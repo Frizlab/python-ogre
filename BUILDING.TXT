@@ -1,0 +1,45 @@
+**** Need to remove cmdXXXX functions etc from ParticleSystem in order to compile correctly
+**** Mods to _particlesystem__classes....  and _particlesystem__wrapper....
+**** FIX IN PROGRESS :)) AJM (But have to stop coding now:))
+
+
+Notes on building the python-ogre code for Windows
+
+Updated by Andy: 13 Aug 2006
+
+Prerequisits:
+=============
+Latest CVS version of Boost (www.boost.org) - I suggest you modify the ./boost/python/detail/preprocessor.hpp and change BOOST_PYTHON_MAX_ARITY to 19 (instead of the default 15).  Although this 'should' be done at the command line by making this change before building boost it's something else you don;t have to worry about
+BJAM - this is needed to build boost so you should have it anyway
+OgreSDK - latest tested version is the prepackaged SDK 1.2.1 for MSVC 7 (www.ogre3d.org)
+Python - tested with python version 2.5 (www.python.org)
+MSVC 7 - :)
+gccxml
+PYPLUS - Always get the latest SVN version
+
+
+Building:
+=========
+Edit the Ogre_Settings.py file to suit your environment
+Run the "BuildSource" batch file
+
+Manually edit the following files and comment out (remove) the lines shown
+
+*** RenderQueueInvocation
+//        RenderQueueInvocation_exposer.def_readwrite( "RENDER_QUEUE_INVOCATION_SHADOWS", Ogre::RenderQueueInvocation::RENDER_QUEUE_INVOCATION_SHADOWS );
+
+*** RibbonTrailFactory
+//        RibbonTrailFactory_exposer.def_readwrite( "FACTORY_TYPE_NAME", Ogre::RibbonTrailFactory::FACTORY_TYPE_NAME );
+
+*** SceneManager
+/*
+    SceneManager_exposer.def_readwrite( "ENTITY_TYPE_MASK", Ogre::SceneManager::ENTITY_TYPE_MASK );
+    SceneManager_exposer.def_readwrite( "FX_TYPE_MASK", Ogre::SceneManager::FX_TYPE_MASK );
+    SceneManager_exposer.def_readwrite( "LIGHT_TYPE_MASK", Ogre::SceneManager::LIGHT_TYPE_MASK );
+    SceneManager_exposer.def_readwrite( "STATICGEOMETRY_TYPE_MASK", Ogre::SceneManager::STATICGEOMETRY_TYPE_MASK );
+    SceneManager_exposer.def_readwrite( "USER_TYPE_MASK_LIMIT", Ogre::SceneManager::USER_TYPE_MASK_LIMIT );
+    SceneManager_exposer.def_readwrite( "WORLD_GEOMETRY_TYPE_MASK", Ogre::SceneManager::WORLD_GEOMETRY_TYPE_MASK );
+    */
+
+Run the "Compile" batch file
+You will now have an Ogre.pyd under the bin directory that should work :)    
