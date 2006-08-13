@@ -91,26 +91,37 @@ def filter_declarations( mb ):
         # Don't include, we'll never need.
         'D3D', 'GL',  'SDL', 'WIN32', 'Any', 'CompositorScriptCompiler', '_', 'Singleton', 
 
-        # TODO: Write these manual wrappers ... (void *'s)
-        # TODO: SharedPtr's manual wrapper is already mostly done by Roman, I should include it.
-        # Don't include as they'll probably need manual wrappers
-        # Reasons vary, but likely include: use of void *, or other semantics which can't be inferred.
-        'Hardware', 'SharedPtr', 'Cmd', 'FileStreamDataStream', 'PatchSurface', 
-        'MapIterator', 'VectorIterator', 'ParticleIterator', 'FileHandleDataStream', 'MemoryDataStream',
-        'PixelBox', 'StringConverter', 'MemoryManager', 'VertexElement', 'MeshSerializerImpl', 
-
-        # TODO: this is a really wierd one, Ogre does something funky here.
-        'GpuProgramParameters',
-
-        # TODO: Find out what the problems with thise are and fix it or ask the mailling list.
-        # Don't include because they have some problems,  we'll want to solve thos problems
-        # at a later date 
-        #'Image' - problem with data property, returns pointer to unsigned char
+###     'Hardware', 'SharedPtr', 'Cmd', 'FileStreamDataStream', 'PatchSurface', 
         
+        'MapIterator', 
+        ## This uses a SingletonPointer however it doesn't include OgreSingleton.h or override getSingleton etc
+        ## of something else strange is happening ????
+        'CompositorManager','SceneManagerEnumerator','SkeletonManager',
+
+        'ManualObject',  #Lots of Virtual Functions returing consts..
+        
+        ### 'VectorIterator', 'ParticleIterator', 'FileHandleDataStream', 'MemoryDataStream',
+###        'PixelBox', 'StringConverter', 'MemoryManager', 'VertexElement', 'MeshSerializerImpl'
+###        'PixelUtil', 
+###        'DataStream', #void *
+        ## now remove some as they use RenderOperation::OperationType which is defined as _OgrePrivate and hence 
+        ## filtered out :(  -- of they have an enum type that doesn't seem to work..
+###        'EdgeListBuilder', 'ManualObject', 'SubMesh', 'VertexCacheProfiler',
+        
+#        'ParticleSystem',   ## Causes missings in the link stage
+        'MeshSerializerImpl', ## link problems - doesn't seem to exist at all ???
+        
+        ##it's defined as a const in the OrgeSceneManagerEnumerator.h file - other simular defs do not have the const??
+        'DefaultSceneManagerFactory',  ## Link - FACTORY_TYPE_NAME string not found - 
+        
+        # this one casuses the ogre.pyd moduel not to load (fails when registering)
+        'VertexCacheProfiler',
+        
+        # TODO: this is a really wierd one, Ogre does something funky here.
+        'GpuProgramParameters',        
     ]
 
-    #Skeleton should have no_init and defaul held_type
-
+    ## Remove private classes , and those that are internal to Ogre...
     private_decls = private_decls_t()
     for cls in ogre_ns.classes():
         if private_decls.is_private( cls ):
@@ -124,52 +135,90 @@ def filter_declarations( mb ):
             func.exclude()
             print '{*} function "%s" is marked as internal' % declarations.full_name( func )
 
+    ## Exclude protected and private that are not pure virtual
+    query = ~declarations.access_type_matcher_t( 'public' ) \
+            & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
+    non_public_non_pure_virtual = ogre_ns.calldefs( query )
+    non_public_non_pure_virtual.exclude()
+    
+    ## Exclude all public not pure virtual, that starts with '_'
+    query = declarations.access_type_matcher_t( 'public' ) \
+            & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL ) \
+            & declarations.custom_matcher_t( lambda decl: decl.name.startswith( '_' ) )
+    non_public_non_pure_virtual = ogre_ns.calldefs( query )
+    non_public_non_pure_virtual.exclude()
+   
+    ## Now get rid of a wide range of classes as defined earlier in startswith...
     for prefix in startswith:
-        classes = ogre_ns.classes (decl_starts_with(prefix), allow_empty=True)
+        classes = ogre_ns.classes (decl_starts_with(prefix), allow_empty=True)  ### NOTE the PREFIX is used here !!!!
         classes.exclude()
+    
+    ## AJM uses RenderOperation::OperationType which is defined as _OgrePrivate
+    ogre_ns.class_( "EdgeListBuilder" ).member_functions( 'addIndexData' ).exclude()   
+    
+    ## AJM Error at compile time - errors when compiling or linking
+    ogre_ns.class_( "MemoryDataStream" ).member_functions( 'getCurrentPtr' ).exclude()   
+    ogre_ns.class_( "MemoryDataStream" ).member_functions( 'getPtr' ).exclude()   
+    ogre_ns.calldefs ('useCountPointer').exclude () #AJM Part of OgreSharedPtr
+    ogre_ns.calldefs ('peekNextPtr').exclude ()
+    ogre_ns.class_( 'RenderSystemOperation' ).exclude() # AJM in OgreCompositorInstance
+    ogre_ns.calldefs ('getChildIterator').exclude ()    
+ 
+    
+    #AJM Set of functions in Particle system that don't get wrapped properly..    ##TOTEST
+    ogre_ns.class_( "ParticleSystem" ).calldefs ( 'CmdCull' ).exclude()   
+    ogre_ns.class_( "ParticleSystem" ).calldefs ( 'CmdHeight' ).exclude()   
+    ogre_ns.class_( "ParticleSystem" ).calldefs ( 'CmdIterationInterval' ).exclude()   
+    ogre_ns.class_( "ParticleSystem" ).calldefs ( 'CmdLocalSpace' ).exclude()   
+    ogre_ns.class_( "ParticleSystem" ).calldefs ( 'CmdMaterial' ).exclude()   
+    ogre_ns.class_( "ParticleSystem" ).calldefs ( 'CmdNonvisibleTimeout' ).exclude()   
+    ogre_ns.class_( "ParticleSystem" ).calldefs ( 'CmdQuota' ).exclude()   
+    ogre_ns.class_( "ParticleSystem" ).calldefs ( 'CmdRenderer' ).exclude()   
+    ogre_ns.class_( "ParticleSystem" ).calldefs ( 'CmdSorted' ).exclude()   
+    ogre_ns.class_( "ParticleSystem" ).calldefs ( 'CmdWidth' ).exclude()   
+ 
+    ###  Issues with various Singleton issues  
+#    ogre_ns.class_( "SkeletonManager" ).member_functions( 'getSingleton' ).exclude() 
+#    ogre_ns.class_( "SkeletonManager" ).member_functions( 'getSingletonPtr' ).exclude() 
+#    ogre_ns.class_( "Root" ).member_functions( 'getSingleton' ).exclude() 
+#    ogre_ns.class_( "Root" ).member_functions( 'getSingletonPtr' ).exclude() 
+#    ogre_ns.class_( "TextureManager" ).member_functions( 'getSingleton' ).exclude() 
+#    ogre_ns.class_( "TextureManager" ).member_functions( 'getSingletonPtr' ).exclude() 
+#    ogre_ns.class_( "SceneManagerEnumerator" ).member_functions( 'getSingleton' ).exclude() 
+#    ogre_ns.class_( "SceneManagerEnumerator" ).member_functions( 'getSingletonPtr' ).exclude() 
+       
+    ## AJM These cause the python module to fail to load  -- need to recheck they are 'all' responsible
+    ogre_ns.class_ ('ResourceGroupManager').calldefs( 'ResourceDeclaration' ).exclude() #AJM ????
+    ogre_ns.class_( "ResourceGroupManager" ).member_functions( 'getResourceDeclarationList' ).exclude()  ##Python load issue
+    ogre_ns.class_( "ResourceGroupManager" ).member_functions( 'linkWorldGeometryToResourceGroup' ).exclude()  ##Python load issue
+    ogre_ns.class_( "ResourceGroupManager" ).member_functions( 'openResource' ).exclude()  ##Python load issue
+    ogre_ns.class_( "ResourceGroupManager" ).member_functions( 'declareResource' ).exclude()  ##Python load issue
 
     # These members have Ogre::Real * methods which need to be wrapped.
     ogre_ns.class_ ('Matrix3').member_operators (symbol='[]').exclude ()
     ogre_ns.class_ ('Matrix4').member_operators (symbol='[]').exclude ()
+    
     #returns reference to "const Real *"
     ogre_ns.class_ ('BillboardChain').calldef( 'getOtherTextureCoordRange' ).exclude()
+    
     #all constructors in this class are private, also some of them are public.
-    Skeleton = ogre_ns.class_( 'Skeleton' )
-    Skeleton.constructors().exclude()
+    Skeleton = ogre_ns.class_( 'Skeleton' ).constructors().exclude()
 
     #"properties.py" functionality exports as "data" property function, that
     #returns reference to non-const uchar*, this cuased generated code to
     #raise compilation error
     ogre_ns.class_( "Image" ).member_functions( 'getData' ).exclude()
-
-    # TODO: These produce an error, but I can no longer remember what.
-    ogre_ns.member_functions ('getCustomAttribute').exclude ()
-    ogre_ns.calldefs ('getChildIterator').exclude ()
-
+ 
+    ## STUFF that hasn't been rechecked for failure...    
     # Methods which have void *'s but are contained in classes I need exported for the sample.
     # once the void * wrappers have been written, this should go away.
     ogre_ns.free_functions ('any_cast').exclude () #not relevant for Python
-    ogre_ns.calldefs ('setOption').exclude ()
-    ogre_ns.calldefs ('getOption').exclude ()
-    ogre_ns.calldefs ('createBezierPatch').exclude ()
-    ogre_ns.calldefs ('define').exclude ()
-    ogre_ns.calldefs ('distributeControlPoints').exclude ()
-    ogre_ns.calldefs ('subdivideCurve').exclude ()
-    ogre_ns.calldefs ('interpolateVertexData').exclude ()
-    ogre_ns.calldefs ('flipToLittleEndian').exclude ()
-    ogre_ns.calldefs ('flipFromLittleEndian').exclude ()
-    ogre_ns.calldefs ('flipEndian').exclude ()
-    ogre_ns.calldefs ('writeData').exclude ()
-    ogre_ns.calldefs ('doGet').exclude ()
-    ogre_ns.calldefs ('doSet').exclude ()
+     
     #AttribParserList is a map from string to function pointer, this class could not be exposed
     AttribParserList = ogre_ns.typedef( name="AttribParserList" )
     declarations.class_traits.get_declaration( AttribParserList ).exclude()
-    #We have to expose this function, otherwise the code will not compile,
-    #because the class wrapper will be abstract.
-    #Roman, may it is possible to specify the body of the function as throw some
-    #exception?
-    #ogre_ns.class_ ('DataStream').calldefs ('read').exclude ()
+    
+
     
 def set_call_policies( mb ):
     ogre_ns = mb.global_ns.namespace ('Ogre')
@@ -216,18 +265,33 @@ def generate_code():
                                           , include_paths=[ogre_settings.headers_dir]
                                           , start_with_declarations=['Ogre']
                                           , indexing_suite_version=2 )
-    mb.BOOST_PYTHON_MAX_ARITY = 19
+    mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
+    
+    global_ns = mb.global_ns
+    global_ns.exclude()
+    ogre_ns = global_ns.namespace( 'Ogre' )
+    ogre_ns.include()
+    
     filter_declarations (mb)
     fix_unnamed_classes (mb)
+
     shared_ptr.create (mb)
+    
+
+    for cls in ogre_ns.classes():
+        print cls #, dir(cls)
+
+    #ogre_ns.class_( 'Singleton<Ogre::>' ).exclude
+    #ogre_ns.class_( 'Singleton<Ogre::TextureManager>' ).exclude
+    
     comparison_operator.create (mb)
 
     #Creating code creator. After this step you should not modify/customize declarations.
     mb.build_code_creator (module_name='Ogre')
 
     # Create properties for accessors
-    properties.create (mb)
+    #properties.create (mb)
     set_call_policies (mb)
     generate_alias (mb)
 
@@ -238,9 +302,16 @@ def generate_code():
 
     mb.code_creator.add_include ("CustomSharedPtr.hpp")
     mb.code_creator.add_include ("ComparisonOperators.hpp")
+    mb.code_creator.add_include ("OgreHardwareOcclusionQuery.h")
 
     #Writing code to the following directory.
-    mb.split_module (ogre_settings.build_dir)
+    huge_classes = []    
+    huge_class_names = [ 'RenderSystem', 'StaticGeometry', 'Node', 'Pass', 'BillboardSet', 'ParticleEmitter', 
+                            'ParticleSystem', 'SceneManager' ]
+    for name in huge_class_names:
+        huge_classes.append( mb.class_( name ) )
+    
+    mb.split_module(ogre_settings.build_dir, huge_classes)
 
 # vim:et:ts=4:sts=4:sw=4
 
