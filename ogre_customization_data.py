@@ -6,7 +6,7 @@ name2alias = {
     "map<std::string, Ogre::MovableObject*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > >":
         "MapOfStringToMovableObject",
     "map<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >":
-        "MapOfStringToString",
+        "NamedValuePairList",
     "vector<float, std::allocator<float> >":
         "VectorOfFloat",
     "vector<std::string, std::allocator<std::string> >":
