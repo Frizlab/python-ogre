@@ -12,5 +12,18 @@ name2alias = {
     "vector<std::string, std::allocator<std::string> >":
         "VectorOfString",
 }
+
+name2alias_class_decl = {
+    "map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >,Ogre::_ConfigOption,std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >,std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::_ConfigOption> > >":
+        "MapOfStringToConfigOption",
+    "vector<Ogre::StaticGeometry::SubMeshLodGeometryLink,std::allocator<Ogre::StaticGeometry::SubMeshLodGeometryLink> >":
+        "VectorOfSubMeshLodGeometryLink",
+    "vector<Ogre::HardwareBuffer::Usage,std::allocator<Ogre::HardwareBuffer::Usage> >":
+        "VectorOfHardwareBufferUsage",
+    "vector<const Ogre::Image*,std::allocator<const Ogre::Image*> >":
+        "VectorOfImagePtr"
+
+}
+
 # vim:et:ts=4:sts=4:sw=4
 
