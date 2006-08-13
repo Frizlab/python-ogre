@@ -218,6 +218,17 @@ def filter_declarations( mb ):
     AttribParserList = ogre_ns.typedef( name="AttribParserList" )
     declarations.class_traits.get_declaration( AttribParserList ).exclude()
     
+    #Andy, please explain why do you want/need to exclude them.
+    #Also it is possible to write rule, that will exclude all variable,
+    #that their names is in upper
+    ogre_ns.class_('RenderQueueInvocation').variable( 'RENDER_QUEUE_INVOCATION_SHADOWS' )
+    ogre_ns.class_('RibbonTrailFactory').variable( 'FACTORY_TYPE_NAME' )
+    SceneManager = ogre_ns.class_( 'SceneManager' )
+    var_names = [ "ENTITY_TYPE_MASK", "FX_TYPE_MASK", "LIGHT_TYPE_MASK"
+                  , "STATICGEOMETRY_TYPE_MASK", "USER_TYPE_MASK_LIMIT"
+                  , "WORLD_GEOMETRY_TYPE_MASK" ]
+    SceneManager.variables( lambda var: var.name in var_names ).exclude()
+        
 
     
 def set_call_policies( mb ):
@@ -252,9 +263,6 @@ def generate_alias (mb):
         print "Looking for", name
         decl = mb.decl( name, lambda decl: isinstance( decl, declarations.class_declaration_t ) )
         decl.alias = alias
-
-
-module_builder.set_logger_level( logging.INFO )
 
 
 def generate_code():
