@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
 #-------------------------------------------------------------------------------
-# TODO: These are todo's that still need investigation, Roman listed these
-# at one point in time.
-# 1. SharedPtr
-# 3. Hardware classes, I am afraid we will have to wrap them manually. They used void* as a function argumen
+# TODO:
+# 1.    void* as a function argument - they are currently wrapped (and compile/load etc) due to latest CVS of boost.  
+#       However probably don't actually work
+# 2.    Properties.py and calling 'properties.create' - commented out at the moment, not sure if it is really needed?
 
-import os, logging
+import os, logging,sys
 import ogre_settings, properties, shared_ptr, comparison_operator, ogre_customization_data
 
 from pyplusplus import code_creators
@@ -26,7 +26,6 @@ cached_headers = [
         r""+ ogre_settings.headers_dir + "/" + ogre_main_header
         , ogre_settings.cache_dir + "/" + ogre_main_header + ".xml" ),
 ]
-
 
 class decl_starts_with (object):
     def __init__ (self, prefix):
@@ -165,18 +164,19 @@ def filter_declarations( mb ):
     ogre_ns.calldefs ('getChildIterator').exclude ()    
  
     
-    #AJM Set of functions in Particle system that don't get wrapped properly..    ##TOTEST
-    ogre_ns.class_( "ParticleSystem" ).calldefs ( 'CmdCull' ).exclude()   
-    ogre_ns.class_( "ParticleSystem" ).calldefs ( 'CmdHeight' ).exclude()   
-    ogre_ns.class_( "ParticleSystem" ).calldefs ( 'CmdIterationInterval' ).exclude()   
-    ogre_ns.class_( "ParticleSystem" ).calldefs ( 'CmdLocalSpace' ).exclude()   
-    ogre_ns.class_( "ParticleSystem" ).calldefs ( 'CmdMaterial' ).exclude()   
-    ogre_ns.class_( "ParticleSystem" ).calldefs ( 'CmdNonvisibleTimeout' ).exclude()   
-    ogre_ns.class_( "ParticleSystem" ).calldefs ( 'CmdQuota' ).exclude()   
-    ogre_ns.class_( "ParticleSystem" ).calldefs ( 'CmdRenderer' ).exclude()   
-    ogre_ns.class_( "ParticleSystem" ).calldefs ( 'CmdSorted' ).exclude()   
-    ogre_ns.class_( "ParticleSystem" ).calldefs ( 'CmdWidth' ).exclude()   
- 
+    #AJM Set of functions in Particle system that don't get wrapped properly.. 
+    PartSys = ogre_ns.class_( "ParticleSystem" )
+    PartSys.class_( "CmdCull" ).exclude()   
+    PartSys.class_( "CmdHeight" ).exclude()   
+    PartSys.class_( "CmdIterationInterval" ).exclude()   
+    PartSys.class_( "CmdLocalSpace" ).exclude()   
+    PartSys.class_( "CmdMaterial" ).exclude()   
+    PartSys.class_( "CmdNonvisibleTimeout" ).exclude()   
+    PartSys.class_( "CmdQuota" ).exclude()   
+    PartSys.class_( "CmdRenderer" ).exclude()   
+    PartSys.class_( "CmdSorted" ).exclude()   
+    PartSys.class_( "CmdWidth" ).exclude()   
+    
     ###  Issues with various Singleton issues  
 #    ogre_ns.class_( "SkeletonManager" ).member_functions( 'getSingleton' ).exclude() 
 #    ogre_ns.class_( "SkeletonManager" ).member_functions( 'getSingletonPtr' ).exclude() 
@@ -218,11 +218,11 @@ def filter_declarations( mb ):
     AttribParserList = ogre_ns.typedef( name="AttribParserList" )
     declarations.class_traits.get_declaration( AttribParserList ).exclude()
     
-    #Andy, please explain why do you want/need to exclude them.
+    #These are excluded as for some reason they don't exist in the link stage
     #Also it is possible to write rule, that will exclude all variable,
     #that their names is in upper
-    ogre_ns.class_('RenderQueueInvocation').variable( 'RENDER_QUEUE_INVOCATION_SHADOWS' )
-    ogre_ns.class_('RibbonTrailFactory').variable( 'FACTORY_TYPE_NAME' )
+    ogre_ns.class_('RenderQueueInvocation').variable( 'RENDER_QUEUE_INVOCATION_SHADOWS' ).exclude()
+    ogre_ns.class_('RibbonTrailFactory').variable( 'FACTORY_TYPE_NAME' ).exclude()
     SceneManager = ogre_ns.class_( 'SceneManager' )
     var_names = [ "ENTITY_TYPE_MASK", "FX_TYPE_MASK", "LIGHT_TYPE_MASK"
                   , "STATICGEOMETRY_TYPE_MASK", "USER_TYPE_MASK_LIMIT"
@@ -263,18 +263,59 @@ def generate_alias (mb):
         print "Looking for", name
         decl = mb.decl( name, lambda decl: isinstance( decl, declarations.class_declaration_t ) )
         decl.alias = alias
-
+        
+        
+### AJM Function to force the instancing of template classes that would not otherwise be created        
+def generate_instantiations_string():
+    # AJM Currently needed for Contoller<float> 
+    toexpose = {'Controller':'float' }
+    
+    ### NOTE that all necessary headers need to be included in the wrapper 
+    instance_wrapper="""
+    #include "OgreController.h" /* .. */
+    namespace  InstanceTemp{
+    %(code)s
+    }
+    """
+    per_instance_code="""
+        inline void Instant_%(class_name)s_%(TypeValue)s (){
+        using namespace Ogre;
+        sizeof( %(class_name)s < %(TypeValue)s > );
+        }
+        """
+    per_instance_code_list=[]
+    
+    for class_name in toexpose.keys():
+        dict = {'class_name': class_name,
+                'TypeValue' : toexpose[class_name]
+                }
+        per_instance_code_list.append(per_instance_code % dict)
+    
+    code = instance_wrapper % {'code':"\n".join (per_instance_code_list) }
+    return code     
+    
 
 def generate_code():
-    #Creating an instance of class that will help you to expose your declarations
+    # First lets create any additional code that is needed to expose templates that wouldn't otherwise be exposed
+    AdditionalCode = generate_instantiations_string()
+    cached_headers.append (module_builder.create_text_fc( AdditionalCode) )
+    
     mb = module_builder.module_builder_t( cached_headers
                                           , gccxml_path=ogre_settings.gccxml_path
                                           , working_directory=ogre_settings.working_dir
                                           , include_paths=[ogre_settings.headers_dir]
                                           , start_with_declarations=['Ogre']
-                                          , indexing_suite_version=2 )
+                                          , indexing_suite_version=2
+                                          )
+                                          
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
+    
+    ## Exclude name space make by 'manually' instancing template classes
+    try:
+        mb.namespace( 'InstanceTemp' ).exclude()
+    except:
+        pass     
     
     global_ns = mb.global_ns
     global_ns.exclude()
@@ -282,16 +323,14 @@ def generate_code():
     ogre_ns.include()
     
     filter_declarations (mb)
+
+#     for cls in ogre_ns.classes():
+#         print cls.name
+#     print "******************"
+#   
+#     sys.exit() 
     fix_unnamed_classes (mb)
-
     shared_ptr.create (mb)
-    
-
-    for cls in ogre_ns.classes():
-        print cls #, dir(cls)
-
-    #ogre_ns.class_( 'Singleton<Ogre::>' ).exclude
-    #ogre_ns.class_( 'Singleton<Ogre::TextureManager>' ).exclude
     
     comparison_operator.create (mb)
 
@@ -299,7 +338,7 @@ def generate_code():
     mb.build_code_creator (module_name='Ogre')
 
     # Create properties for accessors
-    #properties.create (mb)
+    #properties.create (mb)     ## AJM Why did we comment this out?
     set_call_policies (mb)
     generate_alias (mb)
 
