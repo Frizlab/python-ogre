@@ -1,3 +1,5 @@
+#I think it is possible to create code that will do that automaticly.
+
 name2alias = {
     "map<std::string, bool, std::less<std::string>, std::allocator<std::pair<std::string const, bool> > >":
         "MapOfStringToBool",
@@ -6,11 +8,21 @@ name2alias = {
     "map<std::string, Ogre::MovableObject*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > >":
         "MapOfStringToMovableObject",
     "map<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >":
+        "MapOfStringToString",
+    "map<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >":
         "NamedValuePairList",
     "vector<float, std::allocator<float> >":
         "VectorOfFloat",
     "vector<std::string, std::allocator<std::string> >":
-        "VectorOfString",
+        "VectorOfString",    
+    "pair<int, Ogre::CompositorInstance::RenderSystemOperation*>":
+        "PairOfIntAndRenderSystemOperationPtr",
+    "list<Ogre::Plane, std::allocator<Ogre::Plane> >":
+        "ListOfPlane",
+    "set<Ogre::SceneQuery::WorldFragmentType, std::less<Ogre::SceneQuery::WorldFragmentType>, std::allocator<Ogre::SceneQuery::WorldFragmentType> >":
+        "SetOfWorldFragmentTypes",
+    "set<std::string, std::less<std::string>, std::allocator<std::string> >":
+        "SetOfStrings",   
 }
 
 name2alias_class_decl = {
@@ -23,7 +35,7 @@ name2alias_class_decl = {
     "vector<const Ogre::Image*,std::allocator<const Ogre::Image*> >":
         "VectorOfImagePtr"
 
-}
 
+}
 # vim:et:ts=4:sts=4:sw=4
 
