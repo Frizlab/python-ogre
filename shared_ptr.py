@@ -1,111 +1,104 @@
 import ogre_settings
-
 from pygccxml import declarations
 
-def shared_ptr (mb):
-    """A method which attempts to appropriately export the shared pointer classes.
-    """
-    ogre_ns = mb.namespace ('Ogre')
+OGRE_SP_HELD_TYPE_TMPL = \
+"""
+namespace boost{ namespace python{
 
-    file_template = """
-#ifndef CUSTOM_SHARED_PTR_HPP
-#define CUSTOM_SHARED_PTR_HPP
-%(headers)s
-namespace boost { namespace python {
-%(code)s
+%(class_name)s* get_pointer( %(class_ptr_name)s const& p ){
+    return p.get();
+}
+
+template <>
+struct pointee< %(class_ptr_name)s >{
+    typedef %(class_name)s type;
+};
+
 }}// namespace boost::python converter
-#endif//CUSTOM_SHARED_PTR_HPP
 """
 
-    per_class_code = """
-        inline %(class_name)s* get_pointer( %(class_ptr_name)s const& p ){
-            return p.get();
-        }
+REGISTER_SP_TO_PYTHON = \
+"""
+boost::python::register_ptr_to_python< %(sp_inst_class_name)s >();
+"""
 
-        template <> 
-        struct pointee< %(class_ptr_name)s >{
-            typedef %(class_name)s type;
-        };
-    """
-    ogre_shared_ptr_code = """
-        template<class T>  T * get_pointer(Ogre::SharedPtr<T> const& p);
-        template<class T> 
-        inline T * get_pointer(Ogre::SharedPtr<T> const& p){
-            return p.get();
-        }
-        
-        template <class T> struct pointee< Ogre::SharedPtr<T> >{
-            typedef T type;
-        };
-    """
+class ogre_shared_ptr_t:
+    def __init__( self, mb ):
+        self.ogre_ns = mb.namespace ('Ogre')
+        self.visited_classes = set()
 
-    shared_ptr_code_list = []
+    def get_pointee( self, sp_instantiation ):
+        #sp_instantiation - reference to SharedPtr<XXX>
+        #returns reference to XXX type/declaration
+        no_ptr = declarations.remove_pointer( sp_instantiation.variable ('pRep').type )
+        no_alias = declarations.remove_alias( no_ptr )
+        return declarations.remove_declarated( no_alias )
 
-    for shared_ptr_derived in ogre_ns.classes():
-        if len(shared_ptr_derived.bases) != 1 or not shared_ptr_derived.bases[0].related_class.name.startswith ('SharedPtr'):
-            continue
-        shared_ptr_derived.exclude()
-        shared_ptr_instantiation = shared_ptr_derived.bases[0].related_class
+    def configure_base_and_derived( self, sp_derived ):
+        sp_instantiation = sp_derived.bases[0].related_class
+        sp_derived.exclude()
+        sp_instantiation.exclude()
+        pointee = self.get_pointee( sp_instantiation )
 
-        # Now, set the held types appropriately,
-        pointee  = declarations.remove_pointer (shared_ptr_instantiation.variable ('pRep').type)
-        pointee.declaration.held_type = shared_ptr_derived.decl_string
-        print " -- Adding held type for class:", pointee.decl_string, "of type:", shared_ptr_derived.decl_string
+        if pointee in self.visited_classes:
+            return
+        self.visited_classes.add( pointee )
 
-        # Generate pointee<> and get_pointer specialization.
-        name_dict = {
-            'namespace_name': 'Ogre',
-            'class_name': pointee.decl_string,
-            'class_ptr_name': shared_ptr_derived.decl_string,
-        }
-        shared_ptr_code_list.append (per_class_code % name_dict)
+        pointee.add_declaration_code(
+            OGRE_SP_HELD_TYPE_TMPL % {
+                'class_name': pointee.decl_string
+                , 'class_ptr_name': sp_derived.decl_string } )
 
-    shared_ptr_code_list.append (ogre_shared_ptr_code)
-    headers = "\n".join (['#include "%s"' % header for header in ogre_settings.ogre_header_list])
-    final_code_header = file_template % {
-            'code': "\n".join (shared_ptr_code_list),
-            'headers': headers,
-    }
+        if pointee.is_abstract:
+            #For some reason Boost.Python does not support HeldType on abstract
+            #classes
+            pointee.add_registration_code(
+                REGISTER_SP_TO_PYTHON % dict( sp_inst_class_name=sp_derived.decl_string )
+                , works_on_instance=False)
+        else:
+            pointee.held_type = sp_derived.decl_string
 
-    fd = open (ogre_settings.build_dir + "/CustomSharedPtr.hpp", "w")
-    fd.write (final_code_header)
-    fd.close()
+    def configure_instantiation( self, sp_instantiation ):
+        pointee = self.get_pointee( sp_instantiation )
+        if pointee in self.visited_classes:
+            return
+        self.visited_classes.add( pointee )
 
+        #In this case, we can create single template that will tread this use case.
+        #But, thus we will increase compilation time. I think it is much better to
+        #generate non template version.
+        pointee.add_declaration_code(
+            OGRE_SP_HELD_TYPE_TMPL % {
+                'class_name': pointee.decl_string
+                , 'class_ptr_name': sp_instantiation.decl_string } )
 
-def generate_shared_ptr_typedefs (mb):
-    print "Setting held_type for SharedPtr typedefs ..."
-    print "-" * 80
-    ogre_ns = mb.namespace ('Ogre')
-    for ogre_typedef in ogre_ns.typedefs():
-        if not hasattr(ogre_typedef.type,"declaration"):
-            continue
-        typedef_declaration = ogre_typedef.type.declaration
-        if not typedef_declaration.name.startswith ('SharedPtr'):
-            continue
+        if pointee.is_abstract:
+            #For some reason Boost.Python does not support HeldType on abstract
+            #classes
+            pointee.add_registration_code(
+                REGISTER_SP_TO_PYTHON % dict( sp_inst_class_name=sp_instantiation.decl_string )
+                , works_on_instance=False)
+        else:
+            pointee.held_type = sp_instantiation.decl_string
 
-
-        print " -- Setting held type of:", typedef_declaration.decl_string
-
-        # Now we have a SharePtr instantiation
-        shared_ptr_instantiation = typedef_declaration
-
-        # For some reason some of these don't have the variable attribute
-        if not hasattr (shared_ptr_instantiation, "variable"):
-            print " Not Exporting ... trying to find out why:",
-            if hasattr (shared_ptr_instantiation, "why_not_exportable"):
-                print " -- NotExportable:", shared_ptr_instantiation
-            print ""
-            continue
-
-        pointee  = declarations.remove_pointer (shared_ptr_instantiation.variable ('pRep').type)
-        pointee.declaration.held_type = shared_ptr_instantiation.decl_string
-
-        print " -- for:", pointee.decl_string, " -- to",
-        print pointee.declaration.held_type
+    def configure(self):
+        """
+        A method which attempts to appropriately export the shared pointer derived classes.
+        Ogre uses next pattern:
+        template class<T> SharedPtr{...};
+        class XXXPtr : public SharedPtr<XXX> {... }
+        We have to exclude ResourcePtr and to register Smart Pointer conversion
+        See http://boost.org/libs/python/doc/v2/register_ptr_to_python.html
+        """
+        for cls in self.ogre_ns.classes():
+            if 1 == len(cls.bases) and cls.bases[0].related_class.name.startswith ('SharedPtr'):
+                self.configure_base_and_derived( cls )
+            elif cls.name.startswith( 'SharedPtr' ):
+               self.configure_instantiation( cls )
+            else:
+                pass
 
 
-def create (mb):
-    shared_ptr (mb)                    
-    generate_shared_ptr_typedefs (mb)                    
-
+def configure( mb ):
+    ogre_shared_ptr_t( mb ).configure()
 # vim:et:ts=4:sts=4:sw=4
