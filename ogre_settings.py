@@ -8,7 +8,7 @@ if 'roman' in getpass.getuser():
     gccxml_path = r'd:/gccxml_cvs/gccxml-build/bin/release/gccxml.exe'
     pygccxml_base_dir = r'D:\pygccxml_sources\sources'
     working_dir = r'D:\python-ogre'
-    headers_dir = r'D:\ogre\ogrenew\OgreMain\include'
+    headers_dir = r'D:\OgreSDK\include'
     python_headers_dir = 'c:/python/include'
 else:
     gccxml_path = r'c:/development/gccxml/bin/release/gccxml.exe'
