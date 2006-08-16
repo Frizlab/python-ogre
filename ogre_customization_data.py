@@ -14,7 +14,7 @@ name2alias = {
     "vector<float, std::allocator<float> >":
         "VectorOfFloat",
     "vector<std::string, std::allocator<std::string> >":
-        "VectorOfString",    
+        "VectorOfString",
     "pair<int, Ogre::CompositorInstance::RenderSystemOperation*>":
         "PairOfIntAndRenderSystemOperationPtr",
     "list<Ogre::Plane, std::allocator<Ogre::Plane> >":
@@ -22,7 +22,7 @@ name2alias = {
     "set<Ogre::SceneQuery::WorldFragmentType, std::less<Ogre::SceneQuery::WorldFragmentType>, std::allocator<Ogre::SceneQuery::WorldFragmentType> >":
         "SetOfWorldFragmentTypes",
     "set<std::string, std::less<std::string>, std::allocator<std::string> >":
-        "SetOfStrings",   
+        "SetOfStrings",
 }
 
 name2alias_class_decl = {
@@ -33,9 +33,9 @@ name2alias_class_decl = {
     "vector<Ogre::HardwareBuffer::Usage,std::allocator<Ogre::HardwareBuffer::Usage> >":
         "VectorOfHardwareBufferUsage",
     "vector<const Ogre::Image*,std::allocator<const Ogre::Image*> >":
-        "VectorOfImagePtr"
-
-
+        "VectorOfImagePtr",
+    "set<Ogre::Entity*,std::less<Ogre::Entity*>,std::allocator<Ogre::Entity*> >":
+        "SetOfEntityPtr"
 }
 # vim:et:ts=4:sts=4:sw=4
 
