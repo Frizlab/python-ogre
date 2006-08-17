@@ -37,5 +37,43 @@ name2alias_class_decl = {
     "set<Ogre::Entity*,std::less<Ogre::Entity*>,std::allocator<Ogre::Entity*> >":
         "SetOfEntityPtr"
 }
+
+#This files will be added to the generated code:
+header_files = [
+      'Ogre.h'
+    , 'OgreErrorDialog.h'
+    , 'OgreConfigDialog.h'
+    , 'OgreInputEvent.h'
+    , 'OgreEventListeners.h'
+    , 'OgreTagPoint.h'
+    , 'OgreTargetManager.h'
+    , 'OgreOverlayElementFactory.h'
+    , 'OgreArchiveFactory.h'
+    , 'OgreParticleSystemRenderer.h'
+    , 'OgreParticleEmitterFactory.h'
+    , 'OgreParticleAffectorFactory.h'
+    , 'OgreSkeletonInstance.h'
+    , 'OgreSkeletonManager.h'
+    , 'OgreSkeleton.h'
+    , 'OgreCompositor.h'
+    , 'OgrePatchMesh.h'
+    , 'OgreMesh.h'
+    , 'OgreHighLevelGpuProgram.h'
+    , 'OgreHardwarePixelBuffer.h'
+    , 'OgreEventQueue.h'
+    , 'OgreKeyEvent.h'
+    , 'OgreHardwareOcclusionQuery.h'
+]
+
+huge_classes = [
+    'RenderSystem'
+    , 'StaticGeometry'
+    , 'Node'
+    , 'Pass'
+    , 'BillboardSet'
+    , 'ParticleEmitter'
+    , 'ParticleSystem'
+    , 'SceneManager'
+]
 # vim:et:ts=4:sts=4:sw=4
 

@@ -6,8 +6,8 @@
 #       However probably don't actually work
 # 2.    Properties.py and calling 'properties.create' - commented out at the moment, not sure if it is really needed?
 
-import os, logging,sys
-import ogre_settings, properties, shared_ptr, comparison_operator, ogre_customization_data
+import os, sys, time
+import environment, properties, shared_ptr, ogre_customization_data
 
 from pyplusplus import code_creators
 from pyplusplus import module_builder
@@ -17,15 +17,6 @@ from pygccxml import declarations
 from pygccxml.declarations import access_type_matcher_t
 from pygccxml.declarations import type_traits
 from pygccxml import parser
-
-ogre_main_header = 'Ogre.h'
-
-
-cached_headers = [
-    parser.create_cached_source_fc(
-        r""+ ogre_settings.headers_dir + "/" + ogre_main_header
-        , ogre_settings.cache_dir + "/" + ogre_main_header + ".xml" ),
-]
 
 class decl_starts_with (object):
     def __init__ (self, prefix):
@@ -56,8 +47,8 @@ def fix_unnamed_classes (mb):
 class private_decls_t:
     def __init__( self ):
         self.__private = {} #fname : [line ]
-        for fname in os.listdir( ogre_settings.headers_dir ):
-            full_name = os.path.join( ogre_settings.headers_dir, fname )
+        for fname in os.listdir( environment.headers_dir ):
+            full_name = os.path.join( environment.headers_dir, fname )
             if not os.path.isfile( full_name ):
                 continue
             fobj = file( full_name, 'r' )
@@ -90,22 +81,12 @@ def filter_declarations( mb ):
         # Don't include, we'll never need.
         'D3D', 'GL',  'SDL', 'WIN32', 'Any', 'CompositorScriptCompiler', '_', 'Singleton',
 
-###     'Hardware', 'SharedPtr', 'Cmd', 'FileStreamDataStream', 'PatchSurface',
-
         'MapIterator',
         ## This uses a SingletonPointer however it doesn't include OgreSingleton.h or override getSingleton etc
         ## of something else strange is happening ????
         'CompositorManager','SceneManagerEnumerator','SkeletonManager',
 
         'ManualObject',  #Lots of Virtual Functions returing consts..
-
-        ### 'VectorIterator', 'ParticleIterator', 'FileHandleDataStream', 'MemoryDataStream',
-###        'PixelBox', 'StringConverter', 'MemoryManager', 'VertexElement', 'MeshSerializerImpl'
-###        'PixelUtil',
-###        'DataStream', #void *
-        ## now remove some as they use RenderOperation::OperationType which is defined as _OgrePrivate and hence
-        ## filtered out :(  -- of they have an enum type that doesn't seem to work..
-###        'EdgeListBuilder', 'ManualObject', 'SubMesh', 'VertexCacheProfiler',
 
 #        'ParticleSystem',   ## Causes missings in the link stage
         'MeshSerializerImpl', ## link problems - doesn't seem to exist at all ???
@@ -238,8 +219,6 @@ def set_call_policies( mb ):
             mem_fun.call_policies = call_policies.return_value_policy(
                 call_policies.reference_existing_object )
 
-
-
 def generate_alias (mb):
     for name, alias in ogre_customization_data.name2alias.items():
         print "Looking for", name
@@ -256,63 +235,18 @@ def generate_alias (mb):
         decl.alias = alias
 
 
-### AJM Function to force the instancing of template classes that would not otherwise be created
-def generate_instantiations_string():
-    # AJM Currently needed for Contoller<float>
-    toexpose = {'Controller':'float' }
-
-    ### NOTE that all necessary headers need to be included in the wrapper
-    instance_wrapper="""
-    #include "OgreController.h" /* .. */
-    namespace  InstanceTemp{
-    %(code)s
-    }
-    """
-    per_instance_code="""
-        inline void Instant_%(class_name)s_%(TypeValue)s (){
-        using namespace Ogre;
-        sizeof( %(class_name)s < %(TypeValue)s > );
-        }
-        """
-    per_instance_code_list=[]
-
-    for class_name in toexpose.keys():
-        dict = {'class_name': class_name,
-                'TypeValue' : toexpose[class_name]
-                }
-        per_instance_code_list.append(per_instance_code % dict)
-
-    code = instance_wrapper % {'code':"\n".join (per_instance_code_list) }
-    return code
-
-
 def generate_code():
-    # First lets create any additional code that is needed to expose templates that wouldn't otherwise be exposed
-    AdditionalCode = generate_instantiations_string()
-    cached_headers.append (module_builder.create_text_fc( AdditionalCode) )
-
-    mb = module_builder.module_builder_t( cached_headers
-                                          , gccxml_path=ogre_settings.gccxml_path
-                                          , working_directory=ogre_settings.working_dir
-                                          , include_paths=[ogre_settings.headers_dir]
+    xml_cached_fc = parser.create_cached_source_fc( "python_ogre.h", environment.declarations_cache_file )
+    mb = module_builder.module_builder_t( [ xml_cached_fc ]
+                                          , gccxml_path=environment.gccxml_path
+                                          , working_directory=environment.working_dir
+                                          , include_paths=[environment.headers_dir]
                                           , define_symbols=['OGRE_NONCLIENT_BUILD']
                                           , start_with_declarations=['Ogre']
-                                          , indexing_suite_version=2
-                                          )
+                                          , indexing_suite_version=2 )
 
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
-
-    ## Exclude name space make by 'manually' instancing template classes
-    try:
-        mb.namespace( 'InstanceTemp' ).exclude()
-    except:
-        pass
-
-    global_ns = mb.global_ns
-    global_ns.exclude()
-    ogre_ns = global_ns.namespace( 'Ogre' )
-    ogre_ns.include()
 
     filter_declarations (mb)
 
@@ -320,33 +254,24 @@ def generate_code():
     shared_ptr.configure (mb)
 
     #Creating code creator. After this step you should not modify/customize declarations.
-    mb.build_code_creator (module_name='Ogre')
+    mb.build_code_creator (module_name='_ogre_')
 
     # Create properties for accessors
-    #properties.create (mb)     ## AJM Why did we comment this out?
+    properties.create (mb)
     set_call_policies (mb)
     generate_alias (mb)
 
-    mb.code_creator.user_defined_directories.append (ogre_settings.headers_dir)
-    mb.code_creator.user_defined_directories.append (ogre_settings.build_dir)
-    # TODO: make this into a list that gets added.
-    for header in ogre_settings.ogre_header_list:
-        mb.code_creator.add_include (header)
+    mb.code_creator.user_defined_directories.append( environment.headers_dir )
+    mb.code_creator.user_defined_directories.append( environment.build_dir )
+    mb.code_creator.replace_included_headers( ogre_customization_data.header_files )
 
-    #mb.code_creator.add_include ("CustomSharedPtr.hpp")
-    #mb.code_creator.add_include ("ComparisonOperators.hpp")
-    mb.code_creator.add_include ("OgreHardwareOcclusionQuery.h")
+    huge_classes = map( mb.class_, ogre_customization_data.huge_classes )
 
-    #Writing code to the following directory.
-    huge_classes = []
-    huge_class_names = [ 'RenderSystem', 'StaticGeometry', 'Node', 'Pass', 'BillboardSet', 'ParticleEmitter',
-                            'ParticleSystem', 'SceneManager' ]
-    for name in huge_class_names:
-        huge_classes.append( mb.class_( name ) )
-
-    mb.split_module(ogre_settings.build_dir, huge_classes)
+    mb.split_module(environment.build_dir, huge_classes)
 
 # vim:et:ts=4:sts=4:sw=4
 
 if __name__ == '__main__':
+    start_time = time.clock()
     generate_code()
+    print 'Python-OGRE source code was updated( %f minutes ).' % (  ( time.clock() - start_time )/60 )

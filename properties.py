@@ -14,18 +14,18 @@ if no set_function is provided. As well as adding a policy to
 reference_existing_object if the return type of the function is a reference or
 pointer.'''
 
-    def __init__( self, get_function, set_function, parent=None ):
+    def __init__( self, get_function, set_function ):
         #get/set functions are references to relevant declarations
-        code_creators.code_creator_t.__init__ (self, parent)
+        code_creators.code_creator_t.__init__ (self)
         self.__get_function = get_function and get_function.declaration
         self.__set_function = set_function and set_function.declaration
-   
+
     def _create_template (self, function):
         '''Use this function to create the reference to the function with the
 appropriate policy.'''
-        if not function: return '' 
-        
-        impl = '(%(type)s)( &%(function)s )' % dict ( 
+        if not function: return ''
+
+        impl = '(%(type)s)( &%(function)s )' % dict (
                 function = declarations.full_name (function),
                 type = function.function_type ().decl_string)
 
@@ -35,14 +35,14 @@ appropriate policy.'''
             impl = '''bp::make_function (%s, %s)''' \
                 % (impl, function.call_policies.create (None))
 
-        return ', %s' % impl 
-        
-        
+        return ', %s' % impl
+
+
     def _create_impl(self):
-        template = '''add_property ("%(name)s" %(properties)s)''' 
+        template = '''add_property ("%(name)s" %(properties)s)'''
         properties_template = self._create_template (self.__get_function)
         properties_template += self._create_template (self.__set_function)
-        property_name = self.__get_function.name[3:] 
+        property_name = self.__get_function.name[3:]
 
         if property_name == '': return ''
 
@@ -65,7 +65,7 @@ and documented.'''
 
     # First, some helper functions
     def is_relevant (code_creator):
-        '''Ensures that we're looking at methods that start with get/set and 
+        '''Ensures that we're looking at methods that start with get/set and
 are public member functions.'''
         if not isinstance (code_creator, code_creators.declaration_based_t):
             #We are looking for code creator, that has to export some declaration
@@ -100,7 +100,7 @@ type of object as the type of the only argument to the setter function.'''
             improper_getters += 1
             return False
 
-        # We're ok with read only properties         
+        # We're ok with read only properties
         if not setter: return True
         set_decl = setter.declaration
 
@@ -122,12 +122,12 @@ type of object as the type of the only argument to the setter function.'''
     code_creator_dict = {}
     for class_creator in classes:
         code_creator_dict[class_creator.declaration.name] = class_creator
-    
+
     for class_creator in classes:
         accessor_list = filter (is_relevant, class_creator.creators)
         # get only the relevant code_creators
 
-        accessors_db = {} # name : {'get':get creator, 'set':set creator]        
+        accessors_db = {} # name : {'get':get creator, 'set':set creator]
 
         #Filling accessors_db
         for creator in accessor_list:
@@ -139,7 +139,7 @@ type of object as the type of the only argument to the setter function.'''
                 # If we already have this type of creator we will prefer
                 # ones without a const, or the first one
                 if hasattr (accessors_db[property_name][type].declaration,'has_const') and \
-                    accessors_db[property_name][type].declaration.has_const: 
+                    accessors_db[property_name][type].declaration.has_const:
                     print "SWITCHING:", creator.declaration.name, "instead of", accessors_db [property_name][type].declaration.name
                     accessors_db [property_name][type] = creator
             else:

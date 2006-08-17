@@ -2,8 +2,6 @@ import os
 import sys
 import getpass
 
-
-
 if 'roman' in getpass.getuser():
     gccxml_path = r'd:/gccxml_cvs/gccxml-build/bin/release/gccxml.exe'
     pygccxml_base_dir = r'D:\pygccxml_sources\sources'
@@ -23,31 +21,5 @@ sys.path.append (pygccxml_base_dir + r'/pyplusplus_dev')
 
 cache_dir = working_dir + r'/xml_cache'
 build_dir = working_dir + r'/build'
-decl_cache_dir = working_dir + r'/decl_cache'
-
-
-ogre_header_list = [
-    'OgreErrorDialog.h',
-    'OgreConfigDialog.h',
-    'OgreInputEvent.h',
-    'OgreEventListeners.h',
-    'OgreTagPoint.h',
-    'OgreTargetManager.h',
-    'OgreOverlayElementFactory.h',
-    'OgreArchiveFactory.h',
-    'OgreParticleSystemRenderer.h',
-    'OgreParticleEmitterFactory.h',
-    'OgreParticleAffectorFactory.h',
-    'OgreSkeletonInstance.h',
-    'OgreSkeletonManager.h',
-    'OgreSkeleton.h',
-    'OgreCompositor.h',
-    'OgrePatchMesh.h',
-    'OgreMesh.h',
-    'OgreHighLevelGpuProgram.h',
-    'OgreHardwarePixelBuffer.h',
-    'OgreEventQueue.h',
-    'OgreKeyEvent.h',
-]
-
+declarations_cache_file = working_dir + r'/declarations_cache/cache.xml'
 
