@@ -1,4 +1,4 @@
-import ogre_settings
+import environment
 from pygccxml import declarations
 
 OGRE_SP_HELD_TYPE_TMPL = \
