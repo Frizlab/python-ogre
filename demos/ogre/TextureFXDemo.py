@@ -9,18 +9,17 @@ class TextureFXApplication(sf.Application):
         sceneManager.ambientLight = ogre.ColourValue(0.5, 0.5, 0.5)
 
         light = sceneManager.createLight('MainLight')
-        light.position = ogre.Vector3(20, 80, 50)
+        light.position = ogre.Vector3(20, 80, 150)
 
         self._createScalingPlane()
         self._createScrollingKnot()
         self._createWateryPlane()
-
-        mm = ogre.MaterialManager.getSingleton()
-        mm.create('SkyMat', 'General')
-        skyMaterial = ogre.Material(mm.create('SkyMat', 'General'))
+        skyMaterial = ogre.MaterialManager.getSingleton()   #get the material manager pointer
+        skyMaterial =  skyMaterial.create('SkyMat', ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME )
         skyMaterial.lightingEnabled = False
         
-        textureUnitState = skyMaterial.getTechnique(0).getPass(0).createTextureUnitState('clouds.jpg', 0)
+        ##NOTE the use of .pointer to get the sharedptr for the Material Object..
+        textureUnitState = skyMaterial.pointer.getTechnique(0).getPass(0).createTextureUnitState('clouds.jpg', 0)
         textureUnitState.setScrollAnimation(0.15, 0)
 
         sceneManager.setSkyDome(True, 'SkyMat', -5.0, 2.0)
