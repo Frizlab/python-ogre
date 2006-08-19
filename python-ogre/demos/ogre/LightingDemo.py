@@ -16,20 +16,24 @@ class LightingApplication(sf.Application):
         entity = sceneManager.createEntity('head', 'ogrehead.mesh')
         sceneManager.getRootSceneNode().attachObject(entity)
 
+        
+        
+        ## SETUP Trail Lighting
         # light 1		
         direct_vec = ogre.Vector3(-1, -1, 0.5)
-        n=direct_vec.normalisedCopy()
+        direct_vec.normalise() #dCopy()
         l = sceneManager.createLight("light1")
-        l.type=ogre.Light.LT_DIRECTIONAL
-        l.direction=n
+        l.setType (ogre.Light.LT_DIRECTIONAL)   # or .type
+        l.setDirection(direct_vec)
 
 #         # create Ribbon Trail
         pairList = ogre.NamedValuePairList()
         pairList['numberOfChains'] = '2'
         pairList['maxElements'] = '80'
-        trail=sceneManager.createMovableObject("1", "RibbonTrail", pairList)
-        trail.materialName="Examples/LightRibbonTrail"
-        trail.trailLength=400
+
+        trail=sceneManager.createMovableObject("1", "RibbonTrail", pairList)    # this returns a ribbontrail object
+        trail.setMaterialName ("Examples/LightRibbonTrail")
+        trail.setTrailLength (400)
 
         # attach Ribbon Trail scene node
         sceneManager.getRootSceneNode().createChildSceneNode().attachObject(trail)
@@ -41,21 +45,21 @@ class LightingApplication(sf.Application):
         anim.interpolationMode=ogre.Animation.IM_SPLINE
         track = anim.createNodeTrack(1, animNode)
         kf = track.createNodeKeyFrame(0)
-        kf.translation=50,30,0
+        kf.translate=ogre.Vector3(50,30,0)
         kf = track.createNodeKeyFrame(2)
-        kf.translation=100, -30, 0
+        kf.translate=ogre.Vector3(100, -30, 0)
         kf = track.createNodeKeyFrame(4)
-        kf.translation=120, -100, 150
+        kf.translate=ogre.Vector3(120, -100, 150)
         kf = track.createNodeKeyFrame(6)
-        kf.translation=30, -100, 50
+        kf.translate=ogre.Vector3(30, -100, 50)
         kf = track.createNodeKeyFrame(8)
-        kf.translation=-50, 30, -50
+        kf.translate=ogre.Vector3(-50, 30, -50)
         kf = track.createNodeKeyFrame(10)
-        kf.translation=-150, -20, -100
+        kf.translate=ogre.Vector3(-150, -20, -100)
         kf = track.createNodeKeyFrame(12)
-        kf.translation=-50, -30, 0
+        kf.translate=ogre.Vector3(-50, -30, 0)
         kf = track.createNodeKeyFrame(14)
-        kf.translation=50,30,0
+        kf.translate=ogre.Vector3(50,30,0)
 
         animState = sceneManager.createAnimationState("an1")
         animState.enabled=True
@@ -83,17 +87,17 @@ class LightingApplication(sf.Application):
         anim.interpolationMode=ogre.Animation.IM_SPLINE
         track = anim.createNodeTrack(1, animNode)
         kf = track.createNodeKeyFrame(0)
-        kf.translation=-50,100,0
+        kf.translate=ogre.Vector3(-50,100,0)
         kf = track.createNodeKeyFrame(2)
-        kf.translation=-100, 150, -30
+        kf.translate=ogre.Vector3(-100, 150, -30)
         kf = track.createNodeKeyFrame(4)
-        kf.translation=-200, 0, 40
+        kf.translate=ogre.Vector3(-200, 0, 40)
         kf = track.createNodeKeyFrame(6)
-        kf.translation=0, -150, 70
+        kf.translate=ogre.Vector3(0, -150, 70)
         kf = track.createNodeKeyFrame(8)
-        kf.translation=0, 0, 30
+        kf.translate=ogre.Vector3(0, 0, 30)
         kf = track.createNodeKeyFrame(10)
-        kf.translation=-50,100,0
+        kf.translate=ogre.Vector3(-50,100,0)
 
         animState = sceneManager.createAnimationState("an2")
         animState.enabled=True
@@ -131,7 +135,7 @@ class LightingListener(sf.FrameListener):
         for a in self.mAnimStateList:
             a.addTime(frameEvent.timeSinceLastFrame)            		
         return sf.FrameListener.frameStarted(self, frameEvent)
-        self.speakAnimState.addTime(evt.timeSinceLastFrame)
+        #self.speakAnimState.addTime(evt.timeSinceLastFrame)
 
 
 if __name__ == '__main__':
