@@ -58,10 +58,11 @@ class private_decls_t:
                         self.__private[ fname ] = []
                     self.__private[ fname ].append( index + 1 ) #enumerate calcs from 0, while gccxml from 1
                 line = line.strip()
-                if line.startswith( '/// Internal method ' ):
+                if line.startswith( '/// Internal method ' ) or line.startswith( '/** Internal class' ):
                     if not self.__private.has_key( fname ):
                         self.__private[ fname ] = []
                     self.__private[ fname ].append( index + 2 ) #enumerate calcs from 0, while gccxml from 1
+
             fobj.close()
 
     def is_private( self, decl ):
@@ -235,6 +236,27 @@ def generate_alias (mb):
         decl.alias = alias
 
 
+def configure_exception(mb):
+    #We don't exclude  Exception, because it contains functionality, that could
+    #be useful to user. But, we will provide automatic exception translator
+    Exception = mb.namespace( 'Ogre' ).class_( 'Exception' )
+
+    translate_code = os.linesep.join([
+    "namespace python_ogre{",
+    "   void translate(Ogre::Exception const& e){",
+    "        // Use the Python 'C' API to set up an exception object",
+    "        PyErr_SetString(PyExc_RuntimeError, e.getFullDescription().c_str() );",
+    "    }",
+    "}"])
+
+    registration_code = \
+    """
+    boost::python::register_exception_translator<Ogre::Exception>(&python_ogre::translate);
+    """
+
+    Exception.add_declaration_code( translate_code )
+    Exception.add_registration_code( registration_code, works_on_instance=False )
+
 def generate_code():
     xml_cached_fc = parser.create_cached_source_fc( "python_ogre.h", environment.declarations_cache_file )
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
@@ -252,9 +274,11 @@ def generate_code():
 
     fix_unnamed_classes (mb)
     shared_ptr.configure (mb)
+    configure_exception( mb )
 
     #Creating code creator. After this step you should not modify/customize declarations.
     mb.build_code_creator (module_name='_ogre_')
+
 
     # Create properties for accessors
     properties.create (mb)
