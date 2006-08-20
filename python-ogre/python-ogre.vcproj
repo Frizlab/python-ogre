@@ -393,9 +393,6 @@
 				RelativePath=".\build\ArchiveManager.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\build\AutomaticGuardUnguard.pypp.cpp">
-			</File>
-			<File
 				RelativePath=".\build\AutoParamDataSource.pypp.cpp">
 			</File>
 			<File
