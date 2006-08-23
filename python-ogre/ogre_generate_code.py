@@ -80,22 +80,7 @@ def filter_declarations( mb ):
     startswith = [
         # Don't include, we'll never need.
         'D3D', 'GL',  'SDL', 'WIN32', 'Any', 'CompositorScriptCompiler', '_', 'Singleton',
-        'ManualObject',  #Lots of Virtual Functions returing consts..
         'MeshSerializerImpl', ## link problems - doesn't seem to exist at all ???
-        'VertexCacheProfiler', # this one causes the ogre.pyd not to load (fails when registering)
-
-        ##  Classes that caused problems with code generation etc that have either been resolved or
-        ##  worked arounded (specific subclasses or functions excluded further below)
-        
-        ##it's defined as a const in the OrgeSceneManagerEnumerator.h file - other simular defs do not have the const??
-        #'DefaultSceneManagerFactory',  ## Link - FACTORY_TYPE_NAME string not found -
-        # TODO: this is a really wierd one, Ogre does something funky here.
-        #'GpuProgramParameters',
-        #'ParticleSystem',   ## Causes missings in the link stage
-        ##       'MapIterator',
-        ## This uses a SingletonPointer however it doesn't include OgreSingleton.h or override getSingleton etc
-        ## of something else strange is happening ????
-        ##       'CompositorManager','SceneManagerEnumerator','SkeletonManager',
     ]
 
     ## Remove private classes , and those that are internal to Ogre...
@@ -104,6 +89,9 @@ def filter_declarations( mb ):
         if private_decls.is_private( cls ):
             cls.exclude()
             print '{*} class "%s" is marked as private' % cls.decl_string
+
+    #RenderOperation class is marked as private, but I think this is a mistake
+    ogre_ns.class_('RenderOperation').include()
 
     for func in ogre_ns.calldefs():
         if private_decls.is_private( func ):
@@ -130,9 +118,6 @@ def filter_declarations( mb ):
         classes = ogre_ns.classes (decl_starts_with(prefix), allow_empty=True)  ### NOTE the PREFIX is used here !!!!
         classes.exclude()
 
-    ## AJM uses RenderOperation::OperationType which is defined as _OgrePrivate
-    ogre_ns.class_( "EdgeListBuilder" ).member_functions( 'addIndexData' ).exclude()
-
     ## AJM Error at compile time - errors when compiling or linking
     ogre_ns.class_( "MemoryDataStream" ).member_functions( 'getCurrentPtr' ).exclude()
     ogre_ns.class_( "MemoryDataStream" ).member_functions( 'getPtr' ).exclude()
@@ -140,7 +125,7 @@ def filter_declarations( mb ):
     ogre_ns.calldefs ('peekNextPtr').exclude ()
     ogre_ns.calldefs ('peekNextValuePtr').exclude ()    #in many of the Iterator classes
     ogre_ns.class_("GpuProgramParameters").class_("AutoConstantEntry").exclude() # Autoconstant name space variables missing in compile
-    
+
     ogre_ns.class_( 'RenderSystemOperation' ).exclude() # AJM in OgreCompositorInstance
     ogre_ns.calldefs ('getChildIterator').exclude ()
 
@@ -164,7 +149,7 @@ def filter_declarations( mb ):
     ogre_ns.class_( "ResourceGroupManager" ).member_functions( 'openResource' ).exclude()  ##Python load issue
     ogre_ns.class_( "ResourceGroupManager" ).member_functions( 'declareResource' ).exclude()  ##Python load issue
 
-    
+
  #   ogre_ns.class_("SceneManager").class_("AnimationList").exclude()
     # These members have Ogre::Real * methods which need to be wrapped.
     ogre_ns.class_ ('Matrix3').member_operators (symbol='[]').exclude ()
@@ -201,6 +186,11 @@ def filter_declarations( mb ):
                   , "WORLD_GEOMETRY_TYPE_MASK" ]
     SceneManager.variables( lambda var: var.name in var_names ).exclude()
 
+    #VertexCacheProfiler constructor uses enum that will be defined later.
+    #I will replace second default value to be int instead of enum
+    #arg_types=[None,None] - 2 arguments, with whatever type
+    VertexCacheProfiler = ogre_ns.constructor( 'VertexCacheProfiler', arg_types=[None,None] )
+    VertexCacheProfiler.arguments[1].default_value = "int(%s)" % VertexCacheProfiler.arguments[1].default_value
 
 
 def set_call_policies( mb ):
@@ -222,6 +212,9 @@ def generate_alias (mb):
     for name, alias in ogre_customization_data.name2alias.items():
         try:
             decl = mb.class_( name )
+            print '{!}setting alias to %s ' % str( decl )
+            for source_alias in decl.aliases:
+                print '  {source code defines next alias} %s' % str( source_alias )
             decl.alias = alias
             decl.wrapper_alias = alias + '_wrapper'
         except  Exception, error:
@@ -231,9 +224,9 @@ def generate_alias (mb):
         try:
             decl = mb.decl( name, lambda decl: isinstance( decl, declarations.class_declaration_t ) )
             decl.alias = alias
-        except  Exception, error:  
+        except  Exception, error:
             print "==>", name
-  
+
 
 def configure_exception(mb):
     #We don't exclude  Exception, because it contains functionality, that could
@@ -275,14 +268,17 @@ def generate_code():
     shared_ptr.configure (mb)
     configure_exception( mb )
 
+    generate_alias (mb)
+
+    for cls in mb.namespace( 'Ogre' ).classes():
+        cls.add_registration_code( 'std::cout << "registering class %s" << std::endl;' % cls.alias, False )
+
     #Creating code creator. After this step you should not modify/customize declarations.
     mb.build_code_creator (module_name='_ogre_')
-
 
     # Create properties for accessors
     properties.create (mb)
     set_call_policies (mb)
-    generate_alias (mb)
 
     mb.code_creator.user_defined_directories.append( environment.headers_dir )
     mb.code_creator.user_defined_directories.append( environment.build_dir )

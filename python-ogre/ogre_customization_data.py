@@ -5,7 +5,6 @@ name2alias = {
         "MapOfStringToBool",
     "map<std::string, Ogre::OverlayElement*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::OverlayElement*> > >":
         "MapOfStringToOverlayElement",
-        
     "map<std::string, Ogre::MovableObject*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > >":
         "MapOfStringToMovableObject",
     "map<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >":
@@ -24,11 +23,10 @@ name2alias = {
         "SetOfWorldFragmentTypes",
     "set<std::string, std::less<std::string>, std::allocator<std::string> >":
         "SetOfStrings",
-     "map<std::string, Ogre::OverlayElement*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::OverlayElement*> > >"
+    "map<std::string, Ogre::OverlayElement*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::OverlayElement*> > >"
       : "MapOfOverlayElement",
-      "MapIterator<std::map<std::string, Ogre::OverlayElement*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::OverlayElement*> > > >"
+    "MapIterator<std::map<std::string, Ogre::OverlayElement*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::OverlayElement*> > > >"
       : "MapIteratorOfOverlayElement"
-
 }
 
 name2alias_class_decl = {
@@ -42,7 +40,6 @@ name2alias_class_decl = {
         "VectorOfImagePtr",
     "set<Ogre::Entity*,std::less<Ogre::Entity*>,std::allocator<Ogre::Entity*> >":
         "SetOfEntityPtr",
-        
 }
 
 

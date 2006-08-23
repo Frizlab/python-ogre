@@ -375,10 +375,16 @@
 				RelativePath=".\build\AnimationControllerFunction.pypp.cpp">
 			</File>
 			<File
+				RelativePath=".\build\AnimationIterator.pypp.cpp">
+			</File>
+			<File
 				RelativePath=".\build\AnimationState.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\build\AnimationStateControllerValue.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\AnimationStateIterator.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\build\AnimationStateSet.pypp.cpp">
@@ -424,6 +430,9 @@
 			</File>
 			<File
 				RelativePath=".\build\Camera.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\CameraIterator.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\build\CmdAngle.pypp.cpp">
@@ -534,6 +543,9 @@
 				RelativePath=".\build\CompositorInstance.pypp.cpp">
 			</File>
 			<File
+				RelativePath=".\build\CompositorManager.pypp.cpp">
+			</File>
+			<File
 				RelativePath=".\build\CompositorSerializer.pypp.cpp">
 			</File>
 			<File
@@ -574,6 +586,9 @@
 			</File>
 			<File
 				RelativePath=".\build\DefaultSceneManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\DefaultSceneManagerFactory.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\build\DefaultSphereSceneQuery.pypp.cpp">
@@ -637,6 +652,12 @@
 			</File>
 			<File
 				RelativePath=".\build\GpuProgramManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\GpuProgramParameters.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\GpuProgramParametersSharedPtr.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\build\HardwareAnimationDataList.pypp.cpp">
@@ -732,7 +753,16 @@
 				RelativePath=".\build\LogManager.pypp.cpp">
 			</File>
 			<File
+				RelativePath=".\build\ManualObject.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\ManualObjectFactory.pypp.cpp">
+			</File>
+			<File
 				RelativePath=".\build\ManualResourceLoader.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\MapIteratorOfOverlayElement.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\build\MapOfStringToConfigOption.pypp.cpp">
@@ -810,10 +840,16 @@
 				RelativePath=".\build\NodeAnimationTrack.pypp.cpp">
 			</File>
 			<File
+				RelativePath=".\build\NodeTrackIterator.pypp.cpp">
+			</File>
+			<File
 				RelativePath=".\build\NumericAnimationTrack.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\build\NumericKeyFrame.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\NumericTrackIterator.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\build\Overlay.pypp.cpp">
@@ -862,6 +898,9 @@
 			</File>
 			<File
 				RelativePath=".\build\ParticleSystemManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\ParticleSystemTemplateIterator.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\build\ParticleVisualData.pypp.cpp">
@@ -918,6 +957,9 @@
 				RelativePath=".\build\PositionTarget.pypp.cpp">
 			</File>
 			<File
+				RelativePath=".\build\PriorityMapIterator.pypp.cpp">
+			</File>
+			<File
 				RelativePath=".\build\Profile.pypp.cpp">
 			</File>
 			<File
@@ -969,6 +1011,9 @@
 				RelativePath=".\build\RenderablePass.pypp.cpp">
 			</File>
 			<File
+				RelativePath=".\build\RenderOperation.pypp.cpp">
+			</File>
+			<File
 				RelativePath=".\build\RenderPriorityGroup.pypp.cpp">
 			</File>
 			<File
@@ -1005,6 +1050,9 @@
 				RelativePath=".\build\RenderTargetEvent.pypp.cpp">
 			</File>
 			<File
+				RelativePath=".\build\RenderTargetIterator.pypp.cpp">
+			</File>
+			<File
 				RelativePath=".\build\RenderTargetListener.pypp.cpp">
 			</File>
 			<File
@@ -1029,6 +1077,9 @@
 				RelativePath=".\build\ResourceManager.pypp.cpp">
 			</File>
 			<File
+				RelativePath=".\build\ResourceMapIterator.pypp.cpp">
+			</File>
+			<File
 				RelativePath=".\build\RibbonTrail.pypp.cpp">
 			</File>
 			<File
@@ -1045,6 +1096,9 @@
 			</File>
 			<File
 				RelativePath=".\build\SceneManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\SceneManagerEnumerator.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\build\SceneManagerFactory.pypp.cpp">
@@ -1114,6 +1168,9 @@
 			</File>
 			<File
 				RelativePath=".\build\SkeletonInstance.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\SkeletonManager.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\build\SkeletonSerializer.pypp.cpp">
@@ -1212,6 +1269,9 @@
 				RelativePath=".\build\VertexBufferBindingMap.pypp.cpp">
 			</File>
 			<File
+				RelativePath=".\build\VertexCacheProfiler.pypp.cpp">
+			</File>
+			<File
 				RelativePath=".\build\VertexData.pypp.cpp">
 			</File>
 			<File
@@ -1231,6 +1291,9 @@
 			</File>
 			<File
 				RelativePath=".\build\VertexPoseKeyFrame.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\VertexTrackIterator.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\build\ViewPoint.pypp.cpp">
