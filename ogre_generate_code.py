@@ -82,10 +82,10 @@ def filter_declarations( mb ):
         # Don't include, we'll never need.
         'D3D', 'GL',  'SDL', 'WIN32', 'Any', 'CompositorScriptCompiler', '_', 'Singleton',
 
-        'MapIterator',
+ ##       'MapIterator',
         ## This uses a SingletonPointer however it doesn't include OgreSingleton.h or override getSingleton etc
         ## of something else strange is happening ????
-        'CompositorManager','SceneManagerEnumerator','SkeletonManager',
+ ##       'CompositorManager','SceneManagerEnumerator','SkeletonManager',
 
         'ManualObject',  #Lots of Virtual Functions returing consts..
 
@@ -142,6 +142,8 @@ def filter_declarations( mb ):
     ogre_ns.class_( "MemoryDataStream" ).member_functions( 'getPtr' ).exclude()
     ogre_ns.calldefs ('useCountPointer').exclude () #AJM Part of OgreSharedPtr
     ogre_ns.calldefs ('peekNextPtr').exclude ()
+    ogre_ns.calldefs ('peekNextValuePtr').exclude ()    #in many of the Iterator classes
+    
     ogre_ns.class_( 'RenderSystemOperation' ).exclude() # AJM in OgreCompositorInstance
     ogre_ns.calldefs ('getChildIterator').exclude ()
 
@@ -167,6 +169,8 @@ def filter_declarations( mb ):
     ogre_ns.class_( "ResourceGroupManager" ).member_functions( 'openResource' ).exclude()  ##Python load issue
     ogre_ns.class_( "ResourceGroupManager" ).member_functions( 'declareResource' ).exclude()  ##Python load issue
 
+    
+ #   ogre_ns.class_("SceneManager").class_("AnimationList").exclude()
     # These members have Ogre::Real * methods which need to be wrapped.
     ogre_ns.class_ ('Matrix3').member_operators (symbol='[]').exclude ()
     ogre_ns.class_ ('Matrix4').member_operators (symbol='[]').exclude ()
@@ -215,26 +219,26 @@ def set_call_policies( mb ):
     for mem_fun in mem_funs:
         if mem_fun.call_policies:
             continue
-        if declarations.is_pointer (mem_fun.return_type) \
-            or declarations.is_reference (mem_fun.return_type):
+        if declarations.is_pointer (mem_fun.return_type) or declarations.is_reference (mem_fun.return_type):
             mem_fun.call_policies = call_policies.return_value_policy(
                 call_policies.reference_existing_object )
 
 def generate_alias (mb):
     for name, alias in ogre_customization_data.name2alias.items():
-        print "Looking for", name
         try:
             decl = mb.class_( name )
             decl.alias = alias
             decl.wrapper_alias = alias + '_wrapper'
-        except Exception, error:
-            print '{-}==>', name
+        except  Exception, error:
+            print "==>", name
 
     for name, alias in ogre_customization_data.name2alias_class_decl.items():
-        print "Looking for", name
-        decl = mb.decl( name, lambda decl: isinstance( decl, declarations.class_declaration_t ) )
-        decl.alias = alias
-
+        try:
+            decl = mb.decl( name, lambda decl: isinstance( decl, declarations.class_declaration_t ) )
+            decl.alias = alias
+        except  Exception, error:  
+            print "==>", name
+  
 
 def configure_exception(mb):
     #We don't exclude  Exception, because it contains functionality, that could

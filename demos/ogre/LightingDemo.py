@@ -72,7 +72,7 @@ class LightingApplication(sf.Application):
 
         #Add light
         l2 = sceneManager.createLight("l2")
-        l2.diffuseColour=trail.getInitialColour(0)
+        l2.setDiffuseColour(trail.getInitialColour(0))
         animNode.attachObject(l2)
 
         #Add billboard
@@ -111,7 +111,7 @@ class LightingApplication(sf.Application):
 
         #Add light
         l3 = sceneManager.createLight("l3")
-        l3.diffuseColour=trail.getInitialColour(1)
+        l3.setDiffuseColour (trail.getInitialColour(1))
         animNode.attachObject(l3)
 
         #Add billboard
