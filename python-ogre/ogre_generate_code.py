@@ -77,29 +77,25 @@ def filter_declarations( mb ):
     ogre_ns = global_ns.namespace( 'Ogre' )
     ogre_ns.include()
 
-
     startswith = [
         # Don't include, we'll never need.
         'D3D', 'GL',  'SDL', 'WIN32', 'Any', 'CompositorScriptCompiler', '_', 'Singleton',
+        'ManualObject',  #Lots of Virtual Functions returing consts..
+        'MeshSerializerImpl', ## link problems - doesn't seem to exist at all ???
+        'VertexCacheProfiler', # this one causes the ogre.pyd not to load (fails when registering)
 
- ##       'MapIterator',
+        ##  Classes that caused problems with code generation etc that have either been resolved or
+        ##  worked arounded (specific subclasses or functions excluded further below)
+        
+        ##it's defined as a const in the OrgeSceneManagerEnumerator.h file - other simular defs do not have the const??
+        #'DefaultSceneManagerFactory',  ## Link - FACTORY_TYPE_NAME string not found -
+        # TODO: this is a really wierd one, Ogre does something funky here.
+        #'GpuProgramParameters',
+        #'ParticleSystem',   ## Causes missings in the link stage
+        ##       'MapIterator',
         ## This uses a SingletonPointer however it doesn't include OgreSingleton.h or override getSingleton etc
         ## of something else strange is happening ????
- ##       'CompositorManager','SceneManagerEnumerator','SkeletonManager',
-
-        'ManualObject',  #Lots of Virtual Functions returing consts..
-
-#        'ParticleSystem',   ## Causes missings in the link stage
-        'MeshSerializerImpl', ## link problems - doesn't seem to exist at all ???
-
-        ##it's defined as a const in the OrgeSceneManagerEnumerator.h file - other simular defs do not have the const??
-        'DefaultSceneManagerFactory',  ## Link - FACTORY_TYPE_NAME string not found -
-
-        # this one casuses the ogre.pyd moduel not to load (fails when registering)
-        'VertexCacheProfiler',
-
-        # TODO: this is a really wierd one, Ogre does something funky here.
-        'GpuProgramParameters',
+        ##       'CompositorManager','SceneManagerEnumerator','SkeletonManager',
     ]
 
     ## Remove private classes , and those that are internal to Ogre...
@@ -143,10 +139,10 @@ def filter_declarations( mb ):
     ogre_ns.calldefs ('useCountPointer').exclude () #AJM Part of OgreSharedPtr
     ogre_ns.calldefs ('peekNextPtr').exclude ()
     ogre_ns.calldefs ('peekNextValuePtr').exclude ()    #in many of the Iterator classes
+    ogre_ns.class_("GpuProgramParameters").class_("AutoConstantEntry").exclude() # Autoconstant name space variables missing in compile
     
     ogre_ns.class_( 'RenderSystemOperation' ).exclude() # AJM in OgreCompositorInstance
     ogre_ns.calldefs ('getChildIterator').exclude ()
-
 
     #AJM Set of functions in Particle system that don't get wrapped properly..
     PartSys = ogre_ns.class_( "ParticleSystem" )
@@ -160,7 +156,6 @@ def filter_declarations( mb ):
     PartSys.class_( "CmdRenderer" ).exclude()
     PartSys.class_( "CmdSorted" ).exclude()
     PartSys.class_( "CmdWidth" ).exclude()
-
 
     ## AJM These cause the python module to fail to load  -- need to recheck they are 'all' responsible
     ogre_ns.class_ ('ResourceGroupManager').calldefs( 'ResourceDeclaration' ).exclude() #AJM ????
