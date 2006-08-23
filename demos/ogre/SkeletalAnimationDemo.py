@@ -116,7 +116,7 @@ class SkeletalApplication(sf.Application):
             mAnimState[i].setLoop(False)  # manual loop since translation involved
             mAnimationSpeed[i] = ogre.Math.RangeRandom(0.5, 1.5) 
 
-            rot += rotInc 
+            rot = rot + rotInc 
 
         light = sceneManager.createLight('BlueLight')
         light.setType(ogre.Light.LT_SPOTLIGHT)
@@ -183,6 +183,7 @@ class SkeletalAnimationFrameListener(sf.FrameListener):
         for i in xrange(6):
             inc = frameEvent.timeSinceLastFrame * mAnimationSpeed[i]
             if (mAnimState[i].getTimePosition() + inc) >= mAnimChop :
+                # pass
                 # Loop
                 # Need to reposition the scene node origin since animation includes translation
                 # Calculate as an offset to the end position, rotated by the
