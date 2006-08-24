@@ -1,7 +1,7 @@
 # This code is in the Public Domain.
 import Ogre as ogre
 import SampleFramework as sf
-import sys
+import sys,operator
 
 NUM_JAIQUAS = 6
 mAnimationRotation = ogre.Degree(-60)
@@ -57,8 +57,6 @@ class SkeletalApplication(sf.Application):
         evect = ogre.Vector3(0,0,0)
         blankKF.setScale=evect
         blankKF.setTranslate=evect
-        print "BLANKKF ", blankKF.getRotation(), blankKF.getScale(), blankKF.getTranslate()
-        
 
                
 #        for track in anim.getNodeTrackIterator(): 
@@ -95,15 +93,14 @@ class SkeletalApplication(sf.Application):
                 newKf.setScale(startKf.getScale()) 
 
         rotInc = ogre.Math.TWO_PI / NUM_JAIQUAS 
+         
+        rotInc = 360/NUM_JAIQUAS
         rot = 0.0 
         for i in range( NUM_JAIQUAS) :
-            print "***", i
             q = ogre.Quaternion()
             q.FromAngleAxis(ogre.Radian(rot), ogre.Vector3.UNIT_Y) 
-
             mOrientations[i] = q 
             mBasePositions[i] = q * ogre.Vector3(0,0,-20) 
-
             ent = sceneManager.createEntity("jaiqua" + str(i), "jaiqua.mesh") 
             # Add entity to the scene node
             mSceneNode[i] = sceneManager.getRootSceneNode().createChildSceneNode() 
@@ -137,10 +134,6 @@ class SkeletalApplication(sf.Application):
         # Position the camera
         camera.setPosition(100, 20, 0)
         camera.lookAt(0, 10, 0)
-
-
-        
-        
         # Report whether hardware skinning is enabled or not
 ###        subEntity = entity.getSubEntity(0)
 #         material = subEntity.material
@@ -180,7 +173,7 @@ class SkeletalAnimationFrameListener(sf.FrameListener):
         #self.animationSpeeds = animationSpeeds
 
     def frameStarted(self, frameEvent):
-        for i in xrange(6):
+        for i in range(6):
             inc = frameEvent.timeSinceLastFrame * mAnimationSpeed[i]
             if (mAnimState[i].getTimePosition() + inc) >= mAnimChop :
                 # pass
@@ -211,7 +204,7 @@ if __name__ == '__main__':
     except:
         print "Unexpected error:", sys.exc_info()[0]
         raise
-#     except:
+#     except
 #         print "-------"
 #         print "PROBLEM!!!"
 #         e = ogre.Exception.getLastException()
