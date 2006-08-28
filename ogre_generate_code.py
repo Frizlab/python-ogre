@@ -118,6 +118,9 @@ def filter_declarations( mb ):
         classes = ogre_ns.classes (decl_starts_with(prefix), allow_empty=True)  ### NOTE the PREFIX is used here !!!!
         classes.exclude()
 
+    #Only usefull from C++
+    ogre_ns.class_( "MemoryManager" ).exclude()
+
     ## AJM Error at compile time - errors when compiling or linking
     ogre_ns.class_( "MemoryDataStream" ).member_functions( 'getCurrentPtr' ).exclude()
     ogre_ns.class_( "MemoryDataStream" ).member_functions( 'getPtr' ).exclude()
@@ -233,21 +236,8 @@ def configure_exception(mb):
     #be useful to user. But, we will provide automatic exception translator
     Exception = mb.namespace( 'Ogre' ).class_( 'Exception' )
 
-    translate_code = os.linesep.join([
-    "namespace python_ogre{",
-    "   void translate(Ogre::Exception const& e){",
-    "        // Use the Python 'C' API to set up an exception object",
-    "        PyErr_SetString(PyExc_RuntimeError, e.getFullDescription().c_str() );",
-    "    }",
-    "}"])
+    Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getFullDescription().c_str()' )
 
-    registration_code = \
-    """
-    boost::python::register_exception_translator<Ogre::Exception>(&python_ogre::translate);
-    """
-
-    Exception.add_declaration_code( translate_code )
-    Exception.add_registration_code( registration_code, works_on_instance=False )
 
 def generate_code():
     xml_cached_fc = parser.create_cached_source_fc( "python_ogre.h", environment.declarations_cache_file )

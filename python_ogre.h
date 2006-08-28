@@ -11,6 +11,10 @@ inline void instantiate(){
     using namespace Ogre;
 
     sizeof( Controller<float> );
+
+    sizeof( SharedPtr< Controller<float> >);
+
+    sizeof( SharedPtr< WaveformControllerFunction > );
 }
 
 } } //python_ogre::details

@@ -22,6 +22,11 @@ REGISTER_SP_TO_PYTHON = \
 boost::python::register_ptr_to_python< %(sp_inst_class_name)s >();
 """
 
+REGISTER_SPTR_CONVERSION =\
+"""
+boost::python::implicitly_convertible< %(derived)s, %(base)s >();
+"""
+
 class ogre_shared_ptr_t:
     def __init__( self, mb ):
         self.ogre_ns = mb.namespace ('Ogre')
@@ -32,7 +37,6 @@ class ogre_shared_ptr_t:
         #returns reference to XXX type/declaration
         no_ptr = declarations.remove_pointer( sp_instantiation.variable ('pRep').type )
         no_alias = declarations.remove_alias( no_ptr )
-        
         return declarations.remove_declarated( no_alias )
 
     def configure_base_and_derived( self, sp_derived ):
@@ -40,30 +44,31 @@ class ogre_shared_ptr_t:
         sp_derived.exclude()
         sp_instantiation.exclude()
         pointee = self.get_pointee( sp_instantiation )
-        if sp_derived in self.visited_classes:
+        #if sp_derived in self.visited_classes:
         #if pointee in self.visited_classes:
-            return
-        self.visited_classes.add( sp_derived )
+            #return
+        #self.visited_classes.add( sp_derived )
         pointee.add_declaration_code(
             OGRE_SP_HELD_TYPE_TMPL % {
                 'class_name': pointee.decl_string
                 , 'class_ptr_name': sp_derived.decl_string } )
 
-        if pointee.is_abstract:
-            #For some reason Boost.Python does not support HeldType on abstract
-            #classes
-            pointee.add_registration_code(
-                REGISTER_SP_TO_PYTHON % dict( sp_inst_class_name=sp_derived.decl_string )
-                , works_on_instance=False)
-        else:
-            pointee.held_type = sp_derived.decl_string
+        pointee.add_registration_code(
+              REGISTER_SP_TO_PYTHON % dict( sp_inst_class_name=sp_derived.decl_string )
+            , works_on_instance=False)
+
+        pointee.add_registration_code(
+            REGISTER_SPTR_CONVERSION % { 'derived' : sp_derived.decl_string
+                                         , 'base' : sp_instantiation.decl_string }
+            , works_on_instance=False)
+
 
     def configure_instantiation( self, sp_instantiation ):
         pointee = self.get_pointee( sp_instantiation )
-        if sp_instantiation in self.visited_classes:
-            return
-        self.visited_classes.add( sp_instantiation )
-        
+        #if sp_instantiation in self.visited_classes:
+        #    return
+        #self.visited_classes.add( sp_instantiation )
+
 
         #In this case, we can create single template that will tread this use case.
         #But, thus we will increase compilation time. I think it is much better to
@@ -73,14 +78,11 @@ class ogre_shared_ptr_t:
                 'class_name': pointee.decl_string
                 , 'class_ptr_name': sp_instantiation.decl_string } )
 
-        if pointee.is_abstract:
-            #For some reason Boost.Python does not support HeldType on abstract
-            #classes
-            pointee.add_registration_code(
-                REGISTER_SP_TO_PYTHON % dict( sp_inst_class_name=sp_instantiation.decl_string )
-                , works_on_instance=False)
-        else:
-            pointee.held_type = sp_instantiation.decl_string
+        pointee.add_registration_code(
+              REGISTER_SP_TO_PYTHON % dict( sp_inst_class_name=sp_instantiation.decl_string )
+            , works_on_instance=False)
+
+        sp_instantiation.exclude()
 
     def configure(self):
         """
@@ -98,7 +100,6 @@ class ogre_shared_ptr_t:
                self.configure_instantiation( cls )
             else:
                 pass
-
 
 def configure( mb ):
     ogre_shared_ptr_t( mb ).configure()
