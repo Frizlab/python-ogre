@@ -26,7 +26,15 @@ name2alias = {
     "map<std::string, Ogre::OverlayElement*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::OverlayElement*> > >"
       : "MapOfOverlayElement",
     "MapIterator<std::map<std::string, Ogre::OverlayElement*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::OverlayElement*> > > >"
-      : "MapIteratorOfOverlayElement"
+      : "MapIteratorOfOverlayElement",
+    "Controller<float>":
+        "FloatController",
+    "ControllerFunction<float>":
+        "FloatControllerFunction",
+    "ControllerValue<float>":
+        "FloatControllerValue",
+    "TRect<float>":
+        "FloatRect",
 }
 
 name2alias_class_decl = {
@@ -79,6 +87,12 @@ huge_classes = [
     , 'ParticleEmitter'
     , 'ParticleSystem'
     , 'SceneManager'
+    , 'MovableObject'
+    , 'OverlayElement'
+    , 'ManualObject'
+    , 'RenderTarget'
+    , 'Frustum'
+    , 'SceneNode'
 ]
 # vim:et:ts=4:sts=4:sw=4
 
