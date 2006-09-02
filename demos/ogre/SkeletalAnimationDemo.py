@@ -45,7 +45,7 @@ class SkeletalApplication(sf.Application):
         ## Doing this returns a SharedPtr_less_Ogre_scope_Resource_grate 
         skel = ogre.SkeletonManager.getSingleton().load("jaiqua.skeleton", ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME,False, ogre.ManualResourceLoader(), ogre.NamedValuePairList()) 
         ### NOTE the need for pointer here....
-        anim = skel.pointer.getAnimation("Sneak") 
+        anim = skel.getAnimation("Sneak") 
         
         cameraNode = sceneManager.getRootSceneNode().createChildSceneNode()
         cameraNode.attachObject(self.camera)
@@ -77,7 +77,7 @@ class SkeletalApplication(sf.Application):
             newKf = track.createNodeKeyFrame(mAnimChop) 
             startKf = track.getNodeKeyFrame(0) 
 
-            bone = skel.pointer.getBone(track.getHandle())
+            bone = skel.getBone(track.getHandle())
              
             if (bone.getName() == "Spineroot") :
                 mSneakStartOffset = startKf.getTranslate() + bone.getInitialPosition() 
