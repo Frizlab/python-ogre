@@ -18,8 +18,7 @@ class TextureFXApplication(sf.Application):
         skyMaterial =  skyMaterial.create('SkyMat', ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME )
         skyMaterial.lightingEnabled = False
         
-        ##NOTE the use of .pointer to get the sharedptr for the Material Object..
-        textureUnitState = skyMaterial.pointer.getTechnique(0).getPass(0).createTextureUnitState('clouds.jpg', 0)
+        textureUnitState = skyMaterial.getTechnique(0).getPass(0).createTextureUnitState('clouds.jpg', 0)
         textureUnitState.setScrollAnimation(0.15, 0)
 
         sceneManager.setSkyDome(True, 'SkyMat', -5.0, 2.0)
