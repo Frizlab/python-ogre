@@ -185,6 +185,7 @@ class FrameListener(ogre.FrameListener):
         self.showDebugOverlay(True)
         self.moveSpeed = 100.0
         self.rotationSpeed = 8.0
+        self.displayCameraDetails = False
 
         self._setupInput()
 
@@ -280,15 +281,25 @@ class FrameListener(ogre.FrameListener):
             self.renderWindow.writeContentsToFile(path)
             self.renderWindow.debugText = 'screenshot taken: ' + path
 
-
-			
         if self._isToggleKeyDown(ogre.KC_R, 0.5):
             detailsLevel = [ ogre.PM_SOLID,
                              ogre.PM_WIREFRAME,
                              ogre.PM_POINTS ]
             self.sceneDetailIndex = (self.sceneDetailIndex + 1) % len(detailsLevel)
             self.camera.polygonMode=detailsLevel[self.sceneDetailIndex]
-
+        
+        if self._isToggleKeyDown(ogre.KC_P, 0.5):
+            self.displayCameraDetails = not self.displayCameraDetails
+            if not self.displayCameraDetails:
+                self.renderWindow.debugText = ""
+                
+        if self.displayCameraDetails:
+            # Print camera details
+            pos = self.camera.getDerivedPosition()
+            o = self.camera.getDerivedOrientation()
+            self.renderWindow.debugText = "P: %.3f %.3f %.3f O: %.3f %.3f %.3f %.3f"  \
+                        % (pos.x,pos.y,pos.z, o.w,o.x,o.y,o.z)
+        
         if self.inputDevice.isKeyDown(ogre.KC_ESCAPE):
             return False
 

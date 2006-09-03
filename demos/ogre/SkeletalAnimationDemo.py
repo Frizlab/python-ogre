@@ -4,7 +4,7 @@ import SampleFramework as sf
 import sys,operator
 
 NUM_JAIQUAS = 6
-mAnimationRotation = ogre.Degree(-60)
+mAnimationRotation = ogre.Degree(d=-60)
 mAnimChop = 7.96666
 mAnimChopBlend = 0.3
 mAnimState=[0,0,0,0,0,0]  #NUM_JAIQUAS]
@@ -93,12 +93,10 @@ class SkeletalApplication(sf.Application):
                 newKf.setScale(startKf.getScale()) 
 
         rotInc = ogre.Math.TWO_PI / NUM_JAIQUAS 
-         
-        rotInc = 360/NUM_JAIQUAS
         rot = 0.0 
         for i in range( NUM_JAIQUAS) :
             q = ogre.Quaternion()
-            q.FromAngleAxis(ogre.Radian(rot), ogre.Vector3.UNIT_Y) 
+            q.FromAngleAxis(ogre.Radian(r=rot), ogre.Vector3.UNIT_Y) 
             mOrientations[i] = q 
             mBasePositions[i] = q * ogre.Vector3(0,0,-20) 
             ent = sceneManager.createEntity("jaiqua" + str(i), "jaiqua.mesh") 
@@ -118,7 +116,7 @@ class SkeletalApplication(sf.Application):
         light = sceneManager.createLight('BlueLight')
         light.setType(ogre.Light.LT_SPOTLIGHT)
         light.setPosition (-200, 150, -100)
-        dirvec = (-light.getPosition())
+        dirvec = -light.getPosition()
         dirvec.normalise()
         light.setDirection(dirvec)
         light.setDiffuseColour(0.5, 0.5, 1.0)
@@ -126,7 +124,7 @@ class SkeletalApplication(sf.Application):
         light = sceneManager.createLight('GreenLight')
         light.setType(ogre.Light.LT_SPOTLIGHT)
         light.setPosition (0, 150, -100)
-        dirvec = (-light.getPosition())
+        dirvec = -light.getPosition()
         dirvec.normalise()
         light.setDirection(dirvec)
         light.setDiffuseColour (0.5, 1.0, 0.5)
@@ -173,7 +171,7 @@ class SkeletalAnimationFrameListener(sf.FrameListener):
         #self.animationSpeeds = animationSpeeds
 
     def frameStarted(self, frameEvent):
-        for i in range(6):
+        for i in range(NUM_JAIQUAS):
             inc = frameEvent.timeSinceLastFrame * mAnimationSpeed[i]
             if (mAnimState[i].getTimePosition() + inc) >= mAnimChop :
                 # pass
