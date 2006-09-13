@@ -255,13 +255,12 @@ def generate_code():
     filter_declarations (mb)
 
     fix_unnamed_classes (mb)
+    generate_alias (mb)
     shared_ptr.configure (mb)
     configure_exception( mb )
 
-    generate_alias (mb)
-
-    for cls in mb.namespace( 'Ogre' ).classes():
-        cls.add_registration_code( 'std::cout << "registering class %s" << std::endl;' % cls.alias, False )
+    #for cls in mb.namespace( 'Ogre' ).classes():
+    #    cls.add_registration_code( 'std::cout << "registering class %s" << std::endl;' % cls.alias, False )
 
     #Creating code creator. After this step you should not modify/customize declarations.
     mb.build_code_creator (module_name='_ogre_')

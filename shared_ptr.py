@@ -1,3 +1,4 @@
+import os
 import environment
 from pygccxml import declarations
 
@@ -14,7 +15,7 @@ struct pointee< %(class_ptr_name)s >{
     typedef %(class_name)s type;
 };
 
-}}// namespace boost::python converter
+}}// namespace boost::python
 """
 
 REGISTER_SP_TO_PYTHON = \
@@ -44,45 +45,88 @@ class ogre_shared_ptr_t:
         sp_derived.exclude()
         sp_instantiation.exclude()
         pointee = self.get_pointee( sp_instantiation )
-        #if sp_derived in self.visited_classes:
-        #if pointee in self.visited_classes:
-            #return
-        #self.visited_classes.add( sp_derived )
-        pointee.add_declaration_code(
-            OGRE_SP_HELD_TYPE_TMPL % {
-                'class_name': pointee.decl_string
-                , 'class_ptr_name': sp_derived.decl_string } )
 
-        pointee.add_registration_code(
-              REGISTER_SP_TO_PYTHON % dict( sp_inst_class_name=sp_derived.decl_string )
-            , works_on_instance=False)
+        if pointee.held_type:
+            return
+
+        if pointee.is_abstract:
+            pointee.held_type = '::Ogre::SharedPtr< %s >' % pointee.wrapper_alias
+
+            sp_held_type_code = [ "struct %s;" % pointee.wrapper_alias ]
+            sp_held_type_code.append(
+                OGRE_SP_HELD_TYPE_TMPL % { 'class_name': '::' + pointee.wrapper_alias
+                                           , 'class_ptr_name': pointee.held_type } )
+
+            sp_held_type_code.append(
+                OGRE_SP_HELD_TYPE_TMPL % { 'class_name': pointee.decl_string
+                                           , 'class_ptr_name': sp_instantiation.decl_string } )
+
+            pointee.add_declaration_code( os.linesep.join(sp_held_type_code) )
+
+            pointee.add_registration_code(
+                REGISTER_SP_TO_PYTHON % { 'sp_inst_class_name' : sp_instantiation.decl_string }
+                , works_on_instance=False)
+
+            pointee.add_registration_code(
+                REGISTER_SPTR_CONVERSION % { 'derived' : pointee.held_type
+                                             , 'base' : sp_instantiation.decl_string }
+                , works_on_instance=False)
+
+        else:
+            pointee.held_type = sp_derived.decl_string
+
+            pointee.add_declaration_code(
+                OGRE_SP_HELD_TYPE_TMPL % { 'class_name': pointee.decl_string
+                                           , 'class_ptr_name': sp_derived.decl_string } )
 
         pointee.add_registration_code(
             REGISTER_SPTR_CONVERSION % { 'derived' : sp_derived.decl_string
                                          , 'base' : sp_instantiation.decl_string }
             , works_on_instance=False)
 
-
     def configure_instantiation( self, sp_instantiation ):
-        pointee = self.get_pointee( sp_instantiation )
-        #if sp_instantiation in self.visited_classes:
-        #    return
-        #self.visited_classes.add( sp_instantiation )
-
-
-        #In this case, we can create single template that will tread this use case.
-        #But, thus we will increase compilation time. I think it is much better to
-        #generate non template version.
-        pointee.add_declaration_code(
-            OGRE_SP_HELD_TYPE_TMPL % {
-                'class_name': pointee.decl_string
-                , 'class_ptr_name': sp_instantiation.decl_string } )
-
-        pointee.add_registration_code(
-              REGISTER_SP_TO_PYTHON % dict( sp_inst_class_name=sp_instantiation.decl_string )
-            , works_on_instance=False)
-
         sp_instantiation.exclude()
+        pointee = self.get_pointee( sp_instantiation )
+        if pointee.held_type:
+            return
+
+        if pointee.is_abstract:
+            pointee.held_type = '::Ogre::SharedPtr< %s >' % pointee.wrapper_alias
+
+            sp_held_type_code = [ "struct %s;" % pointee.wrapper_alias ]
+            sp_held_type_code.append(
+                OGRE_SP_HELD_TYPE_TMPL % { 'class_name': '::' + pointee.wrapper_alias
+                                           , 'class_ptr_name': pointee.held_type } )
+
+            sp_held_type_code.append(
+                OGRE_SP_HELD_TYPE_TMPL % { 'class_name': pointee.decl_string
+                                           , 'class_ptr_name': sp_instantiation.decl_string } )
+
+            pointee.add_declaration_code( os.linesep.join(sp_held_type_code) )
+
+            pointee.add_registration_code(
+                REGISTER_SP_TO_PYTHON % { 'sp_inst_class_name' : sp_instantiation.decl_string }
+                , works_on_instance=False)
+
+            pointee.add_registration_code(
+                REGISTER_SPTR_CONVERSION % { 'derived' : pointee.held_type
+                                             , 'base' : sp_instantiation.decl_string }
+                , works_on_instance=False)
+
+        else:
+            pointee.held_type = sp_instantiation.decl_string
+
+            pointee.add_declaration_code(
+                OGRE_SP_HELD_TYPE_TMPL % { 'class_name': pointee.decl_string
+                                           , 'class_ptr_name': sp_instantiation.decl_string } )
+
+        for hierarchy_info in pointee.bases:
+            if hierarchy_info.access_type != 'public':
+                continue
+            pointee.add_registration_code(
+                REGISTER_SPTR_CONVERSION % { 'derived' : sp_instantiation.decl_string
+                                             , 'base' : '::Ogre::SharedPtr< %s >' % hierarchy_info.related_class.decl_string }
+                , works_on_instance=False)
 
     def configure(self):
         """
@@ -96,10 +140,9 @@ class ogre_shared_ptr_t:
         for cls in self.ogre_ns.classes():
             if 1 == len(cls.bases) and cls.bases[0].related_class.name.startswith ('SharedPtr'):
                 self.configure_base_and_derived( cls )
-            elif cls.name.startswith( 'SharedPtr' ):
+        for cls in self.ogre_ns.classes():
+            if cls.name.startswith( 'SharedPtr' ):
                self.configure_instantiation( cls )
-            else:
-                pass
 
 def configure( mb ):
     ogre_shared_ptr_t( mb ).configure()
