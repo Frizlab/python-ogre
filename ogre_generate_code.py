@@ -79,8 +79,11 @@ def filter_declarations( mb ):
 
     startswith = [
         # Don't include, we'll never need.
-        'D3D', 'GL',  'SDL', 'WIN32', 'Any', 'CompositorScriptCompiler', '_', 'Singleton',
+        'D3D', 'GL',  'SDL', 'WIN32', 'Any', 'CompositorScriptCompiler', 'Singleton', '_',
         'MeshSerializerImpl', ## link problems - doesn't seem to exist at all ???
+        ## Changes as SharedPtr is 'fixed'
+        'AnimableValue', 'DataStream', 'FloatControllerValue', 'GpuProgram', 'Hardware', 'FloatControllerFunction',
+        'HighLevelGpuProgram','Resource', 'Texture', 'ControllerValue', 'ControllerFunction',
     ]
 
     ## Remove private classes , and those that are internal to Ogre...
@@ -107,12 +110,21 @@ def filter_declarations( mb ):
     non_public_non_pure_virtual.exclude()
 
     ## Exclude all public not pure virtual, that starts with '_'
-    query = declarations.access_type_matcher_t( 'public' ) \
-            & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL ) \
-            & declarations.custom_matcher_t( lambda decl: decl.name.startswith( '_' ) )
-    non_public_non_pure_virtual = ogre_ns.calldefs( query )
-    non_public_non_pure_virtual.exclude()
-
+    ### AJM Although it you want to include them thats OK :)
+    if True:
+        query = declarations.access_type_matcher_t( 'public' ) \
+                & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL ) \
+                & declarations.custom_matcher_t( lambda decl: decl.name.startswith( '_' ) )
+        non_public_non_pure_virtual = ogre_ns.calldefs( query )
+        non_public_non_pure_virtual.exclude()
+        
+    else:   
+        ## AJM Having allowed functions starting with '_' I now need to exclude these are MSVC 7 compiler 
+        ## pukes with an overflow when compiling 'StaticGeometry.pypp.cpp'..
+        GeomRegion = ogre_ns.class_( "StaticGeometry" ).class_("Region")
+        GeomRegion.member_functions('_notifyCurrentCamera'). exclude()
+        GeomRegion.member_functions('_updateRenderQueue'). exclude()
+        
     ## Now get rid of a wide range of classes as defined earlier in startswith...
     for prefix in startswith:
         classes = ogre_ns.classes (decl_starts_with(prefix), allow_empty=True)  ### NOTE the PREFIX is used here !!!!
@@ -145,15 +157,8 @@ def filter_declarations( mb ):
     PartSys.class_( "CmdSorted" ).exclude()
     PartSys.class_( "CmdWidth" ).exclude()
 
-    ## AJM These cause the python module to fail to load  -- need to recheck they are 'all' responsible
-    ogre_ns.class_ ('ResourceGroupManager').calldefs( 'ResourceDeclaration' ).exclude() #AJM ????
-    ogre_ns.class_( "ResourceGroupManager" ).member_functions( 'getResourceDeclarationList' ).exclude()  ##Python load issue
-    ogre_ns.class_( "ResourceGroupManager" ).member_functions( 'linkWorldGeometryToResourceGroup' ).exclude()  ##Python load issue
-    ogre_ns.class_( "ResourceGroupManager" ).member_functions( 'openResource' ).exclude()  ##Python load issue
     ogre_ns.class_( "ResourceGroupManager" ).member_functions( 'declareResource' ).exclude()  ##Python load issue
 
-
- #   ogre_ns.class_("SceneManager").class_("AnimationList").exclude()
     # These members have Ogre::Real * methods which need to be wrapped.
     ogre_ns.class_ ('Matrix3').member_operators (symbol='[]').exclude ()
     ogre_ns.class_ ('Matrix4').member_operators (symbol='[]').exclude ()
@@ -177,17 +182,6 @@ def filter_declarations( mb ):
     #AttribParserList is a map from string to function pointer, this class could not be exposed
     AttribParserList = ogre_ns.typedef( name="AttribParserList" )
     declarations.class_traits.get_declaration( AttribParserList ).exclude()
-
-    #These are excluded as for some reason they don't exist in the link stage
-    #Also it is possible to write rule, that will exclude all variable,
-    #that their names is in upper
-    ogre_ns.class_('RenderQueueInvocation').variable( 'RENDER_QUEUE_INVOCATION_SHADOWS' ).exclude()
-    ogre_ns.class_('RibbonTrailFactory').variable( 'FACTORY_TYPE_NAME' ).exclude()
-    SceneManager = ogre_ns.class_( 'SceneManager' )
-    var_names = [ "ENTITY_TYPE_MASK", "FX_TYPE_MASK", "LIGHT_TYPE_MASK"
-                  , "STATICGEOMETRY_TYPE_MASK", "USER_TYPE_MASK_LIMIT"
-                  , "WORLD_GEOMETRY_TYPE_MASK" ]
-    SceneManager.variables( lambda var: var.name in var_names ).exclude()
 
     #VertexCacheProfiler constructor uses enum that will be defined later.
     #I will replace second default value to be int instead of enum
@@ -215,21 +209,24 @@ def generate_alias (mb):
     for name, alias in ogre_customization_data.name2alias.items():
         try:
             decl = mb.class_( name )
-            print '{!}setting alias to %s ' % str( decl )
+            print '{!}setting %s class to %s ' % (name, alias)
             for source_alias in decl.aliases:
                 print '  {source code defines next alias} %s' % str( source_alias )
             decl.alias = alias
             decl.wrapper_alias = alias + '_wrapper'
         except  Exception, error:
-            print "==>", name
-
+            print "==>Not Found..", name
     for name, alias in ogre_customization_data.name2alias_class_decl.items():
         try:
             decl = mb.decl( name, lambda decl: isinstance( decl, declarations.class_declaration_t ) )
             decl.alias = alias
+            print '{!}setting %s variable to %s ' % (name, alias)
         except  Exception, error:
-            print "==>", name
-
+            print "==>Not Found..", name
+#     for cls in mb.classes():
+#         print "CLASS2: ", cls
+#     for item in mb.decls():
+#         print "DECL2: ", item    
 
 def configure_exception(mb):
     #We don't exclude  Exception, because it contains functionality, that could
@@ -259,8 +256,8 @@ def generate_code():
     shared_ptr.configure (mb)
     configure_exception( mb )
 
-    #for cls in mb.namespace( 'Ogre' ).classes():
-    #    cls.add_registration_code( 'std::cout << "registering class %s" << std::endl;' % cls.alias, False )
+#    for cls in mb.namespace( 'Ogre' ).classes():
+#         cls.add_registration_code( 'std::cout << "registering class %s" << std::endl;' % cls.alias, False )
 
     #Creating code creator. After this step you should not modify/customize declarations.
     mb.build_code_creator (module_name='_ogre_')
