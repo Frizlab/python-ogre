@@ -82,7 +82,7 @@ def filter_declarations( mb ):
         'D3D', 'GL',  'SDL', 'WIN32', 'Any', 'CompositorScriptCompiler', 'Singleton', '_',
         'MeshSerializerImpl', ## link problems - doesn't seem to exist at all ???
         ## Changes as SharedPtr is 'fixed'
-        'AnimableValue', 'DataStream', 'FloatControllerValue', 'GpuProgram', 'Hardware', 'FloatControllerFunction',
+        'AnimableValue', 'DataStream','GpuProgram', 'HardwarePixelBuffer', 'HardwareVertexBuffer','HardwareIndexBuffer',
         'HighLevelGpuProgram','Resource', 'Texture', 'ControllerValue', 'ControllerFunction',
     ]
 
