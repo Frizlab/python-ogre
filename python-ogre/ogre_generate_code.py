@@ -43,7 +43,8 @@ def fix_unnamed_classes (mb):
                 template = '''def_readwrite("%(mvar)s", &Ogre::%(parent)s::%(mvar)s)'''
             named_parent.add_code( template % dict( mvar=mvar.name, parent=named_parent.name ) )
 
-
+#This class should be fixed. For some reason it does not reportr right whether class\function
+#is private or not
 class private_decls_t:
     def __init__( self ):
         self.__private = {} #fname : [line ]
@@ -79,11 +80,8 @@ def filter_declarations( mb ):
 
     startswith = [
         # Don't include, we'll never need.
-        'D3D', 'GL',  'SDL', 'WIN32', 'Any', 'CompositorScriptCompiler', 'Singleton', '_',
+        'D3D', 'GL',  'SDL', 'WIN32', 'Any', 'CompositorScriptCompiler', '_', 'Singleton',
         'MeshSerializerImpl', ## link problems - doesn't seem to exist at all ???
-        ## Changes as SharedPtr is 'fixed'
-        'AnimableValue', 'DataStream','GpuProgram', 'HardwarePixelBuffer', 'HardwareVertexBuffer','HardwareIndexBuffer',
-        'HighLevelGpuProgram','Resource', 'Texture', 'ControllerValue', 'ControllerFunction',
     ]
 
     ## Remove private classes , and those that are internal to Ogre...
@@ -117,18 +115,23 @@ def filter_declarations( mb ):
                 & declarations.custom_matcher_t( lambda decl: decl.name.startswith( '_' ) )
         non_public_non_pure_virtual = ogre_ns.calldefs( query )
         non_public_non_pure_virtual.exclude()
-        
-    else:   
-        ## AJM Having allowed functions starting with '_' I now need to exclude these are MSVC 7 compiler 
+
+    else:
+        ## AJM Having allowed functions starting with '_' I now need to exclude these are MSVC 7 compiler
         ## pukes with an overflow when compiling 'StaticGeometry.pypp.cpp'..
         GeomRegion = ogre_ns.class_( "StaticGeometry" ).class_("Region")
         GeomRegion.member_functions('_notifyCurrentCamera'). exclude()
         GeomRegion.member_functions('_updateRenderQueue'). exclude()
-        
+
     ## Now get rid of a wide range of classes as defined earlier in startswith...
     for prefix in startswith:
         classes = ogre_ns.classes (decl_starts_with(prefix), allow_empty=True)  ### NOTE the PREFIX is used here !!!!
         classes.exclude()
+
+    #Virtual functions that return reference could not be overriden from Python
+    query = declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.VIRTUAL ) \
+            & declarations.custom_matcher_t( lambda decl: declarations.is_reference( decl.return_type ) )
+    ogre_ns.calldefs( query ).virtuality = declarations.VIRTUALITY_TYPES.NOT_VIRTUAL
 
     #Only usefull from C++
     ogre_ns.class_( "MemoryManager" ).exclude()
@@ -136,7 +139,6 @@ def filter_declarations( mb ):
     ## AJM Error at compile time - errors when compiling or linking
     ogre_ns.class_( "MemoryDataStream" ).member_functions( 'getCurrentPtr' ).exclude()
     ogre_ns.class_( "MemoryDataStream" ).member_functions( 'getPtr' ).exclude()
-    ogre_ns.calldefs ('useCountPointer').exclude () #AJM Part of OgreSharedPtr
     ogre_ns.calldefs ('peekNextPtr').exclude ()
     ogre_ns.calldefs ('peekNextValuePtr').exclude ()    #in many of the Iterator classes
     ogre_ns.class_("GpuProgramParameters").class_("AutoConstantEntry").exclude() # Autoconstant name space variables missing in compile
@@ -157,8 +159,7 @@ def filter_declarations( mb ):
     PartSys.class_( "CmdSorted" ).exclude()
     PartSys.class_( "CmdWidth" ).exclude()
 
-    ogre_ns.class_( "ResourceGroupManager" ).member_functions( 'declareResource' ).exclude()  ##Python load issue
-
+ #   ogre_ns.class_("SceneManager").class_("AnimationList").exclude()
     # These members have Ogre::Real * methods which need to be wrapped.
     ogre_ns.class_ ('Matrix3').member_operators (symbol='[]').exclude ()
     ogre_ns.class_ ('Matrix4').member_operators (symbol='[]').exclude ()
@@ -209,24 +210,21 @@ def generate_alias (mb):
     for name, alias in ogre_customization_data.name2alias.items():
         try:
             decl = mb.class_( name )
-            print '{!}setting %s class to %s ' % (name, alias)
+            print '{!}setting alias to %s ' % str( decl )
             for source_alias in decl.aliases:
                 print '  {source code defines next alias} %s' % str( source_alias )
             decl.alias = alias
             decl.wrapper_alias = alias + '_wrapper'
         except  Exception, error:
-            print "==>Not Found..", name
+            print "==>", name
+
     for name, alias in ogre_customization_data.name2alias_class_decl.items():
         try:
             decl = mb.decl( name, lambda decl: isinstance( decl, declarations.class_declaration_t ) )
             decl.alias = alias
-            print '{!}setting %s variable to %s ' % (name, alias)
         except  Exception, error:
-            print "==>Not Found..", name
-#     for cls in mb.classes():
-#         print "CLASS2: ", cls
-#     for item in mb.decls():
-#         print "DECL2: ", item    
+            print "==>", name
+
 
 def configure_exception(mb):
     #We don't exclude  Exception, because it contains functionality, that could
@@ -256,8 +254,8 @@ def generate_code():
     shared_ptr.configure (mb)
     configure_exception( mb )
 
-#    for cls in mb.namespace( 'Ogre' ).classes():
-#         cls.add_registration_code( 'std::cout << "registering class %s" << std::endl;' % cls.alias, False )
+    #for cls in mb.namespace( 'Ogre' ).classes():
+    #    cls.add_registration_code( 'std::cout << "registering class %s" << std::endl;' % cls.alias, False )
 
     #Creating code creator. After this step you should not modify/customize declarations.
     mb.build_code_creator (module_name='_ogre_')
