@@ -28,10 +28,13 @@ REGISTER_SPTR_CONVERSION =\
 boost::python::implicitly_convertible< %(derived)s, %(base)s >();
 """
 
+
 class ogre_shared_ptr_t:
     def __init__( self, mb ):
         self.ogre_ns = mb.namespace ('Ogre')
         self.visited_classes = set()
+        #For this classes wrapper does not exist
+        self.special_cases = ['PatchMesh', 'Controller<float>', 'Compositor' ]
 
     def get_pointee( self, sp_instantiation ):
         #sp_instantiation - reference to SharedPtr<XXX>
@@ -40,109 +43,53 @@ class ogre_shared_ptr_t:
         no_alias = declarations.remove_alias( no_ptr )
         return declarations.remove_declarated( no_alias )
 
-    def configure_base_and_derived( self, sp_derived ):
-        sp_instantiation = sp_derived.bases[0].related_class
-        sp_derived.exclude()
-        sp_instantiation.exclude()
+    def expose( self, sp_instantiation ):
+        sp_instantiation.exclude() # we don't want to export SharedPtr< X >
+
         pointee = self.get_pointee( sp_instantiation )
-
-        if pointee.held_type:
-            return
-
-        if pointee.is_abstract:
-            pointee.held_type = '::Ogre::SharedPtr< %s >' % pointee.wrapper_alias
-
-            sp_held_type_code = [ "struct %s;" % pointee.wrapper_alias ]
-            sp_held_type_code.append(
-                OGRE_SP_HELD_TYPE_TMPL % { 'class_name': '::' + pointee.wrapper_alias
-                                           , 'class_ptr_name': pointee.held_type } )
-
-            sp_held_type_code.append(
-                OGRE_SP_HELD_TYPE_TMPL % { 'class_name': pointee.decl_string
-                                           , 'class_ptr_name': sp_instantiation.decl_string } )
-
-            pointee.add_declaration_code( os.linesep.join(sp_held_type_code) )
-
-            pointee.add_registration_code(
-                REGISTER_SP_TO_PYTHON % { 'sp_inst_class_name' : sp_instantiation.decl_string }
-                , works_on_instance=False)
-
-            pointee.add_registration_code(
-                REGISTER_SPTR_CONVERSION % { 'derived' : pointee.held_type
-                                             , 'base' : sp_instantiation.decl_string }
-                , works_on_instance=False)
-
-        else:
-            pointee.held_type = sp_derived.decl_string
+        if sp_instantiation.derived:
+            #We have struct XPtr : public SharedPtr<X>
+            assert 1 == len( sp_instantiation.derived )
+            sp_derived = sp_instantiation.derived[0].related_class
+            sp_derived.exclude()
 
             pointee.add_declaration_code(
                 OGRE_SP_HELD_TYPE_TMPL % { 'class_name': pointee.decl_string
                                            , 'class_ptr_name': sp_derived.decl_string } )
 
-        pointee.add_registration_code(
-            REGISTER_SPTR_CONVERSION % { 'derived' : sp_derived.decl_string
-                                         , 'base' : sp_instantiation.decl_string }
-            , works_on_instance=False)
-
-    def configure_instantiation( self, sp_instantiation ):
-        sp_instantiation.exclude()
-        pointee = self.get_pointee( sp_instantiation )
-        if pointee.held_type:
-            return
-
-        if pointee.is_abstract:
-            pointee.held_type = '::Ogre::SharedPtr< %s >' % pointee.wrapper_alias
-
-            sp_held_type_code = [ "struct %s;" % pointee.wrapper_alias ]
-            sp_held_type_code.append(
-                OGRE_SP_HELD_TYPE_TMPL % { 'class_name': '::' + pointee.wrapper_alias
-                                           , 'class_ptr_name': pointee.held_type } )
-
-            sp_held_type_code.append(
-                OGRE_SP_HELD_TYPE_TMPL % { 'class_name': pointee.decl_string
-                                           , 'class_ptr_name': sp_instantiation.decl_string } )
-
-            pointee.add_declaration_code( os.linesep.join(sp_held_type_code) )
+            pointee.add_registration_code(
+                REGISTER_SPTR_CONVERSION % { 'derived' : sp_derived.decl_string
+                                             , 'base' : sp_instantiation.decl_string }
+                , works_on_instance=False )
 
             pointee.add_registration_code(
-                REGISTER_SP_TO_PYTHON % { 'sp_inst_class_name' : sp_instantiation.decl_string }
-                , works_on_instance=False)
+                REGISTER_SP_TO_PYTHON % { 'sp_inst_class_name' : sp_derived.decl_string }
+                , works_on_instance=False )
 
+        if pointee.name not in self.special_cases:
+            pointee.held_type = '::Ogre::SharedPtr< %s >' % pointee.wrapper_alias
             pointee.add_registration_code(
                 REGISTER_SPTR_CONVERSION % { 'derived' : pointee.held_type
                                              , 'base' : sp_instantiation.decl_string }
-                , works_on_instance=False)
+                , works_on_instance=False )
+
+            pointee.add_registration_code(
+                REGISTER_SP_TO_PYTHON % { 'sp_inst_class_name' : sp_instantiation.decl_string }
+                , works_on_instance=False )
 
         else:
             pointee.held_type = sp_instantiation.decl_string
 
-            pointee.add_declaration_code(
-                OGRE_SP_HELD_TYPE_TMPL % { 'class_name': pointee.decl_string
-                                           , 'class_ptr_name': sp_instantiation.decl_string } )
-
-        for hierarchy_info in pointee.bases:
-            if hierarchy_info.access_type != 'public':
-                continue
+        base_classes = filter( lambda hi: hi.access_type == 'public', pointee.bases )
+        for base in base_classes:
             pointee.add_registration_code(
                 REGISTER_SPTR_CONVERSION % { 'derived' : sp_instantiation.decl_string
-                                             , 'base' : '::Ogre::SharedPtr< %s >' % hierarchy_info.related_class.decl_string }
+                                             , 'base' : '::Ogre::SharedPtr< %s >' % base.related_class.decl_string }
                 , works_on_instance=False)
 
     def configure(self):
-        """
-        A method which attempts to appropriately export the shared pointer derived classes.
-        Ogre uses next pattern:
-        template class<T> SharedPtr{...};
-        class XXXPtr : public SharedPtr<XXX> {... }
-        We have to exclude ResourcePtr and to register Smart Pointer conversion
-        See http://boost.org/libs/python/doc/v2/register_ptr_to_python.html
-        """
-        for cls in self.ogre_ns.classes():
-            if 1 == len(cls.bases) and cls.bases[0].related_class.name.startswith ('SharedPtr'):
-                self.configure_base_and_derived( cls )
-        for cls in self.ogre_ns.classes():
-            if cls.name.startswith( 'SharedPtr' ):
-               self.configure_instantiation( cls )
+        sp_instantiations = self.ogre_ns.classes( lambda decl: decl.name.startswith( 'SharedPtr' ) )
+        map( lambda sp: self.expose( sp ), sp_instantiations )
 
 def configure( mb ):
     ogre_shared_ptr_t( mb ).configure()
