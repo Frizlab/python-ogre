@@ -20,7 +20,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="e:/python24/include;D:\boost_cvs;D:\ogre\ogrenew\OgreMain\include"
+				AdditionalIncludeDirectories="e:/python24/include;D:\boost_cvs;D:\OgreSDK\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;PYTHON_OGRE_EXPORTS;BOOST_PYTHON_MAX_ARITY=19"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
@@ -30,18 +30,22 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
-				DebugInformationFormat="1"
+				DebugInformationFormat="3"
 				DisableSpecificWarnings="4267;4099;4005;"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)/python_ogre.dll"
-				LinkIncremental="2"
+				AdditionalDependencies="boost_python.lib OgreMain_d.lib"
+				OutputFile="$(OutDir)/_ogre_.dll"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="D:\boost_cvs\bin;E:\Python24\libs;D:\OgreSDK\lib"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile="$(OutDir)/python_ogre.pdb"
+				ProgramDatabaseFile="$(OutDir)/_ogre_.pdb"
 				SubSystem="2"
-				ImportLibrary="$(OutDir)/python_ogre.lib"
+				OptimizeReferences="1"
+				EnableCOMDATFolding="1"
+				ImportLibrary=""
 				TargetMachine="1"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -87,7 +91,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalDependencies="boost_python.lib OgreMain.lib"
-				OutputFile="$(OutDir)/_ogre_.dll"
+				OutputFile="D:\python-ogre\demos\tutorials\Ogre\_ogre_.dll"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="D:\boost_cvs\bin;E:\Python24\libs;D:\OgreSDK\lib"
 				GenerateDebugInformation="FALSE"
@@ -150,6 +154,78 @@
 				RelativePath=".\build\_BillboardSet__unnamed_enums.pypp.cpp">
 			</File>
 			<File
+				RelativePath=".\build\_Frustum__classes.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_Frustum__enums.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_Frustum__memfuns.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_Frustum__memfuns_pvirtual.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_Frustum__memfuns_virtual0.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_Frustum__memfuns_virtual1.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_Frustum__protected_memfuns.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_Frustum__unnamed_enums.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_ManualObject__classes.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_ManualObject__enums.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_ManualObject__memfuns.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_ManualObject__memfuns_pvirtual.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_ManualObject__memfuns_virtual0.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_ManualObject__memfuns_virtual1.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_ManualObject__protected_memfuns.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_ManualObject__unnamed_enums.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_MovableObject__classes.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_MovableObject__enums.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_MovableObject__memfuns.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_MovableObject__memfuns_pvirtual.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_MovableObject__memfuns_virtual0.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_MovableObject__memfuns_virtual1.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_MovableObject__protected_memfuns.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_MovableObject__unnamed_enums.pypp.cpp">
+			</File>
+			<File
 				RelativePath=".\build\_Node__classes.pypp.cpp">
 			</File>
 			<File
@@ -186,6 +262,33 @@
 				RelativePath=".\build\_ogre__global_variables.pypp.cpp">
 			</File>
 			<File
+				RelativePath=".\build\_OverlayElement__classes.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_OverlayElement__enums.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_OverlayElement__memfuns0.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_OverlayElement__memfuns1.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_OverlayElement__memfuns_pvirtual.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_OverlayElement__memfuns_virtual0.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_OverlayElement__memfuns_virtual1.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_OverlayElement__protected_memfuns.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_OverlayElement__unnamed_enums.pypp.cpp">
+			</File>
+			<File
 				RelativePath=".\build\_ParticleEmitter__classes.pypp.cpp">
 			</File>
 			<File
@@ -204,6 +307,9 @@
 				RelativePath=".\build\_ParticleEmitter__memfuns_virtual1.pypp.cpp">
 			</File>
 			<File
+				RelativePath=".\build\_ParticleEmitter__memfuns_virtual2.pypp.cpp">
+			</File>
+			<File
 				RelativePath=".\build\_ParticleEmitter__protected_memfuns.pypp.cpp">
 			</File>
 			<File
@@ -220,6 +326,9 @@
 			</File>
 			<File
 				RelativePath=".\build\_ParticleSystem__memfuns1.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_ParticleSystem__memfuns2.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\build\_ParticleSystem__memfuns_pvirtual.pypp.cpp">
@@ -258,6 +367,9 @@
 				RelativePath=".\build\_Pass__memfuns5.pypp.cpp">
 			</File>
 			<File
+				RelativePath=".\build\_Pass__memfuns6.pypp.cpp">
+			</File>
+			<File
 				RelativePath=".\build\_Pass__memfuns_pvirtual.pypp.cpp">
 			</File>
 			<File
@@ -288,6 +400,9 @@
 				RelativePath=".\build\_RenderSystem__memfuns_pvirtual2.pypp.cpp">
 			</File>
 			<File
+				RelativePath=".\build\_RenderSystem__memfuns_pvirtual3.pypp.cpp">
+			</File>
+			<File
 				RelativePath=".\build\_RenderSystem__memfuns_virtual.pypp.cpp">
 			</File>
 			<File
@@ -295,6 +410,30 @@
 			</File>
 			<File
 				RelativePath=".\build\_RenderSystem__unnamed_enums.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_RenderTarget__classes.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_RenderTarget__enums.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_RenderTarget__memfuns.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_RenderTarget__memfuns_pvirtual.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_RenderTarget__memfuns_virtual0.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_RenderTarget__memfuns_virtual1.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_RenderTarget__protected_memfuns.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_RenderTarget__unnamed_enums.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\build\_SceneManager__classes.pypp.cpp">
@@ -330,10 +469,37 @@
 				RelativePath=".\build\_SceneManager__memfuns_virtual6.pypp.cpp">
 			</File>
 			<File
+				RelativePath=".\build\_SceneManager__memfuns_virtual7.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_SceneManager__memfuns_virtual8.pypp.cpp">
+			</File>
+			<File
 				RelativePath=".\build\_SceneManager__protected_memfuns.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\build\_SceneManager__unnamed_enums.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_SceneNode__classes.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_SceneNode__enums.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_SceneNode__memfuns.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_SceneNode__memfuns_pvirtual.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_SceneNode__memfuns_virtual.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_SceneNode__protected_memfuns.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\_SceneNode__unnamed_enums.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\build\_StaticGeometry__classes.pypp.cpp">
@@ -364,9 +530,6 @@
 			</File>
 			<File
 				RelativePath=".\build\AnimableValue.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\build\AnimableValuePtr.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\build\Animation.pypp.cpp">
@@ -552,22 +715,7 @@
 				RelativePath=".\build\ConfigFile.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\build\Controller_less_float_grate_.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\build\ControllerFunction_less_float_grate_.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\build\ControllerFunctionRealPtr.pypp.cpp">
-			</File>
-			<File
 				RelativePath=".\build\ControllerManager.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\build\ControllerValue_less_float_grate_.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\build\ControllerValueRealPtr.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\build\DataStream.pypp.cpp">
@@ -633,7 +781,19 @@
 				RelativePath=".\build\FileStreamDataStream.pypp.cpp">
 			</File>
 			<File
+				RelativePath=".\build\FloatController.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\FloatControllerFunction.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\FloatControllerValue.pypp.cpp">
+			</File>
+			<File
 				RelativePath=".\build\FloatGpuParameterControllerValue.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\build\FloatRect.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\build\FrameEvent.pypp.cpp">
@@ -655,9 +815,6 @@
 			</File>
 			<File
 				RelativePath=".\build\GpuProgramParameters.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\build\GpuProgramParametersSharedPtr.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\build\HardwareAnimationDataList.pypp.cpp">
@@ -793,9 +950,6 @@
 			</File>
 			<File
 				RelativePath=".\build\MemoryDataStream.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\build\MemoryManager.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\build\Mesh.pypp.cpp">
@@ -1068,6 +1222,9 @@
 				RelativePath=".\build\Resource.pypp.cpp">
 			</File>
 			<File
+				RelativePath=".\build\ResourceDeclarationList.pypp.cpp">
+			</File>
+			<File
 				RelativePath=".\build\ResourceGroupListener.pypp.cpp">
 			</File>
 			<File
@@ -1155,9 +1312,6 @@
 				RelativePath=".\build\ShadowRenderable.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\build\SharedPtr_less_Ogre_scope_Resource_grate_.pypp.cpp">
-			</File>
-			<File
 				RelativePath=".\build\SimpleRenderable.pypp.cpp">
 			</File>
 			<File
@@ -1228,9 +1382,6 @@
 			</File>
 			<File
 				RelativePath=".\build\TransformKeyFrame.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\build\TRect_less_float_grate_.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\build\TriangleList.pypp.cpp">

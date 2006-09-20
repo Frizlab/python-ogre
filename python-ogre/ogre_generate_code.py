@@ -6,7 +6,7 @@
 #       However probably don't actually work
 # 2.    Properties.py and calling 'properties.create' - commented out at the moment, not sure if it is really needed?
 
-import os, sys, time
+import os, sys, time, shutil
 import environment, properties, shared_ptr, ogre_customization_data
 
 from pyplusplus import code_creators
@@ -159,7 +159,6 @@ def filter_declarations( mb ):
     PartSys.class_( "CmdSorted" ).exclude()
     PartSys.class_( "CmdWidth" ).exclude()
 
- #   ogre_ns.class_("SceneManager").class_("AnimationList").exclude()
     # These members have Ogre::Real * methods which need to be wrapped.
     ogre_ns.class_ ('Matrix3').member_operators (symbol='[]').exclude ()
     ogre_ns.class_ ('Matrix4').member_operators (symbol='[]').exclude ()
@@ -175,9 +174,6 @@ def filter_declarations( mb ):
     #raise compilation error
     ogre_ns.class_( "Image" ).member_functions( 'getData' ).exclude()
 
-    ## STUFF that hasn't been rechecked for failure...
-    # Methods which have void *'s but are contained in classes I need exported for the sample.
-    # once the void * wrappers have been written, this should go away.
     ogre_ns.free_functions ('any_cast').exclude () #not relevant for Python
 
     #AttribParserList is a map from string to function pointer, this class could not be exposed
@@ -207,30 +203,22 @@ def set_call_policies( mb ):
                 call_policies.reference_existing_object )
 
 def generate_alias (mb):
-    for name, alias in ogre_customization_data.name2alias.items():
+    gns = mb.global_ns
+    for name, alias in ogre_customization_data.aliases.items():
         try:
-            decl = mb.class_( name )
-            print '{!}setting alias to %s ' % str( decl )
-            for source_alias in decl.aliases:
-                print '  {source code defines next alias} %s' % str( source_alias )
-            decl.alias = alias
-            decl.wrapper_alias = alias + '_wrapper'
-        except  Exception, error:
-            print "==>", name
-
-    for name, alias in ogre_customization_data.name2alias_class_decl.items():
-        try:
-            decl = mb.decl( name, lambda decl: isinstance( decl, declarations.class_declaration_t ) )
-            decl.alias = alias
-        except  Exception, error:
-            print "==>", name
-
+            cls = gns.class_( name )
+            cls.alias = alias
+            cls.wrapper_alias = alias + '_wrapper'
+            #print '{!}setting alias to %s ' % str( decl )
+            #for source_alias in cls.aliases:
+            #    print '  {source code defines next alias} %s' % str( source_alias )
+        except declarations.matcher.declaration_not_found_t:
+            gns.decl( name, decl_type=declarations.class_declaration_t ).rename( alias )
 
 def configure_exception(mb):
     #We don't exclude  Exception, because it contains functionality, that could
     #be useful to user. But, we will provide automatic exception translator
     Exception = mb.namespace( 'Ogre' ).class_( 'Exception' )
-
     Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getFullDescription().c_str()' )
 
 
@@ -254,9 +242,6 @@ def generate_code():
     shared_ptr.configure (mb)
     configure_exception( mb )
 
-    #for cls in mb.namespace( 'Ogre' ).classes():
-    #    cls.add_registration_code( 'std::cout << "registering class %s" << std::endl;' % cls.alias, False )
-
     #Creating code creator. After this step you should not modify/customize declarations.
     mb.build_code_creator (module_name='_ogre_')
 
@@ -271,6 +256,9 @@ def generate_code():
     huge_classes = map( mb.class_, ogre_customization_data.huge_classes )
 
     mb.split_module(environment.build_dir, huge_classes)
+    if not os.path.exists( os.path.join( environment.build_dir, 'py_shared_ptr.h' ) ):
+        shutil.copy( os.path.join( environment.working_dir, 'ogre_wrappers', 'py_shared_ptr.h' )
+                     , environment.build_dir )
 
 # vim:et:ts=4:sts=4:sw=4
 
