@@ -7,7 +7,7 @@
 # 2.    Properties.py and calling 'properties.create' - commented out at the moment, not sure if it is really needed?
 
 import os, sys, time, shutil
-import environment, properties, shared_ptr, ogre_customization_data
+import environment, properties, shared_ptr, ogre_customization_data, hand_made_wrappers
 
 from pyplusplus import code_creators
 from pyplusplus import module_builder
@@ -241,6 +241,8 @@ def generate_code():
     generate_alias (mb)
     shared_ptr.configure (mb)
     configure_exception( mb )
+
+    hand_made_wrappers.apply( mb )
 
     #Creating code creator. After this step you should not modify/customize declarations.
     mb.build_code_creator (module_name='_ogre_')
