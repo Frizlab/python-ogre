@@ -4,7 +4,6 @@ from pygccxml import declarations
 from pyplusplus import code_creators
 from pyplusplus import module_builder
 
-import pprint
 '''OGRE typically uses getX and setX for properties. However, we have to be
 careful because there are methods names setX and getX which are not true
 properties (in a pythonic sense), as sometimes a getX will take one or more
@@ -16,8 +15,6 @@ and documented.
 Yes: isVisible setVisible
 
 '''
-
-
 
 IMPROPER_GETTERS = set()
 IMPROPER_SETTERS = set()
@@ -92,8 +89,8 @@ def add_properties_for_class( cls ):
         cls.add_property( name, accessors[0], accessors[1] )
 
 def create(mb):
+    print 'adding properties for classes'
     for cls in mb.classes( lambda decl: decl.ignore == False ):
-        print 'adding properties for "%s" ...' % cls
         add_properties_for_class( cls )
     print 'improper getters',  len( IMPROPER_GETTERS )
     print 'improper setters',  len( IMPROPER_SETTERS )
