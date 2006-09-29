@@ -21,6 +21,14 @@ RenderWindow_getMetricsIntWrapper( Ogre::RenderWindow& rw ) {
    return ( boost::python::make_tuple(width, height, colourDepth, left, top));
 }
 """
+## Needed as boost doesn't handle this overload properly and always uses 'Plane' as the override - see renderToTexture demo
+WRAPPER_DEFINITION_Frustum = \
+"""
+void
+Frustum_enableCustomNearClipPlaneMP(Ogre::Frustum& Fr, Ogre::MovablePlane const * MP ) {
+        Fr.enableCustomNearClipPlane ( MP ) ;
+}
+"""
 
 WRAPPER_REGISTRATION_RenderTarget = \
 """
@@ -30,7 +38,10 @@ WRAPPER_REGISTRATION_RenderWindow = \
 """
     def( "getMetricsInt", &::RenderWindow_getMetricsIntWrapper )
 """
-
+WRAPPER_REGISTRATION_Frustum = \
+"""
+    def( "enableCustomNearClipPlaneMP", &::Frustum_enableCustomNearClipPlaneMP )
+"""
 
 def apply( mb ):
     rt = mb.class_( 'RenderTarget' )
@@ -39,4 +50,7 @@ def apply( mb ):
     rt = mb.class_( 'RenderWindow' )
     rt.add_declaration_code( WRAPPER_DEFINITION_RenderWindow )
     rt.add_registration_code( WRAPPER_REGISTRATION_RenderWindow )
+    rt = mb.class_( 'Frustum' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_Frustum )
+    rt.add_registration_code( WRAPPER_REGISTRATION_Frustum )
 

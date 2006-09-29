@@ -11,7 +11,7 @@ class SkeletalApplication(sf.Application):
         camera = self.camera
 
         ogre.Animation.setDefaultInterpolationMode(ogre.Animation.IM_SPLINE)
-        sceneManager.ambientLight = ogre.ColourValue(0.5, 0.5, 0.5)
+        sceneManager.AmbientLight = ogre.ColourValue(0.5, 0.5, 0.5)
 
         self.animationStates = []
         self.animationSpeeds = []
@@ -19,18 +19,18 @@ class SkeletalApplication(sf.Application):
             entity = sceneManager.createEntity('robot%d' % index, 'robot.mesh')
             sceneManager.getRootSceneNode().createChildSceneNode(ogre.Vector3(0, 0, index * 50 - NUM_ROBOTS * 50 / 2.0)).attachObject(entity)
             self.animationStates.append(entity.getAnimationState('Walk'))
-            self.animationStates[-1].enabled = True
+            self.animationStates[-1].Enabled = True
             self.animationSpeeds.append(ogre.Math.RangeRandom(0.5, 1.5))
 
         light = sceneManager.createLight('BlueLight')
-        light.position = (-200, -80, -100)
-        light.diffuseColour = (0.5, 0.5, 1.0)
+        light.Position = ogre.Vector3(-200, -80, -100)
+        light.DiffuseColour = ogre.ColourValue(0.5, 0.5, 1.0)
 
         light = sceneManager.createLight('GreenLight')
-        light.position = (0, 0, -100)
-        light.diffuseColour = (0.5, 1.0, 0.5)
+        light.Position = ogre.Vector3(0, 0, -100)
+        light.DiffuseColour = ogre.ColourValue(0.5, 1.0, 0.5)
 
-        camera.position = (100, 50, 100)
+        camera.Position = ogre.Vector3(100, 50, 100)
         camera.lookAt(-50, 50, 0)
 
         # Report whether hardware skinning is enabled or not

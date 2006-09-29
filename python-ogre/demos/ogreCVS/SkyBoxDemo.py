@@ -1,5 +1,6 @@
 # This code is in the Public Domain
 import  Ogre as ogre
+import OIS
 import SampleFramework as sf
 pThrusters = None
 
@@ -68,17 +69,17 @@ class SkyBoxListener(sf.FrameListener):
            
     def frameStarted(self, frameEvent):
         global pThrusters
-        if self._isToggleKeyDown(ogre.KC_N, 0.1):
+        if self._isToggleKeyDown(OIS.KC_N, 0.1):
             pThrusters.setDefaultDimensions( self.fDefDim + 0.25, self.fDefDim + 0.25 )
             self.fDefDim += 0.25
-        if self._isToggleKeyDown(ogre.KC_M, 0.1):
+        if self._isToggleKeyDown(OIS.KC_M, 0.1):
             pThrusters.setDefaultDimensions( self.fDefDim - 0.25, self.fDefDim - 0.25 )
             self.fDefDim -= 0.25
-        if self._isToggleKeyDown(ogre.KC_H, 0.1):
+        if self._isToggleKeyDown(OIS.KC_H, 0.1):
             pThrusters.getEmitter( 0 ).setParticleVelocity( self.fDefVel + 1 )
             pThrusters.getEmitter( 1 ).setParticleVelocity( self.fDefVel + 1 )
             self.fDefVel += 1            
-        if self._isToggleKeyDown(ogre.KC_J, 0.1) and not (self.fDefVel < 0.0):
+        if self._isToggleKeyDown(OIS.KC_J, 0.1) and not (self.fDefVel < 0.0):
             pThrusters.getEmitter( 0 ).setParticleVelocity( self.fDefVel - 1 )
             pThrusters.getEmitter( 1 ).setParticleVelocity( self.fDefVel - 1 )
             self.fDefVel -= 1            

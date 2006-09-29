@@ -134,17 +134,13 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
         # set up linked reflection
         self.mReflectCam.enableReflection(self.mPlane)
         # Also clip
-        ################################################
-        # AJM   Here is a challenge............
-        # by default this doesn't work - effectively the clipiing is against a fixed plane at 0,0,0
-        # it seems that even though we are passing a moveable plane to enableCustomNearClipPlane it
-        # appears boost considers this a plane instead of a moveable plane..
-        #
-        ####     self.mReflectCam.enableCustomNearClipPlane(self.mPlane) 
         
-        # by "fixing" _Frustum__memfunx_virtual0... to allow the moveable override to be called
-        # directly then the following line works...
-        self.mReflectCam.enableCustomNearClipPlane(movableplane=self.mPlane) 
+        # NOTE..  a difference in Python implementation
+        ## this doesn't work as mPlane is treated as a Plane instead of a MoveablePlane 
+        #self.mReflectCam.enableCustomNearClipPlane(self.mPlane) 
+        ## So we have an override :)
+        
+        self.mReflectCam.enableCustomNearClipPlaneMP(self.mPlane) 
 
         #Give the plane a texture
         self.mPlaneEnt.setMaterialName("RttMat")

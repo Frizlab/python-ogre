@@ -236,13 +236,9 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
          
          #Register as a Window listener
          ogre.WindowEventUtilities.addWindowEventListener(self.renderWindow, self);
+         
     def windowResized (self, rw):
-         width = 0
-         height = 0
-         depth = 0
-         left = 0
-         top = 0
-         rw.getMetricsInt(width, height, depth, left, top)  # Note the wrapped function as default needs unsigned int's
+         [width, height, depth, left, top] = rw.getMetricsInt()  # Note the wrapped function as default needs unsigned int's
          ms = self.Mouse.getMouseState()
          ms.width = width
          ms.height = height
@@ -389,7 +385,7 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
         return True        
         
     def _isToggleKeyDown(self, keyCode, toggleTime = 1.0):
-        if self.inputDevice.isKeyDown(keyCode)and self.timeUntilNextToggle <=0:
+        if self.Keyboard.isKeyDown(keyCode)and self.timeUntilNextToggle <=0:
             self.timeUntilNextToggle = toggleTime
             return True
         return False

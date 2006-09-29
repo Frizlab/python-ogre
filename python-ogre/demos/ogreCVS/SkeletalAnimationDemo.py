@@ -35,7 +35,7 @@ class SkeletalApplication(sf.Application):
         ogre.Animation.setDefaultRotationInterpolationMode(ogre.Animation.RIM_LINEAR)
         
         # Need some basic light
-        sceneManager.ambientLight = ogre.ColourValue(0.5, 0.5, 0.5)
+        sceneManager.AmbientLight = ogre.ColourValue(0.5, 0.5, 0.5)
 
         
         # The jaiqua sneak animation doesn't loop properly, so lets hack it so it does
