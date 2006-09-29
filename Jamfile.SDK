@@ -13,13 +13,11 @@ extension ogre
     $(sourcefiles)
     <template>@boost/libs/python/build/extension
     : <include>$(BOOST_PARENT_DIRECTORY)
-    <include>../ocvs/ogrenew/ogremain/include
+    <include>../ogresdk7/include
     <include>./build/
-    <library-path>../ocvs/ogrenew/ogremain/lib/release
+    <library-path>../ogresdk7/lib
     <find-library>ogremain.lib
-    <library-path>../ocvs/ogrenew/samples/common/ceguirenderer/lib
-    <find-library>ogreguirenderer.lib
-    <library-path>../ocvs/ogrenew/dependencies/lib/release
     <find-library>ceguibase.lib
+    <find-library>ogreguirenderer.lib
     <find-library>ode.lib
 ;

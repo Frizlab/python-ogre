@@ -2,9 +2,6 @@ import os
 import sys
 import getpass
 
-OGRE_VERSION="CVS"
-#OGRE_VERSION="1.2"
-
 if 'roman' in getpass.getuser():
     gccxml_path = r'd:/gccxml_cvs/gccxml-build/bin/release/gccxml.exe'
     pygccxml_base_dir = r'D:\pygccxml_sources\sources'
@@ -14,12 +11,9 @@ if 'roman' in getpass.getuser():
 else:
     gccxml_path = r'c:/development/gccxml/bin/release/gccxml.exe'
     pygccxml_base_dir = r'c:\development\pyplus'
-    if OGRE_VERSION == "CVS":
-        headers_dir = r'c:\development\ocvs\ogrenew\ogremain\include'
-        working_dir = r'c:\development\pywork'
-    else:
-        headers_dir = r'c:\development\ogrenew\include'
-        working_dir = r'c:\development\pyworkRel'
+    working_dir = r'c:\development\pyois'
+    headers_dir = r'c:\development\ocvs\ogrenew\dependencies\include\ois'
+    headers_dir = r'c:\development\ois\includes'
     python_headers_dir = 'c:/python25/include'
 
 
