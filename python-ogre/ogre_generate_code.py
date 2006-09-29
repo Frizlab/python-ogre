@@ -43,9 +43,13 @@ def fix_unnamed_classes (mb):
                 template = '''def_readwrite("%(mvar)s", &Ogre::%(parent)s::%(mvar)s)'''
             named_parent.add_code( template % dict( mvar=mvar.name, parent=named_parent.name ) )
 
-#This class should be fixed. For some reason it does not reportr right whether class\function
-#is private or not
+## Lets go looking for 'private' OGRE classes as defined by comments etc in the include files
 class private_decls_t:
+    ## First build a list of include file name/ line number for all instances of 'private' classes
+    ## note the index + 'x' to get things to the same line as gcc..  However potential bugs in code
+    ## depending upon the include file 'formating'.  We are capturing the line the comment is on, gcc
+    ## records the line the opening brace '{' is on...
+    
     def __init__( self ):
         self.__private = {} #fname : [line ]
         for fname in os.listdir( environment.headers_dir ):
@@ -57,8 +61,14 @@ class private_decls_t:
                 if '_OgrePrivate' in line:
                     if not self.__private.has_key( fname ):
                         self.__private[ fname ] = []
-                    self.__private[ fname ].append( index + 1 ) #enumerate calcs from 0, while gccxml from 1
+                    if '{' in line:     ## AJM Ugly hack - assumes there won't be blank lines between class name and opening brace
+                        index = index + 1   #enumerate calcs from 0, while gccxml from 1
+                    else:
+                        index = index + 2   #one line down to the opening brace
+                    self.__private[ fname ].append( index ) #enumerate calcs from 0, while gccxml from 1
                 line = line.strip()
+                
+                ## Again this next bit assumes an opening brace on the same line as the method or class :(
                 if line.startswith( '/// Internal method ' ) or line.startswith( '/** Internal class' ):
                     if not self.__private.has_key( fname ):
                         self.__private[ fname ] = []
@@ -67,6 +77,7 @@ class private_decls_t:
             fobj.close()
 
     def is_private( self, decl ):
+        
         if None is decl.location:
             return False
         file_name = os.path.split( decl.location.file_name )[1]
@@ -82,8 +93,12 @@ def filter_declarations( mb ):
         # Don't include, we'll never need.
         'D3D', 'GL',  'SDL', 'WIN32', 'Any', 'CompositorScriptCompiler', '_', 'Singleton',
         'MeshSerializerImpl', ## link problems - doesn't seem to exist at all ???
+        
     ]
 
+    if environment.OGRE_VERSION == "CVS":
+        mb.global_ns.class_( 'vector<Ogre::Vector4, std::allocator<Ogre::Vector4> >' ).exclude( )
+    
     ## Remove private classes , and those that are internal to Ogre...
     private_decls = private_decls_t()
     for cls in ogre_ns.classes():
@@ -123,6 +138,9 @@ def filter_declarations( mb ):
         GeomRegion.member_functions('_notifyCurrentCamera'). exclude()
         GeomRegion.member_functions('_updateRenderQueue'). exclude()
 
+    ## it turns out that it pukes anyway on StaticGeometry so need to make it smaller..
+    GeomRegion = ogre_ns.class_( "StaticGeometry" ).class_("Region").exclude()
+
     ## Now get rid of a wide range of classes as defined earlier in startswith...
     for prefix in startswith:
         classes = ogre_ns.classes (decl_starts_with(prefix), allow_empty=True)  ### NOTE the PREFIX is used here !!!!
@@ -145,21 +163,19 @@ def filter_declarations( mb ):
 
     ogre_ns.class_( 'RenderSystemOperation' ).exclude() # AJM in OgreCompositorInstance
     ogre_ns.calldefs ('getChildIterator').exclude ()
-
+    
     #AJM Set of functions in Particle system that don't get wrapped properly..
     PartSys = ogre_ns.class_( "ParticleSystem" )
-    PartSys.class_( "CmdCull" ).exclude()
-    PartSys.class_( "CmdHeight" ).exclude()
     PartSys.class_( "CmdIterationInterval" ).exclude()
     PartSys.class_( "CmdLocalSpace" ).exclude()
-    PartSys.class_( "CmdMaterial" ).exclude()
     PartSys.class_( "CmdNonvisibleTimeout" ).exclude()
-    PartSys.class_( "CmdQuota" ).exclude()
-    PartSys.class_( "CmdRenderer" ).exclude()
     PartSys.class_( "CmdSorted" ).exclude()
-    PartSys.class_( "CmdWidth" ).exclude()
-
-    # These members have Ogre::Real * methods which need to be wrapped.
+ 
+#     PartSys.class_( "CmdQuota" ).exclude()
+#     PartSys.class_( "CmdMaterial" ).exclude()
+#     PartSys.class_( "CmdRenderer" ).exclude()
+#    
+     # These members have Ogre::Real * methods which need to be wrapped.
     ogre_ns.class_ ('Matrix3').member_operators (symbol='[]').exclude ()
     ogre_ns.class_ ('Matrix4').member_operators (symbol='[]').exclude ()
 
@@ -236,20 +252,26 @@ def generate_code():
     mb.classes().always_expose_using_scope = True
 
     filter_declarations (mb)
-
+     
     fix_unnamed_classes (mb)
     generate_alias (mb)
     shared_ptr.configure (mb)
     configure_exception( mb )
 
     hand_made_wrappers.apply( mb )
+    
+    # AJM moved these earler in the code as they were making an impact :)
+    # Create properties for accessors
+    properties.create (mb)
+    set_call_policies (mb)
 
     #Creating code creator. After this step you should not modify/customize declarations.
     mb.build_code_creator (module_name='_ogre_')
 
-    # Create properties for accessors
-    properties.create (mb)
-    set_call_policies (mb)
+#     # Create properties for accessors
+#     properties.create (mb)
+#     set_call_policies (mb)
+
 
     mb.code_creator.user_defined_directories.append( environment.headers_dir )
     mb.code_creator.user_defined_directories.append( environment.build_dir )
