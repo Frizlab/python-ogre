@@ -175,15 +175,15 @@ class GrassApplication(sf.Application):
             "general") #ogre.ResourceManager.DEFAULT_RESOURCE_GROUP_NAME)
         
         subMesh = mesh.createSubMesh()
-        subMesh.useSharedVertices = False
-        subMesh.vertexData =   (ogre.VertexData()) ##AJM PROBLEM>
-        subMesh.vertexData.vertexStart = 0
-        subMesh.vertexData.vertexCount = 12
+        subMesh.UseSharedVertices = False
+        subMesh.VertexData = (ogre.VertexData()) ##AJM PROBLEM>
+        subMesh.VertexData.VertexStart = 0
+        subMesh.VertexData.VertexCount = 12
 
         #work-around to prevent destruction
-        self.vertexData = subMesh.vertexData
+        self.vertexData = subMesh.VertexData
 
-        vDec = subMesh.vertexData.vertexDeclaration
+        vDec = subMesh.VertexData.vertexDeclaration
         vDec.addElement(0, vDec.getVertexSize(0), ogre.VET_FLOAT3, ogre.VES_POSITION, 0)
         vDec.addElement(0, vDec.getVertexSize(0), ogre.VET_FLOAT3, ogre.VES_NORMAL, 0)
         vDec.addElement(0, vDec.getVertexSize(0), ogre.VET_FLOAT2, ogre.VES_TEXTURE_COORDINATES, 0)
@@ -193,7 +193,7 @@ class GrassApplication(sf.Application):
             12,
             ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY)
 
-        vertexes = vertexBuffer.lock(subMesh.vertexData.vertexDeclaration,
+        vertexes = vertexBuffer.lock(subMesh.VertexData.vertexDeclaration,
                                       ogre.HardwareBuffer.HBL_DISCARD)
         baseVec = ogre.Vector3(GRASS_WIDTH/2.0, 0, 0)
         vec = ogre.Vector3(baseVec)
@@ -227,24 +227,24 @@ class GrassApplication(sf.Application):
             vec = rot * vec
         vertexBuffer.unlock()
         
-        subMesh.vertexData.vertexBufferBinding.setBinding(0, vertexBuffer)
-        subMesh.indexData.indexCount = 6*3
-        subMesh.indexData.indexBuffer = ogre.HardwareBufferManager.getSingleton().createIndexBuffer(
+        subMesh.VertexData.vertexBufferBinding.setBinding(0, vertexBuffer)
+        subMesh.IndexData.indexCount = 6*3
+        subMesh.IndexData.indexBuffer = ogre.HardwareBufferManager.getSingleton().createIndexBuffer(
             ogre.HardwareIndexBuffer.IT_16BIT, 6*3, ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY)
         indices = []
         for i in xrange(0,3):
             indices += [ x + i * 4 for x in [0,3,1, 0,2,3] ]
-        subMesh.indexData.indexBuffer.writeIndexes(0, indices)
-        subMesh.materialName = ("Examples/GrassBlades")
+        subMesh.IndexData.indexBuffer.writeIndexes(0, indices)
+        subMesh.MaterialName = ("Examples/GrassBlades")
         
         #work-around to prevent destruction
         self.indexData = subMesh.indexData
 
 
 # Light related classes
-class LightFlasher(ogre.ControllerValue_less_float_grate_):
+class LightFlasher(ogre.FloatControllerValue):
     def __init__(self, light, billboard, maxColour):
-        ogre.ControllerValue_less_float_grate_.__init__(self)
+        ogre.FloatControllerValue.__init__(self)
         self.light = light
         self.billboard = billboard
         self.maxColour = ogre.ColourValue(maxColour[0],maxColour[1],maxColour[2])
@@ -267,9 +267,9 @@ class LightFlasherControllerFunction(ogre.WaveformControllerFunction):
         ogre.WaveformControllerFunction.__init__(
             self, waveType, 0, frequency, phase, 1, True)
 
-class LightWibbler(ogre.ControllerValue_less_float_grate_):
+class LightWibbler(ogre.FloatControllerValue):
     def __init__(self, light, billboard, minColour, maxColour, minSize, maxSize):
-        ogre.ControllerValue_less_float_grate_.__init__(self)
+        ogre.FloatControllerValue.__init__(self)
         self.light = light
         self.billboard = billboard
         self.colourRange = (maxColour - minColour) * 0.5

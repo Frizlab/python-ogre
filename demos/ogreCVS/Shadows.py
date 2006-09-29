@@ -323,7 +323,7 @@ class ShadowsListener (sf.FrameListener):
         mAthene.setMaterialName(mAtheneMaterials[mCurrentAtheneMaterial])
     
     def CheckKeyPressed ( self, key, time, func):
-        if (self.inputDevice.isKeyDown(key) and self.timeDelay <= 0):
+        if self._isToggleKeyDown(key, time):
             self.timeDelay = time 
             func()
         

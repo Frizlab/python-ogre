@@ -78,7 +78,7 @@ class ExampleLoadingBar (ogre.ResourceGroupListener):
         self.mLoadingCommentElement.setCaption(scriptName)
         self.mWindow.update()
     
-    def scriptParseEnded(self):
+    def scriptParseEnded(self, scriptName):
         self.mLoadingBarElement.setWidth(
             self.mLoadingBarElement.getWidth() + self.mProgressBarInc)
         self.mWindow.update()

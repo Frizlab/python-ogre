@@ -1,5 +1,6 @@
 # This code is in the Public Domain
 import  Ogre as ogre
+import OIS
 import SampleFramework as sf
 
 class SkyDomeApplication(sf.Application):
@@ -41,16 +42,16 @@ class SkyDomeListener(sf.FrameListener):
 
     def frameStarted(self, frameEvent):
         updateSky = False
-        if self._isToggleKeyDown(ogre.KC_H, 0.1):
+        if self._isToggleKeyDown(OIS.KC_H, 0.1):
             self.curvature += 1
             updateSky = True
-        if self._isToggleKeyDown(ogre.KC_G, 0.1):
+        if self._isToggleKeyDown(OIS.KC_G, 0.1):
             self.curvature -= 1
             updateSky = True
-        if self._isToggleKeyDown(ogre.KC_U, 0.1):
+        if self._isToggleKeyDown(OIS.KC_U, 0.1):
             self.tiling += 1
             updateSky = True
-        if self._isToggleKeyDown(ogre.KC_Y, 0.1):
+        if self._isToggleKeyDown(OIS.KC_Y, 0.1):
             self.tiling -= 1
             updateSky = True
         if updateSky:
