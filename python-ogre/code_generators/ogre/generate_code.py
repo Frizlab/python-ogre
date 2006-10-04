@@ -155,16 +155,6 @@ def set_call_policies( mb ):
             mem_fun.call_policies = call_policies.return_value_policy(
                 call_policies.reference_existing_object )
 
-def generate_alias (mb):
-    gns = mb.global_ns
-    for name, alias in customization_data.aliases( environment.ogre.version ).items():
-        try:
-            cls = gns.class_( name )
-            cls.alias = alias
-            cls.wrapper_alias = alias + '_wrapper'
-        except declarations.matcher.declaration_not_found_t:
-            gns.decl( name, decl_type=declarations.class_declaration_t ).rename( alias )
-
 def configure_exception(mb):
     #We don't exclude  Exception, because it contains functionality, that could
     #be useful to user. But, we will provide automatic exception translator
@@ -190,7 +180,7 @@ def generate_code():
 
     filter_declarations (mb)
 
-    generate_alias (mb)
+    common_utils.set_declaration_aliases( mb.global_ns, customization_data.aliases( environment.ogre.version ) )
 
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
