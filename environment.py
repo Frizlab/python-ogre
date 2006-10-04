@@ -9,6 +9,7 @@ python_include_dir = None #path to python include files directory
 pyplusplus_install_dir = None #path to pygccxml & Py++ packages
 
 generated = None #path to generated files dir
+shared_ptr_dir = None #path to shared_ptr directory
 
 class ogre:
     root_dir = None
@@ -48,6 +49,8 @@ sys.path.append( pyplusplus_install_dir + r'/pyplusplus_dev' )
 
 
 ogre.root_dir = os.path.join( root_dir, 'ogre_dev' )
+
+shared_ptr_dir = os.path.join( root_dir, 'shared_ptr' )
 
 generated_dir = os.path.join( root_dir, 'generated' )
 ogre.generated_dir = os.path.join( generated_dir, 'ogre' )
