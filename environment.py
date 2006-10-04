@@ -23,6 +23,10 @@ class ogre:
 class ois:
     pass
 
+projects = {
+    'ois' : ois
+    , 'ogre' : ogre
+}
 
 if 'roman' in getpass.getuser():
     root_dir = r'D:\python-ogre'
@@ -31,7 +35,6 @@ if 'roman' in getpass.getuser():
     pyplusplus_install_dir = r'D:\pygccxml_sources\sources'
 
     ogre.include_dir = r'D:\OgreSDK\include'
-
 else:
     gccxml_path = r'c:/development/gccxml/bin/release/gccxml.exe'
     pygccxml_base_dir = r'c:\development\pyplus'
@@ -47,14 +50,12 @@ sys.path.append( os.path.join( root_dir, 'common_utils' ) )
 sys.path.append( pyplusplus_install_dir + r'/pygccxml_dev' )
 sys.path.append( pyplusplus_install_dir + r'/pyplusplus_dev' )
 
-
-ogre.root_dir = os.path.join( root_dir, 'ogre_dev' )
-
 shared_ptr_dir = os.path.join( root_dir, 'shared_ptr' )
-
 generated_dir = os.path.join( root_dir, 'generated' )
-ogre.generated_dir = os.path.join( generated_dir, 'ogre' )
+declarations_cache_dir = os.path.join( root_dir, 'code_generators', 'declarations_cache' )
 
-declarations_cache_dir = os.path.join( root_dir, 'declarations_cache' )
-ogre.cache_file = os.path.join( declarations_cache_dir, 'ogre_cache.xml' )
+for name, cls in projects.items():
+    cls.root_dir = os.path.join( root_dir, 'code_generators', name )
+    cls.generated_dir = os.path.join( generated_dir, name )
+    cls.cache_file = os.path.join( declarations_cache_dir, name + '_cache.xml' )
 
