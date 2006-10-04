@@ -2,15 +2,35 @@ import os
 import sys
 import getpass
 
-OGRE_VERSION="CVS"
-#OGRE_VERSION="1.2"
+
+root_dir = None #python-ogre root directory
+gccxml_bin = None #path to gccxml binary
+python_include_dir = None #path to python include files directory
+pyplusplus_install_dir = None #path to pygccxml & Py++ packages
+
+generated = None #path to generated files dir
+
+class ogre:
+    root_dir = None
+    include_dir = None
+    libs_dir = None
+    dlls_dir = None
+    generated_dir = None
+    version = "1.2"
+    cache_file = None
+
+class ois:
+    pass
+
 
 if 'roman' in getpass.getuser():
-    gccxml_path = r'd:/gccxml_cvs/gccxml-build/bin/release/gccxml.exe'
-    pygccxml_base_dir = r'D:\pygccxml_sources\sources'
-    working_dir = r'D:\python-ogre'
-    headers_dir = r'D:\Ogrenew\include'
-    python_headers_dir = 'c:/python/include'
+    root_dir = r'D:\python-ogre'
+    gccxml_bin = r'd:/gccxml_cvs/gccxml-build/bin/release/gccxml.exe'
+    python_include_dir = 'c:/python/include'
+    pyplusplus_install_dir = r'D:\pygccxml_sources\sources'
+
+    ogre.include_dir = r'D:\OgreSDK\include'
+
 else:
     gccxml_path = r'c:/development/gccxml/bin/release/gccxml.exe'
     pygccxml_base_dir = r'c:\development\pyplus'
@@ -22,11 +42,16 @@ else:
         working_dir = r'c:\development\pyworkRel'
     python_headers_dir = 'c:/python25/include'
 
+sys.path.append( os.path.join( root_dir, 'common_utils' ) )
+sys.path.append( pyplusplus_install_dir + r'/pygccxml_dev' )
+sys.path.append( pyplusplus_install_dir + r'/pyplusplus_dev' )
 
-sys.path.append (pygccxml_base_dir + r'/pygccxml_dev')
-sys.path.append (pygccxml_base_dir + r'/pyplusplus_dev')
 
-cache_dir = working_dir + r'/xml_cache'
-build_dir = working_dir + r'/build'
-declarations_cache_file = working_dir + r'/declarations_cache/cache.xml'
+ogre.root_dir = os.path.join( root_dir, 'ogre_dev' )
+
+generated_dir = os.path.join( root_dir, 'generated' )
+ogre.generated_dir = os.path.join( generated_dir, 'ogre' )
+
+declarations_cache_dir = os.path.join( root_dir, 'declarations_cache' )
+ogre.cache_file = os.path.join( declarations_cache_dir, 'ogre_cache.xml' )
 

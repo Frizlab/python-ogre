@@ -7,81 +7,18 @@
 # 2.    Properties.py and calling 'properties.create' - commented out at the moment, not sure if it is really needed?
 
 import os, sys, time, shutil
-import environment, properties, shared_ptr, ogre_customization_data, hand_made_wrappers
 
-from pyplusplus import code_creators
+sys.path.append( '..' )
+
+import environment
+import common_utils
+import customization_data
+import hand_made_wrappers
+
+from pygccxml import parser
+from pygccxml import declarations
 from pyplusplus import module_builder
 from pyplusplus.module_builder import call_policies
-
-from pygccxml import declarations
-from pygccxml.declarations import access_type_matcher_t
-from pygccxml.declarations import type_traits
-from pygccxml import parser
-
-class decl_starts_with (object):
-    def __init__ (self, prefix):
-        self.prefix = prefix
-    def __call__ (self, decl):
-        return self.prefix in decl.name
-
-def fix_unnamed_classes (mb):
-    ogre_ns = mb.namespace  ('Ogre')
-    print len (ogre_ns.classes ('')) / 2
-
-    for unnamed_cls in ogre_ns.classes( '' ):
-        named_parent = unnamed_cls.parent
-        if not named_parent.name:
-            named_parent = named_parent.parent
-
-        for mvar in unnamed_cls.public_members:
-            if not mvar.name:
-                continue
-
-            if declarations.is_array (mvar.type):
-                template = '''def_readonly("%(mvar)s", &Ogre::%(parent)s::%(mvar)s)'''
-            else:
-                template = '''def_readwrite("%(mvar)s", &Ogre::%(parent)s::%(mvar)s)'''
-            named_parent.add_code( template % dict( mvar=mvar.name, parent=named_parent.name ) )
-
-## Lets go looking for 'private' OGRE classes as defined by comments etc in the include files
-class private_decls_t:
-    ## First build a list of include file name/ line number for all instances of 'private' classes
-    ## note the index + 'x' to get things to the same line as gcc..  However potential bugs in code
-    ## depending upon the include file 'formating'.  We are capturing the line the comment is on, gcc
-    ## records the line the opening brace '{' is on...
-    
-    def __init__( self ):
-        self.__private = {} #fname : [line ]
-        for fname in os.listdir( environment.headers_dir ):
-            full_name = os.path.join( environment.headers_dir, fname )
-            if not os.path.isfile( full_name ):
-                continue
-            fobj = file( full_name, 'r' )
-            for index, line in enumerate( fobj ):
-                if '_OgrePrivate' in line:
-                    if not self.__private.has_key( fname ):
-                        self.__private[ fname ] = []
-                    if '{' in line:     ## AJM Ugly hack - assumes there won't be blank lines between class name and opening brace
-                        index = index + 1   #enumerate calcs from 0, while gccxml from 1
-                    else:
-                        index = index + 2   #one line down to the opening brace
-                    self.__private[ fname ].append( index ) #enumerate calcs from 0, while gccxml from 1
-                line = line.strip()
-                
-                ## Again this next bit assumes an opening brace on the same line as the method or class :(
-                if line.startswith( '/// Internal method ' ) or line.startswith( '/** Internal class' ):
-                    if not self.__private.has_key( fname ):
-                        self.__private[ fname ] = []
-                    self.__private[ fname ].append( index + 2 ) #enumerate calcs from 0, while gccxml from 1
-
-            fobj.close()
-
-    def is_private( self, decl ):
-        
-        if None is decl.location:
-            return False
-        file_name = os.path.split( decl.location.file_name )[1]
-        return self.__private.has_key( file_name ) and decl.location.line in self.__private[ file_name ]
 
 def filter_declarations( mb ):
     global_ns = mb.global_ns
@@ -93,14 +30,14 @@ def filter_declarations( mb ):
         # Don't include, we'll never need.
         'D3D', 'GL',  'SDL', 'WIN32', 'Any', 'CompositorScriptCompiler', '_', 'Singleton',
         'MeshSerializerImpl', ## link problems - doesn't seem to exist at all ???
-        
+
     ]
 
-    if environment.OGRE_VERSION == "CVS":
+    if environment.ogre.version == "CVS":
         mb.global_ns.class_( 'vector<Ogre::Vector4, std::allocator<Ogre::Vector4> >' ).exclude( )
-    
+
     ## Remove private classes , and those that are internal to Ogre...
-    private_decls = private_decls_t()
+    private_decls = common_utils.private_decls_t(environment.ogre.include_dir)
     for cls in ogre_ns.classes():
         if private_decls.is_private( cls ):
             cls.exclude()
@@ -143,7 +80,8 @@ def filter_declarations( mb ):
 
     ## Now get rid of a wide range of classes as defined earlier in startswith...
     for prefix in startswith:
-        classes = ogre_ns.classes (decl_starts_with(prefix), allow_empty=True)  ### NOTE the PREFIX is used here !!!!
+        ### NOTE the PREFIX is used here !!!!
+        classes = ogre_ns.classes( common_utils.decl_starts_with(prefix), allow_empty=True)
         classes.exclude()
 
     #Virtual functions that return reference could not be overriden from Python
@@ -163,18 +101,18 @@ def filter_declarations( mb ):
 
     ogre_ns.class_( 'RenderSystemOperation' ).exclude() # AJM in OgreCompositorInstance
     ogre_ns.calldefs ('getChildIterator').exclude ()
-    
+
     #AJM Set of functions in Particle system that don't get wrapped properly..
     PartSys = ogre_ns.class_( "ParticleSystem" )
     PartSys.class_( "CmdIterationInterval" ).exclude()
     PartSys.class_( "CmdLocalSpace" ).exclude()
     PartSys.class_( "CmdNonvisibleTimeout" ).exclude()
     PartSys.class_( "CmdSorted" ).exclude()
- 
+
 #     PartSys.class_( "CmdQuota" ).exclude()
 #     PartSys.class_( "CmdMaterial" ).exclude()
 #     PartSys.class_( "CmdRenderer" ).exclude()
-#    
+#
      # These members have Ogre::Real * methods which need to be wrapped.
     ogre_ns.class_ ('Matrix3').member_operators (symbol='[]').exclude ()
     ogre_ns.class_ ('Matrix4').member_operators (symbol='[]').exclude ()
@@ -220,14 +158,11 @@ def set_call_policies( mb ):
 
 def generate_alias (mb):
     gns = mb.global_ns
-    for name, alias in ogre_customization_data.aliases.items():
+    for name, alias in customization_data.aliases( environment.ogre.version ).items():
         try:
             cls = gns.class_( name )
             cls.alias = alias
             cls.wrapper_alias = alias + '_wrapper'
-            #print '{!}setting alias to %s ' % str( decl )
-            #for source_alias in cls.aliases:
-            #    print '  {source code defines next alias} %s' % str( source_alias )
         except declarations.matcher.declaration_not_found_t:
             gns.decl( name, decl_type=declarations.class_declaration_t ).rename( alias )
 
@@ -239,50 +174,52 @@ def configure_exception(mb):
 
 
 def generate_code():
-    xml_cached_fc = parser.create_cached_source_fc( "python_ogre.h", environment.declarations_cache_file )
+    xml_cached_fc = parser.create_cached_source_fc(
+                        os.path.join( environment.ogre.root_dir, "python_ogre.h" )
+                        , environment.ogre.cache_file )
+
+    defined_symbols = [ 'OGRE_NONCLIENT_BUILD' ]
+    if environment.ogre.version == "CVS":
+        defined_symbols.append( 'OGRE_VERSION_CVS' )
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
-                                          , gccxml_path=environment.gccxml_path
-                                          , working_directory=environment.working_dir
-                                          , include_paths=[environment.headers_dir]
-                                          , define_symbols=['OGRE_NONCLIENT_BUILD']
+                                          , gccxml_path=environment.gccxml_bin
+                                          , working_directory=environment.root_dir
+                                          , include_paths=[environment.ogre.include_dir]
+                                          , define_symbols=defined_symbols
                                           , start_with_declarations=['Ogre']
                                           , indexing_suite_version=2 )
+
+    filter_declarations (mb)
+
+    generate_alias (mb)
 
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
 
-    filter_declarations (mb)
-     
-    fix_unnamed_classes (mb)
-    generate_alias (mb)
-    shared_ptr.configure (mb)
-    configure_exception( mb )
+    ogre_ns = mb.namespace( 'Ogre' )
+    common_utils.fix_unnamed_classes( ogre_ns.classes( name='' ), 'Ogre' )
 
+    common_utils.configure_shared_ptr(mb)
+    configure_exception( mb )
+    ogre_ns.classes().add_properties()
     hand_made_wrappers.apply( mb )
-    
-    # AJM moved these earler in the code as they were making an impact :)
-    # Create properties for accessors
-    properties.create (mb)
+
     set_call_policies (mb)
 
     #Creating code creator. After this step you should not modify/customize declarations.
     mb.build_code_creator (module_name='_ogre_')
 
-#     # Create properties for accessors
-#     properties.create (mb)
-#     set_call_policies (mb)
+    mb.code_creator.user_defined_directories.append( environment.ogre.include_dir )
+    mb.code_creator.user_defined_directories.append( environment.ogre.generated_dir )
+    mb.code_creator.replace_included_headers( customization_data.header_files( environment.ogre.version ) )
 
+    huge_classes = map( mb.class_, customization_data.huge_classes( environment.ogre.version ) )
 
-    mb.code_creator.user_defined_directories.append( environment.headers_dir )
-    mb.code_creator.user_defined_directories.append( environment.build_dir )
-    mb.code_creator.replace_included_headers( ogre_customization_data.header_files )
+    mb.split_module(environment.ogre.generated_dir, huge_classes)
 
-    huge_classes = map( mb.class_, ogre_customization_data.huge_classes )
-
-    mb.split_module(environment.build_dir, huge_classes)
-    if not os.path.exists( os.path.join( environment.build_dir, 'py_shared_ptr.h' ) ):
-        shutil.copy( os.path.join( environment.working_dir, 'ogre_wrappers', 'py_shared_ptr.h' )
-                     , environment.build_dir )
+    py_shared_ptr_path = os.path.join( environment.root_dir, 'ogre_wrappers', 'py_shared_ptr.h' )
+    if not os.path.exists( py_shared_ptr_path ):
+        shutil.copy( py_shared_ptr_path, environment.ogre.generated_dir )
 
 # vim:et:ts=4:sts=4:sw=4
 

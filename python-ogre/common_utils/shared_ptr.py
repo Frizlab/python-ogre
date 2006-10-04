@@ -29,7 +29,7 @@ boost::python::implicitly_convertible< %(derived)s, %(base)s >();
 """
 
 
-class ogre_shared_ptr_t:
+class exposer_t:
     def __init__( self, mb ):
         self.ogre_ns = mb.namespace ('Ogre')
         self.visited_classes = set()
@@ -43,7 +43,7 @@ class ogre_shared_ptr_t:
         no_alias = declarations.remove_alias( no_ptr )
         return declarations.remove_declarated( no_alias )
 
-    def expose( self, sp_instantiation ):
+    def expose_single( self, sp_instantiation ):
         sp_instantiation.exclude() # we don't want to export SharedPtr< X >
 
         pointee = self.get_pointee( sp_instantiation )
@@ -87,10 +87,8 @@ class ogre_shared_ptr_t:
                                              , 'base' : '::Ogre::SharedPtr< %s >' % base.related_class.decl_string }
                 , works_on_instance=False)
 
-    def configure(self):
+    def expose(self):
         sp_instantiations = self.ogre_ns.classes( lambda decl: decl.name.startswith( 'SharedPtr' ) )
-        map( lambda sp: self.expose( sp ), sp_instantiations )
+        map( lambda sp: self.expose_single( sp ), sp_instantiations )
 
-def configure( mb ):
-    ogre_shared_ptr_t( mb ).configure()
-# vim:et:ts=4:sts=4:sw=4
+
