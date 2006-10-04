@@ -52,7 +52,7 @@ sys.path.append( pyplusplus_install_dir + r'/pyplusplus_dev' )
 
 shared_ptr_dir = os.path.join( root_dir, 'shared_ptr' )
 generated_dir = os.path.join( root_dir, 'generated' )
-declarations_cache_dir = os.path.join( root_dir, 'code_generators', 'declarations_cache' )
+declarations_cache_dir = os.path.join( root_dir, 'code_generators', 'cache' )
 
 for name, cls in projects.items():
     cls.root_dir = os.path.join( root_dir, 'code_generators', name )

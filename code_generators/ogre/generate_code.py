@@ -8,6 +8,9 @@
 
 import os, sys, time, shutil
 
+#add environment to the path
+sys.path.append( os.path.join( '..', '..' ) )
+#add common utils to the pass
 sys.path.append( '..' )
 
 import environment
