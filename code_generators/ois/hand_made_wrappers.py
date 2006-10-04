@@ -24,10 +24,10 @@ void destroyInputObjectMouse( OIS::InputManager& im, OIS::Mouse* obj ) {
 void destroyInputObjectJoyStick( OIS::InputManager& im, OIS::JoyStick* obj ) {
      im.destroyInputObject( (OIS::Object*) obj );
      }
-     
+
 """
-      
-        
+
+
 WRAPPER_REGISTRATION_General = \
 """
     def( "createInputObjectKeyboard", &createInputObjectKeyboard,  bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >() );
@@ -36,10 +36,8 @@ WRAPPER_REGISTRATION_General = \
     InputManager_exposer.def( "destroyInputObjectKeyboard", &destroyInputObjectKeyboard);
     InputManager_exposer.def( "destroyInputObjectMouse", &destroyInputObjectMouse);
     InputManager_exposer.def( "destroyInputObjectJoyStick", &destroyInputObjectJoyStick);
-    
+
 """
-
-
 
 def apply( mb ):
     rt = mb.class_( 'InputManager' )

@@ -35,6 +35,7 @@ if 'roman' in getpass.getuser():
     pyplusplus_install_dir = r'D:\pygccxml_sources\sources'
 
     ogre.include_dir = r'D:\OgreSDK\include'
+    ois.include_dir = r'D:\OisSDK\includes'
 else:
     gccxml_path = r'c:/development/gccxml/bin/release/gccxml.exe'
     pygccxml_base_dir = r'c:\development\pyplus'
