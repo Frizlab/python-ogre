@@ -109,11 +109,7 @@ def filter_declarations( mb ):
     PartSys.class_( "CmdNonvisibleTimeout" ).exclude()
     PartSys.class_( "CmdSorted" ).exclude()
 
-#     PartSys.class_( "CmdQuota" ).exclude()
-#     PartSys.class_( "CmdMaterial" ).exclude()
-#     PartSys.class_( "CmdRenderer" ).exclude()
-#
-     # These members have Ogre::Real * methods which need to be wrapped.
+    # These members have Ogre::Real * methods which need to be wrapped.
     ogre_ns.class_ ('Matrix3').member_operators (symbol='[]').exclude ()
     ogre_ns.class_ ('Matrix4').member_operators (symbol='[]').exclude ()
 
@@ -217,11 +213,9 @@ def generate_code():
 
     mb.split_module(environment.ogre.generated_dir, huge_classes)
 
-    py_shared_ptr_path = os.path.join( environment.root_dir, 'ogre_wrappers', 'py_shared_ptr.h' )
-    if not os.path.exists( py_shared_ptr_path ):
-        shutil.copy( py_shared_ptr_path, environment.ogre.generated_dir )
-
-# vim:et:ts=4:sts=4:sw=4
+    if not os.path.exists( os.path.join(environment.ogre.generated_dir, 'py_shared_ptr.h' ) ):
+        shutil.copy( os.path.join( environment.shared_ptr_dir, 'py_shared_ptr.h' )
+                     , environment.ogre.generated_dir )
 
 if __name__ == '__main__':
     start_time = time.clock()
