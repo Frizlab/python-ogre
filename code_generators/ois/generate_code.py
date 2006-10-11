@@ -12,6 +12,7 @@ import os, sys, time
 sys.path.append( os.path.join( '..', '..' ) )
 #add common utils to the pass
 sys.path.append( '..' )
+sys.path.append( '.' )
 
 import environment
 import common_utils
@@ -30,7 +31,13 @@ def filter_declarations( mb ):
     global_ns.exclude()
     ois_ns = global_ns.namespace( 'OIS' )
     ois_ns.include()
-
+    
+    ## Exclude protected and private that are not pure virtual
+    query = ~declarations.access_type_matcher_t( 'public' ) \
+            & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
+    non_public_non_pure_virtual = ois_ns.calldefs( query )
+    non_public_non_pure_virtual.exclude()
+    
 def set_call_policies( mb ):
     ois_ns = mb.global_ns.namespace ('OIS')
 
@@ -45,7 +52,12 @@ def set_call_policies( mb ):
         if declarations.is_pointer (mem_fun.return_type) or declarations.is_reference (mem_fun.return_type):
             mem_fun.call_policies = call_policies.return_value_policy(
                 call_policies.reference_existing_object )
-
+    #need reference to MouseState as this is where you adjust x/y axis size.
+    mouse = mb.class_( "Mouse" )
+    mouse.member_function( "getMouseState" ).call_policies =  call_policies.return_value_policy(
+                                                                               call_policies.reference_existing_object )
+                                                                               
+ 
 def configure_exception(mb):
     #We don't exclude  Exception, because it contains functionality, that could
     #be useful to user. But, we will provide automatic exception translator
