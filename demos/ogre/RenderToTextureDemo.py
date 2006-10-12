@@ -61,9 +61,16 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
         self.mPlane.d = 0
         self.mPlane.normal =ogre.Vector3.UNIT_Y
           
+#         ogre.MeshManager.getSingleton().createPlane("ReflectionPlane", 
+#             ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME, 
+#             self.mPlane._getDerivedPlane(), 2000.0, 2000.0, 
+#             1, 1, True, 1, 1.0, 1.0, ogre.Vector3.UNIT_Z,
+#             ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
+#             True,True
+#             )
         ogre.MeshManager.getSingleton().createPlane("ReflectionPlane", 
             ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME, 
-            self.mPlane._getDerivedPlane(), 2000.0, 2000.0, 
+            self.mPlane, 2000.0, 2000.0, 
             1, 1, True, 1, 1.0, 1.0, ogre.Vector3.UNIT_Z,
             ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
             True,True
@@ -127,17 +134,13 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
         # set up linked reflection
         self.mReflectCam.enableReflection(self.mPlane)
         # Also clip
-        ################################################
-        # AJM   Here is a challenge............
-        # by default this doesn't work - effectively the clipiing is against a fixed plane at 0,0,0
-        # it seems that even though we are passing a moveable plane to enableCustomNearClipPlane it
-        # appears boost considers this a plane instead of a moveable plane..
-        #
-        ####     self.mReflectCam.enableCustomNearClipPlane(self.mPlane) 
         
-        # by "fixing" _Frustum__memfunx_virtual0... to allow the moveable override to be called
-        # directly then the following line works...
-        self.mReflectCam.enableCustomNearClipPlane(movableplane=self.mPlane) 
+        # NOTE..  a difference in Python implementation
+        ## this doesn't work as mPlane is treated as a Plane instead of a MoveablePlane 
+        #self.mReflectCam.enableCustomNearClipPlane(self.mPlane) 
+        ## So we have an override :)
+        
+        self.mReflectCam.enableCustomNearClipPlaneMP(self.mPlane) 
 
         #Give the plane a texture
         self.mPlaneEnt.setMaterialName("RttMat")
