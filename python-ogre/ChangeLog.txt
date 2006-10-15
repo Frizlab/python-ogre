@@ -1,0 +1,13 @@
+
+Jul -Aug 2006:  All the base work done by Larkin and Roman
+13 Aug 2006:  Initial Version from Andy
+13 Aug 2006:  Roman - fix to Ogre_Generate_code.py to simplify build process (removed 'non exposed'? ENUMS)
+                    * Needed to remove cmdXXXX functions etc from ParticleSystem in order to compile correctly
+              Change to Ogre_Customization_data.py to add 'NamedValuePairList' mapping
+15 Aug 2006:  Andy - addition to Ogre_Generate_code.py to expose additional template classes (initially Controller<float>)
+              Fixed ParticleSystem class to remove CmdXXXX functions
+              Update to Ogre_Customization_data.py as some mappings had been lost :)
+----          Significant improvements to both Py++ and the Ogre wrappers make code generation far simpler
+29 Sept 2006: Andy - Update to support both the Ogre CVS and Ogre 1.2.3 code bases.  
+              PYPOS project added as a sub driectory (initially)
+15 Oct 2006:  Andy - initial release of the binary for windows
