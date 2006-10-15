@@ -1,4 +1,5 @@
 # This code is in the Public Domain
+# Note light trails disabled as currently broken in OgreCVS (15/10/06)
 import Ogre as ogre
 import SampleFramework as sf
 
@@ -10,12 +11,13 @@ class LightingApplication(sf.Application):
         sceneManager = self.sceneManager
         camera = self.camera
         
-        sceneManager.setAmbientLight ( ogre.ColourValue(0.5, 0.5, 0.5) )
+        sceneManager.AmbientLight = ogre.ColourValue(0.5, 0.5, 0.5)
         sceneManager.setSkyBox(True, 'Examples/SpaceSkyBox')
 
         entity = sceneManager.createEntity('head', 'ogrehead.mesh')
         sceneManager.getRootSceneNode().attachObject(entity)
-     
+
+        
         
         ## SETUP Trail Lighting
         # light 1		
@@ -32,42 +34,42 @@ class LightingApplication(sf.Application):
 
         trail=sceneManager.createMovableObject("1", "RibbonTrail", pairList)    # this returns a ribbontrail object
         trail.setMaterialName ("Examples/LightRibbonTrail")
-        trail.setTrailLength (400)
+        trail.setTrailLength (200)
 
         # attach Ribbon Trail scene node
         sceneManager.getRootSceneNode().createChildSceneNode().attachObject(trail)
 
 		#Create 3 nodes for trail to follow
         animNode = sceneManager.getRootSceneNode().createChildSceneNode()
-        animNode.setPosition (ogre.Vector3(50,30,0))
+        animNode.Position=ogre.Vector3(50,30,0)
         anim = sceneManager.createAnimation("an1", 14)
-        anim.setInterpolationMode(ogre.Animation.IM_SPLINE)
+        anim.InterpolationMode=ogre.Animation.IM_SPLINE
         track = anim.createNodeTrack(1, animNode)
         kf = track.createNodeKeyFrame(0)
-        kf.setTranslate(ogre.Vector3(50,30,0) )
+        kf.Translate=ogre.Vector3(50,30,0)
         kf = track.createNodeKeyFrame(2)
-        kf.setTranslate(ogre.Vector3(100, -30, 0))
+        kf.Translate=ogre.Vector3(100, -30, 0)
         kf = track.createNodeKeyFrame(4)
-        kf.setTranslate(ogre.Vector3(120, -100, 150))
+        kf.Translate=ogre.Vector3(120, -100, 150)
         kf = track.createNodeKeyFrame(6)
-        kf.setTranslate(ogre.Vector3(30, -100, 50))
+        kf.Translate=ogre.Vector3(30, -100, 50)
         kf = track.createNodeKeyFrame(8)
-        kf.setTranslate(ogre.Vector3(-50, 30, -50))
+        kf.Translate=ogre.Vector3(-50, 30, -50)
         kf = track.createNodeKeyFrame(10)
-        kf.setTranslate(ogre.Vector3(-150, -20, -100))
+        kf.Translate=ogre.Vector3(-150, -20, -100)
         kf = track.createNodeKeyFrame(12)
-        kf.setTranslate(ogre.Vector3(-50, -30, 0))
+        kf.Translate=ogre.Vector3(-50, -30, 0)
         kf = track.createNodeKeyFrame(14)
-        kf.setTranslate(ogre.Vector3(50,30,0))
+        kf.Translate=ogre.Vector3(50,30,0)
 
         animState = sceneManager.createAnimationState("an1")
-        animState.setEnabled(True)
+        animState.Enabled=True
         self.mAnimStateList.append(animState)
 
         trail.setInitialColour(0, 1.0, 0.8, 0)
         trail.setColourChange(0, 0.5, 0.5, 0.5, 0.5)
         trail.setInitialWidth(0, 5)
-        trail.addNode(animNode)
+#         trail.addNode(animNode)
 
         #Add light
         l2 = sceneManager.createLight("l2")
@@ -77,35 +79,35 @@ class LightingApplication(sf.Application):
         #Add billboard
         bbs = sceneManager.createBillboardSet("bb", 1)
         bbs.createBillboard(ogre.Vector3.ZERO, trail.getInitialColour(0))
-        bbs.setMaterialName("Examples/Flare")
+        bbs.MaterialName="Examples/Flare"
         animNode.attachObject(bbs)
 
         animNode = sceneManager.getRootSceneNode().createChildSceneNode()
-        animNode.setPosition(ogre.Vector3(-50,100,0))
+        animNode.Position=ogre.Vector3(-50,100,0)
         anim = sceneManager.createAnimation("an2", 10)
-        anim.setInterpolationMode(ogre.Animation.IM_SPLINE)
+        anim.InterpolationMode=ogre.Animation.IM_SPLINE
         track = anim.createNodeTrack(1, animNode)
         kf = track.createNodeKeyFrame(0)
-        kf.setTranslate(ogre.Vector3(-50,100,0))
+        kf.Translate=ogre.Vector3(-50,100,0)
         kf = track.createNodeKeyFrame(2)
-        kf.setTranslate(ogre.Vector3(-100, 150, -30))
+        kf.Translate=ogre.Vector3(-100, 150, -30)
         kf = track.createNodeKeyFrame(4)
-        kf.setTranslate(ogre.Vector3(-200, 0, 40))
+        kf.Translate=ogre.Vector3(-200, 0, 40)
         kf = track.createNodeKeyFrame(6)
-        kf.setTranslate(ogre.Vector3(0, -150, 70))
+        kf.Translate=ogre.Vector3(0, -150, 70)
         kf = track.createNodeKeyFrame(8)
-        kf.setTranslate(ogre.Vector3(0, 0, 30))
+        kf.Translate=ogre.Vector3(0, 0, 30)
         kf = track.createNodeKeyFrame(10)
-        kf.setTranslate(ogre.Vector3(-50,100,0))
+        kf.Translate=ogre.Vector3(-50,100,0)
 
         animState = sceneManager.createAnimationState("an2")
-        animState.setEnabled(True)
+        animState.Enabled=True
         self.mAnimStateList.append(animState)
 
         trail.setInitialColour(1, 0.0, 1.0, 0.4)
         trail.setColourChange(1, 0.5, 0.5, 0.5, 0.5)
         trail.setInitialWidth(1, 5)
-        trail.addNode(animNode)
+#         trail.addNode(animNode)
 
 
         #Add light
@@ -116,7 +118,7 @@ class LightingApplication(sf.Application):
         #Add billboard
         bbs1 = sceneManager.createBillboardSet("bb2", 1)
         bbs1.createBillboard(ogre.Vector3.ZERO, trail.getInitialColour(1))
-        bbs1.setMaterialName("Examples/Flare")
+        bbs1.MaterialName="Examples/Flare"
         animNode.attachObject(bbs1)
 
 			

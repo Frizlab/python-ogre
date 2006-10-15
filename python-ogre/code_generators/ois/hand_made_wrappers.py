@@ -1,7 +1,7 @@
 import os
 import environment
 
-WRAPPER_DEFINITION_General = \
+WRAPPER_DEFINITION_InputManager = \
 """
 OIS::Keyboard * createInputObjectKeyboard(OIS::InputManager& im, OIS::Type iType, bool bufferMode ) {
 	OIS::Keyboard * mKeyboard = (OIS::Keyboard * ) im.createInputObject( iType, bufferMode );
@@ -24,11 +24,26 @@ void destroyInputObjectMouse( OIS::InputManager& im, OIS::Mouse* obj ) {
 void destroyInputObjectJoyStick( OIS::InputManager& im, OIS::JoyStick* obj ) {
      im.destroyInputObject( (OIS::Object*) obj );
      }
+"""
+     
+WRAPPER_DEFINITION_General = \
+"""
+OIS::InputManager * createPythonInputSystem( size_t windowHnd ) {
+// Wrapper to manage creating input system without using a multimap
+// TODO:  Change this to accept a python list and extract this to the Paramlist
+		OIS::ParamList pl;	
+		std::ostringstream windowHndStr;
+		windowHndStr << windowHnd;
+		pl.insert(std::make_pair(std::string("WINDOW"), windowHndStr.str()));
+		return OIS::InputManager::createInputSystem( pl );
+		//OIS::InputManager &im = *OIS::InputManager::createInputSystem( pl );
+		//return im;
+		}
 
 """
 
 
-WRAPPER_REGISTRATION_General = \
+WRAPPER_REGISTRATION_InputManager = \
 """
     def( "createInputObjectKeyboard", &createInputObjectKeyboard,  bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >() );
     InputManager_exposer.def( "createInputObjectMouse", &createInputObjectMouse,  bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >() );
@@ -38,9 +53,16 @@ WRAPPER_REGISTRATION_General = \
     InputManager_exposer.def( "destroyInputObjectJoyStick", &destroyInputObjectJoyStick);
 
 """
+WRAPPER_REGISTRATION_General = \
+"""   
+def( "createPythonInputSystem", &createPythonInputSystem, bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+"""
 
 def apply( mb ):
     rt = mb.class_( 'InputManager' )
-    rt.add_declaration_code( WRAPPER_DEFINITION_General )
-    rt.add_registration_code( WRAPPER_REGISTRATION_General )
+    rt.add_declaration_code( WRAPPER_DEFINITION_InputManager )
+    rt.add_registration_code( WRAPPER_REGISTRATION_InputManager )
+    
+    mb.add_declaration_code( WRAPPER_DEFINITION_General )
+    mb.add_registration_code( WRAPPER_REGISTRATION_General )
 

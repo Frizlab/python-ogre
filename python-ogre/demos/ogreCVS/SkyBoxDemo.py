@@ -8,12 +8,11 @@ class SkyBoxApplication(sf.Application):
     def _createScene(self):
         global pThrusters
         sceneManager = self.sceneManager
-        sceneManager.ambientLight = ogre.ColourValue(0.5, 0.5, 0.5)
-        sceneManager.setSkyBox(True, "Examples/SpaceSkyBox", 50)
-        
+        sceneManager.AmbientLight = ogre.ColourValue(0.5, 0.5, 0.5)
+        sceneManager.setSkyBox(True, "Examples/SpaceSkyBox", 500)
         # Need a light 
         light = sceneManager.createLight('MainLight')
-        light.setPosition (ogre.Vector3(20, 80, 50))
+        light.Position = ogre.Vector3(20, 80, 50)
 
         # Also add a nice starship in
         ent = sceneManager.createEntity( "razor", "razor.mesh" )
