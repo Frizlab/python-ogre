@@ -38,6 +38,9 @@ def filter_declarations( mb ):
     non_public_non_pure_virtual = ois_ns.calldefs( query )
     non_public_non_pure_virtual.exclude()
     
+    # exclude this as standard boost libraries don't support std::Multimap's.  Replace by createPythonInputSystem
+    ois_ns.class_( "InputManager" ).member_functions("createInputSystem").exclude()
+    
 def set_call_policies( mb ):
     ois_ns = mb.global_ns.namespace ('OIS')
 

@@ -21,10 +21,11 @@ def getPluginPath():
         "** Warning: Please check your ogre installation and copy a\n"
         "** Warning: working plugins.cfg file to the current directory.\n\n")
     raise ogre.Exception(0, "can't locate the 'plugins.cfg' file", "")
-
-
+    
 class Application(object):
     "This class is the base for an Ogre application."
+    debugText=""
+
     def __init__(self):
         self.frameListener = None
         self.root = None
@@ -78,18 +79,26 @@ class Application(object):
         config = ogre.ConfigFile()
 #         print dir (config)
         config.load('resources.cfg', '', False )
-#         t = config.sectionIterator
+#         t = config.SectionIterator
 #         print "\n\n......\n", t,"\n\n"
 #         while (t.hasMoreElements()):
 #             y = t.getNext()
 #             print y
+#             for setting in y:
+#                 print "Setting: ", setting
 #         print "\n\n......\n", t,"\n\n"
-#         for sectionName, mm in config.sectionIterator:
+#         for sectionName, mm in config.SectionIterator:
 #             print sectionName, mm
             #if mm:
                 #for key, path in mm.items():
                     #ogre.ResourceGroupManager.getSingleton().addResourceLocation(path, key, sectionName)
+                    
+                    
+                    
+                    
         ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/packs/OgreCore.zip", "Zip", "Bootstrap", False)
+#        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/andy", "FileSystem", "Bootstrap", False)
+#        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/andy/textures", "FileSystem", "Bootstrap", False)
         ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media", "FileSystem", "General", False)
         ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/fonts", "FileSystem", "General", False)
         ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/materials/programs", "FileSystem", "General", False)
@@ -157,6 +166,7 @@ class Application(object):
 
     def _createFrameListener(self):
         """Creates the FrameListener."""
+        #,self.frameListener, self.frameListener.Mouse 
         self.frameListener = FrameListener(self.renderWindow, self.camera)
         self.frameListener.showDebugOverlay(True)
         self.root.addFrameListener(self.frameListener)
@@ -178,7 +188,7 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
     """A default frame listener, which takes care of basic mouse and keyboard
     input."""
       
-    def __init__(self, renderWindow, camera, bufferedKeys = False, bufferedMouse = False, bufferedJoy = False):
+    def __init__(self, renderWindow, camera, bufferedKeys = False, bufferedMouse = True, bufferedJoy = False):
         ogre.FrameListener.__init__(self)
         ogre.WindowEventListener.__init__(self)
         self.camera = camera
@@ -198,6 +208,7 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
         self.bufferedKeys = bufferedKeys
         self.bufferedMouse = bufferedMouse
         self.bufferedJoy = bufferedJoy
+        self.MenuMode = False   # lets understand a simple menu function
         self._setupInput()
         
     def __del__ (self ):
@@ -207,19 +218,13 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
     def _setupInput(self):
         # ignore buffered input
            
-         pl = OIS.ParamList()
-         windowHnd = None
-         #std::ostringstream windowHndStr;
-         
-         # self.renderWindow.getCustomAttribute("WINDOW", windowHnd )
          windowHnd = self.renderWindow.getCustomAttributeWindowInt("WINDOW")
-         print windowHnd
-         windowHndStr = str ( windowHnd)
+         im = OIS.createPythonInputSystem( windowHnd )
          
-         #windowHndStr << windowHnd;
-         pl.insert("WINDOW", windowHndStr)
-         
-         im = OIS.InputManager.createInputSystem( pl )
+         #pl = OIS.ParamList()
+         #windowHndStr = str ( windowHnd)
+         #pl.insert("WINDOW", windowHndStr)
+         #im = OIS.InputManager.createInputSystem( pl )
          
          #Create all devices (We only catch joystick exceptions here, as, most people have Key/Mouse)
          self.Keyboard = im.createInputObjectKeyboard( OIS.OISKeyboard, self.bufferedKeys )
@@ -258,13 +263,13 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
         if(self.renderWindow.isClosed()):
             return False
         
-        ##Need to capture/update each device
+        ##Need to capture/update each device - this will also trigger any listeners
         self.Keyboard.capture()    
         self.Mouse.capture()
         if( self.Joy ):
             self.Joy.capture()
     
-      ##bool buffJ = (mJoy) ? mJoy->buffered() : true;
+        ##bool buffJ = (mJoy) ? mJoy->buffered() : true;
     
         if self.timeUntilNextToggle >= 0:
             self.timeUntilNextToggle -= frameEvent.timeSinceLastFrame
@@ -279,12 +284,12 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
         self.rotationX = ogre.Radian(0.0)
         self.rotationY = ogre.Radian(0.0)
         self.translateVector = ogre.Vector3(0.0, 0.0, 0.0)
-    
         if not self._processUnbufferedKeyInput(frameEvent):
             return False
-    
-        self._processUnbufferedMouseInput(frameEvent)
-    
+        
+        if not self.MenuMode:   # if we are in Menu mode we don't move the camera..
+            self._processUnbufferedMouseInput(frameEvent)
+        
         self._moveCamera()
         return True
 
@@ -355,7 +360,7 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
             path = 'screenshot_%d.png' % self.numScreenShots
             self.numScreenShots += 1
             self.renderWindow.writeContentsToFile(path)
-            self.renderWindow.debugText = 'screenshot taken: ' + path
+            Application.debugText = 'screenshot taken: ' + path
             self.timeUntilNextToggle = 0.5
         
         if self.Keyboard.isKeyDown(OIS.KC_R) and self.timeUntilNextToggle <= 0:
@@ -374,13 +379,13 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
         if self.Keyboard.isKeyDown(OIS.KC_P) and self.timeUntilNextToggle <= 0:
             self.displayCameraDetails = not self.displayCameraDetails
             if not self.displayCameraDetails:
-                self.renderWindow.debugText = ""
+                Application.debugText = ""
                 
         if self.displayCameraDetails:
             # Print camera details
             pos = self.camera.getDerivedPosition()
             o = self.camera.getDerivedOrientation()
-            self.renderWindow.debugText = "P: %.3f %.3f %.3f O: %.3f %.3f %.3f %.3f"  \
+            Application.debugText = "P: %.3f %.3f %.3f O: %.3f %.3f %.3f %.3f"  \
                         % (pos.x,pos.y,pos.z, o.w,o.x,o.y,o.z)
         return True        
         
@@ -419,7 +424,7 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
         self._setGuiCaption('Core/WorstFps',
                              'Worst FPS: %f %d ms' % (statistics.getWorstFPS(), statistics.getWorstFrameTime()))
         self._setGuiCaption('Core/NumTris', 'Triangle Count: %d' % statistics.getTriangleCount())
-        #self._setGuiCaption('Core/DebugText', self.renderWindow.getDebugText())
+        self._setGuiCaption('Core/DebugText', Application.debugText)
 
     def _setGuiCaption(self, elementName, text):
         element = ogre.OverlayManager.getSingleton().getOverlayElement(elementName, False)
