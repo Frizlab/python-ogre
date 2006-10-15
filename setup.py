@@ -37,7 +37,7 @@ demofiles = GetFileList ( os.path.join (base, "demos") )
 PACKAGEDATA = {
        "packages":    ['Ogre'],
        "package_dir": {'': 'packages'},
-       "package_data": {'': ['*.pyd']},
+       "package_data": {'': ['*.pyd', '*.dll']},
 #       "data_files": [(base+'Demos', demofiles),]
 
 }
