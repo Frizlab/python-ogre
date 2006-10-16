@@ -2,6 +2,19 @@
 import  Ogre as ogre
 import SampleFramework as sf
 
+## As this demo does it's own key input we need to cope with the change to OIS
+if ogre.version[:3]=="1.2":
+    KC_H = ogre.KC_H
+    KC_G = ogre.KC_G
+    KC_U = ogre.KC_U
+    KC_Y = ogre.KC_Y
+else:
+    import OIS as OIS
+    KC_H = OIS.KC_H
+    KC_G = OIS.KC_G
+    KC_U = OIS.KC_U
+    KC_Y = OIS.KC_Y
+
 class SkyDomeApplication(sf.Application):
     def _createScene(self):
         sceneManager = self.sceneManager
@@ -41,21 +54,20 @@ class SkyDomeListener(sf.FrameListener):
 
     def frameStarted(self, frameEvent):
         updateSky = False
-        if self._isToggleKeyDown(ogre.KC_H, 0.1):
+        if self._isToggleKeyDown(KC_H, 0.1):
             self.curvature += 1
             updateSky = True
-        if self._isToggleKeyDown(ogre.KC_G, 0.1):
+        if self._isToggleKeyDown(KC_G, 0.1):
             self.curvature -= 1
             updateSky = True
-        if self._isToggleKeyDown(ogre.KC_U, 0.1):
+        if self._isToggleKeyDown(KC_U, 0.1):
             self.tiling += 1
             updateSky = True
-        if self._isToggleKeyDown(ogre.KC_Y, 0.1):
+        if self._isToggleKeyDown(KC_Y, 0.1):
             self.tiling -= 1
             updateSky = True
         if updateSky:
             self.sceneManager.setSkyDome(True, 'Examples/CloudySky', self.curvature, self.tiling)
-            self.renderWindow.setDebugText('Curvature: %f, Tiling: %d' % (self.curvature, self.tiling))
             
         return sf.FrameListener.frameStarted(self, frameEvent)
 

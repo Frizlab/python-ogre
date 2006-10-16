@@ -77,12 +77,18 @@ class ExampleLoadingBar (ogre.ResourceGroupListener):
     def scriptParseStarted(self, scriptName):
         self.mLoadingCommentElement.setCaption(scriptName)
         self.mWindow.update()
-    
-    def scriptParseEnded(self):
-        self.mLoadingBarElement.setWidth(
-            self.mLoadingBarElement.getWidth() + self.mProgressBarInc)
-        self.mWindow.update()
-    
+
+    if ogre.version[:3] == "1.2":
+        def scriptParseEnded(self):
+            self.mLoadingBarElement.setWidth(
+                self.mLoadingBarElement.getWidth() + self.mProgressBarInc)
+            self.mWindow.update()
+    else:
+        def scriptParseEnded(self, scriptName):
+            self.mLoadingBarElement.setWidth(
+                self.mLoadingBarElement.getWidth() + self.mProgressBarInc)
+            self.mWindow.update()
+
     def resourceGroupScriptingEnded(self, groupName):
         pass
     

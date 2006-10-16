@@ -57,13 +57,14 @@ class BspApplication (sf.Application):
         # modify camera for close work
         
         self.camera.setNearClipDistance(4)
-        self.camera.setFarClipDistance(4000)
+        self.camera.setFarClipDistance(0)
+        self.sceneManager.setAmbientLight (ogre.ColourValue(0.7, 0.7, 0.7))
 
         # Also change position, and set Quake-type orientation
         # Get random player start point
         vp = self.sceneManager.getSuggestedViewpoint(True)
         self.camera.setPosition(vp.position)
-        self.camera.pitch(ogre.Degree(d=90)) # Quake uses X/Y horizon, Z up
+        self.camera.pitch(ogre.Radian(ogre.Degree(d=90))) # Quake uses X/Y horizon, Z up
         self.camera.rotate(vp.orientation)
         # Don't yaw along variable axis, causes leaning
         self.camera.setFixedYawAxis(True, ogre.Vector3.UNIT_Z)

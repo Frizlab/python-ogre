@@ -3,12 +3,25 @@ import  Ogre as ogre
 import SampleFramework as sf
 pThrusters = None
 
+## As this demo does it's own key input we need to cope with the change to OIS
+if ogre.version[:3]=="1.2":
+    KC_N = ogre.KC_N
+    KC_M = ogre.KC_M
+    KC_H = ogre.KC_H
+    KC_J = ogre.KC_J
+else:
+    import OIS as OIS
+    KC_N = OIS.KC_N
+    KC_M = OIS.KC_M
+    KC_H = OIS.KC_H
+    KC_J = OIS.KC_J
+
 class SkyBoxApplication(sf.Application):
     def _createScene(self):
         global pThrusters
         sceneManager = self.sceneManager
         sceneManager.ambientLight = ogre.ColourValue(0.5, 0.5, 0.5)
-        sceneManager.setSkyBox(True, "Examples/SpaceSkyBox", 50)
+        sceneManager.setSkyBox(True, "Examples/SpaceSkyBox")
         
         # Need a light 
         light = sceneManager.createLight('MainLight')
@@ -68,17 +81,18 @@ class SkyBoxListener(sf.FrameListener):
            
     def frameStarted(self, frameEvent):
         global pThrusters
-        if self._isToggleKeyDown(ogre.KC_N, 0.1):
+            
+        if self._isToggleKeyDown(KC_N, 0.1):
             pThrusters.setDefaultDimensions( self.fDefDim + 0.25, self.fDefDim + 0.25 )
             self.fDefDim += 0.25
-        if self._isToggleKeyDown(ogre.KC_M, 0.1):
+        if self._isToggleKeyDown(KC_M, 0.1):
             pThrusters.setDefaultDimensions( self.fDefDim - 0.25, self.fDefDim - 0.25 )
             self.fDefDim -= 0.25
-        if self._isToggleKeyDown(ogre.KC_H, 0.1):
+        if self._isToggleKeyDown(KC_H, 0.1):
             pThrusters.getEmitter( 0 ).setParticleVelocity( self.fDefVel + 1 )
             pThrusters.getEmitter( 1 ).setParticleVelocity( self.fDefVel + 1 )
             self.fDefVel += 1            
-        if self._isToggleKeyDown(ogre.KC_J, 0.1) and not (self.fDefVel < 0.0):
+        if self._isToggleKeyDown(KC_J, 0.1) and not (self.fDefVel < 0.0):
             pThrusters.getEmitter( 0 ).setParticleVelocity( self.fDefVel - 1 )
             pThrusters.getEmitter( 1 ).setParticleVelocity( self.fDefVel - 1 )
             self.fDefVel -= 1            

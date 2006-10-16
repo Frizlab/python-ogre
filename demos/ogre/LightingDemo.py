@@ -1,4 +1,5 @@
 # This code is in the Public Domain
+# Note light trails disabled as currently broken in OgreCVS (15/10/06)
 import Ogre as ogre
 import SampleFramework as sf
 
@@ -67,8 +68,8 @@ class LightingApplication(sf.Application):
 
         trail.setInitialColour(0, 1.0, 0.8, 0)
         trail.setColourChange(0, 0.5, 0.5, 0.5, 0.5)
-        trail.setInitialWidth(0, 5)
-        trail.addNode(animNode)
+        trail.setInitialWidth(1, 5)
+#        trail.addNode(animNode)
 
         #Add light
         l2 = sceneManager.createLight("l2")
@@ -106,7 +107,7 @@ class LightingApplication(sf.Application):
         trail.setInitialColour(1, 0.0, 1.0, 0.4)
         trail.setColourChange(1, 0.5, 0.5, 0.5, 0.5)
         trail.setInitialWidth(1, 5)
-        trail.addNode(animNode)
+#         trail.addNode(animNode)
 
 
         #Add light
