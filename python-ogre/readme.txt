@@ -25,9 +25,6 @@ Ensure you have a path to the ogreSDK bin/release directory
 Change directory to demos/ogre
 Run demos with:
     python demofilename.py
-Note: Included in the demo directory is the boot_python.dll. It may be senisble to copy this to the OgreSDK/bin/release 
-    directory....
-
               
 Prerequisits if buiilding from source:
 ======================================
@@ -48,7 +45,11 @@ Copy OgreSharedPtr.h from ./ogre_wrappers directory to the appropiate ogre inclu
 Run the "BuildSource" batch file
 Run the "Compile" batch file
 You will now have an Ogre.pyd under the bin directory that should work :)
-Check out the demos - ./demos/ogre for ogre 1.2.3 and ./demos/ogreCVS for the CVS version :)
-
+Check out the demos - ./demos/ogre 
 You will also need to build a python wrapper for OIS if you are using the CVS version of Ogre
 Follow the above directions (edit environment.py, Buildsource etc) from the PYOIS directory.
+
+** NOTE **: To support both the CVS and SDK versions of Ogre (which have changed significantly in the use of OIS for input
+in the CVS version) the demo "sample frame work" needed to know the version of Ogre - and in the interest of getting an 
+initial release out we set the version in the the __init__.py file in the Ogre module. The default is CVS.  
+

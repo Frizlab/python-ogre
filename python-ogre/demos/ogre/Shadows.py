@@ -20,6 +20,14 @@
 import Ogre as ogre
 import SampleFramework as sf
 
+if ogre.version[:3] =="1.2":
+    KC_O = ogre.KC_O
+    KC_M = ogre.KC_M
+else:
+    import OIS
+    KC_O = OIS.KC_O
+    KC_M = OIS.KC_M
+
 
 mAnimState = 0
 # Entity* pPlaneEnt
@@ -63,7 +71,7 @@ mSoftShadowsSupported = True
 
 mCurrentAtheneMaterial = 0
 mCurrentShadowTechnique = 0
-#SHADOW_COMPOSITOR_NAME("Gaussian Blur")
+SHADOW_COMPOSITOR_NAME = "Gaussian Blur"
 mAthene =0
 
 mShadowTechniqueInfo=0
@@ -222,7 +230,7 @@ class ShadowsListener (sf.FrameListener):
         sf.FrameListener.__init__(self,win, cam)
         self.sceneManager = sm
         self.mShadowVp=0
-        self.mShadowCompositor=0
+        self.mShadowCompositor=None
         self.timeDelay=0
 
 #     def frameStarted(self, frameEvent):
@@ -231,7 +239,7 @@ class ShadowsListener (sf.FrameListener):
     def changeShadowTechnique(self):
         global NUM_ATHENE_MATERIALS,mAtheneMaterials,NUM_SHADOW_TECH,mShadowTechDescriptions
         global mShadowTech,mShadowTechSoft,mSoftShadowsSupported,mCurrentAtheneMaterial,mCurrentShadowTechnique
-        global mShadowTechniqueInfo, mSunLight, mLight, mMinLightColour
+        global mShadowTechniqueInfo, mSunLight, mLight, mMinLightColour, SHADOW_COMPOSITOR_NAME
         
         prevTech = mCurrentShadowTechnique ##TTT
         
@@ -248,10 +256,13 @@ class ShadowsListener (sf.FrameListener):
 
         if mShadowTechSoft[prevTech] and not mShadowTechSoft[mCurrentShadowTechnique]:
             # Clean up compositors
-            mShadowCompositor.removeListener(gaussianListener)
-            CompositorManager.getSingleton().setCompositorEnabled(self.mShadowVp, ogre.SHADOW_COMPOSITOR_NAME, False)
+            try:
+                mShadowCompositor.removeListener(gaussianListener)
+            except:
+                pass
+            ogre.CompositorManager.getSingleton().setCompositorEnabled(self.mShadowVp, SHADOW_COMPOSITOR_NAME, False)
             # Remove entire compositor chain
-            CompositorManager.getSingleton().removeCompositorChain(self.mShadowVp)
+            ogre.CompositorManager.getSingleton().removeCompositorChain(self.mShadowVp)
             self.mShadowVp = 0
             self.mShadowCompositor = 0
 
@@ -299,14 +310,15 @@ class ShadowsListener (sf.FrameListener):
                 # set up compositors
                 shadowTex = ogre.TextureManager.getSingleton()
                 print "###", shadowTex
-                shadowTex = shadowTex.getByName("ogre/ShadowTexture0")
+                shadowTex = shadowTex.getByName(name="ogre/ShadowTexture0") ## returns a None object
                 print "###", shadowTex
-                shadowRtt = shadowTex.getBuffer().getRenderTarget()
-                mShadowVp = shadowRtt.getViewport(0)
-                mShadowCompositor = ogre.CompositorManager.getSingleton().addCompositor(mShadowVp, ogre.SHADOW_COMPOSITOR_NAME)
-                ogre.CompositorManager.getSingleton().setCompositorEnabled(self.mShadowVp, ogre.SHADOW_COMPOSITOR_NAME, True)
-                mShadowCompositor.addListener(gaussianListener)
-                gaussianListener.notifyViewportSize(self.mShadowVp.getActualWidth(), self.mShadowVp.getActualHeight())
+                if shadowTex:
+                    shadowRtt = shadowTex.getBuffer().getRenderTarget()
+                    mShadowVp = shadowRtt.getViewport(0)
+                    mShadowCompositor = ogre.CompositorManager.getSingleton().addCompositor(mShadowVp, SHADOW_COMPOSITOR_NAME)
+                    ogre.CompositorManager.getSingleton().setCompositorEnabled(self.mShadowVp, SHADOW_COMPOSITOR_NAME, True)
+                    mShadowCompositor.addListener(gaussianListener)
+                    gaussianListener.notifyViewportSize(self.mShadowVp.getActualWidth(), self.mShadowVp.getActualHeight())
 
     def changeAtheneMaterial(self):
         global mCurrentAtheneMaterial, mMaterialInfo, mAthene, mAtheneMaterials, NUM_ATHENE_MATERIALS
@@ -318,7 +330,7 @@ class ShadowsListener (sf.FrameListener):
         mAthene.setMaterialName(mAtheneMaterials[mCurrentAtheneMaterial])
     
     def CheckKeyPressed ( self, key, time, func):
-        if (self.inputDevice.isKeyDown(key) and self.timeDelay <= 0):
+        if self._isToggleKeyDown(key, time):
             self.timeDelay = time 
             func()
         
@@ -330,8 +342,8 @@ class ShadowsListener (sf.FrameListener):
         if (mAnimState):
             mAnimState.addTime(evt.timeSinceLastFrame)
 
-        self.CheckKeyPressed(ogre.KC_O, 1, self.changeShadowTechnique)  
-        self.CheckKeyPressed(ogre.KC_M, 0.5, self.changeAtheneMaterial)
+        self.CheckKeyPressed(KC_O, 1, self.changeShadowTechnique)  
+        self.CheckKeyPressed(KC_M, 0.5, self.changeAtheneMaterial)
 
         return sf.FrameListener.frameStarted(self, evt) and sf.FrameListener.frameEnded(self, evt)        
 

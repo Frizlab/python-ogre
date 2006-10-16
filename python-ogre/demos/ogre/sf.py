@@ -1,8 +1,26 @@
-# Thanks to the PyOgre project for this
-#
 # This code is in the Public Domain
-import ogre
-import ois 
+# Designed for version 1.2.x of Ogre (non OIS)
+import Ogre as ogre
+
+def getPluginPath():
+    """Return the absolute path to a valid plugins.cfg file.""" 
+    import sys
+    import os
+    import os.path
+    
+    paths = [os.path.join(os.getcwd(), 'plugins.cfg'),
+             '/etc/OGRE/plugins.cfg',
+             os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              'plugins.cfg')]
+    for path in paths:
+        if os.path.exists(path):
+            return path
+
+    sys.stderr.write("\n"
+        "** Warning: Unable to locate a suitable plugins.cfg file.\n"
+        "** Warning: Please check your ogre installation and copy a\n"
+        "** Warning: working plugins.cfg file to the current directory.\n\n")
+    raise ogre.Exception(0, "can't locate the 'plugins.cfg' file", "")
 
 
 class Application(object):
@@ -34,17 +52,18 @@ class Application(object):
     def _setUp(self):
         """This sets up the ogre application, and returns false if the user
         hits "cancel" in the dialog box."""
-        self.root = ogre.Root(ogre.getPluginPath())
+        self.root = ogre.Root(getPluginPath())	
+	self.root.setFrameSmoothingPeriod (5.0);
 
         self._setUpResources()
         if not self._configure():
             return False
-
+        
         self._chooseSceneManager()
         self._createCamera()
         self._createViewports()
 
-        ogre.TextureManager.getSingleton().defaultNumMipmaps = 5
+        ogre.TextureManager.getSingleton().setDefaultNumMipmaps (5)
 
         self._createResourceListener()
         self._loadResources()
@@ -57,10 +76,38 @@ class Application(object):
         """This sets up Ogre's resources, which are required to be in
         resources.cfg."""
         config = ogre.ConfigFile()
-        config.loadFromFile('resources.cfg' )
-        for section, key, path in config.values:
-            ogre.ResourceGroupManager.getSingleton().addResourceLocation(path, key, section)
+        print dir (config)
+        config.load('resources.cfg', '', False )
+        #config.loadFromFile('resources.cfg' )
+        #for sectionName, mm in config.getSectionIterator():
+            #if mm:
+                #for key, path in mm.items():
+                    #ogre.ResourceGroupManager.getSingleton().addResourceLocation(path, key, sectionName)
+        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/packs/OgreCore.zip", "Zip", "Bootstrap", False)
+        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media", "FileSystem", "General", False)
+        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/fonts", "FileSystem", "General", False)
+        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/materials/programs", "FileSystem", "General", False)
+        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/materials/scripts", "FileSystem", "General", False)
+        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/materials/textures", "FileSystem", "General", False)
+        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/models", "FileSystem", "General", False)
+        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/overlays", "FileSystem", "General", False)
+        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/particle", "FileSystem", "General", False)
+        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/packs/cubemap.zip", "Zip", "General", False)
+        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/packs/cubemapsJS.zip", "Zip", "General", False)
+        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/packs/dragon.zip", "Zip", "General", False)
+        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/packs/fresneldemo.zip", "Zip", "General", False)
+        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/packs/ogretestmap.zip", "Zip", "General", False)
+        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/packs/skybox.zip", "Zip", "General", False)
 
+        #for section, key, path in config.values:
+        #    ogre.ResourceGroupManager.getSingleton().addResourceLocation(path, key, section)
+        #print dir(config.getSectionIterator())          
+        #for sectionName, mm in config.getSectionIterator():
+            #if mm:
+                #for key, path in mm.items():
+                    #print "--------------"
+                    #print key, path 
+                    
     def _createResourceListener(self):
         """This method is here if you want to add a resource listener to check
         the status of resources loading."""
@@ -75,25 +122,29 @@ class Application(object):
         """This shows the config dialog and creates the renderWindow."""
         carryOn = self.root.showConfigDialog()
         if carryOn:
-            self.renderWindow = self.root.initialise(True)
+            self.renderWindow = self.root.initialise(True, "OGRE Render Window")
         return carryOn
 
     def _chooseSceneManager(self):
         """Chooses a default SceneManager."""
-        self.sceneManager = self.root.createManager(ogre.ST_GENERIC,"Test")
+        #typedef uint16 SceneTypeMask;
+        #md=ogre.SceneManagerMetaData()
+        #md.sceneTypeMask=ogre.ST_GENERIC
+        #print dir(self.root)		
+        self.sceneManager = self.root.createSceneManager(ogre.ST_GENERIC,"ExampleSMInstance")
 
     def _createCamera(self):
-        """Creates the camera."""
+        """Creates the camera."""        
         self.camera = self.sceneManager.createCamera('PlayerCam')
-        self.camera.position = (0, 0, 500)
-        self.camera.lookAt((0, 0, -300))
+        self.camera.setPosition(ogre.Vector3(0, 0, 500))
+        self.camera.lookAt(ogre.Vector3(0, 0, -300))
         self.camera.nearClipDistance = 5
 
     def _createViewports(self):
         """Creates the Viewport."""
         self.viewport = self.renderWindow.addViewport(self.camera)
-        self.viewport.backgroundColour = (0,0,0)
-
+        self.viewport.backgroundColour = ogre.ColourValue(0,0,0)
+        
     def _createScene(self):
         """Creates the scene.  Override this with initial scene contents."""
         pass
@@ -108,7 +159,7 @@ class Application(object):
         """Override this function and return True to turn on Psyco"""
         return False
 
-    def _activatePsyco(self):
+    def _activatePsyco(self):        
        """Import Psyco if available"""
        try:
            import psyco
@@ -117,11 +168,11 @@ class Application(object):
            pass
 
 
-class FrameListener(ogre.CombinedListener):
+class FrameListener(ogre.FrameListener):
     """A default frame listener, which takes care of basic mouse and keyboard
     input."""
     def __init__(self, renderWindow, camera):
-        ogre.CombinedListener.__init__(self)
+        ogre.FrameListener.__init__(self)
         self.camera = camera
         self.renderWindow = renderWindow
         self.statisticsOn = True
@@ -135,48 +186,17 @@ class FrameListener(ogre.CombinedListener):
         self.showDebugOverlay(True)
         self.moveSpeed = 100.0
         self.rotationSpeed = 8.0
+        self.displayCameraDetails = False
 
         self._setupInput()
 
     def _setupInput(self):
-        import sys
-        hwnd = ois.IntPtr()
-        if sys.platform == 'win32':
-            self.renderWindow.getCustomAttribute("HWND", hwnd)
-        elif sys.platform.startswith('linux'):
-            self.renderWindow.getCustomAttribute('GLXWINDOW', hwnd)
-        else:
-            raise Exception, 'Platform not supported by OIS'
-        print "The Hwnd Value is ",	str(hwnd.value())
-        print "My Hwnd Value is",self.renderWindow.getIntCustomAttribute("HWND")	
-        print "The Hwnd Str Value is ",	str(hwnd.value())
-        print "My Hwnd Value is",str(self.renderWindow.getIntCustomAttribute("HWND"))	
-		
-        #if sys.platform == 'win32':
-        #    hwnd=self.renderWindow.getIntCustomAttribute("HWND")
-        #elif sys.platform.startswith('linux'):
-        #    hwnd=self.renderWindow.getIntCustomAttribute('GLXWINDOW')
-        #else:
-        #    raise Exception, 'Platform not supported by OIS'
-
-        oisParams = {
-            'WINDOW': str(self.renderWindow.getIntCustomAttribute("HWND")),
-            'w32_mouse': ['DISCL_FOREGROUND', 'DISCL_EXCLUSIVE'],
-        }
-        print "created Window" 		
-        self.inputManager = ois.InputManager.createInputSystem(oisParams)
-        print "created input Manager" 		
-        self.keyboard = self.inputManager.createInputObject(ois.OISKeyboard, False)
-        print "created Keyboard" 		
-        self.mouse = self.inputManager.createInputObject(ois.OISMouse, False)
-        print "created mouse" 		
+        # ignore buffered input
+        self.inputDevice = ogre.PlatformManager.getSingleton().createInputReader()
+        self.inputDevice.initialise(self.renderWindow, True, True, False)
 
     def frameStarted(self, frameEvent):
-        #print "trying to capture mouse" 		
-        self.keyboard.capture()
-        #print "captured keyboard" 		
-        self.mouse.capture()
-        #print "captured mouse" 		
+        self.inputDevice.capture()
         if self.timeUntilNextToggle >= 0:
             self.timeUntilNextToggle -= frameEvent.timeSinceLastFrame
 
@@ -214,35 +234,35 @@ class FrameListener(ogre.CombinedListener):
             overlay.hide()
 
     def _processUnbufferedKeyInput(self, frameEvent):
-        if self.keyboard.isKeyDown(ois.KC_A):
+        if self.inputDevice.isKeyDown(ogre.KC_A):
             self.translateVector.x = -self.moveScale
 
-        if self.keyboard.isKeyDown(ois.KC_D):
+        if self.inputDevice.isKeyDown(ogre.KC_D):
             self.translateVector.x = self.moveScale
 
-        if self.keyboard.isKeyDown(ois.KC_UP) or self.keyboard.isKeyDown(ois.KC_W):
+        if self.inputDevice.isKeyDown(ogre.KC_UP) or self.inputDevice.isKeyDown(ogre.KC_W):
             self.translateVector.z = -self.moveScale
 
-        if self.keyboard.isKeyDown(ois.KC_DOWN) or self.keyboard.isKeyDown(ois.KC_S):
+        if self.inputDevice.isKeyDown(ogre.KC_DOWN) or self.inputDevice.isKeyDown(ogre.KC_S):
             self.translateVector.z = self.moveScale
 
-        if self.keyboard.isKeyDown(ois.KC_PGUP):
+        if self.inputDevice.isKeyDown(ogre.KC_PGUP):
             self.translateVector.y = self.moveScale
 
-        if self.keyboard.isKeyDown(ois.KC_PGDOWN):
+        if self.inputDevice.isKeyDown(ogre.KC_PGDOWN):
             self.translateVector.y = - self.moveScale
 
-        if self.keyboard.isKeyDown(ois.KC_RIGHT):
+        if self.inputDevice.isKeyDown(ogre.KC_RIGHT):
             self.rotationX = - self.rotationScale
 
-        if self.keyboard.isKeyDown(ois.KC_LEFT):
+        if self.inputDevice.isKeyDown(ogre.KC_LEFT):
             self.rotationX = self.rotationScale
 
-        if self._isToggleKeyDown(ois.KC_F):
+        if self._isToggleKeyDown(ogre.KC_F):
             self.statisticsOn = not self.statisticsOn
             self.showDebugOverlay(self.statisticsOn)
 
-        if self._isToggleKeyDown(ois.KC_T):
+        if self._isToggleKeyDown(ogre.KC_T):
             if self.filtering == ogre.TFO_BILINEAR:
                 self.filtering = ogre.TFO_TRILINEAR
                 ogre.MaterialManager.getSingleton().defaultAnisotropy = 1
@@ -256,42 +276,53 @@ class FrameListener(ogre.CombinedListener):
             ogre.MaterialManager.getSingleton().setDefaultTextureFiltering(self.filtering)
             self.showDebugOverlay(self.statisticsOn)
 
-        if self._isToggleKeyDown(ois.KC_SYSRQ, 0.5):
+        if self._isToggleKeyDown(ogre.KC_SYSRQ, 0.5):
             path = 'screenshot_%d.png' % self.numScreenShots
             self.numScreenShots += 1
             self.renderWindow.writeContentsToFile(path)
             self.renderWindow.debugText = 'screenshot taken: ' + path
 
-        if self._isToggleKeyDown(ois.KC_R, 0.5):
-            detailsLevel = [ ogre.SDL_SOLID,
-                             ogre.SDL_WIREFRAME,
-                             ogre.SDL_POINTS ]
+        if self._isToggleKeyDown(ogre.KC_R, 0.5):
+            detailsLevel = [ ogre.PM_SOLID,
+                             ogre.PM_WIREFRAME,
+                             ogre.PM_POINTS ]
             self.sceneDetailIndex = (self.sceneDetailIndex + 1) % len(detailsLevel)
-            self.camera.detailLevel = detailsLevel[self.sceneDetailIndex]
-
-        if self.keyboard.isKeyDown(ois.KC_ESCAPE):
+            self.camera.polygonMode=detailsLevel[self.sceneDetailIndex]
+        
+        if self._isToggleKeyDown(ogre.KC_P, 0.5):
+            self.displayCameraDetails = not self.displayCameraDetails
+            if not self.displayCameraDetails:
+                self.renderWindow.debugText = ""
+                
+        if self.displayCameraDetails:
+            # Print camera details
+            pos = self.camera.getDerivedPosition()
+            o = self.camera.getDerivedOrientation()
+            self.renderWindow.debugText = "P: %.3f %.3f %.3f O: %.3f %.3f %.3f %.3f"  \
+                        % (pos.x,pos.y,pos.z, o.w,o.x,o.y,o.z)
+        
+        if self.inputDevice.isKeyDown(ogre.KC_ESCAPE):
             return False
 
-        return True
-
+        return True        
+        
     def _isToggleKeyDown(self, keyCode, toggleTime = 1.0):
-        if self.keyboard.isKeyDown(keyCode)and self.timeUntilNextToggle <=0:
+        if self.inputDevice.isKeyDown(keyCode)and self.timeUntilNextToggle <=0:
             self.timeUntilNextToggle = toggleTime
             return True
         return False
 
     def _processUnbufferedMouseInput(self, frameEvent):
-        state = self.mouse.state
-        if state.buttonDown(ois.MB_Right):
-            self.translateVector.x += state.relX * 0.13
-            self.translateVector.y -= state.relY * 0.13
+        if self.inputDevice.getMouseButton(1):
+            self.translateVector.x += self.inputDevice.getMouseRelativeX() * 0.013
+            self.translateVector.y -= self.inputDevice.getMouseRelativeY() * 0.013
         else:
-            self.rotationX = ogre.Degree(- state.relX * 0.13)
-            self.rotationY = ogre.Degree(- state.relY * 0.13)
+            self.rotationX = ogre.Degree(- self.inputDevice.getMouseRelativeX() * 0.013)
+            self.rotationY = ogre.Degree(- self.inputDevice.getMouseRelativeY() * 0.013)
 
-        if state.relZ > 0:
+        if self.inputDevice.getMouseRelativeZ() > 0:
             self.translateVector.z = - self.moveScale * 8.0
-        if state.relZ < 0:
+        if self.inputDevice.getMouseRelativeZ() < 0:
             self.translateVector.z = self.moveScale * 8.0
 
     def _moveCamera(self):
@@ -301,15 +332,15 @@ class FrameListener(ogre.CombinedListener):
 
     def _updateStatistics(self):
         statistics = self.renderWindow
-        self._setGuiCaption('Core/AverageFps', 'Average FPS: %f' % statistics.averageFPS)
-        self._setGuiCaption('Core/CurrFps', 'Current FPS: %f' % statistics.lastFPS)
+        self._setGuiCaption('Core/AverageFps', 'Average FPS: %f' % statistics.getAverageFPS())
+        self._setGuiCaption('Core/CurrFps', 'Current FPS: %f' % statistics.getLastFPS())
         self._setGuiCaption('Core/BestFps',
-                             'Best FPS: %f %d ms' % (statistics.bestFPS, statistics.bestFrameTime))
+                             'Best FPS: %f %d ms' % (statistics.getBestFPS(), statistics.getBestFrameTime()))
         self._setGuiCaption('Core/WorstFps',
-                             'Worst FPS: %f %d ms' % (statistics.worstFPS, statistics.worstFrameTime))
-        self._setGuiCaption('Core/NumTris', 'Triangle Count: %d' % statistics.triangleCount)
-        self._setGuiCaption('Core/DebugText', self.renderWindow.debugText)
+                             'Worst FPS: %f %d ms' % (statistics.getWorstFPS(), statistics.getWorstFrameTime()))
+        self._setGuiCaption('Core/NumTris', 'Triangle Count: %d' % statistics.getTriangleCount())
+        self._setGuiCaption('Core/DebugText', self.renderWindow.getDebugText())
 
     def _setGuiCaption(self, elementName, text):
         element = ogre.OverlayManager.getSingleton().getOverlayElement(elementName, False)
-        element.caption = text
+        element.setCaption(text)
