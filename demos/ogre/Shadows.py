@@ -20,7 +20,7 @@
 import Ogre as ogre
 import SampleFramework as sf
 
-if ogre.version[:3] =="1.2":
+if ogre.OgreVersionString[:2] =="12":
     KC_O = ogre.KC_O
     KC_M = ogre.KC_M
 else:

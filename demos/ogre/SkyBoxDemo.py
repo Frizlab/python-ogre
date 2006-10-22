@@ -4,7 +4,7 @@ import SampleFramework as sf
 pThrusters = None
 
 ## As this demo does it's own key input we need to cope with the change to OIS
-if ogre.version[:3]=="1.2":
+if ogre.OgreVersionString[:2]=="12":
     KC_N = ogre.KC_N
     KC_M = ogre.KC_M
     KC_H = ogre.KC_H

@@ -3,7 +3,7 @@ import  Ogre as ogre
 import SampleFramework as sf
 
 ## As this demo does it's own key input we need to cope with the change to OIS
-if ogre.version[:3]=="1.2":
+if ogre.OgreVersionString[:2]=="12":
     KC_H = ogre.KC_H
     KC_G = ogre.KC_G
     KC_U = ogre.KC_U
