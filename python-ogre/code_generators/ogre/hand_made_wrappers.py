@@ -1,6 +1,23 @@
 import os
 import environment
-
+WRAPPER_DEFINITION_ConfigFile = \
+"""
+// We don't currently support multimaps very well so to extract the resources from a config file
+// we call this with the multimap and it extracts it into a list of tuples for us
+boost::python::list
+ConfigFile_getMultiMapSettings ( Ogre::ConfigFile& cf, Ogre::ConfigFile::SettingsMultiMap * settings ){
+    Ogre::ConfigFile::SettingsMultiMap::iterator i;
+    Ogre::String typeName, archName;
+    boost::python::list retlist = boost::python::list();
+    for (i = settings->begin(); i != settings->end(); ++i)
+    {
+        typeName = i->first;
+        archName = i->second;
+        retlist.append(boost::python::make_tuple(typeName, archName));
+    }
+    return ( retlist );
+}
+"""
 WRAPPER_DEFINITION_RenderTarget = \
 """
 static int
@@ -29,7 +46,10 @@ Frustum_enableCustomNearClipPlaneMP(Ogre::Frustum& Fr, Ogre::MovablePlane const 
         Fr.enableCustomNearClipPlane ( MP ) ;
 }
 """
-
+WRAPPER_REGISTRATION_ConfigFile = \
+"""
+    def( "getMultiMapSettings", &::ConfigFile_getMultiMapSettings )
+"""
 WRAPPER_REGISTRATION_RenderTarget = \
 """
     def( "getCustomAttributeWindowInt", &::RenderTarget_getCustomAttributeWindowInt )
@@ -44,6 +64,9 @@ WRAPPER_REGISTRATION_Frustum = \
 """
 
 def apply( mb ):
+    rt = mb.class_( 'ConfigFile' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_ConfigFile )
+    rt.add_registration_code( WRAPPER_REGISTRATION_ConfigFile )
     rt = mb.class_( 'RenderTarget' )
     rt.add_declaration_code( WRAPPER_DEFINITION_RenderTarget )
     rt.add_registration_code( WRAPPER_REGISTRATION_RenderTarget )

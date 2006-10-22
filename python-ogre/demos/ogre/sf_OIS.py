@@ -78,51 +78,15 @@ class Application(object):
         """This sets up Ogre's resources, which are required to be in
         resources.cfg."""
         config = ogre.ConfigFile()
-#         print dir (config)
-        config.load('resources.cfg', '', False )
-#         t = config.SectionIterator
-#         print "\n\n......\n", t,"\n\n"
-#         while (t.hasMoreElements()):
-#             y = t.getNext()
-#             print y
-#             for setting in y:
-#                 print "Setting: ", setting
-#         print "\n\n......\n", t,"\n\n"
-#         for sectionName, mm in config.SectionIterator:
-#             print sectionName, mm
-            #if mm:
-                #for key, path in mm.items():
-                    #ogre.ResourceGroupManager.getSingleton().addResourceLocation(path, key, sectionName)
-                    
-                    
-                    
-                    
-        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/packs/OgreCore.zip", "Zip", "Bootstrap", False)
-#        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/andy", "FileSystem", "Bootstrap", False)
-#        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/andy/textures", "FileSystem", "Bootstrap", False)
-        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media", "FileSystem", "General", False)
-        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/fonts", "FileSystem", "General", False)
-        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/materials/programs", "FileSystem", "General", False)
-        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/materials/scripts", "FileSystem", "General", False)
-        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/materials/textures", "FileSystem", "General", False)
-        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/models", "FileSystem", "General", False)
-        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/overlays", "FileSystem", "General", False)
-        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/particle", "FileSystem", "General", False)
-        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/packs/cubemap.zip", "Zip", "General", False)
-        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/packs/cubemapsJS.zip", "Zip", "General", False)
-        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/packs/dragon.zip", "Zip", "General", False)
-        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/packs/fresneldemo.zip", "Zip", "General", False)
-        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/packs/ogretestmap.zip", "Zip", "General", False)
-        ogre.ResourceGroupManager.getSingleton().addResourceLocation("../media/packs/skybox.zip", "Zip", "General", False)
-
-        #for section, key, path in config.values:
-        #    ogre.ResourceGroupManager.getSingleton().addResourceLocation(path, key, section)
-        #print dir(config.getSectionIterator())          
-        #for sectionName, mm in config.getSectionIterator():
-            #if mm:
-                #for key, path in mm.items():
-                    #print "--------------"
-                    #print key, path 
+        config.load('resources.cfg' ) #, '', False )
+        seci = config.getSectionIterator()
+        while (seci.hasMoreElements()):
+            secName = seci.peekNextKey()
+            settings = seci.getNext()
+            ## Note that getMultiMapSettings is a Python-Ogre extension to return a multimap in a list of tuples
+            settingslist = config.getMultiMapSettings ( settings )
+            for typeName, archName in settingslist:
+                ogre.ResourceGroupManager.getSingleton().addResourceLocation(archName, typeName, secName)
                     
     def _createResourceListener(self):
         """This method is here if you want to add a resource listener to check
