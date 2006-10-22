@@ -4,8 +4,17 @@
 #
 
 import Ogre as ogre
-if ogre.version[:3] == "1.2":
-    from sf import *
-else:
-    from sf_OIS import *
+try:
+    ogre.OgreVersion = ogre.GetOgreVersion()
+    ogre.OgreVersionString = ogre.OgreVersion[0] + ogre.OgreVersion[1] + ogre.OgreVersion[2]
+    ogre.PythonOgreVersion = ogre.GetPythonOgreVersion()
+    if (ogre.OgreVersion[0]+ ogre.OgreVersion[1]) == "12":   # ogre 1.2.3 is latest SDK
+        from sf import *
+    else:  # assume it's ogre version 1.3, the CVS version that needs OIS
+        from sf_OIS import * 
+           
+except:
+    print "Your version of Python-Ogre doesn't define it's own version and so is rather old!"
+    print "It is suggested you visit http://python-ogre.python-hosting.com and upgrade"
     
+

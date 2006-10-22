@@ -9,6 +9,10 @@ pyplusplus_install_dir = None #path to pygccxml & Py++ packages
 
 generated = None #path to generated files dir
 shared_ptr_dir = None #path to shared_ptr directory
+PythonOgreMajorVersion = "0"
+PythonOgreMinorVersion = "5"
+PythonOgrePatchVersion = "1"
+
 
 class ogre:
     root_dir = None

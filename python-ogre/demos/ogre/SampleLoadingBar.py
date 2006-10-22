@@ -78,7 +78,7 @@ class ExampleLoadingBar (ogre.ResourceGroupListener):
         self.mLoadingCommentElement.setCaption(scriptName)
         self.mWindow.update()
 
-    if ogre.version[:3] == "1.2":
+    if ogre.OgreVersionString[:2] == "12":
         def scriptParseEnded(self):
             self.mLoadingBarElement.setWidth(
                 self.mLoadingBarElement.getWidth() + self.mProgressBarInc)
