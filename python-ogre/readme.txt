@@ -1,5 +1,5 @@
 ##
-## Python-Ogre Version 0.5
+## Python-Ogre Version 0.5.1
 ##
 ## This package contains python binding for the Ogre3D graphics library
 ## and was built using Py++ and Boost.
