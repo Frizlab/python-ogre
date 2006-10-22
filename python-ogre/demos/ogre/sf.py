@@ -138,12 +138,12 @@ class Application(object):
         self.camera = self.sceneManager.createCamera('PlayerCam')
         self.camera.setPosition(ogre.Vector3(0, 0, 500))
         self.camera.lookAt(ogre.Vector3(0, 0, -300))
-        self.camera.nearClipDistance = 5
+        self.camera.NearClipDistance = 5
 
     def _createViewports(self):
         """Creates the Viewport."""
         self.viewport = self.renderWindow.addViewport(self.camera)
-        self.viewport.backgroundColour = ogre.ColourValue(0,0,0)
+        self.viewport.BackgroundColour = ogre.ColourValue(0,0,0)
         
     def _createScene(self):
         """Creates the scene.  Override this with initial scene contents."""
