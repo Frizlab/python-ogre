@@ -121,100 +121,100 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
-				RelativePath=".\ois\_ois_.main.cpp">
+				RelativePath=".\ois_0.7\_ois_.main.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\_ois__enumerations.pypp.cpp">
+				RelativePath=".\ois_0.7\_ois__enumerations.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\Axis.pypp.cpp">
+				RelativePath=".\ois_0.7\Axis.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\Button.pypp.cpp">
+				RelativePath=".\ois_0.7\Button.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\Component.pypp.cpp">
+				RelativePath=".\ois_0.7\Component.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\ConditionalEffect.pypp.cpp">
+				RelativePath=".\ois_0.7\ConditionalEffect.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\ConstantEffect.pypp.cpp">
+				RelativePath=".\ois_0.7\ConstantEffect.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\Effect.pypp.cpp">
+				RelativePath=".\ois_0.7\Effect.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\Envelope.pypp.cpp">
+				RelativePath=".\ois_0.7\Envelope.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\EventArg.pypp.cpp">
+				RelativePath=".\ois_0.7\EventArg.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\Exception.pypp.cpp">
+				RelativePath=".\ois_0.7\Exception.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\ForceEffect.pypp.cpp">
+				RelativePath=".\ois_0.7\ForceEffect.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\ForceFeedback.pypp.cpp">
+				RelativePath=".\ois_0.7\ForceFeedback.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\InputManager.pypp.cpp">
+				RelativePath=".\ois_0.7\InputManager.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\Interface.pypp.cpp">
+				RelativePath=".\ois_0.7\Interface.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\JoyStick.pypp.cpp">
+				RelativePath=".\ois_0.7\JoyStick.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\JoyStickEvent.pypp.cpp">
+				RelativePath=".\ois_0.7\JoyStickEvent.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\JoyStickListener.pypp.cpp">
+				RelativePath=".\ois_0.7\JoyStickListener.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\JoyStickState.pypp.cpp">
+				RelativePath=".\ois_0.7\JoyStickState.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\Keyboard.pypp.cpp">
+				RelativePath=".\ois_0.7\Keyboard.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\KeyEvent.pypp.cpp">
+				RelativePath=".\ois_0.7\KeyEvent.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\KeyListener.pypp.cpp">
+				RelativePath=".\ois_0.7\KeyListener.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\Mouse.pypp.cpp">
+				RelativePath=".\ois_0.7\Mouse.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\MouseEvent.pypp.cpp">
+				RelativePath=".\ois_0.7\MouseEvent.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\MouseListener.pypp.cpp">
+				RelativePath=".\ois_0.7\MouseListener.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\MouseState.pypp.cpp">
+				RelativePath=".\ois_0.7\MouseState.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\Object.pypp.cpp">
+				RelativePath=".\ois_0.7\Object.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\PeriodicEffect.pypp.cpp">
+				RelativePath=".\ois_0.7\PeriodicEffect.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\Pov.pypp.cpp">
+				RelativePath=".\ois_0.7\Pov.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\RampEffect.pypp.cpp">
+				RelativePath=".\ois_0.7\RampEffect.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\Slider.pypp.cpp">
+				RelativePath=".\ois_0.7\Slider.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ois\SupportedEffectList.pypp.cpp">
+				RelativePath=".\ois_0.7\SupportedEffectList.pypp.cpp">
 			</File>
 		</Filter>
 		<Filter
