@@ -9,7 +9,7 @@ mAnimChop = 7.96666
 mAnimChopBlend = 0.3
 mAnimState=[0,0,0,0,0,0]  #NUM_JAIQUAS]
 mAnimationSpeed=[0,0,0,0,0,0]  #
-mSneakStartOffset=ogre.Vector3(0,0,0)
+mSneakStartOffset=ogre.Vector3(100,200,30)
 mSneakEndOffset=ogre.Vector3(0,0,0)
 mOrientations=[0,0,0,0,0,0]  #
 mBasePositions=[0,0,0,0,0,0]  #
@@ -17,11 +17,12 @@ mSceneNode=[0,0,0,0,0,0]  #]
 
 
 class SkeletalApplication(sf.Application):
-    global NUM_JAIQUAS
-    global mAnimationRotation,mAnimChop,mAnimChopBlend,mAnimState,mAnimationSpeed,mSneakStartOffset
-    global mSneakEndOffset, mOrientations, mBasePositions, mSceneNode
 
     def _createScene(self):
+        global NUM_JAIQUAS
+        global mAnimationRotation,mAnimChop,mAnimChopBlend,mAnimState,mAnimationSpeed,mSneakStartOffset
+        global mSneakEndOffset, mOrientations, mBasePositions, mSceneNode
+
         sceneManager = self.sceneManager
         camera = self.camera
         
@@ -171,6 +172,7 @@ class SkeletalAnimationFrameListener(sf.FrameListener):
         #self.animationSpeeds = animationSpeeds
 
     def frameStarted(self, frameEvent):
+ 
         for i in range(NUM_JAIQUAS):
             inc = frameEvent.timeSinceLastFrame * mAnimationSpeed[i]
             if (mAnimState[i].getTimePosition() + inc) >= mAnimChop :
@@ -185,8 +187,7 @@ class SkeletalAnimationFrameListener(sf.FrameListener):
                 offset = rot * startoffset 
                 currEnd = mSceneNode[i].getOrientation() * endoffset + mSceneNode[i].getPosition() 
                 mSceneNode[i].setPosition(currEnd + offset) 
-                mSceneNode[i].rotate(rot) 
-
+                mSceneNode[i].rotate(q=rot) 
                 mAnimState[i].setTimePosition((mAnimState[i].getTimePosition() + inc) - mAnimChop) 
             else:
                 mAnimState[i].addTime(inc)
