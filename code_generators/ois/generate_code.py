@@ -93,7 +93,11 @@ def generate_code():
     hand_made_wrappers.apply( mb )
 
     ois_ns = mb.global_ns.namespace ('OIS')
-    ois_ns.classes().add_properties()
+    common_utils.add_properties( ois_ns.classes() )
+
+    common_utils.add_constants( mb, { 'ois_version' :  '"%s"' % environment.ois.version
+                                      , 'python_version' : '"%s"' % sys.version } )
+
 
     #Creating code creator. After this step you should not modify/customize declarations.
     mb.build_code_creator (module_name='_ois_')

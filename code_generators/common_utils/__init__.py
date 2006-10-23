@@ -1,6 +1,7 @@
 import os
 import shared_ptr
 from pygccxml import declarations
+from pyplusplus.decl_wrappers import property_t
 
 def configure_shared_ptr( mb ):
     exposer = shared_ptr.exposer_t( mb )
@@ -76,3 +77,18 @@ def set_declaration_aliases(global_ns, aliases):
             cls.wrapper_alias = alias + '_wrapper'
         except declarations.matcher.declaration_not_found_t:
             global_ns.decl( name, decl_type=declarations.class_declaration_t ).rename( alias )
+
+
+def add_constants( mb, constants ):
+    tmpl = 'boost::python::scope().attr("%(name)s") = %(value)s;'
+    for name, value in constants.items():
+        mb.add_registration_code( tmpl % dict( name=name, value=str(value) ) )
+    
+def add_properties( classes ):
+    for cls in classes:
+        cls.add_properties()
+        new_props = []
+        for prop in cls.properties:
+            name = prop.name[0].lower() + prop.name[1:]
+            new_props.append( property_t( name, prop.fget, prop.fset, prop.doc, prop.is_static ) )
+        cls.properties.extend( new_props )
