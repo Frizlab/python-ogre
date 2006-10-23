@@ -21,6 +21,7 @@ import hand_made_wrappers
 from pygccxml import parser
 from pygccxml import declarations
 from pyplusplus import module_builder
+from pyplusplus.decl_wrappers import property_t
 from pyplusplus.module_builder import call_policies
 
 def filter_declarations( mb ):
@@ -191,6 +192,12 @@ def generate_code():
     common_utils.configure_shared_ptr(mb)
     configure_exception( mb )
     ogre_ns.classes().add_properties()
+    for cls in ogre_ns.classes():
+        pyogre_props = []
+        for prop in cls.properties:
+            name = prop.name[0].lower() + prop.name[1:]
+            pyogre_props.append( property_t( name, prop.fget, prop.fset, prop.doc, prop.is_static ) )
+        cls.properties.extend( pyogre_props )
     hand_made_wrappers.apply( mb )
 
     set_call_policies (mb)
