@@ -10,8 +10,8 @@ pyplusplus_install_dir = None #path to pygccxml & Py++ packages
 generated = None #path to generated files dir
 shared_ptr_dir = None #path to shared_ptr directory
 PythonOgreMajorVersion = "0"
-PythonOgreMinorVersion = "5"
-PythonOgrePatchVersion = "1"
+PythonOgreMinorVersion = "6" # change to 0.6 due to lowercase properties
+PythonOgrePatchVersion = "0"
 
 
 class ogre:
@@ -29,10 +29,13 @@ class ois:
     version= "0.7"
     pass
 
+class CEGUI:
+    version = "0.5" 
 
 projects = {
     'ois' : ois
     , 'ogre' : ogre
+    , 'CEGUI' : CEGUI
 }
 
 if 'roman' in getpass.getuser():
@@ -58,6 +61,7 @@ else:
                         r'c:/development/boost/boost' )
     else:
         ogre.include_dir  = r'c:\development\ogreSDK\include'
+    CEGUI.include_dir = r'c:/development/ocvs/ogrenew/dependencies/include/CEGUI'
 
 sys.path.append( os.path.join( root_dir, 'common_utils' ) )
 sys.path.append( pyplusplus_install_dir + r'/pygccxml_dev' )
