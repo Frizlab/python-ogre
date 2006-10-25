@@ -31,51 +31,51 @@ def filter_declarations( mb ):
     global_ns.exclude()
     CEGUI_ns = global_ns.namespace( 'CEGUI' )
     CEGUI_ns.include()
-#     
-#     ## Exclude protected and private that are not pure virtual
-#     query = ~declarations.access_type_matcher_t( 'public' ) \
-#             & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
-#     non_public_non_pure_virtual = CEGUI_ns.calldefs( query )
-#     non_public_non_pure_virtual.exclude()
+     
+    ## Exclude protected and private that are not pure virtual
+    query = ~declarations.access_type_matcher_t( 'public' ) \
+            & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
+    non_public_non_pure_virtual = CEGUI_ns.calldefs( query )
+    non_public_non_pure_virtual.exclude()
     
-#     #Virtual functions that return reference could not be overriden from Python
-#     query = declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.VIRTUAL ) \
-#             & declarations.custom_matcher_t( lambda decl: declarations.is_reference( decl.return_type ) )
-#     ogre_ns.calldefs( query ).virtuality = declarations.VIRTUALITY_TYPES.NOT_VIRTUAL
+    #Virtual functions that return reference could not be overriden from Python
+    #query = declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.VIRTUAL ) \
+    #        & declarations.custom_matcher_t( lambda decl: declarations.is_reference( decl.return_type ) )
+    #CEGUI_ns.calldefs( query ).virtuality = declarations.VIRTUALITY_TYPES.NOT_VIRTUAL
     
-#     # seems to be a problem with classes based upon Properties
-#     
-#     WinProp = CEGUI_ns.namespace( 'WindowProperties' )
-#     WinProp.exclude()
-#  
-#     ## lets work around a bug in GCCXMl - http://language-binding.net/pygccxml/design.html#patchers
-#     draws = mb.member_functions( 'draw' )   # find all the draw functions
-#     for draw in draws:  
-#         for arg in draw.arguments:  
-#             if arg.default_value == '0ffffffff':
-#                 arg.default_value = '0xffffffff'
+    # seems to be a problem with classes based upon Properties
+    
+    WinProp = CEGUI_ns.namespace( 'WindowProperties' )
+    WinProp.exclude()
+  
+    ## lets work around a bug in GCCXMl - http://language-binding.net/pygccxml/design.html#patchers
+    draws = mb.member_functions( 'draw' )   # find all the draw functions
+    for draw in draws:  
+        for arg in draw.arguments:  
+            if arg.default_value == '0ffffffff':
+                arg.default_value = '0xffffffff'
             
     ## one version of createFont fails so lets find it and exclude it
-#     fm = mb.class_( 'FontManager' )
-#     
-#     ## can't use the simple, if it had 2 args exclude it as there is a version with 2 args that we want
-#     ##  fm.member_function( 'createFont', arg_types=[None,None ] ).exclude() 
-#     
-#     ## so instead need a function that looks for arg 2 to be XMLAttributes
-#     is_my_case = lambda decl: len( decl.arguments ) == 2 and 'XMLAttributes' in decl.arguments[1].type.decl_string 
-#     fm.member_function( name='createFont', function=is_my_case ).exclude()
+    fm = mb.class_( 'FontManager' )
     
-#     ## couple of functions that fail when compiling
-#     CEGUI_ns.class_( "RawDataContainer" ).member_functions( 'getDataPtr' ).exclude()
-#     CEGUI_ns.class_( "ItemListBase" ).member_functions( 'getSortCallback' ).exclude()
-#     
-#     ## now have functions in String that return uint arrays a need to be wrapped
-#     sc = CEGUI_ns.class_( "String" )
-#     sc.member_functions('data').exclude()
-#     sc.member_functions('ptr').exclude()
-#     ## and only remove the at functions that are not returning constants
-#     ## the const version returns by value which is good, the non const returns a reference which doesn't compile
-#     sc.member_function( 'at', lambda decl: decl.has_const == False ).exclude()
+    ## can't use the simple, if it had 2 args exclude it as there is a version with 2 args that we want
+    ##  fm.member_function( 'createFont', arg_types=[None,None ] ).exclude() 
+    
+    ## so instead need a function that looks for arg 2 to be XMLAttributes
+    is_my_case = lambda decl: len( decl.arguments ) == 2 and 'XMLAttributes' in decl.arguments[1].type.decl_string 
+    fm.member_function( name='createFont', function=is_my_case ).exclude()
+  
+    ## couple of functions that fail when compiling
+    CEGUI_ns.class_( "RawDataContainer" ).member_functions( 'getDataPtr' ).exclude()
+    CEGUI_ns.class_( "ItemListBase" ).member_functions( 'getSortCallback' ).exclude()
+    
+    ## now have functions in String that return uint arrays a need to be wrapped
+    sc = CEGUI_ns.class_( "String" )
+    sc.member_functions('data').exclude()
+    sc.member_functions('ptr').exclude()
+    ## and only remove the at functions that are not returning constants
+    ## the const version returns by value which is good, the non const returns a reference which doesn't compile
+    sc.member_function( 'at', lambda decl: decl.has_const == False ).exclude()
     
     
 def set_call_policies( mb ):
@@ -99,6 +99,12 @@ def configure_exception(mb):
     Exception = mb.namespace( 'CEGUI' ).class_( 'Exception' )
     Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getMessage().c_str()' )
 
+def change_cls_alias( ns ):
+    for cls in ns.classes():
+        if 1 < len( ns.classes( cls.name ) ):
+            alias = cls.decl_string[ len('::CEGUI::'): ]
+            cls.alias = alias.replace( '::', '' )
+
 def generate_code():
     xml_cached_fc = parser.create_cached_source_fc(
                         os.path.join( environment.CEGUI.root_dir, "python_CEGUI.h" )
@@ -115,21 +121,23 @@ def generate_code():
                                       
     filter_declarations (mb)
 
-#     common_utils.set_declaration_aliases( mb.global_ns, customization_data.aliases(environment.CEGUI.version) )
+    change_cls_alias( mb.global_ns.namespace ('CEGUI') )
 
-#     mb.BOOST_PYTHON_MAX_ARITY = 25
-#     mb.classes().always_expose_using_scope = True
+    common_utils.set_declaration_aliases( mb.global_ns, customization_data.aliases(environment.CEGUI.version) )
 
-#     configure_exception( mb )
+    mb.BOOST_PYTHON_MAX_ARITY = 25
+    mb.classes().always_expose_using_scope = True
 
-#     hand_made_wrappers.apply( mb )
-#     set_call_policies (mb)
+    configure_exception( mb )
 
-#     CEGUI_ns = mb.global_ns.namespace ('CEGUI')
-#     common_utils.add_properties( CEGUI_ns.classes() )
+    hand_made_wrappers.apply( mb )
+    set_call_policies (mb)
 
-#     common_utils.add_constants( mb, { 'CEGUI_version' :  '"%s"' % environment.CEGUI.version
-#                                       , 'python_version' : '"%s"' % sys.version } )
+    CEGUI_ns = mb.global_ns.namespace ('CEGUI')
+    common_utils.add_properties( CEGUI_ns.classes() )
+
+    common_utils.add_constants( mb, { 'CEGUI_version' :  '"%s"' % environment.CEGUI.version
+                                       , 'python_version' : '"%s"' % sys.version } )
                                       
     #Creating code creator. After this step you should not modify/customize declarations.
     mb.build_code_creator (module_name='_CEGUI_')
