@@ -27,7 +27,38 @@ def aliases( Version ):
 def header_files( Version ):
     return [ "CEGUI.h"
             , "CEGUIXMLParser.h"
-              ]
+            , "OgreCEGUIRenderer.h"
+            , "OgreRenderQueue.h"
+            , "CEGUIXMLHandler.h"
+            , "CEGUIXMLAttributes.h"
+            , "CEGUIXMLserializer.h"
+            , "OgreCEGUIRenderer.h"
+            ,"OgreCEGUIResourceProvider.h"
+                  ]
+#       return [ "CEGUI.h"
+#             , "CEGUIXMLParser.h"
+#             , "OgreCEGUIRenderer.h"
+#             , "OgreRenderQueue.h"
+#             , "CEGUIXMLHandler.h"
+#             , "CEGUIXMLAttributes.h"
+#             , "CEGUIXMLserializer.h"
+#             , "OgreCEGUIRenderer.h"
+#               ]
+#     return [ 'CEGUI/CEGUIImageset.h'
+#     ,'CEGUI/CEGUISystem.h'
+#     ,'CEGUI/CEGUILogger.h'
+#     ,'CEGUI/CEGUISchemeManager.h'
+#     ,'CEGUI/CEGUIWindowManager.h'
+#     ,'CEGUI/CEGUIWindow.h'
+#     ,'CEGUI/CEGUIPropertyHelper.h'
+#     ,'CEGUI/elements/CEGUICombobox.h'
+#     ,'CEGUI/elements/CEGUIListbox.h'
+#     ,'CEGUI/elements/CEGUIListboxTextItem.h'
+#     ,'CEGUI/elements/CEGUIPushButton.h'
+#     ,'CEGUI/elements/CEGUIScrollbar.h'
+#     ,"OgreCEGUIRenderer.h"
+#     ,"OgreCEGUIResourceProvider.h"
+#     ]
 
 def huge_classes( Version ):
     return []
