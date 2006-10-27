@@ -178,8 +178,8 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
         
     def __del__ (self ):
       ogre.WindowEventUtilities.removeWindowEventListener(self.renderWindow, self)
-      self.windowClosed(self.renderWindow);
-
+      self.windowClosed(self.renderWindow)
+      
     def _setupInput(self):
         # ignore buffered input
            
@@ -207,6 +207,9 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
          #Register as a Window listener
          ogre.WindowEventUtilities.addWindowEventListener(self.renderWindow, self);
          
+    def setMenuMode(self, mode):
+        self.MenuMode = mode
+        
     def windowResized (self, rw):
          [width, height, depth, left, top] = rw.getMetricsInt()  # Note the wrapped function as default needs unsigned int's
          ms = self.Mouse.getMouseState()

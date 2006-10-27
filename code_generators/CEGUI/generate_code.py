@@ -27,12 +27,15 @@ def filter_declarations( mb ):
     CEGUI_ns = global_ns.namespace( 'CEGUI' )
     CEGUI_ns.include()
     
-#     ## Dumb fix to remove all Properties classes
-#     for cls in mb.global_ns.namespace ('CEGUI').classes():
-#         if "Properties" in cls.decl_string:
-#             print "Excluding:", cls.name
-#             cls.exclude()
-            
+    ## Dumb fix to remove all Properties classes -  unfortunately the properties in these classes are indicated as public
+    ## however within their 'parent' class they are defined as private..
+    ## see MultiLineEditboxProperties
+    ##
+    for cls in mb.global_ns.namespace ('CEGUI').classes():
+        if "Properties" in cls.decl_string:
+            print "Excluding:", cls.name
+            cls.exclude()
+           
     ## EventNamespace causes failure when loading the python module
     ## possibly because of the ugly Properties fix above :) 
     for cls in mb.global_ns.namespace ('CEGUI').classes():
@@ -46,7 +49,7 @@ def filter_declarations( mb ):
             cls.variable('WidgetTypeName').exclude()
         except:
             pass
-     
+            
     ## Exclude protected and private that are not pure virtual
     query = ~declarations.access_type_matcher_t( 'public' ) \
             & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
@@ -60,22 +63,7 @@ def filter_declarations( mb ):
             if arg.default_value == '0ffffffff':
                 arg.default_value = '0xffffffff'
 
-    ## there is a problem with a namespace variable in OgreCEGUIRenderer.h
-#     og = mb.class_( 'OgreCEGUIRenderer' ) 
-#     print dir(og)
-#     print og.constructors
-#     d= og.constructors()
-#     print dir(d)
-    
-#     for con in og.constructors():  
-#         if arg in con.arguments:
-#             print dir ( arg )
-#             print arg
-#             
-#             if arg.default_value == 'RENDER_QUEUE_OVERLAY':
-#                 print arg.default_value
-#                 arg.default_value = '::Ogre::RENDER_QUEUE_OVERLAY'
-#     sys.exit()                
+         
     ## this one fails at link time
     mb.class_( 'ScriptFunctor' ).exclude()   
     mb.class_( 'CEGUIRQListener' ).exclude()     
@@ -99,6 +87,15 @@ def filter_declarations( mb ):
     ## the const version returns by value which is good, the non const returns a reference which doesn't compile
     sc.member_function( 'at', lambda decl: decl.has_const == False ).exclude()
     
+    ## CEGUI::WindowManager::loadWindowLayout can take a function pointer as an agrument whcih isn't supported yet
+    ## so lets remove the versions that expose the pointer 
+    lo = CEGUI_ns.class_( 'WindowManager' ).member_function( 'loadWindowLayout' )
+    lo.arguments[3].type = lo.arguments[4].type     #AJM Not sure how args work so setting the func pointer to a void pointer
+    
+    
+#    VertexCacheProfiler = ogre_ns.constructor( 'VertexCacheProfiler', arg_types=[None,None] )
+#    VertexCacheProfiler.arguments[1].default_value = "int(%s)" % VertexCacheProfiler.arguments[1].default_value
+
     
 def set_call_policies( mb ):
     CEGUI_ns = mb.global_ns.namespace ('CEGUI')
@@ -134,8 +131,8 @@ def change_cls_alias( ns ):
        if 1 < len( ns.classes( cls.name ) ):
            alias = cls.decl_string[ len('::CEGUI::'): ]
            print "Adjust:",cls.decl_string
-           #cls.alias = alias.replace( '::', '' )
-           cls.wrapper_alias = cls.alias + '_wrapper' # or 'Wrapper' ??
+           cls.alias = alias.replace( '::', '' )
+           cls.wrapper_alias = cls.alias + 'Wrapper' # or 'Wrapper' ??
            ##cls.exclude()
 
 
@@ -155,7 +152,10 @@ def generate_code():
    
     change_cls_alias( mb.global_ns.namespace ('CEGUI') )
 
-#    common_utils.set_declaration_aliases( mb.global_ns, customization_data.aliases(environment.CEGUI.version) )
+    try:
+        common_utils.set_declaration_aliases( mb.global_ns, customization_data.aliases(environment.CEGUI.version) )
+    except:
+        pass
 
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
@@ -165,8 +165,7 @@ def generate_code():
     hand_made_wrappers.apply( mb )
 
     set_call_policies (mb)
-    
-#    common_utils.add_properties(  mb.global_ns.namespace ('CEGUI').classes() )
+    common_utils.add_properties(  mb.global_ns.namespace ('CEGUI').classes() )
 
     common_utils.add_constants( mb, { 'CEGUI_version' :  '"%s"' % environment.CEGUI.version
                                        , 'python_version' : '"%s"' % sys.version } )
