@@ -12,6 +12,7 @@ import os, sys, time, shutil
 sys.path.append( os.path.join( '..', '..' ) )
 #add common utils to the pass
 sys.path.append( '..' )
+sys.path.append( '.' )
 
 import environment
 import common_utils
