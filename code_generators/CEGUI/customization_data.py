@@ -22,6 +22,8 @@ def aliases( Version ):
                : "SingletonWindowManager"
          ,"Singleton<CEGUI::WindowRendererManager>"
                : "SingletonWindowRendererManager"
+         ,"RefCounted<CEGUI::BoundSlot>"
+               : "RefCountedBoundSlot"
     }
 
 def header_files( Version ):

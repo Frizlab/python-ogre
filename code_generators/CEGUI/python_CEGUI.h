@@ -6,6 +6,9 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <iostream>
+
+
 // #include <CEGUI/CEGUIImageset.h>
 // #include <CEGUI/CEGUISystem.h>
 // #include <CEGUI/CEGUILogger.h>
@@ -28,6 +31,16 @@
 #include "OgreCEGUIRenderer.h"
 #include "OgreCEGUIResourceProvider.h"
 
+// namespace  CEGUI {
+
+// class EventConnection
+// {
+// public:
+//     EventConnection();
+//     bool connected();
+//     void disconnect();
+// };
+// }
 namespace python_CEGUI{ 
 
     inline void instantiate(){
