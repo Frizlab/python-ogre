@@ -17,6 +17,8 @@ import CEGUI as CEGUI
 import OIS as OIS
 import SampleFramework
 
+import sys, exceptions, random
+
 ##----------------------------------------------------------------##
 def convertOISMouseButtonToCegui( buttonID):
     if buttonID ==0:
@@ -34,8 +36,7 @@ def _PointHack(x, y):
     return CEGUI.Vector2(x, y)
 CEGUI.Point = _PointHack
 
-
-
+    
 class MouseListener ( OIS.MouseListener ):
     def __init__(self):
         OIS.MouseListener.__init__( self)
@@ -82,8 +83,7 @@ class GuiFrameListener(SampleFramework.FrameListener, OIS.KeyListener, OIS.Mouse
             return False
         else:
             return SampleFramework.FrameListener.frameEnded(self, evt)
-            
-
+        
     ##----------------------------------------------------------------##
     def keyPressed( self, arg ):
         if arg.key == OIS.KC_ESCAPE:
@@ -104,9 +104,18 @@ class GuiApplication ( SampleFramework.Application ):
         self.GUIRenderer=0
         self.GUIsystem =0
         self.EditorGuiSheet=0
-        self.rttCounter=0
         self.DescriptionMap={}
+        self.ListItems = []
+        
+        # used for adding individual objects
+        self.windowNumber = 0 
+        self.vertScrollNumber = 0 
+        self.horizScrollNumber = 0 
+        self.textScrollNumber = 0 
+        self.siCounter = 0 
+        self.rttCounter=0
 
+ 
         self.DescriptionMap[ "Demo8"] = "The main containing panel" 
         self.DescriptionMap[ "Demo8/Window1"] =  "A test window" 
         self.DescriptionMap[ "Demo8/Window1/Listbox"] = "A list box" 
@@ -126,8 +135,11 @@ class GuiApplication ( SampleFramework.Application ):
         del self.camera
         del self.sceneManager
         del self.frameListener
-        if self.EditorGuiSheet:
-            CEGUI.WindowManager.getSingleton().destroyWindow(self.EditorGuiSheet) 
+        try:
+            if self.EditorGuiSheet:
+                CEGUI.WindowManager.getSingleton().destroyWindow(self.EditorGuiSheet) 
+        except:
+            pass
         del self.GUIsystem
         del self.GUIRenderer
         del self.root
@@ -193,83 +205,58 @@ class GuiApplication ( SampleFramework.Application ):
         CEGUI.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme") 
         self.GUIsystem.setDefaultMouseCursor("TaharezLook",  "MouseArrow") 
         self.GUIsystem.setDefaultFont( "BlueHighway-12") 
-        print "Before Layout"
         sheet = CEGUI.WindowManager.getSingleton().loadWindowLayout("ogregui.layout")  
-        print "After Layout"
         self.GUIsystem.setGUISheet(sheet) 
-
+        
+## note that copies are not made for combo/list boxes so need to keep each item arround
+#         CEGUI.Testit()
         objectComboBox = CEGUI.WindowManager.getSingleton().getWindow("OgreGuiDemo/TabCtrl/Page2/ObjectTypeList") 
-        print "Done 1"    
-        item = CEGUI.ListboxTextItem( "FrameWindow", 0) 
-        print "Done 2"    
-        objectComboBox.addItem(item) 
-#         print "Done 3"    
-#         del item
-#         item = CEGUI.ListboxTextItem( "Horizontal Scrollbar", 1) 
-#         print "Done 4"    
-#         objectComboBox.addItem(item) 
-#         print "Done 5"    
-#         item2 = CEGUI.ListboxTextItem( "Vertical Scrollbar", 2) 
-#         print "Done 6"    
-#         objectComboBox.addItem(item2) 
-#         print "Done 7"    
-#         item3 = CEGUI.ListboxTextItem( "StaticText", 3) 
-#         print "Done 8"    
-#         objectComboBox.addItem(item3) 
-#         print "Done 9"    
-#         item4 = CEGUI.ListboxTextItem( "StaticImage", 4) 
-#         objectComboBox.addItem(item4) 
-#         item5 = CEGUI.ListboxTextItem( "Render to Texture", 5) 
-#         objectComboBox.addItem(item5) 
-#         print "Done 10"    
-#         
-        #self.setupEventHandlers() 
-        print "Done 11"    
+        self.item = CEGUI.ListboxTextItem( "FrameWindow", 0) 
+        objectComboBox.addItem(self.item) 
+        self.item1 = CEGUI.ListboxTextItem( "Horizontal Scrollbar", 1) 
+        objectComboBox.addItem(self.item1) 
+        self.item2 = CEGUI.ListboxTextItem( "Vertical Scrollbar", 2) 
+        objectComboBox.addItem(self.item2) 
+        self.item3 = CEGUI.ListboxTextItem( "StaticText", 3) 
+        objectComboBox.addItem(self.item3) 
+        self.item4 = CEGUI.ListboxTextItem( "StaticImage", 4) 
+        objectComboBox.addItem(self.item4) 
+        self.item5 = CEGUI.ListboxTextItem( "Render to Texture", 5) 
+        objectComboBox.addItem(self.item5) 
+        
+        self.setupEventHandlers() 
         
         
     ## Create new frame listener
     def _createFrameListener(self):
         self.frameListener = GuiFrameListener(self.renderWindow, self.camera, self.GUIRenderer) #self.sceneManager)
         self.root.addFrameListener(self.frameListener)
-#        self.frameListener.showDebugOverlay(True)
+        self.frameListener.showDebugOverlay(False)
+
 
     def setupEventHandlers(self):
         wmgr = CEGUI.WindowManager.getSingleton() 
         
-         
-        qb = wmgr.getWindow( "OgreGuiDemo/TabCtrl/Page1/QuitButton")
-        qb.subscribeEvent(qb.EventClicked, self.handleQuit) 
-        
+        wmgr.getWindow( "OgreGuiDemo/TabCtrl/Page1/QuitButton").subscribeEvent(
+                            CEGUI.PushButton.EventClicked, self, "handleQuit")
         wmgr.getWindow( "OgreGuiDemo/TabCtrl/Page1/NewButton").subscribeEvent(
-                CEGUI.PushButton.EventClicked, self.handleNew) 
+                 CEGUI.PushButton.EventClicked, self, "handleNew") 
         wmgr.getWindow( "OgreGuiDemo/TabCtrl/Page1/LoadButton").subscribeEvent(
-                CEGUI.PushButton.EventClicked, self.handleLoad) 
-        wmgr.getWindow( "OgreGuiDemo/TabCtrl/Page2/ObjectTypeList").subscribeEvent(
-                CEGUI.Combobox.EventListSelectionAccepted,self.handleObjectSelection) 
+                CEGUI.PushButton.EventClicked, self, "handleLoad") 
+        wmgr.getWindow("OgreGuiDemo/TabCtrl/Page2/ObjectTypeList").subscribeEvent(
+				CEGUI.Combobox.EventListSelectionAccepted, self, "handleObjectSelection");
 
-#         wmgr.getWindow( "OgreGuiDemo/TabCtrl/Page1/QuitButton").subscribeEvent(
-#                 CEGUI.PushButton.EventClicked, 
-#                 CEGUI.Event.SubscriberSlot(GuiApplication.handleQuit, self)) 
-#         wmgr.getWindow( "OgreGuiDemo/TabCtrl/Page1/NewButton").subscribeEvent(
-#                 CEGUI.PushButton.EventClicked, 
-#                 CEGUI.Event.SubscriberSlot(GuiApplication.handleNew, self)) 
-#         wmgr.getWindow( "OgreGuiDemo/TabCtrl/Page1/LoadButton").subscribeEvent(
-#                 CEGUI.PushButton.EventClicked, 
-#                 CEGUI.Event.SubscriberSlot(GuiApplication.handleLoad, self)) 
-#         wmgr.getWindow( "OgreGuiDemo/TabCtrl/Page2/ObjectTypeList").subscribeEvent(
-#                 CEGUI.Combobox.EventListSelectionAccepted, 
-#                 CEGUI.Event.SubscriberSlot(GuiApplication.handleObjectSelection, self)) 
-
+				                
     def setupEnterExitEvents(self, win):
         win.subscribeEvent(
             CEGUI.Window.EventMouseEnters, 
-            CEGUI.Event.SubscriberSlot(GuiApplication.handleMouseEnters, self)) 
+            self, "handleMouseEnters") 
         win.subscribeEvent(
             CEGUI.Window.EventMouseLeaves, 
-            CEGUI.Event.SubscriberSlot(GuiApplication.handleMouseLeaves, self)) 
+            self, "handleMouseLeaves") 
         for i in range (win.getChildCount()):
             child = win.getChildAtIdx(i) 
-            setupEnterExitEvents(child) 
+            self.setupEnterExitEvents(child) 
 
     def setupLoadedLayoutHandlers(self):
         wmgr = CEGUI.WindowManager.getSingleton() 
@@ -280,72 +267,66 @@ class GuiApplication ( SampleFramework.Application ):
         self.List = wmgr.getWindow( "Demo8/Window1/Listbox") 
         self.EditBox = wmgr.getWindow( "Demo8/Window1/Controls/Editbox") 
         self.Tip = wmgr.getWindow( "Demo8/Window2/Tips") 
-        
+
         self.Red.subscribeEvent(
               CEGUI.Scrollbar.EventScrollPositionChanged, 
-              CEGUI.Event.Subscriber(GuiApplication.handleColourChanged, self)) 
+              self, "handleColourChanged") 
         self.Green.subscribeEvent(
-          CEGUI.Scrollbar.EventScrollPositionChanged, 
-          CEGUI.Event.Subscriber(GuiApplication.handleColourChanged, self)) 
+              CEGUI.Scrollbar.EventScrollPositionChanged, 
+              self, "handleColourChanged") 
         self.Blue.subscribeEvent(
-          CEGUI.Scrollbar.EventScrollPositionChanged, 
-          CEGUI.Event.Subscriber(GuiApplication.handleColourChanged, self)) 
-        
+              CEGUI.Scrollbar.EventScrollPositionChanged, 
+              self, "handleColourChanged") 
         wmgr.getWindow( "Demo8/Window1/Controls/Add").subscribeEvent(
-          CEGUI.PushButton.EventClicked, 
-          CEGUI.Event.Subscriber(GuiApplication.handleAdd, self)) 
-        
+              CEGUI.PushButton.EventClicked, 
+              self, "handleAdd") 
+               
         root = wmgr.getWindow("Demo8") 
-        setupEnterExitEvents(root) 
+        self.setupEnterExitEvents(root) 
       
     def createRttGuiObject(self):
-        guiObjectName = "NewRttImage" + String(self.rttCounter) 
+        guiObjectName = "NewRttImage" + str(self.rttCounter) 
         
         rttImageSet = CEGUI.ImagesetManager.getSingleton().getImageset("RttImageset") 
-        si = CEGUI.WindowManager.getSingleton().createWindow( "TaharezLook/StaticImage",  guiObjectName.c_str()) 
+        si = CEGUI.WindowManager.getSingleton().createWindow( "TaharezLook/StaticImage",  guiObjectName) 
         si.setSize(CEGUI.UVector2( CEGUI.UDim(0.5, 0), CEGUI.UDim(0.4, 0))) 
         si.setProperty("Image", CEGUI.PropertyHelper.imageToString(rttImageSet.getImage( "RttImage"))) 
         self.rttCounter += 1 
         return si 
 
-#     CEGUI.Window* createStaticImageObject(void)
-#     {
-#         static unsigned int siCounter = 0 
-#         String guiObjectName = "NewStaticImage" + StringConverter.toString(siCounter) 
+    def createStaticImageObject(self):
+        guiObjectName = "NewStaticImage" + str(self.siCounter) 
 
-#         CEGUI.Imageset* imageSet = 
-#             CEGUI.ImagesetManager.getSingleton().getImageset(
-#                  "TaharezLook") 
+        imageSet = CEGUI.ImagesetManager.getSingleton().getImageset("TaharezLook") 
 
-#         CEGUI.Window* si = CEGUI.WindowManager.getSingleton().createWindow( "TaharezLook/StaticImage",  guiObjectName.c_str()) 
-#         si.setSize(CEGUI.UVector2( CEGUI.UDim(0.2f, 0), CEGUI.UDim(0.2f, 0))) 
-#         si.setProperty("Image", CEGUI.PropertyHelper.imageToString(
-#             &imageSet.getImage( "ClientBrush"))) 
+        si = CEGUI.WindowManager.getSingleton().createWindow( "TaharezLook/StaticImage",  guiObjectName) 
+        si.setSize(CEGUI.UVector2( CEGUI.UDim(0.2, 0), CEGUI.UDim(0.2, 0))) 
+        si.setProperty("Image", CEGUI.PropertyHelper.imageToString(imageSet.getImage( "ClientBrush"))) 
 
-#         siCounter++ 
+        self.siCounter+=1
+        return si 
 
-#         return si 
-#     }
-
-    def handleQuit(e):
-        self.FrameListener.requestShutdown() 
+    def handleQuit(self, e):
+        self.frameListener.requestShutdown() 
         return True
-    
-    def handleNew( e):
+
+        
+    def handleNew(self,  e):
         if self.EditorGuiSheet:
             CEGUI.WindowManager.getSingleton().destroyWindow(self.EditorGuiSheet) 
         
         self.EditorGuiSheet = CEGUI.WindowManager.getSingleton().createWindow("DefaultGUISheet", "NewLayout") 
         
-        editorWindow = CEGUI.WindowManager.getSingleton().getWindow( "OgreGuiDemo2/MainWindow") 
+        editorWindow = CEGUI.WindowManager.getSingleton().getWindow( "OgreGuiDemo2/MainWindow")
         editorWindow.addChildWindow( self.EditorGuiSheet ) 
         return True
 
-    def handleLoad(e):
-        if(mEditorGuiSheet):
+        
+    def handleLoad(self, e):
+        if(self.EditorGuiSheet):
             CEGUI.WindowManager.getSingleton().destroyWindow(self.EditorGuiSheet) 
     
-        selfEditorGuiSheet = CEGUI.WindowManager.getSingleton().loadWindowLayout("cegui8.layout")  
+        self.EditorGuiSheet = CEGUI.WindowManager.getSingleton().loadWindowLayout("cegui8.layout")  
         self.setupLoadedLayoutHandlers() 
     
         editorWindow = CEGUI.WindowManager.getSingleton().getWindow( "OgreGuiDemo2/MainWindow") 
@@ -354,67 +335,50 @@ class GuiApplication ( SampleFramework.Application ):
         return True
 
 
-#     bool handleObjectSelection(const CEGUI.EventArgs& e)
-#     {
-#         static unsigned int windowNumber = 0 
-#         static unsigned int vertScrollNumber = 0 
-#         static unsigned int horizScrollNumber = 0 
-#         static unsigned int textScrollNumber = 0 
-#         String guiObjectName 
-#         CEGUI.Window* window = 0 
+    def handleObjectSelection(self, e):
+        guiObjectName =""
+     
+        ## Set a random position to place self object.
+        posX = 0.7 * random.random() #(0.0, 0.7)  
+        posY = 0.6 * random.random()  + 0.1 #(0.1, 0.7)  
+        item = e.window.getSelectedItem() #CEGUI.DoIt(e)
 
-#         ## Set a random position to place self object.
-#         Real posX = Math.RangeRandom(0.0, 0.7)  
-#         Real posY = Math.RangeRandom(0.1, 0.7)  
+        editorWindow = CEGUI.WindowManager.getSingleton().getWindow( "OgreGuiDemo2/MainWindow") 
 
-#         const CEGUI.WindowEventArgs& windowEventArgs = static_cast<const CEGUI.WindowEventArgs&>(e) 
-#         CEGUI.ListboxItem* item = static_cast<CEGUI.Combobox*>(windowEventArgs.window).getSelectedItem() 
+        id = item.getID()
+        if id == 0:
+            guiObjectName = "NewWindow" + str(self.windowNumber) 
+            window = CEGUI.WindowManager.getSingleton().createWindow( "TaharezLook/FrameWindow",  guiObjectName) 
+            window.setSize(CEGUI.UVector2(CEGUI.UDim(0.3,0), CEGUI.UDim(0.3,0))) 
+            window.setText( "New Window") 
+            self.windowNumber+=1 
+        elif id == 1:
+            guiObjectName = "NewHorizScroll" + str(self.horizScrollNumber) 
+            window = CEGUI.WindowManager.getSingleton().createWindow( "TaharezLook/HorizontalScrollbar",  guiObjectName) 
+            window.setSize(CEGUI.UVector2(CEGUI.UDim(0.75,0), CEGUI.UDim(0.03,0))) 
+            self.horizScrollNumber+=1 
+        elif id == 2:
+            guiObjectName = "NewVertScroll" + str(self.vertScrollNumber) 
+            window = CEGUI.WindowManager.getSingleton().createWindow( "TaharezLook/VerticalScrollbar",  guiObjectName) 
+            window.setSize(CEGUI.UVector2(CEGUI.UDim(0.03,0), CEGUI.UDim(0.75,0))) 
+            self.vertScrollNumber+=1
+        elif id == 3:
+            guiObjectName = "NewStaticText" + str(self.textScrollNumber) 
+            window = CEGUI.WindowManager.getSingleton().createWindow( "TaharezLook/StaticText",  guiObjectName) 
+            window.setSize(CEGUI.UVector2(CEGUI.UDim(0.25,0), CEGUI.UDim(0.1,0))) 
+            window.setText( "Example static text") 
+            self.textScrollNumber+=1 
+        elif id == 4:
+            window = self.createStaticImageObject() 
+        elif id == 5:
+            window = self.createRttGuiObject() 
 
-#         CEGUI.Window* editorWindow = CEGUI.WindowManager.getSingleton().getWindow( "OgreGuiDemo2/MainWindow") 
+        editorWindow.addChildWindow(window) 
+        window.setPosition(CEGUI.UVector2(CEGUI.UDim(posX, 0), CEGUI.UDim(posY, 0))) 
 
-#         switch(item.getID())
-#         {
-#         case 0:
-#             guiObjectName = "NewWindow" + StringConverter.toString(windowNumber) 
-#             window = CEGUI.WindowManager.getSingleton().createWindow( "TaharezLook/FrameWindow",  guiObjectName.c_str()) 
-#             window.setSize(CEGUI.UVector2(CEGUI.UDim(0.3f,0), CEGUI.UDim(0.3f,0))) 
-#             window.setText( "New Window") 
-#             windowNumber++ 
-#             break 
-#         case 1:
-#             guiObjectName = "NewHorizScroll" + StringConverter.toString(horizScrollNumber) 
-#             window = CEGUI.WindowManager.getSingleton().createWindow( "TaharezLook/HorizontalScrollbar",  guiObjectName.c_str()) 
-#             window.setSize(CEGUI.UVector2(CEGUI.UDim(0.75f,0), CEGUI.UDim(0.03f,0))) 
-#             horizScrollNumber++ 
-#             break 
-#         case 2:
-#             guiObjectName = "NewVertScroll" + StringConverter.toString(vertScrollNumber) 
-#             window = CEGUI.WindowManager.getSingleton().createWindow( "TaharezLook/VerticalScrollbar",  guiObjectName.c_str()) 
-#             window.setSize(CEGUI.UVector2(CEGUI.UDim(0.03f,0), CEGUI.UDim(0.75f,0))) 
-#             vertScrollNumber++ 
-#             break 
-#         case 3:
-#             guiObjectName = "NewStaticText" + StringConverter.toString(textScrollNumber) 
-#             window = CEGUI.WindowManager.getSingleton().createWindow( "TaharezLook/StaticText",  guiObjectName.c_str()) 
-#             window.setSize(CEGUI.UVector2(CEGUI.UDim(0.25f,0), CEGUI.UDim(0.1f,0))) 
-#             window.setText( "Example static text") 
-#             textScrollNumber++ 
-#             break 
-#         case 4:
-#             window = createStaticImageObject() 
-#             break 
-#         case 5:
-#             window = createRttGuiObject() 
-#             break 
-#         } 
+        return True
 
-#         editorWindow.addChildWindow(window) 
-#         window.setPosition(CEGUI.UVector2(CEGUI.UDim(posX, 0), CEGUI.UDim(posY, 0))) 
-
-#         return True
-#     }
-
-    def handleColourChanged( e):
+    def handleColourChanged( self, e):
         self.Preview.setProperty("ImageColours",
             CEGUI.PropertyHelper.colourToString(CEGUI.colour(
                 self.Red.getScrollPosition() / 255.0,
@@ -423,31 +387,31 @@ class GuiApplication ( SampleFramework.Application ):
         
         return True
 
-    def handleAdd( e):
+    def handleAdd(self,  e):
         listboxitem = CEGUI.ListboxTextItem (self.EditBox.getText()) 
         listboxitem.setSelectionBrushImage("TaharezLook", "ListboxSelectionBrush") 
-        listboxitem.setSelected(self.List.getItemCount() == 0) 
+        if self.List.getItemCount() == 0:
+            listboxitem.setSelected( True ) 
+        else:
+            listboxitem.setSelected( False ) 
         listboxitem.setSelectionColours(
             CEGUI.PropertyHelper.stringToColourRect(self.Preview.getProperty("ImageColours"))) 
-        self.List.addItem(listboxitem) 
+        self.List.addItem(listboxitem)
+        self.ListItems.append(listboxitem) # we need to keep the listitems around for the list box to work
         return True
  
-    def handleMouseEnters( e):
-        name = e.window.getName()
+    def handleMouseEnters(self,  e):
+        name = e.window.getName().c_str
         try:
             self.Tip.setText( self.DescriptionMap[ name ])
         except:
             self.Tip.setText( "" )
         return True
         
-    def handleMouseLeaves(e):
+    def handleMouseLeaves(self, e):
         self.Tip.setText( "") 
         return True
         
-def FreehandleQuit(e):
-    self.FrameListener.requestShutdown() 
-    return True
-
 
 if __name__ == '__main__':
     try:
@@ -455,5 +419,23 @@ if __name__ == '__main__':
         ta.go()
     except ogre.Exception, e:
         print e
+    except exceptions.RuntimeError, e:
+        print "Runtime error:", e
+    except exceptions.TypeError, e:
+        print "Type error:", e
+    except exceptions.AttributeError, e:
+        print "Attribute error:", e
+    except exceptions.NameError, e:
+        print "Name error:", e
+    except Exception,inst:
+        print "EException"
+        print type(inst)     # the exception instance
+        print inst.args      # arguments stored in .args
+        print inst
+    except exceptions.ValueError,e:
+        print "ValueError",e
+    except :
+        print "Unexpected error:", sys.exc_info()[0]
+    
         
 

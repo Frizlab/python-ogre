@@ -152,10 +152,7 @@ def generate_code():
    
     change_cls_alias( mb.global_ns.namespace ('CEGUI') )
 
-    try:
-        common_utils.set_declaration_aliases( mb.global_ns, customization_data.aliases(environment.CEGUI.version) )
-    except:
-        pass
+    common_utils.set_declaration_aliases( mb.global_ns, customization_data.aliases(environment.CEGUI.version) )
 
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
