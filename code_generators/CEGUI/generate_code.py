@@ -146,7 +146,6 @@ def generate_code():
                                           , working_directory=environment.root_dir
                                           , include_paths=environment.CEGUI.include_dir
                                           , define_symbols=['CEGUI_NONCLIENT_BUILD']
-#                                          , start_with_declarations=['CEGUI']
                                           , indexing_suite_version=2 )
     filter_declarations (mb)
    

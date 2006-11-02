@@ -176,7 +176,6 @@ def generate_code():
                                           , working_directory=environment.root_dir
                                           , include_paths=[environment.ogre.include_dir]
                                           , define_symbols=defined_symbols
-                                          , start_with_declarations=['Ogre']
                                           , indexing_suite_version=2 )
 
     filter_declarations (mb)
