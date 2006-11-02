@@ -9,6 +9,8 @@ namespace python_ogre{ namespace details{
 inline void instantiate(){
     using namespace Ogre;
 
+    sizeof( SharedPtr<std::vector<String> > );
+    
     sizeof( Controller<float> );
 
     sizeof( SharedPtr< Controller<float> >);

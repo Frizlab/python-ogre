@@ -41,11 +41,12 @@ projects = {
 if 'roman' in getpass.getuser():
     root_dir = r'D:\python-ogre'
     gccxml_bin = r'd:/gccxml_cvs/gccxml-build/bin/release/gccxml.exe'
-    python_include_dir = 'c:/python/include'
+    python_include_dir = 'e:/python/include'
     pyplusplus_install_dir = r'D:\pygccxml_sources\sources'
 
-    ogre.include_dir = r'D:\OgreSDK\include'
+    ogre.include_dir = r'D:\OgreSDK1.2.3\include'
     ois.include_dir = r'D:\OisSDK\includes'
+    CEGUI.include_dir = r'D:/CEGUI-0.5-0-RC2/include'
 else:
     root_dir = r'C:\development\pywork'
     gccxml_bin = r'c:/development/gccxml/bin/release/gccxml.exe'

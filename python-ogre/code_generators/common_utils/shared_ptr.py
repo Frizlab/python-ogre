@@ -34,7 +34,8 @@ class exposer_t:
         self.ogre_ns = mb.namespace ('Ogre')
         self.visited_classes = set()
         #For this classes wrapper does not exist
-        self.special_cases = ['PatchMesh', 'Controller<float>', 'Compositor' ]
+        self.special_cases = ['PatchMesh', 'Controller<float>', 'Compositor'
+                               , 'vector<std::string, std::allocator<std::string> >' ]
 
     def get_pointee( self, sp_instantiation ):
         #sp_instantiation - reference to SharedPtr<XXX>

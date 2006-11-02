@@ -77,7 +77,6 @@ def generate_code():
                                           , working_directory=environment.root_dir
                                           , include_paths=[environment.ois.include_dir]
                                           , define_symbols=['OIS_NONCLIENT_BUILD']
-                                          , start_with_declarations=['OIS']
                                           , indexing_suite_version=2 )
 
     filter_declarations (mb)
