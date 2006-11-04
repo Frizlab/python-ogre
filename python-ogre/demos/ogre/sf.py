@@ -1,6 +1,7 @@
 # This code is in the Public Domain
 # Designed for version 1.2.x of Ogre (non OIS)
 import Ogre as ogre
+import OgreRefApp
 
 def getPluginPath():
     """Return the absolute path to a valid plugins.cfg file.""" 
@@ -31,12 +32,15 @@ class Application(object):
         self.camera = None
         self.renderWindow = None
         self.sceneManager = None
+        self.world = None
 
     def __del__(self):
         "Clear variables, this should not actually be needed."
         del self.camera
         del self.sceneManager
         del self.frameListener
+        if self.world:
+            del self.world
         del self.root
         del self.renderWindow
 
@@ -52,14 +56,15 @@ class Application(object):
     def _setUp(self):
         """This sets up the ogre application, and returns false if the user
         hits "cancel" in the dialog box."""
-        self.root = ogre.Root(getPluginPath())	
-	self.root.setFrameSmoothingPeriod (5.0);
+        self.root = ogre.Root(getPluginPath())  
+        self.root.setFrameSmoothingPeriod (5.0);
 
         self._setUpResources()
         if not self._configure():
             return False
         
         self._chooseSceneManager()
+        self._createWorld()
         self._createCamera()
         self._createViewports()
 
@@ -90,6 +95,11 @@ class Application(object):
         """This method is here if you want to add a resource listener to check
         the status of resources loading."""
         pass
+        
+    def _createWorld ( self ):
+        """ this should be overridden when supporting the OgreRefApp framework.  Also note you 
+        will have to override __createCamera"""
+        pass
 
     def _loadResources(self):
         """This loads all initial resources.  Redefine this if you do not want
@@ -108,7 +118,7 @@ class Application(object):
         #typedef uint16 SceneTypeMask;
         #md=ogre.SceneManagerMetaData()
         #md.sceneTypeMask=ogre.ST_GENERIC
-        #print dir(self.root)		
+        #print dir(self.root)       
         self.sceneManager = self.root.createSceneManager(ogre.ST_GENERIC,"ExampleSMInstance")
 
     def _createCamera(self):
@@ -120,7 +130,12 @@ class Application(object):
 
     def _createViewports(self):
         """Creates the Viewport."""
-        self.viewport = self.renderWindow.addViewport(self.camera)
+        ## We want a single sampleframework so this work around is to support OgreRefApp Framework
+        ## if using the RefApp camera is based upon World etc etc
+        try:    
+            self.viewport = self.renderWindow.addViewport(self.camera.getRealCamera())
+        except AttributeError:
+            self.viewport = self.renderWindow.addViewport(self.camera)
         self.viewport.BackgroundColour = ogre.ColourValue(0,0,0)
         
     def _createScene(self):
@@ -165,6 +180,13 @@ class FrameListener(ogre.FrameListener):
         self.moveSpeed = 100.0
         self.rotationSpeed = 8.0
         self.displayCameraDetails = False
+        ## we can tell if we are using OgreRefapp based upon the camera class
+        
+        if self.camera.__class__ == ogre.Camera:
+            self.RefAppEnable = False
+        else:
+            self.RefAppEnable = True
+        
 
         self._setupInput()
 
@@ -195,6 +217,10 @@ class FrameListener(ogre.FrameListener):
         self._processUnbufferedMouseInput(frameEvent)
 
         self._moveCamera()
+        # Perform simulation step only if using OgreRefApp etc
+        if  self.RefAppEnable:
+            OgreRefApp.World.getSingleton().simulationStep(frameEvent.timeSinceLastFrame)
+        
         return True
 
     def frameEnded(self, frameEvent):
@@ -306,7 +332,11 @@ class FrameListener(ogre.FrameListener):
     def _moveCamera(self):
         self.camera.yaw(self.rotationX)
         self.camera.pitch(self.rotationY)
-        self.camera.moveRelative(self.translateVector)
+        try:
+            self.camera.translate(self.translateVector) # for using OgreRefApp
+        except AttributeError:
+            self.camera.moveRelative(self.translateVector)
+
 
     def _updateStatistics(self):
         statistics = self.renderWindow
