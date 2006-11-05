@@ -26,16 +26,19 @@ class ogre:
     libs_files = ["ogremain", "ogreguirenderer", "ceguibase", "ode"]
 
 class ois:
-    version= "0.7"
-    pass
+    version = "0.7"
 
 class CEGUI:
     version = "0.5" 
+    
+class ode:
+    version = "0.7"
 
 projects = {
     'ois' : ois
     , 'ogre' : ogre
     , 'CEGUI' : CEGUI
+    , 'ODE' : ode
 }
 
 if 'roman' in getpass.getuser():
@@ -47,6 +50,9 @@ if 'roman' in getpass.getuser():
     ogre.include_dir = r'D:\OgreSDK1.2.3\include'
     ois.include_dir = r'D:\OisSDK\includes'
     CEGUI.include_dir = r'D:/CEGUI-0.5-0-RC2/include'
+    
+    ode.include_dir = r'D:\ode-win32-0.7\ode-0.7\include'
+    
 else:
     root_dir = r'C:\development\pywork'
     gccxml_bin = r'c:/development/gccxml/bin/release/gccxml.exe'
