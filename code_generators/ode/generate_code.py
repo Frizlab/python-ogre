@@ -31,14 +31,6 @@ def filter_declarations( mb ):
     global_ns.exclude()
     ode_ns = global_ns  ##  Ode doesn't have it's own namespace..  .namespace( 'ode' )
     
-    ## OK, so ODE is really a C class pretending to be C++ so we need to work out what to include
-    ## lets try only 'classed' that are '::d[upper case char]..'
-#     for var in ode_ns.variables():
-#         print var
-#     for tt in ode_ns.typedefs():
-#         print tt
-#     #print dir (ode_ns)
-#     sys.exit()
     for cls in ode_ns.classes():
         #print "Checking ", cls.decl_string
         if  cls.decl_string[2:3]=='d' and cls.decl_string[3].isupper():
@@ -57,6 +49,10 @@ def filter_declarations( mb ):
             print "Including Function", funcs.name
             funcs.include()
      
+    ptr_to_fundamental_query \
+        = lambda f: declarations.is_pointer( f.return_type ) \
+                    and declarations.is_fundamental( declarations.remove_pointer( f.return_type ) )
+    ode_ns.calldefs( ptr_to_fundamental_query ).exclude()
 
 #     # some internal variables dxXXXX are being exposed via functions 
 #     # so we need to looking for functions that return these private xxxID's and remove them 
@@ -112,11 +108,31 @@ def set_call_policies( mb ):
     for mem_fun in mem_funs:
         if mem_fun.call_policies:
             continue
-        if declarations.is_pointer (mem_fun.return_type) or declarations.is_reference (mem_fun.return_type):
-            mem_fun.call_policies = call_policies.return_value_policy(
-                call_policies.reference_existing_object )
-                                                                               
- 
+        rtype = declarations.remove_alias( mem_fun.return_type )
+        if declarations.is_pointer(rtype):
+            rtype_no_ptr = declarations.remove_pointer(rtype)
+            cls_decl_traits = declarations.class_declaration_traits
+            if cls_decl_traits.is_my_case( rtype_no_ptr ) \
+               and cls_decl_traits.get_declaration( rtype_no_ptr ).name.startswith( 'dx' ):
+                #dxYYY - is the implementation details classes, that will not be exposed
+                #may be these functions should be excluded?
+                mem_fun.call_policies \
+                    = call_policies.return_value_policy( call_policies.return_opaque_pointer )
+            else:
+                mem_fun.call_policies \
+                    = call_policies.return_value_policy( call_policies.reference_existing_object )
+        elif declarations.is_reference (mem_fun.return_type):
+            mem_fun.call_policies \
+                = call_policies.return_value_policy( call_policies.reference_existing_object )
+        else:
+            pass
+    #For some reason Py++ does not honor call policies in this case.
+    #You will have to expose them by hand
+    dContactGeom = ode_ns.class_( 'dContactGeom' )
+    g12 = dContactGeom.variables( lambda d: d.name in ('g1', 'g2' ) )
+    g12.exclude()
+    #g12.getter_call_policies = call_policies.return_value_policy( call_policies.return_opaque_pointer )
+    
 def configure_exception(mb):
     pass
     #We don't exclude  Exception, because it contains functionality, that could
