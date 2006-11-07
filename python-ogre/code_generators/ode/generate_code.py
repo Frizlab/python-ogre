@@ -52,6 +52,7 @@ def filter_declarations( mb ):
     ptr_to_fundamental_query \
         = lambda f: declarations.is_pointer( f.return_type ) \
                     and declarations.is_fundamental( declarations.remove_pointer( f.return_type ) )
+                    
     ode_ns.calldefs( ptr_to_fundamental_query ).exclude()
 
 #     # some internal variables dxXXXX are being exposed via functions 

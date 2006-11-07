@@ -13,12 +13,12 @@ extension CEGUI
     $(sourcefiles)
     <template>@boost/libs/python/build/extension
     : <include>$(BOOST_PARENT_DIRECTORY)
-    <include>c:/development/ocvs/ogrenew/dependencies/include/CEGUI
-    <include>c:/development/ocvs/ogrenew/dependencies/include
+    <include>c:/development/cegui_mk2/include
+    <include>c:/development/cegui_mk2/
     <include>c:/development/ocvs/ogrenew/ogremain/include
     <include>./CEGUI_0.5/
     <include>c:/development/ocvs/ogrenew/samples/common/CEGUIRenderer/include
-    <library-path>c:/development/ocvs/ogrenew/dependencies/lib/release
+    <library-path>c:/development/cegui_mk2/lib
     <find-library>CEGUIBase.lib
     <find-library>CEGUIExpatParser.lib
     <find-library>CEGUIFalagardWRBase.lib

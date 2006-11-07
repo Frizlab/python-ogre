@@ -27,6 +27,7 @@ from pyplusplus.module_builder import call_policies
 def filter_declarations( mb ):
     global_ns = mb.global_ns
     global_ns.exclude()
+    
     ogre_ns = global_ns.namespace( 'Ogre' )
     ogre_ns.include()
 
@@ -142,11 +143,10 @@ def filter_declarations( mb ):
 
 
 def set_call_policies( mb ):
-    ogre_ns = mb.global_ns.namespace ('Ogre')
-
+#
     # Set the default policy to deal with pointer/reference return types to reference_existing object
     # as this is the Ogre Default.
-    mem_funs = ogre_ns.calldefs ()
+    mem_funs = mb.calldefs ()
     mem_funs.create_with_signature = True #Generated code will not compile on
     #MSVC 7.1 if function has throw modifier.
     for mem_fun in mem_funs:
@@ -174,7 +174,7 @@ def generate_code():
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
-                                          , include_paths=[environment.ogre.include_dir]
+                                          , include_paths=environment.ogre.include_dir
                                           , define_symbols=defined_symbols
                                           , indexing_suite_version=2 )
 
@@ -193,15 +193,15 @@ def generate_code():
     
     hand_made_wrappers.apply( mb )
 
-    set_call_policies (mb)
+    set_call_policies ( mb.global_ns.namespace ('Ogre') )
     common_utils.add_properties( ogre_ns.classes() )
     common_utils.add_constants( mb, { 'ogre_version' :  '"%s"' % environment.ogre.version
                                       , 'python_version' : '"%s"' % sys.version } )
 
     #Creating code creator. After this step you should not modify/customize declarations.
     mb.build_code_creator (module_name='_ogre_')
-
-    mb.code_creator.user_defined_directories.append( environment.ogre.include_dir )
+    for inc in environment.ogre.include_dir :
+        mb.code_creator.user_defined_directories.append(inc )
     mb.code_creator.user_defined_directories.append( environment.ogre.generated_dir )
     mb.code_creator.replace_included_headers( customization_data.header_files( environment.ogre.version ) )
 

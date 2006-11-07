@@ -76,9 +76,18 @@ def filter_declarations( mb ):
 #     fm.member_function( name='createFont', function=is_my_case ).exclude()
 #   
     ## couple of functions that fail when compiling
-    CEGUI_ns.class_( "RawDataContainer" ).member_functions( 'getDataPtr' ).exclude()
-    CEGUI_ns.class_( "ItemListBase" ).member_functions( 'getSortCallback' ).exclude()
     
+    if environment.ogre.version == "CVS":    
+        CEGUI_ns.class_( "RawDataContainer" ).member_functions( 'getDataPtr' ).exclude()
+        CEGUI_ns.class_( "ItemListBase" ).member_functions( 'getSortCallback' ).exclude()
+    else:   
+        CEGUI_ns.class_("DataContainer<unsigned char>").exclude()
+        CEGUI_ns.class_("Menubar").exclude()
+        CEGUI_ns.class_("MenuBase").exclude()
+        CEGUI_ns.class_("PopupMenu").exclude()
+        CEGUI_ns.class_("Referenced").exclude()
+        CEGUI_ns.class_("System").member_functions("getXMLParser").exclude()
+
     ## now have functions in String that return uint arrays a need to be wrapped
     sc = CEGUI_ns.class_( "String" )
     sc.member_functions('data').exclude()
@@ -92,10 +101,12 @@ def filter_declarations( mb ):
     lo = CEGUI_ns.class_( 'WindowManager' ).member_function( 'loadWindowLayout' )
     lo.arguments[3].type = lo.arguments[4].type     #AJM Not sure how args work so setting the func pointer to a void pointer
     
+    ## OgreCEGUIRenderer.h has an assumed namespace in one of the default agrs that we need to fix
+    orRe = CEGUI_ns.constructor('OgreCEGUIRenderer', arg_types=[None, None, None, None] )
+    pos = orRe.arguments[1].default_value.index("RENDER_QUEUE_OVERLAY")
+    tempstring = orRe.arguments[1].default_value[:pos]+"::Ogre::"+orRe.arguments[1].default_value[pos:]
+    orRe.arguments[1].default_value = tempstring
     
-#    VertexCacheProfiler = ogre_ns.constructor( 'VertexCacheProfiler', arg_types=[None,None] )
-#    VertexCacheProfiler.arguments[1].default_value = "int(%s)" % VertexCacheProfiler.arguments[1].default_value
-
     
 def set_call_policies( mb ):
     CEGUI_ns = mb.global_ns.namespace ('CEGUI')
@@ -146,6 +157,7 @@ def generate_code():
                                           , working_directory=environment.root_dir
                                           , include_paths=environment.CEGUI.include_dir
                                           , define_symbols=['CEGUI_NONCLIENT_BUILD']
+#                                          , start_with_declarations=['CEGUI']
                                           , indexing_suite_version=2 )
     filter_declarations (mb)
    
