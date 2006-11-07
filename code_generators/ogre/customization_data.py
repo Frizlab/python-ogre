@@ -145,6 +145,7 @@ def header_files( version ):
                 , 'OgreKeyEvent.h'
                 , 'OgreHardwareOcclusionQuery.h'
                 , 'py_shared_ptr.h'
+
         ]
 
 def huge_classes( version ):

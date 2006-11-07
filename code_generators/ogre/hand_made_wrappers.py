@@ -20,6 +20,41 @@ GetPythonOgreVersion () {
 }
 """            
 
+
+WRAPPER_DEFINITION_CombinedListener = \
+"""
+namespace Ogre {
+    class CombinedListener : public Ogre::FrameListener, public Ogre::KeyListener,
+                 public Ogre::MouseListener, public Ogre::MouseMotionListener
+{
+public:
+    CombinedListener() {}
+    virtual ~CombinedListener() {}
+    
+    // KeyListener methods
+    virtual void keyClicked(Ogre::KeyEvent *e) {}
+    virtual void keyPressed(Ogre::KeyEvent *e) {}
+    virtual void keyReleased(Ogre::KeyEvent *e) {}
+    
+    // MouseListener methods
+    virtual void mouseClicked(Ogre::MouseEvent *e) {}
+    virtual void mousePressed(Ogre::MouseEvent *e) {}
+    virtual void mouseReleased(Ogre::MouseEvent *e) {}
+    virtual void mouseEntered(Ogre::MouseEvent *e) {}
+    virtual void mouseExited(Ogre::MouseEvent *) {}
+    
+    // MouseMotionListener methods
+    virtual void mouseMoved(Ogre::MouseEvent *e) {}
+    virtual void mouseDragged(Ogre::MouseEvent *e) {}
+    
+    // FrameEvent methods
+    virtual bool frameStarted (const FrameEvent &evt) {return true;}
+    virtual bool frameEnded (const FrameEvent &evt) {return true;}
+};
+}
+"""
+
+
 WRAPPER_DEFINITION_ConfigFile = \
 """
 // We don't currently support multimaps very well so to extract the resources from a config file
@@ -91,6 +126,26 @@ WRAPPER_REGISTRATION_General = \
 """
 
 
+if environment.ogre.version != "CVS":
+    ### need to override keylistener etc
+    WRAPPER_DEFINITION_EventProcessor =\
+    """
+	void EventProcessor_addKeyListener(Ogre::EventProcessor& evp, Ogre::KeyListener  * l) {
+	    //evp.addKeyListener ( l );
+	    }
+	void EventProcessor_addMouseListener(Ogre::EventProcessor& evp, Ogre::MouseListener  * m) {
+	    //evp.addMouseListener (  m );
+	    }
+
+	"""     
+    WRAPPER_REGISTRATION_EventProcessor = \
+    """
+        def( "addKeyListenerFunc", &::EventProcessor_addKeyListener );
+        EventProcessor_exposer.def( "addMouseListenerFunc", &::EventProcessor_addMouseListener );
+    """
+
+
+
 def apply( mb ):
     rt = mb.class_( 'ConfigFile' )
     rt.add_declaration_code( WRAPPER_DEFINITION_ConfigFile )
@@ -104,7 +159,15 @@ def apply( mb ):
     rt = mb.class_( 'Frustum' )
     rt.add_declaration_code( WRAPPER_DEFINITION_Frustum )
     rt.add_registration_code( WRAPPER_REGISTRATION_Frustum )
-    
+    if environment.ogre.version != "CVS":
+        rt = mb.class_( 'EventProcessor' )
+        rt.add_declaration_code( WRAPPER_DEFINITION_EventProcessor )
+        rt.add_registration_code( WRAPPER_REGISTRATION_EventProcessor )
+        ## now add support for the combined listener
+        rt = mb.class_( 'CombinedListener' )
+        rt.add_declaration_code( WRAPPER_DEFINITION_CombinedListener )
+        
+        
     mb.add_declaration_code( WRAPPER_DEFINITION_General )
     mb.add_registration_code( WRAPPER_REGISTRATION_General )
     

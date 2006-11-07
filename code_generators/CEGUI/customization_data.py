@@ -1,6 +1,11 @@
 def aliases( Version ):
-    return {
-        "Singleton<CEGUI::Logger>"
+    if Version == "0.5" :
+        return {
+#           "DataContainer<unsigned char>"
+#           :  "DataContainerUnsignedChar"
+#           ,"RefPtr<CEGUI::Event::ConnectionInterface>"
+#           : "RefPtrConnectionInterface"
+         "Singleton<CEGUI::Logger>"
               : "SingletonLogger"
          ,"Singleton<CEGUI::FontManager>"
                : "SingletonFontManager"
@@ -24,16 +29,16 @@ def aliases( Version ):
                : "SingletonWindowRendererManager"
          ,"RefCounted<CEGUI::BoundSlot>"
                : "RefCountedBoundSlot"
-    }
+        }
 
 def header_files( Version ):
-    return [ "CEGUI.h"
+    return [   "CEGUI.h"
             , "CEGUIXMLParser.h"
-            , "OgreCEGUIRenderer.h"
-            , "OgreRenderQueue.h"
+#             , "OgreCEGUIRenderer.h"
+#             , "OgreRenderQueue.h"
             , "CEGUIXMLHandler.h"
             , "CEGUIXMLAttributes.h"
-            , "CEGUIXMLserializer.h"
+#             , "CEGUIXMLserializer.h"
             , "OgreCEGUIRenderer.h"
             ,"OgreCEGUIResourceProvider.h"
                   ]

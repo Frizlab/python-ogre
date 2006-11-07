@@ -23,9 +23,9 @@
 // #include <CEGUI/elements/CEGUIScrollbar.h>
 
 #include "CEGUI.h"
-// #include "CEGUIXMLParser.h"
-// #include "CEGUIXMLHandler.h"
-// #include "CEGUIXMLAttributes.h"
+#include "CEGUIXMLParser.h"     // needed for System
+#include "CEGUIXMLHandler.h"
+#include "CEGUIXMLAttributes.h" // needed for FontManager
 // #include "CEGUIXMLserializer.h"
 // #include "OgreCEGUIRenderer.h"
 #include "OgreCEGUIRenderer.h"
