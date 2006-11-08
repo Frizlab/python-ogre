@@ -20,6 +20,7 @@ import customization_data
 import hand_made_wrappers
 
 from pyplusplus import module_builder
+from pyplusplus import module_creator
 from pyplusplus.module_builder import call_policies
 
 from pygccxml import parser
@@ -97,6 +98,13 @@ def filter_declarations( mb ):
     non_public_non_pure_virtual = ode_ns.calldefs( query )
     non_public_non_pure_virtual.exclude()
     
+    #For some reason Py++ does not honor call policies in this case.
+    #You will have to expose them by hand
+    dContactGeom = ode_ns.class_( 'dContactGeom' )
+    g12 = dContactGeom.variables( lambda d: d.name in ('g1', 'g2' ) )
+    g12.exclude()
+    #g12.getter_call_policies = call_policies.return_value_policy( call_policies.return_opaque_pointer )
+
  
 def set_call_policies( mb ):
     ode_ns = mb.global_ns   ###  Again, no sperate namespace  .namespace ('ode')
@@ -106,40 +114,18 @@ def set_call_policies( mb ):
     mem_funs = ode_ns.calldefs ()
     mem_funs.create_with_signature = True #Generated code will not compile on
     #MSVC 7.1 if function has throw modifier.
+    resolver = module_creator.built_in_resolver_t()
     for mem_fun in mem_funs:
         if mem_fun.call_policies:
             continue
+        decl_call_policies = resolver( mem_fun )
+        if decl_call_policies:
+            mem_fun.call_policies = decl_call_policies
+            continue
         rtype = declarations.remove_alias( mem_fun.return_type )
-        if declarations.is_pointer(rtype):
-            rtype_no_ptr = declarations.remove_pointer(rtype)
-            cls_decl_traits = declarations.class_declaration_traits
-            if cls_decl_traits.is_my_case( rtype_no_ptr ) \
-               and cls_decl_traits.get_declaration( rtype_no_ptr ).name.startswith( 'dx' ):
-                #dxYYY - is the implementation details classes, that will not be exposed
-                #may be these functions should be excluded?
-                mem_fun.call_policies \
-                    = call_policies.return_value_policy( call_policies.return_opaque_pointer )
-            else:
-                mem_fun.call_policies \
-                    = call_policies.return_value_policy( call_policies.reference_existing_object )
-        elif declarations.is_reference (mem_fun.return_type):
+        if declarations.is_pointer(rtype) or declarations.is_reference(rtype):
             mem_fun.call_policies \
                 = call_policies.return_value_policy( call_policies.reference_existing_object )
-        else:
-            pass
-    #For some reason Py++ does not honor call policies in this case.
-    #You will have to expose them by hand
-    dContactGeom = ode_ns.class_( 'dContactGeom' )
-    g12 = dContactGeom.variables( lambda d: d.name in ('g1', 'g2' ) )
-    g12.exclude()
-    #g12.getter_call_policies = call_policies.return_value_policy( call_policies.return_opaque_pointer )
-    
-def configure_exception(mb):
-    pass
-    #We don't exclude  Exception, because it contains functionality, that could
-    #be useful to user. But, we will provide automatic exception translator
-#     Exception = mb.namespace( 'ode' ).class_( 'Exception' )
-#     Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.eText' )
 
 def generate_code():
     xml_cached_fc = parser.create_cached_source_fc(
@@ -156,12 +142,15 @@ def generate_code():
 
     filter_declarations (mb)
 
+    query = lambda decl: isinstance( decl, ( declarations.class_t, declarations.class_declaration_t ) ) \
+                         and decl.name.startswith( 'dx' )
+    mb.global_ns.decls( query ).opaque = True                         
+       
+
     common_utils.set_declaration_aliases( mb.global_ns, customization_data.aliases(environment.ode.version) )
 
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
-
-    configure_exception( mb )
 
     set_call_policies (mb)
     hand_made_wrappers.apply( mb )
