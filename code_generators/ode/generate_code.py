@@ -14,6 +14,8 @@ sys.path.append( os.path.join( '..', '..' ) )
 sys.path.append( '..' )
 sys.path.append( '.' )
 
+import shutil
+
 import environment
 import common_utils
 import customization_data
@@ -126,6 +128,9 @@ def set_call_policies( mb ):
         if declarations.is_pointer(rtype) or declarations.is_reference(rtype):
             mem_fun.call_policies \
                 = call_policies.return_value_policy( call_policies.reference_existing_object )
+        #mem_fun.call_policies \
+        #   = call_policies.return_value_policy( '::boost::python::return_pointee_value' )
+
 
 def generate_code():
     xml_cached_fc = parser.create_cached_source_fc(
@@ -172,6 +177,20 @@ def generate_code():
     huge_classes = map( mb.class_, customization_data.huge_classes(environment.ode.version) )
 
     mb.split_module(environment.ode.generated_dir, huge_classes)
+
+    return_pointee_value_source_path \
+        = os.path.join( environment.pyplusplus_install_dir
+                        , 'pyplusplus_dev'
+                        , 'pyplusplus'
+                        , 'code_repository'
+                        , 'return_pointee_value.hpp' )
+
+    return_pointee_value_target_path \
+        = os.path.join( environment.ode.generated_dir, 'return_pointee_value.hpp' )
+
+    if not os.path.exists( return_pointee_value_target_path ):
+        shutil.copy( return_pointee_value_source_path, environment.ode.generated_dir )
+
 
 if __name__ == '__main__':
     start_time = time.clock()
