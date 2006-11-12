@@ -23,36 +23,45 @@ class ogre:
     version = "CVS"
     #version = "1.2.3"
     cache_file = None
-    libs_files = ["ogremain", "ogreguirenderer", "ceguibase", "ode"]
+    libs_files = ["ogremain", "ogreguirenderer", "ceguibase", "ode", "newton"]
 
 class ois:
-    version = "0.7"
+    version= "0.7"
+    pass
 
 class CEGUI:
     version = "0.5" 
-    
 class ode:
-    version = "0.7"
+    version= "0.7"
+    
+class newton:
+    version= "1.0"
 
+class ogrerefapp:
+    version = "1.2.3"
+
+class ogrenewt:
+    version = "1.0"
+        
+       
 projects = {
     'ois' : ois
     , 'ogre' : ogre
     , 'CEGUI' : CEGUI
-    , 'ODE' : ode
+    , 'ode' : ode
+    , 'newton' : newton
+    , 'ogrerefapp' : ogrerefapp
+    , 'ogrenewt' : ogrenewt
 }
 
 if 'roman' in getpass.getuser():
     root_dir = r'D:\python-ogre'
     gccxml_bin = r'd:/gccxml_cvs/gccxml-build/bin/release/gccxml.exe'
-    python_include_dir = 'e:/python/include'
+    python_include_dir = 'c:/python/include'
     pyplusplus_install_dir = r'D:\pygccxml_sources\sources'
 
-    ogre.include_dir = r'D:\OgreSDK1.2.3\include'
+    ogre.include_dir = r'D:\OgreSDK\include'
     ois.include_dir = r'D:\OisSDK\includes'
-    CEGUI.include_dir = r'D:/CEGUI-0.5-0-RC2/include'
-    
-    ode.include_dir = r'D:\ode-win32-0.7\ode-0.7\include'
-    
 else:
     root_dir = r'C:\development\pywork'
     gccxml_bin = r'c:/development/gccxml/bin/release/gccxml.exe'
@@ -60,15 +69,50 @@ else:
     pyplusplus_install_dir = r'c:\development\pyplus'
 
     if ogre.version == "CVS":
-        ogre.include_dir  = r'c:\development\ocvs\ogrenew\ogremain\include'
-        ois.include_dir = r'c:\development\ois\includes'
-        ogre.libs_dir = (r'c:/development/ocvs/ogrenew/ogremain/lib/release', 
-                        r'c:/development/ocvs/ogrenew/samples/common/ceguirenderer/lib',
-                        r'c:/development/ocvs/ogrenew/dependencies/lib/release',
-                        r'c:/development/boost/boost' )
+        ogre.include_dir  = [r'c:\development\ocvs\ogrenew\ogremain\include']
+        ogrerefapp.include_dir = [r'c:\development\ocvs\ogrenew\ogremain\include',
+                           r'c:\development\ocvs\ogrenew\referenceapplication\referenceapplayer\include',
+                            r'c:\development\ocvs\ogrenew\dependencies\include']
+        ogrerefapp.version="CVS"
+#         ogre.libs_dir = [r'c:/development/ocvs/ogrenew/ogremain/lib/release', 
+#                         r'c:/development/ocvs/ogrenew/samples/common/ceguirenderer/lib',
+#                         r'c:/development/ocvs/ogrenew/dependencies/lib/release',
+#                         r'c:/development/boost/boost' ]
+        CEGUI.include_dir = [r'c:/development/cegui_mk2/include',
+                           ## r'c:/development/ocvs/ogrenew/dependencies/include',
+                           ## NOTE: ogre headers expect cegui to live in ./CEGUI so I've copied the cegui include
+                           ## tree to ./CEGUI in the followind directory..
+                            r'c:/development/cegui_mk2/',
+                            r'c:/development/ocvs/ogrenew/samples/common/CEGUIRenderer/include',
+                            r'c:/development/ocvs/ogrenew/ogremain/include',
+                            r'c:/development/boost'
+                            ]
+                            
+        ogrenewt.include_dir = [r'c:/development/ocvs/ogreaddons/ogrenewt/OgreNewt_Main/inc',
+                            r'c:/development/ocvs/ogrenew/ogremain/include',
+                            r'c:/development/newtonsdk/sdk'
+                            ]
+
     else:
-        ogre.include_dir  = r'c:\development\ogreSDK\include'
-    CEGUI.include_dir = r'c:/development/ocvs/ogrenew/dependencies/include/CEGUI'
+        ogre.include_dir  = [r'c:\devold\ogreSDK\include',
+                                r'c:\devold\ogreSDK\samples\refapp\include'
+                                ]
+        CEGUI.include_dir = [r'c:/devold/cegui_mk2/include',
+                            r'c:/devold/ogresdk/samples/include',
+                            r'c:/devold/ogresdk/include',
+                            r'c:/development/boost'
+                            ]  
+        CEGUI.version = "0.4"                              
+                                    
+        ogrerefapp.include_dir = ogre.include_dir
+        
+#    CEGUI.include_dir = r'c:/ogresdk/include/CEGUI'
+    ode.include_dir = r'c:/development/ocvs/ogrenew/dependencies/include'
+    ode.include_dir = r'c:/development/ode-0.7/include'
+    newton.include_dir = (r'c:/development/newtonsdk/sdk',)
+    ois.include_dir = r'c:\development\ois\includes'
+    
+
 
 sys.path.append( os.path.join( root_dir, 'common_utils' ) )
 sys.path.append( pyplusplus_install_dir + r'/pygccxml_dev' )

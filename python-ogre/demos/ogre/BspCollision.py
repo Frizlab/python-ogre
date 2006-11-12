@@ -8,6 +8,16 @@ import Ogre as ogre
 import SampleFramework as sf     ## note that we are forcing the OIS sample framework
 import OgreRefApp
 
+## As this demo does it's own key input, AND we want to support Ogre 1.2.x we need to cope with the 
+## change to OIS in ogre 1.3.x (current CVS version)
+
+if ogre.OgreVersionString[:2]=="12":
+    KC_SPACE = ogre.KC_SPACE
+else:
+    import OIS as OIS
+    KC_SPACE = OIS.KC_SPACE
+
+
 ## Hacky globals
 gBall = None
 gTargetNode = None
@@ -36,7 +46,7 @@ class BspCollisionListener (sf.FrameListener):
         ## Call superclass
         ret = sf.FrameListener.frameEnded(self, evt)        
 
-        if (self.inputDevice.isKeyDown(ogre.KC_SPACE) and self.timeUntilNextToggle <= 0):
+        if self._isToggleKeyDown(KC_SPACE):  
             self.timeUntilNextToggle = 2
             gBall.setPosition(self.camera.getPosition() + 
                 self.camera.getDirection() * self.camera.getNearClipDistance() * 2)

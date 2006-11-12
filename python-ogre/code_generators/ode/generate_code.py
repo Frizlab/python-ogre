@@ -51,12 +51,22 @@ def filter_declarations( mb ):
         if funcs.name[0]=='d':
             print "Including Function", funcs.name
             funcs.include()
+   # these are xcluded at they require real pointers (to retunr the results)
+    # they have been replaced in hand wrappers
+    ode_ns.class_( "dBody" ).member_functions( "getPosRelPoint").exclude()
+    ode_ns.class_( "dBody" ).member_functions( "getRelPointPos").exclude()
+    ode_ns.class_( "dBody" ).member_functions("getPointVel").exclude()
+    ode_ns.class_( "dBody" ).member_functions( "getRelPointVel").exclude()
+    ode_ns.class_( "dBody" ).member_functions( "getFiniteRotationAxis").exclude()
+    ode_ns.class_( "dBody" ).member_functions( "vectorFromWorld").exclude()
+    ode_ns.class_( "dBody" ).member_functions( "vectorToWorld").exclude()
+    
      
-    ptr_to_fundamental_query \
-        = lambda f: declarations.is_pointer( f.return_type ) \
-                    and declarations.is_fundamental( declarations.remove_pointer( f.return_type ) )
+#     ptr_to_fundamental_query \
+#         = lambda f: declarations.is_pointer( f.return_type ) \
+#                     and declarations.is_fundamental( declarations.remove_pointer( f.return_type ) )
                     
-    ode_ns.calldefs( ptr_to_fundamental_query ).exclude()
+#     ode_ns.calldefs( ptr_to_fundamental_query ).exclude()
 
 #     # some internal variables dxXXXX are being exposed via functions 
 #     # so we need to looking for functions that return these private xxxID's and remove them 
@@ -126,10 +136,10 @@ def set_call_policies( mb ):
             continue
         rtype = declarations.remove_alias( mem_fun.return_type )
         if declarations.is_pointer(rtype) or declarations.is_reference(rtype):
+#             mem_fun.call_policies \
+#                 = call_policies.return_value_policy( call_policies.reference_existing_object )
             mem_fun.call_policies \
-                = call_policies.return_value_policy( call_policies.reference_existing_object )
-        #mem_fun.call_policies \
-        #   = call_policies.return_value_policy( '::boost::python::return_pointee_value' )
+               = call_policies.return_value_policy( '::boost::python::return_pointee_value' )
 
 
 def generate_code():
@@ -141,7 +151,7 @@ def generate_code():
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
                                           , include_paths=[environment.ode.include_dir]
-                                          , define_symbols=['ode_NONCLIENT_BUILD']
+                                          , define_symbols=['ode_NONCLIENT_BUILD', 'ODE_LIB']
 #                                          , start_with_declarations=['ode']
                                           , indexing_suite_version=2 )
 
