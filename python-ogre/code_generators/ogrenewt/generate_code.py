@@ -51,7 +51,7 @@ def filter_declarations( mb ):
     
     ogrenewt_ns = global_ns.namespace( 'OgreNewt' )
     ogrenewt_ns.include()
-
+NewtonBodySetDestructorCallback
     
     ## these need to be excluded due to callback functions - need to wrap them
     ogrenewt_ns.class_( "World" ).member_functions("setLeaveWorldCallback").exclude()
@@ -59,11 +59,14 @@ def filter_declarations( mb ):
     ogrenewt_ns.class_( "Body" ).member_functions("setAutoactiveCallback").exclude()
     ogrenewt_ns.class_( "Body" ).member_functions("setCustomForceAndTorqueCallback").exclude()
     ogrenewt_ns.class_( "Body" ).member_functions("setCustomTransformCallback").exclude()
-#    ogrenewt_ns.class_( "Body" ).member_functions("setStandardForceCallback").exclude()
     ogrenewt_ns.class_( "Debugger" ).member_functions("getSingleton").exclude()
     ogrenewt_ns.class_( "BodyIterator" ).member_functions("getSingleton").exclude()
 
-     
+    ## Replaced these with 'useful' functions in the handwrappers - take and return python objects
+    ogrenewt_ns.class_( "Body" ).member_functions("setUserData").exclude()
+    ogrenewt_ns.class_( "Joint" ).member_functions("setUserData").exclude()
+    ogrenewt_ns.class_( "Body" ).member_functions("getUserData").exclude()
+    ogrenewt_ns.class_( "Joint" ).member_functions("getUserData").exclude()
     
 #     ptr_to_fundamental_query \
 #         = lambda f: declarations.is_pointer( f.return_type ) \
@@ -86,7 +89,14 @@ def filter_declarations( mb ):
 #     non_public_non_pure_virtual = ogrenewt_ns.calldefs( query )
 #     non_public_non_pure_virtual.exclude()
     
-   
+    cls = ogrenewt_ns.class_("ContactCallback")
+    cls.variable('m_body0').include()
+    cls.variable('m_body1').include()
+    cls.variable('m_contact').include()
+    cls.variable('m_material').include()
+    
+    
+    
 def set_call_policies( mb ):
     ogrenewt_ns = mb.global_ns.namespace( 'OgreNewt' )
 
