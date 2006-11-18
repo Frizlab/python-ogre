@@ -78,11 +78,11 @@ else:
 #                         r'c:/development/ocvs/ogrenew/samples/common/ceguirenderer/lib',
 #                         r'c:/development/ocvs/ogrenew/dependencies/lib/release',
 #                         r'c:/development/boost/boost' ]
-        CEGUI.include_dir = [r'c:/development/cegui_mk2/include',
+        CEGUI.include_dir = [r'c:/development/cegui-0.5.0/include',
                            ## r'c:/development/ocvs/ogrenew/dependencies/include',
                            ## NOTE: ogre headers expect cegui to live in ./CEGUI so I've copied the cegui include
                            ## tree to ./CEGUI in the followind directory..
-                            r'c:/development/cegui_mk2/',
+                            r'c:/development/ocvs/ogrenew/dependencies/include/',
                             r'c:/development/ocvs/ogrenew/samples/common/CEGUIRenderer/include',
                             r'c:/development/ocvs/ogrenew/ogremain/include',
                             r'c:/development/boost'
@@ -97,7 +97,7 @@ else:
         ogre.include_dir  = [r'c:\devold\ogreSDK\include',
                                 r'c:\devold\ogreSDK\samples\refapp\include'
                                 ]
-        CEGUI.include_dir = [r'c:/devold/cegui_mk2/include',
+        CEGUI.include_dir = [r'c:/devold/cegui-0.5.0/include',
                             r'c:/devold/ogresdk/samples/include',
                             r'c:/devold/ogresdk/include',
                             r'c:/development/boost'

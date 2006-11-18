@@ -26,8 +26,7 @@
 #include "CEGUIXMLParser.h"     // needed for System
 #include "CEGUIXMLHandler.h"
 #include "CEGUIXMLAttributes.h" // needed for FontManager
-// #include "CEGUIXMLserializer.h"
-// #include "OgreCEGUIRenderer.h"
+#include "CEGUIXMLserializer.h"
 #include "OgreCEGUIRenderer.h"
 #include "OgreCEGUIResourceProvider.h"
 

@@ -14,8 +14,6 @@ sys.path.append( os.path.join( '..', '..' ) )
 sys.path.append( '..' )
 sys.path.append( '.' )
 
-import shutil
-
 import environment
 import common_utils
 import customization_data
@@ -36,7 +34,7 @@ def filter_declarations( mb ):
     
     for cls in ode_ns.classes():
         #print "Checking ", cls.decl_string
-        if  cls.decl_string[2]=='d' and cls.decl_string[3].isupper():
+        if  cls.decl_string[2:3]=='d' and cls.decl_string[3].isupper():
             print "Including Class:", cls.name
             cls.include()
     ## and the dxXXclasses        
@@ -51,36 +49,12 @@ def filter_declarations( mb ):
         if funcs.name[0]=='d':
             print "Including Function", funcs.name
             funcs.include()
-   # these are excluded as they pass real pointers as function varialbles and expectde them to be updated
-    # they have been replaced in hand wrappers
-    ode_ns.class_( "dBody" ).member_functions( "getPosRelPoint").exclude()
-    ode_ns.class_( "dBody" ).member_functions( "getRelPointPos").exclude()
-    ode_ns.class_( "dBody" ).member_functions("getPointVel").exclude()
-    ode_ns.class_( "dBody" ).member_functions( "getRelPointVel").exclude()
-    ode_ns.class_( "dBody" ).member_functions( "getFiniteRotationAxis").exclude()
-    ode_ns.class_( "dBody" ).member_functions( "vectorFromWorld").exclude()
-    ode_ns.class_( "dBody" ).member_functions( "vectorToWorld").exclude()
-    
-
-    # these classes return real *, which are really points to other structures
-    # need to be fixed in hand wrappers
-    ode_ns.class_( "dBody" ).member_functions( "getPosition").exclude()
-    ode_ns.class_( "dBody" ).member_functions( "getRotation").exclude()
-    ode_ns.class_( "dBody" ).member_functions("getQuaternion").exclude()
-    ode_ns.class_( "dBody" ).member_functions( "getLinearVel").exclude()
-    ode_ns.class_( "dBody" ).member_functions( "getAngularVel").exclude()
-    ode_ns.class_( "dBody" ).member_functions( "getForce").exclude()
-    ode_ns.class_( "dBody" ).member_functions( "getTorque").exclude()
-    ode_ns.class_( "dGeom" ).member_functions( "getPosition").exclude()
-    ode_ns.class_( "dGeom" ).member_functions( "getRotation").exclude()
-    
-    
-         
-#     ptr_to_fundamental_query \
-#         = lambda f: declarations.is_pointer( f.return_type ) \
-#                     and declarations.is_fundamental( declarations.remove_pointer( f.return_type ) )
+     
+    ptr_to_fundamental_query \
+        = lambda f: declarations.is_pointer( f.return_type ) \
+                    and declarations.is_fundamental( declarations.remove_pointer( f.return_type ) )
                     
-#     ode_ns.calldefs( ptr_to_fundamental_query ).exclude()
+####    ode_ns.calldefs( ptr_to_fundamental_query ).exclude()
 
 #     # some internal variables dxXXXX are being exposed via functions 
 #     # so we need to looking for functions that return these private xxxID's and remove them 
@@ -150,11 +124,8 @@ def set_call_policies( mb ):
             continue
         rtype = declarations.remove_alias( mem_fun.return_type )
         if declarations.is_pointer(rtype) or declarations.is_reference(rtype):
-#             mem_fun.call_policies \
-#                 = call_policies.return_value_policy( call_policies.reference_existing_object )
             mem_fun.call_policies \
-               = call_policies.return_value_policy( '::boost::python::return_pointee_value' )
-
+                = call_policies.return_value_policy( call_policies.reference_existing_object )
 
 def generate_code():
     xml_cached_fc = parser.create_cached_source_fc(
@@ -165,7 +136,7 @@ def generate_code():
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
                                           , include_paths=[environment.ode.include_dir]
-                                          , define_symbols=['ode_NONCLIENT_BUILD', 'ODE_LIB']
+                                          , define_symbols=['ode_NONCLIENT_BUILD']
 #                                          , start_with_declarations=['ode']
                                           , indexing_suite_version=2 )
 
@@ -201,20 +172,6 @@ def generate_code():
     huge_classes = map( mb.class_, customization_data.huge_classes(environment.ode.version) )
 
     mb.split_module(environment.ode.generated_dir, huge_classes)
-
-    return_pointee_value_source_path \
-        = os.path.join( environment.pyplusplus_install_dir
-                        , 'pyplusplus_dev'
-                        , 'pyplusplus'
-                        , 'code_repository'
-                        , 'return_pointee_value.hpp' )
-
-    return_pointee_value_target_path \
-        = os.path.join( environment.ode.generated_dir, 'return_pointee_value.hpp' )
-
-    if not os.path.exists( return_pointee_value_target_path ):
-        shutil.copy( return_pointee_value_source_path, environment.ode.generated_dir )
-
 
 if __name__ == '__main__':
     start_time = time.clock()

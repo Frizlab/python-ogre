@@ -31,14 +31,15 @@ def aliases( Version ):
                : "RefCountedBoundSlot"
         }
 
+        
 def header_files( Version ):
     return [   "CEGUI.h"
             , "CEGUIXMLParser.h"
-#             , "OgreCEGUIRenderer.h"
+            , "OgreCEGUIRenderer.h"
 #             , "OgreRenderQueue.h"
             , "CEGUIXMLHandler.h"
             , "CEGUIXMLAttributes.h"
-#             , "CEGUIXMLserializer.h"
+            , "CEGUIXMLserializer.h"
             , "OgreCEGUIRenderer.h"
             ,"OgreCEGUIResourceProvider.h"
                   ]

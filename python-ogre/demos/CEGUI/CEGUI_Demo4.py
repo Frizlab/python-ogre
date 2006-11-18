@@ -66,14 +66,14 @@ class GuiApplication ( SampleFramework.Application ):
         l = self.sceneManager.createLight("MainLight") 
         l.setPosition(20,80,50) 
 
-        ## set the default resource groups to be used
-        CEGUI.Imageset.setDefaultResourceGroup("imagesets")
-        CEGUI.Font.setDefaultResourceGroup("fonts")
-        CEGUI.Scheme.setDefaultResourceGroup("schemes")
-        CEGUI.WidgetLookManager.setDefaultResourceGroup("looknfeels")
-        CEGUI.WindowManager.setDefaultResourceGroup("layouts")
-        CEGUI.ScriptModule.setDefaultResourceGroup("lua_scripts")
-        
+#         ## set the default resource groups to be used
+#         CEGUI.Imageset.setDefaultResourceGroup("imagesets")
+#         CEGUI.Font.setDefaultResourceGroup("fonts")
+#         CEGUI.Scheme.setDefaultResourceGroup("schemes")
+#         CEGUI.WidgetLookManager.setDefaultResourceGroup("looknfeels")
+#         CEGUI.WindowManager.setDefaultResourceGroup("layouts")
+#         CEGUI.ScriptModule.setDefaultResourceGroup("lua_scripts")
+#         
         ## setup GUI system
         self.GUIRenderer = CEGUI.OgreCEGUIRenderer(self.renderWindow, 
             ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager) 

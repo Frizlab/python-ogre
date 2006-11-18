@@ -11,15 +11,11 @@
 #include "ode/common.h"
 #include "ode/odecpp.h"
 #include "ode/odecpp_collision.h"
-//#include "c:/development/ode-0.7/ode/src/objects.h"
 
 
 //namespace python_ode{ 
 
     inline void instantiate(){
-        sizeof ( dMatrix3);
-        sizeof ( dQuaternion );
-        sizeof (dVector3);
         struct dxWorld;		/* dynamics world */
         struct dxSpace;		/* collision space */
         struct dxBody;		/* rigid body (dynamics object) */
@@ -48,7 +44,6 @@
         sizeof (dGeomID);
         sizeof (dJointID);
         sizeof (dJointGroupID);
-        
         
     }
 

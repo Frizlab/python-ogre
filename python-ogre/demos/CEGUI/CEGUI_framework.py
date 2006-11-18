@@ -20,6 +20,8 @@ def _PointHack(x, y):
     return CEGUI.Vector2(x, y)
 CEGUI.Point = _PointHack
 
+def cegui_reldim ( x ) :
+    return CEGUI.UDim((x),0)
     
 class MouseListener ( OIS.MouseListener ):
     def __init__(self):

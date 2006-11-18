@@ -51,7 +51,6 @@ def filter_declarations( mb ):
     
     ogrenewt_ns = global_ns.namespace( 'OgreNewt' )
     ogrenewt_ns.include()
-NewtonBodySetDestructorCallback
     
     ## these need to be excluded due to callback functions - need to wrap them
     ogrenewt_ns.class_( "World" ).member_functions("setLeaveWorldCallback").exclude()
@@ -67,7 +66,14 @@ NewtonBodySetDestructorCallback
     ogrenewt_ns.class_( "Joint" ).member_functions("setUserData").exclude()
     ogrenewt_ns.class_( "Body" ).member_functions("getUserData").exclude()
     ogrenewt_ns.class_( "Joint" ).member_functions("getUserData").exclude()
+
+    ## these ones take pointer to structs as arguments and update them inpalce
+    ## replaced in hand wrappers with 6 functions..
+    ogrenewt_ns.class_( "Body" ).member_functions("getPositionOrientation").exclude()
+    ogrenewt_ns.class_( "Body" ).member_functions("getMassMatrix").exclude()
+    ogrenewt_ns.class_( "Body" ).member_functions("getInvMass").exclude()
     
+        
 #     ptr_to_fundamental_query \
 #         = lambda f: declarations.is_pointer( f.return_type ) \
 #                     and declarations.is_fundamental( declarations.remove_pointer( f.return_type ) )
