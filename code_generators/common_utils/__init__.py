@@ -21,31 +21,32 @@ class private_decls_t:
     ## note the index + 'x' to get things to the same line as gcc..  However potential bugs in code
     ## depending upon the include file 'formating'.  We are capturing the line the comment is on, gcc
     ## records the line the opening brace '{' is on...
-    def __init__( self, include_dir ):
+    def __init__( self, include_dirs ):
         self.__private = {} #fname : [line ]
-        for fname in os.listdir( include_dir ):
-            full_name = os.path.join( include_dir, fname )
-            if not os.path.isfile( full_name ):
-                continue
-            fobj = file( full_name, 'r' )
-            for index, line in enumerate( fobj ):
-                if '_OgrePrivate' in line:
-                    if not self.__private.has_key( fname ):
-                        self.__private[ fname ] = []
-                    if '{' in line:     ## AJM Ugly hack - assumes there won't be blank lines between class name and opening brace
-                        index = index + 1   #enumerate calcs from 0, while gccxml from 1
-                    else:
-                        index = index + 2   #one line down to the opening brace
-                    self.__private[ fname ].append( index ) #enumerate calcs from 0, while gccxml from 1
-                line = line.strip()
-
-                ## Again this next bit assumes an opening brace on the same line as the method or class :(
-                if line.startswith( '/// Internal method ' ) or line.startswith( '/** Internal class' ):
-                    if not self.__private.has_key( fname ):
-                        self.__private[ fname ] = []
-                    self.__private[ fname ].append( index + 2 ) #enumerate calcs from 0, while gccxml from 1
-
-            fobj.close()
+        for include_dir in include_dirs:    
+            for fname in os.listdir( include_dir ):
+                full_name = os.path.join( include_dir, fname )
+                if not os.path.isfile( full_name ):
+                    continue
+                fobj = file( full_name, 'r' )
+                for index, line in enumerate( fobj ):
+                    if '_OgrePrivate' in line:
+                        if not self.__private.has_key( fname ):
+                            self.__private[ fname ] = []
+                        if '{' in line:     ## AJM Ugly hack - assumes there won't be blank lines between class name and opening brace
+                            index = index + 1   #enumerate calcs from 0, while gccxml from 1
+                        else:
+                            index = index + 2   #one line down to the opening brace
+                        self.__private[ fname ].append( index ) #enumerate calcs from 0, while gccxml from 1
+                    line = line.strip()
+    
+                    ## Again this next bit assumes an opening brace on the same line as the method or class :(
+                    if line.startswith( '/// Internal method ' ) or line.startswith( '/** Internal class' ):
+                        if not self.__private.has_key( fname ):
+                            self.__private[ fname ] = []
+                        self.__private[ fname ].append( index + 2 ) #enumerate calcs from 0, while gccxml from 1
+    
+                fobj.close()
 
     def is_private( self, decl ):
         if None is decl.location:

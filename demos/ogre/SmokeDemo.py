@@ -6,7 +6,7 @@ class SmokeApplication(sf.Application):
     def _createScene(self):
         sceneManager = self.sceneManager
         camera = self.camera
-        
+
         sceneManager.ambientLight = ogre.ColourValue(0.5, 0.5, 0.5)
         sceneManager.setSkyDome(True, 'Examples/CloudySky', 5.0, 8.0)
 

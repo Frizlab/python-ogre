@@ -21,9 +21,10 @@ class OgreNewtonApplication (sf.Application):
 
     def __del__(self):
         ##
-        ## important that things get deleted int he right order
+        ## important that things get deleted in the right order
         ##
-        del self.camera
+        if self.camera:
+            del self.camera
         del self.sceneManager
         del self.frameListener
         try:
@@ -45,7 +46,20 @@ class OgreNewtonApplication (sf.Application):
 
 
     def _createScene ( self ):
+    
+        ## we are doing this early 
+                ## position camera
+        self.msnCam = self.sceneManager.getRootSceneNode().createChildSceneNode()
+        self.msnCam.attachObject( self.camera )
+        self.camera.setPosition(0.0, 0.0, 0.0)
+        self.msnCam.setPosition( 0.0, -3.0, 23.0)
+    
+        ##make a light
+        light = self.sceneManager.createLight( "Light1" )
+        light.setType( Ogre.Light.LT_POINT )
+        light.setPosition( Ogre.Vector3(0.0, 100.0, 100.0) )
 
+        
         ## setup CEGUI
         self.GUIRenderer = CEGUI.OgreCEGUIRenderer( self.renderWindow, 
                 Ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager )
@@ -58,10 +72,15 @@ class OgreNewtonApplication (sf.Application):
         CEGUI.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme") 
         self.GUIsystem.setDefaultMouseCursor("TaharezLook",  "MouseArrow") 
         self.GUIsystem.setDefaultFont( "BlueHighway-12") 
-        
+
+            
         sheet = CEGUI.WindowManager.getSingleton().createWindow( "DefaultWindow", "root_wnd" )
         CEGUI.System.getSingleton().setGUISheet( sheet )
     
+        self.frameListener = OgreNewtonFrameListener( self.renderWindow, self.camera, 
+                            self.sceneManager, self.World, self.msnCam, self.GUIRenderer )
+
+        
         ## sky box.
         self.sceneManager.setSkyBox(True, "Examples/CloudyNoonSkyBox")
         
@@ -84,7 +103,7 @@ class OgreNewtonApplication (sf.Application):
         bod.attachToNode( floornode )
         bod.setPositionOrientation( Ogre.Vector3(0.0,-10.0,0.0), Ogre.Quaternion.IDENTITY )
         self.bodies.append(bod)
-    
+        
         ## make a simple rope.
         size=Ogre.Vector3 (3,1.0,1.0)
         pos=Ogre.Vector3 (0,1,0)
@@ -98,7 +117,9 @@ class OgreNewtonApplication (sf.Application):
             ## make the next box.
             child = self.makeSimpleBox(size, pos, orient)
             self.bodies.append(child)
-    
+            ## set the buoyancy callback
+            #child.setCustomForceAndTorqueCallback( self.frameListener, "dragCallback")
+               
             ## make the joint right between the bodies...
     
             if parent :
@@ -118,19 +139,21 @@ class OgreNewtonApplication (sf.Application):
             size = Ogre.Vector3( 1+random.random()%3, 1+random.random()%3, 1+random.random()%3 )
     
             bod = self.makeSimpleBox( size, pos, orient )
+            ## set the buoyancy callback
+            #bod.setCustomForceAndTorqueCallback( self.frameListener, "dragCallback" )
+            
             self.bodies.append ( bod)
+            
+        ## make a simple visual object for the buoyancy plane.
+        theplane = self.sceneManager.createEntity("ThePlane", Ogre.SceneManager.PT_PLANE )
+        planeNode = self.sceneManager.getRootSceneNode().createChildSceneNode()
     
-        
-        ## position camera
-        self.msnCam = self.sceneManager.getRootSceneNode().createChildSceneNode()
-        self.msnCam.attachObject( self.camera )
-        self.camera.setPosition(0.0, 0.0, 0.0)
-        self.msnCam.setPosition( 0.0, -3.0, 23.0)
+        theplane.setMaterialName( "Simple/Translucent" )
+        planeNode.attachObject( theplane )
+        planeNode.setPosition( Ogre.Vector3(0,0,0) )
+        planeNode.setOrientation( Ogre.Quaternion( Ogre.Degree(d=-90), Ogre.Vector3(1,0,0) ) )
     
-        ##make a light
-        light = self.sceneManager.createLight( "Light1" )
-        light.setType( Ogre.Light.LT_POINT )
-        light.setPosition( Ogre.Vector3(0.0, 100.0, 100.0) )
+    
 
     def makeSimpleBox( self, size, pos,  orient ):
         ## base mass on the size of the object.
@@ -162,8 +185,8 @@ class OgreNewtonApplication (sf.Application):
 
     def _createFrameListener(self):
         
-        self.frameListener = OgreNewtonFrameListener( self.renderWindow, self.camera, 
-                            self.sceneManager, self.World, self.msnCam, self.GUIRenderer )
+#         self.frameListener = OgreNewtonFrameListener( self.renderWindow, self.camera, 
+#                             self.sceneManager, self.World, self.msnCam, self.GUIRenderer )
         self.root.addFrameListener(self.frameListener)
 
         self.NewtonListener = BasicFrameListener( self.renderWindow, self.sceneManager, self.World, 60 )
@@ -196,10 +219,9 @@ class OgreNewtonFrameListener(GuiFrameListener ):
         self.DragLineNode = self.sceneManager.getRootSceneNode().createChildSceneNode()
         self.DragLine = Ogre.ManualObject( "__DRAG_LINES__" )
         
-    	self.dragPoint = None
-    	self.dragDist = None
-    	self.dragBody =None
-
+        self.dragPoint = None
+        self.dragDist = None
+        self.dragBody =None
 
 
     def frameStarted(self, frameEvent):
@@ -251,7 +273,7 @@ class OgreNewtonFrameListener(GuiFrameListener ):
      
                 mouse = CEGUI.MouseCursor.getSingleton().getPosition()
                 rend = CEGUI.System.getSingleton().getRenderer()
-                print "rend:", rend.getWidth(), rend.getHeight()
+                
                 mx = mouse.d_x / rend.getWidth()
                 my = mouse.d_y / rend.getHeight()
                 print "Mouse: ", mx, my
@@ -276,7 +298,10 @@ class OgreNewtonFrameListener(GuiFrameListener ):
     
                     ## now we need to save this point to apply the spring force, I'm using the userData of the bodies in this example.
                     info.mBody.setUserData( self )
-    
+                    print "\n\n"
+                    test = info.mBody.getUserData()
+                    print "UUU ", test, dir(test)
+                    print "\n\n"
                     ## now change the force callback from the standard one to the one that applies the spring (drag) force.
                     info.mBody.setCustomForceAndTorqueCallback( self, "dragCallback" )
     
@@ -311,28 +336,22 @@ class OgreNewtonFrameListener(GuiFrameListener ):
 
 
     def dragCallback(  self, body ):
-        print "BODY: ", body
         ## this body is being dragged by the mouse, so apply a spring force.
         fl = body.getUserData()
-
         ## first find the global point the mouse is at...
         mouse = CEGUI.MouseCursor.getSingleton().getPosition()
         rend = CEGUI.System.getSingleton().getRenderer()
         
         mx = mouse.d_x / rend.getWidth()
         my = mouse.d_y / rend.getHeight()
-        print "DRAG MOUSE:", mx, my, body, body.getVelocity()
         camray = self.camera.getCameraToViewportRay( mx, my )
     
-        campt = camray.getPoint( self.dragDist )
+        campt = camray.getPoint( fl.dragDist )
     
         ## now find the global point on the body:
         bodpos, bodorient = body.getPositionOrientation(  )
-        print bodpos, bodorient
         bodpt = (bodorient * fl.dragPoint) + bodpos
-
-        #bodpt = (bodorient * self.dragPoint) + bodpos
-    
+            
         ## apply the spring force!
         mass, inertia= body.getMassMatrix(  )
     
@@ -352,11 +371,39 @@ class OgreNewtonFrameListener(GuiFrameListener ):
         gravity = Ogre.Vector3(0,-9.8,0) * mass
         body.addForce( gravity )
         print "Adding Force:", dragForce, bodpt, gravity
+        ## also don't forget buoyancy force. AJM NEED TO WRAP...
+        body.addBouyancyForce( 0.7, 0.5, 0.5, Ogre.Vector3(0.0,-9.8,0.0), 
+                    self, "buoyancyCallback" )
 
     def remove3DLine(self):
         self.DragLineNode.detachAllObjects()
         self.DragLine.clear()
 
+        
+    def standardForceCallback(  me ):
+        mass, inertia = me.getMassMatrix( )
+    
+        gravity = Ogre.Vector3(0,-9.8,0) * mass
+        body.addForce( gravity )
+    
+        ## also don't forget buoyancy force.
+        ## just pass the acceleration due to gravity, not the force (accel * mass)! 
+        body.addBouyancyForce( 0.7, 0.5, 0.5, Ogre.Vector3(0.0,-9.8,0.0), 
+                        self, "buoyancyCallback" )
+ 
+    ##################################################################################
+    ##      BUOYANCY CALLBACK
+    ################################################################################/
+    def buoyancyCallback(self, colID,  me,  orient,  pos,  plane ):
+        ## here we need to create an Ogre::Plane object representing the surface of the liquid.  in our case, we're 
+        ## just assuming a completely flat plane of liquid, however you could use this function to retrieve the plane
+        ## equation for an animated sea, etc.
+        plane = Ogre.Plane( Ogre.Vector3(0,1,0), Ogre.Vector3(0,0,0) )
+    
+        return True
+    
+        
+        
 if __name__ == '__main__':
     try:
         application = OgreNewtonApplication()

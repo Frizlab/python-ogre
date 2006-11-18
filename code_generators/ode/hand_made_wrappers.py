@@ -50,19 +50,74 @@ dBody_getFiniteRotationAxis ( ::dBody & body ) {
     body.getFiniteRotationAxis( &returnValue);
     return returnValue;
 }
-"""        
-            
-# WRAPPER_DEFINITION_RenderWindow = \
-# """
-# boost::python::tuple 
-# RenderWindow_getMetricsIntWrapper( Ogre::RenderWindow& rw ) {
-#    unsigned int width, height, colourDepth;
-#    int left, top;
-#    rw.getMetrics(  width,  height, colourDepth,  left,  top );
-#    return ( boost::python::make_tuple(width, height, colourDepth, left, top));
-# }
-# """
 
+
+boost::python::tuple
+dBody_getPosition(::dBody & body) {
+  const ::dReal * ret = body.getPosition();
+   
+  return boost::python::make_tuple(ret[0], ret[1], ret[2]); 
+}
+
+boost::python::tuple
+dBody_getRotation(::dBody & body){
+    const ::dReal * ret = body.getRotation(); 
+    return boost::python::make_tuple(
+                ret[0], ret[1], ret[2], ret[3], 
+                ret[4], ret[5], ret[6], ret[7],
+                ret[8], ret[9], ret[10], ret[11]); 
+    
+    }
+    
+boost::python::tuple
+dBody_getQuaternion(::dBody & body){
+  const ::dReal * ret = body.getQuaternion (); 
+  return boost::python::make_tuple(ret[0], ret[1], ret[2], ret[3]); 
+    }
+    
+boost::python::tuple
+dBody_getLinearVel(::dBody & body){
+  const ::dReal * ret = body.getLinearVel (); 
+  return boost::python::make_tuple(ret[0], ret[1], ret[2]); 
+    }
+boost::python::tuple
+dBody_getAngularVel(::dBody & body) {
+  const ::dReal * ret = body.getAngularVel (); 
+  return boost::python::make_tuple(ret[0], ret[1], ret[2]); 
+    }
+boost::python::tuple
+dBody_getForce(::dBody & body){
+  const ::dReal * ret = body.getForce(); 
+  return boost::python::make_tuple(ret[0], ret[1], ret[2]); 
+    }
+boost::python::tuple
+dBody_getTorque(::dBody & body){
+  const ::dReal * ret = body.getTorque(); 
+  return boost::python::make_tuple(ret[0], ret[1], ret[2]); 
+    }
+
+"""        
+
+
+WRAPPER_DEFINITION_dGeom=\
+"""
+boost::python::tuple
+dBody_getPosition(::dGeom & geom) {
+  const ::dReal * ret = geom.getPosition();
+   
+  return boost::python::make_tuple(ret[0], ret[1], ret[2]); 
+}
+
+boost::python::tuple
+dBody_getRotation(::dGeom & geom){
+    const ::dReal * ret = geom.getRotation(); 
+    return boost::python::make_tuple(
+                ret[0], ret[1], ret[2], ret[3], 
+                ret[4], ret[5], ret[6], ret[7],
+                ret[8], ret[9], ret[10], ret[11]); 
+    
+    }            
+"""
 
 WRAPPER_REGISTRATION_dBody = \
 """
@@ -73,21 +128,28 @@ WRAPPER_REGISTRATION_dBody = \
     dBody_exposer.def( "getFiniteRotationAxis", &::dBody_getFiniteRotationAxis );
     dBody_exposer.def( "vectorFromWorld", &::dBody_vectorFromWorld );
     dBody_exposer.def( "vectorToWorld", &::dBody_vectorToWorld );
+    
+    dBody_exposer.def( "getPosition", &::dBody_getPosition);
+    dBody_exposer.def( "getRotation", &::dBody_getRotation);
+    dBody_exposer.def( "getQuaternion", &::dBody_getQuaternion);
+    dBody_exposer.def( "getLinearVel", &::dBody_getLinearVel);
+    dBody_exposer.def( "getAngularVel", &::dBody_getAngularVel);
+    dBody_exposer.def( "getForce", &::dBody_getForce);
+    dBody_exposer.def( "getTorque", &::dBody_getTorque)
+"""
+WRAPPER_REGISTRATION_dGeom = \
+"""
+    def( "getPosition", &::dBody_getPosition);
+    dGeom_exposer.def( "getRotation", &::dBody_getRotation);
 """
 
-# WRAPPER_REGISTRATION_General =\
-# """
-# bp::def ("CreateBody", &CreateBody, 
-#         bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
-# # bp::def ("CreateBodyWithID", &CreateBodyWithID, 
-# #         bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
-# # bp::def ("GetID", &GetID, 
-# #         bp::return_value_policy< bp::copy_const_reference, bp::default_call_policies >());
-# """
+
 def apply( mb ):
 #     pass
     cs = mb.class_( 'dBody' )
-
     cs.add_declaration_code( WRAPPER_DEFINITION_dBody )
     cs.add_registration_code( WRAPPER_REGISTRATION_dBody )
+    cs = mb.class_( 'dGeom' )
+    cs.add_declaration_code( WRAPPER_DEFINITION_dGeom )
+    cs.add_registration_code( WRAPPER_REGISTRATION_dGeom )
     

@@ -64,10 +64,14 @@ class BspApplication (sf.Application):
         # Get random player start point
         vp = self.sceneManager.getSuggestedViewpoint(True)
         self.camera.setPosition(vp.position)
-        self.camera.pitch(ogre.Radian(ogre.Degree(d=90))) # Quake uses X/Y horizon, Z up
+        self.camera.pitch(ogre.Degree(90)) # Quake uses X/Y horizon, Z up
         self.camera.rotate(vp.orientation)
         # Don't yaw along variable axis, causes leaning
         self.camera.setFixedYawAxis(True, ogre.Vector3.UNIT_Z)
+
+        ## Look at a nice place :)
+        self.camera.lookAt(-150,40,30)
+
 
 
 if __name__ == '__main__':

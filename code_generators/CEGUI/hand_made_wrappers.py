@@ -1,25 +1,37 @@
 import os
 import environment
 
-WRAPPER_REGISTRATION_General=\
-"""
-"""
-
-WRAPPER_DEFINITION_General=\
-"""
-"""
 
 WRAPPER_REGISTRATION_EventSet = \
 """  
-def( "subscribeEvent", &EventSet_subscribeEventPB, bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());;
-EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventTB, bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());;
-EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventLB, bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());;
-EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventCB, bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());;
-EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventSB, bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());;
-EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventGUISheet, bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());;
-EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventFW, bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());;
-EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventEB, bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());;
-EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventThumb, bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());;
+def( "subscribeEvent", &EventSet_subscribeEventPB, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventTB, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventLB, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventComboBox, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventCheckBox, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventSB, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventGUISheet, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventFW, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventEB, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventThumb, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventSlider, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventSpinner, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventRadioButton, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeDragContainer, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
  
 { //EventConnection
         typedef bp::class_< EventConnection > EventConnection_exposer_t;
@@ -124,7 +136,7 @@ public:
             else
                 boost::python::call<void>(mSubscriber, 
                                         static_cast<const CEGUI::MouseEventArgs&>(args) );
-            
+                                        
         else if (dynamic_cast<CEGUI::WindowEventArgs *>((CEGUI::EventArgs *)&args))
             if (mMethod.length() > 0 )
                 boost::python::call_method<void>(mSubscriber, mMethod.c_str(), 
@@ -171,6 +183,9 @@ protected:
     EventCallback * mCallback;
 };
 
+
+
+
 EventConnection * EventSet_subscribeEventPB(CEGUI::PushButton *self , CEGUI::String const & name, 
                                                 PyObject* subscriber, CEGUI::String const & method="")
 {
@@ -195,7 +210,13 @@ EventConnection * EventSet_subscribeEventGUISheet(CEGUI::GUISheet *self , CEGUI:
     EventConnection *connect = new EventConnection(self->subscribeEvent(name, EventCallback(subscriber, method))); 
     return connect; 
 }
-EventConnection * EventSet_subscribeEventCB(CEGUI::Combobox *self , CEGUI::String const & name, 
+EventConnection * EventSet_subscribeEventComboBox(CEGUI::Combobox *self , CEGUI::String const & name, 
+                                                PyObject* subscriber, CEGUI::String const & method="")
+{
+    EventConnection *connect = new EventConnection(self->subscribeEvent(name, EventCallback(subscriber, method))); 
+    return connect; 
+}
+EventConnection * EventSet_subscribeEventCheckBox(CEGUI::Checkbox *self , CEGUI::String const & name, 
                                                 PyObject* subscriber, CEGUI::String const & method="")
 {
     EventConnection *connect = new EventConnection(self->subscribeEvent(name, EventCallback(subscriber, method))); 
@@ -225,15 +246,36 @@ EventConnection * EventSet_subscribeEventThumb(CEGUI::Thumb *self , CEGUI::Strin
     EventConnection *connect = new EventConnection(self->subscribeEvent(name, EventCallback(subscriber, method))); 
     return connect; 
 }
-
+EventConnection * EventSet_subscribeEventSlider(CEGUI::Slider *self , CEGUI::String const & name, 
+                                                PyObject* subscriber, CEGUI::String const & method="")
+{
+    EventConnection *connect = new EventConnection(self->subscribeEvent(name, EventCallback(subscriber, method))); 
+    return connect; 
+}
+EventConnection * EventSet_subscribeEventSpinner(CEGUI::Spinner *self , CEGUI::String const & name, 
+                                                PyObject* subscriber, CEGUI::String const & method="")
+{
+    EventConnection *connect = new EventConnection(self->subscribeEvent(name, EventCallback(subscriber, method))); 
+    return connect; 
+}
+EventConnection * EventSet_subscribeEventRadioButton(CEGUI::RadioButton *self , CEGUI::String const & name, 
+                                                PyObject* subscriber, CEGUI::String const & method="")
+{
+    EventConnection *connect = new EventConnection(self->subscribeEvent(name, EventCallback(subscriber, method))); 
+    return connect; 
+}
+EventConnection * EventSet_subscribeDragContainer(CEGUI::DragContainer *self , CEGUI::String const & name, 
+                                                PyObject* subscriber, CEGUI::String const & method="")
+{
+    EventConnection *connect = new EventConnection(self->subscribeEvent(name, EventCallback(subscriber, method))); 
+    return connect; 
+}
 """
-
-
 
 def apply( mb ):
 #     mb.add_declaration_code( WRAPPER_DEFINITION_General )
 #     mb.add_registration_code( WRAPPER_REGISTRATION_General )
-    
+#     
     rt = mb.class_( 'EventSet' )
     rt.add_declaration_code( WRAPPER_DEFINITION_EventSet )
     rt.add_registration_code( WRAPPER_REGISTRATION_EventSet )

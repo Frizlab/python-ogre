@@ -9,6 +9,7 @@ import OgreNewt
 import OIS
 import SampleFramework as sf
 from BasicFrameListener import *     # a simple frame listener that updates physics as required..
+import SimpleVehicle
 
 class OgreNewtonApplication (sf.Application):
     def __init__ ( self):
@@ -16,6 +17,7 @@ class OgreNewtonApplication (sf.Application):
         self.World = OgreNewt.World()
         self.EntityCount = 0
         self.bodies=[]
+        self.Car = None
 
     def __del__ (self):
         ## delete the world when we're done.
@@ -33,79 +35,37 @@ class OgreNewtonApplication (sf.Application):
         
         ## shadows on!
         self.sceneManager.setShadowTechnique( Ogre.SHADOWTYPE_STENCIL_ADDITIVE )
-    
-    
-        ## floor object!
-        floor = self.sceneManager.createEntity("Floor", "simple_terrain.mesh" )
-        floornode = self.sceneManager.getRootSceneNode().createChildSceneNode( "FloorNode" )
-        floornode.attachObject( floor )
-        floor.setMaterialName( "Simple/BeachStones" )
-        floor.setCastShadows( False )
-    
-        ##-------------------------------------------------------------
-        ## add some other objects.
-        floor2 = self.sceneManager.createEntity("Floor2", "simple_terrain.mesh" )
-        floornode2 = floornode.createChildSceneNode( "FloorNode2" )
-        floornode2.attachObject( floor2 )
-        floor2.setMaterialName( "Simple/BeachStones" )
-        floor2.setCastShadows( False )
-        floornode2.setPosition( Ogre.Vector3(80.0, 0.0, 0.0) )
-    
-        floor3 = self.sceneManager.createEntity("Floor3", "simple_terrain.mesh" )
-        floornode3 = floornode.createChildSceneNode( "FloorNode3" )
-        floornode3.attachObject( floor3 )
-        floor3.setMaterialName( "Simple/BeachStones" )
-        floor3.setCastShadows( False )
-        floornode3.setPosition( Ogre.Vector3(-80.0, -5.0, 0.0) )
-        floornode3.setOrientation( Ogre.Quaternion( Ogre.Degree(d=15.0), Ogre.Vector3.UNIT_Z ) )
-        ##-------------------------------------------------------------
-    
-        ## using the new "SceneParser" TreeCollision primitive.  this will automatically parse an entire tree of
-        ## SceneNodes (parsing all children), and add collision for all meshes in the tree.
-        stat_col = OgreNewt.TreeCollisionSceneParser( self.World )
-        stat_col.parseScene( floornode, True )
-        bod = OgreNewt.Body( self.World, stat_col )
-        del stat_col
         
-        bod.attachToNode( floornode )
-        bod.setPositionOrientation( Ogre.Vector3(0.0,-20.0,0.0), Ogre.Quaternion.IDENTITY )
-        self.bodies.append( bod )
-        ## make a simple rope.
-        size= Ogre.Vector3(3,1.5,1.5)
-        pos= Ogre.Vector3(0,3,0)
-        orient = Ogre.Quaternion.IDENTITY
+    	## floor object! this time we'll scale it slightly to make it more vehicle-friendly :P
+    	size=Ogre.Vector3(2.0,0.5,2.0)
+    	floor = self.sceneManager.createEntity("Floor", "simple_terrain.mesh" )
+    	floornode = self.sceneManager.getRootSceneNode().createChildSceneNode( "FloorNode" )
+    	floornode.attachObject( floor )
+    	floor.setMaterialName( "Simple/BeachStones" )
+    	floornode.setScale(size)
     
-        ## loop through, making bodies and connecting them.
-        parent = None
-        child = None
+    	floor.setCastShadows( False )
     
-        for x in range (5):
-            ## make the next box.
-            child = self.makeSimpleBox(size, pos, orient)
-            self.bodies.append(child)
-            ## now make a new joint connecting this to the last box.
-            
-            
-            ## make the joint right between the bodies...
-            
+    	##Ogre.Vector3 siz(100.0, 10.0, 100.0);
+    	col = OgreNewt.TreeCollision( self.World, floornode, False )
+    	bod = OgreNewt.Body( self.World, col )
+    	del col
+    	
+    	bod.attachToNode( floornode )
+    	bod.setPositionOrientation( Ogre.Vector3(0.0,-2.0,0.0), Ogre.Quaternion.IDENTITY )
+        
+    	self.bodies.append(bod)
     
-            if (parent):
-                joint = OgreNewt.BallAndSocket( self.World, child, parent, pos-Ogre.Vector3(size.x/2,0,0) )
-            else:
-                ## no parent, this is the first joint, so just pass NULL as the parent, to stick it to the "world"
-                joint = OgreNewt.BallAndSocket( self.World, child, None, pos-Ogre.Vector3(size.x/2,0,0) )
     
-            ## offset pos a little more.
-            pos += Ogre.Vector3(size.x,0,0)
-    
-            ## save the last body for the next loop!
-            parent = child
-            
+    	## here's where we make the simple vehicle.  everything is taken care of in the constuctor.
+    	self.Car = SimpleVehicle.SimpleVehicle( self.sceneManager, self.World, 
+    	                        Ogre.Vector3(0,-0.5,0), Ogre.Quaternion.IDENTITY )
+
         ## position camera
         self.msnCam = self.sceneManager.getRootSceneNode().createChildSceneNode()
         self.msnCam.attachObject( self.camera )
         self.camera.setPosition(0.0, 0.0, 0.0)
-        self.msnCam.setPosition( 0.0, -3.0, 20.0)
+        self.msnCam.setPosition( 0.0, 1.0, 20.0)
     
         ##make a light
         light = self.sceneManager.createLight( "Light1" )
@@ -145,7 +105,8 @@ class OgreNewtonApplication (sf.Application):
     def _createFrameListener(self):
         ## this is our custom frame listener for this app, that lets us shoot cylinders with the space bar, move
         ## the camera, etc.
-        self.frameListener = OgreNewtonFrameListener( self.renderWindow, self.camera, self.sceneManager, self.World, self.msnCam )
+        self.frameListener = OgreNewtonFrameListener( self.renderWindow, self.camera, 
+                                    self.sceneManager, self.World, self.msnCam, self.Car )
         self.root.addFrameListener(self.frameListener)
 
         ## this is a basic frame listener included with OgreNewt that does nothing but update the
@@ -158,7 +119,7 @@ class OgreNewtonApplication (sf.Application):
     
     
 class OgreNewtonFrameListener(sf.FrameListener):
-    def __init__(self, renderWindow, camera, Mgr, World, msnCam):
+    def __init__(self, renderWindow, camera, Mgr, World, msnCam, car):
 
         sf.FrameListener.__init__(self, renderWindow, camera)
         self.World = World
@@ -168,6 +129,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
         self.timer=0
         self.count=0
         self.bodies=[]
+        self.Car=car
     
     def frameStarted(self, frameEvent):
         sf.FrameListener.frameStarted(self, frameEvent)
@@ -225,9 +187,8 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 node.setPosition(0.0, 0.0, 0.0)
                 
                 ent.setMaterialName( "Simple/dirt01" )
-                ent.setNormaliseNormals(True)
-
-  
+                #ent.setNormaliseNormals(True)
+                  
                 ## again, make the collision shape.
                 ##col = OgreNewt.CollisionPrimitives.Cylinder(self.World, 1, 1)
                 col = OgreNewt.Ellipsoid(self.World, Ogre.Vector3(1,1,1))
@@ -237,12 +198,10 @@ class OgreNewtonFrameListener(sf.FrameListener):
     
                 ##no longer need the collision shape object
                 del col
- 
                    
                 ## something new: moment of inertia for the body.  this describes how much the body "resists"
                 ## rotation on each axis.  realistic values here make for MUCH more realistic results.  luckily
                 ## OgreNewt has some helper functions for calculating these values for many primitive shapes!
- ##               inertia = Ogre.Vector3(OgreNewt.MomentOfInertia.CalcSphereSolid( 10.0, 1.0 ))
                 inertia = OgreNewt.CalcSphereSolid( 10.0, 1.0 )
                 body.setMassMatrix( 10.0, inertia )
     
@@ -259,12 +218,43 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 self.timer = 0.2
                 
         self.timer -= frameEvent.timeSinceLastFrame
+     	## ---------------------------------------------------------
+    	## -- VEHICLE CONTORLS
+    	## ---------------------------------------------------------
+    	torque = 0.0
+    	steering = Ogre.Degree(0.0)
+    
+    	if (self.Keyboard.isKeyDown(OIS.KC_I)):
+    		torque += 600.0
+    
+    	if (self.Keyboard.isKeyDown(OIS.KC_K)):
+    		torque -= 600.0
+    
+    	if (self.Keyboard.isKeyDown(OIS.KC_J)):
+    		steering = Ogre.Degree(d=30)
+    
+    	if (self.Keyboard.isKeyDown(OIS.KC_L)):
+    		steering = Ogre.Degree(d=-30)
+    
+    	##update the vehicle!
+    	self.Car.setTorqueSteering( torque, steering )
+    
+    	if ((self.Keyboard.isKeyDown(OIS.KC_R)) and  ( not self.R)):
+    		self.R = True
+    		## rebuild the vehicle
+    		if (self.Car):
+    			del self.Car
+    			self.Car = SimpleVehicle.SimpleVehicle( self.sceneManager, self.World, 
+    			                                Ogre.Vector3(0,Ogre.Math.UnitRandom() * 10.0,0), 
+    			                                Ogre.Quaternion.IDENTITY )
+    	if ( not self.Keyboard.isKeyDown( OIS.KC_R )):
+    	    self.R = False
+        
         if (self.Keyboard.isKeyDown(OIS.KC_ESCAPE)):
+            if self.Car:
+                del self.Car
             return False
         return True        
-
-        
-
 
 if __name__ == '__main__':
     try:
@@ -273,5 +263,22 @@ if __name__ == '__main__':
     except Ogre.Exception, e:
         print e
         print dir(e)
-    
+    except exceptions.RuntimeError, e:
+        print "Runtime error:", e
+    except exceptions.TypeError, e:
+        print "Type error:", e
+    except exceptions.AttributeError, e:
+        print "Attribute error:", e
+    except exceptions.NameError, e:
+        print "Name error:", e
+    except Exception,inst:
+        print "EException"
+        print type(inst)     # the exception instance
+        print inst.args      # arguments stored in .args
+        print inst
+    except exceptions.ValueError,e:
+        print "ValueError",e
+    except :
+        print "Unexpected error:", sys.exc_info()[0]
+   
                 
