@@ -53,6 +53,15 @@ def aliases( version ):
                : "VectorOfVector4"
             , "vector<unsigned short, std::allocator<unsigned short> >"
               : "VectorOfUnsignedShort"
+#             ,"map<std::string, Ogre::MovableObject*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > >"
+# 		        : "MovableObjectMapIterator"
+		     , "MapIterator<std::map<std::string, Ogre::MovableObject*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > >"
+		        : "MovableObjectMapIterator"
+#             ,"Ogre::MapIterator<std::map<std::string, Ogre::MovableObject*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > > "
+#                 :  "MoveableIteratorTemp"
+   
+              
+              
         }
     else: #1.2
         return {
