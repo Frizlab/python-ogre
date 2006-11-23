@@ -78,7 +78,28 @@ inline void instantiate(){
     sizeof ( std::multimap<RenderWindow*, WindowEventListener*> ) ; // WindowEventListeners;
 #endif
 
-   
+   // needed for moveablemapeiterator
+//    	sizeof (MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >,Ogre::MovableObject*,std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >,std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObject*> > > >);
+//    	sizeof (std::vector<std::list<std::pair<std::string const, Ogre::MovableObject*>, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > >::iterator, std::allocator<std::list<std::pair<std::string const, Ogre::MovableObject*>, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > >::iterator> >);
+////
+sizeof(Ogre::MapIterator<std::map<std::string, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >*, std::less<std::string>, std::allocator<std::pair<std::string const, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >*> > > > );
+sizeof(Ogre::MapIterator<std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > > > );
+sizeof(Ogre::MapIterator<std::map<std::string, Ogre::MovableObject*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > > );
+sizeof(Ogre::MapIterator<std::map<std::string, Ogre::Animation*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::Animation*> > > >);
+sizeof(Ogre::MapIterator<std::map<std::string, Ogre::Camera*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::Camera*> > > >);
+sizeof(Ogre::MapIterator<std::map<std::string, Ogre::RenderTarget*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::RenderTarget*> > > >);
+sizeof(Ogre::MapIterator<std::map<unsigned short, Ogre::RenderPriorityGroup*, std::less<unsigned short>, std::allocator<std::pair<unsigned short const, Ogre::RenderPriorityGroup*> > > >);
+sizeof(Ogre::MapIterator<std::map<std::string, Ogre::ParticleSystem*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::ParticleSystem*> > > >);
+sizeof(Ogre::MapIterator<std::map<std::string, Ogre::OverlayElement*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::OverlayElement*> > > >);
+sizeof(Ogre::MapIterator<std::map<unsigned long, Ogre::SharedPtr<Ogre::Resource>, std::less<unsigned long>, std::allocator<std::pair<unsigned long const, Ogre::SharedPtr<Ogre::Resource> > > > >);
+sizeof(Ogre::MapIterator<std::map<std::string, Ogre::ResourceManager*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::ResourceManager*> > > >);
+
+    
+//    	typedef std::map<String, Ogre::MovableObject*> MovableObjectMap;
+// 	typedef MapIterator<MovableObjectMap> MovableObjectIterator;
+//     sizeof ( MovableObjectIterator);
+    
+
     // this is needed to expose within DataStream.pypp.cpp - required as a return value
     // from with in resource group manager
     sizeof( SharedPtr<DataStream> );

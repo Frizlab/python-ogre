@@ -25,6 +25,12 @@ from pyplusplus import module_builder
 from pyplusplus.module_builder import call_policies
 
 def filter_declarations( mb ):
+
+#     for cls in mb.global_ns.classes():
+#         print cls
+# #    for cls in ogre_ns.classes():
+#         
+#     sys.exit(-1)
     global_ns = mb.global_ns
     global_ns.exclude()
     
