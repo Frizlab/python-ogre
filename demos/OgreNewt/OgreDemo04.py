@@ -163,7 +163,7 @@ class OgreNewtonApplication (sf.Application):
     def _createFrameListener(self):
         
         self.frameListener = OgreNewtonFrameListener( self.renderWindow, self.camera, 
-                            self.sceneManager, self.World, self.msnCam, self.GUIRenderer )
+                            self.sceneManager, self.World, self.msnCam, self.GUIRenderer, self.bodies )
         self.root.addFrameListener(self.frameListener)
 
         self.NewtonListener = BasicFrameListener( self.renderWindow, self.sceneManager, self.World, 60 )
@@ -179,7 +179,7 @@ class OgreNewtonApplication (sf.Application):
 
 
 class OgreNewtonFrameListener(GuiFrameListener ):
-    def __init__(self, renderWindow, camera, Mgr, World, msnCam, guirenderer):
+    def __init__(self, renderWindow, camera, Mgr, World, msnCam, guirenderer, bodies):
 
         GuiFrameListener.__init__(self, renderWindow, camera, guirenderer)
         self.World = World
@@ -188,7 +188,7 @@ class OgreNewtonFrameListener(GuiFrameListener ):
         self.sceneManager = Mgr
         self.timer=0
         self.count=0
-        self.bodies=[]
+        self.bodies=bodies
 
         self.dragging = False
     
@@ -205,6 +205,7 @@ class OgreNewtonFrameListener(GuiFrameListener ):
     def frameStarted(self, frameEvent):
         sf.FrameListener.frameStarted(self, frameEvent)
 
+        
         ##Need to capture/update each device - this will also trigger any listeners
         ## OIS specific !!!!
         self.Keyboard.capture()    
@@ -305,7 +306,6 @@ class OgreNewtonFrameListener(GuiFrameListener ):
     
         if (self.Keyboard.isKeyDown(OIS.KC_ESCAPE)):
             return False
-    
         return True
 
 
@@ -349,10 +349,10 @@ class OgreNewtonFrameListener(GuiFrameListener ):
         ## Add the force!
         body.addGlobalForce( dragForce, bodpt )
     
-        gravity = Ogre.Vector3(0,-9.8,0) * mass
+        gravity = Ogre.Vector3(0,-99.8,0) * mass
         body.addForce( gravity )
-        print "Adding Force:", dragForce, bodpt, gravity
-
+        print "Adding Force:", dragForce, bodpt, gravity, mass
+   
     def remove3DLine(self):
         self.DragLineNode.detachAllObjects()
         self.DragLine.clear()

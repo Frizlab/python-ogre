@@ -16,6 +16,7 @@ class OgreNewtonApplication (sf.Application):
         self.World = OgreNewt.World()
         self.EntityCount = 0
         self.bodies=[]
+        sf.Application.debugText = "Press Space Bar to fire.  ESC to end"
 
     def __del__ (self):
         ## delete the world when we're done.
@@ -144,7 +145,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
     
                 ## then make the visual object (again a cylinder)
                 #pos = Ogre.Vector3(self.msnCam.getWorldPosition())
-                pos = self.camera.getWorldPosition()
+                pos = self.msnCam.getWorldPosition()
     
                 name = "Body"+str( self.count )
                 print "created ", name

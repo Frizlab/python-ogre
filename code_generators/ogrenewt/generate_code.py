@@ -72,7 +72,14 @@ def filter_declarations( mb ):
     ogrenewt_ns.class_( "Body" ).member_functions("getPositionOrientation").exclude()
     ogrenewt_ns.class_( "Body" ).member_functions("getMassMatrix").exclude()
     ogrenewt_ns.class_( "Body" ).member_functions("getInvMass").exclude()
-    
+    ogrenewt_ns.class_( "Body" ).member_functions("getFreezeThreshold").exclude()
+    ogrenewt_ns.class_( "ConvexCollision" ).member_functions("calculateInertialMatrix").exclude()
+    ogrenewt_ns.class_( "ContactCallback" ).member_functions("getContactPositionAndNormal").exclude()
+    ogrenewt_ns.class_( "ContactCallback" ).member_functions("getContactTangentDirections").exclude()
+    ogrenewt_ns.class_( "Vehicle" ).class_( "Tire" ).member_functions("getPositionOrientation").exclude()
+    ogrenewt_ns.class_( "CustomJoint" ).member_functions("pinAndDirToLocal").exclude()
+    ogrenewt_ns.class_( "CustomJoint" ).member_functions("localToGlobal").exclude()
+
         
 #     ptr_to_fundamental_query \
 #         = lambda f: declarations.is_pointer( f.return_type ) \
