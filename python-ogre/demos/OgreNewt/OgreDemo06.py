@@ -118,7 +118,7 @@ class OgreNewtonApplication (sf.Application):
             child = self.makeSimpleBox(size, pos, orient)
             self.bodies.append(child)
             ## set the buoyancy callback
-            #child.setCustomForceAndTorqueCallback( self.frameListener, "dragCallback")
+            child.setCustomForceAndTorqueCallback( self.frameListener, "standardForceCallback")
                
             ## make the joint right between the bodies...
     
@@ -127,7 +127,7 @@ class OgreNewtonApplication (sf.Application):
             else:
                 ## no parent, this is the first joint, so just pass None as the parent, to stick it to the "world"
                 joint = OgreNewt.BallAndSocket( self.World, child, None, pos-Ogre.Vector3(size.x/2,0,0) )
-    
+            self.bodies.append(joint)
             ## offset pos a little more.
             pos += Ogre.Vector3(size.x,0,0)
     
@@ -140,7 +140,7 @@ class OgreNewtonApplication (sf.Application):
     
             bod = self.makeSimpleBox( size, pos, orient )
             ## set the buoyancy callback
-            #bod.setCustomForceAndTorqueCallback( self.frameListener, "dragCallback" )
+            bod.setCustomForceAndTorqueCallback( self.frameListener, "standardForceCallback" )
             
             self.bodies.append ( bod)
             
@@ -284,7 +284,7 @@ class OgreNewtonFrameListener(GuiFrameListener ):
     
                 ray = OgreNewt.BasicRaycast( self.World, start, end )
                 info = ray.getFirstHit()
-                print "Info:", info
+                print "Info:", info, dir(info)
                 if (info.mBody):
                     ## a body was found.  first let's find the point we clicked, in local coordinates of the body.
                     ## while self.dragging, make sure the body can't fall asleep.
@@ -380,15 +380,15 @@ class OgreNewtonFrameListener(GuiFrameListener ):
         self.DragLine.clear()
 
         
-    def standardForceCallback(  me ):
+    def standardForceCallback(self,  me ):
         mass, inertia = me.getMassMatrix( )
     
         gravity = Ogre.Vector3(0,-9.8,0) * mass
-        body.addForce( gravity )
+        me.addForce( gravity )
     
         ## also don't forget buoyancy force.
         ## just pass the acceleration due to gravity, not the force (accel * mass)! 
-        body.addBouyancyForce( 0.7, 0.5, 0.5, Ogre.Vector3(0.0,-9.8,0.0), 
+        me.addBouyancyForce( 0.7, 0.5, 0.5, Ogre.Vector3(0.0,-9.8,0.0), 
                         self, "buoyancyCallback" )
  
     ##################################################################################

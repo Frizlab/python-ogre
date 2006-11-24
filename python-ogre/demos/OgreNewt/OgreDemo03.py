@@ -23,6 +23,8 @@ class OgreNewtonApplication (sf.Application):
         self.EntityCount = 0
         self.bodies=[]
         self.Belts=[]
+        sf.Application.debugText = "Press Space Bar drop boxes.  ESC to end"
+
 
     def __del__ (self):
         ## delete the world when we're done.
@@ -122,9 +124,10 @@ class OgreNewtonFrameListener(sf.FrameListener):
         self.timer=0
         self.count=0
         self.bodies=[]
+     
     
     def frameStarted(self, frameEvent):
-        sf.FrameListener.frameStarted(self, frameEvent)
+        #sf.FrameListener.frameStarted(self, frameEvent)
 
         ## in this frame listener we control the camera movement, and allow the user to "shoot" cylinders
         ## by pressing the space bar.  first the camera movement...
@@ -148,13 +151,13 @@ class OgreNewtonFrameListener(sf.FrameListener):
 
         ##and Keyboard
         if (self.Keyboard.isKeyDown(OIS.KC_UP)):
-            self.msnCam.translate(trans * 0.1)
+            self.msnCam.translate(trans * 1)
         if (self.Keyboard.isKeyDown(OIS.KC_DOWN)):
-            self.msnCam.translate(trans * -0.1)
+            self.msnCam.translate(trans * -1)
         if (self.Keyboard.isKeyDown(OIS.KC_LEFT)):
-            self.msnCam.translate(strafe * -0.4)
+            self.msnCam.translate(strafe * -1)
         if (self.Keyboard.isKeyDown(OIS.KC_RIGHT)):
-            self.msnCam.translate(strafe * 0.4)
+            self.msnCam.translate(strafe * 1)
         ## now "shoot" an object!
         if (self.Keyboard.isKeyDown(OIS.KC_SPACE)):
             if (self.timer <= 0.0):

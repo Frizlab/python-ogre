@@ -3,7 +3,7 @@
 
 #   Demo02_Joints - basic demo that shows how to connect rigid bodies via joints.
 # */
-
+import exceptions
 import Ogre
 import OgreNewt
 import OIS
@@ -237,7 +237,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
     		steering = Ogre.Degree(d=-30)
     
     	##update the vehicle!
-    	self.Car.setTorqueSteering( torque, steering )
+#     	self.Car.setTorqueSteering( torque, steering )
     
     	if ((self.Keyboard.isKeyDown(OIS.KC_R)) and  ( not self.R)):
     		self.R = True

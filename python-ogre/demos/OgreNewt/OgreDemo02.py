@@ -16,6 +16,8 @@ class OgreNewtonApplication (sf.Application):
         self.World = OgreNewt.World()
         self.EntityCount = 0
         self.bodies=[]
+        sf.Application.debugText = "Press Space Bar to fire bouncing balls.  ESC to end"
+
 
     def __del__ (self):
         ## delete the world when we're done.
@@ -170,8 +172,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
         self.bodies=[]
     
     def frameStarted(self, frameEvent):
-        sf.FrameListener.frameStarted(self, frameEvent)
-
+        
         ## in this frame listener we control the camera movement, and allow the user to "shoot" cylinders
         ## by pressing the space bar.  first the camera movement...
         quat = self.msnCam.getOrientation()
@@ -204,7 +205,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
         ## now "shoot" an object!
         if (self.Keyboard.isKeyDown(OIS.KC_SPACE)):
             if (self.timer <= 0.0):
-            
+                       
                 ## we get the position and direction from the camera...
                 camorient = self.msnCam.getWorldOrientation()
                 vec = Ogre.Vector3(0,0,-1)
@@ -212,22 +213,19 @@ class OgreNewtonFrameListener(sf.FrameListener):
     
                 ## then make the visual object (again a cylinder)
                 #pos = Ogre.Vector3(self.msnCam.getWorldPosition())
-                pos = self.camera.getWorldPosition()
+                pos = self.msnCam.getWorldPosition()
     
                 name = "Body"+str( self.count )
-                print "created ", name
                 self.count += 1
                    
                 ent = self.sceneManager.createEntity( name, "ellipsoid.mesh" )
                 node = self.sceneManager.getRootSceneNode().createChildSceneNode( name )
                 node.attachObject( ent )
                 
-                node.setPosition(0.0, 0.0, 0.0)
-                
                 ent.setMaterialName( "Simple/dirt01" )
                 ent.setNormaliseNormals(True)
 
-  
+                  
                 ## again, make the collision shape.
                 ##col = OgreNewt.CollisionPrimitives.Cylinder(self.World, 1, 1)
                 col = OgreNewt.Ellipsoid(self.World, Ogre.Vector3(1,1,1))
@@ -242,7 +240,6 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 ## something new: moment of inertia for the body.  this describes how much the body "resists"
                 ## rotation on each axis.  realistic values here make for MUCH more realistic results.  luckily
                 ## OgreNewt has some helper functions for calculating these values for many primitive shapes!
- ##               inertia = Ogre.Vector3(OgreNewt.MomentOfInertia.CalcSphereSolid( 10.0, 1.0 ))
                 inertia = OgreNewt.CalcSphereSolid( 10.0, 1.0 )
                 body.setMassMatrix( 10.0, inertia )
     
@@ -261,6 +258,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
         self.timer -= frameEvent.timeSinceLastFrame
         if (self.Keyboard.isKeyDown(OIS.KC_ESCAPE)):
             return False
+        sf.FrameListener.frameStarted(self, frameEvent)
         return True        
 
         

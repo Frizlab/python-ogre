@@ -38,7 +38,17 @@ Body_getInvMass ( ::OgreNewt::Body & body ) {
 	body.getInvMass( mass,  inertia );
 	return boost::python::make_tuple(mass, inertia);
 	}
+	
+boost::python::tuple
+Body_getFreezeThreshold ( ::OgreNewt::Body & body ) {
+    Ogre::Real speed;
+    Ogre::Real omega;
+	body.getFreezeThreshold( speed,  omega );
+	return boost::python::make_tuple(speed, omega);
+	}
+	
 """
+
 WRAPPER_REGISTRATION_Body =\
 """
 def ("setUserData", &::Body_setUserData );
@@ -46,6 +56,102 @@ Body_exposer.def ("getUserData", &::Body_getUserData);
 Body_exposer.def ("getPositionOrientation", &::Body_getPositionOrientation);
 Body_exposer.def ("getMassMatrix", &::Body_getMassMatrix);
 Body_exposer.def ("getInvMass", &::Body_getInvMass);
+Body_exposer.def ("getFreezeThreshold", &::Body_getFreezeThreshold);
+"""
+
+WRAPPER_DEFINITION_ConvexCollision=\
+"""
+//NEWTON_API void NewtonConvexCollisionCalculateInertialMatrix (const NewtonCollision* convexCollision, dFloat* inertia, dFloat* origin);	
+
+boost::python::tuple
+ConvexCollision_calculateInertialMatrix ( ::OgreNewt::ConvexCollision & convexC ) {
+    Ogre::Vector3 inertia;
+    Ogre::Vector3 offset;
+    convexC.calculateInertialMatrix  ( inertia,  offset );
+    return boost::python::make_tuple(inertia, offset);
+    }
+"""
+WRAPPER_REGISTRATION_ConvexCollision =\
+"""
+def ("calculateInertialMatrix", &::ConvexCollision_calculateInertialMatrix );
+"""
+
+
+WRAPPER_DEFINITION_CustomJoint=\
+"""
+boost::python::tuple
+CustomJoint_pinAndDirToLocal ( ::OgreNewt::CustomJoint & joint, const  Ogre::Vector3 pinpt, const Ogre::Vector3 pindir) {
+    Ogre::Quaternion localOrient0;
+    Ogre::Vector3 localPos0;
+    Ogre::Quaternion localOrient1;
+    Ogre::Vector3 localPos1;
+    joint.pinAndDirToLocal( pinpt,  pindir, 
+                        localOrient0, localPos0, 
+                        localOrient1, localPos1 );
+    return boost::python::make_tuple(localOrient0, localPos0, localOrient1, localPos1);
+    }
+    
+boost::python::tuple
+CustomJoint_localToGlobal ( ::OgreNewt::CustomJoint & joint, const Ogre::Quaternion& localOrient, const Ogre::Vector3& localPos, int bodyIndex) {
+    Ogre::Quaternion globalOrient;
+    Ogre::Vector3 globalPos;
+    joint.localToGlobal(localOrient, localPos, 
+                        globalOrient, globalPos,
+                         bodyIndex);
+    return boost::python::make_tuple(globalOrient, globalPos);
+    }    
+"""
+WRAPPER_REGISTRATION_CustomJoint =\
+"""
+def ("pinAndDirToLocal", &::CustomJoint_pinAndDirToLocal );
+def ("localToGlobal", &::CustomJoint_localToGlobal );
+"""
+
+
+
+
+
+
+WRAPPER_DEFINITION_VehicleTire=\
+"""
+boost::python::tuple
+Vehicle_getPositionOrientation ( ::OgreNewt::Vehicle::Tire & tire ) {
+    Ogre::Quaternion orient;
+    Ogre::Vector3 pos;
+    tire.getPositionOrientation ( orient, pos );
+    return boost::python::make_tuple(orient, pos);
+    }
+"""
+
+WRAPPER_REGISTRATION_VehicleTire =\
+"""
+def ("getPositionOrientation", &::Vehicle_getPositionOrientation );
+"""
+
+## more functions that need to modifiy the attributes passed to them
+WRAPPER_DEFINITION_ContactCallback=\
+"""
+//	void getContactPositionAndNormal( Ogre::Vector3& pos, Ogre::Vector3& norm ) const;
+//	void getContactTangentDirections( Ogre::Vector3& dir0, Ogre::Vector3& dir1 ) const;
+boost::python::tuple
+ContactCallback_getContactPositionAndNormal ( ::OgreNewt::ContactCallback & CC ) {
+    Ogre::Vector3 pos;
+    Ogre::Vector3 norm;
+    CC.getContactPositionAndNormal ( pos, norm );
+    return boost::python::make_tuple(pos, norm);
+    }
+boost::python::tuple
+ContactCallback_getContactTangentDirections ( ::OgreNewt::ContactCallback & CC ) {
+    Ogre::Vector3 dir0;
+    Ogre::Vector3 dir1;
+    CC.getContactTangentDirections  ( dir0, dir1 );
+    return boost::python::make_tuple(dir0, dir1);
+    }    
+"""
+WRAPPER_REGISTRATION_ContactCallback =\
+"""
+def ("getContactPositionAndNormal", &::ContactCallback_getContactPositionAndNormal );
+ContactCallback_exposer.def ("getContactTangentDirections", &::ContactCallback_getContactTangentDirections );
 """
 
 WRAPPER_DEFINITION_Joint=\
@@ -211,16 +317,11 @@ void Body_setCustomTransformCallback( ::OgreNewt::Body * self, PyObject* subscri
 
 WRAPPER_REGISTRATION_EventCallback =\
 """
-
 def ("setCustomForceAndTorqueCallback", &::Body_setCustomForceAndTorqueCallback);
 Body_exposer.def ("addBouyancyForce", &::Body_addBouyancyForce);
 Body_exposer.def ("setAutoactiveCallback", &::Body_setAutoactiveCallback);
 Body_exposer.def ("setCustomTransformCallback", &::Body_setCustomTransformCallback);
-
-
 """
-
-
 
 def apply( mb ):
     cs = mb.class_( 'Body' )
@@ -228,9 +329,24 @@ def apply( mb ):
     cs.add_declaration_code( WRAPPER_DEFINITION_EventCallback )
     cs.add_registration_code( WRAPPER_REGISTRATION_Body )
     cs.add_registration_code( WRAPPER_REGISTRATION_EventCallback )
-    
 
     cs = mb.class_( 'Joint' )
     cs.add_declaration_code( WRAPPER_DEFINITION_Joint )
     cs.add_registration_code( WRAPPER_REGISTRATION_Joint )
-        
+    
+    cs = mb.class_( 'ConvexCollision' )
+    cs.add_declaration_code( WRAPPER_DEFINITION_ConvexCollision )
+    cs.add_registration_code( WRAPPER_REGISTRATION_ConvexCollision )
+
+    cs = mb.class_( 'ContactCallback' )
+    cs.add_declaration_code( WRAPPER_DEFINITION_ContactCallback )
+    cs.add_registration_code( WRAPPER_REGISTRATION_ContactCallback )
+    
+    cs = mb.class_( 'Vehicle' ).class_( 'Tire' )
+    cs.add_declaration_code( WRAPPER_DEFINITION_VehicleTire )
+    cs.add_registration_code( WRAPPER_REGISTRATION_VehicleTire )
+    
+    cs = mb.class_( 'CustomJoint' )
+    cs.add_declaration_code( WRAPPER_DEFINITION_CustomJoint )
+    cs.add_registration_code( WRAPPER_REGISTRATION_CustomJoint )
+                
