@@ -1,5 +1,4 @@
 import Ogre
-import ODE
 import OgreNewt as OgreNewt
 import SampleFramework as sf
 
@@ -36,7 +35,7 @@ class BasicFrameListener (Ogre.FrameListener ): ##, Ogre.WindowEventListener ): 
         if ((self.elapsed > self.update) and (self.elapsed < (1.0)) ):
             while (self.elapsed > self.update):
                 self.World.update( self.update )
-#                print "1..world updated", self.update
+#               print "1..world updated", self.update
                 self.elapsed -= self.update
                 count += 1
         else:

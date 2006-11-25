@@ -181,6 +181,7 @@ class EventCallback
 public:
    PyObject*  mSubscriber;
     ::Ogre::String  mMethod;
+//    std::cout << "**** IN CALL BACK C++ CODE";
 
     EventCallback(PyObject*  subscriber, ::Ogre::String const & method)
     {
@@ -194,10 +195,10 @@ public:
     {
     if (mMethod.length() > 0 )
         boost::python::call_method<void>(mSubscriber, mMethod.c_str(), 
-                            args );
+                            boost::ref(args) );
     else
         boost::python::call<void>(mSubscriber, 
-                            args );
+                            boost::ref(args) );
     return;
     }
 
@@ -224,10 +225,10 @@ public:
     bool retval;
     if (mMethod.length() > 0 )
         retval = boost::python::call_method<bool>(mSubscriber, mMethod.c_str(), 
-                            colID, me, orient, pos, plane );
+                            colID, boost::ref(me), boost::cref(orient), boost::cref(pos), boost::python::ptr(plane) );
     else
         retval = boost::python::call<bool>(mSubscriber, 
-                            colID, me, orient, pos, plane );
+                            colID, boost::ref(me), boost::cref(orient), boost::cref(pos), boost::python::ptr(plane) );
     return retval;
     }
 
@@ -251,10 +252,10 @@ public:
     {
     if (mMethod.length() > 0 )
         boost::python::call_method<void>(mSubscriber, mMethod.c_str(), 
-                            body, id );
+                            boost::ref(body), id );
     else
         boost::python::call<void>(mSubscriber, 
-                            body, id );
+                           boost::ref(body), id );
     return;
     }
 
@@ -278,10 +279,10 @@ public:
     {
     if (mMethod.length() > 0 )
         boost::python::call_method<void>(mSubscriber, mMethod.c_str(), 
-                            body, orient, vect );
+                            boost::ref(body), boost::cref(orient), boost::cref(vect) );
     else
         boost::python::call<void>(mSubscriber, 
-                            body, orient, vect );
+                            boost::ref(body), boost::cref(orient), boost::cref(vect) );
     return;
     }
 
@@ -291,6 +292,7 @@ void Body_setCustomForceAndTorqueCallback( ::OgreNewt::Body * self, PyObject* su
 {
     EventCallback * e = new EventCallback(subscriber, method);
     self->setCustomForceAndTorqueCallback<EventCallback>( &EventCallback::callback, (EventCallback*) e);
+//    return e;
 };
 
 
@@ -317,10 +319,30 @@ void Body_setCustomTransformCallback( ::OgreNewt::Body * self, PyObject* subscri
 
 WRAPPER_REGISTRATION_EventCallback =\
 """
-def ("setCustomForceAndTorqueCallback", &::Body_setCustomForceAndTorqueCallback);
+def ("setCustomForceAndTorqueCallback", &::Body_setCustomForceAndTorqueCallback); 
+//           bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
 Body_exposer.def ("addBouyancyForce", &::Body_addBouyancyForce);
 Body_exposer.def ("setAutoactiveCallback", &::Body_setAutoactiveCallback);
 Body_exposer.def ("setCustomTransformCallback", &::Body_setCustomTransformCallback);
+/*
+//{ //::OgreNewt::EventCallback
+//        typedef bp::class_< ::EventCallback, boost::noncopyable > EventCallback_exposer_t;
+//        EventCallback_exposer_t EventCallback_exposer = EventCallback_exposer_t( "EventCallback", bp::init< PyObject *, Ogre::String const & >(( bp::arg("subscriber"), bp::arg("method") )) );
+//        bp::scope EventCallback_scope( EventCallback_exposer );
+//        { //::OgreNewt::EventCallback::callback
+        
+//            typedef void ( ::EventCallback::*callback_function_type )( ::OgreNewt::Body * ) const;
+            
+//            EventCallback_exposer.def( 
+//                "callback"
+//                , callback_function_type( &::EventCallback::callback )
+//                , ( bp::arg("args") ) );
+//        
+//        }
+//    }
+
+*/
+
 """
 
 def apply( mb ):

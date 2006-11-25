@@ -18,6 +18,9 @@ class OgreNewtonApplication (sf.Application):
         self.World = OgreNewt.World()
         self.EntityCount = 0
         self.bodies=[]
+        self.frameListener = None
+        self.msnCam =None
+        
 
     def __del__(self):
         ##
@@ -47,17 +50,17 @@ class OgreNewtonApplication (sf.Application):
 
     def _createScene ( self ):
     
-        ## we are doing this early 
-                ## position camera
-        self.msnCam = self.sceneManager.getRootSceneNode().createChildSceneNode()
-        self.msnCam.attachObject( self.camera )
-        self.camera.setPosition(0.0, 0.0, 0.0)
-        self.msnCam.setPosition( 0.0, -3.0, 23.0)
-    
-        ##make a light
-        light = self.sceneManager.createLight( "Light1" )
-        light.setType( Ogre.Light.LT_POINT )
-        light.setPosition( Ogre.Vector3(0.0, 100.0, 100.0) )
+#         ## we are doing this early 
+#         ## position camera
+#         self.msnCam = self.sceneManager.getRootSceneNode().createChildSceneNode()
+#         self.msnCam.attachObject( self.camera )
+#         self.camera.setPosition(0.0, 0.0, 0.0)
+#         self.msnCam.setPosition( 0.0, -3.0, 23.0)
+#     
+#         ##make a light
+#         light = self.sceneManager.createLight( "Light1" )
+#         light.setType( Ogre.Light.LT_POINT )
+#         light.setPosition( Ogre.Vector3(0.0, 100.0, 100.0) )
 
         
         ## setup CEGUI
@@ -77,8 +80,6 @@ class OgreNewtonApplication (sf.Application):
         sheet = CEGUI.WindowManager.getSingleton().createWindow( "DefaultWindow", "root_wnd" )
         CEGUI.System.getSingleton().setGUISheet( sheet )
     
-        self.frameListener = OgreNewtonFrameListener( self.renderWindow, self.camera, 
-                            self.sceneManager, self.World, self.msnCam, self.GUIRenderer )
 
         
         ## sky box.
@@ -112,6 +113,11 @@ class OgreNewtonApplication (sf.Application):
         ## loop through, making bodies and connecting them.
         parent = None
         child = None
+        
+        
+        ## we need to make the framelistener early to get access to the call backs..
+        self.frameListener = OgreNewtonFrameListener( self.renderWindow, self.camera, 
+                            self.sceneManager, self.World, self.msnCam, self.GUIRenderer )
     
         for x in range(8):
             ## make the next box.
@@ -121,16 +127,16 @@ class OgreNewtonApplication (sf.Application):
             child.setCustomForceAndTorqueCallback( self.frameListener, "standardForceCallback")
                
             ## make the joint right between the bodies...
-    
             if parent :
                 joint = OgreNewt.BallAndSocket( self.World, child, parent, pos-Ogre.Vector3(size.x/2,0,0) )
             else:
                 ## no parent, this is the first joint, so just pass None as the parent, to stick it to the "world"
                 joint = OgreNewt.BallAndSocket( self.World, child, None, pos-Ogre.Vector3(size.x/2,0,0) )
+                
+            ## need to save the joint, ohterwise it won't work...
             self.bodies.append(joint)
             ## offset pos a little more.
             pos += Ogre.Vector3(size.x,0,0)
-    
             ## save the last body for the next loop!
             parent = child
     
@@ -152,7 +158,20 @@ class OgreNewtonApplication (sf.Application):
         planeNode.attachObject( theplane )
         planeNode.setPosition( Ogre.Vector3(0,0,0) )
         planeNode.setOrientation( Ogre.Quaternion( Ogre.Degree(d=-90), Ogre.Vector3(1,0,0) ) )
+
+        ## position camera
+        self.msnCam = self.sceneManager.getRootSceneNode().createChildSceneNode()
+        self.msnCam.attachObject( self.camera )
+        self.camera.setPosition(0.0, 0.0, 0.0)
+        self.msnCam.setPosition( 0.0, -3.0, 23.0)
     
+        self.frameListener.msnCam = self.msnCam
+        
+        ##make a light
+        light = self.sceneManager.createLight( "Light1" )
+        light.setType( Ogre.Light.LT_POINT )
+        light.setPosition( Ogre.Vector3(0.0, 100.0, 100.0) )
+            
     
 
     def makeSimpleBox( self, size, pos,  orient ):
@@ -225,7 +244,7 @@ class OgreNewtonFrameListener(GuiFrameListener ):
 
 
     def frameStarted(self, frameEvent):
-        sf.FrameListener.frameStarted(self, frameEvent)
+        #sf.FrameListener.frameStarted(self, frameEvent)
 
         ##Need to capture/update each device - this will also trigger any listeners
         ## OIS specific !!!!
@@ -233,31 +252,29 @@ class OgreNewtonFrameListener(GuiFrameListener ):
         self.Mouse.capture()
         ms = self.Mouse.getMouseState()
 
-        #print dir(ms), ms.buttonDown(OIS.MouseButtonID.MB_Left), dir(ms.buttonDown), 
-        
         ## ----------------------------------------
         ## CAMERA CONTROLS
         ## ----------------------------------------
+        quat = self.msnCam.getOrientation()
+        vec = Ogre.Vector3(0.0,0.0,-0.5)
+        trans = quat * vec
+        vec = Ogre.Vector3(0.5,0.0,0.0)
+        strafe = quat * vec
         if ((self.Keyboard.isKeyDown(OIS.KC_LSHIFT)) or (self.Keyboard.isKeyDown(OIS.KC_RSHIFT))):
-            quat = self.msnCam.getOrientation()
-            vec = Ogre.Vector3(0.0,0.0,-0.5)
-            trans = quat * vec
-            vec = Ogre.Vector3(0.5,0.0,0.0)
-            strafe = quat * vec
             
             ## now lets handle mouse input
             self.msnCam.pitch( Ogre.Radian(ms.relY * -0.5) )
             self.msnCam.yaw( Ogre.Radian(ms.relX * -0.5), Ogre.Node.TS_WORLD )
 
             ##and Keyboard
-            if (self.Keyboard.isKeyDown(OIS.KC_UP)):
-                self.msnCam.translate(trans)
-            if (self.Keyboard.isKeyDown(OIS.KC_DOWN)):
-                self.msnCam.translate(trans * -1.0)
-            if (self.Keyboard.isKeyDown(OIS.KC_LEFT)):
-                self.msnCam.translate(strafe * -1.0)
-            if (self.Keyboard.isKeyDown(OIS.KC_RIGHT)):
-                self.msnCam.translate(strafe)
+        if (self.Keyboard.isKeyDown(OIS.KC_UP)):
+            self.msnCam.translate(trans)
+        if (self.Keyboard.isKeyDown(OIS.KC_DOWN)):
+            self.msnCam.translate(trans * -1.0)
+        if (self.Keyboard.isKeyDown(OIS.KC_LEFT)):
+            self.msnCam.translate(strafe * -1.0)
+        if (self.Keyboard.isKeyDown(OIS.KC_RIGHT)):
+            self.msnCam.translate(strafe)
 
 
         ## ----------------------------------------
@@ -276,7 +293,6 @@ class OgreNewtonFrameListener(GuiFrameListener ):
                 
                 mx = mouse.d_x / rend.getWidth()
                 my = mouse.d_y / rend.getHeight()
-                print "Mouse: ", mx, my
                 camray = self.camera.getCameraToViewportRay(mx,my)
     
                 start = camray.getOrigin()
@@ -284,11 +300,9 @@ class OgreNewtonFrameListener(GuiFrameListener ):
     
                 ray = OgreNewt.BasicRaycast( self.World, start, end )
                 info = ray.getFirstHit()
-                print "Info:", info, dir(info)
                 if (info.mBody):
                     ## a body was found.  first let's find the point we clicked, in local coordinates of the body.
                     ## while self.dragging, make sure the body can't fall asleep.
-                    print "**GOTBODY**"
                     info.mBody.unFreeze()
                     info.mBody.setAutoFreeze(0)
                     bodpos, bodorient = info.mBody.getPositionOrientation( )
@@ -298,10 +312,6 @@ class OgreNewtonFrameListener(GuiFrameListener ):
     
                     ## now we need to save this point to apply the spring force, I'm using the userData of the bodies in this example.
                     info.mBody.setUserData( self )
-                    print "\n\n"
-                    test = info.mBody.getUserData()
-                    print "UUU ", test, dir(test)
-                    print "\n\n"
                     ## now change the force callback from the standard one to the one that applies the spring (drag) force.
                     info.mBody.setCustomForceAndTorqueCallback( self, "dragCallback" )
     
@@ -330,10 +340,11 @@ class OgreNewtonFrameListener(GuiFrameListener ):
     
         if (self.Keyboard.isKeyDown(OIS.KC_ESCAPE)):
             return False
-    
         return True
 
-
+    def remove3DLine(self):
+        self.DragLineNode.detachAllObjects()
+        self.DragLine.clear()
 
     def dragCallback(  self, body ):
         ## this body is being dragged by the mouse, so apply a spring force.
@@ -370,17 +381,13 @@ class OgreNewtonFrameListener(GuiFrameListener ):
     
         gravity = Ogre.Vector3(0,-9.8,0) * mass
         body.addForce( gravity )
-        print "Adding Force:", dragForce, bodpt, gravity
         ## also don't forget buoyancy force. AJM NEED TO WRAP...
         body.addBouyancyForce( 0.7, 0.5, 0.5, Ogre.Vector3(0.0,-9.8,0.0), 
                     self, "buoyancyCallback" )
 
-    def remove3DLine(self):
-        self.DragLineNode.detachAllObjects()
-        self.DragLine.clear()
 
         
-    def standardForceCallback(self,  me ):
+    def standardForceCallback( self, me ):
         mass, inertia = me.getMassMatrix( )
     
         gravity = Ogre.Vector3(0,-9.8,0) * mass
@@ -390,15 +397,17 @@ class OgreNewtonFrameListener(GuiFrameListener ):
         ## just pass the acceleration due to gravity, not the force (accel * mass)! 
         me.addBouyancyForce( 0.7, 0.5, 0.5, Ogre.Vector3(0.0,-9.8,0.0), 
                         self, "buoyancyCallback" )
- 
+    
     ##################################################################################
     ##      BUOYANCY CALLBACK
     ################################################################################/
-    def buoyancyCallback(self, colID,  me,  orient,  pos,  plane ):
+    def buoyancyCallback( self, colID,  me,  orient,  pos,  plane ):
         ## here we need to create an Ogre::Plane object representing the surface of the liquid.  in our case, we're 
         ## just assuming a completely flat plane of liquid, however you could use this function to retrieve the plane
         ## equation for an animated sea, etc.
-        plane = Ogre.Plane( Ogre.Vector3(0,1,0), Ogre.Vector3(0,0,0) )
+        plane1 = Ogre.Plane( Ogre.Vector3(0,1,0), Ogre.Vector3(0,0,0) )
+        plane.normal = plane1.normal
+        plane.d = plane1.d
     
         return True
     

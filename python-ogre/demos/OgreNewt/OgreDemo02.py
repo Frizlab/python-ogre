@@ -85,12 +85,8 @@ class OgreNewtonApplication (sf.Application):
             ## make the next box.
             child = self.makeSimpleBox(size, pos, orient)
             self.bodies.append(child)
-            ## now make a new joint connecting this to the last box.
-            
             
             ## make the joint right between the bodies...
-            
-    
             if (parent):
                 joint = OgreNewt.BallAndSocket( self.World, child, parent, pos-Ogre.Vector3(size.x/2,0,0) )
             else:
@@ -102,6 +98,9 @@ class OgreNewtonApplication (sf.Application):
     
             ## save the last body for the next loop!
             parent = child
+            
+            ## NOW - we also have to kepe copies of the joints, otherwise they get deleted !!!
+            self.bodies.append ( joint) 
             
         ## position camera
         self.msnCam = self.sceneManager.getRootSceneNode().createChildSceneNode()

@@ -18,6 +18,8 @@ class OgreNewtonApplication (sf.Application):
         self.EntityCount = 0
         self.bodies=[]
         self.Car = None
+        sf.Application.debugText = "I, J, K, L move/steer the car. ESC to exit"
+
 
     def __del__ (self):
         ## delete the world when we're done.
@@ -225,10 +227,10 @@ class OgreNewtonFrameListener(sf.FrameListener):
     	steering = Ogre.Degree(0.0)
     
     	if (self.Keyboard.isKeyDown(OIS.KC_I)):
-    		torque += 600.0
+    		torque += 800.0
     
     	if (self.Keyboard.isKeyDown(OIS.KC_K)):
-    		torque -= 600.0
+    		torque -= 800.0
     
     	if (self.Keyboard.isKeyDown(OIS.KC_J)):
     		steering = Ogre.Degree(d=30)
@@ -237,7 +239,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
     		steering = Ogre.Degree(d=-30)
     
     	##update the vehicle!
-#     	self.Car.setTorqueSteering( torque, steering )
+     	self.Car.setTorqueSteering( torque, steering )
     
     	if ((self.Keyboard.isKeyDown(OIS.KC_R)) and  ( not self.R)):
     		self.R = True
