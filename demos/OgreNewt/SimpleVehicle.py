@@ -6,7 +6,6 @@ class SimpleVehicle (OgreNewt.Vehicle):
     ## SimpleVehicle constructor .  this creates and sets up the entire vehicle!
     def __init__( self, mgr,  world,  position,  orient) : 
         OgreNewt.Vehicle.__init__(self)
-    
         ## save the scene manager
         self.sceneManager = mgr
         self.World = world
@@ -98,6 +97,7 @@ class SimpleVehicle (OgreNewt.Vehicle):
                 ## create the actual tire!
                 tire = self.SimpleTire(self, tireorient, tirepos, pin, mass, width, radius,
                     susShock, susSpring, susLength, 0, steering)
+                    
                 ## attach the tire to the node.
                 tire.attachToNode( node )
                 self.tires.append(tire)
@@ -108,23 +108,24 @@ class SimpleVehicle (OgreNewt.Vehicle):
 	    self.Steering = steering
     
     def __del__(self):
-        
+        print "IN __DEL__ SIMPLEVEC"
+        return
         ## delete tire objects.
         for tire in self.tires:
+            tire.__del__()
             del tire
-    
         ## finally, destroy entity and node from chassis.
-        ent = self.chassis.getOgreNode().getAttachedObject(0)
-        self.chassis.getOgreNode().detachAllObjects()
-        self.chassis.getOgreNode().getCreator().destroyEntity( ent )
-        self.chassis.getOgreNode().getParentSceneNode().removeAndDestroyChild( self.chassis.getOgreNode().getName() )
+#         ent = self.chassis.getOgreNode().getAttachedObject(0) ## causes no RTTI ???
+#         self.chassis.getOgreNode().detachAllObjects()
+#         self.chassis.getOgreNode().getCreator().destroyEntity( ent )
+#         self.chassis.getOgreNode().getParentSceneNode().removeAndDestroyChild( self.chassis.getOgreNode().getName() )
+        print "DONE __DEL__ SIMPLEVEC"
 	    
     ## This is the important callback, which is the meat of controlling the vehicle.
     def userCallback(self):
         ## foop through wheels, adding torque and steering, and updating their positions.
         ## problem here as the original source casts the tire returned as a simpletire
         ## however getFirstTire returns and OgreNewt tire so we lose the 'steering'
-        
         for tire in self.tires:
             if (tire.SteeringTire):
                 tire.setSteeringAngle( self.Steering )
@@ -143,7 +144,10 @@ class SimpleVehicle (OgreNewt.Vehicle):
 
             def __del__(self):
                 ## destroy entity, and scene node.
-                pass
+
+                print "IN __DEL__ for simpletire"
+                return
+                print "DONE __DEL__ SIMPLETIRE"
 #                 ent = self.node.getAttachedObject(0)
 #                 self.node.detachAllObjects()
 #                 self.node.getCreator().destroyEntity( ent )

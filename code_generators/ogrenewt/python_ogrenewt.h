@@ -6,12 +6,12 @@
 #include <vector>
 #include <string>
 #include <map>
-
 #include "ogrenewt.h"
 
-//namespace python_ogrenewt{ 
+//namespace OgreNewt{ 
 
     inline void instantiate(){
+        //sizeof ( EventCallback);
                 
     }
 

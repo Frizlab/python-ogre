@@ -52,12 +52,13 @@ def filter_declarations( mb ):
     ogrenewt_ns = global_ns.namespace( 'OgreNewt' )
     ogrenewt_ns.include()
     
-    ## these need to be excluded due to callback functions - need to wrap them
+    ## these need to be excluded due to callback functions - Have bene wrapped 
     ogrenewt_ns.class_( "World" ).member_functions("setLeaveWorldCallback").exclude()
     ogrenewt_ns.class_( "Body" ).member_functions("addBouyancyForce").exclude()
     ogrenewt_ns.class_( "Body" ).member_functions("setAutoactiveCallback").exclude()
     ogrenewt_ns.class_( "Body" ).member_functions("setCustomForceAndTorqueCallback").exclude()
     ogrenewt_ns.class_( "Body" ).member_functions("setCustomTransformCallback").exclude()
+    
     ogrenewt_ns.class_( "Debugger" ).member_functions("getSingleton").exclude()
     ogrenewt_ns.class_( "BodyIterator" ).member_functions("getSingleton").exclude()
 

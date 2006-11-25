@@ -148,7 +148,6 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 pos = self.msnCam.getWorldPosition()
     
                 name = "Body"+str( self.count )
-                print "created ", name
                 self.count += 1
     
                 ent = self.sceneManager.createEntity( name, "cylinder.mesh" )
@@ -164,7 +163,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 ##col = OgreNewt.CollisionPrimitives.Cylinder(self.World, 1, 1)
                 col = OgreNewt.Cylinder(self.World, 1, 1)
                 
-                ## then make the rigid body.    ## need to keep it arround
+                ## then make the rigid body.    ## need to keep it around see below.......
                 body = OgreNewt.Body( self.World, col)
     
                 ##no longer need the collision shape object
@@ -187,6 +186,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 body.setPositionOrientation( pos, camorient )
                 body.setVelocity( (direct * 50.0) )
                 
+                ## note that we have to keep the bodies around :)
                 self.bodies.append(body)
                 
                 self.timer = 0.2
