@@ -158,11 +158,12 @@ class OgreNewtonApplication (sf.Application):
         planeNode.attachObject( theplane )
         planeNode.setPosition( Ogre.Vector3(0,0,0) )
         planeNode.setOrientation( Ogre.Quaternion( Ogre.Degree(d=-90), Ogre.Vector3(1,0,0) ) )
-
+        
         ## position camera
         self.msnCam = self.sceneManager.getRootSceneNode().createChildSceneNode()
         self.msnCam.attachObject( self.camera )
-        self.camera.setPosition(0.0, 0.0, 0.0)
+        self.camera.setPosition(0.0, 5.0, 10.0)
+        #self.camera.lookAt (0,0,0)
         self.msnCam.setPosition( 0.0, -3.0, 23.0)
     
         self.frameListener.msnCam = self.msnCam
@@ -381,12 +382,10 @@ class OgreNewtonFrameListener(GuiFrameListener ):
     
         gravity = Ogre.Vector3(0,-9.8,0) * mass
         body.addForce( gravity )
-        ## also don't forget buoyancy force. AJM NEED TO WRAP...
+        ## also don't forget buoyancy force. 
         body.addBouyancyForce( 0.7, 0.5, 0.5, Ogre.Vector3(0.0,-9.8,0.0), 
                     self, "buoyancyCallback" )
 
-
-        
     def standardForceCallback( self, me ):
         mass, inertia = me.getMassMatrix( )
     
@@ -397,7 +396,14 @@ class OgreNewtonFrameListener(GuiFrameListener ):
         ## just pass the acceleration due to gravity, not the force (accel * mass)! 
         me.addBouyancyForce( 0.7, 0.5, 0.5, Ogre.Vector3(0.0,-9.8,0.0), 
                         self, "buoyancyCallback" )
-    
+ 
+        me.addBouyancyForce( 1.0, 0.8, 0.9, Ogre.Vector3(0.0,-9.8,0.0), 
+                        self, "buoyancyCallback" )
+
+
+	                        
+                        
+                           
     ##################################################################################
     ##      BUOYANCY CALLBACK
     ################################################################################/
@@ -406,9 +412,10 @@ class OgreNewtonFrameListener(GuiFrameListener ):
         ## just assuming a completely flat plane of liquid, however you could use this function to retrieve the plane
         ## equation for an animated sea, etc.
         plane1 = Ogre.Plane( Ogre.Vector3(0,1,0), Ogre.Vector3(0,0,0) )
+        ## we need to copy the normals and 'd' to the plane we were passed...
         plane.normal = plane1.normal
-        plane.d = plane1.d
-    
+        plane.d = 60.0 #plane1.d
+       
         return True
     
         
