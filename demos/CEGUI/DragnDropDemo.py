@@ -23,6 +23,10 @@ import SampleFramework
 
 from CEGUI_framework import *
 
+
+CONTAINER_POS = 0.05
+CONTAINER_SIZE = 0.90
+
 def createUVector2( x, y):
     return CEGUI.UVector2(cegui.UDim(x,0), cegui.UDim(y,0))
     
@@ -32,10 +36,8 @@ def CreateControl(widget_name,name,parent,pos,size,text='',showframe=False):
     parent.addChildWindow(control)
     control.setPosition (createUVector2( pos[0],pos[1]) )
     control.setSize(createUVector2(size[0], size[1]))
-
     control.minimumSize = cegui.Size(0.01,0.01)
     control.maximumSize = cegui.Size(1.0,1.0)
-   
     control.text = text
     control.frameEnabled = showframe
     return control	
@@ -64,6 +66,8 @@ def handleDragDropped(args):
     # set frame colour and add image to frame static grid
     args.window.setProperty("FrameColours", "tl:FFFFFFFF tr:FFFFFFFF bl:FFFFFFFF br:FFFFFFFF")
     args.window.addChildWindow(args.dragDropItem)
+    args.dragDropItem.position = CEGUI.UVector2(cegui_reldim (CONTAINER_POS), cegui_reldim (CONTAINER_POS))
+    args.dragDropItem.setSize(CEGUI.UVector2(cegui_reldim(CONTAINER_SIZE), cegui_reldim(CONTAINER_SIZE)))
     return True
 
 def onMouseEnters(args):
@@ -156,7 +160,7 @@ class GEUIApplication(SampleFramework.Application):
         stat.windowHeight=cegui.UDim(0.05,0)         # %window parents height,offset  pixels parent 
         stat.windowWidth=cegui.UDim(0.80,0)          # %window parents width, offset  pixels parent 
         stat.windowXPosition = cegui.UDim(0.10,0)    # %position parent window width,offset  pixels parent 
-        stat.windowYPosition = cegui.UDim(0.65,0)    # %position parent window height,offset  pixels parent  
+        stat.windowYPosition = cegui.UDim(0.05,0)    # %position parent window height,offset  pixels parent  
         stat.text = "Drag Above Icon to different cells in frame window"
         img = cegui.ImagesetManager.getSingleton().getImageset("TaharezLook").getImage("ListboxSelectionBrush")
         stat.backgroundImage = img
@@ -206,8 +210,9 @@ class GEUIApplication(SampleFramework.Application):
 
         # create a drag/drop container
         item=cegui.WindowManager.getSingleton().createWindow("DragContainer", "theItem")
-        item.position = CEGUI.UVector2(cegui_reldim (0.5), cegui_reldim (0.05))
-        item.setSize(CEGUI.UVector2(cegui_reldim(0.9), cegui_reldim(0.9)))
+        item.position = CEGUI.UVector2(cegui_reldim (CONTAINER_POS), cegui_reldim (CONTAINER_POS))
+        item.setSize(CEGUI.UVector2(cegui_reldim(CONTAINER_SIZE), cegui_reldim(CONTAINER_SIZE)))
+
 
 
         # create a static iamge as drag container's contents and parent to drag container
@@ -244,7 +249,7 @@ class GEUIApplication(SampleFramework.Application):
         self.camera.nearClipDistance = 5
 
     def _createFrameListener(self):
-        self.frameListener = GuiFrameListener(self.renderWindow, self.camera, self.sceneManager)
+        self.frameListener = CEGUIFrameListener(self.renderWindow, self.camera, self.sceneManager)
         self.root.addFrameListener(self.frameListener)
         self.frameListener.showDebugOverlay(True)
 
@@ -258,6 +263,19 @@ class GEUIApplication(SampleFramework.Application):
         del self.root
         del self.renderWindow        
      
+class CEGUIFrameListener(GuiFrameListener):
+
+    def __init__(self, renderWindow, camera, sceneManager):
+        GuiFrameListener.__init__(self, renderWindow, camera, sceneManager)
+
+        self.keepRendering = True   # whether to continue rendering or not
+
+    def frameStarted(self, evt):
+        # injectTimePulse needed when using tooltips
+	cegui.System.getSingleton().injectTimePulse( evt.timeSinceLastFrame)
+        return GuiFrameListener.frameStarted(self,evt)
+
+
 
 if __name__ == '__main__':
     try:

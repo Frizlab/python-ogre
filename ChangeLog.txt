@@ -10,10 +10,14 @@ Jul -Aug 2006:  All the base work done by Larkin and Roman
 ----          Significant improvements to both Py++ and the Ogre wrappers make code generation far simpler
 29 Sept 2006: Andy - Update to support both the Ogre CVS and Ogre 1.2.3 code bases.  
               PYPOS project added as a sub driectory (initially)
-15 Oct 2006:  Andy - initial release of the binary for windows Verison 0.5
-22 Oct 2006:  Version 0.5.1  
-              Removed hard coding of the resources loaded - resource.cfg is now used - see _setUpResources in sf.py
-              Added Ogre.GetOgreVersion() and Ogre.GetPythonOgreVersion() to allow for future flexibility in demo support
-              Fixed a couple of small bugs in the sample framework (typos in setting NearDepth and BackgoundColour)
-              Fixed bug in Skelatal demo where global variable wasn't defined and used
+15 Oct 2006:  Andy - initial release of the binary for windows 0.5/ 0.51 release
+18 Nov 2006:  Version 0.6 Windows release.
+              Built against the CVS version of Ogre, hence dlls included as part of this release
+              CEGUI/OIS/OgreNewt (Newton Physics)/OgreRefApp (ODE Physics) part of the release
+              Media is now a seperate download as expected to change (can be cleaned up and shrunk)
+26 Nov 2006:  Version 0.65 Windows Release
+              Series of minor fixes - added support for MovableObjects in Ogre
+              Call backs in OgreNewt now work - or seem too :)  Demos 0-6 working well
+              Known problems in a couple of the OgreNewt demos 7 and 8..
+              
               

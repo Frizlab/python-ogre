@@ -14,10 +14,10 @@ This version is built against the Ogre CVS"""
 
 METADATA = {
     "name":             "Python-Ogre",
-    "version":          "0.6 CVS",
+    "version":          "0.65 CVS",
     "license":          "LGPL",
     "url":              "http://python-ogre.python-hosting.com/",
-    "author":           "Lakin Wecker, Roman Yakovenko, Andy Miller",
+    "author":           "Lakin Wecker, Roman Yakovenko, Andy",
     "author_email":     "python-ogre-developers@googlegroups.com",
     "description":      "Py++ Ogre Python Binding: For CVS version of Ogre",
     "long_description": DESCRIPTION,
@@ -36,7 +36,7 @@ base = os.path.join(os.getcwd(), os.path.dirname(sys.argv[0]) )
 demofiles = GetFileList ( os.path.join (base, "demos") )
 
 PACKAGEDATA = {
-       "packages":    ['Ogre', 'OIS', 'CEGUI', 'ODE', 'OgreRefApp', 'NEWTON', 'OgreNewt'],
+       "packages":    ['Ogre', 'OIS', 'CEGUI', 'OgreRefApp', 'OgreNewt'],
        "package_dir": {'': 'packages'},
        "package_data": {'': ['*.pyd', '*.dll']},
 #       "data_files": [(base+'Demos', demofiles),]
