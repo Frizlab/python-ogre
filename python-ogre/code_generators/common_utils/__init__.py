@@ -85,11 +85,12 @@ def add_constants( mb, constants ):
     for name, value in constants.items():
         mb.add_registration_code( tmpl % dict( name=name, value=str(value) ) )
     
-def add_properties( classes ):
+def add_properties( classes, AddLeadingLower = False ):
     for cls in classes:
         cls.add_properties()
-        new_props = []
-        for prop in cls.properties:
-            name = prop.name[0].lower() + prop.name[1:]
-            new_props.append( property_t( name, prop.fget, prop.fset, prop.doc, prop.is_static ) )
-        cls.properties.extend( new_props )
+        if AddLeadingLower: 
+            new_props = []
+            for prop in cls.properties:
+                name = prop.name[0].lower() + prop.name[1:]
+                new_props.append( property_t( name, prop.fget, prop.fset, prop.doc, prop.is_static ) )
+            cls.properties.extend( new_props )
