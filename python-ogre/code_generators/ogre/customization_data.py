@@ -3,8 +3,13 @@
 def aliases( version ):
     if version == "CVS":
         return {
-              "map<std::string, bool, std::less<std::string>, std::allocator<std::pair<std::string const, bool> > >"
+              "map<unsigned, Ogre::StaticGeometry::Region*, std::less<unsigned>, std::allocator<std::pair<unsigned const, Ogre::StaticGeometry::Region*> > >"
+                : "MapOfRegionIterator"
+              
+            ,  "map<std::string, bool, std::less<std::string>, std::allocator<std::pair<std::string const, bool> > >"
               : "MapOfStringToBool"
+            , "map<std::string, Ogre::AnimationState*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::AnimationState*> > >" 
+              :  "MapOfAnimationState"
             , "map<std::string, Ogre::OverlayElement*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::OverlayElement*> > >"
               : "MapOfStringToOverlayElement"
             , "map<std::string, Ogre::MovableObject*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > >"

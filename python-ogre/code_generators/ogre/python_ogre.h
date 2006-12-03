@@ -45,16 +45,30 @@ namespace python_ogre{ namespace details{
 
 inline void instantiate(){
     using namespace Ogre;
-
+    
     sizeof( Controller<float> );
 
     sizeof( SharedPtr< Controller<float> >);
 
     sizeof( SharedPtr< WaveformControllerFunction > );
-    
+    sizeof ( AnimableValue );
+    sizeof ( SharedPtr<AnimableValue>  );
+    sizeof ( AnimableValuePtr );
+
+    sizeof ( Ogre::DataStream );
+    sizeof ( Ogre::DataStreamPtr );
+    sizeof ( Ogre::FileInfo );
     sizeof ( std::pair< std::wstring, std::wstring > );
+    sizeof ( std::list<Ogre::AnimationState*, std::allocator<Ogre::AnimationState*> > );
+    sizeof ( Ogre::SharedPtr<Ogre::DataStream> );
+    sizeof ( Ogre::SharedPtr<std::vector<std::string, std::allocator<std::string> > > );
+//     sizeof ( Ogre::SharedPtr<std::vector<Ogre::FileInfo, std::allocator<Ogre::FileInfo> > > ); ## problem exposing
+    sizeof ( Ogre::Singleton<Ogre::ArchiveManager> );
+    sizeof ( Ogre::MaterialPtr );
+    sizeof ( Ogre::TexturePtr );
+
     
-    // lets clean up some of the file names
+        // lets clean up some of the file names
     sizeof( SharedPtr<Ogre::Resource> );
     sizeof ( std::vector<Ogre::Vector4, std::allocator< Ogre::Vector4> > );
     sizeof ( Ogre::StringVectorPtr );
@@ -62,6 +76,24 @@ inline void instantiate(){
     
     sizeof ( SharedPtr<Ogre::StringVectorPtr> );
     sizeof ( SharedPtr<Ogre::StringVector> );
+    
+    // Ogre::ConstMapIterator requirements
+    sizeof ( std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, 
+                    Ogre::AnimationState*, std::less<std::basic_string<char, std::char_traits<char>, 
+                    std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, 
+                    std::char_traits<char>, std::allocator<char> >, Ogre::AnimationState*> > > );
+    sizeof ( Ogre::ConstMapIterator<std::map<std::basic_string<char, std::char_traits<char>, 
+                    std::allocator<char> >, Ogre::AnimationState*, std::less<std::basic_string<char, 
+                    std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, 
+                    std::char_traits<char>, std::allocator<char> >, Ogre::AnimationState*> > > > );
+    sizeof ( Ogre::ConstVectorIterator<std::list<Ogre::AnimationState*, std::allocator<Ogre::AnimationState*> > > );
+    
+    sizeof ( std::map<unsigned int,class Ogre::StaticGeometry::Region *,struct std::less<unsigned int>,
+                    class std::allocator<struct std::pair<unsigned int const ,class Ogre::StaticGeometry::Region *> > >);
+    
+    // StaticGeometry Iterator
+    sizeof ( Ogre::MapIterator<std::map<unsigned int, Ogre::StaticGeometry::Region*, std::less<unsigned int>, 
+                    std::allocator<std::pair<const unsigned int, Ogre::StaticGeometry::Region*> > > > ) ;
     
     // Needed for AliasTextureIterator
     sizeof( ConstMapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > );
