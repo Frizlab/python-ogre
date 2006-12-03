@@ -22,25 +22,33 @@ import hand_made_wrappers
 from pygccxml import parser
 from pygccxml import declarations
 from pyplusplus import module_builder
+
+from pyplusplus import function_transformers as ft
 from pyplusplus.module_builder import call_policies
+
 
 def filter_declarations( mb ):
 
-#     for cls in mb.global_ns.classes():
-#         print cls
-# #    for cls in ogre_ns.classes():
-#         
-#     sys.exit(-1)
     global_ns = mb.global_ns
     global_ns.exclude()
     
     ogre_ns = global_ns.namespace( 'Ogre' )
     ogre_ns.include()
 
+#     for cls in mb.global_ns.classes():
+# #    for cls in ogre_ns.classes():
+#         print cls
+#         
+#     sys.exit(-1)
+    
+    
+    
     startswith = [
         # Don't include, we'll never need.
-        'D3D', 'GL',  'SDL', 'WIN32', 'Any', 'CompositorScriptCompiler', '_', 'Singleton',
-        'MeshSerializerImpl', ## link problems - doesn't seem to exist at all ???
+        'D3D', 'GL', 'WIN32', '_'  
+#         ,'AnimableValue'  # this as unnamed variables, and is intended to be subclassed???
+#         ,'MeshSerializerImpl', ## link problems - doesn't seem to exist at all ???
+#         ,'SDL', 'CompositorScriptCompiler','Any', 'Singleton'
 
     ]
 
@@ -113,25 +121,25 @@ def filter_declarations( mb ):
     ogre_ns.class_( 'RenderSystemOperation' ).exclude() # AJM in OgreCompositorInstance
     ogre_ns.calldefs ('getChildIterator').exclude ()
 
-    #AJM Set of functions in Particle system that don't get wrapped properly..
+    #AJM Set of functions in Particle system that don't get wrapped properly.. Rechecked 30Nov06 AJM
     PartSys = ogre_ns.class_( "ParticleSystem" )
     PartSys.class_( "CmdIterationInterval" ).exclude()
     PartSys.class_( "CmdLocalSpace" ).exclude()
     PartSys.class_( "CmdNonvisibleTimeout" ).exclude()
     PartSys.class_( "CmdSorted" ).exclude()
 
-    # These members have Ogre::Real * methods which need to be wrapped.
+    # These members have Ogre::Real * methods which need to be wrapped. # recheck 29/12/06 AJM
     ogre_ns.class_ ('Matrix3').member_operators (symbol='[]').exclude ()
     ogre_ns.class_ ('Matrix4').member_operators (symbol='[]').exclude ()
 
-    #returns reference to "const Real *"
-    ogre_ns.class_ ('BillboardChain').calldef( 'getOtherTextureCoordRange' ).exclude()
+    #returns reference to "const Real *" # recheck 29/12/06 AJM
+    ogre_ns.class_ ('BillboardChain').calldef( 'getOtherTextureCoordRange' ).exclude() 
 
     #all constructors in this class are private, also some of them are public.
     Skeleton = ogre_ns.class_( 'Skeleton' ).constructors().exclude()
 
     #"properties.py" functionality exports as "data" property function, that
-    #returns reference to non-const uchar*, this cuased generated code to
+    #returns reference to non-const uchar*, this caused generated code to
     #raise compilation error
     ogre_ns.class_( "Image" ).member_functions( 'getData' ).exclude()
 
@@ -147,6 +155,13 @@ def filter_declarations( mb ):
     VertexCacheProfiler = ogre_ns.constructor( 'VertexCacheProfiler', arg_types=[None,None] )
     VertexCacheProfiler.arguments[1].default_value = "int(%s)" % VertexCacheProfiler.arguments[1].default_value
 
+    ## now specifically remove functions that we have wrapped in hand_made_wrappers.py
+    ogre_ns.class_( "RenderTarget" ).member_functions( 'getCustomAttribute' ).exclude()
+#     ogre_ns.class_( "RenderTarget" ).member_functions( 'getMetrics' ).exclude()
+#     ogre_ns.class_( "RenderWindow" ).member_functions( 'getMetrics' ).exclude()
+    ogre_ns.class_( "Mesh" ).member_functions( 'suggestTangentVectorBuildParams' ).exclude()
+#     ogre_ns.class_( "Viewport" ).member_functions( 'getActualDimensions' ).exclude()
+    
 
 def set_call_policies( mb ):
 #
@@ -167,6 +182,16 @@ def configure_exception(mb):
     #be useful to user. But, we will provide automatic exception translator
     Exception = mb.namespace( 'Ogre' ).class_( 'Exception' )
     Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getFullDescription().c_str()' )
+
+def my_add_properties ( classes, AddLeadingLower = False ):
+    for cls in classes:
+        cls.add_properties()
+        if AddLeadingLower: 
+            new_props = []
+            for prop in cls.properties:
+                name = prop.name[0].lower() + prop.name[1:]
+                new_props.append( property_t( name, prop.fget, prop.fset, prop.doc, prop.is_static ) )
+            cls.properties.extend( new_props )
 
 
 def generate_code():
@@ -200,11 +225,25 @@ def generate_code():
     hand_made_wrappers.apply( mb )
 
     set_call_policies ( mb.global_ns.namespace ('Ogre') )
-    common_utils.add_properties( ogre_ns.classes() )
+    common_utils.add_properties( ogre_ns.classes(), True )
+#    my_add_properties( ogre_ns.classes(), True )
+    
     common_utils.add_constants( mb, { 'ogre_version' :  '"%s"' % environment.ogre.version
                                       , 'python_version' : '"%s"' % sys.version } )
+    ns = mb.global_ns.namespace ('Ogre')                                  
+#    mb.global_ns.namespace ('Ogre').class_('RenderTarget').mem_fun('getCustomAttribute').add_transformation(ft.output('value') )
+    ns.class_('RenderTarget').mem_fun('getMetrics').add_transformation(ft.output(0), ft.output(1), ft.output(2) )
+#    ns.class_('RenderTarget').mem_fun('getStatistics').add_transformation(ft.output(0), ft.output(1), ft.output(2), ft.output(3) )
+    ns.class_('RenderQueueListener').mem_fun('renderQueueStarted').add_transformation(ft.output('skipThisInvocation'))
+    ns.class_('RenderWindow').mem_fun('getMetrics').add_transformation(ft.output(0), ft.output(1), ft.output(2),ft.output(3),ft.output(4) )
+    ns.class_('Viewport').mem_fun('getActualDimensions').add_transformation(ft.output(0), ft.output(1), ft.output(2), ft.output(3) )
+    ns.class_('CompositorChain').class_('RQListener').mem_fun('renderQueueStarted').add_transformation(ft.output("skipThisQueue"))
+    ns.class_('CompositorChain').class_('RQListener').mem_fun('renderQueueEnded').add_transformation(ft.output("repeatThisQueue"))
+    
 
-    #Creating code creator. After this step you should not modify/customize declarations.
+    
+#     
+#     #Creating code creator. After this step you should not modify/customize declarations.
     mb.build_code_creator (module_name='_ogre_')
     for inc in environment.ogre.include_dir :
         mb.code_creator.user_defined_directories.append(inc )
