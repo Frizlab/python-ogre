@@ -16,12 +16,11 @@ PythonOgrePatchVersion = "0"
 
 class ogre:
     root_dir = None
-    include_dir = None
+    include_dirs = None
     libs_dir = None
     dlls_dir = None
     generated_dir = None
     version = "CVS"
-    #version = "1.2.3"
     cache_file = None
     libs_files = ["ogremain", "ogreguirenderer", "ceguibase", "ode", "newton"]
 
@@ -31,6 +30,7 @@ class ois:
 
 class CEGUI:
     version = "0.5" 
+    
 class ode:
     version= "0.7"
     
@@ -55,12 +55,12 @@ projects = {
 }
 
 if 'roman' in getpass.getuser():
-    root_dir = r'D:\python-ogre'
-    gccxml_bin = r'd:/gccxml_cvs/gccxml-build/bin/release/gccxml.exe'
-    python_include_dir = 'c:/python/include'
-    pyplusplus_install_dir = r'D:\pygccxml_sources\sources'
+    root_dir = r'd:\dev\python-ogre\bindings-dev'
+    gccxml_bin = r'd:/dev/gccxml_cvs/gccxml-bin/bin/release/gccxml.exe'
+    python_include_dir = 'e:/python25/include'
+    pyplusplus_install_dir = r'd:\dev\language-binding'
 
-    ogre.include_dir = r'D:\OgreSDK\include'
+    ogre.include_dirs = [ r'd:\dev\python-ogre\sources\ogre_cvs\ogrenew\OgreMain\include' ]
     ois.include_dir = r'D:\OisSDK\includes'
 else:
     root_dir = r'C:\development\pywork'
