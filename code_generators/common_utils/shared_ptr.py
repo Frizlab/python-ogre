@@ -1,5 +1,6 @@
 import os
 import environment
+from pyplusplus import messages
 from pygccxml import declarations
 
 OGRE_SP_HELD_TYPE_TMPL = \
@@ -46,14 +47,16 @@ class exposer_t:
 
     def expose_single( self, sp_instantiation ):
         sp_instantiation.exclude() # we don't want to export SharedPtr< X >
-
+        sp_instantiation.disable_warnings( messages.W1040 )
+        
         pointee = self.get_pointee( sp_instantiation )
         if sp_instantiation.derived:
             #We have struct XPtr : public SharedPtr<X>
             assert 1 == len( sp_instantiation.derived )
             sp_derived = sp_instantiation.derived[0].related_class
             sp_derived.exclude()
-
+            sp_derived.disable_warnings( messages.W1040 )
+            
             pointee.add_declaration_code(
                 OGRE_SP_HELD_TYPE_TMPL % { 'class_name': pointee.decl_string
                                            , 'class_ptr_name': sp_derived.decl_string } )
