@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 
-#-------------------------------------------------------------------------------
-# TODO:
-# 1.    void* as a function argument - they are currently wrapped (and compile/load etc) due to latest CVS of boost.
-#       However probably don't actually work
-# 2.    Properties.py and calling 'properties.create' - commented out at the moment, not sure if it is really needed?
 
 import os, sys, time, shutil
 
@@ -34,29 +29,17 @@ def filter_declarations( mb ):
     
     ogre_ns = global_ns.namespace( 'Ogre' )
     ogre_ns.include()
-
-#     for cls in mb.global_ns.classes():
-# #    for cls in ogre_ns.classes():
-#         print cls
-#         
-#     sys.exit(-1)
-    
-    
     
     startswith = [
         # Don't include, we'll never need.
         'D3D', 'GL', 'WIN32', '_'  
-#         ,'AnimableValue'  # this as unnamed variables, and is intended to be subclassed???
-#         ,'MeshSerializerImpl', ## link problems - doesn't seem to exist at all ???
-#         ,'SDL', 'CompositorScriptCompiler','Any', 'Singleton'
-
     ]
 
     if environment.ogre.version == "CVS":
         mb.global_ns.class_( 'vector<Ogre::Vector4, std::allocator<Ogre::Vector4> >' ).exclude( )
 
     ## Remove private classes , and those that are internal to Ogre...
-    private_decls = common_utils.private_decls_t(environment.ogre.include_dir)
+    private_decls = common_utils.private_decls_t(environment.ogre.include_dirs)
     for cls in ogre_ns.classes():
         if private_decls.is_private( cls ):
             cls.exclude()
@@ -205,7 +188,7 @@ def generate_code():
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
-                                          , include_paths=environment.ogre.include_dir
+                                          , include_paths=environment.ogre.include_dirs
                                           , define_symbols=defined_symbols
                                           , indexing_suite_version=2 )
 
@@ -245,7 +228,7 @@ def generate_code():
 #     
 #     #Creating code creator. After this step you should not modify/customize declarations.
     mb.build_code_creator (module_name='_ogre_')
-    for inc in environment.ogre.include_dir :
+    for inc in environment.ogre.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )
     mb.code_creator.user_defined_directories.append( environment.ogre.generated_dir )
     mb.code_creator.replace_included_headers( customization_data.header_files( environment.ogre.version ) )
