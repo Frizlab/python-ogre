@@ -50,10 +50,15 @@ def aliases( version ):
               : "VectorOfHardwareBufferUsage"
             , "vector<const Ogre::Image*,std::allocator<const Ogre::Image*> >"
               : "VectorOfImagePtr"
-            , "set<Ogre::Entity*,std::less<Ogre::Entity*>,std::allocator<Ogre::Entity*> >"
-              : "SetOfEntityPtr"
-            , "vector<Ogre::RenderWindow*,std::allocator<Ogre::RenderWindow*> >"
-              : "VectorOfRenderWindowPtr"
+              
+## AJM removed these as exposing them in python_ogre caused them to disappear?              
+#             , "set<Ogre::Entity*,std::less<Ogre::Entity*>,std::allocator<Ogre::Entity*> >"
+#               : "SetOfEntityPtr"
+#             , "vector<Ogre::RenderWindow*,std::allocator<Ogre::RenderWindow*> >"
+#               : "VectorOfRenderWindowPtr"
+#                , "multimap<Ogre::Vector3,Ogre::Vector3,std::less<Ogre::Vector3>,std::allocator<std::pair<const Ogre::Vector3, Ogre::Vector3> > >"
+#                 : "Vector3Multimap"    
+
              , "vector<Ogre::Vector4, std::allocator<Ogre::Vector4> >"
                : "VectorOfVector4"
             , "vector<unsigned short, std::allocator<unsigned short> >"
@@ -62,8 +67,10 @@ def aliases( version ):
 # 		        : "MovableObjectMapIterator"
 		     , "MapIterator<std::map<std::string, Ogre::MovableObject*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > >"
 		        : "MovableObjectMapIterator"
-#             ,"Ogre::MapIterator<std::map<std::string, Ogre::MovableObject*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > > "
-#                 :  "MoveableIteratorTemp"
+               , "map<Ogre::Vector3, unsigned, Ogre::EdgeListBuilder::vectorLess, std::allocator<std::pair<Ogre::Vector3 const, unsigned> > >"
+                : "Vector3EdgeMap"
+              , "map<unsigned, Ogre::Vector3, std::less<unsigned>, std::allocator<std::pair<unsigned const, Ogre::Vector3> > >"
+                : "Vector3Map"    
    
               
               
