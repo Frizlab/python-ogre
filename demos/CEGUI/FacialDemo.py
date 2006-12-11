@@ -53,7 +53,7 @@ class CEGUIFrameListener(GuiFrameListener):
         GuiFrameListener.__init__(self, renderWindow, camera, sceneManager)
         self._setupGUI()
         self._setupConnections()
-        self.MenuMode = False
+        self.MenuMode = True
 
 
     def _setupGUI(self):
@@ -77,41 +77,17 @@ class CEGUIFrameListener(GuiFrameListener):
         btn.selected=True
         self.connections.append(btn.subscribeEvent(btn.EventSelectStateChanged, self, "handleRadioChanged"))
 
-
-    # -----------------------------------------------------------------------------    
-    # here I do not call the CEGUI.framestarted method, since doing so will result in 
-    # the facial node moving about the screen. Looks like sf_OIS.py needs updating to
-    # handle this
-    # -----------------------------------------------------------------------------    
-    #def frameStarted(self, evt):
-    #    ok = GuiFrameListener.frameStarted(self,evt)
-    #    if ok: 
-    #        self.speakAnimState.addTime(evt.timeSinceLastFrame)
-    #    return ok
-
-    def frameStarted(self, frameEvent):
-        if(self.renderWindow.isClosed()):
-            return False
-        
-        ##Need to capture/update each device - this will also trigger any listeners
-        self.Keyboard.capture()    
-        self.Mouse.capture()
-        if( self.Joy ):
-            self.Joy.capture()
-    
-        ##bool buffJ = (mJoy) ? mJoy->buffered() : true;
-
-
-        self.speakAnimState.addTime(frameEvent.timeSinceLastFrame)
-        return True
-
-
+    def frameStarted(self, evt):
+        ok = GuiFrameListener.frameStarted(self,evt)
+        if ok: 
+            self.speakAnimState.addTime(evt.timeSinceLastFrame)
+        return ok
 
     # scrollbars event handler
     def handleScrollChanged(self,args):
         if (not self.mPlayAnimation):
             #Alter the animation 
-            name = args.window.name
+            name = args.window.name.c_str   ## Note that you need to extract the string
             #Find which pose was changed
             for i in xrange(0,SI_COUNT):
                 if (scrollbarNames[i] == name):
@@ -119,15 +95,9 @@ class CEGUIFrameListener(GuiFrameListener):
             if (i != SI_COUNT):
                 #Update the pose
                 self.manualKeyFrame.updatePoseReference(
-                  poseIndexes[i], self.scrollbars[i].scrollPosition)
+                  poseIndexes[i], self.scrollbars[i].getScrollPosition() ) #scrollPosition)
                 #Dirty animation state since we're fudging this manually
-
-                # ===============================================================
-                # AnimationStateSet has no function "_notifyDirty()
-                # see Tracker Number 38, to remove the comment from the following
-                # line, after this is resolved 
-                # ===============================================================
-                self.speakManualState.parent._notifyDirty()
+                self.speakManualState.getParent()._notifyDirty()
 
         return True
 
