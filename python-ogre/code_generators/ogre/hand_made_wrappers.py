@@ -19,23 +19,40 @@ GetPythonOgreVersion () {
                                                 ) );
 }
 void
-Utility_setFloat(void * data, boost::python::list listin)
+Utility_setFloat(void * ptrin, boost::python::list listin)
 {
-    for int index=0;index<len(listin);index++ {
-        (float *) data[index] = extract<float> (listin[index]);
+    int index;
+    float * newptr = reinterpret_cast<float *>(ptrin);
+    for (index=0;index<len(listin);index++ ) {
+//        newptr[index] = boost::python::extract<float> (listin[index]);
+        *newptr++ = boost::python::extract<float> (listin[index]);
         }
 }
+
 void
-Utility_setFloat(void * data, float in)
+Utility_setUint16(void * ptrin, boost::python::list listin)
 {
-    (float *)data[0]= in;
+    int index;
+    Ogre::uint16 * newptr = reinterpret_cast<Ogre::uint16 *>(ptrin);
+    for (index=0;index<len(listin);index++ ) {
+        *newptr++ = boost::python::extract<Ogre::uint16> (listin[index]);
+        }
 }
+
+
+// void
+// Utility_setFloat(void * ptrin, float datain)
+// {
+//     float * newptr = reinterpret_cast<float *>(ptrin);
+//     newptr[0]= datain;
+// }
 """            
 WRAPPER_REGISTRATION_General = \
 """
     def( "GetOgreVersion", &GetOgreVersion);
     def( "GetPythonOgreVersion", &GetPythonOgreVersion);
     def( "setFloat", &Utility_setFloat );
+    def( "setUint16", &Utility_setUint16 );
     
 """
 
@@ -116,13 +133,19 @@ WRAPPER_REGISTRATION_RenderTarget = \
 
 #####################################################################
 
-WRAPPER_DEFINITION_Utility = \
+WRAPPER_DEFINITION_HardwareBufferManager = \
 """
+::Ogre::HardwareIndexBufferSharedPtr 
+hbm_createIndexBuffer( ::Ogre::HardwareIndexBuffer::IndexType itype, ::size_t numIndexes, 
+                        ::Ogre::HardwareBuffer::Usage usage, bool useShadowBuffer=false ){
+        return me.createIndexBuffer( itype, numIndexes, usage, useShadowBuffer );
+    }
 
-
 """
-WRAPPER_REGISTRATION_Utility = \
+WRAPPER_REGISTRATION_HardwareBufferManager = \
 """
+    def( "createIndexBuffer", &::hbm_createIndexBuffer );
+//           bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
 """
 
 #########################################
@@ -172,7 +195,19 @@ if environment.ogre.version != "CVS":
         def( "addKeyListenerFunc", &::EventProcessor_addKeyListener );
         EventProcessor_exposer.def( "addMouseListenerFunc", &::EventProcessor_addMouseListener );
     """
-
+WRAPPER_DEFINITION_SubMesh =\
+"""
+void
+SubMesh_createVertexData ( Ogre::SubMesh & me ) {
+    me.vertexData = new Ogre::VertexData();
+    }
+ 
+"""
+WRAPPER_REGISTRATION_SubMesh = \
+"""
+    def( "createVertexData", &::SubMesh_createVertexData );
+""" 
+		
 WRAPPER_DEFINITION_Mesh =\
 """
 boost::python::tuple
@@ -227,9 +262,12 @@ def apply( mb ):
     rt = mb.class_( 'Mesh' )
     rt.add_declaration_code( WRAPPER_DEFINITION_Mesh )
     rt.add_registration_code( WRAPPER_REGISTRATION_Mesh )
-#     rt = mb.class_( 'Viewport' )
-#     rt.add_declaration_code( WRAPPER_DEFINITION_Viewport )
-#     rt.add_registration_code( WRAPPER_REGISTRATION_Viewport )
+#     rt = mb.class_( 'HardwareBufferManager' )
+#     rt.add_declaration_code( WRAPPER_DEFINITION_HardwareBufferManager )
+#     rt.add_registration_code( WRAPPER_REGISTRATION_HardwareBufferManager )
+    rt = mb.class_( 'SubMesh' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_SubMesh )
+    rt.add_registration_code( WRAPPER_REGISTRATION_SubMesh )
         
         
     mb.add_declaration_code( WRAPPER_DEFINITION_General )

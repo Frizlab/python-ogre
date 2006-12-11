@@ -19,6 +19,7 @@ import Ogre as ogre
 import OIS
 import SampleFramework as sf
 import random
+VERTEXDATA = None
 
 # self.mLight 
 # self.mLightNode = 0 
@@ -72,7 +73,7 @@ class GrassListener ( sf.FrameListener ):
         self.timeDelay = 0
         self.xpos = (random.random () * (math.pi*2)) - math.pi 
         self.zpos = (random.random () * (math.pi*2)) - math.pi 
-
+        
     def waveGrass(self, timeElapsed):
         global mStaticGeom, OFFSET_PARAM
         
@@ -81,7 +82,6 @@ class GrassListener ( sf.FrameListener ):
 
         ## Update vertex program parameters by binding a value to each renderable
         offset = ogre.Vector4(0,0,0,0) 
-
         rit =  mStaticGeom.getRegionIterator()  # StaticGeometry.RegionIterator 
         while rit.hasMoreElements():
             reg = rit.getNext() 
@@ -90,8 +90,8 @@ class GrassListener ( sf.FrameListener ):
             self.zpos += reg.getCentre().z * 0.001 
             offset.x = math.sin(self.xpos) * 0.05 
             offset.z = math.sin(self.zpos) * 0.05 
-
             lodit = reg.getLODIterator() 
+            
             while lodit.hasMoreElements():
                 lod = lodit.getNext() 
                 matit = lod.getMaterialIterator() 
@@ -102,7 +102,7 @@ class GrassListener ( sf.FrameListener ):
                         geom = geomit.getNext() 
                         geom.setCustomParameter(OFFSET_PARAM, offset) 
 
-
+        
     def frameStarted( self, evt) :
         global mAnimState
         if sf.FrameListener.frameStarted(self, evt) == False:
@@ -122,8 +122,7 @@ class GrassListener ( sf.FrameListener ):
 
         
 class Grass_Application(sf.Application):
-    ##SceneNode *mpObjsNode  ## the node which will hold our entities
-
+           
     def createGrassMesh(self):
         global GRASS_MESH_NAME
         ## Each grass section is 3 planes at 60 degrees to each other
@@ -131,114 +130,121 @@ class Grass_Application(sf.Application):
         msh = ogre.MeshManager.getSingleton().createManual(GRASS_MESH_NAME, 
             ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME) 
         sm = msh.createSubMesh() 
-        print "============", sm, dir(sm)
         sm.useSharedVertices = False 
-        self.vd = ogre.VertexData() 
-        print self.vd, dir(self.vd)
-        del self.vd
-#         sm.set_vertexData ( self.vd )
-        ###vertexData = ogre.VertexData() 
+
+        ##  AJM: NOTE the Python-Ogre work around here
+        ##  subMesh.vertexData isn't being exposed as a writeable property due to boost limitation
+        ##  hence a new function has been added.
+        ##  C++ Code:   sm->vertexData = new VertexData();
+        
+        sm.createVertexData() # wrapper to create VertexData as assign it to .VertexData
+        
         sm.vertexData.vertexStart = 0 
         sm.vertexData.vertexCount = 12 
         dcl = sm.vertexData.vertexDeclaration 
         offset = 0 
-        dcl.addElement(0, offset, VET_FLOAT3, VES_POSITION) 
-        offset += VertexElement.getTypeSize(VET_FLOAT3) 
-        dcl.addElement(0, offset, VET_FLOAT3, VES_NORMAL) 
-        offset += VertexElement.getTypeSize(VET_FLOAT3) 
-        dcl.addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES) 
-        offset += VertexElement.getTypeSize(VET_FLOAT2) 
+        dcl.addElement(0, offset, ogre.VertexElementType.VET_FLOAT3, ogre.VertexElementSemantic.VES_POSITION) 
+        offset += ogre.VertexElement.getTypeSize(ogre.VertexElementType.VET_FLOAT3) 
+        dcl.addElement(0, offset, ogre.VertexElementType.VET_FLOAT3, ogre.VertexElementSemantic.VES_NORMAL) 
+        offset += ogre.VertexElement.getTypeSize(ogre.VertexElementType.VET_FLOAT3) 
+        dcl.addElement(0, offset, ogre.VertexElementType.VET_FLOAT2, ogre.VertexElementSemantic.VES_TEXTURE_COORDINATES) 
+        offset += ogre.VertexElement.getTypeSize(ogre.VertexElementType.VET_FLOAT2) 
 
-        vbuf = HardwareBufferManager.getSingleton().createVertexBuffer(
-                offset, 12, HardwareBuffer.HBU_STATIC_WRITE_ONLY) 
+        vbuf = ogre.HardwareBufferManager.getSingleton().createVertexBuffer(
+                offset, 12, ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY) 
 
-                
-        ## Upload data
-#         data[]={
-#             -1,1,-1,  ## corner 1
-#             -1,-1,-1, ## corner 2
-#             1,1,-1,   ## corner 3
-#             1,-1,-1}  ## corner 4
-#         vbuf.writeData(0, sizeof(data), data, true)
-                
-        pReal = vbuf.lock(HardwareBuffer.HBL_DISCARD) 
+        #lock the buffer and get a pointer to the data      
+        pointer = vbuf.lock(ogre.HardwareBuffer.HBL_DISCARD)
+         
         baseVec = ogre.Vector3(GRASS_WIDTH/2, 0, 0) 
         vec = baseVec 
         rot = ogre.Quaternion () 
         rot.FromAngleAxis(ogre.Degree(d=60), ogre.Vector3.UNIT_Y) 
+        
+        # change from the C++ demo - we build a buffer and then write it in one go
+        buffer=[]
         for i in range ( 3 ) :
             ## position
-#           pReal++ = -vec.x 
-#           pReal++ = GRASS_HEIGHT 
-#           pReal++ = -vec.z 
-#           ## normal
-#           pReal++ = 0 
-#           pReal++ = 1 
-#           pReal++ = 0 
-#           ## uv
-#           pReal++ = 0 
-#           pReal++ = 0 
-
-#           ## position
-#           pReal++ = vec.x 
-#           pReal++ = GRASS_HEIGHT 
-#           pReal++ = vec.z 
-#           ## normal
-#           pReal++ = 0 
-#           pReal++ = 1 
-#           pReal++ = 0 
-#           ## uv
-#           pReal++ = 1 
-#           pReal++ = 0 
-
-#           ## position
-#           pReal++ = -vec.x 
-#           pReal++ = 0 
-#           pReal++ = -vec.z 
-#           ## normal
-#           pReal++ = 0 
-#           pReal++ = 1 
-#           pReal++ = 0 
-#           ## uv
-#           pReal++ = 0 
-#           pReal++ = 1 
-
-#           ## position
-#           pReal++ = vec.x 
-#           pReal++ = 0 
-#           pReal++ = vec.z 
-#           ## normal
-#           pReal++ = 0 
-#           pReal++ = 1 
-#           pReal++ = 0 
-#           ## uv
-#           pReal++ = 1 
-#           pReal++ = 1 
-
+            buffer.append( -vec.x )
+            buffer.append( GRASS_HEIGHT )
+            buffer.append( -vec.z )
+            ## normal
+            buffer.append( 0 )
+            buffer.append( 1 )
+            buffer.append( 0 )
+            ## uv
+            buffer.append( 0 )
+            buffer.append( 0 )
+            
+            ## position
+            buffer.append( vec.x )
+            buffer.append( GRASS_HEIGHT )
+            buffer.append( vec.z )
+            ## normal
+            buffer.append( 0 )
+            buffer.append( 1 )
+            buffer.append( 0 )
+            ## uv
+            buffer.append( 1 )
+            buffer.append( 0 )
+            
+            ## position
+            buffer.append( -vec.x )
+            buffer.append( 0 )
+            buffer.append( -vec.z )
+            ## normal
+            buffer.append( 0 )
+            buffer.append( 1 )
+            buffer.append( 0 )
+            ## uv
+            buffer.append( 0 )
+            buffer.append( 1 )
+            
+            ## position
+            buffer.append( vec.x )
+            buffer.append( 0 )
+            buffer.append( vec.z )
+            ## normal
+            buffer.append( 0 )
+            buffer.append( 1 )
+            buffer.append( 0 )
+            ## uv
+            buffer.append( 1 )
+            buffer.append( 1 )
+            
             vec = rot * vec 
-
+            
+        ## Python-Ogre extension function to write a list for floats to a buffer
+        ogre.setFloat( pointer, buffer )
+        
         vbuf.unlock() 
+        
         sm.vertexData.vertexBufferBinding.setBinding(0, vbuf) 
+        
         sm.indexData.indexCount = 6*3 
+        
         sm.indexData.indexBuffer = ogre.HardwareBufferManager.getSingleton().createIndexBuffer(
-                ogre.HardwareIndexBuffer.IT_16BIT, 6*3,
-                ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY) 
-        pI = sm.indexData.indexBuffer.lock(ogre.HardwareBuffer.HBL_DISCARD) 
+                ogre.HardwareIndexBuffer.IT_16BIT, 6*3, ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY) 
+        
+        pointer = sm.indexData.indexBuffer.lock(ogre.HardwareBuffer.HBL_DISCARD)
+
+        buff=[]
         for i in range ( 3 ):
             off = i*4 
-#           *pI++ = 0 + off 
-#           *pI++ = 3 + off 
-#           *pI++ = 1 + off 
-
-#           *pI++ = 0 + off 
-#           *pI++ = 2 + off 
-#           *pI++ = 3 + off 
-
-
+            buff.append( 0 + off )
+            buff.append( 3 + off ) 
+            buff.append( 1 + off )
+            
+            buff.append( 0 + off )
+            buff.append( 2 + off )
+            buff.append( 3 + off )
+        ogre.setUint16( pointer, buff )    # write unsigned ints...
         sm.indexData.indexBuffer.unlock() 
-
+        
+        
         sm.setMaterialName(GRASS_MATERIAL) 
         msh.load() 
+        self.sm = sm
 
 
 
@@ -331,7 +337,7 @@ class Grass_Application(sf.Application):
 
         self.createGrassMesh() 
 
-       ### e = self.sceneManager.createEntity("1", GRASS_MESH_NAME) 
+        e = self.sceneManager.createEntity("1", GRASS_MESH_NAME) 
 
         s = self.sceneManager.createStaticGeometry("bing") 
         s.setRegionDimensions(ogre.Vector3(1000,1000,1000)) 
@@ -340,19 +346,15 @@ class Grass_Application(sf.Application):
 
         for  x in range(-1950,1950,150):
             for z in range(-1950, 1950,  150):
-                pos = ogre.Vector3 (
-                    x +random.randrange(-25, 25), 
-                    0, 
-                    z + random.randrange(-25, 25)) 
+                pos = ogre.Vector3 ( x + random.randrange(-25, 25), 0, z + random.randrange(-25, 25)) 
                 orientation = ogre.Quaternion()
                 orientation.FromAngleAxis(
                     ogre.Degree(random.randrange(0, 359)),
                     ogre.Vector3.UNIT_Y) 
-                scale = ogre.Vector3(
-                    1, random.random()*(1.15-0.85)+0.85, 1) 
-#                 s.addEntity(e, pos, orientation, scale) 
+                scale = ogre.Vector3( 1, random.random()*(1.15-0.85)+0.85, 1)
+                s.addEntity(e, pos, orientation, scale) 
         s.build() 
-        mStaticGeom = s 
+        mStaticGeom = s     ## need to make it available else where
 
         ## Put an Ogre head in the middle
         m = ogre.MeshManager.getSingleton().load("ogrehead.mesh", 
@@ -377,8 +379,27 @@ class Grass_Application(sf.Application):
         self.root.addFrameListener(self.frameListener)
 
 if __name__ == '__main__':
+    import exceptions
     try:
         application = Grass_Application()
         application.go()
     except ogre.Exception, e:
         print e
+#        print dir(e)
+    except exceptions.RuntimeError, e:
+        print "Runtime error:", e
+    except exceptions.TypeError, e:
+        print "Type error:", e
+    except exceptions.AttributeError, e:
+        print "Attribute error:", e
+    except exceptions.NameError, e:
+        print "Name error:", e
+    except Exception,inst:
+        print "EException"
+        print type(inst)     # the exception instance
+        print inst.args      # arguments stored in .args
+        print inst
+    except exceptions.ValueError,e:
+        print "ValueError",e
+    except :
+        print "Unexpected error:", sys.exc_info()[0]
