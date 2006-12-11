@@ -154,6 +154,8 @@ class GuiApplication ( SampleFramework.Application ):
     ## Create new frame listener
     def _createFrameListener(self):
         self.frameListener = GuiFrameListener(self.renderWindow, self.camera, self.GUIRenderer) #self.sceneManager)
+        self.frameListener.MenuMode = True # this stop the camera moving with the mouse cursor..
+
         self.root.addFrameListener(self.frameListener)
         self.frameListener.showDebugOverlay(False)
 

@@ -135,14 +135,14 @@ class FresnelApplication(sf.Application):
         "Debug Card Capabilities"
         txMan = ogre.TextureManager.getSingleton()
         print " ----------------- Formats ---------------------------------" 
-        print "Is Supported",txMan.isFormatSupported(ogre.TEX_TYPE_2D, ogre.PF_R8G8B8, ogre.TU_RENDERTARGET)
-        print "Is Equivalent Supported",  txMan.isEquivalentFormatSupported(ogre.TEX_TYPE_2D, ogre.PF_R8G8B8, ogre.TU_RENDERTARGET)
-        print "Is Equivalent Supported",  txMan.isEquivalentFormatSupported(ogre.TEX_TYPE_2D, ogre.PF_R8G8B8, ogre.TU_RENDERTARGET)
-        print "Pixel Format Native Support", txMan.getNativeFormat(ogre.TEX_TYPE_2D, ogre.PF_R8G8B8, ogre.TU_RENDERTARGET)
-        print "Value is",ogre.PF_R8G8B8
-        print "Value is",ogre.TEX_TYPE_2D
-        print "Value is",ogre.TU_RENDERTARGET
-        print "Value is",ogre.TU_STATIC, ogre.TU_DYNAMIC,ogre.TU_RENDERTARGET,0x200
+        print "Is Supported",txMan.isFormatSupported(ogre.TextureType.TEX_TYPE_2D, ogre.PixelFormat.PF_R8G8B8, ogre.TextureUsage.TU_RENDERTARGET)
+        print "Is Equivalent Supported",  txMan.isEquivalentFormatSupported(ogre.TextureType.TEX_TYPE_2D, ogre.PixelFormat.PF_R8G8B8, ogre.TextureUsage.TU_RENDERTARGET)
+        print "Is Equivalent Supported",  txMan.isEquivalentFormatSupported(ogre.TextureType.TEX_TYPE_2D, ogre.PixelFormat.PF_R8G8B8, ogre.TextureUsage.TU_RENDERTARGET)
+        print "Pixel Format Native Support", txMan.getNativeFormat(ogre.TextureType.TEX_TYPE_2D, ogre.PixelFormat.PF_R8G8B8, ogre.TextureUsage.TU_RENDERTARGET)
+        print "Value is",ogre.PixelFormat.PF_R8G8B8
+        print "Value is",ogre.TextureType.TEX_TYPE_2D
+        print "Value is",ogre.TextureUsage.TU_RENDERTARGET
+        print "Value is",ogre.TextureUsage.TU_STATIC, ogre.TextureUsage.TU_DYNAMIC,ogre.TextureUsage.TU_RENDERTARGET,0x200
         print " ----------------- End Formats ---------------------------------" 
 		
     def _createScene(self):
@@ -178,8 +178,8 @@ class FresnelApplication(sf.Application):
         	             
         # create Refraction Render Target
         mTexture = ogre.TextureManager.getSingleton().createManual( 'Refraction', 
-			'General', ogre.TEX_TYPE_2D, 
-			512, 512, 0, ogre.PF_R8G8B8, ogre.TU_RENDERTARGET,self.myManualLoader) 
+			'General', ogre.TextureType.TEX_TYPE_2D, 
+			512, 512, 0, ogre.PixelFormat.PF_R8G8B8, ogre.TextureUsage.TU_RENDERTARGET,self.myManualLoader) 
 			#, self.myManualLoader )
        
         #RenderTarget 
@@ -195,8 +195,8 @@ class FresnelApplication(sf.Application):
         # create Reflection Render Target
         #TexturePtr 
         mTexture = ogre.TextureManager.getSingleton().createManual( "Reflection", 
-			'General', ogre.TEX_TYPE_2D, 
-			512, 512, 0, ogre.PF_R8G8B8, ogre.TU_RENDERTARGET,self.myManualLoader )
+			'General', ogre.TextureType.TEX_TYPE_2D, 
+			512, 512, 0, ogre.PixelFormat.PF_R8G8B8, ogre.TextureUsage.TU_RENDERTARGET,self.myManualLoader )
         #RenderTarget 
         self.rttTex2 = mTexture.getRenderTarget()
         #Viewport 
