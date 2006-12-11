@@ -206,7 +206,7 @@ class OgreWindow(wx.PyWindow):
         "create a Viewport" 
         renderWindow=self.renderWindow 
         viewport = renderWindow.addViewport(self.sceneEntities.Camera, 0, 0.0, 0.0, 1.0, 1.0) 
-        viewport.backgroundColour = (0, 0, 0) 
+        viewport.backgroundColour = ogre.ColourValue(0, 0, 0) 
 
     
     
