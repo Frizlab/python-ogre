@@ -17,6 +17,7 @@ import hand_made_wrappers
 from pygccxml import parser
 from pygccxml import declarations
 from pyplusplus import module_builder
+from pyplusplus import decl_wrappers
 
 from pyplusplus import function_transformers as ft
 from pyplusplus.module_builder import call_policies
@@ -38,30 +39,8 @@ def filter_declarations( mb ):
 
     if environment.ogre.version == "CVS":
         mb.global_ns.class_( 'vector<Ogre::Vector4, std::allocator<Ogre::Vector4> >' ).exclude( )
-
-    ## Remove private classes , and those that are internal to Ogre...
-    private_decls = common_utils.private_decls_t(environment.ogre.include_dirs)
-    for cls in ogre_ns.classes():
-        if private_decls.is_private( cls ):
-            cls.exclude()
-            print '{*} class "%s" is marked as private' % cls.decl_string
-
-    #RenderOperation class is marked as private, but I think this is a mistake
-    ogre_ns.class_('RenderOperation').include()
-
-    for func in ogre_ns.calldefs():
-        if private_decls.is_private( func ):
-            if func.virtuality == declarations.VIRTUALITY_TYPES.PURE_VIRTUAL:
-                continue
-            func.exclude()
-            print '{*} function "%s" is marked as internal' % declarations.full_name( func )
-
-    ## Exclude protected and private that are not pure virtual
-    query = ~declarations.access_type_matcher_t( 'public' ) \
-            & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
-    non_public_non_pure_virtual = ogre_ns.calldefs( query )
-    non_public_non_pure_virtual.exclude()
-
+    
+    
     ## Exclude all public not pure virtual, that starts with '_'
     ## AJM - no real reason to exclude these functions - and more to the point we sometimes need them :)
 #     query = declarations.access_type_matcher_t( 'public' ) \
@@ -71,11 +50,6 @@ def filter_declarations( mb ):
 #     non_public_non_pure_virtual.exclude()
 
 
-    ## MSVC 7.1 pukes on StaticGeometry so need to make it smaller..
-    ogre_ns.class_( "StaticGeometry" ).class_("QueuedSubMesh").exclude()
-    ogre_ns.class_( "StaticGeometry" ).class_("QueuedGeometry").exclude()
-    ogre_ns.class_( "StaticGeometry" ).class_("SubMeshLodGeometryLink").exclude()
-    
     GeomRegion = ogre_ns.class_( "StaticGeometry" ).class_("Region")
     GeomRegion.member_functions('getLights'). exclude() # fails at link time
     
@@ -86,24 +60,9 @@ def filter_declarations( mb ):
         classes = ogre_ns.classes( common_utils.decl_starts_with(prefix), allow_empty=True)
         classes.exclude()
 
-    #Virtual functions that return reference could not be overriden from Python
-    query = declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.VIRTUAL ) \
-            & declarations.custom_matcher_t( lambda decl: declarations.is_reference( decl.return_type ) )
-    ogre_ns.calldefs( query ).virtuality = declarations.VIRTUALITY_TYPES.NOT_VIRTUAL
-
     #Only usefull from C++
     ogre_ns.class_( "MemoryManager" ).exclude()
-
-    ## AJM Error at compile time - errors when compiling or linking
-    ogre_ns.class_( "MemoryDataStream" ).member_functions( 'getCurrentPtr' ).exclude()
-    ogre_ns.class_( "MemoryDataStream" ).member_functions( 'getPtr' ).exclude()
-    ogre_ns.calldefs ('peekNextPtr').exclude ()
-    ogre_ns.calldefs ('peekNextValuePtr').exclude ()    #in many of the Iterator classes
-    ogre_ns.class_("GpuProgramParameters").class_("AutoConstantEntry").exclude() # Autoconstant name space variables missing in compile
-
-    ogre_ns.class_( 'RenderSystemOperation' ).exclude() # AJM in OgreCompositorInstance
-    ogre_ns.calldefs ('getChildIterator').exclude ()
-
+  
     #AJM Set of functions in Particle system that don't get wrapped properly.. Rechecked 30Nov06 AJM
     PartSys = ogre_ns.class_( "ParticleSystem" )
     PartSys.class_( "CmdIterationInterval" ).exclude()
@@ -111,12 +70,66 @@ def filter_declarations( mb ):
     PartSys.class_( "CmdNonvisibleTimeout" ).exclude()
     PartSys.class_( "CmdSorted" ).exclude()
     
-    ## AJM Try to force    
-    ogre_ns.class_("ParticleAffectorFactory").include()
+    ## Positiontagret is currently incomplete in the CVS code
+    ogre_ns.class_("TargetManager").member_functions("getPositionTargetAt").exclude() # this returns a PositionTarget
+    
+    ## AJM Need to force    
+    ## ogre_ns.class_("ParticleAffectorFactory").include()
     ogre_ns.class_("HardwareIndexBufferSharedPtr").include()
+    ogre_ns.class_("GpuProgramParameters").class_("AutoConstantEntry").include() # Autoconstant name space variables missing in compile
+    ogre_ns.class_("VertexBoneAssignment_s").include()
+
+    #
+    # problem areas as defermined by Py++'s "unexposed" warning message
+    # compile problems - There are a number fo Factories that don't expose well
+    # lets hope that they aren't really needed from Python....
+    ogre_ns.class_('ArchiveFactory').exclude() 
+    ogre_ns.class_('ArchiveManager').mem_fun('addArchiveFactory').exclude() # this needs ArchiveFactory
+    ogre_ns.class_('ParticleSystemRendererFactory').exclude()
+    ogre_ns.class_('FactoryObj<Ogre::Archive>').exclude()
+    ogre_ns.class_('FactoryObj<Ogre::ParticleSystemRenderer>').exclude()
+    ## these need ParticleSystemRendererFactory
+    ogre_ns.class_('MapIterator<std::map<std::string, Ogre::ParticleSystemRendererFactory*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::ParticleSystemRendererFactory*> > > >').mem_fun('getNext').exclude()
+    ogre_ns.class_('MapIterator<std::map<std::string, Ogre::ParticleSystemRendererFactory*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::ParticleSystemRendererFactory*> > > >').mem_fun('peekNextValue').exclude()
+    ogre_ns.class_('BillboardParticleRendererFactory').exclude()
+    ogre_ns.class_('ParticleSystemManager').mem_fun('addRendererFactory').exclude()
+    ## moveableobject's probably need further looking at...
+    ogre_ns.class_('ConstMapIterator<stdext::hash_map<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > >').exclude()
+    ogre_ns.class_('MapIterator<stdext::hash_map<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > >').exclude()
+    ogre_ns.class_('Mesh').mem_fun('getSubMeshNameMap').exclude()
+
+    
+    ## Ogre::GpuProgramParameters::AutoConstantEntry is flagged as private but other functions rely on it
+    ## however we can't expose it as Py++ doesn't like the Union that's defined within the class def..
+    ogre_ns.class_('Renderable').mem_fun('_updateCustomGpuParameter').exclude()
+    ogre_ns.class_('ConstVectorIterator<std::vector<Ogre::GpuProgramParameters::AutoConstantEntry, std::allocator<Ogre::GpuProgramParameters::AutoConstantEntry> > >').exclude() # ::getNext(), ::peekNext()
+    ogre_ns.class_('GpuProgramParameters').mem_fun('getAutoConstantEntry').exclude()
+    ogre_ns.class_('SubEntity').mem_fun('_updateCustomGpuParameter').exclude()
+    
+#     ogre_ns.class_("ConstMapIterator<stdext::hash_map<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > >").include()
+#     ogre_ns.class_("MapIterator<stdext::hash_map<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > >").include()
+#     ogre_ns.class_("MapIterator<std::multimap<unsigned, Ogre::VertexBoneAssignment_s, std::less<unsigned>, std::allocator<std::pair<unsigned const, Ogre::VertexBoneAssignment_s> > > >").include()
+
+    # there are a set of consiterators that I'm not exposing as they need better understanding and testing
+    # these functions rely on them so they are being excluded as well
+    ogre_ns.class_('SceneNode').member_functions('getAttachedObjectIterator').exclude()
+    ogre_ns.class_('Mesh').mem_fun('getBoneAssignmentIterator').exclude()
+    ogre_ns.class_('SubMesh').mem_fun('getBoneAssignmentIterator').exclude()
+    ogre_ns.class_('GpuProgramParameters').mem_fun('getAutoConstantIterator').exclude()
     
     
-    
+    # A couple of Std's that need exposing
+    std_ns = global_ns.namespace("std")
+    std_ns.class_("pair<unsigned, unsigned>").include()
+    std_ns.class_("pair<bool, float>").include()
+#     stdext_ns = global_ns.namespace('stdext')
+#     stdext_ns.class_("hash_compare<std::string, std::less<std::string> >").include()
+#     stdext_ns.class_("hash_map<std::string, unsigned short, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, unsigned short> > >").include()
+#     stdext_ns.class_("_Hash<stdext::_Hmap_traits<std::string, unsigned short, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, unsigned short> >, false> >").include()
+    global_ns.class_("HWND__").include()
+    global_ns.class_("_iobuf").include()    # need the file handle in Ogre::FileHandleDataStream::FileHandleDataStream
+
+        
     # These members have Ogre::Real * methods which need to be wrapped. # recheck 29/12/06 AJM
     ogre_ns.class_ ('Matrix3').member_operators (symbol='[]').exclude ()
     ogre_ns.class_ ('Matrix4').member_operators (symbol='[]').exclude ()
@@ -146,13 +159,58 @@ def filter_declarations( mb ):
 
     ## now specifically remove functions that we have wrapped in hand_made_wrappers.py
     ogre_ns.class_( "RenderTarget" ).member_functions( 'getCustomAttribute' ).exclude()
-#     ogre_ns.class_( "RenderTarget" ).member_functions( 'getMetrics' ).exclude()
-#     ogre_ns.class_( "RenderWindow" ).member_functions( 'getMetrics' ).exclude()
     ogre_ns.class_( "Mesh" ).member_functions( 'suggestTangentVectorBuildParams' ).exclude()
-#     ogre_ns.class_( "Viewport" ).member_functions( 'getActualDimensions' ).exclude()
 
-    ## Expose functions that were no exposed but that other functions reliy on    
+    ## Expose functions that were not exposed but that other functions rely on    
     ogre_ns.class_("OverlayManager").member_functions('addOverlayElementFactory').include()
+
+    ## AJM Error at compile time - errors when compiling or linking
+    ogre_ns.class_( "MemoryDataStream" ).member_functions( 'getCurrentPtr' ).exclude()
+    ogre_ns.class_( "MemoryDataStream" ).member_functions( 'getPtr' ).exclude()
+    ogre_ns.calldefs ('peekNextPtr').exclude ()
+    ogre_ns.calldefs ('peekNextValuePtr').exclude ()    #in many of the Iterator classes
+    ogre_ns.calldefs ('getChildIterator').exclude ()
+    
+    ogre_ns.class_( "ErrorDialog" ).exclude()   # doesn't exist for link time
+    ##ogre_ns.class_("RenderSystemOperation" ).include() # AJM in OgreCompositorInstance
+    ogre_ns.class_( 'CompositorInstance').class_('RenderSystemOperation').exclude() # doesn't exist for link time
+    ogre_ns.class_( 'CompositorChain').mem_fun('_queuedOperation').exclude() #needs RenderSystemOperation
+    
+    ## there are some virtual functions that shouldn't really be exposed anyway..
+#     getType = mb.mem_funs( 'getType' )
+#     getType.virtuality = declarations.VIRTUALITY_TYPES.NOT_VIRTUAL 
+
+##  Note - you need to do all the 'excludes' AFTER you've included all the classes you want..
+##  Otherwise things get screwed up...
+
+## Remove private classes , and those that are internal to Ogre...
+    private_decls = common_utils.private_decls_t(environment.ogre.include_dirs)
+    for cls in ogre_ns.classes():
+        if private_decls.is_private( cls ):
+            cls.exclude()
+            print '{*} class "%s" is marked as private' % cls.decl_string
+
+
+    for func in ogre_ns.calldefs():
+        if private_decls.is_private( func ):
+            if func.virtuality == declarations.VIRTUALITY_TYPES.PURE_VIRTUAL:
+                continue
+            func.exclude()
+            print '{*} function "%s" is marked as internal' % declarations.full_name( func )
+
+    ## Exclude protected and private that are not pure virtual
+    query = ~declarations.access_type_matcher_t( 'public' ) \
+            & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
+    non_public_non_pure_virtual = ogre_ns.calldefs( query )
+    non_public_non_pure_virtual.exclude()
+
+    #Virtual functions that return reference could not be overriden from Python
+    query = declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.VIRTUAL ) \
+            & declarations.custom_matcher_t( lambda decl: declarations.is_reference( decl.return_type ) )
+    ogre_ns.calldefs( query ).virtuality = declarations.VIRTUALITY_TYPES.NOT_VIRTUAL
+
+    #RenderOperation class is marked as private, but I think this is a mistake
+    ogre_ns.class_('RenderOperation').include()
 
 
 
@@ -192,14 +250,32 @@ def configure_exception(mb):
 
 def add_transformations ( mb ):
     ns = mb.global_ns.namespace ('Ogre')
+    
+    ## we need to exclude the underlying classes
+#     ns.class_('RenderTarget').mem_fun('getMetrics').exclude()
+#     ns.class_('RenderQueueListener').mem_fun('renderQueueStarted').exclude()
+#     ns.class_('RenderWindow').mem_fun('getMetrics').exclude()
+#     ns.class_('Viewport').mem_fun('getActualDimensions').exclude()
+#     ns.class_('CompositorChain').class_('RQListener').mem_fun('renderQueueStarted').exclude()
+#     ns.class_('CompositorChain').class_('RQListener').mem_fun('renderQueueEnded').exclude()
+    
+    
     ns.class_('RenderTarget').mem_fun('getMetrics').add_transformation(ft.output(0), ft.output(1), ft.output(2) )
+    
+## AJM CAUSES WRAPPER PROBLEM IN COMPILE   
+#     for f in ns.class_('RenderTarget').mem_funs('getStatistics'):
+#         if len(f.arguments) == 4:
+#             f.add_transformation(ft.output(0), ft.output(1), ft.output(2), ft.output(3) )
+#             break
+    ns.class_('RenderQueueListener').mem_fun('renderQueueEnded').add_transformation(ft.output('repeatThisInvocation'))
     ns.class_('RenderQueueListener').mem_fun('renderQueueStarted').add_transformation(ft.output('skipThisInvocation'))
     ns.class_('RenderWindow').mem_fun('getMetrics').add_transformation(ft.output(0), ft.output(1), ft.output(2),ft.output(3),ft.output(4) )
     ns.class_('Viewport').mem_fun('getActualDimensions').add_transformation(ft.output(0), ft.output(1), ft.output(2), ft.output(3) )
     ns.class_('CompositorChain').class_('RQListener').mem_fun('renderQueueStarted').add_transformation(ft.output("skipThisQueue"))
     ns.class_('CompositorChain').class_('RQListener').mem_fun('renderQueueEnded').add_transformation(ft.output("repeatThisQueue"))
-            
-            
+    ns.class_('PanelOverlayElement').mem_fun('getUV').add_transformation(ft.output('u1'), ft.output('v1'), ft.output('u2'), ft.output('v2') )
+    ### ns.class_('Matrix3').mem_fun('Matrix3').add_transformation(ft.inputarray(9))........        
+    ns.class_('Font').mem_fun('getGlyphTexCoords').add_transformation(ft.output(1), ft.output(2),ft.output(3), ft.output(4))
 #
 # the 'main'function
 #            
@@ -222,6 +298,12 @@ def generate_code():
     # We filter (both include and exclude) specific classes and functions that we want to wrap
     # 
     filter_declarations (mb)
+ 
+#     for cls in mb.classes():
+#         print cls
+#     sys.exit(-1)
+
+    
     #
     # Then we convert automatic 'long' names to simple ones - check the list in customization_data.py
     #
@@ -267,6 +349,22 @@ def generate_code():
     # Automatically add properties where we can - ie mirror set_variable() with .variable= capability
     # note that we are using a new function to filter existing properties..
     #
+#     cls = ogre_ns.class_('Vector3')
+#     prop = decl_wrappers.properties.find_properties (cls)
+#     for p in prop:
+#         print "1:",p
+#     prop = decl_wrappers.properties.find_properties (cls, recognizer=decl_wrappers.properties.name_based_recognizer_t())
+#     for p in prop:
+#         print "2:",p
+#     prop = decl_wrappers.properties.find_properties (cls, recognizer=ogre_properties.ogre_property_recognizer_t())
+#     for p in prop:
+#         print "3:",p
+#         
+#         
+#     
+#     cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
+#     sys.exit()
+
     for cls in ogre_ns.classes():
         cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
 
@@ -274,10 +372,7 @@ def generate_code():
     
     common_utils.add_constants( mb, { 'ogre_version' :  '"%s"' % environment.ogre.version
                                       , 'python_version' : '"%s"' % sys.version } )
-#     for cls in mb.classes():
-#         print cls
-#     sys.exit(-1)
-
+ 
 #     
 #     #Creating code creator. After this step you should not modify/customize declarations.
     mb.build_code_creator (module_name='_ogre_')
