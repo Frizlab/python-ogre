@@ -36,7 +36,10 @@ class exposer_t:
         self.visited_classes = set()
         #For this classes wrapper does not exist
         self.special_cases = ['PatchMesh', 'Controller<float>', 'Compositor'
-                               , 'vector<std::string, std::allocator<std::string> >' ]
+                               , 'vector<std::string, std::allocator<std::string> >'
+                               , 'vector<Ogre::FileInfo,std::allocator<Ogre::FileInfo> >'
+                               , 'list<Ogre::SharedPtr<Ogre::DataStream>,std::allocator<Ogre::SharedPtr<Ogre::DataStream> > >'
+                              ]
 
     def get_pointee( self, sp_instantiation ):
         #sp_instantiation - reference to SharedPtr<XXX>
@@ -69,8 +72,9 @@ class exposer_t:
             pointee.add_registration_code(
                 REGISTER_SP_TO_PYTHON % { 'sp_inst_class_name' : sp_derived.decl_string }
                 , works_on_instance=False )
-
+        
         if pointee.name not in self.special_cases:
+            print "checking:", pointee.name
             pointee.held_type = '::Ogre::SharedPtr< %s >' % pointee.wrapper_alias
             pointee.add_registration_code(
                 REGISTER_SPTR_CONVERSION % { 'derived' : pointee.held_type
@@ -83,13 +87,17 @@ class exposer_t:
 
         else:
             pointee.held_type = sp_instantiation.decl_string
-
-        base_classes = filter( lambda hi: hi.access_type == 'public', pointee.bases )
-        for base in base_classes:
-            pointee.add_registration_code(
-                REGISTER_SPTR_CONVERSION % { 'derived' : sp_instantiation.decl_string
-                                             , 'base' : '::Ogre::SharedPtr< %s >' % base.related_class.decl_string }
-                , works_on_instance=False)
+        #print pointee.name, pointee.bases   
+        try: 
+            base_classes = filter( lambda hi: hi.access_type == 'public', pointee.bases )
+            for base in base_classes:
+                pointee.add_registration_code(
+                    REGISTER_SPTR_CONVERSION % { 'derived' : sp_instantiation.decl_string
+                                                 , 'base' : '::Ogre::SharedPtr< %s >' % base.related_class.decl_string }
+                    , works_on_instance=False)
+        except:
+            print "WARNING: Problem with ", pointee.name, " it possibly doesn't have any bases"
+            pass
 
     def expose(self):
         sp_instantiations = self.ogre_ns.classes( lambda decl: decl.name.startswith( 'SharedPtr' ) )
