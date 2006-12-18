@@ -16,6 +16,7 @@ import hand_made_wrappers
 
 from pygccxml import parser
 from pygccxml import declarations
+from pyplusplus import messages
 from pyplusplus import module_builder
 from pyplusplus import decl_wrappers
 
@@ -126,8 +127,10 @@ def filter_declarations( mb ):
 #     stdext_ns.class_("hash_compare<std::string, std::less<std::string> >").include()
 #     stdext_ns.class_("hash_map<std::string, unsigned short, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, unsigned short> > >").include()
 #     stdext_ns.class_("_Hash<stdext::_Hmap_traits<std::string, unsigned short, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, unsigned short> >, false> >").include()
-    global_ns.class_("HWND__").include()
-    global_ns.class_("_iobuf").include()    # need the file handle in Ogre::FileHandleDataStream::FileHandleDataStream
+    hwnd = global_ns.class_("HWND__")
+    hwnd.opaque = True
+    _iobuf = global_ns.class_("_iobuf")# need the file handle in Ogre::FileHandleDataStream::FileHandleDataStream
+    _iobuf.opaque = True
 
         
     # These members have Ogre::Real * methods which need to be wrapped. # recheck 29/12/06 AJM
@@ -251,6 +254,9 @@ def configure_exception(mb):
 def add_transformations ( mb ):
     ns = mb.global_ns.namespace ('Ogre')
     
+    def create_output( size ):
+        return [ ft.output( i ) for i in range( size ) ]
+    
     ## we need to exclude the underlying classes
 #     ns.class_('RenderTarget').mem_fun('getMetrics').exclude()
 #     ns.class_('RenderQueueListener').mem_fun('renderQueueStarted').exclude()
@@ -259,35 +265,56 @@ def add_transformations ( mb ):
 #     ns.class_('CompositorChain').class_('RQListener').mem_fun('renderQueueStarted').exclude()
 #     ns.class_('CompositorChain').class_('RQListener').mem_fun('renderQueueEnded').exclude()
     
+    rt_cls = ns.class_('RenderTarget')
+    rt_cls.mem_fun('getMetrics').add_transformation( *create_output(3) )
+    rt_cls.mem_fun( 'getStatistics', arg_types=['float &']*4 ).add_transformation( *create_output(4) )
     
-    ns.class_('RenderTarget').mem_fun('getMetrics').add_transformation(ft.output(0), ft.output(1), ft.output(2) )
-    
-## AJM CAUSES WRAPPER PROBLEM IN COMPILE   
-#     for f in ns.class_('RenderTarget').mem_funs('getStatistics'):
-#         if len(f.arguments) == 4:
-#             f.add_transformation(ft.output(0), ft.output(1), ft.output(2), ft.output(3) )
-#             break
-    ns.class_('RenderQueueListener').mem_fun('renderQueueEnded').add_transformation(ft.output('repeatThisInvocation'))
-    ns.class_('RenderQueueListener').mem_fun('renderQueueStarted').add_transformation(ft.output('skipThisInvocation'))
-    ns.class_('RenderWindow').mem_fun('getMetrics').add_transformation(ft.output(0), ft.output(1), ft.output(2),ft.output(3),ft.output(4) )
-    ns.class_('Viewport').mem_fun('getActualDimensions').add_transformation(ft.output(0), ft.output(1), ft.output(2), ft.output(3) )
-    ns.class_('CompositorChain').class_('RQListener').mem_fun('renderQueueStarted').add_transformation(ft.output("skipThisQueue"))
-    ns.class_('CompositorChain').class_('RQListener').mem_fun('renderQueueEnded').add_transformation(ft.output("repeatThisQueue"))
-    ns.class_('PanelOverlayElement').mem_fun('getUV').add_transformation(ft.output('u1'), ft.output('v1'), ft.output('u2'), ft.output('v2') )
+    ns.mem_fun('::Ogre::RenderQueueListener::renderQueueEnded') \
+        .add_transformation(ft.output('repeatThisInvocation'))
+    ns.mem_fun('::Ogre::RenderQueueListener::renderQueueStarted') \
+        .add_transformation(ft.output('skipThisInvocation'))
+    ns.mem_fun('::Ogre::RenderWindow::getMetrics').add_transformation( *create_output(5) )
+    ns.mem_fun('::Ogre::Viewport::getActualDimensions').add_transformation( *create_output(4) )
+    ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueStarted') \
+        .add_transformation(ft.output("skipThisQueue"))
+    ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueEnded') \
+        .add_transformation(ft.output("repeatThisQueue"))
+    ns.mem_fun('::Ogre::PanelOverlayElement::getUV') \
+        .add_transformation(ft.output('u1'), ft.output('v1'), ft.output('u2'), ft.output('v2') )
     ### ns.class_('Matrix3').mem_fun('Matrix3').add_transformation(ft.inputarray(9))........        
-    ns.class_('Font').mem_fun('getGlyphTexCoords').add_transformation(ft.output(1), ft.output(2),ft.output(3), ft.output(4))
+    ns.mem_fun('::Ogre::Font::getGlyphTexCoords') \
+        .add_transformation(ft.output(1), ft.output(2),ft.output(3), ft.output(4))
+
+
 #
 # the 'main'function
 #            
-def generate_code():
+def generate_code():  
+    messages.disable( 
+          #Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+          messages.W1020
+        , messages.W1021
+        , messages.W1022
+        , messages.W1023
+        , messages.W1024
+        , messages.W1025
+        , messages.W1026
+        , messages.W1027
+        , messages.W1028
+        , messages.W1029
+        , messages.W1030
+        , messages.W1031 
+        # Inaccessible property warning
+        , messages.W1041 )
+    
     xml_cached_fc = parser.create_cached_source_fc(
                         os.path.join( environment.ogre.root_dir, "python_ogre.h" )
                         , environment.ogre.cache_file )
 
     defined_symbols = [ 'OGRE_NONCLIENT_BUILD' ]
     if environment.ogre.version == "CVS":
-        defined_symbols.append( 'OGRE_VERSION_CVS' )
-        
+        defined_symbols.append( 'OGRE_VERSION_CVS' )  
+    
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
@@ -313,6 +340,8 @@ def generate_code():
     mb.classes().always_expose_using_scope = True
 
     ogre_ns = mb.namespace( 'Ogre' )
+    #Py++ can not expose static pointer member variables
+    ogre_ns.vars( 'ms_Singleton' ).disable_warnings( messages.W1035 )
     
     common_utils.fix_unnamed_classes( ogre_ns.classes( name='' ), 'Ogre' )
 
