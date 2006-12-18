@@ -20,8 +20,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="e:/python24/include;D:\boost_cvs;D:\OgreSDK\include"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;PYTHON_OGRE_EXPORTS;BOOST_PYTHON_MAX_ARITY=19"
+				AdditionalIncludeDirectories="e:/python25/include;D:\dev\boost_cvs;&quot;D:\dev\python-ogre\sources\ogre_cvs\ogrenew\OgreMain\include&quot;"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;PYTHON_OGRE_EXPORTS;BOOST_PYTHON_MAX_ARITY=19;BOOST_DYN_LINK;_DLL"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -31,7 +31,7 @@
 				WarningLevel="3"
 				Detect64BitPortabilityProblems="TRUE"
 				DebugInformationFormat="3"
-				DisableSpecificWarnings="4267;4099;4005;"/>
+				DisableSpecificWarnings="4267;4099;4005;4244"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
@@ -130,1339 +130,1840 @@
 			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}">
 			<File
-				RelativePath=".\ogre_1.2.3\_BillboardSet__classes.pypp.cpp">
+				RelativePath=".\ogre_CVS\_BillboardSet__classes.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_BillboardSet__enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_BillboardSet__enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_BillboardSet__memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_BillboardSet__memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_BillboardSet__memfuns_pvirtual.pypp.cpp">
+				RelativePath=".\ogre_CVS\_BillboardSet__memfuns_pvirtual.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_BillboardSet__memfuns_virtual0.pypp.cpp">
+				RelativePath=".\ogre_CVS\_BillboardSet__memfuns_virtual0.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_BillboardSet__memfuns_virtual1.pypp.cpp">
+				RelativePath=".\ogre_CVS\_BillboardSet__memfuns_virtual1.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_BillboardSet__protected_memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_BillboardSet__memfuns_virtual2.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_BillboardSet__unnamed_enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_BillboardSet__protected_memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Frustum__classes.pypp.cpp">
+				RelativePath=".\ogre_CVS\_BillboardSet__unnamed_enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Frustum__enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Frustum__classes.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Frustum__memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Frustum__enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Frustum__memfuns_pvirtual.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Frustum__memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Frustum__memfuns_virtual0.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Frustum__memfuns_pvirtual.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Frustum__memfuns_virtual1.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Frustum__memfuns_virtual0.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Frustum__protected_memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Frustum__memfuns_virtual1.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Frustum__unnamed_enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Frustum__protected_memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ManualObject__classes.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Frustum__unnamed_enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ManualObject__enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ManualObject__classes.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ManualObject__memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ManualObject__enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ManualObject__memfuns_pvirtual.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ManualObject__memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ManualObject__memfuns_virtual0.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ManualObject__memfuns_pvirtual.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ManualObject__memfuns_virtual1.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ManualObject__memfuns_virtual0.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ManualObject__protected_memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ManualObject__memfuns_virtual1.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ManualObject__unnamed_enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ManualObject__protected_memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_MovableObject__classes.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ManualObject__unnamed_enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_MovableObject__enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_MovableObject__classes.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_MovableObject__memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_MovableObject__enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_MovableObject__memfuns_pvirtual.pypp.cpp">
+				RelativePath=".\ogre_CVS\_MovableObject__memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_MovableObject__memfuns_virtual0.pypp.cpp">
+				RelativePath=".\ogre_CVS\_MovableObject__memfuns_pvirtual.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_MovableObject__memfuns_virtual1.pypp.cpp">
+				RelativePath=".\ogre_CVS\_MovableObject__memfuns_virtual0.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_MovableObject__protected_memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_MovableObject__memfuns_virtual1.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_MovableObject__unnamed_enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_MovableObject__protected_memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Node__classes.pypp.cpp">
+				RelativePath=".\ogre_CVS\_MovableObject__unnamed_enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Node__enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Node__classes.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Node__memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Node__enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Node__memfuns_pvirtual.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Node__memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Node__memfuns_virtual0.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Node__memfuns_pvirtual.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Node__memfuns_virtual1.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Node__memfuns_virtual0.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Node__memfuns_virtual2.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Node__memfuns_virtual1.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Node__protected_memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Node__memfuns_virtual2.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Node__unnamed_enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Node__protected_memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ogre_.main.cpp">
+				RelativePath=".\ogre_CVS\_Node__unnamed_enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ogre__enumerations.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ogre_.main.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ogre__global_variables.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ogre__enumerations.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_OverlayElement__classes.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ogre__global_variables.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_OverlayElement__enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_OverlayElement__classes.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_OverlayElement__memfuns0.pypp.cpp">
+				RelativePath=".\ogre_CVS\_OverlayElement__enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_OverlayElement__memfuns1.pypp.cpp">
+				RelativePath=".\ogre_CVS\_OverlayElement__memfuns0.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_OverlayElement__memfuns_pvirtual.pypp.cpp">
+				RelativePath=".\ogre_CVS\_OverlayElement__memfuns1.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_OverlayElement__memfuns_virtual0.pypp.cpp">
+				RelativePath=".\ogre_CVS\_OverlayElement__memfuns_pvirtual.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_OverlayElement__memfuns_virtual1.pypp.cpp">
+				RelativePath=".\ogre_CVS\_OverlayElement__memfuns_virtual0.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_OverlayElement__protected_memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_OverlayElement__memfuns_virtual1.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_OverlayElement__unnamed_enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_OverlayElement__protected_memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ParticleEmitter__classes.pypp.cpp">
+				RelativePath=".\ogre_CVS\_OverlayElement__unnamed_enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ParticleEmitter__enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ParticleEmitter__classes.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ParticleEmitter__memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ParticleEmitter__enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ParticleEmitter__memfuns_pvirtual.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ParticleEmitter__memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ParticleEmitter__memfuns_virtual0.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ParticleEmitter__memfuns_pvirtual.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ParticleEmitter__memfuns_virtual1.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ParticleEmitter__memfuns_virtual0.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ParticleEmitter__memfuns_virtual2.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ParticleEmitter__memfuns_virtual1.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ParticleEmitter__protected_memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ParticleEmitter__memfuns_virtual2.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ParticleEmitter__unnamed_enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ParticleEmitter__protected_memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ParticleSystem__classes.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ParticleEmitter__unnamed_enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ParticleSystem__enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ParticleSystem__classes.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ParticleSystem__memfuns0.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ParticleSystem__enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ParticleSystem__memfuns1.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ParticleSystem__memfuns0.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ParticleSystem__memfuns2.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ParticleSystem__memfuns1.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ParticleSystem__memfuns_pvirtual.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ParticleSystem__memfuns2.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ParticleSystem__memfuns_virtual.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ParticleSystem__memfuns_pvirtual.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ParticleSystem__protected_memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ParticleSystem__memfuns_virtual.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_ParticleSystem__unnamed_enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ParticleSystem__protected_memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Pass__classes.pypp.cpp">
+				RelativePath=".\ogre_CVS\_ParticleSystem__unnamed_enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Pass__enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Pass__classes.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Pass__memfuns0.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Pass__enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Pass__memfuns1.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Pass__memfuns0.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Pass__memfuns2.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Pass__memfuns1.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Pass__memfuns3.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Pass__memfuns2.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Pass__memfuns4.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Pass__memfuns3.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Pass__memfuns5.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Pass__memfuns4.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Pass__memfuns6.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Pass__memfuns5.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Pass__memfuns_pvirtual.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Pass__memfuns6.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Pass__memfuns_virtual.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Pass__memfuns7.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Pass__protected_memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Pass__memfuns_pvirtual.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_Pass__unnamed_enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Pass__memfuns_virtual.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_RenderSystem__classes.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Pass__protected_memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_RenderSystem__enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_Pass__unnamed_enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_RenderSystem__memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_RenderSystem__classes.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_RenderSystem__memfuns_pvirtual0.pypp.cpp">
+				RelativePath=".\ogre_CVS\_RenderSystem__enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_RenderSystem__memfuns_pvirtual1.pypp.cpp">
+				RelativePath=".\ogre_CVS\_RenderSystem__memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_RenderSystem__memfuns_pvirtual2.pypp.cpp">
+				RelativePath=".\ogre_CVS\_RenderSystem__memfuns_pvirtual0.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_RenderSystem__memfuns_pvirtual3.pypp.cpp">
+				RelativePath=".\ogre_CVS\_RenderSystem__memfuns_pvirtual1.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_RenderSystem__memfuns_virtual.pypp.cpp">
+				RelativePath=".\ogre_CVS\_RenderSystem__memfuns_pvirtual2.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_RenderSystem__protected_memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_RenderSystem__memfuns_pvirtual3.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_RenderSystem__unnamed_enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_RenderSystem__memfuns_virtual0.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_RenderTarget__classes.pypp.cpp">
+				RelativePath=".\ogre_CVS\_RenderSystem__memfuns_virtual1.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_RenderTarget__enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_RenderSystem__protected_memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_RenderTarget__memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_RenderSystem__unnamed_enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_RenderTarget__memfuns_pvirtual.pypp.cpp">
+				RelativePath=".\ogre_CVS\_RenderTarget__classes.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_RenderTarget__memfuns_virtual0.pypp.cpp">
+				RelativePath=".\ogre_CVS\_RenderTarget__enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_RenderTarget__memfuns_virtual1.pypp.cpp">
+				RelativePath=".\ogre_CVS\_RenderTarget__memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_RenderTarget__protected_memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_RenderTarget__memfuns_pvirtual.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_RenderTarget__unnamed_enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_RenderTarget__memfuns_virtual0.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_SceneManager__classes.pypp.cpp">
+				RelativePath=".\ogre_CVS\_RenderTarget__memfuns_virtual1.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_SceneManager__enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_RenderTarget__protected_memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_SceneManager__memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_RenderTarget__unnamed_enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_SceneManager__memfuns_pvirtual.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneManager__classes.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_SceneManager__memfuns_virtual0.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneManager__enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_SceneManager__memfuns_virtual1.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneManager__memfuns0.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_SceneManager__memfuns_virtual2.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneManager__memfuns1.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_SceneManager__memfuns_virtual3.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneManager__memfuns_pvirtual.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_SceneManager__memfuns_virtual4.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneManager__memfuns_virtual0.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_SceneManager__memfuns_virtual5.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneManager__memfuns_virtual1.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_SceneManager__memfuns_virtual6.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneManager__memfuns_virtual2.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_SceneManager__memfuns_virtual7.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneManager__memfuns_virtual3.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_SceneManager__memfuns_virtual8.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneManager__memfuns_virtual4.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_SceneManager__protected_memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneManager__memfuns_virtual5.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_SceneManager__unnamed_enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneManager__memfuns_virtual6.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_SceneNode__classes.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneManager__memfuns_virtual7.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_SceneNode__enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneManager__memfuns_virtual8.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_SceneNode__memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneManager__memfuns_virtual9.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_SceneNode__memfuns_pvirtual.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneManager__protected_memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_SceneNode__memfuns_virtual.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneManager__unnamed_enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_SceneNode__protected_memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneNode__classes.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_SceneNode__unnamed_enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneNode__enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_StaticGeometry__classes.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneNode__memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_StaticGeometry__enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneNode__memfuns_pvirtual.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_StaticGeometry__memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneNode__memfuns_virtual0.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_StaticGeometry__memfuns_pvirtual.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneNode__memfuns_virtual1.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_StaticGeometry__memfuns_virtual.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneNode__protected_memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_StaticGeometry__protected_memfuns.pypp.cpp">
+				RelativePath=".\ogre_CVS\_SceneNode__unnamed_enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\_StaticGeometry__unnamed_enums.pypp.cpp">
+				RelativePath=".\ogre_CVS\_StaticGeometry__classes.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\AliasTextureIterator.pypp.cpp">
+				RelativePath=".\ogre_CVS\_StaticGeometry__enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Angle.pypp.cpp">
+				RelativePath=".\ogre_CVS\_StaticGeometry__memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\AnimableObject.pypp.cpp">
+				RelativePath=".\ogre_CVS\_StaticGeometry__memfuns_pvirtual.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\AnimableValue.pypp.cpp">
+				RelativePath=".\ogre_CVS\_StaticGeometry__memfuns_virtual.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Animation.pypp.cpp">
+				RelativePath=".\ogre_CVS\_StaticGeometry__protected_memfuns.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\AnimationControllerFunction.pypp.cpp">
+				RelativePath=".\ogre_CVS\_StaticGeometry__unnamed_enums.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\AnimationIterator.pypp.cpp">
+				RelativePath=".\ogre_CVS\AliasTextureIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\AnimationState.pypp.cpp">
+				RelativePath=".\ogre_CVS\AlignedAllocatorVector4.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\AnimationStateControllerValue.pypp.cpp">
+				RelativePath=".\ogre_CVS\AlignedMemory.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\AnimationStateIterator.pypp.cpp">
+				RelativePath=".\ogre_CVS\Angle.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\AnimationStateSet.pypp.cpp">
+				RelativePath=".\ogre_CVS\AnimableObject.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\AnimationTrack.pypp.cpp">
+				RelativePath=".\ogre_CVS\AnimableValue.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Archive.pypp.cpp">
+				RelativePath=".\ogre_CVS\Animation.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ArchiveManager.pypp.cpp">
+				RelativePath=".\ogre_CVS\AnimationControllerFunction.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\AutoParamDataSource.pypp.cpp">
+				RelativePath=".\ogre_CVS\AnimationIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\AxisAlignedBox.pypp.cpp">
+				RelativePath=".\ogre_CVS\AnimationList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\AxisAlignedBoxSceneQuery.pypp.cpp">
+				RelativePath=".\ogre_CVS\AnimationState.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Billboard.pypp.cpp">
+				RelativePath=".\ogre_CVS\AnimationStateControllerValue.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\BillboardChain.pypp.cpp">
+				RelativePath=".\ogre_CVS\AnimationStateIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\BillboardChainFactory.pypp.cpp">
+				RelativePath=".\ogre_CVS\AnimationStateSet.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\BillboardSet.pypp.cpp">
+				RelativePath=".\ogre_CVS\AnimationTrack.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\BillboardSetFactory.pypp.cpp">
+				RelativePath=".\ogre_CVS\Any.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Bone.pypp.cpp">
+				RelativePath=".\ogre_CVS\AnyNumeric.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Box.pypp.cpp">
+				RelativePath=".\ogre_CVS\Archive.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Camera.pypp.cpp">
+				RelativePath=".\ogre_CVS\ArchiveManager.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CameraIterator.pypp.cpp">
+				RelativePath=".\ogre_CVS\AutoParamDataSource.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdAngle.pypp.cpp">
+				RelativePath=".\ogre_CVS\AxisAlignedBox.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdCaption.pypp.cpp">
+				RelativePath=".\ogre_CVS\AxisAlignedBoxSceneQuery.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdColour.pypp.cpp">
+				RelativePath=".\ogre_CVS\Billboard.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdColourRangeEnd.pypp.cpp">
+				RelativePath=".\ogre_CVS\BillboardChain.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdColourRangeStart.pypp.cpp">
+				RelativePath=".\ogre_CVS\BillboardChainFactory.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdDirection.pypp.cpp">
+				RelativePath=".\ogre_CVS\BillboardParticleRenderer.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdDuration.pypp.cpp">
+				RelativePath=".\ogre_CVS\BillboardSet.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdEmissionRate.pypp.cpp">
+				RelativePath=".\ogre_CVS\BillboardSetFactory.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdHeight.pypp.cpp">
+				RelativePath=".\ogre_CVS\Bone.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdHorizontalAlign.pypp.cpp">
+				RelativePath=".\ogre_CVS\BoneList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdLeft.pypp.cpp">
+				RelativePath=".\ogre_CVS\BorderPanelOverlayElement.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdMaterial.pypp.cpp">
+				RelativePath=".\ogre_CVS\BorderPanelOverlayElementFactory.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdMaxDuration.pypp.cpp">
+				RelativePath=".\ogre_CVS\BorderRenderable.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdMaxRepeatDelay.pypp.cpp">
+				RelativePath=".\ogre_CVS\Box.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdMaxTTL.pypp.cpp">
+				RelativePath=".\ogre_CVS\Camera.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdMaxVelocity.pypp.cpp">
+				RelativePath=".\ogre_CVS\CameraIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdMetricsMode.pypp.cpp">
+				RelativePath=".\ogre_CVS\CameraList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdMinDuration.pypp.cpp">
+				RelativePath=".\ogre_CVS\ChildContainerMap.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdMinRepeatDelay.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdAngle.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdMinTTL.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdCaption.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdMinVelocity.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdColour.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdPosition.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdColourRangeEnd.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdRepeatDelay.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdColourRangeStart.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdTop.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdDirection.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdTTL.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdDuration.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdVelocity.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdEmissionRate.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdVerticalAlign.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdEmittedEmitter.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdVisible.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdHeight.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CmdWidth.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdHorizontalAlign.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ColourValue.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdLeft.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CompositionPass.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdMaterial.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CompositionTargetPass.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdMaxDuration.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CompositionTechnique.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdMaxRepeatDelay.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Compositor.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdMaxTTL.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CompositorChain.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdMaxVelocity.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CompositorInstance.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdMetricsMode.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CompositorManager.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdMinDuration.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\CompositorSerializer.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdMinRepeatDelay.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ConfigFile.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdMinTTL.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ControllerManager.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdMinVelocity.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\DataStream.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdName.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\DefaultAxisAlignedBoxSceneQuery.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdPosition.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\DefaultIntersectionSceneQuery.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdRepeatDelay.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\DefaultPlaneBoundedVolumeListSceneQuery.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdTop.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\DefaultRaySceneQuery.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdTTL.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\DefaultSceneManager.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdVelocity.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\DefaultSceneManagerFactory.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdVerticalAlign.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\DefaultSphereSceneQuery.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdVisible.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Degree.pypp.cpp">
+				RelativePath=".\ogre_CVS\CmdWidth.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\EdgeData.pypp.cpp">
+				RelativePath=".\ogre_CVS\ColourValue.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\EdgeGroupList.pypp.cpp">
+				RelativePath=".\ogre_CVS\CompiledState.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\EdgeList.pypp.cpp">
+				RelativePath=".\ogre_CVS\CompositionPass.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\EdgeListBuilder.pypp.cpp">
+				RelativePath=".\ogre_CVS\CompositionTargetPass.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Entity.pypp.cpp">
+				RelativePath=".\ogre_CVS\CompositionTechnique.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\EntityFactory.pypp.cpp">
+				RelativePath=".\ogre_CVS\Compositor.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\EventProcessor.pypp.cpp">
+				RelativePath=".\ogre_CVS\CompositorChain.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\EventTarget.pypp.cpp">
+				RelativePath=".\ogre_CVS\CompositorInstance.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Exception.pypp.cpp">
+				RelativePath=".\ogre_CVS\CompositorManager.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\FileHandleDataStream.pypp.cpp">
+				RelativePath=".\ogre_CVS\CompositorSerializer.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\FileInfo.pypp.cpp">
+				RelativePath=".\ogre_CVS\ConfigDialog.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\FileStreamDataStream.pypp.cpp">
+				RelativePath=".\ogre_CVS\ConfigFile.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\FloatController.pypp.cpp">
+				RelativePath=".\ogre_CVS\ConstAnimationStateIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\FloatControllerFunction.pypp.cpp">
+				RelativePath=".\ogre_CVS\ConstEnabledAnimationStateIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\FloatControllerValue.pypp.cpp">
+				RelativePath=".\ogre_CVS\ConstMapIteratorVectorFloat.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\FloatGpuParameterControllerValue.pypp.cpp">
+				RelativePath=".\ogre_CVS\ConstMapIteratorVectorGpuProgramParametersIntConstantEntry.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\FloatRect.pypp.cpp">
+				RelativePath=".\ogre_CVS\ConstMapIteratorVectorNode.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\FrameEvent.pypp.cpp">
+				RelativePath=".\ogre_CVS\ConstMapIteratorVectorTectUnitState.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\FrameListener.pypp.cpp">
+				RelativePath=".\ogre_CVS\ConstMapIteratorVectorVertexPoseKeyFrame.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\FrameTimeControllerValue.pypp.cpp">
+				RelativePath=".\ogre_CVS\ConstPoseIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Frustum.pypp.cpp">
+				RelativePath=".\ogre_CVS\ConstShadowTextureConfigIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\GpuProgram.pypp.cpp">
+				RelativePath=".\ogre_CVS\ConstVertexOffsetIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\GpuProgramManager.pypp.cpp">
+				RelativePath=".\ogre_CVS\ControllerManager.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\GpuProgramParameters.pypp.cpp">
+				RelativePath=".\ogre_CVS\ConvexBody.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\HardwareAnimationDataList.pypp.cpp">
+				RelativePath=".\ogre_CVS\DataStream.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\HardwareBuffer.pypp.cpp">
+				RelativePath=".\ogre_CVS\DefaultAxisAlignedBoxSceneQuery.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\HardwareBufferLicensee.pypp.cpp">
+				RelativePath=".\ogre_CVS\DefaultIntersectionSceneQuery.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\HardwareBufferManager.pypp.cpp">
+				RelativePath=".\ogre_CVS\DefaultPlaneBoundedVolumeListSceneQuery.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\HardwareIndexBuffer.pypp.cpp">
+				RelativePath=".\ogre_CVS\DefaultRaySceneQuery.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\HardwareOcclusionQuery.pypp.cpp">
+				RelativePath=".\ogre_CVS\DefaultSceneManager.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\HardwarePixelBuffer.pypp.cpp">
+				RelativePath=".\ogre_CVS\DefaultSceneManagerFactory.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\HardwareVertexBuffer.pypp.cpp">
+				RelativePath=".\ogre_CVS\DefaultShadowCameraSetup.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\HighLevelGpuProgram.pypp.cpp">
+				RelativePath=".\ogre_CVS\DefaultSphereSceneQuery.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\HighLevelGpuProgramFactory.pypp.cpp">
+				RelativePath=".\ogre_CVS\Degree.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\HighLevelGpuProgramManager.pypp.cpp">
+				RelativePath=".\ogre_CVS\EdgeData.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\IlluminationPass.pypp.cpp">
+				RelativePath=".\ogre_CVS\EdgeGroupList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Image.pypp.cpp">
+				RelativePath=".\ogre_CVS\EdgeList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\IndexData.pypp.cpp">
+				RelativePath=".\ogre_CVS\EdgeListBuilder.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\IndexMap.pypp.cpp">
+				RelativePath=".\ogre_CVS\EdgeMap.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\InputReader.pypp.cpp">
+				RelativePath=".\ogre_CVS\EffectMap.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\IntersectionSceneQuery.pypp.cpp">
+				RelativePath=".\ogre_CVS\EnabledAnimationStateList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\IntersectionSceneQueryListener.pypp.cpp">
+				RelativePath=".\ogre_CVS\Entity.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\IntersectionSceneQueryResult.pypp.cpp">
+				RelativePath=".\ogre_CVS\EntityFactory.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\KeyFrame.pypp.cpp">
+				RelativePath=".\ogre_CVS\EntitySet.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\KeyTarget.pypp.cpp">
+				RelativePath=".\ogre_CVS\Exception.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\LayerBlendModeEx.pypp.cpp">
+				RelativePath=".\ogre_CVS\FileHandleDataStream.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Light.pypp.cpp">
+				RelativePath=".\ogre_CVS\FileInfo.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\LightFactory.pypp.cpp">
+				RelativePath=".\ogre_CVS\FileStreamDataStream.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\LightList.pypp.cpp">
+				RelativePath=".\ogre_CVS\FloatController.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\LinkedSkeletonAnimationSource.pypp.cpp">
+				RelativePath=".\ogre_CVS\FloatControllerFunction.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ListOfPlane.pypp.cpp">
+				RelativePath=".\ogre_CVS\FloatControllerValue.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\LODFaceList.pypp.cpp">
+				RelativePath=".\ogre_CVS\FloatGpuParameterControllerValue.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Log.pypp.cpp">
+				RelativePath=".\ogre_CVS\FloatRect.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\LogListener.pypp.cpp">
+				RelativePath=".\ogre_CVS\FocusedShadowCameraSetup.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\LogManager.pypp.cpp">
+				RelativePath=".\ogre_CVS\Font.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ManualObject.pypp.cpp">
+				RelativePath=".\ogre_CVS\FrameEvent.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ManualObjectFactory.pypp.cpp">
+				RelativePath=".\ogre_CVS\FrameListener.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ManualResourceLoader.pypp.cpp">
+				RelativePath=".\ogre_CVS\FrameTimeControllerValue.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\MapIteratorOfOverlayElement.pypp.cpp">
+				RelativePath=".\ogre_CVS\Frustum.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\MapOfStringToConfigOption.pypp.cpp">
+				RelativePath=".\ogre_CVS\GeometryBucketList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Material.pypp.cpp">
+				RelativePath=".\ogre_CVS\GeometryIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\MaterialManager.pypp.cpp">
+				RelativePath=".\ogre_CVS\GpuProgram.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\MaterialScriptContext.pypp.cpp">
+				RelativePath=".\ogre_CVS\GpuProgramManager.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\MaterialScriptProgramDefinition.pypp.cpp">
+				RelativePath=".\ogre_CVS\GpuProgramParameters.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\MaterialSerializer.pypp.cpp">
+				RelativePath=".\ogre_CVS\HardwareAnimationDataList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Math.pypp.cpp">
+				RelativePath=".\ogre_CVS\HardwareBuffer.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Matrix3.pypp.cpp">
+				RelativePath=".\ogre_CVS\HardwareBufferLicensee.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Matrix4.pypp.cpp">
+				RelativePath=".\ogre_CVS\HardwareBufferManager.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\MemoryDataStream.pypp.cpp">
+				RelativePath=".\ogre_CVS\HardwareIndexBuffer.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Mesh.pypp.cpp">
+				RelativePath=".\ogre_CVS\HardwareOcclusionQuery.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\MeshLodUsage.pypp.cpp">
+				RelativePath=".\ogre_CVS\HardwarePixelBuffer.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\MeshManager.pypp.cpp">
+				RelativePath=".\ogre_CVS\HardwareVertexBuffer.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\MeshSerializer.pypp.cpp">
+				RelativePath=".\ogre_CVS\HighLevelGpuProgram.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\MouseMotionTarget.pypp.cpp">
+				RelativePath=".\ogre_CVS\HighLevelGpuProgramFactory.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\MouseState.pypp.cpp">
+				RelativePath=".\ogre_CVS\HighLevelGpuProgramManager.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\MouseTarget.pypp.cpp">
+				RelativePath=".\ogre_CVS\IlluminationPass.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\MovableObject.pypp.cpp">
+				RelativePath=".\ogre_CVS\IlluminationPassList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\MovableObjectFactory.pypp.cpp">
+				RelativePath=".\ogre_CVS\Image.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\MovablePlane.pypp.cpp">
+				RelativePath=".\ogre_CVS\IndexData.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\MultiRenderTarget.pypp.cpp">
+				RelativePath=".\ogre_CVS\IntConstantList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\NamedValuePairList.pypp.cpp">
+				RelativePath=".\ogre_CVS\IntersectionSceneQuery.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Node.pypp.cpp">
+				RelativePath=".\ogre_CVS\IntersectionSceneQueryListener.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\NodeAnimationTrack.pypp.cpp">
+				RelativePath=".\ogre_CVS\IntersectionSceneQueryResult.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\NodeTrackIterator.pypp.cpp">
+				RelativePath=".\ogre_CVS\KeyFrame.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\NumericAnimationTrack.pypp.cpp">
+				RelativePath=".\ogre_CVS\LayerBlendModeEx.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\NumericKeyFrame.pypp.cpp">
+				RelativePath=".\ogre_CVS\Light.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\NumericTrackIterator.pypp.cpp">
+				RelativePath=".\ogre_CVS\LightFactory.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Overlay.pypp.cpp">
+				RelativePath=".\ogre_CVS\LightList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Overlay2DElementsIterator.pypp.cpp">
+				RelativePath=".\ogre_CVS\LinkedSkeletonAnimationSource.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\OverlayContainer.pypp.cpp">
+				RelativePath=".\ogre_CVS\LinkedSkeletonAnimSourceIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\OverlayElement.pypp.cpp">
+				RelativePath=".\ogre_CVS\LinkedSkeletonAnimSourceList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\OverlayManager.pypp.cpp">
+				RelativePath=".\ogre_CVS\LiSPSMShadowCameraSetup.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ParamCommand.pypp.cpp">
+				RelativePath=".\ogre_CVS\list_less_Ogre_scope_Particle_ptr__comma__std_scope_allocator_less_Ogre_scope_Particle_ptr__grate___grate_.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ParamDictionary.pypp.cpp">
+				RelativePath=".\ogre_CVS\ListOfPlane.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ParameterDef.pypp.cpp">
+				RelativePath=".\ogre_CVS\LODBucketList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ParameterList.pypp.cpp">
+				RelativePath=".\ogre_CVS\LODFaceList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Particle.pypp.cpp">
+				RelativePath=".\ogre_CVS\LODIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ParticleAffector.pypp.cpp">
+				RelativePath=".\ogre_CVS\Log.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ParticleEmitter.pypp.cpp">
+				RelativePath=".\ogre_CVS\LogListener.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ParticleIterator.pypp.cpp">
+				RelativePath=".\ogre_CVS\LogManager.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ParticleSystem.pypp.cpp">
+				RelativePath=".\ogre_CVS\ManualObject.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ParticleSystemFactory.pypp.cpp">
+				RelativePath=".\ogre_CVS\ManualObjectFactory.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ParticleSystemManager.pypp.cpp">
+				RelativePath=".\ogre_CVS\ManualResourceLoader.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ParticleSystemTemplateIterator.pypp.cpp">
+				RelativePath=".\ogre_CVS\MapIteratorBasicStringAllocator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ParticleVisualData.pypp.cpp">
+				RelativePath=".\ogre_CVS\MapIteratorBasicStringOverlayContainer.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Pass.pypp.cpp">
+				RelativePath=".\ogre_CVS\MapIteratorMoveableObjectFactoryPtr.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\PassSet.pypp.cpp">
+				RelativePath=".\ogre_CVS\MapIteratorNodeAnimationTrackPtr.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\PassthroughControllerFunction.pypp.cpp">
+				RelativePath=".\ogre_CVS\MapIteratorNumericAnimationTrackPtr.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\PatchMesh.pypp.cpp">
+				RelativePath=".\ogre_CVS\MapIteratorOfOverlayElement.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\PatchSurface.pypp.cpp">
+				RelativePath=".\ogre_CVS\MapIteratorRenderQueueGroupPtr.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\PixelBox.pypp.cpp">
+				RelativePath=".\ogre_CVS\MapIteratorStringMovableObjectPtr.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\PixelUtil.pypp.cpp">
+				RelativePath=".\ogre_CVS\MapIteratorStringParticleAffectorFactoryPtr.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Plane.pypp.cpp">
+				RelativePath=".\ogre_CVS\MapIteratorVertexAnimationTrackPtr.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\PlaneBoundedVolume.pypp.cpp">
+				RelativePath=".\ogre_CVS\MapOfAnimationState.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\PlaneBoundedVolumeList.pypp.cpp">
+				RelativePath=".\ogre_CVS\MapOfOverlayElement.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\PlaneBoundedVolumeListSceneQuery.pypp.cpp">
+				RelativePath=".\ogre_CVS\MapOfRegionIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\PlaneList.pypp.cpp">
+				RelativePath=".\ogre_CVS\MapOfStringToConfigOption.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\PlatformManager.pypp.cpp">
+				RelativePath=".\ogre_CVS\MapSceneManagerInstances.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Pose.pypp.cpp">
+				RelativePath=".\ogre_CVS\Material.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\PoseList.pypp.cpp">
+				RelativePath=".\ogre_CVS\MaterialBucketMap.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\PoseRefList.pypp.cpp">
+				RelativePath=".\ogre_CVS\MaterialIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\PositionTarget.pypp.cpp">
+				RelativePath=".\ogre_CVS\MaterialManager.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\PriorityMapIterator.pypp.cpp">
+				RelativePath=".\ogre_CVS\MaterialScriptContext.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Profile.pypp.cpp">
+				RelativePath=".\ogre_CVS\MaterialScriptProgramDefinition.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Profiler.pypp.cpp">
+				RelativePath=".\ogre_CVS\MaterialSerializer.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ProgressiveMesh.pypp.cpp">
+				RelativePath=".\ogre_CVS\Math.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Quaternion.pypp.cpp">
+				RelativePath=".\ogre_CVS\Matrix3.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\QueuedRenderableCollection.pypp.cpp">
+				RelativePath=".\ogre_CVS\Matrix4.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\QueuedRenderableVisitor.pypp.cpp">
+				RelativePath=".\ogre_CVS\MemoryDataStream.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Radian.pypp.cpp">
+				RelativePath=".\ogre_CVS\Mesh.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Ray.pypp.cpp">
+				RelativePath=".\ogre_CVS\MeshLodUsage.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RaySceneQuery.pypp.cpp">
+				RelativePath=".\ogre_CVS\MeshManager.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RaySceneQueryListener.pypp.cpp">
+				RelativePath=".\ogre_CVS\MeshSerializer.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RaySceneQueryResult.pypp.cpp">
+				RelativePath=".\ogre_CVS\MetaDataIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RaySceneQueryResultEntry.pypp.cpp">
+				RelativePath=".\ogre_CVS\MetaDataList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Rectangle.pypp.cpp">
+				RelativePath=".\ogre_CVS\MovableObject.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Rectangle2D.pypp.cpp">
+				RelativePath=".\ogre_CVS\MovableObjectFactory.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RegionSceneQuery.pypp.cpp">
+				RelativePath=".\ogre_CVS\MovableObjectFactoryIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Renderable.pypp.cpp">
+				RelativePath=".\ogre_CVS\MovableObjectFactoryMap.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RenderablePass.pypp.cpp">
+				RelativePath=".\ogre_CVS\MovableObjectMapIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RenderOperation.pypp.cpp">
+				RelativePath=".\ogre_CVS\MovablePlane.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RenderPriorityGroup.pypp.cpp">
+				RelativePath=".\ogre_CVS\MultiRenderTarget.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RenderQueue.pypp.cpp">
+				RelativePath=".\ogre_CVS\NamedValuePairList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RenderQueueGroup.pypp.cpp">
+				RelativePath=".\ogre_CVS\Node.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RenderQueueInvocation.pypp.cpp">
+				RelativePath=".\ogre_CVS\NodeAnimationTrack.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RenderQueueInvocationSequence.pypp.cpp">
+				RelativePath=".\ogre_CVS\NodeTrackIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RenderQueueListener.pypp.cpp">
+				RelativePath=".\ogre_CVS\NodeTrackList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RenderSystem.pypp.cpp">
+				RelativePath=".\ogre_CVS\NumericAnimationTrack.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RenderSystemCapabilities.pypp.cpp">
+				RelativePath=".\ogre_CVS\NumericKeyFrame.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RenderSystemList.pypp.cpp">
+				RelativePath=".\ogre_CVS\NumericTrackIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RenderSystemOpPairs.pypp.cpp">
+				RelativePath=".\ogre_CVS\NumericTrackList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RenderTarget.pypp.cpp">
+				RelativePath=".\ogre_CVS\Overlay.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RenderTargetEvent.pypp.cpp">
+				RelativePath=".\ogre_CVS\Overlay2DElementsIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RenderTargetIterator.pypp.cpp">
+				RelativePath=".\ogre_CVS\OverlayContainer.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RenderTargetListener.pypp.cpp">
+				RelativePath=".\ogre_CVS\OverlayContainerList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RenderTargetViewportEvent.pypp.cpp">
+				RelativePath=".\ogre_CVS\OverlayElement.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RenderTexture.pypp.cpp">
+				RelativePath=".\ogre_CVS\OverlayElementFactory.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RenderWindow.pypp.cpp">
+				RelativePath=".\ogre_CVS\OverlayManager.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Resource.pypp.cpp">
+				RelativePath=".\ogre_CVS\OverlayMap.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ResourceDeclarationList.pypp.cpp">
+				RelativePath=".\ogre_CVS\OverlayMapIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ResourceGroupListener.pypp.cpp">
+				RelativePath=".\ogre_CVS\PanelOverlayElement.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ResourceGroupManager.pypp.cpp">
+				RelativePath=".\ogre_CVS\PanelOverlayElementFactory.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ResourceManager.pypp.cpp">
+				RelativePath=".\ogre_CVS\ParamCommand.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ResourceMapIterator.pypp.cpp">
+				RelativePath=".\ogre_CVS\ParamDictionary.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RibbonTrail.pypp.cpp">
+				RelativePath=".\ogre_CVS\ParameterDef.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RibbonTrailFactory.pypp.cpp">
+				RelativePath=".\ogre_CVS\ParameterList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Root.pypp.cpp">
+				RelativePath=".\ogre_CVS\Particle.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\RotationalSpline.pypp.cpp">
+				RelativePath=".\ogre_CVS\ParticleAffector.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ScaleControllerFunction.pypp.cpp">
+				RelativePath=".\ogre_CVS\ParticleAffectorFactory.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SceneManager.pypp.cpp">
+				RelativePath=".\ogre_CVS\ParticleAffectorFactoryMap.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SceneManagerEnumerator.pypp.cpp">
+				RelativePath=".\ogre_CVS\ParticleEmitter.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SceneManagerFactory.pypp.cpp">
+				RelativePath=".\ogre_CVS\ParticleEmitterFactory.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SceneManagerMetaData.pypp.cpp">
+				RelativePath=".\ogre_CVS\ParticleEmitterFactoryIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SceneNode.pypp.cpp">
+				RelativePath=".\ogre_CVS\ParticleEmitterFactoryMap.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SceneQuery.pypp.cpp">
+				RelativePath=".\ogre_CVS\ParticleIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SceneQueryListener.pypp.cpp">
+				RelativePath=".\ogre_CVS\ParticleRendererFactoryIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SceneQueryMovableIntersectionList.pypp.cpp">
+				RelativePath=".\ogre_CVS\ParticleSystem.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SceneQueryMovableWorldFragmentIntersectionList.pypp.cpp">
+				RelativePath=".\ogre_CVS\ParticleSystemFactory.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SceneQueryResult.pypp.cpp">
+				RelativePath=".\ogre_CVS\ParticleSystemManager.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SceneQueryResultMovableList.pypp.cpp">
+				RelativePath=".\ogre_CVS\ParticleSystemRenderer.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SceneQueryResultWorldFragmentList.pypp.cpp">
+				RelativePath=".\ogre_CVS\ParticleSystemRendererFactoryMap.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ScriptLoader.pypp.cpp">
+				RelativePath=".\ogre_CVS\ParticleSystemTemplateIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SectionIterator.pypp.cpp">
+				RelativePath=".\ogre_CVS\ParticleTemplateMap.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Serializer.pypp.cpp">
+				RelativePath=".\ogre_CVS\ParticleVisualData.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SetOfEntityPtr.pypp.cpp">
+				RelativePath=".\ogre_CVS\Pass.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SetOfStrings.pypp.cpp">
+				RelativePath=".\ogre_CVS\PassIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SetOfWorldFragmentTypes.pypp.cpp">
+				RelativePath=".\ogre_CVS\PassSet.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SettingsIterator.pypp.cpp">
+				RelativePath=".\ogre_CVS\PassthroughControllerFunction.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ShadowCaster.pypp.cpp">
+				RelativePath=".\ogre_CVS\PatchMesh.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ShadowListener.pypp.cpp">
+				RelativePath=".\ogre_CVS\PatchSurface.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ShadowRenderable.pypp.cpp">
+				RelativePath=".\ogre_CVS\PixelBox.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SimpleRenderable.pypp.cpp">
+				RelativePath=".\ogre_CVS\PixelUtil.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SimpleSpline.pypp.cpp">
+				RelativePath=".\ogre_CVS\Plane.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Skeleton.pypp.cpp">
+				RelativePath=".\ogre_CVS\PlaneBoundedVolume.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SkeletonInstance.pypp.cpp">
+				RelativePath=".\ogre_CVS\PlaneBoundedVolumeList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SkeletonManager.pypp.cpp">
+				RelativePath=".\ogre_CVS\PlaneBoundedVolumeListSceneQuery.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SkeletonSerializer.pypp.cpp">
+				RelativePath=".\ogre_CVS\PlaneList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Sphere.pypp.cpp">
+				RelativePath=".\ogre_CVS\PlaneOptimalShadowCameraSetup.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SphereSceneQuery.pypp.cpp">
+				RelativePath=".\ogre_CVS\Polygon.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\StaticGeometry.pypp.cpp">
+				RelativePath=".\ogre_CVS\Pose.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\StringConverter.pypp.cpp">
+				RelativePath=".\ogre_CVS\PoseIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\StringInterface.pypp.cpp">
+				RelativePath=".\ogre_CVS\PoseList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\StringUtil.pypp.cpp">
+				RelativePath=".\ogre_CVS\PoseRefList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SubEntity.pypp.cpp">
+				RelativePath=".\ogre_CVS\PriorityMap.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SubMesh.pypp.cpp">
+				RelativePath=".\ogre_CVS\PriorityMapIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\SubMeshIterator.pypp.cpp">
+				RelativePath=".\ogre_CVS\Profile.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Technique.pypp.cpp">
+				RelativePath=".\ogre_CVS\Profiler.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\TempBlendedBufferInfo.pypp.cpp">
+				RelativePath=".\ogre_CVS\ProgressiveMesh.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\TexCoordModifierControllerValue.pypp.cpp">
+				RelativePath=".\ogre_CVS\Quaternion.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Texture.pypp.cpp">
+				RelativePath=".\ogre_CVS\QueuedRenderableCollection.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\TextureFrameControllerValue.pypp.cpp">
+				RelativePath=".\ogre_CVS\QueuedRenderableVisitor.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\TextureManager.pypp.cpp">
+				RelativePath=".\ogre_CVS\Radian.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\TextureUnitState.pypp.cpp">
+				RelativePath=".\ogre_CVS\RadixSortBillboardFloat.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Timer.pypp.cpp">
+				RelativePath=".\ogre_CVS\RadixSortParticleFloat.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\TransformKeyFrame.pypp.cpp">
+				RelativePath=".\ogre_CVS\RadixSortRenderablePassFloat.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\TriangleList.pypp.cpp">
+				RelativePath=".\ogre_CVS\RadixSortRenderablePassUInt.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\UserDefinedObject.pypp.cpp">
+				RelativePath=".\ogre_CVS\Ray.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Vector2.pypp.cpp">
+				RelativePath=".\ogre_CVS\RaySceneQuery.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Vector3.pypp.cpp">
+				RelativePath=".\ogre_CVS\RaySceneQueryListener.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Vector4.pypp.cpp">
+				RelativePath=".\ogre_CVS\RaySceneQueryResult.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\VectorOfFloat.pypp.cpp">
+				RelativePath=".\ogre_CVS\RaySceneQueryResultEntry.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\VectorOfHardwareBufferUsage.pypp.cpp">
+				RelativePath=".\ogre_CVS\RealConstantIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\VectorOfString.pypp.cpp">
+				RelativePath=".\ogre_CVS\RealConstantList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\VectorOfSubMeshLodGeometryLink.pypp.cpp">
+				RelativePath=".\ogre_CVS\Rect.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\VertexAnimationTrack.pypp.cpp">
+				RelativePath=".\ogre_CVS\Rectangle.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\VertexBufferBinding.pypp.cpp">
+				RelativePath=".\ogre_CVS\Rectangle2D.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\VertexBufferBindingMap.pypp.cpp">
+				RelativePath=".\ogre_CVS\RegionIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\VertexCacheProfiler.pypp.cpp">
+				RelativePath=".\ogre_CVS\RegionSceneQuery.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\VertexData.pypp.cpp">
+				RelativePath=".\ogre_CVS\Renderable.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\VertexDeclaration.pypp.cpp">
+				RelativePath=".\ogre_CVS\RenderablePass.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\VertexElement.pypp.cpp">
+				RelativePath=".\ogre_CVS\RenderOperation.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\VertexElementList.pypp.cpp">
+				RelativePath=".\ogre_CVS\RenderPriorityGroup.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\VertexMorphKeyFrame.pypp.cpp">
+				RelativePath=".\ogre_CVS\RenderQueue.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\VertexOffsetMap.pypp.cpp">
+				RelativePath=".\ogre_CVS\RenderQueueGroup.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\VertexPoseKeyFrame.pypp.cpp">
+				RelativePath=".\ogre_CVS\RenderQueueGroupMap.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\VertexTrackIterator.pypp.cpp">
+				RelativePath=".\ogre_CVS\RenderQueueInvocation.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\ViewPoint.pypp.cpp">
+				RelativePath=".\ogre_CVS\RenderQueueInvocationList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\Viewport.pypp.cpp">
+				RelativePath=".\ogre_CVS\RenderQueueInvocationSequence.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_1.2.3\WaveformControllerFunction.pypp.cpp">
+				RelativePath=".\ogre_CVS\RenderQueueListener.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\RenderSystem.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\RenderSystemCapabilities.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\RenderSystemList.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\RenderSystemOpPairs.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\RenderTarget.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\RenderTargetEvent.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\RenderTargetIterator.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\RenderTargetListener.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\RenderTargetMap.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\RenderTargetViewportEvent.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\RenderTexture.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\RenderWindow.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\Resource.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ResourceBackgroundQueue.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ResourceDeclarationList.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ResourceGroupListener.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ResourceGroupManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ResourceHandleMap.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ResourceManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ResourceManagerIterator.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ResourceManagerMap.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ResourceMapIterator.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\RibbonTrail.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\RibbonTrailFactory.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\Root.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\RotationalSpline.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ScaleControllerFunction.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SceneManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SceneManagerEnumerator.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SceneManagerFactory.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SceneManagerIterator.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SceneManagerMetaData.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SceneNode.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SceneQuery.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SceneQueryListener.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SceneQueryMovableIntersectionList.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SceneQueryMovableWorldFragmentIntersectionList.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SceneQueryResult.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SceneQueryResultMovableList.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SceneQueryResultWorldFragmentList.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ScriptLoader.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SectionIterator.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\Serializer.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\set_less_short_unsigned_int_comma_std_scope_less_less_short_unsigned_int_grate__comma_std_scope_allocator_less_short_unsigned_int_grate___grate_.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SetOfStrings.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SetOfWorldFragmentTypes.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SettingsBySection.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SettingsIterator.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SettingsMultiMap.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ShadowCameraSetup.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ShadowCaster.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ShadowListener.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ShadowRenderable.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ShadowRenderableList.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ShadowRenderableListIterator.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ShadowTextureConfig.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ShadowTextureConfigList.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ShadowTextureList.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ShadowTextureManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SimpleRenderable.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SimpleSpline.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SingletonArchiveManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SingletonCompositorManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SingletonControllerManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SingletonGpuProgramManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SingletonHardwareBufferManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SingletonHighLevelGpuProgramManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SingletonLogManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SingletonMaterialManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SingletonMeshManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SingletonOverlayManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SingletonParticleSystemManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SingletonProfiler.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SingletonResourceBackgroundQueue.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SingletonResourceGroupManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SingletonRoot.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SingletonSceneManagerEnumerator.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SingletonShadowTextureManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SingletonSkeletonManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SingletonTextureManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\Skeleton.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SkeletonInstance.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SkeletonManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SkeletonSerializer.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\Sphere.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SphereSceneQuery.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\StaticGeometry.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\StdPairBoolFloat.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\StdPairUnsignedUnsiged.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\StringConverter.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\StringInterface.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\StringUtil.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SubEntity.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SubMesh.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SubMeshIterator.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\SubMeshList.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\TagPoint.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\TargetManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\TargetPasses.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\Technique.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\TechniqueIterator.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\TempBlendedBufferInfo.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\TexCoordModifierControllerValue.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\TextAreaOverlayElement.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\TextAreaOverlayElementFactory.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\Texture.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\TextureDefinitionIterator.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\TextureDefinitions.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\TextureFrameControllerValue.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\TextureManager.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\TextureUnitState.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\TextureUnitStates.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\TimeIndex.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\Timer.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\TransformKeyFrame.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\TriangleFaceNormalList.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\TriangleLightFacingList.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\TriangleList.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\UserDefinedObject.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\Vector2.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\Vector3.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\Vector3Map.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\Vector4.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\vector_less_Ogre_scope_Node_ptr__comma__std_scope_allocator_less_Ogre_scope_Node_ptr__grate___grate_.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VectorCompositionTechnique.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VectorCompositorInstance.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VectorCompostionPass.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VectorIteratorBonePtr.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VectorIteratorCompositionTargetPassPtr.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VectorIteratorCompositorInstancePtr.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VectorIteratorIlluminationPassPtr.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VectorIteratorPassPtr.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VectorIteratorTechniquePtr.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VectorIteratorTextureUnitStatePtr.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VectorIteratorVertexPoseKeyFrame.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VectorIterRenderQueue.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VectorOfFloat.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VectorOfHardwareBufferUsage.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VectorOfImagePtr.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VectorOfString.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VectorOfSubMeshLodGeometryLink.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VectorOfUnsignedShort.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VectorOfVector4.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VectorPass.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VectorTechnique.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VertexAnimationTrack.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VertexBoneAssignment_s.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VertexBoneAssignmentList.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VertexBufferBinding.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VertexBufferBindingMap.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VertexCacheProfiler.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VertexData.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VertexDeclaration.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VertexElement.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VertexElementList.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VertexMorphKeyFrame.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VertexOffsetIterator.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VertexPoseKeyFrame.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VertexTrackIterator.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VertexTrackList.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ViewPoint.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\Viewport.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\WaveformControllerFunction.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\WindowEventListener.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\WindowEventListeners.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\WindowEventUtilities.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\Windows.pypp.cpp">
 			</File>
 		</Filter>
 	</Files>

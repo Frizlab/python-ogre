@@ -58,7 +58,7 @@ if 'roman' in getpass.getuser():
     root_dir = r'd:\dev\python-ogre\bindings-dev'
     gccxml_bin = r'd:/dev/gccxml_cvs/gccxml-bin/bin/release/gccxml.exe'
     python_include_dir = 'e:/python25/include'
-    pyplusplus_install_dir = r'd:\dev\language-binding'
+    pyplusplus_install_dir = r'D:\dev\language-binding\sources'
 
     ogre.include_dirs = [ r'd:\dev\python-ogre\sources\ogre_cvs\ogrenew\OgreMain\include' ]
     ois.include_dir = r'D:\OisSDK\includes'
