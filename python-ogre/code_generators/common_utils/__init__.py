@@ -85,12 +85,21 @@ def add_constants( mb, constants ):
     for name, value in constants.items():
         mb.add_registration_code( tmpl % dict( name=name, value=str(value) ) )
     
-def add_properties( classes, AddLeadingLower = False ):
+def add_properties( classes ):
     for cls in classes:
         cls.add_properties()
-        if AddLeadingLower: 
-            new_props = []
-            for prop in cls.properties:
-                name = prop.name[0].lower() + prop.name[1:]
-                new_props.append( property_t( name, prop.fget, prop.fset, prop.doc, prop.is_static ) )
-            cls.properties.extend( new_props )
+
+## note that we assume all the properties have been added by ourselves and we checked case insentistively for conflicts
+##                
+def add_LeadingLowerProperties ( cls ):
+    new_props = []
+    existing_names = []
+    for prop in cls.properties:
+        existing_names.append( prop.name)
+    for prop in cls.properties:
+        name = prop.name[0].lower() + prop.name[1:]
+        if name not in existing_names:  # lets make sure it's different
+            existing_names.append ( name )
+            new_props.append( property_t( name, prop.fget, prop.fset, prop.doc, prop.is_static ) )
+            print "Extending Properties for ", cls, "with", name, "(", prop.name,")"
+    cls.properties.extend( new_props )

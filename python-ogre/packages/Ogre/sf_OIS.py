@@ -204,8 +204,8 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
     def _setupInput(self):
         # ignore buffered input
            
-         windowHnd = self.renderWindow.getCustomAttributeWindowInt("WINDOW")
-         im = OIS.createPythonInputSystem( windowHnd )
+         windowHnd = self.renderWindow.getCustomAttributeInt("WINDOW")
+         self.InputManager = OIS.createPythonInputSystem( windowHnd )
          
          #pl = OIS.ParamList()
          #windowHndStr = str ( windowHnd)
@@ -213,10 +213,10 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
          #im = OIS.InputManager.createInputSystem( pl )
          
          #Create all devices (We only catch joystick exceptions here, as, most people have Key/Mouse)
-         self.Keyboard = im.createInputObjectKeyboard( OIS.OISKeyboard, self.bufferedKeys )
-         self.Mouse = im.createInputObjectMouse( OIS.OISMouse, self.bufferedMouse )
+         self.Keyboard = self.InputManager.createInputObjectKeyboard( OIS.OISKeyboard, self.bufferedKeys )
+         self.Mouse = self.InputManager.createInputObjectMouse( OIS.OISMouse, self.bufferedMouse )
          try :
-            self.Joy = im.createInputObjectJoyStick( OIS.OISJoyStick, bufferedJoy )
+            self.Joy = self.InputManager.createInputObjectJoyStick( OIS.OISJoyStick, bufferedJoy )
          except:
             self.Joy = False
          
@@ -232,7 +232,7 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
         self.MenuMode = mode
         
     def windowResized (self, rw):
-         [width, height, depth, left, top] = rw.getMetricsInt()  # Note the wrapped function as default needs unsigned int's
+         [width, height, depth, left, top] = rw.getMetrics()  # Note the wrapped function as default needs unsigned int's
          ms = self.Mouse.getMouseState()
          ms.width = width
          ms.height = height
@@ -240,13 +240,13 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
     def windowClosed(self, rw):
       #Only close for window that created OIS (mWindow)
       if( rw == self.renderWindow ):
-         im = OIS.InputManager.getSingletonPtr()
-         if( im ):
-            im.destroyInputObjectMouse( self.Mouse )
-            im.destroyInputObjectKeyboard( self.Keyboard )
+         if( self.InputManager ):
+            self.InputManager.destroyInputObjectMouse( self.Mouse )
+            self.InputManager.destroyInputObjectKeyboard( self.Keyboard )
             if self.Joy:
-                im.destroyInputObjectJoyStick( self.Joy )
-            im.destroyInputSystem()
+                self.InputManager.destroyInputObjectJoyStick( self.Joy )
+            OIS.InputManager.destroyInputSystem(self.InputManager)
+            self.InputManager=None
             
     def frameStarted(self, frameEvent):
         if(self.renderWindow.isClosed()):
@@ -386,21 +386,22 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
             self.timeUntilNextToggle = toggleTime
             return True
         return False
+        
+    def _isToggleMouseDown(self, Button, toggleTime = 1.0): 
+        ms = self.Mouse.getMouseState() 
+        if ms.buttonDown( Button ) and self.timeUntilNextToggle <=0: 
+            self.timeUntilNextToggle = toggleTime 
+            return True 
+        return False 
 
     def _processUnbufferedMouseInput(self, frameEvent):
         ms = self.Mouse.getMouseState()
         if ms.buttonDown( OIS.MB_Right ):
-            self.translateVector.x += ms.relX * 0.13
-            self.translateVector.y -= ms.relY * 0.13
+            self.translateVector.x += ms.X.rel * 0.13
+            self.translateVector.y -= ms.Y.rel * 0.13
         else:
-            self.rotationX = ogre.Radian(- ms.relX * 0.13)
-            self.rotationY = ogre.Radian(- ms.relY * 0.13)
-
-#         if self.inputDevice.getMouseRelativeZ() > 0:
-#             self.translateVector.z = - self.moveScale * 8.0
-#         if self.inputDevice.getMouseRelativeZ() < 0:
-#             self.translateVector.z = self.moveScale * 8.0
-#          pass
+            self.rotationX = ogre.Radian(- ms.X.rel * 0.13)
+            self.rotationY = ogre.Radian(- ms.Y.rel * 0.13)
 
     def _moveCamera(self):
         self.camera.yaw(self.rotationX)

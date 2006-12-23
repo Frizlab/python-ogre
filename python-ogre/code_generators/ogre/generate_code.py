@@ -127,18 +127,29 @@ def filter_declarations( mb ):
 #     stdext_ns.class_("hash_compare<std::string, std::less<std::string> >").include()
 #     stdext_ns.class_("hash_map<std::string, unsigned short, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, unsigned short> > >").include()
 #     stdext_ns.class_("_Hash<stdext::_Hmap_traits<std::string, unsigned short, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, unsigned short> >, false> >").include()
-    hwnd = global_ns.class_("HWND__")
-    hwnd.opaque = True
-    _iobuf = global_ns.class_("_iobuf")# need the file handle in Ogre::FileHandleDataStream::FileHandleDataStream
-    _iobuf.opaque = True
+    
+#     for t in ogre_ns.mem_funs(return_type='::Ogre::Real const *'):
+#         print "Exclude as returns Real const *", t.name
+#         t.exclude()
+#     for t in ogre_ns.mem_funs(return_type='::Ogre::Real *'):
+#         print "Exclude as returns Real *", t.name
+#         t.exclude()
 
-        
+    # exclude functions and operators that return Real * as we don't handle them well :(            
+    ogre_ns.mem_funs( return_type='::Ogre::Real const *', allow_empty=True).exclude()
+    ogre_ns.mem_funs( return_type='::Ogre::Real *',allow_empty=True).exclude()
+    ogre_ns.mem_funs( return_type='float *',allow_empty=True).exclude()
+    ogre_ns.member_operators( return_type='::Ogre::Real const * const', allow_empty=True ).exclude()  ## YUCK Matrix4!
+    ogre_ns.member_operators( return_type='::Ogre::Real const *', allow_empty=True ).exclude()
+    ogre_ns.member_operators( return_type='::Ogre::Real *', allow_empty=True).exclude()
+    ogre_ns.member_operators( return_type='float *', allow_empty=True).exclude()
+
     # These members have Ogre::Real * methods which need to be wrapped. # recheck 29/12/06 AJM
-    ogre_ns.class_ ('Matrix3').member_operators (symbol='[]').exclude ()
-    ogre_ns.class_ ('Matrix4').member_operators (symbol='[]').exclude ()
+#     ogre_ns.class_ ('Matrix3').member_operators (symbol='[]').exclude ()
+#     ogre_ns.class_ ('Matrix4').member_operators (symbol='[]').exclude ()
 
-    #returns reference to "const Real *" # recheck 29/12/06 AJM
-    ogre_ns.class_ ('BillboardChain').calldef( 'getOtherTextureCoordRange' ).exclude() 
+#     #returns reference to "const Real *" # recheck 29/12/06 AJM
+#     ogre_ns.class_ ('BillboardChain').calldef( 'getOtherTextureCoordRange' ).exclude() 
 
     #all constructors in this class are private, also some of them are public.
     Skeleton = ogre_ns.class_( 'Skeleton' ).constructors().exclude()
@@ -214,6 +225,12 @@ def filter_declarations( mb ):
 
     #RenderOperation class is marked as private, but I think this is a mistake
     ogre_ns.class_('RenderOperation').include()
+    # need to force these
+    hwnd = global_ns.class_("HWND__")
+    hwnd.opaque = True
+    _iobuf = global_ns.class_("_iobuf")# need the file handle in Ogre::FileHandleDataStream::FileHandleDataStream
+    _iobuf.opaque = True
+
 
 
 
@@ -290,22 +307,22 @@ def add_transformations ( mb ):
 # the 'main'function
 #            
 def generate_code():  
-    messages.disable( 
-          #Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-          messages.W1020
-        , messages.W1021
-        , messages.W1022
-        , messages.W1023
-        , messages.W1024
-        , messages.W1025
-        , messages.W1026
-        , messages.W1027
-        , messages.W1028
-        , messages.W1029
-        , messages.W1030
-        , messages.W1031 
-        # Inaccessible property warning
-        , messages.W1041 )
+#     messages.disable( 
+#           #Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+#           messages.W1020
+#         , messages.W1021
+#         , messages.W1022
+#         , messages.W1023
+#         , messages.W1024
+#         , messages.W1025
+#         , messages.W1026
+#         , messages.W1027
+#         , messages.W1028
+#         , messages.W1029
+#         , messages.W1030
+#         , messages.W1031 
+#         # Inaccessible property warning
+#         , messages.W1041 )
     
     xml_cached_fc = parser.create_cached_source_fc(
                         os.path.join( environment.ogre.root_dir, "python_ogre.h" )
@@ -396,6 +413,9 @@ def generate_code():
 
     for cls in ogre_ns.classes():
         cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
+        ## because we want backwards pyogre compatibility lets add leading lowercase properties
+        common_utils.add_LeadingLowerProperties ( cls )
+
 
 ##    common_utils.add_properties( ogre_ns.classes(), True )
     

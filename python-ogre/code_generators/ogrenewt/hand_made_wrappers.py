@@ -225,10 +225,10 @@ public:
     bool retval;
     if (mMethod.length() > 0 )
         retval = boost::python::call_method<bool>(mSubscriber, mMethod.c_str(), 
-                            colID, boost::ref(me), boost::cref(orient), boost::cref(pos), boost::python::ptr(plane) );
+                            colID, boost::ref(me), boost::cref(orient), boost::cref(pos), boost::ref(plane) );
     else
         retval = boost::python::call<bool>(mSubscriber, 
-                            colID, boost::ref(me), boost::cref(orient), boost::cref(pos), boost::python::ptr(plane) );
+                            colID, boost::ref(me), boost::cref(orient), boost::cref(pos), boost::ref(plane) );
     return retval;
     }
 
