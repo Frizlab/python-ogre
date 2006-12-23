@@ -315,6 +315,12 @@ class FrameListener(ogre.FrameListener):
             self.timeUntilNextToggle = toggleTime
             return True
         return False
+        
+    def _isToggleMouseDown(self, Button, toggleTime = 1.0): 
+        if self.inputDevice.getMouseButton(Button) and self.timeUntilNextToggle <=0: 
+            self.timeUntilNextToggle = toggleTime 
+            return True 
+        return False 
 
     def _processUnbufferedMouseInput(self, frameEvent):
         if self.inputDevice.getMouseButton(1):
