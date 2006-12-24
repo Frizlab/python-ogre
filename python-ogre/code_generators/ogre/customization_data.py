@@ -177,7 +177,7 @@ def aliases( version ):
                 : "VectorIteratorVertexPoseKeyFrame"
                                 
                 ,"pair<unsigned, unsigned>"
-                : "StdPairUnsignedUnsiged"
+                : "StdPairUnsignedUnsigned"
                 ,"pair<bool, float>"
                 : "StdPairBoolFloat"
               

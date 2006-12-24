@@ -123,17 +123,6 @@ def filter_declarations( mb ):
     std_ns = global_ns.namespace("std")
     std_ns.class_("pair<unsigned, unsigned>").include()
     std_ns.class_("pair<bool, float>").include()
-#     stdext_ns = global_ns.namespace('stdext')
-#     stdext_ns.class_("hash_compare<std::string, std::less<std::string> >").include()
-#     stdext_ns.class_("hash_map<std::string, unsigned short, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, unsigned short> > >").include()
-#     stdext_ns.class_("_Hash<stdext::_Hmap_traits<std::string, unsigned short, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, unsigned short> >, false> >").include()
-    
-#     for t in ogre_ns.mem_funs(return_type='::Ogre::Real const *'):
-#         print "Exclude as returns Real const *", t.name
-#         t.exclude()
-#     for t in ogre_ns.mem_funs(return_type='::Ogre::Real *'):
-#         print "Exclude as returns Real *", t.name
-#         t.exclude()
 
     # exclude functions and operators that return Real * as we don't handle them well :(            
     ogre_ns.mem_funs( return_type='::Ogre::Real const *', allow_empty=True).exclude()
@@ -143,13 +132,6 @@ def filter_declarations( mb ):
     ogre_ns.member_operators( return_type='::Ogre::Real const *', allow_empty=True ).exclude()
     ogre_ns.member_operators( return_type='::Ogre::Real *', allow_empty=True).exclude()
     ogre_ns.member_operators( return_type='float *', allow_empty=True).exclude()
-
-    # These members have Ogre::Real * methods which need to be wrapped. # recheck 29/12/06 AJM
-#     ogre_ns.class_ ('Matrix3').member_operators (symbol='[]').exclude ()
-#     ogre_ns.class_ ('Matrix4').member_operators (symbol='[]').exclude ()
-
-#     #returns reference to "const Real *" # recheck 29/12/06 AJM
-#     ogre_ns.class_ ('BillboardChain').calldef( 'getOtherTextureCoordRange' ).exclude() 
 
     #all constructors in this class are private, also some of them are public.
     Skeleton = ogre_ns.class_( 'Skeleton' ).constructors().exclude()
@@ -174,6 +156,7 @@ def filter_declarations( mb ):
     ## now specifically remove functions that we have wrapped in hand_made_wrappers.py
     ogre_ns.class_( "RenderTarget" ).member_functions( 'getCustomAttribute' ).exclude()
     ogre_ns.class_( "Mesh" ).member_functions( 'suggestTangentVectorBuildParams' ).exclude()
+    ##ogre_ns.class_( "MeshManager" ).member_functions( 'createBezierPatch' ).exclude()
 
     ## Expose functions that were not exposed but that other functions rely on    
     ogre_ns.class_("OverlayManager").member_functions('addOverlayElementFactory').include()
@@ -274,14 +257,7 @@ def add_transformations ( mb ):
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
     
-    ## we need to exclude the underlying classes
-#     ns.class_('RenderTarget').mem_fun('getMetrics').exclude()
-#     ns.class_('RenderQueueListener').mem_fun('renderQueueStarted').exclude()
-#     ns.class_('RenderWindow').mem_fun('getMetrics').exclude()
-#     ns.class_('Viewport').mem_fun('getActualDimensions').exclude()
-#     ns.class_('CompositorChain').class_('RQListener').mem_fun('renderQueueStarted').exclude()
-#     ns.class_('CompositorChain').class_('RQListener').mem_fun('renderQueueEnded').exclude()
-    
+   
     rt_cls = ns.class_('RenderTarget')
     rt_cls.mem_fun('getMetrics').add_transformation( *create_output(3) )
     rt_cls.mem_fun( 'getStatistics', arg_types=['float &']*4 ).add_transformation( *create_output(4) )

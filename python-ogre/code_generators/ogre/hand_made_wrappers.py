@@ -39,6 +39,13 @@ Utility_setUint16(void * ptrin, boost::python::list listin)
         }
 }
 
+// sometimes we need to take the ctypess addressof(), an int, and recast it as a general void *
+void *
+Utility_CastVoidPtr ( int address )
+{
+    return (void *) address;
+    }
+    
 
 // void
 // Utility_setFloat(void * ptrin, float datain)
@@ -53,6 +60,8 @@ WRAPPER_REGISTRATION_General = \
     def( "GetPythonOgreVersion", &GetPythonOgreVersion);
     def( "setFloat", &Utility_setFloat );
     def( "setUint16", &Utility_setUint16 );
+    bp::def( "CastVoidPtr", &Utility_CastVoidPtr,
+                bp::return_value_policy< bp::return_opaque_pointer >());
     
 """
 
@@ -207,6 +216,37 @@ WRAPPER_REGISTRATION_SubMesh = \
 """
     def( "createVertexData", &::SubMesh_createVertexData );
 """ 
+
+WRAPPER_DEFINITION_MeshManager =\
+"""
+// Needs a void* to a databuffer (controlPointBuffer) - we want to use ctypes within python
+// and pass 'addressof()' to this function - so we get an address in an int
+Ogre::PatchMeshPtr 
+MeshManager_createBezierPatch(::Ogre::MeshManager & me,
+            const Ogre::String& name, const Ogre::String& groupName, int controlPointBuffer, 
+            Ogre::VertexDeclaration *declaration, size_t width, size_t height,
+            size_t uMaxSubdivisionLevel = Ogre::PatchSurface::AUTO_LEVEL, 
+            size_t vMaxSubdivisionLevel = Ogre::PatchSurface::AUTO_LEVEL,
+            Ogre::PatchSurface::VisibleSide visibleSide = Ogre::PatchSurface::VS_FRONT,
+            Ogre::HardwareBuffer::Usage vbUsage = Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY, 
+            Ogre::HardwareBuffer::Usage ibUsage = Ogre::HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY,
+            bool vbUseShadow = true, bool ibUseShadow = true) {
+            
+       return me.createBezierPatch(
+             name, groupName, (void*) controlPointBuffer, 
+            declaration,  width,  height,
+            uMaxSubdivisionLevel, 
+            vMaxSubdivisionLevel,
+            visibleSide,
+            vbUsage, 
+            ibUsage,
+            vbUseShadow, ibUseShadow );
+            }
+"""
+WRAPPER_REGISTRATION_MeshManager = \
+"""
+    def( "createBezierPatchSpecial", &::MeshManager_createBezierPatch );
+"""
 		
 WRAPPER_DEFINITION_Mesh =\
 """
@@ -262,6 +302,9 @@ def apply( mb ):
     rt = mb.class_( 'Mesh' )
     rt.add_declaration_code( WRAPPER_DEFINITION_Mesh )
     rt.add_registration_code( WRAPPER_REGISTRATION_Mesh )
+    rt = mb.class_( 'MeshManager' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_MeshManager )
+    rt.add_registration_code( WRAPPER_REGISTRATION_MeshManager )
 #     rt = mb.class_( 'HardwareBufferManager' )
 #     rt.add_declaration_code( WRAPPER_DEFINITION_HardwareBufferManager )
 #     rt.add_registration_code( WRAPPER_REGISTRATION_HardwareBufferManager )
