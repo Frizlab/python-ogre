@@ -214,8 +214,18 @@ def filter_declarations( mb ):
     _iobuf = global_ns.class_("_iobuf")# need the file handle in Ogre::FileHandleDataStream::FileHandleDataStream
     _iobuf.opaque = True
 
-
-
+    #Exclude non default constructors of iterator classes. 
+    for cls in ogre_ns.classes():
+       if not declarations.templates.is_instantiation( cls.name ):
+           continue
+       name = declarations.templates.name( cls.name )
+       if not name.endswith( 'Iterator' ):
+           continue
+       #default constructor does not have arguments
+       constructors = cls.constructors( lambda decl: bool( decl.arguments )
+                                                      , allow_empty=True
+                                                      , recursive=False )
+       constructors.exclude()
 
 
 def set_call_policies( mb ):

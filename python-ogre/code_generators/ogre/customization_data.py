@@ -3,9 +3,20 @@
 def aliases( version ):
     if version == "CVS":
         return {
-              "map<unsigned, Ogre::StaticGeometry::Region*, std::less<unsigned>, std::allocator<std::pair<unsigned const, Ogre::StaticGeometry::Region*> > >"
-                : "MapOfRegionIterator"
-              
+            "map<unsigned, Ogre::StaticGeometry::Region*, std::less<unsigned>, std::allocator<std::pair<unsigned const, Ogre::StaticGeometry::Region*> > >"
+              : "MapOfRegionIterator"
+
+            , "map<std::string, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >, std::less<std::string>, std::allocator<std::pair<std::string const, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > > > > >"
+              : "MapOfStringToMultiMapFromStringToString"
+
+            #~ , "map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::StaticGeometry::MaterialBucket*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::StaticGeometry::MaterialBucket*> > >"
+              #~ : "MapOfStringToStaticGeometryMaterialBucketPtr"
+            #~ , "MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::StaticGeometry::MaterialBucket*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::StaticGeometry::MaterialBucket*> > > >"
+              #~ : "MapIteratorStringToStaticGeometryMaterialBucketPtr"
+            , "multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >"
+              : "MultiMapStringToString"
+            , "MapIterator<std::map<std::string, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >, std::less<std::string>, std::allocator<std::pair<std::string const, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > > > > > >"
+                : "MapIteratorStringToMultiMapFromStringToString"
             ,  "map<std::string, bool, std::less<std::string>, std::allocator<std::pair<std::string const, bool> > >"
               : "MapOfStringToBool"
             , "map<std::string, Ogre::AnimationState*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::AnimationState*> > >" 

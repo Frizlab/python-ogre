@@ -33,28 +33,28 @@
     #include "OgreMouseEvent.h"
 
 namespace Ogre {
-class CombinedListener : public Ogre::FrameListener, public Ogre::KeyListener,
-                 public Ogre::MouseListener, public Ogre::MouseMotionListener
+class CombinedListener : public FrameListener, public KeyListener,
+                 public MouseListener, public MouseMotionListener
 {
 public:
     CombinedListener() {}
     virtual ~CombinedListener() {}
     
     // KeyListener methods
-    virtual void keyClicked(Ogre::KeyEvent *e) {}
-    virtual void keyPressed(Ogre::KeyEvent *e) {}
-    virtual void keyReleased(Ogre::KeyEvent *e) {}
+    virtual void keyClicked(KeyEvent *e) {}
+    virtual void keyPressed(KeyEvent *e) {}
+    virtual void keyReleased(KeyEvent *e) {}
     
     // MouseListener methods
-    virtual void mouseClicked(Ogre::MouseEvent *e) {}
-    virtual void mousePressed(Ogre::MouseEvent *e) {}
-    virtual void mouseReleased(Ogre::MouseEvent *e) {}
-    virtual void mouseEntered(Ogre::MouseEvent *e) {}
-    virtual void mouseExited(Ogre::MouseEvent *) {}
+    virtual void mouseClicked(MouseEvent *e) {}
+    virtual void mousePressed(MouseEvent *e) {}
+    virtual void mouseReleased(MouseEvent *e) {}
+    virtual void mouseEntered(MouseEvent *e) {}
+    virtual void mouseExited(MouseEvent *) {}
     
     // MouseMotionListener methods
-    virtual void mouseMoved(Ogre::MouseEvent *e) {}
-    virtual void mouseDragged(Ogre::MouseEvent *e) {}
+    virtual void mouseMoved(MouseEvent *e) {}
+    virtual void mouseDragged(MouseEvent *e) {}
     
     // FrameEvent methods
     virtual bool frameStarted (const FrameEvent &evt) {return true;}
@@ -69,136 +69,116 @@ namespace python_ogre{ namespace details{
 inline void instantiate(){
     using namespace Ogre;
     
-    
-
-
-    
-    
-    
-    
-    
-    
-    
-    
-    sizeof (AlignedAllocator<Ogre::Vector4, 0>  );
+    sizeof (AlignedAllocator<Vector4, 0>  );
     sizeof (AnimableValue );
     sizeof (AnimableValuePtr );
-    sizeof (ConstMapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > );
+    sizeof (ConstMapIterator<std::map<std::string, std::string > > );
     sizeof (Controller<float> );
-    sizeof (MapIterator<std::map<short unsigned int, Ogre::NodeAnimationTrack*, std::less<short unsigned int>, std::allocator<std::pair<short unsigned int const, Ogre::NodeAnimationTrack*> > > >);
-    sizeof (MapIterator<std::map<short unsigned int, Ogre::NumericAnimationTrack*, std::less<short unsigned int>, std::allocator<std::pair<short unsigned int const, Ogre::NumericAnimationTrack*> > > >);
-    sizeof (MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObjectFactory*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObjectFactory*> > > >);
-    sizeof (MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::Overlay*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::Overlay*> > > >);
-    sizeof (MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::ParticleAffectorFactory*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::ParticleAffectorFactory*> > > >);
-    sizeof (MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > >);
-    sizeof (MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::multimap<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::multimap<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >*> > > > );
-    sizeof (MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::multimap<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::multimap<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >*> > > >);
-    sizeof (MapIterator<std::map<std::string, Ogre::MovableObject*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > >);
-    sizeof (MapIterator<std::map<std::string, Ogre::OverlayContainer*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::OverlayContainer*> > > >);
-    sizeof (MapIterator<std::map<std::string, Ogre::OverlayContainer*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::OverlayContainer*> > > >);
-    sizeof (MapIterator<std::map<std::string, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >*, std::less<std::string>, std::allocator<std::pair<std::string const, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >*> > > > );
-    sizeof (MapIterator<std::map<unsigned char, Ogre::RenderQueueGroup*, std::less<unsigned char>, std::allocator<std::pair<unsigned char const, Ogre::RenderQueueGroup*> > > >);
-    sizeof (MapIterator<std::map<unsigned short, Ogre::NodeAnimationTrack*, std::less<unsigned short>, std::allocator<std::pair<unsigned short const, Ogre::NodeAnimationTrack*> > > >);
-    sizeof (MapIterator<std::map<unsigned short, Ogre::NumericAnimationTrack*, std::less<unsigned short>, std::allocator<std::pair<unsigned short const, Ogre::NumericAnimationTrack*> > > >);
-    sizeof (MapIterator<std::map<unsigned short, Ogre::VertexAnimationTrack*, std::less<unsigned short>, std::allocator<std::pair<unsigned short const, Ogre::VertexAnimationTrack*> > > >);
-    sizeof (MapIterator<std::multimap<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > >);
-    sizeof (MapIterator<stdext::hash_map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObject*, stdext::hash_compare<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObject*> > > >);
-    sizeof (MapIterator<stdext::hash_map<std::string, Ogre::Node*, stdext::hash_compare<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::Node*> > > >);
-
-    
+    sizeof (MapIterator<std::map<short unsigned int, NodeAnimationTrack*> >);
+    sizeof (MapIterator<std::map<short unsigned int, NumericAnimationTrack*> >);
+    sizeof (MapIterator<std::map<std::string, MovableObjectFactory*> >);
+    sizeof (MapIterator<std::map<std::string, Overlay*> >);
+    sizeof (MapIterator<std::map<std::string, ParticleAffectorFactory*> >);
+    sizeof (MapIterator<std::map<std::string, std::string > >);
+    sizeof (MapIterator<std::map<std::string, std::multimap<std::string, std::string >* > >);
+    sizeof (MapIterator<std::map<std::string, MovableObject*> >);
+    sizeof (MapIterator<std::map<std::string, OverlayContainer*> >);
+    sizeof (MapIterator<std::map<std::string, OverlayContainer*> >);
+    sizeof (MapIterator<std::map<std::string, std::multimap<std::string, std::string> > >);
+    sizeof (MapIterator<std::map<unsigned char, RenderQueueGroup*> >);
+    sizeof (MapIterator<std::map<unsigned short, NodeAnimationTrack*> >);
+    sizeof (MapIterator<std::map<unsigned short, NumericAnimationTrack*> >);
+    sizeof (MapIterator<std::map<unsigned short, VertexAnimationTrack*> >);
+    sizeof (MapIterator<std::multimap<std::string, std::string > >);
+    sizeof (MapIterator<stdext::hash_map<std::string, MovableObject* > >);
+    sizeof (MapIterator<stdext::hash_map<std::string, Node* > >); 
         
-    // sizeof (Ogre::ArchiveFactory );  // AJM this doesn't expose well :)
-    sizeof (Ogre::CompositorInstance::RenderSystemOperation );
-    sizeof (Ogre::ConstMapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::AnimationState*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::AnimationState*> > > > );
-    sizeof (Ogre::ConstMapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObjectFactory*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObjectFactory*> > > > );
-    sizeof (Ogre::ConstMapIterator<stdext::hash_map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObject*, stdext::hash_compare<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObject*> > > > );
-    sizeof (Ogre::ConstMapIterator<stdext::hash_map<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > > );
-    sizeof (Ogre::ConstMapIterator<stdext::hash_map<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > >  );
-    sizeof (Ogre::ConstMapIterator<std::map<unsigned int, Ogre::Vector3, std::less<unsigned int>, std::allocator<std::pair<const unsigned int, Ogre::Vector3> > > >  );
-    sizeof (Ogre::ConstVectorIterator<std::list<Ogre::AnimationState*, std::allocator<Ogre::AnimationState*> > > );
-    sizeof (Ogre::ConstVectorIterator<std::vector<const Ogre::SceneManagerMetaData*, std::allocator<const Ogre::SceneManagerMetaData*> > > );
-    sizeof (Ogre::ConstVectorIterator<std::vector<float, std::allocator<float> > > );
-    sizeof (Ogre::ConstVectorIterator<std::vector<Ogre::GpuProgramParameters::AutoConstantEntry, std::allocator<Ogre::GpuProgramParameters::AutoConstantEntry> > > );
-    sizeof (Ogre::ConstVectorIterator<std::vector<Ogre::GpuProgramParameters::IntConstantEntry, std::allocator<Ogre::GpuProgramParameters::IntConstantEntry> > >  );
-    sizeof (Ogre::ConstVectorIterator<std::vector<Ogre::GpuProgramParameters::RealConstantEntry, std::allocator<Ogre::GpuProgramParameters::RealConstantEntry> > >);
-    sizeof (Ogre::ConstVectorIterator<std::vector<Ogre::LinkedSkeletonAnimationSource, std::allocator<Ogre::LinkedSkeletonAnimationSource> > > );
-    sizeof (Ogre::ConstVectorIterator<std::vector<Ogre::Node*, std::allocator<Ogre::Node*> > > );
-    sizeof (Ogre::ConstVectorIterator<std::vector<Ogre::Pose*, std::allocator<Ogre::Pose*> > > );
-    sizeof (Ogre::ConstVectorIterator<std::vector<Ogre::ShadowTextureConfig, std::allocator<Ogre::ShadowTextureConfig> > > );
-    sizeof (Ogre::ConstVectorIterator<std::vector<Ogre::TextureUnitState*, std::allocator<Ogre::TextureUnitState*> > > );
-    sizeof (Ogre::ConstVectorIterator<std::vector<Ogre::VertexPoseKeyFrame::PoseRef, std::allocator<Ogre::VertexPoseKeyFrame::PoseRef> > >  );
-    sizeof (Ogre::DataStream );
-    sizeof (Ogre::DataStreamPtr );
-    sizeof (Ogre::FileInfo );
-    sizeof (Ogre::GpuProgramParameters::AutoConstantEntry );
-    sizeof (Ogre::HardwareIndexBuffer );
-    sizeof (Ogre::HardwareIndexBufferSharedPtr );  
-    sizeof (Ogre::HardwarePixelBufferSharedPtr );
-    sizeof (Ogre::MapIterator<class std::map<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> >,class Ogre::StaticGeometry::MaterialBucket *,struct std::less<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > >,class std::allocator<struct std::pair<class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > const ,class Ogre::StaticGeometry::MaterialBucket *> > > > );   
-    sizeof (Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::OverlayContainer*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::OverlayContainer*> > > > );
-    sizeof (Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::ParticleEmitterFactory*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::ParticleEmitterFactory*> > > > );
-    sizeof (Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::ParticleSystemRendererFactory*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::ParticleSystemRendererFactory*> > > > );
-    sizeof (Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::SceneManager*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::SceneManager*> > > > );     
-    sizeof (Ogre::MapIterator<std::map<std::string, Ogre::Animation*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::Animation*> > > >);
-    sizeof (Ogre::MapIterator<std::map<std::string, Ogre::Camera*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::Camera*> > > >);
-    sizeof (Ogre::MapIterator<std::map<std::string, Ogre::MovableObject*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > > );
-    sizeof (Ogre::MapIterator<std::map<std::string, Ogre::OverlayElement*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::OverlayElement*> > > >);
-    sizeof (Ogre::MapIterator<std::map<std::string, Ogre::ParticleSystem*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::ParticleSystem*> > > >);
-    sizeof (Ogre::MapIterator<std::map<std::string, Ogre::RenderTarget*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::RenderTarget*> > > >);
-    sizeof (Ogre::MapIterator<std::map<std::string, Ogre::ResourceManager*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::ResourceManager*> > > >);
-    sizeof (Ogre::MapIterator<std::map<std::string, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >*, std::less<std::string>, std::allocator<std::pair<std::string const, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >*> > > > );
-    sizeof (Ogre::MapIterator<std::map<unsigned char, Ogre::RenderQueueGroup*, std::less<unsigned char>, std::allocator<std::pair<const unsigned char, Ogre::RenderQueueGroup*> > > > );
-    sizeof (Ogre::MapIterator<std::map<unsigned int, Ogre::StaticGeometry::Region*, std::less<unsigned int>, std::allocator<std::pair<const unsigned int, Ogre::StaticGeometry::Region*> > > > ) ;
-    sizeof (Ogre::MapIterator<std::map<unsigned int, Ogre::Vector3, std::less<unsigned int>, std::allocator<std::pair<const unsigned int, Ogre::Vector3> > > > );
-    sizeof (Ogre::MapIterator<std::map<unsigned long, Ogre::SharedPtr<Ogre::Resource>, std::less<unsigned long>, std::allocator<std::pair<unsigned long const, Ogre::SharedPtr<Ogre::Resource> > > > >);
-    sizeof (Ogre::MapIterator<std::map<unsigned short, Ogre::RenderPriorityGroup*, std::less<unsigned short>, std::allocator<std::pair<unsigned short const, Ogre::RenderPriorityGroup*> > > >);
-    sizeof (Ogre::MapIterator<std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > > > );
-    sizeof (Ogre::MapIterator<std::multimap<unsigned int, Ogre::VertexBoneAssignment_s, std::less<unsigned int>, std::allocator<std::pair<const unsigned int, Ogre::VertexBoneAssignment_s> > > > );
-    sizeof (Ogre::MapIterator<std::multimap<unsigned, Ogre::VertexBoneAssignment_s, std::less<unsigned>, std::allocator<std::pair<unsigned const, Ogre::VertexBoneAssignment_s> > > > );
-    sizeof (Ogre::MapIterator<stdext::hash_map<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > > );
-    sizeof (Ogre::MapIterator<stdext::hash_map<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > >  );
-    sizeof (Ogre::MapIterator<std::multimap<unsigned, Ogre::VertexBoneAssignment_s, std::less<unsigned>, std::allocator<std::pair<unsigned const, Ogre::VertexBoneAssignment_s> > > >  );
-    sizeof (Ogre::MaterialPtr );
-    sizeof (Ogre::MaterialPtr );
-    sizeof (Ogre::MeshPtr );
+    // sizeof (ArchiveFactory );  // AJM this doesn't expose well :)
+    sizeof (CompositorInstance::RenderSystemOperation );
+    sizeof (ConstMapIterator<std::map<std::string, AnimationState*> >);
+    sizeof (ConstMapIterator<std::map<std::string, MovableObjectFactory*> >);
+    sizeof (ConstMapIterator<stdext::hash_map<std::string, MovableObject*> >);
+    sizeof (ConstMapIterator<std::map<unsigned int, Vector3> >);
+    sizeof (ConstVectorIterator<std::list<AnimationState*> >);
+    sizeof (ConstVectorIterator<std::vector<const SceneManagerMetaData*> >);
+    sizeof (ConstVectorIterator<std::vector<float> >);
+    sizeof (ConstVectorIterator<std::vector<GpuProgramParameters::AutoConstantEntry> >);
+    sizeof (ConstVectorIterator<std::vector<GpuProgramParameters::IntConstantEntry> >);
+    sizeof (ConstVectorIterator<std::vector<GpuProgramParameters::RealConstantEntry> >);
+    sizeof (ConstVectorIterator<std::vector<LinkedSkeletonAnimationSource> >);
+    sizeof (ConstVectorIterator<std::vector<Node*> >);
+    sizeof (ConstVectorIterator<std::vector<Pose*> >);
+    sizeof (ConstVectorIterator<std::vector<ShadowTextureConfig> >);
+    sizeof (ConstVectorIterator<std::vector<TextureUnitState*> >);
+    sizeof (ConstVectorIterator<std::vector<VertexPoseKeyFrame::PoseRef> >);
+    sizeof (DataStream );
+    sizeof (DataStreamPtr );
+    sizeof (FileInfo );
+    sizeof (GpuProgramParameters::AutoConstantEntry );
+    sizeof (HardwareIndexBuffer );
+    sizeof (HardwareIndexBufferSharedPtr );  
+    sizeof (HardwarePixelBufferSharedPtr );
+    //???sizeof (MapIterator<std::map<class std::basic_string<char,struct std::char_traits<char>,class  );   
+    sizeof (MapIterator<std::map<std::string, OverlayContainer*> >);
+    sizeof (MapIterator<std::map<std::string, ParticleEmitterFactory*> >);
+    sizeof (MapIterator<std::map<std::string, ParticleSystemRendererFactory*> >);
+    sizeof (MapIterator<std::map<std::string, SceneManager*> >);     
+    sizeof (MapIterator<std::map<std::string, Animation*> >);
+    sizeof (MapIterator<std::map<std::string, Camera*> >);
+    sizeof (MapIterator<std::map<std::string, MovableObject*> >);
+    sizeof (MapIterator<std::map<std::string, OverlayElement*> >);
+    sizeof (MapIterator<std::map<std::string, ParticleSystem*> >);
+    sizeof (MapIterator<std::map<std::string, RenderTarget*> >);
+    sizeof (MapIterator<std::map<std::string, ResourceManager*> >);
+    sizeof (MapIterator<std::map<std::string, std::multimap<std::string, std::string> > >);
+    sizeof (MapIterator<std::map<unsigned char, RenderQueueGroup*> >);
+    sizeof (MapIterator<std::map<unsigned int, StaticGeometry::Region*> >);
+    sizeof (MapIterator<std::map<unsigned int, Vector3> >);
+    sizeof (MapIterator<std::map<unsigned long, SharedPtr<Resource> > >);
+    sizeof (MapIterator<std::map<unsigned short, RenderPriorityGroup*> >);
+    sizeof (MapIterator<std::multimap<std::string, std::string> >);
+    sizeof (MapIterator<std::multimap<unsigned int, VertexBoneAssignment_s> >);
+    sizeof (MapIterator<std::multimap<unsigned, VertexBoneAssignment_s> >);
+    sizeof (MapIterator<stdext::hash_map<std::string, MovableObject*> >);
+    sizeof (MapIterator<stdext::hash_map<std::string, MovableObject*> >);
+    sizeof (MapIterator<std::multimap<unsigned, VertexBoneAssignment_s> >);
+    sizeof (MapIterator<std::map<std::string, Ogre::StaticGeometry::MaterialBucket* > >);
+    sizeof (MaterialPtr );
+    sizeof (MaterialPtr );
+    sizeof (MeshPtr );
     
-    sizeof (Ogre::OverlayElementFactory );
-    sizeof (Ogre::ParticleAffectorFactory );
-    sizeof (Ogre::ParticleEmitterFactory );
-    sizeof (Ogre::ParticleSystemRendererFactory );
-    sizeof (Ogre::PatchMeshPtr );
-//    sizeof (Ogre::PositionTarget  );
-    sizeof (Ogre::SharedPtr<Ogre::ControllerValue<float> > );
-    sizeof (Ogre::SharedPtr<Ogre::DataStream> );
-    sizeof (Ogre::SharedPtr<std::vector<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >  );
-    sizeof (Ogre::SharedPtr<std::vector<std::string, std::allocator<std::string> > > );
-    sizeof (Ogre::SharedPtr<std::vector<std::string, std::allocator<std::string> > > );
-    sizeof (Ogre::SharedPtr<std::vector<Ogre::FileInfo, std::allocator<Ogre::FileInfo> > >  );
-    sizeof (Ogre::SharedPtr<std::list<Ogre::SharedPtr<Ogre::DataStream>, std::allocator<Ogre::SharedPtr<Ogre::DataStream> > > >  );
-    sizeof (Ogre::Singleton<Ogre::ArchiveManager> );
-    sizeof (Ogre::StringVector );
-    sizeof (Ogre::StringVectorPtr );
-    sizeof (Ogre::TexturePtr );
-    sizeof (Ogre::VectorIterator<class std::vector<class Ogre::StaticGeometry::LODBucket *,class std::allocator<class Ogre::StaticGeometry::LODBucket *> > > );
-    sizeof (Ogre::VectorIterator<std::vector<Ogre::Bone*, std::allocator<Ogre::Bone*> > > );
-    sizeof (Ogre::VectorIterator<std::vector<Ogre::CompositionPass*, std::allocator<Ogre::CompositionPass*> > > );
-    sizeof (Ogre::VectorIterator<std::vector<Ogre::CompositionTechnique*, std::allocator<Ogre::CompositionTechnique*> > > );
-    sizeof (Ogre::VectorIterator<std::vector<Ogre::CompositionTechnique::TextureDefinition*, std::allocator<Ogre::CompositionTechnique::TextureDefinition*> > > );
-    sizeof (Ogre::VectorIterator<std::vector<Ogre::Pose*, std::allocator<Ogre::Pose*> > > );
-    sizeof (Ogre::VectorIterator<std::vector<Ogre::ShadowRenderable*, std::allocator<Ogre::ShadowRenderable*> > > );
-    sizeof (Ogre::VectorIterator<std::vector<Ogre::StaticGeometry::GeometryBucket*, std::allocator<Ogre::StaticGeometry::GeometryBucket*> > > );
-    sizeof (Ogre::VectorIterator<std::vector<Ogre::Technique*, std::allocator<Ogre::Technique*> > > );
-    sizeof (Ogre::VectorIterator<std::vector<Ogre::VertexPoseKeyFrame::PoseRef, std::allocator<Ogre::VertexPoseKeyFrame::PoseRef> > > );
-    sizeof (Ogre::VertexBoneAssignment_s );
-
-    
-    
-
-    
-        sizeof (RadixSort<std::list<Ogre::Billboard*, std::allocator<Ogre::Billboard*> >,Ogre::Billboard*,float>);
-    sizeof (RadixSort<std::list<Ogre::Particle*, std::allocator<Ogre::Particle*> >,Ogre::Particle*,float>);
-    sizeof (RadixSort<std::vector<Ogre::RenderablePass, std::allocator<Ogre::RenderablePass> >,Ogre::RenderablePass,float> );
-    sizeof (RadixSort<std::vector<Ogre::RenderablePass, std::allocator<Ogre::RenderablePass> >,Ogre::RenderablePass,unsigned int> );
+    sizeof (OverlayElementFactory );
+    sizeof (ParticleAffectorFactory );
+    sizeof (ParticleEmitterFactory );
+    sizeof (ParticleSystemRendererFactory );
+    sizeof (PatchMeshPtr );
+//    sizeof (PositionTarget  );
+    sizeof (SharedPtr<ControllerValue<float> > );
+    sizeof (SharedPtr<DataStream> );
+    sizeof (SharedPtr<std::vector<std::string> >);
+    sizeof (SharedPtr<std::vector<std::string> >);
+    sizeof (SharedPtr<std::vector<std::string> >);
+    sizeof (SharedPtr<std::vector<FileInfo> >);
+    sizeof (SharedPtr<std::list<SharedPtr<DataStream> > >);
+    sizeof (Singleton<ArchiveManager> );
+    sizeof (StringVector );
+    sizeof (StringVectorPtr );
+    sizeof (TexturePtr );
+    sizeof (VectorIterator<std::vector<StaticGeometry::LODBucket *> >);
+    sizeof (VectorIterator<std::vector<Bone*> >);
+    sizeof (VectorIterator<std::vector<CompositionPass*> >);
+    sizeof (VectorIterator<std::vector<CompositionTechnique*> >);
+    sizeof (VectorIterator<std::vector<CompositionTechnique::TextureDefinition*> >);
+    sizeof (VectorIterator<std::vector<Pose*> >);
+    sizeof (VectorIterator<std::vector<ShadowRenderable*> >);
+    sizeof (VectorIterator<std::vector<StaticGeometry::GeometryBucket*> >);
+    sizeof (VectorIterator<std::vector<Technique*> >);
+    sizeof (VectorIterator<std::vector<VertexPoseKeyFrame::PoseRef> >);
+    sizeof (VertexBoneAssignment_s );   
+    sizeof (RadixSort<std::list<Billboard*>, Ogre::Billboard*, float >);
+    sizeof (RadixSort<std::list<Particle*>, Ogre::Particle*, float >);
+    sizeof (RadixSort<std::vector<RenderablePass>, Ogre::RenderablePass, float >);
+    sizeof (RadixSort<std::vector<RenderablePass>, Ogre::RenderablePass, unsigned int >);
     sizeof (SharedPtr< Controller<float> >);
     sizeof (SharedPtr< std::vector<String> > );
     sizeof (SharedPtr< WaveformControllerFunction > );
@@ -206,93 +186,75 @@ inline void instantiate(){
     sizeof (SharedPtr<ControllerFunctionRealPtr> );
     sizeof (SharedPtr<ControllerValueRealPtr> );
     sizeof (SharedPtr<DataStream> );
-    sizeof (SharedPtr<Ogre::HardwareIndexBuffer> );
-    sizeof (SharedPtr<Ogre::MemoryDataStream>);
-    sizeof (SharedPtr<Ogre::Resource> );
-    sizeof (SharedPtr<Ogre::StringVector> );
-    sizeof (SharedPtr<Ogre::StringVectorPtr> );
-    sizeof (SharedPtr<std::vector<std::string, std::allocator<std::string> > >);
-    sizeof (Singleton<Ogre::ArchiveManager>);
-    sizeof (Singleton<Ogre::CompositorManager>);
-    sizeof (Singleton<Ogre::ControllerManager>);
-    sizeof (Singleton<Ogre::GpuProgramManager>);
-    sizeof (Singleton<Ogre::HardwareBufferManager>);
-    sizeof (Singleton<Ogre::HighLevelGpuProgramManager>);
-    sizeof (Singleton<Ogre::LogManager>);
-    sizeof (Singleton<Ogre::MaterialManager>);
-    sizeof (Singleton<Ogre::MeshManager>);
-    sizeof (Singleton<Ogre::OverlayManager>);
-    sizeof (Singleton<Ogre::ParticleSystemManager>);
-    sizeof (Singleton<Ogre::Profiler>);
-    sizeof (Singleton<Ogre::ResourceBackgroundQueue>);
-    sizeof (Singleton<Ogre::ResourceGroupManager>);
-    sizeof (Singleton<Ogre::Root>);
-    sizeof (Singleton<Ogre::SceneManagerEnumerator>);
-    sizeof (Singleton<Ogre::ShadowTextureManager>);
-    sizeof (Singleton<Ogre::SkeletonManager>);
-    sizeof (Singleton<Ogre::TextureManager>);
-    sizeof (std::_Tree<std::_Tmap_traits<std::string, Ogre::Animation*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::Animation*> >, false> >::iterator );
-    sizeof (std::_Tree<std::_Tmap_traits<std::string, Ogre::AnimationState*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::AnimationState*> >, false> >::const_iterator );
-    sizeof (std::_Tree<std::_Tmap_traits<std::string, Ogre::OverlayElement*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::OverlayElement*> >, false> >::iterator );
-    sizeof (std::_Tree<std::_Tmap_traits<std::string, Ogre::ParticleSystem*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::ParticleSystem*> >, false> >::iterator );
-    sizeof (std::_Tree<std::_Tmap_traits<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> >, false> >::const_iterator );
-    sizeof (std::_Tree<std::_Tmap_traits<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> >, true> >::iterator );
-    sizeof (std::_Tree<std::_Tmap_traits<unsigned long, Ogre::SharedPtr<Ogre::Resource>, std::less<unsigned long>, std::allocator<std::pair<unsigned long const, Ogre::SharedPtr<Ogre::Resource> > >, false> >::iterator);
-    sizeof (std::_Tree<std::_Tmap_traits<unsigned short, Ogre::RenderPriorityGroup*, std::less<unsigned short>, std::allocator<std::pair<unsigned short const, Ogre::RenderPriorityGroup*> >, false> >::iterator );
-    sizeof (std::_Tree<std::_Tmap_traits<unsigned short, Ogre::VertexAnimationTrack*, std::less<unsigned short>, std::allocator<std::pair<unsigned short const, Ogre::VertexAnimationTrack*> >, false> >::const_iterator );
-    sizeof (std::list<Ogre::AnimationState*, std::allocator<Ogre::AnimationState*> > );
-    sizeof (std::list<Ogre::AnimationState*, std::allocator<Ogre::AnimationState*> >);
-    sizeof (std::list<Ogre::AnimationState*, std::allocator<Ogre::AnimationState*> >::const_iterator );
-    sizeof (std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::AnimationState*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::AnimationState*> > > );
-    sizeof (std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > );
-    sizeof (std::map<std::string, Ogre::MovableObject*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > >);
+    sizeof (SharedPtr<HardwareIndexBuffer> );
+    sizeof (SharedPtr<MemoryDataStream>);
+    sizeof (SharedPtr<Resource> );
+    sizeof (SharedPtr<StringVector> );
+    sizeof (SharedPtr<StringVectorPtr> );
+    sizeof (SharedPtr<std::vector<std::string> >);
+    sizeof (Singleton<ArchiveManager>);
+    sizeof (Singleton<CompositorManager>);
+    sizeof (Singleton<ControllerManager>);
+    sizeof (Singleton<GpuProgramManager>);
+    sizeof (Singleton<HardwareBufferManager>);
+    sizeof (Singleton<HighLevelGpuProgramManager>);
+    sizeof (Singleton<LogManager>);
+    sizeof (Singleton<MaterialManager>);
+    sizeof (Singleton<MeshManager>);
+    sizeof (Singleton<OverlayManager>);
+    sizeof (Singleton<ParticleSystemManager>);
+    sizeof (Singleton<Profiler>);
+    sizeof (Singleton<ResourceBackgroundQueue>);
+    sizeof (Singleton<ResourceGroupManager>);
+    sizeof (Singleton<Root>);
+    sizeof (Singleton<SceneManagerEnumerator>);
+    sizeof (Singleton<ShadowTextureManager>);
+    sizeof (Singleton<SkeletonManager>);
+    sizeof (Singleton<TextureManager>);
+    sizeof (std::list<AnimationState*>);
+    sizeof (std::list<AnimationState*>::iterator);
+    sizeof (std::list<AnimationState*>::const_iterator );
+    sizeof (std::map<std::string, AnimationState*>);
+    sizeof (std::map<std::string, std::string > );
+    sizeof (std::map<std::string, MovableObject*> );
     sizeof (std::map<String, String> );    // NameValuePairList
-    sizeof (std::map<unsigned int,class Ogre::StaticGeometry::Region *,struct std::less<unsigned int>, class std::allocator<struct std::pair<unsigned int const ,class Ogre::StaticGeometry::Region *> > >);
-    sizeof (std::map<unsigned, Ogre::Vector3, std::less<unsigned>, std::allocator<std::pair<unsigned const, Ogre::Vector3> > >);
-    sizeof (std::multimap<Ogre::RenderWindow*,Ogre::WindowEventListener*,std::less<Ogre::RenderWindow*>,std::allocator<std::pair<Ogre::RenderWindow* const, Ogre::WindowEventListener*> > >);
-    sizeof (std::multimap<Ogre::Vector3,Ogre::Vector3,std::less<Ogre::Vector3>,std::allocator<std::pair<const Ogre::Vector3, Ogre::Vector3> > > );
+    sizeof (std::map<unsigned int, StaticGeometry::Region *> );
+    sizeof (std::map<unsigned, Vector3>);
+    sizeof (std::multimap<RenderWindow*,WindowEventListener*>);
+    sizeof (std::multimap<Vector3,Vector3>);
     sizeof (std::multimap<RenderWindow*, WindowEventListener*> ) ; // WindowEventListeners;
-    sizeof (std::multimap<std::basic_string<char, std::char_traits<char>, std::allocator<char> >,std::basic_string<char, std::char_traits<char>, std::allocator<char> >,std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >,std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > >);
+    sizeof (std::multimap<std::string,std::string>);
     sizeof (std::pair< std::wstring, std::wstring > );
     sizeof (std::pair<bool, float> );
     sizeof (std::pair<bool, float> );
     sizeof (std::pair<unsigned int,unsigned int> );
     sizeof (std::pair<unsigned, unsigned> );
     
-    sizeof (std::set<Ogre::Entity*,std::less<Ogre::Entity*>,std::allocator<Ogre::Entity*> > );
-    sizeof (std::vector<Ogre::LinkedSkeletonAnimationSource, std::allocator<Ogre::LinkedSkeletonAnimationSource> >::const_iterator );
-    sizeof (std::vector<Ogre::RenderWindow*,std::allocator<Ogre::RenderWindow*> > );
-    sizeof (std::vector<Ogre::ShadowRenderable*, std::allocator<Ogre::ShadowRenderable*> >::iterator );
-    sizeof (std::vector<Ogre::ShadowTextureConfig, std::allocator<Ogre::ShadowTextureConfig> >::const_iterator );
-    sizeof (std::vector<Ogre::Vector4, std::allocator< Ogre::Vector4> > );
-    sizeof (std::vector<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::allocator<std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >  );
-    sizeof (std::vector<std::string, std::allocator<std::string> >);
+    sizeof (std::set<Entity*>);
+    sizeof (std::vector<LinkedSkeletonAnimationSource>::const_iterator );
+    sizeof (std::vector<RenderWindow*>);
+    sizeof (std::vector<ShadowRenderable*>::iterator );
+    sizeof (std::vector<ShadowTextureConfig>::const_iterator );
+    sizeof (std::vector<Vector4>);
+    sizeof (std::vector<std::string>);
     sizeof (std::vector<String> );
-    sizeof (stdext::hash_map<std::string, unsigned short, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, unsigned short> > > );
+    sizeof (stdext::hash_map<std::string, unsigned short>);
     sizeof (TRect<long int>);
-    sizeof (VectorIterator<std::vector<Ogre::Bone*, std::allocator<Ogre::Bone*> > >);
-    sizeof (VectorIterator<std::vector<Ogre::CompositionTargetPass*, std::allocator<Ogre::CompositionTargetPass*> > >);
-    sizeof (VectorIterator<std::vector<Ogre::CompositionTargetPass*, std::allocator<Ogre::CompositionTargetPass*> > >);
-    sizeof (VectorIterator<std::vector<Ogre::CompositorInstance*, std::allocator<Ogre::CompositorInstance*> > >);
-    sizeof (VectorIterator<std::vector<Ogre::CompositorInstance*, std::allocator<Ogre::CompositorInstance*> > >);
-    sizeof (VectorIterator<std::vector<Ogre::IlluminationPass*, std::allocator<Ogre::IlluminationPass*> > >);
-    sizeof (VectorIterator<std::vector<Ogre::IlluminationPass*, std::allocator<Ogre::IlluminationPass*> > >);
-    sizeof (VectorIterator<std::vector<Ogre::Pass*, std::allocator<Ogre::Pass*> > >);
-    sizeof (VectorIterator<std::vector<Ogre::Pass*, std::allocator<Ogre::Pass*> > >);
-    sizeof (VectorIterator<std::vector<Ogre::RenderQueueInvocation*, std::allocator<Ogre::RenderQueueInvocation*> > >);
-    sizeof (VectorIterator<std::vector<Ogre::Technique*, std::allocator<Ogre::Technique*> > >);
-    sizeof (VectorIterator<std::vector<Ogre::TextureUnitState*, std::allocator<Ogre::TextureUnitState*> > >);
-    sizeof (VectorIterator<std::vector<Ogre::TextureUnitState*, std::allocator<Ogre::TextureUnitState*> > >);
-    sizeof (VectorIterator<std::vector<Ogre::VertexPoseKeyFrame::PoseRef, std::allocator<Ogre::VertexPoseKeyFrame::PoseRef> > >);
+    sizeof (VectorIterator<std::vector<Bone*> >);
+    sizeof (VectorIterator<std::vector<CompositionTargetPass*> >);
+    sizeof (VectorIterator<std::vector<CompositorInstance*> >);
+    sizeof (VectorIterator<std::vector<IlluminationPass*> >);
+    sizeof (VectorIterator<std::vector<Pass*> >);
+    sizeof (VectorIterator<std::vector<RenderQueueInvocation*> >);
+    sizeof (VectorIterator<std::vector<Technique*> >);
+    sizeof (VectorIterator<std::vector<TextureUnitState*> >);
+    sizeof (VectorIterator<std::vector<VertexPoseKeyFrame::PoseRef> >);
      
-    sizeof (std::pair<std::list<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObject*>, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObject*> > >::const_iterator,std::list<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObject*>, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObject*> > >::const_iterator>);
-    sizeof (std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >,Ogre::MovableObject*>);
-    sizeof (std::pair<std::list<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObject*>, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObject*> > >::iterator,std::list<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObject*>, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObject*> > >::iterator>);
-    sizeof (std::pair<std::list<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObject*>, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObject*> > >::iterator,bool>);
-    sizeof (stdext::_Hmap_traits<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> >, false>::value_compare);
-    sizeof (stdext::_Hmap_traits<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> >, false>);
-    sizeof (stdext::_Hash<stdext::_Hmap_traits<std::string, unsigned short, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, unsigned short> >, false> >);
-   
+    sizeof (std::pair<std::list<std::pair<const std::string, Ogre::MovableObject*> >::iterator,std::list<std::pair<const std::string, Ogre::MovableObject*> >::iterator>);
+    sizeof (std::pair<std::list<std::pair<const std::string, Ogre::MovableObject*> >::const_iterator,std::list<std::pair<const std::string, Ogre::MovableObject*> >::const_iterator>);
+    
+    sizeof (std::pair<const std::string,Ogre::MovableObject*>);
+    sizeof (std::pair<std::list<std::pair<const std::string, Ogre::MovableObject*> >::iterator,bool>);
 
 }
 
