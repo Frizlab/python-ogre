@@ -17,6 +17,7 @@ class doc_extractor:
         self.startswith = startswith
         
     def __call__(self, declaration):
+        #print "doc_extractor called with:", declaration
         if not declaration.decl_string.startswith(self.startswith):
             return ""
         
@@ -25,6 +26,7 @@ class doc_extractor:
                 self.file_name = declaration.location.file_name
                 self.source = open(declaration.location.file_name).readlines()
         except:
+            #print "DOC without location:", declaration
             return ""
             
         find_block_end = False
@@ -44,7 +46,9 @@ class doc_extractor:
             line = self.source[lcount]
             if line.lstrip()[:3] == '///':
                 str = clear_str(line)
-                return '"' + str[:-2] + '"' # remove the \n from the single line comment
+                retvalue = '"' + str[:-2] + '"' # remove the \n from the single line comment
+                #print "Extracted Doc String (short) ", retvalue
+                return retvalue
                 
         ## if that didn't work we'll look for a block of comments
         
@@ -76,7 +80,21 @@ class doc_extractor:
         
         if doc_lines:
             #print "Extracted Doc String for:",  declaration, "[", len(doc_lines),"]"
-            return '"' + "\\\n".join(doc_lines) + '"'
+            ## we need to cope with strings longer than 2048 for MSVC
+            ret = '"' + "\\\n".join(doc_lines) + '"'
+            if len ( ret ) < 1700:  ## just to be safe and adjust for line end chars etc..
+                return ret  ## OK we don't need to do anything special...
+            ret =  '"'
+            length = 1
+            for line in doc_lines:
+                ret = ret + line
+                length += len ( line )
+                if length < 1500 :  # again lets be conservative
+                    ret = ret + "\\\n"
+                else :
+                    ret = ret + '"' + "\n" + '"'    # we close the original 'quote', move to a new line and open a new quote
+                    length = 1
+            return ret + '"'     
         #print "Doc String not found for", declaration  
         return ""
     
@@ -99,7 +117,7 @@ def clear_str(str):
     clean = lambda str, sym, change2 = '': str.replace(sym, change2)
 
     str = reduce(clean, [str, '/', '*', '!', "\brief", "\fn",\
-     "@brief", "@fn", "@ref", "\ref"])
+     "@brief", "@fn", "@ref", "\ref", '"']) ## somtimes there are '"' in the doc strings...
      
     str = clean(str, "@param", "Param: ")
     str = clean(str, "\param", "Param: ")
