@@ -23,6 +23,8 @@ from pyplusplus import decl_wrappers
 from pyplusplus import function_transformers as ft
 from pyplusplus.module_builder import call_policies
 
+import common_utils.extract_documentation as exdoc
+
 import ogre_properties
 
 def filter_declarations( mb ):
@@ -156,7 +158,6 @@ def filter_declarations( mb ):
     ## now specifically remove functions that we have wrapped in hand_made_wrappers.py
     ogre_ns.class_( "RenderTarget" ).member_functions( 'getCustomAttribute' ).exclude()
     ogre_ns.class_( "Mesh" ).member_functions( 'suggestTangentVectorBuildParams' ).exclude()
-    ##ogre_ns.class_( "MeshManager" ).member_functions( 'createBezierPatch' ).exclude()
 
     ## Expose functions that were not exposed but that other functions rely on    
     ogre_ns.class_("OverlayManager").member_functions('addOverlayElementFactory').include()
@@ -288,6 +289,14 @@ def add_transformations ( mb ):
     ns.mem_fun('::Ogre::Font::getGlyphTexCoords') \
         .add_transformation(ft.output(1), ft.output(2),ft.output(3), ft.output(4))
 
+def my_doc_extractor( decl ):
+    retstr = ""
+    if decl.decl_string.startswith("::Ogre") :
+        try:
+            retstr = decl.location.file_name + str( decl.location.line )   
+        except:
+            retstr = "PROBLEM"    
+    return retstr 
 
 #
 # the 'main'function
@@ -323,7 +332,8 @@ def generate_code():
                                           , working_directory=environment.root_dir
                                           , include_paths=environment.ogre.include_dirs
                                           , define_symbols=defined_symbols
-                                          , indexing_suite_version=2 )
+                                          , indexing_suite_version=2
+                                           )
     #
     # We filter (both include and exclude) specific classes and functions that we want to wrap
     # 
@@ -396,11 +406,13 @@ def generate_code():
 #     
 #     cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
 #     sys.exit()
-
+    extractor = exdoc.doc_extractor("")
+    
     for cls in ogre_ns.classes():
         cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
         ## because we want backwards pyogre compatibility lets add leading lowercase properties
         common_utils.add_LeadingLowerProperties ( cls )
+        common_utils.add_PropertyDoc ( cls )
 
 
 ##    common_utils.add_properties( ogre_ns.classes(), True )
@@ -410,7 +422,8 @@ def generate_code():
  
 #     
 #     #Creating code creator. After this step you should not modify/customize declarations.
-    mb.build_code_creator (module_name='_ogre_')
+    ##extractor = exdoc.doc_extractor("::Ogre::SceneManager") # you can filter the class for testing
+    mb.build_code_creator (module_name='_ogre_' , doc_extractor= extractor)
     for inc in environment.ogre.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )
     mb.code_creator.user_defined_directories.append( environment.ogre.generated_dir )

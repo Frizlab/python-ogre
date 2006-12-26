@@ -101,5 +101,36 @@ def add_LeadingLowerProperties ( cls ):
         if name not in existing_names:  # lets make sure it's different
             existing_names.append ( name )
             new_props.append( property_t( name, prop.fget, prop.fset, prop.doc, prop.is_static ) )
-            print "Extending Properties for ", cls, "with", name, "(", prop.name,")"
     cls.properties.extend( new_props )
+    
+def extract_func_name ( name ):
+    """ extract the function name from a fully qualified description
+    """
+    end = name.index('(')  # position of open brace, function call is before that
+    start = -1
+    for x in range ( end, 0, -1 ):   # step back until we find the ':'
+        if name[x] == ':' :
+            start = x + 1
+            break
+    ## so now return the function call
+    return name[start:end]
+ 
+def add_PropertyDoc ( cls ):
+    """ Go through the list of properties and modify any blank doc strings with something useful
+    """
+    for prop in cls.properties:
+        doc = "Python-Ogre Property: " + prop.name + "\\n"
+        if prop.fget:
+            getter = extract_func_name ( str(prop.fget) )
+        if prop.fset:
+            setter = extract_func_name ( str(prop.fset) )
+        if prop.fget and prop.fset :
+            line2 = "  Getter and Setter property wrapping '"+ getter + "' and '" + setter + "'\\n"      
+        elif prop.fget and not prop.fset:
+            line2 = "  Getter ONLY property wrapping '" + getter +"'\\n"
+        else :
+            line2 = "  Setter ONLY property wrapping '" + setter + "'\\n"
+        prop._doc =   '"' + doc + "\\\n" + line2 + '"'
+        
+        
+       
