@@ -5,11 +5,11 @@ from pygccxml import declarations
 
 OGRE_SP_HELD_TYPE_TMPL = \
 """
-namespace boost{ namespace python{
-
 %(class_name)s* get_pointer( %(class_ptr_name)s const& p ){
     return p.get();
 }
+
+namespace boost{ namespace python{
 
 template <>
 struct pointee< %(class_ptr_name)s >{
@@ -34,12 +34,6 @@ class exposer_t:
     def __init__( self, mb ):
         self.ogre_ns = mb.namespace ('Ogre')
         self.visited_classes = set()
-        #For this classes wrapper does not exist
-        self.special_cases = ['PatchMesh', 'Controller<float>', 'Compositor'
-                               , 'vector<std::string, std::allocator<std::string> >'
-                               , 'vector<Ogre::FileInfo,std::allocator<Ogre::FileInfo> >'
-                               , 'list<Ogre::SharedPtr<Ogre::DataStream>,std::allocator<Ogre::SharedPtr<Ogre::DataStream> > >'
-                              ]
 
     def get_pointee( self, sp_instantiation ):
         #sp_instantiation - reference to SharedPtr<XXX>
@@ -73,8 +67,7 @@ class exposer_t:
                 REGISTER_SP_TO_PYTHON % { 'sp_inst_class_name' : sp_derived.decl_string }
                 , works_on_instance=False )
         
-        if pointee.name not in self.special_cases:
-            print "checking:", pointee.name
+        if declarations.is_class( pointee ) and pointee.is_wrapper_needed():
             pointee.held_type = '::Ogre::SharedPtr< %s >' % pointee.wrapper_alias
             pointee.add_registration_code(
                 REGISTER_SPTR_CONVERSION % { 'derived' : pointee.held_type
