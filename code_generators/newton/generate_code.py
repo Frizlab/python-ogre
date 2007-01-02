@@ -82,7 +82,7 @@ def generate_code():
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
-                                          , include_paths=environment.newton.include_dir
+                                          , include_paths=environment.newton.include_dirs
                                           , define_symbols=['newton_NONCLIENT_BUILD','_NEWTON_USE_LIB', '_CONSOLE', 'NDEBUG']
 #                                          , start_with_declarations=['newton']
                                           , indexing_suite_version=2 )
@@ -107,7 +107,7 @@ def generate_code():
                                       
     #Creating code creator. After this step you should not modify/customize declarations.
     mb.build_code_creator (module_name='_newton_')
-    for incs in environment.newton.include_dir:
+    for incs in environment.newton.include_dirs:
         mb.code_creator.user_defined_directories.append( incs )
     mb.code_creator.user_defined_directories.append( environment.newton.generated_dir )
     mb.code_creator.replace_included_headers( customization_data.header_files(environment.newton.version) )

@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
-#-------------------------------------------------------------------------------
-# TODO:
-# 1.    void* as a function argument - they are currently wrapped (and compile/load etc) due to latest CVS of boost.
-#       However probably don't actually work
-# 2.    Properties.py and calling 'properties.create' - commented out at the moment, not sure if it is really needed?
+#
+#
+# Python-Ogre code generation script for OgreNewt
+#
+#
 
 import os, sys, time
 
@@ -20,27 +20,28 @@ import environment
 import common_utils
 import customization_data
 import hand_made_wrappers
-
-from pyplusplus import module_builder
-from pyplusplus import module_creator
-from pyplusplus.module_builder import call_policies
-
 from pygccxml import parser
 from pygccxml import declarations
+from pyplusplus import messages
+from pyplusplus import module_builder
+from pyplusplus import decl_wrappers
 
+from pyplusplus import function_transformers as ft
+from pyplusplus.module_builder import call_policies
+
+import common_utils.extract_documentation as exdoc
 
 def filter_declarations( mb ):
     global_ns = mb.global_ns
     global_ns.exclude()
+    
     ogrenewt_ns = global_ns.namespace( 'BasicJoints' )
     ogrenewt_ns.include()
     ogrenewt_ns = global_ns.namespace( 'PrebuiltCustomJoints' )
     ogrenewt_ns.include()
     ogrenewt_ns = global_ns.namespace( 'CollisionPrimitives' )
     ogrenewt_ns.include()
-#     
-#     ogrenewt_ns = global_ns.namespace( 'OgreNewt' )
-#     
+    
     temp_ns = global_ns.namespace( 'Converters' )
     temp_ns.include()
     temp_ns = global_ns.namespace( 'CollisionTools' )
@@ -52,57 +53,34 @@ def filter_declarations( mb ):
     ogrenewt_ns = global_ns.namespace( 'OgreNewt' )
     ogrenewt_ns.include()
     
-    ## these need to be excluded due to callback functions - Have bene wrapped 
+    ## these need to be excluded due to callback functions - Have been wrapped 
     ogrenewt_ns.class_( "World" ).member_functions("setLeaveWorldCallback").exclude()
+    
     ogrenewt_ns.class_( "Body" ).member_functions("addBouyancyForce").exclude()
+    
     ogrenewt_ns.class_( "Body" ).member_functions("setAutoactiveCallback").exclude()
     ogrenewt_ns.class_( "Body" ).member_functions("setCustomForceAndTorqueCallback").exclude()
     ogrenewt_ns.class_( "Body" ).member_functions("setCustomTransformCallback").exclude()
     
-    ogrenewt_ns.class_( "Debugger" ).member_functions("getSingleton").exclude()
-    ogrenewt_ns.class_( "BodyIterator" ).member_functions("getSingleton").exclude()
-
     ## Replaced these with 'useful' functions in the handwrappers - take and return python objects
     ogrenewt_ns.class_( "Body" ).member_functions("setUserData").exclude()
     ogrenewt_ns.class_( "Joint" ).member_functions("setUserData").exclude()
     ogrenewt_ns.class_( "Body" ).member_functions("getUserData").exclude()
     ogrenewt_ns.class_( "Joint" ).member_functions("getUserData").exclude()
-
-    ## these ones take pointer to structs as arguments and update them inpalce
-    ## replaced in hand wrappers with 6 functions..
-    ogrenewt_ns.class_( "Body" ).member_functions("getPositionOrientation").exclude()
-    ogrenewt_ns.class_( "Body" ).member_functions("getMassMatrix").exclude()
-    ogrenewt_ns.class_( "Body" ).member_functions("getInvMass").exclude()
-    ogrenewt_ns.class_( "Body" ).member_functions("getFreezeThreshold").exclude()
-    ogrenewt_ns.class_( "ConvexCollision" ).member_functions("calculateInertialMatrix").exclude()
-    ogrenewt_ns.class_( "ContactCallback" ).member_functions("getContactPositionAndNormal").exclude()
-    ogrenewt_ns.class_( "ContactCallback" ).member_functions("getContactTangentDirections").exclude()
-    ogrenewt_ns.class_( "Vehicle" ).class_( "Tire" ).member_functions("getPositionOrientation").exclude()
-    ogrenewt_ns.class_( "CustomJoint" ).member_functions("pinAndDirToLocal").exclude()
-    ogrenewt_ns.class_( "CustomJoint" ).member_functions("localToGlobal").exclude()
-
-        
-#     ptr_to_fundamental_query \
-#         = lambda f: declarations.is_pointer( f.return_type ) \
-#                     and declarations.is_fundamental( declarations.remove_pointer( f.return_type ) )
-                    
-#     ogrenewt_ns.calldefs( ptr_to_fundamental_query ).exclude()
-
-### and we need the free functions - mainly fro
+     
+       
+    ### and we need the free functions 
     for func in ogrenewt_ns.free_functions ():
-        print "FREE Func:", func.name
+        ## print "FREE Func:", func.name
         func.include()
-#         if func.name[0]=='d':
-#             print "Including Function", func.name
-#             func.include()
-  
             
     ## Exclude protected and private that are not pure virtual
-#     query = ~declarations.access_type_matcher_t( 'public' ) \
-#             & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
-#     non_public_non_pure_virtual = ogrenewt_ns.calldefs( query )
-#     non_public_non_pure_virtual.exclude()
-    
+    query = declarations.access_type_matcher_t( 'protected' ) \
+            & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
+    non_public_non_pure_virtual = ogrenewt_ns.calldefs( query )
+    non_public_non_pure_virtual.exclude()
+
+    ## Some varibles that we really do need and aren't exposed by default..    
     cls = ogrenewt_ns.class_("ContactCallback")
     cls.variable('m_body0').include()
     cls.variable('m_body1').include()
@@ -111,13 +89,13 @@ def filter_declarations( mb ):
     
     
     
-def set_call_policies( mb ):
-    ogrenewt_ns = mb.global_ns.namespace( 'OgreNewt' )
-
+def set_call_policies_pointee( mb ):
     # Set the default policy to deal with pointer/reference return types to reference_existing object
     # as this is the ogrenewt Default.
-    mem_funs = ogrenewt_ns.calldefs ()
-    mem_funs.create_with_signature = True #Generated cogrenewt will not compile on
+    ## NOTE AJM 1/1/07 -- this function not used as change to ref_existing_object..
+    from pyplusplus import module_creator
+    mem_funs = mb.calldefs ()
+    mem_funs.create_with_signature = True 
     #MSVC 7.1 if function has throw modifier.
     resolver = module_creator.built_in_resolver_t()
     for mem_fun in mem_funs:
@@ -133,8 +111,50 @@ def set_call_policies( mb ):
 #                 = call_policies.return_value_policy( call_policies.reference_existing_object )
             mem_fun.call_policies \
                = call_policies.return_value_policy( '::boost::python::return_pointee_value' )
+               
+    ## now we fix a problem where the getSingleton policy isn't right               
+    mb.mem_funs( 'getSingleton' ).call_policies = call_policies.return_value_policy(
+                call_policies.reference_existing_object )
 
+                
+def set_call_policies( mb ):
+#
+    # Set the default policy to deal with pointer/reference return types to reference_existing object
+    # as this is the Ogrenewt Default.
+    mem_funs = mb.calldefs ()
+    mem_funs.create_with_signature = True #Generated code will not compile on
+    #MSVC 7.1 if function has throw modifier.
+    for mem_fun in mem_funs:
+        if mem_fun.call_policies:
+            continue
+        if declarations.is_pointer (mem_fun.return_type) or declarations.is_reference (mem_fun.return_type):
+            mem_fun.call_policies = call_policies.return_value_policy(
+                call_policies.reference_existing_object )
+                
+                               
+def add_transformations ( mb ):
+    ns = mb.global_ns.namespace ('OgreNewt')
+    
+    def create_output( size ):
+        return [ ft.output( i ) for i in range( size ) ]
+   
+    ns.mem_fun('::OgreNewt::Body::getPositionOrientation').add_transformation( *create_output(2) )
+    ns.mem_fun('::OgreNewt::Body::getMassMatrix').add_transformation( *create_output(2) )
+    ns.mem_fun('::OgreNewt::Body::getInvMass').add_transformation( *create_output(2) )
+    ns.mem_fun('::OgreNewt::Body::getFreezeThreshold').add_transformation( *create_output(2) )
+    ns.mem_fun('::OgreNewt::ConvexCollision::calculateInertialMatrix').add_transformation( *create_output(2) )
+    
+    ns.mem_fun('::OgreNewt::CustomJoint::pinAndDirToLocal') \
+        .add_transformation(ft.output('localOrient0'), ft.output('localPos0'), ft.output('localOrient1'), ft.output('localPos1') )
+    
+    ns.mem_fun('::OgreNewt::Vehicle::Tire::getPositionOrientation').add_transformation( *create_output(2) )
+    ns.mem_fun('::OgreNewt::ContactCallback::getContactPositionAndNormal').add_transformation( *create_output(2) )
+    ns.mem_fun('::OgreNewt::ContactCallback::getContactTangentDirections').add_transformation( *create_output(2) )
+   
+#     ns.mem_fun('::OgreNewt::CollisionRayCast').add_transformation( ft.output('retColID') )
+#     ns.mem_fun('::OgreNewt::CollisionCollideContinue').add_transformation( ft.output('retTimeOfImpact') )
 
+        
 def generate_ogrenewt():
     xml_cached_fc = parser.create_cached_source_fc(
                         os.path.join( environment.ogrenewt.root_dir, "python_ogrenewt.h" )
@@ -143,35 +163,50 @@ def generate_ogrenewt():
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
-                                          , include_paths=environment.ogrenewt.include_dir
+                                          , include_paths=environment.ogrenewt.include_dirs
                                           , define_symbols=['ogrenewt_NONCLIENT_BUILD']
                                           , indexing_suite_version=2 )
 
     filter_declarations (mb)
-
-#     query = lambda decl: isinstance( decl, ( declarations.class_t, declarations.class_declaration_t ) ) \
-#                          and decl.name.startswith( 'dx' )
-#     mb.global_ns.decls( query ).opaque = True                         
-       
 
     common_utils.set_declaration_aliases( mb.global_ns, customization_data.aliases(environment.ogrenewt.version) )
 
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
 
-    set_call_policies (mb)
+
+    #
+    # the manual stuff all done here !!!
+    #
     hand_made_wrappers.apply( mb )
-
-    ogrenewt_ns = mb.namespace ('OgreNewt')
-    common_utils.add_properties( ogrenewt_ns.classes() )
-
+    
+    #
+    # We need to tell boost how to handle calling (and returning from) certain functions
+    #
+    set_call_policies ( mb.global_ns.namespace ('OgreNewt') )
+    
+    # here we fixup functions that expect to modifiy their 'passed' variables  
+    #  
+    add_transformations ( mb )
+    
+    # 
+    # now add properties
+    #
+    for cls in mb.namespace ('OgreNewt').classes():
+        cls.add_properties(  )
+        common_utils.add_LeadingLowerProperties ( cls )
+        common_utils.add_PropertyDoc ( cls )
+    
     common_utils.add_constants( mb, { 'ogrenewt_version' :  '"%s"' % environment.ogrenewt.version
                                       , 'python_version' : '"%s"' % sys.version } )
-
-
-    #Creating cogrenewt creator. After this step you should not modify/customize declarations.
-    mb.build_code_creator (module_name='_ogrenewt_')
-    for incs in environment.ogrenewt.include_dir:
+    
+    # create the doc extractor we'll be using
+    extractor = exdoc.doc_extractor("")
+    #
+    #Creating the actual code. After this step you should not modify/customize declarations.
+    #
+    mb.build_code_creator (module_name='_ogrenewt_', doc_extractor= extractor)
+    for incs in environment.ogrenewt.include_dirs:
         mb.code_creator.user_defined_directories.append( incs )
     mb.code_creator.replace_included_headers( customization_data.header_files(environment.ogrenewt.version) )
 
@@ -183,14 +218,14 @@ def generate_ogrenewt():
         = os.path.join( environment.pyplusplus_install_dir
                         , 'pyplusplus_dev'
                         , 'pyplusplus'
-                        , 'code_repository'
-                        , 'return_pointee_value.hpp' )
+                        , 'code_repository' )
+                        ## , 'return_pointee_value.hpp' ) ## Removed AJM 1/1/07
 
-    return_pointee_value_target_path \
-        = os.path.join( environment.ogrenewt.generated_dir, 'return_pointee_value.hpp' )
+#     return_pointee_value_target_path \
+#         = os.path.join( environment.ogrenewt.generated_dir, 'return_pointee_value.hpp' )
 
-    if not os.path.exists( return_pointee_value_target_path ):
-        shutil.copy( return_pointee_value_source_path, environment.ogrenewt.generated_dir )
+#     if not os.path.exists( return_pointee_value_target_path ):
+#         shutil.copy( return_pointee_value_source_path, environment.ogrenewt.generated_dir )
 
 
 if __name__ == '__main__':

@@ -19,5 +19,19 @@ Jul -Aug 2006:  All the base work done by Larkin and Roman
               Series of minor fixes - added support for MovableObjects in Ogre
               Call backs in OgreNewt now work - or seem too :)  Demos 0-6 working well
               Known problems in a couple of the OgreNewt demos 7 and 8..
+02 Jan 2007:  Version 0.70 Windows Release
+                Lots of improvements - should have removed all 'No to Python' converter errors in Ogre
+                Everything that is 'exposable' should be there
+                Documentation strings (pulled from the C++ source) now in the Python Doc Strings..
+                Use PyDoc etc against the modules for accurate doc imformation
+                Added leading lower case property names (in addition to the typicaly leading Upper case from Ogre)
+                Strict testing for property names - only add those that don't confict with Ogre function names 
+                which means a number of older properties have been removed - see Pydoc etc..
+                New Demos (Demo-Grass etc) showing low level Ogre access (creating raw Vertic buffers etc)
+                Fixed many functions that Boost doesn't like by default
+                Remove need for path variable to be set - modules do this automajically
+                Renamed and cleaned up the demos and their file naming..
+                Fixed Demo06 in CEGUI
+
               
               
