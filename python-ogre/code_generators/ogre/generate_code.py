@@ -135,6 +135,7 @@ def filter_declarations( mb ):
     ogre_ns.member_operators( return_type='::Ogre::Real *', allow_empty=True).exclude()
     ogre_ns.member_operators( return_type='float *', allow_empty=True).exclude()
 
+    
     #all constructors in this class are private, also some of them are public.
     Skeleton = ogre_ns.class_( 'Skeleton' ).constructors().exclude()
 
@@ -142,7 +143,7 @@ def filter_declarations( mb ):
     #returns reference to non-const uchar*, this caused generated code to
     #raise compilation error
     ogre_ns.class_( "Image" ).member_functions( 'getData' ).exclude()
-
+    
     ogre_ns.free_functions ('any_cast').exclude () #not relevant for Python
 
     #AttribParserList is a map from string to function pointer, this class could not be exposed
@@ -227,8 +228,74 @@ def filter_declarations( mb ):
                                                       , allow_empty=True
                                                       , recursive=False )
        constructors.exclude()
+#     ogre_ns.class_('MeshPtr').include()
 
 
+def find_nonconst ( mb ):
+    """ we have problems with sharedpointer arguments that are defined as references
+    but are NOT const.  Boost doesn't understand how to match them and you get a C++ Signature match fails.
+    In reality the Ogre code probably needs to be patched as all of these should (??) be const.  However we'll fix it 
+    with a function transformation wrapper
+    """
+    funcs = mb.member_functions( )
+    for fun in funcs:
+        arg_position = 0
+        for arg in fun.arguments:
+            if 'Ptr' in arg.type.decl_string:
+                 if not 'const' in arg.type.decl_string and '&' in arg.type.decl_string:
+                    print "Fixing Const", fun.parent.name,"::", fun.name, "::", arg_position
+                    fun.add_transformation( ft.modify_type(arg_position,declarations.remove_reference ) )
+            arg_position +=1
+                    
+##
+## Note that I've left this function in here afor reference purposes - it's not used as its an ugly
+## workaround/fix to something that isn't broken or should be fixed in a python wrapper
+##                 
+def fixup_specials ( mb ):
+    """ fixup to create override functions that accept tuples instead of Vector3's or Colourvalues
+    'override_type' should be Vector3 or ColourValue
+    """
+    FUN_CODE  = """
+/// Python-Ogre override to enable property creation passing a python tuple
+void
+%(class_name)s_%(function_name)s( ::Ogre::%(class_name)s & me, ::boost::python::tuple tuplein) {
+    me.%(function_name)s ( %(override_type)s( boost::python::extract<Ogre::Real> (tuplein[0]),
+                            boost::python::extract<Ogre::Real> (tuplein[1]),
+                            boost::python::extract<Ogre::Real> (tuplein[2]) )
+                            );
+}
+"""   
+
+    EXPOSER_CODE = """
+          def( "%(function_name)s" , &%(class_name)s_%(function_name)s );    /// Python-Ogre Setter Extension (tuple as input)
+"""
+    ## the list of ogre values we want to accept as 3 tuples
+    overrides= ['::Ogre::Vector3 const &', '::Ogre::ColourValue const &']
+    exclude_classes = ['AnimableValue']
+    
+    for override in overrides:
+        override_clean  = (override.split()[0])[2:] ## need a simple version of Ogre::Vector3 or Ogre::ColourValue etc..
+        ## get the list of matching functions
+        funcs = mb.member_functions( return_type='void' , arg_types=[override])
+        for fun in funcs:
+            if fun.name.startswith ('set') and fun.parent.name not in exclude_classes : ## we only override set's
+                tc = mb.class_( fun.parent.name )
+                tc.add_declaration_code(
+                    FUN_CODE % { 'class_name': fun.parent.name
+                                               , 'function_name': fun.name
+                                               , 'override_type' : override_clean } )
+                tc.add_registration_code( 
+                    EXPOSER_CODE % { 'class_name': fun.parent.name
+                                               , 'function_name': fun.name } )
+                propname = fun.name[3:] # remove the 'set'
+                ### AJm WARNING - this bit is to make things easier to create python proerties and isn't gauranteed to be right
+                print "Setter_Override Ogre.%(class_name)s.%(propname)s= property( Ogre.%(class_name)s.get%(propname)s,Ogre.%(class_name)s.set%(propname)s ) " % {'class_name' : fun.parent.name,
+                                'propname' : propname }
+                lprop = propname[0].lower() + propname[1:]                                
+                print "Setter_Override Ogre.%(class_name)s.%(lprop)s= property( Ogre.%(class_name)s.get%(propname)s, Ogre.%(class_name)s.set%(propname)s ) " % {'lprop' : lprop,
+                                'class_name' : fun.parent.name,
+                                'propname' : propname }
+  
 def set_call_policies( mb ):
 #
     # Set the default policy to deal with pointer/reference return types to reference_existing object
@@ -267,7 +334,6 @@ def add_transformations ( mb ):
     
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
-    
    
     rt_cls = ns.class_('RenderTarget')
     rt_cls.mem_fun('getMetrics').add_transformation( *create_output(3) )
@@ -289,35 +355,28 @@ def add_transformations ( mb ):
     ns.mem_fun('::Ogre::Font::getGlyphTexCoords') \
         .add_transformation(ft.output(1), ft.output(2),ft.output(3), ft.output(4))
 
-def my_doc_extractor( decl ):
-    retstr = ""
-    if decl.decl_string.startswith("::Ogre") :
-        try:
-            retstr = decl.location.file_name + str( decl.location.line )   
-        except:
-            retstr = "PROBLEM"    
-    return retstr 
 
 #
 # the 'main'function
 #            
 def generate_code():  
-#     messages.disable( 
-#           #Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-#           messages.W1020
-#         , messages.W1021
-#         , messages.W1022
-#         , messages.W1023
-#         , messages.W1024
-#         , messages.W1025
-#         , messages.W1026
-#         , messages.W1027
-#         , messages.W1028
-#         , messages.W1029
-#         , messages.W1030
-#         , messages.W1031 
-#         # Inaccessible property warning
-#         , messages.W1041 )
+    messages.disable( 
+          #Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+          messages.W1020
+        , messages.W1021
+        , messages.W1022
+        , messages.W1023
+        , messages.W1024
+        , messages.W1025
+        , messages.W1026
+        , messages.W1027
+        , messages.W1028
+        , messages.W1029
+        , messages.W1030
+        , messages.W1031
+        , messages.W1040 
+        # Inaccessible property warning
+        , messages.W1041 )
     
     xml_cached_fc = parser.create_cached_source_fc(
                         os.path.join( environment.ogre.root_dir, "python_ogre.h" )
@@ -338,12 +397,18 @@ def generate_code():
     # We filter (both include and exclude) specific classes and functions that we want to wrap
     # 
     filter_declarations (mb)
- 
+
 #     for cls in mb.classes():
 #         print cls
 #     sys.exit(-1)
 
     
+    #
+    # fix shared Ptr's that are defined as references but NOT const...
+    #
+    find_nonconst ( mb.namespace( 'Ogre' ) )
+    
+   
     #
     # Then we convert automatic 'long' names to simple ones - check the list in customization_data.py
     #

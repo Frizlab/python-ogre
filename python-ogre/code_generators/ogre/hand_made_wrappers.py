@@ -65,6 +65,33 @@ WRAPPER_REGISTRATION_General = \
     
 """
 
+##################################################################
+
+WRAPPER_DEFINITION_BillboardParticleRenderer = \
+"""
+boost::python::str
+BBP_getType(Ogre::BillboardParticleRenderer & me) {
+    return boost::python::str( me.getType() );
+    }
+"""
+WRAPPER_REGISTRATION_BillboardParticleRenderer = \
+"""
+    def( "getType", &::BBP_getType );
+"""
+
+WRAPPER_DEFINITION_BillboardParticleRendererFactory = \
+"""
+boost::python::str
+BBPF_getType(Ogre::BillboardParticleRenderer & me) {
+    return boost::python::str( me.getType() );
+    }
+"""
+WRAPPER_REGISTRATION_BillboardParticleRendererFactory = \
+"""
+    def( "getType", &::BBPF_getType );
+"""
+
+
 ###################################################
 
 WRAPPER_DEFINITION_CombinedListener = \
@@ -159,21 +186,6 @@ WRAPPER_REGISTRATION_HardwareBufferManager = \
 
 #########################################
 
-WRAPPER_DEFINITION_RenderWindow = \
-"""
-boost::python::tuple 
-RenderWindow_getMetrics( Ogre::RenderWindow& rw ) {
-   unsigned int width, height, colourDepth;
-   int left, top;
-   rw.getMetrics(  width,  height, colourDepth,  left,  top );
-   return ( boost::python::make_tuple(width, height, colourDepth, left, top));
-}
-"""
-WRAPPER_REGISTRATION_RenderWindow = \
-"""
-    def( "getMetrics", &::RenderWindow_getMetrics );
-"""
-
 ## Needed as boost doesn't handle this overload properly and always uses 'Plane' as the override - see renderToTexture demo
 WRAPPER_DEFINITION_Frustum = \
 """
@@ -204,6 +216,9 @@ if environment.ogre.version != "CVS":
         def( "addKeyListenerFunc", &::EventProcessor_addKeyListener );
         EventProcessor_exposer.def( "addMouseListenerFunc", &::EventProcessor_addMouseListener );
     """
+    
+#################################################################################################
+    
 WRAPPER_DEFINITION_SubMesh =\
 """
 void
@@ -217,36 +232,7 @@ WRAPPER_REGISTRATION_SubMesh = \
     def( "createVertexData", &::SubMesh_createVertexData );
 """ 
 
-WRAPPER_DEFINITION_MeshManager =\
-"""
-// Needs a void* to a databuffer (controlPointBuffer) - we want to use ctypes within python
-// and pass 'addressof()' to this function - so we get an address in an int
-Ogre::PatchMeshPtr 
-MeshManager_createBezierPatch(::Ogre::MeshManager & me,
-            const Ogre::String& name, const Ogre::String& groupName, int controlPointBuffer, 
-            Ogre::VertexDeclaration *declaration, size_t width, size_t height,
-            size_t uMaxSubdivisionLevel = Ogre::PatchSurface::AUTO_LEVEL, 
-            size_t vMaxSubdivisionLevel = Ogre::PatchSurface::AUTO_LEVEL,
-            Ogre::PatchSurface::VisibleSide visibleSide = Ogre::PatchSurface::VS_FRONT,
-            Ogre::HardwareBuffer::Usage vbUsage = Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY, 
-            Ogre::HardwareBuffer::Usage ibUsage = Ogre::HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY,
-            bool vbUseShadow = true, bool ibUseShadow = true) {
-            
-       return me.createBezierPatch(
-             name, groupName, (void*) controlPointBuffer, 
-            declaration,  width,  height,
-            uMaxSubdivisionLevel, 
-            vMaxSubdivisionLevel,
-            visibleSide,
-            vbUsage, 
-            ibUsage,
-            vbUseShadow, ibUseShadow );
-            }
-"""
-WRAPPER_REGISTRATION_MeshManager = \
-"""
-    def( "createBezierPatchSpecial", &::MeshManager_createBezierPatch );
-"""
+#################################################################################################
 		
 WRAPPER_DEFINITION_Mesh =\
 """
@@ -265,19 +251,9 @@ WRAPPER_REGISTRATION_Mesh = \
     def( "suggestTangentVectorBuildParams", &::Mesh_suggestTangentVectorBuildParams );
 """
 
-WRAPPER_DEFINITION_Viewport =\
-"""
-boost::python::tuple
-Viewport_getActualDimensions(::Ogre::Viewport & me ) {
-    int l, t, w, h;
-    me.getActualDimensions(l, t, w, h);
-    return boost::python::make_tuple ( l, t, w, h );
-    }
-"""
-WRAPPER_REGISTRATION_Viewport = \
-"""
-    def( "getActualDimensions", &::Viewport_getActualDimensions );
-"""
+
+#################################################################################################
+#################################################################################################
 
 def apply( mb ):
     rt = mb.class_( 'ConfigFile' )
@@ -286,9 +262,6 @@ def apply( mb ):
     rt = mb.class_( 'RenderTarget' )
     rt.add_declaration_code( WRAPPER_DEFINITION_RenderTarget )
     rt.add_registration_code( WRAPPER_REGISTRATION_RenderTarget )
-#     rt = mb.class_( 'RenderWindow' )
-#     rt.add_declaration_code( WRAPPER_DEFINITION_RenderWindow )
-#     rt.add_registration_code( WRAPPER_REGISTRATION_RenderWindow )
     rt = mb.class_( 'Frustum' )
     rt.add_declaration_code( WRAPPER_DEFINITION_Frustum )
     rt.add_registration_code( WRAPPER_REGISTRATION_Frustum )
@@ -302,20 +275,19 @@ def apply( mb ):
     rt = mb.class_( 'Mesh' )
     rt.add_declaration_code( WRAPPER_DEFINITION_Mesh )
     rt.add_registration_code( WRAPPER_REGISTRATION_Mesh )
-    rt = mb.class_( 'MeshManager' )
-    rt.add_declaration_code( WRAPPER_DEFINITION_MeshManager )
-    rt.add_registration_code( WRAPPER_REGISTRATION_MeshManager )
-#     rt = mb.class_( 'HardwareBufferManager' )
-#     rt.add_declaration_code( WRAPPER_DEFINITION_HardwareBufferManager )
-#     rt.add_registration_code( WRAPPER_REGISTRATION_HardwareBufferManager )
     rt = mb.class_( 'SubMesh' )
     rt.add_declaration_code( WRAPPER_DEFINITION_SubMesh )
     rt.add_registration_code( WRAPPER_REGISTRATION_SubMesh )
-        
-        
+    
+    rt = mb.class_( 'BillboardParticleRenderer' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_BillboardParticleRenderer )
+    rt.add_registration_code( WRAPPER_REGISTRATION_BillboardParticleRenderer )
+    
+    rt = mb.class_( 'BillboardParticleRendererFactory' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_BillboardParticleRendererFactory )
+    rt.add_registration_code( WRAPPER_REGISTRATION_BillboardParticleRendererFactory )
+      
     mb.add_declaration_code( WRAPPER_DEFINITION_General )
     mb.add_registration_code( WRAPPER_REGISTRATION_General )
-#     rt.add_declaration_code( WRAPPER_DEFINITION_VertexBuffer )
-#     rt.add_registration_code( WRAPPER_REGISTRATION_VertexBuffer )
     
 

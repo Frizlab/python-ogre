@@ -19,6 +19,7 @@ from pyplusplus.module_builder import call_policies
 
 from pygccxml import parser
 from pygccxml import declarations
+import common_utils.extract_documentation as exdoc
 
 
 def filter_declarations( mb ):
@@ -107,6 +108,26 @@ def filter_declarations( mb ):
     tempstring = orRe.arguments[1].default_value[:pos]+"::Ogre::"+orRe.arguments[1].default_value[pos:]
     orRe.arguments[1].default_value = tempstring
     
+#     #Exclude non default constructors of iterator classes. 
+#     for cls in CEGUI_ns.classes():
+#        if not declarations.templates.is_instantiation( cls.name ):
+#            continue
+#        name = declarations.templates.name( cls.name )
+#        if not name.endswith( 'Iterator' ):
+#            continue
+#        #default constructor does not have arguments
+#        constructors = cls.constructors( lambda decl: bool( decl.arguments )
+#                                                       , allow_empty=True
+#                                                       , recursive=False )
+#        constructors.exclude()
+
+    ## I'm going to exclude all iterators as there is a problem with CEGUIIteratorBase.h
+    for cls in CEGUI_ns.classes():
+        print "checking", cls.name
+        if 'iterator' in cls.name.lower() :
+            cls.exclude()
+            print "Excluding Iterator", cls.name
+            
     
 def set_call_policies( mb ):
     CEGUI_ns = mb.global_ns.namespace ('CEGUI')
@@ -131,12 +152,6 @@ def configure_exception(mb):
 
 ## this is to fix specific challenges where a class (CaratIndex for example) is defined in multiple namespaces
 ##   
-# def change_cls_alias( ns ):
-#     for cls in ns.classes():
-#         if 1 < len( ns.classes( cls.name ) ):
-#             alias = cls.decl_string[ len('::CEGUI::'): ]
-#             cls.alias = alias.replace( '::', '' )
-
 def change_cls_alias( ns ):
    for cls in ns.classes():
        if 1 < len( ns.classes( cls.name ) ):
@@ -155,7 +170,7 @@ def generate_code():
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
-                                          , include_paths=environment.CEGUI.include_dir
+                                          , include_paths=environment.CEGUI.include_dirs
                                           , define_symbols=['CEGUI_NONCLIENT_BUILD']
 #                                          , start_with_declarations=['CEGUI']
                                           , indexing_suite_version=2 )
@@ -173,14 +188,20 @@ def generate_code():
     hand_made_wrappers.apply( mb )
 
     set_call_policies (mb)
-    common_utils.add_properties(  mb.global_ns.namespace ('CEGUI').classes() )
+    for cls in mb.global_ns.namespace ('CEGUI').classes():
+        cls.add_properties(  )
+        common_utils.add_LeadingLowerProperties ( cls )
+        common_utils.add_PropertyDoc ( cls )
+
 
     common_utils.add_constants( mb, { 'CEGUI_version' :  '"%s"' % environment.CEGUI.version
                                        , 'python_version' : '"%s"' % sys.version } )
                                       
     #Creating code creator. After this step you should not modify/customize declarations.
-    mb.build_code_creator (module_name='_CEGUI_')
-    for incs in environment.CEGUI.include_dir:
+    extractor = exdoc.doc_extractor("")
+    
+    mb.build_code_creator (module_name='_CEGUI_', doc_extractor= extractor)
+    for incs in environment.CEGUI.include_dirs:
         mb.code_creator.user_defined_directories.append( incs )
     mb.code_creator.user_defined_directories.append( environment.CEGUI.generated_dir )
     mb.code_creator.replace_included_headers( customization_data.header_files(environment.CEGUI.version) )

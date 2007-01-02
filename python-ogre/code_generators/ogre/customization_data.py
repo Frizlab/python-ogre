@@ -9,10 +9,6 @@ def aliases( version ):
             , "map<std::string, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >, std::less<std::string>, std::allocator<std::pair<std::string const, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > > > > >"
               : "MapOfStringToMultiMapFromStringToString"
 
-            #~ , "map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::StaticGeometry::MaterialBucket*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::StaticGeometry::MaterialBucket*> > >"
-              #~ : "MapOfStringToStaticGeometryMaterialBucketPtr"
-            #~ , "MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::StaticGeometry::MaterialBucket*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::StaticGeometry::MaterialBucket*> > > >"
-              #~ : "MapIteratorStringToStaticGeometryMaterialBucketPtr"
             , "multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >"
               : "MultiMapStringToString"
             , "MapIterator<std::map<std::string, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >, std::less<std::string>, std::allocator<std::pair<std::string const, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > > > > > >"
@@ -35,6 +31,16 @@ def aliases( version ):
               : "VectorOfString"
             , "pair<int, Ogre::CompositorInstance::RenderSystemOperation*>"
               : "PairOfIntAndRenderSystemOperationPtr"
+              
+              
+             , "list<Ogre::Particle*, std::allocator<Ogre::Particle*> >"
+               : "ListOfParticle"
+             , "set<unsigned char, std::less<unsigned char>, std::allocator<unsigned char> >"
+               : "SetOfUnsignedShort"
+             , "vector<std::pair<std::string, std::string>, std::allocator<std::pair<std::string, std::string> > >"
+               : "VectorStringPairs"
+
+              
             , "list<Ogre::Plane, std::allocator<Ogre::Plane> >"
               : "ListOfPlane"
             , "set<Ogre::SceneQuery::WorldFragmentType, std::less<Ogre::SceneQuery::WorldFragmentType>, std::allocator<Ogre::SceneQuery::WorldFragmentType> >"
@@ -116,8 +122,6 @@ def aliases( version ):
                 : "SingletonControllerManager"
                 ,"Singleton<Ogre::ResourceGroupManager>"
                 : "SingletonResourceGroupManager"
-#                 ,"TRect<long int>"
-#                 : "TRectLInt"
                 ,"SharedPtr<std::vector<Ogre::FileInfo, std::allocator<Ogre::FileInfo> > >"
                 : "SharedPtrFileInfo"
                 ,"SharedPtr<Ogre::MemoryDataStream>"
@@ -125,17 +129,8 @@ def aliases( version ):
                 ,"SharedPtr<std::list<Ogre::SharedPtr<Ogre::DataStream>, std::allocator<Ogre::SharedPtr<Ogre::DataStream> > > >"
                 : "SharedPtrListDataStream"
                 
-#                 , "rebind<Ogre::Vector4>"
-#                 : "RebindVector4"
-#                 ,"holder<Ogre::UserDefinedObject*>"
-#                 : "HolderUserDefinedObjectPtr"
-                
-#                 ,"Any::holder<Ogre::UserDefinedObject*>"
-#                 : "AnyHolderUserDefined"
                 ,"ConstMapIterator<stdext::hash_map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::Node*, stdext::hash_compare<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::Node*> > > >"
                 : "ConstMapIteratorBasicStringNode"
-#                 ,"ConstMapIterator<std::map<unsigned int, Ogre::Vector3, std::less<unsigned int>, std::allocator<std::pair<const unsigned int, Ogre::Vector3> > > >"
-#                 : "ConstMapIteratorVector3"
                 ,"ConstVectorIterator<std::vector<Ogre::Node*, std::allocator<Ogre::Node*> > >"
                 : "ConstMapIteratorVectorNode"
                 ,"ConstVectorIterator<std::vector<Ogre::TextureUnitState*, std::allocator<Ogre::TextureUnitState*> > >"
@@ -160,8 +155,6 @@ def aliases( version ):
                   : "MapIteratorStringMovableObjectFactoryPtr"
                 ,"MapIterator<std::map<std::string, Ogre::OverlayContainer*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::OverlayContainer*> > > >"
                 : "MapIteratorBasicStringOverlayContainer"
-#                 ,"MapIterator<stdext::hash_map<std::string, Ogre::Node*, stdext::hash_compare<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::Node*> > > >"
-#                 : "MapIteratorBasicStringNode"
                 ,"MapIterator<std::map<unsigned char, Ogre::RenderQueueGroup*, std::less<unsigned char>, std::allocator<std::pair<unsigned char const, Ogre::RenderQueueGroup*> > > >"
                 : "MapIteratorRenderQueueGroupPtr"
                 ,"MapIterator<std::map<unsigned short, Ogre::VertexAnimationTrack*, std::less<unsigned short>, std::allocator<std::pair<unsigned short const, Ogre::VertexAnimationTrack*> > > >"
@@ -191,37 +184,19 @@ def aliases( version ):
                 : "StdPairUnsignedUnsigned"
                 ,"pair<bool, float>"
                 : "StdPairBoolFloat"
-              
-              
-## AJM removed these as exposing them in python_ogre caused them to disappear?              
-#             , "set<Ogre::Entity*,std::less<Ogre::Entity*>,std::allocator<Ogre::Entity*> >"
-#               : "SetOfEntityPtr"
-#             , "vector<Ogre::RenderWindow*,std::allocator<Ogre::RenderWindow*> >"
-#               : "VectorOfRenderWindowPtr"
-#                , "multimap<Ogre::Vector3,Ogre::Vector3,std::less<Ogre::Vector3>,std::allocator<std::pair<const Ogre::Vector3, Ogre::Vector3> > >"
-#                 : "Vector3Multimap"    
-
              , "vector<Ogre::Vector4, std::allocator<Ogre::Vector4> >"
                : "VectorOfVector4"
             , "vector<unsigned short, std::allocator<unsigned short> >"
               : "VectorOfUnsignedShort"
             ,"map<std::string, Ogre::MovableObject*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > >"
 		        : "MovableObjectMapIterator"
-# 		     , "MapIterator<std::map<std::string, Ogre::MovableObject*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > >"
-# 		        : "MovableObjectMapIterator"
                , "map<Ogre::Vector3, unsigned, Ogre::EdgeListBuilder::vectorLess, std::allocator<std::pair<Ogre::Vector3 const, unsigned> > >"
                 : "Vector3EdgeMap"
               , "map<unsigned, Ogre::Vector3, std::less<unsigned>, std::allocator<std::pair<unsigned const, Ogre::Vector3> > >"
                 : "Vector3Map"    
    
-# MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > > [class declaration]
-# MapIterator<stdext::hash_map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObject*, stdext::hash_compare<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObject*> > > > [class declaration]
              ,"MapIterator<std::map<std::string, Ogre::MovableObjectFactory*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::MovableObjectFactory*> > > >"
              : "MapIteratorMoveableObjectFactoryPtr"
-
-# MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObjectFactory*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObjectFactory*> > > > [class declaration]
-# MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::ParticleAffectorFactory*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::ParticleAffectorFactory*> > > > [class declaration]
-# MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::Overlay*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::Overlay*> > > > [class declaration]
 
             ## these were generating passes/techniques/instances classes...
             , "vector<Ogre::CompositionPass*, std::allocator<Ogre::CompositionPass*> >"

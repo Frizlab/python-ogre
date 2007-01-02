@@ -70,7 +70,7 @@ def generate_code():
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
-                                          , include_paths=environment.ogrerefapp.include_dir
+                                          , include_paths=environment.ogrerefapp.include_dirs
                                           , define_symbols=defined_symbols
                                           , indexing_suite_version=2 )
 
@@ -96,7 +96,7 @@ def generate_code():
 
     #Creating code creator. After this step you should not modify/customize declarations.
     mb.build_code_creator (module_name='_ogrerefapp_')
-    for inc in environment.ogrerefapp.include_dir :
+    for inc in environment.ogrerefapp.include_dirs :
         mb.code_creator.user_defined_directories.append(inc )
     mb.code_creator.user_defined_directories.append( environment.ogrerefapp.generated_dir )
     mb.code_creator.replace_included_headers( customization_data.header_files( environment.ogrerefapp.version ) )

@@ -42,42 +42,44 @@ class doc_extractor:
         ## and gccxml gives us the line number with the brace - so we need to look back even further
         
         ## lets look for a single comment '///'  We'll try upto 2 lines above
-        for lcount in xrange(declaration.location.line-2, declaration.location.line-4 , -1):
-            line = self.source[lcount]
-            if line.lstrip()[:3] == '///':
-                str = clear_str(line)
-                retvalue = '"' + str[:-2] + '"' # remove the \n from the single line comment
-                #print "Extracted Doc String (short) ", retvalue
-                return retvalue
-                
-        ## if that didn't work we'll look for a block of comments
-        
-        for lcount in xrange(declaration.location.line - 2, -1, -1):
-            line = self.source[lcount]
-            #print "Checking ", lcount, line
-            if not find_block_end:
-                try:
-                    if line.rstrip()[-2:] == "*/":
-                        find_block_end = True
-                except:
-                    pass
-            if  find_block_end:
-                try:
-                    if line.lstrip()[:2] == "/*":
-                        find_block_end = False
-                except:
-                    pass
-            final_str = clear_str(line)
-            if not find_block_end and code(line):
-                ## note that ogre code tends to have the opening function/class bracket on the 'next' line 
-                ## from the 'name' -so we may need to backup one more line to fine doc string..
-                failed +=1
-                final_str = ""  ## make sure we don't add the extra code line
-                if failed > 1:
-                    break
-            if final_str:
-                doc_lines.insert(0, final_str)
-        
+        try:
+            for lcount in xrange(declaration.location.line-2, declaration.location.line-4 , -1):
+                line = self.source[lcount]
+                if line.lstrip()[:3] == '///':
+                    str = clear_str(line)
+                    retvalue = '"' + str[:-2] + '"' # remove the \n from the single line comment
+                    #print "Extracted Doc String (short) ", retvalue
+                    return retvalue
+                    
+            ## if that didn't work we'll look for a block of comments
+            
+            for lcount in xrange(declaration.location.line - 2, -1, -1):
+                line = self.source[lcount]
+                #print "Checking ", lcount, line
+                if not find_block_end:
+                    try:
+                        if line.rstrip()[-2:] == "*/":
+                            find_block_end = True
+                    except:
+                        pass
+                if  find_block_end:
+                    try:
+                        if line.lstrip()[:2] == "/*":
+                            find_block_end = False
+                    except:
+                        pass
+                final_str = clear_str(line)
+                if not find_block_end and code(line):
+                    ## note that ogre code tends to have the opening function/class bracket on the 'next' line 
+                    ## from the 'name' -so we may need to backup one more line to fine doc string..
+                    failed +=1
+                    final_str = ""  ## make sure we don't add the extra code line
+                    if failed > 1:
+                        break
+                if final_str:
+                    doc_lines.insert(0, final_str)
+        except:
+            return ""   ## problem finding comments
         if doc_lines:
             #print "Extracted Doc String for:",  declaration, "[", len(doc_lines),"]"
             ## we need to cope with strings longer than 2048 for MSVC
@@ -128,6 +130,7 @@ def clear_str(str):
     str = clean(str, "@note", "Note: ")
     str = clean(str, "@remarks", "Remarks: ")
     str = clean(str, "@see", "See: ")
+    str = clean(str, "\sa", "See also: ")   # comment string in OgreNewt
     
     str = clean(str, "@par", "")    ## it will get a single blank line by default
     str = clean(str, "\n", "\\n") 

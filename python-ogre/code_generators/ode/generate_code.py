@@ -164,7 +164,7 @@ def generate_code():
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
-                                          , include_paths=[environment.ode.include_dir]
+                                          , include_paths=environment.ode.include_dirs
                                           , define_symbols=['ode_NONCLIENT_BUILD', 'ODE_LIB']
 #                                          , start_with_declarations=['ode']
                                           , indexing_suite_version=2 )
@@ -193,8 +193,8 @@ def generate_code():
 
     #Creating code creator. After this step you should not modify/customize declarations.
     mb.build_code_creator (module_name='_ode_')
-
-    mb.code_creator.user_defined_directories.append( environment.ode.include_dir )
+    for inc in environment.ode.include_dirs:
+        mb.code_creator.user_defined_directories.append(inc )
     mb.code_creator.user_defined_directories.append( environment.ode.generated_dir )
     mb.code_creator.replace_included_headers( customization_data.header_files(environment.ode.version) )
 

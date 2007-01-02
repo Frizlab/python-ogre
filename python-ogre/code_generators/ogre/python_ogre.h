@@ -111,14 +111,11 @@ inline void instantiate(){
     sizeof (ConstVectorIterator<std::vector<ShadowTextureConfig> >);
     sizeof (ConstVectorIterator<std::vector<TextureUnitState*> >);
     sizeof (ConstVectorIterator<std::vector<VertexPoseKeyFrame::PoseRef> >);
-    sizeof (DataStream );
     sizeof (DataStreamPtr );
-    sizeof (FileInfo );
     sizeof (GpuProgramParameters::AutoConstantEntry );
     sizeof (HardwareIndexBuffer );
     sizeof (HardwareIndexBufferSharedPtr );  
     sizeof (HardwarePixelBufferSharedPtr );
-    //???sizeof (MapIterator<std::map<class std::basic_string<char,struct std::char_traits<char>,class  );   
     sizeof (MapIterator<std::map<std::string, OverlayContainer*> >);
     sizeof (MapIterator<std::map<std::string, ParticleEmitterFactory*> >);
     sizeof (MapIterator<std::map<std::string, ParticleSystemRendererFactory*> >);
@@ -158,12 +155,17 @@ inline void instantiate(){
     sizeof (SharedPtr<std::vector<std::string> >);
     sizeof (SharedPtr<std::vector<std::string> >);
     sizeof (SharedPtr<std::vector<std::string> >);
-    sizeof (SharedPtr<std::vector<FileInfo> >);
-    sizeof (SharedPtr<std::list<SharedPtr<DataStream> > >);
-    sizeof (Singleton<ArchiveManager> );
+    
+    // these two require a try/except block in shared pointer creation..
+//     sizeof (SharedPtr<std::vector<FileInfo> >);
+//     sizeof (SharedPtr<std::list<SharedPtr<DataStream> > >);
+
+ 
+     sizeof (Singleton<ArchiveManager> );
     sizeof (StringVector );
     sizeof (StringVectorPtr );
     sizeof (TexturePtr );
+    sizeof (DataStreamPtr);
     sizeof (VectorIterator<std::vector<StaticGeometry::LODBucket *> >);
     sizeof (VectorIterator<std::vector<Bone*> >);
     sizeof (VectorIterator<std::vector<CompositionPass*> >);
@@ -185,7 +187,6 @@ inline void instantiate(){
     sizeof (SharedPtr<AnimableValue>  );
     sizeof (SharedPtr<ControllerFunctionRealPtr> );
     sizeof (SharedPtr<ControllerValueRealPtr> );
-    sizeof (SharedPtr<DataStream> );
     sizeof (SharedPtr<HardwareIndexBuffer> );
     sizeof (SharedPtr<MemoryDataStream>);
     sizeof (SharedPtr<Resource> );
@@ -249,6 +250,24 @@ inline void instantiate(){
     sizeof (VectorIterator<std::vector<Technique*> >);
     sizeof (VectorIterator<std::vector<TextureUnitState*> >);
     sizeof (VectorIterator<std::vector<VertexPoseKeyFrame::PoseRef> >);
+    
+    sizeof ( HardwareVertexBufferSharedPtr  );
+    sizeof ( StringVectorPtr );
+    sizeof ( FileInfoListPtr );
+    sizeof ( GpuProgramParametersSharedPtr );
+    sizeof ( DataStreamPtr );
+    
+    sizeof ( SharedPtr<GpuProgramParameters> );
+    sizeof ( SkeletonPtr );
+    sizeof ( SharedPtr<std::vector<std::string, std::allocator<std::string> > > );
+    sizeof ( SharedPtr<ControllerFunction<float> > );
+    sizeof ( HardwareIndexBufferSharedPtr );
+    sizeof ( GpuProgramPtr );
+    sizeof ( HighLevelGpuProgramPtr );
+    sizeof ( MeshPtr );
+    sizeof ( MaterialPtr );
+    
+    
      
     sizeof (std::pair<std::list<std::pair<const std::string, Ogre::MovableObject*> >::iterator,std::list<std::pair<const std::string, Ogre::MovableObject*> >::iterator>);
     sizeof (std::pair<std::list<std::pair<const std::string, Ogre::MovableObject*> >::const_iterator,std::list<std::pair<const std::string, Ogre::MovableObject*> >::const_iterator>);

@@ -75,7 +75,7 @@ def generate_code():
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
-                                          , include_paths=[environment.ois.include_dir]
+                                          , include_paths=environment.ois.include_dirs
                                           , define_symbols=['OIS_NONCLIENT_BUILD']
                                           , indexing_suite_version=2 )
 
@@ -101,7 +101,9 @@ def generate_code():
     #Creating code creator. After this step you should not modify/customize declarations.
     mb.build_code_creator (module_name='_ois_')
 
-    mb.code_creator.user_defined_directories.append( environment.ois.include_dir )
+    for inc in environment.ois.include_dirs:
+        mb.code_creator.user_defined_directories.append(inc )
+    
     mb.code_creator.user_defined_directories.append( environment.ois.generated_dir )
     mb.code_creator.replace_included_headers( customization_data.header_files() )
 

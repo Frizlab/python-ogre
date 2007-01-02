@@ -1,5 +1,5 @@
 def aliases( Version ):
-    if Version == "0.5" :
+    if Version == "0.5.0b" :
         return {
 #           "DataContainer<unsigned char>"
 #           :  "DataContainerUnsignedChar"

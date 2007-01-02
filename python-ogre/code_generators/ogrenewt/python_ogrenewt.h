@@ -12,6 +12,16 @@
 
     inline void instantiate(){
         //sizeof ( EventCallback);
+//        sizeof ( OgreNewt::NewtonHingeSliderUpdateDescTag );
+        sizeof ( NewtonJoint);
+        sizeof ( NewtonBody );
+        sizeof ( NewtonCollision );
+        sizeof ( NewtonWorld );
+        
+/*        sizeof ( Ogre::Radian );
+        sizeof ( Ogre::Node );
+        sizeof ( Ogre::Vector3);
+        sizeof ( Ogre::Quaternion ); */
                 
     }
 
