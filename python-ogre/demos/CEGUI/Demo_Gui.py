@@ -327,7 +327,7 @@ class GuiApplication ( SampleFramework.Application ):
         return True
  
     def handleMouseEnters(self,  e):
-        name = e.window.getName().c_str
+        name = e.window.getName().c_str()
         try:
             self.Tip.setText( self.DescriptionMap[ name ])
         except:

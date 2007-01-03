@@ -29,7 +29,7 @@ class MouseListener ( OIS.MouseListener ):
 
     ##----------------------------------------------------------------##
     def mouseMoved( self, arg ):
-        CEGUI.System.getSingleton().injectMouseMove( arg.get_state().relX, arg.get_state().relY )
+        CEGUI.System.getSingleton().injectMouseMove( arg.get_state().X.rel, arg.get_state().Y.rel )
         return True
 
     ##----------------------------------------------------------------##
@@ -43,7 +43,7 @@ class MouseListener ( OIS.MouseListener ):
         return True
 
         
-class GuiFrameListener(SampleFramework.FrameListener, OIS.KeyListener, OIS.MouseListener):
+class GuiFrameListener(SampleFramework.FrameListener , OIS.KeyListener, OIS.MouseListener):
 
     def __init__(self, renderWindow, camera,  CEGUIRenderer):
 

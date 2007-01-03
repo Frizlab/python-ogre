@@ -12,6 +12,8 @@ import SampleFramework as sf
 from BasicFrameListener import *     # a simple frame listener that updates physics as required..
 from CEGUI_framework import *   ## we need the OIS version of the framelistener etc
 
+holder=[]
+
 class OgreNewtonApplication (sf.Application):
     def __init__ ( self):
         sf.Application.__init__(self)
@@ -50,18 +52,6 @@ class OgreNewtonApplication (sf.Application):
 
     def _createScene ( self ):
     
-#         ## we are doing this early 
-#         ## position camera
-#         self.msnCam = self.sceneManager.getRootSceneNode().createChildSceneNode()
-#         self.msnCam.attachObject( self.camera )
-#         self.camera.setPosition(0.0, 0.0, 0.0)
-#         self.msnCam.setPosition( 0.0, -3.0, 23.0)
-#     
-#         ##make a light
-#         light = self.sceneManager.createLight( "Light1" )
-#         light.setType( Ogre.Light.LT_POINT )
-#         light.setPosition( Ogre.Vector3(0.0, 100.0, 100.0) )
-
         
         ## setup CEGUI
         self.GUIRenderer = CEGUI.OgreCEGUIRenderer( self.renderWindow, 
@@ -96,7 +86,10 @@ class OgreNewtonApplication (sf.Application):
         floor.setCastShadows( False )
     
         ##Ogre.Vector3 siz(100.0, 10.0, 100.0)
+        print self.World, floornode
+        
         col = OgreNewt.TreeCollision( self.World, floornode, True )
+        
         bod = OgreNewt.Body( self.World, col )
         del col
         
@@ -116,15 +109,16 @@ class OgreNewtonApplication (sf.Application):
         
         
         ## we need to make the framelistener early to get access to the call backs..
-        self.frameListener = OgreNewtonFrameListener( self.renderWindow, self.camera, 
-                            self.sceneManager, self.World, self.msnCam, self.GUIRenderer )
+#         self.frameListener = OgreNewtonFrameListener( self.renderWindow, self.camera, 
+#                             self.sceneManager, self.World, self.msnCam, self.GUIRenderer )
     
         for x in range(8):
             ## make the next box.
             child = self.makeSimpleBox(size, pos, orient)
             self.bodies.append(child)
             ## set the buoyancy callback
-            child.setCustomForceAndTorqueCallback( self.frameListener, "standardForceCallback")
+            ##child.setCustomForceAndTorqueCallback( standardForceCallback, "")
+            child.setCustomForceAndTorqueCallback( standardForceCallback, "")
                
             ## make the joint right between the bodies...
             if parent :
@@ -139,15 +133,17 @@ class OgreNewtonApplication (sf.Application):
             pos += Ogre.Vector3(size.x,0,0)
             ## save the last body for the next loop!
             parent = child
+
+#         OgreNewt.TestOne(self.root, self.renderWindow, self.sceneManager, self.World ) 
     
         for i in range(15):
             pos = Ogre.Vector3( 10-random.random()%20, 4+random.random()%2, 10-random.random()%20 )
             size = Ogre.Vector3( 1+random.random()%3, 1+random.random()%3, 1+random.random()%3 )
     
             bod = self.makeSimpleBox( size, pos, orient )
+
             ## set the buoyancy callback
-            bod.setCustomForceAndTorqueCallback( self.frameListener, "standardForceCallback" )
-            
+            bod.setCustomForceAndTorqueCallback(  standardForceCallback,  "")
             self.bodies.append ( bod)
             
         ## make a simple visual object for the buoyancy plane.
@@ -166,7 +162,7 @@ class OgreNewtonApplication (sf.Application):
         #self.camera.lookAt (0,0,0)
         self.msnCam.setPosition( 0.0, -3.0, 23.0)
     
-        self.frameListener.msnCam = self.msnCam
+        ##self.frameListener.msnCam = self.msnCam
         
         ##make a light
         light = self.sceneManager.createLight( "Light1" )
@@ -176,27 +172,29 @@ class OgreNewtonApplication (sf.Application):
     
 
     def makeSimpleBox( self, size, pos,  orient ):
+        global holder
         ## base mass on the size of the object.
-        mass = size.x * size.y * size.z * 2.5
+        mass = size.x * size.y * size.z * 0.5
             
         ## calculate the inertia based on box formula and mass
         inertia = OgreNewt.CalcBoxSolid( mass, size )
-    
+     	           
         box1 = self.sceneManager.createEntity( "Entity"+str(self.EntityCount), "box.mesh" )
         self.EntityCount += 1
         box1node = self.sceneManager.getRootSceneNode().createChildSceneNode()
         box1node.attachObject( box1 )
         box1node.setScale( size )
         box1.setNormaliseNormals(True)
-    
+        
         col = OgreNewt.Box( self.World, size )
         bod = OgreNewt.Body( self.World, col )
-        del col
+        #del col
                     
         bod.attachToNode( box1node )
+        
         bod.setMassMatrix( mass, inertia )
         bod.setStandardForceCallback()
-    
+        
         box1.setMaterialName( "Simple/BumpyMetal" )
     
         bod.setPositionOrientation( pos, orient )
@@ -205,10 +203,10 @@ class OgreNewtonApplication (sf.Application):
 
     def _createFrameListener(self):
         
-#         self.frameListener = OgreNewtonFrameListener( self.renderWindow, self.camera, 
-#                             self.sceneManager, self.World, self.msnCam, self.GUIRenderer )
+        self.frameListener = OgreNewtonFrameListener( self.renderWindow, self.camera, 
+                            self.sceneManager, self.World, self.msnCam, self.GUIRenderer )
         self.root.addFrameListener(self.frameListener)
-
+	
         self.NewtonListener = BasicFrameListener( self.renderWindow, self.sceneManager, self.World, 60 )
         self.root.addFrameListener(self.NewtonListener)
 
@@ -264,8 +262,8 @@ class OgreNewtonFrameListener(GuiFrameListener ):
         if ((self.Keyboard.isKeyDown(OIS.KC_LSHIFT)) or (self.Keyboard.isKeyDown(OIS.KC_RSHIFT))):
             
             ## now lets handle mouse input
-            self.msnCam.pitch( Ogre.Radian(ms.relY * -0.5) )
-            self.msnCam.yaw( Ogre.Radian(ms.relX * -0.5), Ogre.Node.TS_WORLD )
+            self.msnCam.pitch( Ogre.Radian(ms.Y.rel * -0.5) )
+            self.msnCam.yaw( Ogre.Radian(ms.X.rel * -0.5), Ogre.Node.TS_WORLD )
 
             ##and Keyboard
         if (self.Keyboard.isKeyDown(OIS.KC_UP)):
@@ -309,7 +307,7 @@ class OgreNewtonFrameListener(GuiFrameListener ):
                     bodpos, bodorient = info.mBody.getPositionOrientation( )
                     ## info.mDistance is in the range [0,1].
                     globalpt = camray.getPoint( 100.0 * info.mDistance )
-                    localpt = bodorient.inverse * (globalpt - bodpos)
+                    localpt = bodorient.Inverse() * (globalpt - bodpos)
     
                     ## now we need to save this point to apply the spring force, I'm using the userData of the bodies in this example.
                     info.mBody.setUserData( self )
@@ -330,7 +328,8 @@ class OgreNewtonFrameListener(GuiFrameListener ):
             if (not ms.buttonDown(OIS.MouseButtonID.MB_Left)):
                 ## no longer holding mouse button, so stop self.dragging!
                 ## remove the special callback, and put it back to standard gravity.
-                self.dragBody.setStandardForceCallback()
+                self.dragBody.setCustomForceAndTorqueCallback(  standardForceCallback,  "")
+                ##self.dragBody.setStandardForceCallback()
                 self.dragBody.setAutoFreeze(1)
     
                 self.dragBody = None
@@ -384,48 +383,62 @@ class OgreNewtonFrameListener(GuiFrameListener ):
         body.addForce( gravity )
         ## also don't forget buoyancy force. 
         body.addBouyancyForce( 0.7, 0.5, 0.5, Ogre.Vector3(0.0,-9.8,0.0), 
-                    self, "buoyancyCallback" )
+                     buoyancyCallback, "" )
 
-    def standardForceCallback( self, me ):
-        mass, inertia = me.getMassMatrix( )
+def standardForceCallback(  me ):
+    mass, inertia = me.getMassMatrix( )
+
+    gravity = Ogre.Vector3(0,-9.8,0) * mass
+    me.addForce( gravity )
+
+    ## also don't forget buoyancy force.
+    ## just pass the acceleration due to gravity, not the force (accel * mass)! 
+    me.addBouyancyForce( 0.7, 0.5, 0.5, Ogre.Vector3(0.0,-9.8,0.0), 
+                    buoyancyCallback, "" )
+
+
     
-        gravity = Ogre.Vector3(0,-9.8,0) * mass
-        me.addForce( gravity )
-    
-        ## also don't forget buoyancy force.
-        ## just pass the acceleration due to gravity, not the force (accel * mass)! 
-        me.addBouyancyForce( 0.7, 0.5, 0.5, Ogre.Vector3(0.0,-9.8,0.0), 
-                        self, "buoyancyCallback" )
- 
-        me.addBouyancyForce( 1.0, 0.8, 0.9, Ogre.Vector3(0.0,-9.8,0.0), 
-                        self, "buoyancyCallback" )
-
-
-	                        
-                        
-                           
-    ##################################################################################
-    ##      BUOYANCY CALLBACK
-    ################################################################################/
-    def buoyancyCallback( self, colID,  me,  orient,  pos,  plane ):
-        ## here we need to create an Ogre::Plane object representing the surface of the liquid.  in our case, we're 
-        ## just assuming a completely flat plane of liquid, however you could use this function to retrieve the plane
-        ## equation for an animated sea, etc.
-        plane1 = Ogre.Plane( Ogre.Vector3(0,1,0), Ogre.Vector3(0,0,0) )
-        ## we need to copy the normals and 'd' to the plane we were passed...
-        plane.normal = plane1.normal
-        plane.d = 60.0 #plane1.d
-       
-        return True
+##################################################################################
+##      BUOYANCY CALLBACK
+################################################################################/
+def buoyancyCallback(  colID,  me,  orient,  pos,  plane ):
+    ## here we need to create an Ogre::Plane object representing the surface of the liquid.  in our case, we're 
+    ## just assuming a completely flat plane of liquid, however you could use this function to retrieve the plane
+    ## equation for an animated sea, etc.
+    ##
+    plane1 = Ogre.Plane( Ogre.Vector3(0,1,0), Ogre.Vector3(0,0,0) )
+    ## we need to copy the normals and 'd' to the plane we were passed...
+    plane.normal = plane1.normal
+    plane.d = plane1.d
+   
+    return True
     
         
         
 if __name__ == '__main__':
+    import exceptions
     try:
         application = OgreNewtonApplication()
         application.go()
     except Ogre.Exception, e:
         print e
         print dir(e)
-    
+    except exceptions.RuntimeError, e:
+        print "Runtime error:", e
+    except exceptions.TypeError, e:
+        print "Type error:", e
+    except exceptions.AttributeError, e:
+        print "Attribute error:", e
+    except exceptions.NameError, e:
+        print "Name error:", e
+    except Exception,inst:
+        print "EException"
+        print type(inst)     # the exception instance
+        print inst.args      # arguments stored in .args
+        print inst
+    except exceptions.ValueError,e:
+        print "ValueError",e
+    except :
+        print "Unexpected error:", sys.exc_info()[0]
+   
                 

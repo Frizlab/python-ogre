@@ -87,7 +87,7 @@ class CEGUIFrameListener(GuiFrameListener):
     def handleScrollChanged(self,args):
         if (not self.mPlayAnimation):
             #Alter the animation 
-            name = args.window.name.c_str   ## Note that you need to extract the string
+            name = args.window.name.c_str()   ## Note that you need to extract the string
             #Find which pose was changed
             for i in xrange(0,SI_COUNT):
                 if (scrollbarNames[i] == name):

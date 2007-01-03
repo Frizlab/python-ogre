@@ -230,8 +230,8 @@ class OgreNewtonFrameListener(GuiFrameListener ):
             strafe = quat * vec
             
             ## now lets handle mouse input
-            self.msnCam.pitch( Ogre.Radian(ms.relY * -0.5) )
-            self.msnCam.yaw( Ogre.Radian(ms.relX * -0.5), Ogre.Node.TS_WORLD )
+            self.msnCam.pitch( Ogre.Radian(ms.Y.rel * -0.5) )
+            self.msnCam.yaw( Ogre.Radian(ms.X.rel * -0.5), Ogre.Node.TS_WORLD )
 
             ##and Keyboard
             if (self.Keyboard.isKeyDown(OIS.KC_UP)):
@@ -277,7 +277,7 @@ class OgreNewtonFrameListener(GuiFrameListener ):
                     
                     ## info.mDistance is in the range [0,1].
                     globalpt = camray.getPoint( 100.0 * info.mDistance )
-                    localpt = bodorient.Inverse * (globalpt - bodpos)
+                    localpt = bodorient.Inverse() * (globalpt - bodpos)
     
                     ## now we need to save this point to apply the spring force, I'm using the userData of the bodies in this example.
                     info.mBody.setUserData( self )
