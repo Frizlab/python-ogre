@@ -9,7 +9,7 @@ class TextureFXApplication(sf.Application):
         sceneManager.ambientLight = ogre.ColourValue(0.5, 0.5, 0.5)
 
         light = sceneManager.createLight('MainLight')
-        light.position = ogre.Vector3(20, 80, 150)
+        light.setPosition (20, 80, 150)
 
         self._createScalingPlane()
         self._createScrollingKnot()

@@ -10,7 +10,7 @@ class EnvMapApplication(sf.Application):
         sceneManager.ambientLight = ogre.ColourValue (0.5, 0.5, 0.5)
 
         light = sceneManager.createLight('MainLight')
-        light.position = ogre.Vector3 (20, 80, 50)
+        light.setPosition (20, 80, 50)
 
         entity = sceneManager.createEntity('head', 'ogrehead.mesh')
         entity.setMaterialName("Examples/EnvMappedRustySteel")

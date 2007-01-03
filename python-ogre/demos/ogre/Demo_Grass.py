@@ -125,6 +125,7 @@ class Grass_Application(sf.Application):
            
     def createGrassMesh(self):
         global GRASS_MESH_NAME
+        print "7"
         ## Each grass section is 3 planes at 60 degrees to each other
         ## Normals point straight up to simulate correct lighting
         msh = ogre.MeshManager.getSingleton().createManual(GRASS_MESH_NAME, 
@@ -137,7 +138,7 @@ class Grass_Application(sf.Application):
         ##  hence a new function has been added.
         ##  C++ Code:   sm->vertexData = new VertexData();
         
-        sm.createVertexData() # wrapper to create VertexData as assign it to .VertexData
+        sm.createVertexData() # wrapper to create VertexData and assign it to .VertexData
         
         sm.vertexData.vertexStart = 0 
         sm.vertexData.vertexCount = 12 
@@ -216,7 +217,7 @@ class Grass_Application(sf.Application):
             
         ## Python-Ogre extension function to write a list for floats to a buffer
         ogre.setFloat( pointer, buffer )
-        
+        print "6"
         vbuf.unlock() 
         
         sm.vertexData.vertexBufferBinding.setBinding(0, vbuf) 
@@ -251,6 +252,7 @@ class Grass_Application(sf.Application):
     def  setupLighting(self):
         global mMinLightColour, mMaxLightColour, mMinFlareSize, mMaxFlareSize, mAnimState
         ## Set ambient light
+        print "3"
         self.sceneManager.setAmbientLight(ogre.ColourValue(0.2, 0.2, 0.2)) 
         ## Point light, movable, reddish
         self.mLight = self.sceneManager.createLight("Light2") 
@@ -313,6 +315,7 @@ class Grass_Application(sf.Application):
         ## Create a new animation state to track self
         mAnimState = self.sceneManager.createAnimationState("LightTrack") 
         mAnimState.setEnabled(True) 
+        print "4"
 
 
     def _createScene(self):
@@ -355,7 +358,7 @@ class Grass_Application(sf.Application):
                 s.addEntity(e, pos, orientation, scale) 
         s.build() 
         mStaticGeom = s     ## need to make it available else where
-
+        print "1"
         ## Put an Ogre head in the middle
         m = ogre.MeshManager.getSingleton().load("ogrehead.mesh", 
            ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME) 
@@ -372,7 +375,8 @@ class Grass_Application(sf.Application):
         headNode.setScale(7,7,7) 
         headNode.setPosition(0,200,0) 
         e.setNormaliseNormals(True) 
-        self.camera.move(ogre.Vector3(0,350,0)) 
+        self.camera.move(ogre.Vector3(0,350,0))
+        print "2" 
 
     def _createFrameListener(self):
         self.frameListener = GrassListener(self.renderWindow, self.camera, self.sceneManager)

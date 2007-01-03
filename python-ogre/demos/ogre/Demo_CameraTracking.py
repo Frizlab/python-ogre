@@ -9,9 +9,10 @@ class CameraTrackApplication(sf.Application):
         sceneManager.setAmbientLight (ogre.ColourValue(0.7, 0.7, 0.7))
 #        sceneManager.setSkyBox (True, "Examples/CloudySky") ## AJM THIS FAILS FOR SOME REASON?
         sceneManager.setSkyDome (True, "Examples/CloudySky")
-
+        
         light = sceneManager.createLight('MainLight')
-        light.setPosition (ogre.Vector3 (20, 80, 50))
+        light.setPosition (20, 80, 50)
+        
 
         plane = ogre.Plane()
         plane.normal = ogre.Vector3.UNIT_Y
