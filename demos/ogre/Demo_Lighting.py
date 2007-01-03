@@ -41,9 +41,9 @@ class LightingApplication(sf.Application):
 
 		#Create 3 nodes for trail to follow
         animNode = sceneManager.getRootSceneNode().createChildSceneNode()
-        animNode.Position=ogre.Vector3(50,30,0)
+        animNode.setPosition(50,30,0)
         anim = sceneManager.createAnimation("an1", 14)
-        anim.InterpolationMode=ogre.Animation.IM_SPLINE
+        anim.setInterpolationMode(ogre.Animation.IM_SPLINE)
         track = anim.createNodeTrack(1, animNode)
         kf = track.createNodeKeyFrame(0)
         kf.Translate=ogre.Vector3(50,30,0)
@@ -69,7 +69,7 @@ class LightingApplication(sf.Application):
         trail.setInitialColour(0, 1.0, 0.8, 0)
         trail.setColourChange(0, 0.5, 0.5, 0.5, 0.5)
         trail.setInitialWidth(1, 5)
-#        trail.addNode(animNode)
+        trail.addNode(animNode)
 
         #Add light
         l2 = sceneManager.createLight("l2")
@@ -83,9 +83,13 @@ class LightingApplication(sf.Application):
         animNode.attachObject(bbs)
 
         animNode = sceneManager.getRootSceneNode().createChildSceneNode()
-        animNode.Position=ogre.Vector3(-50,100,0)
+        
+        ### Note the setPosition --  the Position/position properties are only 'get' properties as
+        ### there are multiple overrides for setPosition (one 
+        
+        #animNode.setPosition(-50,100,0)
         anim = sceneManager.createAnimation("an2", 10)
-        anim.InterpolationMode=ogre.Animation.IM_SPLINE
+        anim.setInterpolationMode(ogre.Animation.IM_SPLINE)
         track = anim.createNodeTrack(1, animNode)
         kf = track.createNodeKeyFrame(0)
         kf.Translate=ogre.Vector3(-50,100,0)
@@ -107,7 +111,7 @@ class LightingApplication(sf.Application):
         trail.setInitialColour(1, 0.0, 1.0, 0.4)
         trail.setColourChange(1, 0.5, 0.5, 0.5, 0.5)
         trail.setInitialWidth(1, 5)
-#         trail.addNode(animNode)
+        trail.addNode(animNode)
 
 
         #Add light

@@ -23,14 +23,14 @@ class SkeletalApplication(sf.Application):
             self.animationSpeeds.append(ogre.Math.RangeRandom(0.5, 1.5))
 
         light = sceneManager.createLight('BlueLight')
-        light.Position = ogre.Vector3(-200, -80, -100)
-        light.DiffuseColour = ogre.ColourValue(0.5, 0.5, 1.0)
+        light.setPosition (-200, -80, -100)
+        light.setDiffuseColour (ogre.ColourValue(0.5, 0.5, 1.0) )
 
         light = sceneManager.createLight('GreenLight')
-        light.Position = ogre.Vector3(0, 0, -100)
-        light.DiffuseColour = ogre.ColourValue(0.5, 1.0, 0.5)
+        light.setPosition (0, 0, -100)
+        light.setDiffuseColour (0.5, 1.0, 0.5)
 
-        camera.Position = ogre.Vector3(100, 50, 100)
+        camera.setPosition (100, 50, 100)
         camera.lookAt(-50, 50, 0)
 
         # Report whether hardware skinning is enabled or not

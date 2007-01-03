@@ -112,7 +112,7 @@ class BspCollisionApplication (sf.Application):
         ## Get random player start point
         vp = self.sceneManager.getSuggestedViewpoint(True)
         self.camera.setPosition(vp.position)
-        self.camera.pitch(ogre.Degree(90)) ## Quake uses X/Y horizon, Z up
+        self.camera.pitch(ogre.Degree(d=90)) ## Quake uses X/Y horizon, Z up
         self.camera.rotate(vp.orientation)
         ## Don't yaw along variable axis, causes leaning
         self.camera.setFixedYawAxis(True, ogre.Vector3.UNIT_Z)
@@ -160,14 +160,12 @@ class BspCollisionApplication (sf.Application):
         targetEnt.setCastShadows(False)
         targetEnt.setQueryFlags(0)
         gTargetNode = self.sceneManager.getRootSceneNode().createChildSceneNode()
-        gTargetNode.scale=ogre.Vector3(0.025, 0.025, 0.025)
+        gTargetNode.setScale(0.025, 0.025, 0.025)
         gTargetNode.attachObject(targetEnt)
 
-        print "\n"
         gRsq = self.sceneManager.createRayQuery(ogre.Ray())
         gRsq.setSortByDistance(True, 1)
         gRsq.setWorldFragmentType(ogre.SceneQuery.WFT_SINGLE_INTERSECTION)
-        print gRsq, "\n", dir (gRsq)
         
     ## Create new frame listener
     def _createFrameListener(self):

@@ -1,6 +1,7 @@
 # This code is in the Public Domain
 import  Ogre as ogre
 import SampleFramework as sf
+import sys
 pThrusters = None
 
 ## As this demo does it's own key input we need to cope with the change to OIS
@@ -24,9 +25,9 @@ class SkyBoxApplication(sf.Application):
         sceneManager.setSkyBox(True, "Examples/SpaceSkyBox")
         
         # Need a light 
+   
         light = sceneManager.createLight('MainLight')
-        light.setPosition (ogre.Vector3(20, 80, 50))
-
+        light.setPosition (20, 80, 50)
         # Also add a nice starship in
         ent = sceneManager.createEntity( "razor", "razor.mesh" )
 

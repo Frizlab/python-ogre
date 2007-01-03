@@ -16,7 +16,7 @@ class SkyPlaneApplication(sf.Application):
         sceneManager.setSkyPlane(True, plane, 'Examples/SpaceSkyPlane', 10000, 3)
  
         light = sceneManager.createLight('MainLight')
-        light.position = ogre.Vector3(20, 80, 50)
+        light.setPosition (20, 80, 50)
 
         entity = sceneManager.createEntity('dragon', 'dragon.mesh')
         sceneManager.getRootSceneNode().attachObject(entity)

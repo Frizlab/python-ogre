@@ -45,7 +45,7 @@ if __name__=="__main__":
             fishNode = sceneManager.getRootSceneNode().createChildSceneNode("fishNode") 
             entity = sceneManager.createEntity('Wanda', 'fish.mesh') 
             fishNode.attachObject(entity) 
-            fishNode.Scale = ogre.Vector3(10.0,10.0,10.0) 
+            fishNode.setScale(10.0,10.0,10.0) 
             
             self.sceneEntities.fishNode = fishNode 
             self.sceneEntities.fish = entity 
@@ -119,7 +119,7 @@ if __name__=="__main__":
                 #First : updates the position of the fish to the position of the moving node on the animation path 
                 #The reason that we did not create an animationTrack for fishNode is that we are interested in 
                 #keyframing only the node position, not the scale, orientation etc... 
-                self.sceneEntities.fishNode.Position = self.sceneEntities.fishAnimationNode.Position 
+                self.sceneEntities.fishNode.setPosition( self.sceneEntities.fishAnimationNode.Position )
                 
                 #Then, takes care of the direction that the fish has to face to 
                 directionToGo = self.sceneEntities.fishLookAtNode.Position - self.sceneEntities.fishAnimationNode.Position 
