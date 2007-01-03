@@ -145,8 +145,8 @@ class OgreNewtonFrameListener(sf.FrameListener):
         
         ## now lets handle mouse input
         ms = self.Mouse.getMouseState()
-        self.msnCam.pitch( Ogre.Radian(ms.relY * -0.2) )
-        self.msnCam.yaw( Ogre.Radian(ms.relX * -0.2), Ogre.Node.TS_WORLD )
+        self.msnCam.pitch( Ogre.Radian(ms.Y.rel * -0.2) )
+        self.msnCam.yaw( Ogre.Radian(ms.X.rel * -0.2), Ogre.Node.TS_WORLD )
 
         ##and Keyboard
         if (self.Keyboard.isKeyDown(OIS.KC_UP)):
@@ -162,7 +162,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
             if (self.timer <= 0.0):
 
                 size = Ogre.Vector3 ( 0.2 + random.random() % 2, 0.2 + random.random() % 2, 0.2 + random.random() % 2 )
-                mass = size.length
+                mass = size.length()
                 pos = self.msnCam.getWorldPosition()
                 
                 name = "Body "+str( self.count )
@@ -180,7 +180,6 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 col =OgreNewt.Box( self.World, size )
                 body = OgreNewt.Body( self.World, col )
                 del col
-                
                 inertia = OgreNewt.CalcBoxSolid( mass, size )
                 body.setMassMatrix( mass, inertia )
                 body.attachToNode( node )

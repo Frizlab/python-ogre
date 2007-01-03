@@ -27,6 +27,6 @@ class conveyorMatCallback ( OgreNewt.ContactCallback ):
         self.rotateTangentDirections( thedir )
         result_accel = (thedir * belt.Speed) - object.getVelocity()
         
-        self.setContactTangentAcceleration( result_accel.length, 0 )
+        self.setContactTangentAcceleration( result_accel.length(), 0 )
     
         return 1

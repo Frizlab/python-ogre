@@ -71,13 +71,13 @@ def handleDragDropped(args):
     return True
 
 def onMouseEnters(args):
-    print "You have Mouse Entery" 
+    #print "You have Mouse Entery" 
     # change to mouse move cursor 
     cegui.System.getSingleton().setDefaultMouseCursor("TaharezLook", "MouseMoveCursor")
     
 
 def onMouseLeaves(args):
-    print "You have Mouse Left" 
+    #print "You have Mouse Left" 
     # change to mouse move cursor 
     cegui.System.getSingleton().setDefaultMouseCursor("TaharezLook", "MouseArrow")
 
@@ -106,7 +106,9 @@ class GEUIApplication(SampleFramework.Application):
 
 
         # initiaslise CEGUI Renderer
-        self.guiRenderer = cegui.OgreCEGUIRenderer(self.renderWindow,ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager)
+        print self.renderWindow
+        print self.sceneManager
+        self.guiRenderer = cegui.OgreCEGUIRenderer(self.renderWindow,ogre.RenderQueueGroupID.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager)
         self.system = cegui.System(self.guiRenderer)
         cegui.Logger.getSingleton().loggingLevel = cegui.Insane
 
@@ -129,7 +131,7 @@ class GEUIApplication(SampleFramework.Application):
 
         # setup tooltip
         self.system.setDefaultTooltip("TaharezLook/Tooltip" )
-        tip = self.system.defaultTooltip
+        tip = self.system.getDefaultTooltip()
 
         # displayTime
         #     the number of seconds the tooltip should be displayed for before it automatically
@@ -198,7 +200,7 @@ class GEUIApplication(SampleFramework.Application):
         for x in [frs,feq]: 
             for xp in range(cols):
                 for yp in range(rows):
-                    name = "Slot" + str(xp) + str(yp) + x.name.c_str
+                    name = "Slot" + str(xp) + str(yp) + x.name.c_str()
                     self.img.append(CreateControl("TaharezLook/StaticImage",name,x,[xp*deltax,yp*deltay],[deltax,deltay],'Image1',1)) 
 
         # create events for each slot
