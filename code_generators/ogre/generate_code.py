@@ -477,7 +477,6 @@ def generate_code():
         cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
         ## because we want backwards pyogre compatibility lets add leading lowercase properties
         common_utils.add_LeadingLowerProperties ( cls )
-        common_utils.add_PropertyDoc ( cls )
 
 
 ##    common_utils.add_properties( ogre_ns.classes(), True )

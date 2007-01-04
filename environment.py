@@ -63,12 +63,12 @@ projects = {
 }
 
 if 'roman' in getpass.getuser():
-    root_dir = r'D:\python-ogre'
-    gccxml_bin = r'd:/gccxml_cvs/gccxml-build/bin/release/gccxml.exe'
-    python_include_dirs = 'c:/python/include'
-    pyplusplus_install_dir = r'D:\pygccxml_sources\sources'
+    root_dir = r'D:\dev\python-ogre\bindings-dev'
+    gccxml_bin = r'D:\dev\gccxml/gccxml.exe'
+    python_include_dirs = 'e:/python24/include'
+    pyplusplus_install_dir = r'D:\dev\language-binding\sources'
 
-    ogre.include_dirs = r'D:\OgreSDK\include'
+    ogre.include_dirs = [r'D:\dev\python-ogre\sources\ogre_cvs\ogrenew\OgreMain\include']
     ois.include_dirs = r'D:\OisSDK\includes'
 else:
     root_dir = r'C:\development\pywork'
@@ -135,7 +135,7 @@ sys.path.append( pyplusplus_install_dir + r'/pyplusplus_dev' )
 
 shared_ptr_dir = os.path.join( root_dir, 'shared_ptr' )
 generated_dir = os.path.join( root_dir, 'generated' )
-generated_dir = 'c:/development/boost/libs/pythonogre'
+#generated_dir = 'c:/development/boost/libs/pythonogre'
 
 declarations_cache_dir = os.path.join( root_dir, 'code_generators', 'cache' )
 
