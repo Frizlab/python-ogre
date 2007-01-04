@@ -191,8 +191,6 @@ def generate_code():
     for cls in mb.global_ns.namespace ('CEGUI').classes():
         cls.add_properties(  )
         common_utils.add_LeadingLowerProperties ( cls )
-        common_utils.add_PropertyDoc ( cls )
-
 
     common_utils.add_constants( mb, { 'CEGUI_version' :  '"%s"' % environment.CEGUI.version
                                        , 'python_version' : '"%s"' % sys.version } )

@@ -568,9 +568,6 @@
 				RelativePath=".\ogre_CVS\AnimationIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\AnimationList.pypp.cpp">
-			</File>
-			<File
 				RelativePath=".\ogre_CVS\AnimationState.pypp.cpp">
 			</File>
 			<File
@@ -628,9 +625,6 @@
 				RelativePath=".\ogre_CVS\Bone.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\BoneList.pypp.cpp">
-			</File>
-			<File
 				RelativePath=".\ogre_CVS\BorderPanelOverlayElement.pypp.cpp">
 			</File>
 			<File
@@ -647,12 +641,6 @@
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\CameraIterator.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\CameraList.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\ChildContainerMap.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\CmdAngle.pypp.cpp">
@@ -868,9 +856,6 @@
 				RelativePath=".\ogre_CVS\EffectMap.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\EnabledAnimationStateList.pypp.cpp">
-			</File>
-			<File
 				RelativePath=".\ogre_CVS\Entity.pypp.cpp">
 			</File>
 			<File
@@ -883,10 +868,46 @@
 				RelativePath=".\ogre_CVS\Exception.pypp.cpp">
 			</File>
 			<File
+				RelativePath=".\ogre_CVS\ExceptionCodeType_less_0_grate_.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ExceptionCodeType_less_1_grate_.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ExceptionCodeType_less_2_grate_.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ExceptionCodeType_less_3_grate_.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ExceptionCodeType_less_4_grate_.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ExceptionCodeType_less_5_grate_.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ExceptionCodeType_less_6_grate_.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ExceptionCodeType_less_7_grate_.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ExceptionCodeType_less_8_grate_.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ExceptionCodeType_less_9_grate_.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ExceptionFactory.pypp.cpp">
+			</File>
+			<File
 				RelativePath=".\ogre_CVS\FileHandleDataStream.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\FileInfo.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\FileNotFoundException.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\FileStreamDataStream.pypp.cpp">
@@ -923,9 +944,6 @@
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\Frustum.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\GeometryBucketList.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\GeometryIterator.pypp.cpp">
@@ -976,16 +994,13 @@
 				RelativePath=".\ogre_CVS\IlluminationPass.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\IlluminationPassList.pypp.cpp">
-			</File>
-			<File
 				RelativePath=".\ogre_CVS\Image.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\IndexData.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\IntConstantList.pypp.cpp">
+				RelativePath=".\ogre_CVS\InternalErrorException.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\IntersectionSceneQuery.pypp.cpp">
@@ -995,6 +1010,18 @@
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\IntersectionSceneQueryResult.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\InvalidParametersException.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\InvalidStateException.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\IOException.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\ItemIdentityException.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\KeyFrame.pypp.cpp">
@@ -1018,19 +1045,13 @@
 				RelativePath=".\ogre_CVS\LinkedSkeletonAnimSourceIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\LinkedSkeletonAnimSourceList.pypp.cpp">
-			</File>
-			<File
 				RelativePath=".\ogre_CVS\LiSPSMShadowCameraSetup.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\list_less_Ogre_scope_Particle_ptr__comma__std_scope_allocator_less_Ogre_scope_Particle_ptr__grate___grate_.pypp.cpp">
+				RelativePath=".\ogre_CVS\ListOfParticle.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\ListOfPlane.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\LODBucketList.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\LODFaceList.pypp.cpp">
@@ -1084,28 +1105,16 @@
 				RelativePath=".\ogre_CVS\MapIteratorStringParticleAffectorFactoryPtr.pypp.cpp">
 			</File>
 			<File
+				RelativePath=".\ogre_CVS\MapIteratorStringToMultiMapFromStringToString.pypp.cpp">
+			</File>
+			<File
 				RelativePath=".\ogre_CVS\MapIteratorVertexAnimationTrackPtr.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\MapOfAnimationState.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\MapOfOverlayElement.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\MapOfRegionIterator.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\MapOfStringToConfigOption.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\MapSceneManagerInstances.pypp.cpp">
-			</File>
-			<File
 				RelativePath=".\ogre_CVS\Material.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\MaterialBucketMap.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\MaterialIterator.pypp.cpp">
@@ -1150,9 +1159,6 @@
 				RelativePath=".\ogre_CVS\MetaDataIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\MetaDataList.pypp.cpp">
-			</File>
-			<File
 				RelativePath=".\ogre_CVS\MovableObject.pypp.cpp">
 			</File>
 			<File
@@ -1162,13 +1168,10 @@
 				RelativePath=".\ogre_CVS\MovableObjectFactoryIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\MovableObjectFactoryMap.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\MovableObjectMapIterator.pypp.cpp">
-			</File>
-			<File
 				RelativePath=".\ogre_CVS\MovablePlane.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\MultiMapStringToString.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\MultiRenderTarget.pypp.cpp">
@@ -1210,9 +1213,6 @@
 				RelativePath=".\ogre_CVS\OverlayContainer.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\OverlayContainerList.pypp.cpp">
-			</File>
-			<File
 				RelativePath=".\ogre_CVS\OverlayElement.pypp.cpp">
 			</File>
 			<File
@@ -1220,9 +1220,6 @@
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\OverlayManager.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\OverlayMap.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\OverlayMapIterator.pypp.cpp">
@@ -1255,9 +1252,6 @@
 				RelativePath=".\ogre_CVS\ParticleAffectorFactory.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\ParticleAffectorFactoryMap.pypp.cpp">
-			</File>
-			<File
 				RelativePath=".\ogre_CVS\ParticleEmitter.pypp.cpp">
 			</File>
 			<File
@@ -1265,9 +1259,6 @@
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\ParticleEmitterFactoryIterator.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\ParticleEmitterFactoryMap.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\ParticleIterator.pypp.cpp">
@@ -1288,13 +1279,7 @@
 				RelativePath=".\ogre_CVS\ParticleSystemRenderer.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\ParticleSystemRendererFactoryMap.pypp.cpp">
-			</File>
-			<File
 				RelativePath=".\ogre_CVS\ParticleSystemTemplateIterator.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\ParticleTemplateMap.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\ParticleVisualData.pypp.cpp">
@@ -1357,9 +1342,6 @@
 				RelativePath=".\ogre_CVS\PoseRefList.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\PriorityMap.pypp.cpp">
-			</File>
-			<File
 				RelativePath=".\ogre_CVS\PriorityMapIterator.pypp.cpp">
 			</File>
 			<File
@@ -1414,9 +1396,6 @@
 				RelativePath=".\ogre_CVS\RealConstantIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\RealConstantList.pypp.cpp">
-			</File>
-			<File
 				RelativePath=".\ogre_CVS\Rect.pypp.cpp">
 			</File>
 			<File
@@ -1438,6 +1417,9 @@
 				RelativePath=".\ogre_CVS\RenderablePass.pypp.cpp">
 			</File>
 			<File
+				RelativePath=".\ogre_CVS\RenderingAPIException.pypp.cpp">
+			</File>
+			<File
 				RelativePath=".\ogre_CVS\RenderOperation.pypp.cpp">
 			</File>
 			<File
@@ -1450,13 +1432,7 @@
 				RelativePath=".\ogre_CVS\RenderQueueGroup.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\RenderQueueGroupMap.pypp.cpp">
-			</File>
-			<File
 				RelativePath=".\ogre_CVS\RenderQueueInvocation.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\RenderQueueInvocationList.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\RenderQueueInvocationSequence.pypp.cpp">
@@ -1489,9 +1465,6 @@
 				RelativePath=".\ogre_CVS\RenderTargetListener.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\RenderTargetMap.pypp.cpp">
-			</File>
-			<File
 				RelativePath=".\ogre_CVS\RenderTargetViewportEvent.pypp.cpp">
 			</File>
 			<File
@@ -1516,16 +1489,10 @@
 				RelativePath=".\ogre_CVS\ResourceGroupManager.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\ResourceHandleMap.pypp.cpp">
-			</File>
-			<File
 				RelativePath=".\ogre_CVS\ResourceManager.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\ResourceManagerIterator.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\ResourceManagerMap.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\ResourceMapIterator.pypp.cpp">
@@ -1541,6 +1508,9 @@
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\RotationalSpline.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\RuntimeAssertionException.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\ScaleControllerFunction.pypp.cpp">
@@ -1603,13 +1573,7 @@
 				RelativePath=".\ogre_CVS\SetOfWorldFragmentTypes.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\SettingsBySection.pypp.cpp">
-			</File>
-			<File
 				RelativePath=".\ogre_CVS\SettingsIterator.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\SettingsMultiMap.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\ShadowCameraSetup.pypp.cpp">
@@ -1622,9 +1586,6 @@
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\ShadowRenderable.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\ShadowRenderableList.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\ShadowRenderableListIterator.pypp.cpp">
@@ -1729,7 +1690,7 @@
 				RelativePath=".\ogre_CVS\StdPairBoolFloat.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\StdPairUnsignedUnsiged.pypp.cpp">
+				RelativePath=".\ogre_CVS\StdPairUnsignedUnsigned.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\StringConverter.pypp.cpp">
@@ -1750,16 +1711,10 @@
 				RelativePath=".\ogre_CVS\SubMeshIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\SubMeshList.pypp.cpp">
-			</File>
-			<File
 				RelativePath=".\ogre_CVS\TagPoint.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\TargetManager.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\TargetPasses.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\Technique.pypp.cpp">
@@ -1786,9 +1741,6 @@
 				RelativePath=".\ogre_CVS\TextureDefinitionIterator.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\TextureDefinitions.pypp.cpp">
-			</File>
-			<File
 				RelativePath=".\ogre_CVS\TextureFrameControllerValue.pypp.cpp">
 			</File>
 			<File
@@ -1796,9 +1748,6 @@
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\TextureUnitState.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\TextureUnitStates.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\TimeIndex.pypp.cpp">
@@ -1819,6 +1768,9 @@
 				RelativePath=".\ogre_CVS\TriangleList.pypp.cpp">
 			</File>
 			<File
+				RelativePath=".\ogre_CVS\UnimplementedException.pypp.cpp">
+			</File>
+			<File
 				RelativePath=".\ogre_CVS\UserDefinedObject.pypp.cpp">
 			</File>
 			<File
@@ -1832,18 +1784,6 @@
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\Vector4.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\vector_less_Ogre_scope_Node_ptr__comma__std_scope_allocator_less_Ogre_scope_Node_ptr__grate___grate_.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\VectorCompositionTechnique.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\VectorCompositorInstance.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\VectorCompostionPass.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\VectorIteratorBonePtr.pypp.cpp">
@@ -1894,10 +1834,7 @@
 				RelativePath=".\ogre_CVS\VectorOfVector4.pypp.cpp">
 			</File>
 			<File
-				RelativePath=".\ogre_CVS\VectorPass.pypp.cpp">
-			</File>
-			<File
-				RelativePath=".\ogre_CVS\VectorTechnique.pypp.cpp">
+				RelativePath=".\ogre_CVS\VectorStringPairs.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\VertexAnimationTrack.pypp.cpp">
@@ -1930,6 +1867,9 @@
 				RelativePath=".\ogre_CVS\VertexElementList.pypp.cpp">
 			</File>
 			<File
+				RelativePath=".\ogre_CVS\VertexList.pypp.cpp">
+			</File>
+			<File
 				RelativePath=".\ogre_CVS\VertexMorphKeyFrame.pypp.cpp">
 			</File>
 			<File
@@ -1949,6 +1889,9 @@
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\Viewport.pypp.cpp">
+			</File>
+			<File
+				RelativePath=".\ogre_CVS\VisibleObjectsBoundsInfo.pypp.cpp">
 			</File>
 			<File
 				RelativePath=".\ogre_CVS\WaveformControllerFunction.pypp.cpp">

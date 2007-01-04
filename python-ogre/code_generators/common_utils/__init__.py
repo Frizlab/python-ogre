@@ -114,23 +114,6 @@ def extract_func_name ( name ):
             break
     ## so now return the function call
     return name[start:end]
- 
-def add_PropertyDoc ( cls ):
-    """ Go through the list of properties and modify any blank doc strings with something useful
-    """
-    for prop in cls.properties:
-        doc = "Python-Ogre Property: " + prop.name + "\\n"
-        if prop.fget:
-            getter = extract_func_name ( str(prop.fget) )
-        if prop.fset:
-            setter = extract_func_name ( str(prop.fset) )
-        if prop.fget and prop.fset :
-            line2 = "  Getter and Setter property wrapping '"+ getter + "' and '" + setter + "'\\n"      
-        elif prop.fget and not prop.fset:
-            line2 = "  Getter ONLY property wrapping '" + getter +"'\\n"
-        else :
-            line2 = "  Setter ONLY property wrapping '" + setter + "'\\n"
-        prop._doc =   '"' + doc + "\\\n" + line2 + '"'
         
         
        

@@ -195,7 +195,6 @@ def generate_ogrenewt():
     for cls in mb.namespace ('OgreNewt').classes():
         cls.add_properties(  )
         common_utils.add_LeadingLowerProperties ( cls )
-        common_utils.add_PropertyDoc ( cls )
     
     common_utils.add_constants( mb, { 'ogrenewt_version' :  '"%s"' % environment.ogrenewt.version
                                       , 'python_version' : '"%s"' % sys.version } )
