@@ -3,6 +3,7 @@ extracting from C++ doxygen documented file
 Author G.D.
 
 Updates for Ogre handling by AJM - added remarks/note/par
+jan 03 06 - fix bug, replace single leading \ with \\ in clear_str
 """
 
 class doc_extractor:
@@ -20,13 +21,12 @@ class doc_extractor:
         #print "doc_extractor called with:", declaration
         if not declaration.decl_string.startswith(self.startswith):
             return ""
-        
         try:    # some types such as the base namespace don't have 'location'
             if self.file_name != declaration.location.file_name:            
                 self.file_name = declaration.location.file_name
                 self.source = open(declaration.location.file_name).readlines()
         except:
-            #print "DOC without location:", declaration
+            print "DOC without location:", declaration
             return ""
             
         find_block_end = False
@@ -43,7 +43,7 @@ class doc_extractor:
         
         ## lets look for a single comment '///'  We'll try upto 2 lines above
         try:
-            for lcount in xrange(declaration.location.line-2, declaration.location.line-4 , -1):
+            for lcount in xrange(declaration.location.line-1, declaration.location.line-4 , -1):
                 line = self.source[lcount]
                 if line.lstrip()[:3] == '///':
                     str = clear_str(line)
@@ -53,7 +53,7 @@ class doc_extractor:
                     
             ## if that didn't work we'll look for a block of comments
             
-            for lcount in xrange(declaration.location.line - 2, -1, -1):
+            for lcount in xrange(declaration.location.line - 1, -1, -1):
                 line = self.source[lcount]
                 #print "Checking ", lcount, line
                 if not find_block_end:
@@ -74,10 +74,10 @@ class doc_extractor:
                     ## from the 'name' -so we may need to backup one more line to fine doc string..
                     failed +=1
                     final_str = ""  ## make sure we don't add the extra code line
-                    if failed > 1:
+                    if failed > 2:
                         break
                 if final_str:
-                    doc_lines.insert(0, final_str)
+                    doc_lines.insert(0, clear_str(final_str))
         except:
             return ""   ## problem finding comments
         if doc_lines:
@@ -116,24 +116,28 @@ def clear_str(str):
     """
     replace */! by Space and \breaf, \fn, \param, ...
     """
-    clean = lambda str, sym, change2 = '': str.replace(sym, change2)
-
-    str = reduce(clean, [str, '/', '*', '!', "\brief", "\fn",\
-     "@brief", "@fn", "@ref", "\ref", '"']) ## somtimes there are '"' in the doc strings...
-     
+    def clean ( str, sym, change2 = ""): 
+        return str.replace(sym, change2)
+    str = reduce(clean, [str, '/', '*', '!', "\\brief", '\\fn',\
+     "@brief", "@fn", "@ref", '\\ref', '"']) ## somtimes there are '"' in the doc strings...
     str = clean(str, "@param", "Param: ")
-    str = clean(str, "\param", "Param: ")
+    str = clean(str, "\\param", "Param: ")
     str = clean(str, "@ingroup", "Group")
-    str = clean(str, "\ingroup", "Group")
+    str = clean(str, "\\ingroup", "Group")
     str = clean(str, "@return", "It return")
-    str = clean(str, "\return", "It return")
+    str = clean(str, "\\return", "It return")
     str = clean(str, "@note", "Note: ")
     str = clean(str, "@remarks", "Remarks: ")
     str = clean(str, "@see", "See: ")
-    str = clean(str, "\sa", "See also: ")   # comment string in OgreNewt
+    str = clean(str, "\\sa", "See also: ")   # comment string in OgreNewt
     
     str = clean(str, "@par", "")    ## it will get a single blank line by default
+    str = clean(str, "\\par", "")    ## it will get a single blank line by default
     str = clean(str, "\n", "\\n") 
+    str = clean(str, "\\p", "")     ## cegui comments
+    str = clean(str, "\\exception", "Exception: ") 
+    str = clean(str, "::", ".")     ## make it more python accurate 
+    str = clean(str, "->", ".") 
     return str.lstrip()
     return "  " + str.lstrip()
 
@@ -166,6 +170,8 @@ if __name__ == '__main__':
         
     print doc_extractor("")(x_decl("myfunc(int x, int y)","c:/development/ocvs/ogrenew/ogremain/include/OgreSceneManager.h",218))
     print doc_extractor("")(x_decl("","c:/development/ocvs/ogrenew/ogremain/include/OgreSceneManager.h",223))
+    
+    print doc_extractor("")(x_decl("","c:/development/CEGUI-0.5.0/include/CEGUIEvent.h",139))
     
 
             
