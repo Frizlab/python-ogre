@@ -108,6 +108,8 @@ def filter_declarations( mb ):
     tempstring = orRe.arguments[1].default_value[:pos]+"::Ogre::"+orRe.arguments[1].default_value[pos:]
     orRe.arguments[1].default_value = tempstring
     
+    ## a string one that stops pydoc working against CEGUI
+    CEGUI_ns.class_('ListHeader').variable('SegmentNameSuffix').exclude()
 #     #Exclude non default constructors of iterator classes. 
 #     for cls in CEGUI_ns.classes():
 #        if not declarations.templates.is_instantiation( cls.name ):
