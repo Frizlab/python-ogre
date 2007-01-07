@@ -96,10 +96,13 @@ def filter_declarations( mb ):
     ogre_ns.class_('MapIterator<std::map<std::string, Ogre::ParticleSystemRendererFactory*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::ParticleSystemRendererFactory*> > > >').mem_fun('peekNextValue').exclude()
     ogre_ns.class_('BillboardParticleRendererFactory').exclude()
     ogre_ns.class_('ParticleSystemManager').mem_fun('addRendererFactory').exclude()
+    
     ## moveableobject's probably need further looking at...
-    ogre_ns.class_('ConstMapIterator<stdext::hash_map<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > >').exclude()
-    ogre_ns.class_('MapIterator<stdext::hash_map<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > >').exclude()
-    ogre_ns.class_('Mesh').mem_fun('getSubMeshNameMap').exclude()
+#     ogre_ns.class_('ConstMapIterator<stdext::hash_map<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > >').exclude()
+#     ogre_ns.class_('MapIterator<stdext::hash_map<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > >').exclude()
+    
+    ogre_ns.class_('Mesh').typedef('SubMeshNameMap').include()
+    #ogre_ns.class_('Mesh').mem_fun('getSubMeshNameMap').include()
 
     
     ## Ogre::GpuProgramParameters::AutoConstantEntry is flagged as private but other functions rely on it
@@ -125,6 +128,7 @@ def filter_declarations( mb ):
     std_ns = global_ns.namespace("std")
     std_ns.class_("pair<unsigned, unsigned>").include()
     std_ns.class_("pair<bool, float>").include()
+    global_ns.namespace("stdext").class_('hash_map<std::string, unsigned short, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, unsigned short> > >').include()
 
     # exclude functions and operators that return Real * as we don't handle them well :(            
     ogre_ns.mem_funs( return_type='::Ogre::Real const *', allow_empty=True).exclude()
@@ -326,7 +330,19 @@ def configure_exception(mb):
     #We don't exclude  Exception, because it contains functionality, that could
     #be useful to user. But, we will provide automatic exception translator
     Exception = mb.namespace( 'Ogre' ).class_( 'Exception' )
+    Exception.include()
     Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getFullDescription().c_str()' )
+    
+def get_pyplusplus_alias( typedef ):
+    dpath = declarations.declaration_path( typedef )
+    if len( dpath ) != 4:
+       return None
+    #dpath[0] is global namespace
+    if dpath[1] != 'pyplusplus':
+       return None
+    if dpath[2] != 'aliases':
+       return None
+    return typedef.name
 
 
 def add_transformations ( mb ):
@@ -374,7 +390,7 @@ def generate_code():
         , messages.W1029
         , messages.W1030
         , messages.W1031
-        , messages.W1040 
+        #, messages.W1040 
         # Inaccessible property warning
         , messages.W1041 )
     
@@ -397,22 +413,16 @@ def generate_code():
     # We filter (both include and exclude) specific classes and functions that we want to wrap
     # 
     filter_declarations (mb)
-
-#     for cls in mb.classes():
-#         print cls
-#     sys.exit(-1)
-
-    
+ 
     #
     # fix shared Ptr's that are defined as references but NOT const...
     #
     find_nonconst ( mb.namespace( 'Ogre' ) )
     
-   
     #
     # Then we convert automatic 'long' names to simple ones - check the list in customization_data.py
     #
-    common_utils.set_declaration_aliases( mb.global_ns, customization_data.aliases( environment.ogre.version ) )
+#     common_utils.set_declaration_aliases( mb.global_ns, customization_data.aliases( environment.ogre.version ) )
     #
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
@@ -477,17 +487,39 @@ def generate_code():
         cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
         ## because we want backwards pyogre compatibility lets add leading lowercase properties
         common_utils.add_LeadingLowerProperties ( cls )
+        ##common_utils.add_PropertyDoc ( cls )
 
-
-##    common_utils.add_properties( ogre_ns.classes(), True )
-    
     common_utils.add_constants( mb, { 'ogre_version' :  '"%s"' % environment.ogre.version
                                       , 'python_version' : '"%s"' % sys.version } )
+    for cls in mb.classes():
+        for alias in cls.aliases:
+            ppya=get_pyplusplus_alias( alias)
+            if ppya:
+                cls.alias = ppya
+                print "Fixing alias: ",cls.name," == ",ppya
+                break
+    
+#     for cls in mb.classes():
+# #         if cls.ignore == False and '_' in cls.alias:
+#         ## turns out that a number of needed classes have ignore == True :( 
+#         ## and yet they seem to be exposed:
+#         ## ie.
+#         ## "set<Ogre::SceneQuery::WorldFragmentType, std::less<Ogre::SceneQuery::WorldFragmentType>, std::allocator<Ogre::SceneQuery::WorldFragmentType> >"
+#         ## so I'm going to create an alias for all classes that have 'Ogre' in them and have an ugly alias
+#         filterstring=[ "map", "list", "pair", "set", "Ogre", "vector"]
+#         if  '_' in cls.alias: ## or 'Ogre' in cls.name:    
+#             for s in filterstring:
+#                 if cls.name.startswith(s):
+#                     #guess = try_create_alias( cls.alias)
+#                     guess = cls.alias
+#                     print "typedef ", cls.name
+#                     break
  
 #     
 #     #Creating code creator. After this step you should not modify/customize declarations.
     ##extractor = exdoc.doc_extractor("::Ogre::SceneManager") # you can filter the class for testing
     mb.build_code_creator (module_name='_ogre_' , doc_extractor= extractor)
+    
     for inc in environment.ogre.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )
     mb.code_creator.user_defined_directories.append( environment.ogre.generated_dir )
