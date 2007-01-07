@@ -27,11 +27,11 @@
 //#ifdef OGRE_VERSION_CVS
 
 
-namespace pyplusplus { namespace aliases{
- using namespace Ogre;
-
+namespace pyplusplus { namespace aliases {
+inline void instantiate(){    
+ 
  #include "python_ogre_alias.h"
-} }
+} } }
 
 
 namespace python_ogre{ namespace details{
@@ -39,7 +39,6 @@ inline void instantiate(){
  using namespace Ogre;
  #include "python_ogre_sizeof.h"
  
- sizeof ( Controller<float> );
  // note these std's need to be specifically 'included' in generate_code...
  sizeof (std::pair<bool, float> );
  sizeof (std::pair<unsigned int,unsigned int> );
@@ -49,7 +48,8 @@ inline void instantiate(){
  sizeof (stdext::hash_compare<std::string, std::less<std::string> >);
  sizeof(stdext::hash_map<std::string, unsigned short, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, unsigned short> > >);
  sizeof(HashMap<String, ushort>);
- sizeof( Ogre::Mesh::SubMeshNameMap );
+ sizeof ( std::vector<Ogre::RenderSystem*, std::allocator<Ogre::RenderSystem*> > );
+ 
  
 } } }
 
