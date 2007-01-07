@@ -335,6 +335,7 @@ def configure_exception(mb):
     
 def get_pyplusplus_alias( typedef ):
     dpath = declarations.declaration_path( typedef )
+#     print "checking", len(dpath), typedef.name
     if len( dpath ) != 4:
        return None
     #dpath[0] is global namespace
@@ -492,7 +493,10 @@ def generate_code():
     common_utils.add_constants( mb, { 'ogre_version' :  '"%s"' % environment.ogre.version
                                       , 'python_version' : '"%s"' % sys.version } )
     for cls in mb.classes():
+#         print "checking class", cls.name
+#         print "current alias", cls.alias
         for alias in cls.aliases:
+#             print "checking alais", alias
             ppya=get_pyplusplus_alias( alias)
             if ppya:
                 cls.alias = ppya

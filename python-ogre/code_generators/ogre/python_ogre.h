@@ -28,10 +28,10 @@
 
 
 namespace pyplusplus { namespace aliases {
-inline void instantiate(){    
+//inline void instantiate(){    
  
  #include "python_ogre_alias.h"
-} } }
+} } // }
 
 
 namespace python_ogre{ namespace details{
