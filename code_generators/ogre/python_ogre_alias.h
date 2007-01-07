@@ -1,7 +1,34 @@
 typedef std::set<Ogre::SceneQuery::WorldFragmentType> SupportedWorldFragments;
 //sizeof ( SupportedWorldFragments );
-
+typedef std::vector<std::pair<Ogre::String, Ogre::String> > customParameters;
+typedef std::list<Ogre::Plane> StdListPlane;
+typedef std::list<Ogre::Particle*> StdListParticlePtr;
 typedef ::Ogre::Controller<float> ControllerFloat;
+typedef ::Ogre::ControllerValue<float> ControllerValueFloat;
+typedef ::Ogre::ControllerFunction<float> ControllerFunctionFloat;
+typedef  ::Ogre::Singleton<Ogre::CompositorManager> SingletonCompositorManager;
+typedef  ::Ogre::Singleton<Ogre::SkeletonManager> SingletonSkeletonManager;
+typedef  ::Ogre::Singleton<Ogre::Root> SingletonRoot;
+typedef  ::Ogre::Singleton<Ogre::SceneManagerEnumerator> SingletonSceneManagerEnumerator;
+typedef  ::Ogre::Singleton<Ogre::ShadowTextureManager> SingletonShadowTextureManager;
+typedef  ::Ogre::Singleton<Ogre::ResourceBackgroundQueue> SingletonResourceBackgroundQueue;
+typedef  ::Ogre::Singleton<Ogre::TextureManager> SingletonTextureManager;
+typedef  ::Ogre::Singleton<Ogre::Profiler> SingletonProfiler;
+typedef  ::Ogre::Singleton<Ogre::ParticleSystemManager> SingletonParticleSystemManager;
+typedef  ::Ogre::Singleton<Ogre::OverlayManager> SingletonOverlayManager;
+typedef  ::Ogre::Singleton<Ogre::MeshManager> SingletonMeshManager;
+typedef  ::Ogre::Singleton<Ogre::MaterialManager> SingletonMaterialManager;
+typedef  ::Ogre::Singleton<Ogre::LogManager> SingletonLogManager;
+typedef  ::Ogre::Singleton<Ogre::HighLevelGpuProgramManager> SingletonHighLevelGpuProgramManager;
+typedef  ::Ogre::Singleton<Ogre::GpuProgramManager> SingletonGpuProgramManager;
+typedef  ::Ogre::Singleton<Ogre::HardwareBufferManager> SingletonHardwareBufferManager;
+typedef  ::Ogre::Singleton<Ogre::ControllerManager> SingletonControllerManager;
+typedef  ::Ogre::Singleton<Ogre::ArchiveManager> SingletonArchiveManager;
+typedef  ::Ogre::Singleton<Ogre::ResourceGroupManager> SingletonResourceGroupManager;
+typedef  ::Ogre::Singleton<Ogre::ArchiveManager> SingletonArchiveManager;
+typedef  std::pair<bool, float> StdPairBoolFloat;
+typedef  std::pair<unsigned, unsigned> StdPairUnsignedUnsigned;
+
 //sizeof( ControllerFloat );
 typedef ::Ogre::Mesh::SubMeshNameMap SubMeshNameMap;
 //sizeof( SubMeshNameMap );
@@ -485,6 +512,8 @@ typedef  Singleton<Ogre::HardwareBufferManager> SingletonHardwareBufferManager;
 typedef  Singleton<Ogre::ControllerManager> SingletonControllerManager;
 typedef  Singleton<Ogre::ArchiveManager> SingletonArchiveManager;
 typedef  Singleton<Ogre::ResourceGroupManager> SingletonResourceGroupManager;
+typedef  Singleton<Ogre::ArchiveManager> SingletonArchiveManager;
+
 typedef  TRect<float> TRectFloat;
 typedef  ExceptionCodeType<2> ExceptionCodeType_less_2;
 typedef  ExceptionCodeType<5> ExceptionCodeType_less_5;
