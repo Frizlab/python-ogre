@@ -1,3 +1,6 @@
+sizeof( ::Ogre::Controller<float> );
+sizeof( ::Ogre::Mesh::SubMeshNameMap );
+sizeof( ::Ogre::RenderSystem );
 sizeof( ::Ogre::ConvexBody::PolygonList );
 sizeof( ::Ogre::Polygon::VertexList );
 sizeof( ::Ogre::Polygon::EdgeMap );
@@ -25,16 +28,12 @@ sizeof( ::Ogre::ConfigOption );
 sizeof( ::Ogre::RenderQueueInvocationIterator );
 sizeof( ::Ogre::RenderQueueInvocationList );
 sizeof( ::Ogre::IlluminationPassList );
-
 sizeof( ::Ogre::ATTRIBUTE_PARSER );
 sizeof( ::Ogre::ShadowCameraSetupPtr );
 sizeof( ::Ogre::VertexBoneAssignment );
-
 sizeof( ::Ogre::ControllerFunctionRealPtr );
 sizeof( ::Ogre::ControllerValueRealPtr );
-
 sizeof( ::Ogre::ConstImagePtrList );
-
 sizeof( ::Ogre::ImagePtrList );
 sizeof( ::Ogre::ConfigFile::SettingsMultiMap );
 sizeof( ::Ogre::ConfigFile::SettingsIterator );
@@ -226,12 +225,12 @@ sizeof( ::Ogre::uint8 );
 sizeof( ::Ogre::uint16 );
 sizeof( ::Ogre::uint32 );
 
- sizeof (VectorIterator<std::vector<Bone*> >);
-    sizeof (VectorIterator<std::vector<CompositionTargetPass*> >);
-    sizeof (VectorIterator<std::vector<CompositorInstance*> >);
-    sizeof (VectorIterator<std::vector<IlluminationPass*> >);
-    sizeof (VectorIterator<std::vector<Pass*> >);
-    sizeof (VectorIterator<std::vector<RenderQueueInvocation*> >);
-    sizeof (VectorIterator<std::vector<Technique*> >);
-    sizeof (VectorIterator<std::vector<TextureUnitState*> >);
-    sizeof (VectorIterator<std::vector<VertexPoseKeyFrame::PoseRef> >);
+//  sizeof (VectorIterator<std::vector<Bone*> >);
+//     sizeof (VectorIterator<std::vector<CompositionTargetPass*> >);
+//     sizeof (VectorIterator<std::vector<CompositorInstance*> >);
+//     sizeof (VectorIterator<std::vector<IlluminationPass*> >);
+//     sizeof (VectorIterator<std::vector<Pass*> >);
+//     sizeof (VectorIterator<std::vector<RenderQueueInvocation*> >);
+//     sizeof (VectorIterator<std::vector<Technique*> >);
+//     sizeof (VectorIterator<std::vector<TextureUnitState*> >);
+//     sizeof (VectorIterator<std::vector<VertexPoseKeyFrame::PoseRef> >);
