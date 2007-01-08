@@ -117,7 +117,10 @@ def filter_declarations( mb ):
 #     else:
 #         global_ns.namespace("__gnu_cxx").class_('hash_map<Ogre::String, Ogre::ushort>').include()
 
-    # exclude functions and operators that return Real * as we don't handle them well :(            
+    # exclude functions and operators that return Real * as we don't handle them well :(
+    # 
+    # TODO  could change them to return_pointee            
+    #
     ogre_ns.mem_funs( return_type='::Ogre::Real const *', allow_empty=True).exclude()
     ogre_ns.mem_funs( return_type='::Ogre::Real *',allow_empty=True).exclude()
     ogre_ns.mem_funs( return_type='float *',allow_empty=True).exclude()
@@ -125,7 +128,10 @@ def filter_declarations( mb ):
     ogre_ns.member_operators( return_type='::Ogre::Real const *', allow_empty=True ).exclude()
     ogre_ns.member_operators( return_type='::Ogre::Real *', allow_empty=True).exclude()
     ogre_ns.member_operators( return_type='float *', allow_empty=True).exclude()
-
+    
+    ogre_ns.mem_funs( return_type='::Ogre::uchar *', allow_empty=True).exclude() #light::getdata xxx.opaque = True ??
+    ogre_ns.mem_funs( return_type='::Ogre::uchar const *', allow_empty=True).exclude() #light::getdata xxx.opaque = True ??
+   
     #all constructors in this class are private, also some of them are public.
     Skeleton = ogre_ns.class_( 'Skeleton' ).constructors().exclude()
 
