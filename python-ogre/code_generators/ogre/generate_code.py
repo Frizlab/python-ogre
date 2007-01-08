@@ -123,6 +123,10 @@ def filter_declarations( mb ):
     ogre_ns.class_('SubMesh').mem_fun('getBoneAssignmentIterator').exclude()
     ogre_ns.class_('GpuProgramParameters').mem_fun('getAutoConstantIterator').exclude()
     
+    # new one AJM 08 Jan 07 - in the Ogreroot.h file but not in the source :(
+    ogre_ns.class_('Root').mem_fun('termHandler').exclude()
+    
+
     
     # A couple of Std's that need exposing
     std_ns = global_ns.namespace("std")
