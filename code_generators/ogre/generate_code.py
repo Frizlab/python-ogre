@@ -38,23 +38,15 @@ def filter_declarations( mb ):
     startswith = [
         # Don't include, we'll never need.
         'D3D', 'GL', 'WIN32', '_'  
+        , 'MemoryManager'   ## it's a specialised C++ mem manger not needed in Python
+        ## , 'Any' ## it tries to hold any Ogre type - we get it for free in Python, however other funcs need it
+        , 'RadixSort' ## these show up as ugly aliases but are never exposed - and are really protected
     ]
 
-    if environment.ogre.version == "CVS":
+    if not environment.ogre.version.startswith("1.2"):
         mb.global_ns.class_( 'vector<Ogre::Vector4, std::allocator<Ogre::Vector4> >' ).exclude( )
     
-    
-    ## Exclude all public not pure virtual, that starts with '_'
-    ## AJM - no real reason to exclude these functions - and more to the point we sometimes need them :)
-#     query = declarations.access_type_matcher_t( 'public' ) \
-#             & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL ) \
-#             & declarations.custom_matcher_t( lambda decl: decl.name.startswith( '_' ) )
-#     non_public_non_pure_virtual = ogre_ns.calldefs( query )
-#     non_public_non_pure_virtual.exclude()
-
-
-    GeomRegion = ogre_ns.class_( "StaticGeometry" ).class_("Region")
-    GeomRegion.member_functions('getLights'). exclude() # fails at link time
+# # #     ogre_ns.class_( "StaticGeometry" ).class_("Region").member_functions('getLights').exclude() # fails at link time
     
 
     ## Now get rid of a wide range of classes as defined earlier in startswith...
@@ -63,9 +55,6 @@ def filter_declarations( mb ):
         classes = ogre_ns.classes( common_utils.decl_starts_with(prefix), allow_empty=True)
         classes.exclude()
 
-    #Only usefull from C++
-    ogre_ns.class_( "MemoryManager" ).exclude()
-  
     #AJM Set of functions in Particle system that don't get wrapped properly.. Rechecked 30Nov06 AJM
     PartSys = ogre_ns.class_( "ParticleSystem" )
     PartSys.class_( "CmdIterationInterval" ).exclude()
@@ -73,13 +62,11 @@ def filter_declarations( mb ):
     PartSys.class_( "CmdNonvisibleTimeout" ).exclude()
     PartSys.class_( "CmdSorted" ).exclude()
     
-    ## Positiontagret is currently incomplete in the CVS code
-    ogre_ns.class_("TargetManager").member_functions("getPositionTargetAt").exclude() # this returns a PositionTarget
+    ## Functions defined in .h files but not implemented in source files
+    ogre_ns.class_("TargetManager").member_functions("getPositionTargetAt").exclude() 
+    ogre_ns.class_('Root').mem_fun('termHandler').exclude()
     
-    ## AJM Need to force    
-    ## ogre_ns.class_("ParticleAffectorFactory").include()
-    ogre_ns.class_("HardwareIndexBufferSharedPtr").include()
-    ogre_ns.class_("GpuProgramParameters").class_("AutoConstantEntry").include() # Autoconstant name space variables missing in compile
+    ## It's a structure that doesn't get included by default...
     ogre_ns.class_("VertexBoneAssignment_s").include()
 
     #
@@ -97,11 +84,8 @@ def filter_declarations( mb ):
     ogre_ns.class_('BillboardParticleRendererFactory').exclude()
     ogre_ns.class_('ParticleSystemManager').mem_fun('addRendererFactory').exclude()
     
-    ## moveableobject's probably need further looking at...
-#     ogre_ns.class_('ConstMapIterator<stdext::hash_map<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > >').exclude()
-#     ogre_ns.class_('MapIterator<stdext::hash_map<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > >').exclude()
-    
-    ogre_ns.class_('Mesh').typedef('SubMeshNameMap').include()
+  
+    #ogre_ns.class_('Mesh').typedef('SubMeshNameMap').include()
     #ogre_ns.class_('Mesh').mem_fun('getSubMeshNameMap').include()
 
     
@@ -112,27 +96,26 @@ def filter_declarations( mb ):
     ogre_ns.class_('GpuProgramParameters').mem_fun('getAutoConstantEntry').exclude()
     ogre_ns.class_('SubEntity').mem_fun('_updateCustomGpuParameter').exclude()
     
-#     ogre_ns.class_("ConstMapIterator<stdext::hash_map<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > >").include()
-#     ogre_ns.class_("MapIterator<stdext::hash_map<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> > > >").include()
-#     ogre_ns.class_("MapIterator<std::multimap<unsigned, Ogre::VertexBoneAssignment_s, std::less<unsigned>, std::allocator<std::pair<unsigned const, Ogre::VertexBoneAssignment_s> > > >").include()
-
     # there are a set of consiterators that I'm not exposing as they need better understanding and testing
     # these functions rely on them so they are being excluded as well
     ogre_ns.class_('SceneNode').member_functions('getAttachedObjectIterator').exclude()
     ogre_ns.class_('Mesh').mem_fun('getBoneAssignmentIterator').exclude()
     ogre_ns.class_('SubMesh').mem_fun('getBoneAssignmentIterator').exclude()
     ogre_ns.class_('GpuProgramParameters').mem_fun('getAutoConstantIterator').exclude()
-    
-    # new one AJM 08 Jan 07 - in the Ogreroot.h file but not in the source :(
-    ogre_ns.class_('Root').mem_fun('termHandler').exclude()
-    
-
-    
+     
     # A couple of Std's that need exposing
     std_ns = global_ns.namespace("std")
     std_ns.class_("pair<unsigned, unsigned>").include()
     std_ns.class_("pair<bool, float>").include()
-    global_ns.namespace("stdext").class_('hash_map<std::string, unsigned short, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, unsigned short> > >').include()
+    
+    # HashMap is defined in OgrePrerequisits.h and is different based on platform
+    # ::stdext::hash_map
+#     if sys.platform=='win32':
+#         for s in global_ns.namespace("stdext").classes():
+# #            print "stdex", s, s.alias
+# #         global_ns.namespace("stdext").class_('hash_map<Ogre::String, Ogre::ushort>').include()
+#     else:
+#         global_ns.namespace("__gnu_cxx").class_('hash_map<Ogre::String, Ogre::ushort>').include()
 
     # exclude functions and operators that return Real * as we don't handle them well :(            
     ogre_ns.mem_funs( return_type='::Ogre::Real const *', allow_empty=True).exclude()
@@ -143,15 +126,9 @@ def filter_declarations( mb ):
     ogre_ns.member_operators( return_type='::Ogre::Real *', allow_empty=True).exclude()
     ogre_ns.member_operators( return_type='float *', allow_empty=True).exclude()
 
-    
     #all constructors in this class are private, also some of them are public.
     Skeleton = ogre_ns.class_( 'Skeleton' ).constructors().exclude()
 
-    #"properties.py" functionality exports as "data" property function, that
-    #returns reference to non-const uchar*, this caused generated code to
-    #raise compilation error
-    ogre_ns.class_( "Image" ).member_functions( 'getData' ).exclude()
-    
     ogre_ns.free_functions ('any_cast').exclude () #not relevant for Python
 
     #AttribParserList is a map from string to function pointer, this class could not be exposed
@@ -179,14 +156,9 @@ def filter_declarations( mb ):
     ogre_ns.calldefs ('getChildIterator').exclude ()
     
     ogre_ns.class_( "ErrorDialog" ).exclude()   # doesn't exist for link time
-    ##ogre_ns.class_("RenderSystemOperation" ).include() # AJM in OgreCompositorInstance
     ogre_ns.class_( 'CompositorInstance').class_('RenderSystemOperation').exclude() # doesn't exist for link time
     ogre_ns.class_( 'CompositorChain').mem_fun('_queuedOperation').exclude() #needs RenderSystemOperation
     
-    ## there are some virtual functions that shouldn't really be exposed anyway..
-#     getType = mb.mem_funs( 'getType' )
-#     getType.virtuality = declarations.VIRTUALITY_TYPES.NOT_VIRTUAL 
-
 ##  Note - you need to do all the 'excludes' AFTER you've included all the classes you want..
 ##  Otherwise things get screwed up...
 
@@ -218,11 +190,13 @@ def filter_declarations( mb ):
 
     #RenderOperation class is marked as private, but I think this is a mistake
     ogre_ns.class_('RenderOperation').include()
-    # need to force these
-    hwnd = global_ns.class_("HWND__")
-    hwnd.opaque = True
-    _iobuf = global_ns.class_("_iobuf")# need the file handle in Ogre::FileHandleDataStream::FileHandleDataStream
-    _iobuf.opaque = True
+    
+    if sys.platform == 'win32':
+        # need to force these
+        hwnd = global_ns.class_("HWND__")
+        hwnd.opaque = True
+        _iobuf = global_ns.class_("_iobuf")# need the file handle in Ogre::FileHandleDataStream::FileHandleDataStream
+        _iobuf.opaque = True
 
     #Exclude non default constructors of iterator classes. 
     for cls in ogre_ns.classes():
@@ -236,7 +210,6 @@ def filter_declarations( mb ):
                                                       , allow_empty=True
                                                       , recursive=False )
        constructors.exclude()
-#     ogre_ns.class_('MeshPtr').include()
 
 
 def find_nonconst ( mb ):
@@ -404,7 +377,7 @@ def generate_code():
                         , environment.ogre.cache_file )
 
     defined_symbols = [ 'OGRE_NONCLIENT_BUILD' ]
-    if environment.ogre.version == "CVS":
+    if not environment.ogre.version.startswith("1.2"):
         defined_symbols.append( 'OGRE_VERSION_CVS' )  
     
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
@@ -414,6 +387,17 @@ def generate_code():
                                           , define_symbols=defined_symbols
                                           , indexing_suite_version=2
                                            )
+    
+    for cls in mb.classes():
+#         print "checking class", cls.name
+#         print "current alias", cls.alias
+        for alias in cls.aliases:
+    #             print "checking alais", alias
+            ppya=get_pyplusplus_alias( alias)
+            if ppya:
+                cls.alias = ppya
+                print "Fixing alias: ",cls.name," == ",ppya
+                break                                       
     #
     # We filter (both include and exclude) specific classes and functions that we want to wrap
     # 
@@ -424,11 +408,7 @@ def generate_code():
     #
     find_nonconst ( mb.namespace( 'Ogre' ) )
     
-    #
-    # Then we convert automatic 'long' names to simple ones - check the list in customization_data.py
-    #
-#     common_utils.set_declaration_aliases( mb.global_ns, customization_data.aliases( environment.ogre.version ) )
-    #
+
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
 
@@ -496,16 +476,7 @@ def generate_code():
 
     common_utils.add_constants( mb, { 'ogre_version' :  '"%s"' % environment.ogre.version
                                       , 'python_version' : '"%s"' % sys.version } )
-    for cls in mb.classes():
-#         print "checking class", cls.name
-#         print "current alias", cls.alias
-        for alias in cls.aliases:
-#             print "checking alais", alias
-            ppya=get_pyplusplus_alias( alias)
-            if ppya:
-                cls.alias = ppya
-                print "Fixing alias: ",cls.name," == ",ppya
-                break
+ 
     
 #     for cls in mb.classes():
 # #         if cls.ignore == False and '_' in cls.alias:
@@ -523,7 +494,8 @@ def generate_code():
 #                     print "typedef ", cls.name
 #                     break
  
-#     
+
+
 #     #Creating code creator. After this step you should not modify/customize declarations.
     ##extractor = exdoc.doc_extractor("::Ogre::SceneManager") # you can filter the class for testing
     mb.build_code_creator (module_name='_ogre_' , doc_extractor= extractor)

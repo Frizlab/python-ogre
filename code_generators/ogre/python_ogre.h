@@ -26,6 +26,7 @@
 
 //#ifdef OGRE_VERSION_CVS
 
+typedef HashMap<Ogre::String, unsigned short> OgreHashMapStringUshortOuter;
 
 namespace pyplusplus { namespace aliases {
 //inline void instantiate(){    
@@ -40,16 +41,11 @@ inline void instantiate(){
  #include "python_ogre_sizeof.h"
  
  // note these std's need to be specifically 'included' in generate_code...
- sizeof (std::pair<bool, float> );
- sizeof (std::pair<unsigned int,unsigned int> );
- sizeof (std::map<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >);
- sizeof (ConstMapIterator<std::map<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > > >); 
- sizeof (stdext::_Hash<stdext::_Hmap_traits<std::string, unsigned short, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, unsigned short> >, false> >);
- sizeof (stdext::hash_compare<std::string, std::less<std::string> >);
- sizeof(stdext::hash_map<std::string, unsigned short, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, unsigned short> > >);
- sizeof(HashMap<String, ushort>);
- sizeof ( std::vector<Ogre::RenderSystem*, std::allocator<Ogre::RenderSystem*> > );
- 
+//  typedef HashMap<Ogre::String, unsigned short> OgreHashMapStringUshortInner;
+//  sizeof (OgreHashMapStringUshortInner );
+//  sizeof (HashMap<String, unsigned short> ); // SubMeshNameMap
+ //sizeof ( stdext::hash_map<String, ushort > );
+//  sizeof ( stdext::hash_map<std::string, unsigned short, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, unsigned short> > > );
  
 } } }
 
