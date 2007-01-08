@@ -46,7 +46,6 @@ def filter_declarations( mb ):
     if not environment.ogre.version.startswith("1.2"):
         mb.global_ns.class_( 'vector<Ogre::Vector4, std::allocator<Ogre::Vector4> >' ).exclude( )
     
-# # #     ogre_ns.class_( "StaticGeometry" ).class_("Region").member_functions('getLights').exclude() # fails at link time
     
 
     ## Now get rid of a wide range of classes as defined earlier in startswith...
@@ -65,6 +64,7 @@ def filter_declarations( mb ):
     ## Functions defined in .h files but not implemented in source files
     ogre_ns.class_("TargetManager").member_functions("getPositionTargetAt").exclude() 
     ogre_ns.class_('Root').mem_fun('termHandler').exclude()
+    ogre_ns.class_( "StaticGeometry" ).class_("Region").member_functions('getLights').exclude() 
     
     ## It's a structure that doesn't get included by default...
     ogre_ns.class_("VertexBoneAssignment_s").include()
