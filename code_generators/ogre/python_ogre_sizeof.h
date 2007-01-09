@@ -10,8 +10,8 @@ sizeof (Ogre::RadixSort<std::list<Ogre::Billboard*>,Ogre::Billboard*,float> );
 //typedef std::map<Ogre::String, Ogre::MovableObjectFactory*> MovableObjectFactoryMap;
 sizeof (HashMap<Ogre::String, unsigned short> ); // SubMeshNameMap
 sizeof (  std::map<Ogre::String, Ogre::MovableObjectFactory*> );
-sizeof ( std::vector<Ogre::RenderSystem*> );
-sizeof ( ::pyplusplus::aliases::RenderSystemPtr );
+//sizeof ( std::vector<Ogre::RenderSystem*> );
+//sizeof ( ::pyplusplus::aliases::RenderSystemPtr );
 sizeof( ::Ogre::Controller<float> );
 sizeof( ::Ogre::ControllerValue<float> );
 sizeof( ::Ogre::ControllerFunction<float> );

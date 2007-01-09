@@ -410,16 +410,16 @@ def generate_code():
                                           , define_symbols=defined_symbols
                                           , indexing_suite_version=2
                                            )
-    #
-    # Fix aliases so we don't get ugly classes
-    #    
-    for cls in mb.classes():
-        for alias in cls.aliases:
-            ppya=get_pyplusplus_alias( alias)
-            if ppya:
-                cls.alias = ppya
-                print "Fixing alias: ",cls," == ",ppya
-                break                                       
+#     #
+#     # Fix aliases so we don't get ugly classes
+#     #    
+#     for cls in mb.classes():
+#         for alias in cls.aliases:
+#             ppya=get_pyplusplus_alias( alias)
+#             if ppya:
+#                 cls.alias = ppya
+#                 print "Fixing alias: ",cls," == ",ppya
+#                 break                                       
     #
     # We filter (both include and exclude) specific classes and functions that we want to wrap
     # 
