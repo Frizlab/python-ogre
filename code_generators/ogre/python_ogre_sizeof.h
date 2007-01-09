@@ -4,14 +4,9 @@ sizeof (Ogre::RadixSort<std::vector<Ogre::RenderablePass>,Ogre::RenderablePass,u
 sizeof (Ogre::RadixSort<std::vector<Ogre::RenderablePass>,Ogre::RenderablePass,float> );
 sizeof (Ogre::RadixSort<std::list<Ogre::Particle*>,Ogre::Particle*,float> );
 sizeof (Ogre::RadixSort<std::list<Ogre::Billboard*>,Ogre::Billboard*,float> );
-//sizeof (Ogre::Any::holder<Ogre::UserDefinedObject*>);
-//sizeof (Ogre::MapIterator<Ogre::MovableObject*> );
-//sizeof ( std::map<String, MovableObjectFactory*> );
-//typedef std::map<Ogre::String, Ogre::MovableObjectFactory*> MovableObjectFactoryMap;
 sizeof (HashMap<Ogre::String, unsigned short> ); // SubMeshNameMap
-sizeof (  std::map<Ogre::String, Ogre::MovableObjectFactory*> );
-//sizeof ( std::vector<Ogre::RenderSystem*> );
-//sizeof ( ::pyplusplus::aliases::RenderSystemPtr );
+sizeof ( std::map<Ogre::String, Ogre::MovableObjectFactory*> );
+
 sizeof( ::Ogre::Controller<float> );
 sizeof( ::Ogre::ControllerValue<float> );
 sizeof( ::Ogre::ControllerFunction<float> );

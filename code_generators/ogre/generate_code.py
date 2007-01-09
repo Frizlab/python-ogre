@@ -475,7 +475,9 @@ def generate_code():
     v = cls.variable( "indexData" )
     v.apply_smart_ptr_wa = True
 
-    for cls in ogre_ns.classes():
+#     for cls in ogre_ns.classes():
+    for cls in mb.global_ns.classes():
+        print "Adding Prop to:", cls
         cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
         ## because we want backwards pyogre compatibility lets add leading lowercase properties
         common_utils.add_LeadingLowerProperties ( cls )
