@@ -7,7 +7,7 @@ typedef std::pair<unsigned, unsigned> StdPairUnsignedUnsigned;
 typedef Ogre::AlignedAllocator<Ogre::Vector4, 0> AlignedAllocatorVector40;
 typedef Ogre::AlignedAllocator<Ogre::Vector4, 0>::rebind<Ogre::Vector4> AlignedAllocatorVector40Rebind;
 typedef HashMap<Ogre::String, unsigned short> HashMapStringShort;
-typedef std::vector <Ogre::RenderSystem*> StdVectorRenderPtr;
+typedef std::vector<Ogre::RenderSystem*> StdVectorRenderPtr;
 
 typedef std::vector<Ogre::Vector4> VectorVector4;
 typedef Ogre::MapIterator<Ogre::VertexAnimationTrack*> MapIVertexAnimationTrackPtr;

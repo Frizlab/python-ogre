@@ -230,7 +230,7 @@ def find_nonconst ( mb ):
         for arg in fun.arguments:
             if 'Ptr' in arg.type.decl_string:
                  if not 'const' in arg.type.decl_string and '&' in arg.type.decl_string:
-                    print "Fixing Const", fun.parent.name,"::", fun.name, "::", arg_position
+                    #print "Fixing Const", fun.parent.name,"::", fun.name, "::", arg_position
                     fun.add_transformation( ft.modify_type(arg_position,declarations.remove_reference ) )
             arg_position +=1
                     
@@ -297,6 +297,7 @@ def set_call_policies( mb ):
             mem_fun.call_policies = call_policies.return_value_policy(
                 call_policies.reference_existing_object )
 
+                
 def set_smart_pointers( mb ):
     for v in mb.variables():
        if not declarations.is_class( v.type ):
@@ -355,6 +356,14 @@ def add_transformations ( mb ):
     ns.mem_fun('::Ogre::Font::getGlyphTexCoords') \
         .add_transformation(ft.output(1), ft.output(2),ft.output(3), ft.output(4))
 
+        
+def query_containers_with_ptrs(decl):
+    if not isinstance( decl, declarations.class_types ):
+       return False
+    if not decl.indexing_suite:
+       return False
+    return declarations.is_pointer( decl.indexing_suite.element_type )
+
 
 #
 # the 'main'function
@@ -378,6 +387,11 @@ def generate_code():
         # Inaccessible property warning
         , messages.W1041 )
     
+    #
+    # Use GCCXML to create the controlling XML file.
+    # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded
+    # NOTE: If you update the source library code you need to manually delete the cache .XML file   
+    #
     xml_cached_fc = parser.create_cached_source_fc(
                         os.path.join( environment.ogre.root_dir, "python_ogre.h" )
                         , environment.ogre.cache_file )
@@ -386,6 +400,9 @@ def generate_code():
     if not environment.ogre.version.startswith("1.2"):
         defined_symbols.append( 'OGRE_VERSION_CVS' )  
     
+    #
+    # build the core Py++ system from the GCCXML created source
+    #    
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
@@ -393,16 +410,15 @@ def generate_code():
                                           , define_symbols=defined_symbols
                                           , indexing_suite_version=2
                                            )
-    
+    #
+    # Fix aliases so we don't get ugly classes
+    #    
     for cls in mb.classes():
-#         print "checking class", cls.name
-#         print "current alias", cls.alias
         for alias in cls.aliases:
-    #             print "checking alais", alias
             ppya=get_pyplusplus_alias( alias)
             if ppya:
                 cls.alias = ppya
-                print "Fixing alias: ",cls.name," == ",ppya
+                print "Fixing alias: ",cls," == ",ppya
                 break                                       
     #
     # We filter (both include and exclude) specific classes and functions that we want to wrap
@@ -413,12 +429,19 @@ def generate_code():
     # fix shared Ptr's that are defined as references but NOT const...
     #
     find_nonconst ( mb.namespace( 'Ogre' ) )
-    
-
+      
+    #
+    # lets fix containers that hold pointers - the return value needs adjusting...   
+    #
+#     tt = mb.namespace( 'std' ).decls( query_containers_with_ptrs )
+#     for t in tt:
+#         t.indexing_suite.call_policies  = module_builder.call_policies.return_internal_reference()
+        
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
 
     ogre_ns = mb.namespace( 'Ogre' )
+    
     #Py++ can not expose static pointer member variables
     ogre_ns.vars( 'ms_Singleton' ).disable_warnings( messages.W1035 )
     
@@ -451,59 +474,22 @@ def generate_code():
     v.apply_smart_ptr_wa = True
     v = cls.variable( "indexData" )
     v.apply_smart_ptr_wa = True
-   
 
-    #
-    # Automatically add properties where we can - ie mirror set_variable() with .variable= capability
-    # note that we are using a new function to filter existing properties..
-    #
-#     cls = ogre_ns.class_('Vector3')
-#     prop = decl_wrappers.properties.find_properties (cls)
-#     for p in prop:
-#         print "1:",p
-#     prop = decl_wrappers.properties.find_properties (cls, recognizer=decl_wrappers.properties.name_based_recognizer_t())
-#     for p in prop:
-#         print "2:",p
-#     prop = decl_wrappers.properties.find_properties (cls, recognizer=ogre_properties.ogre_property_recognizer_t())
-#     for p in prop:
-#         print "3:",p
-#         
-#         
-#     
-#     cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
-#     sys.exit()
-    extractor = exdoc.doc_extractor("")
-    
     for cls in ogre_ns.classes():
         cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
         ## because we want backwards pyogre compatibility lets add leading lowercase properties
         common_utils.add_LeadingLowerProperties ( cls )
-        ##common_utils.add_PropertyDoc ( cls )
 
     common_utils.add_constants( mb, { 'ogre_version' :  '"%s"' % environment.ogre.version
                                       , 'python_version' : '"%s"' % sys.version } )
- 
+
+    ##########################################################################################
+    #
+    # Creating the code. After this step you should not modify/customize declarations.
+    #
+    ##########################################################################################
+    extractor = exdoc.doc_extractor("")
     
-#     for cls in mb.classes():
-# #         if cls.ignore == False and '_' in cls.alias:
-#         ## turns out that a number of needed classes have ignore == True :( 
-#         ## and yet they seem to be exposed:
-#         ## ie.
-#         ## "set<Ogre::SceneQuery::WorldFragmentType, std::less<Ogre::SceneQuery::WorldFragmentType>, std::allocator<Ogre::SceneQuery::WorldFragmentType> >"
-#         ## so I'm going to create an alias for all classes that have 'Ogre' in them and have an ugly alias
-#         filterstring=[ "map", "list", "pair", "set", "Ogre", "vector"]
-#         if  '_' in cls.alias: ## or 'Ogre' in cls.name:    
-#             for s in filterstring:
-#                 if cls.name.startswith(s):
-#                     #guess = try_create_alias( cls.alias)
-#                     guess = cls.alias
-#                     print "typedef ", cls.name
-#                     break
- 
-
-
-#     #Creating code creator. After this step you should not modify/customize declarations.
-    ##extractor = exdoc.doc_extractor("::Ogre::SceneManager") # you can filter the class for testing
     mb.build_code_creator (module_name='_ogre_' , doc_extractor= extractor)
     
     for inc in environment.ogre.include_dirs:
