@@ -133,7 +133,10 @@ def filter_declarations( mb ):
     ogre_ns.mem_funs( return_type='::Ogre::uchar const *', allow_empty=True).exclude() #light::getdata xxx.opaque = True ??
    
     #all constructors in this class are private, also some of them are public.
-    Skeleton = ogre_ns.class_( 'Skeleton' ).constructors().exclude()
+    if sys.platform=='win32':
+        Skeleton = ogre_ns.class_( 'Skeleton' ).constructors().exclude()
+    else:
+        ogre_ns.class_( 'Skeleton' ).exclude()
 
     ogre_ns.free_functions ('any_cast').exclude () #not relevant for Python
 
@@ -430,12 +433,6 @@ def generate_code():
     #
     find_nonconst ( mb.namespace( 'Ogre' ) )
       
-    #
-    # lets fix containers that hold pointers - the return value needs adjusting...   
-    #
-#     tt = mb.namespace( 'std' ).decls( query_containers_with_ptrs )
-#     for t in tt:
-#         t.indexing_suite.call_policies  = module_builder.call_policies.return_internal_reference()
         
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
@@ -482,8 +479,8 @@ def generate_code():
         ## because we want backwards pyogre compatibility lets add leading lowercase properties
         common_utils.add_LeadingLowerProperties ( cls )
 
-    common_utils.add_constants( mb, { 'ogre_version' :  '"%s"' % environment.ogre.version
-                                      , 'python_version' : '"%s"' % sys.version } )
+    common_utils.add_constants( mb, { 'ogre_version' :  '"%s"' % environment.ogre.version.replace("\n", "\\\n") 
+                                      , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
 
     ##########################################################################################
     #
