@@ -92,8 +92,8 @@ def filter_declarations( mb ):
     ## Ogre::GpuProgramParameters::AutoConstantEntry is flagged as private but other functions rely on it
     ## however we can't expose it as Py++ doesn't like the Union that's defined within the class def..
     ogre_ns.class_('Renderable').mem_fun('_updateCustomGpuParameter').exclude()
-    ogre_ns.class_('ConstVectorIterator<std::vector<Ogre::GpuProgramParameters::AutoConstantEntry, std::allocator<Ogre::GpuProgramParameters::AutoConstantEntry> > >').exclude() # ::getNext(), ::peekNext()
-    ogre_ns.class_('GpuProgramParameters').mem_fun('getAutoConstantEntry').exclude()
+#    ogre_ns.class_('ConstVectorIterator<std::vector<Ogre::GpuProgramParameters::AutoConstantEntry, std::allocator<Ogre::GpuProgramParameters::AutoConstantEntry> > >').exclude() # ::getNext(), ::peekNext()
+#    ogre_ns.class_('GpuProgramParameters').mem_fun('getAutoConstantEntry').exclude()
     ogre_ns.class_('SubEntity').mem_fun('_updateCustomGpuParameter').exclude()
     
     # there are a set of consiterators that I'm not exposing as they need better understanding and testing
