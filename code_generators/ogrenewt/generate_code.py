@@ -217,7 +217,7 @@ def generate_ogrenewt():
         common_utils.add_LeadingLowerProperties ( cls )
     
     common_utils.add_constants( mb, { 'ogrenewt_version' :  '"%s"' % environment.ogrenewt.version
-                                      , 'python_version' : '"%s"' % sys.version } )
+                                      , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n") } )
     
     # create the doc extractor we'll be using
     extractor = exdoc.doc_extractor("")
