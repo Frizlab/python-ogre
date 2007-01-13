@@ -30,7 +30,7 @@ PythonOgrePatchVersion = "2"
 ##
 PATH_Python = os.path.dirname( sys.executable )
 python_include_dirs = os.path.join ( PATH_Python, 'include')
-Python_lib_dirs = os.path.join ( PATH_Python, 'libs' )
+python_lib_dirs = os.path.join ( PATH_Python, 'libs' )
 root_dir = os.path.abspath(os.path.dirname(__file__) )## The root directory is where this module is located
 
 sys.path.append( os.path.join( root_dir, 'common_utils' ) )
