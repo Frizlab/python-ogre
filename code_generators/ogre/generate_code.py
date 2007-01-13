@@ -89,20 +89,30 @@ def filter_declarations( mb ):
     #ogre_ns.class_('Mesh').mem_fun('getSubMeshNameMap').include()
 
     
-    ## Ogre::GpuProgramParameters::AutoConstantEntry is flagged as private but other functions rely on it
-    ## however we can't expose it as Py++ doesn't like the Union that's defined within the class def..
+    ogre_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').exclude()    # it's got a union that needs to be handled
     ogre_ns.class_('Renderable').mem_fun('_updateCustomGpuParameter').exclude()
-#    ogre_ns.class_('ConstVectorIterator<std::vector<Ogre::GpuProgramParameters::AutoConstantEntry, std::allocator<Ogre::GpuProgramParameters::AutoConstantEntry> > >').exclude() # ::getNext(), ::peekNext()
-#    ogre_ns.class_('GpuProgramParameters').mem_fun('getAutoConstantEntry').exclude()
+    ogre_ns.class_('GpuProgramParameters').mem_fun('getAutoConstantEntry').exclude()
     ogre_ns.class_('SubEntity').mem_fun('_updateCustomGpuParameter').exclude()
+    ogre_ns.class_('GpuProgramParameters').mem_fun('getAutoConstantIterator').exclude()
+    ogre_ns.class_('GpuProgramParameters').mem_fun('_findRawAutoConstantEntryFloat').exclude()
+    ogre_ns.class_('GpuProgramParameters').mem_fun('_findRawAutoConstantEntryInt').exclude()
+    ogre_ns.class_('GpuProgramParameters').mem_fun('findAutoConstantEntry').exclude()
+    ogre_ns.class_('GpuProgramParameters').mem_fun('findFloatAutoConstantEntry').exclude()
+    ogre_ns.class_('GpuProgramParameters').mem_fun('findIntAutoConstantEntry').exclude()
+    ogre_ns.class_('GpuProgramParameters').mem_fun('getConstantDefinitionIterator').exclude()
+    
+    
     
     # there are a set of consiterators that I'm not exposing as they need better understanding and testing
     # these functions rely on them so they are being excluded as well
     ogre_ns.class_('SceneNode').member_functions('getAttachedObjectIterator').exclude()
     ogre_ns.class_('Mesh').mem_fun('getBoneAssignmentIterator').exclude()
     ogre_ns.class_('SubMesh').mem_fun('getBoneAssignmentIterator').exclude()
-    ogre_ns.class_('GpuProgramParameters').mem_fun('getAutoConstantIterator').exclude()
-     
+    
+#     ogre_ns.class_('GpuLogicalIndexUseMap').exclude()
+    ogre_ns.typedef('GpuLogicalIndexUseMap').exclude()  ## Fails as no default constructor for 'IndexUse...
+    ogre_ns.class_('GpuLogicalIndexUse').exclude()  ## related to IndexUseMap..
+    
     # A couple of Std's that need exposing
     std_ns = global_ns.namespace("std")
     std_ns.class_("pair<unsigned, unsigned>").include()
@@ -474,7 +484,7 @@ def generate_code():
 
 #     for cls in ogre_ns.classes():
     for cls in mb.global_ns.classes():
-        print "Adding Prop to:", cls
+#        print "Adding Prop to:", cls
         cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
         ## because we want backwards pyogre compatibility lets add leading lowercase properties
         common_utils.add_LeadingLowerProperties ( cls )
@@ -488,7 +498,6 @@ def generate_code():
     #
     ##########################################################################################
     extractor = exdoc.doc_extractor("")
-    
     mb.build_code_creator (module_name='_ogre_' , doc_extractor= extractor)
     
     for inc in environment.ogre.include_dirs:
