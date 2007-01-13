@@ -85,9 +85,14 @@ def filter_declarations( mb ):
     ogre_ns.class_('ParticleSystemManager').mem_fun('addRendererFactory').exclude()
     
   
-    #ogre_ns.class_('Mesh').typedef('SubMeshNameMap').include()
-    #ogre_ns.class_('Mesh').mem_fun('getSubMeshNameMap').include()
+    ogre_ns.class_('GpuProgramParameters').exclude() ### DAMM  - need to spend time on this class - fix for now!!
+    ogre_ns.typedef('GpuLogicalIndexUseMap').exclude()  ## Fails as no default constructor for 'IndexUse...
+    ogre_ns.class_('GpuLogicalIndexUse').exclude()  ## related to IndexUseMap..
 
+    ## However, GpuLogicalIndexUseMap shows back up because it's part of the GpuLogicalBufferStruct struct
+    ogre_ns.class_('GpuLogicalBufferStruct').exclude()  
+    
+    
     
     ogre_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').exclude()    # it's got a union that needs to be handled
     ogre_ns.class_('Renderable').mem_fun('_updateCustomGpuParameter').exclude()
@@ -109,9 +114,6 @@ def filter_declarations( mb ):
     ogre_ns.class_('Mesh').mem_fun('getBoneAssignmentIterator').exclude()
     ogre_ns.class_('SubMesh').mem_fun('getBoneAssignmentIterator').exclude()
     
-#     ogre_ns.class_('GpuLogicalIndexUseMap').exclude()
-    ogre_ns.typedef('GpuLogicalIndexUseMap').exclude()  ## Fails as no default constructor for 'IndexUse...
-    ogre_ns.class_('GpuLogicalIndexUse').exclude()  ## related to IndexUseMap..
     
     # A couple of Std's that need exposing
     std_ns = global_ns.namespace("std")
@@ -382,23 +384,23 @@ def query_containers_with_ptrs(decl):
 # the 'main'function
 #            
 def generate_code():  
-    messages.disable( 
-          #Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-          messages.W1020
-        , messages.W1021
-        , messages.W1022
-        , messages.W1023
-        , messages.W1024
-        , messages.W1025
-        , messages.W1026
-        , messages.W1027
-        , messages.W1028
-        , messages.W1029
-        , messages.W1030
-        , messages.W1031
-        #, messages.W1040 
-        # Inaccessible property warning
-        , messages.W1041 )
+#     messages.disable( 
+#           #Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+#           messages.W1020
+#         , messages.W1021
+#         , messages.W1022
+#         , messages.W1023
+#         , messages.W1024
+#         , messages.W1025
+#         , messages.W1026
+#         , messages.W1027
+#         , messages.W1028
+#         , messages.W1029
+#         , messages.W1030
+#         , messages.W1031
+#         #, messages.W1040 
+#         # Inaccessible property warning
+#         , messages.W1041 )
     
     #
     # Use GCCXML to create the controlling XML file.
@@ -410,8 +412,7 @@ def generate_code():
                         , environment.ogre.cache_file )
 
     defined_symbols = [ 'OGRE_NONCLIENT_BUILD' ]
-    if not environment.ogre.version.startswith("1.2"):
-        defined_symbols.append( 'OGRE_VERSION_CVS' )  
+    defined_symbols.append( 'OGRE_VERSION_' + environment.ogre.version )  
     
     #
     # build the core Py++ system from the GCCXML created source

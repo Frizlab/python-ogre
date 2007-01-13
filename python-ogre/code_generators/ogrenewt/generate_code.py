@@ -233,12 +233,12 @@ def generate_ogrenewt():
 
     mb.split_module(environment.ogrenewt.generated_dir, huge_classes)
 
-    return_pointee_value_source_path \
-        = os.path.join( environment.pyplusplus_install_dir
-                        , 'pyplusplus_dev'
-                        , 'pyplusplus'
-                        , 'code_repository' )
-                        ## , 'return_pointee_value.hpp' ) ## Removed AJM 1/1/07
+#     return_pointee_value_source_path \
+#         = os.path.join( environment.pyplusplus_install_dir
+#                         , 'pyplusplus_dev'
+#                         , 'pyplusplus'
+#                         , 'code_repository' )
+#                         ## , 'return_pointee_value.hpp' ) ## Removed AJM 1/1/07
 
 #     return_pointee_value_target_path \
 #         = os.path.join( environment.ogrenewt.generated_dir, 'return_pointee_value.hpp' )
