@@ -165,13 +165,15 @@ def add_transformations ( mb ):
     
     ns.mem_fun('::OgreNewt::CustomJoint::pinAndDirToLocal') \
         .add_transformation(ft.output('localOrient0'), ft.output('localPos0'), ft.output('localOrient1'), ft.output('localPos1') )
-    
+    ns.mem_fun('::OgreNewt::CustomJoint::localToGlobal') \
+        .add_transformation(ft.output('globalOrient'), ft.output('globalPos') )
+
     ns.mem_fun('::OgreNewt::Vehicle::Tire::getPositionOrientation').add_transformation( *create_output(2) )
     ns.mem_fun('::OgreNewt::ContactCallback::getContactPositionAndNormal').add_transformation( *create_output(2) )
     ns.mem_fun('::OgreNewt::ContactCallback::getContactTangentDirections').add_transformation( *create_output(2) )
    
-#     ns.mem_fun('::OgreNewt::CollisionRayCast').add_transformation( ft.output('retColID') )
-#     ns.mem_fun('::OgreNewt::CollisionCollideContinue').add_transformation( ft.output('retTimeOfImpact') )
+    ns.free_fun('CollisionRayCast').add_transformation( ft.output('retColID') )
+    ns.free_fun('CollisionCollideContinue').add_transformation( ft.output('retTimeOfImpact') )
 
         
 def generate_ogrenewt():
