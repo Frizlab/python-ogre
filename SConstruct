@@ -21,6 +21,7 @@ import environment
 # The names must match those in environment.projects
 #
 tobuild = ['ogre', 'ois', 'ogrerefapp', 'ogrenewt', 'cegui']
+tobuild = ['fmod']
  
 builddir = "build_dir"
  
@@ -41,10 +42,10 @@ def get_ccflags():
     if os.name=='nt':
         CCFLAGS=''
         #CCFLAGS += '-DBOOST_PYTHON_MAX_ARITY=19'
-        CCFLAGS += ' /Zm800 -nologo'
-        CCFLAGS += ' /W3' # warning level
-        CCFLAGS += ' /TP /O2 /Ob2  /GR /MD /Zc:forScope /Zc:wchar_t /Ogiy /Gs /Ot /GB /Op /wd4675 /EHs -c'
-    else:
+        CCFLAGS += ' -Zm800 -nologo'
+        CCFLAGS += ' -W3' # warning level
+        CCFLAGS += ' -TP -O2 -Ob2 -GR -MD -Zc:forScope -Zc:wchar_t -Ogiy -Gs -Ot -GB -Op -wd4675 -EHs -c'
+    elif os.name =='posix':
         CCFLAGS = ' `pkg-config --cflags OGRE` '
         CCFLAGS += ' -I' + ogre_settings.python_headers_dir + ' -D"BOOST_PYTHON_MAX_ARITY=19"'
         CCFLAGS += ' -O0 -g -I./'
@@ -57,8 +58,8 @@ def get_source_files(_dir):
 
 def get_linkflags():
     if os.name=='nt':
-        LINKFLAGS = " /NOLOGO /INCREMENTAL:NO /DLL /OPT:NOREF,NOICF /subsystem:console "
-    else:
+        LINKFLAGS = " -NOLOGO -INCREMENTAL:NO -DLL -OPT:NOREF,NOICF -subsystem:console "
+    elif os.name == 'posix':
         LINKFLAGS = ' `pkg-config --libs OGRE` '
         LINKFLAGS += ' -lboost_python'
     return LINKFLAGS

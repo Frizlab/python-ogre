@@ -15,7 +15,7 @@ import getpass
 ## otherwise it will use the values you enter below...
 ##
 
-_LOGGING_ON = True
+_LOGGING_ON = False
 
 def log ( instring ):
     if _LOGGING_ON:
@@ -42,7 +42,7 @@ declarations_cache_dir = os.path.join( root_dir, 'code_generators', 'cache' )
 
 _UserName = getpass.getuser()
 _ConfigSet = False
-_SystemType = os.name ## nt or posix
+_SystemType = os.name ## nt or posix or mac
 _PlatformType = sys.platform ## win32, ??
 
 ##
@@ -106,8 +106,10 @@ class ois:
             ]
     if os.name =='nt':
         _lpath='dll'
-    else:
-        _lpath='lib'
+    elif os.name == 'posix':
+        _lpath='lib'   
+    elif os.name =='mac':
+        _lpath='Mac' ## TOFIX
     lib_dirs = [ PATH_LIB_Boost 
             , os.path.join(PATH_OIS, _lpath)
             ]
@@ -139,8 +141,10 @@ class ogrenewt:
     libs = ['newton', LIB_Boost, 'OgreNewt_Main', 'OgreMain']
     if os.name =='nt':
         _lpath='dll'
-    else:
+    elif os.name =='posix':
         _lpath='lib-mt'  
+    elif os.name == 'mac':
+        print "WARNING: Newton doesn't support MAC's"
     include_dirs = [PATH_Boost
                     , PATH_Newton   # only one path for Newton
                 , os.path.join(PATH_Ogre,'OgreMain/include') 
@@ -196,10 +200,21 @@ class ogreode:
                     r'c:/development/ode/include']
     ModuleName='OgreOde'
     active=False
+    
 class FMOD:
-    version= "1.0"
-    include_dirs=[r'c:\development\fmod\api\inc']
+    version= "4.06"
+    include_dirs=[PATH_Boost
+                   ,os.path.join(PATH_FMOD, 'api/inc')]
+    lib_dirs = [ PATH_LIB_Boost
+                  ,os.path.join(PATH_FMOD, 'api/lib')] 
+    CCFLAGS = ' /D "NDEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" '
     ModuleName = 'FMOD'
+    if os.name =='nt':
+        libs=[LIB_Boost, 'fmodexL_vc']
+    elif os.name =='posix':
+        libs=[LIB_Boost, 'libfmodex']
+    elif os.name == 'mac':
+        pass        #TOFIX
     active=False
 ############################################################################################
 
@@ -237,6 +252,10 @@ def CheckPaths ( cls , name):
         for libfile in cls.libs:
             if os.name =='nt':
                 libfile += '.lib'
+            elif os.name == 'posix':
+                libfile += '.a'
+            elif os.name == 'mac':
+                libfie += '' # I don't know what to do here 
             found = False
             log ( "Checking for %s library (%s class) in lib_dirs" % (libfile, name) )
             for lookdir in cls.lib_dirs:
@@ -259,6 +278,8 @@ for name, cls in projects.items():
         cls.PydName = '_' + name.lower() + '_'
         if os.name == 'nt':
             cls.PydName = cls.PydName + '.pyd'
-        else:
+        elif os.name == 'posix':
+            cls.PydName = cls.PydName + '.so'
+        elif os.name =='mac':
             print "WARNING - check the last line of environment.py!!"
 
