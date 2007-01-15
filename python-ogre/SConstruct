@@ -21,7 +21,7 @@ import environment
 # The names must match those in environment.projects
 #
 tobuild = ['ogre', 'ois', 'ogrerefapp', 'ogrenewt', 'cegui']
-tobuild = ['fmod']
+#tobuild = ['fmod']
  
 builddir = "build_dir"
  
