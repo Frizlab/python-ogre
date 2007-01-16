@@ -182,7 +182,7 @@ def filter_declarations( mb ):
     
     #as reported by mike with linux:bp::arg("flags")=(std::_Ios_Fmtflags)0
     if os.name == 'posix':
-        ogre_ne.class_('StringConverter').member_functions('toString').exclude()    
+        ogre_ns.class_('StringConverter').member_functions('toString').exclude()    
         
     
         
