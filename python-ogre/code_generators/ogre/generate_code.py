@@ -180,6 +180,12 @@ def filter_declarations( mb ):
     ogre_ns.class_( 'CompositorInstance').class_('RenderSystemOperation').exclude() # doesn't exist for link time
     ogre_ns.class_( 'CompositorChain').mem_fun('_queuedOperation').exclude() #needs RenderSystemOperation
     
+    #as reported by mike with linux:bp::arg("flags")=(std::_Ios_Fmtflags)0
+    if os.name == 'posix':
+        ogre_ne.class_('StringConverter').class_('toString').exclude()    
+        
+    
+        
 ##  Note - you need to do all the 'excludes' AFTER you've included all the classes you want..
 ##  Otherwise things get screwed up...
 
