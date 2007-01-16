@@ -249,20 +249,21 @@ def CheckPaths ( cls , name):
                     break
             if not found:
                 print "WARNING: Unable to find %s include file (%s class) in include_dirs" % (incfile, name)
-        for libfile in cls.libs and os.name =='nt': 
-            libfile += '.lib'
-#             elif os.name == 'posix':
-#                 libfile += '.a'
-#             elif os.name == 'mac':
-#                 libfie += '' # I don't know what to do here 
-            found = False
-            log ( "Checking for %s library (%s class) in lib_dirs" % (libfile, name) )
-            for lookdir in cls.lib_dirs:
-                if os.path.isfile ( os.path.join ( lookdir, libfile ) ):
-                    found = True
-                    break
-            if not found:
-                print "WARNING: Unable to find %s library (%s class) in lib_dirs" % (libfile, name)
+        if os.name =='nt': 
+            for libfile in cls.libs :
+                libfile += '.lib'
+    #             elif os.name == 'posix':
+    #                 libfile += '.a'
+    #             elif os.name == 'mac':
+    #                 libfie += '' # I don't know what to do here 
+                found = False
+                log ( "Checking for %s library (%s class) in lib_dirs" % (libfile, name) )
+                for lookdir in cls.lib_dirs:
+                    if os.path.isfile ( os.path.join ( lookdir, libfile ) ):
+                        found = True
+                        break
+                if not found:
+                    print "WARNING: Unable to find %s library (%s class) in lib_dirs" % (libfile, name)
     
         
 for name, cls in projects.items():
