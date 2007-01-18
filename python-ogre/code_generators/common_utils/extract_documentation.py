@@ -130,6 +130,10 @@ def clear_str(str):
     str = clean(str, "@remarks", "Remarks: ")
     str = clean(str, "@see", "See: ")
     str = clean(str, "\\sa", "See also: ")   # comment string in OgreNewt
+    str = clean(str, "\\code", "")    
+    str = clean(str, "\\codeblock", "")    
+    str = clean(str, "@code", "")    
+    str = clean(str, "@codeblock", "")    
     
     str = clean(str, "@par", "")    ## it will get a single blank line by default
     str = clean(str, "\\par", "")    ## it will get a single blank line by default
