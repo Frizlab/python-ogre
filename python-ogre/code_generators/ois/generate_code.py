@@ -93,11 +93,10 @@ def generate_code():
     for cls in mb.global_ns.namespace ('OIS').classes():
         cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
         ##common_utils.add_LeadingLowerProperties ( cls )
-        common_utils.add_PropertyDoc ( cls )
 
 
     common_utils.add_constants( mb, { 'ois_version' :  '"%s"' % environment.ois.version
-                                      , 'python_version' : '"%s"' % sys.version } )
+                                      , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n") } )
 
 
     #Creating code creator. After this step you should not modify/customize declarations.
