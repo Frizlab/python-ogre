@@ -22,8 +22,8 @@ import environment
 # list the modules here you want to build
 # The names must match those in environment.projects
 #
-tobuild = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui']
-#tobuild = ['fmod']
+#tobuild = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui']
+#tobuild = ['ode']
  
 builddir = "build_dir"
  
@@ -54,18 +54,37 @@ def get_ccflags():
     return CCFLAGS
 
 def get_source_files(_dir):
-    source_files = filter( lambda s: s.endswith( '.cpp' ), os.listdir(_dir) )
+    try:
+        source_files = filter( lambda s: s.endswith( '.cpp' ), os.listdir(_dir) )
+    except OSError,e:
+        print 'WARNING: Generate the sources this directory: "%s"' % _dir
+        raise e
     source_files.sort()
     return source_files
 
 def get_linkflags():
     if os.name=='nt':
-        LINKFLAGS = " -NOLOGO -INCREMENTAL:NO -DLL -OPT:NOREF,NOICF -subsystem:console "
+        #LINKFLAGS = " -NOLOGO -INCREMENTAL:NO -DLL -OPT:NOREF -subsystem:console " # no change
+        LINKFLAGS = " -NOLOGO -INCREMENTAL:NO -DLL -OPT:NOICF -subsystem:console " # 7 minutes 25% smaller 16.6 Meg
+        #LINKFLAGS = " -NOLOGO -INCREMENTAL:NO -DLL -subsystem:console " ### LONG Link , 80 minutes - 15.7 meg
     elif os.name == 'posix':
         LINKFLAGS = ' `pkg-config --libs OGRE` '
-        LINKFLAGS += ' -lboost_python'
+        #LINKFLAGS += ' -lboost_python'
     return LINKFLAGS
+
+# Let us select the projects to build
+possible_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'CEGUI']
+default_projects = possible_projects
+
+# This lets you call scons like: 'scons PROJECTS=ogre,cegui'
+opts = Options('custom.py')
+opts.Add(ListOption('PROJECTS', 'Project to build wrappers for',
+                    possible_projects, default_projects))
+temp_env = Environment(options = opts)
+tobuild = temp_env['PROJECTS']
+del temp_env    
     
+        
 for name, cls in environment.projects.items():
     ##if name.active:
     if name in tobuild:
@@ -76,9 +95,15 @@ for name, cls in environment.projects.items():
         cls._build_dir = os.path.join ( builddir, cls.dir_name)
         cls._name = name
         _env = Environment(ENV=os.environ)
-        
+
+        ## Use custom compilier if wanted (things like ccache)
+        if hasattr(environment, 'cxx_compiler'):
+            _env['CXX'] = environment.cxx_compiler
+        if hasattr(environment, 'cc_compiler'):
+            _env['CC'] = environment.cc_compiler
+           
         ## setup linker paths/libs and flags (standard and additional)
-        _env.Append ( LIBPATH= cls.lib_dirs + [environment.python_lib_dirs, environment.PATH_LIB_Boost] )
+        _env.Append ( LIBPATH= cls.lib_dirs + [environment.python_lib_dirs] )
         linkflags=get_linkflags()
         if hasattr ( cls, 'LINKFLAGS' ):
             linkflags += cls.LINKFLAGS
@@ -86,7 +111,7 @@ for name, cls in environment.projects.items():
         _env.Append ( LIBS = cls.libs )
         
         ## setup compile paths and flags (standard and additional)
-        _env.Append ( CPPPATH = cls.include_dirs + [environment.python_include_dirs, environment.PATH_Boost]  )
+        _env.Append ( CPPPATH = cls.include_dirs + [environment.python_include_dirs, environment.Config.PATH_Boost]  )
         ccflags= get_ccflags()
         if hasattr( cls, 'CCFLAGS'):
             ccflags += cls.CCFLAGS
@@ -110,10 +135,8 @@ for name, cls in environment.projects.items():
         ## and lets have it install the output into the 'package_dir_name/ModuleName' dir and rename to the PydName
         
         ## ugly hack - scons returns a list of targets from SharedLibrary - we have to choose the one we want
-        if os.name == 'nt':  
-            index=0
-        else:
-            index=1
-        _env.InstallAs(os.path.join(environment.package_dir_name,cls.ModuleName, cls.PydName), package[index] )
-
+        index = 0  # this is the index into a list of targets - '0' should be the platform default
+        _env.InstallAs(os.path.join(environment.package_dir_name,
+                                    cls.ModuleName, cls.PydName), 
+                                     package[index] )
 

@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 
-#-------------------------------------------------------------------------------
-# TODO:
-# 1.    void* as a function argument - they are currently wrapped (and compile/load etc) due to latest CVS of boost.
-#       However probably don't actually work
-# 2.    Properties.py and calling 'properties.create' - commented out at the moment, not sure if it is really needed?
 
 import os, sys, time
 
@@ -25,7 +20,7 @@ from pyplusplus.module_builder import call_policies
 from pygccxml import parser
 from pygccxml import declarations
 import common_utils.extract_documentation as exdoc
-import ogre_properties
+import common_utils.ogre_properties as ogre_properties
 
 def filter_declarations( mb ):
     global_ns = mb.global_ns
@@ -92,12 +87,9 @@ def generate_code():
 
     for cls in mb.global_ns.namespace ('OIS').classes():
         cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
-        ##common_utils.add_LeadingLowerProperties ( cls )
-
 
     common_utils.add_constants( mb, { 'ois_version' :  '"%s"' % environment.ois.version
                                       , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n") } )
-
 
     #Creating code creator. After this step you should not modify/customize declarations.
     extractor = exdoc.doc_extractor("")

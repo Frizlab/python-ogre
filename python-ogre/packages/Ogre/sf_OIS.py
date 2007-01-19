@@ -2,7 +2,7 @@
 # designed for the CVS/OIS verison of Ogre
 import Ogre as ogre
 import OIS as OIS
-import OgreRefApp
+###import OgreRefApp
 
 def getPluginPath():
     """Return the absolute path to a valid plugins.cfg file.""" 
@@ -203,9 +203,10 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
       
     def _setupInput(self):
         # ignore buffered input
-           
+        
          windowHnd = self.renderWindow.getCustomAttributeInt("WINDOW")
-         self.InputManager = OIS.createPythonInputSystem( windowHnd )
+         self.InputManager = \
+             OIS.createPythonInputSystem([("WINDOW",str(windowHnd))])
          
          #pl = OIS.ParamList()
          #windowHndStr = str ( windowHnd)
