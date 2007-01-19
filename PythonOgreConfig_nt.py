@@ -14,6 +14,7 @@ PATH_CEGUI =        r'c:/development/cegui-0.5.0'
 PATH_OIS =          r'c:/development/ois'
 PATH_Newton =       r'c:/development/newtonsdk/sdk'
 PATH_FMOD =         r'c:/development/fmod'
+PATH_ODE =          r'c:/development/ode'
 
 # We need to know where to find gccxml......
 gccxml_bin =        r'c:/development/gccxml/bin/release/gccxml.exe'
@@ -38,7 +39,7 @@ PATH_LIB_OgreNewt =             os.path.join(PATH_OgreAddons, r'ogrenewt/OgreNew
 PATH_LIB_Newton =               os.path.join(PATH_Newton ,'dll')  ##NOTE Posix platforms this lives in 'lib-mt'
 PATH_LIB_OIS =                  os.path.join(PATH_OIS, 'dll') ## NOTE Posix platforms this lives in'lib' not 'dll'
 PATH_LIB_CEGUI =                os.path.join ( PATH_Ogre, r'Dependencies/lib/Release' )
-PATH_LIB_ODE =                  os.path.join( PATH_Ogre, 'Dependencies/lib/Release')
+PATH_LIB_ODE =                  os.path.join( PATH_ODE, 'lib/releasedll')## probable releaselib for posix
 PATH_LIB_OgreOde =              os.path.join( PATH_OgreAddons, 'ogreode/lib/Release') 
 PATH_LIB_OgreOdePrefab =        os.path.join( PATH_Ogre, 'OgreMain/lib/Release' )
 PATH_LIB_FMOD =                 os.path.join(PATH_FMOD, 'api/lib') 
@@ -49,7 +50,9 @@ PATH_INCLUDE_OIS =          os.path.join(PATH_OIS,'includes')    ## Note the plu
 PATH_INCLUDE_OgreRefApp =   os.path.join(PATH_Ogre,'ReferenceApplication/ReferenceAppLayer/include') 
 PATH_INCLUDE_OgreNewt =     os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')
 PATH_INCLUDE_CEGUI =        os.path.join(PATH_CEGUI, r'include')
-PATH_INCLUDE_ODE =          os.path.join( PATH_Ogre, 'Dependencies/include')
+PATH_INCLUDE_ODE =          os.path.join( PATH_ODE, 'include')
+PATH_INCLUDE_ODESOURCE =          os.path.join( PATH_ODE, 'ode/src')
+
 PATH_INCLUDE_OgreOde =      os.path.join( PATH_OgreAddons,'ogreode/include')
 PATH_INCLUDE_OgreOdePrefab= os.path.join( PATH_OgreAddons,'ogreode/prefab/include')
 PATH_INCLUDE_FMOD =          os.path.join(PATH_FMOD, 'api/inc')
