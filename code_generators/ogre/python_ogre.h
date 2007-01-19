@@ -29,7 +29,7 @@ typedef HashMap<Ogre::String, unsigned short> OgreHashMapStringUshortOuter;
 // First we create a magic namespace to hold all our aliases
 namespace pyplusplus { namespace aliases {
     
- #include "python_ogre_alias.h"
+ #include "python_ogre_aliases.h"
 } } 
 
 // then we exposed everything needed (and more) to ensure GCCXML makes them visible to Py++

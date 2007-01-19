@@ -28,18 +28,19 @@ void destroyInputObjectJoyStick( OIS::InputManager& im, OIS::JoyStick* obj ) {
      
 WRAPPER_DEFINITION_General = \
 """
-OIS::InputManager * createPythonInputSystem( size_t windowHnd ) {
-// Wrapper to manage creating input system without using a multimap
-// TODO:  Change this to accept a python list and extract this to the Paramlist
-		OIS::ParamList pl;	
-		std::ostringstream windowHndStr;
-		windowHndStr << windowHnd;
-		pl.insert(std::make_pair(std::string("WINDOW"), windowHndStr.str()));
-		return OIS::InputManager::createInputSystem( pl );
-		//OIS::InputManager &im = *OIS::InputManager::createInputSystem( pl );
-		//return im;
-		}
+OIS::InputManager * createPythonInputSystem( boost::python::object parameters) {
+    namespace py = boost::python;
+    OIS::ParamList pl;
 
+    for (int i = 0; i < boost::python::len( parameters ); ++i) {
+        py::object param( parameters[i] );
+        std::string item1 = py::extract<std::string>( py::str( param[0] ));
+        std::string item2 = py::extract<std::string>( py::str( param[1] ));
+        pl.insert(std::make_pair( item1, item2 ));
+    }
+
+    return OIS::InputManager::createInputSystem( pl );
+}
 """
 
 

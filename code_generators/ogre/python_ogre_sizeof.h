@@ -1,3 +1,8 @@
+// sizeof ( Ogre::VectorIterator );
+// sizeof ( Ogre::MapIterator );
+// sizeof ( Ogre::ConstVectorIterator );
+// sizeof ( Ogre::ConstMapIterator );
+
 sizeof (std::pair<bool, float> );
 sizeof (std::pair<unsigned int,unsigned int> );
 sizeof (Ogre::RadixSort<std::vector<Ogre::RenderablePass>,Ogre::RenderablePass,unsigned int> );

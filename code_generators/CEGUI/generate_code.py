@@ -167,13 +167,13 @@ def change_cls_alias( ns ):
 
 def generate_code():
     xml_cached_fc = parser.create_cached_source_fc(
-                        os.path.join( environment.CEGUI.root_dir, "python_CEGUI.h" )
-                        , environment.CEGUI.cache_file )
+                        os.path.join( environment.cegui.root_dir, "python_CEGUI.h" )
+                        , environment.cegui.cache_file )
 
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
-                                          , include_paths=environment.CEGUI.include_dirs
+                                          , include_paths=environment.cegui.include_dirs
                                           , define_symbols=['CEGUI_NONCLIENT_BUILD']
                                           , indexing_suite_version=2 )
     filter_declarations (mb)
@@ -192,19 +192,19 @@ def generate_code():
         cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t()  )
         common_utils.add_LeadingLowerProperties ( cls )
 
-    common_utils.add_constants( mb, { 'CEGUI_version' :  '"%s"' % environment.CEGUI.version
+    common_utils.add_constants( mb, { 'CEGUI_version' :  '"%s"' % environment.cegui.version
                                        , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n") } )
                                       
     #Creating code creator. After this step you should not modify/customize declarations.
     extractor = exdoc.doc_extractor("")
     
     mb.build_code_creator (module_name='_cegui_', doc_extractor= extractor)
-    for incs in environment.CEGUI.include_dirs:
+    for incs in environment.cegui.include_dirs:
         mb.code_creator.user_defined_directories.append( incs )
-    mb.code_creator.user_defined_directories.append( environment.CEGUI.generated_dir )
-    mb.code_creator.replace_included_headers( customization_data.header_files(environment.CEGUI.version) )
-    huge_classes = map( mb.class_, customization_data.huge_classes(environment.CEGUI.version) )
-    mb.split_module(environment.CEGUI.generated_dir, huge_classes)
+    mb.code_creator.user_defined_directories.append( environment.cegui.generated_dir )
+    mb.code_creator.replace_included_headers( customization_data.header_files(environment.cegui.version) )
+    huge_classes = map( mb.class_, customization_data.huge_classes(environment.cegui.version) )
+    mb.split_module(environment.cegui.generated_dir, huge_classes)
 
 if __name__ == '__main__':
     start_time = time.clock()

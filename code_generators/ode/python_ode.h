@@ -8,7 +8,7 @@
 #include <map>
 
 #include "ode/ode.h"
-#include "ode/common.h"
+// #include "ode/common.h"
 #include "ode/odecpp.h"
 #include "ode/odecpp_collision.h"
 //#include "c:/development/ode-0.7/ode/src/objects.h"
@@ -17,37 +17,18 @@
 //namespace python_ode{ 
 
     inline void instantiate(){
-        sizeof ( dMatrix3);
-        sizeof ( dQuaternion );
-        sizeof (dVector3);
-        struct dxWorld;		/* dynamics world */
-        struct dxSpace;		/* collision space */
-        struct dxBody;		/* rigid body (dynamics object) */
-        struct dxGeom;		/* geometry (collision object) */
-        struct dxJoint;
-        struct dxJointNode;
-        struct dxJointGroup;
-
-        typedef struct dxWorld *dWorldID;
-        typedef struct dxSpace *dSpaceID;
-        typedef struct dxBody *dBodyID;
-        typedef struct dxGeom *dGeomID;
-        typedef struct dxJoint *dJointID;
-        typedef struct dxJointGroup *dJointGroupID;
-
-       //class dxWorld {};
-        sizeof ( dxSpace *);
-        sizeof ( dxBody *);
-        sizeof ( dxJoint *);
-        sizeof ( dxJointNode*);
-        sizeof ( dxJointGroup*) ;
-                
-        sizeof (dWorldID);
-        sizeof (dSpaceID);
-        sizeof (dBodyID);
-        sizeof (dGeomID);
-        sizeof (dJointID);
-        sizeof (dJointGroupID);
+//         sizeof ( dMatrix3);
+//         sizeof ( dQuaternion );
+//         sizeof (dVector3);
+//    
+//        //class dxWorld {};
+//                         
+//         sizeof (dWorldID);
+//         sizeof (dSpaceID);
+//         sizeof (dBodyID);
+//         sizeof (dGeomID);
+//         sizeof (dJointID);
+//         sizeof (dJointGroupID);
         
         
     }

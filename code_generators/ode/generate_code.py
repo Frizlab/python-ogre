@@ -74,6 +74,10 @@ def filter_declarations( mb ):
     ode_ns.class_( "dGeom" ).member_functions( "getPosition").exclude()
     ode_ns.class_( "dGeom" ).member_functions( "getRotation").exclude()
     
+    # in hand wrappers to handle pyobjects...
+    ode_ns.class_( "dGeom" ).member_functions( "getData").exclude()
+    ode_ns.class_( "dGeom" ).member_functions( "setData").exclude()
+    
     
          
 #     ptr_to_fundamental_query \
@@ -188,7 +192,7 @@ def generate_code():
     common_utils.add_properties( ode_ns.classes() )
 
     common_utils.add_constants( mb, { 'ode_version' :  '"%s"' % environment.ode.version
-                                      , 'python_version' : '"%s"' % sys.version } )
+                                      , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n") } )
 
 
     #Creating code creator. After this step you should not modify/customize declarations.
