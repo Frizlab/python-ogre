@@ -24,8 +24,8 @@ from pyplusplus import function_transformers as ft
 from pyplusplus.module_builder import call_policies
 
 import common_utils.extract_documentation as exdoc
+import common_utils.ogre_properties as ogre_properties
 
-import ogre_properties
 
 def filter_declarations( mb ):
 
@@ -43,11 +43,9 @@ def filter_declarations( mb ):
         , 'RadixSort' ## these show up as ugly aliases but are never exposed - and are really protected
     ]
 
-    if not environment.ogre.version.startswith("1.2"):
+    if not environment.ogre.version.startswith("1.2") and os.name =='nt':
         mb.global_ns.class_( 'vector<Ogre::Vector4, std::allocator<Ogre::Vector4> >' ).exclude( )
     
-    
-
     ## Now get rid of a wide range of classes as defined earlier in startswith...
     for prefix in startswith:
         ### NOTE the PREFIX is used here !!!!
@@ -60,7 +58,7 @@ def filter_declarations( mb ):
     PartSys.class_( "CmdLocalSpace" ).exclude()
     PartSys.class_( "CmdNonvisibleTimeout" ).exclude()
     PartSys.class_( "CmdSorted" ).exclude()
-    
+
     ## Functions defined in .h files but not implemented in source files
     ogre_ns.class_("TargetManager").member_functions("getPositionTargetAt").exclude() 
     ogre_ns.class_('Root').mem_fun('termHandler').exclude()
@@ -83,7 +81,6 @@ def filter_declarations( mb ):
     ogre_ns.class_('MapIterator<std::map<std::string, Ogre::ParticleSystemRendererFactory*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::ParticleSystemRendererFactory*> > > >').mem_fun('peekNextValue').exclude()
     ogre_ns.class_('BillboardParticleRendererFactory').exclude()
     ogre_ns.class_('ParticleSystemManager').mem_fun('addRendererFactory').exclude()
-    
   
     ogre_ns.class_('GpuProgramParameters').exclude() ### DAMM  - need to spend time on this class - fix for now!!
     ogre_ns.typedef('GpuLogicalIndexUseMap').exclude()  ## Fails as no default constructor for 'IndexUse...
@@ -91,8 +88,6 @@ def filter_declarations( mb ):
 
     ## However, GpuLogicalIndexUseMap shows back up because it's part of the GpuLogicalBufferStruct struct
     ogre_ns.class_('GpuLogicalBufferStruct').exclude()  
-    
-    
     
     ogre_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').exclude()    # it's got a union that needs to be handled
     ogre_ns.class_('Renderable').mem_fun('_updateCustomGpuParameter').exclude()
@@ -106,20 +101,17 @@ def filter_declarations( mb ):
     ogre_ns.class_('GpuProgramParameters').mem_fun('findIntAutoConstantEntry').exclude()
     ogre_ns.class_('GpuProgramParameters').mem_fun('getConstantDefinitionIterator').exclude()
     
-    
-    
     # there are a set of consiterators that I'm not exposing as they need better understanding and testing
     # these functions rely on them so they are being excluded as well
     ogre_ns.class_('SceneNode').member_functions('getAttachedObjectIterator').exclude()
     ogre_ns.class_('Mesh').mem_fun('getBoneAssignmentIterator').exclude()
     ogre_ns.class_('SubMesh').mem_fun('getBoneAssignmentIterator').exclude()
     
-    
     # A couple of Std's that need exposing
     std_ns = global_ns.namespace("std")
     std_ns.class_("pair<unsigned, unsigned>").include()
     std_ns.class_("pair<bool, float>").include()
-    
+
     # HashMap is defined in OgrePrerequisits.h and is different based on platform
     # ::stdext::hash_map
 #     if sys.platform=='win32':
@@ -155,20 +147,20 @@ def filter_declarations( mb ):
     #AttribParserList is a map from string to function pointer, this class could not be exposed
     AttribParserList = ogre_ns.typedef( name="AttribParserList" )
     declarations.class_traits.get_declaration( AttribParserList ).exclude()
-
+    
     #VertexCacheProfiler constructor uses enum that will be defined later.
     #I will replace second default value to be int instead of enum
     #arg_types=[None,None] - 2 arguments, with whatever type
     VertexCacheProfiler = ogre_ns.constructor( 'VertexCacheProfiler', arg_types=[None,None] )
     VertexCacheProfiler.arguments[1].default_value = "int(%s)" % VertexCacheProfiler.arguments[1].default_value
-
+    
     ## now specifically remove functions that we have wrapped in hand_made_wrappers.py
     ogre_ns.class_( "RenderTarget" ).member_functions( 'getCustomAttribute' ).exclude()
     ogre_ns.class_( "Mesh" ).member_functions( 'suggestTangentVectorBuildParams' ).exclude()
-
+    
     ## Expose functions that were not exposed but that other functions rely on    
     ogre_ns.class_("OverlayManager").member_functions('addOverlayElementFactory').include()
-
+    
     ## AJM Error at compile time - errors when compiling or linking
     ogre_ns.class_( "MemoryDataStream" ).member_functions( 'getCurrentPtr' ).exclude()
     ogre_ns.class_( "MemoryDataStream" ).member_functions( 'getPtr' ).exclude()
@@ -183,6 +175,13 @@ def filter_declarations( mb ):
     #as reported by mike with linux:bp::arg("flags")=(std::_Ios_Fmtflags)0
     if os.name == 'posix':
         ogre_ns.class_('StringConverter').member_functions('toString').exclude()    
+#     for StringConverter in ogre_ns.class_( 'StringConverter').member_functions('toString'): ##, arg_types=[None,None] )
+#  #       print dir(StringConverter)
+#         print StringConverter.arguments
+#         print StringConverter.argument_types
+#         
+#     sys.exit()   
+   ### StringConverter.arguments[1].default_value = "int(%s)" % VertexCacheProfiler.arguments[1].default_value
         
     
         
@@ -443,11 +442,13 @@ def generate_code():
     #
     # We filter (both include and exclude) specific classes and functions that we want to wrap
     # 
+    print "Filtering"
     filter_declarations (mb)
- 
+    
     #
     # fix shared Ptr's that are defined as references but NOT const...
     #
+    print "Fixing non const's"
     find_nonconst ( mb.namespace( 'Ogre' ) )
       
         
@@ -459,8 +460,9 @@ def generate_code():
     #Py++ can not expose static pointer member variables
     ogre_ns.vars( 'ms_Singleton' ).disable_warnings( messages.W1035 )
     
+    print "Fixing Unnamed classes"
     common_utils.fix_unnamed_classes( ogre_ns.classes( name='' ), 'Ogre' )
-
+    print "Configuring shared pointers"
     common_utils.configure_shared_ptr(mb)
     configure_exception( mb )
     
@@ -489,8 +491,8 @@ def generate_code():
     v = cls.variable( "indexData" )
     v.apply_smart_ptr_wa = True
 
-#     for cls in ogre_ns.classes():
-    for cls in mb.global_ns.classes():
+    for cls in ogre_ns.classes():
+#     for cls in mb.global_ns.classes():
 #        print "Adding Prop to:", cls
         cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
         ## because we want backwards pyogre compatibility lets add leading lowercase properties
