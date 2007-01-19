@@ -180,6 +180,7 @@ class ode:
                 ]
     include_dirs = [ Config.PATH_Boost 
                     ,  Config.PATH_INCLUDE_ODE
+                    , Config.PATH_INCLUDE_ODESOURCE ## some header files are in the source tree ??
                     ]
 
     ModuleName = 'ODE'
@@ -207,10 +208,10 @@ class ogreode:
 
     libs=[Config.LIB_Boost, 'OgreMain', 'ode' ]
     CCFLAGS =  ' -D"BOOST_PYTHON_MAX_ARITY=19"'
-    CheckIncludes = ['boost/python.hpp', 'Ogre.h', 'ode.h', 'OgreOde_Core.h'] 
+    CheckIncludes = ['boost/python.hpp', 'Ogre.h', 'ode.h', 'odecpp.h', 'OgreOde_Core.h'] 
                      
     ModuleName='OgreOde'
-    active=False
+    active=True
     
 class fmod:
     version= "4.06"
@@ -222,7 +223,8 @@ class fmod:
                   ] 
     CCFLAGS = ' /D "NDEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" '
     ModuleName = 'FMOD'
-    active=False
+    CheckIncludes = ['fmod.h']
+    active=True
 ############################################################################################
 
 ## Here is the master list....
