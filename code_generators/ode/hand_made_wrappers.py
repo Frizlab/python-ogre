@@ -95,7 +95,18 @@ dBody_getTorque(::dBody & body){
   const ::dReal * ret = body.getTorque(); 
   return boost::python::make_tuple(ret[0], ret[1], ret[2]); 
     }
-
+    
+void
+dBody_setData ( ::dBody & me, PyObject * data ) {
+    me.setData ( data );
+    }
+    
+PyObject *
+dBody_getData ( ::dBody & me ) {
+    void *  data = me.getData (  );
+    Py_INCREF( (PyObject *) data );     // I'm passing a reference to this object so better inc the ref :)
+    return  (PyObject *) data;
+    }        
 """        
 
 WRAPPER_REGISTRATION_dBody = \
@@ -114,7 +125,9 @@ WRAPPER_REGISTRATION_dBody = \
     dBody_exposer.def( "getLinearVel", &::dBody_getLinearVel);
     dBody_exposer.def( "getAngularVel", &::dBody_getAngularVel);
     dBody_exposer.def( "getForce", &::dBody_getForce);
-    dBody_exposer.def( "getTorque", &::dBody_getTorque)
+    dBody_exposer.def( "getTorque", &::dBody_getTorque);
+    dBody_exposer.def( "getData", &::dBody_getData);
+    dBody_exposer.def( "setData", &::dBody_setData);
 """
 
 #######################################################
@@ -123,14 +136,14 @@ WRAPPER_REGISTRATION_dBody = \
 WRAPPER_DEFINITION_dGeom=\
 """
 boost::python::tuple
-dBody_getPosition(::dGeom & geom) {
+dGeom_getPosition(::dGeom & geom) {
   const ::dReal * ret = geom.getPosition();
    
   return boost::python::make_tuple(ret[0], ret[1], ret[2]); 
 }
 
 boost::python::tuple
-dBody_getRotation(::dGeom & geom){
+dGeom_getRotation(::dGeom & geom){
     const ::dReal * ret = geom.getRotation(); 
     return boost::python::make_tuple(
                 ret[0], ret[1], ret[2], ret[3], 
@@ -140,12 +153,12 @@ dBody_getRotation(::dGeom & geom){
     } 
     
 void
-dBody_setData ( ::dGeom & me, PyObject * data ) {
+dGeom_setData ( ::dGeom & me, PyObject * data ) {
     me.setData ( data );
     }
     
 PyObject *
-dBody_getData ( ::dGeom & me ) {
+dGeom_getData ( ::dGeom & me ) {
     void *  data = me.getData (  );
     Py_INCREF( (PyObject *) data );     // I'm passing a reference to this object so better inc the ref :)
     return  (PyObject *) data;
@@ -155,10 +168,10 @@ dBody_getData ( ::dGeom & me ) {
 
 WRAPPER_REGISTRATION_dGeom = \
 """
-    def( "getPosition", &::dBody_getPosition);
-    dGeom_exposer.def( "getRotation", &::dBody_getRotation);
-    dGeom_exposer.def ("setData", &::dBody_setData );
-    dGeom_exposer.def ("getData", &::dBody_getData);
+    def( "getPosition", &::dGeom_getPosition);
+    dGeom_exposer.def( "getRotation", &::dGeom_getRotation);
+    dGeom_exposer.def ("setData", &::dGeom_setData );
+    dGeom_exposer.def ("getData", &::dGeom_getData);
 """
 
 
@@ -171,37 +184,44 @@ class nearCallback
 public:
    PyObject*  CallBackObject;
    std::string  CallBackFunction;
-    
-    nearCallback(PyObject*  cb_object, std::string const & cb_function )
+   boost::python::object CallBackData;
+    // we store the data etc here
+    nearCallback(boost::python::object data, PyObject*  cb_object, std::string const & cb_function )
     {
         CallBackObject = cb_object;
         CallBackFunction = cb_function;
+        CallBackData = data;
     } 
-    ~nearCallback() { } 
     
-//typedef void dNearCallback (void *data, dGeomID o1, dGeomID o2);
-    void operator() (void *data, dGeomID o1, dGeomID o2) const
-        {
-        callback( data, o1, o2 );
-        }
-
-    void callback (void *data, dGeomID o1, dGeomID o2) const
+    
+   // static call back function needed here as it matches the call signature needed by the ODE library
+   
+   static void callback (void * data, dGeomID o1, dGeomID o2) 
     {
-    if (CallBackFunction.length() > 0 )
-        boost::python::call_method<void>(CallBackObject, CallBackFunction.c_str(), 
-                            boost::ref( data), boost::ref(o1), boost::ref(o2) );
+    nearCallback * ActualClass = (nearCallback * )  data; // get a pointer to the instanced class
+    // dGeomID's are opaque pointers so I'll do a little work before passing them on..
+//    dBodyID b1 = dGeomGetBody(o1);
+//    dBodyID b2 = dGeomGetBody(o2);
+    
+    if (ActualClass->CallBackFunction.length() > 0 )
+        boost::python::call_method<void>(ActualClass->CallBackObject, ActualClass->CallBackFunction.c_str(), 
+                            ActualClass->CallBackData, 
+                           (void *)o1, (void *)o2 );
     else
-        boost::python::call<void>(CallBackObject, 
-                            boost::ref( data), boost::ref(o1), boost::ref(o2) );
+        boost::python::call<void>(ActualClass->CallBackObject, 
+                            ActualClass->CallBackData,
+                           (void *)o1, (void *)o2 );
     return;
     }
 
  
 };
-void dSpace_collide( ::dSpace * self,  void * data, PyObject* subscriber, std::string const & method="")
+void dSpace_collide( ::dSpace * self,  boost::python::object data, PyObject* subscriber, std::string const & method="")
 {
-    nearCallback * e = new nearCallback(subscriber, method);
-    self->collide( data, e);
+    // store the 'data' in the class as well
+    nearCallback * e = new nearCallback(data, subscriber, method);
+    // then use the 'data' field to store point to the static call back function
+    self->collide( (void*) e, &nearCallback::callback);
 };
 
 """

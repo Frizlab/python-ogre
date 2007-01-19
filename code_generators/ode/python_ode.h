@@ -11,7 +11,10 @@
 // #include "ode/common.h"
 #include "ode/odecpp.h"
 #include "ode/odecpp_collision.h"
-//#include "c:/development/ode-0.7/ode/src/objects.h"
+
+//#include "collision_kernel.h"
+//#include "collision_std.h"
+//#include "objects.h"
 
 
 //namespace python_ode{ 
