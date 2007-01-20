@@ -177,6 +177,7 @@ def add_transformations ( mb ):
 
         
 def generate_ogrenewt():
+ 
     xml_cached_fc = parser.create_cached_source_fc(
                         os.path.join( environment.ogrenewt.root_dir, "python_ogrenewt.h" )
                         , environment.ogrenewt.cache_file )
@@ -185,7 +186,7 @@ def generate_ogrenewt():
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
                                           , include_paths=environment.ogrenewt.include_dirs
-                                          , define_symbols=['ogrenewt_NONCLIENT_BUILD']
+                                          , define_symbols=['ogrenewt_NONCLIENT_BUILD', 'OGRE_NONCLIENT_BUILD']
                                           , indexing_suite_version=2 )
 
     filter_declarations (mb)

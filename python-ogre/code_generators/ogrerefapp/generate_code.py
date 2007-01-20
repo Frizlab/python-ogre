@@ -75,7 +75,7 @@ def generate_code():
                         os.path.join( environment.ogrerefapp.root_dir, "python_ogre.h" )
                         , environment.ogrerefapp.cache_file )
 
-    defined_symbols = [ 'OGREREFAPP_NONCLIENT_BUILD' ]
+    defined_symbols = [ 'OGREREFAPP_NONCLIENT_BUILD', 'OGRE_NONCLIENT_BUILD' ]
     defined_symbols.append( 'OGREREFAPP_VERSION_' + environment.ogrerefapp.version )
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
