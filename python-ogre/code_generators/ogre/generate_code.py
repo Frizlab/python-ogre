@@ -254,54 +254,31 @@ def find_nonconst ( mb ):
                     fun.add_transformation( ft.modify_type(arg_position,declarations.remove_reference ) )
             arg_position +=1
                     
-##
-## Note that I've left this function in here afor reference purposes - it's not used as its an ugly
-## workaround/fix to something that isn't broken or should be fixed in a python wrapper
-##                 
-def fixup_specials ( mb ):
-    """ fixup to create override functions that accept tuples instead of Vector3's or Colourvalues
-    'override_type' should be Vector3 or ColourValue
+def add_py_tuple_conversion( mb ):
     """
-    FUN_CODE  = """
-/// Python-Ogre override to enable property creation passing a python tuple
-void
-%(class_name)s_%(function_name)s( ::Ogre::%(class_name)s & me, ::boost::python::tuple tuplein) {
-    me.%(function_name)s ( %(override_type)s( boost::python::extract<Ogre::Real> (tuplein[0]),
-                            boost::python::extract<Ogre::Real> (tuplein[1]),
-                            boost::python::extract<Ogre::Real> (tuplein[2]) )
-                            );
-}
-"""   
-
-    EXPOSER_CODE = """
-          def( "%(function_name)s" , &%(class_name)s_%(function_name)s );    /// Python-Ogre Setter Extension (tuple as input)
-"""
-    ## the list of ogre values we want to accept as 3 tuples
-    overrides= ['::Ogre::Vector3 const &', '::Ogre::ColourValue const &']
-    exclude_classes = ['AnimableValue']
+    Allows to pass Python tuple as argument to function, instead of
+       * ColourValue
+       * Vector[2|3|4]
+       * TODO: Matrix[3|4]
+    """
+    rvalue_converters = ( 
+        'register_pytuple_to_colour_value_conversion'
+        , 'register_pytuple_to_vector2_conversion'
+        , 'register_pytuple_to_vector3_conversion'
+        , 'register_pytuple_to_vector4_conversion' )
+        
+    for converter in rvalue_converters:
+        mb.add_declaration_code( 'void %s();' % converter )
+        mb.add_registration_code( '%s();' % converter )
     
-    for override in overrides:
-        override_clean  = (override.split()[0])[2:] ## need a simple version of Ogre::Vector3 or Ogre::ColourValue etc..
-        ## get the list of matching functions
-        funcs = mb.member_functions( return_type='void' , arg_types=[override])
-        for fun in funcs:
-            if fun.name.startswith ('set') and fun.parent.name not in exclude_classes : ## we only override set's
-                tc = mb.class_( fun.parent.name )
-                tc.add_declaration_code(
-                    FUN_CODE % { 'class_name': fun.parent.name
-                                               , 'function_name': fun.name
-                                               , 'override_type' : override_clean } )
-                tc.add_registration_code( 
-                    EXPOSER_CODE % { 'class_name': fun.parent.name
-                                               , 'function_name': fun.name } )
-                propname = fun.name[3:] # remove the 'set'
-                ### AJm WARNING - this bit is to make things easier to create python proerties and isn't gauranteed to be right
-                print "Setter_Override Ogre.%(class_name)s.%(propname)s= property( Ogre.%(class_name)s.get%(propname)s,Ogre.%(class_name)s.set%(propname)s ) " % {'class_name' : fun.parent.name,
-                                'propname' : propname }
-                lprop = propname[0].lower() + propname[1:]                                
-                print "Setter_Override Ogre.%(class_name)s.%(lprop)s= property( Ogre.%(class_name)s.get%(propname)s, Ogre.%(class_name)s.set%(propname)s ) " % {'lprop' : lprop,
-                                'class_name' : fun.parent.name,
-                                'propname' : propname }
+    environment.ogre.generated_dir
+    
+    custom_rvalue_path = os.path.join(
+                            os.path.abspath(os.path.dirname(__file__) )
+                            , 'custom_rvalue.cpp' )
+    
+    if not os.path.exists( os.path.join(environment.ogre.generated_dir, 'custom_rvalue.cpp' ) ):
+        shutil.copy( custom_rvalue_path, environment.ogre.generated_dir )
   
 def set_call_policies( mb ):
 #
@@ -389,23 +366,23 @@ def query_containers_with_ptrs(decl):
 # the 'main'function
 #            
 def generate_code():  
-#     messages.disable( 
-#           #Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-#           messages.W1020
-#         , messages.W1021
-#         , messages.W1022
-#         , messages.W1023
-#         , messages.W1024
-#         , messages.W1025
-#         , messages.W1026
-#         , messages.W1027
-#         , messages.W1028
-#         , messages.W1029
-#         , messages.W1030
-#         , messages.W1031
-#         #, messages.W1040 
-#         # Inaccessible property warning
-#         , messages.W1041 )
+    messages.disable( 
+          #Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+          messages.W1020
+        , messages.W1021
+        , messages.W1022
+        , messages.W1023
+        , messages.W1024
+        , messages.W1025
+        , messages.W1026
+        , messages.W1027
+        , messages.W1028
+        , messages.W1029
+        , messages.W1030
+        , messages.W1031
+        , messages.W1040 
+        # Inaccessible property warning
+        , messages.W1041 )
     
     #
     # Use GCCXML to create the controlling XML file.
@@ -429,16 +406,6 @@ def generate_code():
                                           , define_symbols=defined_symbols
                                           , indexing_suite_version=2
                                            )
-#     #
-#     # Fix aliases so we don't get ugly classes
-#     #    
-#     for cls in mb.classes():
-#         for alias in cls.aliases:
-#             ppya=get_pyplusplus_alias( alias)
-#             if ppya:
-#                 cls.alias = ppya
-#                 print "Fixing alias: ",cls," == ",ppya
-#                 break                                       
     #
     # We filter (both include and exclude) specific classes and functions that we want to wrap
     # 
@@ -500,6 +467,8 @@ def generate_code():
 
     common_utils.add_constants( mb, { 'ogre_version' :  '"%s"' % environment.ogre.version.replace("\n", "\\\n") 
                                       , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
+
+    add_py_tuple_conversion( mb )
 
     ##########################################################################################
     #
