@@ -22,6 +22,7 @@ def aliases( Version ):
 
 def header_files( Version ):
     return [ 
+    "ode/ode.h",
     "OgreOde_Core.h",
     "OgreOde_Prefab.h"
              ]

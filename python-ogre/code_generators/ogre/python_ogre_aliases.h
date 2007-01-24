@@ -1,11 +1,20 @@
 
-// these are 3 uglys to remove messages in the generate_code output - doesn't impact the generated code :)
+// these are uglys to remove messages in the generate_code output - doesn't impact the generated code :)
 typedef Ogre::MapIterator<std::map<short unsigned int, Ogre::VertexAnimationTrack*, std::less<short unsigned int>, std::allocator<std::pair<const short unsigned int, Ogre::VertexAnimationTrack*> > > >\
     MapIteratorVertexAnimationTrackPtr;
 typedef Ogre::MapIterator<std::map<short unsigned int, Ogre::NumericAnimationTrack*, std::less<short unsigned int>, std::allocator<std::pair<const short unsigned int, Ogre::NumericAnimationTrack*> > > >\
     MapIteratorNumericAnimationTrackPtr;
 typedef Ogre::MapIterator<std::map<short unsigned int, Ogre::NodeAnimationTrack*, std::less<short unsigned int>, std::allocator<std::pair<const short unsigned int, Ogre::NodeAnimationTrack*> > > >\
     MapIteratorNodeAnimationTrackPtr;
+typedef Ogre::ConstMapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::GpuConstantDefinition, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::GpuConstantDefinition> > > >\
+    ConstMapIteratorGpuConstantDef;
+typedef Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObjectFactory*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::MovableObjectFactory*> > > >\
+    MapIteratorMovableObjectFactory;
+typedef Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > >\
+    MapIteratorString;
+    
+    
+
 
 typedef std::set<Ogre::SceneQuery::WorldFragmentType> SupportedWorldFragments;
 typedef std::vector<std::pair<Ogre::String, Ogre::String> > customParameters;
