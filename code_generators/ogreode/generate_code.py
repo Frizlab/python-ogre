@@ -33,10 +33,29 @@ def filter_declarations( mb ):
     
     ogreode_ns = global_ns.namespace( 'OgreOde' )
     ogreode_ns.include()
+    ogreode_ns.class_("Body").variable("MovableType").exclude() ## this "static const Ogre::String" causes msvc7.1 to die!!
+    ogreode_ns.class_("Utility").variable("Infinity").exclude() ## this "static const Ogre::String" causes msvc7.1 to die!!
+    ogreode_ns.class_("Body").variable("getTypeName").exclude() ## this "static const Ogre::String" causes msvc7.1 to die!!
+
+    ogreode_ns.class_("EntityInformer").mem_fun("getIndices").exclude() ## unsigned int const *
+    
+    # Unfortunately the classes here being used with Maintainedlist don't implement ALL of
+    # maintaintlist's functions - hence Py++ has tried to expose them all and it fails at
+    # compile time.  Probably need to patch the source to implement null functions.
+    ogreode_ns.class_("MaintainedList<OgreOde::Body>").exclude() 
+    ogreode_ns.class_("MaintainedList<OgreOde::Geometry>").exclude() 
+    ogreode_ns.class_("MaintainedList<OgreOde::Joint>").exclude() 
+    ogreode_ns.class_("MaintainedList<OgreOde::JointGroup>").exclude() 
+    ogreode_ns.class_("MaintainedList<OgreOde::Space>").exclude() 
+    
+    # this one has link errors
+    ogreode_ns.class_("CircularBuffer<OgreOde::BodyState*>").exclude() 
+    ogreode_ns.class_("PlaneBoundedRegionGeometry").member_functions("_planeCallback").exclude() 
+    ogreode_ns.class_("TerrainGeometry").member_functions("_heightCallback").exclude() 
 
     ogreodeP_ns = global_ns.namespace( 'OgreOde_Prefab' )
     ogreodeP_ns.include()
-
+    ogreodeP_ns.class_("Vehicle").mem_fun("load").exclude() 
   
 def set_call_policies( mb ):
 #
@@ -66,16 +85,33 @@ def generate_ogreode():
     xml_cached_fc = parser.create_cached_source_fc(
                         os.path.join( environment.ogreode.root_dir, "python_ogreode.h" )
                         , environment.ogreode.cache_file )
+    defined_symbols = [  'OGRE_NONCLIENT_BUILD' ]
+    defined_symbols.append( 'OGREODE_VERSION_' + environment.ogreode.version )  
 
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
                                           , include_paths=environment.ogreode.include_dirs
-                                          , define_symbols=[]
+                                          , define_symbols= defined_symbols
                                           , indexing_suite_version=2 )
 
     filter_declarations (mb)
 
+    ## we need to handle "ode" return values etc
+    query = lambda decl: isinstance( decl, ( declarations.class_t, declarations.class_declaration_t ) ) \
+                         and decl.name.startswith( 'dx' )
+    mb.global_ns.decls( query ).opaque = True  
+    
+    ## here we adjust for functions that return poiners to ODE "ID's", which are really C structs
+    ## I may have been over agressive in identifing these functions but hopefully not...
+    for func in mb.namespace( 'OgreOde' ).member_functions():  
+        if func.return_type.decl_string.endswith('ID'):
+            print "Setting ", func.name, "to Opaque"
+            func.opaque = True
+            func.call_policies = call_policies.return_value_policy(
+                call_policies.return_opaque_pointer )
+            
+                        
     
     common_utils.set_declaration_aliases( mb.global_ns, customization_data.aliases( environment.ogreode.version ) )
     #

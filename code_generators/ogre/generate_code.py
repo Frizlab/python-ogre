@@ -22,6 +22,7 @@ from pyplusplus import decl_wrappers
 
 from pyplusplus import function_transformers as ft
 from pyplusplus.module_builder import call_policies
+from pyplusplus.module_creator import sort_algorithms
 
 import common_utils.extract_documentation as exdoc
 import common_utils.ogre_properties as ogre_properties
@@ -135,6 +136,27 @@ def filter_declarations( mb ):
     
     ogre_ns.mem_funs( return_type='::Ogre::uchar *', allow_empty=True).exclude() #light::getdata xxx.opaque = True ??
     ogre_ns.mem_funs( return_type='::Ogre::uchar const *', allow_empty=True).exclude() #light::getdata xxx.opaque = True ??
+
+    # functions that take pointers to pointers 
+    ogre_ns.class_( 'VertexElement').member_functions('baseVertexPointerToElement').exclude()
+    
+    # return arrays
+    ##  const Vector3* ----
+    for f in ogre_ns.mem_funs( return_type='::Ogre::Vector3 const *', allow_empty=True):
+        if f.name.startswith("get") and "Corner" in f.name:
+            f.call_policies = call_policies.convert_array_to_tuple( 8, call_policies.memory_managers.none )
+#         print "***", f.name, f
+#     sys.exit()
+#     ogre_ns.class_( 'AxisAlignedBox').member_function('getAllCorners').call_policies =\
+#          call_policies.convert_array_to_tuple( 8, call_policies.memory_managers.none )
+#     ogre_ns.class_( 'OgreCamera').member_function('getWorldSpaceCorners').call_policies =\
+#          call_policies.convert_array_to_tuple( 8, call_policies.memory_managers.none )
+#     ogre_ns.class_( 'OgreFrustum').member_function('getWorldSpaceCorners').call_policies =\
+#          call_policies.convert_array_to_tuple( 8, call_policies.memory_managers.none )
+
+
+#   const Vector3* getWorldSpaceCorners(void) const; (from OgreCamera.h)
+#   virtual const Vector3* getWorldSpaceCorners(void) const; (from OgreFrustum.h)
    
     #all constructors in this class are private, also some of them are public.
     if sys.platform=='win32':
@@ -312,6 +334,8 @@ def configure_exception(mb):
     #be useful to user. But, we will provide automatic exception translator
     Exception = mb.namespace( 'Ogre' ).class_( 'Exception' )
     Exception.include()
+    Exception.mem_fun('what').exclude() # declared with empty throw
+    Exception.mem_fun('getNumber').exclude() # declared with empty throw
     Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getFullDescription().c_str()' )
     
 def get_pyplusplus_alias( typedef ):
@@ -366,24 +390,30 @@ def query_containers_with_ptrs(decl):
 # the 'main'function
 #            
 def generate_code():  
-    messages.disable( 
-          #Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-          messages.W1020
-        , messages.W1021
-        , messages.W1022
-        , messages.W1023
-        , messages.W1024
-        , messages.W1025
-        , messages.W1026
-        , messages.W1027
-        , messages.W1028
-        , messages.W1029
-        , messages.W1030
-        , messages.W1031
-        , messages.W1040 
-        # Inaccessible property warning
-        , messages.W1041 )
-    
+#     messages.disable( 
+# #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+#           messages.W1020
+#         , messages.W1021
+#         , messages.W1022
+#         , messages.W1023
+#         , messages.W1024
+#         , messages.W1025
+#         , messages.W1026
+#         , messages.W1027
+#         , messages.W1028
+#         , messages.W1029
+#         , messages.W1030
+#         , messages.W1031
+#         , messages.W1040 
+#         # Inaccessible property warning
+#         , messages.W1041
+#         , messages.W1036 # pointer to Python immutable member
+#         , messages.W1033 # unnamed variables
+#         , messages.W1018 # expose unnamed classes
+#         , messages.W1049 # returns reference to local variable
+#         , messages.W1014 # unsupported '=' operator
+#          )
+    ### sort_algorithms.USE_CALLDEF_ORGANIZER = True   ## tried this to remove a couple of order issues, without success :)
     #
     # Use GCCXML to create the controlling XML file.
     # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded
