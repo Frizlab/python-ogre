@@ -36,16 +36,17 @@ def filter_declarations( mb ):
     ogreal_ns.include()
     ##ogreal_ns.mem_funs( return_type='::OgreAL::Real const *', allow_empty=True).exclude()
     
+    #Virtual functions that return reference could not be overriden from Python
+    query = declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.VIRTUAL ) \
+            & declarations.custom_matcher_t( lambda decl: declarations.is_reference( decl.return_type ) )
+    ogreal_ns.calldefs( query ).virtuality = declarations.VIRTUALITY_TYPES.NOT_VIRTUAL
+
     ## Exclude protected and private that are not pure virtual
     query = ~declarations.access_type_matcher_t( 'public' ) \
             & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
     non_public_non_pure_virtual = ogreal_ns.calldefs( query )
     non_public_non_pure_virtual.exclude()
 
-    #Virtual functions that return reference could not be overriden from Python
-    query = declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.VIRTUAL ) \
-            & declarations.custom_matcher_t( lambda decl: declarations.is_reference( decl.return_type ) )
-    ogreal_ns.calldefs( query ).virtuality = declarations.VIRTUALITY_TYPES.NOT_VIRTUAL
     
     # a couple of defined functions without source
     ogreal_ns.class_('Sound').mem_fun('setGainValues').exclude()
