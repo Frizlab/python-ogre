@@ -36,7 +36,7 @@ def filter_declarations( mb ):
         if  cls.decl_string[2:6]=='FMOD' :
             print "Including Class:", cls.name
             cls.include()
-  
+    
     ## and we'll need the free functions as well
      
 #     for funcs in FMOD_ns.free_functions ():
@@ -49,6 +49,9 @@ def filter_declarations( mb ):
 #     for var in FMOD_ns.variables():
 #         print "VAR:", var.name       
 #         var.include()
+
+    FMOD_ns.free_function('FMOD_System_Update').include()
+    
     for var in FMOD_ns.enums():
         if var.name[0:4] == 'FMOD':
             var.include()
@@ -67,7 +70,35 @@ def filter_declarations( mb ):
     
     FMOD_ns.class_('FMOD_DSP_STATE').exclude()
     FMOD_ns.class_('FMOD_ADVANCEDSETTINGS').exclude() # calldef('ASIOChannelList').exclude()
+    ##mb.free_function('System_Create').exclude() #hand wrapped
+    #FMOD_ns.class_('System').mem_fun('update').exclude()
+    
+#         .add_transformation(ft.outputRef('system'))
        
+
+    # I want the extradatadrive information to be an int address instead of a void pointer
+    # t
+#     c=ns.mem_fun('::FMOD::System::init')  
+#     c.arguments[2].default_value = "unsigned int(0)" # unsigned int(%s)" % c.arguments[2].default_value
+    for c in FMOD_ns.classes():
+        for f in c.member_functions(allow_empty=True):
+            for arg in f.arguments:
+#                 print arg.type
+#                 print dir(arg.type)
+#                 print dir(arg)
+#                 print arg.type.decl_string
+#                 sys.exit()
+                if arg.type.decl_string=="void *" and arg.default_value == None:
+                    pass
+                    #######arg.default_value = "unsigned int(0)"
+#                     print "***"
+#                     print arg
+#                     print dir(arg)
+#                     print arg.default_value
+#                     print arg.name
+#                     print arg.type
+#                     sys.exit()
+
     
 def set_call_policies( mb ):
     FMOD_ns = mb
@@ -128,18 +159,40 @@ def add_transformations ( mb ):
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
    
-    ns.mem_fun('::FMOD::System::getVersion') \
-        .add_transformation(ft.output('version'))
+#     ns.mem_fun('::FMOD::System::getVersion') \
+#         .add_transformation(ft.output('version', AddRef=True))
     ns.mem_fun('::FMOD::System::createSound') \
-        .add_transformation(ft.output('sound'))
+        .add_transformation(ft.output('sound', AddRef=True, ReturnByRef=True))
+    ns.mem_fun('::FMOD::System::playSound') \
+        .add_transformation(ft.output('channel', AddRef=True, ReturnByRef=True))
+    ns.mem_fun('::FMOD::System::playSound') \
+        .add_transformation(ft.output('channel', AddRef=True, ReturnByRef=True))
+    for c in ns.classes():
+       for f in c.member_functions(allow_empty=True):
+            if f.name.startswith ('is') or f.name.startswith('get'):
+                if len(f.arguments) == 1:   
+                    ds = f.arguments[0].type.decl_string
+                    if "*" in ds and \
+                        (ds.startswith('int') or ds.startswith('bool') or ds.startswith('unsign') or ds.startswith('float') ):
+                        print "Adding base transformation for" , ds, f
+                        f.add_transformation(ft.output(0, AddRef=True) )   
+                    elif "* *" in ds and not ds.startswith ('void'):   # it's a pointer to a pointer
+                        print "Adding pointer transformation for ", ds, f
+                        f.add_transformation(ft.output(0, AddRef=True, ReturnByRef=True ))   
+                    else:
+                        print "Not transforming ", c, f, ds 
+                               
+#     ns.mem_fun('::FMOD::Channel::isPlaying').add_transformation(ft.output(0))  
+#     ns.mem_fun('::FMOD::Channel::getPaused').add_transformation(ft.output(0))  
+#     ns.mem_fun('::FMOD::Channel::getVolume').add_transformation(ft.output(0))  
+#     ns.mem_fun('::FMOD::Channel::getFrequency').add_transformation(ft.output(0))  
+#     ns.mem_fun('::FMOD::Channel::getPan').add_transformation(ft.output(0))  
+#     ns.mem_fun('::FMOD::Channel::getMute').add_transformation(ft.output(0))  
+#         
+#     mb.free_function('System_Create') \
+#         .add_transformation(ft.outputRef('system'))
         
-##        FMOD_RESULT F_API getVersion             (unsigned int *version);
-        
-## typedef ::FMOD_RESULT ( ::FMOD::System::*createSound_function_type )( char const *,::FMOD_MODE,::FMOD_CREATESOUNDEXINFO *,::FMOD::Sound * * ) ;
-##        FMOD_RESULT F_API createSound            (const char *name_or_data, FMOD_MODE mode, FMOD_CREATESOUNDEXINFO *exinfo, Sound **sound);
-        
-##    result = system->createSound("../media/drumloop.wav", FMOD_HARDWARE, 0, &sound1);
-        
+      
  
     
 def set_smart_pointers( mb ):
@@ -158,18 +211,18 @@ def set_smart_pointers( mb ):
 
 def generate_code():
     xml_cached_fc = parser.create_cached_source_fc(
-                        os.path.join( environment.FMOD.root_dir, "python_FMOD.h" )
-                        , environment.FMOD.cache_file )
+                        os.path.join( environment.fmod.root_dir, "python_FMOD.h" )
+                        , environment.fmod.cache_file )
 
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
-                                          , include_paths=environment.FMOD.include_dirs
+                                          , include_paths=environment.fmod.include_dirs
                                           , define_symbols=['FMOD_NONCLIENT_BUILD', '_CONSOLE', 'NDEBUG', 'WIN32']
                                           , indexing_suite_version=2 )
     filter_declarations (mb)
    
-##    common_utils.set_declaration_aliases( mb.global_ns, customization_data.aliases(environment.FMOD.version) )
+##    common_utils.set_declaration_aliases( mb.global_ns, customization_data.aliases(environment.fmod.version) )
 
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
@@ -196,17 +249,17 @@ def generate_code():
     
 #     common_utils.add_properties(  mb.global_ns.namespace ('FMOD').classes() )
 
-    common_utils.add_constants( mb, { 'FMOD_version' :  '"%s"' % environment.FMOD.version
+    common_utils.add_constants( mb, { 'FMOD_version' :  '"%s"' % environment.fmod.version
                                        , 'python_version' : '"%s"' % sys.version } )
                                       
     #Creating code creator. After this step you should not modify/customize declarations.
     mb.build_code_creator (module_name='_fmod_')
-    for incs in environment.FMOD.include_dirs:
+    for incs in environment.fmod.include_dirs:
         mb.code_creator.user_defined_directories.append( incs )
-    mb.code_creator.user_defined_directories.append( environment.FMOD.generated_dir )
-    mb.code_creator.replace_included_headers( customization_data.header_files(environment.FMOD.version) )
-    huge_classes = map( mb.class_, customization_data.huge_classes(environment.FMOD.version) )
-    mb.split_module(environment.FMOD.generated_dir, huge_classes)
+    mb.code_creator.user_defined_directories.append( environment.fmod.generated_dir )
+    mb.code_creator.replace_included_headers( customization_data.header_files(environment.fmod.version) )
+    huge_classes = map( mb.class_, customization_data.huge_classes(environment.fmod.version) )
+    mb.split_module(environment.fmod.generated_dir, huge_classes)
     
     return_pointee_value_source_path = os.path.join( environment.pyplusplus_install_dir
                     , 'pyplusplus_dev'
@@ -215,10 +268,10 @@ def generate_code():
                     , 'return_pointee_value.hpp' )
 
     return_pointee_value_target_path \
-        = os.path.join( environment.FMOD.generated_dir, 'return_pointee_value.hpp' )
+        = os.path.join( environment.fmod.generated_dir, 'return_pointee_value.hpp' )
 
     if not os.path.exists( return_pointee_value_target_path ):
-        shutil.copy( return_pointee_value_source_path, environment.FMOD.generated_dir )
+        shutil.copy( return_pointee_value_source_path, environment.fmod.generated_dir )
 
     
     
