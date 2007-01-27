@@ -6,3 +6,5 @@ sizeof (FMOD::ChannelGroup);
 //sizeof (FMOD::Reverb);
 sizeof (FMOD::DSP);
 sizeof (FMOD::Geometry);
+//sizeof (FMOD_SYSTEM);
+

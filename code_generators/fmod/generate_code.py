@@ -38,36 +38,47 @@ def filter_declarations( mb ):
             cls.include()
     
     ## and we'll need the free functions as well
+    ## well in actual fact we can do without th
      
-#     for funcs in FMOD_ns.free_functions ():
-#         #print "FREE Func:", funcs.name
-#         if funcs.name[0:4]=='FMOD':
-#             print "Including Free Function", funcs.name
-#             funcs.include() 
-#      
-#     print dir (FMOD_ns)
-#     for var in FMOD_ns.variables():
-#         print "VAR:", var.name       
-#         var.include()
-
-    FMOD_ns.free_function('FMOD_System_Update').include()
-    
+    for funcs in FMOD_ns.free_functions ():
+        #print "FREE Func:", funcs.name
+        if funcs.name[0:4]=='FMOD':
+            print "Including Free Function", funcs.name
+            funcs.include() 
+# # #      
+# # #     for var in FMOD_ns.variables():
+# # #         if var.name[0:4] == 'FMOD':
+# # #             print "VAR (FMOD ns):", var.name       
+# # #             var.include()
+# # #             
+# # #     for var in global_ns.variables():
+# # #         if var.name[0:4] == 'FMOD':
+# # #             print "VAR(Global ns):", var.name       
+# # #             var.include()
+# # #     
+# # #     for var in global_ns.typedefs():
+# # #         if var.name[0:4] == 'FMOD':
+# # #             print "TYPEDEF(Global ns):", var.name       
+# # #             var.include()
+# # #     
     for var in FMOD_ns.enums():
         if var.name[0:4] == 'FMOD':
             var.include()
             print "ENUM INCLUDED", var.name       
-    #sys.exit()               
-#    FMOD_ns.member_functions( "FMOD_System_Create").exclude()
+# # #             
+# # #     setOpaque = [ "FMOD_SYSTEM", "FMOD_SOUND", "FMOD_CHANNEL", "FMOD_CHANNELGROUP", 
+# # #                     "FMOD_REVERB", "FMOD_DSP", "FMOD_POLYGON", "FMOD_GEOMETRY", "FMOD_SYNCPOINT"
+# # #                     ]
+# # #     for c in setOpaque:
+# # #         for t in global_ns.typedefs(c):
+# # #             t.opaque=True
+                    
+    query = ~declarations.access_type_matcher_t( 'public' ) \
+            & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
+    non_public_non_pure_virtual = FMOD_ns.calldefs( query )
+    non_public_non_pure_virtual.exclude()
     
     ## now we need to exclude a few things - I thing the return char * * is a problem
-#     FMOD_ns.class_( "FMOD_ADVANCEDSETTINGS" ).member_functions( "get_ASIOChannelList").exclude()
-#     FMOD_ns.class_( "FMOD_DSP_STATE" ).member_functions( "get_instance").exclude()
-            
-#    global_ns.include()
-#     FMOD_ns = global_ns.namespace( 'FMOD' )
-#     FMOD_ns.class_('System').include()
-    #FMOD_ns.include()
-    
     FMOD_ns.class_('FMOD_DSP_STATE').exclude()
     FMOD_ns.class_('FMOD_ADVANCEDSETTINGS').exclude() # calldef('ASIOChannelList').exclude()
     ##mb.free_function('System_Create').exclude() #hand wrapped
@@ -77,29 +88,34 @@ def filter_declarations( mb ):
        
 
     # I want the extradatadrive information to be an int address instead of a void pointer
-    # t
 #     c=ns.mem_fun('::FMOD::System::init')  
 #     c.arguments[2].default_value = "unsigned int(0)" # unsigned int(%s)" % c.arguments[2].default_value
     for c in FMOD_ns.classes():
         for f in c.member_functions(allow_empty=True):
             for arg in f.arguments:
-#                 print arg.type
-#                 print dir(arg.type)
-#                 print dir(arg)
-#                 print arg.type.decl_string
-#                 sys.exit()
                 if arg.type.decl_string=="void *" and arg.default_value == None:
-                    pass
-                    #######arg.default_value = "unsigned int(0)"
-#                     print "***"
-#                     print arg
-#                     print dir(arg)
-#                     print arg.default_value
-#                     print arg.name
-#                     print arg.type
-#                     sys.exit()
+                    arg.default_value = "unsigned int(0)"
+                    
+                    
+    # exclude hand wrapped functions                    
+# # #     FMOD_ns.class_('Sound').mem_fun('release').exclude()
+# # #     FMOD_ns.class_('Sound').mem_fun('close').exclude()
+# # #     FMOD_ns.class_('System').mem_fun('release').exclude()
+# # #     FMOD_ns.class_('System').mem_fun('init').exclude()
+# # #     FMOD_ns.class_('System').mem_fun('playDSP').exclude()
+# # #     FMOD_ns.free_function('System_Create').exclude()
 
-    
+    excludelist=['addDSP','setChannelGroup','addGroup','addInput','disconnectFrom','setSubSound']
+    for c in FMOD_ns.classes():
+        for fun in c.member_functions(allow_empty=True):
+            if fun.name in excludelist:
+                fun.exclude()
+#     FMOD_ns.class_('System').mem_fun('playDSP').exclude()        
+#     FMOD_ns.class_('System').mem_fun('playSound').exclude()        
+#     FMOD_ns.class_('System').mem_fun('recordStart').exclude()        
+        
+        
+        
 def set_call_policies( mb ):
     FMOD_ns = mb
 
@@ -107,16 +123,8 @@ def set_call_policies( mb ):
     # as this is the FMOD Default.
     mem_funs = FMOD_ns.calldefs ()
     mem_funs.create_with_signature = True #Generated code will not compile on
-#     #MSVC 7.1 if function has throw modifier.
-#     for mem_fun in mem_funs:
-#         if mem_fun.call_policies:
-#             continue
-#         if declarations.is_pointer (mem_fun.return_type) or declarations.is_reference (mem_fun.return_type):
-#             mem_fun.call_policies = call_policies.return_value_policy(
-#                 call_policies.reference_existing_object )
 
-#                 
-   #MSVC 7.1 if function has throw modifier.
+    #MSVC 7.1 if function has throw modifier.
     resolver = module_creator.built_in_resolver_t()
     for mem_fun in mem_funs:
         if mem_fun.call_policies:
@@ -140,74 +148,51 @@ def configure_exception(mb):
 #     Exception = mb.namespace( 'FMOD' ).class_( 'Exception' )
 #     Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getMessage().c_str()' )
 
-## this is to fix specific challenges where a class (CaratIndex for example) is defined in multiple namespaces
-##   
-
-def change_cls_alias( ns ):
-   for cls in ns.classes():
-       if 1 < len( ns.classes( cls.name ) ):
-           alias = cls.decl_string[ len('::FMOD::'): ]
-           print "Adjust:",cls.decl_string
-           cls.alias = alias.replace( '::', '' )
-           cls.wrapper_alias = cls.alias + 'Wrapper' # or 'Wrapper' ??
-           ##cls.exclude()
-           
            
 def add_transformations ( mb ):
     ns = mb.global_ns.namespace ('FMOD')
     
-    def create_output( size ):
-        return [ ft.output( i ) for i in range( size ) ]
-   
-#     ns.mem_fun('::FMOD::System::getVersion') \
-#         .add_transformation(ft.output('version', AddRef=True))
-    ns.mem_fun('::FMOD::System::createSound') \
-        .add_transformation(ft.output('sound', AddRef=True, ReturnByRef=True))
-    ns.mem_fun('::FMOD::System::playSound') \
-        .add_transformation(ft.output('channel', AddRef=True, ReturnByRef=True))
-    ns.mem_fun('::FMOD::System::playSound') \
-        .add_transformation(ft.output('channel', AddRef=True, ReturnByRef=True))
+    def getTransforms ( f, offset ):
+        ftlist=[]
+        pos = 0
+        standardprefix=['boo', 'uns', 'flo', 'int'] # normal types
+        for arg in f.arguments:
+            if pos >= offset:
+                ds = arg.type.decl_string
+                if "*" in ds and ds[0:4] in standardprefix: ## a pointer to a 'normal' type
+                    ftlist.append( ft.output(pos, AddRef=True) )
+                
+                elif "* *" in ds and not ds.startswith ('void') and "FMOD::" in ds:   # it's a pointer to a pointer, return by reference
+                    ftlist.append( ft.output(pos, AddRef=True, ReturnByRef=True) )
+            pos += 1  
+        return ftlist 
+    
+    # fix up transforms in the FMOD classes
     for c in ns.classes():
        for f in c.member_functions(allow_empty=True):
-            if f.name.startswith ('is') or f.name.startswith('get'):
-                if len(f.arguments) == 1:   
-                    ds = f.arguments[0].type.decl_string
-                    if "*" in ds and \
-                        (ds.startswith('int') or ds.startswith('bool') or ds.startswith('unsign') or ds.startswith('float') ):
-                        print "Adding base transformation for" , ds, f
-                        f.add_transformation(ft.output(0, AddRef=True) )   
-                    elif "* *" in ds and not ds.startswith ('void'):   # it's a pointer to a pointer
-                        print "Adding pointer transformation for ", ds, f
-                        f.add_transformation(ft.output(0, AddRef=True, ReturnByRef=True ))   
-                    else:
-                        print "Not transforming ", c, f, ds 
-                               
-#     ns.mem_fun('::FMOD::Channel::isPlaying').add_transformation(ft.output(0))  
-#     ns.mem_fun('::FMOD::Channel::getPaused').add_transformation(ft.output(0))  
-#     ns.mem_fun('::FMOD::Channel::getVolume').add_transformation(ft.output(0))  
-#     ns.mem_fun('::FMOD::Channel::getFrequency').add_transformation(ft.output(0))  
-#     ns.mem_fun('::FMOD::Channel::getPan').add_transformation(ft.output(0))  
-#     ns.mem_fun('::FMOD::Channel::getMute').add_transformation(ft.output(0))  
-#         
-#     mb.free_function('System_Create') \
-#         .add_transformation(ft.outputRef('system'))
-        
-      
- 
-    
-def set_smart_pointers( mb ):
-    for v in mb.variables():
-       if not declarations.is_class( v.type ):
-           continue
-       cls = declarations.class_traits.get_declaration( v.type )
-       print "Could smartpr:", cls.name
-#        if cls.name.startswith( 'SharedPtr<' ):
-#            v.apply_smart_ptr_wa = True    
-#            print "Applying Smart Pointer: ",  v.name, " of class: ",  cls.name
-#        elif cls.name.endswith( 'SharedPtr' ):
-#            v.apply_smart_ptr_wa = True    
-#            print "Applying Smart Pointer: ",  v.name, " of class: ",  cls.name
+            ftlist = getTransforms( f, 0 )
+            if ftlist:
+                print "Transforming ", f.name #, " with ", ftlist
+                f.add_transformation ( *ftlist ) 
+                
+# # #     # now handle freefunction transforms                  
+# # #     for f in ns.free_functions ():
+# # # #         print "FREE checking", f
+# # #         ftlist = getTransforms( f, 0 )  
+# # #         if ftlist:
+# # #             print "Transforming Free", f.name #, " with ", ftlist
+# # #             f.add_transformation ( *ftlist ) 
+# # #     # now handle freefunction transforms   
+# # #                    
+# # #     for f in mb.global_ns.free_functions ():
+# # #         if f.name.startswith("FMOD"):
+# # #             ftlist = getTransforms( f, 0 )
+# # #             if ftlist:
+# # #                 print "Transforming Global Free", f.name #, " with ", ftlist
+# # #                 f.add_transformation ( *ftlist ) 
 
+#     mb.global_ns.free_function('::FMOD_System_Create').add_transformation(ft.output(0, AddRef=True, ReturnByRef=True))
+   
 
 def generate_code():
     xml_cached_fc = parser.create_cached_source_fc(
@@ -222,32 +207,17 @@ def generate_code():
                                           , indexing_suite_version=2 )
     filter_declarations (mb)
    
-##    common_utils.set_declaration_aliases( mb.global_ns, customization_data.aliases(environment.fmod.version) )
-
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
-
     
-#     common_utils.fix_unnamed_classes( mb.namespace( 'FMOD' ).classes( name='' ), 'FMOD' )
-
-#     common_utils.configure_shared_ptr(mb)
     configure_exception( mb )
-
     
     hand_made_wrappers.apply( mb )
     
     set_call_policies (mb.global_ns.namespace ('FMOD'))
     
-    # now we fix up the smart pointers ...
-#     set_smart_pointers ( mb.global_ns.namespace ('FMOD') )  
-   # set_smart_pointers ( mb.global_ns )  
-   # sys.exit()
-    # here we fixup functions that expect to modifiy their 'passed' variables    
     add_transformations ( mb )
     
-    
-    
-#     common_utils.add_properties(  mb.global_ns.namespace ('FMOD').classes() )
 
     common_utils.add_constants( mb, { 'FMOD_version' :  '"%s"' % environment.fmod.version
                                        , 'python_version' : '"%s"' % sys.version } )
