@@ -114,21 +114,20 @@ class ois:
 class ogrerefapp:
     active = True
     version = "1.4"
-    libs=[Config.LIB_Boost, 'OgreMain', 'ode', 'OgreGUIRenderer', 'CEGUIBase', 'ReferenceAppLayer']
+    libs=[Config.LIB_Boost, 'OgreMain', 'ode', 'ReferenceAppLayer']
     lib_dirs = [ Config.PATH_LIB_Boost
-                , Config.PATH_LIB_Ogre_CEGUIRenderer
                 , Config.PATH_LIB_Ogre_OgreMain
-                , Config.PATH_LIB_Ogre_Dependencies
+                , Config.PATH_LIB_ODE
                 , Config.PATH_LIB_OgreRefApp
                 ]
     include_dirs = [ Config.PATH_Boost 
                     ,Config.PATH_INCLUDE_Ogre
                     ,Config.PATH_INCLUDE_OgreRefApp
-                    ,Config.PATH_INCLUDE_Ogre_Dependencies
+                    ,Config.PATH_INCLUDE_ODE
                     ]
     CCFLAGS =  ' -D"BOOST_PYTHON_MAX_ARITY=19"'
     ModuleName = 'OgreRefApp'
-    CheckIncludes = ['boost/python.hpp', 'Ogre.h', 'OgreReferenceAppLayer.h', 'OIS/OIS.h']
+    CheckIncludes = ['boost/python.hpp', 'Ogre.h', 'OgreReferenceAppLayer.h', 'ode/ode.h']
     
 class ogrenewt:
     active=True
@@ -197,18 +196,22 @@ class ogreode:
     lib_dirs = [ Config.PATH_LIB_Boost
                 , Config.PATH_LIB_OgreOde
                 , Config.PATH_LIB_OgreOdePrefab
+                , Config.PATH_LIB_OgreOdeLoader
                 , Config.PATH_LIB_Ogre_OgreMain
+                ,  Config.PATH_LIB_ODE
                 ]
     include_dirs = [ Config.PATH_Boost 
-                , Config.PATH_INCLUDE_Ogre
                 , Config.PATH_INCLUDE_ODE
                 , Config.PATH_INCLUDE_OgreOde
                 , Config.PATH_INCLUDE_OgreOdePrefab
+                , Config.PATH_INCLUDE_OgreOdeLoader
+                , Config.PATH_INCLUDE_Ogre
                 ]
 
-    libs=[Config.LIB_Boost, 'OgreMain', 'ode' ]
+    libs=[Config.LIB_Boost, 'OgreMain', 'ode', 'OgreOde_Core', 'OgreOde_Prefab', 'OgreOde_Loader' ]
     CCFLAGS =  ' -D"BOOST_PYTHON_MAX_ARITY=19"'
-    CheckIncludes = ['boost/python.hpp', 'Ogre.h', 'ode.h', 'odecpp.h', 'OgreOde_Core.h'] 
+    CheckIncludes = ['boost/python.hpp', 'Ogre.h', 'ode/ode.h', 'ode/odecpp.h', 'OgreOde_Core.h', 'OgreOde_Loader.h', 
+                    'Ogreode_Prefab.h'] 
                      
     ModuleName='OgreOde'
     active=True
@@ -219,12 +222,33 @@ class fmod:
                    ,Config.PATH_INCLUDE_FMOD
                    ]
     lib_dirs = [ Config.PATH_LIB_Boost
-                  ,Config.PATH_INCLUDE_FMOD
+                  ,Config.PATH_LIB_FMOD
                   ] 
-    CCFLAGS = ' /D "NDEBUG" /D "WIN32" /D "_CONSOLE" /D "_MBCS" '
-    ModuleName = 'FMOD'
+                 
+    CCFLAGS = ' /D "NDEBUG" /D "WIN32" /D "_MBCS" '
+    ModuleName = 'FMOD' 
     CheckIncludes = ['fmod.h']
     active=True
+    
+class ogreal:
+    version="0.3"
+    include_dirs = [ Config.PATH_Boost
+                , Config.PATH_INCLUDE_Ogre
+                , Config.PATH_INCLUDE_OgreAL
+                , Config.PATH_INCLUDE_OGG
+                , Config.PATH_INCLUDE_VORBIS
+                , Config.PATH_INCLUDE_OPENAL
+                , Config.PATH_INCLUDE_ALUT
+                ]    
+    lib_dirs = [ Config.PATH_LIB_Boost
+                  ,Config.PATH_LIB_Ogre_OgreMain
+                  , Config.PATH_LIB_OgreAL
+                  ] 
+    libs=[Config.LIB_Boost, 'OgreMain', 'OgreAL']
+    ModuleName = 'OgreAL'
+    CheckIncludes = ['OgreAL.h']
+    active=True
+                
 ############################################################################################
 
 ## Here is the master list....
@@ -240,6 +264,7 @@ projects = {
     , 'ogrenewt' : ogrenewt
     , 'fmod' : fmod
     , 'ogreode' : ogreode
+    , 'ogreal' : ogreal
 }        
 
 #

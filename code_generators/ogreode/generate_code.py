@@ -19,12 +19,18 @@ import common_utils
 import customization_data
 import hand_made_wrappers
 
-from pyplusplus import module_builder
-from pyplusplus import module_creator
-from pyplusplus.module_builder import call_policies
-
 from pygccxml import parser
 from pygccxml import declarations
+from pyplusplus import messages
+from pyplusplus import module_builder
+from pyplusplus import decl_wrappers
+
+from pyplusplus import function_transformers as ft
+from pyplusplus.module_builder import call_policies
+from pyplusplus.module_creator import sort_algorithms
+
+import common_utils.extract_documentation as exdoc
+import common_utils.ogre_properties as ogre_properties
 
 
 def filter_declarations( mb ):
@@ -35,7 +41,6 @@ def filter_declarations( mb ):
     ogreode_ns.include()
     ogreode_ns.class_("Body").variable("MovableType").exclude() ## this "static const Ogre::String" causes msvc7.1 to die!!
     ogreode_ns.class_("Utility").variable("Infinity").exclude() ## this "static const Ogre::String" causes msvc7.1 to die!!
-#    ogreode_ns.class_("Body").variable("getTypeName").exclude() ## this "static const Ogre::String" causes msvc7.1 to die!!
 
     ogreode_ns.class_("EntityInformer").mem_fun("getIndices").exclude() ## unsigned int const *
     
@@ -52,10 +57,21 @@ def filter_declarations( mb ):
     ogreode_ns.class_("CircularBuffer<OgreOde::BodyState*>").exclude() 
     ogreode_ns.class_("PlaneBoundedRegionGeometry").member_functions("_planeCallback").exclude() 
     ogreode_ns.class_("TerrainGeometry").member_functions("_heightCallback").exclude() 
-
+    
     ogreodeP_ns = global_ns.namespace( 'OgreOde_Prefab' )
     ogreodeP_ns.include()
-    ogreodeP_ns.class_("Vehicle").mem_fun("load").exclude() 
+    ogreodeP_ns.class_("Vehicle").mem_fun("load").exclude()
+     
+    ogreodeL_ns = global_ns.namespace( 'OgreOde_Loader' )
+    ogreodeL_ns.include()
+    ogreodeL_ns.class_('DotLoader').mem_fun('loadFile').exclude() # it returns a pointer to a tinyxml object - could make it opaque?
+        ## Exclude protected and private that are not pure virtual
+    query = ~declarations.access_type_matcher_t( 'public' ) \
+            & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
+    ogreode_ns.calldefs( query ).exclude()
+    ogreodeP_ns.calldefs( query ).exclude()
+    ogreodeL_ns.calldefs( query ).exclude()
+    
   
 def set_call_policies( mb ):
 #
@@ -112,8 +128,6 @@ def generate_ogreode():
                 call_policies.return_opaque_pointer )
             
                         
-    
-    common_utils.set_declaration_aliases( mb.global_ns, customization_data.aliases( environment.ogreode.version ) )
     #
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
@@ -137,32 +151,31 @@ def generate_ogreode():
     #
     set_call_policies ( mb.global_ns.namespace ('OgreOde') )
     set_call_policies ( mb.global_ns.namespace ('OgreOde_Prefab') )
-    
-    # now we fix up the smart pointers ...
-#     set_smart_pointers ( mb.global_ns.namespace ('Ogre') )  
+    set_call_policies ( mb.global_ns.namespace ('OgreOde_Loader') )
     
     # here we fixup functions that expect to modifiy their 'passed' variables    
     add_transformations ( mb )
 
-#     for cls in ogreode_ns.classes():
-#     cls.add_properties( recognizer=ogreode_properties.ogreode_property_recognizer_t() )
-
-    ogreode_ns = mb.global_ns.namespace ('OgreOde')
-    common_utils.add_properties( ogreode_ns.classes() )
-    ogreode_ns = mb.global_ns.namespace ('OgreOde_Prefab')
-    common_utils.add_properties( ogreode_ns.classes() )
-
-    
+    #
+    # add properties to the 3 namespaces, in a conservative fashion
+    #
+    namespaces = ['OgreOde', 'OgreOde_Prefab', 'OgreOde_Loader']
+    for ns in namespaces:
+        for cls in mb.global_ns.namespace(ns).classes():
+            cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
     
     common_utils.add_constants( mb, { 'ogreode_version' :  '"%s"' % environment.ogreode.version
                                       , 'python_version' : '"%s"' % sys.version } )
 
 
-#     for c in mb.global_ns.classes():
-#         print c
-#     sys.exit()                                      
-    #Creating cogreode creator. After this step you should not modify/customize declarations.
-    mb.build_code_creator (module_name='_ogreode_')
+    #
+    # now do the work
+    #
+    #Creating ogreode creator. After this step you should not modify/customize declarations.
+    #
+    extractor = exdoc.doc_extractor("")
+    mb.build_code_creator (module_name='_ogreode_' , doc_extractor= extractor)
+
     for inc in environment.ogreode.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )
 

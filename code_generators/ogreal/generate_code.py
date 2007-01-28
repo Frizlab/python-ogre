@@ -47,12 +47,26 @@ def filter_declarations( mb ):
     non_public_non_pure_virtual = ogreal_ns.calldefs( query )
     non_public_non_pure_virtual.exclude()
 
-    
+         
     # a couple of defined functions without source
     ogreal_ns.class_('Sound').mem_fun('setGainValues').exclude()
     ogreal_ns.class_('Sound').mem_fun('setDistanceValues').exclude()
-
+    
+    # need to force these to be included so they get exposed..
+    global_ns.namespace( 'Ogre' ).class_('Singleton<OgreAL::Listener>').include()
+    global_ns.namespace( 'Ogre' ).class_('Singleton<OgreAL::SoundManager>').include()
+    
+    # and classes the we need to be exposed but don't want code generated as they already exist in
+    # other modules ('Ogre' in this case) that will be "imported" before the OgreAL module
     global_ns.namespace( 'Ogre' ).class_('MovableObject').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('MovableObjectFactory').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('Vector3').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('Node').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('AxisAlignedBox').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('RenderQueue').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('FrameEvent').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('FrameListener').include(already_exposed=True)
+    
     
 
 
@@ -136,7 +150,9 @@ def generate_code():
     # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded
     # NOTE: If you update the source library code you need to manually delete the cache .XML file   
     #
-    xml_cached_fc = parser.create_gccxml_fc( environment.ogreal.cache_file )
+    xml_cached_fc = parser.create_cached_source_fc(
+                        os.path.join( environment.ogreal.root_dir, "python_ogreal.h" )
+                        , environment.ogreal.cache_file )
 
     defined_symbols = [ 'OGREAL_NONCLIENT_BUILD', 'OGRE_NONCLIENT_BUILD', 'WIN32', '_LIB', '_MBCS', 'NDEBUG' ]
     defined_symbols.append( 'OGREAL_VERSION_' + environment.ogreal.version )  
@@ -178,6 +194,7 @@ def generate_code():
     # We need to tell boost how to handle calling (and returning from) certain functions
     #
     set_call_policies ( mb.global_ns.namespace ('OgreAL') )
+    set_call_policies ( mb.global_ns.namespace ('Ogre') )  # need this to set singletons to return_existing_object
     
     # now we fix up the smart pointers ...
 #     set_smart_pointers ( mb.global_ns.namespace ('OgreAL') )  
