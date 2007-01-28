@@ -14,10 +14,12 @@ namespace pyplusplus { namespace aliases {
 //
 namespace python_ogreal{ namespace details{
 inline void instantiate(){
- using namespace OgreAL;
+ //using namespace OgreAL;
  #include "python_ogreal_sizeof.h"
  
-} } }
+} 
+} 
+}
 
 
 #endif//__python_ogreal_h_5B402FBF_8DE8_49C9_AF71_1CF9634B5344__
