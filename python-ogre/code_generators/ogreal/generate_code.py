@@ -52,7 +52,7 @@ def filter_declarations( mb ):
     ogreal_ns.class_('Sound').mem_fun('setGainValues').exclude()
     ogreal_ns.class_('Sound').mem_fun('setDistanceValues').exclude()
 
-    global_ns.namespace( 'Ogre' ).class_('MovableObject').include()
+    global_ns.namespace( 'Ogre' ).class_('MovableObject').include(already_exposed=True)
     
 
 
@@ -136,9 +136,7 @@ def generate_code():
     # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded
     # NOTE: If you update the source library code you need to manually delete the cache .XML file   
     #
-    xml_cached_fc = parser.create_cached_source_fc(
-                        os.path.join( environment.ogreal.root_dir, "python_ogreal.h" )
-                        , environment.ogreal.cache_file )
+    xml_cached_fc = parser.create_gccxml_fc( environment.ogreal.cache_file )
 
     defined_symbols = [ 'OGREAL_NONCLIENT_BUILD', 'OGRE_NONCLIENT_BUILD', 'WIN32', '_LIB', '_MBCS', 'NDEBUG' ]
     defined_symbols.append( 'OGREAL_VERSION_' + environment.ogreal.version )  
