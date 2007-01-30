@@ -38,7 +38,8 @@ def filter_declarations( mb ):
     
     startswith = [
         # Don't include, we'll never need.
-        'D3D', 'GL', 'WIN32', '_'  
+        ##'D3D', 'GL'
+        'WIN32'  ### , '_'  
         , 'MemoryManager'   ## it's a specialised C++ mem manger not needed in Python
         ## , 'Any' ## it tries to hold any Ogre type - we get it for free in Python, however other funcs need it
         , 'RadixSort' ## these show up as ugly aliases but are never exposed - and are really protected
@@ -61,7 +62,6 @@ def filter_declarations( mb ):
     PartSys.class_( "CmdSorted" ).exclude()
 
     ## Functions defined in .h files but not implemented in source files
-    ogre_ns.class_("TargetManager").member_functions("getPositionTargetAt").exclude() 
     ogre_ns.class_('Root').mem_fun('termHandler').exclude()
     ogre_ns.class_( "StaticGeometry" ).class_("Region").member_functions('getLights').exclude() 
     
@@ -84,6 +84,8 @@ def filter_declarations( mb ):
     ogre_ns.class_('ParticleSystemManager').mem_fun('addRendererFactory').exclude()
   
     ogre_ns.class_('GpuProgramParameters').exclude() ### DAMM  - need to spend time on this class - fix for now!!
+    
+     
     ogre_ns.typedef('GpuLogicalIndexUseMap').exclude()  ## Fails as no default constructor for 'IndexUse...
     ogre_ns.class_('GpuLogicalIndexUse').exclude()  ## related to IndexUseMap..
 
@@ -145,18 +147,6 @@ def filter_declarations( mb ):
     for f in ogre_ns.mem_funs( return_type='::Ogre::Vector3 const *', allow_empty=True):
         if f.name.startswith("get") and "Corner" in f.name:
             f.call_policies = call_policies.convert_array_to_tuple( 8, call_policies.memory_managers.none )
-#         print "***", f.name, f
-#     sys.exit()
-#     ogre_ns.class_( 'AxisAlignedBox').member_function('getAllCorners').call_policies =\
-#          call_policies.convert_array_to_tuple( 8, call_policies.memory_managers.none )
-#     ogre_ns.class_( 'OgreCamera').member_function('getWorldSpaceCorners').call_policies =\
-#          call_policies.convert_array_to_tuple( 8, call_policies.memory_managers.none )
-#     ogre_ns.class_( 'OgreFrustum').member_function('getWorldSpaceCorners').call_policies =\
-#          call_policies.convert_array_to_tuple( 8, call_policies.memory_managers.none )
-
-
-#   const Vector3* getWorldSpaceCorners(void) const; (from OgreCamera.h)
-#   virtual const Vector3* getWorldSpaceCorners(void) const; (from OgreFrustum.h)
    
     #all constructors in this class are private, also some of them are public.
     if sys.platform=='win32':
@@ -197,15 +187,11 @@ def filter_declarations( mb ):
     #as reported by mike with linux:bp::arg("flags")=(std::_Ios_Fmtflags)0
     if os.name == 'posix':
         ogre_ns.class_('StringConverter').member_functions('toString').exclude()    
-#     for StringConverter in ogre_ns.class_( 'StringConverter').member_functions('toString'): ##, arg_types=[None,None] )
-#  #       print dir(StringConverter)
-#         print StringConverter.arguments
-#         print StringConverter.argument_types
-#         
-#     sys.exit()   
-   ### StringConverter.arguments[1].default_value = "int(%s)" % VertexCacheProfiler.arguments[1].default_value
-        
-    
+   
+   ## changes due to expanded header file input
+   
+    ogre_ns.class_('OptimisedUtil').mem_fun('softwareVertexSkinning').exclude
+   
         
 ##  Note - you need to do all the 'excludes' AFTER you've included all the classes you want..
 ##  Otherwise things get screwed up...
@@ -248,18 +234,23 @@ def filter_declarations( mb ):
 
     #Exclude non default constructors of iterator classes. 
     for cls in ogre_ns.classes():
-       if not declarations.templates.is_instantiation( cls.name ):
+        if not declarations.templates.is_instantiation( cls.name ):
            continue
-       name = declarations.templates.name( cls.name )
-       if not name.endswith( 'Iterator' ):
+        name = declarations.templates.name( cls.name )
+        if not name.endswith( 'Iterator' ):
            continue
-       #default constructor does not have arguments
-       constructors = cls.constructors( lambda decl: bool( decl.arguments )
+        #default constructor does not have arguments
+        constructors = cls.constructors( lambda decl: bool( decl.arguments )
                                                       , allow_empty=True
                                                       , recursive=False )
-       constructors.exclude()
-
-
+        constructors.exclude()
+        # and while we are here we have problems with '=' on these classes
+        try:
+            cls.operator('=').exclude()
+            print "Operator '=' Excluded:", cls.name
+        except:
+            pass
+     
 def find_nonconst ( mb ):
     """ we have problems with sharedpointer arguments that are defined as references
     but are NOT const.  Boost doesn't understand how to match them and you get a C++ Signature match fails.
@@ -353,7 +344,7 @@ def get_pyplusplus_alias( typedef ):
 
 def add_transformations ( mb ):
     ns = mb.global_ns.namespace ('Ogre')
-    
+        
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
    
@@ -376,7 +367,7 @@ def add_transformations ( mb ):
     ### ns.class_('Matrix3').mem_fun('Matrix3').add_transformation(ft.inputarray(9))........        
     ns.mem_fun('::Ogre::Font::getGlyphTexCoords') \
         .add_transformation(ft.output(1), ft.output(2),ft.output(3), ft.output(4))
-
+    ns.mem_fun('::Ogre::ExternalTextureSource::getTextureTecPassStateLevel').add_transformation( *create_output(3) )
         
 def query_containers_with_ptrs(decl):
     if not isinstance( decl, declarations.class_types ):

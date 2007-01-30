@@ -156,6 +156,7 @@ class cegui:
                     ,Config.PATH_CEGUI
                     , Config.PATH_INCLUDE_Ogre_CEGUIRenderer
                     , Config.PATH_INCLUDE_Ogre
+                    , Config.PATH_INCLUDE_Ogre_Dependencies
                     ]
                   
     lib_dirs = [ Config.PATH_LIB_Boost
