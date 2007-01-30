@@ -13,7 +13,6 @@ typedef Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char
 typedef Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > >\
     MapIteratorString;
     
-    
 
 
 typedef std::set<Ogre::SceneQuery::WorldFragmentType> SupportedWorldFragments;
@@ -54,6 +53,11 @@ typedef Ogre::ExceptionCodeType<9>  ExceptionCodeType9;
 typedef ::Ogre::Controller<float> ControllerFloat;
 typedef ::Ogre::ControllerValue<float> ControllerValueFloat;
 typedef ::Ogre::ControllerFunction<float> ControllerFunctionFloat;
+
+typedef  ::Ogre::Singleton<Ogre::FontManager> SingletonFontManager;
+typedef  ::Ogre::Singleton<Ogre::ExternalTextureSourceManager> SingletonExternalTextureSourceManager;
+typedef  ::Ogre::Singleton<Ogre::DynLibManager> SingletonDynLibManager;
+
 typedef  ::Ogre::Singleton<Ogre::CompositorManager> SingletonCompositorManager;
 typedef  ::Ogre::Singleton<Ogre::SkeletonManager> SingletonSkeletonManager;
 typedef  ::Ogre::Singleton<Ogre::Root> SingletonRoot;

@@ -2,13 +2,21 @@
 // sizeof ( Ogre::MapIterator );
 // sizeof ( Ogre::ConstVectorIterator );
 // sizeof ( Ogre::ConstMapIterator );
+sizeof ( exception );
+
+sizeof ( ::Ogre::Singleton<Ogre::FontManager> );
+sizeof ( ::Ogre::Singleton<Ogre::ExternalTextureSourceManager> );
+sizeof (  ::Ogre::Singleton<Ogre::DynLibManager> );
 
 sizeof (std::pair<bool, float> );
 sizeof (std::pair<unsigned int,unsigned int> );
-sizeof (Ogre::RadixSort<std::vector<Ogre::RenderablePass>,Ogre::RenderablePass,unsigned int> );
-sizeof (Ogre::RadixSort<std::vector<Ogre::RenderablePass>,Ogre::RenderablePass,float> );
-sizeof (Ogre::RadixSort<std::list<Ogre::Particle*>,Ogre::Particle*,float> );
-sizeof (Ogre::RadixSort<std::list<Ogre::Billboard*>,Ogre::Billboard*,float> );
+sizeof (::Ogre::Root::PluginLibList );
+sizeof (::Ogre::Root::PluginInstanceList );
+
+sizeof (::Ogre::RadixSort<std::vector<Ogre::RenderablePass>,Ogre::RenderablePass,unsigned int> );
+sizeof (::Ogre::RadixSort<std::vector<Ogre::RenderablePass>,Ogre::RenderablePass,float> );
+sizeof (::Ogre::RadixSort<std::list<Ogre::Particle*>,Ogre::Particle*,float> );
+sizeof (::Ogre::RadixSort<std::list<Ogre::Billboard*>,Ogre::Billboard*,float> );
 sizeof (HashMap<Ogre::String, unsigned short> ); // SubMeshNameMap
 sizeof ( std::map<Ogre::String, Ogre::MovableObjectFactory*> );
 
