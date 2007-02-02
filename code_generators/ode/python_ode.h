@@ -20,18 +20,18 @@
 //namespace python_ode{ 
 
     inline void instantiate(){
-//         sizeof ( dMatrix3);
-//         sizeof ( dQuaternion );
-//         sizeof (dVector3);
+        sizeof ( dMatrix3);
+        sizeof ( dQuaternion );
+        sizeof (dVector3);
 //    
 //        //class dxWorld {};
 //                         
-//         sizeof (dWorldID);
-//         sizeof (dSpaceID);
-//         sizeof (dBodyID);
-//         sizeof (dGeomID);
-//         sizeof (dJointID);
-//         sizeof (dJointGroupID);
+        sizeof (dWorldID);
+        sizeof (dSpaceID);
+        sizeof (dBodyID);
+        sizeof (dGeomID);
+        sizeof (dJointID);
+        sizeof (dJointGroupID);
         
         
     }

@@ -26,6 +26,8 @@ import common_utils.ogre_properties as ogre_properties
 def filter_declarations( mb ):
     global_ns = mb.global_ns
     global_ns.exclude()
+    global_ns.namespace('std').class_('pair<float, float>').include()
+    
     CEGUI_ns = global_ns.namespace( 'CEGUI' )
     CEGUI_ns.include()
     
@@ -128,8 +130,13 @@ def filter_declarations( mb ):
     for cls in CEGUI_ns.classes():
         print "checking", cls.name
         if 'iterator' in cls.name.lower() :
-            cls.exclude()
+            ##########cls.exclude()
             print "Excluding Iterator", cls.name
+    global_ns.namespace( 'Ogre' ).class_('SceneManager').include(already_exposed=True)
+            
+    global_ns.namespace( 'Ogre' ).class_('RenderWindow').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('TexturePtr').include(already_exposed=True)
+#     global_ns.namespace( 'Ogre' ).class_('SimpleRenderable').include(already_exposed=True)
             
     
 def set_call_policies( mb ):
@@ -174,7 +181,7 @@ def generate_code():
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
                                           , include_paths=environment.cegui.include_dirs
-                                          , define_symbols=['CEGUI_NONCLIENT_BUILD']
+                                          , define_symbols=['CEGUI_NONCLIENT_BUILD', 'OGRE_NONCLIENT_BUILD']
                                           , indexing_suite_version=2 )
     filter_declarations (mb)
    

@@ -36,6 +36,7 @@ def filter_declarations( mb ):
     
     # exclude this as standard boost libraries don't support std::Multimap's.  Replace by createPythonInputSystem
     # ois_ns.class_( "InputManager" ).member_functions("createInputSystem").exclude()
+    ois_ns.class_('Effect').variable('OIS_INFINITE').exclude()
     
 def set_call_policies( mb ):
     ois_ns = mb.global_ns.namespace ('OIS')

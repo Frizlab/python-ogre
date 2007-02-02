@@ -141,7 +141,8 @@ def filter_declarations( mb ):
 
     # functions that take pointers to pointers 
     ogre_ns.class_( 'VertexElement').member_functions('baseVertexPointerToElement').exclude()
-    
+    mb.global_ns.mem_fun('::Ogre::InstancedGeometry::BatchInstance::getObjectsAsArray').exclude()
+
     # return arrays
     ##  const Vector3* ----
     for f in ogre_ns.mem_funs( return_type='::Ogre::Vector3 const *', allow_empty=True):
@@ -192,6 +193,7 @@ def filter_declarations( mb ):
    
     ogre_ns.class_('OptimisedUtil').mem_fun('softwareVertexSkinning').exclude
    
+    ogre_ns.class_('ShadowVolumeExtrudeProgram').variable('programNames').exclude()    #funky sring[8] problem
         
 ##  Note - you need to do all the 'excludes' AFTER you've included all the classes you want..
 ##  Otherwise things get screwed up...
@@ -250,6 +252,19 @@ def filter_declarations( mb ):
             print "Operator '=' Excluded:", cls.name
         except:
             pass
+            
+    ## now for problem areas in the new unicode string handling - just excluding without 'thought' :)
+    ## the variables are not present in the source (to check)
+    ## most of the functions return pointers to 'stuff' that isn't handled at compile time
+    ogre_ns.class_('UTFString').variable('mVoidBuffer').exclude
+    ogre_ns.class_('UTFString').variable('mStrBuffer').exclude
+    ogre_ns.class_('UTFString').variable('mWStrBuffer').exclude
+    ogre_ns.class_('UTFString').variable('mUTF32StrBuffer').exclude
+    ogre_ns.class_('UTFString').member_functions('at').exclude
+    ogre_ns.class_('UTFString').mem_fun('c_str').exclude
+    ogre_ns.class_('UTFString').mem_fun('data').exclude  
+    ogre_ns.class_('UTFString').mem_fun('asUTF32_c_str').exclude
+
      
 def find_nonconst ( mb ):
     """ we have problems with sharedpointer arguments that are defined as references
@@ -365,10 +380,10 @@ def add_transformations ( mb ):
     ns.mem_fun('::Ogre::PanelOverlayElement::getUV') \
         .add_transformation(ft.output('u1'), ft.output('v1'), ft.output('u2'), ft.output('v2') )
     ### ns.class_('Matrix3').mem_fun('Matrix3').add_transformation(ft.inputarray(9))........        
-    ns.mem_fun('::Ogre::Font::getGlyphTexCoords') \
-        .add_transformation(ft.output(1), ft.output(2),ft.output(3), ft.output(4))
+#     ns.mem_fun('::Ogre::Font::getGlyphTexCoords') \
+#         .add_transformation(ft.output(1), ft.output(2),ft.output(3), ft.output(4))
     ns.mem_fun('::Ogre::ExternalTextureSource::getTextureTecPassStateLevel').add_transformation( *create_output(3) )
-        
+
 def query_containers_with_ptrs(decl):
     if not isinstance( decl, declarations.class_types ):
        return False
@@ -508,8 +523,22 @@ def generate_code():
 
     mb.split_module(environment.ogre.generated_dir, huge_classes)
 
-    if not os.path.exists( os.path.join(environment.ogre.generated_dir, 'py_shared_ptr.h' ) ):
+    def samefile ( sourcefile, destfile):
+        if not os.path.exists( destfile ):
+            return False
+        if os.stat(sourcefile).st_mtime != os.stat(destfile).st_mtime:
+            return False
+        return True
+        
+    if not samefile ( os.path.join( environment.shared_ptr_dir, 'py_shared_ptr.h'),
+                             os.path.join(environment.ogre.generated_dir, 'py_shared_ptr.h' ) ):
+        print "Updated py_shared_ptr.h as it was missing or out of date"
         shutil.copy( os.path.join( environment.shared_ptr_dir, 'py_shared_ptr.h' )
+                     , environment.ogre.generated_dir )
+    if not samefile ( os.path.join( os.getcwd(), 'python_ogre_masterlist.h' ),
+                            os.path.join( environment.ogre.generated_dir, 'python_ogre_masterlist.h' ) ) :            
+        print "Updated python_ogre_masterlist.h as it was missing or out of date"
+        shutil.copy( os.path.join( os.getcwd(), 'python_ogre_masterlist.h' )
                      , environment.ogre.generated_dir )
 
 if __name__ == '__main__':

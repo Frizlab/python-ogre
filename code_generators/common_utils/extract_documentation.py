@@ -126,8 +126,6 @@ def clear_str(str):
     """
     def clean ( str, sym, change2 = ""): 
         return str.replace(sym, change2)
-    str = reduce(clean, [str, '/', '*', '!', "\\brief", '\\fn',\
-     "@brief", "@fn", "@ref", '\\ref', '"']) ## somtimes there are '"' in the doc strings...
     str = clean(str, "@param", "Param: ")
     str = clean(str, "\\param", "Param: ")
     str = clean(str, "@ingroup", "Group")
@@ -137,6 +135,10 @@ def clear_str(str):
     str = clean(str, "@note", "Note: ")
     str = clean(str, "@remarks", "Remarks: ")
     str = clean(str, "@see", "See: ")
+    str = clean(str, "\\see", "See: ")
+    str = clean(str, "@ref", "Ref: ")
+    str = clean(str, "\\ref", "REf: ")
+    
     str = clean(str, "\\sa", "See also: ")   # comment string in OgreNewt
     str = clean(str, "\\code", "")    
     str = clean(str, "\\codeblock", "")    
@@ -150,6 +152,10 @@ def clear_str(str):
     str = clean(str, "\\exception", "Exception: ") 
     str = clean(str, "::", ".")     ## make it more python accurate 
     str = clean(str, "->", ".") 
+    
+    ## now clean up the rest
+    str = reduce(clean, [str, '/', '*', '!', "\\brief", '\\fn',\
+     "@brief", "@fn", '"', "@{", "\\c", "\\a", "\\"]) ## somtimes there are '"' in the doc strings and other "\\"...
     return str.lstrip()
     return "  " + str.lstrip()
 

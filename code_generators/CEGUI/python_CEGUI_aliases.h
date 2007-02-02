@@ -13,6 +13,8 @@ typedef ::CEGUI::WindowFactoryManager::FalagardMappingIterator FalagardMappingIt
 typedef ::CEGUI::WindowManager::WindowIterator WindowIterator;
 
 typedef std::pair<float, float> StdPairFloatFloat;
+typedef std::map<std::string, std::string> MapStringString;
+typedef std::vector<std::string> VectorString;
    
 typedef CEGUI::Singleton<CEGUI::Logger> SingletonLogger;
 typedef CEGUI::Singleton<CEGUI::FontManager> SingletonFontManager;

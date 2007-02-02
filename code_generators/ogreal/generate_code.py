@@ -58,16 +58,22 @@ def filter_declarations( mb ):
     
     # and classes the we need to be exposed but don't want code generated as they already exist in
     # other modules ('Ogre' in this case) that will be "imported" before the OgreAL module
+    global_ns.namespace( 'Ogre' ).class_('AxisAlignedBox').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('MovableObject').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('MovableObjectFactory').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('Vector3').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('Node').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('AxisAlignedBox').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('RenderQueue').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('FrameEvent').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('FrameListener').include(already_exposed=True)
-    
-    
+#     global_ns.namespace( 'Ogre' ).class_('Quaternion').include(already_exposed=True)
+#     global_ns.namespace( 'Ogre' ).class_('SceneManager').include(already_exposed=True)
+#     global_ns.namespace( 'Ogre' ).class_('SceneNode').include(already_exposed=True)
+#     global_ns.namespace( 'Ogre' ).class_('NameValuePairList').include(already_exposed=True)
+#     global_ns.namespace( 'Ogre' ).class_('String').include(already_exposed=True)
+#     global_ns.namespace( 'Ogre' ).class_('ResourceGroupManager').include(already_exposed=True)
+#     
+#     global_ns.namespace( 'Ogre' ).class_('MapIterator<OgreAL::FormatMap>').include(already_exposed=True)
 
 
 

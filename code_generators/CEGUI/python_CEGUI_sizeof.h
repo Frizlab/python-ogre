@@ -1,3 +1,4 @@
+sizeof ( ::std::pair<float, float> );
 sizeof ( ::CEGUI::Event::Connection ) ;
 sizeof ( ::CEGUI::Event::Subscriber) ;
 

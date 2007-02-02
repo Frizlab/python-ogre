@@ -89,6 +89,18 @@ def filter_declarations( mb ):
     cls.variable('m_contact').include()
     cls.variable('m_material').include()
     
+    global_ns.namespace( 'Ogre' ).class_('AxisAlignedBox').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('Radian').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('SceneNode').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('IndexData').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('SceneManager').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('Vector3').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('Matrix4').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('Degree').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('Quaternion').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('Node').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('Serializer').include(already_exposed=True)
+    
     
     
 def set_call_policies_pointee( mb ):
