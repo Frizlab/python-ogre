@@ -134,6 +134,28 @@ sizeof( ::Ogre::SubMesh::IndexMap );
 sizeof( ::Ogre::SubMesh::VertexBoneAssignmentList );
 sizeof( ::Ogre::SubMesh::BoneAssignmentIterator );
 sizeof( ::Ogre::SubMesh::AliasTextureIterator );
+
+
+sizeof( ::Ogre::InstancedGeometry::OptimisedSubMeshGeometryList );
+sizeof( ::Ogre::InstancedGeometry::SubMeshLodGeometryLinkList );
+sizeof( ::Ogre::InstancedGeometry::SubMeshGeometryLookup );
+sizeof( ::Ogre::InstancedGeometry::QueuedSubMeshList );
+sizeof( ::Ogre::InstancedGeometry::QueuedSubMeshOriginList );
+sizeof( ::Ogre::InstancedGeometry::QueuedGeometryList );
+// sizeof( ::Ogre::InstancedGeometry::GeometryBucketList );
+// sizeof( ::Ogre::InstancedGeometry::GeometryBucketList );
+// sizeof( ::Ogre::InstancedGeometry::CurrentGeometryMap );
+// sizeof( ::Ogre::InstancedGeometry::GeometryIterator );
+// sizeof( ::Ogre::InstancedGeometry::MaterialBucketMap );
+// sizeof( ::Ogre::InstancedGeometry::MaterialIterator );
+// sizeof( ::Ogre::InstancedGeometry::LODBucketList );
+// sizeof( ::Ogre::InstancedGeometry::ObjectsMap );
+// sizeof( ::Ogre::InstancedGeometry::LODIterator );
+sizeof( ::Ogre::InstancedGeometry::BatchInstanceMap );
+sizeof( ::Ogre::InstancedGeometry::RenderOperationVector );
+// sizeof( ::Ogre::InstancedGeometry::IndexRemap );
+sizeof( ::Ogre::InstancedGeometry::BatchInstanceIterator );
+
 sizeof( ::Ogre::StaticGeometry::OptimisedSubMeshGeometryList );
 sizeof( ::Ogre::StaticGeometry::SubMeshLodGeometryLinkList );
 sizeof( ::Ogre::StaticGeometry::SubMeshGeometryLookup );
@@ -147,6 +169,7 @@ sizeof( ::Ogre::StaticGeometry::Region::LODBucketList );
 sizeof( ::Ogre::StaticGeometry::Region::LODIterator );
 sizeof( ::Ogre::StaticGeometry::RegionMap );
 sizeof( ::Ogre::StaticGeometry::RegionIterator );
+
 sizeof( ::Ogre::Skeleton::BoneList );
 sizeof( ::Ogre::Skeleton::BoneIterator );
 sizeof( ::Ogre::Skeleton::LinkedSkeletonAnimSourceList );

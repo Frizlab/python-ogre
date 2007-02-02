@@ -31,11 +31,15 @@ from pyplusplus.module_creator import sort_algorithms
 
 import common_utils.extract_documentation as exdoc
 import common_utils.ogre_properties as ogre_properties
+import common_utils.process_warnings as process_warnings
 
 
 def filter_declarations( mb ):
     global_ns = mb.global_ns
     global_ns.exclude()
+    
+    if not environment.ogre.version.startswith("1.2") and os.name =='nt':
+        mb.global_ns.class_( 'vector<Ogre::Vector4, std::allocator<Ogre::Vector4> >' ).exclude( )
     
     ogreode_ns = global_ns.namespace( 'OgreOde' )
     ogreode_ns.include()
@@ -52,6 +56,11 @@ def filter_declarations( mb ):
     ogreode_ns.class_("MaintainedList<OgreOde::Joint>").exclude() 
     ogreode_ns.class_("MaintainedList<OgreOde::JointGroup>").exclude() 
     ogreode_ns.class_("MaintainedList<OgreOde::Space>").exclude() 
+#     ogreode_ns.class_("MaintainedListIterator<OgreOde::Body>").exclude() 
+#     ogreode_ns.class_("MaintainedListIterator<OgreOde::Geometry>").exclude() 
+#     ogreode_ns.class_("MaintainedListIterator<OgreOde::Joint>").exclude() 
+#     ogreode_ns.class_("MaintainedListIterator<OgreOde::JointGroup>").exclude() 
+#     ogreode_ns.class_("MaintainedListIterator<OgreOde::Space>").exclude() 
     
     # this one has link errors
     ogreode_ns.class_("CircularBuffer<OgreOde::BodyState*>").exclude() 
@@ -72,7 +81,33 @@ def filter_declarations( mb ):
     ogreodeP_ns.calldefs( query ).exclude()
     ogreodeL_ns.calldefs( query ).exclude()
     
-  
+    ## now expose but don't create class that exist in other modules
+    global_ns.namespace( 'Ogre' ).class_('Bone').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('Quaternion').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('SimpleRenderable').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('FrameEvent').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('Plane').include(already_exposed=True)
+#     global_ns.namespace( 'Ogre' ).class_('SceneQuery').struct('WorldFragment').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('MovableObjectFactory').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('MovableObject').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('RaySceneQueryListener').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('Root').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('Matrix3').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('Vector3').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('UserDefinedObject').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('AxisAlignedBox').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('Camera').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('FrameListener').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('Node').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('SceneNode').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('RenderQueue').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('Entity').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('SceneManager').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('Matrix4').include(already_exposed=True)
+#     global_ns.namespace( 'Ogre' ).class_('Plugin').include(already_exposed=True)
+    
+    #global_ns.namespace( 'Ogre' ).class_('Root').class_('PluginInstanceList').exclude()
+    
 def set_call_policies( mb ):
 #
     # Set the default policy to deal with pointer/reference return types to reference_existing object
@@ -166,8 +201,9 @@ def generate_ogreode():
     
     common_utils.add_constants( mb, { 'ogreode_version' :  '"%s"' % environment.ogreode.version
                                       , 'python_version' : '"%s"' % sys.version } )
-
-
+    for ns in namespaces:
+        for cls in mb.global_ns.namespace(ns).classes():
+            process_warnings.go ( cls )
     #
     # now do the work
     #
@@ -175,7 +211,7 @@ def generate_ogreode():
     #
     extractor = exdoc.doc_extractor("")
     mb.build_code_creator (module_name='_ogreode_' , doc_extractor= extractor)
-
+   
     for inc in environment.ogreode.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )
 
@@ -183,7 +219,7 @@ def generate_ogreode():
     mb.code_creator.replace_included_headers( customization_data.header_files(environment.ogreode.version) )
 
     huge_classes = map( mb.class_, customization_data.huge_classes(environment.ogreode.version) )
-
+    print "ABOUT TO SPLIT"
     mb.split_module(environment.ogreode.generated_dir, huge_classes)
 
 if __name__ == '__main__':

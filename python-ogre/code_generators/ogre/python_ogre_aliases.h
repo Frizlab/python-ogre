@@ -12,8 +12,19 @@ typedef Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char
     MapIteratorMovableObjectFactory;
 typedef Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > >\
     MapIteratorString;
+////
     
+// typedef std::list<Ogre::InstancedGeometry::OptimisedSubMeshGeometry*> OptimisedSubMeshGeometryList;
+// typedef std::vector<Ogre::InstancedGeometry::SubMeshLodGeometryLink> SubMeshLodGeometryLinkList;
+// typedef std::map<Ogre::InstancedGeometry::SubMesh*, Ogre::InstancedGeometry::SubMeshLodGeometryLinkList*> SubMeshGeometryLookup;
+// typedef std::vector<Ogre::InstancedGeometry::QueuedSubMesh*> QueuedSubMeshList;
+// typedef std::vector<Ogre::String> QueuedSubMeshOriginList;
 
+// typedef std::map<uint32, BatchInstance*> BatchInstanceMap;
+// typedef std::vector<RenderOperation*> RenderOperationVector;
+
+// typedef MapIterator<BatchInstanceMap> BatchInstanceIterator;
+///
 
 typedef std::set<Ogre::SceneQuery::WorldFragmentType> SupportedWorldFragments;
 typedef std::vector<std::pair<Ogre::String, Ogre::String> > customParameters;

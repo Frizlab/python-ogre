@@ -232,9 +232,28 @@ def ("collide", &::dSpace_collide);
 
 """
 
+WRAPPER_DEFINITION_General = \
+"""
+dSimpleSpace *
+General_CreateSimpleSpace (void) {
+    return new dSimpleSpace( 0 );
+}
 
+dHashSpace *
+General_CreateHashSpace (void ) {
+    return new dHashSpace( 0 );
+}
 
+"""
 
+WRAPPER_REGISTRATION_General =\
+"""
+    bp::def ("CreateSimpleSpace", &::General_CreateSimpleSpace,
+        bp::return_value_policy< bp::reference_existing_object>());
+    bp::def ("CreateHashSpace", &::General_CreateHashSpace,
+        bp::return_value_policy< bp::reference_existing_object>());
+
+"""
 #################################################################################
 #################################################################################
 
@@ -252,4 +271,7 @@ def apply( mb ):
     cs = mb.class_( 'dSpace' )
     cs.add_declaration_code( WRAPPER_DEFINITION_dSpace )
     cs.add_registration_code( WRAPPER_REGISTRATION_dSpace )
+    
+    mb.add_declaration_code( WRAPPER_DEFINITION_General )
+    mb.add_registration_code( WRAPPER_REGISTRATION_General )
     

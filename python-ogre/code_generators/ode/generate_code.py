@@ -51,11 +51,18 @@ def filter_declarations( mb ):
         if funcs.name[0]=='d' and funcs.name[1].isupper():
             print "Including Function", funcs.name
             funcs.include()
-#     for var in ode_ns.variables ():
-#         print "Checking Variable:", var.name
-#         if var.name[0:1]=='dx':
-#             print "Including variable", var.name
-#             var.include()
+    for var in ode_ns.variables ():
+        print "Checking Variable:", var.name
+        if len(var.name) > 2:
+            if var.name[0]=='d' and var.name[1].isupper():
+                print "Including variable", var.name
+                var.include()
+    for var in ode_ns.typedefs ():
+        print "Checking typedef:", var.name
+        if len(var.name) > 2:
+            if var.name[0]=='d' and var.name[1].isupper():
+                print "Including typedef", var.name
+                var.include()                
 #         print "Member Func:", funcs.name
 #         if funcs.name[0]=='d':
 #             print "Including Member Function", funcs.name
@@ -97,6 +104,7 @@ def filter_declarations( mb ):
     ode_ns.class_( "dBody" ).member_functions( "setData").exclude()
     ode_ns.class_( "dBody" ).member_functions( "getData").exclude()
     
+    ode_ns.class_( "dSpace" ).member_functions( "collide").exclude()
     
          
 #     ptr_to_fundamental_query \
@@ -198,8 +206,18 @@ def generate_code():
 
     query = lambda decl: isinstance( decl, ( declarations.class_t, declarations.class_declaration_t ) ) \
                          and decl.name.startswith( 'dx' )
-    mb.global_ns.decls( query ).opaque = True                         
-       
+    mb.global_ns.decls( query ).opaque = True   
+#     mb.global_ns.variable('dSpaceID').opaque=True
+                          
+#     ## here we adjust for functions that return poiners to ODE "ID's", which are really C structs
+#     ## I may have been over agressive in identifing these functions but hopefully not...
+#     for func in mb.namespace( 'OgreOde' ).member_functions():  
+#         if func.return_type.decl_string.endswith('ID'):
+#             print "Setting ", func.name, "to Opaque"
+#             func.opaque = True
+#             func.call_policies = call_policies.return_value_policy(
+#                 call_policies.return_opaque_pointer )
+        
 
     common_utils.set_declaration_aliases( mb.global_ns, customization_data.aliases(environment.ode.version) )
 

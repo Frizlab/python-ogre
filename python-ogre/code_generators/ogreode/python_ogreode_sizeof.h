@@ -7,7 +7,7 @@ sizeof ( pyplusplus::aliases::MaintainedListSpace );
 sizeof ( pyplusplus::aliases::MaintainedListJointGroup );
 sizeof ( pyplusplus::aliases::MaintainedListJoint );
 
-sizeof ( pyplusplus::aliases::StdListPrefabObject );
+//sizeof ( pyplusplus::aliases::StdListPrefabObject );
 sizeof ( pyplusplus::aliases::VectorString );
 sizeof ( pyplusplus::aliases::VectorUnsignedShort );
 
@@ -20,4 +20,5 @@ sizeof ( OgreOde::BoneMappingKey );
 sizeof ( OgreOde::MaterialID );
 sizeof ( OgreOde::MaterialMap );
 sizeof ( OgreOde::MaterialMapPair );
+
 
