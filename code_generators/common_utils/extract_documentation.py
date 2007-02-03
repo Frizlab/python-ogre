@@ -155,7 +155,7 @@ def clear_str(str):
     
     ## now clean up the rest
     str = reduce(clean, [str, '/', '*', '!', "\\brief", '\\fn',\
-     "@brief", "@fn", '"', "@{", "\\c", "\\a", "\\"]) ## somtimes there are '"' in the doc strings and other "\\"...
+     "@brief", "@fn", '"', "@{", "\\c", "\\a"]) ## somtimes there are '"' in the doc strings and other "\\"...
     return str.lstrip()
     return "  " + str.lstrip()
 

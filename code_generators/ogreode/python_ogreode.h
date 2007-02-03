@@ -3,6 +3,7 @@
 
 #include "ode/ode.h"
 #include "ode/odecpp.h"
+#include "../ogre/python_ogre_masterlist.h"
 
 //See best practices section in Py++ documentation
 // NOTE:  I had to manually add these includes instead of relying on OgreOde_Core as the "order"

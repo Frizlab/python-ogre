@@ -104,7 +104,7 @@ def filter_declarations( mb ):
     global_ns.namespace( 'Ogre' ).class_('Entity').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('SceneManager').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('Matrix4').include(already_exposed=True)
-#     global_ns.namespace( 'Ogre' ).class_('Plugin').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('Plugin').include(already_exposed=True)
     
     #global_ns.namespace( 'Ogre' ).class_('Root').class_('PluginInstanceList').exclude()
     

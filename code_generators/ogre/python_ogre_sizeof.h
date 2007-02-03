@@ -135,6 +135,10 @@ sizeof( ::Ogre::SubMesh::VertexBoneAssignmentList );
 sizeof( ::Ogre::SubMesh::BoneAssignmentIterator );
 sizeof( ::Ogre::SubMesh::AliasTextureIterator );
 
+sizeof( ::Ogre::StaticGeometry::SubMeshLodGeometryLink );
+sizeof( ::Ogre::InstancedGeometry::SubMeshLodGeometryLink );
+sizeof ( ::pyplusplus::aliases::SubMeshLodGeometryLinkList );
+sizeof ( ::pyplusplus::aliases::InstSubMeshLodGeometryLinkList );
 
 sizeof( ::Ogre::InstancedGeometry::OptimisedSubMeshGeometryList );
 sizeof( ::Ogre::InstancedGeometry::SubMeshLodGeometryLinkList );
@@ -142,18 +146,15 @@ sizeof( ::Ogre::InstancedGeometry::SubMeshGeometryLookup );
 sizeof( ::Ogre::InstancedGeometry::QueuedSubMeshList );
 sizeof( ::Ogre::InstancedGeometry::QueuedSubMeshOriginList );
 sizeof( ::Ogre::InstancedGeometry::QueuedGeometryList );
-// sizeof( ::Ogre::InstancedGeometry::GeometryBucketList );
-// sizeof( ::Ogre::InstancedGeometry::GeometryBucketList );
-// sizeof( ::Ogre::InstancedGeometry::CurrentGeometryMap );
-// sizeof( ::Ogre::InstancedGeometry::GeometryIterator );
-// sizeof( ::Ogre::InstancedGeometry::MaterialBucketMap );
-// sizeof( ::Ogre::InstancedGeometry::MaterialIterator );
-// sizeof( ::Ogre::InstancedGeometry::LODBucketList );
-// sizeof( ::Ogre::InstancedGeometry::ObjectsMap );
-// sizeof( ::Ogre::InstancedGeometry::LODIterator );
+sizeof( ::Ogre::InstancedGeometry::InstancedObject::GeometryBucketList );
+sizeof( ::Ogre::InstancedGeometry::MaterialBucket::GeometryIterator );
+sizeof( ::Ogre::InstancedGeometry::LODBucket::MaterialBucketMap );
+sizeof( ::Ogre::InstancedGeometry::LODBucket::MaterialIterator );
+sizeof( ::Ogre::InstancedGeometry::BatchInstance::LODBucketList );
+sizeof( ::Ogre::InstancedGeometry::BatchInstance::ObjectsMap );
+sizeof( ::Ogre::InstancedGeometry::BatchInstance::LODIterator );
 sizeof( ::Ogre::InstancedGeometry::BatchInstanceMap );
 sizeof( ::Ogre::InstancedGeometry::RenderOperationVector );
-// sizeof( ::Ogre::InstancedGeometry::IndexRemap );
 sizeof( ::Ogre::InstancedGeometry::BatchInstanceIterator );
 
 sizeof( ::Ogre::StaticGeometry::OptimisedSubMeshGeometryList );
