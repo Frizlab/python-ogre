@@ -12,19 +12,7 @@ typedef Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char
     MapIteratorMovableObjectFactory;
 typedef Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > >\
     MapIteratorString;
-////
     
-// typedef std::list<Ogre::InstancedGeometry::OptimisedSubMeshGeometry*> OptimisedSubMeshGeometryList;
-// typedef std::vector<Ogre::InstancedGeometry::SubMeshLodGeometryLink> SubMeshLodGeometryLinkList;
-// typedef std::map<Ogre::InstancedGeometry::SubMesh*, Ogre::InstancedGeometry::SubMeshLodGeometryLinkList*> SubMeshGeometryLookup;
-// typedef std::vector<Ogre::InstancedGeometry::QueuedSubMesh*> QueuedSubMeshList;
-// typedef std::vector<Ogre::String> QueuedSubMeshOriginList;
-
-// typedef std::map<uint32, BatchInstance*> BatchInstanceMap;
-// typedef std::vector<RenderOperation*> RenderOperationVector;
-
-// typedef MapIterator<BatchInstanceMap> BatchInstanceIterator;
-///
 
 typedef std::set<Ogre::SceneQuery::WorldFragmentType> SupportedWorldFragments;
 typedef std::vector<std::pair<Ogre::String, Ogre::String> > customParameters;
@@ -201,8 +189,11 @@ typedef ::Ogre::SubMesh::IndexMap IndexMap;
 typedef ::Ogre::SubMesh::VertexBoneAssignmentList VertexBoneAssignmentList;
 typedef ::Ogre::SubMesh::BoneAssignmentIterator BoneAssignmentIterator;
 typedef ::Ogre::SubMesh::AliasTextureIterator AliasTextureIterator;
+
+
 typedef ::Ogre::StaticGeometry::OptimisedSubMeshGeometryList OptimisedSubMeshGeometryList;
 typedef ::Ogre::StaticGeometry::SubMeshLodGeometryLinkList SubMeshLodGeometryLinkList;
+typedef ::Ogre::StaticGeometry::SubMeshLodGeometryLink SubMeshLodGeometryLink;
 typedef ::Ogre::StaticGeometry::SubMeshGeometryLookup SubMeshGeometryLookup;
 typedef ::Ogre::StaticGeometry::QueuedSubMeshList QueuedSubMeshList;
 typedef ::Ogre::StaticGeometry::QueuedGeometryList QueuedGeometryList;
@@ -214,6 +205,26 @@ typedef ::Ogre::StaticGeometry::Region::LODBucketList LODBucketList;
 typedef ::Ogre::StaticGeometry::Region::LODIterator LODIterator;
 typedef ::Ogre::StaticGeometry::RegionMap RegionMap;
 typedef ::Ogre::StaticGeometry::RegionIterator RegionIterator;
+
+typedef ::Ogre::InstancedGeometry::OptimisedSubMeshGeometryList InstOptimisedSubMeshGeometryList;
+typedef ::Ogre::InstancedGeometry::SubMeshLodGeometryLinkList InstSubMeshLodGeometryLinkList;
+typedef ::Ogre::InstancedGeometry::SubMeshLodGeometryLink InstSubMeshLodGeometryLink;
+typedef ::Ogre::InstancedGeometry::SubMeshGeometryLookup InstSubMeshGeometryLookup;
+typedef ::Ogre::InstancedGeometry::QueuedSubMeshList InstQueuedSubMeshList;
+typedef ::Ogre::InstancedGeometry::QueuedGeometryList InstQueuedGeometryList;
+
+// typedef ::Ogre::InstancedGeometry::QueuedSubMeshOriginList QueuedSubMeshOriginListI;  // StringVector overlap
+typedef ::Ogre::InstancedGeometry::InstancedObject::GeometryBucketList InstGeometryBucketList;
+typedef ::Ogre::InstancedGeometry::MaterialBucket::GeometryIterator InstGeometryIterator;
+typedef ::Ogre::InstancedGeometry::LODBucket::MaterialBucketMap InstMaterialBucketMap;
+typedef ::Ogre::InstancedGeometry::LODBucket::MaterialIterator InstMaterialIterator;
+typedef ::Ogre::InstancedGeometry::BatchInstance::LODBucketList InstLODBucketList;
+typedef ::Ogre::InstancedGeometry::BatchInstance::ObjectsMap InstObjectsMap;
+typedef ::Ogre::InstancedGeometry::BatchInstance::LODIterator InstLODIterator;
+typedef ::Ogre::InstancedGeometry::BatchInstanceMap InstBatchInstanceMap;
+typedef ::Ogre::InstancedGeometry::RenderOperationVector InstRenderOperationVector;
+typedef ::Ogre::InstancedGeometry::BatchInstanceIterator InstBatchInstanceIterator;
+
 typedef ::Ogre::Skeleton::BoneList BoneList;
 typedef ::Ogre::Skeleton::BoneIterator BoneIterator;
 typedef ::Ogre::Skeleton::LinkedSkeletonAnimSourceList LinkedSkeletonAnimSourceList;

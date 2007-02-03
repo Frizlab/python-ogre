@@ -113,24 +113,24 @@ def filter_declarations( mb ):
     
     ## a string one that stops pydoc working against CEGUI
     CEGUI_ns.class_('ListHeader').variable('SegmentNameSuffix').exclude()
-#     #Exclude non default constructors of iterator classes. 
-#     for cls in CEGUI_ns.classes():
-#        if not declarations.templates.is_instantiation( cls.name ):
-#            continue
-#        name = declarations.templates.name( cls.name )
-#        if not name.endswith( 'Iterator' ):
-#            continue
-#        #default constructor does not have arguments
-#        constructors = cls.constructors( lambda decl: bool( decl.arguments )
-#                                                       , allow_empty=True
-#                                                       , recursive=False )
-#        constructors.exclude()
+    #Exclude non default constructors of iterator classes. 
+    for cls in CEGUI_ns.classes():
+       if not declarations.templates.is_instantiation( cls.name ):
+           continue
+       name = declarations.templates.name( cls.name )
+       if not name.endswith( 'Iterator' ):
+           continue
+       #default constructor does not have arguments
+       constructors = cls.constructors( lambda decl: bool( decl.arguments )
+                                                      , allow_empty=True
+                                                      , recursive=False )
+       constructors.exclude()
 
     ## I'm going to exclude all iterators as there is a problem with CEGUIIteratorBase.h
     for cls in CEGUI_ns.classes():
         print "checking", cls.name
         if 'iterator' in cls.name.lower() :
-            ##########cls.exclude()
+            cls.exclude()
             print "Excluding Iterator", cls.name
     global_ns.namespace( 'Ogre' ).class_('SceneManager').include(already_exposed=True)
             

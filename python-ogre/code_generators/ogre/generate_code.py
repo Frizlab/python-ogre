@@ -84,7 +84,8 @@ def filter_declarations( mb ):
     ogre_ns.class_('ParticleSystemManager').mem_fun('addRendererFactory').exclude()
   
     ogre_ns.class_('GpuProgramParameters').exclude() ### DAMM  - need to spend time on this class - fix for now!!
-    
+    ogre_ns.class_('UnifiedHighLevelGpuProgramFactory').exclude()
+    ogre_ns.class_('UnifiedHighLevelGpuProgram').class_('CmdDelegate').exclude()    
      
     ogre_ns.typedef('GpuLogicalIndexUseMap').exclude()  ## Fails as no default constructor for 'IndexUse...
     ogre_ns.class_('GpuLogicalIndexUse').exclude()  ## related to IndexUseMap..
@@ -256,16 +257,45 @@ def filter_declarations( mb ):
     ## now for problem areas in the new unicode string handling - just excluding without 'thought' :)
     ## the variables are not present in the source (to check)
     ## most of the functions return pointers to 'stuff' that isn't handled at compile time
-    ogre_ns.class_('UTFString').variable('mVoidBuffer').exclude
-    ogre_ns.class_('UTFString').variable('mStrBuffer').exclude
-    ogre_ns.class_('UTFString').variable('mWStrBuffer').exclude
-    ogre_ns.class_('UTFString').variable('mUTF32StrBuffer').exclude
-    ogre_ns.class_('UTFString').member_functions('at').exclude
-    ogre_ns.class_('UTFString').mem_fun('c_str').exclude
-    ogre_ns.class_('UTFString').mem_fun('data').exclude  
-    ogre_ns.class_('UTFString').mem_fun('asUTF32_c_str').exclude
-
-     
+    ogre_ns.class_('UTFString').variable('mVoidBuffer').exclude()
+    ogre_ns.class_('UTFString').variable('mStrBuffer').exclude()
+    ogre_ns.class_('UTFString').variable('mWStrBuffer').exclude()
+    ogre_ns.class_('UTFString').variable('mUTF32StrBuffer').exclude()
+    ogre_ns.class_('UTFString').member_functions('at').exclude()
+    ogre_ns.class_('UTFString').mem_fun('c_str').exclude()
+    ogre_ns.class_('UTFString').mem_fun('data').exclude()  
+    ogre_ns.class_('UTFString').mem_fun('asUTF32_c_str').exclude()
+    
+    cls = ogre_ns.class_('UTFString')
+    print dir(cls)
+    for p in cls.properties:
+        print "Prop:", p
+    for p in cls.typedefs():
+        print "Typedef:", p
+    for p in cls.vars():
+        print "Var:", p
+    for p in cls.mem_funs():
+        print "MemFunc:", p
+    for p in cls.private_members():
+        print "PrivateMem:", p
+    sys.exit()
+    #New stuff from the Instanced Geomerty class causing problems :(
+#     for cls in ogre_ns.classes():
+#         print cls, cls.name
+#     print "++++++++++++++++++++++++++++++++++++++++++++"
+#     for cls in global_ns.classes():
+#         print cls, cls.name
+#     print "++++++++++++++++++++++++++++++++++++++++++++"
+#     for cls in global_ns.variables():
+#         print cls, cls.name
+#         
+    ogre_ns.class_('InstancedGeometry').class_('SubMeshLodGeometryLink').exclude()
+    ogre_ns.class_('StaticGeometry').class_('SubMeshLodGeometryLink').exclude()
+    global_ns.namespace('std').class_('vector<Ogre::InstancedGeometry::SubMeshLodGeometryLink, std::allocator<Ogre::InstancedGeometry::SubMeshLodGeometryLink> >').exclude()
+    global_ns.namespace('std').class_('vector<Ogre::StaticGeometry::SubMeshLodGeometryLink, std::allocator<Ogre::StaticGeometry::SubMeshLodGeometryLink> >').exclude()
+   #ogre_ns.class_('InstancedGeometry').class_('SubMeshLodGeometryLinkList').exclude()
+    ogre_ns.class_('InstancedGeometry').exclude()
+       
 def find_nonconst ( mb ):
     """ we have problems with sharedpointer arguments that are defined as references
     but are NOT const.  Boost doesn't understand how to match them and you get a C++ Signature match fails.
@@ -493,11 +523,12 @@ def generate_code():
     v.apply_smart_ptr_wa = True
     v = cls.variable( "indexData" )
     v.apply_smart_ptr_wa = True
-
+    NoPropClasses = ["UTFString"]
     for cls in ogre_ns.classes():
 #     for cls in mb.global_ns.classes():
-#        print "Adding Prop to:", cls
-        cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
+        if cls.name not in NoPropClasses:
+            print "Adding Prop to:", cls.name
+            cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
         ## because we want backwards pyogre compatibility lets add leading lowercase properties
         common_utils.add_LeadingLowerProperties ( cls )
 
@@ -525,8 +556,9 @@ def generate_code():
 
     def samefile ( sourcefile, destfile):
         if not os.path.exists( destfile ):
+            print destfile,"doesn't exist"
             return False
-        if os.stat(sourcefile).st_mtime != os.stat(destfile).st_mtime:
+        if os.stat(sourcefile).st_mtime > os.stat(destfile).st_mtime:
             return False
         return True
         

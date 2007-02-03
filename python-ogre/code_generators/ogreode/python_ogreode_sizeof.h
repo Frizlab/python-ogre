@@ -21,4 +21,6 @@ sizeof ( OgreOde::MaterialID );
 sizeof ( OgreOde::MaterialMap );
 sizeof ( OgreOde::MaterialMapPair );
 
+sizeof ( ::std::vector<Ogre::Plugin*, std::allocator<Ogre::Plugin*> > );
+
 
