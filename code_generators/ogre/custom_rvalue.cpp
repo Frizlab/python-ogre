@@ -17,8 +17,8 @@ struct PyTuple2ColourValue{
     typedef boost::tuples::tuple< float, float, float> rgb_type;
     typedef boost::tuples::tuple< float, float, float, float> rgba_type;
 
-    typedef bpl::from_py_tuple< rgb_type > rgb_converter_type;
-    typedef bpl::from_py_tuple< rgba_type > rgba_converter_type;
+    typedef bpl::from_py_sequence< rgb_type > rgb_converter_type;
+    typedef bpl::from_py_sequence< rgba_type > rgba_converter_type;
 
     typedef Ogre::ColourValue colour_t;
 
@@ -42,11 +42,11 @@ struct PyTuple2ColourValue{
         bpl::tuple py_tuple( bpl::handle<>( bpl::borrowed( obj ) ) );
         if( 3 == bpl::len( py_tuple ) ){
             boost::tuples::tie(red, green, blue)
-                = rgb_converter_type::construct_c_tuple( obj );
+                = rgb_converter_type::to_c_tuple( obj );
         }
         else{
             boost::tuples::tie(red, green, blue, alpha) 
-                = rgba_converter_type::construct_c_tuple( obj );
+                = rgba_converter_type::to_c_tuple( obj );
         }
 
         colour_t* colour = new (memory_chunk) colour_t(red, green, blue, alpha);
@@ -62,7 +62,7 @@ struct PyTuple2Vector2{
 
     typedef boost::tuples::tuple< real_type, real_type> vector_tuple_type;
 
-    typedef bpl::from_py_tuple< vector_tuple_type > converter_type;
+    typedef bpl::from_py_sequence< vector_tuple_type > converter_type;
 
     static void* convertible(PyObject* obj){
         return converter_type::convertible( obj );
@@ -76,7 +76,7 @@ struct PyTuple2Vector2{
         void* memory_chunk = the_storage->storage.bytes;
 
         real_type x(0.0), y(0.0);
-        boost::tuples::tie(x, y) = converter_type::construct_c_tuple( obj );
+        boost::tuples::tie(x, y) = converter_type::to_c_tuple( obj );
 
         vector_type* vec = new (memory_chunk) vector_type(x,y);
         data->convertible = memory_chunk;
@@ -89,7 +89,7 @@ struct PyTuple2Vector3{
 
     typedef boost::tuples::tuple< real_type, real_type, real_type> vector_tuple_type;
 
-    typedef bpl::from_py_tuple< vector_tuple_type > converter_type;
+    typedef bpl::from_py_sequence< vector_tuple_type > converter_type;
 
     static void* convertible(PyObject* obj){
         return converter_type::convertible( obj );
@@ -103,7 +103,7 @@ struct PyTuple2Vector3{
         void* memory_chunk = the_storage->storage.bytes;
 
         real_type x(0.0), y(0.0), z(0.0);
-        boost::tuples::tie(x, y, z) = converter_type::construct_c_tuple( obj );
+        boost::tuples::tie(x, y, z) = converter_type::to_c_tuple( obj );
 
         vector_type* vec = new (memory_chunk) vector_type(x, y, z);
         data->convertible = memory_chunk;
@@ -117,7 +117,7 @@ struct PyTuple2Vector4{
 
     typedef boost::tuples::tuple< real_type, real_type, real_type, real_type> vector_tuple_type;
 
-    typedef bpl::from_py_tuple< vector_tuple_type > converter_type;
+    typedef bpl::from_py_sequence< vector_tuple_type > converter_type;
 
     static void* convertible(PyObject* obj){
         return converter_type::convertible( obj );
@@ -131,7 +131,7 @@ struct PyTuple2Vector4{
         void* memory_chunk = the_storage->storage.bytes;
 
         real_type x(0.0), y(0.0), z(0.0), w(0.0);
-        boost::tuples::tie(x, y, z, w) = converter_type::construct_c_tuple( obj );
+        boost::tuples::tie(x, y, z, w) = converter_type::to_c_tuple( obj );
 
         vector_type* vec = new (memory_chunk) vector_type(x, y, z, w);
         data->convertible = memory_chunk;
