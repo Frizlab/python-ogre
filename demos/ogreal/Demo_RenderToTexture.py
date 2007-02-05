@@ -104,9 +104,6 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
         # Attach the rtt entity to the root of the scene
         rootNode = sceneManager.getRootSceneNode()
         self.mPlaneNode = rootNode.createChildSceneNode()
-
-        
-        
         
         # Attach both the plane entity, and the plane definition
         self.mPlaneNode.attachObject(self.mPlaneEnt)
@@ -120,18 +117,25 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
         ## SOUND !!!!!!!!!!!!
         #
         #
+#         
         node = rootNode.createChildSceneNode( "Head" )
         node.attachObject( ogreHead )
         self.soundManager  = OgreAL.SoundManager()
         sound = self.soundManager.createSound("Roar", "roar.wav", True)
         node.attachObject(sound)
-
         sound.play()
 
         bgSound = self.soundManager.createSoundStream("ZeroFactor", "Zero Factor - Untitled.ogg", True)
         bgSound.setGain(0.5)
-#         bgSound.setRelativeToListener(True)
-   
+        bgSound.setRelativeToListener(True)
+        bgSound.play()
+        
+    	node = sceneManager.getRootSceneNode().createChildSceneNode("CameraNode")
+#     	node.setPosition(0, 100, 100)
+#     	node = node.createChildSceneNode("PitchNode")
+#     	node.attachObject(self.camera)
+# #     	node.attachObject(self.soundManager.getListener())
+#     	node.pitch(ogre.Degree(-30))
         
     
         
@@ -203,12 +207,12 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
         camera.setPosition (ogre.Vector3(-50, 100, 500))
         camera.lookAt (0,0,0)
 #         camera.attachObject(OgreAL.SoundManager.getListener())
-# node = sceneMgr->getRootSceneNode()->createChildSceneNode("CameraNode");
-# node->setPosition(0, 100, 100);
-# node = node->createChildSceneNode("PitchNode");
-# node->attachObject(camera);
-# node->attachObject(soundManager->getListener());
-# node->pitch(Ogre::Degree(-30));
+# node = sceneMgr.getRootSceneNode().createChildSceneNode("CameraNode");
+# node.setPosition(0, 100, 100);
+# node = node.createChildSceneNode("PitchNode");
+# node.attachObject(camera);
+# node.attachObject(soundManager.getListener());
+# node.pitch(Ogre::Degree(-30));
       
     def _createFrameListener(self):
         # "create FrameListener"
