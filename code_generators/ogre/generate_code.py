@@ -266,19 +266,19 @@ def filter_declarations( mb ):
     ogre_ns.class_('UTFString').mem_fun('data').exclude()  
     ogre_ns.class_('UTFString').mem_fun('asUTF32_c_str').exclude()
     
-    cls = ogre_ns.class_('UTFString')
-    print dir(cls)
-    for p in cls.properties:
-        print "Prop:", p
-    for p in cls.typedefs():
-        print "Typedef:", p
-    for p in cls.vars():
-        print "Var:", p
-    for p in cls.mem_funs():
-        print "MemFunc:", p
-    for p in cls.private_members():
-        print "PrivateMem:", p
-    sys.exit()
+#     cls = ogre_ns.class_('UTFString')
+#     print dir(cls)
+#     for p in cls.properties:
+#         print "Prop:", p
+#     for p in cls.typedefs():
+#         print "Typedef:", p
+#     for p in cls.vars():
+#         print "Var:", p
+#     for p in cls.mem_funs():
+#         print "MemFunc:", p
+#     for p in cls.private_members():
+#         print "PrivateMem:", p
+#     sys.exit()
     #New stuff from the Instanced Geomerty class causing problems :(
 #     for cls in ogre_ns.classes():
 #         print cls, cls.name
