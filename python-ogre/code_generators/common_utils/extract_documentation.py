@@ -140,8 +140,9 @@ def clear_str(str):
     str = clean(str, "\\ref", "REf: ")
     
     str = clean(str, "\\sa", "See also: ")   # comment string in OgreNewt
-    str = clean(str, "\\code", "")    
-    str = clean(str, "\\codeblock", "")    
+    str = clean(str, "\\code", "Code: ")    
+    str = clean(str, "\\codeblock", "CodeBlock: ")    
+    str = clean(str, "\\endcode", "")    
     str = clean(str, "@code", "")    
     str = clean(str, "@codeblock", "")    
     

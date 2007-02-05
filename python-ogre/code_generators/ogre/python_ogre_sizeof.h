@@ -1,7 +1,30 @@
-// sizeof ( Ogre::VectorIterator );
-// sizeof ( Ogre::MapIterator );
-// sizeof ( Ogre::ConstVectorIterator );
-// sizeof ( Ogre::ConstMapIterator );
+// sizeof ( ::Ogre::VectorIterator );
+// sizeof ( ::Ogre::MapIterator );
+// sizeof ( ::Ogre::ConstVectorIterator );
+// sizeof ( ::Ogre::ConstMapIterator );
+
+sizeof ( ::Ogre::SharedPtr<Ogre::WaveformControllerFunction> );
+// sizeof ( ::Ogre::ControllerFunction<float>);
+// sizeof ( ::Ogre::SharedPtr<::Ogre::ControllerFunction<float>>);
+
+sizeof ( ::Ogre::SharedPtr<Ogre::AnimableValue> );
+sizeof ( ::Ogre::SharedPtr<Ogre::FileInfoList> );
+//sizeof ( ::Ogre::SharedPtr<Ogre::CodecData> );
+sizeof ( ::Ogre::SharedPtr<Ogre::ControllerFunction<Real> > );
+sizeof ( ::Ogre::SharedPtr<Ogre::ControllerValue<Real> > );
+sizeof ( ::Ogre::SharedPtr<Ogre::MemoryDataStream> );
+sizeof ( ::Ogre::SharedPtr<Ogre::DataStream> );
+sizeof ( ::Ogre::SharedPtr<Ogre::DataStreamList> );
+sizeof ( ::Ogre::SharedPtr<Ogre::GpuProgramParameters> );
+// sizeof ( std::multimap<Ogre::HardwareVertexBuffer*, Ogre::VertexBufferBinding::HardwareVertexBufferSharedPtr> FreeTemporaryVertexBufferMap;
+//sizeof ( std::map<unsigned short, Ogre::VertexBufferBinding::HardwareVertexBufferSharedPtr>); // VertexBufferBindingMap;
+sizeof ( ::Ogre::SharedPtr<Ogre::Resource> ); //ResourcePtr;
+sizeof ( ::Ogre::SharedPtr<Ogre::ShadowCameraSetup> ); //ShadowCameraSetupPtr;
+sizeof ( ::Ogre::SharedPtr<Ogre::StringVector> ); //StringVectorPtr;
+
+
+
+
 sizeof ( exception );
 
 sizeof ( ::Ogre::Singleton<Ogre::FontManager> );
@@ -51,6 +74,8 @@ sizeof( ::Ogre::RenderTargetPriorityMap );
 sizeof( ::Ogre::RenderTargetMap );
 sizeof( ::Ogre::ConfigOptionMap );
 sizeof( ::Ogre::ConfigOption );
+sizeof( ::Ogre::_ConfigOption );
+
 sizeof( ::Ogre::RenderQueueInvocationIterator );
 sizeof( ::Ogre::RenderQueueInvocationList );
 sizeof( ::Ogre::IlluminationPassList );

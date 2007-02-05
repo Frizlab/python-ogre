@@ -1,3 +1,18 @@
+typedef Ogre::SharedPtr<Ogre::AnimableValue> AnimableValuePtr;
+typedef Ogre::SharedPtr<Ogre::FileInfoList> FileInfoListPtr;
+//typedef Ogre::SharedPtr<Ogre::CodecData> CodecDataPtr;
+typedef Ogre::SharedPtr<Ogre::ControllerFunction<Ogre::Real> > ControllerFunctionRealPtr;
+typedef Ogre::SharedPtr<Ogre::ControllerValue<Ogre::Real> > ControllerValueRealPtr;
+typedef Ogre::SharedPtr<Ogre::MemoryDataStream> MemoryDataStreamPtr;
+typedef Ogre::SharedPtr<Ogre::DataStream> DataStreamPtr;
+typedef Ogre::SharedPtr<Ogre::DataStreamList> DataStreamListPtr;
+typedef Ogre::SharedPtr<Ogre::GpuProgramParameters> GpuProgramParametersSharedPtr;
+// typedef std::multimap<Ogre::HardwareVertexBuffer*, Ogre::VertexBufferBinding::HardwareVertexBufferSharedPtr> FreeTemporaryVertexBufferMap;
+//typedef std::map<unsigned short, Ogre::VertexBufferBinding::HardwareVertexBufferSharedPtr> VertexBufferBindingMap;
+typedef Ogre::SharedPtr<Ogre::Resource> ResourcePtr;
+typedef Ogre::SharedPtr<Ogre::ShadowCameraSetup> ShadowCameraSetupPtr;
+typedef Ogre::SharedPtr<Ogre::StringVector> StringVectorPtr;
+
 
 // these are uglys to remove messages in the generate_code output - doesn't impact the generated code :)
 typedef Ogre::MapIterator<std::map<short unsigned int, Ogre::VertexAnimationTrack*, std::less<short unsigned int>, std::allocator<std::pair<const short unsigned int, Ogre::VertexAnimationTrack*> > > >\
@@ -104,6 +119,8 @@ typedef ::Ogre::RenderTargetPriorityMap RenderTargetPriorityMap;
 typedef ::Ogre::RenderTargetMap RenderTargetMap;
 typedef ::Ogre::ConfigOptionMap ConfigOptionMap;
 typedef ::Ogre::ConfigOption ConfigOption;
+typedef ::Ogre::_ConfigOption _ConfigOption;
+
 typedef ::Ogre::RenderQueueInvocationIterator RenderQueueInvocationIterator;
 typedef ::Ogre::RenderQueueInvocationList RenderQueueInvocationList;
 typedef ::Ogre::IlluminationPassList IlluminationPassList;
