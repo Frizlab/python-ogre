@@ -7,6 +7,14 @@ def configure_shared_ptr( mb ):
     exposer = shared_ptr.exposer_t( mb )
     exposer.expose()
 
+def samefile ( sourcefile, destfile):
+    if not os.path.exists( destfile ):
+        print destfile,"doesn't exist"
+        return False
+    if os.stat(sourcefile).st_mtime > os.stat(destfile).st_mtime:
+        return False
+    return True
+        
 
 class decl_starts_with (object):
     def __init__ (self, prefix):
