@@ -83,27 +83,33 @@ def filter_declarations( mb ):
     ogre_ns.class_('BillboardParticleRendererFactory').exclude()
     ogre_ns.class_('ParticleSystemManager').mem_fun('addRendererFactory').exclude()
   
-    ogre_ns.class_('GpuProgramParameters').exclude() ### DAMM  - need to spend time on this class - fix for now!!
-    ogre_ns.class_('UnifiedHighLevelGpuProgramFactory').exclude()
-    ogre_ns.class_('UnifiedHighLevelGpuProgram').class_('CmdDelegate').exclude()    
      
-    ogre_ns.typedef('GpuLogicalIndexUseMap').exclude()  ## Fails as no default constructor for 'IndexUse...
-    ogre_ns.class_('GpuLogicalIndexUse').exclude()  ## related to IndexUseMap..
-
-    ## However, GpuLogicalIndexUseMap shows back up because it's part of the GpuLogicalBufferStruct struct
-    ogre_ns.class_('GpuLogicalBufferStruct').exclude()  
     
-    ogre_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').exclude()    # it's got a union that needs to be handled
-    ogre_ns.class_('Renderable').mem_fun('_updateCustomGpuParameter').exclude()
-    ogre_ns.class_('GpuProgramParameters').mem_fun('getAutoConstantEntry').exclude()
-    ogre_ns.class_('SubEntity').mem_fun('_updateCustomGpuParameter').exclude()
-    ogre_ns.class_('GpuProgramParameters').mem_fun('getAutoConstantIterator').exclude()
-    ogre_ns.class_('GpuProgramParameters').mem_fun('_findRawAutoConstantEntryFloat').exclude()
-    ogre_ns.class_('GpuProgramParameters').mem_fun('_findRawAutoConstantEntryInt').exclude()
-    ogre_ns.class_('GpuProgramParameters').mem_fun('findAutoConstantEntry').exclude()
-    ogre_ns.class_('GpuProgramParameters').mem_fun('findFloatAutoConstantEntry').exclude()
-    ogre_ns.class_('GpuProgramParameters').mem_fun('findIntAutoConstantEntry').exclude()
-    ogre_ns.class_('GpuProgramParameters').mem_fun('getConstantDefinitionIterator').exclude()
+    
+    ## NOTE:  I need to exclude the GpuLogicalIndexUseMap class/typedef and this doesn't seem to work
+    ogre_ns.typedef('GpuLogicalIndexUseMap').exclude()  ## Fails as no default constructor for 'IndexUse...
+    ## So I'm trying it's raw form - however this doesn't work either
+    global_ns.namespace('std').class_('map<unsigned, Ogre::GpuLogicalIndexUse, std::less<unsigned>, std::allocator<std::pair<unsigned const, Ogre::GpuLogicalIndexUse> > >').exclude()
+    
+    ## however this exclude works (but doesn't really help)
+    ## ogre_ns.class_('GpuLogicalIndexUse').exclude()  ## related to IndexUseMap..
+
+    
+    
+    ## However, GpuLogicalIndexUseMap shows back up because it's part of the GpuLogicalBufferStruct struct
+#     ogre_ns.class_('GpuLogicalBufferStruct').exclude()  
+#     
+#     ogre_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').exclude()    # it's got a union that needs to be handled
+#     ogre_ns.class_('Renderable').mem_fun('_updateCustomGpuParameter').exclude()
+#     ogre_ns.class_('GpuProgramParameters').mem_fun('getAutoConstantEntry').exclude()
+#     ogre_ns.class_('SubEntity').mem_fun('_updateCustomGpuParameter').exclude()
+#     ogre_ns.class_('GpuProgramParameters').mem_fun('getAutoConstantIterator').exclude()
+#     ogre_ns.class_('GpuProgramParameters').mem_fun('_findRawAutoConstantEntryFloat').exclude()
+#     ogre_ns.class_('GpuProgramParameters').mem_fun('_findRawAutoConstantEntryInt').exclude()
+#     ogre_ns.class_('GpuProgramParameters').mem_fun('findAutoConstantEntry').exclude()
+#     ogre_ns.class_('GpuProgramParameters').mem_fun('findFloatAutoConstantEntry').exclude()
+#     ogre_ns.class_('GpuProgramParameters').mem_fun('findIntAutoConstantEntry').exclude()
+#     ogre_ns.class_('GpuProgramParameters').mem_fun('getConstantDefinitionIterator').exclude()
     
     # there are a set of consiterators that I'm not exposing as they need better understanding and testing
     # these functions rely on them so they are being excluded as well
@@ -266,35 +272,11 @@ def filter_declarations( mb ):
     ogre_ns.class_('UTFString').mem_fun('data').exclude()  
     ogre_ns.class_('UTFString').mem_fun('asUTF32_c_str').exclude()
     
-#     cls = ogre_ns.class_('UTFString')
-#     print dir(cls)
-#     for p in cls.properties:
-#         print "Prop:", p
-#     for p in cls.typedefs():
-#         print "Typedef:", p
-#     for p in cls.vars():
-#         print "Var:", p
-#     for p in cls.mem_funs():
-#         print "MemFunc:", p
-#     for p in cls.private_members():
-#         print "PrivateMem:", p
-#     sys.exit()
-    #New stuff from the Instanced Geomerty class causing problems :(
-#     for cls in ogre_ns.classes():
-#         print cls, cls.name
-#     print "++++++++++++++++++++++++++++++++++++++++++++"
-#     for cls in global_ns.classes():
-#         print cls, cls.name
-#     print "++++++++++++++++++++++++++++++++++++++++++++"
-#     for cls in global_ns.variables():
-#         print cls, cls.name
-#         
+         
     ogre_ns.class_('InstancedGeometry').class_('SubMeshLodGeometryLink').exclude()
     ogre_ns.class_('StaticGeometry').class_('SubMeshLodGeometryLink').exclude()
     global_ns.namespace('std').class_('vector<Ogre::InstancedGeometry::SubMeshLodGeometryLink, std::allocator<Ogre::InstancedGeometry::SubMeshLodGeometryLink> >').exclude()
     global_ns.namespace('std').class_('vector<Ogre::StaticGeometry::SubMeshLodGeometryLink, std::allocator<Ogre::StaticGeometry::SubMeshLodGeometryLink> >').exclude()
-   #ogre_ns.class_('InstancedGeometry').class_('SubMeshLodGeometryLinkList').exclude()
-    ogre_ns.class_('InstancedGeometry').exclude()
        
 def find_nonconst ( mb ):
     """ we have problems with sharedpointer arguments that are defined as references
