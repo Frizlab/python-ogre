@@ -55,15 +55,17 @@ class private_decls_t:
         return self.__private.has_key( file_name ) and decl.location.line in self.__private[ file_name ]
 
 def fix_unnamed_classes( classes, namespace ):
-    for unnamed_cls in classes:
+    for unnamed_cls in classes:        
         named_parent = unnamed_cls.parent
         if not named_parent.name:
             named_parent = named_parent.parent
-
+        if not named_parent or named_parent.ignore:
+            continue
         for mvar in unnamed_cls.public_members:
             if not mvar.name:
                 continue
-
+            if mvar.ignore:
+                continue
             if declarations.is_array (mvar.type):
                 template = '''def_readonly("%(mvar)s", &%(ns)s::%(parent)s::%(mvar)s)'''
             else:
