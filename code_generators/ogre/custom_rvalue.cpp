@@ -7,6 +7,7 @@
 #include "OgreVector2.h"
 #include "OgreVector3.h"
 #include "OgreVector4.h"
+#include "OgreUTFString.h"
 
 namespace bpl = boost::python;
 
@@ -138,6 +139,38 @@ struct PyTuple2Vector4{
     }
 };
 
+
+struct PyStringToUTFString{
+
+    typedef Ogre::UTFString string_type;
+
+    static void* convertible(PyObject* obj){
+        if( !PyString_Check(obj) || !PyUnicode_Check(obj) ){
+            return 0;
+        }
+        return obj;
+    }
+
+    static void
+    construct( PyObject* obj, bpl::converter::rvalue_from_python_stage1_data* data){
+        typedef bpl::converter::rvalue_from_python_storage<string_type> string_storage_t;
+        string_storage_t* the_storage = reinterpret_cast<string_storage_t*>( data );
+        void* memory_chunk = the_storage->storage.bytes;
+
+        bpl::object py_str( bpl::handle<>( bpl::borrowed( obj ) ) );                
+        if( PyString_Check(obj) ){        
+            std::string c_str = bpl::extract<std::string>( py_str );
+            new (memory_chunk) string_type(c_str);
+        }
+        else{ //unicode
+            std::wstring c_str = bpl::extract<std::wstring>( py_str );
+            new (memory_chunk) string_type(c_str);
+        }
+        data->convertible = memory_chunk;        
+    }
+};
+
+
 } //r_values_impl
 
 
@@ -165,4 +198,9 @@ void register_pytuple_to_vector4_conversion(){
                                          , bpl::type_id<Ogre::Vector4>() );
 }
 
+void register_pystring_to_utfstring_conversion(){
+    bpl::converter::registry::push_back(  &r_values_impl::PyStringToUTFString::convertible
+                                         , &r_values_impl::PyStringToUTFString::construct
+                                         , bpl::type_id<Ogre::UTFString>() );
+}
 

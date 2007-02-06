@@ -82,19 +82,10 @@ def filter_declarations( mb ):
     ogre_ns.class_('MapIterator<std::map<std::string, Ogre::ParticleSystemRendererFactory*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::ParticleSystemRendererFactory*> > > >').mem_fun('peekNextValue').exclude()
     ogre_ns.class_('BillboardParticleRendererFactory').exclude()
     ogre_ns.class_('ParticleSystemManager').mem_fun('addRendererFactory').exclude()
-  
-     
     
-    
-    ## NOTE:  I need to exclude the GpuLogicalIndexUseMap class/typedef and this doesn't seem to work
-    ogre_ns.typedef('GpuLogicalIndexUseMap').exclude()  ## Fails as no default constructor for 'IndexUse...
-    ## So I'm trying it's raw form - however this doesn't work either
-    global_ns.namespace('std').class_('map<unsigned, Ogre::GpuLogicalIndexUse, std::less<unsigned>, std::allocator<std::pair<unsigned const, Ogre::GpuLogicalIndexUse> > >').exclude()
-    
-    ## however this exclude works (but doesn't really help)
-    ## ogre_ns.class_('GpuLogicalIndexUse').exclude()  ## related to IndexUseMap..
-
-    
+    #exclude GpuLogicalIndexUseMap
+    GpuLogicalBufferStruct = ogre_ns.class_( 'GpuLogicalBufferStruct' )
+    GpuLogicalBufferStruct.variable( 'map' ).exclude()   
     
     ## However, GpuLogicalIndexUseMap shows back up because it's part of the GpuLogicalBufferStruct struct
 #     ogre_ns.class_('GpuLogicalBufferStruct').exclude()  
