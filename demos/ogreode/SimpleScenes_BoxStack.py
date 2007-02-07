@@ -7,11 +7,15 @@
 # 
 # The box stacking test extends the base test class
 # 
-import SimpleScenes##.py
+from SimpleScenes import *##.py
+import Ogre as ogre
+import OgreOde
+import OIS
+
 
 class SimpleScenes_BoxStack ( SimpleScenes ):
     def __init__ ( self, world ):
-        SimpleScenes.__init__( self )
+        SimpleScenes.__init__( self, world )
     def __del__ ( self ):
         pass
         
@@ -27,16 +31,17 @@ class SimpleScenes_BoxStack ( SimpleScenes ):
         ## Do default processing
         SimpleScenes.frameEnded(self, time, keyinput, mouse)
         body = None
-    
+        
         ## Create random objects, that method will stop them being created too often
         if (keyinput.isKeyDown(OIS.KC_Z)): 
-            body = createRandomObject(OgreOde.Geometry.Class_Sphere)
+            body = self.createRandomObject(OgreOde.Geometry.Class_Sphere)
         elif (keyinput.isKeyDown(OIS.KC_X)): 
-            body = createRandomObject(OgreOde.Geometry.Class_Box)
+            body = self.createRandomObject(OgreOde.Geometry.Class_Box)
         elif (keyinput.isKeyDown(OIS.KC_C)): 
-            body = createRandomObject(OgreOde.Geometry.Class_Capsule)
+            body = self.createRandomObject(OgreOde.Geometry.Class_Cylinder) #Capsule
         elif (keyinput.isKeyDown(OIS.KC_T)): 
-            body = createRandomObject(OgreOde.Geometry.Class_TriangleMesh)
-        elif (keyinput.isKeyDown(OIs.KC_G)): 
-            createRagDoll()
+            body = self.createRandomObject(OgreOde.Geometry.Class_Convex) #TriangleMesh)
+        elif (keyinput.isKeyDown(OIS.KC_G)): 
+            self.createRagDoll()
+        
         

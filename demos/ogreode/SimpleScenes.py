@@ -12,22 +12,24 @@ class SimpleScenes (OgreOde.CollisionListener,OgreOde.StepListener):
     KEY_DELAY = 1.0
     STEP_RATE = 0.01
     def __init__ ( self, world ):
+        global KEY_DELAY
         OgreOde.CollisionListener.__init__(self)
         OgreOde.StepListener.__init__(self)
      
         self._world = world
-        self._mgr = _world.getSceneManager()
+        self._mgr = self._world.getSceneManager()
         self._world.setCollisionListener(self)
-        self._space = _world.getDefaultSpace()
-        self._key_delay = KEY_DELAY
+        self._space = self._world.getDefaultSpace()
+        self._key_delay = 1.0 # KEY_DELAY
         self._last_node = 0
         self.RagdollList=[]
         
         self.dotOgreOdeLoader = OgreOde.DotLoader( world )
-        self.bodies=[]  # an array to keep objects around in (like c++ "new" )
-        self._ragdollFactory = OgreOde_Prefab.RagdollFactory()
+        self._bodies=[]  # an array to keep objects around in (like c++ "new" )
+        self._geoms=[]
+        self._ragdollFactory = OgreOde.RagdollFactory()
         ogre.Root.getSingletonPtr().addMovableObjectFactory(self._ragdollFactory) 
-        setInfoText("")
+        self.setInfoText("")
         
         self.xmlNames = [
             "zombie",
@@ -81,7 +83,8 @@ class SimpleScenes (OgreOde.CollisionListener,OgreOde.StepListener):
                return False 
     
         ## Set the friction at the contact
-        contact.setCoulombFriction(OgreOde.Utility.Infinity)
+        ## Infinity didn't get exposed :(
+        contact.setCoulombFriction( 9999999999 )    ### OgreOde.Utility.Infinity)
         contact.setBouncyness(0.1)
     
         ## Yes, this collision is valid
@@ -90,7 +93,7 @@ class SimpleScenes (OgreOde.CollisionListener,OgreOde.StepListener):
 # 
 # Handle key presses
 # 
-    def frameEnded(self, time,keyinput, mouse):
+    def frameEnded(self, time, keyinput, mouse):
         self._key_delay += time
         for d in self.RagdollList:
             d.update()  # ??
@@ -99,16 +102,25 @@ class SimpleScenes (OgreOde.CollisionListener,OgreOde.StepListener):
     # Utility method to set the information string in the UI
     # 
     def setInfoText(self,  text):
-        ogre.OverlayManager.getSingleton().getOverlayElement("OgreOdeDemos/Info").setCaption(ogre.UFTString("Info: " + text))
+        ogre.OverlayManager.getSingleton().getOverlayElement("OgreOdeDemos/Info").setCaption(ogre.UTFString("Info: " + text))
 
+    def getLastNode(self):
+        return self._last_node
         
-
+    ## If we register this with a stepper it'll get told every time the world's about to be stepped
+    def preStep(self, time):
+        self.addForcesAndTorques()
+        return True
+        
+    def addForcesAndTorques(self):
+        pass
 # /*
 # Create a ragdoll
 # */
     def createRagDoll( self ):
+        return ### currently broken
         global KEY_DELAY
-        if (self._key_delay < KEY_DELAY): 
+        if (self._key_delay < 1.0 ) : ##KEY_DELAY): 
             return
      
         self._key_delay = 0.0
@@ -117,10 +129,10 @@ class SimpleScenes (OgreOde.CollisionListener,OgreOde.StepListener):
     
         params["mesh"] = self.meshNames[self.sSelectedMesh]
     
-        RagDollName = "zombie" + str(self.self._ragdoll_count)
-        self.self._ragdoll_count += 1
+        RagDollName = "zombie" + str(self._ragdoll_count)
+        self._ragdoll_count += 1
         _ragdoll = self._mgr.createMovableObject(RagDollName, 
-            OgreOde_Prefab.RagdollFactory.FACTORY_TYPE_NAME,
+            OgreOde.RagdollFactory.FACTORY_TYPE_NAME,
             params)
             
         _ragdoll.setCastShadows(True)
@@ -132,7 +144,7 @@ class SimpleScenes (OgreOde.CollisionListener,OgreOde.StepListener):
         ##_ragdoll_node.pitch(Degree(rand() % 360))
     
     
-        _ragdoll_node.setOrientation(Quaternion(ogre.Radian(OgreOde.Utility.randomReal() * 10.0 - 5.0),
+        _ragdoll_node.setOrientation(ogre.Quaternion(ogre.Radian(OgreOde.Utility.randomReal() * 10.0 - 5.0),
                                         ogre.Vector3(OgreOde.Utility.randomReal() * 2.0 - 1.0,
                                         OgreOde.Utility.randomReal() * 2.0 - 1.0,
                                         OgreOde.Utility.randomReal() * 2.0 - 1.0)))
@@ -148,12 +160,13 @@ class SimpleScenes (OgreOde.CollisionListener,OgreOde.StepListener):
         _ragdoll.getAnimationState(self.meshAnimation[self.sSelectedMesh]).setEnabled(False)
     
         if (self.ragdollFile[self.sSelectedMesh] != "" ):
+            ### not yet implemented !!!!!!
             dotOgreOdeLoader.loadRagdoll(self.ragdollFile[self.sSelectedMesh], 
                                         _ragdoll,
                                         self.xmlNames[self.sSelectedMesh])
     
         ## Create the ragdoll
-        _ragdoll.takePhysicalControl(_space, False)
+        _ragdoll.takePhysicalControl(self._space, False)
         _ragdoll.setSelfCollisions(False)
     
         self.RagdollList.append(_ragdoll)
@@ -169,15 +182,15 @@ class SimpleScenes (OgreOde.CollisionListener,OgreOde.StepListener):
             typeName = "crate"
         elif objectClass == OgreOde.Geometry.Class_Sphere:
             typeName = "ball" 
-        elif objectClass == OgreOde.Geometry.Class_Capsule:
+        elif objectClass == OgreOde.Geometry.Class_Cylinder:  #Capsule:
             typeName = "capsule" 
-        elif objectClass == OgreOde.Geometry.Class_TriangleMesh:
+        elif objectClass == OgreOde.Geometry.Class_Convex:  # TriangleMesh:
             typeName = "gun" 
         else:
             typeName = "unknown" 
             
         ## Create the visual representation (the Ogre entity and scene node)
-        name = typeName + str(_bodies.size())
+        name = typeName + str(len(self._bodies))
         entity = self._mgr.createEntity(name, typeName + ".mesh")
         node = self._mgr.getRootSceneNode().createChildSceneNode(name)
         node.attachObject(entity)
@@ -190,7 +203,7 @@ class SimpleScenes (OgreOde.CollisionListener,OgreOde.StepListener):
                     (OgreOde.Utility.randomReal() * 0.5 + 0.1) * 2.0)
     
         ## Create a body associated with the node we created
-        body = OgreOde.Body()
+        body = OgreOde.Body(self._world)  ##AJM
         node.attachObject(body)
     
         ## Set the mass and geometry to match the visual representation
@@ -200,7 +213,7 @@ class SimpleScenes (OgreOde.CollisionListener,OgreOde.StepListener):
             mass = OgreOde.BoxMass(1.0,size)
             mass.setDensity(5.0,size)
             
-            geom = OgreOde.BoxGeometry(size,_space)
+            geom = OgreOde.BoxGeometry(size, self._world, self._space)
             node.setScale(size.x * 0.1,size.y * 0.1,size.z * 0.1)
             body.setMass(mass)
     
@@ -208,23 +221,23 @@ class SimpleScenes (OgreOde.CollisionListener,OgreOde.StepListener):
             mass= OgreOde.SphereMass(1.0,size.x)
             mass.setDensity(5.0,size.x)
     
-            geom = OgreOde.SphereGeometry(size.x,_space)
+            geom = OgreOde.SphereGeometry(size.x,self._world,self._space)
             node.setScale(size.x * 0.2,size.x * 0.2,size.x * 0.2)
             body.setMass(mass)
     
-        elif objectClass == OgreOde.Geometry.Class_Capsule:
+        elif objectClass == OgreOde.Geometry.Class_Cylinder:
                 size.x *= 0.5
     
-                mass = OgreOde.CapsuleMass(1.0,size.x,Vector3.UNIT_Z,size.y)
-                mass.setDensity(5.0,size.x,Vector3.UNIT_Z,size.y)
+                mass = OgreOde.CapsuleMass(1.0,size.x,ogre.Vector3.UNIT_Z,size.y)
+                mass.setDensity(5.0,size.x,ogre.Vector3.UNIT_Z,size.y)
                 
-                geom = OgreOde.CapsuleGeometry(size.x,size.y,_space)
+                geom = OgreOde.CapsuleGeometry(size.x,size.y,self._world, self._space)
                 node.setScale(size.x,size.x,(size.y + (size.x * 2.0)) * 0.25)
                 body.setMass(mass)
     
-        elif objectClass == OgreOde.Geometry.Class_TriangleMesh:
+        elif objectClass == OgreOde.Geometry.Class_Convex:
                 ei = OgreOde.EntityInformer (entity, node._getFullTransform())
-                geom = ei.createStaticTriangleMesh(_space)
+                geom = ei.createStaticTriangleMesh(self._world,self._space)
     
                 mass = OgreOde.BoxMass (1.0, ei.getSize())
                 mass.setDensity(5.0, ei.getSize())
@@ -244,7 +257,7 @@ class SimpleScenes (OgreOde.CollisionListener,OgreOde.StepListener):
         ## If we created something position and orient it randomly
         if (body) :
             body.setOrientation(ogre.Quaternion(ogre.Radian(OgreOde.Utility.randomReal() * 10.0 - 5.0),
-                                    Vector3(OgreOde.Utility.randomReal() * 2.0 - 1.0,
+                                    ogre.Vector3(OgreOde.Utility.randomReal() * 2.0 - 1.0,
                                             OgreOde.Utility.randomReal() * 2.0 - 1.0,
                                             OgreOde.Utility.randomReal() * 2.0 - 1.0)))
             body.setPosition(ogre.Vector3((OgreOde.Utility.randomReal() * 10.0) - 5.0,
@@ -252,7 +265,7 @@ class SimpleScenes (OgreOde.CollisionListener,OgreOde.StepListener):
                                         (OgreOde.Utility.randomReal() * 10.0) - 5.0))
     
             ## Set the last body we created to be looked at
-            _last_node = body.getParentNode()
+            self._last_node = body.getParentNode()
     
         return body
     
