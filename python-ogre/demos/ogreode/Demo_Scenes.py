@@ -20,23 +20,25 @@ import OIS
 import SampleFramework as sf
 import sys
 
-import SimpleScenes_BoxStack.py
-
+from SimpleScenes_BoxStack import *
+from SimpleScenes_TriMesh import *
 
 
 STEP_RATE=0.01
-ANY_QUERY_MASK					= 1<<0
-ZOMBIE_QUERY_MASK				= 1<<1
-GEOMETRY_QUERY_MASK				= 1<<2
-VEHICLE_QUERY_MASK				= 1<<3
-STATIC_GEOMETRY_QUERY_MASK		= 1<<4
+ANY_QUERY_MASK                  = 1<<0
+ZOMBIE_QUERY_MASK               = 1<<1
+GEOMETRY_QUERY_MASK             = 1<<2
+VEHICLE_QUERY_MASK              = 1<<3
+STATIC_GEOMETRY_QUERY_MASK      = 1<<4
 ## We need a frame listener class
         
 class SimpleScenesFrameListener ( sf.FrameListener ):
     def __init__( self, demo, renderWindow, camera ):
         sf.FrameListener.__init__(self, renderWindow, camera)
         self._demo = demo
-        
+    def __del__(self):
+        print "del11"
+                
     def frameStarted(self, evt):
         ## Do the default demo input handling and keep our UI display
         ## in sync with the other stuff (frame rate, logo, etc)
@@ -61,9 +63,7 @@ class SimpleScenesFrameListener ( sf.FrameListener ):
     # 
     def frameEnded(self, evt):
         ## Tell our demo that the frame's ended before doing default processing
-        print "fe1"
         self._demo.frameEnded(evt, self.Keyboard, self.Mouse)
-        print "fe2"
         return sf.FrameListener.frameEnded(self, evt)
 
 # /*
@@ -71,11 +71,44 @@ class SimpleScenesFrameListener ( sf.FrameListener ):
 # and create the common OgreOde things we'll need
 # */
 class SimpleScenesApplication(sf.Application):
+    def __init__ ( self ):
+        sf.Application.__init__(self)
+        self._test = 0
+        self._plane = 0
+        self._stepper = 0   
+        self._world = 0
+        self._delay=0.0
+        self._spot=None
+        self._time_elapsed = 0.0
+        self._time_step = 0.1 ## SimpleScenes::STEP_RATE
+        self._looking = _chasing = False
+        self._paused = False
+
+    def _setUpResources( self ):
+        sf.Application._setUpResources(self) 
+        rsm = ogre.ResourceGroupManager.getSingletonPtr()
+        groups = rsm.getResourceGroups()        
+        ##if (std::find(groups.begin(), groups.end(), String("OgreOde")) == groups.end())
+        rsm.createResourceGroup("OgreOde")
+        rsm.addResourceLocation("../Media/OgreOde","FileSystem", "OgreOde")
+        
+    def __del__ ( self ):
+        print "in __del__"
+        del self._test
+        del self._plane
+        del self._stepper
+        del self._world
+
+        sf.Application.__del__( self )
+        print "del2"
+        del( self.frameListener )
+        print "del3"
+        
     def _createScene(self):
         global STEP_RATE, ANY_QUERY_MASK, STATIC_GEOMETRY_QUERY_MASK
         sceneManager = self.sceneManager
         ogre.MovableObject.setDefaultQueryFlags (ANY_QUERY_MASK)
-
+        self.shadowtype=0
         ## Set up shadowing
         sceneManager.setShadowTechnique(ogre.SHADOWTYPE_TEXTURE_MODULATIVE)
         sceneManager.setShadowColour((0.5, 0.5, 0.5))
@@ -212,7 +245,8 @@ class SimpleScenesApplication(sf.Application):
     
         ## If we're running a test, tell it that a frame's ended
         if ((self._test) and (not self._paused)):
-            self._test.frameStarted(evt.timeSinceLastFrame, Keyboad, Mouse)
+            #self._test.frameStarted(evt.timeSinceLastFrame, Keyboad, Mouse)
+            self._test.frameEnded(evt.timeSinceLastFrame, Keyboard, Mouse)
 
 
 # /*
@@ -223,13 +257,11 @@ class SimpleScenesApplication(sf.Application):
 # things dangling, like particle systems.
 # */
     def frameEnded(self, evt, Keyboard, Mouse):
-        print "f23"
         time = evt.timeSinceLastFrame
         sceneManager = self.sceneManager
         ## If we're running a test, tell it that a frame's ended
         if ((self._test) and (not self._paused)): 
-            self._test.frameEnded(time)
-        print "fe4"
+            self._test.frameEnded(time, Keyboard, Mouse)
         ## Step the world and then synchronise the scene nodes with it, 
         ## we could get this to do this automatically, but we 
         ## can't be sure of what order the framelisteners will fire in
@@ -237,34 +269,33 @@ class SimpleScenesApplication(sf.Application):
             self._world.synchronise()
     
         self._delay += time
-        print self._delay
         if (self._delay > 1.0):
             changed = False
     
             ## Switch the test we're displaying
             if (Keyboard.isKeyDown(OIS.KC_F1)):
                 del self._test
-                self._test = SimpleScenes_BoxStack()
+                self._test = SimpleScenes_BoxStack(self._world)
                 changed = True
             elif (Keyboard.isKeyDown(OIS.KC_F2)):
                 del self._test
-                self._test = SimpleScenes_Chain()
+                self._test = SimpleScenes_Chain(self._world)
                 changed = True
             elif (Keyboard.isKeyDown(OIS.KC_F3)):
                 del self._test
-                self._test = SimpleScenes_Buggy()
+                self._test = SimpleScenes_Buggy(self._world)
                 changed = True
             elif (Keyboard.isKeyDown(OIS.KC_F4)):
                 del self._test
-                self._test = SimpleScenes_TriMesh()
+                self._test = SimpleScenes_TriMesh(self._world)
                 changed = True
             elif (Keyboard.isKeyDown(OIS.KC_F5)):
                 del self._test
-                self._test = SimpleScenes_Crash()
+                self._test = SimpleScenes_Crash(self._world)
                 changed = True
             elif (Keyboard.isKeyDown(OIS.KC_F6)):
                 del self._test
-                self._test = SimpleScenes_Joints()
+                self._test = SimpleScenes_Joints(self._world)
     
                 if (self.camera.getPosition().z < 10.0):
                     pos = self.camera.getPosition()
@@ -273,7 +304,7 @@ class SimpleScenesApplication(sf.Application):
                 changed = True
             elif (Keyboard.isKeyDown(OIS.KC_F7)):
                 del self._test
-                self._test = SimpleScenes_Zombie()
+                self._test = SimpleScenes_Zombie(self._world)
                 changed = True
     
             ## If we changed the test...
@@ -282,21 +313,22 @@ class SimpleScenesApplication(sf.Application):
                 self._stepper.setStepListener(self._test)
     
                 ## Set the UI to show the test's details
-                OverlayManager.getSingleton().getOverlayElement("OgreOdeDemos/Name").setCaption("Name: " + self._test.getName())
-                OverlayManager.getSingleton().getOverlayElement("OgreOdeDemos/Keys").setCaption("Keys: " + self._test.getKeys())
+                ogre.OverlayManager.getSingleton().getOverlayElement("OgreOdeDemos/Name")\
+                                .setCaption(ogre.UTFString("Name: " + self._test.getName()))
+                ogre.OverlayManager.getSingleton().getOverlayElement("OgreOdeDemos/Keys")\
+                                .setCaption(ogre.UTFString("Keys: " + self._test.getKeys()))
     
                 self._delay = 0.0
     
             ## Switch shadows
             if (Keyboard.isKeyDown(OIS.KC_SPACE)):
-                shadowtype = 0
-                shadowtype += 1
-                if (shadowtype > 5):
-                    shadowtype = 0
+                self.shadowtype += 1
+                if (self.shadowtype > 5):
+                    self.shadowtype = 0
                     
-                if shadowtype == 0:
+                if self.shadowtype == 0:
                     sceneManager.setShadowTechnique (ogre.SHADOWTYPE_NONE) 
-                elif shadowtype == 1:
+                elif self.shadowtype == 1:
                     sceneManager.setShadowTechnique(ogre.SHADOWTYPE_TEXTURE_MODULATIVE)
                     sceneManager.setShadowColour(ogre.ColourValue(0.5, 0.5, 0.5))
                     sceneManager.setShadowFarDistance(30)
@@ -304,11 +336,11 @@ class SimpleScenesApplication(sf.Application):
                         sceneManager.setShadowTextureSettings(1024, 2)
                     else :
                         sceneManager.setShadowTextureSettings(512, 2)
-                elif shadowtype == 2:
+                elif self.shadowtype == 2:
                     sceneManager.setShadowTechnique (ogre.SHADOWTYPE_STENCIL_ADDITIVE) 
-                elif shadowtype == 3:
+                elif self.shadowtype == 3:
                     sceneManager.setShadowTechnique (ogre.SHADOWTYPE_STENCIL_MODULATIVE )  
-                elif shadowtype == 4:
+                elif self.shadowtype == 4:
                     sceneManager.setShadowTechnique (ogre.SHADOWTYPE_TEXTURE_ADDITIVE )     
                     sceneManager.setShadowColour((0.5, 0.5, 0.5))
                     sceneManager.setShadowFarDistance(30)
@@ -347,7 +379,7 @@ class SimpleScenesApplication(sf.Application):
                     timeSet = 0.0
                 else:
                     timeSet = 1.0
-                it = sceneManager.getMovableObjectIterator(ParticleSystemFactory.FACTORY_TYPE_NAME)
+                it = sceneManager.getMovableObjectIterator(ogre.ParticleSystemFactory.FACTORY_TYPE_NAME)
                 while(it.hasMoreElements()):
                     p = it.getNext()
                     p.setSpeedFactor(timeSet)
