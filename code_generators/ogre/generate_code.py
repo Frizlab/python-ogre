@@ -263,11 +263,20 @@ def filter_declarations( mb ):
     ogre_ns.class_('UTFString').mem_fun('data').exclude()  
     ogre_ns.class_('UTFString').mem_fun('asUTF32_c_str').exclude()
     
+    ## missing symbols at link time, including constructor and destructor!
+    global_ns.class_('::Ogre::UnifiedHighLevelGpuProgramFactory').exclude()
+    global_ns.class_('::Ogre::InstancedGeometry::MaterialBucket').mem_fun('getGeometryBucketList').exclude()
+    global_ns.class_('::Ogre::InstancedGeometry::MaterialBucket').mem_fun('getMaterialBucketMap').exclude()
+    gpu = global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram')
+    gpu = gpu.class_('CmdDelegate')
+    gpu.mem_fun('doGet').exclude()
+    global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram').class_('CmdDelegate').mem_fun('doSet').exclude()
+    
          
-    ogre_ns.class_('InstancedGeometry').class_('SubMeshLodGeometryLink').exclude()
-    ogre_ns.class_('StaticGeometry').class_('SubMeshLodGeometryLink').exclude()
-    global_ns.namespace('std').class_('vector<Ogre::InstancedGeometry::SubMeshLodGeometryLink, std::allocator<Ogre::InstancedGeometry::SubMeshLodGeometryLink> >').exclude()
-    global_ns.namespace('std').class_('vector<Ogre::StaticGeometry::SubMeshLodGeometryLink, std::allocator<Ogre::StaticGeometry::SubMeshLodGeometryLink> >').exclude()
+# # #     ogre_ns.class_('InstancedGeometry').class_('SubMeshLodGeometryLink').exclude()
+# # #     ogre_ns.class_('StaticGeometry').class_('SubMeshLodGeometryLink').exclude()
+# # #     global_ns.namespace('std').class_('vector<Ogre::InstancedGeometry::SubMeshLodGeometryLink, std::allocator<Ogre::InstancedGeometry::SubMeshLodGeometryLink> >').exclude()
+# # #     global_ns.namespace('std').class_('vector<Ogre::StaticGeometry::SubMeshLodGeometryLink, std::allocator<Ogre::StaticGeometry::SubMeshLodGeometryLink> >').exclude()
        
 def find_nonconst ( mb ):
     """ we have problems with sharedpointer arguments that are defined as references
