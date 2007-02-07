@@ -31,7 +31,7 @@ class SimpleScenes_Chain (SimpleScenes):
         num_links = 10
 
         self._first_body = 0
-        self._force = 100
+        self._force = 1
 
         ## Create all the links in the chain
         for i in range (num_links, 0, -1 ):
@@ -80,17 +80,18 @@ class SimpleScenes_Chain (SimpleScenes):
 
         right = self._mgr.getCamera("PlayerCam").getRight()
         forward = right.crossProduct(ogre.Vector3.UNIT_Y)
-
+    
         ## Up
         if (input.isKeyDown(OIS.KC_X)): self._force_to_apply += ogre.Vector3.UNIT_Y * self._force
 
         ## Left/right
-        if (input.isKeyDown(OIS.KC_J)): self._force_to_apply -= right * self._force
-        if (input.isKeyDown(OIS.KC_L)): self._force_to_apply += right * self._force
+        elif (input.isKeyDown(OIS.KC_J)): self._force_to_apply -= right * self._force
+        elif (input.isKeyDown(OIS.KC_L)): self._force_to_apply += right * self._force
 
         ## Forward/back
-        if (input.isKeyDown(OIS.KC_K)): self._force_to_apply += forward * self._force
-        if (input.isKeyDown(OIS.KC_I)): self._force_to_apply -= forward * self._force
+        elif (input.isKeyDown(OIS.KC_K)): self._force_to_apply += forward * self._force
+        elif (input.isKeyDown(OIS.KC_I)): self._force_to_apply -= forward * self._force
+        else: self._force_to_apply = 0
 
         self._mgr.getCamera("PlayerCam")
 
