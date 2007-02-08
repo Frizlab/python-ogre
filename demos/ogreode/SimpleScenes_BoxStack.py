@@ -17,8 +17,8 @@ class SimpleScenes_BoxStack ( SimpleScenes ):
     def __init__ ( self, world ):
         SimpleScenes.__init__( self, world )
     def __del__ ( self ):
-        pass
-        
+        SimpleScenes.__del__(self)
+       
     ## Return our name for the test application to display
     def getName(self ):
         return "Test Box Stack"

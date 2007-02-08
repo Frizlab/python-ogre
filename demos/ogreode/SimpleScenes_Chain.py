@@ -122,6 +122,8 @@ class SimpleScenes_Chain (SimpleScenes):
                 name = "Crate_" + str(i)
                 self._mgr.destroySceneNode(name)
                 self._mgr.destroyEntity(name)
+        SimpleScenes.__del__(self)
+                
 
     ## Utility method to create a static box
     def createBox(self, id,size, position):
