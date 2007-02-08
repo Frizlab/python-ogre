@@ -8,7 +8,7 @@ import OgreOde
 # 
 # base class 
 # 
-class SimpleScenes (OgreOde.CollisionListener,OgreOde.StepListener):
+class SimpleScenes (OgreOde.CollisionListener, OgreOde.StepListener):
     KEY_DELAY = 1.0
     STEP_RATE = 0.01
     def __init__ ( self, world ):
@@ -27,6 +27,7 @@ class SimpleScenes (OgreOde.CollisionListener,OgreOde.StepListener):
         self.dotOgreOdeLoader = OgreOde.DotLoader( world )
         self._bodies=[]  # an array to keep objects around in (like c++ "new" )
         self._geoms=[]
+        self._joints=[]
         self._ragdollFactory = OgreOde.RagdollFactory()
         ogre.Root.getSingletonPtr().addMovableObjectFactory(self._ragdollFactory) 
         self.setInfoText("")
@@ -118,27 +119,26 @@ class SimpleScenes (OgreOde.CollisionListener,OgreOde.StepListener):
 # Create a ragdoll
 # */
     def createRagDoll( self ):
-        return ### currently broken
         global KEY_DELAY
         if (self._key_delay < 1.0 ) : ##KEY_DELAY): 
             return
      
         self._key_delay = 0.0
     
-        params = ogre.NameValuePairList()
-    
-        params["mesh"] = self.meshNames[self.sSelectedMesh]
-    
-        RagDollName = "zombie" + str(self._ragdoll_count)
+        dl = OgreOde.DotLoader()    
+        _ragdoll = self.dotOgreOdeLoader.loadObject ( self.ragdollFile[self.sSelectedMesh], 
+                            self.xmlNames[self.sSelectedMesh], 
+                            "zombie" + str(self._ragdoll_count))
+                            
+                            
+# #         _ragdoll = OgreOde.Ragdoll ( rd )
+
         self._ragdoll_count += 1
-        _ragdoll = self._mgr.createMovableObject(RagDollName, 
-            OgreOde.RagdollFactory.FACTORY_TYPE_NAME,
-            params)
-            
         _ragdoll.setCastShadows(True)
-    
+
         _ragdoll_node = self._mgr.getRootSceneNode().createChildSceneNode(_ragdoll.getName() + "Node")
         _ragdoll_node.attachObject(_ragdoll)
+    
     
         ##_ragdoll_node.yaw(Degree(rand() % 360))
         ##_ragdoll_node.pitch(Degree(rand() % 360))
@@ -153,24 +153,23 @@ class SimpleScenes (OgreOde.CollisionListener,OgreOde.StepListener):
                                     OgreOde.Utility.randomReal() + 5,
                                     (OgreOde.Utility.randomReal() * 10.0) - 5.0))
     
-    
         _ragdoll_node.setScale( self.meshScale[self.sSelectedMesh])
     
     
         _ragdoll.getAnimationState(self.meshAnimation[self.sSelectedMesh]).setEnabled(False)
     
-        if (self.ragdollFile[self.sSelectedMesh] != "" ):
-            ### not yet implemented !!!!!!
-            dotOgreOdeLoader.loadRagdoll(self.ragdollFile[self.sSelectedMesh], 
-                                        _ragdoll,
-                                        self.xmlNames[self.sSelectedMesh])
     
         ## Create the ragdoll
-        _ragdoll.takePhysicalControl(self._space, False)
+        _ragdoll.takePhysicalControl(self._world,self._space, False)
         _ragdoll.setSelfCollisions(False)
     
         self.RagdollList.append(_ragdoll)
 
+       
+        
+  
+    
+    
     # /*
     # Create a randomly sized box, sphere or capsule for dropping on things
     # */ 
@@ -275,7 +274,7 @@ class SimpleScenes (OgreOde.CollisionListener,OgreOde.StepListener):
     def __del__ ( self ):
         ## Stop listening for collisions
         if (self._world.getCollisionListener() == self): 
-            _world.setCollisionListener(0)
+            self._world.setCollisionListener(None)
     
         ## Delete all the joints
         for i in self._joints:
@@ -283,8 +282,8 @@ class SimpleScenes (OgreOde.CollisionListener,OgreOde.StepListener):
         clearList = []
         ## Run through the list of bodies we're monitoring
         for i in self._bodies:
-            ## Get the node this body controls
-            node = i.getParentNode()
+            ## Get the SCENE node this body controls
+            node = i.getParentSceneNode()
             if (node):
                 ## Get its name and remember all the things attached to it
                 name = node.getName()
@@ -295,6 +294,7 @@ class SimpleScenes (OgreOde.CollisionListener,OgreOde.StepListener):
                         clearList.append(obj)
     
                 ## Destroy the node by name
+                
                 self._mgr.getRootSceneNode().removeAndDestroyChild(name)
             ## Delete the body
             del (i)
@@ -304,18 +304,17 @@ class SimpleScenes (OgreOde.CollisionListener,OgreOde.StepListener):
             if (i.getMovableType() == "Entity") :
                 self._mgr.destroyMovableObject(i)
             elif (i.getMovableType() == "ParticleSystem")  :
-                _mgr.destroyParticleSystem(i)
+                self._mgr.destroyParticleSystem(i)
     
         ## Delete all the collision geometries
         for i in self._geoms:
             del (i)
         ## Remove all the entities we found attached to scene nodes we're controlling
         for i in self.RagdollList:
-            assert (i.getParentNode ())
-            assert (i.getParentNode ().getParent())
-            i.getParentNode().getParent().removeAndDestroyChild(
-                i.getParentNode().getName ())
-    
-            self._mgr.destroyMovableObject(i.getName(), OgreOde_Prefab.RagdollFactory.FACTORY_TYPE_NAME)
-        ogre.Root.getSingletonPtr().removeMovableObjectFactory(_ragdollFactory)
-        del _ragdollFactory 
+# #             assert (i.getParentNode ())
+# #             assert (i.getParentNode ().getParent())
+            self._mgr.getRootSceneNode().removeAndDestroyChild(i.getParentNode().getName ())
+            self._mgr.destroyMovableObject(i.getName(), OgreOde.RagdollFactory.FACTORY_TYPE_NAME)
+        ogre.Root.getSingletonPtr().removeMovableObjectFactory(self._ragdollFactory)
+        del self._ragdollFactory 
+

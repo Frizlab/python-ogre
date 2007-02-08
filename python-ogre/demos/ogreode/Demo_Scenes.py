@@ -22,6 +22,9 @@ import sys
 
 from SimpleScenes_BoxStack import *
 from SimpleScenes_TriMesh import *
+from SimpleScenes_Chain import *
+from SimpleScenes_Joints import *
+from SimpleScenes_Buggy import *
 
 
 STEP_RATE=0.01
@@ -84,13 +87,13 @@ class SimpleScenesApplication(sf.Application):
         self._looking = _chasing = False
         self._paused = False
 
-    def _setUpResources( self ):
-        sf.Application._setUpResources(self) 
-        rsm = ogre.ResourceGroupManager.getSingletonPtr()
-        groups = rsm.getResourceGroups()        
-        ##if (std::find(groups.begin(), groups.end(), String("OgreOde")) == groups.end())
-        rsm.createResourceGroup("OgreOde")
-        rsm.addResourceLocation("../Media/OgreOde","FileSystem", "OgreOde")
+#     def _setUpResources( self ):
+#         sf.Application._setUpResources(self) 
+#         rsm = ogre.ResourceGroupManager.getSingletonPtr()
+#         groups = rsm.getResourceGroups()        
+#         ##if (std::find(groups.begin(), groups.end(), String("OgreOde")) == groups.end())
+#         rsm.createResourceGroup("OgreOde")
+#         rsm.addResourceLocation("../Media/OgreOde","FileSystem", "OgreOde")
         
     def __del__ ( self ):
         print "in __del__"
@@ -274,7 +277,8 @@ class SimpleScenesApplication(sf.Application):
     
             ## Switch the test we're displaying
             if (Keyboard.isKeyDown(OIS.KC_F1)):
-                del self._test
+                print self._test
+                del (self._test)
                 self._test = SimpleScenes_BoxStack(self._world)
                 changed = True
             elif (Keyboard.isKeyDown(OIS.KC_F2)):
@@ -365,7 +369,7 @@ class SimpleScenesApplication(sf.Application):
     
             ## Switch debugging objects on or off
             if (Keyboard.isKeyDown(OIS.KC_E)):
-                self._world.setShowDebugObjects(not self._world.getShowDebugObjects())
+                self._world.setShowDebugGeometries(not self._world.getShowDebugGeometries())
                 self._delay = 0.0
     
             ## Pause or unpause the simulation

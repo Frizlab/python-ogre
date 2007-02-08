@@ -38,7 +38,8 @@ class SimpleScenes_TriMesh ( SimpleScenes_BoxStack ):
     def __del__ ( self ):
         self._mgr.destroySceneNode("Landscape")
         self._mgr.destroyEntity("Landscape")
-
+        SimpleScenes.__del__(self)
+       
     ## Return our name for the test application to display
     def getName(self):
         return "Test Triangle Mesh"

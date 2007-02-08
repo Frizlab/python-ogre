@@ -83,15 +83,16 @@ def filter_declarations( mb ):
     ogre_ns.class_('BillboardParticleRendererFactory').exclude()
     ogre_ns.class_('ParticleSystemManager').mem_fun('addRendererFactory').exclude()
     
-    #exclude GpuLogicalIndexUseMap
+    #exclude GpuLogicalIndexUseMap  NOTE:  Example use of Py++ to exclude a special variable........
     GpuLogicalBufferStruct = ogre_ns.class_( 'GpuLogicalBufferStruct' )
     GpuLogicalBufferStruct.variable( 'map' ).exclude()   
     
-    ## However, GpuLogicalIndexUseMap shows back up because it's part of the GpuLogicalBufferStruct struct
-#     ogre_ns.class_('GpuLogicalBufferStruct').exclude()  
-#     
-#     ogre_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').exclude()    # it's got a union that needs to be handled
-#     ogre_ns.class_('Renderable').mem_fun('_updateCustomGpuParameter').exclude()
+    ogre_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').variable('data').exclude()    
+    ogre_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').variable('fData').exclude() 
+    ogre_ns.class_('GpuProgramParameters').mem_fun('getFloatPointer').exclude() 
+    ogre_ns.class_('GpuProgramParameters').mem_fun('getIntPointer').exclude() 
+       
+    #     ogre_ns.class_('Renderable').mem_fun('_updateCustomGpuParameter').exclude()
 #     ogre_ns.class_('GpuProgramParameters').mem_fun('getAutoConstantEntry').exclude()
 #     ogre_ns.class_('SubEntity').mem_fun('_updateCustomGpuParameter').exclude()
 #     ogre_ns.class_('GpuProgramParameters').mem_fun('getAutoConstantIterator').exclude()
@@ -267,10 +268,10 @@ def filter_declarations( mb ):
     global_ns.class_('::Ogre::UnifiedHighLevelGpuProgramFactory').exclude()
     global_ns.class_('::Ogre::InstancedGeometry::MaterialBucket').mem_fun('getGeometryBucketList').exclude()
     global_ns.class_('::Ogre::InstancedGeometry::MaterialBucket').mem_fun('getMaterialBucketMap').exclude()
-    gpu = global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram')
-    gpu = gpu.class_('CmdDelegate')
-    gpu.mem_fun('doGet').exclude()
-    global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram').class_('CmdDelegate').mem_fun('doSet').exclude()
+    
+    global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram::CmdDelegate').mem_fun('doGet').exclude()
+    global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram::CmdDelegate').mem_fun('doSet').exclude()
+    global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram::CmdDelegate').exclude()
     
          
 # # #     ogre_ns.class_('InstancedGeometry').class_('SubMeshLodGeometryLink').exclude()
