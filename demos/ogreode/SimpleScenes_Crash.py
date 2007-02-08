@@ -4,7 +4,10 @@
 # A reimplementation of the ODE "crashing into a wall" demo 
 # using Ogre and the OgreOde wrapper.
 # */
-
+from SimpleScenes import *
+import Ogre as ogre
+import OgreOde
+import OIS
 # /*
 # The crash test extends the base test class
 # */

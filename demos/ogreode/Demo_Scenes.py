@@ -25,6 +25,7 @@ from SimpleScenes_TriMesh import *
 from SimpleScenes_Chain import *
 from SimpleScenes_Joints import *
 from SimpleScenes_Buggy import *
+from SimpleScenes_Zombie_NoAny import *
 
 
 STEP_RATE=0.01
