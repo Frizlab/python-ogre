@@ -3,6 +3,7 @@ def header_files( version ):
     if not version.startswith("1.2"):
         return [ 'python_ogre_masterlist.h'
                 ,'py_shared_ptr.h'
+                , 'generators.h'
         ]
 
         return [ 'Ogre.h'
