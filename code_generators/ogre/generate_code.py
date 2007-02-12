@@ -295,7 +295,7 @@ def find_nonconst ( mb ):
                     fun.add_transformation( ft.modify_type(arg_position,declarations.remove_reference ) )
             arg_position +=1
                     
-def add_py_tuple_conversion( mb ):
+def add_auto_conversions( mb ):
     """
     Allows to pass Python tuple as argument to function, instead of
        * ColourValue
@@ -306,7 +306,8 @@ def add_py_tuple_conversion( mb ):
         'register_pytuple_to_colour_value_conversion'
         , 'register_pytuple_to_vector2_conversion'
         , 'register_pytuple_to_vector3_conversion'
-        , 'register_pytuple_to_vector4_conversion' )
+        , 'register_pytuple_to_vector4_conversion'
+        , 'register_pystring_to_utfstring_conversion' )
         
     for converter in rvalue_converters:
         mb.add_declaration_code( 'void %s();' % converter )
@@ -320,6 +321,15 @@ def add_py_tuple_conversion( mb ):
     
     if not os.path.exists( os.path.join(environment.ogre.generated_dir, 'custom_rvalue.cpp' ) ):
         shutil.copy( custom_rvalue_path, environment.ogre.generated_dir )
+  
+    if not common_utils.samefile( os.path.join(environment.ogre.generated_dir, 'custom_rvalue.cpp' )
+                                  , custom_rvalue_path ):
+        print "Updated custom_rvalue.cpp as it was missing or out of date"                                      
+        shutil.copy( custom_rvalue_path, environment.ogre.generated_dir )
+  
+    UTFString = mb.class_( 'UTFString' )
+    UTFString.mem_fun( 'asUTF8' ).alias = '__str__'
+    UTFString.mem_fun( 'asWStr' ).alias = '__unicode__'
   
 def set_call_policies( mb ):
 #
@@ -357,18 +367,6 @@ def configure_exception(mb):
     Exception.mem_fun('getNumber').exclude() # declared with empty throw
     Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getFullDescription().c_str()' )
     
-def get_pyplusplus_alias( typedef ):
-    dpath = declarations.declaration_path( typedef )
-#     print "checking", len(dpath), typedef.name
-    if len( dpath ) != 4:
-       return None
-    #dpath[0] is global namespace
-    if dpath[1] != 'pyplusplus':
-       return None
-    if dpath[2] != 'aliases':
-       return None
-    return typedef.name
-
 
 def add_transformations ( mb ):
     ns = mb.global_ns.namespace ('Ogre')
@@ -481,12 +479,7 @@ def generate_code():
     print "Configuring shared pointers"
     common_utils.configure_shared_ptr(mb)
     configure_exception( mb )
-    
-    #
-    # the manual stuff all done here !!!
-    #
-    hand_made_wrappers.apply( mb )
-    
+        
     #
     # We need to tell boost how to handle calling (and returning from) certain functions
     #
@@ -497,6 +490,11 @@ def generate_code():
     
     # here we fixup functions that expect to modifiy their 'passed' variables    
     add_transformations ( mb )
+    
+    #
+    # the manual stuff all done here !!!
+    #
+    hand_made_wrappers.apply( mb )
     
     cls = mb.class_( "IndexData" )
     v = cls.variable( "indexBuffer" )
@@ -518,7 +516,7 @@ def generate_code():
     common_utils.add_constants( mb, { 'ogre_version' :  '"%s"' % environment.ogre.version.replace("\n", "\\\n") 
                                       , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
 
-    add_py_tuple_conversion( mb )
+    add_auto_conversions( mb )
 
     ##########################################################################################
     #
@@ -537,24 +535,26 @@ def generate_code():
 
     mb.split_module(environment.ogre.generated_dir, huge_classes)
 
-    def samefile ( sourcefile, destfile):
-        if not os.path.exists( destfile ):
-            print destfile,"doesn't exist"
-            return False
-        if os.stat(sourcefile).st_mtime > os.stat(destfile).st_mtime:
-            return False
-        return True
-        
-    if not samefile ( os.path.join( environment.shared_ptr_dir, 'py_shared_ptr.h'),
+    if not common_utils.samefile( os.path.join( environment.shared_ptr_dir, 'py_shared_ptr.h'),
                              os.path.join(environment.ogre.generated_dir, 'py_shared_ptr.h' ) ):
         print "Updated py_shared_ptr.h as it was missing or out of date"
         shutil.copy( os.path.join( environment.shared_ptr_dir, 'py_shared_ptr.h' )
                      , environment.ogre.generated_dir )
-    if not samefile ( os.path.join( os.getcwd(), 'python_ogre_masterlist.h' ),
+    if not common_utils.samefile ( os.path.join( os.getcwd(), 'python_ogre_masterlist.h' ),
                             os.path.join( environment.ogre.generated_dir, 'python_ogre_masterlist.h' ) ) :            
         print "Updated python_ogre_masterlist.h as it was missing or out of date"
         shutil.copy( os.path.join( os.getcwd(), 'python_ogre_masterlist.h' )
                      , environment.ogre.generated_dir )
+    
+    generators_path = os.path.join( os.path.abspath(os.path.dirname(__file__) )
+                                    , 'generators.h' )
+
+    if not common_utils.samefile( os.path.join(environment.ogre.generated_dir, 'generators.h' )
+                                  , generators_path ):
+        print "Updated generators.h as it was missing or out of date"                                      
+        shutil.copy( generators_path, environment.ogre.generated_dir )
+
+
 
 if __name__ == '__main__':
     start_time = time.clock()
