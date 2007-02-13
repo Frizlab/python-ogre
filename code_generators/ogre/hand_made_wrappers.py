@@ -281,6 +281,8 @@ WRAPPER_REGISTRATION_Mesh = \
 
 
 def iter_as_generator( cls ):
+    print "ITER:", cls
+    
     code = os.linesep.join([ 
             'typedef %(cls)s iter_type;'
             , 'generators::generator_maker< iter_type >::register_< %(call_policies)s >( %(exposer_name)s );'])
@@ -333,6 +335,6 @@ def apply( mb ):
     mb.add_declaration_code( WRAPPER_DEFINITION_General )
     mb.add_registration_code( WRAPPER_REGISTRATION_General )
     
-    vec_iterators = mb.classes( lambda cls: cls.name.startswith( 'VectorIterator<' ) )
-    for cls in vec_iterators:
-        iter_as_generator( cls )
+#     vec_iterators = mb.classes( lambda cls: cls.name.startswith( 'VectorIterator<' ) )
+#     for cls in vec_iterators:
+#         iter_as_generator( cls )
