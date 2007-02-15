@@ -11,6 +11,9 @@ def samefile ( sourcefile, destfile):
     if not os.path.exists( destfile ):
         print destfile,"doesn't exist"
         return False
+    if not os.path.exists( sourcefile ):
+        print sourcefile,"doesn't exist (missing source file)"
+        return False
     if os.stat(sourcefile).st_mtime > os.stat(destfile).st_mtime:
         return False
     return True
