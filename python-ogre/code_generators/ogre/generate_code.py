@@ -25,6 +25,7 @@ from pyplusplus.module_builder import call_policies
 from pyplusplus.module_creator import sort_algorithms
 
 import common_utils.extract_documentation as exdoc
+import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
 
 
@@ -37,11 +38,8 @@ def filter_declarations( mb ):
     ogre_ns.include()
     
     startswith = [
-        # Don't include, we'll never need.
-        ##'D3D', 'GL'
-        'WIN32'  ### , '_'  
+        'WIN32'
         , 'MemoryManager'   ## it's a specialised C++ mem manger not needed in Python
-        ## , 'Any' ## it tries to hold any Ogre type - we get it for free in Python, however other funcs need it
         , 'RadixSort' ## these show up as ugly aliases but are never exposed - and are really protected
     ]
 
@@ -54,7 +52,27 @@ def filter_declarations( mb ):
         classes = ogre_ns.classes( common_utils.decl_starts_with(prefix), allow_empty=True)
         classes.exclude()
 
+### AJM - OK, so I think we can remove all FACTORY classes etc - not really sure but thought we
+### do so and see if anyone complained
+    for cls in ogre_ns.classes ():
+        if 'Factory' in cls.name:
+            print "Factory Class Excluded", cls
+            cls.exclude()
+    for fun in ogre_ns.mem_funs ():
+        if 'Factory' in fun.name:
+            print "Factory Function Excluded", fun
+            fun.exclude()
+            continue
+        for arg in fun.arguments:
+            if 'Factory' in arg.name:
+                print "Factory Function Excluded", fun
+                fun.exclude()
+                break
+                    
+        
+        
     #AJM Set of functions in Particle system that don't get wrapped properly.. Rechecked 30Nov06 AJM
+    ## Other 'Cmd..' classes are defined as _OgrePrivate, whereas these are not in the head file
     PartSys = ogre_ns.class_( "ParticleSystem" )
     PartSys.class_( "CmdIterationInterval" ).exclude()
     PartSys.class_( "CmdLocalSpace" ).exclude()
@@ -68,40 +86,16 @@ def filter_declarations( mb ):
     ## It's a structure that doesn't get included by default...
     ogre_ns.class_("VertexBoneAssignment_s").include()
 
-    #
-    # problem areas as defermined by Py++'s "unexposed" warning message
-    # compile problems - There are a number fo Factories that don't expose well
-    # lets hope that they aren't really needed from Python....
-    ogre_ns.class_('ArchiveFactory').exclude() 
-    ogre_ns.class_('ArchiveManager').mem_fun('addArchiveFactory').exclude() # this needs ArchiveFactory
-    ogre_ns.class_('ParticleSystemRendererFactory').exclude()
-    ogre_ns.class_('FactoryObj<Ogre::Archive>').exclude()
-    ogre_ns.class_('FactoryObj<Ogre::ParticleSystemRenderer>').exclude()
-    ## these need ParticleSystemRendererFactory
-    ogre_ns.class_('MapIterator<std::map<std::string, Ogre::ParticleSystemRendererFactory*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::ParticleSystemRendererFactory*> > > >').mem_fun('getNext').exclude()
-    ogre_ns.class_('MapIterator<std::map<std::string, Ogre::ParticleSystemRendererFactory*, std::less<std::string>, std::allocator<std::pair<std::string const, Ogre::ParticleSystemRendererFactory*> > > >').mem_fun('peekNextValue').exclude()
-    ogre_ns.class_('BillboardParticleRendererFactory').exclude()
-    ogre_ns.class_('ParticleSystemManager').mem_fun('addRendererFactory').exclude()
-    
+   
     #exclude GpuLogicalIndexUseMap  NOTE:  Example use of Py++ to exclude a special variable........
     GpuLogicalBufferStruct = ogre_ns.class_( 'GpuLogicalBufferStruct' )
     GpuLogicalBufferStruct.variable( 'map' ).exclude()   
     
+    ## THIS IS A UNION
     ogre_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').variable('data').exclude()    
-    ogre_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').variable('fData').exclude() 
-    ogre_ns.class_('GpuProgramParameters').mem_fun('getFloatPointer').exclude() 
-    ogre_ns.class_('GpuProgramParameters').mem_fun('getIntPointer').exclude() 
-       
-    #     ogre_ns.class_('Renderable').mem_fun('_updateCustomGpuParameter').exclude()
-#     ogre_ns.class_('GpuProgramParameters').mem_fun('getAutoConstantEntry').exclude()
-#     ogre_ns.class_('SubEntity').mem_fun('_updateCustomGpuParameter').exclude()
-#     ogre_ns.class_('GpuProgramParameters').mem_fun('getAutoConstantIterator').exclude()
-#     ogre_ns.class_('GpuProgramParameters').mem_fun('_findRawAutoConstantEntryFloat').exclude()
-#     ogre_ns.class_('GpuProgramParameters').mem_fun('_findRawAutoConstantEntryInt').exclude()
-#     ogre_ns.class_('GpuProgramParameters').mem_fun('findAutoConstantEntry').exclude()
-#     ogre_ns.class_('GpuProgramParameters').mem_fun('findFloatAutoConstantEntry').exclude()
-#     ogre_ns.class_('GpuProgramParameters').mem_fun('findIntAutoConstantEntry').exclude()
-#     ogre_ns.class_('GpuProgramParameters').mem_fun('getConstantDefinitionIterator').exclude()
+    v= ogre_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').variable('fData')
+    v.exclude() 
+     
     
     # there are a set of consiterators that I'm not exposing as they need better understanding and testing
     # these functions rely on them so they are being excluded as well
@@ -114,29 +108,6 @@ def filter_declarations( mb ):
     std_ns.class_("pair<unsigned, unsigned>").include()
     std_ns.class_("pair<bool, float>").include()
 
-    # HashMap is defined in OgrePrerequisits.h and is different based on platform
-    # ::stdext::hash_map
-#     if sys.platform=='win32':
-#         for s in global_ns.namespace("stdext").classes():
-# #            print "stdex", s, s.alias
-# #         global_ns.namespace("stdext").class_('hash_map<Ogre::String, Ogre::ushort>').include()
-#     else:
-#         global_ns.namespace("__gnu_cxx").class_('hash_map<Ogre::String, Ogre::ushort>').include()
-
-    # exclude functions and operators that return Real * as we don't handle them well :(
-    # 
-    # TODO  could change them to return_pointee            
-    #
-    ogre_ns.mem_funs( return_type='::Ogre::Real const *', allow_empty=True).exclude()
-    ogre_ns.mem_funs( return_type='::Ogre::Real *',allow_empty=True).exclude()
-    ogre_ns.mem_funs( return_type='float *',allow_empty=True).exclude()
-    ogre_ns.member_operators( return_type='::Ogre::Real const * const', allow_empty=True ).exclude()  ## YUCK Matrix4!
-    ogre_ns.member_operators( return_type='::Ogre::Real const *', allow_empty=True ).exclude()
-    ogre_ns.member_operators( return_type='::Ogre::Real *', allow_empty=True).exclude()
-    ogre_ns.member_operators( return_type='float *', allow_empty=True).exclude()
-    
-    ogre_ns.mem_funs( return_type='::Ogre::uchar *', allow_empty=True).exclude() #light::getdata xxx.opaque = True ??
-    ogre_ns.mem_funs( return_type='::Ogre::uchar const *', allow_empty=True).exclude() #light::getdata xxx.opaque = True ??
 
     # functions that take pointers to pointers 
     ogre_ns.class_( 'VertexElement').member_functions('baseVertexPointerToElement').exclude()
@@ -171,11 +142,9 @@ def filter_declarations( mb ):
     ogre_ns.class_( "Mesh" ).member_functions( 'suggestTangentVectorBuildParams' ).exclude()
     
     ## Expose functions that were not exposed but that other functions rely on    
-    ogre_ns.class_("OverlayManager").member_functions('addOverlayElementFactory').include()
+    ### ogre_ns.class_("OverlayManager").member_functions('addOverlayElementFactory').include()
     
     ## AJM Error at compile time - errors when compiling or linking
-    ogre_ns.class_( "MemoryDataStream" ).member_functions( 'getCurrentPtr' ).exclude()
-    ogre_ns.class_( "MemoryDataStream" ).member_functions( 'getPtr' ).exclude()
     ogre_ns.calldefs ('peekNextPtr').exclude ()
     ogre_ns.calldefs ('peekNextValuePtr').exclude ()    #in many of the Iterator classes
     ogre_ns.calldefs ('getChildIterator').exclude ()
@@ -248,7 +217,6 @@ def filter_declarations( mb ):
         # and while we are here we have problems with '=' on these classes
         try:
             cls.operator('=').exclude()
-            print "Operator '=' Excluded:", cls.name
         except:
             pass
             
@@ -265,7 +233,6 @@ def filter_declarations( mb ):
     ogre_ns.class_('UTFString').mem_fun('asUTF32_c_str').exclude()
     
     ## missing symbols at link time, including constructor and destructor!
-    global_ns.class_('::Ogre::UnifiedHighLevelGpuProgramFactory').exclude()
     global_ns.class_('::Ogre::InstancedGeometry::MaterialBucket').mem_fun('getGeometryBucketList').exclude()
     global_ns.class_('::Ogre::InstancedGeometry::MaterialBucket').mem_fun('getMaterialBucketMap').exclude()
     
@@ -273,11 +240,6 @@ def filter_declarations( mb ):
     global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram::CmdDelegate').mem_fun('doSet').exclude()
     global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram::CmdDelegate').exclude()
     
-         
-# # #     ogre_ns.class_('InstancedGeometry').class_('SubMeshLodGeometryLink').exclude()
-# # #     ogre_ns.class_('StaticGeometry').class_('SubMeshLodGeometryLink').exclude()
-# # #     global_ns.namespace('std').class_('vector<Ogre::InstancedGeometry::SubMeshLodGeometryLink, std::allocator<Ogre::InstancedGeometry::SubMeshLodGeometryLink> >').exclude()
-# # #     global_ns.namespace('std').class_('vector<Ogre::StaticGeometry::SubMeshLodGeometryLink, std::allocator<Ogre::StaticGeometry::SubMeshLodGeometryLink> >').exclude()
        
 def find_nonconst ( mb ):
     """ we have problems with sharedpointer arguments that are defined as references
@@ -338,10 +300,21 @@ def set_call_policies( mb ):
     mem_funs = mb.calldefs ()
     mem_funs.create_with_signature = True #Generated code will not compile on
     #MSVC 7.1 if function has throw modifier.
+    pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', 'unsigned char']
     for mem_fun in mem_funs:
+        if declarations.is_pointer (mem_fun.return_type):
+            for i in pointee_types:
+                if mem_fun.return_type.decl_string.startswith ( i ):
+                    print "Excluding", mem_fun
+                    mem_fun.exclude()
+                    ##mem_fun.add_transformation( ft.modify_return_type( ReturnUnsignedInt ) )
+
+##                    mem_fun.call_policies = call_policies.return_value_policy( '::boost::python::return_pointee_value' )
+                    break
         if mem_fun.call_policies:
             continue
-        if declarations.is_pointer (mem_fun.return_type) or declarations.is_reference (mem_fun.return_type):
+        if not mem_fun.call_policies and \
+                    (declarations.is_reference (mem_fun.return_type) or declarations.is_pointer (mem_fun.return_type) ):
             mem_fun.call_policies = call_policies.return_value_policy(
                 call_policies.reference_existing_object )
 
@@ -366,18 +339,32 @@ def configure_exception(mb):
     Exception.mem_fun('what').exclude() # declared with empty throw
     Exception.mem_fun('getNumber').exclude() # declared with empty throw
     Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getFullDescription().c_str()' )
+
+def ReturnUnsignedInt( type_ ):
+    return declarations.cpptypes.unsigned_int_t()
     
+def FixVoidPtrArgs ( mb ):
+    for fun in mb.member_functions():
+        arg_position = 0
+        for arg in fun.arguments:
+            if declarations.type_traits.is_void_pointer(arg.type):
+                fun.add_transformation( ft.modify_type(arg_position,ReturnUnsignedInt ) )
+                print "Fixed Void Ptr", fun, arg_position
+                break
+            arg_position +=1
+                    
 
 def add_transformations ( mb ):
     ns = mb.global_ns.namespace ('Ogre')
         
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
-   
+#     ns.mem_fun('::Ogre::Image::getData').add_transformation ( \
+#                     ft.modify_type(0,ReturnUnsignedInt ) )
+#    
     rt_cls = ns.class_('RenderTarget')
     rt_cls.mem_fun('getMetrics').add_transformation( *create_output(3) )
     rt_cls.mem_fun( 'getStatistics', arg_types=['float &']*4 ).add_transformation( *create_output(4) )
-    
     ns.mem_fun('::Ogre::RenderQueueListener::renderQueueEnded') \
         .add_transformation(ft.output('repeatThisInvocation'))
     ns.mem_fun('::Ogre::RenderQueueListener::renderQueueStarted') \
@@ -402,6 +389,16 @@ def query_containers_with_ptrs(decl):
        return False
     return declarations.is_pointer( decl.indexing_suite.element_type )
 
+def remove_static_consts ( mb ):
+    """ linux users have compile problems with vars that are static consts AND have values set in the .h files
+    we can simply leave these out """
+    checker = varchecker.var_checker()
+    for var in mb.vars():
+        if type(var.type) == declarations.cpptypes.const_t:
+            if checker( var ):
+                print "Excluding static const ", var
+                var.exclude()    
+    
 
 #
 # the 'main'function
@@ -456,16 +453,15 @@ def generate_code():
     #
     # We filter (both include and exclude) specific classes and functions that we want to wrap
     # 
-    print "Filtering"
     filter_declarations (mb)
-    
+    remove_static_consts ( mb.namespace( 'Ogre' ) )
     #
     # fix shared Ptr's that are defined as references but NOT const...
     #
-    print "Fixing non const's"
     find_nonconst ( mb.namespace( 'Ogre' ) )
       
-        
+    FixVoidPtrArgs  ( mb.namespace( 'Ogre' ) )
+          
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
 
@@ -474,9 +470,8 @@ def generate_code():
     #Py++ can not expose static pointer member variables
     ogre_ns.vars( 'ms_Singleton' ).disable_warnings( messages.W1035 )
     
-    print "Fixing Unnamed classes"
     common_utils.fix_unnamed_classes( ogre_ns.classes( name='' ), 'Ogre' )
-    print "Configuring shared pointers"
+    
     common_utils.configure_shared_ptr(mb)
     configure_exception( mb )
         
@@ -508,7 +503,6 @@ def generate_code():
     for cls in ogre_ns.classes():
 #     for cls in mb.global_ns.classes():
         if cls.name not in NoPropClasses:
-            print "Adding Prop to:", cls.name
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
         ## because we want backwards pyogre compatibility lets add leading lowercase properties
         common_utils.add_LeadingLowerProperties ( cls )
@@ -540,6 +534,7 @@ def generate_code():
         print "Updated py_shared_ptr.h as it was missing or out of date"
         shutil.copy( os.path.join( environment.shared_ptr_dir, 'py_shared_ptr.h' )
                      , environment.ogre.generated_dir )
+                     
     if not common_utils.samefile ( os.path.join( os.getcwd(), 'python_ogre_masterlist.h' ),
                             os.path.join( environment.ogre.generated_dir, 'python_ogre_masterlist.h' ) ) :            
         print "Updated python_ogre_masterlist.h as it was missing or out of date"
@@ -549,11 +544,24 @@ def generate_code():
     generators_path = os.path.join( os.path.abspath(os.path.dirname(__file__) )
                                     , 'generators.h' )
 
-    if not common_utils.samefile( os.path.join(environment.ogre.generated_dir, 'generators.h' )
-                                  , generators_path ):
+    if not common_utils.samefile( generators_path,
+                                    os.path.join(environment.ogre.generated_dir, 'generators.h' )
+                                   ):
         print "Updated generators.h as it was missing or out of date"                                      
         shutil.copy( generators_path, environment.ogre.generated_dir )
+        
+    return_pointee_value_source_path = os.path.join( environment.pyplusplus_install_dir
+                    , 'pyplusplus_dev'
+                    , 'pyplusplus'
+                    , 'code_repository'
+                    , 'return_pointee_value.hpp' )
 
+    return_pointee_value_target_path \
+        = os.path.join( environment.ogre.generated_dir, 'return_pointee_value.hpp' )
+
+    if not common_utils.samefile( return_pointee_value_source_path, return_pointee_value_target_path ):
+        print "Updated return_pointee_value.hpp as it was missing or out of date"                                      
+        shutil.copy( return_pointee_value_source_path, environment.ogre.generated_dir )
 
 
 if __name__ == '__main__':

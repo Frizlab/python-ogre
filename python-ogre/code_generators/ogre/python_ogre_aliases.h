@@ -28,7 +28,7 @@ typedef Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char
 typedef Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > >\
     MapIteratorString;
     
-
+typedef std::map<unsigned short, unsigned short> MapShortShort;
 typedef std::set<Ogre::SceneQuery::WorldFragmentType> SupportedWorldFragments;
 typedef std::vector<std::pair<Ogre::String, Ogre::String> > customParameters;
 typedef std::list<Ogre::Plane> StdListPlane;

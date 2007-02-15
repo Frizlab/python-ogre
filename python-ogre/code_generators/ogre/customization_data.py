@@ -4,26 +4,10 @@ def header_files( version ):
         return [ 'python_ogre_masterlist.h'
                 ,'py_shared_ptr.h'
                 , 'generators.h'
+##                , 'return_pointee_value.hpp'
         ]
 
-        return [ 'Ogre.h'
-                , 'OgreErrorDialog.h'
-                , 'OgreConfigDialog.h'
-                , 'OgreTagPoint.h'
-                , 'OgreOverlayElementFactory.h'
-                , 'OgreArchiveFactory.h'
-                , 'OgreParticleSystemRenderer.h'
-                , 'OgreParticleEmitterFactory.h'
-                , 'OgreParticleAffectorFactory.h'
-                , 'OgreSkeletonInstance.h'
-                , 'OgreSkeletonManager.h'
-                , 'OgreSkeleton.h'
-                , 'OgreCompositor.h'
-                , 'py_shared_ptr.h'
-                ,  'OgreBillboardParticleRenderer.h'
-                , 'OgrePlugin.h'
-                
-            ]
+      
     else: #1.2
         return [ 'Ogre.h'
                 , 'OgreErrorDialog.h'
