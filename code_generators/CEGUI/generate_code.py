@@ -132,6 +132,8 @@ def filter_declarations( mb ):
         if 'iterator' in cls.name.lower() :
             cls.exclude()
             print "Excluding Iterator", cls.name
+    CEGUI_ns.class_('OgreCEGUIResourceProvider').exclude() # it's _ogrePrivate..
+    
     global_ns.namespace( 'Ogre' ).class_('SceneManager').include(already_exposed=True)
             
     global_ns.namespace( 'Ogre' ).class_('RenderWindow').include(already_exposed=True)

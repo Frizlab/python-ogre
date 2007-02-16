@@ -335,6 +335,10 @@ def apply( mb ):
     mb.add_declaration_code( WRAPPER_DEFINITION_General )
     mb.add_registration_code( WRAPPER_REGISTRATION_General )
     
-#     vec_iterators = mb.classes( lambda cls: cls.name.startswith( 'VectorIterator<' ) )
-#     for cls in vec_iterators:
-#         iter_as_generator( cls )
+    vec_iterators = mb.classes( lambda cls: cls.name.startswith( 'VectorIterator<' ) )
+    for cls in vec_iterators:
+        iter_as_generator( cls )
+        
+    map_iterators = mb.classes( lambda cls: cls.name.startswith( 'MapIterator<' ) )
+    for cls in map_iterators:
+        iter_as_generator( cls )        
