@@ -29,13 +29,20 @@ import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
 
 
-def filter_declarations( mb ):
+############################################################
+##
+##  Here is where we manually exclude stuff from Ogre - 
+##
+############################################################
 
+def ManualExclude ( mb ):
     global_ns = mb.global_ns
-    global_ns.exclude()
-    
     ogre_ns = global_ns.namespace( 'Ogre' )
-    ogre_ns.include()
+    
+    ## Specifically remove functions that we have wrapped in hand_made_wrappers.py
+    ogre_ns.class_( "RenderTarget" ).member_functions( 'getCustomAttribute' ).exclude()
+    ogre_ns.class_( "Mesh" ).member_functions( 'suggestTangentVectorBuildParams' ).exclude()
+
     
     startswith = [
         'WIN32'
@@ -51,9 +58,8 @@ def filter_declarations( mb ):
         ### NOTE the PREFIX is used here !!!!
         classes = ogre_ns.classes( common_utils.decl_starts_with(prefix), allow_empty=True)
         classes.exclude()
-
-### AJM - OK, so I think we can remove all FACTORY classes etc - not really sure but thought we
-### do so and see if anyone complained
+    ### AJM - OK, so I think we can remove all FACTORY classes etc - not really sure but thought we
+    ### do so and see if anyone complained
     for cls in ogre_ns.classes ():
         if 'Factory' in cls.name:
             print "Factory Class Excluded", cls
@@ -68,8 +74,6 @@ def filter_declarations( mb ):
                 print "Factory Function Excluded", fun
                 fun.exclude()
                 break
-                    
-        
         
     #AJM Set of functions in Particle system that don't get wrapped properly.. Rechecked 30Nov06 AJM
     ## Other 'Cmd..' classes are defined as _OgrePrivate, whereas these are not in the head file
@@ -82,11 +86,7 @@ def filter_declarations( mb ):
     ## Functions defined in .h files but not implemented in source files
     ogre_ns.class_('Root').mem_fun('termHandler').exclude()
     ogre_ns.class_( "StaticGeometry" ).class_("Region").member_functions('getLights').exclude() 
-    
-    ## It's a structure that doesn't get included by default...
-    ogre_ns.class_("VertexBoneAssignment_s").include()
 
-   
     #exclude GpuLogicalIndexUseMap  NOTE:  Example use of Py++ to exclude a special variable........
     GpuLogicalBufferStruct = ogre_ns.class_( 'GpuLogicalBufferStruct' )
     GpuLogicalBufferStruct.variable( 'map' ).exclude()   
@@ -95,30 +95,14 @@ def filter_declarations( mb ):
     ogre_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').variable('data').exclude()    
     v= ogre_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').variable('fData')
     v.exclude() 
-     
-    
     # there are a set of consiterators that I'm not exposing as they need better understanding and testing
     # these functions rely on them so they are being excluded as well
     ogre_ns.class_('SceneNode').member_functions('getAttachedObjectIterator').exclude()
     ogre_ns.class_('Mesh').mem_fun('getBoneAssignmentIterator').exclude()
     ogre_ns.class_('SubMesh').mem_fun('getBoneAssignmentIterator').exclude()
-    
-    # A couple of Std's that need exposing
-    std_ns = global_ns.namespace("std")
-    std_ns.class_("pair<unsigned, unsigned>").include()
-    std_ns.class_("pair<bool, float>").include()
-
-
     # functions that take pointers to pointers 
     ogre_ns.class_( 'VertexElement').member_functions('baseVertexPointerToElement').exclude()
     mb.global_ns.mem_fun('::Ogre::InstancedGeometry::BatchInstance::getObjectsAsArray').exclude()
-
-    # return arrays
-    ##  const Vector3* ----
-    for f in ogre_ns.mem_funs( return_type='::Ogre::Vector3 const *', allow_empty=True):
-        if f.name.startswith("get") and "Corner" in f.name:
-            f.call_policies = call_policies.convert_array_to_tuple( 8, call_policies.memory_managers.none )
-   
     #all constructors in this class are private, also some of them are public.
     if sys.platform=='win32':
         Skeleton = ogre_ns.class_( 'Skeleton' ).constructors().exclude()
@@ -130,20 +114,6 @@ def filter_declarations( mb ):
     #AttribParserList is a map from string to function pointer, this class could not be exposed
     AttribParserList = ogre_ns.typedef( name="AttribParserList" )
     declarations.class_traits.get_declaration( AttribParserList ).exclude()
-    
-    #VertexCacheProfiler constructor uses enum that will be defined later.
-    #I will replace second default value to be int instead of enum
-    #arg_types=[None,None] - 2 arguments, with whatever type
-    VertexCacheProfiler = ogre_ns.constructor( 'VertexCacheProfiler', arg_types=[None,None] )
-    VertexCacheProfiler.arguments[1].default_value = "int(%s)" % VertexCacheProfiler.arguments[1].default_value
-    
-    ## now specifically remove functions that we have wrapped in hand_made_wrappers.py
-    ogre_ns.class_( "RenderTarget" ).member_functions( 'getCustomAttribute' ).exclude()
-    ogre_ns.class_( "Mesh" ).member_functions( 'suggestTangentVectorBuildParams' ).exclude()
-    
-    ## Expose functions that were not exposed but that other functions rely on    
-    ### ogre_ns.class_("OverlayManager").member_functions('addOverlayElementFactory').include()
-    
     ## AJM Error at compile time - errors when compiling or linking
     ogre_ns.calldefs ('peekNextPtr').exclude ()
     ogre_ns.calldefs ('peekNextValuePtr').exclude ()    #in many of the Iterator classes
@@ -160,65 +130,7 @@ def filter_declarations( mb ):
    ## changes due to expanded header file input
    
     ogre_ns.class_('OptimisedUtil').mem_fun('softwareVertexSkinning').exclude
-   
     ogre_ns.class_('ShadowVolumeExtrudeProgram').variable('programNames').exclude()    #funky sring[8] problem
-        
-##  Note - you need to do all the 'excludes' AFTER you've included all the classes you want..
-##  Otherwise things get screwed up...
-
-## Remove private classes , and those that are internal to Ogre...
-    private_decls = common_utils.private_decls_t(environment.ogre.include_dirs)
-    for cls in ogre_ns.classes():
-        if private_decls.is_private( cls ):
-            cls.exclude()
-            print '{*} class "%s" is marked as private' % cls.decl_string
-
-
-    for func in ogre_ns.calldefs():
-        if private_decls.is_private( func ):
-            if func.virtuality == declarations.VIRTUALITY_TYPES.PURE_VIRTUAL:
-                continue
-            func.exclude()
-            print '{*} function "%s" is marked as internal' % declarations.full_name( func )
-
-    ## Exclude protected and private that are not pure virtual
-    query = ~declarations.access_type_matcher_t( 'public' ) \
-            & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
-    non_public_non_pure_virtual = ogre_ns.calldefs( query )
-    non_public_non_pure_virtual.exclude()
-
-    #Virtual functions that return reference could not be overriden from Python
-    query = declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.VIRTUAL ) \
-            & declarations.custom_matcher_t( lambda decl: declarations.is_reference( decl.return_type ) )
-    ogre_ns.calldefs( query ).virtuality = declarations.VIRTUALITY_TYPES.NOT_VIRTUAL
-
-    #RenderOperation class is marked as private, but I think this is a mistake
-    ogre_ns.class_('RenderOperation').include()
-    
-    if sys.platform == 'win32':
-        # need to force these
-        hwnd = global_ns.class_("HWND__")
-        hwnd.opaque = True
-        _iobuf = global_ns.class_("_iobuf")# need the file handle in Ogre::FileHandleDataStream::FileHandleDataStream
-        _iobuf.opaque = True
-
-    #Exclude non default constructors of iterator classes. 
-    for cls in ogre_ns.classes():
-        if not declarations.templates.is_instantiation( cls.name ):
-           continue
-        name = declarations.templates.name( cls.name )
-        if not name.endswith( 'Iterator' ):
-           continue
-        #default constructor does not have arguments
-        constructors = cls.constructors( lambda decl: bool( decl.arguments )
-                                                      , allow_empty=True
-                                                      , recursive=False )
-        constructors.exclude()
-        # and while we are here we have problems with '=' on these classes
-        try:
-            cls.operator('=').exclude()
-        except:
-            pass
             
     ## now for problem areas in the new unicode string handling - just excluding without 'thought' :)
     ## the variables are not present in the source (to check)
@@ -240,15 +152,206 @@ def filter_declarations( mb ):
     global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram::CmdDelegate').mem_fun('doSet').exclude()
     global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram::CmdDelegate').exclude()
     
-       
-def find_nonconst ( mb ):
+    
+############################################################
+##
+##  And there are things that manually need to be INCLUDED 
+##
+############################################################
+    
+def ManualInclude ( mb ):
+    global_ns = mb.global_ns
+    ogre_ns = global_ns.namespace( 'Ogre' )
+
+    ## It's a structure that doesn't get included by default...
+    ogre_ns.class_("VertexBoneAssignment_s").include()
+    # A couple of Std's that need exposing
+    std_ns = global_ns.namespace("std")
+    std_ns.class_("pair<unsigned, unsigned>").include()
+    std_ns.class_("pair<bool, float>").include()
+    #RenderOperation class is marked as private, but I think this is a mistake
+    ogre_ns.class_('RenderOperation').include()
+    
+############################################################
+##
+##  And things that need manual fixes, but not necessarly hand wrapped
+##
+############################################################
+def ManualFixes ( mb ):    
+
+    global_ns = mb.global_ns
+    ogre_ns = global_ns.namespace( 'Ogre' )
+
+    # return arrays
+    ##  const Vector3* ----
+    for f in ogre_ns.mem_funs( return_type='::Ogre::Vector3 const *', allow_empty=True):
+        if f.name.startswith("get") and "Corner" in f.name:
+            f.call_policies = call_policies.convert_array_to_tuple( 8, call_policies.memory_managers.none )
+   
+    
+    #VertexCacheProfiler constructor uses enum that will be defined later.
+    #I will replace second default value to be int instead of enum
+    #arg_types=[None,None] - 2 arguments, with whatever type
+    VertexCacheProfiler = ogre_ns.constructor( 'VertexCacheProfiler', arg_types=[None,None] )
+    VertexCacheProfiler.arguments[1].default_value = "int(%s)" % VertexCacheProfiler.arguments[1].default_value
+      
+    if sys.platform == 'win32':
+        # need to force these
+        hwnd = global_ns.class_("HWND__")
+        hwnd.opaque = True
+        _iobuf = global_ns.class_("_iobuf")# need the file handle in Ogre::FileHandleDataStream::FileHandleDataStream
+        _iobuf.opaque = True
+        
+    ## we apply smart ptr to sharedptr classes automatically, however these are harder to identify    
+    cls = mb.class_( "IndexData" )
+    v = cls.variable( "indexBuffer" )
+    v.apply_smart_ptr_wa = True
+    cls = mb.class_( "SubMesh" )
+    v = cls.variable( "vertexData" )
+    v.apply_smart_ptr_wa = True
+    v = cls.variable( "indexData" )
+    v.apply_smart_ptr_wa = True   
+    
+    # make UFTstrings behave as real Python strings..
+    UTFString = mb.class_( 'UTFString' )
+    UTFString.mem_fun( 'asUTF8' ).alias = '__str__'
+    UTFString.mem_fun( 'asWStr' ).alias = '__unicode__'
+
+             
+############################################################
+##
+##  And things that need to have their argument and call values fixed.
+##  ie functions that pass pointers in the argument list and of course we need
+##  to read the updated values - so instead we pass them back 
+##  as new values in a tuple (ETC ETC)
+##
+############################################################
+        
+def ManualTransformations ( mb ):
+    ns = mb.global_ns.namespace ('Ogre')
+        
+    def create_output( size ):
+        return [ ft.output( i ) for i in range( size ) ]
+
+    rt_cls = ns.class_('RenderTarget')
+    rt_cls.mem_fun('getMetrics').add_transformation( *create_output(3) )
+    rt_cls.mem_fun( 'getStatistics', arg_types=['float &']*4 ).add_transformation( *create_output(4) )
+    ns.mem_fun('::Ogre::RenderQueueListener::renderQueueEnded') \
+        .add_transformation(ft.output('repeatThisInvocation'))
+    ns.mem_fun('::Ogre::RenderQueueListener::renderQueueStarted') \
+        .add_transformation(ft.output('skipThisInvocation'))
+    ns.mem_fun('::Ogre::RenderWindow::getMetrics').add_transformation( *create_output(5) )
+    ns.mem_fun('::Ogre::Viewport::getActualDimensions').add_transformation( *create_output(4) )
+    ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueStarted') \
+        .add_transformation(ft.output("skipThisQueue"))
+    ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueEnded') \
+        .add_transformation(ft.output("repeatThisQueue"))
+    ns.mem_fun('::Ogre::PanelOverlayElement::getUV') \
+        .add_transformation(ft.output('u1'), ft.output('v1'), ft.output('u2'), ft.output('v2') )
+    ns.mem_fun('::Ogre::ExternalTextureSource::getTextureTecPassStateLevel').add_transformation( *create_output(3) )        
+    
+    
+###############################################################################
+##
+##  Now for the AUTOMATIC stuff that should just work with all versions of Ogre
+##
+###############################################################################
+    
+    
+def AutoExclude( mb ):
+    """ Automaticaly exclude a range of things that don't convert well from C++ to Python
+    """
+    global_ns = mb.global_ns
+    ogre_ns = global_ns.namespace( 'Ogre' )
+    
+    # vars that are static consts but have their values set in the header file are bad
+    Remove_Static_Consts ( ogre_ns )
+    
+    ## Remove private classes , and those that are internal to Ogre...
+    private_decls = common_utils.private_decls_t(environment.ogre.include_dirs)
+    for cls in ogre_ns.classes():
+        if private_decls.is_private( cls ):
+            cls.exclude()
+            print '{*} class "%s" is marked as private' % cls.decl_string
+
+    for func in ogre_ns.calldefs():
+        if private_decls.is_private( func ):
+            if func.virtuality == declarations.VIRTUALITY_TYPES.PURE_VIRTUAL:
+                continue
+            func.exclude()
+            print '{*} function "%s" is marked as internal' % declarations.full_name( func )
+
+    ## Exclude protected and private that are not pure virtual
+    query = ~declarations.access_type_matcher_t( 'public' ) \
+            & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
+    non_public_non_pure_virtual = ogre_ns.calldefs( query )
+    non_public_non_pure_virtual.exclude()
+
+    #Virtual functions that return reference could not be overriden from Python
+    query = declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.VIRTUAL ) \
+            & declarations.custom_matcher_t( lambda decl: declarations.is_reference( decl.return_type ) )
+    ogre_ns.calldefs( query ).virtuality = declarations.VIRTUALITY_TYPES.NOT_VIRTUAL
+    
+    #Exclude non default constructors of iterator classes. 
+    for cls in ogre_ns.classes():
+        if not declarations.templates.is_instantiation( cls.name ):
+           continue
+        name = declarations.templates.name( cls.name )
+        if not name.endswith( 'Iterator' ):
+           continue
+        #default constructor does not have arguments
+        constructors = cls.constructors( lambda decl: bool( decl.arguments )
+                                                      , allow_empty=True
+                                                      , recursive=False )
+        constructors.exclude()
+        # and while we are here we have problems with '=' on these classes
+        try:
+            cls.operator('=').exclude()
+        except:
+            pass
+
+            
+def AutoInclude( mb ):
+    pass
+
+    
+def AutoFixes ( mb ): 
+    """ now we fix a range of things automatically - typically by going through 
+    the entire name space trying to guess stuff and fix it:)
+    """       
+    global_ns = mb.global_ns
+    ogre_ns = global_ns.namespace( 'Ogre' )
+    
+    # arguments passed as refs but not const are not liked by boost
+    Fix_Ref_Not_Const ( ogre_ns )
+    
+    # Functions that have void pointers in their argument list need to change to unsigned int's  
+    Fix_Void_Ptr_Args  ( ogre_ns )
+    
+    # Allow conversion between Vectors/Colourvalue etc and Python lists      
+    Add_Auto_Conversions( mb )
+    
+    # now we fix up the smart pointers ...
+    Set_Smart_Pointers ( ogre_ns )  
+    
+    # and change functions that return a variety of pointers to instead return unsigned int's
+    Fix_Pointer_Returns ( ogre_ns )   
+
+    
+ 
+###############################################################################
+##
+## here are the helper functions that do much of the work
+##
+###############################################################################     
+     
+def Fix_Ref_Not_Const ( mb ):
     """ we have problems with sharedpointer arguments that are defined as references
     but are NOT const.  Boost doesn't understand how to match them and you get a C++ Signature match fails.
     In reality the Ogre code probably needs to be patched as all of these should (??) be const.  However we'll fix it 
     with a function transformation wrapper
     """
-    funcs = mb.member_functions( )
-    for fun in funcs:
+    for fun in mb.member_functions( ):
         arg_position = 0
         for arg in fun.arguments:
             if 'Ptr' in arg.type.decl_string:
@@ -257,7 +360,7 @@ def find_nonconst ( mb ):
                     fun.add_transformation( ft.modify_type(arg_position,declarations.remove_reference ) )
             arg_position +=1
                     
-def add_auto_conversions( mb ):
+def Add_Auto_Conversions( mb ):
     """
     Allows to pass Python tuple as argument to function, instead of
        * ColourValue
@@ -289,28 +392,17 @@ def add_auto_conversions( mb ):
         print "Updated custom_rvalue.cpp as it was missing or out of date"                                      
         shutil.copy( custom_rvalue_path, environment.ogre.generated_dir )
   
-    UTFString = mb.class_( 'UTFString' )
-    UTFString.mem_fun( 'asUTF8' ).alias = '__str__'
-    UTFString.mem_fun( 'asWStr' ).alias = '__unicode__'
-  
-def set_call_policies( mb ):
-#
-    # Set the default policy to deal with pointer/reference return types to reference_existing object
-    # as this is the Ogre Default.
+    
+    
+      
+def Set_Call_Policies( mb ):
+    """ set the return call policies on classes that this hasn't already been done for.
+    Set the default policy to deal with pointer/reference return types to reference_existing object
+    """
     mem_funs = mb.calldefs ()
     mem_funs.create_with_signature = True #Generated code will not compile on
     #MSVC 7.1 if function has throw modifier.
-    pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', 'unsigned char']
     for mem_fun in mem_funs:
-        if declarations.is_pointer (mem_fun.return_type):
-            for i in pointee_types:
-                if mem_fun.return_type.decl_string.startswith ( i ):
-                    print "Excluding", mem_fun
-                    mem_fun.exclude()
-                    ##mem_fun.add_transformation( ft.modify_return_type( ReturnUnsignedInt ) )
-
-##                    mem_fun.call_policies = call_policies.return_value_policy( '::boost::python::return_pointee_value' )
-                    break
         if mem_fun.call_policies:
             continue
         if not mem_fun.call_policies and \
@@ -319,7 +411,9 @@ def set_call_policies( mb ):
                 call_policies.reference_existing_object )
 
                 
-def set_smart_pointers( mb ):
+def Set_Smart_Pointers( mb ):
+    """ we need to identify 'smart pointer' which are any of the SharedPtr classes
+    """
     for v in mb.variables():
        if not declarations.is_class( v.type ):
            continue
@@ -331,56 +425,50 @@ def set_smart_pointers( mb ):
            v.apply_smart_ptr_wa = True    
            print "Applying Smart Pointer: ",  v.name, " of class: ",  cls.name
                 
-def configure_exception(mb):
-    #We don't exclude  Exception, because it contains functionality, that could
-    #be useful to user. But, we will provide automatic exception translator
+def Set_Exception(mb):
+    """We don't exclude  Exception, because it contains functionality, that could
+    be useful to user. But, we will provide automatic exception translator
+    """
     Exception = mb.namespace( 'Ogre' ).class_( 'Exception' )
     Exception.include()
     Exception.mem_fun('what').exclude() # declared with empty throw
     Exception.mem_fun('getNumber').exclude() # declared with empty throw
     Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getFullDescription().c_str()' )
 
-def ReturnUnsignedInt( type_ ):
+def _ReturnUnsignedInt( type_ ):
+    """helper to return an UnsignedInt call for tranformation functions
+    """
     return declarations.cpptypes.unsigned_int_t()
     
-def FixVoidPtrArgs ( mb ):
+def Fix_Void_Ptr_Args ( mb ):
+    """ we modify functions that take void *'s in their argument list to instead take
+    unsigned ints, which allows us to use CTypes buffers
+    """
     for fun in mb.member_functions():
         arg_position = 0
         for arg in fun.arguments:
             if declarations.type_traits.is_void_pointer(arg.type):
-                fun.add_transformation( ft.modify_type(arg_position,ReturnUnsignedInt ) )
+                fun.add_transformation( ft.modify_type(arg_position,_ReturnUnsignedInt ) )
                 print "Fixed Void Ptr", fun, arg_position
                 break
             arg_position +=1
                     
+def Fix_Pointer_Returns ( mb ):
+    """ Change out functions that return a variety of pointer to base types and instead
+    have them return the address the pointer is pointing to (the pointer value)
+    This allow us to use CTypes to handle in memory buffers from Python
+    """
+    pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', 'unsigned char']
+    for fun in mb.member_functions():
+        if declarations.is_pointer (fun.return_type):
+            for i in pointee_types:
+                if fun.return_type.decl_string.startswith ( i ):
+                    print "Excluding", fun
+                    fun.exclude()
+#                     print "Fixing to return unsigned int", fun
+#                     fun.add_transformation( ft.modify_return_type( _ReturnUnsignedInt ) )
 
-def add_transformations ( mb ):
-    ns = mb.global_ns.namespace ('Ogre')
-        
-    def create_output( size ):
-        return [ ft.output( i ) for i in range( size ) ]
-#     ns.mem_fun('::Ogre::Image::getData').add_transformation ( \
-#                     ft.modify_type(0,ReturnUnsignedInt ) )
-#    
-    rt_cls = ns.class_('RenderTarget')
-    rt_cls.mem_fun('getMetrics').add_transformation( *create_output(3) )
-    rt_cls.mem_fun( 'getStatistics', arg_types=['float &']*4 ).add_transformation( *create_output(4) )
-    ns.mem_fun('::Ogre::RenderQueueListener::renderQueueEnded') \
-        .add_transformation(ft.output('repeatThisInvocation'))
-    ns.mem_fun('::Ogre::RenderQueueListener::renderQueueStarted') \
-        .add_transformation(ft.output('skipThisInvocation'))
-    ns.mem_fun('::Ogre::RenderWindow::getMetrics').add_transformation( *create_output(5) )
-    ns.mem_fun('::Ogre::Viewport::getActualDimensions').add_transformation( *create_output(4) )
-    ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueStarted') \
-        .add_transformation(ft.output("skipThisQueue"))
-    ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueEnded') \
-        .add_transformation(ft.output("repeatThisQueue"))
-    ns.mem_fun('::Ogre::PanelOverlayElement::getUV') \
-        .add_transformation(ft.output('u1'), ft.output('v1'), ft.output('u2'), ft.output('v2') )
-    ### ns.class_('Matrix3').mem_fun('Matrix3').add_transformation(ft.inputarray(9))........        
-#     ns.mem_fun('::Ogre::Font::getGlyphTexCoords') \
-#         .add_transformation(ft.output(1), ft.output(2),ft.output(3), ft.output(4))
-    ns.mem_fun('::Ogre::ExternalTextureSource::getTextureTecPassStateLevel').add_transformation( *create_output(3) )
+
 
 def query_containers_with_ptrs(decl):
     if not isinstance( decl, declarations.class_types ):
@@ -389,7 +477,8 @@ def query_containers_with_ptrs(decl):
        return False
     return declarations.is_pointer( decl.indexing_suite.element_type )
 
-def remove_static_consts ( mb ):
+    
+def Remove_Static_Consts ( mb ):
     """ linux users have compile problems with vars that are static consts AND have values set in the .h files
     we can simply leave these out """
     checker = varchecker.var_checker()
@@ -450,58 +539,55 @@ def generate_code():
                                           , define_symbols=defined_symbols
                                           , indexing_suite_version=2
                                            )
+    mb.BOOST_PYTHON_MAX_ARITY = 25
+    mb.classes().always_expose_using_scope = True
+    
     #
     # We filter (both include and exclude) specific classes and functions that we want to wrap
     # 
-    filter_declarations (mb)
-    remove_static_consts ( mb.namespace( 'Ogre' ) )
-    #
-    # fix shared Ptr's that are defined as references but NOT const...
-    #
-    find_nonconst ( mb.namespace( 'Ogre' ) )
-      
-    FixVoidPtrArgs  ( mb.namespace( 'Ogre' ) )
-          
-    mb.BOOST_PYTHON_MAX_ARITY = 25
-    mb.classes().always_expose_using_scope = True
-
-    ogre_ns = mb.namespace( 'Ogre' )
+    global_ns = mb.global_ns
+    global_ns.exclude()
+    ogre_ns = global_ns.namespace( 'Ogre' )
+    ogre_ns.include()
     
+    AutoExclude ( mb )
+    ManualExclude ( mb )
+    AutoInclude ( mb )
+    ManualInclude ( mb )
+    
+    AutoFixes ( mb )
+    ManualFixes ( mb )
+    
+    # here we fixup functions that expect to modifiy their 'passed' variables    
+    ManualTransformations ( mb )
+    
+    
+    
+
     #Py++ can not expose static pointer member variables
     ogre_ns.vars( 'ms_Singleton' ).disable_warnings( messages.W1035 )
     
+    # Ogre is "special" in that some classes are unnnamed and need fixing
     common_utils.fix_unnamed_classes( ogre_ns.classes( name='' ), 'Ogre' )
     
     common_utils.configure_shared_ptr(mb)
-    configure_exception( mb )
+    
+    Set_Exception( mb )
         
     #
     # We need to tell boost how to handle calling (and returning from) certain functions
     #
-    set_call_policies ( mb.global_ns.namespace ('Ogre') )
+    Set_Call_Policies ( mb.global_ns.namespace ('Ogre') )
     
-    # now we fix up the smart pointers ...
-    set_smart_pointers ( mb.global_ns.namespace ('Ogre') )  
-    
-    # here we fixup functions that expect to modifiy their 'passed' variables    
-    add_transformations ( mb )
     
     #
     # the manual stuff all done here !!!
     #
     hand_made_wrappers.apply( mb )
     
-    cls = mb.class_( "IndexData" )
-    v = cls.variable( "indexBuffer" )
-    v.apply_smart_ptr_wa = True
-    cls = mb.class_( "SubMesh" )
-    v = cls.variable( "vertexData" )
-    v.apply_smart_ptr_wa = True
-    v = cls.variable( "indexData" )
-    v.apply_smart_ptr_wa = True
+   
     NoPropClasses = ["UTFString"]
     for cls in ogre_ns.classes():
-#     for cls in mb.global_ns.classes():
         if cls.name not in NoPropClasses:
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
         ## because we want backwards pyogre compatibility lets add leading lowercase properties
@@ -510,7 +596,6 @@ def generate_code():
     common_utils.add_constants( mb, { 'ogre_version' :  '"%s"' % environment.ogre.version.replace("\n", "\\\n") 
                                       , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
 
-    add_auto_conversions( mb )
 
     ##########################################################################################
     #
