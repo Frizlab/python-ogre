@@ -27,7 +27,7 @@ struct generator_maker{
         typedef generator_maker< VectorIterator > maker_type;
         
         py_cls.def( "__iter__", &maker_type::iter, boost::python::return_self<>() );
-        py_cls.def( "__next__", &maker_type::next, TNextCallPolicies() );
+        py_cls.def( "next", &maker_type::next, TNextCallPolicies() );
     }
     
 };

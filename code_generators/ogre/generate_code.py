@@ -103,11 +103,13 @@ def ManualExclude ( mb ):
     ogre_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').variable('data').exclude()    
     v= ogre_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').variable('fData')
     v.exclude() 
-    # there are a set of consiterators that I'm not exposing as they need better understanding and testing
+    # there are a set of const iterators that I'm not exposing as they need better understanding and testing
     # these functions rely on them so they are being excluded as well
     ogre_ns.class_('SceneNode').member_functions('getAttachedObjectIterator').exclude()
     ogre_ns.class_('Mesh').mem_fun('getBoneAssignmentIterator').exclude()
     ogre_ns.class_('SubMesh').mem_fun('getBoneAssignmentIterator').exclude()
+    
+    
     # functions that take pointers to pointers 
     ogre_ns.class_( 'VertexElement').member_functions('baseVertexPointerToElement').exclude()
     mb.global_ns.mem_fun('::Ogre::InstancedGeometry::BatchInstance::getObjectsAsArray').exclude()
@@ -570,7 +572,7 @@ def generate_code():
     global_ns.exclude()
     ogre_ns = global_ns.namespace( 'Ogre' )
     ogre_ns.include()
-    
+
     AutoExclude ( mb )
     ManualExclude ( mb )
     AutoInclude ( mb )
@@ -635,41 +637,23 @@ def generate_code():
 
     mb.split_module(environment.ogre.generated_dir, huge_classes)
 
-    if not common_utils.samefile( os.path.join( environment.shared_ptr_dir, 'py_shared_ptr.h'),
-                             os.path.join(environment.ogre.generated_dir, 'py_shared_ptr.h' ) ):
-        print "Updated py_shared_ptr.h as it was missing or out of date"
-        shutil.copy( os.path.join( environment.shared_ptr_dir, 'py_shared_ptr.h' )
-                     , environment.ogre.generated_dir )
-                     
-    if not common_utils.samefile ( os.path.join( os.getcwd(), 'python_ogre_masterlist.h' ),
-                            os.path.join( environment.ogre.generated_dir, 'python_ogre_masterlist.h' ) ) :            
-        print "Updated python_ogre_masterlist.h as it was missing or out of date"
-        shutil.copy( os.path.join( os.getcwd(), 'python_ogre_masterlist.h' )
-                     , environment.ogre.generated_dir )
+    ## now we need to ensure a series of headers and additional source files are
+    ## copied to the generaated directory..
+    additional_files=[
+            os.path.join( environment.shared_ptr_dir, 'py_shared_ptr.h'),
+            os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'python_ogre_masterlist.h' ),
+            os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'generators.h' ),
+            os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'custom_rvalue.cpp' ),
+            os.path.join( environment.include_dir, 'tuples.hpp' )
+            ]            
+    for sourcefile in additional_files:
+        p,filename = os.path.split(sourcefile)
+        destfile = os.path.join(environment.ogre.generated_dir, filename ) 
     
-    generators_path = os.path.join( os.path.abspath(os.path.dirname(__file__) )
-                                    , 'generators.h' )
-
-    if not common_utils.samefile( generators_path,
-                                    os.path.join(environment.ogre.generated_dir, 'generators.h' )
-                                   ):
-        print "Updated generators.h as it was missing or out of date"                                      
-        shutil.copy( generators_path, environment.ogre.generated_dir )
+        if not common_utils.samefile( sourcefile ,destfile ):
+            shutil.copy( sourcefile, environment.ogre.generated_dir )
+            print "Updated ", filename, "as it was missing or out of date"
         
-    return_pointee_value_source_path = os.path.join( environment.pyplusplus_install_dir
-                    , 'pyplusplus_dev'
-                    , 'pyplusplus'
-                    , 'code_repository'
-                    , 'return_pointee_value.hpp' )
-
-    return_pointee_value_target_path \
-        = os.path.join( environment.ogre.generated_dir, 'return_pointee_value.hpp' )
-
-    if not common_utils.samefile( return_pointee_value_source_path, return_pointee_value_target_path ):
-        print "Updated return_pointee_value.hpp as it was missing or out of date"                                      
-        shutil.copy( return_pointee_value_source_path, environment.ogre.generated_dir )
-
-
 if __name__ == '__main__':
     start_time = time.clock()
     generate_code()
