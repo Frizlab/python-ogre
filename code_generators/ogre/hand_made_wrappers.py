@@ -316,18 +316,29 @@ WRAPPER_REGISTRATION_SubMesh = \
 # # """
 
 
-def iter_as_generator( cls ):
+def iter_as_generator_vector( cls ):
     print "ITER:", cls
     
     code = os.linesep.join([ 
             'typedef %(cls)s iter_type;'
-            , 'generators::generator_maker< iter_type >::register_< %(call_policies)s >( %(exposer_name)s );'])
+            , 'generators::generator_maker_vector< iter_type >::register_< %(call_policies)s >( %(exposer_name)s );'])
     cls.add_registration_code( 
             code % { 'cls' : cls.decl_string
                      , 'call_policies' : cls.mem_fun( 'getNext' ).call_policies.create_type()
                      , 'exposer_name' : cls.class_var_name }
             , works_on_instance=False )
             
+def iter_as_generator_map( cls ):
+    print "ITER:", cls
+    
+    code = os.linesep.join([ 
+            'typedef %(cls)s iter_type;'
+            , 'generators::generator_maker_map< iter_type >::register_< %(call_policies)s >( %(exposer_name)s );'])
+    cls.add_registration_code( 
+            code % { 'cls' : cls.decl_string
+                     , 'call_policies' : cls.mem_fun( 'getNext' ).call_policies.create_type()
+                     , 'exposer_name' : cls.class_var_name }
+            , works_on_instance=False )
 
 #################################################################################################
 #################################################################################################
@@ -369,8 +380,12 @@ def apply( mb ):
     
     vec_iterators = mb.classes( lambda cls: cls.name.startswith( 'VectorIterator<' ) )
     for cls in vec_iterators:
-        iter_as_generator( cls )
+        iter_as_generator_vector( cls )
         
+    map_iterators = mb.classes( lambda cls: cls.name.startswith( 'MapIterator<' ) )
+    for cls in map_iterators:
+        iter_as_generator_map( cls )   
+             
     if environment.ogre.version == "1.2":
         rt = mb.class_( 'EventProcessor' )
         rt.add_declaration_code( WRAPPER_DEFINITION_EventProcessor )
@@ -378,6 +393,3 @@ def apply( mb ):
         ## now add support for the combined listener
         rt = mb.class_( 'CombinedListener' )
         rt.add_declaration_code( WRAPPER_DEFINITION_CombinedListener )        
-#     map_iterators = mb.classes( lambda cls: cls.name.startswith( 'MapIterator<' ) )
-#     for cls in map_iterators:
-#         iter_as_generator( cls )        
