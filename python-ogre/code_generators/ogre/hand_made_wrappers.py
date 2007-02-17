@@ -147,29 +147,29 @@ public:
 """
 
 
-WRAPPER_DEFINITION_ConfigFile = \
-"""
-// We don't currently support multimaps very well so to extract the resources from a config file
-// we call this with the multimap and it extracts it into a list of tuples for us
-boost::python::list
-ConfigFile_getMultiMapSettings ( Ogre::ConfigFile& cf, Ogre::ConfigFile::SettingsMultiMap * settings ){
-    Ogre::ConfigFile::SettingsMultiMap::iterator i;
-    Ogre::String typeName, archName;
-    boost::python::list retlist = boost::python::list();
-    for (i = settings->begin(); i != settings->end(); ++i)
-    {
-        typeName = i->first;
-        archName = i->second;
-        retlist.append(boost::python::make_tuple(typeName, archName));
-    }
-    return ( retlist );
-}
-"""
-WRAPPER_REGISTRATION_ConfigFile = \
-"""
-    def( "getMultiMapSettings", &::ConfigFile_getMultiMapSettings,
-    "Python-Ogre Helper Function: Return Configfile settings as a list" )
-"""
+# # WRAPPER_DEFINITION_ConfigFile = \
+# # """
+# # // We don't currently support multimaps very well so to extract the resources from a config file
+# # // we call this with the multimap and it extracts it into a list of tuples for us
+# # boost::python::list
+# # ConfigFile_getMultiMapSettings ( Ogre::ConfigFile& cf, Ogre::ConfigFile::SettingsMultiMap * settings ){
+# #     Ogre::ConfigFile::SettingsMultiMap::iterator i;
+# #     Ogre::String typeName, archName;
+# #     boost::python::list retlist = boost::python::list();
+# #     for (i = settings->begin(); i != settings->end(); ++i)
+# #     {
+# #         typeName = i->first;
+# #         archName = i->second;
+# #         retlist.append(boost::python::make_tuple(typeName, archName));
+# #     }
+# #     return ( retlist );
+# # }
+# # """
+# # WRAPPER_REGISTRATION_ConfigFile = \
+# # """
+# #     def( "getMultiMapSettings", &::ConfigFile_getMultiMapSettings,
+# #     "Python-Ogre Helper Function: Return Configfile settings as a list" )
+# # """
 
 #####################################################################
 
@@ -244,7 +244,7 @@ WRAPPER_REGISTRATION_HardwareBufferManager = \
 # # # # WRAPPER_REGISTRATION_SectionIterator = \
 # # # # """
 # # # #        SectionIterator_exposer.def( "__iter__", &::SectionIterator_iter );
-# # # #        SectionIterator_exposer.def( "next", &::SectionIterator_next );
+# # # #        SectionIterator_exposer.def( "__next__", &::SectionIterator_next );
 # # # # """
 
 #########################################
@@ -333,28 +333,21 @@ def iter_as_generator( cls ):
 #################################################################################################
 
 def apply( mb ):
-    rt = mb.class_( 'ConfigFile' )
-    rt.add_declaration_code( WRAPPER_DEFINITION_ConfigFile )
-    rt.add_registration_code( WRAPPER_REGISTRATION_ConfigFile )
     rt = mb.class_( 'RenderTarget' )
     rt.add_declaration_code( WRAPPER_DEFINITION_RenderTarget )
     rt.add_registration_code( WRAPPER_REGISTRATION_RenderTarget )
+    
     rt = mb.class_( 'Frustum' )
     rt.add_declaration_code( WRAPPER_DEFINITION_Frustum )
     rt.add_registration_code( WRAPPER_REGISTRATION_Frustum )
-    if environment.ogre.version == "1.2":
-        rt = mb.class_( 'EventProcessor' )
-        rt.add_declaration_code( WRAPPER_DEFINITION_EventProcessor )
-        rt.add_registration_code( WRAPPER_REGISTRATION_EventProcessor )
-        ## now add support for the combined listener
-        rt = mb.class_( 'CombinedListener' )
-        rt.add_declaration_code( WRAPPER_DEFINITION_CombinedListener )
-#     rt = mb.class_( 'Mesh' )
-#     rt.add_declaration_code( WRAPPER_DEFINITION_Mesh )
-#     rt.add_registration_code( WRAPPER_REGISTRATION_Mesh )
+    
     rt = mb.class_( 'SubMesh' )
     rt.add_declaration_code( WRAPPER_DEFINITION_SubMesh )
     rt.add_registration_code( WRAPPER_REGISTRATION_SubMesh )
+
+#     rt = mb.class_( 'Mesh' )
+#     rt.add_declaration_code( WRAPPER_DEFINITION_Mesh )
+#     rt.add_registration_code( WRAPPER_REGISTRATION_Mesh )
     
 #     rt = mb.class_( 'BillboardParticleRenderer' )
 #     rt.add_declaration_code( WRAPPER_DEFINITION_BillboardParticleRenderer )
@@ -367,6 +360,9 @@ def apply( mb ):
 #     rt = mb.class_( 'MapIterator' )
 #     rt.add_declaration_code( WRAPPER_DEFINITION_SectionIterator )
 #     rt.add_registration_code( WRAPPER_REGISTRATION_SectionIterator )
+#     rt = mb.class_( 'ConfigFile' )
+#     rt.add_declaration_code( WRAPPER_DEFINITION_ConfigFile )
+#     rt.add_registration_code( WRAPPER_REGISTRATION_ConfigFile )
 
     mb.add_declaration_code( WRAPPER_DEFINITION_General )
     mb.add_registration_code( WRAPPER_REGISTRATION_General )
@@ -375,6 +371,13 @@ def apply( mb ):
     for cls in vec_iterators:
         iter_as_generator( cls )
         
+    if environment.ogre.version == "1.2":
+        rt = mb.class_( 'EventProcessor' )
+        rt.add_declaration_code( WRAPPER_DEFINITION_EventProcessor )
+        rt.add_registration_code( WRAPPER_REGISTRATION_EventProcessor )
+        ## now add support for the combined listener
+        rt = mb.class_( 'CombinedListener' )
+        rt.add_declaration_code( WRAPPER_DEFINITION_CombinedListener )        
 #     map_iterators = mb.classes( lambda cls: cls.name.startswith( 'MapIterator<' ) )
 #     for cls in map_iterators:
 #         iter_as_generator( cls )        
