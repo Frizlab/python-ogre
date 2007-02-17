@@ -1,5 +1,13 @@
 #!/usr/bin/env python
+"""  To Do list:
 
+Continue to ignore ptr() functions in Vectors2/3/4 and Matrix 2/3/4 - these simple return a pointer to the start of the 
+underlying data memebers and can be accessed in python with matrix3.x, matrix3.y etc
+
+FT [] operators for Matrix3/4 to return 3/4 array
+
+
+"""
 
 import os, sys, time, shutil
 
@@ -41,7 +49,7 @@ def ManualExclude ( mb ):
     
     ## Specifically remove functions that we have wrapped in hand_made_wrappers.py
     ogre_ns.class_( "RenderTarget" ).member_functions( 'getCustomAttribute' ).exclude()
-    ogre_ns.class_( "Mesh" ).member_functions( 'suggestTangentVectorBuildParams' ).exclude()
+    ##ogre_ns.class_( "Mesh" ).member_functions( 'suggestTangentVectorBuildParams' ).exclude()
 
     
     startswith = [
@@ -249,6 +257,8 @@ def ManualTransformations ( mb ):
     ns.mem_fun('::Ogre::PanelOverlayElement::getUV') \
         .add_transformation(ft.output('u1'), ft.output('v1'), ft.output('u2'), ft.output('v2') )
     ns.mem_fun('::Ogre::ExternalTextureSource::getTextureTecPassStateLevel').add_transformation( *create_output(3) )        
+    ns.mem_fun('::Ogre::Mesh::suggestTangentVectorBuildParams' )\
+        .add_transformation(ft.output('outSourceCoordSet'), ft.output('outIndex') )
     
     
 ###############################################################################
@@ -459,11 +469,21 @@ def Fix_Pointer_Returns ( mb ):
     This allow us to use CTypes to handle in memory buffers from Python
     """
     pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', 'unsigned char']
+    known_names=['ptr', 'useCountPointer']  # these are function names we know it's cool to exclude
     for fun in mb.member_functions():
         if declarations.is_pointer (fun.return_type):
             for i in pointee_types:
                 if fun.return_type.decl_string.startswith ( i ):
-                    print "Excluding", fun
+                    if not fun.name in known_names:
+                        print "Excluding (function):", fun
+                    fun.exclude()
+#                     print "Fixing to return unsigned int", fun
+#                     fun.add_transformation( ft.modify_return_type( _ReturnUnsignedInt ) )
+    for fun in mb.member_operators():
+        if declarations.is_pointer (fun.return_type):
+            for i in pointee_types:
+                if fun.return_type.decl_string.startswith ( i ):
+                    print "Excluding (operator):", fun
                     fun.exclude()
 #                     print "Fixing to return unsigned int", fun
 #                     fun.add_transformation( ft.modify_return_type( _ReturnUnsignedInt ) )
@@ -542,6 +562,7 @@ def generate_code():
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
     
+        
     #
     # We filter (both include and exclude) specific classes and functions that we want to wrap
     # 

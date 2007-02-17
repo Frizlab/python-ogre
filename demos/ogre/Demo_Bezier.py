@@ -177,14 +177,17 @@ class BezierApplication(sf.Application):
 
         ##
         ## NOTE: Python-Ogre Special :)
-        ## Function (createBezierPatch) requires a void * to a buffer.  The buffer we created with Ctypes
-        ## and we convert the address of the raw data to a void * with a utility function ( ogre.CastVoidPt )
+        ## createBezierPatch requires the address of te buffer which we pass using the addressof method
+        ## in ctypes..
         ##
         patch = ogre.MeshManager.getSingleton().createBezierPatch(
             "Bezier1", ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME,
-            ogre.CastVoidPtr(ctypes.addressof(pVert)), patchDecl, 3,3, 5, 5, ogre.PatchSurface.VS_BOTH,
-            ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, ogre.HardwareBuffer.HBU_DYNAMIC_WRITE_ONLY,
-            True, True) 
+            ctypes.addressof(pVert), patchDecl, 3,3, 5, 5, visibleSide=ogre.PatchSurface.VS_BOTH )
+            
+        ## the rest of these are default settings - so you can use them or Python-Ogre will fill in the
+        ## default values for you
+        ##    ,vbUsage=ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, ibUsage=ogre.HardwareBuffer.HBU_DYNAMIC_WRITE_ONLY,
+        ##    vbUseShadow=True, ibUseShadow=True) 
 
         ## Start patch at 0 detail
         patch.setSubdivision(0.0) 

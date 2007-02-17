@@ -215,9 +215,8 @@ class Grass_Application(sf.Application):
             
             vec = rot * vec 
             
-        ## Python-Ogre extension function to write a list for floats to a buffer
+        ## Python-Ogre extension function to write a list of floats to a buffer
         ogre.setFloat( pointer, buffer )
-        print "6"
         vbuf.unlock() 
         
         sm.vertexData.vertexBufferBinding.setBinding(0, vbuf) 
@@ -239,7 +238,9 @@ class Grass_Application(sf.Application):
             buff.append( 0 + off )
             buff.append( 2 + off )
             buff.append( 3 + off )
-        ogre.setUint16( pointer, buff )    # write unsigned ints...
+            
+        # another Python-Ogre helper function to write unsigned ints to a buffer
+        ogre.setUint16( pointer, buff )    
         sm.indexData.indexBuffer.unlock() 
         
         

@@ -56,12 +56,31 @@ Utility_CastVoidPtr ( int address )
 """            
 WRAPPER_REGISTRATION_General = \
 """
-    def( "GetOgreVersion", &GetOgreVersion);
-    def( "GetPythonOgreVersion", &GetPythonOgreVersion);
-    def( "setFloat", &Utility_setFloat );
-    def( "setUint16", &Utility_setUint16 );
+    bp::def( "GetOgreVersion", &GetOgreVersion,
+                "Python-Ogre Helper Function: Return the version of Ogre.\\n\\
+                Input: None\\n\\
+                Ouput: Tuple [major,minor,patch]");
+    bp::def( "GetPythonOgreVersion", &GetPythonOgreVersion,
+                "Python-Ogre Helper Function: Return the version of Python-Ogre.\\n\\
+                Input: None\\n\\
+                Ouput: Tuple [major,minor,patch]");
+    bp::def( "setFloat", &Utility_setFloat,
+                "Python-Ogre Helper Function: Write Floats to Memory.\\n\\
+                Input: void *, Python List (numerics)\\n\\
+                Ouput: None\\n\\
+                The list is extracted as floats and written to memory starting at the pointer" );
+    bp::def( "setUint16", &Utility_setUint16,
+                "Python-Ogre Helper Function: Write Unsigned Ints to Memory.\\n\\
+                Input: void *, Python List (numerics)\\n\\
+                Ouput: None\\n\\
+                The list is extracted as unsigned ints and written to memory starting at the pointer" );
     bp::def( "CastVoidPtr", &Utility_CastVoidPtr,
-                bp::return_value_policy< bp::return_opaque_pointer >());
+                bp::return_value_policy< bp::return_opaque_pointer >(),
+                "Python-Ogre Helper Function: Casts a number to a void *.\\n\\
+                Input: numeric value (typically CTypes.addressof(xx) )\\n\\
+                Output: A void pointer with the input address");
+                
+       
     
 """
 
@@ -148,7 +167,8 @@ ConfigFile_getMultiMapSettings ( Ogre::ConfigFile& cf, Ogre::ConfigFile::Setting
 """
 WRAPPER_REGISTRATION_ConfigFile = \
 """
-    def( "getMultiMapSettings", &::ConfigFile_getMultiMapSettings )
+    def( "getMultiMapSettings", &::ConfigFile_getMultiMapSettings,
+    "Python-Ogre Helper Function: Return Configfile settings as a list" )
 """
 
 #####################################################################
@@ -161,10 +181,26 @@ RenderTarget_getCustomAttributeInt(Ogre::RenderTarget& rd, const std::string& na
     rd.getCustomAttribute( name, &value );
     return value;
 }
+static float
+RenderTarget_getCustomAttributeFloat(Ogre::RenderTarget& rd, const std::string& name) {
+    float value(0);
+    rd.getCustomAttribute( name, &value );
+    return value;
+}
 """
 WRAPPER_REGISTRATION_RenderTarget = \
 """
-    def( "getCustomAttributeInt", &::RenderTarget_getCustomAttributeInt );
+    def( "getCustomAttributeInt", &::RenderTarget_getCustomAttributeInt,
+    "Python-Ogre Helper Function: Get a Custom Atribute as an int\\n\\
+    Input: None\\n\\
+    Output: Numeric (int)\\n\\
+    Gets a custom attribure from RenderTarget as an int" );
+    
+    RenderTarget_exposer.def( "getCustomAttributeFloat", &::RenderTarget_getCustomAttributeFloat,
+    "Python-Ogre Helper Function: Get a Custom Atribute as a float\\n\\
+    Input: None\\n\\
+    Output: Numeric (float)\\n\\
+    Gets a custom attribure from RenderTarget as a float" );
 """
 
 #####################################################################
@@ -184,32 +220,32 @@ WRAPPER_REGISTRATION_HardwareBufferManager = \
 //           bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
 """
 
-#####################################################################
+# # # # #####################################################################
 
-WRAPPER_DEFINITION_SectionIterator = \
-"""
-Ogre::SectionIterator
-SectionIterator_iter ( Ogre::SectionIterator & me ) {
-    return me;
-    }
-   
-boost::python::tuple
-SectionIterator_next( Ogre::SectionIterator & me ){
-    if me.hasMoreElements(){
-        return boost::python::make_tuple (
-                    boost::python::str (me.peekNextKey())
-                   ,boost::python::str (me.getNext())
-                    )
-        }
-    else
-        boost::python::raise StopIteration ()   
-    }
-"""
-WRAPPER_REGISTRATION_SectionIterator = \
-"""
-       SectionIterator_exposer.def( "__iter__", &::SectionIterator_iter );
-       SectionIterator_exposer.def( "next", &::SectionIterator_next );
-"""
+# # # # WRAPPER_DEFINITION_SectionIterator = \
+# # # # """
+# # # # Ogre::SectionIterator
+# # # # SectionIterator_iter ( Ogre::SectionIterator & me ) {
+# # # #     return me;
+# # # #     }
+# # # #    
+# # # # boost::python::tuple
+# # # # SectionIterator_next( Ogre::SectionIterator & me ){
+# # # #     if me.hasMoreElements(){
+# # # #         return boost::python::make_tuple (
+# # # #                     boost::python::str (me.peekNextKey())
+# # # #                    ,boost::python::str (me.getNext())
+# # # #                     )
+# # # #         }
+# # # #     else
+# # # #         boost::python::raise StopIteration ()   
+# # # #     }
+# # # # """
+# # # # WRAPPER_REGISTRATION_SectionIterator = \
+# # # # """
+# # # #        SectionIterator_exposer.def( "__iter__", &::SectionIterator_iter );
+# # # #        SectionIterator_exposer.def( "next", &::SectionIterator_next );
+# # # # """
 
 #########################################
 
@@ -262,22 +298,22 @@ WRAPPER_REGISTRATION_SubMesh = \
 
 #################################################################################################
 		
-WRAPPER_DEFINITION_Mesh =\
-"""
-boost::python::tuple
-Mesh_suggestTangentVectorBuildParams(::Ogre::Mesh & me, ::Ogre::VertexElementSemantic targetSemantic) {
-unsigned short a, b;
-bool ret;
+# # WRAPPER_DEFINITION_Mesh =\
+# # """
+# # boost::python::tuple
+# # Mesh_suggestTangentVectorBuildParams(::Ogre::Mesh & me, ::Ogre::VertexElementSemantic targetSemantic) {
+# # unsigned short a, b;
+# # bool ret;
 
-    ret = me.suggestTangentVectorBuildParams(targetSemantic,
-		a, b);
-		return boost::python::make_tuple ( ret, a, b );
-}
-"""     
-WRAPPER_REGISTRATION_Mesh = \
-"""
-    def( "suggestTangentVectorBuildParams", &::Mesh_suggestTangentVectorBuildParams );
-"""
+# #     ret = me.suggestTangentVectorBuildParams(targetSemantic,
+# # 		a, b);
+# # 		return boost::python::make_tuple ( ret, a, b );
+# # }
+# # """     
+# # WRAPPER_REGISTRATION_Mesh = \
+# # """
+# #     bp::def( "suggestTangentVectorBuildParams", &::Mesh_suggestTangentVectorBuildParams );
+# # """
 
 
 def iter_as_generator( cls ):
@@ -313,20 +349,20 @@ def apply( mb ):
         ## now add support for the combined listener
         rt = mb.class_( 'CombinedListener' )
         rt.add_declaration_code( WRAPPER_DEFINITION_CombinedListener )
-    rt = mb.class_( 'Mesh' )
-    rt.add_declaration_code( WRAPPER_DEFINITION_Mesh )
-    rt.add_registration_code( WRAPPER_REGISTRATION_Mesh )
+#     rt = mb.class_( 'Mesh' )
+#     rt.add_declaration_code( WRAPPER_DEFINITION_Mesh )
+#     rt.add_registration_code( WRAPPER_REGISTRATION_Mesh )
     rt = mb.class_( 'SubMesh' )
     rt.add_declaration_code( WRAPPER_DEFINITION_SubMesh )
     rt.add_registration_code( WRAPPER_REGISTRATION_SubMesh )
     
-    rt = mb.class_( 'BillboardParticleRenderer' )
-    rt.add_declaration_code( WRAPPER_DEFINITION_BillboardParticleRenderer )
-    rt.add_registration_code( WRAPPER_REGISTRATION_BillboardParticleRenderer )
-    
-    rt = mb.class_( 'BillboardParticleRendererFactory' )
-    rt.add_declaration_code( WRAPPER_DEFINITION_BillboardParticleRendererFactory )
-    rt.add_registration_code( WRAPPER_REGISTRATION_BillboardParticleRendererFactory )
+#     rt = mb.class_( 'BillboardParticleRenderer' )
+#     rt.add_declaration_code( WRAPPER_DEFINITION_BillboardParticleRenderer )
+#     rt.add_registration_code( WRAPPER_REGISTRATION_BillboardParticleRenderer )
+#     
+#     rt = mb.class_( 'BillboardParticleRendererFactory' )
+#     rt.add_declaration_code( WRAPPER_DEFINITION_BillboardParticleRendererFactory )
+#     rt.add_registration_code( WRAPPER_REGISTRATION_BillboardParticleRendererFactory )
       
 #     rt = mb.class_( 'MapIterator' )
 #     rt.add_declaration_code( WRAPPER_DEFINITION_SectionIterator )
@@ -339,6 +375,6 @@ def apply( mb ):
     for cls in vec_iterators:
         iter_as_generator( cls )
         
-    map_iterators = mb.classes( lambda cls: cls.name.startswith( 'MapIterator<' ) )
-    for cls in map_iterators:
-        iter_as_generator( cls )        
+#     map_iterators = mb.classes( lambda cls: cls.name.startswith( 'MapIterator<' ) )
+#     for cls in map_iterators:
+#         iter_as_generator( cls )        
