@@ -83,15 +83,14 @@ class Application(object):
         """This sets up Ogre's resources, which are required to be in
         resources.cfg."""
         config = ogre.ConfigFile()
-        config.load('resources.cfg' ) #, '', False )
+        config.load('resources.cfg' ) 
         seci = config.getSectionIterator()
-        while (seci.hasMoreElements()):
-            secName = seci.peekNextKey()
-            settings = seci.getNext()
-            ## Note that getMultiMapSettings is a Python-Ogre extension to return a multimap in a list of tuples
-            settingslist = config.getMultiMapSettings ( settings )
-            for typeName, archName in settingslist:
-                ogre.ResourceGroupManager.getSingleton().addResourceLocation(archName, typeName, secName)
+        while seci.hasMoreElements():
+            SectionName = seci.peekNextKey()
+            Section = seci.getNext()
+            for item in Section:
+                ogre.ResourceGroupManager.getSingleton().\
+                    addResourceLocation(item.value, item.key, SectionName)
                     
     def _createResourceListener(self):
         """This method is here if you want to add a resource listener to check
@@ -232,6 +231,10 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
     def setMenuMode(self, mode):
         self.MenuMode = mode
         
+    def _UpdateSimulation( self, frameEvent ):
+        # create a real version of this to update the simulation
+        pass 
+           
     def windowResized (self, rw):
          [width, height, depth, left, top] = rw.getMetrics()  # Note the wrapped function as default needs unsigned int's
          ms = self.Mouse.getMouseState()
@@ -281,9 +284,11 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
             self._processUnbufferedMouseInput(frameEvent)
         
         self._moveCamera()
-        # Perform simulation step only if using OgreRefApp etc
+        # Perform simulation step only if using OgreRefApp.  For simplicity create a function that simply does
+        ###  "OgreRefApp.World.getSingleton().simulationStep(frameEvent.timeSinceLastFrame)"
+        
         if  self.RefAppEnable:
-            OgreRefApp.World.getSingleton().simulationStep(frameEvent.timeSinceLastFrame)
+            self._UpdateSimulation( frameEvent )
         return True
 
     def frameEnded(self, frameEvent):
@@ -425,4 +430,4 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
 
     def _setGuiCaption(self, elementName, text):
         element = ogre.OverlayManager.getSingleton().getOverlayElement(elementName, False)
-        element.setCaption(text)
+        element.setCaption(ogre.UTFString(text))
