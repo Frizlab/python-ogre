@@ -48,18 +48,25 @@ struct generator_maker_map{
     static void iter( const MapIterator& ){
     } //return_self call policies should be used
 
-        
-    static boost::python::tuple next( MapIterator& iter ){
+    static mapped_type next (  MapIterator& iter ){
         if( !iter.hasMoreElements() ){
             boost::python::objects::stop_iteration_error();
             //will not come here
         }
-        return boost::python::make_tuple (
-                    boost::python::str (iter.peekNextKey())
-                   ,boost::python::str (iter.getNext())
-                   );
-//        return iter.getNext();
+        return iter.getNext();
     }
+  
+// //     static boost::python::tuple next( MapIterator& iter ){
+// //         if( !iter.hasMoreElements() ){
+// //             boost::python::objects::stop_iteration_error();
+// //             //will not come here
+// //         }
+// //         return boost::python::make_tuple (
+// //                     (iter.peekNextKey())
+// //                    ,(iter.getNext())
+// //                    );
+// // //        return iter.getNext();
+// //     }
     
     
     template< typename TNextCallPolicies, typename TPyClass>
@@ -67,7 +74,7 @@ struct generator_maker_map{
         typedef generator_maker_map< MapIterator > maker_type_map;
         
         py_cls.def( "__iter__", &maker_type_map::iter, boost::python::return_self<>() );
-        py_cls.def( "next", &maker_type_map::next ); // , TNextCallPolicies() );
+        py_cls.def( "next", &maker_type_map::next  , TNextCallPolicies() );
     }
     
 };
