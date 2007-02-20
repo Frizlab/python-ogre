@@ -176,8 +176,7 @@ WRAPPER_REGISTRATION_General = \
                 Input: numeric value (typically CTypes.addressof(xx) )\\n\\
                 Output: A void pointer with the input address");
     bp::def( "CastResourceToNative", &Utility_CastResourceToNative,
-                bp::return_value_policy< bp::return_opaque_pointer >(),
-                "Python-Ogre Helper Function: Casts a Resource to it\'s native type.\\n\\
+               "Python-Ogre Helper Function: Casts a Resource to it\'s native type.\\n\\
                 Input: Resource Object\\n\\
                 Output: \'Native\' Object (Texture, Font, Mesh, etc)\\n\\
                 This function should not be needed, however just in case you get a resource object from Ogre\\n\\
