@@ -68,20 +68,20 @@ def ManualExclude ( mb ):
         classes.exclude()
     ### AJM - OK, so I think we can remove all FACTORY classes etc - not really sure but thought we
     ### do so and see if anyone complained
-    for cls in ogre_ns.classes ():
-        if 'Factory' in cls.name:
-            print "Factory Class Excluded", cls
-            cls.exclude()
-    for fun in ogre_ns.mem_funs ():
-        if 'Factory' in fun.name:
-            print "Factory Function Excluded", fun
-            fun.exclude()
-            continue
-        for arg in fun.arguments:
-            if 'Factory' in arg.name:
-                print "Factory Function Excluded", fun
-                fun.exclude()
-                break
+# # #     for cls in ogre_ns.classes ():
+# # #         if 'Factory' in cls.name:
+# # #             print "Factory Class Excluded", cls
+# # #             cls.exclude()
+# # #     for fun in ogre_ns.mem_funs ():
+# # #         if 'Factory' in fun.name:
+# # #             print "Factory Function Excluded", fun
+# # #             fun.exclude()
+# # #             continue
+# # #         for arg in fun.arguments:
+# # #             if 'Factory' in arg.name:
+# # #                 print "Factory Function Excluded", fun
+# # #                 fun.exclude()
+# # #                 break
         
     #AJM Set of functions in Particle system that don't get wrapped properly.. Rechecked 30Nov06 AJM
     ## Other 'Cmd..' classes are defined as _OgrePrivate, whereas these are not in the head file
@@ -105,9 +105,9 @@ def ManualExclude ( mb ):
     v.exclude() 
     # there are a set of const iterators that I'm not exposing as they need better understanding and testing
     # these functions rely on them so they are being excluded as well
-    ogre_ns.class_('SceneNode').member_functions('getAttachedObjectIterator').exclude()
-    ogre_ns.class_('Mesh').mem_fun('getBoneAssignmentIterator').exclude()
-    ogre_ns.class_('SubMesh').mem_fun('getBoneAssignmentIterator').exclude()
+# # #     ogre_ns.class_('SceneNode').member_functions('getAttachedObjectIterator').exclude()
+# # #     ogre_ns.class_('Mesh').mem_fun('getBoneAssignmentIterator').exclude()
+# # #     ogre_ns.class_('SubMesh').mem_fun('getBoneAssignmentIterator').exclude()
     
     
     # functions that take pointers to pointers 
@@ -127,7 +127,9 @@ def ManualExclude ( mb ):
     ## AJM Error at compile time - errors when compiling or linking
     ogre_ns.calldefs ('peekNextPtr').exclude ()
     ogre_ns.calldefs ('peekNextValuePtr').exclude ()    #in many of the Iterator classes
-    ogre_ns.calldefs ('getChildIterator').exclude ()
+    
+    
+# # # #     ogre_ns.calldefs ('getChildIterator').exclude ()
     
     ogre_ns.class_( "ErrorDialog" ).exclude()   # doesn't exist for link time
     ogre_ns.class_( 'CompositorInstance').class_('RenderSystemOperation').exclude() # doesn't exist for link time
@@ -158,10 +160,13 @@ def ManualExclude ( mb ):
     global_ns.class_('::Ogre::InstancedGeometry::MaterialBucket').mem_fun('getGeometryBucketList').exclude()
     global_ns.class_('::Ogre::InstancedGeometry::MaterialBucket').mem_fun('getMaterialBucketMap').exclude()
     
-    global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram::CmdDelegate').mem_fun('doGet').exclude()
-    global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram::CmdDelegate').mem_fun('doSet').exclude()
+    global_ns.class_('::Ogre::UnifiedHighLevelGpuProgramFactory').exclude()
     global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram::CmdDelegate').exclude()
-    
+#     global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram::CmdDelegate').mem_fun('doGet').exclude()
+#     global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram::CmdDelegate').mem_fun('doSet').exclude()
+#     
+    # hand made wrapper to return correct type
+    global_ns.class_('::Ogre::ResourceManager').mem_fun('getByName').exclude()
     
 ############################################################
 ##
@@ -172,6 +177,11 @@ def ManualExclude ( mb ):
 def ManualInclude ( mb ):
     global_ns = mb.global_ns
     ogre_ns = global_ns.namespace( 'Ogre' )
+    
+#     ogre_ns.class_( "StaticGeometry" ).class_("Region").include()
+#     ogre_ns.class_( "StaticGeometry" ).class_("LODBucket").include()
+#     ogre_ns.class_( "StaticGeometry" ).class_("MaterialBucket").include()
+    
 
     ## It's a structure that doesn't get included by default...
     ogre_ns.class_("VertexBoneAssignment_s").include()
@@ -179,6 +189,18 @@ def ManualInclude ( mb ):
     std_ns = global_ns.namespace("std")
     std_ns.class_("pair<unsigned, unsigned>").include()
     std_ns.class_("pair<bool, float>").include()
+    std_ns.class_("pair<Ogre::SharedPtr<Ogre::Resource>, bool>").include()
+    
+    ## handle the hashmaps -- TODO FIX under LINUX
+    if sys.platform=='win32':
+        stdex_ns = global_ns.namespace("stdext")
+        for cls in stdex_ns.classes():
+            print "Checking", cls
+            if cls.name.startswith ("hash"):
+                print "Including", cls
+                cls.include()
+    
+    
     #RenderOperation class is marked as private, but I think this is a mistake
     ogre_ns.class_('RenderOperation').include()
     
@@ -197,8 +219,25 @@ def ManualFixes ( mb ):
     for f in ogre_ns.mem_funs( return_type='::Ogre::Vector3 const *', allow_empty=True):
         if f.name.startswith("get") and "Corner" in f.name:
             f.call_policies = call_policies.convert_array_to_tuple( 8, call_policies.memory_managers.none )
+            f.include()
    
+    ### NOTE that we "include" things here again as they've probably been excluded in AutoFixes..
     
+    ## this one points to an array of [2] floats        
+    c =ogre_ns.class_('BillboardChain').mem_fun('getOtherTextureCoordRange')
+    c.call_policies = call_policies.convert_array_to_tuple( 2, call_policies.memory_managers.none )    
+    c.include()
+            
+    ## and these ones return
+    c = ogre_ns.class_('Matrix4').operators('[]')
+    c.call_policies= call_policies.convert_array_to_tuple( 4, call_policies.memory_managers.none )   
+    c.include() 
+    c = ogre_ns.class_('Matrix3').operators('[]')
+    c.call_policies= call_policies.convert_array_to_tuple( 3, call_policies.memory_managers.none )    
+    c.include()
+
+            
+        
     #VertexCacheProfiler constructor uses enum that will be defined later.
     #I will replace second default value to be int instead of enum
     #arg_types=[None,None] - 2 arguments, with whatever type
@@ -244,24 +283,100 @@ def ManualTransformations ( mb ):
         return [ ft.output( i ) for i in range( size ) ]
 
     rt_cls = ns.class_('RenderTarget')
-    rt_cls.mem_fun('getMetrics').add_transformation( *create_output(3) )
-    rt_cls.mem_fun( 'getStatistics', arg_types=['float &']*4 ).add_transformation( *create_output(4) )
-    ns.mem_fun('::Ogre::RenderQueueListener::renderQueueEnded') \
-        .add_transformation(ft.output('repeatThisInvocation'))
-    ns.mem_fun('::Ogre::RenderQueueListener::renderQueueStarted') \
-        .add_transformation(ft.output('skipThisInvocation'))
-    ns.mem_fun('::Ogre::RenderWindow::getMetrics').add_transformation( *create_output(5) )
-    ns.mem_fun('::Ogre::Viewport::getActualDimensions').add_transformation( *create_output(4) )
-    ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueStarted') \
-        .add_transformation(ft.output("skipThisQueue"))
-    ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueEnded') \
-        .add_transformation(ft.output("repeatThisQueue"))
-    ns.mem_fun('::Ogre::PanelOverlayElement::getUV') \
-        .add_transformation(ft.output('u1'), ft.output('v1'), ft.output('u2'), ft.output('v2') )
-    ns.mem_fun('::Ogre::ExternalTextureSource::getTextureTecPassStateLevel').add_transformation( *create_output(3) )        
-    ns.mem_fun('::Ogre::Mesh::suggestTangentVectorBuildParams' )\
-        .add_transformation(ft.output('outSourceCoordSet'), ft.output('outIndex') )
+    x=rt_cls.mem_fun('getMetrics')
+    x.add_transformation( *create_output(3) )
+    x=rt_cls.mem_fun( 'getStatistics', arg_types=['float &']*4 )
+    x.add_transformation( *create_output(4) )
     
+    x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueEnded')
+    x.add_transformation(ft.output('repeatThisInvocation'))
+    
+    x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueStarted') 
+    x.add_transformation(ft.output('skipThisInvocation'))
+    
+    x=ns.mem_fun('::Ogre::RenderWindow::getMetrics')
+    x.add_transformation( *create_output(5) )
+    
+    x=ns.mem_fun('::Ogre::Viewport::getActualDimensions')
+    x.add_transformation( *create_output(4) )
+    
+    x=ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueStarted')
+    x.add_transformation(ft.output("skipThisQueue"))
+    
+    x=ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueEnded') 
+    x.add_transformation(ft.output("repeatThisQueue"))
+    
+    x=ns.mem_fun('::Ogre::PanelOverlayElement::getUV') 
+    x.add_transformation(ft.output('u1'), ft.output('v1'), ft.output('u2'), ft.output('v2') )
+    
+    x=ns.mem_fun('::Ogre::ExternalTextureSource::getTextureTecPassStateLevel')
+    x.add_transformation( *create_output(3) )  
+          
+    x=ns.mem_fun('::Ogre::Mesh::suggestTangentVectorBuildParams' )
+    x.add_transformation(ft.output('outSourceCoordSet'), ft.output('outIndex') )
+    
+    # these are * * 's so need more work
+#     x = ns.mem_fun('::Ogre::AnimationTrack::getKeyFramesAtTime' )
+#     x.add_transformation(ft.output('keyFrame1'), ft.output('keyFrame2') )
+    
+#     x = ns.mem_fun('::Ogre::Mesh::prepareMatricesForVertexBlend' )
+#     x.add_transformation(ft.output('blendMatrices') )
+#     
+#     x = ns.mem_fun('::Ogre::Mesh::softwareVertexBlend' )
+#     x.add_transformation(ft.output('blendMatrices') )
+#     
+#     x = ns.mem_fun('::Ogre::OptimisedUtil::softwareVertexSkinning' )
+#     x.add_transformation(ft.output('blendMatrices') )
+    
+#     x = ns.mem_fun('::Ogre::NumericSolver::solveNxNLinearSysDestr')
+#     x.add_transformation(ft.output('coeff') )
+    
+#     x = ns.mem_fun('::Ogre::SkeletonInstance::_getAnimationImpl')
+#     x.add_transformation(ft.output('linker') )
+#     x = ns.mem_fun('::Ogre::SkeletonInstance::getAnimation', arg_types=[None,None])
+#     x.add_transformation(ft.output('linker') )
+# #     x = ns.mem_fun('::Ogre::Skeleton::_getAnimationImpl')
+# #     x.add_transformation(ft.output('linker') )
+#     x = ns.mem_fun('::Ogre::Skeleton::getAnimation', arg_types=[None,None])
+#     x.add_transformation(ft.output('linker') )
+    
+    x = ns.mem_fun('::Ogre::RenderQueue::RenderableListener::renderableQueued')
+    x.add_transformation(ft.output('ppTech') )
+    
+    ##
+    ## now we handle some specials..
+    ##
+    image_size = """ 
+namespace{ 
+struct ImageSize{ 
+    ssize_t operator()( boost::python::object self ) const{ 
+        Ogre::Image& img = boost::python::extract<Ogre::Image&>( self ); 
+        return img.getSize(); 
+    } 
+}; 
+} 
+""" 
+    Image = ns.class_( 'Image' ) 
+    Image.add_declaration_code( image_size ) 
+    for f in Image.mem_funs( 'getData' ): 
+        f.call_policies = call_policies.return_range( f, 'ImageSize' ) 
+        if f.has_const: 
+            f.alias = 'getReadOnlyData' 
+
+    memorydatastream_size = """ 
+namespace{ 
+struct MDSSize{ 
+    ssize_t operator()( boost::python::object self ) const{ 
+        Ogre::MemoryDataStream& mds = boost::python::extract<Ogre::MemoryDataStream&>( self ); 
+        return mds.size(); 
+    } 
+}; 
+} 
+"""     
+    MDS = ns.class_( 'MemoryDataStream' ) 
+    MDS.add_declaration_code( memorydatastream_size ) 
+    f = MDS.mem_fun( 'getPtr' ) 
+    f.call_policies = call_policies.return_range( f, 'MDSSize' ) 
     
 ###############################################################################
 ##
@@ -464,13 +579,24 @@ def Fix_Void_Ptr_Args ( mb ):
                 print "Fixed Void Ptr", fun, arg_position
                 break
             arg_position +=1
+    pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', '::Ogre::uint8', 'unsigned char']
+    for fun in mb.member_functions():
+        arg_position = 0
+        for arg in fun.arguments:
+            if declarations.is_pointer(arg.type):
+                for i in pointee_types:
+                    if arg.type.decl_string.startswith ( i ):
+                        print "NEED TO CHECK",fun, arg_position
+                        break
+            arg_position +=1
+            
                     
 def Fix_Pointer_Returns ( mb ):
     """ Change out functions that return a variety of pointer to base types and instead
     have them return the address the pointer is pointing to (the pointer value)
     This allow us to use CTypes to handle in memory buffers from Python
     """
-    pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', 'unsigned char']
+    pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', '::Ogre::uint8', 'unsigned char']
     known_names=['ptr', 'useCountPointer']  # these are function names we know it's cool to exclude
     for fun in mb.member_functions():
         if declarations.is_pointer (fun.return_type):
@@ -478,6 +604,8 @@ def Fix_Pointer_Returns ( mb ):
                 if fun.return_type.decl_string.startswith ( i ):
                     if not fun.name in known_names:
                         print "Excluding (function):", fun
+#                     fun.call_policies \
+#                             = call_policies.return_range( fun, 'raw_data_size_t' )
                     fun.exclude()
 #                     print "Fixing to return unsigned int", fun
 #                     fun.add_transformation( ft.modify_return_type( _ReturnUnsignedInt ) )
@@ -572,28 +700,30 @@ def generate_code():
     global_ns.exclude()
     ogre_ns = global_ns.namespace( 'Ogre' )
     ogre_ns.include()
-
+    
+# #     ogre_ns.class_( "StaticGeometry" ).class_("Region").include()
+# #     ogre_ns.class_( "StaticGeometry" ).class_("LODBucket").include()
+# #     ogre_ns.class_( "StaticGeometry" ).class_("MaterialBucket").include()
+    
     AutoExclude ( mb )
     ManualExclude ( mb )
     AutoInclude ( mb )
     ManualInclude ( mb )
-    
     AutoFixes ( mb )
     ManualFixes ( mb )
     
     # here we fixup functions that expect to modifiy their 'passed' variables    
     ManualTransformations ( mb )
     
-    
-    
-
     #Py++ can not expose static pointer member variables
     ogre_ns.vars( 'ms_Singleton' ).disable_warnings( messages.W1035 )
     
     # Ogre is "special" in that some classes are unnnamed and need fixing
     common_utils.fix_unnamed_classes( ogre_ns.classes( name='' ), 'Ogre' )
+    print "8", ogre_ns.class_( "StaticGeometry" ).class_("Region").ignore
     
     common_utils.configure_shared_ptr(mb)
+    print "9", ogre_ns.class_( "StaticGeometry" ).class_("Region").ignore
     
     Set_Exception( mb )
         
@@ -601,12 +731,14 @@ def generate_code():
     # We need to tell boost how to handle calling (and returning from) certain functions
     #
     Set_Call_Policies ( mb.global_ns.namespace ('Ogre') )
+    print "10", ogre_ns.class_( "StaticGeometry" ).class_("Region").ignore
     
     
     #
     # the manual stuff all done here !!!
     #
     hand_made_wrappers.apply( mb )
+    print "11", ogre_ns.class_( "StaticGeometry" ).class_("Region").ignore
     
    
     NoPropClasses = ["UTFString"]
@@ -619,6 +751,9 @@ def generate_code():
     common_utils.add_constants( mb, { 'ogre_version' :  '"%s"' % environment.ogre.version.replace("\n", "\\\n") 
                                       , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
 
+    print "12", ogre_ns.class_( "StaticGeometry" ).class_("Region").ignore
+   ##sys.exit()
+    print "13", ogre_ns.class_( "StaticGeometry" ).typedef("RegionMap").ignore
 
     ##########################################################################################
     #

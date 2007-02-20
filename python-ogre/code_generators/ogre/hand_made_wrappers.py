@@ -1,6 +1,74 @@
 import os
 import environment
 
+WRAPPER_DEFINITION_ResourceManager = \
+"""
+boost::python::object ResourceManager_getByName_alt(Ogre::ResourceManager& me, const std::string& name){
+    // this version is "just because" :)
+    Ogre::ResourcePtr r = me.getByName( name );
+    Ogre::ResourceManager * rm = r->getCreator();
+    Ogre::String type = rm->getResourceType();
+    if (type == "Texture") 
+            return boost::python::object( Ogre::TexturePtr( r ) );
+    if (type == "Material")
+            return boost::python::object( Ogre::MaterialPtr( r ) );
+    if (type == "Compositor" )
+            return boost::python::object( Ogre::CompositorPtr( r ) );
+    if (type == "Font") 
+            return boost::python::object( Ogre::FontPtr( r ) );
+    if (type == "GpuProgram") 
+            return boost::python::object( Ogre::GpuProgramPtr( r ) );
+    if (type == "HighLevelGpuProgram" )
+            return boost::python::object( Ogre::HighLevelGpuProgramPtr( r ) );
+    if (type == "Mesh" )
+            return boost::python::object( Ogre::MeshPtr( r ) );
+    if (type == "Skeleton" )
+            return boost::python::object( Ogre::SkeletonPtr( r ) );
+            
+    return  boost::python::object( r );   
+}
+
+
+boost::python::object ResourceManager_getByName(Ogre::ResourceManager& me, const std::string& name){
+    // get the resouce
+    Ogre::ResourcePtr r = me.getByName( name );
+    //ResourcePtr r = TextureManager.getSingleton().getByName( name ); 
+   if( dynamic_cast< Ogre::Texture* >( r.get() ) ){
+        return boost::python::object( Ogre::TexturePtr( r ) );
+    }
+    if( dynamic_cast< Ogre::Material* >( r.get() ) ){
+        return boost::python::object( Ogre::MaterialPtr( r ) );
+    }
+   if( dynamic_cast< Ogre::Compositor* >( r.get() ) ){
+        return boost::python::object( Ogre::CompositorPtr( r ) );
+    }
+    if( dynamic_cast< Ogre::Font* >( r.get() ) ){
+        return boost::python::object( Ogre::FontPtr( r ) );
+    }   
+    if( dynamic_cast< Ogre::GpuProgram* >( r.get() ) ){
+        return boost::python::object( Ogre::GpuProgramPtr( r ) );
+    }
+    if( dynamic_cast< Ogre::HighLevelGpuProgram* >( r.get() ) ){
+        return boost::python::object( Ogre::HighLevelGpuProgramPtr( r ) );
+    }
+    if( dynamic_cast< Ogre::Mesh* >( r.get() ) ){
+        return boost::python::object( Ogre::MeshPtr( r ) );
+    }
+    if( dynamic_cast< Ogre::Skeleton* >( r.get() ) ){
+        return boost::python::object( Ogre::SkeletonPtr( r ) );
+    }
+    return boost::python::object( r ); //unknown type
+}
+"""
+WRAPPER_REGISTRATION_ResourceManager = \
+"""
+    def( "getByName", &::ResourceManager_getByName,
+    "" );
+    
+    ResourceManager_exposer.def( "getByNameAlt", &::ResourceManager_getByName_alt,
+    "" );
+"""
+
 WRAPPER_DEFINITION_General = \
 """
 boost::python::tuple 
@@ -46,6 +114,34 @@ Utility_CastVoidPtr ( int address )
     return (void *) address;
     }
     
+boost::python::object 
+Utility_CastResourceToNative(Ogre::ResourcePtr& r){
+   if( dynamic_cast< Ogre::Texture* >( r.get() ) ){
+        return boost::python::object( Ogre::TexturePtr( r ) );
+    }
+    if( dynamic_cast< Ogre::Material* >( r.get() ) ){
+        return boost::python::object( Ogre::MaterialPtr( r ) );
+    }
+   if( dynamic_cast< Ogre::Compositor* >( r.get() ) ){
+        return boost::python::object( Ogre::CompositorPtr( r ) );
+    }
+    if( dynamic_cast< Ogre::Font* >( r.get() ) ){
+        return boost::python::object( Ogre::FontPtr( r ) );
+    }   
+    if( dynamic_cast< Ogre::GpuProgram* >( r.get() ) ){
+        return boost::python::object( Ogre::GpuProgramPtr( r ) );
+    }
+    if( dynamic_cast< Ogre::HighLevelGpuProgram* >( r.get() ) ){
+        return boost::python::object( Ogre::HighLevelGpuProgramPtr( r ) );
+    }
+    if( dynamic_cast< Ogre::Mesh* >( r.get() ) ){
+        return boost::python::object( Ogre::MeshPtr( r ) );
+    }
+    if( dynamic_cast< Ogre::Skeleton* >( r.get() ) ){
+        return boost::python::object( Ogre::SkeletonPtr( r ) );
+    }
+    return boost::python::object( r ); //unknown type
+}       
 
 // void
 // Utility_setFloat(void * ptrin, float datain)
@@ -79,9 +175,16 @@ WRAPPER_REGISTRATION_General = \
                 "Python-Ogre Helper Function: Casts a number to a void *.\\n\\
                 Input: numeric value (typically CTypes.addressof(xx) )\\n\\
                 Output: A void pointer with the input address");
+    bp::def( "CastResourceToNative", &Utility_CastResourceToNative,
+                bp::return_value_policy< bp::return_opaque_pointer >(),
+                "Python-Ogre Helper Function: Casts a Resource to it\'s native type.\\n\\
+                Input: Resource Object\\n\\
+                Output: \'Native\' Object (Texture, Font, Mesh, etc)\\n\\
+                This function should not be needed, however just in case you get a resource object from Ogre\\n\\
+                and you need to use it as it\'s native type");
                 
-       
-    
+   
+   
 """
 
 ##################################################################
@@ -347,6 +450,10 @@ def apply( mb ):
     rt = mb.class_( 'RenderTarget' )
     rt.add_declaration_code( WRAPPER_DEFINITION_RenderTarget )
     rt.add_registration_code( WRAPPER_REGISTRATION_RenderTarget )
+    
+    rt = mb.class_( 'ResourceManager' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_ResourceManager )
+    rt.add_registration_code( WRAPPER_REGISTRATION_ResourceManager )
     
     rt = mb.class_( 'Frustum' )
     rt.add_declaration_code( WRAPPER_DEFINITION_Frustum )
