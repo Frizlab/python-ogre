@@ -50,6 +50,9 @@ def ManualExclude ( mb ):
     ## Specifically remove functions that we have wrapped in hand_made_wrappers.py
     ogre_ns.class_( "RenderTarget" ).member_functions( 'getCustomAttribute' ).exclude()
     ##ogre_ns.class_( "Mesh" ).member_functions( 'suggestTangentVectorBuildParams' ).exclude()
+    # hand made wrapper to return correct type
+    global_ns.class_('::Ogre::ResourceManager').mem_fun('getByName').exclude()
+    global_ns.class_('::Ogre::ResourceManager').mem_fun('getByHandle').exclude()
 
     
     startswith = [
@@ -165,8 +168,6 @@ def ManualExclude ( mb ):
 #     global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram::CmdDelegate').mem_fun('doGet').exclude()
 #     global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram::CmdDelegate').mem_fun('doSet').exclude()
 #     
-    # hand made wrapper to return correct type
-    global_ns.class_('::Ogre::ResourceManager').mem_fun('getByName').exclude()
     
 ############################################################
 ##
@@ -281,39 +282,57 @@ def ManualTransformations ( mb ):
         
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
+        
+    def docit ( general, i, o ): 
+        docs = "Python-Ogre Modified Function Call\\n" + general +"\\n"
+        docs = docs + "Input: " + i + "\\n"
+        docs = docs + "Output: " + o + "\\n\\\n"
+        return docs
 
     rt_cls = ns.class_('RenderTarget')
     x=rt_cls.mem_fun('getMetrics')
     x.add_transformation( *create_output(3) )
+    x.documentation = docit ( "","no arguments", "tuple containing width, height, colourDepth")
+    
     x=rt_cls.mem_fun( 'getStatistics', arg_types=['float &']*4 )
     x.add_transformation( *create_output(4) )
+    x.documentation = docit ("", "no arguments", "tuple - lastFPS, avgFPS, bestFPS, worstFPS")
     
     x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueEnded')
     x.add_transformation(ft.output('repeatThisInvocation'))
+    x.documentation = docit ("","queueGroupId, invocation", "tuple - repeatThisInvocation")
     
     x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueStarted') 
     x.add_transformation(ft.output('skipThisInvocation'))
+    x.documentation = docit ("","queueGroupId, invocation", "tuple - repeatThisInvocation")
     
     x=ns.mem_fun('::Ogre::RenderWindow::getMetrics')
     x.add_transformation( *create_output(5) )
+    x.documentation = docit ("","no arguments", "tuple - width, height, colourDepth, left, top")
     
     x=ns.mem_fun('::Ogre::Viewport::getActualDimensions')
     x.add_transformation( *create_output(4) )
-    
+    x.documentation = docit ("","no arguments", "tuple - left, top, width, height")
+
     x=ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueStarted')
     x.add_transformation(ft.output("skipThisQueue"))
+    x.documentation = docit ("", "id, invocation", "skipThisQueue" )
     
     x=ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueEnded') 
     x.add_transformation(ft.output("repeatThisQueue"))
+    x.documentation = docit ("", "id, invocation", "repeatThisQueue" )
     
     x=ns.mem_fun('::Ogre::PanelOverlayElement::getUV') 
     x.add_transformation(ft.output('u1'), ft.output('v1'), ft.output('u2'), ft.output('v2') )
+    x.documentation = docit ("", "no arguments", "tuple - u1, v1, u2, v2" )
     
     x=ns.mem_fun('::Ogre::ExternalTextureSource::getTextureTecPassStateLevel')
     x.add_transformation( *create_output(3) )  
-          
+    x.documentation = docit ("", "no arguments", "tuple - TechniqueLevel, PassLevel,StateLevel")
+              
     x=ns.mem_fun('::Ogre::Mesh::suggestTangentVectorBuildParams' )
     x.add_transformation(ft.output('outSourceCoordSet'), ft.output('outIndex') )
+    x.documentation = docit ("", "targetSemantic","outSourceCoordSet, outIndex" )
     
     # these are * * 's so need more work
 #     x = ns.mem_fun('::Ogre::AnimationTrack::getKeyFramesAtTime' )
@@ -342,31 +361,38 @@ def ManualTransformations ( mb ):
     
     x = ns.mem_fun('::Ogre::RenderQueue::RenderableListener::renderableQueued')
     x.add_transformation(ft.output('ppTech') )
+    x.documentation = docit ("UNTESTED", "rend, groupID, priority", "ppTech" )
     
     ##
     ## now we handle some specials..
     ##
+
+
     image_size = """ 
 namespace{ 
 struct ImageSize{ 
-    ssize_t operator()( boost::python::object self ) const{ 
+    ssize_t operator()( boost::python::tuple args ) const{ 
+        boost::python::object self = args[0];
         Ogre::Image& img = boost::python::extract<Ogre::Image&>( self ); 
         return img.getSize(); 
     } 
 }; 
 } 
 """ 
+        
     Image = ns.class_( 'Image' ) 
     Image.add_declaration_code( image_size ) 
     for f in Image.mem_funs( 'getData' ): 
         f.call_policies = call_policies.return_range( f, 'ImageSize' ) 
+        f.documentation = "Python-Ogre Modified Return Range \\n"
         if f.has_const: 
             f.alias = 'getReadOnlyData' 
 
     memorydatastream_size = """ 
 namespace{ 
 struct MDSSize{ 
-    ssize_t operator()( boost::python::object self ) const{ 
+    ssize_t operator()( boost::python::tuple args ) const{ 
+        boost::python::object self=args[0];
         Ogre::MemoryDataStream& mds = boost::python::extract<Ogre::MemoryDataStream&>( self ); 
         return mds.size(); 
     } 
@@ -377,6 +403,40 @@ struct MDSSize{
     MDS.add_declaration_code( memorydatastream_size ) 
     f = MDS.mem_fun( 'getPtr' ) 
     f.call_policies = call_policies.return_range( f, 'MDSSize' ) 
+    f.documentation = "Python-Ogre Modified Return Range \\n"
+    
+    gpu_pp_int_size = """ 
+namespace{ 
+struct GpuProgramParametersGetIntPointerSize{ 
+    ssize_t operator()( boost::python::tuple args ) const{ 
+        boost::python::object self = args[0]; 
+        Ogre::GpuProgramParameters& gpupp = boost::python::extract<Ogre::GpuProgramParameters&>( self ); 
+        boost::python::object pos_obj = args[1]; 
+        ssize_t offset = boost::python::extract<ssize_t>( pos_obj ); 
+        return gpupp.intBufferSize - offset; 
+        }
+}; 
+struct GpuProgramParametersGetFloatPointerSize{ 
+    ssize_t operator()( boost::python::tuple args ) const{ 
+        boost::python::object self = args[0]; 
+        Ogre::GpuProgramParameters& gpupp = boost::python::extract<Ogre::GpuProgramParameters&>( self ); 
+        boost::python::object pos_obj = args[1]; 
+        ssize_t offset = boost::python::extract<ssize_t>( pos_obj ); 
+        return gpupp.floatBufferSize - offset; 
+        }
+}; 
+} 
+""" 
+  
+ 
+#     GpuProgramParameters = ns.class_( 'GpuProgramParameters' ) 
+#     GpuProgramParameters.add_declaration_code( gpu_pp_int_size ) 
+#     f = GpuProgramParameters.mem_fun( 'getIntPointer' ) 
+#     f.call_policies = call_policies.return_range( f, 'GpuProgramParametersGetIntPointerSize' ) 
+#     f.documentation = "Python-Ogre Modified Return Range \\n"
+#     f = GpuProgramParameters.mem_fun( 'getFloatPointer' ) 
+#     f.call_policies = call_policies.return_range( f, 'GpuProgramParametersGetFloatPointerSize' ) 
+#     f.documentation = "Python-Ogre Modified Return Range \\n"
     
 ###############################################################################
 ##
@@ -511,16 +571,6 @@ def Add_Auto_Conversions( mb ):
                             os.path.abspath(os.path.dirname(__file__) )
                             , 'custom_rvalue.cpp' )
     
-    if not os.path.exists( os.path.join(environment.ogre.generated_dir, 'custom_rvalue.cpp' ) ):
-        shutil.copy( custom_rvalue_path, environment.ogre.generated_dir )
-  
-    if not common_utils.samefile( os.path.join(environment.ogre.generated_dir, 'custom_rvalue.cpp' )
-                                  , custom_rvalue_path ):
-        print "Updated custom_rvalue.cpp as it was missing or out of date"                                      
-        shutil.copy( custom_rvalue_path, environment.ogre.generated_dir )
-  
-    
-    
       
 def Set_Call_Policies( mb ):
     """ set the return call policies on classes that this hasn't already been done for.
@@ -595,28 +645,24 @@ def Fix_Pointer_Returns ( mb ):
     """ Change out functions that return a variety of pointer to base types and instead
     have them return the address the pointer is pointing to (the pointer value)
     This allow us to use CTypes to handle in memory buffers from Python
+    
+    Also - if documentation has been set then ignore the class/function as it means it's been tweaked else where
     """
     pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', '::Ogre::uint8', 'unsigned char']
     known_names=['ptr', 'useCountPointer']  # these are function names we know it's cool to exclude
     for fun in mb.member_functions():
         if declarations.is_pointer (fun.return_type):
             for i in pointee_types:
-                if fun.return_type.decl_string.startswith ( i ):
+                if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
                     if not fun.name in known_names:
                         print "Excluding (function):", fun
-#                     fun.call_policies \
-#                             = call_policies.return_range( fun, 'raw_data_size_t' )
                     fun.exclude()
-#                     print "Fixing to return unsigned int", fun
-#                     fun.add_transformation( ft.modify_return_type( _ReturnUnsignedInt ) )
     for fun in mb.member_operators():
         if declarations.is_pointer (fun.return_type):
             for i in pointee_types:
-                if fun.return_type.decl_string.startswith ( i ):
+                if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
                     print "Excluding (operator):", fun
                     fun.exclude()
-#                     print "Fixing to return unsigned int", fun
-#                     fun.add_transformation( ft.modify_return_type( _ReturnUnsignedInt ) )
 
 
 
@@ -637,7 +683,6 @@ def Remove_Static_Consts ( mb ):
             if checker( var ):
                 print "Excluding static const ", var
                 var.exclude()    
-    
 
 #
 # the 'main'function
