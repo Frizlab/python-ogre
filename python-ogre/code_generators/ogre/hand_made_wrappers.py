@@ -28,11 +28,43 @@ boost::python::object ResourceManager_getByName_alt(Ogre::ResourceManager& me, c
     return  boost::python::object( r );   
 }
 
+        
+// I'm not going to wrap ResourceManager::load in the same way as getByName etc as you can always do a load
+// and then do a getByName
+        
+boost::python::object ResourceManager_getByHandle(Ogre::ResourceManager& me,Ogre::ResourceHandle handle) {
+   // get the resouce
+    Ogre::ResourcePtr r = me.getByHandle( handle );
+   if( dynamic_cast< Ogre::Texture* >( r.get() ) ){
+        return boost::python::object( Ogre::TexturePtr( r ) );
+    }
+    if( dynamic_cast< Ogre::Material* >( r.get() ) ){
+        return boost::python::object( Ogre::MaterialPtr( r ) );
+    }
+   if( dynamic_cast< Ogre::Compositor* >( r.get() ) ){
+        return boost::python::object( Ogre::CompositorPtr( r ) );
+    }
+    if( dynamic_cast< Ogre::Font* >( r.get() ) ){
+        return boost::python::object( Ogre::FontPtr( r ) );
+    }   
+    if( dynamic_cast< Ogre::GpuProgram* >( r.get() ) ){
+        return boost::python::object( Ogre::GpuProgramPtr( r ) );
+    }
+    if( dynamic_cast< Ogre::HighLevelGpuProgram* >( r.get() ) ){
+        return boost::python::object( Ogre::HighLevelGpuProgramPtr( r ) );
+    }
+    if( dynamic_cast< Ogre::Mesh* >( r.get() ) ){
+        return boost::python::object( Ogre::MeshPtr( r ) );
+    }
+    if( dynamic_cast< Ogre::Skeleton* >( r.get() ) ){
+        return boost::python::object( Ogre::SkeletonPtr( r ) );
+    }
+    return boost::python::object( r ); //unknown type
+}
 
 boost::python::object ResourceManager_getByName(Ogre::ResourceManager& me, const std::string& name){
     // get the resouce
     Ogre::ResourcePtr r = me.getByName( name );
-    //ResourcePtr r = TextureManager.getSingleton().getByName( name ); 
    if( dynamic_cast< Ogre::Texture* >( r.get() ) ){
         return boost::python::object( Ogre::TexturePtr( r ) );
     }
@@ -63,10 +95,12 @@ boost::python::object ResourceManager_getByName(Ogre::ResourceManager& me, const
 WRAPPER_REGISTRATION_ResourceManager = \
 """
     def( "getByName", &::ResourceManager_getByName,
-    "" );
-    
+    "Python-Ogre Hand Wrapped\\n" );
     ResourceManager_exposer.def( "getByNameAlt", &::ResourceManager_getByName_alt,
-    "" );
+    "Python-Ogre Hand Wrapped\\n" );
+    ResourceManager_exposer.def( "getByHandle", &::ResourceManager_getByHandle,
+    "Python-Ogre Hand Wrapped\\n" );
+
 """
 
 WRAPPER_DEFINITION_General = \
