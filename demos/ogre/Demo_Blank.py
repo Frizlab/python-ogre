@@ -10,12 +10,12 @@ def doit():
     config = ogre.ConfigFile()
     config.load('resources.cfg' ) #, '', False )
     seci = config.getSectionIterator()
-    while (seci.hasMoreElements()):
+    while seci.hasMoreElements():
         secName = seci.peekNextKey()
         settings = seci.getNext()
-        ## Note that getMultiMapSettings is a Python-Ogre extension to return a multimap in a list of tuples
-        settingslist = config.getMultiMapSettings ( settings )
-        for typeName, archName in settingslist:
+        for entry in settings:
+            typeName = entry.key
+            archName =entry.value
             ogre.ResourceGroupManager.getSingleton().addResourceLocation(archName, typeName, secName)
             
             

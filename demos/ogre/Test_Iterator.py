@@ -27,31 +27,13 @@ class TestApplication(sf.Application):
         s.build() 
         
         print "\n\n  About to test Iterators \n\n"
-        rit =  s.getRegionIterator()  # StaticGeometry.RegionIterator  ## MAP ITERATOR
-        ##for reg in rit:   ##
-        while rit.hasMoreElements():
-            reg = rit.getNext() 
-            lodit = reg.getLODIterator()   ## Vector Iterator
-            
-            ## Error occurs here...
-            for lod in lodit: 
-            
-            ## uncomment these two line (and comment the one above) and everything works
-#             while lodit.hasMoreElements():
-#                 #lod = lodit.getNext()      ## either of these work..
-#                 lod = lodit.__next__() 
-                
-                matit = lod.getMaterialIterator()  ## MAP ITERATOR
-                ##for mat in matit:  
-                while matit.hasMoreElements():  
-                    mat = matit.getNext() 
-                    geomit = mat.getGeometryIterator()  ## Vector Iterator
-                    ##for geom in geomit: 
-                    while geomit.hasMoreElements():  
-                        geom = geomit.getNext() 
+        for reg in s.getRegionIterator():   ##
+            for lod in reg.getLODIterator(): 
+                for mat in lod.getMaterialIterator():  
+                    for geom in mat.getGeometryIterator(): 
                         print "Iterators:", reg, lod, mat, geom
                         
-        ## If it doesn't crach then it must be OK :)
+        ## If it doesn't crash then it must be OK :)
         print"\n\n   Iterators OK !!\n\n"
 
 if __name__ == '__main__':

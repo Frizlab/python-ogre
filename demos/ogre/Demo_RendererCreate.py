@@ -16,14 +16,16 @@ class ApplicationFramework(object):
         config.load('resources.cfg' ) 
         
         ## this is still ugly as we need to create a real python iterator...
-        seci = config.getSectionIterator()
-        while (seci.hasMoreElements()):
-            secName = seci.peekNextKey()
-            settings = seci.getNext()
-            settingslist = config.getMultiMapSettings ( settings )
-            for typeName, archName in settingslist:
-                ogre.ResourceGroupManager.getSingleton().addResourceLocation(archName, typeName, secName)
+        
+        
+        section_iter = config.getSectionIterator()
+        while section_iter.hasMoreElements():
+            section_name = section_iter.peekNextKey()
+            settings = section_iter.getNext()
+            for item in settings:
+                ogre.ResourceGroupManager.getSingleton().addResourceLocation(item.value, item.key, section_name)
 
+        
                 
         renList = self.root.getAvailableRenderers()
         miscParams = ogre.NameValuePairList()
@@ -76,8 +78,8 @@ class ApplicationFramework(object):
         del self.frameListener
         if self.world:
             del self.world
-        del self.root
         del self.renderWindow
+        del self.root
         
     def render(self):
         return self.root.renderOneFrame()

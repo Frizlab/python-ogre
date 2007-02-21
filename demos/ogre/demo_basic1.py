@@ -41,9 +41,12 @@ class OGREMain(ogre.Root):
             print "MaxPointSize:", cap.getMaxPointSize()
             print "Stencil stuff:", cap.getStencilBufferBitDepth()
             opts = ren.getConfigOptions()
-            print opts
-            print opts.keys()
-            print dir(opts)
+            print "Opts:", opts
+            print "Opts keys:",opts.keys()
+#             for i in opts:
+#                 print "Key:",i.key
+#                 ##print i.value
+#             print dir(opts)
             print opts['Video Mode']
             print ren.getConfigOptions()['Video Mode']
         self.setRenderSystem(rend_list[1])
@@ -62,9 +65,11 @@ class OGREMain(ogre.Root):
         while section_iter.hasMoreElements():
             section_name = section_iter.peekNextKey()
             settings = section_iter.getNext()
-            settings_tuples = config.getMultiMapSettings(settings)
-            for resource_type, resource in settings_tuples:
-                self.rgm.addResourceLocation(resource, resource_type, section_name)
+            ### settings_tuples = config.getMultiMapSettings(settings)
+            ##for resource_type, resource in settings_tuples:
+            ##    self.rgm.addResourceLocation(resource, resource_type, section_name)
+            for item in settings:
+                self.rgm.addResourceLocation(item.value, item.key, section_name)
 
 
 def main():
