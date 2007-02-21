@@ -505,6 +505,11 @@ class ShadowsApplication ( sf.Application ):
 
         # show overlay
         pOver = ogre.OverlayManager.getSingleton().getByName("Example/ShadowsOverlay")    
+        print "\n\n\n"
+        print dir (pOver )
+        print pOver
+        print "\n\n\n"
+        
         mShadowTechniqueInfo = ogre.OverlayManager.getSingleton().getOverlayElement("Example/Shadows/ShadowTechniqueInfo")
         mMaterialInfo = ogre.OverlayManager.getSingleton().getOverlayElement("Example/Shadows/MaterialInfo")
         mInfo = ogre.OverlayManager.getSingleton().getOverlayElement("Example/Shadows/Info")

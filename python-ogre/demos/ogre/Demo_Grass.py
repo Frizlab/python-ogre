@@ -82,24 +82,15 @@ class GrassListener ( sf.FrameListener ):
 
         ## Update vertex program parameters by binding a value to each renderable
         offset = ogre.Vector4(0,0,0,0) 
-        rit =  mStaticGeom.getRegionIterator()  # StaticGeometry.RegionIterator 
-        while rit.hasMoreElements():
-            reg = rit.getNext() 
+        for reg in mStaticGeom.getRegionIterator():
             ## a little randomness
             self.xpos += reg.getCentre().x * 0.001 
             self.zpos += reg.getCentre().z * 0.001 
             offset.x = math.sin(self.xpos) * 0.05 
             offset.z = math.sin(self.zpos) * 0.05 
-            lodit = reg.getLODIterator() 
-            
-            while lodit.hasMoreElements():
-                lod = lodit.getNext() 
-                matit = lod.getMaterialIterator() 
-                while matit.hasMoreElements():
-                    mat = matit.getNext() 
-                    geomit = mat.getGeometryIterator() 
-                    while geomit.hasMoreElements():
-                        geom = geomit.getNext() 
+            for lod in reg.getLODIterator(): 
+                for mat in lod.getMaterialIterator():  
+                    for geom in mat.getGeometryIterator():
                         geom.setCustomParameter(OFFSET_PARAM, offset) 
 
         
