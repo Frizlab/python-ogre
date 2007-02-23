@@ -205,6 +205,8 @@ def ManualInclude ( mb ):
     #RenderOperation class is marked as private, but I think this is a mistake
     ogre_ns.class_('RenderOperation').include()
     
+#     ogre_ns.class_('_ConfigOption').noncopyable = False
+        
 ############################################################
 ##
 ##  And things that need manual fixes, but not necessarly hand wrapped
