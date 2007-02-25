@@ -32,7 +32,10 @@ class doc_extractor:
         find_block_end = False
         failed = 0
         doc_lines = []
-        
+        if declaration.documentation:
+            basedoc = declaration.documentation
+        else:
+            basedoc = ""
         ## note the gccxml uses a 1 based line scheme whereas we are using python arrays - 0 based
         ## so we need to subtract 1 from the line number.
         
@@ -47,7 +50,10 @@ class doc_extractor:
                 line = self.source[lcount]
                 if line.lstrip()[:3] == '///':
                     str = clear_str(line)
-                    retvalue = '"' + str[:-2] + '"' # remove the \n from the single line comment
+                    if basedoc:
+                        retvalue = '"' + basedoc + "\\n\\\n"+ str[:-2] + '"' # remove the \n from the single line comment
+                    else:
+                        retvalue = '"' + str[:-2] + '"' # remove the \n from the single line comment
                     #print "Extracted Doc String (short) ", retvalue
                     return retvalue
                     
@@ -79,12 +85,13 @@ class doc_extractor:
                 if final_str:
                     doc_lines.insert(0, clear_str(final_str))
         except:
-            return ""   ## problem finding comments
+            if not basedoc:
+                return ""
+        ret =""        
         if doc_lines:
             #print "Extracted Doc String for:",  declaration, "[", len(doc_lines),"]"
             ## we need to cope with strings longer than 2048 for MSVC
-            ret1 = '"' + "\\\n".join(doc_lines) + '"'
-            ret =""
+            ret1 =  "\\\n".join(doc_lines) 
             ## Py++ doesn't like non ascii characters in the doc string
             ## class_declaration.py - _generate_constructor - return ( ''.join( result ), used_init )
             for c in ret1:
@@ -93,7 +100,6 @@ class doc_extractor:
                 ret = ret + c
             if len ( ret ) < 1700:  ## just to be safe and adjust for line end chars etc..
                 return ret  ## OK we don't need to do anything special...
-            ret =  '"'
             length = 1
             for line in doc_lines:
                 ret = ret + line
@@ -103,10 +109,7 @@ class doc_extractor:
                 else :
                     ret = ret + '"' + "\n" + '"'    # we close the original 'quote', move to a new line and open a new quote
                     length = 1
-            
-            return ret + '"'     
-        #print "Doc String not found for", declaration  
-        return ""
+        return '"' + basedoc + "\\n\\\n" + ret + '"'            
     
 def get_generic_doc(declaration):
     """
