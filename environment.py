@@ -22,20 +22,25 @@ def log ( instring ):
         print __file__, "LOG::", instring
 
 PythonOgreMajorVersion = "0"
-PythonOgreMinorVersion = "9" # 0.9 for first 1.4 RC0
-PythonOgrePatchVersion = "0"
+PythonOgreMinorVersion = "7" # change to 0.7 due to lowercase properties
+PythonOgrePatchVersion = "2"
 
 ##
 ## these should be fine with auto create - however override them as necessary
 ##
 PATH_Python = os.path.dirname( sys.executable )
-python_include_dirs = os.path.join ( PATH_Python, 'include')
-python_lib_dirs = os.path.join ( PATH_Python, 'libs' )
+if os.name =='nt': 
+	python_include_dirs = os.path.join ( PATH_Python, 'include')
+	python_lib_dirs = os.path.join ( PATH_Python, 'libs' )
+##
+## for linux
+else:
+	python_include_dirs = os.path.join ( '/usr/include/python2.4', '')
+	python_lib_dirs = os.path.join ( '/usr/lib/python2.4', 'libs' )
 root_dir = os.path.abspath(os.path.dirname(__file__) )## The root directory is where this module is located
 
 sys.path.append( os.path.join( root_dir, 'common_utils' ) )
 shared_ptr_dir = os.path.join( root_dir, 'shared_ptr' )
-include_dir = os.path.join( root_dir, 'include' )
 generated_dir_name = 'generated'
 package_dir_name = 'packages'
 generated_dir = os.path.join( root_dir, generated_dir_name )
@@ -90,7 +95,6 @@ class ogre:
                 ,  Config.PATH_LIB_Ogre_CEGUIRenderer
                 , Config.PATH_LIB_Ogre_OgreMain
                 , Config.PATH_LIB_Ogre_Dependencies 
-                , Config.PATH_LIB_CEGUI
                 ]
     include_dirs = [ Config.PATH_Boost 
                 , Config.PATH_INCLUDE_Ogre 
@@ -162,10 +166,9 @@ class cegui:
                     ]
                   
     lib_dirs = [ Config.PATH_LIB_Boost
-                #,  Config.PATH_LIB_Ogre_CEGUIRenderer
+                ,  Config.PATH_LIB_Ogre_CEGUIRenderer
                 , Config.PATH_LIB_Ogre_OgreMain
-                , Config.PATH_LIB_CEGUI
-                #,  Config.PATH_LIB_Ogre_Dependencies
+                ,  Config.PATH_LIB_Ogre_Dependencies
                 ]
     CCFLAGS =  ' -D"BOOST_PYTHON_MAX_ARITY=19"'
     ModuleName = 'CEGUI'
