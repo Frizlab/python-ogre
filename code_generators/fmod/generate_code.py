@@ -159,10 +159,13 @@ def add_transformations ( mb ):
         for arg in f.arguments:
             if pos >= offset:
                 ds = arg.type.decl_string
-                if "*" in ds and ds[0:4] in standardprefix: ## a pointer to a 'normal' type
-                    ftlist.append( ft.output(pos, AddRef=True) )
+# #                     this doesn't seem to be needed anymore 
+# #                 if "*" in ds and ds[0:4] in standardprefix: ## a pointer to a 'normal' type
+# #                     print "NEED TO TWEAK with addref", f, arg, pos
+# # # #                     ftlist.append( ft.output(pos, AddRef=True) )
                 
-                elif "* *" in ds and not ds.startswith ('void') and "FMOD::" in ds:   # it's a pointer to a pointer, return by reference
+                if "* *" in ds and not ds.startswith ('void') and "FMOD::" in ds:   # it's a pointer to a pointer, return by reference
+                    print "NEED TO TWEAK with addref & returnby ref", f, arg, pos
                     ftlist.append( ft.output(pos, AddRef=True, ReturnByRef=True) )
             pos += 1  
         return ftlist 

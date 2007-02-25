@@ -6,7 +6,25 @@
 #       However probably don't actually work
 # 2.    Properties.py and calling 'properties.create' - commented out at the moment, not sure if it is really needed?
 
-import os, sys, time
+
+# # /* these types are mainly just used in headers */
+# # typedef dReal dVector3[4];
+# # typedef dReal dVector4[4];
+# # typedef dReal dMatrix3[4*3];
+# # typedef dReal dMatrix4[4*4];
+# # typedef dReal dMatrix6[8*6];
+# # typedef dReal dQuaternion[4];
+
+## stuff to handle
+## arguments named "result" with a type of dVector3 or dVector4 changed to an output of 3 or 4 reals
+## any other dVector3 (or any thing in the list above define as an in/out
+
+## wonder if we should just make everything an in/out
+## PROBLEM:  Current array function transformers can only be in or out, not both...
+## so lets set anything named result to output, all others to input..
+
+
+import os, sys, time, shutil
 
 #add environment to the path
 sys.path.append( os.path.join( '..', '..' ) )
@@ -14,21 +32,90 @@ sys.path.append( os.path.join( '..', '..' ) )
 sys.path.append( '..' )
 sys.path.append( '.' )
 
-import shutil
-
 import environment
 import common_utils
 import customization_data
 import hand_made_wrappers
 
-from pyplusplus import module_builder
-from pyplusplus import module_creator
-from pyplusplus.module_builder import call_policies
-
 from pygccxml import parser
 from pygccxml import declarations
+from pyplusplus import messages
+from pyplusplus import module_builder
+from pyplusplus import decl_wrappers
 
+from pyplusplus import function_transformers as ft
+from pyplusplus.module_builder import call_policies
+from pyplusplus.module_creator import call_policies_resolver
+from pyplusplus.module_creator import sort_algorithms
 
+from pyplusplus import code_repository
+
+import common_utils.extract_documentation as exdoc
+import common_utils.var_checker as varchecker
+import defination_finder as df
+
+def AutoArrayArgs( mb ):
+    """ Fix Functions that return a pointer to a float structure..  Challenge is that all of the 
+    sensible names (dVector3, dMatrix4) are typedefs to dReal (a float *) so in the gcc xml file
+    we lose the names and so don't know what the real stuctures are.  
+    
+    So we use an external function in "defination_finfer.py" to go back to the header files for
+    each function and determine what the structure really is.
+    
+    We also don't know if these structures are for input or output or both to the function -- so
+    we look for a variable called 'result' as treat it as an output, everything else as an input
+    
+    Need to get a mod to Py++ to support in/out
+    """
+    
+    defcheck = df.def_finder()
+    names={'dVector3':4, 'dVector3':4, 'dMatrix3':12,'dMatrix4':16, 'dMatrix6':48, 'dQuaternion':4}
+    for fun in mb.global_ns.calldefs():
+        print "CHECKING", fun
+        transforms=[]       ## we collect the transformations for a function and execute in one go
+        desc=""
+        arg_position = 0
+        for arg in fun.arguments:
+            if arg.name=='result':  # it's an output
+                originalDef = defcheck(fun, arg_position)  ## here is where we go and get the real def for the arg
+                for n in names:
+                    if n in originalDef:
+                        transforms.append(ft.output_static_array(arg_position, size=names[n]) )
+                        desc=desc+"Transforming "+ arg.name+ " pos("+str(arg_position)+\
+                             ") as an OUTPUT array with "+ str(names[n])+ " elements"
+                        break
+            else:
+                print "Arg Pos", arg_position, arg.name
+                originalDef = defcheck(fun, arg_position)  ## here is where we go and get the real def for the arg
+                for n in names:
+                    if n in originalDef:
+                        transforms.append(ft.input_static_array(arg_position, size=names[n]) )
+                        desc=desc+"Transforming "+ arg.name+ " pos("+str(arg_position)+\
+                             ") as an INPUT array with "+ str(names[n])+ "elements"
+                        break
+            arg_position += 1
+        if transforms:
+            fun.add_transformation( *transforms )
+            fun.documentation = "Python-Ogre: Function Array Modified\\n\\\n" + desc
+
+def ReturnReals( mb ):
+    """ many functions return dReal * which we need to make tuples
+    however we don't relaly know how big to make the tuple so we use a dictionary
+    to determine the size based upon the function name
+    """
+    names = {'Rotation':12, 'Position':3, 'Quaternion':4, 'Vel':3, 'Force':3, 'Torque':3 }
+
+    for fun in mb.global_ns.calldefs():
+        if fun.return_type:
+            if "::dReal const *" == fun.return_type.decl_string:  ## OK we need to process it
+                for n in names:
+                    if fun.name.endswith (n):
+                        print "Fixing return on",fun.name
+                        fun.call_policies = call_policies.convert_array_to_tuple( 
+                                            names[n], call_policies.memory_managers.none )
+                        break
+
+            
 def filter_declarations( mb ):
     global_ns = mb.global_ns
     global_ns.exclude()
@@ -51,6 +138,7 @@ def filter_declarations( mb ):
         if funcs.name[0]=='d' and funcs.name[1].isupper():
             print "Including Function", funcs.name
             funcs.include()
+            
     for var in ode_ns.variables ():
         print "Checking Variable:", var.name
         if len(var.name) > 2:
@@ -67,6 +155,8 @@ def filter_declarations( mb ):
 #         if funcs.name[0]=='d':
 #             print "Including Member Function", funcs.name
 #             funcs.include()
+
+## these either don't exist in the source or have strange arguments
     ignore=(  "dGeomGetBodyNext", "dGeomMoved", "dPrintMatrix",
         "dWorldGetAutoDisableAngularAverageThreshold",
         "dWorldGetAutoDisableLinearAverageThreshold", 
@@ -75,29 +165,7 @@ def filter_declarations( mb ):
     for cls in ignore:
         ode_ns.free_function(cls).exclude()
        
-   # these are excluded as they pass real pointers as function varialbles and expectde them to be updated
-    # they have been replaced in hand wrappers
-    ode_ns.class_( "dBody" ).member_functions( "getPosRelPoint").exclude()
-    ode_ns.class_( "dBody" ).member_functions( "getRelPointPos").exclude()
-    ode_ns.class_( "dBody" ).member_functions("getPointVel").exclude()
-    ode_ns.class_( "dBody" ).member_functions( "getRelPointVel").exclude()
-    ode_ns.class_( "dBody" ).member_functions( "getFiniteRotationAxis").exclude()
-    ode_ns.class_( "dBody" ).member_functions( "vectorFromWorld").exclude()
-    ode_ns.class_( "dBody" ).member_functions( "vectorToWorld").exclude()
-    
-
-    # these classes return real *, which are really points to other structures
-    # need to be fixed in hand wrappers
-    ode_ns.class_( "dBody" ).member_functions( "getPosition").exclude()
-    ode_ns.class_( "dBody" ).member_functions( "getRotation").exclude()
-    ode_ns.class_( "dBody" ).member_functions("getQuaternion").exclude()
-    ode_ns.class_( "dBody" ).member_functions( "getLinearVel").exclude()
-    ode_ns.class_( "dBody" ).member_functions( "getAngularVel").exclude()
-    ode_ns.class_( "dBody" ).member_functions( "getForce").exclude()
-    ode_ns.class_( "dBody" ).member_functions( "getTorque").exclude()
-    ode_ns.class_( "dGeom" ).member_functions( "getPosition").exclude()
-    ode_ns.class_( "dGeom" ).member_functions( "getRotation").exclude()
-    
+    # #     
     # in hand wrappers to handle pyobjects...
     ode_ns.class_( "dGeom" ).member_functions( "getData").exclude()
     ode_ns.class_( "dGeom" ).member_functions( "setData").exclude()
@@ -107,48 +175,7 @@ def filter_declarations( mb ):
     ode_ns.class_( "dSpace" ).member_functions( "collide").exclude()
     
          
-#     ptr_to_fundamental_query \
-#         = lambda f: declarations.is_pointer( f.return_type ) \
-#                     and declarations.is_fundamental( declarations.remove_pointer( f.return_type ) )
-                    
-#     ode_ns.calldefs( ptr_to_fundamental_query ).exclude()
 
-#     # some internal variables dxXXXX are being exposed via functions 
-#     # so we need to looking for functions that return these private xxxID's and remove them 
-#     for cls in ode_ns.classes():
-#         try:
-#             for func in cls.member_functions():
-#                 if 'ID' in func.return_type.decl_string[-2:]:
-#                     print "Removing :", cls.name,"-",func.name, "-",func.return_type.decl_string 
-#                     func.exclude()
-#                 ## while we are here lets look for functions returning dReal pointers which are not supported
-#                 elif 'dReal' in func.return_type.decl_string:
-#                     if '*' in func.return_type.decl_string: ## a pointer to a real :(
-#                         print "Removing dREAL:", cls.name,"-",func.name, "-",func.return_type.decl_string 
-#                         func.exclude()
-#         except:
-#             pass
-#   
-#     # these dx variables are also used in structures so we need to stop these struct members being exposed 
-#     for cls in ode_ns.classes():
-#         try:
-#             for var in cls.variables():
-#                 #print "*** ", var,"\n", var.type
-#                 if 'ID' in var.type.decl_string[-2:]:
-#                     print "Removing VAR:", cls.name,"-",var.name, "-",var.decl_string 
-#                     var.exclude()
-#                 elif 'as__scope_d' in var.type.decl_string:
-#                     print "Removing SCOPE VAR:", cls.name,"-",var.name, "-",var.decl_string 
-#                     var.exclude()
-#         except:
-#             pass
-#             
-#     cls =  ode_ns.class_('::dJoint')
-#     for func in cls.member_functions():
-#         print func
-        
-#     sys.exit()
-            
     ## Exclude protected and private that are not pure virtual
     ### need to be careful here as it removes free functions
     query = ( declarations.access_type_matcher_t( 'private' ) | declarations.access_type_matcher_t( 'protected' ) )\
@@ -164,16 +191,15 @@ def filter_declarations( mb ):
     g12.exclude()
     #g12.getter_call_policies = call_policies.return_value_policy( call_policies.return_opaque_pointer )
 
- 
-def set_call_policies( mb ):
+def Set_Call_Policies( mb ):
+    """ set the return call policies on classes that this hasn't already been done for.
+    Set the default policy to deal with pointer/reference return types to reference_existing object
+    """
     ode_ns = mb.global_ns   ###  Again, no sperate namespace  .namespace ('ode')
-
-    # Set the default policy to deal with pointer/reference return types to reference_existing object
-    # as this is the ode Default.
     mem_funs = ode_ns.calldefs ()
     mem_funs.create_with_signature = True #Generated code will not compile on
     #MSVC 7.1 if function has throw modifier.
-    resolver = module_creator.built_in_resolver_t()
+    resolver = call_policies_resolver.built_in_resolver_t()
     for mem_fun in mem_funs:
         if mem_fun.call_policies:
             continue
@@ -181,13 +207,11 @@ def set_call_policies( mb ):
         if decl_call_policies:
             mem_fun.call_policies = decl_call_policies
             continue
-        rtype = declarations.remove_alias( mem_fun.return_type )
-        if declarations.is_pointer(rtype) or declarations.is_reference(rtype):
-#             mem_fun.call_policies \
-#                 = call_policies.return_value_policy( call_policies.reference_existing_object )
+        if not mem_fun.call_policies and \
+                    (declarations.is_reference (mem_fun.return_type) or declarations.is_pointer (mem_fun.return_type) ):
             mem_fun.call_policies \
                = call_policies.return_value_policy( '::boost::python::return_pointee_value' )
-
+ 
 
 def generate_code():
     xml_cached_fc = parser.create_cached_source_fc(
@@ -203,7 +227,9 @@ def generate_code():
                                           , indexing_suite_version=2 )
 
     filter_declarations (mb)
-
+    AutoArrayArgs( mb )
+    ReturnReals( mb )
+    
     query = lambda decl: isinstance( decl, ( declarations.class_t, declarations.class_declaration_t ) ) \
                          and decl.name.startswith( 'dx' )
     mb.global_ns.decls( query ).opaque = True   
@@ -224,7 +250,7 @@ def generate_code():
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
 
-    set_call_policies (mb)
+    Set_Call_Policies (mb)
     hand_made_wrappers.apply( mb )
 
     ode_ns = mb.global_ns  ## .namespace ('ode')
@@ -235,11 +261,15 @@ def generate_code():
 
 
     #Creating code creator. After this step you should not modify/customize declarations.
-    mb.build_code_creator (module_name='_ode_')
+    extractor = exdoc.doc_extractor("")
+    mb.build_code_creator (module_name='_ode_' , doc_extractor= extractor)
+    
     for inc in environment.ode.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )
     mb.code_creator.user_defined_directories.append( environment.ode.generated_dir )
     mb.code_creator.replace_included_headers( customization_data.header_files(environment.ode.version) )
+    mb.code_creator.add_include( "__convenience.pypp.hpp" )
+    mb.code_creator.add_system_header( code_repository.convenience.file_name )
 
     huge_classes = map( mb.class_, customization_data.huge_classes(environment.ode.version) )
 

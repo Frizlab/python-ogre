@@ -9,16 +9,17 @@ DESCRIPTION = """Python-Ogre is a Python wrapper module for the
 OGRE 3D Graphics library. It contains python functions and classes
 that will allow you to fully utilitize the Ogre library.  It is 
 Unique in that the python wrappers are created automatically by
-Py++, hence making maintainence etc very simple."""
+Py++, hence making maintainence etc very simple.
+This version is built against the Ogre CVS"""
 
 METADATA = {
     "name":             "Python-Ogre",
-    "version":          "0.5 Release",
+    "version":          "0.80 Candidate",
     "license":          "LGPL",
     "url":              "http://python-ogre.python-hosting.com/",
-    "author":           "Lakin Wecker, Roman Yakovenko, Andy Miller",
+    "author":           "Lakin Wecker, Roman Yakovenko, Andy",
     "author_email":     "python-ogre-developers@googlegroups.com",
-    "description":      "Py++ Ogre Python Binding",
+    "description":      "Py++ Ogre Python Binding: For CVS version of Ogre - SNAPSHOT Release",
     "long_description": DESCRIPTION,
 }
 from distutils.core import setup
@@ -35,7 +36,7 @@ base = os.path.join(os.getcwd(), os.path.dirname(sys.argv[0]) )
 demofiles = GetFileList ( os.path.join (base, "demos") )
 
 PACKAGEDATA = {
-       "packages":    ['Ogre'],
+       "packages":    ['Ogre', 'OIS', 'CEGUI', 'OgreRefApp', 'OgreNewt', 'FMOD', 'OgreOde','ODE', 'OgreAL' ], #, #'Newton'],
        "package_dir": {'': 'packages'},
        "package_data": {'': ['*.pyd', '*.dll']},
 #       "data_files": [(base+'Demos', demofiles),]
