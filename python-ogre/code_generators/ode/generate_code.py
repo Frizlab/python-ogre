@@ -71,6 +71,8 @@ def AutoArrayArgs( mb ):
     defcheck = df.def_finder()
     names={'dVector3':4, 'dVector3':4, 'dMatrix3':12,'dMatrix4':16, 'dMatrix6':48, 'dQuaternion':4}
     for fun in mb.global_ns.calldefs():
+        if fun.name[0] != 'd':
+            continue
         print "CHECKING", fun
         transforms=[]       ## we collect the transformations for a function and execute in one go
         desc=""
