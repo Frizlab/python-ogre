@@ -124,7 +124,13 @@ def set_call_policies( mb ):
                 
 
 def add_transformations ( mb ):
-    pass
+    global_ns = mb.global_ns
+    global_ns.member_functions('::OgreOde_Prefab::Ragdoll::pick').exclude()
+    global_ns.mem_fun('::OgreOde_Prefab::Ragdoll::pick', arg_types=[None,None,None]).include()
+    global_ns.mem_fun('::OgreOde_Prefab::Ragdoll::pick', arg_types=[None,None,None]) \
+        .add_transformation(ft.output('body'), ft.output('position') )
+        
+    
     
 def configure_exception(mb):
     #We don't exclude  Exception, because it contains functionality, that could

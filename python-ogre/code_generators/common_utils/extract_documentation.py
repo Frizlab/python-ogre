@@ -150,6 +150,7 @@ def clear_str(str):
     str = clean(str, "\\par", "")    ## it will get a single blank line by default
     str = clean(str, "\n", "\\n") 
     str = clean(str, "\\p", "")     ## cegui comments
+    str = clean(str, "\\li", "  ")     ## ode comments
     str = clean(str, "\\exception", "Exception: ") 
     str = clean(str, "::", ".")     ## make it more python accurate 
     str = clean(str, "->", ".") 
