@@ -71,7 +71,9 @@ def AutoArrayArgs( mb ):
     defcheck = df.def_finder()
     names={'dVector3':4, 'dVector3':4, 'dMatrix3':12,'dMatrix4':16, 'dMatrix6':48, 'dQuaternion':4}
     for fun in mb.global_ns.calldefs():
-        if fun.name[0] != 'd':
+        if len(fun.name) < 2 or "std::" in fun.decl_string:
+            continue
+        if fun.name[0] != 'd' or (fun.name[1] != fun.name[1].upper()):
             continue
         print "CHECKING", fun
         transforms=[]       ## we collect the transformations for a function and execute in one go
@@ -115,6 +117,7 @@ def ReturnReals( mb ):
                         print "Fixing return on",fun.name
                         fun.call_policies = call_policies.convert_array_to_tuple( 
                                             names[n], call_policies.memory_managers.none )
+                        fun.include()
                         break
 
             
@@ -229,8 +232,6 @@ def generate_code():
                                           , indexing_suite_version=2 )
 
     filter_declarations (mb)
-    AutoArrayArgs( mb )
-    ReturnReals( mb )
     
     query = lambda decl: isinstance( decl, ( declarations.class_t, declarations.class_declaration_t ) ) \
                          and decl.name.startswith( 'dx' )
@@ -253,6 +254,8 @@ def generate_code():
     mb.classes().always_expose_using_scope = True
 
     Set_Call_Policies (mb)
+    AutoArrayArgs( mb )
+    ReturnReals( mb )
     hand_made_wrappers.apply( mb )
 
     ode_ns = mb.global_ns  ## .namespace ('ode')

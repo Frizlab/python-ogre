@@ -18,7 +18,7 @@ dBody_getData ( ::dBody & me ) {
 
 WRAPPER_REGISTRATION_dBody = \
 """
-    dBody_exposer.def( "getData", &::dBody_getData);
+    def( "getData", &::dBody_getData);
     dBody_exposer.def( "setData", &::dBody_setData);
 """
 
@@ -44,7 +44,7 @@ dGeom_getData ( ::dGeom & me ) {
 
 WRAPPER_REGISTRATION_dGeom = \
 """
-    dGeom_exposer.def ("setData", &::dGeom_setData );
+    def ("setData", &::dGeom_setData );
     dGeom_exposer.def ("getData", &::dGeom_getData);
 """
 
