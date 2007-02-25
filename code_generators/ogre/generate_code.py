@@ -614,12 +614,12 @@ def Set_Exception(mb):
     Exception.mem_fun('getNumber').exclude() # declared with empty throw
     Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getFullDescription().c_str()' )
     ## we need to exclude the copy constructor
-    for c in Exception.constructors(arg_types=[]):
-        print c
-        c.exclude() ## exclude the first constructor..
-        break
-    print dir(c)
-    sys.exit()
+#     for c in Exception.constructors(arg_types=[]):
+#         print c
+#         c.exclude() ## exclude the first constructor..
+#         break
+#     print dir(c)
+#     sys.exit()
         
     
 def _ReturnUnsignedInt( type_ ):
