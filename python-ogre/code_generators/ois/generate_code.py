@@ -20,6 +20,7 @@ from pyplusplus.module_builder import call_policies
 from pygccxml import parser
 from pygccxml import declarations
 import common_utils.extract_documentation as exdoc
+import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
 
 def filter_declarations( mb ):
@@ -57,6 +58,18 @@ def set_call_policies( mb ):
     mouse.member_function( "getMouseState" ).call_policies =  call_policies.return_value_policy(
                                                                                call_policies.reference_existing_object )
                                                                                
+                                                                               
+def Remove_Static_Consts ( mb ):
+    """ linux users have compile problems with vars that are static consts AND have values set in the .h files
+    we can simply leave these out """
+    checker = varchecker.var_checker()
+    for var in mb.vars():
+        if type(var.type) == declarations.cpptypes.const_t:
+            if checker( var ):
+                print "Excluding static const ", var
+                var.exclude()    
+
+                                                                               
  
 def configure_exception(mb):
     #We don't exclude  Exception, because it contains functionality, that could
@@ -77,7 +90,8 @@ def generate_code():
                                           , indexing_suite_version=2 )
 
     filter_declarations (mb)
-
+    
+    Remove_Static_Consts ( mb.namespace( 'OIS' ) )
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
 
