@@ -93,14 +93,9 @@ class doc_extractor:
         if doc_lines:
             #print "Extracted Doc String for:",  declaration, "[", len(doc_lines),"]"
             ## we need to cope with strings longer than 2048 for MSVC
-            ret1 =  "\\\n".join(doc_lines) 
-            ## Py++ doesn't like non ascii characters in the doc string
-            ## class_declaration.py - _generate_constructor - return ( ''.join( result ), used_init )
-            for c in ret1:
-                if ord(c) >127:
-                    c = ' '
-                ret = ret + c
+            ret =  "\\\n".join(doc_lines) 
             if len ( ret ) > 1700:  ## just to be safe and adjust for line end chars etc..
+                ret = ""
                 length = 1
                 for line in doc_lines:
                     ret = ret + line
@@ -110,8 +105,15 @@ class doc_extractor:
                     else :
                         ret = ret + '"' + "\n" + '"'    # we close the original 'quote', move to a new line and open a new quote
                         length = 1
-        if len(basedoc) >1 or len(ret)>1:
-            return '"' + basedoc + "\\n" + ret + '"'            
+        ## Py++ doesn't like non ascii characters in the doc string
+        ## class_declaration.py - _generate_constructor - return ( ''.join( result ), used_init )
+        newret = ""
+        for c in ret:
+            if ord(c) >127:
+                c = ' '
+            newret = newret + c
+        if len(basedoc) >1 or len(newret)>1:
+            return '"' + basedoc + "\\n" + newret + '"'            
         else: return ""
     
 def get_generic_doc(declaration):
