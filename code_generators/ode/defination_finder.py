@@ -30,9 +30,16 @@ class def_finder:
         ## the ODE source likes to split definations across multiple lines so we need to backup until we
         ## find the opening brace, then make a single line from rest
         ##
-        print "**", self.source[startlocation]
-        while not "(" in self.source[startlocation]:  ## need to backup as defs are across multiple line
+        print "Starting with:", self.source[startlocation]
+        
+        ## lets look for the function name and a '('
+        while (not "(" in self.source[startlocation] and 
+            declaration.name not in self.source[startlocation]) or\
+                self.source[startlocation].lstrip()[0] == '{':
+            ## need to backup as defs are across multiple line
             startlocation -=1
+            print"Backed up to:", self.source[startlocation].lstrip()
+             
         varline = ""   
         for x in range (startlocation, endlocation+1):
             varline = varline + self.source[x]
