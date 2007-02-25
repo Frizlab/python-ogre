@@ -18,6 +18,7 @@ class doc_extractor:
         self.startswith = startswith
         
     def __call__(self, declaration):
+       
         #print "doc_extractor called with:", declaration
         if not declaration.decl_string.startswith(self.startswith):
             return ""
@@ -34,6 +35,7 @@ class doc_extractor:
         doc_lines = []
         if declaration.documentation:
             basedoc = declaration.documentation
+            
         else:
             basedoc = ""
         ## note the gccxml uses a 1 based line scheme whereas we are using python arrays - 0 based
@@ -49,11 +51,11 @@ class doc_extractor:
             for lcount in xrange(declaration.location.line-1, declaration.location.line-4 , -1):
                 line = self.source[lcount]
                 if line.lstrip()[:3] == '///':
-                    str = clear_str(line)
+                    str_ = clear_str(line)
                     if basedoc:
-                        retvalue = '"' + basedoc + "\\n\\\n"+ str[:-2] + '"' # remove the \n from the single line comment
+                        retvalue = '"' + basedoc + "\\n\\\n"+ str_[:-2] + '"' # remove the \n from the single line comment
                     else:
-                        retvalue = '"' + str[:-2] + '"' # remove the \n from the single line comment
+                        retvalue = '"' + str_[:-2] + '"' # remove the \n from the single line comment
                     #print "Extracted Doc String (short) ", retvalue
                     return retvalue
                     
@@ -98,18 +100,19 @@ class doc_extractor:
                 if ord(c) >127:
                     c = ' '
                 ret = ret + c
-            if len ( ret ) < 1700:  ## just to be safe and adjust for line end chars etc..
-                return ret  ## OK we don't need to do anything special...
-            length = 1
-            for line in doc_lines:
-                ret = ret + line
-                length += len ( line )
-                if length < 1500 :  # again lets be conservative
-                    ret = ret + "\\\n"
-                else :
-                    ret = ret + '"' + "\n" + '"'    # we close the original 'quote', move to a new line and open a new quote
-                    length = 1
-        return '"' + basedoc + "\\n\\\n" + ret + '"'            
+            if len ( ret ) > 1700:  ## just to be safe and adjust for line end chars etc..
+                length = 1
+                for line in doc_lines:
+                    ret = ret + line
+                    length += len ( line )
+                    if length < 1500 :  # again lets be conservative
+                        ret = ret + "\\\n"
+                    else :
+                        ret = ret + '"' + "\n" + '"'    # we close the original 'quote', move to a new line and open a new quote
+                        length = 1
+        if len(basedoc) >1 or len(ret)>1:
+            return '"' + basedoc + "\\n" + ret + '"'            
+        else: return ""
     
 def get_generic_doc(declaration):
     """
