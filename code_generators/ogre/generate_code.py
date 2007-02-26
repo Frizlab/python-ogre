@@ -269,6 +269,11 @@ def ManualFixes ( mb ):
     UTFString.mem_fun( 'asUTF8' ).alias = '__str__'
     UTFString.mem_fun( 'asWStr' ).alias = '__unicode__'
 
+    # expose << operators as __str__ functions
+    ClassList=['Vector3','Vector2','Vector4','Matrix4', 'ColourValue', 'Quaternion']
+    for cls in ClassList:
+        mb.class_(cls).add_registration_code ( 'def(str(bp::self))' )
+    
              
 ############################################################
 ##
@@ -526,6 +531,9 @@ def AutoFixes ( mb ):
     # and change functions that return a variety of pointers to instead return unsigned int's
     Fix_Pointer_Returns ( ogre_ns )   
 
+    # functions that need to have implicit conversions turned off
+    Fix_Implicit_Conversions ( ogre_ns)
+    
     
  
 ###############################################################################
@@ -533,7 +541,17 @@ def AutoFixes ( mb ):
 ## here are the helper functions that do much of the work
 ##
 ###############################################################################     
-     
+
+ 
+def Fix_Implicit_Conversions ( mb ):
+    # and we need to remove the conversion here as radians doesn't work as expected
+    cls=mb.class_('Radian')
+    cls.constructors().allow_implicit_conversion = False
+    cls=mb.class_('Degree')
+    cls.constructors().allow_implicit_conversion = False
+#     for cls in ogre_ns.class_( lambda cls: cls.name in ( 'Radian', 'Degree' ) ):
+#        cls.constructors().allow_implicit_conversion = False
+    
 def Fix_Ref_Not_Const ( mb ):
     """ we have problems with sharedpointer arguments that are defined as references
     but are NOT const.  Boost doesn't understand how to match them and you get a C++ Signature match fails.
@@ -613,13 +631,11 @@ def Set_Exception(mb):
     Exception.mem_fun('what').exclude() # declared with empty throw
     Exception.mem_fun('getNumber').exclude() # declared with empty throw
     Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getFullDescription().c_str()' )
-    ## we need to exclude the copy constructor
-#     for c in Exception.constructors(arg_types=[]):
-#         print c
-#         c.exclude() ## exclude the first constructor..
-#         break
-#     print dir(c)
-#     sys.exit()
+    
+    ## there are two identical constructors so we need to remove one of them
+    for c in Exception.constructors(arg_types=[None]):
+        c.exclude() ## exclude the first constructor..
+        break
         
     
 def _ReturnUnsignedInt( type_ ):
