@@ -92,16 +92,16 @@ boost::python::object ResourceManager_getByName(Ogre::ResourceManager& me, const
     return boost::python::object( r ); //unknown type
 }
 """
-WRAPPER_REGISTRATION_ResourceManager = \
-"""
-    def( "getByName", &::ResourceManager_getByName,
-    "Python-Ogre Hand Wrapped\\n" );
-    ResourceManager_exposer.def( "getByNameAlt", &::ResourceManager_getByName_alt,
-    "Python-Ogre Hand Wrapped\\n" );
-    ResourceManager_exposer.def( "getByHandle", &::ResourceManager_getByHandle,
-    "Python-Ogre Hand Wrapped\\n" );
+WRAPPER_REGISTRATION_ResourceManager = [
+    'def( "getByName", &::ResourceManager_getByName,\
+    "Python-Ogre Hand Wrapped\\n" );',
+    'def( "getByNameAlt", &::ResourceManager_getByName_alt,\
+    "Python-Ogre Hand Wrapped\\n" );',
+    'def( "getByHandle", &::ResourceManager_getByHandle,\
+    "Python-Ogre Hand Wrapped\\n" );'
+    ]
+    
 
-"""
 
 WRAPPER_DEFINITION_General = \
 """
@@ -184,41 +184,37 @@ Utility_CastResourceToNative(Ogre::ResourcePtr& r){
 //     newptr[0]= datain;
 // }
 """            
-WRAPPER_REGISTRATION_General = \
-"""
-    bp::def( "GetOgreVersion", &GetOgreVersion,
+WRAPPER_REGISTRATION_General = [
+    """bp::def( "GetOgreVersion", &GetOgreVersion,
                 "Python-Ogre Helper Function: Return the version of Ogre.\\n\\
                 Input: None\\n\\
-                Ouput: Tuple [major,minor,patch]");
-    bp::def( "GetPythonOgreVersion", &GetPythonOgreVersion,
+                Ouput: Tuple [major,minor,patch]");""",
+    """bp::def( "GetPythonOgreVersion", &GetPythonOgreVersion,
                 "Python-Ogre Helper Function: Return the version of Python-Ogre.\\n\\
                 Input: None\\n\\
-                Ouput: Tuple [major,minor,patch]");
-    bp::def( "setFloat", &Utility_setFloat,
+                Ouput: Tuple [major,minor,patch]");""",
+    """bp::def( "setFloat", &Utility_setFloat,
                 "Python-Ogre Helper Function: Write Floats to Memory.\\n\\
                 Input: void *, Python List (numerics)\\n\\
                 Ouput: None\\n\\
-                The list is extracted as floats and written to memory starting at the pointer" );
-    bp::def( "setUint16", &Utility_setUint16,
+                The list is extracted as floats and written to memory starting at the pointer" );""",
+    """bp::def( "setUint16", &Utility_setUint16,
                 "Python-Ogre Helper Function: Write Unsigned Ints to Memory.\\n\\
                 Input: void *, Python List (numerics)\\n\\
                 Ouput: None\\n\\
-                The list is extracted as unsigned ints and written to memory starting at the pointer" );
-    bp::def( "CastVoidPtr", &Utility_CastVoidPtr,
+                The list is extracted as unsigned ints and written to memory starting at the pointer" );""",
+    """bp::def( "CastVoidPtr", &Utility_CastVoidPtr,
                 bp::return_value_policy< bp::return_opaque_pointer >(),
                 "Python-Ogre Helper Function: Casts a number to a void *.\\n\\
                 Input: numeric value (typically CTypes.addressof(xx) )\\n\\
-                Output: A void pointer with the input address");
-    bp::def( "CastResourceToNative", &Utility_CastResourceToNative,
+                Output: A void pointer with the input address");""",
+    """bp::def( "CastResourceToNative", &Utility_CastResourceToNative,
                "Python-Ogre Helper Function: Casts a Resource to it\'s native type.\\n\\
                 Input: Resource Object\\n\\
                 Output: \'Native\' Object (Texture, Font, Mesh, etc)\\n\\
                 This function should not be needed, however just in case you get a resource object from Ogre\\n\\
-                and you need to use it as it\'s native type");
-                
-   
-   
-"""
+                and you need to use it as it\'s native type");"""
+     ]
 
 ##################################################################
 
@@ -229,10 +225,9 @@ BBP_getType(Ogre::BillboardParticleRenderer & me) {
     return boost::python::str( me.getType() );
     }
 """
-WRAPPER_REGISTRATION_BillboardParticleRenderer = \
-"""
-    def( "getType", &::BBP_getType );
-"""
+WRAPPER_REGISTRATION_BillboardParticleRenderer = [
+    'def( "getType", &::BBP_getType );'
+    ]
 
 WRAPPER_DEFINITION_BillboardParticleRendererFactory = \
 """
@@ -241,10 +236,9 @@ BBPF_getType(Ogre::BillboardParticleRenderer & me) {
     return boost::python::str( me.getType() );
     }
 """
-WRAPPER_REGISTRATION_BillboardParticleRendererFactory = \
-"""
-    def( "getType", &::BBPF_getType );
-"""
+WRAPPER_REGISTRATION_BillboardParticleRendererFactory = [
+        'def( "getType", &::BBPF_getType );'
+    ]
 
 
 ###################################################
@@ -282,33 +276,6 @@ public:
 }
 """
 
-
-# # WRAPPER_DEFINITION_ConfigFile = \
-# # """
-# # // We don't currently support multimaps very well so to extract the resources from a config file
-# # // we call this with the multimap and it extracts it into a list of tuples for us
-# # boost::python::list
-# # ConfigFile_getMultiMapSettings ( Ogre::ConfigFile& cf, Ogre::ConfigFile::SettingsMultiMap * settings ){
-# #     Ogre::ConfigFile::SettingsMultiMap::iterator i;
-# #     Ogre::String typeName, archName;
-# #     boost::python::list retlist = boost::python::list();
-# #     for (i = settings->begin(); i != settings->end(); ++i)
-# #     {
-# #         typeName = i->first;
-# #         archName = i->second;
-# #         retlist.append(boost::python::make_tuple(typeName, archName));
-# #     }
-# #     return ( retlist );
-# # }
-# # """
-# # WRAPPER_REGISTRATION_ConfigFile = \
-# # """
-# #     def( "getMultiMapSettings", &::ConfigFile_getMultiMapSettings,
-# #     "Python-Ogre Helper Function: Return Configfile settings as a list" )
-# # """
-
-#####################################################################
-
 WRAPPER_DEFINITION_RenderTarget = \
 """
 static int
@@ -324,20 +291,18 @@ RenderTarget_getCustomAttributeFloat(Ogre::RenderTarget& rd, const std::string& 
     return value;
 }
 """
-WRAPPER_REGISTRATION_RenderTarget = \
-"""
-    def( "getCustomAttributeInt", &::RenderTarget_getCustomAttributeInt,
+WRAPPER_REGISTRATION_RenderTarget = [
+    """def( "getCustomAttributeInt", &::RenderTarget_getCustomAttributeInt,
     "Python-Ogre Helper Function: Get a Custom Atribute as an int\\n\\
     Input: None\\n\\
     Output: Numeric (int)\\n\\
-    Gets a custom attribure from RenderTarget as an int" );
-    
-    RenderTarget_exposer.def( "getCustomAttributeFloat", &::RenderTarget_getCustomAttributeFloat,
+    Gets a custom attribure from RenderTarget as an int" );""",
+    """def( "getCustomAttributeFloat", &::RenderTarget_getCustomAttributeFloat,
     "Python-Ogre Helper Function: Get a Custom Atribute as a float\\n\\
     Input: None\\n\\
     Output: Numeric (float)\\n\\
-    Gets a custom attribure from RenderTarget as a float" );
-"""
+    Gets a custom attribure from RenderTarget as a float" );"""
+    ]
 
 #####################################################################
 
@@ -350,40 +315,12 @@ hbm_createIndexBuffer( ::Ogre::HardwareIndexBuffer::IndexType itype, ::size_t nu
     }
 
 """
-WRAPPER_REGISTRATION_HardwareBufferManager = \
-"""
-    def( "createIndexBuffer", &::hbm_createIndexBuffer );
-//           bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
-"""
+WRAPPER_REGISTRATION_HardwareBufferManager = [
+    """def( "createIndexBuffer", &::hbm_createIndexBuffer );
+//           bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());"""
+    ]
 
-# # # # #####################################################################
 
-# # # # WRAPPER_DEFINITION_SectionIterator = \
-# # # # """
-# # # # Ogre::SectionIterator
-# # # # SectionIterator_iter ( Ogre::SectionIterator & me ) {
-# # # #     return me;
-# # # #     }
-# # # #    
-# # # # boost::python::tuple
-# # # # SectionIterator_next( Ogre::SectionIterator & me ){
-# # # #     if me.hasMoreElements(){
-# # # #         return boost::python::make_tuple (
-# # # #                     boost::python::str (me.peekNextKey())
-# # # #                    ,boost::python::str (me.getNext())
-# # # #                     )
-# # # #         }
-# # # #     else
-# # # #         boost::python::raise StopIteration ()   
-# # # #     }
-# # # # """
-# # # # WRAPPER_REGISTRATION_SectionIterator = \
-# # # # """
-# # # #        SectionIterator_exposer.def( "__iter__", &::SectionIterator_iter );
-# # # #        SectionIterator_exposer.def( "__next__", &::SectionIterator_next );
-# # # # """
-
-#########################################
 
 ## Needed as boost doesn't handle this overload properly and always uses 'Plane' as the override - see renderToTexture demo
 WRAPPER_DEFINITION_Frustum = \
@@ -393,10 +330,9 @@ Frustum_enableCustomNearClipPlaneMP(Ogre::Frustum& Fr, Ogre::MovablePlane const 
         Fr.enableCustomNearClipPlane ( MP ) ;
 }
 """
-WRAPPER_REGISTRATION_Frustum = \
-"""
-    def( "enableCustomNearClipPlaneMP", &::Frustum_enableCustomNearClipPlaneMP );
-"""
+WRAPPER_REGISTRATION_Frustum = [
+    """def( "enableCustomNearClipPlaneMP", &::Frustum_enableCustomNearClipPlaneMP );"""
+    ]
 
 ## WARNING, this is OLD CODE and is probably broken
 if environment.ogre.version == "1.2":
@@ -427,29 +363,9 @@ SubMesh_createVertexData ( Ogre::SubMesh & me ) {
     }
  
 """
-WRAPPER_REGISTRATION_SubMesh = \
-"""
-    def( "createVertexData", &::SubMesh_createVertexData );
-""" 
-
-#################################################################################################
-		
-# # WRAPPER_DEFINITION_Mesh =\
-# # """
-# # boost::python::tuple
-# # Mesh_suggestTangentVectorBuildParams(::Ogre::Mesh & me, ::Ogre::VertexElementSemantic targetSemantic) {
-# # unsigned short a, b;
-# # bool ret;
-
-# #     ret = me.suggestTangentVectorBuildParams(targetSemantic,
-# # 		a, b);
-# # 		return boost::python::make_tuple ( ret, a, b );
-# # }
-# # """     
-# # WRAPPER_REGISTRATION_Mesh = \
-# # """
-# #     bp::def( "suggestTangentVectorBuildParams", &::Mesh_suggestTangentVectorBuildParams );
-# # """
+WRAPPER_REGISTRATION_SubMesh = [
+    """def( "createVertexData", &::SubMesh_createVertexData );"""
+    ] 
 
 
 def iter_as_generator_vector( cls ):
@@ -479,44 +395,29 @@ def iter_as_generator_map( cls ):
 #################################################################################################
 #################################################################################################
 
+def apply_reg ( class_, code ):
+    for c in code:
+        class_.add_registration_code ( c )
+        
 def apply( mb ):
     rt = mb.class_( 'RenderTarget' )
     rt.add_declaration_code( WRAPPER_DEFINITION_RenderTarget )
-    rt.add_registration_code( WRAPPER_REGISTRATION_RenderTarget )
+    apply_reg (rt,  WRAPPER_REGISTRATION_RenderTarget )
     
     rt = mb.class_( 'ResourceManager' )
     rt.add_declaration_code( WRAPPER_DEFINITION_ResourceManager )
-    rt.add_registration_code( WRAPPER_REGISTRATION_ResourceManager )
+    apply_reg (rt,  WRAPPER_REGISTRATION_ResourceManager )
     
     rt = mb.class_( 'Frustum' )
     rt.add_declaration_code( WRAPPER_DEFINITION_Frustum )
-    rt.add_registration_code( WRAPPER_REGISTRATION_Frustum )
+    apply_reg (rt,  WRAPPER_REGISTRATION_Frustum )
     
     rt = mb.class_( 'SubMesh' )
     rt.add_declaration_code( WRAPPER_DEFINITION_SubMesh )
-    rt.add_registration_code( WRAPPER_REGISTRATION_SubMesh )
-
-#     rt = mb.class_( 'Mesh' )
-#     rt.add_declaration_code( WRAPPER_DEFINITION_Mesh )
-#     rt.add_registration_code( WRAPPER_REGISTRATION_Mesh )
+    apply_reg (rt,  WRAPPER_REGISTRATION_SubMesh )
     
-#     rt = mb.class_( 'BillboardParticleRenderer' )
-#     rt.add_declaration_code( WRAPPER_DEFINITION_BillboardParticleRenderer )
-#     rt.add_registration_code( WRAPPER_REGISTRATION_BillboardParticleRenderer )
-#     
-#     rt = mb.class_( 'BillboardParticleRendererFactory' )
-#     rt.add_declaration_code( WRAPPER_DEFINITION_BillboardParticleRendererFactory )
-#     rt.add_registration_code( WRAPPER_REGISTRATION_BillboardParticleRendererFactory )
-      
-#     rt = mb.class_( 'MapIterator' )
-#     rt.add_declaration_code( WRAPPER_DEFINITION_SectionIterator )
-#     rt.add_registration_code( WRAPPER_REGISTRATION_SectionIterator )
-#     rt = mb.class_( 'ConfigFile' )
-#     rt.add_declaration_code( WRAPPER_DEFINITION_ConfigFile )
-#     rt.add_registration_code( WRAPPER_REGISTRATION_ConfigFile )
-
     mb.add_declaration_code( WRAPPER_DEFINITION_General )
-    mb.add_registration_code( WRAPPER_REGISTRATION_General )
+    apply_reg (mb,  WRAPPER_REGISTRATION_General )
     
     vec_iterators = mb.classes( lambda cls: cls.name.startswith( 'VectorIterator<' ) )
     for cls in vec_iterators:

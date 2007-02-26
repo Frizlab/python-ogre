@@ -49,7 +49,11 @@ global_ns.exclude()
 ogre_ns = global_ns.namespace( 'Ogre' )
 ogre_ns.include()
     
-
+# for op in mb.operators():
+#    print op
+# for cls in ogre_ns.classes():
 for cls in mb.classes():
-    print cls
+   for op in cls.operators( allow_empty = True ):
+      print cls, op
+#     print cls
     
