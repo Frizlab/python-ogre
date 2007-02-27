@@ -91,7 +91,7 @@ if not _ConfigSet:
 class ogre:
     active = True
     version = "1.4"   # "1.2"
-    libs=[Config.LIB_Boost, 'OgreMain', 'ode', 'OgreGUIRenderer', 'CEGUIBase']
+    libs=[Config.LIB_Boost, 'OgreMain',  'OgreGUIRenderer', 'CEGUIBase']
     lib_dirs = [ Config.PATH_LIB_Boost
                 ,  Config.PATH_LIB_Ogre_CEGUIRenderer
                 , Config.PATH_LIB_Ogre_OgreMain
@@ -109,7 +109,7 @@ class ogre:
 class ois:
     active = True
     version= "1.0"
-    libs=['OIS']
+    libs=['OIS',Config.LIB_Boost]
     include_dirs = [ Config.PATH_Boost 
             , Config.PATH_INCLUDE_OIS
             ]
