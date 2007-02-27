@@ -69,22 +69,6 @@ def ManualExclude ( mb ):
         ### NOTE the PREFIX is used here !!!!
         classes = ogre_ns.classes( common_utils.decl_starts_with(prefix), allow_empty=True)
         classes.exclude()
-    ### AJM - OK, so I think we can remove all FACTORY classes etc - not really sure but thought we
-    ### do so and see if anyone complained
-# # #     for cls in ogre_ns.classes ():
-# # #         if 'Factory' in cls.name:
-# # #             print "Factory Class Excluded", cls
-# # #             cls.exclude()
-# # #     for fun in ogre_ns.mem_funs ():
-# # #         if 'Factory' in fun.name:
-# # #             print "Factory Function Excluded", fun
-# # #             fun.exclude()
-# # #             continue
-# # #         for arg in fun.arguments:
-# # #             if 'Factory' in arg.name:
-# # #                 print "Factory Function Excluded", fun
-# # #                 fun.exclude()
-# # #                 break
         
     #AJM Set of functions in Particle system that don't get wrapped properly.. Rechecked 30Nov06 AJM
     ## Other 'Cmd..' classes are defined as _OgrePrivate, whereas these are not in the head file
@@ -104,13 +88,8 @@ def ManualExclude ( mb ):
     
     ## THIS IS A UNION
     ogre_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').variable('data').exclude()    
-    v= ogre_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').variable('fData')
+    v = ogre_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').variable('fData')
     v.exclude() 
-    # there are a set of const iterators that I'm not exposing as they need better understanding and testing
-    # these functions rely on them so they are being excluded as well
-# # #     ogre_ns.class_('SceneNode').member_functions('getAttachedObjectIterator').exclude()
-# # #     ogre_ns.class_('Mesh').mem_fun('getBoneAssignmentIterator').exclude()
-# # #     ogre_ns.class_('SubMesh').mem_fun('getBoneAssignmentIterator').exclude()
     
     
     # functions that take pointers to pointers 
@@ -131,9 +110,7 @@ def ManualExclude ( mb ):
     ogre_ns.calldefs ('peekNextPtr').exclude ()
     ogre_ns.calldefs ('peekNextValuePtr').exclude ()    #in many of the Iterator classes
     
-    
-# # # #     ogre_ns.calldefs ('getChildIterator').exclude ()
-    
+        
     ogre_ns.class_( "ErrorDialog" ).exclude()   # doesn't exist for link time
     ogre_ns.class_( 'CompositorInstance').class_('RenderSystemOperation').exclude() # doesn't exist for link time
     ogre_ns.class_( 'CompositorChain').mem_fun('_queuedOperation').exclude() #needs RenderSystemOperation
@@ -165,10 +142,7 @@ def ManualExclude ( mb ):
     
     global_ns.class_('::Ogre::UnifiedHighLevelGpuProgramFactory').exclude()
     global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram::CmdDelegate').exclude()
-#     global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram::CmdDelegate').mem_fun('doGet').exclude()
-#     global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram::CmdDelegate').mem_fun('doSet').exclude()
-#     
-    
+
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 
@@ -205,7 +179,18 @@ def ManualInclude ( mb ):
     #RenderOperation class is marked as private, but I think this is a mistake
     ogre_ns.class_('RenderOperation').include()
     
-#     ogre_ns.class_('_ConfigOption').noncopyable = False
+    for oper in global_ns.free_operators( '<<' ):
+        rtype = declarations.remove_declarated( declarations.remove_reference( oper.return_type ) )
+        if not( declarations.is_std_ostream( rtype ) or declarations.is_std_wostream( rtype ) ):
+            continue
+        type_or_decl = declarations.remove_declarated(
+                    declarations.remove_const( 
+                        declarations.remove_reference( oper.arguments[1].type ) ) )
+        if not isinstance( type_or_decl, declarations.declaration_t ):
+            continue
+        if type_or_decl.ignore == False:
+            oper.include()
+
         
 ############################################################
 ##
@@ -268,11 +253,6 @@ def ManualFixes ( mb ):
     UTFString = mb.class_( 'UTFString' )
     UTFString.mem_fun( 'asUTF8' ).alias = '__str__'
     UTFString.mem_fun( 'asWStr' ).alias = '__unicode__'
-
-    # expose << operators as __str__ functions
-    ClassList=['Vector3','Vector2','Vector4','Matrix4', 'ColourValue', 'Quaternion']
-    for cls in ClassList:
-        mb.class_(cls).add_registration_code ( 'def(str(bp::self))' )
     
              
 ############################################################
