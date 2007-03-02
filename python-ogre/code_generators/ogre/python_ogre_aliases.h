@@ -15,6 +15,8 @@ typedef Ogre::SharedPtr<Ogre::StringVector> StringVectorPtr;
 
 typedef Ogre::ResourceManager::ResourceCreateOrRetrieveResult ResourceCreateOrRetrieveResult;
 
+typedef Ogre::FactoryObj<Ogre::Archive> ArchiveFactoryObj;
+typedef Ogre::FactoryObj<Ogre::ParticleSystemRenderer> ParticleSystemRendererFactoryObj;
 
 // these are uglys to remove messages in the generate_code output - doesn't impact the generated code :)
 typedef Ogre::MapIterator<std::map<short unsigned int, Ogre::VertexAnimationTrack*, std::less<short unsigned int>, std::allocator<std::pair<const short unsigned int, Ogre::VertexAnimationTrack*> > > >\
@@ -121,7 +123,7 @@ typedef Ogre::RenderTargetPriorityMap RenderTargetPriorityMap;
 typedef Ogre::RenderTargetMap RenderTargetMap;
 typedef Ogre::ConfigOptionMap ConfigOptionMap;
 typedef Ogre::ConfigOption ConfigOption;
-typedef Ogre::_ConfigOption _ConfigOption;
+//typedef Ogre::_ConfigOption _ConfigOption;
 
 typedef Ogre::RenderQueueInvocationIterator RenderQueueInvocationIterator;
 typedef Ogre::RenderQueueInvocationList RenderQueueInvocationList;
