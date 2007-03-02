@@ -179,8 +179,11 @@ def ManualInclude ( mb ):
     #RenderOperation class is marked as private, but I think this is a mistake
     ogre_ns.class_('RenderOperation').include()
     
+    ## Now we find all << operators and expose them as __str__ methods..  Makes "print xx" work nicely
+    ## we simply include any relevant << operators and Py++/Boost does the work for us
     for oper in global_ns.free_operators( '<<' ):
         rtype = declarations.remove_declarated( declarations.remove_reference( oper.return_type ) )
+        # we don't want the ones from std::...
         if not( declarations.is_std_ostream( rtype ) or declarations.is_std_wostream( rtype ) ):
             continue
         type_or_decl = declarations.remove_declarated(
@@ -525,12 +528,12 @@ def AutoFixes ( mb ):
  
 def Fix_Implicit_Conversions ( mb ):
     # and we need to remove the conversion here as radians doesn't work as expected
-    cls=mb.class_('Radian')
+#     cls=mb.class_('Radian')
+#     cls.constructors().allow_implicit_conversion = False
+#     cls=mb.class_('Degree')
+#     cls.constructors().allow_implicit_conversion = False
+    cls=mb.class_('Angle')
     cls.constructors().allow_implicit_conversion = False
-    cls=mb.class_('Degree')
-    cls.constructors().allow_implicit_conversion = False
-#     for cls in ogre_ns.class_( lambda cls: cls.name in ( 'Radian', 'Degree' ) ):
-#        cls.constructors().allow_implicit_conversion = False
     
 def Fix_Ref_Not_Const ( mb ):
     """ we have problems with sharedpointer arguments that are defined as references
