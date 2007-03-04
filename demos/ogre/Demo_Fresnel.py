@@ -1,5 +1,5 @@
 #Fish!
-NUM_FISH = 30
+NUM_FISH = 50
 NUM_FISH_WAYPOINTS= 10
 FISH_PATH_LENGTH=200 
 
@@ -14,13 +14,13 @@ class MyManualLoader(ogre.ManualResourceLoader):
         ogre.ManualResourceLoader.__init__(self)
         
     def	loadResource(self,resource):
-        pass    
+    	pass    
         
 # Refraction Render Target Listener
 class RefractionTextureListener(ogre.RenderTargetListener):
 
     def __init__(self,planeEnt,aboveWaterEnts):
-        ogre.RenderTargetListener.__init__(self)
+    	ogre.RenderTargetListener.__init__(self)
         self.planeEnt = planeEnt
         self.aboveWaterEnts = aboveWaterEnts
         
@@ -50,14 +50,14 @@ class ReflectionTextureListener(ogre.RenderTargetListener):
         #Hide plane and objects above the water
         self.planeEnt.visible = False
         for e in self.belowWaterEnts:
-            e.visible = False                
+            e.setVisible ( False )	##.visible to setVisible
         self.cam.enableReflection(self.reflectionPlane)
             
     def postRenderTargetUpdate(self,evt):
         #Show plane and objects above the water
         self.planeEnt.visible = True
         for e in self.belowWaterEnts:
-            e.visible = True     
+            e.setVisible ( True     )  # .visible to setVisible
         self.cam.disableReflection()
 
 class FresnelFrameListener(sf.FrameListener):
@@ -75,7 +75,7 @@ class FresnelFrameListener(sf.FrameListener):
 
     
     def frameStarted(self, frameEvent):
-        if(self.renderWindow.closed):
+        if(self.renderWindow.isClosed() ):  ## closed to isClosed()
             return false    
         self.animTime += frameEvent.timeSinceLastFrame
         while (self.animTime > FISH_PATH_LENGTH):
@@ -85,7 +85,7 @@ class FresnelFrameListener(sf.FrameListener):
             self.fishAnimations[fish].addTime(frameEvent.timeSinceLastFrame*2)
             #Move the fish
             newPos = self.fishSplines[fish].interpolate(self.animTime / FISH_PATH_LENGTH*1.0)
-            self.fishNodes[fish].position=newPos
+            self.fishNodes[fish].setPosition(newPos)	## .position to SetPosition
             #Work out the direction
             direction = self.fishLastPosition[fish] - newPos
             direction.normalise
@@ -96,9 +96,9 @@ class FresnelFrameListener(sf.FrameListener):
                 orientation = ogre.Quaternion.IDENTITY
                 orientation.FromAxes(ogre.Vector3.NEGATIVE_UNIT_X, 
 					ogre.Vector3.UNIT_Y, ogre.Vector3.NEGATIVE_UNIT_Z)
-                self.fishNodes[fish].orientation = orientation
+                self.fishNodes[fish].setOrientation (orientation)  ## .orientation to SetOr..
             else:
-                self.fishNodes[fish].orientation=ogre.Vector3.UNIT_X.getRotationTo(direction)
+                self.fishNodes[fish].setOrientation (ogre.Vector3.UNIT_X.getRotationTo(direction))
             self.fishLastPosition[fish] = newPos
         return sf.FrameListener.frameStarted(self,frameEvent)
 
@@ -127,7 +127,7 @@ class FresnelApplication(sf.Application):
         del self.camera
         del self.sceneManager
         del self.rendtargetlistener
-        del self.frameListener
+       	del self.frameListener
         del self.root
         del self.renderWindow
 		
@@ -164,14 +164,14 @@ class FresnelApplication(sf.Application):
                 raise ogre.Exception(111, 'Your card does not support advanced fragment programs, so cannot run this demo. Sorry!', 'fresneldemo.py')
 
         theCam = self.camera
-        self.camera.position = -100,20,700
+        self.camera.setPosition (-100,20,700)
         #Set ambient light
         sceneManager.ambientLight = ogre.ColourValue(0.5, 0.5, 0.5)
 
         #Create a point light
         l = sceneManager.createLight("MainLight")
         l.type = ogre.Light.LT_DIRECTIONAL
-        l.direction = -ogre.Vector3.UNIT_Y
+        l.setDirection (-ogre.Vector3.UNIT_Y)
 
         # debug graphics card capabilities                        
         self.debugSupportedFormats()    
@@ -183,12 +183,12 @@ class FresnelApplication(sf.Application):
 			#, self.myManualLoader )
        
         #RenderTarget 
-        self.rttTex = mTexture.getRenderTarget()
+        self.rttTex = mTexture.getBuffer().getRenderTarget()  ## added getBuffer()
         #Viewport 
         v = self.rttTex.addViewport( self.camera )
         
         #MaterialPtr 
-        self.mat = ogre.MaterialPointer(ogre.MaterialManager.getSingleton().getByName("Examples/FresnelReflectionRefraction"))
+        self.mat = ogre.MaterialManager.getSingleton().getByName("Examples/FresnelReflectionRefraction")  ## removed MaterialPointer
         self.mat.getTechnique(0).getPass(0).getTextureUnitState(2).setTextureName("Refraction")
         v.overlaysEnabled=False
         
@@ -198,11 +198,11 @@ class FresnelApplication(sf.Application):
 			'General', ogre.TextureType.TEX_TYPE_2D, 
 			512, 512, 0, ogre.PixelFormat.PF_R8G8B8, ogre.TextureUsage.TU_RENDERTARGET,self.myManualLoader )
         #RenderTarget 
-        self.rttTex2 = mTexture.getRenderTarget()
+        self.rttTex2 = mTexture.getBuffer().getRenderTarget()  ## added getBuffer()
         #Viewport 
         v = self.rttTex2.addViewport( self.camera )
         #MaterialPtr 
-        self.mat2 = ogre.MaterialPointer(ogre.MaterialManager.getSingleton().getByName("Examples/FresnelReflectionRefraction"))
+        self.mat2 = ogre.MaterialManager.getSingleton().getByName("Examples/FresnelReflectionRefraction") ## removed MaterialPointer
         self.mat2.getTechnique(0).getPass(0).getTextureUnitState(1).setTextureName("Reflection")
         v.overlaysEnabled=False
 
@@ -258,8 +258,8 @@ class FresnelApplication(sf.Application):
                     #check this waypoint isn't too far, we don't want turbo-fish ;)
                     #since the waypoints are achieved every 5 seconds, half the length
                     #of the pond is ok
-                    while ((lastPos - pos).length > 750.0):
-                        pos = ogre.Vector3(ogre.Math.SymmetricRandom() * 700.0, -10.0, ogre.Math.SymmetricRandom() * 700.0)
+                    while ((lastPos - pos).length() > 750.0):  ## change .length to .length()
+                    	pos = ogre.Vector3(ogre.Math.SymmetricRandom() * 700.0, -10.0, ogre.Math.SymmetricRandom() * 700.0)
                 self.fishSplines[fish].addPoint(pos)
                 lastPos = pos
                 #close the spline
@@ -273,6 +273,7 @@ class FresnelApplication(sf.Application):
         self.rttTex2.addListener(self.reflectionListener)   
         self.refractionListener = RefractionTextureListener(self.planeEnt,self.aboveWaterEnts)
         self.rttTex.addListener(self.refractionListener)
+        
           		
     def _createFrameListener(self):
         "create FrameListener"
