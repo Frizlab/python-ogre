@@ -142,6 +142,9 @@ def ManualExclude ( mb ):
     
     global_ns.class_('::Ogre::UnifiedHighLevelGpuProgramFactory').exclude()
     global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram::CmdDelegate').exclude()
+    
+    #new in Ogre 1.4 RC2
+    global_ns.class_('::Ogre::SceneManager').mem_fun('getQueuedRenderableVisitor').exclude()
 
 ############################################################
 ##
@@ -528,12 +531,12 @@ def AutoFixes ( mb ):
  
 def Fix_Implicit_Conversions ( mb ):
     # and we need to remove the conversion here as radians doesn't work as expected
-#     cls=mb.class_('Radian')
-#     cls.constructors().allow_implicit_conversion = False
-#     cls=mb.class_('Degree')
-#     cls.constructors().allow_implicit_conversion = False
-    cls=mb.class_('Angle')
+    cls=mb.class_('Radian')
     cls.constructors().allow_implicit_conversion = False
+    cls=mb.class_('Degree')
+    cls.constructors().allow_implicit_conversion = False
+#     cls=mb.class_('Angle')
+#     cls.constructors().allow_implicit_conversion = False
     
 def Fix_Ref_Not_Const ( mb ):
     """ we have problems with sharedpointer arguments that are defined as references
@@ -774,10 +777,8 @@ def generate_code():
     
     # Ogre is "special" in that some classes are unnnamed and need fixing
     common_utils.fix_unnamed_classes( ogre_ns.classes( name='' ), 'Ogre' )
-    print "8", ogre_ns.class_( "StaticGeometry" ).class_("Region").ignore
     
     common_utils.configure_shared_ptr(mb)
-    print "9", ogre_ns.class_( "StaticGeometry" ).class_("Region").ignore
     
     Set_Exception( mb )
         
@@ -785,30 +786,23 @@ def generate_code():
     # We need to tell boost how to handle calling (and returning from) certain functions
     #
     Set_Call_Policies ( mb.global_ns.namespace ('Ogre') )
-    print "10", ogre_ns.class_( "StaticGeometry" ).class_("Region").ignore
-    
     
     #
     # the manual stuff all done here !!!
     #
     hand_made_wrappers.apply( mb )
-    print "11", ogre_ns.class_( "StaticGeometry" ).class_("Region").ignore
     
-   
     NoPropClasses = ["UTFString"]
     for cls in ogre_ns.classes():
         if cls.name not in NoPropClasses:
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
-        ## because we want backwards pyogre compatibility lets add leading lowercase properties
-        common_utils.add_LeadingLowerProperties ( cls )
+            ## because we want backwards pyogre compatibility lets add leading lowercase properties
+            common_utils.add_LeadingLowerProperties ( cls )
 
     common_utils.add_constants( mb, { 'ogre_version' :  '"%s"' % environment.ogre.version.replace("\n", "\\\n") 
                                       , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
 
-    print "12", ogre_ns.class_( "StaticGeometry" ).class_("Region").ignore
-   ##sys.exit()
-    print "13", ogre_ns.class_( "StaticGeometry" ).typedef("RegionMap").ignore
-
+    
     ##########################################################################################
     #
     # Creating the code. After this step you should not modify/customize declarations.
