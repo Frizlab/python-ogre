@@ -9,7 +9,13 @@ class TerrainApplication(sf.Application):
     def _createCamera(self):
         self.camera = self.sceneManager.createCamera('PlayerCam')
         self.camera.setPosition (ogre.Vector3(128, 25, 128))
-        self.camera.lookAt(ogre.Vector3(0, 0, -300))
+        self.camera.setPosition (128, 25, 128)
+        self.camera.position = ogre.Vector3(128, 25, 128)
+        self.camera.position = (128, 25, 128)
+        self.camera.position = [128, 25, 128]
+        self.camera.position = 128, 25, 128
+        
+        self.camera.lookAt(0, 0, -300)
         self.camera.NearClipDistance = 1
 
         # infinte far clip plane?
@@ -22,19 +28,19 @@ class TerrainApplication(sf.Application):
         sceneManager = self.sceneManager
         camera = self.camera
  
-        sceneManager.AmbientLight = ogre.ColourValue(0.5, 0.5, 0.5)
+        sceneManager.AmbientLight = 0.5, 0.5, 0.5
         
         # Create a light
         l = sceneManager.createLight("MainLight")
         # Accept default settings: point light, white diffuse, just set position
         # NB I could attach the light to a SceneNode if I wanted it to move automatically with
         #  other objects, but I don't
-        l.setPosition(ogre.Vector3(20,80,50))
+        l.setPosition(20,80,50)
         
         # Fog
         # NB it's VERY important to set this before calling setWorldGeometry 
         # because the vertex program picked will be different
-        fadeColour = ogre.ColourValue(0.93, 0.86, 0.76)
+        fadeColour = (0.93, 0.86, 0.76)
         sceneManager.setFog(ogre.FOG_LINEAR, fadeColour, 0.001, 500.0, 1000.0)
         self.renderWindow.getViewport(0).BackgroundColour = fadeColour
 
@@ -53,6 +59,8 @@ class TerrainApplication(sf.Application):
         ## Setup a nice starting position for the camera
         camera.setPosition(707,2500,528)
         camera.setOrientation(ogre.Quaternion(-0.3486, 0.0122, 0.9365, 0.0329))
+        camera.orientation = ogre.Quaternion(-0.3486, 0.0122, 0.9365, 0.0329)
+        camera.orientation = -0.3486, 0.0122, 0.9365, 0.0329
 
     def _createFrameListener(self):
         self.frameListener = TerrainListener(self.renderWindow, self.camera, self.sceneManager)

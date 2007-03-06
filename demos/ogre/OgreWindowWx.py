@@ -114,7 +114,7 @@ class OgreWindow(wx.PyWindow):
                 
         root.initialise(False) 
         
-        renderParameters = ogre.NamedValuePairList() 
+        renderParameters = ogre.NameValuePairList() 
         renderParameters['externalWindowHandle'] = str(self.GetHandle()) 
         renderWindow = root.createRenderWindow('wxPython render window', size[0], 
                                                size[1], False, renderParameters) 
@@ -129,6 +129,7 @@ class OgreWindow(wx.PyWindow):
         
         if getattr(self, 'ogreRoot', None): 
             self.UpdateRender() 
+            self.renderWindow.windowMovedOrResized() 
         event.Skip() 
 
     def _OnEraseBackground(self, event): 
@@ -192,6 +193,8 @@ class OgreWindow(wx.PyWindow):
         camera = self.sceneManager.createCamera('Camera') 
         camera.lookAt(ogre.Vector3(0, 0, 0)) 
         camera.nearClipDistance = 5 
+        camera.setAutoAspectRatio( True ) 
+        
         self.sceneEntities.Camera = camera 
         
         # create the camera nodes & attach camera 

@@ -14,7 +14,7 @@ This version is built against the Ogre CVS"""
 
 METADATA = {
     "name":             "Python-Ogre",
-    "version":          "0.80 Candidate",
+    "version":          "0.91 Candidate",
     "license":          "LGPL",
     "url":              "http://python-ogre.python-hosting.com/",
     "author":           "Lakin Wecker, Roman Yakovenko, Andy",
@@ -36,7 +36,7 @@ base = os.path.join(os.getcwd(), os.path.dirname(sys.argv[0]) )
 demofiles = GetFileList ( os.path.join (base, "demos") )
 
 PACKAGEDATA = {
-       "packages":    ['Ogre', 'OIS', 'CEGUI', 'OgreRefApp', 'OgreNewt', 'FMOD', 'OgreOde','ODE', 'OgreAL' ], #, #'Newton'],
+       "packages":    ['Ogre', 'OIS', 'CEGUI', 'OgreRefApp', 'OgreNewt', 'OgreOde','ODE', 'OgreAL' ]
        "package_dir": {'': 'packages'},
        "package_data": {'': ['*.pyd', '*.dll']},
 #       "data_files": [(base+'Demos', demofiles),]

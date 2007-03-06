@@ -18,7 +18,6 @@ class CameraTrackApplication(sf.Application):
         plane.normal = ogre.Vector3.UNIT_Y
         plane.d = 200
         mm = ogre.MeshManager.getSingleton()
-        print dir(mm)
         mm.createPlane('FloorPlane', 'General', plane, 200000.0, 200000.0,
                20, 20, True, 1, 200.0, 200.0,  (0, 0, 1),
                ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
@@ -41,6 +40,8 @@ class CameraTrackApplication(sf.Application):
         # create the camera node & attach camera
         cameraNode = sceneManager.getRootSceneNode().createChildSceneNode()
         cameraNode.attachObject(self.camera)
+        
+        print "\n\n",self.camera,"\n"
 #
         # set up spline animation of node
         animation = sceneManager.createAnimation('CameraTrack', 10)

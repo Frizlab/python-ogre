@@ -52,14 +52,14 @@ class WaterMesh:
         vbind = subMesh.vertexData.vertexBufferBinding 
     
     
-        vdecl.addElement(0, 0, Ogre.VertexElementType.VET_FLOAT3, Ogre.VertexElementSemantic.VES_POSITION) 
+        vdecl.addElement(0, 0, Ogre.VertexElementType.Ogre.VET_FLOAT3, Ogre.VertexElementSemantic.VES_POSITION) 
         vdecl.addElement(1, 0, Ogre.VertexElementType.VET_FLOAT3, Ogre.VertexElementSemantic.VES_NORMAL) 
         vdecl.addElement(2, 0, Ogre.VertexElementType.VET_FLOAT2, Ogre.VertexElementSemantic.VES_TEXTURE_COORDINATES) 
     
         ## Prepare buffer for positions - todo: first attempt, slow
         posVertexBuffer = \
              Ogre.HardwareBufferManager.getSingleton().createVertexBuffer(
-                3*4, #sizeof(float),
+                3 * ctypes.sizeof(ctypes.c_float),
                 numVertices,
                 Ogre.HardwareBuffer.HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE) 
         vbind.setBinding(0, posVertexBuffer) 
@@ -67,7 +67,7 @@ class WaterMesh:
         ## Prepare buffer for normals - write only
         normVertexBuffer = \
              Ogre.HardwareBufferManager.getSingleton().createVertexBuffer(
-                3*4, #sizeof(float),
+                3*ctypes.sizeof(ctypes.c_float), 
                 numVertices,
                 Ogre.HardwareBuffer.HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE) 
         vbind.setBinding(1, normVertexBuffer) 
@@ -85,7 +85,7 @@ class WaterMesh:
     
         texcoordsVertexBuffer = \
              Ogre.HardwareBufferManager.getSingleton().createVertexBuffer(
-                2*4, #sizeof(float),
+                2*ctypes.sizeof(ctypes.c_float),
                 numVertices,
                 Ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY) 
         texcoordsVertexBuffer.writeData(0,
@@ -135,26 +135,25 @@ class WaterMesh:
     #  prepare vertex positions
     #  note - we use 3 vertex buffers, since algorighm uses two last phases
     #  to calculate the next one
-      
+        self.vertexBuffers=[]
         storageclass2 = ctypes.c_float * (numVertices*3)
         for b in range(3) :
             self.vertexBuffers.append (  storageclass2(1.1) ) ### new float[numVertices * 3]  
             for y in range(complexity) :
                 for x in range (complexity) :
-# # #                     numPoint = y*(complexity+1) + x  
-# # #                     vertex = self.vertexBuffers[b] + 3*numPoint  
-                    self.vertexBuffers[b].append( (x) / (complexity) * planeSize  )
-                    self.vertexBuffers[b].append( 0 )
-                    self.vertexBuffers[b].append( (y) / (complexity) * planeSize  )
+                    numPoint = y*(complexity+1) + x  
+                    vertex = vertexBuffers[b] + 3*numPoint  
+                    self.vertexBuffers[b][0]=x / (complexity) * planeSize  )
+                    self.vertexBuffers[b][1]=0
+                    self.vertexBuffers[b][2] = y / (complexity) * planeSize  )
                         
-# # # # #         AxisAlignedBox meshBounds(0,0,0,
-# # # # #             planeSize,0, planeSize) 
+        AxisAlignedBox meshBounds = Ogre.AxisAlignedBox(0,0,0, planeSize,0, planeSize) 
         mesh._setBounds(meshBounds) 
     
         currentBuffNumber = 0  
         posVertexBuffer.writeData(0,
             posVertexBuffer.getSizeInBytes(), ## size
-            ogre.CastVoidPtr(ctypes.addressof(vertexBuffers[currentBuffNumber])), ## source
+            ctypes.addressof(self.vertexBuffers[currentBuffNumber]), ## source
             True)  ## discard?
     
         mesh.load() 
@@ -162,7 +161,8 @@ class WaterMesh:
     
     #  ========================================================================= 
     def __del__ (self):
-        pass
+        del self.vertexBuffers
+        
 #       del vertexBuffers[0] 
 #       del vertexBuffers[1] 
 #       del vertexBuffers[2] 
