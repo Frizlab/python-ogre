@@ -9,9 +9,6 @@ xxx 2007: Version 0.91 Release
 * Extended setter properties - functions that take colour/vectors can now be properties taking tuples/lists
    ie. light.colour=0,0,1 || [0,0,1] || (0,0,1) || Ogre.ColourValue(0,0,1)  now work
    
-* Identified functions with pointer arguments and used "functional transformation" to make these 'outputs'
-   ie. getWorldTransforms() now return a Matrix4 instead of taking a pointer to it as an argument
-
 20 Feb 2007:  Version 0.9 Release
 =================================
 * Python style iterator access to all Map and Vector iterators 
