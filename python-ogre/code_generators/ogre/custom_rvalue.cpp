@@ -170,6 +170,32 @@ struct PyStringToUTFString{
     }
 };
 
+struct PyTuple2Quaternion{
+
+    typedef Ogre::Quaternion quat_type;
+
+    typedef boost::tuples::tuple< real_type, real_type, real_type, real_type> quat_tuple_type;
+
+    typedef bpl::from_py_sequence< quat_tuple_type > converter_type;
+
+    static void* convertible(PyObject* obj){
+        return converter_type::convertible( obj );
+    }
+
+    static void
+    construct( PyObject* obj, bpl::converter::rvalue_from_python_stage1_data* data){
+
+        typedef bpl::converter::rvalue_from_python_storage<quat_type> quat_storage_t;
+        quat_storage_t* the_storage = reinterpret_cast<quat_storage_t*>( data );
+        void* memory_chunk = the_storage->storage.bytes;
+
+        real_type fW(0.0), fX(0.0), fY(0.0), fZ(0.0);
+        boost::tuples::tie(fW, fX, fY, fZ) = converter_type::to_c_tuple( obj );
+
+        quat_type* quat = new (memory_chunk) quat_type(fW, fX, fY, fZ);
+        data->convertible = memory_chunk;
+    }
+};
 
 } //r_values_impl
 
@@ -202,5 +228,10 @@ void register_pystring_to_utfstring_conversion(){
     bpl::converter::registry::push_back(  &r_values_impl::PyStringToUTFString::convertible
                                          , &r_values_impl::PyStringToUTFString::construct
                                          , bpl::type_id<Ogre::UTFString>() );
+}
+void register_pytuple_to_quaternion_conversion(){
+    bpl::converter::registry::push_back(  &r_values_impl::PyTuple2Quaternion::convertible
+                                         , &r_values_impl::PyTuple2Quaternion::construct
+                                         , bpl::type_id<Ogre::Quaternion>() );
 }
 

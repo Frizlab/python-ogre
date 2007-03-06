@@ -48,6 +48,11 @@ class SkeletalApplication(sf.Application):
         ### NOTE the need for pointer here....
         anim = skel.getAnimation("Sneak") 
         
+        m=ogre.Matrix4()
+        print "\n\ntesting", m
+        skel._getBoneMatrices( m )        
+        print "\nAfter call", m, "\n\n"
+        
         cameraNode = sceneManager.getRootSceneNode().createChildSceneNode()
         cameraNode.attachObject(self.camera)
     

@@ -1,24 +1,61 @@
+xxx 2007: Version 0.91 Release
+==============================
+* Reverse order of entries in ChangeLog :)
+* _ConfigOption name changed to ConfigOption
+* << Operators in base source now exposed as __str__ -- makes "print xxx" work well
+* Couple of FactoryObj aliases added to clean up names
+* Radian/Degree constructor fix added to __init__.py file
+* Auto Quaternion conversion (to and from Tuple/list)
+* Extended setter properties - functions that take colour/vectors can now be properties taking tuples/lists
+   ie. light.colour=0,0,1 || [0,0,1] || (0,0,1) || Ogre.ColourValue(0,0,1)  now work
+   
+* Identified functions with pointer arguments and used "functional transformation" to make these 'outputs'
+   ie. getWorldTransforms() now return a Matrix4 instead of taking a pointer to it as an argument
 
-Jul -Aug 2006:  All the base work done by Larkin and Roman
-13 Aug 2006:  Initial Version from Andy
-13 Aug 2006:  Roman - fix to Ogre_Generate_code.py to simplify build process (removed 'non exposed'? ENUMS)
-                    * Needed to remove cmdXXXX functions etc from ParticleSystem in order to compile correctly
-              Change to Ogre_Customization_data.py to add 'NamedValuePairList' mapping
-15 Aug 2006:  Andy - addition to Ogre_Generate_code.py to expose additional template classes (initially Controller<float>)
-              Fixed ParticleSystem class to remove CmdXXXX functions
-              Update to Ogre_Customization_data.py as some mappings had been lost :)
-----          Significant improvements to both Py++ and the Ogre wrappers make code generation far simpler
-29 Sept 2006: Andy - Update to support both the Ogre CVS and Ogre 1.2.3 code bases.  
-              PYPOS project added as a sub driectory (initially)
-15 Oct 2006:  Andy - initial release of the binary for windows 0.5/ 0.51 release
-18 Nov 2006:  Version 0.6 Windows release.
-              Built against the CVS version of Ogre, hence dlls included as part of this release
-              CEGUI/OIS/OgreNewt (Newton Physics)/OgreRefApp (ODE Physics) part of the release
-              Media is now a seperate download as expected to change (can be cleaned up and shrunk)
-26 Nov 2006:  Version 0.65 Windows Release
-              Series of minor fixes - added support for MovableObjects in Ogre
-              Call backs in OgreNewt now work - or seem too :)  Demos 0-6 working well
-              Known problems in a couple of the OgreNewt demos 7 and 8..
+20 Feb 2007:  Version 0.9 Release
+=================================
+* Python style iterator access to all Map and Vector iterators 
+  (you can still access the iterators using the C++ methods)
+  So now a "for r in fm.getResourceIterator():" is valid
+* getByName and getByHandle methods of ResourceManager (and it's subclasses)
+  now automatically returns the correct Object type - previously it returned
+  a 'Resource' (which is how the C++ library works) - now it will return a 
+  Texture/Font/Mesh as appropiate
+* Documentation has been improved - all "Special Funtions/modifications" 
+  have pydoc strings that start with "Python-Ogre...."
+* New return policies have allowed us to exposed 'Image::getData', 
+  MemoryDataStream::getPtr' etc
+* Factory classes have been included (again) in the build - there was 
+  dicusssion as to how useful they might be but there isn't any harm...
+* OgreOde demos included in the release
+* Matrix3[0..2] returns a tuple holding the matrix row
+* Minor improvements in tuple handling, multiplication of Quats etc works again
+* Built with the CVS version of Ogre 1.4RC1..
+* Getmultimapsettings helper function removed as multimaps now fully supported..
+    ### settings_tuples = config.getMultiMapSettings(settings)
+    ##for resource_type, resource in settings_tuples:
+    ##    self.rgm.addResourceLocation(resource, resource_type, section_name)
+    for item in settings:
+        self.rgm.addResourceLocation(item.value, item.key, section_name)            
+* _ConfigOption and other structures exposed correctly and now work
+              
+04 feb 2007:  Version 0.8 Release
+=================================
+* Number of minor tweaks to Ogre, some classes corrected to match the Ogre Library better:
+   (NamedValuePairList is now NameValuePairList, FloatController... are now Controller...Float)
+* Most calls automatically convert from tuples (or lists) to colourvalues or vectors. So instead of
+   having to do an ogre.ColourValue(1,1,1) you can do (1,1,1) 
+* CEGUI has been updated a little, more from an internal code creation perspective (less classes unexposed)
+* Used the Scons build system for everything 
+* OgreAl has been added - we now have simple sound for the library
+* ODE and OgreOde have been added for a new physics library - DEMOS have not been completed - expect problems:)
+* FMOD has been included for fun, a VERY limited support at present, but will be improved:)  
+                            
+09 jan 2007:  SNAPSHOT
+======================
+              Changes to demo01 in OgreNewt showing how to do debug lines
+              MANY changes to code generation (with Py++) enhancements - fixing many container classes that wrap pointers
+              Demo_renderCreate to show how to create your own render window and uses previously broken wrappers
 02 Jan 2007:  Version 0.70 Windows Release
                 Lots of improvements - should have removed all 'No to Python' converter errors in Ogre
                 Everything that is 'exposable' should be there
@@ -32,20 +69,26 @@ Jul -Aug 2006:  All the base work done by Larkin and Roman
                 Remove need for path variable to be set - modules do this automajically
                 Renamed and cleaned up the demos and their file naming..
                 Fixed Demo06 in CEGUI
-09 jan 2007;  SNAPSHOT
-              Changes to demo01 in OgreNewt showing how to do debug lines
-              MANY changes to code generation (with Py++) enhancements - fixing many container classes that wrap pointers
-              Demo_renderCreate to show how to create your own render window and uses previously broken wrappers
-04 feb 2007:  Version 0.8 Release
-                Number of minor tweaks to Ogre, some classes corrected to match the Ogre Library better:
-                (NamedValuePairList is now NameValuePairList, FloatController... are now Controller...Float)
-                Most calls automatically convert from tuples (or lists) to colourvalues or vectors. So instead of
-                having to do an ogre.ColourValue(1,1,1) you can do (1,1,1) 
-                CEGUI has been updated a little, more from an internal code creation perspective (less classes unexposed)
-                Used the Scons build system for everything 
-                OgreAl has been added - we now have simple sound for the library
-                ODE and OgreOde have been added for a new physics library - DEMOS have not been completed to expect problems:)
-                FMOD has been included for fun, a VERY limited support at present, but will be improved:)                              
+26 Nov 2006:  Version 0.65 Windows Release
+              Series of minor fixes - added support for MovableObjects in Ogre
+              Call backs in OgreNewt now work - or seem too :)  Demos 0-6 working well
+              Known problems in a couple of the OgreNewt demos 7 and 8..
+18 Nov 2006:  Version 0.6 Windows release.
+              Built against the CVS version of Ogre, hence dlls included as part of this release
+              CEGUI/OIS/OgreNewt (Newton Physics)/OgreRefApp (ODE Physics) part of the release
+              Media is now a seperate download as expected to change (can be cleaned up and shrunk)
+15 Oct 2006:  Andy - initial release of the binary for windows 0.5/ 0.51 release
+29 Sept 2006: Andy - Update to support both the Ogre CVS and Ogre 1.2.3 code bases.  
+              PYPOS project added as a sub driectory (initially)
+15 Aug 2006:  Andy - addition to Ogre_Generate_code.py to expose additional template classes (initially Controller<float>)
+              Fixed ParticleSystem class to remove CmdXXXX functions
+              Update to Ogre_Customization_data.py as some mappings had been lost :)
+----          Significant improvements to both Py++ and the Ogre wrappers make code generation far simpler
+13 Aug 2006:  Roman - fix to Ogre_Generate_code.py to simplify build process (removed 'non exposed'? ENUMS)
+                    * Needed to remove cmdXXXX functions etc from ParticleSystem in order to compile correctly
+              Change to Ogre_Customization_data.py to add 'NamedValuePairList' mapping
+13 Aug 2006:  Initial Version from Andy
+Jul -Aug 2006:  All the base work done by Larkin and Roman
 
-              
+
               

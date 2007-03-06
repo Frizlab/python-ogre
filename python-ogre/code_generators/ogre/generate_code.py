@@ -4,8 +4,8 @@
 Continue to ignore ptr() functions in Vectors2/3/4 and Matrix 2/3/4 - these simple return a pointer to the start of the 
 underlying data memebers and can be accessed in python with matrix3.x, matrix3.y etc
 
-FT [] operators for Matrix3/4 to return 3/4 array
-
+Functions with Matrices and Vertices need to be managed - as they expect a pointer to an array of Matrix4/Vector3 etc
+Review all the functions with 'Check' beside them in the output as they probably don't work........
 
 """
 
@@ -143,6 +143,9 @@ def ManualExclude ( mb ):
     global_ns.class_('::Ogre::UnifiedHighLevelGpuProgramFactory').exclude()
     global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram::CmdDelegate').exclude()
     
+    # this one expects a pointer to matrix4 and will return mBoneList.size() of them
+    global_ns.class_('::Ogre::Skeleton').mem_fun('_getBoneMatrices').exclude()
+    
     #new in Ogre 1.4 RC2
     global_ns.class_('::Ogre::SceneManager').mem_fun('getQueuedRenderableVisitor').exclude()
 
@@ -214,8 +217,9 @@ def ManualFixes ( mb ):
         if f.name.startswith("get") and "Corner" in f.name:
             f.call_policies = call_policies.convert_array_to_tuple( 8, call_policies.memory_managers.none )
             f.include()
-   
     ### NOTE that we "include" things here again as they've probably been excluded in AutoFixes..
+    
+    
     
     ## this one points to an array of [2] floats        
     c =ogre_ns.class_('BillboardChain').mem_fun('getOtherTextureCoordRange')
@@ -326,6 +330,28 @@ def ManualTransformations ( mb ):
     x=ns.mem_fun('::Ogre::Mesh::suggestTangentVectorBuildParams' )
     x.add_transformation(ft.output('outSourceCoordSet'), ft.output('outIndex') )
     x.documentation = docit ("", "targetSemantic","outSourceCoordSet, outIndex" )
+      
+    x=ns.mem_fun('::Ogre::PixelUtil::getBitDepths')
+    x.add_transformation(ft.output_static_array('rgba',4) )
+    x.documentation = docit ("", "format", "rgba" )
+    
+    x=ns.mem_fun('::Ogre::PixelUtil::getBitMasks')
+    x.add_transformation(ft.output_static_array('rgba',4) )
+    x.documentation = docit ("", "format", "rgba" )
+
+    
+    ## these need updates to Py++ to handle pointers 
+# #     x = ns.mem_fun('::Ogre::PixelUtil::unpackColour', arg_types=['float *','float *','float *','float *',None,None])
+# #     x.add_transformation(ft.output('r'), ft.output('g'), ft.output('b'), ft.output('a') )
+# #     x.documentation = docit ("", "Pixelformat, src", "r,g,b,a" )
+
+# #     x = ns.mem_fun('::Ogre::Frustum::projectSphere')
+# #     x.add_transformation(ft.output('left'), ft.output('top'), ft.output('right'), ft.output('bottom') )
+# #     x.documentation = docit ("", "Sphere", "result, left, top, right, bottom" )
+# #             
+# #     x = ns.mem_fun('::Ogre::Camera::projectSphere')
+# #     x.add_transformation(ft.output('left'), ft.output('top'), ft.output('right'), ft.output('bottom') )
+# #     x.documentation = docit ("", "Sphere", "result, left, top, right, bottom" )
     
     # these are * * 's so need more work
 #     x = ns.mem_fun('::Ogre::AnimationTrack::getKeyFramesAtTime' )
@@ -352,9 +378,9 @@ def ManualTransformations ( mb ):
 #     x = ns.mem_fun('::Ogre::Skeleton::getAnimation', arg_types=[None,None])
 #     x.add_transformation(ft.output('linker') )
     
-    x = ns.mem_fun('::Ogre::RenderQueue::RenderableListener::renderableQueued')
-    x.add_transformation(ft.output('ppTech') )
-    x.documentation = docit ("UNTESTED", "rend, groupID, priority", "ppTech" )
+# # #     x = ns.mem_fun('::Ogre::RenderQueue::RenderableListener::renderableQueued')
+# # #     x.add_transformation(ft.output('ppTech') )
+# # #     x.documentation = docit ("UNTESTED", "rend, groupID, priority", "ppTech" )
     
     ##
     ## now we handle some specials..
@@ -565,7 +591,8 @@ def Add_Auto_Conversions( mb ):
         , 'register_pytuple_to_vector2_conversion'
         , 'register_pytuple_to_vector3_conversion'
         , 'register_pytuple_to_vector4_conversion'
-        , 'register_pystring_to_utfstring_conversion' )
+        , 'register_pystring_to_utfstring_conversion' 
+        , 'register_pytuple_to_quaternion_conversion' )
         
     for converter in rvalue_converters:
         mb.add_declaration_code( 'void %s();' % converter )
@@ -641,16 +668,47 @@ def Fix_Void_Ptr_Args ( mb ):
                 print "Fixed Void Ptr", fun, arg_position
                 break
             arg_position +=1
-    pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', '::Ogre::uint8', 'unsigned char']
+            
+    ## lets go and look for stuff that might be a problem        
+    pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', '::Ogre::uint8',
+             'unsigned char', 'Matrices', 'Vertices']
+    function_names=['Matrices', 'Vertices']
     for fun in mb.member_functions():
+        if fun.documentation or fun.ignore: continue ## means it's been tweaked somewhere else
+        for n in function_names:
+            if n in fun.name:
+                print "CHECK :", fun
+                break
         arg_position = 0
         for arg in fun.arguments:
-            if declarations.is_pointer(arg.type):
+            if declarations.is_pointer(arg.type): ## and "const" not in arg.type.decl_string:
                 for i in pointee_types:
-                    if arg.type.decl_string.startswith ( i ):
-                        print "NEED TO CHECK",fun, arg_position
+                    if i in arg.type.decl_string:
+                        print "CHECK ", fun, str(arg_position)
                         break
             arg_position +=1
+
+    
+    ## Now we look for pointers to particular types and decide what to do with them??        
+# # #     pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', '::Ogre::uint8',
+# # #              'unsigned char', '::Ogre::Matrix4']
+# # #     for fun in mb.member_functions():
+# # #         arg_position = 0
+# # #         trans=[]
+# # #         desc=""
+# # #         for arg in fun.arguments:
+# # #             if declarations.is_pointer(arg.type) and "const" not in arg.type.decl_string:
+# # #                 for i in pointee_types:
+# # #                     if arg.type.decl_string.startswith ( i ):
+# # #                         trans.append(ft.output (arg_position ) )
+# # #                         desc = desc + " Transform " + arg.name + " (position:" + str(arg_position) +") as an output."
+# # #                         break
+# # #             arg_position +=1
+# # #         if trans:
+# # #             print "Tranformation applied to ", fun, desc
+# # #             fun.add_transformation ( * trans )
+# # #             fun.documentation = "Python-Ogre: Function Modified\\n\\\n" + desc
+
             
                     
 def Fix_Pointer_Returns ( mb ):
@@ -663,14 +721,14 @@ def Fix_Pointer_Returns ( mb ):
     pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', '::Ogre::uint8', 'unsigned char']
     known_names=['ptr', 'useCountPointer']  # these are function names we know it's cool to exclude
     for fun in mb.member_functions():
-        if declarations.is_pointer (fun.return_type):
+        if declarations.is_pointer (fun.return_type) and not fun.documentation:
             for i in pointee_types:
                 if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
                     if not fun.name in known_names:
                         print "Excluding (function):", fun
                     fun.exclude()
     for fun in mb.member_operators():
-        if declarations.is_pointer (fun.return_type):
+        if declarations.is_pointer (fun.return_type) and not fun.documentation:
             for i in pointee_types:
                 if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
                     print "Excluding (operator):", fun
@@ -766,11 +824,12 @@ def generate_code():
     ManualExclude ( mb )
     AutoInclude ( mb )
     ManualInclude ( mb )
+    # here we fixup functions that expect to modifiy their 'passed' variables    
+    ManualTransformations ( mb )
+    
     AutoFixes ( mb )
     ManualFixes ( mb )
     
-    # here we fixup functions that expect to modifiy their 'passed' variables    
-    ManualTransformations ( mb )
     
     #Py++ can not expose static pointer member variables
     ogre_ns.vars( 'ms_Singleton' ).disable_warnings( messages.W1035 )
@@ -791,7 +850,11 @@ def generate_code():
     # the manual stuff all done here !!!
     #
     hand_made_wrappers.apply( mb )
-    
+
+# #     cls= ogre_ns.class_( "Camera" )
+# #     cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
+# #     sys.exit()
+# #     
     NoPropClasses = ["UTFString"]
     for cls in ogre_ns.classes():
         if cls.name not in NoPropClasses:

@@ -7,7 +7,7 @@ class ParticleApplication(sf.Application):
         sceneManager = self.sceneManager
         camera = self.camera
         
-        sceneManager.ambientLight = ogre.ColourValue(0.5, 0.5, 0.5)
+        sceneManager.ambientLight = [0, 0, 1]
 
         entity = sceneManager.createEntity('head', 'ogrehead.mesh')
         entity.setMaterialName('Examples/EnvMappedRustySteel')

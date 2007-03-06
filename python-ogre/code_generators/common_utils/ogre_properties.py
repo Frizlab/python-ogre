@@ -24,7 +24,26 @@ from pyplusplus import decl_wrappers
 class ogre_property_recognizer_t( decl_wrappers.name_based_recognizer_t ):
     def __init__( self ):
         decl_wrappers.name_based_recognizer_t.__init__( self )
-    
+        
+    def check_type_compatibility( self, fget, fset ):
+        extendedtypes=['Vector','ColourValue', 'Quaternion', 'Matrix']
+        if decl_wrappers.name_based_recognizer_t.check_type_compatibility( self, fget, fset ):
+            return True
+        t2 = fset.arguments[0].type
+        for t in extendedtypes:
+            if t in t2.decl_string:
+                return True
+        return False
+            
+    def is_setter( self, mem_fun ):
+        if len( mem_fun.arguments ) != 1:
+            return False
+        if not declarations.is_void( mem_fun.return_type ):
+            return False
+        if mem_fun.has_const:
+            return False
+        return True
+             
     def create_read_only_property( self, fget ):
         found = self.find_out_ro_prefixes( fget.name )
         if found in ( None, '' ):
