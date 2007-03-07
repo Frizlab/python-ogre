@@ -145,10 +145,12 @@ struct PyStringToUTFString{
     typedef Ogre::UTFString string_type;
 
     static void* convertible(PyObject* obj){
-        if( !PyString_Check(obj) || !PyUnicode_Check(obj) ){
+        if( PyString_Check(obj) || PyUnicode_Check(obj) ){
+            return obj;
+        }
+        else{
             return 0;
         }
-        return obj;
     }
 
     static void
