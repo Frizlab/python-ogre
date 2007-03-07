@@ -197,7 +197,12 @@ def ManualInclude ( mb ):
                         declarations.remove_reference( oper.arguments[1].type ) ) )
         if not isinstance( type_or_decl, declarations.declaration_t ):
             continue
-        if type_or_decl.ignore == False:
+        # ugly hack until patch 1675539 gets applied to Ogre source
+        Expose = True
+        for c in ['ConvexBody', 'Polygon']:
+            if c in type_or_decl.decl_string:
+                Expose = False
+        if type_or_decl.ignore == False and Expose:
             oper.include()
 
         
