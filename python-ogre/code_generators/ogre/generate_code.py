@@ -36,6 +36,12 @@ import common_utils.extract_documentation as exdoc
 import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
 
+## small helper function
+def docit ( general, i, o ): 
+    docs = "Python-Ogre Modified Function Call\\n" + general +"\\n"
+    docs = docs + "Input: " + i + "\\n"
+    docs = docs + "Output: " + o + "\\n\\\n"
+    return docs
 
 ############################################################
 ##
@@ -159,11 +165,6 @@ def ManualInclude ( mb ):
     global_ns = mb.global_ns
     ogre_ns = global_ns.namespace( 'Ogre' )
     
-#     ogre_ns.class_( "StaticGeometry" ).class_("Region").include()
-#     ogre_ns.class_( "StaticGeometry" ).class_("LODBucket").include()
-#     ogre_ns.class_( "StaticGeometry" ).class_("MaterialBucket").include()
-    
-
     ## It's a structure that doesn't get included by default...
     ogre_ns.class_("VertexBoneAssignment_s").include()
     # A couple of Std's that need exposing
@@ -222,24 +223,25 @@ def ManualFixes ( mb ):
         if f.name.startswith("get") and "Corner" in f.name:
             f.call_policies = call_policies.convert_array_to_tuple( 8, call_policies.memory_managers.none )
             f.include()
+            f.documentation=docit ("Return Type Change", "None", "Tuple with 8 Vector3's")
     ### NOTE that we "include" things here again as they've probably been excluded in AutoFixes..
-    
-    
     
     ## this one points to an array of [2] floats        
     c =ogre_ns.class_('BillboardChain').mem_fun('getOtherTextureCoordRange')
     c.call_policies = call_policies.convert_array_to_tuple( 2, call_policies.memory_managers.none )    
     c.include()
+    c.documentation=docit ("Return Type Change", "None", "Tuple with 2 floats's")
             
     ## and these ones return
     c = ogre_ns.class_('Matrix4').operators('[]')
     c.call_policies= call_policies.convert_array_to_tuple( 4, call_policies.memory_managers.none )   
     c.include() 
+    c.documentation=docit ("Return Type Change", "None", "Tuple with 4 floats's (the matrix 'line')")
     c = ogre_ns.class_('Matrix3').operators('[]')
     c.call_policies= call_policies.convert_array_to_tuple( 3, call_policies.memory_managers.none )    
     c.include()
+    c.documentation=docit ("Return Type Change", "None", "Tuple with 3 floats's (the matrix 'line')")
 
-            
         
     #VertexCacheProfiler constructor uses enum that will be defined later.
     #I will replace second default value to be int instead of enum
@@ -264,11 +266,29 @@ def ManualFixes ( mb ):
     v = cls.variable( "indexData" )
     v.apply_smart_ptr_wa = True   
     
-    # make UFTstrings behave as real Python strings..
+    # make UTFstrings behave as real Python strings..
     UTFString = mb.class_( 'UTFString' )
     UTFString.mem_fun( 'asUTF8' ).alias = '__str__'
     UTFString.mem_fun( 'asWStr' ).alias = '__unicode__'
     
+# #     # ensure functions that take UTFString can also take a python string
+# #     utf = ogre_ns.class_( 'UTFString' )
+# #     def has_utf_type( utf, var ): 
+# #         res =  declarations.is_same( utf, declarations.remove_const( var.type ) )
+# # # #         if "String" in var.type.decl_string:
+# # # #             print "***", utf, var
+# # # #             print var.type
+# # # #             print var.type.decl_string
+# # # #             nake_type1 = declarations.type_traits.remove_declarated( utf )
+# # # #             nake_type2 = declarations.type_traits.remove_declarated(  var.type  )
+# # # #         
+# # # #             print res, "Comparing NAKE ",nake_type1, nake_type2
+# # # #             print res, "Comparing  ",declarations.remove_const( var.type ), utf
+# #         if res:
+# #             print "UTFFIX", utf,var,var.type
+# #         return res
+# #     ogre_ns.variables( lambda var: has_utf_type( utf, var ) ).use_make_functions = True
+# #     #ogre_ns.variables( lambda var: has_utf_type( utf, var ) ).apply_smart_ptr_wa  = True
              
 ############################################################
 ##
@@ -285,12 +305,6 @@ def ManualTransformations ( mb ):
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
         
-    def docit ( general, i, o ): 
-        docs = "Python-Ogre Modified Function Call\\n" + general +"\\n"
-        docs = docs + "Input: " + i + "\\n"
-        docs = docs + "Output: " + o + "\\n\\\n"
-        return docs
-
     rt_cls = ns.class_('RenderTarget')
     x=rt_cls.mem_fun('getMetrics')
     x.add_transformation( *create_output(3) )
@@ -561,13 +575,13 @@ def AutoFixes ( mb ):
 
  
 def Fix_Implicit_Conversions ( mb ):
-    # and we need to remove the conversion here as radians doesn't work as expected
-    cls=mb.class_('Radian')
-    cls.constructors().allow_implicit_conversion = False
-    cls=mb.class_('Degree')
-    cls.constructors().allow_implicit_conversion = False
-#     cls=mb.class_('Angle')
-#     cls.constructors().allow_implicit_conversion = False
+    """Some of the implicit conversion gets a little too smart and causes strange problems
+    """
+    nonImplicitClasses=['Vector2','Vector3', 'Vector4', 'Matrix4', 
+                        'Radian', 'Degree', 'Angle', 'Quaternion']
+    for className in nonImplicitClasses:
+        mb.class_(className).constructors().allow_implicit_conversion = False
+    
     
 def Fix_Ref_Not_Const ( mb ):
     """ we have problems with sharedpointer arguments that are defined as references
@@ -589,7 +603,9 @@ def Add_Auto_Conversions( mb ):
     Allows to pass Python tuple as argument to function, instead of
        * ColourValue
        * Vector[2|3|4]
-       * TODO: Matrix[3|4]
+       * Matrix[3|4]
+       * Quaternion
+       * UTFString's (passing a string)
     """
     rvalue_converters = ( 
         'register_pytuple_to_colour_value_conversion'
@@ -597,7 +613,9 @@ def Add_Auto_Conversions( mb ):
         , 'register_pytuple_to_vector3_conversion'
         , 'register_pytuple_to_vector4_conversion'
         , 'register_pystring_to_utfstring_conversion' 
-        , 'register_pytuple_to_quaternion_conversion' )
+        , 'register_pytuple_to_quaternion_conversion'
+        , 'register_pytuple_to_matrix3_conversion' )
+# #         , 'register_pytuple_to_matrix4_conversion' ) ## can't do this until we extend tuple template in boost
         
     for converter in rvalue_converters:
         mb.add_declaration_code( 'void %s();' % converter )
@@ -670,7 +688,10 @@ def Fix_Void_Ptr_Args ( mb ):
         for arg in fun.arguments:
             if declarations.type_traits.is_void_pointer(arg.type):
                 fun.add_transformation( ft.modify_type(arg_position,_ReturnUnsignedInt ) )
-                print "Fixed Void Ptr", fun, arg_position
+                fun.documentation = docit ("Modified Input Argument to work with CTypes",
+                                            "Argument "+arg.name+ "(pos:" + str(arg_position)\
+                                            +") takes a CTypes.adddressof(xx)", "...")
+                #print "Fixed Void Ptr", fun, arg_position
                 break
             arg_position +=1
             
@@ -690,6 +711,7 @@ def Fix_Void_Ptr_Args ( mb ):
                 for i in pointee_types:
                     if i in arg.type.decl_string:
                         print "CHECK ", fun, str(arg_position)
+                        fun.documentation=docit("SUSPECT - MAYBE BROKEN", "....", "...")
                         break
             arg_position +=1
 
@@ -730,7 +752,7 @@ def Fix_Pointer_Returns ( mb ):
             for i in pointee_types:
                 if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
                     if not fun.name in known_names:
-                        print "Excluding (function):", fun
+                        print "Excluding (function):", fun, "as it returns (pointer)", i
                     fun.exclude()
     for fun in mb.member_operators():
         if declarations.is_pointer (fun.return_type) and not fun.documentation:
@@ -869,7 +891,10 @@ def generate_code():
 
     common_utils.add_constants( mb, { 'ogre_version' :  '"%s"' % environment.ogre.version.replace("\n", "\\\n") 
                                       , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
-
+                                      
+    ## need to create a welcome doc string for this...                                  
+    common_utils.add_constants( mb, { '__doc__' :  '"Python-Ogre Wrapper Library"' } ) 
+    
     
     ##########################################################################################
     #
