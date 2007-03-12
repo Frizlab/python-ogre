@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+# -----------------------------------------------------------------------------
+# This source file is part of Python-Ogre and is covered by the LGPL
+# For the latest info, see http://python-ogre.org/
+#
+# -----------------------------------------------------------------------------
 """  To Do list:
 
 Continue to ignore ptr() functions in Vectors2/3/4 and Matrix 2/3/4 - these simple return a pointer to the start of the 
@@ -597,7 +602,7 @@ def Fix_Implicit_Conversions ( mb ):
     """Some of the implicit conversion gets a little too smart and causes strange problems
     """
     nonImplicitClasses=['Vector2','Vector3', 'Vector4', 'Matrix4', 
-                        'Radian', 'Degree',  'Quaternion']
+                          'Quaternion']  ## 'Radian', 'Degree',
     for className in nonImplicitClasses:
         mb.class_(className).constructors().allow_implicit_conversion = False
  
