@@ -1,3 +1,14 @@
+# This code is in the Public Domain
+# -----------------------------------------------------------------------------
+# This source file is part of Python-Ogre
+# For the latest info, see http://python-ogre.org/
+#
+# It is likely based on original code from OGRE and/or PyOgre
+# For the latest info, see http://www.ogre3d.org/
+#
+# You may use this sample code for anything you like, it is not covered by the
+# LGPL.
+# -----------------------------------------------------------------------------
 #Fish!
 NUM_FISH = 50
 NUM_FISH_WAYPOINTS= 10
@@ -241,7 +252,7 @@ class FresnelApplication(sf.Application):
                 
         # create fish
         for fish in xrange(0,NUM_FISH):
-            pEnt = self.sceneManager.createEntity("fish" + ogre.StringConverter.toString(fish), "fish.mesh")
+            pEnt = self.sceneManager.createEntity("fish" + str(fish), "fish.mesh")
             node = self.rootNode.createChildSceneNode()
             amimstate = pEnt.getAnimationState("swim")
             amimstate.enabled = True

@@ -1,3 +1,14 @@
+# This code is in the Public Domain
+# -----------------------------------------------------------------------------
+# This source file is part of Python-Ogre
+# For the latest info, see http://python-ogre.org/
+#
+# It is likely based on original code from OGRE and/or PyOgre
+# For the latest info, see http://www.ogre3d.org/
+#
+# You may use this sample code for anything you like, it is not covered by the
+# LGPL.
+# -----------------------------------------------------------------------------
 
 # 
 # #     \file 
@@ -67,7 +78,7 @@ class BezierApplication(sf.Application):
 
         ## Set ambient light
         sceneManager.setAmbientLight( (0.2, 0.2, 0.2) ) 
-
+        print "\n1"
         ## Create a point light
         l = sceneManager.createLight("MainLight") 
         l.setType(ogre.Light.LT_DIRECTIONAL) 
@@ -174,7 +185,8 @@ class BezierApplication(sf.Application):
         pVert[inc+5] = 0.0
         pVert[inc+6] = 1.0  
         pVert[inc+7] = 1.0
-
+        print "\n1"
+        
         ##
         ## NOTE: Python-Ogre Special :)
         ## createBezierPatch requires the address of te buffer which we pass using the addressof method
@@ -188,23 +200,30 @@ class BezierApplication(sf.Application):
         ## default values for you
         ##    ,vbUsage=ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, ibUsage=ogre.HardwareBuffer.HBU_DYNAMIC_WRITE_ONLY,
         ##    vbUseShadow=True, ibUseShadow=True) 
-
+        print "\n22"
+        
         ## Start patch at 0 detail
         patch.setSubdivision(0.0) 
         ## Create entity based on patch
         patchEntity = sceneManager.createEntity("Entity1", "Bezier1") 
+        print "\n23"
 
         pMat = ogre.MaterialManager.getSingleton().create("TextMat", 
             ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME) 
+        print "\n24"
         pMat.getTechnique(0).getPass(0).createTextureUnitState( "BumpyMetal.jpg" ) 
+        print "\n25"
         patchEntity.setMaterialName("TextMat") 
+        print "\n26"
         patchPass = pMat.getTechnique(0).getPass(0) 
-
+        print "\n1"
+        
         ## Attach the entity to the root of the scene
         sceneManager.getRootSceneNode().attachObject(patchEntity) 
 
         self.camera.setPosition(500,500, 1500) 
         self.camera.lookAt(0,200,-300) 
+        print "\n1"
         sf.Application.debugText  = "STARTED"
         print "SETUP FINISHED!!!!"
 
@@ -222,10 +241,29 @@ class BezierApplication(sf.Application):
         
         
 if __name__ == '__main__':
+    import exceptions,sys
     try:
         application = BezierApplication()
         application.go()
     except ogre.Exception, e:
         print e
-
+#        print dir(e)
+#     except exceptions.RuntimeError, e:
+#         print "Runtime error:", e, e.args
+#         print sys.exc_info()[0]
+#     except exceptions.TypeError, e:
+#         print "Type error:", e
+#     except exceptions.AttributeError, e:
+#         print "Attribute error:", e
+#     except exceptions.NameError, e:
+#         print "Name error:", e
+#     except Exception,inst:
+#         print "EException"
+#         print type(inst)     # the exception instance
+#         print inst.args      # arguments stored in .args
+#         print inst
+#     except exceptions.ValueError,e:
+#         print "ValueError",e
+#     except :
+#         print "Unexpected error:", sys.exc_info()[0]
 
