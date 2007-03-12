@@ -65,10 +65,9 @@ def ManualExclude ( mb ):
         'WIN32'
         , 'MemoryManager'   ## it's a specialised C++ mem manger not needed in Python
         , 'RadixSort' ## these show up as ugly aliases but are never exposed - and are really protected
+        , 'Angle'   ## obtuse implicit conversion between Radian and Degree - causes compile issues 
     ]
 
-    if not environment.ogre.version.startswith("1.2") and os.name =='nt':
-        mb.global_ns.class_( 'vector<Ogre::Vector4, std::allocator<Ogre::Vector4> >' ).exclude( )
     
     ## Now get rid of a wide range of classes as defined earlier in startswith...
     for prefix in startswith:
@@ -102,10 +101,6 @@ def ManualExclude ( mb ):
     ogre_ns.class_( 'VertexElement').member_functions('baseVertexPointerToElement').exclude()
     mb.global_ns.mem_fun('::Ogre::InstancedGeometry::BatchInstance::getObjectsAsArray').exclude()
     #all constructors in this class are private, also some of them are public.
-    if sys.platform=='win32':
-        Skeleton = ogre_ns.class_( 'Skeleton' ).constructors().exclude()
-    else:
-        ogre_ns.class_( 'Skeleton' ).exclude()
 
     ogre_ns.free_functions ('any_cast').exclude () #not relevant for Python
 
@@ -121,9 +116,6 @@ def ManualExclude ( mb ):
     ogre_ns.class_( 'CompositorInstance').class_('RenderSystemOperation').exclude() # doesn't exist for link time
     ogre_ns.class_( 'CompositorChain').mem_fun('_queuedOperation').exclude() #needs RenderSystemOperation
     
-    #as reported by mike with linux:bp::arg("flags")=(std::_Ios_Fmtflags)0
-    if os.name == 'posix':
-        ogre_ns.class_('StringConverter').member_functions('toString').exclude()    
    
    ## changes due to expanded header file input
    
@@ -172,15 +164,6 @@ def ManualInclude ( mb ):
     std_ns.class_("pair<unsigned, unsigned>").include()
     std_ns.class_("pair<bool, float>").include()
     std_ns.class_("pair<Ogre::SharedPtr<Ogre::Resource>, bool>").include()
-    
-    ## handle the hashmaps -- TODO FIX under LINUX
-    if sys.platform=='win32':
-        stdex_ns = global_ns.namespace("stdext")
-        for cls in stdex_ns.classes():
-            print "Checking", cls
-            if cls.name.startswith ("hash"):
-                print "Including", cls
-                cls.include()
     
     
     #RenderOperation class is marked as private, but I think this is a mistake
@@ -249,12 +232,6 @@ def ManualFixes ( mb ):
     VertexCacheProfiler = ogre_ns.constructor( 'VertexCacheProfiler', arg_types=[None,None] )
     VertexCacheProfiler.arguments[1].default_value = "int(%s)" % VertexCacheProfiler.arguments[1].default_value
       
-    if sys.platform == 'win32':
-        # need to force these
-        hwnd = global_ns.class_("HWND__")
-        hwnd.opaque = True
-        _iobuf = global_ns.class_("_iobuf")# need the file handle in Ogre::FileHandleDataStream::FileHandleDataStream
-        _iobuf.opaque = True
         
     ## we apply smart ptr to sharedptr classes automatically, however these are harder to identify    
     cls = mb.class_( "IndexData" )
@@ -565,22 +542,65 @@ def AutoFixes ( mb ):
     # functions that need to have implicit conversions turned off
     Fix_Implicit_Conversions ( ogre_ns)
     
-    
+    if os.name =='nt':
+        Fix_NT( mb )
+    elif os.name =='posix':
+        Fix_Posix( mb )
+        
  
 ###############################################################################
 ##
 ## here are the helper functions that do much of the work
 ##
 ###############################################################################     
+def Fix_Posix ( mb ):
+    """ fixup for posix specific stuff -- note only expect to be called on a posix machine
+    """
+    ## we could do more here if need be...
+    if sys.platform == 'darwin':
+        pass
+    elif sys.platform.startswith ('linux'):
+        pass
+        
+    #as reported by mike with linux:bp::arg("flags")=(std::_Ios_Fmtflags)0
+    mb.namespace( 'Ogre' ).class_('StringConverter').member_functions('toString').exclude()    
+    mb.namespace( 'Ogre' ).class_( 'Skeleton' ).exclude()
+    
+    ## grab the operator== and operator!= and exclude them
+    ## NOTE: Defination for these are "extern bool..." so I wonder if we should exclude any "extern" operators
+    for o in mb.namespace('Ogre').free_operators(arg_types=['::Ogre::ShadowTextureConfig const &', '::Ogre::ShadowTextureConfig const &']):
+        o.exclude()
+    
 
+
+def Fix_NT ( mb ):
+    """ fixup for NT systems
+    """
+    mb.global_ns.class_( 'vector<Ogre::Vector4, std::allocator<Ogre::Vector4> >' ).exclude( )
+    Skeleton = mb.namespace( 'Ogre' ).class_( 'Skeleton' ).constructors().exclude()
+    
+    ## handle the hashmaps -- TODO FIX under LINUX ???
+    stdex_ns = mb.global_ns.namespace("stdext")
+    for cls in stdex_ns.classes():
+        if cls.name.startswith ("hash"):
+            cls.include()
+            
+    # need to force these
+    hwnd = mb.global_ns.class_("HWND__")
+    hwnd.opaque = True
+    _iobuf = mb.global_ns.class_("_iobuf")# need the file handle in Ogre::FileHandleDataStream::FileHandleDataStream
+    _iobuf.opaque = True
+    
+    
  
 def Fix_Implicit_Conversions ( mb ):
     """Some of the implicit conversion gets a little too smart and causes strange problems
     """
     nonImplicitClasses=['Vector2','Vector3', 'Vector4', 'Matrix4', 
-                        'Radian', 'Degree', 'Angle', 'Quaternion']
+                        'Radian', 'Degree',  'Quaternion']
     for className in nonImplicitClasses:
         mb.class_(className).constructors().allow_implicit_conversion = False
+ 
     
     
 def Fix_Ref_Not_Const ( mb ):
