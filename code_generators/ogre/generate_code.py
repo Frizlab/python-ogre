@@ -688,10 +688,10 @@ def Set_Exception(mb):
     Exception.mem_fun('getNumber').exclude() # declared with empty throw
     Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getFullDescription().c_str()' )
     
-    ## there are two identical constructors so we need to remove one of them
-    for c in Exception.constructors(arg_types=[None]):
-        c.exclude() ## exclude the first constructor..
-        break
+# #     ## there are two identical constructors so we need to remove one of them
+# #     for c in Exception.constructors(arg_types=[None]):
+# #         c.exclude() ## exclude the first constructor..
+# #         break
         
     
 def _ReturnUnsignedInt( type_ ):
