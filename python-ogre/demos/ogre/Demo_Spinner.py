@@ -54,7 +54,7 @@ class MyApp(object):
 
        # for now this forces D3D
        rend_list = self.root.getAvailableRenderers()
-       self.root.setRenderSystem(rend_list[1])
+       self.root.setRenderSystem(rend_list[-1])
 
    def _build_scene(self):
 

@@ -1,3 +1,14 @@
+# This code is in the Public Domain
+# -----------------------------------------------------------------------------
+# This source file is part of Python-Ogre
+# For the latest info, see http://python-ogre.org/
+#
+# It is likely based on original code from OGRE and/or PyOgre
+# For the latest info, see http://www.ogre3d.org/
+#
+# You may use this sample code for anything you like, it is not covered by the
+# LGPL.
+# -----------------------------------------------------------------------------
 #
 # Python_Ogre Demo
 #

@@ -1,4 +1,14 @@
-# This code is in the Public Domain.
+# This code is in the Public Domain
+# -----------------------------------------------------------------------------
+# This source file is part of Python-Ogre
+# For the latest info, see http://python-ogre.org/
+#
+# It is likely based on original code from OGRE and/or PyOgre
+# For the latest info, see http://www.ogre3d.org/
+#
+# You may use this sample code for anything you like, it is not covered by the
+# LGPL.
+# -----------------------------------------------------------------------------
 import Ogre as ogre
 import SampleFramework as sf
 import sys,operator
@@ -45,13 +55,8 @@ class SkeletalApplication(sf.Application):
         
         ## Doing this returns a SharedPtr_less_Ogre_scope_Resource_grate 
         skel = ogre.SkeletonManager.getSingleton().load("jaiqua.skeleton", ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME,False, ogre.ManualResourceLoader(), ogre.NameValuePairList()) 
-        ### NOTE the need for pointer here....
+        print "TEST\n",skel,"\n"
         anim = skel.getAnimation("Sneak") 
-        
-        m=ogre.Matrix4()
-        print "\n\ntesting", m
-        skel._getBoneMatrices( m )        
-        print "\nAfter call", m, "\n\n"
         
         cameraNode = sceneManager.getRootSceneNode().createChildSceneNode()
         cameraNode.attachObject(self.camera)
