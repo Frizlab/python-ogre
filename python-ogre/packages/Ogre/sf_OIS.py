@@ -1,5 +1,14 @@
 # This code is in the Public Domain
-# designed for the CVS/OIS verison of Ogre
+# -----------------------------------------------------------------------------
+# This source file is part of Python-Ogre
+# For the latest info, see http://python-ogre.org/
+#
+# It is likely based on original code from OGRE and/or PyOgre
+# For the latest info, see http://www.ogre3d.org/
+#
+# You may use this sample code for anything you like, it is not covered by the
+# LGPL.
+# -----------------------------------------------------------------------------
 import Ogre as ogre
 import OIS as OIS
 ###import OgreRefApp
@@ -274,8 +283,8 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
             self.moveScale = self.moveSpeed * frameEvent.timeSinceLastFrame
             self.rotationScale = self.rotationSpeed * frameEvent.timeSinceLastFrame
     
-        self.rotationX = ogre.Radian(0.0)
-        self.rotationY = ogre.Radian(0.0)
+        self.rotationX = ogre.Degree(0.0)
+        self.rotationY = ogre.Degree(0.0)
         self.translateVector = ogre.Vector3(0.0, 0.0, 0.0)
         if not self._processUnbufferedKeyInput(frameEvent):
             return False
@@ -406,8 +415,8 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
             self.translateVector.x += ms.X.rel * 0.13
             self.translateVector.y -= ms.Y.rel * 0.13
         else:
-            self.rotationX = ogre.Radian(- ms.X.rel * 0.13)
-            self.rotationY = ogre.Radian(- ms.Y.rel * 0.13)
+            self.rotationX = ogre.Degree(- ms.X.rel * 0.13)
+            self.rotationY = ogre.Degree(- ms.Y.rel * 0.13)
 
     def _moveCamera(self):
         self.camera.yaw(self.rotationX)
@@ -430,4 +439,10 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
 
     def _setGuiCaption(self, elementName, text):
         element = ogre.OverlayManager.getSingleton().getOverlayElement(elementName, False)
+        ##d=ogre.UTFString("hell0")
+        ##element.setCaption(d)
+        
+        #element.caption="hello"
+        
+        #element.setCaption("help")
         element.setCaption(ogre.UTFString(text))
