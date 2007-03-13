@@ -571,7 +571,7 @@ def Fix_Posix ( mb ):
     mb.namespace( 'Ogre' ).class_('StringConverter').member_functions('toString').exclude()    
     
     ### TO TEST - not sure why we excluded this (no notes) and it's needed for demos
-    ###  mb.namespace( 'Ogre' ).class_( 'Skeleton' ).exclude()
+    mb.namespace( 'Ogre' ).class_( 'Skeleton' ).exclude()
     
     ## grab the operator== and operator!= and exclude them
     ## NOTE: Defination for these are "extern bool..." so I wonder if we should exclude any "extern" operators
