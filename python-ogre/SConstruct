@@ -25,7 +25,7 @@ import environment
 #tobuild = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui']
 #tobuild = ['ode']
  
-builddir = "build_dir"
+builddir = "c:/temp/build_dir"
  
 def create_SConscript ( cls ):
     fname = os.path.join( cls._source, 'SConscript')
@@ -45,8 +45,9 @@ def get_ccflags():
         CCFLAGS=''
         #CCFLAGS += '-DBOOST_PYTHON_MAX_ARITY=19'
         CCFLAGS += ' -Zm800 -nologo'
-        CCFLAGS += ' -W3' # warning level
-        CCFLAGS += ' -TP -O2 -Ob2 -GR -MD -Zc:forScope -Zc:wchar_t -Ogiy -Gs -Ot -GB -Op -wd4675 -EHs -c'
+        CCFLAGS += ' -W3 -wd4675' # warning level  -Zc:wchar_t 
+        CCFLAGS += ' -TP -MD -Zc:forScope  -EHs -c'
+        CCFLAGS += '  -Ox -Op -GRB '
     elif os.name =='posix':
         CCFLAGS = ' `pkg-config --cflags OGRE` '
         CCFLAGS += ' -I' 
@@ -60,7 +61,7 @@ def get_source_files(_dir):
         print 'WARNING: Generate the sources this directory: "%s"' % _dir
         raise e
     source_files.sort()
-    return source_files
+    return source_files ## "Image.pypp.cpp" ##source_files
 
 def get_linkflags():
     if os.name=='nt':
@@ -73,8 +74,8 @@ def get_linkflags():
     return LINKFLAGS
 
 # Let us select the projects to build
-possible_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'CEGUI']
-default_projects = possible_projects
+possible_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode', 'fmod', 'ogreode', 'ogreal']
+default_projects = possible_projects #['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui' ]
 
 # This lets you call scons like: 'scons PROJECTS=ogre,cegui'
 opts = Options('custom.py')

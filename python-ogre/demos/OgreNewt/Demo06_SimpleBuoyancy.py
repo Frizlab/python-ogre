@@ -262,8 +262,8 @@ class OgreNewtonFrameListener(GuiFrameListener ):
         if ((self.Keyboard.isKeyDown(OIS.KC_LSHIFT)) or (self.Keyboard.isKeyDown(OIS.KC_RSHIFT))):
             
             ## now lets handle mouse input
-            self.msnCam.pitch( Ogre.Radian(ms.Y.rel * -0.5) )
-            self.msnCam.yaw( Ogre.Radian(ms.X.rel * -0.5), Ogre.Node.TS_WORLD )
+            self.msnCam.pitch( Ogre.Degree(ms.Y.rel * -0.5) )
+            self.msnCam.yaw( Ogre.Degree(ms.X.rel * -0.5), Ogre.Node.TS_WORLD )
 
             ##and Keyboard
         if (self.Keyboard.isKeyDown(OIS.KC_UP)):
