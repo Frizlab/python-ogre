@@ -3,6 +3,26 @@ import environment
 from pyplusplus import messages
 from pygccxml import declarations
 
+## Expermental...  Set this to False to change the shared pointer wrapper to a "possibly" more generic one
+Version1 = True
+
+OGRE_SP_HELD_TYPE_TMPL_VER2 = \
+"""
+namespace Ogre {
+    %(base_class_name)s* get_pointer( SharedPtr<%(base_class_name)s> const& p ){
+        return p.get();
+    }
+}
+
+namespace boost{ namespace python{
+
+template <>
+struct pointee< %(class_ptr_name)s >{
+    typedef %(class_name)s type;
+};
+
+}}// namespace boost::python
+"""
 OGRE_SP_HELD_TYPE_TMPL = \
 """
 %(class_name)s* get_pointer( %(class_ptr_name)s const& p ){
@@ -34,6 +54,7 @@ class exposer_t:
     def __init__( self, mb ):
         self.ogre_ns = mb.namespace ('Ogre')
         self.visited_classes = set()
+        self.name_space = 'Ogre'
 
     def get_pointee( self, sp_instantiation ):
         #sp_instantiation - reference to SharedPtr<XXX>
@@ -54,9 +75,18 @@ class exposer_t:
             sp_derived.exclude()
             sp_derived.disable_warnings( messages.W1040 )
             
-            pointee.add_declaration_code(
-                OGRE_SP_HELD_TYPE_TMPL % { 'class_name': pointee.decl_string
-                                           , 'class_ptr_name': sp_derived.decl_string } )
+            if Version1:
+                pointee.add_declaration_code(
+                    OGRE_SP_HELD_TYPE_TMPL % { 'class_name': pointee.decl_string
+                                               ,'base_class_name': pointee.name 
+                                               , 'class_ptr_name': sp_derived.decl_string
+                                               , 'name_space' : self.name_space } )
+            else:
+                pointee.add_declaration_code(
+                    OGRE_SP_HELD_TYPE_TMPL_VER2 % { 'class_name': pointee.decl_string
+                                               ,'base_class_name': pointee.name 
+                                               , 'class_ptr_name': sp_derived.decl_string
+                                               , 'name_space' : self.name_space } )
 
             pointee.add_registration_code(
                 REGISTER_SPTR_CONVERSION % { 'derived' : sp_derived.decl_string
