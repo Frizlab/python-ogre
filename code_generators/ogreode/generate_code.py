@@ -67,6 +67,10 @@ def filter_declarations( mb ):
     ogreode_ns.class_("PlaneBoundedRegionGeometry").member_functions("_planeCallback").exclude() 
     ogreode_ns.class_("TerrainGeometry").member_functions("_heightCallback").exclude() 
     
+    ## couple of functions that are hand wrapped
+    ogreode_ns.class_("Geometry").mem_fun("setUserObject").exclude() 
+    ogreode_ns.class_("Geometry").mem_fun("getUserObject").exclude() 
+
     ogreodeP_ns = global_ns.namespace( 'OgreOde_Prefab' )
     ogreodeP_ns.include()
     ogreodeP_ns.class_("Vehicle").mem_fun("load").exclude()
@@ -105,6 +109,27 @@ def filter_declarations( mb ):
     global_ns.namespace( 'Ogre' ).class_('SceneManager').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('Matrix4').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('Plugin').include(already_exposed=True)
+#     print "\nCLASSES:::  Std"
+#     for c in global_ns.namespace('std').classes():
+#         print c.name, c
+#     print "\nCLASSES:::  Ode"
+#     for c in global_ns.namespace('OgreOde').classes():
+#         print c.name, c
+#     print "\nCLASSES:::  Prefab"
+#     for c in global_ns.namespace('OgreOde_Prefab').classes():
+#         print c.name, c
+#     print "\nCLASSES:::  Loader"
+#     for c in global_ns.namespace('OgreOde_Loader').classes():
+#         print c.name, c
+#     print "\n\nfunction"
+#     c= global_ns.namespace('OgreOde_Prefab').class_('Vehicle')
+#     print dir(c)
+#     mem_funs = c.calldefs()
+#     for f in mem_funs:
+#         print f
+#     sys.exit()    
+#    global_ns.namespace( 'std' ).class_('vector<Ogre::Vector4, std::allocator<Ogre::Vector4> >').include(already_exposed=True)
+#     global_ns.namespace( 'std' ).class_('StringVector').include(already_exposed=True)
     
     #global_ns.namespace( 'Ogre' ).class_('Root').class_('PluginInstanceList').exclude()
     

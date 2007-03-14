@@ -53,7 +53,9 @@ class SimpleScenes_Buggy ( SimpleScenes ):
         ## it doesn't need a body) and keep track of it
         ei = OgreOde.EntityInformer(entity,ogre.Matrix4.getScale(node.getScale()))
         geom = ei.createSingleStaticBox(self._world, self._space)
+        print "SETTING",geom
         entity.setUserObject(geom)
+        print "GETTING", entity.getUserObject()
         self._geoms.append(geom)
 
         ## The self.car is what we'll want to look at
@@ -86,12 +88,31 @@ class SimpleScenes_Buggy ( SimpleScenes ):
     ##------------------------------------------------------------------------------------------------
     def changecar( self ):
         self.sSelectedcar = (self.sSelectedcar + 1) % self.maxNumCar
-
-        del self.vehicle
-        self.vehicle = self.dotOgreOdeLoader.loadObject (self.carFileNames[self.sSelectedcar], 
+        
+        try:
+            del self.vehicle
+            print "1"
+            del self.vehicle
+            print "2"
+            del self.vehicle
+            del self.vehicle
+            del self.vehicle
+            del self.vehicle
+            del self.vehicle
+            del self.vehicle
+            del self.vehicle
+        
+        except:
+            pass
+        dotOgreOdeLoader = OgreOde.DotLoader( self._world )
+        
+        self.vehicle = dotOgreOdeLoader.loadObject (self.carFileNames[self.sSelectedcar], 
                                         self.carNames[self.sSelectedcar])
-
-
+#         print "\n\n",vehicle
+#         del vehicle
+#         print "\n\n",vehicle
+        
+        
         ## Move the self.vehicle
         self.vehicle.setPosition(ogre.Vector3(0,0.82898,0))
 

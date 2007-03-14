@@ -46,10 +46,8 @@ class SimpleScenes_Zombie ( SimpleScenes ):
         ragdoll.setCastShadows(True);       
         ragdoll.setQueryFlags (ZOMBIE_QUERY_MASK);
 
-        try:
-            a = ragdoll.getUserAny ();
-        except:
-            ## throws an exception if there isn't any data (no key)
+        a = ragdoll.getUserAny ();
+        if a.isEmpty ():
             b = self.ragDollData ();
 
             b.timeSinceBirth = 0.0;
@@ -100,7 +98,7 @@ class SimpleScenes_Zombie ( SimpleScenes ):
 
         self._shot_time = 0.0;
 
-        self.myOdeRay = OgreOde.RayGeometry(1000.0, self._world, self._space);
+        myOdeRay = OgreOde.RayGeometry(1000.0, self._world, self._space);
         self.mRayQuery = self._mgr.createRayQuery(Ray());
         self.mRayQuery.setQueryMask (ZOMBIE_QUERY_MASK);
         self.mRayQuery.setQueryTypeMask(ogre.SceneManager.ENTITY_TYPE_MASK);
@@ -117,7 +115,7 @@ class SimpleScenes_Zombie ( SimpleScenes ):
 
             self._mgr.destroyMovableObject(zE.getName(), OgreOde.RagdollFactory.FACTORY_TYPE_NAME);
             
-        del self.myOdeRay;
+        del myOdeRay;
 
         self._over.hide();
         self._mgr.destroySceneNode("gun");
@@ -172,7 +170,7 @@ class SimpleScenes_Zombie ( SimpleScenes ):
                         ( input.isKeyDown(OIS.KC_X) or mouse.getMouseState().buttonDown(OIS.MB_Left))):
 
             pickRay = self._camera.getCameraToViewportRay(0.5, 0.5);
-            self.myOdeRay.setDefinition(pickRay.getOrigin(), pickRay.getDirection());
+            myOdeRay.setDefinition(pickRay.getOrigin(), pickRay.getDirection());
 
             self._shot_time = 0.2;
 
@@ -182,7 +180,7 @@ class SimpleScenes_Zombie ( SimpleScenes ):
                 i = result.begin();
         
                 ##self.mRayQuery.setSortByDistance (True, 1);##only one hit
-                self.myOdeRay.enable ();
+                myOdeRay.enable ();
                 while(i != result.end()):
                     self._last_ragdoll = 5.0;
 
@@ -208,7 +206,7 @@ class SimpleScenes_Zombie ( SimpleScenes ):
                     hit_point = ogre.Vector3 ;
 
                     is_hit = False;
-                    if (radgoll.pick(self.myOdeRay, hit_body, hit_point)):
+                    if (radgoll.pick(myOdeRay, hit_body, hit_point)):
                         if (hit_body):
                             hit_body.addForceAt(pickRay.getDirection() * 250000, hit_point);
                             is_hit = True;
@@ -220,7 +218,7 @@ class SimpleScenes_Zombie ( SimpleScenes ):
                         b = radgoll.getUserAny();
                         radgoll.getAnimationState(self.meshAnimation[b.self.sSelectedMesh]).setEnabled(True);
                     i += 1;
-            self.myOdeRay.disable ();
+            myOdeRay.disable ();
 
                            
         for zE in self.myRagDolls :
