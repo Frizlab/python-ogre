@@ -24,7 +24,7 @@ class SimpleScenes (OgreOde.CollisionListener, OgreOde.StepListener):
         self._last_node = 0
         self.RagdollList=[]
         
-        self.dotOgreOdeLoader = OgreOde.DotLoader( world )
+# #         self.dotOgreOdeLoader = OgreOde.DotLoader( world )
         self._bodies=[]  # an array to keep objects around in (like c++ "new" )
         self._geoms=[]
         self._joints=[]
