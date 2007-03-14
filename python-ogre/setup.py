@@ -1,9 +1,28 @@
 #!/usr/bin/env python
+# -----------------------------------------------------------------------------
+# This source file is part of Python-Ogre
+# For the latest info, see http://www.python-ogre.org/
 #
-# This is the distutils setup script for python-ogre.
-# Full instructions are in "install.txt" or "install.html"
+# Copyright (c) 2006-2007 Python-Ogre Development Team
 #
-# To configure, compile, install, just run this script.
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+# Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+# http://www.gnu.org/copyleft/lesser.txt.
+#
+# You may alternatively use this source under the terms of a specific version of
+# the Python-Ogre Unrestricted License provided you have obtained such a license
+# -----------------------------------------------------------------------------
+#
 
 DESCRIPTION = """Python-Ogre is a Python wrapper module for the
 OGRE 3D Graphics library. It contains python functions and classes
@@ -14,12 +33,12 @@ This version is built against the Ogre CVS"""
 
 METADATA = {
     "name":             "Python-Ogre",
-    "version":          "0.91 Candidate",
+    "version":          "0.94 Candidate",
     "license":          "LGPL",
     "url":              "http://python-ogre.python-hosting.com/",
     "author":           "Lakin Wecker, Roman Yakovenko, Andy",
     "author_email":     "python-ogre-developers@googlegroups.com",
-    "description":      "Py++ Ogre Python Binding: For CVS version of Ogre - SNAPSHOT Release",
+    "description":      "Py++ Ogre Python Binding",
     "long_description": DESCRIPTION,
 }
 from distutils.core import setup
@@ -36,10 +55,9 @@ base = os.path.join(os.getcwd(), os.path.dirname(sys.argv[0]) )
 demofiles = GetFileList ( os.path.join (base, "demos") )
 
 PACKAGEDATA = {
-       "packages":    ['Ogre', 'OIS', 'CEGUI', 'OgreRefApp', 'OgreNewt', 'OgreOde','ODE', 'OgreAL' ]
+       "packages":    ['Ogre', 'OIS', 'CEGUI', 'OgreRefApp', 'OgreNewt', 'OgreOde','ODE', 'OgreAL' ],
        "package_dir": {'': 'packages'},
-       "package_data": {'': ['*.pyd', '*.dll']},
-#       "data_files": [(base+'Demos', demofiles),]
+       "package_data": {'': ['*.pyd', '*.dll']}
 
 }
 
