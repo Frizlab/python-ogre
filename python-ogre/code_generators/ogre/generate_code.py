@@ -571,7 +571,9 @@ def Fix_Posix ( mb ):
     mb.namespace( 'Ogre' ).class_('StringConverter').member_functions('toString').exclude()    
     
     ### TO TEST - not sure why we excluded this (no notes) and it's needed for demos
-    mb.namespace( 'Ogre' ).class_( 'Skeleton' ).exclude()
+    c = mb.namespace( 'Ogre' ).class_( 'Skeleton' )
+    ###c.exclude()
+    c.mem_fun('_refreshAnimationState').exclude()
     
     ## grab the operator== and operator!= and exclude them
     ## NOTE: Defination for these are "extern bool..." so I wonder if we should exclude any "extern" operators
@@ -597,8 +599,9 @@ def Fix_NT ( mb ):
     hwnd.opaque = True
     _iobuf = mb.global_ns.class_("_iobuf")# need the file handle in Ogre::FileHandleDataStream::FileHandleDataStream
     _iobuf.opaque = True
-    
-    
+        
+#     for o in mb.namespace('Ogre').free_operators(arg_types=['::Ogre::ShadowTextureConfig const &', '::Ogre::ShadowTextureConfig const &']):
+#         o.exclude()
  
 def Fix_Implicit_Conversions ( mb ):
     """Some of the implicit conversion gets a little too smart and causes strange problems
