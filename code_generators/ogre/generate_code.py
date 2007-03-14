@@ -573,12 +573,14 @@ def Fix_Posix ( mb ):
     ### TO TEST - not sure why we excluded this (no notes) and it's needed for demos
     c = mb.namespace( 'Ogre' ).class_( 'Skeleton' )
     ###c.exclude()
-    c.mem_fun('_refreshAnimationState').exclude()
-    c.mem_fun('_mergeSkeletonAnimations').exclude()
+    c.mem_fun( '_mergeSkeletonAnimations' ).arguments[-1].default_value = '::Ogre::StringVector()'
+
+# #     c.mem_fun('_mergeSkeletonAnimations').exclude()
     
     ## grab the operator== and operator!= and exclude them
     ## NOTE: Defination for these are "extern bool..." so I wonder if we should exclude any "extern" operators
-    for o in mb.namespace('Ogre').free_operators(arg_types=['::Ogre::ShadowTextureConfig const &', '::Ogre::ShadowTextureConfig const &']):
+    for o in mb.namespace('Ogre').free_operators(arg_types=['::Ogre::ShadowTextureConfig const &', 
+            '::Ogre::ShadowTextureConfig const &'], allow_empty=True):
         o.exclude()
     
 
@@ -601,9 +603,20 @@ def Fix_NT ( mb ):
     _iobuf = mb.global_ns.class_("_iobuf")# need the file handle in Ogre::FileHandleDataStream::FileHandleDataStream
     _iobuf.opaque = True
         
-#     for o in mb.namespace('Ogre').free_operators(arg_types=['::Ogre::ShadowTextureConfig const &', '::Ogre::ShadowTextureConfig const &']):
-#         o.exclude()
- 
+   ### TO TEST - not sure why we excluded this (no notes) and it's needed for demos
+    c = mb.namespace( 'Ogre' ).class_( 'Skeleton' )
+    ###c.exclude()
+    c.mem_fun( '_mergeSkeletonAnimations' ).arguments[-1].default_value = '::Ogre::StringVector()'
+
+# #     c.mem_fun('_mergeSkeletonAnimations').exclude()
+    
+    ## grab the operator== and operator!= and exclude them
+    ## NOTE: Defination for these are "extern bool..." so I wonder if we should exclude any "extern" operators
+    for o in mb.namespace('Ogre').free_operators(arg_types=['::Ogre::ShadowTextureConfig const &', 
+            '::Ogre::ShadowTextureConfig const &'], allow_empty=True):
+        o.exclude()
+        
+        
 def Fix_Implicit_Conversions ( mb ):
     """Some of the implicit conversion gets a little too smart and causes strange problems
     """
