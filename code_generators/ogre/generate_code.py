@@ -574,6 +574,7 @@ def Fix_Posix ( mb ):
     c = mb.namespace( 'Ogre' ).class_( 'Skeleton' )
     ###c.exclude()
     c.mem_fun('_refreshAnimationState').exclude()
+    c.mem_fun('_mergeSkeletonAnimations').exclude()
     
     ## grab the operator== and operator!= and exclude them
     ## NOTE: Defination for these are "extern bool..." so I wonder if we should exclude any "extern" operators
