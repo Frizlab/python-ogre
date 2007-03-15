@@ -237,7 +237,11 @@ def ManualFixes ( mb ):
     VertexCacheProfiler = ogre_ns.constructor( 'VertexCacheProfiler', arg_types=[None,None] )
     VertexCacheProfiler.arguments[1].default_value = "int(%s)" % VertexCacheProfiler.arguments[1].default_value
       
-        
+    ### General fixes..... really only needed in Linux, but no harm in Windows
+    c = mb.namespace( 'Ogre' ).class_( 'Skeleton' )
+    c.mem_fun( '_mergeSkeletonAnimations' ).arguments[-1].default_value = '::Ogre::StringVector()'
+
+            
     ## we apply smart ptr to sharedptr classes automatically, however these are harder to identify    
     cls = mb.class_( "IndexData" )
     v = cls.variable( "indexBuffer" )
@@ -570,19 +574,18 @@ def Fix_Posix ( mb ):
     #as reported by mike with linux:bp::arg("flags")=(std::_Ios_Fmtflags)0
     mb.namespace( 'Ogre' ).class_('StringConverter').member_functions('toString').exclude()    
     
-    ### TO TEST - not sure why we excluded this (no notes) and it's needed for demos
-    c = mb.namespace( 'Ogre' ).class_( 'Skeleton' )
-    ###c.exclude()
-    c.mem_fun( '_mergeSkeletonAnimations' ).arguments[-1].default_value = '::Ogre::StringVector()'
-
-# #     c.mem_fun('_mergeSkeletonAnimations').exclude()
-    
     ## grab the operator== and operator!= and exclude them
     ## NOTE: Defination for these are "extern bool..." so I wonder if we should exclude any "extern" operators
     for o in mb.namespace('Ogre').free_operators(arg_types=['::Ogre::ShadowTextureConfig const &', 
             '::Ogre::ShadowTextureConfig const &'], allow_empty=True):
         o.exclude()
-    
+        
+    ## And even though we have excluded the operators we also need to exclude the equality 
+    ## otherwise it causes undefined symbols __ZN4OgreeqERKNS_19ShadowTextureConfigES2_
+    ## -- change file is --_ShadowTextureConfig__value_traits.pypp.hpp
+    c = mb.namespace( 'Ogre' ).class_( 'ShadowTextureConfig' )
+    c.equality_comparable = False
+
 
 
 def Fix_NT ( mb ):
@@ -602,12 +605,7 @@ def Fix_NT ( mb ):
     hwnd.opaque = True
     _iobuf = mb.global_ns.class_("_iobuf")# need the file handle in Ogre::FileHandleDataStream::FileHandleDataStream
     _iobuf.opaque = True
-        
-    ## grab the operator== and operator!= and exclude them
-    ## NOTE: Defination for these are "extern bool..." so I wonder if we should exclude any "extern" operators
-    for o in mb.namespace('Ogre').free_operators(arg_types=['::Ogre::ShadowTextureConfig const &', 
-            '::Ogre::ShadowTextureConfig const &'], allow_empty=True):
-        o.exclude()
+    
         
         
 def Fix_Implicit_Conversions ( mb ):
