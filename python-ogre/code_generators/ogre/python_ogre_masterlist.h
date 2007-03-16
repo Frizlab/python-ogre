@@ -32,7 +32,9 @@
 #include "OgreCompositorScriptCompiler.h"
 #include "OgreCompositorSerializer.h"
 #include "OgreConfig.h"
-#include "OgreConfigDialog.h"
+#ifndef __APPLE_CC__  // need to exlude under MacOS X
+    #include "OgreConfigDialog.h"
+#endif
 #include "OgreConfigFile.h"
 #include "OgreConfigOptionMap.h"
 #include "OgreController.h"

@@ -186,13 +186,13 @@ def ManualInclude ( mb ):
                         declarations.remove_reference( oper.arguments[1].type ) ) )
         if not isinstance( type_or_decl, declarations.declaration_t ):
             continue
-        # ugly hack until patch 1675539 gets applied to Ogre source
-        Expose = True
-        for c in ['ConvexBody', 'Polygon']:
-            if c in type_or_decl.decl_string:
-                Expose = False
-        if type_or_decl.ignore == False and Expose:
-            oper.include()
+# #         # ugly hack until patch 1675539 gets applied to Ogre source
+# #         Expose = True
+# #         for c in ['ConvexBody', 'Polygon']:
+# #             if c in type_or_decl.decl_string:
+# #                 Expose = False
+# #         if type_or_decl.ignore == False and Expose:
+# #             oper.include()
 
         
 ############################################################
@@ -865,6 +865,7 @@ def generate_code():
                                           , include_paths=environment.ogre.include_dirs
                                           , define_symbols=defined_symbols
                                           , indexing_suite_version=2
+                                          , cflags=environment.ogre.cflags
                                            )
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
