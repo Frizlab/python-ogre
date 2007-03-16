@@ -4,7 +4,7 @@ from pyplusplus import messages
 from pygccxml import declarations
 
 ## Expermental...  Set this to False to change the shared pointer wrapper to a "possibly" more generic one
-Version1 = True
+Version1 = False
 
 OGRE_SP_HELD_TYPE_TMPL_VER2 = \
 """

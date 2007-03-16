@@ -33,10 +33,18 @@ if os.name =='nt':
 	python_include_dirs = os.path.join ( PATH_Python, 'include')
 	python_lib_dirs = os.path.join ( PATH_Python, 'libs' )
 ##
-## for linux
+## for linux or darwin (MAC OS X)
+
 else:
-	python_include_dirs = os.path.join ( '/usr/include/python2.4', '')
-	python_lib_dirs = os.path.join ( '/usr/lib/python2.4', 'libs' )
+    if os.sys.platform <> 'darwin':
+        ## It's linux of some sort
+    	python_include_dirs = os.path.join ( '/usr/include/python2.4', '')
+    	python_lib_dirs = os.path.join ( '/usr/lib/python2.4', 'libs' )
+    else:
+        ## it's Mac OS X
+        python_include_dirs = '/Library/Frameworks/Python.framework/Versions/2.5/include/python2.5'
+        python_lib_dirs = ''
+
 root_dir = os.path.abspath(os.path.dirname(__file__) )## The root directory is where this module is located
 
 sys.path.append( os.path.join( root_dir, 'common_utils' ) )
@@ -91,18 +99,33 @@ if not _ConfigSet:
 class ogre:
     active = True
     version = "1.4"   # "1.2"
-    libs=[Config.LIB_Boost, 'OgreMain',  'OgreGUIRenderer', 'CEGUIBase']
-    lib_dirs = [ Config.PATH_LIB_Boost
-                ,  Config.PATH_LIB_Ogre_CEGUIRenderer
-                , Config.PATH_LIB_Ogre_OgreMain
-                , Config.PATH_LIB_Ogre_Dependencies 
-                , Config.PATH_LIB_CEGUI
-                 ]
-    include_dirs = [ Config.PATH_Boost 
-                , Config.PATH_INCLUDE_Ogre 
-                ]
-    CCFLAGS =  ' -D"BOOST_PYTHON_MAX_ARITY=19"'
-    LINKFLAGS = ''
+    cflags = ""
+    if os.sys.platform <> 'darwin':
+        libs=[Config.LIB_Boost, 'OgreMain',  'OgreGUIRenderer', 'CEGUIBase']
+        lib_dirs = [ Config.PATH_LIB_Boost
+                    ,  Config.PATH_LIB_Ogre_CEGUIRenderer
+                    , Config.PATH_LIB_Ogre_OgreMain
+                    , Config.PATH_LIB_Ogre_Dependencies 
+                    , Config.PATH_LIB_CEGUI
+                     ]
+        include_dirs = [ Config.PATH_Boost 
+                    , Config.PATH_INCLUDE_Ogre 
+                    ]
+        CCFLAGS =  ' -D"BOOST_PYTHON_MAX_ARITY=19"'
+        LINKFLAGS = ''
+    else:
+        libs=[Config.LIB_Boost]
+        lib_dirs = [ Config.PATH_LIB_Boost ]
+        include_dirs = [ Config.PATH_Boost 
+                        , Config.PATH_INCLUDE_Ogre
+                        , python_include_dirs
+                        , '/Developer/SDKs/MacOSX10.4u.sdk/Developer/Headers/CFMCarbon' 
+                        ]
+                                
+        CCFLAGS = ' -D"BOOST_PYTHON_MAX_ARITY=19" -D_POSIX_C_SOURCE -DCF_OPEN_SOURCE'
+        LINKFLAGS = '-framework Python -framework Ogre'
+        cflags += '--gccxml-cxxflags "-DCF_OPEN_SOURCE -D_POSIX_C_SOURCE -isysroot /Developer/SDKs/MacOSX10.4u.sdk"'
+        
     CheckIncludes=['boost/python.hpp', 'Ogre.h']
 
      
@@ -118,7 +141,10 @@ class ois:
             ]
     ModuleName = 'OIS'
     CheckIncludes=['boost/python.hpp', 'OIS.h']
-        
+    
+    if os.sys.platform == 'darwin':
+        LINKFLAGS = '-framework Python -framework Carbon'
+    
 class ogrerefapp:
     active = True
     version = "1.4"
@@ -145,11 +171,13 @@ class ogrenewt:
                     , Config.PATH_Newton   # only one path for Newton
                     , Config.PATH_INCLUDE_Ogre 
                     , Config.PATH_INCLUDE_OgreNewt
+                    , Config.PATH_INCLUDE_Ogre_Dependencies  #needed for OIS/OIS.h
                     ]
     lib_dirs = [ Config.PATH_LIB_Boost
                 ,Config.PATH_LIB_Newton
                 ,Config.PATH_LIB_OgreNewt
                 , Config.PATH_LIB_Ogre_OgreMain
+                
                 ]
     CCFLAGS =  ' -D"BOOST_PYTHON_MAX_ARITY=19"'
     ModuleName = 'OgreNewt'
