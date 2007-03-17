@@ -17,16 +17,22 @@ class ParticleApplication(sf.Application):
         sceneManager = self.sceneManager
         camera = self.camera
         
-        sceneManager.ambientLight = [0, 0, 1]
+        sceneManager.ambientLight = [0.5, 0.5, 0.5]
 
         entity = sceneManager.createEntity('head', 'ogrehead.mesh')
-        entity.setMaterialName('Examples/EnvMappedRustySteel')
-
+        
+        ## Add entity to the root scene node
         sceneManager.getRootSceneNode().createChildSceneNode().attachObject(entity)
-
-        particleSystemManager = ogre.ParticleSystemManager.getSingleton()
+        
+        ## green numbus around Ogre
         particleSystem1 = sceneManager.createParticleSystem('Nimbus', 'Examples/GreenyNimbus')
         sceneManager.getRootSceneNode().createChildSceneNode().attachObject(particleSystem1)
+
+
+#         ## Fireworks  
+#         ## WARNING -- needs a reasonably good graphics card or causes a crash
+#         particleSystem1 = sceneManager.createParticleSystem('Fireworks', 'Examples/Fireworks')
+#         sceneManager.getRootSceneNode().createChildSceneNode().attachObject(particleSystem1)
 
         self.fountainNode = sceneManager.getRootSceneNode().createChildSceneNode()
 
@@ -70,9 +76,10 @@ class ParticleListener(sf.FrameListener):
         self.fountainNode = fountainNode
 
     def frameStarted(self, frameEvent):
-        dd = ogre.Degree(frameEvent.timeSinceLastFrame * 30.0)
-        rad = ogre.Radian(dd)
-        self.fountainNode.yaw(rad, ogre.Node.TS_LOCAL)
+        self.fountainNode.yaw(ogre.Degree(frameEvent.timeSinceLastFrame * 30))
+# #         dd = ogre.Degree(frameEvent.timeSinceLastFrame * 30.0)
+# #         rad = ogre.Radian(dd)
+# #         self.fountainNode.yaw(rad, ogre.Node.TS_LOCAL)
         return sf.FrameListener.frameStarted(self, frameEvent)
 
 if __name__ == '__main__':
