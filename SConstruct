@@ -25,7 +25,10 @@ import environment
 #tobuild = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui']
 #tobuild = ['ode']
  
-builddir = "c:/temp/build_dir"
+if os.name=='nt': 
+    builddir = "c:/temp/build_dir"
+else:
+    builddir = "build_dir"
  
 def create_SConscript ( cls ):
     fname = os.path.join( cls._source, 'SConscript')
@@ -49,9 +52,12 @@ def get_ccflags():
         CCFLAGS += ' -TP -MD -Zc:forScope  -EHs -c'
         CCFLAGS += '  -Ox -Op -GRB '
     elif os.name =='posix':
-        CCFLAGS = ' `pkg-config --cflags OGRE` '
-        CCFLAGS += ' -I' 
-        CCFLAGS += ' -O0 -g -I./'
+        if os.sys.platform <> 'darwin':
+            CCFLAGS = ' `pkg-config --cflags OGRE` '
+            CCFLAGS += ' -I' 
+            CCFLAGS += ' -O0 -g -I./'
+        else:
+            CCFLAGS  = ' -I -pipe -Os -I./'
     return CCFLAGS
 
 def get_source_files(_dir):
@@ -69,8 +75,10 @@ def get_linkflags():
         LINKFLAGS = " -NOLOGO -INCREMENTAL:NO -DLL -OPT:NOICF -subsystem:console " # 7 minutes 25% smaller 16.6 Meg
         #LINKFLAGS = " -NOLOGO -INCREMENTAL:NO -DLL -subsystem:console " ### LONG Link , 80 minutes - 15.7 meg
     elif os.name == 'posix':
-        LINKFLAGS = ' `pkg-config --libs OGRE` '
-        #LINKFLAGS += ' -lboost_python'
+        if os.sys.platform <> 'darwin':
+            LINKFLAGS = ' `pkg-config --libs OGRE` '
+        else:
+            LINKFLAGS = ''
     return LINKFLAGS
 
 # Let us select the projects to build
