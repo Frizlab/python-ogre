@@ -55,7 +55,7 @@ def get_ccflags():
         if os.sys.platform <> 'darwin':
             CCFLAGS = ' `pkg-config --cflags OGRE` '
             CCFLAGS += ' -I' 
-            CCFLAGS += ' -O0 -g -I./'
+            CCFLAGS += ' -Os -I./'
         else:
             CCFLAGS  = ' -I -pipe -Os -I./'
     return CCFLAGS
