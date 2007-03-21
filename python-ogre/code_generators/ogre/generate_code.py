@@ -257,6 +257,13 @@ def ManualFixes ( mb ):
     UTFString.mem_fun( 'asUTF8' ).alias = '__str__'
     UTFString.mem_fun( 'asWStr' ).alias = '__unicode__'
     
+    ## Math abs function is overloaded (with degree and radian) and doesn't know what to "return"
+    ## so exclude the overloads except the one that takes a real...
+    cls = mb.class_("Math")
+    cls.member_functions("Abs").exclude()
+    cls.mem_fun('Abs', arg_types=['::Ogre::Real']).include()
+    
+    
 # #     # ensure functions that take UTFString can also take a python string
 # #     utf = ogre_ns.class_( 'UTFString' )
 # #     def has_utf_type( utf, var ): 
