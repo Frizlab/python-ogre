@@ -12,6 +12,7 @@ xxx 2007: Version 0.94 Release
 * Fixed Quaternion multiplication by a float
 * Remove auto converstions in _ogre_main so hopefully don't get strange obj to obj conversions
 * Added Hinge etc callbacks to OgreNewt (missing) via hand wrappers
+* Removed Math::Abs overloads so only the (::Ogre::Real) on is left, otherwise it always picked the Radian one
    
 20 Feb 2007:  Version 0.9 Release
 =================================
