@@ -63,7 +63,13 @@ def filter_declarations( mb ):
     ogrenewt_ns.class_( "Body" ).member_functions("setAutoactiveCallback").exclude()
     ogrenewt_ns.class_( "Body" ).member_functions("setCustomForceAndTorqueCallback").exclude()
     ogrenewt_ns.class_( "Body" ).member_functions("setCustomTransformCallback").exclude()
+
+    ogrenewt_ns.class_( "BodyIterator" ).member_functions("go").exclude()
+    global_ns.namespace( 'BasicJoints' ).class_( "Hinge" ).member_functions("setCallback").exclude()
+    global_ns.namespace( 'BasicJoints' ).class_( "Slider" ).member_functions("setCallback").exclude()
+    global_ns.namespace( 'BasicJoints' ).class_( "Universal" ).member_functions("setCallback").exclude()
     
+        
     ## Replaced these with 'useful' functions in the handwrappers - take and return python objects
     ogrenewt_ns.class_( "Body" ).member_functions("setUserData").exclude()
     ogrenewt_ns.class_( "Joint" ).member_functions("setUserData").exclude()
@@ -198,7 +204,8 @@ def generate_ogrenewt():
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
                                           , include_paths=environment.ogrenewt.include_dirs
-                                          , define_symbols=['ogrenewt_NONCLIENT_BUILD', 'OGRE_NONCLIENT_BUILD']
+                                          , define_symbols=['ogrenewt_NONCLIENT_BUILD', 'OGRE_NONCLIENT_BUILD',
+                                                        'OIS_NONCLIENT_BUILD','OIS_DYNAMIC_LIB']
                                           , indexing_suite_version=2 )
 
     filter_declarations (mb)
