@@ -1,4 +1,4 @@
-xxx 2007: Version 0.91 Release
+xxx 2007: Version 0.94 Release
 ==============================
 * Reverse order of entries in ChangeLog :)
 * _ConfigOption name changed to ConfigOption
@@ -6,8 +6,12 @@ xxx 2007: Version 0.91 Release
 * Couple of FactoryObj aliases added to clean up names
 * Radian/Degree constructor fix added to __init__.py file
 * Auto Quaternion conversion (to and from Tuple/list)
+* Auto Matrix3 conversion to and from Tuple/list
 * Extended setter properties - functions that take colour/vectors can now be properties taking tuples/lists
    ie. light.colour=0,0,1 || [0,0,1] || (0,0,1) || Ogre.ColourValue(0,0,1)  now work
+* Fixed Quaternion multiplication by a float
+* Remove auto converstions in _ogre_main so hopefully don't get strange obj to obj conversions
+* Added Hinge etc callbacks to OgreNewt (missing) via hand wrappers
    
 20 Feb 2007:  Version 0.9 Release
 =================================
