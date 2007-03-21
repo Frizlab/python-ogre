@@ -17,11 +17,11 @@ Body_getUserData ( ::OgreNewt::Body & body) {
 """
 
 
-WRAPPER_REGISTRATION_Body =\
-"""
-def ("setUserData", &::Body_setUserData );
-Body_exposer.def ("getUserData", &::Body_getUserData);
-"""
+WRAPPER_REGISTRATION_Body =[
+    'def ("setUserData", &::Body_setUserData );',
+    'def ("getUserData", &::Body_getUserData);'
+    ]
+    
 
 #################################################################################
 
@@ -39,13 +39,186 @@ Joint_getUserData ( ::OgreNewt::Joint & joint) {
     }
 """
 
-WRAPPER_REGISTRATION_Joint =\
-"""
-def ("setUserData", &::Joint_setUserData );
-Joint_exposer.def ("getUserData", &::Joint_getUserData);
-"""
+WRAPPER_REGISTRATION_Joint = [
+    'def ("setUserData", &::Joint_setUserData );',
+    'def ("getUserData", &::Joint_getUserData);'
+    ]
 
 #################################################################################
+
+WRAPPER_DEFINITION_Hinge=\
+"""
+
+class HingeCallback
+{
+public:
+   PyObject*  mSubscriber;
+    ::Ogre::String  mMethod;
+
+    HingeCallback(PyObject*  subscriber, ::Ogre::String const & method)
+    {
+        mSubscriber = subscriber;
+        mMethod = method;
+    } 
+    
+    ~HingeCallback() { } 
+    
+    void operator() ( OgreNewt::BasicJoints::Hinge * me)
+    {
+    if (mMethod.length() > 0 )
+        boost::python::call_method<void>(mSubscriber, mMethod.c_str(), 
+                            boost::ref(me) );
+    else
+        boost::python::call<void>(mSubscriber, 
+                            boost::ref(me) );
+    return;
+    }
+
+};
+
+void Hinge_setHingeCallback( ::OgreNewt::BasicJoints::Hinge * me, 
+                                            PyObject* subscriber, ::Ogre::String const & method="")
+{
+    HingeCallback * cb = new HingeCallback(subscriber, method);
+    me->setCallback( ( ::OgreNewt::BasicJoints::Hinge::HingeCallback) cb);
+};
+"""
+WRAPPER_REGISTRATION_Hinge = [
+    'def ("setCallback", &::Hinge_setHingeCallback); '
+    ]
+    
+#################################################################################
+
+WRAPPER_DEFINITION_Slider=\
+"""
+
+class SliderCallback
+{
+public:
+   PyObject*  mSubscriber;
+    ::Ogre::String  mMethod;
+
+    SliderCallback(PyObject*  subscriber, ::Ogre::String const & method)
+    {
+        mSubscriber = subscriber;
+        mMethod = method;
+    } 
+    
+    ~SliderCallback() { } 
+    
+    void operator() ( OgreNewt::BasicJoints::Slider * me)
+    {
+    if (mMethod.length() > 0 )
+        boost::python::call_method<void>(mSubscriber, mMethod.c_str(), 
+                            boost::ref(me) );
+    else
+        boost::python::call<void>(mSubscriber, 
+                            boost::ref(me) );
+    return;
+    }
+
+};
+
+void Slider_setSliderCallback( ::OgreNewt::BasicJoints::Slider * me, 
+                                            PyObject* subscriber, ::Ogre::String const & method="")
+{
+    SliderCallback * cb = new SliderCallback(subscriber, method);
+    me->setCallback( ( ::OgreNewt::BasicJoints::Slider::SliderCallback ) cb);
+};
+"""
+WRAPPER_REGISTRATION_Slider = [
+    'def ("setCallback", &::Slider_setSliderCallback); '
+    ]
+        
+############################################################################################
+
+WRAPPER_DEFINITION_Universal=\
+"""
+
+class UniversalCallback
+{
+public:
+   PyObject*  mSubscriber;
+    ::Ogre::String  mMethod;
+
+    UniversalCallback(PyObject*  subscriber, ::Ogre::String const & method)
+    {
+        mSubscriber = subscriber;
+        mMethod = method;
+    } 
+    
+    ~UniversalCallback() { } 
+    
+    void operator() ( OgreNewt::BasicJoints::Universal * me)
+    {
+    if (mMethod.length() > 0 )
+        boost::python::call_method<void>(mSubscriber, mMethod.c_str(), 
+                            boost::ref(me) );
+    else
+        boost::python::call<void>(mSubscriber, 
+                            boost::ref(me) );
+    return;
+    }
+
+};
+
+void Universal_setUniversalCallback( ::OgreNewt::BasicJoints::Universal * me, 
+                                                PyObject* subscriber, ::Ogre::String const & method="")
+{
+    UniversalCallback * cb = new UniversalCallback(subscriber, method);
+    me->setCallback( ( ::OgreNewt::BasicJoints::Universal::UniversalCallback ) cb);
+};
+"""
+WRAPPER_REGISTRATION_Universal = [
+    'def ("setCallback", &::Universal_setUniversalCallback); '
+    ]
+
+    
+############################################################################################
+
+WRAPPER_DEFINITION_BodyIterator=\
+"""
+
+class BodyIteratorCallback
+{
+public:
+   PyObject*  mSubscriber;
+    ::Ogre::String  mMethod;
+
+    BodyIteratorCallback(PyObject*  subscriber, ::Ogre::String const & method)
+    {
+        mSubscriber = subscriber;
+        mMethod = method;
+    } 
+    
+    ~BodyIteratorCallback() { } 
+    
+    void operator() ( OgreNewt::BodyIterator * me)
+    {
+    if (mMethod.length() > 0 )
+        boost::python::call_method<void>(mSubscriber, mMethod.c_str(), 
+                            boost::ref(me) );
+    else
+        boost::python::call<void>(mSubscriber, 
+                            boost::ref(me) );
+    return;
+    }
+
+};
+
+void BodyIterator_setBodyIteratorCallback( ::OgreNewt::BodyIterator * me, 
+                                                PyObject* subscriber, ::Ogre::String const & method="")
+{
+    BodyIteratorCallback * cb = new BodyIteratorCallback(subscriber, method);
+    me->go( ( ::OgreNewt::BodyIterator::IteratorCallback ) cb);
+};
+"""
+WRAPPER_REGISTRATION_BodyIterator = [
+    'def ("go", &::BodyIterator_setBodyIteratorCallback); '
+    ]            
+############################################################################################
+
+
 
 WRAPPER_DEFINITION_EventCallback = \
 """
@@ -169,7 +342,8 @@ void Body_setCustomForceAndTorqueCallback( ::OgreNewt::Body * body, PyObject* su
 
 
 void Body_addBouyancyForce( ::OgreNewt::Body * self, Ogre::Real fluidDensity, Ogre::Real fluidLinearViscosity , 
-                    Ogre::Real fluidAngularViscosity , const Ogre::Vector3& gravity, PyObject* subscriber, ::Ogre::String const & method="")
+                    Ogre::Real fluidAngularViscosity , const Ogre::Vector3& gravity, 
+                                                            PyObject* subscriber, ::Ogre::String const & method="")
 {
     BouyancyCallback * e = new BouyancyCallback(subscriber, method);
     self->addBouyancyForce<BouyancyCallback>(fluidDensity, fluidLinearViscosity, fluidAngularViscosity,
@@ -185,31 +359,48 @@ void Body_setAutoactiveCallback( ::OgreNewt::Body * self, PyObject* subscriber, 
 void Body_setCustomTransformCallback( ::OgreNewt::Body * self, PyObject* subscriber, ::Ogre::String const & method="" )
 {
     CustomTransformCallback * e = new CustomTransformCallback(subscriber, method);
-    self->setCustomTransformCallback<CustomTransformCallback>(&CustomTransformCallback::callback, (CustomTransformCallback*) e);
+    self->setCustomTransformCallback<CustomTransformCallback>(&CustomTransformCallback::callback, 
+                                                                                    (CustomTransformCallback*) e);
 };
 """
 
 
 
-WRAPPER_REGISTRATION_EventCallback =\
-"""
-def ("setCustomForceAndTorqueCallback", &::Body_setCustomForceAndTorqueCallback); 
-Body_exposer.def ("addBouyancyForce", &::Body_addBouyancyForce);
-Body_exposer.def ("setAutoactiveCallback", &::Body_setAutoactiveCallback);
-Body_exposer.def ("setCustomTransformCallback", &::Body_setCustomTransformCallback);
+WRAPPER_REGISTRATION_EventCallback = [
+    'def ("setCustomForceAndTorqueCallback", &::Body_setCustomForceAndTorqueCallback); ',
+    'def ("addBouyancyForce", &::Body_addBouyancyForce);',
+    'def ("setAutoactiveCallback", &::Body_setAutoactiveCallback);',
+    'def ("setCustomTransformCallback", &::Body_setCustomTransformCallback);'
+    ]
+########################################################################################
 
-"""
-
+def apply_reg ( class_, code ):
+    for c in code:
+        class_.add_registration_code ( c )
 
 def apply( mb ):
     cs = mb.class_( 'Body' )
     cs.add_declaration_code( WRAPPER_DEFINITION_Body )
     cs.add_declaration_code( WRAPPER_DEFINITION_EventCallback )
-    cs.add_registration_code( WRAPPER_REGISTRATION_Body )
-    cs.add_registration_code( WRAPPER_REGISTRATION_EventCallback )
+    apply_reg (cs,  WRAPPER_REGISTRATION_EventCallback )
+    apply_reg (cs,  WRAPPER_REGISTRATION_Body )
 
+ 
     cs = mb.class_( 'Joint' )
     cs.add_declaration_code( WRAPPER_DEFINITION_Joint )
-    cs.add_registration_code( WRAPPER_REGISTRATION_Joint )
-
-                
+    apply_reg (cs,  WRAPPER_REGISTRATION_Joint )
+    
+    cs = mb.namespace( 'BasicJoints' ).class_("Hinge" )
+    cs.add_declaration_code( WRAPPER_DEFINITION_Hinge )
+    apply_reg (cs,  WRAPPER_REGISTRATION_Hinge )
+    cs = mb.namespace( 'BasicJoints' ).class_("Slider" )
+    cs.add_declaration_code( WRAPPER_DEFINITION_Slider )
+    apply_reg (cs,  WRAPPER_REGISTRATION_Slider )
+    cs = mb.namespace( 'BasicJoints' ).class_("Universal" )
+    cs.add_declaration_code( WRAPPER_DEFINITION_Universal )
+    apply_reg (cs,  WRAPPER_REGISTRATION_Universal )
+    
+    cs = mb.class_( 'BodyIterator' )
+    cs.add_declaration_code( WRAPPER_DEFINITION_BodyIterator )
+    apply_reg (cs,  WRAPPER_REGISTRATION_BodyIterator )
+      
