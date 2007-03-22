@@ -42,7 +42,9 @@ else:
     	python_lib_dirs = os.path.join ( '/usr/lib/python2.4', 'libs' )
     else:
         ## it's Mac OS X
-        python_include_dirs = '/Library/Frameworks/Python.framework/Versions/2.5/include/python2.5'
+        pathlist = PATH_Python.split('/')
+        version = pathlist[pathlist.index('Versions')+1]
+        python_include_dirs = '/'.join(pathlist[:pathlist.index('Versions')+2]) + '/include/python' + version
         python_lib_dirs = ''
 
 root_dir = os.path.abspath(os.path.dirname(__file__) )## The root directory is where this module is located
