@@ -37,11 +37,14 @@ def create_SConscript ( cls ):
         ## return ## uncomment this if you have manually created a Sconscript file..
     
     f = open (  fname , 'w' )
-    f.write (  """
+    if os.sys.platform <> 'darwin':
+        targettype = 'SharedLibrary'
+    else:
+        targettype = 'LoadableModule'
+    f.write ("""
 Import(\'_env\') \n
-_%s = _env.SharedLibrary( "%s", SHLIBPREFIX=\'\', source=_env["FILES"])\n
-Return ('_%s') """ % ( cls._name, cls._name, cls._name ) )
-    
+_%s = _env.%s( "%s", SHLIBPREFIX=\'\', source=_env["FILES"])\n
+Return ('_%s') """ % ( cls._name, targettype, cls._name, cls._name ) )
                                    
 def get_ccflags():
     if os.name=='nt':
