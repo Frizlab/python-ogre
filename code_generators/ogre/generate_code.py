@@ -103,7 +103,7 @@ def ManualExclude ( mb ):
     
     
     # functions that take pointers to pointers 
-    ogre_ns.class_( 'VertexElement').member_functions('baseVertexPointerToElement').exclude()
+    ogre_ns.class_( 'VertexElement').member_functions('baseVertexPointerToElement').exclude() ## now as a transformed funct
     mb.global_ns.mem_fun('::Ogre::InstancedGeometry::BatchInstance::getObjectsAsArray').exclude()
     #all constructors in this class are private, also some of them are public.
 
@@ -259,9 +259,9 @@ def ManualFixes ( mb ):
     
     ## Math abs function is overloaded (with degree and radian) and doesn't know what to "return"
     ## so exclude the overloads except the one that takes a real...
-    cls = mb.class_("Math")
-    cls.member_functions("Abs").exclude()
-    cls.mem_fun('Abs', arg_types=['::Ogre::Real']).include()
+#     cls = mb.class_("Math")
+#     cls.member_functions("Abs").exclude()
+#     cls.mem_fun('Abs', arg_types=['::Ogre::Real']).include()
     
     
 # #     # ensure functions that take UTFString can also take a python string
@@ -616,12 +616,15 @@ def Fix_NT ( mb ):
         
         
 def Fix_Implicit_Conversions ( mb ):
-    """Some of the implicit conversion gets a little too smart and causes strange problems
+    """By default we disable explicit conversion, however sometimes it makes sense
     """
-    nonImplicitClasses=['Vector2','Vector3', 'Vector4', 'Matrix4', 
-                          'Quaternion']  ## 'Radian', 'Degree',
+    nonImplicitClasses=['Radian','Degree' ] # AnimationStateControllerValue, Any, SceneQuery, 
+    # BorderRenderable, SceneNode, CompositionPass, CompositionTargetPass, CompositionTechnique
+    # CompositorChain, CompositorInstance::TargetOperation, TextureUnitState, DefaultAxisAlignedBoxSceneQuery
+    # DefaultIntersectionSceneQuery, DefaultPlaneBoundedVolumeListSceneQuery, DefaultRaySceneQuery
+      # DefaultSphereSceneQuery, DefaultSceneManager, 
     for className in nonImplicitClasses:
-        mb.class_(className).constructors().allow_implicit_conversion = False
+        mb.class_(className).constructors().allow_implicit_conversion = True
  
     
     
@@ -874,6 +877,9 @@ def generate_code():
                                           , indexing_suite_version=2
                                           , cflags=environment.ogre.cflags
                                            )
+    # NOTE THE CHANGE HERE                                           
+    mb.constructors().allow_implicit_conversion = False                                           
+    
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
     
@@ -945,7 +951,7 @@ def generate_code():
     #
     ##########################################################################################
     extractor = exdoc.doc_extractor("")
-    mb.build_code_creator (module_name='_ogre_' , doc_extractor= extractor)
+    mb.build_code_creator (module_name='_ogre_' , doc_extractor= extractor )
     
     for inc in environment.ogre.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )

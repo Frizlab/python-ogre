@@ -1,9 +1,14 @@
 #include ".\Ragdoll.h"
 import Ogre
 import OgreNewt
+import ctypes
+import sys
+from xml.dom.minidom import parse, parseString
 
 class RagDoll:
-    
+    JT_BALLSOCKET = 0
+    JT_HINGE = 1
+
     class RagBone:
         BS_BOX =1
         BS_ELLIPSOID=2
@@ -44,7 +49,7 @@ class RagDoll:
             elif shape == RagDoll.RagBone.BS_ELLIPSOID:
                 col = OgreNewt.Ellipsoid( world, size ) 
             elif shape == RagDoll.RagBone.BS_CONVEXHULL:
-                col = _makeConvexHull( world, mesh, size.x ) 
+                col = self._makeConvexHull( world, mesh, size.x ) 
             else:
                 col = OgreNewt.Box( world, size ) 
         
@@ -57,7 +62,7 @@ class RagDoll:
             self.Body.setMassMatrix( mass, inertia * mass ) 
             self.Body.setCenterOfMass( com ) 
         
-            self.Body.setCustomTransformCallback( self, "_placementCallback" ) 
+            self.Body.setCustomTransformCallback( self.Doll, "_placementCallback" ) 
 
 
         def __del__(self): ## ragbone
@@ -65,17 +70,7 @@ class RagDoll:
             del self.Body 
 
 
-        def _hingeCallback( self, me ):
-            bone = me.getUserData() 
-            angle = me.getJointAngle() 
-            lim1 = bone.getLimit1() 
-            lim2 = bone.getLimit2() 
-            if (angle < lim1):
-                accel = me.calculateStopAlpha( lim1 ) 
-                me.setCallbackAccel( accel ) 
-            if (angle > lim2):
-                accel = me.calculateStopAlpha( lim2 ) 
-                me.setCallbackAccel( accel ) 
+        
 
 
         def _makeConvexHull( self, world, mesh, minWeight ):
@@ -105,91 +100,127 @@ class RagDoll:
                     p_elem = v_decl.findElementBySemantic( Ogre.VES_POSITION ) 
                     
                 start = v_data.vertexStart 
-                ##pointer
-                v_sptr = v_data.vertexBufferBinding.getBuffer( p_elem.getSource() ) 
-                v_ptr = v_sptr.lock( Ogre.HardwareBuffer.HBL_READ_ONLY )
                 
+                ## Here's were we start messing with 'C' pointers
+                v_sptr = v_data.vertexBufferBinding.getBuffer( p_elem.getSource() ) #returns a hardwarevertexbuffer
+                v_ptr = v_sptr.lock( Ogre.HardwareBuffer.HBL_READ_ONLY )    # returns a void pointer
+                
+                v_ptr_address = Ogre.CastInt ( v_ptr )  ##need to write this one...
+                
+                ## we need to reference floats in groups of 3...
+                _storageclass = ctypes.c_float * (3)
+                vertexVector=[]
                 while (bai.hasMoreElements()):
                     vba = bai.getNext() 
                     if (vba.boneIndex == boneIndex):
                         ##found a vertex that is attached to self bone.
                         if (vba.weight >= minWeight):
-                            ##get offset to Position data!
-                            v_offset = v_ptr + (vba.vertexIndex * v_sptr.getVertexSize()) 
-                            ## AJM
-##                            p_elem.baseVertexPointerToElement( v_offset, &v_Posptr ) 
-                            p_elem.baseVertexPointerToElement( v_offset, v_Posptr ) 
+                            
+                            ## We want the the offset into the vertex buffer.
+                            v_offset = v_ptr_address + (vba.vertexIndex * v_sptr.getVertexSize()) 
+                            
+                            ## And now we get a pointer to the actual buffer position..
+                            ## 
+                            ## C++ uses this function as it returns a different pointer based upon the 
+                            ## second argumment (v_Posptr)..  
+                            ## In python we don't need this, instead we simply want the address so we can
+                            ## use ctypes to cope with the differnt underlying 'C' type
+                            ##
+                            ## p_elem.baseVertexPointerToElement( v_offset, v_Posptr ) 
+                            
+                            v_offset = v_offset + p_elem.getOffset()
+                            
+                            _FloatBuffer = _storageclass.from_address( v_offset )
+                            
                             vert = Ogre.Vector3()
-                            vert.x = v_Posptr
-                            v_Posptr+=1
-                            vert.y = v_Posptr
-                            v_Posptr+=1
-                            vert.z = v_Posptr  
+                            vert.x = _FloatBuffer[0]
+                            vert.y = _FloatBuffer[1]
+                            vert.z = _FloatBuffer[2]  
+                            
                             ## apply transformation in to local space.
                             vert = invMatrix * vert 
+                            ## and save the Vector3...
                             vertexVector.append( vert ) 
-        ##                  Ogre.LogManager.getSingletonPtr().logMessage("  vertex found! id:"+Ogre.StringConverter.toString(vba.vertexIndex)) 
                 v_sptr.unlock() 
                 
-            ## okay, we have gathered all verts for self bone.  make a convex hull!
-            numVerts = vertexVector.size() 
-            verts = Ogre.Vector3[ numVerts ] 
-            j = 0 
-            while (not vertexVector.empty()):
-                verts[j] = vertexVector.back() 
-                vertexVector.pop() 
-                j+=1 
-        
-            ##////////////////////////////////////////////////////////////////////////////////
-            col = OgreNewt.CollisionPrimitives.ConvexHull( world, verts, numVerts ) 
-            del verts 
+       
+            ##################################################################################
+#             col = OgreNewt.CollisionPrimitives.ConvexHull( world, verts, numVerts ) 
+            ## To Check - might need to keep vertexVector around - ie as a self.vertexVector
+            ## Note the helper function -- the Constructor on ConvexHull needs a pointer to a list of Vector3's
+            col = OgreNewt.createConvexHull( world, vertexVector, len(vertexVector) )
+                            #.Ogre.Quaternion.IDENTITY, Ogre.Vector3.ZERO ) 
             return col  
+            
+        ## newton body.
+        def getBody(self):
+            return self.Body
 
+        ## set limits.
+        def setLimits( self, limit1, limit2 ):
+            self.Limit1 = limit1
+            self.Limit2 = limit2
+
+        ## get limits.
+        def getLimit1(self):
+            return self.Limit1
+            
+        def getLimit2(self):
+            return self.Limit2
+
+        ## get ogre bone
+        def getOgreBone(self):
+            return self.OgreBone
+
+        ## get parent.
+        def getParent( self ):
+            return self.Parent
+
+        ## get doll.
+        def getDoll( self ):
+            return self.Doll
+
+        ## set offset.
+        def setOffset( self, orient, pos ):
+            self.OffsetOrient = orient
+            self.OffsetPos = pos
+
+        ## get offsets
+        def getOffsetOrient( self ):
+            return self.OffsetOrient
+        def getOffsetPos( self ):
+            return self.OffsetPos
+        
+        
+        
+        
 
     def __init__( self, filename, world, node ):    # ragdoll __init__
         self.Node = node 
         self.World = world 
         self.Bones=[]
+        self.statics=[]
         ## get the skeleton.
         self.Skeleton = self.Node.getAttachedObject(0).getSkeleton() 
         ## get the mesh.
         self.Mesh = self.Node.getAttachedObject(0).getMesh() 
-        
-        #######  AJM - need to convert to Python XML handling :)
-#     	doc = OgreNewt.TiXmlDocument()
-#         doc.LoadFile( filename ) 
-        from xml.dom.minidom import parse, parseString
+
+        ## now for XML handling        
         doc = parse(filename) # parse an XML file by name
         root = doc.documentElement
-#         root = doc.RootElement() 
         if (not root):
-            ## error!
             Ogre.LogManager.getSingleton().logMessage(" ERROR! cannot find 'root' in xml file: "+filename ) 
             return 
         ## found the root ragdoll.  find the root bone, and go!
-        parent = None 
-        print "\n**************\n"
-        print root
-        print dir(root)
-        print "\n**************\n"
-        
         bone = root.getElementsByTagName ("Bone")[0]
 
         ##bone = root.FirstChildElement("Bone") 
         if (bone):
             self._addAllBones( None, bone ) 
-
+        else:
+            sys.exit("Issue - master bone is missing")
 
     def _addAllBones ( self, parent,  bone):
-        print "==============="
-        print bone
-        
-        print dir(bone)
-        print "\n========\n"
-#         print bone[0]
-#         print dir(bone[0])
-        print bone.getAttribute("dir")
-        
         ## get the information for the bone represented by self element.
         t =  bone.getAttribute("dir").split()  #vector3
         dire = Ogre.Vector3(float(t[0]), float(t[1]), float(t[2]))
@@ -200,7 +231,6 @@ class RagDoll:
         size = Ogre.Vector3(float(t[0]), float(t[1]), float(t[2]))
         
         skeleton_bone = bone.getAttribute("skeleton_bone") 
-        print skeleton_bone
         ogrebone = self.Skeleton.getBone( str(skeleton_bone) ) 
     
         shapestr = bone.getAttribute("shape") 
@@ -221,9 +251,9 @@ class RagDoll:
     
         mass = float( bone.getAttribute("mass") ) 
         
-        ##/////////////////////////////////////////////////////////////////////////////
+        ##############################################################################/
         me = self._addBone( self.World, parent, dire, shape, size, mass, ogrebone ) 
-        ##/////////////////////////////////////////////////////////////////////////////
+        ##############################################################################/
     
         ## position the bone.
         boneorient = self.Node.getWorldOrientation() * ogrebone._getDerivedOrientation() 
@@ -231,7 +261,6 @@ class RagDoll:
             bonepos = self.Node._getFullTransform() * ogrebone._getDerivedPosition() + (boneorient * (dire * (length*0.5))) 
         else:
             bonepos = self.Node._getFullTransform() * ogrebone._getDerivedPosition()
-        
         me.Body.setPositionOrientation( bonepos, boneorient ) 
     
         ## set offsets
@@ -242,13 +271,17 @@ class RagDoll:
     
         ## get the joint to connect self bone with it's parent.
         if (parent):
-            joint = bone.FirstChildElement("Joint") 
+            joint = bone.getElementsByTagName ("Joint")[0]
             if (not joint):
                 ## error!
                 Ogre.LogManager.getSingleton().logMessage(" ERROR! cannot find 'Joint' in xml file!") 
                 return 
-            jointpin = Ogre.StringConverter.parseVector3( joint.Attribute("pin") ) 
-            jointtypestr = joint.Attribute("type") 
+        
+            p = joint.getAttribute("pin").split()
+            jointpin = Ogre.Vector3(float(p[0]), float(p[1]), float(p[2]))
+        
+ 
+            jointtypestr = joint.getAttribute("type") 
             jointtype = RagDoll.JT_BALLSOCKET 
     
             if (jointtypestr == "ballsocket"):
@@ -256,24 +289,21 @@ class RagDoll:
             elif (jointtypestr == "hinge"):
                 jointtype = RagDoll.JT_HINGE 
     
-            limit1 = Ogre.StringConverter.parseReal( joint.Attribute("limit1") ) 
-            limit2 = Ogre.StringConverter.parseReal( joint.Attribute("limit2") ) 
+            limit1 = float( joint.getAttribute("limit1") ) 
+            limit2 = float( joint.getAttribute("limit2") ) 
     
             jpos = self.Node._getFullTransform() * ogrebone._getDerivedPosition() 
             jpin = (self.Node.getWorldOrientation() * parent.getOgreBone()._getDerivedOrientation()) * jointpin 
     
-            _joinBones( jointtype, parent, me, jpos, jpin, limit1, limit2) 
+            self._joinBones( jointtype, parent, me, jpos, jpin, limit1, limit2) 
     
-        ##/////////////////////////////////////////////////////////////////////////////
-        ##/////////////////////////////////////////////////////////////////////////////
+        ##############################################################################/
+        ##############################################################################/
         ## add all children of self bone.
-        child = bone.FirstChildElement("Bone") 
-    
-        while (child):
-            self._addAllBones( me, child ) 
-            child = child.NextSiblingElement("Bone") 
-    
-    
+        for b in  bone.childNodes:
+            if b.nodeName == "Bone":
+               self._addAllBones( me, b )
+        
     
     
     #RagDoll.~RagDoll()
@@ -294,13 +324,15 @@ class RagDoll:
     def _joinBones( self, typein, parent, child, pos, pin, limit1, limit2 ):
         pin.normalise() 
         if typein == RagDoll.JT_BALLSOCKET:
-            joint = OgreNewt.BasicJoints.BallAndSocket( child.Body.getWorld(), child.Body, parent.Body, pos ) 
+            joint = OgreNewt.BallAndSocket( child.Body.getWorld(), child.Body, parent.Body, pos ) 
             joint.setLimits(pin, Ogre.Degree(limit1), Ogre.Degree(limit2)) 
+            self.statics.append(joint) # need to keep it arround 
         elif typein == RagDoll.JT_HINGE:
-            joint = OgreNewt.BasicJoints.Hinge( child.Body.getWorld(), child.Body, parent.Body, pos, pin ) 
-            joint.setCallback( self, "_hingeCallback" ) 
+            joint = OgreNewt.Hinge( child.Body.getWorld(), child.Body, parent.Body, pos, pin ) 
+            joint.setCallback( _hingeCallback,"" ) 
             joint.setUserData( child ) 
-            child.setLimits( limit1, limit2 ) 
+            child.setLimits( limit1, limit2 )
+            self.statics.append(joint) # need to keep it arround 
     
     
     def _placementCallback(  self, me,  orient,  pos ):
@@ -311,8 +343,8 @@ class RagDoll:
         if (not bone.getParent()):
             finalorient = (orient * bone.getOffsetOrient()) 
             finalpos = pos + (orient * bone.getOffsetPos()) 
-            doll.self.Node.setPosition( finalpos ) 
-            doll.self.Node.setOrientation( finalorient ) 
+            doll.Node.setPosition( finalpos ) 
+            doll.Node.setOrientation( finalorient ) 
         else:
             ## standard bone, calculate the local orientation between it and it's parent.
             parentpos, parentorient = bone.getParent().Body.getPositionOrientation(  ) 
@@ -329,3 +361,14 @@ class RagDoll:
             pos, orient = it.Body.getPositionOrientation(  ) 
             it.Body.setVelocity( vel + omega.crossProduct( pos - mainpos ) ) 
     
+def _hingeCallback( me ):
+    bone = me.getUserData() 
+    angle = me.getJointAngle() 
+    lim1 = bone.getLimit1() 
+    lim2 = bone.getLimit2() 
+    if (angle < lim1):
+        accel = me.calculateStopAlpha( lim1 ) 
+        me.setCallbackAccel( accel ) 
+    if (angle > lim2):
+        accel = me.calculateStopAlpha( lim2 ) 
+        me.setCallbackAccel( accel ) 

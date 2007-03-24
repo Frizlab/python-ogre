@@ -131,6 +131,19 @@ Utility_setFloat(void * ptrin, boost::python::list listin)
         }
 }
 
+
+boost::python::list
+Utility_getFloat(void * ptrin,  int size)
+{
+    boost::python::list outlist;
+    int index;
+    float * newptr = reinterpret_cast<float *>(ptrin);
+    for (index=0;index<size;index++ ) {
+        outlist.append ( *newptr++ );
+        }
+    return outlist;
+}
+
 void
 Utility_setUint16(void * ptrin, boost::python::list listin)     // unsigned short
 {
@@ -141,11 +154,30 @@ Utility_setUint16(void * ptrin, boost::python::list listin)     // unsigned shor
         }
 }
 
+boost::python::list
+Utility_getUint16(void * ptrin,  int size)
+{
+    boost::python::list outlist;
+    int index;
+    Ogre::uint16 * newptr = reinterpret_cast<Ogre::uint16 *>(ptrin);
+    for (index=0;index<size;index++ ) {
+        outlist.append ( *newptr++ );
+        }
+    return outlist;
+}
+
 // sometimes we need to take the ctypess addressof(), an int, and recast it as a general void *
 void *
 Utility_CastVoidPtr ( int address )
 {
     return (void *) address;
+    }
+    
+// Othertimes we need the address the void * points to
+unsigned int
+Utility_CastInt ( void * address )
+{
+    return (unsigned int) address;
     }
     
 boost::python::object 
@@ -198,16 +230,30 @@ WRAPPER_REGISTRATION_General = [
                 Input: void *, Python List (numerics)\\n\\
                 Ouput: None\\n\\
                 The list is extracted as floats and written to memory starting at the pointer" );""",
+    """bp::def( "getFloat", &Utility_getFloat,
+                "Python-Ogre Helper Function: Reads floats into a python list.\\n\\
+                Input: void *, size\\n\\
+                Ouput: Python List\\n\\
+                The list is populated with floats from memory starting at the pointer" );""",
     """bp::def( "setUint16", &Utility_setUint16,
                 "Python-Ogre Helper Function: Write Unsigned Ints to Memory.\\n\\
                 Input: void *, Python List (numerics)\\n\\
                 Ouput: None\\n\\
                 The list is extracted as unsigned ints and written to memory starting at the pointer" );""",
+    """bp::def( "getUint16", &Utility_getFloat,
+                "Python-Ogre Helper Function: Reads ints into a python list.\\n\\
+                Input: void *, size\\n\\
+                Ouput: Python List\\n\\
+                The list is populated with ints from memory starting at the pointer" );""",
     """bp::def( "CastVoidPtr", &Utility_CastVoidPtr,
                 bp::return_value_policy< bp::return_opaque_pointer >(),
                 "Python-Ogre Helper Function: Casts a number to a void *.\\n\\
                 Input: numeric value (typically CTypes.addressof(xx) )\\n\\
                 Output: A void pointer with the input address");""",
+    """bp::def( "CastInt", &Utility_CastInt,
+                "Python-Ogre Helper Function: Returns an interger reflecting the void pointer adddress.\\n\\
+                Input: void * \\n\\
+                Output: A number representing the input address");""",
     """bp::def( "CastResourceToNative", &Utility_CastResourceToNative,
                "Python-Ogre Helper Function: Casts a Resource to it\'s native type.\\n\\
                 Input: Resource Object\\n\\
