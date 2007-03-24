@@ -19,7 +19,7 @@ class OgreNewtonApplication (sf.Application):
         self.World = OgreNewt.World()
         self.EntityCount = 0
         self.bodies=[]
-        sf.Application.debugText = "Press Space Bar to fire bouncing balls.  ESC to end"
+        sf.Application.debugText = "Press '1' or '2' to make a solid figure then Space Bar to shoot him"
 
 
     def __del__ (self):
@@ -51,7 +51,8 @@ class OgreNewtonApplication (sf.Application):
     	col = OgreNewt.TreeCollision( self.World, floornode, True )
     	bod = OgreNewt.Body( self.World, col )
     	del col
-	       
+        self.bodies.append( bod )   ## need to keep him so collision works
+    		       
         bod.attachToNode( floornode )
         bod.setPositionOrientation( Ogre.Vector3(0.0,-4.0,0.0), Ogre.Quaternion.IDENTITY )
         self.bodies.append( bod )

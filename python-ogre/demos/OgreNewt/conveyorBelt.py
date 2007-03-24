@@ -2,7 +2,7 @@
 import Ogre
 import OgreNewt
 
-class conveyorBelt():
+class conveyorBelt:
     def __init__ (self):
         self.bodies = []    
     def __del__ (self):

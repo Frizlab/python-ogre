@@ -52,35 +52,48 @@ WRAPPER_DEFINITION_Hinge=\
 class HingeCallback
 {
 public:
-   PyObject*  mSubscriber;
-    ::Ogre::String  mMethod;
-
-    HingeCallback(PyObject*  subscriber, ::Ogre::String const & method)
+    PyObject*  cb_object;
+    ::Ogre::String  cb_method;
+    
+    HingeCallback( PyObject*  subscriber, ::Ogre::String const & method)
     {
-        mSubscriber = subscriber;
-        mMethod = method;
+        cb_object = subscriber;
+        cb_method = method;
     } 
     
     ~HingeCallback() { } 
     
-    void operator() ( OgreNewt::BasicJoints::Hinge * me)
+    void callback( OgreNewt::BasicJoints::Hinge * me)
     {
-    if (mMethod.length() > 0 )
-        boost::python::call_method<void>(mSubscriber, mMethod.c_str(), 
-                            boost::ref(me) );
-    else
-        boost::python::call<void>(mSubscriber, 
-                            boost::ref(me) );
-    return;
+        if (cb_method.length() > 0 )
+            boost::python::call_method<void>(cb_object, cb_method.c_str(), 
+                                boost::ref(me) );
+        else
+            boost::python::call<void>(cb_object, 
+                                boost::ref(me) );
     }
 
 };
+HingeCallback * Hcb;
+static void StaticCallBack( OgreNewt::BasicJoints::Hinge * me)
+{
+    Hcb->callback ( me );
+}
 
+
+/* here is the routine that gets called from Python to setup the callback.. It creates a new class
+that handles the fact that the python function can be a class method or a stand alone function.
+However the call back that gets passed to the OgreNewt library MUST be a STATIC function - this is to ensure
+that the calling conventions being used are 'C' ones, not C++...  
+This means that there will only every be ONE PYTHON function that receives all the callbacks for Hinges..
+So if you really want it to do different things then you will need the python function to look at the hinge
+it's been passed and manage the callback appropiately
+*/
 void Hinge_setHingeCallback( ::OgreNewt::BasicJoints::Hinge * me, 
                                             PyObject* subscriber, ::Ogre::String const & method="")
 {
-    HingeCallback * cb = new HingeCallback(subscriber, method);
-    me->setCallback( ( ::OgreNewt::BasicJoints::Hinge::HingeCallback) cb);
+    Hcb = new HingeCallback(subscriber, method);
+    me->setCallback( ( ::OgreNewt::BasicJoints::Hinge::HingeCallback) &StaticCallBack );
 };
 """
 WRAPPER_REGISTRATION_Hinge = [
@@ -106,7 +119,7 @@ public:
     
     ~SliderCallback() { } 
     
-    void operator() ( OgreNewt::BasicJoints::Slider * me)
+    void callback ( OgreNewt::BasicJoints::Slider * me)
     {
     if (mMethod.length() > 0 )
         boost::python::call_method<void>(mSubscriber, mMethod.c_str(), 
@@ -119,11 +132,18 @@ public:
 
 };
 
+SliderCallback * Scb;
+static void StaticCallBack( OgreNewt::BasicJoints::Slider * me)
+{
+    Scb->callback ( me );
+}
+
+
 void Slider_setSliderCallback( ::OgreNewt::BasicJoints::Slider * me, 
                                             PyObject* subscriber, ::Ogre::String const & method="")
 {
-    SliderCallback * cb = new SliderCallback(subscriber, method);
-    me->setCallback( ( ::OgreNewt::BasicJoints::Slider::SliderCallback ) cb);
+    Scb = new SliderCallback(subscriber, method);
+    me->setCallback( ( ::OgreNewt::BasicJoints::Slider::SliderCallback ) &StaticCallBack);
 };
 """
 WRAPPER_REGISTRATION_Slider = [
@@ -149,7 +169,7 @@ public:
     
     ~UniversalCallback() { } 
     
-    void operator() ( OgreNewt::BasicJoints::Universal * me)
+    void callback ( OgreNewt::BasicJoints::Universal * me)
     {
     if (mMethod.length() > 0 )
         boost::python::call_method<void>(mSubscriber, mMethod.c_str(), 
@@ -162,11 +182,17 @@ public:
 
 };
 
+UniversalCallback * Ucb;
+static void StaticCallBack( OgreNewt::BasicJoints::Universal * me)
+{
+    Ucb->callback ( me );
+}
+
 void Universal_setUniversalCallback( ::OgreNewt::BasicJoints::Universal * me, 
                                                 PyObject* subscriber, ::Ogre::String const & method="")
 {
-    UniversalCallback * cb = new UniversalCallback(subscriber, method);
-    me->setCallback( ( ::OgreNewt::BasicJoints::Universal::UniversalCallback ) cb);
+    Ucb = new UniversalCallback(subscriber, method);
+    me->setCallback( ( ::OgreNewt::BasicJoints::Universal::UniversalCallback ) &StaticCallBack);
 };
 """
 WRAPPER_REGISTRATION_Universal = [
@@ -373,7 +399,34 @@ WRAPPER_REGISTRATION_EventCallback = [
     'def ("setCustomTransformCallback", &::Body_setCustomTransformCallback);'
     ]
 ########################################################################################
+WRAPPER_DEFINITION_General=\
+"""
+OgreNewt::ConvexCollision *
+//OgreNewt::CollisionPrimitives::ConvexHull *
+General_createConvexHull( const OgreNewt::World* world, boost::python::list verts, int vertcount )
+//				const Ogre::Quaternion& orient = Ogre::Quaternion::IDENTITY, const Ogre::Vector3& pos = Ogre::Vector3::ZERO )
 
+   {
+	Ogre::Vector3* newverts = new Ogre::Vector3[ len(verts) ];
+	Ogre::Vector3* startpos = newverts;
+    int index;
+
+    for (index=0;index<len(verts);index++ ) {
+        *newverts++ = boost::python::extract<Ogre::Vector3> (verts[index]);
+        }
+	OgreNewt::ConvexCollision* col = new OgreNewt::CollisionPrimitives::ConvexHull( world, startpos, len(verts) );
+    //return &OgreNewt::CollisionPrimitives::ConvexHull( world, startpos, len(verts) );
+	return col;
+	}
+	"""
+
+WRAPPER_REGISTRATION_General= [
+    'def ("createConvexHull", &::General_createConvexHull,\
+     bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());'
+    ]
+    
+    
+    
 def apply_reg ( class_, code ):
     for c in code:
         class_.add_registration_code ( c )
@@ -403,4 +456,7 @@ def apply( mb ):
     cs = mb.class_( 'BodyIterator' )
     cs.add_declaration_code( WRAPPER_DEFINITION_BodyIterator )
     apply_reg (cs,  WRAPPER_REGISTRATION_BodyIterator )
+    
+    mb.add_declaration_code( WRAPPER_DEFINITION_General )
+    apply_reg (mb,  WRAPPER_REGISTRATION_General )
       

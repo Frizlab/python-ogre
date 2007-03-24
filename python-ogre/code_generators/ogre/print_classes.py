@@ -51,9 +51,11 @@ ogre_ns.include()
     
 # for op in mb.operators():
 #    print op
-# for cls in ogre_ns.classes():
-for cls in mb.classes():
-   for op in cls.operators( allow_empty = True ):
-      print cls, op
+for cls in ogre_ns.classes():
+#for cls in mb.classes():
+#    for op in cls.operators( allow_empty = True ):
+#       print cls, op
 #     print cls
-    
+    for f in cls.member_functions ( allow_empty = True):
+        for a in f.arguments:
+            print cls, f, a, a.type, a.type.decl_string

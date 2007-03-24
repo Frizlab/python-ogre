@@ -76,6 +76,9 @@ def filter_declarations( mb ):
     ogrenewt_ns.class_( "Body" ).member_functions("getUserData").exclude()
     ogrenewt_ns.class_( "Joint" ).member_functions("getUserData").exclude()
      
+    # ConvexHull has an overloaded constructor that takes 5 args, one is a pointer to a list of vectors which we can't
+    # handle, so we created a helper function caller createConvexHull that takes a python list instead.
+    mb.global_ns.namespace ('OgreNewt').class_('ConvexHull').constructor(arg_types=[None,None,None,None,None]).exclude()
        
     ### and we need the free functions 
     for func in ogrenewt_ns.free_functions ():
@@ -87,7 +90,8 @@ def filter_declarations( mb ):
             & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
     non_public_non_pure_virtual = ogrenewt_ns.calldefs( query )
     non_public_non_pure_virtual.exclude()
-
+    
+    
     ## Some varibles that we really do need and aren't exposed by default..    
     cls = ogrenewt_ns.class_("ContactCallback")
     cls.variable('m_body0').include()
@@ -230,6 +234,7 @@ def generate_ogrenewt():
     # here we fixup functions that expect to modifiy their 'passed' variables  
     #  
     add_transformations ( mb )
+    
     
     # 
     # now add properties
