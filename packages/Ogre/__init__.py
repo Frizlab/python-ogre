@@ -30,6 +30,8 @@ def Degree( d=None, r=None ):
         return _ogre.Degree (r=r)
     else:
         return _ogre_.Degree( d=d )
-
-
-    
+        
+class Vector3 ( _ogre_.Vector3 ):
+    def __str__ ( self ):
+        
+        return "Ogre.Vector3: x=%(x)f y=%(y)f y=%(y)f" % { 'x':self.x, 'y':self.y, 'z':self.z}
