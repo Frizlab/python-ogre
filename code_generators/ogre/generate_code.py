@@ -89,8 +89,8 @@ def ManualExclude ( mb ):
     PartSys.class_( "CmdSorted" ).exclude()
 
     ## Functions defined in .h files but not implemented in source files
-    ogre_ns.class_('Root').mem_fun('termHandler').exclude()
-    ogre_ns.class_( "StaticGeometry" ).class_("Region").member_functions('getLights').exclude() 
+#     ogre_ns.class_('Root').mem_fun('termHandler').exclude()
+#     ogre_ns.class_( "StaticGeometry" ).class_("Region").member_functions('getLights').exclude() 
 
     #exclude GpuLogicalIndexUseMap  NOTE:  Example use of Py++ to exclude a special variable........
     GpuLogicalBufferStruct = ogre_ns.class_( 'GpuLogicalBufferStruct' )
@@ -151,6 +151,9 @@ def ManualExclude ( mb ):
     
     #new in Ogre 1.4 RC2
     global_ns.class_('::Ogre::SceneManager').mem_fun('getQueuedRenderableVisitor').exclude()
+    # in hand made wrappers
+    global_ns.class_('::Ogre::BillboardSet').mem_fun('getTextureCoords').exclude()
+    global_ns.class_('::Ogre::BillboardSet').mem_fun('setTextureCoords').exclude()
 
 ############################################################
 ##
