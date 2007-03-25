@@ -264,6 +264,8 @@ WRAPPER_REGISTRATION_General = [
 
 ##################################################################
 
+
+
 WRAPPER_DEFINITION_BillboardParticleRenderer = \
 """
 boost::python::str
@@ -286,7 +288,48 @@ WRAPPER_REGISTRATION_BillboardParticleRendererFactory = [
         'def( "getType", &::BBPF_getType );'
     ]
 
+####################3
+WRAPPER_DEFINITION_BillboardSet = \
+"""
+boost::python::list
+Billboardset_getTextureCoords (Ogre::BillboardSet & me ) {
+    boost::python::list outlist;
+    Ogre::FloatRect const * fr;
+    Ogre::uint16 count;
+    // make the underlying call
+    fr = me.getTextureCoords( &count );
+    while ( count-- > 0 ) {
+        outlist.append ( *fr++ );
+        }
+    return outlist;
+}
 
+void
+Billboardset_setTextureCoords ( Ogre::BillboardSet & me, boost::python::list listin )
+{
+    Ogre::FloatRect * fr, *start;
+    fr = new Ogre::FloatRect [ len( listin ) ];
+    start = fr;
+    int index;
+    for (index =0 ; index <len(listin); index ++) {
+        *fr++ = boost::python::extract<Ogre::FloatRect> (listin[index]);
+        }
+    Ogre::uint16 count;
+    count = len(listin);
+    me.setTextureCoords( start, count );
+}
+"""
+WRAPPER_REGISTRATION_BillboardSet = [
+        """def( "getTextureCoords", &::Billboardset_getTextureCoords,
+         "Python-Ogre Hand Wrapped Function: Returns a list of TextureCoords.\\n\\
+                Input: Nothing\\n\\
+                Output: List of FloatRec\'s");""",
+        """def( "setTextureCoords", &::Billboardset_setTextureCoords,
+         "Python-Ogre Hand Wrapped Function: set a list of TextureCoords.\\n\\
+                Input: List of FloatRec\'s\\n\\
+                Output: Nothing");"""
+                
+    ]
 ###################################################
 
 WRAPPER_DEFINITION_CombinedListener = \
@@ -458,6 +501,10 @@ def apply( mb ):
     rt.add_declaration_code( WRAPPER_DEFINITION_Frustum )
     apply_reg (rt,  WRAPPER_REGISTRATION_Frustum )
     
+    rt = mb.class_( 'BillboardSet' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_BillboardSet )
+    apply_reg (rt,  WRAPPER_REGISTRATION_BillboardSet )
+ 
     rt = mb.class_( 'SubMesh' )
     rt.add_declaration_code( WRAPPER_DEFINITION_SubMesh )
     apply_reg (rt,  WRAPPER_REGISTRATION_SubMesh )
