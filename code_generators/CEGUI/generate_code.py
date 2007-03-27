@@ -39,7 +39,8 @@ def filter_declarations( mb ):
         if "Properties" in cls.decl_string:
             print "Excluding:", cls.name
             cls.exclude()
-           
+          
+                   
     ## EventNamespace causes failure when loading the python module
     ## possibly because of the ugly Properties fix above :) 
     for cls in mb.global_ns.namespace ('CEGUI').classes():
@@ -126,7 +127,7 @@ def filter_declarations( mb ):
                                                       , recursive=False )
        constructors.exclude()
 
-    ## I'm going to exclude all iterators as there is a problem with CEGUIIteratorBase.h
+#     ## I'm going to exclude all iterators as there is a problem with CEGUIIteratorBase.h
     for cls in CEGUI_ns.classes():
         print "checking", cls.name
         if 'iterator' in cls.name.lower() :

@@ -27,4 +27,4 @@ typedef CEGUI::Singleton<CEGUI::WidgetLookManager> SingletonWidgetLookManager;
 typedef CEGUI::Singleton<CEGUI::WindowFactoryManager> SingletonWindowFactoryManager;
 typedef CEGUI::Singleton<CEGUI::WindowManager> SingletonWindowManager;
 typedef CEGUI::Singleton<CEGUI::WindowRendererManager> SingletonWindowRendererManager;
-typedef CEGUI::RefCounted<CEGUI::BoundSlot> RefCountedBoundSlot;
+//typedef CEGUI::RefCounted<CEGUI::BoundSlot> RefCountedBoundSlot;

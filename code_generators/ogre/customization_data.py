@@ -5,6 +5,8 @@ def header_files( version ):
                 ,'py_shared_ptr.h'
                 , 'generators.h'
 ##                , 'return_pointee_value.hpp'
+                ,'boost/python/ssize_t.hpp' ## needed for python2.4 as it doesn't define ssize_t
+
         ]
 
       

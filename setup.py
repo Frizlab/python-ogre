@@ -44,6 +44,8 @@ METADATA = {
 from distutils.core import setup
 import os, sys
 
+PythonVersionString = str(sys.version_info[0]) + '.' + str(sys.version_info[1])
+
 def GetFileList ( basepath ):
     filesout = []
     for root, dirs, files in os.walk(basepath):
@@ -55,8 +57,8 @@ base = os.path.join(os.getcwd(), os.path.dirname(sys.argv[0]) )
 demofiles = GetFileList ( os.path.join (base, "demos") )
 
 PACKAGEDATA = {
-       "packages":    ['Ogre', 'OIS', 'CEGUI', 'OgreRefApp', 'OgreNewt', 'OgreOde','ODE', 'OgreAL' ],
-       "package_dir": {'': 'packages'},
+       "packages":    ['Ogre', 'OIS', 'CEGUI'], ##, 'OgreRefApp', 'OgreNewt', 'OgreOde','ODE', 'OgreAL', 'OgreDshow' ],
+       "package_dir": {'': 'packages_2.5'},
        "package_data": {'': ['*.pyd', '*.dll']}
 
 }
