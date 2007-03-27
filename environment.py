@@ -105,7 +105,8 @@ class ogre:
     active = True
     version = "1.4"   # "1.2"
     cflags = ""
-    parent = ""
+    parent = "ogre/renderer"
+    ModuleName = 'OGRE'
     if os.sys.platform <> 'darwin':
         libs=[Config.LIB_Boost, 'OgreMain',  'OgreGUIRenderer', 'CEGUIBase']
         lib_dirs = [ Config.PATH_LIB_Boost
@@ -119,6 +120,7 @@ class ogre:
                     ]
         CCFLAGS =  ' -D"BOOST_PYTHON_MAX_ARITY=19"'
         LINKFLAGS = ''
+        externalFiles=['OgreMain.dll', 'OgreGuiRender.dll', Config.LIB_Boost+'.dll']
     else:
         libs=[Config.LIB_Boost]
         lib_dirs = [ Config.PATH_LIB_Boost ]
@@ -138,7 +140,7 @@ class ogre:
 class ois:
     active = True
     version= "1.0"
-    parent = "Ogre"
+    parent = "ogre/io"
     libs=['OIS',Config.LIB_Boost]
     include_dirs = [ Config.PATH_Boost 
             , Config.PATH_INCLUDE_OIS
@@ -148,14 +150,14 @@ class ois:
             ]
     ModuleName = 'OIS'
     CheckIncludes=['boost/python.hpp', 'OIS.h']
-    
+    externalFiles = ['OIS.dll']
     if os.sys.platform == 'darwin':
         LINKFLAGS = '-framework Python -framework Carbon'
     
 class ogrerefapp:
     active = True
     version = "1.4"
-    parent = "Ogre"
+    parent = "ogre/physics"
     libs=[Config.LIB_Boost, 'OgreMain', 'ode', 'ReferenceAppLayer']
     lib_dirs = [ Config.PATH_LIB_Boost
                 , Config.PATH_LIB_Ogre_OgreMain
@@ -174,7 +176,7 @@ class ogrerefapp:
 class ogrenewt:
     active=True
     version = "1.0"
-    parent = "Ogre"
+    parent = "ogre/physics"
     libs = ['newton', Config.LIB_Boost, 'OgreNewt_Main', 'OgreMain']
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_Newton   # only one path for Newton
@@ -195,7 +197,7 @@ class ogrenewt:
 class cegui:
     active = True
     version = "0.5.0b" 
-    parent = "Ogre"
+    parent = "ogre/gui"
     libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain', 'OgreGUIRenderer' ]
     include_dirs = [Config.PATH_Boost
                     ,Config.PATH_INCLUDE_CEGUI
@@ -221,7 +223,7 @@ class cegui:
 class ode:
     version= "0.7"
     include_dirs = [r'c:/development/ode/include']
-    parent = ""
+    parent = "ogre/physics"
     libs=[Config.LIB_Boost,  'ode']
     lib_dirs = [ Config.PATH_LIB_Boost
                 ,  Config.PATH_LIB_ODE
@@ -242,7 +244,7 @@ class newton:
     parent = ""    
 class ogreode:
     version= "1.0"
-    parent = "Ogre"
+    parent = "ogre/physics"
 
     lib_dirs = [ Config.PATH_LIB_Boost
                 , Config.PATH_LIB_OgreOde
@@ -269,7 +271,7 @@ class ogreode:
     
 class fmod:
     version= "4.06"
-    parent = ""
+    parent = "ogre/sound"
     include_dirs=[Config.PATH_Boost
                    ,Config.PATH_INCLUDE_FMOD
                    ]
@@ -280,11 +282,11 @@ class fmod:
     CCFLAGS = ' /D "NDEBUG" /D "WIN32" /D "_MBCS" '
     ModuleName = 'FMOD' 
     CheckIncludes = ['fmod.h']
-    active=True
+    active=False
     
 class ogreal:
     version="0.3"
-    parent = "Ogre"
+    parent = "ogre/sound"
     
     include_dirs = [ Config.PATH_Boost
                 , Config.PATH_INCLUDE_Ogre
