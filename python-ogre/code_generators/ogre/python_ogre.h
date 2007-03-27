@@ -4,27 +4,7 @@
 //See best practices section in Py++ documentation
 #include "python_ogre_masterlist.h"
 
-// #include "Ogre.h"
-// #include "OgreParticleAffectorFactory.h"
 
-// #include "OgreBillboardParticleRenderer.h"
-// #include "OgreParticleSystemRenderer.h"
-// #include "OgreParticleEmitterFactory.h"
-// #include "OgreArchiveFactory.h"
-
-// #include "OgreErrorDialog.h"
-// #include "OgreConfigDialog.h"
-// #include "OgreTagPoint.h"
-// #include "OgreOverlayElementFactory.h"
-// #include "OgreArchiveFactory.h"
-// #include "OgreParticleSystemRenderer.h"
-// #include "OgreParticleEmitterFactory.h"
-// #include "OgreParticleAffectorFactory.h"
-// #include "OgreSkeletonInstance.h"
-// #include "OgreSkeletonManager.h"
-// #include "OgreSkeleton.h"
-// #include "OgreCompositor.h"
-// #include "OgrePlugin.h"
 
 typedef HashMap<Ogre::String, unsigned short> OgreHashMapStringUshortOuter;
 

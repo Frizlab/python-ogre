@@ -71,6 +71,7 @@ def ManualExclude ( mb ):
         , 'MemoryManager'   ## it's a specialised C++ mem manger not needed in Python
         , 'RadixSort' ## these show up as ugly aliases but are never exposed - and are really protected
         , 'Angle'   ## obtuse implicit conversion between Radian and Degree - causes compile issues 
+        , 'StringConverter' ## the tostring introduces registration order issues which means it doesn't really work
     ]
 
     
@@ -405,7 +406,7 @@ def ManualTransformations ( mb ):
     image_size = """ 
 namespace{ 
 struct ImageSize{ 
-    ssize_t operator()( boost::python::tuple args ) const{ 
+    bp::ssize_t operator()( boost::python::tuple args ) const{ 
         boost::python::object self = args[0];
         Ogre::Image& img = boost::python::extract<Ogre::Image&>( self ); 
         return img.getSize(); 
@@ -425,7 +426,7 @@ struct ImageSize{
     memorydatastream_size = """ 
 namespace{ 
 struct MDSSize{ 
-    ssize_t operator()( boost::python::tuple args ) const{ 
+    bp::ssize_t operator()( boost::python::tuple args ) const{ 
         boost::python::object self=args[0];
         Ogre::MemoryDataStream& mds = boost::python::extract<Ogre::MemoryDataStream&>( self ); 
         return mds.size(); 
@@ -442,20 +443,20 @@ struct MDSSize{
     gpu_pp_int_size = """ 
 namespace{ 
 struct GpuProgramParametersGetIntPointerSize{ 
-    ssize_t operator()( boost::python::tuple args ) const{ 
+    bp::ssize_t operator()( boost::python::tuple args ) const{ 
         boost::python::object self = args[0]; 
         Ogre::GpuProgramParameters& gpupp = boost::python::extract<Ogre::GpuProgramParameters&>( self ); 
         boost::python::object pos_obj = args[1]; 
-        ssize_t offset = boost::python::extract<ssize_t>( pos_obj ); 
+        bp::ssize_t offset = boost::python::extract<bp::ssize_t>( pos_obj ); 
         return gpupp.intBufferSize - offset; 
         }
 }; 
 struct GpuProgramParametersGetFloatPointerSize{ 
-    ssize_t operator()( boost::python::tuple args ) const{ 
+    bp::ssize_t operator()( boost::python::tuple args ) const{ 
         boost::python::object self = args[0]; 
         Ogre::GpuProgramParameters& gpupp = boost::python::extract<Ogre::GpuProgramParameters&>( self ); 
         boost::python::object pos_obj = args[1]; 
-        ssize_t offset = boost::python::extract<ssize_t>( pos_obj ); 
+        bp::ssize_t offset = boost::python::extract<bp::ssize_t>( pos_obj ); 
         return gpupp.floatBufferSize - offset; 
         }
 }; 

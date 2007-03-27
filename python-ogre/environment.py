@@ -25,16 +25,19 @@ PythonOgreMajorVersion = "0"
 PythonOgreMinorVersion = "9" # change to 0.7 due to lowercase properties
 PythonOgrePatchVersion = "1"
 
+
 ##
 ## these should be fine with auto create - however override them as necessary
 ##
 PATH_Python = os.path.dirname( sys.executable )
+## I want a version string 2.4 or 2.5 etc
+PythonVersionString = str(sys.version_info[0]) + '.' + str(sys.version_info[1])
+
 if os.name =='nt': 
 	python_include_dirs = os.path.join ( PATH_Python, 'include')
 	python_lib_dirs = os.path.join ( PATH_Python, 'libs' )
 ##
 ## for linux or darwin (MAC OS X)
-
 else:
     if os.sys.platform <> 'darwin':
         ## It's linux of some sort
@@ -52,8 +55,8 @@ root_dir = os.path.abspath(os.path.dirname(__file__) )## The root directory is w
 sys.path.append( os.path.join( root_dir, 'common_utils' ) )
 shared_ptr_dir = os.path.join( root_dir, 'shared_ptr' )
 include_dir = os.path.join( root_dir, 'include' )
-generated_dir_name = 'generated'
-package_dir_name = 'packages'
+generated_dir_name = 'generated' 
+package_dir_name = 'packages'+ "_" + PythonVersionString 
 generated_dir = os.path.join( root_dir, generated_dir_name )
 declarations_cache_dir = os.path.join( root_dir, 'code_generators', 'cache' )
 
@@ -102,12 +105,13 @@ class ogre:
     active = True
     version = "1.4"   # "1.2"
     cflags = ""
+    parent = ""
     if os.sys.platform <> 'darwin':
         libs=[Config.LIB_Boost, 'OgreMain',  'OgreGUIRenderer', 'CEGUIBase']
         lib_dirs = [ Config.PATH_LIB_Boost
                     ,  Config.PATH_LIB_Ogre_CEGUIRenderer
                     , Config.PATH_LIB_Ogre_OgreMain
-                    , Config.PATH_LIB_Ogre_Dependencies 
+                    , Config.PATH_LIB_Ogre_Dependencies #needed for ceguibase.lib etc
                     , Config.PATH_LIB_CEGUI
                      ]
         include_dirs = [ Config.PATH_Boost 
@@ -134,6 +138,7 @@ class ogre:
 class ois:
     active = True
     version= "1.0"
+    parent = "Ogre"
     libs=['OIS',Config.LIB_Boost]
     include_dirs = [ Config.PATH_Boost 
             , Config.PATH_INCLUDE_OIS
@@ -150,6 +155,7 @@ class ois:
 class ogrerefapp:
     active = True
     version = "1.4"
+    parent = "Ogre"
     libs=[Config.LIB_Boost, 'OgreMain', 'ode', 'ReferenceAppLayer']
     lib_dirs = [ Config.PATH_LIB_Boost
                 , Config.PATH_LIB_Ogre_OgreMain
@@ -168,6 +174,7 @@ class ogrerefapp:
 class ogrenewt:
     active=True
     version = "1.0"
+    parent = "Ogre"
     libs = ['newton', Config.LIB_Boost, 'OgreNewt_Main', 'OgreMain']
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_Newton   # only one path for Newton
@@ -188,20 +195,21 @@ class ogrenewt:
 class cegui:
     active = True
     version = "0.5.0b" 
+    parent = "Ogre"
     libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain', 'OgreGUIRenderer' ]
     include_dirs = [Config.PATH_Boost
                     ,Config.PATH_INCLUDE_CEGUI
                     ,Config.PATH_CEGUI
                     , Config.PATH_INCLUDE_Ogre_CEGUIRenderer
                     , Config.PATH_INCLUDE_Ogre
-                    , Config.PATH_INCLUDE_Ogre_Dependencies
+                    , Config.PATH_INCLUDE_Ogre_Dependencies ## needed as OgreCEGUI uses CEGUI/.. in #includes
                     ]
                   
     lib_dirs = [ Config.PATH_LIB_Boost
                 ##,  Config.PATH_LIB_Ogre_CEGUIRenderer
                 , Config.PATH_LIB_Ogre_OgreMain
                 , Config.PATH_LIB_CEGUI
-                ##,  Config.PATH_LIB_Ogre_Dependencies
+                ,  Config.PATH_LIB_Ogre_Dependencies  
                 ]
     CCFLAGS =  ' -D"BOOST_PYTHON_MAX_ARITY=19"'
     ModuleName = 'CEGUI'
@@ -213,6 +221,7 @@ class cegui:
 class ode:
     version= "0.7"
     include_dirs = [r'c:/development/ode/include']
+    parent = ""
     libs=[Config.LIB_Boost,  'ode']
     lib_dirs = [ Config.PATH_LIB_Boost
                 ,  Config.PATH_LIB_ODE
@@ -230,9 +239,11 @@ class newton:
     active=False
     include_dirs = [r'c:/development/newtonsdk/sdk']
     ModuleName = 'NEWTON'
-    
+    parent = ""    
 class ogreode:
     version= "1.0"
+    parent = "Ogre"
+
     lib_dirs = [ Config.PATH_LIB_Boost
                 , Config.PATH_LIB_OgreOde
                 , Config.PATH_LIB_OgreOdePrefab
@@ -258,6 +269,7 @@ class ogreode:
     
 class fmod:
     version= "4.06"
+    parent = ""
     include_dirs=[Config.PATH_Boost
                    ,Config.PATH_INCLUDE_FMOD
                    ]
@@ -272,6 +284,8 @@ class fmod:
     
 class ogreal:
     version="0.3"
+    parent = "Ogre"
+    
     include_dirs = [ Config.PATH_Boost
                 , Config.PATH_INCLUDE_Ogre
                 , Config.PATH_INCLUDE_OgreAL

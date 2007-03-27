@@ -1,50 +1,53 @@
 import os
 
-SDK=False
+SDK=True ## set to true if buiding from 1.4 release source...
+BASE_DIR = 'c:/development'
+
 
 ## Boost stuff 
 ## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
-PATH_Boost =        r'c:/development/boost'    
+PATH_Boost =        os.path.join(BASE_DIR, 'boost')
 ## Path to your boost_pythonxxxx lib file
-PATH_LIB_Boost =    r'c:/development/boost/bin.v2/libs/python/build/msvc-7.1/release/threading-multi'
+PATH_LIB_Boost =    os.path.join(BASE_DIR, 'boost/bin.v2/libs/python/build/msvc-7.1/release/threading-multi')
 ## and the name of the boost python library
 LIB_Boost =         r'boost_python-vc71-mt-1_35'
+# We need to know where to find gccxml......
+gccxml_bin =        os.path.join(BASE_DIR, 'gccxml/bin/release/gccxml.exe')
+# and the Py++ directory as sometimes we need access to the code repository there
+pyplusplus_install_dir = os.path.join(BASE_DIR, 'pyplus')
 
 ## Parent directories of the libraries
-PATH_Ogre =         r'c:/development/Ocvs/Ogrenew'
-PATH_OgreAddons =   r'c:/development/Ocvs/OgreAddons'
-PATH_CEGUI =        r'c:/development/cegui-0.5.0'
-PATH_OIS =          r'c:/development/ois'
-PATH_Newton =       r'c:/development/newtonsdk/sdk'
-PATH_FMOD =         r'c:/development/fmod'
-PATH_ODE =          r'c:/development/ode'
-PATH_OGREAL=        r'c:/development/ocvs/ogrealE'
-PATH_OGG =          r'c:/development/ogg'
-PATH_VORBIS=        r'c:/development/vorbis'
-PATH_OPENAL=        r'c:/development/openal'
-PATH_ALUT=          r'c:/development/freealut'
-PATH_OgreOde=       r'c:/development/Ocvs/OgreAddons/ogreode'
+PATH_Ogre =         os.path.join(BASE_DIR,'Ocvs/Ogrenew')
+PATH_OgreAddons =   os.path.join(BASE_DIR, 'Ocvs/OgreAddons')
+PATH_CEGUI =        os.path.join(BASE_DIR, 'cegui-0.5.0')
+PATH_OIS =          os.path.join(BASE_DIR, 'ois')
+PATH_Newton =       os.path.join(BASE_DIR, 'newtonsdk/sdk')
+PATH_FMOD =         os.path.join(BASE_DIR, 'fmod')
+PATH_ODE =          os.path.join(BASE_DIR, 'ode')
+PATH_OGREAL=        os.path.join(BASE_DIR, 'ocvs/ogrealE')
+PATH_OGG =          os.path.join(BASE_DIR, 'ogg')
+PATH_VORBIS=        os.path.join(BASE_DIR, 'vorbis')
+PATH_OPENAL=        os.path.join(BASE_DIR, 'openal')
+PATH_ALUT=          os.path.join(BASE_DIR, 'freealut')
+PATH_OgreOde=       os.path.join(BASE_DIR, 'Ocvs/OgreAddons/ogreode')
 #
 # it's time for the SDK version
 if SDK:
-    PATH_Ogre =         r'c:/development/OgreSDK'
-    PATH_OgreAddons =   r'c:/development/Ocvs/OgreAddons'
-    PATH_CEGUI =        r'c:/development/OgreSDK/'
-    PATH_OIS =          r'c:/development/OgreSDK/'
-    PATH_Newton =       r'c:/development/newtonsdk/sdk'
-    PATH_FMOD =         r'c:/development/fmod'
-    PATH_ODE =          r'c:/development/ode'
-    PATH_OGREAL=        r'c:/development/ocvs/ogrealE'
-    PATH_OGG =          r'c:/development/ogg'
-    PATH_VORBIS=        r'c:/development/vorbis'
-    PATH_OPENAL=        r'c:/development/openal'
-    PATH_ALUT=          r'c:/development/freealut'
-    PATH_OgreOde=       r'c:/development/Ocvs/OgreAddons/ogreode'
+    PATH_Ogre =         os.path.join(BASE_DIR, 'Ogrenew')
+    PATH_OgreAddons =   os.path.join(BASE_DIR, 'Ocvs/OgreAddons')
+    PATH_CEGUI =        os.path.join(BASE_DIR, 'Ogrenew')
+    PATH_OIS =          os.path.join(BASE_DIR, 'Ogrenew')
+    PATH_Newton =       os.path.join(BASE_DIR, 'newtonsdk/sdk')
+    PATH_FMOD =         os.path.join(BASE_DIR, 'fmod')
+    PATH_ODE =          os.path.join(BASE_DIR, 'ode')
+    PATH_OGREAL=        os.path.join(BASE_DIR, 'ocvs/ogrealE')
+    PATH_OGG =          os.path.join(BASE_DIR, 'ogg')
+    PATH_VORBIS=        os.path.join(BASE_DIR, 'vorbis')
+    PATH_OPENAL=        os.path.join(BASE_DIR, 'openal')
+    PATH_ALUT=          os.path.join(BASE_DIR, 'freealut')
+    PATH_OgreOde=       os.path.join(BASE_DIR, 'Ocvs/OgreAddons/ogreode')
 
-# We need to know where to find gccxml......
-gccxml_bin =        r'c:/development/gccxml/bin/release/gccxml.exe'
-# and the Py++ directory as sometimes we need access to the code repository there
-pyplusplus_install_dir = r'c:/development/pyplus'
+
 
 ## Overrides - this is needed as libs isn't defined in enirvonment for fmod..
 class fmod:
@@ -74,8 +77,9 @@ PATH_LIB_OgreAL =               os.path.join(PATH_OGREAL, 'lib/Release' )
 if SDK:
     PATH_LIB_Ogre_CEGUIRenderer =    os.path.join( PATH_Ogre, 'lib')
     PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'lib' )
+    PATH_LIB_Ogre_Dependencies =    os.path.join( PATH_Ogre, 'Dependencies/lib/Release')
     PATH_LIB_OgreRefApp =           os.path.join( PATH_Ogre, 'lib')
-    PATH_LIB_OIS =                  os.path.join(PATH_OIS, 'lib') ## NOTE Posix platforms this lives in'lib' not 'dll'
+    PATH_LIB_OIS =                  os.path.join(PATH_Ogre, 'Dependencies/lib/Release') ## NOTE Posix platforms this lives in'lib' not 'dll'
     PATH_LIB_CEGUI =                os.path.join ( PATH_Ogre, r'lib' )
 
 
@@ -100,7 +104,9 @@ PATH_INCLUDE_FMOD =          os.path.join(PATH_FMOD, 'api/inc')
 PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'samples/Common/CEGUIRenderer/include')
 
 if SDK:
-    PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'include') 
-    PATH_INCLUDE_OIS =          os.path.join(PATH_OIS,'include/OIS')    ## Note the plural include's
+    PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include') 
+    PATH_INCLUDE_OIS =          os.path.join(PATH_Ogre,'Dependencies/include/OIS')    ## Note the plural include's
     PATH_INCLUDE_OgreRefApp =   os.path.join(PATH_Ogre,'samples/refapp/include') 
-    PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'samples/include')
+    PATH_INCLUDE_CEGUI =        os.path.join(PATH_Ogre, 'Dependencies/include/CEGUI')
+
+    
