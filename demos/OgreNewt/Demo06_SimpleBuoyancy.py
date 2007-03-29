@@ -3,9 +3,9 @@
 
 #     Demo04_Raycasting - how raycasting in Newton works, implemented with a simple way to drag objects around.
 # */
-import Ogre
-import OgreNewt
-import OIS
+import ogre.renderer.OGRE as Ogre
+import ogre.physics.OgreNewt as OgreNewt
+import ogre.io.OIS as OIS
 import CEGUI
 import random
 import SampleFramework as sf

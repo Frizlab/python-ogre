@@ -1,5 +1,5 @@
 # This code is in the Public Domain.
-import Ogre as ogre
+import ogre.renderer.OGRE as ogre
 import SampleFramework as sf
 import sys,operator
 

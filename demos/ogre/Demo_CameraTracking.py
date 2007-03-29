@@ -9,7 +9,7 @@
 # You may use this sample code for anything you like, it is not covered by the
 # LGPL.
 # -----------------------------------------------------------------------------
-import Ogre as ogre
+import ogre.renderer.OGRE as ogre
 import SampleFramework as sf
 
 class CameraTrackApplication(sf.Application):

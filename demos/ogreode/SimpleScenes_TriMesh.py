@@ -4,8 +4,8 @@
 # # A reimplementation of the ODE triangle mesh collision
 # # demo using Ogre and the OgreOde wrapper.
 # # */
-import Ogre as ogre
-import OgreOde
+import ogre.renderer.OGRE as ogre
+import ogre.physics.OgreOde as OgreOde
 
 from SimpleScenes_BoxStack import *
 

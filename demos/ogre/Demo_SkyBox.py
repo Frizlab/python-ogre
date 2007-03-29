@@ -21,7 +21,7 @@ if ogre.OgreVersionString[:2]=="12":
     KC_H = ogre.KC_H
     KC_J = ogre.KC_J
 else:
-    import OIS as OIS
+    import ogre.io.OIS as OIS
     KC_N = OIS.KC_N
     KC_M = OIS.KC_M
     KC_H = OIS.KC_H

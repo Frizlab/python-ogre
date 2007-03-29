@@ -10,6 +10,7 @@
 # LGPL.
 # -----------------------------------------------------------------------------
 import  Ogre as ogre
+import ogre.renderer.OGRE as OgreDshow 
 import SampleFramework as sf
 import ctypes, math
 
@@ -27,7 +28,20 @@ class SmokeApplication(sf.Application):
         particleSystem2 = sceneManager.createParticleSystem('fountain1', 'Examples/Smoke')
         node = self.fountainNode.createChildSceneNode()
         node.attachObject(particleSystem2)
+
         
+        try: 
+            #if it exists, get the entity and make it visible 
+             entity = self.sceneManager.getEntity("hello") 
+             entity.visible = True 
+        except RuntimeError, e:
+            print "\n\nRUNTIME\n", e
+            print dir(e)
+            print e.args
+            print e.message
+        except ogre.Exception, e:
+            print e
+
         
 if __name__ == '__main__':
     try:

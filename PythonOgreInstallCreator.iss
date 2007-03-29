@@ -6,7 +6,6 @@ AppName=Python-Ogre
 AppVerName=Python-Ogre 1.4.0
 DefaultDirName=c:\PythonOgre
 DefaultGroupName=Python-Ogre
-SolidCompression=true
 OutputBaseFilename=PythonOgreInstaller
 OutputDir=c:\temp
 SourceDir=c:\development\PythonOgreRelease
@@ -19,6 +18,8 @@ AppSupportURL=http://www.python-ogre.org
 AppUpdatesURL=http://www.python-ogre.org
 AppVersion=1.4.0
 LicenseFile=LICENSE.GPL
+Compression=lzma
+InfoBeforeFile=InstallWarning.txt
 
 
 ; Now for the files
@@ -36,6 +37,21 @@ Source: packages_2.4\*; DestDir: {code:GetPythonSiteDir}; Check: FoundPython('2.
 ; the python modules again - if we don't find python we install both versions in the app directory
 Source: packages_2.5\*; DestDir: {app}\packages_2.5; Check: NoPythonFound; Flags: recursesubdirs
 Source: packages_2.4\*; DestDir: {app}\packages_2.4; Check: NoPythonFound; Flags: recursesubdirs
+
+;
+; I REALLY DON'T like doing this but if people have used a previous version of Python-Ogre
+; I need to remove it to force any existing source code to fail and hence have them
+; update to the new directory structure..
+;
+[InstallDelete]
+Type: filesandordirs; Name: {code:GetPythonSiteDir}\Ogre
+Type: filesandordirs; Name: {code:GetPythonSiteDir}\OIS
+Type: filesandordirs; Name: {code:GetPythonSiteDir}\CEGUI
+Type: filesandordirs; Name: {code:GetPythonSiteDir}\OgreOde
+Type: filesandordirs; Name: {code:GetPythonSiteDir}\OgreNewt
+Type: filesandordirs; Name: {code:GetPythonSiteDir}\OgreAL
+Type: filesandordirs; Name: {code:GetPythonSiteDir}\OgreRefApp
+Type: filesandordirs; Name: {code:GetPythonSiteDir}\ODE
 
 [Icons]
 Name: {group}\Ogre Demos\Smoke; Filename: {code:GetPythonExe}; Parameters: Demo_Smoke.py; WorkingDir: {app}\Demos\Ogre

@@ -1,8 +1,8 @@
 import sys
 import time
 
-import Ogre as ogre
-import OIS as ois
+import ogre.renderer.OGRE as ogre
+import ogre.io.OIS as OIS
 
 
 class MyApp(object):
@@ -74,17 +74,17 @@ class MyApp(object):
 
 
    def key_down(self, key):
-       if key == ois.KC_LEFT:
+       if key == OIS.KC_LEFT:
            self.ninja.start_spinning(-1)
-       elif key == ois.KC_RIGHT:
+       elif key == OIS.KC_RIGHT:
            self.ninja.start_spinning(1)
 
    def key_up(self, key):
-       if key == ois.KC_LEFT:
+       if key == OIS.KC_LEFT:
            self.ninja.stop_spinning()
-       elif key == ois.KC_RIGHT:
+       elif key == OIS.KC_RIGHT:
            self.ninja.stop_spinning()
-       elif key == ois.KC_ESCAPE:
+       elif key == OIS.KC_ESCAPE:
            self.window.destroy()
 
    def render_one(self):
@@ -103,19 +103,19 @@ class MyApp(object):
        self.root.shutdown()
 
 
-class InputManager(ois.KeyListener, ois.MouseListener):
+class InputManager(OIS.KeyListener, OIS.MouseListener):
    def __init__(self, app, hnd):
-       ois.KeyListener.__init__(self)
-       ois.MouseListener.__init__(self)
+       OIS.KeyListener.__init__(self)
+       OIS.MouseListener.__init__(self)
        self.app = app
-       self.input_mgr = ois.createPythonInputSystem([("WINDOW", str(hnd))])
+       self.input_mgr = OIS.createPythonInputSystem([("WINDOW", str(hnd))])
 
        # Setup Unbuffered Keyboard and Buffered Mouse Input
        self.keyboard = \
-           self.input_mgr.createInputObjectKeyboard(ois.OISKeyboard,True)
+           self.input_mgr.createInputObjectKeyboard(OIS.OISKeyboard,True)
        self.keyboard.setEventCallback(self)
        #self.mouse = \
-       #    self.input_mgr.createInputObjectMouse(ois.OISMouse, True)
+       #    self.input_mgr.createInputObjectMouse(OIS.OISMouse, True)
        #self.mouse.setEventCallback(self)
 
    def capture(self):
@@ -150,7 +150,7 @@ class InputManager(ois.KeyListener, ois.MouseListener):
 
        self.input_mgr.destroyInputObjectKeyboard(self.keyboard)
 
-       ois.InputManager.destroyInputSystem(self.input_mgr)
+       OIS.InputManager.destroyInputSystem(self.input_mgr)
 
 class UberSpinningNinja(object):
    """Create a ninja!"""

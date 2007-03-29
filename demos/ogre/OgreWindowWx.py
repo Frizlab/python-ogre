@@ -1,5 +1,5 @@
 import wx 
-import Ogre as ogre 
+import ogre.renderer.OGRE as ogre 
 try : 
     import psyco #use psyco if available (JIT compiler) 
     psyco.full() 

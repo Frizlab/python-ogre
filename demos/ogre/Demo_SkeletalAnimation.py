@@ -9,7 +9,7 @@
 # You may use this sample code for anything you like, it is not covered by the
 # LGPL.
 # -----------------------------------------------------------------------------
-import Ogre as ogre
+import ogre.renderer.OGRE as ogre
 import SampleFramework as sf
 import sys,operator
 
@@ -55,7 +55,6 @@ class SkeletalApplication(sf.Application):
         
         ## Doing this returns a SharedPtr_less_Ogre_scope_Resource_grate 
         skel = ogre.SkeletonManager.getSingleton().load("jaiqua.skeleton", ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME,False, ogre.ManualResourceLoader(), ogre.NameValuePairList()) 
-        print "TEST\n",skel,"\n"
         anim = skel.getAnimation("Sneak") 
         
         cameraNode = sceneManager.getRootSceneNode().createChildSceneNode()
@@ -78,7 +77,8 @@ class SkeletalApplication(sf.Application):
         trackIter = anim.getNodeTrackIterator()
         while (trackIter.hasMoreElements()):
             track = trackIter.getNext()
-            oldKf = blankKF
+            
+            oldKf = ogre.TransformKeyFrame (0, 0)
             track.getInterpolatedKeyFrame(mAnimChop, oldKf) 
 
             # Drop all keyframes after the chop

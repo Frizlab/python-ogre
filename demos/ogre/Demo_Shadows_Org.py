@@ -16,14 +16,14 @@
 #     \brief
 #         Shows a few ways to use ogre's shadowing techniques
 # 
-import Ogre as ogre
+import ogre.renderer.OGRE as ogre
 import SampleFramework as sf
 
 if ogre.OgreVersionString[:2] =="12":
     KC_O = ogre.KC_O
     KC_M = ogre.KC_M
 else:
-    import OIS
+    import ogre.io.OIS as OIS
     KC_O = OIS.KC_O
     KC_M = OIS.KC_M
 
@@ -411,8 +411,7 @@ class ShadowsApplication ( sf.Application ):
 
         #mLight.setPosition(Vector3(300,250,-300))
         mLightNode.setPosition(ogre.Vector3(300,250,-300))
-
-
+           
         # Create a track for the light
         anim = sceneManager.createAnimation("LightTrack", 20)
         # Spline it for nice curves

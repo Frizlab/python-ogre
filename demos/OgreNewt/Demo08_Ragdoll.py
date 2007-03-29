@@ -6,9 +6,9 @@
 
 ### DEMO NOT YET WORKING......
 
-import Ogre
-import OgreNewt
-import OIS
+import ogre.renderer.OGRE as Ogre
+import ogre.physics.OgreNewt as OgreNewt
+import ogre.io.OIS as OIS
 import SampleFramework as sf
 from BasicFrameListener import *     # a simple frame listener that updates physics as required..
 from ragdoll import *
@@ -47,12 +47,12 @@ class OgreNewtonApplication (sf.Application):
         floor.setMaterialName( "Simple/BeachStones" )
         floor.setCastShadows( False )
     
-    	##Ogre.Vector3 siz(100.0, 10.0, 100.0)
-    	col = OgreNewt.TreeCollision( self.World, floornode, True )
-    	bod = OgreNewt.Body( self.World, col )
-    	del col
+        ##Ogre.Vector3 siz(100.0, 10.0, 100.0)
+        col = OgreNewt.TreeCollision( self.World, floornode, True )
+        bod = OgreNewt.Body( self.World, col )
+        del col
         self.bodies.append( bod )   ## need to keep him so collision works
-    		       
+                   
         bod.attachToNode( floornode )
         bod.setPositionOrientation( Ogre.Vector3(0.0,-4.0,0.0), Ogre.Quaternion.IDENTITY )
         self.bodies.append( bod )
@@ -62,7 +62,7 @@ class OgreNewtonApplication (sf.Application):
         self.msnCam.attachObject( self.camera )
         self.camera.setPosition(0.0, 0.0, 0.0)
         self.msnCam.setPosition( 0.0, -2.0, 10.0)
-    	self.camera.setNearClipDistance( 0.01 )
+        self.camera.setNearClipDistance( 0.01 )
 
         ##make a light
         light = self.sceneManager.createLight( "Light1" )
@@ -99,17 +99,21 @@ class OgreNewtonFrameListener(sf.FrameListener):
         self.bodies=[]
         
         ##############################
-    	## setup the ragdoll model here.
-    	self.RagEntity = self.sceneManager.createEntity( "RAGDOLL_ENTITY", "zombie.mesh" )
-    	self.RagNode = self.sceneManager.getRootSceneNode().createChildSceneNode()
-    	self.RagNode.attachObject( self.RagEntity )
-    	self.RagEntity.getAnimationState( "LOOP" ).setLoop( True )
-    	self.RagEntity.getAnimationState( "LOOP" ).setEnabled( True )
-    	self.RagNode.setPosition( 0.0, -4.0, 0.0 )
+        ## setup the ragdoll model here.
+        self.RagEntity = self.sceneManager.createEntity( "RAGDOLL_ENTITY", "zombie.mesh" )
+     
+        self.RagNode = self.sceneManager.getRootSceneNode().createChildSceneNode()
+        self.RagNode.attachObject( self.RagEntity )
+#       self.RagEntity.getAnimationState( "LOOP" ).setLoop( True )
+#       self.RagEntity.getAnimationState( "LOOP" ).setEnabled( True )
+#         self.RagEntity.getAnimationState( "Walk" ).setLoop( True )
+#         self.RagEntity.getAnimationState( "Walk" ).setEnabled( True )
+        self.RagNode.setPosition( 0.0, -4.0, 0.0 )
+        self.RagNode.setScale([0.05,0.05,0.05])
     
-    	self.Ragdoll = None
+        self.Ragdoll = None
     
-    	self.K1 = self.K2 = False
+        self.K1 = self.K2 = False
 
 
     
@@ -119,11 +123,11 @@ class OgreNewtonFrameListener(sf.FrameListener):
         ## by pressing the space bar.  first the camera movement...
         quat = self.msnCam.getOrientation()
     
-    	vec = Ogre.Vector3(0.0,0.0,-3 * frameEvent.timeSinceLastFrame)
-    	trans = quat * vec
+        vec = Ogre.Vector3(0.0,0.0,-3 * frameEvent.timeSinceLastFrame)
+        trans = quat * vec
 
-    	vec = Ogre.Vector3(3*frameEvent.timeSinceLastFrame,0.0,0.0)
-    	strafe = quat * vec
+        vec = Ogre.Vector3(3*frameEvent.timeSinceLastFrame,0.0,0.0)
+        strafe = quat * vec
 
         ##Need to capture/update each device - this will also trigger any listeners
         ## OIS specific !!!!
@@ -198,49 +202,52 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 
         self.timer -= frameEvent.timeSinceLastFrame
         
-    	######################################################
-    	## RAGDOLL CODE
-    	if (self.Ragdoll):
-    		## ragdoll exists, so pressing "R" Key will remove ragdoll, and reset the entity.
-    		if ((self.Keyboard.isKeyDown(OIS.KC_1) and ( not self.K1)) or
-    		             (self.Keyboard.isKeyDown( OIS.KC_2 ) and (not self.K2) )):
-    			self.K1 = True
-    			self.K2 = True
+        ######################################################
+        ## RAGDOLL CODE
+        if (self.Ragdoll):
+            ## ragdoll exists, so pressing "R" Key will remove ragdoll, and reset the entity.
+            if ((self.Keyboard.isKeyDown(OIS.KC_1) and ( not self.K1)) or
+                         (self.Keyboard.isKeyDown( OIS.KC_2 ) and (not self.K2) )):
+                self.K1 = True
+                self.K2 = True
     
-    			## remove the ragdoll.
-    			del self.Ragdoll
-    			self.Ragdoll = None
+                ## remove the ragdoll.
+                del self.Ragdoll
+                self.Ragdoll = None
     
-    			self.RagNode.setPosition( Ogre.Vector3(0.0, -4.0, 0.0) )
-    			self.RagNode.setOrientation( Ogre.Quaternion.IDENTITY )
+                self.RagNode.setPosition( Ogre.Vector3(0.0, -4.0, 0.0) )
+                self.RagNode.setOrientation( Ogre.Quaternion.IDENTITY )
     
-    			self.RagEntity.getAnimationState( "LOOP" ).setEnabled( True )
-    			self.RagEntity.getAnimationState( "LOOP" ).setTimePosition( 0.0 )
-    	else:
-    		## no ragdoll, so "R" key spawns the ragdoll. otherwise, we add time to the animation.
-    		self.RagEntity.getAnimationState( "LOOP" ).addTime( frameEvent.timeSinceLastFrame )
+#               self.RagEntity.getAnimationState( "LOOP" ).setEnabled( True )
+#               self.RagEntity.getAnimationState( "LOOP" ).setTimePosition( 0.0 )
+#                 self.RagEntity.getAnimationState( "Walk" ).setEnabled( True )
+#                 self.RagEntity.getAnimationState( "Walk" ).setTimePosition( 0.0 )
+        else:
+            ## no ragdoll, so "R" key spawns the ragdoll. otherwise, we add time to the animation.
+#           self.RagEntity.getAnimationState( "LOOP" ).addTime( frameEvent.timeSinceLastFrame )
+#             self.RagEntity.getAnimationState( "Walk" ).addTime( frameEvent.timeSinceLastFrame )
     
-    		if (self.Keyboard.isKeyDown(OIS.KC_1 ) and ( not self.K1)):
-    			self.K1 = True
+            if (self.Keyboard.isKeyDown(OIS.KC_1 ) and ( not self.K1)):
+                self.K1 = True
     
-    			## spawn the ragdoll.  this is the version that is made up of simple primitives.
-    			self.Ragdoll = RagDoll( "../media/models/zombie_rag_primitives.xml", self.World, self.RagNode )
-    			self.RagEntity.getAnimationState( "LOOP" ).setEnabled( False )
-    		elif (self.Keyboard.isKeyDown(OIS.KC_2 ) and ( not self.K2)):
-    			self.K2 = True
+                ## spawn the ragdoll.  this is the version that is made up of simple primitives.
+                self.Ragdoll = RagDoll( "./zombie_rag_primitives.xml", self.World, self.RagNode )
+#                 self.RagEntity.getAnimationState( "Walk" ).setEnabled( False )
+            elif (self.Keyboard.isKeyDown(OIS.KC_2 ) and ( not self.K2)):
+                self.K2 = True
     
-    			## spawn the ragdoll.  this is the version that uses auto-hull generation for very accurate collision shapes.
-    			self.Ragdoll = RagDoll( "../media/models/zombie_rag_hull.xml", self.World, self.RagNode )
-    			self.RagEntity.getAnimationState( "LOOP" ).setEnabled( False )
+                ## spawn the ragdoll.  this is the version that uses auto-hull generation for very accurate collision shapes.
+                self.Ragdoll = RagDoll( "./zombie_rag_hull.xml", self.World, self.RagNode )
+                self.RagEntity.getAnimationState( "Walk" ).setEnabled( False )
 
-    	if ( not self.Keyboard.isKeyDown(OIS.KC_1 )): 
-    	    self.K1 = False
-    	if ( not self.Keyboard.isKeyDown(OIS.KC_2 )):
-    	    self.K2 = False
-    	if (self.Keyboard.isKeyDown(OIS.KC_F3 )): 
-    		self.RagEntity.setVisible( False )
-    	else: 
-    		self.RagEntity.setVisible( True ) 
+        if ( not self.Keyboard.isKeyDown(OIS.KC_1 )): 
+            self.K1 = False
+        if ( not self.Keyboard.isKeyDown(OIS.KC_2 )):
+            self.K2 = False
+        if (self.Keyboard.isKeyDown(OIS.KC_F3 )): 
+            self.RagEntity.setVisible( False )
+        else: 
+            self.RagEntity.setVisible( True ) 
         
         
         if (self.Keyboard.isKeyDown(OIS.KC_ESCAPE)):

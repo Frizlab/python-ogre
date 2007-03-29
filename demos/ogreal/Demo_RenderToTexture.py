@@ -1,6 +1,6 @@
 import sys
-import Ogre as ogre
-import OgreAL
+import ogre.renderer.OGRE as ogre
+import ogre.sound.OgreAL as OgreAL
 import SampleFramework as sf
 
 class RenderToTextureFrameListener(sf.FrameListener):
@@ -125,7 +125,7 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
         node.attachObject(sound)
         sound.play()
 
-        bgSound = self.soundManager.createSoundStream("ZeroFactor", "Zero Factor - Untitled.ogg", True)
+        bgSound = self.soundManager.createSoundStream("stereo", "stereo.ogg", True)
         bgSound.setGain(0.5)
         bgSound.setRelativeToListener(True)
         bgSound.play()

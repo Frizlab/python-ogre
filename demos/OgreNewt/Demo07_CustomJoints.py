@@ -4,9 +4,9 @@
 #   to setup basic rigid bodies.
 # 
 
-import Ogre
-import OgreNewt
-import OIS
+import ogre.renderer.OGRE as Ogre
+import ogre.physics.OgreNewt as OgreNewt
+import ogre.io.OIS as OIS
 import SampleFramework as sf
 from BasicFrameListener import *     # a simple frame listener that updates physics as required..
 from MyCustomBallSocket import *

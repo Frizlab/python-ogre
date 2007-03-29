@@ -8,8 +8,26 @@ class TestApplication(sf.Application):
     def _createScene(self):
         sceneManager = self.sceneManager
         camera = self.camera
+        
+        anames = camera.getAnimableValueNames()
+        print len(anames), anames
+        for n in anames:
+            print "Camera AnimableValue: ", n
 
         sceneManager.ambientLight = ogre.ColourValue(0.5, 0.5, 0.5)
+        l = sceneManager.createLight("MainLight") 
+        l.setType(ogre.Light.LT_DIRECTIONAL) 
+        l.setDirection(-0.5, -0.5, 0) 
+        anames = l.getAnimableValueNames()
+        print len(anames), anames
+        for n in anames:
+            print "Light AnimableValue:", n
+        
+        av = l.createAnimableValue(anames[0])
+        print "\nAnimableValue:", av
+        print av.type, av.ValueType
+        
+        
         sceneManager.setSkyDome(True, 'Examples/CloudySky', 5.0, 8.0)
         e = sceneManager.createEntity('ninja', 'ninja.mesh')
 

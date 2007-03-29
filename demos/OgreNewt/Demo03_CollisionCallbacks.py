@@ -6,9 +6,9 @@
 #   material callbacks to create hot spots, or make sound effects, or spawn particles, etc.  this example
 #   uses a conveyor belt as an example.  look at the conveyorMatCallback to see how it's implemented.
 # */
-import Ogre
-import OgreNewt
-import OIS
+import ogre.renderer.OGRE as Ogre
+import ogre.physics.OgreNewt as OgreNewt
+import ogre.io.OIS as OIS
 import SampleFramework as sf
 import random
 from BasicFrameListener import *     # a simple frame listener that updates physics as required..

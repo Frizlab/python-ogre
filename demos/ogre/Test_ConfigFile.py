@@ -1,4 +1,4 @@
-import Ogre
+import ogre.renderer.OGRE as Ogre
 import sys
 
 config = Ogre.ConfigFile()
@@ -8,9 +8,22 @@ config.load('resources.cfg' ) #, '', False )
 ### if we use the python iterator style (for x in iter:) we only get the value
 
 iter = config.getSectionIterator()
+print iter
+for i in iter:
+    print "__ ", i.keys(), i
+    for j in i:
+        print j.key, j.value
+
+print dir(i)
+
+iter = config.getSectionIterator()
 while iter.hasMoreElements():
     SectionName = iter.peekNextKey() 
     Section = iter.getNext() 
     for item in Section:
         print SectionName, item.key, item.value
        
+config = Ogre.ConfigFile()
+config.load_special('resources.cfg' ) #, '', False )
+for section, key, path in config.values:
+    print section, key, path

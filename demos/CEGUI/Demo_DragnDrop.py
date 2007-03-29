@@ -17,8 +17,8 @@
 #      Simple Tooltip Text / injectTimePulse
 
 
-import Ogre as ogre
-import CEGUI as cegui
+import ogre.renderer.OGRE as ogre
+import ogre.gui.CEGUI as cegui
 import SampleFramework
 
 from CEGUI_framework import *
@@ -106,16 +106,13 @@ class GEUIApplication(SampleFramework.Application):
 
 
         # initiaslise CEGUI Renderer
-        print self.renderWindow
-        print self.sceneManager
         self.guiRenderer = cegui.OgreCEGUIRenderer(self.renderWindow,ogre.RenderQueueGroupID.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager)
         self.system = cegui.System(self.guiRenderer)
         cegui.Logger.getSingleton().loggingLevel = cegui.Insane
 
         # load TaharezLook scheme
-        cegui.SchemeManager.getSingleton().loadScheme("TaharezLook.scheme")
+        cegui.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme")
         self.system.setDefaultMouseCursor("TaharezLook", "MouseArrow")
-        cegui.FontManager.getSingleton().createFont("Iconified-12.font")
 
         # default layout
         sheet = cegui.WindowManager.getSingleton().createWindow("DefaultWindow", "root_wnd")

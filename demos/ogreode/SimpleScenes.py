@@ -3,8 +3,8 @@
 # ---------------
 # Code for the base scene class from which the specific scenes are derived
 # */
-import Ogre as ogre
-import OgreOde
+import ogre.renderer.OGRE as ogre
+import ogre.physics.OgreOde as OgreOde
 # 
 # base class 
 # 
@@ -126,6 +126,8 @@ class SimpleScenes (OgreOde.CollisionListener, OgreOde.StepListener):
         self._key_delay = 0.0
     
         dl = OgreOde.DotLoader()    
+        print self
+        print dir(self)
         _ragdoll = self.dotOgreOdeLoader.loadObject ( self.ragdollFile[self.sSelectedMesh], 
                             self.xmlNames[self.sSelectedMesh], 
                             "zombie" + str(self._ragdoll_count))

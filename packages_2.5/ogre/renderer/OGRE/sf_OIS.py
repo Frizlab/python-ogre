@@ -1,7 +1,17 @@
 # This code is in the Public Domain
-# Designed for version 1.2.x of Ogre (non OIS)
-import Ogre as ogre
-import OgreRefApp
+# -----------------------------------------------------------------------------
+# This source file is part of Python-Ogre
+# For the latest info, see http://python-ogre.org/
+#
+# It is likely based on original code from OGRE and/or PyOgre
+# For the latest info, see http://www.ogre3d.org/
+#
+# You may use this sample code for anything you like, it is not covered by the
+# LGPL.
+# -----------------------------------------------------------------------------
+import ogre.renderer.OGRE as ogre
+import ogre.io.OIS as OIS
+###import OgreRefApp
 
 def getPluginPath():
     """Return the absolute path to a valid plugins.cfg file.""" 
@@ -22,10 +32,11 @@ def getPluginPath():
         "** Warning: Please check your ogre installation and copy a\n"
         "** Warning: working plugins.cfg file to the current directory.\n\n")
     raise ogre.Exception(0, "can't locate the 'plugins.cfg' file", "")
-
-
+    
 class Application(object):
     "This class is the base for an Ogre application."
+    debugText=""
+
     def __init__(self):
         self.frameListener = None
         self.root = None
@@ -56,8 +67,8 @@ class Application(object):
     def _setUp(self):
         """This sets up the ogre application, and returns false if the user
         hits "cancel" in the dialog box."""
-        self.root = ogre.Root(getPluginPath())  
-        self.root.setFrameSmoothingPeriod (5.0);
+        self.root = ogre.Root(getPluginPath())
+        self.root.setFrameSmoothingPeriod (5.0)
 
         self._setUpResources()
         if not self._configure():
@@ -76,21 +87,20 @@ class Application(object):
         self._createScene()
         self._createFrameListener()
         return True
+
     def _setUpResources(self):
         """This sets up Ogre's resources, which are required to be in
         resources.cfg."""
         config = ogre.ConfigFile()
-        config.load('resources.cfg' ) #, '', False )
+        config.load('resources.cfg' ) 
         seci = config.getSectionIterator()
-        while (seci.hasMoreElements()):
-            secName = seci.peekNextKey()
-            settings = seci.getNext()
-            ## Note that getMultiMapSettings is a Python-Ogre extension to return a multimap in a list of tuples
-            settingslist = config.getMultiMapSettings ( settings )
-            for typeName, archName in settingslist:
-                ogre.ResourceGroupManager.getSingleton().addResourceLocation(archName, typeName, secName)
-
-                     
+        while seci.hasMoreElements():
+            SectionName = seci.peekNextKey()
+            Section = seci.getNext()
+            for item in Section:
+                ogre.ResourceGroupManager.getSingleton().\
+                    addResourceLocation(item.value, item.key, SectionName)
+                    
     def _createResourceListener(self):
         """This method is here if you want to add a resource listener to check
         the status of resources loading."""
@@ -118,7 +128,7 @@ class Application(object):
         #typedef uint16 SceneTypeMask;
         #md=ogre.SceneManagerMetaData()
         #md.sceneTypeMask=ogre.ST_GENERIC
-        #print dir(self.root)       
+        #print dir(self.root)    
         self.sceneManager = self.root.createSceneManager(ogre.ST_GENERIC,"ExampleSMInstance")
 
     def _createCamera(self):
@@ -144,6 +154,7 @@ class Application(object):
 
     def _createFrameListener(self):
         """Creates the FrameListener."""
+        #,self.frameListener, self.frameListener.Mouse 
         self.frameListener = FrameListener(self.renderWindow, self.camera)
         self.frameListener.showDebugOverlay(True)
         self.root.addFrameListener(self.frameListener)
@@ -161,11 +172,13 @@ class Application(object):
            pass
 
 
-class FrameListener(ogre.FrameListener):
+class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
     """A default frame listener, which takes care of basic mouse and keyboard
     input."""
-    def __init__(self, renderWindow, camera):
+      
+    def __init__(self, renderWindow, camera, bufferedKeys = False, bufferedMouse = True, bufferedJoy = False):
         ogre.FrameListener.__init__(self)
+        ogre.WindowEventListener.__init__(self)
         self.camera = camera
         self.renderWindow = renderWindow
         self.statisticsOn = True
@@ -180,47 +193,111 @@ class FrameListener(ogre.FrameListener):
         self.moveSpeed = 100.0
         self.rotationSpeed = 8.0
         self.displayCameraDetails = False
+        self.bufferedKeys = bufferedKeys
+        self.bufferedMouse = bufferedMouse
+        self.bufferedJoy = bufferedJoy
+        self.MenuMode = False   # lets understand a simple menu function
         ## we can tell if we are using OgreRefapp based upon the camera class
         
         if self.camera.__class__ == ogre.Camera:
             self.RefAppEnable = False
         else:
             self.RefAppEnable = True
-        
-
         self._setupInput()
-
+        
+    def __del__ (self ):
+      ogre.WindowEventUtilities.removeWindowEventListener(self.renderWindow, self)
+      self.windowClosed(self.renderWindow)
+      
     def _setupInput(self):
         # ignore buffered input
-        self.inputDevice = ogre.PlatformManager.getSingleton().createInputReader()
-        self.inputDevice.initialise(self.renderWindow, True, True, False)
-
+        
+         windowHnd = self.renderWindow.getCustomAttributeInt("WINDOW")
+         self.InputManager = \
+             OIS.createPythonInputSystem([("WINDOW",str(windowHnd))])
+         
+         #pl = OIS.ParamList()
+         #windowHndStr = str ( windowHnd)
+         #pl.insert("WINDOW", windowHndStr)
+         #im = OIS.InputManager.createInputSystem( pl )
+         
+         #Create all devices (We only catch joystick exceptions here, as, most people have Key/Mouse)
+         self.Keyboard = self.InputManager.createInputObjectKeyboard( OIS.OISKeyboard, self.bufferedKeys )
+         self.Mouse = self.InputManager.createInputObjectMouse( OIS.OISMouse, self.bufferedMouse )
+         try :
+            self.Joy = self.InputManager.createInputObjectJoyStick( OIS.OISJoyStick, bufferedJoy )
+         except:
+            self.Joy = False
+         
+         #Set initial mouse clipping size
+         self.windowResized(self.renderWindow)
+         
+         self.showDebugOverlay(True)
+         
+         #Register as a Window listener
+         ogre.WindowEventUtilities.addWindowEventListener(self.renderWindow, self);
+         
+    def setMenuMode(self, mode):
+        self.MenuMode = mode
+        
+    def _UpdateSimulation( self, frameEvent ):
+        # create a real version of this to update the simulation
+        pass 
+           
+    def windowResized (self, rw):
+         [width, height, depth, left, top] = rw.getMetrics()  # Note the wrapped function as default needs unsigned int's
+         ms = self.Mouse.getMouseState()
+         ms.width = width
+         ms.height = height
+         
+    def windowClosed(self, rw):
+      #Only close for window that created OIS (mWindow)
+      if( rw == self.renderWindow ):
+         if( self.InputManager ):
+            self.InputManager.destroyInputObjectMouse( self.Mouse )
+            self.InputManager.destroyInputObjectKeyboard( self.Keyboard )
+            if self.Joy:
+                self.InputManager.destroyInputObjectJoyStick( self.Joy )
+            OIS.InputManager.destroyInputSystem(self.InputManager)
+            self.InputManager=None
+            
     def frameStarted(self, frameEvent):
-        self.inputDevice.capture()
+        if(self.renderWindow.isClosed()):
+            return False
+        
+        ##Need to capture/update each device - this will also trigger any listeners
+        self.Keyboard.capture()    
+        self.Mouse.capture()
+        if( self.Joy ):
+            self.Joy.capture()
+    
+        ##bool buffJ = (mJoy) ? mJoy->buffered() : true;
+    
         if self.timeUntilNextToggle >= 0:
             self.timeUntilNextToggle -= frameEvent.timeSinceLastFrame
-
+    
         if frameEvent.timeSinceLastFrame == 0:
             self.moveScale = 1
             self.rotationScale = 0.1
         else:
             self.moveScale = self.moveSpeed * frameEvent.timeSinceLastFrame
             self.rotationScale = self.rotationSpeed * frameEvent.timeSinceLastFrame
-
+    
         self.rotationX = ogre.Degree(0.0)
         self.rotationY = ogre.Degree(0.0)
         self.translateVector = ogre.Vector3(0.0, 0.0, 0.0)
-
         if not self._processUnbufferedKeyInput(frameEvent):
             return False
-
-        self._processUnbufferedMouseInput(frameEvent)
-
-        self._moveCamera()
-        # Perform simulation step only if using OgreRefApp etc
-        if  self.RefAppEnable:
-            OgreRefApp.World.getSingleton().simulationStep(frameEvent.timeSinceLastFrame)
         
+        if not self.MenuMode:   # if we are in Menu mode we don't move the camera..
+            self._processUnbufferedMouseInput(frameEvent)
+        
+        self._moveCamera()
+        # Perform simulation step only if using OgreRefApp.  For simplicity create a function that simply does
+        ###  "OgreRefApp.World.getSingleton().simulationStep(frameEvent.timeSinceLastFrame)"
+        
+        if  self.RefAppEnable:
+            self._UpdateSimulation( frameEvent )
         return True
 
     def frameEnded(self, frameEvent):
@@ -238,102 +315,108 @@ class FrameListener(ogre.FrameListener):
             overlay.hide()
 
     def _processUnbufferedKeyInput(self, frameEvent):
-        if self.inputDevice.isKeyDown(ogre.KC_A):
+        if self.Keyboard.isKeyDown(OIS.KC_A):
             self.translateVector.x = -self.moveScale
 
-        if self.inputDevice.isKeyDown(ogre.KC_D):
+        if self.Keyboard.isKeyDown(OIS.KC_D):
             self.translateVector.x = self.moveScale
 
-        if self.inputDevice.isKeyDown(ogre.KC_UP) or self.inputDevice.isKeyDown(ogre.KC_W):
+        if self.Keyboard.isKeyDown(OIS.KC_UP) or self.Keyboard.isKeyDown(OIS.KC_W):
             self.translateVector.z = -self.moveScale
 
-        if self.inputDevice.isKeyDown(ogre.KC_DOWN) or self.inputDevice.isKeyDown(ogre.KC_S):
+        if self.Keyboard.isKeyDown(OIS.KC_DOWN) or self.Keyboard.isKeyDown(OIS.KC_S):
             self.translateVector.z = self.moveScale
 
-        if self.inputDevice.isKeyDown(ogre.KC_PGUP):
+        if self.Keyboard.isKeyDown(OIS.KC_PGUP):
             self.translateVector.y = self.moveScale
 
-        if self.inputDevice.isKeyDown(ogre.KC_PGDOWN):
+        if self.Keyboard.isKeyDown(OIS.KC_PGDOWN):
             self.translateVector.y = - self.moveScale
 
-        if self.inputDevice.isKeyDown(ogre.KC_RIGHT):
+        if self.Keyboard.isKeyDown(OIS.KC_RIGHT):
             self.rotationX = - self.rotationScale
 
-        if self.inputDevice.isKeyDown(ogre.KC_LEFT):
+        if self.Keyboard.isKeyDown(OIS.KC_LEFT):
             self.rotationX = self.rotationScale
 
-        if self._isToggleKeyDown(ogre.KC_F):
-            self.statisticsOn = not self.statisticsOn
-            self.showDebugOverlay(self.statisticsOn)
+        if self.Keyboard.isKeyDown(OIS.KC_ESCAPE) or self.Keyboard.isKeyDown(OIS.KC_Q):
+            return False
 
-        if self._isToggleKeyDown(ogre.KC_T):
+        if( self.Keyboard.isKeyDown(OIS.KC_F) and self.timeUntilNextToggle <= 0 ): 
+             self.statisticsOn = not self.statisticsOn
+             self.showDebugOverlay(self.statisticsOn)
+             self.timeUntilNextToggle = 1
+
+        if self.Keyboard.isKeyDown(OIS.KC_T) and self.timeUntilNextToggle <= 0:
             if self.filtering == ogre.TFO_BILINEAR:
                 self.filtering = ogre.TFO_TRILINEAR
-                ogre.MaterialManager.getSingleton().defaultAnisotropy = 1
+                self.Aniso = 1
             elif self.filtering == ogre.TFO_TRILINEAR:
                 self.filtering = ogre.TFO_ANISOTROPIC
-                ogre.MaterialManager.getSingleton().defaultAnisotropy = 8
+                self.Aniso = 8
             else:
                 self.filtering = ogre.TFO_BILINEAR
-                ogre.MaterialManager.getSingleton().defaultAnisotropy = 1
+                self.Aniso = 1
 
             ogre.MaterialManager.getSingleton().setDefaultTextureFiltering(self.filtering)
+            ogre.MaterialManager.getSingleton().setDefaultAnisotropy(self.Aniso)
             self.showDebugOverlay(self.statisticsOn)
-
-        if self._isToggleKeyDown(ogre.KC_SYSRQ, 0.5):
+            self.timeUntilNextToggle = 1
+        
+        if self.Keyboard.isKeyDown(OIS.KC_SYSRQ) and self.timeUntilNextToggle <= 0:
             path = 'screenshot_%d.png' % self.numScreenShots
             self.numScreenShots += 1
             self.renderWindow.writeContentsToFile(path)
-            self.renderWindow.debugText = 'screenshot taken: ' + path
-
-        if self._isToggleKeyDown(ogre.KC_R, 0.5):
+            Application.debugText = 'screenshot taken: ' + path
+            self.timeUntilNextToggle = 0.5
+        
+        if self.Keyboard.isKeyDown(OIS.KC_R) and self.timeUntilNextToggle <= 0:
             detailsLevel = [ ogre.PM_SOLID,
                              ogre.PM_WIREFRAME,
                              ogre.PM_POINTS ]
             self.sceneDetailIndex = (self.sceneDetailIndex + 1) % len(detailsLevel)
             self.camera.polygonMode=detailsLevel[self.sceneDetailIndex]
+            self.timeUntilNextToggle = 0.5
+            
+        if self.Keyboard.isKeyDown(OIS.KC_F) and self.timeUntilNextToggle <= 0:
+            self.statisticsOn = not self.statisticsOn
+            self.showDebugOverlay(self.statisticsOn)
+            self.timeUntilNextToggle = 1
         
-        if self._isToggleKeyDown(ogre.KC_P, 0.5):
+        if self.Keyboard.isKeyDown(OIS.KC_P) and self.timeUntilNextToggle <= 0:
             self.displayCameraDetails = not self.displayCameraDetails
             if not self.displayCameraDetails:
-                self.renderWindow.debugText = ""
+                Application.debugText = ""
                 
         if self.displayCameraDetails:
             # Print camera details
             pos = self.camera.getDerivedPosition()
             o = self.camera.getDerivedOrientation()
-            self.renderWindow.debugText = "P: %.3f %.3f %.3f O: %.3f %.3f %.3f %.3f"  \
+            Application.debugText = "P: %.3f %.3f %.3f O: %.3f %.3f %.3f %.3f"  \
                         % (pos.x,pos.y,pos.z, o.w,o.x,o.y,o.z)
-        
-        if self.inputDevice.isKeyDown(ogre.KC_ESCAPE):
-            return False
-
         return True        
         
     def _isToggleKeyDown(self, keyCode, toggleTime = 1.0):
-        if self.inputDevice.isKeyDown(keyCode)and self.timeUntilNextToggle <=0:
+        if self.Keyboard.isKeyDown(keyCode)and self.timeUntilNextToggle <=0:
             self.timeUntilNextToggle = toggleTime
             return True
         return False
         
     def _isToggleMouseDown(self, Button, toggleTime = 1.0): 
-        if self.inputDevice.getMouseButton(Button) and self.timeUntilNextToggle <=0: 
+        ms = self.Mouse.getMouseState() 
+        if ms.buttonDown( Button ) and self.timeUntilNextToggle <=0: 
             self.timeUntilNextToggle = toggleTime 
             return True 
         return False 
 
     def _processUnbufferedMouseInput(self, frameEvent):
-        if self.inputDevice.getMouseButton(1):
-            self.translateVector.x += self.inputDevice.getMouseRelativeX() * 0.013
-            self.translateVector.y -= self.inputDevice.getMouseRelativeY() * 0.013
+        ms = self.Mouse.getMouseState()
+        if ms.buttonDown( OIS.MB_Right ):
+            self.translateVector.x += ms.X.rel * 0.13
+            self.translateVector.y -= ms.Y.rel * 0.13
         else:
-            self.rotationX = ogre.Degree(- self.inputDevice.getMouseRelativeX() * 0.013)
-            self.rotationY = ogre.Degree(- self.inputDevice.getMouseRelativeY() * 0.013)
-
-        if self.inputDevice.getMouseRelativeZ() > 0:
-            self.translateVector.z = - self.moveScale * 8.0
-        if self.inputDevice.getMouseRelativeZ() < 0:
-            self.translateVector.z = self.moveScale * 8.0
+            self.rotationX = ogre.Degree(- ms.X.rel * 0.13)
+            self.rotationY = ogre.Degree(- ms.Y.rel * 0.13)
 
     def _moveCamera(self):
         self.camera.yaw(self.rotationX)
@@ -342,7 +425,6 @@ class FrameListener(ogre.FrameListener):
             self.camera.translate(self.translateVector) # for using OgreRefApp
         except AttributeError:
             self.camera.moveRelative(self.translateVector)
-
 
     def _updateStatistics(self):
         statistics = self.renderWindow
@@ -353,8 +435,14 @@ class FrameListener(ogre.FrameListener):
         self._setGuiCaption('Core/WorstFps',
                              'Worst FPS: %f %d ms' % (statistics.getWorstFPS(), statistics.getWorstFrameTime()))
         self._setGuiCaption('Core/NumTris', 'Triangle Count: %d' % statistics.getTriangleCount())
-        self._setGuiCaption('Core/DebugText', self.renderWindow.getDebugText())
+        self._setGuiCaption('Core/DebugText', Application.debugText)
 
     def _setGuiCaption(self, elementName, text):
         element = ogre.OverlayManager.getSingleton().getOverlayElement(elementName, False)
-        element.setCaption(text)
+        ##d=ogre.UTFString("hell0")
+        ##element.setCaption(d)
+        
+        #element.caption="hello"
+        
+        #element.setCaption("help")
+        element.setCaption(ogre.UTFString(text))

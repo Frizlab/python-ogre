@@ -1,5 +1,5 @@
-import Ogre
-import OgreNewt
+import ogre.renderer.OGRE as Ogre
+import ogre.physics.OgreNewt as OgreNewt
 EntityCount = 0
 class SimpleVehicle (OgreNewt.Vehicle):
 
@@ -83,7 +83,7 @@ class SimpleVehicle (OgreNewt.Vehicle):
                 steering = True
     
                 ## first, load the visual mesh that represents the tire.
-                ent = self.sceneManager.createEntity("Tire"+Ogre.StringConverter.toString(EntityCount),"wheel.mesh") # "ellipsoid.mesh") #"wheel.mesh")
+                ent = self.sceneManager.createEntity("Tire"+str(EntityCount),"wheel.mesh") # "ellipsoid.mesh") #"wheel.mesh")
                 EntityCount+=1
                 ## make a scene node for the tire.
                 node = self.sceneManager.getRootSceneNode().createChildSceneNode()
@@ -109,17 +109,25 @@ class SimpleVehicle (OgreNewt.Vehicle):
     
     def __del__(self):
         print "IN __DEL__ SIMPLEVEC"
-        return
+
         ## delete tire objects.
-        for tire in self.tires:
-            tire.__del__()
-            del tire
+#         for tire in self.tires:
+#             print "deleting tire\n"
+#             #tire.__del__()
+#             del tire
+        print "deleting array"
+        del self.tires
+        del self.bodies
+        
         ## finally, destroy entity and node from chassis.
-#         ent = self.chassis.getOgreNode().getAttachedObject(0) ## causes no RTTI ???
-#         self.chassis.getOgreNode().detachAllObjects()
-#         self.chassis.getOgreNode().getCreator().destroyEntity( ent )
-#         self.chassis.getOgreNode().getParentSceneNode().removeAndDestroyChild( self.chassis.getOgreNode().getName() )
-        print "DONE __DEL__ SIMPLEVEC"
+        ent = self.chassis
+        print "1",ent
+        print "2", ent.getOgreNode() ## causes no RTTI ???
+        print "3", ent.getOgreNode().getAttachedObject(0) ## causes no RTTI ???
+        self.chassis.getOgreNode().detachAllObjects()
+        self.chassis.getOgreNode().getCreator().destroyEntity( ent )
+        self.chassis.getOgreNode().getParentSceneNode().removeAndDestroyChild( self.chassis.getOgreNode().getName() )
+        ## now it will call the body destructor...
 	    
     ## This is the important callback, which is the meat of controlling the vehicle.
     def userCallback(self):
@@ -142,14 +150,11 @@ class SimpleVehicle (OgreNewt.Vehicle):
                         mass, width, radius, susShock, susSpring, susLength, ColID )
                 self.SteeringTire = steer;
 
-            def __del__(self):
+            def __del__ ( self ):
                 ## destroy entity, and scene node.
-
-                print "IN __DEL__ for simpletire"
-                return
-                print "DONE __DEL__ SIMPLETIRE"
-#                 ent = self.node.getAttachedObject(0)
-#                 self.node.detachAllObjects()
-#                 self.node.getCreator().destroyEntity( ent )
-#                 self.node.getParentSceneNode().removeAndDestroyChild( self.node.getName() )
- 
+                
+                ent = self.getOgreNode().getAttachedObject(0)
+#                 	m_node->detachAllObjects();
+#                 	m_node->getCreator()->destroyEntity( ent );
+#                 	m_node->getParentSceneNode()->removeAndDestroyChild( m_node->getName() );
+                   

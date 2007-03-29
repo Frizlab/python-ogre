@@ -1,5 +1,5 @@
-import Ogre
-import OgreNewt
+import ogre.renderer.OGRE as Ogre
+import ogre.physics.OgreNewt as OgreNewt
 ## constructor.  we must pass the 2 bodies (2nd can be NULL), also the max DOF for the joint, up to 6.
 
 class MyCustomBallSocket ( OgreNewt.CustomJoint ):

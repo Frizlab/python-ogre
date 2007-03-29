@@ -9,8 +9,8 @@
 # You may use this sample code for anything you like, it is not covered by the
 # LGPL.
 # -----------------------------------------------------------------------------
-import Ogre as ogre
-import OIS as OIS
+import ogre.renderer.OGRE as ogre
+import ogre.io.OIS as OIS
 ###import OgreRefApp
 
 def getPluginPath():

@@ -38,19 +38,19 @@ class ParticleApplication(sf.Application):
 
         particleSystem2 = sceneManager.createParticleSystem('fountain1', 'Examples/PurpleFountain')
         node = self.fountainNode.createChildSceneNode()
-        node.translate(200.0, -100.0, 0.0,ogre.Node.TS_PARENT)
-        node.rotate(ogre.Vector3(0, 0, -1), ogre.Radian(ogre.Degree(20)),ogre.Node.TS_PARENT)
+        node.translate(200.0, -100.0, 0.0)
+        node.rotate(ogre.Vector3.UNIT_Z, ogre.Degree(20))
         node.attachObject(particleSystem2)
 
         particleSystem3 = sceneManager.createParticleSystem('fountain2', 'Examples/PurpleFountain')
         node = self.fountainNode.createChildSceneNode()
-        node.translate(-200.0, -100.0, 0.0,ogre.Node.TS_PARENT)
-        node.rotate(ogre.Vector3(0, 0, -1), ogre.Radian(ogre.Degree(-20)),ogre.Node.TS_PARENT)
+        node.translate(-200.0, -100.0, 0.0)
+        node.rotate(ogre.Vector3.UNIT_Z, ogre.Degree(-20))
         node.attachObject(particleSystem3)
 
         particleSystem4 = sceneManager.createParticleSystem('rain', 'Examples/Rain')
         node = sceneManager.getRootSceneNode().createChildSceneNode()
-        node.translate(0.0, 1000.0, 0.0,ogre.Node.TS_PARENT)
+        node.translate(0.0, 1000.0, 0.0)
         node.attachObject(particleSystem4)
         particleSystem4.fastForward(5)
 #         

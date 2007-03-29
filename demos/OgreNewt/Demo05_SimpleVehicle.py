@@ -4,9 +4,9 @@
 #   Demo02_Joints - basic demo that shows how to connect rigid bodies via joints.
 # */
 import exceptions
-import Ogre
-import OgreNewt
-import OIS
+import ogre.renderer.OGRE as Ogre
+import ogre.physics.OgreNewt as OgreNewt
+import ogre.io.OIS as OIS
 import SampleFramework as sf
 from BasicFrameListener import *     # a simple frame listener that updates physics as required..
 import SimpleVehicle
@@ -241,7 +241,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
     	##update the vehicle!
      	self.Car.setTorqueSteering( torque, steering )
     
-    	if ((self.Keyboard.isKeyDown(OIS.KC_R)) and  ( not self.R)):
+    	if ((self.Keyboard.isKeyDown(OIS.KC_Q)) and  ( not self.R)):
     		self.R = True
     		## rebuild the vehicle
     		if (self.Car):
@@ -249,7 +249,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
     			self.Car = SimpleVehicle.SimpleVehicle( self.sceneManager, self.World, 
     			                                Ogre.Vector3(0,Ogre.Math.UnitRandom() * 10.0,0), 
     			                                Ogre.Quaternion.IDENTITY )
-    	if ( not self.Keyboard.isKeyDown( OIS.KC_R )):
+    	if ( not self.Keyboard.isKeyDown( OIS.KC_Q )):
     	    self.R = False
         
         if (self.Keyboard.isKeyDown(OIS.KC_ESCAPE)):

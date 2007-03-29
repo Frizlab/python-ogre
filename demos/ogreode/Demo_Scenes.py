@@ -14,9 +14,9 @@
 #include "SimpleScenes_Crash.h"
 #include "SimpleScenes_Joints.h"
 #include "SimpleScenes_Zombie.h"
-import  Ogre as ogre
-import OgreOde
-import OIS
+import ogre.renderer.OGRE as ogre
+import ogre.physics.OgreOde as OgreOde
+import ogre.io.OIS as OIS
 import SampleFramework as sf
 import sys
 
@@ -134,7 +134,7 @@ class SimpleScenesApplication(sf.Application):
         self._spot.setSpecularColour(1,1,0.8)
 
         ## Give us some sky
-        sceneManager.setSkyBox(True,"kk3d/DesertVII",5000,True)
+        sceneManager.setSkyBox(True,"Examples/SpaceSkyBox",5000,True)
     
         ## Position and orient the camera
         self.camera.setPosition(13,4.5,0)

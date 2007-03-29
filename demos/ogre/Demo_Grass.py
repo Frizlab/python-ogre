@@ -26,8 +26,8 @@ GRASS_MESH_NAME = "grassblades"
 GRASS_MATERIAL = "Examples/GrassBlades"
 OFFSET_PARAM = 999
 import ctypes, math
-import Ogre as ogre
-import OIS
+import ogre.renderer.OGRE as ogre
+import ogre.io.OIS as OIS
 import SampleFramework as sf
 import random
 VERTEXDATA = None

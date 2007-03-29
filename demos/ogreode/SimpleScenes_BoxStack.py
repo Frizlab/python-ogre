@@ -8,9 +8,9 @@
 # The box stacking test extends the base test class
 # 
 from SimpleScenes import *##.py
-import Ogre as ogre
-import OgreOde
-import OIS
+import ogre.renderer.OGRE as ogre
+import ogre.physics.OgreOde as OgreOde
+import ogre.io.OIS as OIS
 
 
 class SimpleScenes_BoxStack ( SimpleScenes ):

@@ -14,7 +14,7 @@ NUM_FISH = 50
 NUM_FISH_WAYPOINTS= 10
 FISH_PATH_LENGTH=200 
 
-import Ogre as ogre
+import ogre.renderer.OGRE as ogre
 import SampleFramework as sf
 import math
 
