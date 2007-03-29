@@ -1,6 +1,6 @@
 #include ".\Ragdoll.h"
-import Ogre
-import OgreNewt
+import ogre.renderer.OGRE as Ogre
+import ogre.physics.OgreNewt as OgreNewt
 import ctypes
 import sys
 from xml.dom.minidom import parse, parseString

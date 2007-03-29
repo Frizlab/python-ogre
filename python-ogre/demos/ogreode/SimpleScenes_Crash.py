@@ -5,9 +5,9 @@
 # using Ogre and the OgreOde wrapper.
 # */
 from SimpleScenes import *
-import Ogre as ogre
-import OgreOde
-import OIS
+import ogre.renderer.OGRE as ogre
+import ogre.physics.OgreOde as OgreOde
+import ogre.io.OIS as OIS
 # /*
 # The crash test extends the base test class
 # */

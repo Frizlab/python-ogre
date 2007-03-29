@@ -15,7 +15,7 @@
 # shows how to create a window with a title etc
 #
 
-import Ogre as ogre
+import ogre.renderer.OGRE as ogre
 import SampleFramework as sf
 from sys import stdout
 

@@ -9,7 +9,7 @@
 # You may use this sample code for anything you like, it is not covered by the
 # LGPL.
 # -----------------------------------------------------------------------------
-import Ogre as ogre
+import ogre.renderer.OGRE as ogre
 import SampleFramework as sf
 
 class LightingApplication(sf.Application):
@@ -75,7 +75,7 @@ class LightingApplication(sf.Application):
         animState.Enabled=True
         self.mAnimStateList.append(animState)
 
-        trail.setInitialColour(0, 1.0, 0.8, 0)
+        trail.setInitialColour(0, 1.0, 0.8, 0.4)
         trail.setColourChange(0, 0.5, 0.5, 0.5, 0.5)
         trail.setInitialWidth(1, 5)
         trail.addNode(animNode)
@@ -90,7 +90,21 @@ class LightingApplication(sf.Application):
         bbs.createBillboard(ogre.Vector3.ZERO, trail.getInitialColour(0))
         bbs.MaterialName="Examples/Flare"
         animNode.attachObject(bbs)
-
+        
+        coords = bbs.getTextureCoords()
+        print coords
+        for c in coords:
+            print c.bottom, c.left, c.right, c.top, c.height(), c.width()
+        
+        c.bottom=1
+        c.right=1
+        c.left=0
+        c.top=0
+        newlist = []
+        newlist.append( c )
+         
+        bbs.setTextureCoords( newlist )       
+             
         animNode = sceneManager.getRootSceneNode().createChildSceneNode()
         
         ### Note the setPosition --  the Position/position properties are only 'get' properties as

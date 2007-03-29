@@ -12,9 +12,9 @@
 # -----------------------------------------------------------------------------
 # */
 
-import Ogre as ogre
-import CEGUI as CEGUI
-import OIS as OIS
+import ogre.renderer.OGRE as ogre
+import ogre.gui.CEGUI as CEGUI
+import ogre.io.OIS as OIS
 import SampleFramework
 
 import sys, exceptions, random

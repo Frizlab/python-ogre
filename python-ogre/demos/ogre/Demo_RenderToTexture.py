@@ -10,8 +10,8 @@
 # LGPL.
 # -----------------------------------------------------------------------------
 import sys
-import Ogre as ogre
-import OgreAL
+import ogre.renderer.OGRE as ogre
+import ogre.renderer.OGRE as OgreAL
 import SampleFramework as sf
 
 class RenderToTextureFrameListener(sf.FrameListener):

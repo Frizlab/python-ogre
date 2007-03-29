@@ -6,8 +6,8 @@
 # ===============================================================
 
 
-import Ogre as ogre
-import CEGUI as cegui
+import ogre.renderer.OGRE as ogre
+import ogre.gui.CEGUI as cegui
 import SampleFramework
 
 from CEGUI_framework import *
@@ -141,9 +141,9 @@ class FacialAnimationApplication(SampleFramework.Application):
         cegui.Logger.getSingleton().loggingLevel = cegui.Insane
 
         # Load Cegui Scheme
-        cegui.SchemeManager.getSingleton().loadScheme("TaharezLook.scheme")
+        cegui.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme")
         self.system.setDefaultMouseCursor("TaharezLook", "MouseArrow")
-        cegui.FontManager.getSingleton().createFont("bluehighway-12.font")
+        #cegui.FontManager.getSingleton().createFont("bluehighway-12.font")
 
         # Load Layout 
         sheet = cegui.WindowManager.getSingleton().loadWindowLayout("facial.layout")

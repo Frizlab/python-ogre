@@ -1,4 +1,4 @@
-import Ogre
+import ogre.renderer.OGRE as Ogre
 
 class MyLog(Ogre.LogListener):
     def __init__(self):

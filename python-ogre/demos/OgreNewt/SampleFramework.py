@@ -3,19 +3,12 @@
 # which is different in that it uses OIS for all input handling.
 #
 
-import Ogre as ogre
+import ogre.renderer.OGRE as ogre
 
-try:
-    ogre.OgreVersion = ogre.GetOgreVersion()
-    ogre.OgreVersionString = ogre.OgreVersion[0] + ogre.OgreVersion[1] + ogre.OgreVersion[2]
-    ogre.PythonOgreVersion = ogre.GetPythonOgreVersion()
-    if (ogre.OgreVersion[0]+ ogre.OgreVersion[1]) == "12":   # ogre 1.2.3 is latest SDK
-        from Ogre.sf import *
-    else:  # assume it's ogre version 1.3, the CVS version that needs OIS
-        from Ogre.sf_OIS import * 
+ogre.OgreVersion = ogre.GetOgreVersion()
+ogre.OgreVersionString = ogre.OgreVersion[0] + ogre.OgreVersion[1] + ogre.OgreVersion[2]
+ogre.PythonOgreVersion = ogre.GetPythonOgreVersion()
+from ogre.renderer.OGRE.sf_OIS import * 
            
-except:
-    print "Your version of Python-Ogre doesn't define it's own version and so is rather old!"
-    print "It is suggested you visit http://python-ogre.python-hosting.com and upgrade"
-    
+ 
 

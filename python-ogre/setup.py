@@ -33,7 +33,7 @@ This version is built against the Ogre CVS"""
 
 METADATA = {
     "name":             "Python-Ogre",
-    "version":          "0.94 Candidate",
+    "version":          "0.95 Candidate",
     "license":          "LGPL",
     "url":              "http://python-ogre.python-hosting.com/",
     "author":           "Lakin Wecker, Roman Yakovenko, Andy",
@@ -57,8 +57,11 @@ base = os.path.join(os.getcwd(), os.path.dirname(sys.argv[0]) )
 demofiles = GetFileList ( os.path.join (base, "demos") )
 
 PACKAGEDATA = {
-       "packages":    ['Ogre', 'OIS', 'CEGUI'], ##, 'OgreRefApp', 'OgreNewt', 'OgreOde','ODE', 'OgreAL', 'OgreDshow' ],
-       "package_dir": {'': 'packages_2.5'},
+       "packages":    ['ogre', 'ogre.io', 'ogre.io.OIS', 'ogre.renderer', 'ogre.renderer.OGRE', 
+                        'ogre.gui', 'ogre.gui.CEGUI','ogre.sound', 'ogre.sound.OgreAL', 
+                        'ogre.physics', 'ogre.physics.ODE', 'ogre.physics.OgreRefApp',
+                        'ogre.physics.OgreOde', 'ogre.physics.OgreNewt'], ##, 'OgreRefApp', 'OgreNewt', 'OgreOde','ODE', 'OgreAL', 'OgreDshow' ],
+       "package_dir": {'': 'packages_'+ PythonVersionString },
        "package_data": {'': ['*.pyd', '*.dll']}
 
 }

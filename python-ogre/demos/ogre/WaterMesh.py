@@ -13,7 +13,7 @@
 # */
 
 import ctypes, math
-import Ogre
+import ogre.renderer.OGRE as Ogre
 import random
 
 ANIMATIONS_PER_SECOND = 100.0

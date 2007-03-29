@@ -1,7 +1,7 @@
 #include ".\conveyormatcallback.h"
 #include ".\conveyorBelt.h"
-import Ogre
-import OgreNewt
+import ogre.renderer.OGRE as Ogre
+import ogre.physics.OgreNewt as OgreNewt
 
 class conveyorMatCallback ( OgreNewt.ContactCallback ):
 

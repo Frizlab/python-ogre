@@ -15,7 +15,7 @@
 #  */
 
 #include "ExampleApplication.h"
-import Ogre
+import ogre.renderer.OGRE as Ogre
 import WaterMesh
 import math
 import SampleFramework as sf

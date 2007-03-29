@@ -26,9 +26,9 @@ import environment
 #tobuild = ['ode']
  
 if os.name=='nt': 
-    builddir = "c:/temp/build_dir"
+    builddir = "c:/temp/build_dir" + "_" + environment.PythonVersionString
 else:
-    builddir = "build_dir"
+    builddir = "build_dir" + "_" + environment.PythonVersionString
  
 def create_SConscript ( cls ):
     fname = os.path.join( cls._source, 'SConscript')
@@ -50,10 +50,10 @@ def get_ccflags():
     if os.name=='nt':
         CCFLAGS=''
         #CCFLAGS += '-DBOOST_PYTHON_MAX_ARITY=19'
-        CCFLAGS += ' -Zm800 -nologo'
-        CCFLAGS += ' -W3 -wd4675' # warning level  -Zc:wchar_t 
-        CCFLAGS += ' -TP -MD -Zc:forScope  -EHs -c'
-        CCFLAGS += '  -Ox -Op -GRB '
+        CCFLAGS += '  /nologo' # -Zm800
+        CCFLAGS += ' /W3 /wd4675' # warning level  -Zc:wchar_t 
+        CCFLAGS += ' /TP /MD /Zc:forScope  /EHs /c'
+        CCFLAGS += '  /Ogisyb2 /Gs /GR ' #/Op /Ox /O2
     elif os.name =='posix':
         if os.sys.platform <> 'darwin':
             CCFLAGS = ' `pkg-config --cflags OGRE` '
@@ -75,8 +75,8 @@ def get_source_files(_dir):
 def get_linkflags():
     if os.name=='nt':
         #LINKFLAGS = " -NOLOGO -INCREMENTAL:NO -DLL -OPT:NOREF -subsystem:console " # no change
-        LINKFLAGS = " -NOLOGO -INCREMENTAL:NO -DLL -OPT:NOICF -subsystem:console " # 7 minutes 25% smaller 16.6 Meg
-        #LINKFLAGS = " -NOLOGO -INCREMENTAL:NO -DLL -subsystem:console " ### LONG Link , 80 minutes - 15.7 meg
+        LINKFLAGS = " /NOLOGO /INCREMENTAL:NO /DLL /OPT:NOICF /subsystem:console " # 7 minutes 25% smaller 16.6 Meg
+        #LINKFLAGS = " /NOLOGO /INCREMENTAL:NO /DLL /subsystem:console " ### LONG Link , 80 minutes - 15.7 meg
     elif os.name == 'posix':
         if os.sys.platform <> 'darwin':
             LINKFLAGS = ' `pkg-config --libs OGRE` '
@@ -85,8 +85,8 @@ def get_linkflags():
     return LINKFLAGS
 
 # Let us select the projects to build
-possible_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode', 'fmod', 'ogreode', 'ogreal']
-default_projects = possible_projects #['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui' ]
+possible_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',  'ogreode', 'ogreal']
+default_projects = possible_projects #['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'fmod','cegui' ]
 
 # This lets you call scons like: 'scons PROJECTS=ogre,cegui'
 opts = Options('custom.py')
@@ -148,7 +148,7 @@ for name, cls in environment.projects.items():
         
         ## ugly hack - scons returns a list of targets from SharedLibrary - we have to choose the one we want
         index = 0  # this is the index into a list of targets - '0' should be the platform default
-        _env.InstallAs(os.path.join(environment.package_dir_name,
+        _env.InstallAs(os.path.join(environment.package_dir_name, cls.parent,
                                     cls.ModuleName, cls.PydName), 
                                      package[index] )
 

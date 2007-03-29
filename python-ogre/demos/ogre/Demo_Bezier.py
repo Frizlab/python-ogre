@@ -18,7 +18,7 @@
 # #         the bezier patch support.
 # 
 
-import Ogre as ogre
+import ogre.renderer.OGRE as ogre
 import SampleFramework as sf
 import ctypes, math
 

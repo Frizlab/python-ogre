@@ -1,3 +1,14 @@
+# This code is in the Public Domain
+# -----------------------------------------------------------------------------
+# This source file is part of Python-Ogre
+# For the latest info, see http://python-ogre.org/
+#
+# It is likely based on original code from OGRE and/or PyOgre
+# For the latest info, see http://www.ogre3d.org/
+#
+# You may use this sample code for anything you like, it is not covered by the
+# LGPL.
+# -----------------------------------------------------------------------------
 
 
 # /** Defines an example loading progress bar which you can use during 
@@ -14,7 +25,7 @@
 #   added to a resource group called 'Bootstrap' - this provides the basic 
 #   resources required for the progress bar and will be loaded automatically.
 
-import Ogre as ogre
+import ogre.renderer.OGRE as ogre
 
 class ExampleLoadingBar (ogre.ResourceGroupListener):
 #   /** Show the loading bar and start listening.

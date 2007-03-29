@@ -1,0 +1,11 @@
+WARNING...
+
+As part of the Python-Ogre installation we will remove any existing (previous) versions of Python-Ogre
+
+This typically means deleting the Ogre, OIS, CEGUI, OgreRefApp, ODE, OgreNewt, and OgreOde directories in
+your python]lib\site-packages directory.
+
+This version of Python-Ogre introduces a new module layout form and will require that you make minor
+changes to your import statments in any existing python code.
+
+If you don't want this to happen please cancel now

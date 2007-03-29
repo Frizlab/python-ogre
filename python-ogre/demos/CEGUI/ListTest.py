@@ -16,9 +16,9 @@
 ###  This is a blank template to make it easier to convert existing samples
 ###
 
-import Ogre as ogre
+import ogre.renderer.OGRE as ogre
 import CEGUI as CEGUI
-import OIS as OIS
+import ogre.io.OIS as OIS as OIS
 import SampleFramework
 
 import sys, exceptions, random

@@ -16,9 +16,9 @@
 ###  This is a blank template to make it easier to convert existing samples
 ###
 
-import Ogre as ogre
-import CEGUI as CEGUI
-import OIS as OIS
+import ogre.renderer.OGRE as ogre
+import ogre.gui.CEGUI as CEGUI
+import ogre.io.OIS as OIS
 import SampleFramework
 
 import sys, exceptions, random
@@ -88,12 +88,12 @@ class GuiApplication ( SampleFramework.Application ):
         winMgr = CEGUI.WindowManager.getSingleton()
 
         ## load scheme and set up defaults
-        CEGUI.SchemeManager.getSingleton().loadScheme("TaharezLook.scheme") 
+        CEGUI.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme") 
         self.GUIsystem.setDefaultMouseCursor("TaharezLook",  "MouseArrow") 
-        CEGUI.FontManager.getSingleton().createFont("Commonwealth-10.font")
+        #CEGUI.FontManager.getSingleton().createFont("Commonwealth-10.font")
 
         ## load an image to use as a background
-        CEGUI.ImagesetManager.getSingleton().createImagesetFromImageFile("BackgroundImage", "GPN-2000-001437.tga")
+        CEGUI.ImagesetManager.getSingleton().createImagesetFromImageFile("BackgroundImage", "ogregui.tga")
         
         ## here we will use a StaticImage as the root, then we can use it to place a background image
         background = winMgr.createWindow("TaharezLook/StaticImage", "background_wnd")

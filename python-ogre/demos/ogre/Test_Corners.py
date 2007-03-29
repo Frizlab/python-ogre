@@ -2,7 +2,7 @@ import os,sys
 if sys.platform == 'win32': 
     os.environ['PATH'] += ';' + __file__[0] 
 
-import Ogre as ogre 
+import ogre.renderer.OGRE as ogre 
 import SampleFramework 
 import math 
 

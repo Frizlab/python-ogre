@@ -1,6 +1,6 @@
 #include ".\conveyorbelt.h"
-import Ogre
-import OgreNewt
+import ogre.renderer.OGRE as Ogre
+import ogre.physics.OgreNewt as OgreNewt
 
 class conveyorBelt:
     def __init__ (self):

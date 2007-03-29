@@ -15,9 +15,9 @@
 ## Description: Test the OgreRefApp module
 ## -----------------------------------------------------------------------------
 
-import Ogre as ogre
+import ogre.renderer.OGRE as ogre
 import SampleFramework as sf     ## note that we are forcing the OIS sample framework
-import OgreRefApp as OgreRefApp
+import ogre.renderer.OGRE as OgreRefApp as OgreRefApp
 
 ## As this demo does it's own key input, AND we want to support Ogre 1.2.x we need to cope with the 
 ## change to OIS in ogre 1.3.x (current CVS version)
@@ -25,7 +25,7 @@ import OgreRefApp as OgreRefApp
 if ogre.OgreVersionString[:2]=="12":
     KC_SPACE = ogre.KC_SPACE
 else:
-    import OIS as OIS
+    import ogre.io.OIS as OIS
     KC_SPACE = OIS.KC_SPACE
 
 

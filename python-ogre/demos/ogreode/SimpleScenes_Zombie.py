@@ -6,9 +6,9 @@
 # #ifndef _SIMPLESCENES_ZOMBIE_H_
 # #define _SIMPLESCENES_ZOMBIE_H_
 from SimpleScenes import *
-import Ogre as ogre
-import OgreOde
-import OIS
+import ogre.renderer.OGRE as ogre
+import ogre.physics.OgreOde as OgreOde
+import ogre.io.OIS as OIS
 
 ZOMBIE_QUERY_MASK               = 1<<1
 

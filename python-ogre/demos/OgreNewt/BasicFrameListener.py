@@ -1,5 +1,5 @@
-import Ogre
-import OgreNewt as OgreNewt
+import ogre.renderer.OGRE as Ogre
+import ogre.physics.OgreNewt as OgreNewt
 import SampleFramework as sf
 
 class BasicFrameListener (Ogre.FrameListener ): ##, Ogre.WindowEventListener ): # sf.FrameListener):
