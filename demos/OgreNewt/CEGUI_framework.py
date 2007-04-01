@@ -1,6 +1,6 @@
-import CEGUI as CEGUI
-import ogre.io.OIS as OIS as OIS
-import ogre.renderer.OGRE as Ogre as Ogre
+import ogre.gui.CEGUI as CEGUI
+import ogre.io.OIS as OIS
+import ogre.renderer.OGRE as Ogre 
 import SampleFramework
 
 ##----------------------------------------------------------------##

@@ -9,7 +9,7 @@
 # You may use this sample code for anything you like, it is not covered by the
 # LGPL.
 # -----------------------------------------------------------------------------
-import  Ogre as ogre
+import ogre.renderer.OGRE as ogre
 import SampleFramework as sf
 
 ## As this demo does it's own key input we need to cope with the change to OIS

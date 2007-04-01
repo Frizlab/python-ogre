@@ -11,7 +11,7 @@
 # -----------------------------------------------------------------------------
 import sys
 import ogre.renderer.OGRE as ogre
-import ogre.renderer.OGRE as OgreAL
+
 import SampleFramework as sf
 
 class RenderToTextureFrameListener(sf.FrameListener):
@@ -133,19 +133,6 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
         #
         node = rootNode.createChildSceneNode( "Head" )
         node.attachObject( ogreHead )
-        self.soundManager  = OgreAL.SoundManager()
-        sound = self.soundManager.createSound("Roar", "roar.wav", True)
-        node.attachObject(sound)
-
-        sound.play()
-
-        bgSound = self.soundManager.createSoundStream("ZeroFactor", "Zero Factor - Untitled.ogg", True)
-        bgSound.setGain(0.5)
-#         bgSound.setRelativeToListener(True)
-   
-        
-    
-        
         
         
         ## Either of these techniques works...

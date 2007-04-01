@@ -116,19 +116,19 @@ class SimpleVehicle (OgreNewt.Vehicle):
 #             #tire.__del__()
 #             del tire
         print "deleting array"
-        del self.tires
-        del self.bodies
+
         
         ## finally, destroy entity and node from chassis.
         ent = self.chassis
         print "1",ent
-        print "2", ent.getOgreNode() ## causes no RTTI ???
-        print "3", ent.getOgreNode().getAttachedObject(0) ## causes no RTTI ???
-        self.chassis.getOgreNode().detachAllObjects()
-        self.chassis.getOgreNode().getCreator().destroyEntity( ent )
-        self.chassis.getOgreNode().getParentSceneNode().removeAndDestroyChild( self.chassis.getOgreNode().getName() )
+#         print "2", ent.getOgreNode() ## causes no RTTI ???
+#         print "3", ent.getOgreNode().getAttachedObject(0) ## causes no RTTI ???
+#         self.chassis.getOgreNode().detachAllObjects()
+#         self.chassis.getOgreNode().getCreator().destroyEntity( ent )
+#         self.chassis.getOgreNode().getParentSceneNode().removeAndDestroyChild( self.chassis.getOgreNode().getName() )
         ## now it will call the body destructor...
-	    
+        del self.tires
+        del self.bodies	    
     ## This is the important callback, which is the meat of controlling the vehicle.
     def userCallback(self):
         ## foop through wheels, adding torque and steering, and updating their positions.
@@ -153,7 +153,7 @@ class SimpleVehicle (OgreNewt.Vehicle):
             def __del__ ( self ):
                 ## destroy entity, and scene node.
                 
-                ent = self.getOgreNode().getAttachedObject(0)
+                ent = self.getOgreNode()## .getAttachedObject(0)
 #                 	m_node->detachAllObjects();
 #                 	m_node->getCreator()->destroyEntity( ent );
 #                 	m_node->getParentSceneNode()->removeAndDestroyChild( m_node->getName() );

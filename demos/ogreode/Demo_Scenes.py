@@ -41,7 +41,8 @@ class SimpleScenesFrameListener ( sf.FrameListener ):
         sf.FrameListener.__init__(self, renderWindow, camera)
         self._demo = demo
     def __del__(self):
-        print "del11"
+        print "FR del"
+        sf.FramsListener.__del__(self)
                 
     def frameStarted(self, evt):
         ## Do the default demo input handling and keep our UI display
@@ -68,6 +69,7 @@ class SimpleScenesFrameListener ( sf.FrameListener ):
     def frameEnded(self, evt):
         ## Tell our demo that the frame's ended before doing default processing
         self._demo.frameEnded(evt, self.Keyboard, self.Mouse)
+        return True
         return sf.FrameListener.frameEnded(self, evt)
 
 # /*
@@ -124,7 +126,10 @@ class SimpleScenesApplication(sf.Application):
             sceneManager.setShadowTextureSettings(512, 2)
     
         ## Add some default lighting to the scene
-        sceneManager.setAmbientLight( (0.25, 0.25, 0.25) )
+#         sceneManager.setAmbientLight( (.8, .8, .8) )
+#         light = sceneManager.createLight('MainLight')
+#         light.setPosition (0, 0, 1)
+#         light.CastShadows=True
     
         ## Create a directional light to shadow and light the bodies
         self._spot = sceneManager.createLight("Spot")
@@ -134,7 +139,7 @@ class SimpleScenesApplication(sf.Application):
         self._spot.setSpecularColour(1,1,0.8)
 
         ## Give us some sky
-        sceneManager.setSkyBox(True,"Examples/SpaceSkyBox",5000,True)
+        sceneManager.setSkyBox(True,"kk3d/DesertVII", 5000, True) # Examples/SpaceSkyBox",5000,True)
     
         ## Position and orient the camera
         self.camera.setPosition(13,4.5,0)

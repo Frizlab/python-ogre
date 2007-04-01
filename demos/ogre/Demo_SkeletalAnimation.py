@@ -55,6 +55,7 @@ class SkeletalApplication(sf.Application):
         
         ## Doing this returns a SharedPtr_less_Ogre_scope_Resource_grate 
         skel = ogre.SkeletonManager.getSingleton().load("jaiqua.skeleton", ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME,False, ogre.ManualResourceLoader(), ogre.NameValuePairList()) 
+        print "TEST\n",skel,"\n"
         anim = skel.getAnimation("Sneak") 
         
         cameraNode = sceneManager.getRootSceneNode().createChildSceneNode()
@@ -77,9 +78,8 @@ class SkeletalApplication(sf.Application):
         trackIter = anim.getNodeTrackIterator()
         while (trackIter.hasMoreElements()):
             track = trackIter.getNext()
-            
-            oldKf = ogre.TransformKeyFrame (0, 0)
-            track.getInterpolatedKeyFrame(mAnimChop, oldKf) 
+            oldKf = blankKF
+            track.getInterpolatedKeyFrame(ogre.TimeIndex(mAnimChop), oldKf) 
 
             # Drop all keyframes after the chop
             while (track.getKeyFrame(track.getNumKeyFrames()-1).getTime() >= mAnimChop - mAnimChopBlend):
