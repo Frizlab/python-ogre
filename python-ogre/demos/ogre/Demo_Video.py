@@ -9,8 +9,8 @@
 # You may use this sample code for anything you like, it is not covered by the
 # LGPL.
 # -----------------------------------------------------------------------------
-import  Ogre as ogre
-import ogre.renderer.OGRE as OgreDshow 
+import ogre.renderer.OGRE as ogre
+import ogre.video as OgreDshow 
 import SampleFramework as sf
 
 class VideoApplication(sf.Application):

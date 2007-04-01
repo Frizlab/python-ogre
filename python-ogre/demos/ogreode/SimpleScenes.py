@@ -24,7 +24,7 @@ class SimpleScenes (OgreOde.CollisionListener, OgreOde.StepListener):
         self._last_node = 0
         self.RagdollList=[]
         
-# #         self.dotOgreOdeLoader = OgreOde.DotLoader( world )
+        self.dotOgreOdeLoader = OgreOde.DotLoader( world )
         self._bodies=[]  # an array to keep objects around in (like c++ "new" )
         self._geoms=[]
         self._joints=[]
@@ -125,9 +125,6 @@ class SimpleScenes (OgreOde.CollisionListener, OgreOde.StepListener):
      
         self._key_delay = 0.0
     
-        dl = OgreOde.DotLoader()    
-        print self
-        print dir(self)
         _ragdoll = self.dotOgreOdeLoader.loadObject ( self.ragdollFile[self.sSelectedMesh], 
                             self.xmlNames[self.sSelectedMesh], 
                             "zombie" + str(self._ragdoll_count))

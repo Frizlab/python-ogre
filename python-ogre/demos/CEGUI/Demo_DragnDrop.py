@@ -111,7 +111,7 @@ class GEUIApplication(SampleFramework.Application):
         cegui.Logger.getSingleton().loggingLevel = cegui.Insane
 
         # load TaharezLook scheme
-        cegui.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme")
+        cegui.SchemeManager.getSingleton().loadScheme("TaharezLook.scheme")
         self.system.setDefaultMouseCursor("TaharezLook", "MouseArrow")
 
         # default layout

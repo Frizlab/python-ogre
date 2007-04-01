@@ -9,10 +9,9 @@
 # You may use this sample code for anything you like, it is not covered by the
 # LGPL.
 # -----------------------------------------------------------------------------
-import  Ogre as ogre
-import ogre.renderer.OGRE as OgreDshow 
+import ogre.renderer.OGRE as ogre
 import SampleFramework as sf
-import ctypes, math
+
 
 class SmokeApplication(sf.Application):
     def _createScene(self):
@@ -29,20 +28,7 @@ class SmokeApplication(sf.Application):
         node = self.fountainNode.createChildSceneNode()
         node.attachObject(particleSystem2)
 
-        
-        try: 
-            #if it exists, get the entity and make it visible 
-             entity = self.sceneManager.getEntity("hello") 
-             entity.visible = True 
-        except RuntimeError, e:
-            print "\n\nRUNTIME\n", e
-            print dir(e)
-            print e.args
-            print e.message
-        except ogre.Exception, e:
-            print e
-
-        
+                
 if __name__ == '__main__':
     try:
         application = SmokeApplication()

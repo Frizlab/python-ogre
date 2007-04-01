@@ -11,15 +11,15 @@ class doc_extractor:
     extracts doxigen styled documentation from source
     or generates from description
     """
-    def __init__(self, startswith):
+    def __init__(self, startswith, outfile="documentation.dox"):
         #for caching source
         self.file_name  = None
         self.source = None
         self.startswith = startswith
+        self.outfile = open ( outfile, 'w' ) # create the file for writing (truncates existing)
         
     def __call__(self, declaration):
        
-        #print "doc_extractor called with:", declaration
         if not declaration.decl_string.startswith(self.startswith):
             return ""
         try:    # some types such as the base namespace don't have 'location'
@@ -34,8 +34,8 @@ class doc_extractor:
         failed = 0
         doc_lines = []
         if declaration.documentation:
-            basedoc = declaration.documentation
-            
+            if len(declaration.documentation) > 2:
+                basedoc = declaration.documentation + "\\\n"
         else:
             basedoc = ""
         ## note the gccxml uses a 1 based line scheme whereas we are using python arrays - 0 based
@@ -53,7 +53,7 @@ class doc_extractor:
                 if line.lstrip()[:3] == '///':
                     str_ = clear_str(line)
                     if basedoc:
-                        retvalue = '"' + basedoc + "\\n\\\n"+ str_[:-2] + '"' # remove the \n from the single line comment
+                        retvalue = '"' + basedoc +  str_[:-2] + '"' # remove the \n from the single line comment
                     else:
                         retvalue = '"' + str_[:-2] + '"' # remove the \n from the single line comment
                     #print "Extracted Doc String (short) ", retvalue
@@ -89,8 +89,9 @@ class doc_extractor:
         except:
             if not basedoc:
                 return ""
-        ret =""        
+        ret ="" 
         if doc_lines:
+            doc_lines = remove_leading_blanks ( doc_lines )
             #print "Extracted Doc String for:",  declaration, "[", len(doc_lines),"]"
             ## we need to cope with strings longer than 2048 for MSVC
             ret =  "\\\n".join(doc_lines) 
@@ -113,9 +114,32 @@ class doc_extractor:
                 c = ' '
             newret = newret + c
         if len(basedoc) >1 or len(newret)>1:
-            return '"' + basedoc + "\\n" + newret + '"'            
+            self.outfile.write("***============================*****\n" + declaration.decl_string + "\n")
+            self.outfile.write( str(len(basedoc)) + "  " + str(len(newret)) + "\n" )
+            self.outfile.write( newret )      
+            return '"' + basedoc + newret.lstrip() + '"'            
         else: return ""
+
+def remove_leading_blanks ( docin ):
+    """
+    remove any initial lines that are '\n\'
+    """  
+    returnlist=[]
     
+    if docin[0].strip() != "\\n":
+        print "** ", docin[0]
+        return docin # nothing to fix so return the original list..
+        
+    fixed = False
+    for line in docin:
+        if not fixed:
+            if line.strip() != "\\n":
+                fixed = True 
+        if fixed:
+            returnlist.append(line)
+    return returnlist
+                
+           
 def get_generic_doc(declaration):
     """
     generate call information about function or method
@@ -128,7 +152,7 @@ def get_generic_doc(declaration):
     return ''
                 
 
-def clear_str(str):
+def clear_str_OLD(str):
     """
     replace */! by Space and \breaf, \fn, \param, ...
     """
@@ -182,6 +206,58 @@ def code(str):
         pass
     return False
 
+           
+def clear_str(_str):
+    """
+    replace */! by Space and \breaf, \fn, \param, ...
+    """
+    def clean ( _str, sym, change2 = ""): 
+        return _str.replace(sym, change2)
+        
+        
+    _str = clean(_str, "::", ".")     ## make it more python accurate 
+    _str = clean(_str, "->", ".") 
+#     _str = clean(_str, "@param", "Param: ")
+    _str = clean(_str, "\\param", "@param")
+    _str = clean(_str, "@ingroup", "@group")
+    _str = clean(_str, "\\ingroup", "@group")
+#     _str = clean(_str, "@return", "It return")
+    _str = clean(_str, "\\return", "@return")
+#     _str = clean(_str, "@note", "Note: ")
+    _str = clean(_str, "@remarks", "@see")
+#     _str = clean(_str, "@see", "See: ")
+    _str = clean(_str, "\\see", "@see")
+    _str = clean(_str, "@ref", "@see")
+    _str = clean(_str, "\\ref", "@see")
+    _str = clean(_str, "@copydoc", "Ref: ")
+    
+    _str = clean(_str, "\\sa", "@see")   # comment _string in OgreNewt
+    _str = clean(_str, "\\codeblock", "::")    
+    _str = clean(_str, "\\code", "::")    
+    _str = clean(_str, "\\endcode", "\\n")    
+    _str = clean(_str, "@codeblock", "\\n")   # endsure a new line to end the code block 
+    _str = clean(_str, "@code", "::")   # using literal code blocks 
+    
+#     _str = clean(_str, "@par", "")    ## it will get a single blank line by default -- breaks @param...
+    _str = clean(_str, "\\par", "")    ## it will get a single blank line by default
+    _str = clean(_str, "\n", "\\n") 
+    _str = clean(_str, "\\p", "")     ## cegui comments
+    _str = clean(_str, "\\li", "  -")     ## ode comments
+    _str = clean(_str, "\\exception", "@exception") 
+    _str = clean(_str, "\\a", "")     ## cegui
+    
+    ## now clean up the rest
+    _str = reduce(clean, [_str, '/', '*', '!', "\\brief", '\\fn',
+         "@brief", "@fn", '"', "@{", "\\c", "\\a"]) ## somtimes there are '"' in the doc strings and other "\\"...
+#     return _str.lstrip()
+#     return "  " + _str.lstrip()
+    return _str  ## no removale of white space so Epytext can handle sections etc
+
+    
+def make_epytext ( str ):
+    """ turn this string into something more Epytext compatible """
+    knownfields = ['param']
+    
 if __name__ == '__main__':
     class loc:
         def __init__(self, f, l):
@@ -201,6 +277,3 @@ if __name__ == '__main__':
     print doc_extractor("")(x_decl("","c:/development/ocvs/ogrenew/ogremain/include/OgreSceneManager.h",223))
     
     print doc_extractor("")(x_decl("","c:/development/CEGUI-0.5.0/include/CEGUIEvent.h",139))
-    
-
-            
