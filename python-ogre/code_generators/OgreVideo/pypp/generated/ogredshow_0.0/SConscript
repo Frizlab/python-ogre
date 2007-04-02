@@ -1,0 +1,6 @@
+
+Import('_env') 
+
+_ogredshow = _env.SharedLibrary( "ogredshow", SHLIBPREFIX='', source=_env["FILES"])
+
+Return ('_ogredshow') 
