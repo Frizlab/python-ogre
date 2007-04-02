@@ -1,0 +1,23 @@
+
+INFO Parsing xml file "C:\Development\OgreVideo\pypp\cache\ogredshow_0.0_cache.xml" ... 
+DOC without location: OgreUtils [namespace]
+
+WARNING: Ogre::Vector2 [class]
+> warning W1040: The declaration is unexposed, but there are other
+> declarations, which refer to it. This could cause "no to_python
+> converter found" run time error. Declarations:    Ogre::Vector2
+> OgreUtils::DirectShowMovieTexture::getMovieDimensions() [member
+> function]
+
+WARNING: Ogre::TexturePtr [class]
+> warning W1040: The declaration is unexposed, but there are other
+> declarations, which refer to it. This could cause "no to_python
+> converter found" run time error. Declarations:    Ogre::TexturePtr
+> OgreUtils::DirectShowMovieTexture::getMovieTexture() [member function]
+
+INFO: file "DirectShowMovieTexture.pypp.hpp" - updated( 0.001107 seconds )
+
+INFO: file "DirectShowMovieTexture.pypp.cpp" - updated( 0.001331 seconds )
+
+INFO: file "_ogredshow_.main.cpp" - updated( 0.018419 seconds )
+Python-OgreDshow source code was updated( 1.171505 minutes ).
