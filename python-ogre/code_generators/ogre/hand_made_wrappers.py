@@ -2,6 +2,89 @@ import os
 import environment
 
 
+WRAPPER_DEFINITION_ShadowRenderable =\
+"""
+boost::python::object ShadowRenderable_castElement(Ogre::ShadowRenderable * r){
+    if( dynamic_cast< Ogre::Region::RegionShadowRenderable * >( r ) ){
+        return boost::python::object( (Ogre::Region::RegionShadowRenderable*) r );
+    }   
+    if( dynamic_cast< Ogre::ManualObject::ManualObjectSectionShadowRenderable * >( r ) ){
+        return boost::python::object( (Ogre::ManualObject::ManualObjectSectionShadowRenderable*) r );
+    }    
+    if( dynamic_cast< Ogre::Entity::EntityShadowRenderable * >( r ) ){
+        return boost::python::object( (Ogre::Entity::EntityShadowRenderable*) r );
+    }
+    return  boost::python::object( r );
+    }
+    
+boost::python::object ShadowRenderable_getLightCapRenderable( Ogre::ShadowRenderable & me){
+    return ShadowRenderable_castElement ( me.getLightCapRenderable() );
+    }
+"""
+WRAPPER_REGISTRATION_ShadowRenderable = [
+    'def( "getLightCapRenderable", &::ShadowRenderable_getLightCapRenderable,\
+    "Python-Ogre Hand Wrapped\\n" );'
+    ]    
+    
+    
+WRAPPER_DEFINITION_KeyFrame = \
+"""
+boost::python::object KeyFrame_castKeyFrame(Ogre::KeyFrame * k){
+    if( dynamic_cast< Ogre::VertexPoseKeyFrame * >( k ) ){
+        return boost::python::object( (Ogre::VertexPoseKeyFrame*) k );
+    }   
+    if( dynamic_cast< Ogre::VertexMorphKeyFrame * >( k ) ){
+        return boost::python::object( (Ogre::VertexMorphKeyFrame*) k );
+    }
+    if( dynamic_cast< Ogre::TransformKeyFrame * >( k ) ){
+        return boost::python::object( (Ogre::TransformKeyFrame*) k );
+    }        
+    if( dynamic_cast< Ogre::NumericKeyFrame * >( k ) ){
+        return boost::python::object( (Ogre::NumericKeyFrame*) k );
+    }
+    return  boost::python::object( k );
+    }
+    
+boost::python::object KeyFrame_clone( Ogre::KeyFrame & me, Ogre::AnimationTrack * newParent){
+    return KeyFrame_castKeyFrame ( me._clone( newParent ) );
+    }
+"""
+WRAPPER_REGISTRATION_KeyFrame = [
+    'def( "_clone", &::KeyFrame_clone,\
+    "Python-Ogre Hand Wrapped\\n" );'
+    ] 
+
+
+WRAPPER_DEFINITION_OverlayElement = \
+"""
+boost::python::object OverlayElement_castElement(Ogre::OverlayElement * e){
+    if( dynamic_cast< Ogre::TextAreaOverlayElement * >( e ) ){
+        return boost::python::object( (Ogre::TextAreaOverlayElement*) e );
+    }   
+    if( dynamic_cast< Ogre::OverlayContainer * >( e ) ){
+        return boost::python::object( (Ogre::OverlayContainer*) e );
+    }
+    return  boost::python::object( e );
+    }
+boost::python::object OverlayElement_findElementAt(Ogre::OverlayElement &me, Ogre::Real x, Ogre::Real y) {
+    return OverlayElement_castElement ( me.findElementAt ( x, y) );
+    }
+boost::python::object OverlayElement_clone(Ogre::OverlayElement &me, Ogre::String const & instanceName) {
+    return OverlayElement_castElement ( me.clone ( instanceName ) );
+    }
+/*boost::python::object OverlayElement_getSourceTemplate(Ogre::OverlayElement &me) {
+    return OverlayElement_castElement ( me.getSourceTemplate () );
+    }*/
+"""
+WRAPPER_REGISTRATION_OverlayElement = [
+    'def( "findElementAt", &::OverlayElement_findElementAt,\
+    "Python-Ogre Hand Wrapped\\n" );',
+    'def( "clone", &::OverlayElement_clone,\
+    "Python-Ogre Hand Wrapped\\n" );'
+    #,   'def( "getSourceTemplate", &::OverlayElement_getSourceTemplate,\
+    #"Python-Ogre Hand Wrapped\\n" );'   
+    ]
+    
 WRAPPER_DEFINITION_Node = \
 """
 boost::python::object Node_castNode(Ogre::Node * n){
@@ -527,6 +610,18 @@ def apply( mb ):
     rt = mb.class_( 'Node' )
     rt.add_declaration_code( WRAPPER_DEFINITION_Node )
     apply_reg (rt,  WRAPPER_REGISTRATION_Node )
+
+    rt = mb.class_( 'KeyFrame' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_KeyFrame )
+    apply_reg (rt,  WRAPPER_REGISTRATION_KeyFrame )
+
+# #     rt = mb.class_( 'ShadowRenderable' )
+# #     rt.add_declaration_code( WRAPPER_DEFINITION_ShadowRenderable )
+# #     apply_reg (rt,  WRAPPER_REGISTRATION_ShadowRenderable )
+
+    rt = mb.class_( 'OverlayElement' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_OverlayElement )
+    apply_reg (rt,  WRAPPER_REGISTRATION_OverlayElement )
 
     rt = mb.class_( 'Frustum' )
     rt.add_declaration_code( WRAPPER_DEFINITION_Frustum )
