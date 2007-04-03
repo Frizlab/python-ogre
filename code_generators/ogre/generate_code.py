@@ -64,7 +64,14 @@ def ManualExclude ( mb ):
     # hand made wrapper to return correct type
     global_ns.class_('::Ogre::ResourceManager').mem_fun('getByName').exclude()
     global_ns.class_('::Ogre::ResourceManager').mem_fun('getByHandle').exclude()
+    global_ns.class_('::Ogre::ResourceManager').mem_fun('load').exclude()
+    global_ns.class_('::Ogre::ResourceManager').mem_fun('create').exclude()
 
+    # another one that needs a dynamic cast in handwrappers
+    global_ns.class_('::Ogre::Node').member_functions('getChild').exclude()
+    global_ns.class_('::Ogre::Node').member_functions('removeChild').exclude()
+    global_ns.class_('::Ogre::Node').member_functions('createChild').exclude()
+    global_ns.class_('::Ogre::Node').member_functions('getParent').exclude()
     
     startswith = [
         'WIN32'
@@ -622,7 +629,7 @@ def Fix_NT ( mb ):
 def Fix_Implicit_Conversions ( mb ):
     """By default we disable explicit conversion, however sometimes it makes sense
     """
-    nonImplicitClasses=['Radian','Degree' ] # AnimationStateControllerValue, Any, SceneQuery, 
+    nonImplicitClasses=['Radian','Degree', 'TimeIndex' ] # AnimationStateControllerValue, Any, SceneQuery, 
     # BorderRenderable, SceneNode, CompositionPass, CompositionTargetPass, CompositionTechnique
     # CompositorChain, CompositorInstance::TargetOperation, TextureUnitState, DefaultAxisAlignedBoxSceneQuery
     # DefaultIntersectionSceneQuery, DefaultPlaneBoundedVolumeListSceneQuery, DefaultRaySceneQuery
