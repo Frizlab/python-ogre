@@ -31,9 +31,6 @@ boost::python::object Node_removeChild1(Ogre::Node& me, unsigned short index){
 boost::python::object Node_removeChild2(Ogre::Node& me, const Ogre::String& name){
     return Node_castNode( me.getChild( name ) );
 }
-// boost::python::object Node_removeChild3(Ogre::Node& me, Ogre::Node * child ){
-//     return Node_castNode( me.getChild( &child ) );
-// }
 boost::python::object Node_createChild1(Ogre::Node& me, Ogre::Vector3 const & translate=Ogre::Vector3::ZERO, 
                                 Ogre::Quaternion const & rotate=Ogre::Quaternion::IDENTITY) {
     return Node_castNode( me.createChild( translate, rotate ) );                               
@@ -56,12 +53,12 @@ WRAPPER_REGISTRATION_Node = [
     "Python-Ogre Hand Wrapped\\n" );',
     'def( "removeChild", &::Node_removeChild2,\
     "Python-Ogre Hand Wrapped\\n" );',
-#     'def( "removeChild", &::Node_removeChild3,\
-#     "Python-Ogre Hand Wrapped\\n" );',
     'def( "createChild", &::Node_createChild1,\
+    ( bp::arg("translate")=Ogre::Vector3::ZERO, bp::arg("rotate")=Ogre::Quaternion::IDENTITY ),\
     "Python-Ogre Hand Wrapped\\n" );',
     'def( "createChild", &::Node_createChild2,\
-    "Python-Ogre Hand Wrapped\\n" );',
+    ( bp::arg("name"), bp::arg("translate")=Ogre::Vector3::ZERO, bp::arg("rotate")=Ogre::Quaternion::IDENTITY ),\
+    "Python-Ogre Hand Wrapped\\n" );'
     ]
 
 WRAPPER_DEFINITION_ResourceManager = \
@@ -124,8 +121,10 @@ WRAPPER_REGISTRATION_ResourceManager = [
     'def( "getByHandle", &::ResourceManager_getByHandle,\
     "Python-Ogre Hand Wrapped\\n" );',
     'def( "create", &::ResourceManager_create,\
+    ( bp::arg("name"), bp::arg("group"), bp::arg("isManual")=(bool)(false), bp::arg("loader")=bp::object(), bp::arg("createParams")=bp::object() ),\
     "Python-Ogre Hand Wrapped\\n" );',
     'def( "load", &::ResourceManager_load,\
+    ( bp::arg("name"), bp::arg("group"), bp::arg("isManual")=(bool)(false), bp::arg("loader")=bp::object(), bp::arg("loadParams")=bp::object() ),\
     "Python-Ogre Hand Wrapped\\n" );',
     ]
     
