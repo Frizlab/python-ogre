@@ -60,18 +60,24 @@ def ManualExclude ( mb ):
     
     ## Specifically remove functions that we have wrapped in hand_made_wrappers.py
     ogre_ns.class_( "RenderTarget" ).member_functions( 'getCustomAttribute' ).exclude()
-    ##ogre_ns.class_( "Mesh" ).member_functions( 'suggestTangentVectorBuildParams' ).exclude()
-    # hand made wrapper to return correct type
+
+    # hand made wrapper to return correct types
     global_ns.class_('::Ogre::ResourceManager').mem_fun('getByName').exclude()
     global_ns.class_('::Ogre::ResourceManager').mem_fun('getByHandle').exclude()
     global_ns.class_('::Ogre::ResourceManager').mem_fun('load').exclude()
     global_ns.class_('::Ogre::ResourceManager').mem_fun('create').exclude()
 
-    # another one that needs a dynamic cast in handwrappers
     global_ns.class_('::Ogre::Node').member_functions('getChild').exclude()
     global_ns.class_('::Ogre::Node').member_functions('removeChild').exclude()
     global_ns.class_('::Ogre::Node').member_functions('createChild').exclude()
     global_ns.class_('::Ogre::Node').member_functions('getParent').exclude()
+    
+    global_ns.class_('::Ogre::OverlayElement').mem_fun('findElementAt').exclude()
+    global_ns.class_('::Ogre::OverlayElement').mem_fun('clone').exclude()
+#     global_ns.class_('::Ogre::OverlayElement').mem_fun('getSourceTemplate').exclude()
+    
+    global_ns.class_('::Ogre::KeyFrame').mem_fun('_clone').exclude()
+#     global_ns.class_('::Ogre::ShadowRenderable').mem_fun('getLightCapRenderable').exclude()
     
     startswith = [
         'WIN32'
