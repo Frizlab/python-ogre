@@ -1,70 +1,75 @@
 import os
 import environment
 
+
+WRAPPER_DEFINITION_Node = \
+"""
+boost::python::object Node_castNode(Ogre::Node * n){
+    if( dynamic_cast< Ogre::SceneNode * >( n ) ){
+        return boost::python::object( (Ogre::SceneNode*) n );
+    }    
+    if( dynamic_cast< Ogre::Bone * >( n ) ){
+        return boost::python::object( (Ogre::Bone*)n  );
+    }    
+    return  boost::python::object( n );  
+}
+
+boost::python::object Node_getChild_short(Ogre::Node& me, unsigned short index){
+    return Node_castNode( me.getChild( index ) );
+}
+
+boost::python::object Node_getChild_string(Ogre::Node& me, const Ogre::String& name){
+    return Node_castNode( me.getChild( name ) );
+}
+boost::python::object Node_getParent(Ogre::Node& me){
+    return Node_castNode( me.getParent( ) );
+}
+
+boost::python::object Node_removeChild1(Ogre::Node& me, unsigned short index){
+    return Node_castNode( me.getChild( index ) );
+}
+boost::python::object Node_removeChild2(Ogre::Node& me, const Ogre::String& name){
+    return Node_castNode( me.getChild( name ) );
+}
+// boost::python::object Node_removeChild3(Ogre::Node& me, Ogre::Node * child ){
+//     return Node_castNode( me.getChild( &child ) );
+// }
+boost::python::object Node_createChild1(Ogre::Node& me, Ogre::Vector3 const & translate=Ogre::Vector3::ZERO, 
+                                Ogre::Quaternion const & rotate=Ogre::Quaternion::IDENTITY) {
+    return Node_castNode( me.createChild( translate, rotate ) );                               
+}                               
+boost::python::object Node_createChild2(Ogre::Node& me, Ogre::String const & name, 
+                                Ogre::Vector3 const & translate=Ogre::Vector3::ZERO, 
+                                Ogre::Quaternion const & rotate=Ogre::Quaternion::IDENTITY) {
+    return Node_castNode( me.createChild( name, translate, rotate ) );                               
+}
+"""
+
+WRAPPER_REGISTRATION_Node = [
+    'def( "getChild", &::Node_getChild_short,\
+    "Python-Ogre Hand Wrapped\\n" );',
+    'def( "getChild", &::Node_getChild_string,\
+    "Python-Ogre Hand Wrapped\\n" );',   
+    'def( "getParent", &::Node_getParent,\
+    "Python-Ogre Hand Wrapped\\n" );',   
+    'def( "removeChild", &::Node_removeChild1,\
+    "Python-Ogre Hand Wrapped\\n" );',
+    'def( "removeChild", &::Node_removeChild2,\
+    "Python-Ogre Hand Wrapped\\n" );',
+#     'def( "removeChild", &::Node_removeChild3,\
+#     "Python-Ogre Hand Wrapped\\n" );',
+    'def( "createChild", &::Node_createChild1,\
+    "Python-Ogre Hand Wrapped\\n" );',
+    'def( "createChild", &::Node_createChild2,\
+    "Python-Ogre Hand Wrapped\\n" );',
+    ]
+
 WRAPPER_DEFINITION_ResourceManager = \
 """
-boost::python::object ResourceManager_getByName_alt(Ogre::ResourceManager& me, const std::string& name){
-    // this version is "just because" :)
-    Ogre::ResourcePtr r = me.getByName( name );
-    Ogre::ResourceManager * rm = r->getCreator();
-    Ogre::String type = rm->getResourceType();
-    if (type == "Texture") 
-            return boost::python::object( Ogre::TexturePtr( r ) );
-    if (type == "Material")
-            return boost::python::object( Ogre::MaterialPtr( r ) );
-    if (type == "Compositor" )
-            return boost::python::object( Ogre::CompositorPtr( r ) );
-    if (type == "Font") 
-            return boost::python::object( Ogre::FontPtr( r ) );
-    if (type == "GpuProgram") 
-            return boost::python::object( Ogre::GpuProgramPtr( r ) );
-    if (type == "HighLevelGpuProgram" )
-            return boost::python::object( Ogre::HighLevelGpuProgramPtr( r ) );
-    if (type == "Mesh" )
-            return boost::python::object( Ogre::MeshPtr( r ) );
-    if (type == "Skeleton" )
-            return boost::python::object( Ogre::SkeletonPtr( r ) );
-            
-    return  boost::python::object( r );   
-}
-
-        
 // I'm not going to wrap ResourceManager::load in the same way as getByName etc as you can always do a load
 // and then do a getByName
-        
-boost::python::object ResourceManager_getByHandle(Ogre::ResourceManager& me,Ogre::ResourceHandle handle) {
-   // get the resouce
-    Ogre::ResourcePtr r = me.getByHandle( handle );
-   if( dynamic_cast< Ogre::Texture* >( r.get() ) ){
-        return boost::python::object( Ogre::TexturePtr( r ) );
-    }
-    if( dynamic_cast< Ogre::Material* >( r.get() ) ){
-        return boost::python::object( Ogre::MaterialPtr( r ) );
-    }
-   if( dynamic_cast< Ogre::Compositor* >( r.get() ) ){
-        return boost::python::object( Ogre::CompositorPtr( r ) );
-    }
-    if( dynamic_cast< Ogre::Font* >( r.get() ) ){
-        return boost::python::object( Ogre::FontPtr( r ) );
-    }   
-    if( dynamic_cast< Ogre::GpuProgram* >( r.get() ) ){
-        return boost::python::object( Ogre::GpuProgramPtr( r ) );
-    }
-    if( dynamic_cast< Ogre::HighLevelGpuProgram* >( r.get() ) ){
-        return boost::python::object( Ogre::HighLevelGpuProgramPtr( r ) );
-    }
-    if( dynamic_cast< Ogre::Mesh* >( r.get() ) ){
-        return boost::python::object( Ogre::MeshPtr( r ) );
-    }
-    if( dynamic_cast< Ogre::Skeleton* >( r.get() ) ){
-        return boost::python::object( Ogre::SkeletonPtr( r ) );
-    }
-    return boost::python::object( r ); //unknown type
-}
 
-boost::python::object ResourceManager_getByName(Ogre::ResourceManager& me, const std::string& name){
-    // get the resouce
-    Ogre::ResourcePtr r = me.getByName( name );
+boost::python::object ResourceManager_CastResource ( Ogre::ResourcePtr r ) {
    if( dynamic_cast< Ogre::Texture* >( r.get() ) ){
         return boost::python::object( Ogre::TexturePtr( r ) );
     }
@@ -90,15 +95,38 @@ boost::python::object ResourceManager_getByName(Ogre::ResourceManager& me, const
         return boost::python::object( Ogre::SkeletonPtr( r ) );
     }
     return boost::python::object( r ); //unknown type
+}   
+ 
+boost::python::object ResourceManager_getByHandle(Ogre::ResourceManager& me,Ogre::ResourceHandle handle) {
+    return ResourceManager_CastResource ( me.getByHandle( handle ) );
+}
+boost::python::object ResourceManager_getByName(Ogre::ResourceManager& me, const std::string& name){
+    return ResourceManager_CastResource (me.getByName( name ) );
+}
+boost::python::object ResourceManager_create(Ogre::ResourceManager& me,Ogre::String const & name, 
+                            Ogre::String const & group, bool isManual=false, 
+                            Ogre::ManualResourceLoader * loader=0, Ogre::NameValuePairList const * createParams=0) {
+    return ResourceManager_CastResource (me.create(name, group, isManual,  loader, createParams) );
+}
+                            
+boost::python::object ResourceManager_load(Ogre::ResourceManager& me,Ogre::String const & name, 
+                            Ogre::String const & group, bool isManual=false, Ogre::ManualResourceLoader * loader=0, 
+                            Ogre::NameValuePairList const * loadParams=0){
+                            
+    return ResourceManager_CastResource (me.load(name, group, isManual, loader, loadParams) );
 }
 """
+
+
 WRAPPER_REGISTRATION_ResourceManager = [
     'def( "getByName", &::ResourceManager_getByName,\
     "Python-Ogre Hand Wrapped\\n" );',
-    'def( "getByNameAlt", &::ResourceManager_getByName_alt,\
-    "Python-Ogre Hand Wrapped\\n" );',
     'def( "getByHandle", &::ResourceManager_getByHandle,\
-    "Python-Ogre Hand Wrapped\\n" );'
+    "Python-Ogre Hand Wrapped\\n" );',
+    'def( "create", &::ResourceManager_create,\
+    "Python-Ogre Hand Wrapped\\n" );',
+    'def( "load", &::ResourceManager_load,\
+    "Python-Ogre Hand Wrapped\\n" );',
     ]
     
 
@@ -497,6 +525,10 @@ def apply( mb ):
     rt.add_declaration_code( WRAPPER_DEFINITION_ResourceManager )
     apply_reg (rt,  WRAPPER_REGISTRATION_ResourceManager )
     
+    rt = mb.class_( 'Node' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_Node )
+    apply_reg (rt,  WRAPPER_REGISTRATION_Node )
+
     rt = mb.class_( 'Frustum' )
     rt.add_declaration_code( WRAPPER_DEFINITION_Frustum )
     apply_reg (rt,  WRAPPER_REGISTRATION_Frustum )
