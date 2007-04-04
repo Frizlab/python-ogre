@@ -203,13 +203,14 @@ def ManualInclude ( mb ):
                         declarations.remove_reference( oper.arguments[1].type ) ) )
         if not isinstance( type_or_decl, declarations.declaration_t ):
             continue
-# #         # ugly hack until patch 1675539 gets applied to Ogre source
-# #         Expose = True
-# #         for c in ['ConvexBody', 'Polygon']:
-# #             if c in type_or_decl.decl_string:
-# #                 Expose = False
-# #         if type_or_decl.ignore == False and Expose:
-# #             oper.include()
+        # ugly hack until a patch gets applied to Ogre source
+        Expose = True
+        for c in ['StaticFaceGroup']:
+            if c in type_or_decl.decl_string:
+                Expose = False
+        if type_or_decl.ignore == False and Expose:
+            print "OPERATOR<<:", oper
+            oper.include()
 
         
 ############################################################
@@ -635,12 +636,12 @@ def Fix_NT ( mb ):
 def Fix_Implicit_Conversions ( mb ):
     """By default we disable explicit conversion, however sometimes it makes sense
     """
-    nonImplicitClasses=['Radian','Degree', 'TimeIndex' ] # AnimationStateControllerValue, Any, SceneQuery, 
+    ImplicitClasses=['Radian','Degree', 'TimeIndex' ] # AnimationStateControllerValue, Any, SceneQuery, 
     # BorderRenderable, SceneNode, CompositionPass, CompositionTargetPass, CompositionTechnique
     # CompositorChain, CompositorInstance::TargetOperation, TextureUnitState, DefaultAxisAlignedBoxSceneQuery
     # DefaultIntersectionSceneQuery, DefaultPlaneBoundedVolumeListSceneQuery, DefaultRaySceneQuery
       # DefaultSphereSceneQuery, DefaultSceneManager, 
-    for className in nonImplicitClasses:
+    for className in ImplicitClasses:
         mb.class_(className).constructors().allow_implicit_conversion = True
  
     

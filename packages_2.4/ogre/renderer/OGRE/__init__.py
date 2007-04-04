@@ -18,6 +18,8 @@ OgreException = _ogre_.Exception
 def Radian( r=None, d=None ):
     if isinstance( r, _ogre_.Degree ):
         return _ogre_.Radian( r )
+    elif isinstance( r, _ogre_.Radian ):
+        return _ogre_.Radian().assign( r )
     elif d:
         return _ogre_.Radian( d=d )
     else:
@@ -26,12 +28,10 @@ def Radian( r=None, d=None ):
 def Degree( d=None, r=None ):
     if isinstance( d, _ogre_.Radian ):
         return _ogre_.Degree( d )
+    elif isinstance( d, _ogre_.Degree ):
+        return _ogre_.Degree().assign( d )
     elif r: 
         return _ogre.Degree (r=r)
     else:
         return _ogre_.Degree( d=d )
         
-class Vector3 ( _ogre_.Vector3 ):
-    def __str__ ( self ):
-        
-        return "Ogre.Vector3: x=%(x)f y=%(y)f y=%(y)f" % { 'x':self.x, 'y':self.y, 'z':self.z}
