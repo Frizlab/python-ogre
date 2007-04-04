@@ -28,8 +28,7 @@ derived_py_exception = \
 """
 class Ogre${err_class}(OgreException):
     def __init__( self, app_error ):
-        OgreException.__init__( self )
-        self._pimpl = app_error
+        OgreException.__init__( self, app_error )
     
     def __getattribute__(self, attr):
         return super(Ogre${err_class},self).__getattribute__(attr)
