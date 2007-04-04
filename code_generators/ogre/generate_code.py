@@ -26,6 +26,7 @@ import environment
 import common_utils
 import customization_data
 import hand_made_wrappers
+import register_exceptions
 
 from pygccxml import parser
 from pygccxml import declarations
@@ -721,20 +722,20 @@ def Set_Smart_Pointers( mb ):
            v.apply_smart_ptr_wa = True    
            print "Applying Smart Pointer: ",  v.name, " of class: ",  cls.name
                 
-def Set_Exception(mb):
-    """We don't exclude  Exception, because it contains functionality, that could
-    be useful to user. But, we will provide automatic exception translator
-    """
-    Exception = mb.namespace( 'Ogre' ).class_( 'Exception' )
-    Exception.include()
-    Exception.mem_fun('what').exclude() # declared with empty throw
-    Exception.mem_fun('getNumber').exclude() # declared with empty throw
-    Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getFullDescription().c_str()' )
+#~ def Set_Exception(mb):
+    #~ """We don't exclude  Exception, because it contains functionality, that could
+    #~ be useful to user. But, we will provide automatic exception translator
+    #~ """
+    #~ Exception = mb.namespace( 'Ogre' ).class_( 'Exception' )
+    #~ Exception.include()
+    #~ Exception.mem_fun('what').exclude() # declared with empty throw
+    #~ Exception.mem_fun('getNumber').exclude() # declared with empty throw
+    #~ Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getFullDescription().c_str()' )
     
-# #     ## there are two identical constructors so we need to remove one of them
-# #     for c in Exception.constructors(arg_types=[None]):
-# #         c.exclude() ## exclude the first constructor..
-# #         break
+#~ # #     ## there are two identical constructors so we need to remove one of them
+#~ # #     for c in Exception.constructors(arg_types=[None]):
+#~ # #         c.exclude() ## exclude the first constructor..
+#~ # #         break
         
     
 def _ReturnUnsignedInt( type_ ):
@@ -933,7 +934,7 @@ def generate_code():
     
     common_utils.configure_shared_ptr(mb)
     
-    Set_Exception( mb )
+    register_exceptions.register( mb )
         
     #
     # We need to tell boost how to handle calling (and returning from) certain functions
