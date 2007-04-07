@@ -10,7 +10,7 @@ class OgreException(Exception):
         self._pimpl = app_error
     
     def __str__( self ):
-        return self._pimpl.message()
+        return self._pimpl.getFullDescription()
 
     def __getattribute__(self, attr):
         my_pimpl = super(OgreException, self).__getattribute__("_pimpl")
@@ -33,7 +33,7 @@ class Ogre${err_class}(OgreException):
     def __getattribute__(self, attr):
         return super(Ogre${err_class},self).__getattribute__(attr)
 
-_ogre_.Ogre${err_class} = Ogre${err_class}
+_ogre_._${err_class}_.py_err_class = Ogre${err_class}
 """.strip()
 
 register_translator = """${err_class}_exception_translator();"""
@@ -54,12 +54,12 @@ struct ${err_class}_exception_translator{
         bp::register_exception_translator<exception_type>(&translator_type::translate);
     }
     
-    static void 
-    translate( const exception_type& err ){
-        bp::object this_module( bp::handle<>( bp::borrowed(PyImport_AddModule("_ogre_"))));
-        bp::object app_exc_class = this_module.attr("Ogre${err_class}");
-        bp::object pyerr = app_exc_class( err );
-        PyErr_SetObject( app_exc_class.ptr(), bp::incref( pyerr.ptr() ) );
+    static void  
+    translate( const exception_type& err ){ 
+        bp::object pimpl_err( err ); 
+        bp::object pyerr_class = pimpl_err.attr( "py_err_class" ); 
+        bp::object pyerr = pyerr_class( pimpl_err ); 
+        PyErr_SetObject( pyerr_class.ptr(), bp::incref( pyerr.ptr() ) ); 
     }
 
     //Sometimes, exceptions should be passed back to the library.
