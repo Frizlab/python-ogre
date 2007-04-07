@@ -4,8 +4,7 @@ if sys.platform == 'win32':
     os.environ['PATH'] += ';' + __path__[0] 
 
 from _ogre_ import *
-
-OgreException = _ogre_.Exception
+import _ogre_exceptions_
 
 
 ## Note the work around to ensure the Radians and Degree types work correctly
