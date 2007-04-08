@@ -8,16 +8,17 @@ boost::python::object OgreOde_Loader_loadObject(OgreOde_Loader::DotLoader& me, c
 {
     OgreOde_Prefab::Object *  r = me.loadObject( filename, object_name, instance_name );
    if( dynamic_cast< OgreOde_Prefab::Vehicle* >( r ) ){
-        return boost::python::object( static_cast <OgreOde_Prefab::Vehicle *>( r ) );
+        return boost::python::object( (OgreOde_Prefab::Vehicle *)( r ) );
     }
     if( dynamic_cast< OgreOde_Prefab::Ragdoll* >( r ) ){
-        return boost::python::object( static_cast <OgreOde_Prefab::Ragdoll *>( r ) );
+        return boost::python::object( (OgreOde_Prefab::Ragdoll *)( r ) );
     }
     return boost::python::object( r ); //unknown type
 }
 """     
 WRAPPER_REGISTRATION_OgreOdeLoader = [
-    'def( "loadObject1", &::OgreOde_Loader_loadObject,\
+    'def( "loadObject", &::OgreOde_Loader_loadObject,\
+    ( bp::arg("filename"), bp::arg("object_name"), bp::arg("instance_name")=Ogre::StringUtil::BLANK ),\
     "Python-Ogre Hand Wrapped\\nReturns a vehicle or ragdoll as appropiate" );',
     ]
     

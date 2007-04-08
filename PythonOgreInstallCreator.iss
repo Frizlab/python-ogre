@@ -66,6 +66,27 @@ Type: filesandordirs; Name: {code:GetPythonSiteDir}\ogre\physics\ODE\*.pyc
 Type: filesandordirs; Name: {code:GetPythonSiteDir}\ogre\physics\OgreOde\*.pyc
 Type: filesandordirs; Name: {code:GetPythonSiteDir}\ogre\physics\OgreNewt\*.pyc
 
+Type: files; Name: {app}\demos\CEGUI\*.pyc
+Type: files; Name: {app}\demos\CEGUI\*.log
+Type: files; Name: {app}\demos\ogre\*.pyc
+Type: files; Name: {app}\demos\ogre\*.log
+Type: files; Name: {app}\demos\ogreode\*.pyc
+Type: files; Name: {app}\demos\ogreode\*.log
+Type: files; Name: {app}\demos\ogrenewt\*.pyc
+Type: files; Name: {app}\demos\ogrenewt\*.log
+Type: files; Name: {app}\demos\ogreal\*.pyc
+Type: files; Name: {app}\demos\ogreal\*.log
+Type: files; Name: {app}\demos\ode\*.pyc
+Type: files; Name: {app}\demos\ode\*.log
+Type: dirifempty; Name: {app}\demos\CEGUI
+Type: dirifempty; Name: {app}\demos\ogre
+Type: dirifempty; Name: {app}\demos\ogreode
+Type: dirifempty; Name: {app}\demos\ogrenewt
+Type: dirifempty; Name: {app}\demos\ogreal
+Type: dirifempty; Name: {app}\demos\ode
+Type: dirifempty; Name: {app}\demos
+Type: dirifempty; Name: {app}
+
 ;
 ; I REALLY DON'T like doing this but if people have used a previous version of Python-Ogre
 ; I need to remove it to force any existing source code to fail and hence have them

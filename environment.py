@@ -21,9 +21,9 @@ def log ( instring ):
     if _LOGGING_ON:
         print __file__, "LOG::", instring
 
-PythonOgreMajorVersion = "0"
-PythonOgreMinorVersion = "9" # change to 0.7 due to lowercase properties
-PythonOgrePatchVersion = "1"
+PythonOgreMajorVersion = "1"
+PythonOgreMinorVersion = "0" # change to 0.7 due to lowercase properties
+PythonOgrePatchVersion = "0"
 
 
 ##

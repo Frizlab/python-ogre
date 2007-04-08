@@ -125,15 +125,7 @@ class FacialAnimationApplication(SampleFramework.Application):
 		
     def _createGUI(self):
 
-        ## set the default resource groups to be used
-        CEGUI.Imageset.setDefaultResourceGroup("imagesets")
-        #CEGUI.Font.setDefaultResourceGroup("fonts")
-        CEGUI.Scheme.setDefaultResourceGroup("schemes")
-        CEGUI.WidgetLookManager.setDefaultResourceGroup("looknfeels")
-        CEGUI.WindowManager.setDefaultResourceGroup("layouts")
-        CEGUI.ScriptModule.setDefaultResourceGroup("lua_scripts")
-
-        # Initiaslise CEGUI Renderer
+         # Initiaslise CEGUI Renderer
         self.guiRenderer = cegui.OgreCEGUIRenderer(self.renderWindow,ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager)
 
         # create cegui system and log name facial.log
@@ -143,7 +135,7 @@ class FacialAnimationApplication(SampleFramework.Application):
         # Load Cegui Scheme
         cegui.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme")
         self.system.setDefaultMouseCursor("TaharezLook", "MouseArrow")
-        #cegui.FontManager.getSingleton().createFont("bluehighway-12.font")
+        self.system.setDefaultFont("BlueHighway-12")
 
         # Load Layout 
         sheet = cegui.WindowManager.getSingleton().loadWindowLayout("facial.layout")

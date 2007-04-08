@@ -87,7 +87,7 @@ class SimpleScenes_Zombie ( SimpleScenes ):
         self.myRagDolls.append (ragdoll)
 
 
-        ##self.sSelectedMesh = (self.sSelectedMesh + 1) % 4
+        self.sSelectedMesh = (self.sSelectedMesh + 1) % 4
 
     ## Constructor
     def __init__( self, world):
@@ -196,7 +196,7 @@ class SimpleScenes_Zombie ( SimpleScenes ):
                     self._last_ragdoll = 5.0
 
                     radgoll = i.movable
-
+                    
                    ## uncomment to see nice debug mesh of animated mesh
                    
 #                   ## ray cast could be tested against that instead of ragdoll.
@@ -217,7 +217,8 @@ class SimpleScenes_Zombie ( SimpleScenes ):
                     hit_point = ogre.Vector3()
 
                     is_hit = False
-                    if (radgoll.pick(self.myOdeRay, hit_body, hit_point)):
+                    result, hit_body, hit_point = radgoll.PYpick(self.myOdeRay)
+                    if result:
                         if (hit_body):
                             hit_body.addForceAt(pickRay.getDirection() * 250000, hit_point)
                             is_hit = True

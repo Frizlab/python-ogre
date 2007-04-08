@@ -7,13 +7,7 @@
 # */
 
 ## The tests we can display
-#import SimpleScenes_BoxStack.py
-#include "SimpleScenes_Buggy.h"
-#include "SimpleScenes_Chain.h"
-#include "SimpleScenes_TriMesh.h"
-#include "SimpleScenes_Crash.h"
-#include "SimpleScenes_Joints.h"
-#include "SimpleScenes_Zombie.h"
+
 import ogre.renderer.OGRE as ogre
 import ogre.physics.OgreOde as OgreOde
 import ogre.io.OIS as OIS
@@ -41,8 +35,7 @@ class SimpleScenesFrameListener ( sf.FrameListener ):
         sf.FrameListener.__init__(self, renderWindow, camera)
         self._demo = demo
     def __del__(self):
-        print "FR del"
-        sf.FramsListener.__del__(self)
+        sf.FrameListener.__del__(self)
                 
     def frameStarted(self, evt):
         ## Do the default demo input handling and keep our UI display
@@ -58,8 +51,12 @@ class SimpleScenesFrameListener ( sf.FrameListener ):
                     pOver.hide()
                     
         ## Tell the demo application that it needs to handle input
-        self._demo.frameStarted(evt, self.Keyboard, self.Mouse)  #we pass the keyboard etc to the main app framelistener
-    
+        if bOK:
+            self._demo.frameStarted(evt, self.Keyboard, self.Mouse)  #we pass the keyboard etc to the main app framelistener
+        else:
+            ## NOTE:  Because we are holding a pointer to the main app (or demo app) we need to 
+            ## delete it here first otherwise we get a crash..
+            del self._demo  
         ## Quit or carry on according to the normal demo input
         return bOK
     
@@ -69,7 +66,6 @@ class SimpleScenesFrameListener ( sf.FrameListener ):
     def frameEnded(self, evt):
         ## Tell our demo that the frame's ended before doing default processing
         self._demo.frameEnded(evt, self.Keyboard, self.Mouse)
-        return True
         return sf.FrameListener.frameEnded(self, evt)
 
 # /*
@@ -90,25 +86,12 @@ class SimpleScenesApplication(sf.Application):
         self._looking = _chasing = False
         self._paused = False
 
-#     def _setUpResources( self ):
-#         sf.Application._setUpResources(self) 
-#         rsm = ogre.ResourceGroupManager.getSingletonPtr()
-#         groups = rsm.getResourceGroups()        
-#         ##if (std::find(groups.begin(), groups.end(), String("OgreOde")) == groups.end())
-#         rsm.createResourceGroup("OgreOde")
-#         rsm.addResourceLocation("../Media/OgreOde","FileSystem", "OgreOde")
-        
     def __del__ ( self ):
-        print "in __del__"
         del self._test
         del self._plane
         del self._stepper
         del self._world
 
-        sf.Application.__del__( self )
-        print "del2"
-        del( self.frameListener )
-        print "del3"
         
     def _createScene(self):
         global STEP_RATE, ANY_QUERY_MASK, STATIC_GEOMETRY_QUERY_MASK
@@ -126,10 +109,10 @@ class SimpleScenesApplication(sf.Application):
             sceneManager.setShadowTextureSettings(512, 2)
     
         ## Add some default lighting to the scene
-#         sceneManager.setAmbientLight( (.8, .8, .8) )
-#         light = sceneManager.createLight('MainLight')
-#         light.setPosition (0, 0, 1)
-#         light.CastShadows=True
+        sceneManager.setAmbientLight( (.8, .8, .8) )
+        light = sceneManager.createLight('MainLight')
+        light.setPosition (0, 0, 1)
+        light.CastShadows=True
     
         ## Create a directional light to shadow and light the bodies
         self._spot = sceneManager.createLight("Spot")
@@ -283,7 +266,6 @@ class SimpleScenesApplication(sf.Application):
     
             ## Switch the test we're displaying
             if (Keyboard.isKeyDown(OIS.KC_F1)):
-                print self._test
                 del (self._test)
                 self._test = SimpleScenes_BoxStack(self._world)
                 changed = True
@@ -299,11 +281,11 @@ class SimpleScenesApplication(sf.Application):
                 del self._test
                 self._test = SimpleScenes_TriMesh(self._world)
                 changed = True
+#             elif (Keyboard.isKeyDown(OIS.KC_F6)):
+#                 del self._test
+#                 self._test = SimpleScenes_Crash(self._world)
+#                 changed = True
             elif (Keyboard.isKeyDown(OIS.KC_F5)):
-                del self._test
-                self._test = SimpleScenes_Crash(self._world)
-                changed = True
-            elif (Keyboard.isKeyDown(OIS.KC_F6)):
                 del self._test
                 self._test = SimpleScenes_Joints(self._world)
     
@@ -312,10 +294,10 @@ class SimpleScenesApplication(sf.Application):
                     self.camera.setPosition(pos.x,pos.y,10.0)
                     self.camera.lookAt(0,0,0)
                 changed = True
-            elif (Keyboard.isKeyDown(OIS.KC_F7)):
-                del self._test
-                self._test = SimpleScenes_Zombie(self._world)
-                changed = True
+#             elif (Keyboard.isKeyDown(OIS.KC_F7)):
+#                 del self._test
+#                 self._test = SimpleScenes_Zombie(self._world)
+#                 changed = True
     
             ## If we changed the test...
             if ((self._test) and (changed)):
@@ -399,14 +381,13 @@ class SimpleScenesApplication(sf.Application):
         ## note we pass ourselves as the demo to the framelistener
         self.frameListener = SimpleScenesFrameListener(self, self.renderWindow, self.camera)
         self.root.addFrameListener(self.frameListener)
-
-
+       
 
 
 if __name__ == '__main__':
     try:
         application = SimpleScenesApplication()
         application.go()
-    except ogre.Exception, e:
+    except ogre.OgreException, e:
         print e
-        print dir(e)
+        

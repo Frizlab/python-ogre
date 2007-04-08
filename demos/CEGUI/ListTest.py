@@ -17,8 +17,8 @@
 ###
 
 import ogre.renderer.OGRE as ogre
-import CEGUI as CEGUI
-import ogre.io.OIS as OIS as OIS
+import ogre.gui.CEGUI as CEGUI
+import ogre.io.OIS as OIS 
 import SampleFramework
 
 import sys, exceptions, random
@@ -67,29 +67,19 @@ class GuiApplication ( SampleFramework.Application ):
         self.GUIRenderer = CEGUI.OgreCEGUIRenderer(self.renderWindow, 
             ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager) 
 
-        ## set the default resource groups to be used
-        CEGUI.Imageset.setDefaultResourceGroup("imagesets")
-        CEGUI.Font.setDefaultResourceGroup("fonts")
-        CEGUI.Scheme.setDefaultResourceGroup("schemes")
-        CEGUI.WidgetLookManager.setDefaultResourceGroup("looknfeels")
-        CEGUI.WindowManager.setDefaultResourceGroup("layouts")
-        CEGUI.ScriptModule.setDefaultResourceGroup("lua_scripts")
-
-                    
+                   
         self.GUIsystem = CEGUI.System(self.GUIRenderer) 
 
         logger = CEGUI.Logger.getSingleton()
         logger.setLoggingLevel( CEGUI.Informative ) 
 
         ## load scheme and set up defaults
-        CEGUI.SchemeManager.getSingleton().loadScheme("TaharezLook.scheme") 
+        CEGUI.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme") 
         self.GUIsystem.setDefaultMouseCursor("TaharezLook",  "MouseArrow") 
-        #self.GUIsystem.setDefaultFont( "BlueHighway-12") 
-        CEGUI.FontManager.getSingleton().createFont("Commonwealth-10.font")
-        self.GUIsystem.setDefaultFont( "Commonwealth-10") 
+        self.GUIsystem.setDefaultFont( "BlueHighway-12")
         #sheet = CEGUI.WindowManager.getSingleton().loadWindowLayout("ogregui.layout")  
         ## load an image to use as a background
-        CEGUI.ImagesetManager.getSingleton().createImagesetFromImageFile("BackgroundImage", "GPN-2000-001437.tga")
+        CEGUI.ImagesetManager.getSingleton().createImagesetFromImageFile("BackgroundImage", "HeatNoise.tga")
     
         ## here we will use a StaticImage as the root, then we can use it to place a background image
         background = CEGUI.WindowManager.getSingleton().createWindow("TaharezLook/StaticImage", "background_wnd")
@@ -103,26 +93,25 @@ class GuiApplication ( SampleFramework.Application ):
         background.setProperty("Image", "set:BackgroundImage image:full_image")
         ## install this as the root GUI sheet
         self.GUIsystem.setGUISheet(background) 
-	self.lb=self.CreateComponent("TaharezLook/Listbox","TestBox",(0,0),
-	  (0.5,0.5),(0.5,0.5),(0.5,0.5))
+        self.lb=self.CreateComponent("TaharezLook/Listbox","TestBox",(0,0),(0.5,0.5),(0.5,0.5),(0.5,0.5))
         background.addChildWindow(self.lb)
 
-	print "Reset List before Add... ",
-	self.lb.resetList()
-	print "Ok"
-	print "Adding Item... ",
-	self.lbi=self.AddItemToListBox(self.lb, "Test test test")
-	print "Ok"
-
-	print "Reset List after Add... ",
-	self.lb.resetList()
-	print "Ok"
+        print "Reset List before Add... ",
+        self.lb.resetList()
+        print "Ok"
+        print "Adding Item... ",
+        self.lbi=self.AddItemToListBox(self.lb, "Test test test")
+        print "Ok"
+    
+        print "Reset List after Add... ",
+        self.lb.resetList()
+        print "Ok"
 
         ## now setup any event handlers you want       
         self.setupEventHandlers() 
         
     def AddItemToListBox(self, l, t):
-      import CEGUI as cegui
+      import ogre.gui.CEGUI as cegui
       item=cegui.ListboxTextItem(t,l.itemCount+1)
       item.setSelectionBrushImage( "TaharezLook", "ListboxSelectionBrush")
       item.setSelectionColours (cegui.colour(1.0, 0.0, 0.0, 1.0))
@@ -133,7 +122,7 @@ class GuiApplication ( SampleFramework.Application ):
 
     def CreateComponent(self,widget_name,name,pos,size,min,max,text='',showframe=False):
       """ Manually create a component! """
-      import CEGUI as cegui
+      import ogre.gui.CEGUI as cegui
       control = cegui.WindowManager.getSingleton().createWindow(widget_name, name)
       control.position = cegui.UVector2(cegui.UDim(pos[0],0),cegui.UDim(pos[1],0))
       control.setSize(cegui.UVector2(cegui.UDim(size[0],0),cegui.UDim(size[1],0)))
@@ -154,9 +143,9 @@ class GuiApplication ( SampleFramework.Application ):
 #         wmgr.getWindow( "OgreGuiDemo/TabCtrl/Page1/QuitButton").subscribeEvent(
 #                             CEGUI.PushButton.EventClicked, self, "handleQuit")
 #         wmgr.getWindow("OgreGuiDemo/TabCtrl/Page2/ObjectTypeList").subscribeEvent(
-# 				CEGUI.Combobox.EventListSelectionAccepted, self, "handleObjectSelection");
+#               CEGUI.Combobox.EventListSelectionAccepted, self, "handleObjectSelection");
 
-				                
+                                
     def handleQuit(self, e):
         self.frameListener.requestShutdown() 
         return True
@@ -165,25 +154,7 @@ if __name__ == '__main__':
     try:
         ta = GuiApplication()
         ta.go()
-    except ogre.Exception, e:
+    except ogre.OgreException, e:
         print e
-    except exceptions.RuntimeError, e:
-        print "Runtime error:", e
-    except exceptions.TypeError, e:
-        print "Type error:", e
-    except exceptions.AttributeError, e:
-        print "Attribute error:", e
-    except exceptions.NameError, e:
-        print "Name error:", e
-    except Exception,inst:
-        print "EException"
-        print type(inst)     # the exception instance
-        print inst.args      # arguments stored in .args
-        print inst
-    except exceptions.ValueError,e:
-        print "ValueError",e
-    except :
-        print "Unexpected error:", sys.exc_info()[0]
-    
         
 

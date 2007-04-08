@@ -24,6 +24,7 @@ boost::python::object ShadowRenderable_getLightCapRenderable( Ogre::ShadowRender
 WRAPPER_REGISTRATION_ShadowRenderable = [
     'def( "getLightCapRenderable", &::ShadowRenderable_getLightCapRenderable,\
     "Python-Ogre Hand Wrapped\\n" );'
+    
     ]    
     
     
@@ -78,15 +79,17 @@ boost::python::object OverlayElement_clone(Ogre::OverlayElement &me, Ogre::Strin
 """
 WRAPPER_REGISTRATION_OverlayElement = [
     'def( "findElementAt", &::OverlayElement_findElementAt,\
-    "Python-Ogre Hand Wrapped\\n" );',
+    "Python-Ogre Hand Wrapped\\n" );'
     'def( "clone", &::OverlayElement_clone,\
     "Python-Ogre Hand Wrapped\\n" );'
-    #,   'def( "getSourceTemplate", &::OverlayElement_getSourceTemplate,\
-    #"Python-Ogre Hand Wrapped\\n" );'   
     ]
     
 WRAPPER_DEFINITION_Node = \
 """
+Ogre::SceneNode * 
+Node_castAsSceneNode ( Ogre::Node * n ) {
+    return ( (Ogre::SceneNode* ) n );
+    }
 boost::python::object Node_castNode(Ogre::Node * n){
     if( dynamic_cast< Ogre::SceneNode * >( n ) ){
         return boost::python::object( (Ogre::SceneNode*) n );
@@ -127,21 +130,24 @@ boost::python::object Node_createChild2(Ogre::Node& me, Ogre::String const & nam
 
 WRAPPER_REGISTRATION_Node = [
     'def( "getChild", &::Node_getChild_short,\
-    "Python-Ogre Hand Wrapped\\n" );',
+    "Python-Ogre Hand Wrapped\\n" );'
     'def( "getChild", &::Node_getChild_string,\
-    "Python-Ogre Hand Wrapped\\n" );',   
+    "Python-Ogre Hand Wrapped\\n" );'
     'def( "getParent", &::Node_getParent,\
-    "Python-Ogre Hand Wrapped\\n" );',   
+    "Python-Ogre Hand Wrapped\\n" );'
     'def( "removeChild", &::Node_removeChild1,\
-    "Python-Ogre Hand Wrapped\\n" );',
+    "Python-Ogre Hand Wrapped\\n" );'
     'def( "removeChild", &::Node_removeChild2,\
-    "Python-Ogre Hand Wrapped\\n" );',
+    "Python-Ogre Hand Wrapped\\n" );'
     'def( "createChild", &::Node_createChild1,\
     ( bp::arg("translate")=Ogre::Vector3::ZERO, bp::arg("rotate")=Ogre::Quaternion::IDENTITY ),\
-    "Python-Ogre Hand Wrapped\\n" );',
+    "Python-Ogre Hand Wrapped\\n" );'
     'def( "createChild", &::Node_createChild2,\
     ( bp::arg("name"), bp::arg("translate")=Ogre::Vector3::ZERO, bp::arg("rotate")=Ogre::Quaternion::IDENTITY ),\
     "Python-Ogre Hand Wrapped\\n" );'
+    'def( "castAsSceneNode", &::Node_castAsSceneNode,\
+    "Python-Ogre Helper Function\\nCase a Node as a Scene Node",\
+    bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());'
     ]
 
 WRAPPER_DEFINITION_ResourceManager = \
@@ -200,15 +206,15 @@ boost::python::object ResourceManager_load(Ogre::ResourceManager& me,Ogre::Strin
 
 WRAPPER_REGISTRATION_ResourceManager = [
     'def( "getByName", &::ResourceManager_getByName,\
-    "Python-Ogre Hand Wrapped\\n" );',
+    "Python-Ogre Hand Wrapped\\n" );'
     'def( "getByHandle", &::ResourceManager_getByHandle,\
-    "Python-Ogre Hand Wrapped\\n" );',
+    "Python-Ogre Hand Wrapped\\n" );'
     'def( "create", &::ResourceManager_create,\
     ( bp::arg("name"), bp::arg("group"), bp::arg("isManual")=(bool)(false), bp::arg("loader")=bp::object(), bp::arg("createParams")=bp::object() ),\
-    "Python-Ogre Hand Wrapped\\n" );',
+    "Python-Ogre Hand Wrapped\\n" );'
     'def( "load", &::ResourceManager_load,\
     ( bp::arg("name"), bp::arg("group"), bp::arg("isManual")=(bool)(false), bp::arg("loader")=bp::object(), bp::arg("loadParams")=bp::object() ),\
-    "Python-Ogre Hand Wrapped\\n" );',
+    "Python-Ogre Hand Wrapped\\n" );'
     ]
     
 
