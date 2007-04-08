@@ -34,6 +34,7 @@ class Ogre${err_class}(OgreException):
         return super(Ogre${err_class},self).__getattribute__(attr)
 
 _ogre_._${err_class}_.py_err_class = Ogre${err_class}
+_ogre_.Ogre${err_class} = Ogre${err_class} 
 """.strip()
 
 register_translator = """${err_class}_exception_translator();"""
