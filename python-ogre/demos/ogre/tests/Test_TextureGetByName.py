@@ -1,5 +1,5 @@
 # This code is in the Public Domain
-import  Ogre as ogre
+import  ogre.renderer.OGRE as ogre
 import SampleFramework as sf
 import ctypes, math,sys
 
@@ -20,7 +20,20 @@ class TestApplication(sf.Application):
             # now try to get it byname
             Res = fm.getByName(name)
             print "**TEST** : ", name, " should be a Font object", Res
-       
+        print "TESTING NODE RETURN"    
+        skel = ogre.SkeletonManager.getSingleton().load("jaiqua.skeleton", ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME,False, ogre.ManualResourceLoader(), ogre.NameValuePairList()) 
+        print "TEST\n",skel,"\n"
+        for i in range( skel.numBones): 
+            bone = skel.getBone(i)
+            print "BONE", bone 
+            for j in range(bone.numChildren()): 
+                # Child bones, one per part than can be damaged 
+                child = bone.getChild(j) 
+                print "Child1", child
+                for k in range(child.numChildren()): 
+                    # Grandchild bones, one damaged and one undamaged 
+                    # These guys have geometry attached, should therefore be SceneNodes 
+                    print "CHILD TYPE", child, child.getChild(k) 
         
         ##### code for testing OverlayContainer.getChildIterator
         ##### --strank

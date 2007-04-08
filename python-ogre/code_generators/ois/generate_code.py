@@ -16,6 +16,7 @@ import hand_made_wrappers
 
 from pyplusplus import module_builder
 from pyplusplus.module_builder import call_policies
+from pyplusplus import function_transformers as ft
 
 from pygccxml import parser
 from pygccxml import declarations
@@ -69,7 +70,10 @@ def Remove_Static_Consts ( mb ):
                 print "Excluding static const ", var
                 var.exclude()    
 
-                                                                               
+def add_transformations ( mb ):
+    global_ns = mb.global_ns
+    return
+                                                                              
  
 def configure_exception(mb):
     #We don't exclude  Exception, because it contains functionality, that could
@@ -90,6 +94,7 @@ def generate_code():
                                           , indexing_suite_version=2 )
 
     filter_declarations (mb)
+    add_transformations ( mb )
     
     Remove_Static_Consts ( mb.namespace( 'OIS' ) )
     mb.BOOST_PYTHON_MAX_ARITY = 25
@@ -105,7 +110,6 @@ def generate_code():
 
     common_utils.add_constants( mb, { 'ois_version' :  '"%s"' % environment.ois.version
                                       , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n") } )
-
     #Creating code creator. After this step you should not modify/customize declarations.
     extractor = exdoc.doc_extractor("")
     mb.build_code_creator (module_name='_ois_',doc_extractor= extractor)

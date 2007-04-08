@@ -212,8 +212,7 @@ if __name__ == '__main__':
     try:
         application = OgreNewtonApplication()
         application.go()
-    except Ogre.Exception, e:
+    except Ogre.OgreException, e:
         print e
-        print dir(e)
     
      

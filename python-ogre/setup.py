@@ -33,7 +33,7 @@ This version is built against the Ogre CVS"""
 
 METADATA = {
     "name":             "Python-Ogre",
-    "version":          "0.95 Candidate",
+    "version":          "1.0 RC1",
     "license":          "LGPL",
     "url":              "http://python-ogre.python-hosting.com/",
     "author":           "Lakin Wecker, Roman Yakovenko, Andy",

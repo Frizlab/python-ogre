@@ -104,12 +104,9 @@ class OgreNewtonFrameListener(sf.FrameListener):
      
         self.RagNode = self.sceneManager.getRootSceneNode().createChildSceneNode()
         self.RagNode.attachObject( self.RagEntity )
-#       self.RagEntity.getAnimationState( "LOOP" ).setLoop( True )
-#       self.RagEntity.getAnimationState( "LOOP" ).setEnabled( True )
-#         self.RagEntity.getAnimationState( "Walk" ).setLoop( True )
-#         self.RagEntity.getAnimationState( "Walk" ).setEnabled( True )
+        self.RagEntity.getAnimationState( "LOOP" ).setLoop( True )
+        self.RagEntity.getAnimationState( "LOOP" ).setEnabled( True )
         self.RagNode.setPosition( 0.0, -4.0, 0.0 )
-        self.RagNode.setScale([0.05,0.05,0.05])
     
         self.Ragdoll = None
     
@@ -180,7 +177,6 @@ class OgreNewtonFrameListener(sf.FrameListener):
     
                 ##no longer need the collision shape object
                 del col
- 
                    
                 ## something new: moment of inertia for the body.  this describes how much the body "resists"
                 ## rotation on each axis.  realistic values here make for MUCH more realistic results.  luckily
@@ -205,7 +201,6 @@ class OgreNewtonFrameListener(sf.FrameListener):
         ######################################################
         ## RAGDOLL CODE
         if (self.Ragdoll):
-            ## ragdoll exists, so pressing "R" Key will remove ragdoll, and reset the entity.
             if ((self.Keyboard.isKeyDown(OIS.KC_1) and ( not self.K1)) or
                          (self.Keyboard.isKeyDown( OIS.KC_2 ) and (not self.K2) )):
                 self.K1 = True
@@ -218,27 +213,23 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 self.RagNode.setPosition( Ogre.Vector3(0.0, -4.0, 0.0) )
                 self.RagNode.setOrientation( Ogre.Quaternion.IDENTITY )
     
-#               self.RagEntity.getAnimationState( "LOOP" ).setEnabled( True )
-#               self.RagEntity.getAnimationState( "LOOP" ).setTimePosition( 0.0 )
-#                 self.RagEntity.getAnimationState( "Walk" ).setEnabled( True )
-#                 self.RagEntity.getAnimationState( "Walk" ).setTimePosition( 0.0 )
+                self.RagEntity.getAnimationState( "LOOP" ).setEnabled( True )
+                self.RagEntity.getAnimationState( "LOOP" ).setTimePosition( 0.0 )
         else:
-            ## no ragdoll, so "R" key spawns the ragdoll. otherwise, we add time to the animation.
-#           self.RagEntity.getAnimationState( "LOOP" ).addTime( frameEvent.timeSinceLastFrame )
-#             self.RagEntity.getAnimationState( "Walk" ).addTime( frameEvent.timeSinceLastFrame )
+            self.RagEntity.getAnimationState( "LOOP" ).addTime( frameEvent.timeSinceLastFrame )
     
             if (self.Keyboard.isKeyDown(OIS.KC_1 ) and ( not self.K1)):
                 self.K1 = True
     
                 ## spawn the ragdoll.  this is the version that is made up of simple primitives.
                 self.Ragdoll = RagDoll( "./zombie_rag_primitives.xml", self.World, self.RagNode )
-#                 self.RagEntity.getAnimationState( "Walk" ).setEnabled( False )
+                self.RagEntity.getAnimationState( "LOOP" ).setEnabled( False )
             elif (self.Keyboard.isKeyDown(OIS.KC_2 ) and ( not self.K2)):
                 self.K2 = True
     
                 ## spawn the ragdoll.  this is the version that uses auto-hull generation for very accurate collision shapes.
                 self.Ragdoll = RagDoll( "./zombie_rag_hull.xml", self.World, self.RagNode )
-                self.RagEntity.getAnimationState( "Walk" ).setEnabled( False )
+                self.RagEntity.getAnimationState( "LOOP" ).setEnabled( False )
 
         if ( not self.Keyboard.isKeyDown(OIS.KC_1 )): 
             self.K1 = False
@@ -262,8 +253,8 @@ if __name__ == '__main__':
     try:
         application = OgreNewtonApplication()
         application.go()
-    except Ogre.Exception, e:
-        print e
-        print dir(e)
+    except Ogre.OgreException, e:
+        print "\nError Occured\n", e, "\n"
+        
     
                 

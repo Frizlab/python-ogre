@@ -68,9 +68,7 @@ class RagDoll:
         def __del__(self): ## ragbone
             self.OgreBone.setManuallyControlled( False ) 
             del self.Body 
-
-
-        
+       
 
 
         def _makeConvexHull( self, world, mesh, minWeight ):

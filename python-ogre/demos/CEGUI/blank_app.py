@@ -67,15 +67,7 @@ class GuiApplication ( SampleFramework.Application ):
         self.GUIRenderer = CEGUI.OgreCEGUIRenderer(self.renderWindow, 
             ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager) 
 
-        ## set the default resource groups to be used
-        CEGUI.Imageset.setDefaultResourceGroup("imagesets")
-        CEGUI.Font.setDefaultResourceGroup("fonts")
-        CEGUI.Scheme.setDefaultResourceGroup("schemes")
-        CEGUI.WidgetLookManager.setDefaultResourceGroup("looknfeels")
-        CEGUI.WindowManager.setDefaultResourceGroup("layouts")
-        CEGUI.ScriptModule.setDefaultResourceGroup("lua_scripts")
-
-                    
+                          
         self.GUIsystem = CEGUI.System(self.GUIRenderer) 
 
         logger = CEGUI.Logger.getSingleton()
@@ -116,25 +108,5 @@ if __name__ == '__main__':
     try:
         ta = GuiApplication()
         ta.go()
-    except ogre.Exception, e:
+    except ogre.OgreException, e:
         print e
-    except exceptions.RuntimeError, e:
-        print "Runtime error:", e
-    except exceptions.TypeError, e:
-        print "Type error:", e
-    except exceptions.AttributeError, e:
-        print "Attribute error:", e
-    except exceptions.NameError, e:
-        print "Name error:", e
-    except Exception,inst:
-        print "EException"
-        print type(inst)     # the exception instance
-        print inst.args      # arguments stored in .args
-        print inst
-    except exceptions.ValueError,e:
-        print "ValueError",e
-    except :
-        print "Unexpected error:", sys.exc_info()[0]
-    
-        
-

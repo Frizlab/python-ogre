@@ -62,7 +62,7 @@ class GuiFrameListener(SampleFramework.FrameListener , OIS.KeyListener, OIS.Mous
     ## Tell the frame listener to exit at the end of the next frame
     def requestShutdown( self ):
         self.ShutdownRequested = True
-
+  
     def frameEnded(self, evt):
         if self.ShutdownRequested:
             return False

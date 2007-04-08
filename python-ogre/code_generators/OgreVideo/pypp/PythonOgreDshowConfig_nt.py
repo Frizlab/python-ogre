@@ -6,13 +6,13 @@ SDK=False
 ## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
 PATH_Boost =        r'c:/development/boost'    
 ## Path to your boost_pythonxxxx lib file
-PATH_LIB_Boost =    r'c:/development/boost/bin.v2/libs/python/build/msvc-7.1/release/threading-multi'
+PATH_LIB_Boost =    r'c:/development/boost/bin.v2/libs/python2.5/build/msvc-7.1/release/threading-multi'
 ## and the name of the boost python library
 LIB_Boost =         r'boost_python-vc71-mt-1_35'
 
 ## Parent directories of the libraries
-PATH_OgreDshow =         r'c:/development/OgreVideo'
-PATH_OGRE =           r'c:/development/Ocvs/ogrenew'
+PATH_OgreDshow =         r'c:/development/pywork/code_generators/OgreVideo'
+PATH_OGRE =           r'c:/development/ogrenew'
 
 # We need to know where to find gccxml......
 gccxml_bin =        r'c:/development/gccxml/bin/release/gccxml.exe'

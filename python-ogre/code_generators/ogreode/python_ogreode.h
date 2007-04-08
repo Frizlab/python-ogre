@@ -27,6 +27,7 @@
 
 #include "OgreOde_Prefab.h"
 #include "OgreOde_Loader.h"
+//#include "..\ogre\python_ogre_masterlist.h"
 
 // First we create a magic namespace to hold all our aliases
 namespace pyplusplus { namespace aliases {
@@ -38,7 +39,7 @@ namespace pyplusplus { namespace aliases {
 //
 namespace python_ogreode{ namespace details{
 inline void instantiate(){
- using namespace OgreOde;
+//  using namespace OgreOde;
  #include "python_ogreode_sizeof.h"
  
 } } }

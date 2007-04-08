@@ -1,6 +1,6 @@
 # pyODE example 1: Getting started
 
-import ODE as ode
+import ogre.physics.ODE as ode
 
 # Create a world object
 world = ode.dWorld()

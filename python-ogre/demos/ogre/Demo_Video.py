@@ -98,5 +98,5 @@ if __name__ == '__main__':
     try:
         application = VideoApplication()
         application.go()
-    except ogre.Exception, e:
+    except ogre.OgreException, e:
         print e

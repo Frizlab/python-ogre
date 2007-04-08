@@ -55,7 +55,23 @@ class SkeletalApplication(sf.Application):
         
         ## Doing this returns a SharedPtr_less_Ogre_scope_Resource_grate 
         skel = ogre.SkeletonManager.getSingleton().load("jaiqua.skeleton", ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME,False, ogre.ManualResourceLoader(), ogre.NameValuePairList()) 
-        print "TEST\n",skel,"\n"
+#         print "TEST\n",skel,"\n"
+#         for i in range( skel.numBones): 
+#             bone = skel.getBone(i) 
+#             for j in range(bone.numChildren()): 
+#                 # Child bones, one per part than can be damaged 
+#                 child = bone.getChild(j) 
+#                 nn = child.name
+#                 print "NAME", nn
+#                 c1 = bone.getChild ( nn )
+#                 print "Retriev Bone via name", c1
+#                 for k in range(child.numChildren()): 
+#                     # Grandchild bones, one damaged and one undamaged 
+#                     # These guys have geometry attached, should therefore be SceneNodes 
+#                     print child.getChild(k) 
+
+       
+        
         anim = skel.getAnimation("Sneak") 
         
         cameraNode = sceneManager.getRootSceneNode().createChildSceneNode()
@@ -79,7 +95,8 @@ class SkeletalApplication(sf.Application):
         while (trackIter.hasMoreElements()):
             track = trackIter.getNext()
             oldKf = blankKF
-            track.getInterpolatedKeyFrame(ogre.TimeIndex(mAnimChop), oldKf) 
+#             track.getInterpolatedKeyFrame(ogre.TimeIndex(mAnimChop), oldKf) 
+            track.getInterpolatedKeyFrame(mAnimChop, oldKf) 
 
             # Drop all keyframes after the chop
             while (track.getKeyFrame(track.getNumKeyFrames()-1).getTime() >= mAnimChop - mAnimChopBlend):
@@ -207,16 +224,7 @@ if __name__ == '__main__':
     try:
         application = SkeletalApplication()
         application.go()
-#     except ogre.Exception, e:
-#         print "############"
-#         print e
-    except:
-        print "Unexpected error:", sys.exc_info()[0]
-        raise
-#     except
-#         print "-------"
-#         print "PROBLEM!!!"
-#         e = ogre.Exception.getLastException()
-#         print "EXCEPTION :  ", e
+    except ogre.OgreException, e:
+        print e
         
             

@@ -96,22 +96,14 @@ class GEUIApplication(SampleFramework.Application):
         self.ec2 = 0
 
     def _createGUI(self):
-        ## set the default resource groups to be used
-        CEGUI.Imageset.setDefaultResourceGroup("imagesets")
-        CEGUI.Font.setDefaultResourceGroup("fonts")
-        CEGUI.Scheme.setDefaultResourceGroup("schemes")
-        CEGUI.WidgetLookManager.setDefaultResourceGroup("looknfeels")
-        CEGUI.WindowManager.setDefaultResourceGroup("layouts")
-        CEGUI.ScriptModule.setDefaultResourceGroup("lua_scripts")
-
-
+       
         # initiaslise CEGUI Renderer
         self.guiRenderer = cegui.OgreCEGUIRenderer(self.renderWindow,ogre.RenderQueueGroupID.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager)
         self.system = cegui.System(self.guiRenderer)
         cegui.Logger.getSingleton().loggingLevel = cegui.Insane
 
         # load TaharezLook scheme
-        cegui.SchemeManager.getSingleton().loadScheme("TaharezLook.scheme")
+        cegui.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme")
         self.system.setDefaultMouseCursor("TaharezLook", "MouseArrow")
 
         # default layout
@@ -280,5 +272,5 @@ if __name__ == '__main__':
     try:
         ta = GEUIApplication()
         ta.go()
-    except ogre.Exception, e:
+    except ogre.OgreException, e:
         print e

@@ -73,5 +73,5 @@ if __name__ == '__main__':
     try:
         application = SkeletalApplication()
         application.go()
-    except ogre.Exception, e:
+    except ogre.OgreException, e:
         print e

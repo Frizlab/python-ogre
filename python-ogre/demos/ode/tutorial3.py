@@ -2,7 +2,7 @@
 
 import sys, os, random
 from math import *
-import ODE as ode
+import ogre.physics.ODE as ode
 
 
 
