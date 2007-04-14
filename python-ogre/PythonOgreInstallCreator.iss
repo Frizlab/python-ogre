@@ -78,6 +78,12 @@ Type: files; Name: {app}\demos\ogreal\*.pyc
 Type: files; Name: {app}\demos\ogreal\*.log
 Type: files; Name: {app}\demos\ode\*.pyc
 Type: files; Name: {app}\demos\ode\*.log
+Type: files; Name: {app}\demos\CEGUI\*.cfg
+Type: files; Name: {app}\demos\ogre\*.cfg
+Type: files; Name: {app}\demos\ogreode\*.cfg
+Type: files; Name: {app}\demos\ogrenewt\*.cfg
+Type: files; Name: {app}\demos\ogreal\*.cfg
+Type: files; Name: {app}\demos\ode\*.cfg
 Type: dirifempty; Name: {app}\demos\CEGUI
 Type: dirifempty; Name: {app}\demos\ogre
 Type: dirifempty; Name: {app}\demos\ogreode
@@ -175,17 +181,23 @@ Name: {group}\CEGUI Demos\GUI; Filename: {code:GetPythonExe}; Parameters: Demo_G
 Name: {group}\CEGUI Demos\Drag and Drop; Filename: {code:GetPythonExe}; Parameters: Demo_DragnDrop.py; WorkingDir: {app}\Demos\CEGUI
 Name: {group}\CEGUI Demos\Gui 2; Filename: {code:GetPythonExe}; Parameters: Demo_NewGui.py; WorkingDir: {app}\Demos\CEGUI
 Name: {group}\CEGUI Demos\Fish; Filename: {code:GetPythonExe}; Parameters: Demo_FishNoWx.py; WorkingDir: {app}\Demos\CEGUI
+
 Name: {group}\ODE Demos\Multiple Scenes; Filename: {code:GetPythonExe}; Parameters: Demo_Scenes.py; WorkingDir: {app}\Demos\OgreOde
+
 Name: {group}\OgreAL Demos\Basic Sound; Filename: {code:GetPythonExe}; Parameters: Demo_RenderToTexture.py; WorkingDir: {app}\Demos\OgreAL
 
 Name: {group}\OgreNewt Demos\Basics; Filename: {code:GetPythonExe}; Parameters: Demo01_TheBasics.py; WorkingDir: {app}\Demos\OgreNewt
 Name: {group}\OgreNewt Demos\Joints; Filename: {code:GetPythonExe}; Parameters: Demo02_Joints.py; WorkingDir: {app}\Demos\OgreNewt
 Name: {group}\OgreNewt Demos\Collision Callbacks; Filename: {code:GetPythonExe}; Parameters: Demo03_CollisionCallbacks.py; WorkingDir: {app}\Demos\OgreNewt
 Name: {group}\OgreNewt Demos\Ray Casting; Filename: {code:GetPythonExe}; Parameters: Demo04_RayCasting.py; WorkingDir: {app}\Demos\OgreNewt
+Name: {group}\OgreNewt Demos\Simple Vehicle; Filename: {code:GetPythonExe}; Parameters: Demo05_SimpleVehicle.py; WorkingDir: {app}\Demos\OgreNewt
+Name: {group}\OgreNewt Demos\Simple Buoyancy; Filename: {code:GetPythonExe}; Parameters: Demo06_SimpleBuoyancy.py; WorkingDir: {app}\Demos\OgreNewt
+Name: {group}\OgreNewt Demos\Custom Joints; Filename: {code:GetPythonExe}; Parameters: Demo07_CustomJoints.py; WorkingDir: {app}\Demos\OgreNewt
+Name: {group}\OgreNewt Demos\Ragdoll; Filename: {code:GetPythonExe}; Parameters: Demo08_ragdoll.py; WorkingDir: {app}\Demos\OgreNewt
 
 Name: {group}\Uninstall Python-Ogre; Filename: {uninstallexe}
 Name: {group}\Python-Ogre API Documenatation; Filename: {app}\docs\Python-Ogre.chm
-Name: {group}\Python-Ogre API (Html); Filename: {app}\docs\html\index.html
+;Name: {group}\Python-Ogre API (Html); Filename: {app}\docs\html\index.html
 
 
 
@@ -198,17 +210,14 @@ var
   PythonVersion : String;
   DisplayedPythonWarning : Boolean;
   SupportedVersions : array of String;
-  Force, Debug : Boolean;
+  Debug : Boolean;
 
 function NoPythonFound(): Boolean;
 begin
-	if Force then
-		Result := True 	// force the modules installed under app dir
+	if NumPythonVersions = 0 then
+		Result := True
 	else
-		if NumPythonVersions = 0 then
-			Result := True
-		else
-			Result := False;
+		Result := False;
 end;
 
 
@@ -224,17 +233,27 @@ begin
 			if PythonVersions[I] = ver then Result := True;
 end;
 
+
+function FoundPythonIn (  ver: String; listin: array of String ) : Boolean;
+var
+	I : Integer;
+begin
+	Result := False;
+	if GetArrayLength(listin) = 0 then
+		Result := False
+	else
+		for I:=0 to GetArrayLength(listin)-1 do
+			if listin[I] = ver then Result := True;
+end;
+
 function SelectedPython (  ver: String ) : Boolean;
 var
 	I : Integer;
 begin
-	if Force then // with force we install both modules under app directory
-		Result := False
+	if PythonVersion = ver then
+		Result := True
 	else
-		if PythonVersion = ver then
-			Result := True
-		else
-			Result := False;
+		Result := False;
 end;
 
 function IsSupportedVersion ( Param: String ) : Boolean;
@@ -263,19 +282,21 @@ var
 	i, count: Integer;
 	p: string;
 	Result1 : array of String;
+	tempv, templ :  array of String;
 begin
-	PythonVersions := ['',''];
-	PythonLocations := ['',''];
+	tempv := ['',''];
+	templ := ['',''];
 	count := 0;
 	RegGetSubkeyNames(HKEY_LOCAL_MACHINE, 'SOFTWARE\Python\PythonCore', Result1);
 	// if we have versions here process them
 	for i:=0 to GetArrayLength(Result1)-1 do
 		if IsSupportedVersion ( Result1[i] ) then begin // make sure we support it..
-			RegQueryStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Python\PythonCore\' + Result1[i] + '\InstallPath', '', p);
-			if FileExists ( p + '\python.exe' ) then begin
-				PythonVersions[count] := Result1[i];
-				PythonLocations[count] := p;	// save the location
-				count := count + 1;
+			if RegQueryStringValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Python\PythonCore\' + Result1[i] + '\InstallPath', '', p) then begin
+				if FileExists ( p + '\python.exe' ) then begin
+					tempv[count] := Result1[i];
+					templ[count] := p;	// save the location
+					count := count + 1;
+				end;
 			end;
 		end;
 
@@ -284,17 +305,26 @@ begin
 		// OK so we should now have all the valid versions listed in LOCAL_MACHINE
 		RegGetSubkeyNames(HKEY_CURRENT_USER, 'SOFTWARE\Python\PythonCore', Result1);
 		for i:=0 to GetArrayLength(Result1)-1 do
-			if not FoundPython ( Result1[i] ) then  // check we don't already know about this version
+			if not FoundPythonIn ( Result1[i], tempv ) then  // check we don't already know about this version
 				if IsSupportedVersion (Result1[i]) then begin
-					RegQueryStringValue(HKEY_CURRENT_USER, 'SOFTWARE\Python\PythonCore\' + Result1[i] + '\InstallPath', '', p);
-					if FileExists ( p + '\python.exe' ) then begin
-						PythonVersions[count] := Result1[i];
-						PythonLocations[count] := p;
-						count := count + 1;
+					if RegQueryStringValue(HKEY_CURRENT_USER, 'SOFTWARE\Python\PythonCore\' + Result1[i] + '\InstallPath', '', p) then begin
+						if FileExists ( p + '\python.exe' ) then begin
+							tempv[count] := Result1[i];
+							templ[count] := p;
+							count := count + 1;
+						end;
 					end;
 				end;
 
 	end;
+	for i:=0 to 1 do
+		if ( Length(tempv[i]) > 0 ) then begin
+			setarraylength ( PythonVersions, getarraylength (PythonVersions) + 1);
+			PythonVersions[getarraylength(PythonVersions)-1] := tempv[i];
+			setarraylength ( PythonLocations, getarraylength (Pythonlocations) + 1);
+			PythonLocations[getarraylength(PythonLocations)-1] := templ[i];
+		end;
+
 	Result := GetArrayLength ( PythonVersions );
 end;
 
@@ -324,14 +354,15 @@ end;
 function ShouldSkipPage(PageID: Integer): Boolean;
 begin
   Result := False;
-  if PageID = Page.ID then
-	if NumPythonVersions = 1 then
-		Result := True;
-	if NumPythonVersions = 0 then begin
-		if DisplayedPythonWarning = False then
-			MsgBox('Unable to Find Python - will install all versions - "python setup.py install" will need to be run', mbInformation, MB_OK);
-		DisplayedPythonWarning := True;
-		Result := True;
+	if PageID = Page.ID then begin
+		if NumPythonVersions = 1 then
+			Result := True;
+		if NumPythonVersions = 0 then begin
+			if DisplayedPythonWarning = False then
+				MsgBox('Unable to Find Python - will install all versions - "python setup.py install" will need to be run', mbInformation, MB_OK);
+			DisplayedPythonWarning := True;
+			Result := True;
+		end;
 	end;
 end;
 
@@ -348,13 +379,27 @@ begin
 	Result:= 'Python-Ogre is about to be installed....' + NewLine + NewLine +
 	'Tools, demos, and documentation will be installed to:' + NewLine +
 	Space + ExpandConstant('{app}') + NewLine + NewLine;
-	if NoPythonFound or Force then begin
+	if NoPythonFound then begin
 		Result := Result + 'Python was not found so the python modules will' + NewLine +
 		Space + 'be installed under ' + ExpandConstant('{app}') +'.' + NewLine +
-		Space + 'You will need to run "python setup.py install" to install the modules';
+		Space + 'You will need to run "python setup.py install" to install the modules' +
+		NewLine + NewLine +
+		Space + 'The program links will probably be broken as Python was not found';
 	end else begin
 		Result := Result + 'Python Modules will be installed to:' + NewLine +
 		Space + GetPythonSiteDir ( PythonVersion ) + NewLine;
+	end;
+end;
+{ we have an issue that sometimes the older python ogre is not uninstalled or completely
+deleted by out predelete file lists -- probably because a file has been added etc
+This is OK except it leave the module directory with the wrong name so we need to fix this
+}
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+	if CurStep = ssInstall then begin
+		if DirExists ( GetPythonSiteDir('') + '\Ogre' ) then begin
+			RenameFile ( GetPythonSiteDir('') + '\Ogre', GetPythonSiteDir('') + '\ogre' );
+		end;
 	end;
 end;
 
@@ -367,18 +412,6 @@ begin
 	PythonVersion := '';
 	SupportedVersions := ['2.4', '2.5'];
 	Debug := False;
-	Force := False;
-	if ParamCount > 0 then
-		for I:=0 to ParamCount-1 do begin
-			if ParamStr( I ) = 'debug' then begin
-				Debug := True;
-				msgbox ('Setting Debug to True',  mbInformation, MB_OK);
-			end;
-			if ParamStr( I ) = 'force' then begin
-				Force := True;
-				msgbox ('Setting Force to True',  mbInformation, MB_OK);
-			end;
-		end;
 
 	NumPythonVersions := GetInstalledPythonVersions();
 	if Debug then
@@ -402,3 +435,4 @@ begin
 
 
 end;
+

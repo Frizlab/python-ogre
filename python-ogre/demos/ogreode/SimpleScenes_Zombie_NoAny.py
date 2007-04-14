@@ -53,7 +53,7 @@ class SimpleScenes_Zombie ( SimpleScenes ):
         self.myRagDolls = []
         self.UserData={}
         
-        ragdoll = self.dotOgreOdeLoader.loadObject(self.ragdollFile[self.sSelectedMesh],
+        ragdoll = self.dotOgreOdeLoader.loadRagdoll(self.ragdollFile[self.sSelectedMesh],
                                                          self.xmlNames[self.sSelectedMesh],
                                                          "zombie" + str(self._ragdoll_count))
         self._ragdoll_count += 1
@@ -217,7 +217,7 @@ class SimpleScenes_Zombie ( SimpleScenes ):
                     hit_point = ogre.Vector3()
 
                     is_hit = False
-                    result, hit_body, hit_point = radgoll.PYpick(self.myOdeRay)
+                    result, hit_body, hit_point = radgoll.pick(self.myOdeRay)
                     if result:
                         if (hit_body):
                             hit_body.addForceAt(pickRay.getDirection() * 250000, hit_point)

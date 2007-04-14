@@ -4,84 +4,89 @@ import environment
 
 WRAPPER_DEFINITION_ShadowRenderable =\
 """
-boost::python::object ShadowRenderable_castElement(Ogre::ShadowRenderable * r){
+Ogre::ShadowRenderable * ShadowRenderable_castElement(Ogre::ShadowRenderable * r){
     if( dynamic_cast< Ogre::Region::RegionShadowRenderable * >( r ) ){
-        return boost::python::object( (Ogre::Region::RegionShadowRenderable*) r );
+        return  (Ogre::Region::RegionShadowRenderable*) r ;
     }   
     if( dynamic_cast< Ogre::ManualObject::ManualObjectSectionShadowRenderable * >( r ) ){
-        return boost::python::object( (Ogre::ManualObject::ManualObjectSectionShadowRenderable*) r );
+        return  (Ogre::ManualObject::ManualObjectSectionShadowRenderable*) r ;
     }    
     if( dynamic_cast< Ogre::Entity::EntityShadowRenderable * >( r ) ){
-        return boost::python::object( (Ogre::Entity::EntityShadowRenderable*) r );
+        return (Ogre::Entity::EntityShadowRenderable*) r ;
     }
-    return  boost::python::object( r );
+    return  ( r );
     }
     
-boost::python::object ShadowRenderable_getLightCapRenderable( Ogre::ShadowRenderable & me){
+Ogre::ShadowRenderable* ShadowRenderable_getLightCapRenderable( Ogre::ShadowRenderable & me){
     return ShadowRenderable_castElement ( me.getLightCapRenderable() );
     }
 """
 WRAPPER_REGISTRATION_ShadowRenderable = [
     'def( "getLightCapRenderable", &::ShadowRenderable_getLightCapRenderable,\
-    "Python-Ogre Hand Wrapped\\n" );'
+    "Python-Ogre Hand Wrapped\\n",\
+    bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
     
     ]    
     
     
-WRAPPER_DEFINITION_KeyFrame = \
-"""
-boost::python::object KeyFrame_castKeyFrame(Ogre::KeyFrame * k){
-    if( dynamic_cast< Ogre::VertexPoseKeyFrame * >( k ) ){
-        return boost::python::object( (Ogre::VertexPoseKeyFrame*) k );
-    }   
-    if( dynamic_cast< Ogre::VertexMorphKeyFrame * >( k ) ){
-        return boost::python::object( (Ogre::VertexMorphKeyFrame*) k );
-    }
-    if( dynamic_cast< Ogre::TransformKeyFrame * >( k ) ){
-        return boost::python::object( (Ogre::TransformKeyFrame*) k );
-    }        
-    if( dynamic_cast< Ogre::NumericKeyFrame * >( k ) ){
-        return boost::python::object( (Ogre::NumericKeyFrame*) k );
-    }
-    return  boost::python::object( k );
-    }
-    
-boost::python::object KeyFrame_clone( Ogre::KeyFrame & me, Ogre::AnimationTrack * newParent){
-    return KeyFrame_castKeyFrame ( me._clone( newParent ) );
-    }
-"""
-WRAPPER_REGISTRATION_KeyFrame = [
-    'def( "_clone", &::KeyFrame_clone,\
-    "Python-Ogre Hand Wrapped\\n" );'
-    ] 
+# WRAPPER_DEFINITION_KeyFrame = \
+# """
+# boost::python::object KeyFrame_castKeyFrame(Ogre::KeyFrame * k){
+#     if( dynamic_cast< Ogre::VertexPoseKeyFrame * >( k ) ){
+#         return boost::python::object( (Ogre::VertexPoseKeyFrame*) k );
+#     }   
+#     if( dynamic_cast< Ogre::VertexMorphKeyFrame * >( k ) ){
+#         return boost::python::object( (Ogre::VertexMorphKeyFrame*) k );
+#     }
+#     if( dynamic_cast< Ogre::TransformKeyFrame * >( k ) ){
+#         return boost::python::object( (Ogre::TransformKeyFrame*) k );
+#     }        
+#     if( dynamic_cast< Ogre::NumericKeyFrame * >( k ) ){
+#         return boost::python::object( (Ogre::NumericKeyFrame*) k );
+#     }
+#     return  boost::python::object( k );
+#     }
+#     
+# boost::python::object KeyFrame_clone( Ogre::KeyFrame & me, Ogre::AnimationTrack * newParent){
+#     return KeyFrame_castKeyFrame ( me._clone( newParent ) );
+#     }
+# """
+# WRAPPER_REGISTRATION_KeyFrame = [
+#     'def( "_clone", &::KeyFrame_clone,\
+#     "Python-Ogre Hand Wrapped\\n" );'
+#     ] 
 
 
 WRAPPER_DEFINITION_OverlayElement = \
 """
-boost::python::object OverlayElement_castElement(Ogre::OverlayElement * e){
+Ogre::OverlayElement * OverlayElement_castElement(Ogre::OverlayElement * e){
     if( dynamic_cast< Ogre::TextAreaOverlayElement * >( e ) ){
-        return boost::python::object( (Ogre::TextAreaOverlayElement*) e );
+        return (Ogre::TextAreaOverlayElement*) e;
     }   
     if( dynamic_cast< Ogre::OverlayContainer * >( e ) ){
-        return boost::python::object( (Ogre::OverlayContainer*) e );
+        return (Ogre::OverlayContainer*) e;
     }
-    return  boost::python::object( e );
+    return  ( e );
     }
-boost::python::object OverlayElement_findElementAt(Ogre::OverlayElement &me, Ogre::Real x, Ogre::Real y) {
+Ogre::OverlayElement * OverlayElement_findElementAt(Ogre::OverlayElement &me, Ogre::Real x, Ogre::Real y) {
     return OverlayElement_castElement ( me.findElementAt ( x, y) );
     }
-boost::python::object OverlayElement_clone(Ogre::OverlayElement &me, Ogre::String const & instanceName) {
+Ogre::OverlayElement * OverlayElement_clone(Ogre::OverlayElement &me, Ogre::String const & instanceName) {
     return OverlayElement_castElement ( me.clone ( instanceName ) );
     }
-/*boost::python::object OverlayElement_getSourceTemplate(Ogre::OverlayElement &me) {
+/*Ogre::OverlayElement * OverlayElement_getSourceTemplate(Ogre::OverlayElement &me) {
     return OverlayElement_castElement ( me.getSourceTemplate () );
     }*/
 """
 WRAPPER_REGISTRATION_OverlayElement = [
     'def( "findElementAt", &::OverlayElement_findElementAt,\
-    "Python-Ogre Hand Wrapped\\n" );'
+    "Python-Ogre Hand Wrapped\\n",\
+    bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
+
     'def( "clone", &::OverlayElement_clone,\
-    "Python-Ogre Hand Wrapped\\n" );'
+    "Python-Ogre Hand Wrapped\\n",\
+    bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
+
     ]
     
 WRAPPER_DEFINITION_Node = \
@@ -90,61 +95,57 @@ Ogre::SceneNode *
 Node_castAsSceneNode ( Ogre::Node * n ) {
     return ( (Ogre::SceneNode* ) n );
     }
-boost::python::object Node_castNode(Ogre::Node * n){
+Ogre::Node * Node_castNode(Ogre::Node * n){
     if( dynamic_cast< Ogre::SceneNode * >( n ) ){
-        return boost::python::object( (Ogre::SceneNode*) n );
+        return  (Ogre::SceneNode*) n ;
     }    
     if( dynamic_cast< Ogre::Bone * >( n ) ){
-        return boost::python::object( (Ogre::Bone*)n  );
+        return  (Ogre::Bone*)n  ;
     }    
-    return  boost::python::object( n );  
+    return ( n );  
 }
 
-boost::python::object Node_getChild_short(Ogre::Node& me, unsigned short index){
+Ogre::Node * Node_getChild_short(Ogre::Node& me, unsigned short index){
     return Node_castNode( me.getChild( index ) );
 }
 
-boost::python::object Node_getChild_string(Ogre::Node& me, const Ogre::String& name){
+Ogre::Node * Node_getChild_string(Ogre::Node& me, const Ogre::String& name){
     return Node_castNode( me.getChild( name ) );
 }
-boost::python::object Node_getParent(Ogre::Node& me){
+Ogre::Node * Node_getParent(Ogre::Node& me){
     return Node_castNode( me.getParent( ) );
 }
 
-boost::python::object Node_removeChild1(Ogre::Node& me, unsigned short index){
-    return Node_castNode( me.getChild( index ) );
+Ogre::Node * Node_removeChild1(Ogre::Node& me, unsigned short index){
+    return Node_castNode( me.removeChild( index ) );
 }
-boost::python::object Node_removeChild2(Ogre::Node& me, const Ogre::String& name){
-    return Node_castNode( me.getChild( name ) );
+Ogre::Node * Node_removeChild2(Ogre::Node& me, const Ogre::String& name){
+    return Node_castNode( me.removeChild( name ) );
 }
-boost::python::object Node_createChild1(Ogre::Node& me, Ogre::Vector3 const & translate=Ogre::Vector3::ZERO, 
-                                Ogre::Quaternion const & rotate=Ogre::Quaternion::IDENTITY) {
-    return Node_castNode( me.createChild( translate, rotate ) );                               
-}                               
-boost::python::object Node_createChild2(Ogre::Node& me, Ogre::String const & name, 
-                                Ogre::Vector3 const & translate=Ogre::Vector3::ZERO, 
-                                Ogre::Quaternion const & rotate=Ogre::Quaternion::IDENTITY) {
-    return Node_castNode( me.createChild( name, translate, rotate ) );                               
+Ogre::Node * Node_removeChild3(Ogre::Node& me, Ogre::Node * child){
+    return Node_castNode( me.removeChild( child ) );
 }
 """
 
 WRAPPER_REGISTRATION_Node = [
     'def( "getChild", &::Node_getChild_short,\
-    "Python-Ogre Hand Wrapped\\n" );'
+    "Python-Ogre Hand Wrapped\\n",\
+    bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
     'def( "getChild", &::Node_getChild_string,\
-    "Python-Ogre Hand Wrapped\\n" );'
+    "Python-Ogre Hand Wrapped\\n",\
+    bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
     'def( "getParent", &::Node_getParent,\
-    "Python-Ogre Hand Wrapped\\n" );'
+    "Python-Ogre Hand Wrapped\\n",\
+    bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
     'def( "removeChild", &::Node_removeChild1,\
-    "Python-Ogre Hand Wrapped\\n" );'
+    "Python-Ogre Hand Wrapped\\n",\
+    bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
     'def( "removeChild", &::Node_removeChild2,\
-    "Python-Ogre Hand Wrapped\\n" );'
-    'def( "createChild", &::Node_createChild1,\
-    ( bp::arg("translate")=Ogre::Vector3::ZERO, bp::arg("rotate")=Ogre::Quaternion::IDENTITY ),\
-    "Python-Ogre Hand Wrapped\\n" );'
-    'def( "createChild", &::Node_createChild2,\
-    ( bp::arg("name"), bp::arg("translate")=Ogre::Vector3::ZERO, bp::arg("rotate")=Ogre::Quaternion::IDENTITY ),\
-    "Python-Ogre Hand Wrapped\\n" );'
+    "Python-Ogre Hand Wrapped\\n",\
+    bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
+    'def( "removeChild", &::Node_removeChild3,\
+    "Python-Ogre Hand Wrapped\\n",\
+    bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
     'def( "castAsSceneNode", &::Node_castAsSceneNode,\
     "Python-Ogre Helper Function\\nCase a Node as a Scene Node",\
     bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());'
@@ -206,12 +207,12 @@ boost::python::object ResourceManager_load(Ogre::ResourceManager& me,Ogre::Strin
 
 WRAPPER_REGISTRATION_ResourceManager = [
     'def( "getByName", &::ResourceManager_getByName,\
-    "Python-Ogre Hand Wrapped\\n" );'
+    "Python-Ogre Hand Wrapped\\n" );',
     'def( "getByHandle", &::ResourceManager_getByHandle,\
-    "Python-Ogre Hand Wrapped\\n" );'
+    "Python-Ogre Hand Wrapped\\n" );',
     'def( "create", &::ResourceManager_create,\
     ( bp::arg("name"), bp::arg("group"), bp::arg("isManual")=(bool)(false), bp::arg("loader")=bp::object(), bp::arg("createParams")=bp::object() ),\
-    "Python-Ogre Hand Wrapped\\n" );'
+    "Python-Ogre Hand Wrapped\\n" );',
     'def( "load", &::ResourceManager_load,\
     ( bp::arg("name"), bp::arg("group"), bp::arg("isManual")=(bool)(false), bp::arg("loader")=bp::object(), bp::arg("loadParams")=bp::object() ),\
     "Python-Ogre Hand Wrapped\\n" );'
@@ -617,9 +618,9 @@ def apply( mb ):
     rt.add_declaration_code( WRAPPER_DEFINITION_Node )
     apply_reg (rt,  WRAPPER_REGISTRATION_Node )
 
-    rt = mb.class_( 'KeyFrame' )
-    rt.add_declaration_code( WRAPPER_DEFINITION_KeyFrame )
-    apply_reg (rt,  WRAPPER_REGISTRATION_KeyFrame )
+#     rt = mb.class_( 'KeyFrame' )
+#     rt.add_declaration_code( WRAPPER_DEFINITION_KeyFrame )
+#     apply_reg (rt,  WRAPPER_REGISTRATION_KeyFrame )
 
 # #     rt = mb.class_( 'ShadowRenderable' )
 # #     rt.add_declaration_code( WRAPPER_DEFINITION_ShadowRenderable )
