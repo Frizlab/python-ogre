@@ -94,7 +94,7 @@ class SimpleScenes_Buggy ( SimpleScenes ):
             del self.vehicle
         dotOgreOdeLoader = OgreOde.DotLoader( self._world )
         
-        self.vehicle = dotOgreOdeLoader.loadObject (self.carFileNames[self.sSelectedcar], 
+        self.vehicle = dotOgreOdeLoader.loadVehicle (self.carFileNames[self.sSelectedcar], 
                                         self.carNames[self.sSelectedcar],"")
         ## Move the self.vehicle
         self.vehicle.setPosition(ogre.Vector3(0,0.82898,0))

@@ -125,7 +125,8 @@ class SimpleScenes (OgreOde.CollisionListener, OgreOde.StepListener):
      
         self._key_delay = 0.0
     
-        _ragdoll = self.dotOgreOdeLoader.loadObject ( self.ragdollFile[self.sSelectedMesh], 
+        ## note helper funciton here -- instead of loadObject it's loadRagdoll
+        _ragdoll = self.dotOgreOdeLoader.loadRagdoll ( self.ragdollFile[self.sSelectedMesh], 
                             self.xmlNames[self.sSelectedMesh], 
                             "zombie" + str(self._ragdoll_count))
                             

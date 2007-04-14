@@ -83,7 +83,7 @@ class SimpleScenesApplication(sf.Application):
         self._spot=None
         self._time_elapsed = 0.0
         self._time_step = 0.1 ## SimpleScenes::STEP_RATE
-        self._looking = _chasing = False
+        self._looking = self._chasing = False
         self._paused = False
 
     def __del__ ( self ):

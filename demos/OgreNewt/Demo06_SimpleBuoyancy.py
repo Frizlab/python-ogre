@@ -6,7 +6,7 @@
 import ogre.renderer.OGRE as Ogre
 import ogre.physics.OgreNewt as OgreNewt
 import ogre.io.OIS as OIS
-import CEGUI
+import ogre.gui.CEGUI as CEGUI
 import random
 import SampleFramework as sf
 from BasicFrameListener import *     # a simple frame listener that updates physics as required..

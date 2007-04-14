@@ -78,7 +78,7 @@ def filter_declarations( mb ):
     ogreodeL_ns = global_ns.namespace( 'OgreOde_Loader' )
     ogreodeL_ns.include()
     ogreodeL_ns.class_('DotLoader').mem_fun('loadFile').exclude() # it returns a pointer to a tinyxml object - could make it opaque?
-    ogreodeL_ns.class_('DotLoader').mem_fun('loadObject').exclude() # hand wrapped
+    ##ogreodeL_ns.class_('DotLoader').mem_fun('loadObject').exclude() # hand wrapped
     
     
         ## Exclude protected and private that are not pure virtual
@@ -156,9 +156,8 @@ def add_transformations ( mb ):
 #     global_ns.member_functions('::OgreOde_Prefab::Ragdoll::pick').exclude()
 #     global_ns.mem_fun('::OgreOde_Prefab::Ragdoll::pick', arg_types=[None,None,None]).include()
     f = global_ns.mem_fun('::OgreOde_Prefab::Ragdoll::pick', arg_types=[None,None,None])
-    f.alias = "PYPick"
-    f.add_transformation(ft.output('body'), ft.output('position') )
-        
+    f.add_transformation(ft.output('body'), ft.output('position') , alias='pick') 
+     
 
     
     

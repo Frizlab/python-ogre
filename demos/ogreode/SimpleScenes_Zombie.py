@@ -38,7 +38,7 @@ class SimpleScenes_Zombie ( SimpleScenes ):
         self.myRagDolls = [];
 
         
-        ragdoll = self.dotOgreOdeLoader.loadObject(self.ragdollFile[self.sSelectedMesh],
+        ragdoll = self.dotOgreOdeLoader.loadRagdoll(self.ragdollFile[self.sSelectedMesh],
                                                          self.xmlNames[self.sSelectedMesh],
                                                          "zombie" + str(self._ragdoll_count));
         self._ragdoll_count += 1

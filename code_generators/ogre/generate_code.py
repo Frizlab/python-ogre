@@ -70,14 +70,14 @@ def ManualExclude ( mb ):
 
     global_ns.class_('::Ogre::Node').member_functions('getChild').exclude()
     global_ns.class_('::Ogre::Node').member_functions('removeChild').exclude()
-    global_ns.class_('::Ogre::Node').member_functions('createChild').exclude()
+#     global_ns.class_('::Ogre::Node').member_functions('createChild').exclude()
     global_ns.class_('::Ogre::Node').member_functions('getParent').exclude()
     
     global_ns.class_('::Ogre::OverlayElement').mem_fun('findElementAt').exclude()
     global_ns.class_('::Ogre::OverlayElement').mem_fun('clone').exclude()
 #     global_ns.class_('::Ogre::OverlayElement').mem_fun('getSourceTemplate').exclude()
     
-    global_ns.class_('::Ogre::KeyFrame').mem_fun('_clone').exclude()
+#     global_ns.class_('::Ogre::KeyFrame').mem_fun('_clone').exclude()
 #     global_ns.class_('::Ogre::ShadowRenderable').mem_fun('getLightCapRenderable').exclude()
     
     startswith = [
@@ -249,7 +249,8 @@ def ManualFixes ( mb ):
     c.include()
     c.documentation=docit ("Return Type Change", "None", "Tuple with 3 floats's (the matrix 'line')")
 
-        
+    for c in ogre_ns.class_('PixelUtil').member_functions('packColour'):
+        c.alias = 'packColour'
     #VertexCacheProfiler constructor uses enum that will be defined later.
     #I will replace second default value to be int instead of enum
     #arg_types=[None,None] - 2 arguments, with whatever type
@@ -849,30 +850,31 @@ def Remove_Static_Consts ( mb ):
 # the 'main'function
 #            
 def generate_code():  
-#     messages.disable( 
-# #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-#           messages.W1020
-#         , messages.W1021
-#         , messages.W1022
-#         , messages.W1023
-#         , messages.W1024
-#         , messages.W1025
-#         , messages.W1026
-#         , messages.W1027
-#         , messages.W1028
-#         , messages.W1029
-#         , messages.W1030
-#         , messages.W1031
-#         , messages.W1040 
-#         # Inaccessible property warning
-#         , messages.W1041
-#         , messages.W1036 # pointer to Python immutable member
-#         , messages.W1033 # unnamed variables
-#         , messages.W1018 # expose unnamed classes
-#         , messages.W1049 # returns reference to local variable
-#         , messages.W1014 # unsupported '=' operator
-#          )
-    ### sort_algorithms.USE_CALLDEF_ORGANIZER = True   ## tried this to remove a couple of order issues, without success :)
+    messages.disable( 
+#           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+          messages.W1020
+        , messages.W1021
+        , messages.W1022
+        , messages.W1023
+        , messages.W1024
+        , messages.W1025
+        , messages.W1026
+        , messages.W1027
+        , messages.W1028
+        , messages.W1029
+        , messages.W1030
+        , messages.W1031
+        , messages.W1035
+        , messages.W1040 
+        , messages.W1038        
+        , messages.W1041
+        , messages.W1036 # pointer to Python immutable member
+        , messages.W1033 # unnamed variables
+        , messages.W1018 # expose unnamed classes
+        , messages.W1049 # returns reference to local variable
+        , messages.W1014 # unsupported '=' operator
+         )
+    sort_algorithms.USE_CALLDEF_ORGANIZER = True   ## tried this to remove a couple of order issues, without success :)
     #
     # Use GCCXML to create the controlling XML file.
     # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded

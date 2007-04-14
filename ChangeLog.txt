@@ -1,6 +1,7 @@
-xxx 2007: Version 0.94 Release
+April 14 2007: Version 1.0 RC1 Release
 ==============================
 * Reverse order of entries in ChangeLog :)
+* exception handling matches the changes in Ogre 1.4 (and works)
 * _ConfigOption name changed to ConfigOption
 * << Operators in base source now exposed as __str__ -- makes "print xxx" work well
 * Couple of FactoryObj aliases added to clean up names
@@ -13,6 +14,7 @@ xxx 2007: Version 0.94 Release
 * Remove auto converstions in _ogre_main so hopefully don't get strange obj to obj conversions
 * Added Hinge etc callbacks to OgreNewt (missing) via hand wrappers
 * Removed Math::Abs overloads so only the (::Ogre::Real) on is left, otherwise it always picked the Radian one
+* Excluded StringConverter class - not really needed in Python and has reg order issues in 'tostring'
    
 20 Feb 2007:  Version 0.9 Release
 =================================
