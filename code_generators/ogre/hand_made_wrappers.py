@@ -2,25 +2,25 @@ import os
 import environment
 
 
-WRAPPER_DEFINITION_ShadowRenderable =\
-"""
-Ogre::ShadowRenderable * ShadowRenderable_castElement(Ogre::ShadowRenderable * r){
-    if( dynamic_cast< Ogre::Region::RegionShadowRenderable * >( r ) ){
-        return  (Ogre::Region::RegionShadowRenderable*) r ;
-    }   
-    if( dynamic_cast< Ogre::ManualObject::ManualObjectSectionShadowRenderable * >( r ) ){
-        return  (Ogre::ManualObject::ManualObjectSectionShadowRenderable*) r ;
-    }    
-    if( dynamic_cast< Ogre::Entity::EntityShadowRenderable * >( r ) ){
-        return (Ogre::Entity::EntityShadowRenderable*) r ;
-    }
-    return  ( r );
-    }
-    
-Ogre::ShadowRenderable* ShadowRenderable_getLightCapRenderable( Ogre::ShadowRenderable & me){
-    return ShadowRenderable_castElement ( me.getLightCapRenderable() );
-    }
-"""
+# WRAPPER_DEFINITION_ShadowRenderable =\
+# """
+# Ogre::ShadowRenderable * ShadowRenderable_castElement(Ogre::ShadowRenderable * r){
+#     if( dynamic_cast< Ogre::Region::RegionShadowRenderable * >( r ) ){
+#         return  (Ogre::Region::RegionShadowRenderable*) r ;
+#     }   
+#     if( dynamic_cast< Ogre::ManualObject::ManualObjectSectionShadowRenderable * >( r ) ){
+#         return  (Ogre::ManualObject::ManualObjectSectionShadowRenderable*) r ;
+#     }    
+#     if( dynamic_cast< Ogre::Entity::EntityShadowRenderable * >( r ) ){
+#         return (Ogre::Entity::EntityShadowRenderable*) r ;
+#     }
+#     return  ( r );
+#     }
+#     
+# Ogre::ShadowRenderable* ShadowRenderable_getLightCapRenderable( Ogre::ShadowRenderable & me){
+#     return ShadowRenderable_castElement ( me.getLightCapRenderable() );
+#     }
+# """
 WRAPPER_REGISTRATION_ShadowRenderable = [
     'def( "getLightCapRenderable", &::ShadowRenderable_getLightCapRenderable,\
     "Python-Ogre Hand Wrapped\\n",\
@@ -28,34 +28,6 @@ WRAPPER_REGISTRATION_ShadowRenderable = [
     
     ]    
     
-    
-# WRAPPER_DEFINITION_KeyFrame = \
-# """
-# boost::python::object KeyFrame_castKeyFrame(Ogre::KeyFrame * k){
-#     if( dynamic_cast< Ogre::VertexPoseKeyFrame * >( k ) ){
-#         return boost::python::object( (Ogre::VertexPoseKeyFrame*) k );
-#     }   
-#     if( dynamic_cast< Ogre::VertexMorphKeyFrame * >( k ) ){
-#         return boost::python::object( (Ogre::VertexMorphKeyFrame*) k );
-#     }
-#     if( dynamic_cast< Ogre::TransformKeyFrame * >( k ) ){
-#         return boost::python::object( (Ogre::TransformKeyFrame*) k );
-#     }        
-#     if( dynamic_cast< Ogre::NumericKeyFrame * >( k ) ){
-#         return boost::python::object( (Ogre::NumericKeyFrame*) k );
-#     }
-#     return  boost::python::object( k );
-#     }
-#     
-# boost::python::object KeyFrame_clone( Ogre::KeyFrame & me, Ogre::AnimationTrack * newParent){
-#     return KeyFrame_castKeyFrame ( me._clone( newParent ) );
-#     }
-# """
-# WRAPPER_REGISTRATION_KeyFrame = [
-#     'def( "_clone", &::KeyFrame_clone,\
-#     "Python-Ogre Hand Wrapped\\n" );'
-#     ] 
-
 
 WRAPPER_DEFINITION_OverlayElement = \
 """
@@ -381,31 +353,6 @@ WRAPPER_REGISTRATION_General = [
 
 ##################################################################
 
-
-
-WRAPPER_DEFINITION_BillboardParticleRenderer = \
-"""
-boost::python::str
-BBP_getType(Ogre::BillboardParticleRenderer & me) {
-    return boost::python::str( me.getType() );
-    }
-"""
-WRAPPER_REGISTRATION_BillboardParticleRenderer = [
-    'def( "getType", &::BBP_getType );'
-    ]
-
-WRAPPER_DEFINITION_BillboardParticleRendererFactory = \
-"""
-boost::python::str
-BBPF_getType(Ogre::BillboardParticleRenderer & me) {
-    return boost::python::str( me.getType() );
-    }
-"""
-WRAPPER_REGISTRATION_BillboardParticleRendererFactory = [
-        'def( "getType", &::BBPF_getType );'
-    ]
-
-####################3
 WRAPPER_DEFINITION_BillboardSet = \
 """
 boost::python::list
@@ -449,38 +396,6 @@ WRAPPER_REGISTRATION_BillboardSet = [
     ]
 ###################################################
 
-WRAPPER_DEFINITION_CombinedListener = \
-"""
-namespace Ogre {
-    class CombinedListener : public Ogre::FrameListener, public Ogre::KeyListener,
-                 public Ogre::MouseListener, public Ogre::MouseMotionListener
-{
-public:
-    CombinedListener() {}
-    virtual ~CombinedListener() {}
-    
-    // KeyListener methods
-    virtual void keyClicked(Ogre::KeyEvent *e) {}
-    virtual void keyPressed(Ogre::KeyEvent *e) {}
-    virtual void keyReleased(Ogre::KeyEvent *e) {}
-    
-    // MouseListener methods
-    virtual void mouseClicked(Ogre::MouseEvent *e) {}
-    virtual void mousePressed(Ogre::MouseEvent *e) {}
-    virtual void mouseReleased(Ogre::MouseEvent *e) {}
-    virtual void mouseEntered(Ogre::MouseEvent *e) {}
-    virtual void mouseExited(Ogre::MouseEvent *) {}
-    
-    // MouseMotionListener methods
-    virtual void mouseMoved(Ogre::MouseEvent *e) {}
-    virtual void mouseDragged(Ogre::MouseEvent *e) {}
-    
-    // FrameEvent methods
-    virtual bool frameStarted (const FrameEvent &evt) {return true;}
-    virtual bool frameEnded (const FrameEvent &evt) {return true;}
-};
-}
-"""
 
 WRAPPER_DEFINITION_RenderTarget = \
 """
@@ -540,24 +455,6 @@ WRAPPER_REGISTRATION_Frustum = [
     """def( "enableCustomNearClipPlaneMP", &::Frustum_enableCustomNearClipPlaneMP );"""
     ]
 
-## WARNING, this is OLD CODE and is probably broken
-if environment.ogre.version == "1.2":
-    ### need to override keylistener etc
-    WRAPPER_DEFINITION_EventProcessor =\
-    """
-	void EventProcessor_addKeyListener(Ogre::EventProcessor& evp, Ogre::KeyListener  * l) {
-	    //evp.addKeyListener ( l );
-	    }
-	void EventProcessor_addMouseListener(Ogre::EventProcessor& evp, Ogre::MouseListener  * m) {
-	    //evp.addMouseListener (  m );
-	    }
-
-	"""     
-    WRAPPER_REGISTRATION_EventProcessor = \
-    """
-        def( "addKeyListenerFunc", &::EventProcessor_addKeyListener );
-        EventProcessor_exposer.def( "addMouseListenerFunc", &::EventProcessor_addMouseListener );
-    """
     
 #################################################################################################
     
@@ -618,13 +515,9 @@ def apply( mb ):
     rt.add_declaration_code( WRAPPER_DEFINITION_Node )
     apply_reg (rt,  WRAPPER_REGISTRATION_Node )
 
-#     rt = mb.class_( 'KeyFrame' )
-#     rt.add_declaration_code( WRAPPER_DEFINITION_KeyFrame )
-#     apply_reg (rt,  WRAPPER_REGISTRATION_KeyFrame )
-
-# #     rt = mb.class_( 'ShadowRenderable' )
-# #     rt.add_declaration_code( WRAPPER_DEFINITION_ShadowRenderable )
-# #     apply_reg (rt,  WRAPPER_REGISTRATION_ShadowRenderable )
+#     rt = mb.class_( 'ShadowRenderable' )
+#     rt.add_declaration_code( WRAPPER_DEFINITION_ShadowRenderable )
+#     apply_reg (rt,  WRAPPER_REGISTRATION_ShadowRenderable )
 
     rt = mb.class_( 'OverlayElement' )
     rt.add_declaration_code( WRAPPER_DEFINITION_OverlayElement )
@@ -653,10 +546,3 @@ def apply( mb ):
     for cls in map_iterators:
         iter_as_generator_map( cls )   
              
-    if environment.ogre.version == "1.2":
-        rt = mb.class_( 'EventProcessor' )
-        rt.add_declaration_code( WRAPPER_DEFINITION_EventProcessor )
-        rt.add_registration_code( WRAPPER_REGISTRATION_EventProcessor )
-        ## now add support for the combined listener
-        rt = mb.class_( 'CombinedListener' )
-        rt.add_declaration_code( WRAPPER_DEFINITION_CombinedListener )        
