@@ -1,3 +1,11 @@
+April 15 2007: Version 1.0 RC2 Release
+=============================
+Turned out that there were some old media files in the release so I've decided to quickly put out a snapshot
+release .
+* removed old media from media/materials/programs - caused ATI graphics cards to crash
+* fixed wrappers for Node.getChild/removeChild etc as I'd incorrectly wrapped them :(
+* added build date and time to module doc  ie. print ogre._ogre_.__doc__ 
+
 April 14 2007: Version 1.0 RC1 Release
 ==============================
 * Reverse order of entries in ChangeLog :)
