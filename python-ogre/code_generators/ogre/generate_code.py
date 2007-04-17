@@ -240,7 +240,6 @@ def ManualFixes ( mb ):
     c.documentation=docit ("Return Type Change", "None", "Tuple with 2 floats's")
             
     ## and these ones return
-    ## note that there aren't any bounds checking here in Windows MSVC7...
     c = ogre_ns.class_('Matrix4').operators('[]')
     c.call_policies= call_policies.convert_array_to_tuple( 4, call_policies.memory_managers.none )   
     c.include() 
@@ -363,27 +362,7 @@ def ManualTransformations ( mb ):
     x=ns.mem_fun('::Ogre::Mesh::suggestTangentVectorBuildParams' )
     x.add_transformation(ft.output('outSourceCoordSet'), ft.output('outIndex') )
     x.documentation = docit ("", "targetSemantic","outSourceCoordSet, outIndex" )
-
-    x=ns.mem_fun('::Ogre::Quaternion::ToAxes', arg_types=[None] )  #single argument version
-    x.add_transformation(ft.output('akAxis') )
-    x.documentation = docit ("", "no Arguments","Vector3 result (akAxis)" )
-
-    x=ns.mem_fun('::Ogre::Quaternion::ToAxes', arg_types=[None, None, None] )  
-    x.add_transformation(ft.output('xAxis'),ft.output('yAxis'),ft.output('zAxis') )
-    x.documentation = docit ("", "no Arguments","Vector3's with result (xAxis, yAxis, zAxis)" )
       
-    x=ns.mem_fun('::Ogre::Quaternion::ToRotationMatrix' )  #single argument version
-    x.add_transformation(ft.output('kRot') )
-    x.documentation = docit ("", "no Arguments","Matrix3 result (kRot)" )
-
-    x=ns.mem_fun('::Ogre::Quaternion::ToAngleAxis', arg_types=['::Ogre::Radian &', None] ) 
-    x.add_transformation(ft.output('rfAngle'), ft.output('rkAxis') )
-    x.documentation = docit ("", "no Arguments","Radian (rfAngle) and a Vector3(rkAxis)" )
-    
-    x=ns.mem_fun('::Ogre::Quaternion::ToAngleAxis', arg_types=['::Ogre::Degree &', None] ) 
-    x.add_transformation(ft.output('dAngle'), ft.output('rkAxis') )
-    x.documentation = docit ("", "no Arguments","Degree (dAngle) and a Vector3(rkAxis)" )
-
     x=ns.mem_fun('::Ogre::PixelUtil::getBitDepths')
     x.add_transformation(ft.output_static_array('rgba',4) )
     x.documentation = docit ("", "format", "rgba" )
@@ -984,7 +963,7 @@ def generate_code():
                                       , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
                                       
     ## need to create a welcome doc string for this...                                  
-    common_utils.add_constants( mb, { '__doc__' :  '"Python-Ogre Wrapper Library: %s"' % time.strftime("%d %b %y %H:%M") } ) 
+    common_utils.add_constants( mb, { '__doc__' :  '"Python-Ogre Wrapper Library"' } ) 
     
     
     ##########################################################################################
