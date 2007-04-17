@@ -124,7 +124,14 @@ def register( mb ):
         derived.add_registration_code( substitute( register_translator, err_class=derived.name ), False )
         python_part_code.append( substitute( derived_py_exception, err_class=derived.name ) )
 
-    ogre_exceptions = os.path.join( environment.ogre.generated_dir, '_ogre_exceptions_.py' )
+    directory_path =  environment.ogre.generated_dir
+    ogre_exceptions = os.path.join( directory_path, '_ogre_exceptions_.py' )
+    
+    if os.path.exists( directory_path ) and not os.path.isdir(directory_path):
+        raise RuntimeError( 'directory_path should be a path not a file.' )
+    if not os.path.exists( directory_path ):
+        os.makedirs( directory_path )
+
     f = file( ogre_exceptions, 'w+' )
     f.write( os.linesep.join( python_part_code ) )
     f.close()
