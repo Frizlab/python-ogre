@@ -22,6 +22,7 @@ class OgreException(Exception):
 _ogre_.OgreException = OgreException
 #this one for backward compatability
 _ogre_.Exception = OgreException
+_ogre_._Exception_.py_err_class = OgreException
 """.strip()
 
 derived_py_exception = \
