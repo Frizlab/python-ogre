@@ -482,6 +482,7 @@ def iter_as_generator_vector( cls ):
                      , 'call_policies' : cls.mem_fun( 'getNext' ).call_policies.create_type()
                      , 'exposer_name' : cls.class_var_name }
             , works_on_instance=False )
+    cls.include_files.append( 'generators.h' )
             
 def iter_as_generator_map( cls ):
     print "ITER:", cls
@@ -494,6 +495,7 @@ def iter_as_generator_map( cls ):
                      , 'call_policies' : cls.mem_fun( 'getNext' ).call_policies.create_type()
                      , 'exposer_name' : cls.class_var_name }
             , works_on_instance=False )
+    cls.include_files.append( 'generators.h' )
 
 #################################################################################################
 #################################################################################################

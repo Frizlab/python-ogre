@@ -68,6 +68,7 @@ class exposer_t:
         sp_instantiation.disable_warnings( messages.W1040 )
         
         pointee = self.get_pointee( sp_instantiation )
+        pointee.include_files.append( 'py_shared_ptr.h' )
         if sp_instantiation.derived:
             #We have struct XPtr : public SharedPtr<X>
             assert 1 == len( sp_instantiation.derived )
