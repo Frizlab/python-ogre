@@ -2,10 +2,7 @@
 def header_files( version ):
     if not version.startswith("1.2"):
         return [ 'python_ogre_masterlist.h'
-                ,'py_shared_ptr.h'
-                , 'generators.h'
-##                , 'return_pointee_value.hpp'
-                ,'boost/python/ssize_t.hpp' ## needed for python2.4 as it doesn't define ssize_t
+                 ,'boost/python/ssize_t.hpp' ## needed for python2.4 as it doesn't define ssize_t
 
         ]
 
