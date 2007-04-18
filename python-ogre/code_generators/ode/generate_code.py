@@ -273,8 +273,8 @@ def generate_code():
         mb.code_creator.user_defined_directories.append(inc )
     mb.code_creator.user_defined_directories.append( environment.ode.generated_dir )
     mb.code_creator.replace_included_headers( customization_data.header_files(environment.ode.version) )
-    mb.code_creator.add_include( "__convenience.pypp.hpp" )
-    mb.code_creator.add_system_header( code_repository.convenience.file_name )
+# #     mb.code_creator.add_include( "__convenience.pypp.hpp" )
+# #     mb.code_creator.add_system_header( code_repository.convenience.file_name )
 
     huge_classes = map( mb.class_, customization_data.huge_classes(environment.ode.version) )
 
