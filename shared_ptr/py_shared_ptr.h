@@ -4,16 +4,14 @@
 #include "boost/python.hpp"
 #include "Ogre.h"
 
+namespace Ogre {
 template<class T>
 inline T * get_pointer(Ogre::SharedPtr<T> const& p){
     return p.get();
 }
-
+}
 
 namespace boost{ namespace python{
-
-    using ::get_pointer;
-    
     template <class T>
     struct pointee< Ogre::SharedPtr<T> >{
         typedef T type;
