@@ -62,7 +62,7 @@ PACKAGEDATA = {
                         'ogre.physics', 'ogre.physics.ODE', 'ogre.physics.OgreRefApp',
                         'ogre.physics.OgreOde', 'ogre.physics.OgreNewt'], ##, 'OgreRefApp', 'OgreNewt', 'OgreOde','ODE', 'OgreAL', 'OgreDshow' ],
        "package_dir": {'': 'packages_'+ PythonVersionString },
-       "package_data": {'': ['*.pyd', '*.dll']}
+       "package_data": {'': ['*.pyd', '*.dll', '*.so']}
 
 }
 
