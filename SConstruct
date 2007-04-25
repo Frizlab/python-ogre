@@ -58,7 +58,8 @@ def get_ccflags():
         if os.sys.platform <> 'darwin':
             CCFLAGS = ' `pkg-config --cflags OGRE` '
             CCFLAGS += ' -I' 
-            CCFLAGS += ' -Os -I./'
+            CCFLAGS += ' -O3 -I./ -fvisibility=hidden -finline-limit=20 '
+            CCFLAGS += ' -fvisibility-inlines-hidden -DOGRE_GCC_VISIBILITY '
         else:
             CCFLAGS  = ' -I -pipe -Os -I./'
     return CCFLAGS
@@ -79,7 +80,7 @@ def get_linkflags():
         #LINKFLAGS = " /NOLOGO /INCREMENTAL:NO /DLL /subsystem:console " ### LONG Link , 80 minutes - 15.7 meg
     elif os.name == 'posix':
         if os.sys.platform <> 'darwin':
-            LINKFLAGS = ' `pkg-config --libs OGRE` '
+            LINKFLAGS = ' `pkg-config --libs OGRE` --strip-all '
         else:
             LINKFLAGS = ''
     return LINKFLAGS

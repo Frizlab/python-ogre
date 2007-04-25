@@ -1,0 +1,84 @@
+Index: OgreMain/include/OgreCompositorChain.h
+===================================================================
+RCS file: /cvsroot/ogre/ogrenew/OgreMain/include/OgreCompositorChain.h,v
+retrieving revision 1.15
+diff -u -r1.15 OgreCompositorChain.h
+--- OgreMain/include/OgreCompositorChain.h	9 Dec 2006 14:37:23 -0000	1.15
++++ OgreMain/include/OgreCompositorChain.h	25 Apr 2007 00:39:14 -0000
+@@ -166,7 +166,7 @@
+ 		void destroyResources(void);
+ 
+ 		/** Render queue listener used to set up rendering events. */
+-		class RQListener: public RenderQueueListener
++		class _OgreExport RQListener: public RenderQueueListener
+ 		{
+ 		public:
+ 			/** @copydoc RenderQueueListener::renderQueueStarted
+Index: OgreMain/include/OgreRenderTargetListener.h
+===================================================================
+RCS file: /cvsroot/ogre/ogrenew/OgreMain/include/OgreRenderTargetListener.h,v
+retrieving revision 1.10
+diff -u -r1.10 OgreRenderTargetListener.h
+--- OgreMain/include/OgreRenderTargetListener.h	23 Aug 2006 08:18:35 -0000	1.10
++++ OgreMain/include/OgreRenderTargetListener.h	25 Apr 2007 00:39:22 -0000
+@@ -31,7 +31,9 @@
+ 
+ 
+ #include "OgrePrerequisites.h"
+-
++#if defined ( OGRE_GCC_VISIBILITY )
++#   pragma GCC visibility push(default)
++#endif
+ namespace Ogre {
+ 
+     /** Struct containing information about a RenderTarget event.
+@@ -128,5 +130,7 @@
+ 		virtual void viewportRemoved(const RenderTargetViewportEvent& evt) {}
+     };
+ }
+-
++#if defined ( OGRE_GCC_VISIBILITY )
++#   pragma GCC visibility pop
++#endif
+ #endif
+Index: OgreMain/include/OgreSingleton.h
+===================================================================
+RCS file: /cvsroot/ogre/ogrenew/OgreMain/include/OgreSingleton.h,v
+retrieving revision 1.11
+diff -u -r1.11 OgreSingleton.h
+--- OgreMain/include/OgreSingleton.h	23 Aug 2006 08:18:36 -0000	1.11
++++ OgreMain/include/OgreSingleton.h	25 Apr 2007 00:39:24 -0000
+@@ -47,6 +47,9 @@
+ #   pragma warning (disable : 4312)
+ #endif
+ 
++#if defined ( OGRE_GCC_VISIBILITY )
++#   pragma GCC visibility push(default)
++#endif
+ namespace Ogre {
+ // End SJS additions
+     /** Template class for creating single-instance global classes.
+@@ -76,4 +79,7 @@
+ 		{ return ms_Singleton; }
+     };
+ }
++#if defined ( OGRE_GCC_VISIBILITY )
++#   pragma GCC visibility pop
++#endif
+ #endif
+Index: OgreMain/include/OgreWindowEventUtilities.h
+===================================================================
+RCS file: /cvsroot/ogre/ogrenew/OgreMain/include/OgreWindowEventUtilities.h,v
+retrieving revision 1.7
+diff -u -r1.7 OgreWindowEventUtilities.h
+--- OgreMain/include/OgreWindowEventUtilities.h	23 Aug 2006 08:18:36 -0000	1.7
++++ OgreMain/include/OgreWindowEventUtilities.h	25 Apr 2007 00:39:26 -0000
+@@ -43,7 +43,7 @@
+ 	@Remarks
+ 		Callback class used to send out window events to client app
+ 	*/
+-	class WindowEventListener
++	class _OgreExport WindowEventListener
+ 	{
+ 	public:
+ 		virtual ~WindowEventListener() {};

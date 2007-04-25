@@ -597,10 +597,11 @@ def Fix_Posix ( mb ):
         pass
     elif sys.platform.startswith ('linux'):
         pass
-        
+    mb.global_ns.class_('vector<int, std::allocator<int> >').alias='VectorInt'
+    mb.global_ns.class_('vector<std::pair<unsigned, unsigned>, std::allocator<std::pair<unsigned, unsigned> > >').alias='VectorUnsignedUnsigned'
     #as reported by mike with linux:bp::arg("flags")=(std::_Ios_Fmtflags)0
     mb.namespace( 'Ogre' ).class_('StringConverter').member_functions('toString').exclude()    
-    
+
     ## grab the operator== and operator!= and exclude them
     ## NOTE: Defination for these are "extern bool..." so I wonder if we should exclude any "extern" operators
     for o in mb.namespace('Ogre').free_operators(arg_types=['::Ogre::ShadowTextureConfig const &', 
@@ -884,7 +885,7 @@ def generate_code():
                         os.path.join( environment.ogre.root_dir, "python_ogre.h" )
                         , environment.ogre.cache_file )
 
-    defined_symbols = [ 'OGRE_NONCLIENT_BUILD' ]
+    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY' ]
     defined_symbols.append( 'OGRE_VERSION_' + environment.ogre.version )  
     
     #

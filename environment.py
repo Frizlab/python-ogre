@@ -108,7 +108,7 @@ class ogre:
     parent = "ogre/renderer"
     ModuleName = 'OGRE'
     if os.sys.platform <> 'darwin':
-        libs=[Config.LIB_Boost, 'OgreMain',  'OgreGUIRenderer', 'CEGUIBase']
+        libs=[Config.LIB_Boost, 'OgreMain' ] #,  'OgreGUIRenderer', 'CEGUIBase']
         lib_dirs = [ Config.PATH_LIB_Boost
                     ,  Config.PATH_LIB_Ogre_CEGUIRenderer
                     , Config.PATH_LIB_Ogre_OgreMain
