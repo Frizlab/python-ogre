@@ -159,7 +159,7 @@
 #include "OgreSceneNode.h"
 #include "OgreSceneQuery.h"
 #include "OgreScriptLoader.h"
-#include "OgreSearchOps.h"
+/// #include "OgreSearchOps.h"
 #include "OgreSerializer.h"
 #include "OgreShadowCameraSetup.h"
 #include "OgreShadowCameraSetupFocused.h"
