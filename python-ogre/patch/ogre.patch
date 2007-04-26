@@ -22,7 +22,9 @@ Index: OgreMain/include/OgreSingleton.h
 +#if defined ( OGRE_GCC_VISIBILITY )
 +#   pragma GCC visibility push(default)
 +#endif
- namespace Ogre {
+namespace Ogre {
+// End SJS additions
+    /** Template class for creating single-instance global classes.
 @@ -76,4 +79,7 @@
  		{ return ms_Singleton; }
      };
