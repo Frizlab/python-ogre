@@ -2,30 +2,26 @@ import sys,os
 
 ## Boost stuff 
 ## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
-PATH_Boost = r'/home/andy/development/boost'    
-## Path to your boost_pythonxxxx lib file
-## Path to your boost_pythonxxxx lib file
+BASE_DIR = r'/home/andy/development'
+LOCAL_LIB = os.path.join(BASE_DIR,'local/lib')
+PATH_Boost = os.path.join(BASE_DIR, 'boost')
 
+#
+PATH_LIB_Boost = LOCAL_LIB
 ## and the name of the boost python library
-LIB_Boost =         r'boost_python-vc71-mt-1_35'
-
-
-
-PATH_LIB_Boost = r'/usr/boost/bin.v2/libs/python/build/'
-## and the name of the boost python library
-LIB_Boost = 'boost_python??????????'
+LIB_Boost = 'libboost_python-gcc41-1_35'
 
 ## Ogre Home, should 'Samples', 'OgreMain' subdirectories
-PATH_Ogre = r'/home/andy/development/ogrenew'
-PATH_OgreAddons = r'/home/andy/development/OgreAddons'
+PATH_Ogre = os.path.join(BASE_DIR,'ogrenew')
+PATH_OgreAddons = os.path.join(BASE_DIR,'OgreAddons')
 
-PATH_CEGUI = r'/home/andy/development/CEGUI-0.5.0'
-PATH_OIS = r'/home/andy/development/ois-1.0RC1'
-PATH_Newton = r'/usr/development/newtonsdk/sdk'
+PATH_CEGUI = os.path.join(BASE_DIR,'CEGUI-0.5.0')
+PATH_OIS = os.path.join(BASE_DIR,'ois-1.0RC1')
+PATH_Newton = os.path.join(BASE_DIR,'newtonsdk/sdk')
 
 #
 # Don't forget we need to call gccxml......
-gccxml_bin = r'/home/andy/development/gccxml/GCC_XML/'
+gccxml_bin = os.path.join(BASE_DIR,'gccxml-build/bin')
 
 
 ## Parent directories of the libraries
@@ -40,7 +36,7 @@ PATH_OgreOde=       r'/home/andy/development/'
 
 
 # and the Py++ directory as sometimes we need access to the code repository there
-pyplusplus_install_dir = r'/home/andy/development/pygccxml'
+pyplusplus_install_dir = os.path.join(BASE_DIR,'pygccxml')
 
 # Overrides - this is needed as libs isn't defined in enirvonment for fmod..
 class fmod:
