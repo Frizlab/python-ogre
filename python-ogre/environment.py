@@ -41,8 +41,8 @@ if os.name =='nt':
 else:
     if os.sys.platform <> 'darwin':
         ## It's linux of some sort
-    	python_include_dirs = os.path.join ( '/usr/include/python2.4', '')
-    	python_lib_dirs = os.path.join ( '/usr/lib/python2.4', 'libs' )
+    	python_include_dirs = os.path.join ( '/usr/include/python'+PythonVersionString,'')
+    	python_lib_dirs = os.path.join ( '/usr/lib/python'+PythonVersionString, 'libs' )
     else:
         ## it's Mac OS X
         pathlist = PATH_Python.split('/')

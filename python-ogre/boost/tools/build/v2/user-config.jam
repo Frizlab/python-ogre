@@ -14,7 +14,7 @@
 #  Uncomment relevant parts to suite your local configuration and preferences.
 
 import toolset : using ;
-using python : 2.4 ;
+using python ;
 #using python : 2.5 ;
 ##using msvc : 7.1 ;
 #  GCC configuration
