@@ -59,7 +59,7 @@ def get_ccflags():
             CCFLAGS = ' `pkg-config --cflags OGRE` '
             CCFLAGS += ' -I' 
             CCFLAGS += ' -O3 -I./ -fvisibility=hidden -finline-limit=20 '
-            CCFLAGS += ' -fvisibility-inlines-hidden -DOGRE_GCC_VISIBILITY '
+            CCFLAGS += '  -DOGRE_GCC_VISIBILITY ' # -fvisibility-inlines-hidden
         else:
             CCFLAGS  = ' -I -pipe -Os -I./'
     return CCFLAGS
