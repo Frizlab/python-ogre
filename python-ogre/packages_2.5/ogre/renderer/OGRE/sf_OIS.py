@@ -212,7 +212,7 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
     def _setupInput(self):
         # ignore buffered input
         
-         windowHnd = self.renderWindow.getCustomAttributeInt("WINDOW")
+         windowHnd = self.renderWindow.getCustomAttributeUnsignedLong("WINDOW")
          self.InputManager = \
              OIS.createPythonInputSystem([("WINDOW",str(windowHnd))])
          
