@@ -257,16 +257,16 @@ Utility_getUint16(void * ptrin,  int size)
 
 // sometimes we need to take the ctypess addressof(), an int, and recast it as a general void *
 void *
-Utility_CastVoidPtr ( int address )
+Utility_CastVoidPtr ( unsigned long address )
 {
     return (void *) address;
     }
     
 // Othertimes we need the address the void * points to
-unsigned int
+unsigned long
 Utility_CastInt ( void * address )
 {
-    return (unsigned int) address;
+    return (unsigned long) address;
     }
     
 boost::python::object 
@@ -399,6 +399,12 @@ WRAPPER_REGISTRATION_BillboardSet = [
 
 WRAPPER_DEFINITION_RenderTarget = \
 """
+static unsigned long
+RenderTarget_getCustomAttributeUnsignedLong(Ogre::RenderTarget& rd, const std::string& name) {
+    unsigned long value(0);
+    rd.getCustomAttribute( name, &value );
+    return value;
+}
 static int
 RenderTarget_getCustomAttributeInt(Ogre::RenderTarget& rd, const std::string& name) {
     int value(0);
@@ -417,12 +423,17 @@ WRAPPER_REGISTRATION_RenderTarget = [
     "Python-Ogre Helper Function: Get a Custom Atribute as an int\\n\\
     Input: None\\n\\
     Output: Numeric (int)\\n\\
-    Gets a custom attribure from RenderTarget as an int" );""",
+    Gets a custom attribute from RenderTarget as an int" );""",
     """def( "getCustomAttributeFloat", &::RenderTarget_getCustomAttributeFloat,
     "Python-Ogre Helper Function: Get a Custom Atribute as a float\\n\\
     Input: None\\n\\
     Output: Numeric (float)\\n\\
-    Gets a custom attribure from RenderTarget as a float" );"""
+    Gets a custom attribute from RenderTarget as a float" );""",
+    """def( "getCustomAttributeUnsignedLong", &::RenderTarget_getCustomAttributeUnsignedLong,
+    "Python-Ogre Helper Function: Get a Custom Atribute as an unsigned long\\n\\
+    Input: None\\n\\
+    Output: Numeric (unsigned long)\\n\\
+    Gets a custom attribute from RenderTarget as an unsigned long" );"""
     ]
 
 #####################################################################
