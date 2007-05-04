@@ -1,0 +1,19 @@
+<scene formatVersion="0.2.0">
+  <nodes>
+    <node name="Cornelius">
+      <position x="0.073818" y="3.176668" z="0.644701"/>
+      <rotation qx="-0.707107" qy="0.000000" qz="0.000000" qw="0.707107"/>
+      <scale x="1.000000" y="1.000000" z="1.000000"/>
+      <entity name="Cornelius" meshFile="primitivemonkey.mesh"/>
+    </node>
+  </nodes>
+  <externals>
+    <item type="material">
+      <file name="testLevel.material"/>
+    </item>
+  </externals>
+  <environment>
+    <colourAmbient r="0.389464" g="0.374485" b="0.479341"/>
+    <colourBackground r="0.719733" g="0.872534" b="0.925940"/>
+  </environment>
+</scene>
