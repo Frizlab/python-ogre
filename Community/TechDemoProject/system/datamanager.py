@@ -99,6 +99,11 @@ class DataManager:
                     actorDict[k] = people.__dict__[k]
             else:
                 break
+        
+        # I couldn't get it to find my actor, what's up with that?    
+        # For now, I'm manually adding it here.  
+        actorDict["Bird"] = people.Bird
+            
         print actorDict
                     
         
