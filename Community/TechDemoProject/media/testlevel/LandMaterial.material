@@ -1,0 +1,15 @@
+material LandMaterial/SOLID/TEX/testLandMap.tga
+{
+	technique
+	{
+		pass
+		{
+			diffuse 0.281606 0.219515 0.010495
+			specular 0.000000 0.000000 0.000000 32.750000
+			texture_unit
+			{
+				texture testLandMap.tga
+			}
+		}
+	}
+}
