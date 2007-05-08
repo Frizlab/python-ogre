@@ -169,7 +169,8 @@ def ManualExclude ( mb ):
     # in hand made wrappers
     global_ns.class_('::Ogre::BillboardSet').mem_fun('getTextureCoords').exclude()
     global_ns.class_('::Ogre::BillboardSet').mem_fun('setTextureCoords').exclude()
-
+#     global_ns.class_('::Ogre::RenderQueueListener').mem_fun('renderQueueStarted').exclude()
+#     global_ns.class_('::Ogre::RenderQueueListener').mem_fun('renderQueueEnded').exclude()
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 
@@ -249,8 +250,6 @@ def ManualFixes ( mb ):
     c.include()
     c.documentation=docit ("Return Type Change", "None", "Tuple with 3 floats's (the matrix 'line')")
 
-    for c in ogre_ns.class_('PixelUtil').member_functions('packColour'):
-        c.alias = 'packColour'
     #VertexCacheProfiler constructor uses enum that will be defined later.
     #I will replace second default value to be int instead of enum
     #arg_types=[None,None] - 2 arguments, with whatever type
@@ -302,7 +301,24 @@ def ManualFixes ( mb ):
 # #         return res
 # #     ogre_ns.variables( lambda var: has_utf_type( utf, var ) ).use_make_functions = True
 # #     #ogre_ns.variables( lambda var: has_utf_type( utf, var ) ).apply_smart_ptr_wa  = True
-             
+
+
+##
+# fix up any ugly name alias
+##
+def ManualAlias ( mb ):
+	return
+	AliasFixList = [
+	["::Ogre::SceneManager::estimateWorldGeometry",
+	["::Ogre::DataStreamPtr &", "::Ogre::String const &"],
+	ft.modify_type('typename',declarations.remove_reference),
+	"estimateWorldGeometry"],
+	]
+	
+	for fix in AliasFixList:
+		c=mb.member_function(fix[0] ,arg_types=fix[1])
+		c.add_transformation( fix[2], alias=fix[3])
+		     
 ############################################################
 ##
 ##  And things that need to have their argument and call values fixed.
@@ -324,16 +340,16 @@ def ManualTransformations ( mb ):
     x.documentation = docit ( "","no arguments", "tuple containing width, height, colourDepth")
     
     x=rt_cls.mem_fun( 'getStatistics', arg_types=['float &']*4 )
-    x.add_transformation( *create_output(4) )
+    x.add_transformation( ft.output(0),ft.output(1),ft.output(2),ft.output(3), alias="getStatistics" )
     x.documentation = docit ("", "no arguments", "tuple - lastFPS, avgFPS, bestFPS, worstFPS")
     
-    x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueEnded')
-    x.add_transformation(ft.output('repeatThisInvocation'))
-    x.documentation = docit ("","queueGroupId, invocation", "tuple - repeatThisInvocation")
-    
-    x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueStarted') 
-    x.add_transformation(ft.output('skipThisInvocation'))
-    x.documentation = docit ("","queueGroupId, invocation", "tuple - repeatThisInvocation")
+#     x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueEnded')
+#     x.add_transformation(ft.output('repeatThisInvocation'))
+#     x.documentation = docit ("","queueGroupId, invocation", "tuple - repeatThisInvocation")
+#     
+#     x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueStarted') 
+#     x.add_transformation(ft.output('skipThisInvocation'))
+#     x.documentation = docit ("","queueGroupId, invocation", "tuple - repeatThisInvocation")
     
     x=ns.mem_fun('::Ogre::RenderWindow::getMetrics')
     x.add_transformation( *create_output(5) )
@@ -418,6 +434,18 @@ def ManualTransformations ( mb ):
     ## now we handle some specials..
     ##
 
+
+    pixelBox_size = """ 
+namespace{ 
+struct PixelBoxSize{ 
+    bp::ssize_t operator()( boost::python::tuple args ) const{ 
+        boost::python::object self = args[0];
+        Ogre::PixelBox& pb = boost::python::extract<Ogre::PixelBox&>( self ); 
+        return pb.getSize(); 
+    } 
+}; 
+} 
+""" 
 
     image_size = """ 
 namespace{ 
@@ -661,7 +689,7 @@ def Fix_Ref_Not_Const ( mb ):
             if 'Ptr' in arg.type.decl_string:
                  if not 'const' in arg.type.decl_string and '&' in arg.type.decl_string:
                     #print "Fixing Const", fun.parent.name,"::", fun.name, "::", arg_position
-                    fun.add_transformation( ft.modify_type(arg_position,declarations.remove_reference ) )
+                    fun.add_transformation( ft.modify_type(arg_position,declarations.remove_reference ), alias=fun.name )
             arg_position +=1
                     
 def Add_Auto_Conversions( mb ):
@@ -753,7 +781,7 @@ def Fix_Void_Ptr_Args ( mb ):
         arg_position = 0
         for arg in fun.arguments:
             if declarations.type_traits.is_void_pointer(arg.type):
-                fun.add_transformation( ft.modify_type(arg_position,_ReturnUnsignedInt ) )
+                fun.add_transformation( ft.modify_type(arg_position,_ReturnUnsignedInt ), alias=fun.name )
                 fun.documentation = docit ("Modified Input Argument to work with CTypes",
                                             "Argument "+arg.name+ "(pos:" + str(arg_position)\
                                             +") takes a CTypes.adddressof(xx)", "...")
@@ -924,7 +952,7 @@ def generate_code():
     ManualInclude ( mb )
     # here we fixup functions that expect to modifiy their 'passed' variables    
     ManualTransformations ( mb )
-    
+    ManualAlias ( mb )
     AutoFixes ( mb )
     ManualFixes ( mb )
     

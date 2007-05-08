@@ -13,6 +13,14 @@ typedef Ogre::SharedPtr<Ogre::Resource> ResourcePtr;
 typedef Ogre::SharedPtr<Ogre::ShadowCameraSetup> ShadowCameraSetupPtr;
 typedef Ogre::SharedPtr<Ogre::StringVector> StringVectorPtr;
 
+typedef Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::GpuConstantDefinition, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::GpuConstantDefinition> > > >\
+	MapIteratorGpuConstantDefinition;
+typedef std::vector<std::pair<unsigned, unsigned>, std::allocator<std::pair<unsigned, unsigned> > >\
+	VectorUnsignedUnsigned;
+		
+typedef std::vector<Ogre::GpuProgramParameters::AutoConstantEntry, std::allocator<Ogre::GpuProgramParameters::AutoConstantEntry> >\
+	VectorAutoConstantEntry;
+	
 typedef Ogre::ResourceManager::ResourceCreateOrRetrieveResult ResourceCreateOrRetrieveResult;
 
 typedef Ogre::FactoryObj<Ogre::Archive> ArchiveFactoryObj;
@@ -41,7 +49,6 @@ typedef std::pair<bool, float> StdPairBoolFloat;
 typedef std::pair<unsigned, unsigned> StdPairUnsignedUnsigned;
 typedef Ogre::AlignedAllocator<Ogre::Vector4, 0> AlignedAllocatorVector40;
 typedef Ogre::AlignedAllocator<Ogre::Vector4, 0>::rebind<Ogre::Vector4> AlignedAllocatorVector40Rebind;
-typedef HashMap<Ogre::String, unsigned short> HashMapStringShort;
 
 typedef std::vector<Ogre::Vector4> VectorVector4;
 typedef Ogre::MapIterator<Ogre::VertexAnimationTrack*> MapIVertexAnimationTrackPtr;
