@@ -5,11 +5,13 @@
 #    * Better structure the base class (class Boid)
 #    * Maybe do some of the maintenance in update() instead of move()?
 #    * Rotate each boid's scenenode in a realistic way
+#    * Use a frustrum to determine which neighbors a boid can see
 
 import ogre.renderer.OGRE as ogre
 
 import base_actor
 
+import math
 import random
 
 gauss = random.Random().gauss
@@ -45,6 +47,10 @@ class Boid(base_actor.GameActor):
         self.neighbors = []
         self.nearest_neighbor = None
 
+        self.pitch = ogre.Radian(0.0)
+        self.yaw = ogre.Radian(0.0)
+        self.roll = ogre.Radian(0.0)        
+
     def find_neighbors(self):
         self.neighbors = []
         self.nearest_neighbor = None
@@ -66,9 +72,35 @@ class Boid(base_actor.GameActor):
         # adjust velocity, then cut it down if needed
         self.velocity += self.accel * time
         trim(self.velocity, self.maxSpeed)
+      
+        self.OgreNode.roll(-self.roll)
+        self.OgreNode.pitch(-self.pitch)
+        self.OgreNode.yaw(-self.yaw)          
+        
+        (self.pitch,self.yaw,self.roll) = self.calculatePitchYawRoll()
+        self.OgreNode.yaw(self.yaw)    
+        self.OgreNode.pitch(self.pitch)    
+        self.OgreNode.roll(self.roll)        
         
         self.OgreNode.position += self.velocity * time
+        
+    def calculatePitchYawRoll(self):
+        lateral = self.velocity.crossProduct(self.accel).crossProduct(self.velocity)
+        lateral.normalise()
+        
+        lateralMag = self.accel.dotProduct(lateral)
+        
+        if (lateralMag == 0):
+            roll = 0
+        else:
+            roll = -math.atan2(9.8, lateralMag) + math.pi / 2.0
 
+        pitch = -math.atan(self.velocity.y / math.sqrt(self.velocity.z * self.velocity.z + self.velocity.x * self.velocity.x))
+
+        yaw = math.atan2(self.velocity.x, self.velocity.z);
+
+        return (ogre.Radian(x) for x in (pitch, yaw, roll))
+        
     def flock(self):
         """Steer toward center of nearby boids"""
         vector = ogre.Vector3(0.0,0.0,0.0)
@@ -197,7 +229,8 @@ class Bird(Boid):
 class Dragon(Boid):
     def __init__(self):
         Boid.__init__(self)
-        self.media = [{'name':'DragonMesh', 'parent':'root', 'rType':'mesh', 'rName':'dragon.mesh'}]
+        self.media = [{'name':'DragonMesh', 'parent':'root', 'rType':'mesh', 'rName':'dragon.mesh'},
+        {'name':'Smokey', 'parent':'DragonMesh', 'rType':'particle', 'rName':'Examples/DragonFire', 'offset':(100.0, 0.0, 80.0)}]
         self.name = 'Bird'
         self.isAnimated = False
         self.nodeScale = 0.1
@@ -206,4 +239,11 @@ class Dragon(Boid):
         self.maxSpeed = 100.0
         
         self.rules = [self.avoid_ground, self.stay_in_bubble, self.maintain_cruising_speed, self.wander]
+
+    def setActorOptions(self, world):
+        pass
+
+    def calculatePitchYawRoll(self):
+        (p,y,r) = Boid.calculatePitchYawRoll(self)
         
+        return (p + ogre.Radian(math.pi), y, r + ogre.Radian(math.pi))
