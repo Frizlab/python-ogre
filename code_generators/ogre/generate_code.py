@@ -74,11 +74,7 @@ def ManualExclude ( mb ):
     global_ns.class_('::Ogre::Node').member_functions('getParent').exclude()
     
     global_ns.class_('::Ogre::OverlayElement').mem_fun('findElementAt').exclude()
-    global_ns.class_('::Ogre::OverlayElement').mem_fun('clone').exclude()
-#     global_ns.class_('::Ogre::OverlayElement').mem_fun('getSourceTemplate').exclude()
-    
-#     global_ns.class_('::Ogre::KeyFrame').mem_fun('_clone').exclude()
-#     global_ns.class_('::Ogre::ShadowRenderable').mem_fun('getLightCapRenderable').exclude()
+    global_ns.class_('::Ogre::OverlayElement').mem_fun('clone').exclude() # virtual, but not in code.
     
     startswith = [
         'WIN32'
@@ -271,6 +267,16 @@ def ManualFixes ( mb ):
     v = cls.variable( "indexData" )
     v.apply_smart_ptr_wa = True   
     
+    ## Functions that return objects we need to manage
+    FunctionsToMemoryManage=[\
+    	'::Ogre::VertexData::clone',
+    	'::Ogre::IndexData::clone',
+    	'::Ogre::Pose::clone',
+    	'::Ogre::Animation::clone'
+    	]
+    for cls in FunctionsToMemoryManage:
+    	global_ns.mem_fun(cls).call_policies = call_policies.return_value_policy( call_policies.manage_new_object )
+    
     # make UTFstrings behave as real Python strings..
     UTFString = mb.class_( 'UTFString' )
     UTFString.mem_fun( 'asUTF8' ).alias = '__str__'
@@ -343,13 +349,13 @@ def ManualTransformations ( mb ):
     x.add_transformation( ft.output(0),ft.output(1),ft.output(2),ft.output(3), alias="getStatistics" )
     x.documentation = docit ("", "no arguments", "tuple - lastFPS, avgFPS, bestFPS, worstFPS")
     
-#     x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueEnded')
-#     x.add_transformation(ft.output('repeatThisInvocation'))
-#     x.documentation = docit ("","queueGroupId, invocation", "tuple - repeatThisInvocation")
-#     
-#     x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueStarted') 
-#     x.add_transformation(ft.output('skipThisInvocation'))
-#     x.documentation = docit ("","queueGroupId, invocation", "tuple - repeatThisInvocation")
+    x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueEnded')
+    x.add_transformation(ft.inout('repeatThisInvocation'))
+    #x.documentation = docit ("","queueGroupId, invocation", "tuple - repeatThisInvocation")
+    
+    x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueStarted') 
+    x.add_transformation(ft.inout('skipThisInvocation'))
+    #x.documentation = docit ("","queueGroupId, invocation", "tuple - repeatThisInvocation")
     
     x=ns.mem_fun('::Ogre::RenderWindow::getMetrics')
     x.add_transformation( *create_output(5) )
@@ -360,11 +366,11 @@ def ManualTransformations ( mb ):
     x.documentation = docit ("","no arguments", "tuple - left, top, width, height")
 
     x=ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueStarted')
-    x.add_transformation(ft.output("skipThisQueue"))
+    x.add_transformation(ft.inout("skipThisQueue"))
     x.documentation = docit ("", "id, invocation", "skipThisQueue" )
     
     x=ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueEnded') 
-    x.add_transformation(ft.output("repeatThisQueue"))
+    x.add_transformation(ft.inout("repeatThisQueue"))
     x.documentation = docit ("", "id, invocation", "repeatThisQueue" )
     
     x=ns.mem_fun('::Ogre::PanelOverlayElement::getUV') 

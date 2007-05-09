@@ -1,4 +1,11 @@
-April 15 2007: Version 1.0 RC2 Release
+* Further fixes to remove ugly function names (PixelUtil..)
+* changed return calue policy on "clone" calls as we need to manage the object
+* switched to VC8..
+* getCustomAttributeUnsignedLong added and SF-OIS changed to use this for 64bit compatibility
+
+
+
+April 15 2007: Version 1.0 RC1 (c) Release
 =============================
 Turned out that there were some old media files in the release so I've decided to quickly put out a snapshot
 release .
