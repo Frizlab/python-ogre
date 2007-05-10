@@ -204,7 +204,7 @@ class cegui:
                     ,Config.PATH_CEGUI
                     , Config.PATH_INCLUDE_Ogre_CEGUIRenderer
                     , Config.PATH_INCLUDE_Ogre
-                    ##, Config.PATH_INCLUDE_Ogre_Dependencies ## needed as OgreCEGUI uses CEGUI/.. in #includes
+                    , Config.PATH_INCLUDE_Ogre_Dependencies ## needed as OgreCEGUI uses CEGUI/.. in #includes
                     ]
                   
     lib_dirs = [ Config.PATH_LIB_Boost
@@ -284,6 +284,40 @@ class fmod:
     CheckIncludes = ['fmod.h']
     active=False
     
+class betagui:
+    version="1.0"
+    parent="ogre/gui"
+    cflags = ""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_Ogre,
+                    Config.PATH_INCLUDE_betagui
+                    ]
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain,
+                Config.PATH_LIB_betagui
+                ]
+    CheckIncludes=[]
+    libs=[  Config.LIB_Boost, 'OgreMain' ]
+    ModuleName="BetaGui"   
+    active=True
+
+class simplegui:
+    version="1.0"
+    parent="ogre/gui"
+    cflags = ""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_Ogre,
+                    Config.PATH_INCLUDE_simplegui
+                    ]
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain,
+                Config.PATH_LIB_simplegui
+                ]
+    CheckIncludes=[]
+    libs=[  Config.LIB_Boost, 'OgreMain' ]
+    ModuleName="simplegui"   
+    active=True
+        
 class ogreal:
     version="0.3"
     parent = "ogre/sound"
@@ -321,6 +355,8 @@ projects = {
     , 'fmod' : fmod
     , 'ogreode' : ogreode
     , 'ogreal' : ogreal
+    , 'betagui' : betagui
+    , 'simplegui' : simplegui
 }        
 
 #

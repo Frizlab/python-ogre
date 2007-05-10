@@ -8,29 +8,33 @@ BASE_DIR = 'c:/development'
 ## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
 PATH_Boost =        os.path.join(BASE_DIR, 'boost')
 ## Path to your boost_pythonxxxx lib file
-PATH_LIB_Boost =    os.path.join(BASE_DIR, 'boost/bin.v2/libs/python2.5/build/msvc-7.1/release/threading-multi')
+PATH_LIB_Boost =    os.path.join(BASE_DIR, 'boost/bin.v2/libs/python2.5/build/msvc-8.0/release/threading-multi')
 ## PATH_LIB_Boost =    os.path.join(BASE_DIR, 'boost/bin.v2/libs/python2.4/build/msvc-7.1/release/threading-multi')
 ## and the name of the boost python library
 LIB_Boost =         r'boost_python-vc71-mt-1_35'
+LIB_Boost =         r'boost_python-vc80-mt-1_35'
 # We need to know where to find gccxml......
 gccxml_bin =        os.path.join(BASE_DIR, 'gccxml/bin/release/gccxml.exe')
 # and the Py++ directory as sometimes we need access to the code repository there
 pyplusplus_install_dir = os.path.join(BASE_DIR, 'pyplus')
 
 ## Parent directories of the libraries
-PATH_Ogre =         os.path.join(BASE_DIR,'Ocvs/Ogrenew')
-PATH_OgreAddons =   os.path.join(BASE_DIR, 'Ocvs/OgreAddons')
+PATH_Ogre =         os.path.join(BASE_DIR,'Ogrenew')
+PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
 PATH_CEGUI =        os.path.join(BASE_DIR, 'cegui-0.5.0')
 PATH_OIS =          os.path.join(BASE_DIR, 'ois')
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonsdk/sdk')
 PATH_FMOD =         os.path.join(BASE_DIR, 'fmod')
-PATH_ODE =          os.path.join(BASE_DIR, 'ode')
-PATH_OGREAL=        os.path.join(BASE_DIR, 'ocvs/ogrealE')
+PATH_ODE =          os.path.join(BASE_DIR, 'opende/trunk')
+PATH_OGREAL=        os.path.join(BASE_DIR, 'ogreal')
 PATH_OGG =          os.path.join(BASE_DIR, 'ogg')
 PATH_VORBIS=        os.path.join(BASE_DIR, 'vorbis')
 PATH_OPENAL=        os.path.join(BASE_DIR, 'openal')
 PATH_ALUT=          os.path.join(BASE_DIR, 'freealut')
-PATH_OgreOde=       os.path.join(BASE_DIR, 'Ocvs/OgreAddons/ogreode')
+PATH_OgreOde=       os.path.join(BASE_DIR, 'OgreAddons/ogreode')
+PATH_betagui=       os.path.join(BASE_DIR, 'betagui')
+PATH_simplegui=     os.path.join(BASE_DIR, 'simplegui')
+
 #
 # it's time for the SDK version
 if SDK:
@@ -40,7 +44,7 @@ if SDK:
     PATH_OIS =          os.path.join(BASE_DIR, 'Ogrenew')
     PATH_Newton =       os.path.join(BASE_DIR, 'newtonsdk/sdk')
     PATH_FMOD =         os.path.join(BASE_DIR, 'fmod')
-    PATH_ODE =          os.path.join(BASE_DIR, 'ode')
+    PATH_ODE =          os.path.join(BASE_DIR, 'opende/trunk')
     PATH_OGREAL=        os.path.join(BASE_DIR, 'ogreAL')
     PATH_OGG =          os.path.join(BASE_DIR, 'ogg')
     PATH_VORBIS=        os.path.join(BASE_DIR, 'vorbis')
@@ -74,6 +78,8 @@ PATH_LIB_OgreOdePrefab =        os.path.join( PATH_OgreOde, 'prefab/lib/Release'
 PATH_LIB_OgreOdeLoader =        os.path.join( PATH_OgreOde, 'loader/lib/Release' )
 PATH_LIB_FMOD =                 os.path.join(PATH_FMOD, 'api/lib') 
 PATH_LIB_OgreAL =               os.path.join(PATH_OGREAL, 'lib/Release' )
+PATH_LIB_betagui =              PATH_betagui
+PATH_LIB_simplegui =            PATH_simplegui
 
 if SDK:
     PATH_LIB_Ogre_CEGUIRenderer =    os.path.join( PATH_Ogre, 'lib')
@@ -103,6 +109,8 @@ PATH_INCLUDE_OgreOdePrefab= os.path.join( PATH_OgreOde,'prefab/include')
 PATH_INCLUDE_OgreOdeLoader= os.path.join( PATH_OgreOde,'loader/include')
 PATH_INCLUDE_FMOD =          os.path.join(PATH_FMOD, 'api/inc')
 PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'samples/Common/CEGUIRenderer/include')
+PATH_INCLUDE_betagui =       PATH_betagui
+PATH_INCLUDE_simplegui =     PATH_simplegui
 
 if SDK:
     PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include') 
