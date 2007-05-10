@@ -3,7 +3,9 @@ import ogre.renderer.OGRE as ogre
 import ogre.io.OIS as OIS
 import ogre.physics.OgreNewt as OgreNewt
 from dotscene import DotScene
-from actors.characters import people, boids
+from actors.characters import people
+from actors.characters.boids import Bird, Dragon
+
 from frameListeners import debugFrameListener
 import sys
 
@@ -102,8 +104,8 @@ class DataManager:
         
         # I couldn't get it to find my actor, what's up with that?    
         # For now, I'm manually adding it here.  
-        actorDict["Bird"] = boids.Bird
-        actorDict["Dragon"] = boids.Dragon
+        actorDict["Bird"] = Bird
+        actorDict["Dragon"] = Dragon
             
         print actorDict
                     
@@ -193,8 +195,8 @@ class DataManager:
                     cms.setCompositorEnabled(self.renderWindow.getViewport(0), comp, True)
                 else:
                     cms.setCompositorEnabled(self.renderWindow.getViewport(0),comp, False)
-        OgreNewt.Debugger.getSingleton().init(self.sceneManager)
-        OgreNewt.Debugger.getSingleton().showLines(self.world)
+##        OgreNewt.Debugger.getSingleton().init(self.sceneManager)
+##        OgreNewt.Debugger.getSingleton().showLines(self.world)
                         
                         
     def clearScene(self):

@@ -20,7 +20,7 @@ class DebugFrameListener(ogre.FrameListener, OIS.KeyListener, OIS.MouseListener)
         OIS.MouseListener.__init__(self)
         self.renderWindow = renderWindow
         self.camera = camera
-        self.moveScale = 500.00
+        self.moveScale = 1500.00
         self.fps = 60.0
         self.translateVector = ogre.Vector3(0.0, 0.0, 0.0)
         self.steering = ogre.Degree(0.0)

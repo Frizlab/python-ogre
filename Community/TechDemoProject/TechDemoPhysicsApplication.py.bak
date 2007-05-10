@@ -169,7 +169,7 @@ class TechDemoApp:
         # create a camera, and set the view distance
         self.camera = self.sceneManager.createCamera('PlayerCam')
         self.camera.nearClipDistance = 0.1
-        self.camera.setPosition( 0.0, 40, 350.0)
+        self.camera.setPosition( 150, 40, 150.0)
         self.camera.lookAt(ogre.Vector3(0, -50, -300))
         
     

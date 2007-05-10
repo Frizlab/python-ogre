@@ -99,6 +99,11 @@ class DataManager:
                     actorDict[k] = people.__dict__[k]
             else:
                 break
+        
+        # I couldn't get it to find my actor, what's up with that?    
+        # For now, I'm manually adding it here.  
+        actorDict["Bird"] = people.Bird
+            
         print actorDict
                     
         
@@ -155,7 +160,7 @@ class DataManager:
                     if hasattr(self, 'scnLoader'):
                         
                         stat_col = OgreNewt.TreeCollisionSceneParser( self.world )
-                        stat_col.parseScene( self.staticRoot, False )
+                        stat_col.parseScene( self.staticRoot, True )
                         self.staticCollisionBody = OgreNewt.Body( self.world, stat_col )
                         self.staticCollisionBody.attachToNode( self.staticRoot )
                         #self.staticCollisionBody.setPositionOrientation( self.staticRoot.getPosition(), self.staticRoot.getOrientation() )
@@ -187,8 +192,8 @@ class DataManager:
                     cms.setCompositorEnabled(self.renderWindow.getViewport(0), comp, True)
                 else:
                     cms.setCompositorEnabled(self.renderWindow.getViewport(0),comp, False)
-        OgreNewt.Debugger.getSingleton().init(self.sceneManager)
-        OgreNewt.Debugger.getSingleton().showLines(self.world)
+##        OgreNewt.Debugger.getSingleton().init(self.sceneManager)
+##        OgreNewt.Debugger.getSingleton().showLines(self.world)
                         
                         
     def clearScene(self):

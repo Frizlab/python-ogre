@@ -1,0 +1,34 @@
+<scene formatVersion="0.2.0">
+  <nodes>
+    <node name="waterPlane">
+      <position x="0.000000" y="0.000000" z="0.000000"/>
+      <rotation qx="-0.707107" qy="0.000000" qz="0.000000" qw="0.707107"/>
+      <scale x="1.000000" y="1.000000" z="1.000000"/>
+      <entity name="waterPlane" meshFile="waterPlane.mesh"/>
+    </node>
+    <node name="Island_Full_Mesh">
+      <position x="0.000000" y="11.725710" z="-0.000001"/>
+      <rotation qx="-0.707107" qy="0.000000" qz="0.000000" qw="0.707107"/>
+      <scale x="1.000000" y="1.000000" z="1.000000"/>
+      <entity name="Island_Full_Mesh" meshFile="Plane.mesh"/>
+    </node>
+    <node name="Cornelius">
+      <position x="-70.106216" y="3.275960" z="-19.215164"/>
+      <rotation qx="-0.500000" qy="-0.500000" qz="-0.500000" qw="0.500000"/>
+      <scale x="0.432031" y="0.432031" z="0.432031"/>
+      <entity name="Cornelius" meshFile="primitivemonkey.mesh"/>
+    </node>
+  </nodes>
+  <externals>
+    <item type="material">
+      <file name="Island_External.material"/>
+    </item>
+  </externals>
+  <environment>
+    <fog linearStart="307.967896" linearEnd="873.676025" mode="linear">
+      <colourDiffuse r="0.674510" g="0.713726" b="0.752941"/>
+    </fog>
+    <colourAmbient r="0.000000" g="0.000000" b="0.000000"/>
+    <colourBackground r="0.674510" g="0.713726" b="0.752941"/>
+  </environment>
+</scene>

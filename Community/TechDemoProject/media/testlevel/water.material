@@ -1,0 +1,17 @@
+material WaterMaterial
+{
+	technique
+	{
+		pass
+		{
+			scene_blend colour_blend
+
+			texture_unit
+			{
+				texture Water02.jpg
+				scroll_anim 0.0001 0.0001
+				rotate_anim 0.0003
+			}
+		}
+	}
+}

@@ -1,0 +1,261 @@
+01:32:16: Creating resource group General
+01:32:16: Creating resource group Internal
+01:32:16: Creating resource group Autodetect
+01:32:16: SceneManagerFactory for type 'DefaultSceneManager' registered.
+01:32:16: Registering ResourceManager for type Material
+01:32:16: Registering ResourceManager for type Mesh
+01:32:16: Registering ResourceManager for type Skeleton
+01:32:16: MovableObjectFactory for type 'ParticleSystem' registered.
+01:32:16: OverlayElementFactory for type Panel registered.
+01:32:16: OverlayElementFactory for type BorderPanel registered.
+01:32:16: OverlayElementFactory for type TextArea registered.
+01:32:16: Registering ResourceManager for type Font
+01:32:16: ArchiveFactory for archive type FileSystem registered.
+01:32:16: ArchiveFactory for archive type Zip registered.
+01:32:16: FreeImage version: 3.9.2
+01:32:16: This program uses FreeImage, a free, open source image library supporting all common bitmap formats. See http://freeimage.sourceforge.net for details
+01:32:16: Supported formats: bmp,ico,jpg,jif,jpeg,jpe,jng,koa,iff,lbm,mng,pbm,pbm,pcd,pcx,pgm,pgm,png,ppm,ppm,ras,tga,targa,tif,tiff,wap,wbmp,wbm,psd,cut,xbm,xpm,gif,hdr,g3,sgi
+01:32:16: DDS codec registering
+01:32:16: Registering ResourceManager for type HighLevelGpuProgram
+01:32:16: Registering ResourceManager for type Compositor
+01:32:16: MovableObjectFactory for type 'Entity' registered.
+01:32:16: MovableObjectFactory for type 'Light' registered.
+01:32:16: MovableObjectFactory for type 'BillboardSet' registered.
+01:32:16: MovableObjectFactory for type 'ManualObject' registered.
+01:32:16: MovableObjectFactory for type 'BillboardChain' registered.
+01:32:16: MovableObjectFactory for type 'RibbonTrail' registered.
+01:32:16: *-*-* OGRE Initialising
+01:32:16: *-*-* Version 1.4.0 (Eihort)
+01:32:16: Loading library ./plugins\RenderSystem_GL.dll
+01:32:16: Installing plugin: GL RenderSystem
+01:32:16: OpenGL Rendering Subsystem created.
+01:32:16: Plugin successfully installed
+01:32:16: Loading library ./plugins\Plugin_BSPSceneManager.dll
+01:32:16: Installing plugin: BSP Scene Manager
+01:32:16: Plugin successfully installed
+01:32:16: Loading library ./plugins\Plugin_CgProgramManager.dll
+01:32:16: Installing plugin: Cg Program Manager
+01:32:16: Plugin successfully installed
+01:32:16: Loading library ./plugins\Plugin_OctreeSceneManager.dll
+01:32:16: Installing plugin: Octree & Terrain Scene Manager
+01:32:16: Plugin successfully installed
+01:32:16: Loading library ./plugins\RenderSystem_Direct3D9.dll
+01:32:16: Installing plugin: D3D9 RenderSystem
+01:32:16: D3D9 : Direct3D9 Rendering Subsystem created.
+01:32:17: D3D9: Driver Detection Starts
+01:32:17: D3D9: Driver Detection Ends
+01:32:17: Plugin successfully installed
+01:32:17: Loading library ./plugins\Plugin_ParticleFX.dll
+01:32:17: Installing plugin: ParticleFX
+01:32:17: Particle Emitter Type 'Point' registered
+01:32:17: Particle Emitter Type 'Box' registered
+01:32:17: Particle Emitter Type 'Ellipsoid' registered
+01:32:17: Particle Emitter Type 'Cylinder' registered
+01:32:17: Particle Emitter Type 'Ring' registered
+01:32:17: Particle Emitter Type 'HollowEllipsoid' registered
+01:32:17: Particle Affector Type 'LinearForce' registered
+01:32:17: Particle Affector Type 'ColourFader' registered
+01:32:17: Particle Affector Type 'ColourFader2' registered
+01:32:17: Particle Affector Type 'ColourImage' registered
+01:32:17: Particle Affector Type 'ColourInterpolator' registered
+01:32:17: Particle Affector Type 'Scaler' registered
+01:32:17: Particle Affector Type 'Rotator' registered
+01:32:17: Particle Affector Type 'DirectionRandomiser' registered
+01:32:17: Particle Affector Type 'DeflectorPlane' registered
+01:32:17: Plugin successfully installed
+01:32:17: D3D9 : RenderSystem Option: Allow NVPerfHUD = No
+01:32:17: D3D9 : RenderSystem Option: Anti aliasing = None
+01:32:17: D3D9 : RenderSystem Option: Floating-point mode = Fastest
+01:32:17: D3D9 : RenderSystem Option: Full Screen = No
+01:32:17: D3D9 : RenderSystem Option: Rendering Device = Radeon X1650 Series
+01:32:17: D3D9 : RenderSystem Option: VSync = No
+01:32:17: D3D9 : RenderSystem Option: Video Mode = 800 x 600 @ 32-bit colour
+01:32:19: CPU Identifier & Features
+01:32:19: -------------------------
+01:32:19:  *   CPU ID: GenuineIntel: Intel(R) Pentium(R) 4 CPU 2.80GHz
+01:32:19:  *      SSE: yes
+01:32:19:  *     SSE2: yes
+01:32:19:  *     SSE3: no
+01:32:19:  *      MMX: yes
+01:32:19:  *   MMXEXT: yes
+01:32:19:  *    3DNOW: no
+01:32:19:  * 3DNOWEXT: no
+01:32:19:  *     CMOV: yes
+01:32:19:  *      TSC: yes
+01:32:19:  *      FPU: yes
+01:32:19:  *      PRO: no
+01:32:19:  *       HT: yes
+01:32:19: -------------------------
+01:32:19: D3D9 : Subsystem Initialising
+01:32:19: D3D9RenderSystem::createRenderWindow "Tek Demo", 800x600 windowed  miscParams: FSAA=0 FSAAQuality=0 colourDepth=32 useNVPerfHUD=false vsync=false 
+01:32:19: D3D9 : Created D3D9 Rendering Window 'Tek Demo' : 800x600, 32bpp
+01:32:19: D3D9 : WARNING - disabling VSync in windowed mode can cause timing issues at lower frame rates, turn VSync on if you observe this problem.
+01:32:19: Registering ResourceManager for type Texture
+01:32:19: Registering ResourceManager for type GpuProgram
+01:32:19: RenderSystem capabilities
+01:32:19: -------------------------
+01:32:19:  * Hardware generation of mipmaps: yes
+01:32:19:  * Texture blending: yes
+01:32:19:  * Anisotropic texture filtering: yes
+01:32:19:  * Dot product texture operation: yes
+01:32:19:  * Cube mapping: yes
+01:32:19:  * Hardware stencil buffer: yes
+01:32:19:    - Stencil depth: 8
+01:32:19:    - Two sided stencil support: yes
+01:32:19:    - Wrap stencil values: yes
+01:32:19:  * Hardware vertex / index buffers: yes
+01:32:19:  * Vertex programs: yes
+01:32:19:    - Max vertex program version: vs_3_0
+01:32:19:  * Fragment programs: yes
+01:32:19:    - Max fragment program version: ps_3_0
+01:32:19:  * Texture Compression: yes
+01:32:19:    - DXT: yes
+01:32:19:    - VTC: no
+01:32:19:  * Scissor Rectangle: yes
+01:32:19:  * Hardware Occlusion Query: yes
+01:32:19:  * User clip planes: yes
+01:32:19:  * VET_UBYTE4 vertex element type: yes
+01:32:19:  * Infinite far plane projection: yes
+01:32:19:  * Hardware render-to-texture: yes
+01:32:19:  * Floating point textures: yes
+01:32:19:  * Non-power-of-two textures: yes (limited)
+01:32:19:  * Volume textures: yes
+01:32:19:  * Multiple Render Targets: 4
+01:32:19:  * Point Sprites: yes
+01:32:19:  * Extended point parameters: yes
+01:32:19:  * Max Point Size: 256
+01:32:19:  * Vertex texture fetch: no
+01:32:19: ***************************************
+01:32:19: *** D3D9 : Subsystem Initialised OK ***
+01:32:19: ***************************************
+01:32:19: ResourceBackgroundQueue - threading disabled
+01:32:19: Particle Renderer Type 'billboard' registered
+01:32:19: SceneManagerFactory for type 'OctreeSceneManager' registered.
+01:32:19: SceneManagerFactory for type 'TerrainSceneManager' registered.
+01:32:19: SceneManagerFactory for type 'BspSceneManager' registered.
+01:32:19: Registering ResourceManager for type BspLevel
+01:32:19: Creating viewport on target 'Tek Demo', rendering from camera 'PlayerCam', relative dimensions L: 0.00 T: 0.00 W: 1.00 H: 1.00 ZOrder: 0
+01:32:19: Viewport for camera 'PlayerCam', actual dimensions L: 0 T: 0 W: 800 H: 600
+01:32:19: Creating resource group Bootstrap
+01:32:19: Added resource location './media/OgreCore.zip' of type 'Zip' to resource group 'Bootstrap'
+01:32:19: Creating resource group MainMenu
+01:32:19: Added resource location './media/MainMenu' of type 'FileSystem' to resource group 'MainMenu'
+01:32:19: Creating resource group Core
+01:32:19: Added resource location './media/Core/Materials' of type 'FileSystem' to resource group 'Core'
+01:32:19: Added resource location './media/packs/dragon.zip' of type 'Zip' to resource group 'Core'
+01:32:19: Creating resource group testlevel
+01:32:19: Added resource location './media/testlevel' of type 'FileSystem' to resource group 'testlevel'
+01:32:19: Initialising resource group Core
+01:32:19: Parsing scripts for resource group Core
+01:32:19: Parsing script Examples.program
+01:32:19: OGRE EXCEPTION(6:FileNotFoundException): Cannot locate resource Example_Basic.cg in resource group Core or any other group. in ResourceGroupManager::openResource at \Development\ogrenew\OgreMain\src\OgreResourceGroupManager.cpp (line 603)
+01:32:19: High-level program Ogre/BasicVertexPrograms/AmbientOneTexture encountered an error during loading and is thus not supported.
+01:32:19: OGRE EXCEPTION(6:FileNotFoundException): Cannot locate resource Example_Basic.cg in resource group Core or any other group. in ResourceGroupManager::openResource at \Development\ogrenew\OgreMain\src\OgreResourceGroupManager.cpp (line 603)
+01:32:19: High-level program Ogre/HardwareSkinningTwoWeightsCg encountered an error during loading and is thus not supported.
+01:32:19: OGRE EXCEPTION(6:FileNotFoundException): Cannot locate resource Example_Basic.cg in resource group Core or any other group. in ResourceGroupManager::openResource at \Development\ogrenew\OgreMain\src\OgreResourceGroupManager.cpp (line 603)
+01:32:19: High-level program Ogre/HardwareMorphAnimation encountered an error during loading and is thus not supported.
+01:32:19: OGRE EXCEPTION(6:FileNotFoundException): Cannot locate resource Example_Basic.cg in resource group Core or any other group. in ResourceGroupManager::openResource at \Development\ogrenew\OgreMain\src\OgreResourceGroupManager.cpp (line 603)
+01:32:19: High-level program Ogre/HardwarePoseAnimation encountered an error during loading and is thus not supported.
+01:32:19: Parsing script Bloom.material
+01:32:19: Parsing script Examples-Advanced.material
+01:32:19: OGRE EXCEPTION(6:FileNotFoundException): Cannot locate resource Example_CelShading.cg in resource group Core or any other group. in ResourceGroupManager::openResource at \Development\ogrenew\OgreMain\src\OgreResourceGroupManager.cpp (line 603)
+01:32:19: High-level program Ogre/CelShadingVP encountered an error during loading and is thus not supported.
+01:32:19: OGRE EXCEPTION(6:FileNotFoundException): Cannot locate resource Example_CelShading.cg in resource group Core or any other group. in ResourceGroupManager::openResource at \Development\ogrenew\OgreMain\src\OgreResourceGroupManager.cpp (line 603)
+01:32:19: High-level program Ogre/CelShadingFP encountered an error during loading and is thus not supported.
+01:32:19: OGRE EXCEPTION(6:FileNotFoundException): Cannot locate resource Example_BumpMapping.cg in resource group Core or any other group. in ResourceGroupManager::openResource at \Development\ogrenew\OgreMain\src\OgreResourceGroupManager.cpp (line 603)
+01:32:19: High-level program Examples/BumpMapVP encountered an error during loading and is thus not supported.
+01:32:19: OGRE EXCEPTION(6:FileNotFoundException): Cannot locate resource Example_BumpMapping.cg in resource group Core or any other group. in ResourceGroupManager::openResource at \Development\ogrenew\OgreMain\src\OgreResourceGroupManager.cpp (line 603)
+01:32:19: High-level program Examples/BumpMapFP encountered an error during loading and is thus not supported.
+01:32:19: OGRE EXCEPTION(6:FileNotFoundException): Cannot locate resource Example_BumpMapping.cg in resource group Core or any other group. in ResourceGroupManager::openResource at \Development\ogrenew\OgreMain\src\OgreResourceGroupManager.cpp (line 603)
+01:32:19: High-level program Examples/BumpMapVPSpecular encountered an error during loading and is thus not supported.
+01:32:19: OGRE EXCEPTION(6:FileNotFoundException): Cannot locate resource Example_BumpMapping.cg in resource group Core or any other group. in ResourceGroupManager::openResource at \Development\ogrenew\OgreMain\src\OgreResourceGroupManager.cpp (line 603)
+01:32:19: High-level program Examples/BumpMapFPSpecular encountered an error during loading and is thus not supported.
+01:32:19: OGRE EXCEPTION(6:FileNotFoundException): Cannot locate resource Example_Projection.cg in resource group Core or any other group. in ResourceGroupManager::openResource at \Development\ogrenew\OgreMain\src\OgreResourceGroupManager.cpp (line 603)
+01:32:19: High-level program Examples/TexProjectionVP encountered an error during loading and is thus not supported.
+01:32:19: OGRE EXCEPTION(6:FileNotFoundException): Cannot locate resource Example_Projection.cg in resource group Core or any other group. in ResourceGroupManager::openResource at \Development\ogrenew\OgreMain\src\OgreResourceGroupManager.cpp (line 603)
+01:32:19: High-level program Examples/TexProjectionFP encountered an error during loading and is thus not supported.
+01:32:19: OGRE EXCEPTION(6:FileNotFoundException): Cannot locate resource Example_Fresnel.cg in resource group Core or any other group. in ResourceGroupManager::openResource at \Development\ogrenew\OgreMain\src\OgreResourceGroupManager.cpp (line 603)
+01:32:19: High-level program Examples/FresnelRefractReflectVP encountered an error during loading and is thus not supported.
+01:32:19: OGRE EXCEPTION(6:FileNotFoundException): Cannot locate resource Example_Fresnel.cg in resource group Core or any other group. in ResourceGroupManager::openResource at \Development\ogrenew\OgreMain\src\OgreResourceGroupManager.cpp (line 603)
+01:32:19: High-level program Examples/FresnelRefractReflectFP encountered an error during loading and is thus not supported.
+01:32:19: OGRE EXCEPTION(6:FileNotFoundException): Cannot locate resource Example_BumpMapping.cg in resource group Core or any other group. in ResourceGroupManager::openResource at \Development\ogrenew\OgreMain\src\OgreResourceGroupManager.cpp (line 603)
+01:32:19: High-level program Examples/BumpMapVPShadowRcv encountered an error during loading and is thus not supported.
+01:32:19: OGRE EXCEPTION(6:FileNotFoundException): Cannot locate resource Example_BumpMapping.cg in resource group Core or any other group. in ResourceGroupManager::openResource at \Development\ogrenew\OgreMain\src\OgreResourceGroupManager.cpp (line 603)
+01:32:19: High-level program Examples/BumpMapFPShadowRcv encountered an error during loading and is thus not supported.
+01:32:19: Parsing script Examples.compositor
+01:32:19: Finished parsing scripts for resource group Core
+01:32:19: Initialising resource group testlevel
+01:32:19: Parsing scripts for resource group testlevel
+01:32:19: Parsing script dragon.material
+01:32:19: Parsing script fish.material
+01:32:19: Parsing script island.material
+01:32:19: Parsing script LandMaterial.material
+01:32:19: Parsing script monkey_baked.material
+01:32:19: Parsing script Rastaman.material
+01:32:19: Parsing script smoke.material
+01:32:19: Parsing script stonemonkeys.material
+01:32:19: Parsing script testlevel.material
+01:32:19: Parsing script testlevel_skybox.material
+01:32:19: Parsing script testlevel_skyboxes.material
+01:32:19: Parsing script water.material
+01:32:19: Parsing script smoke.particle
+01:32:19: Finished parsing scripts for resource group testlevel
+01:32:19: Mesh: Loading waterPlane.mesh.
+01:32:19: Texture: Water02.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) with  hardware generated mipmaps from Image. Internal format is PF_X8R8G8B8,512x512x1.
+01:32:19: Mesh: Loading Plane.mesh.
+01:32:19: Texture: Land_Lightmap_Large.jpg: Loading 1 faces(PF_R8G8B8,2048x2048x1) with  hardware generated mipmaps from Image. Internal format is PF_X8R8G8B8,2048x2048x1.
+01:32:20: Mesh: Loading primitivemonkey.mesh.
+01:32:20: Texture: monkeyLightMap.tga: Loading 1 faces(PF_R8G8B8,256x256x1) with  hardware generated mipmaps from Image. Internal format is PF_X8R8G8B8,256x256x1.
+01:32:27: Texture: tg2_skybox_for.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) with  hardware generated mipmaps from Image. Internal format is PF_X8R8G8B8,512x512x1.
+01:32:27: Texture: tg2_skybox_back.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) with  hardware generated mipmaps from Image. Internal format is PF_X8R8G8B8,512x512x1.
+01:32:27: Texture: tg2_skybox_left.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) with  hardware generated mipmaps from Image. Internal format is PF_X8R8G8B8,512x512x1.
+01:32:27: Texture: tg2_skybox_right.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) with  hardware generated mipmaps from Image. Internal format is PF_X8R8G8B8,512x512x1.
+01:32:27: Texture: tg2_skybox_up.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) with  hardware generated mipmaps from Image. Internal format is PF_X8R8G8B8,512x512x1.
+01:32:27: Texture: sb_dn.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) with  hardware generated mipmaps from Image. Internal format is PF_X8R8G8B8,512x512x1.
+01:32:27: Creating viewport on target 'rtt/125984544', rendering from camera 'PlayerCam', relative dimensions L: 0.00 T: 0.00 W: 1.00 H: 1.00 ZOrder: 0
+01:32:27: Viewport for camera 'PlayerCam', actual dimensions L: 0 T: 0 W: 128 H: 128
+01:32:27: Creating viewport on target 'rtt/125983104', rendering from camera 'PlayerCam', relative dimensions L: 0.00 T: 0.00 W: 1.00 H: 1.00 ZOrder: 0
+01:32:27: Viewport for camera 'PlayerCam', actual dimensions L: 0 T: 0 W: 128 H: 128
+01:32:27: Mesh: Loading rastaMan.mesh.
+01:32:27: Skeleton: Loading RastaMan-Armature.skeleton
+01:32:27: Texture: RastamanTexture.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) with  hardware generated mipmaps from Image. Internal format is PF_X8R8G8B8,512x512x1.
+01:32:27: WARNING: the mesh 'rastaMan.mesh' includes vertices with more than 4 bone assignments. The lowest weighted assignments beyond this limit have been removed, so your animation may look slightly different. To eliminate this, reduce the number of bone assignments per vertex on your mesh to 4.
+01:32:27: Mesh: Loading fish.mesh.
+01:32:27: Skeleton: Loading fish.skeleton
+01:32:27: Texture: steelhead.png: Loading 1 faces(PF_R8G8B8,256x256x1) with  hardware generated mipmaps from Image. Internal format is PF_X8R8G8B8,256x256x1.
+01:32:27: WARNING: the mesh 'fish.mesh' includes vertices without bone assignments. Those vertices will transform to wrong position when skeletal animation enabled. To eliminate this, assign at least one bone assignment per vertex on your mesh.
+01:32:27: Mesh: Loading Triangle.mesh.
+01:32:27: WARNING: Triangle.mesh is an older format ([MeshSerializer_v1.30]); you should upgrade it as soon as possible using the OgreMeshUpgrade tool.
+01:32:27: Can't assign material Material.001 to SubEntity of Bird2BirdMesh because this Material does not exist. Have you forgotten to define it in a .material script?
+01:32:27: Can't assign material Material.001 to SubEntity of Bird3BirdMesh because this Material does not exist. Have you forgotten to define it in a .material script?
+01:32:27: Can't assign material Material.001 to SubEntity of Bird4BirdMesh because this Material does not exist. Have you forgotten to define it in a .material script?
+01:32:27: Can't assign material Material.001 to SubEntity of Bird5BirdMesh because this Material does not exist. Have you forgotten to define it in a .material script?
+01:32:27: Can't assign material Material.001 to SubEntity of Bird6BirdMesh because this Material does not exist. Have you forgotten to define it in a .material script?
+01:32:27: Can't assign material Material.001 to SubEntity of Bird7BirdMesh because this Material does not exist. Have you forgotten to define it in a .material script?
+01:32:28: Can't assign material Material.001 to SubEntity of Bird8BirdMesh because this Material does not exist. Have you forgotten to define it in a .material script?
+01:32:28: Can't assign material Material.001 to SubEntity of Bird9BirdMesh because this Material does not exist. Have you forgotten to define it in a .material script?
+01:32:28: Can't assign material Material.001 to SubEntity of Bird10BirdMesh because this Material does not exist. Have you forgotten to define it in a .material script?
+01:32:28: Can't assign material Material.001 to SubEntity of Bird11BirdMesh because this Material does not exist. Have you forgotten to define it in a .material script?
+01:32:28: Can't assign material Material.001 to SubEntity of Bird12BirdMesh because this Material does not exist. Have you forgotten to define it in a .material script?
+01:32:28: Can't assign material Material.001 to SubEntity of Bird13BirdMesh because this Material does not exist. Have you forgotten to define it in a .material script?
+01:32:28: Can't assign material Material.001 to SubEntity of Bird14BirdMesh because this Material does not exist. Have you forgotten to define it in a .material script?
+01:32:28: Can't assign material Material.001 to SubEntity of Bird15BirdMesh because this Material does not exist. Have you forgotten to define it in a .material script?
+01:32:28: Can't assign material Material.001 to SubEntity of Bird16BirdMesh because this Material does not exist. Have you forgotten to define it in a .material script?
+01:32:28: Can't assign material Material.001 to SubEntity of Bird17BirdMesh because this Material does not exist. Have you forgotten to define it in a .material script?
+01:32:28: Can't assign material Material.001 to SubEntity of Bird18BirdMesh because this Material does not exist. Have you forgotten to define it in a .material script?
+01:32:28: Can't assign material Material.001 to SubEntity of Bird19BirdMesh because this Material does not exist. Have you forgotten to define it in a .material script?
+01:32:28: Can't assign material Material.001 to SubEntity of Bird20BirdMesh because this Material does not exist. Have you forgotten to define it in a .material script?
+01:32:28: Can't assign material Material.001 to SubEntity of Bird21BirdMesh because this Material does not exist. Have you forgotten to define it in a .material script?
+01:32:28: Can't assign material Material.001 to SubEntity of Bird22BirdMesh because this Material does not exist. Have you forgotten to define it in a .material script?
+01:32:28: Mesh: Loading dragon.mesh.
+01:32:28: WARNING: dragon.mesh is an older format ([MeshSerializer_v1.10]); you should upgrade it as soon as possible using the OgreMeshUpgrade tool.
+01:32:28: Texture: BODY.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) with  hardware generated mipmaps from Image. Internal format is PF_X8R8G8B8,512x512x1.
+01:32:28: Texture: HEAD4.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) with  hardware generated mipmaps from Image. Internal format is PF_X8R8G8B8,512x512x1.
+01:32:28: Texture: LEGS.jpg: Loading 1 faces(PF_R8G8B8,512x512x1) with  hardware generated mipmaps from Image. Internal format is PF_X8R8G8B8,512x512x1.
+01:32:28: WARNING: Texture instance 'CompositorInstanceTexture1' was defined as manually loaded, but no manual loader was provided. This Resource will be lost if it has to be reloaded.
+01:32:28: WARNING: Texture instance 'CompositorInstanceTexture0' was defined as manually loaded, but no manual loader was provided. This Resource will be lost if it has to be reloaded.
+01:32:28: Texture: spot_shadow_fade.png: Loading 1 faces(PF_R8G8B8,128x128x1) with  hardware generated mipmaps from Image. Internal format is PF_X8R8G8B8,128x128x1.
+01:32:28: Texture: smoke.png: Loading 1 faces(PF_A8R8G8B8,256x256x1) with  hardware generated mipmaps from Image. Internal format is PF_A8R8G8B8,256x256x1.
+01:32:28: WARNING: Texture instance 'Ogre/ShadowTexture0' was defined as manually loaded, but no manual loader was provided. This Resource will be lost if it has to be reloaded.
+01:32:28: Creating viewport on target 'rtt/127473728', rendering from camera 'Ogre/ShadowTexture0Cam', relative dimensions L: 0.00 T: 0.00 W: 1.00 H: 1.00 ZOrder: 0
+01:32:28: Viewport for camera 'Ogre/ShadowTexture0Cam', actual dimensions L: 0 T: 0 W: 512 H: 512

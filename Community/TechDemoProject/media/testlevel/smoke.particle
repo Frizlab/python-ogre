@@ -42,14 +42,13 @@ Examples/Smoke
 
 }
 
-
 Examples/DragonFire
 {
     	material        	Examples/Smoke
-    	particle_width  	1
-    	particle_height 	1
+    	particle_width  	8
+    	particle_height 	8
     	cull_each       	true
-    	quota           	50
+    	quota           	7
     	billboard_type  	point
 		sorted				true
     
@@ -57,11 +56,11 @@ Examples/DragonFire
     	emitter Point
     	{
 		angle               		11
-        	emission_rate       		10
-        	time_to_live        		5
-        	direction           		0 0 -1
-        	velocity_min        		20
-        	velocity_max        		20    	
+        	emission_rate       		2
+        	time_to_live        		4
+        	direction           		0 1 0
+        	velocity_min        		2
+        	velocity_max        		5    	
 	}
 
 	affector ColourImage
@@ -81,4 +80,5 @@ Examples/DragonFire
    	{
        	rate 	4
    	}
+
 }

@@ -1,5 +1,8 @@
 import ogre.renderer.OGRE as ogre
 
+import psyco
+psyco.full()
+
 import base_actor
 
 class RastaMan(base_actor.GameActor):
@@ -53,3 +56,5 @@ class Ball(base_actor.GameActor):
         
     def setActorOptions(self, world):
         self.makeSphereCollision(world)
+
+
