@@ -1,0 +1,210 @@
+material skin.pointer 
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture transparent.png
+			}
+		}
+	}
+}
+
+material skin.window
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture transparent.png
+			}
+		}
+	}
+}
+
+
+material skin.window.border
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture transparent.png
+			}
+		}
+	}
+}
+
+material skin.window.titlebar
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture transparent.png
+			}
+		}
+	}
+}
+
+material skin.window.titlebar.button
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture transparent.png
+			}
+		}
+	}
+}
+
+material skin.window.titlebar.button.over
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture transparent.png
+			}
+		}
+	}
+}
+
+material skin.window.titlebar.button.down
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture transparent.png
+			}
+		}
+	}
+}
+
+material skin.textbox
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture transparent.png
+			}
+		}
+	}
+}
+
+material skin.textbox.border
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture transparent.png
+			}
+		}
+	}
+}
+
+material skin.label
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture transparent.png
+			}
+		}
+	}
+}
+
+material skin.menu
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture transparent.png
+			}
+		}
+	}
+}
+
+material skin.button
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture transparent.png
+			}
+		}
+	}
+}
+
+material skin.button.over
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture transparent.png
+			}
+		}
+	}
+}
+
+material skin.button.down
+{
+	technique
+	{
+		pass
+		{
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture transparent.png
+			}
+		}
+	}
+}
