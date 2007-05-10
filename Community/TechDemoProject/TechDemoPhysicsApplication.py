@@ -75,7 +75,7 @@ class TechDemoApp:
         self.datamanager = DataManager(self.sceneManager, self.viewport, self.renderWindow, \
                                         self.camera, 30, True) # True = createphysics
                                         
-        self.sceneManager.shadowTechnique = ogre.SHADOWTYPE_TEXTURE_ADDITIVE
+        #self.sceneManager.shadowTechnique = ogre.SHADOWTYPE_TEXTURE_ADDITIVE
         
         
         # Load our default frame listener. 
@@ -92,6 +92,9 @@ class TechDemoApp:
         fadeColour = (0.90, 0.89, 0.89) # B G R
         
         self.sceneManager.setFog(ogre.FOG_LINEAR, fadeColour, 0, 10000, 12000)
+        self.sceneManager.shadowTechnique = ogre.SHADOWTYPE_TEXTURE_MODULATIVE_INTEGRATED
+        self.sceneManager.setShadowTextureSize(512)
+        self.sceneManager.setShadowColour(ogre.ColourValue(0.2, 0.2, 0.2))
         self.renderWindow.getViewport(0).backgroundColour = fadeColour
         
         # render one Frame, to init the compositor etc.
@@ -172,7 +175,14 @@ class TechDemoApp:
         self.camera.setPosition( 0.0, 40, 350.0)
         self.camera.lookAt(ogre.Vector3(0, -50, -300))
         
-    
+        # debug Light Creation
+        light = self.sceneManager.createLight('BlueLight')
+        light.type = ogre.Light.LT_DIRECTIONAL
+        light.setPosition (-200, 500, 100)
+        dirvec = -light.getPosition()
+        dirvec.normalise()
+        light.setDirection(dirvec)
+        light.setDiffuseColour(0.9, 0.9, 1.0)
         
         # connect the camera to the renderWindow
         self.viewport = self.renderWindow.addViewport(self.camera)

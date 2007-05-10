@@ -92,6 +92,7 @@ class DotScene:
                     name = str(thingy['name'].nodeValue)
                     mesh = str(thingy['meshFile'].nodeValue)
                     attachMe = self.sceneManager.createEntity(name,mesh)
+                    attachMe.setCastShadows(False)
                     attachMe.setNormaliseNormals(True)
                     print 'added entity: "%s" %s' % (name, mesh)
                 except IndexError:

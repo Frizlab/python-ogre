@@ -13,7 +13,7 @@ class DebugFrameListener(ogre.FrameListener, OIS.KeyListener, OIS.MouseListener)
     # well, as this directs user input to the player actor, instead of 
     # directly affecting the camera
 
-    def __init__(self, renderWindow, camera, player=None):
+    def __init__(self, renderWindow, camera, sceneManager, player=None):
 
         ogre.FrameListener.__init__(self)
         OIS.KeyListener.__init__(self)
@@ -25,6 +25,9 @@ class DebugFrameListener(ogre.FrameListener, OIS.KeyListener, OIS.MouseListener)
         self.translateVector = ogre.Vector3(0.0, 0.0, 0.0)
         self.steering = ogre.Degree(0.0)
         self.pitch = ogre.Degree(0.0)
+        self.filtering = ogre.TFO_BILINEAR
+        self.shadowType = ogre.SHADOWTYPE_NONE
+        self.sceneManager = sceneManager
         self.setupInput()
         
         self.Mouse.setEventCallback(self)
@@ -88,6 +91,19 @@ class DebugFrameListener(ogre.FrameListener, OIS.KeyListener, OIS.MouseListener)
             self.translateVector.x = -self.moveScale * (self.time / self.fps)
         elif arg.key == OIS.KC_D:
             self.translateVector.x = self.moveScale * (self.time / self.fps)
+
+        if arg.key == OIS.KC_H:
+            if self.shadowType == ogre.SHADOWTYPE_NONE:
+                self.shadowType = ogre.SHADOWTYPE_STENCIL_MODULATIVE
+                self.sceneManager.shadowTechnique = self.shadowType
+            elif self.shadowType == ogre.SHADOWTYPE_STENCIL_MODULATIVE:
+                self.shadowType = ogre.SHADOWTYPE_TEXTURE_MODULATIVE
+                self.sceneManager.shadowTechnique = self.shadowType
+            else: 
+                self.shadowType = ogre.SHADOWTYPE_NONE
+                self.sceneManager.shadowTechnique = self.shadowType
+                
+            ogre.MaterialManager.getSingleton().setDefaultTextureFiltering(self.filtering)
             
         return True
 

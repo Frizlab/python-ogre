@@ -184,7 +184,7 @@ class DataManager:
                 self.spawnActor(actor.strip(), pos)
             if k == 'FRAME_LISTENER':
                 fl = frameListeners[ky[1]]
-                self.inputListener = fl(self.renderWindow, self.camera)
+                self.inputListener = fl(self.renderWindow, self.camera, self.sceneManager)
                 ogre.Root.getSingleton().addFrameListener(self.inputListener)
             if k == 'COMPOSITOR':
                 comp = ky[1]

@@ -41,7 +41,7 @@ class Boid(base_actor.GameActor):
         self.maxAccel = 2.0
         self.maxSpeed = 10.0
         self.cruisingSpeed = 5.0
-        self.wander_deviation = 1.0
+        self.wander_deviation = 2.5
         
         self.rules = []
         self.neighbors = []
