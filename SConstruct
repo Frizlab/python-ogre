@@ -43,8 +43,9 @@ def create_SConscript ( cls ):
         targettype = 'LoadableModule'
     f.write ("""
 Import(\'_env\') \n
-_%s = _env.%s( "%s", SHLIBPREFIX=\'\', source=_env["FILES"])\n
-Return ('_%s') """ % ( cls._name, targettype, cls._name, cls._name ) )
+_%(name)s = _env.%(targettype)s( "%(name)s", SHLIBPREFIX=\'\', source=_env["FILES"])\n
+Return ('_%(name)s')\n
+ """ % { 'name':cls._name, 'targettype':targettype } )
                                    
 def get_ccflags():
     if os.name=='nt':
@@ -53,13 +54,14 @@ def get_ccflags():
         CCFLAGS += '  /nologo' # -Zm800
         CCFLAGS += ' /W3 /wd4675' # warning level  -Zc:wchar_t 
         CCFLAGS += ' /TP /MD /Zc:forScope  /EHs /c'
-        CCFLAGS += '  /Ogisyb2 /Gs /GR ' #/Op /Ox /O2
+        ##CCFLAGS += '  /Ogisyb2 /Gs /GR ' #/Op /Ox /O2
+        CCFLAGS += ' /Ox /Ob2 /Oi /Ot /Oy /GS- /GR '
     elif os.name =='posix':
         if os.sys.platform <> 'darwin':
             CCFLAGS = ' `pkg-config --cflags OGRE` '
             CCFLAGS += ' -I' 
-            CCFLAGS += ' -O3 -I./ ' #-fvisibility=hidden -finline-limit=20 '
-            #CCFLAGS += ' -DOGRE_GCC_VISIBILITY ' # -fvisibility-inlines-hidden 
+            CCFLAGS += ' -O3 -I./ -fvisibility=hidden -finline-limit=20 '
+            CCFLAGS += ' -DOGRE_GCC_VISIBILITY '  # -fvisibility-inlines-hidden
         else:
             CCFLAGS  = ' -I -pipe -Os -I./'
     return CCFLAGS
@@ -80,13 +82,14 @@ def get_linkflags():
         #LINKFLAGS = " /NOLOGO /INCREMENTAL:NO /DLL /subsystem:console " ### LONG Link , 80 minutes - 15.7 meg
     elif os.name == 'posix':
         if os.sys.platform <> 'darwin':
-            LINKFLAGS = ' `pkg-config --libs OGRE` --strip-all '
+            LINKFLAGS = ' `pkg-config --libs OGRE` --strip-all -lstdc++ '
         else:
             LINKFLAGS = ''
     return LINKFLAGS
 
 # Let us select the projects to build
-possible_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',  'ogreode', 'ogreal']
+possible_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',\
+    'ogreode', 'ogreal', 'simplegui', 'raknet']
 default_projects = possible_projects #['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'fmod','cegui' ]
 
 # This lets you call scons like: 'scons PROJECTS=ogre,cegui'
@@ -140,15 +143,19 @@ for name, cls in environment.projects.items():
         
         ## create a dynamic Sconscript file in the source directory (only if it doesn't exist)
         create_SConscript ( cls )
-        
+# #         _env.LINKCOM  = [_env['LINKCOM'],\
+# #         				'mt.exe -nologo -manifest %(name)s.manifest -outputresource:%(name)s;2' % {'name':cls._name} ]
         ## now call the SConscript file in the source directory
         Export ( '_env' ) 
         package = _env.SConscript(os.path.join( cls._build_dir, 'SConscript' ) )
         
-        ## and lets have it install the output into the 'package_dir_name/ModuleName' dir and rename to the PydName
-        
         ## ugly hack - scons returns a list of targets from SharedLibrary - we have to choose the one we want
         index = 0  # this is the index into a list of targets - '0' should be the platform default
+
+        ## and lets have it install the output into the 'package_dir_name/ModuleName' dir and rename to the PydName
+        _env.AddPostAction(package,\
+        	 'mt.exe -nologo -manifest %(name)s.manifest -outputresource:%(name)s;2' % { 'name':package[index] } )
+        
         _env.InstallAs(os.path.join(environment.package_dir_name, cls.parent,
                                     cls.ModuleName, cls.PydName), 
                                      package[index] )

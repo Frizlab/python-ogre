@@ -317,7 +317,22 @@ class simplegui:
     libs=[  Config.LIB_Boost, 'OgreMain' ]
     ModuleName="simplegui"   
     active=True
-        
+ 
+class raknet:
+    version="1.0"
+    parent="ogre/network"
+    cflags = ""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_raknet
+                    ]
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_raknet
+                ]
+    CheckIncludes=[]
+    libs=[  Config.LIB_Boost, 'RakNetLibStatic' ]  # could use RakNetDll
+    ModuleName="raknet"   
+    active=True    
+           
 class ogreal:
     version="0.3"
     parent = "ogre/sound"
