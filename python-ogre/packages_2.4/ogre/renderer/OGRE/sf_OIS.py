@@ -291,8 +291,7 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
         
         if not self.MenuMode:   # if we are in Menu mode we don't move the camera..
             self._processUnbufferedMouseInput(frameEvent)
-        
-        self._moveCamera()
+            self._moveCamera()
         # Perform simulation step only if using OgreRefApp.  For simplicity create a function that simply does
         ###  "OgreRefApp.World.getSingleton().simulationStep(frameEvent.timeSinceLastFrame)"
         
