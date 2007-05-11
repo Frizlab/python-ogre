@@ -5,12 +5,32 @@ material WaterMaterial
 		pass
 		{
 			scene_blend colour_blend
+			depth_write off
 
 			texture_unit
 			{
 				texture Water02.jpg
 				scroll_anim 0.0001 0.0001
 				rotate_anim 0.0003
+			}
+		}
+	}
+}
+
+material WaterMaterialUnder
+{
+	technique
+	{
+		pass
+		{
+			scene_blend colour_blend
+			depth_write off
+
+			texture_unit
+			{
+				texture Water02.jpg
+				scroll_anim 0.0000 0.0001
+				rotate_anim -0.004
 			}
 		}
 	}

@@ -13,18 +13,21 @@ class DebugFrameListener(ogre.FrameListener, OIS.KeyListener, OIS.MouseListener)
     # well, as this directs user input to the player actor, instead of 
     # directly affecting the camera
 
-    def __init__(self, renderWindow, camera, player=None):
+    def __init__(self, renderWindow, camera, sceneManager, player=None):
 
         ogre.FrameListener.__init__(self)
         OIS.KeyListener.__init__(self)
         OIS.MouseListener.__init__(self)
         self.renderWindow = renderWindow
         self.camera = camera
-        self.moveScale = 500.00
+        self.moveScale = 1500.00
         self.fps = 60.0
         self.translateVector = ogre.Vector3(0.0, 0.0, 0.0)
         self.steering = ogre.Degree(0.0)
         self.pitch = ogre.Degree(0.0)
+        self.filtering = ogre.TFO_BILINEAR
+        self.shadowType = ogre.SHADOWTYPE_NONE
+        self.sceneManager = sceneManager
         self.setupInput()
         
         self.Mouse.setEventCallback(self)
@@ -63,6 +66,21 @@ class DebugFrameListener(ogre.FrameListener, OIS.KeyListener, OIS.MouseListener)
         
 
     def frameEnded(self, evt):
+        # change the fog level if we go underwater
+        if self.camera.position.y < 0.00:
+            end = 30 + max(0, (300 + self.camera.position.y) )
+            if self.camera.position.y < -200:
+                bFac = 0.04
+            else:
+                ratio = ((200.00 - abs(self.camera.position.y)) / 200.00)
+                bFac = 0.4 * ratio
+                gFac = 0.15 * ratio
+                
+            
+            self.sceneManager.setFog(ogre.FogMode.FOG_LINEAR, ogre.ColourValue(0.04, gFac, bFac), 0.001, 50.0, end)
+        else:
+            self.sceneManager.setFog(ogre.FogMode.FOG_LINEAR, ogre.ColourValue(0.8, 0.8, 0.9), 0.001, 40000.0, 80000.00)
+            
         return True
         
     def mouseMoved( self, arg ):
@@ -88,6 +106,19 @@ class DebugFrameListener(ogre.FrameListener, OIS.KeyListener, OIS.MouseListener)
             self.translateVector.x = -self.moveScale * (self.time / self.fps)
         elif arg.key == OIS.KC_D:
             self.translateVector.x = self.moveScale * (self.time / self.fps)
+
+        if arg.key == OIS.KC_H:
+            if self.shadowType == ogre.SHADOWTYPE_NONE:
+                self.shadowType = ogre.SHADOWTYPE_STENCIL_MODULATIVE
+                self.sceneManager.shadowTechnique = self.shadowType
+            elif self.shadowType == ogre.SHADOWTYPE_STENCIL_MODULATIVE:
+                self.shadowType = ogre.SHADOWTYPE_TEXTURE_MODULATIVE
+                self.sceneManager.shadowTechnique = self.shadowType
+            else: 
+                self.shadowType = ogre.SHADOWTYPE_NONE
+                self.sceneManager.shadowTechnique = self.shadowType
+                
+            ogre.MaterialManager.getSingleton().setDefaultTextureFiltering(self.filtering)
             
         return True
 

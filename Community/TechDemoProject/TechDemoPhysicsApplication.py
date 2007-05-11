@@ -47,7 +47,7 @@ class TechDemoApp:
         print '6'
         del self.renderWindow
         print '7'
-        
+        print 'Application says Bye-Bye'
         
 
         
@@ -91,7 +91,7 @@ class TechDemoApp:
         #self.datamanager.showMainMenu()
         fadeColour = (0.90, 0.89, 0.89) # B G R
         
-        self.sceneManager.setFog(ogre.FOG_LINEAR, fadeColour, 0, 10000, 12000)
+        self.sceneManager.setFog(ogre.FogMode.FOG_LINEAR, fadeColour, 0, 6000, 12000)
         self.sceneManager.shadowTechnique = ogre.SHADOWTYPE_TEXTURE_MODULATIVE_INTEGRATED
         self.sceneManager.setShadowTextureSize(512)
         self.sceneManager.setShadowColour(ogre.ColourValue(0.2, 0.2, 0.2))

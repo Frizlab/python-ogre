@@ -6,10 +6,28 @@ material testLevel/TG2_skybox
 		{
 			lighting off
 			depth_write off
-
+			fog_override
 			texture_unit
 			{
 				cubic_texture tg2_skybox_for.jpg tg2_skybox_back.jpg tg2_skybox_left.jpg tg2_skybox_right.jpg tg2_skybox_up.jpg sb_dn.jpg separateUV
+				tex_address_mode clamp
+			}
+		}
+	}
+}
+
+material testLevel/sea_skybox
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			depth_write off
+			fog_override
+			texture_unit
+			{
+				cubic_texture sea_sb_for.jpg sea_sb_back.jpg sea_sb_left.jpg sea_sb_right.jpg tg2_skybox_up.jpg sea_sb_dn.jpg separateUV
 				tex_address_mode clamp
 			}
 		}

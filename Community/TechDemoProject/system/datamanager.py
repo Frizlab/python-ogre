@@ -4,7 +4,7 @@ import ogre.io.OIS as OIS
 import ogre.physics.OgreNewt as OgreNewt
 from dotscene import DotScene
 from actors.characters import people
-from actors.characters.boids import Bird, Dragon
+from actors.characters.boids import Bird, Dragon, FishBoid
 
 from frameListeners import debugFrameListener
 import sys
@@ -42,6 +42,7 @@ class DataManager:
         self.collisionList = []
         self.framerate = framerate # fps rate for physics updates
         self.staticRoot = rt.createChildSceneNode('Root_Static')
+        self.foliageRoot = rt.createChildSceneNode('Root_Foliage')
         self.actorRoot = rt.createChildSceneNode('Root_Actors')
         #self.StaticEntity = self.sceneManager.createEntity('Static', 'ellipsoid.mesh')
         #self.staticRoot.attachObject(self.StaticEntity)
@@ -99,13 +100,12 @@ class DataManager:
             if '__' not in k:
                 if not k in ['ogre', 'base_actor']:
                     actorDict[k] = people.__dict__[k]
-            else:
-                break
         
         # I couldn't get it to find my actor, what's up with that?    
         # For now, I'm manually adding it here.  
         actorDict["Bird"] = Bird
         actorDict["Dragon"] = Dragon
+        actorDict["FishBoid"] = FishBoid
             
         print actorDict
                     
@@ -145,6 +145,9 @@ class DataManager:
             if k == 'XML_SCENE':
                 sceneFile = os.path.join(os.curdir, 'system', 'gameConfig', ky[1])
                 self.scnLoader = DotScene( sceneFile, self.sceneManager, self.staticRoot)
+            if k == 'FOLIAGE_SCENE':
+                sceneFile = os.path.join(os.curdir, 'system', 'gameConfig', ky[1])
+                self.foliageLoader = DotScene( sceneFile, self.sceneManager, self.foliageRoot)
             if k == 'XML_SCENE_PHYSICS':
                 # We'll cache the collision trees,
                 try:
