@@ -102,6 +102,7 @@ class CameraTrackApplication(sf.Application):
         w.setText("Sample Text!")
         b = w.createButton((0.25,0.3,0.5,0.4),"sgui.button")
         b.setText("Exit!")
+        
         self.cb1 = CallBack()
         self.cb1.function = self.my_eventHandler
         b.addEventHandler(gui.Widget.Event.SGUI_MOUSE_BUTTON_UP,self.cb1)
@@ -113,8 +114,8 @@ class CameraTrackApplication(sf.Application):
         return True     
         
     def _createFrameListener(self):
-        self.frameListener = CameraTrackListener(self.renderWindow, self.camera, self.animationState)
-        self.root.addFrameListener(self.frameListener)
+#         self.frameListener = CameraTrackListener(self.renderWindow, self.camera, self.animationState)
+#         self.root.addFrameListener(self.frameListener)
         self.GuiFrameListener= GuiFrameListener(self.renderWindow, self.camera)
         self.root.addFrameListener(self.GuiFrameListener)
         
@@ -159,17 +160,19 @@ class GuiFrameListener ( sf.FrameListener, ois.MouseListener, ois.KeyListener ):
         return True
 
     ##----------------------------------------------------------------##
-    def mousePressed( self, arg,  id ):
-        gui.GUIManager.getSingleton().injectMouseButtonDown(gui.MB_Left)
+    def mousePressed( self, arg,  _id ):
+        b = gui.MouseButtonID.values[_id]
+        gui.GUIManager.getSingleton().injectMouseButtonDown(b)
         return True
 
     ##----------------------------------------------------------------##
-    def mouseReleased( self, arg, id ):
-        gui.GUIManager.getSingleton().injectMouseButtonUp(gui.MB_Left)
+    def mouseReleased( self, arg, _id ):
+        b = gui.MouseButtonID.values[_id]
+        gui.GUIManager.getSingleton().injectMouseButtonUp(b)
         return True
 
     ##----------------------------------------------------------------##
-    def  keyPressed( self, arg ):
+    def keyPressed( self, arg ):
         if( arg.key == ois.KC_ESCAPE ):
             self.ShutdownRequested = True
         ## Now convert from OIS keycode to SimpleGUI one..            
