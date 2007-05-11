@@ -2,6 +2,7 @@ import os
 
 SDK=True ## set to true if buiding from 1.4 release source...
 BASE_DIR = 'c:/development'
+root_dir = os.path.abspath(os.path.dirname(__file__) )## The root directory is where this module is located
 
 
 ## Boost stuff 
@@ -33,7 +34,9 @@ PATH_OPENAL=        os.path.join(BASE_DIR, 'openal')
 PATH_ALUT=          os.path.join(BASE_DIR, 'freealut')
 PATH_OgreOde=       os.path.join(BASE_DIR, 'OgreAddons/ogreode')
 PATH_betagui=       os.path.join(BASE_DIR, 'betagui')
-PATH_simplegui=     os.path.join(BASE_DIR, 'simplegui')
+PATH_raknet=       os.path.join(BASE_DIR, 'RakNet')
+
+PATH_simplegui=     os.path.join(root_dir, 'ThirdParty/simplegui')
 
 #
 # it's time for the SDK version
@@ -80,6 +83,7 @@ PATH_LIB_FMOD =                 os.path.join(PATH_FMOD, 'api/lib')
 PATH_LIB_OgreAL =               os.path.join(PATH_OGREAL, 'lib/Release' )
 PATH_LIB_betagui =              PATH_betagui
 PATH_LIB_simplegui =            PATH_simplegui
+PATH_LIB_raknet =               os.path.join(PATH_raknet, 'Lib' )
 
 if SDK:
     PATH_LIB_Ogre_CEGUIRenderer =    os.path.join( PATH_Ogre, 'lib')
@@ -111,6 +115,7 @@ PATH_INCLUDE_FMOD =          os.path.join(PATH_FMOD, 'api/inc')
 PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'samples/Common/CEGUIRenderer/include')
 PATH_INCLUDE_betagui =       PATH_betagui
 PATH_INCLUDE_simplegui =     PATH_simplegui
+PATH_INCLUDE_raknet =        os.path.join(PATH_raknet, 'Source' )
 
 if SDK:
     PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include') 
