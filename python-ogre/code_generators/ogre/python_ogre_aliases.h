@@ -10,7 +10,13 @@ typedef Ogre::SharedPtr<Ogre::GpuProgramParameters> GpuProgramParametersSharedPt
 // typedef std::multimap<Ogre::HardwareVertexBuffer*, Ogre::VertexBufferBinding::HardwareVertexBufferSharedPtr> FreeTemporaryVertexBufferMap;
 //typedef std::map<unsigned short, Ogre::VertexBufferBinding::HardwareVertexBufferSharedPtr> VertexBufferBindingMap;
 typedef Ogre::SharedPtr<Ogre::Resource> ResourcePtr;
+
 typedef Ogre::SharedPtr<Ogre::ShadowCameraSetup> ShadowCameraSetupPtr;
+typedef Ogre::SharedPtr<Ogre::DefaultShadowCameraSetup> DefaultShadowCameraSetupPtr;
+typedef Ogre::SharedPtr<Ogre::FocusedShadowCameraSetup> FocusedShadowCameraSetupPtr;
+typedef Ogre::SharedPtr<Ogre::LiSPSMShadowCameraSetup> LiSPSMShadowCameraSetupPtr;
+typedef Ogre::SharedPtr<Ogre::PlaneOptimalShadowCameraSetup> PlaneOptimalShadowCameraSetupPtr;
+
 typedef Ogre::SharedPtr<Ogre::StringVector> StringVectorPtr;
 
 typedef Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::GpuConstantDefinition, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::GpuConstantDefinition> > > >\
