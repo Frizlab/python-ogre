@@ -91,6 +91,8 @@ class DotScene:
                     thingy = self.findNodes(node, 'entity')[0].attributes
                     name = str(thingy['name'].nodeValue)
                     mesh = str(thingy['meshFile'].nodeValue)
+                    if '.' in mesh:
+                        mesh = str(mesh.split('.')[0] + '.mesh')
                     attachMe = self.sceneManager.createEntity(name,mesh)
                     attachMe.setCastShadows(False)
                     attachMe.setNormaliseNormals(True)

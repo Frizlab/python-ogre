@@ -39,6 +39,7 @@ class DataManager:
         self.updateAITime = 0.0
         self.totalTime = 0.0
         self.updateResolution = 1 # Spread actor updates over frames by dividing by this number
+        self.hasSkyBox = False
         self.collisionList = []
         self.framerate = framerate # fps rate for physics updates
         self.staticRoot = rt.createChildSceneNode('Root_Static')
@@ -132,7 +133,11 @@ class DataManager:
             if k == 'RESOURCE_GROUP':
                 ogre.ResourceGroupManager.getSingleton().initialiseResourceGroup(ky[1])
             if k == 'SKYBOX':
+                self.hasSkyBox = True
+                self.skyBoxMaterial = ky[1]
                 self.sceneManager.setSkyBox(True, ky[1])
+            if k == 'SEA_LEVEL':
+                self.seaLevel = 0.00
             if k == 'BASE_LAND_MESH':
                 floor = self.sceneManager.createEntity("Landscape", ky[1] )
                 floor.setNormaliseNormals(True)
@@ -317,6 +322,27 @@ class DataManager:
             self.sceneManager.destroyEntity(ob.Entity)
             del ob
         
+        # change camera view for underwater
+        if hasattr(self, 'seaLevel'):
+            if self.camera.position.y < 0.00:
+                end = 15 + max(0, (150 + self.camera.position.y) )
+                if self.camera.position.y < -200:
+                    bFac = 0.04
+                else:
+                    ratio = ((200.00 - abs(self.camera.position.y)) / 200.00)
+                    bFac = 0.3 * ratio
+                    gFac = 0.15 * ratio
+                # set the skybox seperately, so we can still see it underwater :)
+                self.sceneManager.setFog(ogre.FogMode.FOG_LINEAR, ogre.ColourValue(0.04, gFac, bFac), 0.001, 50.0, end)
+                if self.hasSkyBox:
+                    mat = ogre.MaterialManager.getSingleton().getByName(self.skyBoxMaterial)
+                    mat.setFog(False, ogre.FogMode.FOG_LINEAR, ogre.ColourValue(0.8, 0.9, 0.95), 0.001, 40000, 80000)
+                    
+                
+            else:
+                self.sceneManager.setFog(ogre.FogMode.FOG_LINEAR, ogre.ColourValue(0.8, 0.8, 0.9), 0.001, 40000.0, 80000.00)
+        
+        
         
     def spawnActor(self, actorName, position):
         # -- Spawns an actor into the game
@@ -331,13 +357,8 @@ class DataManager:
         # NOTE: This is for naming only!!, query len(self.actors) to find
         # the actual number of actors still alive in-game.
         self.numActors += 1
-        # add the animations to our animation states list, and start the first animation
+        # add to the actor list
         self.actors.append(actor)
-##        if (actor.IsAnimated):
-##            for i in actor.animations:
-##                addState = actor.Entity.getAnimationState(i)
-##                self.animationStates.append(addState)
-##                self.animationStates[-1].enabled = True
         
         
     def getActorByName(self, name):

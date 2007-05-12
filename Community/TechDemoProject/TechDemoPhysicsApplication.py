@@ -33,6 +33,7 @@ class TechDemoApp:
         
     def __del__(self):
         # delete in order
+        del self.viewport
         del self.camera
         print '1'
         del self.sceneManager
@@ -92,9 +93,8 @@ class TechDemoApp:
         fadeColour = (0.90, 0.89, 0.89) # B G R
         
         self.sceneManager.setFog(ogre.FogMode.FOG_LINEAR, fadeColour, 0, 6000, 12000)
-        self.sceneManager.shadowTechnique = ogre.SHADOWTYPE_TEXTURE_MODULATIVE_INTEGRATED
-        self.sceneManager.setShadowTextureSize(512)
-        self.sceneManager.setShadowColour(ogre.ColourValue(0.2, 0.2, 0.2))
+        self.setupShadows()
+
         self.renderWindow.getViewport(0).backgroundColour = fadeColour
         
         # render one Frame, to init the compositor etc.
@@ -183,12 +183,12 @@ class TechDemoApp:
         dirvec.normalise()
         light.setDirection(dirvec)
         light.setDiffuseColour(0.9, 0.9, 1.0)
+        self.defaultLight = light
         
         # connect the camera to the renderWindow
         self.viewport = self.renderWindow.addViewport(self.camera)
         
-        # Enable shadows
-        self.viewport.setShadowsEnabled(True)
+
         
         # set a background color
         self.viewport.backgroundColour = (0,0,0)
@@ -197,6 +197,20 @@ class TechDemoApp:
         
         # get a pointer to ogre's compositor manager system
         self.cms = ogre.CompositorManager.getSingleton()
+
+
+    def setupShadows(self):
+##        shadSetup = ogre.LiSPSMShadowCameraSetup() 
+##        print dir(shadSetup)
+##        cam = shadSetup.getShadowCamera(self.sceneManager, self.camera, self.viewport, self.defaultLight, self.camera)
+##        self.sceneManager.SetShadowCameraSetup(ogre.SharedPtr(shadSetup))
+        
+        self.sceneManager.shadowTechnique = ogre.SHADOWTYPE_TEXTURE_MODULATIVE
+        self.sceneManager.shadowFarDistance = 100
+        self.sceneManager.setShadowTextureSize(512)
+        self.sceneManager.setShadowColour(ogre.ColourValue(0.2, 0.2, 0.2))
+        # Enable shadows
+        self.viewport.setShadowsEnabled(True)
         
     def setupResources(self):
         # --Many ways to do this:, here is a simple dirty python

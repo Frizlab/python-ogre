@@ -6,10 +6,12 @@ material WaterMaterial
 		{
 			scene_blend colour_blend
 			depth_write off
+			cull_hardware none
+			cull_software none
 
 			texture_unit
 			{
-				texture Water02.jpg
+				texture Water02.png
 				scroll_anim 0.0001 0.0001
 				rotate_anim 0.0003
 			}

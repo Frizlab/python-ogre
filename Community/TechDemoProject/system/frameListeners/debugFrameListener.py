@@ -29,6 +29,7 @@ class DebugFrameListener(ogre.FrameListener, OIS.KeyListener, OIS.MouseListener)
         self.shadowType = ogre.SHADOWTYPE_NONE
         self.sceneManager = sceneManager
         self.setupInput()
+        self.numScreenShots = 0
         
         self.Mouse.setEventCallback(self)
         self.Keyboard.setEventCallback(self)
@@ -67,20 +68,7 @@ class DebugFrameListener(ogre.FrameListener, OIS.KeyListener, OIS.MouseListener)
 
     def frameEnded(self, evt):
         # change the fog level if we go underwater
-        if self.camera.position.y < 0.00:
-            end = 30 + max(0, (300 + self.camera.position.y) )
-            if self.camera.position.y < -200:
-                bFac = 0.04
-            else:
-                ratio = ((200.00 - abs(self.camera.position.y)) / 200.00)
-                bFac = 0.3 * ratio
-                gFac = 0.15 * ratio
-                
-            
-            self.sceneManager.setFog(ogre.FogMode.FOG_LINEAR, ogre.ColourValue(0.04, gFac, bFac), 0.001, 50.0, end)
-        else:
-            self.sceneManager.setFog(ogre.FogMode.FOG_LINEAR, ogre.ColourValue(0.8, 0.8, 0.9), 0.001, 40000.0, 80000.00)
-            
+    
         return True
         
     def mouseMoved( self, arg ):
@@ -110,15 +98,23 @@ class DebugFrameListener(ogre.FrameListener, OIS.KeyListener, OIS.MouseListener)
         if arg.key == OIS.KC_H:
             if self.shadowType == ogre.SHADOWTYPE_NONE:
                 self.shadowType = ogre.SHADOWTYPE_STENCIL_MODULATIVE
-                self.sceneManager.shadowTechnique = self.shadowType
+                
             elif self.shadowType == ogre.SHADOWTYPE_STENCIL_MODULATIVE:
                 self.shadowType = ogre.SHADOWTYPE_TEXTURE_MODULATIVE
-                self.sceneManager.shadowTechnique = self.shadowType
+                
+            elif self.shadowType == ogre.SHADOWTYPE_TEXTURE_MODULATIVE:
+                self.shadowType = ogre.SHADOWTYPE_TEXTURE_ADDITIVE
+                
             else: 
                 self.shadowType = ogre.SHADOWTYPE_NONE
-                self.sceneManager.shadowTechnique = self.shadowType
+            self.sceneManager.shadowTechnique = self.shadowType
                 
             ogre.MaterialManager.getSingleton().setDefaultTextureFiltering(self.filtering)
+            
+        if arg.key == OIS.KC_P:
+            path = 'screenshot_%d.png' % self.numScreenShots
+            self.numScreenShots += 1
+            self.renderWindow.writeContentsToFile(path)
             
         return True
 
