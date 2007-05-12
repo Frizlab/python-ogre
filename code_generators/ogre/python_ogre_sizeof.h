@@ -22,6 +22,10 @@ sizeof ( Ogre::SharedPtr<Ogre::Resource> ); //ResourcePtr;
 sizeof ( Ogre::SharedPtr<Ogre::ShadowCameraSetup> ); //ShadowCameraSetupPtr;
 sizeof ( Ogre::SharedPtr<Ogre::StringVector> ); //StringVectorPtr;
 
+sizeof ( Ogre::SharedPtr<DefaultShadowCameraSetup> );
+sizeof ( Ogre::SharedPtr<FocusedShadowCameraSetup> );
+sizeof ( Ogre::SharedPtr<LiSPSMShadowCameraSetup> );
+sizeof ( Ogre::SharedPtr<PlaneOptimalShadowCameraSetup> );
 
 sizeof ( Ogre::ResourceManager::ResourceCreateOrRetrieveResult);
 

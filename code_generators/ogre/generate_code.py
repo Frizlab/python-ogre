@@ -673,7 +673,8 @@ def Fix_NT ( mb ):
 def Fix_Implicit_Conversions ( mb ):
     """By default we disable explicit conversion, however sometimes it makes sense
     """
-    ImplicitClasses=['Radian','Degree', 'TimeIndex' ] # AnimationStateControllerValue, Any, SceneQuery, 
+    ImplicitClasses=['Radian','Degree', 'TimeIndex', 'LiSPSMShadowCameraSetup' ] 
+    # AnimationStateControllerValue, Any, SceneQuery, 
     # BorderRenderable, SceneNode, CompositionPass, CompositionTargetPass, CompositionTechnique
     # CompositorChain, CompositorInstance::TargetOperation, TextureUnitState, DefaultAxisAlignedBoxSceneQuery
     # DefaultIntersectionSceneQuery, DefaultPlaneBoundedVolumeListSceneQuery, DefaultRaySceneQuery
@@ -697,7 +698,8 @@ def Fix_Ref_Not_Const ( mb ):
                     #print "Fixing Const", fun.parent.name,"::", fun.name, "::", arg_position
                     fun.add_transformation( ft.modify_type(arg_position,declarations.remove_reference ), alias=fun.name )
             arg_position +=1
-                    
+ 
+                               
 def Add_Auto_Conversions( mb ):
     """
     Allows to pass Python tuple as argument to function, instead of
@@ -757,7 +759,8 @@ def Set_Smart_Pointers( mb ):
        elif cls.name.endswith( 'SharedPtr' ):
            v.apply_smart_ptr_wa = True    
            print "Applying Smart Pointer: ",  v.name, " of class: ",  cls.name
-                
+           
+                           
 #~ def Set_Exception(mb):
     #~ """We don't exclude  Exception, because it contains functionality, that could
     #~ be useful to user. But, we will provide automatic exception translator
