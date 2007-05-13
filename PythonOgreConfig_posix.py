@@ -3,6 +3,8 @@ import sys,os
 ## Boost stuff 
 ## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
 BASE_DIR = r'/home/andy/development'
+root_dir = os.path.abspath(os.path.dirname(__file__) )## The root directory is where this module is located
+
 LOCAL_LIB = os.path.join(BASE_DIR,'local/lib')
 PATH_Boost = os.path.join(BASE_DIR, 'boost')
 
@@ -33,6 +35,9 @@ PATH_VORBIS=        r'/home/andy/development/'
 PATH_OPENAL=        r'/home/andy/development/'
 PATH_ALUT=          r'/home/andy/development/'
 PATH_OgreOde=       r'/home/andy/development/'
+PATH_betagui=       os.path.join(BASE_DIR, 'betagui')
+PATH_raknet=       os.path.join(BASE_DIR, 'RakNet')
+PATH_simplegui=     os.path.join(root_dir, 'ThirdParty/simplegui')
 
 
 # and the Py++ directory as sometimes we need access to the code repository there
@@ -63,6 +68,9 @@ PATH_LIB_OgreOdeLoader =        os.path.join( PATH_OgreOde, 'loader/lib/Release'
 
 PATH_LIB_FMOD =                 os.path.join(PATH_FMOD, 'api/lib') 
 PATH_LIB_OgreAL =               os.path.join(PATH_OGREAL, 'lib/Release' )
+PATH_LIB_betagui =              PATH_betagui
+PATH_LIB_simplegui =            PATH_simplegui
+PATH_LIB_raknet =               os.path.join(PATH_raknet, 'Lib' )
 
 
 PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include') 
@@ -82,6 +90,10 @@ PATH_INCLUDE_ALUT=          os.path.join( PATH_ALUT, 'include' )
 PATH_INCLUDE_OgreOde =      os.path.join( PATH_OgreOde,'include')
 PATH_INCLUDE_OgreOdePrefab= os.path.join( PATH_OgreOde,'prefab/include')
 PATH_INCLUDE_OgreOdeLoader= os.path.join( PATH_OgreOde,'loader/include')
+PATH_INCLUDE_betagui =       PATH_betagui
+PATH_INCLUDE_simplegui =     PATH_simplegui
+PATH_INCLUDE_raknet =        os.path.join(PATH_raknet, 'Source' )
+
 
 PATH_INCLUDE_FMOD =          os.path.join(PATH_FMOD, 'api/inc')
 PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'samples/Common/CEGUIRenderer/include')

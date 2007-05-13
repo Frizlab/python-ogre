@@ -17,7 +17,7 @@ LIB_Boost =         r'boost_python-vc80-mt-1_35'
 # We need to know where to find gccxml......
 gccxml_bin =        os.path.join(BASE_DIR, 'gccxml/bin/release/gccxml.exe')
 # and the Py++ directory as sometimes we need access to the code repository there
-pyplusplus_install_dir = os.path.join(BASE_DIR, 'pyplus')
+pyplusplus_install_dir = os.path.join(BASE_DIR, 'pygccxml')
 
 ## Parent directories of the libraries
 PATH_Ogre =         os.path.join(BASE_DIR,'Ogrenew')
@@ -27,7 +27,7 @@ PATH_OIS =          os.path.join(BASE_DIR, 'ois')
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonsdk/sdk')
 PATH_FMOD =         os.path.join(BASE_DIR, 'fmod')
 PATH_ODE =          os.path.join(BASE_DIR, 'opende/trunk')
-PATH_OGREAL=        os.path.join(BASE_DIR, 'ogreal')
+PATH_OGREAL=        os.path.join(BASE_DIR, 'ogreal/trunk/OgreAL-Eihort')
 PATH_OGG =          os.path.join(BASE_DIR, 'ogg')
 PATH_VORBIS=        os.path.join(BASE_DIR, 'vorbis')
 PATH_OPENAL=        os.path.join(BASE_DIR, 'openal')
@@ -45,14 +45,7 @@ if SDK:
     PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
     PATH_CEGUI =        os.path.join(BASE_DIR, 'Ogrenew')
     PATH_OIS =          os.path.join(BASE_DIR, 'Ogrenew')
-    PATH_Newton =       os.path.join(BASE_DIR, 'newtonsdk/sdk')
-    PATH_FMOD =         os.path.join(BASE_DIR, 'fmod')
     PATH_ODE =          os.path.join(BASE_DIR, 'opende/trunk')
-    PATH_OGREAL=        os.path.join(BASE_DIR, 'ogreAL')
-    PATH_OGG =          os.path.join(BASE_DIR, 'ogg')
-    PATH_VORBIS=        os.path.join(BASE_DIR, 'vorbis')
-    PATH_OPENAL=        os.path.join(BASE_DIR, 'openal')
-    PATH_ALUT=          os.path.join(BASE_DIR, 'freealut')
     PATH_OgreOde=       os.path.join(BASE_DIR, 'OgreAddons/ogreode')
 
 
