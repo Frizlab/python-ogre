@@ -107,7 +107,7 @@ class ogre:
     cflags = ""
     parent = "ogre/renderer"
     ModuleName = 'OGRE'
-    if os.sys.platform <> 'darwin':
+    if os.name =='nt': 
         libs=[Config.LIB_Boost, 'OgreMain' ] #,  'OgreGUIRenderer', 'CEGUIBase']
         lib_dirs = [ Config.PATH_LIB_Boost
                     ,  Config.PATH_LIB_Ogre_CEGUIRenderer
@@ -115,6 +115,16 @@ class ogre:
                     , Config.PATH_LIB_Ogre_Dependencies #needed for ceguibase.lib etc
                     , Config.PATH_LIB_CEGUI
                      ]
+        include_dirs = [ Config.PATH_Boost 
+                    , Config.PATH_INCLUDE_Ogre 
+                    ]
+        CCFLAGS =  ' -D"BOOST_PYTHON_MAX_ARITY=19"'
+        LINKFLAGS = ''
+        externalFiles=['OgreMain.dll', 'OgreGuiRender.dll', Config.LIB_Boost+'.dll']
+    elif os.sys.platform <> 'darwin':
+        libs=[Config.LIB_Boost, 'OgreMain' ] #,  'OgreGUIRenderer', 'CEGUIBase']
+        lib_dirs = [ Config.LOCAL_LIB
+                    ]
         include_dirs = [ Config.PATH_Boost 
                     , Config.PATH_INCLUDE_Ogre 
                     ]
