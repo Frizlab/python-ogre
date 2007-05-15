@@ -209,7 +209,7 @@ def generate_ogrenewt():
                                           , working_directory=environment.root_dir
                                           , include_paths=environment.ogrenewt.include_dirs
                                           , define_symbols=['ogrenewt_NONCLIENT_BUILD', 'OGRE_NONCLIENT_BUILD',
-                                                        'OIS_NONCLIENT_BUILD','OIS_DYNAMIC_LIB']
+                                                        'OIS_NONCLIENT_BUILD', 'OIS_STATIC_BUILD']
                                           , indexing_suite_version=2 )
 
     filter_declarations (mb)

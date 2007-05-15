@@ -248,7 +248,6 @@ def generate_code():
 #                 call_policies.return_opaque_pointer )
         
 
-    common_utils.set_declaration_aliases( mb.global_ns, customization_data.aliases(environment.ode.version) )
 
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
@@ -273,6 +272,7 @@ def generate_code():
         mb.code_creator.user_defined_directories.append(inc )
     mb.code_creator.user_defined_directories.append( environment.ode.generated_dir )
     mb.code_creator.replace_included_headers( customization_data.header_files(environment.ode.version) )
+    
 # #     mb.code_creator.add_include( "__convenience.pypp.hpp" )
 # #     mb.code_creator.add_system_header( code_repository.convenience.file_name )
 

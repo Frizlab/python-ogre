@@ -1,2 +1,0 @@
-//sizeof( Ogre::RenderSystemList );
-// empty

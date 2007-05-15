@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -----------------------------------------------------------------------------
-# This source file is part of Python-OgreDshow and is covered by the LGPL
+# This source file is part of Python-Ogre and is covered by the LGPL
 # For the latest info, see http://python-ogre.org/
 #
 # -----------------------------------------------------------------------------
@@ -10,13 +10,15 @@ import os, sys, time, shutil
 
 #add environment to the path
 sys.path.append( os.path.join( '..', '..' ) )
-sys.path.append ( 'c:/development/pywork/code_generators')
+#add common utils to the pass
+sys.path.append( '..' )
+sys.path.append( '.' )
 
 import environment
-import hand_made_wrappers
 import common_utils
-import common_utils.extract_documentation as exdoc
 import customization_data
+import hand_made_wrappers
+import register_exceptions
 
 from pygccxml import parser
 from pygccxml import declarations
@@ -28,24 +30,29 @@ from pyplusplus import function_transformers as ft
 from pyplusplus.module_builder import call_policies
 from pyplusplus.module_creator import sort_algorithms
 
+import common_utils.extract_documentation as exdoc
+import common_utils.var_checker as varchecker
+import common_utils.ogre_properties as ogre_properties
+
+MAIN_NAMESPACE = 'Ogre'
+
 ## small helper function
 def docit ( general, i, o ): 
-    docs = "Python-OgreDshow Modified Function Call\\n" + general +"\\n"
+    docs = "Python-Ogre Modified Function Call\\n" + general +"\\n"
     docs = docs + "Input: " + i + "\\n"
     docs = docs + "Output: " + o + "\\n\\\n"
     return docs
 
 ############################################################
 ##
-##  Here is where we manually exclude stuff from Ogre - 
+##  Here is where we manually exclude stuff
 ##
 ############################################################
 
 def ManualExclude ( mb ):
     global_ns = mb.global_ns
-    OgreDshow_ns = global_ns.namespace( 'OgreUtils' )
-    ## This does nothing - RenderSystemList.xx still gets created
-    ##global_ns.namespace('std').class_('vector<Ogre::RenderSystem*, std::allocator<Ogre::RenderSystem*> >').exclude()
+    main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    
 
 ############################################################
 ##
@@ -55,26 +62,8 @@ def ManualExclude ( mb ):
     
 def ManualInclude ( mb ):
     global_ns = mb.global_ns
-    OgreDshow_ns = global_ns.namespace( 'OgreUtils' )
+    main_ns = global_ns.namespace( MAIN_NAMESPACE )
     
-    # now for classes in Ogre that are referenced
-# #     for c in global_ns.classes():
-# #         print "Class:",c
-# #         print "alais", c.alias
-# #         print c.name
-# #     print dir (  global_ns.classes() )   
-    global_ns.namespace( 'Ogre' ).class_('Vector2').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('TexturePtr').include(already_exposed=True)
-#     global_ns.namespace( 'Ogre' ).class_('Plugin').include(already_exposed=True)
-#     global_ns.namespace( 'Ogre' ).class_('FrameEvent').include(already_exposed=True)
-#     global_ns.namespace( 'Ogre' ).class_('FrameListener').include(already_exposed=True)
-    
-    ## AJM if i do this next line then a "complete" RenderSystemList.pypp.cpp is created
-#    global_ns.namespace('std').class_('vector<Ogre::RenderSystem*, std::allocator<Ogre::RenderSystem*> >').include(already_exposed=True)
-
-    
-   
-
         
 ############################################################
 ##
@@ -84,14 +73,9 @@ def ManualInclude ( mb ):
 def ManualFixes ( mb ):    
 
     global_ns = mb.global_ns
-    ar_ns = global_ns.namespace( 'OgreUtils' )
-    
-    ## TO FIX
-#     x = ar_ns.class_('TrackerBase').mem_fun('setOgreRoot')
-#     x.call_policies = call_policies.return_value_policy(
-#                 call_policies.with_custodian_and_ward )
-    
-             
+    main_ns = global_ns.namespace( MAIN_NAMESPACE )
+
+              
 ############################################################
 ##
 ##  And things that need to have their argument and call values fixed.
@@ -102,26 +86,16 @@ def ManualFixes ( mb ):
 ############################################################
         
 def ManualTransformations ( mb ):
-    ar_ns = mb.global_ns.namespace ('OgreUtils')
+    global_ns = mb.global_ns
+    main_ns = global_ns.namespace( MAIN_NAMESPACE )
         
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
         
-#     x = ar_ns.class_('TrackerBase').mem_fun('queryMarker')
-#     x.add_transformation(ft.output('bVisible'))
-#     x.documentation = docit ("**** Assume bVisible is always an 'output' variable","id, transform", "bVisible")
-#     
-#     x = ar_ns.class_('BCHTracker').mem_fun('queryMarker')
-#     x.add_transformation(ft.output('bVisible'))
-#     x.documentation = docit ("**** Assume bVisible is always an 'output' variable","id, transform", "bVisible")
-
-#     x = ar_ns.class_('TestTracker').mem_fun('queryMarker')
-#     x.add_transformation(ft.output('bVisible'))
-#     x.documentation = docit ("**** Assume bVisible is always an 'output' variable","id, transform", "bVisible")
-
+    
 ###############################################################################
 ##
-##  Now for the AUTOMATIC stuff that should just work with all versions of Ogre
+##  Now for the AUTOMATIC stuff that should just work
 ##
 ###############################################################################
     
@@ -130,15 +104,22 @@ def AutoExclude( mb ):
     """ Automaticaly exclude a range of things that don't convert well from C++ to Python
     """
     global_ns = mb.global_ns
-    OgreDshow_ns = global_ns.namespace( 'OgreUtils' )
+    main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    
+    # vars that are static consts but have their values set in the header file are bad
+    Remove_Static_Consts ( main_ns )
     
     ## Exclude protected and private that are not pure virtual
     query = ~declarations.access_type_matcher_t( 'public' ) \
             & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
-    non_public_non_pure_virtual = OgreDshow_ns.calldefs( query )
+    non_public_non_pure_virtual = main_ns.calldefs( query )
     non_public_non_pure_virtual.exclude()
 
-            
+    #Virtual functions that return reference could not be overriden from Python
+    query = declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.VIRTUAL ) \
+            & declarations.custom_matcher_t( lambda decl: declarations.is_reference( decl.return_type ) )
+    main_ns.calldefs( query ).virtuality = declarations.VIRTUALITY_TYPES.NOT_VIRTUAL
+               
 def AutoInclude( mb ):
     pass
 
@@ -148,30 +129,24 @@ def AutoFixes ( mb ):
     the entire name space trying to guess stuff and fix it:)
     """       
     global_ns = mb.global_ns
-    OgreDshow_ns = global_ns.namespace( 'OgreUtils' )
+    main_ns = global_ns.namespace( MAIN_NAMESPACE )
     
-# # #     # arguments passed as refs but not const are not liked by boost
-# # #     Fix_Ref_Not_Const ( OgreDshow_ns )
-# # #     
-# # #     # Functions that have void pointers in their argument list need to change to unsigned int's  
-# # #     Fix_Void_Ptr_Args  ( OgreDshow_ns )
-# # #     
-# # #     # Allow conversion between Vectors/Colourvalue etc and Python lists      
-# # #     Add_Auto_Conversions( mb )
-# # #     
-# # #     # now we fix up the smart pointers ...
-# # #     Set_Smart_Pointers ( OgreDshow_ns )  
-# # #     
-# # #     # and change functions that return a variety of pointers to instead return unsigned int's
-# # #     Fix_Pointer_Returns ( OgreDshow_ns )   
+    # arguments passed as refs but not const are not liked by boost
+    Fix_Ref_Not_Const ( main_ns )
+    
+    # Functions that have void pointers in their argument list need to change to unsigned int's  
+    Fix_Void_Ptr_Args  ( main_ns )
+    
+    # and change functions that return a variety of pointers to instead return unsigned int's
+    Fix_Pointer_Returns ( main_ns )   
 
     # functions that need to have implicit conversions turned off
-# # #     Fix_Implicit_Conversions ( OgreDshow_ns)
-# # #     
-# # #     if os.name =='nt':
-# # #         Fix_NT( mb )
-# # #     elif os.name =='posix':
-# # #         Fix_Posix( mb )
+    Fix_Implicit_Conversions ( main_ns)
+    
+    if os.name =='nt':
+        Fix_NT( mb )
+    elif os.name =='posix':
+        Fix_Posix( mb )
         
  
 ###############################################################################
@@ -187,36 +162,22 @@ def Fix_Posix ( mb ):
         pass
     elif sys.platform.startswith ('linux'):
         pass
-        
+
 
 def Fix_NT ( mb ):
     """ fixup for NT systems
     """
-    
+        
         
 def Fix_Implicit_Conversions ( mb ):
-    """Some of the implicit conversion gets a little too smart and causes strange problems
+    """By default we disable explicit conversion, however sometimes it makes sense
     """
-    nonImplicitClasses=['TestTracker','BCHTracker']
-    for className in nonImplicitClasses:
-        mb.class_(className).constructors().allow_implicit_conversion = False
-    
-    
-def Fix_Ref_Not_Const ( mb ):
-    """ we have problems with sharedpointer arguments that are defined as references
-    but are NOT const.  Boost doesn't understand how to match them and you get a C++ Signature match fails.
-    In reality the Ogre code probably needs to be patched as all of these should (??) be const.  However we'll fix it 
-    with a function transformation wrapper
-    """
-    for fun in mb.member_functions( ):
-        arg_position = 0
-        for arg in fun.arguments:
-            if 'Ptr' in arg.type.decl_string:
-                 if not 'const' in arg.type.decl_string and '&' in arg.type.decl_string:
-                    #print "Fixing Const", fun.parent.name,"::", fun.name, "::", arg_position
-                    fun.add_transformation( ft.modify_type(arg_position,declarations.remove_reference ) )
-            arg_position +=1
+    ImplicitClasses=['' ] 
+    for className in ImplicitClasses:
+        mb.class_(className).constructors().allow_implicit_conversion = True
                     
+def Add_Auto_Conversions( mb ):
+    pass
     
       
 def Set_Call_Policies( mb ):
@@ -234,19 +195,18 @@ def Set_Call_Policies( mb ):
             mem_fun.call_policies = call_policies.return_value_policy(
                 call_policies.reference_existing_object )
 
-                
+                                
 def Set_Exception(mb):
-    """We don't exclude  Exception, because it contains functionality, that could
-    be useful to user. But, we will provide automatic exception translator
-    """
     pass
-#     Exception = mb.namespace( 'OgreUtils' ).class_( 'Exception' )
-#     Exception.include()
-#     Exception.mem_fun('what').exclude() # declared with empty throw
-#     Exception.mem_fun('getNumber').exclude() # declared with empty throw
-#     Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getFullDescription().c_str()' )
-    
-       
+    #~ """We don't exclude  Exception, because it contains functionality, that could
+    #~ be useful to user. But, we will provide automatic exception translator
+    #~ """
+    #~ Exception = mb.namespace( 'Ogre' ).class_( 'Exception' )
+    #~ Exception.include()
+    #~ Exception.mem_fun('what').exclude() # declared with empty throw
+    #~ Exception.mem_fun('getNumber').exclude() # declared with empty throw
+    #~ Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getFullDescription().c_str()' )
+            
     
 def _ReturnUnsignedInt( type_ ):
     """helper to return an UnsignedInt call for tranformation functions
@@ -269,8 +229,7 @@ def Fix_Void_Ptr_Args ( mb ):
                 break
             arg_position +=1
             
-
-            
+         
                     
 def Fix_Pointer_Returns ( mb ):
     """ Change out functions that return a variety of pointer to base types and instead
@@ -279,9 +238,8 @@ def Fix_Pointer_Returns ( mb ):
     
     Also - if documentation has been set then ignore the class/function as it means it's been tweaked else where
     """
-    return
-    pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', '::Ogre::uint8', 'unsigned char']
-    known_names=['ptr', 'useCountPointer']  # these are function names we know it's cool to exclude
+    pointee_types=['unsigned int','int', 'float', 'unsigned char']
+    known_names=[]  # these are function names we know it's cool to exclude
     for fun in mb.member_functions():
         if declarations.is_pointer (fun.return_type) and not fun.documentation:
             for i in pointee_types:
@@ -295,6 +253,15 @@ def Fix_Pointer_Returns ( mb ):
                 if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
                     print "Excluding (operator):", fun
                     fun.exclude()
+
+
+
+def query_containers_with_ptrs(decl):
+    if not isinstance( decl, declarations.class_types ):
+       return False
+    if not decl.indexing_suite:
+       return False
+    return declarations.is_pointer( decl.indexing_suite.element_type )
 
     
 def Remove_Static_Consts ( mb ):
@@ -311,19 +278,41 @@ def Remove_Static_Consts ( mb ):
 # the 'main'function
 #            
 def generate_code():  
+    messages.disable( 
+#           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+          messages.W1020
+        , messages.W1021
+        , messages.W1022
+        , messages.W1023
+        , messages.W1024
+        , messages.W1025
+        , messages.W1026
+        , messages.W1027
+        , messages.W1028
+        , messages.W1029
+        , messages.W1030
+        , messages.W1031
+        , messages.W1035
+        , messages.W1040 
+        , messages.W1038        
+        , messages.W1041
+        , messages.W1036 # pointer to Python immutable member
+        , messages.W1033 # unnamed variables
+        , messages.W1018 # expose unnamed classes
+        , messages.W1049 # returns reference to local variable
+        , messages.W1014 # unsupported '=' operator
+         )
     #
     # Use GCCXML to create the controlling XML file.
     # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded
     # NOTE: If you update the source library code you need to manually delete the cache .XML file   
     #
     xml_cached_fc = parser.create_cached_source_fc(
-                        os.path.join( environment.ogredshow.root_dir, "python_ogredshow.h" )
-                        , environment.ogredshow.cache_file )
+                        os.path.join( environment.PROJECT.root_dir, "python_PROJECT.h" )
+                        , environment.PROJECT.cache_file )
 
-    defined_symbols = [ 'ogredshow_NONCLIENT_BUILD' ]
-    defined_symbols.append( 'ogredshow_VERSION_' + environment.ogredshow.version ) 
-    defined_symbols.append ( 'OGRE_NONCLIENT_BUILD' )
-    
+    defined_symbols = [ ]
+    defined_symbols.append( 'VERSION_' + environment.PROJECT.version )  
     
     #
     # build the core Py++ system from the GCCXML created source
@@ -331,11 +320,14 @@ def generate_code():
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
-                                          , include_paths=environment.ogredshow.include_dirs
+                                          , include_paths=environment.PROJECT.include_dirs
                                           , define_symbols=defined_symbols
                                           , indexing_suite_version=2
-                                          , cflags=environment.ogredshow.cflags
+                                          , cflags=environment.ogre.cflags
                                            )
+    # NOTE THE CHANGE HERE                                           
+    mb.constructors().allow_implicit_conversion = False                                           
+    
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
     
@@ -345,9 +337,10 @@ def generate_code():
     # 
     global_ns = mb.global_ns
     global_ns.exclude()
-    OgreDshow_ns = global_ns.namespace( 'OgreUtils' )
-    OgreDshow_ns.include()
-        
+    main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    main_ns.include()
+    
+   
     AutoExclude ( mb )
     ManualExclude ( mb )
     AutoInclude ( mb )
@@ -357,26 +350,27 @@ def generate_code():
     
     AutoFixes ( mb )
     ManualFixes ( mb )
-    
-  
-    Set_Exception( mb )
-        
+            
     #
     # We need to tell boost how to handle calling (and returning from) certain functions
     #
-    Set_Call_Policies ( mb.global_ns.namespace ('OgreUtils') )
+    Set_Call_Policies ( mb.global_ns.namespace (MAIN_NAMESPACE) )
     
     #
     # the manual stuff all done here !!!
     #
     hand_made_wrappers.apply( mb )
 
-    common_utils.add_constants( mb, { 'ogredhow_version' :  '"%s"' % environment.ogredshow.version.replace("\n", "\\\n") 
+    NoPropClasses = [""]
+    for cls in main_ns.classes():
+        if cls.name not in NoPropClasses:
+            cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
+            
+    common_utils.add_constants( mb, { 'PROJECT_version' :  '"%s"' % environment.PROJECT.version.replace("\n", "\\\n") 
                                       , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
                                       
     ## need to create a welcome doc string for this...                                  
-    common_utils.add_constants( mb, { '__doc__' :  '"Python-OgreDshow Wrapper Library"' } ) 
-# #     mb.global_ns.class_('vector<Ogre::RenderSystem*, std::allocator<Ogre::RenderSystem*> >').exclude()
+    common_utils.add_constants( mb, { '__doc__' :  '"PROJECT DESCRIPTION"' } ) 
     
     
     ##########################################################################################
@@ -384,22 +378,36 @@ def generate_code():
     # Creating the code. After this step you should not modify/customize declarations.
     #
     ##########################################################################################
-    extractor = exdoc.doc_extractor("")
-    mb.build_code_creator (module_name='_ogredshow_' , doc_extractor= extractor)
+    extractor = exdoc.doc_extractor() # I'm excluding the UTFstring docs as lots about nothing 
+    mb.build_code_creator (module_name='_PROJECT_' , doc_extractor= extractor )
     
-    for inc in environment.ogredshow.include_dirs:
+    for inc in environment.PROJECT.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )
-    mb.code_creator.user_defined_directories.append( environment.ogredshow.generated_dir )
-    mb.code_creator.replace_included_headers( customization_data.header_files( environment.ogredshow.version ) )
+    mb.code_creator.user_defined_directories.append( environment.PROJECT.generated_dir )
+    mb.code_creator.replace_included_headers( customization_data.header_files( environment.PROJECT.version ) )
 
-    huge_classes = map( mb.class_, customization_data.huge_classes( environment.ogredshow.version ) )
+    huge_classes = map( mb.class_, customization_data.huge_classes( environment.PROJECT.version ) )
 
-    mb.split_module(environment.ogredshow.generated_dir , huge_classes)
+    mb.split_module(environment.PROJECT.generated_dir, huge_classes)
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generaated directory..
+    additional_files=[
+            os.path.join( environment.shared_ptr_dir, 'py_shared_ptr.h'),
+            os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'python_ogre_masterlist.h' ),
+            os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'generators.h' ),
+            os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'custom_rvalue.cpp' ),
+            os.path.join( environment.include_dir, 'tuples.hpp' )
+            ]            
+    for sourcefile in additional_files:
+        p,filename = os.path.split(sourcefile)
+        destfile = os.path.join(environment.ogre.generated_dir, filename ) 
+    
+        if not common_utils.samefile( sourcefile ,destfile ):
+            shutil.copy( sourcefile, environment.ogre.generated_dir )
+            print "Updated ", filename, "as it was missing or out of date"
         
 if __name__ == '__main__':
     start_time = time.clock()
     generate_code()
-    print 'Python-OgreDshow source code was updated( %f minutes ).' % (  ( time.clock() - start_time )/60 )
+    print 'Source code was updated( %f minutes ).' % (  ( time.clock() - start_time )/60 )

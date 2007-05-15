@@ -78,7 +78,7 @@ def get_source_files(_dir):
 def get_linkflags():
     if os.name=='nt':
         #LINKFLAGS = " -NOLOGO -INCREMENTAL:NO -DLL -OPT:NOREF -subsystem:console " # no change
-        LINKFLAGS = " /NOLOGO /INCREMENTAL:NO /DLL /OPT:NOICF /subsystem:console " # 7 minutes 25% smaller 16.6 Meg
+        LINKFLAGS = " /NOLOGO /OPT:REF /INCREMENTAL:NO /DLL /OPT:ICF /OPT:NOWIN98 /subsystem:console " # 7 minutes 25% smaller 16.6 Meg
         #LINKFLAGS = " /NOLOGO /INCREMENTAL:NO /DLL /subsystem:console " ### LONG Link , 80 minutes - 15.7 meg
     elif os.name == 'posix':
         if os.sys.platform <> 'darwin':
@@ -88,8 +88,10 @@ def get_linkflags():
     return LINKFLAGS
 
 # Let us select the projects to build
-possible_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',  'ogreode', 'ogreal', 'betagui', 'simplegui']
-default_projects = possible_projects #['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'fmod','cegui' ]
+possible_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',\
+    'ogreode', 'ogreal', 'simplegui' ] ## 'betagui']  # , 'raknet'
+default_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',\
+    'ogreode', 'ogreal',  'simplegui' ] ##'betagui']
 
 # This lets you call scons like: 'scons PROJECTS=ogre,cegui'
 opts = Options('custom.py')

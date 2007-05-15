@@ -33,7 +33,7 @@ This version is built against the Ogre CVS"""
 
 METADATA = {
     "name":             "Python-Ogre",
-    "version":          "1.0 RC1c",
+    "version":          "1.0 RC2a",
     "license":          "LGPL",
     "url":              "http://python-ogre.python-hosting.com/",
     "author":           "Lakin Wecker, Roman Yakovenko, Andy",
@@ -60,7 +60,8 @@ PACKAGEDATA = {
        "packages":    ['ogre', 'ogre.io', 'ogre.io.OIS', 'ogre.renderer', 'ogre.renderer.OGRE', 
                         'ogre.gui', 'ogre.gui.CEGUI','ogre.sound', 'ogre.sound.OgreAL', 
                         'ogre.physics', 'ogre.physics.ODE', 'ogre.physics.OgreRefApp',
-                        'ogre.physics.OgreOde', 'ogre.physics.OgreNewt'], ##, 'OgreRefApp', 'OgreNewt', 'OgreOde','ODE', 'OgreAL', 'OgreDshow' ],
+                        'ogre.physics.OgreOde', 'ogre.physics.OgreNewt', 
+                        'ogre.gui.SimpleGUI'],
        "package_dir": {'': 'packages_'+ PythonVersionString },
        "package_data": {'': ['*.pyd', '*.dll', '*.so']}
 

@@ -1,12 +1,19 @@
+May 13 2007:  Version 1.0 RC2(a) -- SnapShot
+============================================
+* Installer prompts to run dxwebsetup as people WILL need the latest DirectX drivers
+* Installer automatically runs vcredist_x86.exe for the shared C++ libraries neede for VC8
+* Build with latest CVS/SVN versions of supporting Libraries
+* Build with latest DirectX drivers (April 2007)
+* included SimpleGUI
+* Exposed SharedPtr's for various ShadowCameras
+* Fixed to renderQueueStarted and renderQueueEnded (return True or False)
 * Further fixes to remove ugly function names (PixelUtil..)
-* changed return calue policy on "clone" calls as we need to manage the object
-* switched to VC8..
+* changed return value policy on "clone" calls as we need to manage the object
+* switched to VC8 -- fingers crossed :)
 * getCustomAttributeUnsignedLong added and SF-OIS changed to use this for 64bit compatibility
 
-
-
 April 15 2007: Version 1.0 RC1 (c) Release
-=============================
+==========================================
 Turned out that there were some old media files in the release so I've decided to quickly put out a snapshot
 release .
 * removed old media from media/materials/programs - caused ATI graphics cards to crash
@@ -14,7 +21,7 @@ release .
 * added build date and time to module doc  ie. print ogre._ogre_.__doc__ 
 
 April 14 2007: Version 1.0 RC1 Release
-==============================
+======================================
 * Reverse order of entries in ChangeLog :)
 * exception handling matches the changes in Ogre 1.4 (and works)
 * _ConfigOption name changed to ConfigOption
