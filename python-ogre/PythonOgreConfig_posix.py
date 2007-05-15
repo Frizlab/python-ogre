@@ -11,9 +11,10 @@ BASE_DIR,ignore = os.path.split(module_dir) ##  r'/home/andy/development'
 ROOT_DIR = os.path.join(BASE_DIR,'root')
 
 
-LOCAL_LIB = os.path.join(ROOT_DIR,'/usr/lib')
-LOCAL_INCLUDE = os.path.join(ROOT_DIR, '/usr/include')
-PATH_Boost = os.path.join(LOCAL_INCLUDE, 'boost_1_34')
+LOCAL_LIB = os.path.join(ROOT_DIR,'usr/lib')
+LOCAL_INCLUDE = os.path.join(ROOT_DIR, 'usr/include')
+PATH_Boost = os.path.join(LOCAL_INCLUDE, 'boost-1_34')
+print "**", PATH_Boost
 
 #
 PATH_LIB_Boost = LOCAL_LIB
@@ -32,7 +33,7 @@ PATH_Ogre =         os.path.join(BASE_DIR,'ogrenew')
 # # PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
 # # PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.5.0')
 # # PATH_OIS =          os.path.join(BASE_DIR, 'ois-1.0RC1')
-# # PATH_Newton =       os.path.join(BASE_DIR, 'newtonsdk/sdk')
+PATH_Newton =       os.path.join(BASE_DIR, 'newtonSDK/sdk')
 # # PATH_FMOD =         os.path.join(BASE_DIR, 'fmod')
 # # PATH_ODE =          os.path.join(BASE_DIR, 'opende/trunk')
 # # PATH_OGREAL=        os.path.join(BASE_DIR, 'ogreal/trunk/OgreAL-Eihort')
@@ -41,8 +42,8 @@ PATH_Ogre =         os.path.join(BASE_DIR,'ogrenew')
 # # PATH_OPENAL=        os.path.join(BASE_DIR, 'openal')
 # # PATH_ALUT=          os.path.join(BASE_DIR, 'freealut')
 PATH_OgreOde=       os.path.join(BASE_DIR, 'OgreAddons/ogreode')
-# # PATH_betagui=       os.path.join(BASE_DIR, 'betagui')
-# PATH_raknet=       os.path.join(BASE_DIR, 'RakNet')
+PATH_betagui=       os.path.join(module_dir, 'ThirdParty/betagui')
+PATH_raknet=       os.path.join(BASE_DIR, 'RakNet')
 PATH_simplegui=     os.path.join(module_dir, 'ThirdParty/simplegui')
 
 
@@ -66,7 +67,7 @@ PATH_LIB_Ogre_Dependencies =    os.path.join( LOCAL_LIB ) # , 'Dependencies/lib/
 
 PATH_LIB_OgreRefApp =           os.path.join( LOCAL_LIB ) # PATH_Ogre, 'ReferenceApplication/ReferenceAppLayer/lib/Release')
 PATH_LIB_OgreNewt =             os.path.join( LOCAL_LIB ) #PATH_OgreAddons, r'ogrenewt/OgreNewt_Main/lib/Release') 
-PATH_LIB_Newton =               os.path.join( LOCAL_LIB ) # PATH_Newton ,'dll')  ##NOTE Posix platforms this lives in 'lib-mt'
+PATH_LIB_Newton =               PATH_Newton #os.path.join( LOCAL_LIB ) # PATH_Newton ,'dll')  ##NOTE Posix platforms this lives in 'lib-mt'
 PATH_LIB_OIS =                  os.path.join( LOCAL_LIB ) #PATH_OIS, 'dll') ## NOTE Posix platforms this lives in'lib' not 'dll'
 PATH_LIB_CEGUI =                os.path.join ( LOCAL_LIB ) #PATH_Ogre, r'Dependencies/lib/Release' )
 PATH_LIB_ODE =                  os.path.join( LOCAL_LIB ) #PATH_ODE, 'lib/releasedll')## probable releaselib for posix
@@ -100,8 +101,8 @@ PATH_INCLUDE_ALUT=      ''#    os.path.join( PATH_ALUT, 'include' )
 PATH_INCLUDE_OgreOde =      os.path.join( PATH_OgreOde,'include')
 PATH_INCLUDE_OgreOdePrefab= os.path.join( PATH_OgreOde,'prefab/include')
 PATH_INCLUDE_OgreOdeLoader= os.path.join( PATH_OgreOde,'loader/include')
-
+PATH_INCLUDE_Newton = PATH_Newton #  os.path.join(LOCAL_INCLUDE,'Newton') 
 PATH_INCLUDE_betagui =       PATH_betagui
 PATH_INCLUDE_simplegui =     PATH_simplegui
 PATH_INCLUDE_raknet =        os.path.join(PATH_raknet, 'Source' )
-PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'samples/Common/CEGUIRenderer/include')
+PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'Samples/Common/CEGUIRenderer/include')
