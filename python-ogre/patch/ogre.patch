@@ -1,48 +1,10 @@
-Index: OgreMain/include/OgreCompositorChain.h
-===================================================================
---- OgreMain/include/OgreCompositorChain.h	9 Dec 2006 14:37:23 -0000	1.15
-+++ OgreMain/include/OgreCompositorChain.h	25 Apr 2007 00:39:14 -0000
-@@ -166,7 +166,7 @@
- 		void destroyResources(void);
+--- ogrenew/configure.in	2007-05-15 22:43:31.000000000 +0800
++++ ogrenew/configure.in	2007-05-15 22:43:18.000000000 +0800
+@@ -49,6 +49,7 @@
+         ;;
+     esac
+     ])
++CFLAGS_VISIBILITY=""
+ AC_SUBST(CFLAGS_VISIBILITY)
+ AC_LANG_POP
  
- 		/** Render queue listener used to set up rendering events. */
--		class RQListener: public RenderQueueListener
-+		class _OgreExport RQListener: public RenderQueueListener
- 		{
- 		public:
- 			/** @copydoc RenderQueueListener::renderQueueStarted
-Index: OgreMain/include/OgreSingleton.h
-===================================================================
---- OgreMain/include/OgreSingleton.h	23 Aug 2006 08:18:36 -0000	1.11
-+++ OgreMain/include/OgreSingleton.h	25 Apr 2007 00:39:24 -0000
-@@ -47,6 +47,9 @@
- #   pragma warning (disable : 4312)
- #endif
- 
-+#if defined ( OGRE_GCC_VISIBILITY )
-+#   pragma GCC visibility push(default)
-+#endif
-namespace Ogre {
-// End SJS additions
-    /** Template class for creating single-instance global classes.
-@@ -76,4 +79,7 @@
- 		{ return ms_Singleton; }
-     };
- }
-+#if defined ( OGRE_GCC_VISIBILITY )
-+#   pragma GCC visibility pop
-+#endif
- #endif
-Index: OgreMain/include/OgreWindowEventUtilities.h
-===================================================================
---- OgreMain/include/OgreWindowEventUtilities.h	23 Aug 2006 08:18:36 -0000	1.7
-+++ OgreMain/include/OgreWindowEventUtilities.h	25 Apr 2007 00:39:26 -0000
-@@ -43,7 +43,7 @@
- 	@Remarks
- 		Callback class used to send out window events to client app
- 	*/
--	class WindowEventListener
-+	class _OgreExport WindowEventListener
- 	{
- 	public:
- 		virtual ~WindowEventListener() {};
