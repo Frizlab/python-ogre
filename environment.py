@@ -188,7 +188,7 @@ class ogrenewt:
     parent = "ogre/physics"
     libs = ['newton', Config.LIB_Boost, 'OgreNewt_Main', 'OgreMain']
     include_dirs = [Config.PATH_Boost
-                    , Config.PATH_Newton   # only one path for Newton
+                    , Config.PATH_INCLUDE_Newton   # only one path for Newton
                     , Config.PATH_INCLUDE_Ogre 
                     , Config.PATH_INCLUDE_OgreNewt
                     , Config.PATH_INCLUDE_Ogre_Dependencies  #needed for OIS/OIS.h
@@ -210,7 +210,7 @@ class cegui:
     libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain', 'OgreGUIRenderer' ]
     include_dirs = [Config.PATH_Boost
                     ,Config.PATH_INCLUDE_CEGUI
-                    ,Config.PATH_CEGUI
+                    #,Config.PATH_CEGUI
                     , Config.PATH_INCLUDE_Ogre_CEGUIRenderer
                     , Config.PATH_INCLUDE_Ogre
                     , Config.PATH_INCLUDE_Ogre_Dependencies ## needed as OgreCEGUI uses CEGUI/.. in #includes
@@ -245,12 +245,7 @@ class ode:
     ModuleName = 'ODE'
     CheckIncludes = ['boost/python.hpp',  'ode/ode.h'] 
     active=True
-class newton:
-    version= "1.0"
-    active=False
-    include_dirs = [r'c:/development/newtonsdk/sdk']
-    ModuleName = 'NEWTON'
-    parent = ""    
+
 class ogreode:
     version= "1.0"
     parent = "ogre/physics"
@@ -278,20 +273,7 @@ class ogreode:
     ModuleName='OgreOde'
     active=True
     
-class fmod:
-    version= "4.06"
-    parent = "ogre/sound"
-    include_dirs=[Config.PATH_Boost
-                   ,Config.PATH_INCLUDE_FMOD
-                   ]
-    lib_dirs = [ Config.PATH_LIB_Boost
-                  ,Config.PATH_LIB_FMOD
-                  ] 
-                 
-    CCFLAGS = ' /D "NDEBUG" /D "WIN32" /D "_MBCS" '
-    ModuleName = 'FMOD' 
-    CheckIncludes = ['fmod.h']
-    active=False
+
     
 # class betagui:
 #     version="1.0"
@@ -373,10 +355,8 @@ projects = {
     , 'ogre' : ogre
     , 'cegui' : cegui
     , 'ode' : ode
-    , 'newton' : newton
     , 'ogrerefapp' : ogrerefapp
     , 'ogrenewt' : ogrenewt
-    , 'fmod' : fmod
     , 'ogreode' : ogreode
     , 'ogreal' : ogreal
 #     , 'betagui' : betagui
