@@ -64,7 +64,9 @@ ogre_ns.include()
     
 # for op in mb.operators():
 #    print op
-#for cls in mb.classes():
+for cls in mb.classes():
+	print cls
+sys.exit()
 
 bases={}
 for cls in ogre_ns.classes():

@@ -130,7 +130,6 @@ class ogre:
                     ]
         CCFLAGS =  ' -D"BOOST_PYTHON_MAX_ARITY=19"'
         LINKFLAGS = ''
-        externalFiles=['OgreMain.dll', 'OgreGuiRender.dll', Config.LIB_Boost+'.dll']
     else:
         libs=[Config.LIB_Boost]
         lib_dirs = [ Config.PATH_LIB_Boost ]

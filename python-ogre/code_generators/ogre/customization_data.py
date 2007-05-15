@@ -31,7 +31,7 @@ def header_files( version ):
                 , 'OgreEventQueue.h'
                 , 'OgreKeyEvent.h'
                 , 'OgreHardwareOcclusionQuery.h'
-                , 'py_shared_ptr.h'
+##                , 'py_shared_ptr.h'
 
         ]
 
