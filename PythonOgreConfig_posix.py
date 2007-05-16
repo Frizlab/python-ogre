@@ -41,7 +41,7 @@ PATH_Newton =       os.path.join(BASE_DIR, 'newtonSDK/sdk')
 # # PATH_VORBIS=        os.path.join(BASE_DIR, 'vorbis')
 # # PATH_OPENAL=        os.path.join(BASE_DIR, 'openal')
 # # PATH_ALUT=          os.path.join(BASE_DIR, 'freealut')
-PATH_OgreOde=       os.path.join(BASE_DIR, 'OgreAddons/ogreode')
+PATH_OgreOde=       os.path.join(BASE_DIR, 'ogreaddons/ogreode')
 PATH_betagui=       os.path.join(module_dir, 'ThirdParty/betagui')
 PATH_raknet=       os.path.join(BASE_DIR, 'RakNet')
 PATH_simplegui=     os.path.join(module_dir, 'ThirdParty/simplegui')
@@ -88,7 +88,7 @@ PATH_INCLUDE_OIS =          os.path.join(LOCAL_INCLUDE,'OIS') #os.path.join(PATH
 PATH_INCLUDE_OgreRefApp =   os.path.join(PATH_Ogre,'ReferenceApplication/ReferenceAppLayer/include') 
 PATH_INCLUDE_OgreNewt =     os.path.join(LOCAL_INCLUDE,'OgreNewt') #os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')
 PATH_INCLUDE_CEGUI =        os.path.join(LOCAL_INCLUDE,'CEGUI') #os.path.join(PATH_CEGUI, r'include/CEGUI')
-PATH_INCLUDE_ODE =          os.path.join(LOCAL_INCLUDE,'ODE') #os.path.join( PATH_ODE, 'include')
+PATH_INCLUDE_ODE =          os.path.join(LOCAL_INCLUDE,'') #os.path.join( PATH_ODE, 'include')
 PATH_INCLUDE_ODESOURCE =    '' #      os.path.join( PATH_ODE, 'ode/src')
 
 
