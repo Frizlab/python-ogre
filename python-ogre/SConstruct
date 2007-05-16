@@ -89,7 +89,7 @@ def get_linkflags():
 
 # Let us select the projects to build
 possible_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',\
-    'ogreode', 'ogreal', 'simplegui', 'raknet']
+    'ogreode', 'ogreal', 'quickgui', 'raknet']
 default_projects = possible_projects #['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'fmod','cegui' ]
 
 # This lets you call scons like: 'scons PROJECTS=ogre,cegui'
