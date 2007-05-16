@@ -128,7 +128,7 @@ class ogre:
         include_dirs = [ Config.PATH_Boost 
                     , Config.PATH_INCLUDE_Ogre 
                     ]
-        CCFLAGS =  ' -D"BOOST_PYTHON_MAX_ARITY=19"'
+        CCFLAGS =  ' -DBOOST_PYTHON_MAX_ARITY=19'
         LINKFLAGS = ''
     else:
         libs=[Config.LIB_Boost]
