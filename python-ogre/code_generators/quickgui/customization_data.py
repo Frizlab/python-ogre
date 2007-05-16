@@ -1,6 +1,6 @@
 
 def header_files( version ):
-    return [ 'SimpleGUI.h']
+    return [ 'QuickGUI.h']
   
 def huge_classes( version ):
     return []
