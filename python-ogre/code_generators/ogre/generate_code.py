@@ -134,8 +134,10 @@ def ManualExclude ( mb ):
     
    
    ## changes due to expanded header file input
-   
-    ogre_ns.class_('OptimisedUtil').mem_fun('softwareVertexSkinning').exclude
+    try:	   
+    	ogre_ns.class_('OptimisedUtil').mem_fun('softwareVertexSkinning').exclude  # this isn;t in the LINUX include for 1.4.1
+    except:
+        pass
     ogre_ns.class_('ShadowVolumeExtrudeProgram').variable('programNames').exclude()    #funky sring[8] problem
             
     ## now for problem areas in the new unicode string handling - just excluding without 'thought' :)
