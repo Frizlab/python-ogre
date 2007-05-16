@@ -61,7 +61,7 @@ PACKAGEDATA = {
                         'ogre.gui', 'ogre.gui.CEGUI','ogre.sound', 'ogre.sound.OgreAL', 
                         'ogre.physics', 'ogre.physics.ODE', 'ogre.physics.OgreRefApp',
                         'ogre.physics.OgreOde', 'ogre.physics.OgreNewt', 
-                        'ogre.gui.SimpleGUI'],
+                        'ogre.gui.QuickGUI'],
        "package_dir": {'': 'packages_'+ PythonVersionString },
        "package_data": {'': ['*.pyd', '*.dll', '*.so']}
 

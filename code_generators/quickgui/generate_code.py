@@ -42,8 +42,8 @@ import common_utils.extract_documentation as exdoc
 import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
 
-MAIN_NAMESPACE = 'SimpleGUI'
-simplegui="xxx"  ##do a search and replace on simplegui
+MAIN_NAMESPACE = 'QuickGUI'
+quickgui="xxx"  ##do a search and replace on quickgui
 
 ## small helper function
 def docit ( general, i, o ): 
@@ -91,8 +91,9 @@ def ManualInclude ( mb ):
     global_ns.namespace( 'Ogre' ).class_('ColourValue').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('RenderTexture').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('RenderOperation').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Singleton<SimpleGUI::GUIManager>').include() #already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Singleton<SimpleGUI::MouseCursor>').include() #already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('UTFString').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('Singleton<QuickGUI::GUIManager>').include() #already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('Singleton<QuickGUI::MouseCursor>').include() #already_exposed=True)
     
 ############################################################
 ##
@@ -342,12 +343,12 @@ def generate_code():
     # NOTE: If you update the source library code you need to manually delete the cache .XML file   
     #
     xml_cached_fc = parser.create_cached_source_fc(
-                        os.path.join( environment.simplegui.root_dir, "python_simplegui.h" )
-                        , environment.simplegui.cache_file )
+                        os.path.join( environment.quickgui.root_dir, "python_quickgui.h" )
+                        , environment.quickgui.cache_file )
 
     defined_symbols = [ 'OGRE_NONCLIENT_BUILD' ]
 
-    defined_symbols.append( 'VERSION_' + environment.simplegui.version )  
+    defined_symbols.append( 'VERSION_' + environment.quickgui.version )  
     
     #
     # build the core Py++ system from the GCCXML created source
@@ -355,10 +356,10 @@ def generate_code():
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
-                                          , include_paths=environment.simplegui.include_dirs
+                                          , include_paths=environment.quickgui.include_dirs
                                           , define_symbols=defined_symbols
                                           , indexing_suite_version=2
-                                          , cflags=environment.simplegui.cflags
+                                          , cflags=environment.quickgui.cflags
                                            )
     # NOTE THE CHANGE HERE                                           
     mb.constructors().allow_implicit_conversion = False                                           
@@ -405,11 +406,11 @@ def generate_code():
         if cls.name not in NoPropClasses:
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
             
-    common_utils.add_constants( mb, { 'simplegui_version' :  '"%s"' % environment.simplegui.version.replace("\n", "\\\n") 
+    common_utils.add_constants( mb, { 'quickgui_version' :  '"%s"' % environment.quickgui.version.replace("\n", "\\\n") 
                                       , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
                                       
     ## need to create a welcome doc string for this...                                  
-    common_utils.add_constants( mb, { '__doc__' :  '"simplegui DESCRIPTION"' } ) 
+    common_utils.add_constants( mb, { '__doc__' :  '"quickgui DESCRIPTION"' } ) 
     
     
     ##########################################################################################
@@ -418,27 +419,27 @@ def generate_code():
     #
     ##########################################################################################
     #extractor = exdoc.doc_extractor("::Ogre") # I'm excluding the UTFstring docs as lots about nothing 
-    mb.build_code_creator (module_name='_simplegui_' ) #, doc_extractor= extractor )
+    mb.build_code_creator (module_name='_quickgui_' ) #, doc_extractor= extractor )
     
-    for inc in environment.simplegui.include_dirs:
+    for inc in environment.quickgui.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )
-    mb.code_creator.user_defined_directories.append( environment.simplegui.generated_dir )
-    mb.code_creator.replace_included_headers( customization_data.header_files( environment.simplegui.version ) )
+    mb.code_creator.user_defined_directories.append( environment.quickgui.generated_dir )
+    mb.code_creator.replace_included_headers( customization_data.header_files( environment.quickgui.version ) )
 
-    huge_classes = map( mb.class_, customization_data.huge_classes( environment.simplegui.version ) )
+    huge_classes = map( mb.class_, customization_data.huge_classes( environment.quickgui.version ) )
 
-    mb.split_module(environment.simplegui.generated_dir, huge_classes)
+    mb.split_module(environment.quickgui.generated_dir, huge_classes)
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory..
-    additional_files= os.listdir(environment.Config.PATH_INCLUDE_simplegui)
+    additional_files= os.listdir(environment.Config.PATH_INCLUDE_quickgui)
     for f in additional_files:
         if f.endswith('cpp') or f.endswith('.h'):
-            sourcefile = os.path.join(environment.Config.PATH_INCLUDE_simplegui, f)
-            destfile = os.path.join(environment.simplegui.generated_dir, f ) 
+            sourcefile = os.path.join(environment.Config.PATH_INCLUDE_quickgui, f)
+            destfile = os.path.join(environment.quickgui.generated_dir, f ) 
         
             if not common_utils.samefile( sourcefile ,destfile ):
-                shutil.copy( sourcefile, environment.simplegui.generated_dir )
+                shutil.copy( sourcefile, environment.quickgui.generated_dir )
                 print "Updated ", f, "as it was missing or out of date"
         
 if __name__ == '__main__':

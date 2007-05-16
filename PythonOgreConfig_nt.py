@@ -24,19 +24,19 @@ PATH_Ogre =         os.path.join(BASE_DIR,'Ogrenew')
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
 PATH_CEGUI =        os.path.join(BASE_DIR, 'cegui-0.5.0')
 PATH_OIS =          os.path.join(BASE_DIR, 'ois')
-PATH_Newton =       os.path.join(BASE_DIR, 'newtonsdk/sdk')
+PATH_Newton =       os.path.join(BASE_DIR, 'newtonsdk','sdk')
 PATH_FMOD =         os.path.join(BASE_DIR, 'fmod')
-PATH_ODE =          os.path.join(BASE_DIR, 'opende/trunk')
-PATH_OGREAL=        os.path.join(BASE_DIR, 'ogreal/trunk/OgreAL-Eihort')
+PATH_ODE =          os.path.join(BASE_DIR, 'opende','trunk')
+PATH_OGREAL=        os.path.join(BASE_DIR, 'ogreal','trunk','OgreAL-Eihort')
 PATH_OGG =          os.path.join(BASE_DIR, 'ogg')
 PATH_VORBIS=        os.path.join(BASE_DIR, 'vorbis')
 PATH_OPENAL=        os.path.join(BASE_DIR, 'openal')
 PATH_ALUT=          os.path.join(BASE_DIR, 'freealut')
-PATH_OgreOde=       os.path.join(BASE_DIR, 'OgreAddons/ogreode')
+PATH_OgreOde=       os.path.join(BASE_DIR, 'OgreAddons','ogreode')
 PATH_betagui=       os.path.join(BASE_DIR, 'betagui')
 PATH_raknet=       os.path.join(BASE_DIR, 'RakNet')
 
-PATH_simplegui=     os.path.join(root_dir, 'ThirdParty/simplegui')
+PATH_quickgui=     os.path.join(root_dir, 'ThirdParty','quickgui')
 
 #
 # it's time for the SDK version
@@ -45,8 +45,8 @@ if SDK:
     PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
     PATH_CEGUI =        os.path.join(BASE_DIR, 'Ogrenew')
     PATH_OIS =          os.path.join(BASE_DIR, 'Ogrenew')
-    PATH_ODE =          os.path.join(BASE_DIR, 'opende/trunk')
-    PATH_OgreOde=       os.path.join(BASE_DIR, 'OgreAddons/ogreode')
+    PATH_ODE =          os.path.join(BASE_DIR, 'opende','trunk')
+    PATH_OgreOde=       os.path.join(BASE_DIR, 'OgreAddons','ogreode')
 
 
 
@@ -75,7 +75,7 @@ PATH_LIB_OgreOdeLoader =        os.path.join( PATH_OgreOde, 'loader/lib/Release'
 PATH_LIB_FMOD =                 os.path.join(PATH_FMOD, 'api/lib') 
 PATH_LIB_OgreAL =               os.path.join(PATH_OGREAL, 'lib/Release' )
 PATH_LIB_betagui =              PATH_betagui
-PATH_LIB_simplegui =            PATH_simplegui
+PATH_LIB_quickgui =            PATH_quickgui
 PATH_LIB_raknet =               os.path.join(PATH_raknet, 'Lib' )
 
 if SDK:
@@ -107,7 +107,7 @@ PATH_INCLUDE_OgreOdeLoader= os.path.join( PATH_OgreOde,'loader/include')
 PATH_INCLUDE_FMOD =          os.path.join(PATH_FMOD, 'api/inc')
 PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'samples/Common/CEGUIRenderer/include')
 PATH_INCLUDE_betagui =       PATH_betagui
-PATH_INCLUDE_simplegui =     PATH_simplegui
+PATH_INCLUDE_quickgui =     PATH_quickgui
 PATH_INCLUDE_raknet =        os.path.join(PATH_raknet, 'Source' )
 
 if SDK:

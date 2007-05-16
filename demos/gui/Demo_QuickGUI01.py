@@ -14,18 +14,18 @@
 
 ## /*
 ## -----------------------------------------------------------------------------
-## Filename:    SimpleGUIDemo.h
+## Filename:    QuickGUIDemo.h
 ## Description: A place for me to try out stuff with OGRE.
 ## -----------------------------------------------------------------------------
 ## */
 
 import ogre.renderer.OGRE as Ogre
 import ogre.io.OIS as ois
-import ogre.gui.SimpleGUI as gui
+import ogre.gui.QuickGUI as gui
 import SampleFramework as sf
 
 class CallBack ( gui.MemberFunctionSlot ):
-    """ Callback class for user events in SimpleGUI"""
+    """ Callback class for user events in QuickGUI"""
     def __init__(self, function=""):
         gui.MemberFunctionSlot.__init__(self)
         self.function=function
@@ -90,7 +90,7 @@ class GuiFrameListener ( sf.FrameListener, ois.MouseListener, ois.KeyListener ):
     def  keyPressed( self, arg ):
         if( arg.key == ois.KC_ESCAPE ):
             self.ShutdownRequested = True
-        ## Now convert from OIS keycode to SimpleGUI one..            
+        ## Now convert from OIS keycode to QuickGUI one..            
         k = gui.KeyCode.values[arg.key]
         gui.GUIManager.getSingleton().injectKeyDown( k )
         gui.GUIManager.getSingleton().injectChar( chr(arg.text) )
@@ -104,7 +104,7 @@ class GuiFrameListener ( sf.FrameListener, ois.MouseListener, ois.KeyListener ):
 
 
 
-class SimpleGUIDemoApp (sf.Application):
+class QuickGUIDemoApp (sf.Application):
     ## Just override the mandatory create scene method
     def _createScene(self):
         self.mDebugDisplayShown=True
@@ -173,63 +173,64 @@ class SimpleGUIDemoApp (sf.Application):
         
     def createGUI(self):
         self.callbacks=[]
-        self.mGUIManager.createMouseCursor((0.05,0.05),"sgui.pointer")
+        self.mGUIManager.createMouseCursor((0.05,0.05))
 
         ## Main Menu and it's MenuLists
         menuWindow = self.mGUIManager.createEmptyWindow((0,0,1,0.04))
         menuWindow.setZOrder(600)
-        topMenu = menuWindow.createFullSizeMenu("sgui.menu")
+        topMenu = menuWindow.createFullSizeMenu()
         
-        fileList = topMenu.addMenuList("File",(0,0,0.075,1),"sgui.menubutton",0.1,"sgui.menulist","sgui.listitem.highlight")
+        fileList = topMenu.addMenuList("File",(0,0,0.075,1),0.1)
         exitListItem = fileList.addListItem("Exit")
         
-        exitListItem.addEventHandler(gui.Widget.Event.SGUI_MOUSE_BUTTON_UP,self.MakeCallback (self.evtHndlr_exitListItem ) )
+        exitListItem.addEventHandler(gui.Widget.Event.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback (self.evtHndlr_exitListItem ) )
         
-        cameraList = topMenu.addMenuList("Camera Properties",Ogre.Vector4(0.08,0,0.2,1),"sgui.menubutton",0.15,"sgui.menulist","sgui.listitem.highlight")
+        cameraList = topMenu.addMenuList("Camera Properties",Ogre.Vector4(0.08,0,0.2,1),0.15)
         pointListItem = cameraList.addListItem("Point")
         pointListItem.addImage(Ogre.Vector4(0,0,0.2,1),"demo.pointmode")
-        pointListItem.addEventHandler(gui.Widget.SGUI_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_CameraPoint) )
+        pointListItem.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_CameraPoint) )
         wireframeListItem = cameraList.addListItem("Wire Frame")
         wireframeListItem.addImage(Ogre.Vector4(0,0,0.2,1),"demo.wireframemode")
-        wireframeListItem.addEventHandler(gui.Widget.SGUI_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_CameraWireFrame) )
+        wireframeListItem.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_CameraWireFrame) )
         solidListItem = cameraList.addListItem("Solid")
         solidListItem.addImage(Ogre.Vector4(0,0,0.2,1),"demo.solidmode")
-        solidListItem.addEventHandler(gui.Widget.SGUI_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_CameraSolid) )
+        solidListItem.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_CameraSolid) )
  
-        viewportList = topMenu.addMenuList("Progress Bar Color",Ogre.Vector4(0.285,0,0.2,1),"sgui.menubutton",0.2,"sgui.menulist","sgui.listitem.highlight")
+        viewportList = topMenu.addMenuList("Progress Bar Color",Ogre.Vector4(0.285,0,0.2,1),0.2)
         redListItem = viewportList.addListItem("Red")
         redListItem.addImage(Ogre.Vector4(0.1,0.1,0.8,0.8),"demo.listitem.red")
-        redListItem.addEventHandler(gui.Widget.SGUI_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_pbRed) )
+        redListItem.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_pbRed) )
         greenListItem = viewportList.addListItem("Green")
         greenListItem.addImage(Ogre.Vector4(0.1,0.1,0.8,0.8),"demo.listitem.green")
-        greenListItem.addEventHandler(gui.Widget.SGUI_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_pbGreen) )
+        greenListItem.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_pbGreen) )
         blueListItem = viewportList.addListItem("Blue")
         blueListItem.addImage(Ogre.Vector4(0.1,0.1,0.8,0.8),"demo.listitem.blue")
-        blueListItem.addEventHandler(gui.Widget.SGUI_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_pbBlue) )
+        blueListItem.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_pbBlue) )
 
-        otherList = topMenu.addMenuList("Other",Ogre.Vector4(0.490,0,0.1,1),"sgui.menubutton",0.2,"sgui.menulist","sgui.listitem.highlight")
+        otherList = topMenu.addMenuList("Other",Ogre.Vector4(0.490,0,0.1,1),0.2)
         textColorListItem = otherList.addListItem("Text Color")
-        textColorListItem.addEventHandler(gui.Widget.SGUI_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_setTextWhite) )
+        textColorListItem.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_setTextWhite) )
         tcProperties = textColorListItem.addNStateButton(Ogre.Vector4(0.8,0.1,0.175,0.9))
         tcProperties.addState("OpenProperties","demo.listitem.textproperties")
-        tcProperties.addEventHandler(gui.Widget.SGUI_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_showSetTextDialog) )
+        tcProperties.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_showSetTextDialog) )
         RenderStatsListItem = otherList.addListItem("Render Stats")
         toggleRenderStats = RenderStatsListItem.addNStateButton(Ogre.Vector4(0.8,0.1,0.175,0.9))
-        toggleRenderStats.addState("checked","sgui.button.state2")
-        toggleRenderStats.addState("unchecked","sgui.button.state1")
-        toggleRenderStats.addEventHandler(gui.Widget.SGUI_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_toggleDebugDisplay))
+        toggleRenderStats.addState("checked","qgui.unchecked")
+        toggleRenderStats.addState("unchecked","qgui.checked")
+        toggleRenderStats.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_toggleDebugDisplay))
 
         ## Logos
-        logoImage = self.mGUIManager.createEmptyWindow("Logo_Image_Window",Ogre.Vector4(0.02,0.07,0.3,0.3)).createFullSizeImage("demo.ogrelogo")
-        logoLabel = self.mGUIManager.createEmptyWindow(Ogre.Vector4(0.075,0.4,0.15,0.05)).createFullSizeLabel("sgui.label")
+        logoImage = self.mGUIManager.createEmptyWindow(Ogre.Vector4(0.02,0.07,0.3,0.3)).createFullSizeImage(False)
+        logoImage.setBorderWidth(10)
+        logoLabel = self.mGUIManager.createEmptyWindow(Ogre.Vector4(0.075,0.4,0.15,0.05)).createFullSizeLabel()
         logoLabel.setText("Click Me >")
         imageToggleButton = self.mGUIManager.createEmptyWindow(Ogre.Vector4(0.225,0.4,0.05,0.05)).createFullSizeNStateButton()
-        imageToggleButton.addState("OgreLogo","sgui.button.state1")
-        imageToggleButton.addState("SimpleGUILogo","sgui.button.state2")
+        imageToggleButton.addState("OgreLogo","qgui.checked")
+        imageToggleButton.addState("QuickGUILogo","qgui.unchecked")
 
         ## RTT Example Use
         rttImage = self.mGUIManager.createEmptyWindow(Ogre.Vector4(0.75,0.07,0.2,0.15)).createFullSizeImage("self.rttTex",True)
-        ninjaWindow = self.mGUIManager.createWindow(Ogre.Vector4(0.725,0.25,0.25,0.15),"sgui.window")
+        ninjaWindow = self.mGUIManager.createWindow(Ogre.Vector4(0.725,0.25,0.25,0.15))
         ninjaWindow.hideTitlebar()
         animToggleButton = ninjaWindow.createNStateButton(Ogre.Vector4(0.05,0.033,0.9,0.3))
         ## populate NStateButton with States - robot animations
@@ -237,7 +238,7 @@ class SimpleGUIDemoApp (sf.Application):
         state = 0
         while( casi.hasMoreElements() ):
             animName = casi.getNext().getAnimationName()
-            animToggleButton.addState("State"+str(state),"sgui.button",animName)
+            animToggleButton.addState("State"+str(state),"qgui.button",animName)
             if state == 0:
                 self.robotAnimationState = self.robot.getAnimationState(animName)
                 self.robotAnimationState.setEnabled(True)
@@ -245,64 +246,67 @@ class SimpleGUIDemoApp (sf.Application):
                 self.robotAnimationState.setLoop(True)
             state+=1
 #         animToggleButton.addOnStateChangedEventHandler(self.evtHndlr_changeAnimations)
-        animToggleButton.addEventHandler(gui.Widget.SGUI_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_changeAnimations) )
+#         animToggleButton.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_changeAnimations) )
+        animToggleButton.addOnStateChangedEventHandler(self.MakeCallback(self.evtHndlr_changeAnimations) )
         
-        hurtButton = ninjaWindow.createButton(Ogre.Vector4(0.05,0.36,0.9,0.3),"sgui.button")
+        hurtButton = ninjaWindow.createButton(Ogre.Vector4(0.05,0.36,0.9,0.3))
         hurtButton.setText("Hurt")
-        hurtButton.addEventHandler(gui.Widget.SGUI_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_hurt) )
-        healButton = ninjaWindow.createButton(Ogre.Vector4(0.05,0.69,0.9,0.3),"sgui.button")
+        hurtButton.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_hurt) )
+        healButton = ninjaWindow.createButton(Ogre.Vector4(0.05,0.69,0.9,0.3))
         healButton.setText("Heal")
-        healButton.addEventHandler(gui.Widget.SGUI_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_heal) )
+        healButton.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_heal) )
 
         ## Progress Bar Setup
         lbW1 = self.mGUIManager.createEmptyWindow((0.4,0.5125,0.07,0.07))
-        lbW1.setZOrder(600)
+        lbW1.setZOrder(2)
         self.lifeBarLabel = lbW1.createFullSizeLabel("")
         self.lifeBarLabel.setText("HP")
         lbW2 = self.mGUIManager.createEmptyWindow((0.55,0.5125,0.07,0.07))
-        lbW2.setZOrder(600)
+        lbW2.setZOrder(2)
         self.lifeBarValueLabel = lbW2.createFullSizeLabel("")
-#         self.lifeBarValueLabel.setText("100")
-        self.lifeBar = self.mGUIManager.createEmptyWindow((0.4,0.55,0.2,0.03)).createFullSizeProgressBar("sgui.progressbar.green")
-        self.lifeBar.setProgress(0.5)
-        self.lifeBarValueLabel.setText("50")
+        self.lifeBarValueLabel.setText("100")
+        self.lifeBar = self.mGUIManager.createEmptyWindow((0.4,0.55,0.2,0.03)).createFullSizeProgressBar()
+#         self.lifeBar.setProgress(0.5)
+#         self.lifeBarValueLabel.setText("50")
         
         ## Combobox
 # #         listbox = self.mGUIManager.
         
         
         ## Mouse Over window
-        mouseOverWindow = self.mGUIManager.createWindow("Mouse Over Window",Ogre.Vector4(0.7,0.7,0.3,0.1),"sgui.window")
+        mouseOverWindow = self.mGUIManager.createWindow(Ogre.Vector4(0.7,0.7,0.3,0.1))
+        mouseOverWindow.setReferenceName("Mouse Over Window")
         mouseOverWindow.hideTitlebar()
-        mouseOverLabel = mouseOverWindow.createLabel(Ogre.Vector4(0,0,1,0.5),"sgui.label")
+        mouseOverLabel = mouseOverWindow.createLabel(Ogre.Vector4(0,0,1,0.5))
         mouseOverLabel.setText("Mouse Over Widget:")
-        mouseOverTB = mouseOverWindow.createTextBox(Ogre.Vector4(0,0.5,1,0.5),"sgui.textbox")
+        mouseOverTB = mouseOverWindow.createTextBox(Ogre.Vector4(0,0.5,1,0.5))
         mouseOverTB.setReadOnly(True)
 
         ## Login Portion
-        self.mGUIManager.createEmptyWindow(Ogre.Vector4(0.02,0.6,0.2,0.05)).createFullSizeLabel("sgui.label").setText("User Name:")
-        self.mGUIManager.createEmptyWindow(Ogre.Vector4(0.02,0.65,0.2,0.05)).createFullSizeLabel("sgui.label").setText("Password:")
-        self.usernameTB = self.mGUIManager.createEmptyWindow(Ogre.Vector4(0.225,0.6,0.2,0.05)).createFullSizeTextBox("sgui.textbox")
-        self.passwordTB = self.mGUIManager.createEmptyWindow(Ogre.Vector4(0.225,0.65,0.2,0.05)).createFullSizeTextBox("sgui.textbox")
-        self.passwordTB.maskUserInput('*')
-        loginButton = self.mGUIManager.createEmptyWindow(Ogre.Vector4(0.125,0.7,0.25,0.07)).createFullSizeButton("sgui.button")
+        self.mGUIManager.createEmptyWindow(Ogre.Vector4(0.02,0.6,0.2,0.05)).createFullSizeLabel().setText("User Name:")
+        self.mGUIManager.createEmptyWindow(Ogre.Vector4(0.02,0.65,0.2,0.05)).createFullSizeLabel().setText("Password:")
+        self.usernameTB = self.mGUIManager.createEmptyWindow(Ogre.Vector4(0.225,0.6,0.2,0.05)).createFullSizeTextBox()
+        self.passwordTB = self.mGUIManager.createEmptyWindow(Ogre.Vector4(0.225,0.65,0.2,0.05)).createFullSizeTextBox()
+        self.passwordTB.maskUserInput(ord('*'))
+        loginButton = self.mGUIManager.createEmptyWindow(Ogre.Vector4(0.125,0.7,0.25,0.07)).createFullSizeButton()
         loginButton.setText("Login")
-        loginButton.addEventHandler(gui.Widget.SGUI_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_login) )
+        loginButton.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_login) )
         self.loginResultLabel = self.mGUIManager.createEmptyWindow(Ogre.Vector4(0.0,0.77,0.5,0.05)).createFullSizeLabel("")
 
         ## Set Text Window
-        self.stWindow = self.mGUIManager.createWindow(Ogre.Vector4(0.7,0.45,0.3,0.2),"sgui.window",False)
+        self.stWindow = self.mGUIManager.createWindow(Ogre.Vector4(0.7,0.45,0.3,0.2))
+        self.stWindow.hide()
         self.stWindow.setText("Set Text Color:")
-        self.stWindow.createLabel(Ogre.Vector4(0.05,0.3,0.3,0.25),"sgui.label").setText("Color:")
-        colorCB = self.stWindow.createComboBox(Ogre.Vector4(0.4,0.3,0.55,0.25),"sgui.combobox","sgui.listitem.highlight")
+        self.stWindow.createLabel(Ogre.Vector4(0.05,0.3,0.3,0.25)).setText("Color:")
+        colorCB = self.stWindow.createComboBox(Ogre.Vector4(0.4,0.3,0.55,0.25))
         colorCB.addListItem("Red")
         colorCB.addListItem("Green")
         colorCB.addListItem("Blue")
         colorCB.addListItem("Black")
         colorCB.addListItem("White")
-        setTextButton = self.stWindow.createButton(Ogre.Vector4(0.05,0.6,0.9,0.3),"sgui.button")
+        setTextButton = self.stWindow.createButton(Ogre.Vector4(0.05,0.6,0.9,0.3))
         setTextButton.setText("Apply")
-        setTextButton.addEventHandler(gui.Widget.SGUI_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_setTextColor) )
+        setTextButton.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_setTextColor) )
 
     def evtHndlr_exitListItem(self, args):
         ## check if left mouse button is down
@@ -340,15 +344,15 @@ class SimpleGUIDemoApp (sf.Application):
         return True
 
     def evtHndlr_pbRed(self,args):
-        self.lifeBar.setMaterial("sgui.progressbar.red")
+        self.lifeBar.setMaterial("progressbar.red")
         return False
 
     def evtHndlr_pbGreen(self, args):
-        self.lifeBar.setMaterial("sgui.progressbar.green")
+        self.lifeBar.setMaterial("progressbar.green")
         return True
 
     def evtHndlr_pbBlue(self, args):
-        self.lifeBar.setMaterial("sgui.progressbar.blue")
+        self.lifeBar.setMaterial("progressbar.blue")
         return True
 
     def evtHndlr_login(self, args):
@@ -408,7 +412,7 @@ class SimpleGUIDemoApp (sf.Application):
  
 if __name__ == '__main__':
     try:
-        application = SimpleGUIDemoApp()
+        application = QuickGUIDemoApp()
         application.go()
     except Ogre.OgreException, e:
         print e
