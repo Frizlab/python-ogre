@@ -1,0 +1,29 @@
+--- loader/include/OgreOdeDotLoader.h	15 Nov 2006 14:40:33 -0000	1.1
++++ loader/include/OgreOdeDotLoader.h	11 May 2007 08:15:56 -0000
+@@ -15,8 +15,8 @@
+         DotLoader(OgreOde::World * world = 0, OgreOde::Space * space = 0);
+ 		~DotLoader(){};
+ 
+-        void setWorld(OgreOde::World * world)  {_world = world;};
+-        void setSpace(OgreOde::Space * space)  {_space = space;};
++        void setWorld(OgreOde::World * world);//  {_world = world;};
++        void setSpace(OgreOde::Space * space);//  {_space = space;};
+ 
+         ObjectList  *load(const Ogre::String &filename, const Ogre::StringVector &objects_names, const Ogre::StringVector &instance_names);
+         void         save(const Ogre::String &filename, const Ogre::StringVector &objects_names, ObjectList  *objects);
+
+--- loader/src/OgreOdeDotLoader.cpp	28 Feb 2007 17:53:36 -0000	1.4
++++ loader/src/OgreOdeDotLoader.cpp	11 May 2007 08:16:31 -0000
+@@ -62,6 +62,12 @@
+ {
+ 
+ }
++
++void DotLoader::setWorld(OgreOde::World * world)  
++{_world = world;};
++void DotLoader::setSpace(OgreOde::Space * space)  
++{_space = space;};
++
+ //------------------------------------------------------------------------------------------------
+ ObjectList  *DotLoader::load(const String &filename, const StringVector &objects_names, const StringVector &instance_names)
+ {

@@ -1,0 +1,22 @@
+--- OgreNewt_Main/inc/OgreNewt.h	19 Feb 2007 02:28:23 -0000	1.11
++++ OgreNewt_Main/inc/OgreNewt.h	11 May 2007 08:23:58 -0000
+@@ -38,7 +38,7 @@
+ #include "OgreNewt_BodyIterator.h"
+ #include "OgreNewt_Debugger.h"
+ 
+-#include "OgreNewt_BasicFrameListener.h"
++//#include "OgreNewt_BasicFrameListener.h"
+ 
+ /*! \mainpage OgreNewt Library version 0.10
+ 
+--- OgreNewt_Main/inc/OgreNewt_ContactCallback.h	19 Feb 2007 02:28:23 -0000	1.5
++++ OgreNewt_Main/inc/OgreNewt_ContactCallback.h	11 May 2007 08:24:09 -0000
+@@ -136,7 +136,7 @@
+ 	static void _CDECL contactEnd( const NewtonMaterial* material );
+ 
+ 
+-protected:
++//protected:
+ 
+ 	NewtonMaterial* m_material;
+ 	NewtonContact* m_contact;
