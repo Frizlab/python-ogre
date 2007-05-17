@@ -207,7 +207,10 @@ class cegui:
     active = True
     version = "0.5.0b" 
     parent = "ogre/gui"
-    libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain', 'OgreGUIRenderer' ]
+    if os.name =='nt': 
+        libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain', 'OgreGUIRenderer' ]
+    else:
+        libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain', 'CEGUIOgreRenderer' ]
     include_dirs = [Config.PATH_Boost
                     ,Config.PATH_INCLUDE_CEGUI
                     , Config.PATH_INCLUDE_Ogre_CEGUIRenderer
