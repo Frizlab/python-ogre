@@ -235,7 +235,7 @@ def generate_ogreode():
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
     
     common_utils.add_constants( mb, { 'ogreode_version' :  '"%s"' % environment.ogreode.version
-                                      , 'python_version' : '"%s"' % sys.version } )
+                                      , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" )  } )
     for ns in namespaces:
         for cls in mb.global_ns.namespace(ns).classes():
             process_warnings.go ( cls )
