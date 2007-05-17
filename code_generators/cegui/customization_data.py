@@ -6,6 +6,7 @@ def header_files( Version ):
             , "CEGUIXMLHandler.h"
             , "CEGUIXMLAttributes.h"
             , "CEGUIXMLSerializer.h"
+            , "Ogre.h"
             , "OgreCEGUIRenderer.h"
             ,"OgreCEGUIResourceProvider.h"
                   ]
