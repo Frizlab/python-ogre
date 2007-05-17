@@ -1,12 +1,12 @@
 material LandMaterial/SOLID/TEX/testLandMap.tga
 {
+receive_shadows on
 	technique
 	{
 		pass
 		{
-			lighting off
 			diffuse 0.281606 0.219515 0.010495
-			specular 0.000000 0.000000 0.000000 32.750000
+			specular 0.7 0.7 0.7 0.8
 			texture_unit
 			{
 				texture testLandMap.tga

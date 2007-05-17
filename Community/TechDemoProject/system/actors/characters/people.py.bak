@@ -1,5 +1,8 @@
 import ogre.renderer.OGRE as ogre
 
+import psyco
+psyco.full()
+
 import base_actor
 
 class RastaMan(base_actor.GameActor):
@@ -14,6 +17,7 @@ class RastaMan(base_actor.GameActor):
         self.animations = ['Run', 'Idle']
         self.nodeScale = 0.7
         self.heightAdjust = 5.0
+        self.animSpeed = 0.3
         self.adjustHeight = False
         self.hasPhysics = True
         
@@ -34,11 +38,11 @@ class RastaMan(base_actor.GameActor):
         
         
 
-    def move(self, time):
-        self.updateHeight()
+    def move(self, time, world):
+        pass
 
         
-    def Update(self, actors, player, updateAITime, time):
+    def Update(self, actors, player, updateAITime, world, time):
         pass
         
 class Ball(base_actor.GameActor):
@@ -52,3 +56,5 @@ class Ball(base_actor.GameActor):
         
     def setActorOptions(self, world):
         self.makeSphereCollision(world)
+
+

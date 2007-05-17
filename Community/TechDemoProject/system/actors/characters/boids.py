@@ -49,7 +49,11 @@ class Boid(base_actor.GameActor):
 
         self.pitch = ogre.Radian(0.0)
         self.yaw = ogre.Radian(0.0)
-        self.roll = ogre.Radian(0.0)        
+        self.roll = ogre.Radian(0.0)
+        
+    def Update(self, actors, player, updateAITime, world, time):
+        #print 'UpdatingBoid'
+        self.floorDist = self.getFloorDistance(world)
 
     def find_neighbors(self):
         self.neighbors = []
@@ -80,9 +84,35 @@ class Boid(base_actor.GameActor):
         (self.pitch,self.yaw,self.roll) = self.calculatePitchYawRoll()
         self.OgreNode.yaw(self.yaw)    
         self.OgreNode.pitch(self.pitch)    
-        self.OgreNode.roll(self.roll)        
+        self.OgreNode.roll(self.roll)
+        
+        self.updateHeight()       
         
         self.OgreNode.position += self.velocity * time
+        
+    def updateHeight(self):
+        if not self.hasPhysics:
+            if not self.adjustHeight:
+                if self.hAdjustClock == self.hAdjustTime:
+                    self.hAdjustClock = 0
+                    self.adjustHeight = True
+                else:
+                    self.hAdjustClock += 1
+                return
+            
+            #floorDist = self.getFloorDistance(world)
+            #print floorDist
+            if self.floorDist < 5.0 or self.OgreNode.position.y < 5.0:
+                #print 'CourseCorrectingBoid'
+                #print floorDist, self.OgreNode.position.y
+                self.velocity =  ogre.Vector3(	self.velocity.x, 
+                                    self.velocity.y + 0.2, 
+                                    self.velocity.z) 
+            else:
+                self.velocity.y = max(-1.0, self.velocity.y - 1.0)
+                
+                self.adjustHeight = False
+            
         
     def calculatePitchYawRoll(self):
         lateral = self.velocity.crossProduct(self.accel).crossProduct(self.velocity)
@@ -183,6 +213,8 @@ birds = []
 class Bird(Boid):
     def __init__(self):
         Boid.__init__(self)
+        self.updateAIFrequency = 1.0
+        self.updateAITime = 0.5
         self.media = [{'name':'BirdMesh', 'parent':'root', 'rType':'mesh', 'rName':'Triangle.mesh'}]
         self.name = 'Bird'
         self.isAnimated = False
@@ -222,8 +254,8 @@ class Bird(Boid):
                     self.nearest_neighbor = actor
                     self.distance_to_neighbor = distance
         
-    def Update(self, actors, player, updateAITime, time):
-        pass
+##    def Update(self, actors, player, updateAITime, world, time):
+##        pass
     
     
 class Dragon(Boid):

@@ -5,7 +5,8 @@ material WaterMaterial
 		pass
 		{
 			scene_blend colour_blend
-			depth_write off
+			depth_write on
+			depth_func less_equal
 			cull_hardware none
 			cull_software none
 
@@ -26,7 +27,7 @@ material WaterMaterialUnder
 		pass
 		{
 			scene_blend colour_blend
-			depth_write off
+			depth_write on
 
 			texture_unit
 			{

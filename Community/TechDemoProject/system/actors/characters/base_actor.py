@@ -170,6 +170,7 @@ class GameActor:
         self.loopAnim = True # does the animation loop?
         
         # PHYSICS
+        self.body = None
         self.bodies = {} # hold a dict of all physics bodies attached to me
         self.hasPhysics = False # Enable physics?
         self.torque = 0.0 # forward motion
@@ -180,6 +181,11 @@ class GameActor:
         #self.isColliding = False
         #self.collisionsEnabled = False 
         #self.radius = 50
+        
+    def __del__(self):
+        del self.body
+        del self.bodies
+        
     
     def SetTarget(self, gameActor):
         # pass another actor as a new target
@@ -187,7 +193,7 @@ class GameActor:
         self.target = gameActor
         self.calculateTargetDirection()
         
-    def Spawn(self, position, SceneManager, rootNode, numActors, RaySceneQuery, updateResolution, world = None):
+    def Spawn(self, position, SceneManager, rootnode, numActors, RaySceneQuery, updateResolution, world = None):
         # -- This function creates our object in the game
         # -- it's called after __init__ has finished, so you can
         # -- setup everything prior to the model appearing.
@@ -196,19 +202,11 @@ class GameActor:
         
         # try to keep our name unique by appending the number of actors
         self.name = str(self.name) + str(numActors)
-        # get a reference to the root scenenode
-        rootnode = rootNode ##SceneManager.getRootSceneNode()
         # get the engine's AI tick speed
         self.updateResolution = updateResolution
         # get a reference to the main sceneQuery object
         self.raySceneQuery = RaySceneQuery
         # get a reference to the physics world
-##        self.world = None
-##        if world:
-##            self.world = world
-##            print dir(self.world)
-##        # create an ogre entity and load our mesh
-##        self.Entity = SceneManager.createEntity(self.name, self.mesh)
         # create a parent or 'main' node
         self.OgreNode = rootnode.createChildSceneNode(self.name)
         # create and build the media tree
@@ -269,22 +267,51 @@ class GameActor:
         # set a flag for the datamanager
         self.hasPhysics = True
         
-    def getFloorDistance(self, direction=ogre.Vector3.NEGATIVE_UNIT_Y):
+    # Raycasts are queries into the physics world    
+    # These handlers can be called from the actor's Update method
+    # this is because they need a reference to the physics world
+    def doDistanceRayCast(self, world, start, end):
+        q = OgreNewt.BasicRaycast(world, start, end)
+        info = q.getFirstHit()
+        if info:
+            if not info.mDistance == -1.0:
+                off = end - start
+                dist = off.length() * info.mDistance
+                return dist
+        
+            
+    def doDetailedRayCast(self, world, start, end, numResults):
+        q = OgreNewt.BasicRaycast(world, start, end)
+        info = q.getFirstHit()
+        if info:
+            if not info.mDistance == -1.0:
+                off = end - start
+                dist = off.length() * info.mDistance
+                return dist
+            
+        
+    def getFloorDistance(self, world, direction=ogre.Vector3.NEGATIVE_UNIT_Y):
         # -- Function for non-physics objects over landscapes
         # -- Fires from *under* the floor upwards. therefore if the object is on the floor:
         # -- self.position[y] - floorDistance - self.heightAdjust = 0
         # -- otherwise, the offset can be calculated easily from the distance returned.
-        dist = 0.0
-        # setup our ray object
-        self.ray.origin = ogre.Vector3(self.position[X], 0, self.position[Z])
-        self.ray.direction = ogre.Vector3.UNIT_Y
-        # attach our adjusted ray to the sceneQuery
-        self.raySceneQuery.ray = self.ray
-        # find the distance to the nearest world fragment.
-        for queryResult in self.raySceneQuery.execute():
-            if queryResult.worldFragment is not None or 'land' in queryResult.movable.name.lower():
-                dist = queryResult.distance
-        return dist
+        
+        # Assumes the object is above Floor!
+        start = self.OgreNode.position
+        end = ogre.Vector3(self.OgreNode.position.x,
+                            self.OgreNode.position.y -100,
+                            self.OgreNode.position.z)
+                            
+        return self.doDistanceRayCast(world, start, end)
+##        dist = 0.00
+##        self.ray.origin = ogre.Vector3(self.position[X], self.position[Y] + self.heightAdjust, self.position[Z])
+##        self.ray.direction = direction
+##        self.raySceneQuery.ray = self.ray
+##        for queryResult in self.raySceneQuery.execute():
+##            if queryResult.worldFragment is not None:
+##                dist = queryResult.distance
+##                break
+##        return dist
     
     def takeDamage(self, amount):
         # damage is dealt by the datamanager
@@ -301,7 +328,7 @@ class GameActor:
         self.Remove()
 
     
-    def Update(self, actors, player, updateAITime, time):
+    def Update(self, actors, player, updateAITime, world, time):
         # -- Again, this is designed to be subclassed.
         # -- datamanager checks this objects think time
         # -- and calls this handler when its time to think.
@@ -323,7 +350,7 @@ class GameActor:
         self.moving = False
         self.toDelete = True
         
-    def updateHeight(self):
+    def updateHeight(self, world):
         # -- This function makes objects stick to the floor as they move
         # -- This is throttled back by the hAdjustTime property, because
         # -- it uses a lot of cpu time. For slow moving objects the time
@@ -337,9 +364,7 @@ class GameActor:
                     self.hAdjustClock += 1
                 return
             
-            floorDist = self.getFloorDistance()
-            
-            
+            floorDist = self.getFloorDistance(world)
             # if we are already very close to the floor, we dont need to continue
             if (abs(self.position[Y] - floorDist - self.heightAdjust)) < 0.01:
                 # this will cause a delay between the next height check

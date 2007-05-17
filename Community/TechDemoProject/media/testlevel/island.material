@@ -1,12 +1,12 @@
 material Island_Map_Baked/SOLID/TEX/Land_Lightmap_Large.jpg
 {
+receive_shadows on
 	technique
 	{
 		pass
 		{
-			lighting off
 			diffuse 1.000000 0.973661 0.973661
-			specular 0.000000 0.000000 0.000000 0.250000
+			specular 0.7 0.7 0.7 0.250000
 			texture_unit
 			{
 				texture Land_Lightmap_Large.jpg

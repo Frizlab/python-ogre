@@ -111,7 +111,7 @@ def QT_GET_COMMON_ANCESTOR(cell,cellLevel,binaryDiff):
 ##// Locate the leaf cell containing the specified point p, where p lies in
 ##// [0,1)x[0,1).
 ##//-------------------------------------------------------------------------------
-def qtLocateCell(root, pos):
+def qtLocateCell (root, pos):
 ##//----Determine the x and y locational codes of the point's position. Refer
 ##//----to [King2001] for more efficient methods for converting floating point
 ##//----numbers to integers.

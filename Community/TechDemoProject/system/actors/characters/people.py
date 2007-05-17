@@ -39,10 +39,10 @@ class RastaMan(base_actor.GameActor):
         
 
     def move(self, time):
-        self.updateHeight()
+        pass
 
         
-    def Update(self, actors, player, updateAITime, time):
+    def Update(self, actors, player, updateAITime, world, time):
         pass
         
 class Ball(base_actor.GameActor):

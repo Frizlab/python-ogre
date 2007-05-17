@@ -1,14 +1,15 @@
-material LandMaterial/SOLID/TEX/Land_Lightmap_Large.tga
+material Island_Map_Baked/SOLID/TEX/Land_Lightmap_Large.jpg/VertCol
 {
 	technique
 	{
 		pass
 		{
-			diffuse 0.281606 0.219515 0.010495
-			specular 0.000000 0.000000 0.000000 32.750000
+			diffuse 0.5, 0.5, 0.5
+			ambient 0,0,0
+			specular 0.620938 0.620938 0.620938 8.000000
 			texture_unit
 			{
-				texture Land_Lightmap_Large.tga
+				texture Land_Lightmap_Large.jpg
 			}
 		}
 	}

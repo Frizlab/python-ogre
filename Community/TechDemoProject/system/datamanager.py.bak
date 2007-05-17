@@ -22,7 +22,6 @@ class DataManager:
     def __init__(self, sceneManager, viewport, window, camera, framerate=60, physics=False):
         print 'DataManager Starting'
         self.sceneManager = sceneManager
-        self.sceneManager.setAmbientLight(ogre.ColourValue(0.1,0.05,0.05))
         rt = self.sceneManager.getRootSceneNode()
         self.shadowType = ogre.SHADOWTYPE_STENCIL_ADDITIVE
         self.sceneManager.shadowTechnique = self.shadowType
