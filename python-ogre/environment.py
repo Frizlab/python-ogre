@@ -238,7 +238,7 @@ class ode:
                 ]
     include_dirs = [ Config.PATH_Boost 
                     ,  Config.PATH_INCLUDE_ODE
-                    , Config.PATH_INCLUDE_ODESOURCE ## some header files are in the source tree ??
+                    ##, Config.PATH_INCLUDE_ODESOURCE ## some header files are in the source tree ??
                     ]
 
     ModuleName = 'ODE'
