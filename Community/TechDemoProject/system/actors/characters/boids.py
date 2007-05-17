@@ -104,13 +104,13 @@ class Boid(base_actor.GameActor):
         
         self.accel = ogre.Vector3(0.0,0.0,0.0)
             
-        print "...now doing rules..."
+        #print "...now doing rules..."
                 
         for rule in self.rules:
             # Adjust acceleration according to current rule
             vector = rule()
             
-            print "   ...%s: %s %s %s" % (rule, vector.x, vector.y, vector.z)
+            #print "   ...%s: %s %s %s" % (rule, vector.x, vector.y, vector.z)
             
             self.accel += vector
             # Stop running rules when maxAccel reached            

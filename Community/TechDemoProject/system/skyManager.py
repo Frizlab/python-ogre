@@ -55,7 +55,7 @@ class SkyManager:
     def makeDefaultStars(self):
         self.mStarList = []
         self.createStar(Star("sun_sol_", ogre.ColourValue( 1, 1, 1 ), ogre.ColourValue( 0.4, 0.3, 0.2 ), 
-            100, ogre.Vector3.UNIT_Y, ogre.Radian(0), 800, 700))
+            100, ogre.Vector3.UNIT_Y, ogre.Radian(0), 1700, 1500))
         #self.createStar(Star("moon", ogre.ColourValue( 0.15, 0.2, 0.3 ), ogre.ColourValue( 0.1, 0.2, 0.6 ), 
             #27, ogre.Vector3(0.2,1,0), ogre.Radian(0.7), 750, 250))
 #       //createStar(Star("redsun", ColourValue( 0.5, 0.3, 0.2 ), ColourValue( 0.4, 0.1, 0.0 ), 
@@ -198,14 +198,14 @@ class SkyManager:
     def setNightLightVisible(self, visible):
         self.mNightLight.setVisible(visible)
 
-    def setNightLightParameters(self, directional = True, positionOrDirection = ogre.Vector3(0.1,-1,-0.1), mNightLightColour = ogre.ColourValue(0.3, 0.45, 1.0), mNightLightPower = 0.1, shadows = True):
+    def setNightLightParameters(self, directional = True, positionOrDirection = ogre.Vector3(0.1,-1,-0.1), mNightLightColour = ogre.ColourValue(0.3, 0.45, 1.0), mNightLightPower = 0.3, shadows = True):
         if directional:
             self.mNightLight.setType( ogre.Light.LT_DIRECTIONAL )
             self.mNightLight.setDirection(positionOrDirection)
         else:
             self.mNightLight.setType( ogre.LightLT_POINT )
             self.mNightLight.setPosition( positionOrDirection )
-        self.mNightLight.setDiffuseColour( 0,0,0 )
+        self.mNightLight.setDiffuseColour( 0.3,0.2,0.1 )
         self.mNightLight.setSpecularColour( 0,0,0 )
         self.mNightLight.setCastShadows(shadows)
         self.mNightLightColour = mNightLightColour

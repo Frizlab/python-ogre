@@ -94,7 +94,7 @@ class DotScene:
                     if '.' in mesh:
                         mesh = str(mesh.split('.')[0] + '.mesh')
                     attachMe = self.sceneManager.createEntity(name,mesh)
-                    attachMe.setCastShadows(True)
+                    #attachMe.setCastShadows(True)
                     attachMe.setNormaliseNormals(True)
                     print 'added entity: "%s" %s' % (name, mesh)
                 except IndexError:

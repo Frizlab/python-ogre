@@ -1,16 +1,10 @@
 <scene formatVersion="0.2.0">
   <nodes>
-    <node name="waterPlane">
-      <position x="0.000000" y="0.000000" z="0.000000"/>
-      <rotation qx="-0.707107" qy="0.000000" qz="0.000000" qw="0.707107"/>
-      <scale x="1.000000" y="1.000000" z="1.000000"/>
-      <entity name="waterPlane" meshFile="waterPlane.mesh"/>
-    </node>
     <node name="Island_Full_Mesh">
       <position x="0.000000" y="11.725710" z="-0.000001"/>
       <rotation qx="-0.707107" qy="0.000000" qz="0.000000" qw="0.707107"/>
       <scale x="1.000000" y="1.000000" z="1.000000"/>
-      <entity name="Island_Full_Mesh" meshFile="Plane.mesh"/>
+      <entity name="Island_Full_Mesh" meshFile="LandPlane.mesh"/>
     </node>
     <node name="Cornelius">
       <position x="-70.106216" y="3.275960" z="-19.215164"/>

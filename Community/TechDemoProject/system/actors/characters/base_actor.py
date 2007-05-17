@@ -61,8 +61,8 @@ class mediaTree:
     def build(self, sceneManager, actorName, parentNode):
         if not self.isBuilt:
             if self.item:
-                print 'Building Item', self.item['name'], 'of type', self.item['rType'],
-                print 'as child of', self.item['parent']
+##                print 'Building Item', self.item['name'], 'of type', self.item['rType'],
+##                print 'as child of', self.item['parent']
                 name = actorName + self.item['name']
                 self.prepResource(sceneManager, name)
                 self.node = parentNode.createChildSceneNode()
@@ -80,7 +80,7 @@ class mediaTree:
             self.tree[k].destroy( sceneManager )
         # Objects with no kids are deleted first
         if self.node and self.liveResource:
-            print 'destroying sceneNode:', self.node.name, self.liveResource.name
+##            print 'destroying sceneNode:', self.node.name, self.liveResource.name
             self.destroyResource( sceneManager )
             sceneManager.destroySceneNode(self.node.name)
             
@@ -278,6 +278,8 @@ class GameActor:
                 off = end - start
                 dist = off.length() * info.mDistance
                 return dist
+##            else:
+##                return self.OgreNode.position.y
         
             
     def doDetailedRayCast(self, world, start, end, numResults):

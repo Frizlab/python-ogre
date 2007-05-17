@@ -145,7 +145,7 @@ class SkyFrameListener(DebugFrameListener):
         self.skyManager.mTime += self.sky_pitch
         for star in self.skyManager.mStarList:
             q = ogre.Quaternion(self.sky_yaw, ogre.Vector3.UNIT_Z)
-            star.rotAxis = q * star.rotAxis
+            star.rotAxis = q * self.rotAxis
         return True
 
         

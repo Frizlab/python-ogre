@@ -276,7 +276,7 @@ class GameActor:
         if info:
             if not info.mDistance == -1.0:
                 off = end - start
-                dist = off.length * info.mDistance
+                dist = off.length() * info.mDistance
                 return dist
         
             
@@ -286,7 +286,7 @@ class GameActor:
         if info:
             if not info.mDistance == -1.0:
                 off = end - start
-                dist = off.length * info.mDistance
+                dist = off.length() * info.mDistance
                 return dist
             
         
