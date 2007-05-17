@@ -232,7 +232,7 @@ class cegui:
 #############  these are under construction and DO NOT WORK (Yet) #####################  
   
 class ode:
-    version= "0.7"
+    version= "0.8"
     include_dirs = [r'c:/development/ode/include']
     parent = "ogre/physics"
     libs=[Config.LIB_Boost,  'ode']
@@ -308,7 +308,7 @@ class quickgui:
                 ]
     CheckIncludes=[]
     libs=[  Config.LIB_Boost, 'OgreMain' ]
-    ModuleName="quickgui"   
+    ModuleName="QuickGUI"   
     active=True
  
 # class raknet:

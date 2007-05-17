@@ -43,6 +43,7 @@ def filter_declarations( mb ):
     
     ogreode_ns = global_ns.namespace( 'OgreOde' )
     ogreode_ns.include()
+
     ogreode_ns.class_("Body").variable("MovableType").exclude() ## this "static const Ogre::String" causes msvc7.1 to die!!
     ogreode_ns.class_("Utility").variable("Infinity").exclude() ## this "static const Ogre::String" causes msvc7.1 to die!!
 
