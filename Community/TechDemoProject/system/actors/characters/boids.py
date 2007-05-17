@@ -1,11 +1,6 @@
 #
 # A boids implementation by willism...
 #
-# Todos:
-#    * Better structure the base class (class Boid)
-#    * Maybe do some of the maintenance in update() instead of move()?
-#    * Rotate each boid's scenenode in a realistic way
-#    * Use a frustrum to determine which neighbors a boid can see
 
 import ogre.renderer.OGRE as ogre
 
@@ -27,6 +22,17 @@ def trim(vector, maxLength):
     
     return False
 
+def extrude(vector, minLength):    
+    """If the vector is shorter than the given minLength, lengthen it to
+       be (approximately) the minLength.  Return true if the vector was
+       extruded, false if not."""
+    if vector.squaredLength() / (minLength * minLength) < 1.0:
+        vector.normalise()
+        vector *= minLength
+        return True
+    
+    return False
+
 class Boid(base_actor.GameActor):
 
     def __init__(self):
@@ -39,11 +45,15 @@ class Boid(base_actor.GameActor):
         self.accel = ogre.Vector3(0.0,0.0,0.0)
 
         self.maxAccel = 2.0
-        self.maxSpeed = 10.0
-        self.cruisingSpeed = 5.0
+        self.minSpeed = 8.0
+        self.maxSpeed = 16.0
+        self.cruisingSpeed = 12.0
         self.wander_deviation = 2.5
-        
+        self.visibility = 50.0
+                
         self.rules = []
+
+        self.potential_neighbors = []
         self.neighbors = []
         self.nearest_neighbor = None
 
@@ -51,31 +61,68 @@ class Boid(base_actor.GameActor):
         self.yaw = ogre.Radian(0.0)
         self.roll = ogre.Radian(0.0)
         
+        # initially assume we're high enough...
+        self.floorDist = 20.0
+        
     def Update(self, actors, player, updateAITime, world, time):
         #print 'UpdatingBoid'
         self.floorDist = self.getFloorDistance(world)
 
+    def setActorOptions(self, world):
+        self.viewFrustum = ogre.Frustum()
+        self.viewFrustum.setAspectRatio(1.0)
+        self.viewFrustum.setFOVy(ogre.Radian(math.pi * 0.8))
+ 
+        self.viewFrustum.setNearClipDistance(0.1)
+        self.viewFrustum.setFarClipDistance(50.0)
+        self.OgreNode.attachObject(self.viewFrustum)
+        
+        self.world = world
+
     def find_neighbors(self):
+
         self.neighbors = []
         self.nearest_neighbor = None
-
+        self.distance_to_neighbor = self.visibility
+        
+        # Find out info about neighbors
+        for actor in self.potential_neighbors:
+            
+            if (actor is not self):
+                if (self.viewFrustum.isVisible(actor.OgreNode.position)):
+                    self.neighbors.append(actor)
+                
+                    distance = (self.OgreNode.position - actor.OgreNode.position).length()
+    
+                    if distance < self.distance_to_neighbor:
+                        self.nearest_neighbor = actor
+                        self.distance_to_neighbor = distance        
+                        
     def move(self, time):        
         
         self.find_neighbors()
         
         self.accel = ogre.Vector3(0.0,0.0,0.0)
+            
+        print "...now doing rules..."
                 
         for rule in self.rules:
             # Adjust acceleration according to current rule
-            self.accel += rule()
+            vector = rule()
             
+            print "   ...%s: %s %s %s" % (rule, vector.x, vector.y, vector.z)
+            
+            self.accel += vector
             # Stop running rules when maxAccel reached            
             if trim(self.accel, self.maxAccel):
                 break;
         
+        
+        
         # adjust velocity, then cut it down if needed
         self.velocity += self.accel * time
         trim(self.velocity, self.maxSpeed)
+        extrude(self.velocity, self.minSpeed)
       
         self.OgreNode.roll(-self.roll)
         self.OgreNode.pitch(-self.pitch)
@@ -84,42 +131,17 @@ class Boid(base_actor.GameActor):
         (self.pitch,self.yaw,self.roll) = self.calculatePitchYawRoll()
         self.OgreNode.yaw(self.yaw)    
         self.OgreNode.pitch(self.pitch)    
-        self.OgreNode.roll(self.roll)
+        self.OgreNode.roll(self.roll)   
         
-        self.updateHeight()       
-        
-        self.OgreNode.position += self.velocity * time
-        
-    def updateHeight(self):
-        if not self.hasPhysics:
-            if not self.adjustHeight:
-                if self.hAdjustClock == self.hAdjustTime:
-                    self.hAdjustClock = 0
-                    self.adjustHeight = True
-                else:
-                    self.hAdjustClock += 1
-                return
-            
-            #floorDist = self.getFloorDistance(world)
-            #print floorDist
-            if self.floorDist < 5.0 or self.OgreNode.position.y < 5.0:
-                #print 'CourseCorrectingBoid'
-                #print floorDist, self.OgreNode.position.y
-                self.velocity =  ogre.Vector3(	self.velocity.x, 
-                                    self.velocity.y + 0.2, 
-                                    self.velocity.z) 
-            else:
-                self.velocity.y = max(-1.0, self.velocity.y - 1.0)
-                
-                self.adjustHeight = False
-            
-        
+        self.OgreNode.position += self.velocity * time       
+
     def calculatePitchYawRoll(self):
+        
         lateral = self.velocity.crossProduct(self.accel).crossProduct(self.velocity)
         lateral.normalise()
         
         lateralMag = self.accel.dotProduct(lateral)
-        
+
         if (lateralMag == 0):
             roll = 0
         else:
@@ -134,13 +156,15 @@ class Boid(base_actor.GameActor):
     def flock(self):
         """Steer toward center of nearby boids"""
         vector = ogre.Vector3(0.0,0.0,0.0)
+        
         for boid in self.neighbors:
             vector += boid.OgreNode.position
-            
-        vector /= len(self.neighbors)
-        vector -= self.OgreNode.position
         
-        trim(vector, 0.3)
+        if (len(self.neighbors) > 0):         
+            vector /= len(self.neighbors)
+            vector -= self.OgreNode.position
+        
+        trim(vector, 0.5)
         return vector
         
     def maintain_distance(self):
@@ -161,20 +185,20 @@ class Boid(base_actor.GameActor):
         
         if self.nearest_neighbor != None:
             vector = self.nearest_neighbor.velocity - self.velocity
-            trim(vector, 0.4)
+            trim(vector, 0.1)
             
         return vector
     
     def avoid_ground(self):
         """Try to avoid the ground"""
-        if self.OgreNode.position.y < 12.0:
-            return ogre.Vector3(0.0, 10.0, 0.0)
+        if (self.floorDist != None and self.floorDist < 12.0) or self.OgreNode.position.y < 12.0:
+            return ogre.Vector3(0.0, 1.0, 0.0)
         return ogre.Vector3(0.0,0.0,0.0)
     
     def maintain_altitude(self):
         """Try to maintain altitude"""
         vector = ogre.Vector3(0.0, -self.velocity.y, 0.0)
-        trim(vector, 0.1)
+        trim(vector, 0.5)
         return vector
         
     def stay_in_bubble(self):
@@ -183,7 +207,7 @@ class Boid(base_actor.GameActor):
         
         if self.OgreNode.position.squaredLength() > 40000:
             vector = -self.OgreNode.position
-            trim(vector, 2.0)
+            trim(vector, 1.0)
 
         return vector
     
@@ -202,11 +226,6 @@ class Boid(base_actor.GameActor):
         trim(vector, 0.1)
         
         return vector
-    
-    def wander(self):
-        """wander a little bit"""
-        (x,y,z) = [gauss(0.0,self.wander_deviation) for i in range(3)]
-        return ogre.Vector3(x,y,z)
 
 birds = []
         
@@ -220,43 +239,20 @@ class Bird(Boid):
         self.isAnimated = False
         
         self.rules = [self.avoid_ground,
-                      self.maintain_distance,
                       self.stay_in_bubble,
-                      self.maintain_altitude,
+                      self.maintain_distance,
                       self.maintain_cruising_speed,
+                      self.maintain_altitude,
                       self.match_velocity,                      
-                      self.flock,                      
-                      self.wander]
+                      self.flock]
         
         self.velocity = ogre.Vector3(0.0,0.0,5.0)
         
         self.comfort_distance_near = 2.5 + random.random() * 2.5
-        self.visibility = 50.0
         self.maxSpeed = 8.0
         
         birds.append(self)
-        
-    def find_neighbors(self):
-
-        self.neighbors = []
-        self.nearest_neighbor = None
-        self.distance_to_neighbor = self.visibility
-        
-        # Find out info about neighbors
-        for actor in birds:
-            if actor is not self:
-                distance = (self.OgreNode.position - actor.OgreNode.position).length()
-    
-                if distance < self.visibility:
-                    self.neighbors.append(actor)
-    
-                if distance < self.distance_to_neighbor:
-                    self.nearest_neighbor = actor
-                    self.distance_to_neighbor = distance
-        
-##    def Update(self, actors, player, updateAITime, world, time):
-##        pass
-    
+        self.potential_neighbors = birds    
     
 class Dragon(Boid):
     def __init__(self):
@@ -268,12 +264,11 @@ class Dragon(Boid):
         self.nodeScale = 0.1
 
         self.velocity = ogre.Vector3(0.0,0.0,-50.0)
+        
+        # self.minSpeed = 50.0
         self.maxSpeed = 100.0
         
-        self.rules = [self.avoid_ground, self.stay_in_bubble, self.maintain_cruising_speed, self.wander]
-
-    def setActorOptions(self, world):
-        pass
+        self.rules = [self.avoid_ground, self.stay_in_bubble, self.maintain_cruising_speed]
 
     def calculatePitchYawRoll(self):
         (p,y,r) = Boid.calculatePitchYawRoll(self)
@@ -295,11 +290,10 @@ class FishBoid(Boid):
               self.maintain_altitude,
               self.maintain_cruising_speed,
               self.match_velocity,                      
-              self.flock,                      
-              self.wander]
-                    
-        
+              self.flock]
+
     def setActorOptions(self, world):
+        Boid.setActorOptions(self, world)
         Node, Entity = self.MediaTree.find('FishBoid')
         Node.yaw(ogre.Degree(-90))
         self.curAnimationStates.append(Entity.getAnimationState('swim'))
