@@ -19,6 +19,10 @@ typedef Ogre::SharedPtr<Ogre::PlaneOptimalShadowCameraSetup> PlaneOptimalShadowC
 
 typedef Ogre::SharedPtr<Ogre::StringVector> StringVectorPtr;
 
+typedef std::list<Ogre::Particle*> ParticleList;
+typedef std::list<Ogre::ParticleEmitter*> ParticleEmitterList;
+typedef std::vector<Ogre::Particle*> ParticlePool;
+
 typedef Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::GpuConstantDefinition, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::GpuConstantDefinition> > > >\
 	MapIteratorGpuConstantDefinition;
 typedef std::vector<std::pair<unsigned, unsigned>, std::allocator<std::pair<unsigned, unsigned> > >\
@@ -307,6 +311,9 @@ typedef Ogre::ParticleSystemManager::ParticleAffectorFactoryIterator ParticleAff
 typedef Ogre::ParticleSystemManager::ParticleEmitterFactoryIterator ParticleEmitterFactoryIterator;
 typedef Ogre::ParticleSystemManager::ParticleRendererFactoryIterator ParticleRendererFactoryIterator;
 typedef Ogre::ParticleSystemManager::ParticleSystemTemplateIterator ParticleSystemTemplateIterator;
+
+
+
 typedef Ogre::OverlayManager::OverlayMap OverlayMap;
 typedef Ogre::OverlayManager::ElementMap ElementMap;
 typedef Ogre::OverlayManager::OverlayMapIterator OverlayMapIterator;
