@@ -1,30 +1,44 @@
 import ogre.renderer.OGRE as ogre
+import logging
 #from ogre.Math import *
 import ogre.physics.OgreNewt as OgreNewt
 Sin = ogre.Math.Sin
 Cos = ogre.Math.Cos
 
-
-# ------------------------ GAME ACTOR ----------------------------------------#
-# - This class is the basis for all interactive or dynamic objects in the     #
-# - game. To create actors you subclass this, and override functions and      #
-# - properties.                                                               #
-#                                                                             #
-# - 
 NUM_ACTORS = 0
 
 X,Y,Z = 0,1,2
 
 IDLE = 0
 
-# class dealing with storage of nodes / entities / particles etc.
+# ------------------------ EVENT CLASS ---------------------------------------#
+# - A generic event, written and read by all entities in the game 
+# - ie: actors, framelisteners, managers
+class Event:
+    def __init__(self, time, name, function, *args):
+        self.time = time
+        self.name = name
+        self.function = function
+        self.args = args
+    def __cmp__(self, other):
+        return cmp(self.time, other.time)
+    def __repr__(self):
+        return ('Event Name = ' + self.name + ' - Event Time: ' + str(self.time))
+    
+
+# ------------------------ MEDIATREE -----------------------------------------#
+# - A helper class to deal with spawning / deleting of an actor's 
+# - different media. It is a tree data structure, which mimics the
+# - parent to child relationship of ogre nodes / entities
 class mediaTree:
     def __init__(self, items, level='root'):
+        '''Create a tree from a list of items'''
         self.item = self.node = self.liveResource = None
         self.tree = {}
         self.level = level
         self.isBuilt = False
         for item in items:
+            #logging.debug(str(item))
             if item['name'] == self.level:
                 self.item = item
             if item['parent'] == self.level:
@@ -40,6 +54,7 @@ class mediaTree:
                 self.tree[b].printTree(b, indent+10)
         
     def find(self, name, item=None):
+        '''Find an item by name'''
         if name == self.level:
             if not self.isBuilt:
                 item = self.item
@@ -52,6 +67,7 @@ class mediaTree:
             return item
                 
     def getKids(self, level, retList=[]):
+        '''Get all children of a given level'''
         if level == self.level:
             retList += [self.tree[k].item for k in self.tree]
         else:
@@ -59,10 +75,10 @@ class mediaTree:
         return retList
                 
     def build(self, sceneManager, actorName, parentNode):
+        '''Create the media in the sceneManager, the starting point
+        for attaching this actor is parentNode'''
         if not self.isBuilt:
             if self.item:
-##                print 'Building Item', self.item['name'], 'of type', self.item['rType'],
-##                print 'as child of', self.item['parent']
                 name = actorName + self.item['name']
                 self.prepResource(sceneManager, name)
                 self.node = parentNode.createChildSceneNode()
@@ -74,17 +90,19 @@ class mediaTree:
                 self.tree[b].build( sceneManager, actorName, parentNode )
 
     def destroy(self, sceneManager):
+        '''Remove media from the sceneManager'''
         # destroy children first
         # recurse backwards up to the OgreNode
         for k in self.tree:
             self.tree[k].destroy( sceneManager )
         # Objects with no kids are deleted first
         if self.node and self.liveResource:
-##            print 'destroying sceneNode:', self.node.name, self.liveResource.name
+            logging.debug('destroying sceneNode:' + self.node.name + self.liveResource.name)
             self.destroyResource( sceneManager )
             sceneManager.destroySceneNode(self.node.name)
             
     def hide(self, level='root'):
+        '''Hide all objects in-game that are children of <level>'''
         if level == self.level:
             if self.node:
                 self.node.setVisible(False)
@@ -92,36 +110,58 @@ class mediaTree:
         else: [ self.tree[k].hide(level) for k in self.tree ]
         
     def show(self, level='root'):
+        '''Show in-game objects that are children of <level>'''
         if level == self.level:
             if self.node:
                 self.node.setVisible(True)
                 [ self.tree[k].hide( k ) for k in self.tree ]
         else: [ self.tree[k].hide(level) for k in self.tree ]
         
-
-
+        
     def destroyResource(self, sceneManager):
+        '''Destroy the resource specifically at this level in the tree'''
         if self.liveResource:
-            if self.item['rType'] == 'mesh':
+            type = self.item['rType']
+            if type == 'mesh':
                 sceneManager.destroyEntity( self.liveResource.name )
-            elif self.item['rType'] == 'particle':
+            elif type == 'particle':
                 sceneManager.destroyParticleSystem( self.liveResource.name )
-            elif self.item['rType'] == 'ribbon':
+            elif type == 'light':
+                sceneManager.destroyLight( self.liveResource.name )
+            elif type == 'ribbon':
                 sceneManager.destroyRibbonTrail( self.liveResource.name )
 
     def prepResource(self, sceneManager, name):
+        '''Prepare and create the resource at this specific level in the tree'''
         if self.item['rType'] == 'mesh':
-            self.liveResource = sceneManager.createEntity(name, self.item['rName'])
+            self.liveResource = sceneManager.createEntity(name + '_Entity', self.item['rName'])
         elif self.item['rType'] == 'particle':
             self.liveResource = sceneManager.createParticleSystem(name, self.item['rName'])
         elif self.item['rType'] == 'billboard':
-            self.liveResource = 'Billboard'
+            self.liveResource = sceneManager.createBillboardSet(name + '_Billboard', 1)
+            self.liveResource.createBillboard(0,0,0, ogre.ColourValue(0.5,0.5,0.5))
+            self.liveResource.MaterialName=self.item['rName']
+            # do the rest of the billboard setup in setActorOptions()
+        elif self.item['rType'] == 'light':
+            self.liveResource = sceneManager.createLight(name)
+            # Again, do the light setup in setActorOptions
         elif self.item['rType'] == 'actor':
             self.liveResource = 'Actor'
+            
+##        bbs = sceneManager.createBillboardSet("bb", 1)
+##        bbs.createBillboard(ogre.Vector3.ZERO, trail.getInitialColour(0))
+##        bbs.MaterialName="Examples/Flare"
+##        animNode.attachObject(bbs)
         
-        
+# ------------------------ GAME ACTOR ----------------------------------------#
+# - This class is the basis for all interactive or dynamic objects in the     #
+# - game. To create actors you subclass this, and override functions and      #
+# - properties.                                                               #
+#                                                                             #
 class GameActor:
     def __init__(self):
+        '''Initialise a basic game actor with a selection of properties
+        sub-class this to begin creating actors'''
         
         # GENERAL
         self.life = 100 # how many hp?
@@ -158,6 +198,9 @@ class GameActor:
         self.updateAIFrequency = 1.0
         self.updateAITime = 1.0
         self.state = IDLE # generic mode flag
+        self.worldEventRegister = {'testWorldEvent':self.testWorldEvent} # A list of functions to expose to world events
+        self.actorEventRegister = {} # A list of functions to expose to actor events
+        self.events  = [] # events that I send out
         self.toDelete = False # tell the datamanager when i need to die
         
         # ANIMATIONS
@@ -176,29 +219,32 @@ class GameActor:
         self.torque = 0.0 # forward motion
         self.steering = 0.0 # rotation direction
         
-        # -- Old stuff from my previous collision code.
-        #self.incontact = []
-        #self.isColliding = False
-        #self.collisionsEnabled = False 
-        #self.radius = 50
-        
     def __del__(self):
+        '''Cleanup this actor'''
         del self.body
         del self.bodies
         
-    
+    def testWorldEvent(self, *args):
+        '''DEBUG: Recieving world events'''
+        retString = 'testWorldEvent Recieved' + str(args)
+        logging.debug(retString)
+        self.events.append( Event(0, 'actorRecievedEvent', 'flTestActorEvent', None) )
+        
     def SetTarget(self, gameActor):
+        '''Set the object of attention for this actor'''
         # pass another actor as a new target
         # and find out what direction it lies in
         self.target = gameActor
         self.calculateTargetDirection()
         
     def Spawn(self, position, SceneManager, rootnode, numActors, RaySceneQuery, updateResolution, world = None):
-        # -- This function creates our object in the game
-        # -- it's called after __init__ has finished, so you can
-        # -- setup everything prior to the model appearing.
-        # -- it also calls another post-setup routine after this one.
-        # -- Again, use the post-setup to acess things like the node setup
+        '''This function creates our object in the game
+        it's called after __init__ has finished, so you can
+        setup everything prior to the model appearing.
+        it also calls another post-setup routine after this one.
+        use the setActorOptions to acess the mesh/nodes etc after
+        spawning. Only on rare occasions should you need to actually
+        redefine this method in a subclassed actor.'''
         
         # try to keep our name unique by appending the number of actors
         self.name = str(self.name) + str(numActors)
@@ -210,12 +256,8 @@ class GameActor:
         # create a parent or 'main' node
         self.OgreNode = rootnode.createChildSceneNode(self.name)
         # create and build the media tree
-        self.MediaTree = mediaTree(self.media)
+        self.MediaTree = self.mediaTree = mediaTree(self.media)
         self.MediaTree.build( SceneManager, self.name, self.OgreNode )
-##        # create a child-node
-##        self.Node = self.OgreNode.createChildSceneNode("o_" + self.name)
-##        # attach the entity to the sub-node
-##        self.Node.attachObject(self.Entity)
         # set our position as a tuple, for easier use in python
         self.position = position
         # set the ogrenode position to match, this will move the child as well
@@ -224,53 +266,46 @@ class GameActor:
         self.OgreNode.setScale(self.nodeScale)
         # we are now alive ..
         self.Alive = True
-##        # start animating
-##        if self.isAnimated:
-##            self.curAnimationState = self.Entity.getAnimationState(self.animations[0])
-##            self.curAnimationState.enabled = True
         # adjust height to ground if needed
         if self.adjustHeight:
-            self.updateHeight()
+            self.updateHeight(world)
         #Setup any post-spawn options specific to a character
         self.setActorOptions(world)
         # setup the ogre node's rest state
-##        self.Node.setInitialState()
-##        self.Node.resetOrientation()
-
-##    def __del__(self, sceneManager:
-##        self.MediaTree.destroy()
+        #self.Node.setInitialState()
 
     def setActorOptions(self, world):
-        #Override this function in sub-classes
-        # to setup any post-spawn options 
-        # ie: options that need access to the entity / node
-        # Note: Now, you setup animations here as well
+        '''Override this function in sub-classes
+        to setup any post-spawn options 
+        ie: options that need access to the entity / node
+        Note: Now, you setup animations here as well'''
         pass
-
         
-    def connectPhysics(self, world):
-        # -- This part is ripped wholesale from the python-ogre demos
-
-        # create collision body
-        col = OgreNewt.Cylinder(world, 2.5, 5)
-        # now we make a new rigid body based on this collision shape.
-        body = OgreNewt.Body( world, col )
-        # we`re done with the collision shape, we can delete it now.
-        del col
-        # now we "attach" the rigid body to the scene node that holds the visual object, and set it's
-        # original position and orientation.  all rigid bodies default to mass=0 (static, immobile), so
-        # that's all we'll need to do for this object.  dynamic objects have a few more steps, so look
-        # at the code in the FrameListener for more.
-        body.attachToNode( self.OgreNode )
-        body.setPositionOrientation( self.OgreNode.getPosition(), Ogre.Quaternion.IDENTITY )
-        self.body = body
-        # set a flag for the datamanager
-        self.hasPhysics = True
+##    def connectPhysics(self, world):
+##        # -- This part is ripped wholesale from the python-ogre demos
+##
+##        # create collision body
+##        col = OgreNewt.Cylinder(world, 2.5, 5)
+##        # now we make a new rigid body based on this collision shape.
+##        body = OgreNewt.Body( world, col )
+##        # we`re done with the collision shape, we can delete it now.
+##        del col
+##        # now we "attach" the rigid body to the scene node that holds the visual object, and set it's
+##        # original position and orientation.  all rigid bodies default to mass=0 (static, immobile), so
+##        # that's all we'll need to do for this object.  dynamic objects have a few more steps, so look
+##        # at the code in the FrameListener for more.
+##        body.attachToNode( self.OgreNode )
+##        body.setPositionOrientation( self.OgreNode.getPosition(), Ogre.Quaternion.IDENTITY )
+##        self.body = body
+##        # set a flag for the datamanager
+##        self.hasPhysics = True
         
     # Raycasts are queries into the physics world    
     # These handlers can be called from the actor's Update method
     # this is because they need a reference to the physics world
     def doDistanceRayCast(self, world, start, end):
+        '''Do a rayCast to detect distance to the nearest physics body
+        in the direction (start -> end)'''
         q = OgreNewt.BasicRaycast(world, start, end)
         info = q.getFirstHit()
         if info:
@@ -278,11 +313,12 @@ class GameActor:
                 off = end - start
                 dist = off.length() * info.mDistance
                 return dist
-##            else:
-##                return self.OgreNode.position.y
+            else:
+                return None
         
             
     def doDetailedRayCast(self, world, start, end, numResults):
+        '''Do a detailed physics raycast, returning as much information as possible'''
         q = OgreNewt.BasicRaycast(world, start, end)
         info = q.getFirstHit()
         if info:
@@ -293,70 +329,59 @@ class GameActor:
             
         
     def getFloorDistance(self, world, direction=ogre.Vector3.NEGATIVE_UNIT_Y):
-        # -- Function for non-physics objects over landscapes
-        # -- Fires from *under* the floor upwards. therefore if the object is on the floor:
-        # -- self.position[y] - floorDistance - self.heightAdjust = 0
-        # -- otherwise, the offset can be calculated easily from the distance returned.
-        
-        # Assumes the object is above Floor!
+        '''Get y distance between actor and nearest physics body, assumes the
+        actor is above the floor'''
         start = self.OgreNode.position
         end = ogre.Vector3(self.OgreNode.position.x,
                             self.OgreNode.position.y -100,
                             self.OgreNode.position.z)
                             
         return self.doDistanceRayCast(world, start, end)
-##        dist = 0.00
-##        self.ray.origin = ogre.Vector3(self.position[X], self.position[Y] + self.heightAdjust, self.position[Z])
-##        self.ray.direction = direction
-##        self.raySceneQuery.ray = self.ray
-##        for queryResult in self.raySceneQuery.execute():
-##            if queryResult.worldFragment is not None:
-##                dist = queryResult.distance
-##                break
-##        return dist
     
     def takeDamage(self, amount):
-        # damage is dealt by the datamanager
+        '''damage is dealt by the datamanager, which calls this method'''
         if self.Alive:
             self.life -= amount
             if self.life < 0.00:
                 self.Die()
             
     def Die(self):
-        # -- This function is where you can set any animations
-        # -- or spawn other objects when this one dies
-        # -- by default, it just causes the object to be
-        # -- removed from the scene.
+        '''This function is where you can set any animations
+        or spawn other objects when this one dies
+        by default, it just causes the object to be
+        removed from the scene.'''
         self.Remove()
 
     
     def Update(self, actors, player, updateAITime, world, time):
-        # -- Again, this is designed to be subclassed.
-        # -- datamanager checks this objects think time
-        # -- and calls this handler when its time to think.
+        '''Again, this is designed to be subclassed.
+        datamanager checks this objects think time
+        and calls this handler when its time to think.'''
         pass
         
     def animate(self, time):
+        '''Animate all animating entities in the media tree'''
         if self.isAnimated and len(self.curAnimationStates) > 0:
             for state in self.curAnimationStates:
                 state.addTime(time * self.animSpeed)
             
-    def move(self, time): # sublcass this
+    def move(self, time):
+        '''Move the actor, - subclass this to define actor movement'''
         pass
         
 
     def Remove(self):
-        # stops animations, and sets flag for datamanager to delete me
+        '''Stops animations, and sets flag for datamanager to delete me'''
         self.IsAnimated = False
         self.Alive = False
         self.moving = False
         self.toDelete = True
         
     def updateHeight(self, world):
-        # -- This function makes objects stick to the floor as they move
-        # -- This is throttled back by the hAdjustTime property, because
-        # -- it uses a lot of cpu time. For slow moving objects the time
-        # -- can be increased, resulting in slightly better performance
+        '''This function makes objects stick to the floor as they move
+        This is throttled back by the hAdjustTime property, because
+        it uses a lot of cpu time. For slow moving objects the time
+        can be increased, resulting in slightly better performance'''
         if not self.hasPhysics:
             if not self.adjustHeight:
                 if self.hAdjustClock == self.hAdjustTime:
@@ -379,6 +404,7 @@ class GameActor:
                 self.OgreNode.setPosition(ogre.Vector3(self.position))
 
     def rotate(self, fTime, targetDirection = None):
+        '''Rotate this actor in the horizontal plane, towards its target direction'''
         if not self.hasPhysics:
             if self.calculateTargetEachFrame and targetDirection is None:
                 self.calculateTargetDirection()
@@ -386,7 +412,6 @@ class GameActor:
                 self.targetDirection.y *-1 - self.direction.y,
                 self.targetDirection.z *-1 - self.direction.z) == (0.0, 0.0, 0.0):
                 self.direction = self.targetDirection
-                print "ON Target"
             else:
                 dir = self.v3normalize(self.direction + (self.targetDirection - self.direction)*fTime*self.rotationSpeed)
                 self.direction = dir
@@ -402,6 +427,7 @@ class GameActor:
             
             
     def calculateTargetDirection(self):
+        '''Calculate the direction to this actors target'''
         if self.target is not None:
             newpos = self.target.OgreNode.position
             td = newpos - self.OgreNode.position
@@ -413,6 +439,9 @@ class GameActor:
             return False
         
     def makeWalkingPhysics(self, world, entity):
+        '''NOT QUITE WORKING YET:
+        Will make a capsule-and-ball physics setup for emulating a walking
+        humanoid character'''
         # make a walking character physics setup
         self.torque = 0.0 # forward motion
         self.steering = 0.0 # rotation direction on X,Z plane
@@ -448,7 +477,6 @@ class GameActor:
         torsoBody.setStandardForceCallback()
         self.bodies['torsoBody'] = torsoBody
         # connect them, body is child of feet
-        print world, torsoBody, feetBody
         joint = OgreNewt.Hinge(world, torsoBody, feetBody, center-ogre.Vector3(size.x/2,0,0), ogre.Vector3.UNIT_X)
         self.bodies['joint'] = joint
         feetBody.setJointRecursiveCollision(0)
@@ -461,16 +489,17 @@ class GameActor:
         
         
     def physWalkForward(self):
+        '''Callback for OgreNewt'''
         p, q = self.torsoBody.getPositionOrientation()
         self.torque = (q * ogre.Vector3( self.speed * ogre.Math.Cos(1), 0, self.speed * ogre.Math.Sin(1) ))
         
     def physWalkRotate(self, boolLR):
+        '''Callback for OgreNewt'''
         if boolLR:
             self.steering -= self.rotationSpeed
         else:
             self.steering += self.rotationSpeed
 
-        
     def physWalkStop(self):
         self.torque = ogre.Vector3(0,0,0)
         
@@ -496,13 +525,11 @@ class GameActor:
             pass
         
     def makeSphereCollision(self, world):
+        '''Setup a simple rolling sphere for this actors collision system'''
         
         col = OgreNewt.Ellipsoid(world, ogre.Vector3(2,2,2))
-        
         body = OgreNewt.Body( world, col)
-
         del col
-
         inertia = OgreNewt.CalcSphereSolid( 10.0, 1.0 )
         body.setMassMatrix( 10.0, inertia )
 
@@ -519,9 +546,6 @@ class GameActor:
         self.bodies['ballbody'] = body
         
         ## note that we have to keep the bodies around :)
-        
-    def delBodies(self):
-        del self.bodies
         
         
     

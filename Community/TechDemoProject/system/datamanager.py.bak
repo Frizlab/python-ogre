@@ -1,14 +1,17 @@
 import os, sys
+import logging
 import ogre.renderer.OGRE as ogre
 import ogre.io.OIS as OIS
 import ogre.physics.OgreNewt as OgreNewt
 from dotscene import DotScene
 from actors.characters import people
-from actors.characters.boids import Bird, Dragon, FishBoid
+from actors.characters.boids import Bird, Dragon, FishBoid, FairyNest, SmallFairy
 
 from frameListeners import debugFrameListener
-import skyManager
+from frameListeners import oceanListener
+from frameListeners import skyManager
 import sys
+import eventManager
 
 frameListeners = {'debugFrameListener':debugFrameListener.DebugFrameListener, 
                     'skyInteractFrameListener':debugFrameListener.SkyFrameListener}
@@ -17,120 +20,10 @@ actorDict = {}
 
 sys.path.append('.\gameConfig')
 
-class oceanRttManager(ogre.FrameListener, ogre.RenderTargetListener):
-    def __init__(self, mainCamera, renderWindow):
-        ogre.FrameListener.__init__(self)
-        self.mPlane = None
-        self.mPlaneEnt = None
-        self.camera = mainCamera
-        self.mReflectCam= None
-        self.mPlaneNode= None
-        ogre.RenderTargetListener.__init__(self)
-        
-    def _createScene(self, sceneManager, renderWindow):
-        "Override sf create scene"
-        # Create a prefab plane
-        self.mPlane = ogre.MovablePlane("ReflectPlane")
-        self.mPlane.d = 0
-        self.mPlane.normal =ogre.Vector3.UNIT_Y
-          
-#         ogre.MeshManager.getSingleton().createPlane("ReflectionPlane", 
-#             ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME, 
-#             self.mPlane._getDerivedPlane(), 2000.0, 2000.0, 
-#             1, 1, True, 1, 1.0, 1.0, ogre.Vector3.UNIT_Z,
-#             ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
-#             True,True
-#             )
-        ogre.MeshManager.getSingleton().createPlane("ReflectionPlane", 
-            ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME, 
-            self.mPlane, 20000.0, 20000.0, 
-            1, 1, True, 1, 1.0, 1.0, ogre.Vector3.UNIT_Z,
-            ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
-            True,True
-            )
-        # Create plane entity
-        self.mPlaneEnt = sceneManager.createEntity( "WaterRefPlane", "ReflectionPlane" )
-
-        # Attach the rtt entity to the root of the scene
-        rootNode = sceneManager.getRootSceneNode()
-        self.mPlaneNode = rootNode.createChildSceneNode()
-        
-        # Attach both the plane entity, and the plane definition
-        self.mPlaneNode.attachObject(self.mPlaneEnt)
-        self.mPlaneNode.attachObject(self.mPlane) 
-        
-        #self.mPlaneNode.translate( ogre.Vector3(0, -10, 0))
-        #self.mPlaneNode.roll(ogre.Degree(d=5))
-        
-        
-        ## Either of these techniques works...
-        # create RenderTexture
-        rttTex = ogre.Root.getSingleton().getRenderSystem().createRenderTexture( "RttTex", 512, 512, 
-                                                                 ogre.TEX_TYPE_2D,ogre.PixelFormat.PF_R8G8B8 )
-#         texture = ogre.TextureManager.getSingleton().createManual( "RttTex", 
-#                     ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME, ogre.TEX_TYPE_2D, 
-#                     512, 512, 0, ogre.PixelFormat.PF_R8G8B8, ogre.TU_RENDERTARGET )
-        
-        self.mReflectCam = sceneManager.createCamera("ReflectCam")
-        self.mReflectCam.setNearClipDistance(self.camera.getNearClipDistance())
-        self.mReflectCam.setFarClipDistance(self.camera.getFarClipDistance())
-        
-        w = renderWindow.getViewport(0).getActualWidth() 
-        h = renderWindow.getViewport(0).getActualHeight ()
-        self.mReflectCam.setAspectRatio ( float(w)/float(h) )
-
-        # create ViewPort        
-        v = rttTex.addViewport( self.mReflectCam )
-        v.setClearEveryFrame ( True  )
-        v.setBackgroundColour (ogre.ColourValue.White)
-       
-        mat = ogre.MaterialManager.getSingleton().create("RttMat",ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME)
-        t = mat.getTechnique(0).getPass(0).createTextureUnitState('Water02.png')
-        mat.getTechnique(0).getPass(0).setSceneBlending(ogre.SceneBlendType.SBT_TRANSPARENT_ALPHA)
-        rt = mat.getTechnique(0).getPass(0).createTextureUnitState('RttTex') # creates the reflection...
-
-        # Blend with base texture
-        rt.setColourOperationEx( ogre.LBX_BLEND_MANUAL, ogre.LBS_TEXTURE, 
-                                ogre.LBS_CURRENT, ogre.ColourValue.White,
-                                ogre.ColourValue.White, 0.5)
-                                
-        rt.setTextureAddressingMode (ogre.TextureUnitState.TAM_CLAMP)
-        rt.setProjectiveTexturing(True, self.mReflectCam)
-         
-        rttTex.addListener(self)
-
-        # set up linked reflection
-        self.mReflectCam.enableReflection(self.mPlane)
-        # Also clip
-        
-        # NOTE..  a difference in Python implementation
-        ## this doesn't work as mPlane is treated as a Plane instead of a MoveablePlane 
-        #self.mReflectCam.enableCustomNearClipPlane(self.mPlane) 
-        ## So we have an override :)
-        
-        self.mReflectCam.enableCustomNearClipPlaneMP(self.mPlane) 
-
-        #Give the plane a texture
-        self.mPlaneEnt.setMaterialName("RttMat")
-        
-    def frameStarted(self, frameEvent):
-        # Make sure reflection camera is updated too
-        self.mReflectCam.setOrientation ( self.camera.getOrientation() )
-        self.mReflectCam.setPosition (self.camera.getPosition())
-        return True 
-    
-    def preRenderTargetUpdate(self,evt):
-        self.mPlane.setVisible(False)
-           
-    def postRenderTargetUpdate(self,evt):
-        self.mPlane.setVisible(True)
-        
-
-
 
 class DataManager:
     def __init__(self, sceneManager, viewport, window, camera, framerate=60, physics=False):
-        print 'DataManager Starting'
+        logging.debug('DataManager Starting')
         self.sceneManager = sceneManager
         self.sceneManager.setAmbientLight(ogre.ColourValue(0.1,0.05,0.05))
         rt = self.sceneManager.getRootSceneNode()
@@ -138,12 +31,14 @@ class DataManager:
         self.sceneManager.shadowTechnique = self.shadowType
         self.viewport = viewport
         self.renderWindow = window
+        self.eventManager = eventManager.EventManager()
         self.camera = camera
         self.numActors = 0000
         ray = ogre.Ray(ogre.Vector3(10.0,0.0,10.0), ogre.Vector3.NEGATIVE_UNIT_Y)
         self.raySceneQuery = self.sceneManager.createRayQuery(ray)
         self.raySceneQuery.setSortByDistance(True)
         self.cacheActors()
+        self.activePlugins = [] # plugins that are currently loaded
         self.actors = []
         self.objectsToDestroy = []
         self.animationStates = []
@@ -161,52 +56,54 @@ class DataManager:
         #self.StaticEntity = self.sceneManager.createEntity('Static', 'ellipsoid.mesh')
         #self.staticRoot.attachObject(self.StaticEntity)
         self.staticCollisionBody = None
-        print 'Datamanager get world'
+        logging.debug('Datamanager get world')
         if physics:
             self.world = OgreNewt.World()
             self.treeColParser = OgreNewt.TreeCollisionSceneParser( self.world ) # note - this IS a treecollision itself
             self.treeColLoader = OgreNewt.TreeCollisionSerializer()
-            print 'world and loader / parser initialized'
+            logging.debug('world and loader / parser initialized')
         self.elapsed = 0.0 # used for physics update synching
         self.physTick = (1.0 / self.framerate)
         self.player = None
         self.defaultScene = 'testLevel.cfg'
         self.firstRun = True
         
-        print 'DataManager Initialized ::'
+        logging.debug('DataManager Initialized ::')
         
     def __del__(self):
-        while self.objectsToDestroy:
-            ob = self.objectsToDestroy.pop()
-            print 'Destroying:', ob.name
-            ob.MediaTree.destroy( self.sceneManager )
-            self.sceneManager.destroySceneNode( ob.OgreNode.name )
-##            self.sceneManager.destroySceneNode(ob.Node.name)
-##            self.sceneManager.destroySceneNode(ob.OgreNode.name)
-##            self.sceneManager.destroyEntity(ob.Entity)
-            del ob
-        while self.actors:
-            ob = self.actors.pop()
-            print 'Destroying:', ob.name
-            ob.MediaTree.destroy( self.sceneManager )
-            self.sceneManager.destroySceneNode( ob.OgreNode.name )
-            del ob
-        print 'bodies'
-        #del self.sceneManager
-        print 'sm'
-        #del self.viewport
-        print 'vp'
-        #del self.renderWindow
-        print 'rw'
-        #del self.camera
-        print 'cam'
-        #del self.inputListener
-        print 'fl'
-        del self.staticCollisionBody
-        print 'stat_col'
-        #del self.treeColParser
-        print 'parser'
-        #del self.world
+        self.clearScene()
+##            while self.objectsToDestroy:
+##            ob = self.objectsToDestroy.pop()
+##            print 'Destroying:', ob.name
+##            ob.MediaTree.destroy( self.sceneManager )
+##            self.sceneManager.destroySceneNode( ob.OgreNode.name )
+####            self.sceneManager.destroySceneNode(ob.Node.name)
+####            self.sceneManager.destroySceneNode(ob.OgreNode.name)
+####            self.sceneManager.destroyEntity(ob.Entity)
+##            del ob
+##        while self.actors:
+##            ob = self.actors.pop()
+##            print 'Destroying:', ob.name
+##            ob.MediaTree.destroy( self.sceneManager )
+##            self.sceneManager.destroySceneNode( ob.OgreNode.name )
+##            del ob
+##        print 'bodies'
+##        #del self.sceneManager
+##        print 'sm'
+##        #del self.viewport
+##        print 'vp'
+##        #del self.renderWindow
+##        print 'rw'
+##        #del self.camera
+##        print 'cam'
+##        #del self.inputListener
+##        print 'fl'
+##        
+##        print 'stat_col'
+##        #del self.treeColParser
+##        print 'parser'
+##        #del self.world
+        
         
     def cacheActors(self):
         pKeys = people.__dict__.keys()
@@ -220,8 +117,10 @@ class DataManager:
         actorDict["Bird"] = Bird
         actorDict["Dragon"] = Dragon
         actorDict["FishBoid"] = FishBoid
+        actorDict["FairyNest"] = FairyNest
+        actorDict["SmallFairy"] = SmallFairy
             
-        print actorDict
+        #print actorDict
                     
         
         
@@ -232,14 +131,15 @@ class DataManager:
         # an xml scene and moving models, or just one of those.
         # check out XXXXXXXXXX to see the script.
         # dirty script parsing begins here:
-        print 'Loading Scene:', scriptName
+        logging.debug('Loading Scene:', scriptName)
         settings = []
         f = open(os.path.join(os.curdir ,'system', 'gameConfig', scriptName), 'r')
         script = f.readlines()
         for l in script:
-            if '=' in l:
-                key, value = l.split('=')
-                settings.append([ key.strip(), value.strip() ])
+            if '//' not in l:
+                if '=' in l:
+                    key, value = l.split('=')
+                    settings.append([ key.strip(), value.strip() ])
         for ky in settings:
             k = ky[0]
             # parse the settings and load up stuff
@@ -250,11 +150,12 @@ class DataManager:
                 self.skyBoxMaterial = ky[1]
                 self.sceneManager.setSkyBox(True, ky[1])
             if k == 'SKYMANAGER':
-                self.skyManager = skyManager.SkyManager(True, True, self.sceneManager.getName())
-                self.skyInteractListener = debugFrameListener.SkyFrameListener(self.renderWindow, self.camera, self.sceneManager, self.skyManager)
-                ogre.Root.getSingleton().addFrameListener(self.skyInteractListener)
-            if k == 'SEA_LEVEL':
-                self.seaLevel = 0.00
+                skyMan = skyManager.SkyManager(True, True, self.sceneManager.getName())
+                ogre.Root.getSingleton().addFrameListener(skyMan)
+                self.activePlugins.append(skyMan)
+                skyInteractListener = debugFrameListener.SkyFrameListener(self.renderWindow, self.camera, self.sceneManager, skyMan)
+                ogre.Root.getSingleton().addFrameListener(skyInteractListener)
+                self.activePlugins.append(skyInteractListener)
             if k == 'BASE_LAND_MESH':
                 floor = self.sceneManager.createEntity("Landscape", ky[1] )
                 floor.setNormaliseNormals(True)
@@ -268,9 +169,10 @@ class DataManager:
                 sceneFile = os.path.join(os.curdir, 'system', 'gameConfig', ky[1])
                 self.scnLoader = DotScene( sceneFile, self.sceneManager, self.staticRoot)
             if k == 'WATERLEVEL':
-                self.waterManager = oceanRttManager(self.camera, self.renderWindow)
-                self.waterManager._createScene(self.sceneManager, self.renderWindow)
-                ogre.Root.getSingleton().addFrameListener(self.waterManager)
+                waterManager = oceanListener.oceanRttManager(self.camera, self.renderWindow)
+                waterManager._createScene(self.sceneManager, self.renderWindow)
+                ogre.Root.getSingleton().addFrameListener(waterManager)
+                self.activePlugins.append(waterManager)
             if k == 'FOLIAGE_SCENE':
                 sceneFile = os.path.join(os.curdir, 'system', 'gameConfig', ky[1])
                 self.foliageLoader = DotScene( sceneFile, self.sceneManager, self.foliageRoot)
@@ -286,7 +188,7 @@ class DataManager:
                     self.treeCollision = OgreNewt.TreeCollision(self.world)
                     dataS = ogre.DataStream(f)
                     self.treeColLoader.importTreeCollision( dataS, self.treeCollision)
-                    print 'Tree Collision imported........'
+                    logging.debug('Tree Collision imported........')
                     #f.close()
                 except:
 
@@ -305,11 +207,11 @@ class DataManager:
     ##                        stat_col.attachToNode(self.staticRoot)
                         self.treeColLoader.exportTreeCollision(stat_col, ky[1])
                         del stat_col
-                        print 'Tree Collision Created and Exported'
+                        logging.debug('Tree Collision Created and Exported')
                     else:
                         # nothing we can do if no scene has been loaded
                         # the order must be right in the config file
-                        print 'No way to make Tree Collision'
+                        logging.debug('No way to make Tree Collision')
                         pass
             if k == 'ACTOR': # 2 properties: ky[1]:actorName, ky[2]:position
                 actor, pos = ky[1].split('@')
@@ -318,24 +220,43 @@ class DataManager:
                 self.spawnActor(actor.strip(), pos)
             if k == 'FRAME_LISTENER':
                 fl = frameListeners[ky[1]]
-                self.inputListener = fl(self.renderWindow, self.camera, self.sceneManager)
-                ogre.Root.getSingleton().addFrameListener(self.inputListener)
+                inputListener = fl(self.renderWindow, self.camera, self.sceneManager)
+                ogre.Root.getSingleton().addFrameListener(inputListener)
+                self.activePlugins.append(inputListener)
             if k == 'COMPOSITOR':
                 comp = ky[1]
-                print 'ADDING COMPOSITOR'
+                logging.debug('ADDING COMPOSITOR')
                 cms = ogre.CompositorManager.getSingleton()
                 if not cms.hasCompositorChain(self.renderWindow.getViewport(0)):
                     newcomp = cms.addCompositor(self.renderWindow.getViewport(0), comp)
                     cms.setCompositorEnabled(self.renderWindow.getViewport(0), comp, True)
                 else:
                     cms.setCompositorEnabled(self.renderWindow.getViewport(0),comp, False)
-##        OgreNewt.Debugger.getSingleton().init(self.sceneManager)
-##        OgreNewt.Debugger.getSingleton().showLines(self.world)
+        OgreNewt.Debugger.getSingleton().init(self.sceneManager)
+        OgreNewt.Debugger.getSingleton().showLines(self.world)
                         
                         
     def clearScene(self):
         # clear the current scene and models
-        pass
+        #del self.objectsToDestroy
+        while self.objectsToDestroy:
+            obNum = self.objectsToDestroy.pop()
+            ob = self.actors.pop(obNum)
+            ob.MediaTree.destroy( self.sceneManager )
+            self.sceneManager.destroySceneNode( ob.OgreNode.name )
+            del ob
+        while self.actors:
+            ob = self.actors.pop()
+            ob.MediaTree.destroy( self.sceneManager )
+            self.sceneManager.destroySceneNode( ob.OgreNode.name )
+            del ob
+        del self.staticCollisionBody
+        del self.treeColLoader
+        del self.activePlugins
+        logging.debug('DataManager cleared scene')
+        
+        
+        
     
     def getSceneLoaded(self):
         # return the name of the scene, or none.
@@ -372,8 +293,52 @@ class DataManager:
         # objects to spawn this frame
         self.toSpawn = []
         
-        # update the sky
-        self.skyManager.frameStarted(time)
+##        # update the sky
+##        if self.skyManager:
+##            self.skyManager.frameStarted(time)
+##            
+##        if self.skyManager.events:
+##            logging.debug('SkyManager Event Found')
+##            while self.skyManager.events:
+##                    self.eventManager.addWorldEvent(self.skyManager.events.pop())
+
+        # Loop thru all plugins and call the framestarted method.
+        for plug in self.activePlugins:
+            #plug.frameStarted(time)
+            if plug.events:
+                #logging.debug('FrameListener Event Found')
+                while plug.events:
+                    self.eventManager.addWorldEvent(plug.events.pop())
+                    
+        
+        # Run the eventManager
+        system_events = world_events = actor_events = []
+        system_events, world_events, actor_events = self.eventManager.update(time)
+        
+
+        #logging.debug('worldevents %s ' % str(world_events))
+            
+
+        #logging.debug('actorEvents %s ' % str(actor_events))
+            
+        # execute any events on the datamanager
+        if world_events:
+            for evt in world_events:
+                if hasattr(self, evt.function):
+                    func = getattr(self, evt.function)
+                    func(evt.args)
+        
+        if actor_events:
+            #print 'Actor Events'
+            for evt in actor_events:
+                if hasattr(self, evt.function):
+                    func = getattr(self, evt.function)
+                    if evt.function == 'spawnActor':
+                        self.spawnActor(evt.args[0], evt.args[1])
+                    else:
+                        func(evt.args)
+                    
+                    
         
         # we may want to remove objects from the game
         self.objectsToDestroy = []
@@ -383,6 +348,8 @@ class DataManager:
         self.updateAITime += time
         self.totalTime += time
         self.elapsed += time
+        
+        
         
         if self.elapsed > self.physTick:
             anim_move = True
@@ -406,11 +373,28 @@ class DataManager:
             
             # -----------------------------------------------------------------
             actor = self.actors[act]
+
             if actor.Alive:
+                # apply World Events
+                if world_events:
+                    for evt in world_events:
+                        if hasattr(actor, evt.function):
+                            func = getattr(actor, evt.function)
+                            func(evt.args)
+                            
+                if actor.events:
+                    while actor.events:
+                        self.eventManager.addActorEvent(actor.events.pop())
+                    
+                        
                 if actor.hasAI:
                     if abs((self.updateAITime % actor.updateAIFrequency) - actor.updateAITime) <= time/2:
                         # this actor should think now
                         actor.Update(self.actors, self.player, self.updateAITime, self.world, time)
+                        # Get actors requested events
+##                        if actor.events:
+##                            for evt in actor.events:
+##                                self.eventManager.addActorEvent(evt)
             else:
                 # this actor is dead or dying
                 if actor.isAnimated:
@@ -423,9 +407,11 @@ class DataManager:
                     
             if anim_move:
             # play the next animation frames            
-                actor.animate(self.physTick)
-                # move, if mobile and not physics controlled
-                actor.move(self.physTick)
+                # the actor may have died before getting here
+                if actor.Alive:
+                    actor.animate(self.physTick)
+                    # move, if mobile and not physics controlled
+                    actor.move(self.physTick)
                         
             if actor.toDelete:
                 # see if its a shot hitting something
@@ -434,8 +420,11 @@ class DataManager:
                     if x:
                         actortodamage = self.actorsList[actor.HitActor]
                         actortodamage.takeDamage(actor.damageDealt)
-                self.objectsToDestroy.append(self.actors.pop(act))
+                
+                self.objectsToDestroy.append(act)
             # -----------------------------------------------------------------
+            
+        
             
         # physics and visual update (stepped framerate)
         
@@ -444,12 +433,15 @@ class DataManager:
         
         # The Final delete action for dead objects    
         while self.objectsToDestroy:
-            ob = self.objectsToDestroy.pop()
-            print 'Destroying:', ob.name
-            self.sceneManager.destroySceneNode(ob.Node.name)
-            self.sceneManager.destroySceneNode(ob.OgreNode.name)
-            self.sceneManager.destroyEntity(ob.Entity)
+            obNum = self.objectsToDestroy.pop()
+            ob = self.actors.pop(obNum)
+            ob.MediaTree.destroy( self.sceneManager )
+            del ob.bodies
+            del ob.body
+            self.sceneManager.destroySceneNode( ob.OgreNode.name )
+            logging.debug('DestroyingNode:' + ob.name)
             del ob
+            
         
         # change camera view for underwater
         if hasattr(self, 'seaLevel'):
@@ -475,11 +467,13 @@ class DataManager:
         
     def spawnActor(self, actorName, position):
         # -- Spawns an actor into the game
-        
+        logging.debug('Spawning: ' + str(actorName) + str(position))
         # get a reference to the requested class
         actorFunc = actorDict[actorName]
         # instantiate it
         actor = actorFunc()
+        # make certain of a unique name
+        actor.name = actor.name + str(self.numActors)
         # call the spawn function to load the mesh etc.
         actor.Spawn(position, self.sceneManager, self.actorRoot, self.numActors, self.raySceneQuery, self.updateResolution, self.world)
         # increase the number of actors 
@@ -497,10 +491,6 @@ class DataManager:
                 return a
     
     def showMainMenu(self):
-        # --We have a very simple main menu, so we're just going to
-        # --do it with overlays, instead of cegui.
-        # --Note: this is not the in-game menu, that is in the 
-        # --DataManager, and uses inGameListener.py
         
         # First off, clear the scene
         if self.getSceneLoaded():

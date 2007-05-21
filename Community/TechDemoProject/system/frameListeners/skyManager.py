@@ -10,6 +10,18 @@
 #           100, Vector3::UNIT_Y, Radian(0), 800, 700));
 
 import ogre.renderer.OGRE as ogre
+
+class Event:
+    def __init__(self, time, name, function, *args):
+        self.time = time
+        self.name = name
+        self.function = function
+        self.args = args
+    def __cmp__(self, other):
+        return cmp(self.time, other.time)
+    def __repr__(self):
+        return ('Event Name = ' + self.name + ' - Event Time: ' + str(self.time))
+    
             
 class Star:
     def __init__(self, name, diffuse, specular, orbitTime=20, rotAxis=ogre.Vector3.UNIT_Y,
@@ -24,12 +36,15 @@ class Star:
         self.size = size
         
         
-class SkyManager:
+class SkyManager(ogre.FrameListener):
     def __init__(self, useDefaults = True, directionalStars = True, sceneMgrName = ""):
+        ogre.FrameListener.__init__(self)
         self.mTime = 0
         self.mStartFade = 0.85
         self.mEndFade = 0.30
         self.mStarList = []
+        
+        self.isNight = False
         
         self.events = []
         
@@ -58,6 +73,7 @@ class SkyManager:
         self.mStarList = []
         self.createStar(Star("sun_sol_", ogre.ColourValue( 1, 1, 1 ), ogre.ColourValue( 0.4, 0.3, 0.2 ), 
             100, ogre.Vector3.UNIT_Y, ogre.Radian(0), 1700, 1500))
+        self.mainStar = -1
         #self.createStar(Star("moon", ogre.ColourValue( 0.15, 0.2, 0.3 ), ogre.ColourValue( 0.1, 0.2, 0.6 ), 
             #27, ogre.Vector3(0.2,1,0), ogre.Radian(0.7), 750, 250))
 #       //createStar(Star("redsun", ColourValue( 0.5, 0.3, 0.2 ), ColourValue( 0.4, 0.1, 0.0 ), 
@@ -117,8 +133,8 @@ class SkyManager:
         affector.setParameter("green",str((-1+(star.specular.g/totalSpecular))*fadeSpeed))
         affector.setParameter("blue", str((-1+(star.specular.b/totalSpecular))*fadeSpeed))
 
-    def frameStarted(self, timeSinceLastFrame):
-        self.mTime += timeSinceLastFrame
+    def frameStarted(self, frameEvent):
+        self.mTime += frameEvent.timeSinceLastFrame
         brightestLight = 0
         for i in range(len(self.mStarList)):
             star = self.mStarList[i]
@@ -179,16 +195,22 @@ class SkyManager:
             if starBrightness > brightestLight:
                 brightestLight = starBrightness
             #           // if the sky brightness is linked to a particular star, set it when the star is found
-            if mainStar == i:
+            if self.mainStar == i:
                 self.mActiveFragmentParameters.setNamedConstant("fBlend",starBrightness)
 
 #       // if sky brightness can be based on any star, use the brightest star currently in the sky
-        if mainStar < 0:
+        if self.mainStar < 0:
             self.mActiveFragmentParameters.setNamedConstant("fBlend",brightestLight)
 
-
-#       // if there are no stars in the sky, turn on the night light
+        if brightestLight == 0:
+            if not self.isNight:
+                self.setNightLightVisible(True)
+        else:
+            if self.isNight:
+                self.setNightLightVisible(False)
         
+            
+#       // if there are no stars in the sky, turn on the night light
         ambient = self.mNightLightPower - (brightestLight * self.mNightLightPower)
         self.mNightLight.setDiffuseColour(
             ambient*self.mNightLightColour.r,
@@ -198,6 +220,7 @@ class SkyManager:
             ambient*self.mNightLightColour.r,
             ambient*self.mNightLightColour.g,
             ambient*self.mNightLightColour.b)
+        return True
             
         
 ##        if brightestLight == 0:
@@ -219,11 +242,14 @@ class SkyManager:
     def setNightLightVisible(self, visible):
         print 'SettingNightLight'
         self.mNightLight.setVisible(visible)
-        
+        self.isNight = visible
         # This adds an event to the eventManager
         # relaying the message to all actors that
         # it is sunset (or sunrise).
-        self.events.append([1, "dayNightToggle", visible])
+        if visible:
+            self.events.append(Event(0, 'WorldSunset', 'event_SunSet', None))
+        else:
+            self.events.append(Event(0, 'WorldSunrise', 'event_SunRise', None))
          
         
 
@@ -232,7 +258,7 @@ class SkyManager:
             self.mNightLight.setType( ogre.Light.LT_DIRECTIONAL )
             self.mNightLight.setDirection(positionOrDirection)
         else:
-            self.mNightLight.setType( ogre.LightLT_POINT )
+            self.mNightLight.setType( ogre.Light.LT_POINT )
             self.mNightLight.setPosition( positionOrDirection )
         self.mNightLight.setDiffuseColour( 0.3,0.2,0.1 )
         self.mNightLight.setSpecularColour( 0,0,0 )

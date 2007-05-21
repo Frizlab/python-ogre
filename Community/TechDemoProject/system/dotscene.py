@@ -45,7 +45,7 @@ class DotScene:
                 # rotate it
                 rot = self.findNodes(node, 'rotation')[0].attributes
                 newNode.orientation = ogre.Quaternion(float(rot['qw'].nodeValue), float(rot['qx'].nodeValue), float(rot['qy'].nodeValue), float(rot['qz'].nodeValue))
-                print float(rot['qw'].nodeValue), float(rot['qx'].nodeValue), float(rot['qy'].nodeValue), float(rot['qz'].nodeValue)
+                #print float(rot['qw'].nodeValue), float(rot['qx'].nodeValue), float(rot['qy'].nodeValue), float(rot['qz'].nodeValue)
 
                 # scale it
                 scale = self.findNodes(node, 'scale')[0].attributes
@@ -96,7 +96,7 @@ class DotScene:
                     attachMe = self.sceneManager.createEntity(name,mesh)
                     attachMe.setCastShadows(False)
                     attachMe.setNormaliseNormals(True)
-                    print 'added entity: "%s" %s' % (name, mesh)
+                    #print 'added entity: "%s" %s' % (name, mesh)
                 except IndexError:
                     pass
 

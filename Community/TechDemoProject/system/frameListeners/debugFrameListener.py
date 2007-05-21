@@ -6,6 +6,17 @@
 import ogre.renderer.OGRE as ogre
 import ogre.io.OIS as OIS
 
+class Event:
+    def __init__(self, time, name, function, *args):
+        self.time = time
+        self.name = name
+        self.function = function
+        self.args = args
+    def __cmp__(self, other):
+        return cmp(self.time, other.time)
+    def __repr__(self):
+        return ('Event Name = ' + self.name + ' - Event Time: ' + str(self.time))
+
 class DebugFrameListener(ogre.FrameListener, OIS.KeyListener, OIS.MouseListener):
     # this framelistener does not deal with application level things
     # like shutdown etc. It is simply an input reader, in this case
@@ -23,6 +34,8 @@ class DebugFrameListener(ogre.FrameListener, OIS.KeyListener, OIS.MouseListener)
         self.moveScale = 1500.00
         self.fps = 60.0
         self.translateVector = ogre.Vector3(0.0, 0.0, 0.0)
+        self.showframerate = True
+        self.showDebugOverlay(True)
         self.steering = ogre.Degree(0.0)
         self.pitch = ogre.Degree(0.0)
         self.filtering = ogre.TFO_BILINEAR
@@ -30,9 +43,11 @@ class DebugFrameListener(ogre.FrameListener, OIS.KeyListener, OIS.MouseListener)
         self.sceneManager = sceneManager
         self.setupInput()
         self.numScreenShots = 0
-        
         self.Mouse.setEventCallback(self)
         self.Keyboard.setEventCallback(self)
+        
+        self.events = [] # for the event Listener
+        
         print 'DebugFrameListener setup Complete::'
         
     def setupInput(self):
@@ -46,6 +61,7 @@ class DebugFrameListener(ogre.FrameListener, OIS.KeyListener, OIS.MouseListener)
     ## Tell the frame listener to exit at the end of the next frame
     def requestShutdown( self ):
         self.ShutdownRequested = True
+        
         
     def frameStarted(self, evt):
 ##        if(self.renderWindow.isClosed()):
@@ -64,12 +80,36 @@ class DebugFrameListener(ogre.FrameListener, OIS.KeyListener, OIS.MouseListener)
         self.camera.pitch(self.pitch)
         self.camera.moveRelative(self.translateVector)
         return True
+    
+    def updateStatistics(self):
+        statistics = self.renderWindow
+        self._setGuiCaption('Core/AverageFps', 'Average FPS: %f' % statistics.getAverageFPS())
+        self._setGuiCaption('Core/CurrFps', 'Current FPS: %f' % statistics.getLastFPS())
+        self._setGuiCaption('Core/BestFps',
+                             'Best FPS: %f %d ms' % (statistics.getBestFPS(), statistics.getBestFrameTime()))
+##        self._setGuiCaption('Core/WorstFps',
+##                             'Worst FPS: %f %d ms' % (statistics.getWorstFPS(), statistics.getWorstFrameTime()))
+##        self._setGuiCaption('Core/NumTris', 'Triangle Count: %d' % statistics.getTriangleCount())
+##        self._setGuiCaption('Core/DebugText', Application.debugText)
+
+    def _setGuiCaption(self, elementName, text):
+        element = ogre.OverlayManager.getSingleton().getOverlayElement(elementName, False)
+        element.setCaption(ogre.UTFString(text))
         
 
-    def frameEnded(self, evt):
-        # change the fog level if we go underwater
-    
+    def frameEnded(self, frameEvent):
+        self.updateStatistics()
         return True
+
+    def showDebugOverlay(self, show):
+        """Turns the debug overlay (frame statistics) on or off."""
+        overlay = ogre.OverlayManager.getSingleton().getByName('Core/DebugOverlay')
+        if overlay is None:
+            raise ogre.Exception(111, "Could not find overlay Core/DebugOverlay", "SampleFramework.py")
+        if show:
+            overlay.show()
+        else:
+            overlay.hide()
         
     def mouseMoved( self, arg ):
         self.steering = ogre.Degree(- arg.get_state().X.rel * 0.13)
@@ -116,6 +156,9 @@ class DebugFrameListener(ogre.FrameListener, OIS.KeyListener, OIS.MouseListener)
             self.numScreenShots += 1
             self.renderWindow.writeContentsToFile(path)
             
+        if arg.key == OIS.KC_F:
+            self.showframerate = not self.showframerate
+            self.showDebugOverlay(self.showframerate)
         return True
 
     ##----------------------------------------------------------------##
@@ -141,11 +184,18 @@ class SkyFrameListener(DebugFrameListener):
         self.time = evt.timeSinceLastFrame
         self.Keyboard.capture()    
         self.Mouse.capture()
-
+        
+        if not self.sky_pitch == 0.0:
+            if not self.movingSky:
+                if self.sky_pitch < 0.0:
+                    self.sky_pitch= min(0.0, self.sky_pitch + 0.3)
+                else:
+                    self.sky_pitch= max(0.0, self.sky_pitch - 0.3)
         self.skyManager.mTime += self.sky_pitch
-        for star in self.skyManager.mStarList:
-            q = ogre.Quaternion(self.sky_yaw, ogre.Vector3.UNIT_Z)
-            star.rotAxis = q * star.rotAxis
+##        
+##        for star in self.skyManager.mStarList:
+##            q = ogre.Quaternion(self.sky_yaw, ogre.Vector3.UNIT_Z)
+##            star.rotAxis = q * star.rotAxis
         return True
 
         
@@ -153,10 +203,11 @@ class SkyFrameListener(DebugFrameListener):
         return True
         
     def mouseMoved( self, arg ):
-        if self.movingSky:
-            self.sky_yaw = ogre.Degree(- arg.get_state().X.rel * 0.5).valueRadians()
-            self.sky_pitch = ogre.Degree(- arg.get_state().Y.rel * 0.5).valueRadians()
         return True
+##        if self.movingSky:
+##            self.sky_yaw = ogre.Degree(- arg.get_state().X.rel * 0.5).valueRadians()
+##            self.sky_pitch = ogre.Degree(- arg.get_state().Y.rel * 0.5).valueRadians()
+##        return True
 
     ##----------------------------------------------------------------##
     def mousePressed(  self, arg, id ):
@@ -172,19 +223,28 @@ class SkyFrameListener(DebugFrameListener):
 ##            self.movingSky = True
 ##        return True
         if arg.key == OIS.KC_I:
-            self.sky_yaw -= ogre.Degree(20.0).valueRadians()
+            self.sky_yaw -= ogre.Degree(5.0).valueRadians()
+            self.movingSky = True
         elif arg.key == OIS.KC_K:
-            self.sky_yaw += ogre.Degree(20.0).valueRadians()
+            self.sky_yaw += ogre.Degree(5.0).valueRadians()
+            self.movingSky = True
         elif arg.key == OIS.KC_J:
-            self.sky_pitch -= ogre.Degree(20.0).valueRadians()
+            self.sky_pitch -= ogre.Degree(5.0).valueRadians()
+            self.movingSky = True
         elif arg.key == OIS.KC_L:
-            self.sky_pitch += ogre.Degree(20.0).valueRadians()
+            self.sky_pitch += ogre.Degree(5.0).valueRadians()
+            self.movingSky = True
+        
+        # test world events:
+        elif arg.key == OIS.KC_N:
+            self.events.append( Event(4, 'SkyDebugEvent', 'testWorldEvent', 20, 'testValue') )
+            
         return True
 
     ##----------------------------------------------------------------##
     def keyReleased( self, arg ):
-        if arg.key == OIS.KC_LCONTROL:
-            self.movingSky = False
+##        print 'sky movement off', str(self.sky_pitch)
+        self.movingSky = False
         return True
     
         

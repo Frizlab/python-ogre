@@ -1,4 +1,5 @@
 # import the ogre / ois modules
+
 import os, sys
 import ogre.renderer.OGRE as ogre
 import ogre.io.OIS as OIS
@@ -6,13 +7,19 @@ import ogre.physics.OgreNewt as OgreNewt
 from system.defaultFL import DefaultFrameListener
 from system.dotscene import *
 from system.datamanager import *
+import time, logging
+
+logging.basicConfig(level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)s %(message)s',
+                    filename='./TechDemo.log',
+                    filemode='w')
 
 # try importing psyco
 try:
     import psyco
     psyco.full()
 except:
-    print 'No Psyco'
+    logging.debug('No Psyco')
 
 # our main application
 class TechDemoApp:
@@ -30,6 +37,7 @@ class TechDemoApp:
         self.sceneManager = None
         self.playerListener = None
         self.world = None
+        self.fps = 60
         
     def __del__(self):
         # delete in order
@@ -89,20 +97,20 @@ class TechDemoApp:
         
         # User pressed 'ok', engine is now running (or crashed)
         # Now make the visual elements appear by calling our own handler
-        print 'Visuals'
+        logging.debug('Visuals')
         self.setupVisuals()
         
         # call the resource manager setup routine
-        print 'Resources'
+        logging.debug('Resources')
         self.setupResources()
         
         # start our own dataManager class
         # this deals with all the loading and running of levels
         # datamanger is the only namespace with a permanent reference
         # to the physics world as well
-        print 'Datamanager'
+        logging.debug('Datamanager')
         self.datamanager = DataManager(self.sceneManager, self.viewport, self.renderWindow, \
-                                        self.camera, 30, True) # True = createphysics
+                                        self.camera, self.fps, True) # True = createphysics
                                         
         #self.sceneManager.shadowTechnique = ogre.SHADOWTYPE_TEXTURE_ADDITIVE
         
@@ -111,13 +119,11 @@ class TechDemoApp:
         # This is a kind of 'super' framelistener
         # it runs the datamanager,and simply listens
         # for a quit. other listeners are added later.
-        print 'FrameListener'
+        logging.debug('FrameListener')
         self.mainFrameListener = DefaultFrameListener(self.renderWindow,
                                                         self.camera, self.datamanager)
         self.root.addFrameListener(self.mainFrameListener)
         
-        # Take the first action, and load the main menu
-        #self.datamanager.showMainMenu()
         fadeColour = (0.90, 0.89, 0.89) # B G R
         
         self.sceneManager.setFog(ogre.FogMode.FOG_LINEAR, fadeColour, 0, 6000, 12000)
@@ -129,14 +135,16 @@ class TechDemoApp:
         self.root.renderOneFrame()
         
         # Finally, kick off the main program loop
-        print 'Render'
+        logging.debug('Render')
+        self.startTime = time.time()
+        self.lastTime = self.startTime - 2.0
         while self.render():
             pass
         #self.root.startRendering()
         
     def render(self):
         return self.root.renderOneFrame()
-        
+
 # -----------------------------------------------------------------------------
         
     def setupOgre(self):
@@ -159,7 +167,7 @@ class TechDemoApp:
         else:
             # Cancel was pressed, all we have to do is
             # return False to stop the app
-            print "GAME: User cancelled"
+            logging.debug("GAME: User cancelled")
             return False
         
     def setupRoot(self):
@@ -170,7 +178,7 @@ class TechDemoApp:
         # Loop over list of desired plugins
         for plugin in self.plugins:
             plugin_name = plugin + extension
-            print' Searching for: %s' % plugin_name
+            logging.debug(' Searching for: %s' % plugin_name)
             found = False
            
             # Check to see if plugin exists anywhere along the list of possible paths
@@ -233,7 +241,7 @@ class TechDemoApp:
 ##        shadSetup.getShadowCamera(self.sceneManager, self.camera, self.viewport, self.defaultLight, self.camera)
 ##        self.sceneManager.setShadowCameraSetup(shadSetup)
         
-        self.sceneManager.shadowTechnique = ogre.SHADOWTYPE_TEXTURE_MODULATIVE
+        self.sceneManager.shadowTechnique = ogre.SHADOWTYPE_NONE
         self.sceneManager.shadowFarDistance = 100
         self.sceneManager.setShadowTextureSize(512)
         self.sceneManager.setShadowColour(ogre.ColourValue(0.2, 0.2, 0.2))
@@ -253,14 +261,13 @@ class TechDemoApp:
                         l = l.split('#')[0].strip()
                     if '[' in l:
                         section = l.strip('[]')
-                        print section
+                        logging.debug(section)
                     else:
                         key, path = l.split('=')
                         ogre.ResourceGroupManager.getSingleton().addResourceLocation(path, key, section)
-        print 'Resources Loaded'
+        logging.debug('Resources Loaded')
                         
         # --and here is the iterator version
-                        
         #config = ogre.ConfigFile()
         #config.load('resources.cfg' )
         #section_iter = config.getSectionIterator()
@@ -269,10 +276,13 @@ class TechDemoApp:
         #   settings = section_iter.getNext()
         #   for item in settings:
         #       ogre.ResourceGroupManager.getSingleton().addResourceLocation(item.value, item.key, section_name)
+        
         # Setup the number of mipmaps for all textures.
         ogre.TextureManager.getSingleton().defaultNumMipmaps = 5
         # Init the core resource group by default:
+        ogre.ResourceGroupManager.getSingleton().initialiseResourceGroup('Bootstrap')
         ogre.ResourceGroupManager.getSingleton().initialiseResourceGroup('Core')
+        
         return True
     
     def setupPhysics( self ):
@@ -284,8 +294,8 @@ if __name__=='__main__':
         app =  TechDemoApp()
         app.start()
     except ogre.OgreException, e:
-        print '## EXCEPTION ##'
         print str(e)
+        logging.debug('## EXCEPTION ## %s' % str(e))
 
         
         

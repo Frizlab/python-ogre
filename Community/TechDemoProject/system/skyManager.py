@@ -24,12 +24,15 @@ class Star:
         self.size = size
         
         
-class SkyManager:
+class SkyManager(ogre.FrameListener):
     def __init__(self, useDefaults = True, directionalStars = True, sceneMgrName = ""):
+        ogre.FrameListener.__init__(self)
         self.mTime = 0
         self.mStartFade = 0.85
-        self.mEndFade = 0.45
+        self.mEndFade = 0.30
         self.mStarList = []
+        
+        self.events = []
         
         if sceneMgrName != "":
             self.mSceneMgr = ogre.Root.getSingleton().getSceneManager(sceneMgrName)
@@ -87,7 +90,7 @@ class SkyManager:
     #Creates a particle effect that is based on the specular colour of the star
     def createParticleTemplate(self, star):
         system = ogre.ParticleSystemManager.getSingleton().createTemplate(
-            star.name+"ParticleTemplate", ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME)
+        star.name+"ParticleTemplate", ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME)
         system.setMaterialName("starFlare")
         system.setParameter("particle_width", str(star.size))
         system.setParameter("particle_height", str(star.size))
@@ -115,7 +118,7 @@ class SkyManager:
         affector.setParameter("green",str((-1+(star.specular.g/totalSpecular))*fadeSpeed))
         affector.setParameter("blue", str((-1+(star.specular.b/totalSpecular))*fadeSpeed))
 
-    def frameStarted(self, timeSinceLastFrame, mainStar = -1):
+    def frameStarted(self, timeSinceLastFrame):
         self.mTime += timeSinceLastFrame
         brightestLight = 0
         for i in range(len(self.mStarList)):
@@ -128,6 +131,8 @@ class SkyManager:
             #           // set star (light and particle) position
             node = self.mSceneMgr.getSceneNode(star.name+"PositionNode")
             node.setPosition( ogre.Vector3(x, y, 0) )
+            
+
 
             #           // set light direction
             light = self.mSceneMgr.getLight(star.name+"Light")      
@@ -142,6 +147,15 @@ class SkyManager:
             starHeight = (y+star.distance)/(star.distance*2)
             #           // brightness changes as the star moves through the fade zone, but is otherwise 0 or 1
             starBrightness = (starHeight - self.mEndFade)/(self.mStartFade - self.mEndFade)
+            
+            
+            
+            # set corona brightness ...
+##            system = ogre.ParticleSystemManager.getSingleton().getTemplate(star.name+"ParticleTemplate")
+##            coronaSize = star.size * starBrightness
+##            system.setParameter("particle_width", str(coronaSize))
+##            
+##            system.setParameter("particle_height", str(coronaSize))
 
             if starBrightness <= 0:
             #               // star is below fade zone - i.e. below the world
@@ -166,8 +180,8 @@ class SkyManager:
             if starBrightness > brightestLight:
                 brightestLight = starBrightness
             #           // if the sky brightness is linked to a particular star, set it when the star is found
-            if mainStar == i:
-                self.mActiveFragmentParameters.setNamedConstant("fBlend",starBrightness)
+##            if mainStar == i:
+##                self.mActiveFragmentParameters.setNamedConstant("fBlend",starBrightness)
 
 #       // if sky brightness can be based on any star, use the brightest star currently in the sky
         if mainStar < 0:
@@ -175,6 +189,7 @@ class SkyManager:
 
 
 #       // if there are no stars in the sky, turn on the night light
+        
         ambient = self.mNightLightPower - (brightestLight * self.mNightLightPower)
         self.mNightLight.setDiffuseColour(
             ambient*self.mNightLightColour.r,
@@ -184,6 +199,13 @@ class SkyManager:
             ambient*self.mNightLightColour.r,
             ambient*self.mNightLightColour.g,
             ambient*self.mNightLightColour.b)
+            
+        
+##        if brightestLight == 0:
+##            self.setNightLightVisible(True)
+##        else:
+##            self.setNightLightVisible(False)
+            
 
 
 
@@ -196,7 +218,15 @@ class SkyManager:
         self.mEndFade = _mEndFade
 
     def setNightLightVisible(self, visible):
+        print 'SettingNightLight'
         self.mNightLight.setVisible(visible)
+        
+        # This adds an event to the eventManager
+        # relaying the message to all actors that
+        # it is sunset (or sunrise).
+        self.events.append([1, "dayNightToggle", visible])
+         
+        
 
     def setNightLightParameters(self, directional = True, positionOrDirection = ogre.Vector3(0.1,-1,-0.1), mNightLightColour = ogre.ColourValue(0.3, 0.45, 1.0), mNightLightPower = 0.3, shadows = True):
         if directional:
@@ -215,7 +245,7 @@ class SkyManager:
         self.mTime = time
 
     def __del__(self): 
-        mActiveFragmentParameters.setNull()
-        mActiveFragmentProgram.setNull()
-        mActiveMaterial.setNull()
+        self.mActiveFragmentParameters = None
+        self.mActiveFragmentProgram = None
+        self.mActiveMaterial= None
 

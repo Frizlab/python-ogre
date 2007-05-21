@@ -5,11 +5,25 @@
 import ogre.renderer.OGRE as ogre
 
 import base_actor
+import logging
 
 import math
 import random
 
 gauss = random.Random().gauss
+
+
+class Event:
+    def __init__(self, time, name, function, *args):
+        self.time = time
+        self.name = name
+        self.function = function
+        self.args = args
+    def __cmp__(self, other):
+        return cmp(self.time, other.time)
+    def __repr__(self):
+        return ('Event: name=' + self.name + ' time=' + str(self.time) + 'function=' +  str(self.function))
+    
 
 def trim(vector, maxLength):    
     """If the vector is longer than the given maxLength, shorten it to
@@ -67,6 +81,13 @@ class Boid(base_actor.GameActor):
     def Update(self, actors, player, updateAITime, world, time):
         #print 'UpdatingBoid'
         self.floorDist = self.getFloorDistance(world)
+        
+    def __del__(self):
+        birds.remove(self)
+
+            
+##        del self.nearest_neighbor
+##        del self.neighbors
 
     def setActorOptions(self, world):
         self.viewFrustum = ogre.Frustum()
@@ -89,14 +110,16 @@ class Boid(base_actor.GameActor):
         for actor in self.potential_neighbors:
             
             if (actor is not self):
-                if (self.viewFrustum.isVisible(actor.OgreNode.position)):
-                    self.neighbors.append(actor)
-                
-                    distance = (self.OgreNode.position - actor.OgreNode.position).length()
-    
-                    if distance < self.distance_to_neighbor:
-                        self.nearest_neighbor = actor
-                        self.distance_to_neighbor = distance        
+                # CHANGED: Workaround for actors dying in the middle of a loop
+                if actor.Alive:
+                    if (self.viewFrustum.isVisible(actor.OgreNode.position)):
+                        self.neighbors.append(actor)
+                    
+                        distance = (self.OgreNode.position - actor.OgreNode.position).length()
+        
+                        if distance < self.distance_to_neighbor:
+                            self.nearest_neighbor = actor
+                            self.distance_to_neighbor = distance        
                         
     def move(self, time):        
         
@@ -274,6 +297,88 @@ class Dragon(Boid):
         (p,y,r) = Boid.calculatePitchYawRoll(self)
         
         return (p + ogre.Radian(math.pi), y, r + ogre.Radian(math.pi))
+    
+    
+class FairyNest(base_actor.GameActor):
+    def __init__(self):
+        base_actor.GameActor.__init__(self)
+
+        self.media = [{'name':'FairyNestMesh', 'parent':'root', 'rType':'mesh', 'rName':'ShortGrass.mesh'}]
+        self.name = 'FairyNest'
+        self.isAnimated = False
+        self.adjustHeight = False
+        self.hasAI = True
+        self.makingFairies = False
+        
+    def setActorOptions(self, world):
+        dist = self.getFloorDistance(world)
+        node, ent = self.MediaTree.find('FairyNestMesh')
+        node.yaw(ogre.Degree(-90))
+        self.OgreNode.position = ogre.Vector3( self.OgreNode.position.x,
+                                                self.OgreNode.position.y - dist,
+                                                self.OgreNode.position.z)
+    def event_SunSet(self, *args):
+        logging.debug(self.name + ' started making fairies ')
+        if not self.makingFairies:
+            self.makingFairies = True
+            
+    def event_SunRise(self, *args):
+        logging.debug(self.name + ' stopped making fairies ')
+        if self.makingFairies:
+            self.makingFairies = False
+            
+    def Update(self, actors, player, totalAITime, world, time):
+        if self.makingFairies:
+            print 'spawnFairy'
+            self.spawnFairy()
+            
+    def spawnFairy(self):
+        self.events.append(Event(1, 'SmallFairySpawn', 'spawnActor', 'SmallFairy', self.OgreNode.position))
+        
+fairies = []
+        
+class SmallFairy(Boid):
+    def __init__(self):
+        Boid.__init__(self)
+        self.media =[{'name':'FairyGlow', 'parent':'root', 'rType':'billboard', 'rName':'NightCreatures/FairyGlow'},
+                        {'name':'FairyLight', 'parent':'root', 'rType':'light', 'rName':'fairylight'}]
+        self.rules = [self.avoid_ground, self.stay_in_bubble, self.maintain_cruising_speed]
+            
+        self.nodeScale = 0.5
+        
+        self.velocity = ogre.Vector3(ogre.Math.SymmetricRandom(),
+                                    ogre.Math.SymmetricRandom(),
+                                    ogre.Math.SymmetricRandom())
+        extrude(self.velocity, 3.0)
+        
+        self.comfort_distance_near = 2.5 + random.random() * 2.5
+        self.maxSpeed = 5.0
+        
+        fairies.append(self)
+        self.potential_neighbors = fairies
+        
+    def setActorOptions(self, world):
+        node, bbs = self.MediaTree.find('FairyGlow')
+        bbs.getBillboard(0).setDimensions(0.7,0.7)
+        bbs.getBillboard(0).setPosition(self.OgreNode.position)
+        node, light = self.MediaTree.find('FairyLight')
+        light.setDiffuseColour(ogre.ColourValue(0.5,0.3,0.25))
+        light.setPowerScale(0.5)
+        light.setCastShadows(False)
+        light.setAttenuation(30,1,0.0005,0)
+        Boid.setActorOptions(self, world)
+        
+    def __del__(self):
+        fairies.remove(self)
+        
+        
+    def event_SunRise(self, *args):
+        self.Alive = False
+        self.toDelete = True
+        
+        
+        
+    
     
 class FishBoid(Boid):
     def __init__(self):

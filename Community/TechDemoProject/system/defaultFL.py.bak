@@ -32,8 +32,6 @@ class DefaultFrameListener(ogre.FrameListener, ogre.WindowEventListener):
             self.RefAppEnable = True
         self._setupInput()
         
-        self.events = []
-        
     def __del__ (self ):
         print 'Deleting FrameListener'
         ogre.WindowEventUtilities.removeWindowEventListener(self.renderWindow, self)
