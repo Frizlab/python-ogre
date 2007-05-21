@@ -134,10 +134,8 @@ def ManualExclude ( mb ):
     
    
    ## changes due to expanded header file input
-    try:	   
-    	ogre_ns.class_('OptimisedUtil').mem_fun('softwareVertexSkinning').exclude  # this isn;t in the LINUX include for 1.4.1
-    except:
-        pass
+   
+    ogre_ns.class_('OptimisedUtil').mem_fun('softwareVertexSkinning').exclude
     ogre_ns.class_('ShadowVolumeExtrudeProgram').variable('programNames').exclude()    #funky sring[8] problem
             
     ## now for problem areas in the new unicode string handling - just excluding without 'thought' :)
@@ -169,6 +167,15 @@ def ManualExclude ( mb ):
     global_ns.class_('::Ogre::BillboardSet').mem_fun('setTextureCoords').exclude()
 #     global_ns.class_('::Ogre::RenderQueueListener').mem_fun('renderQueueStarted').exclude()
 #     global_ns.class_('::Ogre::RenderQueueListener').mem_fun('renderQueueEnded').exclude()
+
+    ## as we now include all protected functions tere are a couple of problem areas that popped up
+    ogre_ns.constructor("IndexData",arg_types=['::Ogre::IndexData const &']).exclude()
+    global_ns.class_('::Ogre::OverlayManager').\
+        mem_fun('destroyOverlayElementImpl', arg_types=['::Ogre::OverlayElement *',None] ).exclude()
+    global_ns
+
+
+
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 
@@ -208,6 +215,7 @@ def ManualInclude ( mb ):
         for c in ['StaticFaceGroup']:
             if c in type_or_decl.decl_string:
                 Expose = False
+                oper.exclude() ## need to specifically exclude now...
         if type_or_decl.ignore == False and Expose:
             print "OPERATOR<<:", oper
             oper.include()
@@ -366,7 +374,35 @@ def ManualTransformations ( mb ):
     x=ns.mem_fun('::Ogre::Viewport::getActualDimensions')
     x.add_transformation( *create_output(4) )
     x.documentation = docit ("","no arguments", "tuple - left, top, width, height")
-
+    
+    x=ns.mem_fun('::Ogre::BillboardSet::getParametricOffsets')
+    x.add_transformation( *create_output(4) )
+    x.documentation = docit ("","no arguments", "tuple - left, right, top, bottom")
+    
+    x=ns.mem_fun('::Ogre::Compiler2Pass::isFloatValue')
+    x.add_transformation( *create_output(2) )
+    x.documentation = docit ("","no arguments", "tuple - Return Value(True/False), fvalue, charsize")
+    
+    x=ns.mem_fun('::Ogre::UTFString::_utf16_to_utf32')
+    x.add_transformation( ft.output('out_uc') )
+    x.documentation = docit ("","uint16", "tuple - size_t, out character")
+    
+    x=ns.mem_fun('::Ogre::UTFString::_utf8_to_utf32')
+    x.add_transformation( ft.output('out_uc') )
+    x.documentation = docit ("","char", "tuple - size_t, out character")
+    
+    x=ns.mem_fun('::Ogre::Frustum::calcProjectionParameters')
+    x.add_transformation( *create_output(4) )
+    x.documentation = docit ("","no arguments", "tuple - left, right, bottom, top")
+    
+    x=ns.mem_fun('::Ogre::StaticGeometry::getRegionIndexes')
+    x.add_transformation( ft.output('x'), ft.output('y'), ft.output('z') )
+    x.documentation = docit ("","Vector", "tuple - x,y,z")
+    
+    x=ns.mem_fun('::Ogre::InstancedGeometry::getBatchInstanceIndexes')
+    x.add_transformation( ft.output('x'), ft.output('y'), ft.output('z') )
+    x.documentation = docit ("","Vector", "tuple - x,y,z")
+    
     x=ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueStarted')
     x.add_transformation(ft.inout("skipThisQueue"))
     x.documentation = docit ("", "id, invocation", "skipThisQueue" )
@@ -557,6 +593,8 @@ def AutoExclude( mb ):
 
     ## Exclude protected and private that are not pure virtual
     query = ~declarations.access_type_matcher_t( 'public' ) \
+            & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
+    query = declarations.access_type_matcher_t( 'private' ) \
             & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
     non_public_non_pure_virtual = ogre_ns.calldefs( query )
     non_public_non_pure_virtual.exclude()
