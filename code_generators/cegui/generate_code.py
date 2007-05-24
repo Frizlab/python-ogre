@@ -31,6 +31,10 @@ def filter_declarations( mb ):
     CEGUI_ns = global_ns.namespace( 'CEGUI' )
     CEGUI_ns.include()
     
+    ## not available at link time..
+    CEGUI_ns.free_function("lbi_greater").exclude()
+    CEGUI_ns.free_function("lbi_less").exclude()
+    
     ## Dumb fix to remove all Properties classes -  unfortunately the properties in these classes are indicated as public
     ## however within their 'parent' class they are defined as private..
     ## see MultiLineEditboxProperties
@@ -56,10 +60,9 @@ def filter_declarations( mb ):
             pass
             
     ## Exclude protected and private that are not pure virtual
-    query = ~declarations.access_type_matcher_t( 'public' ) \
+    query = declarations.access_type_matcher_t( 'private' ) \
             & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
-    non_public_non_pure_virtual = CEGUI_ns.calldefs( query )
-    non_public_non_pure_virtual.exclude()
+    CEGUI_ns.calldefs( query, allow_empty=True ).exclude()
     
     ## lets work around a bug in GCCXMl - http://language-binding.net/pygccxml/design.html#patchers
     draws = mb.member_functions( 'draw' )   # find all the draw functions
