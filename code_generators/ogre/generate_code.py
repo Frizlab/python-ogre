@@ -172,7 +172,6 @@ def ManualExclude ( mb ):
     ogre_ns.constructor("IndexData",arg_types=['::Ogre::IndexData const &']).exclude()
     global_ns.class_('::Ogre::OverlayManager').\
         mem_fun('destroyOverlayElementImpl', arg_types=['::Ogre::OverlayElement *',None] ).exclude()
-    global_ns
 
 
 
@@ -318,6 +317,18 @@ def ManualFixes ( mb ):
 # #     ogre_ns.variables( lambda var: has_utf_type( utf, var ) ).use_make_functions = True
 # #     #ogre_ns.variables( lambda var: has_utf_type( utf, var ) ).apply_smart_ptr_wa  = True
 
+    ## need some help here as the function overloads are causing issues
+    f = global_ns.class_('::Ogre::GpuProgramParameters').\
+        mem_fun('setNamedConstant', arg_types=['::Ogre::String const &','::Ogre::Real'] )
+    print f.arguments[1]
+    print dir (f.arguments[1])
+    print f.arguments[1].name
+    f.arguments[1].name="real"
+    f = global_ns.class_('::Ogre::GpuProgramParameters').\
+        mem_fun('setNamedConstant', arg_types=['::Ogre::String const &','int'] )
+    f.arguments[1].name="int"
+    
+    #.default_value = "int(%s)" % VertexCacheProfiler.arguments[1].default_value    
 
 ##
 # fix up any ugly name alias
@@ -657,12 +668,35 @@ def AutoFixes ( mb ):
     elif os.name =='posix':
         Fix_Posix( mb )
         
+    Auto_Document( mb )
  
 ###############################################################################
 ##
 ## here are the helper functions that do much of the work
 ##
-###############################################################################     
+###############################################################################  
+def Auto_Document ( mb ):
+    """Indicate that the functions being exposed are declated protected or private in the C++ code
+    this should warn people to be careful using them :) """
+    global_ns = mb.global_ns
+    ogre_ns = global_ns.namespace( 'Ogre' )
+
+    query = declarations.access_type_matcher_t( 'private' ) 
+    for c in ogre_ns.calldefs( query, allow_empty=True ):
+        print "PRIVATE:", c
+        s = c.documentation
+        if not s:
+            s = ""
+        c.documentation="<<private declaration>>\\n"+s
+    query = declarations.access_type_matcher_t( 'protected' ) 
+    for c in ogre_ns.calldefs( query, allow_empty=True ):
+        print "PROTECTED:", c
+        s = c.documentation
+        if not s:
+            s = ""
+        c.documentation="<<protected declaration>>\\n"+s
+        
+  
 def Fix_Posix ( mb ):
     """ fixup for posix specific stuff -- note only expect to be called on a posix machine
     """
