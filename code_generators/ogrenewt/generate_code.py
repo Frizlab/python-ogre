@@ -86,10 +86,10 @@ def filter_declarations( mb ):
         func.include()
             
     ## Exclude protected and private that are not pure virtual
-    query = declarations.access_type_matcher_t( 'protected' ) \
+    query = declarations.access_type_matcher_t( 'private' ) \
             & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
-    non_public_non_pure_virtual = ogrenewt_ns.calldefs( query )
-    non_public_non_pure_virtual.exclude()
+    ogrenewt_ns.calldefs( query, allow_empty=True ).exclude()
+    
     
     
     ## Some varibles that we really do need and aren't exposed by default..    

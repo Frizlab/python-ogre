@@ -43,7 +43,6 @@ def filter_declarations( mb ):
     
     ogreode_ns = global_ns.namespace( 'OgreOde' )
     ogreode_ns.include()
-
     ogreode_ns.class_("Body").variable("MovableType").exclude() ## this "static const Ogre::String" causes msvc7.1 to die!!
     ogreode_ns.class_("Utility").variable("Infinity").exclude() ## this "static const Ogre::String" causes msvc7.1 to die!!
 
@@ -82,12 +81,12 @@ def filter_declarations( mb ):
     ##ogreodeL_ns.class_('DotLoader').mem_fun('loadObject').exclude() # hand wrapped
     
     
-        ## Exclude protected and private that are not pure virtual
-    query = ~declarations.access_type_matcher_t( 'public' ) \
+    ## Exclude private that are not pure virtual
+    query = declarations.access_type_matcher_t( 'private' ) \
             & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
-    ogreode_ns.calldefs( query ).exclude()
-    ogreodeP_ns.calldefs( query ).exclude()
-    ogreodeL_ns.calldefs( query ).exclude()
+    ogreode_ns.calldefs( query,allow_empty=True ).exclude()
+    ogreodeP_ns.calldefs( query,allow_empty=True ).exclude()
+    ogreodeL_ns.calldefs( query,allow_empty=True ).exclude()
     
     ## now expose but don't create class that exist in other modules
     global_ns.namespace( 'Ogre' ).class_('Bone').include(already_exposed=True)
@@ -236,7 +235,7 @@ def generate_ogreode():
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
     
     common_utils.add_constants( mb, { 'ogreode_version' :  '"%s"' % environment.ogreode.version
-                                      , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" )  } )
+                                      , 'python_version' : '"%s"' % sys.version } )
     for ns in namespaces:
         for cls in mb.global_ns.namespace(ns).classes():
             process_warnings.go ( cls )

@@ -320,13 +320,31 @@ def ManualFixes ( mb ):
     ## need some help here as the function overloads are causing issues
     f = global_ns.class_('::Ogre::GpuProgramParameters').\
         mem_fun('setNamedConstant', arg_types=['::Ogre::String const &','::Ogre::Real'] )
-    print f.arguments[1]
-    print dir (f.arguments[1])
-    print f.arguments[1].name
     f.arguments[1].name="real"
     f = global_ns.class_('::Ogre::GpuProgramParameters').\
         mem_fun('setNamedConstant', arg_types=['::Ogre::String const &','int'] )
     f.arguments[1].name="int"
+    
+    
+    f = global_ns.class_('::Ogre::GpuProgramParameters').\
+        mem_fun('setNamedConstant', arg_types=['::Ogre::String const &','float const *', None, None] )
+    f.add_transformation( ft.modify_type('val',_ReturnUnsignedInt ), alias='setNamedConstantFloat' )
+    f.documentation = docit ("Modified Input Argument (val) to work with CTypes",
+                                            "Argument val takes a CTypes.adddressof(xx)", "...")
+            
+    f = global_ns.class_('::Ogre::GpuProgramParameters').\
+        mem_fun('setNamedConstant', arg_types=['::Ogre::String const &','double const *', None, None] )
+    f.add_transformation( ft.modify_type('val',_ReturnUnsignedInt ), alias='setNamedConstantDouble' )
+    f.documentation = docit ("Modified Input Argument (val) to work with CTypes",
+                                            "Argument val takes a CTypes.adddressof(xx)", "...")
+        
+    f = global_ns.class_('::Ogre::GpuProgramParameters').\
+        mem_fun('setNamedConstant', arg_types=['::Ogre::String const &','int const *', None, None] )
+    f.add_transformation( ft.modify_type('val',_ReturnUnsignedInt ), alias='setNamedConstantInt' )
+    f.documentation = docit ("Modified Input Argument (val) to work with CTypes",
+                                            "Argument val takes a CTypes.adddressof(xx)", "...")
+    
+    
     
     #.default_value = "int(%s)" % VertexCacheProfiler.arguments[1].default_value    
 
@@ -367,7 +385,7 @@ def ManualTransformations ( mb ):
     x.documentation = docit ( "","no arguments", "tuple containing width, height, colourDepth")
     
     x=rt_cls.mem_fun( 'getStatistics', arg_types=['float &']*4 )
-    x.add_transformation( ft.output(0),ft.output(1),ft.output(2),ft.output(3), alias="getStatistics" )
+    x.add_transformation( ft.output(0),ft.output(1),ft.output(2),ft.output(3), alias="getStatisticsList" )
     x.documentation = docit ("", "no arguments", "tuple - lastFPS, avgFPS, bestFPS, worstFPS")
     
     x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueEnded')

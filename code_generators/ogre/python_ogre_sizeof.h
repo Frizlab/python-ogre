@@ -8,6 +8,7 @@ sizeof ( Ogre::SharedPtr<Ogre::WaveformControllerFunction> );
 // sizeof ( Ogre::SharedPtr<Ogre::ControllerFunction<float>>);
 sizeof ( std::list<Ogre::Particle*> );
 sizeof ( std::vector<Ogre::Particle*>);
+sizeof ( Ogre::RenderTarget::FrameStats );
 
 sizeof ( Ogre::SharedPtr<Ogre::AnimableValue> );
 sizeof ( Ogre::SharedPtr<Ogre::FileInfoList> );

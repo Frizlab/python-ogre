@@ -16,7 +16,7 @@ class doc_extractor:
         self.file_name  = None
         self.source = None
         self.startswith = startswith
-        self.outfile = open ( outfile, 'w' ) # create the file for writing (truncates existing)
+#         self.outfile = open ( outfile, 'w' ) # create the file for writing (truncates existing)
         
     def __call__(self, declaration):
        
@@ -114,9 +114,9 @@ class doc_extractor:
                 c = ' '
             newret = newret + c
         if len(basedoc) >1 or len(newret)>1:
-            self.outfile.write("***============================*****\n" + declaration.decl_string + "\n")
-            self.outfile.write( str(len(basedoc)) + "  " + str(len(newret)) + "\n" )
-            self.outfile.write( newret )      
+# #             self.outfile.write("***============================*****\n" + declaration.decl_string + "\n")
+# #             self.outfile.write( str(len(basedoc)) + "  " + str(len(newret)) + "\n" )
+# #             self.outfile.write( newret )      
             return '"' + basedoc + newret.lstrip() + '"'            
         else: return ""
 
@@ -127,7 +127,7 @@ def remove_leading_blanks ( docin ):
     returnlist=[]
     
     if docin[0].strip() != "\\n":
-        print "** ", docin[0]
+# #         print "** ", docin[0]
         return docin # nothing to fix so return the original list..
         
     fixed = False
