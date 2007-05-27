@@ -1,3 +1,12 @@
+May 27 2007:
+* Fixes to Py++ improvec++ callback into Python for various functions including Compositor Instances
+* getStatistics now returns a FrameStat's class -- previously returned a list - see getStatisticsList
+* setNamedConstant (GPU functions) caused a number of challenges
+    now see setNamedConstantInt/Float/Double - to be used with ctypes -- see Demo_Compositor
+* Fixed missing callback functions in CEGUI
+* SimpleGUI is now QuickGUI
+
+
 May 13 2007:  Version 1.0 RC2(a) -- SnapShot
 ============================================
 * Installer prompts to run dxwebsetup as people WILL need the latest DirectX drivers
