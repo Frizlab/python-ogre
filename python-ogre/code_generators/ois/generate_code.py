@@ -31,10 +31,9 @@ def filter_declarations( mb ):
     ois_ns.include()
     
     ## Exclude protected and private that are not pure virtual
-    query = ~declarations.access_type_matcher_t( 'public' ) \
+    query = declarations.access_type_matcher_t( 'private' ) \
             & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
-    non_public_non_pure_virtual = ois_ns.calldefs( query )
-    non_public_non_pure_virtual.exclude()
+    ois_ns.calldefs( query ).exclude()
     
     # exclude this as standard boost libraries don't support std::Multimap's.  Replace by createPythonInputSystem
     # ois_ns.class_( "InputManager" ).member_functions("createInputSystem").exclude()
