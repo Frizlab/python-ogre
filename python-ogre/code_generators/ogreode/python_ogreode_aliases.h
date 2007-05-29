@@ -1,5 +1,5 @@
 
-#include "..\ogre\python_ogre_aliases.h"
+#include "../ogre/python_ogre_aliases.h"
 
 typedef OgreOde::CircularBuffer<OgreOde::BodyState*> CircularBufferBodyStatePtr;
 typedef OgreOde::MaintainedList<OgreOde::Geometry> MaintainedListGeometry;
