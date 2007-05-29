@@ -128,9 +128,12 @@ def filter_declarations( mb ):
     ode_ns = global_ns  ##  Ode doesn't have it's own namespace..  .namespace( 'ode' )
     for cls in ode_ns.classes():
         print "Checking ", cls.decl_string
-        if  cls.decl_string[2]=='d' and cls.decl_string[3].isupper():
-            print "Including Class:", cls.name
-            cls.include()
+        try:
+            if  cls.decl_string[2]=='d' and cls.decl_string[3].isupper():
+                print "Including Class:", cls.name
+                cls.include()
+        except:
+            pass
     ## and the dxXXclasses        
     for cls in ode_ns.classes():
         print "Checking ", cls.decl_string
@@ -168,7 +171,10 @@ def filter_declarations( mb ):
         "dWorldSetAutoDisableAngularAverageThreshold",
         "dWorldSetAutoDisableLinearAverageThreshold"     )
     for cls in ignore:
-        ode_ns.free_function(cls).exclude()
+        try:
+            ode_ns.free_function(cls).exclude()
+        except:
+            pass
        
     # #     
     # in hand wrappers to handle pyobjects...
