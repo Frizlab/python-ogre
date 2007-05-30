@@ -18,7 +18,7 @@
 #include "OgreBone.h"
 #include "OgreBorderPanelOverlayElement.h"
 #include "OgreCamera.h"
-//#include "OgreCodec.h"  // this one causes a Py++ exception
+//#include "OgreCodec.h"  //  this one causes a Py++ exception
 #include "OgreColourValue.h"
 #include "OgreCommon.h"
 #include "OgreCompiler2Pass.h"
@@ -96,7 +96,11 @@
 #include "OgreNode.h"
 #include "OgreNoMemoryMacros.h"
 #include "OgreNumerics.h"
-#include "OgreOptimisedUtil.h"
+
+#ifdef __WIN32__
+	#include "OgreOptimisedUtil.h"
+#endif
+	
 #include "OgreOverlay.h"
 #include "OgreOverlayContainer.h"
 #include "OgreOverlayElement.h"
@@ -121,7 +125,9 @@
 #include "OgrePlane.h"
 #include "OgrePlaneBoundedVolume.h"
 #include "OgrePlatform.h"
-#include "OgrePlatformInformation.h"
+#ifdef __WIN32__
+	#include "OgrePlatformInformation.h"
+#endif	
 #include "OgrePlugin.h"
 #include "OgrePolygon.h"
 #include "OgrePose.h"

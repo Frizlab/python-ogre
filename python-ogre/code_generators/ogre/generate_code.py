@@ -134,9 +134,11 @@ def ManualExclude ( mb ):
     
    
    ## changes due to expanded header file input
-   
-    ogre_ns.class_('OptimisedUtil').mem_fun('softwareVertexSkinning').exclude
-    ogre_ns.class_('ShadowVolumeExtrudeProgram').variable('programNames').exclude()    #funky sring[8] problem
+    try:             
+        ogre_ns.class_('OptimisedUtil').mem_fun('softwareVertexSkinning').exclude  # this isn't in the LINUX include for 1.4.1  
+    except:
+        pass  
+    ogre_ns.class_('ShadowVolumeExtrudeProgram').variable('programNames').exclude()    #funky string[8] problem
             
     ## now for problem areas in the new unicode string handling - just excluding without 'thought' :)
     ## the variables are not present in the source (to check)
@@ -278,13 +280,13 @@ def ManualFixes ( mb ):
     
     ## Functions that return objects we need to manage
     FunctionsToMemoryManage=[\
-    	'::Ogre::VertexData::clone',
-    	'::Ogre::IndexData::clone',
-    	'::Ogre::Pose::clone',
-    	'::Ogre::Animation::clone'
-    	]
+        '::Ogre::VertexData::clone',
+        '::Ogre::IndexData::clone',
+        '::Ogre::Pose::clone',
+        '::Ogre::Animation::clone'
+        ]
     for cls in FunctionsToMemoryManage:
-    	global_ns.mem_fun(cls).call_policies = call_policies.return_value_policy( call_policies.manage_new_object )
+        global_ns.mem_fun(cls).call_policies = call_policies.return_value_policy( call_policies.manage_new_object )
     
     # make UTFstrings behave as real Python strings..
     UTFString = mb.class_( 'UTFString' )
@@ -352,18 +354,18 @@ def ManualFixes ( mb ):
 # fix up any ugly name alias
 ##
 def ManualAlias ( mb ):
-	return
-	AliasFixList = [
-	["::Ogre::SceneManager::estimateWorldGeometry",
-	["::Ogre::DataStreamPtr &", "::Ogre::String const &"],
-	ft.modify_type('typename',declarations.remove_reference),
-	"estimateWorldGeometry"],
-	]
-	
-	for fix in AliasFixList:
-		c=mb.member_function(fix[0] ,arg_types=fix[1])
-		c.add_transformation( fix[2], alias=fix[3])
-		     
+    return
+    AliasFixList = [
+    ["::Ogre::SceneManager::estimateWorldGeometry",
+    ["::Ogre::DataStreamPtr &", "::Ogre::String const &"],
+    ft.modify_type('typename',declarations.remove_reference),
+    "estimateWorldGeometry"],
+    ]
+    
+    for fix in AliasFixList:
+        c=mb.member_function(fix[0] ,arg_types=fix[1])
+        c.add_transformation( fix[2], alias=fix[3])
+             
 ############################################################
 ##
 ##  And things that need to have their argument and call values fixed.
