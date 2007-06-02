@@ -18,7 +18,17 @@ def samefile ( sourcefile, destfile):
         return False
     return True
         
-
+def docit ( general, i, o ): 
+    docs = "Python-Ogre Modified Function Call\\n" + general +"\\n"
+    docs = docs + "Input: " + i + "\\n"
+    docs = docs + "Output: " + o + "\\n\\\n"
+    return docs
+    
+def _ReturnUnsignedInt( type_ ):
+    """helper to return an UnsignedInt call for tranformation functions
+    """
+    return declarations.cpptypes.unsigned_int_t()    
+    
 class decl_starts_with (object):
     def __init__ (self, prefix):
         self.prefix = prefix

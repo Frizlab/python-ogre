@@ -1,6 +1,24 @@
 import os
 import environment
 
+WRAPPER_DEFINITION_String =\
+"""
+// Helper function to pass a python string to a CEGUI::String
+void StringAssign(CEGUI::String &me, PyObject * stringin)
+{
+    if (PyUnicode_Check( stringin )) { // OK so it's a unicodeobject
+    	me.assign ( PyUnicode_AS_DATA ( stringin ) );
+    	}
+    else if (PyString_Check( stringin )) { // OK so it's a unicodeobject
+    	me.assign ( PyString_AsString ( stringin ) );
+    	}
+    return ;
+    }
+"""
+WRAPPER_REGISTRATION_String =\
+"""
+def ( "assign",&StringAssign);
+"""
 
 WRAPPER_REGISTRATION_EventSet = \
 """  
@@ -322,3 +340,6 @@ def apply( mb ):
     rt.add_declaration_code( WRAPPER_DEFINITION_EventSet )
     rt.add_registration_code( WRAPPER_REGISTRATION_EventSet )
 
+    rt = mb.class_( 'String' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_String )
+    rt.add_registration_code( WRAPPER_REGISTRATION_String )

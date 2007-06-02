@@ -14,12 +14,18 @@ import common_utils
 import customization_data
 import hand_made_wrappers
 
-from pyplusplus import module_builder
-from pyplusplus.module_builder import call_policies
-
 from pygccxml import parser
 from pygccxml import declarations
+from pyplusplus import messages
+from pyplusplus import module_builder
+from pyplusplus import decl_wrappers
+
+from pyplusplus import function_transformers as ft
+from pyplusplus.module_builder import call_policies
+from pyplusplus.module_creator import sort_algorithms
+
 import common_utils.extract_documentation as exdoc
+import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
 
 
@@ -132,7 +138,7 @@ def filter_declarations( mb ):
 
 #     ## I'm going to exclude all iterators as there is a problem with CEGUIIteratorBase.h
     for cls in CEGUI_ns.classes():
-        print "checking", cls.name
+# #         print "checking", cls.name
         if 'iterator' in cls.name.lower() :
             cls.exclude()
             print "Excluding Iterator", cls.name
@@ -160,6 +166,33 @@ def set_call_policies( mb ):
             mem_fun.call_policies = call_policies.return_value_policy(
                 call_policies.reference_existing_object )
  
+             
+    ## OK so the CEGUI String class is ugly (from a python perspective) 
+    ## I'm going to fix the pointer arguments so you can use ctypes to use the class
+    ## however real work is in hand_made_wrappers with a new 'assign' function
+    for fun in CEGUI_ns.class_('String').member_functions():
+        arg_position = 0
+        for arg in fun.arguments:
+            if declarations.type_traits.is_pointer(arg.type): # 
+                fun.add_transformation( ft.modify_type(arg_position,common_utils._ReturnUnsignedInt ), alias=fun.name )
+                fun.documentation = common_utils.docit ("Modified Input Argument to work with CTypes",
+                                            "Argument "+arg.name+ "(pos:" + str(arg_position)\
+                                            +") takes a CTypes.adddressof(xx)", "...")
+                break
+            arg_position +=1
+        
+    for fun in CEGUI_ns.class_('String').constructors():
+        arg_position = 0
+        for arg in fun.arguments:
+            if declarations.type_traits.is_pointer(arg.type):
+                fun.add_transformation( ft.modify_type(arg_position,common_utils._ReturnUnsignedInt ), alias=fun.name )
+                fun.documentation = common_utils.docit ("Modified Input Argument to work with CTypes",
+                                            "Argument "+arg.name+ "(pos:" + str(arg_position)\
+                                            +") takes a CTypes.adddressof(xx)", "...")
+                break
+            arg_position +=1
+        
+                
 def configure_exception(mb):
     #We don't exclude  Exception, because it contains functionality, that could
     #be useful to user. But, we will provide automatic exception translator
@@ -172,13 +205,37 @@ def change_cls_alias( ns ):
    for cls in ns.classes():
        if 1 < len( ns.classes( cls.name ) ):
            alias = cls.decl_string[ len('::CEGUI::'): ]
-           print "Adjust:",cls.decl_string
+           ##print "Adjust:",cls.decl_string
            cls.alias = alias.replace( '::', '' )
            cls.wrapper_alias = cls.alias + 'Wrapper' # or 'Wrapper' ??
            ##cls.exclude()
 
 
 def generate_code():
+    messages.disable( 
+#           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+          messages.W1020
+        , messages.W1021
+        , messages.W1022
+        , messages.W1023
+        , messages.W1024
+        , messages.W1025
+        , messages.W1026
+        , messages.W1027
+        , messages.W1028
+        , messages.W1029
+        , messages.W1030
+        , messages.W1031
+        , messages.W1035
+#         , messages.W1040 
+#         , messages.W1038        
+        , messages.W1041
+        , messages.W1036 # pointer to Python immutable member
+        , messages.W1033 # unnamed variables
+        , messages.W1018 # expose unnamed classes
+#         , messages.W1049 # returns reference to local variable
+        , messages.W1014 # unsupported '=' operator
+         )
     xml_cached_fc = parser.create_cached_source_fc(
                         os.path.join( environment.cegui.root_dir, "python_CEGUI.h" )
                         , environment.cegui.cache_file )
