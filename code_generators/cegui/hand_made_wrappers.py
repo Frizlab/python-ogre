@@ -7,10 +7,10 @@ WRAPPER_DEFINITION_String =\
 void StringAssign(CEGUI::String &me, PyObject * stringin)
 {
     if (PyUnicode_Check( stringin )) { // OK so it's a unicodeobject
-    	me.assign ( PyUnicode_AS_DATA ( stringin ) );
+    	me.assign ( (CEGUI::utf8 * ) PyUnicode_AS_DATA ( stringin ) );
     	}
     else if (PyString_Check( stringin )) { // OK so it's a unicodeobject
-    	me.assign ( PyString_AsString ( stringin ) );
+    	me.assign ( (CEGUI::utf8 * ) PyString_AsString ( stringin ) );
     	}
     return ;
     }
