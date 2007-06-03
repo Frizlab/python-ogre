@@ -175,6 +175,15 @@ def ManualExclude ( mb ):
     global_ns.class_('::Ogre::OverlayManager').\
         mem_fun('destroyOverlayElementImpl', arg_types=['::Ogre::OverlayElement *',None] ).exclude()
 
+    ## change due to CVS Ogre update (Thanks Dermont)
+    AttribParserList = ogre_ns.typedef( name="AttribParserList" )
+    declarations.class_traits.get_declaration( AttribParserList ).exclude()
+
+    ogre_ns.class_( 'MaterialSerializer' ).mem_fun('invokeParser').exclude()
+    
+    ogre_ns.class_('OverlayManager' ).mem_fun('parseNewElement').exclude()
+
+
 
 
 ############################################################
