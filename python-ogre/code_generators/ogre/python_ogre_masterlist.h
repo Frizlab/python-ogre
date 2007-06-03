@@ -97,9 +97,9 @@
 #include "OgreNoMemoryMacros.h"
 #include "OgreNumerics.h"
 
-#ifdef __WIN32__
-	#include "OgreOptimisedUtil.h"
-#endif
+// // #ifdef __WIN32__
+// // 	#include "OgreOptimisedUtil.h"
+// // #endif
 	
 #include "OgreOverlay.h"
 #include "OgreOverlayContainer.h"
@@ -125,9 +125,9 @@
 #include "OgrePlane.h"
 #include "OgrePlaneBoundedVolume.h"
 #include "OgrePlatform.h"
-#ifdef __WIN32__
-	#include "OgrePlatformInformation.h"
-#endif	
+// // #ifdef __WIN32__
+// // 	#include "OgrePlatformInformation.h"
+// // #endif	
 #include "OgrePlugin.h"
 #include "OgrePolygon.h"
 #include "OgrePose.h"

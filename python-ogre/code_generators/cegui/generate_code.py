@@ -202,13 +202,25 @@ def configure_exception(mb):
 ## this is to fix specific challenges where a class (CaratIndex for example) is defined in multiple namespaces
 ##   
 def change_cls_alias( ns ):
-   for cls in ns.classes():
-       if 1 < len( ns.classes( cls.name ) ):
-           alias = cls.decl_string[ len('::CEGUI::'): ]
-           ##print "Adjust:",cls.decl_string
-           cls.alias = alias.replace( '::', '' )
-           cls.wrapper_alias = cls.alias + 'Wrapper' # or 'Wrapper' ??
-           ##cls.exclude()
+    for cls in ns.classes():
+        if 1 < len( ns.classes( cls.name ) ):
+            print "Length of classes is", len( ns.classes( cls.name ) ), " for ", cls.name
+            for c in ns.classes( cls.name ):
+               print "* ", c.decl_string
+            print cls.decl_string
+            alias = cls.decl_string[ len('::CEGUI::'): ]
+            print "Adjust Alias for:",cls.decl_string, " with ", alias.replace ('::','')
+            cls.alias = alias.replace( '::', '' )
+            cls.wrapper_alias = cls.alias + 'Wrapper' # or 'Wrapper' ??
+            ##cls.exclude()
+# #         for f in cls.member_functions( allow_empty=True):
+# #             if 1 < len( ns.member_functions( f.name ) ):
+# #                 print "Length of functions is", len( ns.member_functions( f.name ) ), " for ", f.name
+# #                 alias = cls.name + f.name
+# #                 print "Adjust Alias for:",cls.name, f.name, " with ", alias
+# # #                 f.alias = alias 
+# #                 f.wrapper_alias = alias + 'Wrapper' 
+
 
 
 def generate_code():
@@ -246,7 +258,20 @@ def generate_code():
                                           , include_paths=environment.cegui.include_dirs
                                           , define_symbols=['CEGUI_NONCLIENT_BUILD', 'OGRE_NONCLIENT_BUILD']
                                           , indexing_suite_version=2 )
+                                          
     filter_declarations (mb)
+                                          
+    ns=mb.global_ns.namespace ('CEGUI')                                      
+    print "\n\n"
+    c=ns.class_('::CEGUI::Checkbox')
+    for f in c.member_functions():
+        print "LENGTH ", len( ns.member_functions(f.name ) ), "for ", f.name
+        for c in ns.member_functions(f.name ):
+           print "==:", c.decl_string
+        print f.decl_string  
+# #     sys.exit()
+    
+                                            
    
     change_cls_alias( mb.global_ns.namespace ('CEGUI') )
 
