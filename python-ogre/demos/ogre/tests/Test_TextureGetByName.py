@@ -40,7 +40,6 @@ class TestApplication(sf.Application):
         overman = ogre.OverlayManager.getSingleton()
         statspanel = overman.getOverlayElement('Core/StatPanel', False)
         print statspanel
-        print dir(statspanel)
         
         # Old/C++ style (works fine)
 #         childiter = statspanel.getChildIterator()
@@ -61,5 +60,5 @@ if __name__ == '__main__':
     try:
         application = TestApplication()
         application.go()
-    except ogre.Exception, e:
+    except ogre.OgreException, e:
         print e

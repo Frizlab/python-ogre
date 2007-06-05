@@ -13,6 +13,7 @@
 NUM_FISH = 50
 NUM_FISH_WAYPOINTS= 10
 FISH_PATH_LENGTH=200 
+FISH_SCALE=1.2
 
 import ogre.renderer.OGRE as ogre
 import SampleFramework as sf
@@ -24,14 +25,14 @@ class MyManualLoader(ogre.ManualResourceLoader):
     def __init__(self):
         ogre.ManualResourceLoader.__init__(self)
         
-    def	loadResource(self,resource):
-    	pass    
+    def loadResource(self,resource):
+        pass    
         
 # Refraction Render Target Listener
 class RefractionTextureListener(ogre.RenderTargetListener):
 
     def __init__(self,planeEnt,aboveWaterEnts):
-    	ogre.RenderTargetListener.__init__(self)
+        ogre.RenderTargetListener.__init__(self)
         self.planeEnt = planeEnt
         self.aboveWaterEnts = aboveWaterEnts
         
@@ -61,14 +62,14 @@ class ReflectionTextureListener(ogre.RenderTargetListener):
         #Hide plane and objects above the water
         self.planeEnt.visible = False
         for e in self.belowWaterEnts:
-            e.setVisible ( False )	##.visible to setVisible
+            e.setVisible ( False )  ##.visible to setVisible
         self.cam.enableReflection(self.reflectionPlane)
             
     def postRenderTargetUpdate(self,evt):
         #Show plane and objects above the water
         self.planeEnt.visible = True
         for e in self.belowWaterEnts:
-            e.setVisible ( True     )  # .visible to setVisible
+            e.setVisible ( True )  # .visible to setVisible
         self.cam.disableReflection()
 
 class FresnelFrameListener(sf.FrameListener):
@@ -96,17 +97,17 @@ class FresnelFrameListener(sf.FrameListener):
             self.fishAnimations[fish].addTime(frameEvent.timeSinceLastFrame*2)
             #Move the fish
             newPos = self.fishSplines[fish].interpolate(self.animTime / FISH_PATH_LENGTH*1.0)
-            self.fishNodes[fish].setPosition(newPos)	## .position to SetPosition
+            self.fishNodes[fish].setPosition(newPos)    ## .position to SetPosition
             #Work out the direction
             direction = self.fishLastPosition[fish] - newPos
             direction.normalise
-			#Test for opposite vectors
+            #Test for opposite vectors
             d = 1.0 + ogre.Vector3.UNIT_X.dotProduct(direction)
             if (math.fabs(d) < 0.00001):
                 #Diametrically opposed vectors
                 orientation = ogre.Quaternion.IDENTITY
                 orientation.FromAxes(ogre.Vector3.NEGATIVE_UNIT_X, 
-					ogre.Vector3.UNIT_Y, ogre.Vector3.NEGATIVE_UNIT_Z)
+                    ogre.Vector3.UNIT_Y, ogre.Vector3.NEGATIVE_UNIT_Z)
                 self.fishNodes[fish].setOrientation (orientation)  ## .orientation to SetOr..
             else:
                 self.fishNodes[fish].setOrientation (ogre.Vector3.UNIT_X.getRotationTo(direction))
@@ -138,10 +139,10 @@ class FresnelApplication(sf.Application):
         del self.camera
         del self.sceneManager
         del self.rendtargetlistener
-       	del self.frameListener
+        del self.frameListener
         del self.root
         del self.renderWindow
-		
+        
     def debugSupportedFormats(self):
         "Debug Card Capabilities"
         txMan = ogre.TextureManager.getSingleton()
@@ -155,7 +156,7 @@ class FresnelApplication(sf.Application):
         print "Value is",ogre.TextureUsage.TU_RENDERTARGET
         print "Value is",ogre.TextureUsage.TU_STATIC, ogre.TextureUsage.TU_DYNAMIC,ogre.TextureUsage.TU_RENDERTARGET,0x200
         print " ----------------- End Formats ---------------------------------" 
-		
+        
     def _createScene(self):
         "Override sf create scene"
         self.myManualLoader=MyManualLoader()
@@ -165,17 +166,19 @@ class FresnelApplication(sf.Application):
         # check graphics card capabilities                        
         capabilities = ogre.Root.getSingleton().getRenderSystem().getCapabilities()
         if not capabilities.hasCapability(ogre.RSC_VERTEX_PROGRAM) or not capabilities.hasCapability(ogre.RSC_FRAGMENT_PROGRAM):
-            raise ogre.Exception(111, 'Your card does not support vertex and fragment programs, so cannot run this demo. Sorry!', 'fresneldemo.py')
+            raise ogre.Exception(1, 'Your card does not support vertex and fragment programs, so cannot run this demo. Sorry!', 'fresneldemo.py')
         
         else:
             if (ogre.GpuProgramManager.getSingleton().isSyntaxSupported("arbfp1") and
                 ogre.GpuProgramManager.getSingleton().isSyntaxSupported("ps_2_0") and
-				ogre.GpuProgramManager.getSingleton().isSyntaxSupported("ps_1_4")):
-				
-                raise ogre.Exception(111, 'Your card does not support advanced fragment programs, so cannot run this demo. Sorry!', 'fresneldemo.py')
+                ogre.GpuProgramManager.getSingleton().isSyntaxSupported("ps_1_4")):
+                
+                raise ogre.Exception(1, 'Your card does not support advanced fragment programs, so cannot run this demo. Sorry!', 'fresneldemo.py')
 
         theCam = self.camera
-        self.camera.setPosition (-100,20,700)
+        self.camera.setPosition (-50,125,760)
+        self.camera.setDirection (0,0,-1)
+        
         #Set ambient light
         sceneManager.ambientLight = ogre.ColourValue(0.5, 0.5, 0.5)
 
@@ -185,13 +188,14 @@ class FresnelApplication(sf.Application):
         l.setDirection (-ogre.Vector3.UNIT_Y)
 
         # debug graphics card capabilities                        
-        self.debugSupportedFormats()    
-        	             
+        # self.debugSupportedFormats()    
+                         
         # create Refraction Render Target
         mTexture = ogre.TextureManager.getSingleton().createManual( 'Refraction', 
-			'General', ogre.TextureType.TEX_TYPE_2D, 
-			512, 512, 0, ogre.PixelFormat.PF_R8G8B8, ogre.TextureUsage.TU_RENDERTARGET,self.myManualLoader) 
-			#, self.myManualLoader )
+            'General', ogre.TextureType.TEX_TYPE_2D, 
+            512, 512, 0, ogre.PixelFormat.PF_R8G8B8, ogre.TextureUsage.TU_RENDERTARGET )
+            #,self.myManualLoader) 
+            #, self.myManualLoader )
        
         #RenderTarget 
         self.rttTex = mTexture.getBuffer().getRenderTarget()  ## added getBuffer()
@@ -206,8 +210,9 @@ class FresnelApplication(sf.Application):
         # create Reflection Render Target
         #TexturePtr 
         mTexture = ogre.TextureManager.getSingleton().createManual( "Reflection", 
-			'General', ogre.TextureType.TEX_TYPE_2D, 
-			512, 512, 0, ogre.PixelFormat.PF_R8G8B8, ogre.TextureUsage.TU_RENDERTARGET,self.myManualLoader )
+            'General', ogre.TextureType.TEX_TYPE_2D, 
+            512, 512, 0, ogre.PixelFormat.PF_R8G8B8, ogre.TextureUsage.TU_RENDERTARGET)
+            #,self.myManualLoader )
         #RenderTarget 
         self.rttTex2 = mTexture.getBuffer().getRenderTarget()  ## added getBuffer()
         #Viewport 
@@ -216,18 +221,15 @@ class FresnelApplication(sf.Application):
         self.mat2 = ogre.MaterialManager.getSingleton().getByName("Examples/FresnelReflectionRefraction") ## removed MaterialPointer
         self.mat2.getTechnique(0).getPass(0).getTextureUnitState(1).setTextureName("Reflection")
         v.overlaysEnabled=False
-
-        #My node to which all objects will be attached
-        self.rootNode = sceneManager.rootSceneNode.createChildSceneNode()
-
+        
         #Define a floor plane mesh
         self.reflectionPlane = ogre.Plane()
         self.reflectionPlane.normal = ogre.Vector3.UNIT_Y
         self.reflectionPlane.d = 0
 
         ogre.MeshManager.getSingleton().createPlane('ReflectPlane', "General",
-                                                    self.reflectionPlane, 1500, 1500,
-                                                    10, 10, True, 1, 5, 5,
+                                                    self.reflectionPlane, 700, 1300,
+                                                    10, 10, True, 1, 3, 5,
                                                     (0, 0, 1))
         
         self.planeEnt = sceneManager.createEntity( "plane", "ReflectPlane" )
@@ -237,15 +239,29 @@ class FresnelApplication(sf.Application):
         sceneManager.rootSceneNode.createChildSceneNode().attachObject(self.planeEnt)
         
         sceneManager.setSkyBox(True, "Examples/CloudyNoonSkyBox")
-                       
+        
+        #My node to which all objects will be attached
+        self.rootNode = sceneManager.rootSceneNode.createChildSceneNode()  
+                     
         # create above Water Entities
-        for entity_name in "head1 Pillar1 Pillar2 Pillar3 Pillar4 UpperSurround".split():
+# #         for entity_name in "head1 Pillar1 Pillar2 Pillar3 Pillar4 UpperSurround".split():
+        for entity_name in "RomanBathUpper Columns".split():
             pEnt = self.sceneManager.createEntity( entity_name, entity_name + ".mesh" )
             self.rootNode.attachObject(pEnt)
             self.aboveWaterEnts.append(pEnt)
 
+        headNode = self.rootNode.createChildSceneNode ()
+        pEnt = self.sceneManager.createEntity( "OgreHead", "ogrehead.mesh" )
+        pEnt.setMaterialName ("RomanBath/OgreStone")
+        headNode.attachObject(pEnt)
+        headNode.setPosition(-350,55,130)
+        headNode.rotate(ogre.Vector3.UNIT_Y, ogre.Degree (90))
+        self.aboveWaterEnts.append(pEnt)
+        
         # create below Water Entities
-        for entity_name in "LowerSurround PoolFloor".split():
+#         for entity_name in "LowerSurround PoolFloor".split():
+        for entity_name in "RomanBathLower".split():
+        
             pEnt = self.sceneManager.createEntity( entity_name, entity_name + ".mesh" )
             self.rootNode.attachObject(pEnt)
             self.belowWaterEnts.append(pEnt)
@@ -254,6 +270,7 @@ class FresnelApplication(sf.Application):
         for fish in xrange(0,NUM_FISH):
             pEnt = self.sceneManager.createEntity("fish" + str(fish), "fish.mesh")
             node = self.rootNode.createChildSceneNode()
+            node.setScale(FISH_SCALE, FISH_SCALE, FISH_SCALE)
             amimstate = pEnt.getAnimationState("swim")
             amimstate.enabled = True
             node.attachObject(pEnt)
@@ -264,13 +281,13 @@ class FresnelApplication(sf.Application):
             self.fishSplines[fish].autoCalculate=False
             lastPos = ogre.Vector3(0.0,0.0,0.0)
             for waypoint in xrange(0,NUM_FISH_WAYPOINTS):
-                pos = ogre.Vector3(ogre.Math.SymmetricRandom() * 700.0, -10.0, ogre.Math.SymmetricRandom() * 700.0)
+                pos = ogre.Vector3(ogre.Math.SymmetricRandom() * 270.0, -10.0, ogre.Math.SymmetricRandom() * 700.0)
                 if (waypoint > 0):
                     #check this waypoint isn't too far, we don't want turbo-fish ;)
                     #since the waypoints are achieved every 5 seconds, half the length
                     #of the pond is ok
                     while ((lastPos - pos).length() > 750.0):  ## change .length to .length()
-                    	pos = ogre.Vector3(ogre.Math.SymmetricRandom() * 700.0, -10.0, ogre.Math.SymmetricRandom() * 700.0)
+                        pos = ogre.Vector3(ogre.Math.SymmetricRandom() * 270.0, -10.0, ogre.Math.SymmetricRandom() * 700.0)
                 self.fishSplines[fish].addPoint(pos)
                 lastPos = pos
                 #close the spline
@@ -285,7 +302,7 @@ class FresnelApplication(sf.Application):
         self.refractionListener = RefractionTextureListener(self.planeEnt,self.aboveWaterEnts)
         self.rttTex.addListener(self.refractionListener)
         
-          		
+                
     def _createFrameListener(self):
         "create FrameListener"
         self.frameListener = FresnelFrameListener(self.renderWindow, self.camera,

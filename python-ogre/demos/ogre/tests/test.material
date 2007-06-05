@@ -1,0 +1,16 @@
+
+material AndyTest
+{
+    receive_shadows off
+	technique
+	{
+		pass
+		{
+			specular 1 1 1 1 10
+			texture_unit
+			{
+				texture spacesky.jpg
+			}
+		}
+	}
+}

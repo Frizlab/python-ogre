@@ -1,19 +1,49 @@
-import os,sys 
+import os,sys, ctypes
 if sys.platform == 'win32': 
     os.environ['PATH'] += ';' + __file__[0] 
 
+    
+    
 import ogre.renderer.OGRE as ogre
-##import ogre.renderer.OGRE._ogre_exceptions_ ## as Exception1 
-## from ogre.renderer.OGRE._ogre_exceptions_ import * #as Exception 
-
 import SampleFramework 
 import math 
 
+class FilePtr ( ogre.DataStream ):
+    def __init__ ( self, filename ):
+        ogre.DataStream.__init__(self)
+        datain = file(filename, 'r').read() # should put error checking etc here
+        self.length = len ( datain )
+        self.source = ctypes.create_string_buffer( datain ) ## Note it allocates one extra byte
+    def read ( self, dest, size ):
+        if size <= self.length:
+            print ogre.CastInt(dest)
+            ctypes.memmove ( ogre.CastInt(dest), self.source, size ) # again should check here for 
+    def size ( self ):
+        return self.length
+        
 class TutorialApplication(SampleFramework.Application): 
+
+
     def _createScene(self): 
         sm = self.sceneManager 
+#         f= file("test.material", 'r')
+#         MatString = f.read()
+#         RawMemBuffer = ctypes.create_string_buffer( MatString ) ## Note it allocates one extra byte
+#         dataptr = ogre.MemoryDataStream ( ctypes.addressof ( RawMemBuffer ), len (MatString) + 1 )
+#         ogre.MaterialManager.getSingleton().parseScript( dataptr, "General" )   
+#         print "MATERIAL OK"     
+        
+        fp = FilePtr ( "test.material")
+        print "##", fp
+        dataptr = ogre.MemoryDataStream ( fp )
+        ogre.MaterialManager.getSingleton().parseScript( dataptr, "General" )   
+        print "MATERIAL OK"     
+        
         
         try:
+        
+        
+        
             entity = self.sceneManager.getEntity("Junk") 
         except ogre.OgreItemIdentityException, e:
             print"\nException OK: OgreItemIdentityException \n",e, "\n"
