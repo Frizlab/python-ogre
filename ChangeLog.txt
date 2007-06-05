@@ -1,11 +1,18 @@
-May 27 2007:
-* Fixes to Py++ improvec++ callback into Python for various functions including Compositor Instances
-* getStatistics now returns a FrameStat's class -- previously returned a list - see getStatisticsList
-* setNamedConstant (GPU functions) caused a number of challenges
-    now see setNamedConstantInt/Float/Double - to be used with ctypes -- see Demo_Compositor
-* Fixed missing callback functions in CEGUI
-* SimpleGUI is now QuickGUI
-
+June 0x 2007: Version 1.0 RC2(b) -- SnapShot
+============================================
+* cleaned up demos and media files to match my working environment better
+* get/setUint32 added as utility functions 
+* Demo_GetVerticies added into demo/ogre/tests dir to support extracting verticies and indicies from submeshes
+* Updated QuickGui to 0.9.4
+* CEGUI String.assign( xx ) now takes a python string (as xx) which can be utf8 encoded
+* fix in Py++ to expose correct class when there are multiple override options
+* GPU Parameter programming now possible -- see Demo_Compositor for code examples
+* CEGUI fixes for Window/MouseCursor/System/Renderering were missing an event subscription type
+* LOTS (?) of new functions exposed as we no longer filter protected non virtual functions from the generated source
+* added a Patch directory to the SVN to allow automated download and build of 3rd party libraries
+* removed OptimisedUtil and PlatformInformation from the Ogre master include list due to compile issues
+* lots of updates for the linux build (in the SVN)
+* as always, built against an updated Ogre 1.4 CVS
 
 May 13 2007:  Version 1.0 RC2(a) -- SnapShot
 ============================================
@@ -17,7 +24,7 @@ May 13 2007:  Version 1.0 RC2(a) -- SnapShot
 * Exposed SharedPtr's for various ShadowCameras
 * Fixed to renderQueueStarted and renderQueueEnded (return True or False)
 * Further fixes to remove ugly function names (PixelUtil..)
-* changed return value policy on "clone" calls as we need to manage the object
+* changed return calue policy on "clone" calls as we need to manage the object
 * switched to VC8 -- fingers crossed :)
 * getCustomAttributeUnsignedLong added and SF-OIS changed to use this for 64bit compatibility
 

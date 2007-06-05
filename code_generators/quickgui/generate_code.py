@@ -65,7 +65,8 @@ def ManualExclude ( mb ):
     ['Menu','evtHndlr_listItemCreated'],
     ['Menu','evtHndlr_listItemMouseEnters'],
     ['Menu','evtHndlr_listItemMouseLeaves'],
-    ['Widget','convertPixelToRelativePoint']
+    ['Widget','convertPixelToRelativePoint'],
+    ['Sheet','_adjustMenuOverlay']
     ]
     for cls in NonExistant:
         try:
@@ -94,6 +95,9 @@ def ManualInclude ( mb ):
     global_ns.namespace( 'Ogre' ).class_('UTFString').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('Singleton<QuickGUI::GUIManager>').include() #already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('Singleton<QuickGUI::MouseCursor>').include() #already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('PanelOverlayElement').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('TextAreaOverlayElement').include(already_exposed=True)
+
     
 ############################################################
 ##
@@ -140,11 +144,10 @@ def AutoExclude( mb ):
     Remove_Static_Consts ( main_ns )
     
     ## Exclude protected and private that are not pure virtual
-    query = ~declarations.access_type_matcher_t( 'public' ) \
+    query = declarations.access_type_matcher_t( 'private' ) \
             & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
-    non_public_non_pure_virtual = main_ns.calldefs( query )
-    non_public_non_pure_virtual.exclude()
-
+    main_ns.calldefs( query ).exclude()
+    
     #Virtual functions that return reference could not be overriden from Python
     query = declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.VIRTUAL ) \
             & declarations.custom_matcher_t( lambda decl: declarations.is_reference( decl.return_type ) )
@@ -313,20 +316,20 @@ def Remove_Static_Consts ( mb ):
 # the 'main'function
 #            
 def generate_code():  
-# # #     messages.disable( 
-# # # #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-# # #           messages.W1020
-# # #         , messages.W1021
-# # #         , messages.W1022
-# # #         , messages.W1023
-# # #         , messages.W1024
-# # #         , messages.W1025
-# # #         , messages.W1026
-# # #         , messages.W1027
-# # #         , messages.W1028
-# # #         , messages.W1029
-# # #         , messages.W1030
-# # #         , messages.W1031
+    messages.disable( 
+#           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+          messages.W1020
+        , messages.W1021
+        , messages.W1022
+        , messages.W1023
+        , messages.W1024
+        , messages.W1025
+        , messages.W1026
+        , messages.W1027
+        , messages.W1028
+        , messages.W1029
+        , messages.W1030
+        , messages.W1031
 # # #         , messages.W1035
 # # #         , messages.W1040 
 # # #         , messages.W1038        
@@ -336,7 +339,7 @@ def generate_code():
 # # #         , messages.W1018 # expose unnamed classes
 # # #         , messages.W1049 # returns reference to local variable
 # # #         , messages.W1014 # unsupported '=' operator
-# # #          )
+         )
     #
     # Use GCCXML to create the controlling XML file.
     # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded

@@ -5,12 +5,13 @@ import SampleFramework as sf
 
 class RenderToTextureFrameListener(sf.FrameListener):
 
-    def __init__(self, renderWindow, camera, mReflectCam , planeSceneNode):
+    def __init__(self, renderWindow, camera, mReflectCam , planeSceneNode, pitchnode):
     
         sf.FrameListener.__init__(self, renderWindow, camera)
         self.camera = camera
         self.mReflectCam = mReflectCam       
         self.planeNode = planeSceneNode
+        self.pitchnode = pitchnode
 
     def frameStarted(self, frameEvent):
         result = sf.FrameListener.frameStarted(self,frameEvent)
@@ -18,6 +19,8 @@ class RenderToTextureFrameListener(sf.FrameListener):
         # Make sure reflection camera is updated too
         self.mReflectCam.setOrientation ( self.camera.getOrientation() )
         self.mReflectCam.setPosition (self.camera.getPosition())
+        self.pitchnode.setOrientation ( self.camera.getOrientation() )
+        self.pitchnode.setPosition (self.camera.getPosition())
         # Rotate plane
         dd = ogre.Degree(d=(30.0 * frameEvent.timeSinceLastFrame))
         self.planeNode.yaw(dd, ogre.Node.TS_PARENT)
@@ -38,6 +41,7 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
         self.mReflectCam= None
         self.mPlaneNode= None
         ogre.RenderTargetListener.__init__(self)
+#         self.soundManager  = OgreAL.SoundManager()
         
     def preRenderTargetUpdate(self,evt):
         self.mPlane.setVisible(False)
@@ -74,7 +78,8 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
         l.setSpecularColour ( ogre.ColourValue(1.0, 1.0, 1.0))
 
         # Create a prefab plane
-        self.mPlane = ogre.MovablePlane("ReflectPlane")
+        self.mPlane = ogre.MovablePlane(name="ReflectPlane")
+        
         self.mPlane.d = 0
         self.mPlane.normal =ogre.Vector3.UNIT_Y
           
@@ -118,27 +123,27 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
         #
         #
 #         
+        self.soundManager  = OgreAL.SoundManager()
+#         
         node = rootNode.createChildSceneNode( "Head" )
         node.attachObject( ogreHead )
-        self.soundManager  = OgreAL.SoundManager()
         sound = self.soundManager.createSound("Roar", "roar.wav", True)
         node.attachObject(sound)
         sound.play()
 
-        bgSound = self.soundManager.createSoundStream("stereo", "stereo.ogg", True)
-        bgSound.setGain(0.5)
-        bgSound.setRelativeToListener(True)
-        bgSound.play()
+#         bgSound = self.soundManager.createSoundStream("stereo", "stereo.ogg", True)
+#         bgSound.setGain(0.5)
+#         bgSound.setRelativeToListener(True)
+#         bgSound.play()
         
     	node = sceneManager.getRootSceneNode().createChildSceneNode("CameraNode")
-#     	node.setPosition(0, 100, 100)
-#     	node = node.createChildSceneNode("PitchNode")
-#     	node.attachObject(self.camera)
-# #     	node.attachObject(self.soundManager.getListener())
-#     	node.pitch(ogre.Degree(-30))
-        
-    
-        
+     	node.setPosition(0, 100, 100)
+     	node = node.createChildSceneNode("PitchNode")
+#      	node.attachObject(self.camera)
+     	node.attachObject(self.soundManager.getListener())
+     	node.pitch(ogre.Degree(-30))
+        self.pitchnode = node
+      
         
         
         ## Either of these techniques works...
@@ -217,13 +222,13 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
     def _createFrameListener(self):
         # "create FrameListener"
         self.fL = RenderToTextureFrameListener(self.renderWindow, self.camera,
-                                                                   self.mReflectCam, self.mPlaneNode)
+                                                                   self.mReflectCam, self.mPlaneNode, self.pitchnode)
         self.root.addFrameListener(self.fL)
 
 if __name__ == '__main__':
    try:
         application = RenderToTextureApplication()
         application.go()
-   except ogre.Exception, e:
+   except ogre.OgreException, e:
         print e        
 

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+
+<GUILayout > 
+    <Window Type="DefaultWindow" Name="Root" > 
+        <Property Name="InheritsAlpha" Value="False" /> 
+        <Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" /> 
+        <Property Name="UnifiedAreaRect" Value="{{0,0},{0,0},{1,0},{1,0}}" /> 
+        <Window Type="TaharezLook/FrameWindow" Name="Root/MainWindow" > 
+            <Property Name="Font" Value="Commonwealth-10" /> 
+            <Property Name="Text" Value="Python Console" /> 
+            <Property Name="TitlebarFont" Value="Commonwealth-10" /> 
+            <Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" /> 
+            <Property Name="TitlebarEnabled" Value="True" /> 
+            <Property Name="UnifiedAreaRect" Value="{{0.172396,0},{0.0970626,0},{0.839931,0},{0.983908,0}}" /> 
+            <Window Type="TaharezLook/MultiLineEditbox" Name="Root/MainWindow/Input" > 
+                <Property Name="Text" ></Property> 
+                <Property Name="MaxTextLength" Value="1073741823" /> 
+                <Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" /> 
+                <Property Name="UnifiedAreaRect" Value="{{0.013654,0},{0.059723,0},{0.98277,0},{1,-48}}" /> 
+            </Window> 
+        </Window> 
+    </Window> 
+</GUILayout>

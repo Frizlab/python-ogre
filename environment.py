@@ -207,12 +207,10 @@ class cegui:
     active = True
     version = "0.5.0b" 
     parent = "ogre/gui"
-    if os.name =='nt': 
-        libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain', 'OgreGUIRenderer' ]
-    else:
-        libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain', 'CEGUIOgreRenderer' ]
+    libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain', 'OgreGUIRenderer' ]
     include_dirs = [Config.PATH_Boost
                     ,Config.PATH_INCLUDE_CEGUI
+                    ,Config.PATH_CEGUI
                     , Config.PATH_INCLUDE_Ogre_CEGUIRenderer
                     , Config.PATH_INCLUDE_Ogre
                     , Config.PATH_INCLUDE_Ogre_Dependencies ## needed as OgreCEGUI uses CEGUI/.. in #includes
@@ -233,7 +231,6 @@ class cegui:
   
 class ode:
     version= "0.8"
-    include_dirs = [r'c:/development/ode/include']
     parent = "ogre/physics"
     libs=[Config.LIB_Boost,  'ode']
     lib_dirs = [ Config.PATH_LIB_Boost
@@ -241,13 +238,18 @@ class ode:
                 ]
     include_dirs = [ Config.PATH_Boost 
                     ,  Config.PATH_INCLUDE_ODE
-                    ##, Config.PATH_INCLUDE_ODESOURCE ## some header files are in the source tree ??
+    ##                , Config.PATH_INCLUDE_ODESOURCE ## some header files are in the source tree ??
                     ]
 
     ModuleName = 'ODE'
     CheckIncludes = ['boost/python.hpp',  'ode/ode.h'] 
     active=True
-
+class newton:
+    version= "1.0"
+    active=False
+    include_dirs = [r'c:/development/newtonsdk/sdk']
+    ModuleName = 'NEWTON'
+    parent = ""    
 class ogreode:
     version= "1.0"
     parent = "ogre/physics"
@@ -275,7 +277,20 @@ class ogreode:
     ModuleName='OgreOde'
     active=True
     
-
+class fmod:
+    version= "4.06"
+    parent = "ogre/sound"
+    include_dirs=[Config.PATH_Boost
+                   ,Config.PATH_INCLUDE_FMOD
+                   ]
+    lib_dirs = [ Config.PATH_LIB_Boost
+                  ,Config.PATH_LIB_FMOD
+                  ] 
+                 
+    CCFLAGS = ' /D "NDEBUG" /D "WIN32" /D "_MBCS" '
+    ModuleName = 'FMOD' 
+    CheckIncludes = ['fmod.h']
+    active=False
     
 # class betagui:
 #     version="1.0"
@@ -295,7 +310,7 @@ class ogreode:
 #     active=True
 
 class quickgui:
-    version="1.0"
+    version="0.9.6"
     parent="ogre/gui"
     cflags = ""
     include_dirs = [ Config.PATH_Boost,
@@ -308,7 +323,7 @@ class quickgui:
                 ]
     CheckIncludes=[]
     libs=[  Config.LIB_Boost, 'OgreMain' ]
-    ModuleName="QuickGUI"   
+    ModuleName="quickgui"   
     active=True
  
 # class raknet:
@@ -357,8 +372,10 @@ projects = {
     , 'ogre' : ogre
     , 'cegui' : cegui
     , 'ode' : ode
+    , 'newton' : newton
     , 'ogrerefapp' : ogrerefapp
     , 'ogrenewt' : ogrenewt
+    , 'fmod' : fmod
     , 'ogreode' : ogreode
     , 'ogreal' : ogreal
 #     , 'betagui' : betagui

@@ -1,6 +1,6 @@
 ## test iterators
 # This code is in the Public Domain
-import  Ogre as ogre
+import  ogre.renderer.OGRE as ogre
 import SampleFramework as sf
 import ctypes, math, sys
 
@@ -53,6 +53,13 @@ class TestApplication(sf.Application):
                         
         ## If it doesn't crash then it must be OK :)
         print"\n\n   Iterators OK !!\n\n"
+        
+        print "testing plugins"
+        pit  = self.root.getInstalledPlugins()
+        print dir(pit)
+        for p in pit:
+            print "Name %s" %  (p.getName())
+
 
 if __name__ == '__main__':
     import exceptions

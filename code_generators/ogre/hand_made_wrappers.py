@@ -234,6 +234,28 @@ Utility_getFloat(void * ptrin,  int size)
 }
 
 void
+Utility_setUint32(void * ptrin, boost::python::list listin)     // unsigned short
+{
+    int index;
+    Ogre::uint32 * newptr = reinterpret_cast<Ogre::uint32 *>(ptrin);
+    for (index=0;index<len(listin);index++ ) {
+        *newptr++ = boost::python::extract<Ogre::uint32> (listin[index]);
+        }
+}
+
+boost::python::list
+Utility_getUint32(void * ptrin,  int size)
+{
+    boost::python::list outlist;
+    int index;
+    Ogre::uint32 * newptr = reinterpret_cast<Ogre::uint32 *>(ptrin);
+    for (index=0;index<size;index++ ) {
+        outlist.append ( *newptr++ );
+        }
+    return outlist;
+}
+
+void
 Utility_setUint16(void * ptrin, boost::python::list listin)     // unsigned short
 {
     int index;
@@ -329,11 +351,21 @@ WRAPPER_REGISTRATION_General = [
                 Input: void *, Python List (numerics)\\n\\
                 Ouput: None\\n\\
                 The list is extracted as unsigned ints and written to memory starting at the pointer" );""",
-    """bp::def( "getUint16", &Utility_getFloat,
+    """bp::def( "getUint16", &Utility_getUint16,
                 "Python-Ogre Helper Function: Reads ints into a python list.\\n\\
                 Input: void *, size\\n\\
                 Ouput: Python List\\n\\
                 The list is populated with ints from memory starting at the pointer" );""",
+    """bp::def( "setUint32", &Utility_setUint32,
+                "Python-Ogre Helper Function: Write Unsigned Ints 32 to Memory.\\n\\
+                Input: void *, Python List (numerics)\\n\\
+                Ouput: None\\n\\
+                The list is extracted as unsigned ints 32 and written to memory starting at the pointer" );""",
+    """bp::def( "getUint32", &Utility_getUint32,
+                "Python-Ogre Helper Function: Reads ints 32 into a python list.\\n\\
+                Input: void *, size\\n\\
+                Ouput: Python List\\n\\
+                The list is populated with ints from memory starting at the pointer" );""",                
     """bp::def( "CastVoidPtr", &Utility_CastVoidPtr,
                 bp::return_value_policy< bp::return_opaque_pointer >(),
                 "Python-Ogre Helper Function: Casts a number to a void *.\\n\\
