@@ -1,9 +1,9 @@
-June 0x 2007: Version 1.0 RC2(b) -- SnapShot
+June xx 2007: Version 1.0 RC2(b) -- SnapShot
 ============================================
-* cleaned up demos and media files to match my working environment better
+* cleaned up demos and media files to match my working environment
 * get/setUint32 added as utility functions 
 * Demo_GetVerticies added into demo/ogre/tests dir to support extracting verticies and indicies from submeshes
-* Updated QuickGui to 0.9.4
+* Updated QuickGui to 0.9.4 (was SimpleGUI)
 * CEGUI String.assign( xx ) now takes a python string (as xx) which can be utf8 encoded
 * fix in Py++ to expose correct class when there are multiple override options
 * GPU Parameter programming now possible -- see Demo_Compositor for code examples
@@ -17,16 +17,16 @@ June 0x 2007: Version 1.0 RC2(b) -- SnapShot
 May 13 2007:  Version 1.0 RC2(a) -- SnapShot
 ============================================
 * Installer prompts to run dxwebsetup as people WILL need the latest DirectX drivers
-* Installer automatically runs vcredist_x86.exe for the shared C++ libraries neede for VC8
-* Build with latest CVS/SVN versions of supporting Libraries
-* Build with latest DirectX drivers (April 2007)
-* included SimpleGUI
+* Installer automatically runs vcredist_x86.exe for the shared C++ libraries needed for VC8
+* Built with latest CVS/SVN versions of supporting Libraries
+* Built with latest DirectX drivers (April 2007)
+* Included SimpleGUI
 * Exposed SharedPtr's for various ShadowCameras
 * Fixed to renderQueueStarted and renderQueueEnded (return True or False)
 * Further fixes to remove ugly function names (PixelUtil..)
-* changed return calue policy on "clone" calls as we need to manage the object
+* changed return value policy on "clone" calls as we need to manage the object
 * switched to VC8 -- fingers crossed :)
-* getCustomAttributeUnsignedLong added and SF-OIS changed to use this for 64bit compatibility
+* getCustomAttributeUnsignedLong added and sf-OIS.py changed to use this for 64bit compatibility
 
 April 15 2007: Version 1.0 RC1 (c) Release
 ==========================================
