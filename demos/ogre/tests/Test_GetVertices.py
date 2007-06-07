@@ -17,7 +17,6 @@ def GetIndicies ( sm ) :
     
     if ibuf.getType() == ogre.HardwareIndexBuffer.IT_32BIT:
         Use32Bit = True
-        return outbuff ## fix needed for this in Python-Ogre ( in SVN soon ) :)
     else: Use32Bit = False
     
     buffer = ibuf.lock(ogre.HardwareBuffer.HBL_READ_ONLY)
@@ -30,7 +29,7 @@ def GetIndicies ( sm ) :
         else:
             l = ogre.getUint16 ( ogre.CastVoidPtr ( address ), 3 )
             address += ibuf.getIndexSize() * 3
-        outbuff += l
+        outbuff.append(tuple(l))
     return outbuff
     
 def GetVerticies ( sm ) :
@@ -53,7 +52,7 @@ def GetVerticies ( sm ) :
         
     for i in range (vertex_data.vertexCount):
         points = ogre.getFloat( ogre.CastVoidPtr ( newaddress), 3 ) # note the getFloat and Cast back to a pointer :)
-        outbuff += points
+        outbuff.append(tuple(points))
         newaddress += vbuf.getVertexSize()
     return outbuff
             
@@ -70,7 +69,7 @@ class TutorialApplication(SampleFramework.Application):
             sm = mesh.getSubMesh(m)
             v += GetVerticies ( sm )
             i += GetIndicies ( sm )            
-        print v    
+#         print v    
         print i
         sys.exit()
         

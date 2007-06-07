@@ -17,7 +17,7 @@
 
 import ogre.renderer.OGRE as ogre
 import SampleFramework as sf     ## note that we are forcing the OIS sample framework
-import ogre.renderer.OGRE as OgreRefApp
+import ogre.physics.OgreRefApp as OgreRefApp
 
 ## As this demo does it's own key input, AND we want to support Ogre 1.2.x we need to cope with the 
 ## change to OIS in ogre 1.3.x (current CVS version)
