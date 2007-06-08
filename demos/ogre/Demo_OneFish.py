@@ -10,11 +10,8 @@
 
 
 import ogre.renderer.OGRE as ogre
-import ogre.gui.CEGUI as cegui
 import SampleFramework
-
-
-from CEGUI_framework import *   ## we need the OIS version of the framelistener etc
+import ogre.io.OIS as OIS
 
 
 class TutorialFrameListener(SampleFramework.FrameListener):

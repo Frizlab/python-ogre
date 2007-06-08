@@ -297,7 +297,8 @@ class GuiApplication ( SampleFramework.Application ):
         eb.setSize(CEGUI.UVector2(cegui_reldim(0.90), cegui_reldim( 0.08)))
         ## subscribe a handler to listen for when the text changes
         eb.subscribeEvent(CEGUI.Window.EventTextChanged, textChangedHandler,"")
-        
+        eb.subscribeEvent(CEGUI.Window.EventKeyDown, textKeyDownHandler,"")
+                
         ##
         ## Controls are set up.  Install initial settings
         ##
@@ -308,10 +309,6 @@ class GuiApplication ( SampleFramework.Application ):
         
         ## success!
         return True
-    
-    
-    
-    
         
                 
         ## now setup any event handlers you want       
@@ -351,7 +348,12 @@ def textChangedHandler( e):
 
     return True
         
-        
+def textKeyDownHandler( e):
+    """ This doesn't do anything, just makes sure the event subscription is working"""
+    ##find the static box
+    st = CEGUI.WindowManager.getSingleton().getWindow("TextWindow/Static")
+    
+    return True        
         
 # /*************************************************************************
 #     Free function to handle slider position changes

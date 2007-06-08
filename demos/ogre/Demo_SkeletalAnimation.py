@@ -37,8 +37,27 @@ class SkeletalApplication(sf.Application):
         camera = self.camera
         
         #setup Shadows
+#         sceneManager.setShadowTechnique(ogre.SHADOWTYPE_TEXTURE_MODULATIVE)
+        sceneManager.setShadowTechnique(ogre.SHADOWTYPE_STENCIL_ADDITIVE)  ## doesn't work on my laptop
         sceneManager.setShadowTechnique(ogre.SHADOWTYPE_TEXTURE_MODULATIVE)
-        sceneManager.setShadowTextureSize(512)
+#         sceneManager.setShadowTextureSize(512)
+#         self.CurrentShadowCameraSetup = ogre.LiSPSMShadowCameraSetup() 
+#         self.CurrentShadowCameraSetup = ogre.PlaneOptimalShadowCameraSetup() ## needs an argument
+#         self.CurrentShadowCameraSetup.getShadowCamera (self.sceneManager, self.camera, self.viewport, light, self.camera) 
+
+        self.CurrentShadowCameraSetup = ogre.FocusedShadowCameraSetup() 
+#         self.CurrentShadowCameraSetup = ogre.DefaultShadowCameraSetup() 
+
+#         sceneManager.setShadowCameraSetup(self.CurrentShadowCameraSetup)
+        if self.root.getRenderSystem().getCapabilities().hasCapability(ogre.RSC_HWRENDER_TO_TEXTURE):
+            ## In D3D, use a 1024x1024 shadow texture
+            sceneManager.setShadowTextureSettings(1024, 2)
+        else:
+            ## Use 512x512 texture in GL since we can't go higher than the window res
+            sceneManager.setShadowTextureSettings(512, 2)
+            
+       
+        
         sceneManager.setShadowColour(ogre.ColourValue(0.6, 0.6, 0.6))
 
         # Setup animation default
@@ -156,10 +175,21 @@ class SkeletalApplication(sf.Application):
         dirvec.normalise()
         light.setDirection(dirvec)
         light.setDiffuseColour (0.5, 1.0, 0.5)
+        self.TexCam = sceneManager.createCamera("ReflectCam")
+        self.TexCam.setCustomViewMatrix(False)
+
+        self.CurrentShadowCameraSetup.getShadowCamera (self.sceneManager, self.camera, self.viewport, light, self.TexCam) 
+
+#         self.CurrentShadowCameraSetup = ogre.FocusedShadowCameraSetup() 
+#         self.CurrentShadowCameraSetup = ogre.DefaultShadowCameraSetup() 
+
+        sceneManager.setShadowCameraSetup(self.CurrentShadowCameraSetup)
  
         # Position the camera
         camera.setPosition(100, 20, 0)
         camera.lookAt(0, 10, 0)
+        camera.setFarClipDistance(100000)
+
         # Report whether hardware skinning is enabled or not
 ###        subEntity = entity.getSubEntity(0)
 #         material = subEntity.material
@@ -177,16 +207,20 @@ class SkeletalApplication(sf.Application):
         ogre.MeshManager.getSingleton().createPlane("Myplane",
             ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME, plane,
             1500,1500,20,20,True,1,60,60,ogre.Vector3.UNIT_Z)
-        pPlaneEnt = sceneManager.createEntity( "plane", "Myplane" )
-        pPlaneEnt.setMaterialName("Examples/Rockwall")
-        pPlaneEnt.setCastShadows(False)
-        sceneManager.getRootSceneNode().createChildSceneNode(ogre.Vector3(0,99,0)).attachObject(pPlaneEnt)
+        self.pPlaneEnt = sceneManager.createEntity( "plane", "Myplane" )
+        self.pPlaneEnt.setMaterialName("Examples/Rockwall")
+        self.pPlaneEnt.setCastShadows(False)
+        sceneManager.getRootSceneNode().createChildSceneNode(ogre.Vector3(0,99,0)).attachObject(self.pPlaneEnt)
 
             
             
     def _createFrameListener(self):
         self.frameListener = SkeletalAnimationFrameListener(self.renderWindow, self.camera ) # self.animationStates, self.animationSpeeds)
         self.root.addFrameListener(self.frameListener)
+
+    def __del__ ( self ):        
+        del self.pPlaneEnt
+        sf.application.__del__(self)
 
 class SkeletalAnimationFrameListener(sf.FrameListener):
     global NUM_JAIQUAS

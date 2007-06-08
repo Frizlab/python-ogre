@@ -158,6 +158,12 @@ class UberSpinningNinja(object):
        self.entity = app.sm.createEntity('ninja', 'ninja.mesh')
        self.node = node.createChildSceneNode("ninja_node", start_coords)
        self.node.attachObject(self.entity)
+       
+       src = self.node.Orientation * (ogre.Vector3.UNIT_Z) 
+       directionToGo = ogre.Vector3(0,0,-1) 
+       quat = src.getRotationTo(directionToGo)
+       self.node.Orientation=quat 
+       
        self.spinning_x = 0 # 1 for clockwise, -1 for counter clockwise
 
    def start_spinning(self, clock_wise=1):
