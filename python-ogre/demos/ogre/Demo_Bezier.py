@@ -25,6 +25,18 @@ import ctypes, math
 ##patch = ogre.PatchMesh()
 ##Pass = ogre.Pass()
 
+## Logging class
+class MyLog(ogre.LogListener):
+    def __init__(self):
+        # Creates a C++ log that will try and write to console and file
+        ogre.LogListener.__init__(self)
+                 
+    def messageLogged(self, message, level, debug, logName):
+        # This should be called by Ogre instead of logging
+        pass
+        #print message
+        
+        
 ## Event handler to add ability to alter subdivision
 class BezierListener(sf.FrameListener):
     def __init__(self, renderWindow, camera ):
@@ -63,6 +75,18 @@ class BezierApplication(sf.Application):
         sf.Application.__init__(self)
         patchDecl = ogre.VertexDeclaration()
         self.patchCtlPoints =0
+        # Create the global log manager instance
+        self.logMgr = ogre.LogManager()
+        # create the instance of our log listener
+        self.myLog = MyLog()
+        # create a "log"
+        self.currentLog = ogre.LogManager.getSingletonPtr().createLog("dummy.log" 
+                                                    , True  # it's the default log
+                                                    , False     # I don't want it sent to the debug window
+                                                    , True     # it's a virtual log, so you need a listener :)
+                                                    )  
+        # register our listener
+        self.currentLog.addListener ( self.myLog )    
         
     def __del__(self):
         global pVert

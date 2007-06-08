@@ -38,7 +38,6 @@ class GuiApplication ( SampleFramework.Application ):
         self.textScrollNumber = 0 
         self.siCounter = 0 
         self.rttCounter=0
-
  
         self.DescriptionMap[ "Demo8"] = "The main containing panel" 
         self.DescriptionMap[ "Demo8/Window1"] =  "A test window" 
@@ -50,7 +49,6 @@ class GuiApplication ( SampleFramework.Application ):
         self.DescriptionMap[ "Demo8/Window1/Controls/Editbox"] =  "An edit box  self text will be added to the list" 
         self.DescriptionMap[ "Demo8/Window1/Controls/Add"] =  "Adds the text to the list" 
         self.DescriptionMap[ "Demo8/Window1/Controls/ins1"] =  "Some static text" 
-    
 
     def __del__(self):
         ##
@@ -68,7 +66,6 @@ class GuiApplication ( SampleFramework.Application ):
         del self.GUIRenderer
         del self.root
         del self.renderWindow        
-   
  
     ## Just override the mandatory create scene method
     def _createScene(self):
@@ -88,7 +85,6 @@ class GuiApplication ( SampleFramework.Application ):
         ## setup GUI system
         self.GUIRenderer = CEGUI.OgreCEGUIRenderer(self.renderWindow, 
             ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager) 
-
             
         self.GUIsystem = CEGUI.System(self.GUIRenderer) 
 
@@ -129,11 +125,14 @@ class GuiApplication ( SampleFramework.Application ):
         CEGUI.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme") 
         self.GUIsystem.setDefaultMouseCursor("TaharezLook",  "MouseArrow") 
         self.GUIsystem.setDefaultFont( "BlueHighway-12") 
+        
         sheet = CEGUI.WindowManager.getSingleton().loadWindowLayout("ogregui.layout")  
         self.GUIsystem.setGUISheet(sheet) 
-        
-## note that copies are not made for combo/list boxes so need to keep each item arround
-#         CEGUI.Testit()
+
+#     
+## note that copies are not made for combo/list boxes so need to keep each item around
+## hence the use of 'self.' variables
+#        
         objectComboBox = CEGUI.WindowManager.getSingleton().getWindow("OgreGuiDemo/TabCtrl/Page2/ObjectTypeList") 
         self.item = CEGUI.ListboxTextItem( "FrameWindow", 0) 
         objectComboBox.addItem(self.item) 
@@ -149,7 +148,7 @@ class GuiApplication ( SampleFramework.Application ):
         objectComboBox.addItem(self.item5) 
         
         self.setupEventHandlers() 
-        
+       
         
     ## Create new frame listener
     def _createFrameListener(self):
@@ -245,6 +244,25 @@ class GuiApplication ( SampleFramework.Application ):
         
         editorWindow = CEGUI.WindowManager.getSingleton().getWindow( "OgreGuiDemo2/MainWindow")
         editorWindow.addChildWindow( self.EditorGuiSheet ) 
+               
+        ## Test with the Euro symbol 
+        special=CEGUI.String()
+        special.assign(8364)
+        #special=CEGUI.String(num=1,code_point=8364) # this makes a single char string with the unicode character
+        
+        ## and let's check some appending etc..
+        f=CEGUI.String("Start")
+        temp=f.append(special,0,1) ## append the unicode string
+        end = CEGUI.String("End")
+        temp=temp.append(end,0,3)
+        editorWindow.text=temp 
+        
+        ## Now for utf8
+        utf8String = "\xc4\x8d Special 'C' showing utf8 capabilities \xc2\xa9 Python-Ogre\xe2\x84\xa2"
+        cs = CEGUI.String()
+        cs.assign ( utf8String )
+        editorWindow.text=cs
+        
         return True
 
         
@@ -338,6 +356,14 @@ class GuiApplication ( SampleFramework.Application ):
         self.Tip.setText( "") 
         return True
         
+def TestonKeyDown( e):
+
+    ##find the static box
+    print"KEYDOWN"
+    print e
+    print dir(e)
+    
+    return True         
 
 if __name__ == '__main__':
     try:

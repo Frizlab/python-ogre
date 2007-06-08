@@ -75,11 +75,18 @@ class CameraTrackApplication(sf.Application):
 
         self.animationState = sceneManager.createAnimationState('CameraTrack')
         self.animationState.setEnabled (True)
-
-
 		
         # add some fog
-        sceneManager.setFog(ogre.FOG_EXP, (1, 1, 1), 0.0002)
+        sceneManager.setFog(ogre.FOG_EXP, (1, 1, 1), 0.0002)  ## change .0002 to .002 for lots of fog
+        shadSetup = ogre.LiSPSMShadowCameraSetup() 
+#         shadSetup = ogre.FocusedShadowCameraSetup() 
+#         shadSetup = ogre.DefaultShadowCameraSetup() 
+        self.TexCam = sceneManager.createCamera("ReflectCam")
+        self.TexCam.setCustomViewMatrix(False)
+#         self.TexCam.position = (1,0.5,1)
+        shadSetup.getShadowCamera (self.sceneManager, self.camera, self.viewport, light, self.TexCam) 
+        self.sceneManager.setShadowCameraSetup( shadSetup )
+
 
     def _createFrameListener(self):
         self.frameListener = CameraTrackListener(self.renderWindow, self.camera, self.animationState)
