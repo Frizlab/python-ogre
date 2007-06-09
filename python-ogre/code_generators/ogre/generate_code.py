@@ -1112,7 +1112,7 @@ def generate_code():
     # Creating the code. After this step you should not modify/customize declarations.
     #
     ##########################################################################################
-    extractor = exdoc.doc_extractor("Ogre::") # I'm excluding the UTFstring docs as lots about nothing 
+    extractor = exdoc.doc_extractor("::Ogre::") # I'm excluding the UTFstring docs as lots about nothing 
     mb.build_code_creator (module_name='_ogre_' , doc_extractor= extractor )
     
     for inc in environment.ogre.include_dirs:
