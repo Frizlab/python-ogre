@@ -29,7 +29,7 @@ class GuiApplication ( SampleFramework.Application ):
         self.GUIsystem =0
         self.EditorGuiSheet=0
         self.DescriptionMap={}
-        self.ListItems = []
+        self.ListItems = [] # used to hold objects that in C++ code would be created with "new"
         
         # used for adding individual objects
         self.windowNumber = 0 
@@ -54,6 +54,8 @@ class GuiApplication ( SampleFramework.Application ):
         ##
         ## important that things get deleted int he right order
         ##
+        
+        ## we could delete self.listitems however it should happen automagically
         del self.camera
         del self.sceneManager
         del self.frameListener
@@ -131,22 +133,18 @@ class GuiApplication ( SampleFramework.Application ):
 
 #     
 ## note that copies are not made for combo/list boxes so need to keep each item around
-## hence the use of 'self.' variables
+## hence the use of the array and setting AutoDelete to False...
 #        
         objectComboBox = CEGUI.WindowManager.getSingleton().getWindow("OgreGuiDemo/TabCtrl/Page2/ObjectTypeList") 
-        self.item = CEGUI.ListboxTextItem( "FrameWindow", 0) 
-        objectComboBox.addItem(self.item) 
-        self.item1 = CEGUI.ListboxTextItem( "Horizontal Scrollbar", 1) 
-        objectComboBox.addItem(self.item1) 
-        self.item2 = CEGUI.ListboxTextItem( "Vertical Scrollbar", 2) 
-        objectComboBox.addItem(self.item2) 
-        self.item3 = CEGUI.ListboxTextItem( "StaticText", 3) 
-        objectComboBox.addItem(self.item3) 
-        self.item4 = CEGUI.ListboxTextItem( "StaticImage", 4) 
-        objectComboBox.addItem(self.item4) 
-        self.item5 = CEGUI.ListboxTextItem( "Render to Texture", 5) 
-        objectComboBox.addItem(self.item5) 
-        
+        function = 0
+        for title in ["FrameWindow", "Horizontal Scrollbar","Vertical Scrollbar",
+                      "StaticText","StaticImage","Render to Texture"] :
+            item = CEGUI.ListboxTextItem( title, function ) # create the item
+            item.AutoDeleted = False            # ensure Python is in control of it's "deletion"
+            objectComboBox.addItem(item)   # add the item to the combo list
+            self.ListItems.append(item)         # ensure the item stays around until we decide to delete it
+            function += 1                       # a simple flag so we know what to create when this is selected
+                
         self.setupEventHandlers() 
        
         
@@ -332,7 +330,8 @@ class GuiApplication ( SampleFramework.Application ):
         return True
 
     def handleAdd(self,  e):
-        listboxitem = CEGUI.ListboxTextItem (self.EditBox.getText()) 
+        listboxitem = CEGUI.ListboxTextItem (self.EditBox.getText())
+        listboxitem.AutoDeleted = False     # Fix to ensure that items are not deleted by the CEGUI system 
         listboxitem.setSelectionBrushImage("TaharezLook", "ListboxSelectionBrush") 
         if self.List.getItemCount() == 0:
             listboxitem.setSelected( True ) 
