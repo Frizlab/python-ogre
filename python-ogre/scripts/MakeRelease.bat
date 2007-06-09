@@ -1,4 +1,4 @@
-@echo off
+rem echo off
 echo
 echo ====== Python-Ogre Windows Release Build ======
 echo =
@@ -26,7 +26,8 @@ del ..\..\PythonOgreRelease\*.log /s
 del ..\..\PythonOgreRelease\1 /s
 del ..\..\PythonOgreRelease\2 /s
 del ..\..\PythonOgreRelease\ogre.cfg /s
-rmdir /s /q ..\..\PythonOgreRelease\demos\ogre\tofix 
+rem rmdir /s /q ..\..\PythonOgreRelease\demos\gui\tofix 
+rem rmdir /s /q ..\..\PythonOgreRelease\demos\ogre\tofix 
 
 
 

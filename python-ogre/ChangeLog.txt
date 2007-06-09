@@ -1,7 +1,8 @@
-June xx 2007: Version 1.0 RC2(b) -- SnapShot
+June 09 2007: Version 1.0 RC2(b) -- Release
 ============================================
 * cleaned up demos and media files to match my working environment
-* get/setUint32 added as utility functions 
+* fixed a problem in Demo_CEGUI_Gui related to creating text list items
+* get/setUint32 added as utility functions - getUint16 bug fixed
 * Demo_GetVerticies added into demo/ogre/tests dir to support extracting verticies and indicies from submeshes
 * Updated QuickGui to 0.9.4 (was SimpleGUI)
 * CEGUI String.assign( xx ) now takes a python string (as xx) which can be utf8 encoded
