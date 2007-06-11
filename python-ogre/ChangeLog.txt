@@ -1,3 +1,8 @@
+June 10 2007: Version 1.0 RC2(c) -- Release
+============================================
+* Goes without saying that something would be wrong.. The VC8 Redistributables I shipped appear to be old and 
+  fail on some machines -- newer one included
+
 June 09 2007: Version 1.0 RC2(b) -- Release
 ============================================
 * cleaned up demos and media files to match my working environment

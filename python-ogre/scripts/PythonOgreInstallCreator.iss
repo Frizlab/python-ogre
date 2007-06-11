@@ -3,7 +3,7 @@
 ;
 [Setup]
 AppName=Python-Ogre
-AppVerName=Python-Ogre 1.0RC2b
+AppVerName=Python-Ogre 1.0RC2c
 DefaultDirName=C:\PythonOgre
 DefaultGroupName=Python-Ogre
 OutputBaseFilename=PythonOgreInstaller
@@ -15,7 +15,7 @@ AppPublisher=OpenSource
 AppPublisherURL=http://www.python-ogre.org
 AppSupportURL=http://www.python-ogre.org
 AppUpdatesURL=http://www.python-ogre.org
-AppVersion=1.0.2
+AppVersion=1.0.2.3
 LicenseFile=LICENSE.GPL
 Compression=lzma
 InfoBeforeFile=InstallWarning.rtf
@@ -23,13 +23,13 @@ InfoAfterFile=postinstall.rtf
 SolidCompression=true
 AppCopyright=LPGL
 VersionInfoCompany=OpenSource
-VersionInfoTextVersion=1.0RC2b
+VersionInfoTextVersion=1.0RC2c
 VersionInfoCopyright=PythonOgre Development Team
 RestartIfNeededByRun=false
 UninstallDisplayName=PythonOgre
 WizardImageFile=compiler:WizModernImage-IS.bmp
 WizardSmallImageFile=compiler:WizModernSmallImage-IS.bmp
-VersionInfoVersion=1.0.2.2
+VersionInfoVersion=1.0.2.3
 [Files]
 ; base files, demos and tools
 Source: *; DestDir: {app}
@@ -164,6 +164,7 @@ Name: {group}\Ogre Demos\CEL Shading; Filename: {code:GetPythonExe}; Parameters:
 Name: {group}\Ogre Demos\Compositor; Filename: {code:GetPythonExe}; Parameters: Demo_Compositor.py; WorkingDir: {app}\Demos\Ogre
 Name: {group}\Ogre Demos\ENV Map; Filename: {code:GetPythonExe}; Parameters: Demo_EnvMap.py; WorkingDir: {app}\Demos\Ogre
 Name: {group}\Ogre Demos\Facial; Filename: {code:GetPythonExe}; Parameters: Demo_Facial.py; WorkingDir: {app}\Demos\Ogre
+Name: {group}\Ogre Demos\Fish; Filename: {code:GetPythonExe}; Parameters: Demo_OneFish.py; WorkingDir: {app}\Demos\Ogre
 Name: {group}\Ogre Demos\Fresnel; Filename: {code:GetPythonExe}; Parameters: Demo_Fresnel.py; WorkingDir: {app}\Demos\Ogre
 Name: {group}\Ogre Demos\Grass; Filename: {code:GetPythonExe}; Parameters: Demo_Grass.py; WorkingDir: {app}\Demos\Ogre
 Name: {group}\Ogre Demos\Lighting; Filename: {code:GetPythonExe}; Parameters: Demo_Lighting.py; WorkingDir: {app}\Demos\Ogre
@@ -184,7 +185,6 @@ Name: {group}\Ogre Demos\WX Gui; Filename: {code:GetPythonExe}; Parameters: Demo
 Name: {group}\GUI\CEGUI - Basic; Filename: {code:GetPythonExe}; Parameters: Demo_CEGUI_Gui.py; WorkingDir: {app}\Demos\gui
 Name: {group}\GUI\CEGUI Drag and Drop; Filename: {code:GetPythonExe}; Parameters: Demo_CEGUI_DragnDrop.py; WorkingDir: {app}\Demos\gui
 Name: {group}\GUI\CEGUI - Nice; Filename: {code:GetPythonExe}; Parameters: Demo_CEGUI_NewGui.py; WorkingDir: {app}\Demos\gui
-Name: {group}\GUI\CEGUI Fish; Filename: {code:GetPythonExe}; Parameters: Demo_CEGUI_FishNoWx.py; WorkingDir: {app}\Demos\gui
 Name: {group}\GUI\QuickGUI-01; Filename: {code:GetPythonExe}; Parameters: Demo_QuickGUI01.py; WorkingDir: {app}\Demos\gui
 
 Name: {group}\ODE Demos\Multiple Scenes; Filename: {code:GetPythonExe}; Parameters: Demo_Scenes.py; WorkingDir: {app}\Demos\OgreOde
