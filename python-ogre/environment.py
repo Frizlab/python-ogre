@@ -238,12 +238,27 @@ class ode:
                 ]
     include_dirs = [ Config.PATH_Boost 
                     ,  Config.PATH_INCLUDE_ODE
-    ##                , Config.PATH_INCLUDE_ODESOURCE ## some header files are in the source tree ??
                     ]
 
     ModuleName = 'ODE'
     CheckIncludes = ['boost/python.hpp',  'ode/ode.h'] 
     active=True
+    
+class opcode:
+    version= "1.3"
+    parent = "ogre/physics"
+    libs=[Config.LIB_Boost,  'Opcode']
+    lib_dirs = [ Config.PATH_LIB_Boost
+                ,  Config.PATH_LIB_OPCODE
+                ]
+    include_dirs = [ Config.PATH_Boost 
+                    ,  Config.PATH_INCLUDE_OPCODE
+                    ]
+
+    ModuleName = 'Opcode'
+    CheckIncludes = ['boost/python.hpp',  'Opcode.h'] 
+    active=True 
+       
 class newton:
     version= "1.0"
     active=False
@@ -310,7 +325,7 @@ class fmod:
 #     active=True
 
 class quickgui:
-    version="0.9.6"
+    version="0.9.4"
     parent="ogre/gui"
     cflags = ""
     include_dirs = [ Config.PATH_Boost,
@@ -380,6 +395,7 @@ projects = {
     , 'ogreal' : ogreal
 #     , 'betagui' : betagui
     , 'quickgui' : quickgui
+    , 'opcode' : opcode
 #     , 'raknet' : raknet
 }        
 
