@@ -125,21 +125,7 @@ def filter_declarations( mb ):
     global_ns = mb.global_ns
     global_ns.exclude()
     
-    #
-    # Deal with Opcode first
-    #
-    opcode_ns = global_ns.namespace( 'Opcode' )
-    opcode_ns.include()
-    
-    
-    
-    
-    # keep it simple to start with and don't try for Ice
-#     icecore_ns = global_ns.namespace( 'IceCore' )
-#     icecore_ns.include()
-#     icemaths_ns = global_ns.namespace( 'IceMaths' )
-#     icemaths_ns.include()
-    
+  
     ode_ns = global_ns  ##  Ode doesn't have it's own namespace..  .namespace( 'ode' )
     for cls in ode_ns.classes():
 # #         print "Checking ", cls.decl_string
@@ -218,17 +204,7 @@ def filter_declarations( mb ):
     #g12.getter_call_policies = call_policies.return_value_policy( call_policies.return_opaque_pointer )
 
     
-    excludes=["::Opcode::AABBQuantizedNoLeafTree::Walk", "::Opcode::AABBQuantizedTree::Walk",
-                "::Opcode::AABBNoLeafTree::Walk", "::Opcode::AABBCollisionTree::Walk","::Opcode::AABBTree::Walk",
-                "::Opcode::AABBOptimizedTree::Walk", "::Opcode::SAP_PairData::DumpPairs",
-                ]
-    for e in excludes:
-        global_ns.member_functions(e).exclude()
-    excludes = ["::Opcode::BruteForceBipartiteBoxTest","::Opcode::BipartiteBoxPruning"]
-    for e in excludes:
-        global_ns.free_functions(e).exclude()
-    
-    global_ns.class_("::Opcode::AABBOptimizedTree").exclude()
+
     
     
 def Set_Call_Policies( mb ):
@@ -286,9 +262,7 @@ def generate_code():
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
                                           , include_paths=environment.ode.include_dirs
-                                          , define_symbols=['ode_NONCLIENT_BUILD', 'ODE_LIB',
-                                          'ODE_DLL', 'OPCODE_EXPORTS', 'ICECORE_EXPORTS']
-#                                          , start_with_declarations=['ode']
+                                          , define_symbols=['ode_NONCLIENT_BUILD', 'ODE_LIB']
                                           , indexing_suite_version=2 )
 
     filter_declarations (mb)
