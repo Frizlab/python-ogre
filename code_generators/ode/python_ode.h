@@ -10,6 +10,8 @@
 #include "ode/ode.h"
 #include "ode/odecpp.h"
 #include "ode/odecpp_collision.h"
+#undef _MSC_VER
+#include "Opcode.h"
 
 // First we create a magic namespace to hold all our aliases
 namespace pyplusplus { namespace aliases {
