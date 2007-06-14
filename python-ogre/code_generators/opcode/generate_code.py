@@ -36,6 +36,8 @@ import common_utils.ogre_properties as ogre_properties
 
 MAIN_NAMESPACE = 'Opcode'
 
+NAMESPACES = [ 'IceCore', 'Opcode', 'IceMaths']
+
 ## small helper function
 def docit ( general, i, o ): 
     docs = "Python-Ogre (Opcode) Modified Function Call\\n" + general +"\\n"
@@ -51,20 +53,58 @@ def docit ( general, i, o ):
 
 def ManualExclude ( mb ):
     global_ns = mb.global_ns
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
     excludes=["::Opcode::AABBQuantizedNoLeafTree::Walk", "::Opcode::AABBQuantizedTree::Walk",
                 "::Opcode::AABBNoLeafTree::Walk", "::Opcode::AABBCollisionTree::Walk","::Opcode::AABBTree::Walk",
                 "::Opcode::AABBOptimizedTree::Walk", "::Opcode::SAP_PairData::DumpPairs",
                 "::Opcode::AABBTree::GetIndices","::Opcode::AABBTreeNode::GetPrimitives",
-                "::Opcode::HybridModel::GetIndices","::Opcode::VolumeCollider::GetTouchedPrimitives"
+                "::Opcode::HybridModel::GetIndices","::Opcode::VolumeCollider::GetTouchedPrimitives", 
+                # Quat's don't seem to be implemented
+                "::IceMaths::Matrix3x3::FromQuat"
+                ,"::IceMaths::Matrix3x3::FromQuatL2"
+                ## in header but missing in source
+                ,"::IceMaths::IndexedTriangle::ComputeCubeIndex"
+                ,"::IceMaths::LSS::ComputeOBB"
+                ,"::IceMaths::Matrix3x3::RotX"
+                ,"::IceMaths::Matrix3x3::RotYX"
+                ,"::IceMaths::Matrix3x3::RotY"
+                ,"::IceMaths::Matrix3x3::RotZ"
+                ,"::IceMaths::Matrix3x3::Rot"
+                ,"::IceMaths::Matrix3x3::Normalize"
+                ,"::IceMaths::Matrix3x3::Exp"
+                ,"::IceMaths::Matrix3x3::FromTo"
+                ,"::IceMaths::Point::Transform"
+                ,"::IceMaths::Point::Mult2"
+                ,"::IceMaths::Point::InvTransform"
+                ,"::IceMaths::Point::Transform"
+                ,"::IceMaths::Point::TransMult"
+                ,"::IceMaths::Point::Unfold"
+                ,"::IceMaths::Point::Mult"
+                ,"::IceMaths::Point::Mac"
+                ,"::IceMaths::Triangle::ComputeMoment"
                 ]
     for e in excludes:
+        print "excluding function", e
         global_ns.member_functions(e).exclude()
-    excludes = ["::Opcode::BruteForceBipartiteBoxTest","::Opcode::BipartiteBoxPruning"]
+    excludes = ["::Opcode::BruteForceBipartiteBoxTest","::Opcode::BipartiteBoxPruning"
+                ,"::IceMaths::Normalize1"
+                ,"::IceMaths::Normalize2"
+                ]
     for e in excludes:
+        print "Excluding:", e
         global_ns.free_functions(e).exclude()
     
-    global_ns.class_("::Opcode::AABBOptimizedTree").exclude()
+    excludes = ["::Opcode::AABBOptimizedTree" 
+               ### Exclude matrix4x4 as boost/boost/tuple/detail/tuple_basic.hpp needs to be extended to take 16 arguments 
+               ,"::IceMaths::Matrix4x4"
+               ,"::IceMaths::Sphere"
+               ]
+    for e in excludes:
+        global_ns.class_(e).exclude()
+        
+    excludes = ["::IceMaths::Matrix3x3::m", "::IceMaths::Matrix4x4::m"]
+    for e in excludes:
+        global_ns.variable(e).exclude()
+    
 
 ############################################################
 ##
@@ -74,14 +114,8 @@ def ManualExclude ( mb ):
     
 def ManualInclude ( mb ):
     global_ns = mb.global_ns
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
-
-    # keep it simple to start with and don't try for Ice
-#     icecore_ns = global_ns.namespace( 'IceCore' )
-#     icecore_ns.include()
-#     icemaths_ns = global_ns.namespace( 'IceMaths' )
-#     icemaths_ns.include()
-        
+    
+            
 ############################################################
 ##
 ##  And things that need manual fixes, but not necessarly hand wrapped
@@ -90,7 +124,15 @@ def ManualInclude ( mb ):
 def ManualFixes ( mb ):    
 
     global_ns = mb.global_ns
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    icemaths_ns = global_ns.namespace( 'IceMaths' )
+# #     c = icemaths_ns.class_('Matrix4x4').operators('[]')
+# #     c.call_policies= call_policies.convert_array_to_tuple( 4, call_policies.memory_managers.none )   
+# #     c.include() 
+# #     c.documentation=docit ("Return Type Change", "None", "Tuple with 4 floats's (the matrix 'line')")
+# #     c = icemaths_ns.class_('Matrix3x3').operators('[]')
+# #     c.call_policies= call_policies.convert_array_to_tuple( 3, call_policies.memory_managers.none )    
+# #     c.include()
+# #     c.documentation=docit ("Return Type Change", "None", "Tuple with 3 floats's (the matrix 'line')")
 
               
 ############################################################
@@ -121,24 +163,28 @@ def AutoExclude( mb ):
     """ Automaticaly exclude a range of things that don't convert well from C++ to Python
     """
     global_ns = mb.global_ns
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    for ns in NAMESPACES:
+        main_ns = global_ns.namespace( ns )
     
-    # vars that are static consts but have their values set in the header file are bad
-    Remove_Static_Consts ( main_ns )
+        # vars that are static consts but have their values set in the header file are bad
+        Remove_Static_Consts ( main_ns )
+        
+        ## Exclude protected and private that are not pure virtual
+        query = declarations.access_type_matcher_t( 'private' ) \
+                & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
+        try:
+            non_public_non_pure_virtual = main_ns.calldefs( query )
+            non_public_non_pure_virtual.exclude()
+        except:
+            pass
     
-    ## Exclude protected and private that are not pure virtual
-    query = ~declarations.access_type_matcher_t( 'public' ) \
-            & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
-    non_public_non_pure_virtual = main_ns.calldefs( query )
-    non_public_non_pure_virtual.exclude()
-
-    #Virtual functions that return reference could not be overriden from Python
-    query = declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.VIRTUAL ) \
-            & declarations.custom_matcher_t( lambda decl: declarations.is_reference( decl.return_type ) )
-    try:
-        main_ns.calldefs( query ).virtuality = declarations.VIRTUALITY_TYPES.NOT_VIRTUAL
-    except:
-        pass
+        #Virtual functions that return reference could not be overriden from Python
+        query = declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.VIRTUAL ) \
+                & declarations.custom_matcher_t( lambda decl: declarations.is_reference( decl.return_type ) )
+        try:
+            main_ns.calldefs( query ).virtuality = declarations.VIRTUALITY_TYPES.NOT_VIRTUAL
+        except:
+            pass
                
 def AutoInclude( mb ):
     pass
@@ -149,20 +195,21 @@ def AutoFixes ( mb ):
     the entire name space trying to guess stuff and fix it:)
     """       
     global_ns = mb.global_ns
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    for ns in NAMESPACES:
+        main_ns = global_ns.namespace( ns )
     
-    # arguments passed as refs but not const are not liked by boost
-#     Fix_Ref_Not_Const ( main_ns )
+        # arguments passed as refs but not const are not liked by boost
+    #     Fix_Ref_Not_Const ( main_ns )
+        
+        # Functions that have void pointers in their argument list need to change to unsigned int's  
+        Fix_Void_Ptr_Args  ( main_ns )
+        
+        # and change functions that return a variety of pointers to instead return unsigned int's
+        Fix_Pointer_Returns ( main_ns )   
     
-    # Functions that have void pointers in their argument list need to change to unsigned int's  
-    Fix_Void_Ptr_Args  ( main_ns )
-    
-    # and change functions that return a variety of pointers to instead return unsigned int's
-    Fix_Pointer_Returns ( main_ns )   
-
-    # functions that need to have implicit conversions turned off
-    Fix_Implicit_Conversions ( main_ns)
-    
+        # functions that need to have implicit conversions turned off
+        Fix_Implicit_Conversions ( main_ns)
+        
     if os.name =='nt':
         Fix_NT( mb )
     elif os.name =='posix':
@@ -252,13 +299,13 @@ def Fix_Void_Ptr_Args ( mb ):
          
                     
 def Fix_Pointer_Returns ( mb ):
-    """ Change out functions that return a variety of pointer to base types and instead
+    """ Change out functions that return a variety of pointers to base types and instead
     have them return the address the pointer is pointing to (the pointer value)
     This allow us to use CTypes to handle in memory buffers from Python
     
     Also - if documentation has been set then ignore the class/function as it means it's been tweaked else where
     """
-    pointee_types=['unsigned int','int', 'float', 'unsigned char']
+    pointee_types=['unsigned int','int', 'float', 'unsigned char', '::udword', '::sbyte' ]
     known_names=[]  # these are function names we know it's cool to exclude
     for fun in mb.member_functions():
         if declarations.is_pointer (fun.return_type) and not fun.documentation:
@@ -302,7 +349,7 @@ def Remove_Static_Consts ( mb ):
 #            
 def generate_code():  
     messages.disable( 
-#           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+# #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
           messages.W1020
         , messages.W1021
         , messages.W1022
@@ -315,13 +362,13 @@ def generate_code():
         , messages.W1029
         , messages.W1030
         , messages.W1031
-        , messages.W1035
-        , messages.W1040 
-        , messages.W1038        
+#         , messages.W1035
+#         , messages.W1040 
+#         , messages.W1038        
         , messages.W1041
         , messages.W1036 # pointer to Python immutable member
-        , messages.W1033 # unnamed variables
-        , messages.W1018 # expose unnamed classes
+#         , messages.W1033 # unnamed variables
+#         , messages.W1018 # expose unnamed classes
         , messages.W1049 # returns reference to local variable
         , messages.W1014 # unsupported '=' operator
          )
@@ -360,8 +407,9 @@ def generate_code():
     # 
     global_ns = mb.global_ns
     global_ns.exclude()
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
-    main_ns.include()
+    for ns in NAMESPACES:
+        main_ns = global_ns.namespace( ns )
+        main_ns.include()
     
    
     AutoExclude ( mb )
@@ -377,17 +425,30 @@ def generate_code():
     #
     # We need to tell boost how to handle calling (and returning from) certain functions
     #
-    Set_Call_Policies ( mb.global_ns.namespace (MAIN_NAMESPACE) )
+    for ns in NAMESPACES:
+        Set_Call_Policies ( mb.global_ns.namespace (ns) )
     
+        
+    c = mb.global_ns.namespace ( 'IceMaths').class_('Matrix3x3')
+    for o in c.operators():
+        if 'Quat' in o._decl_string():
+            o.exclude()
+    c = mb.global_ns.namespace ( 'IceMaths').class_('Point')
+    for o in c.operators():
+        if 'float const *' in o._decl_string():
+            o.exclude()
+            print "EXCLUDED OP", o._decl_string()
     #
     # the manual stuff all done here !!!
     #
     hand_made_wrappers.apply( mb )
 
     NoPropClasses = [""]
-    for cls in main_ns.classes():
-        if cls.name not in NoPropClasses:
-            cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
+    for ns in NAMESPACES:
+        main_ns = global_ns.namespace( ns )
+        for cls in main_ns.classes():
+            if cls.name not in NoPropClasses:
+                cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
             
     common_utils.add_constants( mb, { 'opcode_version' :  '"%s"' % environment.opcode.version.replace("\n", "\\\n") 
                                       , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
