@@ -54,8 +54,9 @@ def docit ( general, i, o ):
 def ManualExclude ( mb ):
     global_ns = mb.global_ns
     excludes=["::Opcode::AABBQuantizedNoLeafTree::Walk", "::Opcode::AABBQuantizedTree::Walk",
-                "::Opcode::AABBNoLeafTree::Walk", "::Opcode::AABBCollisionTree::Walk","::Opcode::AABBTree::Walk",
-                "::Opcode::AABBOptimizedTree::Walk", "::Opcode::SAP_PairData::DumpPairs",
+                "::Opcode::AABBNoLeafTree::Walk", "::Opcode::AABBCollisionTree::Walk",
+                "::Opcode::AABBTree::Walk",## "::Opcode::AABBOptimizedTree::Walk",
+                "::Opcode::SAP_PairData::DumpPairs",
                 "::Opcode::AABBTree::GetIndices","::Opcode::AABBTreeNode::GetPrimitives",
                 "::Opcode::HybridModel::GetIndices","::Opcode::VolumeCollider::GetTouchedPrimitives", 
                 # Quat's don't seem to be implemented
@@ -81,6 +82,9 @@ def ManualExclude ( mb ):
                 ,"::IceMaths::Point::Mult"
                 ,"::IceMaths::Point::Mac"
                 ,"::IceMaths::Triangle::ComputeMoment"
+                ,"::IceMaths::Sphere::Compute"
+                ,"::IceMaths::Sphere::FastCompute"
+                ,"::IceMaths::Matrix4x4::Rot"
                 ]
     for e in excludes:
         print "excluding function", e
@@ -95,8 +99,8 @@ def ManualExclude ( mb ):
     
     excludes = ["::Opcode::AABBOptimizedTree" 
                ### Exclude matrix4x4 as boost/boost/tuple/detail/tuple_basic.hpp needs to be extended to take 16 arguments 
-               ,"::IceMaths::Matrix4x4"
-               ,"::IceMaths::Sphere"
+#                ,"::IceMaths::Matrix4x4"
+#                ,"::IceMaths::Sphere"
                ]
     for e in excludes:
         global_ns.class_(e).exclude()
@@ -381,7 +385,7 @@ def generate_code():
                         os.path.join( environment.opcode.root_dir, "python_opcode.h" )
                         , environment.opcode.cache_file )
 
-    defined_symbols = ['OPCODE_EXPORTS' ]
+    defined_symbols = ['OPCODE_EXPORTS'] #, 'OPC_USE_CALLBACKS' ]
     defined_symbols.append( 'VERSION_' + environment.opcode.version )  
     
     #
@@ -428,16 +432,37 @@ def generate_code():
     for ns in NAMESPACES:
         Set_Call_Policies ( mb.global_ns.namespace (ns) )
     
-        
+#IceMaths::Quat IceMaths::Matrix3x3::operator ::IceMaths::Quat() const [casting operator]
     c = mb.global_ns.namespace ( 'IceMaths').class_('Matrix3x3')
     for o in c.operators():
         if 'Quat' in o._decl_string():
             o.exclude()
+            print "Excluded Op", o, "\n", o._decl_string()
+##  OP float const * IceMaths::Point::operator float const *() const [casting operator]
     c = mb.global_ns.namespace ( 'IceMaths').class_('Point')
     for o in c.operators():
         if 'float const *' in o._decl_string():
             o.exclude()
-            print "EXCLUDED OP", o._decl_string()
+            print "Excluded Op", o, "\n", o._decl_string()
+    ##Spere(udword nb_verts, const Point* verts);  Not Implemented
+    c = mb.global_ns.namespace ( 'IceMaths').class_('Sphere')
+    for o in c.constructors(arg_types=("::udword","::IceMaths::Point const *") ):
+        o.exclude()
+    c = mb.global_ns.namespace ( 'IceMaths').class_('Matrix4x4')
+    for o in c.constructors():
+        if len (o.arguments) > 10:
+            o.exclude()
+    for o in c.member_functions():
+        if len (o.arguments) > 10:
+            print "Too Many Arguments - excluded:", o, o._decl_string()
+            o.exclude()
+    c = mb.global_ns.namespace ( 'IceMaths').class_('Matrix4x4')
+    for o in c.casting_operators():
+        rett = o.return_type.decl_string
+        if 'Quat' in rett or 'PR' in rett:
+            o.exclude()
+            print "Excluded Op", o
+             
     #
     # the manual stuff all done here !!!
     #
