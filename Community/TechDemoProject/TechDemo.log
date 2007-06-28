@@ -1,222 +1,130 @@
-2007-05-21 23:28:39,280 DEBUG  Searching for: RenderSystem_GL.dll
-2007-05-21 23:28:39,592 DEBUG  Searching for: Plugin_BSPSceneManager.dll
-2007-05-21 23:28:39,592 DEBUG  Searching for: Plugin_CgProgramManager.dll
-2007-05-21 23:28:39,796 DEBUG  Searching for: Plugin_OctreeSceneManager.dll
-2007-05-21 23:28:39,796 DEBUG  Searching for: RenderSystem_Direct3D9.dll
-2007-05-21 23:28:40,467 DEBUG  Searching for: Plugin_ParticleFX.dll
-2007-05-21 23:28:16,000 DEBUG Visuals
-2007-05-21 23:28:16,000 DEBUG Resources
-2007-05-21 23:28:16,000 DEBUG Bootstrap
-2007-05-21 23:28:16,000 DEBUG MainMenu
-2007-05-21 23:28:16,000 DEBUG Core
-2007-05-21 23:28:16,000 DEBUG testlevel
-2007-05-21 23:28:16,000 DEBUG Resources Loaded
-2007-05-21 23:28:16,000 DEBUG Datamanager
-2007-05-21 23:28:16,000 DEBUG DataManager Starting
-2007-05-21 23:28:16,000 DEBUG Datamanager get world
-2007-05-21 23:28:16,000 DEBUG world and loader / parser initialized
-2007-05-21 23:28:16,000 DEBUG DataManager Initialized ::
-2007-05-21 23:28:16,000 DEBUG FrameListener
-2007-05-21 23:28:16,000 DEBUG Render
-2007-05-21 23:28:16,000 DEBUG Tree Collision Created and Exported
-2007-05-21 23:28:16,000 DEBUG Spawning: RastaMan(-5.0, 50.0, 30.0)
-2007-05-21 23:28:16,000 DEBUG Spawning: FairyNest(-4.0, 20.0, -8.0)
-2007-05-21 23:28:16,000 DEBUG Spawning: Bird(0.0, 20.0, -100.0)
-2007-05-21 23:28:16,000 DEBUG Spawning: Bird(-5.0, 20.0, -100.0)
-2007-05-21 23:28:16,000 DEBUG Spawning: Bird(-10.0, 20.0, -100.0)
-2007-05-21 23:28:16,000 DEBUG Spawning: Bird(-15.0, 20.0, -100.0)
-2007-05-21 23:28:16,000 DEBUG Spawning: Bird(5.0, 20.0, -100.0)
-2007-05-21 23:28:16,000 DEBUG Spawning: Bird(10.0, 20.0, -100.0)
-2007-05-21 23:28:16,000 DEBUG Spawning: Bird(15.0, 20.0, -100.0)
-2007-05-21 23:28:16,000 DEBUG Spawning: Dragon(-100.0, 40.0, 100.0)
-2007-05-21 23:28:16,000 DEBUG destroying sceneNode:Unnamed_626RastaMan00RastaManMesh_Entity
-2007-05-21 23:28:16,000 DEBUG DestroyingNode:RastaMan00
-2007-05-21 23:30:24,000 DEBUG FairyNest11 started making fairies 
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG FairyNest11 stopped making fairies 
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_669actor2626FairyGlow_Billboard
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_670actor2626FairyLight
-2007-05-21 23:30:24,000 DEBUG DestroyingNode:actor2626
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_667actor2525FairyGlow_Billboard
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_668actor2525FairyLight
-2007-05-21 23:30:24,000 DEBUG DestroyingNode:actor2525
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_665actor2424FairyGlow_Billboard
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_666actor2424FairyLight
-2007-05-21 23:30:24,000 DEBUG DestroyingNode:actor2424
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_663actor2323FairyGlow_Billboard
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_664actor2323FairyLight
-2007-05-21 23:30:24,000 DEBUG DestroyingNode:actor2323
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_661actor2222FairyGlow_Billboard
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_662actor2222FairyLight
-2007-05-21 23:30:24,000 DEBUG DestroyingNode:actor2222
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_659actor2121FairyGlow_Billboard
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_660actor2121FairyLight
-2007-05-21 23:30:24,000 DEBUG DestroyingNode:actor2121
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_657actor2020FairyGlow_Billboard
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_658actor2020FairyLight
-2007-05-21 23:30:24,000 DEBUG DestroyingNode:actor2020
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_655actor1919FairyGlow_Billboard
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_656actor1919FairyLight
-2007-05-21 23:30:24,000 DEBUG DestroyingNode:actor1919
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_653actor1818FairyGlow_Billboard
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_654actor1818FairyLight
-2007-05-21 23:30:24,000 DEBUG DestroyingNode:actor1818
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_651actor1717FairyGlow_Billboard
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_652actor1717FairyLight
-2007-05-21 23:30:24,000 DEBUG DestroyingNode:actor1717
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_649actor1616FairyGlow_Billboard
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_650actor1616FairyLight
-2007-05-21 23:30:24,000 DEBUG DestroyingNode:actor1616
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_647actor1515FairyGlow_Billboard
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_648actor1515FairyLight
-2007-05-21 23:30:24,000 DEBUG DestroyingNode:actor1515
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_645actor1414FairyGlow_Billboard
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_646actor1414FairyLight
-2007-05-21 23:30:24,000 DEBUG DestroyingNode:actor1414
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_643actor1313FairyGlow_Billboard
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_644actor1313FairyLight
-2007-05-21 23:30:24,000 DEBUG DestroyingNode:actor1313
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_641actor1212FairyGlow_Billboard
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_642actor1212FairyLight
-2007-05-21 23:30:24,000 DEBUG DestroyingNode:actor1212
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_639actor1111FairyGlow_Billboard
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_640actor1111FairyLight
-2007-05-21 23:30:24,000 DEBUG DestroyingNode:actor1111
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_637actor1010FairyGlow_Billboard
-2007-05-21 23:30:24,000 DEBUG destroying sceneNode:Unnamed_638actor1010FairyLight
-2007-05-21 23:30:24,000 DEBUG DestroyingNode:actor1010
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG FairyNest11 started making fairies 
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:30:24,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:32:32,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:32:32,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:32:32,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:32:32,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:32:32,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:32:32,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:32:32,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:32:32,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:32:32,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:32:32,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:32:32,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:32:32,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:32:32,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:32:32,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:32:32,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
-2007-05-21 23:32:32,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:32:32,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
-2007-05-21 23:32:32,000 DEBUG FairyNest11 stopped making fairies 
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_709actor4646FairyGlow_Billboard
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_710actor4646FairyLight
-2007-05-21 23:32:32,000 DEBUG DestroyingNode:actor4646
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_707actor4545FairyGlow_Billboard
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_708actor4545FairyLight
-2007-05-21 23:32:32,000 DEBUG DestroyingNode:actor4545
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_705actor4444FairyGlow_Billboard
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_706actor4444FairyLight
-2007-05-21 23:32:32,000 DEBUG DestroyingNode:actor4444
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_703actor4343FairyGlow_Billboard
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_704actor4343FairyLight
-2007-05-21 23:32:32,000 DEBUG DestroyingNode:actor4343
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_701actor4242FairyGlow_Billboard
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_702actor4242FairyLight
-2007-05-21 23:32:32,000 DEBUG DestroyingNode:actor4242
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_699actor4141FairyGlow_Billboard
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_700actor4141FairyLight
-2007-05-21 23:32:32,000 DEBUG DestroyingNode:actor4141
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_697actor4040FairyGlow_Billboard
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_698actor4040FairyLight
-2007-05-21 23:32:32,000 DEBUG DestroyingNode:actor4040
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_695actor3939FairyGlow_Billboard
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_696actor3939FairyLight
-2007-05-21 23:32:32,000 DEBUG DestroyingNode:actor3939
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_693actor3838FairyGlow_Billboard
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_694actor3838FairyLight
-2007-05-21 23:32:32,000 DEBUG DestroyingNode:actor3838
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_691actor3737FairyGlow_Billboard
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_692actor3737FairyLight
-2007-05-21 23:32:32,000 DEBUG DestroyingNode:actor3737
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_689actor3636FairyGlow_Billboard
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_690actor3636FairyLight
-2007-05-21 23:32:32,000 DEBUG DestroyingNode:actor3636
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_687actor3535FairyGlow_Billboard
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_688actor3535FairyLight
-2007-05-21 23:32:32,000 DEBUG DestroyingNode:actor3535
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_685actor3434FairyGlow_Billboard
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_686actor3434FairyLight
-2007-05-21 23:32:32,000 DEBUG DestroyingNode:actor3434
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_683actor3333FairyGlow_Billboard
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_684actor3333FairyLight
-2007-05-21 23:32:32,000 DEBUG DestroyingNode:actor3333
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_681actor3232FairyGlow_Billboard
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_682actor3232FairyLight
-2007-05-21 23:32:32,000 DEBUG DestroyingNode:actor3232
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_679actor3131FairyGlow_Billboard
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_680actor3131FairyLight
-2007-05-21 23:32:32,000 DEBUG DestroyingNode:actor3131
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_677actor3030FairyGlow_Billboard
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_678actor3030FairyLight
-2007-05-21 23:32:32,000 DEBUG DestroyingNode:actor3030
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_675actor2929FairyGlow_Billboard
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_676actor2929FairyLight
-2007-05-21 23:32:32,000 DEBUG DestroyingNode:actor2929
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_673actor2828FairyGlow_Billboard
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_674actor2828FairyLight
-2007-05-21 23:32:32,000 DEBUG DestroyingNode:actor2828
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_671actor2727FairyGlow_Billboard
-2007-05-21 23:32:32,000 DEBUG destroying sceneNode:Unnamed_672actor2727FairyLight
-2007-05-21 23:32:32,000 DEBUG DestroyingNode:actor2727
+2007-06-28 21:36:36,858 DEBUG  Searching for: RenderSystem_GL.dll
+2007-06-28 21:36:39,467 DEBUG  Searching for: Plugin_BSPSceneManager.dll
+2007-06-28 21:36:39,515 DEBUG  Searching for: Plugin_CgProgramManager.dll
+2007-06-28 21:36:40,515 DEBUG  Searching for: Plugin_OctreeSceneManager.dll
+2007-06-28 21:36:40,655 DEBUG  Searching for: RenderSystem_Direct3D9.dll
+2007-06-28 21:36:42,578 DEBUG  Searching for: Plugin_ParticleFX.dll
+2007-06-28 21:37:20,000 DEBUG Visuals
+2007-06-28 21:37:20,000 DEBUG Resources
+2007-06-28 21:37:20,000 DEBUG Bootstrap
+2007-06-28 21:37:20,000 DEBUG MainMenu
+2007-06-28 21:37:20,000 DEBUG Core
+2007-06-28 21:37:20,000 DEBUG testlevel
+2007-06-28 21:37:20,000 DEBUG Resources Loaded
+2007-06-28 21:37:20,000 DEBUG Datamanager
+2007-06-28 21:37:20,000 DEBUG DataManager Starting
+2007-06-28 21:37:20,000 DEBUG Datamanager get world
+2007-06-28 21:37:20,000 DEBUG world and loader / parser initialized
+2007-06-28 21:37:20,000 DEBUG DataManager Initialized ::
+2007-06-28 21:37:20,000 DEBUG FrameListener
+2007-06-28 21:37:20,000 DEBUG Render
+2007-06-28 21:37:20,000 DEBUG Tree Collision Created and Exported
+2007-06-28 21:37:20,000 DEBUG DebugFrameListener setup Complete::
+2007-06-28 21:37:20,000 DEBUG DebugFrameListener setup Complete::
+2007-06-28 21:37:20,000 DEBUG Spawning: RastaMan(-5.0, 50.0, 30.0)
+2007-06-28 21:37:20,000 DEBUG RastaMan00 Setting Actor Options
+2007-06-28 21:37:20,000 DEBUG Spawning: FairyNest(-4.0, 20.0, -8.0)
+2007-06-28 21:37:20,000 DEBUG Spawning: Bird(0.0, 20.0, -100.0)
+2007-06-28 21:37:20,000 DEBUG Spawning: Bird(-5.0, 20.0, -100.0)
+2007-06-28 21:37:20,000 DEBUG Spawning: Bird(-10.0, 20.0, -100.0)
+2007-06-28 21:37:20,000 DEBUG Spawning: Bird(-15.0, 20.0, -100.0)
+2007-06-28 21:37:20,000 DEBUG Spawning: Bird(5.0, 20.0, -100.0)
+2007-06-28 21:37:20,000 DEBUG Spawning: Bird(10.0, 20.0, -100.0)
+2007-06-28 21:37:20,000 DEBUG Spawning: Bird(15.0, 20.0, -100.0)
+2007-06-28 21:37:20,000 DEBUG Spawning: Dragon(-100.0, 40.0, 100.0)
+2007-06-28 21:37:20,000 DEBUG Actor Event AddedEvent: name=BigExplosionSpawn time=1function=spawnActor
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_626RastaMan00RastaManMesh_Entity
+2007-06-28 21:37:20,000 DEBUG DestroyingNode:RastaMan00
+2007-06-28 21:37:20,000 DEBUG Spawning: BallVector3(-5, 20.3303, 30)
+2007-06-28 21:37:20,000 DEBUG FairyNest11 started making fairies 
+2007-06-28 21:37:20,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
+2007-06-28 21:37:20,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
+2007-06-28 21:37:20,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
+2007-06-28 21:37:20,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
+2007-06-28 21:37:20,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
+2007-06-28 21:37:20,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
+2007-06-28 21:37:20,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
+2007-06-28 21:37:20,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
+2007-06-28 21:37:20,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
+2007-06-28 21:37:20,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
+2007-06-28 21:37:20,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
+2007-06-28 21:37:20,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
+2007-06-28 21:37:20,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
+2007-06-28 21:37:20,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
+2007-06-28 21:37:20,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
+2007-06-28 21:37:20,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
+2007-06-28 21:37:20,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
+2007-06-28 21:37:20,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
+2007-06-28 21:37:20,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
+2007-06-28 21:37:20,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
+2007-06-28 21:37:20,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
+2007-06-28 21:37:20,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
+2007-06-28 21:37:20,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
+2007-06-28 21:37:20,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
+2007-06-28 21:37:20,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
+2007-06-28 21:37:20,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
+2007-06-28 21:37:20,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
+2007-06-28 21:37:20,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
+2007-06-28 21:37:20,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
+2007-06-28 21:37:20,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
+2007-06-28 21:37:20,000 DEBUG Actor Event AddedEvent: name=SmallFairySpawn time=1function=spawnActor
+2007-06-28 21:37:20,000 DEBUG FairyNest11 stopped making fairies 
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_666actor2525FairyGlow_Billboard
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_667actor2525FairyLight
+2007-06-28 21:37:20,000 DEBUG DestroyingNode:actor2525
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_664actor2424FairyGlow_Billboard
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_665actor2424FairyLight
+2007-06-28 21:37:20,000 DEBUG DestroyingNode:actor2424
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_662actor2323FairyGlow_Billboard
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_663actor2323FairyLight
+2007-06-28 21:37:20,000 DEBUG DestroyingNode:actor2323
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_660actor2222FairyGlow_Billboard
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_661actor2222FairyLight
+2007-06-28 21:37:20,000 DEBUG DestroyingNode:actor2222
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_658actor2121FairyGlow_Billboard
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_659actor2121FairyLight
+2007-06-28 21:37:20,000 DEBUG DestroyingNode:actor2121
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_656actor2020FairyGlow_Billboard
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_657actor2020FairyLight
+2007-06-28 21:37:20,000 DEBUG DestroyingNode:actor2020
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_654actor1919FairyGlow_Billboard
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_655actor1919FairyLight
+2007-06-28 21:37:20,000 DEBUG DestroyingNode:actor1919
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_652actor1818FairyGlow_Billboard
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_653actor1818FairyLight
+2007-06-28 21:37:20,000 DEBUG DestroyingNode:actor1818
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_650actor1717FairyGlow_Billboard
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_651actor1717FairyLight
+2007-06-28 21:37:20,000 DEBUG DestroyingNode:actor1717
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_648actor1616FairyGlow_Billboard
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_649actor1616FairyLight
+2007-06-28 21:37:20,000 DEBUG DestroyingNode:actor1616
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_646actor1515FairyGlow_Billboard
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_647actor1515FairyLight
+2007-06-28 21:37:20,000 DEBUG DestroyingNode:actor1515
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_644actor1414FairyGlow_Billboard
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_645actor1414FairyLight
+2007-06-28 21:37:20,000 DEBUG DestroyingNode:actor1414
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_642actor1313FairyGlow_Billboard
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_643actor1313FairyLight
+2007-06-28 21:37:20,000 DEBUG DestroyingNode:actor1313
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_640actor1212FairyGlow_Billboard
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_641actor1212FairyLight
+2007-06-28 21:37:20,000 DEBUG DestroyingNode:actor1212
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_638actor1111FairyGlow_Billboard
+2007-06-28 21:37:20,000 DEBUG destroying sceneNode:Unnamed_639actor1111FairyLight
+2007-06-28 21:37:20,000 DEBUG DestroyingNode:actor1111
+2007-06-28 21:37:20,000 DEBUG Spawning: SmallFairyVector3(-4, 9.62345, -8)
+2007-06-28 21:39:28,000 DEBUG destroying sceneNode:Unnamed_627FairyNest11FairyNestMesh_Entity
+2007-06-28 21:39:28,000 DEBUG destroying sceneNode:Unnamed_628Bird22BirdMesh_Entity
+2007-06-28 21:39:28,000 DEBUG destroying sceneNode:Unnamed_629Bird33BirdMesh_Entity
+2007-06-28 21:39:28,000 DEBUG destroying sceneNode:Unnamed_630Bird44BirdMesh_Entity
+2007-06-28 21:39:28,000 DEBUG destroying sceneNode:Unnamed_631Bird55BirdMesh_Entity
+2007-06-28 21:39:28,000 DEBUG destroying sceneNode:Unnamed_632Bird66BirdMesh_Entity
+2007-06-28 21:39:28,000 DEBUG destroying sceneNode:Unnamed_633Bird77BirdMesh_Entity
+2007-06-28 21:39:28,000 DEBUG destroying sceneNode:Unnamed_634Bird88BirdMesh_Entity
+2007-06-28 21:39:28,000 DEBUG destroying sceneNode:Unnamed_636Bird99Smokey
+2007-06-28 21:39:28,000 DEBUG destroying sceneNode:Unnamed_635Bird99DragonMesh_Entity
+2007-06-28 21:39:28,000 DEBUG destroying sceneNode:Unnamed_637ball1010BallmESH_Entity
+2007-06-28 21:39:28,000 DEBUG destroying sceneNode:Unnamed_668actor2626FairyGlow_Billboard
+2007-06-28 21:39:28,000 DEBUG destroying sceneNode:Unnamed_669actor2626FairyLight

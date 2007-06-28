@@ -1,8 +1,19 @@
+#-----------------------------------------------------------------------------#
+#                                                                             #
+#   This source code is part of the python-ogre techdemo project.             #
+#                                                                             #
+#   This program is released as public domain                                 #
+#                                                                             #
+#-----------------------------------------------------------------------------#
+#   
+#   TITLE: SkyManager
+#   DESCRIPTION: Sky Manager
+#   AUTHOR: mikeInside, python version by Ben Harling
+
 #// Quick 'n Dirty Sky Manager v1.0
 #// by mikeInside 2007
 #// http://mikeinside.modthesims2.com
 #// This code is under the Whatevar! licence. Do what you want; but keep the original copyright header.
-# Pythonised by Ben Harling
 
 
 
@@ -10,6 +21,7 @@
 #           100, Vector3::UNIT_Y, Radian(0), 800, 700));
 
 import ogre.renderer.OGRE as ogre
+import logging
 
 class Event:
     def __init__(self, time, name, function, *args):
@@ -273,4 +285,5 @@ class SkyManager(ogre.FrameListener):
         self.mActiveFragmentParameters = None
         self.mActiveFragmentProgram = None
         self.mActiveMaterial= None
+        print 'SkyManager Desttoyed'
 

@@ -1,3 +1,17 @@
+#-----------------------------------------------------------------------------#
+#                                                                             #
+#   This source code is part of the python-ogre techdemo project.             #
+#                                                                             #
+#   This program is released as public domain                                 #
+#                                                                             #
+#-----------------------------------------------------------------------------#
+#   
+#   TITLE: DataManager
+#   DESCRIPTION: Application wide data management
+#   AUTHOR: Ben Harling
+
+
+
 import os, sys
 import logging
 import ogre.renderer.OGRE as ogre
@@ -5,6 +19,7 @@ import ogre.io.OIS as OIS
 import ogre.physics.OgreNewt as OgreNewt
 from dotscene import DotScene
 from actors.characters import people
+import actors.characters.boids
 from actors.characters.boids import Bird, Dragon, FishBoid, FairyNest, SmallFairy
 
 from frameListeners import debugFrameListener
@@ -71,7 +86,9 @@ class DataManager:
         logging.debug('DataManager Initialized ::')
         
     def __del__(self):
+        print 'Killing DataManager'
         self.clearScene()
+        del self.world
 ##            while self.objectsToDestroy:
 ##            ob = self.objectsToDestroy.pop()
 ##            print 'Destroying:', ob.name
@@ -184,7 +201,7 @@ class DataManager:
 ##                    f = open(ky[1], 'r')
 ##                    tree = ogre.FileHandleDataStream(f)
                 try:
-                    f = open(ky[1], 'rb').read()
+                    f = open(ky[1], 'rb')
                     self.treeCollision = OgreNewt.TreeCollision(self.world)
                     dataS = ogre.DataStream(f)
                     self.treeColLoader.importTreeCollision( dataS, self.treeCollision)
@@ -239,23 +256,55 @@ class DataManager:
     def clearScene(self):
         # clear the current scene and models
         #del self.objectsToDestroy
-        while self.objectsToDestroy:
-            obNum = self.objectsToDestroy.pop()
-            ob = self.actors.pop(obNum)
-            ob.MediaTree.destroy( self.sceneManager )
-            self.sceneManager.destroySceneNode( ob.OgreNode.name )
-            del ob
-        while self.actors:
-            ob = self.actors.pop()
-            ob.MediaTree.destroy( self.sceneManager )
-            self.sceneManager.destroySceneNode( ob.OgreNode.name )
-            del ob
-        del self.staticCollisionBody
-        del self.treeColLoader
         del self.activePlugins
-        logging.debug('DataManager cleared scene')
+        self.world.destroyAllBodies()
+        del actors.characters.boids.birds
+        del actors.characters.boids.fairies
+        print 'DataManage:: remove objectsToDestroy'
+        for ob in self.objectsToDestroy:
+            ob.MediaTree.destroy( self.sceneManager )
+            self.sceneManager.destroySceneNode( ob.OgreNode.name )
+        
+        for ob in self.actors:
+            ob.MediaTree.destroy( self.sceneManager )
+            self.sceneManager.destroySceneNode( ob.OgreNode.name )
+        
+        while self.objectsToDestroy:
+##            obNum = self.objectsToDestroy.pop()
+##            ob = self.actors.pop(obNum)
+##            ob.MediaTree.destroy( self.sceneManager )
+##            self.sceneManager.destroySceneNode( ob.OgreNode.name )
+            del self.objectsToDestroy[0]
+        print 'DataManage:: remove actors'
+        while self.actors:
+##            ob = self.actors.pop()
+##            ob.MediaTree.destroy( self.sceneManager )
+##            self.sceneManager.destroySceneNode( ob.OgreNode.name )
+            del self.actors[0]
+##        print 'DataManage:: remove staticCollisionBody'
+        del self.staticCollisionBody
+##        print 'DataManage:: remove treeCollision'
+        del self.treeColLoader
+        #del self.activePlugins
+        print 'DataManager cleared scene'
+        
+    # Input event - write loads of data about the world to the log
+    def event_LogEverything(self, *args):
+        logging.debug('--------- WORLD STATE AT %s -----------' % str(self.totalTime) )
+        logging.debug('------- ACTORS :')
+        for actor in self.actors:
+            s = actor.name + " Alive:" +  str(actor.Alive) + ' Bodies: ' +str(actor.bodies)
+            logging.debug(s)
+        logging.debug('------- ACTOR DELETE QUEUE :')
+        for actor in self.objectsToDestroy:
+            s = actor.name + " Alive:" +  str(actor.Alive) + str(actor.bodies)
+            logging.debug(s)
+        logging.debug('------- BOIDS :')
+        logging.debug(actors.characters.boids.birds)
+        logging.debug(actors.characters.boids.fairies)
         
         
+            
         
     
     def getSceneLoaded(self):
@@ -388,7 +437,7 @@ class DataManager:
                     
                         
                 if actor.hasAI:
-                    if abs((self.updateAITime % actor.updateAIFrequency) - actor.updateAITime) <= time/2:
+                    if abs((self.updateAITime % actor.updateAIFrequency) - actor.updateAITime) <= time:
                         # this actor should think now
                         actor.Update(self.actors, self.player, self.updateAITime, self.world, time)
                         # Get actors requested events
@@ -435,6 +484,12 @@ class DataManager:
         while self.objectsToDestroy:
             obNum = self.objectsToDestroy.pop()
             ob = self.actors.pop(obNum)
+            
+            # Check for any events spawned on death
+            if ob.events:
+                while ob.events:
+                    self.eventManager.addActorEvent(ob.events.pop())
+                
             ob.MediaTree.destroy( self.sceneManager )
             del ob.bodies
             del ob.body

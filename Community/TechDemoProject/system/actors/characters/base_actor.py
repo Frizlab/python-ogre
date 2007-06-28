@@ -1,3 +1,16 @@
+#-----------------------------------------------------------------------------#
+#                                                                             #
+#   This source code is part of the python-ogre techdemo project.             #
+#                                                                             #
+#   This program is released as public domain                                 #
+#                                                                             #
+#-----------------------------------------------------------------------------#
+#   
+#   TITLE: base_actor
+#   DESCRIPTION: Root Actor definition
+#   AUTHOR: Ben Harling
+
+
 import ogre.renderer.OGRE as ogre
 import logging
 #from ogre.Math import *
@@ -23,7 +36,7 @@ class Event:
     def __cmp__(self, other):
         return cmp(self.time, other.time)
     def __repr__(self):
-        return ('Event Name = ' + self.name + ' - Event Time: ' + str(self.time))
+        return ('Event: name=' + self.name + ' time=' + str(self.time) + 'function=' +  str(self.function))
     
 
 # ------------------------ MEDIATREE -----------------------------------------#
@@ -222,7 +235,9 @@ class GameActor:
     def __del__(self):
         '''Cleanup this actor'''
         del self.body
-        del self.bodies
+        while self.bodies:
+            b= self.bodies.pop()
+            del b
         
     def testWorldEvent(self, *args):
         '''DEBUG: Recieving world events'''

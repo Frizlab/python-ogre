@@ -1,14 +1,15 @@
-fragment_program skydomePS hlsl
+fragment_program skydomePS cg
 {
-   source skydomePS1_4.source
-   target ps_1_4
+   source skydomePS1_4.cg
+   profiles ps_2_0 arbfp1 fp30 
+ 
    entry_point ps_main
 }
 
-vertex_program skydomeVS hlsl
+vertex_program skydomeVS cg
 {
-   source skydomeVS1_1.source
-   target vs_1_1
+   source skydomeVS1_1.cg
+   profiles vs_2_0 arbvp1 vp30
    entry_point vs_main
 }
 

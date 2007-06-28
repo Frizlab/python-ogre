@@ -1,3 +1,16 @@
+#-----------------------------------------------------------------------------#
+#                                                                             #
+#   This source code is part of the python-ogre techdemo project.             #
+#                                                                             #
+#   This program is released as public domain                                 #
+#                                                                             #
+#-----------------------------------------------------------------------------#
+#   
+#   TITLE: EventManager
+#   DESCRIPTION: Application wide event gathering and dispatching
+#   AUTHOR: Ben Harling
+#   Based on: http://www.ogre3d.org/phpBB2addons/viewtopic.php?t=4049&start=0&postdays=0&postorder=asc&highlight=heapq
+
 import heapq
 import logging
 # -- Simple Event Manager

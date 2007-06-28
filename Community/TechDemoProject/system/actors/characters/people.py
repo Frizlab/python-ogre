@@ -1,9 +1,25 @@
+#-----------------------------------------------------------------------------#
+#                                                                             #
+#   This source code is part of the python-ogre techdemo project.             #
+#                                                                             #
+#   This program is released as public domain                                 #
+#                                                                             #
+#-----------------------------------------------------------------------------#
+#   
+#   TITLE: people
+#   DESCRIPTION: Actor Examples
+#   AUTHOR: Ben Harling
+
+
 import ogre.renderer.OGRE as ogre
+import logging
 
 ##import psyco
 ##psyco.full()
 
 import base_actor
+
+
 
 class RastaMan(base_actor.GameActor):
     def __init__(self):
@@ -23,7 +39,7 @@ class RastaMan(base_actor.GameActor):
         
     def setActorOptions(self, world):
         # Demonstrate some of the properties of the mediaTree
-        print self.name, 'Setting Actor Options'
+        logging.debug(self.name +' Setting Actor Options')
         #self.MediaTree.printTree()
         Node, Entity = self.MediaTree.find('RastaManMesh')
         #print 'Node:', str(Node), 'Entity:', str(Entity)
@@ -39,15 +55,28 @@ class RastaMan(base_actor.GameActor):
     def move(self, time):
         self.timer+=time
         if self.timer > 3:
-            self.Remove()
+            self.Die()
+            
+    def Die(self):
+        self.events.append(base_actor.Event(1, 'BigExplosionSpawn', 'spawnActor', 'Ball', self.OgreNode.position))
+        self.Remove()
         
     def Update(self, actors, player, updateAITime, world, time):
         pass
         
+class Explosion_Big(base_actor.GameActor):
+    def __init__(self):
+        self.name = 'BigExplosion'
+        self.isAnimated = False
+        self.hasAI = False
+        self.media = [{'name':'RastaManMesh', 'parent':'root', 'rType':'mesh', 'rName':'rastaMan.mesh'}]
+        
+        
 class Ball(base_actor.GameActor):
     def __init__(self):
         base_actor.GameActor.__init__(self)
-        self.mesh = 'ellipsoid.mesh'
+        self.media = [{'name':'BallmESH', 'parent':'root', 'rType':'mesh', 'rName':'ellipsoid.mesh'}]
+        #self.mesh = 'ellipsoid.mesh'
         self.name = 'ball'
         self.isAnimated = False
         self.hasAI = False

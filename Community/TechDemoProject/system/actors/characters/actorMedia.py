@@ -1,3 +1,16 @@
+#-----------------------------------------------------------------------------#
+#                                                                             #
+#   This source code is part of the python-ogre techdemo project.             #
+#                                                                             #
+#   This program is released as public domain                                 #
+#                                                                             #
+#-----------------------------------------------------------------------------#
+#   
+#   TITLE: MediaTree
+#   DESCRIPTION: Helper class to spawn objects
+#   AUTHOR: Ben Harling
+
+
 import ogre.renderer.OGRE as ogre
 
 data = [{'name': 'TestOutOfOrder', 'parent':'OtherBit', 'rType':'mesh', 'rName':'Rastaman', 'offset':ogre.Vector3(0,0,0)},

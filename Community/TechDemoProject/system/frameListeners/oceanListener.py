@@ -1,5 +1,17 @@
-import ogre.renderer.OGRE as ogre
+#-----------------------------------------------------------------------------#
+#                                                                             #
+#   This source code is part of the python-ogre techdemo project.             #
+#                                                                             #
+#   This program is released as public domain                                 #
+#                                                                             #
+#-----------------------------------------------------------------------------#
+#   
+#   TITLE: Ocean Listener
+#   DESCRIPTION: Cut and paste from the PO Render to texture demo
 
+
+import ogre.renderer.OGRE as ogre
+import logging
 
 class oceanRttManager(ogre.FrameListener, ogre.RenderTargetListener):
     def __init__(self, mainCamera, renderWindow):
@@ -11,6 +23,11 @@ class oceanRttManager(ogre.FrameListener, ogre.RenderTargetListener):
         self.mPlaneNode= None
         self.events = []
         ogre.RenderTargetListener.__init__(self)
+        
+    def __del__(self):
+        del self.camera
+        del self.mReflectCam
+        print 'OceanListener Destroyed'
         
     def _createScene(self, sceneManager, renderWindow):
         "Override sf create scene"
@@ -98,7 +115,11 @@ class oceanRttManager(ogre.FrameListener, ogre.RenderTargetListener):
         #Give the plane a texture
         self.mPlaneEnt.setMaterialName("RttMat")
         
+        self.renderWindow = renderWindow
+        
     def frameStarted(self, frameEvent):
+        if(self.renderWindow.isClosed()):
+            return False
         # Make sure reflection camera is updated too
         self.mReflectCam.setOrientation ( self.camera.getOrientation() )
         self.mReflectCam.setPosition (self.camera.getPosition())

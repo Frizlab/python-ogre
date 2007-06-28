@@ -1,3 +1,15 @@
+#-----------------------------------------------------------------------------#
+#                                                                             #
+#   This source code is part of the python-ogre techdemo project.             #
+#                                                                             #
+#   This program is released as public domain                                 #
+#                                                                             #
+#-----------------------------------------------------------------------------#
+#   
+#   TITLE: EventManager
+#   DESCRIPTION: Application wide event gathering and dispatching
+#   AUTHOR: willism, Ben Harling
+
 #
 # A boids implementation by willism...
 #
@@ -13,6 +25,9 @@ import random
 gauss = random.Random().gauss
 
 
+
+# Generic Event ---------------------------------------------------------------------------------------------
+
 class Event:
     def __init__(self, time, name, function, *args):
         self.time = time
@@ -24,6 +39,14 @@ class Event:
     def __repr__(self):
         return ('Event: name=' + self.name + ' time=' + str(self.time) + 'function=' +  str(self.function))
     
+# -----------------------------------------------------------------------------------------------------------
+    
+
+##def __del__(*args):
+##    del birds
+##    del fairies
+    
+
 
 def trim(vector, maxLength):    
     """If the vector is longer than the given maxLength, shorten it to
@@ -54,6 +77,9 @@ class Boid(base_actor.GameActor):
         self.hasAI = True
         self.adjustHeight = False
         self.hasPhysics = False
+        
+        self.updateAIFrequency = 0.2
+        self.updateAITime = 1.0
 
         self.velocity = ogre.Vector3(0.0,0.0,1.0)
         self.accel = ogre.Vector3(0.0,0.0,0.0)
@@ -81,9 +107,42 @@ class Boid(base_actor.GameActor):
     def Update(self, actors, player, updateAITime, world, time):
         #print 'UpdatingBoid'
         self.floorDist = self.getFloorDistance(world)
+        self.find_neighbors()
+        
+        self.accel = ogre.Vector3(0.0,0.0,0.0)
+            
+        #print "...now doing rules..."
+                
+        for rule in self.rules:
+            # Adjust acceleration according to current rule
+            vector = rule()
+            
+            #print "   ...%s: %s %s %s" % (rule, vector.x, vector.y, vector.z)
+            
+            self.accel += vector
+            # Stop running rules when maxAccel reached            
+            if trim(self.accel, self.maxAccel):
+                break;
+        
+        
+        
+        # adjust velocity, then cut it down if needed
+        self.velocity += self.accel * time
+        trim(self.velocity, self.maxSpeed)
+        extrude(self.velocity, self.minSpeed)
+      
+        self.OgreNode.roll(-self.roll)
+        self.OgreNode.pitch(-self.pitch)
+        self.OgreNode.yaw(-self.yaw)          
+        
+        (self.pitch,self.yaw,self.roll) = self.calculatePitchYawRoll()
+        self.OgreNode.yaw(self.yaw)    
+        self.OgreNode.pitch(self.pitch)    
+        self.OgreNode.roll(self.roll)   
         
     def __del__(self):
         birds.remove(self)
+        base_actor.GameActor.__del__(self)
 
             
 ##        del self.nearest_neighbor
@@ -123,38 +182,38 @@ class Boid(base_actor.GameActor):
                         
     def move(self, time):        
         
-        self.find_neighbors()
-        
-        self.accel = ogre.Vector3(0.0,0.0,0.0)
-            
-        #print "...now doing rules..."
-                
-        for rule in self.rules:
-            # Adjust acceleration according to current rule
-            vector = rule()
-            
-            #print "   ...%s: %s %s %s" % (rule, vector.x, vector.y, vector.z)
-            
-            self.accel += vector
-            # Stop running rules when maxAccel reached            
-            if trim(self.accel, self.maxAccel):
-                break;
-        
-        
-        
-        # adjust velocity, then cut it down if needed
-        self.velocity += self.accel * time
-        trim(self.velocity, self.maxSpeed)
-        extrude(self.velocity, self.minSpeed)
-      
-        self.OgreNode.roll(-self.roll)
-        self.OgreNode.pitch(-self.pitch)
-        self.OgreNode.yaw(-self.yaw)          
-        
-        (self.pitch,self.yaw,self.roll) = self.calculatePitchYawRoll()
-        self.OgreNode.yaw(self.yaw)    
-        self.OgreNode.pitch(self.pitch)    
-        self.OgreNode.roll(self.roll)   
+##        self.find_neighbors()
+##        
+##        self.accel = ogre.Vector3(0.0,0.0,0.0)
+##            
+##        #print "...now doing rules..."
+##                
+##        for rule in self.rules:
+##            # Adjust acceleration according to current rule
+##            vector = rule()
+##            
+##            #print "   ...%s: %s %s %s" % (rule, vector.x, vector.y, vector.z)
+##            
+##            self.accel += vector
+##            # Stop running rules when maxAccel reached            
+##            if trim(self.accel, self.maxAccel):
+##                break;
+##        
+##        
+##        
+##        # adjust velocity, then cut it down if needed
+##        self.velocity += self.accel * time
+##        trim(self.velocity, self.maxSpeed)
+##        extrude(self.velocity, self.minSpeed)
+##      
+##        self.OgreNode.roll(-self.roll)
+##        self.OgreNode.pitch(-self.pitch)
+##        self.OgreNode.yaw(-self.yaw)          
+##        
+##        (self.pitch,self.yaw,self.roll) = self.calculatePitchYawRoll()
+##        self.OgreNode.yaw(self.yaw)    
+##        self.OgreNode.pitch(self.pitch)    
+##        self.OgreNode.roll(self.roll)   
         
         self.OgreNode.position += self.velocity * time       
 

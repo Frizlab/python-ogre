@@ -1,13 +1,32 @@
-# import the ogre / ois modules
+#-----------------------------------------------------------------------------#
+#                                                                             #
+#   This source code is part of the python-ogre techdemo project.             #
+#                                                                             #
+#   This program is released as public domain                                 #
+#                                                                             #
+#-----------------------------------------------------------------------------#
 
+#   
+#   TITLE: TechDemoApplication
+#   DESCRIPTION: Main Application class
+#   AUTHOR: Ben Harling
+
+
+# import the ogre / ois modules
+import time, logging
 import os, sys
-import ogre.renderer.OGRE as ogre
-import ogre.io.OIS as OIS
+
+
+import warnings
+#warnings.simplefilter('ignore', RuntimeWarning)
+import ogre.renderer.OGRE as Ogre
 import ogre.physics.OgreNewt as OgreNewt
+import ogre.io.OIS
+#warnings.simplefilter('default', RuntimeWarning)
 from system.defaultFL import DefaultFrameListener
 from system.dotscene import *
 from system.datamanager import *
-import time, logging
+
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
@@ -26,7 +45,7 @@ class TechDemoApp:
     
     def __init__(self):
         # declarations the basic parts
-        self.frameListener = None
+        self.mainFrameListener = None
         self.plugins = ['RenderSystem_GL', 'Plugin_BSPSceneManager', 'Plugin_CgProgramManager', \
                         'Plugin_OctreeSceneManager', 'RenderSystem_Direct3D9', \
                         'Plugin_ParticleFX']
@@ -41,50 +60,17 @@ class TechDemoApp:
         
     def __del__(self):
         # delete in order
-                ##
-        ## important that things get deleted int he right order
-        ##
-        if self.camera:
-            del self.camera
-        del self.sceneManager
-        try:
-            del self.datamanager.inputListener
-        except:
-            pass
+        print 'Stopping DataManager'
         del self.mainFrameListener
-        try:
-            if self.EditorGuiSheet:
-                CEGUI.WindowManager.getSingleton().destroyWindow(self.EditorGuiSheet) 
-        except:
-            pass
-        del self.datamanager
-        
-        try:            
-##            del self.GUIsystem
-##            del self.GUIRenderer
-            del self.root
-            del self.renderWindow        
-            ## delete the world when we're done.
-            #del self.bodies
-            del self.world
-        except:
-            pass
-##        del self.viewport
-##        del self.camera
-##        print '1'
-##        del self.sceneManager
-##        print '2'
-##        del self.mainFrameListener
-##        print '3'
-##        del self.datamanager
-##        print '4'
-##        del self.world
-##        print '5'
-##        del self.root
-##        print '6'
-##        del self.renderWindow
-##        print '7'
-##        print 'Application says Bye-Bye'
+        #del self.datamanager
+        print 'Removing Camera'
+        del self.camera
+        print 'Removing SceneManager'
+        del self.sceneManager
+        print 'Removing Root'
+        del self.root
+        print 'Removing renderWindow'
+        del self.renderWindow
         
 
         
@@ -109,7 +95,7 @@ class TechDemoApp:
         # datamanger is the only namespace with a permanent reference
         # to the physics world as well
         logging.debug('Datamanager')
-        self.datamanager = DataManager(self.sceneManager, self.viewport, self.renderWindow, \
+        datamanager = DataManager(self.sceneManager, self.viewport, self.renderWindow, \
                                         self.camera, self.fps, True) # True = createphysics
                                         
         #self.sceneManager.shadowTechnique = ogre.SHADOWTYPE_TEXTURE_ADDITIVE
@@ -121,7 +107,7 @@ class TechDemoApp:
         # for a quit. other listeners are added later.
         logging.debug('FrameListener')
         self.mainFrameListener = DefaultFrameListener(self.renderWindow,
-                                                        self.camera, self.datamanager)
+                                                        self.camera, datamanager)
         self.root.addFrameListener(self.mainFrameListener)
         
         fadeColour = (0.90, 0.89, 0.89) # B G R
@@ -136,9 +122,9 @@ class TechDemoApp:
         
         # Finally, kick off the main program loop
         logging.debug('Render')
-        self.startTime = time.time()
-        self.lastTime = self.startTime - 2.0
+        self.startTime = time.clock()
         while self.render():
+            #self.datamanager.update()
             pass
         #self.root.startRendering()
         
@@ -192,7 +178,7 @@ class TechDemoApp:
 
             # Fail if we can't load a plugin
             if not found:
-                raise GraphicsError('Could not load plugin: %s' % plugin_name)
+                raise #GraphicsError('Could not load plugin: %s' % plugin_name)
         
         
     def setupVisuals(self):
@@ -211,37 +197,23 @@ class TechDemoApp:
         self.camera.setPosition( 0.0, 40, 350.0)
         self.camera.lookAt(ogre.Vector3(0, -50, -300))
         
-        # debug Light Creation
-##        light = self.sceneManager.createLight('BlueLight')
-##        light.type = ogre.Light.LT_DIRECTIONAL
-##        light.setPosition (-200, 500, 100)
-##        dirvec = -light.getPosition()
-##        dirvec.normalise()
-##        light.setDirection(dirvec)
-##        light.setDiffuseColour(0.9, 0.9, 1.0)
-##        self.defaultLight = light
-        
         # connect the camera to the renderWindow
         self.viewport = self.renderWindow.addViewport(self.camera)
-        
 
-        
         # set a background color
         self.viewport.backgroundColour = (0,0,0)
-        
-
         
         # get a pointer to ogre's compositor manager system
         self.cms = ogre.CompositorManager.getSingleton()
 
 
     def setupShadows(self):
-##        shadSetup = ogre.LiSPSMShadowCameraSetup() 
-##        print dir(shadSetup)
-##        shadSetup.getShadowCamera(self.sceneManager, self.camera, self.viewport, self.defaultLight, self.camera)
-##        self.sceneManager.setShadowCameraSetup(shadSetup)
-        
-##        self.sceneManager.shadowTechnique = ogre.SHADOWTYPE_NONE
+        ## shadSetup = ogre.LiSPSMShadowCameraSetup() 
+        ## print dir(shadSetup)
+        ## shadSetup.getShadowCamera(self.sceneManager, self.camera, self.viewport, self.defaultLight, self.camera)
+        ## self.sceneManager.setShadowCameraSetup(shadSetup)
+        ## self.sceneManager.shadowTechnique = ogre.SHADOWTYPE_NONE
+        # Setup texture shadows
         self.sceneManager.shadowFarDistance = 100
         self.sceneManager.setShadowTextureSize(512)
         self.sceneManager.setShadowColour(ogre.ColourValue(0.2, 0.2, 0.2))
@@ -286,7 +258,8 @@ class TechDemoApp:
         return True
     
     def setupPhysics( self ):
-        self.world = OgreNewt.World()
+        #self.world = OgreNewt.World()
+        pass
         
 # Start the Game here
 if __name__=='__main__':
@@ -295,7 +268,9 @@ if __name__=='__main__':
         app.start()
     except ogre.OgreException, e:
         print str(e)
-        logging.debug('## EXCEPTION ## %s' % str(e))
+        
+        print '## EXCEPTION ## %s' % str(e)
+        pdb.pm()
 
         
         

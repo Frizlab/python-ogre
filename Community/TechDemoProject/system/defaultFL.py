@@ -1,3 +1,14 @@
+#-----------------------------------------------------------------------------#
+#                                                                             #
+#   This source code is part of the python-ogre techdemo project.             #
+#                                                                             #
+#   This program is released as public domain                                 #
+#                                                                             #
+#-----------------------------------------------------------------------------#
+#   
+#   TITLE: Default Frame listener
+#   DESCRIPTION: Application close event capture
+
 import ogre.renderer.OGRE as ogre
 import ogre.io.OIS as OIS
 
@@ -25,13 +36,14 @@ class DefaultFrameListener(ogre.FrameListener, ogre.WindowEventListener):
         self.displayCameraDetails = False
         self.MenuMode = False   # lets understand a simple menu function
         ## we can tell if we are using OgreRefapp based upon the camera class
-        self.framerate = 1.0 / 60.0
+        self.framerate = 1.0 / 30.0
         if self.camera.__class__ == ogre.Camera:
             self.RefAppEnable = False
         else:
             self.RefAppEnable = True
         self._setupInput()
-        
+        self.lastFrameTime = 0.0
+        self.clock = 0.0
         self.events = []
         
     def __del__ (self ):
@@ -45,6 +57,7 @@ class DefaultFrameListener(ogre.FrameListener, ogre.WindowEventListener):
         
     def windowClosed(self, rw):
         print 'Closing Window'
+        del self.datamanager
         #Only close for window that created OIS (mWindow)
         if( rw == self.renderWindow ):
             if( self.InputManager ):
@@ -111,6 +124,8 @@ class DefaultFrameListener(ogre.FrameListener, ogre.WindowEventListener):
         if(self.renderWindow.isClosed()):
             return False
         
+        self.clock += frameEvent.timeSinceLastFrame
+        
         ##Need to capture/update each device - this will also trigger any listeners
         self.Keyboard.capture()    
         self.Mouse.capture()
@@ -122,10 +137,10 @@ class DefaultFrameListener(ogre.FrameListener, ogre.WindowEventListener):
         if self.timeUntilNextToggle >= 0:
             self.timeUntilNextToggle -= frameEvent.timeSinceLastFrame
             
-        
-        if frameEvent.timeSinceLastFrame > self.framerate:
+        diff = self.clock - self.lastFrameTime
+        if diff > self.framerate:
             self.datamanager.update(frameEvent.timeSinceLastFrame)
-            self.lastFrameTime = frameEvent.timeSinceLastFrame
+            self.lastFrameTime = self.clock
         
         if not self._processUnbufferedKeyInput(frameEvent):
             return False
@@ -148,6 +163,7 @@ class DefaultFrameListener(ogre.FrameListener, ogre.WindowEventListener):
 
     def _processUnbufferedKeyInput(self, frameEvent):
         if self.Keyboard.isKeyDown(OIS.KC_ESCAPE) or self.Keyboard.isKeyDown(OIS.KC_Q):
+            del self.datamanager
             return False
         return True        
         

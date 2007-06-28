@@ -1,10 +1,20 @@
-# debugFrameListener
+#-----------------------------------------------------------------------------#
+#                                                                             #
+#   This source code is part of the python-ogre techdemo project.             #
+#                                                                             #
+#   This program is released as public domain                                 #
+#                                                                             #
+#-----------------------------------------------------------------------------#
+#   
+#   TITLE: DebugFrameListener
+#   DESCRIPTION: Input testing listener
 
 # Set this through a level config file.
 # eg: FRAME_LISTENER=debugFrameListener
 
 import ogre.renderer.OGRE as ogre
 import ogre.io.OIS as OIS
+import logging
 
 class Event:
     def __init__(self, time, name, function, *args):
@@ -45,10 +55,11 @@ class DebugFrameListener(ogre.FrameListener, OIS.KeyListener, OIS.MouseListener)
         self.numScreenShots = 0
         self.Mouse.setEventCallback(self)
         self.Keyboard.setEventCallback(self)
+        self.Joy = None
         
         self.events = [] # for the event Listener
         
-        print 'DebugFrameListener setup Complete::'
+        logging.debug('DebugFrameListener setup Complete::')
         
     def setupInput(self):
          windowHnd = self.renderWindow.getCustomAttributeInt("WINDOW")
@@ -57,6 +68,25 @@ class DebugFrameListener(ogre.FrameListener, OIS.KeyListener, OIS.MouseListener)
             
          self.Keyboard = self.InputManager.createInputObjectKeyboard( OIS.OISKeyboard, True )
          self.Mouse = self.InputManager.createInputObjectMouse( OIS.OISMouse, True )
+        
+    def __del__(self):
+##        ogre.WindowEventUtilities.removeWindowEventListener(self.renderWindow, self)
+        self.windowClosed(self.renderWindow)
+        print 'DebugFrameListener Deleted'
+        
+    def windowClosed(self, rw):
+        #Only close for window that created OIS (mWindow)
+        if rw is self.renderWindow:
+            if self.InputManager :
+                self.InputManager.destroyInputObjectMouse( self.Mouse )
+                self.InputManager.destroyInputObjectKeyboard( self.Keyboard )
+                if self.Joy:
+                    self.InputManager.destroyInputObjectJoyStick( self.Joy )
+                OIS.InputManager.destroyInputSystem(self.InputManager)
+                self.InputManager=None
+        print 'WindowClosedEvent'
+        
+        
 
     ## Tell the frame listener to exit at the end of the next frame
     def requestShutdown( self ):
@@ -64,8 +94,8 @@ class DebugFrameListener(ogre.FrameListener, OIS.KeyListener, OIS.MouseListener)
         
         
     def frameStarted(self, evt):
-##        if(self.renderWindow.isClosed()):
-##            return False
+        if(self.renderWindow.isClosed()):
+            return False
         self.steering = ogre.Degree(0.0)
         self.pitch = ogre.Degree(0.0)
         #self.translateVector = ogre.Vector3(0.0, 0.0, 0.0)
@@ -159,6 +189,9 @@ class DebugFrameListener(ogre.FrameListener, OIS.KeyListener, OIS.MouseListener)
         if arg.key == OIS.KC_F:
             self.showframerate = not self.showframerate
             self.showDebugOverlay(self.showframerate)
+            
+        if arg.key == OIS.KC_M:
+            self.events.append(Event(1, 'DebugPrintEvent', 'event_LogEverything', None))
         return True
 
     ##----------------------------------------------------------------##
@@ -181,6 +214,8 @@ class SkyFrameListener(DebugFrameListener):
         self.ShutdownRequested = True
         
     def frameStarted(self, evt):
+        if(self.renderWindow.isClosed()):
+            return False
         self.time = evt.timeSinceLastFrame
         self.Keyboard.capture()    
         self.Mouse.capture()
