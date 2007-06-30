@@ -444,4 +444,4 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
         #element.caption="hello"
         
         #element.setCaption("help")
-        element.setCaption(ogre.UTFString(text))
+        element.setCaption(text) # ogre.UTFString(text))
