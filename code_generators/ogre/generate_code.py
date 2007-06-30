@@ -14,6 +14,9 @@ Review all the functions with 'Check' beside them in the output as they probably
 
 """
 
+# set this to True if you've compiled Ogre with Threads Enabled
+USE_THREADS=False
+
 import os, sys, time, shutil
 
 #add environment to the path
@@ -41,7 +44,7 @@ from pyplusplus.module_creator import sort_algorithms
 import common_utils.extract_documentation as exdoc
 import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
-
+HACK = True
 ## small helper function
 def docit ( general, i, o ): 
     docs = "Python-Ogre Modified Function Call\\n" + general +"\\n"
@@ -67,6 +70,7 @@ def ManualExclude ( mb ):
     global_ns.class_('::Ogre::ResourceManager').mem_fun('getByHandle').exclude()
     global_ns.class_('::Ogre::ResourceManager').mem_fun('load').exclude()
     global_ns.class_('::Ogre::ResourceManager').mem_fun('create').exclude()
+    
 
     global_ns.class_('::Ogre::Node').member_functions('getChild').exclude()
     global_ns.class_('::Ogre::Node').member_functions('removeChild').exclude()
@@ -202,7 +206,8 @@ def ManualInclude ( mb ):
     std_ns = global_ns.namespace("std")
     std_ns.class_("pair<unsigned, unsigned>").include()
     std_ns.class_("pair<bool, float>").include()
-    std_ns.class_("pair<Ogre::SharedPtr<Ogre::Resource>, bool>").include()
+    if not HACK:
+        std_ns.class_("pair<Ogre::SharedPtr<Ogre::Resource>, bool>").include()
     
     
     #RenderOperation class is marked as private, but I think this is a mistake
@@ -277,16 +282,21 @@ def ManualFixes ( mb ):
     c.mem_fun( '_mergeSkeletonAnimations' ).arguments[-1].default_value = '::Ogre::StringVector()'
 
             
-    ## we apply smart ptr to sharedptr classes automatically, however these are harder to identify    
-    cls = mb.class_( "IndexData" )
-    v = cls.variable( "indexBuffer" )
-    v.apply_smart_ptr_wa = True
-    cls = mb.class_( "SubMesh" )
-    v = cls.variable( "vertexData" )
-    v.apply_smart_ptr_wa = True
-    v = cls.variable( "indexData" )
-    v.apply_smart_ptr_wa = True   
-    
+    ## we apply smart ptr to sharedptr classes automatically, however these are harder to identify   
+#     known = ['indexBuffer', 'vertexData', 'indexData']
+#     for v in mb.member_variables():
+#         if v.name in known:
+#             print "Setting ", v," to smart pointer"
+#             v.apply_smart_ptr_wa = True
+# \   cls = mb.class_( "IndexData" )
+#     v = cls.variable( "indexBuffer" )
+#     v.apply_smart_ptr_wa = True
+#     cls = mb.class_( "SubMesh" )
+#     v = cls.variable( "vertexData" )
+#     v.apply_smart_ptr_wa = True
+#     v = cls.variable( "indexData" )
+#     v.apply_smart_ptr_wa = True   
+#     
     ## Functions that return objects we need to manage
     FunctionsToMemoryManage=[\
         '::Ogre::VertexData::clone',
@@ -850,18 +860,33 @@ def Set_Call_Policies( mb ):
 
                 
 def Set_Smart_Pointers( mb ):
-    """ we need to identify 'smart pointer' which are any of the SharedPtr classes
+    """ we need to identify 'smart pointers' which are any of the SharedPtr classes
     """
     for v in mb.variables():
-       if not declarations.is_class( v.type ):
-           continue
-       cls = declarations.class_traits.get_declaration( v.type )
-       if cls.name.startswith( 'SharedPtr<' ):
+        if not declarations.is_class( v.type ):
+            continue
+        cls = declarations.class_traits.get_declaration( v.type )
+        if cls.name.startswith( 'SharedPtr<' ):
            v.apply_smart_ptr_wa = True    
            print "Applying Smart Pointer: ",  v.name, " of class: ",  cls.name
-       elif cls.name.endswith( 'SharedPtr' ):
+        elif cls.name.endswith( 'SharedPtr' ):
            v.apply_smart_ptr_wa = True    
            print "Applying Smart Pointer: ",  v.name, " of class: ",  cls.name
+    
+    # now I want to get some specials, the are not classes so haven't been found so far
+    # this is potentially too broad brushed in it's approach but seems OK so far -- however if
+    # need bewe could check for specific classes - the current list being:
+    #
+    # InstancedGeometry,SubMeshLodGeometryLink,OptimisedSubMeshGeometry,SubMesh
+    # StaticGeometry,SubMeshLodGeometryLink,OptimisedSubMeshGeometry,
+    # RenderOperation,IndexData,EdgeListBuilder,Geometry,EdgeData,EdgeGroup
+                  
+    known = ['indexBuffer', 'vertexData', 'indexData']
+    for c in mb.classes():
+        for v in c.variables(allow_empty = True ):
+            if v.name in known:
+               v.apply_smart_ptr_wa = True    
+               print "Applying Smart Pointer (know): ",  v.name, " of class: ",  c.name
            
                            
 #~ def Set_Exception(mb):
@@ -1008,7 +1033,7 @@ def generate_code():
         , messages.W1035
         , messages.W1040 
         , messages.W1038        
-        , messages.W1041
+# #         , messages.W1041 # properties that aren't exposed
         , messages.W1036 # pointer to Python immutable member
         , messages.W1033 # unnamed variables
         , messages.W1018 # expose unnamed classes
@@ -1025,7 +1050,10 @@ def generate_code():
                         os.path.join( environment.ogre.root_dir, "python_ogre.h" )
                         , environment.ogre.cache_file )
 
-    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY' ]
+    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY']
+    if USE_THREADS:
+        defined_symbols.append('BOOST_HAS_THREADS')
+        defined_symbols.append('BOOST_HAS_WINTHREADS')
     defined_symbols.append( 'OGRE_VERSION_' + environment.ogre.version )  
     
     #
@@ -1097,9 +1125,10 @@ def generate_code():
     for cls in ogre_ns.classes():
         if cls.name not in NoPropClasses:
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
+            common_utils.remove_DuplicateProperties ( cls )
             ## because we want backwards pyogre compatibility lets add leading lowercase properties
             common_utils.add_LeadingLowerProperties ( cls )
-
+            
     common_utils.add_constants( mb, { 'ogre_version' :  '"%s"' % environment.ogre.version.replace("\n", "\\\n") 
                                       , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
                                       
@@ -1112,7 +1141,7 @@ def generate_code():
     # Creating the code. After this step you should not modify/customize declarations.
     #
     ##########################################################################################
-    extractor = exdoc.doc_extractor("::Ogre::") # I'm excluding the UTFstring docs as lots about nothing 
+    extractor = exdoc.doc_extractor( "Ogre" ) # I'm excluding the UTFstring docs as lots about nothing 
     mb.build_code_creator (module_name='_ogre_' , doc_extractor= extractor )
     
     for inc in environment.ogre.include_dirs:
@@ -1122,7 +1151,7 @@ def generate_code():
 
     huge_classes = map( mb.class_, customization_data.huge_classes( environment.ogre.version ) )
 
-    mb.split_module(environment.ogre.generated_dir, huge_classes)
+    mb.split_module(environment.ogre.generated_dir, huge_classes, use_files_sum_repository=False )
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generaated directory..

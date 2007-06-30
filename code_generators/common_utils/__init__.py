@@ -126,6 +126,34 @@ def add_LeadingLowerProperties ( cls ):
             new_props.append( property_t( name, prop.fget, prop.fset, prop.doc, prop.is_static ) )
     cls.properties.extend( new_props )
     
+    
+def remove_DuplicateProperties ( cls ):
+    unique = {}
+    duplicate = False
+    newlist = []
+    # first build a list of duplicates
+    for prop in cls.properties:
+        if not unique.has_key (prop.name):
+            unique[prop.name] = [prop]
+        else:
+            unique[prop.name].append ( prop )
+            duplicate = True
+    if duplicate:
+        for k in unique.keys():  
+            if len ( unique[k] ) > 1  :
+#                 print "DUPLICATE FOUND: ", cls, len ( unique[k] )
+                for p in unique[k]:
+#                     print "   Checking", p.name, p.fget, p.fset
+                    prefered = p
+                    if "::get" in prefered.fget.decl_string:
+                        break   # we break out if it's a 'get' function (otherwise, last one wins)
+#                 print " Using ", prefered.fget
+                newlist.append ( prefered )
+            else:
+                newlist.append ( unique[k][0] )
+        ## this is ugly - we replace the existing properties array with our new 'prefered' unique list      
+        cls._properties = newlist                         
+    
 def extract_func_name ( name ):
     """ extract the function name from a fully qualified description
     """
