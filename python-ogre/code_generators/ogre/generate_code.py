@@ -14,9 +14,6 @@ Review all the functions with 'Check' beside them in the output as they probably
 
 """
 
-# set this to True if you've compiled Ogre with Threads Enabled
-USE_THREADS=False
-
 import os, sys, time, shutil
 
 #add environment to the path
@@ -1051,7 +1048,7 @@ def generate_code():
                         , environment.ogre.cache_file )
 
     defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY']
-    if USE_THREADS:
+    if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')
         defined_symbols.append('BOOST_HAS_WINTHREADS')
     defined_symbols.append( 'OGRE_VERSION_' + environment.ogre.version )  

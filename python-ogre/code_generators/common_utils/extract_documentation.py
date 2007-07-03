@@ -19,9 +19,14 @@ class doc_extractor:
 #         self.outfile = open ( outfile, 'w' ) # create the file for writing (truncates existing)
         
     def __call__(self, declaration):
-       
-        if not declaration.decl_string.startswith(self.startswith):
-            return ""
+# # #         if not self.startswith in declaration.decl_string:
+# #         if not declaration.demangled.startswith(self.startswith):
+# #             print "DOC: not in scope", declaration.decl_string 
+# #             print "name:", declaration.name
+# #             print "demangled:", declaration.demangled
+# # #             print "type:", declaration.type
+# # #             if "Ogre" in declaration.decl_string : sys.exit()
+# #             return ""
         try:    # some types such as the base namespace don't have 'location'
             if self.file_name != declaration.location.file_name:            
                 self.file_name = declaration.location.file_name
@@ -109,6 +114,7 @@ class doc_extractor:
         ## Py++ doesn't like non ascii characters in the doc string
         ## class_declaration.py - _generate_constructor - return ( ''.join( result ), used_init )
         newret = ""
+#         print "DOC:  GOT SOMETHING", ret
         for c in ret:
             if ord(c) >127:
                 c = ' '

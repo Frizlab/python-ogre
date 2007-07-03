@@ -17,6 +17,11 @@ import getpass
 
 _LOGGING_ON = False
 
+##
+## set this to True if you compiled Ogre with Threads enabled
+##
+_USE_THREADS = True
+
 def log ( instring ):
     if _LOGGING_ON:
         print __file__, "LOG::", instring
@@ -325,9 +330,10 @@ class fmod:
 #     active=True
 
 class quickgui:
-    version="0.9.4"
+    version="0.9.5"
     parent="ogre/gui"
-    cflags = ""
+    CCFLAGS = ' /D "QUICKGUI_LIB" '
+    cflags=""
     include_dirs = [ Config.PATH_Boost,
                     Config.PATH_INCLUDE_Ogre,
                     Config.PATH_INCLUDE_quickgui

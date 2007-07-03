@@ -1,3 +1,11 @@
+xxx 2007 
+============================================
+* Updated to QuickGui 0.9.5
+* Added common_utils function to remove duplicate Properties which happened when there was a getXXX AND a hasXXX implemented
+        in the C++ code -- now we filter these are give the getXXX priority
+* Implemented support for Ogre compiled with THREADS enabled - need to set value to True in ogre/generate_code.py
+* Change implemented in Py++ to expose missing 'setters'
+
 June 10 2007: Version 1.0 RC2(c) -- Release
 ============================================
 * Goes without saying that something would be wrong.. The VC8 Redistributables I shipped appear to be old and 
