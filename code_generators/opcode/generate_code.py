@@ -59,6 +59,12 @@ def ManualExclude ( mb ):
                 "::Opcode::SAP_PairData::DumpPairs",
                 "::Opcode::AABBTree::GetIndices","::Opcode::AABBTreeNode::GetPrimitives",
                 "::Opcode::HybridModel::GetIndices","::Opcode::VolumeCollider::GetTouchedPrimitives", 
+                
+                ## Implemented in handmade wrappers
+                "::Opcode::MeshInterface::SetCallback",
+                "::Opcode::MeshInterface::GetUserData",
+                "::Opcode::MeshInterface::GetCallback",
+                
                 # Quat's don't seem to be implemented
                 "::IceMaths::Matrix3x3::FromQuat"
                 ,"::IceMaths::Matrix3x3::FromQuatL2"
@@ -89,19 +95,18 @@ def ManualExclude ( mb ):
     for e in excludes:
         print "excluding function", e
         global_ns.member_functions(e).exclude()
-    excludes = ["::Opcode::BruteForceBipartiteBoxTest","::Opcode::BipartiteBoxPruning"
-                ,"::IceMaths::Normalize1"
+    excludes = [#"::Opcode::BruteForceBipartiteBoxTest" # ,"::Opcode::BipartiteBoxPruning"
+                "::IceMaths::Normalize1"
                 ,"::IceMaths::Normalize2"
                 ]
     for e in excludes:
         print "Excluding:", e
         global_ns.free_functions(e).exclude()
     
-    excludes = ["::Opcode::AABBOptimizedTree" 
+    excludes = ["::Opcode::AABBOptimizedTree"  # Is a super class and exposed via other suclasses
                ### Exclude matrix4x4 as boost/boost/tuple/detail/tuple_basic.hpp needs to be extended to take 16 arguments 
-#                ,"::IceMaths::Matrix4x4"
-#                ,"::IceMaths::Sphere"
-               ]
+#                ,"::IceMaths::Matrix4x4"  # fixed by excluding constructor...
+                ]
     for e in excludes:
         global_ns.class_(e).exclude()
         
@@ -150,12 +155,62 @@ def ManualFixes ( mb ):
         
 def ManualTransformations ( mb ):
     global_ns = mb.global_ns
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    main_ns = global_ns # global_ns.namespace(  )
         
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
-        
+  
+    x = main_ns.mem_fun('::Opcode::PlanesCollider::PlanesAABBOverlap') 
+    x.add_transformation(ft.output('out_clip_mask'))
+    x.documentation = docit ("","Point center, Point extents, , udword in_clip_mask", "out_clip_mask")     
+     
+    x = main_ns.mem_fun('::IceMaths::IndexedTriangle::GetVRefs') 
+    x.add_transformation(ft.output('vref0'),ft.output('vref1'),ft.output('vref2'))
+    x.documentation = docit ("","ubyte edgenb", "vref0, vref1, vref2")      
+ 
+    x = main_ns.mem_fun('::IceCore::Container::FindNext') 
+    x.add_transformation(ft.inout('entry'))
+    x.documentation = docit ("","container, entry", "entry, mode")      
     
+    x = main_ns.mem_fun('::IceCore::Container::FindPrev') 
+    x.add_transformation(ft.inout('entry'))
+    x.documentation = docit ("","container, entry", "entry, mode")   
+       
+    x = main_ns.free_function('::IceCore::Compute3DCoords') 
+    x.add_transformation(ft.output('u'),ft.output('v'),ft.output('w'))
+    x.documentation = docit ("","i, nbu, nbu_nbv", "u,v,w")      
+
+    x = main_ns.free_function('::IceCore::Compute2DCoords') 
+    x.add_transformation(ft.output('u'),ft.output('v'))
+    x.documentation = docit ("","i, nbu", "u,v") 
+         
+    x = main_ns.free_function('::IceCore::Swap') 
+    x.add_transformation(ft.inout('x'),ft.inout('y'))
+    x.documentation = docit ("","x,y", "x,y")      
+
+    x = main_ns.free_function('::IceCore::SetLeastNBits') 
+    x.add_transformation(ft.inout('x'))
+    x.documentation = docit ("","x, n", "x") 
+         
+    x = main_ns.free_function('::IceCore::ZeroLeastSetBit') 
+    x.add_transformation(ft.inout('n'))
+    x.documentation = docit ("","n", "n")   
+    
+    x = main_ns.free_function('::IceCore::SpreadBits') 
+    x.add_transformation(ft.inout('n'))
+    x.documentation = docit ("","n", "n")  
+        
+    x = main_ns.free_function('::IceCore::ReverseBits') 
+    x.add_transformation(ft.inout('n'))
+    x.documentation = docit ("","n", "n")      
+    
+    x = main_ns.mem_fun('::IceMaths::AABB::ComputeOutline') 
+    x.add_transformation(ft.inout('num'))
+    
+    x = main_ns.mem_fun('::IceMaths::AABB::ComputeBoxArea') 
+    x.add_transformation(ft.inout('num'))
+       
+
 ###############################################################################
 ##
 ##  Now for the AUTOMATIC stuff that should just work

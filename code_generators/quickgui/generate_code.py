@@ -349,7 +349,10 @@ def generate_code():
                         os.path.join( environment.quickgui.root_dir, "python_quickgui.h" )
                         , environment.quickgui.cache_file )
 
-    defined_symbols = [ 'OGRE_NONCLIENT_BUILD' ]
+    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'QUICKGUI_LIB' ]
+    if environment._USE_THREADS:
+        defined_symbols.append('BOOST_HAS_THREADS')
+        defined_symbols.append('BOOST_HAS_WINTHREADS')
 
     defined_symbols.append( 'VERSION_' + environment.quickgui.version )  
     

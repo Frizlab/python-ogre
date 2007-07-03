@@ -209,6 +209,14 @@ GetPythonOgreVersion () {
                                                 """ + environment.PythonOgrePatchVersion + """
                                                 ) );
 }
+
+
+Ogre::VertexData *
+Utility_createVertexData ( ) {
+    return (new Ogre::VertexData());
+    }
+    
+    
 void
 Utility_setFloat(void * ptrin, boost::python::list listin)
 {
@@ -328,6 +336,11 @@ Utility_CastResourceToNative(Ogre::ResourcePtr& r){
 // }
 """            
 WRAPPER_REGISTRATION_General = [
+    """bp::def( "createVertexData", &Utility_createVertexData,
+                "Python-Ogre Helper Function: Returns a pointer to a 'new' VertexData element.\\n\\
+                Input: None\\n\\
+                Ouput: VertexData",\
+                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());""",
     """bp::def( "GetOgreVersion", &GetOgreVersion,
                 "Python-Ogre Helper Function: Return the version of Ogre.\\n\\
                 Input: None\\n\\
@@ -504,13 +517,15 @@ WRAPPER_REGISTRATION_Frustum = [
 WRAPPER_DEFINITION_SubMesh =\
 """
 void
-SubMesh_createVertexData ( Ogre::SubMesh & me ) {
+SubMesh_createandsetVertexData ( Ogre::SubMesh & me ) {
     me.vertexData = new Ogre::VertexData();
     }
+    
+  
  
 """
 WRAPPER_REGISTRATION_SubMesh = [
-    """def( "createVertexData", &::SubMesh_createVertexData );"""
+    """def( "createVertexData", &::SubMesh_createandsetVertexData );"""
     ] 
 
 
