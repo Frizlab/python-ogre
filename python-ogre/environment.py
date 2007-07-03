@@ -20,7 +20,7 @@ _LOGGING_ON = False
 ##
 ## set this to True if you compiled Ogre with Threads enabled
 ##
-_USE_THREADS = True
+_USE_THREADS = False
 
 def log ( instring ):
     if _LOGGING_ON:
