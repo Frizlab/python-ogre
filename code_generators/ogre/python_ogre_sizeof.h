@@ -57,7 +57,6 @@ sizeof( Ogre::Controller<float> );
 sizeof( Ogre::ControllerValue<float> );
 sizeof( Ogre::ControllerFunction<float> );
 
-sizeof( Ogre::Mesh::SubMeshNameMap );
 sizeof( Ogre::RenderSystem );
 
 sizeof( Ogre::ConvexBody::PolygonList );

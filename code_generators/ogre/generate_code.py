@@ -758,7 +758,9 @@ def Fix_Posix ( mb ):
     c = mb.namespace( 'Ogre' ).class_( 'ShadowTextureConfig' )
     c.equality_comparable = False
 
-
+    ## This class gets exposed as a hash_map in windows (ok) but a hash_map_suite in linux whihc fails 
+    mb.namespace( 'Ogre' ).class_( 'Mesh' ).variable('mSubMeshNameMap').exclude()
+    mb.namespace( 'Ogre' ).class_( 'Mesh' ).member_function('getSubMeshNameMap').exclude()
 
 def Fix_NT ( mb ):
     """ fixup for NT systems
