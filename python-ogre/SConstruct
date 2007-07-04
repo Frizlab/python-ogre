@@ -60,8 +60,8 @@ def get_ccflags():
         if os.sys.platform <> 'darwin':
             CCFLAGS = ' `pkg-config --cflags OGRE` '
             CCFLAGS += ' -I' 
-            CCFLAGS += ' -O3 -I./ -fvisibility=hidden -finline-limit=20 '
-            CCFLAGS += ' -DOGRE_GCC_VISIBILITY '  # -fvisibility-inlines-hidden
+            CCFLAGS += ' -O3 -I./ '#-fvisibility=hidden -finline-limit=20 '
+            #CCFLAGS += ' -DOGRE_GCC_VISIBILITY '  # -fvisibility-inlines-hidden
         else:
             CCFLAGS  = ' -I -pipe -Os -I./'
     return CCFLAGS
