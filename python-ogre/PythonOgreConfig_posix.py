@@ -30,22 +30,22 @@ pyplusplus_install_dir = os.path.join(BASE_DIR,'pygccxml')
 
 # # ## Parent directories of the libraries
 PATH_Ogre =         os.path.join(BASE_DIR,'ogrenew')
-# # PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
-# # PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.5.0')
-# # PATH_OIS =          os.path.join(BASE_DIR, 'ois-1.0RC1')
+PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
+PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.5.0')
+PATH_OIS =          os.path.join(BASE_DIR, 'ois-1.0RC1')
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonSDK/sdk')
 # # PATH_FMOD =         os.path.join(BASE_DIR, 'fmod')
-# # PATH_ODE =          os.path.join(BASE_DIR, 'opende/trunk')
+PATH_ODE =          os.path.join(BASE_DIR, 'ode-0.8')
 # # PATH_OGREAL=        os.path.join(BASE_DIR, 'ogreal/trunk/OgreAL-Eihort')
 # # PATH_OGG =          os.path.join(BASE_DIR, 'ogg')
 # # PATH_VORBIS=        os.path.join(BASE_DIR, 'vorbis')
 # # PATH_OPENAL=        os.path.join(BASE_DIR, 'openal')
 # # PATH_ALUT=          os.path.join(BASE_DIR, 'freealut')
 PATH_OgreOde=       os.path.join(BASE_DIR, 'ogreaddons','ogreode')
-PATH_betagui=       os.path.join(module_dir, 'ThirdParty','betagui')
-PATH_raknet=       os.path.join(BASE_DIR, 'RakNet')
+#PATH_betagui=       os.path.join(module_dir, 'ThirdParty','betagui')
+#PATH_raknet=       os.path.join(BASE_DIR, 'RakNet')
 PATH_quickgui=     os.path.join(module_dir, 'ThirdParty','quickgui')
-
+PATH_OPCODE=        os.path.join(BASE_DIR, 'Opcode')
 
 
 
@@ -76,11 +76,11 @@ PATH_LIB_OgreOdePrefab =        os.path.join( LOCAL_LIB ) #PATH_OgreOde, 'prefab
 PATH_LIB_OgreOdeLoader =        os.path.join( LOCAL_LIB ) #PATH_OgreOde, 'loader/lib/Release' )
 
 PATH_LIB_OgreAL =               os.path.join( LOCAL_LIB ) #PATH_OGREAL, 'lib/Release' )
-PATH_LIB_betagui =              PATH_betagui
+#PATH_LIB_betagui =              PATH_betagui
 PATH_LIB_quickgui =            PATH_quickgui
-PATH_LIB_raknet =               os.path.join( LOCAL_LIB ) #PATH_raknet, 'Lib' )
+#PATH_LIB_raknet =               os.path.join( LOCAL_LIB ) #PATH_raknet, 'Lib' )
 
-
+PATH_LIB_OPCODE =              os.path.join( PATH_OPCODE, 'Release') 
 PATH_INCLUDE_Ogre=          os.path.join(LOCAL_INCLUDE,'OGRE')  # os.path.join(PATH_Ogre,'OgreMain/include') 
 
 PATH_INCLUDE_Ogre_Dependencies =    PATH_INCLUDE_Ogre #      os.path.join( PATH_Ogre, 'Dependencies/include')
@@ -90,7 +90,7 @@ PATH_INCLUDE_OgreNewt =     os.path.join(LOCAL_INCLUDE,'OgreNewt') #os.path.join
 PATH_INCLUDE_CEGUI =        os.path.join(LOCAL_INCLUDE,'CEGUI') #os.path.join(PATH_CEGUI, r'include/CEGUI')
 PATH_INCLUDE_ODE =          os.path.join(LOCAL_INCLUDE,'') #os.path.join( PATH_ODE, 'include')
 PATH_INCLUDE_ODESOURCE =    '' #      os.path.join( PATH_ODE, 'ode/src')
-
+PATH_INCLUDE_OPCODE =       PATH_OPCODE
 
 PATH_INCLUDE_OgreAL =   ''#    os.path.join( PATH_OGREAL, 'include' )
 PATH_INCLUDE_OPENAL =   ''#    os.path.join( PATH_OPENAL, 'include')
@@ -102,7 +102,7 @@ PATH_INCLUDE_OgreOde =      os.path.join( PATH_OgreOde,'include')
 PATH_INCLUDE_OgreOdePrefab= os.path.join( PATH_OgreOde,'prefab/include')
 PATH_INCLUDE_OgreOdeLoader= os.path.join( PATH_OgreOde,'loader/include')
 PATH_INCLUDE_Newton = PATH_Newton #  os.path.join(LOCAL_INCLUDE,'Newton') 
-PATH_INCLUDE_betagui =       PATH_betagui
+#PATH_INCLUDE_betagui =       PATH_betagui
 PATH_INCLUDE_quickgui =     PATH_quickgui
-PATH_INCLUDE_raknet =        os.path.join(PATH_raknet, 'Source' )
+#PATH_INCLUDE_raknet =        os.path.join(PATH_raknet, 'Source' )
 PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'Samples/Common/CEGUIRenderer/include')

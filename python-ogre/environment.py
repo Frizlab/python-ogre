@@ -297,20 +297,20 @@ class ogreode:
     ModuleName='OgreOde'
     active=True
     
-class fmod:
-    version= "4.06"
-    parent = "ogre/sound"
-    include_dirs=[Config.PATH_Boost
-                   ,Config.PATH_INCLUDE_FMOD
-                   ]
-    lib_dirs = [ Config.PATH_LIB_Boost
-                  ,Config.PATH_LIB_FMOD
-                  ] 
+#class fmod:
+#    version= "4.06"
+#    parent = "ogre/sound"
+#    include_dirs=[Config.PATH_Boost
+#                   ,Config.PATH_INCLUDE_FMOD
+#                   ]
+#    lib_dirs = [ Config.PATH_LIB_Boost
+#                  ,Config.PATH_LIB_FMOD
+#                  ] 
                  
-    CCFLAGS = ' /D "NDEBUG" /D "WIN32" /D "_MBCS" '
-    ModuleName = 'FMOD' 
-    CheckIncludes = ['fmod.h']
-    active=False
+#    CCFLAGS = ' /D "NDEBUG" /D "WIN32" /D "_MBCS" '
+#    ModuleName = 'FMOD' 
+#    CheckIncludes = ['fmod.h']
+#    active=False
     
 # class betagui:
 #     version="1.0"
@@ -396,7 +396,7 @@ projects = {
     , 'newton' : newton
     , 'ogrerefapp' : ogrerefapp
     , 'ogrenewt' : ogrenewt
-    , 'fmod' : fmod
+#    , 'fmod' : fmod
     , 'ogreode' : ogreode
     , 'ogreal' : ogreal
 #     , 'betagui' : betagui
