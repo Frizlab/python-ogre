@@ -212,7 +212,7 @@ class cegui:
     active = True
     version = "0.5.0b" 
     parent = "ogre/gui"
-    libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain', 'OgreGUIRenderer' ]
+    libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain']
     include_dirs = [Config.PATH_Boost
                     ,Config.PATH_INCLUDE_CEGUI
                     ,Config.PATH_CEGUI
@@ -227,6 +227,12 @@ class cegui:
                 , Config.PATH_LIB_CEGUI
                 ,  Config.PATH_LIB_Ogre_Dependencies  
                 ]
+    ## differerent library name in linux
+    if os.name =='nt':
+        libs.append ('OgreGUIRenderer')
+    else:
+        libs.append ( 'CEGUIOgreRenderer',)
+        
     CCFLAGS =  ' -DBOOST_PYTHON_MAX_ARITY=19'
     ModuleName = 'CEGUI'
     CheckIncludes = ['boost/python.hpp', 'Ogre.h', 'CEGUI.h', 'OgreCEGUIRenderer.h'] 
@@ -332,7 +338,7 @@ class ogreode:
 class quickgui:
     version="0.9.5"
     parent="ogre/gui"
-    CCFLAGS = ' /D "QUICKGUI_LIB" '
+    CCFLAGS = ' -DQUICKGUI_LIB '
     cflags=""
     include_dirs = [ Config.PATH_Boost,
                     Config.PATH_INCLUDE_Ogre,
