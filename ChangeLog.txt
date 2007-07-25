@@ -5,6 +5,8 @@ xxx 2007
         in the C++ code -- now we filter these are give the getXXX priority
 * Implemented support for Ogre compiled with THREADS enabled - need to set value to True in ogre/generate_code.py
 * Change implemented in Py++ to expose missing 'setters'
+* Added bullet physics to the library - no testing as of yet
+* OIS compile has changed to use the static library instead of the dll
 
 June 10 2007: Version 1.0 RC2(c) -- Release
 ============================================
