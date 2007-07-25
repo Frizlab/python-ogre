@@ -60,8 +60,8 @@ def get_ccflags():
         if os.sys.platform <> 'darwin':
             CCFLAGS = ' `pkg-config --cflags OGRE` '
             CCFLAGS += ' -I' 
-            CCFLAGS += ' -O3 -I./ '#-fvisibility=hidden -finline-limit=20 '
-            #CCFLAGS += ' -DOGRE_GCC_VISIBILITY '  # -fvisibility-inlines-hidden
+            CCFLAGS += ' -O3 -I./ -fvisibility=hidden -finline-limit=20 '
+            CCFLAGS += ' -DOGRE_GCC_VISIBILITY '  # -fvisibility-inlines-hidden
         else:
             CCFLAGS  = ' -I -pipe -Os -I./'
     return CCFLAGS
@@ -77,7 +77,7 @@ def get_source_files(_dir):
 
 def get_linkflags():
     if os.name=='nt':
-        #LINKFLAGS = " -NOLOGO -INCREMENTAL:NO -DLL -OPT:NOREF -subsystem:console " # no change
+        #LINKFLAGS = " /NOLOGO /INCREMENTAL:NO /DLL /OPT:NOREF /OPT:NOICF /OPT:NOWIN98 /subsystem:console " # no change
         LINKFLAGS = " /NOLOGO /OPT:REF /INCREMENTAL:NO /DLL /OPT:ICF /OPT:NOWIN98 /subsystem:console " # 7 minutes 25% smaller 16.6 Meg
         #LINKFLAGS = " /NOLOGO /INCREMENTAL:NO /DLL /subsystem:console " ### LONG Link , 80 minutes - 15.7 meg
     elif os.name == 'posix':
@@ -89,9 +89,9 @@ def get_linkflags():
 
 # Let us select the projects to build
 possible_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',\
-    'ogreode', 'ogreal', 'quickgui', 'opcode' ] ## 'betagui']  # , 'raknet'
+    'ogreode', 'ogreal', 'quickgui', 'opcode', 'nxogre', 'bullet' ]  # , 'raknet'
 default_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',\
-    'ogreode', 'ogreal',  'quickgui', 'opcode' ] ##'betagui']
+    'ogreode', 'ogreal',  'quickgui', 'opcode', 'nxogre', 'bullet' ]
 
 # This lets you call scons like: 'scons PROJECTS=ogre,cegui'
 opts = Options('custom.py')
@@ -112,7 +112,8 @@ for name, cls in environment.projects.items():
         cls._build_dir = os.path.join ( builddir, cls.dir_name)
         cls._name = name
         _env = Environment(ENV=os.environ)
-
+        
+              
         ## Use custom compilier if wanted (things like ccache)
         if hasattr(environment, 'cxx_compiler'):
             _env['CXX'] = environment.cxx_compiler
@@ -154,8 +155,7 @@ for name, cls in environment.projects.items():
         index = 0  # this is the index into a list of targets - '0' should be the platform default
 
         ## and lets have it install the output into the 'package_dir_name/ModuleName' dir and rename to the PydName
-    	if os.name=='nt':      
-		_env.AddPostAction(package,\
+        _env.AddPostAction(package,\
         	 'mt.exe -nologo -manifest %(name)s.manifest -outputresource:%(name)s;2' % { 'name':package[index] } )
         
         _env.InstallAs(os.path.join(environment.package_dir_name, cls.parent,

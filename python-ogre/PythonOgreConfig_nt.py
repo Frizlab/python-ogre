@@ -33,11 +33,12 @@ PATH_VORBIS=        os.path.join(BASE_DIR, 'vorbis')
 PATH_OPENAL=        os.path.join(BASE_DIR, 'openal')
 PATH_ALUT=          os.path.join(BASE_DIR, 'freealut')
 PATH_OgreOde=       os.path.join(BASE_DIR, 'OgreAddons','ogreode')
-PATH_betagui=       os.path.join(BASE_DIR, 'betagui')
 PATH_raknet=       os.path.join(BASE_DIR, 'RakNet')
 PATH_OPCODE=        os.path.join(BASE_DIR, 'Opcode')
 PATH_quickgui=     os.path.join(root_dir, 'ThirdParty','quickgui')
-
+PATH_NxOgre=       os.path.join(BASE_DIR, 'nxogre/NxOgre')
+PATH_Bullet=       os.path.join(BASE_DIR, 'bullet-2.52') 
+PATH_PhysX=      "c:/program files/AGEIA Technologies/SDK/v2.7.2/SDKs"
 #
 # it's time for the SDK version
 if SDK:
@@ -51,10 +52,10 @@ if SDK:
 
 
 ## Overrides - this is needed as libs isn't defined in enirvonment for fmod..
-class fmod:
-    version= "4.06"
-    libs=[LIB_Boost, 'fmodexL_vc']
-    ##libs=[Config.LIB_Boost, 'libfmodex']  ##posix
+# # class fmod:
+# #     version= "4.06"
+# #     libs=[LIB_Boost, 'fmodexL_vc']
+# #     ##libs=[Config.LIB_Boost, 'libfmodex']  ##posix
 
 ###
 ### these paths assume you've left all the directory structure as standard
@@ -68,16 +69,18 @@ PATH_LIB_OgreNewt =             os.path.join(PATH_OgreAddons, r'ogrenewt/OgreNew
 PATH_LIB_Newton =               os.path.join(PATH_Newton ,'dll')  ##NOTE Posix platforms this lives in 'lib-mt'
 PATH_LIB_OIS =                  os.path.join(PATH_OIS, 'dll') ## NOTE Posix platforms this lives in'lib' not 'dll'
 PATH_LIB_CEGUI =                os.path.join ( PATH_CEGUI, 'lib' )
-PATH_LIB_ODE =                  os.path.join( PATH_ODE, 'lib/releasedll')## probable releaselib for posix
+PATH_LIB_ODE =                  os.path.join( PATH_ODE, 'lib/releaselib')## probable releaselib for posix
 PATH_LIB_OgreOde =              os.path.join( PATH_OgreOde, 'lib/Release') 
 PATH_LIB_OPCODE =              os.path.join( PATH_OPCODE, 'Release') 
 PATH_LIB_OgreOdePrefab =        os.path.join( PATH_OgreOde, 'prefab/lib/Release' )
 PATH_LIB_OgreOdeLoader =        os.path.join( PATH_OgreOde, 'loader/lib/Release' )
 PATH_LIB_FMOD =                 os.path.join(PATH_FMOD, 'api/lib') 
 PATH_LIB_OgreAL =               os.path.join(PATH_OGREAL, 'lib/Release' )
-PATH_LIB_betagui =              PATH_betagui
 PATH_LIB_quickgui =            PATH_quickgui
 PATH_LIB_raknet =               os.path.join(PATH_raknet, 'Lib' )
+PATH_LIB_NxOgre=                os.path.join(PATH_NxOgre, 'compiler','NxOgre.VC8','Release','lib')
+PATH_LIB_PhysX = ""
+PATH_LIB_Bullet =           os.path.join(PATH_Bullet, 'out/release8/libs' )
 
 if SDK:
     PATH_LIB_Ogre_CEGUIRenderer =    os.path.join( PATH_Ogre, 'lib')
@@ -108,9 +111,18 @@ PATH_INCLUDE_OgreOdePrefab= os.path.join( PATH_OgreOde,'prefab/include')
 PATH_INCLUDE_OgreOdeLoader= os.path.join( PATH_OgreOde,'loader/include')
 PATH_INCLUDE_FMOD =          os.path.join(PATH_FMOD, 'api/inc')
 PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'samples/Common/CEGUIRenderer/include')
-PATH_INCLUDE_betagui =       PATH_betagui
 PATH_INCLUDE_quickgui =     PATH_quickgui
 PATH_INCLUDE_raknet =        os.path.join(PATH_raknet, 'Source' )
+PATH_INCLUDE_NxOgre=        os.path.join(PATH_NxOgre, 'include')
+PATH_INCLUDE_Bullet=        os.path.join(PATH_Bullet, 'src')
+
+PATH_INCLUDE_PhysX= [ os.path.join(PATH_PhysX, 'Physics','include')
+                    ,os.path.join(PATH_PhysX, 'Cooking','include')
+                    ,os.path.join(PATH_PhysX, 'Foundation','include')
+                    ,os.path.join(PATH_PhysX, 'PhysXLoader','include')
+                    ,os.path.join(PATH_PhysX, 'NxCharacter','include')
+                    ,os.path.join(PATH_PhysX, 'NxExtensions','include')
+                    ]
 
 if SDK:
     PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include') 

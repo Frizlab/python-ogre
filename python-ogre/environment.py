@@ -155,7 +155,9 @@ class ois:
     active = True
     version= "1.0"
     parent = "ogre/io"
-    libs=['OIS',Config.LIB_Boost]
+    libs=['OIS_Static',Config.LIB_Boost]
+    if os.name=="nt":
+        libs.append ( "User32" ) # needed for static linking
     include_dirs = [ Config.PATH_Boost 
             , Config.PATH_INCLUDE_OIS
             ]
@@ -164,7 +166,7 @@ class ois:
             ]
     ModuleName = 'OIS'
     CheckIncludes=['boost/python.hpp', 'OIS.h']
-    externalFiles = ['OIS.dll']
+    #externalFiles = ['OIS.dll']
     if os.sys.platform == 'darwin':
         LINKFLAGS = '-framework Python -framework Carbon'
     
@@ -212,7 +214,7 @@ class cegui:
     active = True
     version = "0.5.0b" 
     parent = "ogre/gui"
-    libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain']
+    libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain', 'OgreGUIRenderer' ]
     include_dirs = [Config.PATH_Boost
                     ,Config.PATH_INCLUDE_CEGUI
                     ,Config.PATH_CEGUI
@@ -227,12 +229,6 @@ class cegui:
                 , Config.PATH_LIB_CEGUI
                 ,  Config.PATH_LIB_Ogre_Dependencies  
                 ]
-    ## differerent library name in linux
-    if os.name =='nt':
-        libs.append ('OgreGUIRenderer')
-    else:
-        libs.append ( 'CEGUIOgreRenderer',)
-        
     CCFLAGS =  ' -DBOOST_PYTHON_MAX_ARITY=19'
     ModuleName = 'CEGUI'
     CheckIncludes = ['boost/python.hpp', 'Ogre.h', 'CEGUI.h', 'OgreCEGUIRenderer.h'] 
@@ -244,6 +240,8 @@ class ode:
     version= "0.8"
     parent = "ogre/physics"
     libs=[Config.LIB_Boost,  'ode']
+    if os.name=="nt":
+        libs.append ( "User32" ) # needed for MessageBox function
     lib_dirs = [ Config.PATH_LIB_Boost
                 ,  Config.PATH_LIB_ODE
                 ]
@@ -270,6 +268,21 @@ class opcode:
     CheckIncludes = ['boost/python.hpp',  'Opcode.h'] 
     active=True 
        
+class bullet:
+    version= "2.52"
+    parent = "ogre/physics"
+    libs=[Config.LIB_Boost,  'libbulletcollision', 'libbulletdynamics','libbulletmath']
+    lib_dirs = [ Config.PATH_LIB_Boost
+                ,  Config.PATH_LIB_Bullet
+                ]
+    include_dirs = [ Config.PATH_Boost 
+                    ,  Config.PATH_INCLUDE_Bullet
+                    ]
+
+    ModuleName = 'bullet'
+    CheckIncludes = ['boost/python.hpp'] 
+    active=True 
+
 class newton:
     version= "1.0"
     active=False
@@ -303,42 +316,26 @@ class ogreode:
     ModuleName='OgreOde'
     active=True
     
-#class fmod:
-#    version= "4.06"
-#    parent = "ogre/sound"
-#    include_dirs=[Config.PATH_Boost
-#                   ,Config.PATH_INCLUDE_FMOD
-#                   ]
-#    lib_dirs = [ Config.PATH_LIB_Boost
-#                  ,Config.PATH_LIB_FMOD
-#                  ] 
+class fmod:
+    version= "4.06"
+    parent = "ogre/sound"
+    include_dirs=[Config.PATH_Boost
+                   ,Config.PATH_INCLUDE_FMOD
+                   ]
+    lib_dirs = [ Config.PATH_LIB_Boost
+                  ,Config.PATH_LIB_FMOD
+                  ] 
                  
-#    CCFLAGS = ' /D "NDEBUG" /D "WIN32" /D "_MBCS" '
-#    ModuleName = 'FMOD' 
-#    CheckIncludes = ['fmod.h']
-#    active=False
+    CCFLAGS = ' /D "NDEBUG" /D "WIN32" /D "_MBCS" '
+    ModuleName = 'FMOD' 
+    CheckIncludes = ['fmod.h']
+    active=False
     
-# class betagui:
-#     version="1.0"
-#     parent="ogre/gui"
-#     cflags = ""
-#     include_dirs = [ Config.PATH_Boost,
-#                     Config.PATH_INCLUDE_Ogre,
-#                     Config.PATH_INCLUDE_betagui
-#                     ]
-#     lib_dirs = [Config.PATH_LIB_Boost,
-#                 Config.PATH_LIB_Ogre_OgreMain,
-#                 Config.PATH_LIB_betagui
-#                 ]
-#     CheckIncludes=[]
-#     libs=[  Config.LIB_Boost, 'OgreMain' ]
-#     ModuleName="BetaGui"   
-#     active=True
 
 class quickgui:
     version="0.9.5"
     parent="ogre/gui"
-    CCFLAGS = ' -DQUICKGUI_LIB '
+    CCFLAGS = ' /D "QUICKGUI_LIB" '
     cflags=""
     include_dirs = [ Config.PATH_Boost,
                     Config.PATH_INCLUDE_Ogre,
@@ -351,6 +348,26 @@ class quickgui:
     CheckIncludes=[]
     libs=[  Config.LIB_Boost, 'OgreMain' ]
     ModuleName="quickgui"   
+    active=True
+
+class nxogre:
+    version="0.9"
+    parent="ogre/physics"
+    cflags=""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_Ogre,
+                    Config.PATH_INCLUDE_NxOgre,
+                    ]
+    for d in Config.PATH_INCLUDE_PhysX:
+        include_dirs.append( d )
+                    
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain,
+                Config.PATH_LIB_NxOgre
+                ]
+    CheckIncludes=[]
+    libs=[  Config.LIB_Boost, 'NxOgre' ]
+    ModuleName="NxOgre"   
     active=True
  
 # class raknet:
@@ -402,13 +419,14 @@ projects = {
     , 'newton' : newton
     , 'ogrerefapp' : ogrerefapp
     , 'ogrenewt' : ogrenewt
-#    , 'fmod' : fmod
+    , 'fmod' : fmod
     , 'ogreode' : ogreode
     , 'ogreal' : ogreal
-#     , 'betagui' : betagui
     , 'quickgui' : quickgui
     , 'opcode' : opcode
-#     , 'raknet' : raknet
+    , 'nxogre' : nxogre
+    , 'bullet' : bullet
+    #, 'raknet' : raknet
 }        
 
 #
