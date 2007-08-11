@@ -14,7 +14,9 @@ import SampleFramework as sf
 
 class TerrainApplication(sf.Application):
     def _chooseSceneManager(self):
-        self.sceneManager = self.root.createSceneManager("TerrainSceneManager")
+        # self.sceneManager = self.root.createSceneManager("TerrainSceneManager")
+        self.sceneManager = self.root.createSceneManager(ogre.ST_GENERIC)
+        self.sceneManager = self.root.createSceneManager(ogre.ST_EXTERIOR_CLOSE)
 
     def _createCamera(self):
         self.camera = self.sceneManager.createCamera('PlayerCam')
@@ -56,8 +58,8 @@ class TerrainApplication(sf.Application):
 
         sceneManager.setWorldGeometry('terrain.cfg')
 
-#         if (self.oot.getRenderSystem().getCapabilities().hasCapability(RSC_INFINITE_FAR_PLANE)):
-#             camera.setFarClipDistance(0)
+        if (self.root.getRenderSystem().getCapabilities().hasCapability(ogre.RSC_INFINITE_FAR_PLANE)):
+            camera.setFarClipDistance(0)
 
         # setup the sky plane
         plane = ogre.Plane()

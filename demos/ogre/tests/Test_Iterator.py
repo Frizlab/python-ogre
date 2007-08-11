@@ -60,13 +60,48 @@ class TestApplication(sf.Application):
         for p in pit:
             print "Name %s" %  (p.getName())
 
-
+            
+        # create head entity
+        headNode = sceneManager.getRootSceneNode().createChildSceneNode()
+        entity = sceneManager.createEntity('head', 'ogrehead.mesh')
+        headNode.attachObject(entity)
+        childnode = headNode.createChildSceneNode("Child_Base")    
+        for x in range(5):
+            pos = ogre.Vector3 ( x*100, 1,20) 
+            orientation = ogre.Quaternion()
+            orientation.FromAngleAxis(
+                ogre.Degree(15),
+                ogre.Vector3.UNIT_Y) 
+            scale = ogre.Vector3( 1, 1, 1)
+            
+#             sn = childnode.createChild()
+#             sn = sn.createChildSceneNode()
+#             se = sceneManager.createEntity('snetity'+str(x), 'ogrehead.mesh')
+#             sn.attachObject(se)
+#             sn.position = pos
+#             sn.orientation = orientation
+            childnode = childnode.createChildSceneNode("Child_"+str(x))
+            ce = sceneManager.createEntity('Childeetity'+str(x), 'ogrehead.mesh')
+            childnode.attachObject(ce)
+            childnode.position = pos
+            childnode.orientation = orientation
+        childItor = headnode.getChildIterator() 
+        while(childItor.hasMoreElements()): 
+            child = childItor.getNext().castAsSceneNode() 
+            print child.name
+            objItor = child.getAttachedObjectIterator() 
+            while objItor.hasMoreElements():
+                print "OBJ:", objItor.getNext()
+            
+            
+            
+            
 if __name__ == '__main__':
     import exceptions
     try:
         application = TestApplication()
         application.go()
-    except ogre.Exception, e:
+    except ogre.OgreException, e:
         print e
 #        print dir(e)
     except exceptions.RuntimeError, e:

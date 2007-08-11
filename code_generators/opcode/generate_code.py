@@ -355,7 +355,40 @@ def Fix_Void_Ptr_Args ( mb ):
                 break
             arg_position +=1
             
-         
+   ## lets go and look for stuff that might be a problem        
+    pointee_types=['unsigned int',' int ', ' float ', ' Real ', 'uchar', 'uint8',
+             'unsigned char']
+                          
+    function_names=[]
+    for fun in mb.member_functions():
+        if fun.documentation or fun.ignore: continue ## means it's been tweaked somewhere else
+        for n in function_names:
+            if n in fun.name:
+                print "CHECK :", fun
+                break
+        arg_position = 0
+        for arg in fun.arguments:
+            if declarations.is_pointer(arg.type): ## and "const" not in arg.type.decl_string:
+                for i in pointee_types:
+                    if i in arg.type.decl_string:
+                        print '"',arg.type.decl_string, '"'
+                        print "CHECK ", fun, str(arg_position)
+                        fun.documentation=docit("SUSPECT - MAYBE BROKEN", "....", "...")
+                        break
+            arg_position +=1
+
+## NEED To do the same for constructors
+    for fun in mb.constructors():
+        arg_position = 0
+        for arg in fun.arguments:
+            if declarations.is_pointer(arg.type): ## and "const" not in arg.type.decl_string:
+                for i in pointee_types:
+                    if i in arg.type.decl_string:
+                        print '"',arg.type.decl_string, '"'
+                        print "Excluding: ", fun
+                        fun.exclude()
+                        break
+            arg_position +=1         
                     
 def Fix_Pointer_Returns ( mb ):
     """ Change out functions that return a variety of pointers to base types and instead

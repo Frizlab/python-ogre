@@ -121,6 +121,7 @@ def filter_declarations( mb ):
     tempstring = orRe.arguments[1].default_value[:pos]+"::Ogre::"+orRe.arguments[1].default_value[pos:]
     orRe.arguments[1].default_value = tempstring
     
+    # try to force this one..
     ## a string one that stops pydoc working against CEGUI
     CEGUI_ns.class_('ListHeader').variable('SegmentNameSuffix').exclude()
     #Exclude non default constructors of iterator classes. 
@@ -224,30 +225,30 @@ def change_cls_alias( ns ):
 
 
 def generate_code():
-    messages.disable( 
-#           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-          messages.W1020
-        , messages.W1021
-        , messages.W1022
-        , messages.W1023
-        , messages.W1024
-        , messages.W1025
-        , messages.W1026
-        , messages.W1027
-        , messages.W1028
-        , messages.W1029
-        , messages.W1030
-        , messages.W1031
-        , messages.W1035
-#         , messages.W1040 
-#         , messages.W1038        
-        , messages.W1041
-        , messages.W1036 # pointer to Python immutable member
-        , messages.W1033 # unnamed variables
-        , messages.W1018 # expose unnamed classes
-#         , messages.W1049 # returns reference to local variable
-        , messages.W1014 # unsupported '=' operator
-         )
+#     messages.disable( 
+# #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+#           messages.W1020
+#         , messages.W1021
+#         , messages.W1022
+#         , messages.W1023
+#         , messages.W1024
+#         , messages.W1025
+#         , messages.W1026
+#         , messages.W1027
+#         , messages.W1028
+#         , messages.W1029
+#         , messages.W1030
+#         , messages.W1031
+#         , messages.W1035
+# #         , messages.W1040 
+# #         , messages.W1038        
+#         , messages.W1041
+#         , messages.W1036 # pointer to Python immutable member
+#         , messages.W1033 # unnamed variables
+#         , messages.W1018 # expose unnamed classes
+# #         , messages.W1049 # returns reference to local variable
+#         , messages.W1014 # unsupported '=' operator
+#          )
     xml_cached_fc = parser.create_cached_source_fc(
                         os.path.join( environment.cegui.root_dir, "python_CEGUI.h" )
                         , environment.cegui.cache_file )
@@ -286,7 +287,12 @@ def generate_code():
     for cls in mb.global_ns.namespace ('CEGUI').classes():
         cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t()  )
         common_utils.add_LeadingLowerProperties ( cls )
-
+        
+    v=mb.global_ns.namespace ('CEGUI') .class_('ScriptModule').variable('d_identifierString')
+    print "INCLUDE:", v
+    v.include()   
+    print "DONE" 
+        
     common_utils.add_constants( mb, { 'CEGUI_version' :  '"%s"' % environment.cegui.version
                                        , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n") } )
                                       
@@ -294,6 +300,8 @@ def generate_code():
     extractor = exdoc.doc_extractor("")
     
     mb.build_code_creator (module_name='_cegui_', doc_extractor= extractor)
+    print "VARIABLE exportable:", v.exportable
+    
     for incs in environment.cegui.include_dirs:
         mb.code_creator.user_defined_directories.append( incs )
     mb.code_creator.user_defined_directories.append( environment.cegui.generated_dir )

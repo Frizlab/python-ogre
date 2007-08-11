@@ -10,6 +10,7 @@
 
             <Window Type="DefaultGUISheet" Name="OgreGuiDemo/TabCtrl/Page1">
                 <Property Name="Text" Value="File" />
+                <Event Name='Clicked' Function='some_function' />
                 <Window Type="TaharezLook/Button" Name="OgreGuiDemo/TabCtrl/Page1/NewButton">
                     <Property Name="UnifiedPosition" Value="{{0.1,0},{0.1,0}}" />
                     <Property Name="UnifiedSize" Value="{{0.8,0},{0.07,0}}" />
@@ -34,6 +35,12 @@
                     <Property Name="Text" Value="Select Type" />
                     <Property Name="ClippedByParent" Value="false" />
                     <Property Name="ReadOnly" Value="true" />
+                </Window>
+                <Window Type="TaharezLook/Button" Name="OgreGuiDemo/TabCtrl/Page2/SpecialButton">
+                    <Property Name="UnifiedPosition" Value="{{0.1,0},{0.3,0}}" />
+                    <Property Name="UnifiedSize" Value="{{0.8,0},{0.07,0}}" />
+                    <Property Name="Text" Value="Special" />
+                    <Event Name='Clicked' Function='SPECIALCLICK' />
                 </Window>
             </Window>
         </Window>

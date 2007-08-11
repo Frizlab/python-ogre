@@ -1,7 +1,7 @@
 import os
 import sys
 import getpass
-
+import datetime
 
 ##
 ##  Jan 2007 modification
@@ -335,21 +335,42 @@ class fmod:
 class quickgui:
     version="0.9.5"
     parent="ogre/gui"
-    CCFLAGS = ' /D "QUICKGUI_LIB" '
+    CCFLAGS = ' /D "WIN32" /D "NDEBUG", /D "WINDOWS" ' # /D "FT2_BUILD_LIBRARY"
     cflags=""
     include_dirs = [ Config.PATH_Boost,
                     Config.PATH_INCLUDE_Ogre,
                     Config.PATH_INCLUDE_quickgui
+                    #,Config.PATH_INCLUDE_freetype
                     ]
     lib_dirs = [Config.PATH_LIB_Boost,
                 Config.PATH_LIB_Ogre_OgreMain,
                 Config.PATH_LIB_quickgui
                 ]
     CheckIncludes=[]
-    libs=[  Config.LIB_Boost, 'OgreMain' ]
+    libs=[  Config.LIB_Boost, 'OgreMain', 'QuickGUI' ]
     ModuleName="quickgui"   
     active=True
 
+
+class betagui:
+    version="0.16"
+    parent="ogre/gui"
+    CCFLAGS = ' ' # /D "FT2_BUILD_LIBRARY"
+    cflags=""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_Ogre,
+                    Config.PATH_INCLUDE_betagui
+                    ]
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain,
+                Config.PATH_LIB_betagui
+                ]
+    CheckIncludes=[]
+    libs=[  Config.LIB_Boost, 'OgreMain' ]
+    ModuleName="betagui"   
+    active=True
+
+    
 class nxogre:
     version="0.9"
     parent="ogre/physics"
@@ -360,16 +381,63 @@ class nxogre:
                     ]
     for d in Config.PATH_INCLUDE_PhysX:
         include_dirs.append( d )
+    if os.name == 'nt':
+        CCFLAGS = ' /D "WIN32" '
                     
     lib_dirs = [Config.PATH_LIB_Boost,
                 Config.PATH_LIB_Ogre_OgreMain,
-                Config.PATH_LIB_NxOgre
+                Config.PATH_LIB_NxOgre,
+                Config.PATH_LIB_PhysX
                 ]
     CheckIncludes=[]
-    libs=[  Config.LIB_Boost, 'NxOgre' ]
+    libs=[  Config.LIB_Boost, 'NxOgre','NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' ]
     ModuleName="NxOgre"   
     active=True
- 
+    
+    
+class theora:
+    version="0.5.0"
+    parent="ogre/addons"
+    cflags=""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_Ogre,
+                    Config.PATH_INCLUDE_Theora,
+                    ]
+    for d in Config.PATH_INCLUDE_OggVorbisTheora:
+        include_dirs.append( d )
+        
+    if os.name == 'nt':
+        CCFLAGS = ' /D "WIN32" '
+                    
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain,
+                Config.PATH_LIB_Theora,
+                ]
+    CheckIncludes=[]
+    libs=[  Config.LIB_Boost, 'Plugin_TheoraVideoSystem','OgreMain' ]
+    ModuleName="theora"   
+    active=True
+    
+class physx:
+    version="2.7.2"
+    parent="ogre/physics"
+    cflags=""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_Ogre,
+                    ]
+    for d in Config.PATH_INCLUDE_PhysX:
+        include_dirs.append( d )
+    if os.name == 'nt':
+        CCFLAGS = ' /D "WIN32" '
+                    
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain,
+                Config.PATH_LIB_PhysX
+                ]
+    CheckIncludes=[]
+    libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader' ]
+    ModuleName="PhysX"   
+    active=True 
 # class raknet:
 #     version="1.0"
 #     parent="ogre/network"
@@ -405,7 +473,45 @@ class ogreal:
     ModuleName = 'OgreAL'
     CheckIncludes = ['OgreAL.h']
     active=True
-                
+    
+class ogrevideoffmpeg:
+    version="0.2.1"
+    parent="ogre/addons"
+    cflags = ""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_Ogre,
+                    Config.PATH_INCLUDE_ogrevideoffmpeg,
+                    Config.PATH_INCLUDE_ffmpeg
+                    ]
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain,
+                Config.PATH_LIB_ogrevideoffmpeg,
+                Config.PATH_LIB_ffmpeg
+                ]
+    CheckIncludes=[]
+    if os.name == 'nt':
+        libs=[  Config.LIB_Boost, 'OgreMain', 'avformat-51', 'avcodec-51', 'avutil-49' ]
+    else:
+        libs=[  Config.LIB_Boost, 'OgreMain', 'avformat', 'avcodec', 'avutil', 'z', 'GL', 'GLU', 'Xxf86vm', 'Xext', 'X11' ]
+    ModuleName="ogrevideoffmpeg"   
+    active=True 
+
+class ogredshow:
+    version="0.1"
+    parent="ogre/addons"
+    cflags = ""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_Ogre,
+                    Config.PATH_INCLUDE_ogredshow
+                    ]
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain,
+                Config.PATH_LIB_ogredshow
+                ]
+    CheckIncludes=[]
+    libs=[  Config.LIB_Boost, 'OgreMain','Strmiids' , 'ole32']
+    ModuleName="ogredshow"   
+    active=True 
 ############################################################################################
 
 ## Here is the master list....
@@ -426,6 +532,11 @@ projects = {
     , 'opcode' : opcode
     , 'nxogre' : nxogre
     , 'bullet' : bullet
+    , 'physx' : physx
+    , 'betagui': betagui
+    , 'theora' : theora
+    , 'ogrevideoffmpeg' : ogrevideoffmpeg
+    , 'ogredshow' : ogredshow
     #, 'raknet' : raknet
 }        
 

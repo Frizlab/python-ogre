@@ -10,15 +10,17 @@
 # LGPL.
 # -----------------------------------------------------------------------------
 import ogre.renderer.OGRE as ogre
+##from sf_OIS import * 
 import SampleFramework as sf
 
 class CameraTrackApplication(sf.Application):
     def _createScene(self):
+        print "11"
         sceneManager = self.sceneManager
         
         sceneManager.setAmbientLight ( (0.7, 0.7, 0.7) )
 #        sceneManager.setSkyBox (True, "Examples/CloudySky") ## AJM THIS FAILS FOR SOME REASON?
-        sceneManager.setSkyDome (True, "Examples/CloudySky")
+        sceneManager.setSkyDome (True, 'Examples/CloudySky',4.0,8.0)
         
         light = sceneManager.createLight('MainLight')
         light.setPosition (20, 80, 50)
@@ -86,20 +88,36 @@ class CameraTrackApplication(sf.Application):
 #         self.TexCam.position = (1,0.5,1)
         shadSetup.getShadowCamera (self.sceneManager, self.camera, self.viewport, light, self.TexCam) 
         self.sceneManager.setShadowCameraSetup( shadSetup )
+        
+        mouseRay = self.camera.getCameraToViewportRay( 10,10 )
+        raySceneQuery = self.sceneManager.createRayQuery(ogre.Ray())
+        raySceneQuery.setRay(mouseRay)
+        raySceneQuery.setSortByDistance(True)
+        result = raySceneQuery.execute()
 
 
     def _createFrameListener(self):
-        self.frameListener = CameraTrackListener(self.renderWindow, self.camera, self.animationState)
+        self.frameListener = CameraTrackListener(self.renderWindow, self.camera, self.animationState,self)
         self.root.addFrameListener(self.frameListener)
 
 class CameraTrackListener(sf.FrameListener):
-    def __init__(self, renderWindow, camera, animationState):
+    def __init__(self, renderWindow, camera, animationState, app):
         sf.FrameListener.__init__(self, renderWindow, camera)
+        self.app = app
+        self.camera=camera
         self.animationState = animationState
 
     def frameStarted(self, frameEvent):
         #MyTest #Crash    
         self.animationState.addTime(frameEvent.timeSinceLastFrame)
+        
+        ms = self.Mouse.getMouseState()
+        mouseRay = self.app.camera.getCameraToViewportRay( ms.X.abs, ms.Y.abs )
+        raySceneQuery = self.app.sceneManager.createRayQuery(ogre.Ray())
+        raySceneQuery.setRay(mouseRay)
+        raySceneQuery.setSortByDistance(True)
+        result = raySceneQuery.execute()
+        
         return sf.FrameListener.frameStarted(self, frameEvent)
 
 

@@ -8,7 +8,6 @@ def header_files( Version ):
             , "CEGUIXMLSerializer.h"
             , "OgreCEGUIRenderer.h"
             ,"OgreCEGUIResourceProvider.h"
-            , "OgreRenderWindow.h"  ## needed for Linux in OgreCEGUIRenderer.pypp.cpp
                   ]
 
 

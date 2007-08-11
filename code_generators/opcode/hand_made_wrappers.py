@@ -41,8 +41,8 @@ def apply_reg ( class_, code ):
         class_.add_registration_code ( c )
         
 def apply( mb ):
-    cs = mb.class_( 'Opcode' )
-    cs.add_declaration_code( WRAPPER_DEFINITION_MeshInterface )
-    apply_reg (cs,  WRAPPER_REGISTRATION_MeshInterface )
+    cs = mb.class_( 'MeshInterface' )
+#     cs.add_declaration_code( WRAPPER_DEFINITION_MeshInterface )
+#     apply_reg (cs,  WRAPPER_REGISTRATION_MeshInterface )
 
     

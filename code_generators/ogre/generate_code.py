@@ -71,12 +71,14 @@ def ManualExclude ( mb ):
 
     global_ns.class_('::Ogre::Node').member_functions('getChild').exclude()
     global_ns.class_('::Ogre::Node').member_functions('removeChild').exclude()
-#     global_ns.class_('::Ogre::Node').member_functions('createChild').exclude()
     global_ns.class_('::Ogre::Node').member_functions('getParent').exclude()
     
+    # these need to be dynamically cast before returning their result 
     global_ns.class_('::Ogre::OverlayElement').mem_fun('findElementAt').exclude()
-    global_ns.class_('::Ogre::OverlayElement').mem_fun('clone').exclude() # virtual, but not in code.
+    global_ns.class_('::Ogre::OverlayElement').mem_fun('clone').exclude() 
+# #     global_ns.class_('::Ogre::OverlayManager').mem_fun('createOverlayElement').exclude() 
     
+        
     startswith = [
         'WIN32'
         , 'MemoryManager'   ## it's a specialised C++ mem manger not needed in Python
@@ -168,6 +170,8 @@ def ManualExclude ( mb ):
     # in hand made wrappers
     global_ns.class_('::Ogre::BillboardSet').mem_fun('getTextureCoords').exclude()
     global_ns.class_('::Ogre::BillboardSet').mem_fun('setTextureCoords').exclude()
+    
+    ## these are hand wrapper -- 
 #     global_ns.class_('::Ogre::RenderQueueListener').mem_fun('renderQueueStarted').exclude()
 #     global_ns.class_('::Ogre::RenderQueueListener').mem_fun('renderQueueEnded').exclude()
 
@@ -406,13 +410,15 @@ def ManualTransformations ( mb ):
     x.add_transformation( ft.output(0),ft.output(1),ft.output(2),ft.output(3), alias="getStatisticsList" )
     x.documentation = docit ("", "no arguments", "tuple - lastFPS, avgFPS, bestFPS, worstFPS")
     
-    x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueEnded')
-    x.add_transformation(ft.inout('repeatThisInvocation'))
-    #x.documentation = docit ("","queueGroupId, invocation", "tuple - repeatThisInvocation")
+    # This doesn't work at the moment as Py++ ignores it ??
     
-    x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueStarted') 
-    x.add_transformation(ft.inout('skipThisInvocation'))
-    #x.documentation = docit ("","queueGroupId, invocation", "tuple - repeatThisInvocation")
+#     x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueEnded')
+#     x.add_transformation(ft.inout('repeatThisInvocation'))
+#     x.documentation = docit ("","queueGroupId, invocation", "tuple - repeatThisInvocation")
+#     
+#     x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueStarted') 
+#     x.add_transformation(ft.inout('skipThisInvocation'))
+#     x.documentation = docit ("","queueGroupId, invocation", "tuple - skipThisInvocation")
     
     x=ns.mem_fun('::Ogre::RenderWindow::getMetrics')
     x.add_transformation( *create_output(5) )
@@ -668,7 +674,6 @@ def AutoExclude( mb ):
             cls.operator('=').exclude()
         except:
             pass
-
             
 def AutoInclude( mb ):
     pass
@@ -758,9 +763,7 @@ def Fix_Posix ( mb ):
     c = mb.namespace( 'Ogre' ).class_( 'ShadowTextureConfig' )
     c.equality_comparable = False
 
-    ## This class gets exposed as a hash_map in windows (ok) but a hash_map_suite in linux whihc fails 
-    mb.namespace( 'Ogre' ).class_( 'Mesh' ).variable('mSubMeshNameMap').exclude()
-    mb.namespace( 'Ogre' ).class_( 'Mesh' ).member_function('getSubMeshNameMap').exclude()
+
 
 def Fix_NT ( mb ):
     """ fixup for NT systems
@@ -942,6 +945,18 @@ def Fix_Void_Ptr_Args ( mb ):
                     if i in arg.type.decl_string:
                         print "CHECK ", fun, str(arg_position)
                         fun.documentation=docit("SUSPECT - MAYBE BROKEN", "....", "...")
+                        break
+            arg_position +=1
+
+## NEED To do the same for constructors
+    for fun in mb.constructors():
+        arg_position = 0
+        for arg in fun.arguments:
+            if declarations.is_pointer(arg.type): ## and "const" not in arg.type.decl_string:
+                for i in pointee_types:
+                    if i in arg.type.decl_string:
+                        print "Excluding: ", fun
+                        fun.exclude()
                         break
             arg_position +=1
 

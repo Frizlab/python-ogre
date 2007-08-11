@@ -95,7 +95,7 @@ class GuiFrameListener ( sf.FrameListener, ois.MouseListener, ois.KeyListener ):
         ## Now convert from OIS keycode to QuickGUI one..            
         k = gui.KeyCode.values[arg.key]
         gui.GUIManager.getSingleton().injectKeyDown( k )
-        gui.GUIManager.getSingleton().injectChar( chr(arg.text) )
+        gui.GUIManager.getSingleton().injectChar( int(arg.text) )
         return True
 
     ##----------------------------------------------------------------##
@@ -122,9 +122,11 @@ class QuickGUIDemoApp (sf.Application):
         ## NB I could attach the light to a SceneNode if I wanted it to move automatically with
         ##  other objects, but I don't
         l.setPosition(20,80,50)
-
+        
+        print "\n\nCREATE GUIMANAGER\n"
         self.mGUIManager = gui.GUIManager(self.renderWindow.getWidth(),self.renderWindow.getHeight())
-
+        print "\n\n", self.mGUIManager
+        
         self.robot = self.sceneManager.createEntity("ChuckNorris", "robot.mesh")
 
         robotNode = self.sceneManager.getRootSceneNode().createChildSceneNode()
@@ -134,7 +136,7 @@ class QuickGUIDemoApp (sf.Application):
         
         ##  This ensures the camera doesn't move when we move the cursor..
         #3 However we do the same thing by setting MenuMode to True in the frameListerner further down
-#         self.camera.setAutoTracking(True, robotNode)
+        self.camera.setAutoTracking(True, robotNode)
 
         plane = Ogre.Plane( Ogre.Vector3.UNIT_Y, 0 )
         Ogre.MeshManager.getSingleton().createPlane("ground",
@@ -175,8 +177,14 @@ class QuickGUIDemoApp (sf.Application):
         
     def createGUI(self):
         self.callbacks=[]
-        self.mGUIManager.createMouseCursor((0.05,0.05))
-
+        self.mousecursor = self.mGUIManager.getMouseCursor()
+        
+        self.mousecursor.show()
+        self.mousecursor.setTexture("qgui.unchecked.over.png" ) #pointer.png")
+        self.mousecursor.setSize(50,50)
+        print "\n\n",self.mousecursor,"\n\n"
+        
+        
         self.mSheet = self.mGUIManager.getDefaultSheet()
         
         ## Main Menu and it's MenuLists
@@ -223,7 +231,7 @@ class QuickGUIDemoApp (sf.Application):
 
         ## Logos
         
-        logoImage = self.mSheet.createImage((0.02,0.07,0.3,0.3),False)
+        logoImage = self.mSheet.createImage((0.02,0.07,0.3,0.3))
         logoImage.setBorderWidth(10)
         logoLabel = self.mSheet.createLabel((0.075,0.4,0.15,0.05))
         logoLabel.setText("Click Me >")
@@ -232,7 +240,7 @@ class QuickGUIDemoApp (sf.Application):
         imageToggleButton.addState("QuickGUILogo","qgui.unchecked")
 
         ## RTT Example Use
-        rttImage = self.mSheet.createImage(Ogre.Vector4(0.75,0.07,0.2,0.15),"self.rttTex",True)
+        rttImage = self.mSheet.createImage(Ogre.Vector4(0.75,0.07,0.2,0.15),"self.rttTex")
         rttImage.setBorderWidth(10)
         ninjaWindow = self.mSheet.createWindow(Ogre.Vector4(0.725,0.25,0.25,0.15))
         ninjaWindow.hideTitlebar()
@@ -266,6 +274,8 @@ class QuickGUIDemoApp (sf.Application):
         self.lifeBarValueLabel.setText("100")
         self.lifeBar =self.mSheet.createProgressBar((0.4,0.55,0.2,0.03))
         
+        self.lifeBar.setTexture("progressbar.red")
+        
         ## Mouse Over window
         mouseOverWindow = self.mSheet.createWindow("Mouse Over Window",Ogre.Vector4(0.7,0.7,0.3,0.1))
         mouseOverWindow.hideTitlebar()
@@ -288,14 +298,17 @@ class QuickGUIDemoApp (sf.Application):
         ## Set Text Window
         self.stWindow = self.mSheet.createWindow(Ogre.Vector4(0.7,0.45,0.3,0.2))
         self.stWindow.hide()
-        self.stWindow.setText("Set Text Color:")
+        self.stWindow.createLabel((0.05,0.3,0.3,0.25)).getText().setCaption("Color:")
+		
         self.stWindow.createLabel(Ogre.Vector4(0.05,0.3,0.3,0.25)).setText("Color:")
         colorCB = self.stWindow.createComboBox(Ogre.Vector4(0.4,0.3,0.55,0.25))
-        colorCB.addListItem("Red")
-        colorCB.addListItem("Green")
-        colorCB.addListItem("Blue")
-        colorCB.addListItem("Black")
-        colorCB.addListItem("White")
+        colorCBdropList = colorCB.getDropDownList()
+		
+        colorCBdropList.addListItem("Red")
+        colorCBdropList.addListItem("Green")
+        colorCBdropList.addListItem("Blue")
+        colorCBdropList.addListItem("Black")
+        colorCBdropList.addListItem("White")
         setTextButton = self.stWindow.createButton(Ogre.Vector4(0.05,0.6,0.9,0.3))
         setTextButton.setText("Apply")
         setTextButton.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_setTextColor) )

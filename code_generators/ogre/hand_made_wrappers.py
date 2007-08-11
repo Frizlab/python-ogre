@@ -2,6 +2,26 @@ import os
 import environment
 
 
+
+WRAPPER_WRAPPER_RenderQueueListener =\
+"""
+    virtual void renderQueueEnded( ::Ogre::uint8 queueGroupId, ::Ogre::String const & invocation, bool & repeatThisInvocation ){
+        bool holder;
+        bp::override func_renderQueueEnded = this->get_override( "renderQueueEnded" ); 
+        holder = func_renderQueueEnded( queueGroupId, invocation, repeatThisInvocation );
+        repeatThisInvocation = holder;
+    }
+
+
+    virtual void renderQueueStarted( ::Ogre::uint8 queueGroupId, ::Ogre::String const & invocation, bool & skipThisInvocation ){
+        bool holder;
+        bp::override func_renderQueueStarted = this->get_override( "renderQueueStarted" );
+        holder = func_renderQueueStarted( queueGroupId, invocation, skipThisInvocation );
+        skipThisInvocation = holder;
+    }
+"""
+
+
 # WRAPPER_DEFINITION_ShadowRenderable =\
 # """
 # Ogre::ShadowRenderable * ShadowRenderable_castElement(Ogre::ShadowRenderable * r){
@@ -31,6 +51,18 @@ WRAPPER_REGISTRATION_ShadowRenderable = [
 
 WRAPPER_DEFINITION_OverlayElement = \
 """
+Ogre::OverlayElement * OverlayElement_castElementAsOverlayContainer(Ogre::OverlayElement * e){  
+    if( dynamic_cast< Ogre::OverlayContainer * >( e ) ){
+        return (Ogre::OverlayContainer*) e;
+    }
+    return  ( e );
+    }
+Ogre::OverlayElement * OverlayElement_castElementAsTextAreaOverlay(Ogre::OverlayElement * e){
+    if( dynamic_cast< Ogre::TextAreaOverlayElement * >( e ) ){
+        return (Ogre::TextAreaOverlayElement*) e;
+    }   
+    return  ( e );
+    }   
 Ogre::OverlayElement * OverlayElement_castElement(Ogre::OverlayElement * e){
     if( dynamic_cast< Ogre::TextAreaOverlayElement * >( e ) ){
         return (Ogre::TextAreaOverlayElement*) e;
@@ -46,9 +78,6 @@ Ogre::OverlayElement * OverlayElement_findElementAt(Ogre::OverlayElement &me, Og
 Ogre::OverlayElement * OverlayElement_clone(Ogre::OverlayElement &me, Ogre::String const & instanceName) {
     return OverlayElement_castElement ( me.clone ( instanceName ) );
     }
-/*Ogre::OverlayElement * OverlayElement_getSourceTemplate(Ogre::OverlayElement &me) {
-    return OverlayElement_castElement ( me.getSourceTemplate () );
-    }*/
 """
 WRAPPER_REGISTRATION_OverlayElement = [
     'def( "findElementAt", &::OverlayElement_findElementAt,\
@@ -58,8 +87,41 @@ WRAPPER_REGISTRATION_OverlayElement = [
     'def( "clone", &::OverlayElement_clone,\
     "Python-Ogre Hand Wrapped\\n",\
     bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
+    
+    'def( "castElement", &::OverlayElement_castElement,\
+    "Python-Ogre Hand Wrapped\\nWill return the overlay element as either a textareaoverlay or an overlaycontainer",\
+    bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
+    
+    'def( "castElementAsOverlayContainer", &::OverlayElement_castElementAsOverlayContainer,\
+    "Python-Ogre Hand Wrapped\\nWill return the overlay element as an OverlayContainer (if possible)",\
+    bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
+    
+    'def( "castElementAsTextAreaOverlay", &::OverlayElement_castElementAsTextAreaOverlay,\
+    "Python-Ogre Hand Wrapped\\nWill return the overlay element as a TextAreaOverlay (if possible)",\
+    bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
 
     ]
+# WRAPPER_DEFINITION_OverlayManager = \
+# """
+# Ogre::OverlayElement* OverlayManager_createOverlayElement(Ogre::OverlayManager &me, const Ogre::String& typeName, 
+#                   const Ogre::String& instanceName, bool isTemplate = false){
+#    Ogre::OverlayElement* e = me.createOverlayElement(typeName, instanceName, isTemplate );
+#    if( dynamic_cast< Ogre::TextAreaOverlayElement * >( e ) ){
+#         return (Ogre::TextAreaOverlayElement*) e;
+#     }   
+#     if( dynamic_cast< Ogre::OverlayContainer * >( e ) ){
+#         return (Ogre::OverlayContainer*) e;
+#     }
+#     return  ( e );
+#     }
+# """  
+#                 
+# WRAPPER_REGISTRATION_OverlayManager = [
+#     'def( "createOverlayElement", &::OverlayManager_createOverlayElement,\
+#     "Python-Ogre Hand Wrapped\\nShould Return the correct Type (TextAreOverlayElement or OverlayContainer)",\
+#     bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
+# ]
+
     
 WRAPPER_DEFINITION_Node = \
 """
@@ -119,7 +181,10 @@ WRAPPER_REGISTRATION_Node = [
     "Python-Ogre Hand Wrapped\\n",\
     bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
     'def( "castAsSceneNode", &::Node_castAsSceneNode,\
-    "Python-Ogre Helper Function\\nCase a Node as a Scene Node",\
+    "Python-Ogre Helper Function\\nCast a Node as a Scene Node",\
+    bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());'
+    'def( "castNode", &::Node_castNode,\
+    "Python-Ogre Helper Function\\nCast a Node as a Scene Node or Bone Node (automatic)",\
     bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());'
     ]
 
@@ -194,6 +259,21 @@ WRAPPER_REGISTRATION_ResourceManager = [
 
 WRAPPER_DEFINITION_General = \
 """
+Ogre::OverlayContainer * General_castElementAsOverlayContainer( Ogre::OverlayElement * e ){  
+       return (Ogre::OverlayContainer*) e;
+    }
+    
+Ogre::OverlayContainer * General_castTextAreaAsOverlayContainer( Ogre::TextAreaOverlayElement * e ){  
+        return (Ogre::OverlayContainer*) e;
+    }
+Ogre::OverlayContainer * General_castPanelAsOverlayContainer( Ogre::PanelOverlayElement * e ){  
+        return (Ogre::OverlayContainer*) e;
+    }
+    
+Ogre::OverlayContainer * General_castBorderPanelAsOverlayContainer( Ogre::BorderPanelOverlayElement * e ){  
+        return (Ogre::OverlayContainer*) e;
+    }
+    
 boost::python::tuple 
 GetOgreVersion () {
             return ( boost::python::make_tuple( Ogre::StringConverter::toString(OGRE_VERSION_MAJOR),
@@ -336,6 +416,28 @@ Utility_CastResourceToNative(Ogre::ResourcePtr& r){
 // }
 """            
 WRAPPER_REGISTRATION_General = [
+
+    """bp::def( "castAsOverlayContainer", &General_castElementAsOverlayContainer,
+                "Python-Ogre Helper Function: Casts as Overlay Container -- needed for add2D.\\n\\
+                Input: Element\\n\\
+                Ouput: OverlayContainer",\
+                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());""",
+    """bp::def( "castAsOverlayContainer", &General_castTextAreaAsOverlayContainer,
+                "Python-Ogre Helper Function: Casts as Overlay Container -- needed for add2D.\\n\\
+                Input: Element\\n\\
+                Ouput: OverlayContainer",\
+                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());""",
+    """bp::def( "castAsOverlayContainer", &General_castPanelAsOverlayContainer,
+                "Python-Ogre Helper Function: Casts as Overlay Container -- needed for add2D.\\n\\
+                Input: Element\\n\\
+                Ouput: OverlayContainer",\
+                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());""",
+    """bp::def( "castAsOverlayContainer", &General_castBorderPanelAsOverlayContainer,
+                "Python-Ogre Helper Function: Casts as Overlay Container -- needed for add2D.\\n\\
+                Input: Element\\n\\
+                Ouput: OverlayContainer",\
+                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());""",
+
     """bp::def( "createVertexData", &Utility_createVertexData,
                 "Python-Ogre Helper Function: Returns a pointer to a 'new' VertexData element.\\n\\
                 Input: None\\n\\
@@ -583,6 +685,10 @@ def apply( mb ):
     rt.add_declaration_code( WRAPPER_DEFINITION_OverlayElement )
     apply_reg (rt,  WRAPPER_REGISTRATION_OverlayElement )
 
+#     rt = mb.class_( 'OverlayManager' )
+#     rt.add_declaration_code( WRAPPER_DEFINITION_OverlayManager )
+#     apply_reg (rt,  WRAPPER_REGISTRATION_OverlayManager )
+
     rt = mb.class_( 'Frustum' )
     rt.add_declaration_code( WRAPPER_DEFINITION_Frustum )
     apply_reg (rt,  WRAPPER_REGISTRATION_Frustum )
@@ -604,5 +710,24 @@ def apply( mb ):
         
     map_iterators = mb.classes( lambda cls: cls.name.startswith( 'MapIterator<' ) )
     for cls in map_iterators:
-        iter_as_generator_map( cls )   
+        iter_as_generator_map( cls ) 
+        
+    rt = mb.class_( 'RenderQueueListener' )   
+    rt.add_wrapper_code ( WRAPPER_WRAPPER_RenderQueueListener )
              
+#     cls = mb.class_('Animation').class_('NodeTrackIterator')
+#     iter_as_generator_map( cls )
+#     global_ns = mb.global_ns
+#     ogre_ns = global_ns.namespace( 'Ogre' )
+#     i = ogre_ns.typedef( name="NodeTrackIterator" )
+#     iter_as_generator_map( i )
+          
+#     typedef std::map<unsigned short, NodeAnimationTrack*> NodeTrackList;
+#         typedef ConstMapIterator<NodeTrackList> NodeTrackIterator;
+
+# 		typedef std::map<unsigned short, NumericAnimationTrack*> NumericTrackList;
+# 		typedef ConstMapIterator<NumericTrackList> NumericTrackIterator;
+
+# 		typedef std::map<unsigned short, VertexAnimationTrack*> VertexTrackList;
+# 		typedef ConstMapIterator<VertexTrackList> VertexTrackIterator;
+

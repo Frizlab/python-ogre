@@ -27,7 +27,8 @@ class SmokeApplication(sf.Application):
         particleSystem2 = sceneManager.createParticleSystem('fountain1', 'Examples/Smoke')
         node = self.fountainNode.createChildSceneNode()
         node.attachObject(particleSystem2)
-
+        
+       
                 
 if __name__ == '__main__':
     try:

@@ -60,6 +60,8 @@ EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeSystem,
             bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
 EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeRenderer, 
             bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventSet, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
                         
 { //EventConnection
         typedef bp::class_< EventConnection > EventConnection_exposer_t;
@@ -213,6 +215,12 @@ protected:
 
 
 
+EventConnection * EventSet_subscribeEventSet(CEGUI::EventSet *self , CEGUI::String const & name, 
+                                                PyObject* subscriber, CEGUI::String const & method="")
+{
+    EventConnection *connect = new EventConnection(self->subscribeEvent(name, EventCallback(subscriber, method))); 
+    return connect; 
+}
 
 EventConnection * EventSet_subscribeEventPB(CEGUI::PushButton *self , CEGUI::String const & name, 
                                                 PyObject* subscriber, CEGUI::String const & method="")
@@ -332,9 +340,23 @@ EventConnection * EventSet_subscribeRenderer(CEGUI::Renderer *self , CEGUI::Stri
 }
 """
 
+WRAPPER_DEFINITION_General = \
+"""
+CEGUI::ScriptModule 
+General_CreateScriptModule () {
+            return ( new CEGUI::ScriptModule() ) ;
+            }
+"""
+WRAPPER_REGISTRATION_General =\
+"""
+bp::def( "createScriptModule", &General_CreateScriptModule,
+                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+"""
+
+
 def apply( mb ):
-#     mb.add_declaration_code( WRAPPER_DEFINITION_General )
-#     mb.add_registration_code( WRAPPER_REGISTRATION_General )
+# #     mb.add_declaration_code( WRAPPER_DEFINITION_General )
+# #     mb.add_registration_code( WRAPPER_REGISTRATION_General )
 #     
     rt = mb.class_( 'EventSet' )
     rt.add_declaration_code( WRAPPER_DEFINITION_EventSet )

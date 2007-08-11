@@ -74,22 +74,7 @@ class SkeletalApplication(sf.Application):
         
         ## Doing this returns a SharedPtr_less_Ogre_scope_Resource_grate 
         skel = ogre.SkeletonManager.getSingleton().load("jaiqua.skeleton", ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME,False, ogre.ManualResourceLoader(), ogre.NameValuePairList()) 
-#         print "TEST\n",skel,"\n"
-#         for i in range( skel.numBones): 
-#             bone = skel.getBone(i) 
-#             for j in range(bone.numChildren()): 
-#                 # Child bones, one per part than can be damaged 
-#                 child = bone.getChild(j) 
-#                 nn = child.name
-#                 print "NAME", nn
-#                 c1 = bone.getChild ( nn )
-#                 print "Retriev Bone via name", c1
-#                 for k in range(child.numChildren()): 
-#                     # Grandchild bones, one damaged and one undamaged 
-#                     # These guys have geometry attached, should therefore be SceneNodes 
-#                     print child.getChild(k) 
-
-       
+      
         
         anim = skel.getAnimation("Sneak") 
         
@@ -190,17 +175,7 @@ class SkeletalApplication(sf.Application):
         camera.lookAt(0, 10, 0)
         camera.setFarClipDistance(100000)
 
-        # Report whether hardware skinning is enabled or not
-###        subEntity = entity.getSubEntity(0)
-#         material = subEntity.material
-#         technique = material.bestTechnique
-#         techniquePass = technique.getPass(0)
-#         if techniquePass.hasVertexProgram and techniquePass.vertexProgram.skeletalAnimationIncluded:
-#             self.renderWindow.debugText = 'Hardware skinning is enabled'
-#         else:
-#             self.renderWindow.debugText = 'Software skinning is enabled'
-
-            
+           
         plane = ogre.Plane()
         plane.normal = ogre.Vector3.UNIT_Y
         plane.d = 100

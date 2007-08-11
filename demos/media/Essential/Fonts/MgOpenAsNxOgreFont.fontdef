@@ -1,0 +1,8 @@
+nxogrefont
+{
+	type 		truetype
+	source 		MgOpen.ttf
+	size 		16
+	resolution  72
+}
+

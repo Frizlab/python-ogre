@@ -14,18 +14,12 @@ import SampleFramework as sf
 import sys
 pThrusters = None
 
-## As this demo does it's own key input we need to cope with the change to OIS
-if ogre.OgreVersionString[:2]=="12":
-    KC_N = ogre.KC_N
-    KC_M = ogre.KC_M
-    KC_H = ogre.KC_H
-    KC_J = ogre.KC_J
-else:
-    import ogre.io.OIS as OIS
-    KC_N = OIS.KC_N
-    KC_M = OIS.KC_M
-    KC_H = OIS.KC_H
-    KC_J = OIS.KC_J
+
+import ogre.io.OIS as OIS
+KC_N = OIS.KC_N
+KC_M = OIS.KC_M
+KC_H = OIS.KC_H
+KC_J = OIS.KC_J
 
 class SkyBoxApplication(sf.Application):
     def _createScene(self):
