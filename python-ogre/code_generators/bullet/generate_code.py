@@ -331,7 +331,42 @@ def Fix_Void_Ptr_Args ( mb ):
             fun.add_transformation ( * trans )
             fun.documentation = docit ("Modified Input Argument to work with CTypes",
                                         "Argument "+ desc + " takes a CTypes.adddressof(xx)", "...")
+   ## lets go and look for stuff that might be a problem        
+    pointee_types=['unsigned int',' int ', ' float ', ' Real ', 'uchar', 'uint8',
+             'unsigned char']
+                          
+    function_names=[]
+    for fun in mb.member_functions():
+        if fun.documentation or fun.ignore: continue ## means it's been tweaked somewhere else
+        for n in function_names:
+            if n in fun.name:
+                print "CHECK :", fun
+                break
+        arg_position = 0
+        for arg in fun.arguments:
+            if declarations.is_pointer(arg.type): ## and "const" not in arg.type.decl_string:
+                for i in pointee_types:
+                    if i in arg.type.decl_string:
+                        print '"',arg.type.decl_string, '"'
+                        print "CHECK ", fun, str(arg_position)
+                        fun.documentation=docit("SUSPECT - MAYBE BROKEN", "....", "...")
+                        break
+            arg_position +=1
+
+## NEED To do the same for constructors
+    for fun in mb.constructors():
+        arg_position = 0
+        for arg in fun.arguments:
+            if declarations.is_pointer(arg.type): ## and "const" not in arg.type.decl_string:
+                for i in pointee_types:
+                    if i in arg.type.decl_string:
+                        print '"',arg.type.decl_string, '"'
+                        print "Excluding: ", fun
+                        fun.exclude()
+                        break
+            arg_position +=1
             
+                        
                     
 def Fix_Pointer_Returns ( mb ):
     """ Change out functions that return a variety of pointers to base types and instead
@@ -383,30 +418,30 @@ def Remove_Static_Consts ( mb ):
 # the 'main'function
 #            
 def generate_code():  
-#     messages.disable( 
+    messages.disable( 
 # # #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-#           messages.W1020
-#         , messages.W1021
-#         , messages.W1022
-#         , messages.W1023
-#         , messages.W1024
-#         , messages.W1025
-#         , messages.W1026
-#         , messages.W1027
-#         , messages.W1028
-#         , messages.W1029
-#         , messages.W1030
-#         , messages.W1031
+          messages.W1020
+        , messages.W1021
+        , messages.W1022
+        , messages.W1023
+        , messages.W1024
+        , messages.W1025
+        , messages.W1026
+        , messages.W1027
+        , messages.W1028
+        , messages.W1029
+        , messages.W1030
+        , messages.W1031
 # #         , messages.W1035
 # #         , messages.W1040 
 # #         , messages.W1038        
 #         , messages.W1041
-#         , messages.W1036 # pointer to Python immutable member
+        , messages.W1036 # pointer to Python immutable member
 # #         , messages.W1033 # unnamed variables
 # #         , messages.W1018 # expose unnamed classes
-#         , messages.W1049 # returns reference to local variable
+        , messages.W1049 # returns reference to local variable
 #         , messages.W1014 # unsupported '=' operator
-#          )
+         )
     #
     # Use GCCXML to create the controlling XML file.
     # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded

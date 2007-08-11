@@ -62,6 +62,20 @@ class Application(object):
         if self._isPsycoEnabled():
             self._activatePsyco()
         self.root.startRendering()
+        
+    def goOneFrame(self):
+      "Starts the rendering loop. Show how to use the renderOneFrame Method"
+      if not self._setUp():
+          return
+      if self._isPsycoEnabled():
+          self._activatePsyco()
+    
+      self.root.getRenderSystem()._initRenderTargets()
+      while True:
+          ogre.WindowEventUtilities().messagePump()
+          if not self.root.renderOneFrame():
+              break
+
 
 
     def _setUp(self):
@@ -224,11 +238,11 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
          #Create all devices (We only catch joystick exceptions here, as, most people have Key/Mouse)
          self.Keyboard = self.InputManager.createInputObjectKeyboard( OIS.OISKeyboard, self.bufferedKeys )
          self.Mouse = self.InputManager.createInputObjectMouse( OIS.OISMouse, self.bufferedMouse )
-         try :
-            self.Joy = self.InputManager.createInputObjectJoyStick( OIS.OISJoyStick, bufferedJoy )
+         try:
+            self.Joy = self.InputManager.createInputObjectJoyStick( OIS.OISJoyStick, self.bufferedJoy )
          except:
             self.Joy = False
-         
+#          
          #Set initial mouse clipping size
          self.windowResized(self.renderWindow)
          

@@ -45,13 +45,16 @@ class SkeletalApplication(sf.Application):
 
         # Report whether hardware skinning is enabled or not
         subEntity = entity.getSubEntity(0)
-        #material = subEntity.material
-        #technique = material.bestTechnique
-        #techniquePass = technique.getPass(0)
-        #if techniquePass.hasVertexProgram and techniquePass.vertexProgram.skeletalAnimationIncluded:
-            #self.renderWindow.debugText = 'Hardware skinning is enabled'
-        #else:
-            #self.renderWindow.debugText = 'Software skinning is enabled'
+        material = subEntity.material
+        technique = material.getBestTechnique()
+        techniquePass = technique.getPass(0)
+        
+        if techniquePass.hasVertexProgram and techniquePass.vertexProgram.skeletalAnimationIncluded:
+            sf.Application.debugText = 'Hardware skinning is enabled'
+            
+        else:
+            sf.Application.debugText = 'Software skinning is enabled'
+            
 
     def _createFrameListener(self):
         self.frameListener = SkeletalAnimationFrameListener(self.renderWindow, self.camera,

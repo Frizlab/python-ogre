@@ -224,32 +224,23 @@ class BezierApplication(sf.Application):
         ## default values for you
         ##    ,vbUsage=ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, ibUsage=ogre.HardwareBuffer.HBU_DYNAMIC_WRITE_ONLY,
         ##    vbUseShadow=True, ibUseShadow=True) 
-        print "\n22"
         
         ## Start patch at 0 detail
         patch.setSubdivision(0.0) 
         ## Create entity based on patch
         patchEntity = sceneManager.createEntity("Entity1", "Bezier1") 
-        print "\n23"
 
         pMat = ogre.MaterialManager.getSingleton().create("TextMat", 
             ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME) 
-        print "\n24"
         pMat.getTechnique(0).getPass(0).createTextureUnitState( "BumpyMetal.jpg" ) 
-        print "\n25"
         patchEntity.setMaterialName("TextMat") 
-        print "\n26"
-        patchPass = pMat.getTechnique(0).getPass(0) 
-        print "\n1"
-        
+      
         ## Attach the entity to the root of the scene
         sceneManager.getRootSceneNode().attachObject(patchEntity) 
 
         self.camera.setPosition(500,500, 1500) 
         self.camera.lookAt(0,200,-300) 
-        print "\n1"
         sf.Application.debugText  = "STARTED"
-        print "SETUP FINISHED!!!!"
 
 
     def _destroyScene(self):

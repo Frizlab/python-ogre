@@ -1,0 +1,369 @@
+material widget.edit
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			ambient 1 1 1
+			diffuse 1 1 1
+			specular 1 1 1 30
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture widget.edit.png
+			}
+		}
+	}
+}
+
+material widget.edit.over
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			ambient 1 1 1
+			diffuse 1 1 1
+			specular 1 1 1 30
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture widget.edit.png
+			}
+		}
+	}
+}
+
+material widget.add
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			ambient 1 1 1
+			diffuse 1 1 1
+			specular 1 1 1 30
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture widget.add.png
+			}
+		}
+	}
+}
+
+
+material widget.add.over
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			ambient 1 1 1
+			diffuse 1 1 1
+			specular 1 1 1 30
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture widget.add.active.png
+			}
+		}
+	}
+}
+
+material widget.angle
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			ambient 1 1 1
+			diffuse 1 1 1
+			specular 1 1 1 30
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture widget.angle.png
+			}
+		}
+	}
+}
+
+
+material widget.angle.over
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			ambient 1 1 1
+			diffuse 1 1 1
+			specular 1 1 1 30
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture widget.angle.over.png
+			}
+		}
+	}
+}
+
+material widget.scale
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			ambient 1 1 1
+			diffuse 1 1 1
+			specular 1 1 1 30
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture widget.scale.png
+			}
+		}
+	}
+}
+
+
+material widget.scale.over
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			ambient 1 1 1
+			diffuse 1 1 1
+			specular 1 1 1 30
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture widget.scale.over.png
+			}
+		}
+	}
+}
+
+material widget.material
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			ambient 1 1 1
+			diffuse 1 1 1
+			specular 1 1 1 30
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture widget.material.png
+			}
+		}
+	}
+}
+
+
+material widget.material.over
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			ambient 1 1 1
+			diffuse 1 1 1
+			specular 1 1 1 30
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture widget.material.over.png
+			}
+		}
+	}
+}
+
+material widget.create
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			ambient 1 1 1
+			diffuse 1 1 1
+			specular 1 1 1 30
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture widget.create.png
+			}
+		}
+	}
+}
+
+material widget.create.over
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			ambient 1 1 1
+			diffuse 1 1 1
+			specular 1 1 1 30
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture widget.create.png
+			}
+		}
+	}
+}
+
+material icon.cube
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			ambient 1 1 1
+			diffuse 1 1 1
+			specular 1 1 1 30
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture icon.cube.png
+			}
+		}
+	}
+}
+
+material icon.cube.over
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			ambient 1 1 1
+			diffuse 1 1 1
+			specular 1 1 1 30
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture icon.cube.png
+			}
+		}
+	}
+}
+
+material icon.sphere
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			ambient 1 1 1
+			diffuse 1 1 1
+			specular 1 1 1 30
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture icon.sphere.png
+			}
+		}
+	}
+}
+
+material icon.sphere.over
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			ambient 1 1 1
+			diffuse 1 1 1
+			specular 1 1 1 30
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture icon.sphere.png
+			}
+		}
+	}
+}
+
+material ov.base
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			ambient 1 1 1
+			diffuse 1 1 1
+			specular 1 1 1 30
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture_alias ovt
+				texture widget.menu.png
+			}
+		}
+	}
+}
+
+
+material widget.mm : ov.base
+{
+	set_texture_alias ovt widget.mm.png
+}
+
+material widget.mm.over : ov.base
+{
+	set_texture_alias ovt widget.mm.png
+}
+
+material widget.mm.bodies : ov.base
+{
+	set_texture_alias ovt widget.mm.bodies.png
+}
+
+material widget.mm.bodies.over : ov.base
+{
+	set_texture_alias ovt widget.mm.bodies.over.png
+}
+
+material widget.mm.joints : ov.base
+{
+	set_texture_alias ovt widget.mm.joints.png
+}
+
+material widget.mm.joints.over : ov.base
+{
+	set_texture_alias ovt widget.mm.joints.over.png
+}
+
+
+material widget.mm.fx : ov.base
+{
+	set_texture_alias ovt widget.mm.fx.png
+}
+
+material widget.mm.fx.over : ov.base
+{
+	set_texture_alias ovt widget.mm.fx.over.png
+}

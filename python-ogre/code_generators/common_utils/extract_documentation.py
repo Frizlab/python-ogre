@@ -158,49 +158,7 @@ def get_generic_doc(declaration):
     return ''
                 
 
-def clear_str_OLD(str):
-    """
-    replace */! by Space and \breaf, \fn, \param, ...
-    """
-    def clean ( str, sym, change2 = ""): 
-        return str.replace(sym, change2)
-    str = clean(str, "@param", "Param: ")
-    str = clean(str, "\\param", "Param: ")
-    str = clean(str, "@ingroup", "Group")
-    str = clean(str, "\\ingroup", "Group")
-    str = clean(str, "@return", "It return")
-    str = clean(str, "\\return", "It return")
-    str = clean(str, "@note", "Note: ")
-    str = clean(str, "@remarks", "Remarks: ")
-    str = clean(str, "@see", "See: ")
-    str = clean(str, "\\see", "See: ")
-    str = clean(str, "@ref", "Ref: ")
-    str = clean(str, "\\ref", "REf: ")
-    str = clean(str, "@copydoc", "Ref: ")
-    
-    str = clean(str, "\\sa", "See also: ")   # comment string in OgreNewt
-    str = clean(str, "\\code", "Code: ")    
-    str = clean(str, "\\codeblock", "CodeBlock: ")    
-    str = clean(str, "\\endcode", "")    
-    str = clean(str, "@code", "")    
-    str = clean(str, "@codeblock", "")    
-    
-    str = clean(str, "@par", "")    ## it will get a single blank line by default
-    str = clean(str, "\\par", "")    ## it will get a single blank line by default
-    str = clean(str, "\n", "\\n") 
-    str = clean(str, "\\p", "")     ## cegui comments
-    str = clean(str, "\\li", "  ")     ## ode comments
-    str = clean(str, "\\exception", "Exception: ") 
-    str = clean(str, "::", ".")     ## make it more python accurate 
-    str = clean(str, "->", ".") 
-    
-    ## now clean up the rest
-    str = reduce(clean, [str, '/', '*', '!', "\\brief", '\\fn',\
-     "@brief", "@fn", '"', "@{", "\\c", "\\a"]) ## somtimes there are '"' in the doc strings and other "\\"...
-    return str.lstrip()
-    return "  " + str.lstrip()
 
-    
 def code(str):
     """
     detect str is code?
@@ -248,9 +206,14 @@ def clear_str(_str):
     _str = clean(_str, "\\par", "")    ## it will get a single blank line by default
     _str = clean(_str, "\n", "\\n") 
     _str = clean(_str, "\\p", "")     ## cegui comments
-    _str = clean(_str, "\\li", "  -")     ## ode comments
+    _str = clean(_str, "\\li", "  * ")     ## ode comments
     _str = clean(_str, "\\exception", "@exception") 
     _str = clean(_str, "\\a", "")     ## cegui
+    
+    _str = clean(_str, "\\warning", "Warning: ")     ## nxPhysics
+    _str = clean(_str, "\\include", "Include: ")     ## nxPhysics
+    _str = clean(_str, "\\image", "Image: ")     ## nxPhysics
+    
     
     ## now clean up the rest
     _str = reduce(clean, [_str, '/', '*', '!', "\\brief", '\\fn',

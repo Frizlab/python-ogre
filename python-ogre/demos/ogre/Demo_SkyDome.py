@@ -12,18 +12,11 @@
 import ogre.renderer.OGRE as ogre
 import SampleFramework as sf
 
-## As this demo does it's own key input we need to cope with the change to OIS
-if ogre.OgreVersionString[:2]=="12":
-    KC_H = ogre.KC_H
-    KC_G = ogre.KC_G
-    KC_U = ogre.KC_U
-    KC_Y = ogre.KC_Y
-else:
-    import ogre.io.OIS as OIS
-    KC_H = OIS.KC_H
-    KC_G = OIS.KC_G
-    KC_U = OIS.KC_U
-    KC_Y = OIS.KC_Y
+import ogre.io.OIS as OIS
+KC_H = OIS.KC_H
+KC_G = OIS.KC_G
+KC_U = OIS.KC_U
+KC_Y = OIS.KC_Y
 
 class SkyDomeApplication(sf.Application):
     def _createScene(self):

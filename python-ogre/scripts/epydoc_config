@@ -4,7 +4,7 @@
 # dotted names, module filenames, or package directory names.
 # Alases for this option include "objects" and "values".
 #modules: ogre
-modules: ogre.renderer.OGRE, ogre.gui.CEGUI, ogre.gui.QuickGUI, ogre.sound.OgreAL, ogre.io.OIS,ogre.physics.OgreOde, ogre.physics.OgreNewt, ogre.physics.OgreRefApp, ogre.physics.ODE 
+modules: ogre.renderer.OGRE, ogre.gui.CEGUI, ogre.gui.QuickGUI, ogre.sound.OgreAL, ogre.io.OIS, ogre.physics.OgreOde, ogre.physics.OgreNewt, ogre.physics.OgreRefApp, ogre.physics.ODE, ogre.physics.PhysX, ogre.physics.NxOgre, ogre.physics.bullet, ogre.physics.Opcode
 #modules: ogre.sound.OgreAL
 
 output: html

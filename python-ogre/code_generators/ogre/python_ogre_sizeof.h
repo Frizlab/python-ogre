@@ -12,6 +12,9 @@ sizeof ( Ogre::RenderTarget::FrameStats );
 
 sizeof ( Ogre::SharedPtr<Ogre::AnimableValue> );
 sizeof ( Ogre::SharedPtr<Ogre::FileInfoList> );
+sizeof ( Ogre::SharedPtr<Ogre::Texture> );
+sizeof ( Ogre::TexturePtr );
+
 //sizeof ( Ogre::SharedPtr<Ogre::CodecData> );
 sizeof ( Ogre::SharedPtr<Ogre::ControllerFunction<Ogre::Real> > );
 sizeof ( Ogre::SharedPtr<Ogre::ControllerValue<Ogre::Real> > );
@@ -57,6 +60,7 @@ sizeof( Ogre::Controller<float> );
 sizeof( Ogre::ControllerValue<float> );
 sizeof( Ogre::ControllerFunction<float> );
 
+sizeof( Ogre::Mesh::SubMeshNameMap );
 sizeof( Ogre::RenderSystem );
 
 sizeof( Ogre::ConvexBody::PolygonList );

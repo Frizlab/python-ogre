@@ -1,4 +1,4 @@
-
+#include "Ogre.h"  // need to include this
 #include "QuickGUI.h"
 
 // First we create a magic namespace to hold all our aliases

@@ -1,12 +1,24 @@
-xxx 2007 
+
+August 10 2007: Version 1.0 - Release
 ============================================
-* Updated to QuickGui 0.9.5
+* Added NxOgre Wrapper -- single demo with Cakewalk
+* Added PhysX Wrapper -- required for NxOgre -- you need to install the PhysX library
+* Added OgreDshow wrapper -- play videos (with sound) on textures using DirectShow
+* Added OgreVideoFfmpeg wrapper (thanks Dermont) -- plays video (without sound) vis ffmpeg
+* Added BetaGUI wrapper -- needed for the NxOgre Cakewalk conversion
+* Updated to QuickGui 0.9.5 -- using SVN version
 * Added common_utils function to remove duplicate Properties which happened when there was a getXXX AND a hasXXX implemented
         in the C++ code -- now we filter these are give the getXXX priority
 * Implemented support for Ogre compiled with THREADS enabled - need to set value to True in ogre/generate_code.py
 * Change implemented in Py++ to expose missing 'setters'
-* Added bullet physics to the library - no testing as of yet
+* Added castAsOverlayContainer function to Ogre -- needed for 'add2D' functionality
+* Added bullet physics to the library - no testing as of yet -- probably doesn't work
+* Fixed issue where we were exposing constructors with arguments that were pointers to fundemental types (int * etc)
+        could cause a crash if passing invalid parameters (None) to these constructors
 * OIS compile has changed to use the static library instead of the dll
+* Updated Windows Help documentation
+* SVN and Tickets have been moved to SourceForge
+* Using "touch" on the release files to get some consistancy in the release
 
 June 10 2007: Version 1.0 RC2(c) -- Release
 ============================================

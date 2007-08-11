@@ -171,7 +171,7 @@ def generate_ogreode():
     xml_cached_fc = parser.create_cached_source_fc(
                         os.path.join( environment.ogreode.root_dir, "python_ogreode.h" )
                         , environment.ogreode.cache_file )
-    defined_symbols = [  'OGRE_NONCLIENT_BUILD' ]
+    defined_symbols = [  'OGRE_NONCLIENT_BUILD', 'ODE_LIB' ]
     defined_symbols.append( 'OGREODE_VERSION_' + environment.ogreode.version )  
 
     mb = module_builder.module_builder_t( [ xml_cached_fc ]

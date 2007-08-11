@@ -12,8 +12,8 @@
 import sys
 import time
 
-import Ogre as ogre
-import OIS as ois
+import ogre.renderer.OGRE as ogre 
+import ogre.io.OIS as OIS 
 
 class OGREMain(ogre.Root):
     def __init__(self, plugins_path='src/plugins.cfg',resource_path='resources.cfg'):
@@ -28,10 +28,13 @@ class OGREMain(ogre.Root):
        self._choose_render_engine()
     
        self.initialise(False)
+       self.initialisePlugins()
        
-       self.sm = self.createSceneManager(ogre.ST_GENERIC)
-       self.sm.setAmbientLight(ogre.ColourValue(1, 1, 1))
+       
+       self.sm = self.createSceneManager("TerrainSceneManager" ) #ogre.ST_GENERIC)
        self.window = self.createRenderWindow("Woot", 800, 600, False)
+       
+       self.sm.setAmbientLight(ogre.ColourValue(1, 1, 1))
        self.camera = self.sm.createCamera("camera")
        self.camera.setPosition(0, 100, 500)
        self.camera.lookAt(ogre.Vector3(0, 0, 0))

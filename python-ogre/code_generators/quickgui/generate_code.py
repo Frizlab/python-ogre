@@ -61,18 +61,27 @@ def docit ( general, i, o ):
 def ManualExclude ( mb ):
     global_ns = mb.global_ns
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
-    NonExistant = [\
-    ['Menu','evtHndlr_listItemCreated'],
-    ['Menu','evtHndlr_listItemMouseEnters'],
-    ['Menu','evtHndlr_listItemMouseLeaves'],
-    ['Widget','convertPixelToRelativePoint'],
-    ['Sheet','_adjustMenuOverlay']
-    ]
+    
+ 
+    NotExported=[]
+    for c in NotExported:
+        main_ns.class_( c ).exclude()
+                        
+    
+    NonExistant = []
     for cls in NonExistant:
         try:
             main_ns.class_(cls[0]).member_function(cls[1]).exclude()
         except  declarations.matcher.declaration_not_found_t, e:
-            pass           
+            pass 
+    excludes=[\
+            '::QuickGUI::RenderObjectGroup::_populateRenderObjectList'
+            ,'::QuickGUI::RenderObjectGroup::_updateRenderQueue'
+                ]
+    for e in excludes:
+        print "excluding function", e
+        global_ns.member_functions(e).exclude()
+                      
 # 				
 
 ############################################################
@@ -84,6 +93,7 @@ def ManualExclude ( mb ):
 def ManualInclude ( mb ):
     global_ns = mb.global_ns
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    
     ## now expose but don't create class that exist in other modules
     global_ns.namespace( 'Ogre' ).class_('OverlayContainer').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('Vector2').include(already_exposed=True)
@@ -93,10 +103,13 @@ def ManualInclude ( mb ):
     global_ns.namespace( 'Ogre' ).class_('RenderTexture').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('RenderOperation').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('UTFString').include(already_exposed=True)
+    global_ns.class_('::Ogre::FontPtr').include(already_exposed=True)
+    global_ns.class_('::Ogre::RenderQueueListener').include(already_exposed=True)
+    global_ns.class_('::Ogre::SceneManager').include(already_exposed=True)
+    
+    
     global_ns.namespace( 'Ogre' ).class_('Singleton<QuickGUI::GUIManager>').include() #already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('Singleton<QuickGUI::MouseCursor>').include() #already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('PanelOverlayElement').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('TextAreaOverlayElement').include(already_exposed=True)
 
     
 ############################################################
@@ -126,6 +139,13 @@ def ManualTransformations ( mb ):
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
         
+#     x =global_ns.mem_fun('::QuickGUI::GUIManager::renderQueueEnded')
+#     x.add_transformation(ft.inout('repeatThisQueue'))
+#     x.documentation = docit ("","queueGroupId, invocation", "tuple - repeatThisInvocation")
+#     
+#     x = global_ns.mem_fun('::QuickGUI::GUIManager::renderQueueStarted') 
+#     x.add_transformation(ft.inout('skipThisQueue'))
+#     x.documentation = docit ("","queueGroupId, invocation", "tuple - skipThisInvocation")        
     
 ###############################################################################
 ##
@@ -349,7 +369,8 @@ def generate_code():
                         os.path.join( environment.quickgui.root_dir, "python_quickgui.h" )
                         , environment.quickgui.cache_file )
 
-    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'QUICKGUI_LIB' ]
+    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'FT2_BUILD_LIBRARY', 'QUICKGUI_EXPORTS',
+                    'WIN32', 'NDEBUG', 'WINDOWS' ]
     if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')
         defined_symbols.append('BOOST_HAS_WINTHREADS')
@@ -434,11 +455,12 @@ def generate_code():
 
     huge_classes = map( mb.class_, customization_data.huge_classes( environment.quickgui.version ) )
 
-    mb.split_module(environment.quickgui.generated_dir, huge_classes)
+    mb.split_module(environment.quickgui.generated_dir, huge_classes,use_files_sum_repository=False)
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory..
     additional_files= os.listdir(environment.Config.PATH_INCLUDE_quickgui)
+    additional_files=[]
     for f in additional_files:
         if f.endswith('cpp') or f.endswith('.h'):
             sourcefile = os.path.join(environment.Config.PATH_INCLUDE_quickgui, f)

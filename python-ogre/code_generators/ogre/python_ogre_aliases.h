@@ -115,6 +115,7 @@ typedef  Ogre::Singleton<Ogre::ResourceGroupManager> SingletonResourceGroupManag
 typedef  Ogre::Singleton<Ogre::ArchiveManager> SingletonArchiveManager;
 typedef  Ogre::RenderSystem* RenderSystemPtr;
 
+typedef Ogre::Mesh::SubMeshNameMap MeshSubMeshNameMap;
 typedef Ogre::RenderSystem RenderSystem;
 typedef Ogre::ConvexBody::PolygonList PolygonList;
 typedef Ogre::Polygon::VertexList VertexList;
@@ -317,7 +318,7 @@ typedef Ogre::OverlayManager::OverlayMap OverlayMap;
 typedef Ogre::OverlayManager::ElementMap ElementMap;
 typedef Ogre::OverlayManager::OverlayMapIterator OverlayMapIterator;
 // typedef Ogre::OverlayManager::TemplateIterator TemplateIterator; //overlaps ChildIterator
-typedef Ogre::OverlayContainer::ChildMap ChildMap;
+//typedef Ogre::OverlayContainer::ChildMap ChildMap;
 typedef Ogre::OverlayContainer::ChildIterator ChildIterator;
 typedef Ogre::OverlayContainer::ChildContainerMap ChildContainerMap;
 typedef Ogre::OverlayContainer::ChildContainerIterator ChildContainerIterator;
@@ -331,7 +332,7 @@ typedef Ogre::Mesh::VertexBoneAssignmentList VertexBoneAssignmentList;
 typedef Ogre::Mesh::BoneAssignmentIterator BoneAssignmentIterator;
 typedef Ogre::Mesh::SubMeshList SubMeshList;
 typedef Ogre::Mesh::IndexMap IndexMap;
-typedef Ogre::Mesh::SubMeshNameMap SubMeshNameMap;
+//typedef Ogre::Mesh::SubMeshNameMap SubMeshNameMap;
 typedef Ogre::Mesh::SubMeshIterator SubMeshIterator;
 typedef Ogre::Mesh::PoseIterator PoseIterator;
 typedef Ogre::Mesh::ConstPoseIterator ConstPoseIterator;

@@ -36,6 +36,22 @@ material Examples/OgreLogo
 		}
 	}
 }
+
+material Example/TheoraVideoPlayer/Play
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.8 0.8 0.8
+
+			texture_unit
+			{
+			    texture BeachStones.jpg	
+			}
+		}
+	}
+}
 material Examples/DarkMaterial
 {
 	technique

@@ -89,9 +89,11 @@ def get_linkflags():
 
 # Let us select the projects to build
 possible_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',\
-    'ogreode', 'ogreal', 'quickgui', 'opcode', 'nxogre', 'bullet' ]  # , 'raknet'
+    'ogreode', 'ogreal', 'quickgui', 'opcode', 'nxogre', 'bullet', 'physx', 'betagui','theora',\
+     'ogrevideoffmpeg', 'ogredshow' ]  # , 'raknet'
 default_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',\
-    'ogreode', 'ogreal',  'quickgui', 'opcode', 'nxogre', 'bullet' ]
+    'ogreode', 'ogreal',  'quickgui', 'opcode', 'nxogre', 'bullet', 'physx', 'betagui','theora',\
+     'ogrevideoffmpeg', 'ogredshow' ]
 
 # This lets you call scons like: 'scons PROJECTS=ogre,cegui'
 opts = Options('custom.py')

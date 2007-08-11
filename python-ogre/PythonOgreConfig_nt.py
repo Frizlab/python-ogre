@@ -36,9 +36,16 @@ PATH_OgreOde=       os.path.join(BASE_DIR, 'OgreAddons','ogreode')
 PATH_raknet=       os.path.join(BASE_DIR, 'RakNet')
 PATH_OPCODE=        os.path.join(BASE_DIR, 'Opcode')
 PATH_quickgui=     os.path.join(root_dir, 'ThirdParty','quickgui')
+PATH_quickgui=     os.path.join(BASE_DIR, 'Quickgui')    ## note test for Quickgui SVN version
+PATH_betagui=     os.path.join(root_dir, 'ThirdParty','betagui')
 PATH_NxOgre=       os.path.join(BASE_DIR, 'nxogre/NxOgre')
 PATH_Bullet=       os.path.join(BASE_DIR, 'bullet-2.52') 
 PATH_PhysX=      "c:/program files/AGEIA Technologies/SDK/v2.7.2/SDKs"
+PATH_Theora=    os.path.join(PATH_OgreAddons,'videoplugin','TheoraVideo')
+PATH_Dshow=     os.path.join(root_dir, 'ThirdParty','dshow')
+PATH_ogrevideoffmpeg = os.path.join(root_dir, 'ThirdParty','ffmpeg')
+PATH_ffmpeg=     os.path.join(BASE_DIR, 'ffmpeg')
+PATH_ogredshow = os.path.join(root_dir, 'ThirdParty','dshow')
 #
 # it's time for the SDK version
 if SDK:
@@ -76,11 +83,16 @@ PATH_LIB_OgreOdePrefab =        os.path.join( PATH_OgreOde, 'prefab/lib/Release'
 PATH_LIB_OgreOdeLoader =        os.path.join( PATH_OgreOde, 'loader/lib/Release' )
 PATH_LIB_FMOD =                 os.path.join(PATH_FMOD, 'api/lib') 
 PATH_LIB_OgreAL =               os.path.join(PATH_OGREAL, 'lib/Release' )
-PATH_LIB_quickgui =            PATH_quickgui
+PATH_LIB_betagui =            PATH_betagui
+PATH_LIB_quickgui =            os.path.join(PATH_quickgui, 'bin')
 PATH_LIB_raknet =               os.path.join(PATH_raknet, 'Lib' )
-PATH_LIB_NxOgre=                os.path.join(PATH_NxOgre, 'compiler','NxOgre.VC8','Release','lib')
-PATH_LIB_PhysX = ""
+PATH_LIB_NxOgre=                os.path.join(PATH_NxOgre, 'lib')
+PATH_LIB_PhysX =    os.path.join(PATH_PhysX,'lib/win32')
 PATH_LIB_Bullet =           os.path.join(PATH_Bullet, 'out/release8/libs' )
+PATH_LIB_Theora=        os.path.join(PATH_Theora, 'bin', 'Release')
+PATH_LIB_ogrevideoffmpeg = PATH_ogrevideoffmpeg
+PATH_LIB_ffmpeg=                os.path.join(PATH_ffmpeg, 'lib')
+PATH_LIB_ogredshow = PATH_ogredshow
 
 if SDK:
     PATH_LIB_Ogre_CEGUIRenderer =    os.path.join( PATH_Ogre, 'lib')
@@ -111,10 +123,23 @@ PATH_INCLUDE_OgreOdePrefab= os.path.join( PATH_OgreOde,'prefab/include')
 PATH_INCLUDE_OgreOdeLoader= os.path.join( PATH_OgreOde,'loader/include')
 PATH_INCLUDE_FMOD =          os.path.join(PATH_FMOD, 'api/inc')
 PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'samples/Common/CEGUIRenderer/include')
-PATH_INCLUDE_quickgui =     PATH_quickgui
+PATH_INCLUDE_quickgui =     os.path.join(PATH_quickgui,'QuickGUI','include')
 PATH_INCLUDE_raknet =        os.path.join(PATH_raknet, 'Source' )
 PATH_INCLUDE_NxOgre=        os.path.join(PATH_NxOgre, 'include')
 PATH_INCLUDE_Bullet=        os.path.join(PATH_Bullet, 'src')
+PATH_INCLUDE_freetype=   os.path.join(PATH_INCLUDE_quickgui,'FreeType2.3.5')    
+PATH_INCLUDE_betagui = PATH_betagui
+PATH_INCLUDE_Dshow= PATH_Dshow
+PATH_INCLUDE_Theora = os.path.join (PATH_Theora,'include')
+PATH_INCLUDE_ogrevideoffmpeg =  PATH_ogrevideoffmpeg
+PATH_INCLUDE_ffmpeg = os.path.join (PATH_ffmpeg,'include')
+PATH_INCLUDE_ogredshow =  PATH_ogredshow
+
+PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
+                        ,os.path.join(BASE_DIR, 'vorbis', 'include')
+                        ,os.path.join(PATH_OgreAddons,'videoplugin','theora','include')
+                        ,os.path.join(PATH_OgreAddons,'videoplugin','ptypes-1.8.3','include')
+                        ]
 
 PATH_INCLUDE_PhysX= [ os.path.join(PATH_PhysX, 'Physics','include')
                     ,os.path.join(PATH_PhysX, 'Cooking','include')

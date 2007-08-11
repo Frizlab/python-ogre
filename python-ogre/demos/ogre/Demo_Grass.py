@@ -40,6 +40,7 @@ mMaxLightColour = ogre.ColourValue (1.0, 0.6, 0.0)
 mMinFlareSize = 40 
 mMaxFlareSize = 80 
 mStaticGeom = None # ogre.StaticGeometry()
+vertexdata=None
 
 
 #  This class 'wibbles' the light and billboard 
@@ -124,23 +125,30 @@ class GrassListener ( sf.FrameListener ):
 
         
 class Grass_Application(sf.Application):
-           
+    def __del__( self ):
+        ## Fix to stop crashes at exit -- C++ tries to delete vertexData which is ugly if it's a python object
+        self.sm.vertexData=None
+        
     def createGrassMesh(self):
         global GRASS_MESH_NAME
-        print "7"
+        self.SetToNone = []
         ## Each grass section is 3 planes at 60 degrees to each other
         ## Normals point straight up to simulate correct lighting
         msh = ogre.MeshManager.getSingleton().createManual(GRASS_MESH_NAME, 
             ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME) 
+        self.msh = msh
+        self.hw = ogre.HardwareBufferManager.getSingleton()
         sm = msh.createSubMesh() 
+        
         sm.useSharedVertices = False 
 
-        ##  AJM: NOTE the Python-Ogre work around here
-        ##  subMesh.vertexData isn't being exposed as a writeable property due to boost limitation
-        ##  hence a new function has been added.
-        ##  C++ Code:   sm->vertexData = new VertexData();
+           
+        self.vertexdata = ogre.VertexData() ## Create the VertexData Object
         
-        sm.createVertexData() # wrapper to create VertexData and assign it to .VertexData
+        ## NOTE the submesh will delete the vertexData when it is destroyed which is BAD -- ie we have C++ specifically
+        ## deleting a Python object which makes everything confused..  The fix is to set the submesh vertexData to 
+        ## 'None' before exiting -- see the __del__ function
+        sm.vertexData = self.vertexdata     
         
         sm.vertexData.vertexStart = 0 
         sm.vertexData.vertexCount = 12 
@@ -220,9 +228,9 @@ class Grass_Application(sf.Application):
         ## Python-Ogre extension function to write a list of floats to a buffer
         ogre.setFloat( pointer, buffer )
         vbuf.unlock() 
-        
+              
         sm.vertexData.vertexBufferBinding.setBinding(0, vbuf) 
-        
+          
         sm.indexData.indexCount = 6*3 
         
         sm.indexData.indexBuffer = ogre.HardwareBufferManager.getSingleton().createIndexBuffer(
@@ -247,8 +255,9 @@ class Grass_Application(sf.Application):
         
         
         sm.setMaterialName(GRASS_MATERIAL) 
-        msh.load() 
-        self.sm = sm
+        msh.load()
+        ## we need to keep access to the submesh so we can set .vertexData to None at exit (see __del__ )
+        self.sm = sm 
 
 
 
