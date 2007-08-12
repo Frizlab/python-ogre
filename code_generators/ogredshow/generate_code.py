@@ -535,10 +535,10 @@ def generate_code():
         for f in additional_files:
             if f.endswith('cpp') or f.endswith('.h'):
                 sourcefile = os.path.join(p, f)
-                destfile = os.path.join(environment.ogrevideoffmpeg.generated_dir, f ) 
+                destfile = os.path.join(environment.ogredshow.generated_dir, f ) 
         
                 if not common_utils.samefile( sourcefile ,destfile ):
-                    shutil.copy( sourcefile, environment.ogrevideoffmpeg.generated_dir )
+                    shutil.copy( sourcefile, environment.ogredshow.generated_dir )
                     print "Updated ", f, "as it was missing or out of date"
         
 if __name__ == '__main__':

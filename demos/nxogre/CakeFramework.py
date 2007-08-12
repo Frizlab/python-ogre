@@ -445,6 +445,7 @@ class Frosting ( Decoration, BetaGUI.BetaGUIListener ):
         self.Camera.setNearClipDistance(0.1)
         self.RMB=False 
         self.Effects=[]  ## we need to keep effects around
+        self.objects=[] ## hold newly created objects
             
         ## Building stuff
         self.BuildMode = Enum ('BM_NONE',
@@ -972,30 +973,30 @@ class Frosting ( Decoration, BetaGUI.BetaGUIListener ):
     
         if (b.getPosition().x == 96  and  self.mBuildMode == self.BuildMode.BM_ACTOR  and  c == 1) :
             sz = self.BuildNode.getScale() 
-            b = None
             if (self.BuildMesh == "cube.1m.mesh"):
-                b = self.Scene.createBody(self.BuildMesh, nxogre.CubeShape(sz.x,sz.y,sz.z), 
-                            mxogre.Pose(self.BuildNode.getPosition(), self.BuildNode.getOrientation()), 
+                tempBody = self.Scene.createBody(self.BuildMesh, nxogre.CubeShape(sz.x,sz.y,sz.z), 
+                            nxogre.Pose(self.BuildNode.getPosition(), self.BuildNode.getOrientation()), 
                                 "Density: 100, node-scale:" + str(self.BuildNode.getScale())) 
             elif (self.BuildMesh == "sphere.50cm.mesh"):
-                b = self.Scene.createBody(self.BuildMesh, nxogre.SphereShape(sz.x * 0.5), 
+                tempBody = self.Scene.createBody(self.BuildMesh, nxogre.SphereShape(sz.x * 0.5), 
                             nxogre.Pose(self.BuildNode.getPosition(), self.BuildNode.getOrientation()), 
                                 "Density: 100, node-scale:" + str(ogre.Vector3(sz.x,sz.x,sz.x))) 
             elif (self.BuildMesh == "convex1.mesh"):
-                b = self.Scene.createBody(self.BuildMesh, 
+                tempBody = self.Scene.createBody(self.BuildMesh, 
                         nxogre.ConvexShape("convex1.mesh", "mesh-scale:" + str(sz)), 
                             nxogre.Pose(self.BuildNode.getPosition(), self.BuildNode.getOrientation()), 
                                 "Density: 100, node-scale:" + str(ogre.Vector3(sz.x,sz.y,sz.z))) 
             self.BuildNode.setVisible(False) 
             self.BuildNode.detachAllObjects() 
     
-            b.getEntity().setMaterialName(self.BuildMaterials[self.CurrentBuildMaterial]) 
+            tempBody.getEntity().setMaterialName(self.BuildMaterials[self.CurrentBuildMaterial]) 
     
             e=BetaGUI.AlphaEffect(self.WidgetEdit, 0.25, 1,0,0)
             self.Gui.addEffect(e) 
             self.Effects.append(e)
             self.mBuildMode = self.BuildMode.BM_NONE 
-    
+            self.objects.append(tempBody)
+            
         ##////////////////////////////////////////////////////////////////////////////////
         if (b.getPosition().x == 0) :
             if (c == 1) :
