@@ -57,13 +57,15 @@ base = os.path.join(os.getcwd(), os.path.dirname(sys.argv[0]) )
 demofiles = GetFileList ( os.path.join (base, "demos") )
 
 PACKAGEDATA = {
-       "packages":    ['ogre', 'ogre.io', 'ogre.io.OIS', 'ogre.renderer', 'ogre.renderer.OGRE', 
-                        'ogre.gui', 'ogre.gui.CEGUI','ogre.sound', 'ogre.sound.OgreAL', 
+       "packages":    ['ogre', 
+                        'ogre.io', 'ogre.io.OIS', 
+                        'ogre.renderer', 'ogre.renderer.OGRE', 
+                        'ogre.gui', 'ogre.gui.CEGUI','ogre.gui.QuickGUI', 'ogre.gui.betagui',
+                        'ogre.sound', 'ogre.sound.OgreAL', 
                         'ogre.physics', 'ogre.physics.ODE', 'ogre.physics.OgreRefApp',
                         'ogre.physics.OgreOde', 'ogre.physics.OgreNewt', 'ogre.physics.Opcode',
-                        'ogre.gui.QuickGUI', 'ogre.renderer.OGREdshow',
                         'ogre.physics.bullet','ogre.physics.PhysX','ogre.physics.NxOgre',
-                        'ogre.gui.betagui','ogre.addons','ogre.addons.theora',
+                        'ogre.addons','ogre.addons.theora',
                         'ogre.addons.ogrevideoffmpeg', 'ogre.addons.ogredshow'],
        "package_dir": {'': 'packages_'+ PythonVersionString },
        "package_data": {'': ['*.pyd', '*.dll', '*.so']}

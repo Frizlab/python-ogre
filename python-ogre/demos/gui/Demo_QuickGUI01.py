@@ -59,7 +59,7 @@ class GuiFrameListener ( sf.FrameListener, ois.MouseListener, ois.KeyListener ):
 
         s = ""
         if( gm.getMouseOverWidget() != None): s = gm.getMouseOverWidget().getInstanceName()  
-        w = gm.getDefaultSheet().getWindow("Mouse Over Window").getTextBox(0).setText(s)
+        w = gm.getDefaultSheet().getWindow("Mouse Over Window")
         if w :
             w.getTextBox(0).setText(s)
 
@@ -92,6 +92,13 @@ class GuiFrameListener ( sf.FrameListener, ois.MouseListener, ois.KeyListener ):
     def  keyPressed( self, arg ):
         if( arg.key == ois.KC_ESCAPE ):
             self.ShutdownRequested = True
+        elif ( arg.key == ois.KC_UP ):
+            camPos = self.camera.getPostion()
+            self.camera.setPosition(camPos.x, camPos.y, camPos.z-5)
+        elif ( arg.key == ois.KC_DOWN ):
+            camPos = self.camera.getPostion()
+            self.camera.setPosition(camPos.x, camPos.y, camPos.z+5)
+        
         ## Now convert from OIS keycode to QuickGUI one..            
         k = gui.KeyCode.values[arg.key]
         gui.GUIManager.getSingleton().injectKeyDown( k )
@@ -107,6 +114,20 @@ class GuiFrameListener ( sf.FrameListener, ois.MouseListener, ois.KeyListener ):
 
 
 class QuickGUIDemoApp (sf.Application):
+
+    def _setUpResources(self):
+        """This sets up Ogre's resources, which are different for QuickGUI
+        """
+        config = Ogre.ConfigFile()
+        config.load('resources.cfg.quickgui' ) 
+        seci = config.getSectionIterator()
+        while seci.hasMoreElements():
+            SectionName = seci.peekNextKey()
+            Section = seci.getNext()
+            for item in Section:
+                Ogre.ResourceGroupManager.getSingleton().\
+                    addResourceLocation(item.value, item.key, SectionName)
+                    
     ## Just override the mandatory create scene method
     def _createScene(self):
         self.mDebugDisplayShown=True
@@ -123,9 +144,7 @@ class QuickGUIDemoApp (sf.Application):
         ##  other objects, but I don't
         l.setPosition(20,80,50)
         
-        print "\n\nCREATE GUIMANAGER\n"
         self.mGUIManager = gui.GUIManager(self.renderWindow.getWidth(),self.renderWindow.getHeight())
-        print "\n\n", self.mGUIManager
         
         self.robot = self.sceneManager.createEntity("ChuckNorris", "robot.mesh")
 
@@ -136,7 +155,7 @@ class QuickGUIDemoApp (sf.Application):
         
         ##  This ensures the camera doesn't move when we move the cursor..
         #3 However we do the same thing by setting MenuMode to True in the frameListerner further down
-        self.camera.setAutoTracking(True, robotNode)
+# # #         self.camera.setAutoTracking(True, robotNode)
 
         plane = Ogre.Plane( Ogre.Vector3.UNIT_Y, 0 )
         Ogre.MeshManager.getSingleton().createPlane("ground",
@@ -177,72 +196,66 @@ class QuickGUIDemoApp (sf.Application):
         
     def createGUI(self):
         self.callbacks=[]
-        self.mousecursor = self.mGUIManager.getMouseCursor()
         
-        self.mousecursor.show()
-        self.mousecursor.setTexture("qgui.unchecked.over.png" ) #pointer.png")
-        self.mousecursor.setSize(50,50)
-        print "\n\n",self.mousecursor,"\n\n"
-        
-        
+        self.mGUIManager.clearAll() 
         self.mSheet = self.mGUIManager.getDefaultSheet()
         
         ## Main Menu and it's MenuLists
-        topMenu = self.mSheet.createMenu((0,0,1,0.04))
+        
+        topMenu = self.mSheet.createMenu((0,0,1,0.05))
         
         fileList = topMenu.addMenuList("File",0,0.075)
         exitListItem = fileList.addListItem("Exit")
         
-        exitListItem.addEventHandler(gui.Widget.Event.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback (self.evtHndlr_exitListItem ) )
+        exitListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback (self.evtHndlr_exitListItem ) )
         
-        cameraList = topMenu.addMenuList("Camera Properties",0.08,0.2)
+        cameraList = topMenu.addMenuList("Progress",0.08,0.2)
         pointListItem = cameraList.addListItem("Point")
-        pointListItem.addImage(Ogre.Vector4(0,0,0.2,1),"demo.pointmode")
-        pointListItem.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_CameraPoint) )
+        pointListItem.addImage(Ogre.Vector4(0,0,0.2,1),"pointmode.png")
+        pointListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_CameraPoint) )
         wireframeListItem = cameraList.addListItem("Wire Frame")
-        wireframeListItem.addImage(Ogre.Vector4(0,0,0.2,1),"demo.wireframemode")
-        wireframeListItem.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_CameraWireFrame) )
+        wireframeListItem.addImage(Ogre.Vector4(0,0,0.2,1),"wireframemode.png")
+        wireframeListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_CameraWireFrame) )
         solidListItem = cameraList.addListItem("Solid")
-        solidListItem.addImage(Ogre.Vector4(0,0,0.2,1),"demo.solidmode")
-        solidListItem.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_CameraSolid) )
+        solidListItem.addImage(Ogre.Vector4(0,0,0.2,1),"solidmode.png")
+        solidListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_CameraSolid) )
  
-        viewportList = topMenu.addMenuList("Progress Bar Color",0.285,0.2)
+        viewportList = topMenu.addMenuList("Progress Bar Color",0.285,0.25)
         redListItem = viewportList.addListItem("Red")
-        redListItem.addImage(Ogre.Vector4(0.1,0.1,0.8,0.8),"demo.listitem.red")
-        redListItem.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_pbRed) )
+        redListItem.addImage(Ogre.Vector4(0.1,0.1,0.8,0.8),"listitem.red.png")
+        redListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_pbRed) )
         greenListItem = viewportList.addListItem("Green")
-        greenListItem.addImage(Ogre.Vector4(0.1,0.1,0.8,0.8),"demo.listitem.green")
-        greenListItem.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_pbGreen) )
+        greenListItem.addImage(Ogre.Vector4(0.1,0.1,0.8,0.8),"listitem.green.png")
+        greenListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_pbGreen) )
         blueListItem = viewportList.addListItem("Blue")
-        blueListItem.addImage(Ogre.Vector4(0.1,0.1,0.8,0.8),"demo.listitem.blue")
-        blueListItem.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_pbBlue) )
+        blueListItem.addImage(Ogre.Vector4(0.1,0.1,0.8,0.8),"listitem.blue.png")
+        blueListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_pbBlue) )
 
-        otherList = topMenu.addMenuList("Other",0.49,0.1)
+        otherList = topMenu.addMenuList("Other",0.55,0.25)
         textColorListItem = otherList.addListItem("Text Color")
-        textColorListItem.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_setTextWhite) )
+        textColorListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_setTextWhite) )
         tcProperties = textColorListItem.addNStateButton(Ogre.Vector4(0.8,0.1,0.175,0.9))
-        tcProperties.addState("OpenProperties","demo.listitem.textproperties")
-        tcProperties.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_showSetTextDialog) )
+        tcProperties.addState("OpenProperties","properties.png")
+        tcProperties.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_showSetTextDialog) )
         RenderStatsListItem = otherList.addListItem("Render Stats")
         toggleRenderStats = RenderStatsListItem.addNStateButton(Ogre.Vector4(0.8,0.1,0.175,0.9))
-        toggleRenderStats.addState("checked","qgui.unchecked")
-        toggleRenderStats.addState("unchecked","qgui.checked")
-        toggleRenderStats.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_toggleDebugDisplay))
+        toggleRenderStats.addState("checked","qgui.unchecked.png")
+        toggleRenderStats.addState("unchecked","qgui.checked.png")
+        toggleRenderStats.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_toggleDebugDisplay))
 
         ## Logos
-        
         logoImage = self.mSheet.createImage((0.02,0.07,0.3,0.3))
         logoImage.setBorderWidth(10)
         logoLabel = self.mSheet.createLabel((0.075,0.4,0.15,0.05))
-        logoLabel.setText("Click Me >")
+        logoLabel.getText().setCaption("Click Me >")
         imageToggleButton = self.mSheet.createNStateButton(Ogre.Vector4(0.225,0.4,0.05,0.05))
-        imageToggleButton.addState("OgreLogo","qgui.checked")
-        imageToggleButton.addState("QuickGUILogo","qgui.unchecked")
+        imageToggleButton.addState("OgreLogo","qgui.checked.png")
+        imageToggleButton.addState("QuickGUILogo","qgui.unchecked.png")
 
         ## RTT Example Use
         rttImage = self.mSheet.createImage(Ogre.Vector4(0.75,0.07,0.2,0.15),"self.rttTex")
-        rttImage.setBorderWidth(10)
-        ninjaWindow = self.mSheet.createWindow(Ogre.Vector4(0.725,0.25,0.25,0.15))
+#         rttImage.setBorderWidth(10)
+        ninjaWindow = self.mSheet.createWindow(Ogre.Vector4(0.75,0.25,0.2,0.2))
         ninjaWindow.hideTitlebar()
         animToggleButton = ninjaWindow.createNStateButton(Ogre.Vector4(0.05,0.033,0.9,0.3))
         ## populate NStateButton with States - robot animations
@@ -250,7 +263,7 @@ class QuickGUIDemoApp (sf.Application):
         state = 0
         while( casi.hasMoreElements() ):
             animName = casi.getNext().getAnimationName()
-            animToggleButton.addState("State"+str(state),"qgui.button",animName)
+            animToggleButton.addState("State"+str(state),"qgui.button.png",animName)
             if state == 0:
                 self.robotAnimationState = self.robot.getAnimationState(animName)
                 self.robotAnimationState.setEnabled(True)
@@ -258,61 +271,73 @@ class QuickGUIDemoApp (sf.Application):
                 self.robotAnimationState.setLoop(True)
             state+=1
 #         animToggleButton.addOnStateChangedEventHandler(self.evtHndlr_changeAnimations)
-#         animToggleButton.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_changeAnimations) )
+#         animToggleButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_changeAnimations) )
         animToggleButton.addOnStateChangedEventHandler(self.MakeCallback(self.evtHndlr_changeAnimations) )
         
         hurtButton = ninjaWindow.createButton(Ogre.Vector4(0.05,0.36,0.9,0.3))
-        hurtButton.setText("Hurt")
-        hurtButton.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_hurt) )
+        hurtButton.getText().setCaption("Hurt")
+        hurtButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_hurt) )
         healButton = ninjaWindow.createButton(Ogre.Vector4(0.05,0.69,0.9,0.3))
-        healButton.setText("Heal")
-        healButton.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_heal) )
-
+        healButton.getText().setCaption("Heal")
+        healButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_heal) )
+        
+        ## TrackBar Setup
+        tb1 = self.mSheet.createTrackBar(Ogre.Vector4(0.4,0.1,0.2,0.04))
+        tb1.setNumRegions(3)
+        tb1.setTickPosition(4) # Does not work! 3 regions -> ticks: 0/1/2/3
+        tb2 = self.mSheet.createTrackBar(Ogre.Vector4(0.4,0.15,0.03,0.2))
+        tb2.setNumTicks(10)
+        tb2.setTickPosition(9)
+        
         ## Progress Bar Setup
-        self.mSheet.createLabel((0.4,0.5125,0.07,0.07),"").setText("HP")
-        self.lifeBarValueLabel = self.mSheet.createLabel((0.55,0.5125,0.07,0.07),"")
-        self.lifeBarValueLabel.setText("100")
-        self.lifeBar =self.mSheet.createProgressBar((0.4,0.55,0.2,0.03))
-        
-        self.lifeBar.setTexture("progressbar.red")
-        
+        self.lifeBar = self.mSheet.createProgressBar(Ogre.Vector4(0.4,0.55,0.2,0.03))
+        self.lifeBar.setInitialPixelOffset(0)
+        HPLabel = self.mSheet.createLabel(Ogre.Vector4(0.4,0.5125,0.07,0.07),"")
+        HPLabel.getText().setCaption("HP")
+        HPLabel.appearOverWidget(self.lifeBar)
+        self.lifeBarValueLabel = self.mSheet.createLabel(Ogre.Vector4(0.55,0.5125,0.07,0.07),"")
+        self.lifeBarValueLabel.getText().setCaption("100")
+        self.lifeBarValueLabel.appearOverWidget(self.lifeBar)
+
         ## Mouse Over window
-        mouseOverWindow = self.mSheet.createWindow("Mouse Over Window",Ogre.Vector4(0.7,0.7,0.3,0.1))
+        mouseOverWindow = self.mSheet.createWindow("Mouse Over Window",Ogre.Vector4(0.6,0.7,0.4,0.1))
         mouseOverWindow.hideTitlebar()
         mouseOverLabel = mouseOverWindow.createLabel(Ogre.Vector4(0,0,1,0.5))
-        mouseOverLabel.setText("Mouse Over Widget:")
+        mouseOverLabel.getText().setCaption("Mouse Over Widget:")
         mouseOverTB = mouseOverWindow.createTextBox(Ogre.Vector4(0,0.5,1,0.5))
         mouseOverTB.setReadOnly(True)
 
         ## Login Portion
-        self.mSheet.createLabel(Ogre.Vector4(0.02,0.6,0.2,0.05)).setText("User Name:")
-        self.mSheet.createLabel(Ogre.Vector4(0.02,0.65,0.2,0.05)).setText("Password:")
+        self.mSheet.createLabel(Ogre.Vector4(0.02,0.6,0.2,0.05)).getText().setCaption("User Name:")
+        self.mSheet.createLabel(Ogre.Vector4(0.02,0.65,0.2,0.05)).getText().setCaption("Password:")
         self.usernameTB = self.mSheet.createTextBox(Ogre.Vector4(0.225,0.6,0.2,0.05))
         self.passwordTB = self.mSheet.createTextBox(Ogre.Vector4(0.225,0.65,0.2,0.05))
         self.passwordTB.maskUserInput(ord('*'))
         loginButton = self.mSheet.createButton(Ogre.Vector4(0.125,0.7,0.25,0.07))
-        loginButton.setText("Login")
-        loginButton.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_login) )
+        loginButton.getText().setCaption("Login")
+        loginButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_login) )
         self.loginResultLabel = self.mSheet.createLabel(Ogre.Vector4(0.0,0.77,0.5,0.05), "")
 
         ## Set Text Window
         self.stWindow = self.mSheet.createWindow(Ogre.Vector4(0.7,0.45,0.3,0.2))
         self.stWindow.hide()
-        self.stWindow.createLabel((0.05,0.3,0.3,0.25)).getText().setCaption("Color:")
-		
-        self.stWindow.createLabel(Ogre.Vector4(0.05,0.3,0.3,0.25)).setText("Color:")
+        self.stWindow.getTitleBar().setCaption("Set Text Color:")
+        
+        self.stWindow.createLabel(Ogre.Vector4(0.05,0.3,0.3,0.25)).getText().setCaption("Color:")
         colorCB = self.stWindow.createComboBox(Ogre.Vector4(0.4,0.3,0.55,0.25))
         colorCBdropList = colorCB.getDropDownList()
-		
+        
         colorCBdropList.addListItem("Red")
         colorCBdropList.addListItem("Green")
         colorCBdropList.addListItem("Blue")
         colorCBdropList.addListItem("Black")
         colorCBdropList.addListItem("White")
         setTextButton = self.stWindow.createButton(Ogre.Vector4(0.05,0.6,0.9,0.3))
-        setTextButton.setText("Apply")
-        setTextButton.addEventHandler(gui.Widget.QGUI_EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_setTextColor) )
-
+        setTextButton.setCaption("Apply")
+        setTextButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_setTextColor) )
+        # colorCB->clearList();
+        colorCBdropList.removeListItem(2)
+        
     def evtHndlr_exitListItem(self, args):
         ## check if left mouse button is down
         if(args.button == gui.MB_Left):
@@ -337,33 +362,39 @@ class QuickGUIDemoApp (sf.Application):
         currentProgress = self.lifeBar.getProgress()
         random = Ogre.Math.RangeRandom(currentProgress,1.0)
         self.lifeBar.setProgress(random)
-        self.lifeBarValueLabel.setText(str(int(random * 100)))
+        self.lifeBarValueLabel.getText().setCaption(str(int(random * 100)))
         return True
 
     def evtHndlr_hurt(self, args):
-        if args.button == gui.MB_Left: 
-            currentProgress = self.lifeBar.getProgress()
-            random = Ogre.Math.RangeRandom(0.0,currentProgress)
-            self.lifeBar.setProgress(random)
-            self.lifeBarValueLabel.setText(str(int(random * 100)))
+        currentProgress = self.lifeBar.getProgress()
+        random = Ogre.Math.RangeRandom(0.0,currentProgress)
+        self.lifeBar.setProgress(random)
+        self.lifeBarValueLabel.getText().setCaption(str(int(random * 100)))
         return True
 
     def evtHndlr_pbRed(self,args):
-        self.lifeBar.setMaterial("progressbar.red")
+        self.lifeBar.setTexture("progressbar.red.png")
+        self.lifeBar.setProgress(1.0)
+        self.lifeBar.getText().setCaption("100")
+
         return False
 
     def evtHndlr_pbGreen(self, args):
-        self.lifeBar.setMaterial("progressbar.green")
+        self.lifeBar.setTexture("progressbar.gree.png")
+        self.lifeBar.setProgress(1.0)
+        self.lifeBar.getText().setCaption("100")
         return True
 
     def evtHndlr_pbBlue(self, args):
-        self.lifeBar.setMaterial("progressbar.blue")
+        self.lifeBar.setTexture("progressbar.blue.png")
+        self.lifeBar.setProgress(1.0)
+        self.lifeBar.getText().setCaption("100")
         return True
 
     def evtHndlr_login(self, args):
-        if( self.usernameTB.getText() == self.passwordTB.getText() ) : s = "Login Successful."
+        if( self.usernameTB.getCaption() == self.passwordTB.getCaption() ) : s = "Login Successful."
         else: s = "Username and/or Password do not match."
-        self.loginResultLabel.setText(s)
+        self.loginResultLabel.getText().setCaption(s)
         return True
 
     def evtHndlr_toggleDebugDisplay(self, args):
@@ -372,7 +403,7 @@ class QuickGUIDemoApp (sf.Application):
         return True
 
     def evtHndlr_setTextWhite(self, args):
-        self.stWindow.setTextColor(Ogre.ColourValue.White)
+        self.stWindow.getTitleBar().getText().setColor(Ogre.ColourValue.White)
         return True
 
     def evtHndlr_showSetTextDialog(self, args):
@@ -393,7 +424,7 @@ class QuickGUIDemoApp (sf.Application):
         return True
 
     def evtHndlr_setTextColor(self, args):
-        s = self.stWindow.getComboBox(0).getText()
+        s = self.stWindow.getComboBox(0).getText().getCaption()
         
         if( s == "Red" ): c = Ogre.ColourValue.Red
         elif( s == "Green" ): c = Ogre.ColourValue.Green
@@ -401,7 +432,7 @@ class QuickGUIDemoApp (sf.Application):
         elif( s == "Black" ): c = Ogre.ColourValue.Black
         elif( s == "White" ): c = Ogre.ColourValue.White
 
-        self.stWindow.setTextColor(c)
+        self.stWindow.getTitleBar().getText().setColor(c)
         return True
             
     def _createFrameListener(self):

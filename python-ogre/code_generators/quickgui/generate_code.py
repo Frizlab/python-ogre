@@ -106,6 +106,7 @@ def ManualInclude ( mb ):
     global_ns.class_('::Ogre::FontPtr').include(already_exposed=True)
     global_ns.class_('::Ogre::RenderQueueListener').include(already_exposed=True)
     global_ns.class_('::Ogre::SceneManager').include(already_exposed=True)
+#     global_ns.class_('::Ogre::TRect<float>').include(already_exposed=True)
     
     
     global_ns.namespace( 'Ogre' ).class_('Singleton<QuickGUI::GUIManager>').include() #already_exposed=True)
