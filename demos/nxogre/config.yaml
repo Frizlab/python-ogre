@@ -1,8 +1,8 @@
 # Graphics
-device:dx9
+device:direct3d9
 width:640
 height:480
-depth:16
+depth:32
 aa:0
 vsync:No
 fullscreen:No
