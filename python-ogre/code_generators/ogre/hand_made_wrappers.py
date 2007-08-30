@@ -712,8 +712,8 @@ def apply( mb ):
     for cls in map_iterators:
         iter_as_generator_map( cls ) 
         
-    rt = mb.class_( 'RenderQueueListener' )   
-    rt.add_wrapper_code ( WRAPPER_WRAPPER_RenderQueueListener )
+#     rt = mb.class_( 'RenderQueueListener' )   
+#     rt.add_wrapper_code ( WRAPPER_WRAPPER_RenderQueueListener )
              
 #     cls = mb.class_('Animation').class_('NodeTrackIterator')
 #     iter_as_generator_map( cls )

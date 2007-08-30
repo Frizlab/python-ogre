@@ -41,21 +41,24 @@ class Decoration ():
                     
     def decorate(self):
         pass
-	def cleanup(self):
-	    pass
-	    
-	def onFrame(self, deltaTime):
-	    pass
+    def cleanup(self):
+        pass
+        
+    def onFrame(self, deltaTime):
+        pass
 
-	def  preStart(self, World):
-	    pass
-	    
+    def  preStart(self, World):
+        pass
+        
     def getCamera(self ):
         return self.Camera 
     
     def getSceneManager(self):
         return self.SceneMgr
 
+        
+        
+        
 ## From: http://www.ogre3d.org/phpBB2/viewtopic.php?p=183438#183438
 
 class HighlightQueueListener ( ogre.RenderQueueListener ):
@@ -81,7 +84,7 @@ class HighlightQueueListener ( ogre.RenderQueueListener ):
          rendersys.setStencilCheckEnabled(True) 
          rendersys.setStencilBufferParams(ogre.CMPF_NOT_EQUAL,1,0xFFFFFFFF,
                   ogre.SOP_KEEP,ogre.SOP_KEEP,ogre.SOP_KEEP,False)       
-
+      return skipThisInvocation
 
 
     def renderQueueEnded(self,queueGroupId,  invocation,repeatThisInvocation):
@@ -89,7 +92,8 @@ class HighlightQueueListener ( ogre.RenderQueueListener ):
 
          rendersys = ogre.Root.getSingleton().getRenderSystem() 
          rendersys.setStencilCheckEnabled(False) 
-         rendersys.setStencilBufferParams() 
+         rendersys.setStencilBufferParams()
+      return repeatThisInvocation 
 
 ##/////////////////////////////////////////////////////////////////////////////
 
@@ -322,9 +326,8 @@ class Renderer ( ogre.FrameListener ):
     
         self.Root.setRenderSystem(self.RenderSystem) 
         self.RenderSystem.setConfigOption("Full Screen", configuration["fullscreen"]) 
-        ##self.RenderSystem.setConfigOption("VSync", configuration["vsync"]) 
-        self.RenderSystem.setConfigOption("VSync", "Yes") 
-    
+        self.RenderSystem.setConfigOption("VSync", configuration["vsync"]) 
+        
         if (configuration["device"] == "Direct3D9 Rendering Subsystem"):
             self.RenderSystem.setConfigOption("Video Mode", 
                                    configuration["width"]
@@ -1162,9 +1165,9 @@ class Sponge_Cake ( Cake ):
     def start(self):
 
         self.World = nxogre.World("log: html")
-        self.Scene = self.World.createScene("Main", self.SceneMgr, "gravity: yes, floor: yes")
+        self.Scene = self.World.createScene("Main", self.SceneMgr, "gravity: yes, floor: yes, time-step-method: variable")
 
-        self.Scene.createBody("cube.1m.mesh", nxogre.CubeShape(1), ogre.Vector3(0,2.5,0), "mass: 10")
+        self.Scene.createBody("cube.1m.mesh", nxogre.CubeShape(1), ogre.Vector3(0,5,0), "mass: 10")
 
     def stop(self):
         del self.World
@@ -1189,15 +1192,10 @@ if __name__ == '__main__':
     import exceptions,sys
     try:
         application = Sponge_Cake ()
-        print "PRE"
         application.pre()
-        print "START"
         application.start()
-        print "GETWORLD"
         application.WorldInstance = application.getWorld()
-        print "startRendereing"
         application.startRendering(application)
-        print "STOP"
         application.stop()
         application.post()
 
