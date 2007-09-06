@@ -212,6 +212,8 @@ def generate_ogrenewt():
                                                         'OIS_NONCLIENT_BUILD', 'OIS_STATIC_BUILD']
                                           , indexing_suite_version=2 )
 
+    ## This module depends on Ogre
+    mb.register_module_dependency ( environment.ogre.generated_dir )
     filter_declarations (mb)
     #
     # fix shared Ptr's that are defined as references but NOT const...

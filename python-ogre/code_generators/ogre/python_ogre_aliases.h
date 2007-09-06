@@ -299,7 +299,7 @@ typedef Ogre::ProgressiveMesh::LODFaceList LODFaceList;
 typedef Ogre::Pose::VertexOffsetMap VertexOffsetMap;
 typedef Ogre::Pose::VertexOffsetIterator VertexOffsetIterator;
 typedef Ogre::Pose::ConstVertexOffsetIterator ConstVertexOffsetIterator;
-typedef Ogre::PlaneBoundedVolume::PlaneList PlaneList;
+typedef Ogre::PlaneBoundedVolume::PlaneList PlaneListBoundedVolume;
 typedef Ogre::Pass::PassSet PassSet;
 typedef Ogre::Pass::TextureUnitStateIterator TextureUnitStateIterator;
 typedef Ogre::Pass::ConstTextureUnitStateIterator ConstTextureUnitStateIterator;

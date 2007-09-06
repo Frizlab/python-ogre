@@ -75,8 +75,9 @@ def ManualExclude ( mb ):
         except  declarations.matcher.declaration_not_found_t, e:
             pass 
     excludes=[\
-            '::QuickGUI::RenderObjectGroup::_populateRenderObjectList'
-            ,'::QuickGUI::RenderObjectGroup::_updateRenderQueue'
+            '::QuickGUI::QuadContainer::_populateRenderObjectList'
+            ,'::QuickGUI::QuadContainer::_updateRenderQueue'
+            ,'::QuickGUI::GUIManager::getDefaultFont'
                 ]
     for e in excludes:
         print "excluding function", e
@@ -109,9 +110,7 @@ def ManualInclude ( mb ):
 #     global_ns.class_('::Ogre::TRect<float>').include(already_exposed=True)
     
     
-    global_ns.namespace( 'Ogre' ).class_('Singleton<QuickGUI::GUIManager>').include() #already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Singleton<QuickGUI::MouseCursor>').include() #already_exposed=True)
-
+    
     
 ############################################################
 ##
@@ -390,8 +389,10 @@ def generate_code():
                                           , cflags=environment.quickgui.cflags
                                            )
     # NOTE THE CHANGE HERE                                           
-    mb.constructors().allow_implicit_conversion = False                                           
-    
+    mb.constructors().allow_implicit_conversion = False   
+                                            
+    mb.register_module_dependency ( environment.ogre.generated_dir )
+
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
     

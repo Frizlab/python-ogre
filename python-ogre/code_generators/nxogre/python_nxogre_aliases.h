@@ -7,7 +7,23 @@ typedef std::vector<Ogre::Vector4, std::allocator<Ogre::Vector4> > VectorVector4
 typedef std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> >,std::basic_string<char, std::char_traits<char>, std::allocator<char> > >\
     PairString;
     
-
+typedef NxOgre::List<std::basic_string<char, std::char_traits<char>, std::allocator<char> > > ListString;
+typedef NxOgre::List<NxOgre::Blueprints::ActorBlueprint*> ListBlueprints;
+typedef  NxOgre::Container<unsigned, NxOgre::ShapeBlueprint const&> ContainerShapeBlueprint;
+typedef NxOgre::Container<std::string, NxOgre::ActorBlueprint> ContainerActorBlueprint;
+//typedef NxOgre::Container<NxOgre::Scene::Renderables, float> ContainerSceneRencerables;
+typedef std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >,float,std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >,std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, float> > >\
+    MapStrings;
+typedef std::map<unsigned, float, std::less<unsigned>, std::allocator<std::pair<unsigned const, float> > >\
+    MapUnsignedFloat;
+typedef std::vector<NxOgre::Scene*, std::allocator<NxOgre::Scene*> > VectorScene;
+typedef std::list<NxOgre::Blueprints::ActorBlueprint*, std::allocator<NxOgre::Blueprints::ActorBlueprint*> > ListBlueprintsActorBlueprint;
+typedef std::list<std::pair<std::string, std::string>, std::allocator<std::pair<std::string, std::string> > >\
+    ListPairString;
+typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::DominanceGroup*>::Containee, std::less<std::string>, std::allocator<std::pair<std::string const, NxOgre::Container<std::string, NxOgre::DominanceGroup*>::Containee> > >\
+    MapContainerDominanceGroup;
+        
+    
 typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::Scene*>::Containee, std::less<std::string> >\
      MapContainerScene;
 typedef std::list<NxOgre::CharacterHitReport*, std::allocator<NxOgre::CharacterHitReport*> > ListCharacterHitReportPtr;
@@ -41,7 +57,7 @@ typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::Trigger*>::
      MapContainerTrigger;
 typedef std::list<NxOgre::RemoteDebuggerConnection::Camera, std::allocator<NxOgre::RemoteDebuggerConnection::Camera> >\
     ListRemoteDebuggerConnectionCamera;
-typedef std::vector<NxOgre::Summary::Feature> VectorSummaryFeature;
+// typedef std::vector<NxOgre::Summary::Feature> VectorSummaryFeature;
 typedef std::map<unsigned, NxOgre::Container<unsigned, NxOgre::Shape*>::Containee, std::less<unsigned> >\
     MapContainerUnsignedShape;
 typedef std::map<unsigned, NxOgre::Container<unsigned, NxOgre::ErrorReporter*>::Containee, std::less<unsigned> >\

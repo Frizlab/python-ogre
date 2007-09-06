@@ -361,7 +361,8 @@ def generate_code():
                                            )
     # NOTE THE CHANGE HERE                                           
     mb.constructors().allow_implicit_conversion = False                                           
-    
+    mb.register_module_dependency ( environment.ogre.generated_dir )
+
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
     

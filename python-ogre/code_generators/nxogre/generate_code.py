@@ -56,6 +56,17 @@ def ManualExclude ( mb ):
         if c.decl_string.startswith('::NxOgre::Container<') and '*' not in c.decl_string:
             print "EXCLUDING: ", c
             c.exclude()
+        
+        ### Now some of the functions need to be excluded.. This is too much and could be cut back
+        ### ie only some of the containers lists fail at compile time
+        funlist = ['get','has','next','remove']
+        if c.decl_string.startswith('::NxOgre::List<'):
+            for f in funlist:
+                try:
+                    c.member_function(f).exclude()
+                    print "EXCLUDING: ", c, f
+                except:
+                    pass
         for v in c.variables(allow_empty=True):
             if v.access_type !=  'public' :
                 v.exclude()
@@ -64,9 +75,6 @@ def ManualExclude ( mb ):
         if t.decl_string.startswith('::NxOgre::Container<') and '*' not in t.decl_string:
             t.exclude()
             print "EXCLUDING: ", t
-#     print dir ( main_ns )   
-#     for t in main_ns.variables():
-#         print t
 
     # things not yet implemented in the C source..
     excludes=['::NxOgre::Compartment']
@@ -75,26 +83,25 @@ def ManualExclude ( mb ):
             for e in excludes:
                 if e in m.decl_string:
                     m.exclude()
-#     for c in main_ns.constructors():
-#         print c               
         
-    # problem with a constructor on Shape   
-    main_ns.class_('::NxOgre::Shape').constructor(arg_types=['::NxOgre::ShapeParams']).exclude()
-    # And coth..
+    # problem with a constructor on Cloth   
     main_ns.class_('::NxOgre::Cloth').constructor(arg_types=[None,'::NxClothDesc','::NxMeshData',None,None]).exclude()
-        
-    ### Member Functions
+# # #         
+# # #     ### Member Functions
     excludes=[
             '::NxOgre::Container<std::string, NxOgre::FluidDrain*>::begin'
             ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::get'
             ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::getFirst'
             ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::next'
             ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::getFirst'
+            ,'::NxOgre::List<NxOgre::RemoteDebuggerConnection::Camera>::destroyAndEraseAll'
+            ,'::NxOgre::List<NxOgre::RemoteDebuggerConnection::Camera>::dumpToConsole'
+            
             ,'::NxOgre::UserAllocator::realloc'
-            ,'::NxOgre::Serialiser::NXU_notifySaveActor' # takes a * * argument
-            # not yet implemented in source
+# # #             # not yet implemented in source
             ,'::NxOgre::WheelSet::attachNewWheel'
             ,'::NxOgre::WheelSet::createThreeWheelSet'
+            ,'::NxOgre::WheelSet::createSixWheelSet'
             ,'::NxOgre::Wheel::addEntity'
             ,'::NxOgre::Cloth::duplicate'
             ,'::NxOgre::ClothRayCaster::getClosestCloth'
@@ -126,14 +133,9 @@ def ManualExclude ( mb ):
             ,'::NxOgre::Scene::createSphericalJoint'
             ,'::NxOgre::Scene::createPrismaticJoint'
             ,'::NxOgre::Scene::createFixedJoint'
-            ,'::NxOgre::Serialiser::saveScene'
-            ,'::NxOgre::Serialiser::restoreScene'
+            ,'::NxOgre::Scene::save'
             ,'::NxOgre::SoftBody::simulate'
             ,'::NxOgre::SoftBody::render'
-            ,'::NxOgre::WheelSet::createSixWheelSet'
-            ,'::NxOgre::Summary::has'
-            ,'::NxOgre::ActorBlueprint::setDynamicCollisionModel'
-            ,'::NxOgre::ActorBlueprint::setCollisionModel'
             ,'::NxOgre::PhysXDriver::stop'
             ,'::NxOgre::PhysXDriver::start'
             ,'::NxOgre::PhysXDriver::reset'
@@ -144,36 +146,32 @@ def ManualExclude ( mb ):
         main_ns.member_functions(e).exclude()
         
     ### Free Functions
-    excludes = ['::NxOgre::NxCookTriMeshToDisk'
-                ,'::NxOgre::NxCookConvexToDisk'
-                ,'::NxOgre::simulateWorldGeometry']
+    excludes = []
     for e in excludes:
         main_ns.free_functions(e).exclude()
         
     ## Classes
     excludes = ['::NxOgre::BaseCharacterHitReport'
                 ,'::NxOgre::CharacterHitReport'
+                ,'::NxOgre::Blueprints::ActorBlueprint'
+                ,'::NxOgre::Blueprints::ActorFactory'
+                ,'::NxOgre::Blueprints::WorldBlueprint'
+                ,'::NxOgre::Serialiser::SerialiserBase'
+                ,'::NxOgre::UserAllocator'
+                ,'::NxOgre::State'
+               
                 # not yet implemented in source
                 ]
     for e in excludes:
         main_ns.class_(e).exclude()
-    
-        
+# # #     
+# # #         
     ## I have a challenge that Py++ doesn't recognise these classes by full name (perhaps because they are structs?)
     ## so I have to look through and match on a class by class basis
     excludeName = ['Container<NxOgre::Scene::Renderables, float>'
                 ,'List<NxOgre::CharacterHitReport*>'
-                ,'Container<std::string, NxOgre::RayCastHit>'
                 ,'List<NxOgre::RemoteDebuggerConnection::Camera>'
-                ,'List<NxOgre::Wheel*>'
-                ,'NxCookTriMeshToDisk'
-                ,'NxCookConvexToDisk'
-                ,'simulateWorldGeometry'
-                ,'UserAllocator'
-                ,'ClothVertex'
-#                ,'Cloth'
-                ##,'PhysXDriver'
-                ,'State'
+                ,'List<NxOgre::Blueprints::ActorBlueprint*>'
                 ]
     for c in main_ns.classes():
 #         print c.decl_string   
@@ -210,7 +208,7 @@ def ManualExclude ( mb ):
             if 'NxVec3' in a.type.decl_string or 'NxQuat' in a.type.decl_string:
                 c.exclude()
                 break
-                
+# # #                 
 
 ############################################################
 ##
@@ -604,7 +602,10 @@ def generate_code():
                                            )
     # NOTE THE CHANGE HERE                                           
     mb.constructors().allow_implicit_conversion = False                                           
-    
+    ## This module depends on Ogre and physx
+    mb.register_module_dependency ( environment.ogre.generated_dir )
+    mb.register_module_dependency ( environment.physx.generated_dir )
+
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
     

@@ -1,5 +1,5 @@
 del /Q cache\*
-rmdir /s /q ..\generated
+echo rmdir /s /q ..\generated
 cd ogre
 python generate_code.py >1
 cd ..
@@ -24,4 +24,8 @@ cd ..
 cd cegui
 python generate_code.py >1
 cd ..
+cd quickgui
+python generate_code.py >1
+cd ..
+
 

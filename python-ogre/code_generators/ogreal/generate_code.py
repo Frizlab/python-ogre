@@ -174,6 +174,8 @@ def generate_code():
                                           , indexing_suite_version=2
                                            )
     #
+    mb.register_module_dependency ( environment.ogre.generated_dir )
+
     # We filter (both include and exclude) specific classes and functions that we want to wrap
     # 
     filter_declarations (mb)
