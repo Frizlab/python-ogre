@@ -37,7 +37,8 @@ import common_utils.process_warnings as process_warnings
 def filter_declarations( mb ):
     global_ns = mb.global_ns
     global_ns.exclude()
-    
+
+    global_ns.namespace("std").class_('list<Ogre::Plane, std::allocator<Ogre::Plane> >').exclude()
     if not environment.ogre.version.startswith("1.2") and os.name =='nt':
         mb.global_ns.class_( 'vector<Ogre::Vector4, std::allocator<Ogre::Vector4> >' ).exclude( )
     
@@ -112,9 +113,11 @@ def filter_declarations( mb ):
     global_ns.namespace( 'Ogre' ).class_('SceneManager').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('Matrix4').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('Plugin').include(already_exposed=True)
-#     print "\nCLASSES:::  Std"
-#     for c in global_ns.namespace('std').classes():
-#         print c.name, c
+    print "\nCLASSES:::  Std"
+    for c in global_ns.namespace('std').classes():
+        print c.name, c
+    global_ns.namespace("std").class_('list<Ogre::Plane, std::allocator<Ogre::Plane> >').exclude()
+            
 #     print "\nCLASSES:::  Ode"
 #     for c in global_ns.namespace('OgreOde').classes():
 #         print c.name, c
@@ -180,7 +183,9 @@ def generate_ogreode():
                                           , include_paths=environment.ogreode.include_dirs
                                           , define_symbols= defined_symbols
                                           , indexing_suite_version=2 )
-
+                                          
+    ## This module depends on Ogre
+    mb.register_module_dependency ( environment.ogre.generated_dir )
     filter_declarations (mb)
 
     ## we need to handle "ode" return values etc
@@ -255,7 +260,7 @@ def generate_ogreode():
 
     huge_classes = map( mb.class_, customization_data.huge_classes(environment.ogreode.version) )
     print "ABOUT TO SPLIT"
-    mb.split_module(environment.ogreode.generated_dir, huge_classes)
+    mb.split_module(environment.ogreode.generated_dir, huge_classes, use_files_sum_repository=False )
 
 if __name__ == '__main__':
     start_time = time.clock()

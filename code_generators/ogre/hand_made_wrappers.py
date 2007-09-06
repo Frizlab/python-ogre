@@ -2,6 +2,22 @@ import os
 import environment
 
 
+WRAPPER_DEFINITION_PixelBox =\
+"""
+// return the data buffer - can't be handled 'normally' by Py++
+void * PixelBox_data ( ::Ogre::PixelBox & me )
+{
+    return me.data;
+}
+"""
+WRAPPER_REGISTRATION_PixelBox = [
+    """def( "getData", &::PixelBox_data,\\
+                "Python-Ogre Helper Function: Returns the data buffer.\\n\\
+                Input: \\n\\
+                Output: A void pointer to the data buffer",\\
+                bp::return_value_policy< bp::return_opaque_pointer >());"""
+    ]
+
 
 WRAPPER_WRAPPER_RenderQueueListener =\
 """
@@ -22,32 +38,6 @@ WRAPPER_WRAPPER_RenderQueueListener =\
 """
 
 
-# WRAPPER_DEFINITION_ShadowRenderable =\
-# """
-# Ogre::ShadowRenderable * ShadowRenderable_castElement(Ogre::ShadowRenderable * r){
-#     if( dynamic_cast< Ogre::Region::RegionShadowRenderable * >( r ) ){
-#         return  (Ogre::Region::RegionShadowRenderable*) r ;
-#     }   
-#     if( dynamic_cast< Ogre::ManualObject::ManualObjectSectionShadowRenderable * >( r ) ){
-#         return  (Ogre::ManualObject::ManualObjectSectionShadowRenderable*) r ;
-#     }    
-#     if( dynamic_cast< Ogre::Entity::EntityShadowRenderable * >( r ) ){
-#         return (Ogre::Entity::EntityShadowRenderable*) r ;
-#     }
-#     return  ( r );
-#     }
-#     
-# Ogre::ShadowRenderable* ShadowRenderable_getLightCapRenderable( Ogre::ShadowRenderable & me){
-#     return ShadowRenderable_castElement ( me.getLightCapRenderable() );
-#     }
-# """
-WRAPPER_REGISTRATION_ShadowRenderable = [
-    'def( "getLightCapRenderable", &::ShadowRenderable_getLightCapRenderable,\
-    "Python-Ogre Hand Wrapped\\n",\
-    bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
-    
-    ]    
-    
 
 WRAPPER_DEFINITION_OverlayElement = \
 """
@@ -677,6 +667,10 @@ def apply( mb ):
     rt.add_declaration_code( WRAPPER_DEFINITION_Node )
     apply_reg (rt,  WRAPPER_REGISTRATION_Node )
 
+    rt = mb.class_( 'PixelBox' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_PixelBox )
+    apply_reg (rt,  WRAPPER_REGISTRATION_PixelBox )
+    
 #     rt = mb.class_( 'ShadowRenderable' )
 #     rt.add_declaration_code( WRAPPER_DEFINITION_ShadowRenderable )
 #     apply_reg (rt,  WRAPPER_REGISTRATION_ShadowRenderable )
@@ -712,8 +706,8 @@ def apply( mb ):
     for cls in map_iterators:
         iter_as_generator_map( cls ) 
         
-#     rt = mb.class_( 'RenderQueueListener' )   
-#     rt.add_wrapper_code ( WRAPPER_WRAPPER_RenderQueueListener )
+    rt = mb.class_( 'RenderQueueListener' )   
+    rt.add_wrapper_code ( WRAPPER_WRAPPER_RenderQueueListener )
              
 #     cls = mb.class_('Animation').class_('NodeTrackIterator')
 #     iter_as_generator_map( cls )

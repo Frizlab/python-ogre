@@ -66,7 +66,8 @@ PACKAGEDATA = {
                         'ogre.physics.OgreOde', 'ogre.physics.OgreNewt', 'ogre.physics.Opcode',
                         'ogre.physics.bullet','ogre.physics.PhysX','ogre.physics.NxOgre',
                         'ogre.addons','ogre.addons.theora',
-                        'ogre.addons.ogrevideoffmpeg', 'ogre.addons.ogredshow'],
+                        'ogre.addons.ogrevideoffmpeg', 'ogre.addons.ogredshow',
+                        'ogre.addons.plib'],
        "package_dir": {'': 'packages_'+ PythonVersionString },
        "package_data": {'': ['*.pyd', '*.dll', '*.so']}
 

@@ -543,7 +543,15 @@ struct PixelBoxSize{
 }; 
 } 
 """ 
-
+#     c = ns.class_( 'PixelBox' ) 
+#     c.add_declaration_code( pixelBox_size ) 
+#     for f in c.mem_funs( 'getData' ): 
+#         f.call_policies = call_policies.return_range( f, 'ImageSize' ) 
+#         f.documentation = "Python-Ogre Modified Return Range \\n"
+#         if f.has_const: 
+#             f.alias = 'getReadOnlyData' 
+            
+            
     image_size = """ 
 namespace{ 
 struct ImageSize{ 
@@ -916,10 +924,21 @@ def Fix_Void_Ptr_Args ( mb ):
     """ we modify functions that take void *'s in their argument list to instead take
     unsigned ints, which allows us to use CTypes buffers
     """
+#     for fun in  mb.class_('PixelUtil').member_functions('unpackColour') : 
+#         print "Function:", fun  
+#         for arg in fun.arguments:
+#             print arg
+#             print arg.type
+#             print "Const", declarations.is_const(arg.type)
+#             print "pointer", declarations.is_pointer(arg.type)
+#             print "Void", declarations.is_void(arg.type)
+#             print arg.type.decl_string
+#     sys.exit()    
+        
     for fun in mb.member_functions():
         arg_position = 0
         for arg in fun.arguments:
-            if declarations.type_traits.is_void_pointer(arg.type):
+            if arg.type.decl_string == 'void const *' or arg.type.decl_string == 'void *':
                 fun.add_transformation( ft.modify_type(arg_position,_ReturnUnsignedInt ), alias=fun.name )
                 fun.documentation = docit ("Modified Input Argument to work with CTypes",
                                             "Argument "+arg.name+ "(pos:" + str(arg_position)\

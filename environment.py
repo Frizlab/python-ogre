@@ -333,9 +333,9 @@ class fmod:
     
 
 class quickgui:
-    version="0.9.5"
+    version="0.9.6"
     parent="ogre/gui"
-    CCFLAGS = ' /D "WIN32" /D "NDEBUG", /D "WINDOWS" ' # /D "FT2_BUILD_LIBRARY"
+    CCFLAGS = ' /D "WIN32" /D "NDEBUG", /D "WINDOWS" /D "OGRE_PLATFORM_WIN32"' # /D "FT2_BUILD_LIBRARY"
     cflags=""
     include_dirs = [ Config.PATH_Boost,
                     Config.PATH_INCLUDE_Ogre,
@@ -417,6 +417,26 @@ class theora:
     libs=[  Config.LIB_Boost, 'Plugin_TheoraVideoSystem','OgreMain' ]
     ModuleName="theora"   
     active=True
+ 
+class plib:
+    version="1.8.4"
+    parent="ogre/addons"
+    cflags=""
+    CCFLAGS = ' /D "_CRT_SECURE_NO_WARNINGS" ' 
+    include_dirs= [ Config.PATH_INCLUDE_plib,
+            os.path.join ( Config.PATH_INCLUDE_plib,"..")   # needed as net.h includes via plib/xxxx
+            ]
+    lib_dirs = [ Config.PATH_LIB_Boost,
+            Config.PATH_LIB_plib
+            ]           
+    ModuleName = "plib"
+    CheckIncludes=[]
+    if os.name == "nt":
+        libs = [ Config.LIB_Boost, 'winmm', 'User32','wsock32' ]
+    else:
+        libs = [ Config.LIB_Boost ] # Note sure what linux libraries are needed
+    
+    active = True
     
 class physx:
     version="2.7.2"
@@ -537,6 +557,7 @@ projects = {
     , 'theora' : theora
     , 'ogrevideoffmpeg' : ogrevideoffmpeg
     , 'ogredshow' : ogredshow
+    , 'plib' : plib
     #, 'raknet' : raknet
 }        
 

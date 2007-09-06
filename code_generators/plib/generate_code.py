@@ -34,7 +34,7 @@ import common_utils.extract_documentation as exdoc
 import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
 
-MAIN_NAMESPACE = 'Ogre'
+MAIN_NAMESPACE = ''
 
 ## small helper function
 def docit ( general, i, o ): 
@@ -51,8 +51,8 @@ def docit ( general, i, o ):
 
 def ManualExclude ( mb ):
     global_ns = mb.global_ns
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
-
+    main_ns = global_ns
+ 
     # things not yet implemented in the C source..
     excludes=[]
     for c in main_ns.classes():
@@ -60,13 +60,32 @@ def ManualExclude ( mb ):
             for e in excludes:
                 if e in m.decl_string:
                     m.exclude()
-     
-        
+    
     ### Member Functions
-    excludes=['::Ogre::TheoraVideoController::CmdRenderFx::doGet'
-            ,'::Ogre::TheoraVideoController::CmdSeekingEnabled::doGet'
-            ,'::Ogre::TheoraVideoController::CmdRenderFx::doSet'
-            ,'::Ogre::TheoraVideoController::CmdSeekingEnabled::doSet']
+    excludes=[  #'::slScheduler::waveOutClose'
+#             ,'::slScheduler::waveOutWrite'
+#             ,'::slScheduler::waveOutReset'
+#             ,'::slScheduler::waveOutGetPosition'
+#             ,'::slScheduler::waveOutPrepareHeader' 
+            '::netMessage::print' # strange / ugly defination
+            ,'::slSample::getBuffer' # returns char pointer -- needs wrapping
+            ,'::slSample::getComment' # same..
+            # have callbacks and need to be hand wrapped
+            ,'::slScheduler::loopSample'
+            ,'::slScheduler::loopMusic'
+            ,'::slScheduler::playSample'
+            ,'::slScheduler::playMusic'
+            # handwrapped to handle python lists instead of c buffers
+            ,'::netSocket::send'
+            ,'::netSocket::sendto'
+            ,'::netSocket::recv'
+            ,'::netSocket::recvfrom'
+            ,'::netBuffer::getData'  ## returns a char pointer to the data which needs wrapping
+            ,'::netChannel::send'
+            ,'::netChannel::recv'
+            ,'::netMonitorServer::setCommandFunc'   ## needs to handle callbacks
+            
+         ]
     for e in excludes:
         print "excluding ", e
         main_ns.member_functions(e).exclude()
@@ -77,20 +96,17 @@ def ManualExclude ( mb ):
         main_ns.free_functions(e).exclude()
         
     ## Classes
-    excludes = ['::Ogre::TheoraSeekUtility'
-                ,'::Ogre::TheoraVideoController::CmdRenderFx'
-                ,'::Ogre::TheoraVideoController::CmdSeekingEnabled']
+    excludes = []
     for e in excludes:
         main_ns.class_(e).exclude()
     
         
     ## I have a challenge that Py++ doesn't recognise these classes by full name (perhaps because they are structs?)
     ## so I have to look through and match on a class by class basis
-    excludeName = [ ]
+    excludeName = []
     for c in main_ns.classes():
         if c.name in excludeName:
             c.exclude()
-       
       
     ### Variables        
     excludes = []
@@ -107,8 +123,12 @@ def ManualExclude ( mb ):
     for e in excludes:
         main_ns.operators(e).exclude()
         
-    ### Constructors
-    
+#     ### Constructors
+#     for c in main_ns.class_('::plib::Pose').constructors():  ## these hide the working constructors
+#         for a in c.arguments:
+#             if 'NxVec3' in a.type.decl_string or 'NxQuat' in a.type.decl_string:
+#                 c.exclude()
+#                 break
                 
 
 ############################################################
@@ -119,28 +139,13 @@ def ManualExclude ( mb ):
     
 def ManualInclude ( mb ):
     global_ns = mb.global_ns
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
-    main_ns.enum('::Ogre::TextureSpecialRenderFX').include()
-    
-    ## need this as it's a base class in Theora
-    c = main_ns.class_('::Ogre::ExternalTextureSource')
-    c.include()
-    for cls in c.classes():
-        if cls.name.startswith('Cmd'):
-            cls.exclude()
-            
-    c = main_ns.class_('::Ogre::TheoraVideoController')
-    print dir ( c )
-    print c.bases
-    for i in c.bases:
-        print "Base: ", i
-    print dir (i)    
-    
-    main_ns.enum('::Ogre::eTexturePlayMode').include(already_exposed=True)
-    main_ns.enum('::Ogre::eAudioSampleFormat').include(already_exposed=True)
-    main_ns.class_('::Ogre::RingBuffer').include(already_exposed=True)
-    main_ns.class_('::Ogre::TexturePtr').include(already_exposed=True)
-    
+    main_ns = global_ns
+      
+    includes=['netInit']
+    ### Free Functions
+    for e in includes:
+        main_ns.free_functions(e).include()
+        
 ############################################################
 ##
 ##  And things that need manual fixes, but not necessarly hand wrapped
@@ -150,8 +155,7 @@ def ManualFixes ( mb ):
 
     global_ns = mb.global_ns
     
-    # fix issue where the namespace isn't in the default values
-                 
+                
 ############################################################
 ##
 ##  And things that need to have their argument and call values fixed.
@@ -162,13 +166,24 @@ def ManualFixes ( mb ):
 ############################################################
         
 def ManualTransformations ( mb ):
+    def _ReturnUnsignedInt( type_ ):
+        """helper to return an UnsignedInt call for tranformation functions
+        """
+        return declarations.cpptypes.unsigned_int_t()
+
     global_ns = mb.global_ns
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    main_ns = global_ns
         
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
- 
     
+    ## hack to get things working -- needs to be wrapped to handle a python call back        
+    change = ['loopSample', 'loopMusic','playSample','playMusic']
+    for fun in change:
+        f = global_ns.class_('::slScheduler').mem_fun(fun)
+        f.add_transformation( ft.modify_type('cb',_ReturnUnsignedInt ), alias=fun )
+        print "Changed ", f
+       
 ###############################################################################
 ##
 ##  Now for the AUTOMATIC stuff that should just work
@@ -180,7 +195,7 @@ def AutoExclude( mb ):
     """ Automaticaly exclude a range of things that don't convert well from C++ to Python
     """
     global_ns = mb.global_ns
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    main_ns = global_ns
     
     # vars that are static consts but have their values set in the header file are bad
     Remove_Static_Consts ( main_ns )
@@ -201,34 +216,26 @@ def AutoExclude( mb ):
                
 def AutoInclude( mb ):
     main_ns = mb.global_ns  ##   doesn't have it's own namespace..
-    
-    for c in main_ns.classes():
-        if c.name.startswith ('Theora'):
-            c.include()
-            print "Including:", c
+    validPrefix= ['sl','sm','net','ul']
+        
+    for cls in main_ns.classes():
+        for p in validPrefix:
+            if cls.name.startswith ( p ) and cls.name[len(p)].isupper():
+                print "Including class: ", cls.name
+                cls.include()
             
-#     for cls in main_ns.classes():
-#         try:
-#             if  cls.decl_string[2:4]=='Nx' and cls.decl_string[4].isupper():
-#                 cls.include()
-#         except:
-#             pass
-#      ## and we'll need the free functions as well
-#     for funcs in main_ns.free_functions ():
-#         if funcs.name[0:2]=='Nx' and funcs.name[2].isupper():
-#             funcs.include()
-#             
-#     for var in main_ns.variables ():
-# #         print "checking var ", var.name
-#         if len(var.name) > 2:
-#             if var.name[0:2]=='Nx' and var.name[2].isupper():
-#                 var.include()
-#     for var in main_ns.typedefs ():
-# #         print "checking typedef ", var.name
-#         if len(var.name) > 2:
-#             if var.name[0:2]=='Nx' and var.name[2].isupper():
-#                 var.include()            
-                
+    for cls in main_ns.enums():
+        for p in validPrefix:
+            if cls.name.startswith ( p ) and cls.name[len(p)].isupper():
+                print "Including enum: ", cls.name
+                cls.include()
+
+    for cls in main_ns.free_functions():
+        print "Free Function:", cls
+        for p in validPrefix:
+            if cls.name.startswith ( p ) and cls.name[len(p)].isupper():
+                print "Including free function: ", cls.name
+                cls.include()
 
     
 def AutoFixes ( mb ): 
@@ -236,7 +243,7 @@ def AutoFixes ( mb ):
     the entire name space trying to guess stuff and fix it:)
     """       
     global_ns = mb.global_ns
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    main_ns = global_ns
     
     # arguments passed as refs but not const are not liked by boost
     #Fix_Ref_Not_Const ( main_ns )
@@ -279,14 +286,7 @@ def Fix_NT ( mb ):
 def Fix_Implicit_Conversions ( mb ):
     """By default we disable explicit conversion, however sometimes it makes sense
     """
-#     for c in mb.classes():
-#         if c.name.endswith ('Params'):
-#             print "Implicit Conversion:", c
-#             c.constructors().allow_implicit_conversion = True
-#             
-#     ImplicitClasses=['::NxOgre::Pose'] 
-#     for className in ImplicitClasses:
-#         mb.class_(className).constructors().allow_implicit_conversion = True
+    pass
                     
 def Add_Auto_Conversions( mb ):
     pass
@@ -332,12 +332,12 @@ def Fix_Void_Ptr_Args ( mb ):
     for fun in mb.member_functions():
         arg_position = 0
         for arg in fun.arguments:
-            if declarations.type_traits.is_void_pointer(arg.type):
-                fun.add_transformation( ft.modify_type(arg_position,_ReturnUnsignedInt ) )
+            if declarations.type_traits.is_void_pointer(arg.type) or arg.type.decl_string == "void const *":
+                fun.add_transformation( ft.modify_type(arg_position,_ReturnUnsignedInt ), alias=fun.name )
                 fun.documentation = docit ("Modified Input Argument to work with CTypes",
                                             "Argument "+arg.name+ "(pos:" + str(arg_position)\
                                             +") takes a CTypes.adddressof(xx)", "...")
-                #print "Fixed Void Ptr", fun, arg_position
+                print "Fixed Void Ptr", fun, arg_position
                 break
             arg_position +=1
             
@@ -385,7 +385,7 @@ def Fix_Pointer_Returns ( mb ):
     """
     pointee_types=['unsigned int','int', 'float', 'unsigned char']
     known_names=[]  # these are function names we know it's cool to exclude
-    for fun in mb.member_functions(allow_empty=True):
+    for fun in mb.member_functions():
         if declarations.is_pointer (fun.return_type) and not fun.documentation:
             for i in pointee_types:
                 if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
@@ -454,14 +454,14 @@ def generate_code():
     # NOTE: If you update the source library code you need to manually delete the cache .XML file   
     #
     xml_cached_fc = parser.create_cached_source_fc(
-                        os.path.join( environment.theora.root_dir, "python_theora.h" )
-                        , environment.theora.cache_file )
+                        os.path.join( environment.plib.root_dir, "python_plib.h" )
+                        , environment.plib.cache_file )
 
-    defined_symbols = [ 'THEORAVIDEO_PLUGIN_EXPORTS','OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY']
+    defined_symbols = [ ]
     if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')
         defined_symbols.append('BOOST_HAS_WINTHREADS')
-    defined_symbols.append( 'VERSION_' + environment.theora.version )  
+    defined_symbols.append( 'VERSION_' + environment.plib.version )  
     
     undefined_symbols = []
     #
@@ -470,32 +470,30 @@ def generate_code():
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
-                                          , include_paths=environment.theora.include_dirs
+                                          , include_paths=environment.plib.include_dirs
                                           , define_symbols=defined_symbols
-# #                                           , undefine_symbols = undefined_symbols
                                           , indexing_suite_version=2
                                           , cflags=environment.ogre.cflags
                                            )
     # NOTE THE CHANGE HERE                                           
     mb.constructors().allow_implicit_conversion = False                                           
-    
+ 
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
-    
         
     #
     # We filter (both include and exclude) specific classes and functions that we want to wrap
     # 
     global_ns = mb.global_ns
     global_ns.exclude()
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
-    main_ns.exclude()   ## Note we exclude so we don't get the ogre stuff
+    main_ns = global_ns
+# #     main_ns.include()
     
    
-    AutoExclude ( mb )
     AutoInclude ( mb )
-    ManualInclude ( mb )
+    AutoExclude ( mb )
     ManualExclude ( mb )
+    ManualInclude ( mb )
     # here we fixup functions that expect to modifiy their 'passed' variables    
     ManualTransformations ( mb )
     
@@ -505,7 +503,7 @@ def generate_code():
     #
     # We need to tell boost how to handle calling (and returning from) certain functions
     #
-    Set_Call_Policies ( mb.global_ns.namespace (MAIN_NAMESPACE) )
+    Set_Call_Policies ( mb.global_ns )
     
     #
     # the manual stuff all done here !!!
@@ -517,11 +515,11 @@ def generate_code():
         if cls.name not in NoPropClasses:
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
             
-    common_utils.add_constants( mb, { 'Theora_version' :  '"%s"' % environment.theora.version.replace("\n", "\\\n") 
+    common_utils.add_constants( mb, { 'PROJECT_version' :  '"%s"' % environment.plib.version.replace("\n", "\\\n") 
                                       , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
                                       
     ## need to create a welcome doc string for this...                                  
-    common_utils.add_constants( mb, { '__doc__' :  '"Theora DESCRIPTION"' } ) 
+    common_utils.add_constants( mb, { '__doc__' :  '"plib PROJECT DESCRIPTION"' } ) 
     
     
     ##########################################################################################
@@ -529,34 +527,36 @@ def generate_code():
     # Creating the code. After this step you should not modify/customize declarations.
     #
     ##########################################################################################
-    extractor = exdoc.doc_extractor("")  
-    mb.build_code_creator (module_name='_theora_' , doc_extractor= extractor )
+    extractor = exdoc.doc_extractor("") # I'm excluding the UTFstring docs as lots about nothing 
+    mb.build_code_creator (module_name='_plib_' , doc_extractor= extractor )
     
-    for inc in environment.theora.include_dirs:
+    for inc in environment.plib.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )
-    mb.code_creator.user_defined_directories.append( environment.theora.generated_dir )
-    mb.code_creator.replace_included_headers( customization_data.header_files( environment.theora.version ) )
+    mb.code_creator.user_defined_directories.append( environment.plib.generated_dir )
+    mb.code_creator.replace_included_headers( customization_data.header_files( environment.plib.version ) )
 
-    huge_classes = map( mb.class_, customization_data.huge_classes( environment.theora.version ) )
+    huge_classes = map( mb.class_, customization_data.huge_classes( environment.plib.version ) )
 
-    mb.split_module(environment.theora.generated_dir, huge_classes,use_files_sum_repository=False)
+    mb.split_module(environment.plib.generated_dir, huge_classes,use_files_sum_repository=False)
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generaated directory..
-    additional_files=[
-#             os.path.join( environment.shared_ptr_dir, 'py_shared_ptr.h'),
-# #             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'generators.h' ),
-# #             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'custom_rvalue.cpp' ),
-#             os.path.join( environment.include_dir, 'tuples.hpp' )
-            ]            
-    for sourcefile in additional_files:
-        p,filename = os.path.split(sourcefile)
-        destfile = os.path.join(environment.ogre.generated_dir, filename ) 
-    
-        if not common_utils.samefile( sourcefile ,destfile ):
-            shutil.copy( sourcefile, environment.ogre.generated_dir )
-            print "Updated ", filename, "as it was missing or out of date"
+    additional_files = []
+    paths = [os.path.join(environment.Config.PATH_plib,'src','sl'),
+            os.path.join(environment.Config.PATH_plib,'src','util'),
+            os.path.join(environment.Config.PATH_plib,'src','net')
+            ]
+
+    for p in paths:
+        additional_files = os.listdir(p)
+        for f in additional_files:
+            if f.endswith('cxx') or f.endswith('.h'):
+                sourcefile = os.path.join(p, f)
+                destfile = os.path.join(environment.plib.generated_dir, f ) 
         
+                if not common_utils.samefile( sourcefile ,destfile ):
+                    shutil.copy( sourcefile, environment.plib.generated_dir )
+                    print "Updated ", f, "as it was missing or out of date"        
 if __name__ == '__main__':
     start_time = time.clock()
     generate_code()
