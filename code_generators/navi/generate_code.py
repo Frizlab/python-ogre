@@ -34,7 +34,7 @@ import common_utils.extract_documentation as exdoc
 import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
 
-MAIN_NAMESPACE = 'NxOgre'
+MAIN_NAMESPACE = 'NaviLibrary'
 
 ## small helper function
 def docit ( general, i, o ): 
@@ -52,106 +52,19 @@ def docit ( general, i, o ):
 def ManualExclude ( mb ):
     global_ns = mb.global_ns
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
-    for c in main_ns.classes():
-        if c.decl_string.startswith('::NxOgre::Container<') and '*' not in c.decl_string:
-            print "EXCLUDING: ", c
-            c.exclude()
-        
-        ### Now some of the functions need to be excluded.. This is too much and could be cut back
-        ### ie only some of the containers lists fail at compile time
-        funlist = ['get','has','next','remove']
-        if c.decl_string.startswith('::NxOgre::List<'):
-            for f in funlist:
-                try:
-                    c.member_function(f).exclude()
-                    print "EXCLUDING: ", c, f
-                except:
-                    pass
-        for v in c.variables(allow_empty=True):
-            if v.access_type !=  'public' :
-                v.exclude()
-                print "excluded", v, v.access_type
-    for t in main_ns.typedefs():
-        if t.decl_string.startswith('::NxOgre::Container<') and '*' not in t.decl_string:
-            t.exclude()
-            print "EXCLUDING: ", t
-
+     
     # things not yet implemented in the C source..
-    excludes=['::NxOgre::Compartment']
+    excludes=[]
     for c in main_ns.classes():
         for m in c.member_functions(allow_empty=True):
             for e in excludes:
                 if e in m.decl_string:
                     m.exclude()
-        
-    # problem with a constructor on Cloth   
-    main_ns.class_('::NxOgre::Cloth').constructor(arg_types=[None,'::NxClothDesc','::NxMeshData',None,None]).exclude()
-# # #         
-# # #     ### Member Functions
-    excludes=[
-            '::NxOgre::Container<std::string, NxOgre::FluidDrain*>::begin'
-            ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::get'
-            ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::getFirst'
-            ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::next'
-            ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::_begin'
-            ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::_next'
-            ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::_begin'
-            ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::_next'
-            
-            ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::getFirst'
-            ,'::NxOgre::List<NxOgre::RemoteDebuggerConnection::Camera>::destroyAndEraseAll'
-            ,'::NxOgre::List<NxOgre::RemoteDebuggerConnection::Camera>::dumpToConsole'
-            
-            ,'::NxOgre::UserAllocator::realloc'
-# # #             # not yet implemented in source
-            ,'::NxOgre::WheelSet::attachNewWheel'
-            ,'::NxOgre::WheelSet::createThreeWheelSet'
-            ,'::NxOgre::WheelSet::createSixWheelSet'
-            ,'::NxOgre::Wheel::addEntity'
-            ,'::NxOgre::Cloth::duplicate'
-            ,'::NxOgre::ClothRayCaster::getClosestCloth'
-            ,'::NxOgre::Joint::getBreakableMaxForce'
-            ,'::NxOgre::Joint::getBreakableMaxTorque'
-            ,'::NxOgre::Joint::getGlobalAxis'
-            ,'::NxOgre::Joint::setGlobalAxis'
-# # #             ,'::NxOgre::Joint::getType'
-#             ,'::NxOgre::Joint::hasMoreLimitPlanes'
-#             ,'::NxOgre::Joint::purgeLimitPlanes'
-#             ,'::NxOgre::Joint::resetLimitPlaneIterator'
-#             ,'::NxOgre::Joint::addLimitPlane'
-#             ,'::NxOgre::Joint::setBreakable'
-#             ,'::NxOgre::Joint::getGlobalAnchor'
-#             ,'::NxOgre::Joint::setGlobalAnchor'
-#             ,'::NxOgre::Joint::getState'
-#             ,'::NxOgre::Joint::getNextLimitPlane'
-#             ,'::NxOgre::Joint::setLimitPoint'
-#             ,'::NxOgre::Joint::getLimitPoint'
-#             ,'::NxOgre::Joint::getActorA'
-#             ,'::NxOgre::Joint::getActorB'
-            ,'::NxOgre::JointParams::setSpring'
-            ,'::NxOgre::JointParams::setMotor'
-            ,'::NxOgre::JointParams::setLimits'
-            ,'::NxOgre::JointParams::setJointProjection'
-            ,'::NxOgre::Scene::addMaterialPairsFromFile'
-            ,'::NxOgre::Scene::addMaterialPair'
-            ,'::NxOgre::Fluid::setName'
-            ,'::NxOgre::Fluid::getNxScene'
-            ,'::NxOgre::RayCaster::castBounds'
-            ,'::NxOgre::Scene::getSimType'
-            ,'::NxOgre::Scene::getGravity'
-            ,'::NxOgre::Scene::createSphericalJoint'
-            ,'::NxOgre::Scene::createPrismaticJoint'
-            ,'::NxOgre::Scene::createFixedJoint'
-            ,'::NxOgre::Scene::save'
-            ,'::NxOgre::Scene::batchDestroyActors'
-            ,'::NxOgre::SimpleIntersection::getResult'
-            ,'::NxOgre::SoftBody::simulate'
-            ,'::NxOgre::SoftBody::render'
-            ,'::NxOgre::PhysXDriver::stop'
-            ,'::NxOgre::PhysXDriver::start'
-            ,'::NxOgre::PhysXDriver::reset'
-            ,'::NxOgre::PhysXDriver::hasHardware'
-            ]
+    
+    ### Member Functions
+    excludes=[ '::NaviLibrary::NaviDataValue::isEmpty'
+               ,'::NaviLibrary::NaviDataValue::isNumber' ## inline functions
+         ]
     for e in excludes:
         print "excluding ", e
         main_ns.member_functions(e).exclude()
@@ -162,65 +75,41 @@ def ManualExclude ( mb ):
         main_ns.free_functions(e).exclude()
         
     ## Classes
-    excludes = ['::NxOgre::BaseCharacterHitReport'
-                ,'::NxOgre::CharacterHitReport'
-                ,'::NxOgre::Blueprints::ActorBlueprint'
-                ,'::NxOgre::Blueprints::ActorFactory'
-                ,'::NxOgre::Blueprints::WorldBlueprint'
-                ,'::NxOgre::Serialiser::SerialiserBase'
-                ,'::NxOgre::UserAllocator'
-                ,'::NxOgre::State'
-               
-                # not yet implemented in source
-                ]
+    excludes = []
     for e in excludes:
         main_ns.class_(e).exclude()
-# # #     
-# # #         
+    
+        
     ## I have a challenge that Py++ doesn't recognise these classes by full name (perhaps because they are structs?)
     ## so I have to look through and match on a class by class basis
-    excludeName = ['Container<NxOgre::Scene::Renderables, float>'
-                ,'Container<std::string,NxOgre::Actor*>'
-                ,'List<NxOgre::CharacterHitReport*>'
-                ,'List<NxOgre::RemoteDebuggerConnection::Camera>'
-                ,'List<NxOgre::Blueprints::ActorBlueprint*>'
-                ]
+    excludeName = []
     for c in main_ns.classes():
-#         print c.decl_string   
-#         print c.name
         if c.name in excludeName:
             c.exclude()
-        # a temporary fix for container based classes -- still an issue with them though...
-        # AND this is an overkill -- not all classes need these removed...
-        if c.decl_string.startswith ('::NxOgre::Container<'):
-            for f in c.member_functions(allow_empty=True):
-                if f.name in ['begin','get','next','destroyAndEraseAll','destroyAllOwned','CopyTo']:
-                    f.exclude()    
       
     ### Variables        
-    excludes = ['::NxOgre::CharacterController::mHitReports'
-                ]
+    excludes = []
     for e in excludes:
         main_ns.variable(e).exclude()
         
     ### Typedefs    
-    excludes = ['::NxOgre::CharacterHitReports']
+    excludes = []
     for e in excludes:
         main_ns.typedefs(e).exclude()
         
     ### Operators        
-    excludes=['::NxOgre::Container<std::string, NxOgre::FluidDrain*>::operator[]'
-            ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::operator[]']
+    excludes=[]
     for e in excludes:
         main_ns.operators(e).exclude()
         
-    ### Constructors
-    for c in main_ns.class_('::NxOgre::Pose').constructors():  ## these hide the working constructors
-        for a in c.arguments:
-            if 'NxVec3' in a.type.decl_string or 'NxQuat' in a.type.decl_string:
-                c.exclude()
-                break
-# # #                 
+    main_ns.class_('::NaviLibrary::NaviDataValue').constructor(arg_types=['bool']).exclude()    
+#     ### Constructors
+#     for c in main_ns.class_('NaviDataValue').constructor(arg_types=['bool']):  ## these hide the working constructors
+#         for a in c.arguments:
+#             if 'NxVec3' in a.type.decl_string or 'NxQuat' in a.type.decl_string:
+#                 c.exclude()
+#                 break
+                
 
 ############################################################
 ##
@@ -230,38 +119,12 @@ def ManualExclude ( mb ):
     
 def ManualInclude ( mb ):
     global_ns = mb.global_ns
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
-#     for f in main_ns.member_functions():
-#         print f
-#     sys.exit()
-    c=main_ns.class_('ClothVertex')
-    c.include()
-    for m in c.member_functions():
-        m.exclude()
-    c.member_function('getGlobalPosition').include()  ## this is the only function implemented
+    main_ns = global_ns.namespace( MAIN_NAMESPACE )  
     
-    global_ns.namespace( 'Ogre' ).class_('AxisAlignedBox').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Radian').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('SceneNode').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('IndexData').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('SceneManager').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Vector3').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Matrix4').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Degree').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Quaternion').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Node').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Serializer').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('FrameListener').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Matrix3').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Material').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Camera').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('MeshPtr').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('FrameEvent').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Root').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Entity').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('SubMesh').include(already_exposed=True)
-        
-    
+    includes=[]
+    ### Free Functions
+    for e in includes:
+        main_ns.free_functions(e).include()
         
 ############################################################
 ##
@@ -272,22 +135,7 @@ def ManualFixes ( mb ):
 
     global_ns = mb.global_ns
     
-    # fix issue where the namespace isn't in the default values
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
-    for c in main_ns.constructors():
-        for a in c.arguments:
-            if a.default_value and a.default_value.startswith("param"):
-                t1,t2=a.default_value.split('<')
-                a.default_value="NxOgre::"+t1+"<NxOgre::"+t2
-            elif a.default_value and a.default_value == 'IN_ORDER':
-                a.default_value = 'NxOgre::NxIterator::IN_ORDER'
-    for c in main_ns.member_functions():
-        for a in c.arguments:
-            if a.default_value and a.default_value.startswith("param"):
-                t1,t2=a.default_value.split('<')
-                a.default_value="NxOgre::"+t1+"<NxOgre::"+t2
-
-              
+                
 ############################################################
 ##
 ##  And things that need to have their argument and call values fixed.
@@ -298,19 +146,18 @@ def ManualFixes ( mb ):
 ############################################################
         
 def ManualTransformations ( mb ):
+    def _ReturnUnsignedInt( type_ ):
+        """helper to return an UnsignedInt call for tranformation functions
+        """
+        return declarations.cpptypes.unsigned_int_t()
+
     global_ns = mb.global_ns
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
         
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
-    c = main_ns.mem_fun('::NxOgre::Cloth::raycast')
-    c.add_transformation(ft.inout('vertexId'))
-    c.documentation = docit('','VertexId is in/out','bool, vertexId')
     
-#     for x in ns.member_functions('::NxOgre::Params::Set'):    
-#         x.add_transformation(ft.inout("arg2"))
-#         x.documentation = docit ("", "arg2 is an in/out","ret,arg2" )
-    
+           
 ###############################################################################
 ##
 ##  Now for the AUTOMATIC stuff that should just work
@@ -342,29 +189,8 @@ def AutoExclude( mb ):
         pass
                
 def AutoInclude( mb ):
-    main_ns = mb.global_ns  ##   doesn't have it's own namespace..
-# #     for cls in main_ns.classes():
-# #         try:
-# #             if  cls.decl_string[2:4]=='Nx' and cls.decl_string[4].isupper():
-# #                 cls.include()
-# #         except:
-# #             pass
-# #      ## and we'll need the free functions as well
-# #     for funcs in main_ns.free_functions ():
-# #         if funcs.name[0:2]=='Nx' and funcs.name[2].isupper():
-# #             funcs.include()
-# #             
-# #     for var in main_ns.variables ():
-# # #         print "checking var ", var.name
-# #         if len(var.name) > 2:
-# #             if var.name[0:2]=='Nx' and var.name[2].isupper():
-# #                 var.include()
-# #     for var in main_ns.typedefs ():
-# # #         print "checking typedef ", var.name
-# #         if len(var.name) > 2:
-# #             if var.name[0:2]=='Nx' and var.name[2].isupper():
-# #                 var.include()            
-# #                 
+    global_ns = mb.global_ns
+    main_ns = global_ns.namespace( MAIN_NAMESPACE )
 
     
 def AutoFixes ( mb ): 
@@ -415,14 +241,7 @@ def Fix_NT ( mb ):
 def Fix_Implicit_Conversions ( mb ):
     """By default we disable explicit conversion, however sometimes it makes sense
     """
-    for c in mb.classes():
-        if c.name.endswith ('Params'):
-            print "Implicit Conversion:", c
-            c.constructors().allow_implicit_conversion = True
-            
-    ImplicitClasses=['::NxOgre::Pose'] 
-    for className in ImplicitClasses:
-        mb.class_(className).constructors().allow_implicit_conversion = True
+    pass
                     
 def Add_Auto_Conversions( mb ):
     pass
@@ -468,12 +287,12 @@ def Fix_Void_Ptr_Args ( mb ):
     for fun in mb.member_functions():
         arg_position = 0
         for arg in fun.arguments:
-            if declarations.type_traits.is_void_pointer(arg.type):
-                fun.add_transformation( ft.modify_type(arg_position,_ReturnUnsignedInt ) )
+            if declarations.type_traits.is_void_pointer(arg.type) or arg.type.decl_string == "void const *":
+                fun.add_transformation( ft.modify_type(arg_position,_ReturnUnsignedInt ), alias=fun.name )
                 fun.documentation = docit ("Modified Input Argument to work with CTypes",
                                             "Argument "+arg.name+ "(pos:" + str(arg_position)\
                                             +") takes a CTypes.adddressof(xx)", "...")
-                #print "Fixed Void Ptr", fun, arg_position
+                print "Fixed Void Ptr", fun, arg_position
                 break
             arg_position +=1
             
@@ -528,7 +347,7 @@ def Fix_Pointer_Returns ( mb ):
                     if not fun.name in known_names:
                         print "Excluding (function):", fun, "as it returns (pointer)", i
                     fun.exclude()
-    for fun in mb.member_operators():
+    for fun in mb.member_operators(allow_empty=True):
         if declarations.is_pointer (fun.return_type) and not fun.documentation:
             for i in pointee_types:
                 if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
@@ -559,45 +378,45 @@ def Remove_Static_Consts ( mb ):
 # the 'main'function
 #            
 def generate_code():  
-    messages.disable( 
-#           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-          messages.W1020
-        , messages.W1021
-        , messages.W1022
-        , messages.W1023
-        , messages.W1024
-        , messages.W1025
-        , messages.W1026
-        , messages.W1027
-        , messages.W1028
-        , messages.W1029
-        , messages.W1030
-        , messages.W1031
-        , messages.W1035
-        , messages.W1040 
-        , messages.W1038 
-        , messages.W1039       
-        , messages.W1041
-        , messages.W1036 # pointer to Python immutable member
-        , messages.W1033 # unnamed variables
-        , messages.W1018 # expose unnamed classes
-        , messages.W1049 # returns reference to local variable
-        , messages.W1014 # unsupported '=' operator
-         )
+#     messages.disable( 
+# #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+#           messages.W1020
+#         , messages.W1021
+#         , messages.W1022
+#         , messages.W1023
+#         , messages.W1024
+#         , messages.W1025
+#         , messages.W1026
+#         , messages.W1027
+#         , messages.W1028
+#         , messages.W1029
+#         , messages.W1030
+#         , messages.W1031
+#         , messages.W1035
+#         , messages.W1040 
+#         , messages.W1038 
+#         , messages.W1039       
+#         , messages.W1041
+#         , messages.W1036 # pointer to Python immutable member
+#         , messages.W1033 # unnamed variables
+#         , messages.W1018 # expose unnamed classes
+#         , messages.W1049 # returns reference to local variable
+#         , messages.W1014 # unsupported '=' operator
+#          )
     #
     # Use GCCXML to create the controlling XML file.
     # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded
     # NOTE: If you update the source library code you need to manually delete the cache .XML file   
     #
     xml_cached_fc = parser.create_cached_source_fc(
-                        os.path.join( environment.nxogre.root_dir, "python_nxogre.h" )
-                        , environment.nxogre.cache_file )
+                        os.path.join( environment.navi.root_dir, "python_navi.h" )
+                        , environment.navi.cache_file )
 
-    defined_symbols = [ 'NXOGRE_EXPORTS','OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY']
+    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY']
     if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')
         defined_symbols.append('BOOST_HAS_WINTHREADS')
-    defined_symbols.append( 'VERSION_' + environment.nxogre.version )  
+    defined_symbols.append( 'VERSION_' + environment.navi.version )  
     
     undefined_symbols = []
     #
@@ -606,21 +425,17 @@ def generate_code():
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
-                                          , include_paths=environment.nxogre.include_dirs
+                                          , include_paths=environment.navi.include_dirs
                                           , define_symbols=defined_symbols
-# #                                           , undefine_symbols = undefined_symbols
                                           , indexing_suite_version=2
-                                          , cflags=environment.ogre.cflags
+                                          , cflags=environment.navi.cflags
                                            )
     # NOTE THE CHANGE HERE                                           
     mb.constructors().allow_implicit_conversion = False                                           
-    ## This module depends on Ogre and physx
     mb.register_module_dependency ( environment.ogre.generated_dir )
-    mb.register_module_dependency ( environment.physx.generated_dir )
-
+ 
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
-    
         
     #
     # We filter (both include and exclude) specific classes and functions that we want to wrap
@@ -640,11 +455,12 @@ def generate_code():
     
     AutoFixes ( mb )
     ManualFixes ( mb )
+
             
     #
     # We need to tell boost how to handle calling (and returning from) certain functions
     #
-    Set_Call_Policies ( mb.global_ns.namespace (MAIN_NAMESPACE) )
+    Set_Call_Policies ( mb.global_ns )
     
     #
     # the manual stuff all done here !!!
@@ -656,11 +472,11 @@ def generate_code():
         if cls.name not in NoPropClasses:
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
             
-    common_utils.add_constants( mb, { 'PROJECT_version' :  '"%s"' % environment.nxogre.version.replace("\n", "\\\n") 
+    common_utils.add_constants( mb, { 'PROJECT_version' :  '"%s"' % environment.navi.version.replace("\n", "\\\n") 
                                       , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
                                       
     ## need to create a welcome doc string for this...                                  
-    common_utils.add_constants( mb, { '__doc__' :  '"NxOgre PROJECT DESCRIPTION"' } ) 
+    common_utils.add_constants( mb, { '__doc__' :  '"Navi PROJECT DESCRIPTION"' } ) 
     
     
     ##########################################################################################
@@ -669,33 +485,32 @@ def generate_code():
     #
     ##########################################################################################
     extractor = exdoc.doc_extractor("") # I'm excluding the UTFstring docs as lots about nothing 
-    mb.build_code_creator (module_name='_nxogre_' , doc_extractor= extractor )
+    mb.build_code_creator (module_name='_navi_' , doc_extractor= extractor )
     
-    for inc in environment.nxogre.include_dirs:
+    for inc in environment.navi.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )
-    mb.code_creator.user_defined_directories.append( environment.nxogre.generated_dir )
-    mb.code_creator.replace_included_headers( customization_data.header_files( environment.nxogre.version ) )
+    mb.code_creator.user_defined_directories.append( environment.navi.generated_dir )
+    mb.code_creator.replace_included_headers( customization_data.header_files( environment.navi.version ) )
 
-    huge_classes = map( mb.class_, customization_data.huge_classes( environment.nxogre.version ) )
+    huge_classes = map( mb.class_, customization_data.huge_classes( environment.navi.version ) )
 
-    mb.split_module(environment.nxogre.generated_dir, huge_classes,use_files_sum_repository=False)
+    mb.split_module(environment.navi.generated_dir, huge_classes,use_files_sum_repository=False)
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generaated directory..
-    additional_files=[
-            os.path.join( environment.shared_ptr_dir, 'py_shared_ptr.h'),
-#             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'generators.h' ),
-#             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'custom_rvalue.cpp' ),
-            os.path.join( environment.include_dir, 'tuples.hpp' )
-            ]            
-    for sourcefile in additional_files:
-        p,filename = os.path.split(sourcefile)
-        destfile = os.path.join(environment.ogre.generated_dir, filename ) 
-    
-        if not common_utils.samefile( sourcefile ,destfile ):
-            shutil.copy( sourcefile, environment.ogre.generated_dir )
-            print "Updated ", filename, "as it was missing or out of date"
+    additional_files = []
+    paths = []
+
+    for p in paths:
+        additional_files = os.listdir(p)
+        for f in additional_files:
+            if f.endswith('cpp') or f.endswith('.h'):
+                sourcefile = os.path.join(p, f)
+                destfile = os.path.join(environment.navi.generated_dir, f ) 
         
+                if not common_utils.samefile( sourcefile ,destfile ):
+                    shutil.copy( sourcefile, environment.navi.generated_dir )
+                    print "Updated ", f, "as it was missing or out of date"        
 if __name__ == '__main__':
     start_time = time.clock()
     generate_code()

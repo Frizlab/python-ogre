@@ -369,8 +369,8 @@ def generate_code():
                         os.path.join( environment.quickgui.root_dir, "python_quickgui.h" )
                         , environment.quickgui.cache_file )
 
-    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'FT2_BUILD_LIBRARY', 'QUICKGUI_EXPORTS',
-                    'WIN32', 'NDEBUG', 'WINDOWS' ]
+    defined_symbols = [ 'OGRE_NONCLIENT_BUILD',
+                    'WIN32', 'NDEBUG', 'WINDOWS' ]  ## , 'QUICKGUI_EXPORTS'
     if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')
         defined_symbols.append('BOOST_HAS_WINTHREADS')
@@ -461,16 +461,16 @@ def generate_code():
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory..
-    additional_files= os.listdir(environment.Config.PATH_INCLUDE_quickgui)
-    additional_files=[]
-    for f in additional_files:
-        if f.endswith('cpp') or f.endswith('.h'):
-            sourcefile = os.path.join(environment.Config.PATH_INCLUDE_quickgui, f)
-            destfile = os.path.join(environment.quickgui.generated_dir, f ) 
-        
-            if not common_utils.samefile( sourcefile ,destfile ):
-                shutil.copy( sourcefile, environment.quickgui.generated_dir )
-                print "Updated ", f, "as it was missing or out of date"
+    additional_dirs=[environment.Config.PATH_INCLUDE_quickgui, 
+                    os.path.join(environment.Config.PATH_quickgui,'QuickGUI','src')]
+    for d in additional_dirs:
+        for f in os.listdir(d):
+            if f.endswith('cpp') or f.endswith('.h'):
+                sourcefile = os.path.join(d, f)
+                destfile = os.path.join(environment.quickgui.generated_dir, f ) 
+                if not common_utils.samefile( sourcefile ,destfile ):
+                    shutil.copy( sourcefile, environment.quickgui.generated_dir )
+                    print "Updated ", f, "as it was missing or out of date"
         
 if __name__ == '__main__':
     start_time = time.clock()
