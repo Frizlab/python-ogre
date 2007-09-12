@@ -103,15 +103,64 @@ if not _ConfigSet:
 ######################
 
 ##  Hopefully we can make the rest of this 'automagic'  ##
+class Default:
+    version = ""
+    pythonModule = False
+    moduleName = ""
+    myHome = ""
+    myLibraryPaths = [ ]
+    myLibraries = [ ]
+    parent = None
+    children = []
+    codeGenerationFlags=[]
+    dependsOn = []
+    compileFlags = []
+    linkFlags= []
+    includePaths = []
+    myIncludes = []
+    libaries = myLibraries # a list of the libraries I need plus
+    mySource = []   # where to get the source - tuples, {'svn|cvs|ftp|http','utl'}
+    myBuildCmds = []    # commands to build the library with
 
 ######################
-                    
+class boost:
+    version = "3.4"
+    pythonModule = False
+    moduleName = ""
+    myHome = 'boost'
+    myLibraryPaths = [ 'boost/bin.v2/libs/python2.5/build/msvc-8.0/release/threading-multi' ]
+    myLibraries = [ 'boost_python-vc80-mt-1_35']
+   
+    parent = None
+    children = []
+    codeGenerationFlags=[]
+    dependsOn = []
+    compileFlags = []
+    linkFlags= []
+    includePaths = []
+    myIncludes = []
+    libaries = myLibraries # a list of the libraries I need plus
+    mySource = ['http://prdownloads.sourceforge.net/boost/boost-jam-3.1.13-1-linuxx86.tgz',
+                'http://downloads.sourceforge.net/boost/boost_1_34_0.tar.bz2']   # where to get the source - tuples, {'svn|cvs|ftp|http','utl'}
+    myBuildCmds = []    # commands to build the library with
+       
 class ogre:
     active = True
-    version = "1.4"   # "1.2"
+    pythonModule = True
+    version = "1.4"
+    myName='ogre'
+    moduleName='OGRE'
     cflags = ""
-    parent = "ogre/renderer"
-    ModuleName = 'OGRE'
+    moduleParentLocation = "renderer"
+    dependsOn = ['boost']
+    myLibraryPaths = []
+    myLibraries = ['OgreMain']
+    libraries = myLibraries
+    
+#     for mod in dependsOn:
+#         libraries += mod.libraries   
+#     
+    
     if os.name =='nt': 
         libs=[Config.LIB_Boost, 'OgreMain' ] #,  'OgreGUIRenderer', 'CEGUIBase']
         lib_dirs = [ Config.PATH_LIB_Boost
@@ -335,7 +384,7 @@ class fmod:
 class quickgui:
     version="0.9.6"
     parent="ogre/gui"
-    CCFLAGS = ' /D "WIN32" /D "NDEBUG", /D "WINDOWS" /D "OGRE_PLATFORM_WIN32"' # /D "FT2_BUILD_LIBRARY"
+    CCFLAGS = ' /D "WIN32" /D "NDEBUG", /D "WINDOWS"' ###/D "OGRE_PLATFORM_WIN32"' # /D "FT2_BUILD_LIBRARY"
     cflags=""
     include_dirs = [ Config.PATH_Boost,
                     Config.PATH_INCLUDE_Ogre,
@@ -343,14 +392,35 @@ class quickgui:
                     #,Config.PATH_INCLUDE_freetype
                     ]
     lib_dirs = [Config.PATH_LIB_Boost,
-                Config.PATH_LIB_Ogre_OgreMain,
-                Config.PATH_LIB_quickgui
+                Config.PATH_LIB_Ogre_OgreMain
+                ##,Config.PATH_LIB_quickgui
                 ]
     CheckIncludes=[]
-    libs=[  Config.LIB_Boost, 'OgreMain', 'QuickGUI' ]
+    libs=[  Config.LIB_Boost, 'OgreMain' ]
     ModuleName="quickgui"   
     active=True
 
+class navi:
+    version="0.9"
+    parent="ogre/gui"
+    CCFLAGS = '/D "WIN32" /D "NDEBUG", /D "WINDOWS"' 
+    cflags=""
+    include_dirs = [ Config.PATH_Boost
+                    ,Config.PATH_INCLUDE_Ogre
+                    ,Config.PATH_INCLUDE_navi
+                    ,os.path.join(Config.PATH_navi,'..','Dependencies','win32','llmozlib','include')
+                    ]
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain
+                ,Config.PATH_LIB_navi
+                ,os.path.join(Config.PATH_navi,'..','Dependencies','win32','llmozlib','lib')
+                ]
+    CheckIncludes=[]
+    libs=[  Config.LIB_Boost, 'Navi', 'OgreMain','llmozlib', 'user32',
+            'kernel32.lib', 'gdi32.lib', 'winspool.lib', 'comdlg32.lib', 'advapi32.lib',
+            'shell32.lib','ole32.lib','oleaut32.lib','uuid.lib' ]
+    ModuleName="navi"   
+    active=True
 
 class betagui:
     version="0.16"
@@ -558,6 +628,7 @@ projects = {
     , 'ogrevideoffmpeg' : ogrevideoffmpeg
     , 'ogredshow' : ogredshow
     , 'plib' : plib
+    , 'navi': navi
     #, 'raknet' : raknet
 }        
 

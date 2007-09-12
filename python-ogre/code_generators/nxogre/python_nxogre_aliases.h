@@ -1,3 +1,6 @@
+typedef std::vector<NxOgre::Joint::LimitPlane,std::allocator<NxOgre::Joint::LimitPlane> > VectorJointLimitPlane;
+typedef std::vector<NxOgre::SimplePlane*,std::allocator<NxOgre::SimplePlane*> > VectorSimplePlane;
+
 typedef std::vector<float, std::allocator<float> > VectorFloat;
 typedef std::vector<std::string, std::allocator<std::string> > VectorString;
 typedef std::list<std::string> stdString;

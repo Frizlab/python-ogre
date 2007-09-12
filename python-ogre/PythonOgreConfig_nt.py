@@ -47,6 +47,8 @@ PATH_ogrevideoffmpeg = os.path.join(root_dir, 'ThirdParty','ffmpeg')
 PATH_ffmpeg=     os.path.join(BASE_DIR, 'ffmpeg')
 PATH_ogredshow = os.path.join(root_dir, 'ThirdParty','dshow')
 PATH_plib = os.path.join(BASE_DIR, 'plib')
+PATH_navi = os.path.join(BASE_DIR, 'navi','Navi')
+
 
 #
 # it's time for the SDK version
@@ -96,6 +98,7 @@ PATH_LIB_ogrevideoffmpeg = PATH_ogrevideoffmpeg
 PATH_LIB_ffmpeg=                os.path.join(PATH_ffmpeg, 'lib')
 PATH_LIB_ogredshow = PATH_ogredshow
 PATH_LIB_plib = PATH_plib
+PATH_LIB_navi=                os.path.join(PATH_navi, 'lib')
 
 if SDK:
     PATH_LIB_Ogre_CEGUIRenderer =    os.path.join( PATH_Ogre, 'lib')
@@ -138,6 +141,7 @@ PATH_INCLUDE_ogrevideoffmpeg =  PATH_ogrevideoffmpeg
 PATH_INCLUDE_ffmpeg = os.path.join (PATH_ffmpeg,'include')
 PATH_INCLUDE_ogredshow =  PATH_ogredshow
 PATH_INCLUDE_plib = PATH_plib
+PATH_INCLUDE_navi = os.path.join (PATH_navi,'include')
 
 PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ,os.path.join(BASE_DIR, 'vorbis', 'include')
