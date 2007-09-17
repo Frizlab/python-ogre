@@ -353,7 +353,31 @@ bp::def( "createScriptModule", &General_CreateScriptModule,
                 bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
 """
 
+WRAPPER_DEFINITION_Window=\
+"""
+void
+Window_setUserData ( ::CEGUI::Window & me, PyObject * data ) {
+    me.setUserData ( data );
+    }
+    
+PyObject *
+Window_getUserData ( ::CEGUI::Window & me) {
+    void *  data = me.getUserData (  );
+    Py_INCREF( (PyObject *) data );     // I'm passing a reference to this object so better inc the ref :)
+    return  (PyObject *) data;
+    }
+"""
 
+
+WRAPPER_REGISTRATION_Window =[
+    'def ("setUserData", &::Window_setUserData );',
+    'def ("getUserData", &::Window_getUserData);'
+    ]
+    
+def apply_reg ( class_, code ):
+    for c in code:
+        class_.add_registration_code ( c )
+        
 def apply( mb ):
 # #     mb.add_declaration_code( WRAPPER_DEFINITION_General )
 # #     mb.add_registration_code( WRAPPER_REGISTRATION_General )
@@ -365,3 +389,7 @@ def apply( mb ):
     rt = mb.class_( 'String' )
     rt.add_declaration_code( WRAPPER_DEFINITION_String )
     rt.add_registration_code( WRAPPER_REGISTRATION_String )
+
+    rt = mb.class_( 'Window' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_Window )
+    apply_reg( rt,  WRAPPER_REGISTRATION_Window )

@@ -152,6 +152,7 @@ class ogre:
     moduleName='OGRE'
     cflags = ""
     moduleParentLocation = "renderer"
+    parent = "ogre/renderer"
     dependsOn = ['boost']
     myLibraryPaths = []
     myLibraries = ['OgreMain']
@@ -384,7 +385,8 @@ class fmod:
 class quickgui:
     version="0.9.6"
     parent="ogre/gui"
-    CCFLAGS = ' /D "WIN32" /D "NDEBUG", /D "WINDOWS"' ###/D "OGRE_PLATFORM_WIN32"' # /D "FT2_BUILD_LIBRARY"
+    ## note the defined for _QuickGUIExport forces non dll usage 
+    CCFLAGS = ' /D WIN32 /D NDEBUG /D WINDOWS /D _QuickGUIExport="" ' 
     cflags=""
     include_dirs = [ Config.PATH_Boost,
                     Config.PATH_INCLUDE_Ogre,

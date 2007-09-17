@@ -102,6 +102,17 @@ def ManualExclude ( mb ):
             ,'::NxOgre::List<NxOgre::RemoteDebuggerConnection::Camera>::destroyAndEraseAll'
             ,'::NxOgre::List<NxOgre::RemoteDebuggerConnection::Camera>::dumpToConsole'
             
+            
+#             ,'::NxOgre::Container<std::string, NxOgre::Joint*>::dumpToConsole'
+#             ,'::NxOgre::Container<std::string, NxOgre::Joint*>::count'
+#             ,'::NxOgre::Container<std::string, NxOgre::Joint*>::empty'
+#             ,'::NxOgre::Container<std::string, NxOgre::Joint*>::insert'
+#             ,'::NxOgre::Container<std::string, NxOgre::Joint*>::lock'
+#             ,'::NxOgre::Container<std::string, NxOgre::Joint*>::isLocked'
+#             ,'::NxOgre::Container<std::string, NxOgre::Joint*>::has'
+#             ,'::NxOgre::Container<std::string, NxOgre::Joint*>::getFirst'
+            
+            
             ,'::NxOgre::UserAllocator::realloc'
 # # #             # not yet implemented in source
             ,'::NxOgre::WheelSet::attachNewWheel'
@@ -155,7 +166,13 @@ def ManualExclude ( mb ):
     for e in excludes:
         print "excluding ", e
         main_ns.member_functions(e).exclude()
-        
+ 
+    ## this is probably excessive :)
+    names = ['_begin','_end', '_atEnd', '_next']
+    for f in main_ns.member_functions():
+        if f.name in names:
+            print "excuding MF:", f.name, f 
+            f.exclude()           
     ### Free Functions
     excludes = []
     for e in excludes:
@@ -170,7 +187,7 @@ def ManualExclude ( mb ):
                 ,'::NxOgre::Serialiser::SerialiserBase'
                 ,'::NxOgre::UserAllocator'
                 ,'::NxOgre::State'
-               
+                
                 # not yet implemented in source
                 ]
     for e in excludes:
@@ -180,15 +197,17 @@ def ManualExclude ( mb ):
     ## I have a challenge that Py++ doesn't recognise these classes by full name (perhaps because they are structs?)
     ## so I have to look through and match on a class by class basis
     excludeName = ['Container<NxOgre::Scene::Renderables, float>'
-                ,'Container<std::string,NxOgre::Actor*>'
+                ,'Container<std::string, NxOgre::Actor*>'
                 ,'List<NxOgre::CharacterHitReport*>'
                 ,'List<NxOgre::RemoteDebuggerConnection::Camera>'
                 ,'List<NxOgre::Blueprints::ActorBlueprint*>'
+                ,'Container<std::string, NxOgre::Joint*>'
                 ]
     for c in main_ns.classes():
 #         print c.decl_string   
-#         print c.name
+        print ("Checking:",c.name)
         if c.name in excludeName:
+            print ("SPECIAL excluding ", c.name)
             c.exclude()
         # a temporary fix for container based classes -- still an issue with them though...
         # AND this is an overkill -- not all classes need these removed...
