@@ -366,22 +366,6 @@ class ogreode:
     ModuleName='OgreOde'
     active=True
     
-class fmod:
-    version= "4.06"
-    parent = "ogre/sound"
-    include_dirs=[Config.PATH_Boost
-                   ,Config.PATH_INCLUDE_FMOD
-                   ]
-    lib_dirs = [ Config.PATH_LIB_Boost
-                  ,Config.PATH_LIB_FMOD
-                  ] 
-                 
-    CCFLAGS = ' /D "NDEBUG" /D "WIN32" /D "_MBCS" '
-    ModuleName = 'FMOD' 
-    CheckIncludes = ['fmod.h']
-    active=False
-    
-
 class quickgui:
     version="0.9.6"
     parent="ogre/gui"
@@ -592,18 +576,23 @@ class ogredshow:
     version="0.1"
     parent="ogre/addons"
     cflags = ""
-    include_dirs = [ Config.PATH_Boost,
-                    Config.PATH_INCLUDE_Ogre,
-                    Config.PATH_INCLUDE_ogredshow
-                    ]
-    lib_dirs = [Config.PATH_LIB_Boost,
-                Config.PATH_LIB_Ogre_OgreMain,
-                Config.PATH_LIB_ogredshow
-                ]
-    CheckIncludes=[]
-    libs=[  Config.LIB_Boost, 'OgreMain','Strmiids' , 'ole32']
     ModuleName="ogredshow"   
-    active=True 
+    if os.name == "nt":
+	    include_dirs = [ Config.PATH_Boost,
+	                    Config.PATH_INCLUDE_Ogre,
+	                    Config.PATH_INCLUDE_ogredshow
+	                    ]
+	    lib_dirs = [Config.PATH_LIB_Boost,
+	                Config.PATH_LIB_Ogre_OgreMain,
+	                Config.PATH_LIB_ogredshow
+	                ]
+	    CheckIncludes=[]
+	    libs=[  Config.LIB_Boost, 'OgreMain','Strmiids' , 'ole32']
+	    active=True
+    else:
+	active=False
+	
+ 
 ############################################################################################
 
 ## Here is the master list....
@@ -617,7 +606,6 @@ projects = {
     , 'newton' : newton
     , 'ogrerefapp' : ogrerefapp
     , 'ogrenewt' : ogrenewt
-    , 'fmod' : fmod
     , 'ogreode' : ogreode
     , 'ogreal' : ogreal
     , 'quickgui' : quickgui
