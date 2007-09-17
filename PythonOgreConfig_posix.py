@@ -41,7 +41,7 @@ PATH_Ogre =         os.path.join(BASE_DIR,'ogrenew')
 # # PATH_OPENAL=        os.path.join(BASE_DIR, 'openal')
 # # PATH_ALUT=          os.path.join(BASE_DIR, 'freealut')
 PATH_OgreOde=       os.path.join(BASE_DIR, 'OgreAddons/ogreode')
-# # PATH_betagui=       os.path.join(BASE_DIR, 'betagui')
+PATH_betagui=       os.path.join(BASE_DIR, 'betagui')
 # PATH_raknet=       os.path.join(BASE_DIR, 'RakNet')
 PATH_simplegui=     os.path.join(module_dir, 'ThirdParty/simplegui')
 
@@ -77,7 +77,7 @@ PATH_LIB_OgreOdeLoader =        os.path.join( LOCAL_LIB ) #PATH_OgreOde, 'loader
 PATH_LIB_OgreAL =               os.path.join( LOCAL_LIB ) #PATH_OGREAL, 'lib/Release' )
 PATH_LIB_betagui =              PATH_betagui
 PATH_LIB_simplegui =            PATH_simplegui
-PATH_LIB_raknet =               os.path.join( LOCAL_LIB ) #PATH_raknet, 'Lib' )
+# PATH_LIB_raknet =               os.path.join( LOCAL_LIB ) #PATH_raknet, 'Lib' )
 
 
 PATH_INCLUDE_Ogre=          os.path.join(LOCAL_INCLUDE,'OGRE')  # os.path.join(PATH_Ogre,'OgreMain/include') 
@@ -103,5 +103,5 @@ PATH_INCLUDE_OgreOdeLoader= os.path.join( PATH_OgreOde,'loader/include')
 
 PATH_INCLUDE_betagui =       PATH_betagui
 PATH_INCLUDE_simplegui =     PATH_simplegui
-PATH_INCLUDE_raknet =        os.path.join(PATH_raknet, 'Source' )
+# PATH_INCLUDE_raknet =        os.path.join(PATH_raknet, 'Source' )
 PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'samples/Common/CEGUIRenderer/include')
