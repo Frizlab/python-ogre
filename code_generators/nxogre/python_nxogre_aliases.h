@@ -96,8 +96,6 @@ typedef NxOgre::Container<NxOgre::NxString, NxOgre::Fluid*>    Fluids;
 typedef NxOgre::Container<NxOgre::NxString, NxOgre::FluidDrain*>   FluidDrains;
 typedef NxOgre::Container<NxOgre::NxString, NxOgre::FluidEmitter*>   FluidEmitters;
 typedef NxOgre::Container<NxOgre::NxString, NxOgre::SoftBody*>   SoftBodies;
-// typedef std::map<NxOgre::TI, NxOgre::Containee > Type;
-// typedef std::list<NxOgre::TT> Type;
 typedef std::pair<NxOgre::NxString,NxOgre::NxString> Parameter;
 typedef std::vector<Parameter> Parameters;
 typedef Ogre::String NxString;
@@ -109,7 +107,7 @@ typedef NxOgre::Container<NxOgre::NxShapeIndex, NxOgre::Shape*>   CollisionModel
 typedef NxOgre::Container<NxOgre::NxString, NxOgre::Cloth*>    Cloths;
 typedef NxOgre::Container<NxOgre::NxErrorIndex, NxOgre::ErrorReporter*>  ErrorReporterList;
 typedef NxOgre::Container<NxOgre::NxString, NxOgre::Helper*>   Helpers;
-typedef NxOgre::Container<NxOgre::NxString, NxOgre::Joint*>    Joints;
+typedef NxOgre::Container<NxOgre::NxString, NxOgre::Joint*>    JointsClass;
 typedef NxOgre::Container<NxOgre::NxString, NxOgre::Material*>   MaterialList;
 // typedef NxOgre::Container<NxOgre::NxMaterialIndex, NxOgre::Material*>  MaterialListByIndex;
 // typedef NxOgre::Container<NxOgre::NxString, NxOgre::NxMaterialIndex>  MaterialPair;
@@ -127,3 +125,7 @@ typedef std::vector<unsigned short, std::allocator<unsigned short> > VectorShort
 typedef std::vector<std::pair<Ogre::Vector3, unsigned>, std::allocator<std::pair<Ogre::Vector3, unsigned> > > VectorPairVector3;
 typedef std::set<Ogre::Entity*,std::less<Ogre::Entity*>,std::allocator<Ogre::Entity*> > SetEntity;
 typedef NxOgre::Material NxOgreMaterial;    
+typedef std::map<unsigned, NxOgre::Container<unsigned, NxOgre::Joint*>::Containee, std::less<unsigned>, std::allocator<std::pair<unsigned const, NxOgre::Container<unsigned, NxOgre::Joint*>::Containee> > >\
+    MapContainerJointContainee;
+typedef std::map<unsigned short, NxOgre::Container<unsigned short, NxOgre::DominanceGroup*>::Containee, std::less<unsigned short>, std::allocator<std::pair<unsigned short const, NxOgre::Container<unsigned short, NxOgre::DominanceGroup*>::Containee> > >\
+    MapContainerDominanceGroupContainee;

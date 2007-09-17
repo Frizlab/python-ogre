@@ -449,6 +449,7 @@ def apply( mb ):
     cs = mb.namespace( 'BasicJoints' ).class_("Slider" )
     cs.add_declaration_code( WRAPPER_DEFINITION_Slider )
     apply_reg (cs,  WRAPPER_REGISTRATION_Slider )
+    
     cs = mb.namespace( 'BasicJoints' ).class_("Universal" )
     cs.add_declaration_code( WRAPPER_DEFINITION_Universal )
     apply_reg (cs,  WRAPPER_REGISTRATION_Universal )

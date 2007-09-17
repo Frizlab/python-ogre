@@ -145,6 +145,10 @@ def filter_declarations( mb ):
             print "Excluding Iterator", cls.name
     CEGUI_ns.class_('OgreCEGUIResourceProvider').exclude() # it's _ogrePrivate..
     
+    ## Replaced these with 'useful' functions in the handwrappers - take and return python objects
+    CEGUI_ns.class_( "Window" ).member_functions("setUserData").exclude()
+    CEGUI_ns.class_( "Window" ).member_functions("getUserData").exclude()
+    
     global_ns.namespace( 'Ogre' ).class_('SceneManager').include(already_exposed=True)
             
     global_ns.namespace( 'Ogre' ).class_('RenderWindow').include(already_exposed=True)
