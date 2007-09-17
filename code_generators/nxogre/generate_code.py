@@ -162,6 +162,7 @@ def ManualExclude ( mb ):
             ,'::NxOgre::PhysXDriver::start'
             ,'::NxOgre::PhysXDriver::reset'
             ,'::NxOgre::PhysXDriver::hasHardware'
+           
             ]
     for e in excludes:
         print "excluding ", e
@@ -171,8 +172,12 @@ def ManualExclude ( mb ):
     names = ['_begin','_end', '_atEnd', '_next']
     for f in main_ns.member_functions():
         if f.name in names:
-            print "excuding MF:", f.name, f 
-            f.exclude()           
+            print "excluding MF:", f.name, f 
+            f.exclude() 
+        elif f.name.startswith('getActors'):    # these return 'Actors' which doesn't exist
+            print "excluding MF:", f.name    
+            f.exclude()
+                 
     ### Free Functions
     excludes = []
     for e in excludes:
