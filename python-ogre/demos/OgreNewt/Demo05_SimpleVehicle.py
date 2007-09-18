@@ -43,7 +43,7 @@ class OgreNewtonApplication (sf.Application):
         floor = self.sceneManager.createEntity("Floor", "simple_terrain.mesh" )
         floornode = self.sceneManager.getRootSceneNode().createChildSceneNode( "FloorNode" )
         floornode.attachObject( floor )
-        floor.setMaterialName( "Simple/BeachStones" )
+        floor.setMaterialName( "Examples/DarkMaterial" )
         floornode.setScale(size)
     
         floor.setCastShadows( False )
@@ -97,7 +97,7 @@ class OgreNewtonApplication (sf.Application):
         bod.setMassMatrix( mass, inertia )
         bod.setStandardForceCallback()
     
-        box1.setMaterialName( "Simple/BumpyMetal" )
+        box1.setMaterialName( "Examples/BumpyMetal" )
     
         bod.setPositionOrientation( pos, orient )
     
@@ -190,7 +190,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 
                 node.setPosition(0.0, 0.0, 0.0)
                 
-                ent.setMaterialName( "Simple/dirt01" )
+                ent.setMaterialName( "Examples/RustySteel" )
                 #ent.setNormaliseNormals(True)
                   
                 ## again, make the collision shape.

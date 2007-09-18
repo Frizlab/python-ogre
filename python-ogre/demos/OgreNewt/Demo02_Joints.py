@@ -51,7 +51,7 @@ class OgreNewtonApplication (sf.Application):
         bod.setMassMatrix( mass, inertia )
         bod.setStandardForceCallback()
     
-        box1.setMaterialName( "Simple/BumpyMetal" )
+        box1.setMaterialName( "Examples/RustySteel" )
     
         bod.setPositionOrientation( pos, orient )
     
@@ -68,7 +68,7 @@ class OgreNewtonApplication (sf.Application):
         floor = self.sceneManager.createEntity("Floor", "simple_terrain.mesh" )
         floornode = self.sceneManager.getRootSceneNode().createChildSceneNode( "FloorNode" )
         floornode.attachObject( floor )
-        floor.setMaterialName( "Simple/BeachStones" )
+        floor.setMaterialName( "Examples/DarkMaterial" )
         floor.setCastShadows( False )
     
         ##-------------------------------------------------------------
@@ -76,17 +76,17 @@ class OgreNewtonApplication (sf.Application):
         floor2 = self.sceneManager.createEntity("Floor2", "simple_terrain.mesh" )
         floornode2 = floornode.createChildSceneNode( "FloorNode2" )
         floornode2.attachObject( floor2 )
-        floor2.setMaterialName( "Simple/BeachStones" )
+        floor2.setMaterialName( "Examples/DarkMaterial" )
         floor2.setCastShadows( False )
         floornode2.setPosition( Ogre.Vector3(80.0, 0.0, 0.0) )
     
         floor3 = self.sceneManager.createEntity("Floor3", "simple_terrain.mesh" )
         floornode3 = floornode.createChildSceneNode( "FloorNode3" )
         floornode3.attachObject( floor3 )
-        floor3.setMaterialName( "Simple/BeachStones" )
+        floor3.setMaterialName( "Examples/DarkMaterial" )
         floor3.setCastShadows( False )
-        floornode3.setPosition( Ogre.Vector3(-80.0, -5.0, 0.0) )
-        floornode3.setOrientation( Ogre.Quaternion( Ogre.Degree(d=15.0), Ogre.Vector3.UNIT_Z ) )
+        floornode3.setPosition( Ogre.Vector3(-80.0, 0.0, 0.0) )
+        floornode3.setOrientation( Ogre.Quaternion( Ogre.Degree(d=0.0), Ogre.Vector3.UNIT_Z ) )
         ##-------------------------------------------------------------
     
         ## using the new "SceneParser" TreeCollision primitive.  this will automatically parse an entire tree of
@@ -218,7 +218,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 node = self.sceneManager.getRootSceneNode().createChildSceneNode( name )
                 node.attachObject( ent )
                 
-                ent.setMaterialName( "Simple/dirt01" )
+                ent.setMaterialName( "Examples/RustySteel" )
                 ent.setNormaliseNormals(True)
 
                   

@@ -54,7 +54,8 @@ class OgreNewtonApplication (sf.Application):
         self.Belts.append( belt )
     
         belt = conveyorBelt()
-        belt.init( "ConveyorBelt2", self.sceneManager, self.World, Ogre.Vector3(23,0.3,4), Ogre.Vector3(-1,0,0), 6.0, Ogre.Vector3(3,-1,0),
+        belt.init( "ConveyorBelt2", self.sceneManager, self.World, Ogre.Vector3(23,0.3,4),
+            Ogre.Vector3(-1,0,0), 6.0, Ogre.Vector3(3,-1,0),
             Ogre.Quaternion.IDENTITY, self.MatConveyor, BT_CONVEYOR )
         self.Belts.append( belt )
     
@@ -62,7 +63,7 @@ class OgreNewtonApplication (sf.Application):
         floor = self.sceneManager.createEntity("Floor", "simple_terrain.mesh" )
         floornode = self.sceneManager.getRootSceneNode().createChildSceneNode( "FloorNode" )
         floornode.attachObject( floor )
-        floor.setMaterialName( "Simple/BeachStones" )
+        floor.setMaterialName( "Examples/DarkMaterial" )
     
         floor.setCastShadows( False )
     
@@ -178,7 +179,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 
                 node.setScale( size )
                 
-                ent.setMaterialName( "Simple/BumpyMetal" )
+                ent.setMaterialName( "Examples/RustySteel" )
                 ent.setNormaliseNormals(True)
                 
                 col =OgreNewt.Box( self.World, size )

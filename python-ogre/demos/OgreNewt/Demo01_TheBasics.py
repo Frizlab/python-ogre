@@ -41,7 +41,7 @@ class OgreNewtonApplication (sf.Application):
         floor.setNormaliseNormals(True)
         floornode = self.sceneManager.getRootSceneNode().createChildSceneNode( "FloorNode" )
         floornode.attachObject( floor )
-        floor.setMaterialName( "Simple/BeachStones" )
+        floor.setMaterialName( "Examples/DarkMaterial" )
         floor.setCastShadows( False )
         
         ## okay, the basic mesh is loaded.  now let's decide the size of the object, and scale the node.
@@ -161,7 +161,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 
                 node.setPosition(0.0, 0.0, 0.0)
                 
-                ent.setMaterialName( "Simple/dirt01" )
+                ent.setMaterialName( "Examples/RustySteel" )
                 ent.setNormaliseNormals(True)
     
                 ## again, make the collision shape.
