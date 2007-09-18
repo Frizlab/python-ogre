@@ -46,7 +46,7 @@ class SimpleVehicle (OgreNewt.Vehicle):
         bod.setMassMatrix( mass, inertia )
         bod.setStandardForceCallback()
     
-        box1.setMaterialName( "Simple/BumpyMetal" )
+        box1.setMaterialName( "Examples/BumpyMetal" )
         box1.setNormaliseNormals(True)
     
         bod.setPositionOrientation( pos, orient )

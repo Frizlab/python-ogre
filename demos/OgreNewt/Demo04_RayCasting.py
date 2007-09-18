@@ -77,7 +77,7 @@ class OgreNewtonApplication (sf.Application):
         floor = self.sceneManager.createEntity("Floor", "simple_terrain.mesh" )
         floornode = self.sceneManager.getRootSceneNode().createChildSceneNode( "FloorNode" )
         floornode.attachObject( floor )
-        floor.setMaterialName( "Simple/BeachStones" )
+        floor.setMaterialName( "Examples/DarkMaterial" )
         floor.setCastShadows( False )
     
         ##Ogre.Vector3 siz(100.0, 10.0, 100.0)
@@ -160,7 +160,7 @@ class OgreNewtonApplication (sf.Application):
         bod.setMassMatrix( mass, inertia )
         bod.setStandardForceCallback()
     
-        box1.setMaterialName( "Simple/BumpyMetal" )
+        box1.setMaterialName( "Examples/BumpyMetal" )
     
         bod.setPositionOrientation( pos, orient )
     

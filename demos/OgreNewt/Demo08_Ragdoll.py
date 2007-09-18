@@ -44,7 +44,7 @@ class OgreNewtonApplication (sf.Application):
         floor = self.sceneManager.createEntity("Floor", "simple_terrain.mesh" )
         floornode = self.sceneManager.getRootSceneNode().createChildSceneNode( "FloorNode" )
         floornode.attachObject( floor )
-        floor.setMaterialName( "Simple/BeachStones" )
+        floor.setMaterialName( "Examples/DarkMaterial" )
         floor.setCastShadows( False )
     
         ##Ogre.Vector3 siz(100.0, 10.0, 100.0)
@@ -165,7 +165,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 node = self.sceneManager.getRootSceneNode().createChildSceneNode( name )
                 node.attachObject( ent )
                 
-                ent.setMaterialName( "Simple/dirt01" )
+                ent.setMaterialName( "Examples/RustySteel" )
                 ent.setNormaliseNormals(True)
 
                   
@@ -222,13 +222,13 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 self.K1 = True
     
                 ## spawn the ragdoll.  this is the version that is made up of simple primitives.
-                self.Ragdoll = RagDoll( "./zombie_rag_primitives.xml", self.World, self.RagNode )
+                self.Ragdoll = RagDoll( "./Media/models/zombie_rag_primitives.xml", self.World, self.RagNode )
                 self.RagEntity.getAnimationState( "LOOP" ).setEnabled( False )
             elif (self.Keyboard.isKeyDown(OIS.KC_2 ) and ( not self.K2)):
                 self.K2 = True
     
                 ## spawn the ragdoll.  this is the version that uses auto-hull generation for very accurate collision shapes.
-                self.Ragdoll = RagDoll( "./zombie_rag_hull.xml", self.World, self.RagNode )
+                self.Ragdoll = RagDoll( "./Media/models/zombie_rag_hull.xml", self.World, self.RagNode )
                 self.RagEntity.getAnimationState( "LOOP" ).setEnabled( False )
 
         if ( not self.Keyboard.isKeyDown(OIS.KC_1 )): 
