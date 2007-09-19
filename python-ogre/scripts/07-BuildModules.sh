@@ -9,5 +9,6 @@ source ./config.sh
 #
 cd python-ogre 
 scons PROJECTS=ogre,ois,quickgui,cegui,ogrerefapp
+python setup.py install
 cd ..
 
