@@ -5,18 +5,15 @@
 source ./config.sh
 
 echo "=== generating code ===" 
+cd python-ogre/code_generators 
 echo ' -- creating OGRE code'
-cd python-ogre/code_generators/ogre 
+cd ogre 
 python generate_code.py > build.out 
 cd .. 
 echo ' -- creating OGRErefapp code'
 cd ogrerefapp 
 python generate_code.py > build.out 
 cd .. 
-#echo ' -- creating OgreAL code'
-#cd ogreal 
-#python generate_code.py > build.out 
-#cd .. 
 echo ' -- creating quickgui code'
 cd quickgui 
 python generate_code.py > build.out 
@@ -25,21 +22,25 @@ echo ' -- creating OIS code'
 cd ois 
 python generate_code.py > build.out 
 cd .. 
-echo ' -- creating OGREode code'
-cd ogreode 
+echo ' -- creating CEGUI code'
+cd cegui 
 python generate_code.py > build.out 
-cd .. 
+cd ..
+#echo ' -- creating OgreAL code'
+#cd ogreal 
+#python generate_code.py > build.out 
+#cd .. 
+#echo ' -- creating OGREode code'
+#cd ogreode 
+#python generate_code.py > build.out 
+#cd .. 
 #echo ' -- creating OGREnewt code'
 #cd ogrenewt 
 #python generate_code.py > build.out 
 #cd .. 
-echo ' -- creating ode code'
-cd ode 
-python generate_code.py > build.out 
-cd ..
-echo ' -- creating CEGUI code'
-cd cegui 
-python generate_code.py > build.out 
+#echo ' -- creating ode code'
+#cd ode 
+#python generate_code.py > build.out 
 cd $INSTALL_DIR
 echo
 echo "=== done building code ==="
