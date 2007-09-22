@@ -27,7 +27,7 @@ def log ( instring ):
         print __file__, "LOG::", instring
 
 PythonOgreMajorVersion = "1"
-PythonOgreMinorVersion = "0" # change to 0.7 due to lowercase properties
+PythonOgreMinorVersion = "1" # change to 0.7 due to lowercase properties
 PythonOgrePatchVersion = "0"
 
 
@@ -370,7 +370,7 @@ class quickgui:
     version="0.9.6"
     parent="ogre/gui"
     ## note the defined for _QuickGUIExport forces non dll usage 
-    CCFLAGS = ' /D WIN32 /D NDEBUG /D WINDOWS /D _QuickGUIExport="" ' 
+    CCFLAGS = ' -DWIN32 -DNDEBUG -DWINDOWS -D_QuickGUIExport="" ' 
     cflags=""
     include_dirs = [ Config.PATH_Boost,
                     Config.PATH_INCLUDE_Ogre,
@@ -389,7 +389,7 @@ class quickgui:
 class navi:
     version="0.9"
     parent="ogre/gui"
-    CCFLAGS = '/D "WIN32" /D "NDEBUG", /D "WINDOWS"' 
+    CCFLAGS = '-D"WIN32" -D"NDEBUG", -D"WINDOWS"' 
     cflags=""
     include_dirs = [ Config.PATH_Boost
                     ,Config.PATH_INCLUDE_Ogre
@@ -411,7 +411,7 @@ class navi:
 class betagui:
     version="0.16"
     parent="ogre/gui"
-    CCFLAGS = ' ' # /D "FT2_BUILD_LIBRARY"
+    CCFLAGS = ' ' # -D"FT2_BUILD_LIBRARY"
     cflags=""
     include_dirs = [ Config.PATH_Boost,
                     Config.PATH_INCLUDE_Ogre,
@@ -438,7 +438,7 @@ class nxogre:
     for d in Config.PATH_INCLUDE_PhysX:
         include_dirs.append( d )
     if os.name == 'nt':
-        CCFLAGS = ' /D "WIN32" '
+        CCFLAGS = ' -D"WIN32" '
                     
     lib_dirs = [Config.PATH_LIB_Boost,
                 Config.PATH_LIB_Ogre_OgreMain,
@@ -463,7 +463,7 @@ class theora:
         include_dirs.append( d )
         
     if os.name == 'nt':
-        CCFLAGS = ' /D "WIN32" '
+        CCFLAGS = ' -D"WIN32" '
                     
     lib_dirs = [Config.PATH_LIB_Boost,
                 Config.PATH_LIB_Ogre_OgreMain,
@@ -478,12 +478,11 @@ class plib:
     version="1.8.4"
     parent="ogre/addons"
     cflags=""
-    CCFLAGS = ' /D "_CRT_SECURE_NO_WARNINGS" ' 
+    CCFLAGS = ' -D"_CRT_SECURE_NO_WARNINGS" ' 
     include_dirs= [ Config.PATH_INCLUDE_plib,
-            os.path.join ( Config.PATH_INCLUDE_plib,"..")   # needed as net.h includes via plib/xxxx
+            Config.PATH_THIRDPARTY   # needed as net.h includes via plib/xxxx
             ]
     lib_dirs = [ Config.PATH_LIB_Boost,
-            Config.PATH_LIB_plib
             ]           
     ModuleName = "plib"
     CheckIncludes=[]
@@ -504,7 +503,7 @@ class physx:
     for d in Config.PATH_INCLUDE_PhysX:
         include_dirs.append( d )
     if os.name == 'nt':
-        CCFLAGS = ' /D "WIN32" '
+        CCFLAGS = ' -D"WIN32" '
                     
     lib_dirs = [Config.PATH_LIB_Boost,
                 Config.PATH_LIB_Ogre_OgreMain,
@@ -514,22 +513,9 @@ class physx:
     libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader' ]
     ModuleName="PhysX"   
     active=True 
-# class raknet:
-#     version="1.0"
-#     parent="ogre/network"
-#     cflags = ""
-#     include_dirs = [ Config.PATH_Boost,
-#                     Config.PATH_INCLUDE_raknet
-#                     ]
-#     lib_dirs = [Config.PATH_LIB_Boost,
-#                 Config.PATH_LIB_raknet
-#                 ]
-#     CheckIncludes=[]
-#     libs=[  Config.LIB_Boost, 'RakNetLibStatic' ]  # could use RakNetDll
-#     ModuleName="raknet"   
-#     active=True    
            
 class ogreal:
+    ## changes to compile ogreal as part of Python-Ogre to make it easier under linux
     version="0.3"
     parent = "ogre/sound"
     
@@ -540,12 +526,29 @@ class ogreal:
                 , Config.PATH_INCLUDE_VORBIS
                 , Config.PATH_INCLUDE_OPENAL
                 , Config.PATH_INCLUDE_ALUT
-                ]    
-    lib_dirs = [ Config.PATH_LIB_Boost
-                  ,Config.PATH_LIB_Ogre_OgreMain
-                  , Config.PATH_LIB_OgreAL
+                ]  
+    if os.name=='nt':                  
+        lib_dirs = [ Config.PATH_LIB_Boost
+                ,Config.PATH_LIB_Ogre_OgreMain    
+                ,os.path.join(Config.PATH_OGG, 'win32', 'Static_Release')
+                ,os.path.join(Config.PATH_VORBIS, 'win32','Vorbis_Static_Release')
+                ,os.path.join(Config.PATH_VORBIS, 'win32','VorbisEnc_Static_Release')
+                ,os.path.join(Config.PATH_VORBIS, 'win32','VorbisFile_Static_Release')
+                ,os.path.join(Config.PATH_OPENAL, 'libs','Win32')
+                ,os.path.join(Config.PATH_ALUT, 'lib')
                   ] 
-    libs=[Config.LIB_Boost, 'OgreMain', 'OgreAL']
+    else:
+        lib_dirs = [ Config.PATH_LIB_Boost
+                ,Config.PATH_LIB_Ogre_OgreMain    
+                  ] 
+                  
+    if os.name =='nt':
+        CCFLAGS = ' -DOgreAL_Export="" -DWIN32 -DNDEBUG -D_LIB -D_WIN32 -D_WINDOWS -DVORBIS_IEEE_FLOAT32 -D_USE_NON_INTEL_COMPILER '              
+    libs=[Config.LIB_Boost, 'OgreMain', 
+                'ogg_static', 
+                'alut', 
+                'vorbis_static','vorbisfile_static','vorbisenc_static',
+                'OpenAL32', 'EFX-Util']  ##  'OgreAL' -- going to compile OgreAL ourselves
     ModuleName = 'OgreAL'
     CheckIncludes = ['OgreAL.h']
     active=True
@@ -576,23 +579,18 @@ class ogredshow:
     version="0.1"
     parent="ogre/addons"
     cflags = ""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_Ogre,
+                    Config.PATH_INCLUDE_ogredshow
+                    ]
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain,
+                Config.PATH_LIB_ogredshow
+                ]
+    CheckIncludes=[]
+    libs=[  Config.LIB_Boost, 'OgreMain','Strmiids' , 'ole32']
     ModuleName="ogredshow"   
-    if os.name == "nt":
-	    include_dirs = [ Config.PATH_Boost,
-	                    Config.PATH_INCLUDE_Ogre,
-	                    Config.PATH_INCLUDE_ogredshow
-	                    ]
-	    lib_dirs = [Config.PATH_LIB_Boost,
-	                Config.PATH_LIB_Ogre_OgreMain,
-	                Config.PATH_LIB_ogredshow
-	                ]
-	    CheckIncludes=[]
-	    libs=[  Config.LIB_Boost, 'OgreMain','Strmiids' , 'ole32']
-	    active=True
-    else:
-	active=False
-	
- 
+    active=True 
 ############################################################################################
 
 ## Here is the master list....
@@ -619,7 +617,6 @@ projects = {
     , 'ogredshow' : ogredshow
     , 'plib' : plib
     , 'navi': navi
-    #, 'raknet' : raknet
 }        
 
 #

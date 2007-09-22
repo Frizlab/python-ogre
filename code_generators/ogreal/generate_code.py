@@ -237,7 +237,24 @@ def generate_code():
 #     if not os.path.exists( os.path.join(environment.ogreal.generated_dir, 'py_shared_ptr.h' ) ):
 #         shutil.copy( os.path.join( environment.shared_ptr_dir, 'py_shared_ptr.h' )
 #                      , environment.ogreal.generated_dir )
-
+    ## now we need to ensure a series of headers and additional source files are
+    ## copied to the generated directory.. Also cope with sub directories
+    additional_dirs=[
+                    [os.path.join(environment.Config.root_dir, 'ThirdParty', 'ogreal'),''],
+#                     [os.path.join(environment.Config.root_dir, 'ThirdParty', 'ogreal', 'extra'),''],
+#                     [os.path.join(environment.Config.root_dir, 'ThirdParty', 'ogreal', 'extra','ogg'),'ogg'],
+# #                     [os.path.join(environment.Config.root_dir, 'ThirdParty', 'ogreal', 'extra','vorbis'),'vorbis'],
+                    ]
+    for d,d1 in additional_dirs:
+        for f in os.listdir(d):
+            if f.endswith('cpp') or f.endswith('.h') or f.endswith('.c'):
+                sourcefile = os.path.join(d, f)
+                destfile = os.path.join(environment.ogreal.generated_dir, d1,  f ) 
+                if not os.path.exists ( os.path.join(environment.ogreal.generated_dir, d1 ) ):
+                    os.mkdir ( os.path.join(environment.ogreal.generated_dir, d1 ) )
+                if not common_utils.samefile( sourcefile ,destfile ):
+                    shutil.copy( sourcefile, environment.ogreal.generated_dir )
+                    print "Updated ", f, "as it was missing or out of date"
 if __name__ == '__main__':
     start_time = time.clock()
     generate_code()

@@ -77,7 +77,8 @@ def ManualExclude ( mb ):
     excludes=[\
             '::QuickGUI::QuadContainer::_populateRenderObjectList'
             ,'::QuickGUI::QuadContainer::_updateRenderQueue'
-            ##,'::QuickGUI::GUIManager::getDefaultFont'
+            ,'::QuickGUI::HorizontalTrackBar::_getButtonSize'
+            ,'::QuickGUI::List::getNumberOfListItems'
                 ]
     for e in excludes:
         print "excluding function", e
