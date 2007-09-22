@@ -306,20 +306,19 @@ class ode:
 class opcode:
     version= "1.3"
     parent = "ogre/physics"
-    libs=[Config.LIB_Boost,  'Opcode']
+    libs=[Config.LIB_Boost]
     lib_dirs = [ Config.PATH_LIB_Boost
-                ,  Config.PATH_LIB_OPCODE
                 ]
     include_dirs = [ Config.PATH_Boost 
                     ,  Config.PATH_INCLUDE_OPCODE
                     ]
-
+    CCFLAGS =  ' -DBAN_OPCODE_AUTOLINK, -DICE_NO_DLL '
     ModuleName = 'Opcode'
     CheckIncludes = ['boost/python.hpp',  'Opcode.h'] 
     active=True 
        
 class bullet:
-    version= "2.52"
+    version= "2.62"
     parent = "ogre/physics"
     libs=[Config.LIB_Boost,  'libbulletcollision', 'libbulletdynamics','libbulletmath']
     lib_dirs = [ Config.PATH_LIB_Boost

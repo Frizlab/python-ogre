@@ -4,26 +4,42 @@
 
 namespace QuickGUI
 {
-	MenuList::MenuList(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material, Ogre::OverlayContainer* overlayContainer, Widget* ParentWidget) :
-		Button(name,dimensions,positionMode,sizeMode,material+".button",overlayContainer,ParentWidget)
+	MenuList::MenuList(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
+		Button(name,type,dimensions,pMode,sMode,texture,container,ParentWidget,gm)
 	{
-		mWidgetType = Widget::QGUI_TYPE_MENULIST;
-		setCharacterHeight(0.8);
+		mShowWithParent = false;
+
+		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
+		if(mWidgetType == TYPE_MENULIST)
+		{
+			mQuad->setLayer(Quad::LAYER_MENU);
+			mText->setLayer(Quad::LAYER_MENU);
+		}
+
+		mButtonTexture = mTextureName + ".button" + mTextureExtension;
+		mListTexture = mTextureName + ".list" + mTextureExtension;
+
+		addEventHandler(EVENT_LOSE_FOCUS,&MenuList::onLoseFocus,this);
 
 		// create list
-		mList = new List(mInstanceName+".List",Ogre::Vector3(0,1.0,1.0),QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,material+".list",getSheet()->getMenuContainer(),this);
-		mList->setCharacterHeight(mCharacterHeight);
-		mList->setFont(mFont);
-		mList->setTextColor(mTextTopColor,mTextBotColor);
+		mList = new List(mInstanceName+".List",TYPE_LIST,Rect(0,1,1,0),QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,mTextureName + ".list" + mTextureExtension,mQuadContainer,this,mGUIManager);
+		mList->setShowWithParent(false);
 		mList->hide();
-		// give the list the same zOrder as the button representing this menulist.
-		mList->setZOrderOffset(mZOrderOffset,false);
-		Widget::_addChildWidget(mList);
+		mList->addEventHandler(EVENT_CHILD_ADDED,&MenuList::addDefaultListItemHandler,this);
+
+		setTexture(mButtonTexture);
+		mDefaultTexture = mTextureName;
 	}
 
 	MenuList::~MenuList()
 	{
 		Widget::removeAndDestroyAllChildWidgets();
+	}
+
+	void MenuList::addDefaultListItemHandler(const EventArgs& args)
+	{
+		dynamic_cast<const WidgetEventArgs&>(args).widget->addEventHandler(Widget::EVENT_MOUSE_BUTTON_UP,&MenuList::hideMenuList,this);
+		dynamic_cast<const WidgetEventArgs&>(args).widget->addEventHandler(Widget::EVENT_LOSE_FOCUS,&MenuList::hideMenuList,this);
 	}
 
 	ListItem* MenuList::addListItem(const Ogre::UTFString& text)
@@ -36,92 +52,34 @@ namespace QuickGUI
 		return mList->addListItem(name,text);
 	}
 
-	void MenuList::alignListItemText(HorizontalAlignment ha, VerticalAlignment va)
+	void MenuList::hideMenuList(const EventArgs& e)
 	{
-		mList->alignListItemText(ha,va);
+		Menu* m = dynamic_cast<Menu*>(mParentWidget);
+
+		m->setShowMenuState(false);
+		m->hideMenuLists();
 	}
 
-	void MenuList::clearList()
+	void MenuList::onLoseFocus(const EventArgs& args)
 	{
-		mList->clearList();
+		const MouseEventArgs mea = dynamic_cast<const MouseEventArgs&>(args);
+		// if user clicked on a child of this MenuList, do not completely hide MenuLists.
+		if(getTargetWidget(mea.position) != NULL)
+			return;
+
+		Menu* m = dynamic_cast<Menu*>(mParentWidget);
+
+		// if the user has clicked another MenuList from the same Menu, do not complete this
+		// function.
+		if( m->pointOverMenuListButton(mea.position) )
+			return;
+
+		m->setShowMenuState(false);
+		m->hideMenuLists();
 	}
 
-	void MenuList::deactivate(EventArgs& e)
+	List* MenuList::getList()
 	{
-		if(!mEnabled) return;
-
-		// If the Mouse has clicked on any of the menu's List or ListItems, the widget should not *deactivate*.
-		// As for hiding the list, this will be taken care of in the onMouseButtonDown handler.  The list needs
-		// to remain visible so that ListItem picking works correctly. (If list is hidden, you can't click the ListItem..)
-		if(getTargetWidget(MouseCursor::getSingleton().getPixelPosition()) != NULL) return;
-
-		Button::deactivate(e);
-	}
-
-	ListItem* MenuList::getListItem(unsigned int index)
-	{
-		return mList->getListItem(index);
-	}
-
-	ListItem* MenuList::getListItem(const Ogre::String& name)
-	{
-		return mList->getListItem(name);
-	}
-
-	int MenuList::getNumberOfListItems()
-	{
-		return mList->getNumberOfListItems();
-	}
-
-	void MenuList::hideHighlight()
-	{
-		mList->hideHighlight();
-	}
-
-	void MenuList::highlightListItem(ListItem* i)
-	{
-		mList->highlightListItem(i);
-	}
-
-	void MenuList::hideList()
-	{
-		mList->hide();
-	}
-
-	bool MenuList::isListVisible()
-	{
-		return mList->isVisible();
-	}
-
-	bool MenuList::isMouseOverButton()
-	{
-		return isPointWithinBounds(MouseCursor::getSingleton().getPixelPosition());
-	}
-
-	void MenuList::removeListItem(unsigned int index)
-	{
-		mList->removeListItem(index);
-	}
-
-	void MenuList::setListCharacterHeight(const Ogre::Real& relativeHeight)
-	{
-		mList->setCharacterHeight(relativeHeight);
-	}
-
-	void MenuList::setListHighlightMaterial(const Ogre::String& material)
-	{
-		mList->setHighlightMaterial(material);
-	}
-
-	void MenuList::setListWidth(const Ogre::Real& relativeWidth)
-	{
-		// make it seem like the width is relative to the menu, and not the menu list
-		Ogre::Real numPixels = relativeWidth * mParentWidget->getSize(QGUI_GMM_PIXELS).x;
-		mList->setWidth(numPixels / mPixelDimensions.z);
-	}
-
-	void MenuList::showList()
-	{
-		mList->show();
+		return mList;
 	}
 }

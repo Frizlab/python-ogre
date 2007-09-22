@@ -60,7 +60,7 @@ def ManualExclude ( mb ):
                 if m.name in excludes:
                     m.exclude()
     excludes=['::btAlignedObjectArray<int>::expand'
-            ,'::btAxisSweep3::createProxy'
+#             ,'::btAxisSweep3::createProxy'
 #             ,'::btBU_Simplex1to4::getName'
 #             ,'getName'
             ,'::btCollisionDispatcher::getNewManifold'
@@ -90,13 +90,14 @@ def ManualExclude ( mb ):
         global_ns.free_functions(e).exclude()
     
     excludes = ['btAlignedAllocator<btCollisionObject*, 16>'
-            ,'btAlignedAllocator<btCollisionShape*, 16>'
+#             ,'btAlignedAllocator<btCollisionShape*, 16>'
             ,'btAlignedAllocator<btPersistentManifold*, 16>'
             ,'btAlignedAllocator<btTypedConstraint*, 16>'
             ,'btAlignedAllocator<btRaycastVehicle*, 16>'
             ,'btCapsuleShape'  ## fix later
             ]
     for e in excludes:
+        print "excluding class", e
         global_ns.class_(e).exclude()
         
     excludes = ['::btPolyhedralConvexShape::m_optionalHull'  ## needs Hull from Extras

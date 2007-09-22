@@ -3,7 +3,6 @@
 
 #include "QuickGUIButton.h"
 #include "QuickGUILabel.h"
-#include "QuickGUIPrerequisites.h"
 
 namespace QuickGUI
 {
@@ -42,7 +41,7 @@ namespace QuickGUI
 			@param
 				material Ogre material defining the widget image.
 			@param
-				overlayContainer associates the internal OverlayElement with a specified zOrder.
+				group QuadContainer containing this widget.
 			@param
 				ParentWidget parent widget which created this widget.
 			@note
@@ -50,8 +49,7 @@ namespace QuickGUI
 			@note
 				height it default at 0.05 absolute coordinates.	Height can be modified.
         */
-		TitleBar(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material, Ogre::OverlayContainer* overlayContainer, Widget* ParentWidget);
-		virtual ~TitleBar();
+		TitleBar(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
 
 		/**
 		* Gets a handle to the Button widget used for this Widget.
@@ -61,13 +59,21 @@ namespace QuickGUI
 		* Hides Only the CloseButton, removing default ability to close the window
 		*/
 		void hideCloseButton();
+
+		/**
+		* Convenience method to set the text of the titlebar.
+		*/
+		void setCaption(const Ogre::UTFString& caption);
 		/**
 		* Shows the Close Button.
 		*/
 		void showCloseButton();
 
 	protected:
-		Button*								mCloseButton;
+		virtual ~TitleBar();
+
+		Button* mCloseButton;
+		Ogre::Real mRelativeButtonWidth;
 	};
 }
 

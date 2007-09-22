@@ -1,81 +1,34 @@
 #include "QuickGUIMouseCursor.h"
 #include "QuickGUIManager.h"
 
-template<> QuickGUI::MouseCursor* Ogre::Singleton<QuickGUI::MouseCursor>::ms_Singleton = 0;
-
 namespace QuickGUI
 {
-	MouseCursor::MouseCursor(const Ogre::Vector2& dimensions, const Ogre::String& material, const unsigned int& RenderWidthInPixels, const unsigned int& RenderHeightInPixels) :
-		mMaterial(material),
-		mRelativeCursorDimensions(dimensions),
-		mRenderWidthInPixels(RenderWidthInPixels),
-		mRenderHeightInPixels(RenderHeightInPixels),
-		mVisible(1),
-		mHideWhenOffScreen(1),
+	MouseCursor::MouseCursor(const Size& size, GuiMetricsMode sizeMode, const Ogre::String& textureName, GUIManager* gm) :
+		mGUIManager(gm),
+		mTextureName(textureName),
+		mVisible(true),
+		mHideWhenOffScreen(true),
 		mOnTopBorder(0),
 		mOnBotBorder(0),
 		mOnLeftBorder(0),
-		mOnRightBorder(0)
+		mOnRightBorder(0),
+		mOriginOffset(Point::ZERO)
 	{
-		mPixelCursorDimensions.x = mRelativeCursorDimensions.x * RenderWidthInPixels;
-		mPixelCursorDimensions.y = mRelativeCursorDimensions.y * RenderHeightInPixels;
-		mConstraints.x = RenderWidthInPixels;
-		mConstraints.y = RenderHeightInPixels;
-		mPosition.x = mConstraints.x/2;
-		mPosition.y = mConstraints.y/2;
+		mQuad = new Quad("MouseCursor.Quad",gm);
+		setSize(size.width,size.height,sizeMode);
+		mQuad->setTexture(mTextureName);
+		mRenderObjectList.push_back(mQuad);
 
-		// Create Mouse Overlay
-		mMouseOverlay = Ogre::OverlayManager::getSingleton().create("simpleGUI_Mouse_Overlay");
-		mMouseOverlay->setZOrder(649);
-		mMouseOverlay->show();
-
-		// Create Mouse Overlay Container
-		mMousePointerContainer = static_cast<Ogre::OverlayContainer*>(Ogre::OverlayManager::getSingleton().createOverlayElement("Panel","simpleGUI_Mouse_Container"));
-		mMousePointerContainer->setMetricsMode(Ogre::GMM_PIXELS);
-		mMousePointerContainer->setPosition(mPosition.x,mPosition.y);
-		mMousePointerContainer->setDimensions(Ogre::Math::Ceil(mPixelCursorDimensions.x), Ogre::Math::Ceil(mPixelCursorDimensions.y));
-		mMousePointerContainer->setMaterialName(mMaterial);
-
-		mMouseOverlay->add2D(mMousePointerContainer);
-		mMousePointerContainer->show();
+		mVertexBuffer = new VertexBuffer(6,mGUIManager);
+		mVertexBuffer->setData(&mRenderObjectList);
+		mVertexBuffer->setUpdateBeforeRender(true);
 	}
 	
 	MouseCursor::~MouseCursor()
 	{
-		if(mMouseOverlay)
-		{
-			Ogre::OverlayManager* om = Ogre::OverlayManager::getSingletonPtr();
-
-			if(mMousePointerContainer)
-			{
-				mMouseOverlay->remove2D(mMousePointerContainer);
-				om->destroyOverlayElement(mMousePointerContainer);
-				mMousePointerContainer = NULL;
-			}
-			om->destroy(mMouseOverlay);
-			mMouseOverlay = NULL;
-		}
-	}
-
-	MouseCursor* MouseCursor::getSingletonPtr(void) { return ms_Singleton; }
-
-	MouseCursor& MouseCursor::getSingleton(void) { assert( ms_Singleton );  return (*ms_Singleton); }
-
-	void MouseCursor::_updateWindowDimensions( const unsigned int& RenderWidthInPixels, const unsigned int& RenderHeightInPixels)
-	{
-		mRenderWidthInPixels = RenderWidthInPixels;
-		mRenderHeightInPixels = RenderHeightInPixels;
-
-		mPixelCursorDimensions.x = mRelativeCursorDimensions.x * mRenderWidthInPixels;
-		mPixelCursorDimensions.y = mRelativeCursorDimensions.y * mRenderHeightInPixels;
-		mMousePointerContainer->setDimensions(Ogre::Math::Ceil(mPixelCursorDimensions.x), Ogre::Math::Ceil(mPixelCursorDimensions.y));
-
-		mConstraints.x = RenderWidthInPixels;
-		mConstraints.y = RenderHeightInPixels;
-		mPosition.x = mConstraints.x/2;
-		mPosition.y = mConstraints.y/2;
-
-		constrainPosition();
+		mRenderObjectList.clear();
+		delete mQuad;
+		delete mVertexBuffer;
 	}
 
 	void MouseCursor::constrainPosition()
@@ -86,35 +39,36 @@ namespace QuickGUI
 		mOnTopBorder = false;
 		mOnLeftBorder = false;
 
-		if (mPosition.x >= (mConstraints.x - 1))
+		if (mPixelPosition.x >= (mGUIManager->getViewportWidth() - 1))
 		{
-			mPosition.x = mConstraints.x - 1;
+			mPixelPosition.x = mGUIManager->getViewportWidth() - 1;
 			mOnRightBorder = true;
 			offScreen = true;
 		}
 
-		if (mPosition.y >= (mConstraints.y - 1))
+		if (mPixelPosition.y >= (mGUIManager->getViewportHeight() - 1))
 		{
-			mPosition.y = mConstraints.y - 1;
+			mPixelPosition.y = mGUIManager->getViewportHeight() - 1;
 			mOnBotBorder = true;
 			offScreen = true;
 		}
 
-		if (mPosition.y <= 0)
+		if (mPixelPosition.y <= 0)
 		{
-			mPosition.y = 0;
+			mPixelPosition.y = 0;
 			mOnTopBorder = true;
 			offScreen = true;
 		}
 
-		if (mPosition.x <= 0)
+		if (mPixelPosition.x <= 0)
 		{
-			mPosition.x = 0;
+			mPixelPosition.x = 0;
 			mOnLeftBorder = true;
 			offScreen = true;
 		}
 
-		if (offScreen) GUIManager::getSingleton().injectMouseLeaves();
+		if(offScreen) 
+			mGUIManager->injectMouseLeaves();
 		// For example, if the user wants the mouse hidden, we shouldn't show it
 		// even if its within bounds.
 		else 
@@ -123,8 +77,10 @@ namespace QuickGUI
 			else hide();
 		}
 
-		// Perform the actual moving of the mouse overlay
-		mMousePointerContainer->setPosition(mPosition.x,mPosition.y);
+		// Perform the actual moving of the mouse quad
+		mAbsolutePosition.x = mPixelPosition.x / mGUIManager->getViewportWidth();
+		mAbsolutePosition.y = mPixelPosition.y / mGUIManager->getViewportHeight();
+		mQuad->setPosition(mAbsolutePosition);
 	}
 
 	bool MouseCursor::getHideWhenOffScreen()
@@ -132,36 +88,55 @@ namespace QuickGUI
 		return mHideWhenOffScreen;
 	}
 
-	Ogre::Vector2 MouseCursor::getPixelPosition()
+	Point MouseCursor::getOriginOffset(GuiMetricsMode mode)
 	{
-		return mPosition;
+		switch(mode)
+		{
+			case QGUI_GMM_ABSOLUTE:
+			case QGUI_GMM_RELATIVE:
+				return Point(mOriginOffset.x / mGUIManager->getViewportWidth(),mOriginOffset.y / mGUIManager->getViewportHeight());
+			case QGUI_GMM_PIXELS:
+			default:
+				return mOriginOffset;
+		}
+		return mOriginOffset;
 	}
 
-	Ogre::Vector2 MouseCursor::getRelativePosition()
+	Point MouseCursor::getPosition(GuiMetricsMode mode)
 	{
-		return mRelativeCursorDimensions;
+		switch(mode)
+		{
+			case QGUI_GMM_ABSOLUTE:
+			case QGUI_GMM_RELATIVE:
+				return Point(mAbsolutePosition.x + (mOriginOffset.x / mGUIManager->getViewportWidth()),mAbsolutePosition.y + (mOriginOffset.y / mGUIManager->getViewportHeight()));
+			case QGUI_GMM_PIXELS:
+			default:
+				return Point(mPixelPosition.x + mOriginOffset.x,mPixelPosition.y + mOriginOffset.y);
+		}
 	}
 
-	Ogre::Vector2 MouseCursor::getRelativeSize()
+	Size MouseCursor::getSize(GuiMetricsMode mode)
 	{
-		return mRelativeCursorDimensions;
+		switch(mode)
+		{
+			case QGUI_GMM_ABSOLUTE:
+			case QGUI_GMM_RELATIVE:
+				return mAbsoluteSize;
+			case QGUI_GMM_PIXELS:
+			default:
+				return mPixelSize;
+		}
 	}
 
 	void MouseCursor::hide()
 	{
-		if(mMouseOverlay) 
-		{
-			mMouseOverlay->hide();
-			mVisible = false;
-		}
+		mQuad->setVisible(false);
+		mVisible = false;
 	}
 
 	void MouseCursor::_hide()
 	{
-		if(mMouseOverlay) 
-		{
-			mMouseOverlay->hide();
-		}
+		mQuad->setVisible(false);
 	}
 
 	bool MouseCursor::isVisible()
@@ -189,17 +164,52 @@ namespace QuickGUI
 		return mOnTopBorder;
 	}
 
-	void MouseCursor::offsetPosition(const int& x_offset_in_pixels, const int& y_offset_in_pixels)
+	void MouseCursor::offsetOrigin(int xOffset, int yOffset, GuiMetricsMode mode)
 	{
-		mPosition.x += x_offset_in_pixels;
-		mPosition.y += y_offset_in_pixels;
+		switch(mode)
+		{
+			case QGUI_GMM_ABSOLUTE:
+			case QGUI_GMM_RELATIVE:
+				mOriginOffset.x = xOffset * mGUIManager->getViewportWidth();
+				mOriginOffset.y = yOffset * mGUIManager->getViewportHeight();
+				break;
+			case QGUI_GMM_PIXELS:
+				mOriginOffset.x = xOffset;
+				mOriginOffset.y = yOffset;
+				break;
+		}
+	}
+
+	void MouseCursor::offsetPosition(const int& xOffset, const int& yOffset, GuiMetricsMode mode)
+	{
+		switch(mode)
+		{
+			case QGUI_GMM_ABSOLUTE:
+			case QGUI_GMM_RELATIVE:
+				mPixelPosition.x += xOffset * mGUIManager->getViewportWidth();
+				mPixelPosition.y += yOffset * mGUIManager->getViewportHeight();
+				break;
+			case QGUI_GMM_PIXELS:
+				mPixelPosition.x += xOffset;
+				mPixelPosition.y += yOffset;
+				break;
+		}
+
+		mAbsolutePosition.x = mPixelPosition.x / mGUIManager->getViewportWidth();
+		mAbsolutePosition.y = mPixelPosition.y / mGUIManager->getViewportHeight();
+		
 		constrainPosition();
 	}
 
-	void MouseCursor::setMaterial(const Ogre::String& material)
+	void MouseCursor::render()
 	{
-		mMaterial = material;
-		mMousePointerContainer->setMaterialName(mMaterial);
+		mVertexBuffer->render();
+	}
+
+	void MouseCursor::setTexture(const Ogre::String& textureName)
+	{
+		mTextureName = textureName;
+		mQuad->setTexture(mTextureName);
 	}
 
 	void MouseCursor::setHideCursorWhenOSCursorOffscreen(bool hide)
@@ -207,24 +217,50 @@ namespace QuickGUI
 		mHideWhenOffScreen = hide;
 	}
 
-	void MouseCursor::setPosition(const int& xPixelPosition, const int& yPixelPosition)
+	void MouseCursor::setPosition(Ogre::Real xPosition, Ogre::Real yPosition, GuiMetricsMode mode)
 	{
-		mPosition.x = xPixelPosition;
-		mPosition.y = yPixelPosition;
+		switch(mode)
+		{
+			case QGUI_GMM_ABSOLUTE:
+			case QGUI_GMM_RELATIVE:
+				mPixelPosition.x = xPosition * mGUIManager->getViewportWidth();
+				mPixelPosition.y = yPosition * mGUIManager->getViewportHeight();
+				break;
+			case QGUI_GMM_PIXELS:
+				mPixelPosition.x = xPosition;
+				mPixelPosition.y = yPosition;
+				break;
+		}
+
+		mAbsolutePosition.x = mPixelPosition.x / mGUIManager->getViewportWidth();
+		mAbsolutePosition.y = mPixelPosition.y / mGUIManager->getViewportHeight();
+
 		constrainPosition();
 	}
 
-	void MouseCursor::setSize(const int& widthInPixels, const int& heightInPixels)
+	void MouseCursor::setSize(Ogre::Real width, Ogre::Real height, GuiMetricsMode mode)
 	{
-		mMousePointerContainer->setDimensions(widthInPixels,heightInPixels);
+		switch(mode)
+		{
+			case QGUI_GMM_ABSOLUTE:
+			case QGUI_GMM_RELATIVE:
+				mPixelSize.width = width * mGUIManager->getViewportWidth();
+				mPixelSize.height = height * mGUIManager->getViewportHeight();
+				break;
+			case QGUI_GMM_PIXELS:
+				mPixelSize.width = width;
+				mPixelSize.height = height;
+				break;
+		}
+
+		mAbsoluteSize.width = mPixelSize.width / static_cast<float>(mGUIManager->getViewportWidth());
+		mAbsoluteSize.height = mPixelSize.height / static_cast<float>(mGUIManager->getViewportHeight());
+		mQuad->setSize(mAbsoluteSize);
 	}
 
 	void MouseCursor::show()
 	{
-		if(mMouseOverlay) 
-		{
-			mMouseOverlay->show();
-			mVisible = true;
-		}
+		mQuad->setVisible(true);
+		mVisible = true;
 	}
 }

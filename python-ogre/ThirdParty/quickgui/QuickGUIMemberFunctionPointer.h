@@ -20,7 +20,7 @@ namespace QuickGUI
 	{
 	public:
 		virtual ~MemberFunctionSlot() {};
-		virtual bool execute(const EventArgs& args) = 0;
+		virtual void execute(const EventArgs& args) = 0;
 	};
 
 	template<typename T>
@@ -28,7 +28,7 @@ namespace QuickGUI
 		public MemberFunctionSlot
 	{
 	public:
-		typedef bool (T::*MemberFunction)(const EventArgs&);
+		typedef void (T::*MemberFunction)(const EventArgs&);
 	public:
 		MemberFunctionPointer() :
 			d_undefined(true)
@@ -40,10 +40,10 @@ namespace QuickGUI
 		{}
 		virtual ~MemberFunctionPointer() {}
 
-		virtual bool execute(const EventArgs& args)
+		void execute(const EventArgs& args)
 		{
-			if(!d_undefined) return (d_object->*d_function)(args);
-			return false;
+			if(!d_undefined) 
+				(d_object->*d_function)(args);
 		}
 	protected:
 		MemberFunction	d_function;

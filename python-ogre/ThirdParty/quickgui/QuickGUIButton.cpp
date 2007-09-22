@@ -5,70 +5,100 @@
 
 namespace QuickGUI
 {
-	Button::Button(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material, Ogre::OverlayContainer* overlayContainer, Widget* ParentWidget) :
-		Label(name,dimensions,positionMode,sizeMode,material,overlayContainer,ParentWidget)
+	Button::Button(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
+		Label(name,type,dimensions,pMode,sMode,texture,container,ParentWidget,gm),
+		mButtonDown(false)
 	{
-		mWidgetType = Widget::QGUI_TYPE_BUTTON;
-		setCharacterHeight(0.5);
+		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
+		if(mWidgetType == TYPE_BUTTON)
+		{
+			mQuad->setLayer(Quad::LAYER_CHILD);
+		}
 
-		Ogre::MaterialManager* mm = Ogre::MaterialManager::getSingletonPtr();
+		mButtonDownTexture = mTextureName + ".down" + mTextureExtension;
+		mButtonOverTexture = mTextureName + ".over" + mTextureExtension;
 
-		mOverMaterialExists = mm->resourceExists(mWidgetMaterial+".over");
-		mDownMaterialExists = mm->resourceExists(mWidgetMaterial+".down");
+		addEventHandler(EVENT_MOUSE_ENTER,&Button::onMouseEnters,this);
+		addEventHandler(EVENT_MOUSE_LEAVE,&Button::onMouseLeaves,this);
+		addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&Button::onMouseButtonDown,this);
+		addEventHandler(EVENT_MOUSE_BUTTON_UP,&Button::onMouseButtonUp,this);
 	}
 
 	Button::~Button()
 	{
 	}
 
-	void Button::applyButtonDownMaterial()
+	void Button::applyButtonDownTexture()
 	{
-		if(mDownMaterialExists) 
+		// apply button ".down" texture
+		setTexture(mButtonDownTexture,false);
+	}
+
+	void Button::applyButtonOverTexture()
+	{
+		// apply button ".over" texture
+		setTexture(mButtonOverTexture,false);
+	}
+
+	void Button::applyDefaultTexture()
+	{
+		setTexture(mFullTextureName,false);
+	}
+
+	bool Button::isDown()
+	{
+		return mButtonDown;
+	}
+
+	void Button::onMouseButtonDown(const EventArgs& args) 
+	{
+		if(dynamic_cast<const MouseEventArgs&>(args).button == MB_Left)
 		{
-			// apply button ".down" material
-			mOverlayElement->setMaterialName(mWidgetMaterial+".down");
+			applyButtonDownTexture();
+			mButtonDown = true;
 		}
 	}
 
-	void Button::applyDefaultMaterial()
+	void Button::onMouseButtonUp(const EventArgs& args) 
+	{ 
+		if(dynamic_cast<const MouseEventArgs&>(args).button == MB_Left)
+		{
+			applyButtonOverTexture();
+			mButtonDown = false;
+		}
+	}
+
+	void Button::onMouseEnters(const EventArgs& args) 
+	{ 
+		if(mGrabbed) 
+		{
+			applyButtonDownTexture();
+			mButtonDown = true;
+		}
+		else 
+			applyButtonOverTexture();
+	}
+
+	void Button::onMouseLeaves(const EventArgs& args) 
+	{ 
+		applyDefaultTexture();
+		mButtonDown = false;
+	}
+
+	void Button::setBaseTexture(const Ogre::String& textureName)
 	{
-		mOverlayElement->setMaterialName(mWidgetMaterial);
+		Label::setBaseTexture(textureName);
+		mButtonDownTexture = mTextureName + ".down" + mTextureExtension;
+		mButtonOverTexture = mTextureName + ".over" + mTextureExtension;
 	}
 
-	bool Button::onMouseButtonDown(MouseEventArgs& e) 
+	void Button::setButtonDownTexture(const Ogre::String& textureName)
 	{
-		if(!mEnabled) return e.handled;
-
-		applyButtonDownMaterial();
-
-		return Label::onMouseButtonDown(e);
+		mButtonDownTexture = textureName;
 	}
 
-	bool Button::onMouseButtonUp(MouseEventArgs& e) 
-	{ 
-		if(!mEnabled) return e.handled;
-
-		if(mOverMaterialExists) mOverlayElement->setMaterialName(mWidgetMaterial+".over");
-
-		return Label::onMouseButtonUp(e);
-	}
-
-	bool Button::onMouseEnters(MouseEventArgs& e) 
-	{ 
-		if(!mEnabled) return e.handled;
-
-		if(mGrabbed) applyButtonDownMaterial();
-		else if(mOverMaterialExists) mOverlayElement->setMaterialName(mWidgetMaterial+".over");
-
-		return Label::onMouseEnters(e);
-	}
-
-	bool Button::onMouseLeaves(MouseEventArgs& e) 
-	{ 
-		if(!mEnabled) return e.handled;
-
-		mOverlayElement->setMaterialName(mWidgetMaterial);
-
-		return Label::onMouseLeaves(e);
+	void Button::setButtonOverTexture(const Ogre::String& textureName)
+	{
+		mButtonOverTexture = textureName;
 	}
 }

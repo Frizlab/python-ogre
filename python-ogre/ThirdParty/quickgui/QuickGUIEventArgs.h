@@ -13,26 +13,45 @@
 #ifndef QUICKGUIEVENTARGS_H
 #define QUICKGUIEVENTARGS_H
 
+#include "OgrePrerequisites.h"
+#include "OgreUTFString.h"
+
 #include "QuickGUIKeyCode.h"
 #include "QuickGUIMouseButtonID.h"
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIPoint.h"
 #include "QuickGUIExportDLL.h"
 
 namespace QuickGUI
 {
 	class Widget;
+	class Text;
 
 	/** Basic EventArgs
 	*/
 	class _QuickGUIExport EventArgs
 	{
 	public:
-		EventArgs();
-		~EventArgs();
-        virtual void dummy (void) {}; // needed to make the class polymorphic so Boost::Python can tell the arg type
+		typedef enum Type
+		{
+			TYPE_DEFAULT		=  0,
+			TYPE_WIDGET				,
+			TYPE_MOUSE				,
+			TYPE_KEY				,
+			TYPE_SCROLL				,
+			TYPE_TEXT
+		};
+	public:
+		EventArgs() : handled(false)
+		{}
+
+		~EventArgs() {}
+
+		virtual void dummy() {} // needed to make the class polymorphic so Boost::Python can tell the arg type.
 
 		// handlers should set this to true if they handled the event.
-		bool	handled;		
+		bool	handled;
+
+		Type	type;
 	};
 
 	/** Widget EventArgs
@@ -40,10 +59,13 @@ namespace QuickGUI
 	class _QuickGUIExport WidgetEventArgs : public EventArgs
 	{
 	public:
-		WidgetEventArgs(Widget* w) : widget(w) {}
+		WidgetEventArgs(Widget* w) : EventArgs(), widget(w)
+		{
+			type = TYPE_WIDGET;
+		}
 
 		//pointer to a Widget object of relevance to the event.
-		Widget*	widget;		
+		Widget*	widget;
 	};
 
 	/** Mouse EventArgs
@@ -51,12 +73,15 @@ namespace QuickGUI
 	class _QuickGUIExport MouseEventArgs : public WidgetEventArgs
 	{
 	public:
-		MouseEventArgs(Widget* w) : WidgetEventArgs(w) {}
+		MouseEventArgs(Widget* w) : WidgetEventArgs(w) 
+		{
+			type = TYPE_MOUSE;
+		}
 
 		// holds current mouse position. (pixels)
-		Ogre::Vector2	position;
+		Point			position;
 		// holds variation of mouse position from last mouse input
-		Ogre::Vector2	moveDelta;		
+		Point			moveDelta;		
 		// holds the mouse button that was down for the given event
 		MouseButtonID	button;
 		// holds the amount the scroll wheel has changed.
@@ -68,7 +93,10 @@ namespace QuickGUI
 	class _QuickGUIExport KeyEventArgs : public WidgetEventArgs
 	{
 	public:
-		KeyEventArgs(Widget* w) : WidgetEventArgs(w) {}
+		KeyEventArgs(Widget* w) : WidgetEventArgs(w) 
+		{
+			type = TYPE_KEY;
+		}
 
 		// codepoint for the key (only used for Character inputs).
 		Ogre::UTFString::unicode_char	codepoint;		
@@ -76,15 +104,37 @@ namespace QuickGUI
 		KeyCode							scancode;
 	};
 
-	/** ButtonState EventArgs
+	/** Text EventArgs
 	*/
-	class _QuickGUIExport ButtonStateEventArgs : public WidgetEventArgs
+	class _QuickGUIExport TextEventArgs : public EventArgs
 	{
 	public:
-		ButtonStateEventArgs(Widget* w) : WidgetEventArgs(w) {}
+		TextEventArgs(Text* t) : EventArgs(), text(t)
+		{
+			type = TYPE_TEXT;
+			colorChanged = false;
+			captionChanged = false;
+			fontChanged = false;
+		}
 
-		// index used to retreive the NStateButton's current state
-		Ogre::ushort		currentState;
+		bool colorChanged;
+		bool captionChanged;
+		bool fontChanged;
+
+		Text* text;
+	};
+
+	/** Scroll EventArgs
+	*/
+	class _QuickGUIExport ScrollEventArgs : public WidgetEventArgs
+	{
+	public:
+		ScrollEventArgs(Widget* w) : WidgetEventArgs(w), sliderIncreasedPosition(false)
+		{
+			type = TYPE_SCROLL;
+		}
+
+		bool sliderIncreasedPosition;
 	};
 }
 

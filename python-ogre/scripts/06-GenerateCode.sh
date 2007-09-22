@@ -26,10 +26,10 @@ echo ' -- creating CEGUI code'
 cd cegui 
 python generate_code.py > build.out 
 cd ..
-#echo ' -- creating OgreAL code'
-#cd ogreal 
-#python generate_code.py > build.out 
-#cd .. 
+echo ' -- creating OgreAL code'
+cd ogreal 
+python generate_code.py > build.out 
+cd .. 
 #echo ' -- creating OGREode code'
 #cd ogreode 
 #python generate_code.py > build.out 

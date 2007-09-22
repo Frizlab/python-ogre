@@ -2,10 +2,16 @@
 
 namespace QuickGUI
 {
-	NStateButton::NStateButton(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, Ogre::OverlayContainer* overlayContainer, Widget* ParentWidget) :
-		Button(name,dimensions,positionMode,sizeMode,"",overlayContainer,ParentWidget)
+	NStateButton::NStateButton(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
+		Button(name,type,dimensions,pMode,sMode,"",container,ParentWidget,gm)
 	{
-		mWidgetType = Widget::QGUI_TYPE_NSTATEBUTTON;
+		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
+		if(mWidgetType == TYPE_NSTATEBUTTON)
+		{
+			mQuad->setLayer(Quad::LAYER_CHILD);
+		}
+
+		addEventHandler(EVENT_MOUSE_BUTTON_UP,&NStateButton::onMouseButtonUp,this);
 	}
 
 	NStateButton::~NStateButton()
@@ -18,9 +24,9 @@ namespace QuickGUI
 		mOnStateChangedUserEventHandlers.push_back(function);
 	}
 
-	void NStateButton::addState(const Ogre::String& name, const Ogre::String& material, Ogre::UTFString text)
+	void NStateButton::addState(const Ogre::String& name, const Ogre::String& texture, Ogre::UTFString text)
 	{
-		NStateButton::State* s = new NStateButton::State(name,material,text);
+		NStateButton::State* s = new NStateButton::State(name,texture,text);
 		mStates.push_back(s);
 
 		// The widget has an image when the first state gets added
@@ -97,46 +103,48 @@ namespace QuickGUI
 		return NULL;
 	}
 
-	bool NStateButton::onMouseButtonUp(MouseEventArgs& e)
+	void NStateButton::onMouseButtonUp(const EventArgs& args)
 	{
-		if(!mEnabled) return e.handled;
+		const MouseEventArgs mea = dynamic_cast<const MouseEventArgs&>(args);
 
-		e.widget = this;
+		if( mea.button == QuickGUI::MB_Left ) 
+			toggleNextState();
+		else if( mea.button == QuickGUI::MB_Right ) 
+			togglePreviousState();
 
-		if( e.button == QuickGUI::MB_Left ) toggleNextState();
-		else if( e.button == QuickGUI::MB_Right ) togglePreviousState();
-
-		return Button::onMouseButtonUp(e);
+		Button::onMouseButtonUp(args);
 	}
 
-	bool NStateButton::onStateChanged(WidgetEventArgs& e)
+	void NStateButton::onStateChanged(const WidgetEventArgs& args)
 	{
-		if(!mEnabled) return e.handled;
-
 		std::vector<MemberFunctionSlot*>::iterator it;
 		for( it = mOnStateChangedUserEventHandlers.begin(); it != mOnStateChangedUserEventHandlers.end(); ++it )
-			e.handled = (*it)->execute(e);
+			(*it)->execute(args);
+	}
 
-		return e.handled;
+	void NStateButton::setBaseTexture(const Ogre::String& textureName)
+	{
+		Button::setBaseTexture(textureName);
+
+		mDisabledTextureName = mTextureName + ".disabled" + mTextureExtension;
 	}
 
 	void NStateButton::setCurrentState(State* s)
 	{
+		if(!mEnabled)
+			return;
+
 		// Make sure s is a state within this State Button
-		if(getState(s->getName()) == NULL) return;
+		if(getState(s->getName()) == NULL) 
+			return;
 
 		mCurrentState = s;
-		mWidgetMaterial = mCurrentState->getMaterial();
-		mOverlayElement->setMaterialName(mWidgetMaterial);
-		setText(mCurrentState->getText());
+		setTexture(mCurrentState->getTextureName());
+		mDefaultTexture = mTextureName;
+		mText->setCaption(mCurrentState->getText());
 
-		Ogre::MaterialManager* mm = Ogre::MaterialManager::getSingletonPtr();
-		mOverMaterialExists = mm->resourceExists(mWidgetMaterial+".over");
-		mDownMaterialExists = mm->resourceExists(mWidgetMaterial+".down");
-
-		WidgetEventArgs e(this);
-		e.handled = false;
-		onStateChanged(e);
+		WidgetEventArgs args(this);
+		onStateChanged(args);
 	}
 
 	void NStateButton::setCurrentState(Ogre::ushort index)

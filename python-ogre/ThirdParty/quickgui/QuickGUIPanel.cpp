@@ -4,215 +4,263 @@
 
 namespace QuickGUI
 {
-	Panel::Panel(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material, Ogre::OverlayContainer* overlayContainer, Widget* parentWidget) :
-		Widget(name,dimensions,positionMode,sizeMode,material,overlayContainer,parentWidget),
+	Panel::Panel(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* parentWidget, GUIManager* gm) :
+		Image(name,type,dimensions,pMode,sMode,texture,container,parentWidget,gm),
+		QuadContainer(this),
 		mAutoNameWidgetCounter(0),
 		mNumButtons(0),
 		mNumComboBoxes(0),
 		mNumImages(0),
 		mNumLabels(0),
+		mNumLists(0),
 		mNumMenus(0),
 		mNumNStateButtons(0),
 		mNumPanels(0),
 		mNumProgressBars(0),
 		mNumTextBoxes(0),
-		mNumTrackBars(0)
+		mNumHorizontalTrackBars(0),
+		mNumVerticalTrackBars(0),
+		mNumHorizontalScrollBars(0),
+		mNumVerticalScrollBars(0)
 	{
-		mWidgetType = Widget::QGUI_TYPE_PANEL;
-		mZOrderValues.clear();
-
-		if( overlayContainer == NULL )
+		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
+		if(mWidgetType == TYPE_PANEL)
 		{
-			mOverlayContainer = createOverlayContainer(mInstanceName+".OverlayContainer","");
-			mOverlayContainer->addChildImpl(mChildrenContainer);
+			mQuad->setLayer(Quad::LAYER_CHILD);
+			// This will remove if from parent QuadContainer and add it to this one.
+			mQuad->_notifyQuadContainer(this);
+			mQuadContainer->addChildPanelContainer(this);
 
-			mOverlayContainer->show();
-			mChildrenContainer->show();
+			mScrollPane = new ScrollPane(mInstanceName+".ScrollPane",TYPE_SCROLL_PANE,this,this,mGUIManager);
 		}
-
-		mOverlayElement = createPanelOverlayElement(mInstanceName+".Background",mPixelDimensions,mWidgetMaterial);
-		mOverlayContainer->addChild(mOverlayElement);
-		mOverlayElement->show();
 	}
 
 	Panel::~Panel()
 	{
-	}
+		// Must be done before removing from parent Container! 
+		// (Cannot destroy parent container and then have children remove themself from it...)
+		Widget::removeAndDestroyAllChildWidgets();
 
-	void Panel::_addZOrderValue(int zOrder)
-	{
-		mZOrderValues.push_back(zOrder);
-		mZOrderValues.sort();
-	}
-
-	void Panel::_removeZOrderValue(int zOrder)
-	{
-		std::list<int>::iterator it;
-		for( it = mZOrderValues.begin(); it != mZOrderValues.end(); ++it )
+		if(mQuadContainer != NULL)
 		{
-			if( *it == zOrder ) mZOrderValues.erase(it);
-			return;
+			if(mWidgetType == Widget::TYPE_WINDOW)
+				mQuadContainer->removeChildWindowContainer(QuadContainer::getID());
+			else if(mWidgetType == Widget::TYPE_PANEL)
+				mQuadContainer->removeChildPanelContainer(QuadContainer::getID());
 		}
 	}
 
-	Button* Panel::_createButton(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material)
+	void Panel::_removeFromChildList(Widget* w)
 	{
-		Button* newButton = new Button(name,dimensions,positionMode,sizeMode,material,mChildrenContainer,this);
-		newButton->setZOrderOffset(1);
-		if(!mVisible) newButton->hide();
-		Widget::_addChildWidget(newButton);
+		if(!Widget::isChild(w))
+			return;
+
+		switch( w->getWidgetType() )
+		{
+		case Widget::TYPE_BUTTON:
+			--mNumButtons; 
+			break;
+		case Widget::TYPE_COMBOBOX:
+			--mNumComboBoxes;
+			break;
+		case Widget::TYPE_IMAGE:
+			--mNumImages;
+			break;
+		case Widget::TYPE_LABEL:
+			--mNumLabels;
+			break;
+		case Widget::TYPE_MENU:
+			--mNumMenus;
+			break;
+		case Widget::TYPE_NSTATEBUTTON:
+			--mNumNStateButtons;
+			break;
+		case Widget::TYPE_PANEL:
+			--mNumPanels;
+			break;
+		case Widget::TYPE_PROGRESSBAR:
+			--mNumProgressBars;
+			break;
+		case Widget::TYPE_TEXTBOX:
+			--mNumTextBoxes;
+			break;
+		case Widget::TYPE_TRACKBAR_HORIZONTAL:
+			--mNumHorizontalTrackBars;
+			break;
+		case Widget::TYPE_TRACKBAR_VERTICAL:
+			--mNumVerticalTrackBars;
+			break;
+		}
+
+		Widget::_removeFromChildList(w);
+	}
+
+	Button* Panel::_createButton(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture)
+	{
 		// update count
 		++mNumButtons;
+
+		Button* newButton = new Button(name,TYPE_BUTTON,dimensions,positionMode,sizeMode,texture,this,this,mGUIManager);
+		if(!mVisible) 
+			newButton->hide();
 		
 		return newButton;
 	}
 
-	ComboBox* Panel::_createComboBox(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material)
+	ComboBox* Panel::_createComboBox(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture)
 	{
-		ComboBox* newComboBox = new ComboBox(name,dimensions,positionMode,sizeMode,material,mChildrenContainer,this);
-		newComboBox->setZOrderOffset(1);
-		if(!mVisible) newComboBox->hide();
-		Widget::_addChildWidget(newComboBox);
 		// update count
 		++mNumComboBoxes;
+
+		ComboBox* newComboBox = new ComboBox(name,TYPE_COMBOBOX,dimensions,positionMode,sizeMode,texture,this,this,mGUIManager);
+		if(!mVisible) 
+			newComboBox->hide();
 		
 		return newComboBox;
 	}
 
-	Image* Panel::_createImage(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material, bool texture)
+	HorizontalScrollBar* Panel::_createHorizontalScrollBar(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture)
 	{
-		Ogre::String defaultMaterial = getSheet()->getDefaultSkin() + ".image";
-		Image* newImage = new Image(name,dimensions,positionMode,sizeMode,defaultMaterial,mChildrenContainer,this);
-		if(texture) newImage->setMaterial(material,true);
-		else newImage->setMaterial(material);
-		newImage->setZOrderOffset(1);
-		if(!mVisible) newImage->hide();
-		Widget::_addChildWidget(newImage);
+		// update count;
+		++mNumHorizontalScrollBars;
+
+		HorizontalScrollBar* newScrollBar = new HorizontalScrollBar(name,TYPE_SCROLLBAR_HORIZONTAL,dimensions,positionMode,sizeMode,texture,this,this,mGUIManager);
+		if(!mVisible)
+			newScrollBar->hide();
+
+		return newScrollBar;
+	}
+
+	Image* Panel::_createImage(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture)
+	{
 		// update count
 		++mNumImages;
+
+		Image* newImage = new Image(name,TYPE_IMAGE,dimensions,positionMode,sizeMode,texture,this,this,mGUIManager);
+		if(!mVisible) 
+			newImage->hide();
 
 		return newImage;
 	}
 
-	Label* Panel::_createLabel(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material)
+	Label* Panel::_createLabel(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture)
 	{
-		Label* newLabel = new Label(name,dimensions,positionMode,sizeMode,material,mChildrenContainer,this);
-		newLabel->setZOrderOffset(1);
-		if(!mVisible) newLabel->hide();
-		Widget::_addChildWidget(newLabel);
 		// update count
 		++mNumLabels;
+
+		Label* newLabel = new Label(name,TYPE_LABEL,dimensions,positionMode,sizeMode,texture,this,this,mGUIManager);
+		if(!mVisible) 
+			newLabel->hide();
 
 		return newLabel;
 	}
 
-	Menu* Panel::_createMenu(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material)
+	List* Panel::_createList(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture)
 	{
-		Menu* newMenu = new Menu(name,dimensions,positionMode,sizeMode,material,mChildrenContainer,this);
-		newMenu->setZOrderOffset(1);
-		if(!mVisible) newMenu->hide();
-		Widget::_addChildWidget(newMenu);
+		// update count
+		++mNumLists;
+
+		List* newList = new List(name,TYPE_LIST,dimensions,positionMode,sizeMode,texture,this,this,mGUIManager);
+		if(!mVisible) 
+			newList->hide();
+
+		return newList;
+	}
+
+	Menu* Panel::_createMenu(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture)
+	{
 		// update count
 		++mNumMenus;
+
+		Menu* newMenu = new Menu(name,TYPE_MENU,dimensions,positionMode,sizeMode,texture,this,this,mGUIManager);
+		if(!mVisible) 
+			newMenu->hide();
 
 		return newMenu;
 	}
 
-	NStateButton* Panel::_createNStateButton(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	NStateButton* Panel::_createNStateButton(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		NStateButton* newNStateButton = new NStateButton(name,dimensions,positionMode,sizeMode,mChildrenContainer,this);
-		newNStateButton->setZOrderOffset(1);
-		if(!mVisible) newNStateButton->hide();
-		Widget::_addChildWidget(newNStateButton);
 		// update count
 		++mNumNStateButtons;
+
+		NStateButton* newNStateButton = new NStateButton(name,TYPE_NSTATEBUTTON,dimensions,positionMode,sizeMode,this,this,mGUIManager);
+		if(!mVisible) 
+			newNStateButton->hide();
 
 		return newNStateButton;
 	}
 
-	Panel* Panel::_createPanel(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material)
+	Panel* Panel::_createPanel(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture)
 	{
-		Panel* newPanel = new Panel(name,dimensions,positionMode,sizeMode,material,mChildrenContainer,this);
-		newPanel->setZOrderOffset(1);
-		if(!mVisible) newPanel->hide();
-		Widget::_addChildWidget(newPanel);
 		// update count
 		++mNumPanels;
 
+		Panel* newPanel = new Panel(name,TYPE_PANEL,dimensions,positionMode,sizeMode,texture,this,this,mGUIManager);
+		if(!mVisible) 
+			newPanel->hide();
+	
 		return newPanel;
 	}
 
-	ProgressBar* Panel::_createProgressBar(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material)
+	ProgressBar* Panel::_createProgressBar(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture)
 	{
-		ProgressBar* newProgressBar = new ProgressBar(name,dimensions,positionMode,sizeMode,material,mChildrenContainer,this);
-		newProgressBar->setZOrderOffset(1);
-		if(!mVisible) newProgressBar->hide();
-		Widget::_addChildWidget(newProgressBar);
 		// update count
 		++mNumProgressBars;
+
+		ProgressBar* newProgressBar = new ProgressBar(name,TYPE_PROGRESSBAR,dimensions,positionMode,sizeMode,texture,this,this,mGUIManager);
+		if(!mVisible) 
+			newProgressBar->hide();
 
 		return newProgressBar;
 	}
 
-	TextBox* Panel::_createTextBox(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material)
+	TextBox* Panel::_createTextBox(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture)
 	{
-		TextBox* newTextBox = new TextBox(name,dimensions,positionMode,sizeMode,material,mChildrenContainer,this);
-		newTextBox->setZOrderOffset(1);
-		if(!mVisible) newTextBox->hide();
-		Widget::_addChildWidget(newTextBox);
 		// update count
 		++mNumTextBoxes;
+
+		TextBox* newTextBox = new TextBox(name,TYPE_TEXTBOX,dimensions,positionMode,sizeMode,texture,this,this,mGUIManager);
+		if(!mVisible) 
+			newTextBox->hide();
 
 		return newTextBox;
 	}
 
-	TrackBar* Panel::_createTrackBar(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material)
+	HorizontalTrackBar* Panel::_createHorizontalTrackBar(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture)
 	{
-		TrackBar* newTrackBar = new TrackBar(name,dimensions,positionMode,sizeMode,material,mChildrenContainer,this);
-		newTrackBar->setZOrderOffset(1);
-		if(!mVisible) newTrackBar->hide();
-		Widget::_addChildWidget(newTrackBar);
 		// update count;
-		++mNumTrackBars;
+		++mNumHorizontalTrackBars;
+
+		HorizontalTrackBar* newTrackBar = new HorizontalTrackBar(name,TYPE_TRACKBAR_HORIZONTAL,dimensions,positionMode,sizeMode,texture,this,this,mGUIManager);
+		if(!mVisible) 
+			newTrackBar->hide();
 
 		return newTrackBar;
 	}
 
-	bool Panel::_destroyWidget(Widget::Type TYPE, unsigned int index)
+	VerticalScrollBar* Panel::_createVerticalScrollBar(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture)
 	{
-		int counter = -1;
-		std::vector<Widget*>::iterator it;
-		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
-		{
-			if( (*it)->getWidgetType() == TYPE )
-			{
-				++counter;
-				if( counter == index )
-				{
-					Widget* w = (*it);
-					mChildWidgets.erase(it);
-					delete w;
-					return true;
-				}
-			}
-		}
-		return false;
+		// update count;
+		++mNumVerticalScrollBars;
+
+		VerticalScrollBar* newScrollBar = new VerticalScrollBar(name,TYPE_SCROLLBAR_VERTICAL,dimensions,positionMode,sizeMode,texture,this,this,mGUIManager);
+		if(!mVisible)
+			newScrollBar->hide();
+
+		return newScrollBar;
 	}
 
-	bool Panel::_destroyWidget(const Ogre::String& name)
+	VerticalTrackBar* Panel::_createVerticalTrackBar(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture)
 	{
-		std::vector<Widget*>::iterator it;
-		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
-		{
-			if( (*it)->getInstanceName() == name )
-			{
-				Widget* w = (*it);
-				mChildWidgets.erase(it);
-				delete w;
-				return true;
-			}
-		}
-		return false;
+		// update count;
+		++mNumVerticalTrackBars;
+
+		VerticalTrackBar* newTrackBar = new VerticalTrackBar(name,TYPE_TRACKBAR_VERTICAL,dimensions,positionMode,sizeMode,texture,this,this,mGUIManager);
+		if(!mVisible) 
+			newTrackBar->hide();
+
+		return newTrackBar;
 	}
 
 	Widget* Panel::_getWidget(Widget::Type TYPE, unsigned int index)
@@ -240,197 +288,252 @@ namespace QuickGUI
 		return NULL;
 	}
 
-	void Panel::activate(EventArgs& e)
+	Button* Panel::createButton(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if(!mEnabled) return;
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
 
-		Widget::activate(e);
-
-		std::vector<Widget*>::iterator wIt;
-		for( wIt = mChildWidgets.begin(); wIt != mChildWidgets.end(); ++wIt )
-		{
-			(*wIt)->activate(e);
-		}
+		return _createButton(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	Button* Panel::createButton(const Ogre::String& name, const Ogre::Vector4& dimensions, const Ogre::String& material, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
-	{
-		if( !(GUIManager::getSingleton().validWidgetName(name)) ) return NULL;
-
-		return _createButton(name,dimensions,positionMode,sizeMode,material);
-	}
-
-	Button* Panel::createButton(const Ogre::Vector4& dimensions, const Ogre::String& material, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	Button* Panel::createButton(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
 		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
 		++mAutoNameWidgetCounter;
 
-		return _createButton(name,dimensions,positionMode,sizeMode,material);
+		return _createButton(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	Button* Panel::createButton(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	Button* Panel::createButton(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if( !(GUIManager::getSingleton().validWidgetName(name)) ) return NULL;
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
 
-		Ogre::String material = getSheet()->getDefaultSkin() + ".button";
+		Ogre::String texture = getDefaultSkin() + ".button.png";
 
-		return _createButton(name,dimensions,positionMode,sizeMode,material);
+		return _createButton(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	Button* Panel::createButton(const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
-	{
-		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
-		++mAutoNameWidgetCounter;
-
-		Ogre::String material = getSheet()->getDefaultSkin() + ".button";
-
-		return _createButton(name,dimensions,positionMode,sizeMode,material);
-	}
-
-	ComboBox* Panel::createComboBox(const Ogre::String& name, const Ogre::Vector4& dimensions, const Ogre::String& material, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
-	{
-		if( !(GUIManager::getSingleton().validWidgetName(name)) ) return NULL;
-
-		return _createComboBox(name,dimensions,positionMode,sizeMode,material);
-	}
-
-	ComboBox* Panel::createComboBox(const Ogre::Vector4& dimensions, const Ogre::String& material, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	Button* Panel::createButton(const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
 		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
 		++mAutoNameWidgetCounter;
 
-		return _createComboBox(name,dimensions,positionMode,sizeMode,material);
+		Ogre::String texture = getDefaultSkin() + ".button.png";
+
+		return _createButton(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	ComboBox* Panel::createComboBox(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	ComboBox* Panel::createComboBox(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if( !(GUIManager::getSingleton().validWidgetName(name)) ) return NULL;
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
+
+		return _createComboBox(name,dimensions,positionMode,sizeMode,texture);
+	}
+
+	ComboBox* Panel::createComboBox(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	{
+		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
+		++mAutoNameWidgetCounter;
+
+		return _createComboBox(name,dimensions,positionMode,sizeMode,texture);
+	}
+
+	ComboBox* Panel::createComboBox(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	{
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
 		
-		Ogre::String material = getSheet()->getDefaultSkin() + ".combobox";
+		Ogre::String texture = getDefaultSkin() + ".combobox.png";
 
-		return _createComboBox(name,dimensions,positionMode,sizeMode,material);
+		return _createComboBox(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	ComboBox* Panel::createComboBox(const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	ComboBox* Panel::createComboBox(const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
 		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
 		++mAutoNameWidgetCounter;
 		
-		Ogre::String material = getSheet()->getDefaultSkin() + ".combobox";
+		Ogre::String texture = getDefaultSkin() + ".combobox.png";
 
-		return _createComboBox(name,dimensions,positionMode,sizeMode,material);
+		return _createComboBox(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	Image* Panel::createImage(const Ogre::String& name, const Ogre::Vector4& dimensions, const Ogre::String& material, bool texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	HorizontalScrollBar* Panel::createHorizontalScrollBar(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if( !(GUIManager::getSingleton().validWidgetName(name)) ) return NULL;
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
 
-		return _createImage(name,dimensions,positionMode,sizeMode,material,texture);
+		return _createHorizontalScrollBar(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	Image* Panel::createImage(const Ogre::Vector4& dimensions, const Ogre::String& material, bool texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
-	{
-		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
-		++mAutoNameWidgetCounter;
-
-		return _createImage(name,dimensions,positionMode,sizeMode,material,texture);
-	}
-
-	Image* Panel::createImage(const Ogre::String& name, const Ogre::Vector4& dimensions, bool texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
-	{
-		if( !(GUIManager::getSingleton().validWidgetName(name)) ) return NULL;
-
-		Ogre::String material = getSheet()->getDefaultSkin() + ".image";
-
-		return _createImage(name,dimensions,positionMode,sizeMode,material,texture);
-	}
-
-	Image* Panel::createImage(const Ogre::Vector4& dimensions, bool texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	HorizontalScrollBar* Panel::createHorizontalScrollBar(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
 		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
 		++mAutoNameWidgetCounter;
 
-		Ogre::String material = getSheet()->getDefaultSkin() + ".image";
-
-		return _createImage(name,dimensions,positionMode,sizeMode,material,texture);
+		return _createHorizontalScrollBar(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	Label* Panel::createLabel(const Ogre::String& name, const Ogre::Vector4& dimensions, const Ogre::String& material, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	HorizontalScrollBar* Panel::createHorizontalScrollBar(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if( !(GUIManager::getSingleton().validWidgetName(name)) ) return NULL;
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
 
-		return _createLabel(name,dimensions,positionMode,sizeMode,material);
+		Ogre::String texture = getDefaultSkin() + ".scrollbar.horizontal.png";
+
+		return _createHorizontalScrollBar(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	Label* Panel::createLabel(const Ogre::Vector4& dimensions, const Ogre::String& material, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	HorizontalScrollBar* Panel::createHorizontalScrollBar(const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
 		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
 		++mAutoNameWidgetCounter;
 
-		return _createLabel(name,dimensions,positionMode,sizeMode,material);
+		Ogre::String texture = getDefaultSkin() + ".scrollbar.horizontal.png";
+
+		return _createHorizontalScrollBar(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	Label* Panel::createLabel(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	Image* Panel::createImage(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if( !(GUIManager::getSingleton().validWidgetName(name)) ) return NULL;
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
 
-		Ogre::String material = getSheet()->getDefaultSkin() + ".label";
+		return _createImage(name,dimensions,positionMode,sizeMode,texture);
+	}
 
-		return _createLabel(name,dimensions,positionMode,sizeMode,material);
+	Image* Panel::createImage(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	{
+		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
+		++mAutoNameWidgetCounter;
+
+		return _createImage(name,dimensions,positionMode,sizeMode,texture);
+	}
+
+	Image* Panel::createImage(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	{
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
+
+		Ogre::String texture = getDefaultSkin() + ".image.png";
+
+		return _createImage(name,dimensions,positionMode,sizeMode,texture);
+	}
+
+	Image* Panel::createImage(const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	{
+		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
+		++mAutoNameWidgetCounter;
+
+		Ogre::String texture = getDefaultSkin() + ".image.png";
+
+		return _createImage(name,dimensions,positionMode,sizeMode,texture);
+	}
+
+	Label* Panel::createLabel(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	{
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
+
+		return _createLabel(name,dimensions,positionMode,sizeMode,texture);
+	}
+
+	Label* Panel::createLabel(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	{
+		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
+		++mAutoNameWidgetCounter;
+
+		return _createLabel(name,dimensions,positionMode,sizeMode,texture);
+	}
+
+	Label* Panel::createLabel(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	{
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
+
+		Ogre::String texture = getDefaultSkin() + ".label.png";
+
+		return _createLabel(name,dimensions,positionMode,sizeMode,texture);
 	}
 	
-	Label* Panel::createLabel(const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	Label* Panel::createLabel(const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
 		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
 		++mAutoNameWidgetCounter;
 
-		Ogre::String material = getSheet()->getDefaultSkin() + ".label";
+		Ogre::String texture = getDefaultSkin() + ".label.png";
 
-		return _createLabel(name,dimensions,positionMode,sizeMode,material);
+		return _createLabel(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	Menu* Panel::createMenu(const Ogre::String& name, const Ogre::Vector4& dimensions, const Ogre::String& material, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	List* Panel::createList(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if( !(GUIManager::getSingleton().validWidgetName(name)) ) return NULL;
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
 
-		return _createMenu(name,dimensions,positionMode,sizeMode,material);
+		return _createList(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	Menu* Panel::createMenu(const Ogre::Vector4& dimensions, const Ogre::String& material, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
-	{
-		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
-		++mAutoNameWidgetCounter;
-
-		return _createMenu(name,dimensions,positionMode,sizeMode,material);
-	}
-
-	Menu* Panel::createMenu(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
-	{
-		if( !(GUIManager::getSingleton().validWidgetName(name)) ) return NULL;
-
-		Ogre::String material = getSheet()->getDefaultSkin() + ".menu";
-
-		return _createMenu(name,dimensions,positionMode,sizeMode,material);
-	}
-
-	Menu* Panel::createMenu(const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	List* Panel::createList(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
 		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
 		++mAutoNameWidgetCounter;
 
-		Ogre::String material = getSheet()->getDefaultSkin() + ".menu";
-
-		return _createMenu(name,dimensions,positionMode,sizeMode,material);
+		return _createList(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	NStateButton* Panel::createNStateButton(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	List* Panel::createList(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if( !(GUIManager::getSingleton().validWidgetName(name)) ) return NULL;
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
+
+		Ogre::String texture = getDefaultSkin() + ".list.png";
+
+		return _createList(name,dimensions,positionMode,sizeMode,texture);
+	}
+
+	List* Panel::createList(const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	{
+		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
+		++mAutoNameWidgetCounter;
+
+		Ogre::String texture = getDefaultSkin() + ".list.png";
+
+		return _createList(name,dimensions,positionMode,sizeMode,texture);
+	}
+
+	Menu* Panel::createMenu(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	{
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
+
+		return _createMenu(name,dimensions,positionMode,sizeMode,texture);
+	}
+
+	Menu* Panel::createMenu(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	{
+		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
+		++mAutoNameWidgetCounter;
+
+		return _createMenu(name,dimensions,positionMode,sizeMode,texture);
+	}
+
+	Menu* Panel::createMenu(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	{
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
+
+		Ogre::String texture = getDefaultSkin() + ".menu.png";
+
+		return _createMenu(name,dimensions,positionMode,sizeMode,texture);
+	}
+
+	Menu* Panel::createMenu(const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	{
+		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
+		++mAutoNameWidgetCounter;
+
+		Ogre::String texture = getDefaultSkin() + ".menu.png";
+
+		return _createMenu(name,dimensions,positionMode,sizeMode,texture);
+	}
+
+	NStateButton* Panel::createNStateButton(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	{
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
 
 		return _createNStateButton(name,dimensions,positionMode,sizeMode);
 	}
 
-	NStateButton* Panel::createNStateButton(const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	NStateButton* Panel::createNStateButton(const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
 		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
 		++mAutoNameWidgetCounter;
@@ -438,358 +541,215 @@ namespace QuickGUI
 		return _createNStateButton(name,dimensions,positionMode,sizeMode);
 	}
 
-	Panel* Panel::createPanel(const Ogre::String& name, const Ogre::Vector4& dimensions, const Ogre::String& material, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	Panel* Panel::createPanel(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if( !(GUIManager::getSingleton().validWidgetName(name)) ) return NULL;
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
 
-		return _createPanel(name,dimensions,positionMode,sizeMode,material);
+		return _createPanel(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	Panel* Panel::createPanel(const Ogre::Vector4& dimensions, const Ogre::String& material, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	Panel* Panel::createPanel(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
 		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
 		++mAutoNameWidgetCounter;
 
-		return _createPanel(name,dimensions,positionMode,sizeMode,material);
+		return _createPanel(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	Panel* Panel::createPanel(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	Panel* Panel::createPanel(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if( !(GUIManager::getSingleton().validWidgetName(name)) ) return NULL;
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
 
-		Ogre::String material = getSheet()->getDefaultSkin() + ".panel";
+		Ogre::String texture = getDefaultSkin() + ".panel.png";
 
-		return _createPanel(name,dimensions,positionMode,sizeMode,material);
+		return _createPanel(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	Panel* Panel::createPanel(const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
-	{
-		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
-		++mAutoNameWidgetCounter;
-
-		Ogre::String material = getSheet()->getDefaultSkin() + ".panel";
-
-		return _createPanel(name,dimensions,positionMode,sizeMode,material);
-	}
-
-	ProgressBar* Panel::createProgressBar(const Ogre::String& name, const Ogre::Vector4& dimensions, const Ogre::String& material, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
-	{
-		if( !(GUIManager::getSingleton().validWidgetName(name)) ) return NULL;
-
-		return _createProgressBar(name,dimensions,positionMode,sizeMode,material);
-	}
-
-	ProgressBar* Panel::createProgressBar(const Ogre::Vector4& dimensions,  const Ogre::String& material, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	Panel* Panel::createPanel(const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
 		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
 		++mAutoNameWidgetCounter;
 
-		return _createProgressBar(name,dimensions,positionMode,sizeMode,material);
+		Ogre::String texture = getDefaultSkin() + ".panel.png";
+
+		return _createPanel(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	ProgressBar* Panel::createProgressBar(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	ProgressBar* Panel::createProgressBar(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if( !(GUIManager::getSingleton().validWidgetName(name)) ) return NULL;
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
 
-		Ogre::String material = getSheet()->getDefaultSkin() + ".progressbar";
-
-		return _createProgressBar(name,dimensions,positionMode,sizeMode,material);
+		return _createProgressBar(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	ProgressBar* Panel::createProgressBar(const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
-	{
-		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
-		++mAutoNameWidgetCounter;
-
-		Ogre::String material = getSheet()->getDefaultSkin() + ".progressbar";
-
-		return _createProgressBar(name,dimensions,positionMode,sizeMode,material);
-	}
-
-	TextBox* Panel::createTextBox(const Ogre::String& name, const Ogre::Vector4& dimensions, const Ogre::String& material, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
-	{
-		if( !(GUIManager::getSingleton().validWidgetName(name)) ) return NULL;
-
-		return _createTextBox(name,dimensions,positionMode,sizeMode,material);
-	}
-
-	TextBox* Panel::createTextBox(const Ogre::Vector4& dimensions, const Ogre::String& material, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	ProgressBar* Panel::createProgressBar(const Rect& dimensions,  const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
 		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
 		++mAutoNameWidgetCounter;
 
-		return _createTextBox(name,dimensions,positionMode,sizeMode,material);
+		return _createProgressBar(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	TextBox* Panel::createTextBox(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	ProgressBar* Panel::createProgressBar(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if( !(GUIManager::getSingleton().validWidgetName(name)) ) return NULL;
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
 
-		Ogre::String material = getSheet()->getDefaultSkin() + ".textbox";
+		Ogre::String texture = getDefaultSkin() + ".progressbar.png";
 
-		return _createTextBox(name,dimensions,positionMode,sizeMode,material);
+		return _createProgressBar(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	TextBox* Panel::createTextBox(const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
-	{
-		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
-		++mAutoNameWidgetCounter;
-
-		Ogre::String material = getSheet()->getDefaultSkin() + ".textbox";
-
-		return _createTextBox(name,dimensions,positionMode,sizeMode,material);
-	}
-
-	TrackBar* Panel::createTrackBar(const Ogre::String& name, const Ogre::Vector4& dimensions, const Ogre::String& material, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
-	{
-		if( !(GUIManager::getSingleton().validWidgetName(name)) ) return NULL;
-
-		return _createTrackBar(name,dimensions,positionMode,sizeMode,material);
-	}
-
-	TrackBar* Panel::createTrackBar(const Ogre::Vector4& dimensions, const Ogre::String& material, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	ProgressBar* Panel::createProgressBar(const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
 		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
 		++mAutoNameWidgetCounter;
 
-		return _createTrackBar(name,dimensions,positionMode,sizeMode,material);
+		Ogre::String texture = getDefaultSkin() + ".progressbar.png";
+
+		return _createProgressBar(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	TrackBar* Panel::createTrackBar(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	TextBox* Panel::createTextBox(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if( !(GUIManager::getSingleton().validWidgetName(name)) ) return NULL;
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
 
-		Ogre::String material = getSheet()->getDefaultSkin() + ".trackbar";
-
-		return _createTrackBar(name,dimensions,positionMode,sizeMode,material);
+		return _createTextBox(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	TrackBar* Panel::createTrackBar(const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	TextBox* Panel::createTextBox(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
 		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
 		++mAutoNameWidgetCounter;
 
-		Ogre::String material = getSheet()->getDefaultSkin() + ".trackbar";
-
-		return _createTrackBar(name,dimensions,positionMode,sizeMode,material);
+		return _createTextBox(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	void Panel::destroyButton(unsigned int index)
+	TextBox* Panel::createTextBox(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if( index >= mNumButtons ) return;
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
 
-		if(_destroyWidget(Widget::QGUI_TYPE_BUTTON,index))
-			--mNumButtons;
+		Ogre::String texture = getDefaultSkin() + ".textbox.png";
+
+		return _createTextBox(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	void Panel::destroyButton(const Ogre::String& name)
+	TextBox* Panel::createTextBox(const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if(_destroyWidget(name))
-			--mNumButtons;
+		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
+		++mAutoNameWidgetCounter;
+
+		Ogre::String texture = getDefaultSkin() + ".textbox.png";
+
+		return _createTextBox(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	void Panel::destroyButton(Button* b)
+	HorizontalTrackBar* Panel::createHorizontalTrackBar(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if(_destroyWidget(b->getInstanceName()))
-			--mNumButtons;
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
+
+		return _createHorizontalTrackBar(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	void Panel::destroyComboBox(unsigned int index)
+	HorizontalTrackBar* Panel::createHorizontalTrackBar(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if( index >= mNumComboBoxes ) return;
+		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
+		++mAutoNameWidgetCounter;
 
-		if(_destroyWidget(Widget::QGUI_TYPE_COMBOBOX,index))
-			--mNumComboBoxes;
+		return _createHorizontalTrackBar(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	void Panel::destroyComboBox(const Ogre::String& name)
+	HorizontalTrackBar* Panel::createHorizontalTrackBar(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if(_destroyWidget(name))
-			--mNumComboBoxes;;
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
+
+		Ogre::String texture = getDefaultSkin() + ".trackbar.horizontal.png";
+
+		return _createHorizontalTrackBar(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	void Panel::destroyComboBox(ComboBox* b)
+	HorizontalTrackBar* Panel::createHorizontalTrackBar(const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if(_destroyWidget(b->getInstanceName()))
-			--mNumComboBoxes;;
+		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
+		++mAutoNameWidgetCounter;
+
+		Ogre::String texture = getDefaultSkin() + ".trackbar.horizontal.png";
+
+		return _createHorizontalTrackBar(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	void Panel::destroyImage(unsigned int index)
+	VerticalScrollBar* Panel::createVerticalScrollBar(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if( index >= mNumImages ) return;
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
 
-		if(_destroyWidget(Widget::QGUI_TYPE_IMAGE,index))
-			--mNumImages;
+		return _createVerticalScrollBar(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	void Panel::destroyImage(const Ogre::String& name)
+	VerticalScrollBar* Panel::createVerticalScrollBar(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if(_destroyWidget(name))
-			--mNumImages;
+		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
+		++mAutoNameWidgetCounter;
+
+		return _createVerticalScrollBar(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	void Panel::destroyImage(Image* i)
+	VerticalScrollBar* Panel::createVerticalScrollBar(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if(_destroyWidget(i->getInstanceName()))
-			--mNumImages;
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
+
+		Ogre::String texture = getDefaultSkin() + ".scrollbar.vertical.png";
+
+		return _createVerticalScrollBar(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	void Panel::destroyLabel(unsigned int index)
+	VerticalScrollBar* Panel::createVerticalScrollBar(const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if( index >= mNumLabels ) return;
+		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
+		++mAutoNameWidgetCounter;
 
-		if(_destroyWidget(Widget::QGUI_TYPE_LABEL,index))
-			--mNumLabels;
+		Ogre::String texture = getDefaultSkin() + ".scrollbar.vertical.png";
+
+		return _createVerticalScrollBar(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	void Panel::destroyLabel(const Ogre::String& name)
+	VerticalTrackBar* Panel::createVerticalTrackBar(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if(_destroyWidget(name))
-			--mNumLabels;
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
+
+		return _createVerticalTrackBar(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	void Panel::destroyLabel(Label* l)
+	VerticalTrackBar* Panel::createVerticalTrackBar(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if(_destroyWidget(l->getInstanceName()))
-			--mNumLabels;
+		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
+		++mAutoNameWidgetCounter;
+
+		return _createVerticalTrackBar(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	void Panel::destroyMenu(unsigned int index)
+	VerticalTrackBar* Panel::createVerticalTrackBar(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if( index >= mNumMenus ) return;
+		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
 
-		if(_destroyWidget(Widget::QGUI_TYPE_MENU,index))
-			--mNumMenus;
+		Ogre::String texture = getDefaultSkin() + ".trackbar.vertical.png";
+
+		return _createVerticalTrackBar(name,dimensions,positionMode,sizeMode,texture);
 	}
 
-	void Panel::destroyMenu(const Ogre::String& name)
+	VerticalTrackBar* Panel::createVerticalTrackBar(const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		if(_destroyWidget(name))
-			--mNumMenus;
-	}
+		Ogre::String name = mInstanceName + ".ChildWidget" + Ogre::StringConverter::toString(mAutoNameWidgetCounter);
+		++mAutoNameWidgetCounter;
 
-	void Panel::destroyMenu(Menu* m)
-	{
-		if(_destroyWidget(m->getInstanceName()))
-			--mNumMenus;
-	}
+		Ogre::String texture = getDefaultSkin() + ".trackbar.vertical.png";
 
-	void Panel::destroyNStateButton(unsigned int index)
-	{
-		if( index >= mNumNStateButtons ) return;
-
-		if(_destroyWidget(Widget::QGUI_TYPE_NSTATEBUTTON,index))
-			--mNumNStateButtons;
-	}
-
-	void Panel::destroyNStateButton(const Ogre::String& name)
-	{
-		if(_destroyWidget(name))
-			--mNumNStateButtons;
-	}
-
-	void Panel::destroyNStateButton(NStateButton* b)
-	{
-		if(_destroyWidget(b->getInstanceName()))
-			--mNumNStateButtons;
-	}
-
-	void Panel::destroyPanel(unsigned int index)
-	{
-		if( index >= mNumNStateButtons ) return;
-
-		if(_destroyWidget(Widget::QGUI_TYPE_PANEL,index))
-			--mNumPanels;
-	}
-
-	void Panel::destroyPanel(const Ogre::String& name)
-	{
-		if(_destroyWidget(name))
-			--mNumPanels;
-	}
-
-	void Panel::destroyPanel(Panel* p)
-	{
-		if(_destroyWidget(p->getInstanceName()))
-			--mNumPanels;
-	}
-
-	void Panel::destroyProgressBar(unsigned int index)
-	{
-		if( index >= mNumProgressBars ) return;
-
-		if(_destroyWidget(Widget::QGUI_TYPE_PROGRESSBAR,index))
-			--mNumProgressBars;
-	}
-
-	void Panel::destroyProgressBar(const Ogre::String& name)
-	{
-		if(_destroyWidget(name))
-			--mNumProgressBars;
-	}
-
-	void Panel::destroyProgressBar(ProgressBar* b)
-	{
-		if(_destroyWidget(b->getInstanceName()))
-			--mNumProgressBars;
-	}
-
-	void Panel::destroyTextBox(unsigned int index)
-	{
-		if( index >= mNumTextBoxes ) return;
-
-		if(_destroyWidget(Widget::QGUI_TYPE_TEXTBOX,index))
-			--mNumTextBoxes;
-	}
-
-	void Panel::destroyTextBox(const Ogre::String& name)
-	{
-		if(_destroyWidget(name))
-			--mNumTextBoxes;
-	}
-
-	void Panel::destroyTextBox(TextBox* b)
-	{
-		if(_destroyWidget(b->getInstanceName()))
-			--mNumTextBoxes;
-	}
-
-	void Panel::destroyTrackBar(unsigned int index)
-	{
-		if( index >= mNumTrackBars ) return;
-
-		if(_destroyWidget(Widget::QGUI_TYPE_TRACKBAR,index))
-			--mNumTrackBars;
-	}
-
-	void Panel::destroyTrackBar(const Ogre::String& name)
-	{
-		if(_destroyWidget(name))
-			--mNumTrackBars;
-	}
-
-	void Panel::destroyTrackBar(TrackBar* b)
-	{
-		if(_destroyWidget(b->getInstanceName()))
-			--mNumTrackBars;
-	}
-
-	void Panel::deactivate(EventArgs& e)
-	{
-		if(!mEnabled) return;
-
-		Widget::deactivate(e);
-
-		std::vector<Widget*>::iterator wIt;
-		for( wIt = mChildWidgets.begin(); wIt != mChildWidgets.end(); ++wIt )
-			(*wIt)->deactivate(e);
+		return _createVerticalTrackBar(name,dimensions,positionMode,sizeMode,texture);
 	}
 
 	Button* Panel::getButton(unsigned int index)
 	{
 		if( index >= mNumButtons ) return NULL;
 
-		Widget* w = _getWidget(Widget::QGUI_TYPE_BUTTON,index);
+		Widget* w = _getWidget(Widget::TYPE_BUTTON,index);
 		if( w != NULL ) return dynamic_cast<Button*>(w);
 		else return NULL;
 	}
@@ -805,7 +765,7 @@ namespace QuickGUI
 	{
 		if( index >= mNumComboBoxes ) return NULL;
 
-		Widget* w = _getWidget(Widget::QGUI_TYPE_COMBOBOX,index);
+		Widget* w = _getWidget(Widget::TYPE_COMBOBOX,index);
 		if( w != NULL ) return dynamic_cast<ComboBox*>(w);
 		else return NULL;
 	}
@@ -817,11 +777,27 @@ namespace QuickGUI
 		else return NULL;
 	}
 
+	HorizontalScrollBar* Panel::getHorizontalScrollBar(unsigned int index)
+	{
+		if( index >= mNumHorizontalScrollBars ) return NULL;
+
+		Widget* w = _getWidget(Widget::TYPE_SCROLLBAR_HORIZONTAL,index);
+		if( w != NULL ) return dynamic_cast<HorizontalScrollBar*>(w);
+		else return NULL;
+	}
+
+	HorizontalScrollBar* Panel::getHorizontalScrollBar(const Ogre::String& name)
+	{
+		Widget* w = _getWidget(name);
+		if( w != NULL ) return dynamic_cast<HorizontalScrollBar*>(w);
+		else return NULL;
+	}
+
 	Image* Panel::getImage(unsigned int index)
 	{
 		if( index >= mNumImages ) return NULL;
 
-		Widget* w = _getWidget(Widget::QGUI_TYPE_IMAGE,index);
+		Widget* w = _getWidget(Widget::TYPE_IMAGE,index);
 		if( w != NULL ) return dynamic_cast<Image*>(w);
 		else return NULL;
 	}
@@ -837,7 +813,7 @@ namespace QuickGUI
 	{
 		if( index >= mNumLabels ) return NULL;
 
-		Widget* w = _getWidget(Widget::QGUI_TYPE_LABEL,index);
+		Widget* w = _getWidget(Widget::TYPE_LABEL,index);
 		if( w != NULL ) return dynamic_cast<Label*>(w);
 		else return NULL;
 	}
@@ -849,21 +825,27 @@ namespace QuickGUI
 		else return NULL;
 	}
 
-	Ogre::String Panel::getMaterial()
+	List* Panel::getList(unsigned int index)
 	{
-		return mWidgetMaterial;
+		if( index >= mNumLists ) return NULL;
+
+		Widget* w = _getWidget(Widget::TYPE_LIST,index);
+		if( w != NULL ) return dynamic_cast<List*>(w);
+		else return NULL;
 	}
 
-	int Panel::getMaxZOrderValue()
+	List* Panel::getList(const Ogre::String& name)
 	{
-		return mZOrderValues.back();
+		Widget* w = _getWidget(name);
+		if( w != NULL ) return dynamic_cast<List*>(w);
+		else return NULL;
 	}
 
 	Menu* Panel::getMenu( unsigned int index )
 	{
 		if( index >= mNumMenus ) return NULL;
 
-		Widget* w = _getWidget(Widget::QGUI_TYPE_MENU,index);
+		Widget* w = _getWidget(Widget::TYPE_MENU,index);
 		if( w != NULL ) return dynamic_cast<Menu*>(w);
 		else return NULL;
 	}
@@ -879,7 +861,7 @@ namespace QuickGUI
 	{
 		if( index >= mNumNStateButtons ) return NULL;
 
-		Widget* w = _getWidget(Widget::QGUI_TYPE_NSTATEBUTTON,index);
+		Widget* w = _getWidget(Widget::TYPE_NSTATEBUTTON,index);
 		if( w != NULL ) return dynamic_cast<NStateButton*>(w);
 		else return NULL;
 	}
@@ -895,7 +877,7 @@ namespace QuickGUI
 	{
 		if( index >= mNumPanels ) return NULL;
 
-		Widget* w = _getWidget(Widget::QGUI_TYPE_PANEL,index);
+		Widget* w = _getWidget(Widget::TYPE_PANEL,index);
 		if( w != NULL ) return dynamic_cast<Panel*>(w);
 		else return NULL;
 	}
@@ -911,7 +893,7 @@ namespace QuickGUI
 	{
 		if( index >= mNumProgressBars ) return NULL;
 
-		Widget* w = _getWidget(Widget::QGUI_TYPE_PROGRESSBAR,index);
+		Widget* w = _getWidget(Widget::TYPE_PROGRESSBAR,index);
 		if( w != NULL ) return dynamic_cast<ProgressBar*>(w);
 		else return NULL;
 	}
@@ -923,11 +905,16 @@ namespace QuickGUI
 		else return NULL;
 	}
 
+	ScrollPane* Panel::getScrollPane()
+	{
+		return mScrollPane;
+	}
+
 	TextBox* Panel::getTextBox(unsigned int index)
 	{
 		if( index >= mNumTextBoxes ) return NULL;
 
-		Widget* w = _getWidget(Widget::QGUI_TYPE_TEXTBOX,index);
+		Widget* w = _getWidget(Widget::TYPE_TEXTBOX,index);
 		if( w != NULL ) return dynamic_cast<TextBox*>(w);
 		else return NULL;
 	}
@@ -939,25 +926,51 @@ namespace QuickGUI
 		else return NULL;
 	}
 
-	TrackBar* Panel::getTrackBar(unsigned int index)
+	HorizontalTrackBar* Panel::getHorizontalTrackBar(unsigned int index)
 	{
-		if( index >= mNumTrackBars ) return NULL;
+		if( index >= mNumHorizontalTrackBars ) return NULL;
 
-		Widget* w = _getWidget(Widget::QGUI_TYPE_TRACKBAR,index);
-		if( w != NULL ) return dynamic_cast<TrackBar*>(w);
+		Widget* w = _getWidget(Widget::TYPE_TRACKBAR_HORIZONTAL,index);
+		if( w != NULL ) return dynamic_cast<HorizontalTrackBar*>(w);
 		else return NULL;
 	}
 
-	TrackBar* Panel::getTrackBar(const Ogre::String& name)
+	HorizontalTrackBar* Panel::getHorizontalTrackBar(const Ogre::String& name)
 	{
 		Widget* w = _getWidget(name);
-		if( w != NULL ) return dynamic_cast<TrackBar*>(w);
+		if( w != NULL ) return dynamic_cast<HorizontalTrackBar*>(w);
 		else return NULL;
 	}
 
-	void Panel::setMaterial(const Ogre::String& material)
+	VerticalScrollBar* Panel::getVerticalScrollBar(unsigned int index)
 	{
-		mWidgetMaterial = material;
-		mOverlayElement->setMaterialName(material);
+		if( index >= mNumVerticalScrollBars ) return NULL;
+
+		Widget* w = _getWidget(Widget::TYPE_SCROLLBAR_VERTICAL,index);
+		if( w != NULL ) return dynamic_cast<VerticalScrollBar*>(w);
+		else return NULL;
+	}
+
+	VerticalScrollBar* Panel::getVerticalScrollBar(const Ogre::String& name)
+	{
+		Widget* w = _getWidget(name);
+		if( w != NULL ) return dynamic_cast<VerticalScrollBar*>(w);
+		else return NULL;
+	}
+
+	VerticalTrackBar* Panel::getVerticalTrackBar(unsigned int index)
+	{
+		if( index >= mNumVerticalTrackBars ) return NULL;
+
+		Widget* w = _getWidget(Widget::TYPE_TRACKBAR_VERTICAL,index);
+		if( w != NULL ) return dynamic_cast<VerticalTrackBar*>(w);
+		else return NULL;
+	}
+
+	VerticalTrackBar* Panel::getVerticalTrackBar(const Ogre::String& name)
+	{
+		Widget* w = _getWidget(name);
+		if( w != NULL ) return dynamic_cast<VerticalTrackBar*>(w);
+		else return NULL;
 	}
 }

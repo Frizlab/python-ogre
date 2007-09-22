@@ -30,3 +30,9 @@ typedef btAlignedAllocator<btPersistentManifold*, 16> PersistentManifoldPtr16;
 
 typedef btAlignedObjectArray<btElement> btElementArray;
 typedef btAlignedAllocator<btElement, 16> btElement16;
+
+typedef btAxisSweep3Internal<unsigned> btAxisSweep3InternalUnsigned;
+typedef btAxisSweep3Internal<unsigned short> btAxisSweep3InternalUnsignedShort;
+typedef btAlignedObjectArray<btCompoundShapeChild> CompoundShapeChildObjectArray;
+typedef btAlignedAllocator<btCompoundShapeChild, 16> CompoundShapeChild16;
+

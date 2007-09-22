@@ -1,20 +1,17 @@
 #include "QuickGUIManager.h"
 
-#include "OgreFontManager.h"
-
-template<> QuickGUI::GUIManager* Ogre::Singleton<QuickGUI::GUIManager>::ms_Singleton = 0;
-
 namespace QuickGUI
 {
-	GUIManager::GUIManager(const unsigned int& RenderWindowWidth, const unsigned int& RenderWindowHeight) :
-		mRenderWindowWidth(RenderWindowWidth),
-		mRenderWindowHeight(RenderWindowHeight),
-		mMouseCursor(0),
+	GUIManager::GUIManager(Ogre::Viewport* vp) :
+		mViewport(vp),
 		mActiveSheet(0),
 		mWidgetContainingMouse(0),
 		mActiveWidget(0),
-		mClickTimeout(1),
-		mAutoNameSheetCounter(0)
+		mClickTimeout(75),
+		mAutoNameSheetCounter(0),
+		mQueueID(Ogre::RENDER_QUEUE_OVERLAY),
+		mMouseCursor(0),
+		mSceneManager(0)
 	{
 		mWidgetNames.clear();
 
@@ -27,30 +24,83 @@ namespace QuickGUI
 		mMouseButtonDown[6] = NULL;
 		mMouseButtonDown[7] = NULL;
 
+		mMouseCursor = new MouseCursor(Size(30,30),QGUI_GMM_PIXELS,"qgui.pointer.png",this);
+		mMouseCursor->setPosition(0.5,0.5,QGUI_GMM_RELATIVE);
+		
 		mDefaultSheet = createSheet("DefaultSheet","");
-		mActiveSheet = mDefaultSheet;
+		// Initialize all widget tracking pointers.
+		mActiveWidget = mWidgetContainingMouse = mActiveSheet = mDefaultSheet;
+
+		// by default, we support codepoints 9, and 32-166.
+		mSupportedCodePoints.push_back(9);
+		for(Ogre::UTFString::code_point i = 32; i < 167; ++i)
+			mSupportedCodePoints.push_back(i);
+
+		// load default skin into an SkinSet Texture - must be done before we start rendering.
+		loadSkin("qgui");
+
+		_createDefaultTextures();
+
+		mTimer = new Ogre::Timer();
 	}
 
 	GUIManager::~GUIManager()
 	{
+		delete mTimer;
+
+		removeFromRenderQueue();
 		clearAll();
-		destroyMouseCursor();
+
+		delete mMouseCursor;
+		mMouseCursor = NULL;
+
+		// delete imagesets
+		std::map<Ogre::String,SkinSet*>::iterator it;
+		for( it = mSkinSets.begin(); it != mSkinSets.end(); ++it )
+			delete (it->second);
+		mSkinSets.clear();
 	}
 
-	GUIManager* GUIManager::getSingletonPtr(void) { return ms_Singleton; }
-
-	GUIManager& GUIManager::getSingleton(void) { assert( ms_Singleton );  return (*ms_Singleton); }
-
-	void GUIManager::_notifyWindowDimensions(const unsigned int& RenderWindowWidth, const unsigned int& RenderWindowHeight)
+	void GUIManager::_createDefaultTextures()
 	{
-		mRenderWindowWidth = RenderWindowWidth;
-		mRenderWindowHeight = RenderWindowHeight;
-		
-		if( mMouseCursor ) mMouseCursor->_updateWindowDimensions(mRenderWindowWidth,mRenderWindowHeight);
+		Ogre::TextureManager* tm = Ogre::TextureManager::getSingletonPtr();
+		// QuickGUI.White - Plain White
+		if( !tm->resourceExists("QuickGUI.White") )
+		{
+			Ogre::TexturePtr tp = 
+				tm->createManual("QuickGUI.White",Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,Ogre::TEX_TYPE_2D,1,1,1,0,Ogre::PF_A8B8G8R8);
 
-		std::list<Sheet*>::iterator it;
-		for( it = mSheets.begin(); it != mSheets.end(); ++it )
-			(*it)->_notifyDimensionsChanged();
+			Ogre::HardwarePixelBufferSharedPtr buf = tp->getBuffer();
+			buf->lock(Ogre::HardwareBuffer::HBL_NORMAL);
+			const Ogre::PixelBox& pb = buf->getCurrentLock();
+			Ogre::uint8* pixelData = static_cast<Ogre::uint8*>(pb.data);
+
+			*pixelData++ = 255;	// Blue
+			*pixelData++ = 255; // Green
+			*pixelData++ = 255; // Red
+			*pixelData++ = 255; // Alpha
+
+			buf->unlock();
+		}
+
+		// QuickGUI.TextSelection - Used for text selections.  Has half alpha value.
+		if( !tm->resourceExists("QuickGUI.TextSelection") )
+		{
+			Ogre::TexturePtr tp = 
+				tm->createManual("QuickGUI.TextSelection",Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,Ogre::TEX_TYPE_2D,1,1,1,0,Ogre::PF_A8B8G8R8);
+
+			Ogre::HardwarePixelBufferSharedPtr buf = tp->getBuffer();
+			buf->lock(Ogre::HardwareBuffer::HBL_NORMAL);
+			const Ogre::PixelBox& pb = buf->getCurrentLock();
+			Ogre::uint8* pixelData = static_cast<Ogre::uint8*>(pb.data);
+
+			*pixelData++ = 255;	// Blue
+			*pixelData++ = 255; // Green
+			*pixelData++ = 255; // Red
+			*pixelData++ = 200; // Alpha
+
+			buf->unlock();
+		}
 	}
 
 	void GUIManager::clearAll()
@@ -79,42 +129,29 @@ namespace QuickGUI
 		mDefaultSheet = createSheet("DefaultSheet","");
 		mActiveSheet = mDefaultSheet;
 
-		destroyMouseCursor();
+		mActiveWidget = mActiveSheet;
+		mWidgetContainingMouse = mActiveSheet;
 	}
 
-	MouseCursor* GUIManager::createMouseCursor(const Ogre::Vector2& dimensions, const Ogre::String& material)
+	Sheet* GUIManager::_createSheet(const Ogre::String& name, const Ogre::String& texture)
 	{
-		mMouseCursor = new MouseCursor(dimensions,material,mRenderWindowWidth,mRenderWindowHeight);
-
-		return mMouseCursor;
-	}
-
-	MouseCursor* GUIManager::createMouseCursor(const Ogre::Vector2& dimensions)
-	{
-		Ogre::String material = "qgui.pointer";
-
-		return createMouseCursor(dimensions,material);
-	}
-
-	Sheet* GUIManager::_createSheet(const Ogre::String& name, const Ogre::String& material)
-	{
-		Sheet* newSheet = new Sheet(name,material);
+		Sheet* newSheet = new Sheet(name,Widget::TYPE_SHEET,texture,this);
 
 		mSheets.push_back(newSheet);
 
 		return newSheet;
 	}
 
-	Sheet* GUIManager::createSheet(const Ogre::String& name, const Ogre::String& material)
+	Sheet* GUIManager::createSheet(const Ogre::String& name, const Ogre::String& texture)
 	{
-		if( !(GUIManager::getSingleton().validWidgetName(name)) ) return NULL;
+		if( !(validWidgetName(name)) ) return NULL;
 
-		return _createSheet(name,material);
+		return _createSheet(name,texture);
 	}
 
 	Sheet* GUIManager::createSheet(const Ogre::String& name)
 	{
-		if( !(GUIManager::getSingleton().validWidgetName(name)) ) return NULL;
+		if( !(validWidgetName(name)) ) return NULL;
 
 		// the default skin for a sheet is transparency.
 		return _createSheet(name,"");
@@ -129,15 +166,9 @@ namespace QuickGUI
 		return _createSheet(name,"");
 	}
 
-	void GUIManager::destroyMouseCursor()
-	{
-		delete mMouseCursor;
-		mMouseCursor = NULL;
-	}
-
 	void GUIManager::destroySheet(const Ogre::String& name)
 	{
-		if( name == "" ) return;
+		if( (name == "") || (mActiveSheet->getInstanceName() == name) ) return;
 
 		std::list<Sheet*>::iterator it;
 		for( it = mSheets.begin(); it != mSheets.end(); ++it )
@@ -150,6 +181,15 @@ namespace QuickGUI
 				break;
 			}
 		}
+	}
+
+	void GUIManager::destroyWidget(Widget* w)
+	{
+		// Cannot destroy active sheet!
+		if( (w == NULL) || (w->getInstanceName() == mActiveSheet->getInstanceName()) )
+			return;
+
+		mFreeList.push_back(w);
 	}
 
 	void GUIManager::destroySheet(Sheet* sheet)
@@ -167,6 +207,12 @@ namespace QuickGUI
 		return mDefaultSheet;
 	}
 
+	SkinSet* GUIManager::getSkinImageSet(const Ogre::String& name)
+	{
+		if(!skinLoaded(name)) return NULL;
+		else return mSkinSets[name];
+	}
+
 	MouseCursor* GUIManager::getMouseCursor()
 	{
 		return mMouseCursor;
@@ -177,22 +223,22 @@ namespace QuickGUI
 		return mWidgetContainingMouse;
 	}
 
-	Ogre::Real GUIManager::getRenderWindowAspectRatio()
+	Ogre::Viewport* GUIManager::getViewport()
 	{
-		return (static_cast<Ogre::Real>(mRenderWindowWidth) / static_cast<Ogre::Real>(mRenderWindowHeight));
+		return mViewport;
 	}
 
-	unsigned int GUIManager::getRenderWindowWidth()
+	unsigned int GUIManager::getViewportWidth()
 	{
-		return mRenderWindowWidth;
+		return mViewport->getActualWidth();
 	}
 
-	unsigned int GUIManager::getRenderWindowHeight()
+	unsigned int GUIManager::getViewportHeight()
 	{
-		return mRenderWindowHeight;
+		return mViewport->getActualHeight();
 	}
 
-	Sheet* GUIManager::getSheet(const Ogre::String& name)
+	Sheet* GUIManager::getParentSheet(const Ogre::String& name)
 	{
 		if( name == "" ) return NULL;
 
@@ -206,317 +252,392 @@ namespace QuickGUI
 		return NULL;
 	}
 
+	bool GUIManager::embeddedInSkinImageset(const Ogre::String& skinName, const Ogre::String& textureName)
+	{
+		if(!skinLoaded(skinName)) return false;
+		else return mSkinSets[skinName]->containsImage(textureName);
+	}
+
 	bool GUIManager::injectChar(Ogre::UTFString::unicode_char c)
 	{
-		KeyEventArgs args(0);
+		if( std::find(mSupportedCodePoints.begin(),mSupportedCodePoints.end(),c) == mSupportedCodePoints.end() )
+			return false;
+
+		KeyEventArgs args(mActiveWidget);
 		args.codepoint = c;
-		args.handled = false;
 
-		if( isalpha(c) || isdigit(c) || ispunct(c) || c == ' ' )
-		{
-			if( mActiveWidget != NULL ) 
-			{
-				args.widget = mActiveWidget;
-				mActiveWidget->onCharacter(args);
-			}
-		}
-
-		return args.handled;
+		return mActiveWidget->fireEvent(Widget::EVENT_CHARACTER_KEY,args);
 	}
 
 	bool GUIManager::injectKeyDown(const KeyCode& kc)
 	{
-		KeyEventArgs args(0);
+		KeyEventArgs args(mActiveWidget);
 		args.scancode = kc;
-		args.handled = false;
 
-		if( mActiveWidget != NULL ) 
-		{
-			args.widget = mActiveWidget;
-			mActiveWidget->onKeyDown(args);
-		}
-
-		return args.handled;
+		return mActiveWidget->fireEvent(Widget::EVENT_KEY_DOWN,args);
 	}
 
 	bool GUIManager::injectKeyUp(const KeyCode& kc)
 	{
-		KeyEventArgs args(0);
+		KeyEventArgs args(mActiveWidget);
 		args.scancode = kc;
-		args.handled = false;
 
-		if( mActiveWidget != NULL ) 
-		{
-			args.widget = mActiveWidget;
-			mActiveWidget->onKeyUp(args);
-		}
-
-		return args.handled;
+		return mActiveWidget->fireEvent(Widget::EVENT_KEY_UP,args);
 	}
 	
 	bool GUIManager::injectMouseButtonDown(const MouseButtonID& button)
 	{
-		if( (mMouseCursor == NULL) || (!mMouseCursor->isVisible()) ) return false;
+		if( !mMouseCursor->isVisible() ) 
+			return false;
 
-		MouseEventArgs args(0);
+		bool eventHandled = false;
 
-		args.position.x = mMouseCursor->getPixelPosition().x;
-		args.position.y = mMouseCursor->getPixelPosition().y;
+		MouseEventArgs args(mActiveWidget);
+		args.position = mMouseCursor->getPosition();
 		args.button = button;
-		args.handled = false;
 
-		if(mWidgetContainingMouse != NULL) 
+		// Feature, allowing widgets to be clicked, without transfering focus.  Widget will receive
+		// Mouse Button Down Event.
+		if(!mWidgetContainingMouse->getGainFocusOnClick())
 		{
-			// mActiveWidget is the last widget the user clicked on, ie TextBox, ComboBox, etc.
-			if( (mActiveWidget != NULL) && (mActiveWidget->getInstanceName() != mWidgetContainingMouse->getInstanceName()) )
-			{
-				args.widget = mActiveWidget;
-				mActiveWidget->deactivate(args);
-				// reset to false, becase within this context, the event (mouseButtonDown) has not been handled
-				args.handled = false;
-				mActiveWidget = NULL;
-			}
+			return mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_BUTTON_DOWN,args);
+		}
 
+		// mActiveWidget is the last widget the user clicked on, ie TextBox, ComboBox, etc.
+		if( mActiveWidget->getInstanceName() != mWidgetContainingMouse->getInstanceName() )
+		{
+			if(mActiveWidget->fireEvent(Widget::EVENT_LOSE_FOCUS,args))
+				eventHandled = true;
+
+			// Update active widget reference.
 			mActiveWidget = mWidgetContainingMouse;
+		}
+		
+		args.widget = mActiveWidget;
+		args.position = mMouseCursor->getPosition();
+		args.button = button;
+
+		if(mActiveWidget->fireEvent(Widget::EVENT_MOUSE_BUTTON_DOWN,args))
+			eventHandled = true;
+		if(mActiveWidget->fireEvent(Widget::EVENT_GAIN_FOCUS,args))
+			eventHandled = true;
+		mActiveWidget->setGrabbed(true);
 			
-			args.widget = mActiveWidget;
-			mWidgetContainingMouse->onMouseButtonDown(args);
-			// Gaurds against the scenario where a handler changes game state (clears GUI)
-			if( mWidgetContainingMouse == NULL ) return args.handled;
-				
-			// When a window becomes active, activates all its child widgets (except textboxes)
-			Window* w = mWidgetContainingMouse->getWindow();
-			if( w != NULL ) w->activate(args);
-			else mWidgetContainingMouse->getSheet()->activate(args);
+		// If the user clicked on a widget that is a part of a window, make sure the window is brought to front.
+		Window* w = mActiveWidget->getParentWindow();
+		if( w != NULL ) 
+			w->bringToFront();
 
-			// Only one textbox can be active at a time.  In the event that the clicked widget
-			// is a textbox, activate it!
-			if( mActiveWidget->getWidgetType() == Widget::QGUI_TYPE_TEXTBOX ) mActiveWidget->activate(args);
+		// Record that the mouse button went down on this widget (non-window)
+		mMouseButtonDown[args.button] = mActiveWidget;
+		
+		mMouseButtonTimings[button] = mTimer->getMilliseconds();
 
-			// Record that the mouse button went down on this widget (non-window)
-			mMouseButtonDown[args.button] = mWidgetContainingMouse;
-		}
-		else
-		{
-			if( mActiveWidget != NULL )
-			{
-				args.widget = mActiveWidget;
-				mActiveWidget->deactivate(args);
-				mActiveWidget = NULL;
-			}
-
-			mMouseButtonDown[args.button] = NULL;
-		}
-
-		mMouseButtonTimings[button] = time(NULL);
-
-		return args.handled;
+		return eventHandled;
 	}
 
 	bool GUIManager::injectMouseButtonUp(const MouseButtonID& button)
 	{
-		if( (mMouseCursor == NULL) || (!mMouseCursor->isVisible()) ) return false;
+		if( !mMouseCursor->isVisible() ) 
+			return false;
 
-		MouseEventArgs args(0);
+		bool eventHandled = false;
 
-		args.position.x = mMouseCursor->getPixelPosition().x;
-		args.position.y = mMouseCursor->getPixelPosition().y;
+		MouseEventArgs args(mActiveWidget);
+		args.position = mMouseCursor->getPosition();
 		args.button = button;
-		args.handled = false;
+
+		// Feature, allowing widgets to be clicked, without transfering focus.  Widget will receive
+		// Mouse Button Up and Click Events, if appropriate.
+		if(!mWidgetContainingMouse->getGainFocusOnClick())
+		{
+			if( mMouseButtonDown[args.button] == mWidgetContainingMouse )
+			{
+				eventHandled = mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_BUTTON_UP,args);
+				// check if time elapsed it within click time.
+				if( (mTimer->getMilliseconds() - mMouseButtonTimings[button]) < mClickTimeout ) 
+					eventHandled = mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_CLICK,args);
+			}
+			return eventHandled;
+		}
 
 		// If the MouseButton was not pressed on this widget, do not register the button being released on the widget
-		// Obviously if the recorded widget is NULL, we know that nothing will be registered
-		if( mMouseButtonDown[button] == NULL ) 
+		if( mWidgetContainingMouse->getInstanceName() != mActiveWidget->getInstanceName()  )
 		{
-			if( mActiveWidget != NULL ) mActiveWidget->deactivate(args);
-			return false;
-		}
-		if( mWidgetContainingMouse == NULL )
-		{
-			if( mActiveWidget != NULL ) mActiveWidget->deactivate(args);
-			return false;
-		}
-		if( mMouseButtonDown[button]->getInstanceName() != mWidgetContainingMouse->getInstanceName() )
-		{
-			if( mActiveWidget != NULL ) mActiveWidget->deactivate(args);
-			return false;
+			if(mActiveWidget->fireEvent(Widget::EVENT_LOSE_FOCUS,args))
+				eventHandled = true;
+
+			mActiveWidget->setGrabbed(false);
+			return eventHandled;
 		}
 
 		// after this point, we know that the user had mouse button down on this widget, and is now doing mouse button up
 
-		args.widget = mWidgetContainingMouse;
+		args.widget = mActiveWidget;
+		args.position = mMouseCursor->getPosition();
+		args.button = button;
 
-		mWidgetContainingMouse->onMouseButtonUp(args);
-		// Need to gaurd against the scenario where  mousebutton up destroys the UI
-		if( (mWidgetContainingMouse != NULL) && (time(NULL) - mMouseButtonTimings[button] < mClickTimeout) ) mWidgetContainingMouse->onMouseClicked(args);
+		if(mActiveWidget->fireEvent(Widget::EVENT_MOUSE_BUTTON_UP,args))
+			eventHandled = true;
+		mActiveWidget->setGrabbed(false);
 
-		return args.handled;
+		// check if time elapsed it within click time.
+		if( (mTimer->getMilliseconds() - mMouseButtonTimings[button]) < mClickTimeout ) 
+			if(mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_CLICK,args))
+				eventHandled = true;
+
+		return eventHandled;
 	}
 
 	bool GUIManager::injectMouseLeaves(void)
 	{
-		if( (mMouseCursor == NULL) || (!mMouseCursor->isVisible()) ) return false;
+		if( !mMouseCursor->isVisible() ) 
+			return false;
 
-		if(mMouseCursor->getHideWhenOffScreen()) mMouseCursor->_hide();
+		if(mMouseCursor->getHideWhenOffScreen()) 
+			mMouseCursor->_hide();
 
 		return true;
 	}
 
 	bool GUIManager::injectMouseMove(const int& xPixelOffset, const int& yPixelOffset)
 	{
-		if( mMouseCursor == NULL ) return false;
-
 		MouseEventArgs args(0);
-
+		args.position = mMouseCursor->getPosition();
 		args.moveDelta.x = xPixelOffset;
 		args.moveDelta.y = yPixelOffset;
-		args.handled = false;
 
-		if( mMouseCursor->mouseOnTopBorder() && yPixelOffset < 0 ) args.moveDelta.y = 0;
-		if( mMouseCursor->mouseOnBotBorder() && yPixelOffset > 0 ) args.moveDelta.y = 0;
-		if( mMouseCursor->mouseOnLeftBorder() && xPixelOffset < 0 ) args.moveDelta.x = 0;
-		if( mMouseCursor->mouseOnRightBorder() && xPixelOffset > 0 ) args.moveDelta.x = 0;
+		if( mMouseCursor->mouseOnTopBorder() && yPixelOffset < 0 ) 
+			args.moveDelta.y = 0;
+		if( mMouseCursor->mouseOnBotBorder() && yPixelOffset > 0 ) 
+			args.moveDelta.y = 0;
+		if( mMouseCursor->mouseOnLeftBorder() && xPixelOffset < 0 ) 
+			args.moveDelta.x = 0;
+		if( mMouseCursor->mouseOnRightBorder() && xPixelOffset > 0 ) 
+			args.moveDelta.x = 0;
 
 		// Update Mouse Cursor Position
 		mMouseCursor->offsetPosition(xPixelOffset,yPixelOffset);
 
-		args.position.x = mMouseCursor->getPixelPosition().x;
-		args.position.y = mMouseCursor->getPixelPosition().y;
-
-		if(!mMouseCursor->isVisible()) return args.handled;
-
-		// Now that moving the cursor is handled, move onto widget event handling.
-		if( mActiveSheet == NULL ) return args.handled;
+		if(!mMouseCursor->isVisible()) 
+			return false;
 
 		// See if we should be dragging a widget.
-		if( (mWidgetContainingMouse != NULL) && 
-			(mWidgetContainingMouse->getGrabbed()) && 
-			(mWidgetContainingMouse->draggingEnabled()) )
+		if( (mActiveWidget->getGrabbed()) && (mActiveWidget->draggingEnabled()) )
 		{
-			// If another widget is active, make in inactive
-			if( (mActiveWidget != NULL) && 
-				(mActiveWidget->getInstanceName() != mWidgetContainingMouse->getInstanceName()) ) 
-			{
-				mActiveWidget->deactivate(args);
-				mActiveWidget = NULL;
-				// restore arg values, since deactivate may have modified it.
-				args.position.x = mMouseCursor->getPixelPosition().x;
-				args.position.y = mMouseCursor->getPixelPosition().y;
-				args.moveDelta.x = xPixelOffset;
-				args.moveDelta.y = yPixelOffset;
-				args.handled = false;
-			}
-
 			// Dragging, which uses move function, works with pixel values (uninfluenced by parent dimensions!)
-			mWidgetContainingMouse->drag(args.moveDelta.x,args.moveDelta.y,QGUI_GMM_PIXELS);
+			mActiveWidget->drag(xPixelOffset,yPixelOffset,QGUI_GMM_PIXELS);
 
-			return args.handled;
+			return true;
 		}
 
 		// Now get the widget the cursor is over.
-		Widget* hitWidget = mActiveSheet->getTargetWidget(args.position);
+		Widget* hitWidget;
+		Widget* wItr = mActiveWidget;
+		while( (hitWidget = wItr->getTargetWidget(args.position)) == NULL )
+			wItr = wItr->getParentWidget();
+		
 		// NOTE: Widget is only detected if it is enabled.
 		args.widget = hitWidget;
 
-		// Take care of properly firing MouseMoved, MouseEnters, and MouseLeaves events
-		if(hitWidget)
-		{
-			if( mWidgetContainingMouse != NULL )
-			{
-				if( (mWidgetContainingMouse->getInstanceName() != hitWidget->getInstanceName()) )
-				{
-					mWidgetContainingMouse->onMouseLeaves(args);
-					mWidgetContainingMouse = hitWidget;
-					mWidgetContainingMouse->onMouseEnters(args);
-				}
-				mWidgetContainingMouse->onMouseMoved(args);
-			}
-			else
-			{
-				mWidgetContainingMouse = hitWidget;
-				mWidgetContainingMouse->onMouseEnters(args);
-				mWidgetContainingMouse->onMouseMoved(args);
-			}
-		}
-		else
-		{
-			if( mWidgetContainingMouse != NULL )
-			{
-				mWidgetContainingMouse->onMouseLeaves(args);
-			}
-			mWidgetContainingMouse = NULL;
-		}
+		bool eventHandled = false;
 
-		return args.handled;
+		if( (mWidgetContainingMouse->getInstanceName() != hitWidget->getInstanceName()) )
+		{
+			if(mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_LEAVE,args))
+				eventHandled = true;
+
+			mWidgetContainingMouse = hitWidget;
+			if(mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_ENTER,args))
+				eventHandled = true;
+		}
+		else // widget containing mouse has not changed.
+			eventHandled = mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_MOVE,args);
+
+		return eventHandled;
 	}
 
 	bool GUIManager::injectMousePosition(const int& xPixelPosition, const int& yPixelPosition)
 	{
-		if( mMouseCursor == NULL ) return false;
+		Point pos = mMouseCursor->getPosition();
 
-		MouseEventArgs args(0);
-		args.handled = false;
-
-		Ogre::Vector2 pos = mMouseCursor->getPixelPosition();
-
-		injectMouseMove(xPixelPosition - pos.x,yPixelPosition - pos.y);
-
-		return args.handled;
+		return injectMouseMove(xPixelPosition - pos.x,yPixelPosition - pos.y);
 	}
 
 	bool GUIManager::injectMouseWheelChange(float delta)
 	{
-		MouseEventArgs args(0);
-		args.handled = false;
-
+		MouseEventArgs args(mWidgetContainingMouse);
 		args.wheelChange = delta;
 
-		if( mWidgetContainingMouse != NULL )
-		{
-			args.widget = mWidgetContainingMouse;
-			mWidgetContainingMouse->onMouseWheel(args);
-		}
-
-		return args.handled;
+		return mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_WHEEL,args);
 	}
 
 	void GUIManager::injectTime(Ogre::Real time)
 	{
-		if( mActiveSheet != NULL ) mActiveSheet->timeElapsed(time);
+		mActiveSheet->timeElapsed(time);
+	}
+
+	void GUIManager::loadSkin(const Ogre::String& skinName)
+	{
+		// check if imageset is already created for this skin
+		if( mSkinSets.find(skinName) != mSkinSets.end() ) return;
+
+		mSkinSets[skinName] = new SkinSet(skinName);
+	}
+
+	void GUIManager::renderQueueStarted(Ogre::uint8 id, const Ogre::String& invocation, bool& skipThisQueue)
+	{
+		if(mQueueID == id)
+		{
+			mActiveSheet->render();
+			mMouseCursor->render();
+		}
+	}
+
+	void GUIManager::renderQueueEnded(Ogre::uint8 id, const Ogre::String& invocation, bool& repeatThisQueue)
+	{
+		bool listEmpty = mFreeList.empty();
+
+		if(!listEmpty)
+		{
+			mActiveWidget = mActiveSheet;
+			mWidgetContainingMouse = mActiveSheet;
+		}
+
+		std::vector<Widget*>::iterator it;
+		for( it = mFreeList.begin(); it != mFreeList.end(); ++it )
+		{
+			listEmpty = false;
+
+			// if widget is a sheet, need to remove it from sheet list.
+			if( (*it)->getWidgetType() == Widget::TYPE_SHEET )
+				destroySheet((*it)->getInstanceName());
+			else 
+				delete (*it);
+		}
+		mFreeList.clear();
+
+		if(!listEmpty)
+			injectMouseMove(0,0);
+	}
+
+	void GUIManager::removeFromRenderQueue()
+	{
+		if(mSceneManager != NULL)
+			mSceneManager->removeRenderQueueListener(this);
 	}
 
 	void GUIManager::removeWidgetName(const Ogre::String& name)
 	{
-		if( name == "" ) return;
+		if( name == "" ) 
+			return;
 
 		Ogre::StringVector::iterator it = std::remove(mWidgetNames.begin(),mWidgetNames.end(),name);
-		if( it != mWidgetNames.end() ) mWidgetNames.erase(it);
+		if( it != mWidgetNames.end() ) 
+			mWidgetNames.erase(it);
 	}
 
 	void GUIManager::setActiveSheet(Sheet* s)
 	{
-		if( s == NULL ) return;
-
-		std::list<Sheet*>::iterator it;
-		for( it = mSheets.begin(); it != mSheets.end(); ++it )
-			(*it)->hide();
+		if( (s == NULL) || (s->getInstanceName() == mActiveSheet->getInstanceName()) ) 
+			return;
 
 		mActiveSheet = s;
-		mActiveSheet->show();
+
+		// Make sure active widget loses focus.
+		mActiveWidget->fireEvent(Widget::EVENT_LOSE_FOCUS,EventArgs());
+		
+		// Make sure mouse over widget has mouse leave event.
+		MouseEventArgs args(mWidgetContainingMouse);
+		args.position = mMouseCursor->getPosition();
+
+		mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_LEAVE,args);
 
 		// Update the active widget
-		if( mActiveWidget != NULL ) mActiveWidget = NULL;
+		mActiveWidget = mActiveSheet;
+		mWidgetContainingMouse = mActiveSheet;
 		injectMouseMove(0,0);
+	}
+
+	void GUIManager::setActiveWidget(Widget* w)
+	{
+		if ( !w->enabled() || w == NULL )
+			return;
+
+		if( w->getInstanceName() != mActiveWidget->getInstanceName() ) 
+		{
+			WidgetEventArgs args(mActiveWidget);
+			mActiveWidget->fireEvent(Widget::EVENT_LOSE_FOCUS,args);
+		}
+
+		mActiveWidget = w;
+
+		WidgetEventArgs args(mActiveWidget);
+		mActiveWidget->fireEvent(Widget::EVENT_GAIN_FOCUS,args);
+	}
+
+	void GUIManager::setRenderQueueID(Ogre::uint8 id)
+	{
+		mQueueID = id;
+	}
+
+	void GUIManager::setSceneManager(Ogre::SceneManager* sm)
+	{
+		// remove listener from previous scene manager
+		if(mSceneManager != NULL)
+			mSceneManager->removeRenderQueueListener(this);
+		// update
+		mSceneManager = sm;
+		// add listener to new scene manager
+		if(mSceneManager != NULL)
+			mSceneManager->addRenderQueueListener(this);
+	}
+
+	void GUIManager::setSupportedCodePoints(const std::vector<Ogre::UTFString::code_point>& list)
+	{
+		mSupportedCodePoints.clear();
+		mSupportedCodePoints.assign(list.begin(),list.end());
+	}
+
+	void GUIManager::setViewport(Ogre::Viewport* vp)
+	{
+		mViewport = vp;
+	}
+
+	bool GUIManager::skinLoaded(const Ogre::String& skinName)
+	{
+		return (mSkinSets.find(skinName) != mSkinSets.end());
+	}
+
+	bool GUIManager::textureExists(const Ogre::String& textureName)
+	{
+		if(textureName == "")
+			return false;
+
+		if(Utility::textureExistsOnDisk(textureName))
+			return true;
+
+		if(Ogre::TextureManager::getSingletonPtr()->resourceExists(textureName)) 
+			return true;
+
+		std::map<Ogre::String,SkinSet*>::iterator it;
+		for( it = mSkinSets.begin(); it != mSkinSets.end(); ++it )
+			if( it->second->containsImage(textureName) )
+				return true;
+
+		return false;
 	}
 
 	bool GUIManager::validWidgetName(const Ogre::String& name, bool addToList)
 	{
-		if( name == "" ) return false;
+		if( name == "" ) 
+			return false;
 
 		Ogre::StringVector::iterator it;
 		for( it = mWidgetNames.begin(); it != mWidgetNames.end(); ++it )
 		{
-			if( (*it) == name ) return false;
+			if( (*it) == name ) 
+				return false;
 		}
 
 		if(addToList) mWidgetNames.push_back(name);
