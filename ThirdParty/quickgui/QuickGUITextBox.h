@@ -2,9 +2,7 @@
 #define QUICKGUITEXTBOX_H
 
 #include "QuickGUILabel.h"
-#include "QuickGUIPrerequisites.h"
-#include "QuickGUIText.h"
-#include "QuickGUIWidget.h"
+#include "QuickGUIMouseCursor.h"
 
 namespace QuickGUI
 {
@@ -21,7 +19,7 @@ namespace QuickGUI
 		TextBoxes must be created by the Window widget.
 	*/
 	class _QuickGUIExport TextBox :
-		public Widget
+		public Label
 	{
 	public:
 		/** Constructor
@@ -36,112 +34,196 @@ namespace QuickGUI
 			@param
 				material Ogre material defining the widget image.
 			@param
-				overlayContainer associates the internal OverlayElement with a specified zOrder.
+				group QuadContainer containing this widget.
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		TextBox(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material, Ogre::OverlayContainer* overlayContainer, Widget* ParentWidget);
-		virtual ~TextBox();
+		TextBox(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
 
-		/**
-		* When user has changed the font, character height, or text,
-		* the label must be updated and aligned according to its parent.
-		*/
-		void _notifyTextChanged();
 		/**
 		* Adds a character to the textBox right before text cursor.
 		*/
-		void addCharacter(Ogre::UTFString::unicode_char c);
+		void addCharacter(Ogre::UTFString::code_point cp);
 		/**
 		* Add user defined event that will be called when user presses Enter key with Textbox Activated.
 		*/
-		template<typename T> void addOnEnterPressedEventHandler(bool (T::*function)(const EventArgs&), T* obj)
+		template<typename T> void addOnEnterPressedEventHandler(void (T::*function)(const EventArgs&), T* obj)
 		{
 			mOnEnterPressedUserEventHandlers.push_back(new MemberFunctionPointer<T>(function,obj));
 		}
 		void addOnEnterPressedEventHandler(MemberFunctionSlot* function);
 		/**
-		* Aligns the child Label widget horizontally and vertically.
-		*/
-		void alignText(HorizontalAlignment ha, VerticalAlignment va);
-		/**
 		* Method to erase the character right before the text cursor.
 		*/
 		void backSpace();
+
 		/**
 		* Method to erase the character right after the text cursor.
 		*/
 		void deleteCharacter();
 		/**
-		* Gets a handle to the Label widget used for this Widget.
+		* Sets focus to the widget, displaying the text cursor.
 		*/
-		Text* getTextWidget();
+		void focus();
+		Ogre::UTFString getCaption();
+		/**
+		* Returns the index of the beginning of the next word.  If next word
+		* does not exist, the last index of the previous word is returned.
+		* NOTE: This function is relative to the Text Cursor.
+		*/
+		int getNextWordIndex();
+		/**
+		* Returns the index of the beginning of the previous word.  If previous word
+		* does not exist, the first index of the previous word is returned.
+		* NOTE: This function is relative to the Text Cursor.
+		*/
+		int getPreviousWordIndex();
 		bool getReadOnly();
+		/**
+		* Sets mVisible to false.  Widgets should override this to implement how they handle
+		* hiding.
+		*/
+		void hide();
 		/**
 		* Hides the actual user input and writes the designated character
 		* in its place.  Great for visible password protection.
 		*/
 		void maskUserInput(const Ogre::UTFString::unicode_char& symbol=' ');
+		void moveCursorLeft();
+		void moveCursorRight();
 
 		// Overridden Event Handling functions
 		/**
-		* Handler for the QGUI_EVENT_DEACTIVATED event, and deactivates all child widgets (if exist)
+		* Handler for the EVENT_LOSE_FOCUS event, and deactivates all child widgets (if exist)
 		*/
-		void deactivate(EventArgs& e);
+		void onLoseFocus(const EventArgs& args);
 		/**
 		* User defined event handler called when user presses Enter.
 		* Note that this event is not passed to its parents, the event is specific to this widget.
 		*/
-		bool onEnterPressed(KeyEventArgs& e);
+		void onEnterPressed(const KeyEventArgs& args);
 		/**
-		* Handler for the QGUI_EVENT_KEY_DOWN event.  If not handled, it will be passed
+		* Handler for the EVENT_KEY_DOWN event.  If not handled, it will be passed
 		* to the parent widget (if exists)
 		*/
-		bool onKeyDown(KeyEventArgs& e);
+		void onKeyDown(const EventArgs& args);
 		/**
-		* Handler for the QGUI_EVENT_KEY_UP event.  If not handled, it will be passed
+		* Handler for the EVENT_KEY_UP event.  If not handled, it will be passed
 		* to the parent widget (if exists)
 		*/
-		bool onKeyUp(KeyEventArgs& e);
+		void onKeyUp(const EventArgs& args);
 		/**
-		* Handler for the QGUI_EVENT_CHARACTER_KEY event.  Appends character to the end of the Label's text.
-		* If not handled, it will be passed to the parent widget (if exists)
+		* Handler for the EVENT_CHARACTER_KEY event.  Appends character to the end of the Label's text.
 		*/
-		bool onCharacter(KeyEventArgs& e);
+		void onCharacter(const EventArgs& args);
 		/**
-		* Default Handler for the QGUI_EVENT_MOUSE_BUTTON_DOWN event.  If not handled, it will be passed
-		* to the parent widget (if exists)
+		* Handler for the EVENT_MOUSE_BUTTON_DOWN event.  Used to implement text highlighting.
 		*/
-		bool onMouseButtonDown(MouseEventArgs& e);
+		void onMouseButtonDown(const EventArgs& args);
+		/**
+		* Handler for the EVENT_MOUSE_BUTTON_UP event.  Used to implement text highlighting.
+		*/
+		void onMouseButtonUp(const EventArgs& args);
+		/**
+		* Handler for the EVENT_MOUSE_CLICK event.  Sets the Cursor position.
+		*/
+		void onMouseClicked(const EventArgs& args);
+		/**
+		* Stores/Updates the texture used for the widget, and allows the widget to derive other needed textures. (by overriding this function)
+		*/
+		void setBaseTexture(const Ogre::String& textureName);
+		/**
+		* Convenience method.  For advance text use, use getText function to
+		* get a reference to the Text object.
+		*/
+		void setCaption(const Ogre::UTFString& caption);
+		/**
+		* Text Cursor Indices start at 0, and are to the left of Text Indices.  
+		* Let () represent Text Cursor Indices and [] represent Text Indices: 
+		*	(0)[0](1)[1](2)[2](3)
+		*/
+		void setCursorIndex(int cursorIndex, bool clearSelection = true);
+		void setCursorIndex(Point position, bool clearSelection = true);
+		void setCursorTexture(const Ogre::String& textureName);
 		/**
 		* If set to true, cannot input text to textbox
 		*/
 		void setReadOnly(bool readOnly);
 		void setText(const Ogre::UTFString& text);
-
 		/**
 		* Default Handler for injecting Time.
 		*/
 		void timeElapsed(Ogre::Real time);
 
 	protected:
-		bool								mMaskUserInput;
-		Ogre::UTFString::unicode_char		mMaskSymbol;
+		virtual ~TextBox();
 
-		Ogre::Real							mBackSpaceTimer;
-		bool								mBackSpaceDown;
-		Ogre::Real							mDeleteTimer;
-		bool								mDeleteDown;
-		Ogre::Real							mMoveCursorTimer;
-		bool								mLeftArrowDown;
-		bool								mRightArrowDown;
-		Ogre::Real							mCursorVisibilityTimer;
-		bool								mReadOnly;
+		MouseCursor* mMouseCursor;
 
-		Text*								mTextWidget;
-		bool								mInputMode;
+		// Text Cursor Properties
+		Quad* mTextCursor;
+		size_t mCursorPixelWidth;
+		Ogre::String mTextCursorTexture;
+
+		// The full unmodified String stored by this textbox. Text boundaries and character
+		// masking will affect what the user sees on screen.
+		Ogre::UTFString mCaption;
+		// String used for visual display.
+		Ogre::UTFString mOutput;
+
+		// Text Cursor Indices start at 0, and are to the left of Text Indices.
+		// Let () represent Text Cursor Indices and [] represent Text Indices: (0)[0](1)[1](2)
+		int mCursorIndex;
+		// Text Cursor Indices that represent the portion of text visible, given the textBounds.
+		int mVisibleStart;
+		int mVisibleEnd;
+		// Text Cursor Indices that represent the portion of text that is selected.  If within
+		// visible indices, will appear highlighted.
+		int mSelectStart;
+		int mSelectEnd;
+		// previous index recorded to keep track of direction.
+		int mSelectPrevious;
+
+		// Masking, used for password textboxes.
+		bool mMaskUserInput;
+		Ogre::UTFString::unicode_char mMaskSymbol;
+
+		Ogre::Real mBackSpaceTimer;
+		bool mBackSpaceDown;
+
+		Ogre::Real mDeleteTimer;
+		bool mDeleteDown;
+
+		Ogre::Real mMoveCursorTimer;
+		bool mLeftArrowDown;
+		bool mRightArrowDown;
+
+		// Special keys used for text manipulation.
+		bool mLShiftDown;
+		bool mRShiftDown;
+		bool mLCtrlDown;
+		bool mRCtrlDown;
+
+		Ogre::Real mCursorVisibilityTimer;
+
+		bool mMouseLeftDown;
+		// Used to determine if cursor should blink.
+		bool mHasFocus;
+
+		bool mReadOnly;
 
 		std::vector<MemberFunctionSlot*> mOnEnterPressedUserEventHandlers;
+
+		// setCursorIndex functionality broken into parts.  Not to be called outside this function,
+		// and is order dependent.
+		void _determineTextSelectionBounds(int cursorIndex, bool clearSelection);
+		void _determineVisibleTextBounds(int cursorIndex);
+		void _positionCursor();
+
+		// Updates the visible portion of the text, and the selection within the text.
+		void _updateText();
+		void _updateVisibleText();
+		void _updateHighlightedText();
 	};
 }
 

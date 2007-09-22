@@ -4,45 +4,48 @@
 
 namespace QuickGUI
 {
-	List::List(const Ogre::String& name, const Ogre::Vector3& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material, Ogre::OverlayContainer* overlayContainer, Widget* ParentWidget) :
-		Label(name,Ogre::Vector4(dimensions.x,dimensions.y,dimensions.z,0),positionMode,sizeMode,material,overlayContainer,ParentWidget),
+	List::List(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
+		Image(name,type,dimensions,pMode,sMode,texture,container,ParentWidget,gm),
 		mAutoNameListItemCount(0),
-		mAutoNameListCount(0),
-		mListItemHorizontalAlignment(QuickGUI::QGUI_HA_MID),
-		mListItemVerticalAlignment(QuickGUI::QGUI_VA_MID)
+		mAutoSizeHeight(false),
+		mNumberOfVisibleItems(5),
+		mItemPixelHeight(20)
 	{
-		mWidgetType = Widget::QGUI_TYPE_LIST;
+		if(mRelativeDimensions.height <= 0.001)
+			mAutoSizeHeight = true;
+		else
+		{
+			mNumberOfVisibleItems = ((mPixelDimensions.width / mItemPixelHeight) + 1.0);
+		}
 
-		mDefaultListItemHeight = mParentWidget->getSize(QGUI_GMM_ABSOLUTE).y;
-		mHighlightMaterial = getSheet()->getDefaultSkin() + ".list.highlight";
+		mHighlightTexture = mParentSheet->getDefaultSkin() + ".list.highlight" + mTextureExtension;
 
 		// create highlight container for the list
-		mHighlightContainer = createOverlayContainer(mInstanceName+".HighlightContainer","");
-		mChildrenContainer->addChildImpl(mHighlightContainer);
+		mHighlightPanel = new Quad(mInstanceName+".HighlightPanel",mGUIManager);
+		mHighlightPanel->setLayer(Quad::LAYER_MENU);
+		mHighlightPanel->setTexture(mHighlightTexture);
+		mHighlightPanel->setOffset(mOffset+1);
+		mHighlightPanel->_notifyQuadContainer(mQuadContainer);
 
-		mHighlightPanel = createPanelOverlayElement(mInstanceName+".HighlightPanel",mPixelDimensions,mHighlightMaterial);
-		mHighlightContainer->addChild(mHighlightPanel);
-		mHighlightPanel->show();
+		addEventHandler(EVENT_SIZE_CHANGED,&List::onWidthChanged,this);
 
 		mItems.clear();
-		mChildLists.clear();
+
+		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
+		if(mWidgetType == TYPE_LIST)
+		{
+			mQuad->setLayer(Quad::LAYER_CHILD);
+
+			mScrollPane = new ScrollPane(mInstanceName+".ScrollPane",TYPE_SCROLL_PANE,mQuadContainer,this,mGUIManager);
+		}
 	}
 
 	List::~List()
 	{
 		Widget::removeAndDestroyAllChildWidgets();
 		mItems.clear();
-		mChildLists.clear();
 
-		Ogre::OverlayManager* om = Ogre::OverlayManager::getSingletonPtr();
-
-		mHighlightContainer->removeChild(mHighlightPanel->getName());
-		om->destroyOverlayElement(mHighlightPanel);
-		mHighlightPanel = NULL;
-
-		mChildrenContainer->removeChild(mHighlightContainer->getName());
-		om->destroyOverlayElement(mHighlightContainer);
-		mHighlightContainer = NULL;
+		delete mHighlightPanel;
 	}
 
 	ListItem* List::addListItem(const Ogre::UTFString& text)
@@ -55,94 +58,34 @@ namespace QuickGUI
 
 	ListItem* List::addListItem(const Ogre::String& name, const Ogre::UTFString& text)
 	{
-		Ogre::Vector4 OriginalAbsoluteDimensions = mAbsoluteDimensions;
+		// If using auto sizing of list, make sure to set new height before creating child, since Child Widgets will be relative to parent
+		if(mAutoSizeHeight)
+			setHeight((static_cast<int>(mItems.size()) + 1) * mItemPixelHeight,QGUI_GMM_PIXELS);
 
-		// Calculate the current absolute height of the list
-		Ogre::Real currentListHeight = 0.0;
-		std::vector<ListItem*>::iterator it;
-		for( it = mItems.begin(); it != mItems.end(); ++it )
-		{
-			currentListHeight = currentListHeight + (*it)->getSize(QGUI_GMM_ABSOLUTE).y;
-		}
+		ListItem* newListItem = new ListItem(name,TYPE_LISTITEM,Rect(0,static_cast<int>(mItems.size())* mItemPixelHeight,mPixelDimensions.width,mItemPixelHeight),QGUI_GMM_PIXELS,QGUI_GMM_PIXELS,mQuadContainer,this,mGUIManager);
+		newListItem->getText()->setCaption(text);
 
-		// Grow the list to accept the new incoming list item
-		Ogre::Real calculatedListHeight = currentListHeight + mDefaultListItemHeight;
-		// funny, this should almost always be more than 1.0, which defies relative coordinates
-		// IMPORTANT! Do not call _notifyDimensionsChanged, otherwise all child ListItems will have their dimensions auto adjusted.
-		// We need to keep them as is, and later use the unchanged values to calculate new values, as the list height has changed.
-		// Essentially, we want to maintain the ListItems' height while adjusting the List's height.
-		mRelativeDimensions.w = calculatedListHeight / (mParentWidget->getSize(QGUI_GMM_ABSOLUTE).y);
-		_updateDimensions(mRelativeDimensions);
-		
-		// Shrink the previous list Items back to the correct size
-		for( it = mItems.begin(); it != mItems.end(); ++it )
-		{
-			Ogre::Vector2 pos = (*it)->getPosition(QGUI_GMM_ABSOLUTE);
-			Ogre::Vector2 size = (*it)->getSize(QGUI_GMM_ABSOLUTE);
+		if(!mVisible)
+			newListItem->hide();
 
-			(*it)->setDimensions(
-				Ogre::Vector4(
-					(pos.x - mAbsoluteDimensions.x) / mAbsoluteDimensions.z,
-					(pos.y - mAbsoluteDimensions.y) / mAbsoluteDimensions.w,
-					size.x / mAbsoluteDimensions.z,
-					size.y / mAbsoluteDimensions.w
-					)
-				);
-		}
-		
-		// Add the List Item
-		ListItem* newListItem = new ListItem(name,Ogre::Vector4(0,currentListHeight / calculatedListHeight,1.0,mDefaultListItemHeight / mAbsoluteDimensions.w),QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,mChildrenContainer,this);
-		newListItem->setCharacterHeight(mCharacterHeight);
-		newListItem->setFont(mFont);
-		newListItem->setTextColor(mTextTopColor,mTextBotColor);
-		newListItem->setText(text);
-		newListItem->alignText(mListItemHorizontalAlignment,mListItemVerticalAlignment);
-		newListItem->setZOrderOffset(1,false);
 		mItems.push_back(newListItem);
-		Widget::_addChildWidget(newListItem);
-		if(!mVisible) newListItem->hide();
 
-		// Important!  Even though we have set the dimensions, we need to update the overlay elements (of the list, specifically)
-		_notifyDimensionsChanged();
 		
+
 		return newListItem;
-	}
-
-	void List::alignListItemText(HorizontalAlignment ha, VerticalAlignment va)
-	{
-		mListItemHorizontalAlignment = ha;
-		mListItemVerticalAlignment = va;
-
-		std::vector<ListItem*>::iterator it;
-		for( it = mItems.begin(); it != mItems.end(); ++it )
-		{
-			(*it)->alignText(mListItemHorizontalAlignment,mListItemVerticalAlignment);
-		}
 	}
 
 	void List::clearList()
 	{
-		std::vector<ListItem*>::iterator it;
-		for( it = mItems.begin(); it != mItems.end(); ++it )
-		{
-			Widget::_removeChildWidget(*it);
-			delete *it;
-		}
 		mItems.clear();
+		Widget::removeAndDestroyAllChildWidgets();
 
-		mRelativeDimensions.w = 0;
-		_updateDimensions(mRelativeDimensions);
-	}
+		if(mAutoSizeHeight)
+			setHeight(0);
 
-	void List::deactivate(EventArgs& e)
-	{
-		if(!mEnabled) return;
-
-		if(getTargetWidget(MouseCursor::getSingleton().getPixelPosition()) != NULL) return;
-
-		if(mParentWidget) mParentWidget->deactivate(e);
-
-		Label::deactivate(e);
+		// if this is a drop down list that is part of a combobox, clear the combobox's "selection".
+		if( (mParentWidget != NULL) && (mParentWidget->getWidgetType() == Widget::TYPE_COMBOBOX) )
+			dynamic_cast<ComboBox*>(mParentWidget)->setCaption("");
 	}
 
 	ListItem* List::getListItem(unsigned int index)
@@ -162,131 +105,127 @@ namespace QuickGUI
 		return NULL;
 	}
 
-	int List::getNumberOfListItems()
-	{
-		return static_cast<int>(mChildLists.size());
-	}
-
 	void List::hide()
 	{
-		mHighlightPanel->hide();
+		mHighlightPanel->setVisible(false);
 
-		Label::hide();
+		Image::hide();
 	}
 
 	void List::hideHighlight()
 	{
-		mHighlightPanel->hide();
+		mHighlightPanel->setVisible(false);
 	}
 
 	void List::highlightListItem(ListItem* i)
 	{
-		Ogre::Vector4 liPixelDimensions = i->getDimensions(QGUI_GMM_PIXELS,QGUI_GMM_PIXELS);
-		mHighlightPanel->setPosition(liPixelDimensions.x,liPixelDimensions.y);
-		mHighlightPanel->setDimensions(liPixelDimensions.z,liPixelDimensions.w);
-		mHighlightPanel->show();
+		Rect liAbsDimensions = i->getDimensions(QGUI_GMM_ABSOLUTE,QGUI_GMM_ABSOLUTE);
+		mHighlightPanel->setDimensions(liAbsDimensions);
+		mHighlightPanel->setVisible(true);
 	}
 
-	void List::removeList(unsigned int index)
+	void List::onWidthChanged(const EventArgs& args)
 	{
-		if( (static_cast<int>(mChildLists.size()) - 1) < static_cast<int>(index) ) return;
-		
-		int counter = 0;
-		std::vector<List*>::iterator it;
-		for( it = mChildLists.begin(); it != mChildLists.end(); ++it )
-		{
-			if( counter == index )
-			{
-				Widget::_removeChildWidget(*it);
-				List* l = *(mChildLists.erase(it));
-				delete l;
-				return;
-			}
-			++counter;
-		}
+		std::vector<ListItem*>::iterator it;
+		for( it = mItems.begin(); it != mItems.end(); ++it )
+			(*it)->setWidth(1.0);
 	}
 
 	void List::removeListItem(unsigned int index)
 	{
-		if( (mItems.empty()) || ((mItems.size() - 1) < index) ) return;
+		if( (mItems.empty()) || ((mItems.size() - 1) < index) ) 
+			return;
 
 		Ogre::Real FreeHeight = 0;
 
 		// Delete the List Item
-		ListItem* li;
 		int counter = 0;
 		std::vector<ListItem*>::iterator it;
 		for( it = mItems.begin(); it != mItems.end(); ++it )
 		{
 			if( counter == index )
 			{
-				Widget::_removeChildWidget(*it);
-				li = (*it);
-				FreeHeight = li->getSize(QGUI_GMM_ABSOLUTE).y;
+				ListItem* li = (*it);
 				it = mItems.erase(it);
+				mGUIManager->destroyWidget(li);
 				break;
 			}
 
 			++counter;
 		}
 
-		delete li;
-
-		// IMPORTANT! Do not call _notifyDimensionsChanged, otherwise all child ListItems will have their dimensions auto adjusted.
-		// We need to keep them as is, and later use the unchanged values to calculate new values, as the list height has changed.
-		// Essentially, we want to maintain the ListItems' height while adjusting the List's height.
-		mRelativeDimensions.w = (mAbsoluteDimensions.w - FreeHeight) / (mParentWidget->getSize(QGUI_GMM_ABSOLUTE).y);
-		_updateDimensions(mRelativeDimensions);
-
-		Ogre::Real newYPos = 0.0;
-		for( it = mItems.begin(); it != mItems.end(); ++it )
+		// See if list items need to be re-positioned
+		if( counter != (static_cast<int>(mItems.size()) - 1) )
 		{
-			Ogre::Vector2 pos = (*it)->getPosition(QGUI_GMM_ABSOLUTE);
-			pos.y = newYPos;
-			Ogre::Vector2 size = (*it)->getSize(QGUI_GMM_ABSOLUTE);
-
-			(*it)->setDimensions(
-				Ogre::Vector4(
-					(pos.x - mAbsoluteDimensions.x) / mAbsoluteDimensions.z,
-					(pos.y) / mAbsoluteDimensions.w,
-					size.x / mAbsoluteDimensions.z,
-					size.y / mAbsoluteDimensions.w
-					)
-				);
-
-			newYPos = newYPos + (*it)->getSize(QGUI_GMM_ABSOLUTE).y;
+			Ogre::Real n = 0;
+			std::vector<ListItem*>::iterator it;
+			for( it = mItems.begin(); it != mItems.end(); ++it )
+			{
+				(*it)->setYPosition(mItemPixelHeight * n,QGUI_GMM_PIXELS);
+				(*it)->setHeight(mItemPixelHeight,QGUI_GMM_PIXELS);
+				++n;
+			}
 		}
 
-		// Important!  Even though we have set the dimensions, we need to update the overlay elements (of the list, specifically)
-		_notifyDimensionsChanged();
+		if(mAutoSizeHeight)
+			setHeight(static_cast<int>(mItems.size()) * mItemPixelHeight,QGUI_GMM_PIXELS);
 	}
 
-	void List::setCharacterHeight(const Ogre::Real& relativeHeight)
+	void List::setAutoSizeHeight()
 	{
-		Label::setCharacterHeight(relativeHeight);
+		mAutoSizeHeight = true;
+		setHeight(static_cast<int>(mItems.size()) * mItemPixelHeight,QGUI_GMM_PIXELS);
+	}
+
+	void List::setHighlightTexture(const Ogre::String& texture)
+	{
+		mHighlightTexture = texture;
+		mHighlightPanel->setTexture(mHighlightTexture);
+	}
+
+	void List::setListItemPixelHeight(const Ogre::Real& heightInPixels)
+	{
+		if(mItemPixelHeight == heightInPixels)
+			return;
+
+		mItemPixelHeight = heightInPixels;
+
+		Ogre::Real counter = 0;
 		std::vector<ListItem*>::iterator it;
 		for( it = mItems.begin(); it != mItems.end(); ++it )
 		{
-			(*it)->setCharacterHeight(relativeHeight);
+			(*it)->setYPosition(heightInPixels * counter,QGUI_GMM_PIXELS);
+			(*it)->setHeight(mItemPixelHeight,QGUI_GMM_PIXELS);
+			++counter;
 		}
 	}
 
-	void List::setHighlightMaterial(const Ogre::String& material)
+	void List::setNumberOfVisibleItems(unsigned int number)
 	{
-		mHighlightMaterial = material;
-		mHighlightPanel->setMaterialName(mHighlightMaterial);
+		mNumberOfVisibleItems = number;
+
+		setHeight(mItemPixelHeight * mNumberOfVisibleItems);
+	}
+
+	void List::setSize(const Ogre::Real& width, const Ogre::Real& height, GuiMetricsMode mode)
+	{
+		Image::setSize(width,height,mode);
+	}
+
+	void List::setSize(const Size& s, GuiMetricsMode mode)
+	{
+		Image::setSize(s,mode);
 	}
 
 	void List::setWidth(const Ogre::Real& relativeWidth)
 	{
-		mRelativeDimensions.z = relativeWidth;
-		Widget::_notifyDimensionsChanged();
+		mRelativeDimensions.width = relativeWidth;
 	}
 
 	void List::show()
 	{
-		mHighlightPanel->hide();
+		mHighlightPanel->setVisible(false);
 
-		Label::show();
+		Image::show();
 	}
 }

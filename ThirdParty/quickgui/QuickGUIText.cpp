@@ -1,249 +1,707 @@
+#include "QuickGUIText.h"
 #include "QuickGUILabel.h"
 #include "QuickGUIManager.h"
-#include "QuickGUIText.h"
-#include "OgreFontManager.h"
-#include "OgreFont.h"
+
+#include "OgreMaterialManager.h"
 
 namespace QuickGUI
 {
-	Text::Text(const Ogre::String& name, const Ogre::Vector3& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, Ogre::OverlayContainer* overlayContainer, Widget* ParentWidget) :
-		Widget(name,Ogre::Vector4(dimensions.x,dimensions.y,0,dimensions.z),positionMode,sizeMode,"",overlayContainer,ParentWidget),
-		mTextCursorHidden(1),
-		mCursorIndex(0),
-		mCursorOffset(-3)
+	Text::Text(const Ogre::String& name, QuadContainer* container, Label* owner) :
+		mOwner(owner),
+		mLayer(Quad::LAYER_CHILD),
+		mName(name),
+		mQuadContainer(container),
+		mCaption(""),
+		mAbsoluteDimensions(Rect::ZERO),
+		mLayout(LAYOUT_HORIZONTAL),
+		mVisible(true),
+		mSelectStart(-1),
+		mSelectEnd(-1),
+		mLineSpacing(1.0),
+		mClippingRect(Rect(0,0,1,1))
 	{
-		mWidgetType = Widget::QGUI_TYPE_TEXT;
-		mTruncateMode = RIGHT;
-		mFeedbackString = "...";
-		mCursorPositions.push_back(-5);
-		
-		mTextAreaOverlayElement = createTextAreaOverlayElement(mInstanceName+".Caption",mPixelDimensions,"");
-		mOverlayElement = mTextAreaOverlayElement;
-		mOverlayContainer->addChild(mOverlayElement);
-		mTextAreaOverlayElement->show();
-		mTextAreaOverlayElement->setFontName(mFont);
-		mTextAreaOverlayElement->setCharHeight(mPixelDimensions.w);
+		mOffset = owner->getOffset() + 2;
+		mGUIManager = owner->getGUIManager();
+		Rect ownerDimensions = mOwner->getDimensions(QGUI_GMM_ABSOLUTE,QGUI_GMM_ABSOLUTE);
+		mAbsoluteDimensions = Rect(ownerDimensions.x,ownerDimensions.y,0,0);
 
-		Ogre::String tcMaterial = getSheet()->getDefaultSkin() + ".textcursor";
-		mTextCursor = new TextCursor(mInstanceName+".TextCursor",Ogre::Vector4(0,0,0,1),QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,tcMaterial,mChildrenContainer,this);
-		mTextCursor->setZOrderOffset(1,false);
-		mTextCursor->hide();
+		// Order dependent, this code must go before call to setFont, since that removes selection, which
+		// affects the character background.
+		mCharacterBackground = new Quad(name+".SelectionRectangle",mGUIManager);
+		mCharacterBackground->setTexture("QuickGUI.TextSelection");
+		mCharacterBackground->setColor(mBackgroundSelectColor);
+		mCharacterBackground->setOffset(mOffset-1);
+		mCharacterBackground->setVisible(false);
+		mCharacterBackground->_notifyQuadContainer(mQuadContainer);
+
+		// default font
+		if(owner->getParentSheet() == NULL)
+		{
+			Ogre::FontManager* fm = Ogre::FontManager::getSingletonPtr();
+			setFont(fm->getResourceIterator().getNext()->getName());
+			mColor = Ogre::ColourValue::White;
+		}
+		else
+		{
+			setFont(owner->getParentSheet()->getDefaultFont());
+			mColor = owner->getParentSheet()->getDefaultTextColor();
+		}
+
+		mSelectColor = getInverseColor(mColor);
+		mBackgroundSelectColor = mColor;
 	}
 
 	Text::~Text()
 	{
-		delete mTextCursor;
-		mTextCursor = NULL;
-		mTextAreaOverlayElement = NULL;
+		_clearCharacters();
+		delete mCharacterBackground;
 	}
 
-	Ogre::UTFString Text::_adjustWidth()
+	void Text::_calculateDimensions()
 	{
-		Ogre::UTFString displayText = mText;
-		// Adding a 5 pixel buffer, which helps textBoxes which have borders
-		int parentWidth = mParentWidget->getSize(QGUI_GMM_PIXELS).x - 5;
-
-		if( getTextWidth(displayText) > parentWidth )
+		if(mCharacters.empty())
 		{
-			// calling getTextWidth indexes the text, so cursor can be placed within text.  Only reason
-			// we don't break out early with truncate mode set to NONE.
-			if(mTruncateMode != NONE)
+			mAbsoluteDimensions = Rect(0,0,0,0);
+			return;
+		}
+
+		Ogre::Real minX = 9999;
+		Ogre::Real minY = 9999;
+		Ogre::Real maxX = 0;
+		Ogre::Real maxY = 0;
+
+		std::vector<Quad*>::iterator it;
+		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		{
+			Point charPos = (*it)->getPosition();
+			Size charSize = (*it)->getSize();
+			if( charPos.x < minX )
+				minX = charPos.x;
+			if( (charPos.x + charSize.width) > maxX )
+				maxX = charPos.x + charSize.width;
+			if( charPos.y < minY )
+				minY = charPos.y;
+			if( (charPos.y + charSize.height) > maxY )
+				maxY = charPos.y + charSize.height;
+		}
+
+		mAbsoluteDimensions = Rect(minX,minY,maxX - minX,maxY - minY);
+	}
+
+	void Text::_clearCharacters()
+	{
+		std::vector<Quad*>::iterator it;
+		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		{
+			delete (*it);
+		}
+		mCharacters.clear();
+	}
+
+	void Text::_notifyQuadContainer(QuadContainer* container)
+	{
+		mQuadContainer = container;
+
+		std::vector<Quad*>::iterator it;
+		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		{
+			(*it)->_notifyQuadContainer(mQuadContainer);
+		}
+	}
+
+	void Text::_setCaptionHorizontal(const Ogre::UTFString& text)
+	{		
+		int charCounter = 0;
+		Rect textArea = mOwner->getTextBounds();
+		Point pos(textArea.x,textArea.y);
+		Ogre::UTFString::const_iterator it;
+		for( it = text.begin(); it != text.end(); ++it )
+		{
+			Ogre::UTFString::code_point cp = it.getCharacter();
+			
+			if(isNewLine(cp))
 			{
-				// get width of feedback string
-				Ogre::Real feedbackWidth = getTextWidth(mFeedbackString);
-				Ogre::Real allotedWidth = parentWidth - feedbackWidth;
-				while( (getTextWidth(displayText) > allotedWidth) && (displayText != "") )
+				pos.x = textArea.x;
+				pos.y += getNewlineHeight();
+				continue;
+			}
+
+			// Wrap only at a space
+			if( isSpace(cp) )
+			{
+				Ogre::Real tempx = pos.x;
+				Ogre::UTFString::code_point tempcp;
+				// Find next space, or go to new line if there is no space
+				// before we run out of room.
+				for(int i = 0; (it+i) != text.end(); i++)
 				{
-					if(mTruncateMode == RIGHT) displayText = displayText.erase(displayText.length()-1,1);
-					else if(mTruncateMode == LEFT) displayText = displayText.erase(0,1);
+					tempcp = (it+i).getCharacter();
+					tempx += getGlyphSize(tempcp).width;
+					if( tempx > (textArea.x + textArea.width) )
+					{
+						pos.x = textArea.x;
+						pos.y += getNewlineHeight();
+						// Ignore this space, because it is used for wrapping
+						it.moveNext();
+						cp = it.getCharacter(); 
+						break;
+					}
+					if( i != 0 && isSpace(tempcp) )
+						break;	// There is another space before we need a new line
 				}
-				// concatenate
-				if( (mTruncateMode == RIGHT) && (mFeedbackString != "") ) displayText.append(mFeedbackString);
-				else if( (mTruncateMode == LEFT) && (mFeedbackString != "") ) displayText.insert(0,mFeedbackString);
 			}
-		}
+			// check dimensions to see if wrap around should occur.
+			Size size = getGlyphSize(cp);
 
-		return displayText;
-	}
-
-	void Text::_applyDimensions()
-	{
-		mTextAreaOverlayElement->setPosition(mPixelDimensions.x,mPixelDimensions.y);
-		mTextAreaOverlayElement->setDimensions(mPixelDimensions.z,mPixelDimensions.w);
-		mTextAreaOverlayElement->setCharHeight(mPixelDimensions.w);
-	}
-
-	void Text::_notifyDimensionsChanged()
-	{
-		_updateDimensions(mRelativeDimensions);
-		_applyDimensions();
-	}
-
-	void Text::_notifyTextChanged()
-	{
-		// adjust width to match the width of text
-		mRelativeDimensions.z = (getTextWidth() / mParentWidget->getSize(QGUI_GMM_PIXELS).x);
-		_notifyDimensionsChanged();
-	}
-
-	void Text::activate(EventArgs& e)
-	{
-		Widget::activate(e);
-	}
-
-	Ogre::Real Text::convertPosToIndex(const Ogre::Vector2& p)
-	{
-		Ogre::Real xPos = p.x;
-
-		int index;
-		for( index = 0; index < static_cast<int>(mCursorPositions.size()); ++index )
-		{
-			if( xPos < mCursorPositions[index] + mPixelDimensions.x )
+			if( (pos.x + size.width) > (textArea.x + textArea.width) )
 			{
-				if( index <= 0 ) return index;
-
-				// determine if point is closer to the left or right index
-				int range = mCursorPositions[index] - mCursorPositions[index-1];
-				if( (mCursorPositions[index] - xPos) >= (range / 2) ) return index;
-				else return index - 1;
+				pos.x = textArea.x;
+				pos.y += getNewlineHeight();
 			}
+			// Break if there isn't enough room for another line of text
+			if( (pos.y + size.height) > (textArea.y + textArea.height) )
+				break;
+
+			Quad* q = new Quad(mName + ".Character." + Ogre::StringConverter::toString(charCounter),mGUIManager);
+			q->setOffset(mOffset);
+			q->setLayer(mLayer);
+
+			// set dimensions
+			q->setDimensions(Rect(pos,size));
+			// update pen position
+			pos.x += size.width;
+
+			// We need to have quads that represent spaces for text indexing.  We don't need
+			// to render them, however.
+			if(!isspace(cp))
+			{
+				// set texture
+				q->setTexture(mFontTexture->getName());
+
+				// set texture coords
+				q->setTextureCoordinates(mFont->getGlyphTexCoords(cp));
+
+				// set default color
+				q->setColor(mColor);
+
+				// notify render object group
+				q->_notifyQuadContainer(mQuadContainer);
+			}
+
+			mCharacters.push_back(q);
+			++charCounter;
 		}
-
-		return (index - 1);
 	}
 
-	void Text::deactivate(EventArgs& e)
-	{
-		mParentWidget->deactivate(e);
-	}
-
-	void Text::decrementCursorIndex()
-	{
-		if( mCursorIndex > 0 ) --mCursorIndex;
-		mTextCursor->show();
-		mTextCursor->setPixelPosition(getCursorPosition(mCursorIndex),mPixelDimensions.y);
-	}
-
-	Ogre::Real Text::getCursorPosition(int index)
-	{
-		if( index >= static_cast<int>(mCursorPositions.size()) ) return (mPixelDimensions.x - 2);
-
-		return (mPixelDimensions.x + mCursorPositions[index] + mCursorOffset);
-	}
-
-	int Text::getCursorIndex()
-	{
-		return mCursorIndex;
-	}
-
-	Ogre::Real Text::getTextWidth()
-	{
-		return getTextWidth(mText);
-	}
-
-	Ogre::Real Text::getTextWidth(const Ogre::UTFString& text)
-	{
-		mCursorPositions.clear();
-		// Store first cursor position
-		mCursorPositions.push_back(0);
-
-		if(text == "") return 0.0;
-
-		Ogre::FontManager* fm = Ogre::FontManager::getSingletonPtr();
-		Ogre::Font* f = dynamic_cast<Ogre::Font*>(fm->getByName(mFont).get());
-
-		Ogre::Real width = 0.0;
-		for( int index = 0; index < static_cast<int>(text.length_Characters()); ++index )
+	void Text::_setCaptionVertical(const Ogre::UTFString& text)
+	{		
+		int charCounter = 0;
+		Point widgetPos = mOwner->getPosition(QGUI_GMM_ABSOLUTE);
+		Point pos = widgetPos;
+		Ogre::UTFString::const_iterator it;
+		for( it = text.begin(); it != text.end(); ++it )
 		{
-			if( text[index] == ' ' ) width += (f->getGlyphAspectRatio('0') * mPixelDimensions.w);
-			else width += (f->getGlyphAspectRatio(text[index]) * mPixelDimensions.w);
-			mCursorPositions.push_back(width);
+			Ogre::UTFString::code_point cp = it.getCharacter();
+			
+			if(isWhiteSpace(cp))
+			{
+				if(isSpace(cp))
+					pos.y += getNewlineHeight();
+				else if(isTab(cp))
+					pos.y += (getNewlineHeight() * SPACES_PER_TAB);
+				else if(isNewLine(cp))
+				{
+					pos.x = (widgetPos.x - getSpaceWidth());
+					pos.y = widgetPos.y;
+				}
+				continue;
+			}
+
+			
+			Quad* q = new Quad(mName + ".Character." + Ogre::StringConverter::toString(charCounter),mGUIManager);
+			q->setOffset(mOffset);
+			q->setLayer(mLayer);
+
+			// derive dimensions
+			Size size = getGlyphSize(cp);
+			q->setDimensions(Rect(pos,size));
+			// update pen position
+			pos.y += size.height;
+
+			// set texture
+			q->setTexture(mFontTexture->getName());
+
+			// set texture coords
+			q->setTextureCoordinates(mFont->getGlyphTexCoords(cp));
+
+			// notify render object group
+			q->_notifyQuadContainer(mQuadContainer);
+
+			mCharacters.push_back(q);
+			++charCounter;
+		}
+	}
+
+	void Text::addOnTextChangedEventHandler(MemberFunctionSlot* function)
+	{
+		mOnTextChangedUserEventHandlers.push_back(function);
+	}
+
+	Ogre::Real Text::calculateStringLength(const Ogre::UTFString& text)
+	{
+		Ogre::Real length = 0;
+
+		float renderWindowWidth = mGUIManager->getViewportWidth();
+		
+		Ogre::Font::UVRect uvRect;
+		unsigned int index = 0;
+		while( index < text.length() )
+		{
+			if(isWhiteSpace(text[index]))
+			{
+				if(isSpace(text[index]))
+					uvRect = mFont->getGlyphTexCoords('r');
+				else if(isTab(text[index]))
+				{
+					uvRect = mFont->getGlyphTexCoords('r');
+					uvRect.right = uvRect.right + ((uvRect.right - uvRect.left) * (SPACES_PER_TAB - 1));
+				}
+			}
+			else
+				uvRect = mFont->getGlyphTexCoords(text[index]);
+			length += ((((uvRect.right - uvRect.left) * TEXT_MULTIPLIER) * mFontTextureWidth) / renderWindowWidth);
+			++index;
 		}
 
-		// now we know the text width in pixels, and have index positions at the start/end of each character.
-
-		return width;
+		return length;
 	}
 
-	void Text::hideTextCursor()
+	void Text::refresh()
 	{
-		mTextCursor->hide();
-		mTextCursorHidden = true;
-	}
+		_clearCharacters();
+		clearSelection();
 
-	void Text::incrementCursorIndex()
-	{
-		++mCursorIndex;
-		if( mCursorIndex >= static_cast<int>(mCursorPositions.size()) ) --mCursorIndex;
-		mTextCursor->show();
-		mTextCursor->setPixelPosition(getCursorPosition(mCursorIndex),mPixelDimensions.y);
-	}
+		// Either way we want to calculate the new dimensions, but if the caption is empty,
+		// we don't want to try to align it.
+		if( mCaption != "" )
+		{
+			if( mLayout == LAYOUT_HORIZONTAL )
+				_setCaptionHorizontal(mCaption);
+			else
+				_setCaptionVertical(mCaption);
 
-	void Text::setCharacterHeight(const Ogre::Real& relativeHeight)
-	{
-		// Enforce the Text Widget's dimensions to match the Actual Text Dimensions,
-		// as Text is not bounded to it's overlay element size
-		setHeight(relativeHeight);
-	}
-
-	void Text::setTruncationFeedback(const Ogre::UTFString& visualFeedback)
-	{
-		mFeedbackString = visualFeedback;
-		setText(mText);
-	}
-
-	void Text::setFont(const Ogre::String& font)
-	{
-		mFont = font;
-		_notifyTextChanged();
-	}
-
-	void Text::setHeight(const Ogre::Real& relativeHeight)
-	{
-		mRelativeDimensions.w = relativeHeight;
-		_notifyTextChanged();
-	}
-
-	void Text::setText(const Ogre::UTFString& text)
-	{
-		mText = text;
-
-		mTextAreaOverlayElement->setFontName(mFont);
-		mTextAreaOverlayElement->setCharHeight(mPixelDimensions.w);
-		mTextAreaOverlayElement->setColourTop(mTextTopColor);
-		mTextAreaOverlayElement->setColourBottom(mTextBotColor);
-		mTextAreaOverlayElement->setCaption(_adjustWidth());
+			_calculateDimensions();
+			mOwner->alignText();
+		}
+		else
+			_calculateDimensions();
 		
-		_notifyTextChanged();
+		setClippingRect(mClippingRect);
+
+		// Maintain visibility.
+		if(!mVisible)
+			hide();
 	}
 
-	void Text::setTextCursorPosition(const Ogre::Vector2& p)
+	void Text::removeSelection()
 	{
-		mCursorIndex = convertPosToIndex(p);
-		mTextCursor->setPixelPosition(getCursorPosition(mCursorIndex),mPixelDimensions.y);
+		if((mSelectStart == -1) || (mSelectEnd == -1))
+			return;
+
+		mCaption.erase(mSelectStart,(mSelectEnd-mSelectStart) + 1);
+		clearSelection();
+		setCaption(mCaption);
 	}
 
-	void Text::setTruncateMode(TruncateMode MODE)
+	Rect Text::getAbsoluteDimensions()
 	{
-		mTruncateMode = MODE;
-		setText(mText);
+		return mAbsoluteDimensions;
+	}
+
+	Ogre::UTFString Text::getCaption()
+	{
+		return mCaption;
+	}
+
+	Quad* Text::getCharacter(unsigned int index)
+	{
+		if( mCharacters.empty() )
+			return NULL;
+		else if(index >= mCharacters.size())
+			return mCharacters[static_cast<int>(mCharacters.size())-1];
+
+		return mCharacters[index];
+	}
+
+	Ogre::ColourValue Text::getColor()
+	{
+		return mColor;
+	}
+
+	Size Text::getGlyphSize(Ogre::UTFString::code_point cp)
+	{
+		bool tab = false;
+
+		// Use 'r' for the space character, because its width is most similar
+		if( isSpace(cp) || (tab = isTab(cp)) )
+			cp = 'r';
+
+		Ogre::Font::UVRect uvRect = mFont->getGlyphTexCoords(cp);
+		float width = ((uvRect.right - uvRect.left) * mFontTextureWidth) / static_cast<float>(mGUIManager->getViewportWidth());
+		float height = ((uvRect.bottom - uvRect.top) * mFontTextureHeight) / static_cast<float>(mGUIManager->getViewportHeight());
+
+		// shrink size a little bit to increase sharpness and solve weird blurry issue.
+		if(tab)
+			return Size(width * SPACES_PER_TAB,height) * TEXT_MULTIPLIER;
+		else
+			return Size(width,height) * TEXT_MULTIPLIER;
+
+/*
+		if(tab)
+			return Size(width * mSpacesPerTab,height);
+		else
+			return Size(width,height);
+*/
+	}
+
+	Ogre::ColourValue Text::getInverseColor(const Ogre::ColourValue& c)
+	{
+		return Ogre::ColourValue(
+			1.0 - c.r,
+			1.0 - c.g,
+			1.0 - c.b,
+			c.a);
+	}
+
+	Ogre::Real Text::getLineSpacing()
+	{
+		return mLineSpacing;
+	}
+
+	Ogre::Real Text::getNewlineHeight()
+	{
+		// Take into account linespacing and the text multiplier
+		return getGlyphSize('0').height * mLineSpacing * TEXT_MULTIPLIER;
+	}
+
+	int Text::getNumberOfCharacters()
+	{
+		return static_cast<int>(mCharacters.size());
+	}
+
+	Ogre::UTFString Text::getSelection()
+	{
+		if((mSelectStart < 0) || (mSelectEnd < 0))
+			return "";
+
+		return mCaption.substr(mSelectStart,mSelectEnd);
+	}
+
+	int Text::getSelectionEnd()
+	{
+		return mSelectStart;
+	}
+
+	int Text::getSelectionStart()
+	{
+		return mSelectEnd;
+	}
+
+	Ogre::Real Text::getSpaceWidth()
+	{
+		// Use 'r' for the space character, because its width is most similar
+		return getGlyphSize('r').width * TEXT_MULTIPLIER;
+	}
+
+	Ogre::Real Text::getTabWidth()
+	{
+		return (getSpaceWidth() * SPACES_PER_TAB);
+	}
+
+	int Text::getTextIndex(const Point& absPosition)
+	{
+		if(mCaption.length() <= 0)
+				return -1;
+
+		// check bounds
+		if( absPosition.x < mAbsoluteDimensions.x )
+			return 0;
+		else if( absPosition.x > (mAbsoluteDimensions.x + mAbsoluteDimensions.width) )
+			return (static_cast<int>(mCaption.length()) - 1);
+
+		int textIndex = 0;
+		std::vector<Quad*>::iterator it;
+		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		{
+			if( (*it)->isPointWithinBounds(absPosition) )
+				return textIndex;
+
+			++textIndex;
+		}
+
+		// should never make it here
+		return -1;
+	}
+
+	int Text::getTextCursorIndex(const Point& absPosition)
+	{
+		if(mCaption.length() <= 0)
+				return 0;
+
+		// check bounds
+		if( absPosition.x < mAbsoluteDimensions.x )
+			return -1;
+		else if( absPosition.x > (mAbsoluteDimensions.x + mAbsoluteDimensions.width) )
+			return (static_cast<int>(mCharacters.size()) + 1);
+
+		int textIndex = 0;
+		std::vector<Quad*>::iterator it;
+		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		{
+			if( (*it)->isPointWithinBounds(absPosition) )
+			{
+				float midX = (*it)->getPosition().x + ((*it)->getSize().width / 2);
+				if( absPosition.x < midX )
+					return textIndex;
+				else return textIndex + 1;
+			}
+
+			++textIndex;
+		}
+
+		// should never make it here
+		return textIndex;
+	}
+
+	int Text::getTextCursorIndex(const Rect& absoluteDimensions)
+	{
+		if(mCaption.length() <= 0)
+				return 0;
+
+		// check bounds
+		if( absoluteDimensions.x < mAbsoluteDimensions.x )
+			return -1;
+		else if( absoluteDimensions.x > (mAbsoluteDimensions.x + mAbsoluteDimensions.width) )
+			return (static_cast<int>(mCharacters.size()) + 1);
+
+		int textIndex = 0;
+		std::vector<Quad*>::iterator it;
+		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		{
+			if( (*it)->intersectsRect(absoluteDimensions) )
+			{
+				float midX = (*it)->getPosition().x + ((*it)->getSize().width / 2);
+				if( absoluteDimensions.x < midX )
+					return textIndex;
+				else return textIndex + 1;
+			}
+
+			++textIndex;
+		}
+
+		// should never make it here
+		return textIndex;
+	}
+
+	bool Text::getVisible()
+	{
+		return mVisible;
+	}
+
+	void Text::hide()
+	{
+		std::vector<Quad*>::iterator it;
+		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		{
+			(*it)->setVisible(false);
+		}
+
+		mVisible = false;
+	}
+
+	void Text::move(const Point& absolutePosition)
+	{
+		std::vector<Quad*>::iterator it;
+		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		{
+			Point curPos = (*it)->getPosition();
+			(*it)->setPosition(Point(curPos.x + absolutePosition.x,curPos.y + absolutePosition.y));
+		}
+
+		mAbsoluteDimensions.x += absolutePosition.x;
+		mAbsoluteDimensions.y += absolutePosition.y;
+	}
+
+	void Text::onTextChanged(const TextEventArgs& e)
+	{
+		std::vector<MemberFunctionSlot*>::iterator it;
+		for( it = mOnTextChangedUserEventHandlers.begin(); it != mOnTextChangedUserEventHandlers.end(); ++it )
+			(*it)->execute(e);
+	}
+
+	void Text::clearSelection()
+	{
+		mCharacterBackground->setVisible(false);
+		for(unsigned int index = 0; index < static_cast<int>(mCharacters.size()); ++index )
+			mCharacters[index]->setColor(mColor);
+
+		mSelectStart = -1;
+		mSelectEnd = -1;
+	}
+
+	void Text::selectCharacters()
+	{
+		selectCharacters(0,static_cast<unsigned int>(mCaption.length() - 1));
+	}
+
+	void Text::selectCharacters(unsigned int startIndex, unsigned int endIndex)
+	{
+		if( (mCaption.length() == 0) || (startIndex >= mCaption.length()) )
+			return;
+
+		mSelectStart = startIndex;
+		mSelectEnd = endIndex;
+
+		if( endIndex >= mCaption.length() )
+			mSelectEnd = static_cast<unsigned int>(mCaption.length() - 1);
+
+		// Invert colors of selected characters, and make sure non selected characters are
+		// appropriately colored.
+		for(unsigned int index = 0; index < mCaption.length(); ++index )
+		{
+			if( (static_cast<int>(index) >= mSelectStart) && (static_cast<int>(index) <= mSelectEnd) )
+				mCharacters[index]->setColor(mSelectColor);
+			else
+				mCharacters[index]->setColor(mColor);
+		}
+
+		// set dimensions of background selection quad.
+		Rect dimensions;
+		Quad* q = mCharacters[mSelectStart];
+		dimensions.x = q->getPosition().x;
+		dimensions.y = q->getPosition().y;
+		q = mCharacters[mSelectEnd];
+		dimensions.width = (q->getPosition().x + q->getSize().width) - dimensions.x;
+		dimensions.height = (q->getPosition().y + q->getSize().height) - dimensions.y;
+		mCharacterBackground->setDimensions(dimensions);
+		mCharacterBackground->setVisible(true);
+	}
+
+	void Text::setCaption(const Ogre::UTFString& text, Layout l, Alignment a)
+	{
+		if(text == mCaption)
+			return;
+
+		// update Text properties
+		mLayout = l;
+		mCaption = text;
+		mAlignment = a;
+
+		// apply text properties
+		refresh();
+
+		TextEventArgs e(this);
+		e.captionChanged = true;
+		onTextChanged(e);
+	}
+
+	void Text::setClippingRect(const Rect& r)
+	{
+		mClippingRect = r;
+
+		std::vector<Quad*>::iterator it;
+		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+			(*it)->setClippingRect(mClippingRect);
+	}
+
+	void Text::setFont(const Ogre::String& fontName)
+	{
+		mFont = static_cast<Ogre::FontPtr>(Ogre::FontManager::getSingleton().getByName(fontName));
+		 
+		if(mFont.isNull())
+			throw Ogre::Exception( Ogre::Exception::ERR_ITEM_NOT_FOUND, "Could not find font " + fontName,"Text::setFont" );
+
+		mFont->load();
+		mFontTexture = 
+			static_cast<Ogre::TexturePtr>(
+			Ogre::TextureManager::getSingleton().getByName(mFont->getMaterial()->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getTextureName())
+			);
+		mFontTextureWidth = mFontTexture->getWidth();
+		mFontTextureHeight = mFontTexture->getHeight();
+		
+		// update visual displaying of text
+		refresh();
+
+		TextEventArgs e(this);
+		e.fontChanged = true;
+		onTextChanged(e);
+	}
+
+	void Text::setLayer(Quad::Layer layer)
+	{
+		mLayer = layer;
+
+		std::vector<Quad*>::iterator it;
+		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		{
+			(*it)->setLayer(mLayer);
+		}
+	}
+
+	void Text::setLineSpacing(Ogre::Real spacing)
+	{
+		mLineSpacing = spacing;
+		refresh();
+	}
+
+	void Text::setOffset(int offset)
+	{
+		mOffset = offset;
+
+		std::vector<Quad*>::iterator it;
+		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		{
+			(*it)->setOffset(mOffset);
+		}
+	}
+
+	void Text::setPosition(const Point& absolutePosition)
+	{
+		Point origin(mAbsoluteDimensions.x,mAbsoluteDimensions.y);
+		std::vector<Quad*>::iterator it;
+		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		{
+			Point curPos = (*it)->getPosition();
+			(*it)->setPosition(Point(absolutePosition.x + (curPos.x - origin.x),absolutePosition.y + (curPos.y - origin.y)));
+		}
+
+		mAbsoluteDimensions.x = absolutePosition.x;
+		mAbsoluteDimensions.y = absolutePosition.y;
+	}
+
+	void Text::setColor(Ogre::ColourValue color)
+	{
+		mColor = color;
+
+		std::vector<Quad*>::iterator it;
+		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		{
+			(*it)->setColor(color,color);
+		}
+
+		TextEventArgs e(this);
+		e.colorChanged = true;
+		onTextChanged(e);
 	}
 
 	void Text::show()
 	{
-		if(!mTextCursorHidden) mTextCursor->show();
-		Widget::show();
-	}
+		std::vector<Quad*>::iterator it;
+		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		{
+			(*it)->setVisible(true);
+		}
 
-	void Text::showTextCursor()
-	{
-		mTextCursor->show();
-		mTextCursorHidden = false;
-	}
-
-	void Text::toggleTextCursorVisibility()
-	{
-		mTextCursor->toggleVisibility();
-		mTextCursorHidden = !mTextCursorHidden;
+		mVisible = true;
 	}
 }

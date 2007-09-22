@@ -4,43 +4,43 @@
 
 namespace QuickGUI
 {
-	ComboBox::ComboBox(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material, Ogre::OverlayContainer* overlayContainer, Widget* ParentWidget) :
-		Label(name,dimensions,positionMode,sizeMode,material,overlayContainer,ParentWidget),
-		mListItemHorizontalAlignment(QuickGUI::QGUI_HA_MID),
-		mListItemVerticalAlignment(QuickGUI::QGUI_VA_MID)
+	ComboBox::ComboBox(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
+		Label(name,type,dimensions,pMode,sMode,texture,container,ParentWidget,gm)
 	{
-		mWidgetType = Widget::QGUI_TYPE_COMBOBOX;
+		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
+		if(mWidgetType == TYPE_COMBOBOX)
+		{
+			mQuad->setLayer(Quad::LAYER_CHILD);
+		}
+
+		addEventHandler(EVENT_LOSE_FOCUS,&ComboBox::onLoseFocus,this);
+		addEventHandler(EVENT_MOUSE_ENTER,&ComboBox::onMouseEnters,this);
+		addEventHandler(EVENT_MOUSE_LEAVE,&ComboBox::onMouseLeaves,this);
+		addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&ComboBox::onMouseButtonDown,this);
+		addEventHandler(EVENT_MOUSE_BUTTON_UP,&ComboBox::onMouseButtonUp,this);
 
 		// Create CloseButton - remember to position it relative to it's parent (TitleBar)
 		// Height of the Title Bar
-		Ogre::Real height = (mAbsoluteDimensions.w / mAbsoluteDimensions.z);
+		Ogre::Real height = (mAbsoluteDimensions.height / mAbsoluteDimensions.width);
 		// Button has same height as width - Make the button slightly smaller that the titlebar height
 		Ogre::Real buttonHeight = 0.8;
 		Ogre::Real buttonWidth = (height * buttonHeight);
 		// Make a 5 pixel buffer
-		Ogre::Real buffer = 5.0 / mPixelDimensions.z;
-		Ogre::Vector4 bDimensions = Ogre::Vector4((1 - (buttonWidth + buffer)),0.1,buttonWidth,buttonHeight);
-		mButton = new Button(mInstanceName+".ComboButton",bDimensions,QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,mWidgetMaterial+".button",mChildrenContainer,this);
-		mButton->setZOrderOffset(1);
-		Widget::_addChildWidget(mButton);
+		Ogre::Real buffer = 5.0 / mPixelDimensions.width;
+		Rect bDimensions = Rect((1 - (buttonWidth + buffer)),0.1,buttonWidth,buttonHeight);
+		mButton = new Button(mInstanceName+".ComboButton",TYPE_BUTTON,bDimensions,QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,mTextureName + ".button" + mTextureExtension,mQuadContainer,this,mGUIManager);
+		mButton->addEventHandler(Widget::EVENT_MOUSE_BUTTON_DOWN,&ComboBox::toggleDropDownListVisibility,this);
+		mButton->addEventHandler(Widget::EVENT_MOUSE_BUTTON_UP,&ComboBox::applyButtonDownImage,this);
+		mButton->addEventHandler(Widget::EVENT_MOUSE_ENTER,&ComboBox::applyButtonDownImage,this);
+		mButton->addEventHandler(Widget::EVENT_MOUSE_LEAVE,&ComboBox::applyButtonDownImage,this);
 
-		// Make a 15 pixel buffer for the Label
-		Ogre::Real bigBuffer = 15.0 / mPixelDimensions.z;
-		mLabel = new Label(mInstanceName+".Label",Ogre::Vector4(bigBuffer,0,(1 - (buttonWidth + bigBuffer)),1),QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,"",mChildrenContainer,this);
-		mLabel->addEventHandler(Widget::QGUI_EVENT_DEACTIVATED,&ComboBox::deactivate,dynamic_cast<ComboBox*>(this));
-		mLabel->setZOrderOffset(1);
-		Widget::_addChildWidget(mLabel);
+		mTextBoundsRelativeSize = Size(1 - buttonWidth,1);
 
-		mList = new List(mInstanceName+".List",Ogre::Vector3(0,1.0,1.0),QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,mWidgetMaterial+".list",getSheet()->getMenuContainer(),this);
-		mList->setCharacterHeight(mCharacterHeight);
-		mList->setFont(mFont);
-		mList->setTextColor(mTextTopColor,mTextBotColor);
+		mList = new List(mInstanceName+".List",TYPE_LIST,Rect(0,1,1,0),QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,mTextureName + ".list" + mTextureExtension,mQuadContainer,this,mGUIManager);
+		mList->setShowWithParent(false);
+		mList->setOffset(mOffset + 2);
 		mList->hide();
-		int derivedZOrder = getSheet()->getMenuOverlayZOrder() + 1;
-		Window* w = getWindow();
-		if( w != NULL ) mList->setZOrderOffset(derivedZOrder - getWindow()->getZOrder(),false);
-		else mList->setZOrderOffset(derivedZOrder,false);
-		Widget::_addChildWidget(mList);
+		mList->addEventHandler(EVENT_CHILD_ADDED,&ComboBox::addDefaultListItemHandler,this);
 	}
 
 	ComboBox::~ComboBox()
@@ -53,201 +53,97 @@ namespace QuickGUI
 		mOnSelectUserEventHandlers.clear();
 	}
 
+	void ComboBox::addDefaultListItemHandler(const EventArgs& args)
+	{
+		dynamic_cast<const WidgetEventArgs&>(args).widget->addEventHandler(Widget::EVENT_MOUSE_BUTTON_UP,&ComboBox::onSelection,this);
+		dynamic_cast<const WidgetEventArgs&>(args).widget->addEventHandler(Widget::EVENT_LOSE_FOCUS,&ComboBox::onLoseFocus,this);
+	}
+
 	void ComboBox::addOnSelectionEventHandler(MemberFunctionSlot* function)
 	{
 		mOnSelectUserEventHandlers.push_back(function);
 	}
 
-	void ComboBox::addListItem(const Ogre::UTFString& text)
+	void ComboBox::applyButtonDownImage(const EventArgs& args)
 	{
-		ListItem* newListItem = mList->addListItem(text);
-
-		Ogre::Log* l = Ogre::LogManager::getSingleton().getLog("Ogre.log");
-		l->logMessage("ComboBox Pixel Dimensions: " + Ogre::StringConverter::toString(mPixelDimensions));
-		l->logMessage("Drop List Relative Dimensions: " + Ogre::StringConverter::toString(mList->getDimensions(QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE)));
-		l->logMessage("Drop List Absolute Dimensions: " + Ogre::StringConverter::toString(mList->getDimensions(QGUI_GMM_ABSOLUTE,QGUI_GMM_ABSOLUTE)));
-		l->logMessage("Drop List Pixel Dimensions: " + Ogre::StringConverter::toString(mList->getDimensions(QGUI_GMM_PIXELS,QGUI_GMM_PIXELS)));
-	}
-
-	void ComboBox::addListItem(const Ogre::String& name, const Ogre::UTFString& text)
-	{
-		ListItem* newListItem = mList->addListItem(name,text);
-
-		Ogre::Log* l = Ogre::LogManager::getSingleton().getLog("Ogre.log");
-		l->logMessage("ComboBox Pixel Dimensions: " + Ogre::StringConverter::toString(mPixelDimensions));
-		l->logMessage("Drop List Relative Dimensions: " + Ogre::StringConverter::toString(mList->getDimensions(QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE)));
-		l->logMessage("Drop List Absolute Dimensions: " + Ogre::StringConverter::toString(mList->getDimensions(QGUI_GMM_ABSOLUTE,QGUI_GMM_ABSOLUTE)));
-		l->logMessage("Drop List Pixel Dimensions: " + Ogre::StringConverter::toString(mList->getDimensions(QGUI_GMM_PIXELS,QGUI_GMM_PIXELS)));
-	}
-
-	void ComboBox::alignListItemText(HorizontalAlignment ha, VerticalAlignment va)
-	{
-		mListItemHorizontalAlignment = ha;
-		mListItemVerticalAlignment = va;
-
-		mList->alignListItemText(mListItemHorizontalAlignment,mListItemVerticalAlignment);
-	}
-
-	void ComboBox::clearList()
-	{
-		mList->clearList();
-	}
-
-	int ComboBox::getNumberOfListItems()
-	{
-		return mList->getNumberOfListItems();
+		if(mList->isVisible())
+			mButton->applyButtonDownTexture();
 	}
 
 	// Called when the user clicks outside the widget
-	void ComboBox::deactivate(EventArgs& e)
+	void ComboBox::onLoseFocus(const EventArgs& args)
 	{
-		if(!mEnabled) return;
+		const MouseEventArgs mea = dynamic_cast<const MouseEventArgs&>(args);
 
-		// Restore default material
-		mOverlayElement->setMaterialName(mWidgetMaterial);
-		mButton->applyDefaultMaterial();
-		// If the Mouse has clicked on the ComboBox's List or ListItems, the widget should not *deactivate*.
-		// As for hiding the list, this will be taken care of in the onMouseButtonDown handler.  The list needs
-		// to remain visible so that ListItem picking works correctly. (If list is hidden, you can't click the ListItem..)
-		Ogre::Vector2 p = MouseCursor::getSingleton().getPixelPosition();
-		if(getTargetWidget(p) != NULL) return;
-		
+		// Drop Down List children call this function when they lose focus, so this check is needed because you can enter this
+		// function when you haven't actually clicked outside the combobox.
+		if(isPointWithinBounds(mea.position))
+			return;
+
+		// if user clicked on a child of this comboBox (ie ListItem), do not hide Drop Down List.
+		if(getTargetWidget(mea.position) != NULL)
+			return;
+
 		mList->hide();
-
-		Label::deactivate(e);
 	}
 
-	bool ComboBox::deactivate(const EventArgs& e)
+	List* ComboBox::getDropDownList()
 	{
-		if(!mEnabled) return e.handled;
-
-		// Restore default material
-		mOverlayElement->setMaterialName(mWidgetMaterial);
-		mButton->applyDefaultMaterial();
-		// If the Mouse has clicked on the ComboBox's List or ListItems, the widget should not *deactivate*.
-		// As for hiding the list, this will be taken care of in the onMouseButtonDown handler.  The list needs
-		// to remain visible so that ListItem picking works correctly. (If list is hidden, you can't click the ListItem..)
-		Ogre::Vector2 p = MouseCursor::getSingleton().getPixelPosition();
-		if(getTargetWidget(p) != NULL) return true;
-		
-		mList->hide();
-
-		return true;
+		return mList;
 	}
 
-	bool ComboBox::onMouseEnters(MouseEventArgs& e)
+	void ComboBox::onMouseEnters(const EventArgs& args)
 	{
-		if(!mEnabled) return e.handled;
-
-		if(!mList->isVisible()) mOverlayElement->setMaterialName(mWidgetMaterial+".over");
-		if(mList->isVisible()) mButton->applyButtonDownMaterial();
-
-		return Label::onMouseEnters(e);
+		if(!mList->isVisible())
+			setTexture(mDefaultTexture + ".over" + mTextureExtension);
+		if(mList->isVisible()) 
+			mButton->applyButtonDownTexture();
 	}
 
-	bool ComboBox::onMouseLeaves(MouseEventArgs& e)
+	void ComboBox::onMouseLeaves(const EventArgs& args)
 	{
-		if(!mEnabled) return e.handled;
-
-		if(!mList->isVisible()) mOverlayElement->setMaterialName(mWidgetMaterial);
-
-		return Label::onMouseLeaves(e);
+		if(!mList->isVisible()) 
+			setTexture(mDefaultTexture + mTextureExtension);
 	}
 
-	bool ComboBox::onMouseButtonDown(MouseEventArgs& e)
+	void ComboBox::onMouseButtonDown(const EventArgs& args)
 	{
-		if(!mEnabled) return e.handled;
-
-		if( e.button == MB_Left )
-		{
-			Widget* w = mList->getTargetWidget(e.position);
-			if( w != NULL)
-			{
-				e.widget = w;
-				return onSelection(e);
-			}
-			else
-			{
-				if(!mList->isVisible())
-				{
-					// apply button ".down" material
-					mOverlayElement->setMaterialName(mWidgetMaterial+".down");
-					mButton->applyButtonDownMaterial();
-					mList->show();
-				}
-				else
-				{
-					mOverlayElement->setMaterialName(mWidgetMaterial+".over");
-					mButton->applyDefaultMaterial();
-					mList->hide();
-				}
-			}
-		}
-
-		return Label::onMouseButtonDown(e);
+		if( dynamic_cast<const MouseEventArgs&>(args).button == MB_Left )
+			toggleDropDownListVisibility(args);
 	}
 
-	bool ComboBox::onMouseButtonUp(MouseEventArgs& e)
+	void ComboBox::onMouseButtonUp(const EventArgs& args)
 	{
-		if(!mEnabled) return e.handled;
-
-		if(mList->isVisible()) mButton->applyButtonDownMaterial();
-
-		return Label::onMouseButtonUp(e);
+		if(mList->isVisible()) 
+			mButton->applyButtonDownTexture();
 	}
 
-	bool ComboBox::onSelection(WidgetEventArgs& e)
+	void ComboBox::onSelection(const EventArgs& args)
 	{
-		if(!mEnabled) return e.handled;
-
-		setText(e.widget->getText());
-		mOverlayElement->setMaterialName(mWidgetMaterial);
-		mButton->applyDefaultMaterial();
+		mText->setCaption(dynamic_cast<ListItem*>(dynamic_cast<const WidgetEventArgs&>(args).widget)->getText()->getCaption());
+		setTexture(mDefaultTexture + mTextureExtension);
+		mButton->applyDefaultTexture();
 		mList->hide();
 
 		std::vector<MemberFunctionSlot*>::iterator it;
 		for( it = mOnSelectUserEventHandlers.begin(); it != mOnSelectUserEventHandlers.end(); ++it )
-			e.handled = (*it)->execute(e);
-
-		return e.handled;
+			(*it)->execute(args);
 	}
 
-	void ComboBox::removeListItem(unsigned int index)
+	void ComboBox::toggleDropDownListVisibility(const EventArgs& e)
 	{
-		mList->removeListItem(index);
-	}
-
-	void ComboBox::setCharacterHeight(const Ogre::Real& relativeHeight)
-	{
-		Label::setCharacterHeight(relativeHeight);
-		mList->setCharacterHeight(relativeHeight);
-	}
-
-	void ComboBox::setText(const Ogre::UTFString& text)
-	{
-		// If text is bigger than combobox width, append "..." to a fitting portion of the text
-		mText = text;	// store original text so we can retrieve it.
-
-		mLabel->setFont(mFont);
-		mLabel->setCharacterHeight(mCharacterHeight);
-		mLabel->setTextColor(mTextTopColor,mTextBotColor);
-		mLabel->setText(mText);
-		mLabel->alignText(mHorizontalAlignment,mVerticalAlignment);
-	}
-
-	void ComboBox::setDropListHighlightMaterial(const Ogre::String& material)
-	{
-		mList->setHighlightMaterial(material);
-	}
-
-	void ComboBox::setDropListWidth(const Ogre::Real& relativeWidth)
-	{
-		mList->setWidth(relativeWidth);
-	}
-
-	void ComboBox::show()
-	{
-		Label::show();
-		mList->hide();
+		if(!mList->isVisible())
+		{
+			// apply button ".down" material
+			setTexture(mDefaultTexture + ".down" + mTextureExtension);
+			mButton->applyButtonDownTexture();
+			mList->show();
+		}
+		else
+		{
+			setTexture(mDefaultTexture + ".over" + mTextureExtension);
+			mButton->applyDefaultTexture();
+			mList->hide();
+		}
 	}
 }

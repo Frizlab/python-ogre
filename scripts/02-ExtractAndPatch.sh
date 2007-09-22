@@ -19,6 +19,8 @@ echo " -- Unpacking Newton"
 tar zxf $DOWNLOADS/newtonLinux-1.53.tar.gz
 echo " -- Unpacking ODE"
 unzip -q -o $DOWNLOADS/ode-src-0.8.zip
+echo " -- Unpacking bullet"
+tar zxf $DOWNLOADS/bullet-2.62a.tgz
 
 echo " -- Unpacking CG"
 pushd $ROOT

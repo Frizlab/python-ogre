@@ -1,22 +1,24 @@
 #ifndef QUICKGUIWIDGET_H
 #define QUICKGUIWIDGET_H
 
-#include "QuickGUIExportDLL.h"
-#include "OgrePanelOverlayElement.h"
+#include "OgreException.h"
+#include "OgrePrerequisites.h"
+
 #include "QuickGUIEventArgs.h"
 #include "QuickGUIMemberFunctionPointer.h"
-#include "QuickGUIPrerequisites.h"
-#include "OgreTextAreaOverlayElement.h"
+#include "QuickGUIRect.h"
+#include "QuickGUIQuad.h"
+#include "QuickGUIQuadContainer.h"
+#include "QuickGUIExportDLL.h"
 
 #include <vector>
 
 namespace QuickGUI
 {
-	// Forward declaration solely for the getWindow function
+	// Forward declarations
 	class Window;
-	// Forward declaration solely for the getSheet function
 	class Sheet;
-	// Forward declaration, because of frequent access
+	class Panel;
 	class GUIManager;
 
 	/**
@@ -25,7 +27,7 @@ namespace QuickGUI
 	* Relative: (-inf,+inf), where 1.0 is the full width or height of parent widget. 
 	* Pixels: [0,x], where x is the width or height of the screen in pixels.
 	*/
-	typedef enum GuiMetricsMode
+	enum GuiMetricsMode
 	{
 		QGUI_GMM_ABSOLUTE		=  0,
 		QGUI_GMM_RELATIVE			,
@@ -36,10 +38,9 @@ namespace QuickGUI
 	* Useful for widgets horizontally aligning child widgets, for example a
 	* TitleBar aligning its label widget
 	*/
-	typedef enum HorizontalAlignment
+	enum HorizontalAlignment
 	{
-		QGUI_HA_NO_ALIGNMENT	=  0,
-		QGUI_HA_LEFT				,
+		QGUI_HA_LEFT			=  0,
 		QGUI_HA_MID					,
 		QGUI_HA_RIGHT
 	};
@@ -47,10 +48,9 @@ namespace QuickGUI
 	* Useful for widgets vertically aligning child widgets, for example a
 	* TitleBar aligning its label widget
 	*/
-	typedef enum VerticalAlignment
+	enum VerticalAlignment
 	{
-		QGUI_VA_NO_ALIGNMENT	=  0,
-		QGUI_VA_TOP					,
+		QGUI_VA_TOP				=  0,
 		QGUI_VA_MID					,
 		QGUI_VA_BOTTOM
 	};
@@ -63,58 +63,61 @@ namespace QuickGUI
 	class _QuickGUIExport Widget
 	{
 	public:
+		// GUIManager is the only manager that can destroy widgets.
+		friend class GUIManager;
+
 		/**
 		* Outlining Types of widgets in the library.
 		*/
-		typedef enum Type
+		enum Type
 		{
-			QGUI_TYPE_BUTTON		=  0,
-			QGUI_TYPE_COMBOBOX			,
-			QGUI_TYPE_IMAGE				,
-			QGUI_TYPE_LABEL				,
-			QGUI_TYPE_LIST				,
-			QGUI_TYPE_LISTITEM			,
-			QGUI_TYPE_MENU				,
-			QGUI_TYPE_MENULIST			,
-			QGUI_TYPE_NSTATEBUTTON		,
-			QGUI_TYPE_PANEL				,
-			QGUI_TYPE_PROGRESSBAR		,
-			QGUI_TYPE_SHEET				,
-			QGUI_TYPE_TEXT				,
-			QGUI_TYPE_TEXTBOX			,
-			QGUI_TYPE_TEXTCURSOR		,
-			QGUI_TYPE_TITLEBAR			,
-			QGUI_TYPE_TRACKBAR			,
-			QGUI_TYPE_WINDOW
+			TYPE_BUTTON				=  0,
+			TYPE_COMBOBOX				,
+			TYPE_IMAGE					,
+			TYPE_LABEL					,
+			TYPE_LIST					,
+			TYPE_LISTITEM				,
+			TYPE_MENU					,
+			TYPE_MENULIST				,
+			TYPE_NSTATEBUTTON			,
+			TYPE_PANEL					,
+			TYPE_PROGRESSBAR			,
+			TYPE_SCROLL_PANE			,
+			TYPE_SCROLLBAR_HORIZONTAL	,
+			TYPE_SCROLLBAR_VERTICAL		,
+			TYPE_SHEET					,
+			TYPE_TEXTBOX				,
+			TYPE_TITLEBAR				,
+			TYPE_TRACKBAR_HORIZONTAL	,
+			TYPE_TRACKBAR_VERTICAL		,
+			TYPE_WINDOW
 		};
 		/**
 		* All widgets must support these events
 		*/
-		typedef enum Event
+		enum Event
 		{
-			QGUI_EVENT_ACTIVATED      =  0,
-			QGUI_EVENT_CHARACTER_KEY	  ,
-			QGUI_EVENT_DEACTIVATED		  ,
-			QGUI_EVENT_DRAGGED			  ,
-			QGUI_EVENT_KEY_DOWN			  ,
-			QGUI_EVENT_KEY_UP			  ,
-			QGUI_EVENT_MOUSE_BUTTON_DOWN  ,
-			QGUI_EVENT_MOUSE_BUTTON_UP	  ,
-			QGUI_EVENT_MOUSE_CLICK		  ,
-			QGUI_EVENT_MOUSE_ENTER		  ,
-			QGUI_EVENT_MOUSE_LEAVE		  ,
-			QGUI_EVENT_MOUSE_MOVE		  ,
-			QGUI_EVENT_MOUSE_WHEEL			
-		};
-		/**
-		* Borders that every widget can use.
-		*/
-		typedef enum Border
-		{
-			QGUI_BORDER_TOP		=  0,
-			QGUI_BORDER_BOTTOM		,
-			QGUI_BORDER_LEFT		,
-			QGUI_BORDER_RIGHT
+			EVENT_CHARACTER_KEY		=  0,
+			EVENT_CHILD_ADDED			,
+			EVENT_CHILD_REMOVED			,
+			EVENT_DISABLED				,
+			EVENT_DRAGGED				,
+			EVENT_ENABLED				,
+			EVENT_GAIN_FOCUS			,
+			EVENT_HIDDEN				,
+			EVENT_KEY_DOWN				,
+			EVENT_KEY_UP				,
+			EVENT_LOSE_FOCUS			,
+			EVENT_MOUSE_BUTTON_DOWN		,
+			EVENT_MOUSE_BUTTON_UP		,
+			EVENT_MOUSE_CLICK			,
+			EVENT_MOUSE_ENTER			,
+			EVENT_MOUSE_LEAVE			,
+			EVENT_MOUSE_MOVE			,
+			EVENT_MOUSE_WHEEL			,
+			EVENT_POSITION_CHANGED		,
+			EVENT_SHOWN					,
+			EVENT_SIZE_CHANGED
 		};
 	public:
 		/** Constructor
@@ -127,52 +130,43 @@ namespace QuickGUI
 			@param
 				sizeMode The GuiMetricsMode for the values given for the size. (absolute/relative/pixel)
 			@param
-				overlayContainer associates the internal OverlayElement with a specified zOrder.
+				textureName The name of the texture used to visually represent the widget. (ie "qgui.window.png")
+			@param
+				group The QuadContainer containing the Quad used by this Widget.
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		Widget(const Ogre::String& instanceName, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, Ogre::String material, Ogre::OverlayContainer* overlayContainer, Widget* ParentWidget);
-		virtual ~Widget();
+		//GuiMetricsMode
+		Widget(const Ogre::String& instanceName, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String textureName, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
 
-		// Function that allows widgets to add a child widget after creation.
-		void _addChildWidget(Widget* w);
-		// sets the widget position/size based on mPixelDimensions
-		virtual void _applyDimensions();
-		// Internal method to create widget borders.
-		void _createBorders();
-		// Internal method to destroy widget borders.
-		void _destroyBorders();
-		// Calculates relative dimensions.
-		Ogre::Vector4 _getRelativeDimensions(const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode);
-		// Calculates relative position.
-		Ogre::Vector2 _getRelativePosition(const Ogre::Vector2& position, GuiMetricsMode mode);
-		// Calculates relative size.
-		Ogre::Vector2 _getRelativeSize(const Ogre::Vector2& size, GuiMetricsMode mode); 
-		// Recalculate the dimensions and reposition/resize the widget (calls _updateDimensions)
-		virtual void _notifyDimensionsChanged();
-		// Realign text, if the widget has a child label widget
-		virtual void _notifyTextChanged() {}
-		// Function that allows widgets to remove child widgets.
-		void _removeChildWidget(Widget* w);
-		// Calculate Absolute and Pixel dimensions
-		void _updateDimensions(const Ogre::Vector4& relativeDimensions);
-		// Internal method to update border sizes
-		void _updateBorderSize();
+		// This function should not be called by users.  Its purpose is to add this widget to its parent's child list.
+		void _addToChildList(Widget* w);
+		// This function should not be called by users.  Its purpose is to set the widget's parent.
+		void _notifyParent(Widget* w);
+		// This function should not be called by users.  Its purpose is to notify the widget that it has no parent.
+		void _notifyRemovedFromChildList();
+		// Notifies the widget of the QuadContainer it belongs to.
+		void _notifyQuadContainer(QuadContainer* g);
+		// This function should not be called by users.  Its purpose is to remove this widget from its parent's child list.
+		virtual void _removeFromChildList(Widget* w);
 
 		/** Adds an event handler to this widget
-            @note
-                Multiple user defined event handlers can be defined for an event.  All added event handlers will be called
-				whenever the event is fired.
 			@param
-				EVENT Defined widget events, for example: QGUI_EVENT_ACTIVATED, QGUI_EVENT_CHARACTER_KEY, QGUI_EVENT_MOUSE_BUTTON_DOWN, etc
+				EVENT Defined widget events, for example: EVENT_GAIN_FOCUS, EVENT_CHARACTER_KEY, EVENT_MOUSE_BUTTON_DOWN, etc
             @param
                 function member function assigned to handle the event.  Given in the form of myClass::myFunction.
 				Function must return bool, and take QuickGUI::EventArgs as its parameters.
             @param
                 obj particular class instance that defines the handler for this event.  Here is an example:
-				addEventHandler(QuickGUI::QGUI_EVENT_MOUSE_BUTTON_DOWN,myClass::myFunction,this);
+				addEventHandler(QuickGUI::EVENT_MOUSE_BUTTON_DOWN,myClass::myFunction,this);
+			@note
+				Multiple user defined event handlers can be defined for an event.  All added event handlers will be called
+				whenever the event is fired.
+			@note
+				You may see Visual Studio give an error warning such as "error C2660: 'QuickGUI::Widget::addEventHandler' : function does not take 3 arguments".
+				This is an incorrect error message.  Make sure your function pointer points to a function which returns void, and takes parameter "const EventArgs&".
         */
-		template<typename T> void addEventHandler(Event EVENT, bool (T::*function)(const EventArgs&), T* obj)
+		template<typename T> void addEventHandler(Event EVENT, void (T::*function)(const EventArgs&), T* obj)
 		{
 			mUserEventHandlers[EVENT].push_back(new MemberFunctionPointer<T>(function,obj));
 		}
@@ -180,15 +174,16 @@ namespace QuickGUI
 		void addEventHandler(Event EVENT, MemberFunctionSlot* function);
 
 		/**
-		* Internal method.  User works in relative coordinates, but internally everything is done in pixels.
-		* Used to calculate the pixel size acording to the dimensions provided.
+		* Alters the widgets offset to be higher than widget w.  Widget w must be in the
+		* same QuadContainer and Layer.
 		*/
-		Ogre::Vector4 absoluteToPixelDimensions(const Ogre::Vector4& dimensions);
-
+		virtual void appearOverWidget(Widget* w);
+		void constrainDragging(bool DragXOnly, bool DragYOnly);
 		/**
 		* Disable Widget, making it unresponsive to events.
+		* NOTE: Sheets cannot be disabled.
 		*/
-		void disable();
+		virtual void disable();
 		/**
 		* Moves draggingWidget.  By default, dragging widget is this widget, but this can be changed.
 		* Allows dragging the titlebar or it's text to drag the window, for example.
@@ -200,8 +195,9 @@ namespace QuickGUI
 		bool draggingEnabled();
 		/**
 		* Enable Widget, allowing it to accept and handle events.
+		* NOTE: Sheets cannot be enabled/disabled
 		*/
-		void enable();
+		virtual void enable();
 		/**
 		* Returns true is widget is enabled, false otherwise.
 		*/
@@ -210,119 +206,147 @@ namespace QuickGUI
 		* Enable or Disable dragging.
 		*/
 		void enableDragging(bool enable);
+		/**
+		* Sets focus to the widget by firing an activation event.
+		*/
+		virtual void focus();
 
 		std::vector<Widget*>* getChildWidgetList();
 		Widget* getChildWidget(const Ogre::String& name);
-		Ogre::Vector4 getDimensions(GuiMetricsMode position = QuickGUI::QGUI_GMM_RELATIVE, GuiMetricsMode size = QuickGUI::QGUI_GMM_RELATIVE);
-		Ogre::Vector2 getPosition(GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
-		Ogre::Vector2 getSize(GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
+		Ogre::String getDefaultSkin();
+		Rect getDimensions(GuiMetricsMode position = QuickGUI::QGUI_GMM_RELATIVE, GuiMetricsMode size = QuickGUI::QGUI_GMM_RELATIVE);
+		GUIManager* getGUIManager();
+		Point getPosition(GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
+		Size getSize(GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
 
-		Ogre::Real getCharacterHeight();
-		Ogre::ColourValue getDisabledColor();
-		Ogre::String getFont();
+		/**
+		* Returns the name of the texture used when this widget becomes disabled.
+		*/
+		Ogre::String getDisabledTexture();
+		/**
+		* Returns true if the widget will gain focus when clicked, false otherwise.
+		*/
+		bool getGainFocusOnClick();
 		bool getGrabbed();
-		
+		Ogre::Real getHeight(GuiMetricsMode mode = QGUI_GMM_RELATIVE);
+		/**
+		* Returns true if this widget is hidden when its parent is hidden.
+		*/
+		bool getHideWithParent();
 		Ogre::String getInstanceName();
 		/**
 		* Returns true if window is able to be repositions, false otherwise.
 		*/
 		bool getMovingEnabled();
 		/**
-		* Returns the Overlay Container is used to contain the Widget's OverlayElements
+		* Returns the number of parent iterations required to get to Sheet widget.
 		*/
-		Ogre::OverlayContainer* getOverlayContainer();
+		int getOffset();
 		/**
-		* Returns the Widget's Parent Widget.  Does not throw an exception is the Parent
-		* does not exist.  (Windows do not have parent widgets)
+		* Get Panel this widget belongs to.
+		* NOTE: This value may be NULL.
+		*/
+		Panel* getParentPanel();
+		/**
+		* Get Sheet this widget belongs to.
+		* NOTE: This value may be NULL.
+		*/
+		Sheet* getParentSheet();
+		/**
+		* Get Widget this widget belongs to.
+		* NOTE: This value may be NULL.
 		*/
 		Widget* getParentWidget();
 		/**
-		* Get Sheet this widget belongs to.  If the widget is a Sheet, it is returned.
+		* Get Window this widget belongs to.
+		* NOTE: This value may be NULL.
 		*/
-		Sheet* getSheet();
+		Window* getParentWindow();
+		/*
+		* Get Render Object that visually represents the widget.
+		*/
+		Quad* getQuad();
+		/*
+		* Get Render Object Group this widget's Quad belongs in.
+		*/
+		QuadContainer* getQuadContainer();
+		/**
+		* Get whether or not this widget is shown when its parent is shown.
+		*/
+		bool getShowWithParent();
 		/**
 		* Iterates through visible Children widgets to find and return the widget that is *hit* by the point.
 		* Returns NULL is nothing is *hit*.
 		*/
-		virtual Widget* getTargetWidget(const Ogre::Vector2& p);
+		virtual Widget* getTargetWidget(const Point& p);
+		
+		Ogre::String getTextureName(bool includeExtension = true);
 		/**
-		* Returns the text element of this widget.  Text by default is "".
-		*/
-		Ogre::UTFString getText();
-		Ogre::ColourValue getTextColorTop();
-		Ogre::ColourValue getTextColorBot();
-		/**
-		* Returns the type of the widget, as enumerated above. ex. QGUI_TYPE_BUTTON.
+		* Returns the type of the widget, as enumerated above. ex. TYPE_BUTTON.
 		*/
 		Type getWidgetType();
-		/**
-		* Get Window this widget is attached to.  If the widget is a Window, it is returned.
-		*/
-		Window* getWindow();
-		/**
-		* Get zOrder widget is drawn on.
-		*/
-		int getZOrder();
-		/**
-		* Returns the number of zOrders higher this widget is from it's Parent Widget.
-		*/
-		int getZOrderOffset();
-
+		Ogre::Real getWidth(GuiMetricsMode mode = QGUI_GMM_RELATIVE);
+		Ogre::Real getXPosition(GuiMetricsMode mode = QGUI_GMM_RELATIVE);
+		Ogre::Real getYPosition(GuiMetricsMode mode = QGUI_GMM_RELATIVE);
 		/**
 		* Sets mVisible to false.  Widgets should override this to implement how they handle
 		* hiding.
 		*/
 		virtual void hide();
 		/**
-		* Hide borders if they exist.
-		*/
-		void hideBorders();
-		/**
 		* Returns true if pixel point p is inside the pixel dimensions of this widget.
 		*/
-		virtual bool isPointWithinBounds(const Ogre::Vector2& p);
+		virtual bool isPointWithinBounds(const Point& p);
 		bool isVisible();
+		/**
+		* Returns true if Widget w is a child of this widget, false otherwise.
+		*/
+		bool isChild(Widget* w);
 
 		/**
 		* Offset the widget position.  Useful for dragging/moving widgets.
 		*/
 		void move(const Ogre::Real& xVal, const Ogre::Real& yVal, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
+		void move(const Point& p, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
+		void moveX(Ogre::Real xVal, GuiMetricsMode mode = QGUI_GMM_RELATIVE);
+		void moveY(Ogre::Real yVal, GuiMetricsMode mode = QGUI_GMM_RELATIVE);
 
+		/**
+		* Event Handler that executes the appropriate User defined Event Handlers for a given event.
+		* Returns true if the event was handled, false otherwise.
+		*/
+		bool fireEvent(Event e, const EventArgs& args);
+		/*
+		* Function disabling ability to change widget's texture.
+		*/
+		void lockTexture();
+		virtual void onPositionChanged(const EventArgs& args);
 		/**
 		* Determins if the mouse if over a transparent part of the image defining the widget.
 		* Used to determin if the mouse is *over* a widget. (non transparent parts)
 		*/
-		bool overTransparentPixel(const Ogre::Vector2& mousePosition);
-
+		bool overTransparentPixel(const Point& mousePosition);
+		/**
+		* Makes sure relative position and size are correct, according to parent.  Actual/Pixel position and size are maintained.
+		*/
+		void refresh();
 		/**
 		* Properly cleans up all child widgets.
 		*/
 		void removeAndDestroyAllChildWidgets();
 		/**
-		* Sets top/bottom/left/right border size in pixels.
+		* Stores/Updates the texture used for the widget, and allows the widget to derive other needed textures. (by overriding this function)
 		*/
-		void setBorderWidth(int borderPixelHeight);
-		/**
-		* Sets top/bottom, left/right border size in pixels.
-		*/
-		void setBorderWidth(int topBotBorderPixelHeight, int leftRightBorderPixelHeight);
-		/**
-		* Sets top, bottom, left, right border size in pixels.
-		*/
-		void setBorderWidth(int topBorderPixelHeight, int botBorderPixelHeight, int leftBorderPixelHeight, int rightBorderPixelHeight);
-		/**
-		* Sets character height.  Widgets should override this, since text handling is widget specific,
-		* in terms of truncating and alignment.
-		*/
-		virtual void setCharacterHeight(const Ogre::Real& relativeHeight);
+		virtual void setBaseTexture(const Ogre::String& textureName);
+		virtual void setClippingRect(const Rect& r);
 		/**
 		* Manually set the Dimensions of the widget.
 		*/
-		void setDimensions(const Ogre::Vector4& dimensions, GuiMetricsMode positionMode = QuickGUI::QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QuickGUI::QGUI_GMM_RELATIVE);
+		void setDimensions(const Rect& dimensions, GuiMetricsMode positionMode = QuickGUI::QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QuickGUI::QGUI_GMM_RELATIVE);
 		/**
-		* Set the color used to blend in with a disabled widget.  Grey by default.
+		* Stores the texture to be used when the widget becomes disabled.
 		*/
-		void setDisabledColor(const Ogre::ColourValue& c);
+		void setDisabledTexture(const Ogre::String& disabledTexture);
 		/**
 		* This function specifies the widget that will be moved when the widget is *dragged*.
 		* By default, the Dragging Widget is the widget itself, but this allows for the possibility
@@ -330,180 +354,141 @@ namespace QuickGUI
 		*/
 		void setDraggingWidget(Widget* w);
 		/**
-		* Sets text font.  Widgets should override this, since text handling is widget specific,
-		* in terms of truncating and alignment.
+		* Allows clicking on a widget to not change the active widget.
 		*/
-		virtual void setFont(const Ogre::String& font);
+		void setGainFocusOnClick(bool gainFocus);
 		/**
 		* Manually set mGrabbed to true.
 		*/
 		void setGrabbed(bool grabbed);
+		void setHeight(Ogre::Real height, GuiMetricsMode mode = QGUI_GMM_RELATIVE);
 		/**
-		* Sets only the height of the widget, relative to it's parent (or screen if parent does not exist)
-		* NOTE: all children widgets will be notified that dimensions have changed.
+		* If set to true, this widget will be hidden when its parent's widget is hidden.
+		* NOTE: All widgets have this set to true by default.
 		*/
-		void setHeight(const Ogre::Real& relativeHeight);
+		void setHideWithParent(bool hide);
 		/**
 		* If set to false, widget cannot be moved.
 		*/
 		void setMovingEnabled(bool enable);
 		/**
+		* Manipulates the offset used to determine this widgets zOrder in rendering.
+		*/
+		void setOffset(int offset);
+		/**
 		* Manually set position of widget.
+		* NOTE: the values given are relative to the parent's top left corner, and not the screen!  For screen positioning,
+		*  user the setScreenPosition function.
 		*/
 		void setPosition(const Ogre::Real& xVal, const Ogre::Real& yVal, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
+		void setPosition(const Point& p, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
 		/**
-		* Sets text.  Widgets should override this, since text handling is widget specific,
-		* in terms of truncating and alignment.  Or in some cases where a widget does not use text,
-		* this will have no visual impact.
+		* Manually set position of widget.
+		* NOTE: the values given are relative to the render windows's top left corner, and not the parent widget!
 		*/
-		virtual void setText(const Ogre::UTFString& text);
+		void setScreenPosition(const Ogre::Real& xVal, const Ogre::Real& yVal, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
 		/**
-		* Sets text color.  Widgets should override this, since text handling is widget specific,
-		* in terms of truncating and alignment.  Or in some cases where a widget does not use text,
-		* this will have no visual impact.
+		* Manually set size of widget.
 		*/
-		virtual void setTextColor(const Ogre::ColourValue& color);
-		virtual void setTextColor(const Ogre::ColourValue& topColor,const Ogre::ColourValue& botColor);
+		void setSize(const Ogre::Real& width, const Ogre::Real& height, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
+		void setSize(const Size& s, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
 		/**
-		* Sets the number of zOrders higher this widget is compared to its parent.
+		* If set to true, this widget will be shown when its parent's widget is shown.
+		* NOTE: most widgets have this set to true by default. (Menu's are false by default)
 		*/
-		void setZOrderOffset(int offset, bool updateWindowZList = true);
+		void setShowWithParent(bool show);
+		void setWidth(Ogre::Real width, GuiMetricsMode mode = QGUI_GMM_RELATIVE);
+		void setXPosition(Ogre::Real x, GuiMetricsMode mode = QGUI_GMM_RELATIVE);
+		void setYPosition(Ogre::Real y, GuiMetricsMode mode = QGUI_GMM_RELATIVE);
 		/**
 		* Sets mVisible to true.  Widgets should override this to implement how they handle
 		* showing.
 		*/
 		virtual void show();
 		/**
-		* Shows borders, if they exist.
+		* Applies the texture to the Quad if exists in some form, and updates the Image used for
+		* transparency picking.
 		*/
-		void showBorders();
-		/**
-		* Sets text vertical alignment.  Widgets should override this, since text handling is widget specific,
-		* in terms of truncating and alignment.  Or in some cases where a widget does not use text,
-		* this will have no visual impact.
-		*/
-		void setVerticalAlignment(VerticalAlignment va);
-		/**
-		* Sets text horizontal alignment.  Widgets should override this, since text handling is widget specific,
-		* in terms of truncating and alignment.  Or in some cases where a widget does not use text,
-		* this will have no visual impact.
-		*/
-		void setHorizontalAlignment(HorizontalAlignment ha);
+		virtual void setTexture(const Ogre::String& textureName, bool updateBaseTexture = true);
 
-		// Event Handler functions - should be overriden to supply default functionality,
-		// For example, the button won't look like a button unless you apply the *.over and
-		// *.down material during onMouseEnters, Leaves, ButtonDown, etc. events
 		/**
-		* Default Handler for the QGUI_EVENT_ACTIVATED event, and activates all child widgets (if exist)
+		* Function required for certain widgets/functions to function properly, ie TextBox and fade.
 		*/
-		virtual void activate(EventArgs& e);
-		/**
-		* Default Handler for the QGUI_EVENT_DEACTIVATED event, and deactivates all child widgets (if exist)
-		*/
-		virtual void deactivate(EventArgs& e);
-		virtual bool onDragged(EventArgs& e);
-		virtual bool onMouseEnters(MouseEventArgs& e);
-		virtual bool onMouseLeaves(MouseEventArgs& e);
-		virtual bool onMouseMoved(MouseEventArgs& e);
-		virtual bool onMouseWheel(MouseEventArgs& e);
-		virtual bool onMouseButtonUp(MouseEventArgs& e);
-		virtual bool onMouseButtonDown(MouseEventArgs& e);
-		virtual bool onMouseClicked(MouseEventArgs& e);
-		virtual bool onKeyDown(KeyEventArgs& e);
-		virtual bool onKeyUp(KeyEventArgs& e);
-		virtual bool onCharacter(KeyEventArgs& e);
 		virtual void timeElapsed(Ogre::Real time);
 
+		/*
+		* Allows texture of widget to change. (behavior by default)
+		*/
+		void unlockTexture();
+
 	protected:
+		virtual ~Widget();
+
 		GUIManager*					mGUIManager;
 		Ogre::String				mInstanceName;
 		Type						mWidgetType;
-		bool						mVisible;
 
+		// PROPERTIES
+		bool						mDragXOnly;
+		bool						mDragYOnly;
+		bool						mVisible;
 		bool						mEnabled;
-		Ogre::ColourValue			mDisabledColor;
+		bool						mGainFocusOnClick;
 		bool						mGrabbed;
+		bool						mTextureLocked;
 		bool						mMovingEnabled;
 		bool						mDraggingEnabled;
-		Widget*						mWidgetToDrag;
-		int							mZOrderOffset;
-
-		Ogre::String				mFont;
 		Ogre::Real					mCharacterHeight;
-		Ogre::UTFString				mText;
-		Ogre::ColourValue			mTextTopColor;
-		Ogre::ColourValue			mTextBotColor;
-		VerticalAlignment			mVerticalAlignment;
-		HorizontalAlignment			mHorizontalAlignment;
-
+		Ogre::String				mFullTextureName;
+		Ogre::String				mTextureName;
+		Ogre::String				mTextureExtension;
+		Ogre::String				mDisabledTextureName;
+		// number of parents iterated to get to sheet.
+		int							mOffset;
+		bool						mHideWithParent;
+		bool						mShowWithParent;
+		// used for transparency picking
+		Ogre::Image*				mWidgetImage;
 		Widget*						mParentWidget;
-		Ogre::String				mWidgetMaterial;
-		// Panel or TextArea Element, depending on the widget.
-		Ogre::OverlayElement*		mOverlayElement;
-		Ogre::OverlayContainer*		mOverlayContainer;
+		Sheet*						mParentSheet;
+		Window*						mParentWindow;
+		Panel*						mParentPanel;
 
-		Ogre::PanelOverlayElement*	mBorders[4];
-		int							mBorderSizeInPixels[4];
-		Ogre::String				mBorderMaterial[4];
-		bool						mBordersHidden;
+		Widget*						mWidgetToDrag;
+
+		Rect						mClippingRect;
+
+		Quad*						mQuad;
+
+		// Keeping track of the QuadContainer this Quad belongs to.
+		QuadContainer*				mQuadContainer;
 
 		// List of any child widgets this widget may have.
 		std::vector<Widget*>		mChildWidgets;
-		// Each widget has an overlay container that children are attached to.
-		Ogre::OverlayContainer*		mChildrenContainer;
 
 		// Everything is implemented in pixels under the hood
-		Ogre::Vector4				mPixelDimensions;
+		Rect						mPixelDimensions;
 		// First two values represent the absolute positions - 0,0 to 1,1 represent top left to bottom right of render window
 		// Second two values represent the absolute sizes
-		Ogre::Vector4				mAbsoluteDimensions;
+		Rect						mAbsoluteDimensions;
 		// First two values represent the relative positions - 0,0 to 1,1 represent top left to bottom right of parent widget
 		// Second two values represent the relative sizes		
-		Ogre::Vector4				mRelativeDimensions;
+		Rect						mRelativeDimensions;
 
 		// Event handlers! Only one per event per widget
 		std::vector< std::vector<MemberFunctionSlot*> > mUserEventHandlers;
 
 		void _initEventHandlers();
 
-		/* Uses parent widget's absolute dimensions with given relative dimensions to produce absolute (screen) dimensions */
-		Ogre::Vector4 getAbsoluteDimensions(const Ogre::Vector4& relativeDimensions);
-
-		// COMMENT TAKEN DIRECTLY FROM OGRE
-		/** A 2D element which contains other OverlayElement instances.
-		@remarks
-			This is a specialisation of OverlayElement for 2D elements that contain other
-			elements. These are also the smallest elements that can be attached directly
-			to an Overlay.
-		@remarks
-			OverlayContainers should be managed using OverlayManager. This class is responsible for
-			instantiating / deleting elements, and also for accepting new types of element
-			from plugins etc.
+		/*
+		* Iterates through parents and stores references to parent Panel, Window, and Sheet, if exist.
 		*/
-		Ogre::OverlayContainer* createOverlayContainer(const Ogre::String& name, const Ogre::String& material);
+		void _detectHierarchy();
 
-		// COMMENT TAKEN DIRECTLY FROM OGRE
-		/** OverlayElement representing a flat, single-material (or transparent) panel which can contain other elements.
-		@remarks
-			This class subclasses OverlayContainer because it can contain other elements. Like other
-			containers, if hidden it's contents are also hidden, if moved it's contents also move etc. 
-			The panel itself is a 2D rectangle which is either completely transparent, or is rendered 
-			with a single material. The texture(s) on the panel can be tiled depending on your requirements.
-		@par
-			This component is suitable for backgrounds and grouping other elements. Note that because
-			it has a single repeating material it cannot have a discrete border (unless the texture has one and
-			the texture is tiled only once). For a bordered panel, see it's subclass BorderPanelOverlayElement.
-		@par
-			Note that the material can have all the usual effects applied to it like multiple texture
-			layers, scrolling / animated textures etc. For multiple texture layers, you have to set 
-			the tiling level for each layer.
+		/*
+		* Breaks the texture name into its name and extension, if it has an extension.
 		*/
-		Ogre::PanelOverlayElement* createPanelOverlayElement(const Ogre::String& name, const Ogre::Vector4& dimensions, const Ogre::String& material);
-
-		// COMMENT TAKEN FROM OGRE
-		/** This class implements an overlay element which contains simple unformatted text.
-		*/
-		Ogre::TextAreaOverlayElement* createTextAreaOverlayElement(const Ogre::String& name, const Ogre::Vector4& dimensions, const Ogre::String& material);
+		void _processFullTextureName(const Ogre::String& texture);
 	};
 }
 

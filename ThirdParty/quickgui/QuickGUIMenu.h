@@ -1,9 +1,8 @@
 #ifndef QUICKGUIMENU_H
 #define QUICKGUIMENU_H
 
-#include "QuickGUILabel.h"
+#include "QuickGUIImage.h"
 #include "QuickGUIMenuList.h"
-#include "QuickGUIPrerequisites.h"
 
 #include <utility>
 #include <vector>
@@ -20,7 +19,7 @@ namespace QuickGUI
 		Menus do not contain any text.
 	*/
 	class _QuickGUIExport Menu :
-		public Label
+		public Image
 	{
 	public:
 		/** Constructor
@@ -35,21 +34,20 @@ namespace QuickGUI
 			@param
 				material Ogre material defining the widget image.
 			@param
-				overlayContainer associates the internal OverlayElement with a specified zOrder.
+				group QuadContainer containing this widget.
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		Menu(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material, Ogre::OverlayContainer* overlayContainer, Widget* ParentWidget);
-		virtual ~Menu();
+		Menu(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
 
 		/**
 		* Adds a menu list.
 		*/
-		MenuList* addMenuList(const Ogre::String& name, const Ogre::UTFString& text, Ogre::Real relXPos, Ogre::Real relXSize, const Ogre::String& material);
+		MenuList* addMenuList(const Ogre::String& name, const Ogre::UTFString& text, Ogre::Real relXPos, Ogre::Real relXSize, const Ogre::String& texture);
 		/**
 		* Adds a menu list.  Name is generated.
 		*/
-		MenuList* addMenuList(const Ogre::UTFString& text, Ogre::Real relXPos, Ogre::Real relXSize, const Ogre::String& material);
+		MenuList* addMenuList(const Ogre::UTFString& text, Ogre::Real relXPos, Ogre::Real relXSize, const Ogre::String& texture);
 		/**
 		* Adds a menu list.  Name is generated. Default Material applied.
 		*/
@@ -61,25 +59,6 @@ namespace QuickGUI
 		void clearAllMenuLists();
 
 		/**
-		* Default Event Handler called when widget is deactivated.
-		*/
-		void deactivate(EventArgs& e);
-
-		/**
-		* Event Handler used to hide all child Lists, when a ListItem is clicked.
-		*/
-		bool evtHndlr_hideMenuList(const EventArgs& e);
-		/**
-		* Called whenever a child list creates a child list item.
-		* Used to add MouseEnter and MouseLeave event handlers to List Item, 
-		* for selection highlighting.
-		*/
-		//bool evtHndlr_listItemCreated(const EventArgs& e);
-		//bool evtHndlr_listItemMouseEnters(const EventArgs& e);
-		//bool evtHndlr_listItemMouseLeaves(const EventArgs& e);
-		bool evtHndlr_toggleMenuList(const EventArgs& e);
-
-		/**
 		* Gets a List from the Menu.  No exception is thrown
 		* if the index is out of bounds.
 		*/
@@ -89,21 +68,35 @@ namespace QuickGUI
 		/**
 		* Hides All Child Menus.
 		*/
-		void hideMenus();
+		void hideMenuLists();
 
 		/**
-		* Default Handler for the QGUI_EVENT_MOUSE_BUTTON_UP event.  If not handled, it will be passed
-		* to the parent widget (if exists)
+		* Removes true if point is over a MenuList Button, false otherwise.
 		*/
-		bool onMouseButtonUp(MouseEventArgs& e);
+		bool pointOverMenuListButton(Point pixelPosition);
+
 		/**
-		* Default Handler for the QGUI_EVENT_MOUSE_MOVE event.  If not handled, it will be passed
-		* to the parent widget (if exists)
+		* When set to true, mousing over MenuLists will open them.
 		*/
-		bool onMouseMoved(MouseEventArgs& e);
+		void setShowMenuState(bool show);
+
+		/**
+		* Event Handler tied to MenuLists to determine if a MenuList should become visible
+		* when mouse is over it.
+		*/
+		void showMenuList(const EventArgs& e);
+
+		/**
+		* Event Handler tied to MenuLists to open a menuList when clicked, and update Menu State.
+		*/
+		void toggleMenuList(const EventArgs& e);
 
 	protected:
+		virtual ~Menu();
+
 		std::vector<MenuList*> mMenuLists;
+
+		MenuList* mCurrentOpenList;
 
 		// If user clicks on a menu, it drops down and sets this variable to true;
 		// Mousing over other menu anchor buttons will switch to their menus. (Windows XP menu functionality)

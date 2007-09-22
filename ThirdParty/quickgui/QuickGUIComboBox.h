@@ -4,7 +4,6 @@
 #include "QuickGUIButton.h"
 #include "QuickGUILabel.h"
 #include "QuickGUIList.h"
-#include "QuickGUIPrerequisites.h"
 
 #include <vector>
 
@@ -40,19 +39,17 @@ namespace QuickGUI
 			@param
 				material Ogre material defining the widget image.
 			@param
-				overlayContainer associates the internal OverlayElement with a specified zOrder.
+				group QuadContainer containing this widget.
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		ComboBox(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material, Ogre::OverlayContainer* overlayContainer, Widget* ParentWidget);
-		virtual ~ComboBox();
+		ComboBox(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
 
-		/**
-		* Adds (and creates) a list item to the drop down list.
-		* Note that you cannot add a button or Image to the ListItem.
+		/*
+		* Event Handler tied to ListItems, causing them to hide lists on mouse button up.
 		*/
-		void addListItem(const Ogre::UTFString& text);
-		void addListItem(const Ogre::String& name, const Ogre::UTFString& text);
+		void addDefaultListItemHandler(const EventArgs& args);
+
 		/**
 		* Add user defined events, that will be called when a selection is made.
 		*/
@@ -61,97 +58,51 @@ namespace QuickGUI
 			mOnSelectUserEventHandlers.push_back(new MemberFunctionPointer<T>(function,obj));
 		}
 		void addOnSelectionEventHandler(MemberFunctionSlot* function);
-		/**
-		* Aligns each ListItem text vertically and horizontally.
-		*/
-		void alignListItemText(HorizontalAlignment ha, VerticalAlignment va);
 
 		/**
-		* Destroys all List Items.
+		* Event Handler tied to ComboBox button.
 		*/
-		void clearList();
+		void applyButtonDownImage(const EventArgs& args);
+
+		List* getDropDownList();
 
 		/**
-		* Returns the number of ListItems the ComboBox Drop Down List contains.
+		* Event Handler for the EVENT_LOSE_FOCUS event.
 		*/
-		int getNumberOfListItems();
+		void onLoseFocus(const EventArgs& args);
 
-		// Overridden Event Handling functions
-		// If user Defined Events have been created, they will be called.
 		/**
-		* Default Handler for the QGUI_EVENT_ACTIVATED event, and activates all child widgets (if exist)
+		* Event Handler for the EVENT_MOUSE_ENTER event.
 		*/
-		virtual void deactivate(EventArgs& e);
+		void onMouseEnters(const EventArgs& args);
 		/**
-		* Event Handler assigned to child widgets of the ComboBox.
+		* Default Handler for the EVENT_MOUSE_LEAVE event.
 		*/
-		bool deactivate(const EventArgs& e);
+		void onMouseLeaves(const EventArgs& args);
 		/**
-		* Default Handler for the QGUI_EVENT_MOUSE_ENTER event.  material.over is applied to the button
-		* image. If not handled, it will be passed to the parent widget 
-		* (if exists)
+		* Default Handler for the EVENT_MOUSE_BUTTON_DOWN event.
 		*/
-		bool onMouseEnters(MouseEventArgs& e);
+		void onMouseButtonDown(const EventArgs& args);
 		/**
-		* Default Handler for the QGUI_EVENT_MOUSE_LEAVE event.  material is applied to the button
-		* image. If not handled, it will be passed to the parent widget 
-		* (if exists)
+		* Default Handler for the EVENT_MOUSE_BUTTON_UP event.
 		*/
-		bool onMouseLeaves(MouseEventArgs& e);
-		/**
-		* Default Handler for the QGUI_EVENT_MOUSE_BUTTON_DOWN event.  If not handled, it will be passed
-		* to the parent widget (if exists)
-		*/
-		bool onMouseButtonDown(MouseEventArgs& e);
-		/**
-		* Default Handler for the QGUI_EVENT_MOUSE_BUTTON_UP event.  If not handled, it will be passed
-		* to the parent widget (if exists)
-		*/
-		bool onMouseButtonUp(MouseEventArgs& e);
+		void onMouseButtonUp(const EventArgs& args);
 		/**
 		* Specific Handler for the ComboBox Widget.  Called when the user selects a ListItem
 		*/
-		bool onSelection(WidgetEventArgs& e);
-
+		void onSelection(const EventArgs& args);
 		/**
-		* Removes (and destroys) a ListItem from the Drop Down List.  No exception is thrown
-		* if the index is out of bounds.
+		* Event Handler tied to the combobox button, for opening and closing the drop down list.
 		*/
-		void removeListItem(unsigned int index);
-
-		/**
-		* Manually sets the height of the characters for each list item and Combo Box Label component.
-		* Note that the text can be set larger than the widget dimensions.
-		*/
-		void setCharacterHeight(const Ogre::Real& relativeHeight);
-		/**
-		* Sets the text of the ComboBox's Label component.
-		*/
-		void setText(const Ogre::UTFString& text);
-		/**
-		* Sets the material displayed when the mouse moves over a list item.
-		*/
-		void setDropListHighlightMaterial(const Ogre::String& material);
-		/**
-		* Sets the width of the Drop Down List, relative to the combobox width.
-		*/
-		void setDropListWidth(const Ogre::Real& relativeWidth);
-		/**
-		* Shows the combobox.  Drop Down list is hidden.
-		*/
-		void show();
+		void toggleDropDownListVisibility(const EventArgs& args);
 
 	protected:
-		// ComboBox Label component, usually displays the text of the ListItem
-		// that has been selected.
-		Label* mLabel;
+		virtual ~ComboBox();
+
 		// Button that shows the drop down list.
 		Button* mButton;
 		// Drop down list.
 		List* mList;
-
-		HorizontalAlignment mListItemHorizontalAlignment;
-		VerticalAlignment mListItemVerticalAlignment;
 
 		// User defined event handlers that are called when a Selection is made.
 		std::vector<MemberFunctionSlot*> mOnSelectUserEventHandlers;

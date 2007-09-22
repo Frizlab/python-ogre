@@ -4,12 +4,20 @@
 
 namespace QuickGUI
 {
-	Menu::Menu(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material, Ogre::OverlayContainer* overlayContainer, Widget* ParentWidget) :
-		Label(name,dimensions,positionMode,sizeMode,material,overlayContainer,ParentWidget),
+	Menu::Menu(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
+		Image(name,type,dimensions,pMode,sMode,texture,container,ParentWidget,gm),
 		mMenuListCounter(0),
-		mShowMenus(0)
+		mShowMenus(0),
+		mCurrentOpenList(NULL)
 	{
-		mWidgetType = Widget::QGUI_TYPE_MENU;
+		mShowWithParent = false;
+
+		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
+		if(mWidgetType == TYPE_MENU)
+		{
+			mQuad->setLayer(Quad::LAYER_MENU);
+		}
+
 		mMenuLists.clear();
 	}
 
@@ -18,25 +26,27 @@ namespace QuickGUI
 		clearAllMenuLists();
 	}
 
-	MenuList* Menu::addMenuList(const Ogre::String& name, const Ogre::UTFString& text, Ogre::Real relXPos, Ogre::Real relXSize, const Ogre::String& material)
+	MenuList* Menu::addMenuList(const Ogre::String& name, const Ogre::UTFString& text, Ogre::Real relXPos, Ogre::Real relXSize, const Ogre::String& texture)
 	{
-		MenuList* newMenuList = new MenuList(name,Ogre::Vector4(relXPos,0,relXSize,1),QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,material,mChildrenContainer,this);
-		newMenuList->setText(text);
-		newMenuList->addEventHandler(Widget::QGUI_EVENT_MOUSE_BUTTON_DOWN,&Menu::evtHndlr_toggleMenuList,dynamic_cast<Menu*>(this));
-		newMenuList->addEventHandler(Widget::QGUI_EVENT_DEACTIVATED,&Menu::evtHndlr_hideMenuList,dynamic_cast<Menu*>(this));
-		newMenuList->setZOrderOffset(1);
+		MenuList* newMenuList = new MenuList(name,TYPE_MENULIST,Rect(relXPos,0,relXSize,1),QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,texture,mQuadContainer,this,mGUIManager);
+		newMenuList->addEventHandler(Widget::EVENT_MOUSE_ENTER,&Menu::showMenuList,this);
+		newMenuList->addEventHandler(Widget::EVENT_MOUSE_BUTTON_DOWN,&Menu::toggleMenuList,this);
+
+		newMenuList->getText()->setCaption(text);
 		mMenuLists.push_back(newMenuList);
-		Widget::_addChildWidget(newMenuList);
+
+		if(!mVisible)
+			newMenuList->hide();
 
 		return newMenuList;
 	}
 
-	MenuList* Menu::addMenuList(const Ogre::UTFString& text, Ogre::Real relXPos, Ogre::Real relXSize, const Ogre::String& material)
+	MenuList* Menu::addMenuList(const Ogre::UTFString& text, Ogre::Real relXPos, Ogre::Real relXSize, const Ogre::String& texture)
 	{
 		Ogre::String name = mInstanceName+".MenuList" + Ogre::StringConverter::toString(mMenuListCounter);
 		++mMenuListCounter;
 
-		return addMenuList(name,text,relXPos,relXSize,material);
+		return addMenuList(name,text,relXPos,relXSize,texture);
 	}
 
 	MenuList* Menu::addMenuList(const Ogre::UTFString& text, Ogre::Real relXPos, Ogre::Real relXSize)
@@ -44,7 +54,7 @@ namespace QuickGUI
 		Ogre::String name = mInstanceName+".MenuList" + Ogre::StringConverter::toString(mMenuListCounter);
 		++mMenuListCounter;
 
-		Ogre::String material = getSheet()->getDefaultSkin() + ".menulist";
+		Ogre::String material = getDefaultSkin() + ".menulist.png";
 
 		return addMenuList(name,text,relXPos,relXSize,material);
 	}
@@ -53,73 +63,6 @@ namespace QuickGUI
 	{
 		Widget::removeAndDestroyAllChildWidgets();
 		mMenuLists.clear();
-	}
-
-	// Called when the user clicks outside the widget
-	void Menu::deactivate(EventArgs& e)
-	{
-		if(!mEnabled) return;
-
-		// If the Mouse has clicked on any of the menu's List or ListItems, the widget should not *deactivate*.
-		// As for hiding the list, this will be taken care of in the onMouseButtonDown handler.  The list needs
-		// to remain visible so that ListItem picking works correctly. (If list is hidden, you can't click the ListItem..)
-		if(getTargetWidget(MouseCursor::getSingleton().getPixelPosition()) != NULL) return;
-		
-		hideMenus();
-
-		Label::deactivate(e);
-	}
-
-	bool Menu::evtHndlr_hideMenuList(const EventArgs& e)
-	{
-		// If the Mouse has clicked on any of the menu's List or ListItems, the widget should not *deactivate*.
-		// As for hiding the list, this will be taken care of in the onMouseButtonDown handler.  The list needs
-		// to remain visible so that ListItem picking works correctly. (If list is hidden, you can't click the ListItem..)
-		if(getTargetWidget(MouseCursor::getSingleton().getPixelPosition()) != NULL) return true;
-		
-		hideMenus();
-
-		return true;
-	}
-
-	bool Menu::evtHndlr_toggleMenuList(const EventArgs& e)
-	{
-		const EventArgs* temp = &e;
-		const MouseEventArgs* mea = static_cast<const MouseEventArgs*>(temp);
-		if( mea->button == QuickGUI::MB_Left )
-		{
-			// get index of button clicked
-			bool buttonClicked = false;
-			int index = 0;
-			std::vector<MenuList*>::iterator it;
-			for( it = mMenuLists.begin(); it != mMenuLists.end(); ++it )
-			{
-				if( (*it)->isMouseOverButton() ) 
-				{
-					buttonClicked = true;
-					break;
-				}
-				
-				++index;
-			}
-			if(!buttonClicked) return true;
-
-			// get target list corresponding to the clicked anchor (button) and toggle visibility
-			if(mMenuLists[index]->isListVisible()) 
-			{
-				mMenuLists[index]->hideList();
-				mShowMenus = false;
-			}
-			else 
-			{
-				// Hide all menus and show just the desired one
-				hideMenus();
-				mMenuLists[index]->showList();
-				mShowMenus = true;
-			}
-		}
-		
-		return true;
 	}
 
 	MenuList* Menu::getMenuList(unsigned int index)
@@ -139,70 +82,100 @@ namespace QuickGUI
 		return NULL;
 	}
 
-	void Menu::hideMenus()
+	void Menu::hideMenuLists()
 	{
 		std::vector<MenuList*>::iterator it;
 		for( it = mMenuLists.begin(); it != mMenuLists.end(); ++it )
-			(*it)->hideList();
+			(*it)->getList()->hide();
+		
+		mCurrentOpenList = NULL;
+	}
 
+	bool Menu::pointOverMenuListButton(Point pixelPosition)
+	{
+		std::vector<MenuList*>::iterator it;
+		for(it = mMenuLists.begin(); it != mMenuLists.end(); ++it )
+		{
+			if( (*it)->isPointWithinBounds(pixelPosition) )
+				return true;
+		}
+
+		return false;
+	}
+
+	void Menu::setShowMenuState(bool show)
+	{
 		mShowMenus = false;
 	}
 
-	bool Menu::onMouseButtonUp(MouseEventArgs& e)
+	void Menu::showMenuList(const EventArgs& e)
 	{
-		if(!mEnabled) return e.handled;
-
-		if( e.button == QuickGUI::MB_Left )
-		{
-			std::vector<MenuList*>::iterator it;
-			for( it = mMenuLists.begin(); it != mMenuLists.end(); ++it )
-			{
-				if( (*it)->isMouseOverButton() ) break;
-				else if( (*it)->getTargetWidget(MouseCursor::getSingleton().getPixelPosition()) != NULL )
-				{
-					(*it)->hideList();
-					mShowMenus = false;
-					break;
-				}
-			}
-		}
-
-		return Label::onMouseButtonUp(e);
-	}
-
-	bool Menu::onMouseMoved(MouseEventArgs& e)
-	{
-		if(!mEnabled) return e.handled;
-
 		if(mShowMenus)
 		{
-			// get index of button clicked
-			int index = 0;
-			bool found = false;
+			const MouseEventArgs& mea = dynamic_cast<const MouseEventArgs&>(e);
+
+			if( (mea.widget == NULL) || (mea.widget->getWidgetType() != Widget::TYPE_MENULIST) )
+				return;
+
+			MenuList* l = dynamic_cast<MenuList*>(mea.widget);
 			std::vector<MenuList*>::iterator it;
 			for( it = mMenuLists.begin(); it != mMenuLists.end(); ++it )
 			{
-				if( (*it)->isPointWithinBounds(MouseCursor::getSingleton().getPixelPosition()) )
+				if( (*it)->isPointWithinBounds(mea.position) )
 				{
-					found = true;
+					l = (*it);
 					break;
 				}
-				
-				++index;
 			}
 
-			if(found)
+			if( mCurrentOpenList == NULL )
+				l->getList()->show();
+			else if( l->getInstanceName() != mCurrentOpenList->getInstanceName() )
 			{
-				if(!mMenuLists[index]->isListVisible())
+				mCurrentOpenList->getList()->hide();
+				l->getList()->show();
+			}
+
+			mCurrentOpenList = l;
+		}
+	}
+
+	void Menu::toggleMenuList(const EventArgs& e)
+	{
+		const MouseEventArgs mea = static_cast<const MouseEventArgs&>(e);
+
+		if( (mea.widget == NULL) || (mea.widget->getWidgetType() != Widget::TYPE_MENULIST) )
+				return;
+
+		if( mea.button == MB_Left )
+		{
+			// this function only deals with MenuList Widgets, so we can cast
+			MenuList* l = dynamic_cast<MenuList*>(mea.widget);
+			std::vector<MenuList*>::iterator it;
+			for( it = mMenuLists.begin(); it != mMenuLists.end(); ++it )
+			{
+				if( (*it)->isPointWithinBounds(mea.position) )
 				{
-					// Hide all menus and show just the desired one
-					hideMenus();
-					mMenuLists[index]->showList();
-					mShowMenus = true;
+					l = (*it);
+					break;
 				}
 			}
-		}
 
-		return Label::onMouseMoved(e);
+			if(l->getList()->isVisible())
+			{
+				l->getList()->hide();
+				mCurrentOpenList = NULL;
+				mShowMenus = false;
+			}
+			else
+			{
+				if( (mCurrentOpenList != NULL) && (mCurrentOpenList->getInstanceName() != l->getInstanceName()) )
+					mCurrentOpenList->getList()->hide();
+
+				l->getList()->show();
+				mCurrentOpenList = l;
+				mShowMenus = true;
+			}
+		}
 	}
 }

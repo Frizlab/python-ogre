@@ -2,7 +2,6 @@
 #define QUICKGUIBUTTON_H
 
 #include "QuickGUILabel.h"
-#include "QuickGUIPrerequisites.h"
 
 namespace QuickGUI
 {
@@ -36,50 +35,57 @@ namespace QuickGUI
 			@param
 				material Ogre material defining the widget image.
 			@param
-				overlayContainer associates the internal OverlayElement with a specified zOrder.
+				group QuadContainer containing this widget.
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		Button(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material, Ogre::OverlayContainer* overlayContainer, Widget* ParentWidget);
-		virtual ~Button();
+		Button(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
 
 		/**
 		* Useful when you want to simulate the button being pressed down by the mouse.
 		* If you actually want to click the mouse, use the mouse, or call onMouseButtonDown.
 		*/
-		void applyButtonDownMaterial();
+		void applyButtonDownTexture();
+		void applyButtonOverTexture();
 		/**
 		* If supplying a method to simulate the button being pressed down, we need a method
 		* to restore the button to the normal looking state.
 		*/
-		void applyDefaultMaterial();
+		void applyDefaultTexture();
+
+		bool isDown();
 
 		/**
-		* Default Handler for the QGUI_EVENT_MOUSE_ENTER event.  material.over is applied to the button
-		* image. If not handled, it will be passed to the parent widget 
-		* (if exists)
+		* Event Handler for the EVENT_MOUSE_ENTER event.
 		*/
-		bool onMouseEnters(MouseEventArgs& e);
+		void onMouseEnters(const EventArgs& args);
 		/**
-		* Default Handler for the QGUI_EVENT_MOUSE_LEAVE event.  material is applied to the button
-		* image. If not handled, it will be passed to the parent widget 
-		* (if exists)
+		* Event Handler for the EVENT_MOUSE_LEAVE event.
 		*/
-		bool onMouseLeaves(MouseEventArgs& e);
+		void onMouseLeaves(const EventArgs& args);
 		/**
-		* Default Handler for the QGUI_EVENT_MOUSE_BUTTON_UP event.  If not handled, it will be passed
-		* to the parent widget (if exists)
+		* Event Handler for the EVENT_MOUSE_BUTTON_UP event.
 		*/
-		virtual bool onMouseButtonUp(MouseEventArgs& e);
+		void onMouseButtonUp(const EventArgs& args);
 		/**
-		* Default Handler for the QGUI_EVENT_MOUSE_BUTTON_DOWN event.  If not handled, it will be passed
-		* to the parent widget (if exists)
+		* Event Handler for the EVENT_MOUSE_BUTTON_DOWN event.
 		*/
-		bool onMouseButtonDown(MouseEventArgs& e);
+		void onMouseButtonDown(const EventArgs& args);
+
+		/**
+		* Stores/Updates the texture used for the widget, and allows the widget to derive other needed textures. (by overriding this function)
+		*/
+		void setBaseTexture(const Ogre::String& textureName);
+		void setButtonDownTexture(const Ogre::String& textureName);
+		void setButtonOverTexture(const Ogre::String& textureName);
 
 	protected:
-		bool mOverMaterialExists;
-		bool mDownMaterialExists;
+		virtual ~Button();
+
+		Ogre::String mButtonDownTexture;
+		Ogre::String mButtonOverTexture;
+
+		bool mButtonDown;
 	};
 }
 

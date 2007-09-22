@@ -1,16 +1,26 @@
 #include "QuickGUIListItem.h"
 #include "QuickGUIList.h"
+#include "QuickGUIManager.h"
 #include "QuickGUIMouseCursor.h"
 
 namespace QuickGUI
 {
-	ListItem::ListItem(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, Ogre::OverlayContainer* overlayContainer, Widget* ParentWidget) :
-		Label(name,dimensions,positionMode,sizeMode,"",overlayContainer,ParentWidget),
+	ListItem::ListItem(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
+		Label(name,type,dimensions,pMode,sMode,"",container,ParentWidget,gm),
 		mImage(0),
-		mButton(0)
+		mButton(0),
+		mPropogateImageMouseEvents(true),
+		mPropogateButtonMouseEvents(true)
 	{
-		mWidgetType = Widget::QGUI_TYPE_LISTITEM;
-		setCharacterHeight(1.0);
+		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
+		if(mWidgetType == TYPE_LISTITEM)
+		{
+			mQuad->setLayer(Quad::LAYER_CHILD);
+			mText->setLayer(Quad::LAYER_CHILD);
+		}
+
+		addEventHandler(EVENT_MOUSE_ENTER,&ListItem::onMouseEnters,this);
+		addEventHandler(EVENT_MOUSE_LEAVE,&ListItem::onMouseLeaves,this);
 	}
 	
 	ListItem::~ListItem()
@@ -21,49 +31,44 @@ namespace QuickGUI
 		mButton = NULL;
 	}
 
-	NStateButton* ListItem::addNStateButton(const Ogre::Vector4& dimensions)
+	NStateButton* ListItem::addNStateButton(const Rect& dimensions)
 	{
 		if(mButton != NULL) return NULL;
 
-		mButton = new NStateButton(mInstanceName+".NStateButton",dimensions,QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,mChildrenContainer,this);
-		mButton->addEventHandler(Widget::QGUI_EVENT_DEACTIVATED,&ListItem::evtHndlr_hideMenus,dynamic_cast<ListItem*>(this));
-		mButton->addEventHandler(Widget::QGUI_EVENT_MOUSE_BUTTON_UP,&ListItem::evtHndlr_hideMenus,dynamic_cast<ListItem*>(this));
-		mButton->setZOrderOffset(1,false);
+		mButton = new NStateButton(mInstanceName+".NStateButton",TYPE_BUTTON,dimensions,QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,mQuadContainer,this,mGUIManager);
+		mButton->getQuad()->setLayer(Quad::LAYER_MENU);
+		
+		if(mPropogateButtonMouseEvents)
+		{
+			mButton->addEventHandler(Widget::EVENT_MOUSE_ENTER,&ListItem::onMouseEnters,this);
+			mButton->addEventHandler(Widget::EVENT_MOUSE_BUTTON_DOWN,&ListItem::onMouseButtonDown,this);
+			mButton->addEventHandler(Widget::EVENT_MOUSE_BUTTON_UP,&ListItem::onMouseButtonUp,this);
+			mButton->addEventHandler(Widget::EVENT_LOSE_FOCUS,&ListItem::onLoseFocus,this);
+		}
+
 		if(!mVisible) mButton->hide();
-		Widget::_addChildWidget(mButton);
 
 		return mButton;
 	}
 
-	Image* ListItem::addImage(const Ogre::Vector4& dimensions, const Ogre::String& material)
+	Image* ListItem::addImage(const Rect& dimensions, const Ogre::String& texture)
 	{
 		if(mImage != NULL) return NULL;
 
-		mImage = new Image(mInstanceName+".Image",dimensions,QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,material,mChildrenContainer,this);
-		mImage->addEventHandler(Widget::QGUI_EVENT_DEACTIVATED,&ListItem::evtHndlr_hideMenus,dynamic_cast<ListItem*>(this));
-		mImage->setZOrderOffset(1,false);
+		mImage = new Image(mInstanceName+".Image",TYPE_IMAGE,dimensions,QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,texture,mQuadContainer,this,mGUIManager);
+		mImage->getQuad()->setLayer(Quad::LAYER_MENU);
+
+		if(mPropogateImageMouseEvents)
+		{
+			mImage->addEventHandler(Widget::EVENT_MOUSE_ENTER,&ListItem::onMouseEnters,this);
+			mImage->addEventHandler(Widget::EVENT_MOUSE_BUTTON_DOWN,&ListItem::onMouseButtonDown,this);
+			mImage->addEventHandler(Widget::EVENT_MOUSE_BUTTON_UP,&ListItem::onMouseButtonUp,this);
+			mImage->addEventHandler(Widget::EVENT_LOSE_FOCUS,&ListItem::onLoseFocus,this);
+		}
+		
 		if(!mVisible) mImage->hide();
-		Widget::_addChildWidget(mImage);
-
+		
 		return mImage;
-	}
-
-	void ListItem::deactivate(EventArgs& e)
-	{
-		if(!mEnabled) return;
-
-		if(getTargetWidget(MouseCursor::getSingleton().getPixelPosition()) != NULL) return;
-
-		if(mParentWidget) mParentWidget->deactivate(e);
-
-		Label::deactivate(e);
-	}
-
-	bool ListItem::evtHndlr_hideMenus(const EventArgs& e)
-	{
-		deactivate(const_cast<EventArgs&>(e));
-
-		return true;
 	}
 
 	NStateButton* ListItem::getNStateButton()
@@ -76,48 +81,36 @@ namespace QuickGUI
 		return mImage;
 	}
 
-	bool ListItem::onMouseButtonUp(MouseEventArgs& e)
+	void ListItem::onLoseFocus(const EventArgs& args)
 	{
-		if(!mEnabled) return e.handled;
-
-		bool retVal = Label::onMouseButtonUp(e);
-		// When the widget or any of its child widgets receive the mouse up event, 
-		// hide the menu containing this list item.  This is performed in Menu::onMouseButtonUp
-		e.handled = false;
-		if(mParentWidget) mParentWidget->onMouseButtonUp(e);
-		return retVal;
+		fireEvent(EVENT_LOSE_FOCUS,args);
 	}
 
-	bool ListItem::onMouseEnters(MouseEventArgs& e)
+	void ListItem::onMouseButtonDown(const EventArgs& args)
 	{
-		if(!mEnabled) return e.handled;
-
-		e.widget = this;
-		List* parentList = dynamic_cast<List*>(mParentWidget);
-
-		parentList->highlightListItem(this);
-
-		return Label::onMouseEnters(e);
+		fireEvent(EVENT_MOUSE_BUTTON_DOWN,args);
 	}
 
-	bool ListItem::onMouseLeaves(MouseEventArgs& e)
+	void ListItem::onMouseButtonUp(const EventArgs& args)
 	{
-		if(!mEnabled) return e.handled;
+		fireEvent(EVENT_MOUSE_BUTTON_UP,args);
+	}
 
-		e.widget = this;
-		List* parentList = dynamic_cast<List*>(mParentWidget);
+	void ListItem::onMouseEnters(const EventArgs& args)
+	{
+		dynamic_cast<List*>(mParentWidget)->highlightListItem(this);
+	}
 
-		parentList->hideHighlight();
-
-		return Label::onMouseLeaves(e);
+	void ListItem::onMouseLeaves(const EventArgs& args)
+	{
+		dynamic_cast<List*>(mParentWidget)->hideHighlight();
 	}
 
 	void ListItem::removeNStateButton()
 	{
 		if(mButton == NULL) return;
 
-		Widget::_removeChildWidget(mButton);
-		delete mButton;
+		mGUIManager->destroyWidget(mButton);
 		mButton = NULL;
 	}
 
@@ -125,8 +118,17 @@ namespace QuickGUI
 	{
 		if(mImage == NULL) return;
 
-		Widget::_removeChildWidget(mImage);
-		delete mImage;
+		mGUIManager->destroyWidget(mImage);
 		mImage = NULL;
+	}
+
+	void ListItem::setPropogateButtonMouseEvents(bool propogate)
+	{
+		mPropogateButtonMouseEvents = propogate;
+	}
+
+	void ListItem::setPropogateImageMouseEvents(bool propogate)
+	{
+		mPropogateImageMouseEvents = propogate;
 	}
 }

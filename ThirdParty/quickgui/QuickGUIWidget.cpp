@@ -1,69 +1,81 @@
 #include "QuickGUIWidget.h"
 #include "QuickGUIManager.h"
+#include "QuickGUIPanel.h"
 #include "QuickGUIWindow.h"
 #include "QuickGUISheet.h"
 
-/* From OgreTextAreaOverlayElement.cpp */
-#define UNICODE_ZERO 0x0030
-
 namespace QuickGUI
 {
-	Widget::Widget(const Ogre::String& instanceName, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, Ogre::String WidgetMaterial, Ogre::OverlayContainer* overlayContainer, Widget* ParentWidget) :
+	Widget::Widget(const Ogre::String& instanceName, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String textureName, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
 		mInstanceName(instanceName),
-		mWidgetMaterial(WidgetMaterial),
+		mWidgetType(type),
 		mParentWidget(ParentWidget),
-		mOverlayContainer(overlayContainer),
-		mAbsoluteDimensions(Ogre::Vector4::ZERO),
+		mGUIManager(gm),
+		mRelativeDimensions(dimensions),
+		mAbsoluteDimensions(Rect(0,0,1,1)),
+		mPixelDimensions(Rect(0,0,gm->getViewportWidth(),gm->getViewportHeight())),
 		mVisible(true),
-		mVerticalAlignment(QGUI_VA_NO_ALIGNMENT),
-		mHorizontalAlignment(QGUI_HA_NO_ALIGNMENT),
 		mGrabbed(false),
 		mMovingEnabled(true),
-		mBordersHidden(0),
-		mZOrderOffset(0),
-		mDraggingEnabled(0),
-		mEnabled(1),
-		mDisabledColor(Ogre::ColourValue(0.4,0.4,0.4,0.4))
+		mDraggingEnabled(false),
+		mEnabled(true),
+		mWidgetImage(NULL),
+		mQuadContainer(container),
+		mOffset(0),
+		mClippingRect(Rect(0,0,1,1)),
+		mTextureLocked(false),
+		mGainFocusOnClick(true),
+		mDragXOnly(false),
+		mDragYOnly(false),
+		mShowWithParent(true),
+		mHideWithParent(true)
 	{
-		mGUIManager = GUIManager::getSingletonPtr();
+		mQuad = new Quad(instanceName + ".Quad",gm);
 		mWidgetToDrag = this;
-
-		// calculate and store dimensions, from relative to absolute to pixel
-		mRelativeDimensions = _getRelativeDimensions(dimensions,positionMode,sizeMode);
-		mAbsoluteDimensions = getAbsoluteDimensions(mRelativeDimensions);
-		mPixelDimensions = absoluteToPixelDimensions(mAbsoluteDimensions);
+		_detectHierarchy();
 		_initEventHandlers();
 
-		//Ogre::LogManager::getSingleton().getLog("Ogre.log")->logMessage("Widget constructor - " + mInstanceName);
-		mChildrenContainer = createOverlayContainer(mInstanceName+".ChildrenContainer","");
-		if(mOverlayContainer != NULL) mOverlayContainer->addChildImpl(mChildrenContainer);
+		// All widgets have a Quad base
+		setTexture(textureName);
 
-		// widget type has not been set yet.  If Parent is NULL,
-		// we know the widget is a sheet.
+		if(!((mWidgetType == TYPE_SHEET) || (mWidgetType == TYPE_WINDOW) || (mWidgetType == TYPE_PANEL)))
+			mQuad->_notifyQuadContainer(mQuadContainer);
+
+		// Add event handlers before call to setDimensions, if you want the widget handlers to be called.
+		// This is important for widgets to position themself correctly.
+		addEventHandler(EVENT_POSITION_CHANGED,&Widget::onPositionChanged,this);
+
+		setDimensions(dimensions,pMode,sMode);
+
 		if(mParentWidget != NULL)
 		{
-			Sheet* s = getSheet();
-			mFont = s->getDefaultFont();
-			mCharacterHeight = s->getDefaultCharacterHeight();
-			mText = "";
-			mTextTopColor = s->getDefaultTextColor();
-			mTextBotColor = s->getDefaultTextColor();
+			// set the correct offset
+			mOffset = mParentWidget->getOffset() + 1;
+			// add to parents child widget list
+			mParentWidget->_addToChildList(this);
+			// inheritted property
+			mGainFocusOnClick = mParentWidget->getGainFocusOnClick();
 		}
 
-		// All widgets can create borders on initialization except the Window widget, since
-		// mOverlayContainer is required. mOverlayContainer is created in the Window constructor, not
-		// the widget constructor.
-		_createBorders();
+		mQuad->setOffset(mOffset);
 	}
 
 	Widget::~Widget()
 	{
+		// Safest route is to destroy children first thing.
 		removeAndDestroyAllChildWidgets();
 
-		_destroyBorders();
+		delete mQuad;
 
-		Ogre::OverlayManager* om = Ogre::OverlayManager::getSingletonPtr();
+		if( mParentWidget != NULL )
+		{
+			mParentWidget->_removeFromChildList(this);
+			mParentWidget = NULL;
+		}
 
+		delete mWidgetImage;
+
+		// Cleanup Event Handlers.
 		std::vector< std::vector<MemberFunctionSlot*> >::iterator it1;
 		for( it1 = mUserEventHandlers.begin(); it1 != mUserEventHandlers.end(); ++it1 )
 		{
@@ -74,55 +86,55 @@ namespace QuickGUI
 		}
 		mUserEventHandlers.clear();
 
-		if( mOverlayElement != NULL )
-		{
-			// destroy Children container
-			mOverlayContainer->removeChild(mChildrenContainer->getName());
-			om->destroyOverlayElement(mChildrenContainer);
-			mChildrenContainer = NULL;
-
-			// destroy OverlayElement
-			if( mOverlayElement->getParent() != NULL ) mOverlayElement->getParent()->removeChild(mOverlayElement->getName());
-			om->destroyOverlayElement(mOverlayElement);
-			mOverlayElement = NULL;
-		}
-
-		if((mWidgetType != Widget::QGUI_TYPE_WINDOW) && (mWidgetType != Widget::QGUI_TYPE_SHEET))
-		{
-			int zOrder = mParentWidget->getZOrder();
-			Window* w = getWindow();
-			if( w != NULL ) w->_removeZOrderValue(zOrder + mZOrderOffset);
-			else getSheet()->_removeZOrderValue(zOrder + mZOrderOffset);
-		}
-
-		mParentWidget = NULL;
-
-		GUIManager::getSingleton().removeWidgetName(mInstanceName);
+		// Remove name from GUIManager name list. (So another widget can be created with this name, if desired)
+		mGUIManager->removeWidgetName(mInstanceName);
 	}
 
-	void Widget::_addChildWidget(Widget* w)
+	void Widget::_addToChildList(Widget* w)
 	{
 		mChildWidgets.push_back(w);
+		w->_notifyParent(this);
+
+		WidgetEventArgs args(w);
+		fireEvent(EVENT_CHILD_ADDED,args);
 	}
 
-	void Widget::_applyDimensions()
+	void Widget::_detectHierarchy()
 	{
-		if( mInstanceName == "DefaultSheet.ChildWidget16.List" )
-		{
-			Ogre::Log* l = Ogre::LogManager::getSingleton().getLog("Ogre.log");
-			l->logMessage("Setting ComboBox's Drop List Dimensions: " + Ogre::StringConverter::toString(mPixelDimensions));
-		}
+		mParentSheet = NULL;
+		mParentWindow = NULL;
+		mParentPanel = NULL;
 
-		mOverlayElement->setPosition(mPixelDimensions.x,mPixelDimensions.y);
-		mOverlayElement->setDimensions(mPixelDimensions.z,mPixelDimensions.w);
+		Widget* w = mParentWidget;
+		while( w != NULL )
+		{
+			switch(w->getWidgetType())
+			{
+			case TYPE_SHEET:
+				mParentSheet = dynamic_cast<Sheet*>(w);
+				break;
+			case TYPE_WINDOW:
+				mParentWindow = dynamic_cast<Window*>(w);
+				break;
+			case TYPE_PANEL:
+				// It is possible to have a widget inside a panel inside a panel..
+				// we need to gaurd against this, we only want the immediate parent panel.
+				if( mParentPanel == NULL ) 
+					mParentPanel = dynamic_cast<Panel*>(w);
+				break;
+			default: break;
+			}
+
+			w = w->getParentWidget();
+		}
 	}
 
 	void Widget::_initEventHandlers()
 	{
 		int index = 0;
 		mUserEventHandlers.clear();
-		// 12 is the number of types of events: QGUI_EVENT_ACTIVATED, QGUI_EVENT_CHARACTER_KEY, etc.
-		while( index < 13 )
+		// 12 is the number of types of events: EVENT_GAIN_FOCUS, EVENT_CHARACTER_KEY, etc.
+		while( index < 21 )
 		{
 			std::vector<MemberFunctionSlot*> eventTypeHandler;
 			eventTypeHandler.clear();
@@ -131,260 +143,59 @@ namespace QuickGUI
 		}
 	}
 
-	void Widget::_createBorders()
+	void Widget::_notifyParent(Widget* w)
 	{
-		mBorders[QGUI_BORDER_TOP] = NULL;
-		mBorders[QGUI_BORDER_BOTTOM] = NULL;
-		mBorders[QGUI_BORDER_LEFT] = NULL;
-		mBorders[QGUI_BORDER_RIGHT] = NULL;
-		mBorderSizeInPixels[QGUI_BORDER_TOP] = 0;
-		mBorderSizeInPixels[QGUI_BORDER_BOTTOM] = 0;
-		mBorderSizeInPixels[QGUI_BORDER_LEFT] = 0;
-		mBorderSizeInPixels[QGUI_BORDER_RIGHT] = 0;
+		if( mParentWidget == NULL )
+			mParentWidget = w;
+	}
 
-		if(mOverlayContainer == NULL) return;
+	void Widget::_notifyRemovedFromChildList()
+	{
+		mParentWidget = NULL;
+	}
 
-		// Making the Borders - First step, get that border material information
-		Ogre::MaterialManager* mm = Ogre::MaterialManager::getSingletonPtr();
-		// The material has a .border material to define all borders
-		if( mm->resourceExists(mWidgetMaterial+".border") )
+	void Widget::_notifyQuadContainer(QuadContainer* g)
+	{
+		mQuadContainer = g;
+
+		std::vector<Widget*>::iterator it;
+		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
+			(*it)->_notifyQuadContainer(g);
+	}
+
+	void Widget::_processFullTextureName(const Ogre::String& texture)
+	{
+		mFullTextureName = texture;
+
+		if(mFullTextureName != "")
 		{
-			Ogre::String borderMaterial = mWidgetMaterial+".border";
-			mBorderMaterial[QGUI_BORDER_TOP] = borderMaterial;
-			mBorderMaterial[QGUI_BORDER_BOTTOM] = borderMaterial;
-			mBorderMaterial[QGUI_BORDER_LEFT] = borderMaterial;
-			mBorderMaterial[QGUI_BORDER_RIGHT] = borderMaterial;
+			Ogre::String::size_type index = texture.find_last_of('.');
+			if( index != Ogre::String::npos )
+			{
+				mTextureName = texture.substr(0,index);
+				mTextureExtension = texture.substr(index,texture.length() - index);
+			}
 		}
 		else
 		{
-			if( mm->resourceExists(mWidgetMaterial+".border.top") ) mBorderMaterial[QGUI_BORDER_TOP] = mWidgetMaterial+".border.top";
-			else mBorderMaterial[QGUI_BORDER_TOP] = "";
-			if( mm->resourceExists(mWidgetMaterial+".border.bottom") ) mBorderMaterial[QGUI_BORDER_BOTTOM] = mWidgetMaterial+".border.bottom";
-			else mBorderMaterial[QGUI_BORDER_BOTTOM] = "";
-			if( mm->resourceExists(mWidgetMaterial+".border.left") ) mBorderMaterial[QGUI_BORDER_LEFT] = mWidgetMaterial+".border.left";
-			else mBorderMaterial[QGUI_BORDER_LEFT] = "";
-			if( mm->resourceExists(mWidgetMaterial+".border.right") ) mBorderMaterial[QGUI_BORDER_RIGHT] = mWidgetMaterial+".border.right";
-			else mBorderMaterial[QGUI_BORDER_RIGHT] = "";
-		}
-
-		// Now border materials are stored.  Set Default Border thickness in pixels
-		mBorderSizeInPixels[QGUI_BORDER_TOP] = 3;
-		mBorderSizeInPixels[QGUI_BORDER_BOTTOM] = 3;
-		mBorderSizeInPixels[QGUI_BORDER_LEFT] = 3;
-		mBorderSizeInPixels[QGUI_BORDER_RIGHT] = 3;
-
-		// Create the PanelOverlayElements, with a default of 3 pixel width
-		Ogre::Vector4 defaultTBorderDimensions(
-			mPixelDimensions.x - mBorderSizeInPixels[QGUI_BORDER_LEFT], 
-			mPixelDimensions.y - mBorderSizeInPixels[QGUI_BORDER_TOP], 
-			mPixelDimensions.z + mBorderSizeInPixels[QGUI_BORDER_LEFT] + mBorderSizeInPixels[QGUI_BORDER_RIGHT], 
-			mBorderSizeInPixels[QGUI_BORDER_TOP]);
-
-		Ogre::Vector4 defaultBBorderDimensions(
-			mPixelDimensions.x - mBorderSizeInPixels[QGUI_BORDER_LEFT], 
-			mPixelDimensions.y + mPixelDimensions.w,
-			mPixelDimensions.z + mBorderSizeInPixels[QGUI_BORDER_LEFT] + mBorderSizeInPixels[QGUI_BORDER_RIGHT], 
-			mBorderSizeInPixels[QGUI_BORDER_BOTTOM]);
-
-		int lWidth = mBorderSizeInPixels[QGUI_BORDER_LEFT];
-
-		Ogre::Vector4 defaultLBorderDimensions(
-			mPixelDimensions.x - mBorderSizeInPixels[QGUI_BORDER_LEFT], 
-			mPixelDimensions.y - mBorderSizeInPixels[QGUI_BORDER_TOP],
-			mBorderSizeInPixels[QGUI_BORDER_LEFT], 
-			mPixelDimensions.w + mBorderSizeInPixels[QGUI_BORDER_TOP] + mBorderSizeInPixels[QGUI_BORDER_BOTTOM]);
-
-		int rWidth = mBorderSizeInPixels[QGUI_BORDER_RIGHT];
-
-		Ogre::Vector4 defaultRBorderDimensions(
-			mPixelDimensions.x + mPixelDimensions.z, 
-			mPixelDimensions.y - mBorderSizeInPixels[QGUI_BORDER_TOP], 
-			mBorderSizeInPixels[QGUI_BORDER_RIGHT], 
-			mPixelDimensions.w + mBorderSizeInPixels[QGUI_BORDER_TOP] + mBorderSizeInPixels[QGUI_BORDER_BOTTOM]);
-
-		mBorders[QGUI_BORDER_TOP] = createPanelOverlayElement(mInstanceName+".border.top",defaultTBorderDimensions,mBorderMaterial[QGUI_BORDER_TOP]);
-		mBorders[QGUI_BORDER_BOTTOM] = createPanelOverlayElement(mInstanceName+".border.bottom",defaultBBorderDimensions,mBorderMaterial[QGUI_BORDER_BOTTOM]);
-		mBorders[QGUI_BORDER_LEFT] = createPanelOverlayElement(mInstanceName+".border.left",defaultLBorderDimensions,mBorderMaterial[QGUI_BORDER_LEFT]);
-		mBorders[QGUI_BORDER_RIGHT] = createPanelOverlayElement(mInstanceName+".border.right",defaultRBorderDimensions,mBorderMaterial[QGUI_BORDER_RIGHT]);
-
-		// Attach panels and show
-		mOverlayContainer->addChild(mBorders[QGUI_BORDER_TOP]);
-		mBorders[QGUI_BORDER_TOP]->show();
-		mOverlayContainer->addChild(mBorders[QGUI_BORDER_BOTTOM]);
-		mBorders[QGUI_BORDER_BOTTOM]->show();
-		mOverlayContainer->addChild(mBorders[QGUI_BORDER_LEFT]);
-		mBorders[QGUI_BORDER_LEFT]->show();
-		mOverlayContainer->addChild(mBorders[QGUI_BORDER_RIGHT]);
-		mBorders[QGUI_BORDER_RIGHT]->show();
-	}
-
-	void Widget::_destroyBorders()
-	{
-		if(mOverlayContainer == NULL) return;
-
-		Ogre::OverlayManager* om = Ogre::OverlayManager::getSingletonPtr();
-
-		int index;
-		for( index = 0; index < 4; ++index )
-		{
-			if(mBorders[index] != NULL)
-			{
-				mOverlayContainer->removeChild(mBorders[index]->getName());
-				om->destroyOverlayElement(mBorders[index]);
-				mBorders[index] = NULL;
-			}
+			mTextureName = "";
+			mTextureExtension = "";
 		}
 	}
 
-	Ogre::Vector4 Widget::_getRelativeDimensions(const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
-	{
-		Ogre::Vector2 relPos = _getRelativePosition(Ogre::Vector2(dimensions.x,dimensions.y),positionMode);
-		Ogre::Vector2 relSize = _getRelativeSize(Ogre::Vector2(dimensions.z,dimensions.w),sizeMode);
-
-		return Ogre::Vector4(relPos.x,relPos.y,relSize.x,relSize.y);
-	}
-
-	Ogre::Vector2 Widget::_getRelativePosition(const Ogre::Vector2& position, GuiMetricsMode mode)
-	{
-		Ogre::Vector2 retVal = Ogre::Vector2::ZERO;
-
-		Ogre::Real windowWidth = static_cast<Ogre::Real>(mGUIManager->getRenderWindowWidth());
-		Ogre::Real windowHeight = static_cast<Ogre::Real>(mGUIManager->getRenderWindowHeight());
-		Ogre::Vector2 parentAbsSize(1,1);
-		Ogre::Vector2 parentPixelSize(windowWidth,windowHeight);
-		if(mParentWidget != NULL) 
-		{
-			parentPixelSize = mParentWidget->getSize(QGUI_GMM_PIXELS);
-			parentAbsSize = mParentWidget->getSize(QGUI_GMM_ABSOLUTE);
-		}
-
-		switch(mode)
-		{
-		case QGUI_GMM_ABSOLUTE:
-			retVal.x = position.x / parentAbsSize.x;
-			retVal.y = position.y / parentAbsSize.y;
-			break;
-		case QGUI_GMM_RELATIVE:
-			retVal.x = position.x;
-			retVal.y = position.y;
-			break;
-		case QGUI_GMM_PIXELS:
-			retVal.x = position.x / parentPixelSize.x;
-			retVal.y = position.y / parentPixelSize.y;
-			break;
-		}
-
-		return retVal;
-	}
-
-	Ogre::Vector2 Widget::_getRelativeSize(const Ogre::Vector2& size, GuiMetricsMode mode)
-	{
-		Ogre::Vector2 retVal = Ogre::Vector2::ZERO;
-
-		Ogre::Real windowWidth = static_cast<Ogre::Real>(mGUIManager->getRenderWindowWidth());
-		Ogre::Real windowHeight = static_cast<Ogre::Real>(mGUIManager->getRenderWindowHeight());
-		Ogre::Vector2 parentAbsSize(1,1);
-		Ogre::Vector2 parentPixelSize(windowWidth,windowHeight);
-		if(mParentWidget != NULL) 
-		{
-			parentPixelSize = mParentWidget->getSize(QGUI_GMM_PIXELS);
-			parentAbsSize = mParentWidget->getSize(QGUI_GMM_ABSOLUTE);
-		}
-
-		switch(mode)
-		{
-		case QGUI_GMM_ABSOLUTE:
-			retVal.x = size.x / parentAbsSize.x;
-			retVal.y = size.y / parentAbsSize.y;
-			break;
-		case QGUI_GMM_RELATIVE:
-			retVal.x = size.x;
-			retVal.y = size.y;
-			break;
-		case QGUI_GMM_PIXELS:
-			retVal.x = size.x / parentPixelSize.x;
-			retVal.y = size.y / parentPixelSize.y;
-			break;
-		}
-
-		return retVal;
-	}
-
-	void Widget::_notifyDimensionsChanged()
-	{
-		// Update Widget dimensions - done first.
-		_updateDimensions(mRelativeDimensions);
-		_applyDimensions(); // Widget specific
-
-		// notify child widgets. Make sure this is done after dimensions are updated/applied.
-		std::vector<Widget*>::iterator it;
-		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
-		{
-			(*it)->_notifyDimensionsChanged();
-		}
-
-		// update Borders. Make sure this is done after dimensions are updated/applied.
-		_updateBorderSize();
-
-		Ogre::Vector2 TBorderPos(mPixelDimensions.x - mBorderSizeInPixels[QGUI_BORDER_LEFT], mPixelDimensions.y - mBorderSizeInPixels[QGUI_BORDER_TOP]);
-		Ogre::Vector2 BBorderPos(mPixelDimensions.x - mBorderSizeInPixels[QGUI_BORDER_LEFT], mPixelDimensions.y + mPixelDimensions.w);
-		Ogre::Vector2 LBorderPos(mPixelDimensions.x - mBorderSizeInPixels[QGUI_BORDER_LEFT], mPixelDimensions.y - mBorderSizeInPixels[QGUI_BORDER_TOP]);
-		Ogre::Vector2 RBorderPos(mPixelDimensions.x + mPixelDimensions.z, mPixelDimensions.y - mBorderSizeInPixels[QGUI_BORDER_TOP]);
-
-		if(mBorders[QGUI_BORDER_TOP]) mBorders[QGUI_BORDER_TOP]->setPosition(TBorderPos.x,TBorderPos.y);
-		if(mBorders[QGUI_BORDER_BOTTOM]) mBorders[QGUI_BORDER_BOTTOM]->setPosition(BBorderPos.x,BBorderPos.y);
-		if(mBorders[QGUI_BORDER_LEFT]) mBorders[QGUI_BORDER_LEFT]->setPosition(LBorderPos.x,LBorderPos.y);
-		if(mBorders[QGUI_BORDER_RIGHT]) mBorders[QGUI_BORDER_RIGHT]->setPosition(RBorderPos.x,RBorderPos.y);
-	}
-
-	void Widget::_removeChildWidget(Widget* w)
+	void Widget::_removeFromChildList(Widget* w)
 	{
 		std::vector<Widget*>::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 		{
-			if( (*it)->getInstanceName() == w->getInstanceName() )
+			if( w->getInstanceName() == (*it)->getInstanceName() )
 			{
+				(*it)->_notifyRemovedFromChildList();
 				mChildWidgets.erase(it);
-				break;
+				
+				fireEvent(EVENT_CHILD_REMOVED,WidgetEventArgs(w));
+				return;
 			}
-		}
-	}
-
-	void Widget::_updateDimensions(const Ogre::Vector4& relativeDimensions)
-	{
-		mRelativeDimensions = relativeDimensions;
-		mAbsoluteDimensions = getAbsoluteDimensions(mRelativeDimensions);
-		mPixelDimensions = absoluteToPixelDimensions(mAbsoluteDimensions);
-	}
-
-	void Widget::_updateBorderSize()
-	{
-		if(mBorders[QGUI_BORDER_TOP]) 
-		{
-			mBorders[QGUI_BORDER_TOP]->setHeight(mBorderSizeInPixels[QGUI_BORDER_TOP]);
-			// Adjust width to incorporate width's of left and right borders
-			mBorders[QGUI_BORDER_TOP]->setWidth(mPixelDimensions.z + mBorderSizeInPixels[QGUI_BORDER_LEFT] + mBorderSizeInPixels[QGUI_BORDER_RIGHT]);
-		}
-		
-		if(mBorders[QGUI_BORDER_BOTTOM]) 
-		{
-			mBorders[QGUI_BORDER_BOTTOM]->setHeight(mBorderSizeInPixels[QGUI_BORDER_BOTTOM]);
-			// Adjust width to incorporate width's of left and right borders
-			mBorders[QGUI_BORDER_BOTTOM]->setWidth(mPixelDimensions.z + mBorderSizeInPixels[QGUI_BORDER_LEFT] + mBorderSizeInPixels[QGUI_BORDER_RIGHT]);
-		}
-		
-		if(mBorders[QGUI_BORDER_LEFT]) 
-		{
-			mBorders[QGUI_BORDER_LEFT]->setWidth(mBorderSizeInPixels[QGUI_BORDER_LEFT]);
-			// Adjust width to incorporate width's of top and bottom borders
-			mBorders[QGUI_BORDER_LEFT]->setHeight(mPixelDimensions.w + mBorderSizeInPixels[QGUI_BORDER_TOP] + mBorderSizeInPixels[QGUI_BORDER_BOTTOM]);
-		}
-
-		if(mBorders[QGUI_BORDER_RIGHT]) 
-		{
-			mBorders[QGUI_BORDER_RIGHT]->setWidth(mBorderSizeInPixels[QGUI_BORDER_RIGHT]);
-			// Adjust width to incorporate width's of top and bottom borders
-			mBorders[QGUI_BORDER_RIGHT]->setHeight(mPixelDimensions.w + mBorderSizeInPixels[QGUI_BORDER_TOP] + mBorderSizeInPixels[QGUI_BORDER_BOTTOM]);
 		}
 	}
 
@@ -393,95 +204,74 @@ namespace QuickGUI
 		mUserEventHandlers[EVENT].push_back(function);
 	}
 
-	Ogre::Vector4 Widget::absoluteToPixelDimensions(const Ogre::Vector4& dimensions)
+	void Widget::appearOverWidget(Widget* w)
 	{
-		Ogre::Real renderWindowWidth = static_cast<Ogre::Real>(mGUIManager->getRenderWindowWidth());
-		Ogre::Real renderWindowHeight = static_cast<Ogre::Real>(mGUIManager->getRenderWindowHeight());
+		if( (w->getQuadContainer() == NULL) || (mQuadContainer == NULL) )
+			return;
 
-		return Ogre::Vector4( 
-			static_cast<int>(dimensions.x * renderWindowWidth),
-			static_cast<int>(dimensions.y * renderWindowHeight),
-			static_cast<int>(dimensions.z * renderWindowWidth),
-			static_cast<int>(dimensions.w * renderWindowHeight)
-			);
+		if( (w->getQuadContainer()->getID() != mQuadContainer->getID()) ||
+			(w->getQuad()->getLayer() != mQuad->getLayer()) )
+			return;
+
+		// get highest offset of any of the widgets children
+		int highestOffset = w->getOffset();
+		std::vector<Widget*>::iterator it;
+		std::vector<Widget*>* childList = w->getChildWidgetList();
+		for( it = childList->begin(); it != childList->end(); ++it )
+		{
+			if( (*it)->getOffset() > highestOffset )
+				highestOffset = (*it)->getOffset();
+		}
+
+		// Set offset higher by 3, to allow for an additional quad layer, and text layer.
+		mOffset = highestOffset + 3;
+		mQuad->setOffset(mOffset);
 	}
 
-	Ogre::OverlayContainer* Widget::createOverlayContainer(const Ogre::String& name, const Ogre::String& material)
+	void Widget::constrainDragging(bool DragXOnly, bool DragYOnly)
 	{
-		Ogre::OverlayContainer* newOverlayContainer = NULL;
+		mDragXOnly = false;
+		mDragYOnly = false;
 
-		newOverlayContainer = static_cast<Ogre::OverlayContainer*>(Ogre::OverlayManager::getSingleton().createOverlayElement("Panel",name));
-		newOverlayContainer->setMetricsMode(Ogre::GMM_PIXELS);
-		newOverlayContainer->setPosition(0,0);
-		newOverlayContainer->setDimensions(1.0,1.0);
-		if(!material.empty()) newOverlayContainer->setMaterialName(material);
+		if(DragXOnly && DragYOnly)
+			return;
 
-		return newOverlayContainer;
-	}
-
-	Ogre::PanelOverlayElement* Widget::createPanelOverlayElement(const Ogre::String& name, const Ogre::Vector4& dimensions, const Ogre::String& material)
-	{
-		Ogre::PanelOverlayElement* newPanelOverlayElement = NULL;
-
-		newPanelOverlayElement = static_cast<Ogre::PanelOverlayElement*>(Ogre::OverlayManager::getSingleton().createOverlayElement("Panel",name));
-		newPanelOverlayElement->setMetricsMode(Ogre::GMM_PIXELS);
-		newPanelOverlayElement->setPosition(dimensions.x, dimensions.y);
-		newPanelOverlayElement->setDimensions(dimensions.z, dimensions.w);
-		if(!material.empty()) newPanelOverlayElement->setMaterialName(material);
-
-		return newPanelOverlayElement;
-	}
-
-	Ogre::TextAreaOverlayElement* Widget::createTextAreaOverlayElement(const Ogre::String& name, const Ogre::Vector4& dimensions, const Ogre::String& material)
-	{
-		Ogre::TextAreaOverlayElement* newTextAreaOverlayElement = NULL;
-
-		newTextAreaOverlayElement = static_cast<Ogre::TextAreaOverlayElement*>(Ogre::OverlayManager::getSingleton().createOverlayElement("TextArea",name));
-		newTextAreaOverlayElement->setMetricsMode(Ogre::GMM_PIXELS);
-		newTextAreaOverlayElement->setPosition(dimensions.x, dimensions.y);
-		newTextAreaOverlayElement->setDimensions(dimensions.z, dimensions.w);
-		if(!material.empty()) newTextAreaOverlayElement->setMaterialName(material);
-
-		return newTextAreaOverlayElement;
+		mDragXOnly = DragXOnly;
+		mDragYOnly = DragYOnly;
 	}
 
 	void Widget::disable()
 	{
-		if((mWidgetType == Widget::QGUI_TYPE_TEXT) || 
-			(mWidgetType == Widget::QGUI_TYPE_TEXTCURSOR) || 
-			(mWidgetType == Widget::QGUI_TYPE_SHEET)) return;
+		if((mWidgetType == Widget::TYPE_SHEET)) 
+			return;
+
+		WidgetEventArgs args(this);
+		fireEvent(EVENT_DISABLED,args);
 
 		mEnabled = false;
-		Ogre::MaterialPtr mp = static_cast<Ogre::MaterialPtr>(Ogre::MaterialManager::getSingleton().getByName(mWidgetMaterial));
 
-		Ogre::MaterialPtr disabledMaterial;
-		if(Ogre::MaterialManager::getSingleton().resourceExists(mWidgetMaterial+".disabled"))
-			disabledMaterial = static_cast<Ogre::MaterialPtr>(Ogre::MaterialManager::getSingleton().getByName(mWidgetMaterial+".disabled"));
-		else 
-		{
-			disabledMaterial = mp->clone(mWidgetMaterial+".disabled");
-			Ogre::Pass* p = disabledMaterial->getTechnique(0)->getPass(0);
-
-			if( (p != NULL) && (p->getNumTextureUnitStates() >= 1) ) 
-			{
-				Ogre::TextureUnitState* tus = p->createTextureUnitState();
-				tus->setColourOperationEx(Ogre::LBX_MODULATE,Ogre::LBS_MANUAL,Ogre::LBS_CURRENT,mDisabledColor);
-			}
-		}
-
-		setTextColor(mDisabledColor);
-		mOverlayElement->setMaterialName(disabledMaterial->getName());
+		setTexture(mDisabledTextureName,false);
 	}
 
 	void Widget::drag(const Ogre::Real& xVal, const Ogre::Real& yVal,GuiMetricsMode mode)
 	{
-		if(!mDraggingEnabled) return;
+		if(!mDraggingEnabled) 
+			return;
 
-		if(mWidgetToDrag != NULL) mWidgetToDrag->move(xVal,yVal,mode);
+		if(mWidgetToDrag != NULL) 
+		{
+			Point p = getPosition(mode);
+			if(mDragXOnly)
+				mWidgetToDrag->setScreenPosition(p.x + xVal,p.y,mode);
+			else if(mDragYOnly)
+				mWidgetToDrag->setScreenPosition(p.x,p.y + yVal,mode);
+			else
+				mWidgetToDrag->setScreenPosition(p.x + xVal,p.y + yVal,mode);
+		}
 
 		// fire onDragged Event.
 		WidgetEventArgs args(this);
-		onDragged(args);
+		fireEvent(EVENT_DRAGGED,args);
 	}
 
 	bool Widget::draggingEnabled()
@@ -491,13 +281,15 @@ namespace QuickGUI
 
 	void Widget::enable()
 	{
-		if((mWidgetType == Widget::QGUI_TYPE_TEXT) || 
-			(mWidgetType == Widget::QGUI_TYPE_TEXTCURSOR) || 
-			(mWidgetType == Widget::QGUI_TYPE_SHEET)) return;
+		if(mWidgetType == Widget::TYPE_SHEET) 
+			return;
 
 		mEnabled = true;
-		setTextColor(mTextTopColor,mTextBotColor);
-		mOverlayElement->setMaterialName(mWidgetMaterial);
+
+		setTexture(mFullTextureName,false);
+
+		WidgetEventArgs args(this);
+		fireEvent(EVENT_ENABLED,args);
 	}
 
 	bool Widget::enabled()
@@ -510,29 +302,14 @@ namespace QuickGUI
 		mDraggingEnabled = enable;
 	}
 
-	Ogre::Vector4 Widget::getAbsoluteDimensions(const Ogre::Vector4& relativeDimensions)
+	void Widget::focus()
 	{
-		Ogre::Vector4 ParentAbsoluteDimensions;
-
-		if( mParentWidget == NULL ) ParentAbsoluteDimensions = Ogre::Vector4(0,0,1,1);
-		else ParentAbsoluteDimensions = mParentWidget->getDimensions(QGUI_GMM_ABSOLUTE,QGUI_GMM_ABSOLUTE);
-
-		Ogre::Real x = ParentAbsoluteDimensions.x + (ParentAbsoluteDimensions.z * relativeDimensions.x);
-		Ogre::Real y = ParentAbsoluteDimensions.y + (ParentAbsoluteDimensions.w * relativeDimensions.y);
-		Ogre::Real z = ParentAbsoluteDimensions.z * relativeDimensions.z;
-		Ogre::Real w = ParentAbsoluteDimensions.w * relativeDimensions.w;
-
-		return Ogre::Vector4(x,y,z,w);
+		mGUIManager->setActiveWidget(this);
 	}
 
-	Ogre::Real Widget::getCharacterHeight()
+	Ogre::String Widget::getDisabledTexture()
 	{
-		return mCharacterHeight;
-	}
-
-	Ogre::ColourValue Widget::getDisabledColor()
-	{
-		return mDisabledColor;
+		return mDisabledTextureName;
 	}
 
 	std::vector<Widget*>* Widget::getChildWidgetList()
@@ -543,7 +320,8 @@ namespace QuickGUI
 	Widget* Widget::getChildWidget(const Ogre::String& name)
 	{
 		Widget* w = NULL;
-		if( name == "" ) return w;
+		if( name == "" ) 
+			return w;
 
 		std::vector<Widget*>::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
@@ -555,19 +333,47 @@ namespace QuickGUI
 			}
 		}
 
-		if( w != NULL ) return w;
-		else if( mInstanceName == name ) return this;
-		else return NULL;
+		if( w != NULL ) 
+			return w;
+		else if( mInstanceName == name ) 
+			return this;
+		else 
+			return NULL;
 	}
 
-	Ogre::String Widget::getFont()
+	Ogre::String Widget::getDefaultSkin()
 	{
-		return mFont;
+		if(mParentSheet == NULL) return "qgui";
+		else return mParentSheet->getDefaultSkin();
+	}
+
+	bool Widget::getGainFocusOnClick()
+	{
+		return mGainFocusOnClick;
 	}
 
 	bool Widget::getGrabbed()
 	{
 		return mGrabbed;
+	}
+
+	Ogre::Real Widget::getHeight(GuiMetricsMode mode)
+	{
+		switch(mode)
+		{
+		case QGUI_GMM_ABSOLUTE:
+			return mAbsoluteDimensions.height;
+		case QGUI_GMM_PIXELS:
+			return mPixelDimensions.height;
+		case QGUI_GMM_RELATIVE:
+		default:
+			return mRelativeDimensions.height;
+		}
+	}
+
+	bool Widget::getHideWithParent()
+	{
+		return mHideWithParent;
 	}
 
 	Ogre::String Widget::getInstanceName()
@@ -580,9 +386,19 @@ namespace QuickGUI
 		return mMovingEnabled;
 	}
 
-	Ogre::OverlayContainer* Widget::getOverlayContainer()
+	int Widget::getOffset()
 	{
-		return mOverlayContainer;
+		return mOffset;
+	}
+
+	Panel* Widget::getParentPanel()
+	{
+		return mParentPanel;
+	}
+
+	Sheet* Widget::getParentSheet()
+	{
+		return mParentSheet;
 	}
 
 	Widget* Widget::getParentWidget()
@@ -590,9 +406,29 @@ namespace QuickGUI
 		return mParentWidget;
 	}
 
-	Ogre::Vector4 Widget::getDimensions(GuiMetricsMode position, GuiMetricsMode size)
+	Window* Widget::getParentWindow()
 	{
-		Ogre::Vector4 retVal = Ogre::Vector4::ZERO;
+		return mParentWindow;
+	}
+
+	Quad* Widget::getQuad()
+	{
+		return mQuad;
+	}
+
+	QuadContainer* Widget::getQuadContainer()
+	{
+		return mQuadContainer;
+	}
+
+	bool Widget::getShowWithParent()
+	{
+		return mShowWithParent;
+	}
+
+	Rect Widget::getDimensions(GuiMetricsMode position, GuiMetricsMode size)
+	{
+		Rect retVal = Rect::ZERO;
 
 		switch(position)
 		{
@@ -613,25 +449,30 @@ namespace QuickGUI
 		switch(size)
 		{
 		case QGUI_GMM_ABSOLUTE:
-			retVal.z = mAbsoluteDimensions.z;
-			retVal.w = mAbsoluteDimensions.w;
+			retVal.width = mAbsoluteDimensions.width;
+			retVal.height = mAbsoluteDimensions.height;
 			break;
 		case QGUI_GMM_RELATIVE:
-			retVal.z = mRelativeDimensions.z;
-			retVal.w = mRelativeDimensions.w;
+			retVal.width = mRelativeDimensions.width;
+			retVal.height = mRelativeDimensions.height;
 			break;
 		case QGUI_GMM_PIXELS:
-			retVal.z = mPixelDimensions.z;
-			retVal.w = mPixelDimensions.w;
+			retVal.width = mPixelDimensions.width;
+			retVal.height = mPixelDimensions.height;
 			break;
 		}
 
 		return retVal;
 	}
 
-	Ogre::Vector2 Widget::getPosition(GuiMetricsMode mode)
+	GUIManager* Widget::getGUIManager()
 	{
-		Ogre::Vector2 retVal = Ogre::Vector2::ZERO;
+		return mGUIManager;
+	}
+
+	Point Widget::getPosition(GuiMetricsMode mode)
+	{
+		Point retVal = Point::ZERO;
 
 		switch(mode)
 		{
@@ -652,62 +493,49 @@ namespace QuickGUI
 		return retVal;
 	}
 
-	Ogre::Vector2 Widget::getSize(GuiMetricsMode mode)
+	Size Widget::getSize(GuiMetricsMode mode)
 	{
-		Ogre::Vector2 retVal = Ogre::Vector2::ZERO;
+		Size retVal = Size::ZERO;
 
 		switch(mode)
 		{
 		case QGUI_GMM_ABSOLUTE:
-			retVal.x = mAbsoluteDimensions.z;
-			retVal.y = mAbsoluteDimensions.w;
+			retVal.width = mAbsoluteDimensions.width;
+			retVal.height = mAbsoluteDimensions.height;
 			break;
 		case QGUI_GMM_RELATIVE:
-			retVal.x = mRelativeDimensions.z;
-			retVal.y = mRelativeDimensions.w;
+			retVal.width = mRelativeDimensions.width;
+			retVal.height = mRelativeDimensions.height;
 			break;
 		case QGUI_GMM_PIXELS:
-			retVal.x = mPixelDimensions.z;
-			retVal.y = mPixelDimensions.w;
+			retVal.width = mPixelDimensions.width;
+			retVal.height = mPixelDimensions.height;
 			break;
 		}
 
 		return retVal;
 	}
 
-	Sheet* Widget::getSheet()
+	Widget* Widget::getTargetWidget(const Point& p)
 	{
-		if( mWidgetType == Widget::QGUI_TYPE_SHEET )
-			return dynamic_cast<Sheet*>(this);
-
-		Widget* w = mParentWidget;
-		while( w != NULL )
-		{
-			if( w->getWidgetType() == Widget::QGUI_TYPE_SHEET ) break;
-
-			w = w->getParentWidget();
-		}
-
-		if( w != NULL ) return dynamic_cast<Sheet*>(w);
-		else return NULL;
-	}
-
-	Widget* Widget::getTargetWidget(const Ogre::Vector2& p)
-	{
-		if( !mVisible || !mEnabled ) return NULL;
+		if( !mVisible || !mEnabled || (mWidgetType == TYPE_SCROLL_PANE) ) 
+			return NULL;
 
 		// iterate through child widgets..
 		Widget* w = NULL;
-		// Get the widget with the highest zOrder
-		int widgetZOrder = 0;
+		// Get the widget with the highest offset
+		int widgetOffset = 0;
 		std::vector<Widget*>::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 		{
+			if( (*it)->getWidgetType() == TYPE_SCROLL_PANE )
+				continue;
+
 			Widget* temp = (*it)->getTargetWidget(p);
-			if( (temp != NULL) && (temp->getZOrder() > widgetZOrder) )
+			if( (temp != NULL) && (temp->getOffset() > widgetOffset) )
 			{
 				w = temp;
-				widgetZOrder = temp->getZOrder();
+				widgetOffset = temp->getOffset();
 			}
 		}
 
@@ -716,19 +544,12 @@ namespace QuickGUI
 		else return NULL;
 	}
 
-	Ogre::UTFString Widget::getText()
+	Ogre::String Widget::getTextureName(bool includeExtension)
 	{
-		return mText;
-	}
-
-	Ogre::ColourValue Widget::getTextColorTop()
-	{
-		return mTextTopColor;
-	}
-
-	Ogre::ColourValue Widget::getTextColorBot()
-	{
-		return mTextBotColor;
+		if(includeExtension)
+			return mFullTextureName;
+		else
+			return mTextureName;
 	}
 
 	Widget::Type Widget::getWidgetType()
@@ -736,73 +557,83 @@ namespace QuickGUI
 		return mWidgetType;
 	}
 
-	Window* Widget::getWindow()
+	Ogre::Real Widget::getWidth(GuiMetricsMode mode)
 	{
-		if( mWidgetType == Widget::QGUI_TYPE_WINDOW )
-			return dynamic_cast<Window*>(this);
-
-		Widget* w = mParentWidget;
-		while( w != NULL )
+		switch(mode)
 		{
-			if( w->getWidgetType() == Widget::QGUI_TYPE_WINDOW )
-				break;
-
-			w = w->getParentWidget();
+		case QGUI_GMM_ABSOLUTE:
+			return mAbsoluteDimensions.width;
+		case QGUI_GMM_PIXELS:
+			return mPixelDimensions.width;
+		case QGUI_GMM_RELATIVE:
+		default:
+			return mRelativeDimensions.width;
 		}
-
-		if( w != NULL ) return dynamic_cast<Window*>(w);
-		else return NULL;
 	}
 
-	int Widget::getZOrder()
+	Ogre::Real Widget::getXPosition(GuiMetricsMode mode)
 	{
-		int zOrder = 0;
-		if( mParentWidget != NULL ) zOrder = mParentWidget->getZOrder();
-		return zOrder + mZOrderOffset;
+		switch(mode)
+		{
+		case QGUI_GMM_ABSOLUTE:
+			return mAbsoluteDimensions.x;
+		case QGUI_GMM_PIXELS:
+			return mPixelDimensions.x;
+		case QGUI_GMM_RELATIVE:
+		default:
+			return mRelativeDimensions.x;
+		}
 	}
 
-	int Widget::getZOrderOffset()
+	Ogre::Real Widget::getYPosition(GuiMetricsMode mode)
 	{
-		return mZOrderOffset;
+		switch(mode)
+		{
+		case QGUI_GMM_ABSOLUTE:
+			return mAbsoluteDimensions.y;
+		case QGUI_GMM_PIXELS:
+			return mPixelDimensions.y;
+		case QGUI_GMM_RELATIVE:
+		default:
+			return mRelativeDimensions.y;
+		}
 	}
 
 	void Widget::hide()
 	{
-		mVisible = false;
 		mGrabbed = false;
 
-		if( mBorders[QGUI_BORDER_TOP] ) mBorders[QGUI_BORDER_TOP]->hide();
-		if( mBorders[QGUI_BORDER_BOTTOM] ) mBorders[QGUI_BORDER_BOTTOM]->hide();
-		if( mBorders[QGUI_BORDER_LEFT] ) mBorders[QGUI_BORDER_LEFT]->hide();
-		if( mBorders[QGUI_BORDER_RIGHT] ) mBorders[QGUI_BORDER_RIGHT]->hide();
-
-		if( mOverlayElement ) mOverlayElement->hide();
+		mQuad->setVisible(false);
 
 		// hide children
 		std::vector<Widget*>::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
-			(*it)->hide();
+		{
+			if((*it)->getHideWithParent())
+				(*it)->hide();
+		}
+
+		// Only fire event if we change visibility.  If we were already hidden, don't fire.
+		if(mVisible)
+		{
+			WidgetEventArgs args(this);
+			fireEvent(EVENT_HIDDEN,args);
+		}
+
+		mVisible = false;
 	}
 
-	void Widget::hideBorders()
+	bool Widget::isPointWithinBounds(const Point& p)
 	{
-		mBordersHidden = true;
-		if( mBorders[QGUI_BORDER_TOP] ) mBorders[QGUI_BORDER_TOP]->hide();
-		if( mBorders[QGUI_BORDER_BOTTOM] ) mBorders[QGUI_BORDER_BOTTOM]->hide();
-		if( mBorders[QGUI_BORDER_LEFT] ) mBorders[QGUI_BORDER_LEFT]->hide();
-		if( mBorders[QGUI_BORDER_RIGHT] ) mBorders[QGUI_BORDER_RIGHT]->hide();
-	}
-
-	bool Widget::isPointWithinBounds(const Ogre::Vector2& p)
-	{
-		if(!mVisible) return false;
+		if(!mVisible) 
+			return false;
 
 		if( p.x < mPixelDimensions.x ||
-			p.x > (mPixelDimensions.x + mPixelDimensions.z) )
+			p.x > (mPixelDimensions.x + mPixelDimensions.width) )
 			return false;
 
 		if( p.y < mPixelDimensions.y ||
-			p.y > (mPixelDimensions.y + mPixelDimensions.w) )
+			p.y > (mPixelDimensions.y + mPixelDimensions.height) )
 			return false;
 
 		if(overTransparentPixel(p)) return false;
@@ -815,356 +646,173 @@ namespace QuickGUI
 		return mVisible;
 	}
 
+	bool Widget::isChild(Widget* w)
+	{
+		std::vector<Widget*>::iterator it;
+		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
+		{
+			if( w->getInstanceName() == (*it)->getInstanceName() )
+				return true;
+		}
+
+		return false;
+	}
+
 	void Widget::move(const Ogre::Real& xVal, const Ogre::Real& yVal, GuiMetricsMode mode)
 	{
-		if(!mMovingEnabled) return;
-
-		
-		Ogre::Vector2 relPos = _getRelativePosition(Ogre::Vector2(xVal,yVal),mode);
-		mRelativeDimensions.x += relPos.x;
-		mRelativeDimensions.y += relPos.y;
-
-		_notifyDimensionsChanged();
-		
-		/*
-		Ogre::Vector2 parentPosition(0,0);
-		Ogre::Vector2 parentSize(1,1);
-		if(mParentWidget != NULL) 
-		{
-			parentSize = mParentWidget->getSize(QGUI_GMM_PIXELS);
-			parentPosition = mParentWidget->getPosition(QGUI_GMM_PIXELS);
-		}
+		if(!mMovingEnabled) 
+			return;
 
 		switch(mode)
 		{
 		case QGUI_GMM_ABSOLUTE:
-			mRelativeDimensions.x += xVal / parentSize.x;
-			mRelativeDimensions.y += yVal / parentSize.y;
+			mAbsoluteDimensions.x += xVal;
+			mAbsoluteDimensions.y += yVal;
+			setPosition(mAbsoluteDimensions.x,mAbsoluteDimensions.y,mode);
+			break;
+		case QGUI_GMM_PIXELS:
+			mPixelDimensions.x += xVal;
+			mPixelDimensions.y += yVal;
+			setPosition(mPixelDimensions.x,mPixelDimensions.y,mode);
 			break;
 		case QGUI_GMM_RELATIVE:
 			mRelativeDimensions.x += xVal;
 			mRelativeDimensions.y += yVal;
-			break;
-		case QGUI_GMM_PIXELS:
-			Ogre::Real deltaX = xVal - parentPosition.x;
-			Ogre::Real deltaY = yVal - parentPosition.y;
-
-			mRelativeDimensions.x += xVal / parentSize.x;
-			mRelativeDimensions.y += yVal / parentSize.y;
+			setPosition(mRelativeDimensions.x,mRelativeDimensions.y);
 			break;
 		}
-
-		_notifyDimensionsChanged();
-		*/
 	}
 
-	bool Widget::overTransparentPixel(const Ogre::Vector2& mousePosition)
+	void Widget::move(const Point& p, GuiMetricsMode mode)
 	{
-		if( mWidgetMaterial == "" ) return false;
+		move(p.x,p.y,mode);
+	}
 
-		Ogre::MaterialManager* mm = Ogre::MaterialManager::getSingletonPtr();
-		if(!mm->resourceExists(mWidgetMaterial)) return false;
+	void Widget::moveX(Ogre::Real xVal, GuiMetricsMode mode)
+	{
+		if(!mMovingEnabled) 
+			return;
 
-		Ogre::MaterialPtr mp = static_cast<Ogre::MaterialPtr>(mm->getByName(mWidgetMaterial));
-		Ogre::Pass* p = mp->getTechnique(0)->getPass(0);
-		
-		if( (p == NULL) || (p->getNumTextureUnitStates() < 1) ) return false;
+		switch(mode)
+		{
+		case QGUI_GMM_ABSOLUTE:
+			mAbsoluteDimensions.x += xVal;
+			setXPosition(mAbsoluteDimensions.x,mode);
+			break;
+		case QGUI_GMM_PIXELS:
+			mPixelDimensions.x += xVal;
+			setXPosition(mPixelDimensions.x,mode);
+			break;
+		case QGUI_GMM_RELATIVE:
+			mRelativeDimensions.x += xVal;
+			setXPosition(mRelativeDimensions.x);
+			break;
+		}
+	}
 
-		Ogre::String name = p->getTextureUnitState(0)->getTextureName();
+	void Widget::moveY(Ogre::Real yVal, GuiMetricsMode mode)
+	{
+		if(!mMovingEnabled) 
+			return;
 
-		// exempt from transparent checks, like "" material.
-		if( name == "transparent.png" ) return false;
+		switch(mode)
+		{
+		case QGUI_GMM_ABSOLUTE:
+			mAbsoluteDimensions.y += yVal;
+			setYPosition(mAbsoluteDimensions.y,mode);
+			break;
+		case QGUI_GMM_PIXELS:
+			mPixelDimensions.y += yVal;
+			setYPosition(mPixelDimensions.y,mode);
+			break;
+		case QGUI_GMM_RELATIVE:
+			mRelativeDimensions.y += yVal;
+			setYPosition(mRelativeDimensions.y);
+			break;
+		}
+	}
 
-		Ogre::Image i;
-		i.load(name,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	bool Widget::fireEvent(Event e, const EventArgs& args)
+	{
+		if(!mEnabled || mUserEventHandlers[e].empty() ) 
+			return false;
 
-		Ogre::Vector2 pt = Ogre::Vector2(mousePosition.x - mPixelDimensions.x,mousePosition.y - mPixelDimensions.y);
-		Ogre::Real relX = pt.x / mPixelDimensions.z;
-		Ogre::Real relY = pt.y / mPixelDimensions.w;
+		std::vector<MemberFunctionSlot*>::iterator it;
+		std::vector<MemberFunctionSlot*> userEventHandlers = mUserEventHandlers[e];
+		for( it = userEventHandlers.begin(); it != userEventHandlers.end(); ++it )
+			(*it)->execute(args);
 
-		Ogre::ColourValue c = i.getColourAt(relX * i.getWidth(), relY * i.getHeight(),0);
+		return true; 
+	}
+
+	void Widget::lockTexture()
+	{
+		mTextureLocked = true;
+	}
+
+	void Widget::onPositionChanged(const EventArgs& args)
+	{
+		std::vector<Widget*>::iterator it;
+		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
+			(*it)->setPosition((*it)->getPosition());
+	}
+
+	bool Widget::overTransparentPixel(const Point& mousePosition)
+	{
+		if( mWidgetImage == NULL ) 
+			return false;
+
+		Point pt(mousePosition.x - mPixelDimensions.x,mousePosition.y - mPixelDimensions.y);
+		Ogre::Real relX = pt.x / mPixelDimensions.width;
+		Ogre::Real relY = pt.y / mPixelDimensions.height;
+
+		Ogre::ColourValue c = mWidgetImage->getColourAt(relX * mWidgetImage->getWidth(), relY * mWidgetImage->getHeight(),0);
 		if( c.a <= 0.0 ) return true;
 
 		return false;
+	}
+
+	void Widget::refresh()
+	{
+		setDimensions(getDimensions(QGUI_GMM_ABSOLUTE,QGUI_GMM_ABSOLUTE),QGUI_GMM_ABSOLUTE,QGUI_GMM_ABSOLUTE);
+
+		std::vector<Widget*>::iterator it;
+		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
+			(*it)->refresh();
 	}
 
 	void Widget::removeAndDestroyAllChildWidgets()
 	{
 		std::vector<Widget*>::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
+		{
+			(*it)->_notifyRemovedFromChildList();
 			delete (*it);
+		}
 		mChildWidgets.clear();
 	}
 
-	void Widget::setBorderWidth(int borderPixelHeight)
+	void Widget::setBaseTexture(const Ogre::String& textureName)
 	{
-		setBorderWidth(borderPixelHeight,borderPixelHeight,borderPixelHeight,borderPixelHeight);
+		// separate extension from name, if exists.
+		_processFullTextureName(textureName);
+
+		mDisabledTextureName = mTextureName + ".disabled" + mTextureExtension;
 	}
 
-	void Widget::setBorderWidth(int topBotBorderPixelHeight, int leftRightBorderPixelHeight)
+	void Widget::setClippingRect(const Rect& r)
 	{
-		setBorderWidth(topBotBorderPixelHeight,topBotBorderPixelHeight,leftRightBorderPixelHeight,leftRightBorderPixelHeight);
-	}
+		mQuad->setClippingRect(r);
 
-	void Widget::setBorderWidth(int topBorderPixelHeight, int botBorderPixelHeight, int leftBorderPixelHeight, int rightBorderPixelHeight)
-	{
-		// Update widths
-		mBorderSizeInPixels[QGUI_BORDER_TOP] = topBorderPixelHeight;
-		mBorderSizeInPixels[QGUI_BORDER_BOTTOM] = botBorderPixelHeight;
-		mBorderSizeInPixels[QGUI_BORDER_LEFT] = leftBorderPixelHeight;
-		mBorderSizeInPixels[QGUI_BORDER_RIGHT] = rightBorderPixelHeight;
-
-		// This function repositions and resizes the borders
-		_notifyDimensionsChanged();
-	}
-
-	void Widget::activate(EventArgs& e)
-	{
-		if(!mEnabled) return;
-
-		// execute any user defined event handler callbacks
-		std::vector<MemberFunctionSlot*>::iterator it;
-		std::vector<MemberFunctionSlot*> userEventHandlers = mUserEventHandlers[QGUI_EVENT_ACTIVATED];
-		for( it = userEventHandlers.begin(); it != userEventHandlers.end(); ++it )
-			e.handled = (*it)->execute(e);
-	}
-
-	void Widget::deactivate(EventArgs& e)
-	{
-		if(!mEnabled) return;
-
-		mGrabbed = false;
-
-		// execute any user defined event handler callbacks
-		std::vector<MemberFunctionSlot*>::iterator it;
-		std::vector<MemberFunctionSlot*> userEventHandlers = mUserEventHandlers[QGUI_EVENT_DEACTIVATED];
-		for( it = userEventHandlers.begin(); it != userEventHandlers.end(); ++it )
-			e.handled = (*it)->execute(e);
-	}
-
-	bool Widget::onDragged(EventArgs& e)
-	{
-		if(!mEnabled) return e.handled;
-
-		// execute any user defined event handler callbacks.
-		// NOTE: it is important to return right away, for example pressing
-		// a button might toggle another game state which clears the current GUI,
-		// destroying this button! Exit immediately!
-		std::vector<MemberFunctionSlot*>::iterator it;
-		std::vector<MemberFunctionSlot*> userEventHandlers = mUserEventHandlers[QGUI_EVENT_DRAGGED];
-		for( it = userEventHandlers.begin(); it != userEventHandlers.end(); ++it )
-			e.handled = (*it)->execute(e);
-
-		return e.handled;
-	}
-
-	bool Widget::onMouseEnters(MouseEventArgs& e)
-	{
-		if(!mEnabled) return e.handled;
-
-		// execute any user defined event handler callbacks.
-		// NOTE: it is important to return right away, for example pressing
-		// a button might toggle another game state which clears the current GUI,
-		// destroying this button! Exit immediately!
-		std::vector<MemberFunctionSlot*>::iterator it;
-		std::vector<MemberFunctionSlot*> userEventHandlers = mUserEventHandlers[QGUI_EVENT_MOUSE_ENTER];
-		for( it = userEventHandlers.begin(); it != userEventHandlers.end(); ++it )
-			e.handled = (*it)->execute(e);
-		if(e.handled) return e.handled;
-		
-		// if event not handled, pass it up to parent widget
-		if( (mParentWidget != NULL) && !e.handled ) e.handled = mParentWidget->onMouseEnters(e);
-
-		return e.handled; 
-	}
-
-	bool Widget::onMouseLeaves(MouseEventArgs& e)
-	{
-		if(!mEnabled) return e.handled;
-
-		// execute any user defined event handler callbacks.
-		// NOTE: it is important to return right away, for example pressing
-		// a button might toggle another game state which clears the current GUI,
-		// destroying this button! Exit immediately!
-		std::vector<MemberFunctionSlot*>::iterator it;
-		std::vector<MemberFunctionSlot*> userEventHandlers = mUserEventHandlers[QGUI_EVENT_MOUSE_LEAVE];
-		for( it = userEventHandlers.begin(); it != userEventHandlers.end(); ++it )
-			e.handled = (*it)->execute(e);
-		if(e.handled) return e.handled;
-
-		// if event not handled, pass it up to parent widget
-		if( (mParentWidget != NULL) && !e.handled ) e.handled = mParentWidget->onMouseLeaves(e);
-
-		return e.handled; 
-	}
-
-	bool Widget::onMouseMoved(MouseEventArgs& e)
-	{
-		if(!mEnabled) return e.handled;
-
-		// execute any user defined event handler callbacks.
-		// NOTE: it is important to return right away, for example pressing
-		// a button might toggle another game state which clears the current GUI,
-		// destroying this button! Exit immediately!
-		std::vector<MemberFunctionSlot*>::iterator it;
-		std::vector<MemberFunctionSlot*> userEventHandlers = mUserEventHandlers[QGUI_EVENT_MOUSE_MOVE];
-		for( it = userEventHandlers.begin(); it != userEventHandlers.end(); ++it )
-			e.handled = (*it)->execute(e);
-		if(e.handled) return e.handled;
-		
-		// if event not handled, pass it up to parent widget
-		if( (mParentWidget != NULL) && !e.handled ) e.handled = mParentWidget->onMouseMoved(e);
-
-		return e.handled; 
-	}
-
-	bool Widget::onMouseWheel(MouseEventArgs& e)
-	{
-		if(!mEnabled) return e.handled;
-
-		// execute any user defined event handler callbacks.
-		// NOTE: it is important to return right away, for example pressing
-		// a button might toggle another game state which clears the current GUI,
-		// destroying this button! Exit immediately!
-		std::vector<MemberFunctionSlot*>::iterator it;
-		std::vector<MemberFunctionSlot*> userEventHandlers = mUserEventHandlers[QGUI_EVENT_MOUSE_WHEEL];
-		for( it = userEventHandlers.begin(); it != userEventHandlers.end(); ++it )
-			e.handled = (*it)->execute(e);
-		if(e.handled) return e.handled;
-		
-		// if event not handled, pass it up to parent widget
-		if( (mParentWidget != NULL) && !e.handled ) e.handled = mParentWidget->onMouseWheel(e);
-
-		return e.handled; 
-	}
-
-	bool Widget::onMouseButtonUp(MouseEventArgs& e)
-	{
-		if(!mEnabled) return e.handled;
-
-		mGrabbed = false;
-
-		// execute any user defined event handler callbacks.
-		// NOTE: it is important to return right away, for example pressing
-		// a button might toggle another game state which clears the current GUI,
-		// destroying this button! Exit immediately!
-		std::vector<MemberFunctionSlot*>::iterator it;
-		std::vector<MemberFunctionSlot*> userEventHandlers = mUserEventHandlers[QGUI_EVENT_MOUSE_BUTTON_UP];
-		for( it = userEventHandlers.begin(); it != userEventHandlers.end(); ++it )
-			e.handled = (*it)->execute(e);
-		if(e.handled) return e.handled;
-		
-		// if event not handled, pass it up to parent widget
-		if( (mParentWidget != NULL) && !e.handled ) e.handled = mParentWidget->onMouseButtonUp(e);
-
-		return e.handled; 
-	}
-
-	bool Widget::onMouseButtonDown(MouseEventArgs& e)
-	{
-		if(!mEnabled) return e.handled;
-
-		if( (e.button == QuickGUI::MB_Left) && (e.widget->getInstanceName() == mInstanceName) ) mGrabbed = true;
-
-		// execute any user defined event handler callbacks.
-		// NOTE: it is important to return right away, for example pressing
-		// a button might toggle another game state which clears the current GUI,
-		// destroying this button! Exit immediately!
-		std::vector<MemberFunctionSlot*>::iterator it;
-		std::vector<MemberFunctionSlot*> userEventHandlers = mUserEventHandlers[QGUI_EVENT_MOUSE_BUTTON_DOWN];
-		for( it = userEventHandlers.begin(); it != userEventHandlers.end(); ++it )
-			e.handled = (*it)->execute(e);
-		if(e.handled) return e.handled;
-		
-		// if event not handled, pass it up to parent widget
-		if( (mParentWidget != NULL) && !e.handled ) e.handled = mParentWidget->onMouseButtonDown(e);
-
-		return e.handled; 
-	}
-
-	bool Widget::onMouseClicked(MouseEventArgs& e)
-	{
-		if(!mEnabled) return e.handled;
-
-		// execute any user defined event handler callbacks.
-		// NOTE: it is important to return right away, for example pressing
-		// a button might toggle another game state which clears the current GUI,
-		// destroying this button! Exit immediately!
-		std::vector<MemberFunctionSlot*>::iterator it;
-		std::vector<MemberFunctionSlot*> userEventHandlers = mUserEventHandlers[QGUI_EVENT_MOUSE_CLICK];
-		for( it = userEventHandlers.begin(); it != userEventHandlers.end(); ++it )
-			e.handled = (*it)->execute(e);
-		if(e.handled) return e.handled;
-		
-		// if event not handled, pass it up to parent widget
-		if( (mParentWidget != NULL) && !e.handled ) e.handled = mParentWidget->onMouseClicked(e);
-
-		return e.handled; 
-	}
-
-	bool Widget::onKeyDown(KeyEventArgs& e)
-	{
-		if(!mEnabled) return e.handled;
-
-		// execute any user defined event handler callbacks.
-		// NOTE: it is important to return right away, for example pressing
-		// a button might toggle another game state which clears the current GUI,
-		// destroying this button! Exit immediately!
-		std::vector<MemberFunctionSlot*>::iterator it;
-		std::vector<MemberFunctionSlot*> userEventHandlers = mUserEventHandlers[QGUI_EVENT_KEY_DOWN];
-		for( it = userEventHandlers.begin(); it != userEventHandlers.end(); ++it )
-			e.handled = (*it)->execute(e);
-		if(e.handled) return e.handled;
-		
-		// if event not handled, pass it up to parent widget
-		if( (mParentWidget != NULL) && !e.handled ) e.handled = mParentWidget->onKeyDown(e);
-
-		return e.handled; 
-	}
-
-	bool Widget::onKeyUp(KeyEventArgs& e)
-	{
-		if(!mEnabled) return e.handled;
-
-		// execute any user defined event handler callbacks.
-		// NOTE: it is important to return right away, for example pressing
-		// a button might toggle another game state which clears the current GUI,
-		// destroying this button! Exit immediately!
-		std::vector<MemberFunctionSlot*>::iterator it;
-		std::vector<MemberFunctionSlot*> userEventHandlers = mUserEventHandlers[QGUI_EVENT_KEY_UP];
-		for( it = userEventHandlers.begin(); it != userEventHandlers.end(); ++it )
-			e.handled = (*it)->execute(e);
-		if(e.handled) return e.handled;
-		
-		// if event not handled, pass it up to parent widget
-		if( (mParentWidget != NULL) && !e.handled ) e.handled = mParentWidget->onKeyUp(e);
-
-		return true; 
-	}
-
-	bool Widget::onCharacter(KeyEventArgs& e)
-	{
-		if(!mEnabled) return e.handled;
-
-		// execute any user defined event handler callbacks.
-		// NOTE: it is important to return right away, for example pressing
-		// a button might toggle another game state which clears the current GUI,
-		// destroying this button! Exit immediately!
-		std::vector<MemberFunctionSlot*>::iterator it;
-		std::vector<MemberFunctionSlot*> userEventHandlers = mUserEventHandlers[QGUI_EVENT_CHARACTER_KEY];
-		for( it = userEventHandlers.begin(); it != userEventHandlers.end(); ++it )
-			e.handled = (*it)->execute(e);
-		if(e.handled) return e.handled;
-		
-		// if event not handled, pass it up to parent widget
-		if( (mParentWidget != NULL) && !e.handled ) e.handled = mParentWidget->onCharacter(e);
-
-		return e.handled;
+		std::vector<Widget*>::iterator it;
+		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
+			(*it)->setClippingRect(r);
 	}
 
 	void Widget::timeElapsed(Ogre::Real time) 
 	{
-		if(!mEnabled) return;
+		if(!mEnabled) 
+			return;
 
 		std::vector<Widget*>::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
@@ -1173,22 +821,15 @@ namespace QuickGUI
 		}
 	}
 
-	void Widget::setCharacterHeight(const Ogre::Real& relativeHeight)
+	void Widget::setDimensions(const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
 	{
-		mCharacterHeight = relativeHeight;
-		_notifyTextChanged();
+		setPosition(dimensions.x,dimensions.y,positionMode);
+		setSize(dimensions.width,dimensions.height,sizeMode);
 	}
 
-	void Widget::setDimensions(const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	void Widget::setDisabledTexture(const Ogre::String& disabledTexture)
 	{
-		mRelativeDimensions = _getRelativeDimensions(dimensions,positionMode,sizeMode);
-
-		_notifyDimensionsChanged();
-	}
-
-	void Widget::setDisabledColor(const Ogre::ColourValue& c)
-	{
-		mDisabledColor = c;
+		mDisabledTextureName = disabledTexture;
 	}
 
 	void Widget::setDraggingWidget(Widget* w)
@@ -1196,10 +837,9 @@ namespace QuickGUI
 		mWidgetToDrag = w;
 	}
 
-	void Widget::setFont(const Ogre::String& font)
+	void Widget::setGainFocusOnClick(bool gainFocus)
 	{
-		mFont = font;
-		_notifyTextChanged();
+		mGainFocusOnClick = gainFocus;
 	}
 
 	void Widget::setGrabbed(bool grabbed)
@@ -1207,10 +847,41 @@ namespace QuickGUI
 		mGrabbed = grabbed;
 	}
 
-	void Widget::setHeight(const Ogre::Real& relativeHeight)
+	void Widget::setHeight(Ogre::Real height, GuiMetricsMode mode)
 	{
-		mRelativeDimensions.w = relativeHeight;
-		_notifyDimensionsChanged();
+		if((mWidgetType == Widget::TYPE_SHEET) || (mParentWidget == NULL))
+			return;
+
+		Ogre::Real absParentHeight = mParentWidget->getHeight(QGUI_GMM_ABSOLUTE);
+		Ogre::Real pixParentHeight = mParentWidget->getHeight(QGUI_GMM_PIXELS);
+
+		switch(mode)
+		{
+		case QGUI_GMM_ABSOLUTE:
+			mRelativeDimensions.height = (height / absParentHeight);
+			break;
+		case QGUI_GMM_RELATIVE:
+			mRelativeDimensions.height = height;
+			break;
+		case QGUI_GMM_PIXELS:
+		default:
+			mRelativeDimensions.height = (height / pixParentHeight);
+			break;
+		}
+
+		mAbsoluteDimensions.height = mRelativeDimensions.height * absParentHeight;
+
+		mPixelDimensions.height = mAbsoluteDimensions.height * mGUIManager->getViewportHeight();
+
+		WidgetEventArgs args(this);
+		fireEvent(EVENT_SIZE_CHANGED,args);
+
+		mQuad->setHeight(mAbsoluteDimensions.height);
+	}
+
+	void Widget::setHideWithParent(bool hide)
+	{
+		mHideWithParent = hide;
 	}
 
 	void Widget::setMovingEnabled(bool enable)
@@ -1218,107 +889,266 @@ namespace QuickGUI
 		mMovingEnabled = enable;
 	}
 
+	void Widget::setOffset(int offset)
+	{
+		mOffset = offset;
+		mQuad->setOffset(mOffset);
+	}
+
 	void Widget::setPosition(const Ogre::Real& xVal, const Ogre::Real& yVal, GuiMetricsMode mode)
 	{
-		Ogre::Vector2 parentPosition(0,0);
-		Ogre::Vector2 parentSize(1,1);
-		if(mParentWidget != NULL) 
-		{
-			parentSize = mParentWidget->getSize(QGUI_GMM_PIXELS);
-			parentPosition = mParentWidget->getPosition(QGUI_GMM_PIXELS);
-		}
+		if((mWidgetType == Widget::TYPE_SHEET) || (mParentWidget == NULL))
+			return;
+
+		Point absParentPosition = mParentWidget->getPosition(QGUI_GMM_ABSOLUTE);
+		Size absParentSize = mParentWidget->getSize(QGUI_GMM_ABSOLUTE);
+		Point pixParentPosition = mParentWidget->getPosition(QGUI_GMM_PIXELS);
+		Size pixParentSize = mParentWidget->getSize(QGUI_GMM_PIXELS);
 
 		switch(mode)
 		{
 		case QGUI_GMM_ABSOLUTE:
-			mRelativeDimensions.x = xVal / parentSize.x;
-			mRelativeDimensions.y = yVal / parentSize.y;
+			mRelativeDimensions.x = (xVal / absParentSize.width);
+			mRelativeDimensions.y = (yVal / absParentSize.height);
 			break;
 		case QGUI_GMM_RELATIVE:
 			mRelativeDimensions.x = xVal;
 			mRelativeDimensions.y = yVal;
 			break;
 		case QGUI_GMM_PIXELS:
-			Ogre::Real deltaX = static_cast<Ogre::Real>(xVal) - parentPosition.x;
-			Ogre::Real deltaY = static_cast<Ogre::Real>(yVal) - parentPosition.y;
-
-			mRelativeDimensions.x = (deltaX / parentSize.x);
-			mRelativeDimensions.y = (deltaY / parentSize.y);
+		default:
+			mRelativeDimensions.x = (xVal / pixParentSize.width);
+			mRelativeDimensions.y = (yVal / pixParentSize.height);
 			break;
 		}
 
-		_notifyDimensionsChanged();
+		mAbsoluteDimensions.x = absParentPosition.x + (mRelativeDimensions.x * absParentSize.width);
+		mAbsoluteDimensions.y = absParentPosition.y + (mRelativeDimensions.y * absParentSize.height);
+
+		mPixelDimensions.x = mAbsoluteDimensions.x * mGUIManager->getViewportWidth();
+		mPixelDimensions.y = mAbsoluteDimensions.y * mGUIManager->getViewportHeight();
+
+		WidgetEventArgs args(this);
+		fireEvent(EVENT_POSITION_CHANGED,args);
+		
+		mQuad->setPosition(Point(mAbsoluteDimensions.x,mAbsoluteDimensions.y));
 	}
 
-	void Widget::setText(const Ogre::UTFString& text)
+	void Widget::setPosition(const Point& p, GuiMetricsMode mode)
 	{
-		mText = text;
-		_notifyTextChanged();
+		Widget::setPosition(p.x,p.y,mode);
 	}
 
-	void Widget::setTextColor(const Ogre::ColourValue& color)
+	void Widget::setScreenPosition(const Ogre::Real& xVal, const Ogre::Real& yVal, GuiMetricsMode mode)
 	{
-		setTextColor(color,color);
-	}
+		if((mWidgetType == Widget::TYPE_SHEET) || (mParentWidget == NULL))
+			return;
 
-	void Widget::setTextColor(const Ogre::ColourValue& topColor,const Ogre::ColourValue& botColor)
-	{
-		mTextTopColor = topColor;
-		mTextBotColor = botColor;
-		_notifyTextChanged();
-	}
+		Point absParentPosition = mParentWidget->getPosition(QGUI_GMM_ABSOLUTE);
+		Point pixParentPosition = mParentWidget->getPosition(QGUI_GMM_PIXELS);
 
-	void Widget::setZOrderOffset(int offset, bool updateWindowZList)
-	{
-		mZOrderOffset = offset;
-
-		if(updateWindowZList)
+		switch(mode)
 		{
-			int zOrder = 0;
-			if( mParentWidget != NULL ) zOrder = mParentWidget->getZOrder();
-
-			Window* w = getWindow();
-			if( w != NULL ) w->_addZOrderValue(zOrder + mZOrderOffset);
-			else getSheet()->_addZOrderValue(zOrder + mZOrderOffset);
+		case QGUI_GMM_RELATIVE:
+		case QGUI_GMM_ABSOLUTE:
+			setPosition((xVal - absParentPosition.x),(yVal - absParentPosition.y),QGUI_GMM_ABSOLUTE);
+			break;
+		case QGUI_GMM_PIXELS:
+			setPosition((xVal - pixParentPosition.x),(yVal - pixParentPosition.y),mode);
+			break;
 		}
+	}
+
+	void Widget::setSize(const Ogre::Real& width, const Ogre::Real& height, GuiMetricsMode mode)
+	{
+		if((mWidgetType == Widget::TYPE_SHEET) || (mParentWidget == NULL))
+			return;
+
+		Size absParentSize = mParentWidget->getSize(QGUI_GMM_ABSOLUTE);
+		Size pixParentSize = mParentWidget->getSize(QGUI_GMM_PIXELS);
+
+		switch(mode)
+		{
+		case QGUI_GMM_ABSOLUTE:
+			mRelativeDimensions.width = (width / absParentSize.width);
+			mRelativeDimensions.height = (height / absParentSize.height);
+			break;
+		case QGUI_GMM_RELATIVE:
+			mRelativeDimensions.width = width;
+			mRelativeDimensions.height = height;
+			break;
+		case QGUI_GMM_PIXELS:
+		default:
+			mRelativeDimensions.width = (width / pixParentSize.width);
+			mRelativeDimensions.height = (height / pixParentSize.height);
+			break;
+		}
+
+		mAbsoluteDimensions.width = mRelativeDimensions.width * absParentSize.width;
+		mAbsoluteDimensions.height = mRelativeDimensions.height * absParentSize.height;
+
+		mPixelDimensions.width = mAbsoluteDimensions.width * mGUIManager->getViewportWidth();
+		mPixelDimensions.height = mAbsoluteDimensions.height * mGUIManager->getViewportHeight();
+
+		WidgetEventArgs args(this);
+		fireEvent(EVENT_SIZE_CHANGED,args);
+
+		mQuad->setSize(Size(mAbsoluteDimensions.width,mAbsoluteDimensions.height));
+	}
+
+	void Widget::setSize(const Size& s, GuiMetricsMode mode)
+	{
+		Widget::setSize(s.width,s.height,mode);
+	}
+
+	void Widget::setShowWithParent(bool show)
+	{
+		mShowWithParent = show;
+	}
+
+	void Widget::setWidth(Ogre::Real width, GuiMetricsMode mode)
+	{
+		if((mWidgetType == Widget::TYPE_SHEET) || (mParentWidget == NULL))
+			return;
+
+		Ogre::Real absParentWidth = mParentWidget->getWidth(QGUI_GMM_ABSOLUTE);
+		Ogre::Real pixParentWidth = mParentWidget->getWidth(QGUI_GMM_PIXELS);
+
+		switch(mode)
+		{
+		case QGUI_GMM_ABSOLUTE:
+			mRelativeDimensions.width = (width / absParentWidth);
+			break;
+		case QGUI_GMM_RELATIVE:
+			mRelativeDimensions.width = width;
+			break;
+		case QGUI_GMM_PIXELS:
+		default:
+			mRelativeDimensions.width = (width / pixParentWidth);
+			break;
+		}
+
+		mAbsoluteDimensions.width = mRelativeDimensions.width * absParentWidth;
+
+		mPixelDimensions.width = mAbsoluteDimensions.width * mGUIManager->getViewportWidth();
+
+		WidgetEventArgs args(this);
+		fireEvent(EVENT_SIZE_CHANGED,args);
+
+		mQuad->setWidth(mAbsoluteDimensions.width);
+	}
+
+	void Widget::setXPosition(Ogre::Real x, GuiMetricsMode mode)
+	{
+		if((mWidgetType == Widget::TYPE_SHEET) || (mParentWidget == NULL))
+			return;
+
+		Ogre::Real absParentX = mParentWidget->getXPosition(QGUI_GMM_ABSOLUTE);
+		Ogre::Real absParentWidth = mParentWidget->getWidth(QGUI_GMM_ABSOLUTE);
+		Ogre::Real pixParentX = mParentWidget->getYPosition(QGUI_GMM_PIXELS);
+		Ogre::Real pixParentWidth = mParentWidget->getWidth(QGUI_GMM_PIXELS);
+
+		switch(mode)
+		{
+		case QGUI_GMM_ABSOLUTE:
+			mRelativeDimensions.x = (x / absParentWidth);
+			break;
+		case QGUI_GMM_RELATIVE:
+			mRelativeDimensions.x = x;
+			break;
+		case QGUI_GMM_PIXELS:
+		default:
+			mRelativeDimensions.x = (x / pixParentWidth);
+			break;
+		}
+
+		mAbsoluteDimensions.x = absParentX + (mRelativeDimensions.x * absParentWidth);
+
+		mPixelDimensions.x = mAbsoluteDimensions.x * mGUIManager->getViewportWidth();
+
+		WidgetEventArgs args(this);
+		fireEvent(EVENT_POSITION_CHANGED,args);
+		
+		mQuad->setXPosition(mAbsoluteDimensions.x);
+	}
+
+	void Widget::setYPosition(Ogre::Real y, GuiMetricsMode mode)
+	{
+		if((mWidgetType == Widget::TYPE_SHEET) || (mParentWidget == NULL))
+			return;
+
+		Ogre::Real absParentY = mParentWidget->getYPosition(QGUI_GMM_ABSOLUTE);
+		Ogre::Real absParentHeight = mParentWidget->getHeight(QGUI_GMM_ABSOLUTE);
+		Ogre::Real pixParentY = mParentWidget->getYPosition(QGUI_GMM_PIXELS);
+		Ogre::Real pixParentHeight = mParentWidget->getHeight(QGUI_GMM_PIXELS);
+
+		switch(mode)
+		{
+		case QGUI_GMM_ABSOLUTE:
+			mRelativeDimensions.y = (y / absParentHeight);
+			break;
+		case QGUI_GMM_RELATIVE:
+			mRelativeDimensions.y = y;
+			break;
+		case QGUI_GMM_PIXELS:
+		default:
+			mRelativeDimensions.y = (y / pixParentHeight);
+			break;
+		}
+
+		mAbsoluteDimensions.y = absParentY + (mRelativeDimensions.y * absParentHeight);
+
+		mPixelDimensions.y = mAbsoluteDimensions.y * mGUIManager->getViewportHeight();
+
+		WidgetEventArgs args(this);
+		fireEvent(EVENT_POSITION_CHANGED,args);
+		
+		mQuad->setYPosition(mAbsoluteDimensions.y);
 	}
 
 	void Widget::show()
 	{
-		mVisible = true;
-		if( !mBordersHidden )
-		{
-			if( mBorders[QGUI_BORDER_TOP] ) mBorders[QGUI_BORDER_TOP]->show();
-			if( mBorders[QGUI_BORDER_BOTTOM] ) mBorders[QGUI_BORDER_BOTTOM]->show();
-			if( mBorders[QGUI_BORDER_LEFT] ) mBorders[QGUI_BORDER_LEFT]->show();
-			if( mBorders[QGUI_BORDER_RIGHT] ) mBorders[QGUI_BORDER_RIGHT]->show();
-		}
+		mQuad->setVisible(true);
 
-		if( mOverlayElement ) mOverlayElement->show();
-
-		// show children
-		// hide children
+		// show children, except for Windows and lists of MenuList or ComboBox Widget.
 		std::vector<Widget*>::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
-			(*it)->show();
+		{
+			if((*it)->getShowWithParent())
+				(*it)->show();
+		}
+
+		// Only fire event if we change visibility.  If we were already visible, don't fire.
+		if(!mVisible)
+		{
+			WidgetEventArgs args(this);
+			fireEvent(EVENT_SHOWN,args);
+		}
+
+		mVisible = true;
 	}
 
-	void Widget::showBorders()
+	void Widget::setTexture(const Ogre::String& textureName, bool updateBaseTexture)
 	{
-		mBordersHidden = false;
-		if( mBorders[QGUI_BORDER_TOP] ) mBorders[QGUI_BORDER_TOP]->show();
-		if( mBorders[QGUI_BORDER_BOTTOM] ) mBorders[QGUI_BORDER_BOTTOM]->show();
-		if( mBorders[QGUI_BORDER_LEFT] ) mBorders[QGUI_BORDER_LEFT]->show();
-		if( mBorders[QGUI_BORDER_RIGHT] ) mBorders[QGUI_BORDER_RIGHT]->show();
+		if(mTextureLocked)
+			return;
+
+		if(updateBaseTexture)
+			setBaseTexture(textureName);
+
+		mQuad->setTexture(textureName);
+
+		if(Utility::textureExistsOnDisk(textureName))
+		{
+			Ogre::Image i;
+			i.load(textureName,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+			delete mWidgetImage;
+			mWidgetImage = new Ogre::Image(i);
+		}
 	}
 
-	void Widget::setVerticalAlignment(VerticalAlignment va)
+	void Widget::unlockTexture()
 	{
-		mVerticalAlignment = va;
-	}
-
-	void Widget::setHorizontalAlignment(HorizontalAlignment ha)
-	{
-		mHorizontalAlignment = ha;
+		mTextureLocked = false;
 	}
 }

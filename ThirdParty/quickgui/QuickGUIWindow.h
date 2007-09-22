@@ -38,53 +38,47 @@ namespace QuickGUI
 			@param
 				material Ogre material defining the widget image.
 			@param
+				group QuadContainer containing this widget.
+			@param
 				parentWidget sheet used to create this window.
 			@note
 				Requires all 5 materials listed above.
 			@note
 				This Window will have a TitleBar
         */
-		Window(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material, Widget* parentWidget);
-		virtual ~Window();
+		Window(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* parentWidget, GUIManager* gm);
+
+		void bringToFront();
 		
+		bool getBringToFrontOnFocus();
 		TitleBar* getTitleBar();
 
 		void hide();
 		/**
 		* Hide, as an event handler.  Used as the default method for close button to hide window
 		*/
-		bool hide(const EventArgs& e);
+		void hide(const EventArgs& args);
 		void hideCloseButton();
 		void hideTitlebar();
 
 		// Overridden Event Handling functions
 		// If user Defined Events have been created, they will be called.
 		/**
-		* Default Handler for the QGUI_EVENT_ACTIVATED event, and activates all child widgets (if exist)
+		* Default Handler for the EVENT_GAIN_FOCUS event, and activates all child widgets (if exist)
 		*/
-		void activate(EventArgs& e);
+		void onGainFocus(const EventArgs& args);
 
-		/**
-		* Convenience method to set the TitleBar's Label's caption.
-		*/
-		void setText(const Ogre::UTFString& text);
-		void setTextColor(const Ogre::ColourValue& color);
-		void setTextColor(const Ogre::ColourValue& topColor,const Ogre::ColourValue& botColor);
-		/**
-		* Convenience method to set the TitleBar's height.
-		*/
-		void setTitleBarHeight(Ogre::Real height);
-		void setZOrder(int zOrder);
+		void setBringToFrontOnFocus(bool BringToFront);
 		void show();
 		void showCloseButton();
 		void showTitlebar();
 
 	protected:
-		Ogre::Overlay*						mOverlay;
+		virtual ~Window();
 
-		bool								mTitleBarHidden;
-		Ogre::OverlayContainer*				mTitleBarContainer;
-		TitleBar*							mTitleBar;
+		TitleBar* mTitleBar;
+
+		bool mBringToFrontOnFocus;
 	};
 }
 

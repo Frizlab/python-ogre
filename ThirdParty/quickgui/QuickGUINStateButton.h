@@ -2,7 +2,6 @@
 #define QUICKGUINSTATEBUTTON_H
 
 #include "QuickGUIButton.h"
-#include "QuickGUIPrerequisites.h"
 
 #include <vector>
 
@@ -30,20 +29,20 @@ namespace QuickGUI
 		class State
 		{
 		public:
-			State(const Ogre::String& name, const Ogre::String& material, Ogre::UTFString text="") :
+			State(const Ogre::String& name, const Ogre::String& texture, Ogre::UTFString text="") :
 			  mName(name),
-			  mMaterial(material),
+			  mTextureName(texture),
 			  mText(text)
 			{}
 			~State() {}
 
-			Ogre::String getMaterial() { return mMaterial; }
+			Ogre::String getTextureName() { return mTextureName; }
 			Ogre::String getName() { return mName; }
 			Ogre::UTFString getText() { return mText; }
 			
 		protected:
 			Ogre::String mName;
-			Ogre::String mMaterial;
+			Ogre::String mTextureName;
 			Ogre::UTFString mText;
 		};
 
@@ -57,17 +56,16 @@ namespace QuickGUI
 			@param
 				sizeMode The GuiMetricsMode for the values given for the size. (absolute/relative/pixel)
 			@param
-				overlayContainer associates the internal OverlayElement with a specified zOrder.
+				group QuadContainer containing this widget.
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		NStateButton(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, Ogre::OverlayContainer* overlayContainer, Widget* ParentWidget);
-		virtual ~NStateButton();
+		NStateButton(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
 
 		/**
 		* Add user defined event that will be called when the state of the button has changed.
 		*/
-		template<typename T> void addOnStateChangedEventHandler(bool (T::*function)(const EventArgs&), T* obj)
+		template<typename T> void addOnStateChangedEventHandler(void (T::*function)(const EventArgs&), T* obj)
 		{
 			mOnStateChangedUserEventHandlers.push_back(new MemberFunctionPointer<T>(function,obj));
 		}
@@ -75,7 +73,7 @@ namespace QuickGUI
 		/**
 		* Adds (and creates) a state to the button.  If it is the first state, the state will be applied.
 		*/
-		void addState(const Ogre::String& name, const Ogre::String& material, Ogre::UTFString text="");
+		void addState(const Ogre::String& name, const Ogre::String& texture, Ogre::UTFString text="");
 
 		/**
 		* Removes (and destroys) all states.  Widget has no appearance after this, since no states are defined.
@@ -110,16 +108,17 @@ namespace QuickGUI
 		State* getState(const Ogre::String& name);
 
 		/**
-		* Default Handler for the QGUI_EVENT_MOUSE_BUTTON_UP event.  If not handled, it will be passed
-		* to the parent widget (if exists)
+		* Default Handler for the EVENT_MOUSE_BUTTON_UP event.
 		*/
-		bool onMouseButtonUp(MouseEventArgs& e);
+		void onMouseButtonUp(const EventArgs& args);
 		/**
 		* Default Handler for handling state changes.
-		* Note that this event is not passed to its parents, the event is specific to this widget.
 		*/
-		bool onStateChanged(WidgetEventArgs& e);
-
+		void onStateChanged(const WidgetEventArgs& e);
+		/**
+		* Stores/Updates the texture used for the widget, and allows the widget to derive other needed textures. (by overriding this function)
+		*/
+		void setBaseTexture(const Ogre::String& textureName);
 		/**
 		* Manually setting the current State of the widget. onStateChanged will be called.
 		*/
@@ -137,6 +136,8 @@ namespace QuickGUI
 		void togglePreviousState();
 		
 	protected:
+		virtual ~NStateButton();
+
 		std::vector<State*>	mStates;
 
 		State* mCurrentState;

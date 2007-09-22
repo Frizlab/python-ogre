@@ -1,9 +1,9 @@
 #ifndef QUICKGUILIST_H
 #define QUICKGUILIST_H
 
-#include "QuickGUILabel.h"
+#include "QuickGUIImage.h"
 #include "QuickGUIListItem.h"
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIScrollPane.h"
 
 #include <vector>
 
@@ -19,7 +19,7 @@ namespace QuickGUI
 		Lists are generally created from the Menu, ComboBox, and even List Widget.
 	*/
 	class _QuickGUIExport List :
-		public Label
+		public Image
 	{
 	public:
 		/** Constructor
@@ -34,12 +34,11 @@ namespace QuickGUI
 			@param
 				material Ogre material defining the widget image.
 			@param
-				overlayContainer associates the internal OverlayElement with a specified zOrder.
+				group QuadContainer containing this widget.
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		List(const Ogre::String& name, const Ogre::Vector3& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material, Ogre::OverlayContainer* overlayContainer, Widget* ParentWidget);
-		virtual ~List();
+		List(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
 
 		/**
 		* Adds (and creates) a ListItem and adds it to the List.
@@ -48,20 +47,11 @@ namespace QuickGUI
 		*/
 		ListItem* addListItem(const Ogre::UTFString& text);
 		ListItem* addListItem(const Ogre::String& name, const Ogre::UTFString& text);
-		/**
-		* Aligns ListItem Text vertically and horizontally.
-		*/
-		void alignListItemText(HorizontalAlignment ha, VerticalAlignment va);
 
 		/**
 		* Destroys all List Items.
 		*/
 		void clearList();
-
-		/**
-		* Default Event Handler called when widget is deactivated.
-		*/
-		void deactivate(EventArgs& e);
 
 		/**
 		* Gets a ListItem from the List.  No exception is thrown
@@ -88,25 +78,30 @@ namespace QuickGUI
 		void highlightListItem(ListItem* i);
 
 		/**
-		* Remove (and destroy) a child List, including cleanup of all it's ListItems.
-		* No exception is thrown if the index is out of bounds.
-		*/
-		void removeList(unsigned int index);
-		/**
 		* Removes (and destroys) a ListItem from the List.  No exception is thrown
 		* if the index is out of bounds.
 		*/
 		void removeListItem(unsigned int index);
-
 		/**
-		* Manually sets the height of the characters for each list item and Combo Box Label component.
-		* Note that the text can be set larger than the widget dimensions.
+		* Configures List to adjust its height to match its child ListItems as they are added.
+		* NOTE: ScrollBars cannot be used with AutoSizeHeight.
 		*/
-		void setCharacterHeight(const Ogre::Real& relativeHeight);
+		void setAutoSizeHeight();
 		/**
 		* Sets the material displayed when the mouse moves over a list item.
 		*/
-		void setHighlightMaterial(const Ogre::String& material);
+		void setHighlightTexture(const Ogre::String& texture);
+		/**
+		* Sets the pixel height of each ListItem.
+		*/
+		void setListItemPixelHeight(const Ogre::Real& heightInPixels);
+		/**
+		* Sets the number of visible items viewable in the List.
+		* NOTE: autoSizeHeight is disabled.
+		* NOTE: scrollbars will be available when the number of List Items exceed the 
+		*  number of Visible List Items.
+		*/
+		void setNumberOfVisibleItems(unsigned int number);
 		/**
 		* Sets the width of the list, relative to its parent.
 		*/
@@ -116,22 +111,29 @@ namespace QuickGUI
 		*/
 		void show();
 
+	// functions that were public, and should not be, for this widget.
 	protected:
+		void setSize(const Ogre::Real& width, const Ogre::Real& height, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
+		void setSize(const Size& s, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
+
+	protected:
+		virtual ~List();
+
+		ScrollPane* mScrollPane;
+
+		Ogre::Real mItemPixelHeight;
+
+		bool mAutoSizeHeight;
+
 		int mAutoNameListItemCount;
-		int mAutoNameListCount;
 		std::vector<ListItem*> mItems;
 
-		HorizontalAlignment mListItemHorizontalAlignment;
-		VerticalAlignment mListItemVerticalAlignment;
+		Quad* mHighlightPanel;
+		Ogre::String mHighlightTexture;
 
-		Ogre::OverlayContainer* mHighlightContainer;
-		Ogre::PanelOverlayElement* mHighlightPanel;
-		Ogre::String mHighlightMaterial;
+		int mNumberOfVisibleItems;
 
-		std::vector<List*> mChildLists;
-
-		// This value is an absolute dimension
-		Ogre::Real mDefaultListItemHeight;
+		void onWidthChanged(const EventArgs& args);
 	};
 }
 

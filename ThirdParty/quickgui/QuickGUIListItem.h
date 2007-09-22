@@ -4,7 +4,6 @@
 #include "QuickGUIImage.h"
 #include "QuickGUILabel.h"
 #include "QuickGUINStateButton.h"
-#include "QuickGUIPrerequisites.h"
 
 namespace QuickGUI
 {
@@ -28,31 +27,21 @@ namespace QuickGUI
 			@param
 				sizeMode The GuiMetricsMode for the values given for the size. (absolute/relative/pixel)
 			@param
-				overlayContainer associates the internal OverlayElement with a specified zOrder.
+				group QuadContainer containing this widget.
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		ListItem(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, Ogre::OverlayContainer* overlayContainer, Widget* ParentWidget);
-		virtual ~ListItem();
+		ListItem(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
 
 		/**
 		* Add an NStateButton to the ListItem.  Useful examples: properties - (...), checkbox - [x]
 		* Note that clicking this button doesn't cause the list to be hidden.
 		*/
-		NStateButton* addNStateButton(const Ogre::Vector4& dimensions);
+		NStateButton* addNStateButton(const Rect& dimensions);
 		/**
 		* Add an Image to the ListItem.
 		*/
-		Image* addImage(const Ogre::Vector4& dimensions, const Ogre::String& material);
-
-		/**
-		* Default Event Handler called when widget is deactivated.
-		*/
-		void deactivate(EventArgs& e);
-		/**
-		* Event Handler used to hide all parent Lists, when a ListItem is clicked.
-		*/
-		bool evtHndlr_hideMenus(const EventArgs& e);
+		Image* addImage(const Rect& dimensions, const Ogre::String& texture);
 
 		/**
 		* Returns a pointer to the NStateButton, if it exists.
@@ -63,23 +52,30 @@ namespace QuickGUI
 		*/
 		Image* getImage();
 
-		/**
-		* Default Handler for the QGUI_EVENT_MOUSE_BUTTON_UP event.  If not handled, it will be passed
-		* to the parent widget (if exists)
+		/*
+		* Used to propogate mouse events through Image/Button to ListItem.
 		*/
-		bool onMouseButtonUp(MouseEventArgs& e);
-		/**
-		* Default Handler for the QGUI_EVENT_MOUSE_ENTER event.  material.over is applied to the button
-		* image. If not handled, it will be passed to the parent widget 
-		* (if exists)
+		void onLoseFocus(const EventArgs& args);
+
+		/*
+		* Used to propogate mouse events through Image/Button to ListItem.
 		*/
-		bool onMouseEnters(MouseEventArgs& e);
-		/**
-		* Default Handler for the QGUI_EVENT_MOUSE_LEAVE event.  material is applied to the button
-		* image. If not handled, it will be passed to the parent widget 
-		* (if exists)
+		void onMouseButtonDown(const EventArgs& args);
+
+		/*
+		* Used to propogate mouse events through Image/Button to ListItem.
 		*/
-		bool onMouseLeaves(MouseEventArgs& e);
+		void onMouseButtonUp(const EventArgs& args);
+
+		/**
+		* Event Handler for the EVENT_MOUSE_ENTER event.
+		*/
+		void onMouseEnters(const EventArgs& args);
+		
+		/**
+		* Event Handler for the EVENT_MOUSE_LEAVE event.
+		*/
+		void onMouseLeaves(const EventArgs& args);
 
 		/**
 		* Remove (and destroy) the NStateButton.
@@ -92,9 +88,21 @@ namespace QuickGUI
 		*/
 		void removeImage();
 
+		/*
+		* Note: Must be called prior to creating Image/Button.
+		*/
+		void setPropogateButtonMouseEvents(bool propogate);
+		void setPropogateImageMouseEvents(bool propogate);
+
 	protected:
+		virtual ~ListItem();
+
 		Image* mImage;
 		NStateButton* mButton;
+
+		// Used to determine if clicks on the item/button pass up to parent.
+		bool mPropogateImageMouseEvents;
+		bool mPropogateButtonMouseEvents;
 	};
 }
 

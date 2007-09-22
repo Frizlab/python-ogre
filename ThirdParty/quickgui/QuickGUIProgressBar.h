@@ -1,9 +1,9 @@
 #ifndef QUICKGUIPROGRESSBAR_H
 #define QUICKGUIPROGRESSBAR_H
 
-#include "QuickGUIPrerequisites.h"
-#include "QuickGUIText.h"
-#include "QuickGUIWidget.h"
+#include "OgreHardwarePixelBuffer.h"
+
+#include "QuickGUIImage.h"
 
 namespace QuickGUI
 {
@@ -11,13 +11,31 @@ namespace QuickGUI
 		visual status showing a current position relative to
 		the beginning and end of the bar.
 		@remarks
-		Useful for Life Bar's, or anything similar.
+		Useful for Life Bars, or anything similar.
 		@note
 		ProgressBars must be created by the Window class.
 	*/
 	class _QuickGUIExport ProgressBar :
-		public Widget
+		public Image
 	{
+	public:
+		/**
+		* Allows setting the direction the progressbar fills.
+		* FILLS_NEGATIVE_TO_POSITIVE: 
+		*	For Vertical Layouts, bar moves bottom to top. For Horizontal, bar moves left to right.
+		* FILLS_POSITIVE_TO_NEGATIVE: 
+		*	For Vertical Layouts, bar moves top to bottom. For Horizontal, bar moves right to left.
+		*/
+		typedef enum FillDirection
+		{
+			FILLS_NEGATIVE_TO_POSITIVE	=  0,
+			FILLS_POSITIVE_TO_NEGATIVE
+		};
+		typedef enum Layout
+		{
+			LAYOUT_HORIZONTAL	=  0,
+			LAYOUT_VERTICAL
+		};
 	public:
 		/** Constructor
             @param
@@ -29,23 +47,20 @@ namespace QuickGUI
 			@param
 				sizeMode The GuiMetricsMode for the values given for the size. (absolute/relative/pixel)
 			@param
+				fillDirection The direction that the bar fills as progress increases
+			@param
 				material Ogre material defining the widget image.
 			@param
-				overlayContainer associates the internal OverlayElement with a specified zOrder.
+				group QuadContainer containing this widget.
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		ProgressBar(const Ogre::String& name, const Ogre::Vector4& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& material, Ogre::OverlayContainer* overlayContainer, Widget* ParentWidget);
-		virtual ~ProgressBar();
+		ProgressBar(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
 
-		/**
-		* Internal method that sets the pixel location and size of the widget.
-		*/
-		void _applyDimensions();
 		/**
 		* Add user defined event that will be called when amount of progress has changed.
 		*/
-		template<typename T> void addOnProgressChangedEventHandler(bool (T::*function)(const EventArgs&), T* obj)
+		template<typename T> void addOnProgressChangedEventHandler(void (T::*function)(const EventArgs&), T* obj)
 		{
 			mOnProgressChangedHandlers.push_back(new MemberFunctionPointer<T>(function,obj));
 		}
@@ -59,29 +74,54 @@ namespace QuickGUI
 		* Default Handler for handling progress changes.
 		* Note that this event is not passed to its parents, the event is specific to this widget.
 		*/
-		bool onProgressChanged(WidgetEventArgs& e);
-		void setMaterial(const Ogre::String& material);
+		void onProgressChanged(const WidgetEventArgs& e);
+		void onPositionChanged(const EventArgs& args);
+		void onSizeChanged(const EventArgs& args);
+		void setClippingRect(const Rect& r);
+		void setFillDirection(FillDirection d);
+		/**
+		* Set the initial pixel padding added so that the progressbar will begin to show progress
+		* immediately, instead of ignoring small progress levels. 
+		*/
+		void setInitialPixelOffset(unsigned int width);
+		void setLayout(Layout l);
 		/**
 		* Sets progress.  Value should be between 0.0 and 1.0
 		*/
 		void setProgress(Ogre::Real progress);
+		void setTexture(const Ogre::String& texture);
 		/**
 		* Shows the widget, including any child widgets.
 		*/
 		void show();
 
 	protected:
-	private:
-		Type mProgressBarType;
+		virtual ~ProgressBar();
 
-		Ogre::PanelOverlayElement* mBarOverlayElement;
+		void _getBarExtents();
+		void _modifyBarTexture(Ogre::Real progress);
+
+	private:
+		Quad* mBarPanel;
+		Layout mLayout;
 
 		Ogre::Real mProgress;
 
-		// Default material, displayed in its original state.
-		Ogre::String mMaterial;
+		Ogre::TexturePtr mBarTexture;
+		Ogre::String mBarTextureName;
+		Ogre::Image mBarImage;
+		int mBarMinWidth;
+		int mBarMaxWidth;
+		int mBarMinHeight;
+		int mBarMaxHeight;
 
 		std::vector<MemberFunctionSlot*> mOnProgressChangedHandlers;
+
+		// How many pixels to add to the initial edge
+		int mInitialPixelOffset;
+
+		// Stores how this bar should fill as progress increases
+		ProgressBar::FillDirection mFillDirection;
 	};
 }
 
