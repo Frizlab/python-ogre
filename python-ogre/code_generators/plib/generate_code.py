@@ -542,9 +542,7 @@ def generate_code():
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generaated directory..
     additional_files = []
-    paths = [os.path.join(environment.Config.PATH_plib,'src','sl'),
-            os.path.join(environment.Config.PATH_plib,'src','util'),
-            os.path.join(environment.Config.PATH_plib,'src','net')
+    paths = [environment.Config.PATH_plib
             ]
 
     for p in paths:

@@ -113,9 +113,9 @@ def filter_declarations( mb ):
     global_ns.namespace( 'Ogre' ).class_('SceneManager').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('Matrix4').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('Plugin').include(already_exposed=True)
-    print "\nCLASSES:::  Std"
-    for c in global_ns.namespace('std').classes():
-        print c.name, c
+#     print "\nCLASSES:::  Std"
+#     for c in global_ns.namespace('std').classes():
+#         print c.name, c
     global_ns.namespace("std").class_('list<Ogre::Plane, std::allocator<Ogre::Plane> >').exclude()
             
 #     print "\nCLASSES:::  Ode"

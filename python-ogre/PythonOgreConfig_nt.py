@@ -1,112 +1,92 @@
 import os
 
 SDK=True ## set to true if buiding from 1.4 release source...
-BASE_DIR = 'c:/development'
-root_dir = os.path.abspath(os.path.dirname(__file__) )## The root directory is where this module is located
 
+## The root directory is where this module is located
+module_dir = os.path.abspath(os.path.dirname(__file__) )
+BASE_DIR, ignore = os.path.split(module_dir)
 
-## Boost stuff 
 ## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
 PATH_Boost =        os.path.join(BASE_DIR, 'boost')
 ## Path to your boost_pythonxxxx lib file
 PATH_LIB_Boost =    os.path.join(BASE_DIR, 'boost/bin.v2/libs/python2.5/build/msvc-8.0/release/threading-multi')
-## PATH_LIB_Boost =    os.path.join(BASE_DIR, 'boost/bin.v2/libs/python2.4/build/msvc-7.1/release/threading-multi')
 ## and the name of the boost python library
-LIB_Boost =         r'boost_python-vc71-mt-1_35'
 LIB_Boost =         r'boost_python-vc80-mt-1_35'
+
 # We need to know where to find gccxml......
 gccxml_bin =        os.path.join(BASE_DIR, 'gccxml/bin/release/gccxml.exe')
 # and the Py++ directory as sometimes we need access to the code repository there
 pyplusplus_install_dir = os.path.join(BASE_DIR, 'pygccxml')
 
 ## Parent directories of the libraries
-PATH_Ogre =         os.path.join(BASE_DIR,'Ogrenew')
+PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
+PATH_Ogre =         os.path.join(BASE_DIR, 'ogrenew')
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
-PATH_CEGUI =        os.path.join(BASE_DIR, 'cegui-0.5.0')
-PATH_OIS =          os.path.join(BASE_DIR, 'ois')
+PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.5.0')
+PATH_OIS =          os.path.join(BASE_DIR, 'ois-1.0RC1')
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonsdk','sdk')
 PATH_FMOD =         os.path.join(BASE_DIR, 'fmod')
 PATH_ODE =          os.path.join(BASE_DIR, 'ode-0.8')
-PATH_OGREAL=        os.path.join(BASE_DIR, 'ogreal')
 PATH_OGG =          os.path.join(BASE_DIR, 'ogg')
 PATH_VORBIS=        os.path.join(BASE_DIR, 'vorbis')
 PATH_OPENAL=        os.path.join(BASE_DIR, 'openal')
 PATH_ALUT=          os.path.join(BASE_DIR, 'freealut')
 PATH_OgreOde=       os.path.join(BASE_DIR, 'OgreAddons','ogreode')
-PATH_raknet=       os.path.join(BASE_DIR, 'RakNet')
-PATH_OPCODE=        os.path.join(BASE_DIR, 'Opcode')
-PATH_quickgui=     os.path.join(root_dir, 'ThirdParty','quickgui')
-PATH_quickgui=     os.path.join(BASE_DIR, 'Quickgui')    ## note test for Quickgui SVN version
-PATH_betagui=     os.path.join(root_dir, 'ThirdParty','betagui')
-PATH_NxOgre=       os.path.join(BASE_DIR, 'nxogre/NxOgre')
-PATH_Bullet=       os.path.join(BASE_DIR, 'bullet-2.52') 
-PATH_PhysX=      "c:/program files/AGEIA Technologies/SDK/v2.7.2/SDKs"
-PATH_Theora=    os.path.join(PATH_OgreAddons,'videoplugin','TheoraVideo')
-PATH_Dshow=     os.path.join(root_dir, 'ThirdParty','dshow')
-PATH_ogrevideoffmpeg = os.path.join(root_dir, 'ThirdParty','ffmpeg')
-PATH_ffmpeg=     os.path.join(BASE_DIR, 'ffmpeg')
-PATH_ogredshow = os.path.join(root_dir, 'ThirdParty','dshow')
-PATH_plib = os.path.join(BASE_DIR, 'plib')
-PATH_navi = os.path.join(BASE_DIR, 'navi','Navi')
+PATH_OGREAL=        os.path.join(PATH_THIRDPARTY,,'ogreal')
+PATH_OPCODE=        os.path.join(PATH_THIRDPARTY,'opcode')
+PATH_quickgui=      os.path.join(PATH_THIRDPARTY,'quickgui')
+PATH_betagui=       os.path.join(PATH_THIRDPARTY,'betagui')
+PATH_ogredshow =    os.path.join(PATH_THIRDPARTY,'dshow')
+PATH_plib =         os.path.join(PATH_THIRDPARTY, 'plib')
+PATH_ogrevideoffmpeg = os.path.join(PATH_THIRDPARTY,'ffmpeg')
+PATH_NxOgre=        os.path.join(BASE_DIR, 'nxogre/NxOgre')
+PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.52') 
+PATH_PhysX=         "c:/program files/AGEIA Technologies/SDK/v2.7.2/SDKs"
+PATH_Theora=        os.path.join(PATH_OgreAddons,'videoplugin','TheoraVideo')
+PATH_ffmpeg=        os.path.join(BASE_DIR, 'ffmpeg')
+PATH_navi =         os.path.join(BASE_DIR, 'navi','Navi')
 
 
 #
 # it's time for the SDK version
 if SDK:
-    PATH_Ogre =         os.path.join(BASE_DIR, 'Ogrenew')
-    PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
     PATH_CEGUI =        os.path.join(BASE_DIR, 'Ogrenew')
     PATH_OIS =          os.path.join(BASE_DIR, 'Ogrenew')
-    PATH_ODE =          os.path.join(BASE_DIR, 'ode-0.8')
-    PATH_OgreOde=       os.path.join(BASE_DIR, 'OgreAddons','ogreode')
-
-
-
-## Overrides - this is needed as libs isn't defined in enirvonment for fmod..
-# # class fmod:
-# #     version= "4.06"
-# #     libs=[LIB_Boost, 'fmodexL_vc']
-# #     ##libs=[Config.LIB_Boost, 'libfmodex']  ##posix
-
+    
 ###
 ### these paths assume you've left all the directory structure as standard
 ### Override anything that is different
 ###        
-PATH_LIB_Ogre_CEGUIRenderer =    os.path.join( PATH_Ogre, 'Samples/Common/CEGUIRenderer/lib')
+PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'Samples/Common/CEGUIRenderer/lib')
 PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'lib' )
 PATH_LIB_Ogre_Dependencies =    os.path.join( PATH_Ogre, 'Dependencies/lib/Release')
-PATH_LIB_OgreRefApp =           os.path.join( PATH_Ogre, 'ReferenceApplication/ReferenceAppLayer/lib/Release')
-PATH_LIB_OgreNewt =             os.path.join(PATH_OgreAddons, r'ogrenewt/OgreNewt_Main/lib/Release') 
-PATH_LIB_Newton =               os.path.join(PATH_Newton ,'dll')  ##NOTE Posix platforms this lives in 'lib-mt'
-PATH_LIB_OIS =                  os.path.join(PATH_OIS, 'dll') ## NOTE Posix platforms this lives in'lib' not 'dll'
-PATH_LIB_CEGUI =                os.path.join ( PATH_CEGUI, 'lib' )
+PATH_LIB_OgreRefApp =           os.path.join( PATH_Ogre, 'lib')
+PATH_LIB_OgreNewt =             os.path.join( PATH_OgreAddons, 'ogrenewt/OgreNewt_Main/lib/Release') 
+PATH_LIB_Newton =               os.path.join( PATH_Newton ,'dll')  ##NOTE Posix platforms this lives in 'lib-mt'
+PATH_LIB_OIS =                  os.path.join( PATH_OIS, 'dll') ## NOTE Posix platforms this lives in'lib' not 'dll'
+PATH_LIB_CEGUI =                os.path.join( PATH_CEGUI, 'lib' )
 PATH_LIB_ODE =                  os.path.join( PATH_ODE, 'lib/releaselib')## probable releaselib for posix
+PATH_LIB_OPCODE =               os.path.join( PATH_OPCODE ) 
 PATH_LIB_OgreOde =              os.path.join( PATH_OgreOde, 'lib/Release') 
-PATH_LIB_OPCODE =              os.path.join( PATH_OPCODE, 'Release') 
 PATH_LIB_OgreOdePrefab =        os.path.join( PATH_OgreOde, 'prefab/lib/Release' )
 PATH_LIB_OgreOdeLoader =        os.path.join( PATH_OgreOde, 'loader/lib/Release' )
-PATH_LIB_FMOD =                 os.path.join(PATH_FMOD, 'api/lib') 
-PATH_LIB_OgreAL =               os.path.join(PATH_OGREAL, 'lib/Release' )
-PATH_LIB_betagui =            PATH_betagui
-PATH_LIB_quickgui =            os.path.join(PATH_quickgui, 'bin')
-PATH_LIB_raknet =               os.path.join(PATH_raknet, 'Lib' )
+PATH_LIB_OgreAL =               os.path.join( PATH_OGREAL)#, 'lib/Release' )
+PATH_LIB_betagui =              PATH_betagui
+PATH_LIB_quickgui =             PATH_quickgui
 PATH_LIB_NxOgre=                os.path.join(PATH_NxOgre, 'lib')
-PATH_LIB_PhysX =    os.path.join(PATH_PhysX,'lib/win32')
-PATH_LIB_Bullet =           os.path.join(PATH_Bullet, 'out/release8/libs' )
-PATH_LIB_Theora=        os.path.join(PATH_Theora, 'bin', 'Release')
-PATH_LIB_ogrevideoffmpeg = PATH_ogrevideoffmpeg
+PATH_LIB_PhysX =                os.path.join(PATH_PhysX,'lib/win32')
+PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'out/release8/libs' )
+PATH_LIB_Theora=                os.path.join(PATH_Theora, 'bin', 'Release')
+PATH_LIB_ogrevideoffmpeg =      PATH_ogrevideoffmpeg
 PATH_LIB_ffmpeg=                os.path.join(PATH_ffmpeg, 'lib')
-PATH_LIB_ogredshow = PATH_ogredshow
-PATH_LIB_plib = PATH_plib
-PATH_LIB_navi=                os.path.join(PATH_navi, 'lib')
+PATH_LIB_ogredshow =            PATH_ogredshow
+PATH_LIB_plib =                 PATH_plib
+PATH_LIB_navi=                  os.path.join(PATH_navi, 'lib')
 
 if SDK:
-    PATH_LIB_Ogre_CEGUIRenderer =    os.path.join( PATH_Ogre, 'lib')
-    PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'lib' )
-    PATH_LIB_Ogre_Dependencies =    os.path.join( PATH_Ogre, 'Dependencies/lib/Release')
-    PATH_LIB_OgreRefApp =           os.path.join( PATH_Ogre, 'lib')
-    PATH_LIB_OIS =                  os.path.join(PATH_Ogre, 'Dependencies/lib/Release') ## NOTE Posix platforms this lives in'lib' not 'dll'
-    PATH_LIB_CEGUI =                os.path.join ( PATH_Ogre, r'lib' )
+    PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'lib')
+    PATH_LIB_OIS =                  os.path.join( PATH_Ogre, 'Dependencies/lib/Release') ## NOTE Posix platforms this lives in'lib' not 'dll'
+    PATH_LIB_CEGUI =                os.path.join( PATH_Ogre, 'lib' )
 
 
 
@@ -115,14 +95,14 @@ PATH_INCLUDE_Ogre_Dependencies =  os.path.join( PATH_Ogre, 'Dependencies/include
 PATH_INCLUDE_OIS =          os.path.join(PATH_OIS,'includes')    ## Note the plural include's
 PATH_INCLUDE_OgreRefApp =   os.path.join(PATH_Ogre,'ReferenceApplication/ReferenceAppLayer/include') 
 PATH_INCLUDE_OgreNewt =     os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')
-PATH_INCLUDE_CEGUI =        os.path.join(PATH_CEGUI, r'include/CEGUI')
+PATH_INCLUDE_CEGUI =        os.path.join(PATH_CEGUI, 'include/CEGUI')
 PATH_INCLUDE_ODE =          os.path.join( PATH_ODE, 'include')
 PATH_INCLUDE_OPCODE =       PATH_OPCODE
-PATH_INCLUDE_ODESOURCE =          os.path.join( PATH_ODE, 'ode/src')
-PATH_INCLUDE_OgreAL =       os.path.join( PATH_OGREAL, 'include' )
+PATH_INCLUDE_ODESOURCE =    os.path.join( PATH_ODE, 'ode/src')
+PATH_INCLUDE_OgreAL =       os.path.join( PATH_OGREAL)#, 'include' )
 PATH_INCLUDE_OPENAL =       os.path.join( PATH_OPENAL, 'include')
-PATH_INCLUDE_OGG=           os.path.join( PATH_OGG, r'include' )
-PATH_INCLUDE_VORBIS=        os.path.join( PATH_VORBIS, r'include' )
+PATH_INCLUDE_OGG=           os.path.join( PATH_OGG, 'include' )
+PATH_INCLUDE_VORBIS=        os.path.join( PATH_VORBIS, 'include' )
 PATH_INCLUDE_ALUT=          os.path.join( PATH_ALUT, 'include' )
 PATH_INCLUDE_OgreOde =      os.path.join( PATH_OgreOde,'include')
 PATH_INCLUDE_OgreOdePrefab= os.path.join( PATH_OgreOde,'prefab/include')
@@ -130,18 +110,16 @@ PATH_INCLUDE_OgreOdeLoader= os.path.join( PATH_OgreOde,'loader/include')
 PATH_INCLUDE_FMOD =          os.path.join(PATH_FMOD, 'api/inc')
 PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'samples/Common/CEGUIRenderer/include')
 PATH_INCLUDE_quickgui =     os.path.join(PATH_quickgui,'QuickGUI','include')
-PATH_INCLUDE_raknet =        os.path.join(PATH_raknet, 'Source' )
 PATH_INCLUDE_NxOgre=        os.path.join(PATH_NxOgre, 'include')
 PATH_INCLUDE_Bullet=        os.path.join(PATH_Bullet, 'src')
-PATH_INCLUDE_freetype=   os.path.join(PATH_INCLUDE_quickgui,'FreeType2.3.5')    
-PATH_INCLUDE_betagui = PATH_betagui
-PATH_INCLUDE_Dshow= PATH_Dshow
-PATH_INCLUDE_Theora = os.path.join (PATH_Theora,'include')
+PATH_INCLUDE_freetype=      os.path.join(PATH_INCLUDE_quickgui,'FreeType2.3.5')    
+PATH_INCLUDE_betagui =      PATH_betagui
+PATH_INCLUDE_Theora =       os.path.join (PATH_Theora,'include')
 PATH_INCLUDE_ogrevideoffmpeg =  PATH_ogrevideoffmpeg
-PATH_INCLUDE_ffmpeg = os.path.join (PATH_ffmpeg,'include')
-PATH_INCLUDE_ogredshow =  PATH_ogredshow
-PATH_INCLUDE_plib = PATH_plib
-PATH_INCLUDE_navi = os.path.join (PATH_navi,'include')
+PATH_INCLUDE_ffmpeg =       os.path.join (PATH_ffmpeg,'include')
+PATH_INCLUDE_ogredshow =    PATH_ogredshow
+PATH_INCLUDE_plib =         PATH_plib
+PATH_INCLUDE_navi =         os.path.join (PATH_navi,'include')
 
 PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ,os.path.join(BASE_DIR, 'vorbis', 'include')
@@ -158,9 +136,7 @@ PATH_INCLUDE_PhysX= [ os.path.join(PATH_PhysX, 'Physics','include')
                     ]
 
 if SDK:
-    PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include') 
     PATH_INCLUDE_OIS =          os.path.join(PATH_Ogre,'Dependencies/include/OIS')    ## Note the plural include's
-#     PATH_INCLUDE_OgreRefApp =   os.path.join(PATH_Ogre,'samples/refapp/include') 
     PATH_INCLUDE_CEGUI =        os.path.join(PATH_Ogre, 'Dependencies/include/CEGUI')
 
     
