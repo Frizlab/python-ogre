@@ -80,6 +80,17 @@ def ManualExclude ( mb ):
             ,'::btCapsuleShape::localGetSupportingVertexWithoutMargin'
             ,'::btCapsuleShape::batchedUnitVectorGetSupportingVertexWithoutMargin'
             
+            ,'::btAxisSweep3Internal<unsigned short>::createProxy'
+            ,'::btAxisSweep3Internal<unsigned>::createProxy'
+            ,'::btBU_Simplex1to4::getName'
+            ,'::btBoxShape::getName'
+            ,'::btBvhTriangleMeshShape::getName'
+            ##,'::btConcaveShape::getName'
+            ,'::btDispatcher::getInternalManifoldPointer'
+            ,'::btAxisSweep3Internal<unsigned>::processAllOverlappingPairs'
+            ,'::btAxisSweep3Internal<unsigned short>::processAllOverlappingPairs'
+            
+            
             ]
     for e in excludes:
         print "excluding function", e
@@ -94,7 +105,13 @@ def ManualExclude ( mb ):
             ,'btAlignedAllocator<btPersistentManifold*, 16>'
             ,'btAlignedAllocator<btTypedConstraint*, 16>'
             ,'btAlignedAllocator<btRaycastVehicle*, 16>'
+            # these are being excluded becasue they keep including functions from their parent class
+            # instead of specifing 'bases'
             ,'btCapsuleShape'  ## fix later
+            ,'btConcaveShape'
+            ,'btConvexInternalShape'
+            ,'btConvexShape'
+            ,'btPolyhedralConvexShape'
             ]
     for e in excludes:
         print "excluding class", e
@@ -321,19 +338,18 @@ def Fix_Void_Ptr_Args ( mb ):
     """
     for fun in mb.member_functions():
         arg_position = 0
-        trans=[]
-        desc=""
         for arg in fun.arguments:
-            if declarations.type_traits.is_void_pointer(arg.type):
-                trans.append( ft.modify_type(arg_position,_ReturnUnsignedInt ) )
-                desc = desc + arg.name + "(pos:" + str(arg_position)+"), "
+            if arg.type.decl_string == 'void const *' or arg.type.decl_string == 'void *':
+                fun.add_transformation( ft.modify_type(arg_position,_ReturnUnsignedInt ), alias=fun.name )
+                fun.documentation = docit ("Modified Input Argument to work with CTypes",
+                                            "Argument "+arg.name+ "(pos:" + str(arg_position)\
+                                            +") takes a CTypes.adddressof(xx)", "...")
+                #print "Fixed Void Ptr", fun, arg_position
+                break
             arg_position +=1
-        if trans:
-            fun.add_transformation ( * trans )
-            fun.documentation = docit ("Modified Input Argument to work with CTypes",
-                                        "Argument "+ desc + " takes a CTypes.adddressof(xx)", "...")
+            
    ## lets go and look for stuff that might be a problem        
-    pointee_types=['unsigned int',' int ', ' float ', ' Real ', 'uchar', 'uint8',
+    pointee_types=['unsigned int',' int ', ' char', ' float ', ' Real ', 'uchar', 'uint8',
              'unsigned char']
                           
     function_names=[]
@@ -353,7 +369,7 @@ def Fix_Void_Ptr_Args ( mb ):
                         fun.documentation=docit("SUSPECT - MAYBE BROKEN", "....", "...")
                         break
             arg_position +=1
-
+        
 ## NEED To do the same for constructors
     for fun in mb.constructors():
         arg_position = 0
@@ -376,10 +392,11 @@ def Fix_Pointer_Returns ( mb ):
     
     Also - if documentation has been set then ignore the class/function as it means it's been tweaked else where
     """
-    pointee_types=['unsigned int','int','float', 'unsigned char']# , 'char' ,'int']
+    pointee_types=['unsigned int','int','float', 'char', 'unsigned char']# , 'char' ,'int']
     known_names=[]  # these are function names we know it's cool to exclude
     for fun in mb.member_functions():
-        if declarations.is_pointer (fun.return_type) and not fun.documentation:
+        
+        if declarations.is_pointer (fun.return_type): ## and not fun.documentation:
             for i in pointee_types:
                 if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
                     if not fun.name in known_names:
@@ -452,7 +469,7 @@ def generate_code():
                         os.path.join( environment.bullet.root_dir, "python_bullet.h" )
                         , environment.bullet.cache_file )
 
-    defined_symbols = ['BULLET_EXPORTS'] #, 'OPC_USE_CALLBACKS' ]
+    defined_symbols =  ['BULLET_EXPORTS'] #
     defined_symbols.append( 'VERSION_' + environment.bullet.version )  
     
     #
@@ -464,7 +481,7 @@ def generate_code():
                                           , include_paths=environment.bullet.include_dirs
                                           , define_symbols=defined_symbols
                                           , indexing_suite_version=2
-                                          , cflags=environment.ogre.cflags
+                                          , cflags=environment.bullet.cflags
                                            )
     # NOTE THE CHANGE HERE                                           
     mb.constructors().allow_implicit_conversion = False                                           
@@ -502,9 +519,9 @@ def generate_code():
 
     NoPropClasses = [""]
     main_ns = global_ns
-    for cls in main_ns.classes():
-        if cls.name not in NoPropClasses:
-            cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
+#     for cls in main_ns.classes():
+#         if cls.name not in NoPropClasses:
+#             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
             
     common_utils.add_constants( mb, { 'bullet_version' :  '"%s"' % environment.bullet.version.replace("\n", "\\\n") 
                                       , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
@@ -530,23 +547,7 @@ def generate_code():
 
     mb.split_module(environment.bullet.generated_dir, huge_classes, use_files_sum_repository=False)
 
-    ## now we need to ensure a series of headers and additional source files are
-    ## copied to the generaated directory..
-#     additional_files=[
-#             os.path.join( environment.shared_ptr_dir, 'py_shared_ptr.h'),
-#             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'python_ogre_masterlist.h' ),
-#             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'generators.h' ),
-#             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'custom_rvalue.cpp' ),
-#             os.path.join( environment.include_dir, 'tuples.hpp' )
-#             ]            
-#     for sourcefile in additional_files:
-#         p,filename = os.path.split(sourcefile)
-#         destfile = os.path.join(environment.ogre.generated_dir, filename ) 
-#     
-#         if not common_utils.samefile( sourcefile ,destfile ):
-#             shutil.copy( sourcefile, environment.ogre.generated_dir )
-#             print "Updated ", filename, "as it was missing or out of date"
-        
+ 
 if __name__ == '__main__':
     start_time = time.clock()
     generate_code()

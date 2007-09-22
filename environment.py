@@ -312,7 +312,7 @@ class opcode:
     include_dirs = [ Config.PATH_Boost 
                     ,  Config.PATH_INCLUDE_OPCODE
                     ]
-    CCFLAGS =  ' -DBAN_OPCODE_AUTOLINK, -DICE_NO_DLL '
+    CCFLAGS =  ' -DBAN_OPCODE_AUTOLINK -DICE_NO_DLL '
     ModuleName = 'Opcode'
     CheckIncludes = ['boost/python.hpp',  'Opcode.h'] 
     active=True 
@@ -331,6 +331,8 @@ class bullet:
     ModuleName = 'bullet'
     CheckIncludes = ['boost/python.hpp'] 
     active=True 
+    cflags = ""
+
 
 class newton:
     version= "1.0"
