@@ -474,7 +474,7 @@ def generate_code():
                         os.path.join( environment.opcode.root_dir, "python_opcode.h" )
                         , environment.opcode.cache_file )
 
-    defined_symbols = ['OPCODE_EXPORTS', 'ICE_NO_DLL'] #, 'OPC_USE_CALLBACKS' ]
+    defined_symbols = ['OPCODE_EXPORTS'] #, 'ICE_NO_DLL'] #, 'OPC_USE_CALLBACKS' ]
     defined_symbols.append( 'VERSION_' + environment.opcode.version )  
     
     #

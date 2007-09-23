@@ -41,7 +41,7 @@ def docit ( general, i, o ):
     docs = "Python-Ogre Modified Function Call\\n" + general +"\\n"
     docs = docs + "Input: " + i + "\\n"
     docs = docs + "Output: " + o + "\\n\\\n"
-    return docs
+    return '"'+docs+'"'
 
 ############################################################
 ##
@@ -528,7 +528,7 @@ def generate_code():
     #
     ##########################################################################################
     extractor = exdoc.doc_extractor("") # I'm excluding the UTFstring docs as lots about nothing 
-    mb.build_code_creator (module_name='_plib_' , doc_extractor= extractor )
+    mb.build_code_creator (module_name='_plib_' ) ## no docs as issues here, doc_extractor= extractor )
     
     for inc in environment.plib.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )

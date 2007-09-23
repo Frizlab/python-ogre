@@ -318,6 +318,8 @@ class opcode:
                 ]
     include_dirs = [ Config.PATH_Boost 
                     ,  Config.PATH_INCLUDE_OPCODE
+                    ,  os.path.join(Config.PATH_INCLUDE_OPCODE, 'Ice' )
+
                     ]
     CCFLAGS =  ' -DBAN_OPCODE_AUTOLINK -DICE_NO_DLL '
     ModuleName = 'Opcode'
