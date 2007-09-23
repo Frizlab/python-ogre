@@ -246,7 +246,7 @@ class ogrenewt:
     active=True
     version = "1.0"
     parent = "ogre/physics"
-    libs = ['newton', Config.LIB_Boost, 'OgreNewt_Main', 'OgreMain']
+    libs = ['Newton', Config.LIB_Boost, 'OgreNewt_Main', 'OgreMain']
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_Newton   # only one path for Newton
                     , Config.PATH_INCLUDE_Ogre 
