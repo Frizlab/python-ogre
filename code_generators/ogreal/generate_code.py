@@ -240,7 +240,7 @@ def generate_code():
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory.. Also cope with sub directories
     additional_dirs=[
-                    [os.path.join(environment.Config.root_dir, 'ThirdParty', 'ogreal'),''],
+                    [environment.Config.PATH_OGREAL,''],
 #                     [os.path.join(environment.Config.root_dir, 'ThirdParty', 'ogreal', 'extra'),''],
 #                     [os.path.join(environment.Config.root_dir, 'ThirdParty', 'ogreal', 'extra','ogg'),'ogg'],
 # #                     [os.path.join(environment.Config.root_dir, 'ThirdParty', 'ogreal', 'extra','vorbis'),'vorbis'],

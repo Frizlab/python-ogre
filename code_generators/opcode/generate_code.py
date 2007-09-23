@@ -92,6 +92,7 @@ def ManualExclude ( mb ):
                 ,"::IceMaths::Sphere::FastCompute"
                 ,"::IceMaths::Matrix4x4::Rot"
                 ,"::Opcode::MeshInterface::RemapClient"
+                ,"::Opcode::HybridModel::Build"
                 ]
     for e in excludes:
         print "excluding function", e
@@ -590,18 +591,21 @@ def generate_code():
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generaated directory..
-    additional_dirs=[environment.Config.PATH_OPCODE 
-    ]
-    
-    for d in additional_dirs:
+    additional_dirs=[
+                    [environment.Config.PATH_OPCODE ,''],
+                    [os.path.join(environment.Config.PATH_OPCODE, 'Ice'),'Ice'],
+                    [os.path.join(environment.Config.PATH_OPCODE, 'Ice'),''],  ## double copy to make the compile work..
+                    ]
+    for d,d1 in additional_dirs:
         for f in os.listdir(d):
             if f.endswith('cpp') or f.endswith('.h') or f.endswith('.c'):
                 sourcefile = os.path.join(d, f)
-                destfile = os.path.join(environment.opcode.generated_dir, f ) 
+                destfile = os.path.join(environment.opcode.generated_dir, d1,  f ) 
+                if not os.path.exists ( os.path.join(environment.opcode.generated_dir, d1 ) ):
+                    os.mkdir ( os.path.join(environment.opcode.generated_dir, d1 ) )
                 if not common_utils.samefile( sourcefile ,destfile ):
                     shutil.copy( sourcefile, environment.opcode.generated_dir )
                     print "Updated ", f, "as it was missing or out of date"
-
         
 if __name__ == '__main__':
     start_time = time.clock()
