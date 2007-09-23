@@ -205,7 +205,10 @@ class ois:
     active = True
     version= "1.0"
     parent = "ogre/io"
-    libs=['OIS_Static',Config.LIB_Boost]
+    if os.name=='nt':
+        libs=['OIS_Static',Config.LIB_Boost]
+    else:
+        libs=['OIS',Config.LIB_Boost]
     if os.name=="nt":
         libs.append ( "User32" ) # needed for static linking
     include_dirs = [ Config.PATH_Boost 
@@ -264,7 +267,11 @@ class cegui:
     active = True
     version = "0.5.0b" 
     parent = "ogre/gui"
-    libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain', 'OgreGUIRenderer' ]
+    if os.name=='nt':
+        libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain', 'OgreGUIRenderer' ]
+    else:
+        libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain', 'CEGUIOgreRenderer' ]
+
     include_dirs = [Config.PATH_Boost
                     ,Config.PATH_INCLUDE_CEGUI
                     ,Config.PATH_CEGUI
@@ -370,8 +377,12 @@ class ogreode:
 class quickgui:
     version="0.9.6"
     parent="ogre/gui"
-    ## note the defined for _QuickGUIExport forces non dll usage 
-    CCFLAGS = ' -DWIN32 -DNDEBUG -DWINDOWS -D_QuickGUIExport="" ' 
+    ## note the defined for _QuickGUIExport forces non dll usage
+    if os.name=='nt': 
+        ## note the defined for _QuickGUIExport forces non dll usage 
+        CCFLAGS = ' -DWIN32 -DNDEBUG -DWINDOWS -D_QuickGUIExport="" ' 
+    else:
+        CCFLAGS = ''
     cflags=""
     include_dirs = [ Config.PATH_Boost,
                     Config.PATH_INCLUDE_Ogre,
@@ -586,7 +597,7 @@ class ogredshow:
                     ]
     lib_dirs = [Config.PATH_LIB_Boost,
                 Config.PATH_LIB_Ogre_OgreMain,
-                Config.PATH_LIB_ogredshow
+                
                 ]
     CheckIncludes=[]
     libs=[  Config.LIB_Boost, 'OgreMain','Strmiids' , 'ole32']

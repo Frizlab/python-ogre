@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
  *	Contains a simple container class.
- *	\file		IceContainer.cpp
+ *	\file	.Ice/Container.cpp
  *	\author		Pierre Terdiman
  *	\date		February, 5, 2000
  */
@@ -24,7 +24,7 @@
 // Precompiled Header
 #include "Stdafx.h"
 
-using namespace IceCore;
+using namespace.Ice/Core;
 
 // Static members
 #ifdef CONTAINER_STATS

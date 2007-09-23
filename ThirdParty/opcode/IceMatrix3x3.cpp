@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
  *	Contains code for 3x3 matrices.
- *	\file		IceMatrix3x3.cpp
+ *	\file	.Ice/Matrix3x3.cpp
  *	\author		Pierre Terdiman
  *	\date		April, 4, 2000
  */
@@ -35,7 +35,7 @@
 // Precompiled Header
 #include "Stdafx.h"
 
-using namespace IceMaths;
+using namespace.Ice/Maths;
 
 // Cast operator
 Matrix3x3::operator Matrix4x4() const

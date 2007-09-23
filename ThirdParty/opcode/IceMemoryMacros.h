@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
  *	Contains all memory macros.
- *	\file		IceMemoryMacros.h
+ *	\file	.Ice/MemoryMacros.h
  *	\author		Pierre Terdiman
  *	\date		April, 4, 2000
  */
@@ -98,7 +98,7 @@
 	#define SAFE_DESTRUCT(x)	if (x) { (x)->SelfDestruct();	(x) = null; }	//!< Safe ICE-style release
 
 #ifdef __ICEERROR_H__
-	#define CHECKALLOC(x)		if(!x) return SetIceError("Out of memory.", EC_OUT_OF_MEMORY);	//!< Standard alloc checking. HANDLE WITH CARE.
+	#define CHECKALLOC(x)		if(!x) return Se.Ice/Error("Out of memory.", EC_OUT_OF_MEMORY);	//!< Standard alloc checking. HANDLE WITH CARE.
 #else
 	#define CHECKALLOC(x)		if(!x) return false;
 #endif

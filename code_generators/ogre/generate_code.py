@@ -771,6 +771,10 @@ def Fix_Posix ( mb ):
     c = mb.namespace( 'Ogre' ).class_( 'ShadowTextureConfig' )
     c.equality_comparable = False
 
+    ## handle a problem hashmap
+    mb.member_function('::Ogre::Mesh::getSubMeshNameMap').exclude()
+    stdex_ns = mb.global_ns.namespace("__gnu_cxx")
+    stdex_ns.class_('hash_map<std::string, unsigned short, __gnu_cxx::hash<std::string>, std::equal_to<std::string>, std::allocator<unsigned short> >').exclude
 
 
 def Fix_NT ( mb ):
@@ -1167,7 +1171,8 @@ def generate_code():
                                       
     ## need to create a welcome doc string for this...                                  
     common_utils.add_constants( mb, { '__doc__' :  '"Python-Ogre Wrapper Library"' } ) 
-    
+    stdex_ns = mb.global_ns.namespace("__gnu_cxx")
+    stdex_ns.class_('hash_map<std::string, unsigned short, __gnu_cxx::hash<std::string>, std::equal_to<std::string>, std::allocator<unsigned short> >').exclude
     
     ##########################################################################################
     #

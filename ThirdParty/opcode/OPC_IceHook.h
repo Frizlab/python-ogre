@@ -26,45 +26,45 @@
 	#define ICE_COMPILE_TIME_ASSERT(exp)	extern char ICE_Dummy[ (exp) ? 1 : -1 ]
 
 	#define	Log				{}
-	#define	SetIceError		false
+	#define	Se.Ice/Error		false
 	#define	EC_OUTOFMEMORY	"Out of memory"
 
-	#include ".\Ice\IcePreprocessor.h"
+	#include "..Ice/\IcePreprocessor.h"
 
 	#undef ICECORE_API
 	#define ICECORE_API	OPCODE_API
 
-	#include ".\Ice\IceTypes.h"
-	#include ".\Ice\IceFPU.h"
-	#include ".\Ice\IceMemoryMacros.h"
+	#include "..Ice/\IceTypes.h"
+	#include "..Ice/\IceFPU.h"
+	#include "..Ice/\IceMemoryMacros.h"
 
-	namespace IceCore
+	namespace.Ice/Core
 	{
-		#include ".\Ice\IceUtils.h"
-		#include ".\Ice\IceContainer.h"
-		#include ".\Ice\IcePairs.h"
-		#include ".\Ice\IceRevisitedRadix.h"
-		#include ".\Ice\IceRandom.h"
+		#include "..Ice/\IceUtils.h"
+		#include "..Ice/\IceContainer.h"
+		#include "..Ice/\IcePairs.h"
+		#include "..Ice/\IceRevisitedRadix.h"
+		#include "..Ice/\IceRandom.h"
 	}
-	using namespace IceCore;
+	using namespace.Ice/Core;
 
 	#define ICEMATHS_API	OPCODE_API
-	namespace IceMaths
+	namespace.Ice/Maths
 	{
-		#include ".\Ice\IceAxes.h"
-		#include ".\Ice\IcePoint.h"
-		#include ".\Ice\IceHPoint.h"
-		#include ".\Ice\IceMatrix3x3.h"
-		#include ".\Ice\IceMatrix4x4.h"
-		#include ".\Ice\IcePlane.h"
-		#include ".\Ice\IceRay.h"
-		#include ".\Ice\IceIndexedTriangle.h"
-		#include ".\Ice\IceTriangle.h"
-		#include ".\Ice\IceTriList.h"
-		#include ".\Ice\IceAABB.h"
-		#include ".\Ice\IceOBB.h"
-		#include ".\Ice\IceBoundingSphere.h"
-		#include ".\Ice\IceSegment.h"
-		#include ".\Ice\IceLSS.h"
+		#include "..Ice/\IceAxes.h"
+		#include "..Ice/\IcePoint.h"
+		#include "..Ice/\IceHPoint.h"
+		#include "..Ice/\IceMatrix3x3.h"
+		#include "..Ice/\IceMatrix4x4.h"
+		#include "..Ice/\IcePlane.h"
+		#include "..Ice/\IceRay.h"
+		#include "..Ice/\IceIndexedTriangle.h"
+		#include "..Ice/\IceTriangle.h"
+		#include "..Ice/\IceTriList.h"
+		#include "..Ice/\IceAABB.h"
+		#include "..Ice/\IceOBB.h"
+		#include "..Ice/\IceBoundingSphere.h"
+		#include "..Ice/\IceSegment.h"
+		#include "..Ice/\IceLSS.h"
 	}
-	using namespace IceMaths;
+	using namespace.Ice/Maths;

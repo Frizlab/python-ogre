@@ -29,7 +29,7 @@ pyplusplus_install_dir = os.path.join(BASE_DIR,'pygccxml')
 # # ## Parent directories of the libraries
 PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
 PATH_Ogre =         os.path.join(BASE_DIR,'ogrenew')
-PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
+PATH_OgreAddons =   os.path.join(BASE_DIR, 'ogreaddons')
 PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.5.0')
 PATH_OIS =          os.path.join(BASE_DIR, 'ois-1.0RC1')
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonSDK','sdk')
@@ -103,10 +103,12 @@ PATH_INCLUDE_OgreOdePrefab= os.path.join( PATH_OgreOde,'prefab/include')
 PATH_INCLUDE_OgreOdeLoader= os.path.join( PATH_OgreOde,'loader/include')
 PATH_INCLUDE_NxOgre=        os.path.join(PATH_NxOgre, 'include')
 PATH_INCLUDE_betagui =       PATH_betagui
-PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'Samples/Common/CEGUIRenderer/include')PATH_INCLUDE_OPCODE = 		os.path.join( LOCAL_INCLUDE )
+PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'Samples/Common/CEGUIRenderer/include')PATH_INCLUDE_OPCODE = 		os.path.join( PATH_OPCODE )
 PATH_INCLUDE_Bullet = 		os.path.join( LOCAL_INCLUDE )
 PATH_INCLUDE_navi =         os.path.join (PATH_navi,'include')
 PATH_INCLUDE_plib =         PATH_plib
+PATH_INCLUDE_ogredshow =    PATH_ogredshow
+
 PATH_INCLUDE_Theora =       os.path.join (PATH_Theora,'include')
 PATH_INCLUDE_ogrevideoffmpeg =  PATH_ogrevideoffmpeg
 PATH_INCLUDE_ffmpeg =       os.path.join (PATH_ffmpeg,'include')
