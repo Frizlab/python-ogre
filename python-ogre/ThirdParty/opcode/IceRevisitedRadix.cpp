@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
  *	Contains source code from the article "Radix Sort Revisited".
- *	\file		IceRevisitedRadix.cpp
+ *	\file	.Ice/RevisitedRadix.cpp
  *	\author		Pierre Terdiman
  *	\date		April, 4, 2000
  */
@@ -51,7 +51,7 @@ To do:
 // Precompiled Header
 #include "Stdafx.h"
 
-using namespace IceCore;
+using namespace.Ice/Core;
 
 #define INVALIDATE_RANKS	mCurrentSize|=0x80000000
 #define VALIDATE_RANKS		mCurrentSize&=0x7fffffff

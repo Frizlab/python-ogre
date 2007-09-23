@@ -210,7 +210,7 @@ udword MeshInterface::CheckTopology()	const
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool MeshInterface::SetCallback(RequestCallback callback, void* user_data)
 {
-	if(!callback)	return SetIceError("MeshInterface::SetCallback: callback pointer is null");
+	if(!callback)	return Se.Ice/Error("MeshInterface::SetCallback: callback pointer is null");
 
 	mObjCallback	= callback;
 	mUserData		= user_data;
@@ -227,7 +227,7 @@ bool MeshInterface::SetCallback(RequestCallback callback, void* user_data)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool MeshInterface::SetPointers(const IndexedTriangle* tris, const Point* verts)
 {
-	if(!tris || !verts)	return SetIceError("MeshInterface::SetPointers: pointer is null", null);
+	if(!tris || !verts)	return Se.Ice/Error("MeshInterface::SetPointers: pointer is null", null);
 
 	mTris	= tris;
 	mVerts	= verts;
@@ -244,8 +244,8 @@ bool MeshInterface::SetPointers(const IndexedTriangle* tris, const Point* verts)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 bool MeshInterface::SetStrides(udword tri_stride, udword vertex_stride)
 {
-	if(tri_stride<sizeof(IndexedTriangle))	return SetIceError("MeshInterface::SetStrides: invalid triangle stride", null);
-	if(vertex_stride<sizeof(Point))			return SetIceError("MeshInterface::SetStrides: invalid vertex stride", null);
+	if(tri_stride<sizeof(IndexedTriangle))	return Se.Ice/Error("MeshInterface::SetStrides: invalid triangle stride", null);
+	if(vertex_stride<sizeof(Point))			return Se.Ice/Error("MeshInterface::SetStrides: invalid vertex stride", null);
 
 	mTriStride		= tri_stride;
 	mVertexStride	= vertex_stride;

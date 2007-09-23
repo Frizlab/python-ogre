@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
  *	Contains code for random generators.
- *	\file		IceRandom.cpp
+ *	\file	.Ice/Random.cpp
  *	\author		Pierre Terdiman
  *	\date		August, 9, 2001
  */
@@ -11,14 +11,14 @@
 // Precompiled Header
 #include "Stdafx.h"
 
-using namespace IceCore;
+using namespace.Ice/Core;
 
-void IceCore::	SRand(udword seed)
+void.Ice/Core::	SRand(udword seed)
 {
 	srand(seed);
 }
 
-udword IceCore::Rand()
+udword.Ice/Core::Rand()
 {
 	return rand();
 }
@@ -26,7 +26,7 @@ udword IceCore::Rand()
 
 static BasicRandom gRandomGenerator(42);
 
-udword IceCore::GetRandomIndex(udword max_index)
+udword.Ice/Core::GetRandomIndex(udword max_index)
 {
 	// We don't use rand() since it's limited to RAND_MAX
 	udword Index = gRandomGenerator.Randomize();

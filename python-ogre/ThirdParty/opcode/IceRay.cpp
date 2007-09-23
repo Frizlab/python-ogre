@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
  *	Contains code for rays.
- *	\file		IceRay.cpp
+ *	\file	.Ice/Ray.cpp
  *	\author		Pierre Terdiman
  *	\date		April, 4, 2000
  */
@@ -61,7 +61,7 @@
 // Precompiled Header
 #include "Stdafx.h"
 
-using namespace IceMaths;
+using namespace.Ice/Maths;
 
 float Ray::SquareDistance(const Point& point, float* t)	const
 {

@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
  *	Contains code for segments.
- *	\file		IceSegment.cpp
+ *	\file	.Ice/Segment.cpp
  *	\author		Pierre Terdiman
  *	\date		April, 4, 2000
  */
@@ -24,7 +24,7 @@
 // Precompiled Header
 #include "Stdafx.h"
 
-using namespace IceMaths;
+using namespace.Ice/Maths;
 
 float Segment::SquareDistance(const Point& point, float* t)	const
 {

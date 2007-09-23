@@ -263,7 +263,7 @@
 				>
 			</File>
 			<File
-				RelativePath="OPC_IceHook.h"
+				RelativePath="OPC.Ice/Hook.h"
 				>
 			</File>
 			<File
@@ -826,10 +826,10 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="Ice"
+			Name=.Ice/"
 			>
 			<File
-				RelativePath="Ice\IceAABB.cpp"
+				RelativePath=.Ice/\IceAABB.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -849,47 +849,19 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Ice\IceAABB.h"
+				RelativePath=.Ice/\IceAABB.h"
 				>
 			</File>
 			<File
-				RelativePath="Ice\IceAxes.h"
+				RelativePath=.Ice/\IceAxes.h"
 				>
 			</File>
 			<File
-				RelativePath="Ice\IceBoundingSphere.h"
+				RelativePath=.Ice/\IceBoundingSphere.h"
 				>
 			</File>
 			<File
-				RelativePath="Ice\IceContainer.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="Ice\IceContainer.h"
-				>
-			</File>
-			<File
-				RelativePath="Ice\IceFPU.h"
-				>
-			</File>
-			<File
-				RelativePath="Ice\IceHPoint.cpp"
+				RelativePath=.Ice/\IceContainer.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -909,39 +881,15 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Ice\IceHPoint.h"
+				RelativePath=.Ice/\IceContainer.h"
 				>
 			</File>
 			<File
-				RelativePath="Ice\IceIndexedTriangle.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="Ice\IceIndexedTriangle.h"
+				RelativePath=.Ice/\IceFPU.h"
 				>
 			</File>
 			<File
-				RelativePath="Ice\IceLSS.h"
-				>
-			</File>
-			<File
-				RelativePath="Ice\IceMatrix3x3.cpp"
+				RelativePath=.Ice/\IceHPoint.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -961,39 +909,11 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Ice\IceMatrix3x3.h"
+				RelativePath=.Ice/\IceHPoint.h"
 				>
 			</File>
 			<File
-				RelativePath="Ice\IceMatrix4x4.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="Ice\IceMatrix4x4.h"
-				>
-			</File>
-			<File
-				RelativePath="Ice\IceMemoryMacros.h"
-				>
-			</File>
-			<File
-				RelativePath="Ice\IceOBB.cpp"
+				RelativePath=.Ice/\IceIndexedTriangle.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1013,39 +933,15 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Ice\IceOBB.h"
+				RelativePath=.Ice/\IceIndexedTriangle.h"
 				>
 			</File>
 			<File
-				RelativePath="Ice\IcePairs.h"
+				RelativePath=.Ice/\IceLSS.h"
 				>
 			</File>
 			<File
-				RelativePath="Ice\IcePlane.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="Ice\IcePlane.h"
-				>
-			</File>
-			<File
-				RelativePath="Ice\IcePoint.cpp"
+				RelativePath=.Ice/\IceMatrix3x3.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1065,15 +961,11 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Ice\IcePoint.h"
+				RelativePath=.Ice/\IceMatrix3x3.h"
 				>
 			</File>
 			<File
-				RelativePath="Ice\IcePreprocessor.h"
-				>
-			</File>
-			<File
-				RelativePath="Ice\IceRandom.cpp"
+				RelativePath=.Ice/\IceMatrix4x4.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1093,35 +985,15 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Ice\IceRandom.h"
+				RelativePath=.Ice/\IceMatrix4x4.h"
 				>
 			</File>
 			<File
-				RelativePath="Ice\IceRay.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="Ice\IceRay.h"
+				RelativePath=.Ice/\IceMemoryMacros.h"
 				>
 			</File>
 			<File
-				RelativePath="Ice\IceRevisitedRadix.cpp"
+				RelativePath=.Ice/\IceOBB.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1141,35 +1013,15 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Ice\IceRevisitedRadix.h"
+				RelativePath=.Ice/\IceOBB.h"
 				>
 			</File>
 			<File
-				RelativePath="Ice\IceSegment.cpp"
-				>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						PreprocessorDefinitions=""
-					/>
-				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="Ice\IceSegment.h"
+				RelativePath=.Ice/\IcePairs.h"
 				>
 			</File>
 			<File
-				RelativePath="Ice\IceTriangle.cpp"
+				RelativePath=.Ice/\IcePlane.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1189,19 +1041,11 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Ice\IceTriangle.h"
+				RelativePath=.Ice/\IcePlane.h"
 				>
 			</File>
 			<File
-				RelativePath="Ice\IceTrilist.h"
-				>
-			</File>
-			<File
-				RelativePath="Ice\IceTypes.h"
-				>
-			</File>
-			<File
-				RelativePath="Ice\IceUtils.cpp"
+				RelativePath=.Ice/\IcePoint.cpp"
 				>
 				<FileConfiguration
 					Name="Release|Win32"
@@ -1221,7 +1065,163 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="Ice\IceUtils.h"
+				RelativePath=.Ice/\IcePoint.h"
+				>
+			</File>
+			<File
+				RelativePath=.Ice/\IcePreprocessor.h"
+				>
+			</File>
+			<File
+				RelativePath=.Ice/\IceRandom.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=.Ice/\IceRandom.h"
+				>
+			</File>
+			<File
+				RelativePath=.Ice/\IceRay.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=.Ice/\IceRay.h"
+				>
+			</File>
+			<File
+				RelativePath=.Ice/\IceRevisitedRadix.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=.Ice/\IceRevisitedRadix.h"
+				>
+			</File>
+			<File
+				RelativePath=.Ice/\IceSegment.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=.Ice/\IceSegment.h"
+				>
+			</File>
+			<File
+				RelativePath=.Ice/\IceTriangle.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=.Ice/\IceTriangle.h"
+				>
+			</File>
+			<File
+				RelativePath=.Ice/\IceTrilist.h"
+				>
+			</File>
+			<File
+				RelativePath=.Ice/\IceTypes.h"
+				>
+			</File>
+			<File
+				RelativePath=.Ice/\IceUtils.cpp"
+				>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						PreprocessorDefinitions=""
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=.Ice/\IceUtils.h"
 				>
 			</File>
 		</Filter>

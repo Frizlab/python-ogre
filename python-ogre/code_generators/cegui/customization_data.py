@@ -2,7 +2,7 @@
 def header_files( Version ):
     return [   "CEGUI.h"
             , "CEGUIXMLParser.h"
-            , "OgreCEGUIRenderer.h"
+            , "Ogre.h"
             , "CEGUIXMLHandler.h"
             , "CEGUIXMLAttributes.h"
             , "CEGUIXMLSerializer.h"
