@@ -7,9 +7,9 @@ int netSocket_send ( netSocket & me, boost::python::list listin, int flags = 0 )
 {
     int index, result;
     int size = len(listin);
-    byte * buffer = new byte [size];
+    unsigned char * buffer = new unsigned char [size];
     for (index=0;index<size;index++ ) {
-        buffer[index] = (byte) boost::python::extract<int> (listin[index]);
+        buffer[index] = (unsigned char) boost::python::extract<int> (listin[index]);
     }
     result = me.send((const void *) buffer, size, flags );
     delete buffer;
@@ -20,9 +20,9 @@ int netSocket_send_str ( netSocket & me, boost::python::str listin, int flags = 
 {
     int index, result;
     int size = len(listin);
-    byte * buffer = new byte[size];
+    unsigned char * buffer = new unsigned char[size];
     for (index=0;index<size;index++ ) {
-        buffer[index] = (byte) boost::python::extract<char> (listin[index]);
+        buffer[index] = (unsigned char) boost::python::extract<char> (listin[index]);
     }
     result = me.send((const void *) buffer, size, flags );
     delete buffer;
@@ -32,7 +32,7 @@ int netSocket_sendto ( netSocket & me, boost::python::list listin, int flags, co
 {
     int index, result;
     int size = len(listin);
-    byte * buffer = new byte[size];
+    unsigned char * buffer = new unsigned char[size];
     for (index=0;index<size;index++ ) {
         buffer[index] = boost::python::extract<int> (listin[index]);
     }
@@ -44,7 +44,7 @@ int netSocket_sendto_str ( netSocket & me, boost::python::str listin, int flags,
 {
     int index, result;
     int size = len(listin);
-    byte * buffer = new byte[size];
+    unsigned char * buffer = new unsigned char[size];
     for (index=0;index<size;index++ ) {
         buffer[index] = boost::python::extract<char> (listin[index]);
     }
@@ -56,7 +56,7 @@ int netSocket_sendto_str ( netSocket & me, boost::python::str listin, int flags,
  
 boost::python::list netSocket_recv	( netSocket & me, int MaxSize=20486, int flags = 0 )
 {
-    byte * buffer = new byte [MaxSize];
+    unsigned char * buffer = new unsigned char [MaxSize];
     int length,x;
     boost::python::list listout;
     length = me.recv ( (void *) buffer, MaxSize, flags);
@@ -82,7 +82,7 @@ boost::python::str netSocket_recv_str	( netSocket & me, int MaxSize=2048, int fl
 
 boost::python::list netSocket_recvfrom ( netSocket & me, int MaxSize, int flags, netAddress* from ) 
 {
-    byte * buffer = new byte [MaxSize];
+    unsigned char * buffer = new unsigned char [MaxSize];
     int length,x;
     boost::python::list listout;
     length = me.recvfrom ( (void *) buffer, MaxSize, flags, from);
@@ -162,9 +162,9 @@ int netChannel_send ( netChannel & me, boost::python::list listin, int flags = 0
 {
     int index, result;
     int size = len(listin);
-    byte * buffer = new byte [size];
+    unsigned char * buffer = new unsigned char [size];
     for (index=0;index<size;index++ ) {
-        buffer[index] = (byte) boost::python::extract<int> (listin[index]);
+        buffer[index] = (unsigned char) boost::python::extract<int> (listin[index]);
     }
     result = me.send((const void *) buffer, size, flags );
     delete buffer;
@@ -175,9 +175,9 @@ int netChannel_send_str ( netChannel & me, boost::python::str listin, int flags 
 {
     int index, result;
     int size = len(listin);
-    byte * buffer = new byte[size];
+    unsigned char * buffer = new unsigned char[size];
     for (index=0;index<size;index++ ) {
-        buffer[index] = (byte) boost::python::extract<char> (listin[index]);
+        buffer[index] = (unsigned char) boost::python::extract<char> (listin[index]);
     }
     result = me.send((const void *) buffer, size, flags );
     delete buffer;
@@ -185,7 +185,7 @@ int netChannel_send_str ( netChannel & me, boost::python::str listin, int flags 
 }  
 boost::python::list netChannel_recv	( netChannel & me, int MaxSize=2048, int flags = 0 )
 {
-    byte * buffer = new byte [MaxSize];
+    unsigned char * buffer = new unsigned char [MaxSize];
     int length,x;
     boost::python::list listout;
     length = me.recv ( (void *) buffer, MaxSize, flags);
