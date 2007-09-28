@@ -106,7 +106,7 @@ if not _ConfigSet:
 class Default:
     version = ""
     pythonModule = False
-    moduleName = ""
+    ModuleName = ""
     myHome = ""
     myLibraryPaths = [ ]
     myLibraries = [ ]
@@ -126,7 +126,7 @@ class Default:
 class boost:
     version = "3.4"
     pythonModule = False
-    moduleName = ""
+    ModuleName = ""
     myHome = 'boost'
     myLibraryPaths = [ 'boost/bin.v2/libs/python2.5/build/msvc-8.0/release/threading-multi' ]
     myLibraries = [ 'boost_python-vc80-mt-1_35']
@@ -149,7 +149,7 @@ class ogre:
     pythonModule = True
     version = "1.4"
     myName='ogre'
-    moduleName='OGRE'
+    ModuleName='OGRE'
     cflags = ""
     moduleParentLocation = "renderer"
     parent = "ogre/renderer"
@@ -227,7 +227,10 @@ class ogrerefapp:
     active = True
     version = "1.4"
     parent = "ogre/physics"
-    libs=[Config.LIB_Boost, 'OgreMain', 'ode', 'ReferenceAppLayer']
+    if os.name=="nt":
+        libs=[Config.LIB_Boost, 'OgreMain', 'ode', 'ReferenceAppLayer']
+    else:
+        libs=[Config.LIB_Boost, 'OgreMain', 'ode', 'ReferenceAppLayer']
     lib_dirs = [ Config.PATH_LIB_Boost
                 , Config.PATH_LIB_Ogre_OgreMain
                 , Config.PATH_LIB_ODE
