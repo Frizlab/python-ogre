@@ -28,7 +28,10 @@ namespace QuickGUI
 		mDragXOnly(false),
 		mDragYOnly(false),
 		mShowWithParent(true),
-		mHideWithParent(true)
+		mHideWithParent(true),
+		mResizeOverTime(false),
+		mRepositionOverTime(false),
+		mInheritClippingRect(true)
 	{
 		mQuad = new Quad(instanceName + ".Quad",gm);
 		mWidgetToDrag = this;
@@ -53,8 +56,9 @@ namespace QuickGUI
 			mOffset = mParentWidget->getOffset() + 1;
 			// add to parents child widget list
 			mParentWidget->_addToChildList(this);
-			// inheritted property
+			// inheritted properties
 			mGainFocusOnClick = mParentWidget->getGainFocusOnClick();
+			mClippingRect = mParentWidget->getClippingRect();
 		}
 
 		mQuad->setOffset(mOffset);
@@ -245,12 +249,12 @@ namespace QuickGUI
 		if((mWidgetType == Widget::TYPE_SHEET)) 
 			return;
 
+		setTexture(mDisabledTextureName,false);
+
 		WidgetEventArgs args(this);
 		fireEvent(EVENT_DISABLED,args);
 
 		mEnabled = false;
-
-		setTexture(mDisabledTextureName,false);
 	}
 
 	void Widget::drag(const Ogre::Real& xVal, const Ogre::Real& yVal,GuiMetricsMode mode)
@@ -341,6 +345,11 @@ namespace QuickGUI
 			return NULL;
 	}
 
+	Rect Widget::getClippingRect()
+	{
+		return mClippingRect;
+	}
+
 	Ogre::String Widget::getDefaultSkin()
 	{
 		if(mParentSheet == NULL) return "qgui";
@@ -374,6 +383,11 @@ namespace QuickGUI
 	bool Widget::getHideWithParent()
 	{
 		return mHideWithParent;
+	}
+
+	bool Widget::getInheritClippingRect()
+	{
+		return mInheritClippingRect;
 	}
 
 	Ogre::String Widget::getInstanceName()
@@ -518,7 +532,7 @@ namespace QuickGUI
 
 	Widget* Widget::getTargetWidget(const Point& p)
 	{
-		if( !mVisible || !mEnabled || (mWidgetType == TYPE_SCROLL_PANE) ) 
+		if( !mVisible || !mEnabled || ((mQuadContainer == NULL) && (mWidgetType != TYPE_SHEET)) ) 
 			return NULL;
 
 		// iterate through child widgets..
@@ -734,7 +748,7 @@ namespace QuickGUI
 
 	bool Widget::fireEvent(Event e, const EventArgs& args)
 	{
-		if(!mEnabled || mUserEventHandlers[e].empty() ) 
+		if(!mEnabled || mUserEventHandlers[e].empty()) 
 			return false;
 
 		std::vector<MemberFunctionSlot*>::iterator it;
@@ -792,6 +806,32 @@ namespace QuickGUI
 		mChildWidgets.clear();
 	}
 
+	void Widget::resizeOverTime(Ogre::Real seconds, Size finalSize, GuiMetricsMode mode)
+	{
+		if(mParentWidget == NULL)
+			return;
+
+		mResizeOverTime = true;
+		mResizeTime = seconds;
+		mResizeTimer = 0;
+		mInitialAbsSize = Size(mAbsoluteDimensions.width,mAbsoluteDimensions.height);
+
+		switch(mode)
+		{
+		case QGUI_GMM_RELATIVE:
+			mFinalAbsSize.width = finalSize.width * mParentWidget->getWidth(QGUI_GMM_ABSOLUTE);
+			mFinalAbsSize.height = finalSize.height * mParentWidget->getHeight(QGUI_GMM_ABSOLUTE);
+			break;
+		case QGUI_GMM_ABSOLUTE:
+			mFinalAbsSize = finalSize;
+			break;
+		case QGUI_GMM_PIXELS:
+			mFinalAbsSize.width = finalSize.width / static_cast<Ogre::Real>(mGUIManager->getViewportWidth());
+			mFinalAbsSize.height = finalSize.height / static_cast<Ogre::Real>(mGUIManager->getViewportHeight());
+			break;
+		}
+	}
+
 	void Widget::setBaseTexture(const Ogre::String& textureName)
 	{
 		// separate extension from name, if exists.
@@ -806,7 +846,10 @@ namespace QuickGUI
 
 		std::vector<Widget*>::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
-			(*it)->setClippingRect(r);
+		{
+			if((*it)->getInheritClippingRect())
+				(*it)->setClippingRect(r);
+		}
 	}
 
 	void Widget::timeElapsed(Ogre::Real time) 
@@ -818,6 +861,18 @@ namespace QuickGUI
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 		{
 			(*it)->timeElapsed(time);
+		}
+
+		if(mResizeOverTime)
+		{
+			Ogre::Real totalWidthChange = mFinalAbsSize.width - mInitialAbsSize.width;
+			setWidth(mInitialAbsSize.width + (totalWidthChange * (mResizeTimer / mResizeTime)) ,QGUI_GMM_ABSOLUTE);
+			Ogre::Real totalHeightChange = mFinalAbsSize.height - mInitialAbsSize.height;
+			setHeight(mInitialAbsSize.height + (totalHeightChange * (mResizeTimer / mResizeTime)) ,QGUI_GMM_ABSOLUTE);
+
+			mResizeTimer += time;
+			if(mResizeTimer >= mResizeTime)
+				mResizeOverTime = false;
 		}
 	}
 
@@ -882,6 +937,11 @@ namespace QuickGUI
 	void Widget::setHideWithParent(bool hide)
 	{
 		mHideWithParent = hide;
+	}
+
+	void Widget::setInheritClippingRect(bool inherit)
+	{
+		mInheritClippingRect = inherit;
 	}
 
 	void Widget::setMovingEnabled(bool enable)

@@ -1,8 +1,8 @@
 rem del /Q cache\*
 call vcvars32
-rem cd ogre
-rem python generate_code.py >1
-rem cd ..
+cd ogre
+python generate_code.py >1
+cd ..
 cd ogreode
 python generate_code.py >1
 cd ..
@@ -55,5 +55,5 @@ cd plib
 python generate_code.py >1
 cd ..
 cd ..
-scons -i
+#scons -i
 

@@ -34,22 +34,27 @@ namespace QuickGUI
 		mSlider = new Button(mInstanceName+".Slider",TYPE_BUTTON,Rect(0,0,1,1),QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,mSliderTextureName,mQuadContainer,this,mGUIManager);
 		mSlider->enableDragging(true);
 		mSlider->constrainDragging(false,true);
+		mSlider->getQuad()->setLayer(mQuad->getLayer());
 		mSlider->addEventHandler(EVENT_DRAGGED,&VerticalScrollBar::onSliderDragged,this);
 		
 		Ogre::Real scrollBarWidth = mPixelDimensions.width;
 		mScrollUp1 = new Button(mInstanceName+".Up1",TYPE_BUTTON,Rect(0,0,scrollBarWidth,scrollBarWidth),QGUI_GMM_PIXELS,QGUI_GMM_PIXELS,mScrollUpTextureName,mQuadContainer,this,mGUIManager);
+		mScrollUp1->getQuad()->setLayer(mQuad->getLayer());
 		mScrollUp1->hide();
 		mScrollUp1->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&VerticalScrollBar::onScrollUpDown,this);
 
 		mScrollUp2 = new Button(mInstanceName+".Up2",TYPE_BUTTON,Rect(0,0,scrollBarWidth,scrollBarWidth),QGUI_GMM_PIXELS,QGUI_GMM_PIXELS,mScrollUpTextureName,mQuadContainer,this,mGUIManager);
+		mScrollUp2->getQuad()->setLayer(mQuad->getLayer());
 		mScrollUp2->hide();
 		mScrollUp2->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&VerticalScrollBar::onScrollUpDown,this);
 
 		mScrollDown1 = new Button(mInstanceName+".Down1",TYPE_BUTTON,Rect(0,0,scrollBarWidth,scrollBarWidth),QGUI_GMM_PIXELS,QGUI_GMM_PIXELS,mScrollDownTextureName,mQuadContainer,this,mGUIManager);
+		mScrollDown1->getQuad()->setLayer(mQuad->getLayer());
 		mScrollDown1->hide();
 		mScrollDown1->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&VerticalScrollBar::onScrollDownDown,this);
 
 		mScrollDown2 = new Button(mInstanceName+".Down2",TYPE_BUTTON,Rect(0,0,scrollBarWidth,scrollBarWidth),QGUI_GMM_PIXELS,QGUI_GMM_PIXELS,mScrollDownTextureName,mQuadContainer,this,mGUIManager);
+		mScrollDown2->getQuad()->setLayer(mQuad->getLayer());
 		mScrollDown2->hide();
 		mScrollDown2->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&VerticalScrollBar::onScrollDownDown,this);
 		
@@ -103,6 +108,7 @@ namespace QuickGUI
 			value = (mMaxSliderPosition - mSlider->getHeight());
 
 		mSlider->setYPosition(mMinSliderPosition + value);
+		_constrainSlider();
 	}
 
 	void VerticalScrollBar::_showButtons()
@@ -193,7 +199,12 @@ namespace QuickGUI
 
 	Ogre::Real VerticalScrollBar::getValue()
 	{
-		return ((mSlider->getYPosition() - mMinSliderPosition) / (mMaxSliderPosition - mMinSliderPosition));
+		Ogre::Real retVal = ((mSlider->getYPosition() - mMinSliderPosition) / (mMaxSliderPosition - mMinSliderPosition));
+		
+		if(retVal < 0)
+			retVal = 0;
+
+		return retVal;
 	}
 
 	void VerticalScrollBar::onMouseDownOnTrack(const EventArgs& args)

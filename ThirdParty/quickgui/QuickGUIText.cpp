@@ -17,10 +17,10 @@ namespace QuickGUI
 		mVisible(true),
 		mSelectStart(-1),
 		mSelectEnd(-1),
-		mLineSpacing(1.0),
-		mClippingRect(Rect(0,0,1,1))
+		mLineSpacing(1.0)
 	{
-		mOffset = owner->getOffset() + 2;
+		mClippingRect = mOwner->getClippingRect();
+		mOffset = owner->getOffset() + 1;
 		mGUIManager = owner->getGUIManager();
 		Rect ownerDimensions = mOwner->getDimensions(QGUI_GMM_ABSOLUTE,QGUI_GMM_ABSOLUTE);
 		mAbsoluteDimensions = Rect(ownerDimensions.x,ownerDimensions.y,0,0);
@@ -133,7 +133,11 @@ namespace QuickGUI
 				Ogre::UTFString::code_point tempcp;
 				// Find next space, or go to new line if there is no space
 				// before we run out of room.
-				for(int i = 0; (it+i) != text.end(); i++)
+                                #if defined(__x86_64__)
+                                for(long int i = 0; (it+i) != text.end(); i++)
+                                #else
+                                for(int i = 0; (it+i) != text.end(); i++)
+				#endif
 				{
 					tempcp = (it+i).getCharacter();
 					tempx += getGlyphSize(tempcp).width;
@@ -296,11 +300,11 @@ namespace QuickGUI
 		else
 			_calculateDimensions();
 		
-		setClippingRect(mClippingRect);
-
-		// Maintain visibility.
+		// Maintain visibility. Must be called before setting clip rect!
 		if(!mVisible)
 			hide();
+
+		setClippingRect(mClippingRect);		
 	}
 
 	void Text::removeSelection()

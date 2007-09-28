@@ -14,14 +14,14 @@ namespace QuickGUI
 		mTextColor(Ogre::ColourValue::White),
 		mDisabledTextColor(Ogre::ColourValue(0.75,0.75,0.75,1))
 	{
+		mText = new Text(mInstanceName+".Text",mQuadContainer,this);
+
 		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
 		if(mWidgetType == TYPE_LABEL)
 		{
 			mQuad->setLayer(Quad::LAYER_CHILD);
-		}
-
-		mText = new Text(mInstanceName+".Text",mQuadContainer,this);
-		mText->setOffset(mOffset+1);
+			mText->setLayer(Quad::LAYER_CHILD);
+		}		
 	}
 
 	Label::~Label()

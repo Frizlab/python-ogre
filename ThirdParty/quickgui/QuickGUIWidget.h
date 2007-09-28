@@ -219,6 +219,7 @@ namespace QuickGUI
 		Point getPosition(GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
 		Size getSize(GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
 
+		Rect getClippingRect();
 		/**
 		* Returns the name of the texture used when this widget becomes disabled.
 		*/
@@ -233,6 +234,10 @@ namespace QuickGUI
 		* Returns true if this widget is hidden when its parent is hidden.
 		*/
 		bool getHideWithParent();
+		/**
+		* Returns true if clipping rect is inheritted from its parent.
+		*/
+		bool getInheritClippingRect();
 		Ogre::String getInstanceName();
 		/**
 		* Returns true if window is able to be repositions, false otherwise.
@@ -335,6 +340,10 @@ namespace QuickGUI
 		*/
 		void removeAndDestroyAllChildWidgets();
 		/**
+		* Scales the widget over time.
+		*/
+		void resizeOverTime(Ogre::Real seconds, Size finalSize, GuiMetricsMode mode = QGUI_GMM_ABSOLUTE);
+		/**
 		* Stores/Updates the texture used for the widget, and allows the widget to derive other needed textures. (by overriding this function)
 		*/
 		virtual void setBaseTexture(const Ogre::String& textureName);
@@ -367,6 +376,10 @@ namespace QuickGUI
 		* NOTE: All widgets have this set to true by default.
 		*/
 		void setHideWithParent(bool hide);
+		/**
+		* If set to true, widget will share the same clipping rect as its parent.
+		*/
+		void setInheritClippingRect(bool inherit);
 		/**
 		* If set to false, widget cannot be moved.
 		*/
@@ -447,6 +460,7 @@ namespace QuickGUI
 		int							mOffset;
 		bool						mHideWithParent;
 		bool						mShowWithParent;
+		bool						mInheritClippingRect;
 		// used for transparency picking
 		Ogre::Image*				mWidgetImage;
 		Widget*						mParentWidget;
@@ -455,6 +469,16 @@ namespace QuickGUI
 		Panel*						mParentPanel;
 
 		Widget*						mWidgetToDrag;
+
+		// EFFECTS
+		bool						mResizeOverTime;
+		Ogre::Real					mResizeTimer;
+		Ogre::Real					mResizeTime;
+		Size						mInitialAbsSize;
+		Size						mFinalAbsSize;
+		
+		bool						mRepositionOverTime;
+		Point						mFinalAbsPosition;
 
 		Rect						mClippingRect;
 

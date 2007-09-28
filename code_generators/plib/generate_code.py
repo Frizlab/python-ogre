@@ -54,11 +54,12 @@ def ManualExclude ( mb ):
     main_ns = global_ns
  
     # things not yet implemented in the C source..
-    excludes=[]
+    excludes=['print', 'getName'] # don't like print functions at all
     for c in main_ns.classes():
         for m in c.member_functions(allow_empty=True):
             for e in excludes:
-                if e in m.decl_string:
+                if e == m.name:
+                    print "Excluding:", c, m
                     m.exclude()
     
     ### Member Functions
@@ -85,18 +86,40 @@ def ManualExclude ( mb ):
             ,'::netChannel::recv'
             ,'::netMonitorServer::setCommandFunc'   ## needs to handle callbacks
             
+            ,'::ssgIndexArray::get'
+            ,'::ssgSimpleList::raw_get'
+            ,'::ssgSimpleState::getTextureFilename'  # char pointers
+            ,'::ssgStateSelector::getTextureFilename'
+            ,'::ssgTexture::getFilename'
+            ,'::ssgVtxArray::getIndex'  ## returns a short
+            ,'::ssgLoaderOptions::make_path'
+            ,'::ssgBase::copy_from'
+            
+            
+           
+           ## ,'::ssgBase::getName'
          ]
     for e in excludes:
         print "excluding ", e
         main_ns.member_functions(e).exclude()
         
     ### Free Functions
-    excludes = []
+    excludes = ['::ssgShowStats'
+                ,'::netCopyName'
+                ,'::ulGetCWD'
+                ,'::ulGetError'
+                ,'::ulMakePath'
+                ,'::ulOpenDir'
+                ,'::ulStrDup'
+                ,'::ssgSavePOV'
+                ,'::ssgConvertTexture'
+                ,'::netPoll'
+                ]
     for e in excludes:
         main_ns.free_functions(e).exclude()
         
     ## Classes
-    excludes = []
+    excludes = ['ssgBaseTransform','ssgEntityBinding','ssgHit', 'ssgSimpleState']
     for e in excludes:
         main_ns.class_(e).exclude()
     
@@ -183,6 +206,30 @@ def ManualTransformations ( mb ):
         f = global_ns.class_('::slScheduler').mem_fun(fun)
         f.add_transformation( ft.modify_type('cb',_ReturnUnsignedInt ), alias=fun )
         print "Changed ", f
+   
+# #     for fun in global_ns.member_functions():
+# #         
+# #         arg_position = 0
+# #         trans=[]
+# #         desc=""
+# #         for arg in fun.arguments:
+# #             if arg.type.decl_string == 'float[4] *':
+# #                 f=declarations.cpptypes.float_t()
+# #                 fp = declarations.cpptypes.pointer_t( f )
+# # # #                 arg.type = fp
+# #                 trans.append(ft.input_static_array (arg_position,16 ) )
+# #                 desc = desc + " Transform " + arg.name + " (position:" + str(arg_position) +") as an input array of 16 floats"
+# #             arg_position +=1
+# #         if trans:
+# #             print "Tranformation applied to ", fun, desc
+# #             fun.add_transformation ( * trans )
+# #             fun.documentation = '\"Python-Ogre: Function Modified\\n\\\n' + desc  +'\"'     
+# #             fun.include()
+# #             fun.exportable = True
+# # #     f = global_ns.member_function('::ssgEntity::cull')
+# # #     f.include()
+# # #     f.add_transformation (ft.input_static_array('m',16) )
+        
        
 ###############################################################################
 ##
@@ -201,7 +248,7 @@ def AutoExclude( mb ):
     Remove_Static_Consts ( main_ns )
     
     ## Exclude protected and private that are not pure virtual
-    query = ~declarations.access_type_matcher_t( 'public' ) \
+    query = declarations.access_type_matcher_t( 'private' ) \
             & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
     non_public_non_pure_virtual = main_ns.calldefs( query )
     non_public_non_pure_virtual.exclude()
@@ -213,10 +260,16 @@ def AutoExclude( mb ):
         main_ns.calldefs( query ).virtuality = declarations.VIRTUALITY_TYPES.NOT_VIRTUAL
     except:
         pass
-               
+    
+    f=main_ns.free_function("ssgLoadAC")
+    print "\n\n",f,"\n\n"    
+#     f.include()
+    print f.exportable, f.ignore
+    print "\n\n"
+                   
 def AutoInclude( mb ):
     main_ns = mb.global_ns  ##   doesn't have it's own namespace..
-    validPrefix= ['sl','sm','net','ul']
+    validPrefix= ['sl','sm','net','ul', 'ssg']
         
     for cls in main_ns.classes():
         for p in validPrefix:
@@ -226,12 +279,15 @@ def AutoInclude( mb ):
             
     for cls in main_ns.enums():
         for p in validPrefix:
-            if cls.name.startswith ( p ) and cls.name[len(p)].isupper():
+            if cls.name.startswith ( p ): # and cls.name[len(p)].isupper():
                 print "Including enum: ", cls.name
                 cls.include()
+            elif cls.name.startswith (p.upper()):
+                print "Including enum: ", cls.name
+                cls.include()
+            
 
     for cls in main_ns.free_functions():
-        print "Free Function:", cls
         for p in validPrefix:
             if cls.name.startswith ( p ) and cls.name[len(p)].isupper():
                 print "Including free function: ", cls.name
@@ -521,6 +577,8 @@ def generate_code():
     ## need to create a welcome doc string for this...                                  
     common_utils.add_constants( mb, { '__doc__' :  '"plib PROJECT DESCRIPTION"' } ) 
     
+    f = global_ns.member_function('::ssgEntity::cull')
+    f.include()
     
     ##########################################################################################
     #
@@ -554,8 +612,31 @@ def generate_code():
         
                 if not common_utils.samefile( sourcefile ,destfile ):
                     shutil.copy( sourcefile, environment.plib.generated_dir )
-                    print "Updated ", f, "as it was missing or out of date"        
+                    print "Updated ", f, "as it was missing or out of date"       
+                    
+                    
+                    
+
 if __name__ == '__main__':
     start_time = time.clock()
+# #     import trace
+# #     
+# #     # create a Trace object, telling it what to ignore, and whether to
+# #     # do tracing or line-counting or both.
+# #     tracer = trace.Trace(
+# #         ignoredirs=[sys.prefix, sys.exec_prefix],
+# #         trace=1,
+# #         count=1,
+# #         countcallers=1,
+# #         countfuncs=1 )
+# #         #,
+# #         #outfile="c:\temp\out.trace")
+# #     
+# #     # run the new command using the given tracer
+# #     tracer.run('generate_code()')
+# #     
+# #     # make a report, placing output in /tmp
+# #     r = tracer.results()
+# #     r.write_results(show_missing=True, coverdir="\temp")
     generate_code()
     print 'Source code was updated( %f minutes ).' % (  ( time.clock() - start_time )/60 )

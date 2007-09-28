@@ -79,6 +79,7 @@ namespace QuickGUI
 		* next frame.
 		*/
 		void destroyWidget(Widget* w);
+		void destroyWidget(const Ogre::String& widgetName);
 
 		/**
 		* Returns the sheet currently being used, whether shown or hidden.
