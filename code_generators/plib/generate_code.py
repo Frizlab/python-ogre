@@ -95,6 +95,8 @@ def ManualExclude ( mb ):
             ,'::ssgLoaderOptions::make_path'
             ,'::ssgBase::copy_from'
             
+            ,'::ulLinkedList::unlinkNode'
+            
             
            
            ## ,'::ssgBase::getName'
@@ -110,6 +112,8 @@ def ManualExclude ( mb ):
                 ,'::ulGetError'
                 ,'::ulMakePath'
                 ,'::ulOpenDir'
+                ,'::ulCloseDir'
+                ,'::ulReadDir'
                 ,'::ulStrDup'
                 ,'::ssgSavePOV'
                 ,'::ssgConvertTexture'
