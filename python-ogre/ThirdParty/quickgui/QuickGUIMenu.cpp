@@ -4,8 +4,8 @@
 
 namespace QuickGUI
 {
-	Menu::Menu(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
-		Image(name,type,dimensions,pMode,sMode,texture,container,ParentWidget,gm),
+	Menu::Menu(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
+		Image(name,type,pixelDimensions,texture,container,ParentWidget,gm),
 		mMenuListCounter(0),
 		mShowMenus(0),
 		mCurrentOpenList(NULL)
@@ -26,9 +26,9 @@ namespace QuickGUI
 		clearAllMenuLists();
 	}
 
-	MenuList* Menu::addMenuList(const Ogre::String& name, const Ogre::UTFString& text, Ogre::Real relXPos, Ogre::Real relXSize, const Ogre::String& texture)
+	MenuList* Menu::addMenuList(const Ogre::String& name, const Ogre::UTFString& text, Ogre::Real pixelX, Ogre::Real pixelWidth, const Ogre::String& texture)
 	{
-		MenuList* newMenuList = new MenuList(name,TYPE_MENULIST,Rect(relXPos,0,relXSize,1),QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,texture,mQuadContainer,this,mGUIManager);
+		MenuList* newMenuList = new MenuList(name,TYPE_MENULIST,Rect(pixelX,0,pixelWidth,mSize.height),texture,mQuadContainer,this,mGUIManager);
 		newMenuList->addEventHandler(Widget::EVENT_MOUSE_ENTER,&Menu::showMenuList,this);
 		newMenuList->addEventHandler(Widget::EVENT_MOUSE_BUTTON_DOWN,&Menu::toggleMenuList,this);
 
@@ -41,22 +41,22 @@ namespace QuickGUI
 		return newMenuList;
 	}
 
-	MenuList* Menu::addMenuList(const Ogre::UTFString& text, Ogre::Real relXPos, Ogre::Real relXSize, const Ogre::String& texture)
+	MenuList* Menu::addMenuList(const Ogre::UTFString& text, Ogre::Real pixelX, Ogre::Real pixelWidth, const Ogre::String& texture)
 	{
 		Ogre::String name = mInstanceName+".MenuList" + Ogre::StringConverter::toString(mMenuListCounter);
 		++mMenuListCounter;
 
-		return addMenuList(name,text,relXPos,relXSize,texture);
+		return addMenuList(name,text,pixelX,pixelWidth,texture);
 	}
 
-	MenuList* Menu::addMenuList(const Ogre::UTFString& text, Ogre::Real relXPos, Ogre::Real relXSize)
+	MenuList* Menu::addMenuList(const Ogre::UTFString& text, Ogre::Real pixelX, Ogre::Real pixelWidth)
 	{
 		Ogre::String name = mInstanceName+".MenuList" + Ogre::StringConverter::toString(mMenuListCounter);
 		++mMenuListCounter;
 
 		Ogre::String material = getDefaultSkin() + ".menulist.png";
 
-		return addMenuList(name,text,relXPos,relXSize,material);
+		return addMenuList(name,text,pixelX,pixelWidth,material);
 	}
 
 	void Menu::clearAllMenuLists()

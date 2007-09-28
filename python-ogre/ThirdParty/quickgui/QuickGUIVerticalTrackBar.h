@@ -38,7 +38,7 @@ namespace QuickGUI
 			@note
 				Vertical or Horizontal TrackBars are derived from a comparison between width and height.
         */
-		VerticalTrackBar(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
+		VerticalTrackBar(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
 
 		/**
 		* Add user defined event that will be called when amount of progress has changed.
@@ -99,7 +99,7 @@ namespace QuickGUI
 		* Sets the number of positions Slider can be moved to. Related to setNumRegions.
 		*/
 		void setNumTicks(unsigned int NumTicks);
-		void setSliderSize(Size s, GuiMetricsMode mode = QGUI_GMM_RELATIVE);
+		void setSliderSize(Size pixelSize);
 		/**
 		* Applies the texture to the Quad if exists in some form, and updates the Image used for
 		* transparency picking.
@@ -131,19 +131,12 @@ namespace QuickGUI
 		// ----- SLIDER BUTTON PROPERTIES --------------------
 		Button* mSliderButton;
 		Ogre::String mSliderTextureName;
-		Size mRelativeSliderSize;
-		// Each region has a beggining and end. mCurrentPos tracks where slider is.
-		int mSliderIndex;
 
 		void onSliderDragged(const EventArgs& args);
 
 		// ----- EVENT HANDLERS --------------------
 		void onMouseDownOnSlider(const EventArgs& args);
 		void onMouseUpOnSlider(const EventArgs& args);
-
-		bool mMouseDownOnSlider;
-		// Record the difference in index positions between the slider and cursor, when cursor goes down.
-		int mMouseDownSliderDifference;
 
 		std::vector<MemberFunctionSlot*> mOnValueChangedHandlers;
 	};

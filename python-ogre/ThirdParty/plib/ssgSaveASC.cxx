@@ -209,7 +209,7 @@ int ssgSaveASC ( FILE* fileout, ssgEntity *ent )
 
 int ssgSaveASC ( const char *filename, ssgEntity *ent )
 {
-  save_fd = fopen ( filename, "wa" ) ;
+  save_fd = fopen ( filename, "w" ) ;
 
   if ( save_fd == NULL )
   {

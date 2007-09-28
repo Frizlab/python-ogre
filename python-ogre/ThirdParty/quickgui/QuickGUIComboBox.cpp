@@ -4,8 +4,8 @@
 
 namespace QuickGUI
 {
-	ComboBox::ComboBox(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
-		Label(name,type,dimensions,pMode,sMode,texture,container,ParentWidget,gm)
+	ComboBox::ComboBox(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
+		Label(name,type,pixelDimensions,texture,container,ParentWidget,gm)
 	{
 		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
 		if(mWidgetType == TYPE_COMBOBOX)
@@ -19,24 +19,16 @@ namespace QuickGUI
 		addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&ComboBox::onMouseButtonDown,this);
 		addEventHandler(EVENT_MOUSE_BUTTON_UP,&ComboBox::onMouseButtonUp,this);
 
-		// Create CloseButton - remember to position it relative to it's parent (TitleBar)
-		// Height of the Title Bar
-		Ogre::Real height = (mAbsoluteDimensions.height / mAbsoluteDimensions.width);
-		// Button has same height as width - Make the button slightly smaller that the titlebar height
-		Ogre::Real buttonHeight = 0.8;
-		Ogre::Real buttonWidth = (height * buttonHeight);
-		// Make a 5 pixel buffer
-		Ogre::Real buffer = 5.0 / mPixelDimensions.width;
-		Rect bDimensions = Rect((1 - (buttonWidth + buffer)),0.1,buttonWidth,buttonHeight);
-		mButton = new Button(mInstanceName+".ComboButton",TYPE_BUTTON,bDimensions,QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,mTextureName + ".button" + mTextureExtension,mQuadContainer,this,mGUIManager);
+		Ogre::Real ButtonSize = mSize.height - 4;
+		mButton = new Button(mInstanceName+".ComboButton",TYPE_BUTTON,Rect(mSize.width - ButtonSize - 2,2,ButtonSize,ButtonSize),mTextureName + ".button" + mTextureExtension,mQuadContainer,this,mGUIManager);
 		mButton->addEventHandler(Widget::EVENT_MOUSE_BUTTON_DOWN,&ComboBox::toggleDropDownListVisibility,this);
 		mButton->addEventHandler(Widget::EVENT_MOUSE_BUTTON_UP,&ComboBox::applyButtonDownImage,this);
 		mButton->addEventHandler(Widget::EVENT_MOUSE_ENTER,&ComboBox::applyButtonDownImage,this);
 		mButton->addEventHandler(Widget::EVENT_MOUSE_LEAVE,&ComboBox::applyButtonDownImage,this);
 
-		mTextBoundsRelativeSize = Size(1 - buttonWidth,1);
+		mTextBoundsPixelSize = Size(mSize.width - ButtonSize - 2,mSize.height);
 
-		mList = new List(mInstanceName+".List",TYPE_LIST,Rect(0,1,1,0),QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,mTextureName + ".list" + mTextureExtension,mQuadContainer,this,mGUIManager);
+		mList = new List(mInstanceName+".List",TYPE_LIST,Rect(0,mSize.height,mSize.width,0),mTextureName + ".list" + mTextureExtension,mQuadContainer,this,mGUIManager);
 		mList->setShowWithParent(false);
 		mList->setOffset(mOffset + 2);
 		mList->hide();

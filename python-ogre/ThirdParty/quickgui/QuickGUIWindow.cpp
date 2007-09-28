@@ -4,8 +4,8 @@
 
 namespace QuickGUI
 {
-	Window::Window(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* parentWidget, GUIManager* gm) :
-		Panel(name,type,dimensions,pMode,sMode,texture,container,parentWidget,gm),
+	Window::Window(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* parentWidget, GUIManager* gm) :
+		Panel(name,type,pixelDimensions,texture,container,parentWidget,gm),
 		mTitleBar(0),
 		mBringToFrontOnFocus(true)
 	{
@@ -13,8 +13,7 @@ namespace QuickGUI
 		addEventHandler(EVENT_GAIN_FOCUS,&Window::onGainFocus,this);
 
 		// Create TitleBar - tradition titlebar dimensions: across the top of the window
-		Rect defaultTitleBarDimensions = Rect(0,0,1,0.05 / getSize(QGUI_GMM_ABSOLUTE).height);
-		mTitleBar = new TitleBar(mInstanceName+".Titlebar",TYPE_TITLEBAR,defaultTitleBarDimensions,QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,mTextureName + ".titlebar" + mTextureExtension,this,this,mGUIManager);
+		mTitleBar = new TitleBar(mInstanceName+".Titlebar",TYPE_TITLEBAR,Rect(0,0,mSize.width,25),mTextureName + ".titlebar" + mTextureExtension,this,this,mGUIManager);
 		mTitleBar->enableDragging(true);
 		mTitleBar->setDraggingWidget(this);
 

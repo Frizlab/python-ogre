@@ -90,7 +90,7 @@ namespace QuickGUI
 		* Form: (x,y,w,h)
 		* NOTE: value will be Vector4::ZERO is there is no caption for this text.
 		*/
-		Rect getAbsoluteDimensions();
+		Rect getDimensions();
 		Ogre::UTFString getCaption();
 		Quad* getCharacter(unsigned int index);
 		Ogre::ColourValue getColor();
@@ -138,19 +138,19 @@ namespace QuickGUI
 		*  position is more than end of text, index (length - 1) is returned.  If caption
 		*  is empty, -1 is returned.
 		*/
-		int getTextIndex(const Point& absPosition);
+		int getTextIndex(const Point& pixelPosition);
 		/*
 		* Tests if absolute position is within any character bounds of the text caption.
 		* Each cursor location to the left and right of a character is a cursor index.  
 		* The cursor index to the left of character 0 is 0, for example.
 		*/
-		int getTextCursorIndex(const Point& absPosition);
+		int getTextCursorIndex(const Point& pixelPosition);
 		/*
 		* Tests if the given rectangle intersects with any characters of the text caption.
 		* Each cursor location to the left and right of a character is a cursor index.  
 		* The cursor index to the left of character 0 is 0, for example.
 		*/
-		int getTextCursorIndex(const Rect& absoluteDimensions);
+		int getTextCursorIndex(const Rect& pixelDimensions);
 		bool getVisible();
 
 		void hide();
@@ -160,7 +160,7 @@ namespace QuickGUI
 		* to maintain its position relative to the widget that owns the text.  Only call this function
 		* if you want to override the default positioning of the text, relative to its owner.
 		*/
-		void move(const Point& absolutePosition);
+		void move(const Point& pixelPosition);
 
 		/**
 		* Specific Handler for the Text object.  Called when the Text font, color, or caption changes.
@@ -188,7 +188,7 @@ namespace QuickGUI
 		* Sets the text Caption.  Size will be calculated from glyph dimensions.
 		*/
 		void setCaption(const Ogre::UTFString& text, Layout l = LAYOUT_HORIZONTAL, Alignment a = ALIGNMENT_LEFT);
-		void setClippingRect(const Rect& r);
+		void setClippingRect(const Rect& pixelDimensions);
 		void setFont(const Ogre::String& fontName);
 		void setLayer(Quad::Layer layer);
 		void setOffset(int offset);
@@ -197,7 +197,7 @@ namespace QuickGUI
 		* to maintain its position relative to the widget that owns the text.  Only call this function
 		* if you want to override the default positioning of the text, relative to its owner.
 		*/
-		void setPosition(const Point& absolutePosition);
+		void setPosition(const Point& pixelPosition);
 		/*
 		* Sets the color of all characters of the text.
 		*/
@@ -240,7 +240,7 @@ namespace QuickGUI
 		int mSelectStart;
 		int mSelectEnd;
 
-		Rect mAbsoluteDimensions;
+		Rect mPixelDimensions;
 
 		// User defined event handlers that are called when a Selection is made.
 		std::vector<MemberFunctionSlot*> mOnTextChangedUserEventHandlers;

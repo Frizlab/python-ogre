@@ -53,77 +53,77 @@ namespace QuickGUI
 			@param
 				parentWidget parent widget which created this widget.
         */
-		Panel(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* parentWidget, GUIManager* gm);		
+		Panel(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* parentWidget, GUIManager* gm);		
 
 		void _removeFromChildList(Widget* w);
 
-		Button* createButton(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		Button* createButton(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		Button* createButton(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		Button* createButton(const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
+		Button* createButton(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		Button* createButton(const Rect& pixelDimensions, const Ogre::String& texture);
+		Button* createButton(const Ogre::String& name, const Rect& pixelDimensions);
+		Button* createButton(const Rect& pixelDimensions);
 
-		ComboBox* createComboBox(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		ComboBox* createComboBox(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		ComboBox* createComboBox(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		ComboBox* createComboBox(const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
+		ComboBox* createComboBox(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		ComboBox* createComboBox(const Rect& pixelDimensions, const Ogre::String& texture);
+		ComboBox* createComboBox(const Ogre::String& name, const Rect& pixelDimensions);
+		ComboBox* createComboBox(const Rect& pixelDimensions);
 
-		HorizontalScrollBar* createHorizontalScrollBar(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		HorizontalScrollBar* createHorizontalScrollBar(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		HorizontalScrollBar* createHorizontalScrollBar(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		HorizontalScrollBar* createHorizontalScrollBar(const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
+		HorizontalScrollBar* createHorizontalScrollBar(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		HorizontalScrollBar* createHorizontalScrollBar(const Rect& pixelDimensions, const Ogre::String& texture);
+		HorizontalScrollBar* createHorizontalScrollBar(const Ogre::String& name, const Rect& pixelDimensions);
+		HorizontalScrollBar* createHorizontalScrollBar(const Rect& pixelDimensions);
 
-		Image* createImage(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		Image* createImage(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		Image* createImage(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		Image* createImage(const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
+		Image* createImage(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		Image* createImage(const Rect& pixelDimensions, const Ogre::String& texture);
+		Image* createImage(const Ogre::String& name, const Rect& pixelDimensions);
+		Image* createImage(const Rect& pixelDimensions);
 
-		Label* createLabel(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		Label* createLabel(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		Label* createLabel(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		Label* createLabel(const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
+		Label* createLabel(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		Label* createLabel(const Rect& pixelDimensions, const Ogre::String& texture);
+		Label* createLabel(const Ogre::String& name, const Rect& pixelDimensions);
+		Label* createLabel(const Rect& pixelDimensions);
 
-		List* createList(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		List* createList(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		List* createList(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		List* createList(const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
+		List* createList(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		List* createList(const Rect& pixelDimensions, const Ogre::String& texture);
+		List* createList(const Ogre::String& name, const Rect& pixelDimensions);
+		List* createList(const Rect& pixelDimensions);
 
-		Menu* createMenu(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		Menu* createMenu(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		Menu* createMenu(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		Menu* createMenu(const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
+		Menu* createMenu(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		Menu* createMenu(const Rect& pixelDimensions, const Ogre::String& texture);
+		Menu* createMenu(const Ogre::String& name, const Rect& pixelDimensions);
+		Menu* createMenu(const Rect& pixelDimensions);
 
-		NStateButton* createNStateButton(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		NStateButton* createNStateButton(const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
+		NStateButton* createNStateButton(const Ogre::String& name, const Rect& pixelDimensions);
+		NStateButton* createNStateButton(const Rect& pixelDimensions);
 
-		Panel* createPanel(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		Panel* createPanel(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		Panel* createPanel(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		Panel* createPanel(const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
+		Panel* createPanel(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		Panel* createPanel(const Rect& pixelDimensions, const Ogre::String& texture);
+		Panel* createPanel(const Ogre::String& name, const Rect& pixelDimensions);
+		Panel* createPanel(const Rect& pixelDimensions);
 
-		ProgressBar* createProgressBar(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		ProgressBar* createProgressBar(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		ProgressBar* createProgressBar(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		ProgressBar* createProgressBar(const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
+		ProgressBar* createProgressBar(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		ProgressBar* createProgressBar(const Rect& pixelDimensions, const Ogre::String& texture);
+		ProgressBar* createProgressBar(const Ogre::String& name, const Rect& pixelDimensions);
+		ProgressBar* createProgressBar(const Rect& pixelDimensions);
 
-		TextBox* createTextBox(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		TextBox* createTextBox(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		TextBox* createTextBox(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		TextBox* createTextBox(const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
+		TextBox* createTextBox(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		TextBox* createTextBox(const Rect& pixelDimensions, const Ogre::String& texture);
+		TextBox* createTextBox(const Ogre::String& name, const Rect& pixelDimensions);
+		TextBox* createTextBox(const Rect& pixelDimensions);
 
-		HorizontalTrackBar* createHorizontalTrackBar(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		HorizontalTrackBar* createHorizontalTrackBar(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		HorizontalTrackBar* createHorizontalTrackBar(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		HorizontalTrackBar* createHorizontalTrackBar(const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
+		HorizontalTrackBar* createHorizontalTrackBar(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		HorizontalTrackBar* createHorizontalTrackBar(const Rect& pixelDimensions, const Ogre::String& texture);
+		HorizontalTrackBar* createHorizontalTrackBar(const Ogre::String& name, const Rect& pixelDimensions);
+		HorizontalTrackBar* createHorizontalTrackBar(const Rect& pixelDimensions);
 
-		VerticalScrollBar* createVerticalScrollBar(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		VerticalScrollBar* createVerticalScrollBar(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		VerticalScrollBar* createVerticalScrollBar(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		VerticalScrollBar* createVerticalScrollBar(const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
+		VerticalScrollBar* createVerticalScrollBar(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		VerticalScrollBar* createVerticalScrollBar(const Rect& pixelDimensions, const Ogre::String& texture);
+		VerticalScrollBar* createVerticalScrollBar(const Ogre::String& name, const Rect& pixelDimensions);
+		VerticalScrollBar* createVerticalScrollBar(const Rect& pixelDimensions);
 
-		VerticalTrackBar* createVerticalTrackBar(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		VerticalTrackBar* createVerticalTrackBar(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		VerticalTrackBar* createVerticalTrackBar(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
-		VerticalTrackBar* createVerticalTrackBar(const Rect& dimensions, GuiMetricsMode positionMode = QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QGUI_GMM_RELATIVE);
+		VerticalTrackBar* createVerticalTrackBar(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		VerticalTrackBar* createVerticalTrackBar(const Rect& pixelDimensions, const Ogre::String& texture);
+		VerticalTrackBar* createVerticalTrackBar(const Ogre::String& name, const Rect& pixelDimensions);
+		VerticalTrackBar* createVerticalTrackBar(const Rect& pixelDimensions);
 
 		Button* getButton(unsigned int index);
 		Button* getButton(const Ogre::String& name);
@@ -196,21 +196,21 @@ namespace QuickGUI
 		* Private functions preventing users from setting the Widget Instance Name.  Names
 		* can be given to Windows using the "setReferenceName()" function.
         */
-		Button* _createButton(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture);
-		ComboBox* _createComboBox(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture);
-		HorizontalScrollBar* _createHorizontalScrollBar(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture);
-		Image* _createImage(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture);
-		Label* _createLabel(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture);
-		List* _createList(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture);
+		Button* _createButton(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		ComboBox* _createComboBox(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		HorizontalScrollBar* _createHorizontalScrollBar(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		Image* _createImage(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		Label* _createLabel(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		List* _createList(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
 		// virtual, because Sheets, which contain multiple windows, need to have an overlay made for menus that are to keep highest zOrder.
-		virtual Menu* _createMenu(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture);
-		NStateButton* _createNStateButton(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode);
-		Panel* _createPanel(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture);
-		ProgressBar* _createProgressBar(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture);
-		TextBox* _createTextBox(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture);
-		HorizontalTrackBar* _createHorizontalTrackBar(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture);
-		VerticalScrollBar* _createVerticalScrollBar(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture);
-		VerticalTrackBar* _createVerticalTrackBar(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture);
+		virtual Menu* _createMenu(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		NStateButton* _createNStateButton(const Ogre::String& name, const Rect& pixelDimensions);
+		Panel* _createPanel(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		ProgressBar* _createProgressBar(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		TextBox* _createTextBox(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		HorizontalTrackBar* _createHorizontalTrackBar(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		VerticalScrollBar* _createVerticalScrollBar(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
+		VerticalTrackBar* _createVerticalTrackBar(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
 
 		Widget* _getWidget(Widget::Type TYPE, unsigned int index);
 		Widget* _getWidget(const Ogre::String& name);

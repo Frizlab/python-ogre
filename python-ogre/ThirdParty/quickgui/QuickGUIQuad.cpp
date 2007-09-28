@@ -19,13 +19,13 @@ namespace QuickGUI
 		mAddedToRenderGroup(false),
 		mTextureName(""),
 		mOffset(0),
-		mAbsoluteDimensions(Rect::ZERO),
+		mPixelDimensions(Rect::ZERO),
 		mTextureCoordinates(Ogre::Vector4(0,0,1,1)),
 		mVisible(true),
 		mTopColor(Ogre::ColourValue::White),
 		mBottomColor(Ogre::ColourValue::White),
 		mHiddenViaClipping(false),
-		mClippingRect(Rect(0,0,1,1))
+		mClippingRect(Rect(0,0,gm->getViewportWidth(),gm->getViewportHeight()))
 	{
 		mRenderSystem = Ogre::Root::getSingleton().getRenderSystem();
 		mVertices.resize(6);
@@ -42,7 +42,7 @@ namespace QuickGUI
 	{
 		if(insideRect(mClippingRect))
 		{
-			mDimensionsViaClipping = mAbsoluteDimensions;
+			mDimensionsViaClipping = mPixelDimensions;
 			_computeVertices();
 
 			mTextureCoordinatesViaClipping = mTextureCoordinates;
@@ -63,10 +63,10 @@ namespace QuickGUI
 			Ogre::Real uvWidth = mTextureCoordinates.z - mTextureCoordinates.x;
 			Ogre::Real uvHeight = mTextureCoordinates.w - mTextureCoordinates.y;
 			
-			mTextureCoordinatesViaClipping.x = mTextureCoordinates.x + (((mDimensionsViaClipping.x - mAbsoluteDimensions.x) / mAbsoluteDimensions.width) * uvWidth);
-			mTextureCoordinatesViaClipping.y = mTextureCoordinates.y + (((mDimensionsViaClipping.y - mAbsoluteDimensions.y) / mAbsoluteDimensions.height) * uvHeight);
-			mTextureCoordinatesViaClipping.z = mTextureCoordinates.z - ((((mAbsoluteDimensions.x + mAbsoluteDimensions.width) - (mDimensionsViaClipping.x + mDimensionsViaClipping.width)) / mAbsoluteDimensions.width) * uvWidth);
-			mTextureCoordinatesViaClipping.w = mTextureCoordinates.w - ((((mAbsoluteDimensions.y + mAbsoluteDimensions.height) - (mDimensionsViaClipping.y + mDimensionsViaClipping.height)) / mAbsoluteDimensions.height) * uvHeight);
+			mTextureCoordinatesViaClipping.x = mTextureCoordinates.x + (((mDimensionsViaClipping.x - mPixelDimensions.x) / mPixelDimensions.width) * uvWidth);
+			mTextureCoordinatesViaClipping.y = mTextureCoordinates.y + (((mDimensionsViaClipping.y - mPixelDimensions.y) / mPixelDimensions.height) * uvHeight);
+			mTextureCoordinatesViaClipping.z = mTextureCoordinates.z - ((((mPixelDimensions.x + mPixelDimensions.width) - (mDimensionsViaClipping.x + mDimensionsViaClipping.width)) / mPixelDimensions.width) * uvWidth);
+			mTextureCoordinatesViaClipping.w = mTextureCoordinates.w - ((((mPixelDimensions.y + mPixelDimensions.height) - (mDimensionsViaClipping.y + mDimensionsViaClipping.height)) / mPixelDimensions.height) * uvHeight);
 			
 			_updateTextureCoords();
 
@@ -78,7 +78,7 @@ namespace QuickGUI
 		}
 		else // Quad is outside clipping region.
 		{
-			mDimensionsViaClipping = mAbsoluteDimensions;
+			mDimensionsViaClipping = mPixelDimensions;
 			_computeVertices();
 
 			mTextureCoordinatesViaClipping = mTextureCoordinates;
@@ -94,7 +94,15 @@ namespace QuickGUI
 
 	void Quad::_computeVertices()
 	{
-		Rect actualDimensions = mDimensionsViaClipping;
+		// Convert pixel values into absolute coordinates.
+		Ogre::Real viewportWidth = mGUIManager->getViewportWidth();
+		Ogre::Real viewportHeight = mGUIManager->getViewportHeight();
+
+		Rect absDimensions(
+			mDimensionsViaClipping.x / viewportWidth,
+			mDimensionsViaClipping.y / viewportHeight,
+			mDimensionsViaClipping.width / viewportWidth,
+			mDimensionsViaClipping.height / viewportHeight);
 
 		/* Convert positions into -1, 1 coordinate space (homogenous clip space).
 			- Left / right is simple range conversion
@@ -103,10 +111,10 @@ namespace QuickGUI
 			coordinates, we have to flip the v-axis (ie. subtract the value from
 			1.0 to get the actual correct value).
 		*/
-		Ogre::Real left = (actualDimensions.x * 2) - 1;
-		Ogre::Real right = left + (actualDimensions.width * 2);
-		Ogre::Real top = -((actualDimensions.y * 2) - 1);
-		Ogre::Real bottom = top - (actualDimensions.height * 2);
+		Ogre::Real left = (absDimensions.x * 2) - 1;
+		Ogre::Real right = left + (absDimensions.width * 2);
+		Ogre::Real top = -((absDimensions.y * 2) - 1);
+		Ogre::Real bottom = top - (absDimensions.height * 2);
 
 		// TRIANGLE 1
 		mVertices[0].pos = Ogre::Vector3(left,bottom,0);	// left-bottom
@@ -225,6 +233,11 @@ namespace QuickGUI
 		return mDimensionsChanged;
 	}
 
+	Rect Quad::getDimensions()
+	{
+		return mPixelDimensions;
+	}
+
 	Ogre::String Quad::getID()
 	{
 		return mID;
@@ -241,10 +254,10 @@ namespace QuickGUI
 
 		if(intersectsRect(r))
 		{
-			retVal.x = std::max(mAbsoluteDimensions.x,r.x);
-			retVal.y = std::max(mAbsoluteDimensions.y,r.y);
-			retVal.width = std::min(mAbsoluteDimensions.x + mAbsoluteDimensions.width, r.x + r.width) - retVal.x;
-			retVal.height = std::min(mAbsoluteDimensions.y + mAbsoluteDimensions.height, r.y + r.height) - retVal.y;
+			retVal.x = std::max(mPixelDimensions.x,r.x);
+			retVal.y = std::max(mPixelDimensions.y,r.y);
+			retVal.width = std::min(mPixelDimensions.x + mPixelDimensions.width, r.x + r.width) - retVal.x;
+			retVal.height = std::min(mPixelDimensions.y + mPixelDimensions.height, r.y + r.height) - retVal.y;
 		}
 
 		return retVal;
@@ -252,10 +265,10 @@ namespace QuickGUI
 
 	bool Quad::insideRect(const Rect& r)
 	{
-		if( (mAbsoluteDimensions.x >= r.x) &&
-			(mAbsoluteDimensions.y >= r.y) &&
-			((mAbsoluteDimensions.x + mAbsoluteDimensions.width) <= (r.x + r.width)) &&
-			((mAbsoluteDimensions.y + mAbsoluteDimensions.height) <= (r.y + r.height)) )
+		if( (mPixelDimensions.x >= r.x) &&
+			(mPixelDimensions.y >= r.y) &&
+			((mPixelDimensions.x + mPixelDimensions.width) <= (r.x + r.width)) &&
+			((mPixelDimensions.y + mPixelDimensions.height) <= (r.y + r.height)) )
 			return true;
 
 		return false;
@@ -264,26 +277,26 @@ namespace QuickGUI
 	bool Quad::intersectsRect(const Rect& r)
 	{
 		// if our left side is greater than r's right side, or our right side is less than r's left side, intersection is not possible.
-		if( (mAbsoluteDimensions.x > (r.x + r.width)) || ((mAbsoluteDimensions.x + mAbsoluteDimensions.width) < r.x) )
+		if( (mPixelDimensions.x > (r.x + r.width)) || ((mPixelDimensions.x + mPixelDimensions.width) < r.x) )
 			return false;
 
 		// if our top is greater than r's bottom, or our bottom is less than r's top, intersection is not possible.
-		if( (mAbsoluteDimensions.y > (r.y + r.height)) || ((mAbsoluteDimensions.y + mAbsoluteDimensions.height) < r.y) )
+		if( (mPixelDimensions.y > (r.y + r.height)) || ((mPixelDimensions.y + mPixelDimensions.height) < r.y) )
 			return false;
 
 		// If the above conditions are not met, than there must be overlap between our dimensions and r's dimensions.
 		return true;
 	}
 
-	bool Quad::isPointWithinBounds(const Point& absPosition)
+	bool Quad::isPointWithinBounds(const Point& pixelPosition)
 	{
-		float xPos = absPosition.x;
-		float yPos = absPosition.y;
+		float xPos = pixelPosition.x;
+		float yPos = pixelPosition.y;
 
-		if( (xPos < mAbsoluteDimensions.x) || (xPos > (mAbsoluteDimensions.x + mAbsoluteDimensions.width)) )
+		if( (xPos < mPixelDimensions.x) || (xPos > (mPixelDimensions.x + mPixelDimensions.width)) )
 			return false;
 
-		if( (yPos < mAbsoluteDimensions.y) || (yPos > (mAbsoluteDimensions.y + mAbsoluteDimensions.height)) )
+		if( (yPos < mPixelDimensions.y) || (yPos > (mPixelDimensions.y + mPixelDimensions.height)) )
 			return false;
 
 		return true;
@@ -311,12 +324,12 @@ namespace QuickGUI
 
 	Point Quad::getPosition()
 	{
-		return Point(mAbsoluteDimensions.x,mAbsoluteDimensions.y);
+		return Point(mPixelDimensions.x,mPixelDimensions.y);
 	}
 
 	Size Quad::getSize()
 	{
-		return Size(mAbsoluteDimensions.width,mAbsoluteDimensions.height);
+		return Size(mPixelDimensions.width,mPixelDimensions.height);
 	}
 
 	void Quad::removeFromRenderObjectGroup()
@@ -359,9 +372,9 @@ namespace QuickGUI
 		_notifyQuadContainerNeedsUpdate();
 	}
 
-	void Quad::setDimensions(const Rect& absoluteDimensions)
+	void Quad::setDimensions(const Rect& pixelDimensions)
 	{
-		mAbsoluteDimensions = absoluteDimensions;
+		mPixelDimensions = pixelDimensions;
 		mDimensionsChanged = true;
 
 		_clip();
@@ -369,9 +382,9 @@ namespace QuickGUI
 		_notifyQuadContainerNeedsUpdate();
 	}
 
-	void Quad::setHeight(Ogre::Real absoluteHeight)
+	void Quad::setHeight(Ogre::Real pixelHeight)
 	{
-		mAbsoluteDimensions.height = absoluteHeight;
+		mPixelDimensions.height = pixelHeight;
 
 		mDimensionsChanged = true;
 
@@ -398,10 +411,10 @@ namespace QuickGUI
 		_notifyQuadContainerNeedsUpdate();
 	}
 
-	void Quad::setPosition(const Point& absolutePosition)
+	void Quad::setPosition(const Point& pixelPosition)
 	{
-		mAbsoluteDimensions.x = absolutePosition.x;
-		mAbsoluteDimensions.y = absolutePosition.y;
+		mPixelDimensions.x = pixelPosition.x;
+		mPixelDimensions.y = pixelPosition.y;
 
 		mDimensionsChanged = true;
 
@@ -410,10 +423,10 @@ namespace QuickGUI
 		_notifyQuadContainerNeedsUpdate();
 	}
 
-	void Quad::setSize(const Size& absoluteSize)
+	void Quad::setSize(const Size& pixelSize)
 	{
-		mAbsoluteDimensions.width = absoluteSize.width;
-		mAbsoluteDimensions.height = absoluteSize.height;
+		mPixelDimensions.width = pixelSize.width;
+		mPixelDimensions.height = pixelSize.height;
 
 		mDimensionsChanged = true;
 
@@ -481,9 +494,9 @@ namespace QuickGUI
 		_notifyQuadContainerNeedsUpdate();
 	}
 
-	void Quad::setWidth(Ogre::Real absoluteWidth)
+	void Quad::setWidth(Ogre::Real pixelWidth)
 	{
-		mAbsoluteDimensions.width = absoluteWidth;
+		mPixelDimensions.width = pixelWidth;
 
 		mDimensionsChanged = true;
 
@@ -492,9 +505,9 @@ namespace QuickGUI
 		_notifyQuadContainerNeedsUpdate();
 	}
 
-	void Quad::setXPosition(Ogre::Real absoluteX)
+	void Quad::setXPosition(Ogre::Real pixelX)
 	{
-		mAbsoluteDimensions.x = absoluteX;
+		mPixelDimensions.x = pixelX;
 
 		mDimensionsChanged = true;
 
@@ -503,9 +516,9 @@ namespace QuickGUI
 		_notifyQuadContainerNeedsUpdate();
 	}
 
-	void Quad::setYPosition(Ogre::Real absoluteY)
+	void Quad::setYPosition(Ogre::Real pixelY)
 	{
-		mAbsoluteDimensions.y = absoluteY;
+		mPixelDimensions.y = pixelY;
 
 		mDimensionsChanged = true;
 

@@ -38,20 +38,20 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		Menu(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
+		Menu(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
 
 		/**
 		* Adds a menu list.
 		*/
-		MenuList* addMenuList(const Ogre::String& name, const Ogre::UTFString& text, Ogre::Real relXPos, Ogre::Real relXSize, const Ogre::String& texture);
+		MenuList* addMenuList(const Ogre::String& name, const Ogre::UTFString& text, Ogre::Real pixelX, Ogre::Real pixelWidth, const Ogre::String& texture);
 		/**
 		* Adds a menu list.  Name is generated.
 		*/
-		MenuList* addMenuList(const Ogre::UTFString& text, Ogre::Real relXPos, Ogre::Real relXSize, const Ogre::String& texture);
+		MenuList* addMenuList(const Ogre::UTFString& text, Ogre::Real pixelX, Ogre::Real pixelWidth, const Ogre::String& texture);
 		/**
 		* Adds a menu list.  Name is generated. Default Material applied.
 		*/
-		MenuList* addMenuList(const Ogre::UTFString& text, Ogre::Real relXPos, Ogre::Real relXSize);
+		MenuList* addMenuList(const Ogre::UTFString& text, Ogre::Real pixelX, Ogre::Real pixelWidth);
 
 		/**
 		* Removes and Destroys all Child Lists, and their corresponding Anchor Button.

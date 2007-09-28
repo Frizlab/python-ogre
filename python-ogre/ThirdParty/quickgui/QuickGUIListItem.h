@@ -31,17 +31,17 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		ListItem(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
+		ListItem(const Ogre::String& name, Type type, const Rect& pixelDimensions, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
 
 		/**
 		* Add an NStateButton to the ListItem.  Useful examples: properties - (...), checkbox - [x]
 		* Note that clicking this button doesn't cause the list to be hidden.
 		*/
-		NStateButton* addNStateButton(const Rect& dimensions);
+		NStateButton* addNStateButton(const Rect& pixelDimensions);
 		/**
 		* Add an Image to the ListItem.
 		*/
-		Image* addImage(const Rect& dimensions, const Ogre::String& texture);
+		Image* addImage(const Rect& pixelDimensions, const Ogre::String& texture);
 
 		/**
 		* Returns a pointer to the NStateButton, if it exists.

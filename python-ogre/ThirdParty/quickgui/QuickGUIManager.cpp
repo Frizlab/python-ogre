@@ -11,7 +11,8 @@ namespace QuickGUI
 		mAutoNameSheetCounter(0),
 		mQueueID(Ogre::RENDER_QUEUE_OVERLAY),
 		mMouseCursor(0),
-		mSceneManager(0)
+		mSceneManager(0),
+		mDraggingWidget(false)
 	{
 		mWidgetNames.clear();
 
@@ -24,8 +25,8 @@ namespace QuickGUI
 		mMouseButtonDown[6] = NULL;
 		mMouseButtonDown[7] = NULL;
 
-		mMouseCursor = new MouseCursor(Size(30,30),QGUI_GMM_PIXELS,"qgui.pointer.png",this);
-		mMouseCursor->setPosition(0.5,0.5,QGUI_GMM_RELATIVE);
+		mMouseCursor = new MouseCursor(Size(30,30),"qgui.pointer.png",this);
+		mMouseCursor->setPosition(getViewportWidth()/2.0,getViewportHeight()/2.0);
 		
 		mDefaultSheet = createSheet("DefaultSheet","");
 		// Initialize all widget tracking pointers.
@@ -242,14 +243,14 @@ namespace QuickGUI
 		return mViewport;
 	}
 
-	unsigned int GUIManager::getViewportWidth()
+	Ogre::Real GUIManager::getViewportWidth()
 	{
-		return mViewport->getActualWidth();
+		return static_cast<Ogre::Real>(mViewport->getActualWidth());
 	}
 
-	unsigned int GUIManager::getViewportHeight()
+	Ogre::Real GUIManager::getViewportHeight()
 	{
-		return mViewport->getActualHeight();
+		return static_cast<Ogre::Real>(mViewport->getActualHeight());
 	}
 
 	Sheet* GUIManager::getParentSheet(const Ogre::String& name)
@@ -361,6 +362,15 @@ namespace QuickGUI
 		args.position = mMouseCursor->getPosition();
 		args.button = button;
 
+		// If dragging a widget, fire EVENT_DROPPED event
+		if(mDraggingWidget)
+		{
+			mDraggingWidget = false;
+			mActiveWidget->setGrabbed(false);
+			eventHandled = mActiveWidget->fireEvent(Widget::EVENT_DROPPED,args);
+			return eventHandled;
+		}
+
 		// Feature, allowing widgets to be clicked, without transfering focus.  Widget will receive
 		// Mouse Button Up and Click Events, if appropriate.
 		if(!mWidgetContainingMouse->getGainFocusOnClick())
@@ -381,7 +391,6 @@ namespace QuickGUI
 			if(mActiveWidget->fireEvent(Widget::EVENT_LOSE_FOCUS,args))
 				eventHandled = true;
 
-			mActiveWidget->setGrabbed(false);
 			return eventHandled;
 		}
 
@@ -439,8 +448,10 @@ namespace QuickGUI
 		// See if we should be dragging a widget.
 		if( (mActiveWidget->getGrabbed()) && (mActiveWidget->draggingEnabled()) )
 		{
+			mDraggingWidget = true;
+
 			// Dragging, which uses move function, works with pixel values (uninfluenced by parent dimensions!)
-			mActiveWidget->drag(xPixelOffset,yPixelOffset,QGUI_GMM_PIXELS);
+			mActiveWidget->drag(xPixelOffset,yPixelOffset);
 
 			return true;
 		}

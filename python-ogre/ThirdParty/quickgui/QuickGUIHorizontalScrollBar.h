@@ -6,7 +6,7 @@
 
 namespace QuickGUI
 {
-	class HorizontalScrollBar :
+	class _QuickGUIExport HorizontalScrollBar :
 		public Image
 	{
 	public:
@@ -41,7 +41,7 @@ namespace QuickGUI
 			@note
 				Vertical or Horizontal TrackBars are derived from a comparison between width and height.
         */
-		HorizontalScrollBar(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, const Ogre::String& texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
+		HorizontalScrollBar(const Ogre::String& name, Type type, const Rect& pixelDimensions, const Ogre::String& texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
 
 		// Same as setValue, except that the scroll event is not fired.
 		void _setValue(Ogre::Real value);
@@ -62,9 +62,9 @@ namespace QuickGUI
 		* before another scroll occurs.
 		*/
 		Ogre::Real getRepeatTime();
-		Size getScrollButtonSize(GuiMetricsMode mode = QGUI_GMM_RELATIVE);
-		Ogre::Real getSliderHeight(GuiMetricsMode mode = QGUI_GMM_RELATIVE);
-		Ogre::Real getSliderWidth(GuiMetricsMode mode = QGUI_GMM_RELATIVE);
+		Size getScrollButtonSize();
+		Ogre::Real getSliderHeight();
+		Ogre::Real getSliderWidth();
 		Ogre::Real getSmallChange();
 		/**
 		* Gets the numerical value representing the position of the left end of the slider, relative to the track bounds.
@@ -82,13 +82,13 @@ namespace QuickGUI
 		void setBaseTexture(const Ogre::String& textureName);
 		void setButtonLayout(ButtonLayout layout);
 		void setLargeChange(Ogre::Real change);
-		void setScrollButtonSize(Size s, GuiMetricsMode mode = QGUI_GMM_RELATIVE);
+		void setScrollButtonSize(Size s);
 		/**
 		* Sets the amount of time the left mouse button is down over a button or bar
 		* before another scroll occurs.
 		*/
 		void setScrollRepeatTime(Ogre::Real timeInSeconds);
-		void setSliderHeight(Ogre::Real height, GuiMetricsMode mode = QGUI_GMM_RELATIVE);
+		void setSliderHeight(Ogre::Real height);
 		void setSmallChange(Ogre::Real change);
 		/**
 		* Sets the numerical value representing the position of the left end of the slider, relative to the track bounds.
@@ -108,7 +108,7 @@ namespace QuickGUI
 		Ogre::Real mRepeatTimer;
 
 		// last recorded slider position
-		Point mRelativeSliderPosition;
+		Point mSliderPosition;
 
 		Ogre::Real mMinSliderPosition;
 		Ogre::Real mMaxSliderPosition;
@@ -120,7 +120,6 @@ namespace QuickGUI
 
 		Button* mSlider;
 		Ogre::String mSliderTextureName;
-		Ogre::Real mSliderPixelHeight;
 
 		void setSliderWidth(Ogre::Real relativeWidth);
 		void _constrainSlider();
@@ -128,7 +127,6 @@ namespace QuickGUI
 		Ogre::String mScrollLeftTextureName;
 		Ogre::String mScrollRightTextureName;
 
-		Size mScrollButtonPixelSize;
 		Button* mScrollLeft1;
 		Button* mScrollLeft2;
 		Button* mScrollRight1;

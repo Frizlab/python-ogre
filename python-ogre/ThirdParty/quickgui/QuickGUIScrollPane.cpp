@@ -4,7 +4,7 @@
 namespace QuickGUI
 {
 	ScrollPane::ScrollPane(const Ogre::String& instanceName, Type type, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
-		Widget(instanceName,type,Rect(0,0,1,1),QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,"",container,ParentWidget,gm),
+		Widget(instanceName,type,Rect(0,0,1,1),"",container,ParentWidget,gm),
 		mScrollBarWidth(20),
 		mHorizontalButtonLayout(HorizontalScrollBar::BUTTON_LAYOUT_OPPOSITE),
 		mVerticalButtonLayout(VerticalScrollBar::BUTTON_LAYOUT_OPPOSITE),
@@ -29,47 +29,27 @@ namespace QuickGUI
 		else
 			skinSet = parentTexture.substr(0,parentTexture.find_first_of('.'));
 		
-		Rect parentPixelSize = mParentWidget->getDimensions(QGUI_GMM_PIXELS,QGUI_GMM_PIXELS);
+		Rect parentPixelSize = mParentWidget->getDimensions();
 
-		mTopBar = new HorizontalScrollBar(parentName+".TopScrollBar",TYPE_SCROLLBAR_HORIZONTAL,Rect(mScrollBarWidth,0,parentPixelSize.width - (mScrollBarWidth*2.0),mScrollBarWidth),QGUI_GMM_PIXELS,QGUI_GMM_PIXELS,skinSet+".scrollbar.horizontal.png",container,mParentWidget,gm);
+		mTopBar = new HorizontalScrollBar(parentName+".TopScrollBar",TYPE_SCROLLBAR_HORIZONTAL,Rect(mScrollBarWidth,0,parentPixelSize.width - (mScrollBarWidth*2.0),mScrollBarWidth),skinSet+".scrollbar.horizontal.png",container,mParentWidget,gm);
 		mTopBar->setShowWithParent(false);
-		mTopBar->getQuad()->setLayer(Quad::LAYER_MENU);
 		mTopBar->hide();
 		mTopBar->addOnScrollEventHandler(&ScrollPane::onHorizontalScroll,this);
-		// Set child widgets to also be on menu layer.
-		std::vector<Widget*>* childList = mTopBar->getChildWidgetList();
-		for( std::vector<Widget*>::iterator it = childList->begin(); it != childList->end(); ++it )
-			(*it)->getQuad()->setLayer(Quad::LAYER_MENU);
 
-		mBottomBar = new HorizontalScrollBar(parentName+".BottomScrollBar",TYPE_SCROLLBAR_HORIZONTAL,Rect(mScrollBarWidth,parentPixelSize.height - mScrollBarWidth,parentPixelSize.width - (mScrollBarWidth*2.0),mScrollBarWidth),QGUI_GMM_PIXELS,QGUI_GMM_PIXELS,skinSet+".scrollbar.horizontal.png",container,mParentWidget,gm);
+		mBottomBar = new HorizontalScrollBar(parentName+".BottomScrollBar",TYPE_SCROLLBAR_HORIZONTAL,Rect(mScrollBarWidth,parentPixelSize.height - mScrollBarWidth,parentPixelSize.width - (mScrollBarWidth*2.0),mScrollBarWidth),skinSet+".scrollbar.horizontal.png",container,mParentWidget,gm);
 		mBottomBar->setShowWithParent(false);
-		mBottomBar->getQuad()->setLayer(Quad::LAYER_MENU);
 		mBottomBar->hide();
 		mBottomBar->addOnScrollEventHandler(&ScrollPane::onHorizontalScroll,this);
-		// Set child widgets to also be on menu layer.
-		mBottomBar->getChildWidgetList();
-		for( std::vector<Widget*>::iterator it = childList->begin(); it != childList->end(); ++it )
-			(*it)->getQuad()->setLayer(Quad::LAYER_MENU);
 
-		mLeftBar = new VerticalScrollBar(parentName+".LeftScrollBar",TYPE_SCROLLBAR_VERTICAL,Rect(0,mScrollBarWidth,mScrollBarWidth,parentPixelSize.height - (mScrollBarWidth*2.0)),QGUI_GMM_PIXELS,QGUI_GMM_PIXELS,skinSet+".scrollbar.vertical.png",container,mParentWidget,gm);
+		mLeftBar = new VerticalScrollBar(parentName+".LeftScrollBar",TYPE_SCROLLBAR_VERTICAL,Rect(0,mScrollBarWidth,mScrollBarWidth,parentPixelSize.height - (mScrollBarWidth*2.0)),skinSet+".scrollbar.vertical.png",container,mParentWidget,gm);
 		mLeftBar->setShowWithParent(false);
-		mLeftBar->getQuad()->setLayer(Quad::LAYER_MENU);
 		mLeftBar->hide();
 		mLeftBar->addOnScrollEventHandler(&ScrollPane::onVerticalScroll,this);
-		// Set child widgets to also be on menu layer.
-		childList = mLeftBar->getChildWidgetList();
-		for( std::vector<Widget*>::iterator it = childList->begin(); it != childList->end(); ++it )
-			(*it)->getQuad()->setLayer(Quad::LAYER_MENU);
 
-		mRightBar = new VerticalScrollBar(parentName+".RightScrollBar",TYPE_SCROLLBAR_VERTICAL,Rect(parentPixelSize.width - mScrollBarWidth,mScrollBarWidth,mScrollBarWidth,parentPixelSize.height - (mScrollBarWidth*2.0)),QGUI_GMM_PIXELS,QGUI_GMM_PIXELS,skinSet+".scrollbar.vertical.png",container,mParentWidget,gm);
+		mRightBar = new VerticalScrollBar(parentName+".RightScrollBar",TYPE_SCROLLBAR_VERTICAL,Rect(parentPixelSize.width - mScrollBarWidth,mScrollBarWidth,mScrollBarWidth,parentPixelSize.height - (mScrollBarWidth*2.0)),skinSet+".scrollbar.vertical.png",container,mParentWidget,gm);
 		mRightBar->setShowWithParent(false);
-		mRightBar->getQuad()->setLayer(Quad::LAYER_MENU);
 		mRightBar->hide();
 		mRightBar->addOnScrollEventHandler(&ScrollPane::onVerticalScroll,this);
-		// Set child widgets to also be on menu layer.
-		childList = mRightBar->getChildWidgetList();
-		for( std::vector<Widget*>::iterator it = childList->begin(); it != childList->end(); ++it )
-			(*it)->getQuad()->setLayer(Quad::LAYER_MENU);
 
 		setHorizontalButtonLayout(mHorizontalButtonLayout);
 		setVerticalButtonLayout(mVerticalButtonLayout);
@@ -79,10 +59,95 @@ namespace QuickGUI
 		mParentWidget->addEventHandler(EVENT_POSITION_CHANGED,&ScrollPane::onParentPositionChanged,this);
 		mParentWidget->addEventHandler(EVENT_SIZE_CHANGED,&ScrollPane::onParentSizeChanged,this);
 		addEventHandler(EVENT_SIZE_CHANGED,&ScrollPane::onSizeChanged,this);
+
+		_adjustBarDimensions();
 	}
 
 	ScrollPane::~ScrollPane()
 	{
+	}
+
+	void ScrollPane::_adjustBarDimensions()
+	{
+		bool leftBarUsed = ((mVerticalBarLayout == VERTICAL_BAR_LAYOUT_LEFT) || (mVerticalBarLayout == VERTICAL_BAR_LAYOUT_BOTH));
+		bool rightBarUsed = ((mVerticalBarLayout == VERTICAL_BAR_LAYOUT_RIGHT) || (mVerticalBarLayout == VERTICAL_BAR_LAYOUT_BOTH));
+		bool topBarUsed = ((mHorizontalBarLayout == HORIZONTAL_BAR_LAYOUT_TOP) || (mVerticalBarLayout == HORIZONTAL_BAR_LAYOUT_BOTH));
+		bool bottomBarUsed = ((mHorizontalBarLayout == HORIZONTAL_BAR_LAYOUT_BOTTOM) || (mVerticalBarLayout == HORIZONTAL_BAR_LAYOUT_BOTH));
+
+		// Determine Left and Right Bar Dimensions and Position
+		if(topBarUsed)
+		{
+			if(bottomBarUsed)
+			{
+				mLeftBar->setYPosition(mScrollBarWidth);
+				mLeftBar->setHeight(mParentWidget->getHeight() - (mScrollBarWidth*2));
+				mRightBar->setYPosition(mScrollBarWidth);
+				mRightBar->setHeight(mParentWidget->getHeight() - (mScrollBarWidth*2));
+			}
+			else
+			{
+				mLeftBar->setYPosition(mScrollBarWidth);
+				mLeftBar->setHeight(mParentWidget->getHeight() - mScrollBarWidth);
+				mRightBar->setYPosition(mScrollBarWidth);
+				mRightBar->setHeight(mParentWidget->getHeight() - mScrollBarWidth);
+			}
+		}
+		else
+		{
+			if(bottomBarUsed)
+			{
+				mLeftBar->setYPosition(0);
+				mLeftBar->setHeight(mParentWidget->getHeight() - mScrollBarWidth);
+				mRightBar->setYPosition(0);
+				mRightBar->setHeight(mParentWidget->getHeight() - mScrollBarWidth);
+			}
+			else
+			{
+				mLeftBar->setYPosition(0);
+				mLeftBar->setHeight(mParentWidget->getHeight());
+				mRightBar->setYPosition(0);
+				mRightBar->setHeight(mParentWidget->getHeight());
+			}
+		}
+
+		// Determine Top and Bottom Bar Dimensions and Position
+		if(leftBarUsed)
+		{
+			if(rightBarUsed)
+			{
+				mTopBar->setXPosition(mScrollBarWidth);
+				mTopBar->setWidth(mParentWidget->getWidth() - (mScrollBarWidth*2));
+				mBottomBar->setXPosition(mScrollBarWidth);
+				mBottomBar->setWidth(mParentWidget->getWidth() - (mScrollBarWidth*2));
+			}
+			else
+			{
+				mTopBar->setXPosition(mScrollBarWidth);
+				mTopBar->setWidth(mParentWidget->getWidth() - mScrollBarWidth);
+				mBottomBar->setXPosition(mScrollBarWidth);
+				mBottomBar->setWidth(mParentWidget->getWidth() - mScrollBarWidth);
+			}
+		}
+		else
+		{
+			if(rightBarUsed)
+			{
+				mTopBar->setXPosition(0);
+				mTopBar->setWidth(mParentWidget->getWidth() - mScrollBarWidth);
+				mBottomBar->setXPosition(0);
+				mBottomBar->setWidth(mParentWidget->getWidth() - mScrollBarWidth);
+			}
+			else
+			{
+				mTopBar->setXPosition(0);
+				mTopBar->setWidth(mParentWidget->getWidth());
+				mBottomBar->setXPosition(0);
+				mBottomBar->setWidth(mParentWidget->getWidth());
+			}
+		}
+
+		mBottomBar->setValue(-(mPosition.x) / mSize.width);
+		mRightBar->setValue(-(mPosition.y) / mSize.height);
 	}
 
 	void ScrollPane::_determinePaneBounds()
@@ -91,49 +156,32 @@ namespace QuickGUI
 			return;
 
 		// Scroll Pane should not be smaller than parent width/height
-		Rect parentAbsDimensions = mParentWidget->getDimensions(QGUI_GMM_ABSOLUTE,QGUI_GMM_ABSOLUTE);
+		Size parentSize = mParentWidget->getSize();
 
 		// find the minimum and maximum region encompassing the managed widgets.
-		Ogre::Real right = parentAbsDimensions.x + parentAbsDimensions.width;
-		Ogre::Real bottom = parentAbsDimensions.y + parentAbsDimensions.height;
-
-		Ogre::Real currentXPos = (mTopBar->getValue() * mAbsoluteDimensions.width);
-		Ogre::Real currentYPos = (mLeftBar->getValue() * mAbsoluteDimensions.height);
+		Ogre::Real width = parentSize.width;
+		Ogre::Real height = parentSize.height;
 
 		// Get min/max bounds for scroll pane.  By default, pane has same bounds as parent.
 		// This may change depending on managed widgets that may lie above/below/left/right of current pane bounds.
-		std::vector<std::pair<Widget*,Point> >::iterator it;
+		std::vector<Widget*>::iterator it;
 		for( it = mManagedWidgets.begin(); it != mManagedWidgets.end(); ++it )
 		{
-			Rect wAbsDimensions = (*it).first->getDimensions(QGUI_GMM_ABSOLUTE,QGUI_GMM_ABSOLUTE);
-			wAbsDimensions.x += currentXPos;
-			wAbsDimensions.y += currentYPos;
+			Rect wPixelDimensions = (*it)->getDimensions();
 			
-			if( (wAbsDimensions.x + wAbsDimensions.width) > right )
-				right = (wAbsDimensions.x + wAbsDimensions.width);
+			if( (wPixelDimensions.x + wPixelDimensions.width) > width )
+				width = (wPixelDimensions.x + wPixelDimensions.width);
 
-			if( (wAbsDimensions.y + wAbsDimensions.height) > bottom )
-				bottom = (wAbsDimensions.y + wAbsDimensions.height);
+			if( (wPixelDimensions.y + wPixelDimensions.height) > height )
+				height = (wPixelDimensions.y + wPixelDimensions.height);
 		}
 
-		Size newPanelBounds(right - parentAbsDimensions.x,bottom - parentAbsDimensions.y);
+		setSize(width,height);
 
-		setSize(newPanelBounds,QGUI_GMM_ABSOLUTE);
-		mBottomBar->setValue(currentXPos / newPanelBounds.width);
-		mRightBar->setValue(currentYPos / newPanelBounds.height);
-	}
+		_syncBarWithParentDimensions();
 
-	void ScrollPane::_updateWidgetOffset(const Ogre::String widgetName, const Point& offset)
-	{
-		std::vector<std::pair<Widget*,Point> >::iterator it;
-		for( it = mManagedWidgets.begin(); it != mManagedWidgets.end(); ++it )
-		{
-			if((*it).first->getInstanceName() == widgetName)
-			{
-				(*it).second = offset;
-				return;
-			}
-		}
+		mBottomBar->setValue(-(mPosition.x) / mSize.width);
+		mRightBar->setValue(-(mPosition.y) / mSize.height);
 	}
 
 	void ScrollPane::_showHScrollBars()
@@ -189,7 +237,7 @@ namespace QuickGUI
 		if(!mEnabled)
 			return;
 
-		if(mPixelDimensions.width <= (mParentWidget->getWidth(QGUI_GMM_PIXELS) + 0.001))
+		if(mSize.width <= mParentWidget->getWidth())
 		{
 			if(mTopBar->isVisible())
 				mTopBar->hide();
@@ -199,7 +247,7 @@ namespace QuickGUI
 		else
 			_showHScrollBars();
 
-		if(mPixelDimensions.height <= (mParentWidget->getHeight(QGUI_GMM_PIXELS) + 0.001))
+		if(mSize.height <= mParentWidget->getHeight())
 		{
 			if(mLeftBar->isVisible())
 				mLeftBar->hide();
@@ -210,10 +258,17 @@ namespace QuickGUI
 			_showVScrollBars();
 
 		// sync slider size
-		mTopBar->setSliderWidth(mParentWidget->getWidth(QGUI_GMM_ABSOLUTE) / mAbsoluteDimensions.width);
-		mBottomBar->setSliderWidth(mParentWidget->getWidth(QGUI_GMM_ABSOLUTE) / mAbsoluteDimensions.width);
-		mLeftBar->setSliderHeight(mParentWidget->getHeight(QGUI_GMM_ABSOLUTE) / mAbsoluteDimensions.height);
-		mRightBar->setSliderHeight(mParentWidget->getHeight(QGUI_GMM_ABSOLUTE) / mAbsoluteDimensions.height);
+		Size parentSize = mParentWidget->getSize();
+		// Take into consideration that scrollbar's take up some of the view.
+		if(mRightBar->isVisible())
+			parentSize.width -= mRightBar->getWidth();
+		if(mBottomBar->isVisible())
+			parentSize.height -= mBottomBar->getHeight();
+		
+		mTopBar->setSliderWidth(parentSize.width / mSize.width);
+		mBottomBar->setSliderWidth(parentSize.width / mSize.width);
+		mLeftBar->setSliderHeight(parentSize.height / mSize.height);
+		mRightBar->setSliderHeight(parentSize.height / mSize.height);
 	}
 
 	void ScrollPane::disable()
@@ -271,16 +326,12 @@ namespace QuickGUI
 		if((w->getWidgetType() == TYPE_TITLEBAR) || (w->getWidgetType() == TYPE_MENU))
 			return;
 
-		w->setClippingRect(mParentWidget->getDimensions(QGUI_GMM_ABSOLUTE,QGUI_GMM_ABSOLUTE));
+		w->setClippingRect(mParentWidget->getDimensions());
 
 		if(w->getWidgetType() == TYPE_TEXTBOX)
 			w->addEventHandler(EVENT_GAIN_FOCUS,&ScrollPane::onChildTextBoxGainedFocus,this);
 
-		Point widgetPosition = w->getPosition(QGUI_GMM_ABSOLUTE);
-		Point parentPosition = mParentWidget->getPosition(QGUI_GMM_ABSOLUTE);
-
-		Point offset(widgetPosition.x - parentPosition.x,widgetPosition.y - parentPosition.y);
-		mManagedWidgets.push_back(std::make_pair(w,offset));
+		mManagedWidgets.push_back(w);
 
 		_determinePaneBounds();
 	}
@@ -290,10 +341,10 @@ namespace QuickGUI
 		Widget* w = dynamic_cast<const WidgetEventArgs&>(args).widget;
 
 		// remove widget pointer from managed list
-		std::vector<std::pair<Widget*,Point> >::iterator it;
+		std::vector<Widget*>::iterator it;
 		for( it = mManagedWidgets.begin(); it != mManagedWidgets.end(); ++it )
 		{
-			if( w->getInstanceName() == (*it).first->getInstanceName() )
+			if( w->getInstanceName() == (*it)->getInstanceName() )
 			{
 				mManagedWidgets.erase(it);
 				break;
@@ -312,9 +363,9 @@ namespace QuickGUI
 		if(!mEnabled)
 			return;
 
-		std::vector<std::pair<Widget*,Point> >::iterator it;
+		std::vector<Widget*>::iterator it;
 		for( it = mManagedWidgets.begin(); it != mManagedWidgets.end(); ++it )
-			(*it).first->setClippingRect(mParentWidget->getDimensions(QGUI_GMM_ABSOLUTE,QGUI_GMM_ABSOLUTE));
+			(*it)->setClippingRect(mParentWidget->getDimensions());
 	}
 
 	void ScrollPane::onParentSizeChanged(const EventArgs& args)
@@ -338,18 +389,17 @@ namespace QuickGUI
 			mTopBar->_setValue(mBottomBar->getValue());
 
 		// Move Scroll Pane
-		setXPosition(-(mTopBar->getValue()) * mAbsoluteDimensions.width,QGUI_GMM_ABSOLUTE);
+		Ogre::Real topValue = mTopBar->getValue();
+		Ogre::Real botValue = mBottomBar->getValue();
+		setXPosition(-(topValue) * mSize.width);
 
-		Ogre::Real parentAbsX = mParentWidget->getXPosition(QGUI_GMM_ABSOLUTE);
-		Ogre::Real parentAbsWidth = mParentWidget->getWidth(QGUI_GMM_ABSOLUTE);
-		std::vector<std::pair<Widget*,Point> >::iterator it;
+		std::vector<Widget*>::iterator it;
 		for( it = mManagedWidgets.begin(); it != mManagedWidgets.end(); ++it )
 		{
 			// In the event of scroll panes inside scroll panes, moving a scroll pane will move the inner scroll panes.
 			// In this case, we need to update the clipping rect.
-			(*it).first->setClippingRect(mParentWidget->getDimensions(QGUI_GMM_ABSOLUTE,QGUI_GMM_ABSOLUTE));
-			//(*it).first->setXPosition((mAbsoluteDimensions.x + (*it).second.x - parentAbsX) / parentAbsWidth);
-			(*it).first->setXPosition(mAbsoluteDimensions.x - parentAbsX + (*it).second.x,QGUI_GMM_ABSOLUTE);
+			(*it)->setClippingRect(mParentWidget->getDimensions());
+			(*it)->_setScrollXOffset(mPosition.x);
 		}
 	}
 
@@ -374,17 +424,15 @@ namespace QuickGUI
 			mLeftBar->_setValue(mRightBar->getValue());
 
 		// Move Scroll Pane
-		setYPosition(-(mLeftBar->getValue()) * mAbsoluteDimensions.height,QGUI_GMM_ABSOLUTE);
+		setYPosition(-(mLeftBar->getValue()) * mSize.height);
 
-		Ogre::Real parentAbsY = mParentWidget->getYPosition(QGUI_GMM_ABSOLUTE);
-		std::vector<std::pair<Widget*,Point> >::iterator it;
+		std::vector<Widget*>::iterator it;
 		for( it = mManagedWidgets.begin(); it != mManagedWidgets.end(); ++it )
 		{
 			// In the event of scroll panes inside scroll panes, moving a scroll pane will move the inner scroll panes.
 			// In this case, we need to update the clipping rect.
-			(*it).first->setClippingRect(mParentWidget->getDimensions(QGUI_GMM_ABSOLUTE,QGUI_GMM_ABSOLUTE));
-			//(*it).first->setYPosition(mAbsoluteDimensions.y + (*it).second.y - parentAbsY,QGUI_GMM_ABSOLUTE);
-			(*it).first->setYPosition(mAbsoluteDimensions.y - parentAbsY + (*it).second.y,QGUI_GMM_ABSOLUTE);
+			(*it)->setClippingRect(mParentWidget->getDimensions());
+			(*it)->_setScrollYOffset(mPosition.y);
 		}
 	}
 
@@ -392,6 +440,7 @@ namespace QuickGUI
 	{
 		mHorizontalBarLayout = layout;
 		_syncBarWithParentDimensions();
+		_adjustBarDimensions();
 	}
 
 	void ScrollPane::setHorizontalButtonLayout(HorizontalScrollBar::ButtonLayout layout)
@@ -406,14 +455,13 @@ namespace QuickGUI
 		if((mParentWidget->getWidgetType() == TYPE_LIST) && dynamic_cast<List*>(mParentWidget)->getAutoSizeHeight())
 			return;
 
-		Rect wDimensions = w->getDimensions(QGUI_GMM_ABSOLUTE,QGUI_GMM_ABSOLUTE);
-		if(!wDimensions.inside(mAbsoluteDimensions))
+		Rect wDimensions(w->getScreenPosition(),w->getSize());
+		if(!wDimensions.inside(Rect(getScreenPosition(),mSize)))
 			return;
 
-		Ogre::Real leftX = ((wDimensions.x - mAbsoluteDimensions.x) / mAbsoluteDimensions.width);
-		//Ogre::Real leftX = (wDimensions.x - mAbsoluteDimensions.x);
-		Ogre::Real rightX = (((wDimensions.x + wDimensions.width) - mAbsoluteDimensions.x) / mAbsoluteDimensions.width);
-		//Ogre::Real rightX = ((wDimensions.x + wDimensions.width) / mAbsoluteDimensions.width);
+		Point screenPos = getScreenPosition();
+		Ogre::Real leftX = ((wDimensions.x - screenPos.x) / mSize.width);
+		Ogre::Real rightX = (((wDimensions.x + wDimensions.width) - screenPos.x) / mSize.width);
 
 		// see if we will be scrolling left, right, or not at all
 		Ogre::Real hSliderValue = mTopBar->getValue();
@@ -428,8 +476,8 @@ namespace QuickGUI
 			mTopBar->setValue(rightX * (1 - mTopBar->getSliderWidth()));
 		}
 
-		Ogre::Real topY = ((wDimensions.y - mAbsoluteDimensions.y) / mAbsoluteDimensions.height);
-		Ogre::Real botY = (((wDimensions.y + wDimensions.height) - mAbsoluteDimensions.y) / mAbsoluteDimensions.height);
+		Ogre::Real topY = ((wDimensions.y - screenPos.y) / mSize.height);
+		Ogre::Real botY = (((wDimensions.y + wDimensions.height) - screenPos.y) / mSize.height);
 		// see if we will be scrolling up, down, or not at all
 		Ogre::Real vSliderValue = mLeftBar->getValue();
 		if( topY < vSliderValue )
@@ -448,6 +496,7 @@ namespace QuickGUI
 	{
 		mVerticalBarLayout = layout;
 		_syncBarWithParentDimensions();
+		_adjustBarDimensions();
 	}
 
 	void ScrollPane::setVerticalButtonLayout(VerticalScrollBar::ButtonLayout layout)
@@ -457,40 +506,13 @@ namespace QuickGUI
 		mRightBar->setButtonLayout(mVerticalButtonLayout);
 	}
 
-	void ScrollPane::setPosition(const Ogre::Real& xVal, const Ogre::Real& yVal, GuiMetricsMode mode)
+	void ScrollPane::setPosition(const Ogre::Real& pixelX, const Ogre::Real& pixelY)
 	{
-		Widget::setPosition(xVal,yVal,mode);
+		Widget::setPosition(pixelX,pixelY);
 	}
 
-	void ScrollPane::setPosition(const Point& p, GuiMetricsMode mode)
+	void ScrollPane::setPosition(const Point& pixelPosition)
 	{
-		Widget::setPosition(p,mode);
-	}
-
-	void ScrollPane::show()
-	{
-		mQuad->setVisible(true);
-
-		// show children, except for Windows and lists of MenuList or ComboBox Widget.
-		std::vector<Widget*>::iterator it;
-		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
-		{
-			if( ((*it)->getWidgetType() == TYPE_SCROLLBAR_HORIZONTAL) ||
-				((*it)->getWidgetType() == TYPE_SCROLLBAR_VERTICAL) )
-				continue;
-
-			(*it)->show();
-		}
-
-		_syncBarWithParentDimensions();
-
-		// Only fire event if we change visibility.  If we were already visible, don't fire.
-		if(!mVisible)
-		{
-			WidgetEventArgs args(this);
-			fireEvent(EVENT_SHOWN,args);
-		}
-
-		mVisible = true;
+		Widget::setPosition(pixelPosition);
 	}
 }

@@ -12,7 +12,7 @@ namespace QuickGUI
 		mName(name),
 		mQuadContainer(container),
 		mCaption(""),
-		mAbsoluteDimensions(Rect::ZERO),
+		mPixelDimensions(Rect::ZERO),
 		mLayout(LAYOUT_HORIZONTAL),
 		mVisible(true),
 		mSelectStart(-1),
@@ -22,8 +22,8 @@ namespace QuickGUI
 		mClippingRect = mOwner->getClippingRect();
 		mOffset = owner->getOffset() + 1;
 		mGUIManager = owner->getGUIManager();
-		Rect ownerDimensions = mOwner->getDimensions(QGUI_GMM_ABSOLUTE,QGUI_GMM_ABSOLUTE);
-		mAbsoluteDimensions = Rect(ownerDimensions.x,ownerDimensions.y,0,0);
+		Rect ownerDimensions = mOwner->getDimensions();
+		mPixelDimensions = Rect(ownerDimensions.x,ownerDimensions.y,0,0);
 
 		// Order dependent, this code must go before call to setFont, since that removes selection, which
 		// affects the character background.
@@ -61,7 +61,8 @@ namespace QuickGUI
 	{
 		if(mCharacters.empty())
 		{
-			mAbsoluteDimensions = Rect(0,0,0,0);
+			mPixelDimensions.width = 0;
+			mPixelDimensions.height = 0;
 			return;
 		}
 
@@ -85,7 +86,7 @@ namespace QuickGUI
 				maxY = charPos.y + charSize.height;
 		}
 
-		mAbsoluteDimensions = Rect(minX,minY,maxX - minX,maxY - minY);
+		mPixelDimensions = Rect(minX,minY,maxX - minX,maxY - minY);
 	}
 
 	void Text::_clearCharacters()
@@ -133,10 +134,10 @@ namespace QuickGUI
 				Ogre::UTFString::code_point tempcp;
 				// Find next space, or go to new line if there is no space
 				// before we run out of room.
-                                #if defined(__x86_64__)
-                                for(long int i = 0; (it+i) != text.end(); i++)
-                                #else
-                                for(int i = 0; (it+i) != text.end(); i++)
+                #if defined(__x86_64__)
+                for(long int i = 0; (it+i) != text.end(); i++)
+                #else
+                for(int i = 0; (it+i) != text.end(); i++)
 				#endif
 				{
 					tempcp = (it+i).getCharacter();
@@ -200,7 +201,7 @@ namespace QuickGUI
 	void Text::_setCaptionVertical(const Ogre::UTFString& text)
 	{		
 		int charCounter = 0;
-		Point widgetPos = mOwner->getPosition(QGUI_GMM_ABSOLUTE);
+		Point widgetPos = mOwner->getPosition();
 		Point pos = widgetPos;
 		Ogre::UTFString::const_iterator it;
 		for( it = text.begin(); it != text.end(); ++it )
@@ -220,8 +221,7 @@ namespace QuickGUI
 				}
 				continue;
 			}
-
-			
+	
 			Quad* q = new Quad(mName + ".Character." + Ogre::StringConverter::toString(charCounter),mGUIManager);
 			q->setOffset(mOffset);
 			q->setLayer(mLayer);
@@ -273,7 +273,7 @@ namespace QuickGUI
 			}
 			else
 				uvRect = mFont->getGlyphTexCoords(text[index]);
-			length += ((((uvRect.right - uvRect.left) * TEXT_MULTIPLIER) * mFontTextureWidth) / renderWindowWidth);
+			length += (((uvRect.right - uvRect.left) * TEXT_MULTIPLIER) * mFontTextureWidth);
 			++index;
 		}
 
@@ -317,9 +317,9 @@ namespace QuickGUI
 		setCaption(mCaption);
 	}
 
-	Rect Text::getAbsoluteDimensions()
+	Rect Text::getDimensions()
 	{
-		return mAbsoluteDimensions;
+		return mPixelDimensions;
 	}
 
 	Ogre::UTFString Text::getCaption()
@@ -351,21 +351,14 @@ namespace QuickGUI
 			cp = 'r';
 
 		Ogre::Font::UVRect uvRect = mFont->getGlyphTexCoords(cp);
-		float width = ((uvRect.right - uvRect.left) * mFontTextureWidth) / static_cast<float>(mGUIManager->getViewportWidth());
-		float height = ((uvRect.bottom - uvRect.top) * mFontTextureHeight) / static_cast<float>(mGUIManager->getViewportHeight());
+		float width = ((uvRect.right - uvRect.left) * mFontTextureWidth);
+		float height = ((uvRect.bottom - uvRect.top) * mFontTextureHeight);
 
 		// shrink size a little bit to increase sharpness and solve weird blurry issue.
 		if(tab)
 			return Size(width * SPACES_PER_TAB,height) * TEXT_MULTIPLIER;
 		else
 			return Size(width,height) * TEXT_MULTIPLIER;
-
-/*
-		if(tab)
-			return Size(width * mSpacesPerTab,height);
-		else
-			return Size(width,height);
-*/
 	}
 
 	Ogre::ColourValue Text::getInverseColor(const Ogre::ColourValue& c)
@@ -422,22 +415,22 @@ namespace QuickGUI
 		return (getSpaceWidth() * SPACES_PER_TAB);
 	}
 
-	int Text::getTextIndex(const Point& absPosition)
+	int Text::getTextIndex(const Point& pixelDimensions)
 	{
 		if(mCaption.length() <= 0)
 				return -1;
 
 		// check bounds
-		if( absPosition.x < mAbsoluteDimensions.x )
+		if( pixelDimensions.x < mPixelDimensions.x )
 			return 0;
-		else if( absPosition.x > (mAbsoluteDimensions.x + mAbsoluteDimensions.width) )
+		else if( pixelDimensions.x > (mPixelDimensions.x + mPixelDimensions.width) )
 			return (static_cast<int>(mCaption.length()) - 1);
 
 		int textIndex = 0;
 		std::vector<Quad*>::iterator it;
 		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
 		{
-			if( (*it)->isPointWithinBounds(absPosition) )
+			if( (*it)->isPointWithinBounds(pixelDimensions) )
 				return textIndex;
 
 			++textIndex;
@@ -447,25 +440,25 @@ namespace QuickGUI
 		return -1;
 	}
 
-	int Text::getTextCursorIndex(const Point& absPosition)
+	int Text::getTextCursorIndex(const Point& pixelDimensions)
 	{
 		if(mCaption.length() <= 0)
 				return 0;
 
 		// check bounds
-		if( absPosition.x < mAbsoluteDimensions.x )
+		if( pixelDimensions.x < mPixelDimensions.x )
 			return -1;
-		else if( absPosition.x > (mAbsoluteDimensions.x + mAbsoluteDimensions.width) )
+		else if( pixelDimensions.x > (mPixelDimensions.x + mPixelDimensions.width) )
 			return (static_cast<int>(mCharacters.size()) + 1);
 
 		int textIndex = 0;
 		std::vector<Quad*>::iterator it;
 		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
 		{
-			if( (*it)->isPointWithinBounds(absPosition) )
+			if( (*it)->isPointWithinBounds(pixelDimensions) )
 			{
 				float midX = (*it)->getPosition().x + ((*it)->getSize().width / 2);
-				if( absPosition.x < midX )
+				if( mPixelDimensions.x < midX )
 					return textIndex;
 				else return textIndex + 1;
 			}
@@ -477,25 +470,25 @@ namespace QuickGUI
 		return textIndex;
 	}
 
-	int Text::getTextCursorIndex(const Rect& absoluteDimensions)
+	int Text::getTextCursorIndex(const Rect& pixelDimensions)
 	{
 		if(mCaption.length() <= 0)
 				return 0;
 
 		// check bounds
-		if( absoluteDimensions.x < mAbsoluteDimensions.x )
+		if( pixelDimensions.x < mPixelDimensions.x )
 			return -1;
-		else if( absoluteDimensions.x > (mAbsoluteDimensions.x + mAbsoluteDimensions.width) )
+		else if( pixelDimensions.x > (mPixelDimensions.x + mPixelDimensions.width) )
 			return (static_cast<int>(mCharacters.size()) + 1);
 
 		int textIndex = 0;
 		std::vector<Quad*>::iterator it;
 		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
 		{
-			if( (*it)->intersectsRect(absoluteDimensions) )
+			if( (*it)->intersectsRect(pixelDimensions) )
 			{
 				float midX = (*it)->getPosition().x + ((*it)->getSize().width / 2);
-				if( absoluteDimensions.x < midX )
+				if( pixelDimensions.x < midX )
 					return textIndex;
 				else return textIndex + 1;
 			}
@@ -523,17 +516,17 @@ namespace QuickGUI
 		mVisible = false;
 	}
 
-	void Text::move(const Point& absolutePosition)
+	void Text::move(const Point& pixelDimensions)
 	{
 		std::vector<Quad*>::iterator it;
 		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
 		{
 			Point curPos = (*it)->getPosition();
-			(*it)->setPosition(Point(curPos.x + absolutePosition.x,curPos.y + absolutePosition.y));
+			(*it)->setPosition(Point(curPos.x + pixelDimensions.x,curPos.y + pixelDimensions.y));
 		}
 
-		mAbsoluteDimensions.x += absolutePosition.x;
-		mAbsoluteDimensions.y += absolutePosition.y;
+		mPixelDimensions.x += pixelDimensions.x;
+		mPixelDimensions.y += pixelDimensions.y;
 	}
 
 	void Text::onTextChanged(const TextEventArgs& e)
@@ -609,9 +602,9 @@ namespace QuickGUI
 		onTextChanged(e);
 	}
 
-	void Text::setClippingRect(const Rect& r)
+	void Text::setClippingRect(const Rect& pixelDimensions)
 	{
-		mClippingRect = r;
+		mClippingRect = pixelDimensions;
 
 		std::vector<Quad*>::iterator it;
 		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
@@ -669,18 +662,18 @@ namespace QuickGUI
 		}
 	}
 
-	void Text::setPosition(const Point& absolutePosition)
+	void Text::setPosition(const Point& pixelDimensions)
 	{
-		Point origin(mAbsoluteDimensions.x,mAbsoluteDimensions.y);
+		Point origin(mPixelDimensions.x,mPixelDimensions.y);
 		std::vector<Quad*>::iterator it;
 		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
 		{
 			Point curPos = (*it)->getPosition();
-			(*it)->setPosition(Point(absolutePosition.x + (curPos.x - origin.x),absolutePosition.y + (curPos.y - origin.y)));
+			(*it)->setPosition(Point(pixelDimensions.x + (curPos.x - origin.x),pixelDimensions.y + (curPos.y - origin.y)));
 		}
 
-		mAbsoluteDimensions.x = absolutePosition.x;
-		mAbsoluteDimensions.y = absolutePosition.y;
+		mPixelDimensions.x = pixelDimensions.x;
+		mPixelDimensions.y = pixelDimensions.y;
 	}
 
 	void Text::setColor(Ogre::ColourValue color)

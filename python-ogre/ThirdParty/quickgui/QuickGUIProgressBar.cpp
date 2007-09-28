@@ -3,8 +3,8 @@
 
 namespace QuickGUI
 {
-	ProgressBar::ProgressBar(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
-		Image(name,type,dimensions,pMode,sMode,texture,container,ParentWidget,gm),
+	ProgressBar::ProgressBar(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
+		Image(name,type,pixelDimensions,texture,container,ParentWidget,gm),
 		mInitialPixelOffset(0),
 		mProgress(1.0),
 		mFillDirection(FILLS_NEGATIVE_TO_POSITIVE)
@@ -15,7 +15,7 @@ namespace QuickGUI
 			mQuad->setLayer(Quad::LAYER_CHILD);
 		}
 
-		if( mRelativeDimensions.width > mRelativeDimensions.height )
+		if( mSize.width > mSize.height )
 			mLayout = LAYOUT_HORIZONTAL;
 		else
 			mLayout = LAYOUT_VERTICAL;
@@ -41,7 +41,8 @@ namespace QuickGUI
 		}
 
 		mBarPanel = new Quad(mInstanceName+".BarPanel",mGUIManager);
-		mBarPanel->setDimensions(mAbsoluteDimensions);
+		mBarPanel->setPosition(getScreenPosition());
+		mBarPanel->setSize(mSize);
 		mBarPanel->setOffset(mOffset+1);
 		mBarPanel->setTexture(mBarTexture->getName());
 		mBarPanel->_notifyQuadContainer(mQuadContainer);
@@ -229,12 +230,12 @@ namespace QuickGUI
 	void ProgressBar::onPositionChanged(const EventArgs& args)
 	{
 		Image::onPositionChanged(args);
-		mBarPanel->setPosition(Point(mAbsoluteDimensions.x,mAbsoluteDimensions.y));
+		mBarPanel->setPosition(getScreenPosition());
 	}
 
 	void ProgressBar::onSizeChanged(const EventArgs& args)
 	{
-		mBarPanel->setSize(Size(mAbsoluteDimensions.width,mAbsoluteDimensions.height));
+		mBarPanel->setSize(mSize);
 	}
 
 	void ProgressBar::setClippingRect(const Rect& r)

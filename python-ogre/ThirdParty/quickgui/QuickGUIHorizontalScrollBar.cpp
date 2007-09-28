@@ -3,22 +3,19 @@
 
 namespace QuickGUI
 {
-	HorizontalScrollBar::HorizontalScrollBar(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, const Ogre::String& texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
-		Image(name,type,dimensions,pMode,sMode,texture,container,ParentWidget,gm),
+	HorizontalScrollBar::HorizontalScrollBar(const Ogre::String& name, Type type, const Rect& pixelDimensions, const Ogre::String& texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
+		Image(name,type,pixelDimensions,texture,container,ParentWidget,gm),
 		mMinSliderPosition(0),
 		mMaxSliderPosition(1),
-		mSliderPixelHeight(mPixelDimensions.height),
-		mScrollButtonPixelSize(Size(mPixelDimensions.height,mPixelDimensions.height)),
 		mMouseDownOnTrack(false),
 		mSmallChange(0.1),
 		mLargeChange(0.4),
-		mRelativeSliderPosition(Point::ZERO),
 		mRepeatTimer(0),
 		mScrollRepeatTime(0.5)
 	{
 		if(mWidgetType == TYPE_SCROLLBAR_HORIZONTAL)
 		{
-			mQuad->setLayer(Quad::LAYER_CHILD);
+			mQuad->setLayer(mParentWidget->getQuad()->getLayer());
 		}
 
 		addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&HorizontalScrollBar::onMouseDownOnTrack,this);
@@ -30,30 +27,29 @@ namespace QuickGUI
 		mScrollLeftTextureName = mTextureName + ".left" + mTextureExtension;
 		mScrollRightTextureName = mTextureName + ".right" + mTextureExtension;
 
-		mSlider = new Button(mInstanceName+".Slider",TYPE_BUTTON,Rect(0,0,1,1),QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,mSliderTextureName,mQuadContainer,this,mGUIManager);
+		mSlider = new Button(mInstanceName+".Slider",TYPE_BUTTON,Rect(0,0,mSize.height,mSize.height),mSliderTextureName,mQuadContainer,this,mGUIManager);
 		mSlider->enableDragging(true);
 		mSlider->constrainDragging(true,false);
-		mSlider->getQuad()->setLayer(mQuad->getLayer());
 		mSlider->addEventHandler(EVENT_DRAGGED,&HorizontalScrollBar::onSliderDragged,this);
 		
-		Ogre::Real scrollBarHeight = mPixelDimensions.height;
-		mScrollLeft1 = new Button(mInstanceName+".Left1",TYPE_BUTTON,Rect(0,0,scrollBarHeight,scrollBarHeight),QGUI_GMM_PIXELS,QGUI_GMM_PIXELS,mScrollLeftTextureName,mQuadContainer,this,mGUIManager);
-		mScrollLeft1->getQuad()->setLayer(mQuad->getLayer());
+		Ogre::Real scrollBarHeight = mSize.height;
+		mScrollLeft1 = new Button(mInstanceName+".Left1",TYPE_BUTTON,Rect(0,0,mSize.height,mSize.height),mScrollLeftTextureName,mQuadContainer,this,mGUIManager);
+		mScrollLeft1->setShowWithParent(false);
 		mScrollLeft1->hide();
 		mScrollLeft1->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&HorizontalScrollBar::onScrollLeftDown,this);
 		
-		mScrollLeft2 = new Button(mInstanceName+".Left2",TYPE_BUTTON,Rect(0,0,scrollBarHeight,scrollBarHeight),QGUI_GMM_PIXELS,QGUI_GMM_PIXELS,mScrollLeftTextureName,mQuadContainer,this,mGUIManager);
-		mScrollLeft2->getQuad()->setLayer(mQuad->getLayer());
+		mScrollLeft2 = new Button(mInstanceName+".Left2",TYPE_BUTTON,Rect(0,0,mSize.height,mSize.height),mScrollLeftTextureName,mQuadContainer,this,mGUIManager);
+		mScrollLeft2->setShowWithParent(false);
 		mScrollLeft2->hide();
 		mScrollLeft2->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&HorizontalScrollBar::onScrollLeftDown,this);
 		
-		mScrollRight1 = new Button(mInstanceName+".Right1",TYPE_BUTTON,Rect(0,0,scrollBarHeight,scrollBarHeight),QGUI_GMM_PIXELS,QGUI_GMM_PIXELS,mScrollRightTextureName,mQuadContainer,this,mGUIManager);
-		mScrollRight1->getQuad()->setLayer(mQuad->getLayer());
+		mScrollRight1 = new Button(mInstanceName+".Right1",TYPE_BUTTON,Rect(0,0,mSize.height,mSize.height),mScrollRightTextureName,mQuadContainer,this,mGUIManager);
+		mScrollRight1->setShowWithParent(false);
 		mScrollRight1->hide();
 		mScrollRight1->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&HorizontalScrollBar::onScrollRightDown,this);
 		
-		mScrollRight2 = new Button(mInstanceName+".Right2",TYPE_BUTTON,Rect(0,0,scrollBarHeight,scrollBarHeight),QGUI_GMM_PIXELS,QGUI_GMM_PIXELS,mScrollRightTextureName,mQuadContainer,this,mGUIManager);
-		mScrollRight2->getQuad()->setLayer(mQuad->getLayer());
+		mScrollRight2 = new Button(mInstanceName+".Right2",TYPE_BUTTON,Rect(0,0,mSize.height,mSize.height),mScrollRightTextureName,mQuadContainer,this,mGUIManager);
+		mScrollRight2->setShowWithParent(false);
 		mScrollRight2->hide();
 		mScrollRight2->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&HorizontalScrollBar::onScrollRightDown,this);
 		
@@ -74,23 +70,21 @@ namespace QuickGUI
 			mSlider->setXPosition(mMinSliderPosition);
 		else if(sliderEnd > mMaxSliderPosition)
 			mSlider->setXPosition(mMaxSliderPosition - mSlider->getWidth());
-
-		mRelativeSliderPosition = mSlider->getPosition();
 	}
 
 	void HorizontalScrollBar::_positionScrollButtons()
 	{
 		Rect leftDimensions = mScrollLeft1->getDimensions();
 		Rect rightDimensions = mScrollRight1->getDimensions();
-		mScrollLeft1->setPosition(0,0.5 - (leftDimensions.height/2.0));
-		mScrollRight1->setPosition(leftDimensions.width,0.5 - (rightDimensions.height/2.0));
-		mScrollLeft2->setPosition(1 - rightDimensions.width - leftDimensions.width,0.5 - (leftDimensions.height/2.0));
-		mScrollRight2->setPosition(1 - rightDimensions.width,0.5 - (rightDimensions.height/2.0));
+		mScrollLeft1->setPosition(0,(mSize.height/2.0) - (leftDimensions.height/2.0));
+		mScrollRight1->setPosition(leftDimensions.width,(mSize.height/2.0) - (rightDimensions.height/2.0));
+		mScrollLeft2->setPosition(mSize.width - rightDimensions.width - leftDimensions.width,(mSize.height/2.0) - (leftDimensions.height/2.0));
+		mScrollRight2->setPosition(mSize.width - rightDimensions.width,(mSize.height/2.0) - (rightDimensions.height/2.0));
 	}
 
 	void HorizontalScrollBar::_scroll(Ogre::Real change, ScrollEventArgs args)
 	{
-		mSlider->move(change,0);
+		mSlider->moveX(change * mSize.width);
 
 		_constrainSlider();
 
@@ -101,12 +95,9 @@ namespace QuickGUI
 
 	void HorizontalScrollBar::_setValue(Ogre::Real value)
 	{
-		if( value < 0.0 )
-			value = 0.0;
-		if( value > (mMaxSliderPosition - mSlider->getWidth()) )
-			value = (mMaxSliderPosition - mSlider->getWidth());
+		Ogre::Real pixelX = (value * (mMaxSliderPosition - mMinSliderPosition)) + mMinSliderPosition;
 
-		mSlider->setXPosition(mMinSliderPosition + value);
+		mSlider->setXPosition(pixelX);
 		_constrainSlider();
 	}
 
@@ -167,28 +158,19 @@ namespace QuickGUI
 		return mScrollRepeatTime;
 	}
 
-	Size HorizontalScrollBar::getScrollButtonSize(GuiMetricsMode mode)
+	Size HorizontalScrollBar::getScrollButtonSize()
 	{
-		switch(mode)
-		{
-		case QGUI_GMM_ABSOLUTE:
-			return Size(mScrollButtonPixelSize.width / mGUIManager->getViewportWidth(),mScrollButtonPixelSize.height / mGUIManager->getViewportHeight());
-		case QGUI_GMM_PIXELS:
-			return mScrollButtonPixelSize;
-		case QGUI_GMM_RELATIVE:
-		default:
-			return Size(mScrollButtonPixelSize.width / mPixelDimensions.width,mScrollButtonPixelSize.height / mPixelDimensions.height);
-		}
+		return mScrollLeft1->getSize();
 	}
 
-	Ogre::Real HorizontalScrollBar::getSliderHeight(GuiMetricsMode mode)
+	Ogre::Real HorizontalScrollBar::getSliderHeight()
 	{
-		return mSlider->getHeight(mode);
+		return mSlider->getHeight();
 	}
 
-	Ogre::Real HorizontalScrollBar::getSliderWidth(GuiMetricsMode mode)
+	Ogre::Real HorizontalScrollBar::getSliderWidth()
 	{
-		return mSlider->getWidth(mode);
+		return mSlider->getWidth();
 	}
 
 	Ogre::Real HorizontalScrollBar::getSmallChange()
@@ -199,10 +181,6 @@ namespace QuickGUI
 	Ogre::Real HorizontalScrollBar::getValue()
 	{
 		Ogre::Real retVal = ((mSlider->getXPosition() - mMinSliderPosition) / (mMaxSliderPosition - mMinSliderPosition));
-		
-		if(retVal < 0)
-			retVal = 0;
-
 		return retVal;
 	}
 
@@ -212,9 +190,11 @@ namespace QuickGUI
 		{
 			mMouseDownOnTrack = true;
 
+			Point mousePosition = dynamic_cast<const MouseEventArgs&>(args).position - getScreenPosition();
+
 			ScrollEventArgs scrollArgs(this);
 			// if mouse clicked left of track, scroll left.
-			if(dynamic_cast<const MouseEventArgs&>(args).position.x < mSlider->getXPosition(QGUI_GMM_PIXELS))
+			if(mousePosition.x < mSlider->getXPosition())
 			{
 				scrollArgs.sliderIncreasedPosition = false;
 				_scroll(-mLargeChange,scrollArgs);
@@ -244,7 +224,6 @@ namespace QuickGUI
 
 	void HorizontalScrollBar::onSizeChanged(const EventArgs& args)
 	{
-		mSlider->setWidth(mSlider->getWidth());
 		_positionScrollButtons();
 		_constrainSlider();
 	}
@@ -272,8 +251,7 @@ namespace QuickGUI
 	void HorizontalScrollBar::onSliderDragged(const EventArgs& args)
 	{
 		ScrollEventArgs scrollArgs(this);
-		Point currentRelativeSliderPosition = dynamic_cast<const WidgetEventArgs&>(args).widget->getPosition();
-		if(currentRelativeSliderPosition.x < mRelativeSliderPosition.x)
+		if(dynamic_cast<const MouseEventArgs&>(args).moveDelta.x < 0)
 			scrollArgs.sliderIncreasedPosition = false;
 		else
 			scrollArgs.sliderIncreasedPosition = true;
@@ -328,7 +306,7 @@ namespace QuickGUI
 			{
 				Rect temp = mScrollRight1->getDimensions();
 				mMinSliderPosition = temp.x + temp.width;
-				mMaxSliderPosition = 1.0;
+				mMaxSliderPosition = mSize.width;
 			}
 			break;
 		case BUTTON_LAYOUT_ADJACENT_RIGHT:
@@ -367,7 +345,7 @@ namespace QuickGUI
 			break;
 		case BUTTON_LAYOUT_NONE:
 			mMinSliderPosition = 0.0;
-			mMaxSliderPosition = 1.0;
+			mMaxSliderPosition = mSize.width;
 			break;
 		case BUTTON_LAYOUT_OPPOSITE:
 			{
@@ -380,8 +358,6 @@ namespace QuickGUI
 			break;
 		}
 
-		// adjust slider size to fit within the new region: (mMinSliderPosition to mMaxSliderPosition)
-		mSlider->setWidth(mSlider->getWidth() * (mMaxSliderPosition - mMinSliderPosition));
 		_constrainSlider();
 
 		if(mVisible)
@@ -399,17 +375,14 @@ namespace QuickGUI
 		mLargeChange = change;
 	}
 
-	void HorizontalScrollBar::setScrollButtonSize(Size s, GuiMetricsMode mode)
+	void HorizontalScrollBar::setScrollButtonSize(Size pixelSize)
 	{
-		mScrollLeft1->setSize(s,mode);
-		mScrollLeft2->setSize(s,mode);
-		mScrollRight1->setSize(s,mode);
-		mScrollRight2->setSize(s,mode);
+		mScrollLeft1->setSize(pixelSize);
+		mScrollLeft2->setSize(pixelSize);
+		mScrollRight1->setSize(pixelSize);
+		mScrollRight2->setSize(pixelSize);
 
 		_positionScrollButtons();
-
-		mScrollButtonPixelSize = mScrollLeft1->getSize(QGUI_GMM_PIXELS);
-
 		setButtonLayout(mButtonLayout);
 	}
 
@@ -418,16 +391,15 @@ namespace QuickGUI
 		mScrollRepeatTime = timeInSeconds;
 	}
 
-	void HorizontalScrollBar::setSliderHeight(Ogre::Real height, GuiMetricsMode mode)
+	void HorizontalScrollBar::setSliderHeight(Ogre::Real pixelHeight)
 	{
-		mSlider->setHeight(height,mode);
-		mSlider->setYPosition(0.5 - (mSlider->getHeight()/2.0));
-		mSliderPixelHeight = mSlider->getHeight(QGUI_GMM_PIXELS);
+		mSlider->setHeight(pixelHeight);
+		mSlider->setYPosition((mSize.height/2.0) - (mSlider->getHeight()/2.0));
 	}
 
-	void HorizontalScrollBar::setSliderWidth(Ogre::Real relativeWidth)
+	void HorizontalScrollBar::setSliderWidth(Ogre::Real pixelWidth)
 	{
-		mSlider->setWidth(relativeWidth * (mMaxSliderPosition - mMinSliderPosition));
+		mSlider->setWidth(pixelWidth * (mMaxSliderPosition - mMinSliderPosition));
 		_constrainSlider();
 	}
 
@@ -438,12 +410,14 @@ namespace QuickGUI
 
 	void HorizontalScrollBar::setValue(Ogre::Real value)
 	{
+		value = (value * mSize.width) + mMinSliderPosition;
+
 		if( value < 0.0 )
 			value = 0.0;
 		if( value > (mMaxSliderPosition - mSlider->getWidth()) )
 			value = (mMaxSliderPosition - mSlider->getWidth());
 
-		mSlider->setXPosition(mMinSliderPosition + value);
+		mSlider->setXPosition(value);
 
 		ScrollEventArgs scrollArgs(this);
 		Ogre::Real currentValue = getValue();
@@ -457,29 +431,8 @@ namespace QuickGUI
 
 	void HorizontalScrollBar::show()
 	{
-		mQuad->setVisible(true);
-
-		// show children, except for Windows and lists of MenuList or ComboBox Widget.
-		std::vector<Widget*>::iterator it;
-		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
-		{
-			if( ((*it)->getWidgetType() == TYPE_BUTTON) &&
-				((*it)->getInstanceName() != mSlider->getInstanceName()) )
-				continue;
-
-			(*it)->show();
-		}
-
+		Image::show();
 		_showButtons();
-
-		// Only fire event if we change visibility.  If we were already visible, don't fire.
-		if(!mVisible)
-		{
-			WidgetEventArgs args(this);
-			fireEvent(EVENT_SHOWN,args);
-		}
-
-		mVisible = true;
 	}
 
 	void HorizontalScrollBar::timeElapsed(Ogre::Real time)
