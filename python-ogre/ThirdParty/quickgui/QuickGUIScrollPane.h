@@ -6,6 +6,7 @@
 #include "QuickGUIWidget.h"
 
 #include <vector>
+#include <utility>
 
 namespace QuickGUI
 {
@@ -21,15 +22,17 @@ namespace QuickGUI
 		enum HorizontalBarLayout
 		{
 			HORIZONTAL_BAR_LAYOUT_TOP		=  0,
-			HORIZONTAL_BAR_LAYOUT_BOTTOM			,
-			HORIZONTAL_BAR_LAYOUT_BOTH
+			HORIZONTAL_BAR_LAYOUT_BOTTOM		,
+			HORIZONTAL_BAR_LAYOUT_BOTH			,
+			HORIZONTAL_BAR_LAYOUT_NONE
 		};
 
 		enum VerticalBarLayout
 		{
 			VERTICAL_BAR_LAYOUT_LEFT		=  0,
 			VERTICAL_BAR_LAYOUT_RIGHT			,
-			VERTICAL_BAR_LAYOUT_BOTH
+			VERTICAL_BAR_LAYOUT_BOTH			,
+			VERTICAL_BAR_LAYOUT_NONE
 		};
 	public:
 		/** Constructor
@@ -50,6 +53,17 @@ namespace QuickGUI
         */
 		ScrollPane(const Ogre::String& instanceName, Type type, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
 		~ScrollPane();
+
+		/**
+		* Disable Widget, making it unresponsive to events.
+		* NOTE: Sheets cannot be disabled.
+		*/
+		void disable();
+		/**
+		* Enable Widget, allowing it to accept and handle events.
+		* NOTE: Sheets cannot be enabled/disabled
+		*/
+		void enable();
 
 		HorizontalScrollBar* getBottomScrollBar();
 		HorizontalScrollBar::ButtonLayout getHorizontalButtonLayout();
@@ -72,8 +86,6 @@ namespace QuickGUI
 		*/
 		void show();
 
-		void updateView();
-
 	protected:
 		Ogre::Real mScrollBarWidth;
 
@@ -93,16 +105,20 @@ namespace QuickGUI
 		void onParentSizeChanged(const EventArgs& args);
 		void onParentPositionChanged(const EventArgs& args);
 		void onHorizontalScroll(const EventArgs& args);
+		void onSizeChanged(const EventArgs& args);
 		void onVerticalScroll(const EventArgs& args);
 
 		void _showHScrollBars();
 		void _showVScrollBars();
 		void _syncBarWithParentDimensions();
 
-		std::vector<Widget*> mManagedWidgets;
-		// used for calculating difference in position, after position has changed.
-		Point mAbsPosition;
-		Point mRelPosition;
+		std::vector<std::pair<Widget*,Point> > mManagedWidgets;
+		// When widgets become managed/unmanaged, the pane may grow or shrink.
+		void _determinePaneBounds();
+
+		// Called when you move a widget and want update its managing ScrollPane of its new offset in relation to it's parent.
+		// (Useful for editors)
+		void _updateWidgetOffset(const Ogre::String widgetName, const Point& offset);
 
 	// Inherited functions that need to have their access level changed from public.
 	protected:

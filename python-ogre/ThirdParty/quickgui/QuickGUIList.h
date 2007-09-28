@@ -52,7 +52,11 @@ namespace QuickGUI
 		* Destroys all List Items.
 		*/
 		void clearList();
-
+		/**
+		* Returns true if List height is configured to adjust its height to match its child ListItems as they are added.
+		* NOTE: ScrollBars cannot be used with AutoSizeHeight.
+		*/
+		bool getAutoSizeHeight();
 		/**
 		* Gets a ListItem from the List.  No exception is thrown
 		* if the index is out of bounds.

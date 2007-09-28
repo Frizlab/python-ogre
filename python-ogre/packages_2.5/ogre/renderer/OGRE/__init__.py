@@ -1,4 +1,6 @@
 import sys, os 
+import warnings
+warnings.simplefilter('ignore', RuntimeWarning)
 
 # Note that we put the Python-Ogre path first to ensure we don't get strange problems with windows
 # picking up the wrong dlls -- Thanks to Pelle for tracking down this issue..
@@ -36,3 +38,5 @@ def Degree( d=None, r=None ):
     else:
         return _ogre_.Degree( d=d )
         
+warnings.resetwarnings( ) 
+

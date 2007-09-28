@@ -11,6 +11,8 @@ namespace QuickGUI
 		mNumberOfVisibleItems(5),
 		mItemPixelHeight(20)
 	{
+		mInheritClippingRect = false;
+
 		if(mRelativeDimensions.height <= 0.001)
 			mAutoSizeHeight = true;
 		else
@@ -37,6 +39,7 @@ namespace QuickGUI
 			mQuad->setLayer(Quad::LAYER_CHILD);
 
 			mScrollPane = new ScrollPane(mInstanceName+".ScrollPane",TYPE_SCROLL_PANE,mQuadContainer,this,mGUIManager);
+			mScrollPane->disable();
 		}
 	}
 
@@ -88,6 +91,11 @@ namespace QuickGUI
 			dynamic_cast<ComboBox*>(mParentWidget)->setCaption("");
 	}
 
+	bool List::getAutoSizeHeight()
+	{
+		return mAutoSizeHeight;
+	}
+
 	ListItem* List::getListItem(unsigned int index)
 	{
 		if( (static_cast<int>(mItems.size()) - 1) < static_cast<int>(index) ) return NULL;
@@ -136,8 +144,6 @@ namespace QuickGUI
 		if( (mItems.empty()) || ((mItems.size() - 1) < index) ) 
 			return;
 
-		Ogre::Real FreeHeight = 0;
-
 		// Delete the List Item
 		int counter = 0;
 		std::vector<ListItem*>::iterator it;
@@ -155,16 +161,12 @@ namespace QuickGUI
 		}
 
 		// See if list items need to be re-positioned
-		if( counter != (static_cast<int>(mItems.size()) - 1) )
+		Ogre::Real n = 0;
+		for( it = mItems.begin(); it != mItems.end(); ++it )
 		{
-			Ogre::Real n = 0;
-			std::vector<ListItem*>::iterator it;
-			for( it = mItems.begin(); it != mItems.end(); ++it )
-			{
-				(*it)->setYPosition(mItemPixelHeight * n,QGUI_GMM_PIXELS);
-				(*it)->setHeight(mItemPixelHeight,QGUI_GMM_PIXELS);
-				++n;
-			}
+			(*it)->setYPosition(mItemPixelHeight * n,QGUI_GMM_PIXELS);
+			(*it)->setHeight(mItemPixelHeight,QGUI_GMM_PIXELS);
+			++n;
 		}
 
 		if(mAutoSizeHeight)
@@ -173,6 +175,8 @@ namespace QuickGUI
 
 	void List::setAutoSizeHeight()
 	{
+		mScrollPane->setSize(1,1);
+		mScrollPane->disable();
 		mAutoSizeHeight = true;
 		setHeight(static_cast<int>(mItems.size()) * mItemPixelHeight,QGUI_GMM_PIXELS);
 	}
@@ -185,9 +189,6 @@ namespace QuickGUI
 
 	void List::setListItemPixelHeight(const Ogre::Real& heightInPixels)
 	{
-		if(mItemPixelHeight == heightInPixels)
-			return;
-
 		mItemPixelHeight = heightInPixels;
 
 		Ogre::Real counter = 0;
@@ -198,6 +199,8 @@ namespace QuickGUI
 			(*it)->setHeight(mItemPixelHeight,QGUI_GMM_PIXELS);
 			++counter;
 		}
+
+		mScrollPane->enable();
 	}
 
 	void List::setNumberOfVisibleItems(unsigned int number)

@@ -13,9 +13,9 @@ namespace QuickGUI
 		if(mWidgetType == TYPE_TITLEBAR)
 		{
 			mQuad->setLayer(Quad::LAYER_MENU);
+			mText->setLayer(Quad::LAYER_MENU);
 		}
-
-		mText->setLayer(Quad::LAYER_MENU);
+		
 		mHorizontalAlignment = QGUI_HA_LEFT;
 
 		// Create CloseButton

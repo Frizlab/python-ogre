@@ -168,7 +168,9 @@ namespace QuickGUI
 
 	void GUIManager::destroySheet(const Ogre::String& name)
 	{
-		if( (name == "") || (mActiveSheet->getInstanceName() == name) ) return;
+		// Cannot destroy active sheet!
+		if( (name == "") || (mActiveSheet->getInstanceName() == name) ) 
+			return;
 
 		std::list<Sheet*>::iterator it;
 		for( it = mSheets.begin(); it != mSheets.end(); ++it )
@@ -183,18 +185,30 @@ namespace QuickGUI
 		}
 	}
 
+	void GUIManager::destroySheet(Sheet* sheet)
+	{
+		destroySheet(sheet->getInstanceName());
+	}
+
 	void GUIManager::destroyWidget(Widget* w)
 	{
-		// Cannot destroy active sheet!
-		if( (w == NULL) || (w->getInstanceName() == mActiveSheet->getInstanceName()) )
+		if( w == NULL )
 			return;
+
+		if(w->getWidgetType() == Widget::TYPE_SHEET)
+		{
+			destroySheet(dynamic_cast<Sheet*>(w));
+			return;
+		}
 
 		mFreeList.push_back(w);
 	}
 
-	void GUIManager::destroySheet(Sheet* sheet)
+	void GUIManager::destroyWidget(const Ogre::String& widgetName)
 	{
-		destroySheet(sheet->getInstanceName());
+		Widget* w = mActiveSheet->getChildWidget(widgetName);
+		if( w != NULL )
+			destroyWidget(w);
 	}
 
 	Sheet* GUIManager::getActiveSheet()
@@ -496,29 +510,18 @@ namespace QuickGUI
 
 	void GUIManager::renderQueueEnded(Ogre::uint8 id, const Ogre::String& invocation, bool& repeatThisQueue)
 	{
-		bool listEmpty = mFreeList.empty();
+		if(mFreeList.empty())
+			return;
 
-		if(!listEmpty)
-		{
-			mActiveWidget = mActiveSheet;
-			mWidgetContainingMouse = mActiveSheet;
-		}
+		mActiveWidget = mActiveSheet;
+		mWidgetContainingMouse = mActiveSheet;
 
 		std::vector<Widget*>::iterator it;
 		for( it = mFreeList.begin(); it != mFreeList.end(); ++it )
-		{
-			listEmpty = false;
-
-			// if widget is a sheet, need to remove it from sheet list.
-			if( (*it)->getWidgetType() == Widget::TYPE_SHEET )
-				destroySheet((*it)->getInstanceName());
-			else 
-				delete (*it);
-		}
+			delete (*it);
 		mFreeList.clear();
 
-		if(!listEmpty)
-			injectMouseMove(0,0);
+		injectMouseMove(0,0);
 	}
 
 	void GUIManager::removeFromRenderQueue()

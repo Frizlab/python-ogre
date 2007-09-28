@@ -501,7 +501,7 @@ class plib:
     ModuleName = "plib"
     CheckIncludes=[]
     if os.name == "nt":
-        libs = [ Config.LIB_Boost, 'winmm', 'User32','wsock32' ]
+        libs = [ Config.LIB_Boost, 'winmm', 'User32','wsock32', 'opengl32.lib','glu32.lib' ]
     else:
         libs = [ Config.LIB_Boost ] # Note sure what linux libraries are needed
     

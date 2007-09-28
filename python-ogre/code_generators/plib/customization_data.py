@@ -4,6 +4,7 @@ def header_files( version ):
              ,'sl.h'
              , 'sm.h'
              , 'net.h'
+             , 'ssg.h'
              ]
   
 def huge_classes( version ):

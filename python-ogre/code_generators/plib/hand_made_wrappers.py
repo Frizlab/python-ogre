@@ -277,7 +277,28 @@ WRAPPER_REGISTRATION_slScheduler = [
                 bp::arg("magic")=(0), bp::arg("subscriber")=bp::object(), bp::arg("method")="" ),
     "Python-Ogre Hand Wrapped\\n" );""",
    ] 
-    
+ 
+WRAPPER_DEFINITION_ssgEntity_Wrapper=\
+"""
+  virtual void cull  ( sgFrustum *f, sgMat4 m, int test_needed ){};
+  virtual void isect ( sgSphere  *s, sgMat4 m, int test_needed ){} ;
+  virtual void hot   ( sgVec3     s, sgMat4 m, int test_needed ) {} ;
+  virtual void los   ( sgVec3     s, sgMat4 m, int test_needed ) {} ;
+"""
+
+WRAPPER_DEFINITION_ssgLeaf_Wrapper=\
+"""
+  virtual float *getVertex   ( int i ) { return 0; } ;
+  virtual float *getNormal   ( int i ) {return 0;} ;
+  virtual float *getColour   ( int i ) {return 0;} ;
+  virtual float *getTexCoord ( int i ) {return 0;} ;
+  virtual void transform ( const sgMat4 m ) {};
+  virtual void isect_triangles ( sgSphere *s, sgMat4 m, int test_needed ) {};
+  virtual void hot_triangles   ( sgVec3    s, sgMat4 m, int test_needed ) {};
+  virtual void los_triangles   ( sgVec3    s, sgMat4 m, int test_needed ) {};
+  
+"""
+
 #################################################################################################
 #################################################################################################
 
@@ -302,3 +323,7 @@ def apply( mb ):
     rt.add_declaration_code( WRAPPER_DEFINITION_netBuffer )
     apply_reg (rt,  WRAPPER_REGISTRATION_netBuffer )
         
+    rt = mb.class_( 'ssgEntity' )
+    rt.add_wrapper_code( WRAPPER_DEFINITION_ssgEntity_Wrapper )
+    rt = mb.class_( 'ssgLeaf' )
+    rt.add_wrapper_code( WRAPPER_DEFINITION_ssgLeaf_Wrapper )

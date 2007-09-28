@@ -1,3 +1,6 @@
+import warnings
+warnings.simplefilter('ignore', RuntimeWarning)
+
 from _physx_ import *
 import ogre.renderer.OGRE as ogre
 
@@ -14,4 +17,5 @@ def NxQuat( arg0=None, arg1=None ):
     elif arg0:
         return _physx_.NxQuat(arg0)    
     return _physx_.NxQuat()
+warnings.resetwarnings( ) 
     
