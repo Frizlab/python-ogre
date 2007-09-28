@@ -39,7 +39,11 @@ namespace QuickGUI
                 height != r.height );
         }
 
+		Rect getIntersection( const Rect& r );
+
 		bool inside(const Rect& r);
+		bool intersectsRect(const Rect& r);
+		bool isPointWithinBounds(const Point& pixelPosition);
 
 		Ogre::Real x;
 		Ogre::Real y;

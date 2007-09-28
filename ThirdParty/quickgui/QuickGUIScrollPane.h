@@ -6,7 +6,6 @@
 #include "QuickGUIWidget.h"
 
 #include <vector>
-#include <utility>
 
 namespace QuickGUI
 {
@@ -14,6 +13,7 @@ namespace QuickGUI
 		public Widget
 	{
 	public:
+		friend class Widget;
 		friend class Panel;
 		friend class Sheet;
 		friend class Window;
@@ -80,11 +80,6 @@ namespace QuickGUI
 		void setHorizontalButtonLayout(HorizontalScrollBar::ButtonLayout layout);
 		void setVerticalBarLayout(VerticalBarLayout layout);
 		void setVerticalButtonLayout(VerticalScrollBar::ButtonLayout layout);
-		/**
-		* Sets mVisible to true.  Widgets should override this to implement how they handle
-		* showing.
-		*/
-		void show();
 
 	protected:
 		Ogre::Real mScrollBarWidth;
@@ -99,6 +94,8 @@ namespace QuickGUI
 		VerticalScrollBar::ButtonLayout mVerticalButtonLayout;	
 		VerticalBarLayout mVerticalBarLayout;
 
+		void _adjustBarDimensions();
+
 		void onChildAddedToParent(const EventArgs& args);
 		void onChildRemovedFromParent(const EventArgs& args);
 		void onChildTextBoxGainedFocus(const EventArgs& args);
@@ -112,13 +109,9 @@ namespace QuickGUI
 		void _showVScrollBars();
 		void _syncBarWithParentDimensions();
 
-		std::vector<std::pair<Widget*,Point> > mManagedWidgets;
+		std::vector<Widget*> mManagedWidgets;
 		// When widgets become managed/unmanaged, the pane may grow or shrink.
 		void _determinePaneBounds();
-
-		// Called when you move a widget and want update its managing ScrollPane of its new offset in relation to it's parent.
-		// (Useful for editors)
-		void _updateWidgetOffset(const Ogre::String widgetName, const Point& offset);
 
 	// Inherited functions that need to have their access level changed from public.
 	protected:
@@ -127,8 +120,8 @@ namespace QuickGUI
 		* NOTE: the values given are relative to the parent's top left corner, and not the screen!  For screen positioning,
 		*  user the setScreenPosition function.
 		*/
-		void setPosition(const Ogre::Real& xVal, const Ogre::Real& yVal, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
-		void setPosition(const Point& p, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
+		void setPosition(const Ogre::Real& pixelX, const Ogre::Real& pixelY);
+		void setPosition(const Point& pixelPosition);
 	};
 }
 

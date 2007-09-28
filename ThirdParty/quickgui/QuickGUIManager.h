@@ -103,11 +103,11 @@ namespace QuickGUI
 		/**
 		* Get primary render window width in pixels
 		*/
-		unsigned int getViewportWidth();
+		Ogre::Real getViewportWidth();
 		/**
 		* Get primary render window height in pixels
 		*/
-		unsigned int getViewportHeight();
+		Ogre::Real getViewportHeight();
 
 		/**
 		* Iterates through sheet list and returns the Sheet with the
@@ -240,6 +240,8 @@ namespace QuickGUI
 		Widget*					mWidgetContainingMouse;
 		// Stores reference to last clicked Widget.
 		Widget*					mActiveWidget;
+
+		bool					mDraggingWidget;
 
 		void _createDefaultTextures();
 		Sheet* _createSheet(const Ogre::String& name, const Ogre::String& texture);

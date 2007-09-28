@@ -96,7 +96,7 @@ int ssgSaveTRI ( const char *filename, ssgEntity *ent )
 
 */
 {
-  fileout = fopen ( filename, "wa" ) ;
+  fileout = fopen ( filename, "w" ) ;
 
   if ( fileout == NULL )
   {

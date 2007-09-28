@@ -43,6 +43,7 @@ namespace QuickGUI
 
 		bool dimensionsChanged();
 
+		Rect getDimensions();
 		Ogre::String getID();
 		Layer getLayer();
 		Rect getRectIntersection(const Rect& r);
@@ -55,26 +56,26 @@ namespace QuickGUI
 
 		bool insideRect(const Rect& r);
 		bool intersectsRect(const Rect& r);
-		bool isPointWithinBounds(const Point& absPosition);
+		bool isPointWithinBounds(const Point& pixelPosition);
 
 		void removeFromRenderObjectGroup();
 
 		void setColor(const Ogre::ColourValue& color);
 		void setColor(const Ogre::ColourValue& topColor, const Ogre::ColourValue& botColor);
 		void setClippingRect(const Rect& r);
-		void setDimensions(const Rect& absoluteDimensions);
-		void setHeight(Ogre::Real absoluteHeight);
+		void setDimensions(const Rect& pixelDimensions);
+		void setHeight(Ogre::Real pixelHeight);
 		void setLayer(Layer l);
 		void setOffset(int offset);
-		void setPosition(const Point& absolutePosition);
-		void setSize(const Size& absoluteSize);
+		void setPosition(const Point& pixelPosition);
+		void setSize(const Size& pixelSize);
 		void setTexture(const Ogre::String& textureName);
 		void setTextureCoordinates(const Ogre::Vector4& textureCoordinates);
 		void setTextureCoordinates(const Ogre::FloatRect& textureCoordinates);
 		void setVisible(bool visible);
-		void setWidth(Ogre::Real absoluteWidth);
-		void setXPosition(Ogre::Real absoluteX);
-		void setYPosition(Ogre::Real absoluteY);
+		void setWidth(Ogre::Real pixelWidth);
+		void setXPosition(Ogre::Real pixelX);
+		void setYPosition(Ogre::Real pixelY);
 
 		bool textureChanged();
 
@@ -94,7 +95,7 @@ namespace QuickGUI
 		Ogre::String		mTextureName;
 		// number of parent iterations away from sheet quad.
 		int					mOffset;
-		Rect				mAbsoluteDimensions;
+		Rect				mPixelDimensions;
 		// UV coordinates: (left,top,right,bottom)
 		Ogre::Vector4		mTextureCoordinates;
 		bool				mVisible;

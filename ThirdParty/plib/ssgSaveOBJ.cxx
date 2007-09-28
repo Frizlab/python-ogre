@@ -178,7 +178,7 @@ int ssgSaveOBJ ( const char *filename, ssgEntity *ent )
     John Burkardt
 */
 {
-  fileout = fopen ( filename, "wa" ) ;
+  fileout = fopen ( filename, "w" ) ;
 
   if ( fileout == NULL )
   {

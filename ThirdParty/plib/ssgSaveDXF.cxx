@@ -126,7 +126,7 @@ static void save_entities ( ssgEntity *e )
 
 int ssgSaveDXF ( const char *filename, ssgEntity *ent )
 {
-  fileout = fopen ( filename, "wa" ) ;
+  fileout = fopen ( filename, "w" ) ;
 
   if ( fileout == NULL )
   {

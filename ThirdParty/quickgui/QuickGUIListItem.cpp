@@ -5,8 +5,8 @@
 
 namespace QuickGUI
 {
-	ListItem::ListItem(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
-		Label(name,type,dimensions,pMode,sMode,"",container,ParentWidget,gm),
+	ListItem::ListItem(const Ogre::String& name, Type type, const Rect& pixelDimensions, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
+		Label(name,type,pixelDimensions,"",container,ParentWidget,gm),
 		mImage(0),
 		mButton(0),
 		mPropogateImageMouseEvents(true),
@@ -15,8 +15,9 @@ namespace QuickGUI
 		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
 		if(mWidgetType == TYPE_LISTITEM)
 		{
-			mQuad->setLayer(Quad::LAYER_CHILD);
-			mText->setLayer(Quad::LAYER_CHILD);
+			mQuad->setLayer(mParentWidget->getQuad()->getLayer());
+			mText->setLayer(mQuad->getLayer());
+			mText->setOffset(mOffset+2);
 		}
 
 		addEventHandler(EVENT_MOUSE_ENTER,&ListItem::onMouseEnters,this);
@@ -31,12 +32,13 @@ namespace QuickGUI
 		mButton = NULL;
 	}
 
-	NStateButton* ListItem::addNStateButton(const Rect& dimensions)
+	NStateButton* ListItem::addNStateButton(const Rect& pixelDimensions)
 	{
-		if(mButton != NULL) return NULL;
+		if(mButton != NULL) 
+			return NULL;
 
-		mButton = new NStateButton(mInstanceName+".NStateButton",TYPE_BUTTON,dimensions,QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,mQuadContainer,this,mGUIManager);
-		mButton->getQuad()->setLayer(Quad::LAYER_MENU);
+		mButton = new NStateButton(mInstanceName+".NStateButton",TYPE_BUTTON,pixelDimensions,mQuadContainer,this,mGUIManager);
+		mButton->getQuad()->setLayer(mQuad->getLayer());
 		
 		if(mPropogateButtonMouseEvents)
 		{
@@ -46,17 +48,19 @@ namespace QuickGUI
 			mButton->addEventHandler(Widget::EVENT_LOSE_FOCUS,&ListItem::onLoseFocus,this);
 		}
 
-		if(!mVisible) mButton->hide();
+		if(!mVisible) 
+			mButton->hide();
 
 		return mButton;
 	}
 
-	Image* ListItem::addImage(const Rect& dimensions, const Ogre::String& texture)
+	Image* ListItem::addImage(const Rect& pixelDimensions, const Ogre::String& texture)
 	{
-		if(mImage != NULL) return NULL;
+		if(mImage != NULL) 
+			return NULL;
 
-		mImage = new Image(mInstanceName+".Image",TYPE_IMAGE,dimensions,QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,texture,mQuadContainer,this,mGUIManager);
-		mImage->getQuad()->setLayer(Quad::LAYER_MENU);
+		mImage = new Image(mInstanceName+".Image",TYPE_IMAGE,pixelDimensions,texture,mQuadContainer,this,mGUIManager);
+		mImage->getQuad()->setLayer(mQuad->getLayer());
 
 		if(mPropogateImageMouseEvents)
 		{
@@ -66,7 +70,8 @@ namespace QuickGUI
 			mImage->addEventHandler(Widget::EVENT_LOSE_FOCUS,&ListItem::onLoseFocus,this);
 		}
 		
-		if(!mVisible) mImage->hide();
+		if(!mVisible) 
+			mImage->hide();
 		
 		return mImage;
 	}
@@ -108,7 +113,8 @@ namespace QuickGUI
 
 	void ListItem::removeNStateButton()
 	{
-		if(mButton == NULL) return;
+		if(mButton == NULL) 
+			return;
 
 		mGUIManager->destroyWidget(mButton);
 		mButton = NULL;
@@ -116,7 +122,8 @@ namespace QuickGUI
 
 	void ListItem::removeImage()
 	{
-		if(mImage == NULL) return;
+		if(mImage == NULL) 
+			return;
 
 		mGUIManager->destroyWidget(mImage);
 		mImage = NULL;

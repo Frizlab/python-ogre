@@ -6,14 +6,14 @@
 
 namespace QuickGUI
 {
-	Widget::Widget(const Ogre::String& instanceName, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String textureName, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
+	Widget::Widget(const Ogre::String& instanceName, Type type, const Rect& pixelDimensions, Ogre::String textureName, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
 		mInstanceName(instanceName),
 		mWidgetType(type),
 		mParentWidget(ParentWidget),
 		mGUIManager(gm),
-		mRelativeDimensions(dimensions),
-		mAbsoluteDimensions(Rect(0,0,1,1)),
-		mPixelDimensions(Rect(0,0,gm->getViewportWidth(),gm->getViewportHeight())),
+		mPosition(Point(pixelDimensions.x,pixelDimensions.y)),
+		mSize(Size(pixelDimensions.width,pixelDimensions.height)),
+		mScrollOffset(Point::ZERO),
 		mVisible(true),
 		mGrabbed(false),
 		mMovingEnabled(true),
@@ -22,7 +22,7 @@ namespace QuickGUI
 		mWidgetImage(NULL),
 		mQuadContainer(container),
 		mOffset(0),
-		mClippingRect(Rect(0,0,1,1)),
+		mClippingRect(Rect(0,0,gm->getViewportWidth(),gm->getViewportHeight())),
 		mTextureLocked(false),
 		mGainFocusOnClick(true),
 		mDragXOnly(false),
@@ -48,7 +48,8 @@ namespace QuickGUI
 		// This is important for widgets to position themself correctly.
 		addEventHandler(EVENT_POSITION_CHANGED,&Widget::onPositionChanged,this);
 
-		setDimensions(dimensions,pMode,sMode);
+		setPosition(mPosition);
+		setSize(mSize);
 
 		if(mParentWidget != NULL)
 		{
@@ -137,8 +138,8 @@ namespace QuickGUI
 	{
 		int index = 0;
 		mUserEventHandlers.clear();
-		// 12 is the number of types of events: EVENT_GAIN_FOCUS, EVENT_CHARACTER_KEY, etc.
-		while( index < 21 )
+		// 22 common types of events currently
+		while( index < 22 )
 		{
 			std::vector<MemberFunctionSlot*> eventTypeHandler;
 			eventTypeHandler.clear();
@@ -203,6 +204,18 @@ namespace QuickGUI
 		}
 	}
 
+	void Widget::_setScrollXOffset(Ogre::Real pixelXOffset)
+	{
+		mScrollOffset.x = pixelXOffset;
+		mQuad->setXPosition(getScreenPosition().x + getScrollOffset().x);
+	}
+
+	void Widget::_setScrollYOffset(Ogre::Real pixelYOffset)
+	{
+		mScrollOffset.y = pixelYOffset;
+		mQuad->setYPosition(getScreenPosition().y + getScrollOffset().y);
+	}
+
 	void Widget::addEventHandler(Event EVENT, MemberFunctionSlot* function)
 	{
 		mUserEventHandlers[EVENT].push_back(function);
@@ -217,19 +230,7 @@ namespace QuickGUI
 			(w->getQuad()->getLayer() != mQuad->getLayer()) )
 			return;
 
-		// get highest offset of any of the widgets children
-		int highestOffset = w->getOffset();
-		std::vector<Widget*>::iterator it;
-		std::vector<Widget*>* childList = w->getChildWidgetList();
-		for( it = childList->begin(); it != childList->end(); ++it )
-		{
-			if( (*it)->getOffset() > highestOffset )
-				highestOffset = (*it)->getOffset();
-		}
-
-		// Set offset higher by 3, to allow for an additional quad layer, and text layer.
-		mOffset = highestOffset + 3;
-		mQuad->setOffset(mOffset);
+		setOffset(w->getHighestOffset() + 1);
 	}
 
 	void Widget::constrainDragging(bool DragXOnly, bool DragYOnly)
@@ -257,24 +258,34 @@ namespace QuickGUI
 		mEnabled = false;
 	}
 
-	void Widget::drag(const Ogre::Real& xVal, const Ogre::Real& yVal,GuiMetricsMode mode)
+	void Widget::drag(const Ogre::Real& pixelX, const Ogre::Real& pixelY)
 	{
 		if(!mDraggingEnabled) 
 			return;
 
+		MouseEventArgs args(this);
+		
 		if(mWidgetToDrag != NULL) 
 		{
-			Point p = getPosition(mode);
 			if(mDragXOnly)
-				mWidgetToDrag->setScreenPosition(p.x + xVal,p.y,mode);
+			{
+				args.moveDelta.x = pixelX;
+				mWidgetToDrag->moveX(pixelX);
+			}
 			else if(mDragYOnly)
-				mWidgetToDrag->setScreenPosition(p.x,p.y + yVal,mode);
+			{
+				args.moveDelta.y = pixelY;
+				mWidgetToDrag->moveY(pixelY);
+			}
 			else
-				mWidgetToDrag->setScreenPosition(p.x + xVal,p.y + yVal,mode);
+			{
+				args.moveDelta.x = pixelX;
+				args.moveDelta.y = pixelY;
+				mWidgetToDrag->move(pixelX,pixelY);
+			}
 		}
 
-		// fire onDragged Event.
-		WidgetEventArgs args(this);
+		// fire onDragged Event.		
 		fireEvent(EVENT_DRAGGED,args);
 	}
 
@@ -366,23 +377,34 @@ namespace QuickGUI
 		return mGrabbed;
 	}
 
-	Ogre::Real Widget::getHeight(GuiMetricsMode mode)
+	Ogre::Real Widget::getHeight()
 	{
-		switch(mode)
-		{
-		case QGUI_GMM_ABSOLUTE:
-			return mAbsoluteDimensions.height;
-		case QGUI_GMM_PIXELS:
-			return mPixelDimensions.height;
-		case QGUI_GMM_RELATIVE:
-		default:
-			return mRelativeDimensions.height;
-		}
+		return mSize.height;
 	}
 
 	bool Widget::getHideWithParent()
 	{
 		return mHideWithParent;
+	}
+
+	int Widget::getHighestOffset()
+	{
+		// iterate through child widgets..
+		Widget* w = NULL;
+		// Get the widget with the highest offset
+		int widgetOffset = mOffset;
+		std::vector<Widget*>::iterator it;
+		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
+		{
+			if( (*it)->getWidgetType() == TYPE_SCROLL_PANE )
+				continue;
+
+			int temp = (*it)->getHighestOffset();
+			if( temp > widgetOffset )
+				widgetOffset = temp;
+		}
+
+		return widgetOffset;
 	}
 
 	bool Widget::getInheritClippingRect()
@@ -435,48 +457,22 @@ namespace QuickGUI
 		return mQuadContainer;
 	}
 
+	Point Widget::getScreenPosition()
+	{
+		if(mParentWidget == NULL)
+			return Point::ZERO;
+		
+		return mParentWidget->getScreenPosition() + mPosition;
+	}
+
 	bool Widget::getShowWithParent()
 	{
 		return mShowWithParent;
 	}
 
-	Rect Widget::getDimensions(GuiMetricsMode position, GuiMetricsMode size)
+	Rect Widget::getDimensions()
 	{
-		Rect retVal = Rect::ZERO;
-
-		switch(position)
-		{
-		case QGUI_GMM_ABSOLUTE:
-			retVal.x = mAbsoluteDimensions.x;
-			retVal.y = mAbsoluteDimensions.y;
-			break;
-		case QGUI_GMM_RELATIVE:
-			retVal.x = mRelativeDimensions.x;
-			retVal.y = mRelativeDimensions.y;
-			break;
-		case QGUI_GMM_PIXELS:
-			retVal.x = mPixelDimensions.x;
-			retVal.y = mPixelDimensions.y;
-			break;
-		}
-
-		switch(size)
-		{
-		case QGUI_GMM_ABSOLUTE:
-			retVal.width = mAbsoluteDimensions.width;
-			retVal.height = mAbsoluteDimensions.height;
-			break;
-		case QGUI_GMM_RELATIVE:
-			retVal.width = mRelativeDimensions.width;
-			retVal.height = mRelativeDimensions.height;
-			break;
-		case QGUI_GMM_PIXELS:
-			retVal.width = mPixelDimensions.width;
-			retVal.height = mPixelDimensions.height;
-			break;
-		}
-
-		return retVal;
+		return Rect(mPosition,mSize);
 	}
 
 	GUIManager* Widget::getGUIManager()
@@ -484,53 +480,25 @@ namespace QuickGUI
 		return mGUIManager;
 	}
 
-	Point Widget::getPosition(GuiMetricsMode mode)
+	Point Widget::getPosition()
 	{
-		Point retVal = Point::ZERO;
-
-		switch(mode)
-		{
-		case QGUI_GMM_ABSOLUTE:
-			retVal.x = mAbsoluteDimensions.x;
-			retVal.y = mAbsoluteDimensions.y;
-			break;
-		case QGUI_GMM_RELATIVE:
-			retVal.x = mRelativeDimensions.x;
-			retVal.y = mRelativeDimensions.y;
-			break;
-		case QGUI_GMM_PIXELS:
-			retVal.x = mPixelDimensions.x;
-			retVal.y = mPixelDimensions.y;
-			break;
-		}
-
-		return retVal;
+		return mPosition;
 	}
 
-	Size Widget::getSize(GuiMetricsMode mode)
+	Point Widget::getScrollOffset()
 	{
-		Size retVal = Size::ZERO;
+		if( mParentWidget == NULL )
+			return mScrollOffset;
 
-		switch(mode)
-		{
-		case QGUI_GMM_ABSOLUTE:
-			retVal.width = mAbsoluteDimensions.width;
-			retVal.height = mAbsoluteDimensions.height;
-			break;
-		case QGUI_GMM_RELATIVE:
-			retVal.width = mRelativeDimensions.width;
-			retVal.height = mRelativeDimensions.height;
-			break;
-		case QGUI_GMM_PIXELS:
-			retVal.width = mPixelDimensions.width;
-			retVal.height = mPixelDimensions.height;
-			break;
-		}
-
-		return retVal;
+		return mParentWidget->getScrollOffset() + mScrollOffset;
 	}
 
-	Widget* Widget::getTargetWidget(const Point& p)
+	Size Widget::getSize()
+	{
+		return mSize;
+	}
+
+	Widget* Widget::getTargetWidget(const Point& pixelPosition)
 	{
 		if( !mVisible || !mEnabled || ((mQuadContainer == NULL) && (mWidgetType != TYPE_SHEET)) ) 
 			return NULL;
@@ -545,7 +513,7 @@ namespace QuickGUI
 			if( (*it)->getWidgetType() == TYPE_SCROLL_PANE )
 				continue;
 
-			Widget* temp = (*it)->getTargetWidget(p);
+			Widget* temp = (*it)->getTargetWidget(pixelPosition);
 			if( (temp != NULL) && (temp->getOffset() > widgetOffset) )
 			{
 				w = temp;
@@ -553,9 +521,12 @@ namespace QuickGUI
 			}
 		}
 
-		if( w != NULL ) return w;
-		else if( isPointWithinBounds(p) ) return this;
-		else return NULL;
+		if( w != NULL ) 
+			return w;
+		else if( isPointWithinBounds(pixelPosition) ) 
+			return this;
+		else 
+			return NULL;
 	}
 
 	Ogre::String Widget::getTextureName(bool includeExtension)
@@ -571,46 +542,19 @@ namespace QuickGUI
 		return mWidgetType;
 	}
 
-	Ogre::Real Widget::getWidth(GuiMetricsMode mode)
+	Ogre::Real Widget::getWidth()
 	{
-		switch(mode)
-		{
-		case QGUI_GMM_ABSOLUTE:
-			return mAbsoluteDimensions.width;
-		case QGUI_GMM_PIXELS:
-			return mPixelDimensions.width;
-		case QGUI_GMM_RELATIVE:
-		default:
-			return mRelativeDimensions.width;
-		}
+		return mSize.width;
 	}
 
-	Ogre::Real Widget::getXPosition(GuiMetricsMode mode)
+	Ogre::Real Widget::getXPosition()
 	{
-		switch(mode)
-		{
-		case QGUI_GMM_ABSOLUTE:
-			return mAbsoluteDimensions.x;
-		case QGUI_GMM_PIXELS:
-			return mPixelDimensions.x;
-		case QGUI_GMM_RELATIVE:
-		default:
-			return mRelativeDimensions.x;
-		}
+		return mPosition.x;
 	}
 
-	Ogre::Real Widget::getYPosition(GuiMetricsMode mode)
+	Ogre::Real Widget::getYPosition()
 	{
-		switch(mode)
-		{
-		case QGUI_GMM_ABSOLUTE:
-			return mAbsoluteDimensions.y;
-		case QGUI_GMM_PIXELS:
-			return mPixelDimensions.y;
-		case QGUI_GMM_RELATIVE:
-		default:
-			return mRelativeDimensions.y;
-		}
+		return mPosition.y;
 	}
 
 	void Widget::hide()
@@ -637,20 +581,26 @@ namespace QuickGUI
 		mVisible = false;
 	}
 
-	bool Widget::isPointWithinBounds(const Point& p)
+	bool Widget::isPointWithinBounds(const Point& pixelPosition)
 	{
 		if(!mVisible) 
 			return false;
 
-		if( p.x < mPixelDimensions.x ||
-			p.x > (mPixelDimensions.x + mPixelDimensions.width) )
+		Rect quadDimensions = mQuad->getDimensions();
+
+		if(mWidgetType == TYPE_LISTITEM)
+			quadDimensions = quadDimensions;
+
+		if( pixelPosition.x < quadDimensions.x ||
+			pixelPosition.x > (quadDimensions.x + quadDimensions.width) )
 			return false;
 
-		if( p.y < mPixelDimensions.y ||
-			p.y > (mPixelDimensions.y + mPixelDimensions.height) )
+		if( pixelPosition.y < quadDimensions.y ||
+			pixelPosition.y > (quadDimensions.y + quadDimensions.height) )
 			return false;
 
-		if(overTransparentPixel(p)) return false;
+		if(overTransparentPixel(pixelPosition)) 
+			return false;
 
 		return true;
 	}
@@ -672,78 +622,33 @@ namespace QuickGUI
 		return false;
 	}
 
-	void Widget::move(const Ogre::Real& xVal, const Ogre::Real& yVal, GuiMetricsMode mode)
+	void Widget::move(const Ogre::Real& pixelX, const Ogre::Real& pixelY)
 	{
 		if(!mMovingEnabled) 
 			return;
 
-		switch(mode)
-		{
-		case QGUI_GMM_ABSOLUTE:
-			mAbsoluteDimensions.x += xVal;
-			mAbsoluteDimensions.y += yVal;
-			setPosition(mAbsoluteDimensions.x,mAbsoluteDimensions.y,mode);
-			break;
-		case QGUI_GMM_PIXELS:
-			mPixelDimensions.x += xVal;
-			mPixelDimensions.y += yVal;
-			setPosition(mPixelDimensions.x,mPixelDimensions.y,mode);
-			break;
-		case QGUI_GMM_RELATIVE:
-			mRelativeDimensions.x += xVal;
-			mRelativeDimensions.y += yVal;
-			setPosition(mRelativeDimensions.x,mRelativeDimensions.y);
-			break;
-		}
+		setPosition(mPosition.x + pixelX,mPosition.y + pixelY);
 	}
 
-	void Widget::move(const Point& p, GuiMetricsMode mode)
+	void Widget::move(const Point& pixelOffset)
 	{
-		move(p.x,p.y,mode);
+		move(pixelOffset.x,pixelOffset.y);
 	}
 
-	void Widget::moveX(Ogre::Real xVal, GuiMetricsMode mode)
+	void Widget::moveX(Ogre::Real pixelX)
 	{
 		if(!mMovingEnabled) 
 			return;
 
-		switch(mode)
-		{
-		case QGUI_GMM_ABSOLUTE:
-			mAbsoluteDimensions.x += xVal;
-			setXPosition(mAbsoluteDimensions.x,mode);
-			break;
-		case QGUI_GMM_PIXELS:
-			mPixelDimensions.x += xVal;
-			setXPosition(mPixelDimensions.x,mode);
-			break;
-		case QGUI_GMM_RELATIVE:
-			mRelativeDimensions.x += xVal;
-			setXPosition(mRelativeDimensions.x);
-			break;
-		}
+		setXPosition(mPosition.x + pixelX);
 	}
 
-	void Widget::moveY(Ogre::Real yVal, GuiMetricsMode mode)
+	void Widget::moveY(Ogre::Real pixelY)
 	{
 		if(!mMovingEnabled) 
 			return;
 
-		switch(mode)
-		{
-		case QGUI_GMM_ABSOLUTE:
-			mAbsoluteDimensions.y += yVal;
-			setYPosition(mAbsoluteDimensions.y,mode);
-			break;
-		case QGUI_GMM_PIXELS:
-			mPixelDimensions.y += yVal;
-			setYPosition(mPixelDimensions.y,mode);
-			break;
-		case QGUI_GMM_RELATIVE:
-			mRelativeDimensions.y += yVal;
-			setYPosition(mRelativeDimensions.y);
-			break;
-		}
+		setYPosition(mPosition.y + pixelY);
 	}
 
 	bool Widget::fireEvent(Event e, const EventArgs& args)
@@ -771,14 +676,14 @@ namespace QuickGUI
 			(*it)->setPosition((*it)->getPosition());
 	}
 
-	bool Widget::overTransparentPixel(const Point& mousePosition)
+	bool Widget::overTransparentPixel(const Point& mousePixelPosition)
 	{
 		if( mWidgetImage == NULL ) 
 			return false;
 
-		Point pt(mousePosition.x - mPixelDimensions.x,mousePosition.y - mPixelDimensions.y);
-		Ogre::Real relX = pt.x / mPixelDimensions.width;
-		Ogre::Real relY = pt.y / mPixelDimensions.height;
+		Point pt = mousePixelPosition - getScreenPosition();
+		Ogre::Real relX = pt.x / mSize.width;
+		Ogre::Real relY = pt.y / mSize.height;
 
 		Ogre::ColourValue c = mWidgetImage->getColourAt(relX * mWidgetImage->getWidth(), relY * mWidgetImage->getHeight(),0);
 		if( c.a <= 0.0 ) return true;
@@ -788,7 +693,7 @@ namespace QuickGUI
 
 	void Widget::refresh()
 	{
-		setDimensions(getDimensions(QGUI_GMM_ABSOLUTE,QGUI_GMM_ABSOLUTE),QGUI_GMM_ABSOLUTE,QGUI_GMM_ABSOLUTE);
+		setDimensions(getDimensions());
 
 		std::vector<Widget*>::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
@@ -806,7 +711,7 @@ namespace QuickGUI
 		mChildWidgets.clear();
 	}
 
-	void Widget::resizeOverTime(Ogre::Real seconds, Size finalSize, GuiMetricsMode mode)
+	void Widget::resizeOverTime(Ogre::Real seconds, Size finalPixelSize)
 	{
 		if(mParentWidget == NULL)
 			return;
@@ -814,22 +719,10 @@ namespace QuickGUI
 		mResizeOverTime = true;
 		mResizeTime = seconds;
 		mResizeTimer = 0;
-		mInitialAbsSize = Size(mAbsoluteDimensions.width,mAbsoluteDimensions.height);
+		mInitialPixelSize = Size(mSize.width,mSize.height);
 
-		switch(mode)
-		{
-		case QGUI_GMM_RELATIVE:
-			mFinalAbsSize.width = finalSize.width * mParentWidget->getWidth(QGUI_GMM_ABSOLUTE);
-			mFinalAbsSize.height = finalSize.height * mParentWidget->getHeight(QGUI_GMM_ABSOLUTE);
-			break;
-		case QGUI_GMM_ABSOLUTE:
-			mFinalAbsSize = finalSize;
-			break;
-		case QGUI_GMM_PIXELS:
-			mFinalAbsSize.width = finalSize.width / static_cast<Ogre::Real>(mGUIManager->getViewportWidth());
-			mFinalAbsSize.height = finalSize.height / static_cast<Ogre::Real>(mGUIManager->getViewportHeight());
-			break;
-		}
+		mFinalPixelSize.width = finalPixelSize.width / mGUIManager->getViewportWidth();
+		mFinalPixelSize.height = finalPixelSize.height / mGUIManager->getViewportHeight();
 	}
 
 	void Widget::setBaseTexture(const Ogre::String& textureName)
@@ -840,15 +733,15 @@ namespace QuickGUI
 		mDisabledTextureName = mTextureName + ".disabled" + mTextureExtension;
 	}
 
-	void Widget::setClippingRect(const Rect& r)
+	void Widget::setClippingRect(const Rect& pixelDimensions)
 	{
-		mQuad->setClippingRect(r);
+		mQuad->setClippingRect(pixelDimensions);
 
 		std::vector<Widget*>::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 		{
 			if((*it)->getInheritClippingRect())
-				(*it)->setClippingRect(r);
+				(*it)->setClippingRect(pixelDimensions);
 		}
 	}
 
@@ -865,10 +758,10 @@ namespace QuickGUI
 
 		if(mResizeOverTime)
 		{
-			Ogre::Real totalWidthChange = mFinalAbsSize.width - mInitialAbsSize.width;
-			setWidth(mInitialAbsSize.width + (totalWidthChange * (mResizeTimer / mResizeTime)) ,QGUI_GMM_ABSOLUTE);
-			Ogre::Real totalHeightChange = mFinalAbsSize.height - mInitialAbsSize.height;
-			setHeight(mInitialAbsSize.height + (totalHeightChange * (mResizeTimer / mResizeTime)) ,QGUI_GMM_ABSOLUTE);
+			Ogre::Real totalWidthChange = mFinalPixelSize.width - mInitialPixelSize.width;
+			setWidth(mInitialPixelSize.width + (totalWidthChange * (mResizeTimer / mResizeTime)));
+			Ogre::Real totalHeightChange = mFinalPixelSize.height - mInitialPixelSize.height;
+			setHeight(mInitialPixelSize.height + (totalHeightChange * (mResizeTimer / mResizeTime)));
 
 			mResizeTimer += time;
 			if(mResizeTimer >= mResizeTime)
@@ -876,10 +769,10 @@ namespace QuickGUI
 		}
 	}
 
-	void Widget::setDimensions(const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	void Widget::setDimensions(const Rect& pixelDimensions)
 	{
-		setPosition(dimensions.x,dimensions.y,positionMode);
-		setSize(dimensions.width,dimensions.height,sizeMode);
+		setPosition(pixelDimensions.x,pixelDimensions.y);
+		setSize(pixelDimensions.width,pixelDimensions.height);
 	}
 
 	void Widget::setDisabledTexture(const Ogre::String& disabledTexture)
@@ -902,36 +795,17 @@ namespace QuickGUI
 		mGrabbed = grabbed;
 	}
 
-	void Widget::setHeight(Ogre::Real height, GuiMetricsMode mode)
+	void Widget::setHeight(Ogre::Real pixelHeight)
 	{
 		if((mWidgetType == Widget::TYPE_SHEET) || (mParentWidget == NULL))
 			return;
 
-		Ogre::Real absParentHeight = mParentWidget->getHeight(QGUI_GMM_ABSOLUTE);
-		Ogre::Real pixParentHeight = mParentWidget->getHeight(QGUI_GMM_PIXELS);
-
-		switch(mode)
-		{
-		case QGUI_GMM_ABSOLUTE:
-			mRelativeDimensions.height = (height / absParentHeight);
-			break;
-		case QGUI_GMM_RELATIVE:
-			mRelativeDimensions.height = height;
-			break;
-		case QGUI_GMM_PIXELS:
-		default:
-			mRelativeDimensions.height = (height / pixParentHeight);
-			break;
-		}
-
-		mAbsoluteDimensions.height = mRelativeDimensions.height * absParentHeight;
-
-		mPixelDimensions.height = mAbsoluteDimensions.height * mGUIManager->getViewportHeight();
+		mSize.height = pixelHeight;
 
 		WidgetEventArgs args(this);
 		fireEvent(EVENT_SIZE_CHANGED,args);
 
-		mQuad->setHeight(mAbsoluteDimensions.height);
+		mQuad->setHeight(mSize.height);
 	}
 
 	void Widget::setHideWithParent(bool hide)
@@ -955,110 +829,68 @@ namespace QuickGUI
 		mQuad->setOffset(mOffset);
 	}
 
-	void Widget::setPosition(const Ogre::Real& xVal, const Ogre::Real& yVal, GuiMetricsMode mode)
+	void Widget::setPosition(const Ogre::Real& pixelX, const Ogre::Real& pixelY)
 	{
 		if((mWidgetType == Widget::TYPE_SHEET) || (mParentWidget == NULL))
 			return;
 
-		Point absParentPosition = mParentWidget->getPosition(QGUI_GMM_ABSOLUTE);
-		Size absParentSize = mParentWidget->getSize(QGUI_GMM_ABSOLUTE);
-		Point pixParentPosition = mParentWidget->getPosition(QGUI_GMM_PIXELS);
-		Size pixParentSize = mParentWidget->getSize(QGUI_GMM_PIXELS);
-
-		switch(mode)
-		{
-		case QGUI_GMM_ABSOLUTE:
-			mRelativeDimensions.x = (xVal / absParentSize.width);
-			mRelativeDimensions.y = (yVal / absParentSize.height);
-			break;
-		case QGUI_GMM_RELATIVE:
-			mRelativeDimensions.x = xVal;
-			mRelativeDimensions.y = yVal;
-			break;
-		case QGUI_GMM_PIXELS:
-		default:
-			mRelativeDimensions.x = (xVal / pixParentSize.width);
-			mRelativeDimensions.y = (yVal / pixParentSize.height);
-			break;
-		}
-
-		mAbsoluteDimensions.x = absParentPosition.x + (mRelativeDimensions.x * absParentSize.width);
-		mAbsoluteDimensions.y = absParentPosition.y + (mRelativeDimensions.y * absParentSize.height);
-
-		mPixelDimensions.x = mAbsoluteDimensions.x * mGUIManager->getViewportWidth();
-		mPixelDimensions.y = mAbsoluteDimensions.y * mGUIManager->getViewportHeight();
+		mPosition.x = pixelX;
+		mPosition.y = pixelY;
 
 		WidgetEventArgs args(this);
 		fireEvent(EVENT_POSITION_CHANGED,args);
 		
-		mQuad->setPosition(Point(mAbsoluteDimensions.x,mAbsoluteDimensions.y));
+		mQuad->setPosition(getScreenPosition() + getScrollOffset());
 	}
 
-	void Widget::setPosition(const Point& p, GuiMetricsMode mode)
+	void Widget::setPosition(const Point& pixelPoint)
 	{
-		Widget::setPosition(p.x,p.y,mode);
+		setPosition(pixelPoint.x,pixelPoint.y);
 	}
 
-	void Widget::setScreenPosition(const Ogre::Real& xVal, const Ogre::Real& yVal, GuiMetricsMode mode)
-	{
-		if((mWidgetType == Widget::TYPE_SHEET) || (mParentWidget == NULL))
-			return;
-
-		Point absParentPosition = mParentWidget->getPosition(QGUI_GMM_ABSOLUTE);
-		Point pixParentPosition = mParentWidget->getPosition(QGUI_GMM_PIXELS);
-
-		switch(mode)
-		{
-		case QGUI_GMM_RELATIVE:
-		case QGUI_GMM_ABSOLUTE:
-			setPosition((xVal - absParentPosition.x),(yVal - absParentPosition.y),QGUI_GMM_ABSOLUTE);
-			break;
-		case QGUI_GMM_PIXELS:
-			setPosition((xVal - pixParentPosition.x),(yVal - pixParentPosition.y),mode);
-			break;
-		}
-	}
-
-	void Widget::setSize(const Ogre::Real& width, const Ogre::Real& height, GuiMetricsMode mode)
+	void Widget::setScreenPosition(const Ogre::Real& pixelX, const Ogre::Real& pixelY)
 	{
 		if((mWidgetType == Widget::TYPE_SHEET) || (mParentWidget == NULL))
 			return;
 
-		Size absParentSize = mParentWidget->getSize(QGUI_GMM_ABSOLUTE);
-		Size pixParentSize = mParentWidget->getSize(QGUI_GMM_PIXELS);
+		Point parentScreenPosition = mParentWidget->getScreenPosition();
 
-		switch(mode)
-		{
-		case QGUI_GMM_ABSOLUTE:
-			mRelativeDimensions.width = (width / absParentSize.width);
-			mRelativeDimensions.height = (height / absParentSize.height);
-			break;
-		case QGUI_GMM_RELATIVE:
-			mRelativeDimensions.width = width;
-			mRelativeDimensions.height = height;
-			break;
-		case QGUI_GMM_PIXELS:
-		default:
-			mRelativeDimensions.width = (width / pixParentSize.width);
-			mRelativeDimensions.height = (height / pixParentSize.height);
-			break;
-		}
+		setPosition((parentScreenPosition.x - pixelX),(parentScreenPosition.y - pixelY));
+	}
 
-		mAbsoluteDimensions.width = mRelativeDimensions.width * absParentSize.width;
-		mAbsoluteDimensions.height = mRelativeDimensions.height * absParentSize.height;
+	void Widget::setScreenXPosition(const Ogre::Real& pixelX)
+	{
+		if((mWidgetType == Widget::TYPE_SHEET) || (mParentWidget == NULL))
+			return;
 
-		mPixelDimensions.width = mAbsoluteDimensions.width * mGUIManager->getViewportWidth();
-		mPixelDimensions.height = mAbsoluteDimensions.height * mGUIManager->getViewportHeight();
+		setXPosition(mParentWidget->getScreenPosition().x - pixelX);
+	}
+
+	void Widget::setScreenYPosition(const Ogre::Real& pixelY)
+	{
+		if((mWidgetType == Widget::TYPE_SHEET) || (mParentWidget == NULL))
+			return;
+
+		setYPosition(mParentWidget->getScreenPosition().y - pixelY);
+	}
+
+	void Widget::setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight)
+	{
+		if((mWidgetType == Widget::TYPE_SHEET) || (mParentWidget == NULL))
+			return;
+
+		mSize.width = pixelWidth;
+		mSize.height = pixelHeight;
 
 		WidgetEventArgs args(this);
 		fireEvent(EVENT_SIZE_CHANGED,args);
 
-		mQuad->setSize(Size(mAbsoluteDimensions.width,mAbsoluteDimensions.height));
+		mQuad->setSize(mSize);
 	}
 
-	void Widget::setSize(const Size& s, GuiMetricsMode mode)
+	void Widget::setSize(const Size& pixelSize)
 	{
-		Widget::setSize(s.width,s.height,mode);
+		Widget::setSize(pixelSize.width,pixelSize.height);
 	}
 
 	void Widget::setShowWithParent(bool show)
@@ -1066,104 +898,43 @@ namespace QuickGUI
 		mShowWithParent = show;
 	}
 
-	void Widget::setWidth(Ogre::Real width, GuiMetricsMode mode)
+	void Widget::setWidth(Ogre::Real pixelWidth)
 	{
 		if((mWidgetType == Widget::TYPE_SHEET) || (mParentWidget == NULL))
 			return;
 
-		Ogre::Real absParentWidth = mParentWidget->getWidth(QGUI_GMM_ABSOLUTE);
-		Ogre::Real pixParentWidth = mParentWidget->getWidth(QGUI_GMM_PIXELS);
-
-		switch(mode)
-		{
-		case QGUI_GMM_ABSOLUTE:
-			mRelativeDimensions.width = (width / absParentWidth);
-			break;
-		case QGUI_GMM_RELATIVE:
-			mRelativeDimensions.width = width;
-			break;
-		case QGUI_GMM_PIXELS:
-		default:
-			mRelativeDimensions.width = (width / pixParentWidth);
-			break;
-		}
-
-		mAbsoluteDimensions.width = mRelativeDimensions.width * absParentWidth;
-
-		mPixelDimensions.width = mAbsoluteDimensions.width * mGUIManager->getViewportWidth();
+		mSize.width = pixelWidth;
 
 		WidgetEventArgs args(this);
 		fireEvent(EVENT_SIZE_CHANGED,args);
 
-		mQuad->setWidth(mAbsoluteDimensions.width);
+		mQuad->setWidth(mSize.width);
 	}
 
-	void Widget::setXPosition(Ogre::Real x, GuiMetricsMode mode)
+	void Widget::setXPosition(Ogre::Real pixelX)
 	{
 		if((mWidgetType == Widget::TYPE_SHEET) || (mParentWidget == NULL))
 			return;
 
-		Ogre::Real absParentX = mParentWidget->getXPosition(QGUI_GMM_ABSOLUTE);
-		Ogre::Real absParentWidth = mParentWidget->getWidth(QGUI_GMM_ABSOLUTE);
-		Ogre::Real pixParentX = mParentWidget->getYPosition(QGUI_GMM_PIXELS);
-		Ogre::Real pixParentWidth = mParentWidget->getWidth(QGUI_GMM_PIXELS);
-
-		switch(mode)
-		{
-		case QGUI_GMM_ABSOLUTE:
-			mRelativeDimensions.x = (x / absParentWidth);
-			break;
-		case QGUI_GMM_RELATIVE:
-			mRelativeDimensions.x = x;
-			break;
-		case QGUI_GMM_PIXELS:
-		default:
-			mRelativeDimensions.x = (x / pixParentWidth);
-			break;
-		}
-
-		mAbsoluteDimensions.x = absParentX + (mRelativeDimensions.x * absParentWidth);
-
-		mPixelDimensions.x = mAbsoluteDimensions.x * mGUIManager->getViewportWidth();
+		mPosition.x = pixelX;
 
 		WidgetEventArgs args(this);
 		fireEvent(EVENT_POSITION_CHANGED,args);
 		
-		mQuad->setXPosition(mAbsoluteDimensions.x);
+		mQuad->setXPosition(getScreenPosition().x + getScrollOffset().x);
 	}
 
-	void Widget::setYPosition(Ogre::Real y, GuiMetricsMode mode)
+	void Widget::setYPosition(Ogre::Real pixelY)
 	{
 		if((mWidgetType == Widget::TYPE_SHEET) || (mParentWidget == NULL))
 			return;
 
-		Ogre::Real absParentY = mParentWidget->getYPosition(QGUI_GMM_ABSOLUTE);
-		Ogre::Real absParentHeight = mParentWidget->getHeight(QGUI_GMM_ABSOLUTE);
-		Ogre::Real pixParentY = mParentWidget->getYPosition(QGUI_GMM_PIXELS);
-		Ogre::Real pixParentHeight = mParentWidget->getHeight(QGUI_GMM_PIXELS);
-
-		switch(mode)
-		{
-		case QGUI_GMM_ABSOLUTE:
-			mRelativeDimensions.y = (y / absParentHeight);
-			break;
-		case QGUI_GMM_RELATIVE:
-			mRelativeDimensions.y = y;
-			break;
-		case QGUI_GMM_PIXELS:
-		default:
-			mRelativeDimensions.y = (y / pixParentHeight);
-			break;
-		}
-
-		mAbsoluteDimensions.y = absParentY + (mRelativeDimensions.y * absParentHeight);
-
-		mPixelDimensions.y = mAbsoluteDimensions.y * mGUIManager->getViewportHeight();
+		mPosition.y = pixelY;
 
 		WidgetEventArgs args(this);
 		fireEvent(EVENT_POSITION_CHANGED,args);
 		
-		mQuad->setYPosition(mAbsoluteDimensions.y);
+		mQuad->setYPosition(getScreenPosition().y + getScrollOffset().y);
 	}
 
 	void Widget::show()

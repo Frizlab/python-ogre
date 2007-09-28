@@ -33,17 +33,12 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		Label(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
+		Label(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
 
 		/**
 		* Aligns the child Label widget horizontally and vertically
 		*/
 		void alignText();
-		/**
-		* Alters the widgets offset to be higher than widget w.  Widget w must be in the
-		* same QuadContainer and Layer.
-		*/
-		void appearOverWidget(Widget* w);
 		/**
 		* Disable Widget, making it unresponsive to events.
 		*/
@@ -75,7 +70,7 @@ namespace QuickGUI
 		* get a reference to the Text object.
 		*/
 		virtual void setCaption(const Ogre::UTFString& caption);
-		virtual void setClippingRect(const Rect& r);
+		virtual void setClippingRect(const Rect& pixelDimensions);
 		/**
 		* Sets the color of the text when the widget is disabled.
 		*/
@@ -89,19 +84,23 @@ namespace QuickGUI
 		*/
 		void setHorizontalAlignment(HorizontalAlignment ha);
 		/**
+		* Manipulates the offset used to determine this widgets zOrder in rendering.
+		*/
+		void setOffset(int offset);
+		/**
 		* Manually set position of widget.
 		*/
-		void setPosition(const Ogre::Real& xVal, const Ogre::Real& yVal, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
-		void setPosition(Point p, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
+		void setPosition(const Ogre::Real& pixelX, const Ogre::Real& pixelY);
+		void setPosition(Point pixelPosition);
 		/**
 		* Manually set size of widget.
 		*/
-		void setSize(const Ogre::Real& width, const Ogre::Real& height, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
-		void setSize(const Size& s, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
+		void setSize(const Ogre::Real& pixelWidth, const Ogre::Real& height);
+		void setSize(const Size& pixelSize);
 		/**
 		* Sets the dimensions of the area used for text aligning and displaying.
 		*/
-		void setTextBounds(const Point& relativeOffset, const Size& relativeSize);
+		void setTextBounds(const Point& relativePixelOffset, const Size& relativePixelSize);
 		/*
 		* Shows the widget, including text.
 		*/
@@ -114,9 +113,8 @@ namespace QuickGUI
 		VerticalAlignment mVerticalAlignment;
 		HorizontalAlignment	mHorizontalAlignment;
 
-		Point mTextBoundsRelativeOffset;
-		Size mTextBoundsRelativeSize;
-		Rect mTextBoundsAbsoluteDimensions;
+		Point mTextBoundsPixelOffset;
+		Size mTextBoundsPixelSize;
 
 		// The widgets material changes often, so we need to keep track
 		// of the default original material.

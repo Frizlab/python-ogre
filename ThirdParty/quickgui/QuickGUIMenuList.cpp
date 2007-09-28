@@ -4,8 +4,8 @@
 
 namespace QuickGUI
 {
-	MenuList::MenuList(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
-		Button(name,type,dimensions,pMode,sMode,texture,container,ParentWidget,gm)
+	MenuList::MenuList(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
+		Button(name,type,pixelDimensions,texture,container,ParentWidget,gm)
 	{
 		mShowWithParent = false;
 
@@ -22,7 +22,7 @@ namespace QuickGUI
 		addEventHandler(EVENT_LOSE_FOCUS,&MenuList::onLoseFocus,this);
 
 		// create list
-		mList = new List(mInstanceName+".List",TYPE_LIST,Rect(0,1,1,0),QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,mTextureName + ".list" + mTextureExtension,mQuadContainer,this,mGUIManager);
+		mList = new List(mInstanceName+".List",TYPE_LIST,Rect(0,mSize.height,mSize.width,0),mTextureName + ".list" + mTextureExtension,mQuadContainer,this,mGUIManager);
 		mList->setShowWithParent(false);
 		mList->hide();
 		mList->addEventHandler(EVENT_CHILD_ADDED,&MenuList::addDefaultListItemHandler,this);

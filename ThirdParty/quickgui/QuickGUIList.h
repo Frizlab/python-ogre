@@ -38,7 +38,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		List(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
+		List(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
 
 		/**
 		* Adds (and creates) a ListItem and adds it to the List.
@@ -107,18 +107,14 @@ namespace QuickGUI
 		*/
 		void setNumberOfVisibleItems(unsigned int number);
 		/**
-		* Sets the width of the list, relative to its parent.
-		*/
-		void setWidth(const Ogre::Real& relativeWidth);
-		/**
 		* Shows the widget, including any child widgets.
 		*/
 		void show();
 
 	// functions that were public, and should not be, for this widget.
 	protected:
-		void setSize(const Ogre::Real& width, const Ogre::Real& height, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
-		void setSize(const Size& s, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
+		void setSize(const Ogre::Real& width, const Ogre::Real& height);
+		void setSize(const Size& s);
 
 	protected:
 		virtual ~List();

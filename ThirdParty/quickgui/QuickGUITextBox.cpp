@@ -3,8 +3,8 @@
 
 namespace QuickGUI
 {
-	TextBox::TextBox(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
-		Label(name,type,dimensions,pMode,sMode,texture,container,ParentWidget,gm),
+	TextBox::TextBox(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
+		Label(name,type,pixelDimensions,texture,container,ParentWidget,gm),
 		mMaskUserInput(0),
 		mBackSpaceDown(0),
 		mBackSpaceTimer(0.0),
@@ -52,10 +52,10 @@ namespace QuickGUI
 		mTextCursor->setOffset(mOffset+1);
 		mTextCursor->setDimensions(
 			Rect(
-				mAbsoluteDimensions.x,
-				mAbsoluteDimensions.y,
-				static_cast<float>(mCursorPixelWidth) / static_cast<float>(mGUIManager->getViewportWidth()),
-				mTextBoundsAbsoluteDimensions.height
+				pixelDimensions.x,
+				pixelDimensions.y,
+				mCursorPixelWidth,
+				getTextBounds().height
 				)
 			);
 		mTextCursor->setVisible(false);
@@ -110,17 +110,19 @@ namespace QuickGUI
 
 	void TextBox::_determineVisibleTextBounds(int cursorIndex)
 	{
+		Ogre::Real maxTextWidth = getTextBounds().width;
+
 		// Shift text left to show portion of caption starting at cursorIndex.
 		if( cursorIndex < mVisibleStart )
 		{
 			mVisibleStart = cursorIndex;
 			mVisibleEnd = mVisibleStart + 1;
-			while( (mText->calculateStringLength(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart)) <= mTextBoundsAbsoluteDimensions.width)
+			while( (mText->calculateStringLength(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart)) <= maxTextWidth )
 				&& (mVisibleEnd < static_cast<int>(mCaption.length())) )
 				++mVisibleEnd;
 
 			// When we exit the while loop, we are either at visibleStart == mCaption.length(), or we have exceeded the width limitation.
-			if( mText->calculateStringLength(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart)) > mTextBoundsAbsoluteDimensions.width )
+			if( mText->calculateStringLength(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart)) > maxTextWidth )
 				--mVisibleEnd;
 		}
 		// Shift text right to show portion of caption ending at cursorIndex.
@@ -128,30 +130,32 @@ namespace QuickGUI
 		{
 			mVisibleEnd = cursorIndex;
 			mVisibleStart = mVisibleEnd - 1;
-			while( (mText->calculateStringLength(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart)) <= mTextBoundsAbsoluteDimensions.width) 
+			while( (mText->calculateStringLength(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart)) <= maxTextWidth) 
 				&& (mVisibleStart > 0) )
 				--mVisibleStart;
 
 			// When we exit the while loop, we are either at visibleStart == 0, or we have exceeded the width limitation.
-			if( mText->calculateStringLength(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart)) > mTextBoundsAbsoluteDimensions.width )
+			if( mText->calculateStringLength(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart)) > maxTextWidth )
 				++mVisibleStart;
 		}
 		// start from visible start and display the maximum number of characters until text bounds reached.
 		else
 		{
 			mVisibleEnd = mVisibleStart + 1;
-			while( (mText->calculateStringLength(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart)) <= mTextBoundsAbsoluteDimensions.width)
+			while( (mText->calculateStringLength(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart)) <=maxTextWidth )
 				&& (mVisibleEnd < static_cast<int>(mCaption.length())) )
 				++mVisibleEnd;
 
 			// When we exit the while loop, we are either at visibleStart == mCaption.length(), or we have exceeded the width limitation.
-			if( mText->calculateStringLength(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart)) > mTextBoundsAbsoluteDimensions.width )
+			if( mText->calculateStringLength(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart)) > maxTextWidth )
 				--mVisibleEnd;
 		}
 	}
 
 	void TextBox::_positionCursor()
 	{
+		Rect textBounds = getTextBounds();
+
 		// Now that the correct text will be displayed, we can correctly position the text cursor.
 		Point cursorPos;
 		if((mCursorIndex - mVisibleStart) == 0)
@@ -161,26 +165,26 @@ namespace QuickGUI
 				switch(mHorizontalAlignment)
 				{
 				case QGUI_HA_LEFT:
-					cursorPos.x = mTextBoundsAbsoluteDimensions.x;
+					cursorPos.x = textBounds.x;
 					break;
 				case QGUI_HA_MID:
-					cursorPos.x = (mTextBoundsAbsoluteDimensions.x + (mTextBoundsAbsoluteDimensions.width / 2));
+					cursorPos.x = (textBounds.x + (textBounds.width / 2));
 					break;
 				case QGUI_HA_RIGHT:
-					cursorPos.x = (mTextBoundsAbsoluteDimensions.x + mTextBoundsAbsoluteDimensions.width);
+					cursorPos.x = (textBounds.x + textBounds.width);
 					break;
 				}
 
 				switch(mVerticalAlignment)
 				{
 				case QGUI_VA_TOP:
-					cursorPos.y = mTextBoundsAbsoluteDimensions.y;
+					cursorPos.y = textBounds.y;
 					break;
 				case QGUI_VA_MID:
-					cursorPos.y = (mTextBoundsAbsoluteDimensions.y + (mTextBoundsAbsoluteDimensions.height / 2));
+					cursorPos.y = (textBounds.y + (textBounds.height / 2));
 					break;
 				case QGUI_VA_BOTTOM:
-					cursorPos.y = (mTextBoundsAbsoluteDimensions.y + mTextBoundsAbsoluteDimensions.height);
+					cursorPos.y = (textBounds.y + textBounds.height);
 					break;
 				}
 			}
@@ -597,10 +601,7 @@ namespace QuickGUI
 		{
 			mMouseLeftDown = true;
 
-			Point absMousePos = mea.position;
-			absMousePos.x /= static_cast<float>(mGUIManager->getViewportWidth());
-			absMousePos.y = mTextBoundsAbsoluteDimensions.y + (mTextBoundsAbsoluteDimensions.height / 2);
-			setCursorIndex(mVisibleStart + mText->getTextCursorIndex(absMousePos));
+			setCursorIndex(mVisibleStart + mText->getTextCursorIndex(mea.position));
 		}
 	}
 
@@ -622,11 +623,7 @@ namespace QuickGUI
 		{
 			mMouseLeftDown = false;
 
-			Point mouseAbsPos = mea.position;
-			mouseAbsPos.x /= static_cast<float>(mGUIManager->getViewportWidth());
-			mouseAbsPos.y = mTextBoundsAbsoluteDimensions.y + (mTextBoundsAbsoluteDimensions.height / 2);
-
-			setCursorIndex(mVisibleStart + mText->getTextCursorIndex(mouseAbsPos));
+			setCursorIndex(mVisibleStart + mText->getTextCursorIndex(mea.position));
 		}
 	}
 
@@ -715,10 +712,7 @@ namespace QuickGUI
 
 		if(mHasFocus && mMouseLeftDown)
 		{
-			Point absMousePos = mMouseCursor->getPosition(QGUI_GMM_ABSOLUTE);
-			absMousePos.y = mTextBoundsAbsoluteDimensions.y + (mTextBoundsAbsoluteDimensions.height / 2);
-			
-			int index = mVisibleStart + mText->getTextCursorIndex(absMousePos);
+			int index = mVisibleStart + mText->getTextCursorIndex(mMouseCursor->getPosition());
 			if(index != mCursorIndex)
 				setCursorIndex(index,false);
 		}

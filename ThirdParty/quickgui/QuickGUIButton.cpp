@@ -5,14 +5,14 @@
 
 namespace QuickGUI
 {
-	Button::Button(const Ogre::String& name, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
-		Label(name,type,dimensions,pMode,sMode,texture,container,ParentWidget,gm),
+	Button::Button(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
+		Label(name,type,pixelDimensions,texture,container,ParentWidget,gm),
 		mButtonDown(false)
 	{
 		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
 		if(mWidgetType == TYPE_BUTTON)
 		{
-			mQuad->setLayer(Quad::LAYER_CHILD);
+			mQuad->setLayer(mParentWidget->getQuad()->getLayer());
 		}
 
 		mButtonDownTexture = mTextureName + ".down" + mTextureExtension;

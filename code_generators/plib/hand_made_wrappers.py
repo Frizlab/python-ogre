@@ -299,6 +299,24 @@ WRAPPER_DEFINITION_ssgLeaf_Wrapper=\
   
 """
 
+WRAPPER_DEFINITION_ssgBaseTransform_Wrapper=\
+"""
+  virtual void setTransform ( sgMat4 xform ){};
+"""
+
+WRAPPER_DEFINITION_ssgTransform = \
+"""
+ssgEntity *
+ssgTransform_castAsEntity ( ssgTransform * me ) {
+    return ( (ssgEntity *) me );
+    }
+"""
+WRAPPER_REGISTRATION_ssgTransform = [
+    """def( "castAsEntity", &ssgTransform_castAsEntity,
+                "Python-Ogre Helper Function: Cast as an ssgEntity -- needed for ssgLoadXXX.",
+                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());"""
+                ]
+                
 #################################################################################################
 #################################################################################################
 
@@ -325,5 +343,19 @@ def apply( mb ):
         
     rt = mb.class_( 'ssgEntity' )
     rt.add_wrapper_code( WRAPPER_DEFINITION_ssgEntity_Wrapper )
+    
     rt = mb.class_( 'ssgLeaf' )
     rt.add_wrapper_code( WRAPPER_DEFINITION_ssgLeaf_Wrapper )
+
+    rt = mb.class_( 'ssgBaseTransform' )
+    rt.add_wrapper_code( WRAPPER_DEFINITION_ssgBaseTransform_Wrapper )
+    
+#     rt = mb.class_( 'ssgTransform' )
+#     rt = mb
+#     rt.add_declaration_code( WRAPPER_DEFINITION_ssgTransform )
+#     apply_reg (rt,  WRAPPER_REGISTRATION_ssgTransform )
+
+#     mb.add_declaration_code( WRAPPER_DEFINITION_Free )
+#     apply_reg (mb,  WRAPPER_REGISTRATION_Free )
+    
+    

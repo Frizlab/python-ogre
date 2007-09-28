@@ -5,7 +5,7 @@
 namespace QuickGUI
 {
 	Sheet::Sheet(const Ogre::String& name, Type type, const Ogre::String& texture, GUIManager* gm) :
-		Panel(name,type,Rect(0,0,1,1),QGUI_GMM_RELATIVE,QGUI_GMM_RELATIVE,texture,NULL,NULL,gm),
+		Panel(name,type,Rect(0,0,gm->getViewportWidth(),gm->getViewportHeight()),texture,NULL,NULL,gm),
 		mDefaultTextColor(Ogre::ColourValue::White),
 		mDefaultSkin("qgui"),
 		mAutoNameWindowCounter(0)
@@ -20,6 +20,7 @@ namespace QuickGUI
 		if(type == TYPE_SHEET)
 		{
 			mQuad->setLayer(Quad::LAYER_CHILD);
+			mQuad->setSize(mSize);
 
 			mScrollPane = new ScrollPane(mInstanceName+".ScrollPane",TYPE_SCROLL_PANE,this,this,mGUIManager);
 		}
@@ -34,14 +35,14 @@ namespace QuickGUI
 		// cannot set position/size of sheet widget..
 	}
 
-	Window* Sheet::_createWindow(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode, const Ogre::String& texture)
+	Window* Sheet::_createWindow(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture)
 	{
-		Window* newWindow = new Window(name,TYPE_WINDOW,dimensions,positionMode,sizeMode,texture,this,this,mGUIManager);
+		Window* newWindow = new Window(name,TYPE_WINDOW,pixelDimensions,texture,this,this,mGUIManager);
 
 		return newWindow;
 	}
 
-	Window* Sheet::createWindow(const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	Window* Sheet::createWindow(const Rect& pixelDimensions, const Ogre::String& texture)
 	{
 		// Many widgets can have no material, (label or empty window for example) but a regular window
 		// must have a material!
@@ -50,10 +51,10 @@ namespace QuickGUI
 		Ogre::String name = "DefaultWindow" + Ogre::StringConverter::toString(mAutoNameWindowCounter);
 		++mAutoNameWindowCounter;
 
-		return _createWindow(name,dimensions,positionMode,sizeMode,texture);
+		return _createWindow(name,pixelDimensions,texture);
 	}
 
-	Window* Sheet::createWindow(const Ogre::String& name, const Rect& dimensions, const Ogre::String& texture, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	Window* Sheet::createWindow(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture)
 	{
 		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
 
@@ -61,26 +62,26 @@ namespace QuickGUI
 		// must have a material!
 		if( texture == "" ) return NULL;
 
-		return _createWindow(name,dimensions,positionMode,sizeMode,texture);
+		return _createWindow(name,pixelDimensions,texture);
 	}
 
-	Window* Sheet::createWindow(const Ogre::String& name, const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	Window* Sheet::createWindow(const Ogre::String& name, const Rect& pixelDimensions)
 	{
 		if( !(mGUIManager->validWidgetName(name)) ) return NULL;
 
 		Ogre::String texture = mDefaultSkin + ".window.png";
 
-		return _createWindow(name,dimensions,positionMode,sizeMode,texture);
+		return _createWindow(name,pixelDimensions,texture);
 	}
 
-	Window* Sheet::createWindow(const Rect& dimensions, GuiMetricsMode positionMode, GuiMetricsMode sizeMode)
+	Window* Sheet::createWindow(const Rect& pixelDimensions)
 	{
 		Ogre::String name = "DefaultWindow" + Ogre::StringConverter::toString(mAutoNameWindowCounter);
 		++mAutoNameWindowCounter;
 
 		Ogre::String texture = mDefaultSkin + ".window.png";
 
-		return _createWindow(name,dimensions,positionMode,sizeMode,texture);
+		return _createWindow(name,pixelDimensions,texture);
 	}
 
 	Ogre::String Sheet::getDefaultFont()

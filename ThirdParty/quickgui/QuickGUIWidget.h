@@ -22,19 +22,6 @@ namespace QuickGUI
 	class GUIManager;
 
 	/**
-	* Allows positioning and setting size in 3 different modes.
-	* Absolute: [0.0,1.0], where 1.0 is the full width or height of screen.
-	* Relative: (-inf,+inf), where 1.0 is the full width or height of parent widget. 
-	* Pixels: [0,x], where x is the width or height of the screen in pixels.
-	*/
-	enum GuiMetricsMode
-	{
-		QGUI_GMM_ABSOLUTE		=  0,
-		QGUI_GMM_RELATIVE			,
-		QGUI_GMM_PIXELS
-	};
-
-	/**
 	* Useful for widgets horizontally aligning child widgets, for example a
 	* TitleBar aligning its label widget
 	*/
@@ -65,6 +52,7 @@ namespace QuickGUI
 	public:
 		// GUIManager is the only manager that can destroy widgets.
 		friend class GUIManager;
+		friend class ScrollPane;
 
 		/**
 		* Outlining Types of widgets in the library.
@@ -102,6 +90,7 @@ namespace QuickGUI
 			EVENT_CHILD_REMOVED			,
 			EVENT_DISABLED				,
 			EVENT_DRAGGED				,
+			EVENT_DROPPED				,
 			EVENT_ENABLED				,
 			EVENT_GAIN_FOCUS			,
 			EVENT_HIDDEN				,
@@ -137,7 +126,7 @@ namespace QuickGUI
 				ParentWidget parent widget which created this widget.
         */
 		//GuiMetricsMode
-		Widget(const Ogre::String& instanceName, Type type, const Rect& dimensions, GuiMetricsMode pMode, GuiMetricsMode sMode, Ogre::String textureName, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
+		Widget(const Ogre::String& instanceName, Type type, const Rect& pixelDimensions, Ogre::String textureName, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
 
 		// This function should not be called by users.  Its purpose is to add this widget to its parent's child list.
 		void _addToChildList(Widget* w);
@@ -188,7 +177,7 @@ namespace QuickGUI
 		* Moves draggingWidget.  By default, dragging widget is this widget, but this can be changed.
 		* Allows dragging the titlebar or it's text to drag the window, for example.
 		*/
-		void drag(const Ogre::Real& xVal, const Ogre::Real& yVal, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
+		void drag(const Ogre::Real& pixelX, const Ogre::Real& pixelY);
 		/**
 		* Returns true if the widget is able to be dragged, false otherwise.
 		*/
@@ -214,10 +203,11 @@ namespace QuickGUI
 		std::vector<Widget*>* getChildWidgetList();
 		Widget* getChildWidget(const Ogre::String& name);
 		Ogre::String getDefaultSkin();
-		Rect getDimensions(GuiMetricsMode position = QuickGUI::QGUI_GMM_RELATIVE, GuiMetricsMode size = QuickGUI::QGUI_GMM_RELATIVE);
+		Rect getDimensions();
 		GUIManager* getGUIManager();
-		Point getPosition(GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
-		Size getSize(GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
+		Point getPosition();
+		Point getScrollOffset();
+		Size getSize();
 
 		Rect getClippingRect();
 		/**
@@ -229,11 +219,15 @@ namespace QuickGUI
 		*/
 		bool getGainFocusOnClick();
 		bool getGrabbed();
-		Ogre::Real getHeight(GuiMetricsMode mode = QGUI_GMM_RELATIVE);
+		Ogre::Real getHeight();
 		/**
 		* Returns true if this widget is hidden when its parent is hidden.
 		*/
 		bool getHideWithParent();
+		/**
+		* Iterates through all child widgets and retrieves the highest offset.
+		*/
+		int getHighestOffset();
 		/**
 		* Returns true if clipping rect is inheritted from its parent.
 		*/
@@ -275,6 +269,12 @@ namespace QuickGUI
 		* Get Render Object Group this widget's Quad belongs in.
 		*/
 		QuadContainer* getQuadContainer();
+		/*
+		* Get the screen pixel coordinates this widget is drawn at.
+		* NOTE: This is not the same as getPosition, which returns a value relative to parent.
+		* NOTE: This may not be the actual screen coordinates, since QuickGUI supports scrolling.
+		*/
+		Point getScreenPosition();
 		/**
 		* Get whether or not this widget is shown when its parent is shown.
 		*/
@@ -283,16 +283,16 @@ namespace QuickGUI
 		* Iterates through visible Children widgets to find and return the widget that is *hit* by the point.
 		* Returns NULL is nothing is *hit*.
 		*/
-		virtual Widget* getTargetWidget(const Point& p);
+		virtual Widget* getTargetWidget(const Point& pixelPosition);
 		
 		Ogre::String getTextureName(bool includeExtension = true);
 		/**
 		* Returns the type of the widget, as enumerated above. ex. TYPE_BUTTON.
 		*/
 		Type getWidgetType();
-		Ogre::Real getWidth(GuiMetricsMode mode = QGUI_GMM_RELATIVE);
-		Ogre::Real getXPosition(GuiMetricsMode mode = QGUI_GMM_RELATIVE);
-		Ogre::Real getYPosition(GuiMetricsMode mode = QGUI_GMM_RELATIVE);
+		Ogre::Real getWidth();
+		Ogre::Real getXPosition();
+		Ogre::Real getYPosition();
 		/**
 		* Sets mVisible to false.  Widgets should override this to implement how they handle
 		* hiding.
@@ -301,7 +301,7 @@ namespace QuickGUI
 		/**
 		* Returns true if pixel point p is inside the pixel dimensions of this widget.
 		*/
-		virtual bool isPointWithinBounds(const Point& p);
+		virtual bool isPointWithinBounds(const Point& pixelPosition);
 		bool isVisible();
 		/**
 		* Returns true if Widget w is a child of this widget, false otherwise.
@@ -311,10 +311,10 @@ namespace QuickGUI
 		/**
 		* Offset the widget position.  Useful for dragging/moving widgets.
 		*/
-		void move(const Ogre::Real& xVal, const Ogre::Real& yVal, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
-		void move(const Point& p, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
-		void moveX(Ogre::Real xVal, GuiMetricsMode mode = QGUI_GMM_RELATIVE);
-		void moveY(Ogre::Real yVal, GuiMetricsMode mode = QGUI_GMM_RELATIVE);
+		void move(const Ogre::Real& pixelX, const Ogre::Real& pixelY);
+		void move(const Point& pixelOffset);
+		void moveX(Ogre::Real pixelX);
+		void moveY(Ogre::Real pixelY);
 
 		/**
 		* Event Handler that executes the appropriate User defined Event Handlers for a given event.
@@ -330,7 +330,7 @@ namespace QuickGUI
 		* Determins if the mouse if over a transparent part of the image defining the widget.
 		* Used to determin if the mouse is *over* a widget. (non transparent parts)
 		*/
-		bool overTransparentPixel(const Point& mousePosition);
+		bool overTransparentPixel(const Point& mousePixelPosition);
 		/**
 		* Makes sure relative position and size are correct, according to parent.  Actual/Pixel position and size are maintained.
 		*/
@@ -342,16 +342,16 @@ namespace QuickGUI
 		/**
 		* Scales the widget over time.
 		*/
-		void resizeOverTime(Ogre::Real seconds, Size finalSize, GuiMetricsMode mode = QGUI_GMM_ABSOLUTE);
+		void resizeOverTime(Ogre::Real seconds, Size finalPixelSize);
 		/**
 		* Stores/Updates the texture used for the widget, and allows the widget to derive other needed textures. (by overriding this function)
 		*/
 		virtual void setBaseTexture(const Ogre::String& textureName);
-		virtual void setClippingRect(const Rect& r);
+		virtual void setClippingRect(const Rect& pixelDimensions);
 		/**
 		* Manually set the Dimensions of the widget.
 		*/
-		void setDimensions(const Rect& dimensions, GuiMetricsMode positionMode = QuickGUI::QGUI_GMM_RELATIVE, GuiMetricsMode sizeMode = QuickGUI::QGUI_GMM_RELATIVE);
+		void setDimensions(const Rect& pixelDimensions);
 		/**
 		* Stores the texture to be used when the widget becomes disabled.
 		*/
@@ -370,7 +370,7 @@ namespace QuickGUI
 		* Manually set mGrabbed to true.
 		*/
 		void setGrabbed(bool grabbed);
-		void setHeight(Ogre::Real height, GuiMetricsMode mode = QGUI_GMM_RELATIVE);
+		void setHeight(Ogre::Real pixelHeight);
 		/**
 		* If set to true, this widget will be hidden when its parent's widget is hidden.
 		* NOTE: All widgets have this set to true by default.
@@ -387,32 +387,34 @@ namespace QuickGUI
 		/**
 		* Manipulates the offset used to determine this widgets zOrder in rendering.
 		*/
-		void setOffset(int offset);
+		virtual void setOffset(int offset);
 		/**
 		* Manually set position of widget.
 		* NOTE: the values given are relative to the parent's top left corner, and not the screen!  For screen positioning,
 		*  user the setScreenPosition function.
 		*/
-		void setPosition(const Ogre::Real& xVal, const Ogre::Real& yVal, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
-		void setPosition(const Point& p, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
+		void setPosition(const Ogre::Real& pixelX, const Ogre::Real& pixelY);
+		void setPosition(const Point& pixelPoint);
 		/**
 		* Manually set position of widget.
 		* NOTE: the values given are relative to the render windows's top left corner, and not the parent widget!
 		*/
-		void setScreenPosition(const Ogre::Real& xVal, const Ogre::Real& yVal, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
+		void setScreenPosition(const Ogre::Real& pixelX, const Ogre::Real& pixelY);
+		void setScreenXPosition(const Ogre::Real& pixelX);
+		void setScreenYPosition(const Ogre::Real& pixelY);
 		/**
 		* Manually set size of widget.
 		*/
-		void setSize(const Ogre::Real& width, const Ogre::Real& height, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
-		void setSize(const Size& s, GuiMetricsMode mode = QuickGUI::QGUI_GMM_RELATIVE);
+		void setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight);
+		void setSize(const Size& pixelSize);
 		/**
 		* If set to true, this widget will be shown when its parent's widget is shown.
 		* NOTE: most widgets have this set to true by default. (Menu's are false by default)
 		*/
 		void setShowWithParent(bool show);
-		void setWidth(Ogre::Real width, GuiMetricsMode mode = QGUI_GMM_RELATIVE);
-		void setXPosition(Ogre::Real x, GuiMetricsMode mode = QGUI_GMM_RELATIVE);
-		void setYPosition(Ogre::Real y, GuiMetricsMode mode = QGUI_GMM_RELATIVE);
+		void setWidth(Ogre::Real pixelWidth);
+		void setXPosition(Ogre::Real pixelX);
+		void setYPosition(Ogre::Real pixelY);
 		/**
 		* Sets mVisible to true.  Widgets should override this to implement how they handle
 		* showing.
@@ -474,11 +476,11 @@ namespace QuickGUI
 		bool						mResizeOverTime;
 		Ogre::Real					mResizeTimer;
 		Ogre::Real					mResizeTime;
-		Size						mInitialAbsSize;
-		Size						mFinalAbsSize;
+		Size						mInitialPixelSize;
+		Size						mFinalPixelSize;
 		
 		bool						mRepositionOverTime;
-		Point						mFinalAbsPosition;
+		Point						mFinalPixelPosition;
 
 		Rect						mClippingRect;
 
@@ -490,14 +492,12 @@ namespace QuickGUI
 		// List of any child widgets this widget may have.
 		std::vector<Widget*>		mChildWidgets;
 
-		// Everything is implemented in pixels under the hood
-		Rect						mPixelDimensions;
-		// First two values represent the absolute positions - 0,0 to 1,1 represent top left to bottom right of render window
-		// Second two values represent the absolute sizes
-		Rect						mAbsoluteDimensions;
-		// First two values represent the relative positions - 0,0 to 1,1 represent top left to bottom right of parent widget
-		// Second two values represent the relative sizes		
-		Rect						mRelativeDimensions;
+		// Pixel position relative to parent.  (0,0) is the Parent Widgets top Left corner.
+		Point						mPosition;
+		// Used for scrolling widgets.
+		Point						mScrollOffset;
+		// Size in pixels.
+		Size						mSize;
 
 		// Event handlers! Only one per event per widget
 		std::vector< std::vector<MemberFunctionSlot*> > mUserEventHandlers;
@@ -513,6 +513,9 @@ namespace QuickGUI
 		* Breaks the texture name into its name and extension, if it has an extension.
 		*/
 		void _processFullTextureName(const Ogre::String& texture);
+
+		void _setScrollXOffset(Ogre::Real pixelXOffset);
+		void _setScrollYOffset(Ogre::Real pixelYOffset);
 	};
 }
 

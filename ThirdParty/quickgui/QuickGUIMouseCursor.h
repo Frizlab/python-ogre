@@ -33,7 +33,7 @@ namespace QuickGUI
 			@param
 				textureName Ogre material defining the cursor image.
         */
-        MouseCursor(const Size& size, GuiMetricsMode sizeMode, const Ogre::String& textureName, GUIManager* gm);
+        MouseCursor(const Size& size, const Ogre::String& textureName, GUIManager* gm);
 		/** Standard Destructor. */
 		~MouseCursor();
 
@@ -41,9 +41,9 @@ namespace QuickGUI
 		* Returns true if cursor is set to go invisible when mouse is off the screen, false otherwise.
 		*/
 		bool getHideWhenOffScreen();
-		Point getOriginOffset(GuiMetricsMode mode = QGUI_GMM_PIXELS);
-		Point getPosition(GuiMetricsMode mode = QGUI_GMM_PIXELS);
-		Size getSize(GuiMetricsMode mode = QGUI_GMM_PIXELS);
+		Point getOriginOffset();
+		Point getPosition();
+		Size getSize();
 		/**
 		* Hides the cursor.
 		*/
@@ -78,11 +78,11 @@ namespace QuickGUI
 		* default, offset is (0,0), which leaves the origin at the top left corner of the quad representing
 		* the cursor image.  Applying pixel offsets are useful for cursors like a crosshair or target.
 		*/
-		void offsetOrigin(int xOffset, int yOffset, GuiMetricsMode mode = QGUI_GMM_PIXELS);
+		void offsetOrigin(int xPixelOffset, int yPixelOffset);
 		/**
 		* Applies the pixel offset to the current cursor position.
 		*/
-		void offsetPosition(const int& xOffset, const int& yOffset, GuiMetricsMode mode = QGUI_GMM_PIXELS);
+		void offsetPosition(const int& xPixelOffset, const int& yPixelOffset);
 		/**
 		* Render the mouse to screen.
 		*/
@@ -99,11 +99,11 @@ namespace QuickGUI
 		/**
 		* Sets the position of the mouse cursor on the screen, in pixel coordinates.
 		*/
-		void setPosition(Ogre::Real xPosition, Ogre::Real yPosition, GuiMetricsMode mode = QGUI_GMM_PIXELS);
+		void setPosition(Ogre::Real pixelX, Ogre::Real pixelY);
 		/**
 		* Sets the Size of the mouse cursor on the screen, in pixel dimensions.
 		*/
-		void setSize(Ogre::Real width, Ogre::Real height, GuiMetricsMode mode = QGUI_GMM_PIXELS);
+		void setSize(Ogre::Real pixelWidth, Ogre::Real pixelHeight);
 		/**
 		* Shows the cursor.
 		*/
@@ -117,9 +117,6 @@ namespace QuickGUI
 		// Width and Height in pixels
 		Size			mPixelSize;
 		Point			mPixelPosition;
-		// Absolute is the same as Relative for the MouseCursor, and thus not needed.
-		Size			mAbsoluteSize;
-		Point			mAbsolutePosition;
 
 		// By default the cursor origin is in the top left of the quad, (0,0), but
 		// this value can change for other cursors. (A target, for example)
