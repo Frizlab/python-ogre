@@ -8,7 +8,13 @@ source ./config.sh
 # compile code
 #
 cd python-ogre 
-scons PROJECTS=ogre,ois,quickgui,cegui,plib,ogreode 
+if [ $1 != "" ]
+then 
+    scons PROJECTS=$1
+else
+    scons PROJECTS=ogre,ois,quickgui,cegui,plib,ogreode,ogrenewt
+fi
+#ogre,ois,quickgui,cegui,plib,ogreode 
 #,ogrerefapp
 python setup.py install --prefix=$PREFIX 
 cd ..
