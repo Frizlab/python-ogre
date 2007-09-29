@@ -6,7 +6,7 @@
 # -----------------------------------------------------------------------------
 
 ## STARTER TEMPLATE..
-## replace PROJECT with lowercase project name
+## replace ogrebullet with lowercase project name
 ## set MAIN_NAMESPACE
 ## rename and configure .h files
 
@@ -23,7 +23,6 @@ import environment
 import common_utils
 import customization_data
 import hand_made_wrappers
-import register_exceptions
 
 from pygccxml import parser
 from pygccxml import declarations
@@ -40,7 +39,7 @@ import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
 from common_utils import docit
 
-MAIN_NAMESPACE = ''
+MAIN_NAMESPACE = 'OgreBulletCollisions'
 
 ############################################################
 ##
@@ -192,11 +191,11 @@ def generate_code():
     # NOTE: If you update the source library code you need to manually delete the cache .XML file   
     #
     xml_cached_fc = parser.create_cached_source_fc(
-                        os.path.join( environment.PROJECT.root_dir, "python_PROJECT.h" )
-                        , environment.PROJECT.cache_file )
+                        os.path.join( environment.ogrebulletc.root_dir, "python_ogrebullet.h" )
+                        , environment.ogrebulletc.cache_file )
 
-    defined_symbols = [ ]
-    defined_symbols.append( 'VERSION_' + environment.PROJECT.version )  
+    defined_symbols = ["WIN32","NDEBUG","_WINDOWS", "_PRECOMP", 'OGRE_NONCLIENT_BUILD' ]
+    defined_symbols.append( 'VERSION_' + environment.ogrebulletc.version )  
     
     #
     # build the core Py++ system from the GCCXML created source
@@ -204,14 +203,14 @@ def generate_code():
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
-                                          , include_paths=environment.PROJECT.include_dirs
+                                          , include_paths=environment.ogrebulletc.include_dirs
                                           , define_symbols=defined_symbols
                                           , indexing_suite_version=2
-                                          , cflags=environment.PROJECT.cflags
+                                          , cflags=environment.ogrebulletc.cflags
                                            )
                                            
     # if this module depends on another set it here                                           
-    ## mb.register_module_dependency ( environment.ogre.generated_dir )
+    mb.register_module_dependency ( environment.ogre.generated_dir ) # ,environment.ogrebulletc.generated_dir] )
     
     # normally implicit conversions work OK, however they can cause strange things to happen so safer to leave off
     mb.constructors().allow_implicit_conversion = False                                           
@@ -235,6 +234,7 @@ def generate_code():
     ManualTransformations ( mb )
     AutoFixes ( mb, MAIN_NAMESPACE )
     ManualFixes ( mb )
+            
     #
     # We need to tell boost how to handle calling (and returning from) certain functions
     #
@@ -250,11 +250,11 @@ def generate_code():
         if cls.name not in NoPropClasses:
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
             
-    common_utils.add_constants( mb, { 'PROJECT_version' :  '"%s"' % environment.PROJECT.version.replace("\n", "\\\n") 
+    common_utils.add_constants( mb, { 'ogrebulletC_version' :  '"%s"' % environment.ogrebulletc.version.replace("\n", "\\\n") 
                                       , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
                                       
     ## need to create a welcome doc string for this...                                  
-    common_utils.add_constants( mb, { '__doc__' :  '"PROJECT DESCRIPTION"' } ) 
+    common_utils.add_constants( mb, { '__doc__' :  '"ogrebullet DESCRIPTION"' } ) 
     
     
     ##########################################################################################
@@ -262,17 +262,17 @@ def generate_code():
     # Creating the code. After this step you should not modify/customize declarations.
     #
     ##########################################################################################
-    extractor = exdoc.doc_extractor() # I'm excluding the UTFstring docs as lots about nothing 
-    mb.build_code_creator (module_name='_PROJECT_' , doc_extractor= extractor )
+    extractor = exdoc.doc_extractor( ) # I'm excluding the UTFstring docs as lots about nothing 
+    mb.build_code_creator (module_name='_ogrebulletc_' , doc_extractor= extractor )
     
-    for inc in environment.PROJECT.include_dirs:
+    for inc in environment.ogrebulletc.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )
-    mb.code_creator.user_defined_directories.append( environment.PROJECT.generated_dir )
-    mb.code_creator.replace_included_headers( customization_data.header_files( environment.PROJECT.version ) )
+    mb.code_creator.user_defined_directories.append( environment.ogrebulletc.generated_dir )
+    mb.code_creator.replace_included_headers( customization_data.header_files( environment.ogrebulletc.version ) )
 
-    huge_classes = map( mb.class_, customization_data.huge_classes( environment.PROJECT.version ) )
+    huge_classes = map( mb.class_, customization_data.huge_classes( environment.ogrebulletc.version ) )
 
-    mb.split_module(environment.PROJECT.generated_dir, huge_classes, use_files_sum_repository=False)
+    mb.split_module(environment.ogrebulletc.generated_dir, huge_classes, use_files_sum_repository=False)
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory..
@@ -281,9 +281,9 @@ def generate_code():
         for f in os.listdir(d):
             if f.endswith('cpp') or f.endswith('.h'):
                 sourcefile = os.path.join(d, f)
-                destfile = os.path.join(environment.PROJECT.generated_dir, f ) 
+                destfile = os.path.join(environment.ogrebulletc.generated_dir, f ) 
                 if not common_utils.samefile( sourcefile ,destfile ):
-                    shutil.copy( sourcefile, environment.PROJECT.generated_dir )
+                    shutil.copy( sourcefile, environment.ogrebulletc.generated_dir )
                     print "Updated ", f, "as it was missing or out of date"
         
 if __name__ == '__main__':

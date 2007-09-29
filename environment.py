@@ -249,10 +249,7 @@ class ogrenewt:
     active=True
     version = "1.0"
     parent = "ogre/physics"
-    if os.name=="nt":
-        libs = ['Newton', Config.LIB_Boost, 'OgreNewt_Main', 'OgreMain']
-    else:
-        libs = ['Newton', Config.LIB_Boost, 'OgreNewt', 'OgreMain']
+    libs = ['Newton', Config.LIB_Boost, 'OgreNewt_Main', 'OgreMain']
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_Newton   # only one path for Newton
                     , Config.PATH_INCLUDE_Ogre 
@@ -332,21 +329,6 @@ class opcode:
     CheckIncludes = ['boost/python.hpp',  'Opcode.h'] 
     active=True 
        
-class bullet:
-    version= "2.62"
-    parent = "ogre/physics"
-    libs=[Config.LIB_Boost,  'libbulletcollision', 'libbulletdynamics','libbulletmath']
-    lib_dirs = [ Config.PATH_LIB_Boost
-                ,  Config.PATH_LIB_Bullet
-                ]
-    include_dirs = [ Config.PATH_Boost 
-                    ,  Config.PATH_INCLUDE_Bullet
-                    ]
-
-    ModuleName = 'bullet'
-    CheckIncludes = ['boost/python.hpp'] 
-    active=True 
-    cflags = ""
 
 
 class newton:
@@ -611,6 +593,76 @@ class ogredshow:
     libs=[  Config.LIB_Boost, 'OgreMain','Strmiids' , 'ole32']
     ModuleName="ogredshow"   
     active=True 
+    
+class bullet:
+    version= "2.62"
+    parent = "ogre/physics"
+    libs=[Config.LIB_Boost,  'libbulletcollision', 'libbulletdynamics','libbulletmath']
+    lib_dirs = [ Config.PATH_LIB_Boost
+                ,  Config.PATH_LIB_Bullet
+                ]
+    include_dirs = [ Config.PATH_Boost 
+                    ,  Config.PATH_INCLUDE_Bullet
+                    ]
+
+    ModuleName = 'bullet'
+    CheckIncludes = ['boost/python.hpp'] 
+    active=True 
+    cflags = ""
+    
+class ogrebulletc:  # collision part of ogrebullet
+    active=True
+    version = "1.0"
+    cflags = ""
+    parent = "ogre/physics"
+    libs = [Config.LIB_Boost,  'OgreMain', 
+        'OgreBulletCollisions','libbulletcollision', 'libbulletmath'
+        ]
+    include_dirs = [Config.PATH_Boost
+                    , Config.PATH_INCLUDE_Bullet   # only one path for Newton
+                    , Config.PATH_INCLUDE_Ogre 
+                    , Config.PATH_INCLUDE_Ogre_Dependencies  #needed for OIS/OIS.h
+                    ]
+    for d in Config.PATH_INCLUDE_OgreBullet:
+        include_dirs.append( d )
+    lib_dirs = [ Config.PATH_LIB_Boost
+                ,Config.PATH_LIB_Bullet
+                ,Config.PATH_LIB_OgreBullet
+                , Config.PATH_LIB_Ogre_OgreMain
+                ]
+    if os.name=="nt":
+        CCFLAGS =  ' -DWIN32 -DNDEBUG -D_WINDOWS -D_PRECOMP '
+    else:
+        CCFLAGS = ''
+    ModuleName = 'OgreBulletC'
+    CheckIncludes=['boost/python.hpp', 'Ogre.h']    
+
+class ogrebulletd:  # dynamics part of ogrebullet
+    active=True
+    version = "1.0"
+    cflags = ""
+    parent = "ogre/physics"
+    libs = [Config.LIB_Boost,  'OgreMain', 
+        'OgreBulletCollisions','libbulletcollision','OgreBulletDynamics','libbulletdynamics', 'libbulletmath'
+        ]
+    include_dirs = [Config.PATH_Boost
+                    , Config.PATH_INCLUDE_Bullet   # only one path for Newton
+                    , Config.PATH_INCLUDE_Ogre 
+                    , Config.PATH_INCLUDE_Ogre_Dependencies  #needed for OIS/OIS.h
+                    ]
+    for d in Config.PATH_INCLUDE_OgreBullet:
+        include_dirs.append( d )
+    lib_dirs = [ Config.PATH_LIB_Boost
+                ,Config.PATH_LIB_Bullet
+                ,Config.PATH_LIB_OgreBullet
+                , Config.PATH_LIB_Ogre_OgreMain
+                ]
+    if os.name=="nt":
+        CCFLAGS =  ' -DWIN32 -DNDEBUG -D_WINDOWS -D_PRECOMP '
+    else:
+        CCFLAGS = ''
+    ModuleName = 'OgreBulletD'
+    CheckIncludes=['boost/python.hpp', 'Ogre.h']    
 ############################################################################################
 
 ## Here is the master list....
@@ -637,6 +689,8 @@ projects = {
     , 'ogredshow' : ogredshow
     , 'plib' : plib
     , 'navi': navi
+    , 'ogrebulletc' : ogrebulletc
+    , 'ogrebulletd' : ogrebulletd
 }        
 
 #

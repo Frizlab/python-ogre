@@ -40,9 +40,9 @@ NAMESPACES = [ 'IceCore', 'Opcode', 'IceMaths']
 
 ## small helper function
 def docit ( general, i, o ): 
-    docs = "\"Python-Ogre (Opcode) Modified Function Call\\n" + general +"\\n"
+    docs = "Python-Ogre (Opcode) Modified Function Call\\n" + general +"\\n"
     docs = docs + "Input: " + i + "\\n"
-    docs = docs + "Output: " + o + "\\n\\\n\""
+    docs = docs + "Output: " + o + "\\n\\\n"
     return docs
 
 ############################################################
@@ -475,7 +475,7 @@ def generate_code():
                         os.path.join( environment.opcode.root_dir, "python_opcode.h" )
                         , environment.opcode.cache_file )
 
-    defined_symbols = ['OPCODE_EXPORTS', 'ICE_NO_DLL'] #, 'OPC_USE_CALLBACKS' ]
+    defined_symbols = ['OPCODE_EXPORTS'] #, 'ICE_NO_DLL'] #, 'OPC_USE_CALLBACKS' ]
     defined_symbols.append( 'VERSION_' + environment.opcode.version )  
     
     #
@@ -578,7 +578,7 @@ def generate_code():
     #
     ##########################################################################################
     extractor = exdoc.doc_extractor("") # I'm excluding the UTFstring docs as lots about nothing 
-    mb.build_code_creator (module_name='_opcode_') ##  , doc_extractor= extractor )
+    mb.build_code_creator (module_name='_opcode_' , doc_extractor= extractor )
     
     for inc in environment.opcode.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )

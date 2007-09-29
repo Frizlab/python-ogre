@@ -39,6 +39,8 @@ PATH_VORBIS=        os.path.join(BASE_DIR, 'libvorbis-1.2.0')
 PATH_OPENAL=        os.path.join(BASE_DIR, 'openal-0.0.8')
 PATH_ALUT=          os.path.join(BASE_DIR, 'freealut-1.1.0')
 PATH_OgreOde=       os.path.join(PATH_OgreAddons,'ogreode')
+PATH_OgreBullet=    os.path.join(PATH_OgreAddons,'ogrebullet')
+
 PATH_OGREAL=        os.path.join(PATH_THIRDPARTY,'ogreal')
 PATH_OPCODE=        os.path.join(PATH_THIRDPARTY,'opcode')
 PATH_quickgui=      os.path.join(PATH_THIRDPARTY,'quickgui')
@@ -73,6 +75,8 @@ PATH_LIB_OgreOdePrefab =        os.path.join( LOCAL_LIB ) #PATH_OgreOde, 'prefab
 PATH_LIB_OgreOdeLoader =        os.path.join( LOCAL_LIB ) #PATH_OgreOde, 'loader/lib/Release' )
 PATH_LIB_OgreAL =               os.path.join( LOCAL_LIB ) #PATH_OGREAL, 'lib/Release' )
 PATH_LIB_betagui =              PATH_betagui
+PATH_LIB_OgreBullet =              os.path.join( PATH_OgreBullet, 'lib/Release') 
+
 PATH_LIB_quickgui =             PATH_quickgui
 PATH_LIB_Bullet = 		        os.path.join( LOCAL_LIB )
 PATH_LIB_plib =                 PATH_plib
@@ -101,6 +105,10 @@ PATH_INCLUDE_ALUT=          os.path.join( LOCAL_INCLUDE ) #os.path.join( PATH_AL
 PATH_INCLUDE_OgreOde =      os.path.join( PATH_OgreOde,'include')
 PATH_INCLUDE_OgreOdePrefab= os.path.join( PATH_OgreOde,'prefab/include')
 PATH_INCLUDE_OgreOdeLoader= os.path.join( PATH_OgreOde,'loader/include')
+PATH_INCLUDE_OgreBullet =   [ 
+                        os.path.join( PATH_OgreBullet,'Collisions','include')
+                        ,os.path.join( PATH_OgreBullet,'Dynamics','include')
+                        ]
 PATH_INCLUDE_NxOgre=        os.path.join(PATH_NxOgre, 'include')
 PATH_INCLUDE_betagui =       PATH_betagui
 PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'Samples/Common/CEGUIRenderer/include')PATH_INCLUDE_OPCODE = 		os.path.join( PATH_OPCODE )
