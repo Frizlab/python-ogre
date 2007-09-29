@@ -3,10 +3,16 @@
 
 # master config setup
 source ./config.sh
-
 echo "=== generating code ===" 
 echo "=== generating code ===" >> $INSTALL_DIR/log.out
 cd python-ogre/code_generators 
+if [ $1 != "" ]
+then 
+    cd $1 
+    python generate_code.py > build.out 
+    cd .. 
+else
+
 echo ' -- creating OGRE code'
 echo ' -- creating OGRE code' >> $INSTALL_DIR/log.out
 cd ogre 
@@ -57,14 +63,16 @@ echo ' -- creating Theora code'>> $INSTALL_DIR/log.out
 cd theora 
 python generate_code.py > build.out 
 cd .. 
-
-#echo ' -- creating OGREnewt code'
-#cd ogrenewt 
-#python generate_code.py > build.out 
-#cd .. 
+echo ' -- creating OGREnewt code'
+echo ' -- creating OGREnewt code' >> $INSTALL_DIR/log.out
+cd ogrenewt 
+python generate_code.py > build.out 
+cd .. 
 #echo ' -- creating ode code'
 #cd ode 
 #python generate_code.py > build.out 
+
+fi
 cd $INSTALL_DIR
 echo
 echo "=== done building code ==="

@@ -59,7 +59,9 @@ cd $INSTALL_DIR
 # 
 # Install Newton 
 #
-echo " -- Installing Newton to OgreNewt and root"
+echo " -- Patching and Installing Newton "
+# patch to include stddef.h as size_t isn't defined in Newton.h
+patch -s -i ./python-ogre/patch/Newton.patch -p0 
 cp newtonSDK/sdk/Newton.h $PREFIX/include
 cp newtonSDK/sdk/*.a $PREFIX/lib
 cp newtonSDK/sdk/*.a ogreaddons/ogrenewt
