@@ -11,7 +11,7 @@ class doc_extractor:
     extracts doxigen styled documentation from source
     or generates from description
     """
-    def __init__(self, startswith, outfile="documentation.dox"):
+    def __init__(self, startswith="", outfile="documentation.dox"):
         #for caching source
         self.file_name  = None
         self.source = None

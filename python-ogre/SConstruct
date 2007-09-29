@@ -60,15 +60,15 @@ def get_ccflags():
         if os.sys.platform <> 'darwin':
             CCFLAGS = ' `pkg-config --cflags OGRE` '
             CCFLAGS += ' -I' 
-            CCFLAGS += ' -O3 -I./ ' # -fvisibility=hidden -finline-limit=20 '
-            #CCFLAGS += ' -DOGRE_GCC_VISIBILITY '  # -fvisibility-inlines-hidden
+            CCFLAGS += ' -O3 -I./ -fvisibility=hidden -finline-limit=20 '
+            CCFLAGS += ' -DOGRE_GCC_VISIBILITY '  # -fvisibility-inlines-hidden
         else:
             CCFLAGS  = ' -I -pipe -Os -I./'
     return CCFLAGS
 
 def get_source_files(_dir):
     try:
-        source_files = filter( lambda s: (s.endswith( '.cpp' ) or s.endswith( '.cxx' ) or s.endswith( '.c' )), os.listdir(_dir) )
+        source_files = filter( lambda s: (s.endswith( '.cpp' ) or s.endswith('.cxx') or s.endswith('.c') ), os.listdir(_dir) )
     except OSError,e:
         print 'WARNING: Generate the sources this directory: "%s"' % _dir
         raise e
@@ -90,10 +90,10 @@ def get_linkflags():
 # Let us select the projects to build
 possible_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',\
     'ogreode', 'ogreal', 'quickgui', 'opcode', 'nxogre', 'bullet', 'physx', 'betagui','theora',\
-     'ogrevideoffmpeg', 'ogredshow', 'plib' ]  # , 'raknet'
+     'ogrevideoffmpeg', 'ogredshow', 'plib', 'navi', 'ogrebulletc', 'ogrebulletd' ]  # , 'raknet'
 default_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',\
     'ogreode', 'ogreal',  'quickgui', 'opcode', 'nxogre', 'bullet', 'physx', 'betagui','theora',\
-     'ogrevideoffmpeg', 'ogredshow', 'plib' ]
+     'ogrevideoffmpeg', 'ogredshow', 'plib', 'navi', 'ogrebulletc', 'ogrebulletd' ]
 
 # This lets you call scons like: 'scons PROJECTS=ogre,cegui'
 opts = Options('custom.py')
@@ -155,10 +155,11 @@ for name, cls in environment.projects.items():
         
         ## ugly hack - scons returns a list of targets from SharedLibrary - we have to choose the one we want
         index = 0  # this is the index into a list of targets - '0' should be the platform default
-        if os.name=='nt':
-            _env.AddPostAction(package,\
-            	 'mt.exe -nologo -manifest %(name)s.manifest -outputresource:%(name)s;2' % { 'name':package[index] } )
+
         ## and lets have it install the output into the 'package_dir_name/ModuleName' dir and rename to the PydName
+        _env.AddPostAction(package,\
+        	 'mt.exe -nologo -manifest %(name)s.manifest -outputresource:%(name)s;2' % { 'name':package[index] } )
+        
         _env.InstallAs(os.path.join(environment.package_dir_name, cls.parent,
                                     cls.ModuleName, cls.PydName), 
                                      package[index] )

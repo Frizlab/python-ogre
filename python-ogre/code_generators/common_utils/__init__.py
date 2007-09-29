@@ -2,6 +2,12 @@ import os
 import shared_ptr
 from pygccxml import declarations
 from pyplusplus.decl_wrappers import property_t
+from pyplusplus import function_transformers as ft
+from pyplusplus.module_builder import call_policies
+
+
+import var_checker as varchecker
+import ogre_properties as ogre_properties
 
 def configure_shared_ptr( mb ):
     exposer = shared_ptr.exposer_t( mb )
@@ -166,5 +172,175 @@ def extract_func_name ( name ):
     ## so now return the function call
     return name[start:end]
         
+def docit ( general, i, o ): 
+    """ helper function to generate a semi nice documentation string
+    """
+    docs = "Python-Ogre Modified Function Call\\n" + general +"\\n"
+    docs = docs + "Input: " + i + "\\n"
+    docs = docs + "Output: " + o + "\\n\\\n"
+    return docs
         
+def Auto_Document ( mb, namespace=None ):
+    """Indicate that the functions being exposed are declated protected or private in the C++ code
+    this should warn people to be careful using them :) """
+    global_ns = mb.global_ns
+    if namespace:
+        main_ns = global_ns.namespace( namespace )
+    else:
+        main_ns = global_ns
+    query = declarations.access_type_matcher_t( 'private' ) 
+    for c in main_ns.calldefs( query, allow_empty=True ):
+#         print "PRIVATE:", c
+        s = c.documentation
+        if not s:
+            s = ""
+        c.documentation="<<private declaration>>\\n"+s
+    query = declarations.access_type_matcher_t( 'protected' ) 
+    for c in main_ns.calldefs( query, allow_empty=True ):
+#         print "PROTECTED:", c
+        s = c.documentation
+        if not s:
+            s = ""
+        c.documentation="<<protected declaration>>\\n"+s
        
+   
+def Fix_Void_Ptr_Args ( mb, pointee_types=['unsigned int','int', 'float', 'unsigned char', 'char'],  ignore_names=[] ):
+    """ we modify functions that take void *'s in their argument list to instead take
+    unsigned ints, which allows us to use CTypes buffers
+    """
+    def fixVoids ( fun ):
+        arg_position = 0
+        trans=[]
+        desc=""
+        for arg in fun.arguments:
+            if arg.type.decl_string == 'void const *' or arg.type.decl_string == 'void *':
+                trans.append( ft.modify_type(arg_position,_ReturnUnsignedInt ) )
+                desc = desc +"Argument: "+arg.name+ "( pos:" + str(arg_position) +") takes a CTypes.addressof(xx). "
+            arg_position +=1
+        if trans:
+            print "Tranformation applied to ", fun, desc
+            fun.add_transformation ( * trans , **{"alias":fun.name}  )
+            fun.documentation = docit ("Modified Input Argument to work with CTypes",
+                                            desc, "...")
+
+    for fun in mb.member_functions():
+        fixVoids ( fun )
+    
+    for fun in mb.constructors():
+        fixVoids ( fun )
+     
+                                                                       
+    ## lets go and look for stuff that might be a problem  
+    def fixPointerTypes ( fun,  pointee_types=[], ignore_names=[], Exclude=False ):
+        if fun.documentation or fun.ignore: return ## means it's been tweaked somewhere else
+        for n in ignore_names:
+            if n in fun.name:
+                return
+        for arg in fun.arguments:
+            if declarations.is_pointer(arg.type): ## and "const" not in arg.type.decl_string:
+                for i in pointee_types:
+                    if i in arg.type.decl_string:
+                        if Exclude: 
+                            print "Excluding:", fun," due to pointer argument", arg.type.decl_string
+                            fun.exclude()
+                            return
+                        else:
+                            print "Function has pointer argument: ", fun, arg.type.decl_string
+                            fun.documentation=docit("SUSPECT - MAYBE BROKEN due to pointer argument", "....", "...")
+                            return
+        
+    for fun in mb.member_functions():
+        fixPointerTypes ( fun, pointee_types, ignore_names )
+    for fun in mb.constructors():
+        fixPointerTypes ( fun, pointee_types, [], Exclude=True )
+   
+                    
+def Fix_Pointer_Returns ( mb, pointee_types=['unsigned int','int', 'float','char','unsigned char'], known_names=[] ):
+    """ Change out functions that return a variety of pointer to base types and instead
+    have them return the address the pointer is pointing to (the pointer value)
+    This allow us to use CTypes to handle in memory buffers from Python
+    
+    Also - if documentation has been set then ignore the class/function as it means it's been tweaked else where
+    """
+    for fun in mb.member_functions( allow_empty = True ):
+        if declarations.is_pointer (fun.return_type) and not fun.documentation:
+            for i in pointee_types:
+                if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
+                    if not fun.name in known_names:
+                        print "Excluding (function):", fun, "as it returns (pointer)", i
+                    fun.exclude()
+    for fun in mb.member_operators( allow_empty = True ):
+        if declarations.is_pointer (fun.return_type) and not fun.documentation:
+            for i in pointee_types:
+                if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
+                    print "Excluding (operator):", fun
+                    fun.exclude()
+
+def AutoExclude( mb, MAIN_NAMESPACE=None ):
+    """ Automaticaly exclude a range of things that don't convert well from C++ to Python
+    """
+    global_ns = mb.global_ns
+    if MAIN_NAMESPACE:
+        main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    else:
+        main_ns = global_ns
+    
+    # vars that are static consts but have their values set in the header file are bad
+    Remove_Static_Consts ( main_ns )
+
+    ## Exclude protected and private that are not pure virtual
+    try:
+        query = declarations.access_type_matcher_t( 'private' ) \
+                & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
+        non_public_non_pure_virtual = main_ns.calldefs( query )
+        non_public_non_pure_virtual.exclude()
+    except:
+        pass        
+
+    #Virtual functions that return reference could not be overriden from Python
+    try:
+        query = declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.VIRTUAL ) \
+                & declarations.custom_matcher_t( lambda decl: declarations.is_reference( decl.return_type ) )
+        main_ns.calldefs( query ).virtuality = declarations.VIRTUALITY_TYPES.NOT_VIRTUAL
+    except:
+        pass    
+            
+def AutoInclude( mb, MAIN_NAMESPACE=None ):
+    global_ns = mb.global_ns
+    if MAIN_NAMESPACE:
+        main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    else:
+        main_ns = global_ns
+        
+def Set_DefaultCall_Policies( mb ):
+    """ set the return call policies on classes that this hasn't already been done for.
+    Set the default policy to deal with pointer/reference return types to reference_existing object
+    """
+    mem_funs = mb.calldefs ()
+    mem_funs.create_with_signature = True #Generated code will not compile on
+    #MSVC 7.1 if function has throw modifier.
+    for mem_fun in mem_funs:
+        if mem_fun.call_policies:
+            continue
+        if not mem_fun.call_policies and \
+                    (declarations.is_reference (mem_fun.return_type) or declarations.is_pointer (mem_fun.return_type) ):
+            mem_fun.call_policies = call_policies.return_value_policy(
+                call_policies.reference_existing_object )
+
+def Remove_Static_Consts ( mb ):
+    """ linux users have compile problems with vars that are static consts AND have values set in the .h files
+    we can simply leave these out 
+    This function is not currently used as source was fixed.."""
+    checker = varchecker.var_checker()
+    for var in mb.vars():
+        if type(var.type) == declarations.cpptypes.const_t:
+            if checker( var ):
+                print "Excluding static const ", var
+                var.exclude()                         
+        
+def Fix_Implicit_Conversions ( mb, ImplicitClasses=[] ):
+    """By default we disable explicit conversion, however sometimes it makes sense
+    """
+    for className in ImplicitClasses:
+        mb.class_(className).constructors().allow_implicit_conversion = True
+                        
