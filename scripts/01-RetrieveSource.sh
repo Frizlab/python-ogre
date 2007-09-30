@@ -24,19 +24,15 @@ $WGET http://downloads.sourceforge.net/boost/boost_1_34_0.tar.bz2
 $WGET http://www.newtondynamics.com/downloads/newtonLinux-1.53.tar.gz 
 $WGET http://www.openal.org/openal_webstf/downloads/openal-0.0.8.tar.gz
 $WGET http://www.openal.org/openal_webstf/downloads/freealut-1.1.0.tar.gz 
+$WGET http://downloads.xiph.org/releases/ogg/libogg-1.1.3.tar.gz
+$WGET http://downloads.xiph.org/releases/vorbis/libvorbis-1.2.0.tar.gz
 ##$WGET http://devfiles.ageia.com/Physx_2.7.2_SDK_CoreLinux_deb.tar.gz
 popd 
 cd $INSTALL_DIR
-echo " -- getting OgreAL"
-# svn co https://ogreal.svn.sourceforge.net/svnroot/ogreal/trunk/OgreAL-Eihort OgreAL 
-echo " -- getting NxOgre"
-svn co http://latest.nxogre.org/nxogre3/ NxOgre
 echo " -- getting pygccxml"
 svn co https://pygccxml.svn.sourceforge.net/svnroot/pygccxml pygccxml 
 echo " -- getting python-ogre"
 svn co https://python-ogre.svn.sourceforge.net/svnroot/python-ogre/trunk/python-ogre python-ogre
-echo " -- getting quickgui"
-# svn co --username anyone --password nopassword svn://www.stellarcommand.com/QuickGUI/trunk/src/ quickgui
 echo " -- getting gccxml"
 cvs -z3 -q -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co gccxml 
 echo " -- getting ogreode"
@@ -45,7 +41,10 @@ echo " -- getting ogrenewt"
 cvs -z3 -q -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -P ogreaddons/ogrenewt 
 echo " -- getting videoplugins"
 cvs -z3 -q -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -P ogreaddons/videoplugin
-
+echo " -- getting ogrebullet"
+cvs -z3 -q -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -P ogreaddons/ogrebullet 
+echo " -- getting NxOgre"
+svn co http://latest.nxogre.org/nxogre3/ NxOgre
 echo ""
 echo "======= Sources Retrieved ======="
 echo ""

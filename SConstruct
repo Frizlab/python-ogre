@@ -155,10 +155,13 @@ for name, cls in environment.projects.items():
         
         ## ugly hack - scons returns a list of targets from SharedLibrary - we have to choose the one we want
         index = 0  # this is the index into a list of targets - '0' should be the platform default
-
-        ## and lets have it install the output into the 'package_dir_name/ModuleName' dir and rename to the PydName
-        _env.AddPostAction(package,\
-        	 'mt.exe -nologo -manifest %(name)s.manifest -outputresource:%(name)s;2' % { 'name':package[index] } )
+        if os.name=="nt":
+            ## and lets have it install the output into the 'package_dir_name/ModuleName' dir and rename to the PydName
+            _env.AddPostAction(package,\
+            	 'mt.exe -nologo -manifest %(name)s.manifest -outputresource:%(name)s;2' % { 'name':package[index] } )
+        else:            	 
+            _env.AddPostAction(package,\
+            	 'strip -g -S -d --strip-debug -s %(name)s' % { 'name':package[index] } )
         
         _env.InstallAs(os.path.join(environment.package_dir_name, cls.parent,
                                     cls.ModuleName, cls.PydName), 
