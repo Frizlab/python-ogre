@@ -28,3 +28,40 @@ popd
 #
 # OgreAl
 #
+echo " -- Building OgreAL - libogg"
+pushd libogg-1.1.3
+./configure --prefix=$PREFIX
+make
+make install
+popd
+
+echo " -- Building OgreAL - libvorbis"
+pushd libvorbis-1.2.0
+./configure --prefix=$PREFIX
+make
+make install
+popd
+
+echo " -- Building OgreAL - openal"
+pushd openal-0.0.8
+./autogen.sh
+./configure  --prefix=$PREFIX
+make
+make install
+popd 
+
+echo " -- Building OgreAL - freealut"
+pushd freealut-1.1.0
+./autogen.sh
+./configure  --prefix=$PREFIX
+## ugly hack as the make files in freealut don't really handle a non standard prefix
+cp $PREFIX/include/AL/* ./include/AL
+make
+make install
+popd 
+
+#
+# Bullet
+# 
+##pushd bullet-2.62a
+

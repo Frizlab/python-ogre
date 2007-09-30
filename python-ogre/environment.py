@@ -545,12 +545,19 @@ class ogreal:
                   ] 
                   
     if os.name =='nt':
-        CCFLAGS = ' -DOgreAL_Export="" -DWIN32 -DNDEBUG -D_LIB -D_WIN32 -D_WINDOWS -DVORBIS_IEEE_FLOAT32 -D_USE_NON_INTEL_COMPILER '              
-    libs=[Config.LIB_Boost, 'OgreMain', 
-                'ogg_static', 
-                'alut', 
-                'vorbis_static','vorbisfile_static','vorbisenc_static',
-                'OpenAL32', 'EFX-Util']  ##  'OgreAL' -- going to compile OgreAL ourselves
+        CCFLAGS = ' -DOgreAL_Export="" -DWIN32 -DNDEBUG -D_LIB -D_WIN32 -D_WINDOWS -DVORBIS_IEEE_FLOAT32 -D_USE_NON_INTEL_COMPILER '     
+    if os.name=="nt":         
+        libs=[Config.LIB_Boost, 'OgreMain', 
+                    'ogg_static', 
+                    'alut', 
+                    'vorbis_static','vorbisfile_static','vorbisenc_static',
+                    'OpenAL32', 'EFX-Util']  ##  'OgreAL' -- going to compile OgreAL ourselves
+    else:
+        libs=[Config.LIB_Boost, 'OgreMain', 
+                    'ogg', 
+                    'alut', 
+                    'vorbis','vorbisfile','vorbisenc',
+                    'openal' ]  ##  'OgreAL' -- going to compile OgreAL ourselves
     ModuleName = 'OgreAL'
     CheckIncludes = ['OgreAL.h']
     active=True

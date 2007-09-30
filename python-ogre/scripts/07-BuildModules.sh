@@ -12,10 +12,10 @@ if [ $1 != "" ]
 then 
     scons PROJECTS=$1
 else
-    scons PROJECTS=ogre,ois,quickgui,cegui,plib,ogreode,ogrenewt
+    scons PROJECTS=ogre,ois,quickgui,cegui,plib,ogreode,ogrenewt,ogreal
 fi
-#ogre,ois,quickgui,cegui,plib,ogreode 
-#,ogrerefapp
+#opcode -- not really suited to a linux build -- lots of work needed ? 
+#
 python setup.py install --prefix=$PREFIX 
 cd ..
 

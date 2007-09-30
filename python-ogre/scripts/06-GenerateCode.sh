@@ -48,11 +48,6 @@ echo ' -- creating OGREode code'>> $INSTALL_DIR/log.out
 cd ogreode 
 python generate_code.py > build.out 
 cd .. 
-echo ' -- creating OpCode code'
-echo ' -- creating OpCode code'>> $INSTALL_DIR/log.out
-cd opcode 
-python generate_code.py > build.out 
-cd .. 
 echo ' -- creating PLIB code'
 echo ' -- creating PLIB code'>> $INSTALL_DIR/log.out
 cd plib 
@@ -68,10 +63,10 @@ echo ' -- creating OGREnewt code' >> $INSTALL_DIR/log.out
 cd ogrenewt 
 python generate_code.py > build.out 
 cd .. 
-#echo ' -- creating ode code'
-#cd ode 
-#python generate_code.py > build.out 
-
+echo ' -- creating ode code'
+cd ode 
+python generate_code.py > build.out 
+cd ..
 fi
 cd $INSTALL_DIR
 echo

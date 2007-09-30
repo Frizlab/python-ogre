@@ -21,6 +21,11 @@ echo " -- Unpacking ODE"
 unzip -q -o $DOWNLOADS/ode-src-0.8.zip
 echo " -- Unpacking bullet"
 tar zxf $DOWNLOADS/bullet-2.62a.tgz
+echo " -- Unpacking OgreAL Support"
+tar zxf $DOWNLOADS/libogg-1.1.3.tar.gz
+tar zxf $DOWNLOADS/libvorbis-1.2.0.tar.gz
+tar zxf $DOWNLOADS/freealut-1.1.0.tar.gz
+tar zxf $DOWNLOADS/openal-0.0.8.tar.gz
 
 echo " -- Unpacking CG"
 pushd $ROOT
