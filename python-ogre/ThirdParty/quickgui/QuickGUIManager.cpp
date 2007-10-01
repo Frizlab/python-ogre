@@ -12,7 +12,8 @@ namespace QuickGUI
 		mQueueID(Ogre::RENDER_QUEUE_OVERLAY),
 		mMouseCursor(0),
 		mSceneManager(0),
-		mDraggingWidget(false)
+		mDraggingWidget(false),
+		mDebugString("")
 	{
 		mWidgetNames.clear();
 
@@ -215,6 +216,11 @@ namespace QuickGUI
 	Sheet* GUIManager::getActiveSheet()
 	{
 		return mActiveSheet;
+	}
+
+	Ogre::String GUIManager::getDebugString()
+	{
+		return mDebugString;
 	}
 
 	Sheet* GUIManager::getDefaultSheet()
@@ -588,6 +594,11 @@ namespace QuickGUI
 
 		WidgetEventArgs args(mActiveWidget);
 		mActiveWidget->fireEvent(Widget::EVENT_GAIN_FOCUS,args);
+	}
+
+	void GUIManager::setDebugString(const Ogre::String s)
+	{
+		mDebugString = s;
 	}
 
 	void GUIManager::setRenderQueueID(Ogre::uint8 id)

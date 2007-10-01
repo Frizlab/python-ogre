@@ -77,6 +77,10 @@ namespace QuickGUI
 		void onProgressChanged(const WidgetEventArgs& e);
 		void onPositionChanged(const EventArgs& args);
 		void onSizeChanged(const EventArgs& args);
+		/**
+		* Force updating of the Widget's Quad position on screen.
+		*/
+		void redraw();
 		void setClippingRect(const Rect& r);
 		void setFillDirection(FillDirection d);
 		/**

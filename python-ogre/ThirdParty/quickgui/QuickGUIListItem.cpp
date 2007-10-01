@@ -10,14 +10,17 @@ namespace QuickGUI
 		mImage(0),
 		mButton(0),
 		mPropogateImageMouseEvents(true),
-		mPropogateButtonMouseEvents(true)
+		mPropogateButtonMouseEvents(true),
+		mClippingWidget(ParentWidget)
 	{
 		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
 		if(mWidgetType == TYPE_LISTITEM)
 		{
 			mQuad->setLayer(mParentWidget->getQuad()->getLayer());
+			mQuad->setClippingWidget(mClippingWidget);
 			mText->setLayer(mQuad->getLayer());
 			mText->setOffset(mOffset+2);
+			mText->_clipToWidgetDimensions(mClippingWidget);
 		}
 
 		addEventHandler(EVENT_MOUSE_ENTER,&ListItem::onMouseEnters,this);
@@ -39,6 +42,7 @@ namespace QuickGUI
 
 		mButton = new NStateButton(mInstanceName+".NStateButton",TYPE_BUTTON,pixelDimensions,mQuadContainer,this,mGUIManager);
 		mButton->getQuad()->setLayer(mQuad->getLayer());
+		mButton->getQuad()->setClippingWidget(mClippingWidget);
 		
 		if(mPropogateButtonMouseEvents)
 		{
@@ -61,6 +65,7 @@ namespace QuickGUI
 
 		mImage = new Image(mInstanceName+".Image",TYPE_IMAGE,pixelDimensions,texture,mQuadContainer,this,mGUIManager);
 		mImage->getQuad()->setLayer(mQuad->getLayer());
+		mImage->getQuad()->setClippingWidget(mClippingWidget);
 
 		if(mPropogateImageMouseEvents)
 		{

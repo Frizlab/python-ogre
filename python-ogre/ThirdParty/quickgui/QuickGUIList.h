@@ -40,6 +40,7 @@ namespace QuickGUI
         */
 		List(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
 
+		void _setClippingWidget(Widget* w);
 		/**
 		* Adds (and creates) a ListItem and adds it to the List.
 		* Note that a pointer to the created List Item is returned.

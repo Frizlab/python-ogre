@@ -53,6 +53,16 @@ namespace QuickGUI
             return Point(x + p.x,y + p.y);
         }
 
+		inline Point operator + ( const Size& s ) const
+        {
+            return Point(x + s.width,y + s.height);
+        }
+
+		inline Point operator += ( const Size& s ) const
+        {
+            return Point(x + s.width,y + s.height);
+        }
+
 		inline Point operator - ( const Point& p ) const
         {
             return Point(x - p.x,y - p.y);

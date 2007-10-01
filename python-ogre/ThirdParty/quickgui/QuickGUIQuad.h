@@ -16,6 +16,7 @@ namespace QuickGUI
 	// forward declaration
 	class QuadContainer;
 	class GUIManager;
+	class Widget;
 
 	class _QuickGUIExport Quad
 	{
@@ -29,6 +30,7 @@ namespace QuickGUI
 			LAYER_MENU
 		};
 	public:
+		Quad(const Ogre::String& id, Widget* owner);
 		Quad(const Ogre::String& id, GUIManager* gm);
 		~Quad();
 	
@@ -43,10 +45,11 @@ namespace QuickGUI
 
 		bool dimensionsChanged();
 
+		Rect getClippingRect();
+		Widget* getClippingWidget();
 		Rect getDimensions();
 		Ogre::String getID();
 		Layer getLayer();
-		Rect getRectIntersection(const Rect& r);
 		Ogre::String getTextureName();
 		std::vector<Vertex>* getVertices();
 		int getNumberOfVertices();
@@ -54,15 +57,13 @@ namespace QuickGUI
 		Point getPosition();
 		Size getSize();
 
-		bool insideRect(const Rect& r);
-		bool intersectsRect(const Rect& r);
 		bool isPointWithinBounds(const Point& pixelPosition);
 
 		void removeFromRenderObjectGroup();
 
+		void setClippingWidget(Widget* w);
 		void setColor(const Ogre::ColourValue& color);
 		void setColor(const Ogre::ColourValue& topColor, const Ogre::ColourValue& botColor);
-		void setClippingRect(const Rect& r);
 		void setDimensions(const Rect& pixelDimensions);
 		void setHeight(Ogre::Real pixelHeight);
 		void setLayer(Layer l);
@@ -84,6 +85,7 @@ namespace QuickGUI
 		bool offsetChanged();
 
 	protected:
+		Widget*				mOwner;
 		GUIManager*			mGUIManager;
 		QuadContainer*		mQuadContainer;
 		Ogre::RenderSystem* mRenderSystem;
@@ -102,9 +104,8 @@ namespace QuickGUI
 		Ogre::ColourValue	mTopColor;
 		Ogre::ColourValue	mBottomColor;
 
-		Rect				mClippingRect;
+		Widget*				mClippingWidget;
 		// Store changes made via Clipping.
-		bool				mHiddenViaClipping;
 		Rect				mDimensionsViaClipping;
 		Ogre::Vector4		mTextureCoordinatesViaClipping;
 

@@ -54,6 +54,8 @@ namespace QuickGUI
 		ScrollPane(const Ogre::String& instanceName, Type type, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
 		~ScrollPane();
 
+		// When widgets become managed/unmanaged, the pane may grow or shrink.
+		void _determinePaneBounds();
 		/**
 		* Disable Widget, making it unresponsive to events.
 		* NOTE: Sheets cannot be disabled.
@@ -71,6 +73,8 @@ namespace QuickGUI
 		VerticalScrollBar* getRightScrollBar();
 		HorizontalScrollBar* getTopScrollBar();
 		VerticalScrollBar::ButtonLayout getVerticalButtonLayout();
+
+		void manageWidget(Widget* w);
 
 		/**
 		* Scrolls the Pane so that the given widget is in view.
@@ -98,7 +102,7 @@ namespace QuickGUI
 
 		void onChildAddedToParent(const EventArgs& args);
 		void onChildRemovedFromParent(const EventArgs& args);
-		void onChildTextBoxGainedFocus(const EventArgs& args);
+		void onChildClicked(const EventArgs& args);
 		void onParentSizeChanged(const EventArgs& args);
 		void onParentPositionChanged(const EventArgs& args);
 		void onHorizontalScroll(const EventArgs& args);
@@ -110,8 +114,6 @@ namespace QuickGUI
 		void _syncBarWithParentDimensions();
 
 		std::vector<Widget*> mManagedWidgets;
-		// When widgets become managed/unmanaged, the pane may grow or shrink.
-		void _determinePaneBounds();
 
 	// Inherited functions that need to have their access level changed from public.
 	protected:

@@ -55,11 +55,11 @@ namespace QuickGUI
 	bool Rect::intersectsRect(const Rect& r)
 	{
 		// if our left side is greater than r's right side, or our right side is less than r's left side, intersection is not possible.
-		if( (x > (r.x + r.width)) || ((x + width) < r.x) )
+		if( (x >= (r.x + r.width)) || ((x + width) <= r.x) )
 			return false;
 
 		// if our top is greater than r's bottom, or our bottom is less than r's top, intersection is not possible.
-		if( (y > (r.y + r.height)) || ((y + height) < r.y) )
+		if( (y >= (r.y + r.height)) || ((y + height) <= r.y) )
 			return false;
 
 		// If the above conditions are not met, than there must be overlap between our dimensions and r's dimensions.

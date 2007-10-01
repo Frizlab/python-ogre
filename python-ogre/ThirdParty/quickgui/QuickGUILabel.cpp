@@ -6,8 +6,8 @@ namespace QuickGUI
 	Label::Label(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
 		Image(name,type,pixelDimensions,texture,container,ParentWidget,gm),
 		mDefaultTexture(mTextureName),
-		mVerticalAlignment(QGUI_VA_MID),
-		mHorizontalAlignment(QGUI_HA_MID),
+		mVerticalAlignment(VA_MID),
+		mHorizontalAlignment(HA_MID),
 		mTextBoundsPixelOffset(Point::ZERO),
 		mTextBoundsPixelSize(Size(pixelDimensions.width,pixelDimensions.height)),
 		mTextColor(Ogre::ColourValue::White),
@@ -30,7 +30,6 @@ namespace QuickGUI
 
 	void Label::alignText()
 	{
-		//return;
 		Rect textDimensions = mText->getDimensions();
 		// 1 pixel buffer used
 		Ogre::Real horizontalBuffer = 1.0 / mGUIManager->getViewportWidth();
@@ -39,21 +38,21 @@ namespace QuickGUI
 		Rect textBounds = getTextBounds();
 
 		// Horizontal alignment
-		if( mHorizontalAlignment == QGUI_HA_LEFT )
+		if( mHorizontalAlignment == HA_LEFT )
 			mText->setPosition(Point(textBounds.x + horizontalBuffer,textDimensions.y));
-		else if( mHorizontalAlignment == QGUI_HA_MID )
+		else if( mHorizontalAlignment == HA_MID )
 			mText->setPosition(Point(textBounds.x + ((textBounds.width / 2.0) - (textDimensions.width / 2.0)),textDimensions.y));
-		else if( mHorizontalAlignment == QGUI_HA_RIGHT )
+		else if( mHorizontalAlignment == HA_RIGHT )
 			mText->setPosition(Point(textBounds.x + textBounds.width - (horizontalBuffer + textDimensions.width),textDimensions.y));
 
 		textDimensions = mText->getDimensions();
 
 		// Vertical alignment
-		if( mVerticalAlignment == QGUI_VA_TOP )
+		if( mVerticalAlignment == VA_TOP )
 			mText->setPosition(Point(textDimensions.x,textBounds.y + verticalBuffer));
-		else if( mVerticalAlignment == QGUI_VA_MID )
+		else if( mVerticalAlignment == VA_MID )
 			mText->setPosition(Point(textDimensions.x,textBounds.y + ((textBounds.height / 2.0) - (textDimensions.height / 2.0))));
-		else if( mVerticalAlignment == QGUI_VA_BOTTOM )
+		else if( mVerticalAlignment == VA_BOTTOM )
 			mText->setPosition(Point(textDimensions.x,textBounds.y + textBounds.height - (verticalBuffer + textDimensions.height)));
 	}
 
@@ -84,7 +83,7 @@ namespace QuickGUI
 
 	Rect Label::getTextBounds()
 	{
-		return Rect(getScreenPosition() + mTextBoundsPixelOffset,mTextBoundsPixelSize);
+		return Rect(getScreenPosition() + getScrollOffset() + mTextBoundsPixelOffset,mTextBoundsPixelSize);
 	}
 
 	void Label::hide()
@@ -97,13 +96,14 @@ namespace QuickGUI
 	{
 		Image::onPositionChanged(args);
 
-		mText->refresh();
+		mText->redraw();
 		alignText();
 	}
 
 	void Label::onSizeChanged(const EventArgs& args)
 	{
-		mText->refresh();
+		Image::onSizeChanged(args);
+		mText->redraw();
 		alignText();
 	}
 
@@ -133,7 +133,7 @@ namespace QuickGUI
 	{
 		Image::setPosition(pixelX,pixelY);
 
-		mText->refresh();
+		mText->redraw();
 		alignText();
 	}
 
@@ -146,7 +146,7 @@ namespace QuickGUI
 	{
 		Image::setSize(pixelWidth,pixelHeight);
 
-		mText->refresh();
+		mText->redraw();
 		alignText();
 	}
 
@@ -155,15 +155,15 @@ namespace QuickGUI
 		Label::setSize(pixelSize.width,pixelSize.height);
 	}
 
+	void Label::redraw()
+	{
+		Image::redraw();
+		alignText();
+	}
+
 	void Label::setCaption(const Ogre::UTFString& caption)
 	{
 		mText->setCaption(caption);
-	}
-
-	void Label::setClippingRect(const Rect& pixelDimensions)
-	{
-		Image::setClippingRect(pixelDimensions);
-		mText->setClippingRect(pixelDimensions);
 	}
 
 	void Label::setDisabledTextColor(const Ogre::ColourValue& c)

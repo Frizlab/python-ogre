@@ -85,6 +85,7 @@ namespace QuickGUI
 		* Returns the sheet currently being used, whether shown or hidden.
 		*/
 		Sheet* getActiveSheet();
+		Ogre::String getDebugString();
 		/**
 		* Returns the default sheet, automatically created with the GUI manager.
 		*/
@@ -163,6 +164,7 @@ namespace QuickGUI
 		* Activates the widget w, and deactivates the previously active widget. (if exists)
 		*/
 		void setActiveWidget(Widget* w);
+		void setDebugString(const Ogre::String s);
 		/*
 		* Sets the Render Queue Group to render on.  By default, this is RENDER_QUEUE_OVERLAY.
 		*/
@@ -225,6 +227,8 @@ namespace QuickGUI
 		// Includes the Default Sheet.
 		std::list<Sheet*>		mSheets;
 		int						mAutoNameSheetCounter;
+
+		Ogre::String			mDebugString;
 
 		// list of widgets to delete on next frame.
 		std::vector<Widget*>	mFreeList;

@@ -6,8 +6,43 @@
 
 namespace QuickGUI
 {
+	Quad::Quad(const Ogre::String& id, Widget* owner) :
+		mID(id),
+		mOwner(owner),
+		mGUIManager(owner->getGUIManager()),
+		mQuadContainer(NULL),
+		mLayer(LAYER_CHILD),
+		mColorChanged(false),
+		mDimensionsChanged(false),
+		mTextureChanged(false),
+		mTextureCoordsChanged(false),
+		mOffsetChanged(false),
+		mAddedToRenderGroup(false),
+		mTextureName(""),
+		mOffset(0),
+		mPixelDimensions(Rect::ZERO),
+		mTextureCoordinates(Ogre::Vector4(0,0,1,1)),
+		mVisible(true),
+		mTopColor(Ogre::ColourValue::White),
+		mBottomColor(Ogre::ColourValue::White)
+	{
+		mRenderSystem = Ogre::Root::getSingleton().getRenderSystem();
+		mVertices.resize(6);
+		_updateVertexColor();
+
+		if(mOwner->getParentPanel() != NULL)
+			mClippingWidget = mOwner->getParentPanel();
+		else if(mOwner->getParentWindow() != NULL)
+			mClippingWidget = mOwner->getParentWindow();
+		else if(mOwner->getParentSheet() != NULL)
+			mClippingWidget = mOwner->getParentSheet();
+		else
+			mClippingWidget = mOwner;
+	}
+
 	Quad::Quad(const Ogre::String& id, GUIManager* gm) :
 		mID(id),
+		mOwner(NULL),
 		mGUIManager(gm),
 		mQuadContainer(NULL),
 		mLayer(LAYER_CHILD),
@@ -24,8 +59,9 @@ namespace QuickGUI
 		mVisible(true),
 		mTopColor(Ogre::ColourValue::White),
 		mBottomColor(Ogre::ColourValue::White),
-		mHiddenViaClipping(false),
-		mClippingRect(Rect(0,0,gm->getViewportWidth(),gm->getViewportHeight()))
+		mClippingWidget(NULL),
+		mDimensionsViaClipping(mPixelDimensions),
+		mTextureCoordinatesViaClipping(mTextureCoordinates)
 	{
 		mRenderSystem = Ogre::Root::getSingleton().getRenderSystem();
 		mVertices.resize(6);
@@ -40,7 +76,19 @@ namespace QuickGUI
 
 	void Quad::_clip()
 	{
-		if(insideRect(mClippingRect))
+		if(mClippingWidget == NULL)
+		{
+			mDimensionsViaClipping = mPixelDimensions;
+			_computeVertices();
+			mTextureCoordinatesViaClipping = mTextureCoordinates;
+			_updateTextureCoords();
+			_notifyQuadContainerNeedsUpdate();
+			return;
+		}
+
+		Rect clippingRect = getClippingRect();
+
+		if(mPixelDimensions.inside(clippingRect))
 		{
 			mDimensionsViaClipping = mPixelDimensions;
 			_computeVertices();
@@ -48,15 +96,16 @@ namespace QuickGUI
 			mTextureCoordinatesViaClipping = mTextureCoordinates;
 			_updateTextureCoords();
 
-			if(mHiddenViaClipping)
-			{
-				setVisible(true);
-				mHiddenViaClipping = false;
-			}
+			if(mOwner->isVisible())
+				mVisible = true;
+			else
+				mVisible = false;
+
+			_notifyQuadContainerNeedsUpdate();
 		}
-		else if(intersectsRect(mClippingRect))
+		else if(mPixelDimensions.intersectsRect(clippingRect))
 		{
-			mDimensionsViaClipping = getRectIntersection(mClippingRect);
+			mDimensionsViaClipping = mPixelDimensions.getIntersection(clippingRect);
 			_computeVertices();
 
 			// calculate distance between top/bottom and left/right of the UV coords.
@@ -70,11 +119,12 @@ namespace QuickGUI
 			
 			_updateTextureCoords();
 
-			if(mHiddenViaClipping)
-			{
-				setVisible(true);
-				mHiddenViaClipping = false;
-			}
+			if(mOwner->isVisible())
+				mVisible = true;
+			else
+				mVisible = false;
+
+			_notifyQuadContainerNeedsUpdate();
 		}
 		else // Quad is outside clipping region.
 		{
@@ -84,11 +134,8 @@ namespace QuickGUI
 			mTextureCoordinatesViaClipping = mTextureCoordinates;
 			_updateTextureCoords();
 
-			if(mVisible)
-			{
-				mHiddenViaClipping = true;
-				setVisible(false);
-			}
+			mVisible = false;
+			_notifyQuadContainerNeedsUpdate();
 		}
 	}
 
@@ -137,6 +184,7 @@ namespace QuickGUI
 		mColorChanged = false;
 		mDimensionsChanged = false;
 		mTextureChanged = false;
+		mTextureCoordsChanged = false;
 		mOffsetChanged = false;
 	}
 
@@ -228,9 +276,24 @@ namespace QuickGUI
 		mAddedToRenderGroup = true;
 	}
 
+	void Quad::setClippingWidget(Widget* w)
+	{
+		mClippingWidget = w;
+	}
+
 	bool Quad::dimensionsChanged()
 	{
 		return mDimensionsChanged;
+	}
+
+	Rect Quad::getClippingRect()
+	{
+		return Rect(mClippingWidget->getScreenPosition() + mClippingWidget->getScrollOffset(), mClippingWidget->getSize());
+	}
+
+	Widget* Quad::getClippingWidget()
+	{
+		return mClippingWidget;
 	}
 
 	Rect Quad::getDimensions()
@@ -246,46 +309,6 @@ namespace QuickGUI
 	Quad::Layer Quad::getLayer()
 	{
 		return mLayer;
-	}
-
-	Rect Quad::getRectIntersection(const Rect& r)
-	{
-		Rect retVal = Rect::ZERO;
-
-		if(intersectsRect(r))
-		{
-			retVal.x = std::max(mPixelDimensions.x,r.x);
-			retVal.y = std::max(mPixelDimensions.y,r.y);
-			retVal.width = std::min(mPixelDimensions.x + mPixelDimensions.width, r.x + r.width) - retVal.x;
-			retVal.height = std::min(mPixelDimensions.y + mPixelDimensions.height, r.y + r.height) - retVal.y;
-		}
-
-		return retVal;
-	}
-
-	bool Quad::insideRect(const Rect& r)
-	{
-		if( (mPixelDimensions.x >= r.x) &&
-			(mPixelDimensions.y >= r.y) &&
-			((mPixelDimensions.x + mPixelDimensions.width) <= (r.x + r.width)) &&
-			((mPixelDimensions.y + mPixelDimensions.height) <= (r.y + r.height)) )
-			return true;
-
-		return false;
-	}
-
-	bool Quad::intersectsRect(const Rect& r)
-	{
-		// if our left side is greater than r's right side, or our right side is less than r's left side, intersection is not possible.
-		if( (mPixelDimensions.x > (r.x + r.width)) || ((mPixelDimensions.x + mPixelDimensions.width) < r.x) )
-			return false;
-
-		// if our top is greater than r's bottom, or our bottom is less than r's top, intersection is not possible.
-		if( (mPixelDimensions.y > (r.y + r.height)) || ((mPixelDimensions.y + mPixelDimensions.height) < r.y) )
-			return false;
-
-		// If the above conditions are not met, than there must be overlap between our dimensions and r's dimensions.
-		return true;
 	}
 
 	bool Quad::isPointWithinBounds(const Point& pixelPosition)
@@ -349,12 +372,6 @@ namespace QuickGUI
 		mAddedToRenderGroup = false;
 	}
 
-	void Quad::setClippingRect(const Rect& r)
-	{
-		mClippingRect = r;
-		_clip();
-	}
-
 	void Quad::setColor(const Ogre::ColourValue& color)
 	{
 		setColor(color,color);
@@ -378,8 +395,6 @@ namespace QuickGUI
 		mDimensionsChanged = true;
 
 		_clip();
-
-		_notifyQuadContainerNeedsUpdate();
 	}
 
 	void Quad::setHeight(Ogre::Real pixelHeight)
@@ -389,8 +404,6 @@ namespace QuickGUI
 		mDimensionsChanged = true;
 
 		_clip();
-
-		_notifyQuadContainerNeedsUpdate();
 	}
 
 	void Quad::setLayer(Layer l)
@@ -419,8 +432,6 @@ namespace QuickGUI
 		mDimensionsChanged = true;
 
 		_clip();
-
-		_notifyQuadContainerNeedsUpdate();
 	}
 
 	void Quad::setSize(const Size& pixelSize)
@@ -431,8 +442,6 @@ namespace QuickGUI
 		mDimensionsChanged = true;
 
 		_clip();
-
-		_notifyQuadContainerNeedsUpdate();
 	}
 
 	void Quad::setTexture(const Ogre::String& textureName)
@@ -478,8 +487,6 @@ namespace QuickGUI
 		mTextureCoordsChanged = true;
 
 		_clip();
-		
-		_notifyQuadContainerNeedsUpdate();
 	}
 
 	void Quad::setTextureCoordinates(const Ogre::FloatRect& textureCoordinates)
@@ -491,7 +498,11 @@ namespace QuickGUI
 	{
 		mVisible = visible;
 
-		_notifyQuadContainerNeedsUpdate();
+		// Only clip when becoming visible
+		if(mVisible)
+			_clip();
+		else
+			_notifyQuadContainerNeedsUpdate();
 	}
 
 	void Quad::setWidth(Ogre::Real pixelWidth)
@@ -501,8 +512,6 @@ namespace QuickGUI
 		mDimensionsChanged = true;
 
 		_clip();
-
-		_notifyQuadContainerNeedsUpdate();
 	}
 
 	void Quad::setXPosition(Ogre::Real pixelX)
@@ -512,8 +521,6 @@ namespace QuickGUI
 		mDimensionsChanged = true;
 
 		_clip();
-
-		_notifyQuadContainerNeedsUpdate();
 	}
 
 	void Quad::setYPosition(Ogre::Real pixelY)
@@ -523,8 +530,6 @@ namespace QuickGUI
 		mDimensionsChanged = true;
 
 		_clip();
-
-		_notifyQuadContainerNeedsUpdate();
 	}
 
 	bool Quad::textureChanged()

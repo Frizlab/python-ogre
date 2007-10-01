@@ -16,7 +16,8 @@ namespace QuickGUI
 			mText->setLayer(Quad::LAYER_MENU);
 		}
 		
-		mHorizontalAlignment = QGUI_HA_LEFT;
+		mHorizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
+		mHorizontalAlignment = HA_LEFT;
 
 		// Create CloseButton
 		// Button has same height as width - Make the button slightly smaller that the titlebar height
@@ -28,6 +29,7 @@ namespace QuickGUI
 
 		Ogre::Real ButtonSize = mSize.height - 3;
 		mCloseButton = new Button(mInstanceName+".CloseButton",TYPE_BUTTON,Rect(mSize.width - ButtonSize,0,ButtonSize,ButtonSize),mTextureName + ".button" + mTextureExtension,mQuadContainer,this,mGUIManager);
+		mCloseButton->setHorizontalAnchor(ANCHOR_HORIZONTAL_RIGHT);
 		mCloseButton->getQuad()->setLayer(Quad::LAYER_MENU);
 		mCloseButton->addEventHandler(Widget::EVENT_MOUSE_CLICK,&Window::hide,dynamic_cast<Window*>(mParentWidget));
 		mCloseButton->addEventHandler(Widget::EVENT_MOUSE_BUTTON_UP,&Window::hide,dynamic_cast<Window*>(mParentWidget));
@@ -50,7 +52,7 @@ namespace QuickGUI
 	{
 		mCloseButton->hide();
 		mTextBoundsPixelSize.width = mSize.width;
-		mText->refresh();
+		mText->redraw();
 	}
 
 	void TitleBar::setCaption(const Ogre::UTFString& caption)
