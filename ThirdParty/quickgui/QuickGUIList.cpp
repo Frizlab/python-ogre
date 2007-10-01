@@ -9,30 +9,28 @@ namespace QuickGUI
 		mAutoNameListItemCount(0),
 		mAutoSizeHeight(false),
 		mNumberOfVisibleItems(5),
-		mItemPixelHeight(20)
+		mItemPixelHeight(20),
+		mScrollPane(NULL)
 	{
 		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
 		if(mWidgetType == TYPE_LIST)
 		{
 			mQuad->setLayer(mParentWidget->getQuad()->getLayer());
-
-			mScrollPane = new ScrollPane(mInstanceName+".ScrollPane",TYPE_SCROLL_PANE,mQuadContainer,this,mGUIManager);
-			mScrollPane->disable();
 		}
-
-		mInheritClippingRect = false;
 
 		if(mSize.height <= 0)
 			mAutoSizeHeight = true;
 		else
 		{
 			mNumberOfVisibleItems = ((mSize.width / mItemPixelHeight) + 1.0);
+			setHeight(mNumberOfVisibleItems * mItemPixelHeight);
+			mScrollPane = new ScrollPane(mInstanceName+".ScrollPane",TYPE_SCROLL_PANE,mQuadContainer,this,mGUIManager);
 		}
 
 		mHighlightTexture = mParentSheet->getDefaultSkin() + ".list.highlight" + mTextureExtension;
 
 		// create highlight container for the list
-		mHighlightPanel = new Quad(mInstanceName+".HighlightPanel",mGUIManager);
+		mHighlightPanel = new Quad(mInstanceName+".HighlightPanel",this);
 		mHighlightPanel->setLayer(mQuad->getLayer());
 		mHighlightPanel->setTexture(mHighlightTexture);
 		// offset + 3, to be able to show over ListItems with Images and Buttons and Text
@@ -50,6 +48,12 @@ namespace QuickGUI
 		mItems.clear();
 
 		delete mHighlightPanel;
+	}
+
+	void List::_setClippingWidget(Widget* w)
+	{
+		mQuad->setClippingWidget(w);
+		mHighlightPanel->setClippingWidget(w);
 	}
 
 	ListItem* List::addListItem(const Ogre::UTFString& text)
@@ -114,9 +118,8 @@ namespace QuickGUI
 
 	void List::hide()
 	{
-		mHighlightPanel->setVisible(false);
-
 		Image::hide();
+		mHighlightPanel->setVisible(false);
 	}
 
 	void List::hideHighlight()
@@ -126,7 +129,7 @@ namespace QuickGUI
 
 	void List::highlightListItem(ListItem* i)
 	{
-		mHighlightPanel->setPosition(i->getScreenPosition());
+		mHighlightPanel->setPosition(i->getScreenPosition() + i->getScrollOffset());
 		mHighlightPanel->setSize(i->getSize());
 		mHighlightPanel->setVisible(true);
 	}
@@ -174,8 +177,12 @@ namespace QuickGUI
 
 	void List::setAutoSizeHeight()
 	{
-		mScrollPane->setSize(1,1);
-		mScrollPane->disable();
+		if(mScrollPane != NULL)
+		{
+			mScrollPane->setSize(mSize);
+			mScrollPane->disable();
+		}
+
 		mAutoSizeHeight = true;
 		setHeight(static_cast<int>(mItems.size()) * mItemPixelHeight);
 	}
@@ -204,9 +211,28 @@ namespace QuickGUI
 
 	void List::setNumberOfVisibleItems(unsigned int number)
 	{
+		mAutoSizeHeight = false;
+
 		mNumberOfVisibleItems = number;
 
 		setHeight(mItemPixelHeight * mNumberOfVisibleItems);
+
+		if(mScrollPane == NULL)
+		{
+			mScrollPane = new ScrollPane(mInstanceName+".ScrollPane",TYPE_SCROLL_PANE,mQuadContainer,this,mGUIManager);
+
+			// Add any already existing children to ScrollPane's list of managed widgets.
+			std::vector<Widget*>::iterator it;
+			for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
+			{
+				mScrollPane->manageWidget((*it));
+			}
+		}
+		else
+		{
+			mScrollPane->enable();
+			mScrollPane->_determinePaneBounds();
+		}
 	}
 
 	void List::setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight)

@@ -40,7 +40,7 @@ namespace QuickGUI
 				Ogre::TU_STATIC);
 		}
 
-		mBarPanel = new Quad(mInstanceName+".BarPanel",mGUIManager);
+		mBarPanel = new Quad(mInstanceName+".BarPanel",this);
 		mBarPanel->setPosition(getScreenPosition());
 		mBarPanel->setSize(mSize);
 		mBarPanel->setOffset(mOffset+1);
@@ -238,10 +238,16 @@ namespace QuickGUI
 		mBarPanel->setSize(mSize);
 	}
 
+	void ProgressBar::redraw()
+	{
+		Image::redraw();
+		mBarPanel->setPosition(mQuad->getPosition());
+	}
+
 	void ProgressBar::setClippingRect(const Rect& r)
 	{
-		Image::setClippingRect(r);
-		mBarPanel->setClippingRect(r);
+//		Image::setClippingRect(r);
+//		mBarPanel->setClippingRect(r);
 	}
 
 	void ProgressBar::setFillDirection(FillDirection d)

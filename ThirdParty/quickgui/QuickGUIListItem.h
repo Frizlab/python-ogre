@@ -97,6 +97,8 @@ namespace QuickGUI
 	protected:
 		virtual ~ListItem();
 
+		Widget* mClippingWidget;
+
 		Image* mImage;
 		NStateButton* mButton;
 

@@ -23,6 +23,7 @@ namespace QuickGUI
 
 		// create list
 		mList = new List(mInstanceName+".List",TYPE_LIST,Rect(0,mSize.height,mSize.width,0),mTextureName + ".list" + mTextureExtension,mQuadContainer,this,mGUIManager);
+		mList->_setClippingWidget(mParentSheet);
 		mList->setShowWithParent(false);
 		mList->hide();
 		mList->addEventHandler(EVENT_CHILD_ADDED,&MenuList::addDefaultListItemHandler,this);

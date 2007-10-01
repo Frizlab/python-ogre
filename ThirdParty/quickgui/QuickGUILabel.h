@@ -17,6 +17,27 @@ namespace QuickGUI
 		public Image
 	{
 	public:
+		/**
+		* Useful for widgets horizontally aligning child widgets, for example a
+		* TitleBar aligning its label widget
+		*/
+		enum HorizontalAlignment
+		{
+			HA_LEFT			=  0,
+			HA_MID				,
+			HA_RIGHT
+		};
+		/**
+		* Useful for widgets vertically aligning child widgets, for example a
+		* TitleBar aligning its label widget
+		*/
+		enum VerticalAlignment
+		{
+			VA_TOP				=  0,
+			VA_MID					,
+			VA_BOTTOM
+		};
+	public:
 		/** Constructor
             @param
                 name The name to be given to the widget (must be unique).
@@ -34,7 +55,7 @@ namespace QuickGUI
 				ParentWidget parent widget which created this widget.
         */
 		Label(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
-
+		
 		/**
 		* Aligns the child Label widget horizontally and vertically
 		*/
@@ -66,11 +87,14 @@ namespace QuickGUI
 		void onPositionChanged(const EventArgs& args);
 		void onSizeChanged(const EventArgs& args);
 		/**
+		* Force updating of the Widget's Quad position on screen.
+		*/
+		void redraw();
+		/**
 		* Convenience method.  For advance text use, use getText function to
 		* get a reference to the Text object.
 		*/
 		virtual void setCaption(const Ogre::UTFString& caption);
-		virtual void setClippingRect(const Rect& pixelDimensions);
 		/**
 		* Sets the color of the text when the widget is disabled.
 		*/

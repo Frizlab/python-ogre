@@ -19,15 +19,23 @@ namespace QuickGUI
 		mSelectEnd(-1),
 		mLineSpacing(1.0)
 	{
-		mClippingRect = mOwner->getClippingRect();
 		mOffset = owner->getOffset() + 1;
 		mGUIManager = owner->getGUIManager();
 		Rect ownerDimensions = mOwner->getDimensions();
 		mPixelDimensions = Rect(ownerDimensions.x,ownerDimensions.y,0,0);
 
+		if(mOwner->getParentPanel() != NULL)
+			mClippingWidget = mOwner->getParentPanel();
+		else if(mOwner->getParentWindow() != NULL)
+			mClippingWidget = mOwner->getParentWindow();
+		else if(mOwner->getParentSheet() != NULL)
+			mClippingWidget = mOwner->getParentSheet();
+		else
+			mClippingWidget = mOwner;
+
 		// Order dependent, this code must go before call to setFont, since that removes selection, which
 		// affects the character background.
-		mCharacterBackground = new Quad(name+".SelectionRectangle",mGUIManager);
+		mCharacterBackground = new Quad(name+".SelectionRectangle",mOwner);
 		mCharacterBackground->setTexture("QuickGUI.TextSelection");
 		mCharacterBackground->setColor(mBackgroundSelectColor);
 		mCharacterBackground->setOffset(mOffset-1);
@@ -99,6 +107,17 @@ namespace QuickGUI
 		mCharacters.clear();
 	}
 
+	void Text::_clipToWidgetDimensions(Widget* w)
+	{
+		mClippingWidget = w;
+
+		std::vector<Quad*>::iterator it;
+		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		{
+			(*it)->setClippingWidget(mClippingWidget);
+		}
+	}
+
 	void Text::_notifyQuadContainer(QuadContainer* container)
 	{
 		mQuadContainer = container;
@@ -167,7 +186,7 @@ namespace QuickGUI
 			if( (pos.y + size.height) > (textArea.y + textArea.height) )
 				break;
 
-			Quad* q = new Quad(mName + ".Character." + Ogre::StringConverter::toString(charCounter),mGUIManager);
+			Quad* q = new Quad(mName + ".Character." + Ogre::StringConverter::toString(charCounter),mOwner);
 			q->setOffset(mOffset);
 			q->setLayer(mLayer);
 
@@ -222,7 +241,7 @@ namespace QuickGUI
 				continue;
 			}
 	
-			Quad* q = new Quad(mName + ".Character." + Ogre::StringConverter::toString(charCounter),mGUIManager);
+			Quad* q = new Quad(mName + ".Character." + Ogre::StringConverter::toString(charCounter),mOwner);
 			q->setOffset(mOffset);
 			q->setLayer(mLayer);
 
@@ -280,7 +299,7 @@ namespace QuickGUI
 		return length;
 	}
 
-	void Text::refresh()
+	void Text::redraw()
 	{
 		_clearCharacters();
 		clearSelection();
@@ -304,7 +323,7 @@ namespace QuickGUI
 		if(!mVisible)
 			hide();
 
-		setClippingRect(mClippingRect);		
+		_clipToWidgetDimensions(mClippingWidget);
 	}
 
 	void Text::removeSelection()
@@ -384,6 +403,11 @@ namespace QuickGUI
 	int Text::getNumberOfCharacters()
 	{
 		return static_cast<int>(mCharacters.size());
+	}
+
+	Point Text::getPosition()
+	{
+		return Point(mPixelDimensions.x,mPixelDimensions.y);
 	}
 
 	Ogre::UTFString Text::getSelection()
@@ -485,7 +509,7 @@ namespace QuickGUI
 		std::vector<Quad*>::iterator it;
 		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
 		{
-			if( (*it)->intersectsRect(pixelDimensions) )
+			if( (*it)->getDimensions().intersectsRect(pixelDimensions) )
 			{
 				float midX = (*it)->getPosition().x + ((*it)->getSize().width / 2);
 				if( pixelDimensions.x < midX )
@@ -595,20 +619,11 @@ namespace QuickGUI
 		mAlignment = a;
 
 		// apply text properties
-		refresh();
+		redraw();
 
 		TextEventArgs e(this);
 		e.captionChanged = true;
 		onTextChanged(e);
-	}
-
-	void Text::setClippingRect(const Rect& pixelDimensions)
-	{
-		mClippingRect = pixelDimensions;
-
-		std::vector<Quad*>::iterator it;
-		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
-			(*it)->setClippingRect(mClippingRect);
 	}
 
 	void Text::setFont(const Ogre::String& fontName)
@@ -627,7 +642,7 @@ namespace QuickGUI
 		mFontTextureHeight = mFontTexture->getHeight();
 		
 		// update visual displaying of text
-		refresh();
+		redraw();
 
 		TextEventArgs e(this);
 		e.fontChanged = true;
@@ -648,7 +663,7 @@ namespace QuickGUI
 	void Text::setLineSpacing(Ogre::Real spacing)
 	{
 		mLineSpacing = spacing;
-		refresh();
+		redraw();
 	}
 
 	void Text::setOffset(int offset)

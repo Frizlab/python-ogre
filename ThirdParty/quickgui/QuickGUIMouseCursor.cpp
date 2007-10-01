@@ -73,8 +73,10 @@ namespace QuickGUI
 		// even if its within bounds.
 		else 
 		{
-			if(mVisible) show();
-			else hide();
+			if(mVisible) 
+				show();
+			else 
+				hide();
 		}
 
 		// Perform the actual moving of the mouse quad

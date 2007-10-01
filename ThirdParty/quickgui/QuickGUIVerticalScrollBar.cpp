@@ -6,7 +6,7 @@ namespace QuickGUI
 	VerticalScrollBar::VerticalScrollBar(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
 		Image(name,type,pixelDimensions,texture,container,ParentWidget,gm),
 		mMinSliderPosition(0),
-		mMaxSliderPosition(1),
+		mMaxSliderPosition(mSize.height),
 		mMouseDownOnTrack(false),
 		mSmallChange(0.1),
 		mLargeChange(0.4),
@@ -56,6 +56,8 @@ namespace QuickGUI
 		mScrollDown2->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&VerticalScrollBar::onScrollDownDown,this);
 		
 		_positionScrollButtons();
+		setButtonLayout(BUTTON_LAYOUT_OPPOSITE);
+		_constrainSlider();
 	}
 
 	VerticalScrollBar::~VerticalScrollBar()
@@ -412,21 +414,20 @@ namespace QuickGUI
 
 	void VerticalScrollBar::setValue(Ogre::Real value)
 	{
-		value = (value * mSize.height) + mMinSliderPosition;
-
-		if( value < 0.0 )
-			value = 0.0;
-		if( value > (mMaxSliderPosition - mSlider->getHeight()) )
-			value = (mMaxSliderPosition - mSlider->getHeight());
-
-		mSlider->setYPosition(value);
-
 		ScrollEventArgs scrollArgs(this);
-		Ogre::Real currentValue = getValue();
-		if( value < currentValue )
+		if(value < getValue())
 			scrollArgs.sliderIncreasedPosition = false;
 		else
 			scrollArgs.sliderIncreasedPosition = true;
+
+		Ogre::Real pixelY = (value * (mMaxSliderPosition - mMinSliderPosition)) + mMinSliderPosition;
+
+		if( pixelY < 0.0 )
+			pixelY = 0.0;
+		if( pixelY > (mMaxSliderPosition - mSlider->getHeight()) )
+			pixelY = (mMaxSliderPosition - mSlider->getHeight());
+
+		mSlider->setYPosition(pixelY);			
 
 		_scroll(0,scrollArgs);
 	}

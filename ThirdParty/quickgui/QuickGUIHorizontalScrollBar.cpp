@@ -6,7 +6,7 @@ namespace QuickGUI
 	HorizontalScrollBar::HorizontalScrollBar(const Ogre::String& name, Type type, const Rect& pixelDimensions, const Ogre::String& texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
 		Image(name,type,pixelDimensions,texture,container,ParentWidget,gm),
 		mMinSliderPosition(0),
-		mMaxSliderPosition(1),
+		mMaxSliderPosition(mSize.width),
 		mMouseDownOnTrack(false),
 		mSmallChange(0.1),
 		mLargeChange(0.4),
@@ -54,6 +54,8 @@ namespace QuickGUI
 		mScrollRight2->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&HorizontalScrollBar::onScrollRightDown,this);
 		
 		_positionScrollButtons();
+		setButtonLayout(BUTTON_LAYOUT_OPPOSITE);
+		_constrainSlider();
 	}
 
 	HorizontalScrollBar::~HorizontalScrollBar()
@@ -410,21 +412,20 @@ namespace QuickGUI
 
 	void HorizontalScrollBar::setValue(Ogre::Real value)
 	{
-		value = (value * mSize.width) + mMinSliderPosition;
-
-		if( value < 0.0 )
-			value = 0.0;
-		if( value > (mMaxSliderPosition - mSlider->getWidth()) )
-			value = (mMaxSliderPosition - mSlider->getWidth());
-
-		mSlider->setXPosition(value);
-
 		ScrollEventArgs scrollArgs(this);
-		Ogre::Real currentValue = getValue();
-		if( value < currentValue )
+		if(value < getValue())
 			scrollArgs.sliderIncreasedPosition = false;
 		else
 			scrollArgs.sliderIncreasedPosition = true;
+
+		Ogre::Real pixelX = (value * (mMaxSliderPosition - mMinSliderPosition)) + mMinSliderPosition;
+
+		if( pixelX < 0.0 )
+			pixelX = 0.0;
+		if( pixelX > (mMaxSliderPosition - mSlider->getWidth()) )
+			pixelX = (mMaxSliderPosition - mSlider->getWidth());
+
+		mSlider->setXPosition(pixelX);
 
 		_scroll(0,scrollArgs);
 	}

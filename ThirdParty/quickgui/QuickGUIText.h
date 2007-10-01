@@ -65,6 +65,8 @@ namespace QuickGUI
 		Text(const Ogre::String& name, QuadContainer* container, Label* owner);
 		~Text();
 
+		// Internal function that sets the widget dimensions to use for clipping.
+		void _clipToWidgetDimensions(Widget* w);
 		void _notifyQuadContainer(QuadContainer* container);
 
 		/**
@@ -110,6 +112,7 @@ namespace QuickGUI
 		* the rendered text has a bounded region, and may not fit.
 		*/
 		int getNumberOfCharacters();
+		Point getPosition();
 		/*
 		* Returns the selections portion of the caption.
 		*/
@@ -171,7 +174,7 @@ namespace QuickGUI
 		* Rerenders the text, with current font and text color.  Useful to call
 		* if Widget dimensions have changed.
 		*/
-		void refresh();
+		void redraw();
 		/*
 		* Remove selected characters from the caption.
 		*/
@@ -188,7 +191,6 @@ namespace QuickGUI
 		* Sets the text Caption.  Size will be calculated from glyph dimensions.
 		*/
 		void setCaption(const Ogre::UTFString& text, Layout l = LAYOUT_HORIZONTAL, Alignment a = ALIGNMENT_LEFT);
-		void setClippingRect(const Rect& pixelDimensions);
 		void setFont(const Ogre::String& fontName);
 		void setLayer(Quad::Layer layer);
 		void setOffset(int offset);
@@ -218,7 +220,7 @@ namespace QuickGUI
 		int mOffset;
 		bool mVisible;
 
-		Rect mClippingRect;
+		Widget* mClippingWidget;
 
 		Ogre::UTFString mCaption;
 		Layout mLayout;

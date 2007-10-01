@@ -29,6 +29,7 @@ namespace QuickGUI
 		mTextBoundsPixelSize = Size(mSize.width - ButtonSize - 2,mSize.height);
 
 		mList = new List(mInstanceName+".List",TYPE_LIST,Rect(0,mSize.height,mSize.width,0),mTextureName + ".list" + mTextureExtension,mQuadContainer,this,mGUIManager);
+		mList->_setClippingWidget(mParentSheet);
 		mList->setShowWithParent(false);
 		mList->setOffset(mOffset + 2);
 		mList->hide();

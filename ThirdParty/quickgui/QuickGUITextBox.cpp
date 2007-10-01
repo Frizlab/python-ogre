@@ -33,7 +33,7 @@ namespace QuickGUI
 			mQuad->setLayer(Quad::LAYER_CHILD);
 		}
 
-		mHorizontalAlignment = QGUI_HA_LEFT;
+		mHorizontalAlignment = HA_LEFT;
 
 		mMouseCursor = mGUIManager->getMouseCursor();
 
@@ -45,7 +45,7 @@ namespace QuickGUI
 		addEventHandler(EVENT_KEY_DOWN,&TextBox::onKeyDown,this);
 		addEventHandler(EVENT_KEY_UP,&TextBox::onKeyUp,this);
 
-		mTextCursor = new Quad(mInstanceName + ".TextCursor",mGUIManager);
+		mTextCursor = new Quad(mInstanceName + ".TextCursor",this);
 		mTextCursor->setLayer(Quad::LAYER_CHILD);
 		mTextCursorTexture = mTextureName + ".textcursor" + mTextureExtension;
 		mTextCursor->setTexture(mTextCursorTexture);
@@ -164,26 +164,26 @@ namespace QuickGUI
 			{
 				switch(mHorizontalAlignment)
 				{
-				case QGUI_HA_LEFT:
+				case HA_LEFT:
 					cursorPos.x = textBounds.x;
 					break;
-				case QGUI_HA_MID:
+				case HA_MID:
 					cursorPos.x = (textBounds.x + (textBounds.width / 2));
 					break;
-				case QGUI_HA_RIGHT:
+				case HA_RIGHT:
 					cursorPos.x = (textBounds.x + textBounds.width);
 					break;
 				}
 
 				switch(mVerticalAlignment)
 				{
-				case QGUI_VA_TOP:
+				case VA_TOP:
 					cursorPos.y = textBounds.y;
 					break;
-				case QGUI_VA_MID:
+				case VA_MID:
 					cursorPos.y = (textBounds.y + (textBounds.height / 2));
 					break;
-				case QGUI_VA_BOTTOM:
+				case VA_BOTTOM:
 					cursorPos.y = (textBounds.y + textBounds.height);
 					break;
 				}
@@ -409,14 +409,14 @@ namespace QuickGUI
 
 	void TextBox::hide()
 	{
+		Label::hide();
+
 		mTextCursor->setVisible(false);
 		mBackSpaceDown = false;
 		mLeftArrowDown = false;
 		mRightArrowDown = false;
 		mHasFocus = false;
 		mMouseLeftDown = false;
-
-		Label::hide();
 	}
 
 	void TextBox::maskUserInput(const Ogre::UTFString::unicode_char& symbol)

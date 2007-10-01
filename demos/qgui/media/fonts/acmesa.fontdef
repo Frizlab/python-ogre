@@ -1,0 +1,111 @@
+acmesa.10
+{
+   type       truetype
+   source     ACMESA.TTF
+   size       10
+   resolution 72
+} 
+
+acmesa.12
+{
+   type       truetype
+   source     ACMESA.TTF
+   size       12
+   resolution 72
+} 
+
+acmesa.14
+{
+   type       truetype
+   source     ACMESA.TTF
+   size       14
+   resolution 72
+} 
+
+acmesa.16
+{
+   type       truetype
+   source     ACMESA.TTF
+   size       16
+   resolution 72
+} 
+
+acmesa.18
+{
+   type       truetype
+   source     ACMESA.TTF
+   size       18
+   resolution 72
+} 
+
+acmesa.20
+{
+   type       truetype
+   source     ACMESA.TTF
+   size       20
+   resolution 72
+} 
+
+acmesa.24
+{
+   type       truetype
+   source     ACMESA.TTF
+   size       24
+   resolution 72
+} 
+
+acmesa.28
+{
+   type       truetype
+   source     ACMESA.TTF
+   size       28
+   resolution 72
+} 
+
+acmesa.32
+{
+   type       truetype
+   source     ACMESA.TTF
+   size       32
+   resolution 72
+} 
+
+acmesa.36
+{
+   type       truetype
+   source     ACMESA.TTF
+   size       36
+   resolution 72
+} 
+
+acmesa.42
+{
+   type       truetype
+   source     ACMESA.TTF
+   size       42
+   resolution 72
+} 
+
+acmesa.50
+{
+   type       truetype
+   source     ACMESA.TTF
+   size       50
+   resolution 72
+} 
+
+acmesa.60
+{
+   type       truetype
+   source     ACMESA.TTF
+   size       60
+   resolution 72
+} 
+
+acmesa.75
+{
+   type       truetype
+   source     ACMESA.TTF
+   size       75
+   resolution 72
+} 
