@@ -1,0 +1,22 @@
+// Material created by Gile[s] Ogre Exporter by Walaber
+material nx.racecar
+{
+	technique
+	{
+		pass
+		{
+			ambient 0 0 0
+			diffuse 0 0 0
+			emissive 1 1 1 1
+			specular 0 0 0 0
+			
+			texture_unit
+			{
+				texture racecar1.png
+				filtering bilinear
+				colour_op modulate
+			}
+		}
+	}
+}
+

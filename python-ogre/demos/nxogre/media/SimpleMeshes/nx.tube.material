@@ -1,0 +1,14 @@
+
+material nx.ogre.cloths.tubes
+{
+	technique
+	{
+		pass
+		{
+			diffuse 0.584314 0.721569 0.180392 1
+			specular 1 1 1 0
+			scene_blend alpha_blend
+		}
+	}
+}
+
