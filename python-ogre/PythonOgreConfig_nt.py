@@ -33,6 +33,7 @@ PATH_OPENAL=        os.path.join(BASE_DIR, 'openal')
 PATH_ALUT=          os.path.join(BASE_DIR, 'freealut')
 PATH_OgreOde=       os.path.join(BASE_DIR, PATH_OgreAddons,'ogreode')
 PATH_OgreBullet=    os.path.join(PATH_OgreAddons,'ogrebullet')
+PATH_ogreforests=    os.path.join(PATH_OgreAddons,'forests')
 
 PATH_OGREAL=        os.path.join(PATH_THIRDPARTY,'ogreal')
 PATH_OPCODE=        os.path.join(PATH_THIRDPARTY,'opcode')
@@ -127,6 +128,7 @@ PATH_INCLUDE_ffmpeg =       os.path.join (PATH_ffmpeg,'include')
 PATH_INCLUDE_ogredshow =    PATH_ogredshow
 PATH_INCLUDE_plib =         PATH_plib
 PATH_INCLUDE_navi =         os.path.join (PATH_navi,'include')
+PATH_INCLUDE_ogreforests =         os.path.join (PATH_ogreforests,'include')
 
 PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ,os.path.join(BASE_DIR, 'vorbis', 'include')

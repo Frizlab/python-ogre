@@ -129,15 +129,15 @@ def ManualInclude ( mb ):
         if cls.name.startswith('Cmd'):
             cls.exclude()
             
-    c = main_ns.class_('::Ogre::TheoraVideoController')
-    print dir ( c )
-    print c.bases
-    for i in c.bases:
-        print "Base: ", i
-    print dir (i)    
+# #     c = main_ns.class_('::Ogre::TheoraVideoController')
+# #     print dir ( c )
+# #     print c.bases
+# #     for i in c.bases:
+# #         print "Base: ", i
+# #     print dir (i)    
     
-    main_ns.enum('::Ogre::eTexturePlayMode').include(already_exposed=True)
-    main_ns.enum('::Ogre::eAudioSampleFormat').include(already_exposed=True)
+    main_ns.enum('::Ogre::eTexturePlayMode').include()
+    main_ns.enum('::Ogre::eAudioSampleFormat').include()
     main_ns.class_('::Ogre::RingBuffer').include(already_exposed=True)
     main_ns.class_('::Ogre::TexturePtr').include(already_exposed=True)
     
@@ -506,7 +506,8 @@ def generate_code():
     # We need to tell boost how to handle calling (and returning from) certain functions
     #
     Set_Call_Policies ( mb.global_ns.namespace (MAIN_NAMESPACE) )
-    
+    c = main_ns.class_('::Ogre::ExternalTextureSource' ).include(already_exposed=True)
+        
     #
     # the manual stuff all done here !!!
     #

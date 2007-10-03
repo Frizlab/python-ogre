@@ -40,6 +40,7 @@ PATH_OPENAL=        os.path.join(BASE_DIR, 'openal-0.0.8')
 PATH_ALUT=          os.path.join(BASE_DIR, 'freealut-1.1.0')
 PATH_OgreOde=       os.path.join(PATH_OgreAddons,'ogreode')
 PATH_OgreBullet=    os.path.join(PATH_OgreAddons,'ogrebullet')
+PATH_ogreforests=    os.path.join(PATH_OgreAddons,'forests')
 
 PATH_OGREAL=        os.path.join(PATH_THIRDPARTY,'ogreal')
 PATH_OPCODE=        os.path.join(PATH_THIRDPARTY,'opcode')
@@ -116,6 +117,7 @@ PATH_INCLUDE_Bullet = 		os.path.join( LOCAL_INCLUDE )
 PATH_INCLUDE_navi =         os.path.join (PATH_navi,'include')
 PATH_INCLUDE_plib =         PATH_plib
 PATH_INCLUDE_ogredshow =    PATH_ogredshow
+PATH_INCLUDE_ogreforests =         os.path.join (PATH_ogreforests,'include')
 
 PATH_INCLUDE_Theora =       os.path.join (PATH_Theora,'include')
 PATH_INCLUDE_ogrevideoffmpeg =  PATH_ogrevideoffmpeg

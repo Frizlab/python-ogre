@@ -3,14 +3,14 @@ echo
 echo ====== Python-Ogre Windows Release Build ======
 echo =
 rmdir /s /q ..\..\PythonOgreRelease
-mkdir ..\..\PythonOgreRelease\packages_2.4
+rem mkdir ..\..\PythonOgreRelease\packages_2.4
 mkdir ..\..\PythonOgreRelease\packages_2.5
 mkdir ..\..\PythonOgreRelease\plugins
 mkdir ..\..\PythonOgreRelease\demos
 mkdir ..\..\PythonOgreRelease\ThirdParty
 mkdir ..\..\PythonOgreRelease\Tools
 mkdir ..\..\PythonOgreRelease\docs
-xcopy ..\packages_2.4 ..\..\PythonOgreRelease\packages_2.4 /s
+rem xcopy ..\packages_2.4 ..\..\PythonOgreRelease\packages_2.4 /s
 xcopy ..\packages_2.5 ..\..\PythonOgreRelease\packages_2.5 /s
 xcopy ..\demos ..\..\PythonOgreRelease\demos /s
 xcopy ..\plugins ..\..\PythonOgreRelease\plugins

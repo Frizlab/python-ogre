@@ -16,6 +16,7 @@ set physx="c:\program files\AGEIA Technologies\SDK\v2.7.2\bin\win32"
 set theora=%root%\ogreaddons\videoplugin\TheoraVideo\bin\Release
 set ffmpeg=%root%\ffmpeg
 set navi=%root%\navi\Dependencies\win32\llmozlib\runtime\Release
+set boost=%root%\boost\bin.v2\libs\python2.5\build\msvc-8.0\release\threading-multi
 
 set ogreal=%root%\OgreAL\lib\Release
 set freealut=%root%\FreeAlut\lib
@@ -25,8 +26,12 @@ set openal=%root%\openal\samples\bin\win32
 
 rem Ogre
 copy /y %ogre%\ogremain.dll %package%\renderer\OGRE
+copy /y %ogre%\cg.dll %package%\renderer\OGRE
+
+copy /y %boost%\boost_python-vc80-mt-1_35.dll %package%\renderer\OGRE
 copy /y %ogre%\render*.dll ..\plugins
 copy /y %ogre%\plug*.dll ..\plugins
+
 
 rem Physics
 copy /y %ogre%\ReferenceAppLayer.dll %package%\physics\OgreRefApp
@@ -68,3 +73,5 @@ copy /y %openal%\wrap_oal.dll %package%\sound\OgreAL
 rem navi
 copy /y %navi%\*.dll %package%\gui\navi
 
+rem plib
+copy /y %boost%\boost_python-vc80-mt-1_35.dll %package%\addons\plib

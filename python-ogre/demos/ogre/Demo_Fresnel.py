@@ -38,15 +38,15 @@ class RefractionTextureListener(ogre.RenderTargetListener):
         
     def preRenderTargetUpdate(self,evt):
         #Hide plane and objects above the water
-        self.planeEnt.visible = False
+        self.planeEnt.setVisible ( False )
         for e in self.aboveWaterEnts:
-            e.visible = False                
+            e.setVisible ( False )                
            
     def postRenderTargetUpdate(self,evt):
         #Show plane and objects above the water
-        self.planeEnt.visible = True
+        self.planeEnt.setVisible ( True )
         for e in self.aboveWaterEnts:
-            e.visible = True                
+            e.setVisible ( True )                
 
 # Reflection Render Target Listener
 class ReflectionTextureListener(ogre.RenderTargetListener):
@@ -60,16 +60,16 @@ class ReflectionTextureListener(ogre.RenderTargetListener):
                 
     def preRenderTargetUpdate(self,evt):
         #Hide plane and objects above the water
-        self.planeEnt.visible = False
+        self.planeEnt.setVisible ( False )
         for e in self.belowWaterEnts:
-            e.setVisible ( False )  ##.visible to setVisible
+            e.setVisible ( False )  
         self.cam.enableReflection(self.reflectionPlane)
             
     def postRenderTargetUpdate(self,evt):
         #Show plane and objects above the water
-        self.planeEnt.visible = True
+        self.planeEnt.setVisible ( True )
         for e in self.belowWaterEnts:
-            e.setVisible ( True )  # .visible to setVisible
+            e.setVisible ( True )  
         self.cam.disableReflection()
 
 class FresnelFrameListener(sf.FrameListener):
@@ -165,15 +165,15 @@ class FresnelApplication(sf.Application):
 
         # check graphics card capabilities                        
         capabilities = ogre.Root.getSingleton().getRenderSystem().getCapabilities()
-        if not capabilities.hasCapability(ogre.RSC_VERTEX_PROGRAM) or not capabilities.hasCapability(ogre.RSC_FRAGMENT_PROGRAM):
-            raise ogre.Exception(1, 'Your card does not support vertex and fragment programs, so cannot run this demo. Sorry!', 'fresneldemo.py')
-        
-        else:
-            if (ogre.GpuProgramManager.getSingleton().isSyntaxSupported("arbfp1") and
-                ogre.GpuProgramManager.getSingleton().isSyntaxSupported("ps_2_0") and
-                ogre.GpuProgramManager.getSingleton().isSyntaxSupported("ps_1_4")):
-                
-                raise ogre.Exception(1, 'Your card does not support advanced fragment programs, so cannot run this demo. Sorry!', 'fresneldemo.py')
+#         if not capabilities.hasCapability(ogre.RSC_VERTEX_PROGRAM) or not capabilities.hasCapability(ogre.RSC_FRAGMENT_PROGRAM):
+#             raise ogre.Exception(1, 'Your card does not support vertex and fragment programs, so cannot run this demo. Sorry!', 'fresneldemo.py')
+#         
+#         else:
+#             if (ogre.GpuProgramManager.getSingleton().isSyntaxSupported("arbfp1") and
+#                 ogre.GpuProgramManager.getSingleton().isSyntaxSupported("ps_2_0") and
+#                 ogre.GpuProgramManager.getSingleton().isSyntaxSupported("ps_1_4")):
+#                 
+#                 raise ogre.Exception(1, 'Your card does not support advanced fragment programs, so cannot run this demo. Sorry!', 'fresneldemo.py')
 
         theCam = self.camera
         self.camera.setPosition (-50,125,760)
@@ -233,6 +233,7 @@ class FresnelApplication(sf.Application):
                                                     (0, 0, 1))
         
         self.planeEnt = sceneManager.createEntity( "plane", "ReflectPlane" )
+        print "\n\n", self.planeEnt, "\n",dir(self.planeEnt )
         self.planeEnt.setMaterialName("Examples/FresnelReflectionRefraction")
         
         
