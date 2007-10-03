@@ -1,0 +1,63 @@
+material boot.any
+{
+
+	technique
+	{
+		
+		pass
+		{
+			texture_unit
+			{
+				texture any.jpg
+			}
+		}
+	}
+}
+
+material boot.101
+{
+
+	technique
+	{
+		
+		pass
+		{
+			texture_unit
+			{
+				texture 101.jpg
+			}
+		}
+	}
+}
+
+material boot.102
+{
+
+	technique
+	{
+		
+		pass
+		{
+			texture_unit
+			{
+				texture 102.jpg
+			}
+		}
+	}
+}
+
+material boot.103
+{
+
+	technique
+	{
+		
+		pass
+		{
+			texture_unit
+			{
+				texture 103.jpg
+			}
+		}
+	}
+}
