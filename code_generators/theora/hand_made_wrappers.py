@@ -6,7 +6,14 @@ WRAPPER_DEFINITION_General = \
 Ogre::TheoraVideoController * General_castAsVideoController( Ogre::ExternalTextureSource* e ){  
        return (Ogre::TheoraVideoController*) e;
     }
-    
+ 
+Ogre::TheoraVideoController * Get_Controller( void ) {
+    Ogre::TheoraVideoController * mVideoControl =  static_cast<Ogre::TheoraVideoController*>
+			(Ogre::ExternalTextureSourceManager::getSingleton().
+				getExternalTextureSource("ogg_video"));
+	return mVideoControl;
+	}
+	
 Ogre::TheoraVideoController * General_Init( void ) {
     Ogre::TheoraVideoController * mVideoControl =  static_cast<Ogre::TheoraVideoController*>
 			(Ogre::ExternalTextureSourceManager::getSingleton().
@@ -54,6 +61,11 @@ WRAPPER_REGISTRATION_General = [
                 Input: None\\n\\
                 Ouput: ",\
                 bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());"""                
+    """bp::def( "getVideoController", &Get_Controller,
+                "Python-Ogre Helper Function: Get a  Video Controller .\\n\\
+                Input: None\\n\\
+                Ouput: ",\
+                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());"""                
     ]    
 
 #################################################################################################
@@ -64,7 +76,8 @@ def apply_reg ( class_, code ):
         class_.add_registration_code ( c )
         
 def apply( mb ):
-    mb.add_declaration_code( WRAPPER_DEFINITION_General )
-    apply_reg (mb,  WRAPPER_REGISTRATION_General )
+    return
+# #     mb.add_declaration_code( WRAPPER_DEFINITION_General )
+# #     apply_reg (mb,  WRAPPER_REGISTRATION_General )
 
     

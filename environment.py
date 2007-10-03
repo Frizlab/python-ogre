@@ -365,7 +365,7 @@ class ogreode:
     active=True
     
 class quickgui:
-    version="0.9.6"
+    version="0.9.7"
     parent="ogre/gui"
     ## note the defined for _QuickGUIExport forces non dll usage
     if os.name=='nt': 
@@ -389,7 +389,7 @@ class quickgui:
     active=True
 
 class navi:
-    version="0.9"
+    version="1.4"
     parent="ogre/gui"
     CCFLAGS = '-D"WIN32" -D"NDEBUG", -D"WINDOWS"' 
     cflags=""
@@ -428,6 +428,22 @@ class betagui:
     ModuleName="betagui"   
     active=True
 
+class ogreforests:
+    version="0.1"
+    parent="ogre/addons"
+    CCFLAGS = ' ' # -D"FT2_BUILD_LIBRARY"
+    cflags=""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_Ogre,
+                    Config.PATH_INCLUDE_ogreforests
+                    ]
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain
+                ]
+    CheckIncludes=[]
+    libs=[  Config.LIB_Boost, 'OgreMain' ]
+    ModuleName="ogreforests"   
+    active=True
     
 class nxogre:
     version="0.9"
@@ -545,19 +561,12 @@ class ogreal:
                   ] 
                   
     if os.name =='nt':
-        CCFLAGS = ' -DOgreAL_Export="" -DWIN32 -DNDEBUG -D_LIB -D_WIN32 -D_WINDOWS -DVORBIS_IEEE_FLOAT32 -D_USE_NON_INTEL_COMPILER '     
-    if os.name=="nt":         
-        libs=[Config.LIB_Boost, 'OgreMain', 
-                    'ogg_static', 
-                    'alut', 
-                    'vorbis_static','vorbisfile_static','vorbisenc_static',
-                    'OpenAL32', 'EFX-Util']  ##  'OgreAL' -- going to compile OgreAL ourselves
-    else:
-        libs=[Config.LIB_Boost, 'OgreMain', 
-                    'ogg', 
-                    'alut', 
-                    'vorbis','vorbisfile','vorbisenc',
-                    'openal' ]  ##  'OgreAL' -- going to compile OgreAL ourselves
+        CCFLAGS = ' -DOgreAL_Export="" -DWIN32 -DNDEBUG -D_LIB -D_WIN32 -D_WINDOWS -DVORBIS_IEEE_FLOAT32 -D_USE_NON_INTEL_COMPILER '              
+    libs=[Config.LIB_Boost, 'OgreMain', 
+                'ogg_static', 
+                'alut', 
+                'vorbis_static','vorbisfile_static','vorbisenc_static',
+                'OpenAL32', 'EFX-Util']  ##  'OgreAL' -- going to compile OgreAL ourselves
     ModuleName = 'OgreAL'
     CheckIncludes = ['OgreAL.h']
     active=True
@@ -698,6 +707,7 @@ projects = {
     , 'navi': navi
     , 'ogrebulletc' : ogrebulletc
     , 'ogrebulletd' : ogrebulletd
+    , 'ogreforests' : ogreforests
 }        
 
 #

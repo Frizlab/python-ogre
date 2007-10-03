@@ -18,23 +18,6 @@ class TerrainApplication(sf.Application):
         self.sceneManager = self.root.createSceneManager(ogre.ST_GENERIC)
         self.sceneManager = self.root.createSceneManager(ogre.ST_EXTERIOR_CLOSE)
 
-    def _createCamera(self):
-        self.camera = self.sceneManager.createCamera('PlayerCam')
-        self.camera.setPosition (ogre.Vector3(128, 25, 128))
-        self.camera.setPosition (128, 25, 128)
-        self.camera.position = ogre.Vector3(128, 25, 128)
-        self.camera.position = (128, 25, 128)
-        self.camera.position = [128, 25, 128]
-        self.camera.position = 128, 25, 128
-        
-        self.camera.lookAt(0, 0, -300)
-        self.camera.NearClipDistance = 1
-
-        # infinte far clip plane?
-        #if self.root.renderSystem.capabilities.hasCapability(ogre.RSC_INFINITE_FAR_PLANE):
-            #self.camera.farClipDistance = 0
-        #else:
-        self.camera.FarClipDistance = 1000 
 
     def _createScene(self):
         sceneManager = self.sceneManager

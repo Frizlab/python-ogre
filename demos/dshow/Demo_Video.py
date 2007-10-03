@@ -23,18 +23,12 @@ class VideoApplication(sf.Application):
         light = sceneManager.createLight('MainLight')
         light.setPosition (20, 80, 150)
         
-        self.dshowMovieTextureSystem =  OgreDshow.DirectShowMovieTexture(321,321)
-        movieName = "/downloads/vf2.avi"
-        movieName = "c:/temp/apple.wmv"
+        self.dshowMovieTextureSystem =  OgreDshow.DirectShowMovieTexture(160,120) ## get this right for scaling
+        movieName = "../media_extra/fish.avi"
         
         self.dshowMovieTextureSystem.loadMovie(movieName)
         self.dshowMovieTextureSystem.playMovie()
         
-        
-#         self._createScalingPlane()
-#         self._createScrollingKnot()
-        #self._createWateryPlane()
-#         self._createVideoPlane()
         skyMaterial = ogre.MaterialManager.getSingleton()   #get the material manager pointer
         skyMaterial =  skyMaterial.create('SkyMat', ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME )
         skyMaterial.lightingEnabled = False
@@ -43,7 +37,7 @@ class VideoApplication(sf.Application):
         textureUnitState.setScrollAnimation(0.15, 0)
 
         sceneManager.setSkyDome(True, 'SkyMat', -5.0, 2.0)
-#         
+         
         c = sceneManager.createEntity("cubo", "cube.mesh")
         n = sceneManager.getRootSceneNode().createChildSceneNode()
         n.attachObject(c)
@@ -56,41 +50,10 @@ class VideoApplication(sf.Application):
         tex=mat.getTechnique(0).getPass(0).getTextureUnitState(0)
         tex.setTextureName(
             self.dshowMovieTextureSystem.getMovieTexture().getName())
-           
-
-    def _createScalingPlane(self):
-        entity = self.sceneManager.createEntity('Plane', ogre.SceneManager.PT_PLANE)
-        entity.setMaterialName('Examples/TextureEffect1')
-        node = self.sceneManager.getRootSceneNode().createChildSceneNode(ogre.Vector3(-250, -40, -100))
-        node.attachObject(entity)
-
-    def _createScrollingKnot(self):
-        entity = self.sceneManager.createEntity('Knot', 'knot.mesh')
-        entity.setMaterialName('Examples/TextureEffect2')
-        node = self.sceneManager.getRootSceneNode().createChildSceneNode(ogre.Vector3(200, 50, 150))
-        node.attachObject(entity)
-
-    def _createWateryPlane(self):
-        entity = self.sceneManager.createEntity('WaterPlane', ogre.SceneManager.PT_PLANE)
-        entity.setMaterialName('Examples/TextureEffect3')
-        node = self.sceneManager.getRootSceneNode().attachObject(entity)
-        
-    def _createVideoPlane(self):
-        entity = self.sceneManager.createEntity('WaterPlane', ogre.SceneManager.PT_PLANE)
-        entity.setMaterialName('Examples/Rockwall')
-        node = self.sceneManager.getRootSceneNode().attachObject(entity)
-        
-        mat=ogre.MaterialManager.getSingleton().getByName('Examples/Rockwall')
-        tex=mat.getTechnique(0).getPass(0).getTextureUnitState(0)
-        tex.setTextureName(
-            self.dshowMovieTextureSystem.getMovieTexture().getName())
-
-      
 
     def _createFrameListener(self):
         self.frameListener = VideoListener(self.renderWindow, self.camera, self.dshowMovieTextureSystem)
         self.root.addFrameListener(self.frameListener)
-        
 
     def __del__(self):
         self.dshowMovieTextureSystem.stopMovie()
@@ -103,10 +66,12 @@ class VideoListener(sf.FrameListener):
         sf.FrameListener.__init__(self, renderWindow, camera)
  
     def frameStarted(self, frameEvent):
-        self.video.updateMovieTexture()
+        if not self.video.isPlayingMovie():
+            self.video.rewindMovie()
+            self.video.playMovie()
+        else:
+            self.video.updateMovieTexture()
         return sf.FrameListener.frameStarted(self, frameEvent)
-        
-        
         
 if __name__ == '__main__':
     try:

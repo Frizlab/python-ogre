@@ -51,7 +51,7 @@ class VideoApplication(sf.Application):
             n.setPosition(ogre.Vector3(i*250, 0, 0))
             #self.cubeEntities.append(c)
 
-            v = VIDEO.cVideoPlayer("videoMaterial" + str(i), "apple.wmv")
+            v = VIDEO.cVideoPlayer("videoMaterial" + str(i), "fish.avi")
             #v = VIDEO.cVideoPlayer("videoMaterial" + str(i), "test.divx")
             v.setLoop(True)
             self.videoPlayer.append(v)
