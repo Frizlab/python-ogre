@@ -1,0 +1,90 @@
+sampler cloud : register(s0);
+sampler detail : register(s1);
+sampler noise : register(s2);
+
+void main_vp (in float4 position : POSITION,
+							in float3 normal : NORMAL,
+							in float2 uv : TEXCOORD0,
+							in float4 colour : COLOR, 
+							out float4 oPosition : POSITION,
+							out float4 oColour : COLOR,
+							out float2 oUv : TEXCOORD0,
+							out float oGlow : TEXCOORD1,
+							uniform float4x4 world, 
+							uniform float4x4 worldViewProj,
+							uniform float3 eyePosition,
+							uniform float3 sunDirection)
+{
+	oPosition = mul(worldViewProj, position);
+
+	oColour = colour;
+
+	float3 relPosition = normalize (position);
+	sunDirection = normalize (-sunDirection);
+
+	oGlow = clamp (dot (relPosition, sunDirection), 0, 1);
+
+	oUv = uv;
+}
+
+void main_fp (in float4 col : COLOR,
+							in float2 uv : TEXCOORD0,
+							in float glow : TEXCOORD1,
+							out float4 oCol : COLOR,
+							uniform float3 sunDirection,
+							uniform float4 sunColour,
+							uniform float time,
+							uniform float4 fogColour, 
+							uniform float lightInvScattering, 
+							uniform float absorptionFactor, 
+							uniform float cloudInvScale, 
+							uniform float detailInvScale, 
+							uniform float noiseInvScale, 
+							uniform float2 cloudSpeed, 
+							uniform float2 detailSpeed, 
+							uniform float haloThreshold)
+{
+	// Calculate sampler positions
+	float2 cloudOffset = cloudSpeed * time + uv;
+	float2 detailOffset = detailSpeed * time + uv;
+	// Calculate the base alpha
+	float a1 = tex2D (cloud, (cloudOffset) * cloudInvScale);
+	// If the base is transparent, it will be invisible and we can skip expensive calculations
+	if (a1 > 0) {
+		// Calculate the detail alpha
+		float a2 = tex2D (detail, (detailOffset) * detailInvScale);
+		float a3 = (tex2D (noise, (detailOffset) * noiseInvScale) + tex2D (noise, (detailOffset) * noiseInvScale * detailInvScale)) * 0.5;
+
+		fogColour.a = 1;	// Remove the alpha component!
+
+		// Halo stuff
+		glow = pow (glow, lightInvScattering);
+		if (haloThreshold > 0) {
+			if (glow < haloThreshold)
+				glow = glow / haloThreshold;
+		}
+
+		// Get the final base colour and alpha
+		oCol = col * (fogColour * (2 + sunColour * glow));
+		oCol.a = clamp (a1 + (a2 + a3) * 0.5 - 1, 0, 1);
+		
+		// If there won't be light absorption, skip the most expensive calculations
+		if (absorptionFactor > 0) {
+			sunDirection = normalize (sunDirection) * -0.001;
+			sunDirection.x = sunDirection.x;
+			sunDirection.y = -sunDirection.z;
+			sunDirection.z = 0;
+
+			float absorption = 0;
+			absorption += clamp (tex2D (cloud, (sunDirection * 0.25 + cloudOffset) * cloudInvScale) + tex2D (detail, (sunDirection * 0.25 + detailOffset) * detailInvScale) - 1, 0, 1);
+			absorption += clamp (tex2D (cloud, (sunDirection * 0.50 + cloudOffset) * cloudInvScale) + tex2D (detail, (sunDirection * 0.50 + detailOffset) * detailInvScale) - 1, 0, 1);
+			absorption += clamp (tex2D (cloud, (sunDirection * 0.75 + cloudOffset) * cloudInvScale) + tex2D (detail, (sunDirection * 0.75 + detailOffset) * detailInvScale) - 1, 0, 1);
+			absorption += clamp (tex2D (cloud, (sunDirection * 1.00 + cloudOffset) * cloudInvScale) + tex2D (detail, (sunDirection * 1.00 + detailOffset) * detailInvScale) - 1, 0, 1);
+			oCol.rgb = oCol.rgb * (1 - clamp (absorption * .25, 0, 1) * absorptionFactor) + 
+								 fogColour * clamp (absorption * .25, 0, 1) * absorptionFactor;
+		}
+	}
+	else {
+		oCol.a = 0;
+	}
+}
