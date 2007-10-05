@@ -394,7 +394,7 @@ class CEGUIFrameListener(SampleFramework.FrameListener , OIS.KeyListener, OIS.Mo
         ## call parent class it may cause problems with rotations etc
         if not SampleFramework.FrameListener.frameStarted(self,evt):
             return False
-        return processFrame(evt)
+        return self.processFrame(evt)
 
     ## ------------------------------------------------------------------
     def processFrame(self, evt):

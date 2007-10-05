@@ -694,6 +694,13 @@ def AutoFixes ( mb, MAIN_NAMESPACE ):
     ImplicitClasses=['Radian','Degree', 'TimeIndex', 'LiSPSMShadowCameraSetup' ] 
     common_utils.Fix_Implicit_Conversions ( main_ns, ImplicitClasses )
     
+    # variables that are readonly and mutable need to be changed from 'vars' to properties so there
+    # is a copy made of the C++ variable before passing into Python
+    ToFixClasses=['Matrix3', 'Matrix4','Vector3','Vector2', 'ColourValue', 'Quaternion']  
+    knownNonMutable=['unsigned int','int', 'float','::Ogre::Real', '::Ogre::uchar',
+                      '::Ogre::uint8', 'unsigned char', 'char']
+    common_utils.Fix_ReadOnly_Vars ( mb, ToFixClasses, knownNonMutable )
+    
     if os.name =='nt':
         Fix_NT( mb )
     elif os.name =='posix':

@@ -1,0 +1,156 @@
+<html>
+<head>
+<script type="text/javascript" src="mootools.v1.1.js"></script>
+<script type="text/javascript" src="Navi.js"></script>
+<script type="text/javascript">
+var statusOn = false;
+var chatOn = false;
+var equipOn = false;
+var quitOn = false;
+
+function spotClicked(spotName)
+{
+	if(spotName == 'status')
+	{
+		statusOn = !statusOn;
+		if(statusOn)
+		{
+			$('statuslight').setStyle('background-image', "url('on.png')");
+			$$('.hpControl').setStyle('display','block');
+			new NaviData('turnOn').add('name', spotName).send();
+		}
+		else
+		{
+			$('statuslight').setStyle('background-image', "url('off.png')");
+			$$('.hpControl').setStyle('display','none');
+			new NaviData('turnOff').add('name', spotName).send();
+		}	
+	}
+	else if(spotName == 'chat')
+	{
+		chatOn = !chatOn;
+		if(chatOn)
+		{
+			$('chatlight').setStyle('background-image', "url('on.png')");
+			new NaviData('turnOn').add('name', spotName).send();
+		}
+		else
+		{
+			$('chatlight').setStyle('background-image', "url('off.png')");
+			new NaviData('turnOff').add('name', spotName).send();
+		}	
+	}
+	else if(spotName == 'equip')
+	{
+		equipOn = !equipOn;
+		if(equipOn)
+		{
+			$('equiplight').setStyle('background-image', "url('on.png')");
+			new NaviData('turnOn').add('name', spotName).send();
+		}
+		else
+		{
+			$('equiplight').setStyle('background-image', "url('off.png')");
+			new NaviData('turnOff').add('name', spotName).send();
+		}	
+	}
+	else if(spotName == 'quit')
+	{
+		quitOn = !quitOn;
+		if(quitOn)
+		{
+			$('quitlight').setStyle('background-image', "url('on.png')");
+			new NaviData('turnOn').add('name', spotName).send();
+		}
+		else
+		{
+			$('quitlight').setStyle('background-image', "url('off.png')");
+			new NaviData('turnOff').add('name', spotName).send();
+		}	
+	}
+}
+
+function hpChange(up)
+{
+	if(!statusOn) return;
+	
+	if(up)
+		new NaviData('hpChange').add('direction', 'up').send();
+	else
+		new NaviData('hpChange').add('direction', 'down').send();
+}
+</script>
+<style type="text/css">
+body
+{
+	background-color: #808080;
+	overflow: hidden;
+}
+#container
+{
+	position: absolute;
+	left: 0px;
+	top: 0px;
+	background-image: url('navimenu_bg.png');
+	width: 1024px;
+	height: 128px;
+}
+.light
+{
+	position: absolute;
+	width: 35px;
+	height: 35px;
+	top: 78px;
+	background-image: url('off.png');
+	-moz-opacity: 0.92;
+}
+#statuslight { left: 152px; }
+#chatlight { left: 370px; }
+#equiplight { left: 603px; }
+#quitlight { left: 832px; }
+.spot
+{
+	position: absolute;
+	width: 130px;
+	height: 100px;
+	top: 18px;
+}
+#statusspot { left: 104px; }
+#chatspot { left: 319px; }
+#equipspot { left: 557px; }
+#quitspot { left: 787px; }
+.hpControl
+{
+	position: absolute;
+	width: 48px;
+	height: 24px;
+	left: 237px;
+	display: none;
+}
+#hpUP
+{
+	top: 50px;
+	background-image: url('hp_up.png');
+}
+#hpDOWN
+{
+	top: 70px;
+	background-image: url('hp_down.png');
+}
+</style>
+</head>
+<body>
+<div id="container">
+<div id="statuslight" class="light"></div>
+<div id="chatlight" class="light"></div>
+<div id="equiplight" class="light"></div>
+<div id="quitlight" class="light"></div>
+<div id="statusspot" class="spot" onclick="spotClicked('status')"></div>
+<div id="chatspot" class="spot" onclick="spotClicked('chat')"></div>
+<div id="equipspot" class="spot" onclick="spotClicked('equip')"></div>
+<div id="quitspot" class="spot" onclick="spotClicked('quit')"></div>
+<div id="hpUP" class="hpControl" onclick="hpChange(true)"></div>
+<div id="hpDOWN" class="hpControl" onclick="hpChange(false)"></div>
+</div>
+</body>
+</html>

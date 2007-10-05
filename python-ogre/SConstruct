@@ -91,16 +91,16 @@ def get_linkflags():
 possible_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',\
     'ogreode', 'ogreal', 'quickgui', 'opcode', 'nxogre', 'bullet', 'physx', 'betagui','theora',\
      'ogrevideoffmpeg', 'ogredshow', 'plib', 'ogrebulletc', 'ogrebulletd',
-     'ogreforests', 'et' ]  # , 'raknet', 'navi',
+     'ogreforests', 'et', 'navi' ]  # , 'raknet'
 default_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',\
     'ogreode', 'ogreal',  'quickgui', 'opcode', 'nxogre', 'bullet', 'physx', 'betagui','theora',\
      'ogrevideoffmpeg', 'ogredshow', 'plib',  'ogrebulletc', 'ogrebulletd',
-     'ogreforests', 'et' ]  # 'navi',
+     'ogreforests', 'et']  # 'navi',
 
 # This lets you call scons like: 'scons PROJECTS=ogre,cegui'
 opts = Options('custom.py')
 opts.Add(ListOption('PROJECTS', 'Project to build wrappers for',
-                    possible_projects, default_projects))
+                    default_projects, possible_projects ))
 temp_env = Environment(options = opts)
 tobuild = temp_env['PROJECTS']
 del temp_env    
