@@ -4,28 +4,22 @@
 
 namespace QuickGUI
 {
-	Window::Window(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* parentWidget, GUIManager* gm) :
-		Panel(name,type,pixelDimensions,texture,container,parentWidget,gm),
+	Window::Window(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm) :
+		Panel(name,Rect(pixelDimensions.x,pixelDimensions.y,pixelDimensions.width,pixelDimensions.height),texture,gm),
 		mTitleBar(0),
 		mBringToFrontOnFocus(true)
 	{
+		mWidgetType = TYPE_WINDOW;
 		mShowWithParent = false;
 		addEventHandler(EVENT_GAIN_FOCUS,&Window::onGainFocus,this);
 
 		// Create TitleBar - tradition titlebar dimensions: across the top of the window
-		mTitleBar = new TitleBar(mInstanceName+".Titlebar",TYPE_TITLEBAR,Rect(0,0,mSize.width,25),mTextureName + ".titlebar" + mTextureExtension,this,this,mGUIManager);
+		mTitleBar = new TitleBar(mInstanceName+".Titlebar",Rect(0,0,mSize.width,25),mTextureName + ".titlebar" + mTextureExtension,mGUIManager);
+		addChild(mTitleBar);
 		mTitleBar->enableDragging(true);
 		mTitleBar->setDraggingWidget(this);
 
-		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
-		if(mWidgetType == TYPE_WINDOW)
-		{
-			mQuad->setLayer(Quad::LAYER_CHILD);
-			mQuad->_notifyQuadContainer(this);
-			mQuadContainer->addChildWindowContainer(this);
-
-			mScrollPane = new ScrollPane(mInstanceName+".ScrollPane",TYPE_SCROLL_PANE,this,this,mGUIManager);
-		}
+		setUseBorders(true);
 	}
 
 	Window::~Window()
@@ -72,11 +66,24 @@ namespace QuickGUI
 	{
 		mTitleBar->hide();
 		mTitleBar->setShowWithParent(false);
+
+		Ogre::Real titlebarHeight = mTitleBar->getHeight();
+		setYPosition(mPosition.y - titlebarHeight);
+		setHeight(mSize.height + titlebarHeight);
 	}
 
 	void Window::setBringToFrontOnFocus(bool BringToFront)
 	{
 		mBringToFrontOnFocus = BringToFront;
+	}
+
+	void Window::setQuadContainer(QuadContainer* container)
+	{
+		if((mQuadContainer != NULL) && (mQuadContainer->getID() != mQuadContainer->getID()))
+			mQuadContainer->removeChildWindowContainer(QuadContainer::getID());
+
+		mQuadContainer = container;
+		mQuadContainer->addChildWindowContainer(this);
 	}
 
 	void Window::show()
@@ -93,5 +100,9 @@ namespace QuickGUI
 	{
 		mTitleBar->show();
 		mTitleBar->setShowWithParent(true);
+
+		Ogre::Real titlebarHeight = mTitleBar->getHeight();
+		setYPosition(mPosition.y + titlebarHeight);
+		setHeight(mSize.height - titlebarHeight);
 	}
 }

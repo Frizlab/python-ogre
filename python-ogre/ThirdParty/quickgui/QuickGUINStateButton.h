@@ -60,7 +60,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		NStateButton(const Ogre::String& name, Type type, const Rect& pixelDimensions, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
+		NStateButton(const Ogre::String& name, const Rect& pixelDimensions, GUIManager* gm);
 
 		/**
 		* Add user defined event that will be called when the state of the button has changed.

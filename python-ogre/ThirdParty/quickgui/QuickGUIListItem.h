@@ -31,7 +31,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		ListItem(const Ogre::String& name, Type type, const Rect& pixelDimensions, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
+		ListItem(const Ogre::String& name, const Rect& pixelDimensions, GUIManager* gm);
 
 		/**
 		* Add an NStateButton to the ListItem.  Useful examples: properties - (...), checkbox - [x]
@@ -96,6 +96,7 @@ namespace QuickGUI
 
 	protected:
 		virtual ~ListItem();
+		virtual void setParent(Widget* parent);
 
 		Widget* mClippingWidget;
 

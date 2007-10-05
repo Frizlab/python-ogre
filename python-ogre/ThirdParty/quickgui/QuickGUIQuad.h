@@ -65,6 +65,7 @@ namespace QuickGUI
 		void setColor(const Ogre::ColourValue& color);
 		void setColor(const Ogre::ColourValue& topColor, const Ogre::ColourValue& botColor);
 		void setDimensions(const Rect& pixelDimensions);
+		void setGUIManager(GUIManager* gm);
 		void setHeight(Ogre::Real pixelHeight);
 		void setLayer(Layer l);
 		void setOffset(int offset);
@@ -79,6 +80,8 @@ namespace QuickGUI
 		void setYPosition(Ogre::Real pixelY);
 
 		bool textureChanged();
+
+		void updateClippingWidget();
 
 		bool visible();
 

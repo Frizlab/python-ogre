@@ -54,7 +54,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		Label(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
+		Label(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String textureName, GUIManager* gm);
 		
 		/**
 		* Aligns the child Label widget horizontally and vertically
@@ -99,6 +99,7 @@ namespace QuickGUI
 		* Sets the color of the text when the widget is disabled.
 		*/
 		void setDisabledTextColor(const Ogre::ColourValue& c);
+		virtual void setQuadLayer(Quad::Layer l);
 		/**
 		* Sets text vertical alignment.
 		*/
@@ -132,13 +133,17 @@ namespace QuickGUI
 
 	protected:
 		virtual ~Label();
+		virtual void setClippingWidget(Widget* w, bool recursive = false);
+		virtual void setGUIManager(GUIManager* gm);
+		virtual void setQuadContainer(QuadContainer* container);
+	protected:
 
 		Text* mText;
 		VerticalAlignment mVerticalAlignment;
 		HorizontalAlignment	mHorizontalAlignment;
 
 		Point mTextBoundsPixelOffset;
-		Size mTextBoundsPixelSize;
+		Size mTextBoundsRelativeSize;
 
 		// The widgets material changes often, so we need to keep track
 		// of the default original material.

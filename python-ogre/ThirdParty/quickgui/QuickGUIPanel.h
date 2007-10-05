@@ -53,167 +53,48 @@ namespace QuickGUI
 			@param
 				parentWidget parent widget which created this widget.
         */
-		Panel(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* parentWidget, GUIManager* gm);		
+		Panel(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm);		
 
-		void _removeFromChildList(Widget* w);
+		virtual void addChild(Widget* w);
 
-		Button* createButton(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		Button* createButton(const Rect& pixelDimensions, const Ogre::String& texture);
-		Button* createButton(const Ogre::String& name, const Rect& pixelDimensions);
-		Button* createButton(const Rect& pixelDimensions);
+		Button* createButton();
 
-		ComboBox* createComboBox(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		ComboBox* createComboBox(const Rect& pixelDimensions, const Ogre::String& texture);
-		ComboBox* createComboBox(const Ogre::String& name, const Rect& pixelDimensions);
-		ComboBox* createComboBox(const Rect& pixelDimensions);
+		ComboBox* createComboBox();
 
-		HorizontalScrollBar* createHorizontalScrollBar(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		HorizontalScrollBar* createHorizontalScrollBar(const Rect& pixelDimensions, const Ogre::String& texture);
-		HorizontalScrollBar* createHorizontalScrollBar(const Ogre::String& name, const Rect& pixelDimensions);
-		HorizontalScrollBar* createHorizontalScrollBar(const Rect& pixelDimensions);
+		HorizontalScrollBar* createHorizontalScrollBar();
 
-		Image* createImage(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		Image* createImage(const Rect& pixelDimensions, const Ogre::String& texture);
-		Image* createImage(const Ogre::String& name, const Rect& pixelDimensions);
-		Image* createImage(const Rect& pixelDimensions);
+		Image* createImage();
 
-		Label* createLabel(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		Label* createLabel(const Rect& pixelDimensions, const Ogre::String& texture);
-		Label* createLabel(const Ogre::String& name, const Rect& pixelDimensions);
-		Label* createLabel(const Rect& pixelDimensions);
+		Label* createLabel();
 
-		List* createList(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		List* createList(const Rect& pixelDimensions, const Ogre::String& texture);
-		List* createList(const Ogre::String& name, const Rect& pixelDimensions);
-		List* createList(const Rect& pixelDimensions);
+		List* createList();
 
-		Menu* createMenu(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		Menu* createMenu(const Rect& pixelDimensions, const Ogre::String& texture);
-		Menu* createMenu(const Ogre::String& name, const Rect& pixelDimensions);
-		Menu* createMenu(const Rect& pixelDimensions);
+		Menu* createMenu();
 
-		NStateButton* createNStateButton(const Ogre::String& name, const Rect& pixelDimensions);
-		NStateButton* createNStateButton(const Rect& pixelDimensions);
+		NStateButton* createNStateButton();
 
-		Panel* createPanel(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		Panel* createPanel(const Rect& pixelDimensions, const Ogre::String& texture);
-		Panel* createPanel(const Ogre::String& name, const Rect& pixelDimensions);
-		Panel* createPanel(const Rect& pixelDimensions);
+		Panel* createPanel();
 
-		ProgressBar* createProgressBar(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		ProgressBar* createProgressBar(const Rect& pixelDimensions, const Ogre::String& texture);
-		ProgressBar* createProgressBar(const Ogre::String& name, const Rect& pixelDimensions);
-		ProgressBar* createProgressBar(const Rect& pixelDimensions);
+		ProgressBar* createProgressBar();
 
-		TextBox* createTextBox(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		TextBox* createTextBox(const Rect& pixelDimensions, const Ogre::String& texture);
-		TextBox* createTextBox(const Ogre::String& name, const Rect& pixelDimensions);
-		TextBox* createTextBox(const Rect& pixelDimensions);
+		TextBox* createTextBox();
 
-		HorizontalTrackBar* createHorizontalTrackBar(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		HorizontalTrackBar* createHorizontalTrackBar(const Rect& pixelDimensions, const Ogre::String& texture);
-		HorizontalTrackBar* createHorizontalTrackBar(const Ogre::String& name, const Rect& pixelDimensions);
-		HorizontalTrackBar* createHorizontalTrackBar(const Rect& pixelDimensions);
+		HorizontalTrackBar* createHorizontalTrackBar();
 
-		VerticalScrollBar* createVerticalScrollBar(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		VerticalScrollBar* createVerticalScrollBar(const Rect& pixelDimensions, const Ogre::String& texture);
-		VerticalScrollBar* createVerticalScrollBar(const Ogre::String& name, const Rect& pixelDimensions);
-		VerticalScrollBar* createVerticalScrollBar(const Rect& pixelDimensions);
+		VerticalScrollBar* createVerticalScrollBar();
 
-		VerticalTrackBar* createVerticalTrackBar(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		VerticalTrackBar* createVerticalTrackBar(const Rect& pixelDimensions, const Ogre::String& texture);
-		VerticalTrackBar* createVerticalTrackBar(const Ogre::String& name, const Rect& pixelDimensions);
-		VerticalTrackBar* createVerticalTrackBar(const Rect& pixelDimensions);
-
-		Button* getButton(unsigned int index);
-		Button* getButton(const Ogre::String& name);
-
-		ComboBox* getComboBox(unsigned int index);
-		ComboBox* getComboBox(const Ogre::String& name);
-
-		HorizontalScrollBar* getHorizontalScrollBar(unsigned int index);
-		HorizontalScrollBar* getHorizontalScrollBar(const Ogre::String& name);
-
-		HorizontalTrackBar* getHorizontalTrackBar(unsigned int index);
-		HorizontalTrackBar* getHorizontalTrackBar(const Ogre::String& name);
-
-		Image* getImage(unsigned int index);
-		Image* getImage(const Ogre::String& name);
-
-		Label* getLabel(unsigned int index);
-		Label* getLabel(const Ogre::String& name);
-
-		List* getList(unsigned int index);
-		List* getList(const Ogre::String& name);
-		
-		Menu* getMenu(unsigned int index);
-		Menu* getMenu(const Ogre::String& name);
-
-		NStateButton* getNStateButton(unsigned int index);
-		NStateButton* getNStateButton(const Ogre::String& name);
-
-		Panel* getPanel(unsigned int index);
-		Panel* getPanel(const Ogre::String& name);
-
-		ProgressBar* getProgressBar(unsigned int index);
-		ProgressBar* getProgressBar(const Ogre::String& name);
+		VerticalTrackBar* createVerticalTrackBar();
 
 		ScrollPane* getScrollPane();
-		
-		TextBox* getTextBox(unsigned int index);
-		TextBox* getTextBox(const Ogre::String& name);
-
-		VerticalScrollBar* getVerticalScrollBar(unsigned int index);
-		VerticalScrollBar* getVerticalScrollBar(const Ogre::String& name);
-
-		VerticalTrackBar* getVerticalTrackBar(unsigned int index);
-		VerticalTrackBar* getVerticalTrackBar(const Ogre::String& name);
 
 	protected:
 		virtual ~Panel();
+		virtual void setQuadContainer(QuadContainer* container);
+	protected:
 
 		ScrollPane* mScrollPane;
 
 		int mAutoNameWidgetCounter;
-
-		// Recording the number of widgets created
-		unsigned int mNumButtons;
-		unsigned int mNumComboBoxes;
-		unsigned int mNumHorizontalScrollBars;
-		unsigned int mNumHorizontalTrackBars;
-		unsigned int mNumImages;
-		unsigned int mNumLabels;
-		unsigned int mNumLists;
-		unsigned int mNumMenus;
-		unsigned int mNumNStateButtons;
-		unsigned int mNumPanels;
-		unsigned int mNumProgressBars;
-		unsigned int mNumTextBoxes;
-		unsigned int mNumVerticalScrollBars;
-		unsigned int mNumVerticalTrackBars;
-
-		/** 
-		* Private functions preventing users from setting the Widget Instance Name.  Names
-		* can be given to Windows using the "setReferenceName()" function.
-        */
-		Button* _createButton(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		ComboBox* _createComboBox(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		HorizontalScrollBar* _createHorizontalScrollBar(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		Image* _createImage(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		Label* _createLabel(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		List* _createList(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		// virtual, because Sheets, which contain multiple windows, need to have an overlay made for menus that are to keep highest zOrder.
-		virtual Menu* _createMenu(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		NStateButton* _createNStateButton(const Ogre::String& name, const Rect& pixelDimensions);
-		Panel* _createPanel(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		ProgressBar* _createProgressBar(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		TextBox* _createTextBox(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		HorizontalTrackBar* _createHorizontalTrackBar(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		VerticalScrollBar* _createVerticalScrollBar(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-		VerticalTrackBar* _createVerticalTrackBar(const Ogre::String& name, const Rect& pixelDimensions, const Ogre::String& texture);
-
-		Widget* _getWidget(Widget::Type TYPE, unsigned int index);
-		Widget* _getWidget(const Ogre::String& name);
 	};
 }
 

@@ -51,21 +51,10 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		ScrollPane(const Ogre::String& instanceName, Type type, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
-		~ScrollPane();
+		ScrollPane(const Ogre::String& instanceName, const Rect& pixelDimensions, GUIManager* gm);
 
 		// When widgets become managed/unmanaged, the pane may grow or shrink.
 		void _determinePaneBounds();
-		/**
-		* Disable Widget, making it unresponsive to events.
-		* NOTE: Sheets cannot be disabled.
-		*/
-		void disable();
-		/**
-		* Enable Widget, allowing it to accept and handle events.
-		* NOTE: Sheets cannot be enabled/disabled
-		*/
-		void enable();
 
 		HorizontalScrollBar* getBottomScrollBar();
 		HorizontalScrollBar::ButtonLayout getHorizontalButtonLayout();
@@ -74,39 +63,35 @@ namespace QuickGUI
 		HorizontalScrollBar* getTopScrollBar();
 		VerticalScrollBar::ButtonLayout getVerticalButtonLayout();
 
-		void manageWidget(Widget* w);
-
 		/**
 		* Scrolls the Pane so that the given widget is in view.
 		*/
 		void scrollIntoView(Widget* w);
-		void setHorizontalBarLayout(HorizontalBarLayout layout);
 		void setHorizontalButtonLayout(HorizontalScrollBar::ButtonLayout layout);
-		void setVerticalBarLayout(VerticalBarLayout layout);
 		void setVerticalButtonLayout(VerticalScrollBar::ButtonLayout layout);
 
 	protected:
+		~ScrollPane();
+		virtual void setParent(Widget* parent);
+	protected:
+
 		Ogre::Real mScrollBarWidth;
 
 		HorizontalScrollBar* mTopBar;
 		HorizontalScrollBar* mBottomBar;
 		HorizontalScrollBar::ButtonLayout mHorizontalButtonLayout;
-		HorizontalBarLayout mHorizontalBarLayout;
-
+		
 		VerticalScrollBar* mLeftBar;
 		VerticalScrollBar* mRightBar;
 		VerticalScrollBar::ButtonLayout mVerticalButtonLayout;	
-		VerticalBarLayout mVerticalBarLayout;
-
-		void _adjustBarDimensions();
 
 		void onChildAddedToParent(const EventArgs& args);
 		void onChildRemovedFromParent(const EventArgs& args);
 		void onChildClicked(const EventArgs& args);
+		void onChildPositionChanged(const EventArgs& args);
+		void onChildSizeChanged(const EventArgs& args);
 		void onParentSizeChanged(const EventArgs& args);
-		void onParentPositionChanged(const EventArgs& args);
 		void onHorizontalScroll(const EventArgs& args);
-		void onSizeChanged(const EventArgs& args);
 		void onVerticalScroll(const EventArgs& args);
 
 		void _showHScrollBars();

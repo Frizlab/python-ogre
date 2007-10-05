@@ -24,20 +24,12 @@ namespace QuickGUI
 		mTextureCoordinates(Ogre::Vector4(0,0,1,1)),
 		mVisible(true),
 		mTopColor(Ogre::ColourValue::White),
-		mBottomColor(Ogre::ColourValue::White)
+		mBottomColor(Ogre::ColourValue::White),
+		mClippingWidget(owner)
 	{
 		mRenderSystem = Ogre::Root::getSingleton().getRenderSystem();
 		mVertices.resize(6);
 		_updateVertexColor();
-
-		if(mOwner->getParentPanel() != NULL)
-			mClippingWidget = mOwner->getParentPanel();
-		else if(mOwner->getParentWindow() != NULL)
-			mClippingWidget = mOwner->getParentWindow();
-		else if(mOwner->getParentSheet() != NULL)
-			mClippingWidget = mOwner->getParentSheet();
-		else
-			mClippingWidget = mOwner;
 	}
 
 	Quad::Quad(const Ogre::String& id, GUIManager* gm) :
@@ -397,6 +389,11 @@ namespace QuickGUI
 		_clip();
 	}
 
+	void Quad::setGUIManager(GUIManager* gm)
+	{
+		mGUIManager = gm;
+	}
+
 	void Quad::setHeight(Ogre::Real pixelHeight)
 	{
 		mPixelDimensions.height = pixelHeight;
@@ -535,6 +532,18 @@ namespace QuickGUI
 	bool Quad::textureChanged()
 	{
 		return mTextureChanged;
+	}
+
+	void Quad::updateClippingWidget()
+	{
+		if(mOwner->getParentPanel() != NULL)
+			mClippingWidget = mOwner->getParentPanel();
+		else if(mOwner->getParentWindow() != NULL)
+			mClippingWidget = mOwner->getParentWindow();
+		else if(mOwner->getParentSheet() != NULL)
+			mClippingWidget = mOwner->getParentSheet();
+		else
+			mClippingWidget = mOwner;
 	}
 
 	bool Quad::visible()

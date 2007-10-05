@@ -3,24 +3,19 @@
 
 namespace QuickGUI
 {
-	Label::Label(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
-		Image(name,type,pixelDimensions,texture,container,ParentWidget,gm),
+	Label::Label(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm) :
+		Image(name,pixelDimensions,texture,gm),
 		mDefaultTexture(mTextureName),
 		mVerticalAlignment(VA_MID),
 		mHorizontalAlignment(HA_MID),
 		mTextBoundsPixelOffset(Point::ZERO),
-		mTextBoundsPixelSize(Size(pixelDimensions.width,pixelDimensions.height)),
+		mTextBoundsRelativeSize(Size(1,1)),
 		mTextColor(Ogre::ColourValue::White),
 		mDisabledTextColor(Ogre::ColourValue(0.75,0.75,0.75,1))
 	{
+		mWidgetType = TYPE_LABEL;
 		mText = new Text(mInstanceName+".Text",mQuadContainer,this);
-
-		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
-		if(mWidgetType == TYPE_LABEL)
-		{
-			mQuad->setLayer(mParentWidget->getQuad()->getLayer());
-			mText->setLayer(mQuad->getLayer());
-		}		
+		mText->setQuadLayer(mQuadLayer);	
 	}
 
 	Label::~Label()
@@ -83,7 +78,7 @@ namespace QuickGUI
 
 	Rect Label::getTextBounds()
 	{
-		return Rect(getScreenPosition() + getScrollOffset() + mTextBoundsPixelOffset,mTextBoundsPixelSize);
+		return Rect(getScreenPosition() + getScrollOffset() + mTextBoundsPixelOffset,mTextBoundsRelativeSize * mSize);
 	}
 
 	void Label::hide()
@@ -123,6 +118,18 @@ namespace QuickGUI
 			alignText();
 	}
 
+	void Label::setClippingWidget(Widget* w, bool recursive)
+	{
+		Image::setClippingWidget(w,recursive);
+		mText->_clipToWidgetDimensions(w);
+	}
+
+	void Label::setGUIManager(GUIManager* gm)
+	{
+		Image::setGUIManager(gm);
+		mText->setGUIManager(mGUIManager);
+	}
+
 	void Label::setOffset(int offset)
 	{
 		Image::setOffset(offset);
@@ -140,6 +147,12 @@ namespace QuickGUI
 	void Label::setPosition(Point pixelPosition)
 	{
 		Label::setPosition(pixelPosition.x,pixelPosition.y);
+	}
+
+	void Label::setQuadContainer(QuadContainer* container)
+	{
+		Image::setQuadContainer(container);
+		mText->_notifyQuadContainer(mQuadContainer);
 	}
 
 	void Label::setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight)
@@ -174,10 +187,16 @@ namespace QuickGUI
 			mText->setColor(c);
 	}
 
+	void Label::setQuadLayer(Quad::Layer l)
+	{
+		Image::setQuadLayer(l);
+		mText->setQuadLayer(l);
+	}
+
 	void Label::setTextBounds(const Point& pixelOffset, const Size& pixelSize)
 	{
 		mTextBoundsPixelOffset = pixelOffset;
-		mTextBoundsPixelSize = pixelSize;
+		mTextBoundsRelativeSize = pixelSize / mSize;
 
 		alignText();
 	}

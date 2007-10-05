@@ -5,23 +5,16 @@
 
 namespace QuickGUI
 {
-	ListItem::ListItem(const Ogre::String& name, Type type, const Rect& pixelDimensions, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
-		Label(name,type,pixelDimensions,"",container,ParentWidget,gm),
+	ListItem::ListItem(const Ogre::String& name, const Rect& pixelDimensions, GUIManager* gm) :
+		Label(name,pixelDimensions,"",gm),
 		mImage(0),
 		mButton(0),
 		mPropogateImageMouseEvents(true),
-		mPropogateButtonMouseEvents(true),
-		mClippingWidget(ParentWidget)
+		mPropogateButtonMouseEvents(true)
 	{
-		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
-		if(mWidgetType == TYPE_LISTITEM)
-		{
-			mQuad->setLayer(mParentWidget->getQuad()->getLayer());
-			mQuad->setClippingWidget(mClippingWidget);
-			mText->setLayer(mQuad->getLayer());
-			mText->setOffset(mOffset+2);
-			mText->_clipToWidgetDimensions(mClippingWidget);
-		}
+		mWidgetType = TYPE_LISTITEM;
+		mQuad->setClippingWidget(mClippingWidget);
+		mText->_clipToWidgetDimensions(mClippingWidget);
 
 		addEventHandler(EVENT_MOUSE_ENTER,&ListItem::onMouseEnters,this);
 		addEventHandler(EVENT_MOUSE_LEAVE,&ListItem::onMouseLeaves,this);
@@ -40,7 +33,8 @@ namespace QuickGUI
 		if(mButton != NULL) 
 			return NULL;
 
-		mButton = new NStateButton(mInstanceName+".NStateButton",TYPE_BUTTON,pixelDimensions,mQuadContainer,this,mGUIManager);
+		mButton = new NStateButton(mInstanceName+".NStateButton",pixelDimensions,mGUIManager);
+		addChild(mButton);
 		mButton->getQuad()->setLayer(mQuad->getLayer());
 		mButton->getQuad()->setClippingWidget(mClippingWidget);
 		
@@ -63,7 +57,8 @@ namespace QuickGUI
 		if(mImage != NULL) 
 			return NULL;
 
-		mImage = new Image(mInstanceName+".Image",TYPE_IMAGE,pixelDimensions,texture,mQuadContainer,this,mGUIManager);
+		mImage = new Image(mInstanceName+".Image",pixelDimensions,texture,mGUIManager);
+		addChild(mImage);
 		mImage->getQuad()->setLayer(mQuad->getLayer());
 		mImage->getQuad()->setClippingWidget(mClippingWidget);
 
@@ -132,6 +127,13 @@ namespace QuickGUI
 
 		mGUIManager->destroyWidget(mImage);
 		mImage = NULL;
+	}
+
+	void ListItem::setParent(Widget* parent)
+	{
+		mClippingWidget = mParentWidget;
+		mQuad->setClippingWidget(mClippingWidget);
+		Label::setParent(parent);
 	}
 
 	void ListItem::setPropogateButtonMouseEvents(bool propogate)

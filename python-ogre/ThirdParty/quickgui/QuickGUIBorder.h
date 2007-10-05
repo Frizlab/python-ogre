@@ -43,7 +43,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		Border(const Ogre::String& name, Type type, BorderType bType, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
+		Border(const Ogre::String& name, BorderType bType, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm);
 
 	protected:
 		virtual ~Border();

@@ -649,7 +649,7 @@ namespace QuickGUI
 		onTextChanged(e);
 	}
 
-	void Text::setLayer(Quad::Layer layer)
+	void Text::setQuadLayer(Quad::Layer layer)
 	{
 		mLayer = layer;
 
@@ -704,6 +704,15 @@ namespace QuickGUI
 		TextEventArgs e(this);
 		e.colorChanged = true;
 		onTextChanged(e);
+	}
+
+	void Text::setGUIManager(GUIManager* gm)
+	{
+		mGUIManager = gm;
+
+		std::vector<Quad*>::iterator it;
+		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+			(*it)->setGUIManager(mGUIManager);
 	}
 
 	void Text::show()

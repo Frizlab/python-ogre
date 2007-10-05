@@ -3,8 +3,8 @@
 
 namespace QuickGUI
 {
-	TextBox::TextBox(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
-		Label(name,type,pixelDimensions,texture,container,ParentWidget,gm),
+	TextBox::TextBox(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm) :
+		Label(name,pixelDimensions,texture,gm),
 		mMaskUserInput(0),
 		mBackSpaceDown(0),
 		mBackSpaceTimer(0.0),
@@ -27,12 +27,7 @@ namespace QuickGUI
 		mLCtrlDown(false),
 		mRCtrlDown(false)
 	{
-		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
-		if(mWidgetType == TYPE_TEXTBOX)
-		{
-			mQuad->setLayer(Quad::LAYER_CHILD);
-		}
-
+		mWidgetType = TYPE_TEXTBOX;
 		mHorizontalAlignment = HA_LEFT;
 
 		mMouseCursor = mGUIManager->getMouseCursor();
@@ -45,7 +40,7 @@ namespace QuickGUI
 		addEventHandler(EVENT_KEY_DOWN,&TextBox::onKeyDown,this);
 		addEventHandler(EVENT_KEY_UP,&TextBox::onKeyUp,this);
 
-		mTextCursor = new Quad(mInstanceName + ".TextCursor",this);
+		mTextCursor = _createQuad(mInstanceName + ".TextCursor");
 		mTextCursor->setLayer(Quad::LAYER_CHILD);
 		mTextCursorTexture = mTextureName + ".textcursor" + mTextureExtension;
 		mTextCursor->setTexture(mTextCursorTexture);
@@ -64,7 +59,10 @@ namespace QuickGUI
 
 	TextBox::~TextBox()
 	{
-		delete mTextCursor;
+		std::vector<MemberFunctionSlot*>::iterator it;
+		for( it = mOnEnterPressedUserEventHandlers.begin(); it != mOnEnterPressedUserEventHandlers.end(); ++it )
+			delete (*it);
+		mOnEnterPressedUserEventHandlers.clear();
 	}
 
 	void TextBox::_determineTextSelectionBounds(int cursorIndex, bool clearSelection)

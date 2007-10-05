@@ -7,69 +7,50 @@
 
 namespace QuickGUI
 {
-	Widget::Widget(const Ogre::String& instanceName, Type type, const Rect& pixelDimensions, Ogre::String textureName, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
-		mInstanceName(instanceName),
-		mWidgetType(type),
-		mParentWidget(ParentWidget),
-		mGUIManager(gm),
+	Widget::Widget(const Ogre::String& instanceName, const Rect& pixelDimensions, Ogre::String textureName, GUIManager* gm) :
 		mPosition(Point(pixelDimensions.x,pixelDimensions.y)),
 		mSize(Size(pixelDimensions.width,pixelDimensions.height)),
-		mScrollOffset(Point::ZERO),
-		mVisible(true),
-		mGrabbed(false),
-		mMovingEnabled(true),
-		mDraggingEnabled(false),
-		mEnabled(true),
-		mWidgetImage(NULL),
-		mQuadContainer(container),
-		mOffset(0),
-		mTextureLocked(false),
-		mGainFocusOnClick(true),
+		mGUIManager(gm),
 		mDragXOnly(false),
 		mDragYOnly(false),
-		mShowWithParent(true),
+		mDraggingEnabled(false),
+		mEnabled(true),
+		mGainFocusOnClick(true),
+		mGrabbed(false),
 		mHideWithParent(true),
-		mResizeOverTime(false),
-		mRepositionOverTime(false),
 		mHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT),
-		mVerticalAnchor(ANCHOR_VERTICAL_TOP)
+		mMovingEnabled(true),
+		mOffset(0),
+		mParentPanel(0),
+		mParentSheet(0),
+		mParentWidget(0),
+		mParentWindow(0),
+		mQuadContainer(0),
+		mQuadLayer(Quad::LAYER_CHILD),
+		mRepositionOverTime(false),
+		mResizeOverTime(false),
+		mScrollOffset(Point::ZERO),
+		mShowWithParent(true),
+		mTextureLocked(false),
+		mUseBorders(false),
+		mVerticalAnchor(ANCHOR_VERTICAL_TOP),
+		mVisible(true),
+		mWidgetImage(NULL)
 	{
-		// Detect Hierarchy first thing, other functions depend on parentPanel/Window/Sheet
-		_detectHierarchy();
+		setName(instanceName);
 		_initEventHandlers();
-		mQuad = new Quad(mInstanceName + ".Quad",this);
+		mQuad = _createQuad(mInstanceName + ".Quad");
 		mWidgetToDrag = this;
 
-		// All widgets have a Quad base
 		setTexture(textureName);
-
-		if(!((mWidgetType == TYPE_SHEET) || (mWidgetType == TYPE_WINDOW) || (mWidgetType == TYPE_PANEL)))
-			mQuad->_notifyQuadContainer(mQuadContainer);
 
 		// Add event handlers before call to setDimensions, if you want the widget handlers to be called.
 		// This is important for widgets to position themself correctly.
 		addEventHandler(EVENT_POSITION_CHANGED,&Widget::onPositionChanged,this);
 		addEventHandler(EVENT_SIZE_CHANGED,&Widget::onSizeChanged,this);
 
-		setPosition(mPosition);
-		setSize(mSize);
-
-		if(mParentWidget != NULL)
-		{
-			// set the correct offset
-			mOffset = mParentWidget->getOffset() + 1;
-			// add to parents child widget list
-			mParentWidget->_addToChildList(this);
-			Size parentSize = mParentWidget->getSize();
-			mPixelsFromParentRight = parentSize.width - (mPosition.x + mSize.width);
-			mPixelsFromParentBottom = parentSize.height - (mPosition.y + mSize.height);
-			// inheritted properties
-			mGainFocusOnClick = mParentWidget->getGainFocusOnClick();
-		}
-
-		mQuad->setOffset(mOffset);
-
-		_createBorders();
+		for(int i = 0; i < 8; ++i)
+			mBorders[i] = NULL;
 	}
 
 	Widget::~Widget()
@@ -77,13 +58,9 @@ namespace QuickGUI
 		// Safest route is to destroy children first thing.
 		removeAndDestroyAllChildWidgets();
 
-		delete mQuad;
-
-		if( mParentWidget != NULL )
-		{
-			mParentWidget->_removeFromChildList(this);
-			mParentWidget = NULL;
-		}
+		for(std::vector<Quad*>::iterator it = mQuads.begin(); it != mQuads.end(); ++it)
+			delete (*it);
+		mQuads.clear();
 
 		delete mWidgetImage;
 
@@ -102,15 +79,6 @@ namespace QuickGUI
 		mGUIManager->removeWidgetName(mInstanceName);
 	}
 
-	void Widget::_addToChildList(Widget* w)
-	{
-		mChildWidgets.push_back(w);
-		w->_notifyParent(this);
-
-		WidgetEventArgs args(w);
-		fireEvent(EVENT_CHILD_ADDED,args);
-	}
-
 	void Widget::_applyAnchors()
 	{
 		if(mParentWidget == NULL)
@@ -122,17 +90,12 @@ namespace QuickGUI
 		switch(mHorizontalAnchor)
 		{
 		case ANCHOR_HORIZONTAL_LEFT_RIGHT:
-			if(mWidgetType == TYPE_TITLEBAR)
-				mWidgetType = mWidgetType;
 			setWidth(parentSize.width - mPixelsFromParentRight - mPosition.x);
 			break;
 		case ANCHOR_HORIZONTAL_LEFT:
 			break;
 		case ANCHOR_HORIZONTAL_RIGHT:
-			if(mWidgetType == TYPE_BUTTON)
-				setXPosition(parentSize.width - mPixelsFromParentRight - mSize.width);
-			else
-				setXPosition(parentSize.width - mPixelsFromParentRight - mSize.width);
+			mPosition.x = parentSize.width - mPixelsFromParentRight - mSize.width;
 			break;
 		case ANCHOR_HORIZONTAL_NONE:
 			break;
@@ -147,63 +110,85 @@ namespace QuickGUI
 		case ANCHOR_VERTICAL_TOP:
 			break;
 		case ANCHOR_VERTICAL_BOTTOM:
-			setYPosition(parentSize.height - mPixelsFromParentBottom - mSize.height);
+			mPosition.y = parentSize.height - mPixelsFromParentBottom - mSize.height;
 			break;
 		case ANCHOR_VERTICAL_NONE:
 			break;
 		}
+
+		redraw();
 	}
 
 	void Widget::_createBorders()
 	{
-		// Borders do not have borders
-		if(mWidgetType == TYPE_BORDER)
-			return;
-
 		// By default, borders have a 5 pixel thickness
+		Ogre::Real overlap = 1;
 		Ogre::Real thickness = 5;
 
 		// Corners - only create them if there are textures for them.
 		if(mGUIManager->textureExists(mTextureName+".border.topleft"+mTextureExtension))
-			mBorders[Border::BORDER_TYPE_TOP_LEFT] = new Border(mInstanceName + ".TopLeftCornerBorder",TYPE_BORDER,Border::BORDER_TYPE_TOP_LEFT,Rect(-thickness,-thickness,thickness,thickness),mTextureName+".border.topleft"+mTextureExtension,mQuadContainer,this,mGUIManager);
-		else
-			mBorders[Border::BORDER_TYPE_TOP_LEFT] = NULL;
+		{
+			mBorders[Border::BORDER_TYPE_TOP_LEFT] = new Border(mInstanceName + ".TopLeftCornerBorder",Border::BORDER_TYPE_TOP_LEFT,Rect(-thickness + overlap,-thickness + overlap,thickness,thickness),mTextureName+".border.topleft"+mTextureExtension,mGUIManager);
+			addChild(mBorders[Border::BORDER_TYPE_TOP_LEFT]);
+		}
 
 		if(mGUIManager->textureExists(mTextureName+".border.topright"+mTextureExtension))
-			mBorders[Border::BORDER_TYPE_TOP_RIGHT] = new Border(mInstanceName + ".TopRightCornerBorder",TYPE_BORDER,Border::BORDER_TYPE_TOP_RIGHT,Rect(mSize.width,-thickness,thickness,thickness),mTextureName+".border.topright"+mTextureExtension,mQuadContainer,this,mGUIManager);
-		else
-			mBorders[Border::BORDER_TYPE_TOP_RIGHT] = NULL;
-
+		{
+			mBorders[Border::BORDER_TYPE_TOP_RIGHT] = new Border(mInstanceName + ".TopRightCornerBorder",Border::BORDER_TYPE_TOP_RIGHT,Rect(mSize.width - overlap,-thickness + overlap,thickness,thickness),mTextureName+".border.topright"+mTextureExtension,mGUIManager);
+			addChild(mBorders[Border::BORDER_TYPE_TOP_RIGHT]);
+		}
+		
 		if(mGUIManager->textureExists(mTextureName+".border.bottomleft"+mTextureExtension))
-			mBorders[Border::BORDER_TYPE_BOTTOM_LEFT] = new Border(mInstanceName + ".BottomLeftCornerBorder",TYPE_BORDER,Border::BORDER_TYPE_BOTTOM_LEFT,Rect(-thickness,mSize.height,thickness,thickness),mTextureName+".border.bottomleft"+mTextureExtension,mQuadContainer,this,mGUIManager);
-		else
-			mBorders[Border::BORDER_TYPE_BOTTOM_LEFT] = NULL;
-
+		{
+			mBorders[Border::BORDER_TYPE_BOTTOM_LEFT] = new Border(mInstanceName + ".BottomLeftCornerBorder",Border::BORDER_TYPE_BOTTOM_LEFT,Rect(-thickness + overlap,mSize.height - overlap,thickness,thickness),mTextureName+".border.bottomleft"+mTextureExtension,mGUIManager);
+			addChild(mBorders[Border::BORDER_TYPE_BOTTOM_LEFT]);
+		}
+		
 		if(mGUIManager->textureExists(mTextureName+".border.bottomleft"+mTextureExtension))
-			mBorders[Border::BORDER_TYPE_BOTTOM_RIGHT] = new Border(mInstanceName + ".BottomRightCornerBorder",TYPE_BORDER,Border::BORDER_TYPE_BOTTOM_RIGHT,Rect(mSize.width,mSize.height,thickness,thickness),mTextureName+".border.bottomright"+mTextureExtension,mQuadContainer,this,mGUIManager);
-		else
-			mBorders[Border::BORDER_TYPE_BOTTOM_RIGHT] = NULL;
-
+		{
+			mBorders[Border::BORDER_TYPE_BOTTOM_RIGHT] = new Border(mInstanceName + ".BottomRightCornerBorder",Border::BORDER_TYPE_BOTTOM_RIGHT,Rect(mSize.width - overlap,mSize.height - overlap,thickness,thickness),mTextureName+".border.bottomright"+mTextureExtension,mGUIManager);
+			addChild(mBorders[Border::BORDER_TYPE_BOTTOM_RIGHT]);
+		}
+		
 		// Border edges - only create them if there are textures for them.
 		if(mGUIManager->textureExists(mTextureName+".border.left"+mTextureExtension))
-			mBorders[Border::BORDER_TYPE_LEFT] = new Border(mInstanceName + ".LeftBorder",TYPE_BORDER,Border::BORDER_TYPE_LEFT,Rect(-thickness,0,thickness,mSize.height),mTextureName+".border.left"+mTextureExtension,mQuadContainer,this,mGUIManager);
-		else
-			mBorders[Border::BORDER_TYPE_LEFT] = NULL;
-
+		{
+			mBorders[Border::BORDER_TYPE_LEFT] = new Border(mInstanceName + ".LeftBorder",Border::BORDER_TYPE_LEFT,Rect(-thickness + overlap,0,thickness,mSize.height),mTextureName+".border.left"+mTextureExtension,mGUIManager);
+			addChild(mBorders[Border::BORDER_TYPE_LEFT]);
+		}
+		
 		if(mGUIManager->textureExists(mTextureName+".border.top"+mTextureExtension))
-			mBorders[Border::BORDER_TYPE_TOP] = new Border(mInstanceName + ".TopBorder",TYPE_BORDER,Border::BORDER_TYPE_TOP,Rect(0,-thickness,mSize.width,thickness),mTextureName+".border.top"+mTextureExtension,mQuadContainer,this,mGUIManager);
-		else
-			mBorders[Border::BORDER_TYPE_TOP] = NULL;
-
+		{
+			mBorders[Border::BORDER_TYPE_TOP] = new Border(mInstanceName + ".TopBorder",Border::BORDER_TYPE_TOP,Rect(0,-thickness + overlap,mSize.width,thickness),mTextureName+".border.top"+mTextureExtension,mGUIManager);
+			addChild(mBorders[Border::BORDER_TYPE_TOP]);
+		}
+		
 		if(mGUIManager->textureExists(mTextureName+".border.right"+mTextureExtension))
-			mBorders[Border::BORDER_TYPE_RIGHT] = new Border(mInstanceName + ".RightBorder",TYPE_BORDER,Border::BORDER_TYPE_RIGHT,Rect(mSize.width,0,thickness,mSize.height),mTextureName+".border.right"+mTextureExtension,mQuadContainer,this,mGUIManager);
-		else
-			mBorders[Border::BORDER_TYPE_RIGHT] = NULL;
-
+		{
+			mBorders[Border::BORDER_TYPE_RIGHT] = new Border(mInstanceName + ".RightBorder",Border::BORDER_TYPE_RIGHT,Rect(mSize.width - overlap,0,thickness,mSize.height),mTextureName+".border.right"+mTextureExtension,mGUIManager);
+			addChild(mBorders[Border::BORDER_TYPE_RIGHT]);
+		}
+		
 		if(mGUIManager->textureExists(mTextureName+".border.bottom"+mTextureExtension))
-			mBorders[Border::BORDER_TYPE_BOTTOM] = new Border(mInstanceName + ".BottomBorder",TYPE_BORDER,Border::BORDER_TYPE_BOTTOM,Rect(0,mSize.height,mSize.width,thickness),mTextureName+".border.bottom"+mTextureExtension,mQuadContainer,this,mGUIManager);
-		else
-			mBorders[Border::BORDER_TYPE_BOTTOM] = NULL;
+		{
+			mBorders[Border::BORDER_TYPE_BOTTOM] = new Border(mInstanceName + ".BottomBorder",Border::BORDER_TYPE_BOTTOM,Rect(0,mSize.height - overlap,mSize.width,thickness),mTextureName+".border.bottom"+mTextureExtension,mGUIManager);
+			addChild(mBorders[Border::BORDER_TYPE_BOTTOM]);
+		}		
+	}
+
+	void Widget::_destroyBorders()
+	{
+		for(int i = 0; i < 8; ++i)
+		{
+			;//mBorders[i] = NULL;
+		}
+	}
+
+	Quad* Widget::_createQuad(const Ogre::String& ID)
+	{
+		Quad* newQuad = new Quad(ID,this);
+		mQuads.push_back(newQuad);
+		return newQuad;
 	}
 
 	void Widget::_detectHierarchy()
@@ -250,26 +235,6 @@ namespace QuickGUI
 		}
 	}
 
-	void Widget::_notifyParent(Widget* w)
-	{
-		if( mParentWidget == NULL )
-			mParentWidget = w;
-	}
-
-	void Widget::_notifyRemovedFromChildList()
-	{
-		mParentWidget = NULL;
-	}
-
-	void Widget::_notifyQuadContainer(QuadContainer* g)
-	{
-		mQuadContainer = g;
-
-		std::vector<Widget*>::iterator it;
-		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
-			(*it)->_notifyQuadContainer(g);
-	}
-
 	void Widget::_processFullTextureName(const Ogre::String& texture)
 	{
 		mFullTextureName = texture;
@@ -290,22 +255,6 @@ namespace QuickGUI
 		}
 	}
 
-	void Widget::_removeFromChildList(Widget* w)
-	{
-		std::vector<Widget*>::iterator it;
-		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
-		{
-			if( w->getInstanceName() == (*it)->getInstanceName() )
-			{
-				(*it)->_notifyRemovedFromChildList();
-				mChildWidgets.erase(it);
-				
-				fireEvent(EVENT_CHILD_REMOVED,WidgetEventArgs(w));
-				return;
-			}
-		}
-	}
-
 	void Widget::_setScrollXOffset(Ogre::Real pixelXOffset)
 	{
 		mScrollOffset.x = pixelXOffset;
@@ -318,6 +267,21 @@ namespace QuickGUI
 		mScrollOffset.y = pixelYOffset;
 		mQuad->setYPosition(getScreenPosition().y + getScrollOffset().y);
 		redraw();
+	}
+
+	void Widget::addChild(Widget* w)
+	{
+		if(w->getParentWidget() != NULL)
+			return;
+
+		mChildWidgets.push_back(w);
+		// GUIManager must be set first.
+		w->setGUIManager(mGUIManager);
+		w->setParent(this);
+		w->setQuadContainer(mQuadContainer);
+
+		WidgetEventArgs args(w);
+		fireEvent(EVENT_CHILD_ADDED,args);
 	}
 
 	void Widget::addEventHandler(Event EVENT, MemberFunctionSlot* function)
@@ -453,6 +417,22 @@ namespace QuickGUI
 			return NULL;
 	}
 
+	Widget* Widget::getChildWidget(Type t, unsigned int index)
+	{
+		int count = -1;
+		std::vector<Widget*>::iterator it;
+		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
+		{
+			if((*it)->getWidgetType() == t)
+				++count;
+
+			if(count == index)
+				return (*it);
+		}
+
+		return NULL;
+	}
+
 	Ogre::String Widget::getDefaultSkin()
 	{
 		if(mParentSheet == NULL) return "qgui";
@@ -547,6 +527,11 @@ namespace QuickGUI
 	QuadContainer* Widget::getQuadContainer()
 	{
 		return mQuadContainer;
+	}
+
+	Quad::Layer Widget::getQuadLayer()
+	{
+		return mQuadLayer;
 	}
 
 	Point Widget::getScreenPosition()
@@ -763,7 +748,7 @@ namespace QuickGUI
 		// maintain child widget positions
 		std::vector<Widget*>::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
-			(*it)->setPosition((*it)->getPosition());
+			(*it)->redraw();
 	}
 
 	void Widget::onSizeChanged(const EventArgs& args)
@@ -800,12 +785,33 @@ namespace QuickGUI
 			(*it)->redraw();
 	}
 
+	void Widget::removeChild(Widget* w)
+	{
+		removeChild(w->getInstanceName());
+	}
+
+	void Widget::removeChild(const Ogre::String& widgetName)
+	{
+		std::vector<Widget*>::iterator it;
+		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
+		{
+			if((*it)->getInstanceName() == widgetName)
+			{
+				(*it)->setQuadContainer(NULL);
+				(*it)->setParent(NULL);
+				mChildWidgets.erase(it);
+				return;
+			}
+		}
+	}
+
 	void Widget::removeAndDestroyAllChildWidgets()
 	{
 		std::vector<Widget*>::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 		{
-			(*it)->_notifyRemovedFromChildList();
+			(*it)->setQuadContainer(NULL);
+			(*it)->setParent(NULL);
 			delete (*it);
 		}
 		mChildWidgets.clear();
@@ -854,6 +860,20 @@ namespace QuickGUI
 			mResizeTimer += time;
 			if(mResizeTimer >= mResizeTime)
 				mResizeOverTime = false;
+		}
+	}
+
+	void Widget::setClippingWidget(Widget* w, bool recursive)
+	{
+		for(std::vector<Quad*>::iterator it = mQuads.begin(); it != mQuads.end(); ++it)
+			(*it)->setClippingWidget(w);
+
+		if(recursive)
+		{
+			for(std::vector<Widget*>::iterator it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it)
+			{
+				(*it)->setClippingWidget(w);
+			}
 		}
 	}
 
@@ -911,10 +931,38 @@ namespace QuickGUI
 		mMovingEnabled = enable;
 	}
 
+	void Widget::setName(const Ogre::String& name)
+	{
+		if(!mGUIManager->validWidgetName(name))
+		{
+			bool numberAtEnd = false;
+			int index = static_cast<int>(name.size() - 1);
+			while((index > 0) && isdigit(name[index]))
+				--index;
+
+			if(index == static_cast<int>(name.size() - 1))
+				mInstanceName = name + "1";
+			else
+			{
+				int number = Ogre::StringConverter::parseInt(name.substr(index));
+				++number;
+				mInstanceName = name.substr(0,index) + Ogre::StringConverter::toString(number);
+			}
+		}
+		else
+			mInstanceName = name;
+	}
+
 	void Widget::setOffset(int offset)
 	{
+		int delta = offset - mOffset;
 		mOffset = offset;
-		mQuad->setOffset(mOffset);
+
+		for(std::vector<Quad*>::iterator it = mQuads.begin(); it != mQuads.end(); ++it)
+			(*it)->setOffset((*it)->getOffset() + delta);
+
+		for(std::vector<Widget*>::iterator it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
+			(*it)->setOffset((*it)->getOffset() + delta);
 	}
 
 	void Widget::setPosition(const Ogre::Real& pixelX, const Ogre::Real& pixelY)
@@ -989,6 +1037,21 @@ namespace QuickGUI
 		mShowWithParent = show;
 	}
 
+	void Widget::setQuadLayer(Quad::Layer l)
+	{
+		mQuadLayer = l;
+		mQuad->setLayer(mQuadLayer);
+	}
+
+	void Widget::setUseBorders(bool use)
+	{
+		mUseBorders = use;
+		if(mUseBorders)
+			_createBorders();
+		else
+			_destroyBorders();
+	}
+
 	void Widget::setVerticalAnchor(Widget::VerticalAnchor a)
 	{
 		mVerticalAnchor = a;
@@ -1059,6 +1122,53 @@ namespace QuickGUI
 			WidgetEventArgs args(this);
 			fireEvent(EVENT_SHOWN,args);
 		}
+	}
+
+	void Widget::setGUIManager(GUIManager* gm)
+	{
+		mGUIManager = gm;
+
+		for(std::vector<Quad*>::iterator it = mQuads.begin(); it != mQuads.end(); ++it)
+			(*it)->setGUIManager(mGUIManager);
+
+		std::vector<Widget*>::iterator it;
+		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
+			(*it)->setGUIManager(gm);
+	}
+
+	void Widget::setParent(Widget* parent)
+	{
+		mParentWidget = parent;
+
+		if(mParentWidget != NULL)
+		{
+			_detectHierarchy();
+			// set the correct offset
+			setOffset(mParentWidget->getOffset() + 1);
+			setSize(mSize);
+			setPosition(mPosition);
+			// calculated properties
+			Size parentSize = mParentWidget->getSize();
+			mPixelsFromParentRight = parentSize.width - (mPosition.x + mSize.width);
+			mPixelsFromParentBottom = parentSize.height - (mPosition.y + mSize.height);
+			setClippingWidget(mParentWidget,true);
+			// inheritted properties
+			if(!mParentWidget->isVisible())
+				hide();
+			setQuadLayer(mParentWidget->getQuadLayer());
+			mGainFocusOnClick = mParentWidget->getGainFocusOnClick();
+		}
+	}
+
+	void Widget::setQuadContainer(QuadContainer* container)
+	{
+		mQuadContainer = container;
+		
+		for(std::vector<Quad*>::iterator it = mQuads.begin(); it != mQuads.end(); ++it)
+			(*it)->_notifyQuadContainer(mQuadContainer);
+
+		for( std::vector<Widget*>::iterator it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
+			(*it)->setQuadContainer(mQuadContainer);
 	}
 
 	void Widget::setTexture(const Ogre::String& textureName, bool updateBaseTexture)

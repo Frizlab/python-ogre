@@ -55,8 +55,6 @@ namespace QuickGUI
 		*/
 		void clearAll();
 
-		Sheet* createSheet(const Ogre::String& name, const Ogre::String& texture);
-		Sheet* createSheet(const Ogre::String& name);
 		Sheet* createSheet();
 
 		/** Destroys a Window and all child widgets that exist
@@ -248,7 +246,6 @@ namespace QuickGUI
 		bool					mDraggingWidget;
 
 		void _createDefaultTextures();
-		Sheet* _createSheet(const Ogre::String& name, const Ogre::String& texture);
     };
 }
 

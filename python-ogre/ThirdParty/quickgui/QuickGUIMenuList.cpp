@@ -4,17 +4,11 @@
 
 namespace QuickGUI
 {
-	MenuList::MenuList(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
-		Button(name,type,pixelDimensions,texture,container,ParentWidget,gm)
+	MenuList::MenuList(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm) :
+		Button(name,pixelDimensions,texture,gm)
 	{
+		mWidgetType = TYPE_MENULIST;
 		mShowWithParent = false;
-
-		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
-		if(mWidgetType == TYPE_MENULIST)
-		{
-			mQuad->setLayer(Quad::LAYER_MENU);
-			mText->setLayer(Quad::LAYER_MENU);
-		}
 
 		mButtonTexture = mTextureName + ".button" + mTextureExtension;
 		mListTexture = mTextureName + ".list" + mTextureExtension;
@@ -22,7 +16,8 @@ namespace QuickGUI
 		addEventHandler(EVENT_LOSE_FOCUS,&MenuList::onLoseFocus,this);
 
 		// create list
-		mList = new List(mInstanceName+".List",TYPE_LIST,Rect(0,mSize.height,mSize.width,0),mTextureName + ".list" + mTextureExtension,mQuadContainer,this,mGUIManager);
+		mList = new List(mInstanceName+".List",Rect(0,mSize.height,mSize.width,0),mTextureName + ".list" + mTextureExtension,mGUIManager);
+		addChild(mList);
 		mList->_setClippingWidget(mParentSheet);
 		mList->setShowWithParent(false);
 		mList->hide();

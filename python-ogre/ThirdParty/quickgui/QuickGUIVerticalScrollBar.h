@@ -41,7 +41,7 @@ namespace QuickGUI
 			@note
 				Vertical or Horizontal TrackBars are derived from a comparison between width and height.
         */
-		VerticalScrollBar(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
+		VerticalScrollBar(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm);
 
 		// Same as setValue, except that the scroll event is not fired.
 		void _setValue(Ogre::Real value);
@@ -64,7 +64,6 @@ namespace QuickGUI
 		Ogre::Real getRepeatTime();
 		Size getScrollButtonSize();
 		Ogre::Real getSliderHeight();
-		Ogre::Real getSliderWidth();
 		Ogre::Real getSmallChange();
 		/**
 		* Gets the numerical value representing the position of the left end of the slider, relative to the track bounds.
@@ -82,21 +81,17 @@ namespace QuickGUI
 		void setBaseTexture(const Ogre::String& textureName);
 		void setButtonLayout(ButtonLayout layout);
 		void setLargeChange(Ogre::Real change);
-		void setScrollButtonSize(Size pixelSize);
 		/**
 		* Sets the amount of time the left mouse button is down over a button or bar
 		* before another scroll occurs.
 		*/
 		void setScrollRepeatTime(Ogre::Real timeInSeconds);
-		void setSliderWidth(Ogre::Real pixelWidth);
 		void setSmallChange(Ogre::Real change);
 		/**
 		* Sets the numerical value representing the position of the left end of the slider, relative to the track bounds.
 		* NOTE: value should be between 0.0 and 1.0
 		*/
 		void setValue(Ogre::Real value);
-
-		void show();
 
 		void timeElapsed(Ogre::Real time);
 
@@ -112,6 +107,7 @@ namespace QuickGUI
 
 		Ogre::Real mMinSliderPosition;
 		Ogre::Real mMaxSliderPosition;
+		void _determineMinMax();
 
 		Ogre::Real mLargeChange;
 		Ogre::Real mSmallChange;
@@ -132,7 +128,6 @@ namespace QuickGUI
 		Button* mScrollDown1;
 		Button* mScrollDown2;
 
-		void _positionScrollButtons();
 		void _scroll(Ogre::Real change, ScrollEventArgs args);
 		void onScrollUpDown(const EventArgs& args);
 		void onScrollDownDown(const EventArgs& args);

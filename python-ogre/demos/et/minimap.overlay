@@ -1,0 +1,29 @@
+MiniMap/MainOverlay
+{
+   zorder 500
+   container Panel(MiniMap/MapPanel)
+   {   
+      metrics_mode pixels
+      horz_align right
+      vert_align top
+      top 15
+      left -165
+      width 150
+      height 150
+      material MiniMap/Map
+   }
+   container Panel(MiniMap/MapDot)
+   {   
+      metrics_mode pixels
+      horz_align right
+      vert_align top
+      top 15
+      left -165
+      width 10
+      height 10
+      material MiniMap/Point
+   }
+}
+
+
+

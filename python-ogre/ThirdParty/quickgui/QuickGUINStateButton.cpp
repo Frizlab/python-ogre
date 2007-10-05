@@ -2,15 +2,10 @@
 
 namespace QuickGUI
 {
-	NStateButton::NStateButton(const Ogre::String& name, Type type, const Rect& pixelDimensions, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
-		Button(name,type,pixelDimensions,"",container,ParentWidget,gm)
+	NStateButton::NStateButton(const Ogre::String& name, const Rect& pixelDimensions, GUIManager* gm) :
+		Button(name,pixelDimensions,"",gm)
 	{
-		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
-		if(mWidgetType == TYPE_NSTATEBUTTON)
-		{
-			mQuad->setLayer(mParentWidget->getQuad()->getLayer());
-		}
-
+		mWidgetType = TYPE_NSTATEBUTTON;
 		addEventHandler(EVENT_MOUSE_BUTTON_UP,&NStateButton::onMouseButtonUp,this);
 	}
 

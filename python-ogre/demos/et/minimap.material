@@ -1,0 +1,39 @@
+material MiniMap/Map
+{
+   technique
+   {
+      pass
+      {
+         lighting off
+         scene_blend alpha_blend
+         depth_check off
+
+         texture_unit
+         {
+             //tex_address_mode clamp
+             texture splatting0.png
+         }
+      }
+   }
+} 
+
+material MiniMap/Point
+{
+   technique
+   {
+      pass
+      {
+         point_sprites on
+         point_size 10
+         lighting off
+		texture_unit
+		{
+			texture RustySteel.jpg
+		}
+         
+      }
+   }
+} 
+
+
+

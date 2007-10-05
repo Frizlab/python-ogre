@@ -4,19 +4,15 @@
 
 namespace QuickGUI
 {
-	Menu::Menu(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
-		Image(name,type,pixelDimensions,texture,container,ParentWidget,gm),
+	Menu::Menu(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm) :
+		Image(name,pixelDimensions,texture,gm),
 		mMenuListCounter(0),
 		mShowMenus(0),
 		mCurrentOpenList(NULL)
 	{
+		mWidgetType = TYPE_MENU;
 		mShowWithParent = false;
-
-		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
-		if(mWidgetType == TYPE_MENU)
-		{
-			mQuad->setLayer(Quad::LAYER_MENU);
-		}
+		mQuad->setLayer(Quad::LAYER_MENU);
 
 		mMenuLists.clear();
 	}
@@ -28,7 +24,8 @@ namespace QuickGUI
 
 	MenuList* Menu::addMenuList(const Ogre::String& name, const Ogre::UTFString& text, Ogre::Real pixelX, Ogre::Real pixelWidth, const Ogre::String& texture)
 	{
-		MenuList* newMenuList = new MenuList(name,TYPE_MENULIST,Rect(pixelX,0,pixelWidth,mSize.height),texture,mQuadContainer,this,mGUIManager);
+		MenuList* newMenuList = new MenuList(name,Rect(pixelX,0,pixelWidth,mSize.height),texture,mGUIManager);
+		addChild(newMenuList);
 		newMenuList->addEventHandler(Widget::EVENT_MOUSE_ENTER,&Menu::showMenuList,this);
 		newMenuList->addEventHandler(Widget::EVENT_MOUSE_BUTTON_DOWN,&Menu::toggleMenuList,this);
 
@@ -101,6 +98,25 @@ namespace QuickGUI
 		}
 
 		return false;
+	}
+
+	void Menu::setParent(Widget* parent)
+	{
+		mParentWidget = parent;
+
+		if(mParentWidget != NULL)
+		{
+			_detectHierarchy();
+			// set the correct offset
+			mOffset = mParentWidget->getOffset() + 1;
+			mQuad->setOffset(mOffset);
+			// add to parents child widget list
+			Size parentSize = mParentWidget->getSize();
+			mPixelsFromParentRight = parentSize.width - (mPosition.x + mSize.width);
+			mPixelsFromParentBottom = parentSize.height - (mPosition.y + mSize.height);
+			// inheritted properties
+			mGainFocusOnClick = mParentWidget->getGainFocusOnClick();
+		}
 	}
 
 	void Menu::setShowMenuState(bool show)

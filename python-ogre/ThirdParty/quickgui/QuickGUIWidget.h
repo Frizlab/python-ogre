@@ -12,6 +12,7 @@
 #include "QuickGUIExportDLL.h"
 
 #include <vector>
+#include <ctype.h>
 
 namespace QuickGUI
 {
@@ -32,6 +33,7 @@ namespace QuickGUI
 	public:
 		// GUIManager is the only manager that can destroy widgets.
 		friend class GUIManager;
+		friend class Panel;
 		friend class ScrollPane;
 
 		/**
@@ -127,21 +129,9 @@ namespace QuickGUI
 				ParentWidget parent widget which created this widget.
         */
 		//GuiMetricsMode
-		Widget(const Ogre::String& instanceName, Type type, const Rect& pixelDimensions, Ogre::String textureName, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
+		Widget(const Ogre::String& instanceName, const Rect& pixelDimensions, Ogre::String textureName, GUIManager* gm);
 
-		// This function should not be called by users. Its purpose is to add this widget to its parent's child list.
-		void _addToChildList(Widget* w);
-		// This function should not be called by users. Positions/sizes the widget according to parent's size.
-		virtual void _applyAnchors();
-		// This function should not be called by users. Its purpose is to set the widget's parent.
-		void _notifyParent(Widget* w);
-		// This function should not be called by users. Its purpose is to notify the widget that it has no parent.
-		void _notifyRemovedFromChildList();
-		// Notifies the widget of the QuadContainer it belongs to.
-		void _notifyQuadContainer(QuadContainer* g);
-		// This function should not be called by users.  Its purpose is to remove this widget from its parent's child list.
-		virtual void _removeFromChildList(Widget* w);
-
+		virtual void addChild(Widget* w);
 		/** Adds an event handler to this widget
 			@param
 				EVENT Defined widget events, for example: EVENT_GAIN_FOCUS, EVENT_CHARACTER_KEY, EVENT_MOUSE_BUTTON_DOWN, etc
@@ -162,7 +152,6 @@ namespace QuickGUI
 		{
 			mUserEventHandlers[EVENT].push_back(new MemberFunctionPointer<T>(function,obj));
 		}
-
 		void addEventHandler(Event EVENT, MemberFunctionSlot* function);
 
 		/**
@@ -210,6 +199,7 @@ namespace QuickGUI
 
 		std::vector<Widget*>* getChildWidgetList();
 		Widget* getChildWidget(const Ogre::String& name);
+		Widget* getChildWidget(Type t, unsigned int index);
 		Ogre::String getDefaultSkin();
 		Rect getDimensions();
 		GUIManager* getGUIManager();
@@ -273,6 +263,7 @@ namespace QuickGUI
 		* Get Render Object Group this widget's Quad belongs in.
 		*/
 		QuadContainer* getQuadContainer();
+		Quad::Layer getQuadLayer();
 		/*
 		* Get the screen pixel coordinates this widget is drawn at.
 		* NOTE: This is not the same as getPosition, which returns a value relative to parent.
@@ -333,6 +324,8 @@ namespace QuickGUI
 		* Force updating of the Widget's Quad position on screen.
 		*/
 		virtual void redraw();
+		void removeChild(Widget* w);
+		void removeChild(const Ogre::String& widgetName);
 		/**
 		* Properly cleans up all child widgets.
 		*/
@@ -367,7 +360,7 @@ namespace QuickGUI
 		* Manually set mGrabbed to true.
 		*/
 		void setGrabbed(bool grabbed);
-		void setHeight(Ogre::Real pixelHeight);
+		virtual void setHeight(Ogre::Real pixelHeight);
 		/**
 		* If set to true, this widget will be hidden when its parent's widget is hidden.
 		* NOTE: All widgets have this set to true by default.
@@ -379,6 +372,11 @@ namespace QuickGUI
 		*/
 		void setMovingEnabled(bool enable);
 		/**
+		* Sets the name of the Widget. If the name already exists, the name will have a number appended to it. ('1').
+		* If the name already has a number appended at the end, it will be incremented.
+		*/
+		void setName(const Ogre::String& name);
+		/**
 		* Manipulates the offset used to determine this widgets zOrder in rendering.
 		*/
 		virtual void setOffset(int offset);
@@ -387,8 +385,9 @@ namespace QuickGUI
 		* NOTE: the values given are relative to the parent's top left corner, and not the screen!  For screen positioning,
 		*  user the setScreenPosition function.
 		*/
-		void setPosition(const Ogre::Real& pixelX, const Ogre::Real& pixelY);
-		void setPosition(const Point& pixelPoint);
+		virtual void setPosition(const Ogre::Real& pixelX, const Ogre::Real& pixelY);
+		virtual void setPosition(const Point& pixelPoint);
+		virtual void setQuadLayer(Quad::Layer l);
 		/**
 		* Manually set position of widget.
 		* NOTE: the values given are relative to the render windows's top left corner, and not the parent widget!
@@ -399,17 +398,22 @@ namespace QuickGUI
 		/**
 		* Manually set size of widget.
 		*/
-		void setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight);
-		void setSize(const Size& pixelSize);
+		virtual void setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight);
+		virtual void setSize(const Size& pixelSize);
 		/**
 		* If set to true, this widget will be shown when its parent's widget is shown.
 		* NOTE: most widgets have this set to true by default. (Menu's are false by default)
 		*/
 		void setShowWithParent(bool show);
+		/**
+		* If set to true, borders will be created, provided the matching *.border.*.png textures exist.
+		* If set to false, any borders that have been created will be destroyed.
+		*/
+		void setUseBorders(bool use);
 		void setVerticalAnchor(VerticalAnchor a);
 		void setWidth(Ogre::Real pixelWidth);
 		void setXPosition(Ogre::Real pixelX);
-		void setYPosition(Ogre::Real pixelY);
+		virtual void setYPosition(Ogre::Real pixelY);
 		/**
 		* Sets mVisible to true.  Widgets should override this to implement how they handle
 		* showing.
@@ -432,6 +436,14 @@ namespace QuickGUI
 		void unlockTexture();
 
 	protected:
+		virtual void setClippingWidget(Widget* w, bool recursive = false);
+		virtual void setGUIManager(GUIManager* gm);
+		virtual void setParent(Widget* parent);
+		virtual void setQuadContainer(QuadContainer* container);
+
+		// Positions/sizes the widget according to parent's size.
+		virtual void _applyAnchors();
+	protected:
 		virtual ~Widget();
 
 		GUIManager*					mGUIManager;
@@ -439,6 +451,7 @@ namespace QuickGUI
 		Type						mWidgetType;
 
 		// PROPERTIES
+		Widget*						mClippingWidget;
 		bool						mDragXOnly;
 		bool						mDragYOnly;
 		bool						mVisible;
@@ -446,6 +459,7 @@ namespace QuickGUI
 		bool						mGainFocusOnClick;
 		bool						mGrabbed;
 		bool						mTextureLocked;
+		Quad::Layer					mQuadLayer;
 		bool						mMovingEnabled;
 		bool						mDraggingEnabled;
 		Ogre::String				mFullTextureName;
@@ -482,6 +496,9 @@ namespace QuickGUI
 		Point						mFinalPixelPosition;
 
 		Quad*						mQuad;
+		// All widgets have at least 1 quad, but can use more.
+		std::vector<Quad*>			mQuads;
+		Quad* _createQuad(const Ogre::String& ID);
 
 		// Keeping track of the QuadContainer this Quad belongs to.
 		QuadContainer*				mQuadContainer;
@@ -496,8 +513,10 @@ namespace QuickGUI
 		// Size in pixels.
 		Size						mSize;
 
+		bool						mUseBorders;
 		Border*						mBorders[8];
-		void _createBorders(); // don't need matching destroyBorders, as the border widgets become children of parent and are handled appropriately.
+		void _createBorders();
+		void _destroyBorders();
 
 		// Event handlers! Only one per event per widget
 		std::vector< std::vector<MemberFunctionSlot*> > mUserEventHandlers;

@@ -38,7 +38,7 @@ namespace QuickGUI
 			@note
 				Vertical or Horizontal TrackBars are derived from a comparison between width and height.
         */
-		HorizontalTrackBar(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
+		HorizontalTrackBar(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String textureName, GUIManager* gm);
 
 		/**
 		* Add user defined event that will be called when amount of progress has changed.
