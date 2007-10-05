@@ -1,22 +1,26 @@
-xxx 2007: Version 1.1 Release
-===============================
+October 05 2007: Version 1.1 Release
+====================================
 * Built with Ogre 1.4.4+
 * Added Theora module for video playback
+* Added Plib support - Sound and Networking + subset of ssg 
+* Added OgreForests -- a paging landscape manager
+* Added Editable Terrain (Thanks Dermont)
+* Added OgreBullet Support -- sperate modules for collission and dynamics
+* Added Navi gui support - This REALLY needs Python built with VC8 and so IS BUGGY
+    all current python binaries for Windows are built with VC7 with an older MSVC runtime library that conflicts
+    with the javascript interpreter thats part of the Mozilla libraries
 * Code generated with updated Py++ that fixes 'already exposed' issues with multiple modules
 * Updated QuickGui - SVN 
 * Updated NxOgre using version 0.9-38
-* Added initial Plib support - Sound and Networking + subset of ssg 
+* updated NxOgre config and framework (bug fixes)
 * Bug fix to OgreAL to fix ogg playback and general stability
 * Ogre code generation improvements - Ctype support for 'void const *' (changed to unsigned int)
         previous version only modified 'void *' (missed the const variables)
         Fixed cases where multiple void *'s in argument list - only first one was being fixed
         Moved common functions into common_utils so single place to fix -- need to implement for other modules
+        Created VARNAME_Copy helper functions for readonly variables, incase you want a copy for your own use
 * added helper function for PixelBox ("getData") to give access to the data variable
 * updated the vcredist files to the current version
-* updated NxOgre config and framework (bug fixes)
-* Added "navi" gui support - Now this REALLY needs Python built with VC8 and so IS BUGGY
-    all current python binaries for Windows are built with VC7 with an older MSVC runtime library that conflicts
-    with the javascript interpreter thats part of the Mozilla libraries
 * demos/media is now the standard OgreSDK media directory
     where necessary each demo directory has a ./media directory for additional 'demo' media
 

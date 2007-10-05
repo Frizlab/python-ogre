@@ -1,0 +1,170 @@
+<html>
+<head>
+<script type="text/javascript" src="mootools.v1.1.js"></script>
+<script type="text/javascript" src="Navi.js"></script>
+<script type="text/javascript">
+Window.addEvent('domready', function() {
+	var equipSlots = $$('div.equipSlot');
+	var itemSlots = $$('div.itemSlot');
+	var droppables = $$('div.droppable');
+	var currentItem = false;
+	
+	$('swordDrag').makeDraggable({
+		snap: 5,
+		container: 'inventory',
+		'droppables': droppables
+	});
+	
+	$('swordDrag').addEvent('mousedown', function(){
+		currentItem = this;		
+	});
+	
+	$('shieldDrag').makeDraggable({
+		snap: 5,
+		container: 'inventory',
+		'droppables': droppables
+	});
+	
+	$('shieldDrag').addEvent('mousedown', function(){
+		currentItem = this;		
+	});
+	
+	equipSlots.addEvents({
+		drop: function(){
+			
+			if(currentItem)
+			{
+				this.setStyle('background-color', '#306fcb');
+				$('status').innerHTML = "You've equipped a " + currentItem.getProperty('alt') + "!";
+				new NaviData('itemEquipped').add('name', currentItem.getProperty('alt')).send();
+				
+				// Center the icon in the middle of the drop box
+				currentItem.setStyles({
+					'left': this.getLeft() - 36 + 5,
+					'top': this.getTop() - 140 + 5
+				});
+				currentItem = false;
+			}
+		},
+		over: function(){
+			this.setStyle('background-color', '#7490aa');
+		},
+		leave: function(){
+			this.setStyle('background-color', '#aaaaaa');
+		}	
+	});
+	
+	itemSlots.addEvents({
+		drop: function(){
+			$('status').innerHTML = "";
+			this.setStyle('background-color', '#bbbbbb');
+			if(currentItem)
+			{
+				// Center the icon in the middle of the drop box
+				currentItem.setStyles({
+					'left': this.getLeft() - 36 + 5,
+					'top': this.getTop() - 140 + 5
+				});
+				currentItem = false;
+			}
+		},
+		over: function(){
+			this.setStyle('background-color', '#cccccc');
+		},
+		leave: function(){
+			this.setStyle('background-color', '#bbbbbb');
+		}
+	});
+	
+});
+</script>
+<style type="text/css">
+body 
+{
+	background-color: #808080;
+	overflow: hidden;
+}
+#container 
+{
+	background-image: url('naviequip_bg.png');
+	position: absolute;
+	width: 256px;
+	height: 512px;
+	left: 0px;
+	top: 0px;
+	overflow: hidden;
+}
+#status
+{
+	position: relative;
+	width: 200px;
+	height: 20px;
+	margin-left: auto;
+	margin-right: auto;
+	overflow: hidden;
+	top: 100px;
+	text-align: center;
+	font-family: Verdana;
+	font-size: 14px;
+	color: #565656;
+}
+#swordDrag
+{
+	width: 51px;
+	height: 50px;
+	background-image: url('sword.jpg');
+	float: left;
+	top: 128px;
+	left: 66px;
+}
+#shieldDrag
+{
+	width: 51px;
+	height: 50px;
+	background-image: url('shield.jpg');
+	float: left;
+	top: 66px;
+	left: 5px;
+}
+#inventory
+{
+	position: absolute;
+	width: 183px;
+	height: 243px;
+	left: 36px;
+	top: 140px;
+}
+.droppable
+{
+	float: left;
+	width: 60px;
+	height: 60px;
+}
+.equipSlot
+{
+	background-color: #aaaaaa;
+	border-left: 1px solid #c1c1c1;
+	border-bottom: 1px solid #999999;
+}
+.itemSlot
+{
+	background-color: #bbbbbb;
+	border-left: 1px solid #dddddd;
+	border-bottom: 1px solid #dddddd;
+}
+</style>
+</head>
+<body>
+<div id="container">
+<div id="status"></div>
+<div id="inventory">
+<span id="swordDrag" alt="sword"></span>
+<span id="shieldDrag" alt="shield"></span>
+<div class="droppable equipSlot"></div><div class="droppable equipSlot"></div><div class="droppable equipSlot"></div>
+<div class="droppable itemSlot"></div><div class="droppable itemSlot"></div><div class="droppable itemSlot"></div>
+<div class="droppable itemSlot"></div><div class="droppable itemSlot"></div><div class="droppable itemSlot"></div>
+<div class="droppable itemSlot"></div><div class="droppable itemSlot"></div><div class="droppable itemSlot"></div>
+</div>
+</div>
+</body>
+</html>

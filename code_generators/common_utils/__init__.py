@@ -343,4 +343,63 @@ def Fix_Implicit_Conversions ( mb, ImplicitClasses=[] ):
     """
     for className in ImplicitClasses:
         mb.class_(className).constructors().allow_implicit_conversion = True
-                        
+
+def Fix_ReadOnly_Vars ( main_ns, ToFixClasses, knownNonMutable ):
+    """ find read only variables that are "python" mutable, exclude them, add a getter function
+    and expose them using properties -- this ensures a copy is made of the variable, otherwise you get a pointer
+    to the original 'readonly' C++ variable AND CAN CHANGE IT :( -- it acts like a normal static variable
+    which can cause interersting things to go wrong..
+    """
+    
+    GetterFunction = \
+    """
+    // special function to replace an existing read only variable as 
+    // we need to make a copy of the variable as python doesn't understand 'const'
+    typedef const %(return_type)s ( *fget_Special_%(variable_name)s )(%(class_type)s &);
+    %(return_type)s %(getter_name)s ( %(class_type)s & me )  {
+        return me.%(variable_name)s;
+        }
+    """   
+    GetterReg = \
+    """
+    add_property( // special :)
+                "%(variable_name)s_Copy"
+                , fget_Special_%(variable_name)s ( &%(getter_name)s )
+                , "special get property, built to access const variable" )
+    """
+#     ## fix -- the implementation above isn't really what I wanted :)        
+#     GetterFunction = \
+#     """
+#     // special function to replace an existing read only variable as 
+#     // we need to make a copy of the variable as python doesn't understand 'const'
+#     typedef const %(return_type)s ( *fget_Special_%(variable_name)s )();
+#     %(return_type)s %(getter_name)s (  )  {
+#         return ::%(class_type)s::%(variable_name)s;
+#         }
+#     """   
+   
+    for cls in main_ns.classes():
+        if cls.name in ToFixClasses:  # force fixes in specific classes
+            for v in cls.variables(allow_empty=True):
+                if v.is_read_only and v.exportable==True : # only if it's exposed..
+                    if type (v.type) == declarations.cpptypes.const_t: # only care about const's
+                        known = False
+                        for k in knownNonMutable:
+                            if v.type.decl_string.startswith (k):
+                                known = True
+                        if not known:
+                            ## OK so it must be mutable so lets fix it..
+# # # #                             v.exclude() ## remove it as a variable
+                            return_type, ignore = v.type.decl_string.split(' ',1) # remove cont etc from decl
+                            return_type = return_type[2:] # remove leading ::
+                            variable_name = v.name
+                            class_type = cls.decl_string[2:] # again don't need leading '::'
+                            getter_name = variable_name + '_Getter_Copy' # define a non conflicting name
+                            values = { 'return_type':return_type, 'variable_name':variable_name, 
+                                'class_type':class_type, 'getter_name':getter_name }
+                            # create the actual getter function
+                            deccode = GetterFunction % values
+                            cls.add_declaration_code( deccode )
+                            # and the property registration code
+                            regcode = GetterReg % values
+                            cls.add_registration_code( regcode )

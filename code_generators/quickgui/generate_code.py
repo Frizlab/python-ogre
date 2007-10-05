@@ -79,6 +79,12 @@ def ManualExclude ( mb ):
             ,'::QuickGUI::QuadContainer::_updateRenderQueue'
             ,'::QuickGUI::HorizontalTrackBar::_getButtonSize'
             ,'::QuickGUI::List::getNumberOfListItems'
+            ,'::QuickGUI::Panel::getScrollPane'
+            ,'::QuickGUI::ScrollPane::_showVScrollBars'
+            ,'::QuickGUI::ScrollPane::_showHScrollBars'
+            ,'::QuickGUI::ScrollPane::getVerticalButtonLayout'
+            ,'::QuickGUI::ScrollPane::getHorizontalButtonLayout'
+            ,'::QuickGUI::VerticalScrollBar::getScrollButtonSize'
                 ]
     for e in excludes:
         print "excluding function", e

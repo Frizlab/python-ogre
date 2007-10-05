@@ -223,7 +223,7 @@ def generate_code():
     #
     ##########################################################################################
     extractor = exdoc.doc_extractor("")
-    mb.build_code_creator (module_name='_ogreal_' ) #, doc_extractor= extractor)
+    mb.build_code_creator (module_name='_ogreal_' , doc_extractor= extractor)
     
     for inc in environment.ogreal.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )
