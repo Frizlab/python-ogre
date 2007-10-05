@@ -49,6 +49,7 @@ PATH_betagui=       os.path.join(PATH_THIRDPARTY,'betagui')
 PATH_ogredshow =    os.path.join(PATH_THIRDPARTY,'dshow')
 PATH_plib =         os.path.join(PATH_THIRDPARTY, 'plib')
 PATH_et =           os.path.join(PATH_THIRDPARTY, 'et')
+PATH_caelum =       os.path.join(PATH_THIRDPARTY, 'caelum')
 
 PATH_ogrevideoffmpeg = os.path.join(PATH_THIRDPARTY,'ffmpeg')
 PATH_NxOgre=        os.path.join(BASE_DIR, 'nxogre/NxOgre')

@@ -1,0 +1,69 @@
+vertex_program HazeVP cg
+{
+	source CaelumShaders.cg
+	entry_point Haze_vp
+	profiles vs_2_0 arbvp1 vp30
+
+	default_params
+	{
+		param_named_auto worldViewProj worldviewproj_matrix
+		param_named_auto camPos camera_position
+	}
+}
+
+fragment_program HazeFP cg
+{
+	source CaelumShaders.cg
+	entry_point Haze_fp
+	profiles ps_2_0 arbfp1 fp30
+
+	default_params
+	{
+		param_named_auto fogColour fog_colour
+	}
+}
+
+material CaelumDemoTerrain
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture terrain_texture.jpg
+			}
+
+            texture_unit
+            {
+                texture terrain_detail.jpg
+                scale 0.1 0.1
+            }
+		}
+
+		// Haze pass
+		pass Haze
+		{
+			vertex_program_ref HazeVP
+			{
+			}
+			fragment_program_ref HazeFP
+			{
+			}
+
+			lighting off
+			scene_blend alpha_blend
+
+			texture_unit
+			{
+				texture AtmosphereDepth.png
+				tex_address_mode clamp clamp clamp
+			}
+			texture_unit
+			{
+				texture EarthClearSky2.png
+				tex_address_mode wrap clamp clamp
+			}
+		}
+	}
+}

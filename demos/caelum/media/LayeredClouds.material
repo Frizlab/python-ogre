@@ -1,0 +1,141 @@
+vertex_program LayeredCloudVP cg
+{
+	source LayeredCloud.cg
+	entry_point main_vp
+	profiles vs_2_0 arbvp1 vp30
+
+	default_params
+	{
+		param_named_auto worldViewProj worldviewproj_matrix
+		param_named sunDirection float3 -1 -1 0
+	}
+}
+
+fragment_program LayeredCloudFP cg
+{
+	source LayeredCloud.cg
+	entry_point main_fp
+	profiles ps_2_0 arbfp1 fp30
+
+	default_params
+	{
+		param_named time float 0	// Time offset
+		param_named_auto fogColour fog_colour
+		param_named sunDirection float3 -1 -1 0
+		param_named sunColour float4 1 1 1 1
+		param_named lightInvScattering float 1	// The inverse of the light scattering: The higher, the less scatter (and glow)
+		param_named absorptionFactor float 0.5	// How much light the cloud absorbs; [0, 1]
+		param_named cloudInvScale float 1.5	// The inverse of the cloud forms scale
+		param_named detailInvScale float 7	// The inverse of the cloud details scale
+		param_named noiseInvScale float 31	// The inverse of the cloud noise scale
+		param_named cloudSpeed float2 0 0	// The cloud speed
+		param_named detailSpeed float2 0 0	// The cloud details speed
+		param_named haloThreshold float 0	// The halo threshold. If the cloud glow is below this threshold, it's boosted suddenly, forming a halo.
+	}
+}
+
+material LayeredCloud
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			scene_blend alpha_blend
+
+			vertex_program_ref LayeredCloudVP
+			{
+			}
+			fragment_program_ref LayeredCloudFP
+			{
+				param_named cloudSpeed float2 0.000025 0.00002
+				param_named detailSpeed float2 -0.00001 -0.000015
+			}
+
+			texture_unit Cloud
+			{
+				texture CloudLayer.png
+			}
+			texture_unit Detail
+			{
+				texture AltocumulusDetail.png
+			}
+			texture_unit Noise
+			{
+				texture CloudNoise1.png
+			}
+		}
+	}
+}
+
+material Altocumulus : LayeredCloud
+{
+	set_texture_alias Detail AltocumulusDetail.png
+	set_texture_alias Noise CloudNoise1.png
+
+	technique
+	{
+		pass
+		{
+			fragment_program_ref LayeredCloudFP
+			{
+				param_named lightInvScattering float 3
+				param_named absorptionFactor float 0.6
+			}
+		}
+	}
+}
+
+material Altostratus : LayeredCloud
+{
+	set_texture_alias Detail AltostratusDetail.png
+	set_texture_alias Noise AltostratusDetail.png
+
+	technique
+	{
+		pass
+		{
+			fragment_program_ref LayeredCloudFP
+			{
+				param_named absorptionFactor float 0.4
+				param_named haloThreshold float 0.85
+			}
+		}
+	}
+}
+
+material Cirrostratus : LayeredCloud
+{
+	set_texture_alias Detail CirrostratusDetail.png
+	set_texture_alias Noise AltostratusDetail.png
+
+	technique
+	{
+		pass
+		{
+			fragment_program_ref LayeredCloudFP
+			{
+				param_named absorptionFactor float 0
+				param_named haloThreshold float 0.85
+			}
+		}
+	}
+}
+
+material Cirrus : LayeredCloud
+{
+	set_texture_alias Detail CirrusDetail.png
+  set_texture_alias Noise AltostratusDetail.png
+
+	technique
+	{
+		pass
+		{
+			fragment_program_ref LayeredCloudFP
+			{
+				param_named absorptionFactor float 0
+				param_named haloThreshold float 0.85
+			}
+		}
+	}
+}
