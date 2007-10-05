@@ -32,9 +32,14 @@ namespace QuickGUI
                 height != s.height );
         }
 
-		inline Size operator * ( const Ogre::Real r ) const
+		inline Size operator * ( const Ogre::Real& r ) const
         {
             return Size(width * r,height * r);
+        }
+
+		inline Size operator * ( const Size& s ) const
+        {
+			return Size(width * s.width,height * s.height);
         }
 
 		inline Size operator / ( const Size& s ) const

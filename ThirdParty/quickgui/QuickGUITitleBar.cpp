@@ -6,35 +6,22 @@
 
 namespace QuickGUI
 {
-	TitleBar::TitleBar(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
-		Label(name,type,pixelDimensions,texture,container,ParentWidget,gm)
-	{
-		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
-		if(mWidgetType == TYPE_TITLEBAR)
-		{
-			mQuad->setLayer(Quad::LAYER_MENU);
-			mText->setLayer(Quad::LAYER_MENU);
-		}
-		
+	TitleBar::TitleBar(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm) :
+		Label(name,pixelDimensions,texture,gm)
+	{		
+		setQuadLayer(Quad::LAYER_MENU);
+		mWidgetType = TYPE_TITLEBAR;
 		mHorizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
 		mHorizontalAlignment = HA_LEFT;
 
 		// Create CloseButton
-		// Button has same height as width - Make the button slightly smaller that the titlebar height
-		Ogre::Real buttonHeight = 0.8;
-		Ogre::Real buttonPixelHeight = 0.8 * mSize.height;
-		Ogre::Real verticalPixelSpace = 0.1 * mSize.height;
-		mRelativeButtonWidth = buttonPixelHeight / mSize.width;
-		Ogre::Real horizontalPixelSpace = verticalPixelSpace / mSize.width;
-
 		Ogre::Real ButtonSize = mSize.height - 3;
-		mCloseButton = new Button(mInstanceName+".CloseButton",TYPE_BUTTON,Rect(mSize.width - ButtonSize,0,ButtonSize,ButtonSize),mTextureName + ".button" + mTextureExtension,mQuadContainer,this,mGUIManager);
+		mCloseButton = new Button(mInstanceName+".CloseButton",Rect(mSize.width - ButtonSize,0,ButtonSize,ButtonSize),mTextureName + ".button" + mTextureExtension,mGUIManager);
+		addChild(mCloseButton);
 		mCloseButton->setHorizontalAnchor(ANCHOR_HORIZONTAL_RIGHT);
-		mCloseButton->getQuad()->setLayer(Quad::LAYER_MENU);
-		mCloseButton->addEventHandler(Widget::EVENT_MOUSE_CLICK,&Window::hide,dynamic_cast<Window*>(mParentWidget));
-		mCloseButton->addEventHandler(Widget::EVENT_MOUSE_BUTTON_UP,&Window::hide,dynamic_cast<Window*>(mParentWidget));
+		mCloseButton->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
 
-		mTextBoundsPixelSize = Size(getScreenPosition().x - ButtonSize,mSize.height);
+		mTextBoundsRelativeSize = Size(mSize.width - ButtonSize,mSize.height) / mSize;
 	}
 
 	TitleBar::~TitleBar()
@@ -51,7 +38,7 @@ namespace QuickGUI
 	void TitleBar::hideCloseButton()
 	{
 		mCloseButton->hide();
-		mTextBoundsPixelSize.width = mSize.width;
+		mTextBoundsRelativeSize.width = 1;
 		mText->redraw();
 	}
 
@@ -60,9 +47,35 @@ namespace QuickGUI
 		mText->setCaption(caption);
 	}
 
+	void TitleBar::setParent(Widget* parent)
+	{
+		mParentWidget = parent;
+
+		if(mParentWidget != NULL)
+		{
+			_detectHierarchy();
+			// set the correct offset
+			setOffset(mParentWidget->getOffset() + 1);
+			setSize(mSize);
+			setPosition(mPosition);
+			// calculated properties
+			Size parentSize = mParentWidget->getSize();
+			mPixelsFromParentRight = parentSize.width - (mPosition.x + mSize.width);
+			mPixelsFromParentBottom = parentSize.height - (mPosition.y + mSize.height);
+			setClippingWidget(mParentWidget,true);
+			// inheritted properties
+			if(!mParentWidget->isVisible())
+				hide();
+			mGainFocusOnClick = mParentWidget->getGainFocusOnClick();
+
+			mCloseButton->addEventHandler(Widget::EVENT_MOUSE_CLICK,&Window::hide,dynamic_cast<Window*>(mParentWidget));
+			mCloseButton->addEventHandler(Widget::EVENT_MOUSE_BUTTON_UP,&Window::hide,dynamic_cast<Window*>(mParentWidget));
+		}
+	}
+
 	void TitleBar::showCloseButton()
 	{
 		mCloseButton->show();
-		mTextBoundsPixelSize.width = mSize.width - mCloseButton->getWidth();
+		mTextBoundsRelativeSize.width = (mSize.width - mCloseButton->getWidth()) / mSize.width;
 	}
 }

@@ -192,7 +192,7 @@ namespace QuickGUI
 		*/
 		void setCaption(const Ogre::UTFString& text, Layout l = LAYOUT_HORIZONTAL, Alignment a = ALIGNMENT_LEFT);
 		void setFont(const Ogre::String& fontName);
-		void setLayer(Quad::Layer layer);
+		void setQuadLayer(Quad::Layer layer);
 		void setOffset(int offset);
 		/*
 		* This function could potentially place the text anywhere on the screen, but its main use is
@@ -204,6 +204,7 @@ namespace QuickGUI
 		* Sets the color of all characters of the text.
 		*/
 		void setColor(Ogre::ColourValue color);
+		void setGUIManager(GUIManager* gm);
 		/*
 		* Sets the multiple of normal line spacing that will be used to draw multiple lines of text.
 		*/

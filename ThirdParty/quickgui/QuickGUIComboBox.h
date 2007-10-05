@@ -43,7 +43,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		ComboBox(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
+		ComboBox(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String textureName, GUIManager* gm);
 
 		/*
 		* Event Handler tied to ListItems, causing them to hide lists on mouse button up.

@@ -31,7 +31,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		Image(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
+		Image(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String textureName, GUIManager* gm);
 
 	protected:
 		virtual ~Image();

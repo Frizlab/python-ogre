@@ -3,18 +3,13 @@
 
 namespace QuickGUI
 {
-	ProgressBar::ProgressBar(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
-		Image(name,type,pixelDimensions,texture,container,ParentWidget,gm),
+	ProgressBar::ProgressBar(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm) :
+		Image(name,pixelDimensions,texture,gm),
 		mInitialPixelOffset(0),
 		mProgress(1.0),
 		mFillDirection(FILLS_NEGATIVE_TO_POSITIVE)
 	{
-		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
-		if(mWidgetType == TYPE_PROGRESSBAR)
-		{
-			mQuad->setLayer(Quad::LAYER_CHILD);
-		}
-
+		mWidgetType = TYPE_PROGRESSBAR;
 		if( mSize.width > mSize.height )
 			mLayout = LAYOUT_HORIZONTAL;
 		else
@@ -40,7 +35,7 @@ namespace QuickGUI
 				Ogre::TU_STATIC);
 		}
 
-		mBarPanel = new Quad(mInstanceName+".BarPanel",this);
+		mBarPanel = _createQuad(mInstanceName+".BarPanel");
 		mBarPanel->setPosition(getScreenPosition());
 		mBarPanel->setSize(mSize);
 		mBarPanel->setOffset(mOffset+1);
@@ -56,8 +51,6 @@ namespace QuickGUI
 		for( it = mOnProgressChangedHandlers.begin(); it != mOnProgressChangedHandlers.end(); ++it )
 			delete (*it);
 		mOnProgressChangedHandlers.clear();
-
-		delete mBarPanel;
 	}
 
 	void ProgressBar::_getBarExtents()

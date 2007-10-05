@@ -38,7 +38,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		Menu(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
+		Menu(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm);
 
 		/**
 		* Adds a menu list.
@@ -93,6 +93,8 @@ namespace QuickGUI
 
 	protected:
 		virtual ~Menu();
+		virtual void setParent(Widget* parent);
+	protected:
 
 		std::vector<MenuList*> mMenuLists;
 

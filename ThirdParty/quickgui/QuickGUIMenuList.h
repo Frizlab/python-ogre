@@ -35,7 +35,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		MenuList(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
+		MenuList(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm);
 
 		/*
 		* Event Handler tied to ListItems, causing them to hide lists on mouse button up.

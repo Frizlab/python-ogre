@@ -29,7 +29,7 @@ namespace QuickGUI
 		mMouseCursor = new MouseCursor(Size(30,30),"qgui.pointer.png",this);
 		mMouseCursor->setPosition(getViewportWidth()/2.0,getViewportHeight()/2.0);
 		
-		mDefaultSheet = createSheet("DefaultSheet","");
+		mDefaultSheet = createSheet();
 		// Initialize all widget tracking pointers.
 		mActiveWidget = mWidgetContainingMouse = mActiveSheet = mDefaultSheet;
 
@@ -128,44 +128,16 @@ namespace QuickGUI
 		// reset counter
 		mAutoNameSheetCounter = 0;
 		// create default sheet
-		mDefaultSheet = createSheet("DefaultSheet","");
+		mDefaultSheet = createSheet();
 		mActiveSheet = mDefaultSheet;
 
 		mActiveWidget = mActiveSheet;
 		mWidgetContainingMouse = mActiveSheet;
 	}
 
-	Sheet* GUIManager::_createSheet(const Ogre::String& name, const Ogre::String& texture)
-	{
-		Sheet* newSheet = new Sheet(name,Widget::TYPE_SHEET,texture,this);
-
-		mSheets.push_back(newSheet);
-
-		return newSheet;
-	}
-
-	Sheet* GUIManager::createSheet(const Ogre::String& name, const Ogre::String& texture)
-	{
-		if( !(validWidgetName(name)) ) return NULL;
-
-		return _createSheet(name,texture);
-	}
-
-	Sheet* GUIManager::createSheet(const Ogre::String& name)
-	{
-		if( !(validWidgetName(name)) ) return NULL;
-
-		// the default skin for a sheet is transparency.
-		return _createSheet(name,"");
-	}
-	
 	Sheet* GUIManager::createSheet()
 	{
-		Ogre::String name = "Sheet" + Ogre::StringConverter::toString(mAutoNameSheetCounter);
-		++mAutoNameSheetCounter;
-
-		// the default skin for a sheet is transparency.
-		return _createSheet(name,"");
+		return new Sheet("Sheet"+Ogre::StringConverter::toString(mAutoNameSheetCounter++),"",this);
 	}
 
 	void GUIManager::destroySheet(const Ogre::String& name)

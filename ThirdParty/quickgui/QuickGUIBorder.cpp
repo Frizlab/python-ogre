@@ -3,10 +3,11 @@
 
 namespace QuickGUI
 {
-	Border::Border(const Ogre::String& name, Type type, BorderType bType, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
-		Image(name,type,pixelDimensions,texture,container,ParentWidget,gm),
+	Border::Border(const Ogre::String& name, BorderType bType, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm) :
+		Image(name,pixelDimensions,texture,gm),
 		mBorderType(bType)
 	{
+		mWidgetType = TYPE_BORDER;
 		mDraggingEnabled = true;
 		mWidgetToDrag = NULL;
 

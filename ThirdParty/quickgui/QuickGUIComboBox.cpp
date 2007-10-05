@@ -4,15 +4,10 @@
 
 namespace QuickGUI
 {
-	ComboBox::ComboBox(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
-		Label(name,type,pixelDimensions,texture,container,ParentWidget,gm)
+	ComboBox::ComboBox(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm) :
+		Label(name,pixelDimensions,texture,gm)
 	{
-		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
-		if(mWidgetType == TYPE_COMBOBOX)
-		{
-			mQuad->setLayer(Quad::LAYER_CHILD);
-		}
-
+		mWidgetType = TYPE_COMBOBOX;
 		addEventHandler(EVENT_LOSE_FOCUS,&ComboBox::onLoseFocus,this);
 		addEventHandler(EVENT_MOUSE_ENTER,&ComboBox::onMouseEnters,this);
 		addEventHandler(EVENT_MOUSE_LEAVE,&ComboBox::onMouseLeaves,this);
@@ -20,15 +15,17 @@ namespace QuickGUI
 		addEventHandler(EVENT_MOUSE_BUTTON_UP,&ComboBox::onMouseButtonUp,this);
 
 		Ogre::Real ButtonSize = mSize.height - 4;
-		mButton = new Button(mInstanceName+".ComboButton",TYPE_BUTTON,Rect(mSize.width - ButtonSize - 2,2,ButtonSize,ButtonSize),mTextureName + ".button" + mTextureExtension,mQuadContainer,this,mGUIManager);
+		mButton = new Button(mInstanceName+".ComboButton",Rect(mSize.width - ButtonSize - 2,2,ButtonSize,ButtonSize),mTextureName + ".button" + mTextureExtension,mGUIManager);
+		addChild(mButton);
 		mButton->addEventHandler(Widget::EVENT_MOUSE_BUTTON_DOWN,&ComboBox::toggleDropDownListVisibility,this);
 		mButton->addEventHandler(Widget::EVENT_MOUSE_BUTTON_UP,&ComboBox::applyButtonDownImage,this);
 		mButton->addEventHandler(Widget::EVENT_MOUSE_ENTER,&ComboBox::applyButtonDownImage,this);
 		mButton->addEventHandler(Widget::EVENT_MOUSE_LEAVE,&ComboBox::applyButtonDownImage,this);
 
-		mTextBoundsPixelSize = Size(mSize.width - ButtonSize - 2,mSize.height);
+		mTextBoundsRelativeSize = Size(mSize.width - ButtonSize - 2,mSize.height) / mSize;
 
-		mList = new List(mInstanceName+".List",TYPE_LIST,Rect(0,mSize.height,mSize.width,0),mTextureName + ".list" + mTextureExtension,mQuadContainer,this,mGUIManager);
+		mList = new List(mInstanceName+".List",Rect(0,mSize.height,mSize.width,0),mTextureName + ".list" + mTextureExtension,mGUIManager);
+		addChild(mList);
 		mList->_setClippingWidget(mParentSheet);
 		mList->setShowWithParent(false);
 		mList->setOffset(mOffset + 2);

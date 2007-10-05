@@ -10,7 +10,6 @@ namespace QuickGUI
 		mMenuChanged(false),
 		mID(mOwner->getInstanceName() + ".QuadContainer")
 	{
-		mBaseQuad = mOwner->getQuad();
 		mChildBufferSize.push_back(MIN_VERTEX_BUFFER_SIZE);
 		mMenuBufferSize.push_back(MIN_VERTEX_BUFFER_SIZE);
 
@@ -19,6 +18,9 @@ namespace QuickGUI
 
 		mMenuVertexBuffer = new VertexBuffer(MIN_VERTEX_BUFFER_SIZE,mOwner->getGUIManager());
 		mMenuVertexBuffer->setData(&mMenuRenderables);
+
+		mBaseQuad = mOwner->getQuad();
+		mBaseQuad->_notifyQuadContainer(this);
 	}
 
 	QuadContainer::~QuadContainer()

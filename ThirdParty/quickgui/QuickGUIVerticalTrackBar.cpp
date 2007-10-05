@@ -4,22 +4,19 @@
 
 namespace QuickGUI
 {
-	VerticalTrackBar::VerticalTrackBar(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm) :
-		Image(name,type,pixelDimensions,texture,container,ParentWidget,gm),
+	VerticalTrackBar::VerticalTrackBar(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm) :
+		Image(name,pixelDimensions,texture,gm),
 		mNumRegions(1),
 		mCurrentValue(0),
 		mLargeChange(3)
 	{
-		// Other widgets call this constructor, and they handle quad/quadcontainer their own way.
-		if(mWidgetType == TYPE_TRACKBAR_VERTICAL)
-		{
-			mQuad->setLayer(Quad::LAYER_CHILD);
-		}
-
+		mWidgetType = TYPE_TRACKBAR_VERTICAL;
 		addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&VerticalTrackBar::onMouseButtonDown,this);
 
 		// Creat slider button at the beginning of the VerticalTrackBar, whether horizonal (left) or vertical (bot)
-		mSliderButton = new Button(mInstanceName+".SliderButton",TYPE_BUTTON,Rect(0,0,mSize.width,13),mSliderTextureName,mQuadContainer,this,mGUIManager);
+		mSliderButton = new Button(mInstanceName+".SliderButton",Rect(0,0,mSize.width,13),mSliderTextureName,mGUIManager);
+		addChild(mSliderButton);
+		mSliderButton->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 		mSliderButton->enableDragging(true);
 		mSliderButton->constrainDragging(false,true);
 		mSliderButton->addEventHandler(EVENT_DRAGGED,&VerticalTrackBar::onSliderDragged,this);

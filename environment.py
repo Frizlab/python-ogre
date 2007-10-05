@@ -596,6 +596,11 @@ class ogrevideoffmpeg:
 class ogredshow:
     version="0.1"
     parent="ogre/addons"
+    if os.name=='nt': 
+        ## note the defined for _ETManagerExport forces non dll usage 
+        CCFLAGS = ' -DWIN32 -DNDEBUG -DWINDOWS -D_ETManagerExport="" ' 
+    else:
+        CCFLAGS = ''
     cflags = ""
     include_dirs = [ Config.PATH_Boost,
                     Config.PATH_INCLUDE_Ogre,
@@ -609,6 +614,22 @@ class ogredshow:
     libs=[  Config.LIB_Boost, 'OgreMain','Strmiids' , 'ole32']
     ModuleName="ogredshow"   
     active=True 
+    
+class et:  ## editable terrain
+    version= "2.2"
+    parent = "ogre/addons"
+    libs=[ Config.LIB_Boost, 'OgreMain' ]
+    lib_dirs = [ Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain
+                ]
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_Ogre,
+                    Config.PATH_et
+                    ]
+    ModuleName = 'et'
+    CheckIncludes = ['boost/python.hpp'] 
+    active=True 
+    cflags = ""
     
 class bullet:
     version= "2.62"
@@ -708,6 +729,7 @@ projects = {
     , 'ogrebulletc' : ogrebulletc
     , 'ogrebulletd' : ogrebulletd
     , 'ogreforests' : ogreforests
+    , 'et' : et
 }        
 
 #

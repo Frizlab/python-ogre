@@ -46,7 +46,7 @@ namespace QuickGUI
 			@note
 				This Window will have a TitleBar
         */
-		Window(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* parentWidget, GUIManager* gm);
+		Window(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm);
 
 		void bringToFront();
 		
@@ -75,6 +75,8 @@ namespace QuickGUI
 
 	protected:
 		virtual ~Window();
+		virtual void setQuadContainer(QuadContainer* container);
+	protected:
 
 		TitleBar* mTitleBar;
 

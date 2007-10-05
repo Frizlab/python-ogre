@@ -38,7 +38,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		List(const Ogre::String& name, Type type, const Rect& pixelDimensions, Ogre::String texture, QuadContainer* container, Widget* ParentWidget, GUIManager* gm);
+		List(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm);
 
 		void _setClippingWidget(Widget* w);
 		/**
@@ -107,6 +107,7 @@ namespace QuickGUI
 		*  number of Visible List Items.
 		*/
 		void setNumberOfVisibleItems(unsigned int number);
+		virtual void setQuadLayer(Quad::Layer l);
 		/**
 		* Shows the widget, including any child widgets.
 		*/
