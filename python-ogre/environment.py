@@ -249,7 +249,10 @@ class ogrenewt:
     active=True
     version = "1.0"
     parent = "ogre/physics"
-    libs = ['Newton', Config.LIB_Boost, 'OgreNewt_Main', 'OgreMain']
+    if os.name=="nt":
+        libs = ['Newton', Config.LIB_Boost, 'OgreNewt_Main', 'OgreMain']
+    else:
+        libs = ['Newton', Config.LIB_Boost, 'OgreNewt', 'OgreMain']
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_Newton   # only one path for Newton
                     , Config.PATH_INCLUDE_Ogre 
@@ -576,6 +579,20 @@ class ogreal:
                   
     if os.name =='nt':
         CCFLAGS = ' -DOgreAL_Export="" -DWIN32 -DNDEBUG -D_LIB -D_WIN32 -D_WINDOWS -DVORBIS_IEEE_FLOAT32 -D_USE_NON_INTEL_COMPILER '              
+<<<<<<< .mine
+        libs=[Config.LIB_Boost, 'OgreMain', 
+                    'ogg_static', 
+                    'alut', 
+                    'vorbis_static','vorbisfile_static','vorbisenc_static',
+                    'OpenAL32', 'EFX-Util']  ##  'OgreAL' -- going to compile OgreAL ourselves
+    else:
+        libs=[Config.LIB_Boost, 'OgreMain', 
+                'ogg', 
+                'alut', 
+                'vorbis','vorbisfile','vorbisenc',
+                'openal']  ##  'OgreAL' -- going to compile OgreAL ourselves
+
+=======
         libs=[Config.LIB_Boost, 'OgreMain', 
                     'ogg_static', 
                     'alut', 
@@ -587,6 +604,7 @@ class ogreal:
                     'alut', 
                     'vorbis','vorbisfile','vorbisenc',
                     'openal']  ##  'OgreAL' -- going to compile OgreAL ourselves
+>>>>>>> .r411
     ModuleName = 'OgreAL'
     CheckIncludes = ['OgreAL.h']
     active=True
@@ -650,6 +668,22 @@ class et:  ## editable terrain
     CheckIncludes = ['boost/python.hpp'] 
     active=True 
     cflags = ""
+    
+class caelum:  ## editable terrain
+    version= "2.2"
+    parent = "ogre/addons"
+    libs=[ Config.LIB_Boost, 'OgreMain' ]
+    lib_dirs = [ Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain
+                ]
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_Ogre,
+                    Config.PATH_caelum
+                    ]
+    ModuleName = 'caelum'
+    CheckIncludes = ['boost/python.hpp'] 
+    active=True 
+    cflags = ""    
     
 class bullet:
     version= "2.62"
@@ -750,6 +784,7 @@ projects = {
     , 'ogrebulletd' : ogrebulletd
     , 'ogreforests' : ogreforests
     , 'et' : et
+    , 'caelum' : caelum
     , 'caelum' : caelum
 }        
 

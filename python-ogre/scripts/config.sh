@@ -19,7 +19,7 @@ export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$PREFIX/lib/pkgconfig
 export LD_LIBRARY_PATH=$PREFIX/lib
 export CFLAGS="-I$PREFIX/include -L$PREFIX/lib"
 export CXXFLAGS=$CFLAGS
-export PATH=$PATH:$PREFIX/bin
+export PATH=$PREFIX/bin:$PATH
 export PYTHONPATH=$PREFIX/lib/python$PYTHONVERSION/site-packages
 
 mkdir -p $PREFIX

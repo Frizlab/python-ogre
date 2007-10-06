@@ -6,6 +6,16 @@ source ./config.sh
 
 echo " == Building base libraries == "
 #
+# zlib as the one included in Ubuntu is buggy
+#
+echo " -- building zzlib --"
+pushd zziplib-0.13.49
+aclocal
+./configure --prefix=$PREFIX --datadir=$PREFIX/share
+make
+make install
+popd
+#
 # Install CEGUI (Crazy Eddie's GUI)
 #
 echo " -- Building CEGUI"
@@ -49,11 +59,21 @@ popd
 #
 echo " -- Building Ogre"
 pushd ogrenew 
+aclocal
 ./bootstrap
 ./configure --prefix=$PREFIX
 make
 make install
+cd ReferenceApplication
+aclocal
+./bootstrap
+./configure --prefix=$PREFIX
+make
+make install
+cd ..
 popd 
 
 echo
 echo " ==== Finished building base libraries ===="
+
+

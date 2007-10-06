@@ -17,16 +17,16 @@ $WGET http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.5.0b.tar.gz
 $WGET http://prdownloads.sourceforge.net/wgois/ois-1.0RC1.tar.gz  
 $WGET http://prdownloads.sourceforge.net/boost/boost-jam-3.1.13-1-linuxx86.tgz 
 $WGET http://prdownloads.sourceforge.net/scons/scons-0.96.96.tar.gz 
-$WGET http://prdownloads.sourceforge.net/ogre/ogre-linux_osx-v1-4-4.tar.bz2 
+$WGET http://downloads.sourceforge.net/scons/scons-0.97.0d20070918.tar.gz
+$WGET http://prdownloads.sourceforge.net/ogre/ogre-linux_osx-v1-4-5.tar.bz2 
 $WGET http://prdownloads.sourceforge.net/opende/ode-src-0.8.zip 
-$WGET http://prdownloads.sourceforge.net/bullet/bullet-2.62a.tgz 
 $WGET http://downloads.sourceforge.net/boost/boost_1_34_0.tar.bz2 
 $WGET http://www.newtondynamics.com/downloads/newtonLinux-1.53.tar.gz 
 $WGET http://www.openal.org/openal_webstf/downloads/openal-0.0.8.tar.gz
 $WGET http://www.openal.org/openal_webstf/downloads/freealut-1.1.0.tar.gz 
 $WGET http://downloads.xiph.org/releases/ogg/libogg-1.1.3.tar.gz
 $WGET http://downloads.xiph.org/releases/vorbis/libvorbis-1.2.0.tar.gz
-##$WGET http://devfiles.ageia.com/Physx_2.7.2_SDK_CoreLinux_deb.tar.gz
+$WGET http://downloads.sourceforge.net/zziplib/zziplib-0.13.49.tar.bz2
 popd 
 cd $INSTALL_DIR
 echo " -- getting pygccxml"
@@ -39,12 +39,6 @@ echo " -- getting ogreode"
 cvs -z3 -q -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -P ogreaddons/ogreode
 echo " -- getting ogrenewt"
 cvs -z3 -q -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -P ogreaddons/ogrenewt 
-echo " -- getting videoplugins"
-cvs -z3 -q -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -P ogreaddons/videoplugin
-echo " -- getting ogrebullet"
-cvs -z3 -q -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -P ogreaddons/ogrebullet 
-echo " -- getting NxOgre"
-svn co http://latest.nxogre.org/nxogre3/ NxOgre
 echo ""
 echo "======= Sources Retrieved ======="
 echo ""

@@ -97,7 +97,7 @@ class doc_extractor:
         ret ="" 
         if doc_lines:
             doc_lines = remove_leading_blanks ( doc_lines )
-            #print "Extracted Doc String for:",  declaration, "[", len(doc_lines),"]"
+#            print "Extracted Doc String for:",  declaration, "[", len(doc_lines),"]"
             ## we need to cope with strings longer than 2048 for MSVC
             ret =  "\\\n".join(doc_lines) 
             if len ( ret ) > 1700:  ## just to be safe and adjust for line end chars etc..
@@ -120,10 +120,10 @@ class doc_extractor:
                 c = ' '
             newret = newret + c
         if len(basedoc) >1 or len(newret)>1:
-# #             self.outfile.write("***============================*****\n" + declaration.decl_string + "\n")
-# #             self.outfile.write( str(len(basedoc)) + "  " + str(len(newret)) + "\n" )
-# #             self.outfile.write( newret )      
-            return '"' + basedoc + newret.lstrip() + '"'            
+#             print("***============================*****\n" + declaration.decl_string + "\n")
+#             print ( str(len(basedoc)) + "  " + str(len(newret)) + "\n" )
+#             print ( newret )      
+             return '"' + basedoc + newret.lstrip() + '"'            
         else: return ""
 
 def remove_leading_blanks ( docin ):
@@ -204,7 +204,8 @@ def clear_str(_str):
     
 #     _str = clean(_str, "@par", "")    ## it will get a single blank line by default -- breaks @param...
     _str = clean(_str, "\\par", "")    ## it will get a single blank line by default
-    _str = clean(_str, "\n", "\\n") 
+    _str = clean(_str, "\r\n", "\\n")
+    _str = clean(_str, "\n", "\\n")
     _str = clean(_str, "\\p", "")     ## cegui comments
     _str = clean(_str, "\\li", "  * ")     ## ode comments
     _str = clean(_str, "\\exception", "@exception") 
@@ -218,6 +219,9 @@ def clear_str(_str):
     ## now clean up the rest
     _str = reduce(clean, [_str, '/', '*', '!', "\\brief", '\\fn',
          "@brief", "@fn", '"', "@{", "\\c", "\\a"]) ## somtimes there are '"' in the doc strings and other "\\"...
+    
+    
+         
 #     return _str.lstrip()
 #     return "  " + _str.lstrip()
     return _str  ## no removale of white space so Epytext can handle sections etc
