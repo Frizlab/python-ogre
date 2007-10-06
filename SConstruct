@@ -47,7 +47,7 @@ _%(name)s = _env.%(targettype)s( "%(name)s", SHLIBPREFIX=\'\', source=_env["FILE
 Return ('_%(name)s')\n
  """ % { 'name':cls._name, 'targettype':targettype } )
                                    
-def get_ccflags():
+def get_ccflags(cls):
     if os.name=='nt':
         CCFLAGS=''
         #CCFLAGS += '-DBOOST_PYTHON_MAX_ARITY=19'
@@ -58,10 +58,14 @@ def get_ccflags():
         CCFLAGS += ' /Ox /Ob2 /Oi /Ot /Oy /GS- /GR '
     elif os.name =='posix':
         if os.sys.platform <> 'darwin':
-            CCFLAGS = ' `pkg-config --cflags OGRE` '
+            CCFLAGS = ' `pkg-config --cflags OGRE` '        ## needs to change I think :)
             CCFLAGS += ' -I' 
-            CCFLAGS += ' -O3 -I./ -fvisibility=hidden -finline-limit=20 '
-            CCFLAGS += ' -DOGRE_GCC_VISIBILITY '  # -fvisibility-inlines-hidden
+            CCFLAGS += ' -O3 -I./ '
+            if cls.ModuleName == 'OGRE':
+                ##### -fvisibility=hidden -finline-limit=20 '
+                #CCFLAGS += ' -fvisibility=hidden -fvisibility-inlines-hidden -DOGRE_GCC_VISIBILITY '
+                CCFLAGS += ' ' 
+            
         else:
             CCFLAGS  = ' -I -pipe -Os -I./'
     return CCFLAGS
@@ -134,7 +138,7 @@ for name, cls in environment.projects.items():
         
         ## setup compile paths and flags (standard and additional)
         _env.Append ( CPPPATH = cls.include_dirs + [environment.python_include_dirs, environment.Config.PATH_Boost]  )
-        ccflags= get_ccflags()
+        ccflags= get_ccflags(cls)
         if hasattr( cls, 'CCFLAGS'):
             ccflags += cls.CCFLAGS
         _env.Append ( CCFLAGS=ccflags )
@@ -157,14 +161,14 @@ for name, cls in environment.projects.items():
         
         ## ugly hack - scons returns a list of targets from SharedLibrary - we have to choose the one we want
         index = 0  # this is the index into a list of targets - '0' should be the platform default
-        if os.name=="nt"
+        if os.name=="nt":
             ## and lets have it install the output into the 'package_dir_name/ModuleName' dir and rename to the PydName
             _env.AddPostAction(package,\
             	 'mt.exe -nologo -manifest %(name)s.manifest -outputresource:%(name)s;2' % { 'name':package[index] } )
-        else:
+        else:            	 
             _env.AddPostAction(package,\
-            	 '-strip --debug %(name)s' % { 'name':package[index] } )
-        
+            	 '-strip -g -S -d --strip-debug -s %(name)s' % { 'name':package[index] } )
+            	         
         _env.InstallAs(os.path.join(environment.package_dir_name, cls.parent,
                                     cls.ModuleName, cls.PydName), 
                                      package[index] )

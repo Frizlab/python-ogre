@@ -160,8 +160,7 @@ class TerrainApplication(sf.Application):
         ##    */
         ## 
         ## ====================================================================
-        if self.spm:
-            self.spm = 0
+        self.spm = None
         if self.caelumSystem:
             self.caelumSystem.shutdown(False)
             self.caelumSystem = None

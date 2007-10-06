@@ -36,7 +36,7 @@ BJAM_CONFIG=release
 PREFIX=/usr/local
 EPREFIX=/usr/local
 EOF
-patch -p0 < boost.patch
+patch -N -p0 < boost.patch
 sed -i s/'BOOST_PYTHON_MAX_ARITY 15'/'BOOST_PYTHON_MAX_ARITY 19'/ boost/python/detail/preprocessor.hpp
 make
 make install
@@ -49,6 +49,14 @@ tar -xvzf $DOWNLOADS/scons-0.96.96.tar.gz --overwrite
 cd scons-0.96.96 
 python setup.py install --prefix=$PREFIX 
 cd .. 
+
+echo " -- installing SCONs" 
+rm -rf scons-0.97.0d20070918 
+tar -xvzf $DOWNLOADS/scons-0.97.0d20070918.tar.gz --overwrite 
+cd scons-0.97.0d20070918 
+####python setup.py install --prefix=$PREFIX 
+cd .. 
+
 
 # py++
 echo " -- installing PY++" 

@@ -3,70 +3,66 @@
 
 # master config setup
 source ./config.sh
-echo "=== generating code ===" 
-echo "=== generating code ===" >> $INSTALL_DIR/log.out
 cd python-ogre/code_generators 
 if [ $1 != "" ]
 then 
-    cd $1 
-    python generate_code.py > build.out 
-    cd .. 
+    echo "=== generating $1 ===" 
+    echo "=== generating $1 ===" >> $INSTALL_DIR/log.out
+    $INSTALL_DIR/gen_code.sh $1
 else
 
-echo ' -- creating OGRE code'
-echo ' -- creating OGRE code' >> $INSTALL_DIR/log.out
-cd ogre 
-python generate_code.py > build.out 
-cd .. 
-echo ' -- creating OGRErefapp code'
-echo ' -- creating OGRErefapp code'>> $INSTALL_DIR/log.out
-cd ogrerefapp 
-python generate_code.py > build.out 
-cd .. 
-echo ' -- creating quickgui code'
-echo ' -- creating quickgui code'>> $INSTALL_DIR/log.out
-cd quickgui 
-python generate_code.py > build.out 
-cd .. 
-echo ' -- creating OIS code'
-echo ' -- creating OIS code'>> $INSTALL_DIR/log.out
-cd ois 
-python generate_code.py > build.out 
-cd .. 
-echo ' -- creating CEGUI code'
-echo ' -- creating CEGUI code'>> $INSTALL_DIR/log.out
-cd cegui 
-python generate_code.py > build.out 
-cd ..
-echo ' -- creating OgreAL code'
-echo ' -- creating OgreAL code'>> $INSTALL_DIR/log.out
-cd ogreal 
-python generate_code.py > build.out 
-cd .. 
-echo ' -- creating OGREode code'
-echo ' -- creating OGREode code'>> $INSTALL_DIR/log.out
-cd ogreode 
-python generate_code.py > build.out 
-cd .. 
-echo ' -- creating PLIB code'
-echo ' -- creating PLIB code'>> $INSTALL_DIR/log.out
-cd plib 
-python generate_code.py > build.out 
-cd .. 
-echo ' -- creating Theora code'
-echo ' -- creating Theora code'>> $INSTALL_DIR/log.out
-cd theora 
-python generate_code.py > build.out 
-cd .. 
-echo ' -- creating OGREnewt code'
-echo ' -- creating OGREnewt code' >> $INSTALL_DIR/log.out
-cd ogrenewt 
-python generate_code.py > build.out 
-cd .. 
-echo ' -- creating ode code'
-cd ode 
-python generate_code.py > build.out 
-cd ..
+#    echo ' -- creating OGRE code'
+#    echo ' -- creating OGRE code' >> $INSTALL_DIR/log.out
+#    $INSTALL_DIR/gen_code.sh ogre
+    
+#    echo ' -- creating OGRErefapp code'
+#    echo ' -- creating OGRErefapp code'>> $INSTALL_DIR/log.out
+#    $INSTALL_DIR/gen_code.sh ogrerefapp 
+     
+    echo ' -- creating quickgui code'
+    echo ' -- creating quickgui code'>> $INSTALL_DIR/log.out
+    $INSTALL_DIR/gen_code.sh quickgui 
+
+    echo ' -- creating OIS code'
+    echo ' -- creating OIS code'>> $INSTALL_DIR/log.out
+    $INSTALL_DIR/gen_code.sh ois 
+     
+#    echo ' -- creating CEGUI code'
+#    echo ' -- creating CEGUI code'>> $INSTALL_DIR/log.out
+#    $INSTALL_DIR/gen_code.sh cegui 
+
+    echo ' -- creating OgreAL code'
+    echo ' -- creating OgreAL code'>> $INSTALL_DIR/log.out
+    $INSTALL_DIR/gen_code.sh ogreal 
+     
+    echo ' -- creating OGREode code'
+    echo ' -- creating OGREode code'>> $INSTALL_DIR/log.out
+    $INSTALL_DIR/gen_code.sh ogreode 
+     
+    echo ' -- creating PLIB code'
+    echo ' -- creating PLIB code'>> $INSTALL_DIR/log.out
+    $INSTALL_DIR/gen_code.sh plib 
+     
+    #echo ' -- creating Theora code'
+    #echo ' -- creating Theora code'>> $INSTALL_DIR/log.out
+    #$INSTALL_DIR/gen_code.sh theora 
+
+    echo ' -- creating OGREnewt code'
+    echo ' -- creating OGREnewt code' >> $INSTALL_DIR/log.out
+    $INSTALL_DIR/gen_code.sh ogrenewt 
+     
+    echo ' -- creating ode code'
+    echo ' -- creating ode code' >> $INSTALL_DIR/log.out
+    $INSTALL_DIR/gen_code.sh ode 
+
+#    echo ' -- creating et code'
+#    echo ' -- creating et code' >> $INSTALL_DIR/log.out
+#    $INSTALL_DIR/gen_code.sh et 
+     
+#    echo ' -- creating caelum code'
+#    echo ' -- creating caelum code' >> $INSTALL_DIR/log.out
+#    $INSTALL_DIR/gen_code.sh caelum 
+ 
 fi
 cd $INSTALL_DIR
 echo
