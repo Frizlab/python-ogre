@@ -329,7 +329,21 @@ class opcode:
     CheckIncludes = ['boost/python.hpp',  'Opcode.h'] 
     active=True 
        
-
+class caelum:
+    version="0.2.1"
+    parent="ogre/addons"
+    cflags = ""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_Ogre,
+                    Config.PATH_caelum
+                    ]
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain
+                ]
+    CheckIncludes=[]
+    libs=[  Config.LIB_Boost, 'OgreMain' ]
+    ModuleName="caelum"   
+    active=True
 
 class newton:
     version= "1.0"
@@ -385,7 +399,7 @@ class quickgui:
                 ]
     CheckIncludes=[]
     libs=[  Config.LIB_Boost, 'OgreMain' ]
-    ModuleName="quickgui"   
+    ModuleName="QuickGUI"   
     active=True
 
 class navi:
@@ -562,11 +576,17 @@ class ogreal:
                   
     if os.name =='nt':
         CCFLAGS = ' -DOgreAL_Export="" -DWIN32 -DNDEBUG -D_LIB -D_WIN32 -D_WINDOWS -DVORBIS_IEEE_FLOAT32 -D_USE_NON_INTEL_COMPILER '              
-    libs=[Config.LIB_Boost, 'OgreMain', 
-                'ogg_static', 
-                'alut', 
-                'vorbis_static','vorbisfile_static','vorbisenc_static',
-                'OpenAL32', 'EFX-Util']  ##  'OgreAL' -- going to compile OgreAL ourselves
+        libs=[Config.LIB_Boost, 'OgreMain', 
+                    'ogg_static', 
+                    'alut', 
+                    'vorbis_static','vorbisfile_static','vorbisenc_static',
+                    'OpenAL32', 'EFX-Util']  ##  'OgreAL' -- going to compile OgreAL ourselves
+    else:                    
+        libs=[Config.LIB_Boost, 'OgreMain', 
+                    'ogg', 
+                    'alut', 
+                    'vorbis','vorbisfile','vorbisenc',
+                    'openal']  ##  'OgreAL' -- going to compile OgreAL ourselves
     ModuleName = 'OgreAL'
     CheckIncludes = ['OgreAL.h']
     active=True
@@ -730,6 +750,7 @@ projects = {
     , 'ogrebulletd' : ogrebulletd
     , 'ogreforests' : ogreforests
     , 'et' : et
+    , 'caelum' : caelum
 }        
 
 #

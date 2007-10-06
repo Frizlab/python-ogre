@@ -1,26 +1,19 @@
 import ogre.addons.plib as plib
-import ctypes
 
 plib.netInit ()
-
-sock = plib.netSocket () 
-sock.open        ( False )
+sock = plib.netSocket ()
+if not sock.open ( False ):
+    raise RuntimeError ("Unable to open a socket")
 sock.setBlocking ( False )
-sock.connect     ( "127.0.0.1", 4444 )
-
-count = 0
-maxlen = 256
-storageclass = ctypes.c_char * (maxlen)
-buffer_out=storageclass(" ")
-ctypes.memset ( buffer_out, 39, maxlen )      # just showing how this can be done
-
-
-while ( count < 10 ):
-    msg = "Hello :" + str ( count )
-    print msg
-    buffer_out[:len(msg)] = msg
-    ret = sock.send ( ctypes.addressof(buffer_out), len(msg), 0 )
-    print ret
-    count +=1
+if sock.bind ( "127.0.0.1", 4444 ) == -1:
+    raise RuntimeError ("Unable to bind socket")
+print "Waiting to receive data."
+while ( True ):
+    # use recv to recive the input data as a list of invidual bytes -- suitable for binary data etc
+    # use recv_str to receive the input data as a string
+    # specify maxlen if you need to receive greater than 2048 ie recv(4096)
+    buffer_in = sock.recv_str( )  
+    if len(buffer_in)  >0 : 
+        print "Received:", buffer_in
 
 sock.close ()

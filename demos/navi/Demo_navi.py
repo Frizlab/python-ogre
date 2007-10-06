@@ -19,7 +19,7 @@ class NaviApplication(sf.Application, ogre.WindowEventListener):
     def _createScene(self):
         sceneManager = self.sceneManager
         camera = self.camera
-        self.naviMgr = navi.NaviManager.Get()
+        self.naviMgr = navi.NaviManager(self.renderWindow)
         self.shouldQuit = False # flag to allow the app to do a shutdown
         
         sceneManager.ambientLight = ogre.ColourValue(0.5, 0.5, 0.5)
@@ -41,8 +41,8 @@ class NaviApplication(sf.Application, ogre.WindowEventListener):
         node.scale=(.2, .2, .2)
         
         ## Startup, create, and manage Navis 
-        self.naviMgr.Startup(self.renderWindow)
-    
+# #         self.naviMgr.Startup(self.renderWindow)
+    	
         self.naviMgr.createNavi("menubar", "local://menubar.html", navi.NaviPosition(navi.BottomCenter), 1024, 128, False)
         self.naviMgr.setNaviMask("menubar", "navimenu_bg.png")
         self.naviMgr.bind("menubar", "turnOn", self, "turnOn", ["name"] )
