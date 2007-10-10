@@ -620,6 +620,114 @@ WRAPPER_REGISTRATION_SubMesh = [
     """def( "createVertexData", &::SubMesh_createandsetVertexData );"""
     ] 
 
+    
+#################################################################################################
+WRAPPER_DEFINITION_SceneManager =\
+"""
+bool SceneManager_setOption( Ogre::SceneManager & me, const Ogre::String& strKey, bp::object pValue ) {
+
+    bp::extract<Ogre::AxisAlignedBox> p( pValue );
+    if( p.check() ){
+        Ogre::AxisAlignedBox var = p();
+        return me.setOption ( strKey, reinterpret_cast< void * >( &var ) );
+    }
+    bp::extract<Ogre::Vector3> p3( pValue );
+    if( p3.check() ){
+        Ogre::Vector3 var = p3();
+        return me.setOption ( strKey, reinterpret_cast< void * >( &var ) );
+    }
+    bp::extract<Ogre::Matrix3> p4( pValue );
+    if( p4.check() ){
+        Ogre::Matrix3 var = p4();
+        return me.setOption ( strKey, reinterpret_cast< void * >( &var ) );
+    }
+    bp::extract<Ogre::Matrix4> p5( pValue );
+    if( p5.check() ){
+        Ogre::Matrix4 var = p5();
+        return me.setOption ( strKey, reinterpret_cast< void * >( &var ) );
+    }
+    bp::extract<Ogre::Quaternion> p6( pValue );
+    if( p6.check() ){
+        Ogre::Quaternion var = p6();
+        return me.setOption ( strKey, reinterpret_cast< void * >( &var ) );
+    }
+    bp::extract<int> p2( pValue );
+    if( p2.check() ){
+        int var = p2();
+        return me.setOption ( strKey, reinterpret_cast< void * >( &var ) );
+    }
+    bp::extract<bool> p1( pValue );
+    if( p1.check() ){
+        bool var = p1();
+        return me.setOption ( strKey, reinterpret_cast< void * >( &var ) );
+    }
+    return false;
+}
+
+
+bp::tuple SceneManager_getOption( Ogre::SceneManager & me, const Ogre::String& strKey, bp::object returnType) { 
+
+    bp::extract<Ogre::AxisAlignedBox> p( returnType );
+    if( p.check() ){
+        Ogre::AxisAlignedBox var = p();
+        bool ret = me.getOption ( strKey, reinterpret_cast< void * >( &var ) );
+        return bp::make_tuple ( ret, var );
+    }
+    bp::extract<Ogre::Vector3> p3( returnType );
+    if( p3.check() ){
+        Ogre::Vector3 var = p3();
+        bool ret = me.getOption ( strKey, reinterpret_cast< void * >( &var ) );
+        return bp::make_tuple ( ret, var );
+    }
+    bp::extract<Ogre::Matrix3> p4( returnType );
+    if( p4.check() ){
+        Ogre::Matrix3 var = p4();
+        bool ret = me.getOption ( strKey, reinterpret_cast< void * >( &var ) );
+        return bp::make_tuple ( ret, var );
+    }
+    bp::extract<Ogre::Matrix4> p5( returnType );
+    if( p5.check() ){
+        Ogre::Matrix4 var = p5();
+        bool ret = me.getOption ( strKey, reinterpret_cast< void * >( &var ) );
+        return bp::make_tuple ( ret, var );
+    }
+    bp::extract<Ogre::Quaternion> p6( returnType );
+    if( p6.check() ){
+        Ogre::Quaternion var = p6();
+        bool ret = me.getOption ( strKey, reinterpret_cast< void * >( &var ) );
+        return bp::make_tuple ( ret, var );
+    }
+    bp::extract<int> p2( returnType );
+    if( p2.check() ){
+        int var = p2();
+        bool ret = me.getOption ( strKey, reinterpret_cast< void * >( &var ) );
+        return bp::make_tuple ( ret, var );
+    }
+    bp::extract<bool> p1( returnType );
+    if( p1.check() ){
+        bool var = p1();
+        bool ret = me.getOption ( strKey, reinterpret_cast< void * >( &var ) );
+        return bp::make_tuple ( ret, var );
+    }
+    return bp::make_tuple ( false, false ); 
+}
+
+"""
+
+WRAPPER_REGISTRATION_SceneManager = [
+    """def( "setOption", &::SceneManager_setOption ,
+    "Python-Ogre Helper Function: sets an option in the SceneManager\\n\\
+    Input: Option Name, Option Value\\n\\
+    Ouput: True/False" );""",
+    """def( "getOption", &::SceneManager_getOption ,
+    "Python-Ogre Helper Function: returns an option from the SceneManager\\n\\
+    Input: Option Name\\n\\
+    Ouput: Tuple containing bool (True/False -- success of call) and value" );"""
+    ] 
+
+
+    
+#################################################################################################
 
 def iter_as_generator_vector( cls ):
     print "ITER:", cls
@@ -694,6 +802,11 @@ def apply( mb ):
     rt = mb.class_( 'SubMesh' )
     rt.add_declaration_code( WRAPPER_DEFINITION_SubMesh )
     apply_reg (rt,  WRAPPER_REGISTRATION_SubMesh )
+    
+    rt = mb.class_( 'SceneManager' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_SceneManager )
+    apply_reg (rt,  WRAPPER_REGISTRATION_SceneManager )
+    
     
     mb.add_declaration_code( WRAPPER_DEFINITION_General )
     apply_reg (mb,  WRAPPER_REGISTRATION_General )
