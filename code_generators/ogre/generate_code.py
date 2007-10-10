@@ -175,7 +175,9 @@ def ManualExclude ( mb ):
     ## these are hand wrapper -- 
 #     global_ns.class_('::Ogre::RenderQueueListener').mem_fun('renderQueueStarted').exclude()
 #     global_ns.class_('::Ogre::RenderQueueListener').mem_fun('renderQueueEnded').exclude()
-
+    global_ns.class_('::Ogre::SceneManager').mem_fun('setOption').exclude()
+    global_ns.class_('::Ogre::SceneManager').mem_fun('getOption').exclude()
+    
     ## as we now include all protected functions tere are a couple of problem areas that popped up
     main_ns.constructor("IndexData",arg_types=['::Ogre::IndexData const &']).exclude()
     global_ns.class_('::Ogre::OverlayManager').\
@@ -935,7 +937,14 @@ def generate_code():
     ManualAlias ( mb )
     AutoFixes ( mb, MAIN_NAMESPACE )
     ManualFixes ( mb )
-    
+    for cls in main_ns.classes():
+        if not cls.ignore:
+            try:
+                for c in cls.constructors():
+                    if c.access_type != 'public':
+                        print "NPC:", c.access_type, c
+            except:
+                print "Class without constructors", cls  
     #Py++ can not expose static pointer member variables
     main_ns.vars( 'ms_Singleton' ).disable_warnings( messages.W1035 )
     

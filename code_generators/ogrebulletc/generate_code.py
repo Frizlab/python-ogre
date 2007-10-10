@@ -67,6 +67,11 @@ def ManualInclude ( mb ):
     else:
         main_ns = global_ns    
         
+    global_ns.namespace( 'Ogre' ).class_('MovableObject').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('UserDefinedObject').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('SimpleRenderable').include(already_exposed=True)
+        
+        
 ############################################################
 ##
 ##  And things that need manual fixes, but not necessarly hand wrapped
