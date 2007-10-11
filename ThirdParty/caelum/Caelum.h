@@ -12,10 +12,9 @@
 #include "SimpleSunPositionModel.h"
 #include "SkyColourModel.h"
 #include "SkyDome.h"
-#include "StoredImageSkyColourModel.h"
-#include "StoredImageElvBasedSkyColourModel.h"
 #include "Sun.h"
 #include "SunPositionModel.h"
+#include "LayeredClouds.h"
 #include "UniversalClock.h"
 
 #endif //CAELUM_H

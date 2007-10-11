@@ -1,10 +1,9 @@
 #include "CaelumPrecompiled.h"
 #include "GeometryFactory.h"
-#include "CaelumSystem.h"
 
 namespace caelum {
 
-void GeometryFactory::generateSphericDome (const Ogre::String &name, const unsigned int segments, DomeType type) {
+void GeometryFactory::generateSphericDome (const Ogre::String &name, int segments, DomeType type) {
 	// Return now if already exists
 	if (Ogre::MeshManager::getSingleton ().resourceExists (name))
 		return;
@@ -12,7 +11,7 @@ void GeometryFactory::generateSphericDome (const Ogre::String &name, const unsig
 	LOG ("Creating " + name + " sphere mesh resource...");
 
 	// Use the mesh manager to create the mesh
-	Ogre::MeshPtr msh = Ogre::MeshManager::getSingleton ().createManual (name, CaelumSystem::RESOURCE_GROUP_NAME);
+	Ogre::MeshPtr msh = Ogre::MeshManager::getSingleton ().createManual (name, RESOURCE_GROUP_NAME);
 	// Create a submesh
 	Ogre::SubMesh *sub = msh->createSubMesh ();
 
@@ -87,7 +86,7 @@ void GeometryFactory::generateSphericDome (const Ogre::String &name, const unsig
 	LOG ("DONE");
 }
 
-void GeometryFactory::fillGradientsDomeBuffers (float *pVertex, unsigned short *pIndices, unsigned int segments) {
+void GeometryFactory::fillGradientsDomeBuffers (float *pVertex, unsigned short *pIndices, int segments) {
 	const float deltaLatitude = Ogre::Math::PI / (float )segments;
 	const float deltaLongitude = Ogre::Math::PI * 2.0 / (float )segments;
 
@@ -160,7 +159,7 @@ void GeometryFactory::fillGradientsDomeBuffers (float *pVertex, unsigned short *
 	}
 }
 
-void GeometryFactory::fillStarfieldDomeBuffers (float *pVertex, unsigned short *pIndices, unsigned int segments) {
+void GeometryFactory::fillStarfieldDomeBuffers (float *pVertex, unsigned short *pIndices, int segments) {
 	const float deltaLatitude = Ogre::Math::PI / (float )segments;
 	const float deltaLongitude = Ogre::Math::PI * 2.0 / (float )segments;
 

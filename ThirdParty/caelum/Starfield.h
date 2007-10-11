@@ -18,7 +18,7 @@ class DllExport Starfield : public CameraBoundElement {
 
 		/** Name of the spheric dome resource.
 		 */
-		static const Ogre::String mStarfieldDomeResourceName;
+		static const Ogre::String STARFIELD_DOME_NAME;
 
 		/** Name of the starfield material.
 		 */
@@ -37,7 +37,9 @@ class DllExport Starfield : public CameraBoundElement {
 		/** Constructor.
 			@param sceneMgr The scene manager this dome will belong to.
 		 */
-		Starfield (Ogre::SceneManager *sceneMgr);
+		Starfield (
+                Ogre::SceneManager *sceneMgr,
+                const Ogre::String &textureName = "Starfield.jpg");
 
 		/** Destructor.
 		 */
@@ -64,7 +66,7 @@ class DllExport Starfield : public CameraBoundElement {
 		/** Updates the starfield material.
 			@param mapName The new starfield texture map name.
 		 */
-		void updateMaterial (const Ogre::String &mapName);
+		void setTexture (const Ogre::String &mapName);
 
 	private:
 		/** Internal method to create the starfield material.
