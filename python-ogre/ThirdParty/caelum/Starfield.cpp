@@ -1,23 +1,24 @@
 #include "CaelumPrecompiled.h"
 #include "Starfield.h"
-#include "CaelumSystem.h"
 #include "GeometryFactory.h"
 
 namespace caelum {
 
-const Ogre::String Starfield::mStarfieldDomeResourceName = "CaelumStarfieldDome";
+const Ogre::String Starfield::STARFIELD_DOME_NAME = "CaelumStarfieldDome";
+
 const Ogre::String Starfield::STARFIELD_MATERIAL_NAME = "CaelumStarfieldMaterial";
 
-Starfield::Starfield (Ogre::SceneManager *sceneMgr) {
+Starfield::Starfield (Ogre::SceneManager *sceneMgr, const Ogre::String &textureName) {
 	mAutoRadius = true;
 	mInclination = Ogre::Degree (0);
 
 	createStarfieldMaterial ();
+    setTexture (textureName);
 
-	GeometryFactory::generateSphericDome (mStarfieldDomeResourceName, 32, GeometryFactory::DT_STARFIELD);
-	Ogre::Entity *ent = sceneMgr->createEntity ("StarfieldDome", mStarfieldDomeResourceName);
+	GeometryFactory::generateSphericDome (STARFIELD_DOME_NAME, 32, GeometryFactory::DT_STARFIELD);
+	Ogre::Entity *ent = sceneMgr->createEntity ("StarfieldDome", STARFIELD_DOME_NAME);
 	ent->setMaterialName (STARFIELD_MATERIAL_NAME);
-	ent->setRenderQueueGroup (Ogre::RENDER_QUEUE_SKIES_EARLY + 1);
+	ent->setRenderQueueGroup (CAELUM_RENDER_QUEUE_STARFIELD);
 	ent->setCastShadows (false);
 
 	mNode = sceneMgr->getRootSceneNode ()->createChildSceneNode ();
@@ -70,7 +71,7 @@ void Starfield::update (const float time) {
 	mNode->setOrientation (orientation);
 }
 
-void Starfield::updateMaterial (const Ogre::String &mapName) {
+void Starfield::setTexture (const Ogre::String &mapName) {
 	// Update the starfield material
 	mStarfieldMaterial->getBestTechnique ()->getPass (0)->getTextureUnitState (0)->setTextureName (mapName);
 }
@@ -81,7 +82,7 @@ void Starfield::createStarfieldMaterial () {
 	LOG ("Generating starfield material...");
 	if (!Ogre::MaterialManager::getSingleton ().resourceExists (STARFIELD_MATERIAL_NAME)) {
 		LOG ("\tMaterial not found; creating...");
-		mat = static_cast<Ogre::MaterialPtr>(Ogre::MaterialManager::getSingleton ().create (STARFIELD_MATERIAL_NAME, CaelumSystem::RESOURCE_GROUP_NAME));
+		mat = static_cast<Ogre::MaterialPtr>(Ogre::MaterialManager::getSingleton ().create (STARFIELD_MATERIAL_NAME, RESOURCE_GROUP_NAME));
 		mat->setReceiveShadows (false);
 		LOG ("\t\tMaterial [OK]");
 		Ogre::Pass *pass = mat->getTechnique (0)->getPass (0);

@@ -3,7 +3,6 @@
 
 #include "CaelumPrerequisites.h"
 #include "CameraBoundElement.h"
-#include "SkyColourModel.h"
 #include "Sun.h"
 
 namespace caelum {
@@ -13,31 +12,31 @@ namespace caelum {
  */
 class DllExport SkyDome : public CameraBoundElement {
 // Attributes -----------------------------------------------------------------
-	protected:
+	private:
 		/** Control scene node.
 		 */
 		Ogre::SceneNode *mNode;
 
 		/** Name of the spheric dome resource.
 		 */
-		static const Ogre::String mSphericDomeResourceName;
+		static const Ogre::String SPHERIC_DOME_NAME;
 
 		/** Name of the dome material.
 		 */
 		static const Ogre::String SKY_DOME_MATERIAL_NAME;
 
-		/** Reference to the sky dome material.
-		 */
-		Ogre::MaterialPtr mSkyDomeMaterial;
+		/// Reference to the sky dome material.
+		Ogre::MaterialPtr mMaterial;
 
 // Methods --------------------------------------------------------------------
 	public:
-		/** Constructor (DO NOT USE! Use CaelumSystem::createSkyDome instead).
-			@param sceneMgr The scene manager where this sky dome will be created.
+		/** Constructor
+         *  This will setup some nice defaults.
+		 *  @param sceneMgr The scene manager where this sky dome will be created.
 		 */
 		SkyDome (Ogre::SceneManager *sceneMgr);
 
-		/** Destructor (DO NOT USE! Use CaelumSystem::destroySkyDome instead).
+		/** Destructor
 		 */
 		virtual ~SkyDome ();
 
@@ -48,7 +47,7 @@ class DllExport SkyDome : public CameraBoundElement {
 		/** @copydoc CameraBoundElement::setFarRadius().
 		 */
 		void setFarRadius (float radius);
-	
+
 		/** Sets the sun direction.
 			@param dir The sun light direction.
 		 */
@@ -69,17 +68,11 @@ class DllExport SkyDome : public CameraBoundElement {
 		 */
 		void setAtmosphereHeight (float height) const;
 
-		/** Updates the sky dome material to match the local time.
-			@param skyColourModel The sky colour model in use.
-			@param time The local time.
-			@param sun The sun.
-		 */
-		void updateSkyDomeMaterialTime (SkyColourModel *skyColourModel, float time, Sun *sun);
+        /// Set the sky color gradients image.
+        void setSkyGradientsImage (const Ogre::String& gradients);
 
-		/** Returns the sky dome texture unit state.
-			@return The texture unit state of the sky dome material.
-		 */
-		Ogre::TextureUnitState *getTextureUnitState ();
+        /// Set the atmosphere depthh gradient image.
+        void setAtmosphereDepthImage (const Ogre::String& gradients);
 
 	private:
 		/** Internal method to create the sky dome material.

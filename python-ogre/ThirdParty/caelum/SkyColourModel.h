@@ -5,70 +5,91 @@
 
 namespace caelum {
 
-/** Sky colour model interface.
-	@author Jesús Alonso Abad
-	@version 0.1
+/** Class which returns various sky colours.
+ *  This is based on the same gradients as the skydome.
+ *  It would be nice to split it into multiple components.
+ *  Functions take a "time" parameter but only elevation is actually used.
  */
 class DllExport SkyColourModel {
 // Attributes -----------------------------------------------------------------
-	protected:
-		/** A reference to the sky gradients texture unit state.
-		 */
-		Ogre::TextureUnitState *mSkyGradientsTextureUnitState;
-
+	private:
 		/** The sky gradients image (for lookups).
 		 */
 		Ogre::Image *mSkyGradientsImage;
 
+        /** The sun gradients image (for lookups).
+         */
+        Ogre::Image *mSunColoursImage;
+
+        /** Multiplier for fog densities obtained from the sky gradients image.
+         */
+        float mFogDensityMultiplier;
+
 // Methods --------------------------------------------------------------------
 	public:
-		/** Constructor method.
+	    /** Constructor method.
 		 */
-		SkyColourModel () {
-			mSkyGradientsTextureUnitState = 0;
-			mSkyGradientsImage = 0;
-		}
+		SkyColourModel (
+                const Ogre::String &skyGradients = "EarthClearSky2.png",
+                const Ogre::String &sunColours = "SunGradient.png"
+                );
 
 		/** Destructor.
 		 */
-		virtual ~SkyColourModel () {}
-
-		/** Sets the sky gradients texture unit in use.
-			@param tus The TextureUnitState to be modified.
-		 */
-		void setSkyGradientsTextureUnitState (Ogre::TextureUnitState *tus) {
-			mSkyGradientsTextureUnitState = tus;
-		}
+		virtual ~SkyColourModel ();
 
 		/** Gets the fog colour for a certain daytime.
 			@param time The current time.
 			@param sunDir The sun direction.
 			@return The fog colour.
 		 */
-		virtual Ogre::ColourValue getFogColour (float time, const Ogre::Vector3 &sunDir) = 0;
+		Ogre::ColourValue getFogColour (float time, const Ogre::Vector3 &sunDir);
 
 		/** Gets the fog density for a certain daytime.
 			@param time The current time.
 			@param sunDir The sun direction.
 			@return The fog density.
 		 */
-		virtual float getFogDensity (float time, const Ogre::Vector3 &sunDir) = 0;
+		float getFogDensity (float time, const Ogre::Vector3 &sunDir);
 
-		/** Gets the sun colour for a certain daytime.
-			@param time The current time.
-			@param sunDir The sun direction.
-			@return The sun colour.
-		 */
-		virtual Ogre::ColourValue getSunColour (float time, const Ogre::Vector3 &sunDir) = 0;
+        inline float getFogDensityMultiplier() {
+            return mFogDensityMultiplier;
+        }
 
-		/** Updates the sky colour material, according to various factors.
-			@param fpp The material fragment program parameters (null if it's not supported)
-			@param vpp The material vertex program parameters (null if it's not supported)
-			@param time The local daytime, ranging [0, 1]
-			@param sunDir The sun light direction.
-			@return True if everything went fine.
+        inline void setFogDensityMultiplier(float value) {
+            mFogDensityMultiplier = value;
+        }
+
+		/** Get the colour of the sun sphere.
+         *  This colour is used to draw the sun sphere in the sky.
+		 *  @return The colour of the sun.
 		 */
-		virtual bool updateMaterial (Ogre::GpuProgramParametersSharedPtr fpp, Ogre::GpuProgramParametersSharedPtr vpp, float time, const Ogre::Vector3 &sunDir) = 0;
+		Ogre::ColourValue getSunSphereColour (float time, const Ogre::Vector3 &sunDir);
+
+		/** Gets the colour of sun light.
+         *  This color is used to illuminate the scene.
+         *  @return The colour of the sun's light
+		 */
+		Ogre::ColourValue getSunLightColour (float time, const Ogre::Vector3 &sunDir);
+
+		/// Set the sun gradients image.
+		/// resources/EarthClearSky2.png is the default image; but you can supply another
+		void setSkyGradientsImage (const Ogre::String &filename);
+
+		/// Set the sun colours image.
+		/// Sun colour is taken from this image.
+		/// 'resources/SunGradient.png' is the default image; but you can supply another
+		void setSunColoursImage (const Ogre::String &filename);
+
+	protected:
+		/** Gets the interpolated colour between two pixels from an image.
+			@param x The horizontal coordinate in the range [0, 1].
+			@param height The height at which the pixels are located in the range [0, 1] (will be converted to integer).
+			@param img The lookup image.
+			@param wrap If the map wraps horizontally or not.
+			@return The interpolated colour.
+		 */
+		static Ogre::ColourValue getInterpolatedColour (float x, float height, Ogre::Image *img, bool wrap = true);
 };
 
 } // namespace caelum

@@ -8,6 +8,7 @@
 #include "SkyColourModel.h"
 #include "SkyDome.h"
 #include "Starfield.h"
+#include "LayeredClouds.h"
 #include "Sun.h"
 
 namespace caelum {
@@ -18,11 +19,6 @@ namespace caelum {
  */
 class DllExport CaelumSystem : public Ogre::FrameListener, public Ogre::RenderTargetListener {
 // Attributes -----------------------------------------------------------------
-	public:
-		/** Common resource group name.
-		 */
-		static Ogre::String RESOURCE_GROUP_NAME;
-
 	private:
 		/** Root of the Ogre engine.
 		 */
@@ -46,27 +42,31 @@ class DllExport CaelumSystem : public Ogre::FrameListener, public Ogre::RenderTa
 
 		/// Reference to the universal clock.
 		UniversalClock *mUniversalClock;
-		
-		/** The sky dome.
-		 */
-		SkyDome *mSkyDome;
-
-		/** Reference to the sky colour model in use.
-		 */
-		SkyColourModel *mSkyColourModel;
 
 		/** Flag to indicate if Caelum should manage the fog or not.
 		 */
 		bool mManageFog;
+		
+		/** The sky dome.
+		 */
+        std::auto_ptr<SkyDome> mSkyDome;
 
 		/** Reference to the sun.
 		 */
-		Sun *mSun;
+        std::auto_ptr<Sun> mSun;
+
+		/** Reference to the clouds.
+		 */
+        std::auto_ptr<LayeredClouds> mClouds;
 
 		/** Reference to the starfield.
 		 */
-		Starfield *mStarfield;
+        std::auto_ptr<Starfield> mStarfield;
 
+		/** Reference to the sky colour model in use.
+		 */
+        std::auto_ptr<SkyColourModel> mSkyColourModel;
+        
 // Methods --------------------------------------------------------------------
 	public:
 		/** Constructor.
@@ -75,15 +75,17 @@ class DllExport CaelumSystem : public Ogre::FrameListener, public Ogre::RenderTa
 			@param sceneMgr The Ogre scene manager.
 			@param manageResGroup Tells the system if the resource group has been created externally (true) or if it's to be managed by the system.
 			@param resGroupName The resource group name, if it's desired to use an existing one or just a different name.
-			@param createSkyDome Whether if the sky dome should be created or not.
-			@param createSun Whether if the sun should be created or not.
-			@param createStarfield Whether if the starfield should be created or not.
 		 */
-		CaelumSystem (Ogre::Root *root, 
-										Ogre::SceneManager *sceneMgr, 
-										bool manageResGroup = true, 
-										const Ogre::String &resGroupName = RESOURCE_GROUP_NAME,
-										bool createSkyDome = true, bool createSun = true, bool createStarfield = true);
+		CaelumSystem (
+                Ogre::Root *root, 
+				Ogre::SceneManager *sceneMgr, 
+				bool createSkyColourModel = true,
+				bool createSkyDome = true,
+                bool createSun = true,
+                bool createStarfield = true,
+                bool createClouds = true,
+				bool manageResGroup = true, 
+				const Ogre::String &resGroupName = RESOURCE_GROUP_NAME);
 
 		/** Destructor.
 		 */
@@ -125,56 +127,71 @@ class DllExport CaelumSystem : public Ogre::FrameListener, public Ogre::RenderTa
 		 */
 		bool frameStarted (const Ogre::FrameEvent &e);
 
-		/** Creates the sky dome, or returns the existing one if any yet.
+		/** Set the skydome.
+         *  @param dome A new dome or null to disable.
 		 */
-		SkyDome *createSkyDome ();
+        inline void setSkyDome (SkyDome *dome) {
+            mSkyDome.reset(dome);
+        }
 
 		/** Returns the current sky dome.
-			@return The current sky dome.
 		 */
-		SkyDome *getSkyDome () const;
+        SkyDome *getSkyDome () const {
+            return mSkyDome.get();
+        }
 
-		/** Destroys the sky dome.
-			@remarks Remember to detach the sky dome from every viewport it is attached to before destroying it!
+		/** Set the sun.
+         *  @param sun A new sun or null to disable.
 		 */
-		void destroySkyDome ();
-
-		/** Creates the sun.
-			@return The sun.
-		 */
-		Sun *createSun ();
+        inline void setSun (Sun* sun) {
+            mSun.reset(sun);
+        }
 
 		/** Gets the current sun.
 			@return The sun in use.
 		 */
-		Sun *getSun () const;
+        Sun* getSun () const {
+            return mSun.get();
+        }
 
-		/** Destroys the sun.
-		 */
-		void destroySun ();
+		/** Set the starfield.
+         *  @param starfield A new starfield or null to disable.
+         */
+        inline void setStarfield (Starfield* starfield) {
+            mStarfield.reset(starfield);
+        }
 
-		/** Create the starfield.
-			@note Returns the existing one if there's one already in use.
-			@note The old texture will be replaced by the passed one.
-			@param mapName Name of the starfield texture bitmap.
-			@return The new or current starfield.
-		 */
-		Starfield *createStarfield (const Ogre::String &mapName = "Starfield.jpg");
+		/** Gets the current starfield.
+         */
+        inline Starfield* getStarfield () const {
+            return mStarfield.get();
+        }
 
-		/** Gets the starfield.
-			@return The starfield.
-		 */
-		Starfield *getStarfield () const;
+		/** Set the cloud system
+         *  @param clouds A new cloud system or null to disable.
+         */
+        inline void setClouds (LayeredClouds* clouds) {
+            mClouds.reset(clouds);
+        }
 
-		/** Destroys the current starfield.
-			@remark Remember to detach it from every viewport before deleting!
-		 */
-		void destroyStarfield ();
+		/** Get the current cloud system.
+         */
+        inline LayeredClouds* getClouds () const {
+            return mClouds.get();
+        }
 
 		/** Sets the sky colour model to be used.
-			@param model The sky colour model.
+		 *	@param model The sky colour model, or null to disable
 		 */
-		void setSkyColourModel (SkyColourModel *model);
+        inline void setSkyColourModel (SkyColourModel *model) {
+            mSkyColourModel.reset(model);
+        }
+
+		/** Get the current sky colour model.
+		 */
+        inline SkyColourModel* getSkyColourModel () const {
+            return mSkyColourModel.get();
+        }
 
 		/** Enables/disables the Caelum fog management.
 			@param manage True if you want Caelum to manage the fog for you.

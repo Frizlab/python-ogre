@@ -1,6 +1,5 @@
 #include "CaelumPrecompiled.h"
 #include "Sun.h"
-#include "CaelumSystem.h"
 #include "SimpleSunPositionModel.h"
 #include "EarthSunPositionModel.h"
 
@@ -9,7 +8,8 @@ namespace caelum {
 const Ogre::String Sun::SUN_MATERIAL_NAME = "CaelumSunMaterial";
 
 Sun::Sun (Ogre::SceneManager *sceneMgr): mScene(sceneMgr) {
-	mSunColour = Ogre::ColourValue::White;
+	mSunSphereColour = Ogre::ColourValue::White;
+	mSunLightColour = Ogre::ColourValue::White;
 	mAutoRadius = true;
 	mSunPositionModel = 0;
 
@@ -28,7 +28,7 @@ Sun::Sun (Ogre::SceneManager *sceneMgr): mScene(sceneMgr) {
 	mSunEntity = sceneMgr->createEntity ("CaelumSun", "sphere.mesh");
 	mSunEntity->setMaterialName (SUN_MATERIAL_NAME);
 	mSunEntity->setCastShadows (false);
-	mSunEntity->setRenderQueueGroup (Ogre::RENDER_QUEUE_SKIES_EARLY + 3);
+	mSunEntity->setRenderQueueGroup (CAELUM_RENDER_QUEUE_SUN);
 	mSunNode = sceneMgr->getRootSceneNode ()->createChildSceneNode ();
 	mSunNode->attachObject (mSunEntity);
 }
@@ -58,7 +58,7 @@ Sun::~Sun () {
 }
 
 void Sun::notifyCameraChanged (Ogre::Camera *cam) {
-	float sunRadius0;
+	float sunRadius0 = 1;
 	if (mAutoRadius) {
 		if (cam->getFarClipDistance () > 0) {
 			mRadius = (cam->getFarClipDistance () - CAMERA_DISTANCE_MODIFIER) * 0.5;
@@ -71,7 +71,10 @@ void Sun::notifyCameraChanged (Ogre::Camera *cam) {
 	}
 	sunRadius0 *= mRadius * Ogre::Math::Tan (Ogre::Degree (0.01));
 	mSunNode->setPosition (cam->getRealPosition () - mSunDirection * (mRadius + sunRadius0));
-	mSunNode->setScale (Ogre::Vector3::UNIT_SCALE * (mRadius + sunRadius0) * Ogre::Math::Tan (Ogre::Degree (0.01)));
+    // Scale the sun.
+    float factor = 2 - mSunSphereColour.b / 3;
+    float scale = factor * (mRadius + sunRadius0) * Ogre::Math::Tan (Ogre::Degree (0.01));
+    mSunNode->setScale (Ogre::Vector3::UNIT_SCALE * scale);
 }
 
 void Sun::setFarRadius (float radius) {
@@ -116,23 +119,32 @@ Ogre::Vector3 Sun::getSunDirection () const {
 	return mSunDirection;
 }
 
-void Sun::setSunColour (const Ogre::ColourValue &colour) {
+void Sun::setSunSphereColour (const Ogre::ColourValue &colour) {
 	// Store this last colour
-	mSunColour = colour;
+	mSunSphereColour = colour;
 
-	// Handle light colors.
+	// Set sun material colour.
+	mSunMaterial->setSelfIllumination (colour);
+}
+
+Ogre::ColourValue Sun::getSunSphereColour () {
+	return mSunSphereColour;
+}
+
+void Sun::setSunLightColour (const Ogre::ColourValue &colour) {
+	// Store this last colour
+	mSunLightColour = colour;
+
+	// Set light colours.
 	mMainLight->setDiffuseColour (colour * mDiffuseMultiplier);
 	mMainLight->setSpecularColour (colour * mSpecularMultiplier);
 	if (isManagingAmbientLight()) {
 		mScene->setAmbientLight(colour * mAmbientMultiplier);
 	}
-
-	// Check sun material.
-	mSunMaterial->setSelfIllumination (colour + Ogre::ColourValue (.5, .4, .2));
 }
 
-Ogre::ColourValue Sun::getSunColour () {
-	return mSunColour;
+Ogre::ColourValue Sun::getSunLightColour () {
+	return mSunLightColour;
 }
 
 void Sun::setDiffuseMultiplier (const Ogre::ColourValue &diffuse) {
@@ -173,10 +185,11 @@ void Sun::createSunMaterial () {
 	LOG ("Generating sun material...");
 	if (!Ogre::MaterialManager::getSingleton ().resourceExists (SUN_MATERIAL_NAME)) {
 		LOG ("\tMaterial not found; creating...");
-		mat = static_cast<Ogre::MaterialPtr>(Ogre::MaterialManager::getSingleton ().create (SUN_MATERIAL_NAME, CaelumSystem::RESOURCE_GROUP_NAME));
+		mat = static_cast<Ogre::MaterialPtr>(Ogre::MaterialManager::getSingleton ().create (SUN_MATERIAL_NAME, RESOURCE_GROUP_NAME));
 		mat->setReceiveShadows (false);
 		LOG ("\t\tMaterial [OK]");
 		Ogre::Pass *pass = mat->getTechnique (0)->getPass (0);
+        pass->setSceneBlending (Ogre::SBT_TRANSPARENT_COLOUR);
 		pass->setDepthCheckEnabled (false);
 		pass->setDepthWriteEnabled (false);
 //		pass->setLightingEnabled (false);

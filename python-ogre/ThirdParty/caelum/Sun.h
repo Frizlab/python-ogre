@@ -42,8 +42,11 @@ class DllExport Sun : public CameraBoundElement {
 		/// The latest normalised sun direction.
 		Ogre::Vector3 mSunDirection;
 		
-		/// Sun colour, as set by setSunColour
-		Ogre::ColourValue mSunColour;
+		/// Sun sphere colour, as set by setSunSphereColour
+		Ogre::ColourValue mSunSphereColour;
+
+		/// Sun light colour, as set by setSunLightColour
+		Ogre::ColourValue mSunLightColour;
 
 		/// Colour multiplier for light diffuse colour.
 		Ogre::ColourValue mDiffuseMultiplier;
@@ -101,13 +104,21 @@ class DllExport Sun : public CameraBoundElement {
 		 */
 		Ogre::Vector3 getSunDirection () const;
 
-		/** Sets the sun colour.
-			@param colour The sun colour.
+		/** Sets the sun sphere colour.
+			@param colour The colour used to draw the sun
 		 */
-		void setSunColour (const Ogre::ColourValue &colour);
+		void setSunSphereColour (const Ogre::ColourValue &colour);
 
-		/// Get current sun colour, as set in setSunColur.
-		Ogre::ColourValue getSunColour ();
+		/// Get current sun sphere colour, as set in setSunSphereColour.
+		Ogre::ColourValue getSunSphereColour ();
+
+		/** Sets the sunlight colour.
+			@param colour The colour used to illuminate the scene.
+		 */
+		void setSunLightColour (const Ogre::ColourValue &colour);
+
+		/// Get current sun sphere colour, as set in setSunLightColour.
+		Ogre::ColourValue getSunLightColour ();
 
 		/// Set diffuse multiplier for light colour
 		void setDiffuseMultiplier (const Ogre::ColourValue &diffuse);

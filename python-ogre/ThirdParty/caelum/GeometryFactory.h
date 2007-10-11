@@ -24,7 +24,7 @@ class DllExport GeometryFactory {
 			@param segments The number of sphere segments.
 			@param type The type of sky dome to create.
 		 */
-		static void generateSphericDome (const Ogre::String &name, const unsigned int segments, DomeType type = DT_GRADIENTS);
+		static void generateSphericDome (const Ogre::String &name, int segments, DomeType type = DT_GRADIENTS);
 
 	private:
 		/** Fills the vertex and index buffers for a sky gradients type dome.
@@ -32,14 +32,14 @@ class DllExport GeometryFactory {
 			@param pIndices Pointer to the index buffer.
 			@param segments Subdivision detail.
 		 */
-		static void fillGradientsDomeBuffers (float *pVertex, unsigned short *pIndices, unsigned int segments);
+		static void fillGradientsDomeBuffers (float *pVertex, unsigned short *pIndices, int segments);
 
 		/** Fills the vertex and index buffers for a stardield type dome.
 			@param pVertex Pointer to the vertex buffer.
 			@param pIndices Pointer to the index buffer.
 			@param segments Subdivision detail.
 		 */
-		static void fillStarfieldDomeBuffers (float *pVertex, unsigned short *pIndices, unsigned int segments);
+		static void fillStarfieldDomeBuffers (float *pVertex, unsigned short *pIndices, int segments);
 };
 
 } // namespace caelum
