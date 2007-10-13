@@ -49,7 +49,7 @@ namespace QuickGUI
 			@note
 				height it default at 0.05 absolute coordinates.	Height can be modified.
         */
-		TitleBar(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm);
+		TitleBar(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm);
 
 		/**
 		* Gets a handle to the Button widget used for this Widget.

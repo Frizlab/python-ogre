@@ -25,10 +25,11 @@ namespace QuickGUI
 		mVisible(true),
 		mTopColor(Ogre::ColourValue::White),
 		mBottomColor(Ogre::ColourValue::White),
-		mClippingWidget(owner)
+		mClippingWidget(NULL),
+		mInheritClippingWidget(true),
+		mInheritQuadLayer(true)
 	{
 		mRenderSystem = Ogre::Root::getSingleton().getRenderSystem();
-		mVertices.resize(6);
 		_updateVertexColor();
 	}
 
@@ -56,7 +57,6 @@ namespace QuickGUI
 		mTextureCoordinatesViaClipping(mTextureCoordinates)
 	{
 		mRenderSystem = Ogre::Root::getSingleton().getRenderSystem();
-		mVertices.resize(6);
 		_updateVertexColor();
 	}
 
@@ -298,6 +298,21 @@ namespace QuickGUI
 		return mID;
 	}
 
+	bool Quad::getInheritClippingWidget()
+	{
+		return mInheritClippingWidget;
+	}
+
+	bool Quad::getInheritLayer()
+	{
+		return mInheritQuadLayer;
+	}
+
+	void Quad::setInheritLayer(bool inherit)
+	{
+		mInheritQuadLayer = inherit;
+	}
+
 	Quad::Layer Quad::getLayer()
 	{
 		return mLayer;
@@ -322,14 +337,9 @@ namespace QuickGUI
 		return mTextureName;
 	}
 
-	std::vector<Vertex>* Quad::getVertices()
+	Vertex* Quad::getVertices()
 	{
-		return &mVertices;
-	}
-
-	int Quad::getNumberOfVertices()
-	{
-		return static_cast<int>(mVertices.size());
+		return mVertices;
 	}
 
 	int Quad::getOffset()
@@ -392,6 +402,7 @@ namespace QuickGUI
 	void Quad::setGUIManager(GUIManager* gm)
 	{
 		mGUIManager = gm;
+		_computeVertices();
 	}
 
 	void Quad::setHeight(Ogre::Real pixelHeight)
@@ -401,6 +412,11 @@ namespace QuickGUI
 		mDimensionsChanged = true;
 
 		_clip();
+	}
+
+	void Quad::setInheritClippingWidget(bool inherit)
+	{
+		mInheritClippingWidget = inherit;
 	}
 
 	void Quad::setLayer(Layer l)
@@ -462,16 +478,20 @@ namespace QuickGUI
 		}
 
 		// check for textures embedded in a skin SkinSet
-		if(mGUIManager->embeddedInSkinImageset(textureName.substr(0,textureName.find_first_of('.')),textureName))
+		Ogre::String skin = textureName.substr(0,textureName.find_first_of('.'));
+		if(mGUIManager->embeddedInSkinImageset(skin,textureName))
 		{
-			SkinSet* s = mGUIManager->getSkinImageSet(textureName.substr(0,textureName.find_first_of('.')));
+			SkinSet* s = mGUIManager->getSkinImageSet(skin);
 			setTextureCoordinates(s->getTextureCoordinates(textureName));
-			_setTexture(s->getTextureName());
+			// Don't update texture if they are the same.
+			if( mTextureName != skin )
+				_setTexture(s->getTextureName());
 		}
 		else
 		{
 			// If we make it here, the texture is referring to a particular image file on disk,
-			// that is not embedded in any skin ImageSets.
+			// that is not embedded in any skin ImageSets. Make sure it is loaded
+			Ogre::TextureManager::getSingleton().load(textureName,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 			setTextureCoordinates(Ogre::Vector4(0,0,1,1));
 			_setTexture(textureName);
 		}

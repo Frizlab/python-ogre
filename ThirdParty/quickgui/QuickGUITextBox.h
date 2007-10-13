@@ -38,7 +38,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		TextBox(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm);
+		TextBox(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm);
 
 		/**
 		* Adds a character to the textBox right before text cursor.
@@ -145,6 +145,7 @@ namespace QuickGUI
 		void setCursorIndex(int cursorIndex, bool clearSelection = true);
 		void setCursorIndex(Point position, bool clearSelection = true);
 		void setCursorTexture(const Ogre::String& textureName);
+		virtual void setFont(const Ogre::String& fontScriptName, bool recursive = false);
 		/**
 		* If set to true, cannot input text to textbox
 		*/

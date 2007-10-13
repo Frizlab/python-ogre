@@ -15,6 +15,8 @@
 #include "QuickGUIVertex.h"
 
 #include <list>
+#include <map>
+#include <utility>
 
 namespace QuickGUI
 {
@@ -49,6 +51,9 @@ namespace QuickGUI
 		std::list<Quad*>* mRenderObjectList;
 		std::list<Quad*> mVisibleRenderObjectList;
 		bool mUpdateBeforeRender;
+
+		// Stores the Texture of a quad, and the index of the first quad following it with a different texture.
+		std::vector< std::pair<Ogre::String,int> > mTextureChangeList;
 
 		// required to ensure textures are loaded before used
 		Ogre::TextureManager* mTextureManager;

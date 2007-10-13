@@ -124,6 +124,8 @@ namespace QuickGUI
 		}
 
 		mMenuRenderables.insert(it,o);
+		o->_notifyChangesHandled();
+		o->_notifyAddedToRenderObjectGroup();
 
 		mMenuChanged = true;
 
@@ -151,6 +153,21 @@ namespace QuickGUI
 	int QuadContainer::getOffset()
 	{
 		return mBaseQuad->getOffset();
+	}
+
+	Widget* QuadContainer::getOwner()
+	{
+		return mOwner;
+	}
+
+	std::list<QuadContainer*>* QuadContainer::getPanelList()
+	{
+		return &mChildPanels;
+	}
+
+	std::list<QuadContainer*>* QuadContainer::getWindowList()
+	{
+		return &mChildWindows;
 	}
 
 	void QuadContainer::moveWindowGroupToEnd(QuadContainer* g)

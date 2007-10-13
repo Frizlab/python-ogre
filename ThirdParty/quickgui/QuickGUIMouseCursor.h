@@ -1,6 +1,7 @@
 #ifndef QUICKGUIMOUSECURSOR_H
 #define QUICKGUIMOUSECURSOR_H
 
+#include "OgreImage.h"
 #include "OgrePrerequisites.h"
 
 #include "QuickGUIExportDLL.h"
@@ -38,6 +39,11 @@ namespace QuickGUI
 		~MouseCursor();
 
 		/**
+		* Places the offset at the center of the image used to texture the mouse.
+		*/
+		void centerOrigin();
+
+		/**
 		* Returns true if cursor is set to go invisible when mouse is off the screen, false otherwise.
 		*/
 		bool getHideWhenOffScreen();
@@ -54,6 +60,8 @@ namespace QuickGUI
 		* variable to tell us if user intends the mouse to be shown in window or not.
 		*/
 		void _hide();
+
+		Ogre::String getTexture();
 		
 		bool isVisible();
 		
@@ -112,7 +120,7 @@ namespace QuickGUI
 	protected:
 		GUIManager*		mGUIManager;
 
-		// Default material.
+		// Default texture.
 		Ogre::String	mTextureName;
 		// Width and Height in pixels
 		Size			mPixelSize;

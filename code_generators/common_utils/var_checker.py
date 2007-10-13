@@ -24,7 +24,6 @@ class var_checker:
             
         ## note the gccxml uses a 1 based line scheme whereas we are using python arrays - 0 based
         ## so we need to subtract 1 from the line number.
-        
         varline = self.source[declaration.location.line-1]
 #         print "Checker info:",declaration.location.line, declaration.location.file_name
 #         print "Checker Line:", varline

@@ -35,6 +35,7 @@ namespace QuickGUI
 		* Returns the number of parent iterations required to get to Sheet widget.
 		*/
 		int getOffset();
+		Widget* getOwner();
 
 		/**
 		* Removes the Window Group from its current location and appends to the end
@@ -74,6 +75,9 @@ namespace QuickGUI
 		// Only Sheet widgets will make use of Window List
 		std::list<QuadContainer*> mChildWindows;
 		std::list<Quad*> mMenuRenderables;	// Highest zOrder of this group
+
+		std::list<QuadContainer*>* getPanelList();
+		std::list<QuadContainer*>* getWindowList();
 
 		void _populateRenderObjectList();
 		void _updateRenderQueue();

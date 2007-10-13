@@ -27,6 +27,7 @@ namespace QuickGUI
 		static bool textureExistsOnDisk(const Ogre::String& textureName);
 
 	protected:
+		static Ogre::StringVector mSupportedImageCodecs;
 	};
 }
 

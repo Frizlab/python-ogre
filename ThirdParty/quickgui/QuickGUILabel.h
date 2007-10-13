@@ -54,7 +54,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		Label(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String textureName, GUIManager* gm);
+		Label(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String textureName, GUIManager* gm);
 		
 		/**
 		* Aligns the child Label widget horizontally and vertically
@@ -99,6 +99,7 @@ namespace QuickGUI
 		* Sets the color of the text when the widget is disabled.
 		*/
 		void setDisabledTextColor(const Ogre::ColourValue& c);
+		virtual void setFont(const Ogre::String& fontScriptName, bool recursive = false);
 		virtual void setQuadLayer(Quad::Layer l);
 		/**
 		* Sets text vertical alignment.

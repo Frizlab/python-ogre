@@ -2,7 +2,8 @@
 #define QUICKGUICOMBOBOX_H
 
 #include "QuickGUIButton.h"
-#include "QuickGUILabel.h"
+#include "QuickGUIImage.h"
+#include "QuickGUIMenuLabel.h"
 #include "QuickGUIList.h"
 
 #include <vector>
@@ -24,7 +25,7 @@ namespace QuickGUI
 	ComboBoxes are meant to be created via the Window widget.
 	*/
 	class _QuickGUIExport ComboBox :
-		public Label
+		public Image
 	{
 	public:
 		/** Constructor
@@ -43,13 +44,9 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		ComboBox(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String textureName, GUIManager* gm);
+		ComboBox(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String textureName, GUIManager* gm);
 
-		/*
-		* Event Handler tied to ListItems, causing them to hide lists on mouse button up.
-		*/
-		void addDefaultListItemHandler(const EventArgs& args);
-
+		MenuLabel* addItem();
 		/**
 		* Add user defined events, that will be called when a selection is made.
 		*/
@@ -59,50 +56,60 @@ namespace QuickGUI
 		}
 		void addOnSelectionEventHandler(MemberFunctionSlot* function);
 
-		/**
-		* Event Handler tied to ComboBox button.
-		*/
-		void applyButtonDownImage(const EventArgs& args);
+		void clearDropDownList();
+		void clearSelection();
 
-		List* getDropDownList();
+		int getItemIndex(MenuLabel* l);
+		int getNumberOfItems();
+		MenuLabel* getSelectedItem();
+		int getSelectedItemIndex();
 
+		void hide();
+		
+		void selectItem(unsigned int index);
+		void setDropDownHeight(Ogre::Real pixelHeight);
+		void setDropDownWidth(Ogre::Real pixelWidth);
 		/**
-		* Event Handler for the EVENT_LOSE_FOCUS event.
+		* Sets the material displayed when the mouse moves over a list item.
 		*/
-		void onLoseFocus(const EventArgs& args);
-
-		/**
-		* Event Handler for the EVENT_MOUSE_ENTER event.
-		*/
-		void onMouseEnters(const EventArgs& args);
-		/**
-		* Default Handler for the EVENT_MOUSE_LEAVE event.
-		*/
-		void onMouseLeaves(const EventArgs& args);
-		/**
-		* Default Handler for the EVENT_MOUSE_BUTTON_DOWN event.
-		*/
-		void onMouseButtonDown(const EventArgs& args);
-		/**
-		* Default Handler for the EVENT_MOUSE_BUTTON_UP event.
-		*/
-		void onMouseButtonUp(const EventArgs& args);
-		/**
-		* Specific Handler for the ComboBox Widget.  Called when the user selects a ListItem
-		*/
-		void onSelection(const EventArgs& args);
-		/**
-		* Event Handler tied to the combobox button, for opening and closing the drop down list.
-		*/
-		void toggleDropDownListVisibility(const EventArgs& args);
+		void setHighlightTexture(const Ogre::String& texture);
+		void setRightToLeft(bool rightToLeft);
 
 	protected:
 		virtual ~ComboBox();
 
+		/**
+		* Manually set a ListItem to be highlighted.
+		*/
+		void highlightListItem(MenuLabel* l);
+
+		void selectItem(MenuLabel* l);
+
+		void hideDropDownList(const EventArgs& args);
+		void onLoseFocus(const EventArgs& args);
+		void onMouseButtonUp(const EventArgs& args);
+		void onMouseEnters(const EventArgs& args);
+		void onMouseLeaves(const EventArgs& args);
+		/**
+		* Specific Handler for the ComboBox Widget.  Called when the user selects a ListItem
+		*/
+		void onSelection(const EventArgs& args);
+
+		Quad* mHighlightPanel;
+		Ogre::String mHighlightTexture;
+		MenuLabel* mHighlightedItem;
+
 		// Button that shows the drop down list.
 		Button* mButton;
+		// Imitates the selected item.
+		MenuLabel* mMenuLabel;
 		// Drop down list.
 		List* mList;
+
+		Ogre::Real mDropDownHeight;
+		Ogre::Real mDropDownWidth;
+
+		bool mRightToLeft;
 
 		// User defined event handlers that are called when a Selection is made.
 		std::vector<MemberFunctionSlot*> mOnSelectUserEventHandlers;

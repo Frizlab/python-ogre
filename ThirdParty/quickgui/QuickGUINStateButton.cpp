@@ -2,8 +2,8 @@
 
 namespace QuickGUI
 {
-	NStateButton::NStateButton(const Ogre::String& name, const Rect& pixelDimensions, GUIManager* gm) :
-		Button(name,pixelDimensions,"",gm)
+	NStateButton::NStateButton(const Ogre::String& instanceName, const Size& pixelSize, GUIManager* gm) :
+		Button(instanceName,pixelSize,"",gm)
 	{
 		mWidgetType = TYPE_NSTATEBUTTON;
 		addEventHandler(EVENT_MOUSE_BUTTON_UP,&NStateButton::onMouseButtonUp,this);

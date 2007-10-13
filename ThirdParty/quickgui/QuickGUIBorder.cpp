@@ -3,15 +3,15 @@
 
 namespace QuickGUI
 {
-	Border::Border(const Ogre::String& name, BorderType bType, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm) :
-		Image(name,pixelDimensions,texture,gm),
+	Border::Border(const Ogre::String& instanceName, BorderType bType, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
+		Image(instanceName,pixelSize,texture,gm),
 		mBorderType(bType)
 	{
 		mWidgetType = TYPE_BORDER;
 		mDraggingEnabled = true;
 		mWidgetToDrag = NULL;
 
-		switch(bType)
+		switch(mBorderType)
 		{
 		case BORDER_TYPE_TOP_LEFT:
 			mHorizontalAnchor = ANCHOR_HORIZONTAL_LEFT;
@@ -48,21 +48,31 @@ namespace QuickGUI
 		}
 
 		addEventHandler(EVENT_DRAGGED,&Border::onDragged,this);
+		addEventHandler(EVENT_MOUSE_ENTER,&Border::onMouseEnter,this);
+		addEventHandler(EVENT_MOUSE_LEAVE,&Border::onMouseLeave,this);
 	}
 
 	Border::~Border()
 	{
 	}
 
+	Border::BorderType Border::getBorderType()
+	{
+		return mBorderType;
+	}
+
 	void Border::onDragged(const EventArgs& args)
 	{
+		if(mParentWidget == NULL)
+			return;
+
 		const MouseEventArgs mea = dynamic_cast<const MouseEventArgs&>(args);
 
 		switch(mBorderType)
 		{
 		case BORDER_TYPE_TOP_LEFT:
-			mParentWidget->setScreenPosition(mea.position.x,mea.position.y);
 			mParentWidget->setSize(mParentWidget->getWidth() - mea.moveDelta.x,mParentWidget->getHeight() - mea.moveDelta.y);
+			mParentWidget->setScreenPosition(mea.position.x,mea.position.y);
 			break;
 		case BORDER_TYPE_TOP_RIGHT:
 			mParentWidget->setScreenYPosition(mea.position.y);
@@ -90,5 +100,60 @@ namespace QuickGUI
 			mParentWidget->setHeight(mParentWidget->getHeight() + mea.moveDelta.y);
 			break;
 		}
+	}
+
+	void Border::onMouseEnter(const EventArgs& args)
+	{
+		if((mParentWidget == NULL) || (!mParentWidget->resizingAllowed()))
+			return;
+
+		MouseCursor* mc = mGUIManager->getMouseCursor();
+		mMouseCursorTexture = mc->getTexture();
+
+		Ogre::String skin = mQuad->getTextureName();
+
+		switch(mBorderType)
+		{
+		case BORDER_TYPE_TOP_LEFT:
+			mc->setTexture(skin+".cursor.resize.diagonal1.png");
+			break;
+		case BORDER_TYPE_TOP_RIGHT:
+			mc->setTexture(skin+".cursor.resize.diagonal2.png");
+			break;
+		case BORDER_TYPE_BOTTOM_LEFT:
+			mc->setTexture(skin+".cursor.resize.diagonal2.png");
+			break;
+		case BORDER_TYPE_BOTTOM_RIGHT:
+			mc->setTexture(skin+".cursor.resize.diagonal1.png");
+			break;
+		case BORDER_TYPE_LEFT:
+			mc->setTexture(skin+".cursor.resize.leftright.png");
+			break;
+		case BORDER_TYPE_TOP:
+			mc->setTexture(skin+".cursor.resize.updown.png");
+			break;
+		case BORDER_TYPE_RIGHT:
+			mc->setTexture(skin+".cursor.resize.leftright.png");
+			break;
+		case BORDER_TYPE_BOTTOM:
+			mc->setTexture(skin+".cursor.resize.updown.png");
+			break;
+		}
+
+		Point currentPosition = mc->getPosition();
+		mc->centerOrigin();
+		mc->setPosition(currentPosition.x,currentPosition.y);
+	}
+
+	void Border::onMouseLeave(const EventArgs& args)
+	{
+		if((mParentWidget == NULL) || (!mParentWidget->resizingAllowed()))
+			return;
+
+		MouseCursor* mc = mGUIManager->getMouseCursor();
+		mc->setTexture(mMouseCursorTexture);
+		Point currentPosition = mc->getPosition();
+		mc->offsetOrigin(0,0);
+		mc->setPosition(currentPosition.x,currentPosition.y);
 	}
 }

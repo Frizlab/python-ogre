@@ -281,16 +281,10 @@ def generate_code():
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory..
-    additional_dirs=[]
-    for d in additional_dirs:
-        for f in os.listdir(d):
-            if f.endswith('cpp') or f.endswith('.h'):
-                sourcefile = os.path.join(d, f)
-                destfile = os.path.join(environment.ogrebulletc.generated_dir, f ) 
-                if not common_utils.samefile( sourcefile ,destfile ):
-                    shutil.copy( sourcefile, environment.ogrebulletc.generated_dir )
-                    print "Updated ", f, "as it was missing or out of date"
-        
+    common_utils.copyTree ( sourcePath = os.path.join(environment.Config.PATH_OgreBullet, 'Collisions'),
+                            destPath = environment.ogrebulletc.generated_dir, 
+                            recursive= True )
+            
 if __name__ == '__main__':
     start_time = time.clock()
     generate_code()

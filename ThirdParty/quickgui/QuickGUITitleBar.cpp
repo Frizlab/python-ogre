@@ -6,18 +6,20 @@
 
 namespace QuickGUI
 {
-	TitleBar::TitleBar(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm) :
-		Label(name,pixelDimensions,texture,gm)
-	{		
-		setQuadLayer(Quad::LAYER_MENU);
+	TitleBar::TitleBar(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
+		Label(instanceName,pixelSize,texture,gm)
+	{	
 		mWidgetType = TYPE_TITLEBAR;
+		setQuadLayer(Quad::LAYER_MENU);
+		mInheritQuadLayer = false;
 		mHorizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
 		mHorizontalAlignment = HA_LEFT;
 
 		// Create CloseButton
 		Ogre::Real ButtonSize = mSize.height - 3;
-		mCloseButton = new Button(mInstanceName+".CloseButton",Rect(mSize.width - ButtonSize,0,ButtonSize,ButtonSize),mTextureName + ".button" + mTextureExtension,mGUIManager);
+		mCloseButton = new Button(mInstanceName+".CloseButton",Size(ButtonSize,ButtonSize),mTextureName + ".button" + mTextureExtension,mGUIManager);
 		addChild(mCloseButton);
+		mCloseButton->setPosition(mSize.width - ButtonSize,0);
 		mCloseButton->setHorizontalAnchor(ANCHOR_HORIZONTAL_RIGHT);
 		mCloseButton->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
 

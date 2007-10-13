@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <list>
 #include <map>
+#include <set>
 #include <time.h>
 #include <utility>
 #include <ctype.h>
@@ -43,6 +44,8 @@ namespace QuickGUI
 	class _QuickGUIExport GUIManager :
 		public Ogre::RenderQueueListener
 	{
+	public:
+		friend class ComboBox;
 	public:
 		/** Constructor
         */
@@ -120,6 +123,8 @@ namespace QuickGUI
 		*/
 		bool embeddedInSkinImageset(const Ogre::String& skinName, const Ogre::String& textureName);
 
+		Ogre::String generateName(Widget::Type t);
+
 		/**
 		* Useful for Text Input Widgets, like the TextBox
 		*/
@@ -138,17 +143,23 @@ namespace QuickGUI
 		bool injectMouseWheelChange(float delta);
 		void injectTime(Ogre::Real time);
 
+		/**
+		* Checks if the desired widget name already exists.  If it already exists,
+		* false is returned.
+		*/
+		bool isNameUnique(const Ogre::String& name);
+
 		void loadSkin(const Ogre::String& skinName);
+
+		void notifyNameFree(const Ogre::String& name);
+		void notifyNameUsed(const Ogre::String& name);
+
+		void registerTimeListener(Widget* w);
 
 		virtual void renderQueueStarted(Ogre::uint8 id, const Ogre::String& invocation, bool& skipThisQueue);
 		virtual void renderQueueEnded(Ogre::uint8 id, const Ogre::String& invocation, bool& repeatThisQueue);
 
 		void removeFromRenderQueue();
-
-		/**
-		* Removes a name from the list of used Widget names. (if name in list)
-		*/
-		void removeWidgetName(const Ogre::String& name);
 
 		/**
 		* Sets the active sheet, displaying it on screen.
@@ -194,12 +205,7 @@ namespace QuickGUI
 		*/
 		bool textureExists(const Ogre::String& textureName);
 
-		/**
-		* Checks if the desired widget name already exists.  If it already exists,
-		* false is returned.  Otherwise, if addToList is true, the name is added to
-		* list of used Widget names, and true is returned.
-		*/
-		bool validWidgetName(const Ogre::String& name, bool addToList = true);
+		void unregisterTimeListener(Widget* w);
 
 	protected:
 		// Viewport which renders all widgets belonging to this manager.
@@ -214,7 +220,7 @@ namespace QuickGUI
 
 		MouseCursor*			mMouseCursor;
 
-		Ogre::StringVector		mWidgetNames;
+		std::set<Ogre::String>	mWidgetNames;
 
 		// range of supported codepoints used for injectChar function.
 		std::vector<Ogre::UTFString::code_point> mSupportedCodePoints;
@@ -224,7 +230,6 @@ namespace QuickGUI
 		QuickGUI::Sheet*		mActiveSheet;
 		// Includes the Default Sheet.
 		std::list<Sheet*>		mSheets;
-		int						mAutoNameSheetCounter;
 
 		Ogre::String			mDebugString;
 
@@ -244,6 +249,13 @@ namespace QuickGUI
 		Widget*					mActiveWidget;
 
 		bool					mDraggingWidget;
+
+		// Keep track of open menu's, for mouse detection.
+		std::map<Ogre::String,Widget*>	mOpenMenus;
+		void _menuOpened(Widget* w);
+		void _menuClosed(Widget* w);
+
+		std::vector<Widget*>	mTimeListeners;
 
 		void _createDefaultTextures();
     };

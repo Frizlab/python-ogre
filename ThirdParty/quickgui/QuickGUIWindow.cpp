@@ -4,18 +4,21 @@
 
 namespace QuickGUI
 {
-	Window::Window(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm) :
-		Panel(name,Rect(pixelDimensions.x,pixelDimensions.y,pixelDimensions.width,pixelDimensions.height),texture,gm),
+	Window::Window(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
+		Panel(instanceName,pixelSize,texture,gm),
 		mTitleBar(0),
 		mBringToFrontOnFocus(true)
 	{
 		mWidgetType = TYPE_WINDOW;
 		mShowWithParent = false;
+		mCanResize = true;
 		addEventHandler(EVENT_GAIN_FOCUS,&Window::onGainFocus,this);
 
 		// Create TitleBar - tradition titlebar dimensions: across the top of the window
-		mTitleBar = new TitleBar(mInstanceName+".Titlebar",Rect(0,0,mSize.width,25),mTextureName + ".titlebar" + mTextureExtension,mGUIManager);
+		mGUIManager->notifyNameUsed(mInstanceName + ".TitleBar");
+		mTitleBar = new TitleBar(mInstanceName + ".TitleBar",Size(mSize.width,25),mTextureName + ".titlebar" + mTextureExtension,mGUIManager);
 		addChild(mTitleBar);
+		mTitleBar->setPosition(0,0);
 		mTitleBar->enableDragging(true);
 		mTitleBar->setDraggingWidget(this);
 
@@ -24,6 +27,50 @@ namespace QuickGUI
 
 	Window::~Window()
 	{
+	}
+
+	void Window::allowScrolling(bool allow)
+	{
+		mScrollingAllowed = allow;
+
+		if(mScrollingAllowed)
+		{
+			if(mScrollPane == NULL)
+			{
+				mScrollPane = new ScrollPane(mInstanceName+".ScrollPane",Size(mSize.width,mSize.height),mGUIManager);
+				addChild(mScrollPane);
+				mScrollPane->setPosition(0,0);
+
+				mRightScrollBar = mScrollPane->mRightBar;
+				addChild(mRightScrollBar);
+				mRightScrollBar->setPosition(mSize.width - 20,0);
+
+				mBottomScrollBar = mScrollPane->mBottomBar;
+				addChild(mBottomScrollBar);
+				mBottomScrollBar->setPosition(0,mSize.height - 20);
+
+				if(mTitleBar->isVisible())
+				{
+					mRightScrollBar->setYPosition(mTitleBar->getHeight());
+					mRightScrollBar->setHeight(mRightScrollBar->getHeight() - mTitleBar->getHeight());
+				}
+
+				mScrollPane->manageWidgets();
+			}
+		}
+		else
+		{
+			if(mScrollPane != NULL)
+			{
+				delete mScrollPane;
+				mScrollPane = NULL;
+
+				mGUIManager->destroyWidget(mRightScrollBar);
+				mRightScrollBar = NULL;
+				mGUIManager->destroyWidget(mBottomScrollBar);
+				mBottomScrollBar = NULL;
+			}
+		}
 	}
 
 	void Window::onGainFocus(const EventArgs& args)
@@ -67,6 +114,12 @@ namespace QuickGUI
 		mTitleBar->hide();
 		mTitleBar->setShowWithParent(false);
 
+		if(mRightScrollBar)
+		{
+			mRightScrollBar->setYPosition(0);
+			mRightScrollBar->setHeight(mRightScrollBar->getHeight() + mTitleBar->getHeight());
+		}
+
 		Ogre::Real titlebarHeight = mTitleBar->getHeight();
 		setYPosition(mPosition.y - titlebarHeight);
 		setHeight(mSize.height + titlebarHeight);
@@ -100,6 +153,9 @@ namespace QuickGUI
 	{
 		mTitleBar->show();
 		mTitleBar->setShowWithParent(true);
+
+		mRightScrollBar->setYPosition(mTitleBar->getHeight());
+		mRightScrollBar->setHeight(mRightScrollBar->getHeight() - mTitleBar->getHeight());
 
 		Ogre::Real titlebarHeight = mTitleBar->getHeight();
 		setYPosition(mPosition.y + titlebarHeight);

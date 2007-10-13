@@ -8,7 +8,6 @@ namespace QuickGUI
 		mWidgetContainingMouse(0),
 		mActiveWidget(0),
 		mClickTimeout(75),
-		mAutoNameSheetCounter(0),
 		mQueueID(Ogre::RENDER_QUEUE_OVERLAY),
 		mMouseCursor(0),
 		mSceneManager(0),
@@ -26,7 +25,10 @@ namespace QuickGUI
 		mMouseButtonDown[6] = NULL;
 		mMouseButtonDown[7] = NULL;
 
-		mMouseCursor = new MouseCursor(Size(30,30),"qgui.pointer.png",this);
+		// load default skin into an SkinSet Texture - must be done before we start rendering.
+		loadSkin("qgui");
+
+		mMouseCursor = new MouseCursor(Size(13,17),"qgui.cursor.png",this);
 		mMouseCursor->setPosition(getViewportWidth()/2.0,getViewportHeight()/2.0);
 		
 		mDefaultSheet = createSheet();
@@ -37,9 +39,6 @@ namespace QuickGUI
 		mSupportedCodePoints.push_back(9);
 		for(Ogre::UTFString::code_point i = 32; i < 167; ++i)
 			mSupportedCodePoints.push_back(i);
-
-		// load default skin into an SkinSet Texture - must be done before we start rendering.
-		loadSkin("qgui");
 
 		_createDefaultTextures();
 
@@ -105,6 +104,26 @@ namespace QuickGUI
 		}
 	}
 
+	void GUIManager::_menuOpened(Widget* w)
+	{
+		if(w == NULL)
+			return;
+
+		// check if widget already in list.
+		if(mOpenMenus.find(w->getInstanceName()) != mOpenMenus.end())
+			return;
+
+		mOpenMenus[w->getInstanceName()] = w;
+	}
+
+	void GUIManager::_menuClosed(Widget* w)
+	{
+		if(w == NULL)
+			return;
+
+		mOpenMenus.erase(mOpenMenus.find(w->getInstanceName()));
+	}
+
 	void GUIManager::clearAll()
 	{
 		mWidgetNames.clear();
@@ -120,13 +139,14 @@ namespace QuickGUI
 		mWidgetContainingMouse = NULL;
 		mActiveWidget = NULL;
 
+		mTimeListeners.clear();
+		mOpenMenus.clear();
+
 		std::list<Sheet*>::iterator it;
 		for( it = mSheets.begin(); it != mSheets.end(); ++it )
 			delete (*it);
 		mSheets.clear();
 
-		// reset counter
-		mAutoNameSheetCounter = 0;
 		// create default sheet
 		mDefaultSheet = createSheet();
 		mActiveSheet = mDefaultSheet;
@@ -137,7 +157,10 @@ namespace QuickGUI
 
 	Sheet* GUIManager::createSheet()
 	{
-		return new Sheet("Sheet"+Ogre::StringConverter::toString(mAutoNameSheetCounter++),"",this);
+		Ogre::String name = generateName(Widget::TYPE_SHEET);
+		notifyNameUsed(name);
+
+		return new Sheet(name,"",this);
 	}
 
 	void GUIManager::destroySheet(const Ogre::String& name)
@@ -249,6 +272,40 @@ namespace QuickGUI
 	{
 		if(!skinLoaded(skinName)) return false;
 		else return mSkinSets[skinName]->containsImage(textureName);
+	}
+
+	Ogre::String GUIManager::generateName(Widget::Type t)
+	{
+		Ogre::String s;
+		switch(t)
+		{
+			case Widget::TYPE_BORDER:				s = "Border";		break;
+			case Widget::TYPE_BUTTON:				s = "Button";		break;
+			case Widget::TYPE_COMBOBOX:				s = "ComboBox";		break;
+			case Widget::TYPE_IMAGE:				s = "Image";		break;
+			case Widget::TYPE_LABEL:				s = "Label";		break;
+			case Widget::TYPE_LIST:					s = "List";			break;
+			case Widget::TYPE_MENULABEL:			s = "MenuLabel";	break;
+			case Widget::TYPE_NSTATEBUTTON:			s = "NStateButton"; break;
+			case Widget::TYPE_PANEL:				s = "Panel";		break;
+			case Widget::TYPE_PROGRESSBAR:			s = "ProgressBar";	break;
+			case Widget::TYPE_SCROLL_PANE:			s = "ScrollPane";	break;
+			case Widget::TYPE_SCROLLBAR_HORIZONTAL: s = "HScrollBar";	break;
+			case Widget::TYPE_SCROLLBAR_VERTICAL:	s = "VScrollBar";	break;
+			case Widget::TYPE_SHEET:				s = "Sheet";		break;
+			case Widget::TYPE_TEXTBOX:				s = "TextBox";		break;
+			case Widget::TYPE_TITLEBAR:				s = "TitleBar";		break;
+			case Widget::TYPE_TRACKBAR_HORIZONTAL:	s = "HTrackBar";	break;
+			case Widget::TYPE_TRACKBAR_VERTICAL:	s = "VTrackBar";	break;
+			case Widget::TYPE_WINDOW:				s = "Window";		break;
+			default:								s = "Widget";		break;
+		}
+
+		int counter = 1;
+		while( !isNameUnique(s + Ogre::StringConverter::toString(counter)) )
+			++counter;
+
+		return (s + Ogre::StringConverter::toString(counter));
 	}
 
 	bool GUIManager::injectChar(Ogre::UTFString::unicode_char c)
@@ -435,10 +492,18 @@ namespace QuickGUI
 		}
 
 		// Now get the widget the cursor is over.
-		Widget* hitWidget;
-		Widget* wItr = mActiveWidget;
-		while( (hitWidget = wItr->getTargetWidget(args.position)) == NULL )
-			wItr = wItr->getParentWidget();
+		
+		// Check Open Menus first, since they are not within their parent bounds.
+		Widget* hitWidget = NULL;
+		for(std::map<Ogre::String,Widget*>::iterator it = mOpenMenus.begin(); it != mOpenMenus.end(); ++it)
+		{
+			if( (hitWidget = (*it).second->getTargetWidget(args.position)) != NULL )
+				break;
+		}
+
+		// If no menu's are open, or cursor not over a menu, query the Sheet for the widget the cursor is over.
+		if(hitWidget == NULL)
+			hitWidget = mActiveSheet->getTargetWidget(args.position);
 		
 		// NOTE: Widget is only detected if it is enabled.
 		args.widget = hitWidget;
@@ -477,7 +542,17 @@ namespace QuickGUI
 
 	void GUIManager::injectTime(Ogre::Real time)
 	{
-		mActiveSheet->timeElapsed(time);
+		std::vector<Widget*>::iterator it;
+		for( it = mTimeListeners.begin(); it != mTimeListeners.end(); ++it )
+			(*it)->timeElapsed(time);
+	}
+
+	bool GUIManager::isNameUnique(const Ogre::String& name)
+	{
+		if(name == "")
+			return false;
+
+		return (mWidgetNames.find(name) == mWidgetNames.end());
 	}
 
 	void GUIManager::loadSkin(const Ogre::String& skinName)
@@ -486,6 +561,35 @@ namespace QuickGUI
 		if( mSkinSets.find(skinName) != mSkinSets.end() ) return;
 
 		mSkinSets[skinName] = new SkinSet(skinName);
+	}
+
+	void GUIManager::notifyNameFree(const Ogre::String& name)
+	{
+		mWidgetNames.erase(mWidgetNames.find(name));
+	}
+
+	void GUIManager::notifyNameUsed(const Ogre::String& name)
+	{
+		if(!isNameUnique(name))
+			return;
+
+		mWidgetNames.insert(name);
+	}
+
+	void GUIManager::registerTimeListener(Widget* w)
+	{
+		if(w == NULL)
+			return;
+
+		// check if widget already in list.
+		std::vector<Widget*>::iterator it;
+		for( it = mTimeListeners.begin(); it != mTimeListeners.end(); ++it )
+		{
+			if(w->getInstanceName() == (*it)->getInstanceName())
+				return;
+		}
+
+		mTimeListeners.push_back(w);
 	}
 
 	void GUIManager::renderQueueStarted(Ogre::uint8 id, const Ogre::String& invocation, bool& skipThisQueue)
@@ -517,16 +621,6 @@ namespace QuickGUI
 	{
 		if(mSceneManager != NULL)
 			mSceneManager->removeRenderQueueListener(this);
-	}
-
-	void GUIManager::removeWidgetName(const Ogre::String& name)
-	{
-		if( name == "" ) 
-			return;
-
-		Ogre::StringVector::iterator it = std::remove(mWidgetNames.begin(),mWidgetNames.end(),name);
-		if( it != mWidgetNames.end() ) 
-			mWidgetNames.erase(it);
 	}
 
 	void GUIManager::setActiveSheet(Sheet* s)
@@ -625,20 +719,19 @@ namespace QuickGUI
 		return false;
 	}
 
-	bool GUIManager::validWidgetName(const Ogre::String& name, bool addToList)
+	void GUIManager::unregisterTimeListener(Widget* w)
 	{
-		if( name == "" ) 
-			return false;
+		if(w == NULL)
+			return;
 
-		Ogre::StringVector::iterator it;
-		for( it = mWidgetNames.begin(); it != mWidgetNames.end(); ++it )
+		std::vector<Widget*>::iterator it;
+		for( it = mTimeListeners.begin(); it != mTimeListeners.end(); ++it )
 		{
-			if( (*it) == name ) 
-				return false;
+			if(w->getInstanceName() == (*it)->getInstanceName())
+			{
+				mTimeListeners.erase(it);
+				return;
+			}
 		}
-
-		if(addToList) mWidgetNames.push_back(name);
-
-		return true;
 	}
 }

@@ -78,7 +78,7 @@ def ManualExclude ( mb ):
             '::QuickGUI::QuadContainer::_populateRenderObjectList'
             ,'::QuickGUI::QuadContainer::_updateRenderQueue'
             ,'::QuickGUI::HorizontalTrackBar::_getButtonSize'
-            ,'::QuickGUI::List::getNumberOfListItems'
+#             ,'::QuickGUI::List::getNumberOfListItems'
             ,'::QuickGUI::Panel::getScrollPane'
             ,'::QuickGUI::ScrollPane::_showVScrollBars'
             ,'::QuickGUI::ScrollPane::_showHScrollBars'
@@ -114,6 +114,8 @@ def ManualInclude ( mb ):
     global_ns.class_('::Ogre::FontPtr').include(already_exposed=True)
     global_ns.class_('::Ogre::RenderQueueListener').include(already_exposed=True)
     global_ns.class_('::Ogre::SceneManager').include(already_exposed=True)
+    global_ns.class_('::Ogre::Viewport').include(already_exposed=True)
+    global_ns.class_('::Ogre::Image').include(already_exposed=True)
 #     global_ns.class_('::Ogre::TRect<float>').include(already_exposed=True)
     
     
@@ -468,17 +470,10 @@ def generate_code():
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory..
-    additional_dirs=[environment.Config.PATH_INCLUDE_quickgui
-                    ]
-    for d in additional_dirs:
-        for f in os.listdir(d):
-            if f.endswith('cpp') or f.endswith('.h'):
-                sourcefile = os.path.join(d, f)
-                destfile = os.path.join(environment.quickgui.generated_dir, f ) 
-                if not common_utils.samefile( sourcefile ,destfile ):
-                    shutil.copy( sourcefile, environment.quickgui.generated_dir )
-                    print "Updated ", f, "as it was missing or out of date"
-        
+    common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_quickgui, 
+                            destPath = environment.quickgui.generated_dir, 
+                            recursive=False )
+                            
 if __name__ == '__main__':
     start_time = time.clock()
     generate_code()

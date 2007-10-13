@@ -3,37 +3,29 @@
 
 namespace QuickGUI
 {
-	ScrollPane::ScrollPane(const Ogre::String& instanceName, const Rect& pixelDimensions, GUIManager* gm) :
-		Widget(instanceName,pixelDimensions,"",gm),
+	ScrollPane::ScrollPane(const Ogre::String& instanceName, const Size& pixelSize, GUIManager* gm) :
+		Widget(instanceName,pixelSize,"",gm),
 		mScrollBarWidth(20),
 		mHorizontalButtonLayout(HorizontalScrollBar::BUTTON_LAYOUT_OPPOSITE),
-		mVerticalButtonLayout(VerticalScrollBar::BUTTON_LAYOUT_OPPOSITE),
-		mTopBar(0),
-		mLeftBar(0)
+		mVerticalButtonLayout(VerticalScrollBar::BUTTON_LAYOUT_OPPOSITE)
 	{
 		mWidgetType = TYPE_SCROLL_PANE;
 		mGainFocusOnClick = false;
-/*
-		mTopBar = new HorizontalScrollBar(parentName+".TopScrollBar",TYPE_SCROLLBAR_HORIZONTAL,Rect(mScrollBarWidth,0,parentPixelSize.width - (mScrollBarWidth*2.0),mScrollBarWidth),skinSet+".scrollbar.horizontal.png",container,mParentWidget,gm);
-		mTopBar->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
-		mTopBar->setShowWithParent(false);
-		mTopBar->hide();
-		mTopBar->addOnScrollEventHandler(&ScrollPane::onHorizontalScroll,this);
-*/
-		mBottomBar = new HorizontalScrollBar(mInstanceName+".BottomScrollBar",Rect(0,mSize.height - 20,mSize.width - (20),20),"qgui.scrollbar.horizontal.png",gm);
+
+		mBottomBar = new HorizontalScrollBar(mInstanceName+".BottomScrollBar",Size(mSize.width - 20,20),"qgui.scrollbar.horizontal.png",gm);
+		mBottomBar->setQuadLayer(Quad::LAYER_MENU);
+		mBottomBar->setInheritQuadLayer(false);
 		mBottomBar->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 		mBottomBar->setVerticalAnchor(ANCHOR_VERTICAL_BOTTOM);
+		mBottomBar->setShowWithParent(false);
 		mBottomBar->addOnScrollEventHandler(&ScrollPane::onHorizontalScroll,this);
-/*
-		mLeftBar = new VerticalScrollBar(parentName+".LeftScrollBar",TYPE_SCROLLBAR_VERTICAL,Rect(0,mScrollBarWidth,mScrollBarWidth,parentPixelSize.height - (mScrollBarWidth*2.0)),skinSet+".scrollbar.vertical.png",container,mParentWidget,gm);
-		mLeftBar->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
-		mLeftBar->setShowWithParent(false);
-		mLeftBar->hide();
-		mLeftBar->addOnScrollEventHandler(&ScrollPane::onVerticalScroll,this);
-*/
-		mRightBar = new VerticalScrollBar(mInstanceName+".RightScrollBar",Rect(mSize.width - 20,0,20,mSize.height - 20),"qgui.scrollbar.vertical.png",gm);
+
+		mRightBar = new VerticalScrollBar(mInstanceName+".RightScrollBar",Size(20,mSize.height - 20),"qgui.scrollbar.vertical.png",gm);
+		mRightBar->setQuadLayer(Quad::LAYER_MENU);
+		mRightBar->setInheritQuadLayer(false);
 		mRightBar->setHorizontalAnchor(ANCHOR_HORIZONTAL_RIGHT);
 		mRightBar->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
+		mRightBar->setShowWithParent(false);
 		mRightBar->addOnScrollEventHandler(&ScrollPane::onVerticalScroll,this);
 	}
 
@@ -76,30 +68,28 @@ namespace QuickGUI
 	{
 		Size parentSize = mParentWidget->getSize();
 
-		if(mSize.width <= parentSize.width)
+		if((mSize.width <= parentSize.width) || (!mParentWidget->isVisible()))
 		{
-			if(mTopBar)
-				mTopBar->hide();
 			mBottomBar->hide();
+			mRightBar->setHeight(mParentWidget->getHeight() - mRightBar->getYPosition());
 		}
 		else
 		{
-			if(mTopBar)
-				mTopBar->show();
-			mBottomBar->show();
+			if(mParentWidget->isVisible())
+				mBottomBar->show();
+			mRightBar->setHeight(mParentWidget->getHeight() - mRightBar->getYPosition() - mBottomBar->getHeight());
 		}
 
-		if(mSize.height <= parentSize.height)
+		if((mSize.height <= parentSize.height) || (!mParentWidget->isVisible()))
 		{
-			if(mLeftBar)
-				mLeftBar->hide();
 			mRightBar->hide();
+			mBottomBar->setWidth(mParentWidget->getWidth());
 		}
 		else
 		{
-			if(mLeftBar)
-				mLeftBar->show();
-			mRightBar->show();
+			if(mParentWidget->isVisible())
+				mRightBar->show();
+			mBottomBar->setWidth(mParentWidget->getWidth() - mRightBar->getWidth());
 		}
 
 		// sync slider size
@@ -109,51 +99,45 @@ namespace QuickGUI
 		if(mBottomBar->isVisible())
 			parentSize.height -= mBottomBar->getHeight();
 		
-		if(mTopBar)
-			mTopBar->setSliderWidth(parentSize.width / mSize.width);
 		mBottomBar->setSliderWidth(parentSize.width / mSize.width);
-		if(mLeftBar)
-			mLeftBar->setSliderHeight(parentSize.height / mSize.height);
 		mRightBar->setSliderHeight(parentSize.height / mSize.height);
 	}
 
-	HorizontalScrollBar* ScrollPane::getBottomScrollBar()
+	HorizontalScrollBar::ButtonLayout ScrollPane::getHorizontalButtonLayout()
 	{
-		return mBottomBar;
+		return mHorizontalButtonLayout;
 	}
 
-	VerticalScrollBar* ScrollPane::getLeftScrollBar()
+	Widget* ScrollPane::getTargetWidget(const Point& pixelPosition)
 	{
-		return mLeftBar;
+		return NULL;
 	}
 
-	VerticalScrollBar* ScrollPane::getRightScrollBar()
+	VerticalScrollBar::ButtonLayout ScrollPane::getVerticalButtonLayout()
 	{
-		return mRightBar;
+		return mVerticalButtonLayout;
 	}
 
-	HorizontalScrollBar* ScrollPane::getTopScrollBar()
+	void ScrollPane::manageWidget(Widget* w)
 	{
-		return mTopBar;
-	}
+		if(w->getParentWidget()->getInstanceName() != mParentWidget->getInstanceName())
+			return;
 
-	void ScrollPane::onChildAddedToParent(const EventArgs& args)
-	{
-		Widget* w = dynamic_cast<const WidgetEventArgs&>(args).widget;
+		Ogre::String name = w->getInstanceName();
 		Type t = w->getWidgetType();
 		if( (t == TYPE_TITLEBAR) || 
-			(t == TYPE_MENU) || 
-			(t == TYPE_SCROLLBAR_HORIZONTAL) ||
-			(t == TYPE_SCROLLBAR_VERTICAL) ||
-			(t == TYPE_BORDER) )
+			(t == TYPE_BORDER) ||
+			(name == mBottomBar->getInstanceName()) ||
+			(name == mRightBar->getInstanceName()) )
 			return;
+
+		mManagedWidgets.push_back(w);
 
 		w->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&ScrollPane::onChildClicked,this);
 		w->addEventHandler(EVENT_POSITION_CHANGED,&ScrollPane::onChildPositionChanged,this);
 		w->addEventHandler(EVENT_SIZE_CHANGED,&ScrollPane::onChildSizeChanged,this);
 
-		mManagedWidgets.push_back(w);
-
+		// See if ScrollPane needs to be enlarged.
 		Point widgetExtents = w->getPosition() + w->getSize();
 		bool resized = false;
 		if(widgetExtents.x > mSize.width)
@@ -174,6 +158,28 @@ namespace QuickGUI
 			mBottomBar->setValue(-(mPosition.x) / mSize.width);
 			mRightBar->setValue(-(mPosition.y) / mSize.height);
 		}
+	}
+
+	void ScrollPane::manageWidgets()
+	{
+		if(mParentWidget == NULL)
+			return;
+
+		setSize(mParentWidget->getSize());
+
+		// Manage Parent widgets, except for TitleBar, Borders, and 2 Scroll Bars:
+		mManagedWidgets.clear();
+		std::vector<Widget*>* parentChildren = mParentWidget->getChildWidgetList();
+		std::vector<Widget*>::iterator it;
+		for(it = parentChildren->begin(); it != parentChildren->end(); ++it)
+		{
+			manageWidget((*it));
+		}
+	}
+
+	void ScrollPane::onChildAddedToParent(const EventArgs& args)
+	{
+		manageWidget(dynamic_cast<const WidgetEventArgs&>(args).widget);		
 	}
 
 	void ScrollPane::onChildRemovedFromParent(const EventArgs& args)
@@ -256,14 +262,6 @@ namespace QuickGUI
 
 	void ScrollPane::onHorizontalScroll(const EventArgs& args)
 	{
-		// sync both bars
-		Widget* w = dynamic_cast<const WidgetEventArgs&>(args).widget;
-		if( mTopBar && (w->getInstanceName() == mTopBar->getInstanceName()) )
-			mBottomBar->_setValue(mTopBar->getValue());
-		else if( w->getInstanceName() == mBottomBar->getInstanceName() )
-			if(mTopBar)
-				mTopBar->_setValue(mBottomBar->getValue());
-
 		// Move Scroll Pane
 		setXPosition(-(mBottomBar->getValue()) * mSize.width);
 
@@ -279,14 +277,6 @@ namespace QuickGUI
 
 	void ScrollPane::onVerticalScroll(const EventArgs& args)
 	{
-		// sync both bars
-		Widget* w = dynamic_cast<const WidgetEventArgs&>(args).widget;
-		if( mLeftBar && (w->getInstanceName() == mLeftBar->getInstanceName()) )
-			mRightBar->_setValue(mLeftBar->getValue());
-		else if( w->getInstanceName() == mRightBar->getInstanceName() )
-			if(mLeftBar)
-				mLeftBar->_setValue(mRightBar->getValue());
-
 		// Move Scroll Pane
 		setYPosition(-(mRightBar->getValue()) * mSize.height);
 
@@ -303,8 +293,6 @@ namespace QuickGUI
 	void ScrollPane::setHorizontalButtonLayout(HorizontalScrollBar::ButtonLayout layout)
 	{
 		mHorizontalButtonLayout = layout;
-		if(mTopBar)
-			mTopBar->setButtonLayout(mHorizontalButtonLayout);
 		mBottomBar->setButtonLayout(mHorizontalButtonLayout);
 	}
 
@@ -343,42 +331,9 @@ namespace QuickGUI
 		}
 	}
 
-	void ScrollPane::setParent(Widget* parent)
-	{
-		mParentWidget = parent;
-
-		if(mParentWidget != NULL)
-		{
-			_detectHierarchy();
-			// set the correct offset
-			setOffset(mParentWidget->getOffset() + 1);
-			setSize(mSize);
-			setPosition(mPosition);
-			// calculated properties
-			Size parentSize = mParentWidget->getSize();
-			mPixelsFromParentRight = parentSize.width - (mPosition.x + mSize.width);
-			mPixelsFromParentBottom = parentSize.height - (mPosition.y + mSize.height);
-			setClippingWidget(mParentWidget,true);
-			// inheritted properties
-			if(!mParentWidget->isVisible())
-				hide();
-			setQuadLayer(mParentWidget->getQuadLayer());
-			mGainFocusOnClick = mParentWidget->getGainFocusOnClick();
-
-			mParentWidget->addChild(mBottomBar);
-			mParentWidget->addChild(mRightBar);
-
-			mParentWidget->addEventHandler(EVENT_CHILD_ADDED,&ScrollPane::onChildAddedToParent,this);
-			mParentWidget->addEventHandler(EVENT_CHILD_REMOVED,&ScrollPane::onChildRemovedFromParent,this);
-			mParentWidget->addEventHandler(EVENT_SIZE_CHANGED,&ScrollPane::onParentSizeChanged,this);
-		}
-	}
-
 	void ScrollPane::setVerticalButtonLayout(VerticalScrollBar::ButtonLayout layout)
 	{
 		mVerticalButtonLayout = layout;
-		if(mLeftBar)
-			mLeftBar->setButtonLayout(mVerticalButtonLayout);
 		mRightBar->setButtonLayout(mVerticalButtonLayout);
 	}
 

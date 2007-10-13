@@ -43,14 +43,21 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		Border(const Ogre::String& name, BorderType bType, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm);
+		Border(const Ogre::String& instanceName, BorderType bType, const Size& pixelSize, Ogre::String texture, GUIManager* gm);
+
+		BorderType getBorderType();
 
 	protected:
 		virtual ~Border();
 
 		BorderType mBorderType;
 
+		// used to restore mouse cursor when leaving.
+		Ogre::String mMouseCursorTexture;
+
 		void onDragged(const EventArgs& args);
+		void onMouseEnter(const EventArgs& args);
+		void onMouseLeave(const EventArgs& args);
 	};
 }
 

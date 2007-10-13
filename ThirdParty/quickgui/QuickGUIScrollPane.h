@@ -51,17 +51,17 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		ScrollPane(const Ogre::String& instanceName, const Rect& pixelDimensions, GUIManager* gm);
+		ScrollPane(const Ogre::String& instanceName, const Size& pixelSize, GUIManager* gm);
 
 		// When widgets become managed/unmanaged, the pane may grow or shrink.
 		void _determinePaneBounds();
 
-		HorizontalScrollBar* getBottomScrollBar();
 		HorizontalScrollBar::ButtonLayout getHorizontalButtonLayout();
-		VerticalScrollBar* getLeftScrollBar();
-		VerticalScrollBar* getRightScrollBar();
-		HorizontalScrollBar* getTopScrollBar();
+		virtual Widget* getTargetWidget(const Point& pixelPosition);
 		VerticalScrollBar::ButtonLayout getVerticalButtonLayout();
+
+		void manageWidget(Widget* w);
+		void manageWidgets();
 
 		/**
 		* Scrolls the Pane so that the given widget is in view.
@@ -72,16 +72,13 @@ namespace QuickGUI
 
 	protected:
 		~ScrollPane();
-		virtual void setParent(Widget* parent);
 	protected:
 
 		Ogre::Real mScrollBarWidth;
 
-		HorizontalScrollBar* mTopBar;
 		HorizontalScrollBar* mBottomBar;
 		HorizontalScrollBar::ButtonLayout mHorizontalButtonLayout;
 		
-		VerticalScrollBar* mLeftBar;
 		VerticalScrollBar* mRightBar;
 		VerticalScrollBar::ButtonLayout mVerticalButtonLayout;	
 
