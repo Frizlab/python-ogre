@@ -2,8 +2,8 @@
 
 namespace QuickGUI
 {
-	Image::Image(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm) :
-		Widget(name,pixelDimensions,texture,gm)
+	Image::Image(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
+		Widget(instanceName,pixelSize,texture,gm)
 	{
 		mWidgetType = TYPE_IMAGE;
 	}

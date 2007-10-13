@@ -249,10 +249,7 @@ class ogrenewt:
     active=True
     version = "1.0"
     parent = "ogre/physics"
-    if os.name=="nt":
-        libs = ['Newton', Config.LIB_Boost, 'OgreNewt_Main', 'OgreMain']
-    else:
-        libs = ['Newton', Config.LIB_Boost, 'OgreNewt', 'OgreMain']
+    libs = ['Newton', Config.LIB_Boost, 'OgreNewt_Main', 'OgreMain']
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_Newton   # only one path for Newton
                     , Config.PATH_INCLUDE_Ogre 
@@ -579,20 +576,6 @@ class ogreal:
                   
     if os.name =='nt':
         CCFLAGS = ' -DOgreAL_Export="" -DWIN32 -DNDEBUG -D_LIB -D_WIN32 -D_WINDOWS -DVORBIS_IEEE_FLOAT32 -D_USE_NON_INTEL_COMPILER '              
-<<<<<<< .mine
-        libs=[Config.LIB_Boost, 'OgreMain', 
-                    'ogg_static', 
-                    'alut', 
-                    'vorbis_static','vorbisfile_static','vorbisenc_static',
-                    'OpenAL32', 'EFX-Util']  ##  'OgreAL' -- going to compile OgreAL ourselves
-    else:
-        libs=[Config.LIB_Boost, 'OgreMain', 
-                'ogg', 
-                'alut', 
-                'vorbis','vorbisfile','vorbisenc',
-                'openal']  ##  'OgreAL' -- going to compile OgreAL ourselves
-
-=======
         libs=[Config.LIB_Boost, 'OgreMain', 
                     'ogg_static', 
                     'alut', 
@@ -604,7 +587,6 @@ class ogreal:
                     'alut', 
                     'vorbis','vorbisfile','vorbisenc',
                     'openal']  ##  'OgreAL' -- going to compile OgreAL ourselves
->>>>>>> .r411
     ModuleName = 'OgreAL'
     CheckIncludes = ['OgreAL.h']
     active=True
@@ -669,22 +651,6 @@ class et:  ## editable terrain
     active=True 
     cflags = ""
     
-class caelum:  ## editable terrain
-    version= "2.2"
-    parent = "ogre/addons"
-    libs=[ Config.LIB_Boost, 'OgreMain' ]
-    lib_dirs = [ Config.PATH_LIB_Boost,
-                Config.PATH_LIB_Ogre_OgreMain
-                ]
-    include_dirs = [ Config.PATH_Boost,
-                    Config.PATH_INCLUDE_Ogre,
-                    Config.PATH_caelum
-                    ]
-    ModuleName = 'caelum'
-    CheckIncludes = ['boost/python.hpp'] 
-    active=True 
-    cflags = ""    
-    
 class bullet:
     version= "2.62"
     parent = "ogre/physics"
@@ -701,24 +667,22 @@ class bullet:
     active=True 
     cflags = ""
     
-class ogrebulletc:  # collision part of ogrebullet
+class ogrebulletc:  # 
     active=True
     version = "1.0"
     cflags = ""
     parent = "ogre/physics"
     libs = [Config.LIB_Boost,  'OgreMain', 
-        'OgreBulletCollisions','libbulletcollision', 'libbulletmath'
+        'libbulletcollision', 'libbulletmath','libbulletdynamics'
         ]
     include_dirs = [Config.PATH_Boost
-                    , Config.PATH_INCLUDE_Bullet   # only one path for Newton
+                    , Config.PATH_INCLUDE_Bullet
+                    , os.path.join(Config.PATH_OgreBullet, 'Collisions' )
                     , Config.PATH_INCLUDE_Ogre 
-                    , Config.PATH_INCLUDE_Ogre_Dependencies  #needed for OIS/OIS.h
+                    , Config.PATH_INCLUDE_Ogre_Dependencies  
                     ]
-    for d in Config.PATH_INCLUDE_OgreBullet:
-        include_dirs.append( d )
     lib_dirs = [ Config.PATH_LIB_Boost
                 ,Config.PATH_LIB_Bullet
-                ,Config.PATH_LIB_OgreBullet
                 , Config.PATH_LIB_Ogre_OgreMain
                 ]
     if os.name=="nt":
@@ -728,24 +692,23 @@ class ogrebulletc:  # collision part of ogrebullet
     ModuleName = 'OgreBulletC'
     CheckIncludes=['boost/python.hpp', 'Ogre.h']    
 
-class ogrebulletd:  # dynamics part of ogrebullet
+class ogrebulletd:  # 
     active=True
     version = "1.0"
     cflags = ""
     parent = "ogre/physics"
     libs = [Config.LIB_Boost,  'OgreMain', 
-        'OgreBulletCollisions','libbulletcollision','OgreBulletDynamics','libbulletdynamics', 'libbulletmath'
+        'libbulletcollision', 'libbulletmath','libbulletdynamics'
         ]
     include_dirs = [Config.PATH_Boost
-                    , Config.PATH_INCLUDE_Bullet   # only one path for Newton
+                    , Config.PATH_INCLUDE_Bullet
+                    , os.path.join(Config.PATH_OgreBullet, 'Collisions' )
+                    , os.path.join(Config.PATH_OgreBullet, 'Dynamics' )
                     , Config.PATH_INCLUDE_Ogre 
-                    , Config.PATH_INCLUDE_Ogre_Dependencies  #needed for OIS/OIS.h
+                    , Config.PATH_INCLUDE_Ogre_Dependencies  
                     ]
-    for d in Config.PATH_INCLUDE_OgreBullet:
-        include_dirs.append( d )
     lib_dirs = [ Config.PATH_LIB_Boost
                 ,Config.PATH_LIB_Bullet
-                ,Config.PATH_LIB_OgreBullet
                 , Config.PATH_LIB_Ogre_OgreMain
                 ]
     if os.name=="nt":
@@ -753,7 +716,8 @@ class ogrebulletd:  # dynamics part of ogrebullet
     else:
         CCFLAGS = ''
     ModuleName = 'OgreBulletD'
-    CheckIncludes=['boost/python.hpp', 'Ogre.h']    
+    CheckIncludes=['boost/python.hpp', 'Ogre.h']        
+    
 ############################################################################################
 
 ## Here is the master list....
@@ -784,7 +748,6 @@ projects = {
     , 'ogrebulletd' : ogrebulletd
     , 'ogreforests' : ogreforests
     , 'et' : et
-    , 'caelum' : caelum
     , 'caelum' : caelum
 }        
 

@@ -55,7 +55,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		ProgressBar(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm);
+		ProgressBar(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm);
 
 		/**
 		* Add user defined event that will be called when amount of progress has changed.

@@ -290,21 +290,9 @@ def generate_code():
     ## copied to the generated directory..
    ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory..
-    additional_dirs=[
-                    [environment.Config.PATH_et, '.']
-                    ,[os.path.join ( environment.Config.PATH_et, 'Impl' ), 'Impl']
-                    ]
-    for d,dd in additional_dirs:
-        for f in os.listdir(d):
-            if f.endswith('cpp') or f.endswith('.h'):
-                sourcefile = os.path.join(d, f)
-                destfile = os.path.join(environment.et.generated_dir, dd, f ) 
-                if not os.path.exists ( os.path.join(environment.et.generated_dir, dd ) ):
-                    os.mkdir ( os.path.join(environment.et.generated_dir, dd ) )
-                if not common_utils.samefile( sourcefile ,destfile ):
-                    shutil.copy( sourcefile, destfile )
-                    print "Updated ", f, "as it was missing or out of date"
-        
+    common_utils.copyTree ( sourcePath = environment.Config.PATH_et, 
+                            destPath = environment.et.generated_dir, 
+                            recursive=True )
         
 if __name__ == '__main__':
     start_time = time.clock()

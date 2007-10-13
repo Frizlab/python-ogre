@@ -175,9 +175,12 @@ def ManualExclude ( mb ):
     ## these are hand wrapper -- 
 #     global_ns.class_('::Ogre::RenderQueueListener').mem_fun('renderQueueStarted').exclude()
 #     global_ns.class_('::Ogre::RenderQueueListener').mem_fun('renderQueueEnded').exclude()
+
+    ## AJM 10/10/07 new excludes due to hand_make wrappers..
     global_ns.class_('::Ogre::SceneManager').mem_fun('setOption').exclude()
     global_ns.class_('::Ogre::SceneManager').mem_fun('getOption').exclude()
-    
+    global_ns.class_('::Ogre::ParticleSystem').mem_fun('_getIterator').exclude()
+   
     ## as we now include all protected functions tere are a couple of problem areas that popped up
     main_ns.constructor("IndexData",arg_types=['::Ogre::IndexData const &']).exclude()
     global_ns.class_('::Ogre::OverlayManager').\
@@ -682,8 +685,8 @@ def AutoFixes ( mb, MAIN_NAMESPACE ):
     Set_Smart_Pointers ( main_ns )  
     
     # Functions that have void pointers in their argument list need to change to unsigned int's  
-    pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', '::Ogre::uint8',
-             'unsigned char', 'char', 'Matrices', 'Vertices']
+    pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', '::Ogre::uint8', '::Ogre::uint16'
+             'unsigned char', 'char']
     ignore_names=['Matrices', 'Vertices']
     common_utils.Fix_Void_Ptr_Args  ( main_ns, pointee_types, ignore_names )
 

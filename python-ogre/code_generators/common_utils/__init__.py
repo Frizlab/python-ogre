@@ -1,4 +1,4 @@
-import os
+import os, shutil
 import shared_ptr
 from pygccxml import declarations
 from pyplusplus.decl_wrappers import property_t
@@ -13,17 +13,6 @@ def configure_shared_ptr( mb ):
     exposer = shared_ptr.exposer_t( mb )
     exposer.expose()
 
-def samefile ( sourcefile, destfile):
-    if not os.path.exists( destfile ):
-        print destfile,"doesn't exist"
-        return False
-    if not os.path.exists( sourcefile ):
-        print sourcefile,"doesn't exist (missing source file)"
-        return False
-    if os.stat(sourcefile).st_mtime > os.stat(destfile).st_mtime:
-        return False
-    return True
-        
 def docit ( general, i, o ): 
     docs = "Python-Ogre Modified Function Call\\n" + general +"\\n"
     docs = docs + "Input: " + i + "\\n"
@@ -239,7 +228,7 @@ def Fix_Void_Ptr_Args ( mb, pointee_types=['unsigned int','int', 'float', 'unsig
         for arg in fun.arguments:
             if declarations.is_pointer(arg.type): ## and "const" not in arg.type.decl_string:
                 for i in pointee_types:
-                    if i in arg.type.decl_string:
+                    if arg.type.decl_string.startswith(i):
                         if Exclude: 
                             print "Excluding:", fun," due to pointer argument", arg.type.decl_string
                             fun.exclude()
@@ -403,3 +392,73 @@ def Fix_ReadOnly_Vars ( main_ns, ToFixClasses, knownNonMutable ):
                             # and the property registration code
                             regcode = GetterReg % values
                             cls.add_registration_code( regcode )
+
+                            
+def samefile ( sourcefile, destfile):
+    if not os.path.exists( destfile ):
+        #print destfile,"doesn't exist"
+        return False
+    if not os.path.exists( sourcefile ):
+        #print sourcefile,"doesn't exist (missing source file)"
+        return False
+    if os.stat(sourcefile).st_mtime > os.stat(destfile).st_mtime:
+        return False
+    return True
+                                
+def copyTree ( sourcePath, destPath, recursive=False, extensions=['cpp','h','hxx','cxx','hpp'] ):
+    """ function to do a nice tree copy with file filtering and directory creation etc """
+    
+    ## helper functions
+    def filterExtensions ( listin, extensions):
+        returnList=[]
+        for i in listin:
+            e=i.split('.')
+            if len(e) >0:
+                if e[-1] in extensions:
+                    returnList.append(i)
+        return returnList  
+            
+    def makePath ( pathIn ):
+        if not os.path.exists (pathIn ):
+            os.makedirs ( pathIn )
+            
+    def copyFile ( fileName, sourcePath, destPath):
+        sourceFile = os.path.join ( sourcePath, fileName )
+        destFile = os.path.join ( destPath, fileName)
+        # we only copy the file if it's a different size and or date
+        if not samefile( sourceFile ,destFile ):
+            shutil.copyfile( sourceFile, destFile )
+            print "Updated ", destFile, "as it was missing or out of date"  
+
+    ## Main code starts here
+    
+    if not recursive: # Ok so we only care about a single directory
+        files =  os.listdir( sourcePath )   # get files
+        files = filterExtensions ( files, extensions )  # filter them
+        if len( files ) > 0: 
+            makePath ( destPath )   # make a path if need be
+            for fileName in files:
+                copyFile ( fileName, sourcePath, destPath)  # copy the file
+                
+    else:   # need to do a recursive copy
+        level = 0
+        for currentDir, dirs, files in os.walk(sourcePath):
+            # remember the initial directory so we can get the subdirs later
+            if not level:
+                rootPath= currentDir
+                subPath = ""
+                level += 1
+            else:
+                subPath = currentDir[ len (rootPath) + 1:] # extract the sub directory path
+                
+            # filter the file names
+            files = filterExtensions ( files, extensions )
+            
+            # Make all the directories in the dest Tree (for this level)
+            for dirName in dirs:
+                makePath ( os.path.join (  destPath, subPath, dirName ) )
+                
+            # finally do the copy                
+            for fileName in files:
+                copyFile ( fileName, currentDir, os.path.join(destPath, subPath ) )
+                

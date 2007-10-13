@@ -1,10 +1,5 @@
 
-#include "ETTerrainManager.h"
-#include "../ogre/python_ogre_masterlist.h"
-
-
 #include "ETTerrainInfo.h"
-#include "ETTerrainManager.h"
 #include "ETTerrainManager.h"
 #include "ETBrush.h"
 #include "ETSplattingManager.h"

@@ -3,8 +3,8 @@
 
 namespace QuickGUI
 {
-	Label::Label(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm) :
-		Image(name,pixelDimensions,texture,gm),
+	Label::Label(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
+		Image(instanceName,pixelSize,texture,gm),
 		mDefaultTexture(mTextureName),
 		mVerticalAlignment(VA_MID),
 		mHorizontalAlignment(HA_MID),
@@ -185,6 +185,12 @@ namespace QuickGUI
 
 		if(!mEnabled)
 			mText->setColor(c);
+	}
+
+	void Label::setFont(const Ogre::String& fontScriptName, bool recursive)
+	{
+		Image::setFont(fontScriptName,recursive);
+		mText->setFont(mFontName);
 	}
 
 	void Label::setQuadLayer(Quad::Layer l)

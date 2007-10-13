@@ -3,8 +3,8 @@
 
 namespace QuickGUI
 {
-	ProgressBar::ProgressBar(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm) :
-		Image(name,pixelDimensions,texture,gm),
+	ProgressBar::ProgressBar(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
+		Image(instanceName,pixelSize,texture,gm),
 		mInitialPixelOffset(0),
 		mProgress(1.0),
 		mFillDirection(FILLS_NEGATIVE_TO_POSITIVE)

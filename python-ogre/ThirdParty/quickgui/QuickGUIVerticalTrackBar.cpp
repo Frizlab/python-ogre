@@ -4,8 +4,8 @@
 
 namespace QuickGUI
 {
-	VerticalTrackBar::VerticalTrackBar(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm) :
-		Image(name,pixelDimensions,texture,gm),
+	VerticalTrackBar::VerticalTrackBar(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
+		Image(instanceName,pixelSize,texture,gm),
 		mNumRegions(1),
 		mCurrentValue(0),
 		mLargeChange(3)
@@ -14,8 +14,9 @@ namespace QuickGUI
 		addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&VerticalTrackBar::onMouseButtonDown,this);
 
 		// Creat slider button at the beginning of the VerticalTrackBar, whether horizonal (left) or vertical (bot)
-		mSliderButton = new Button(mInstanceName+".SliderButton",Rect(0,0,mSize.width,13),mSliderTextureName,mGUIManager);
+		mSliderButton = new Button(mInstanceName+".SliderButton",Size(mSize.width,13),mSliderTextureName,mGUIManager);
 		addChild(mSliderButton);
+		mSliderButton->setPosition(0,0);
 		mSliderButton->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 		mSliderButton->enableDragging(true);
 		mSliderButton->constrainDragging(false,true);

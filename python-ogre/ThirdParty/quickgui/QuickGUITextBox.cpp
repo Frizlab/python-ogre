@@ -3,8 +3,8 @@
 
 namespace QuickGUI
 {
-	TextBox::TextBox(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm) :
-		Label(name,pixelDimensions,texture,gm),
+	TextBox::TextBox(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
+		Label(instanceName,pixelSize,texture,gm),
 		mMaskUserInput(0),
 		mBackSpaceDown(0),
 		mBackSpaceTimer(0.0),
@@ -29,8 +29,8 @@ namespace QuickGUI
 	{
 		mWidgetType = TYPE_TEXTBOX;
 		mHorizontalAlignment = HA_LEFT;
-
 		mMouseCursor = mGUIManager->getMouseCursor();
+		mGUIManager->registerTimeListener(this);
 
 		addEventHandler(EVENT_LOSE_FOCUS,&TextBox::onLoseFocus,this);
 		addEventHandler(EVENT_CHARACTER_KEY,&TextBox::onCharacter,this);
@@ -45,20 +45,16 @@ namespace QuickGUI
 		mTextCursorTexture = mTextureName + ".textcursor" + mTextureExtension;
 		mTextCursor->setTexture(mTextCursorTexture);
 		mTextCursor->setOffset(mOffset+1);
-		mTextCursor->setDimensions(
-			Rect(
-				pixelDimensions.x,
-				pixelDimensions.y,
-				mCursorPixelWidth,
-				getTextBounds().height
-				)
-			);
+		mTextCursor->setVisible(false);
+		mTextCursor->setSize(Size(mCursorPixelWidth,getTextBounds().height));
 		mTextCursor->setVisible(false);
 		mTextCursor->_notifyQuadContainer(mQuadContainer);
 	}
 
 	TextBox::~TextBox()
 	{
+		mGUIManager->unregisterTimeListener(this);
+
 		std::vector<MemberFunctionSlot*>::iterator it;
 		for( it = mOnEnterPressedUserEventHandlers.begin(); it != mOnEnterPressedUserEventHandlers.end(); ++it )
 			delete (*it);
@@ -452,6 +448,7 @@ namespace QuickGUI
 
 	void TextBox::onLoseFocus(const EventArgs& args)
 	{
+		mText->clearSelection();
 		mTextCursor->setVisible(false);
 		mBackSpaceDown = false;
 		mLeftArrowDown = false;
@@ -673,6 +670,13 @@ namespace QuickGUI
 
 		mTextCursorTexture = textureName;
 		mTextCursor->setTexture(mTextCursorTexture);
+	}
+
+	void TextBox::setFont(const Ogre::String& fontScriptName, bool recursive)
+	{
+		Label::setFont(fontScriptName,recursive);
+		setCursorIndex(static_cast<int>(mCaption.length()));
+		mTextCursor->setVisible(false);
 	}
 
 	void TextBox::setReadOnly(bool readOnly)

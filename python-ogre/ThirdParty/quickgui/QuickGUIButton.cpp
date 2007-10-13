@@ -5,8 +5,8 @@
 
 namespace QuickGUI
 {
-	Button::Button(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm) :
-		Label(name,pixelDimensions,texture,gm),
+	Button::Button(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
+		Label(instanceName,pixelSize,texture,gm),
 		mButtonDown(false)
 	{
 		mWidgetType = TYPE_BUTTON;

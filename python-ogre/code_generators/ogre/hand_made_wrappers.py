@@ -725,7 +725,34 @@ WRAPPER_REGISTRATION_SceneManager = [
     Ouput: Tuple containing bool (True/False -- success of call) and value" );"""
     ] 
 
+#################################################################################################
+WRAPPER_DEFINITION_ParticleSystem =\
+"""
+// Dummy function so we can show the need to change the call
+void ParticleSystem_getIterator( Ogre::ParticleSystem & me ) {
+        throw std::logic_error ("You shouldn't be using _getIterator - use getParticles instead");
+    return;
+    }
+    
+bp::list ParticleSystem_getParticles ( Ogre::ParticleSystem & me ) {  
+    bp::list listout;
+    Ogre::ParticleIterator pit = me._getIterator();
+    while(!pit.end()) {
+        Ogre::Particle *particle = pit.getNext();
+        listout.append ( particle );
+        }
+    return listout;
+	}
+"""
 
+WRAPPER_REGISTRATION_ParticleSystem = [
+    """def( "_getIterator", &ParticleSystem_getIterator,
+                "Python-Ogre Helper Function: Unavailable! Use getParticles instead");""",
+    """def( "getParticles", &ParticleSystem_getParticles,
+            "Python-Ogre Helper Function: returns a list of particles\\n\\
+            Input: None\\n\\
+            Ouput: List containing particles" );"""
+    ]
     
 #################################################################################################
 
@@ -807,6 +834,9 @@ def apply( mb ):
     rt.add_declaration_code( WRAPPER_DEFINITION_SceneManager )
     apply_reg (rt,  WRAPPER_REGISTRATION_SceneManager )
     
+    rt = mb.class_( 'ParticleSystem' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_ParticleSystem )
+    apply_reg (rt,  WRAPPER_REGISTRATION_ParticleSystem )
     
     mb.add_declaration_code( WRAPPER_DEFINITION_General )
     apply_reg (mb,  WRAPPER_REGISTRATION_General )

@@ -9,7 +9,7 @@
 #include "QuickGUIRect.h"
 #include "QuickGUIVertex.h"
 
-#include <vector>
+#define VERTICES_PER_QUAD 6
 
 namespace QuickGUI
 {
@@ -49,10 +49,11 @@ namespace QuickGUI
 		Widget* getClippingWidget();
 		Rect getDimensions();
 		Ogre::String getID();
+		bool getInheritClippingWidget();
+		bool getInheritLayer();
 		Layer getLayer();
 		Ogre::String getTextureName();
-		std::vector<Vertex>* getVertices();
-		int getNumberOfVertices();
+		Vertex* getVertices();
 		int getOffset();
 		Point getPosition();
 		Size getSize();
@@ -67,6 +68,8 @@ namespace QuickGUI
 		void setDimensions(const Rect& pixelDimensions);
 		void setGUIManager(GUIManager* gm);
 		void setHeight(Ogre::Real pixelHeight);
+		void setInheritClippingWidget(bool inherit);
+		void setInheritLayer(bool inherit);
 		void setLayer(Layer l);
 		void setOffset(int offset);
 		void setPosition(const Point& pixelPosition);
@@ -94,6 +97,7 @@ namespace QuickGUI
 		Ogre::RenderSystem* mRenderSystem;
 
 		Layer				mLayer;
+		bool				mInheritQuadLayer;
 
 		// Name of Widget
 		Ogre::String		mID;
@@ -108,6 +112,7 @@ namespace QuickGUI
 		Ogre::ColourValue	mBottomColor;
 
 		Widget*				mClippingWidget;
+		bool				mInheritClippingWidget;
 		// Store changes made via Clipping.
 		Rect				mDimensionsViaClipping;
 		Ogre::Vector4		mTextureCoordinatesViaClipping;
@@ -119,7 +124,7 @@ namespace QuickGUI
 		bool				mTextureCoordsChanged;
 		bool				mOffsetChanged;
 
-		std::vector<Vertex> mVertices;
+		Vertex				mVertices[VERTICES_PER_QUAD];
 
 		/*
 		* Resizes and adjusts texture coords to display any visible portions that lie

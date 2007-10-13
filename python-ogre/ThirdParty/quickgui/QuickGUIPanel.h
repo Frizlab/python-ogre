@@ -3,10 +3,10 @@
 
 #include "OgreStringConverter.h"
 
+#include "QuickGUIBorder.h"
 #include "QuickGUIButton.h"
 #include "QuickGUIComboBox.h"
 #include "QuickGUIImage.h"
-#include "QuickGUIMenu.h"
 #include "QuickGUINStateButton.h"
 #include "QuickGUIProgressBar.h"
 #include "QuickGUIScrollPane.h"
@@ -53,9 +53,10 @@ namespace QuickGUI
 			@param
 				parentWidget parent widget which created this widget.
         */
-		Panel(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm);		
+		Panel(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm);		
 
 		virtual void addChild(Widget* w);
+		virtual void allowScrolling(bool allow);
 
 		Button* createButton();
 
@@ -68,8 +69,6 @@ namespace QuickGUI
 		Label* createLabel();
 
 		List* createList();
-
-		Menu* createMenu();
 
 		NStateButton* createNStateButton();
 
@@ -86,15 +85,24 @@ namespace QuickGUI
 		VerticalTrackBar* createVerticalTrackBar();
 
 		ScrollPane* getScrollPane();
+		virtual Widget* getTargetWidget(const Point& pixelPosition);
+
+		bool scrollingAllowed();
+		virtual void show();
 
 	protected:
 		virtual ~Panel();
 		virtual void setQuadContainer(QuadContainer* container);
 	protected:
-
 		ScrollPane* mScrollPane;
+		bool mScrollingAllowed;
 
-		int mAutoNameWidgetCounter;
+		VerticalScrollBar* mRightScrollBar;
+		HorizontalScrollBar* mBottomScrollBar;
+
+		void onChildAdded(const EventArgs& args);
+		void onChildRemoved(const EventArgs& args);
+		void onSizeChanged(const EventArgs& args);
 	};
 }
 

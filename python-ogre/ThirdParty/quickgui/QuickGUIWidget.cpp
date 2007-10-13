@@ -7,10 +7,9 @@
 
 namespace QuickGUI
 {
-	Widget::Widget(const Ogre::String& instanceName, const Rect& pixelDimensions, Ogre::String textureName, GUIManager* gm) :
-		mPosition(Point(pixelDimensions.x,pixelDimensions.y)),
-		mSize(Size(pixelDimensions.width,pixelDimensions.height)),
+	Widget::Widget(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String textureName, GUIManager* gm) :
 		mGUIManager(gm),
+		mCanResize(false),
 		mDragXOnly(false),
 		mDragYOnly(false),
 		mDraggingEnabled(false),
@@ -19,8 +18,12 @@ namespace QuickGUI
 		mGrabbed(false),
 		mHideWithParent(true),
 		mHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT),
+		mInheritClippingWidget(true),
+		mInheritQuadLayer(true),
+		mInstanceName(instanceName),
 		mMovingEnabled(true),
 		mOffset(0),
+		mPosition(Point(0,0)),
 		mParentPanel(0),
 		mParentSheet(0),
 		mParentWidget(0),
@@ -31,18 +34,19 @@ namespace QuickGUI
 		mResizeOverTime(false),
 		mScrollOffset(Point::ZERO),
 		mShowWithParent(true),
+		mSkinComponent(""),
 		mTextureLocked(false),
 		mUseBorders(false),
 		mVerticalAnchor(ANCHOR_VERTICAL_TOP),
 		mVisible(true),
 		mWidgetImage(NULL)
 	{
-		setName(instanceName);
 		_initEventHandlers();
 		mQuad = _createQuad(mInstanceName + ".Quad");
 		mWidgetToDrag = this;
 
 		setTexture(textureName);
+		setSize(pixelSize);
 
 		// Add event handlers before call to setDimensions, if you want the widget handlers to be called.
 		// This is important for widgets to position themself correctly.
@@ -55,6 +59,9 @@ namespace QuickGUI
 
 	Widget::~Widget()
 	{
+		if(mParentWidget != NULL)
+			mParentWidget->removeChild(this);
+
 		// Safest route is to destroy children first thing.
 		removeAndDestroyAllChildWidgets();
 
@@ -65,18 +72,22 @@ namespace QuickGUI
 		delete mWidgetImage;
 
 		// Cleanup Event Handlers.
-		std::vector< std::vector<MemberFunctionSlot*> >::iterator it1;
-		for( it1 = mUserEventHandlers.begin(); it1 != mUserEventHandlers.end(); ++it1 )
+		int index = 0;
+		while( index < NUM_EVENTS )
 		{
-			std::vector<MemberFunctionSlot*>::iterator it2;
-			for( it2 = (*it1).begin(); it2 != (*it1).end(); ++it2 )
-				delete (*it2);
-			it1->clear();
+			for(std::vector<MemberFunctionSlot*>::iterator it = mUserEventHandlers[index].begin(); it != mUserEventHandlers[index].end(); ++it)
+				delete (*it);
+			mUserEventHandlers[index].clear();
+
+			++index;
 		}
-		mUserEventHandlers.clear();
 
 		// Remove name from GUIManager name list. (So another widget can be created with this name, if desired)
-		mGUIManager->removeWidgetName(mInstanceName);
+		mGUIManager->notifyNameFree(mInstanceName);
+	}
+
+	void Widget::__constructor()
+	{
 	}
 
 	void Widget::_applyAnchors()
@@ -85,21 +96,6 @@ namespace QuickGUI
 			return;
 
 		Size parentSize = mParentWidget->getSize();
-
-		// Horizontal anchor:
-		switch(mHorizontalAnchor)
-		{
-		case ANCHOR_HORIZONTAL_LEFT_RIGHT:
-			setWidth(parentSize.width - mPixelsFromParentRight - mPosition.x);
-			break;
-		case ANCHOR_HORIZONTAL_LEFT:
-			break;
-		case ANCHOR_HORIZONTAL_RIGHT:
-			mPosition.x = parentSize.width - mPixelsFromParentRight - mSize.width;
-			break;
-		case ANCHOR_HORIZONTAL_NONE:
-			break;
-		}
 
 		// Vertical anchor:
 		switch(mVerticalAnchor)
@@ -116,6 +112,21 @@ namespace QuickGUI
 			break;
 		}
 
+		// Horizontal anchor:
+		switch(mHorizontalAnchor)
+		{
+		case ANCHOR_HORIZONTAL_LEFT_RIGHT:
+			setWidth(parentSize.width - mPixelsFromParentRight - mPosition.x);
+			break;
+		case ANCHOR_HORIZONTAL_LEFT:
+			break;
+		case ANCHOR_HORIZONTAL_RIGHT:
+			mPosition.x = parentSize.width - mPixelsFromParentRight - mSize.width;
+			break;
+		case ANCHOR_HORIZONTAL_NONE:
+			break;
+		}
+
 		redraw();
 	}
 
@@ -128,59 +139,76 @@ namespace QuickGUI
 		// Corners - only create them if there are textures for them.
 		if(mGUIManager->textureExists(mTextureName+".border.topleft"+mTextureExtension))
 		{
-			mBorders[Border::BORDER_TYPE_TOP_LEFT] = new Border(mInstanceName + ".TopLeftCornerBorder",Border::BORDER_TYPE_TOP_LEFT,Rect(-thickness + overlap,-thickness + overlap,thickness,thickness),mTextureName+".border.topleft"+mTextureExtension,mGUIManager);
+			mBorders[Border::BORDER_TYPE_TOP_LEFT] = new Border(mInstanceName + ".TopLeftCornerBorder",Border::BORDER_TYPE_TOP_LEFT,Size(thickness,thickness),mTextureName+".border.topleft"+mTextureExtension,mGUIManager);
 			addChild(mBorders[Border::BORDER_TYPE_TOP_LEFT]);
+			mBorders[Border::BORDER_TYPE_TOP_LEFT]->setPosition(-thickness + overlap,-thickness + overlap);
 		}
 
 		if(mGUIManager->textureExists(mTextureName+".border.topright"+mTextureExtension))
 		{
-			mBorders[Border::BORDER_TYPE_TOP_RIGHT] = new Border(mInstanceName + ".TopRightCornerBorder",Border::BORDER_TYPE_TOP_RIGHT,Rect(mSize.width - overlap,-thickness + overlap,thickness,thickness),mTextureName+".border.topright"+mTextureExtension,mGUIManager);
+			mBorders[Border::BORDER_TYPE_TOP_RIGHT] = new Border(mInstanceName + ".TopRightCornerBorder",Border::BORDER_TYPE_TOP_RIGHT,Size(thickness,thickness),mTextureName+".border.topright"+mTextureExtension,mGUIManager);
 			addChild(mBorders[Border::BORDER_TYPE_TOP_RIGHT]);
+			mBorders[Border::BORDER_TYPE_TOP_RIGHT]->setPosition(mSize.width - overlap,-thickness + overlap);
 		}
 		
 		if(mGUIManager->textureExists(mTextureName+".border.bottomleft"+mTextureExtension))
 		{
-			mBorders[Border::BORDER_TYPE_BOTTOM_LEFT] = new Border(mInstanceName + ".BottomLeftCornerBorder",Border::BORDER_TYPE_BOTTOM_LEFT,Rect(-thickness + overlap,mSize.height - overlap,thickness,thickness),mTextureName+".border.bottomleft"+mTextureExtension,mGUIManager);
+			mBorders[Border::BORDER_TYPE_BOTTOM_LEFT] = new Border(mInstanceName + ".BottomLeftCornerBorder",Border::BORDER_TYPE_BOTTOM_LEFT,Size(thickness,thickness),mTextureName+".border.bottomleft"+mTextureExtension,mGUIManager);
 			addChild(mBorders[Border::BORDER_TYPE_BOTTOM_LEFT]);
+			mBorders[Border::BORDER_TYPE_BOTTOM_LEFT]->setPosition(-thickness + overlap,mSize.height - overlap);
 		}
 		
 		if(mGUIManager->textureExists(mTextureName+".border.bottomleft"+mTextureExtension))
 		{
-			mBorders[Border::BORDER_TYPE_BOTTOM_RIGHT] = new Border(mInstanceName + ".BottomRightCornerBorder",Border::BORDER_TYPE_BOTTOM_RIGHT,Rect(mSize.width - overlap,mSize.height - overlap,thickness,thickness),mTextureName+".border.bottomright"+mTextureExtension,mGUIManager);
+			mBorders[Border::BORDER_TYPE_BOTTOM_RIGHT] = new Border(mInstanceName + ".BottomRightCornerBorder",Border::BORDER_TYPE_BOTTOM_RIGHT,Size(thickness,thickness),mTextureName+".border.bottomright"+mTextureExtension,mGUIManager);
 			addChild(mBorders[Border::BORDER_TYPE_BOTTOM_RIGHT]);
+			mBorders[Border::BORDER_TYPE_BOTTOM_RIGHT]->setPosition(mSize.width - overlap,mSize.height - overlap);
 		}
 		
 		// Border edges - only create them if there are textures for them.
 		if(mGUIManager->textureExists(mTextureName+".border.left"+mTextureExtension))
 		{
-			mBorders[Border::BORDER_TYPE_LEFT] = new Border(mInstanceName + ".LeftBorder",Border::BORDER_TYPE_LEFT,Rect(-thickness + overlap,0,thickness,mSize.height),mTextureName+".border.left"+mTextureExtension,mGUIManager);
+			mBorders[Border::BORDER_TYPE_LEFT] = new Border(mInstanceName + ".LeftBorder",Border::BORDER_TYPE_LEFT,Size(thickness,mSize.height),mTextureName+".border.left"+mTextureExtension,mGUIManager);
 			addChild(mBorders[Border::BORDER_TYPE_LEFT]);
+			mBorders[Border::BORDER_TYPE_LEFT]->setPosition(-thickness + overlap,0);
 		}
 		
 		if(mGUIManager->textureExists(mTextureName+".border.top"+mTextureExtension))
 		{
-			mBorders[Border::BORDER_TYPE_TOP] = new Border(mInstanceName + ".TopBorder",Border::BORDER_TYPE_TOP,Rect(0,-thickness + overlap,mSize.width,thickness),mTextureName+".border.top"+mTextureExtension,mGUIManager);
+			mBorders[Border::BORDER_TYPE_TOP] = new Border(mInstanceName + ".TopBorder",Border::BORDER_TYPE_TOP,Size(mSize.width,thickness),mTextureName+".border.top"+mTextureExtension,mGUIManager);
 			addChild(mBorders[Border::BORDER_TYPE_TOP]);
+			mBorders[Border::BORDER_TYPE_TOP]->setPosition(0,-thickness + overlap);
 		}
 		
 		if(mGUIManager->textureExists(mTextureName+".border.right"+mTextureExtension))
 		{
-			mBorders[Border::BORDER_TYPE_RIGHT] = new Border(mInstanceName + ".RightBorder",Border::BORDER_TYPE_RIGHT,Rect(mSize.width - overlap,0,thickness,mSize.height),mTextureName+".border.right"+mTextureExtension,mGUIManager);
+			mBorders[Border::BORDER_TYPE_RIGHT] = new Border(mInstanceName + ".RightBorder",Border::BORDER_TYPE_RIGHT,Size(thickness,mSize.height),mTextureName+".border.right"+mTextureExtension,mGUIManager);
 			addChild(mBorders[Border::BORDER_TYPE_RIGHT]);
+			mBorders[Border::BORDER_TYPE_RIGHT]->setPosition(mSize.width - overlap,0);
 		}
 		
 		if(mGUIManager->textureExists(mTextureName+".border.bottom"+mTextureExtension))
 		{
-			mBorders[Border::BORDER_TYPE_BOTTOM] = new Border(mInstanceName + ".BottomBorder",Border::BORDER_TYPE_BOTTOM,Rect(0,mSize.height - overlap,mSize.width,thickness),mTextureName+".border.bottom"+mTextureExtension,mGUIManager);
+			mBorders[Border::BORDER_TYPE_BOTTOM] = new Border(mInstanceName + ".BottomBorder",Border::BORDER_TYPE_BOTTOM,Size(mSize.width,thickness),mTextureName+".border.bottom"+mTextureExtension,mGUIManager);
 			addChild(mBorders[Border::BORDER_TYPE_BOTTOM]);
+			mBorders[Border::BORDER_TYPE_BOTTOM]->setPosition(0,mSize.height - overlap);
 		}		
+	}
+
+	void Widget::_deriveAnchorValues()
+	{
+		Size parentSize = mParentWidget->getSize();
+		mPixelsFromParentRight = parentSize.width - (mPosition.x + mSize.width);
+		mPixelsFromParentBottom = parentSize.height - (mPosition.y + mSize.height);
 	}
 
 	void Widget::_destroyBorders()
 	{
 		for(int i = 0; i < 8; ++i)
 		{
-			;//mBorders[i] = NULL;
+			if(mBorders[i] != NULL)
+				mGUIManager->destroyWidget(mBorders[i]);
+			mBorders[i] = NULL;
 		}
 	}
 
@@ -224,13 +252,11 @@ namespace QuickGUI
 	void Widget::_initEventHandlers()
 	{
 		int index = 0;
-		mUserEventHandlers.clear();
 		// 22 common types of events currently
-		while( index < 22 )
+		while( index < NUM_EVENTS )
 		{
-			std::vector<MemberFunctionSlot*> eventTypeHandler;
-			eventTypeHandler.clear();
-			mUserEventHandlers.push_back(eventTypeHandler);
+			mUserEventHandlers[index].clear();
+			mPropogateEventFiring[index] = false;
 			++index;
 		}
 	}
@@ -275,10 +301,11 @@ namespace QuickGUI
 			return;
 
 		mChildWidgets.push_back(w);
-		// GUIManager must be set first.
-		w->setGUIManager(mGUIManager);
+
 		w->setParent(this);
-		w->setQuadContainer(mQuadContainer);
+
+		// Convert Widget's position to be relative to new parent.
+		w->setPosition(w->getScreenPosition() - getScreenPosition());
 
 		WidgetEventArgs args(w);
 		fireEvent(EVENT_CHILD_ADDED,args);
@@ -287,6 +314,11 @@ namespace QuickGUI
 	void Widget::addEventHandler(Event EVENT, MemberFunctionSlot* function)
 	{
 		mUserEventHandlers[EVENT].push_back(function);
+	}
+
+	void Widget::allowResizing(bool allow)
+	{
+		mCanResize = allow;
 	}
 
 	void Widget::appearOverWidget(Widget* w)
@@ -484,6 +516,16 @@ namespace QuickGUI
 		return mHorizontalAnchor;
 	}
 
+	bool Widget::getInheritClippingWidget()
+	{
+		return mInheritClippingWidget;
+	}
+
+	bool Widget::getInheritQuadLayer()
+	{
+		return mInheritQuadLayer;
+	}
+
 	Ogre::String Widget::getInstanceName()
 	{
 		return mInstanceName;
@@ -519,6 +561,11 @@ namespace QuickGUI
 		return mParentWindow;
 	}
 
+	bool Widget::getPropogateEventFiring(Event e)
+	{
+		return mPropogateEventFiring[e];
+	}
+
 	Quad* Widget::getQuad()
 	{
 		return mQuad;
@@ -542,6 +589,11 @@ namespace QuickGUI
 		return mParentWidget->getScreenPosition() + mPosition;
 	}
 
+	Ogre::String Widget::getSkinComponent()
+	{
+		return mSkinComponent;
+	}
+
 	bool Widget::getShowWithParent()
 	{
 		return mShowWithParent;
@@ -550,6 +602,11 @@ namespace QuickGUI
 	Rect Widget::getDimensions()
 	{
 		return Rect(mPosition,mSize);
+	}
+
+	Ogre::String Widget::getFontName()
+	{
+		return mFontName;
 	}
 
 	GUIManager* Widget::getGUIManager()
@@ -577,35 +634,61 @@ namespace QuickGUI
 
 	Widget* Widget::getTargetWidget(const Point& pixelPosition)
 	{
-		if( !mQuad->visible() || 
-			!mEnabled || 
-			((mQuadContainer == NULL) && (mWidgetType != TYPE_SHEET)) ) 
+		if( !mVisible || !mEnabled )
 			return NULL;
 
-		// iterate through child widgets..
+		if( mCanResize )
+		{
+			// Check borders
+			for(int i = 0; i < 8; ++i)
+			{
+				if((mBorders[i] != NULL) && (mBorders[i]->isPointWithinBounds(pixelPosition)))
+					return mBorders[i];
+			}
+		}
+
+		// If position is not inside this widget, it can't be inside a child widget. (except menus, which are handled differently)
+		if( !isPointWithinBounds(pixelPosition) ) 
+			return NULL;
+
 		Widget* w = NULL;
-		// Get the widget with the highest offset
+
+		// Iterate through Menu Layer Child Widgets.
 		int widgetOffset = 0;
 		std::vector<Widget*>::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 		{
-			if( (*it)->getWidgetType() == TYPE_SCROLL_PANE )
+			if( (*it)->getQuadLayer() == Quad::LAYER_CHILD )
 				continue;
 
 			Widget* temp = (*it)->getTargetWidget(pixelPosition);
 			if( (temp != NULL) && (temp->getOffset() > widgetOffset) )
 			{
-				w = temp;
 				widgetOffset = temp->getOffset();
+				w = temp;
 			}
 		}
-
-		if( w != NULL ) 
+		if(w != NULL)
 			return w;
-		else if( isPointWithinBounds(pixelPosition) ) 
-			return this;
-		else 
-			return NULL;
+
+		// Iterate through Child Layer Child Widgets.
+		widgetOffset = 0;
+		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
+		{
+			if( (*it)->getQuadLayer() == Quad::LAYER_MENU )
+				continue;
+
+			Widget* temp = (*it)->getTargetWidget(pixelPosition);
+			if( (temp != NULL) && (temp->getOffset() > widgetOffset) )
+			{
+				widgetOffset = temp->getOffset();
+				w = temp;
+			}
+		}
+		if(w != NULL)
+			return w;
+
+		return this;
 	}
 
 	Ogre::String Widget::getTextureName(bool includeExtension)
@@ -727,13 +810,16 @@ namespace QuickGUI
 
 	bool Widget::fireEvent(Event e, const EventArgs& args)
 	{
-		if(!mEnabled || mUserEventHandlers[e].empty()) 
+		if(!mEnabled || (mUserEventHandlers[e].empty() && !mPropogateEventFiring[e])) 
 			return false;
 
 		std::vector<MemberFunctionSlot*>::iterator it;
-		std::vector<MemberFunctionSlot*> userEventHandlers = mUserEventHandlers[e];
-		for( it = userEventHandlers.begin(); it != userEventHandlers.end(); ++it )
+		std::vector<MemberFunctionSlot*>* userEventHandlers = &(mUserEventHandlers[e]);
+		for( it = userEventHandlers->begin(); it != userEventHandlers->end(); ++it )
 			(*it)->execute(args);
+
+		if(mPropogateEventFiring[e])
+			mParentWidget->fireEvent(e,args);
 
 		return true; 
 	}
@@ -753,9 +839,6 @@ namespace QuickGUI
 
 	void Widget::onSizeChanged(const EventArgs& args)
 	{
-		if(mWidgetType == TYPE_TITLEBAR)
-			mWidgetType = mWidgetType;
-
 		std::vector<Widget*>::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 			(*it)->_applyAnchors();
@@ -770,7 +853,8 @@ namespace QuickGUI
 		Ogre::Real relX = pt.x / mSize.width;
 		Ogre::Real relY = pt.y / mSize.height;
 
-		Ogre::ColourValue c = mWidgetImage->getColourAt(relX * mWidgetImage->getWidth(), relY * mWidgetImage->getHeight(),0);
+		// Reason I subtract 1 from width and height: Cannot access pixel 10 in an image of width 10. 0-9..
+		Ogre::ColourValue c = mWidgetImage->getColourAt((relX * mWidgetImage->getWidth()) - 1, (relY * mWidgetImage->getHeight()) - 1,0);
 		if( c.a <= 0.0 ) return true;
 
 		return false;
@@ -817,6 +901,11 @@ namespace QuickGUI
 		mChildWidgets.clear();
 	}
 
+	bool Widget::resizingAllowed()
+	{
+		return mCanResize;
+	}
+
 	void Widget::resizeOverTime(Ogre::Real seconds, Size finalPixelSize)
 	{
 		if(mParentWidget == NULL)
@@ -841,14 +930,8 @@ namespace QuickGUI
 
 	void Widget::timeElapsed(Ogre::Real time) 
 	{
-		if(!mEnabled) 
+		if(!mEnabled)
 			return;
-
-		std::vector<Widget*>::iterator it;
-		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
-		{
-			(*it)->timeElapsed(time);
-		}
 
 		if(mResizeOverTime)
 		{
@@ -866,13 +949,17 @@ namespace QuickGUI
 	void Widget::setClippingWidget(Widget* w, bool recursive)
 	{
 		for(std::vector<Quad*>::iterator it = mQuads.begin(); it != mQuads.end(); ++it)
-			(*it)->setClippingWidget(w);
+		{
+			if( (*it)->getInheritClippingWidget() )
+				(*it)->setClippingWidget(w);
+		}
 
 		if(recursive)
 		{
 			for(std::vector<Widget*>::iterator it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it)
 			{
-				(*it)->setClippingWidget(w);
+				if( (*it)->getInheritClippingWidget() )
+					(*it)->setClippingWidget(w);
 			}
 		}
 	}
@@ -893,6 +980,17 @@ namespace QuickGUI
 		mWidgetToDrag = w;
 	}
 
+	void Widget::setFont(const Ogre::String& fontScriptName, bool recursive) 
+	{ 
+		mFontName = fontScriptName;
+
+		if(recursive)
+		{
+			for(std::vector<Widget*>::iterator it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it)
+				(*it)->setFont(fontScriptName,recursive);
+		}
+	}
+
 	void Widget::setGainFocusOnClick(bool gainFocus)
 	{
 		mGainFocusOnClick = gainFocus;
@@ -905,7 +1003,7 @@ namespace QuickGUI
 
 	void Widget::setHeight(Ogre::Real pixelHeight)
 	{
-		if((mWidgetType == Widget::TYPE_SHEET) || (mParentWidget == NULL))
+		if(mWidgetType == Widget::TYPE_SHEET)
 			return;
 
 		mSize.height = pixelHeight;
@@ -926,6 +1024,16 @@ namespace QuickGUI
 		mHorizontalAnchor = a;
 	}
 
+	void Widget::setInheritClippingWidget(bool inherit)
+	{
+		mInheritClippingWidget = inherit;
+	}
+
+	void Widget::setInheritQuadLayer(bool inherit)
+	{
+		mInheritQuadLayer = inherit;
+	}
+
 	void Widget::setMovingEnabled(bool enable)
 	{
 		mMovingEnabled = enable;
@@ -933,22 +1041,8 @@ namespace QuickGUI
 
 	void Widget::setName(const Ogre::String& name)
 	{
-		if(!mGUIManager->validWidgetName(name))
-		{
-			bool numberAtEnd = false;
-			int index = static_cast<int>(name.size() - 1);
-			while((index > 0) && isdigit(name[index]))
-				--index;
-
-			if(index == static_cast<int>(name.size() - 1))
-				mInstanceName = name + "1";
-			else
-			{
-				int number = Ogre::StringConverter::parseInt(name.substr(index));
-				++number;
-				mInstanceName = name.substr(0,index) + Ogre::StringConverter::toString(number);
-			}
-		}
+		if(!mGUIManager->isNameUnique(name))
+			mInstanceName = mGUIManager->generateName(mWidgetType);
 		else
 			mInstanceName = name;
 	}
@@ -977,9 +1071,7 @@ namespace QuickGUI
 		fireEvent(EVENT_POSITION_CHANGED,args);
 
 		// update anchors
-		Size parentSize = mParentWidget->getSize();
-		mPixelsFromParentRight = parentSize.width - (mPosition.x + mSize.width);
-		mPixelsFromParentBottom = parentSize.height - (mPosition.y + mSize.height);
+		_deriveAnchorValues();
 		
 		mQuad->setPosition(getScreenPosition() + getScrollOffset());
 	}
@@ -987,6 +1079,11 @@ namespace QuickGUI
 	void Widget::setPosition(const Point& pixelPoint)
 	{
 		setPosition(pixelPoint.x,pixelPoint.y);
+	}
+
+	void Widget::setPropogateEventFiring(Event e, bool propogate)
+	{
+		mPropogateEventFiring[e] = propogate;
 	}
 
 	void Widget::setScreenPosition(const Ogre::Real& pixelX, const Ogre::Real& pixelY)
@@ -1015,7 +1112,7 @@ namespace QuickGUI
 
 	void Widget::setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight)
 	{
-		if((mWidgetType == Widget::TYPE_SHEET) || (mParentWidget == NULL))
+		if(mWidgetType == Widget::TYPE_SHEET)
 			return;
 
 		mSize.width = pixelWidth;
@@ -1040,7 +1137,18 @@ namespace QuickGUI
 	void Widget::setQuadLayer(Quad::Layer l)
 	{
 		mQuadLayer = l;
-		mQuad->setLayer(mQuadLayer);
+
+		for(std::vector<Quad*>::iterator it = mQuads.begin(); it != mQuads.end(); ++it)
+		{
+			if((*it)->getInheritLayer())
+				(*it)->setLayer(mQuadLayer);
+		}
+
+		for(std::vector<Widget*>::iterator it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
+		{
+			if( (*it)->getInheritQuadLayer() )
+				(*it)->setQuadLayer(mQuadLayer);
+		}
 	}
 
 	void Widget::setUseBorders(bool use)
@@ -1059,7 +1167,7 @@ namespace QuickGUI
 
 	void Widget::setWidth(Ogre::Real pixelWidth)
 	{
-		if((mWidgetType == Widget::TYPE_SHEET) || (mParentWidget == NULL))
+		if(mWidgetType == Widget::TYPE_SHEET)
 			return;
 
 		mSize.width = pixelWidth;
@@ -1078,7 +1186,7 @@ namespace QuickGUI
 		mPosition.x = pixelX;
 
 		// update anchor
-		mPixelsFromParentRight = mParentWidget->getWidth() - (mPosition.x + mSize.width);
+		_deriveAnchorValues();
 
 		WidgetEventArgs args(this);
 		fireEvent(EVENT_POSITION_CHANGED,args);
@@ -1094,7 +1202,7 @@ namespace QuickGUI
 		mPosition.y = pixelY;
 
 		// update anchors
-		mPixelsFromParentBottom = mParentWidget->getHeight() - (mPosition.y + mSize.height);
+		_deriveAnchorValues();
 
 		WidgetEventArgs args(this);
 		fireEvent(EVENT_POSITION_CHANGED,args);
@@ -1142,22 +1250,26 @@ namespace QuickGUI
 
 		if(mParentWidget != NULL)
 		{
+			setQuadContainer(parent->getQuadContainer());
+			setGUIManager(parent->getGUIManager());
+
 			_detectHierarchy();
 			// set the correct offset
 			setOffset(mParentWidget->getOffset() + 1);
-			setSize(mSize);
-			setPosition(mPosition);
 			// calculated properties
-			Size parentSize = mParentWidget->getSize();
-			mPixelsFromParentRight = parentSize.width - (mPosition.x + mSize.width);
-			mPixelsFromParentBottom = parentSize.height - (mPosition.y + mSize.height);
-			setClippingWidget(mParentWidget,true);
+			_deriveAnchorValues();
 			// inheritted properties
+			if(mInheritClippingWidget)
+				setClippingWidget(mParentWidget,true);
 			if(!mParentWidget->isVisible())
 				hide();
-			setQuadLayer(mParentWidget->getQuadLayer());
+			if(mInheritQuadLayer)
+				setQuadLayer(mParentWidget->getQuadLayer());
 			mGainFocusOnClick = mParentWidget->getGainFocusOnClick();
 		}
+
+		WidgetEventArgs args(this);
+		fireEvent(EVENT_PARENT_CHANGED,args);
 	}
 
 	void Widget::setQuadContainer(QuadContainer* container)
@@ -1169,6 +1281,11 @@ namespace QuickGUI
 
 		for( std::vector<Widget*>::iterator it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 			(*it)->setQuadContainer(mQuadContainer);
+	}
+
+	void Widget::setSkinComponent(const Ogre::String& skinComponent)
+	{
+		mSkinComponent = skinComponent;
 	}
 
 	void Widget::setTexture(const Ogre::String& textureName, bool updateBaseTexture)

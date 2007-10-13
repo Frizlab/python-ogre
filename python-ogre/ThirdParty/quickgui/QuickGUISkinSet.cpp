@@ -91,7 +91,7 @@ namespace QuickGUI
 			Ogre::Image tempImg;
 			tempImg.load((*texNameItr),Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 			images.push_back(tempImg);
-			mContainedTextures.push_back((*texNameItr));
+			mContainedTextures.insert((*texNameItr));
 
 			++mNumIndividualTextures;
 		}
@@ -210,12 +210,8 @@ namespace QuickGUI
 
 	bool SkinSet::containsImage(Ogre::String textureName)
 	{
-		std::vector<Ogre::String>::iterator it;
-		for( it = mContainedTextures.begin(); it != mContainedTextures.end(); ++it )
-		{
-			if( (*it) == textureName )
-				return true;
-		}
+		if(mContainedTextures.find(textureName) != mContainedTextures.end())
+			return true;
 
 		return false;
 	}

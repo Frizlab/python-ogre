@@ -46,7 +46,9 @@ namespace QuickGUI
 			@note
 				This Window will have a TitleBar
         */
-		Window(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm);
+		Window(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm);
+
+		virtual void allowScrolling(bool allow);
 
 		void bringToFront();
 		
@@ -77,7 +79,6 @@ namespace QuickGUI
 		virtual ~Window();
 		virtual void setQuadContainer(QuadContainer* container);
 	protected:
-
 		TitleBar* mTitleBar;
 
 		bool mBringToFrontOnFocus;

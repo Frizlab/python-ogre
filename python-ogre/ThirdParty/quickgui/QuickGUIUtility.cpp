@@ -3,7 +3,7 @@
 namespace QuickGUI
 {
 	Utility::Utility()
-	{
+	{	
 	}
 
 	Utility::~Utility()
@@ -54,7 +54,8 @@ namespace QuickGUI
 		{
 			Ogre::String extension = fileName.substr(index + 1);
 			Ogre::StringUtil::toLowerCase(extension);
-			Ogre::StringVector supportedImageCodecs(Ogre::Codec::getExtensions());
+
+			Ogre::StringVector& supportedImageCodecs = Ogre::Codec::getExtensions();
 
 			return (std::find(supportedImageCodecs.begin(),supportedImageCodecs.end(),extension) != supportedImageCodecs.end());
 		}

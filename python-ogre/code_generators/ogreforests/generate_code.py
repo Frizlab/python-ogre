@@ -332,16 +332,15 @@ def generate_code():
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory..
-    additional_dirs=[environment.Config.PATH_INCLUDE_ogreforests,
-                    os.path.join (environment.Config.PATH_ogreforests, 'source') ]
-    for d in additional_dirs:
-        for f in os.listdir(d):
-            if f.endswith('cpp') or f.endswith('.h'):
-                sourcefile = os.path.join(d, f)
-                destfile = os.path.join(environment.ogreforests.generated_dir, f ) 
-                if not common_utils.samefile( sourcefile ,destfile ):
-                    shutil.copy( sourcefile, environment.ogreforests.generated_dir )
-                    print "Updated ", f, "as it was missing or out of date"
+    common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_ogreforests, 
+                            destPath = environment.ogreforests.generated_dir, 
+                            recursive=False )
+     
+    ## and we do a special here as we have to modify a header (PagedGeomerty) to with with GCCXML
+    os.remove ( os.path.join ( environment.ogreforests.generated_dir, "PagedGeometry.h" ) )
+    common_utils.copyTree ( sourcePath = os.path.join(environment.Config.PATH_INCLUDE_ogreforests,"orig"), 
+                            destPath = environment.ogreforests.generated_dir, 
+                            recursive=False )
         
 if __name__ == '__main__':
     start_time = time.clock()

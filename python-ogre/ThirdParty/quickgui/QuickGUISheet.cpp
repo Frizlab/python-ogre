@@ -5,12 +5,12 @@
 namespace QuickGUI
 {
 	Sheet::Sheet(const Ogre::String& name, const Ogre::String& texture, GUIManager* gm) :
-		Panel(name,Rect(0,0,gm->getViewportWidth(),gm->getViewportHeight()),texture,gm),
+		Panel(name,Size(gm->getViewportWidth(),gm->getViewportHeight()),texture,gm),
 		mDefaultTextColor(Ogre::ColourValue::White),
-		mDefaultSkin("qgui"),
-		mAutoNameWindowCounter(0)
+		mDefaultSkin("qgui")
 	{
 		mParentSheet = this;
+		mQuadContainer = this;
 		mWidgetType = TYPE_SHEET;
 
 		Ogre::FontManager* fm = Ogre::FontManager::getSingletonPtr();
@@ -29,8 +29,12 @@ namespace QuickGUI
 
 	Window* Sheet::createWindow()
 	{
-		Window* newWindow = new Window("Window"+Ogre::StringConverter::toString(mAutoNameWindowCounter++),Rect(0,0,100,100),"qgui.window.png",mGUIManager);
+		Ogre::String name = mGUIManager->generateName(TYPE_WINDOW);
+		mGUIManager->notifyNameUsed(name);
+
+		Window* newWindow = new Window(name,Size(100,100),"qgui.window.png",mGUIManager);
 		addChild(newWindow);
+		newWindow->setPosition(0,0);
 		
 		return newWindow;
 	}
@@ -48,6 +52,65 @@ namespace QuickGUI
 	Ogre::String Sheet::getDefaultSkin()
 	{
 		return mDefaultSkin;
+	}
+
+	Widget* Sheet::getTargetWidget(const Point& pixelPosition)
+	{
+		Widget* w = NULL;
+
+		// Iterate through Menu Layer Child Widgets.
+		int widgetOffset = 0;
+		std::vector<Widget*>::iterator it;
+		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
+		{
+			if( (*it)->getQuadLayer() == Quad::LAYER_CHILD )
+				continue;
+
+			Widget* temp = (*it)->getTargetWidget(pixelPosition);
+			if( (temp != NULL) && (temp->getOffset() > widgetOffset) )
+			{
+				widgetOffset = temp->getOffset();
+				w = temp;
+			}
+		}
+		if(w != NULL)
+			return w;
+
+		// Iterate through Windows, from highest offset to lowest.
+		std::list<QuadContainer*>* windowList = QuadContainer::getWindowList();
+		std::list<QuadContainer*>::reverse_iterator rit;
+		for( rit = windowList->rbegin(); rit != windowList->rend(); ++rit )
+		{
+			if( (w = (*rit)->getOwner()->getTargetWidget(pixelPosition)) != NULL )
+				return w;
+		}
+
+		// Iterate through Panels, from highest offset to lowest.
+		std::list<QuadContainer*>* panelList = QuadContainer::getPanelList();
+		for( rit = panelList->rbegin(); rit != panelList->rend(); ++rit )
+		{
+			if( (w = (*rit)->getOwner()->getTargetWidget(pixelPosition)) != NULL )
+				return w;
+		}
+
+		// Iterate through Child Layer Child Widgets.
+		widgetOffset = 0;
+		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
+		{
+			if( (*it)->getQuadLayer() == Quad::LAYER_MENU )
+				continue;
+
+			Widget* temp = (*it)->getTargetWidget(pixelPosition);
+			if( (temp != NULL) && (temp->getOffset() > widgetOffset) )
+			{
+				widgetOffset = temp->getOffset();
+				w = temp;
+			}
+		}
+		if(w != NULL)
+			return w;
+
+		return this;
 	}
 
 	Window* Sheet::getWindow(const Ogre::String& name)

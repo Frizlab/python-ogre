@@ -32,9 +32,11 @@ PATH_VORBIS=        os.path.join(BASE_DIR, 'vorbis')
 PATH_OPENAL=        os.path.join(BASE_DIR, 'openal')
 PATH_ALUT=          os.path.join(BASE_DIR, 'freealut')
 PATH_OgreOde=       os.path.join(BASE_DIR, PATH_OgreAddons,'ogreode')
-PATH_OgreBullet=    os.path.join(PATH_OgreAddons,'ogrebullet')
-PATH_ogreforests=    os.path.join(PATH_OgreAddons,'forests')
+# # PATH_OgreBullet=    os.path.join(PATH_OgreAddons,'ogrebullet')
+# # PATH_ogreforests=    os.path.join(PATH_OgreAddons,'forests')
 
+PATH_OgreBullet=    os.path.join(PATH_THIRDPARTY,'ogrebullet')
+PATH_ogreforests=   os.path.join(PATH_THIRDPARTY,'forests')
 PATH_OGREAL=        os.path.join(PATH_THIRDPARTY,'ogreal')
 PATH_OPCODE=        os.path.join(PATH_THIRDPARTY,'opcode')
 PATH_quickgui=      os.path.join(PATH_THIRDPARTY,'quickgui')
@@ -74,7 +76,7 @@ PATH_LIB_CEGUI =                os.path.join( PATH_CEGUI, 'lib' )
 PATH_LIB_ODE =                  os.path.join( PATH_ODE, 'lib/releaselib')## probable releaselib for posix
 PATH_LIB_OPCODE =               os.path.join( PATH_OPCODE ) 
 PATH_LIB_OgreOde =              os.path.join( PATH_OgreOde, 'lib/Release') 
-PATH_LIB_OgreBullet =              os.path.join( PATH_OgreBullet, 'lib/Release') 
+# # PATH_LIB_OgreBullet =              os.path.join( PATH_OgreBullet, 'lib/Release') 
 PATH_LIB_OgreOdePrefab =        os.path.join( PATH_OgreOde, 'prefab/lib/Release' )
 PATH_LIB_OgreOdeLoader =        os.path.join( PATH_OgreOde, 'loader/lib/Release' )
 PATH_LIB_OgreAL =               os.path.join( PATH_OGREAL)#, 'lib/Release' )
@@ -111,10 +113,13 @@ PATH_INCLUDE_OPENAL =       os.path.join( PATH_OPENAL, 'include')
 PATH_INCLUDE_OGG=           os.path.join( PATH_OGG, 'include' )
 PATH_INCLUDE_VORBIS=        os.path.join( PATH_VORBIS, 'include' )
 PATH_INCLUDE_ALUT=          os.path.join( PATH_ALUT, 'include' )
-PATH_INCLUDE_OgreBullet =   [ 
-                        os.path.join( PATH_OgreBullet,'Collisions','include')
-                        ,os.path.join( PATH_OgreBullet,'Dynamics','include')
-                        ]
+
+# # PATH_INCLUDE_OgreBullet =   [ 
+# #                         os.path.join( PATH_OgreBullet,'Collisions','include')
+# #                         ,os.path.join( PATH_OgreBullet,'Dynamics','include')
+# #                         ]
+##PATH_INCLUDE_OgreBullet =   PATH_OgreBullet
+                        
 PATH_INCLUDE_OgreOde =      os.path.join( PATH_OgreOde,'include')
 PATH_INCLUDE_OgreOdePrefab= os.path.join( PATH_OgreOde,'prefab/include')
 PATH_INCLUDE_OgreOdeLoader= os.path.join( PATH_OgreOde,'loader/include')
@@ -131,7 +136,8 @@ PATH_INCLUDE_ffmpeg =       os.path.join (PATH_ffmpeg,'include')
 PATH_INCLUDE_ogredshow =    PATH_ogredshow
 PATH_INCLUDE_plib =         PATH_plib
 PATH_INCLUDE_navi =         os.path.join (PATH_navi,'include')
-PATH_INCLUDE_ogreforests =         os.path.join (PATH_ogreforests,'include')
+##PATH_INCLUDE_ogreforests =         os.path.join (PATH_ogreforests,'include')
+PATH_INCLUDE_ogreforests =         PATH_ogreforests
 
 PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ,os.path.join(BASE_DIR, 'vorbis', 'include')

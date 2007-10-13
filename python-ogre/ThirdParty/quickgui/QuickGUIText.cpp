@@ -111,6 +111,8 @@ namespace QuickGUI
 	{
 		mClippingWidget = w;
 
+		mCharacterBackground->setClippingWidget(mClippingWidget);
+
 		std::vector<Quad*>::iterator it;
 		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
 		{
@@ -121,6 +123,8 @@ namespace QuickGUI
 	void Text::_notifyQuadContainer(QuadContainer* container)
 	{
 		mQuadContainer = container;
+
+		mCharacterBackground->_notifyQuadContainer(mQuadContainer);
 
 		std::vector<Quad*>::iterator it;
 		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
@@ -653,6 +657,8 @@ namespace QuickGUI
 	{
 		mLayer = layer;
 
+		mCharacterBackground->setLayer(mLayer);
+
 		std::vector<Quad*>::iterator it;
 		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
 		{
@@ -669,6 +675,8 @@ namespace QuickGUI
 	void Text::setOffset(int offset)
 	{
 		mOffset = offset;
+
+		mCharacterBackground->setOffset(mOffset-1);
 
 		std::vector<Quad*>::iterator it;
 		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
@@ -709,6 +717,8 @@ namespace QuickGUI
 	void Text::setGUIManager(GUIManager* gm)
 	{
 		mGUIManager = gm;
+
+		mCharacterBackground->setGUIManager(mGUIManager);
 
 		std::vector<Quad*>::iterator it;
 		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )

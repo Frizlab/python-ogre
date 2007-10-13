@@ -14,6 +14,8 @@
 #include <vector>
 #include <ctype.h>
 
+#define NUM_EVENTS 23
+
 namespace QuickGUI
 {
 	// Forward declarations
@@ -47,9 +49,7 @@ namespace QuickGUI
 			TYPE_IMAGE					,
 			TYPE_LABEL					,
 			TYPE_LIST					,
-			TYPE_LISTITEM				,
-			TYPE_MENU					,
-			TYPE_MENULIST				,
+			TYPE_MENULABEL				,
 			TYPE_NSTATEBUTTON			,
 			TYPE_PANEL					,
 			TYPE_PROGRESSBAR			,
@@ -87,6 +87,7 @@ namespace QuickGUI
 			EVENT_MOUSE_LEAVE			,
 			EVENT_MOUSE_MOVE			,
 			EVENT_MOUSE_WHEEL			,
+			EVENT_PARENT_CHANGED		,
 			EVENT_POSITION_CHANGED		,
 			EVENT_SHOWN					,
 			EVENT_SIZE_CHANGED
@@ -129,7 +130,7 @@ namespace QuickGUI
 				ParentWidget parent widget which created this widget.
         */
 		//GuiMetricsMode
-		Widget(const Ogre::String& instanceName, const Rect& pixelDimensions, Ogre::String textureName, GUIManager* gm);
+		Widget(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String textureName, GUIManager* gm);
 
 		virtual void addChild(Widget* w);
 		/** Adds an event handler to this widget
@@ -153,7 +154,7 @@ namespace QuickGUI
 			mUserEventHandlers[EVENT].push_back(new MemberFunctionPointer<T>(function,obj));
 		}
 		void addEventHandler(Event EVENT, MemberFunctionSlot* function);
-
+		void allowResizing(bool allow);
 		/**
 		* Alters the widgets offset to be higher than widget w.  Widget w must be in the
 		* same QuadContainer and Layer.
@@ -211,6 +212,7 @@ namespace QuickGUI
 		* Returns the name of the texture used when this widget becomes disabled.
 		*/
 		Ogre::String getDisabledTexture();
+		Ogre::String getFontName();
 		/**
 		* Returns true if the widget will gain focus when clicked, false otherwise.
 		*/
@@ -226,6 +228,8 @@ namespace QuickGUI
 		*/
 		int getHighestOffset();
 		HorizontalAnchor getHorizontalAnchor();
+		bool getInheritClippingWidget();
+		bool getInheritQuadLayer();
 		Ogre::String getInstanceName();
 		/**
 		* Returns true if window is able to be repositions, false otherwise.
@@ -255,6 +259,7 @@ namespace QuickGUI
 		* NOTE: This value may be NULL.
 		*/
 		Window* getParentWindow();
+		bool getPropogateEventFiring(Event e);
 		/*
 		* Get Render Object that visually represents the widget.
 		*/
@@ -270,6 +275,7 @@ namespace QuickGUI
 		* NOTE: This may not be the actual screen coordinates, since QuickGUI supports scrolling.
 		*/
 		Point getScreenPosition();
+		Ogre::String getSkinComponent();
 		/**
 		* Get whether or not this widget is shown when its parent is shown.
 		*/
@@ -330,6 +336,7 @@ namespace QuickGUI
 		* Properly cleans up all child widgets.
 		*/
 		void removeAndDestroyAllChildWidgets();
+		bool resizingAllowed();
 		/**
 		* Scales the widget over time.
 		*/
@@ -352,6 +359,8 @@ namespace QuickGUI
 		* of moving a window by *dragging* the titlebar, or even the titlbar's text widget.
 		*/
 		void setDraggingWidget(Widget* w);
+
+		virtual void setFont(const Ogre::String& fontScriptName, bool recursive = false);
 		/**
 		* Allows clicking on a widget to not change the active widget.
 		*/
@@ -367,6 +376,12 @@ namespace QuickGUI
 		*/
 		void setHideWithParent(bool hide);
 		void setHorizontalAnchor(HorizontalAnchor a);
+		/**
+		* When set to true, the widget will inherit it's parent's clipping widget.
+		* NOTE: The clipping widget's bounds are the bounds used to clip the widget.
+		*/
+		void setInheritClippingWidget(bool inherit);
+		void setInheritQuadLayer(bool inherit);
 		/**
 		* If set to false, widget cannot be moved.
 		*/
@@ -387,6 +402,7 @@ namespace QuickGUI
 		*/
 		virtual void setPosition(const Ogre::Real& pixelX, const Ogre::Real& pixelY);
 		virtual void setPosition(const Point& pixelPoint);
+		void setPropogateEventFiring(Event e, bool propogate);
 		virtual void setQuadLayer(Quad::Layer l);
 		/**
 		* Manually set position of widget.
@@ -411,7 +427,7 @@ namespace QuickGUI
 		*/
 		void setUseBorders(bool use);
 		void setVerticalAnchor(VerticalAnchor a);
-		void setWidth(Ogre::Real pixelWidth);
+		virtual void setWidth(Ogre::Real pixelWidth);
 		void setXPosition(Ogre::Real pixelX);
 		virtual void setYPosition(Ogre::Real pixelY);
 		/**
@@ -436,13 +452,16 @@ namespace QuickGUI
 		void unlockTexture();
 
 	protected:
+		virtual void __constructor();
 		virtual void setClippingWidget(Widget* w, bool recursive = false);
 		virtual void setGUIManager(GUIManager* gm);
 		virtual void setParent(Widget* parent);
 		virtual void setQuadContainer(QuadContainer* container);
+		void setSkinComponent(const Ogre::String& skinComponent);
 
 		// Positions/sizes the widget according to parent's size.
 		virtual void _applyAnchors();
+		void _deriveAnchorValues();
 	protected:
 		virtual ~Widget();
 
@@ -451,18 +470,23 @@ namespace QuickGUI
 		Type						mWidgetType;
 
 		// PROPERTIES
+		bool						mCanResize;
 		Widget*						mClippingWidget;
+		bool						mInheritClippingWidget;
 		bool						mDragXOnly;
 		bool						mDragYOnly;
+		Ogre::String				mFontName;
 		bool						mVisible;
 		bool						mEnabled;
 		bool						mGainFocusOnClick;
 		bool						mGrabbed;
 		bool						mTextureLocked;
 		Quad::Layer					mQuadLayer;
+		bool						mInheritQuadLayer;
 		bool						mMovingEnabled;
 		bool						mDraggingEnabled;
 		Ogre::String				mFullTextureName;
+		Ogre::String				mSkinComponent;
 		Ogre::String				mTextureName;
 		Ogre::String				mTextureExtension;
 		Ogre::String				mDisabledTextureName;
@@ -518,8 +542,9 @@ namespace QuickGUI
 		void _createBorders();
 		void _destroyBorders();
 
-		// Event handlers! Only one per event per widget
-		std::vector< std::vector<MemberFunctionSlot*> > mUserEventHandlers;
+		// Event handlers! One List per event per widget
+		std::vector<MemberFunctionSlot*> mUserEventHandlers[NUM_EVENTS];
+		bool mPropogateEventFiring[NUM_EVENTS];
 
 		void _initEventHandlers();
 

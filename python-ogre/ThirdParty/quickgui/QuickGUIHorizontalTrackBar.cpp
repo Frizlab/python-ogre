@@ -3,8 +3,8 @@
 
 namespace QuickGUI
 {
-	HorizontalTrackBar::HorizontalTrackBar(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm) :
-		Image(name,pixelDimensions,texture,gm),
+	HorizontalTrackBar::HorizontalTrackBar(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
+		Image(instanceName,pixelSize,texture,gm),
 		mNumRegions(1),
 		mCurrentValue(0),
 		mLargeChange(3)
@@ -13,8 +13,9 @@ namespace QuickGUI
 		addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&HorizontalTrackBar::onMouseButtonDown,this);
 
 		// Creat slider button at the beginning of the HorizontalTrackBar, whether horizonal (left) or vertical (bot)
-		mSliderButton = new Button(mInstanceName+".SliderButton",Rect(0,0,13,mSize.height),mSliderTextureName,mGUIManager);
+		mSliderButton = new Button(mInstanceName+".SliderButton",Size(13,mSize.height),mSliderTextureName,mGUIManager);
 		addChild(mSliderButton);
+		mSliderButton->setPosition(0,0);
 		mSliderButton->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
 		mSliderButton->enableDragging(true);
 		mSliderButton->constrainDragging(true,false);

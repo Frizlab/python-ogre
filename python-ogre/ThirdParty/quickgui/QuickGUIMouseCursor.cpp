@@ -31,6 +31,15 @@ namespace QuickGUI
 		delete mVertexBuffer;
 	}
 
+	void MouseCursor::centerOrigin()
+	{
+		Ogre::Image i;
+		i.load(mTextureName,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+
+		mOriginOffset.x = static_cast<Ogre::Real>(i.getWidth()) / 2.0;
+		mOriginOffset.y = static_cast<Ogre::Real>(i.getHeight()) / 2.0;
+	}
+
 	void MouseCursor::constrainPosition()
 	{
 		bool offScreen = false;
@@ -86,6 +95,11 @@ namespace QuickGUI
 	bool MouseCursor::getHideWhenOffScreen()
 	{
 		return mHideWhenOffScreen;
+	}
+
+	Ogre::String MouseCursor::getTexture()
+	{
+		return mTextureName;
 	}
 
 	Point MouseCursor::getOriginOffset()
@@ -171,8 +185,8 @@ namespace QuickGUI
 
 	void MouseCursor::setPosition(Ogre::Real pixelX, Ogre::Real pixelY)
 	{
-		mPixelPosition.x = pixelX;
-		mPixelPosition.y = pixelY;
+		mPixelPosition.x = pixelX - mOriginOffset.x;
+		mPixelPosition.y = pixelY - mOriginOffset.y;
 
 		constrainPosition();
 	}

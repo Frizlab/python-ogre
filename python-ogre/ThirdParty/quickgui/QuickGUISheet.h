@@ -42,6 +42,7 @@ namespace QuickGUI
 		Ogre::String getDefaultFont();
 		Ogre::ColourValue getDefaultTextColor();
 		Ogre::String getDefaultSkin();
+		virtual Widget* getTargetWidget(const Point& pixelPosition);
 		Window* getWindow(const Ogre::String& name);
 
 		void setDefaultFont(const Ogre::String& font);
@@ -54,8 +55,6 @@ namespace QuickGUI
 	protected:
 		virtual void setQuadContainer(QuadContainer* container);
 	protected:
-		int	mAutoNameWindowCounter;
-
 		Ogre::String mDefaultSkin;
 		Ogre::String mDefaultFont;
 		Ogre::ColourValue mDefaultTextColor;

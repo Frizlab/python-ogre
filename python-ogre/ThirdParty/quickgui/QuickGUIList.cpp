@@ -4,234 +4,221 @@
 
 namespace QuickGUI
 {
-	List::List(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm) :
-		Image(name,pixelDimensions,texture,gm),
-		mAutoNameListItemCount(0),
-		mAutoSizeHeight(false),
-		mNumberOfVisibleItems(5),
-		mItemPixelHeight(20),
-		mScrollPane(NULL)
+	List::List(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
+		Image(instanceName,pixelSize,texture,gm),
+		mScrollPane(0),
+		mAutoNameWidgetCounter(-1),
+		mScrollingAllowed(false),
+		mItemHeight(20)
 	{
 		mWidgetType = TYPE_LIST;
-		if(mSize.height <= 0)
-			mAutoSizeHeight = true;
-		else
-		{
-			mNumberOfVisibleItems = ((mSize.width / mItemPixelHeight) + 1.0);
-			setHeight(mNumberOfVisibleItems * mItemPixelHeight);
-			//mScrollPane = new ScrollPane(mInstanceName+".ScrollPane",mGUIManager);
-		}
 
-		mHighlightTexture = mTextureName + ".highlight" + mTextureExtension;
-
-		// create highlight container for the list
-		mHighlightPanel = _createQuad(mInstanceName+".HighlightPanel");
-		mHighlightPanel->setLayer(mQuad->getLayer());
-		mHighlightPanel->setTexture(mHighlightTexture);
-		// offset + 3, to be able to show over ListItems with Images and Buttons and Text
-		mHighlightPanel->setOffset(mOffset+3);
-		mHighlightPanel->_notifyQuadContainer(mQuadContainer);
-
-		addEventHandler(EVENT_SIZE_CHANGED,&List::onWidthChanged,this);
+		addEventHandler(EVENT_CHILD_ADDED,&List::onChildAdded,this);
+		addEventHandler(EVENT_CHILD_REMOVED,&List::onChildRemoved,this);
 
 		mItems.clear();
 	}
 
 	List::~List()
 	{
-		Widget::removeAndDestroyAllChildWidgets();
 		mItems.clear();
 	}
 
-	void List::_setClippingWidget(Widget* w)
+	MenuLabel* List::addMenuLabel()
 	{
-		mQuad->setClippingWidget(w);
-		mHighlightPanel->setClippingWidget(w);
-	}
+		++mAutoNameWidgetCounter;
 
-	ListItem* List::addListItem(const Ogre::UTFString& text)
-	{
-		Ogre::String name = mInstanceName + ".ListItem" + Ogre::StringConverter::toString(mAutoNameListItemCount);
-		++mAutoNameListItemCount;
+		Point p(0,(mAutoNameWidgetCounter * mItemHeight));
+		Size s(mSize.width,mItemHeight);
 
-		return addListItem(name,text);
-	}
-
-	ListItem* List::addListItem(const Ogre::String& name, const Ogre::UTFString& text)
-	{
-		// If using auto sizing of list, make sure to set new height before creating child, since Child Widgets will be relative to parent
-		if(mAutoSizeHeight)
-			setHeight((static_cast<int>(mItems.size()) + 1) * mItemPixelHeight);
-
-		ListItem* newListItem = new ListItem(name,Rect(0,static_cast<int>(mItems.size())* mItemPixelHeight,mSize.width,mItemPixelHeight),mGUIManager);
-		addChild(newListItem);
-		newListItem->getText()->setCaption(text);
+		MenuLabel* newMenuLabel = new MenuLabel(mInstanceName+".Item"+Ogre::StringConverter::toString(mAutoNameWidgetCounter),s,"qgui.menulabel.png",mGUIManager);
+		addChild(newMenuLabel);
+		newMenuLabel->setPosition(p);
 
 		if(!mVisible)
-			newListItem->hide();
+			newMenuLabel->hide();
 
-		mItems.push_back(newListItem);
+		mItems.push_back(newMenuLabel);
 
-		return newListItem;
+		return newMenuLabel;
 	}
 
-	void List::clearList()
+	void List::allowScrolling(bool allow)
 	{
+		mScrollingAllowed = allow;
+
+		if(mScrollingAllowed)
+		{
+			if(mScrollPane == NULL)
+			{
+				mScrollPane = new ScrollPane(mInstanceName+".ScrollPane",Size(mSize.width,mSize.height),mGUIManager);
+				addChild(mScrollPane);
+				mScrollPane->setPosition(0,0);
+
+				mRightScrollBar = mScrollPane->mRightBar;
+				mRightScrollBar->setOffset(mOffset+2);
+				addChild(mRightScrollBar);
+				mRightScrollBar->setPosition(mSize.width - 20,0);
+				
+				mBottomScrollBar = mScrollPane->mBottomBar;
+				mBottomScrollBar->setOffset(mOffset+2);
+				addChild(mBottomScrollBar);
+				mBottomScrollBar->setPosition(0,mSize.height - 20);
+
+				mScrollPane->manageWidgets();
+			}
+		}
+		else
+		{
+			if(mScrollPane != NULL)
+			{
+				delete mScrollPane;
+				mScrollPane = NULL;
+
+				mGUIManager->destroyWidget(mRightScrollBar);
+				mRightScrollBar = NULL;
+				mGUIManager->destroyWidget(mBottomScrollBar);
+				mBottomScrollBar = NULL;
+			}
+		}
+	}
+
+	void List::clear()
+	{
+		std::vector<Widget*>::iterator it;
+		for( it = mItems.begin(); it != mItems.end(); ++it )
+			mGUIManager->destroyWidget((*it));
 		mItems.clear();
-		Widget::removeAndDestroyAllChildWidgets();
-
-		if(mAutoSizeHeight)
-			setHeight(0);
-
-		// if this is a drop down list that is part of a combobox, clear the combobox's "selection".
-		if( (mParentWidget != NULL) && (mParentWidget->getWidgetType() == Widget::TYPE_COMBOBOX) )
-			dynamic_cast<ComboBox*>(mParentWidget)->setCaption("");
 	}
 
-	bool List::getAutoSizeHeight()
+	Widget* List::getItem(unsigned int index)
 	{
-		return mAutoSizeHeight;
-	}
+		if( index >= mItems.size() )
+			return NULL;
 
-	ListItem* List::getListItem(unsigned int index)
-	{
-		if( (static_cast<int>(mItems.size()) - 1) < static_cast<int>(index) ) return NULL;
 		return mItems[index];
 	}
 
-	ListItem* List::getListItem(const Ogre::String& name)
+	int List::getItemIndex(Widget* w)
 	{
-		std::vector<ListItem*>::iterator it;
+		Ogre::String name = w->getInstanceName();
+
+		int counter = 0;
+		std::vector<Widget*>::iterator it;
 		for( it = mItems.begin(); it != mItems.end(); ++it )
 		{
-			if( (*it)->getInstanceName() == name ) return (*it);
+			if( name == (*it)->getInstanceName() )
+				return counter;
+
+			++counter;
 		}
 
-		return NULL;
+		return -1;
 	}
 
-	void List::hide()
+	int List::getNumberOfItems()
 	{
-		Image::hide();
-		mHighlightPanel->setVisible(false);
+		return static_cast<int>(mItems.size());
 	}
 
-	void List::hideHighlight()
+	ScrollPane* List::getScrollPane()
 	{
-		mHighlightPanel->setVisible(false);
+		return mScrollPane;
 	}
 
-	void List::highlightListItem(ListItem* i)
+	void List::onChildAdded(const EventArgs& args)
 	{
-		mHighlightPanel->setPosition(i->getScreenPosition() + i->getScrollOffset());
-		mHighlightPanel->setSize(i->getSize());
-		mHighlightPanel->setVisible(true);
+		if(mScrollPane != NULL)
+			mScrollPane->onChildAddedToParent(args);
 	}
 
-	void List::onWidthChanged(const EventArgs& args)
+	void List::onChildRemoved(const EventArgs& args)
 	{
-		std::vector<ListItem*>::iterator it;
-		for( it = mItems.begin(); it != mItems.end(); ++it )
-			(*it)->setWidth(mSize.width);
+		if(mScrollPane != NULL)
+			mScrollPane->onChildRemovedFromParent(args);
 	}
 
-	void List::removeListItem(unsigned int index)
+	void List::onSizeChanged(const EventArgs& args)
 	{
-		if( (mItems.empty()) || ((mItems.size() - 1) < index) ) 
-			return;
+		Image::onSizeChanged(args);
 
-		// Delete the List Item
-		int counter = 0;
-		std::vector<ListItem*>::iterator it;
+		if(mScrollPane != NULL)
+			mScrollPane->onParentSizeChanged(args);
+	}
+
+	void List::removeItem(Widget* w)
+	{
+		Ogre::String name = w->getInstanceName();
+
+		unsigned int counter = 0;
+		std::vector<Widget*>::iterator it;
 		for( it = mItems.begin(); it != mItems.end(); ++it )
 		{
-			if( counter == index )
+			if( name == (*it)->getInstanceName() )
 			{
-				ListItem* li = (*it);
-				it = mItems.erase(it);
-				mGUIManager->destroyWidget(li);
+				mGUIManager->destroyWidget((*it));
+				mItems.erase(it);
 				break;
 			}
 
 			++counter;
 		}
 
-		// See if list items need to be re-positioned
-		Ogre::Real n = 0;
+		for( ; counter < mItems.size(); ++counter )
+		{
+			mItems[counter]->setYPosition(counter * mItemHeight);
+		}
+	}
+
+	void List::removeItem(unsigned int index)
+	{
+		if( index >= mItems.size() )
+			return;
+
+		unsigned int counter = 0;
+		std::vector<Widget*>::iterator it;
 		for( it = mItems.begin(); it != mItems.end(); ++it )
 		{
-			(*it)->setYPosition(mItemPixelHeight * n);
-			(*it)->setHeight(mItemPixelHeight);
-			++n;
-		}
+			if( counter == index )
+			{
+				mGUIManager->destroyWidget((*it));
+				mItems.erase(it);
+				break;
+			}
 
-		if(mAutoSizeHeight)
-			setHeight(static_cast<int>(mItems.size()) * mItemPixelHeight);
-	}
-
-	void List::setAutoSizeHeight()
-	{
-		if(mScrollPane != NULL)
-		{
-			mScrollPane->setSize(mSize);
-			mScrollPane->disable();
-		}
-
-		mAutoSizeHeight = true;
-		setHeight(static_cast<int>(mItems.size()) * mItemPixelHeight);
-	}
-
-	void List::setHighlightTexture(const Ogre::String& texture)
-	{
-		mHighlightTexture = texture;
-		mHighlightPanel->setTexture(mHighlightTexture);
-	}
-
-	void List::setListItemPixelHeight(const Ogre::Real& heightInPixels)
-	{
-		mItemPixelHeight = heightInPixels;
-
-		Ogre::Real counter = 0;
-		std::vector<ListItem*>::iterator it;
-		for( it = mItems.begin(); it != mItems.end(); ++it )
-		{
-			(*it)->setYPosition(heightInPixels * counter);
-			(*it)->setHeight(mItemPixelHeight);
 			++counter;
 		}
 
-		mScrollPane->enable();
+		for( ; counter < mItems.size(); ++counter )
+		{
+			mItems[counter]->setYPosition(counter * mItemHeight);
+		}
 	}
 
-	void List::setNumberOfVisibleItems(unsigned int number)
+	bool List::scrollingAllowed()
 	{
-		mAutoSizeHeight = false;
-
-		mNumberOfVisibleItems = number;
-
-		setHeight(mItemPixelHeight * mNumberOfVisibleItems);
+		return mScrollingAllowed;
 	}
 
-	void List::setQuadLayer(Quad::Layer l)
+	void List::setItemPixelHeight(const Ogre::Real& heightInPixels)
 	{
-		Image::setQuadLayer(l);
-		mHighlightPanel->setLayer(mQuadLayer);
-	}
+		mItemHeight = heightInPixels;
 
-	void List::setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight)
-	{
-		Image::setSize(pixelWidth,pixelHeight);
-	}
-
-	void List::setSize(const Size& pixelSize)
-	{
-		Image::setSize(pixelSize);
+		Ogre::Real counter = 0;
+		std::vector<Widget*>::iterator it;
+		for( it = mItems.begin(); it != mItems.end(); ++it )
+		{
+			(*it)->setYPosition(mItemHeight * counter);
+			(*it)->setHeight(mItemHeight);
+			++counter;
+		}
 	}
 
 	void List::show()
 	{
-		mHighlightPanel->setVisible(false);
-
 		Image::show();
+
+		if(mScrollPane != NULL)
+			mScrollPane->_syncBarWithParentDimensions();
 	}
 }

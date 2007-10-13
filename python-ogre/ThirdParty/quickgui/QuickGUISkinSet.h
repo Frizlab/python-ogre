@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <map>
+#include <set>
 #include <vector>
 
 namespace QuickGUI
@@ -63,7 +64,7 @@ namespace QuickGUI
 		// list of textures used to build the SkinSet Texture.
 		std::vector<Ogre::String> mTextureNames;
 		// list of textures that are currently in the SkinSet Texture.
-		std::vector<Ogre::String> mContainedTextures;
+		std::set<Ogre::String> mContainedTextures;
 
 		// The actual texture that stores the imageset
 		Ogre::TexturePtr mTexture;

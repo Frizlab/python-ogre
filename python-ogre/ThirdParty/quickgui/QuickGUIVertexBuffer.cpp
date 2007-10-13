@@ -130,7 +130,8 @@ namespace QuickGUI
 
 	void VertexBuffer::_renderVertexBuffer()
 	{
-		if( mRenderObjectList == NULL ) return;
+		if( mVisibleRenderObjectList.empty() ) 
+			return;
 
 		bool shadowsEnabled = mGUIManager->getViewport()->getShadowsEnabled();
 		mGUIManager->getViewport()->setShadowsEnabled(false);
@@ -141,28 +142,19 @@ namespace QuickGUI
 		* Since mRenderList is sorted by zOrder and by Texture, we can send quads with similar textures into one renderOperation.
 		* Everything rendered in one _render call will receive the texture set previously by _setTexture.
 		*/
-		std::list<Quad*>::iterator it = mVisibleRenderObjectList.begin();
-		while( it != mVisibleRenderObjectList.end() )
+		int quadCounter = 0;
+		for(std::vector< std::pair<Ogre::String,int> >::iterator it = mTextureChangeList.begin(); it != mTextureChangeList.end(); ++it)
 		{
-			Ogre::String currentTexture = (*it)->getTextureName();
-			// tell render operation the where to start reading vertex data.
 			mRenderOperation.vertexData->vertexStart = bufferPosition;
-			// Iterate over quads with the same texture.  At least 1 iteration will occur, advancing the iterator.
-			while( (it != mVisibleRenderObjectList.end()) && 
-				((*it)->getTextureName() == currentTexture) )
-			{
-				bufferPosition += (*it)->getNumberOfVertices();
-				++it;
-			}
+
+			bufferPosition += ((*it).second - quadCounter) * VERTICES_PER_QUAD;
+			quadCounter = (*it).second;
+
 			// tell the render operation how many vertices to read.
 			mRenderOperation.vertexData->vertexCount = bufferPosition - mRenderOperation.vertexData->vertexStart;
-			
-			// make sure texture is loaded
-			if(!mTextureManager->resourceExists(currentTexture)) 
-				mTextureManager->load(currentTexture,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
 			// set texture that will be applied to all vertices rendered.
-			mRenderSystem->_setTexture(0,true,currentTexture);
+			mRenderSystem->_setTexture(0,true,(*it).first);
 			// set render properties prior to rendering.
 			_initRenderState();
 			// perform the rendering.
@@ -217,7 +209,8 @@ namespace QuickGUI
 
 	void VertexBuffer::update()
 	{
-		if(mRenderObjectList == NULL) return;
+		if((mRenderObjectList == NULL) || (mRenderObjectList->empty())) 
+			return;
 		
 		mVisibleRenderObjectList.clear();
 
@@ -231,19 +224,21 @@ namespace QuickGUI
 		{
 			Quad* o = (*it);
 			// skip all invisible RenderObjects
-			if( (!o->visible()) || (o->getTextureName() == "") ) continue;
+			if( (!o->visible()) || (o->getTextureName() == "") ) 
+				continue;
 
-			std::vector<Vertex>* vList = o->getVertices();
-			int vertIndex = 0;
-			for( std::vector<Vertex>::iterator vItr = vList->begin(); vItr != vList->end(); ++vItr, ++vertIndex )
+			// get pointer to beginning of array.
+			Vertex* verts = o->getVertices();
+			for(int vertIndex = 0; vertIndex < VERTICES_PER_QUAD; ++vertIndex)
 			{
-				mVertexBufferPtr[vertIndex].pos = vItr->pos;
-				mVertexBufferPtr[vertIndex].color = vItr->color;
-				mVertexBufferPtr[vertIndex].uv = vItr->uv;
+				mVertexBufferPtr[vertIndex].pos = verts->pos;
+				mVertexBufferPtr[vertIndex].color = verts->color;
+				mVertexBufferPtr[vertIndex].uv = verts->uv;
 
-				++vertexCount;
+				// increment pointer through array.
+				++verts;
 			}
-			mVertexBufferPtr += static_cast<int>(vList->size());
+			mVertexBufferPtr += VERTICES_PER_QUAD;
 			mVisibleRenderObjectList.push_back(*it);
 		}
 
@@ -251,5 +246,28 @@ namespace QuickGUI
 		mVertexBufferPtr = NULL;
 
 		mVertexBufferUsage = vertexCount;
+
+		if(mVisibleRenderObjectList.empty())
+			return;
+
+		mTextureChangeList.clear();
+		int quadCounter = 0;
+		Ogre::String currentTexture = mVisibleRenderObjectList.front()->getTextureName();
+		mTextureChangeList.push_back( std::make_pair(currentTexture,0) );
+		for(std::list<Quad*>::iterator it = mVisibleRenderObjectList.begin(); it != mVisibleRenderObjectList.end(); ++it)
+		{
+			// Every time a quad's texture is different than the previous quads, we record the quad's index.
+			// This is useful for texture batching, and speeds up the _renderVertexBuffer function some.
+			if((*it)->getTextureName() != currentTexture)
+			{
+				currentTexture = (*it)->getTextureName();
+				mTextureChangeList.back().second = quadCounter;
+				mTextureChangeList.push_back( std::make_pair(currentTexture,0) );
+			}
+
+			++quadCounter;
+		}
+		// push one last value onto the list, so the remaining textures are taken into consideration, when list is used in _renderVertexBuffer
+		mTextureChangeList.back().second = quadCounter;
 	}
 }

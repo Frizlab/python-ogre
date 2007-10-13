@@ -41,7 +41,7 @@ namespace QuickGUI
 			@note
 				Vertical or Horizontal TrackBars are derived from a comparison between width and height.
         */
-		VerticalScrollBar(const Ogre::String& name, const Rect& pixelDimensions, Ogre::String texture, GUIManager* gm);
+		VerticalScrollBar(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm);
 
 		// Same as setValue, except that the scroll event is not fired.
 		void _setValue(Ogre::Real value);
