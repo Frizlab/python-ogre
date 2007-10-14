@@ -203,6 +203,7 @@ def clear_str(_str):
     _str = clean(_str, "@code", "::")   # using literal code blocks 
     
 #     _str = clean(_str, "@par", "")    ## it will get a single blank line by default -- breaks @param...
+    _str = clean(_str, "\r\n", "\\n")   ## for linux build
     _str = clean(_str, "\\par", "")    ## it will get a single blank line by default
     _str = clean(_str, "\n", "\\n") 
     _str = clean(_str, "\\p", "")     ## cegui comments
