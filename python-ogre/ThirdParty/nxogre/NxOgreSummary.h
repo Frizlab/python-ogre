@@ -1,0 +1,61 @@
+//
+//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
+//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
+//
+//	This library is free software; you can redistribute it and/or
+//	modify it under the terms of the GNU Lesser General Public
+//	License as published by the Free Software Foundation; either
+//	version 2.1 of the License, or (at your option) any later version.
+//
+//	This library is distributed in the hope that it will be useful,
+//	but WITHOUT ANY WARRANTY; without even the implied warranty of
+//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+//	Lesser General Public License for more details.
+//
+//	You should have received a copy of the GNU Lesser General Public
+//	License along with this library; if not, write to the Free Software
+//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+//
+
+#ifndef __NXOGRE_SUMMARY_H__
+#define __NXOGRE_SUMMARY_H__
+
+#include "NxOgrePrerequisites.h"
+
+namespace NxOgre {
+
+	struct Summary {
+
+		NxString ID;
+		void* ptr;
+
+		enum Feature {
+			IS_PARENT,
+			IS_CHILD,
+			SCENE,
+			ACTOR,
+			SHAPE_CUBE,
+			SHAPE_SPHERE,
+			HAS_REPRESENTATION,
+			HAS_SHAPE_CUBE,
+			HAS_SHAPE_SPHERE,
+			IS_DYNAMIC,
+			IS_STATIC,
+			IS_KINEMTIC, // TODO: SPELL CHECK
+			
+		};
+
+		typedef std::vector<Feature> FeatureSet;
+		
+
+		FeatureSet Features;
+		
+		void add(Feature f){Features.push_back(f);}
+		bool has(Feature);
+
+	};
+
+
+};
+
+#endif

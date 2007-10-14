@@ -471,14 +471,16 @@ class nxogre:
         include_dirs.append( d )
     if os.name == 'nt':
         CCFLAGS = ' -D"WIN32" '
-                    
+    else:
+        CCFLAGS = ' -DNX_LINUX '                
     lib_dirs = [Config.PATH_LIB_Boost,
                 Config.PATH_LIB_Ogre_OgreMain,
-                Config.PATH_LIB_NxOgre,
+#                 Config.PATH_LIB_NxOgre,
                 Config.PATH_LIB_PhysX
                 ]
     CheckIncludes=[]
-    libs=[  Config.LIB_Boost, 'NxOgre','NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' ]
+#     libs=[  Config.LIB_Boost, 'NxOgre','NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' ]
+    libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' ]
     ModuleName="NxOgre"   
     active=True
     

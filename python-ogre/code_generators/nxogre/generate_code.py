@@ -706,19 +706,9 @@ def generate_code():
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generaated directory..
-    additional_files=[
-            os.path.join( environment.shared_ptr_dir, 'py_shared_ptr.h'),
-#             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'generators.h' ),
-#             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'custom_rvalue.cpp' ),
-            os.path.join( environment.include_dir, 'tuples.hpp' )
-            ]            
-    for sourcefile in additional_files:
-        p,filename = os.path.split(sourcefile)
-        destfile = os.path.join(environment.ogre.generated_dir, filename ) 
-    
-        if not common_utils.samefile( sourcefile ,destfile ):
-            shutil.copy( sourcefile, environment.ogre.generated_dir )
-            print "Updated ", filename, "as it was missing or out of date"
+    common_utils.copyTree ( sourcePath = environment.Config.PATH_NxOgre, 
+                            destPath = environment.nxogre.generated_dir, 
+                            recursive=False )
         
 if __name__ == '__main__':
     start_time = time.clock()
