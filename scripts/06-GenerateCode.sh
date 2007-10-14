@@ -3,7 +3,6 @@
 
 # master config setup
 source ./config.sh
-cd python-ogre/code_generators 
 if [ $1 != "" ]
 then 
     echo "=== generating $1 ===" 
@@ -11,13 +10,13 @@ then
     $INSTALL_DIR/gen_code.sh $1
 else
 
-#    echo ' -- creating OGRE code'
-#    echo ' -- creating OGRE code' >> $INSTALL_DIR/log.out
-#    $INSTALL_DIR/gen_code.sh ogre
+    echo ' -- creating OGRE code'
+    echo ' -- creating OGRE code' >> $INSTALL_DIR/log.out
+    $INSTALL_DIR/gen_code.sh ogre
     
-#    echo ' -- creating OGRErefapp code'
-#    echo ' -- creating OGRErefapp code'>> $INSTALL_DIR/log.out
-#    $INSTALL_DIR/gen_code.sh ogrerefapp 
+    echo ' -- creating OGRErefapp code'
+    echo ' -- creating OGRErefapp code'>> $INSTALL_DIR/log.out
+    $INSTALL_DIR/gen_code.sh ogrerefapp 
      
     echo ' -- creating quickgui code'
     echo ' -- creating quickgui code'>> $INSTALL_DIR/log.out
@@ -27,9 +26,9 @@ else
     echo ' -- creating OIS code'>> $INSTALL_DIR/log.out
     $INSTALL_DIR/gen_code.sh ois 
      
-#    echo ' -- creating CEGUI code'
-#    echo ' -- creating CEGUI code'>> $INSTALL_DIR/log.out
-#    $INSTALL_DIR/gen_code.sh cegui 
+    echo ' -- creating CEGUI code'
+    echo ' -- creating CEGUI code'>> $INSTALL_DIR/log.out
+    $INSTALL_DIR/gen_code.sh cegui 
 
     echo ' -- creating OgreAL code'
     echo ' -- creating OgreAL code'>> $INSTALL_DIR/log.out
@@ -55,14 +54,30 @@ else
     echo ' -- creating ode code' >> $INSTALL_DIR/log.out
     $INSTALL_DIR/gen_code.sh ode 
 
-#    echo ' -- creating et code'
-#    echo ' -- creating et code' >> $INSTALL_DIR/log.out
-#    $INSTALL_DIR/gen_code.sh et 
+    echo ' -- creating et code'
+    echo ' -- creating et code' >> $INSTALL_DIR/log.out
+    $INSTALL_DIR/gen_code.sh et 
      
-#    echo ' -- creating caelum code'
-#    echo ' -- creating caelum code' >> $INSTALL_DIR/log.out
-#    $INSTALL_DIR/gen_code.sh caelum 
+    echo ' -- creating caelum code'
+    echo ' -- creating caelum code' >> $INSTALL_DIR/log.out
+    $INSTALL_DIR/gen_code.sh caelum 
  
+    echo ' -- creating forests code'
+    echo ' -- creating forests code' >> $INSTALL_DIR/log.out
+    $INSTALL_DIR/gen_code.sh forests 
+
+    echo ' -- creating ogrebulletc code '
+    echo ' -- creating ogrebulletc code' >> $INSTALL_DIR/log.out
+    $INSTALL_DIR/gen_code.sh ogrebulletc 
+
+    echo ' -- creating ogrebulletd code '
+    echo ' -- creating ogrebulletd code' >> $INSTALL_DIR/log.out
+    $INSTALL_DIR/gen_code.sh ogrebulletd 
+
+#    echo ' -- creating nxogre code '
+#    echo ' -- creating nxogre code' >> $INSTALL_DIR/log.out
+#    $INSTALL_DIR/gen_code.sh nxogre     
+        
 fi
 cd $INSTALL_DIR
 echo

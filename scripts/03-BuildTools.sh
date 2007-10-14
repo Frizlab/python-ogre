@@ -43,18 +43,18 @@ make install
 cd $INSTALL_DIR
 
 ## Scons
-echo " -- installing SCONs" 
-rm -rf scons-0.96.96 
-tar -xvzf $DOWNLOADS/scons-0.96.96.tar.gz --overwrite 
-cd scons-0.96.96 
-python setup.py install --prefix=$PREFIX 
-cd .. 
+#echo " -- installing SCONs" 
+#rm -rf scons-0.96.96 
+#tar -xvzf $DOWNLOADS/scons-0.96.96.tar.gz --overwrite 
+#cd scons-0.96.96 
+#python setup.py install --prefix=$PREFIX 
+#cd .. 
 
 echo " -- installing SCONs" 
 rm -rf scons-0.97.0d20070918 
 tar -xvzf $DOWNLOADS/scons-0.97.0d20070918.tar.gz --overwrite 
 cd scons-0.97.0d20070918 
-####python setup.py install --prefix=$PREFIX 
+python setup.py install --prefix=$PREFIX 
 cd .. 
 
 

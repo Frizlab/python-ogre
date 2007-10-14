@@ -16,7 +16,7 @@ $WGET http://prdownloads.sourceforge.net/freeimage/FreeImage393.zip
 $WGET http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.5.0b.tar.gz  
 $WGET http://prdownloads.sourceforge.net/wgois/ois-1.0RC1.tar.gz  
 $WGET http://prdownloads.sourceforge.net/boost/boost-jam-3.1.13-1-linuxx86.tgz 
-$WGET http://prdownloads.sourceforge.net/scons/scons-0.96.96.tar.gz 
+##$WGET http://prdownloads.sourceforge.net/scons/scons-0.96.96.tar.gz 
 $WGET http://downloads.sourceforge.net/scons/scons-0.97.0d20070918.tar.gz
 $WGET http://prdownloads.sourceforge.net/ogre/ogre-linux_osx-v1-4-5.tar.bz2 
 $WGET http://prdownloads.sourceforge.net/opende/ode-src-0.8.zip 
@@ -39,6 +39,8 @@ echo " -- getting ogreode"
 cvs -z3 -q -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -P ogreaddons/ogreode
 echo " -- getting ogrenewt"
 cvs -z3 -q -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -P ogreaddons/ogrenewt 
+echo " -- getting nxogre"
+svn co  http://latest.nxogre.org/nxogre3/ nxogre
 echo ""
 echo "======= Sources Retrieved ======="
 echo ""
