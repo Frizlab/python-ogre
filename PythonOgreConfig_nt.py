@@ -54,8 +54,6 @@ PATH_Theora=        os.path.join(PATH_OgreAddons,'videoplugin','TheoraVideo')
 PATH_ffmpeg=        os.path.join(BASE_DIR, 'ffmpeg')
 PATH_navi =         os.path.join(BASE_DIR, 'navi','Navi')
 
-
-#
 # it's time for the SDK version
 if SDK:
     PATH_CEGUI =        os.path.join(BASE_DIR, 'Ogrenew')
@@ -88,9 +86,9 @@ PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'out/release8/libs' )
 PATH_LIB_Theora=                os.path.join(PATH_Theora, 'bin', 'Release')
 PATH_LIB_ogrevideoffmpeg =      PATH_ogrevideoffmpeg
 PATH_LIB_ffmpeg=                os.path.join(PATH_ffmpeg, 'lib')
-PATH_LIB_ogredshow =            PATH_ogredshow
 PATH_LIB_plib =                 PATH_plib
 PATH_LIB_navi=                  os.path.join(PATH_navi, 'lib')
+PATH_LIB_ogredshow =            PATH_ogredshow
 
 if SDK:
     PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'lib')
