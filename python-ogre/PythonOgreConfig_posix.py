@@ -1,26 +1,23 @@
 import sys,os
 
-## Boost stuff 
-## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
+## The root directory is where this module is located
 module_dir = os.path.abspath(os.path.dirname(__file__) )## The root directory is where this module is located
 ## lets assume that the base development directory is one level higher
 BASE_DIR,ignore = os.path.split(module_dir) ##  r'/home/andy/development'
 
+# the base of the /usr/... dircetory structure that we are using
 ROOT_DIR = os.path.join(BASE_DIR,'root')
-root_dir = os.path.abspath(os.path.dirname(__file__) )## The root directory is where this module is located
-
 LOCAL_LIB = os.path.join(ROOT_DIR,'usr/lib')
 LOCAL_INCLUDE = os.path.join(ROOT_DIR, 'usr/include')
 
+## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
 PATH_Boost = os.path.join(LOCAL_INCLUDE, 'boost-1_34')
-
-#
+## Path to your boost_pythonxxxx lib file
 PATH_LIB_Boost = LOCAL_LIB
 ## and the name of the boost python library
 LIB_Boost = 'libboost_python-gcc41-1_34'
 
-#
-# Don't forget we need to call gccxml......
+# We need to know where to find gccxml......
 gccxml_bin = os.path.join(BASE_DIR,'gccxml-build/bin')
 # and the Py++ directory as sometimes we need access to the code repository there
 pyplusplus_install_dir = os.path.join(BASE_DIR,'pygccxml')
@@ -39,9 +36,11 @@ PATH_VORBIS=        os.path.join(BASE_DIR, 'libvorbis-1.2.0')
 PATH_OPENAL=        os.path.join(BASE_DIR, 'openal-0.0.8')
 PATH_ALUT=          os.path.join(BASE_DIR, 'freealut-1.1.0')
 PATH_OgreOde=       os.path.join(PATH_OgreAddons,'ogreode')
-PATH_OgreBullet=    os.path.join(PATH_OgreAddons,'ogrebullet')
-PATH_ogreforests=    os.path.join(PATH_OgreAddons,'forests')
+# PATH_OgreBullet=    os.path.join(PATH_OgreAddons,'ogrebullet')
+# PATH_ogreforests=    os.path.join(PATH_OgreAddons,'forests')
 
+PATH_OgreBullet=    os.path.join(PATH_THIRDPARTY,'ogrebullet')
+PATH_ogreforests=   os.path.join(PATH_THIRDPARTY,'forests')
 PATH_OGREAL=        os.path.join(PATH_THIRDPARTY,'ogreal')
 PATH_OPCODE=        os.path.join(PATH_THIRDPARTY,'opcode')
 PATH_quickgui=      os.path.join(PATH_THIRDPARTY,'quickgui')
@@ -75,21 +74,20 @@ PATH_LIB_CEGUI =                os.path.join( LOCAL_LIB ) #PATH_Ogre, r'Dependen
 PATH_LIB_ODE =                  os.path.join( LOCAL_LIB ) #PATH_ODE, 'lib/releasedll')## probable releaselib for posix
 PATH_LIB_OPCODE =               os.path.join( PATH_OPCODE ) 
 PATH_LIB_OgreOde =              os.path.join( LOCAL_LIB ) #PATH_OgreOde, 'lib/Release') 
+# PATH_LIB_OgreBullet =              os.path.join( PATH_OgreBullet, 'lib/Release') 
 PATH_LIB_OgreOdePrefab =        os.path.join( LOCAL_LIB ) #PATH_OgreOde, 'prefab/lib/Release' )
 PATH_LIB_OgreOdeLoader =        os.path.join( LOCAL_LIB ) #PATH_OgreOde, 'loader/lib/Release' )
 PATH_LIB_OgreAL =               os.path.join( LOCAL_LIB ) #PATH_OGREAL, 'lib/Release' )
 PATH_LIB_betagui =              PATH_betagui
-PATH_LIB_OgreBullet =              os.path.join( PATH_OgreBullet, 'lib/Release') 
-
 PATH_LIB_quickgui =             PATH_quickgui
-PATH_LIB_Bullet = 		        os.path.join( LOCAL_LIB )
-PATH_LIB_plib =                 PATH_plib
-PATH_LIB_navi=                  os.path.join(PATH_navi, 'lib')
 PATH_LIB_NxOgre=                os.path.join(LOCAL_LIB )
 PATH_LIB_PhysX =                os.path.join(LOCAL_LIB)
+PATH_LIB_Bullet = 		        os.path.join( LOCAL_LIB )
 PATH_LIB_Theora=                os.path.join(PATH_Theora, 'bin', 'Release')
 PATH_LIB_ogrevideoffmpeg =      PATH_ogrevideoffmpeg
 PATH_LIB_ffmpeg=                os.path.join(PATH_ffmpeg, 'lib')
+PATH_LIB_plib =                 PATH_plib
+PATH_LIB_navi=                  os.path.join(PATH_navi, 'lib')
 
 
 PATH_INCLUDE_Ogre=          os.path.join(LOCAL_INCLUDE,'OGRE')  # os.path.join(PATH_Ogre,'OgreMain/include') 
@@ -99,34 +97,36 @@ PATH_INCLUDE_OgreRefApp =   os.path.join(PATH_Ogre,'ReferenceApplication/Referen
 PATH_INCLUDE_OgreNewt =     os.path.join(LOCAL_INCLUDE,'OgreNewt') #os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')
 PATH_INCLUDE_CEGUI =        os.path.join(LOCAL_INCLUDE,'CEGUI') #os.path.join(PATH_CEGUI, r'include/CEGUI')
 PATH_INCLUDE_ODE =          os.path.join(LOCAL_INCLUDE,'ode') #os.path.join( PATH_ODE, 'include')
+PATH_INCLUDE_OPCODE =       PATH_OPCODE
 PATH_INCLUDE_ODESOURCE =    '' #      os.path.join( PATH_ODE, 'ode/src')
-PATH_INCLUDE_quickgui =     PATH_quickgui
 PATH_INCLUDE_OgreAL =       PATH_OGREAL
 PATH_INCLUDE_OPENAL =       os.path.join( LOCAL_INCLUDE ) #os.path.join( PATH_OPENAL, 'include')
 PATH_INCLUDE_OGG=           os.path.join( LOCAL_INCLUDE,'ogg' ) #os.path.join( PATH_OGG, 'include' )
 PATH_INCLUDE_VORBIS=        os.path.join( LOCAL_INCLUDE,'vorbis' ) #os.path.join( PATH_VORBIS, 'include' )
 PATH_INCLUDE_ALUT=          os.path.join( LOCAL_INCLUDE ) #os.path.join( PATH_ALUT, 'include' )
+
+# PATH_INCLUDE_OgreBullet =   [ 
+#                         os.path.join( PATH_OgreBullet,'Collisions','include')
+#                         ,os.path.join( PATH_OgreBullet,'Dynamics','include')
+#                         ]
+
+
 PATH_INCLUDE_OgreOde =      os.path.join( PATH_OgreOde,'include')
 PATH_INCLUDE_OgreOdePrefab= os.path.join( PATH_OgreOde,'prefab/include')
 PATH_INCLUDE_OgreOdeLoader= os.path.join( PATH_OgreOde,'loader/include')
-PATH_INCLUDE_OgreBullet =   [ 
-                        os.path.join( PATH_OgreBullet,'Collisions','include')
-                        ,os.path.join( PATH_OgreBullet,'Dynamics','include')
-                        ]
+PATH_INCLUDE_FMOD =  ""
+PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'Samples/Common/CEGUIRenderer/include')
+PATH_INCLUDE_quickgui =     PATH_quickgui
 PATH_INCLUDE_NxOgre=        os.path.join(PATH_NxOgre, 'include')
-PATH_INCLUDE_betagui =       PATH_betagui
-PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'Samples/Common/CEGUIRenderer/include')PATH_INCLUDE_OPCODE = 		os.path.join( PATH_OPCODE )
 PATH_INCLUDE_Bullet = 		os.path.join( LOCAL_INCLUDE )
-PATH_INCLUDE_navi =         os.path.join (PATH_navi,'include')
-PATH_INCLUDE_plib =         PATH_plib
-PATH_INCLUDE_ogredshow =    PATH_ogredshow
-PATH_INCLUDE_ogreforests =         os.path.join (PATH_ogreforests,'include')
-
+PATH_INCLUDE_betagui =       PATH_betagui
 PATH_INCLUDE_Theora =       os.path.join (PATH_Theora,'include')
 PATH_INCLUDE_ogrevideoffmpeg =  PATH_ogrevideoffmpeg
 PATH_INCLUDE_ffmpeg =       os.path.join (PATH_ffmpeg,'include')
 PATH_INCLUDE_plib =         PATH_plib
 PATH_INCLUDE_navi =     os.path.join (PATH_navi,'include')
+PATH_INCLUDE_ogredshow =    PATH_ogredshow
+PATH_INCLUDE_ogreforests =         PATH_ogreforests
 
 PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ,os.path.join(BASE_DIR, 'vorbis', 'include')
