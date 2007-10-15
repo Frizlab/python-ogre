@@ -83,7 +83,8 @@ patch -s -N -i ../python-ogre/patch/cegui.patch -p0
 echo "EMPTY" >>./INSTALL
 echo "EMPTY" >>./NEWS
 popd
-
+echo " -- Unpacking Bullet"
+tar zxf $DOWNLOADS/bullet-2.63final.tgz
 echo
 echo "== Finished Extraction and Patching =="
 echo

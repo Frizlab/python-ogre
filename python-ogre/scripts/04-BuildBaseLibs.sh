@@ -64,13 +64,13 @@ aclocal
 ./configure --prefix=$PREFIX
 make
 make install
-cd ReferenceApplication
-aclocal
-./bootstrap
-./configure --prefix=$PREFIX
-make
-make install
-cd ..
+#cd ReferenceApplication
+#aclocal
+#./bootstrap
+#./configure --prefix=$PREFIX
+#make
+#make install
+#cd ..
 popd 
 
 echo
