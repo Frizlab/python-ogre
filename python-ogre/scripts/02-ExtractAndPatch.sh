@@ -73,6 +73,8 @@ cp newtonSDK/sdk/*.a ogreaddons/ogrenewt
 echo " -- Patching Boost"
 chmod -R +rw boost_1_34_0
 cp -r python-ogre/boost/* boost_1_34_0
+sed -i s/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/ boost_1_34_0/configure
+sed -i s/'BOOST_PYTHON_MAX_ARITY 15'/'BOOST_PYTHON_MAX_ARITY 19'/ boost_1_34_0/boost/python/detail/preprocessor.hpp
 
 echo " -- Patching Ogre"
 patch -s -N -i ./python-ogre/patch/ogre.patch -p0 
