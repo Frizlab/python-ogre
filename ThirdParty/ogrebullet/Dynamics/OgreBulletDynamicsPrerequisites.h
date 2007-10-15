@@ -23,49 +23,34 @@ Place - Suite 330, Boston, MA 02111-1307, USA, or go to
 http://www.gnu.org/copyleft/lesser.txt.
 -----------------------------------------------------------------------------
 */
-#ifndef _OGREBULLETCOLLISIONS_OgreBtConverter_H
-#define _OGREBULLETCOLLISIONS_OgreBtConverter_H
 
-#include "OgreBulletCollisionsPreRequisites.h"
+#ifndef _OGREBULLETDYNAMICS_PREREQUISITES_H
+#define _OGREBULLETDYNAMICS_PREREQUISITES_H
 
-#include "OgreVector3.h"
-#include "OgreQuaternion.h"
+#include "btBulletCollisionCommon.h"
+#include "btBulletDynamicsCommon.h"
 
-namespace OgreBulletCollisions
+#include "Ogre.h"
+#include "OgreBulletCollisions.h"
+
+
+namespace OgreBulletDynamics
 {
-    class OgreBtConverter
-    {
-    public:
-        OgreBtConverter(){};
-        ~OgreBtConverter(){};
+    class RigidBody;
+    class PhysicState;
+    class DynamicsWorld;
 
-        static btVector3 to(const Ogre::Vector3 &V)
-        {
-            return btVector3(V.x, V.y, V.z);
-        };
+    class TypedConstraint;
+    class HingeConstraint;
+    class SixDofConstraint;
+    class PointToPointConstraint;
+	class ConeTwistConstraint;
 
-        static btQuaternion to(const Ogre::Quaternion &Q)
-        {
-            return btQuaternion(Q.x, Q.y, Q.z, Q.w);
-        };
-
-    };
-    class BtOgreConverter
-    {
-    public:
-        BtOgreConverter(){};
-        ~BtOgreConverter(){};
-
-        static Ogre::Vector3 to(const btVector3 &V)
-        {
-            return Ogre::Vector3(V.x(), V.y(), V.z());
-        };
-
-        static Ogre::Quaternion to(const btQuaternion &Q)
-        {
-            return Ogre::Quaternion(Q.w(), Q.x(), Q.y(), Q.z());
-            //return Ogre::Quaternion(Q.x(), Q.y(), Q.z(), Q[3]);
-        };
-    };
+    class WheeledRigidBody;
+    class VehicleRayCaster;
+    class VehicleTuning;
+    class RaycastVehicle;
+    class WheelInfo;
 }
-#endif //_OGREBULLETCOLLISIONS_OgreBtConverter_H
+
+#endif //_OGREBULLETDYNAMICS_PREREQUISITES_H
