@@ -249,7 +249,10 @@ class ogrenewt:
     active=True
     version = "1.0"
     parent = "ogre/physics"
-    libs = ['Newton', Config.LIB_Boost, 'OgreNewt_Main', 'OgreMain']
+    if os.name =="nt":
+        libs = ['Newton', Config.LIB_Boost, 'OgreNewt_Main', 'OgreMain']
+    else:
+        libs = ['Newton', Config.LIB_Boost, 'OgreNewt', 'OgreMain']
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_Newton   # only one path for Newton
                     , Config.PATH_INCLUDE_Ogre 
@@ -656,7 +659,7 @@ class et:  ## editable terrain
 class bullet:
     version= "2.62"
     parent = "ogre/physics"
-    libs=[Config.LIB_Boost,  'libbulletcollision', 'libbulletdynamics','libbulletmath']
+    libs=[Config.LIB_Boost,  'LibBulletCollision', 'LibBulletDynamics'] #,'libbulletmath']
     lib_dirs = [ Config.PATH_LIB_Boost
                 ,  Config.PATH_LIB_Bullet
                 ]
@@ -675,7 +678,7 @@ class ogrebulletc:  #
     cflags = ""
     parent = "ogre/physics"
     libs = [Config.LIB_Boost,  'OgreMain', 
-        'libbulletcollision', 'libbulletmath','libbulletdynamics'
+        'LibBulletCollision', 'LibBulletDynamics'
         ]
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_INCLUDE_Bullet
@@ -700,7 +703,7 @@ class ogrebulletd:  #
     cflags = ""
     parent = "ogre/physics"
     libs = [Config.LIB_Boost,  'OgreMain', 
-        'libbulletcollision', 'libbulletmath','libbulletdynamics'
+        'LibBulletCollision', 'LibBulletDynamics'
         ]
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_INCLUDE_Bullet
