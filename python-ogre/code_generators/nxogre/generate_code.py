@@ -166,7 +166,10 @@ def ManualExclude ( mb ):
             ]
     for e in excludes:
         print "excluding ", e
-        main_ns.member_functions(e).exclude()
+        try:
+            main_ns.member_functions(e).exclude()
+        except:
+            pass
  
     ## this is probably excessive :)
     names = ['_begin','_end', '_atEnd', '_next']
@@ -197,6 +200,20 @@ def ManualExclude ( mb ):
                 ]
     for e in excludes:
         main_ns.class_(e).exclude()
+
+#    if os.name != 'nt':
+#        ## Classes
+#        excludes = ['::NxOgre::FluidDrains'
+#                    ,'::NxOgre::FluidEmitters'
+#                    ,'::NxOgre::FluidMesh'
+#                    ,'::NxOgre::FluidParams'
+#                    ,'::NxOgre::Fluids'
+#                    
+#                    # not yet implemented in source
+#                    ]
+#        for e in excludes:
+#            main_ns.class_(e).exclude()
+
 # # #     
 # # #         
     ## I have a challenge that Py++ doesn't recognise these classes by full name (perhaps because they are structs?)
@@ -236,7 +253,10 @@ def ManualExclude ( mb ):
     excludes=['::NxOgre::Container<std::string, NxOgre::FluidDrain*>::operator[]'
             ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::operator[]']
     for e in excludes:
-        main_ns.operators(e).exclude()
+        try:
+            main_ns.operators(e).exclude()
+        except:
+            pass
         
     ### Constructors
     for c in main_ns.class_('::NxOgre::Pose').constructors():  ## these hide the working constructors
@@ -617,7 +637,11 @@ def generate_code():
                         os.path.join( environment.nxogre.root_dir, "python_nxogre.h" )
                         , environment.nxogre.cache_file )
 
-    defined_symbols = [ 'NXOGRE_EXPORTS','OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY']
+    if os.name == 'nt':
+        defined_symbols = [ 'NXOGRE_EXPORTS','OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY']
+    else:
+        defined_symbols = [ 'LINUX','NX_LINUX', 'NX_DISABLE_FLUIDS', 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY']
+
     if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')
         defined_symbols.append('BOOST_HAS_WINTHREADS')

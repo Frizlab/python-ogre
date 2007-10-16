@@ -43,12 +43,12 @@ typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::Material*>:
      MapContainerMaterial;
 typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::Character*>::Containee, std::less<std::string> >\
      MapContainerCharacter;
-typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::Fluid*>::Containee, std::less<std::string> >\
-     MapContainerFluid;
-typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::FluidDrain*>::Containee, std::less<std::string> >\
-     MapContainerFluidDrain;
-typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::FluidEmitter*>::Containee, std::less<std::string> >\
-     MapContainerFluidEmitter;
+//typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::Fluid*>::Containee, std::less<std::string> >\
+//     MapContainerFluid;
+//typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::FluidDrain*>::Containee, std::less<std::string> >\
+//     MapContainerFluidDrain;
+//typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::FluidEmitter*>::Containee, std::less<std::string> >\
+//     MapContainerFluidEmitter;
 typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::SoftBody*>::Containee, std::less<std::string> >\
      MapContainerSoftBody;
      
@@ -92,9 +92,9 @@ typedef NxOgre::Container<NxOgre::NxString, NxOgre::Trigger*>   Triggers;
 typedef NxOgre::List<NxOgre::Wheel*>     Wheels;
 typedef NxOgre::Container<NxOgre::NxString, NxOgre::Character*>   Characters;
 typedef NxOgre::List<NxOgre::CharacterHitReport*>    CharacterHitReports;
-typedef NxOgre::Container<NxOgre::NxString, NxOgre::Fluid*>    Fluids;
-typedef NxOgre::Container<NxOgre::NxString, NxOgre::FluidDrain*>   FluidDrains;
-typedef NxOgre::Container<NxOgre::NxString, NxOgre::FluidEmitter*>   FluidEmitters;
+//typedef NxOgre::Container<NxOgre::NxString, NxOgre::Fluid*>    Fluids;
+//typedef NxOgre::Container<NxOgre::NxString, NxOgre::FluidDrain*>   FluidDrains;
+//typedef NxOgre::Container<NxOgre::NxString, NxOgre::FluidEmitter*>   FluidEmitters;
 typedef NxOgre::Container<NxOgre::NxString, NxOgre::SoftBody*>   SoftBodies;
 typedef std::pair<NxOgre::NxString,NxOgre::NxString> Parameter;
 typedef std::vector<Parameter> Parameters;

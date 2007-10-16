@@ -475,7 +475,7 @@ class nxogre:
     if os.name == 'nt':
         CCFLAGS = ' -D"WIN32" '
     else:
-        CCFLAGS = ' -DNX_LINUX '                
+        CCFLAGS = ' -DNX_LINUX -DLINUX -DNX_DISABLE_FLUIDS '                
     lib_dirs = [Config.PATH_LIB_Boost,
                 Config.PATH_LIB_Ogre_OgreMain,
 #                 Config.PATH_LIB_NxOgre,
@@ -541,13 +541,17 @@ class physx:
         include_dirs.append( d )
     if os.name == 'nt':
         CCFLAGS = ' -D"WIN32" '
-                    
+    else:
+        CCFLAGS = ' -D"LINUX" '                
     lib_dirs = [Config.PATH_LIB_Boost,
                 Config.PATH_LIB_Ogre_OgreMain,
                 Config.PATH_LIB_PhysX
                 ]
     CheckIncludes=[]
-    libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader' ]
+    if os.name == 'nt':
+        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader' ]
+    else:
+        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking',  'PhysXCore' ]
     ModuleName="PhysX"   
     active=True 
            
@@ -693,7 +697,7 @@ class ogrebulletc:  #
     if os.name=="nt":
         CCFLAGS =  ' -DWIN32 -DNDEBUG -D_WINDOWS -D_PRECOMP '
     else:
-        CCFLAGS = ''
+        CCFLAGS = ' -D_PRECOMP '
     ModuleName = 'OgreBulletC'
     CheckIncludes=['boost/python.hpp', 'Ogre.h']    
 
@@ -719,7 +723,7 @@ class ogrebulletd:  #
     if os.name=="nt":
         CCFLAGS =  ' -DWIN32 -DNDEBUG -D_WINDOWS -D_PRECOMP '
     else:
-        CCFLAGS = ''
+        CCFLAGS = ' -D_PRECOMP '
     ModuleName = 'OgreBulletD'
     CheckIncludes=['boost/python.hpp', 'Ogre.h']        
     
