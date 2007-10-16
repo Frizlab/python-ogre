@@ -54,7 +54,7 @@ PATH_ogrevideoffmpeg = os.path.join(PATH_THIRDPARTY,'ffmpeg')
 PATH_NxOgre=        os.path.join(PATH_THIRDPARTY, 'nxogre')
 # PATH_NxOgre=        os.path.join(BASE_DIR, 'nxogre/NxOgre')
 PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.63final') 
-PATH_PhysX=         os.path.join(BASE_DIR, 'AGEIA Technologies/SDK/v2.7.2/SDKs')
+###PATH_PhysX=         os.path.join(BASE_DIR, 'Physx/v2.7.2/SDKs')
 PATH_Theora=        os.path.join(PATH_OgreAddons,'videoplugin','TheoraVideo')
 PATH_ffmpeg=        os.path.join(BASE_DIR, 'ffmpeg')
 PATH_navi =         os.path.join(BASE_DIR, 'navi','Navi')
@@ -82,7 +82,7 @@ PATH_LIB_OgreAL =               os.path.join( LOCAL_LIB ) #PATH_OGREAL, 'lib/Rel
 PATH_LIB_betagui =              PATH_betagui
 PATH_LIB_quickgui =             PATH_quickgui
 # PATH_LIB_NxOgre=                os.path.join(LOCAL_LIB )
-PATH_LIB_PhysX =                os.path.join(LOCAL_LIB)
+PATH_LIB_PhysX =                os.path.join(LOCAL_LIB, 'PhysX','v2.7.2')
 PATH_LIB_Bullet = 		        os.path.join( LOCAL_LIB )
 PATH_LIB_Theora=                os.path.join(PATH_Theora, 'bin', 'Release')
 PATH_LIB_ogrevideoffmpeg =      PATH_ogrevideoffmpeg
@@ -135,11 +135,11 @@ PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ,os.path.join(PATH_OgreAddons,'videoplugin','theora','include')
                         ,os.path.join(PATH_OgreAddons,'videoplugin','ptypes-1.8.3','include')
                         ]
-
-PATH_INCLUDE_PhysX= [ os.path.join(PATH_PhysX, 'Physics','include')
-                    ,os.path.join(PATH_PhysX, 'Cooking','include')
-                    ,os.path.join(PATH_PhysX, 'Foundation','include')
-                    ,os.path.join(PATH_PhysX, 'PhysXLoader','include')
-                    ,os.path.join(PATH_PhysX, 'NxCharacter','include')
-                    ,os.path.join(PATH_PhysX, 'NxExtensions','include')
+physxbase = os.path.joing(LOCAL_INCLUDE, 'PhysX','v2.7.2')
+PATH_INCLUDE_PhysX= [ physxbase
+                    ,os.path.join(physxbase, 'Cooking','include')
+                    ,os.path.join(physxbase, 'Foundation','include')
+                    ,os.path.join(physxbase, 'PhysXLoader','include')
+                    ,os.path.join(physxbase, 'NxCharacter','include')
+                    ,os.path.join(physxbase, 'NxExtensions','include')
                     ]
