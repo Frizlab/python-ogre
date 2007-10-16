@@ -1,6 +1,6 @@
 
 #include "NxOgre.h"
-#include "NXOgreSkeleton.h"  //missing ??
+#include "NxOgreSkeleton.h"  //missing ??
 #include "Ogre.h"
 #include "OgrePlugin.h"
 #include <NxPhysics.h>
