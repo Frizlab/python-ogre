@@ -39,24 +39,13 @@ namespace QuickGUI
         */
 		Window* createWindow();
 		
-		Ogre::String getDefaultFont();
-		Ogre::ColourValue getDefaultTextColor();
-		Ogre::String getDefaultSkin();
 		virtual Widget* getTargetWidget(const Point& pixelPosition);
 		Window* getWindow(const Ogre::String& name);
-
-		void setDefaultFont(const Ogre::String& font);
-		void setDefaultTextColor(const Ogre::ColourValue& color);
-		/**
-		* Sets the default skin, used for widgets with no specified material.
-		*/
-		void setDefaultSkin(const Ogre::String& skin);
 
 	protected:
 		virtual void setQuadContainer(QuadContainer* container);
 	protected:
-		Ogre::String mDefaultSkin;
-		Ogre::String mDefaultFont;
+		Ogre::String mSkin;
 		Ogre::ColourValue mDefaultTextColor;
 	};
 }

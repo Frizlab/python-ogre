@@ -8,3 +8,4 @@ typedef std::map<std::string, std::string, std::less<std::string>, std::allocato
 typedef std::list<QuickGUI::Quad*, std::allocator<QuickGUI::Quad*> > ListQuad;    
 typedef std::vector<QuickGUI::Vertex, std::allocator<QuickGUI::Vertex> > VectorVertex;
 typedef std::vector<std::string, std::allocator<std::string> > VectorString;    
+typedef std::list<QuickGUI::QuadContainer*, std::allocator<QuickGUI::QuadContainer*> > QuadContainerList;

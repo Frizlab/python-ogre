@@ -11,7 +11,10 @@ namespace QuickGUI
 		mTextBoundsPixelOffset(Point::ZERO),
 		mTextBoundsRelativeSize(Size(1,1)),
 		mTextColor(Ogre::ColourValue::White),
-		mDisabledTextColor(Ogre::ColourValue(0.75,0.75,0.75,1))
+		mDisabledTextColor(Ogre::ColourValue(0.75,0.75,0.75,1)),
+		mAutoSize(true),
+		mHPixelPadWidth(10),
+		mVPixelPadHeight(10)
 	{
 		mWidgetType = TYPE_LABEL;
 		mText = new Text(mInstanceName+".Text",mQuadContainer,this);
@@ -51,6 +54,11 @@ namespace QuickGUI
 			mText->setPosition(Point(textDimensions.x,textBounds.y + textBounds.height - (verticalBuffer + textDimensions.height)));
 	}
 
+	void Label::clearText()
+	{
+		mText->clearCaption();
+	}
+
 	void Label::disable()
 	{
 		mTextColor = mText->getColor();
@@ -66,19 +74,34 @@ namespace QuickGUI
 		Image::enable();
 	}
 
-	Ogre::UTFString Label::getCaption()
+	bool Label::getAutoSize()
+	{
+		return mAutoSize;
+	}
+
+	int Label::getHorizontalPixelPadWidth()
+	{
+		return mHPixelPadWidth;
+	}
+
+	Ogre::UTFString Label::getText()
 	{
 		return mText->getCaption();
 	}
 
-	Text* Label::getText()
+	Quad* Label::getTextCharacter(unsigned int index)
 	{
-		return mText;
+		return mText->getCharacter(index);
 	}
 
 	Rect Label::getTextBounds()
 	{
 		return Rect(getScreenPosition() + getScrollOffset() + mTextBoundsPixelOffset,mTextBoundsRelativeSize * mSize);
+	}
+
+	int Label::getVerticalPixelPadHeight()
+	{
+		return mVPixelPadHeight;
 	}
 
 	void Label::hide()
@@ -102,6 +125,17 @@ namespace QuickGUI
 		alignText();
 	}
 
+	void Label::setAutoSize(bool autoSize)
+	{
+		mAutoSize = autoSize;
+
+		if(mAutoSize)
+		{
+			setHeight(mText->getNewlineHeight() + mVPixelPadHeight);
+			setWidth(mText->calculateStringLength(mText->getCaption()) + mHPixelPadWidth);
+		}
+	}
+
 	void Label::setVerticalAlignment(VerticalAlignment va)
 	{
 		mVerticalAlignment = va;
@@ -116,6 +150,11 @@ namespace QuickGUI
 
 		if(mText->getDimensions() != Rect::ZERO)
 			alignText();
+	}
+
+	void Label::setHorizontalPixelPadWidth(unsigned int width)
+	{
+		mHPixelPadWidth = width;
 	}
 
 	void Label::setClippingWidget(Widget* w, bool recursive)
@@ -157,6 +196,7 @@ namespace QuickGUI
 
 	void Label::setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight)
 	{
+		mAutoSize = false;
 		Image::setSize(pixelWidth,pixelHeight);
 
 		mText->redraw();
@@ -174,11 +214,6 @@ namespace QuickGUI
 		alignText();
 	}
 
-	void Label::setCaption(const Ogre::UTFString& caption)
-	{
-		mText->setCaption(caption);
-	}
-
 	void Label::setDisabledTextColor(const Ogre::ColourValue& c)
 	{
 		mDisabledTextColor = c;
@@ -191,6 +226,25 @@ namespace QuickGUI
 	{
 		Image::setFont(fontScriptName,recursive);
 		mText->setFont(mFontName);
+
+		if(mAutoSize)
+		{
+			setHeight(mText->getNewlineHeight() + mVPixelPadHeight);
+			setWidth(mText->calculateStringLength(mText->getCaption()) + mHPixelPadWidth);
+			// setHeight sets mAutoSize to false..
+			mAutoSize = true;
+		}
+		else
+			alignText();
+	}
+
+	void Label::setHeight(Ogre::Real pixelHeight)
+	{
+		mAutoSize = false;
+		Image::setHeight(pixelHeight);
+
+		mText->redraw();
+		alignText();
 	}
 
 	void Label::setQuadLayer(Quad::Layer l)
@@ -199,11 +253,47 @@ namespace QuickGUI
 		mText->setQuadLayer(l);
 	}
 
+	void Label::setText(const Ogre::UTFString& text)
+	{
+		if(mAutoSize)
+		{
+			mText->setCaption(text);
+			setWidth(mText->calculateStringLength(text) + mHPixelPadWidth);
+			// setWidth sets mAutoSize to false..
+			mAutoSize = true;
+		}
+		else
+		{
+			mText->setCaption(text);
+			alignText();
+		}
+	}
+
 	void Label::setTextBounds(const Point& pixelOffset, const Size& pixelSize)
 	{
 		mTextBoundsPixelOffset = pixelOffset;
 		mTextBoundsRelativeSize = pixelSize / mSize;
 
+		alignText();
+	}
+
+	void Label::setTextColor(Ogre::ColourValue color)
+	{
+		mTextColor = color;
+		mText->setColor(mTextColor);
+	}
+
+	void Label::setVerticalPixelPadHeight(unsigned int height)
+	{
+		mVPixelPadHeight = height;
+	}
+
+	void Label::setWidth(Ogre::Real pixelWidth)
+	{
+		mAutoSize = false;
+		Image::setWidth(pixelWidth);
+
+		mText->redraw();
 		alignText();
 	}
 

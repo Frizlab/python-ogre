@@ -6,8 +6,7 @@
 
 namespace QuickGUI
 {
-	Quad::Quad(const Ogre::String& id, Widget* owner) :
-		mID(id),
+	Quad::Quad(Widget* owner) :
 		mOwner(owner),
 		mGUIManager(owner->getGUIManager()),
 		mQuadContainer(NULL),
@@ -27,14 +26,14 @@ namespace QuickGUI
 		mBottomColor(Ogre::ColourValue::White),
 		mClippingWidget(NULL),
 		mInheritClippingWidget(true),
-		mInheritQuadLayer(true)
+		mInheritQuadLayer(true),
+		mShowWithOwner(true)
 	{
 		mRenderSystem = Ogre::Root::getSingleton().getRenderSystem();
 		_updateVertexColor();
 	}
 
-	Quad::Quad(const Ogre::String& id, GUIManager* gm) :
-		mID(id),
+	Quad::Quad(GUIManager* gm) :
 		mOwner(NULL),
 		mGUIManager(gm),
 		mQuadContainer(NULL),
@@ -187,9 +186,6 @@ namespace QuickGUI
 
 	void Quad::_notifyQuadContainer(QuadContainer* container)
 	{
-		if( (mQuadContainer != NULL) && (mQuadContainer->getID() == container->getID()) ) 
-			return;
-
 		if(mAddedToRenderGroup && (mQuadContainer != NULL))
 			removeFromRenderObjectGroup();
 
@@ -293,11 +289,6 @@ namespace QuickGUI
 		return mPixelDimensions;
 	}
 
-	Ogre::String Quad::getID()
-	{
-		return mID;
-	}
-
 	bool Quad::getInheritClippingWidget()
 	{
 		return mInheritClippingWidget;
@@ -316,6 +307,11 @@ namespace QuickGUI
 	Quad::Layer Quad::getLayer()
 	{
 		return mLayer;
+	}
+
+	bool Quad::getShowWithOwner()
+	{
+		return mShowWithOwner;
 	}
 
 	bool Quad::isPointWithinBounds(const Point& pixelPosition)
@@ -364,10 +360,10 @@ namespace QuickGUI
 		switch(mLayer)
 		{
 		case Quad::LAYER_CHILD:
-			mQuadContainer->removeChildRenderable(mID);
+			mQuadContainer->removeChildRenderable(this);
 			break;
 		case Quad::LAYER_MENU:
-			mQuadContainer->removeMenuRenderable(mID);
+			mQuadContainer->removeMenuRenderable(this);
 			break;
 		}
 
@@ -445,6 +441,11 @@ namespace QuickGUI
 		mDimensionsChanged = true;
 
 		_clip();
+	}
+
+	void Quad::setShowWithOwner(bool showWithOwner)
+	{
+		mShowWithOwner = showWithOwner;
 	}
 
 	void Quad::setSize(const Size& pixelSize)

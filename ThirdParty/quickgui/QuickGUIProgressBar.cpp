@@ -35,7 +35,7 @@ namespace QuickGUI
 				Ogre::TU_STATIC);
 		}
 
-		mBarPanel = _createQuad(mInstanceName+".BarPanel");
+		mBarPanel = _createQuad();
 		mBarPanel->setPosition(getScreenPosition());
 		mBarPanel->setSize(mSize);
 		mBarPanel->setOffset(mOffset+1);
@@ -206,13 +206,6 @@ namespace QuickGUI
 		return mProgress;
 	}
 
-	void ProgressBar::hide()
-	{
-		mBarPanel->setVisible(false);
-		
-		Widget::hide();
-	}
-
 	void ProgressBar::onProgressChanged(const WidgetEventArgs& e)
 	{
 		std::vector<MemberFunctionSlot*>::iterator it;
@@ -280,12 +273,5 @@ namespace QuickGUI
 	{
 		Widget::setTexture(texture);
 		mBarPanel->setTexture(mTextureName + ".bar.png");
-	}
-
-	void ProgressBar::show()
-	{
-		mBarPanel->setVisible(true);
-		
-		Widget::show();
 	}
 }

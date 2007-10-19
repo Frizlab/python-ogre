@@ -14,7 +14,7 @@ namespace QuickGUI
 		mOnRightBorder(0),
 		mOriginOffset(Point::ZERO)
 	{
-		mQuad = new Quad("MouseCursor.Quad",gm);
+		mQuad = new Quad(mGUIManager);
 		setSize(size.width,size.height);
 		mQuad->setTexture(mTextureName);
 		mRenderObjectList.push_back(mQuad);

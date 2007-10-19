@@ -6,7 +6,7 @@
 
 namespace QuickGUI
 {
-	Text::Text(const Ogre::String& name, QuadContainer* container, Label* owner) :
+	Text::Text(const Ogre::String& name, QuadContainer* container, Widget* owner) :
 		mOwner(owner),
 		mLayer(Quad::LAYER_CHILD),
 		mName(name),
@@ -17,9 +17,10 @@ namespace QuickGUI
 		mVisible(true),
 		mSelectStart(-1),
 		mSelectEnd(-1),
-		mLineSpacing(1.0)
+		mLineSpacing(1.0),
+		mDisabled(false)
 	{
-		mOffset = owner->getOffset() + 1;
+		mOffset = mOwner->getOffset() + 1;
 		mGUIManager = owner->getGUIManager();
 		Rect ownerDimensions = mOwner->getDimensions();
 		mPixelDimensions = Rect(ownerDimensions.x,ownerDimensions.y,0,0);
@@ -35,25 +36,12 @@ namespace QuickGUI
 
 		// Order dependent, this code must go before call to setFont, since that removes selection, which
 		// affects the character background.
-		mCharacterBackground = new Quad(name+".SelectionRectangle",mOwner);
+		mCharacterBackground = new Quad(mOwner);
 		mCharacterBackground->setTexture("QuickGUI.TextSelection");
 		mCharacterBackground->setColor(mBackgroundSelectColor);
 		mCharacterBackground->setOffset(mOffset-1);
 		mCharacterBackground->setVisible(false);
 		mCharacterBackground->_notifyQuadContainer(mQuadContainer);
-
-		// default font
-		if(owner->getParentSheet() == NULL)
-		{
-			Ogre::FontManager* fm = Ogre::FontManager::getSingletonPtr();
-			setFont(fm->getResourceIterator().getNext()->getName());
-			mColor = Ogre::ColourValue::White;
-		}
-		else
-		{
-			setFont(owner->getParentSheet()->getDefaultFont());
-			mColor = owner->getParentSheet()->getDefaultTextColor();
-		}
 
 		mSelectColor = getInverseColor(mColor);
 		mBackgroundSelectColor = mColor;
@@ -135,8 +123,11 @@ namespace QuickGUI
 
 	void Text::_setCaptionHorizontal(const Ogre::UTFString& text)
 	{		
+		if(mDisabled)
+			return;
+
 		int charCounter = 0;
-		Rect textArea = mOwner->getTextBounds();
+		Rect textArea = dynamic_cast<Label*>(mOwner)->getTextBounds();
 		Point pos(textArea.x,textArea.y);
 		Ogre::UTFString::const_iterator it;
 		for( it = text.begin(); it != text.end(); ++it )
@@ -190,7 +181,7 @@ namespace QuickGUI
 			if( (pos.y + size.height) > (textArea.y + textArea.height) )
 				break;
 
-			Quad* q = new Quad(mName + ".Character." + Ogre::StringConverter::toString(charCounter),mOwner);
+			Quad* q = new Quad(mOwner);
 			q->setOffset(mOffset);
 			q->setLayer(mLayer);
 
@@ -223,6 +214,9 @@ namespace QuickGUI
 
 	void Text::_setCaptionVertical(const Ogre::UTFString& text)
 	{		
+		if(mDisabled)
+			return;
+
 		int charCounter = 0;
 		Point widgetPos = mOwner->getPosition();
 		Point pos = widgetPos;
@@ -245,7 +239,7 @@ namespace QuickGUI
 				continue;
 			}
 	
-			Quad* q = new Quad(mName + ".Character." + Ogre::StringConverter::toString(charCounter),mOwner);
+			Quad* q = new Quad(mOwner);
 			q->setOffset(mOffset);
 			q->setLayer(mLayer);
 
@@ -277,8 +271,6 @@ namespace QuickGUI
 	Ogre::Real Text::calculateStringLength(const Ogre::UTFString& text)
 	{
 		Ogre::Real length = 0;
-
-		float renderWindowWidth = mGUIManager->getViewportWidth();
 		
 		Ogre::Font::UVRect uvRect;
 		unsigned int index = 0;
@@ -303,8 +295,21 @@ namespace QuickGUI
 		return length;
 	}
 
+	void Text::disable()
+	{
+		mDisabled = true;
+	}
+
+	void Text::enable()
+	{
+		mDisabled = false;
+	}
+
 	void Text::redraw()
 	{
+		if(mDisabled)
+			return;
+
 		_clearCharacters();
 		clearSelection();
 
@@ -318,7 +323,8 @@ namespace QuickGUI
 				_setCaptionVertical(mCaption);
 
 			_calculateDimensions();
-			mOwner->alignText();
+
+			dynamic_cast<Label*>(mOwner)->alignText();
 		}
 		else
 			_calculateDimensions();
@@ -363,6 +369,16 @@ namespace QuickGUI
 	Ogre::ColourValue Text::getColor()
 	{
 		return mColor;
+	}
+
+	Ogre::FontPtr Text::getFont()
+	{
+		return mFont;
+	}
+
+	Ogre::Real Text::getFontTextureWidth()
+	{
+		return mFontTextureWidth;
 	}
 
 	Size Text::getGlyphSize(Ogre::UTFString::code_point cp)
@@ -544,6 +560,11 @@ namespace QuickGUI
 		mVisible = false;
 	}
 
+	bool Text::isDisabled()
+	{
+		return mDisabled;
+	}
+
 	void Text::move(const Point& pixelDimensions)
 	{
 		std::vector<Quad*>::iterator it;
@@ -572,6 +593,12 @@ namespace QuickGUI
 
 		mSelectStart = -1;
 		mSelectEnd = -1;
+	}
+
+	void Text::clearCaption()
+	{
+		mCaption = "";
+		redraw();
 	}
 
 	void Text::selectCharacters()

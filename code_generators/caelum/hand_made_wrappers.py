@@ -86,31 +86,22 @@ _castAsEarthSunPositionModel ( caelum::SimpleSunPositionModel * n )  {
     return  dynamic_cast<caelum::EarthSunPositionModel*> (static_cast<caelum::SunPositionModel*>(n) );
     }
 
+caelum::SimpleSunPositionModel *
+Utility_createSimpleSunPositionModel(Ogre::Degree inc) {
+   return new caelum::SimpleSunPositionModel (inc);
+   }
+
 """
 
-# caelum::EarthSunPositionModel *
-# _castAsEarthSunPositionModel ( caelum::SimpleSunPositionModel * n )  {
-#     return  static_cast<caelum::EarthSunPositionModel*> (static_cast<caelum::SunPositionModel*>(n) );
-#     }
-# caelum::EarthSunPositionModel *
-# _castAsEarthSunPositionModel1 ( caelum::SimpleSunPositionModel * n )  {
-#     return  dynamic_cast<caelum::EarthSunPositionModel*> (static_cast<caelum::SunPositionModel*>(n));
-#     }    
-# caelum::SimpleSunPositionModel * 
-# _castAsSimpleSunPositionModel ( caelum::SunPositionModel * n ) {
-#     return static_cast<caelum::SimpleSunPositionModel*> (n) ;
-#     }
 
 WRAPPER_REGISTRATION_General = [
     'def( "castAsEarthSunPositionModel", &::_castAsEarthSunPositionModel,\
     "Python-Ogre Hand Wrapped\\n",\
     bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
-#     'def( "castAsEarthSunPositionModel1", &::_castAsEarthSunPositionModel1,\
-#     "Python-Ogre Hand Wrapped\\n",\
-#     bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
-#     'def( "castAsSimpleSunPositionModel", &::_castAsSimpleSunPositionModel,\
-#     "Python-Ogre Hand Wrapped\\n",\
-#     bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());'
+    'def( "createSimpleSunPositionModel", &::Utility_createSimpleSunPositionModel,\
+    "Python-Ogre Hand Wrapped: create a SimpleSunPositionModel\\n",\
+    bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
+
     ]
     
 #################################################################################################

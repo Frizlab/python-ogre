@@ -27,6 +27,7 @@ namespace QuickGUI
 		mSlider = new Button(mInstanceName+".Slider",Size(mSize.width,mSize.width),mSliderTextureName,mGUIManager);
 		addChild(mSlider);
 		mSlider->setPosition(0,mSize.width);
+		mSlider->setAutoSize(false);
 		mSlider->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 		mSlider->enableDragging(true);
 		mSlider->constrainDragging(false,true);
@@ -37,12 +38,14 @@ namespace QuickGUI
 		mScrollUp1 = new Button(mInstanceName+".Up1",Size(mSize.width,mSize.width),mScrollUpTextureName,mGUIManager);
 		addChild(mScrollUp1);
 		mScrollUp1->setPosition(0,0);
+		mScrollUp1->setAutoSize(false);
 		mScrollUp1->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 		mScrollUp1->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&VerticalScrollBar::onScrollUpDown,this);
 
 		mScrollDown1 = new Button(mInstanceName+".Down1",Size(mSize.width,mSize.width),mScrollDownTextureName,mGUIManager);
 		addChild(mScrollDown1);
 		mScrollDown1->setPosition(0,mSize.width);
+		mScrollDown1->setAutoSize(false);
 		mScrollDown1->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 		mScrollDown1->setShowWithParent(false);
 		mScrollDown1->hide();
@@ -51,6 +54,7 @@ namespace QuickGUI
 		mScrollUp2 = new Button(mInstanceName+".Up2",Size(mSize.width,mSize.width),mScrollUpTextureName,mGUIManager);
 		addChild(mScrollUp2);
 		mScrollUp2->setPosition(0,mSize.height - (mSize.width*2.0));
+		mScrollUp2->setAutoSize(false);
 		mScrollUp2->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 		mScrollUp2->setVerticalAnchor(ANCHOR_VERTICAL_BOTTOM);
 		mScrollUp2->setShowWithParent(false);
@@ -60,6 +64,7 @@ namespace QuickGUI
 		mScrollDown2 = new Button(mInstanceName+".Down2",Size(mSize.width,mSize.width),mScrollDownTextureName,mGUIManager);
 		addChild(mScrollDown2);
 		mScrollDown2->setPosition(0,mSize.height - mSize.width);
+		mScrollDown2->setAutoSize(false);
 		mScrollDown2->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 		mScrollDown2->setVerticalAnchor(ANCHOR_VERTICAL_BOTTOM);
 		mScrollDown2->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&VerticalScrollBar::onScrollDownDown,this);

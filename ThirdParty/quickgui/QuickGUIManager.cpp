@@ -52,6 +52,10 @@ namespace QuickGUI
 		removeFromRenderQueue();
 		clearAll();
 
+		for(std::list<Sheet*>::iterator it = mSheets.begin(); it != mSheets.end(); ++it )
+			delete (*it);
+		mSheets.clear();
+
 		delete mMouseCursor;
 		mMouseCursor = NULL;
 
@@ -110,10 +114,10 @@ namespace QuickGUI
 			return;
 
 		// check if widget already in list.
-		if(mOpenMenus.find(w->getInstanceName()) != mOpenMenus.end())
+		if(mOpenMenus.find(w) != mOpenMenus.end())
 			return;
 
-		mOpenMenus[w->getInstanceName()] = w;
+		mOpenMenus.insert(w);
 	}
 
 	void GUIManager::_menuClosed(Widget* w)
@@ -121,7 +125,7 @@ namespace QuickGUI
 		if(w == NULL)
 			return;
 
-		mOpenMenus.erase(mOpenMenus.find(w->getInstanceName()));
+		mOpenMenus.erase(mOpenMenus.find(w));
 	}
 
 	void GUIManager::clearAll()
@@ -213,6 +217,11 @@ namespace QuickGUI
 		return mActiveSheet;
 	}
 
+	Widget* GUIManager::getActiveWidget()
+	{
+		return mActiveWidget;
+	}
+
 	Ogre::String GUIManager::getDebugString()
 	{
 		return mDebugString;
@@ -254,7 +263,7 @@ namespace QuickGUI
 		return static_cast<Ogre::Real>(mViewport->getActualHeight());
 	}
 
-	Sheet* GUIManager::getParentSheet(const Ogre::String& name)
+	Sheet* GUIManager::getSheet(const Ogre::String& name)
 	{
 		if( name == "" ) return NULL;
 
@@ -279,26 +288,29 @@ namespace QuickGUI
 		Ogre::String s;
 		switch(t)
 		{
-			case Widget::TYPE_BORDER:				s = "Border";		break;
-			case Widget::TYPE_BUTTON:				s = "Button";		break;
-			case Widget::TYPE_COMBOBOX:				s = "ComboBox";		break;
-			case Widget::TYPE_IMAGE:				s = "Image";		break;
-			case Widget::TYPE_LABEL:				s = "Label";		break;
-			case Widget::TYPE_LIST:					s = "List";			break;
-			case Widget::TYPE_MENULABEL:			s = "MenuLabel";	break;
-			case Widget::TYPE_NSTATEBUTTON:			s = "NStateButton"; break;
-			case Widget::TYPE_PANEL:				s = "Panel";		break;
-			case Widget::TYPE_PROGRESSBAR:			s = "ProgressBar";	break;
-			case Widget::TYPE_SCROLL_PANE:			s = "ScrollPane";	break;
-			case Widget::TYPE_SCROLLBAR_HORIZONTAL: s = "HScrollBar";	break;
-			case Widget::TYPE_SCROLLBAR_VERTICAL:	s = "VScrollBar";	break;
-			case Widget::TYPE_SHEET:				s = "Sheet";		break;
-			case Widget::TYPE_TEXTBOX:				s = "TextBox";		break;
-			case Widget::TYPE_TITLEBAR:				s = "TitleBar";		break;
-			case Widget::TYPE_TRACKBAR_HORIZONTAL:	s = "HTrackBar";	break;
-			case Widget::TYPE_TRACKBAR_VERTICAL:	s = "VTrackBar";	break;
-			case Widget::TYPE_WINDOW:				s = "Window";		break;
-			default:								s = "Widget";		break;
+			case Widget::TYPE_BORDER:				s = "Border";			break;
+			case Widget::TYPE_BUTTON:				s = "Button";			break;
+			case Widget::TYPE_COMBOBOX:				s = "ComboBox";			break;
+			case Widget::TYPE_CONSOLE:				s = "Console";			break;
+			case Widget::TYPE_IMAGE:				s = "Image";			break;
+			case Widget::TYPE_LABEL:				s = "Label";			break;
+			case Widget::TYPE_LIST:					s = "List";				break;
+			case Widget::TYPE_MENULABEL:			s = "MenuLabel";		break;
+			case Widget::TYPE_MULTILINELABEL:		s = "MultiLineLabel";	break;
+			case Widget::TYPE_MULTILINETEXTBOX:		s = "MultiLineTextBox";	break;
+			case Widget::TYPE_NSTATEBUTTON:			s = "NStateButton";		break;
+			case Widget::TYPE_PANEL:				s = "Panel";			break;
+			case Widget::TYPE_PROGRESSBAR:			s = "ProgressBar";		break;
+			case Widget::TYPE_SCROLL_PANE:			s = "ScrollPane";		break;
+			case Widget::TYPE_SCROLLBAR_HORIZONTAL: s = "HScrollBar";		break;
+			case Widget::TYPE_SCROLLBAR_VERTICAL:	s = "VScrollBar";		break;
+			case Widget::TYPE_SHEET:				s = "Sheet";			break;
+			case Widget::TYPE_TEXTBOX:				s = "TextBox";			break;
+			case Widget::TYPE_TITLEBAR:				s = "TitleBar";			break;
+			case Widget::TYPE_TRACKBAR_HORIZONTAL:	s = "HTrackBar";		break;
+			case Widget::TYPE_TRACKBAR_VERTICAL:	s = "VTrackBar";		break;
+			case Widget::TYPE_WINDOW:				s = "Window";			break;
+			default:								s = "Widget";			break;
 		}
 
 		int counter = 1;
@@ -354,7 +366,7 @@ namespace QuickGUI
 		}
 
 		// mActiveWidget is the last widget the user clicked on, ie TextBox, ComboBox, etc.
-		if( mActiveWidget->getInstanceName() != mWidgetContainingMouse->getInstanceName() )
+		if( mActiveWidget != mWidgetContainingMouse )
 		{
 			if(mActiveWidget->fireEvent(Widget::EVENT_LOSE_FOCUS,args))
 				eventHandled = true;
@@ -421,7 +433,7 @@ namespace QuickGUI
 		}
 
 		// If the MouseButton was not pressed on this widget, do not register the button being released on the widget
-		if( mWidgetContainingMouse->getInstanceName() != mActiveWidget->getInstanceName()  )
+		if( mWidgetContainingMouse != mActiveWidget  )
 		{
 			if(mActiveWidget->fireEvent(Widget::EVENT_LOSE_FOCUS,args))
 				eventHandled = true;
@@ -495,9 +507,9 @@ namespace QuickGUI
 		
 		// Check Open Menus first, since they are not within their parent bounds.
 		Widget* hitWidget = NULL;
-		for(std::map<Ogre::String,Widget*>::iterator it = mOpenMenus.begin(); it != mOpenMenus.end(); ++it)
+		for(std::set<Widget*>::iterator it = mOpenMenus.begin(); it != mOpenMenus.end(); ++it)
 		{
-			if( (hitWidget = (*it).second->getTargetWidget(args.position)) != NULL )
+			if( (hitWidget = (*it)->getTargetWidget(args.position)) != NULL )
 				break;
 		}
 
@@ -510,7 +522,7 @@ namespace QuickGUI
 
 		bool eventHandled = false;
 
-		if( (mWidgetContainingMouse->getInstanceName() != hitWidget->getInstanceName()) )
+		if( mWidgetContainingMouse != hitWidget )
 		{
 			if(mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_LEAVE,args))
 				eventHandled = true;
@@ -565,7 +577,11 @@ namespace QuickGUI
 
 	void GUIManager::notifyNameFree(const Ogre::String& name)
 	{
-		mWidgetNames.erase(mWidgetNames.find(name));
+		std::set<Ogre::String>::iterator it = mWidgetNames.find(name);
+		if( it == mWidgetNames.end() )
+			return;
+
+		mWidgetNames.erase(it);
 	}
 
 	void GUIManager::notifyNameUsed(const Ogre::String& name)
@@ -585,7 +601,7 @@ namespace QuickGUI
 		std::vector<Widget*>::iterator it;
 		for( it = mTimeListeners.begin(); it != mTimeListeners.end(); ++it )
 		{
-			if(w->getInstanceName() == (*it)->getInstanceName())
+			if(w == (*it))
 				return;
 		}
 
@@ -606,15 +622,21 @@ namespace QuickGUI
 		if(mFreeList.empty())
 			return;
 
-		mActiveWidget = mActiveSheet;
-		mWidgetContainingMouse = mActiveSheet;
+		bool activeWidgetDestroyed = false;
+		if( std::find(mFreeList.begin(),mFreeList.end(),mActiveWidget) != mFreeList.end() )
+		{
+			activeWidgetDestroyed = true;
+			mActiveWidget = mActiveSheet;
+			mWidgetContainingMouse = mActiveSheet;
+		}
 
 		std::vector<Widget*>::iterator it;
 		for( it = mFreeList.begin(); it != mFreeList.end(); ++it )
 			delete (*it);
 		mFreeList.clear();
 
-		injectMouseMove(0,0);
+		if(activeWidgetDestroyed)
+			injectMouseMove(0,0);
 	}
 
 	void GUIManager::removeFromRenderQueue()
@@ -625,7 +647,7 @@ namespace QuickGUI
 
 	void GUIManager::setActiveSheet(Sheet* s)
 	{
-		if( (s == NULL) || (s->getInstanceName() == mActiveSheet->getInstanceName()) ) 
+		if( (s == NULL) || (s == mActiveSheet) ) 
 			return;
 
 		mActiveSheet = s;
@@ -650,7 +672,7 @@ namespace QuickGUI
 		if ( !w->enabled() || w == NULL )
 			return;
 
-		if( w->getInstanceName() != mActiveWidget->getInstanceName() ) 
+		if( w != mActiveWidget ) 
 		{
 			WidgetEventArgs args(mActiveWidget);
 			mActiveWidget->fireEvent(Widget::EVENT_LOSE_FOCUS,args);
@@ -727,7 +749,7 @@ namespace QuickGUI
 		std::vector<Widget*>::iterator it;
 		for( it = mTimeListeners.begin(); it != mTimeListeners.end(); ++it )
 		{
-			if(w->getInstanceName() == (*it)->getInstanceName())
+			if(w == (*it))
 			{
 				mTimeListeners.erase(it);
 				return;

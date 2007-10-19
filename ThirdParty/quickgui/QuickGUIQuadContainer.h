@@ -25,12 +25,11 @@ namespace QuickGUI
 		QuadContainer(Widget* owner);
 		~QuadContainer();
 	
-		void addChildRenderable(Quad* o);
+		void addChildRenderable(Quad* q);
 		void addChildPanelContainer(QuadContainer* g);
 		void addChildWindowContainer(QuadContainer* g);
-		void addMenuRenderable(Quad* o);
+		void addMenuRenderable(Quad* q);
 
-		Ogre::String getID();
 		/**
 		* Returns the number of parent iterations required to get to Sheet widget.
 		*/
@@ -42,22 +41,19 @@ namespace QuickGUI
 		* of the list.  This is essentially bringing the window to the front of the screen.
 		* (highest window zOrder)
 		*/
-		void moveWindowGroupToEnd(QuadContainer* g);
+		void moveWindowGroupToEnd(QuadContainer* c);
 
-		void notifyChildRenderableChanged(Quad* o);
-		void notifyMenuRenderableChanged(Quad* o);
+		void notifyChildRenderableChanged(Quad* q);
+		void notifyMenuRenderableChanged(Quad* q);
 
-		void removeChildRenderable(const Ogre::String& id);
-		void removeChildPanelContainer(const Ogre::String& id);
-		void removeChildWindowContainer(const Ogre::String& id);
-		void removeMenuRenderable(const Ogre::String& id);
+		void removeChildRenderable(Quad* q);
+		void removeChildPanelContainer(QuadContainer* c);
+		void removeChildWindowContainer(QuadContainer* c);
+		void removeMenuRenderable(Quad* q);
 		void render();
 
 	protected:
 		Widget* mOwner;
-		Ogre::String mID;
-
-		QuadContainer* mParentContainer;
 
 		VertexBuffer* mChildVertexBuffer;
 		VertexBuffer* mMenuVertexBuffer;

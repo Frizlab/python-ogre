@@ -30,8 +30,8 @@ namespace QuickGUI
 			LAYER_MENU
 		};
 	public:
-		Quad(const Ogre::String& id, Widget* owner);
-		Quad(const Ogre::String& id, GUIManager* gm);
+		Quad(Widget* owner);
+		Quad(GUIManager* gm);
 		~Quad();
 	
 		void _notifyAddedToRenderObjectGroup();
@@ -48,10 +48,10 @@ namespace QuickGUI
 		Rect getClippingRect();
 		Widget* getClippingWidget();
 		Rect getDimensions();
-		Ogre::String getID();
 		bool getInheritClippingWidget();
 		bool getInheritLayer();
 		Layer getLayer();
+		bool getShowWithOwner();
 		Ogre::String getTextureName();
 		Vertex* getVertices();
 		int getOffset();
@@ -73,6 +73,7 @@ namespace QuickGUI
 		void setLayer(Layer l);
 		void setOffset(int offset);
 		void setPosition(const Point& pixelPosition);
+		void setShowWithOwner(bool showWithOwner);
 		void setSize(const Size& pixelSize);
 		void setTexture(const Ogre::String& textureName);
 		void setTextureCoordinates(const Ogre::Vector4& textureCoordinates);
@@ -99,8 +100,6 @@ namespace QuickGUI
 		Layer				mLayer;
 		bool				mInheritQuadLayer;
 
-		// Name of Widget
-		Ogre::String		mID;
 		Ogre::String		mTextureName;
 		// number of parent iterations away from sheet quad.
 		int					mOffset;
@@ -108,6 +107,7 @@ namespace QuickGUI
 		// UV coordinates: (left,top,right,bottom)
 		Ogre::Vector4		mTextureCoordinates;
 		bool				mVisible;
+		bool				mShowWithOwner;
 		Ogre::ColourValue	mTopColor;
 		Ogre::ColourValue	mBottomColor;
 

@@ -162,6 +162,7 @@ void SkyDome::createSkyDomeMaterial () {
 			fp->setParameter ("profiles", "ps_2_0 arbfp1");
 			pass->setFragmentProgram ("SkyDomeFP");
 			Ogre::GpuProgramParametersSharedPtr parameters = pass->getFragmentProgramParameters();
+            parameters->setIgnoreMissingParams(true);
 			parameters->setNamedConstant ("offset", 0.0f);
 			parameters->setNamedAutoConstant ("hazeColour", Ogre::GpuProgramParameters::ACT_FOG_COLOUR);
 		}
@@ -174,6 +175,7 @@ void SkyDome::createSkyDomeMaterial () {
 			vp->setParameter ("profiles", "vs_2_0 arbvp1");
 			pass->setVertexProgram ("SkyDomeVP");
 			Ogre::GpuProgramParametersSharedPtr parameters = pass->getVertexProgramParameters();
+            parameters->setIgnoreMissingParams(true);
 			parameters->setNamedAutoConstant ("worldViewProj", Ogre::GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
 			parameters->setNamedConstant ("sunDirection", Ogre::Vector3 (1, 0, 0));
 		}

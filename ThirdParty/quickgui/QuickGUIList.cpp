@@ -7,11 +7,16 @@ namespace QuickGUI
 	List::List(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
 		Image(instanceName,pixelSize,texture,gm),
 		mScrollPane(0),
-		mAutoNameWidgetCounter(-1),
+		mAutoNameWidgetCounter(0),
 		mScrollingAllowed(false),
-		mItemHeight(20)
+		mItemHeight(20),
+		mAutoSizeListItems(true),
+		mVPixelPadHeight(10)
 	{
 		mWidgetType = TYPE_LIST;
+
+		mTextUtilities = new Text(mInstanceName+".TextUtilities",mQuadContainer,this);
+		mTextUtilities->disable();
 
 		addEventHandler(EVENT_CHILD_ADDED,&List::onChildAdded,this);
 		addEventHandler(EVENT_CHILD_REMOVED,&List::onChildRemoved,this);
@@ -21,19 +26,26 @@ namespace QuickGUI
 
 	List::~List()
 	{
+		delete mTextUtilities;
+
 		mItems.clear();
 	}
 
 	MenuLabel* List::addMenuLabel()
 	{
-		++mAutoNameWidgetCounter;
-
 		Point p(0,(mAutoNameWidgetCounter * mItemHeight));
 		Size s(mSize.width,mItemHeight);
 
-		MenuLabel* newMenuLabel = new MenuLabel(mInstanceName+".Item"+Ogre::StringConverter::toString(mAutoNameWidgetCounter),s,"qgui.menulabel.png",mGUIManager);
+		++mAutoNameWidgetCounter;
+
+		Ogre::String name = mInstanceName+".Item"+Ogre::StringConverter::toString(mAutoNameWidgetCounter);
+		mGUIManager->notifyNameUsed(name);
+
+		MenuLabel* newMenuLabel = new MenuLabel(name,s,"qgui.menulabel.png",mGUIManager);
 		addChild(newMenuLabel);
 		newMenuLabel->setPosition(p);
+		newMenuLabel->setAutoSize(false);
+		newMenuLabel->setFont(mFontName,true);
 
 		if(!mVisible)
 			newMenuLabel->hide();
@@ -41,6 +53,31 @@ namespace QuickGUI
 		mItems.push_back(newMenuLabel);
 
 		return newMenuLabel;
+	}
+
+	TextBox* List::addTextBox()
+	{
+		Point p(0,(mAutoNameWidgetCounter * mItemHeight));
+		Size s(mSize.width,mItemHeight);
+
+		++mAutoNameWidgetCounter;
+
+		Ogre::String name = mInstanceName+".Item"+Ogre::StringConverter::toString(mAutoNameWidgetCounter);
+		mGUIManager->notifyNameUsed(name);
+
+		TextBox* newTextBox = new TextBox(name,s,"qgui.textbox.png",mGUIManager);
+		addChild(newTextBox);
+		newTextBox->setUseBorders(false);
+		newTextBox->setPosition(p);
+		newTextBox->setAutoSize(false);
+		newTextBox->setFont(mFontName,true);
+
+		if(!mVisible)
+			newTextBox->hide();
+
+		mItems.push_back(newTextBox);
+
+		return newTextBox;
 	}
 
 	void List::allowScrolling(bool allow)
@@ -91,6 +128,11 @@ namespace QuickGUI
 		mItems.clear();
 	}
 
+	bool List::getAutoSizeListItems()
+	{
+		return mAutoSizeListItems;
+	}
+
 	Widget* List::getItem(unsigned int index)
 	{
 		if( index >= mItems.size() )
@@ -126,6 +168,11 @@ namespace QuickGUI
 		return mScrollPane;
 	}
 
+	int List::getVerticalPixelPadHeight()
+	{
+		return mVPixelPadHeight;
+	}
+
 	void List::onChildAdded(const EventArgs& args)
 	{
 		if(mScrollPane != NULL)
@@ -144,30 +191,6 @@ namespace QuickGUI
 
 		if(mScrollPane != NULL)
 			mScrollPane->onParentSizeChanged(args);
-	}
-
-	void List::removeItem(Widget* w)
-	{
-		Ogre::String name = w->getInstanceName();
-
-		unsigned int counter = 0;
-		std::vector<Widget*>::iterator it;
-		for( it = mItems.begin(); it != mItems.end(); ++it )
-		{
-			if( name == (*it)->getInstanceName() )
-			{
-				mGUIManager->destroyWidget((*it));
-				mItems.erase(it);
-				break;
-			}
-
-			++counter;
-		}
-
-		for( ; counter < mItems.size(); ++counter )
-		{
-			mItems[counter]->setYPosition(counter * mItemHeight);
-		}
 	}
 
 	void List::removeItem(unsigned int index)
@@ -200,9 +223,39 @@ namespace QuickGUI
 		return mScrollingAllowed;
 	}
 
+	void List::setAutoSizeListItems(bool autoSize)
+	{
+		mAutoSizeListItems = autoSize;
+
+		if(mAutoSizeListItems)
+		{
+			setItemPixelHeight(mTextUtilities->getNewlineHeight());
+			mAutoSizeListItems = true;
+
+			if(mScrollPane != NULL)
+				mScrollPane->_determinePaneBounds();
+		}
+	}
+
+	void List::setFont(const Ogre::String& fontScriptName, bool recursive)
+	{
+		Image::setFont(fontScriptName,recursive);
+		mTextUtilities->setFont(fontScriptName);
+
+		if(mAutoSizeListItems)
+		{
+			setItemPixelHeight(mTextUtilities->getNewlineHeight() + mVPixelPadHeight);
+			mAutoSizeListItems = true;
+
+			if(mScrollPane != NULL)
+				mScrollPane->_determinePaneBounds();
+		}
+	}
+
 	void List::setItemPixelHeight(const Ogre::Real& heightInPixels)
 	{
 		mItemHeight = heightInPixels;
+		mAutoSizeListItems = false;
 
 		Ogre::Real counter = 0;
 		std::vector<Widget*>::iterator it;
@@ -211,6 +264,20 @@ namespace QuickGUI
 			(*it)->setYPosition(mItemHeight * counter);
 			(*it)->setHeight(mItemHeight);
 			++counter;
+		}
+	}
+
+	void List::setVerticalPixelPadHeight(unsigned int height)
+	{
+		mVPixelPadHeight = height;
+
+		if(mAutoSizeListItems)
+		{
+			setItemPixelHeight(mItemHeight + mVPixelPadHeight);
+			mAutoSizeListItems = true;
+
+			if(mScrollPane != NULL)
+				mScrollPane->_determinePaneBounds();
 		}
 	}
 

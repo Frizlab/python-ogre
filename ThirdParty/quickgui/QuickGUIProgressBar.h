@@ -67,10 +67,6 @@ namespace QuickGUI
 		void addOnProgressChangedEventHandler(MemberFunctionSlot* function);
 		Ogre::Real getProgress();
 		/**
-		* Hides the widget, including any children widgets.
-		*/
-		void hide();
-		/**
 		* Default Handler for handling progress changes.
 		* Note that this event is not passed to its parents, the event is specific to this widget.
 		*/
@@ -94,10 +90,6 @@ namespace QuickGUI
 		*/
 		void setProgress(Ogre::Real progress);
 		void setTexture(const Ogre::String& texture);
-		/**
-		* Shows the widget, including any child widgets.
-		*/
-		void show();
 
 	protected:
 		virtual ~ProgressBar();

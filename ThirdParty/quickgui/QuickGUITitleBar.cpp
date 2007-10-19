@@ -10,6 +10,7 @@ namespace QuickGUI
 		Label(instanceName,pixelSize,texture,gm)
 	{	
 		mWidgetType = TYPE_TITLEBAR;
+		mScrollPaneAccessible = false;
 		setQuadLayer(Quad::LAYER_MENU);
 		mInheritQuadLayer = false;
 		mHorizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
@@ -20,6 +21,7 @@ namespace QuickGUI
 		mCloseButton = new Button(mInstanceName+".CloseButton",Size(ButtonSize,ButtonSize),mTextureName + ".button" + mTextureExtension,mGUIManager);
 		addChild(mCloseButton);
 		mCloseButton->setPosition(mSize.width - ButtonSize,0);
+		mCloseButton->setAutoSize(false);
 		mCloseButton->setHorizontalAnchor(ANCHOR_HORIZONTAL_RIGHT);
 		mCloseButton->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
 
@@ -55,24 +57,29 @@ namespace QuickGUI
 
 		if(mParentWidget != NULL)
 		{
+			setQuadContainer(parent->getQuadContainer());
+			setGUIManager(parent->getGUIManager());
+
 			_detectHierarchy();
 			// set the correct offset
 			setOffset(mParentWidget->getOffset() + 1);
-			setSize(mSize);
-			setPosition(mPosition);
 			// calculated properties
-			Size parentSize = mParentWidget->getSize();
-			mPixelsFromParentRight = parentSize.width - (mPosition.x + mSize.width);
-			mPixelsFromParentBottom = parentSize.height - (mPosition.y + mSize.height);
-			setClippingWidget(mParentWidget,true);
+			_deriveAnchorValues();
 			// inheritted properties
+			if(mInheritClippingWidget)
+				setClippingWidget(mParentWidget,true);
 			if(!mParentWidget->isVisible())
 				hide();
+			if(mInheritQuadLayer)
+				setQuadLayer(mParentWidget->getQuadLayer());
 			mGainFocusOnClick = mParentWidget->getGainFocusOnClick();
 
-			mCloseButton->addEventHandler(Widget::EVENT_MOUSE_CLICK,&Window::hide,dynamic_cast<Window*>(mParentWidget));
-			mCloseButton->addEventHandler(Widget::EVENT_MOUSE_BUTTON_UP,&Window::hide,dynamic_cast<Window*>(mParentWidget));
+			mCloseButton->addEventHandler(Widget::EVENT_MOUSE_CLICK,&Window::onMouseUpOverCloseButton,dynamic_cast<Window*>(mParentWidget));
+			mCloseButton->addEventHandler(Widget::EVENT_MOUSE_BUTTON_UP,&Window::onMouseUpOverCloseButton,dynamic_cast<Window*>(mParentWidget));
 		}
+
+		WidgetEventArgs args(this);
+		fireEvent(EVENT_PARENT_CHANGED,args);
 	}
 
 	void TitleBar::showCloseButton()

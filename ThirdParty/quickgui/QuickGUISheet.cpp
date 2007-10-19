@@ -7,7 +7,7 @@ namespace QuickGUI
 	Sheet::Sheet(const Ogre::String& name, const Ogre::String& texture, GUIManager* gm) :
 		Panel(name,Size(gm->getViewportWidth(),gm->getViewportHeight()),texture,gm),
 		mDefaultTextColor(Ogre::ColourValue::White),
-		mDefaultSkin("qgui")
+		mSkin("qgui")
 	{
 		mParentSheet = this;
 		mQuadContainer = this;
@@ -16,7 +16,7 @@ namespace QuickGUI
 		Ogre::FontManager* fm = Ogre::FontManager::getSingletonPtr();
 		Ogre::ResourceManager::ResourceMapIterator rmi = fm->getResourceIterator();
 		if(rmi.hasMoreElements()) 
-			mDefaultFont = rmi.getNext()->getName();
+			mFontName = rmi.getNext()->getName();
 		else
 			Ogre::Exception(1,"No fonts have been defined!","Sheet::Sheet");
 
@@ -25,6 +25,8 @@ namespace QuickGUI
 
 	Sheet::~Sheet()
 	{
+		mParentSheet = NULL;
+		mQuadContainer = NULL;
 	}
 
 	Window* Sheet::createWindow()
@@ -35,23 +37,9 @@ namespace QuickGUI
 		Window* newWindow = new Window(name,Size(100,100),"qgui.window.png",mGUIManager);
 		addChild(newWindow);
 		newWindow->setPosition(0,0);
+		newWindow->setFont(mFontName,true);
 		
 		return newWindow;
-	}
-
-	Ogre::String Sheet::getDefaultFont()
-	{
-		return mDefaultFont;
-	}
-
-	Ogre::ColourValue Sheet::getDefaultTextColor()
-	{
-		return mDefaultTextColor;
-	}
-
-	Ogre::String Sheet::getDefaultSkin()
-	{
-		return mDefaultSkin;
 	}
 
 	Widget* Sheet::getTargetWidget(const Point& pixelPosition)
@@ -125,21 +113,6 @@ namespace QuickGUI
 		}
 
 		return NULL;
-	}
-
-	void Sheet::setDefaultFont(const Ogre::String& font)
-	{
-		mDefaultFont = font;
-	}
-
-	void Sheet::setDefaultTextColor(const Ogre::ColourValue& color)
-	{
-		mDefaultTextColor = color;
-	}
-
-	void Sheet::setDefaultSkin(const Ogre::String& skin)
-	{
-		mDefaultSkin = skin;
 	}
 
 	void Sheet::setQuadContainer(QuadContainer* container)

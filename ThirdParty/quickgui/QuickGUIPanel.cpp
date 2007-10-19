@@ -25,17 +25,8 @@ namespace QuickGUI
 
 	Panel::~Panel()
 	{
-		// Must be done before removing from parent Container! 
-		// (Cannot destroy parent container and then have children remove themself from it...)
 		Widget::removeAndDestroyAllChildWidgets();
-
-		if(mQuadContainer != NULL)
-		{
-			if(mWidgetType == Widget::TYPE_WINDOW)
-				mQuadContainer->removeChildWindowContainer(QuadContainer::getID());
-			else if(mWidgetType == Widget::TYPE_PANEL)
-				mQuadContainer->removeChildPanelContainer(QuadContainer::getID());
-		}
+		setQuadContainer(NULL);
 	}
 
 	void Panel::addChild(Widget* w)
@@ -45,15 +36,20 @@ namespace QuickGUI
 
 		mChildWidgets.push_back(w);
 		
+		// The setParent method sets the widget's quad container to the
+		// quad container the parent belongs to.  However, Sheets, Panels, and Windows
+		// are quad containers themselves. So temporarily set mQuadContainer to ourself,
+		// make the call to setParent, and then restore the mQuadContainer reference.
+		QuadContainer* temp = mQuadContainer;
+		mQuadContainer = this;
 		w->setParent(this);
+		mQuadContainer = temp;
 
 		// Convert Widget's position to be relative to new parent.
 		if(mScrollPane != NULL)
 			w->setPosition(w->getScreenPosition() - mScrollPane->getScreenPosition());
 		else
 			w->setPosition(w->getScreenPosition() - getScreenPosition());
-
-		w->setQuadContainer(this);
 
 		WidgetEventArgs args(w);
 		fireEvent(EVENT_CHILD_ADDED,args);
@@ -105,6 +101,7 @@ namespace QuickGUI
 		Button* newButton = new Button(name,Size(75,25),"qgui.button.png",mGUIManager);
 		addChild(newButton);
 		newButton->setPosition(0,0);
+		newButton->setFont(mFontName,true);
 
 		return newButton;
 	}
@@ -117,8 +114,22 @@ namespace QuickGUI
 		ComboBox* newComboBox = new ComboBox(name,Size(125,25),"qgui.combobox.png",mGUIManager);
 		addChild(newComboBox);
 		newComboBox->setPosition(0,0);
+		newComboBox->setFont(mFontName,true);
 
 		return newComboBox;
+	}
+
+	Console* Panel::createConsole()
+	{
+		Ogre::String name = mGUIManager->generateName(TYPE_CONSOLE);
+		mGUIManager->notifyNameUsed(name);
+
+		Console* newConsole = new Console(name,Size(200,100),"qgui.console.png",mGUIManager);
+		addChild(newConsole);
+		newConsole->setPosition(0,0);
+		newConsole->setFont(mFontName,true);
+
+		return newConsole;
 	}
 
 	HorizontalScrollBar* Panel::createHorizontalScrollBar()
@@ -129,6 +140,7 @@ namespace QuickGUI
 		HorizontalScrollBar* newHorizontalScrollBar = new HorizontalScrollBar(name,Size(100,50),"qgui.scrollbar.horizontal.png",mGUIManager);
 		addChild(newHorizontalScrollBar);
 		newHorizontalScrollBar->setPosition(0,0);
+		newHorizontalScrollBar->setFont(mFontName,true);
 
 		return newHorizontalScrollBar;
 	}
@@ -141,6 +153,7 @@ namespace QuickGUI
 		HorizontalTrackBar* newHorizontalTrackBar = new HorizontalTrackBar(name,Size(80,20),"qgui.trackbar.horizontal.png",mGUIManager);
 		addChild(newHorizontalTrackBar);
 		newHorizontalTrackBar->setPosition(0,0);
+		newHorizontalTrackBar->setFont(mFontName,true);
 
 		return newHorizontalTrackBar;
 	}
@@ -153,6 +166,7 @@ namespace QuickGUI
 		Image* newImage = new Image(name,Size(50,50),"qgui.image.png",mGUIManager);
 		addChild(newImage);
 		newImage->setPosition(0,0);
+		newImage->setFont(mFontName,true);
 
 		return newImage;
 	}
@@ -162,9 +176,10 @@ namespace QuickGUI
 		Ogre::String name = mGUIManager->generateName(TYPE_LABEL);
 		mGUIManager->notifyNameUsed(name);
 
-		Label* newLabel = new Label(name,Size(35,15),"qgui.label.png",mGUIManager);
+		Label* newLabel = new Label(name,Size::ZERO,"qgui.label.png",mGUIManager);
 		addChild(newLabel);
 		newLabel->setPosition(0,0);
+		newLabel->setFont(mFontName,true);
 
 		return newLabel;
 	}
@@ -177,8 +192,22 @@ namespace QuickGUI
 		List* newList = new List(name,Size(120,100),"qgui.list.png",mGUIManager);
 		addChild(newList);
 		newList->setPosition(0,0);
+		newList->setFont(mFontName,true);
 
 		return newList;
+	}
+
+	MultiLineLabel* Panel::createMultiLineLabel()
+	{
+		Ogre::String name = mGUIManager->generateName(TYPE_MULTILINELABEL);
+		mGUIManager->notifyNameUsed(name);
+
+		MultiLineLabel* newMultiLineLabel = new MultiLineLabel(name,Size(300,100),"qgui.multilinelabel.png",mGUIManager);
+		addChild(newMultiLineLabel);
+		newMultiLineLabel->setPosition(0,0);
+		newMultiLineLabel->setFont(mFontName,true);
+
+		return newMultiLineLabel;
 	}
 
 	NStateButton* Panel::createNStateButton()
@@ -189,6 +218,7 @@ namespace QuickGUI
 		NStateButton* newNStateButton = new NStateButton(name,Size(75,25),mGUIManager);
 		addChild(newNStateButton);
 		newNStateButton->setPosition(0,0);
+		newNStateButton->setFont(mFontName,true);
 
 		return newNStateButton;
 	}
@@ -201,6 +231,7 @@ namespace QuickGUI
 		Panel* newPanel = new Panel(name,Size(200,100),"qgui.panel.png",mGUIManager);
 		addChild(newPanel);
 		newPanel->setPosition(0,0);
+		newPanel->setFont(mFontName,true);
 
 		return newPanel;
 	}
@@ -213,6 +244,7 @@ namespace QuickGUI
 		ProgressBar* newProgressBar = new ProgressBar(name,Size(100,25),"qgui.progressbar.png",mGUIManager);
 		addChild(newProgressBar);
 		newProgressBar->setPosition(0,0);
+		newProgressBar->setFont(mFontName,true);
 
 		return newProgressBar;
 	}
@@ -222,9 +254,10 @@ namespace QuickGUI
 		Ogre::String name = mGUIManager->generateName(TYPE_TEXTBOX);
 		mGUIManager->notifyNameUsed(name);
 
-		TextBox* newTextBox = new TextBox(name,Size(100,20),"qgui.textbox.png",mGUIManager);
+		TextBox* newTextBox = new TextBox(name,Size(100,0),"qgui.textbox.png",mGUIManager);
 		addChild(newTextBox);
 		newTextBox->setPosition(0,0);
+		newTextBox->setFont(mFontName,true);
 
 		return newTextBox;
 	}
@@ -237,6 +270,7 @@ namespace QuickGUI
 		VerticalScrollBar* newVerticalScrollBar = new VerticalScrollBar(name,Size(50,100),"qgui.scrollbar.vertical.png",mGUIManager);
 		addChild(newVerticalScrollBar);
 		newVerticalScrollBar->setPosition(0,0);
+		newVerticalScrollBar->setFont(mFontName,true);
 
 		return newVerticalScrollBar;
 	}
@@ -249,6 +283,7 @@ namespace QuickGUI
 		VerticalTrackBar* newVerticalTrackBar = new VerticalTrackBar(name,Size(20,80),"qgui.trackbar.vertical.png",mGUIManager);
 		addChild(newVerticalTrackBar);
 		newVerticalTrackBar->setPosition(0,0);
+		newVerticalTrackBar->setFont(mFontName,true);
 
 		return newVerticalTrackBar;
 	}
@@ -341,13 +376,15 @@ namespace QuickGUI
 			mScrollPane->onParentSizeChanged(args);
 	}
 
-	void Panel::setQuadContainer(QuadContainer* container)
+	void Panel::setQuadContainer(QuadContainer* c)
 	{
-		if((mQuadContainer != NULL) && (mQuadContainer->getID() != mQuadContainer->getID()))
-			mQuadContainer->removeChildPanelContainer(QuadContainer::getID());
+		if((mQuadContainer != NULL) && (c != mQuadContainer))
+			mQuadContainer->removeChildPanelContainer(this);
 
-		mQuadContainer = container;
-		mQuadContainer->addChildPanelContainer(this);
+		mQuadContainer = c;
+
+		if(mQuadContainer != NULL)
+			mQuadContainer->addChildPanelContainer(this);
 	}
 
 	bool Panel::scrollingAllowed()

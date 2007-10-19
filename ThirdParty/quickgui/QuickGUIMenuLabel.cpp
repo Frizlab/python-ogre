@@ -71,6 +71,7 @@ namespace QuickGUI
 		mButton = new Button(mInstanceName+".Icon",Size(mSize.height,mSize.height),mButtonTextureName,mGUIManager);
 		addChild(mButton);
 		mButton->setPosition(buttonPosition);
+		mButton->setAutoSize(false);
 		mButton->setHorizontalAnchor(hAnchor);
 		mButton->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
 		mButton->setPropogateEventFiring(EVENT_MOUSE_BUTTON_UP,true);

@@ -86,6 +86,7 @@ namespace QuickGUI
 		* Returns the sheet currently being used, whether shown or hidden.
 		*/
 		Sheet* getActiveSheet();
+		Widget* getActiveWidget();
 		Ogre::String getDebugString();
 		/**
 		* Returns the default sheet, automatically created with the GUI manager.
@@ -115,7 +116,7 @@ namespace QuickGUI
 		* Iterates through sheet list and returns the Sheet with the
 		* matching name.  Null if no match found.
 		*/
-		Sheet* getParentSheet(const Ogre::String& name);
+		Sheet* getSheet(const Ogre::String& name);
 
 		/**
 		* Checks if skinName is a loaded skin SkinSet, and if textureName is an
@@ -251,7 +252,7 @@ namespace QuickGUI
 		bool					mDraggingWidget;
 
 		// Keep track of open menu's, for mouse detection.
-		std::map<Ogre::String,Widget*>	mOpenMenus;
+		std::set<Widget*>	mOpenMenus;
 		void _menuOpened(Widget* w);
 		void _menuClosed(Widget* w);
 

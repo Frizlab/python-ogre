@@ -6,7 +6,9 @@
 #include "QuickGUIBorder.h"
 #include "QuickGUIButton.h"
 #include "QuickGUIComboBox.h"
+#include "QuickGUIConsole.h"
 #include "QuickGUIImage.h"
+#include "QuickGUIMultiLineLabel.h"
 #include "QuickGUINStateButton.h"
 #include "QuickGUIProgressBar.h"
 #include "QuickGUIScrollPane.h"
@@ -62,6 +64,8 @@ namespace QuickGUI
 
 		ComboBox* createComboBox();
 
+		Console* createConsole();
+
 		HorizontalScrollBar* createHorizontalScrollBar();
 
 		Image* createImage();
@@ -69,6 +73,8 @@ namespace QuickGUI
 		Label* createLabel();
 
 		List* createList();
+
+		MultiLineLabel* createMultiLineLabel();
 
 		NStateButton* createNStateButton();
 

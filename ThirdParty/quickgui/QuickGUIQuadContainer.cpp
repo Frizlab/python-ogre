@@ -5,10 +5,8 @@ namespace QuickGUI
 {
 	QuadContainer::QuadContainer(Widget* owner) :
 		mOwner(owner),
-		mParentContainer(mOwner->getQuadContainer()),
 		mChildrenChanged(false),
-		mMenuChanged(false),
-		mID(mOwner->getInstanceName() + ".QuadContainer")
+		mMenuChanged(false)
 	{
 		mChildBufferSize.push_back(MIN_VERTEX_BUFFER_SIZE);
 		mMenuBufferSize.push_back(MIN_VERTEX_BUFFER_SIZE);
@@ -41,14 +39,14 @@ namespace QuickGUI
 			(*mIt)->_notifyRemovedFromQuadContainer();
 	}
 
-	void QuadContainer::addChildRenderable(Quad* o)
+	void QuadContainer::addChildRenderable(Quad* q)
 	{
 		std::list<Quad*>::iterator it;
 		it = mChildRenderables.begin();
 		// run until:
 		// 1) end of list
 		// 2) zOrder Matches
-		while( (it != mChildRenderables.end()) && ((*it)->getOffset() < o->getOffset()) )
+		while( (it != mChildRenderables.end()) && ((*it)->getOffset() < q->getOffset()) )
 			++it;
 
 		if( it != mChildRenderables.end() )
@@ -57,13 +55,13 @@ namespace QuickGUI
 			// 1) end of list
 			// 2) Higher zOrder found
 			// 3) we find Quad with same texture
-			while( (it != mChildRenderables.end()) && ((*it)->getOffset() == o->getOffset()) && ((*it)->getTextureName() != o->getTextureName()) )
+			while( (it != mChildRenderables.end()) && ((*it)->getOffset() == q->getOffset()) && ((*it)->getTextureName() != q->getTextureName()) )
 				++it;
 		}
 
-		mChildRenderables.insert(it,o);
-		o->_notifyChangesHandled();
-		o->_notifyAddedToRenderObjectGroup();
+		mChildRenderables.insert(it,q);
+		q->_notifyChangesHandled();
+		q->_notifyAddedToRenderObjectGroup();
 
 		mChildrenChanged = true;
 
@@ -94,7 +92,8 @@ namespace QuickGUI
 
 	void QuadContainer::addChildWindowContainer(QuadContainer* g)
 	{
-		if( (mOwner != NULL) && (mOwner->getWidgetType() != Widget::TYPE_SHEET) ) return;
+		if( (mOwner != NULL) && (mOwner->getWidgetType() != Widget::TYPE_SHEET) ) 
+			return;
 
 		std::list<QuadContainer*>::iterator it = mChildWindows.begin();
 		while( (it != mChildWindows.end()) && ((*it)->getOffset() <= g->getOffset()) )
@@ -103,14 +102,14 @@ namespace QuickGUI
 		mChildWindows.insert(it,g);
 	}
 
-	void QuadContainer::addMenuRenderable(Quad* o)
+	void QuadContainer::addMenuRenderable(Quad* q)
 	{
 		std::list<Quad*>::iterator it;
 		it = mMenuRenderables.begin();
 		// run until:
 		// 1) end of list
 		// 2) zOrder Matches
-		while( (it != mMenuRenderables.end()) && ((*it)->getOffset() < o->getOffset()) )
+		while( (it != mMenuRenderables.end()) && ((*it)->getOffset() < q->getOffset()) )
 			++it;
 
 		if( it != mMenuRenderables.end() )
@@ -119,13 +118,13 @@ namespace QuickGUI
 			// 1) end of list
 			// 2) Higher zOrder found
 			// 3) we find Quad with same texture
-			while( (it != mMenuRenderables.end()) && ((*it)->getOffset() == o->getOffset()) && ((*it)->getTextureName() != o->getTextureName()) )
+			while( (it != mMenuRenderables.end()) && ((*it)->getOffset() == q->getOffset()) && ((*it)->getTextureName() != q->getTextureName()) )
 				++it;
 		}
 
-		mMenuRenderables.insert(it,o);
-		o->_notifyChangesHandled();
-		o->_notifyAddedToRenderObjectGroup();
+		mMenuRenderables.insert(it,q);
+		q->_notifyChangesHandled();
+		q->_notifyAddedToRenderObjectGroup();
 
 		mMenuChanged = true;
 
@@ -143,11 +142,6 @@ namespace QuickGUI
 			mMenuBufferSize.pop_back();
 			mMenuVertexBuffer->resizeVertexBuffer(mMenuBufferSize.back());
 		}
-	}
-
-	Ogre::String QuadContainer::getID()
-	{
-		return mID;
 	}
 
 	int QuadContainer::getOffset()
@@ -170,16 +164,16 @@ namespace QuickGUI
 		return &mChildWindows;
 	}
 
-	void QuadContainer::moveWindowGroupToEnd(QuadContainer* g)
+	void QuadContainer::moveWindowGroupToEnd(QuadContainer* c)
 	{
-		if( (mOwner != NULL) && (mOwner->getWidgetType() != Widget::TYPE_WINDOW) ) return;
+		if( (c->getOwner()->getWidgetType() != Widget::TYPE_WINDOW) && (c != mChildWindows.back()) ) 
+			return;
 
 		bool windowInList = false;
 
-		std::list<QuadContainer*>::iterator it = mChildWindows.begin();
-		while( (it != mChildWindows.end()) && ((*it)->getOffset() <= g->getOffset()) )
+		for( std::list<QuadContainer*>::iterator it = mChildWindows.begin(); it != mChildWindows.end(); ++it )
 		{
-			if( (*it)->getID() == g->getID() )
+			if( (*it) == c )
 			{
 				mChildWindows.erase(it);
 				windowInList = true;
@@ -187,37 +181,38 @@ namespace QuickGUI
 			}
 		}
 		
-		if(windowInList) mChildWindows.push_back(g);
+		if(windowInList) 
+			mChildWindows.push_back(c);
 	}
 
-	void QuadContainer::notifyChildRenderableChanged(Quad* o)
+	void QuadContainer::notifyChildRenderableChanged(Quad* q)
 	{
-		if(o->offsetChanged() || o->textureChanged())
+		if(q->offsetChanged() || q->textureChanged())
 		{
-			removeChildRenderable(o->getID());
-			addChildRenderable(o);
+			removeChildRenderable(q);
+			addChildRenderable(q);
 		}
 
 		mChildrenChanged = true;
 	}
 
-	void QuadContainer::notifyMenuRenderableChanged(Quad* o)
+	void QuadContainer::notifyMenuRenderableChanged(Quad* q)
 	{
-		if(o->offsetChanged() || o->textureChanged())
+		if(q->offsetChanged() || q->textureChanged())
 		{
-			removeMenuRenderable(o->getID());
-			addMenuRenderable(o);
+			removeMenuRenderable(q);
+			addMenuRenderable(q);
 		}
 
 		mMenuChanged = true;
 	}
 
-	void QuadContainer::removeChildRenderable(const Ogre::String& id)
+	void QuadContainer::removeChildRenderable(Quad* q)
 	{
 		std::list<Quad*>::iterator it;
 		for( it = mChildRenderables.begin(); it != mChildRenderables.end(); ++it )
 		{
-			if( (*it)->getID() == id )
+			if( (*it) == q )
 			{
 				(*it)->_notifyRemovedFromQuadContainer();
 				mChildRenderables.erase(it);
@@ -227,12 +222,12 @@ namespace QuickGUI
 		}
 	}
 
-	void QuadContainer::removeChildPanelContainer(const Ogre::String& id)
+	void QuadContainer::removeChildPanelContainer(QuadContainer* c)
 	{
 		std::list<QuadContainer*>::iterator it;
 		for( it = mChildPanels.begin(); it != mChildPanels.end(); ++it )
 		{
-			if( (*it)->getID() == id )
+			if( (*it) == c )
 			{
 				mChildPanels.erase(it);
 				return;
@@ -240,12 +235,12 @@ namespace QuickGUI
 		}
 	}
 
-	void QuadContainer::removeChildWindowContainer(const Ogre::String& id)
+	void QuadContainer::removeChildWindowContainer(QuadContainer* c)
 	{
 		std::list<QuadContainer*>::iterator it;
 		for( it = mChildWindows.begin(); it != mChildWindows.end(); ++it )
 		{
-			if( (*it)->getID() == id )
+			if( (*it) == c )
 			{
 				mChildWindows.erase(it);
 				return;
@@ -253,12 +248,12 @@ namespace QuickGUI
 		}
 	}
 
-	void QuadContainer::removeMenuRenderable(const Ogre::String& id)
+	void QuadContainer::removeMenuRenderable(Quad* q)
 	{
 		std::list<Quad*>::iterator it;
 		for( it = mMenuRenderables.begin(); it != mMenuRenderables.end(); ++it )
 		{
-			if( (*it)->getID() == id )
+			if( (*it) == q )
 			{
 				mMenuRenderables.erase(it);
 				mMenuChanged = true;
