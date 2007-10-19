@@ -698,13 +698,13 @@ StringList EnumsBlueprint::AsNxEmitterType() {
 
 	if (mEnum & NX_AF_DISABLE_COLLISION)
 		l.insert(NxString("NX_AF_DISABLE_COLLISION"));
-
+#ifndef NX_DISABLE_FLUIDS
     if (mEnum & NX_FE_CONSTANT_PRESSURE)
 		l.insert(NxString("NX_FE_CONSTANT_PRESSURE"));
     
 	if (mEnum & NX_FE_CONSTANT_FLOW_RATE)
 		l.insert(NxString("NX_FE_CONSTANT_FLOW_RATE"));
-
+#endif
 	return l;
 
 }
@@ -714,13 +714,13 @@ StringList EnumsBlueprint::AsNxEmitterType() {
 StringList EnumsBlueprint::AsNxEmitterShape() {
 
 	StringList l;
-
+#ifndef NX_DISABLE_FLUIDS
 	if (mEnum & NX_FE_RECTANGULAR)
 		l.insert(NxString("NX_FE_RECTANGULAR"));
     
 	if (mEnum & NX_FE_ELLIPSE)
 		l.insert(NxString("NX_FE_ELLIPSE"));
-	
+	#endif
 	return l;
 
 }
