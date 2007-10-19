@@ -107,7 +107,7 @@ class Cake ():
         if os.name == "nt":
             self.RenderConfiguration["device"] = "Direct3D9" 
         else:
-            self.RenderConfiguration["device"] = "OpenGL" 
+            self.RenderConfiguration["device"] = "GL" 
             
         self.RenderConfiguration["width"] = "600" 
         self.RenderConfiguration["height"] = "480" 
@@ -170,8 +170,13 @@ class Cake ():
             secName = seci.peekNextKey() 
             csettings = seci.getNext() 
             for i in csettings:
-                k = i.key.lower()
-                v = i.value.upper() 
+                if os.name =='nt':
+                    k = i.key.lower()
+                    v = i.value.upper() 
+                else:
+                    k = i.key
+                    v = i.value 
+                
                 self.RenderConfiguration[k] = v 
 
     def onFramePre(self, deltaTime):
@@ -311,6 +316,7 @@ class Renderer ( ogre.FrameListener ):
                 archName = i.value 
                 ogre.ResourceGroupManager.getSingleton().addResourceLocation(archName, typeName, secName) 
         ppath=configuration['pluginspath']
+        print "\n\nPATH: ", ppath,"\n"
         if os.name == "nt":
             self.Root.loadPlugin(os.path.join(ppath,"RenderSystem_Direct3D9"))
         self.Root.loadPlugin(os.path.join(ppath,"RenderSystem_GL") )

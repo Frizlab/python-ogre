@@ -483,7 +483,10 @@ class nxogre:
                 ]
     CheckIncludes=[]
 #     libs=[  Config.LIB_Boost, 'NxOgre','NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' ]
-    libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' ]
+    if os.name =='nt':
+        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' ]
+    else:
+        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'PhysXCore','PhysXLoader','OgreMain' ]
     ModuleName="NxOgre"   
     active=True
     
@@ -551,7 +554,7 @@ class physx:
     if os.name == 'nt':
         libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader' ]
     else:
-        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking',  'PhysXCore' ]
+        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking',  'PhysXCore', 'PhysXLoader' ]
     ModuleName="PhysX"   
     active=True 
            

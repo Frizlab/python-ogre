@@ -10,9 +10,9 @@ source ./config.sh
 cd python-ogre 
 if [ $1 != "" ]
 then 
-    scons PROJECTS=$1
+    scons PROJECTS=$1 -i
 else
-    scons PROJECTS=ogre,ois,cegui,plib,ogrenewt,ogreode,ogreal,quickgui,et,caelum,bullet
+    scons PROJECTS=ogre,ois,cegui,plib,ogrenewt,ogreode,ogreal,quickgui,et,caelum,bullet,ogrebulletc,ogrebulletd -i
 #,ogrebulletc,ogrebulletd -i
 fi
 #opcode -- not really suited to a linux build -- lots of work needed ? 
