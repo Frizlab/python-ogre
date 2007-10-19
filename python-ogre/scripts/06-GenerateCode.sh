@@ -66,6 +66,10 @@ else
     echo ' -- creating forests code' >> $INSTALL_DIR/log.out
     $INSTALL_DIR/gen_code.sh forests 
 
+    echo ' -- creating bullet code '
+    echo ' -- creating bullet code' >> $INSTALL_DIR/log.out
+    $INSTALL_DIR/gen_code.sh bullet 
+
     echo ' -- creating ogrebulletc code '
     echo ' -- creating ogrebulletc code' >> $INSTALL_DIR/log.out
     $INSTALL_DIR/gen_code.sh ogrebulletc 
