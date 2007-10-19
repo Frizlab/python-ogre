@@ -22,6 +22,8 @@ namespace QuickGUI
 		public Label
 	{
 	public:
+		friend class MultiLineLabel;
+	public:
 		/** Constructor
             @param
                 name The name to be given to the widget (must be unique).
@@ -56,7 +58,7 @@ namespace QuickGUI
 		* Method to erase the character right before the text cursor.
 		*/
 		void backSpace();
-
+		void clearText();
 		/**
 		* Method to erase the character right after the text cursor.
 		*/
@@ -65,7 +67,6 @@ namespace QuickGUI
 		* Sets focus to the widget, displaying the text cursor.
 		*/
 		void focus();
-		Ogre::UTFString getCaption();
 		/**
 		* Returns the index of the beginning of the next word.  If next word
 		* does not exist, the last index of the previous word is returned.
@@ -79,6 +80,7 @@ namespace QuickGUI
 		*/
 		int getPreviousWordIndex();
 		bool getReadOnly();
+		Ogre::UTFString getText();
 		/**
 		* Sets mVisible to false.  Widgets should override this to implement how they handle
 		* hiding.
@@ -129,14 +131,15 @@ namespace QuickGUI
 		*/
 		void onMouseClicked(const EventArgs& args);
 		/**
+		* Set true if the label's size should match it's font height and text width.
+		* NOTE: AutoSize is set to true by default.  If you set this to false, you may
+		*  end up with empty label's, as text that doesn't fit in the label won't be rendered.
+		*/
+		virtual void setAutoSize(bool autoSize);
+		/**
 		* Stores/Updates the texture used for the widget, and allows the widget to derive other needed textures. (by overriding this function)
 		*/
 		void setBaseTexture(const Ogre::String& textureName);
-		/**
-		* Convenience method.  For advance text use, use getText function to
-		* get a reference to the Text object.
-		*/
-		void setCaption(const Ogre::UTFString& caption);
 		/**
 		* Text Cursor Indices start at 0, and are to the left of Text Indices.  
 		* Let () represent Text Cursor Indices and [] represent Text Indices: 
@@ -150,7 +153,13 @@ namespace QuickGUI
 		* If set to true, cannot input text to textbox
 		*/
 		void setReadOnly(bool readOnly);
+		/**
+		* Manually set size of widget.
+		*/
+		virtual void setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight);
+		virtual void setSize(const Size& pixelSize);
 		void setText(const Ogre::UTFString& text);
+		virtual void setWidth(Ogre::Real pixelWidth);
 		/**
 		* Default Handler for injecting Time.
 		*/

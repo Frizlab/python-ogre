@@ -33,6 +33,7 @@ namespace QuickGUI
 		mRepositionOverTime(false),
 		mResizeOverTime(false),
 		mScrollOffset(Point::ZERO),
+		mScrollPaneAccessible(true),
 		mShowWithParent(true),
 		mSkinComponent(""),
 		mTextureLocked(false),
@@ -42,7 +43,7 @@ namespace QuickGUI
 		mWidgetImage(NULL)
 	{
 		_initEventHandlers();
-		mQuad = _createQuad(mInstanceName + ".Quad");
+		mQuad = _createQuad();
 		mWidgetToDrag = this;
 
 		setTexture(textureName);
@@ -212,9 +213,9 @@ namespace QuickGUI
 		}
 	}
 
-	Quad* Widget::_createQuad(const Ogre::String& ID)
+	Quad* Widget::_createQuad()
 	{
-		Quad* newQuad = new Quad(ID,this);
+		Quad* newQuad = new Quad(this);
 		mQuads.push_back(newQuad);
 		return newQuad;
 	}
@@ -326,7 +327,7 @@ namespace QuickGUI
 		if( (w->getQuadContainer() == NULL) || (mQuadContainer == NULL) )
 			return;
 
-		if( (w->getQuadContainer()->getID() != mQuadContainer->getID()) ||
+		if( (w->getQuadContainer() != mQuadContainer) ||
 			(w->getQuad()->getLayer() != mQuad->getLayer()) )
 			return;
 
@@ -415,6 +416,11 @@ namespace QuickGUI
 		mGUIManager->setActiveWidget(this);
 	}
 
+	Point Widget::getActualPosition()
+	{
+		return getScreenPosition() + getScrollOffset();
+	}
+
 	Ogre::String Widget::getDisabledTexture()
 	{
 		return mDisabledTextureName;
@@ -427,26 +433,22 @@ namespace QuickGUI
 
 	Widget* Widget::getChildWidget(const Ogre::String& name)
 	{
-		Widget* w = NULL;
 		if( name == "" ) 
-			return w;
+			return NULL;
+		if( mInstanceName == name ) 
+			return this;
 
+		Widget* w = NULL;
 		std::vector<Widget*>::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 		{
-			if( (*it)->getChildWidget(name) != NULL )
+			if( (w = (*it)->getChildWidget(name)) != NULL )
 			{
-				w = (*it);
-				break;
+				return w;
 			}
 		}
 
-		if( w != NULL ) 
-			return w;
-		else if( mInstanceName == name ) 
-			return this;
-		else 
-			return NULL;
+		return NULL;
 	}
 
 	Widget* Widget::getChildWidget(Type t, unsigned int index)
@@ -589,6 +591,11 @@ namespace QuickGUI
 		return mParentWidget->getScreenPosition() + mPosition;
 	}
 
+	bool Widget::getScrollPaneAccessible()
+	{
+		return mScrollPaneAccessible;
+	}
+
 	Ogre::String Widget::getSkinComponent()
 	{
 		return mSkinComponent;
@@ -634,7 +641,7 @@ namespace QuickGUI
 
 	Widget* Widget::getTargetWidget(const Point& pixelPosition)
 	{
-		if( !mVisible || !mEnabled )
+		if( !mQuad->visible() || !mEnabled )
 			return NULL;
 
 		if( mCanResize )
@@ -730,7 +737,9 @@ namespace QuickGUI
 
 		bool currentlyVisible = mVisible;
 		mVisible = false;
-		mQuad->setVisible(false);
+
+		for( std::vector<Quad*>::iterator it = mQuads.begin(); it != mQuads.end(); ++it )
+			(*it)->setVisible(false);
 
 		// hide children
 		std::vector<Widget*>::iterator it;
@@ -739,6 +748,13 @@ namespace QuickGUI
 			if((*it)->getHideWithParent())
 				(*it)->hide();
 		}
+
+		// if widget is the active widget at time of being hidden, set sheet to active widget.
+		if(mGUIManager->getActiveWidget() == this)
+			mGUIManager->setActiveWidget(mParentSheet);
+		// if mouse cursor is over widget at time of being hidden, tell GUIManager to find the next widget mouse is over
+		if(mGUIManager->getMouseOverWidget() == this)
+			mGUIManager->injectMouseMove(0,0);
 
 		// Only fire event if we change visibility.  If we were already hidden, don't fire.
 		if(currentlyVisible)
@@ -772,7 +788,7 @@ namespace QuickGUI
 		std::vector<Widget*>::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 		{
-			if( w->getInstanceName() == (*it)->getInstanceName() )
+			if( w == (*it) )
 				return true;
 		}
 
@@ -849,13 +865,14 @@ namespace QuickGUI
 		if( mWidgetImage == NULL ) 
 			return false;
 
-		Point pt = mousePixelPosition - getScreenPosition();
+		Point pt = mousePixelPosition - getScreenPosition() - getScrollOffset();
 		Ogre::Real relX = pt.x / mSize.width;
 		Ogre::Real relY = pt.y / mSize.height;
 
 		// Reason I subtract 1 from width and height: Cannot access pixel 10 in an image of width 10. 0-9..
 		Ogre::ColourValue c = mWidgetImage->getColourAt((relX * mWidgetImage->getWidth()) - 1, (relY * mWidgetImage->getHeight()) - 1,0);
-		if( c.a <= 0.0 ) return true;
+		if( c.a <= 0.0 ) 
+			return true;
 
 		return false;
 	}
@@ -881,6 +898,9 @@ namespace QuickGUI
 		{
 			if((*it)->getInstanceName() == widgetName)
 			{
+				WidgetEventArgs args((*it));
+				fireEvent(EVENT_CHILD_REMOVED,args);
+
 				(*it)->setQuadContainer(NULL);
 				(*it)->setParent(NULL);
 				mChildWidgets.erase(it);
@@ -894,6 +914,9 @@ namespace QuickGUI
 		std::vector<Widget*>::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 		{
+			WidgetEventArgs args((*it));
+			fireEvent(EVENT_CHILD_REMOVED,args);
+
 			(*it)->setQuadContainer(NULL);
 			(*it)->setParent(NULL);
 			delete (*it);
@@ -1110,6 +1133,11 @@ namespace QuickGUI
 		setYPosition(pixelY - mParentWidget->getScreenPosition().y);
 	}
 
+	void Widget::setScrollPaneAccessible(bool accessible)
+	{
+		mScrollPaneAccessible = accessible;
+	}
+
 	void Widget::setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight)
 	{
 		if(mWidgetType == Widget::TYPE_SHEET)
@@ -1214,7 +1242,11 @@ namespace QuickGUI
 	{
 		bool currentlyVisible = mVisible;
 		mVisible = true;
-		mQuad->setVisible(true);
+		for( std::vector<Quad*>::iterator it = mQuads.begin(); it != mQuads.end(); ++it )
+		{
+			if((*it)->getShowWithOwner())
+				(*it)->setVisible(true);
+		}
 
 		// show children, except for Windows and lists of MenuList or ComboBox Widget.
 		std::vector<Widget*>::iterator it;

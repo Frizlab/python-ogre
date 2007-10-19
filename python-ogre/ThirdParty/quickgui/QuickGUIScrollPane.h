@@ -5,7 +5,7 @@
 #include "QuickGUIHorizontalScrollBar.h"
 #include "QuickGUIWidget.h"
 
-#include <vector>
+#include <set>
 
 namespace QuickGUI
 {
@@ -70,6 +70,8 @@ namespace QuickGUI
 		void setHorizontalButtonLayout(HorizontalScrollBar::ButtonLayout layout);
 		void setVerticalButtonLayout(VerticalScrollBar::ButtonLayout layout);
 
+		void unmanageWidget(Widget* w);
+
 	protected:
 		~ScrollPane();
 	protected:
@@ -95,7 +97,7 @@ namespace QuickGUI
 		void _showVScrollBars();
 		void _syncBarWithParentDimensions();
 
-		std::vector<Widget*> mManagedWidgets;
+		std::set<Widget*> mManagedWidgets;
 
 	// Inherited functions that need to have their access level changed from public.
 	protected:

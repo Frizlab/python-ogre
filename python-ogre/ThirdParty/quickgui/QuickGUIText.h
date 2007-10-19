@@ -23,6 +23,7 @@
 namespace QuickGUI
 {
 	// forward declarations
+	class Widget;
 	class Label;
 	class GUIManager;
 
@@ -62,7 +63,7 @@ namespace QuickGUI
 			ALIGNMENT_RIGHT
 		};
 	public:
-		Text(const Ogre::String& name, QuadContainer* container, Label* owner);
+		Text(const Ogre::String& name, QuadContainer* container, Widget* owner);
 		~Text();
 
 		// Internal function that sets the widget dimensions to use for clipping.
@@ -87,6 +88,13 @@ namespace QuickGUI
 		* Clears selection by hiding the Selection Quad.
 		*/
 		void clearSelection();
+		void clearCaption();
+		/*
+		* Enables use of the Text class as a utility object, for getting glyph dimensions,
+		* calculating text width given font, etc.  Does not render text, or create quads.
+		*/
+		void disable();
+		void enable();
 		/*
 		* Returns the x,y position and width,height of the area encasing the text.
 		* Form: (x,y,w,h)
@@ -96,6 +104,8 @@ namespace QuickGUI
 		Ogre::UTFString getCaption();
 		Quad* getCharacter(unsigned int index);
 		Ogre::ColourValue getColor();
+		Ogre::FontPtr getFont();
+		Ogre::Real getFontTextureWidth();
 		/*
 		* Returns the pixel height of Glyphs in this GlyphSet;
 		*/
@@ -158,6 +168,8 @@ namespace QuickGUI
 
 		void hide();
 
+		bool isDisabled();
+
 		/*
 		* This function could potentially move the text anywhere on the screen, but its main use is
 		* to maintain its position relative to the widget that owns the text.  Only call this function
@@ -212,7 +224,7 @@ namespace QuickGUI
 		void show();
 
 	private:
-		Label* mOwner;
+		Widget* mOwner;
 		Quad::Layer mLayer;
 		GUIManager* mGUIManager;
 
@@ -220,6 +232,9 @@ namespace QuickGUI
 		QuadContainer* mQuadContainer;
 		int mOffset;
 		bool mVisible;
+
+		// Allows this class to be used for 
+		bool mDisabled;
 
 		Widget* mClippingWidget;
 

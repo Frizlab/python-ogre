@@ -27,6 +27,7 @@ namespace QuickGUI
 
 	Window::~Window()
 	{
+		setQuadContainer(NULL);
 	}
 
 	void Window::allowScrolling(bool allow)
@@ -94,16 +95,6 @@ namespace QuickGUI
 		return mTitleBar;
 	}
 
-	void Window::hide()
-	{
-		Panel::hide();
-	}
-
-	void Window::hide(const EventArgs& args)
-	{
-		Panel::hide();
-	}
-
 	void Window::hideCloseButton()
 	{
 		mTitleBar->hideCloseButton();
@@ -119,10 +110,11 @@ namespace QuickGUI
 			mRightScrollBar->setYPosition(0);
 			mRightScrollBar->setHeight(mRightScrollBar->getHeight() + mTitleBar->getHeight());
 		}
+	}
 
-		Ogre::Real titlebarHeight = mTitleBar->getHeight();
-		setYPosition(mPosition.y - titlebarHeight);
-		setHeight(mSize.height + titlebarHeight);
+	void Window::onMouseUpOverCloseButton(const EventArgs& args)
+	{
+		Panel::hide();
 	}
 
 	void Window::setBringToFrontOnFocus(bool BringToFront)
@@ -130,18 +122,15 @@ namespace QuickGUI
 		mBringToFrontOnFocus = BringToFront;
 	}
 
-	void Window::setQuadContainer(QuadContainer* container)
+	void Window::setQuadContainer(QuadContainer* c)
 	{
-		if((mQuadContainer != NULL) && (mQuadContainer->getID() != mQuadContainer->getID()))
-			mQuadContainer->removeChildWindowContainer(QuadContainer::getID());
+		if((mQuadContainer != NULL) && (c != mQuadContainer))
+			mQuadContainer->removeChildWindowContainer(this);
 
-		mQuadContainer = container;
-		mQuadContainer->addChildWindowContainer(this);
-	}
+		mQuadContainer = c;
 
-	void Window::show()
-	{
-		Panel::show();
+		if(mQuadContainer != NULL)
+			mQuadContainer->addChildWindowContainer(this);
 	}
 
 	void Window::showCloseButton()

@@ -9,12 +9,33 @@
 #include "SkyDome.h"
 #include "Starfield.h"
 #include "LayeredClouds.h"
+#include "GroundFog.h"
 #include "Sun.h"
 
 namespace caelum {
 
 /** Root of the Caelum system.
-	This class is the root of the Caelum system.
+    
+    Caelum is built from several classes for different sky elements (the sun,
+    clouds, etc). Those classes know very little about each other and are 
+    connected through the main CaelumSystem class. This class is responsible
+    for tracking and updating sub-components. It "owns" all of the components,
+    using std::auto_ptr members.
+
+    The constructor will create a standard set of components but you can
+    disable some or change others. When you do something like setXxx(new Xxx())
+    CaelumSystem takes control of the object's lifetime.
+
+    This class is also reponsible for doing all per-frame and per-RenderTarget
+    updates. It's better to keep that logic here instead of coupling components
+    together.
+
+    It's difficult to build a CaelumSystem class which will work for any
+    combination of sky elements. It might be a good idea to have different
+    classes for vastly different sky systems. Alternatively the update logic
+    from Caelum could be refactor to only transfer a number of "common sky
+    parameter" around; but that is a lot harder and ultimately less flexible.
+
 	@author Jesús Alonso Abad
  */
 class DllExport CaelumSystem : public Ogre::FrameListener, public Ogre::RenderTargetListener {
@@ -43,9 +64,17 @@ class DllExport CaelumSystem : public Ogre::FrameListener, public Ogre::RenderTa
 		/// Reference to the universal clock.
 		UniversalClock *mUniversalClock;
 
-		/** Flag to indicate if Caelum should manage the fog or not.
-		 */
-		bool mManageFog;
+        /// Flag to indicate if Caelum manages standard Ogre::Scene fog.
+		bool mManageSceneFog;
+
+        /// Global fog density multiplier.
+        double mGlobalFogDensityMultiplier;
+
+        /// Scene fog density multiplier.
+        double mSceneFogDensityMultiplier;
+
+        /// Ground fog density multiplier.
+        double mGroundFogDensityMultiplier;
 		
 		/** The sky dome.
 		 */
@@ -67,25 +96,58 @@ class DllExport CaelumSystem : public Ogre::FrameListener, public Ogre::RenderTa
 		 */
         std::auto_ptr<SkyColourModel> mSkyColourModel;
         
+		/** Reference to ground fog; if enabled.
+		 */
+        std::auto_ptr<GroundFog> mGroundFog;
+
 // Methods --------------------------------------------------------------------
 	public:
+        /** Flags enumeration for caelum components.
+         *  This is an enumeration for the components to create by default in
+         *  Caelum's constructor. You can still pass 0 and create everything
+         *  by hand.
+         * 
+         *  CaelumSystem's constructor used to take a number of bools but now
+         *  there are too many components and this is nicer.
+         * 
+         *  CAELUM_COMPONENT_ members are for individual components.
+         *  CAELUM_COMPONENTS_ are standard bitmasks.
+         *  CAELUM_COMPONENTS_DEFAULT picks elements that don't require
+         *  modifications to external materials (right now it excludes ground fog).
+         */
+        enum CaelumComponent
+        {
+            CAELUM_COMPONENT_SKY_COLOUR_MODEL   = 1 << 0,
+            CAELUM_COMPONENT_SKY_DOME           = 1 << 1,
+            CAELUM_COMPONENT_SUN                = 1 << 2,
+            CAELUM_COMPONENT_STARFIELD          = 1 << 3,
+            CAELUM_COMPONENT_CLOUDS             = 1 << 4,
+            CAELUM_COMPONENT_GROUND_FOG         = 1 << 5,
+
+            CAELUM_COMPONENTS_NONE              = 0x0000,
+            CAELUM_COMPONENTS_DEFAULT           = 0x001F,
+            CAELUM_COMPONENTS_ALL               = 0x002F,
+        };
+    
 		/** Constructor.
 			Registers itself in the Ogre engine and initialises the system.
-			@param root The Ogre rool.
-			@param sceneMgr The Ogre scene manager.
-			@param manageResGroup Tells the system if the resource group has been created externally (true) or if it's to be managed by the system.
-			@param resGroupName The resource group name, if it's desired to use an existing one or just a different name.
+            It can also initialize a bunch of default components.
+
+			@param root The Ogre root.
+			@param scene The Ogre scene manager.
+            @param compoment The components to create.
+			@param manageResGroup Tells the system if the resource group has
+            been created externally (true) or if it's to be managed by the system.
+			@param resGroupName The resource group name, if it's desired to
+            use an existing one or just a different name.
 		 */
 		CaelumSystem (
                 Ogre::Root *root, 
 				Ogre::SceneManager *sceneMgr, 
-				bool createSkyColourModel = true,
-				bool createSkyDome = true,
-                bool createSun = true,
-                bool createStarfield = true,
-                bool createClouds = true,
+				CaelumComponent componentsToCreate = CAELUM_COMPONENTS_DEFAULT, 
 				bool manageResGroup = true, 
-				const Ogre::String &resGroupName = RESOURCE_GROUP_NAME);
+				const Ogre::String &resGroupName = RESOURCE_GROUP_NAME
+        );
 
 		/** Destructor.
 		 */
@@ -193,15 +255,75 @@ class DllExport CaelumSystem : public Ogre::FrameListener, public Ogre::RenderTa
             return mSkyColourModel.get();
         }
 
-		/** Enables/disables the Caelum fog management.
-			@param manage True if you want Caelum to manage the fog for you.
+		/** Sets ground fog system.
+		 *	@param model The sky colour model, or null to disable
 		 */
-		void setManageFog (bool manage);
+        inline void setGroundFog (GroundFog *model) {
+            mGroundFog.reset(model);
+        }
+
+		/** Get ground fog; if any.
+		 */
+        inline GroundFog* getGroundFog () const {
+            return mGroundFog.get();
+        }
+
+		/** Enables/disables Caelum managing standard Ogre::Scene fog.
+            This makes CaelumSystem control standard Ogre::Scene fogging. It
+            will use EXP2 fog with density from SkyColourModel.
+
+            Fog density multipliers are used; final scene fog density is:
+            SceneMultiplier * GlobalMultiplier * SkyColourModel.GetFogDensity
+
+            When this is set to false it also disables all scene fog (but you
+            control it afterwards).
+
+            @param value New value
+		 */
+		void setManageSceneFog (bool value);
 
 		/** Tells if Caelum is managing the fog or not.
-			@return True if Caelum manages the fog.
+			@return The value set in setManageSceneFog.
 		 */
-		bool isFogManaged () const;
+		bool getManageSceneFog () const;
+
+        /** Multiplier for scene fog density (default 1).
+            This is an additional multiplier for Ogre::Scene fog density.
+            This has no effect if getManagerSceneFog is false.
+
+            Final scene fog density is:
+            SceneMultiplier * GlobalMultiplier * SkyColourModel.GetFogDensity
+         */
+        void setSceneFogDensityMultiplier (double value);
+
+        /** Get the value set by setSceneFogDensityMultiplier.
+         */
+        double getSceneFogDensityMultiplier () const;
+
+        /** Multiplier for ground fog density (default 1).
+            This is an additional multiplier for Caelum::GroundFog density.
+            This has no effect if GroundFog is not used.
+
+            Final ground fog density is:
+            GroundFogMultipler * GlobalMultiplier * SkyColourModel.GetFogDensity
+         */
+        void setGroundFogDensityMultiplier (double value);
+
+        /** Get the value set by setGroundFogDensityMultiplier.
+         */
+        double getGroundFogDensityMultiplier () const;
+
+        /** Multiplier for global fog density (default 1).
+            This is an additional multiplier for fog density as received from
+            SkyColourModel. There are other multipliers you can tweak for
+            individual kinds of fog; but this is what you should change from
+            whatever "game logic" you might have.
+         */
+        void setGlobalFogDensityMultiplier (double value);
+
+        /** Get the value set by setSceneFogDensityMultiplier.
+         */
+        double getGlobalFogDensityMultiplier () const;
 
 	private:
 		/** Fires the start event to all the registered listeners.

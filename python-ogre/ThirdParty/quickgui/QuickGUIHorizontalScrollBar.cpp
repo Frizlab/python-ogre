@@ -30,18 +30,21 @@ namespace QuickGUI
 		mSlider->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
 		mSlider->enableDragging(true);
 		mSlider->constrainDragging(true,false);
+		mSlider->setAutoSize(false);
 		mSlider->addEventHandler(EVENT_DRAGGED,&HorizontalScrollBar::onSliderDragged,this);
 		
 		Ogre::Real scrollBarHeight = mSize.height;
 		mScrollLeft1 = new Button(mInstanceName+".Left1",Size(mSize.height,mSize.height),mScrollLeftTextureName,mGUIManager);
 		addChild(mScrollLeft1);
 		mScrollLeft1->setPosition(0,0);
+		mScrollLeft1->setAutoSize(false);
 		mScrollLeft1->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
 		mScrollLeft1->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&HorizontalScrollBar::onScrollLeftDown,this);
 		
 		mScrollRight1 = new Button(mInstanceName+".Right1",Size(mSize.height,mSize.height),mScrollRightTextureName,mGUIManager);
 		addChild(mScrollRight1);
 		mScrollRight1->setPosition(mSize.height,0);
+		mScrollRight1->setAutoSize(false);
 		mScrollRight1->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
 		mScrollRight1->setShowWithParent(false);
 		mScrollRight1->hide();
@@ -50,6 +53,7 @@ namespace QuickGUI
 		mScrollLeft2 = new Button(mInstanceName+".Left2",Size(mSize.height,mSize.height),mScrollLeftTextureName,mGUIManager);
 		addChild(mScrollLeft2);
 		mScrollLeft2->setPosition(mSize.width - (mSize.height*2.0),0);
+		mScrollLeft2->setAutoSize(false);
 		mScrollLeft2->setHorizontalAnchor(ANCHOR_HORIZONTAL_RIGHT);
 		mScrollLeft2->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
 		mScrollLeft2->setShowWithParent(false);
@@ -59,6 +63,7 @@ namespace QuickGUI
 		mScrollRight2 = new Button(mInstanceName+".Right2",Size(mSize.height,mSize.height),mScrollRightTextureName,mGUIManager);
 		addChild(mScrollRight2);
 		mScrollRight2->setPosition(mSize.width - mSize.height,0);
+		mScrollRight2->setAutoSize(false);
 		mScrollRight2->setHorizontalAnchor(ANCHOR_HORIZONTAL_RIGHT);
 		mScrollRight2->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
 		mScrollRight2->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&HorizontalScrollBar::onScrollRightDown,this);

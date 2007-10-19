@@ -63,20 +63,31 @@ namespace QuickGUI
 		int getNumberOfItems();
 		MenuLabel* getSelectedItem();
 		int getSelectedItemIndex();
-
-		void hide();
+		int getVerticalPixelPadHeight();
 		
 		void selectItem(unsigned int index);
 		void setDropDownHeight(Ogre::Real pixelHeight);
 		void setDropDownWidth(Ogre::Real pixelWidth);
+		virtual void setFont(const Ogre::String& fontScriptName, bool recursive = false);
+		virtual void setHeight(Ogre::Real pixelHeight);
 		/**
 		* Sets the material displayed when the mouse moves over a list item.
 		*/
 		void setHighlightTexture(const Ogre::String& texture);
 		void setRightToLeft(bool rightToLeft);
+		/**
+		* Manually set size of widget.
+		*/
+		virtual void setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight);
+		virtual void setSize(const Size& pixelSize);
+		void setVerticalPixelPadHeight(unsigned int height);
 
 	protected:
 		virtual ~ComboBox();
+
+		Text* mTextUtilities;
+		bool mAutoSize;
+		int mVPixelPadHeight;
 
 		/**
 		* Manually set a ListItem to be highlighted.

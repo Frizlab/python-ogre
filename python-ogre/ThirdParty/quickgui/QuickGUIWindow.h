@@ -26,6 +26,8 @@ namespace QuickGUI
 		public Panel
 	{
 	public:
+		friend class TitleBar;
+	public:
 		/** Constructor - Default Window
             @param
                 name The name to be given to the widget (must be unique).
@@ -55,11 +57,6 @@ namespace QuickGUI
 		bool getBringToFrontOnFocus();
 		TitleBar* getTitleBar();
 
-		void hide();
-		/**
-		* Hide, as an event handler.  Used as the default method for close button to hide window
-		*/
-		void hide(const EventArgs& args);
 		void hideCloseButton();
 		void hideTitlebar();
 
@@ -71,13 +68,13 @@ namespace QuickGUI
 		void onGainFocus(const EventArgs& args);
 
 		void setBringToFrontOnFocus(bool BringToFront);
-		void show();
 		void showCloseButton();
 		void showTitlebar();
 
 	protected:
 		virtual ~Window();
 		virtual void setQuadContainer(QuadContainer* container);
+		void onMouseUpOverCloseButton(const EventArgs& args);
 	protected:
 		TitleBar* mTitleBar;
 

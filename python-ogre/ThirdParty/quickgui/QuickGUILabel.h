@@ -18,8 +18,7 @@ namespace QuickGUI
 	{
 	public:
 		/**
-		* Useful for widgets horizontally aligning child widgets, for example a
-		* TitleBar aligning its label widget
+		* Specifies the horizontal alignment of text
 		*/
 		enum HorizontalAlignment
 		{
@@ -28,8 +27,7 @@ namespace QuickGUI
 			HA_RIGHT
 		};
 		/**
-		* Useful for widgets vertically aligning child widgets, for example a
-		* TitleBar aligning its label widget
+		* Specifies the vertical alignment of text
 		*/
 		enum VerticalAlignment
 		{
@@ -59,27 +57,28 @@ namespace QuickGUI
 		/**
 		* Aligns the child Label widget horizontally and vertically
 		*/
-		void alignText();
+		virtual void alignText();
+		virtual void clearText();
 		/**
 		* Disable Widget, making it unresponsive to events.
 		*/
-		void disable();
+		virtual void disable();
 		/**
 		* Enable Widget, allowing it to accept and handle events.
 		*/
-		void enable();
+		virtual void enable();
+		bool getAutoSize();
+		int getHorizontalPixelPadWidth();
 		/**
 		* Convenience method to return the Text object's caption.
 		*/
-		virtual Ogre::UTFString getCaption();
-		/**
-		* Returns a reference to the Text object used by this widget.
-		*/
-		Text* getText();
+		virtual Ogre::UTFString getText();
+		Quad* getTextCharacter(unsigned int index);
 		/*
 		* Returns the dimensions of the area used for text aligning and displaying.
 		*/
 		Rect getTextBounds();
+		int getVerticalPixelPadHeight();
 		/*
 		* Hides the widget, including text.
 		*/
@@ -91,24 +90,28 @@ namespace QuickGUI
 		*/
 		void redraw();
 		/**
-		* Convenience method.  For advance text use, use getText function to
-		* get a reference to the Text object.
+		* Set true if the label's size should match it's font height and text width.
+		* NOTE: AutoSize is set to true by default.  If you set this to false, you may
+		*  end up with empty label's, as text that doesn't fit in the label won't be rendered.
 		*/
-		virtual void setCaption(const Ogre::UTFString& caption);
+		virtual void setAutoSize(bool autoSize);
 		/**
 		* Sets the color of the text when the widget is disabled.
 		*/
-		void setDisabledTextColor(const Ogre::ColourValue& c);
+		virtual void setDisabledTextColor(const Ogre::ColourValue& c);
 		virtual void setFont(const Ogre::String& fontScriptName, bool recursive = false);
+		virtual void setHeight(Ogre::Real pixelHeight);
 		virtual void setQuadLayer(Quad::Layer l);
+		virtual void setText(const Ogre::UTFString& text);
 		/**
 		* Sets text vertical alignment.
 		*/
-		void setVerticalAlignment(VerticalAlignment va);
+		virtual void setVerticalAlignment(VerticalAlignment va);
 		/**
 		* Sets text horizontal alignment.
 		*/
-		void setHorizontalAlignment(HorizontalAlignment ha);
+		virtual void setHorizontalAlignment(HorizontalAlignment ha);
+		void setHorizontalPixelPadWidth(unsigned int width);
 		/**
 		* Manipulates the offset used to determine this widgets zOrder in rendering.
 		*/
@@ -121,12 +124,15 @@ namespace QuickGUI
 		/**
 		* Manually set size of widget.
 		*/
-		void setSize(const Ogre::Real& pixelWidth, const Ogre::Real& height);
-		void setSize(const Size& pixelSize);
+		virtual void setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight);
+		virtual void setSize(const Size& pixelSize);
 		/**
 		* Sets the dimensions of the area used for text aligning and displaying.
 		*/
 		void setTextBounds(const Point& relativePixelOffset, const Size& relativePixelSize);
+		virtual void setTextColor(Ogre::ColourValue color);
+		void setVerticalPixelPadHeight(unsigned int height);
+		virtual void setWidth(Ogre::Real pixelWidth);
 		/*
 		* Shows the widget, including text.
 		*/
@@ -143,6 +149,9 @@ namespace QuickGUI
 		VerticalAlignment mVerticalAlignment;
 		HorizontalAlignment	mHorizontalAlignment;
 
+		int mHPixelPadWidth;
+		int mVPixelPadHeight;
+
 		Point mTextBoundsPixelOffset;
 		Size mTextBoundsRelativeSize;
 
@@ -152,6 +161,8 @@ namespace QuickGUI
 
 		Ogre::ColourValue mTextColor;
 		Ogre::ColourValue mDisabledTextColor;
+
+		bool mAutoSize;
 	};
 }
 

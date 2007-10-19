@@ -46,10 +46,13 @@ namespace QuickGUI
 			TYPE_BORDER				=  0,
 			TYPE_BUTTON					,
 			TYPE_COMBOBOX				,
+			TYPE_CONSOLE				,
 			TYPE_IMAGE					,
 			TYPE_LABEL					,
 			TYPE_LIST					,
 			TYPE_MENULABEL				,
+			TYPE_MULTILINELABEL			,
+			TYPE_MULTILINETEXTBOX		,
 			TYPE_NSTATEBUTTON			,
 			TYPE_PANEL					,
 			TYPE_PROGRESSBAR			,
@@ -198,6 +201,12 @@ namespace QuickGUI
 		*/
 		virtual void focus();
 
+		/**
+		* Returns the position of the widget as it would be drawn on the screen.
+		* NOTE: This is a convenience method. Actual Position is the same as
+		*  getScreenPosition() + getScrollOffset().
+		*/
+		Point getActualPosition();
 		std::vector<Widget*>* getChildWidgetList();
 		Widget* getChildWidget(const Ogre::String& name);
 		Widget* getChildWidget(Type t, unsigned int index);
@@ -275,6 +284,7 @@ namespace QuickGUI
 		* NOTE: This may not be the actual screen coordinates, since QuickGUI supports scrolling.
 		*/
 		Point getScreenPosition();
+		bool getScrollPaneAccessible();
 		Ogre::String getSkinComponent();
 		/**
 		* Get whether or not this widget is shown when its parent is shown.
@@ -411,6 +421,7 @@ namespace QuickGUI
 		void setScreenPosition(const Ogre::Real& pixelX, const Ogre::Real& pixelY);
 		void setScreenXPosition(const Ogre::Real& pixelX);
 		void setScreenYPosition(const Ogre::Real& pixelY);
+		void setScrollPaneAccessible(bool accessible);
 		/**
 		* Manually set size of widget.
 		*/
@@ -487,6 +498,7 @@ namespace QuickGUI
 		bool						mDraggingEnabled;
 		Ogre::String				mFullTextureName;
 		Ogre::String				mSkinComponent;
+		bool						mScrollPaneAccessible;
 		Ogre::String				mTextureName;
 		Ogre::String				mTextureExtension;
 		Ogre::String				mDisabledTextureName;
@@ -522,7 +534,7 @@ namespace QuickGUI
 		Quad*						mQuad;
 		// All widgets have at least 1 quad, but can use more.
 		std::vector<Quad*>			mQuads;
-		Quad* _createQuad(const Ogre::String& ID);
+		Quad* _createQuad();
 
 		// Keeping track of the QuadContainer this Quad belongs to.
 		QuadContainer*				mQuadContainer;

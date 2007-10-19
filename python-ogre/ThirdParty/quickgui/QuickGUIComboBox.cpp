@@ -8,13 +8,18 @@ namespace QuickGUI
 	ComboBox::ComboBox(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
 		Image(instanceName,pixelSize,texture,gm),
 		mRightToLeft(false),
-		mHighlightedItem(0)
+		mHighlightedItem(0),
+		mAutoSize(true),
+		mVPixelPadHeight(10)
 	{
 		mWidgetType = TYPE_COMBOBOX;
 		addEventHandler(EVENT_LOSE_FOCUS,&ComboBox::onLoseFocus,this);
 		addEventHandler(EVENT_MOUSE_ENTER,&ComboBox::onMouseEnters,this);
 		addEventHandler(EVENT_MOUSE_LEAVE,&ComboBox::onMouseLeaves,this);
 		addEventHandler(EVENT_MOUSE_BUTTON_UP,&ComboBox::onMouseButtonUp,this);
+
+		mTextUtilities = new Text(mInstanceName+".TextUtilities",mQuadContainer,this);
+		mTextUtilities->disable();
 
 		Ogre::String name = mInstanceName+".DropDownList";
 		mGUIManager->notifyNameUsed(mInstanceName+".DropDownList");
@@ -48,6 +53,7 @@ namespace QuickGUI
 		mButton = new Button(mInstanceName+".DropDownButton",Size(mSize.height,mSize.height),mTextureName + ".button" + mTextureExtension,mGUIManager);
 		addChild(mButton);
 		mButton->setPosition(mSize.width - mSize.height,0);
+		mButton->setAutoSize(false);
 		mButton->setHorizontalAnchor(ANCHOR_HORIZONTAL_RIGHT);
 		mButton->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
 		mButton->setPropogateEventFiring(EVENT_MOUSE_BUTTON_UP,true);
@@ -55,11 +61,12 @@ namespace QuickGUI
 		mHighlightTexture = mTextureName + ".highlight" + mTextureExtension;
 
 		// create highlight container for the list
-		mHighlightPanel = _createQuad(mInstanceName+".HighlightPanel");
+		mHighlightPanel = _createQuad();
 		mHighlightPanel->setClippingWidget(mList);
 		mHighlightPanel->setInheritClippingWidget(false);
 		mHighlightPanel->setLayer(Quad::LAYER_MENU);
 		mHighlightPanel->setInheritLayer(false);
+		mHighlightPanel->setShowWithOwner(false);
 		mHighlightPanel->setTexture(mHighlightTexture);
 		// offset + 3, to be able to show over ListItems with Images and Buttons and Text
 		mHighlightPanel->setOffset(mOffset+3);
@@ -68,6 +75,8 @@ namespace QuickGUI
 
 	ComboBox::~ComboBox()
 	{
+		delete mTextUtilities;
+
 		Widget::removeAndDestroyAllChildWidgets();
 
 		std::vector<MemberFunctionSlot*>::iterator it;
@@ -98,7 +107,7 @@ namespace QuickGUI
 	{
 		mHighlightPanel->setVisible(false);
 		mHighlightedItem = NULL;
-		mMenuLabel->setCaption("");
+		mMenuLabel->setText("");
 		mMenuLabel->setIconTexture("");
 		mMenuLabel->setButtonTexture("");
 	}
@@ -126,10 +135,9 @@ namespace QuickGUI
 		return mList->getItemIndex(mHighlightedItem);
 	}
 
-	void ComboBox::hide()
+	int ComboBox::getVerticalPixelPadHeight()
 	{
-		Image::hide();
-		mHighlightPanel->setVisible(false);
+		return mVPixelPadHeight;
 	}
 
 	void ComboBox::hideDropDownList(const EventArgs& args)
@@ -139,6 +147,9 @@ namespace QuickGUI
 
 	void ComboBox::highlightListItem(MenuLabel* l)
 	{
+		if(l == NULL)
+			return;
+
 		mHighlightedItem = l;
 		mHighlightPanel->setPosition(mHighlightedItem->getScreenPosition() + mHighlightedItem->getScrollOffset());
 		mHighlightPanel->setSize(mHighlightedItem->getSize());
@@ -226,7 +237,7 @@ namespace QuickGUI
 
 	void ComboBox::selectItem(MenuLabel* l)
 	{
-		mMenuLabel->setCaption(l->getCaption());
+		mMenuLabel->setText(l->getText());
 		mMenuLabel->setIconTexture(l->getIconTexture());
 		mMenuLabel->setButtonTexture(l->getButtonTexture());
 		mHighlightPanel->setVisible(false);
@@ -243,6 +254,24 @@ namespace QuickGUI
 		mDropDownWidth = pixelWidth;
 		mList->setWidth(mDropDownWidth);
 		mList->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT);
+	}
+
+	void ComboBox::setFont(const Ogre::String& fontScriptName, bool recursive)
+	{
+		Image::setFont(fontScriptName,recursive);
+		mTextUtilities->setFont(fontScriptName);
+
+		if(mAutoSize)
+		{
+			setHeight(mTextUtilities->getNewlineHeight() + mVPixelPadHeight);
+			mAutoSize = true;
+		}
+	}
+
+	void ComboBox::setHeight(Ogre::Real pixelHeight)
+	{
+		Image::setHeight(pixelHeight);
+		mAutoSize = false;
 	}
 
 	void ComboBox::setHighlightTexture(const Ogre::String& texture)
@@ -272,5 +301,27 @@ namespace QuickGUI
 		}
 
 		//mMenuLabel->setRightToLeft(mRightToLeft);
+	}
+
+	void ComboBox::setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight)
+	{
+		Image::setSize(pixelWidth,pixelHeight);
+		mAutoSize = false;
+	}
+
+	void ComboBox::setSize(const Size& pixelSize)
+	{
+		ComboBox::setSize(pixelSize.width,pixelSize.height);
+	}
+
+	void ComboBox::setVerticalPixelPadHeight(unsigned int height)
+	{
+		mVPixelPadHeight = height;
+
+		if(mAutoSize)
+		{
+			setHeight(mTextUtilities->getNewlineHeight() + mVPixelPadHeight);
+			mAutoSize = true;
+		}
 	}
 }

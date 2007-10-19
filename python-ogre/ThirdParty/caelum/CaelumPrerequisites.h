@@ -4,7 +4,20 @@
 // Include external headers
 #include "Ogre.h"
 
-#define DllExport
+// Define the dll export qualifier if compiling for Windows
+// // // #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+// // // 	#ifdef CAELUM_LIB
+// // // 		#define DllExport __declspec (dllexport)
+// // // 	#else
+// // // 		#ifdef __MINGW32__
+// // // 			#define DllExport
+// // // 		#else
+// // // 			#define DllExport __declspec (dllimport)
+// // // 		#endif
+// // // 	#endif
+// // // #else
+	#define DllExport
+// // // #endif
 
 // Define the version code
 #define CAELUM_VERSION_MAIN 0
@@ -22,7 +35,7 @@ namespace caelum {
      */
     const float CAMERA_DISTANCE_MODIFIER = 0;
 
-    // Render grounp for caelum stuff
+    // Render group for caelum stuff
     // It's best to have them all together
     enum CaelumRenderQueueGroupId
     {
@@ -30,6 +43,7 @@ namespace caelum {
         CAELUM_RENDER_QUEUE_SKYDOME = Ogre::RENDER_QUEUE_SKIES_EARLY + 1,
         CAELUM_RENDER_QUEUE_SUN = Ogre::RENDER_QUEUE_SKIES_EARLY + 2,
         CAELUM_RENDER_QUEUE_CLOUDS = Ogre::RENDER_QUEUE_SKIES_EARLY + 3,
+        CAELUM_RENDER_QUEUE_GROUND_FOG = Ogre::RENDER_QUEUE_SKIES_EARLY + 4,
     };
 }
 

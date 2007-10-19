@@ -19,6 +19,7 @@ namespace QuickGUI
 		mSliderButton->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
 		mSliderButton->enableDragging(true);
 		mSliderButton->constrainDragging(true,false);
+		mSliderButton->setAutoSize(false);
 		mSliderButton->addEventHandler(EVENT_DRAGGED,&HorizontalTrackBar::onSliderDragged,this);
 		mSliderButton->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&HorizontalTrackBar::onMouseDownOnSlider,this);
 		mSliderButton->addEventHandler(EVENT_MOUSE_BUTTON_UP,&HorizontalTrackBar::onMouseUpOnSlider,this);

@@ -4,6 +4,7 @@
 #include "QuickGUIImage.h"
 #include "QuickGUIMenuLabel.h"
 #include "QuickGUIScrollPane.h"
+#include "QuickGUITextBox.h"
 
 #include <vector>
 
@@ -23,6 +24,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class ComboBox;
+		friend class MultiLineLabel;
 	public:
 		/** Constructor
             @param
@@ -43,24 +45,33 @@ namespace QuickGUI
 		List(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm);
 
 		MenuLabel* addMenuLabel();
+		TextBox* addTextBox();
 		void allowScrolling(bool allow);
 
 		void clear();
 
+		bool getAutoSizeListItems();
 		Widget* getItem(unsigned int index);
 		int getItemIndex(Widget* w);
 		int getNumberOfItems();
 		ScrollPane* getScrollPane();
+		int getVerticalPixelPadHeight();
 
-		void removeItem(Widget* w);
 		void removeItem(unsigned int index);
 
 		bool scrollingAllowed();
 		
 		/**
+		* If set to true, List Items' height will be derived from the height of the
+		* font used by this widget.
+		*/
+		void setAutoSizeListItems(bool autoSize);
+		virtual void setFont(const Ogre::String& fontScriptName, bool recursive = false);
+		/**
 		* Sets the pixel height of each ListItem.
 		*/
 		void setItemPixelHeight(const Ogre::Real& heightInPixels);
+		void setVerticalPixelPadHeight(unsigned int height);
 		/**
 		* Shows the widget, including any child widgets.
 		*/
@@ -68,6 +79,9 @@ namespace QuickGUI
 
 	protected:
 		virtual ~List();
+
+		Text* mTextUtilities;
+		bool mAutoSizeListItems;
 
 		ScrollPane* mScrollPane;
 		bool mScrollingAllowed;
@@ -77,6 +91,8 @@ namespace QuickGUI
 
 		int mAutoNameWidgetCounter;
 		Ogre::Real mItemHeight;
+
+		int mVPixelPadHeight;
 
 		std::vector<Widget*> mItems;
 

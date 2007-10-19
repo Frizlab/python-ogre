@@ -8,6 +8,8 @@ namespace QuickGUI
 		mBorderType(bType)
 	{
 		mWidgetType = TYPE_BORDER;
+		mScrollPaneAccessible = false;
+		mInheritClippingWidget = false;
 		mDraggingEnabled = true;
 		mWidgetToDrag = NULL;
 
@@ -63,7 +65,7 @@ namespace QuickGUI
 
 	void Border::onDragged(const EventArgs& args)
 	{
-		if(mParentWidget == NULL)
+		if((mParentWidget == NULL) || !mParentWidget->resizingAllowed())
 			return;
 
 		const MouseEventArgs mea = dynamic_cast<const MouseEventArgs&>(args);

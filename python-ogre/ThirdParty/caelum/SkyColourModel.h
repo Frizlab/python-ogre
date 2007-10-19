@@ -52,14 +52,6 @@ class DllExport SkyColourModel {
 		 */
 		float getFogDensity (float time, const Ogre::Vector3 &sunDir);
 
-        inline float getFogDensityMultiplier() {
-            return mFogDensityMultiplier;
-        }
-
-        inline void setFogDensityMultiplier(float value) {
-            mFogDensityMultiplier = value;
-        }
-
 		/** Get the colour of the sun sphere.
          *  This colour is used to draw the sun sphere in the sky.
 		 *  @return The colour of the sun.
@@ -83,13 +75,19 @@ class DllExport SkyColourModel {
 
 	protected:
 		/** Gets the interpolated colour between two pixels from an image.
-			@param x The horizontal coordinate in the range [0, 1].
-			@param height The height at which the pixels are located in the range [0, 1] (will be converted to integer).
+            Interpolate a texture pixel by hand. (fx, fy) are in texture coordinates,
+            ranging [0-1] across the entire texture.
+            Smooth blending is only done on the x coordinate.
+            Wrapping is only supported on X as well.
+
+			@param fx Horizontal coordinate.
+			@param fy Vertical coordiate.
 			@param img The lookup image.
-			@param wrap If the map wraps horizontally or not.
+			@param wrapX To wrap the x coordinate.
 			@return The interpolated colour.
 		 */
-		static Ogre::ColourValue getInterpolatedColour (float x, float height, Ogre::Image *img, bool wrap = true);
+		static Ogre::ColourValue getInterpolatedColour (float fx, float fy, Ogre::Image *img,
+                bool wrapX = true);
 };
 
 } // namespace caelum

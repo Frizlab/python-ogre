@@ -43,10 +43,10 @@ namespace QuickGUI
 
 	bool Rect::inside(const Rect& r)
 	{
-		if( ((x - 0.00001) >= r.x) &&
-			((y - 0.00001) >= r.y) &&
-			(((x + width) - 0.00001) <= (r.x + r.width)) &&
-			(((y + height) - 0.00001) <= (r.y + r.height)) )
+		if( (x >= r.x) &&
+			(y >= r.y) &&
+			((x + width) <= (r.x + r.width)) &&
+			((y + height) <= (r.y + r.height)) )
 			return true;
 
 		return false;

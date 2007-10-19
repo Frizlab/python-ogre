@@ -116,7 +116,7 @@ def ManualInclude ( mb ):
     global_ns.class_('::Ogre::SceneManager').include(already_exposed=True)
     global_ns.class_('::Ogre::Viewport').include(already_exposed=True)
     global_ns.class_('::Ogre::Image').include(already_exposed=True)
-#     global_ns.class_('::Ogre::TRect<float>').include(already_exposed=True)
+#     global_ns.class_('::Ogre::FloatRect').include(already_exposed=True)
     
     
     

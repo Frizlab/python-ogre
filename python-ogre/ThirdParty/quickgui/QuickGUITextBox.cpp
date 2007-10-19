@@ -40,15 +40,18 @@ namespace QuickGUI
 		addEventHandler(EVENT_KEY_DOWN,&TextBox::onKeyDown,this);
 		addEventHandler(EVENT_KEY_UP,&TextBox::onKeyUp,this);
 
-		mTextCursor = _createQuad(mInstanceName + ".TextCursor");
+		mTextCursor = _createQuad();
 		mTextCursor->setLayer(Quad::LAYER_CHILD);
+		mTextCursor->setShowWithOwner(false);
 		mTextCursorTexture = mTextureName + ".textcursor" + mTextureExtension;
 		mTextCursor->setTexture(mTextCursorTexture);
 		mTextCursor->setOffset(mOffset+1);
 		mTextCursor->setVisible(false);
-		mTextCursor->setSize(Size(mCursorPixelWidth,getTextBounds().height));
+		mTextCursor->setSize(Size(mCursorPixelWidth,mSize.height));
 		mTextCursor->setVisible(false);
 		mTextCursor->_notifyQuadContainer(mQuadContainer);
+
+		setUseBorders(true);
 	}
 
 	TextBox::~TextBox()
@@ -149,55 +152,88 @@ namespace QuickGUI
 	void TextBox::_positionCursor()
 	{
 		Rect textBounds = getTextBounds();
-
-		// Now that the correct text will be displayed, we can correctly position the text cursor.
 		Point cursorPos;
-		if((mCursorIndex - mVisibleStart) == 0)
-		{
-			if( mCaption == "" )
-			{
-				switch(mHorizontalAlignment)
-				{
-				case HA_LEFT:
-					cursorPos.x = textBounds.x;
-					break;
-				case HA_MID:
-					cursorPos.x = (textBounds.x + (textBounds.width / 2));
-					break;
-				case HA_RIGHT:
-					cursorPos.x = (textBounds.x + textBounds.width);
-					break;
-				}
 
-				switch(mVerticalAlignment)
-				{
-				case VA_TOP:
-					cursorPos.y = textBounds.y;
-					break;
-				case VA_MID:
-					cursorPos.y = (textBounds.y + (textBounds.height / 2));
-					break;
-				case VA_BOTTOM:
-					cursorPos.y = (textBounds.y + textBounds.height);
-					break;
-				}
-			}
-			else
+		// If the Text was not rendered, as is the case when the glyph (font) height is bigger than the area provided,
+		// place the cursor according to horizontal/vertical alignment.
+		if( mText->getNumberOfCharacters() == 0 )
+		{
+			switch(mHorizontalAlignment)
 			{
-				Quad* character = mText->getCharacter(mCursorIndex - mVisibleStart);
-				Point pos = character->getPosition();
-				Size size = character->getSize();
-				cursorPos.x = pos.x;
-				cursorPos.y = pos.y + (size.height / 2);
+			case HA_LEFT:
+				cursorPos.x = textBounds.x;
+				break;
+			case HA_MID:
+				cursorPos.x = (textBounds.x + (textBounds.width / 2));
+				break;
+			case HA_RIGHT:
+				cursorPos.x = (textBounds.x + textBounds.width);
+				break;
+			}
+
+			switch(mVerticalAlignment)
+			{
+			case VA_TOP:
+				cursorPos.y = textBounds.y;
+				break;
+			case VA_MID:
+				cursorPos.y = (textBounds.y + (textBounds.height / 2));
+				break;
+			case VA_BOTTOM:
+				cursorPos.y = (textBounds.y + textBounds.height);
+				break;
 			}
 		}
 		else
 		{
-			Quad* character = mText->getCharacter((mCursorIndex - mVisibleStart) - 1);
-			Point pos = character->getPosition();
-			Size size = character->getSize();
-			cursorPos.x = pos.x + size.width;
-			cursorPos.y = pos.y + (size.height / 2);
+			// Now that the correct text will be displayed, we can correctly position the text cursor.
+			if( (mCursorIndex - mVisibleStart) == 0 )
+			{
+				if( mCaption == "" )
+				{
+					switch(mHorizontalAlignment)
+					{
+					case HA_LEFT:
+						cursorPos.x = textBounds.x;
+						break;
+					case HA_MID:
+						cursorPos.x = (textBounds.x + (textBounds.width / 2));
+						break;
+					case HA_RIGHT:
+						cursorPos.x = (textBounds.x + textBounds.width);
+						break;
+					}
+
+					switch(mVerticalAlignment)
+					{
+					case VA_TOP:
+						cursorPos.y = textBounds.y;
+						break;
+					case VA_MID:
+						cursorPos.y = (textBounds.y + (textBounds.height / 2));
+						break;
+					case VA_BOTTOM:
+						cursorPos.y = (textBounds.y + textBounds.height);
+						break;
+					}
+				}
+				else
+				{
+					Quad* character = mText->getCharacter(mCursorIndex - mVisibleStart);
+					Point pos = character->getPosition();
+					Size size = character->getSize();
+					cursorPos.x = pos.x;
+					cursorPos.y = pos.y + (size.height / 2);
+				}
+			}
+			else
+			{
+				Quad* character = mText->getCharacter((mCursorIndex - mVisibleStart) - 1);
+				Point pos = character->getPosition();
+				Size size = character->getSize();
+				cursorPos.x = pos.x + size.width;
+				cursorPos.y = pos.y + (size.height / 2);
+			}
 		}
 		
 		// horizontally center the text cursor image at the desired position.
@@ -256,7 +292,10 @@ namespace QuickGUI
 
 		// Remove selection if a selection has been made.
 		if(mSelectStart != mSelectEnd)
+		{
 			mCaption = mCaption.erase(mSelectStart,mSelectEnd-mSelectStart);
+			mCursorIndex = mSelectStart;
+		}
 
 		// Insert a character right before the text cursor.
 		mCaption.insert(mCursorIndex,1,cp);
@@ -297,6 +336,11 @@ namespace QuickGUI
 		mCaption.erase(mCursorIndex - 1,1);
 
 		setCursorIndex(mCursorIndex - 1);
+	}
+
+	void TextBox::clearText()
+	{
+		setText("");
 	}
 
 	void TextBox::deleteCharacter()
@@ -340,11 +384,6 @@ namespace QuickGUI
 		mHasFocus = true;
 
 		mGUIManager->setActiveWidget(this);
-	}
-
-	Ogre::UTFString TextBox::getCaption()
-	{
-		return mCaption;
 	}
 
 	int TextBox::getNextWordIndex()
@@ -401,11 +440,15 @@ namespace QuickGUI
 		return mReadOnly;
 	}
 
+	Ogre::UTFString TextBox::getText()
+	{
+		return mCaption;
+	}
+
 	void TextBox::hide()
 	{
 		Label::hide();
 
-		mTextCursor->setVisible(false);
 		mBackSpaceDown = false;
 		mLeftArrowDown = false;
 		mRightArrowDown = false;
@@ -622,16 +665,19 @@ namespace QuickGUI
 		}
 	}
 
+	void TextBox::setAutoSize(bool autoSize)
+	{
+		mAutoSize = autoSize;
+
+		if(mAutoSize)
+			setHeight(mText->getNewlineHeight() + mVPixelPadHeight);
+	}
+
 	void TextBox::setBaseTexture(const Ogre::String& textureName)
 	{
 		Label::setBaseTexture(textureName);
 
 		mTextCursorTexture = mTextureName + ".cursor" + mTextureExtension;
-	}
-
-	void TextBox::setCaption(const Ogre::UTFString& caption)
-	{
-		setText(caption);
 	}
 
 	void TextBox::setCursorIndex(int cursorIndex, bool clearSelection)
@@ -674,7 +720,25 @@ namespace QuickGUI
 
 	void TextBox::setFont(const Ogre::String& fontScriptName, bool recursive)
 	{
-		Label::setFont(fontScriptName,recursive);
+		Image::setFont(fontScriptName,recursive);
+		mText->setFont(mFontName);
+
+		if(mAutoSize)
+		{
+			setHeight(mText->getNewlineHeight() + mVPixelPadHeight);
+			mTextCursor->setHeight(mSize.height);
+			// setHeight sets mAutoSize to false..
+			mAutoSize = true;
+		}
+		else
+			alignText();
+
+		// re-initialize index variables
+		mVisibleStart = 0;
+		mVisibleEnd = 0;
+		mSelectStart = 0;
+		mSelectEnd = 0;
+
 		setCursorIndex(static_cast<int>(mCaption.length()));
 		mTextCursor->setVisible(false);
 	}
@@ -682,6 +746,24 @@ namespace QuickGUI
 	void TextBox::setReadOnly(bool readOnly)
 	{
 		mReadOnly = readOnly;
+	}
+
+	void TextBox::setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight)
+	{
+		if(pixelWidth == 0)
+			mAutoSize = true;
+		else
+			mAutoSize = false;
+
+		Image::setSize(pixelWidth,pixelHeight);
+
+		mText->redraw();
+		alignText();
+	}
+
+	void TextBox::setSize(const Size& pixelSize)
+	{
+		TextBox::setSize(pixelSize.width,pixelSize.height);
 	}
 
 	void TextBox::setText(const Ogre::UTFString& text)
@@ -696,16 +778,18 @@ namespace QuickGUI
 		mSelectStart = 0;
 		mSelectEnd = 0;
 
-		if(mCaption == "")
-		{
-			mText->setCaption("");
-			return;
-		}
-
 		// This function determines the visibleStart and visibleEnd, and
 		// updates the text before setting the cursor position.
 		setCursorIndex(static_cast<int>(mCaption.length()));
 		mTextCursor->setVisible(false);
+	}
+
+	void TextBox::setWidth(Ogre::Real pixelWidth)
+	{
+		Image::setWidth(pixelWidth);
+
+		mText->redraw();
+		alignText();
 	}
 
 	void TextBox::timeElapsed(Ogre::Real time)

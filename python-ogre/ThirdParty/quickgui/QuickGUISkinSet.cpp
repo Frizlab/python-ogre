@@ -146,7 +146,14 @@ namespace QuickGUI
 
 				// Not enough room for all the images!
 				if( next_y > (int)mTexture->getHeight() )
-					throw Ogre::Exception(1, "The texture is not large enough to fit all widget images", "QuickGUIImageSet");
+				{
+					Ogre::Image finalImageSet;
+					finalImageSet.load("QuickGUI.output.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+					buf->blitToMemory(finalImageSet.getPixelBox());
+					finalImageSet.save("SkinSetImage.png");
+		
+					throw Ogre::Exception(1, "The texture is not large enough to fit all widget images.  Please view \"SkinSetImage.png\"", "QuickGUIImageSet");
+				}
 				
 				// Blit to the specified location on the texture
 				buf->blitFromMemory(images.at(i).getPixelBox(),
@@ -178,7 +185,14 @@ namespace QuickGUI
 
 				// Not enough room for all the images!
 				if( next_y > (int)mTexture->getHeight() )
-					throw Ogre::Exception(1, "The texture is not large enough to fit all widget images", "QuickGUIImageSet");
+				{
+					Ogre::Image finalImageSet;
+					finalImageSet.load("QuickGUI.output.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+					buf->blitToMemory(finalImageSet.getPixelBox());
+					finalImageSet.save("SkinSetImage.png");
+
+					throw Ogre::Exception(1, "The texture is not large enough to fit all widget images.  Please view \"SkinSetImage.png\"", "QuickGUIImageSet");
+				}
 				
 				// Blit to the specified location on the texture
 				buf->blitFromMemory(images.at(i).getPixelBox(),
@@ -200,13 +214,11 @@ namespace QuickGUI
 		}
 
 		// Following lines are unnecessary... just puts it out to a file to see :-)
-		/*
-		Ogre::Image finalImageSet;
-		finalImageSet.load("temp.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+/*		Ogre::Image finalImageSet;
+		finalImageSet.load("QuickGUI.output.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 		buf->blitToMemory(finalImageSet.getPixelBox());
 		finalImageSet.save("SkinSetImage.png");
-		*/
-	}
+*/	}
 
 	bool SkinSet::containsImage(Ogre::String textureName)
 	{
