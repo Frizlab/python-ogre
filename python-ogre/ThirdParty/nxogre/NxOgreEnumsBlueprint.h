@@ -49,12 +49,16 @@ namespace NxOgre {
 					FT_NxSphericalJointFlag,
 					FT_NxPulleyJointFlag,
 					FT_NxContactPairFlag,
+
+					#ifndef NX_DISABLE_FLUIDS
 					FT_NxFluidSimulationMethod,
 					FT_NxFluidCollisionMethod,
 					FT_NxFluidFlag,
+					FT_NxFluidEmitterFlag,
+					#endif
+					
 					FT_NxEmitterType,
 					FT_NxEmitterShape,
-					FT_NxFluidEmitterFlag,
 					FT_NxClothFlag,
 					FT_NxForceFieldCoordinates,
 					FT_NxSceneFlags,
@@ -102,12 +106,16 @@ namespace NxOgre {
 				StringList AsNxSphericalJointFlag();
 				StringList AsNxPulleyJointFlag();
 				StringList AsNxContactPairFlag();
+				
+				#ifndef NX_DISABLE_FLUIDS
 				StringList AsNxFluidSimulationMethod();
 				StringList AsNxFluidCollisionMethod();
 				StringList AsNxFluidFlag();
+				StringList AsNxFluidEmitterFlag();
+				#endif
+				
 				StringList AsNxEmitterType();
 				StringList AsNxEmitterShape();
-				StringList AsNxFluidEmitterFlag();
 				StringList AsNxClothFlag();
 				StringList AsNxForceFieldCoordinates();
 				StringList AsNxSceneFlags();
