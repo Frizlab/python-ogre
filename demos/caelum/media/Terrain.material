@@ -1,33 +1,67 @@
-vertex_program HazeVP cg
-{
-	source CaelumShaders.cg
-	entry_point Haze_vp
-	profiles vs_2_0 arbvp1 vp30
-
-	default_params
-	{
-		param_named_auto worldViewProj worldviewproj_matrix
-		param_named_auto camPos camera_position
-	}
-}
-
-fragment_program HazeFP cg
-{
-	source CaelumShaders.cg
-	entry_point Haze_fp
-	profiles ps_2_0 arbfp1 fp30
-
-	default_params
-	{
-		param_named_auto fogColour fog_colour
-	}
-}
-
-material CaelumDemoTerrain
+// Base class for materials in the caelum demo.
+// They have a main pass and additional fog passes.
+// Perhaps might be better to do this at runtime somehow?
+material CaelumDemoBase
 {
 	technique
 	{
-		pass
+	    pass Main
+	    {
+	        fog_override true none
+	    }
+
+	    // Haze pass
+	    pass CaelumHaze
+	    {
+		    vertex_program_ref CaelumHazeVP
+		    {
+		    }
+		    fragment_program_ref CaelumHazeFP
+		    {
+		    }
+
+		    lighting off
+		    scene_blend alpha_blend
+		    fog_override false
+
+		    texture_unit
+		    {
+			    texture AtmosphereDepth.png 1D
+			    tex_address_mode clamp clamp clamp
+		    }
+		    texture_unit
+		    {
+			    texture EarthClearSky2.png
+			    tex_address_mode wrap clamp clamp
+		    }
+	    }
+    	
+	    // Ground fog pass.
+	    pass CaelumGroundFog
+	    {
+		    vertex_program_ref CaelumGroundFogVP
+		    {
+		    }
+    		
+		    fragment_program_ref CaelumGroundFogFP
+		    {
+		    }
+    		
+		    lighting off
+		    //depth_write off
+		    //colour_write off
+		    scene_blend alpha_blend
+	    }
+    }
+}
+
+// Demo terrain material.
+material CaelumDemoTerrain: CaelumDemoBase
+{
+	technique
+	{
+	    // Main terrain pass.
+		pass Main
 		{
 			texture_unit
 			{
@@ -39,31 +73,6 @@ material CaelumDemoTerrain
                 texture terrain_detail.jpg
                 scale 0.1 0.1
             }
-		}
-
-		// Haze pass
-		pass Haze
-		{
-			vertex_program_ref HazeVP
-			{
-			}
-			fragment_program_ref HazeFP
-			{
-			}
-
-			lighting off
-			scene_blend alpha_blend
-
-			texture_unit
-			{
-				texture AtmosphereDepth.png
-				tex_address_mode clamp clamp clamp
-			}
-			texture_unit
-			{
-				texture EarthClearSky2.png
-				tex_address_mode wrap clamp clamp
-			}
 		}
 	}
 }

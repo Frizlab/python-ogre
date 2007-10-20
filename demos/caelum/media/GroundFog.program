@@ -1,0 +1,65 @@
+vertex_program CaelumGroundFogVP cg
+{
+	source CaelumShaders.cg
+	entry_point GroundFog_vp
+	profiles vs_2_x arbvp1 vp30
+	compile_arguments -posinv 
+
+	default_params
+	{
+		param_named_auto worldViewProj worldviewproj_matrix
+		param_named_auto world world_matrix
+	}
+}
+
+fragment_program CaelumGroundFogFP cg
+{
+	source CaelumShaders.cg
+	entry_point GroundFog_fp
+	profiles ps_2_x arbfp1 fp30
+	
+	default_params
+	{
+		param_named_auto camPos camera_position
+		
+		// _auto seems wrong here, since the fog formulas are different than
+		// for standard exp fog.
+		param_named fogDensity float 0
+		param_named fogVerticalDecay float 0
+		param_named fogGroundLevel float 0
+		param_named fogColour float4 0 0 0 0
+	}
+}
+
+vertex_program CaelumGroundFogDomeVP cg
+{
+	source CaelumShaders.cg
+	entry_point GroundFogDome_vp
+	profiles vs_2_0 arbvp1
+	compile_arguments -posinv
+	
+	default_params
+	{
+		param_named_auto worldViewProj worldviewproj_matrix
+	}
+}
+
+fragment_program CaelumGroundFogDomeFP cg
+{
+	source CaelumShaders.cg
+	entry_point GroundFogDome_fp
+	profiles ps_2_0 arbfp1
+
+	default_params
+	{
+		// Fog parameters.
+		param_named fogColour float4 0 0 0 0
+		param_named fogDensity float 0
+		param_named fogVerticalDecay float 0
+		param_named fogGroundLevel float 0
+		
+		// Send camera height. We can't send camera_position because
+		// the entity is always moved with the camera. Joy.
+		param_named cameraHeight float 0
+	}
+}

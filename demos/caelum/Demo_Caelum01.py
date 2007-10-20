@@ -90,15 +90,8 @@ class CaelumSpeedFrameListener(TerrainFrameListener):
         # clamp to terrain
         ret =  TerrainFrameListener.frameStarted(self, frameEvent)
 
-        t = self.caelumSystem.getSun().getSunPositionModel()
-        espm = caelum.castAsEarthSunPositionModel ( t )
-        
-        if espm :
-            espm.setJulianDate (self.caelumSystem.getUniversalClock ().getCurrentRelativeTime ())
-        
-        self.timeTillNextUpdate-= frameEvent.timeSinceLastFrame
-
         ## keyboard input
+        self.timeTillNextUpdate -= frameEvent.timeSinceLastFrame
         if (self.timeTillNextUpdate<= 0):
             if (self.Keyboard.isKeyDown (ois.KC_SPACE)):
                 self.timeTillNextUpdate = 1
@@ -123,11 +116,18 @@ class CaelumSpeedFrameListener(TerrainFrameListener):
                     self.PostFiltering = False
                 else:
                     self.PostFiltering = True
-                ogre.CompositorManager.getSingleton().setCompositorEnabled (self.window.getViewport (0), "Bloom", self.postFiltering)
-
+                ogre.CompositorManager.getSingleton().setCompositorEnabled (self.window.getViewport (0), "Bloom", self.PostFiltering)
+                
+        if self.caelumSystem.getSun():
+            t = self.caelumSystem.getSun().getSunPositionModel()
+            espm = caelum.castAsEarthSunPositionModel ( t )
+            if espm :
+                espm.setJulianDate (self.caelumSystem.getUniversalClock ().getCurrentRelativeTime ())
+        
             ## EXTRA! Update the haze sun light position
             mat =  ogre.MaterialManager.getSingleton().getByName("CaelumDemoTerrain")
-            mat.getTechnique(0).getPass("Haze").getVertexProgramParameters().setNamedConstant("sunDirection", self.caelumSystem.getSun().getSunDirection())
+            if mat:
+                mat.getTechnique(0).getPass("CaelumHaze").getVertexProgramParameters().setNamedConstant("sunDirection", self.caelumSystem.getSun().getSunDirection())
 
         return ret
 
@@ -150,6 +150,11 @@ class TerrainApplication(sf.Application):
         self.root.removeFrameListener(self.frameListener)
         self.frameListener = None
         print "deleted Listeners" 
+        t = self.caelumSystem.getSun().setSunPositionModel(None)
+        print "Sun is None", t
+        t = self.caelumSystem.getSun().getSunPositionModel()
+        print "Sun is None", t
+
 
  
         ## ====================================================================
@@ -207,16 +212,9 @@ class TerrainApplication(sf.Application):
         camera.setNearClipDistance(0.01)
 
         ## Initialise Caelum
-        try:
-            self.caelumSystem = caelum.CaelumSystem(self.root, self.sceneManager
-                                ,createSkyDome=skyDome, createClouds=clouds
-                                )
-        except RuntimeError, e:
-            print "\nError occured when creating the CaelumSystem - do you have a graphics card that supports vertex programs?\n"
-            sys.exit(-1)
-        except:
-            print "Exception Occured:", sys.exc_info()[0]
-            sys.exit(-1)
+        self.caelumSystem = caelum.CaelumSystem(self.root, self.sceneManager )
+#                                 ,createSkyDome=skyDome, createClouds=clouds
+#                                 )
                 
         ## Setup sun position model.
         self.spm = caelum.SimpleSunPositionModel (ogre.Degree (13))
@@ -234,8 +232,8 @@ class TerrainApplication(sf.Application):
         
         ## Basic fogging setup.
         ## This is a hack until proper fogging is implemented.
-        self.caelumSystem.getSkyColourModel().setFogDensityMultiplier(0.0015)
-        self.caelumSystem.setManageFog(True)
+#         self.caelumSystem.getSkyColourModel().setFogDensityMultiplier(0.0015)
+#         self.caelumSystem.setManageFog(True)
         
         ## Setup cloud options
         if clouds:
