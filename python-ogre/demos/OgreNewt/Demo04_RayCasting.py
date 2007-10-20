@@ -3,6 +3,10 @@
 
 #     Demo04_Raycasting - how raycasting in Newton works, implemented with a simple way to drag objects around.
 # */
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
+
 import ogre.renderer.OGRE as Ogre
 import ogre.physics.OgreNewt as OgreNewt
 import ogre.io.OIS as OIS

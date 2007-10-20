@@ -13,6 +13,9 @@
 # /* Static water simulation by eru
 #  * Started 29.05.2003, 20:54:37
 #  */
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
 
 #include "ExampleApplication.h"
 import ogre.renderer.OGRE as Ogre
@@ -32,6 +35,9 @@ MATERIAL_PREFIX ="Examples/Water"
 MATERIAL_NAME ="Examples/Water0"
 COMPLEXITY =64      ## watch out - number of polys is 2*ACCURACY*ACCURACY !
 PLANE_SIZE =3000.0
+
+RAIN_HEIGHT_RANDOM = 5
+RAIN_HEIGHT_CONSTANT = 5
 
 circles_MATERIAL ="Examples/Water/self.circles"
 
@@ -279,12 +285,14 @@ class WaterListener(sf.FrameListener):
         global PLANE_SIZE, COMPLEXITY, RAIN_HEIGHT_RANDOM, RAIN_HEIGHT_CONSTANT
                 
         ## Sorry this isn't currently supported by ogre - haven't exposed Ogre::ParticleIterator
-        return
         
-        
-        pit = self.app.particleSystem._getIterator()  
-        while not pit.end():
-            particle = pit.getNext() 
+# # #         print self.app.particleSystem
+# # #         print dir(self.app.particleSystem)
+# # #         
+# # #         pit = self.app.particleSystem._getIterator()  
+# # #         while not pit.end():
+        for particle in self.app.particleSystem.getParticles():
+# #             particle = pit.getNext() 
             ppos = particle.position 
             if ppos.y<=0 and particle.timeToLive>0 : ## hits the water!:
                 ## delete particle
@@ -302,11 +310,9 @@ class WaterListener(sf.FrameListener):
                 if (y>COMPLEXITY-1):
                     y=COMPLEXITY-1
                 self.WaterMesh.push(x,y,-h)  
-                circle = WaterCircle(
-                    "Circle#"+str(self.pindex),
-                    x, y)
-                self.pindex+=1 
-                self.circles.push_back(circle) 
+#                 circle = self.WaterCircle( "Circle#"+str(self.pindex), x, y)
+#                 self.pindex+=1 
+#                 self.circles.push_back(circle) 
 
 
 

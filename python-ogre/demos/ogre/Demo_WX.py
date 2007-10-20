@@ -9,6 +9,10 @@
 # You may use this sample code for anything you like, it is not covered by the
 # LGPL.
 # -----------------------------------------------------------------------------
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
+
         
 if __name__=="__main__": 
     from OgreWindowWx import *

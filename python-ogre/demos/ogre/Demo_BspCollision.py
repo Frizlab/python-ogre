@@ -14,6 +14,10 @@
 ## Filename:    BspCollision.py
 ## Description: Test the OgreRefApp module
 ## -----------------------------------------------------------------------------
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
+
 
 import ogre.renderer.OGRE as ogre
 import SampleFramework as sf     ## note that we are forcing the OIS sample framework

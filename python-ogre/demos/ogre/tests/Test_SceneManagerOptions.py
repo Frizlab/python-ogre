@@ -32,15 +32,14 @@ class EnvMapApplication(sf.Application):
         ## ShowOctree -- bool
         ret,size = sceneManager.getOption ( 'Size', ogre.AxisAlignedBox() )
         print "Size: ", size
-        ret,depth = sceneManager.getOption ( 'Depth', int(1) )
+        ret,depth = sceneManager.getOption ( 'Depth', 1)
         print "Depth: ", depth
-        ret,value = sceneManager.getOption ( 'ShowOctree', bool(0) )
+        ret,value = sceneManager.getOption ( 'ShowOctree', False )
         print "ShowOctree: ", value
         
         sceneManager.setOption( 'ShowOctree', True)
         sceneManager.setOption( 'Depth',depth)
-        print dir(size)
-        
+       
         size.setMaximum((100,100,100))
         size.setMinimum((0,0,0))
         sceneManager.setOption( 'Size', size)

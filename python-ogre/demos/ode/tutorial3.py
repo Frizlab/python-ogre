@@ -1,6 +1,9 @@
 # pyODE example 3: Collision detection
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
 
-import sys, os, random
+import os, random
 from math import *
 import ogre.physics.ODE as ode
 

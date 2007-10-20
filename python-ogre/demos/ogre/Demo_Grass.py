@@ -18,6 +18,9 @@
 #         use of the StaticGeometry class to create 'baked' instances of
 #       many meshes, to create effects like grass efficiently.
 # **/
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
 
 
 GRASS_HEIGHT = 300
@@ -127,7 +130,8 @@ class GrassListener ( sf.FrameListener ):
 class Grass_Application(sf.Application):
     def __del__( self ):
         ## Fix to stop crashes at exit -- C++ tries to delete vertexData which is ugly if it's a python object
-        self.sm.vertexData=None
+        #self.sm.vertexData=None
+        return
         
     def createGrassMesh(self):
         global GRASS_MESH_NAME
@@ -143,7 +147,7 @@ class Grass_Application(sf.Application):
         sm.useSharedVertices = False 
 
            
-        self.vertexdata = ogre.VertexData() ## Create the VertexData Object
+        self.vertexdata = ogre.createVertexData() ## Create the VertexData Object
         
         ## NOTE the submesh will delete the vertexData when it is destroyed which is BAD -- ie we have C++ specifically
         ## deleting a Python object which makes everything confused..  The fix is to set the submesh vertexData to 
@@ -234,23 +238,43 @@ class Grass_Application(sf.Application):
         sm.indexData.indexCount = 6*3 
         
         sm.indexData.indexBuffer = ogre.HardwareBufferManager.getSingleton().createIndexBuffer(
-                ogre.HardwareIndexBuffer.IT_16BIT, 6*3, ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY) 
+                ogre.HardwareIndexBuffer.IT_16BIT, sm.indexData.indexCount,
+                ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY) 
         
         pointer = sm.indexData.indexBuffer.lock(ogre.HardwareBuffer.HBL_DISCARD)
 
-        buff=[]
+        ## here is one way to do this using a Python-Ogre helper function        
+# #         buff=[]
+# #         for i in range ( 3 ):
+# #             off = i*4 
+# #             buff.append( 0 + off )
+# #             buff.append( 3 + off ) 
+# #             buff.append( 1 + off )
+# #             
+# #             buff.append( 0 + off )
+# #             buff.append( 2 + off )
+# #             buff.append( 3 + off )
+# #             
+# #         # another Python-Ogre helper function to write unsigned ints to a buffer
+# #         ogre.setUint16( pointer, buff )   
+
+        ## Here is a way to do it with ctypes....
+        pVert= ( ctypes.c_uint16 * (sm.indexData.indexCount)).from_address ( ogre.CastInt ( pointer ) ) 
+        index = 0
         for i in range ( 3 ):
-            off = i*4 
-            buff.append( 0 + off )
-            buff.append( 3 + off ) 
-            buff.append( 1 + off )
-            
-            buff.append( 0 + off )
-            buff.append( 2 + off )
-            buff.append( 3 + off )
-            
-        # another Python-Ogre helper function to write unsigned ints to a buffer
-        ogre.setUint16( pointer, buff )    
+            off = i*4
+            pVert[ index ] = 0 + off
+            index +=1
+            pVert[ index ] = 3 + off
+            index +=1
+            pVert[ index ] = 1 + off
+            index +=1
+            pVert[ index ] = 0 + off
+            index +=1
+            pVert[ index ] = 2 + off
+            index +=1
+            pVert[ index ] = 3 + off
+            index +=1
         sm.indexData.indexBuffer.unlock() 
         
         

@@ -14,6 +14,9 @@
 #
 # shows how to create a window with a title etc
 #
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
 
 import ogre.renderer.OGRE as ogre
 import SampleFramework as sf

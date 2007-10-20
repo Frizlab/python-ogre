@@ -1,3 +1,7 @@
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
+
 import ogre.renderer.OGRE as ogre
 import ogre.physics.OgreOde as OgreOde
 import ogre.io.OIS as OIS

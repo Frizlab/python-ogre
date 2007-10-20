@@ -1,9 +1,6 @@
 """
 
 """
-import sys
-sys.path.insert(0,'..')
-import PythonOgreConfig
 
 import ogre.renderer.OGRE as ogre
 import ogre.physics.PhysX as physx
@@ -21,25 +18,52 @@ class NxTutorial ( cf.Cake ):
       
       self.Scene = self.World.createScene("Main", self.SceneMgr,"gravity: yes, floor: yes") 
       
-      self.Scene.createBody("capsule.50cmx1m.mesh",nxogre.CapsuleShape(0.5,1),  ogre.Vector3(0,2,0), "mass: 10" )
+      pose = nxogre.Pose(ogre.Vector3(0,1,0), ogre.Quaternion(0,0,0,0)) #,arg1=quat)
+      self.bodymesh = nxogre.TriangleMeshShape ("racecar.mesh",  "mass: 20" )
 
-      self.myCuboid= self.Scene.createBody("", 
-            nxogre.CubeShape(1,2,1), 
-                nxogre.Pose(
-                    ogre.Vector3(4,0.5,0),                          ## Offset it.
-                    ogre.Quaternion(0.92388, -0.382683, -0, -0)     ## Rotate it (-45 Degrees on the X axis)
-                    )
-                ,
-            "mass: 10"
-        )
+      self.cab = self.Scene.createBody("racecar.mesh", self.bodymesh, pose,  "mass: 10" )
+      self.cab.setAngularDamping(0.7)
+      
+      wheelmeshname = "wheel50cmx10cmx50cm.mesh"
+                    
+      self.wheelset = nxogre.WheelSet().createFourWheelSet ( self.cab, 
+                    frontLeft = (0.5,.6,0.8), 
+                    backLeft=(0.5,.6,-1),
+                    radius = 0.5 )
+      self.wheels = self.wheelset.mWheels
 
-#       print dir( self.myCuboid )
-#       self.myCuboid.addShape("cube.1m-2m-1m.mesh") #, 
-# #             nxogre.Pose(                                                
-# #                 ogre.Vector3(4,0.5,0),
-# #                 ogre.Quaternion(0.92388, -0.382683, -0, -0)
-# #             )
-# #         )
+            
+      print "\n\n", self.wheels,"\n",\
+                dir(self.wheels),"\n",\
+                self.wheels.count(),"\n",\
+                self.wheels.items
+      print self.wheels.items
+      print dir(self.wheels.items)
+      for i in self.wheels.items:
+        i.springRestitution = 7000000
+        i.springDamping = 800
+        i.springBias = 10000
+      print dir ( i)
+#  wheelDesc.wheelApproximation = 10;
+# 	wheelDesc.wheelRadius = 0.5;
+# 	wheelDesc.wheelWidth = 0.1;
+# 	wheelDesc.wheelSuspension = 0.2;
+# 	wheelDesc.springRestitution = 7000;
+# 	wheelDesc.springDamping = 800;
+# 	wheelDesc.springBias = 0;
+# 	wheelDesc.maxBrakeForce = 1;
+# 	wheelDesc.frictionToFront = 0.1;
+# 	wheelDesc.frictionToSide = 0.99;
+# 	wheelDesc.position = NxVec3(0,-0.4,0);
+# 	wheelDesc.wheelFlags = NX_WF_USE_WHEELSHAPE | NX_WF_BUILD_LOWER_HALF | NX_WF_ACCELERATED | 
+# 		                   NX_WF_AFFECTED_BY_HANDBRAKE | NX_WF_STEERABLE_INPUT | NX_WF_BUILD_LOWER_HALF;        
+      
+#       self.driveshaft = nxogre.DriveShaft ( "driveshaft", self.Scene, self.wheels )
+#       
+      self.wheelset.addMeshes (wheelmeshname )
+#       self.wheelset.attachDriveShaft ( self.driveshaft )
+            
+      self.motor = nxogre.Motor ("motor", self.Scene, self.wheels )
 
    ##////////////////////////////////////////////////////////////////////////////////////////////////
    def stop(self):

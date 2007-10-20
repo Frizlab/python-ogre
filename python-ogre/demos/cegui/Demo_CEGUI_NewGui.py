@@ -15,13 +15,16 @@
 ###
 ###  This is a blank template to make it easier to convert existing samples
 ###
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
 
 import ogre.renderer.OGRE as ogre
 import ogre.gui.CEGUI as CEGUI
 import ogre.io.OIS as OIS
 import SampleFramework
 
-import sys, exceptions, random
+import exceptions, random
 
 from CEGUI_framework import *   ## we need the OIS version of the framelistener etc
 

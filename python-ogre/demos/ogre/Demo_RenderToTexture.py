@@ -10,6 +10,9 @@
 # LGPL.
 # -----------------------------------------------------------------------------
 import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
+
 import ogre.renderer.OGRE as ogre
 
 import SampleFramework as sf

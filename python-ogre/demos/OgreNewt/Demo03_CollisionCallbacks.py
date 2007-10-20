@@ -6,6 +6,10 @@
 #   material callbacks to create hot spots, or make sound effects, or spawn particles, etc.  this example
 #   uses a conveyor belt as an example.  look at the conveyorMatCallback to see how it's implemented.
 # */
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
+
 import ogre.renderer.OGRE as Ogre
 import ogre.physics.OgreNewt as OgreNewt
 import ogre.io.OIS as OIS

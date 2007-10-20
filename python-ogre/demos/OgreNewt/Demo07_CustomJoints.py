@@ -3,6 +3,9 @@
 #   Demo07_CustomJoints - basic demo that shows a simple OgreNewt world, and how
 #   to setup basic rigid bodies.
 # 
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
 
 import ogre.renderer.OGRE as Ogre
 import ogre.physics.OgreNewt as OgreNewt

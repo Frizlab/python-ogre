@@ -16,6 +16,9 @@
 ## Currently it uses the Ogre Intersection Query functions will be cleaned up and
 ## replaced with Opcode to see if there is a performance difference
 ##
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
 
 import ogre.renderer.OGRE as ogre
 import SampleFramework as sf
