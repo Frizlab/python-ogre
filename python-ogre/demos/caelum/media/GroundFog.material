@@ -1,0 +1,49 @@
+// Sample base material for using CaelumGroundFog.
+material CaelumGroundFogBase
+{
+	technique Default
+	{
+		pass Main
+		{
+			fog_override true none
+		}
+	
+		// Fog pass
+		pass CaelumGroundFog
+		{
+			vertex_program_ref CaelumGroundFogVP
+			{
+			}
+			
+			fragment_program_ref CaelumGroundFogFP
+			{
+			}
+			
+			scene_blend alpha_blend
+		}
+	}
+}
+
+material CaelumGroundFogDome
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			depth_check off
+			depth_write off
+			fog_override true
+			scene_blend alpha_blend
+			cull_hardware none
+
+			vertex_program_ref CaelumGroundFogDomeVP
+			{
+			}
+			
+			fragment_program_ref CaelumGroundFogDomeFP
+			{
+			}
+		}
+	}
+}

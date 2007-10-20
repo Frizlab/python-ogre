@@ -1,3 +1,16 @@
+October 20 2007: Version 1.1.b  SnapShot
+========================================
+* Fixed Caelum demo
+
+October 19 2007: Version 1.1.a  SnapShot
+========================================
+* Significant fixes to Bullet and OgreBullet modules
+* Added Caelum - "Sky" module
+* Updated QuickGui
+* Additions to Ogre Wrapper
+    setOptions and getOptions work
+
+
 October 05 2007: Version 1.1 Release
 ====================================
 * Built with Ogre 1.4.4+
