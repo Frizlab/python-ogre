@@ -10,6 +10,8 @@
 # LGPL.
 # -----------------------------------------------------------------------------
 import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
 import time
 
 import ogre.renderer.OGRE as ogre

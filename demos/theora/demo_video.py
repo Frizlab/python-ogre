@@ -9,7 +9,11 @@
 # You may use this sample code for anything you like, it is not covered by the
 # LGPL.
 # -----------------------------------------------------------------------------
-import os,sys
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
+
+import os
 
 if sys.platform == 'win32': 
     newpath = os.path.join ( os.path.abspath(os.path.dirname(__file__)), '../../plugins')

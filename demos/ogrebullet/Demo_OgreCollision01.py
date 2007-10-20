@@ -4,6 +4,9 @@
 ## It uses the Ogre Intersection Query functions with the intention of extending it
 ## to use Opcode to see if there is a performance difference
 ##
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
 
 import ogre.renderer.OGRE as ogre
 import ogre.physics.OgreBulletC as bulletC
@@ -98,26 +101,30 @@ class OgreCollideListener(sf.FrameListener):
         self.numBoxes = num
         self.sceneManager = sm
         self.parent = app
-        self.CreateBoxes ( num )
         self.frametime = 0
         self.entitiesInstanced = 0
         self.paused = False
         self.doOnestep = False
+        self.entities =[]
+        self.shapes=[]
+        self.bodies=[]
+        self.CreateBoxes ( num )
         
     def frameStarted(self, frameEvent):
         """ called each frame (at the start), check if it's time to do collision checking and 
         if so do it, otherwise pass through"""
         self.frametime += frameEvent.timeSinceLastFrame 
-               
+        print dir (self.parent.world.getBulletCollisionWorld()       )
+        sys.exit()
         # for performance reasons lets check for collisions about 5 times a second 
         if self.frametime > 0.2:
             self.ResetBoxes()
             if BULLET:
                 if not ( self.paused or self.doOnestep):
                     self.parent.world.getBulletCollisionWorld().performDiscreteCollisionDetection()
-                    objs = self.parent.world.getBulletCollisionWorld().getCollidingObjects()
-                    if len(objs) > 0:
-                        print "Colliding", objs
+#                     objs = self.parent.world.getBulletCollisionWorld().getCollidingObjects()
+#                     if len(objs) > 0:
+#                         print "Colliding", objs
             else:
                 self.intersectSceneQuery.execute( self.querylistener )
             self.frametime = 0
@@ -131,43 +138,44 @@ class OgreCollideListener(sf.FrameListener):
         
         
 ## -------------------------------------------------------------------------
-    def addCube(self, instanceName,pos, q, size,
+    def addCube( self, instanceName, pos, q, size,
+                    mesh = "WoodPallet.mesh",
+                    material = "WoodPallet",
                     bodyRestitution=0, bodyFriction=0, bodyMass=0) :
                     
         entity = self.sceneManager.createEntity(
             instanceName + str(self.entitiesInstanced),
-            "bulletbox.mesh")
-        ## "Crate.mesh");
-        ## "Crate1.mesh");
-        ## "Crate2.mesh");
-    
-    
+            mesh)
+      
         entity.setQueryFlags ( 1<<2 ) ##GEOMETRY_QUERY_MASK)
         entity.setNormaliseNormals(True)
         entity.setCastShadows(True)
     
-        entity.setMaterialName("Bullet/box")
+        entity.setMaterialName(material)
     
         sceneCubeShape = bulletC.BoxCollisionShape(size)
     
         ## if we want dynamics we do this
 #         defaultBody = bulletD.RigidBody(
-#             "defaultCubeRigid" + StringConverter::toString(mNumEntitiesInstanced), 
+#             "defaultCubeRigid" + StringConverter::toString(mNumentitiesInstanced), 
 #             mWorld);
+
         ## it's just collisions so this
         defaultBody = bulletC.Object(
-            "defaultCubeRigid" + str(self.entitiesInstanced), 
-            self.World)
+            "BulletCube" + str(self.entitiesInstanced), 
+            self.parent.world, True)
         defaultBody.setShape ( sceneCubeShape, pos, q);
         
-        node = self.sceneMananger.getRootSceneNode ().createChildSceneNode ()
+# #         node = self.parent.sceneManager.getRootSceneNode ().createChildSceneNode ()
+        node = defaultBody.getRootNode()
+        
         node.attachObject (entity)
-        node.attachObject(defaultBody)
-        
-        self.Entities.append(entity)
-        self.Shapes.append(sceneCubeShape)
-        self.Bodies.append(defaultBody)
-        
+        ##node.attachObject(defaultBody)
+        self.nodes.append ( node )
+        self.entities.append(entity)
+        self.shapes.append(sceneCubeShape)
+        self._bodies.append(entity) # defaultBody)
+                        
         self.entitiesInstanced+=1
         return defaultBody;
     
@@ -180,6 +188,8 @@ class OgreCollideListener(sf.FrameListener):
         self.nodes = []
         self._shapes = []
         self._bBodies = []
+        self.objects=[]
+        self.shapes=[]
         self.mSpeed = .000001
         self.mAmplitude = .5
         for i in range ( self.numBoxes ):
@@ -187,12 +197,6 @@ class OgreCollideListener(sf.FrameListener):
             name = "object" + str(i)
             entityname = names[i % len(names)]
             
-            entity = self.sceneManager.createEntity(name, entityname + ".mesh")
-            
-            node = self.sceneManager.getRootSceneNode().createChildSceneNode(name)
-            node.attachObject(entity)
-            entity.setNormaliseNormals(True)
-            entity.setCastShadows(True)
             ## Pick a size
             scale= 100
             size = ogre.Vector3((random.random() * 0.5 + 0.1) * scale,
@@ -201,31 +205,40 @@ class OgreCollideListener(sf.FrameListener):
             position = ogre.Vector3((random.random() -0.5 ) * 800.0,
                         (random.random() - 0.5 ) * 500.0,
                         (random.random() - 0.5 ) * 800.0)
-                   
+            q = ogre.Quaternion(0,0,0,1)
+            
+# # # # #             entity = self.addCube ( name, position, q, size ) 
+# # # # #             node = entity.getRootNode()
+#             
+            entity = self.sceneManager.createEntity(name, entityname + ".mesh")
+            
+#             entity.setQueryFlags ( 1<<2 ) ##GEOMETRY_QUERY_MASK)
+            entity.setNormaliseNormals(True)
+            entity.setCastShadows(True)
+    
+# # # #             entity.setMaterialName(material)
+            
+
             if BULLET:
                 shape = bulletC.MeshToShapeConverter( entity )
-                if entityname == 'WoodPallet':
+                if entityname == 'WoodPalletNONE':
                     shape = shape.createBox()
                 else:
                     shape = shape.createCylinder()
-                    
-                ## this creates an object with a MainRootNode and a child noe containing the shape
-                ## probably could attach the entity to this and us it but going to do it backwards..
+
+                shape = bulletC.BoxCollisionShape(size)                    
                 bBody = bulletC.Object( "BulletObject" + str(i), self.parent.world, True)
-                bBody.setShape ( shape, position, ogre.Quaternion(0,0,0,1))
-                
-                # detach from parent (as it's connected to the SceneManger Root node)
-                bBody.getRootNode().getParent().removeChild( bBody.getRootNode() )
-                # and attach it to our node..
-                node.addChild ( bBody.getRootNode() )
-                self._shapes.append ( shape )     
-                self._bBodies.append ( bBody )
+                bBody.setShape ( shape, position, q)
+                node = bBody.getRootNode() ##self.sceneManager.getRootSceneNode().createChildSceneNode()
+                node.attachObject(entity)
                 self.parent.world.addObject ( bBody )
             node.setScale (size.x * 0.1,size.y * 0.1,size.z * 0.1) 
             node.setPosition (position)
             # we need access to the entity and nodes to reset the material           
-            self._bodies.append ( entity)
-            self.nodes.append( node)
+            self._bodies.append (entity)
+            self.nodes.append( node )
+            self.objects.append (bBody)
+            self.shapes.append ( shape )
             self.mBoxTime.append ( 10.0*random.random() )
         
     def ResetBoxes(self):
@@ -242,15 +255,15 @@ class OgreCollideListener(sf.FrameListener):
         for i in range ( self.numBoxes):
             self.mBoxTime[i] += timesincelastframe * 0.001 # self.mSpeed
             Center = ogre.Vector3()
-            n = self.nodes[i]
+            n = self.objects[i]
             Center.x = cos(self.mBoxTime[i]*2.17)*self.mAmplitude + sin(self.mBoxTime[i])*self.mAmplitude*0.5
             Center.y = cos(self.mBoxTime[i]*1.38)*self.mAmplitude + sin(self.mBoxTime[i]*self.mAmplitude)
             Center.z = sin(self.mBoxTime[i]*0.777)*self.mAmplitude
-            pos = n.Position
+            pos = n.getRootNode().Position
             pos.x += Center.x
             pos.y += Center.y
             pos.z += Center.y
-            n.Position = pos
+            n.setPosition (pos)
             
     
 if __name__ == '__main__':

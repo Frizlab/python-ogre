@@ -1,4 +1,7 @@
 # pyODE example 1: Getting started
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
 
 import ogre.physics.ODE as ode
 

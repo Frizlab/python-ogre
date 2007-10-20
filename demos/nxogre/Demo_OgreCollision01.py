@@ -4,24 +4,29 @@
 ## It uses the Ogre Intersection Query functions with the intention of extending it
 ## to use Opcode to see if there is a performance difference
 ##
-
 import sys
 sys.path.insert(0,'..')
 import PythonOgreConfig
 
 import ogre.renderer.OGRE as ogre
-import ogre.physics.ODE as ode
-
+import ogre.physics.OgreBulletC as bulletC
+import ogre.physics.bullet as bullet
 import SampleFramework as sf
-import random, sys
+import random
 from math import *
 
-NUMBOXES=300
-TypeOgre=0
-TypeODE=1
+BULLET = True
+NXOGRE = False
 
-AppType =  TypeODE
-          
+# enum QueryFlags
+# {
+# 	ANY_QUERY_MASK					= 1<<0,
+# 	RAGDOLL_QUERY_MASK				= 1<<1,
+# 	GEOMETRY_QUERY_MASK				= 1<<2,
+# 	VEHICLE_QUERY_MASK				= 1<<3,
+# 	STATIC_GEOMETRY_QUERY_MASK		= 1<<4
+# };
+           
 class OgreCollideApplication(sf.Application):
     #
     # first lets create a nice scene with a floor plane (that also get's collided
@@ -31,6 +36,8 @@ class OgreCollideApplication(sf.Application):
         ## Set ambient light
         sceneManager.setAmbientLight ( (0.6, 0.6, 0.6) )
         
+#         sceneManager.setWorldGeometry('terrain.cfg')
+
         ## Create a skydome
         sceneManager.setSkyDome (True, "Examples/CloudySky",5,8)
         light = sceneManager.createLight('MainLight')
@@ -52,15 +59,20 @@ class OgreCollideApplication(sf.Application):
         cameraNode.attachObject(self.camera)
         
         # how many barrels and pallets do we want        
-        self.numBoxes = NUMBOXES
+        self.numBoxes = 300
+        if BULLET:
+            bounds = ogre.AxisAlignedBox  ((-1000, -1000, -1000),(1000,  1000,  1000))
+            self.world = bulletC.CollisionsWorld(self.sceneManager, bounds )
             
     # we need a framelistener to make life easy    
     def _createFrameListener(self):
-        self.frameListener = OgreCollideListener(self.renderWindow, self.camera, self.sceneManager, self.numBoxes)
+        self.frameListener = OgreCollideListener(self.renderWindow, self.camera, self.sceneManager, self.numBoxes, self)
         self.root.addFrameListener(self.frameListener)
+        
+#     def _chooseSceneManager(self):
+#         self.sceneManager = self.root.createSceneManager("TerrainSceneManager")
  
-         
-             
+               
 class OgreCollideQueryListener(ogre.IntersectionSceneQueryListener):
     """ the listener that gets called for each pair of intersecting objects """   
     def __init__ ( self ):
@@ -78,99 +90,73 @@ class OgreCollideQueryListener(ogre.IntersectionSceneQueryListener):
 class OgreCollideListener(sf.FrameListener):
     """ the frame listener we are using"""
     
-    def __init__(self, renderWindow, camera, sm, num):
+    def __init__(self, renderWindow, camera, sm, num, app):
         sf.FrameListener.__init__(self, renderWindow, camera)
-        # Create an intersection query
-        self.intersectSceneQuery =  sm.createIntersectionQuery()
-        # and a listener to receive the results
-        self.querylistener = OgreCollideQueryListener()
+        if not BULLET:
+            # Create an intersection query
+            self.intersectSceneQuery =  sm.createIntersectionQuery()
+            # and a listener to receive the results
+            self.querylistener = OgreCollideQueryListener()
         
         # I then create a range of crates and barrels to test with
         self.numBoxes = num
         self.sceneManager = sm
+        self.parent = app
         self.CreateBoxes ( num )
         self.frametime = 0
-        
-        if AppType == TypeODE:
-            self.SetupODE()
-        
-    def SetupODE(self):
-        # Create a world object
-        self.world = ode.dWorld()
-        self.world.setGravity( 0,-9.81,0 )
-        self.world.setERP(0.8)
-        self.world.setCFM(1E-5)
-        
-        # Create a space object
-        self.space = ode.CreateSimpleSpace()
-        
-        # Create a plane geom which prevent the objects from falling forever
-        self.floor = ode.dPlane(space.id(), 0.0, 1.0, 0.0, 0.0)
-        
-        # A list with ODE bodies
-        self.odebodies = []
-        
-        # A joint group for the contact joints that are generated whenever
-        # two bodies collide
-        self.contactgroup = ode.dJointGroup()  
+        self.entitiesInstanced = 0
+        self.paused = False
+        self.doOnestep = False
         
     def frameStarted(self, frameEvent):
         """ called each frame (at the start), check if it's time to do collision checking and 
         if so do it, otherwise pass through"""
         self.frametime += frameEvent.timeSinceLastFrame 
-        
-        if AppType == TypeOgre:
-            # for performance reasons lets check for collisions about 5 times a second 
-            if self.frametime > 0.2:
-                self.ResetBoxes()
+               
+        # for performance reasons lets check for collisions about 5 times a second 
+        if self.frametime > 0.2:
+            self.ResetBoxes()
+            if BULLET:
+                if not ( self.paused or self.doOnestep):
+                    print dir(self.parent.world.getBulletCollisionWorld())
+                    
+                    self.parent.world.getBulletCollisionWorld().performDiscreteCollisionDetection()
+#                     self.parent.world.getBulletCollisionWorld().performBroadCollisionDetection()
+                    print "##"
+                   
+#                     objs = self.parent.world.getBulletCollisionWorld().getCollidingObjects()
+#                     if len(objs) > 0:
+#                         print "Colliding", objs
+            else:
                 self.intersectSceneQuery.execute( self.querylistener )
-                self.frametime = 0
-        elif AppType == TypeODE:
-            # Detect collisions and create contact joints 
-            self.space.collide((self.world,self.contactgroup), self, "ODE_callback") 
-    
-            # Simulation step 
-            self.world.step(self.frametime) 
-    
-            # Remove all contact joints 
-            contactgroup.empty()         
+            self.frametime = 0
         return sf.FrameListener.frameStarted(self, frameEvent)
         
-    # Collision callback
-    def ODE_callback(self,args, geom1, geom2):
-        """Callback function for the collide() method.
-    
-        This function checks if the given geoms do collide and
-        creates contact joints if they do.
-        """
-        # Check if the objects do collide
-        contacts = ode.dCollide(geom1, geom2)
-        # Create contact joints
-        world,contactgroup = args
-        for c in contacts:
-            c.setBounce(0.2)
-            c.setMu(5000)
-            j = ode.ContactJoint(world, contactgroup, c)
-            j.attach(geom1.getBody(), geom2.getBody())
-            
     def frameEnded ( self, ev ):
         """and at the end of the frame we update the objects positions in preparation for the 
         next frame"""
         self.UpdateBoxes(ev.timeSinceLastFrame)
         return sf.FrameListener.frameEnded(self, ev)
         
+        
+            
     def CreateBoxes (self, num):
         self.numBoxes=num
         self._bodies=[]
         names = ['WoodPallet','Barrel']
         self.mBoxTime = []   #new float[mNbBoxes]
         self.nodes = []
+        self._shapes = []
+        self._bBodies = []
         self.mSpeed = .000001
         self.mAmplitude = .5
         for i in range ( self.numBoxes ):
             ## Create the visual representation (the Ogre entity and scene node)
             name = "object" + str(i)
-            entity = self.sceneManager.createEntity(name, names[i % len(names)] + ".mesh")
+            entityname = names[i % len(names)]
+            
+            entity = self.sceneManager.createEntity(name, entityname + ".mesh")
+            
             node = self.sceneManager.getRootSceneNode().createChildSceneNode(name)
             node.attachObject(entity)
             entity.setNormaliseNormals(True)
@@ -184,9 +170,27 @@ class OgreCollideListener(sf.FrameListener):
                         (random.random() - 0.5 ) * 500.0,
                         (random.random() - 0.5 ) * 800.0)
                    
+            if BULLET:
+                shape = bulletC.MeshToShapeConverter( entity )
+                if entityname == 'WoodPallet':
+                    shape = shape.createBox()
+                else:
+                    shape = shape.createCylinder()
+                    
+                ## this creates an object with a MainRootNode and a child noe containing the shape
+                ## probably could attach the entity to this and us it but going to do it backwards..
+                bBody = bulletC.Object( "BulletObject" + str(i), self.parent.world, True)
+                bBody.setShape ( shape, position, ogre.Quaternion(0,0,0,1))
+                
+                # detach from parent (as it's connected to the SceneManger Root node)
+                bBody.getRootNode().getParent().removeChild( bBody.getRootNode() )
+                # and attach it to our node..
+                node.addChild ( bBody.getRootNode() )
+#                 self._shapes.append ( shape )     
+#                 self._bBodies.append ( bBody )
+                self.parent.world.addObject ( bBody )
             node.setScale (size.x * 0.1,size.y * 0.1,size.z * 0.1) 
             node.setPosition (position)
-            
             # we need access to the entity and nodes to reset the material           
             self._bodies.append ( entity)
             self.nodes.append( node)

@@ -9,6 +9,10 @@
 # You may use this sample code for anything you like, it is not covered by the
 # LGPL.
 # -----------------------------------------------------------------------------
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
+
 import ogre.renderer.OGRE as ogre
 import ogre.video as OgreDshow 
 import SampleFramework as sf

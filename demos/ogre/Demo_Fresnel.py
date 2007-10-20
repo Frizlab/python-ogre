@@ -14,6 +14,9 @@ NUM_FISH = 50
 NUM_FISH_WAYPOINTS= 10
 FISH_PATH_LENGTH=200 
 FISH_SCALE=1.2
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
 
 import ogre.renderer.OGRE as ogre
 import SampleFramework as sf

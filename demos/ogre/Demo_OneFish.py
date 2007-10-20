@@ -8,6 +8,10 @@
 # please feel free to distribute as part of python-ogre demos    -PythonOgreUser101-
 # improving python-ogre one demo at a time
 
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
+
 
 import ogre.renderer.OGRE as ogre
 import SampleFramework

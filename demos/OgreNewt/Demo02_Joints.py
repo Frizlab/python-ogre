@@ -3,6 +3,9 @@
 
 #   Demo02_Joints - basic demo that shows how to connect rigid bodies via joints.
 # */
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
 
 import ogre.renderer.OGRE as Ogre
 import ogre.physics.OgreNewt as OgreNewt

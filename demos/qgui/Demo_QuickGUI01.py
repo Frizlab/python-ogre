@@ -18,6 +18,9 @@
 ## Description: A place for me to try out stuff with OGRE.
 ## -----------------------------------------------------------------------------
 ## */
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
 
 import ogre.renderer.OGRE as Ogre
 import ogre.io.OIS as ois
@@ -65,13 +68,13 @@ class GuiFrameListener ( sf.FrameListener, ois.MouseListener, ois.KeyListener ):
         if( self.mGUIManager != None ) :
             self.mGUIManager .injectTime(evt.timeSinceLastFrame)
 
-#         if(self.mouseOverTB != None):
-#             self.mouseOverTB.setText(self.mGUIManager.getMouseOverWidget().getInstanceName())
-#         
-#         if(self.debugTB == None):
-#             self.debugTB = self.mGUIManager.getActiveSheet().getTextBox("DebugTextBox") 
-#         else:
-#             self.debugTB.setText(self.mGUIManager.getDebugString()) 
+        if(self.mouseOverTB != None):
+            self.mouseOverTB.setText(self.mGUIManager.getMouseOverWidget().getInstanceName())
+        
+        if(self.debugTB == None):
+            self.debugTB = self.mGUIManager.getActiveSheet().getChildWidget("DebugTextBox") 
+        else:
+            self.debugTB.setText(self.mGUIManager.getMouseOverWidget().getOffset()) 
     
         return sf.FrameListener.frameStarted(self,evt)
 
@@ -176,23 +179,23 @@ class QuickGUIDemoApp (sf.Application):
 
         self.camera.setPosition(0,125,500)
         self.camera.pitch(Ogre.Radian(Ogre.Degree(-15)))
-
-        ## Setup Render To Texture for preview window
-        self.rttTex = self.root.getRenderSystem().createRenderTexture( "self.rttTex",\
-                        512, 512, Ogre.TextureType.TEX_TYPE_2D, Ogre.PixelFormat.PF_R8G8B8 )
-        ## From CEGUI example.  The camera position doesn't fit the robot setup, so I changed it some.
-        rttCam = self.sceneManager.createCamera("RttCam")
-        camNode = self.sceneManager.getRootSceneNode().createChildSceneNode("rttCamNode")
-        camNode.attachObject(rttCam)
-        rttCam.setPosition(0,75,225)
-        ##rttCam.setVisible(True)
-
-        v = self.rttTex.addViewport( rttCam )
-        ## Alternatively, use the main camera for the self.rttText, imitating the main screen
-        ##Viewport *v = self.rttTex.addViewport( self.camera )
-        v.setOverlaysEnabled( False )
-        v.setClearEveryFrame( True )
-        v.setBackgroundColour( Ogre.ColourValue.Black )
+# 
+#         ## Setup Render To Texture for preview window
+#         self.rttTex = self.root.getRenderSystem().createRenderTexture( "self.rttTex",\
+#                         512, 512, Ogre.TextureType.TEX_TYPE_2D, Ogre.PixelFormat.PF_R8G8B8 )
+#         ## From CEGUI example.  The camera position doesn't fit the robot setup, so I changed it some.
+#         rttCam = self.sceneManager.createCamera("RttCam")
+#         camNode = self.sceneManager.getRootSceneNode().createChildSceneNode("rttCamNode")
+#         camNode.attachObject(rttCam)
+#         rttCam.setPosition(0,75,225)
+#         ##rttCam.setVisible(True)
+# 
+#         v = self.rttTex.addViewport( rttCam )
+#         ## Alternatively, use the main camera for the self.rttText, imitating the main screen
+#         ##Viewport *v = self.rttTex.addViewport( self.camera )
+#         v.setOverlaysEnabled( False )
+#         v.setClearEveryFrame( True )
+#         v.setBackgroundColour( Ogre.ColourValue.Black )
 
         self.mGUIManager = gui.GUIManager(self.camera.getViewport()) 
         self.mGUIManager.setSceneManager(self.sceneManager) 
@@ -214,53 +217,53 @@ class QuickGUIDemoApp (sf.Application):
         self.mSheet.setDefaultFont ("acmesa.12")
                     
         ## Main Menu and it's MenuLists
-        topMenu = self.mSheet.createMenu() 
-        topMenu.setDimensions(Rect(0,0,800,25))
-        
-        fileList = topMenu.addMenuList("File",0,60)
-        exitListItem = fileList.addListItem("Exit")
-        exitListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback (self.evtHndlr_exitListItem ) )
-        
-        testList = topMenu.addMenuList("Tests",60,160) 
-        pointListItem = testList.addListItem("Main Page") 
-        pointListItem.addImage(Rect(0,0,12,25),"pointmode.png") 
-        pointListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_CameraPoint) )
-        
-        wireframeListItem = testList.addListItem("Position/Size Test") 
-        wireframeListItem.addImage(Rect(0,0,12,25),"wireframemode.png") 
-        wireframeListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_CameraWireFrame) )
-        
-        solidListItem = testList.addListItem("Solid") 
-        solidListItem.addImage(Rect(0,0,12,25),"solidmode.png") 
-        solidListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_CameraSolid) )
-
-        barColorList = topMenu.addMenuList("Progress Bar Color",220,200) 
-        redListItem = barColorList.addListItem("Red") 
-        redListItem.addImage(Rect(20,0,160,20),"listitem.red.png") 
-        redListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_pbRed) )
-        
-        greenListItem = barColorList.addListItem("Green") 
-        greenListItem.addImage(Rect(20,0,160,20),"listitem.green.png") 
-        greenListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_pbGreen) )
-         
-        blueListItem = barColorList.addListItem("Blue") 
-        blueListItem.addImage(Rect(20,0,160,20),"listitem.blue.png") 
-        blueListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_pbBlue) )
-
-        otherList = topMenu.addMenuList("Other",420,200) 
-        textColorListItem = otherList.addListItem("Text Color") 
-        textColorListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_setTextWhite) )
-        
-        tcProperties = textColorListItem.addNStateButton(Rect(170,2.5,15,15)) 
-        tcProperties.addState("OpenProperties","properties.png") 
-        tcProperties.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_showSetTextDialog) )
-        
-        RenderStatsListItem = otherList.addListItem("Render Stats") 
-        toggleRenderStats = RenderStatsListItem.addNStateButton(Rect(170,2.5,15,15)) 
-        toggleRenderStats.addState("checked","qgui.unchecked.png") 
-        toggleRenderStats.addState("unchecked","qgui.checked.png") 
-        toggleRenderStats.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_toggleDebugDisplay))
-
+#         topMenu = self.mSheet.createMenu() 
+#         topMenu.setDimensions(Rect(0,0,800,25))
+#         
+#         fileList = topMenu.addMenuList("File",0,60)
+#         exitListItem = fileList.addListItem("Exit")
+#         exitListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback (self.evtHndlr_exitListItem ) )
+#         
+#         testList = topMenu.addMenuList("Tests",60,160) 
+#         pointListItem = testList.addListItem("Main Page") 
+#         pointListItem.addImage(Rect(0,0,12,25),"pointmode.png") 
+#         pointListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_CameraPoint) )
+#         
+#         wireframeListItem = testList.addListItem("Position/Size Test") 
+#         wireframeListItem.addImage(Rect(0,0,12,25),"wireframemode.png") 
+#         wireframeListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_CameraWireFrame) )
+#         
+#         solidListItem = testList.addListItem("Solid") 
+#         solidListItem.addImage(Rect(0,0,12,25),"solidmode.png") 
+#         solidListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_CameraSolid) )
+# 
+#         barColorList = topMenu.addMenuList("Progress Bar Color",220,200) 
+#         redListItem = barColorList.addListItem("Red") 
+#         redListItem.addImage(Rect(20,0,160,20),"listitem.red.png") 
+#         redListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_pbRed) )
+#         
+#         greenListItem = barColorList.addListItem("Green") 
+#         greenListItem.addImage(Rect(20,0,160,20),"listitem.green.png") 
+#         greenListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_pbGreen) )
+#          
+#         blueListItem = barColorList.addListItem("Blue") 
+#         blueListItem.addImage(Rect(20,0,160,20),"listitem.blue.png") 
+#         blueListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_pbBlue) )
+# 
+#         otherList = topMenu.addMenuList("Other",420,200) 
+#         textColorListItem = otherList.addListItem("Text Color") 
+#         textColorListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_setTextWhite) )
+#         
+#         tcProperties = textColorListItem.addNStateButton(Rect(170,2.5,15,15)) 
+#         tcProperties.addState("OpenProperties","properties.png") 
+#         tcProperties.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_showSetTextDialog) )
+#         
+#         RenderStatsListItem = otherList.addListItem("Render Stats") 
+#         toggleRenderStats = RenderStatsListItem.addNStateButton(Rect(170,2.5,15,15)) 
+#         toggleRenderStats.addState("checked","qgui.unchecked.png") 
+#         toggleRenderStats.addState("unchecked","qgui.checked.png") 
+#         toggleRenderStats.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_toggleDebugDisplay))
+# 
         ## Logos
         logoImage = self.mSheet.createImage()
         logoImage.setDimensions(Rect(16,42,240,180))
@@ -389,17 +392,34 @@ class QuickGUIDemoApp (sf.Application):
         
         colorCB = self.stWindow.createComboBox()
         colorCB.setDimensions(Rect(125,30,100,30))
-        colorCBdropList = colorCB.getDropDownList()
-        colorCBdropList.setNumberOfVisibleItems(6) 
         
-        colorCBdropList.addListItem("Red")
-        colorCBdropList.addListItem("Green")
-        colorCBdropList.addListItem("Blue")
-        colorCBdropList.addListItem("Black")
-        colorCBdropList.addListItem("White") 
-        colorCBdropList.addListItem("Yellow") 
-        colorCBdropList.addListItem("Purple") 
-        colorCBdropList.addListItem("Brown") 
+        colorCB.setDimensions(Rect(125,30,100,30))
+        item = colorCB.addItem()
+        item.setCaption("Red")
+        item = colorCB.addItem()
+        item.setCaption("Green")
+        item = colorCB.addItem()
+        item.setCaption("Blue")
+        item = colorCB.addItem()
+        item.setCaption("Black")
+        item = colorCB.addItem()
+        item.setCaption("White")
+        item = colorCB.addItem()
+        item.setCaption("Purple")
+        item = colorCB.addItem()
+        item.setCaption("Brown")
+        
+#         colorCBdropList = colorCB.getDropDownList()
+#         colorCBdropList.setNumberOfVisibleItems(6) 
+#         
+#         colorCBdropList.addListItem("Red")
+#         colorCBdropList.addListItem("Green")
+#         colorCBdropList.addListItem("Blue")
+#         colorCBdropList.addListItem("Black")
+#         colorCBdropList.addListItem("White") 
+#         colorCBdropList.addListItem("Yellow") 
+#         colorCBdropList.addListItem("Purple") 
+#         colorCBdropList.addListItem("Brown") 
         
         setTextButton = self.stWindow.createButton()
         setTextButton.setDimensions(Rect(80,70,50,30))

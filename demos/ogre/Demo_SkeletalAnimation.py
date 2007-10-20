@@ -9,9 +9,13 @@
 # You may use this sample code for anything you like, it is not covered by the
 # LGPL.
 # -----------------------------------------------------------------------------
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
+
 import ogre.renderer.OGRE as ogre
 import SampleFramework as sf
-import sys,operator
+import operator
 
 NUM_JAIQUAS = 6
 mAnimationRotation = ogre.Degree(d=-60)

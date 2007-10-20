@@ -27,7 +27,6 @@ class WaterMesh:
         self.lastTimeStamp = 0  
         self.lastAnimationTimeStamp = 0 
         self.lastFrameTime = 0  
-        self.vNormals=[]
     
         ## initialize algorithm parameters
         self.PARAM_C = 0.3   ## ripple speed
@@ -48,7 +47,8 @@ class WaterMesh:
         subMesh.useSharedVertices=False 
     
         ## Vertex buffers
-        subMesh.vertexData = Ogre.VertexData() 
+        ##subMesh.vertexData = Ogre.VertexData() 
+        subMesh.vertexData = Ogre.createVertexData() 
         subMesh.vertexData.vertexStart = 0 
         subMesh.vertexData.vertexCount = self.numVertices 
     
@@ -105,8 +105,11 @@ class WaterMesh:
                 3*self.numFaces,
                 Ogre.HardwareBuffer.HBU_STATIC, True) 
                 
+        ## AJM : this si where we could return a iterator into the buffer and use it as an array..
         ## get the address of the self.indexBuffer
+        ## this gives us a void * to the buffer
         faceVertexIndices = self.indexBuffer.lock(0, self.numFaces*3*2, Ogre.HardwareBuffer.HBL_DISCARD) 
+        ## this converts it to an address we can use as a base index
         faceVertexIndices = Ogre.CastInt ( faceVertexIndices )
         for y in range (complexity) :
             for  x in range (complexity ) :
@@ -115,6 +118,7 @@ class WaterMesh:
                 p1 = y*(complexity+1) + x + 1  
                 p2 = (y+1)*(complexity+1) + x  
                 p3 = (y+1)*(complexity+1) + x + 1 
+                # write a series of bytes
                 ctypes.memset ( twoface + 0, p2, 1 )
                 ctypes.memset ( twoface + 1, p1, 1 )
                 ctypes.memset ( twoface + 2, p0, 1 )
@@ -130,6 +134,8 @@ class WaterMesh:
     #  prepare vertex positions
     #  note - we use 3 vertex buffers, since algorighm uses two last phases
     #  to calculate the next one
+    
+    # we need 2 floats, and are going through the loop three times 
         storageclass2 = ctypes.c_float * (self.numVertices*3* 3 )
         self.vertexBuffers = storageclass2 (1.1)
         
@@ -144,9 +150,9 @@ class WaterMesh:
                     numPoint = y*(complexity+1) + x  
 # #                     vertex = self.vertexBuffers[b] + 3.0*numPoint  
                     VertexPos = (self.vertexIndexSize * b) + 3 * numPoint
-                    self.vertexBuffers[VertexPos + 0] = x / (complexity * planeSize  )
+                    self.vertexBuffers[VertexPos + 0] = x / complexity * planeSize 
                     self.vertexBuffers[VertexPos + 1] = 0
-                    self.vertexBuffers[VertexPos + 2] = y / (complexity * planeSize  )
+                    self.vertexBuffers[VertexPos + 2] = y / complexity * planeSize  
                         
         meshBounds = Ogre.AxisAlignedBox(0,0,0, planeSize,0, planeSize) 
         mesh._setBounds(meshBounds) 
@@ -173,30 +179,29 @@ class WaterMesh:
 #   */
 
     def push( self, x, y, depth, absolute=False):
-        buf = self.vertexBuffers[self.currentBufNumber*self.vertexIndexSize]+1  
+        buf = self.currentBufNumber*self.vertexIndexSize+1  
         ## scale pressure according to time passed
         depth = depth * self.lastFrameTime * ANIMATIONS_PER_SECOND  
-        self._PREP(0,0) 
-        self._PREP(0,1) 
-        self._PREP(1,0) 
-        self._PREP(1,1)
+        self._PREP(0,0, buf,x,y,depth,absolute) 
+        self._PREP(0,1, buf,x,y,depth,absolute) 
+        self._PREP(1,0, buf,x,y,depth,absolute) 
+        self._PREP(1,1, buf,x,y,depth,absolute)
         
-    def _PREP(self, addx,addy) :
-        return
-#         *vertex=buf+3*((int)(y+addy)*(complexity+1)+(int)(x+addx)) 
-#         diffy = y - floor(y+addy)
-#         diffx = x - floor(x+addx)
-#         dist=sqrt(diffy*diffy + diffx*diffx)
-#         power = 1 - dist
-#         if (power<0):
-#             power = 0
-#         if (absolute):
-#             *vertex = depth*power
-#         else:
-#             *vertex += depth*power
+    def _PREP(self, addx,addy, buf,x,y,depth,absolute) :
+        vertex=buf+3*((int)(y+addy)*(self.complexity+1)+(int)(x+addx)) 
+        diffy = y - math.floor(y+addy)
+        diffx = x - math.floor(x+addx)
+        dist=math.sqrt(diffy*diffy + diffx*diffx)
+        power = 1 - dist
+        if (power<0):
+            power = 0
+        if (absolute):
+            self.vertexBuffers[vertex] = depth*power
+        else:
+            self.vertexBuffers[vertex] += depth*power
     
-    def hat(self, _x,_y):
-        self.buf[3*(_y*(complexity+1)+(_x))]
+    def hat(self, _x,_y, buf):
+        return self.buf[3*(_y*(self.complexity+1)+(_x))]
          
     
     # /* ========================================================================= */
@@ -204,10 +209,10 @@ class WaterMesh:
 
     def getHeight(self,  x, y):
     
-        self.buf = self.vertexBuffers[self.currentBufNumber*self.vertexIndexSize]  
-        xa = floor(x) 
-        xb = xa + 1  
-        ya = floor(y) 
+        self.buf = self.currentBufNumber*self.vertexIndexSize  
+        xa = math.floor(x) 
+        xb = xa + 1
+        ya = math.floor(y) 
         yb = ya + 1  
         yaxavg = hat(xa,ya) * (1.0-fabs(xa-x)) + hat(xb,ya) * (1.0-fabs(xb-x)) 
         ybxavg = hat(xa,yb) * (1.0-fabs(xa-x)) + hat(xb,yb) * (1.0-fabs(xb-x)) 
@@ -242,25 +247,25 @@ class WaterMesh:
     
 #     /* ========================================================================= */
     def calculateNormals(self):
-        buf = self.vertexBuffers[self.currentBufNumber*self.vertexIndexSize] + 1 
+        buf = self.currentBufNumber*self.vertexIndexSize + 1 
         ## zero normals
         
         for i in range(self.numVertices) :
             self.vNormals.append( Ogre.Vector3().ZERO_Copy )
-        return ## AJM
         ## first, calculate normals for faces, add them to proper vertices
-        buf = self.vertexBuffers[self.currentBufNumber*self.vertexIndexSize]  
-        vinds = self.indexBuffer.lock(
+        vindsPtr = self.indexBuffer.lock(
             0, self.indexBuffer.getSizeInBytes(), Ogre.HardwareBuffer.HBL_READ_ONLY) 
+        storageclass=ctypes.c_ubyte * (self.indexBuffer.getSizeInBytes())
+        vinds=(ctypes.c_ubyte * (self.indexBuffer.getSizeInBytes())).from_address(Ogre.CastInt(vindsPtr))
         pNormals = self.normVertexBuffer.lock(
             0, self.normVertexBuffer.getSizeInBytes(), Ogre.HardwareBuffer.HBL_DISCARD) 
         for i in range(self.numFaces) :
             p0 = vinds[3*i]  
             p1 = vinds[3*i+1]  
             p2 = vinds[3*i+2]  
-            v0=Ogre.Vector3 (buf[3*p0], buf[3*p0+1], buf[3*p0+2]) 
-            v1 = Ogre.Vector3 (buf[3*p1], buf[3*p1+1], buf[3*p1+2]) 
-            v3 = Ogre.Vector3 (buf[3*p2], buf[3*p2+1], buf[3*p2+2]) 
+            v0=Ogre.Vector3 (self.vertexBuffers[buf+3*p0], self.vertexBuffers[buf+3*p0+1], self.vertexBuffers[buf+3*p0+2]) 
+            v1 = Ogre.Vector3 (self.vertexBuffers[buf+3*p1], self.vertexBuffers[buf+3*p1+1], self.vertexBuffers[buf+3*p1+2]) 
+            v2 = Ogre.Vector3 (self.vertexBuffers[buf+3*p2], self.vertexBuffers[buf+3*p2+1], self.vertexBuffers[buf+3*p2+2]) 
             diff1  = v2 - v1  
             diff2 = v0 - v1  
             fn = diff1.crossProduct(diff2) 
@@ -269,8 +274,8 @@ class WaterMesh:
             self.vNormals[p2] += fn  
     
         ## now normalize vertex normals
-        for y in (self.complexity) :
-            for x in (self.complexity) :
+        for y in range(self.complexity) :
+            for x in range(self.complexity) :
                 numPoint = y*(self.complexity+1) + x  
                 n = self.vNormals[numPoint]  
                 n.normalise()  

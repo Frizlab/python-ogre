@@ -9,6 +9,9 @@
 # You may use self sample code for anything you like, it is not covered by the
 # LGPL like the rest of the engine.
 # -----------------------------------------------------------------------------
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
 
 import ogre.renderer.OGRE as Ogre
 import ogre.gui.CEGUI as CEGUI
@@ -16,7 +19,7 @@ import ogre.io.OIS as OIS
 import ctypes
 import SampleFramework
 
-import sys, exceptions, random
+import exceptions, random
 
 def convertOISButtonToCegui( buttonID):
     if buttonID ==0:

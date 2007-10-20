@@ -16,6 +16,9 @@
 #      Example control creation using UDIM
 #      Simple Tooltip Text / injectTimePulse
 
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
 
 import ogre.renderer.OGRE as ogre
 import ogre.gui.CEGUI as cegui

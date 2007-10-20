@@ -90,12 +90,16 @@
 ##      add Menus
 ##      add proper brushes
 ##      add libnoise capabilities
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
+
 import ogre.renderer.OGRE as ogre
 import ogre.addons.et as ET
 import ogre.io.OIS as OIS
 import ogre.gui.CEGUI as CEGUI
 import SampleFramework
-import sys, exceptions, random, os
+import exceptions, random, os
 from CEGUI_framework import *   ## we need the OIS version of the framelistener etc
 
 ### You may have to include this, it causes a problem for me with 

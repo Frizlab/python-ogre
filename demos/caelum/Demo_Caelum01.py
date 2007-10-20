@@ -3,12 +3,14 @@
 ## This source file is based on Caelum's CaelumTest1
 ## -----------------------------------------------------------------------------
 ## */
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
 
 import ogre.renderer.OGRE as ogre
 import ogre.io.OIS as ois
 import ogre.addons.caelum as caelum
 import SampleFramework as sf
-import sys
 import ctypes
 
 ## ------------------------------------------------------------------ 
