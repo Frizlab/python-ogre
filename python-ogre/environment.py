@@ -300,7 +300,7 @@ class cegui:
 #############  these are under construction and DO NOT WORK (Yet) #####################  
   
 class ode:
-    version= "0.8"
+    version= "0.9"
     parent = "ogre/physics"
     libs=[Config.LIB_Boost,  'ode']
     if os.name=="nt":
@@ -310,6 +310,7 @@ class ode:
                 ]
     include_dirs = [ Config.PATH_Boost 
                     ,  Config.PATH_INCLUDE_ODE
+                    , os.path.join(Config.PATH_ODE, 'OPCODE')
                     ]
 
     ModuleName = 'ODE'

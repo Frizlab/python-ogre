@@ -11,7 +11,7 @@ echo " == Building base libraries == "
 echo " -- building zzlib --"
 pushd zziplib-0.13.49
 aclocal
-./configure --prefix=$PREFIX --datadir=$PREFIX/share
+./configure --prefix=$PREFIX --datadir=$PREFIX/share --includedir=$PREFIX/include
 make
 make install
 popd
@@ -24,8 +24,9 @@ aclocal
 #patch -q -i ../python-ogre/patch/cegui.patch -p0
 #echo "EMPTY" >>./INSTALL
 #echo "EMPTY" >>./NEWS
+## Note the --includedir to ensure it writes the correct pkgconfig/CEGUI.pc 
 automake
-./configure --prefix=$PREFIX --enable-freeimage=yes --disable-samples --without-ogre-renderer
+./configure --prefix=$PREFIX --enable-freeimage=yes --disable-samples --without-ogre-renderer --includedir=$PREFIX/include
 make
 make install
 popd
@@ -36,7 +37,7 @@ popd
 echo " -- Builing OIS"
 pushd ois-1.0RC1
 ./bootstrap
-./configure --prefix=$PREFIX
+./configure --prefix=$PREFIX --includedir=$PREFIX/include
 make
 make install
 popd
@@ -46,10 +47,10 @@ popd
 # Install and build ODE
 #
 echo " -- Building ODE"
-pushd ode-0.8
+pushd ode-0.9
 chmod +x autogen.sh
 ./autogen.sh
-./configure --prefix=$PREFIX
+./configure --prefix=$PREFIX --includedir=$PREFIX/include
 make
 make install
 popd
