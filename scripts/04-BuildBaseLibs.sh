@@ -62,7 +62,7 @@ echo " -- Building Ogre"
 pushd ogrenew 
 aclocal
 ./bootstrap
-./configure --prefix=$PREFIX
+./configure --prefix=$PREFIX --with-gui=Xt
 make
 make install
 #cd ReferenceApplication
