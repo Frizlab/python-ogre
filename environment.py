@@ -389,7 +389,7 @@ class quickgui:
         ## note the defined for _QuickGUIExport forces non dll usage 
         CCFLAGS = ' -DWIN32 -DNDEBUG -DWINDOWS -D_QuickGUIExport="" ' 
     else:
-        CCFLAGS = ''
+        CCFLAGS = ' -D_QuickGUIExport="" '
     cflags=""
     include_dirs = [ Config.PATH_Boost,
                     Config.PATH_INCLUDE_Ogre,
