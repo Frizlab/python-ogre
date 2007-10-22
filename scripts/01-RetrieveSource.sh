@@ -19,7 +19,7 @@ $WGET http://prdownloads.sourceforge.net/boost/boost-jam-3.1.13-1-linuxx86.tgz
 ##$WGET http://prdownloads.sourceforge.net/scons/scons-0.96.96.tar.gz 
 $WGET http://downloads.sourceforge.net/scons/scons-0.97.0d20070918.tar.gz
 $WGET http://prdownloads.sourceforge.net/ogre/ogre-linux_osx-v1-4-5.tar.bz2 
-$WGET http://prdownloads.sourceforge.net/opende/ode-src-0.8.zip 
+$WGET http://prdownloads.sourceforge.net/opende/ode-src-0.9.zip 
 $WGET http://downloads.sourceforge.net/boost/boost_1_34_0.tar.bz2 
 $WGET http://www.newtondynamics.com/downloads/newtonLinux-1.53.tar.gz 
 $WGET http://www.openal.org/openal_webstf/downloads/openal-0.0.8.tar.gz

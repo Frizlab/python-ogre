@@ -19,7 +19,7 @@ unzip -q -o $DOWNLOADS/FreeImage393.zip
 echo " -- Unpacking Newton"
 tar zxf $DOWNLOADS/newtonLinux-1.53.tar.gz
 echo " -- Unpacking ODE"
-unzip -q -o $DOWNLOADS/ode-src-0.8.zip
+unzip -q -o $DOWNLOADS/ode-src-0.9.zip
 echo " -- Unpacking OgreAL Support"
 tar zxf $DOWNLOADS/libogg-1.1.3.tar.gz
 tar zxf $DOWNLOADS/libvorbis-1.2.0.tar.gz
