@@ -72,11 +72,11 @@ else
 
     echo ' -- creating ogrebulletc code '
     echo ' -- creating ogrebulletc code' >> $INSTALL_DIR/log.out
-    $INSTALL_DIR/gen_code.sh ogrebulletc 
+###    $INSTALL_DIR/gen_code.sh ogrebulletc 
 
     echo ' -- creating ogrebulletd code '
     echo ' -- creating ogrebulletd code' >> $INSTALL_DIR/log.out
-    $INSTALL_DIR/gen_code.sh ogrebulletd 
+###    $INSTALL_DIR/gen_code.sh ogrebulletd 
 
 #    echo ' -- creating nxogre code '
 #    echo ' -- creating nxogre code' >> $INSTALL_DIR/log.out
