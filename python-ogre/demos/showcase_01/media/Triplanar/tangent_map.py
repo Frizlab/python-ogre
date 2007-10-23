@@ -1,0 +1,229 @@
+#!/usr/bin/env python
+
+import os, sys
+import math
+import ogre.renderer.OGRE as ogre
+
+try:
+    import pygame
+    import Numeric as N
+    from pygame.locals import *
+    surfarray = pygame.surfarray
+    if not surfarray: raise ImportError
+except ImportError:
+    raise ImportError, 'Error Importing Pygame/surfarray or Numeric'
+
+
+if len(sys.argv) < 2:
+    print "No Heightmap Image supplied"
+    sys.exit()
+    
+pygame.init()
+
+
+# ugly debug constants
+WS = 15000.00
+WH = 2000.00
+
+
+def surfdemo_show(array_img, name):
+    "displays a surface, waits for user to continue"
+    screen = pygame.display.set_mode(array_img.shape[:2], 0, 32)
+    surfarray.blit_array(screen, array_img)
+    pygame.display.flip()
+    pygame.display.set_caption(name)
+    while 1:
+        e = pygame.event.wait()
+        if e.type == MOUSEBUTTONDOWN: break
+        elif e.type == KEYDOWN and e.key == K_s:
+            pygame.image.save(screen, name+'.bmp')
+        elif e.type == QUIT: raise SystemExit
+
+
+# get heightmap image
+imagename = os.path.join(sys.argv[1])
+imgsurface = pygame.image.load(imagename)
+imgarray = surfarray.array2d(imgsurface)
+
+# normalmap image
+imagename = os.path.join(sys.argv[2])
+imgsurface = pygame.image.load(imagename)
+normals = surfarray.array2d(imgsurface)
+##surfdemo_show(imgarray, 'imgarray')
+
+size = len(imgarray[0])
+output = pygame.Surface((size, size))
+output = surfarray.array3d(output)
+
+im = imgarray
+
+for px in range(size-1):
+    
+    for py in range(size-1):
+        
+####        long i1 = triangle->index[0];
+####        long i2 = triangle->index[1];
+####        long i3 = triangle->index[2];
+##        
+##        v1 = ogre.Vector3(px, py, imgarray[px][py])
+##        v2 = ogre.Vector3(px+1, py, imgarray[px+1][py])
+##        v3 = ogre.Vector3(px+1, py+1, imgarray[px+1][py+1])
+##        
+##        w1 = ogre.Vector2(px/size, py/size)
+##        w2 = ogre.Vector2(px+1/size, py/size)
+##        w3 = ogre.Vector2(px+1/size, py+1/size)
+##        
+##        x1 = float (v2.x - v1.x)
+##        x2 = float (v3.x - v1.x)
+##        y1 = float (v2.y - v1.y)
+##        y2 = float (v3.y - v1.y)
+##        z1 = float (v2.z - v1.z)
+##        z2 = float (v3.z - v1.z)
+##        
+##        s1 = float (w2.x - w1.x)
+##        s2 = float (w3.x - w1.x)
+##        t1 = float (w2.y - w1.y)
+##        t2 = float (w3.y - w1.y)
+##        
+##        r = 1.0 / (s1 * t2 - s2 * t1)
+##        sdir = ogre.Vector3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r,
+##                (t2 * z1 - t1 * z2) * r)
+##        tdir = ogre.Vector3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
+##                (s1 * z2 - s2 * z1) * r)
+##        
+##        tan1[i1] += sdir;
+##        tan1[i2] += sdir;
+##        tan1[i3] += sdir;
+##        
+##        tan2[i1] += tdir;
+##        tan2[i2] += tdir;
+##        tan2[i3] += tdir;
+##        
+##        n = ogre.Vector3(normals[px][py])
+##        t = tan1[a];
+##        
+##        // Gram-Schmidt orthogonalize
+##        tangent[a] = (t - n * Dot(n, t)).Normalize();
+##        
+##        // Calculate handedness
+##        tangent[a].w = (Dot(Cross(n, t), tan2[a]) < 0.0F) ? -1.0F : 1.0F;
+        
+        # uv values (also x/y in object space)
+        u = float(px) / size
+        v = float(py) / size
+
+        #print u,v
+        u_a = (1.0 + float(px)) / size
+        v_a = (1.0 + float(py)) / size
+
+        # heightmap values for this and neighbouring
+        # pixels ( vertex z-coordinate)
+        h1 = im[px][py] / 255.0
+        h2 = im[px+1][py] / 255.0
+        h3 = im[px+1][py+1] / 255.0
+        
+        # derive final vertex positions & uv coords
+        v1 = [ ogre.Vector3(u, v, h1), ogre.Vector2(u, v) ]
+        v2 = [ ogre.Vector3(u_a, v, h2), ogre.Vector2(u_a, v)]
+        v3 = [ ogre.Vector3(u_a, v_a, h3), ogre.Vector2(u_a, v_a) ]
+        
+        # find two edges ( vertex distance, u/v distance )
+        e2 = []
+        e2.append(v2[0] - v1[0])
+        e2.append(v2[1] - v1[1])
+        
+        e3 = []
+        e3.append(v3[0] - v1[0])
+        e3.append(v3[1] - v1[1])
+        
+        # finally get the tangent vector
+        T = e2[0] / e2[1][0]
+        
+        T=T.normalisedCopy()
+        
+##        Tlen = math.sqrt(math.pow(T[0],2) + math.pow(T[1],2) + math.pow(T[0],2))
+##        
+##        T /= Tlen
+        
+        
+        
+        T *= 128
+        
+        pix = [int(128 + T.x), int(128 + T.y), int(128 + T.z)]
+        
+        #print pix
+        
+        output[px][py] = pix
+        
+surfdemo_show(output, 'imgarray')
+        
+        
+        
+
+
+###allblack
+##allblack = N.zeros((128, 128))
+##surfdemo_show(allblack, 'allblack')
+##
+##
+###striped
+##striped = N.zeros((128, 128, 3))
+##striped[:] = (255, 0, 0)
+##striped[:,::3] = (0, 255, 255)
+##surfdemo_show(striped, 'striped')
+##
+##
+###imgarray
+##imagename = os.path.join('data', 'arraydemo.bmp')
+##imgsurface = pygame.image.load(imagename)
+##imgarray = surfarray.array2d(imgsurface)
+##surfdemo_show(imgarray, 'imgarray')
+##
+##
+###flipped
+##flipped = imgarray[:,-1:0:-1]
+##surfdemo_show(flipped, 'flipped')
+##
+##
+###scaledown
+##scaledown = imgarray[::2,::2]
+##surfdemo_show(scaledown, 'scaledown')
+##
+##
+###scaleup
+##size = N.array(imgarray.shape)*2
+##scaleup = N.zeros(size)
+##scaleup[::2,::2] = imgarray
+##scaleup[1::2,::2] = imgarray
+##scaleup[:,1::2] = scaleup[:,::2]
+##surfdemo_show(scaleup, 'scaleup')
+##
+##
+###redimg
+##rgbarray = surfarray.array3d(imgsurface)
+##redimg = N.array(rgbarray)
+##redimg[:,:,1:] = 0
+##surfdemo_show(redimg, 'redimg')
+##
+##
+###soften
+##soften = N.array(rgbarray)*1
+##soften[1:,:]  += rgbarray[:-1,:]*8
+##soften[:-1,:] += rgbarray[1:,:]*8
+##soften[:,1:]  += rgbarray[:,:-1]*8
+##soften[:,:-1] += rgbarray[:,1:]*8
+##soften /= 33
+##surfdemo_show(soften, 'soften')
+##
+##
+###crossfade (50%)
+##src = N.array(rgbarray)
+##dest = N.zeros(rgbarray.shape)
+##dest[:] = 20, 50, 100
+##diff = (dest - src) * 0.50
+##xfade = src + diff.astype(N.Int)
+##surfdemo_show(xfade, 'xfade')
+##
+##
+##
+###alldone

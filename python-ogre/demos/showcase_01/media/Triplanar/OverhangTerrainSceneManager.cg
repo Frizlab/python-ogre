@@ -1,0 +1,125 @@
+// Linear fogged morphing terrain
+void OverhangTerrain_vp_linear_cg(
+    float4 position : POSITION,
+//    float2 uv1   	: TEXCOORD0,
+//    float2 uv2	 	: TEXCOORD1,
+    float delta     : BLENDWEIGHT,
+
+    out float4 oPosition : POSITION,
+    out float2 oUv1		 : TEXCOORD0,
+    out float2 oUv2		 : TEXCOORD1,
+    out float4 colour    : COLOR,
+    out float fog		 : FOG,
+    uniform float4x4 worldViewProj,
+    uniform float4x4 world,
+    uniform float morphFactor
+    )
+{
+    float2 protoUv = mul(world, position).xz;
+    // Main texture coords
+    oUv1 =  protoUv / 1500;
+    // Detail texture coords
+    oUv2 =  protoUv / 62.5;
+    // Apply morph
+    position.y = position.y + (delta.x * morphFactor);
+    // world / view / projection
+    oPosition = mul(worldViewProj, position);
+    // Full bright (no lighting)
+    colour = float4(1,1,1,1);
+    // Fog 
+    // f = end - camz / end - start
+    // when start / end has been set, fog value is distance
+    fog = oPosition.z;
+}
+
+void OverhangTerrain_fp_cg (
+	float2 uv1 : TEXCOORD0,
+	float2 uv2 : TEXCOORD1,
+	float fog : FOG,
+	
+	out float4 color : COLOR,
+	
+	uniform sampler2D worldTex,
+	uniform sampler2D detailTex
+	)
+	{
+		color = tex2D(worldTex, uv1) * tex2D(detailTex, uv2);
+//		color = float4(1, 1,1,1);
+//		color = color * (1-fog);
+	}
+
+//	
+void OverhangTerrain_vp_linear_triplanar_cg(
+    float4 position : POSITION,
+    float delta     : BLENDWEIGHT,
+    float3 normal	: NORMAL,
+
+    out float4 oPosition : POSITION,
+    out float2 oUv1		 : TEXCOORD0,
+    out float3 oUv2		 : TEXCOORD1,
+    out float4 colour    : COLOR,
+    out float fog		 : TEXCOORD3,
+    out float3 oNormal	 : TEXCOORD2,
+    uniform float4x4 worldViewProj,
+    uniform float4x4 world,
+    uniform float morphFactor
+    )
+{
+    float3 protoUv = mul(world, position);
+    // Main texture coords
+    oUv1 =  (protoUv / 1500).xz;
+    // Detail texture coords
+    oUv2 =  protoUv / 62.5;
+    // Apply morph
+    position.y = position.y + (delta.x * morphFactor);
+    // world / view / projection
+    oPosition = mul(worldViewProj, position);
+    // Full bright (no lighting)
+    colour = float4(1,1,1,1);
+    // Fog 
+    // f = end - camz / end - start
+    // when start / end has been set, fog value is distance
+    fog = oPosition.z / 1500;
+    oNormal = normal;
+}
+
+void OverhangTerrain_fp_triplanar_cg (
+	float2 uv1 : TEXCOORD0,
+	float3 uv2 : TEXCOORD1,
+	float3 normal : TEXCOORD2,
+	float fog : TEXCOORD3,
+	
+	out float4 color : COLOR,
+	
+	uniform sampler2D worldTex : register(s0),
+	uniform sampler2D detailTex : register(s1),
+	uniform sampler2D rock : register(s2)
+	)
+	{
+		//taken from Cascades DX10 demo.
+		float3 blendWeights = normalize(normal);
+		blendWeights = abs(blendWeights);
+		blendWeights *= float3(7,7,7);
+		blendWeights = pow(blendWeights, float3(3,3,3));
+		blendWeights = max(float3(0.0,0.0,0.0), blendWeights);
+		//so they sum to 1.0:
+		blendWeights /= dot(blendWeights, float3(1.0,1.0,1.0));
+		
+		float4 worldColor = tex2D(worldTex, uv1);
+		float4 color1 = tex2D(rock, uv2.xy*3);
+		float4 color2 = tex2D(rock, uv2.yz*3);
+		float4 color3;
+		if(normal.y < 0.0)
+			color3 = tex2D(rock, uv2.xz*3);
+		else
+			color3 = tex2D(detailTex, uv2.xz);
+//		float4 color1 = float4(1,0,0,1);
+//		float4 color2 = float4(0,1,0,1);
+//		float4 color3 = float4(0,0,1,1);
+
+		color = color1*blendWeights.z + color2*blendWeights.x + color3*blendWeights.y;
+//		color = color1*normal.z + color2*normal.x + color3*normal.y;
+		color *= worldColor;
+		color = color * (1-fog) + float4(0.93, 0.86, 0.76, 1.0)*fog;
+	}
+	

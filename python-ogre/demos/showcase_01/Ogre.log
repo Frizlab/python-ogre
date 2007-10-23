@@ -1,0 +1,29 @@
+08:23:00: Creating resource group General
+08:23:00: Creating resource group Internal
+08:23:00: Creating resource group Autodetect
+08:23:00: SceneManagerFactory for type 'DefaultSceneManager' registered.
+08:23:00: Registering ResourceManager for type Material
+08:23:00: Registering ResourceManager for type Mesh
+08:23:00: Registering ResourceManager for type Skeleton
+08:23:00: MovableObjectFactory for type 'ParticleSystem' registered.
+08:23:00: OverlayElementFactory for type Panel registered.
+08:23:00: OverlayElementFactory for type BorderPanel registered.
+08:23:00: OverlayElementFactory for type TextArea registered.
+08:23:00: Registering ResourceManager for type Font
+08:23:00: ArchiveFactory for archive type FileSystem registered.
+08:23:00: ArchiveFactory for archive type Zip registered.
+08:23:00: FreeImage version: 3.9.2
+08:23:00: This program uses FreeImage, a free, open source image library supporting all common bitmap formats. See http://freeimage.sourceforge.net for details
+08:23:00: Supported formats: bmp,ico,jpg,jif,jpeg,jpe,jng,koa,iff,lbm,mng,pbm,pbm,pcd,pcx,pgm,pgm,png,ppm,ppm,ras,tga,targa,tif,tiff,wap,wbmp,wbm,psd,cut,xbm,xpm,gif,hdr,g3,sgi
+08:23:00: DDS codec registering
+08:23:00: Registering ResourceManager for type HighLevelGpuProgram
+08:23:00: Registering ResourceManager for type Compositor
+08:23:00: MovableObjectFactory for type 'Entity' registered.
+08:23:00: MovableObjectFactory for type 'Light' registered.
+08:23:00: MovableObjectFactory for type 'BillboardSet' registered.
+08:23:00: MovableObjectFactory for type 'ManualObject' registered.
+08:23:00: MovableObjectFactory for type 'BillboardChain' registered.
+08:23:00: MovableObjectFactory for type 'RibbonTrail' registered.
+08:23:00: Loading library ../../plugins\RenderSystem_GL.dll
+08:23:00: OGRE EXCEPTION(7:InternalErrorException): Could not load dynamic library ../../plugins\RenderSystem_GL.dll.  System Error: The specified module could not be found.
+ in DynLib::load at ..\src\OgreDynLib.cpp (line 80)
