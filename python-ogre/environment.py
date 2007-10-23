@@ -686,7 +686,7 @@ class ogrebulletc:  #
     cflags = ""
     parent = "ogre/physics"
     libs = [Config.LIB_Boost,  'OgreMain', 
-        'LibBulletCollision', 'LibBulletDynamics'
+        'LibBulletCollision', 'LibBulletDynamics',  'LibBulletMath'
         ]
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_INCLUDE_Bullet
@@ -711,7 +711,7 @@ class ogrebulletd:  #
     cflags = ""
     parent = "ogre/physics"
     libs = [Config.LIB_Boost,  'OgreMain', 
-        'LibBulletCollision', 'LibBulletDynamics'
+        'LibBulletCollision', 'LibBulletDynamics',  'LibBulletMath'
         ]
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_INCLUDE_Bullet

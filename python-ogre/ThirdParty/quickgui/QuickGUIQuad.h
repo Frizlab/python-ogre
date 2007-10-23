@@ -51,6 +51,7 @@ namespace QuickGUI
 		bool getInheritClippingWidget();
 		bool getInheritLayer();
 		Layer getLayer();
+		Ogre::Real getOpacity();
 		bool getShowWithOwner();
 		Ogre::String getTextureName();
 		Vertex* getVertices();
@@ -72,6 +73,7 @@ namespace QuickGUI
 		void setInheritLayer(bool inherit);
 		void setLayer(Layer l);
 		void setOffset(int offset);
+		void setOpacity(Ogre::Real opacity);
 		void setPosition(const Point& pixelPosition);
 		void setShowWithOwner(bool showWithOwner);
 		void setSize(const Size& pixelSize);

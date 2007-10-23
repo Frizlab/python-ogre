@@ -25,6 +25,10 @@ namespace QuickGUI
 
 	Panel::~Panel()
 	{
+		if(mScrollPane != NULL)
+			delete mScrollPane;
+		mScrollPane = NULL;
+
 		Widget::removeAndDestroyAllChildWidgets();
 		setQuadContainer(NULL);
 	}

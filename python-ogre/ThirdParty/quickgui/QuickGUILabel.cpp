@@ -13,8 +13,8 @@ namespace QuickGUI
 		mTextColor(Ogre::ColourValue::White),
 		mDisabledTextColor(Ogre::ColourValue(0.75,0.75,0.75,1)),
 		mAutoSize(true),
-		mHPixelPadWidth(10),
-		mVPixelPadHeight(10)
+		mHPixelPadWidth(6),
+		mVPixelPadHeight(6)
 	{
 		mWidgetType = TYPE_LABEL;
 		mText = new Text(mInstanceName+".Text",mQuadContainer,this);
@@ -115,14 +115,12 @@ namespace QuickGUI
 		Image::onPositionChanged(args);
 
 		mText->redraw();
-		alignText();
 	}
 
 	void Label::onSizeChanged(const EventArgs& args)
 	{
 		Image::onSizeChanged(args);
 		mText->redraw();
-		alignText();
 	}
 
 	void Label::setAutoSize(bool autoSize)
@@ -180,7 +178,6 @@ namespace QuickGUI
 		Image::setPosition(pixelX,pixelY);
 
 		mText->redraw();
-		alignText();
 	}
 
 	void Label::setPosition(Point pixelPosition)
@@ -200,7 +197,6 @@ namespace QuickGUI
 		Image::setSize(pixelWidth,pixelHeight);
 
 		mText->redraw();
-		alignText();
 	}
 
 	void Label::setSize(const Size& pixelSize)
@@ -234,8 +230,6 @@ namespace QuickGUI
 			// setHeight sets mAutoSize to false..
 			mAutoSize = true;
 		}
-		else
-			alignText();
 	}
 
 	void Label::setHeight(Ogre::Real pixelHeight)
@@ -244,7 +238,6 @@ namespace QuickGUI
 		Image::setHeight(pixelHeight);
 
 		mText->redraw();
-		alignText();
 	}
 
 	void Label::setQuadLayer(Quad::Layer l)
@@ -265,7 +258,6 @@ namespace QuickGUI
 		else
 		{
 			mText->setCaption(text);
-			alignText();
 		}
 	}
 
@@ -294,7 +286,6 @@ namespace QuickGUI
 		Image::setWidth(pixelWidth);
 
 		mText->redraw();
-		alignText();
 	}
 
 	void Label::show()

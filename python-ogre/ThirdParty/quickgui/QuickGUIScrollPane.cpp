@@ -334,6 +334,9 @@ namespace QuickGUI
 
 	void ScrollPane::unmanageWidget(Widget* w)
 	{
+		if(!w->getScrollPaneAccessible())
+			return;
+
 		std::set<Widget*>::iterator it = mManagedWidgets.find(w);
 		if(it == mManagedWidgets.end())
 			return;

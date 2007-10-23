@@ -4,5 +4,6 @@
 #include "QuickGUIManager.h"
 #include "QuickGUIWindow.h"
 #include "QuickGUIExportDLL.h"
+#include "QuickGUIEffect.h"
 
 #endif

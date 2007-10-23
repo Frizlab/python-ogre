@@ -27,7 +27,7 @@ http://www.gnu.org/copyleft/lesser.txt.
 #ifndef _OGREBULLETCOLLISIONS_CollisionObject_H
 #define _OGREBULLETCOLLISIONS_CollisionObject_H
 
-#include "OgreBulletCollisionsPreRequisites.h"
+#include "OgreBulletCollisionsPrerequisites.h"
 
 #include "OgreBulletCollisionsWorld.h"
 

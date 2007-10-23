@@ -15,6 +15,7 @@
 #include "QuickGUISheet.h"
 #include "QuickGUIUtility.h"
 
+
 #include <algorithm>
 #include <list>
 #include <map>
@@ -24,8 +25,11 @@
 #include <ctype.h>
 #include <vector>
 
+
 namespace QuickGUI
 {
+	class Effect;
+
 	/** Manages Windows, Mouse Cursor, and Input
 		@remarks
 		The most important class of QuickGUI, responsible for creating and
@@ -47,12 +51,16 @@ namespace QuickGUI
 	public:
 		friend class ComboBox;
 	public:
-		/** Constructor
+		/** Constructor must be called before resource loading or you won't catch skinset fileload.
         */
-		GUIManager(Ogre::Viewport* vp);
+		GUIManager();
 		/** Standard Destructor. */
 		~GUIManager();
 
+		/**
+		* Init has to be postponed after resource loading or you won't catch skinset fileload.
+		*/
+		void init(Ogre::Viewport* vp, const Ogre::String &skinName);
 		/**
 		* Iterates through Window List and destroys it, which properly destroys all child widgets.
 		*/
@@ -208,6 +216,9 @@ namespace QuickGUI
 
 		void unregisterTimeListener(Widget* w);
 
+		// Keep track of effect so that manager can update them.
+		void addEffect (Effect* e);
+
 	protected:
 		// Viewport which renders all widgets belonging to this manager.
 		Ogre::Viewport*			mViewport;
@@ -255,6 +266,9 @@ namespace QuickGUI
 		std::set<Widget*>	mOpenMenus;
 		void _menuOpened(Widget* w);
 		void _menuClosed(Widget* w);
+
+		// Keep track of effect, to update.
+		std::list<Effect*> mActiveEffects;
 
 		std::vector<Widget*>	mTimeListeners;
 

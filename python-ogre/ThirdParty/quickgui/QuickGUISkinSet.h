@@ -8,6 +8,7 @@
 #include "OgreResourceGroupManager.h"
 #include "OgreTextureManager.h"
 #include "OgreVector4.h"
+#include "OgreLogManager.h"
 
 #include "QuickGUIExportDLL.h"
 
@@ -25,7 +26,7 @@ namespace QuickGUI
 	{
 	public:
 		// Generate a new SkinSet using the skin's image files.
-		SkinSet(const Ogre::String& skinName);
+		SkinSet(const Ogre::String& skinName, const Ogre::String &resourceGroup = Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
 		// Delete this SkinSet
 		~SkinSet();
 
@@ -57,7 +58,15 @@ namespace QuickGUI
 		* bottom refer to y-coordinates)
 		*/
 		Ogre::Vector4 getTextureCoordinates(Ogre::String imageName);
-
+		/*
+		* saves skin to a .skinset file in the folder containing first 
+		* place found in the resource group.
+		*/
+		void saveSkin();
+		/*
+		* loads a skin from a .skinset file return false if failing
+		*/
+		bool loadSkin();
 	protected:
 		Ogre::String mSkinName;
 
@@ -81,6 +90,8 @@ namespace QuickGUI
 	private:
 		void _findSkinTextures();
 		bool _isImageFile(const Ogre::String& fileName);
+		Ogre::String mTextureName;
+		Ogre::String mResourceGroup;
 	};
 }
 

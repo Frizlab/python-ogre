@@ -27,7 +27,7 @@ http://www.gnu.org/copyleft/lesser.txt.
 #ifndef _OGREBULLETDYNAMICS_DynamicWorld_H
 #define _OGREBULLETDYNAMICS_DynamicWorld_H
 
-#include "OgreBulletDynamicsPreRequisites.h"
+#include "OgreBulletDynamicsPrerequisites.h"
 
 #include "OgreBulletCollisionsWorld.h"
 #include "Debug/OgreBulletCollisionsDebugDrawer.h"

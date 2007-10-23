@@ -33,6 +33,9 @@ namespace QuickGUI
 
 	void MouseCursor::centerOrigin()
 	{
+		if(!mGUIManager->textureExists(mTextureName)) 
+			return;
+
 		Ogre::Image i;
 		i.load(mTextureName,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 

@@ -26,7 +26,7 @@ http://www.gnu.org/copyleft/lesser.txt.
 #ifndef _OGREBULLETDYNAMICS_PointTopointConstraint_H
 #define _OGREBULLETDYNAMICS_PointTopointConstraint_H
 
-#include "OgreBulletDynamicsPreRequisites.h"
+#include "OgreBulletDynamicsPrerequisites.h"
 
 #include "OgreBulletDynamicsConstraint.h"
 

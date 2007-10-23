@@ -50,7 +50,7 @@ namespace QuickGUI
 		/**
 		* Add user defined events, that will be called when a selection is made.
 		*/
-		template<typename T> void addOnSelectionEventHandler(bool (T::*function)(const EventArgs&), T* obj)
+		template<typename T> void addOnSelectionEventHandler(void (T::*function)(const EventArgs&), T* obj)
 		{
 			mOnSelectUserEventHandlers.push_back(new MemberFunctionPointer<T>(function,obj));
 		}

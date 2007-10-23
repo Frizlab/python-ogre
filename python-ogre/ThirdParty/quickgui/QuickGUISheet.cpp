@@ -9,7 +9,6 @@ namespace QuickGUI
 		mDefaultTextColor(Ogre::ColourValue::White),
 		mSkin("qgui")
 	{
-		mParentSheet = this;
 		mQuadContainer = this;
 		mWidgetType = TYPE_SHEET;
 
@@ -25,7 +24,6 @@ namespace QuickGUI
 
 	Sheet::~Sheet()
 	{
-		mParentSheet = NULL;
 		mQuadContainer = NULL;
 	}
 
@@ -69,16 +67,26 @@ namespace QuickGUI
 		std::list<QuadContainer*>::reverse_iterator rit;
 		for( rit = windowList->rbegin(); rit != windowList->rend(); ++rit )
 		{
-			if( (w = (*rit)->getOwner()->getTargetWidget(pixelPosition)) != NULL )
-				return w;
+			w = (*rit)->getOwner();
+			if (w != NULL)
+			{
+				w = w->getTargetWidget(pixelPosition);
+				if (w != NULL)
+					return w;
+			}
 		}
 
 		// Iterate through Panels, from highest offset to lowest.
 		std::list<QuadContainer*>* panelList = QuadContainer::getPanelList();
 		for( rit = panelList->rbegin(); rit != panelList->rend(); ++rit )
 		{
-			if( (w = (*rit)->getOwner()->getTargetWidget(pixelPosition)) != NULL )
-				return w;
+			w = (*rit)->getOwner();
+			if (w != NULL)
+			{
+				w = w->getTargetWidget(pixelPosition);
+				if (w != NULL)
+					return w;
+			}
 		}
 
 		// Iterate through Child Layer Child Widgets.

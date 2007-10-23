@@ -85,6 +85,7 @@ def ManualExclude ( mb ):
             ,'::QuickGUI::ScrollPane::getVerticalButtonLayout'
             ,'::QuickGUI::ScrollPane::getHorizontalButtonLayout'
             ,'::QuickGUI::VerticalScrollBar::getScrollButtonSize'
+            ,'::QuickGUI::Effect::linearInterpolate'
                 ]
     for e in excludes:
         print "excluding function", e
