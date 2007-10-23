@@ -19,23 +19,21 @@ namespace QuickGUI
 		mHideWithParent(true),
 		mHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT),
 		mInheritClippingWidget(true),
+		mInheritOpacity(true),
 		mInheritQuadLayer(true),
 		mInstanceName(instanceName),
 		mMovingEnabled(true),
 		mOffset(0),
+		mOpacity(1),
 		mPosition(Point(0,0)),
-		mParentPanel(0),
-		mParentSheet(0),
 		mParentWidget(0),
-		mParentWindow(0),
 		mQuadContainer(0),
 		mQuadLayer(Quad::LAYER_CHILD),
-		mRepositionOverTime(false),
-		mResizeOverTime(false),
 		mScrollOffset(Point::ZERO),
 		mScrollPaneAccessible(true),
 		mShowWithParent(true),
 		mSkinComponent(""),
+		mSkinName(""),
 		mTextureLocked(false),
 		mUseBorders(false),
 		mVerticalAnchor(ANCHOR_VERTICAL_TOP),
@@ -220,36 +218,6 @@ namespace QuickGUI
 		return newQuad;
 	}
 
-	void Widget::_detectHierarchy()
-	{
-		mParentSheet = NULL;
-		mParentWindow = NULL;
-		mParentPanel = NULL;
-
-		Widget* w = mParentWidget;
-		while( w != NULL )
-		{
-			switch(w->getWidgetType())
-			{
-			case TYPE_SHEET:
-				mParentSheet = dynamic_cast<Sheet*>(w);
-				break;
-			case TYPE_WINDOW:
-				mParentWindow = dynamic_cast<Window*>(w);
-				break;
-			case TYPE_PANEL:
-				// It is possible to have a widget inside a panel inside a panel..
-				// we need to gaurd against this, we only want the immediate parent panel.
-				if( mParentPanel == NULL ) 
-					mParentPanel = dynamic_cast<Panel*>(w);
-				break;
-			default: break;
-			}
-
-			w = w->getParentWidget();
-		}
-	}
-
 	void Widget::_initEventHandlers()
 	{
 		int index = 0;
@@ -416,6 +384,14 @@ namespace QuickGUI
 		mGUIManager->setActiveWidget(this);
 	}
 
+	Ogre::Real Widget::getActualOpacity()
+	{
+		if((mParentWidget == NULL) || (!mInheritOpacity))
+			return mOpacity;
+
+		return mParentWidget->getActualOpacity() * mOpacity;
+	}
+
 	Point Widget::getActualPosition()
 	{
 		return getScreenPosition() + getScrollOffset();
@@ -465,12 +441,6 @@ namespace QuickGUI
 		}
 
 		return NULL;
-	}
-
-	Ogre::String Widget::getDefaultSkin()
-	{
-		if(mParentSheet == NULL) return "qgui";
-		else return mParentSheet->getDefaultSkin();
 	}
 
 	bool Widget::getGainFocusOnClick()
@@ -545,12 +515,20 @@ namespace QuickGUI
 
 	Panel* Widget::getParentPanel()
 	{
-		return mParentPanel;
+		Widget* w = mParentWidget;
+		while((w != NULL) && (w->getWidgetType() != TYPE_PANEL))
+			w = w->getParentWidget();
+
+		return dynamic_cast<Panel*>(w);
 	}
 
 	Sheet* Widget::getParentSheet()
 	{
-		return mParentSheet;
+		Widget* w = mParentWidget;
+		while((w != NULL) && (w->getWidgetType() != TYPE_SHEET))
+			w = w->getParentWidget();
+
+		return dynamic_cast<Sheet*>(w);
 	}
 
 	Widget* Widget::getParentWidget()
@@ -560,7 +538,11 @@ namespace QuickGUI
 
 	Window* Widget::getParentWindow()
 	{
-		return mParentWindow;
+		Widget* w = mParentWidget;
+		while((w != NULL) && (w->getWidgetType() != TYPE_WINDOW))
+			w = w->getParentWidget();
+
+		return dynamic_cast<Window*>(w);
 	}
 
 	bool Widget::getPropogateEventFiring(Event e)
@@ -606,6 +588,11 @@ namespace QuickGUI
 		return mShowWithParent;
 	}
 
+	Ogre::String Widget::getSkin()
+	{
+		return mSkinName;
+	}
+
 	Rect Widget::getDimensions()
 	{
 		return Rect(mPosition,mSize);
@@ -619,6 +606,16 @@ namespace QuickGUI
 	GUIManager* Widget::getGUIManager()
 	{
 		return mGUIManager;
+	}
+
+	bool Widget::getInheritOpacity()
+	{
+		return mInheritOpacity;
+	}
+
+	Ogre::Real Widget::getOpacity()
+	{
+		return mOpacity;
 	}
 
 	Point Widget::getPosition()
@@ -751,7 +748,7 @@ namespace QuickGUI
 
 		// if widget is the active widget at time of being hidden, set sheet to active widget.
 		if(mGUIManager->getActiveWidget() == this)
-			mGUIManager->setActiveWidget(mParentSheet);
+			mGUIManager->setActiveWidget(mGUIManager->getActiveSheet());
 		// if mouse cursor is over widget at time of being hidden, tell GUIManager to find the next widget mouse is over
 		if(mGUIManager->getMouseOverWidget() == this)
 			mGUIManager->injectMouseMove(0,0);
@@ -866,11 +863,22 @@ namespace QuickGUI
 			return false;
 
 		Point pt = mousePixelPosition - getScreenPosition() - getScrollOffset();
-		Ogre::Real relX = pt.x / mSize.width;
-		Ogre::Real relY = pt.y / mSize.height;
+
+		if (pt.x <= 0 || pt.y <= 0)
+		{
+			// something is wrong here
+			Ogre::LogManager::getSingletonPtr()->logMessage("Quickgui : error in Widget::overTransparentPixel getting correct Mouse to widget position");
+			return false;
+		}
+
+		const Ogre::Real relX = pt.x / mSize.width;
+		const Ogre::Real relY = pt.y / mSize.height;
+
+		const Ogre::Real xpos = (relX * mWidgetImage->getWidth()); 
+		const Ogre::Real ypos = (relY * mWidgetImage->getHeight());
 
 		// Reason I subtract 1 from width and height: Cannot access pixel 10 in an image of width 10. 0-9..
-		Ogre::ColourValue c = mWidgetImage->getColourAt((relX * mWidgetImage->getWidth()) - 1, (relY * mWidgetImage->getHeight()) - 1,0);
+		const Ogre::ColourValue c = mWidgetImage->getColourAt(xpos,ypos,0);
 		if( c.a <= 0.0 ) 
 			return true;
 
@@ -880,6 +888,7 @@ namespace QuickGUI
 	void Widget::redraw()
 	{
 		mQuad->setDimensions(Rect(getScreenPosition() + getScrollOffset(),mSize));
+		mQuad->setOpacity(getActualOpacity());
 
 		std::vector<Widget*>::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
@@ -929,20 +938,6 @@ namespace QuickGUI
 		return mCanResize;
 	}
 
-	void Widget::resizeOverTime(Ogre::Real seconds, Size finalPixelSize)
-	{
-		if(mParentWidget == NULL)
-			return;
-
-		mResizeOverTime = true;
-		mResizeTime = seconds;
-		mResizeTimer = 0;
-		mInitialPixelSize = Size(mSize.width,mSize.height);
-
-		mFinalPixelSize.width = finalPixelSize.width / mGUIManager->getViewportWidth();
-		mFinalPixelSize.height = finalPixelSize.height / mGUIManager->getViewportHeight();
-	}
-
 	void Widget::setBaseTexture(const Ogre::String& textureName)
 	{
 		// separate extension from name, if exists.
@@ -955,18 +950,6 @@ namespace QuickGUI
 	{
 		if(!mEnabled)
 			return;
-
-		if(mResizeOverTime)
-		{
-			Ogre::Real totalWidthChange = mFinalPixelSize.width - mInitialPixelSize.width;
-			setWidth(mInitialPixelSize.width + (totalWidthChange * (mResizeTimer / mResizeTime)));
-			Ogre::Real totalHeightChange = mFinalPixelSize.height - mInitialPixelSize.height;
-			setHeight(mInitialPixelSize.height + (totalHeightChange * (mResizeTimer / mResizeTime)));
-
-			mResizeTimer += time;
-			if(mResizeTimer >= mResizeTime)
-				mResizeOverTime = false;
-		}
 	}
 
 	void Widget::setClippingWidget(Widget* w, bool recursive)
@@ -1052,6 +1035,13 @@ namespace QuickGUI
 		mInheritClippingWidget = inherit;
 	}
 
+	void Widget::setInheritOpacity(bool inherit)
+	{
+		mInheritOpacity = inherit;
+
+		redraw();
+	}
+
 	void Widget::setInheritQuadLayer(bool inherit)
 	{
 		mInheritQuadLayer = inherit;
@@ -1064,6 +1054,7 @@ namespace QuickGUI
 
 	void Widget::setName(const Ogre::String& name)
 	{
+		mGUIManager->notifyNameFree(mInstanceName);
 		if(!mGUIManager->isNameUnique(name))
 			mInstanceName = mGUIManager->generateName(mWidgetType);
 		else
@@ -1080,6 +1071,13 @@ namespace QuickGUI
 
 		for(std::vector<Widget*>::iterator it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 			(*it)->setOffset((*it)->getOffset() + delta);
+	}
+
+	void Widget::setOpacity(Ogre::Real opacity)
+	{
+		mOpacity = opacity;
+
+		redraw();
 	}
 
 	void Widget::setPosition(const Ogre::Real& pixelX, const Ogre::Real& pixelY)
@@ -1136,6 +1134,11 @@ namespace QuickGUI
 	void Widget::setScrollPaneAccessible(bool accessible)
 	{
 		mScrollPaneAccessible = accessible;
+	}
+
+	void Widget::setSkin(const Ogre::String& skinName)
+	{
+		mSkinName = skinName;
 	}
 
 	void Widget::setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight)
@@ -1285,7 +1288,6 @@ namespace QuickGUI
 			setQuadContainer(parent->getQuadContainer());
 			setGUIManager(parent->getGUIManager());
 
-			_detectHierarchy();
 			// set the correct offset
 			setOffset(mParentWidget->getOffset() + 1);
 			// calculated properties

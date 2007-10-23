@@ -309,6 +309,11 @@ namespace QuickGUI
 		return mLayer;
 	}
 
+	Ogre::Real Quad::getOpacity()
+	{
+		return mTopColor.a;
+	}
+
 	bool Quad::getShowWithOwner()
 	{
 		return mShowWithOwner;
@@ -429,6 +434,18 @@ namespace QuickGUI
 		mOffset = offset;
 
 		mOffsetChanged = true;
+
+		_notifyQuadContainerNeedsUpdate();
+	}
+
+	void Quad::setOpacity(Ogre::Real opacity)
+	{
+		mTopColor.a = opacity;
+		mBottomColor.a = opacity;
+
+		mColorChanged = true;
+
+		_updateVertexColor();
 
 		_notifyQuadContainerNeedsUpdate();
 	}

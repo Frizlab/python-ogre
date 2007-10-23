@@ -1,10 +1,10 @@
 #ifndef QUICKGUIMENULABEL_H
 #define QUICKGUIMENULABEL_H
 
-#include "QuickGUIExportDLL.h"
 #include "QuickGUIButton.h"
 #include "QuickGUIImage.h"
 #include "QuickGUILabel.h"
+#include "QuickGUIExportDLL.h"
 
 namespace QuickGUI
 {

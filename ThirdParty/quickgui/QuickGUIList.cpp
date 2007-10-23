@@ -11,7 +11,7 @@ namespace QuickGUI
 		mScrollingAllowed(false),
 		mItemHeight(20),
 		mAutoSizeListItems(true),
-		mVPixelPadHeight(10)
+		mVPixelPadHeight(6)
 	{
 		mWidgetType = TYPE_LIST;
 
@@ -26,7 +26,17 @@ namespace QuickGUI
 
 	List::~List()
 	{
+		if(mScrollPane != NULL)
+			delete mScrollPane;
+		mScrollPane = NULL;
+
 		delete mTextUtilities;
+
+		if(mScrollPane != NULL)
+		{
+			delete mScrollPane;
+			mScrollPane = NULL;
+		}
 
 		mItems.clear();
 	}
@@ -91,6 +101,8 @@ namespace QuickGUI
 				mScrollPane = new ScrollPane(mInstanceName+".ScrollPane",Size(mSize.width,mSize.height),mGUIManager);
 				addChild(mScrollPane);
 				mScrollPane->setPosition(0,0);
+//				mScrollPane->setHorizontalSliderMinWidth(20);
+//				mScrollPane->setVerticalSliderMinHeight(20);
 
 				mRightScrollBar = mScrollPane->mRightBar;
 				mRightScrollBar->setOffset(mOffset+2);

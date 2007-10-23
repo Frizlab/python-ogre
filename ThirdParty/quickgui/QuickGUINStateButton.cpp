@@ -8,6 +8,8 @@ namespace QuickGUI
 		mWidgetType = TYPE_NSTATEBUTTON;
 		mAutoSize = false;
 		addEventHandler(EVENT_MOUSE_BUTTON_UP,&NStateButton::onMouseButtonUp,this);
+
+		mOnStateChangedUserEventHandlers.clear();
 	}
 
 	NStateButton::~NStateButton()

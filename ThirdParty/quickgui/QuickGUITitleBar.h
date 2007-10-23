@@ -59,11 +59,19 @@ namespace QuickGUI
 		* Hides Only the CloseButton, removing default ability to close the window
 		*/
 		void hideCloseButton();
-
+		/**
+		* Set true if the label's size should match it's font height and text width.
+		* NOTE: AutoSize is set to true by default.  If you set this to false, you may
+		*  end up with empty label's, as text that doesn't fit in the label won't be rendered.
+		*/
+		virtual void setAutoSize(bool autoSize);
 		/**
 		* Convenience method to set the text of the titlebar.
 		*/
 		void setCaption(const Ogre::UTFString& caption);
+		virtual void setFont(const Ogre::String& fontScriptName, bool recursive = false);
+		virtual void setText(const Ogre::UTFString& text);
+		virtual void setWidth(Ogre::Real pixelWidth);
 		/**
 		* Shows the Close Button.
 		*/

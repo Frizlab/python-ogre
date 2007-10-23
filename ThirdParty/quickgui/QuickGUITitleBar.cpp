@@ -17,10 +17,10 @@ namespace QuickGUI
 		mHorizontalAlignment = HA_LEFT;
 
 		// Create CloseButton
-		Ogre::Real ButtonSize = mSize.height - 3;
+		Ogre::Real ButtonSize = mSize.height - 2;
 		mCloseButton = new Button(mInstanceName+".CloseButton",Size(ButtonSize,ButtonSize),mTextureName + ".button" + mTextureExtension,mGUIManager);
 		addChild(mCloseButton);
-		mCloseButton->setPosition(mSize.width - ButtonSize,0);
+		mCloseButton->setPosition(mSize.width - ButtonSize - 1,1);
 		mCloseButton->setAutoSize(false);
 		mCloseButton->setHorizontalAnchor(ANCHOR_HORIZONTAL_RIGHT);
 		mCloseButton->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
@@ -46,9 +46,38 @@ namespace QuickGUI
 		mText->redraw();
 	}
 
+	void TitleBar::setAutoSize(bool autoSize)
+	{
+		mAutoSize = autoSize;
+
+		if(mAutoSize)
+		{
+			setHeight(mText->getNewlineHeight() + mVPixelPadHeight);
+			// setHeight sets mAutoSize to false..
+			mAutoSize = true;
+		}
+	}
+
 	void TitleBar::setCaption(const Ogre::UTFString& caption)
 	{
 		mText->setCaption(caption);
+	}
+
+	void TitleBar::setFont(const Ogre::String& fontScriptName, bool recursive)
+	{
+		Image::setFont(fontScriptName,recursive);
+		mText->setFont(mFontName);
+
+		if(mAutoSize)
+		{
+			setHeight(mText->getNewlineHeight() + mVPixelPadHeight);
+			// setHeight sets mAutoSize to false..
+			mAutoSize = true;
+			// The close button will have been resized vertically.  Need to match horizontally
+			mCloseButton->setWidth(mCloseButton->getHeight());
+			mCloseButton->setXPosition(mSize.width - mCloseButton->getWidth() - 1);
+			mTextBoundsRelativeSize = Size(mSize.width - mCloseButton->getWidth(),mSize.height) / mSize;
+		}
 	}
 
 	void TitleBar::setParent(Widget* parent)
@@ -60,7 +89,6 @@ namespace QuickGUI
 			setQuadContainer(parent->getQuadContainer());
 			setGUIManager(parent->getGUIManager());
 
-			_detectHierarchy();
 			// set the correct offset
 			setOffset(mParentWidget->getOffset() + 1);
 			// calculated properties
@@ -80,6 +108,18 @@ namespace QuickGUI
 
 		WidgetEventArgs args(this);
 		fireEvent(EVENT_PARENT_CHANGED,args);
+	}
+
+	void TitleBar::setText(const Ogre::UTFString& text)
+	{
+		mText->setCaption(text);
+	}
+
+	void TitleBar::setWidth(Ogre::Real pixelWidth)
+	{
+		Image::setWidth(pixelWidth);
+
+		mText->redraw();
 	}
 
 	void TitleBar::showCloseButton()

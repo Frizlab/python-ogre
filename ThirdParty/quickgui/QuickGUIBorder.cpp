@@ -112,7 +112,7 @@ namespace QuickGUI
 		MouseCursor* mc = mGUIManager->getMouseCursor();
 		mMouseCursorTexture = mc->getTexture();
 
-		Ogre::String skin = mQuad->getTextureName();
+		Ogre::String skin = mParentWidget->getSkin();
 
 		switch(mBorderType)
 		{

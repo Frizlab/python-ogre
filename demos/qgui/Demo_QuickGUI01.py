@@ -143,6 +143,7 @@ class QuickGUIDemoApp (sf.Application):
                     
     ## Just override the mandatory create scene method
     def _createScene(self):
+        self.mGUIManager = gui.GUIManager()
         self.mDebugDisplayShown=True
         ## Set ambient light
         self.sceneManager.setAmbientLight((0.5, 0.5, 0.5))
@@ -155,7 +156,7 @@ class QuickGUIDemoApp (sf.Application):
         ## Accept default settings: point light, white diffuse, just set position
         ## NB I could attach the light to a SceneNode if I wanted it to move automatically with
         ##  other objects, but I don't
-        l.setPosition(20,80,50)
+        l.setPosition(0,175,550)
         
         self.robot = self.sceneManager.createEntity("ChuckNorris", "robot.mesh")
 
@@ -180,24 +181,24 @@ class QuickGUIDemoApp (sf.Application):
         self.camera.setPosition(0,125,500)
         self.camera.pitch(Ogre.Radian(Ogre.Degree(-15)))
 # 
-#         ## Setup Render To Texture for preview window
-#         self.rttTex = self.root.getRenderSystem().createRenderTexture( "self.rttTex",\
-#                         512, 512, Ogre.TextureType.TEX_TYPE_2D, Ogre.PixelFormat.PF_R8G8B8 )
-#         ## From CEGUI example.  The camera position doesn't fit the robot setup, so I changed it some.
-#         rttCam = self.sceneManager.createCamera("RttCam")
-#         camNode = self.sceneManager.getRootSceneNode().createChildSceneNode("rttCamNode")
-#         camNode.attachObject(rttCam)
-#         rttCam.setPosition(0,75,225)
-#         ##rttCam.setVisible(True)
-# 
-#         v = self.rttTex.addViewport( rttCam )
-#         ## Alternatively, use the main camera for the self.rttText, imitating the main screen
-#         ##Viewport *v = self.rttTex.addViewport( self.camera )
-#         v.setOverlaysEnabled( False )
-#         v.setClearEveryFrame( True )
-#         v.setBackgroundColour( Ogre.ColourValue.Black )
+        ## Setup Render To Texture for preview window
+        self.rttTex = self.root.getRenderSystem().createRenderTexture( "self.rttTex",\
+                        512, 512, Ogre.TextureType.TEX_TYPE_2D, Ogre.PixelFormat.PF_R8G8B8 )
+        ## From CEGUI example.  The camera position doesn't fit the robot setup, so I changed it some.
+        rttCam = self.sceneManager.createCamera("RttCam")
+        camNode = self.sceneManager.getRootSceneNode().createChildSceneNode("rttCamNode")
+        camNode.attachObject(rttCam)
+        rttCam.setPosition(0,75,225)
+        ##rttCam.setVisible(True)
 
-        self.mGUIManager = gui.GUIManager(self.camera.getViewport()) 
+        v = self.rttTex.addViewport( rttCam )
+        ## Alternatively, use the main camera for the self.rttText, imitating the main screen
+        ##Viewport *v = self.rttTex.addViewport( self.camera )
+        v.setOverlaysEnabled( False )
+        v.setClearEveryFrame( True )
+        v.setBackgroundColour( Ogre.ColourValue.Black )
+
+        self.mGUIManager.init(self.camera.getViewport(), "qgui" ) 
         self.mGUIManager.setSceneManager(self.sceneManager) 
 
         self.createGUI()
@@ -214,7 +215,7 @@ class QuickGUIDemoApp (sf.Application):
         Point = gui.Point
         Size = gui.Size
         self.mSheet = self.mGUIManager.getDefaultSheet()
-        self.mSheet.setDefaultFont ("acmesa.12")
+#         self.mSheet.setDefaultFont ("acmesa.12")
                     
         ## Main Menu and it's MenuLists
 #         topMenu = self.mSheet.createMenu() 
@@ -266,11 +267,25 @@ class QuickGUIDemoApp (sf.Application):
 # 
         ## Logos
         logoImage = self.mSheet.createImage()
-        logoImage.setDimensions(Rect(16,42,240,180))
+#         logoImage.setDimensions(Rect(16,42,240,180))
+        logoImage.setDimensions(Rect(-240,-180,1,1))
 
+        screenLeftBottom =gui.Point (16, 42)
+        screenLeftOffBottom = gui.Point (-240, -180)
+        self.me1 = gui.MoveEffect(logoImage, 3, screenLeftOffBottom, screenLeftBottom, 1)
+        self.mGUIManager.addEffect(self.me1)
+        screenSize =gui.Size(240, 180)
+        noSize =gui.Size(1, 1)
+        self.se1 = gui.SizeEffect(logoImage, 3, noSize, screenSize, 1)
+        self.mGUIManager.addEffect(self.se1)
+        self.ae1 = gui.AlphaEffect(logoImage, 3, 0, 1, 3)
+        self.mGUIManager.addEffect( self.ae1)
+             
+        
         logoLabel = self.mSheet.createLabel()
-        logoLabel.setDimensions(Rect(60,240,120,30))
-        logoLabel.getText().setCaption("Click Me >")
+#         logoLabel.setDimensions(Rect(60,240,120,30))
+        logoLabel.setPosition( gui.Point(62,240))
+        logoLabel.setText("Click Me >")
         self.imageToggleButton = self.mSheet.createNStateButton()
         self.imageToggleButton.setDimensions(Rect(180,240,40,30))
         self.imageToggleButton.addState("OgreLogo","qgui.checked.png")
@@ -306,12 +321,12 @@ class QuickGUIDemoApp (sf.Application):
         
         hurtButton = ninjaWindow.createButton()
         hurtButton.setDimensions(Rect(8,45,144,30))
-        hurtButton.getText().setCaption("Hurt")
+        hurtButton.setText("Hurt")
         hurtButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_hurt) )
         
         healButton = ninjaWindow.createButton()
         healButton.setDimensions(Rect(8,82.5,144,30))
-        healButton.getText().setCaption("Heal")
+        healButton.setText("Heal")
         healButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_heal) )
         
         ## TrackBar Setup
@@ -331,13 +346,13 @@ class QuickGUIDemoApp (sf.Application):
         HPLabel = self.mSheet.createLabel()
         HPLabel.setDimensions(Rect(320,315,56,42))
         HPLabel.setTexture("")
-        HPLabel.getText().setCaption("HP")
+        HPLabel.setText("HP")
         HPLabel.appearOverWidget(self.lifeBar)
         
         self.lifeBarValueLabel = self.mSheet.createLabel()
         self.lifeBarValueLabel.setDimensions(Rect(440,315,56,42))
         self.lifeBarValueLabel.setTexture("")
-        self.lifeBarValueLabel.getText().setCaption("100")
+        self.lifeBarValueLabel.setText("100")
         self.lifeBarValueLabel.appearOverWidget(self.lifeBar)
 
         ## Mouse Over window
@@ -347,7 +362,7 @@ class QuickGUIDemoApp (sf.Application):
         
         mouseOverLabel = mouseOverWindow.createLabel()
         mouseOverLabel.setDimensions(Rect(0,0,320,30))
-        mouseOverLabel.getText().setCaption("Mouse Over Widget:")
+        mouseOverLabel.setText("Mouse Over Widget:")
         s = mouseOverLabel.getSize() 
         self.mouseOverTB = mouseOverWindow.createTextBox()
         self.mouseOverTB.setDimensions(Rect(0,s.height,320,30))
@@ -356,11 +371,11 @@ class QuickGUIDemoApp (sf.Application):
         ## Login Portion
         l=self.mSheet.createLabel()
         l.setDimensions(Rect(16,360,160,30))
-        l.getText().setCaption("User Name:")
+        l.setText("User Name:")
         
         l=self.mSheet.createLabel()
         l.setDimensions(Rect(16,390,160,30))
-        l.getText().setCaption("Password:")
+        l.setText("Password:")
         
         self.usernameTB = self.mSheet.createTextBox()
         self.usernameTB.setDimensions(Rect(180,360,200,30))
@@ -372,7 +387,7 @@ class QuickGUIDemoApp (sf.Application):
         
         loginButton = self.mSheet.createButton()
         loginButton.setDimensions(Rect(100,420,200,42))
-        loginButton.getText().setCaption("Login")
+        loginButton.setText("Login")
         loginButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_login) )
         self.loginResultLabel = self.mSheet.createLabel()
         self.loginResultLabel.setDimensions(Rect(0.0,462,480,30))
@@ -382,32 +397,32 @@ class QuickGUIDemoApp (sf.Application):
         self.stWindow = self.mSheet.createWindow()
         self.stWindow.setDimensions(Rect(560,270,240,120))
         self.stWindow.hide()
-        self.stWindow.getTitleBar().setCaption("Set Text Color:")
+        self.stWindow.getTitleBar().setText("Set Text Color:")
         
         closeButton = self.stWindow.getTitleBar().getCloseButton() 
 
         l=self.stWindow.createLabel()
         l.setDimensions(Rect(40,30,60,30))
-        l.getText().setCaption("Color:")
+        l.setText("Color:")
         
         colorCB = self.stWindow.createComboBox()
         colorCB.setDimensions(Rect(125,30,100,30))
         
         colorCB.setDimensions(Rect(125,30,100,30))
         item = colorCB.addItem()
-        item.setCaption("Red")
+        item.setText("Red")
         item = colorCB.addItem()
-        item.setCaption("Green")
+        item.setText("Green")
         item = colorCB.addItem()
-        item.setCaption("Blue")
+        item.setText("Blue")
         item = colorCB.addItem()
-        item.setCaption("Black")
+        item.setText("Black")
         item = colorCB.addItem()
-        item.setCaption("White")
+        item.setText("White")
         item = colorCB.addItem()
-        item.setCaption("Purple")
+        item.setText("Purple")
         item = colorCB.addItem()
-        item.setCaption("Brown")
+        item.setText("Brown")
         
 #         colorCBdropList = colorCB.getDropDownList()
 #         colorCBdropList.setNumberOfVisibleItems(6) 
@@ -423,19 +438,19 @@ class QuickGUIDemoApp (sf.Application):
         
         setTextButton = self.stWindow.createButton()
         setTextButton.setDimensions(Rect(80,70,50,30))
-        setTextButton.setCaption("Apply")
+        setTextButton.setText("Apply")
         setTextButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_setTextColor) )
         # colorCB.clearList()
 #         colorCBdropList.removeListItem(2)
 
         testButton = self.mSheet.createButton()
         testButton.setDimensions(Rect(1200,800,100,50))
-        testButton.getText().setCaption("TEST") 
+        testButton.setText("TEST") 
         testButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.test)) 
 
         testButton2 = self.stWindow.createButton() 
         testButton2.setDimensions(Rect(500,190,100,50))
-        testButton2.getText().setCaption("TEST") 
+        testButton2.setText("TEST") 
         testButton2.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.test)) 
  
         tb=self.mSheet.createTextBox() 
@@ -475,27 +490,27 @@ class QuickGUIDemoApp (sf.Application):
         currentProgress = self.lifeBar.getProgress()
         random = Ogre.Math.RangeRandom(currentProgress,1.0)
         self.lifeBar.setProgress(random)
-        self.lifeBarValueLabel.getText().setCaption(str(int(random * 100)))
+        self.lifeBarValueLabel.setText(str(int(random * 100)))
         return True
 
     def evtHndlr_hurt(self, args):
         currentProgress = self.lifeBar.getProgress()
         random = Ogre.Math.RangeRandom(0.0,currentProgress)
         self.lifeBar.setProgress(random)
-        self.lifeBarValueLabel.getText().setCaption(str(int(random * 100)))
+        self.lifeBarValueLabel.setText(str(int(random * 100)))
         return True
 
     def evtHndlr_pbRed(self,args):
         self.lifeBar.setTexture("progressbar.red.png")
         self.lifeBar.setProgress(1.0)
-        self.lifeBarValueLabel.getText().setCaption("100")
+        self.lifeBarValueLabel.setText("100")
 
         return False
 
     def evtHndlr_pbGreen(self, args):
         self.lifeBar.setTexture("progressbar.green.png")
         self.lifeBar.setProgress(1.0)
-        self.lifeBarValueLabel.getText().setCaption("100")
+        self.lifeBarValueLabel.setText("100")
         return True
 
     def evtHndlr_pbBlue(self, args):
@@ -506,7 +521,7 @@ class QuickGUIDemoApp (sf.Application):
     def evtHndlr_login(self, args):
         if( self.usernameTB.getCaption() == self.passwordTB.getCaption() ) : s = "Login Successful."
         else: s = "Username and/or Password do not match."
-        self.loginResultLabel.getText().setCaption(s)
+        self.loginResultLabel.setText(s)
         return True
 
     def evtHndlr_toggleDebugDisplay(self, args):
@@ -558,7 +573,11 @@ class QuickGUIDemoApp (sf.Application):
     def handleQuit(self,e):
         self.frameListener.requestShutdown()
         return True
- 
+
+    def handleChange(self,e):
+        self.mGUIManager.clearAll()
+        return True
+
 if __name__ == '__main__':
     try:
         application = QuickGUIDemoApp()

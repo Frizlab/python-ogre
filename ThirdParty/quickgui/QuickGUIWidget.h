@@ -200,7 +200,7 @@ namespace QuickGUI
 		* Sets focus to the widget by firing an activation event.
 		*/
 		virtual void focus();
-
+		Ogre::Real getActualOpacity();
 		/**
 		* Returns the position of the widget as it would be drawn on the screen.
 		* NOTE: This is a convenience method. Actual Position is the same as
@@ -210,9 +210,10 @@ namespace QuickGUI
 		std::vector<Widget*>* getChildWidgetList();
 		Widget* getChildWidget(const Ogre::String& name);
 		Widget* getChildWidget(Type t, unsigned int index);
-		Ogre::String getDefaultSkin();
 		Rect getDimensions();
 		GUIManager* getGUIManager();
+		bool getInheritOpacity();
+		Ogre::Real getOpacity();
 		Point getPosition();
 		Point getScrollOffset();
 		Size getSize();
@@ -290,6 +291,7 @@ namespace QuickGUI
 		* Get whether or not this widget is shown when its parent is shown.
 		*/
 		bool getShowWithParent();
+		Ogre::String getSkin();
 		/**
 		* Iterates through visible Children widgets to find and return the widget that is *hit* by the point.
 		* Returns NULL is nothing is *hit*.
@@ -348,10 +350,6 @@ namespace QuickGUI
 		void removeAndDestroyAllChildWidgets();
 		bool resizingAllowed();
 		/**
-		* Scales the widget over time.
-		*/
-		void resizeOverTime(Ogre::Real seconds, Size finalPixelSize);
-		/**
 		* Stores/Updates the texture used for the widget, and allows the widget to derive other needed textures. (by overriding this function)
 		*/
 		virtual void setBaseTexture(const Ogre::String& textureName);
@@ -391,6 +389,7 @@ namespace QuickGUI
 		* NOTE: The clipping widget's bounds are the bounds used to clip the widget.
 		*/
 		void setInheritClippingWidget(bool inherit);
+		void setInheritOpacity(bool inherit);
 		void setInheritQuadLayer(bool inherit);
 		/**
 		* If set to false, widget cannot be moved.
@@ -405,6 +404,7 @@ namespace QuickGUI
 		* Manipulates the offset used to determine this widgets zOrder in rendering.
 		*/
 		virtual void setOffset(int offset);
+		void setOpacity(Ogre::Real opacity);
 		/**
 		* Manually set position of widget.
 		* NOTE: the values given are relative to the parent's top left corner, and not the screen!  For screen positioning,
@@ -422,6 +422,7 @@ namespace QuickGUI
 		void setScreenXPosition(const Ogre::Real& pixelX);
 		void setScreenYPosition(const Ogre::Real& pixelY);
 		void setScrollPaneAccessible(bool accessible);
+		void setSkin(const Ogre::String& skinName);
 		/**
 		* Manually set size of widget.
 		*/
@@ -461,6 +462,14 @@ namespace QuickGUI
 		* Allows texture of widget to change. (behavior by default)
 		*/
 		void unlockTexture();
+		/** Checks if this widget property are subject 
+		*   to modification upon time
+		*/
+		bool getUnderEffect() const { return mUnderEffect; }
+		/** set widget flag underEffect to that if user takes control
+		*   he knows that he has to disable effect before.
+		*/
+		void setUnderEffect(bool val) { mUnderEffect = val; }
 
 	protected:
 		virtual void __constructor();
@@ -487,6 +496,7 @@ namespace QuickGUI
 		bool						mDragXOnly;
 		bool						mDragYOnly;
 		Ogre::String				mFontName;
+		Ogre::String				mSkinName;
 		bool						mVisible;
 		bool						mEnabled;
 		bool						mGainFocusOnClick;
@@ -502,6 +512,8 @@ namespace QuickGUI
 		Ogre::String				mTextureName;
 		Ogre::String				mTextureExtension;
 		Ogre::String				mDisabledTextureName;
+		bool						mInheritOpacity;
+		Ogre::Real					mOpacity;
 		// number of parents iterated to get to sheet.
 		int							mOffset;
 		bool						mHideWithParent;
@@ -509,10 +521,6 @@ namespace QuickGUI
 		// used for transparency picking
 		Ogre::Image*				mWidgetImage;
 		Widget*						mParentWidget;
-		Sheet*						mParentSheet;
-		Window*						mParentWindow;
-		Panel*						mParentPanel;
-
 		Widget*						mWidgetToDrag;
 
 		// ANCHORS
@@ -521,15 +529,9 @@ namespace QuickGUI
 		Ogre::Real					mPixelsFromParentRight;
 		Ogre::Real					mPixelsFromParentBottom;
 
-		// EFFECTS
-		bool						mResizeOverTime;
-		Ogre::Real					mResizeTimer;
-		Ogre::Real					mResizeTime;
-		Size						mInitialPixelSize;
-		Size						mFinalPixelSize;
-		
-		bool						mRepositionOverTime;
-		Point						mFinalPixelPosition;
+		// state that this widget property are subject 
+		// to modification upon time
+		bool						mUnderEffect;
 
 		Quad*						mQuad;
 		// All widgets have at least 1 quad, but can use more.
@@ -559,11 +561,6 @@ namespace QuickGUI
 		bool mPropogateEventFiring[NUM_EVENTS];
 
 		void _initEventHandlers();
-
-		/*
-		* Iterates through parents and stores references to parent Panel, Window, and Sheet, if exist.
-		*/
-		void _detectHierarchy();
 
 		/*
 		* Breaks the texture name into its name and extension, if it has an extension.

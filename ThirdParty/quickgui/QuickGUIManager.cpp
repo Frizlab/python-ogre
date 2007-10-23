@@ -1,9 +1,11 @@
 #include "QuickGUIManager.h"
+#include "QuickGUIEffect.h"
+#include "QuickGUIConfigScriptParser.h"
 
 namespace QuickGUI
 {
-	GUIManager::GUIManager(Ogre::Viewport* vp) :
-		mViewport(vp),
+	GUIManager::GUIManager() :		
+		mViewport(0),
 		mActiveSheet(0),
 		mWidgetContainingMouse(0),
 		mActiveWidget(0),
@@ -25,22 +27,13 @@ namespace QuickGUI
 		mMouseButtonDown[6] = NULL;
 		mMouseButtonDown[7] = NULL;
 
-		// load default skin into an SkinSet Texture - must be done before we start rendering.
-		loadSkin("qgui");
-
-		mMouseCursor = new MouseCursor(Size(13,17),"qgui.cursor.png",this);
-		mMouseCursor->setPosition(getViewportWidth()/2.0,getViewportHeight()/2.0);
-		
-		mDefaultSheet = createSheet();
-		// Initialize all widget tracking pointers.
-		mActiveWidget = mWidgetContainingMouse = mActiveSheet = mDefaultSheet;
+		new ConfigScriptLoader();
 
 		// by default, we support codepoints 9, and 32-166.
 		mSupportedCodePoints.push_back(9);
 		for(Ogre::UTFString::code_point i = 32; i < 167; ++i)
 			mSupportedCodePoints.push_back(i);
 
-		_createDefaultTextures();
 
 		mTimer = new Ogre::Timer();
 	}
@@ -52,10 +45,6 @@ namespace QuickGUI
 		removeFromRenderQueue();
 		clearAll();
 
-		for(std::list<Sheet*>::iterator it = mSheets.begin(); it != mSheets.end(); ++it )
-			delete (*it);
-		mSheets.clear();
-
 		delete mMouseCursor;
 		mMouseCursor = NULL;
 
@@ -64,6 +53,24 @@ namespace QuickGUI
 		for( it = mSkinSets.begin(); it != mSkinSets.end(); ++it )
 			delete (it->second);
 		mSkinSets.clear();
+
+		delete ConfigScriptLoader::getSingletonPtr();
+	}
+
+	void GUIManager::init(Ogre::Viewport* vp, const Ogre::String &skinName) 
+	{
+		mViewport = vp;
+		// load default skin into an SkinSet Texture - must be done before we start rendering.
+		loadSkin(skinName);
+
+		mMouseCursor = new MouseCursor(Size(13,17),"qgui.cursor.png",this);
+		mMouseCursor->setPosition(getViewportWidth()/2.0,getViewportHeight()/2.0);
+
+		mDefaultSheet = createSheet();
+		// Initialize all widget tracking pointers.
+		mActiveWidget = mWidgetContainingMouse = mActiveSheet = mDefaultSheet;
+
+		_createDefaultTextures();
 	}
 
 	void GUIManager::_createDefaultTextures()
@@ -146,6 +153,13 @@ namespace QuickGUI
 		mTimeListeners.clear();
 		mOpenMenus.clear();
 
+		std::list<Effect*>::iterator itEffect = mActiveEffects.begin();
+		while (itEffect != mActiveEffects.end())        
+		{
+			delete *itEffect;
+			++itEffect;            
+		} 
+
 		std::list<Sheet*>::iterator it;
 		for( it = mSheets.begin(); it != mSheets.end(); ++it )
 			delete (*it);
@@ -164,7 +178,10 @@ namespace QuickGUI
 		Ogre::String name = generateName(Widget::TYPE_SHEET);
 		notifyNameUsed(name);
 
-		return new Sheet(name,"",this);
+		Sheet* newSheet = new Sheet(name,"",this);
+		mSheets.push_back(newSheet);
+
+		return newSheet;
 	}
 
 	void GUIManager::destroySheet(const Ogre::String& name)
@@ -282,7 +299,10 @@ namespace QuickGUI
 		if(!skinLoaded(skinName)) return false;
 		else return mSkinSets[skinName]->containsImage(textureName);
 	}
-
+	void GUIManager::addEffect (Effect* e)
+	{
+		mActiveEffects.push_back(e);
+	}
 	Ogre::String GUIManager::generateName(Widget::Type t)
 	{
 		Ogre::String s;
@@ -346,7 +366,7 @@ namespace QuickGUI
 
 		return mActiveWidget->fireEvent(Widget::EVENT_KEY_UP,args);
 	}
-	
+
 	bool GUIManager::injectMouseButtonDown(const MouseButtonID& button)
 	{
 		if( !mMouseCursor->isVisible() ) 
@@ -554,9 +574,38 @@ namespace QuickGUI
 
 	void GUIManager::injectTime(Ogre::Real time)
 	{
-		std::vector<Widget*>::iterator it;
-		for( it = mTimeListeners.begin(); it != mTimeListeners.end(); ++it )
-			(*it)->timeElapsed(time);
+		{
+			std::vector<Widget*>::iterator it;
+			for( it = mTimeListeners.begin(); it != mTimeListeners.end(); ++it )
+				(*it)->timeElapsed(time);
+		}
+
+		// Effects.
+		{
+			/*
+			std::vector<Widget*>::iterator it;   
+			while (itWindow != mWidgets.end())        
+			{
+				(*itWindow)->setUnderEffect(false);
+				++itWindow;
+			} 
+			*/
+		}
+		{
+			std::list<Effect*>::iterator itEffect = mActiveEffects.begin();       
+			while (itEffect != mActiveEffects.end())        
+			{
+				if ((*itEffect)->update(time))
+				{
+					delete *itEffect;
+					itEffect = mActiveEffects.erase(itEffect);
+				}
+				else
+				{
+					++itEffect;
+				}
+			} 
+		}
 	}
 
 	bool GUIManager::isNameUnique(const Ogre::String& name)
@@ -669,7 +718,10 @@ namespace QuickGUI
 
 	void GUIManager::setActiveWidget(Widget* w)
 	{
-		if ( !w->enabled() || w == NULL )
+		if ( w == NULL )
+			return;
+
+		if (!w->enabled())
 			return;
 
 		if( w != mActiveWidget ) 

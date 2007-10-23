@@ -35,6 +35,7 @@
 
 #include "OgreALOggSound.h"
 #include "OgreALSoundManager.h"
+#include "OgreALException.h"
 
 namespace OgreAL {
 	OggSound::OggSound(const Ogre::String& name, const Ogre::String& soundFile, bool loop, AudioFormat format) :
@@ -43,96 +44,110 @@ namespace OgreAL {
 		mVorbisInfo(0),
 		mVorbisComment(0)
 	{
-		if(!(mOggFile = fopen(soundFile.c_str(), "rb")))
+		try
 		{
-			throw Ogre::Exception(1, "Could not open Ogg file.", "OgreAL::OggSound::ctor");
-		}
+			mOggFile = fopen(soundFile.c_str(), "rb");
+			OGREAL_CHECK(mOggFile != 0, 1, "Could not open Ogg file.");
 
-		if(ov_open(mOggFile, &mOggStream, NULL, 0) < 0)
-		{
-			fclose(mOggFile);	 
-			throw Ogre::Exception(1, "Could not open Ogg stream.", "OgreAL::OggSound::ctor");
-		}
+			OGREAL_CHECK(ov_open(mOggFile, &mOggStream, NULL, 0) >= 0, 1, "Could not open Ogg stream.");
+			mVorbisInfo = ov_info(&mOggStream, -1);
 
-		mVorbisInfo = ov_info(&mOggStream, -1);
+			unsigned long channels = mVorbisInfo->channels;
+			mFreq = mVorbisInfo->rate;
+			mLoop = loop;
 
-		unsigned long channels = mVorbisInfo->channels;
-		mFreq = mVorbisInfo->rate;
-		mLoop = loop;
+			switch(channels)
+			{
+			case 1:
+				mFormat = AL_FORMAT_MONO16;
+				// Set BufferSize to 250ms (Frequency * 2 (16bit) divided by 4 (quarter of a second))
+				mBufferSize = mFreq >> 1;
+				// IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment ...
+				mBufferSize -= (mBufferSize % 2);
+				break;
+			case 2:
+				mFormat = AL_FORMAT_STEREO16;
+				// Set BufferSize to 250ms (Frequency * 4 (16bit stereo) divided by 4 (quarter of a second))
+				mBufferSize = mFreq;
+				// IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment ...
+				mBufferSize -= (mBufferSize % 4);
+				break;
+			case 4:
+				mFormat = alGetEnumValue("AL_FORMAT_QUAD16");
+				// Set BufferSize to 250ms (Frequency * 8 (16bit 4-channel) divided by 4 (quarter of a second))
+				mBufferSize = mFreq * 2;
+				// IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment ...
+				mBufferSize -= (mBufferSize % 8);
+				break;
+			case 6:
+				mFormat = alGetEnumValue("AL_FORMAT_51CHN16");
+				// Set BufferSize to 250ms (Frequency * 12 (16bit 6-channel) divided by 4 (quarter of a second))
+				mBufferSize = mFreq * 3;
+				// IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment ...
+				mBufferSize -= (mBufferSize % 12);
+				break;
+			case 7:
+				mFormat = alGetEnumValue("AL_FORMAT_61CHN16");
+				// Set BufferSize to 250ms (Frequency * 16 (16bit 7-channel) divided by 4 (quarter of a second))
+				mBufferSize = mFreq * 4;
+				// IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment ...
+				mBufferSize -= (mBufferSize % 16);
+				break;
+			case 8:
+				mFormat = alGetEnumValue("AL_FORMAT_71CHN16");
+				// Set BufferSize to 250ms (Frequency * 20 (16bit 8-channel) divided by 4 (quarter of a second))
+				mBufferSize = mFreq * 5;
+				// IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment ...
+				mBufferSize -= (mBufferSize % 20);
+				break;
+			default:
+				// Couldn't determine buffer format so log the error and default to mono
+				Ogre::LogManager::getSingleton().logMessage("!!WARNING!! Could not determine buffer format!  Defaulting to MONO");
 
-		if(channels == 1)
-		{
-			mFormat = AL_FORMAT_MONO16;
-			// Set BufferSize to 250ms (Frequency * 2 (16bit) divided by 4 (quarter of a second))
-			mBufferSize = mFreq >> 1;
-			// IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment ...
-			mBufferSize -= (mBufferSize % 2);
-		}
-		else if(channels == 2)
-		{
-			mFormat = AL_FORMAT_STEREO16;
-			// Set BufferSize to 250ms (Frequency * 4 (16bit stereo) divided by 4 (quarter of a second))
-			mBufferSize = mFreq;
-			// IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment ...
-			mBufferSize -= (mBufferSize % 4);
-		}
-		else if(channels == 4)
-		{
-			mFormat = alGetEnumValue("AL_FORMAT_QUAD16");
-			// Set BufferSize to 250ms (Frequency * 8 (16bit 4-channel) divided by 4 (quarter of a second))
-			mBufferSize = mFreq * 2;
-			// IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment ...
-			mBufferSize -= (mBufferSize % 8);
-		}
-		else if(channels == 6)
-		{
-			mFormat = alGetEnumValue("AL_FORMAT_51CHN16");
-			// Set BufferSize to 250ms (Frequency * 12 (16bit 6-channel) divided by 4 (quarter of a second))
-			mBufferSize = mFreq * 3;
-			// IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment ...
-			mBufferSize -= (mBufferSize % 12);
-		}
-		else if(channels == 7)
-		{
-			mFormat = alGetEnumValue("AL_FORMAT_61CHN16");
-			// Set BufferSize to 250ms (Frequency * 16 (16bit 7-channel) divided by 4 (quarter of a second))
-			mBufferSize = mFreq * 4;
-			// IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment ...
-			mBufferSize -= (mBufferSize % 16);
-		}
-		else if(channels == 8)
-		{
-			mFormat = alGetEnumValue("AL_FORMAT_71CHN16");
-			// Set BufferSize to 250ms (Frequency * 20 (16bit 8-channel) divided by 4 (quarter of a second))
-			mBufferSize = mFreq * 5;
-			// IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment ...
-			mBufferSize -= (mBufferSize % 20);
-		}
-		else
-		{
-			// Couldn't determine buffer format so log the error and default to mono
-			Ogre::LogManager::getSingleton().logMessage("!!WARNING!! Could not determine buffer format!  Defaulting to MONO");
+				mFormat = AL_FORMAT_MONO16;
+				// Set BufferSize to 250ms (Frequency * 2 (16bit) divided by 4 (quarter of a second))
+				mBufferSize = mFreq >> 1;
+				// IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment ...
+				mBufferSize -= (mBufferSize % 2);
+				break;
+			}
 
-			mFormat = AL_FORMAT_MONO16;
-			// Set BufferSize to 250ms (Frequency * 2 (16bit) divided by 4 (quarter of a second))
-			mBufferSize = mFreq >> 1;
-			// IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment ...
-			mBufferSize -= (mBufferSize % 2);
+			alGenBuffers(1, &mBuffer);
+			OGREAL_CHECK(alGetError() == AL_NO_ERROR, 13, "Could not generate buffer");
+			int currSection;
+			long size = 0;
+			char data[4096*8];
+			std::vector<char> buffer;
+			do
+			{
+				size = ov_read(&mOggStream, data, sizeof(data), 0, 2, 1, &currSection);
+				buffer.insert(buffer.end(), data, data + size);
+			}while(size > 0);
+
+			ov_clear(&mOggStream);
+			alBufferData(mBuffer, mFormat, &buffer[0], static_cast<ALsizei>(buffer.size()), mFreq);
+			OGREAL_CHECK(alGetError() == AL_NO_ERROR, 13, "Could not generate buffer");
 		}
-
-		alGenBuffers(1, &mBuffer);
-		int currSection;
-		long size = 0;
-		char data[4096*8];
-		std::vector<char> buffer;
-		do
+		catch(Exception e)
 		{
-			size = ov_read(&mOggStream, data, sizeof(data), 0, 2, 1, &currSection);
-			buffer.insert(buffer.end(), data, data + size);
-		}while(size > 0);
+			if (mBuffer)
+			{
+				if (alIsBuffer(mBuffer) == AL_TRUE)
+				{
+					alDeleteBuffers(1, &mBuffer);
+				}
+			}
 
-		ov_clear(&mOggStream);
-		alBufferData(mBuffer, mFormat, &buffer[0], static_cast<ALsizei>(buffer.size()), mFreq);
+			if(mOggFile)
+			{
+				fclose(mOggFile);
+				mOggFile = 0;
+			}
+
+			ov_clear(&mOggStream);
+
+			throw (e);
+		}
 
 		createAndBindSource();
 	}

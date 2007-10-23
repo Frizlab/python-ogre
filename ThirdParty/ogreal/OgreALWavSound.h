@@ -78,6 +78,9 @@ namespace OgreAL {
 		ALvoid* mData;
 
 		friend class SoundFactory;
+
+	private:
+		FILE*	mWavFile;
 	};
 } // Namespace
 #endif
