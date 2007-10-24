@@ -11,6 +11,7 @@ namespace QuickGUI
 		mLargeChange(3)
 	{
 		mWidgetType = TYPE_TRACKBAR_VERTICAL;
+		mSkinComponent = ".trackbar.vertical";
 		addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&VerticalTrackBar::onMouseButtonDown,this);
 
 		// Creat slider button at the beginning of the VerticalTrackBar, whether horizonal (left) or vertical (bot)

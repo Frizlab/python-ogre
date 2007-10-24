@@ -80,6 +80,12 @@ namespace QuickGUI
 		*/
 		virtual void setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight);
 		virtual void setSize(const Size& pixelSize);
+		virtual void setSkin(const Ogre::String& skinName, Ogre::String extension = ".png", bool recursive = false);
+		/**
+		* Applies the texture to the Quad if exists in some form, and updates the Image used for
+		* transparency picking.
+		*/
+		virtual void setTexture(const Ogre::String& textureName, bool updateBaseTexture = true);
 		void setVerticalPixelPadHeight(unsigned int height);
 
 	protected:
@@ -99,6 +105,7 @@ namespace QuickGUI
 		void hideDropDownList(const EventArgs& args);
 		void onLoseFocus(const EventArgs& args);
 		void onMouseButtonUp(const EventArgs& args);
+		void onMouseButtonDown(const EventArgs& args);
 		void onMouseEnters(const EventArgs& args);
 		void onMouseLeaves(const EventArgs& args);
 		/**

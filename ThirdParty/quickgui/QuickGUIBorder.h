@@ -47,6 +47,8 @@ namespace QuickGUI
 
 		BorderType getBorderType();
 
+		void setSkin(const Ogre::String& skinName, Ogre::String extension = ".png", bool recursive = false);
+
 	protected:
 		virtual ~Border();
 

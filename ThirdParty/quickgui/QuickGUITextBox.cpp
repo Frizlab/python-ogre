@@ -28,6 +28,7 @@ namespace QuickGUI
 		mRCtrlDown(false)
 	{
 		mWidgetType = TYPE_TEXTBOX;
+		mSkinComponent = ".textbox";
 		mHorizontalAlignment = HA_LEFT;
 		mMouseCursor = mGUIManager->getMouseCursor();
 		mGUIManager->registerTimeListener(this);

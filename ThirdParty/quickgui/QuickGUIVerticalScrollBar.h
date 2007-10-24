@@ -133,6 +133,7 @@ namespace QuickGUI
 		void onScrollDownDown(const EventArgs& args);
 
 		bool mMouseDownOnTrack;
+		MouseButtonID mButtonDown;
 
 		void onMouseDownOnTrack(const EventArgs& args);
 		void onMouseUpOnTrack(const EventArgs& args);

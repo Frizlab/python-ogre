@@ -8,12 +8,12 @@
 
 namespace QuickGUI
 {
-	class _QuickGUIExport MultiLineLabel :
+	class _QuickGUIExport LabelArea :
 		public Label
 	{
 	public:
-		MultiLineLabel(const Ogre::String& instanceName, Size pixelSize, Ogre::String textureName, GUIManager* gm);
-		~MultiLineLabel();
+		LabelArea(const Ogre::String& instanceName, Size pixelSize, Ogre::String textureName, GUIManager* gm);
+		~LabelArea();
 
 		/**
 		* Aligns the child Label widget horizontally and vertically

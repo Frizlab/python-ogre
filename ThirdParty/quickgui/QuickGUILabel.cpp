@@ -17,6 +17,7 @@ namespace QuickGUI
 		mVPixelPadHeight(6)
 	{
 		mWidgetType = TYPE_LABEL;
+		mSkinComponent = ".label";
 		mText = new Text(mInstanceName+".Text",mQuadContainer,this);
 		mText->setQuadLayer(mQuadLayer);	
 	}

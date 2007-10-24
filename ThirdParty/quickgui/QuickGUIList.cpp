@@ -14,6 +14,7 @@ namespace QuickGUI
 		mVPixelPadHeight(6)
 	{
 		mWidgetType = TYPE_LIST;
+		mSkinComponent = ".list";
 
 		mTextUtilities = new Text(mInstanceName+".TextUtilities",mQuadContainer,this);
 		mTextUtilities->disable();

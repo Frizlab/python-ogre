@@ -22,7 +22,7 @@ namespace QuickGUI
 		public Label
 	{
 	public:
-		friend class MultiLineLabel;
+		friend class LabelArea;
 	public:
 		/** Constructor
             @param

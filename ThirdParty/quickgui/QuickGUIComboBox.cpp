@@ -13,10 +13,12 @@ namespace QuickGUI
 		mVPixelPadHeight(10)
 	{
 		mWidgetType = TYPE_COMBOBOX;
+		mSkinComponent = ".combobox";
 		addEventHandler(EVENT_LOSE_FOCUS,&ComboBox::onLoseFocus,this);
 		addEventHandler(EVENT_MOUSE_ENTER,&ComboBox::onMouseEnters,this);
 		addEventHandler(EVENT_MOUSE_LEAVE,&ComboBox::onMouseLeaves,this);
 		addEventHandler(EVENT_MOUSE_BUTTON_UP,&ComboBox::onMouseButtonUp,this);
+		addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&ComboBox::onMouseButtonDown,this);
 
 		mTextUtilities = new Text(mInstanceName+".TextUtilities",mQuadContainer,this);
 		mTextUtilities->disable();
@@ -38,6 +40,7 @@ namespace QuickGUI
 		mList->allowScrolling(true);
 		mList->hide();
 		mList->setPropogateEventFiring(EVENT_MOUSE_BUTTON_UP,true);
+		mList->setPropogateEventFiring(EVENT_MOUSE_BUTTON_DOWN,true);
 		mList->setPropogateEventFiring(EVENT_MOUSE_ENTER,true);
 		mList->setPropogateEventFiring(EVENT_MOUSE_LEAVE,true);
 
@@ -48,6 +51,8 @@ namespace QuickGUI
 		mMenuLabel->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 		mMenuLabel->setPosition(0,0);
 		mMenuLabel->setPropogateEventFiring(EVENT_LOSE_FOCUS,true);
+		mMenuLabel->setPropogateEventFiring(EVENT_MOUSE_ENTER,true);
+		mMenuLabel->setPropogateEventFiring(EVENT_MOUSE_LEAVE,true);
 
 		mGUIManager->notifyNameUsed(mInstanceName+".DropDownButton");
 		mButton = new Button(mInstanceName+".DropDownButton",Size(mSize.height,mSize.height),mTextureName + ".button" + mTextureExtension,mGUIManager);
@@ -57,6 +62,8 @@ namespace QuickGUI
 		mButton->setHorizontalAnchor(ANCHOR_HORIZONTAL_RIGHT);
 		mButton->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
 		mButton->setPropogateEventFiring(EVENT_MOUSE_BUTTON_UP,true);
+		mButton->setPropogateEventFiring(EVENT_MOUSE_ENTER,true);
+		mButton->setPropogateEventFiring(EVENT_MOUSE_LEAVE,true);
 
 		mHighlightTexture = mTextureName + ".highlight" + mTextureExtension;
 
@@ -181,7 +188,9 @@ namespace QuickGUI
 		{
 			highlightListItem(dynamic_cast<MenuLabel*>(mea.widget));
 		}
-		//setTexture(mDefaultTexture + ".over" + mTextureExtension);
+		
+		setTexture(mTextureName + ".over" + mTextureExtension,false);
+		mButton->applyButtonOverTexture();
 	}
 
 	void ComboBox::onMouseLeaves(const EventArgs& args)
@@ -189,7 +198,14 @@ namespace QuickGUI
 		mHighlightPanel->setVisible(false);
 		mHighlightedItem = NULL;
 		
-		//setTexture(mDefaultTexture + mTextureExtension);
+		setTexture(mTextureName + mTextureExtension,false);
+		mButton->applyDefaultTexture();
+	}
+
+	void ComboBox::onMouseButtonDown(const EventArgs& args)
+	{
+		setTexture(mTextureName + ".down" + mTextureExtension,false);
+		mButton->applyButtonDownTexture();
 	}
 
 	void ComboBox::onMouseButtonUp(const EventArgs& args)
@@ -203,13 +219,11 @@ namespace QuickGUI
 			{
 				mList->hide();
 				mGUIManager->_menuClosed(mList);
-				mButton->applyDefaultTexture();
 			}
 			else
 			{
 				mList->show();
 				mGUIManager->_menuOpened(mList);
-				mButton->applyButtonDownTexture();
 			}
 		}
 	}
@@ -217,7 +231,7 @@ namespace QuickGUI
 	void ComboBox::onSelection(const EventArgs& args)
 	{
 		selectItem(dynamic_cast<MenuLabel*>(dynamic_cast<const WidgetEventArgs&>(args).widget));
-//		setTexture(mDefaultTexture + mTextureExtension);
+		setTexture(mTextureName + mTextureExtension,false);
 		mButton->applyDefaultTexture();
 		mList->hide();
 
@@ -312,6 +326,27 @@ namespace QuickGUI
 	void ComboBox::setSize(const Size& pixelSize)
 	{
 		ComboBox::setSize(pixelSize.width,pixelSize.height);
+	}
+
+	void ComboBox::setSkin(const Ogre::String& skinName, Ogre::String extension, bool recursive)
+	{
+		mSkinName = skinName;
+		setTexture(mSkinName + mSkinComponent + extension);
+	}
+
+	void ComboBox::setTexture(const Ogre::String& textureName, bool updateBaseTexture)
+	{
+		Image::setTexture(textureName,updateBaseTexture);
+
+		if(updateBaseTexture)
+		{
+			mList->setTexture(mTextureName + ".list" + mTextureExtension);
+			mMenuLabel->setTexture(mTextureName + ".menulabel" + mTextureExtension);
+			mButton->setTexture(mTextureName + ".button" + mTextureExtension);
+
+			mHighlightTexture = mTextureName + ".highlight" + mTextureExtension;
+			mHighlightPanel->setTexture(mHighlightTexture);
+		}
 	}
 
 	void ComboBox::setVerticalPixelPadHeight(unsigned int height)

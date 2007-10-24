@@ -16,34 +16,42 @@ namespace QuickGUI
 		switch(mBorderType)
 		{
 		case BORDER_TYPE_TOP_LEFT:
+			mSkinComponent = ".border.topleft";
 			mHorizontalAnchor = ANCHOR_HORIZONTAL_LEFT;
 			mVerticalAnchor = ANCHOR_VERTICAL_TOP;
 			break;
 		case BORDER_TYPE_TOP_RIGHT:
+			mSkinComponent = ".border.topright";
 			mHorizontalAnchor = ANCHOR_HORIZONTAL_RIGHT;
 			mVerticalAnchor = ANCHOR_VERTICAL_TOP;
 			break;
 		case BORDER_TYPE_BOTTOM_LEFT:
+			mSkinComponent = ".border.bottomleft";
 			mHorizontalAnchor = ANCHOR_HORIZONTAL_LEFT;
 			mVerticalAnchor = ANCHOR_VERTICAL_BOTTOM;
 			break;
 		case BORDER_TYPE_BOTTOM_RIGHT:
+			mSkinComponent = ".border.bottomright";
 			mHorizontalAnchor = ANCHOR_HORIZONTAL_RIGHT;
 			mVerticalAnchor = ANCHOR_VERTICAL_BOTTOM;
 			break;
 		case BORDER_TYPE_LEFT:
+			mSkinComponent = ".border.left";
 			mHorizontalAnchor = ANCHOR_HORIZONTAL_LEFT;
 			mVerticalAnchor = ANCHOR_VERTICAL_TOP_BOTTOM;
 			break;
 		case BORDER_TYPE_TOP:
+			mSkinComponent = ".border.top";
 			mHorizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
 			mVerticalAnchor = ANCHOR_VERTICAL_TOP;
 			break;
 		case BORDER_TYPE_RIGHT:
+			mSkinComponent = ".border.right";
 			mHorizontalAnchor = ANCHOR_HORIZONTAL_RIGHT;
 			mVerticalAnchor = ANCHOR_VERTICAL_TOP_BOTTOM;
 			break;
 		case BORDER_TYPE_BOTTOM:
+			mSkinComponent = ".border.bottom";
 			mHorizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
 			mVerticalAnchor = ANCHOR_VERTICAL_BOTTOM;
 			break;
@@ -157,5 +165,20 @@ namespace QuickGUI
 		Point currentPosition = mc->getPosition();
 		mc->offsetOrigin(0,0);
 		mc->setPosition(currentPosition.x,currentPosition.y);
+	}
+
+	void Border::setSkin(const Ogre::String& skinName, Ogre::String extension, bool recursive)
+	{
+		mSkinName = skinName;
+		if(mParentWidget != NULL)
+			setTexture(mSkinName + mParentWidget->getSkinComponent() + mSkinComponent + extension);
+		else
+			setTexture(mSkinName + mSkinComponent + extension);
+
+		if(recursive)
+		{
+			for(std::vector<Widget*>::iterator it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it)
+				(*it)->setSkin(skinName,extension,recursive);
+		}
 	}
 }

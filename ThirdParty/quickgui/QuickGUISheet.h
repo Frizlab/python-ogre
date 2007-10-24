@@ -44,9 +44,6 @@ namespace QuickGUI
 
 	protected:
 		virtual void setQuadContainer(QuadContainer* container);
-	protected:
-		Ogre::String mSkin;
-		Ogre::ColourValue mDefaultTextColor;
 	};
 }
 

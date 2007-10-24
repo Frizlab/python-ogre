@@ -5,11 +5,10 @@
 namespace QuickGUI
 {
 	Sheet::Sheet(const Ogre::String& name, const Ogre::String& texture, GUIManager* gm) :
-		Panel(name,Size(gm->getViewportWidth(),gm->getViewportHeight()),texture,gm),
-		mDefaultTextColor(Ogre::ColourValue::White),
-		mSkin("qgui")
+		Panel(name,Size(gm->getViewportWidth(),gm->getViewportHeight()),texture,gm)
 	{
 		mQuadContainer = this;
+		mSkinComponent = ".sheet";
 		mWidgetType = TYPE_SHEET;
 
 		Ogre::FontManager* fm = Ogre::FontManager::getSingletonPtr();

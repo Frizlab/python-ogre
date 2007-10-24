@@ -5,19 +5,19 @@
 #include "Ogre.h"
 
 // Define the dll export qualifier if compiling for Windows
-// // // #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-// // // 	#ifdef CAELUM_LIB
-// // // 		#define DllExport __declspec (dllexport)
-// // // 	#else
-// // // 		#ifdef __MINGW32__
-// // // 			#define DllExport
-// // // 		#else
-// // // 			#define DllExport __declspec (dllimport)
-// // // 		#endif
-// // // 	#endif
-// // // #else
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	#ifdef CAELUM_LIB
+		#define DllExport __declspec (dllexport)
+	#else
+		#ifdef __MINGW32__
+			#define DllExport
+		#else
+			#define DllExport __declspec (dllimport)
+		#endif
+	#endif
+#else
 	#define DllExport
-// // // #endif
+#endif
 
 // Define the version code
 #define CAELUM_VERSION_MAIN 0

@@ -1,13 +1,13 @@
 #ifndef QUICKGUICONSOLE_H
 #define QUICKGUICONSOLE_H
 
-#include "QuickGUIMultiLineLabel.h"
+#include "QuickGUILabelArea.h"
 #include "QuickGUITextBox.h"
 
 namespace QuickGUI
 {
 	class Console :
-		public MultiLineLabel
+		public LabelArea
 	{
 	public:
 		Console(const Ogre::String& instanceName, Size pixelSize, Ogre::String textureName, GUIManager* gm);

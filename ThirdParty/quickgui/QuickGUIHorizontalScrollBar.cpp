@@ -15,6 +15,7 @@ namespace QuickGUI
 		mButtonLayout(BUTTON_LAYOUT_OPPOSITE)
 	{
 		mWidgetType = TYPE_SCROLLBAR_HORIZONTAL;
+		mSkinComponent = ".scrollbar.horizontal";
 		mGUIManager->registerTimeListener(this);
 		addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&HorizontalScrollBar::onMouseDownOnTrack,this);
 		addEventHandler(EVENT_MOUSE_BUTTON_UP,&HorizontalScrollBar::onMouseUpOnTrack,this);
@@ -261,9 +262,11 @@ namespace QuickGUI
 
 	void HorizontalScrollBar::onMouseDownOnTrack(const EventArgs& args)
 	{
-		if(dynamic_cast<const MouseEventArgs&>(args).button == MB_Left)
+		QuickGUI::MouseButtonID id = dynamic_cast<const MouseEventArgs&>(args).button;
+		if(id == MB_Left)
 		{
 			mMouseDownOnTrack = true;
+			mButtonDown = MB_Left;
 
 			Point mousePosition = dynamic_cast<const MouseEventArgs&>(args).position - getScreenPosition();
 
@@ -282,11 +285,34 @@ namespace QuickGUI
 
 			mRepeatTimer = 0;
 		}
+		else if(id == MB_Right)
+		{
+			mMouseDownOnTrack = true;
+			mButtonDown = MB_Right;
+
+			Point mousePosition = dynamic_cast<const MouseEventArgs&>(args).position - getScreenPosition();
+
+			ScrollEventArgs scrollArgs(this);
+			// if mouse clicked left of track, scroll right.
+			if(mousePosition.x < mSlider->getXPosition())
+			{
+				scrollArgs.sliderIncreasedPosition = false;
+				_scroll(mLargeChange,scrollArgs);
+			}
+			else
+			{
+				scrollArgs.sliderIncreasedPosition = true;
+				_scroll(-mLargeChange,scrollArgs);
+			}
+
+			mRepeatTimer = 0;
+		}
 	}
 
 	void HorizontalScrollBar::onMouseUpOnTrack(const EventArgs& args)
 	{
-		if(dynamic_cast<const MouseEventArgs&>(args).button == MB_Left)
+		QuickGUI::MouseButtonID id = dynamic_cast<const MouseEventArgs&>(args).button;
+		if((id == MB_Left) || (id == MB_Right))
 		{
 			mMouseDownOnTrack = false;
 		}
@@ -306,9 +332,16 @@ namespace QuickGUI
 
 	void HorizontalScrollBar::onScrollLeftDown(const EventArgs& args)
 	{
-		if(dynamic_cast<const MouseEventArgs&>(args).button == MB_Left)
+		QuickGUI::MouseButtonID id = dynamic_cast<const MouseEventArgs&>(args).button;
+		if(id == MB_Left)
 		{
 			scrollLeftSmall();
+
+			mRepeatTimer = 0;
+		}
+		else if(id == MB_Right)
+		{
+			scrollRightSmall();
 
 			mRepeatTimer = 0;
 		}
@@ -316,9 +349,16 @@ namespace QuickGUI
 
 	void HorizontalScrollBar::onScrollRightDown(const EventArgs& args)
 	{
-		if(dynamic_cast<const MouseEventArgs&>(args).button == MB_Left)
+		QuickGUI::MouseButtonID id = dynamic_cast<const MouseEventArgs&>(args).button;
+		if(id == MB_Left)
 		{
 			scrollRightSmall();
+
+			mRepeatTimer = 0;
+		}
+		else if(id == MB_Right)
+		{
+			scrollLeftSmall();
 
 			mRepeatTimer = 0;
 		}
@@ -431,7 +471,7 @@ namespace QuickGUI
 			if(mMouseDownOnTrack)
 			{
 				MouseEventArgs args(this);
-				args.button = MB_Left;
+				args.button = mButtonDown;
 				args.position = mGUIManager->getMouseCursor()->getPosition();
 				onMouseDownOnTrack(args);
 				return;

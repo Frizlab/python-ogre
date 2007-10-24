@@ -1,13 +1,14 @@
-#include "QuickGUIMultiLineLabel.h"
+#include "QuickGUILabelArea.h"
 
 namespace QuickGUI
 {
-	MultiLineLabel::MultiLineLabel(const Ogre::String& instanceName, Size pixelSize, Ogre::String textureName, GUIManager* gm) :
+	LabelArea::LabelArea(const Ogre::String& instanceName, Size pixelSize, Ogre::String textureName, GUIManager* gm) :
 		Label(instanceName,pixelSize,textureName,gm),
 		mOffset(0.0),
 		mCaption("")
 	{
-		mWidgetType = TYPE_MULTILINELABEL;
+		mWidgetType = TYPE_LABELAREA;
+		mSkinComponent = ".labelarea";
 		mAutoSize = false;
 
 		mTextList = new List(mInstanceName+".TextList",mSize,"",mGUIManager);
@@ -18,11 +19,11 @@ namespace QuickGUI
 		allowScrolling(true);
 	}
 
-	MultiLineLabel::~MultiLineLabel()
+	LabelArea::~LabelArea()
 	{
 	}
 
-	int MultiLineLabel::_getLine(int startIndex)
+	int LabelArea::_getLine(int startIndex)
 	{
 		int end = startIndex + 1;
 		
@@ -62,11 +63,11 @@ namespace QuickGUI
 		}
 	}
 
-	void MultiLineLabel::alignText()
+	void LabelArea::alignText()
 	{
 	}
 
-	void MultiLineLabel::allowScrolling(bool allow)
+	void LabelArea::allowScrolling(bool allow)
 	{
 		mScrollingAllowed = allow;
 		mTextList->allowScrolling(mScrollingAllowed);
@@ -77,12 +78,12 @@ namespace QuickGUI
 			mOffset = 0.0;
 	}
 
-	void MultiLineLabel::clearText()
+	void LabelArea::clearText()
 	{
 		setText("");
 	}
 
-	void MultiLineLabel::disable()
+	void LabelArea::disable()
 	{
 		mTextColor = mText->getColor();
 
@@ -94,7 +95,7 @@ namespace QuickGUI
 		Label::disable();
 	}
 
-	void MultiLineLabel::enable()
+	void LabelArea::enable()
 	{
 		for( int i = 0; i < mTextList->getNumberOfItems(); ++i )
 		{
@@ -104,17 +105,17 @@ namespace QuickGUI
 		Label::enable();
 	}
 
-	Ogre::UTFString MultiLineLabel::getText()
+	Ogre::UTFString LabelArea::getText()
 	{
 		return mCaption;
 	}
 
-	bool MultiLineLabel::scrollingAllowed()
+	bool LabelArea::scrollingAllowed()
 	{
 		return mScrollingAllowed;
 	}
 
-	void MultiLineLabel::setDisabledTextColor(const Ogre::ColourValue& c)
+	void LabelArea::setDisabledTextColor(const Ogre::ColourValue& c)
 	{
 		mDisabledTextColor = c;
 
@@ -127,13 +128,13 @@ namespace QuickGUI
 			disable();
 	}
 
-	void MultiLineLabel::setFont(const Ogre::String& fontScriptName, bool recursive)
+	void LabelArea::setFont(const Ogre::String& fontScriptName, bool recursive)
 	{
 		Label::setFont(fontScriptName,recursive);
 		setText(mCaption);
 	}
 
-	void MultiLineLabel::setHorizontalAlignment(HorizontalAlignment ha)
+	void LabelArea::setHorizontalAlignment(HorizontalAlignment ha)
 	{
 		mHorizontalAlignment = ha;
 
@@ -143,7 +144,7 @@ namespace QuickGUI
 		}
 	}
 
-	void MultiLineLabel::setText(const Ogre::UTFString& text)
+	void LabelArea::setText(const Ogre::UTFString& text)
 	{
 		mCaption = text;
 
@@ -184,7 +185,7 @@ namespace QuickGUI
 		}
 	}
 
-	void MultiLineLabel::setTextColor(Ogre::ColourValue color)
+	void LabelArea::setTextColor(Ogre::ColourValue color)
 	{
 		for( int i = 0; i < mTextList->getNumberOfItems(); ++i )
 		{
@@ -192,7 +193,7 @@ namespace QuickGUI
 		}
 	}
 
-	void MultiLineLabel::setVerticalAlignment(VerticalAlignment va)
+	void LabelArea::setVerticalAlignment(VerticalAlignment va)
 	{
 		mVerticalAlignment = va;
 

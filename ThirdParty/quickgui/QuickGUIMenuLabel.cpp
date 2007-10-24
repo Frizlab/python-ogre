@@ -10,6 +10,7 @@ namespace QuickGUI
 		mButtonTextureName("")
 	{
 		mWidgetType = TYPE_MENULABEL;
+		mSkinComponent = ".menulabel";
 		mTextBoundsPixelOffset.x = mSize.height;
 		mTextBoundsRelativeSize.width = (mSize.width - (mSize.height * 2.0)) / mSize.width;
 
