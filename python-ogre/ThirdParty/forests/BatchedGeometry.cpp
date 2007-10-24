@@ -15,7 +15,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 
 #include "BatchedGeometry.h"
 
-#include "OgreRoot.h"
+/*#include "OgreRoot.h"
 #include "OgreRenderSystem.h"
 #include "OgreCamera.h"
 #include "OgreVector3.h"
@@ -30,7 +30,8 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include "OgreHardwareBufferManager.h"
 #include "OgreHardwareBuffer.h"
 #include "OgreMaterialManager.h"
-#include "OgreMaterial.h"
+#include "OgreMaterial.h"*/
+
 using namespace Ogre;
 
 
@@ -52,6 +53,12 @@ BatchedGeometry::~BatchedGeometry()
 {
 	clear();
 }
+
+#if (OGRE_VERSION >=  ((1 << 16) | (5 << 8) | 0)) // must have at least shoggoth (1.5.0)
+void BatchedGeometry::visitRenderables(Ogre::Renderable::Visitor*, bool)
+{
+}
+#endif
 
 void BatchedGeometry::addEntity(Entity *ent, const Vector3 &position, const Quaternion &orientation, const Vector3 &scale, const Ogre::ColourValue &color)
 {
@@ -336,7 +343,7 @@ void BatchedGeometry::SubBatch::build()
 
 	//If no vertex colors are used, make sure the final batch includes them (so the shade values work)
 	if (!vertexData->vertexDeclaration->findElementBySemantic(VES_DIFFUSE)) {
-		Ogre::ushort i = (ushort)vertBinding->getBufferCount();
+		Ogre::ushort i = (Ogre::ushort)vertBinding->getBufferCount();
 
 		vertDecl->addElement(i, 0, VET_COLOUR, VES_DIFFUSE);
 

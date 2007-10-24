@@ -263,3 +263,4 @@ void BatchPage::_updateShaders()
 	}
 
 }
+
