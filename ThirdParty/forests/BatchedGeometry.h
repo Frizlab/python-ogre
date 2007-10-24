@@ -20,13 +20,32 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include "OgreMovableObject.h"
 #include "OgreSceneNode.h"
 #include "OgreMaterialManager.h"
-
+#include "OgreRoot.h"
+#include "OgreRenderSystem.h"
+#include "OgreCamera.h"
+#include "OgreVector3.h"
+#include "OgreQuaternion.h"
+#include "OgreSceneNode.h"
+#include "OgreString.h"
+#include "OgreStringConverter.h"
+#include "OgreEntity.h"
+#include "OgreSubMesh.h"
+#include "OgreMesh.h"
+#include "OgreMeshManager.h"
+#include "OgreHardwareBufferManager.h"
+#include "OgreHardwareBuffer.h"
+#include "OgreMaterialManager.h"
+#include "OgreMaterial.h"
 
 class BatchedGeometry: public Ogre::MovableObject
 {
 public:
 	BatchedGeometry(Ogre::SceneManager *mgr);
 	~BatchedGeometry();
+
+#if (OGRE_VERSION >=  ((1 << 16) | (5 << 8) | 0)) // must have at least shoggoth (1.5.0)
+		void visitRenderables(Ogre::Renderable::Visitor* visitor, bool debugRenderables);
+#endif
 
 	void addEntity(Ogre::Entity *ent, const Ogre::Vector3 &position, const Ogre::Quaternion &orientation = Ogre::Quaternion::IDENTITY, const Ogre::Vector3 &scale = Ogre::Vector3::UNIT_SCALE, const Ogre::ColourValue &color = Ogre::ColourValue::White);
 	void build();
@@ -120,3 +139,4 @@ public:
 
 
 #endif
+

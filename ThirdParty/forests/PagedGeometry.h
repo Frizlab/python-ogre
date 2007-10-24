@@ -97,7 +97,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include "OgreCamera.h"
 #include "OgreVector3.h"
 #include "OgreTimer.h"
-
+#include "OgreRoot.h"
 
 class GeometryPageManager;
 class PageLoader;
