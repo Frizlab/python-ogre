@@ -10,6 +10,7 @@ namespace QuickGUI
 		mVerticalButtonLayout(VerticalScrollBar::BUTTON_LAYOUT_OPPOSITE)
 	{
 		mWidgetType = TYPE_SCROLL_PANE;
+		mSkinComponent = ".scrollpane";
 		mScrollPaneAccessible = false;
 		mGainFocusOnClick = false;
 

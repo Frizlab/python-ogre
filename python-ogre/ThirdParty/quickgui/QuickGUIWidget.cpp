@@ -1136,9 +1136,16 @@ namespace QuickGUI
 		mScrollPaneAccessible = accessible;
 	}
 
-	void Widget::setSkin(const Ogre::String& skinName)
+	void Widget::setSkin(const Ogre::String& skinName, Ogre::String extension, bool recursive)
 	{
 		mSkinName = skinName;
+		setTexture(mSkinName + mSkinComponent + extension);
+
+		if(recursive)
+		{
+			for(std::vector<Widget*>::iterator it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it)
+				(*it)->setSkin(skinName,extension,recursive);
+		}
 	}
 
 	void Widget::setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight)

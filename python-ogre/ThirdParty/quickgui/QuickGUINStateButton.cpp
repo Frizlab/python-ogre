@@ -6,6 +6,7 @@ namespace QuickGUI
 		Button(instanceName,pixelSize,"",gm)
 	{
 		mWidgetType = TYPE_NSTATEBUTTON;
+		mSkinComponent = "";
 		mAutoSize = false;
 		addEventHandler(EVENT_MOUSE_BUTTON_UP,&NStateButton::onMouseButtonUp,this);
 

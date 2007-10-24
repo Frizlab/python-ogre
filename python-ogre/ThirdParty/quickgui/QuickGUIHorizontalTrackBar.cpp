@@ -10,6 +10,7 @@ namespace QuickGUI
 		mLargeChange(3)
 	{
 		mWidgetType = TYPE_TRACKBAR_HORIZONTAL;
+		mSkinComponent = ".trackbar.horizontal";
 		addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&HorizontalTrackBar::onMouseButtonDown,this);
 
 		// Creat slider button at the beginning of the HorizontalTrackBar, whether horizonal (left) or vertical (bot)

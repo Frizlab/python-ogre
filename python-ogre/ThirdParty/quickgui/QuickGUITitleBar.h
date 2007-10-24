@@ -70,6 +70,7 @@ namespace QuickGUI
 		*/
 		void setCaption(const Ogre::UTFString& caption);
 		virtual void setFont(const Ogre::String& fontScriptName, bool recursive = false);
+		void setSkin(const Ogre::String& skinName, Ogre::String extension = ".png", bool recursive = false);
 		virtual void setText(const Ogre::UTFString& text);
 		virtual void setWidth(Ogre::Real pixelWidth);
 		/**

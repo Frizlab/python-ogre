@@ -10,6 +10,7 @@ namespace QuickGUI
 		mFillDirection(FILLS_NEGATIVE_TO_POSITIVE)
 	{
 		mWidgetType = TYPE_PROGRESSBAR;
+		mSkinComponent = ".progressbar";
 		if( mSize.width > mSize.height )
 			mLayout = LAYOUT_HORIZONTAL;
 		else

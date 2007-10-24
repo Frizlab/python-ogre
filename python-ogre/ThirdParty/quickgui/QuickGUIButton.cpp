@@ -10,6 +10,7 @@ namespace QuickGUI
 		mButtonDown(false)
 	{
 		mWidgetType = TYPE_BUTTON;
+		mSkinComponent = ".button";
 		mButtonDownTexture = mTextureName + ".down" + mTextureExtension;
 		mButtonOverTexture = mTextureName + ".over" + mTextureExtension;
 

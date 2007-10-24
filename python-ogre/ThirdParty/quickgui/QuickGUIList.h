@@ -24,7 +24,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class ComboBox;
-		friend class MultiLineLabel;
+		friend class LabelArea;
 	public:
 		/** Constructor
             @param

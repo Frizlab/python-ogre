@@ -51,8 +51,8 @@ namespace QuickGUI
 			TYPE_LABEL					,
 			TYPE_LIST					,
 			TYPE_MENULABEL				,
-			TYPE_MULTILINELABEL			,
-			TYPE_MULTILINETEXTBOX		,
+			TYPE_LABELAREA			,
+			TYPE_TEXTAREA		,
 			TYPE_NSTATEBUTTON			,
 			TYPE_PANEL					,
 			TYPE_PROGRESSBAR			,
@@ -422,7 +422,7 @@ namespace QuickGUI
 		void setScreenXPosition(const Ogre::Real& pixelX);
 		void setScreenYPosition(const Ogre::Real& pixelY);
 		void setScrollPaneAccessible(bool accessible);
-		void setSkin(const Ogre::String& skinName);
+		virtual void setSkin(const Ogre::String& skinName, Ogre::String extension = ".png", bool recursive = false);
 		/**
 		* Manually set size of widget.
 		*/

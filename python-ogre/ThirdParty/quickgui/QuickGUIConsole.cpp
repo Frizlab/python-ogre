@@ -3,10 +3,11 @@
 namespace QuickGUI
 {
 	Console::Console(const Ogre::String& instanceName, Size pixelSize, Ogre::String textureName, GUIManager* gm) :
-		MultiLineLabel(instanceName,pixelSize,textureName,gm),
+		LabelArea(instanceName,pixelSize,textureName,gm),
 		mMaxLines(30)
 	{
 		mWidgetType = TYPE_CONSOLE;
+		mSkinComponent = ".console";
 
 		mInputBox = new TextBox(mInstanceName+".InputBox",Size(mSize.width,0),"qgui.textbox.png",mGUIManager);
 		addChild(mInputBox);
@@ -59,7 +60,7 @@ namespace QuickGUI
 
 	void Console::clearText()
 	{
-		MultiLineLabel::clearText();
+		LabelArea::clearText();
 		mInputBox->clearText();
 	}
 
@@ -83,13 +84,13 @@ namespace QuickGUI
 
 	void Console::setDisabledTextColor(const Ogre::ColourValue& c)
 	{
-		MultiLineLabel::setDisabledTextColor(c);
+		LabelArea::setDisabledTextColor(c);
 		mInputBox->setDisabledTextColor(c);
 	}
 
 	void Console::setHorizontalAlignment(HorizontalAlignment ha)
 	{
-		MultiLineLabel::setHorizontalAlignment(ha);
+		LabelArea::setHorizontalAlignment(ha);
 		mInputBox->setHorizontalAlignment(ha);
 	}
 
@@ -100,13 +101,13 @@ namespace QuickGUI
 
 	void Console::setTextColor(Ogre::ColourValue color)
 	{
-		MultiLineLabel::setTextColor(color);
+		LabelArea::setTextColor(color);
 		mInputBox->setTextColor(color);
 	}
 
 	void Console::setVerticalAlignment(VerticalAlignment va)
 	{
-		MultiLineLabel::setVerticalAlignment(va);
+		LabelArea::setVerticalAlignment(va);
 		mInputBox->setVerticalAlignment(va);
 	}
 

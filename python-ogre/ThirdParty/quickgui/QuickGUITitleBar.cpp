@@ -10,6 +10,7 @@ namespace QuickGUI
 		Label(instanceName,pixelSize,texture,gm)
 	{	
 		mWidgetType = TYPE_TITLEBAR;
+		mSkinComponent = ".titlebar";
 		mScrollPaneAccessible = false;
 		setQuadLayer(Quad::LAYER_MENU);
 		mInheritQuadLayer = false;
@@ -108,6 +109,21 @@ namespace QuickGUI
 
 		WidgetEventArgs args(this);
 		fireEvent(EVENT_PARENT_CHANGED,args);
+	}
+
+	void TitleBar::setSkin(const Ogre::String& skinName, Ogre::String extension, bool recursive)
+	{
+		mSkinName = skinName;
+		if(mParentWidget != NULL)
+			setTexture(mSkinName + mParentWidget->getSkinComponent() + mSkinComponent + extension);
+		else
+			setTexture(mSkinName + mSkinComponent + extension);
+
+		if(recursive)
+		{
+			for(std::vector<Widget*>::iterator it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it)
+				(*it)->setSkin(skinName,extension,recursive);
+		}
 	}
 
 	void TitleBar::setText(const Ogre::UTFString& text)

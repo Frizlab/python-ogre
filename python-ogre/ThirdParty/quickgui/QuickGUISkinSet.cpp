@@ -5,8 +5,7 @@
 
 namespace QuickGUI
 {
-	SkinSet::SkinSet(const Ogre::String& skinName, 
-					const Ogre::String &resourceGroup) :
+	SkinSet::SkinSet(const Ogre::String& skinName, const Ogre::String &resourceGroup) :
 		mSkinName(skinName),
 		mResourceGroup(resourceGroup),
 		mNumIndividualTextures(0),
@@ -386,11 +385,11 @@ namespace QuickGUI
 		}
 
 		// Following lines are unnecessary... just puts it out to a file to see :-)
-		Ogre::Image finalImageSet;
+/*		Ogre::Image finalImageSet;
 		finalImageSet.load("QuickGUI.output.png", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 		buf->blitToMemory(finalImageSet.getPixelBox());
 		finalImageSet.save("SkinSetImage.png");
-	}
+*/	}
 
 	bool SkinSet::containsImage(Ogre::String textureName)
 	{
@@ -398,6 +397,11 @@ namespace QuickGUI
 			return true;
 
 		return false;
+	}
+
+	Ogre::String SkinSet::getSkinName()
+	{
+		return mSkinName;
 	}
 
 	Ogre::String SkinSet::getTextureName()

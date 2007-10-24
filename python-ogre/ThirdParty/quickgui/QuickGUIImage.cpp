@@ -6,6 +6,7 @@ namespace QuickGUI
 		Widget(instanceName,pixelSize,texture,gm)
 	{
 		mWidgetType = TYPE_IMAGE;
+		mSkinComponent = ".image";
 	}
 
 	Image::~Image()

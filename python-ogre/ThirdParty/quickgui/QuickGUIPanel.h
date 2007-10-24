@@ -8,7 +8,7 @@
 #include "QuickGUIComboBox.h"
 #include "QuickGUIConsole.h"
 #include "QuickGUIImage.h"
-#include "QuickGUIMultiLineLabel.h"
+#include "QuickGUILabelArea.h"
 #include "QuickGUINStateButton.h"
 #include "QuickGUIProgressBar.h"
 #include "QuickGUIScrollPane.h"
@@ -74,7 +74,7 @@ namespace QuickGUI
 
 		List* createList();
 
-		MultiLineLabel* createMultiLineLabel();
+		LabelArea* createMultiLineLabel();
 
 		NStateButton* createNStateButton();
 

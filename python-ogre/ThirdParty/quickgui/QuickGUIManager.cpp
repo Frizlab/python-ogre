@@ -316,8 +316,8 @@ namespace QuickGUI
 			case Widget::TYPE_LABEL:				s = "Label";			break;
 			case Widget::TYPE_LIST:					s = "List";				break;
 			case Widget::TYPE_MENULABEL:			s = "MenuLabel";		break;
-			case Widget::TYPE_MULTILINELABEL:		s = "MultiLineLabel";	break;
-			case Widget::TYPE_MULTILINETEXTBOX:		s = "MultiLineTextBox";	break;
+			case Widget::TYPE_LABELAREA:		s = "LabelArea";	break;
+			case Widget::TYPE_TEXTAREA:		s = "TextArea";	break;
 			case Widget::TYPE_NSTATEBUTTON:			s = "NStateButton";		break;
 			case Widget::TYPE_PANEL:				s = "Panel";			break;
 			case Widget::TYPE_PROGRESSBAR:			s = "ProgressBar";		break;

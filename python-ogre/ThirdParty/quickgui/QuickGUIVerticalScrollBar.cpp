@@ -15,6 +15,7 @@ namespace QuickGUI
 		mButtonLayout(BUTTON_LAYOUT_OPPOSITE)
 	{
 		mWidgetType = TYPE_SCROLLBAR_VERTICAL;
+		mSkinComponent = ".scrollbar.vertical";
 		mGUIManager->registerTimeListener(this);
 		addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&VerticalScrollBar::onMouseDownOnTrack,this);
 		addEventHandler(EVENT_MOUSE_BUTTON_UP,&VerticalScrollBar::onMouseUpOnTrack,this);
@@ -262,14 +263,16 @@ namespace QuickGUI
 
 	void VerticalScrollBar::onMouseDownOnTrack(const EventArgs& args)
 	{
-		if(dynamic_cast<const MouseEventArgs&>(args).button == MB_Left)
+		QuickGUI::MouseButtonID id = dynamic_cast<const MouseEventArgs&>(args).button;
+		if(id == MB_Left)
 		{
 			mMouseDownOnTrack = true;
+			mButtonDown = MB_Left;
 
 			Point mousePosition = dynamic_cast<const MouseEventArgs&>(args).position - getScreenPosition();
 
 			ScrollEventArgs scrollArgs(this);
-			// if mouse clicked left of track, scroll left.
+			// if mouse clicked above track, scroll up.
 			if(mousePosition.y < mSlider->getYPosition())
 			{
 				scrollArgs.sliderIncreasedPosition = false;
@@ -283,11 +286,34 @@ namespace QuickGUI
 
 			mRepeatTimer = 0;
 		}
+		else if(id == MB_Right)
+		{
+			mMouseDownOnTrack = true;
+			mButtonDown = MB_Right;
+
+			Point mousePosition = dynamic_cast<const MouseEventArgs&>(args).position - getScreenPosition();
+
+			ScrollEventArgs scrollArgs(this);
+			// if mouse clicked below track, scroll down.
+			if(mousePosition.y < mSlider->getYPosition())
+			{
+				scrollArgs.sliderIncreasedPosition = false;
+				_scroll(mLargeChange,scrollArgs);
+			}
+			else
+			{
+				scrollArgs.sliderIncreasedPosition = true;
+				_scroll(-mLargeChange,scrollArgs);
+			}
+
+			mRepeatTimer = 0;
+		}
 	}
 
 	void VerticalScrollBar::onMouseUpOnTrack(const EventArgs& args)
 	{
-		if(dynamic_cast<const MouseEventArgs&>(args).button == MB_Left)
+		QuickGUI::MouseButtonID id = dynamic_cast<const MouseEventArgs&>(args).button;
+		if((id == MB_Left) || (id == MB_Right))
 		{
 			mMouseDownOnTrack = false;
 		}
@@ -307,20 +333,34 @@ namespace QuickGUI
 
 	void VerticalScrollBar::onScrollUpDown(const EventArgs& args)
 	{
-		if(dynamic_cast<const MouseEventArgs&>(args).button == MB_Left)
+		QuickGUI::MouseButtonID id = dynamic_cast<const MouseEventArgs&>(args).button;
+		if(id == MB_Left)
 		{
 			scrollUpSmall();
 
+			mRepeatTimer = 0;
+		}
+		else if(id == MB_Right)
+		{
+			scrollDownSmall();
+			
 			mRepeatTimer = 0;
 		}
 	}
 
 	void VerticalScrollBar::onScrollDownDown(const EventArgs& args)
 	{
-		if(dynamic_cast<const MouseEventArgs&>(args).button == MB_Left)
+		QuickGUI::MouseButtonID id = dynamic_cast<const MouseEventArgs&>(args).button;
+		if(id == MB_Left)
 		{
 			scrollDownSmall();
 
+			mRepeatTimer = 0;
+		}
+		else if(id == MB_Right)
+		{
+			scrollUpSmall();
+			
 			mRepeatTimer = 0;
 		}
 	}
@@ -432,7 +472,7 @@ namespace QuickGUI
 			if(mMouseDownOnTrack)
 			{
 				MouseEventArgs args(this);
-				args.button = MB_Left;
+				args.button = mButtonDown;
 				args.position = mGUIManager->getMouseCursor()->getPosition();
 				onMouseDownOnTrack(args);
 				return;

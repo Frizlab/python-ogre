@@ -201,12 +201,12 @@ namespace QuickGUI
 		return newList;
 	}
 
-	MultiLineLabel* Panel::createMultiLineLabel()
+	LabelArea* Panel::createMultiLineLabel()
 	{
-		Ogre::String name = mGUIManager->generateName(TYPE_MULTILINELABEL);
+		Ogre::String name = mGUIManager->generateName(TYPE_LABELAREA);
 		mGUIManager->notifyNameUsed(name);
 
-		MultiLineLabel* newMultiLineLabel = new MultiLineLabel(name,Size(300,100),"qgui.multilinelabel.png",mGUIManager);
+		LabelArea* newMultiLineLabel = new LabelArea(name,Size(300,100),"qgui.LabelArea.png",mGUIManager);
 		addChild(newMultiLineLabel);
 		newMultiLineLabel->setPosition(0,0);
 		newMultiLineLabel->setFont(mFontName,true);

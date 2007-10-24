@@ -49,6 +49,7 @@ namespace QuickGUI
 		*/
 		bool containsImage(Ogre::String textureName);
 
+		Ogre::String getSkinName();
 		// Return the name of the skin for this SkinSet
 		Ogre::String getTextureName();
 
