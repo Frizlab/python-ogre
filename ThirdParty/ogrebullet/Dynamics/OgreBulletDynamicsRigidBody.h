@@ -27,7 +27,7 @@ http://www.gnu.org/copyleft/lesser.txt.
 #ifndef _OGREBULLETDYNAMICS_RigidObject_H
 #define _OGREBULLETDYNAMICS_RigidObject_H
 
-#include "OgreBulletDynamicsPrerequisites.h"
+#include "OgreBulletDynamicsPreRequisites.h"
 
 #include "OgreBulletCollisionsObject.h"
 #include "OgreBulletCollisionsWorld.h"
