@@ -4,8 +4,8 @@
 #ifndef __QuickGuiSkinSetParser_h_
 #define __QuickGuiSkinSetParser_h_
 
+#include "OgrePrerequisites.h"
 #include "OgreScriptLoader.h"
-#include <hash_map>
 
 #include "QuickGUIExportDLL.h"
 
@@ -35,7 +35,7 @@ namespace QuickGUI
 		Ogre::Real mLoadOrder;
 		Ogre::StringVector mScriptPatterns;
 
-		stdext::hash_map<Ogre::String, ConfigNode*> scriptList;
+		HashMap <Ogre::String, ConfigNode*> scriptList;
 
 		//Parsing
 		char *parseBuff, *parseBuffEnd, *buffPtr;
