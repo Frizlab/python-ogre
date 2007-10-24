@@ -2,7 +2,6 @@
 //Original author: John Judnich
 
 #include "OgreScriptLoader.h"
-#include <hash_map>
 
 #include "OgreResourceGroupManager.h"
 #include "OgreException.h"
@@ -34,7 +33,7 @@ namespace QuickGUI
 		singletonPtr = NULL;
 
 		//Delete all scripts
-		stdext::hash_map<String, ConfigNode*>::iterator i;
+		HashMap<String, ConfigNode*>::iterator i;
 		for (i = scriptList.begin(); i != scriptList.end(); i++){
 			delete i->second;
 		}
@@ -57,7 +56,7 @@ namespace QuickGUI
 
 	ConfigNode *ConfigScriptLoader::getConfigScript(const String &type, const String &name)
 	{
-		stdext::hash_map<String, ConfigNode*>::iterator i;
+		HashMap<String, ConfigNode*>::iterator i;
 
 		String key = type + ' ' + name;
 		i = scriptList.find(key);
