@@ -82,7 +82,7 @@ def get_source_files(_dir):
 def get_linkflags():
     if os.name=='nt':
         #LINKFLAGS = " /NOLOGO /INCREMENTAL:NO /DLL /OPT:NOREF /OPT:NOICF /OPT:NOWIN98 /subsystem:console " # no change
-        LINKFLAGS = " /NOLOGO /OPT:REF /INCREMENTAL:NO /DLL /OPT:ICF /OPT:NOWIN98 /subsystem:console " # 7 minutes 25% smaller 16.6 Meg
+        LINKFLAGS = " /MAP:FULL /MAPINFO:EXPORTS /NOLOGO /OPT:REF /INCREMENTAL:NO /DLL /OPT:ICF /OPT:NOWIN98 /subsystem:console " # 7 minutes 25% smaller 16.6 Meg
         #LINKFLAGS = " /NOLOGO /INCREMENTAL:NO /DLL /subsystem:console " ### LONG Link , 80 minutes - 15.7 meg
     elif os.name == 'posix':
         if os.sys.platform <> 'darwin':
@@ -95,7 +95,7 @@ def get_linkflags():
 possible_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',\
     'ogreode', 'ogreal', 'quickgui', 'opcode', 'nxogre', 'bullet', 'physx', 'betagui','theora',\
      'ogrevideoffmpeg', 'ogredshow', 'plib', 'ogrebulletc', 'ogrebulletd',
-     'ogreforests', 'et', 'navi', 'caelum' ]  # , 'raknet'
+     'ogreforests', 'et', 'navi', 'caelum', 'noise' ]  # , 'raknet'
 default_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',\
     'ogreode', 'ogreal',  'quickgui', 'opcode', 'nxogre', 'bullet', 'physx', 'betagui','theora',\
      'ogrevideoffmpeg', 'ogredshow', 'plib',  'ogrebulletc', 'ogrebulletd',
@@ -165,9 +165,9 @@ for name, cls in environment.projects.items():
             ## and lets have it install the output into the 'package_dir_name/ModuleName' dir and rename to the PydName
             _env.AddPostAction(package,\
             	 'mt.exe -nologo -manifest %(name)s.manifest -outputresource:%(name)s;2' % { 'name':package[index] } )
-        #else:            	 
-        #    _env.AddPostAction(package,\
-        #    	 '-strip -g -S -d --strip-debug -s %(name)s' % { 'name':package[index] } )
+        else:            	 
+            _env.AddPostAction(package,\
+            	 '-strip -g -S -d --strip-debug -s %(name)s' % { 'name':package[index] } )
             	         
         _env.InstallAs(os.path.join(environment.package_dir_name, cls.parent,
                                     cls.ModuleName, cls.PydName), 

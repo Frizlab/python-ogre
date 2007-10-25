@@ -47,6 +47,8 @@ PATH_et =           os.path.join(PATH_THIRDPARTY, 'et')
 PATH_caelum =       os.path.join(PATH_THIRDPARTY, 'caelum')
 PATH_NxOgre=        os.path.join(PATH_THIRDPARTY, 'nxogre')
 # PATH_NxOgre=        os.path.join(BASE_DIR, 'nxogre/NxOgre')
+PATH_noise=        os.path.join(PATH_THIRDPARTY, 'noise')
+
 
 PATH_ogrevideoffmpeg = os.path.join(PATH_THIRDPARTY,'ffmpeg')
 PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.62') 
@@ -136,6 +138,7 @@ PATH_INCLUDE_ffmpeg =       os.path.join (PATH_ffmpeg,'include')
 PATH_INCLUDE_ogredshow =    PATH_ogredshow
 PATH_INCLUDE_plib =         PATH_plib
 PATH_INCLUDE_navi =         os.path.join (PATH_navi,'include')
+PATH_INCLUDE_noise = PATH_noise 
 ##PATH_INCLUDE_ogreforests =         os.path.join (PATH_ogreforests,'include')
 PATH_INCLUDE_ogreforests =         PATH_ogreforests
 
