@@ -49,6 +49,7 @@ PATH_ogredshow =    os.path.join(PATH_THIRDPARTY,'dshow')
 PATH_plib =         os.path.join(PATH_THIRDPARTY, 'plib')
 PATH_et =           os.path.join(PATH_THIRDPARTY, 'et')
 PATH_caelum =       os.path.join(PATH_THIRDPARTY, 'caelum')
+PATH_noise=         os.path.join(PATH_THIRDPARTY, 'noise')
 
 PATH_ogrevideoffmpeg = os.path.join(PATH_THIRDPARTY,'ffmpeg')
 PATH_NxOgre=        os.path.join(PATH_THIRDPARTY, 'nxogre')
@@ -127,6 +128,7 @@ PATH_INCLUDE_ogrevideoffmpeg =  PATH_ogrevideoffmpeg
 PATH_INCLUDE_ffmpeg =       os.path.join (PATH_ffmpeg,'include')
 PATH_INCLUDE_plib =         PATH_plib
 PATH_INCLUDE_navi =     os.path.join (PATH_navi,'include')
+PATH_INCLUDE_noise = PATH_noise 
 PATH_INCLUDE_ogredshow =    PATH_ogredshow
 PATH_INCLUDE_ogreforests =         PATH_ogreforests
 

@@ -686,11 +686,8 @@ class ogrebulletc:  #
     cflags = ""
     parent = "ogre/physics"
     libs = [Config.LIB_Boost,  'OgreMain', 
-        'LibBulletCollision', 'LibBulletDynamics'
+        'LibBulletCollision', 'LibBulletDynamics', 'LibBulletMath'
         ]
-    if os.name=='nt':
-        libs.append ('LibBulletMath')
-        
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_INCLUDE_Bullet
                     , os.path.join(Config.PATH_OgreBullet, 'Collisions' )
@@ -714,10 +711,8 @@ class ogrebulletd:  #
     cflags = ""
     parent = "ogre/physics"
     libs = [Config.LIB_Boost,  'OgreMain', 
-        'LibBulletCollision', 'LibBulletDynamics'
+        'LibBulletCollision', 'LibBulletDynamics', 'LibBulletMath'
         ]
-    if os.name=='nt':
-        libs.append ('LibBulletMath')
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_INCLUDE_Bullet
                     , os.path.join(Config.PATH_OgreBullet, 'Collisions' )
@@ -735,6 +730,22 @@ class ogrebulletd:  #
         CCFLAGS = ' -D_PRECOMP '
     ModuleName = 'OgreBulletD'
     CheckIncludes=['boost/python.hpp', 'Ogre.h']        
+    
+class noise:
+    version="1.0"
+    parent="ogre/addons"
+    cflags = ""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_noise,
+                    os.path.join(Config.PATH_INCLUDE_noise, 'model'),
+                    os.path.join(Config.PATH_INCLUDE_noise, 'module')
+                    ]
+    lib_dirs = [Config.PATH_LIB_Boost
+                ]
+    CheckIncludes=[]
+    libs=[  Config.LIB_Boost]
+    ModuleName="noise"   
+    active=True
     
 ############################################################################################
 
@@ -767,6 +778,7 @@ projects = {
     , 'ogreforests' : ogreforests
     , 'et' : et
     , 'caelum' : caelum
+    , 'noise' : noise
 }        
 
 #
