@@ -6,6 +6,14 @@ source ./config.sh
 
 echo " == Building base libraries == "
 #
+# Freeimage 
+#
+pushd FreeImage
+make
+make DESTINC=$PREFIX/include DESTLIB=$PREFIX/lib install # On Freeimage's case, this is the right path
+popd
+
+#
 # zlib as the one included in Ubuntu is buggy
 #
 echo " -- building zzlib --"
@@ -62,7 +70,7 @@ echo " -- Building Ogre"
 pushd ogrenew 
 aclocal
 ./bootstrap
-./configure --prefix=$PREFIX --with-gui=Xt
+./configure --prefix=$PREFIX --with-gui=Xt --disable-devil
 make
 make install
 #cd ReferenceApplication
