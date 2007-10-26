@@ -50,15 +50,15 @@ make
 make install
 popd 
 
-echo " -- Building OgreAL - freealut"
-pushd freealut-1.1.0
-./autogen.sh
-./configure  --prefix=$PREFIX
+#echo " -- Building OgreAL - freealut"
+#pushd freealut-1.1.0
+#./autogen.sh
+#./configure  --prefix=$PREFIX
 ## ugly hack as the make files in freealut don't really handle a non standard prefix
-cp $PREFIX/include/AL/* ./include/AL
-make
-make install
-popd 
+#cp $PREFIX/include/AL/* ./include/AL
+#make
+#make install
+#popd 
 
 #
 # Bullet

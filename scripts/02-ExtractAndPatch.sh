@@ -14,8 +14,7 @@ echo " -- Unpacking CEGUI"
 tar zxf $DOWNLOADS/CEGUI-0.5.0b.tar.gz
 echo " -- Unpacking OIS"
 tar zxf $DOWNLOADS/ois-1.0RC1.tar.gz
-echo " -- Unpacking FreeImage"
-unzip -q -o $DOWNLOADS/FreeImage393.zip
+
 echo " -- Unpacking Newton"
 tar zxf $DOWNLOADS/newtonLinux-1.53.tar.gz
 echo " -- Unpacking ODE"
@@ -23,8 +22,18 @@ unzip -q -o $DOWNLOADS/ode-src-0.9.zip
 echo " -- Unpacking OgreAL Support"
 tar zxf $DOWNLOADS/libogg-1.1.3.tar.gz
 tar zxf $DOWNLOADS/libvorbis-1.2.0.tar.gz
-tar zxf $DOWNLOADS/freealut-1.1.0.tar.gz
+## OgreAL doesn't need ALUT anymore
+## tar zxf $DOWNLOADS/freealut-1.1.0.tar.gz
 tar zxf $DOWNLOADS/openal-0.0.8.tar.gz
+
+echo " -- Unpacking and patching FreeImage"
+unzip -q -o $DOWNLOADS/FreeImage393.zip
+pushd FreeImage
+sed --in-place -s 's|/usr/include|\$(DESTINC)|' Makefile.*
+sed --in-place -s 's|/usr/lib|\$(DESTLIB)|' Makefile.*
+sed --in-place -s 's|-o root -g root||' Makefile.*
+sed --in-place -s 's|ldconfig||' Makefile.*
+popd
 
 echo " -- Unpacking CG"
 pushd $ROOT
