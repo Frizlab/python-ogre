@@ -36,7 +36,7 @@ svn co https://pygccxml.svn.sourceforge.net/svnroot/pygccxml pygccxml
 echo " -- getting python-ogre"
 svn co https://python-ogre.svn.sourceforge.net/svnroot/python-ogre/trunk/python-ogre python-ogre
 echo " -- getting gccxml"
-cvs -z3 -q  -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co gccxml -D "1 Oct 2007"
+cvs -z3 -q  -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML -D "1 Oct 2007" co gccxml 
 echo " -- getting ogreode"
 cvs -z3 -q -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -P ogreaddons/ogreode
 echo " -- getting ogrenewt"
