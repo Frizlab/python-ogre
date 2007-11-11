@@ -368,12 +368,13 @@ class caelum:
     ModuleName="caelum"   
     active=True
 
-class newton:
-    version= "1.0"
-    active=False
-    include_dirs = [r'c:/development/newtonsdk/sdk']
-    ModuleName = 'NEWTON'
-    parent = ""    
+# class newton:
+#     version= "1.0"
+#     active=False
+#     include_dirs = [r'c:/development/newtonsdk/sdk']
+#     lib_dirs=[]
+#     ModuleName = 'NEWTON'
+#     parent = ""    
 class ogreode:
     version= "1.0"
     parent = "ogre/physics"
@@ -812,7 +813,7 @@ projects = {
     , 'ogre' : ogre
     , 'cegui' : cegui
     , 'ode' : ode
-    , 'newton' : newton
+#     , 'newton' : newton
     , 'ogrerefapp' : ogrerefapp
     , 'ogrenewt' : ogrenewt
     , 'ogreode' : ogreode
