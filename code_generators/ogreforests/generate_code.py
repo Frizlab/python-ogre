@@ -150,6 +150,8 @@ def ManualTransformations ( mb ):
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
         
+    x=main_ns.mem_fun('::GeometryPageManager::update')
+    x.add_transformation( ft.input('enableCache'))
     
 ###############################################################################
 ##
@@ -337,10 +339,11 @@ def generate_code():
                             recursive=False )
      
     ## and we do a special here as we have to modify a header (PagedGeomerty) to with with GCCXML
-    os.remove ( os.path.join ( environment.ogreforests.generated_dir, "PagedGeometry.h" ) )
-    common_utils.copyTree ( sourcePath = os.path.join(environment.Config.PATH_INCLUDE_ogreforests,"orig"), 
-                            destPath = environment.ogreforests.generated_dir, 
-                            recursive=False )
+    ## Not needed now as GCCXML has been updated
+# #     os.remove ( os.path.join ( environment.ogreforests.generated_dir, "PagedGeometry.h" ) )
+# #     common_utils.copyTree ( sourcePath = os.path.join(environment.Config.PATH_INCLUDE_ogreforests,"orig"), 
+# #                             destPath = environment.ogreforests.generated_dir, 
+# #                             recursive=False )
         
 if __name__ == '__main__':
     start_time = time.clock()

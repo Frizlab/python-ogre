@@ -92,14 +92,19 @@ def get_linkflags():
     return LINKFLAGS
 
 # Let us select the projects to build
-possible_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',\
-    'ogreode', 'ogreal', 'quickgui', 'opcode', 'nxogre', 'bullet', 'physx', 'betagui','theora',\
-     'ogrevideoffmpeg', 'ogredshow', 'plib', 'ogrebulletc', 'ogrebulletd',
-     'ogreforests', 'et', 'navi', 'caelum', 'noise' ]  # , 'raknet'
-default_projects = ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',\
-    'ogreode', 'ogreal',  'quickgui', 'opcode', 'nxogre', 'bullet', 'physx', 'betagui','theora',\
-     'ogrevideoffmpeg', 'ogredshow', 'plib',  'ogrebulletc', 'ogrebulletd',
-     'ogreforests', 'et', 'caelum' ]  # 'navi',
+
+possible_projects = []
+for name in environment.projects.keys():
+    possible_projects.append ( name )
+#  ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',\
+#     'ogreode', 'ogreal', 'quickgui', 'opcode', 'nxogre', 'bullet', 'physx', 'betagui','theora',\
+#      'ogrevideoffmpeg', 'ogredshow', 'plib', 'ogrebulletc', 'ogrebulletd',
+#      'ogreforests', 'et', 'navi', 'caelum', 'noise', 'watermesh' ]  # , 'raknet'
+default_projects =  possible_projects ## environment.projects
+# ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',\
+#     'ogreode', 'ogreal',  'quickgui', 'opcode', 'nxogre', 'bullet', 'physx', 'betagui','theora',\
+#      'ogrevideoffmpeg', 'ogredshow', 'plib',  'ogrebulletc', 'ogrebulletd',
+#      'ogreforests', 'et', 'caelum' ]  # 'navi',
 
 # This lets you call scons like: 'scons PROJECTS=ogre,cegui'
 opts = Options('custom.py')
@@ -121,6 +126,9 @@ for name, cls in environment.projects.items():
         cls._name = name
         _env = Environment(ENV=os.environ)
         
+        if environment.rpath:
+            _env.Append(RPATH=environment.rpath)
+
               
         ## Use custom compilier if wanted (things like ccache)
         if hasattr(environment, 'cxx_compiler'):

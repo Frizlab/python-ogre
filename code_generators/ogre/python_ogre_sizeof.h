@@ -3,6 +3,49 @@
 // sizeof ( Ogre::ConstVectorIterator );
 // sizeof ( Ogre::ConstMapIterator );
 
+Ogre::AnyNumeric AnyNumInt (1);
+Ogre::AnyNumeric AnyNumReal ((Ogre::Real)1.0);
+Ogre::AnyNumeric AnyNumUint8 ((Ogre::uint8)0);
+Ogre::AnyNumeric AnyNumUint16 ((Ogre::uint16)0);
+Ogre::AnyNumeric AnyNumUint32 ((Ogre::uint32)0);
+Ogre::AnyNumeric AnyNumUint ((Ogre::uint)0);
+Ogre::AnyNumeric AnyNumUlong ((Ogre::ulong)0);
+Ogre::AnyNumeric AnyNumUshort ((Ogre::ushort)0);
+Ogre::AnyNumeric AnyNumUchar ((Ogre::uchar) 0);
+
+Ogre::Any AnyInt (1);
+Ogre::Any AnyReal ((Ogre::Real)1.0);
+Ogre::Any AnyUint8 ((Ogre::uint8)0);
+Ogre::Any AnyUint16 ((Ogre::uint16)0);
+Ogre::Any AnyUint32 ((Ogre::uint32)0);
+Ogre::Any AnyUint ((Ogre::uint)0);
+Ogre::Any AnyUlong ((Ogre::ulong)0);
+Ogre::Any AnyUshort ((Ogre::ushort)0);
+Ogre::Any AnyUchar ((Ogre::uchar) 0);
+Ogre::Any AnyString ((Ogre::String) "");
+
+
+sizeof ( AnyNumInt );
+sizeof ( AnyNumReal );
+sizeof ( AnyNumUint8 );
+sizeof ( AnyNumUint16 );
+sizeof ( AnyNumUint32 );
+sizeof ( AnyNumUint );
+sizeof ( AnyNumUlong );
+sizeof ( AnyNumUshort );
+sizeof ( AnyNumUchar );
+
+sizeof ( AnyInt );
+sizeof ( AnyReal );
+sizeof ( AnyUint8 );
+sizeof ( AnyUint16 );
+sizeof ( AnyUint32 );
+sizeof ( AnyUint );
+sizeof ( AnyUlong );
+sizeof ( AnyUshort );
+sizeof ( AnyUchar );
+sizeof ( AnyString );
+
 sizeof ( Ogre::SharedPtr<Ogre::WaveformControllerFunction> );
 // sizeof ( Ogre::ControllerFunction<float>);
 // sizeof ( Ogre::SharedPtr<Ogre::ControllerFunction<float>>);

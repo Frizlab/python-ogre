@@ -70,7 +70,7 @@ PACKAGEDATA = {
                         'ogre.addons.ogrevideoffmpeg', 'ogre.addons.ogredshow',
                         'ogre.addons.plib','ogre.gui.navi',
                         'ogre.addons.ogreforests', 'ogre.addons.et', 'ogre.addons.caelum',
-                        'ogre.addons.noise'  ],
+                        'ogre.addons.noise', 'ogre.addons.watermesh', 'ogre.addons.ofusion'  ],
        "package_dir": {'': 'packages_'+ PythonVersionString },
        "package_data": {'': ['*.pyd', '*.dll', '*.so']}
 

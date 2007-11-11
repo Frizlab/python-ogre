@@ -115,7 +115,7 @@ typedef  Ogre::Singleton<Ogre::ResourceGroupManager> SingletonResourceGroupManag
 typedef  Ogre::Singleton<Ogre::ArchiveManager> SingletonArchiveManager;
 typedef  Ogre::RenderSystem* RenderSystemPtr;
 
-typedef Ogre::Mesh::SubMeshNameMap MeshSubMeshNameMap;
+typedef Ogre::Mesh::SubMeshNameMap SubMeshNameMap;
 typedef Ogre::RenderSystem RenderSystem;
 typedef Ogre::ConvexBody::PolygonList PolygonList;
 typedef Ogre::Polygon::VertexList VertexList;

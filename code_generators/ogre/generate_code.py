@@ -185,7 +185,15 @@ def ManualExclude ( mb ):
     main_ns.constructor("IndexData",arg_types=['::Ogre::IndexData const &']).exclude()
     global_ns.class_('::Ogre::OverlayManager').\
         mem_fun('destroyOverlayElementImpl', arg_types=['::Ogre::OverlayElement *',None] ).exclude()
+        
+        
+    excludes = ['::Ogre::Any::getType'  ## this returns a std::type_info which doesn't make any sense in Python
+    ]
+    for e in excludes:
+        print "excluding ", e
+        main_ns.member_functions(e).exclude()
 
+                
     ## change due to CVS Ogre update (Thanks Dermont)
     AttribParserList = main_ns.typedef( name="AttribParserList" )
     declarations.class_traits.get_declaration( AttribParserList ).exclude()
@@ -241,6 +249,9 @@ def ManualInclude ( mb ):
     main_ns.class_("VertexBoneAssignment_s").include()
     # A couple of Std's that need exposing
     std_ns = global_ns.namespace("std")
+    for c in std_ns.classes():
+        print c
+#     std_ns.class_("pair<unsigned int, unsigned int>").include()
     std_ns.class_("pair<unsigned, unsigned>").include()
     std_ns.class_("pair<bool, float>").include()
     if not HACK:
@@ -880,13 +891,13 @@ def generate_code():
         , messages.W1031
         , messages.W1035
         , messages.W1040 
-        , messages.W1041 # overlapping names when creating a property
-        , messages.W1038        
-        , messages.W1036 # pointer to Python immutable member
-        , messages.W1033 # unnamed variables
-        , messages.W1018 # expose unnamed classes
-        , messages.W1049 # returns reference to local variable
-        , messages.W1014 # unsupported '=' operator
+#         , messages.W1041 # overlapping names when creating a property
+#         , messages.W1038        
+#         , messages.W1036 # pointer to Python immutable member
+#         , messages.W1033 # unnamed variables
+#         , messages.W1018 # expose unnamed classes
+#         , messages.W1049 # returns reference to local variable
+#         , messages.W1014 # unsupported '=' operator
          )
 #     sort_algorithms.USE_CALLDEF_ORGANIZER = True   ## tried this to remove a couple of order issues, without success :)
     #

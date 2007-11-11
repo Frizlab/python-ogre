@@ -17,6 +17,9 @@ PATH_LIB_Boost = LOCAL_LIB
 ## and the name of the boost python library
 LIB_Boost = 'libboost_python-gcc41-1_34'
 
+# in Linux we need to code in the Relative path for the library
+RPATH="../lib"
+
 # We need to know where to find gccxml......
 gccxml_bin = os.path.join(BASE_DIR,'gccxml-build/bin')
 # and the Py++ directory as sometimes we need access to the code repository there
@@ -34,7 +37,6 @@ PATH_ODE =          os.path.join(BASE_DIR, 'ode-0.9')
 PATH_OGG =          os.path.join(BASE_DIR, 'libogg-1.1.3')
 PATH_VORBIS=        os.path.join(BASE_DIR, 'libvorbis-1.2.0')
 PATH_OPENAL=        os.path.join(BASE_DIR, 'openal-0.0.8')
-PATH_ALUT=          os.path.join(BASE_DIR, 'freealut-1.1.0')
 PATH_OgreOde=       os.path.join(PATH_OgreAddons,'ogreode')
 # PATH_OgreBullet=    os.path.join(PATH_OgreAddons,'ogrebullet')
 # PATH_ogreforests=    os.path.join(PATH_OgreAddons,'forests')
@@ -105,7 +107,6 @@ PATH_INCLUDE_OgreAL =       PATH_OGREAL
 PATH_INCLUDE_OPENAL =       os.path.join( LOCAL_INCLUDE ) #os.path.join( PATH_OPENAL, 'include')
 PATH_INCLUDE_OGG=           os.path.join( LOCAL_INCLUDE,'ogg' ) #os.path.join( PATH_OGG, 'include' )
 PATH_INCLUDE_VORBIS=        os.path.join( LOCAL_INCLUDE,'vorbis' ) #os.path.join( PATH_VORBIS, 'include' )
-PATH_INCLUDE_ALUT=          os.path.join( LOCAL_INCLUDE ) #os.path.join( PATH_ALUT, 'include' )
 
 # PATH_INCLUDE_OgreBullet =   [ 
 #                         os.path.join( PATH_OgreBullet,'Collisions','include')

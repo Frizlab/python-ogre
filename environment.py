@@ -119,18 +119,26 @@ class Default:
     includePaths = []
     myIncludes = []
     libaries = myLibraries # a list of the libraries I need plus
-    mySource = []   # where to get the source - tuples, {'svn|cvs|ftp|http','utl'}
-    myBuildCmds = []    # commands to build the library with
+    Source = []   # where to get the source - tuples, {'svn|cvs|ftp|http','utl'}
+    BuildCmds = []    # commands to build the library with
 
 ######################
+class GeneralModules:
+    pythonModule = False
+    Source = [ 
+        ["wget", "http://developer.download.nvidia.com/cg/Cg_1.5/1.5.0/0022/Cg-1.5_Aug2007_x86.tar.gz",''], 
+        ["wget", "http://www.cmake.org/files/v2.4/cmake-2.4.6-Linux-i386.tar.gz",''], 
+        ["wget", "http://downloads.sourceforge.net/scons/scons-0.97.0d20070918.tar.gz",''],
+        ]
+    
 class boost:
+    active = True
     version = "3.4"
     pythonModule = False
     ModuleName = ""
     myHome = 'boost'
     myLibraryPaths = [ 'boost/bin.v2/libs/python2.5/build/msvc-8.0/release/threading-multi' ]
     myLibraries = [ 'boost_python-vc80-mt-1_35']
-   
     parent = None
     children = []
     codeGenerationFlags=[]
@@ -140,9 +148,11 @@ class boost:
     includePaths = []
     myIncludes = []
     libaries = myLibraries # a list of the libraries I need plus
-    mySource = ['http://prdownloads.sourceforge.net/boost/boost-jam-3.1.13-1-linuxx86.tgz',
-                'http://downloads.sourceforge.net/boost/boost_1_34_0.tar.bz2']   # where to get the source - tuples, {'svn|cvs|ftp|http','utl'}
-    myBuildCmds = []    # commands to build the library with
+    Source = [
+            ['wget','http://prdownloads.sourceforge.net/boost/boost-jam-3.1.13-1-linuxx86.tgz',''] ,
+             ['wget','http://downloads.sourceforge.net/boost/boost_1_34_0.tar.bz2','']
+             ]   # where to get the source - tuples, {'svn|cvs|ftp|http','utl'}
+    BuildCmds = []    # commands to build the library with
        
 class ogre:
     active = True
@@ -199,11 +209,17 @@ class ogre:
         cflags += '--gccxml-cxxflags "-DCF_OPEN_SOURCE -D_POSIX_C_SOURCE -isysroot /Developer/SDKs/MacOSX10.4u.sdk"'
         
     CheckIncludes=['boost/python.hpp', 'Ogre.h']
-
+    Source = [
+    ["wget", "http://prdownloads.sourceforge.net/ogre/ogre-linux_osx-v1-4-5.tar.bz2",''],
+    ["wget", "http://prdownloads.sourceforge.net/freeimage/FreeImage393.zip",''], 
+ 
+    ]
      
 class ois:
     active = True
-    version= "1.0"
+    pythonModule = True
+    version= "1.1"
+    cflags=''
     parent = "ogre/io"
     if os.name=='nt':
         libs=['OIS_Static',Config.LIB_Boost]
@@ -316,7 +332,10 @@ class ode:
     ModuleName = 'ODE'
     CheckIncludes = ['boost/python.hpp',  'ode/ode.h'] 
     active=True
-    
+    Source = [
+        ["wget", "http://prdownloads.sourceforge.net/opende/ode-src-0.8.zip",'']
+    ]
+        
 class opcode:
     version= "1.3"
     parent = "ogre/physics"
@@ -570,7 +589,6 @@ class ogreal:
                 , Config.PATH_INCLUDE_OGG
                 , Config.PATH_INCLUDE_VORBIS
                 , Config.PATH_INCLUDE_OPENAL
-                , Config.PATH_INCLUDE_ALUT
                 ]  
     if os.name=='nt':                  
         lib_dirs = [ Config.PATH_LIB_Boost
@@ -580,7 +598,6 @@ class ogreal:
                 ,os.path.join(Config.PATH_VORBIS, 'win32','VorbisEnc_Static_Release')
                 ,os.path.join(Config.PATH_VORBIS, 'win32','VorbisFile_Static_Release')
                 ,os.path.join(Config.PATH_OPENAL, 'libs','Win32')
-                ,os.path.join(Config.PATH_ALUT, 'lib')
                   ] 
     else:
         lib_dirs = [ Config.PATH_LIB_Boost
@@ -591,19 +608,21 @@ class ogreal:
         CCFLAGS = ' -DOgreAL_Export="" -DWIN32 -DNDEBUG -D_LIB -D_WIN32 -D_WINDOWS -DVORBIS_IEEE_FLOAT32 -D_USE_NON_INTEL_COMPILER '              
         libs=[Config.LIB_Boost, 'OgreMain', 
                     'ogg_static', 
-                    'alut', 
                     'vorbis_static','vorbisfile_static','vorbisenc_static',
                     'OpenAL32', 'EFX-Util']  ##  'OgreAL' -- going to compile OgreAL ourselves
     else:                    
         libs=[Config.LIB_Boost, 'OgreMain', 
                     'ogg', 
-                    'alut', 
                     'vorbis','vorbisfile','vorbisenc',
                     'openal']  ##  'OgreAL' -- going to compile OgreAL ourselves
     ModuleName = 'OgreAL'
     CheckIncludes = ['OgreAL.h']
     active=True
-    
+    Source = [
+        ["wget", "http://www.openal.org/openal_webstf/downloads/openal-0.0.8.tar.gz",''],
+        ["wget", "http://downloads.xiph.org/releases/ogg/libogg-1.1.3.tar.gz",''],
+        ["wget", "http://downloads.xiph.org/releases/vorbis/libvorbis-1.2.0.tar.gz",''],
+        ]
 class ogrevideoffmpeg:
     version="0.2.1"
     parent="ogre/addons"
@@ -686,8 +705,10 @@ class ogrebulletc:  #
     cflags = ""
     parent = "ogre/physics"
     libs = [Config.LIB_Boost,  'OgreMain', 
-        'LibBulletCollision', 'LibBulletDynamics', 'LibBulletMath'
+        'LibBulletCollision', 'LibBulletDynamics'
         ]
+    if os.name == 'nt':
+        libs.append('LibBulletMath')        
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_INCLUDE_Bullet
                     , os.path.join(Config.PATH_OgreBullet, 'Collisions' )
@@ -711,8 +732,10 @@ class ogrebulletd:  #
     cflags = ""
     parent = "ogre/physics"
     libs = [Config.LIB_Boost,  'OgreMain', 
-        'LibBulletCollision', 'LibBulletDynamics', 'LibBulletMath'
+        'LibBulletCollision', 'LibBulletDynamics'
         ]
+    if os.name == 'nt':
+        libs.append('LibBulletMath')        
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_INCLUDE_Bullet
                     , os.path.join(Config.PATH_OgreBullet, 'Collisions' )
@@ -747,6 +770,38 @@ class noise:
     ModuleName="noise"   
     active=True
     
+class watermesh:
+    version="1.0"
+    parent="ogre/addons"
+    cflags = ""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_watermesh
+                    , Config.PATH_INCLUDE_Ogre
+                    ]
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain
+                ]
+    CheckIncludes=[]
+    libs=[  Config.LIB_Boost, 'OgreMain' ]
+    ModuleName="watermesh"   
+    active=True
+    
+class ofusion:
+    version="1.0"
+    parent="ogre/addons"
+    cflags = ""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_ofusion
+                    , Config.PATH_INCLUDE_Ogre
+                    ]
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain
+                ]
+    CheckIncludes=[]
+    libs=[  Config.LIB_Boost, 'OgreMain' ]
+    ModuleName="ofusion"   
+    active=True    
+    
 ############################################################################################
 
 ## Here is the master list....
@@ -779,6 +834,8 @@ projects = {
     , 'et' : et
     , 'caelum' : caelum
     , 'noise' : noise
+    , 'watermesh' : watermesh
+    , 'ofusion' : ofusion
 }        
 
 #
@@ -813,8 +870,10 @@ def CheckPaths ( cls , name):
 #
 # a couple of specials that should be done differently
 gccxml_bin = Config.gccxml_bin
-pyplusplus_install_dir = Config.pyplusplus_install_dir                    
-                            
+pyplusplus_install_dir = Config.pyplusplus_install_dir      
+         
+rpath= Config.RPATH  
+                          
 for name, cls in projects.items():
 
     # little hack to allow overriding of settings from the config file
