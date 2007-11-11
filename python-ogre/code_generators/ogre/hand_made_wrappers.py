@@ -852,9 +852,7 @@ def apply( mb ):
     rt = mb.class_( 'RenderQueueListener' )   
     print "WRAPPER CODE\n\n"
     print rt.wrapper_code
-### AJM:  this adds the required wrapper code however you need to edit renderqueuelistener.pypp.cpp to remove
-### the duplicated function definations for it to compile correctly
-#####    rt.add_wrapper_code ( WRAPPER_WRAPPER_RenderQueueListener )
+    rt.add_wrapper_code ( WRAPPER_WRAPPER_RenderQueueListener )
     print "NOW\n\n"
     print rt.wrapper_code
              

@@ -112,6 +112,7 @@ def apply_reg ( class_, code ):
         class_.add_registration_code ( c )
         
 def apply( mb ):
+    return
 #     rt = mb.class_( 'Sun' )
 #     rt.add_declaration_code( WRAPPER_DEFINITION_Sun )
 #     apply_reg (rt,  WRAPPER_REGISTRATION_Sun )

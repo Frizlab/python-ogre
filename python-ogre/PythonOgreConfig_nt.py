@@ -1,6 +1,6 @@
 import os
 
-SDK=True ## set to true if buiding from 1.4 release source...
+SDK=False # True ## set to true if buiding from 1.4 release source...
 
 ## The root directory is where this module is located
 module_dir = os.path.abspath(os.path.dirname(__file__) )
@@ -13,6 +13,9 @@ PATH_LIB_Boost =    os.path.join(BASE_DIR, 'boost/bin.v2/libs/python2.5/build/ms
 ## and the name of the boost python library
 LIB_Boost =         r'boost_python-vc80-mt-1_35'
 
+# in Linux we need to code in the Relative path for the library
+RPATH=""
+
 # We need to know where to find gccxml......
 gccxml_bin =        os.path.join(BASE_DIR, 'gccxml/bin/release/gccxml.exe')
 # and the Py++ directory as sometimes we need access to the code repository there
@@ -23,14 +26,13 @@ PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
 PATH_Ogre =         os.path.join(BASE_DIR, 'ogrenew')
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
 PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.5.0')
-PATH_OIS =          os.path.join(BASE_DIR, 'ois-1.0RC1')
+PATH_OIS =          os.path.join(BASE_DIR, 'ois' ) ##'ois-1.0RC1')
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonsdk','sdk')
 PATH_FMOD =         os.path.join(BASE_DIR, 'fmod')
 PATH_ODE =          os.path.join(BASE_DIR, 'ode-0.9')
 PATH_OGG =          os.path.join(BASE_DIR, 'ogg')
 PATH_VORBIS=        os.path.join(BASE_DIR, 'vorbis')
 PATH_OPENAL=        os.path.join(BASE_DIR, 'openal')
-PATH_ALUT=          os.path.join(BASE_DIR, 'freealut')
 PATH_OgreOde=       os.path.join(BASE_DIR, PATH_OgreAddons,'ogreode')
 # # PATH_OgreBullet=    os.path.join(PATH_OgreAddons,'ogrebullet')
 # # PATH_ogreforests=    os.path.join(PATH_OgreAddons,'forests')
@@ -46,8 +48,10 @@ PATH_plib =         os.path.join(PATH_THIRDPARTY, 'plib')
 PATH_et =           os.path.join(PATH_THIRDPARTY, 'et')
 PATH_caelum =       os.path.join(PATH_THIRDPARTY, 'caelum')
 PATH_NxOgre=        os.path.join(PATH_THIRDPARTY, 'nxogre')
+PATH_watermesh=        os.path.join(PATH_THIRDPARTY, 'watermesh')
 # PATH_NxOgre=        os.path.join(BASE_DIR, 'nxogre/NxOgre')
 PATH_noise=        os.path.join(PATH_THIRDPARTY, 'noise')
+PATH_ofusion=        os.path.join(PATH_THIRDPARTY, 'ofusion')
 
 
 PATH_ogrevideoffmpeg = os.path.join(PATH_THIRDPARTY,'ffmpeg')
@@ -72,7 +76,7 @@ PATH_LIB_Ogre_Dependencies =    os.path.join( PATH_Ogre, 'Dependencies/lib/Relea
 PATH_LIB_OgreRefApp =           os.path.join( PATH_Ogre, 'lib')
 PATH_LIB_OgreNewt =             os.path.join( PATH_OgreAddons, 'ogrenewt/OgreNewt_Main/lib/Release') 
 PATH_LIB_Newton =               os.path.join( PATH_Newton ,'dll')  ##NOTE Posix platforms this lives in 'lib-mt'
-PATH_LIB_OIS =                  os.path.join( PATH_OIS, 'dll') ## NOTE Posix platforms this lives in'lib' not 'dll'
+PATH_LIB_OIS =                  os.path.join( PATH_OIS, 'lib') ## NOTE Posix platforms this lives in'lib' not 'dll'
 PATH_LIB_CEGUI =                os.path.join( PATH_CEGUI, 'lib' )
 PATH_LIB_ODE =                  os.path.join( PATH_ODE, 'lib/releaselib')## probable releaselib for posix
 PATH_LIB_OPCODE =               os.path.join( PATH_OPCODE ) 
@@ -105,7 +109,7 @@ PATH_INCLUDE_Ogre_Dependencies =  os.path.join( PATH_Ogre, 'Dependencies/include
 PATH_INCLUDE_OIS =          os.path.join(PATH_OIS,'includes')    ## Note the plural include's
 PATH_INCLUDE_OgreRefApp =   os.path.join(PATH_Ogre,'ReferenceApplication/ReferenceAppLayer/include') 
 PATH_INCLUDE_OgreNewt =     os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')
-PATH_INCLUDE_CEGUI =        os.path.join(PATH_CEGUI, 'include/CEGUI')
+PATH_INCLUDE_CEGUI =        os.path.join(PATH_CEGUI, 'include')
 PATH_INCLUDE_ODE =          os.path.join( PATH_ODE, 'include')
 PATH_INCLUDE_OPCODE =       PATH_OPCODE
 PATH_INCLUDE_ODESOURCE =    os.path.join( PATH_ODE, 'ode/src')
@@ -113,7 +117,6 @@ PATH_INCLUDE_OgreAL =       os.path.join( PATH_OGREAL)#, 'include' )
 PATH_INCLUDE_OPENAL =       os.path.join( PATH_OPENAL, 'include')
 PATH_INCLUDE_OGG=           os.path.join( PATH_OGG, 'include' )
 PATH_INCLUDE_VORBIS=        os.path.join( PATH_VORBIS, 'include' )
-PATH_INCLUDE_ALUT=          os.path.join( PATH_ALUT, 'include' )
 
 # # PATH_INCLUDE_OgreBullet =   [ 
 # #                         os.path.join( PATH_OgreBullet,'Collisions','include')
