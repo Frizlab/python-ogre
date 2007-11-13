@@ -43,7 +43,7 @@ copy /y %ogreode%\lib\Release\OgreOde_Core.dll %package%\physics\OgreOde
 copy /y %ogreode%\loader\lib\Release\OgreOde_Loader.dll %package%\physics\OgreOde
 copy /y %ogreode%\prefab\lib\Release\OgreOde_Prefab.dll %package%\physics\OgreOde
 rem Physx
-copy /y %physx%\Nx*.dll %package%\physics\PhysX
+copy /y %physx%\Nx*.dll %package%\physics\NxOgre
 copy /y %physx%\Ph*.dll %package%\physics\PhysX
 rem Theora
 copy /y %theora%\Plugin_TheoraVideoSystem.dll ..\plugin

@@ -16,7 +16,7 @@ xcopy ..\demos ..\..\PythonOgreRelease\demos /s
 xcopy ..\plugins ..\..\PythonOgreRelease\plugins
 xcopy ..\docs ..\..\PythonOgreRelease\docs
 xcopy ..\tools ..\..\PythonOgreRelease\tools
-xcopy ..\ThirdParty ..\..\PythonOgreRelease\ThirdParty
+copy ..\ThirdParty ..\..\PythonOgreRelease\ThirdParty
 copy ..\*.rtf ..\..\PythonOgreRelease
 copy ..\COPYING ..\..\PythonOgreRelease
 copy ..\*.gpl ..\..\PythonOgreRelease
@@ -26,7 +26,7 @@ del ..\..\PythonOgreRelease\*.log /s
 del ..\..\PythonOgreRelease\1 /s
 del ..\..\PythonOgreRelease\2 /s
 del ..\..\PythonOgreRelease\ogre.cfg /s
-for /r ..\..\PythonOgreRelease\ %1 in (*) do touch %1
+for /r ..\..\PythonOgreRelease\ %%1 in (*) do touch %%1
 rem rmdir /s /q ..\..\PythonOgreRelease\demos\gui\tofix 
 rem rmdir /s /q ..\..\PythonOgreRelease\demos\ogre\tofix 
 
