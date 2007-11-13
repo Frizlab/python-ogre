@@ -12,8 +12,8 @@ if [ $1 != "" ]
 then 
     scons PROJECTS=$1 -i
 else
-    scons PROJECTS=ogre,ois,cegui,plib,ogrenewt,ogreode,ogreal,quickgui,et,caelum,bullet -i
-#,ogrebulletc,ogrebulletd -i
+    scons PROJECTS=ogre,ois,cegui,plib,ogrenewt,ogreode,ogreal,quickgui,et,bullet,ogreforests -i
+#,ogrebulletc,ogrebulletd,caelum -i
 fi
 #opcode -- not really suited to a linux build -- lots of work needed ? 
 #

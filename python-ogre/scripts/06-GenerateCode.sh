@@ -64,7 +64,7 @@ else
  
     echo ' -- creating forests code'
     echo ' -- creating forests code' >> $INSTALL_DIR/log.out
-    $INSTALL_DIR/gen_code.sh forests 
+    $INSTALL_DIR/gen_code.sh ogreforests 
 
     echo ' -- creating bullet code '
     echo ' -- creating bullet code' >> $INSTALL_DIR/log.out
