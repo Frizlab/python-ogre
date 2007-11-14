@@ -1,5 +1,7 @@
 import os, shutil
 import shared_ptr
+##import hashlib ## makes this 2.5 dependent
+import md5
 from pygccxml import declarations
 from pyplusplus.decl_wrappers import property_t
 from pyplusplus import function_transformers as ft
@@ -401,12 +403,32 @@ def samefile ( sourcefile, destfile):
     if not os.path.exists( sourcefile ):
         #print sourcefile,"doesn't exist (missing source file)"
         return False
+        
+#     inhash = hashlib.md5() #needs python 2.5 or greater
+    inhash = md5.new()
+    inhash.update ( open ( sourcefile ).read() )
+#     outhash = hashlib.md5()
+    outhash = md5.new()
+    outhash.update ( open ( destfile ).read() )
+    if inhash.digest() != outhash.digest():
+        return False    
+        
+    ## probably don't need these as hash should handle it fine..    
     if os.stat(sourcefile).st_mtime > os.stat(destfile).st_mtime:
         return False
+    if os.stat(sourcefile).st_size != os.stat(destfile).st_size:
+        return False
+            
     return True
                                 
-def copyTree ( sourcePath, destPath, recursive=False, extensions=['cpp','h','hxx','cxx','hpp'] ):
-    """ function to do a nice tree copy with file filtering and directory creation etc """
+def copyTree ( sourcePath, destPath, recursive=False, extensions=['cpp','h','hxx','cxx','hpp'], collapse = False ):
+    """ function to do a nice tree copy with file filtering and directory creation etc 
+       
+        Setting collapse to True makes us copy files from the destintion into a single source directory.
+        This is needed when source files (.cpp) live in header directories (OgreBullet) and we are compiling them
+        as part of the Python-Ogre build system -- we've setup Scons to expect all source files to be in a
+        single (flat) directory
+    """
     
     ## helper functions
     def filterExtensions ( listin, extensions):
@@ -432,7 +454,7 @@ def copyTree ( sourcePath, destPath, recursive=False, extensions=['cpp','h','hxx
 
     ## Main code starts here
     
-    if not recursive: # Ok so we only care about a single directory
+    if not recursive: # Ok so we only care about a single directory and hence don't care about collapse setting
         files =  os.listdir( sourcePath )   # get files
         files = filterExtensions ( files, extensions )  # filter them
         if len( files ) > 0: 
@@ -454,11 +476,14 @@ def copyTree ( sourcePath, destPath, recursive=False, extensions=['cpp','h','hxx
             # filter the file names
             files = filterExtensions ( files, extensions )
             
-            # Make all the directories in the dest Tree (for this level)
-            for dirName in dirs:
-                makePath ( os.path.join (  destPath, subPath, dirName ) )
-                
-            # finally do the copy                
-            for fileName in files:
-                copyFile ( fileName, currentDir, os.path.join(destPath, subPath ) )
-                
+            if not collapse:
+                # Make all the directories in the dest Tree (for this level)
+                for dirName in dirs:
+                    makePath ( os.path.join (  destPath, subPath, dirName ) )
+                    
+                # finally do the copy                
+                for fileName in files:
+                    copyFile ( fileName, currentDir, os.path.join(destPath, subPath ) )
+            else:   # told to collapse so everything goes in the destination directory
+                for fileName in files:
+                    copyFile ( fileName, currentDir, destPath )                      

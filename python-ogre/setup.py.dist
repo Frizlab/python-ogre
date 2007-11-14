@@ -1,0 +1,132 @@
+#!/usr/bin/env python
+#
+# This is the distutils setup script for python-ogre.
+# Full instructions are in "install.txt" or "install.html"
+#
+# To configure, compile, install, just run this script.
+
+DESCRIPTION = """Python-Ogre is a Python wrapper module for the
+OGRE 3D Graphics library. It contains python functions and classes
+that will allow you to fully utilitize the Ogre library.  It is 
+Unique in that the python wrappers are created automatically by
+Py++, hence making maintainence etc very simple."""
+
+METADATA = {
+    "name":             "Python-Ogre",
+    "version":          "1.0release",
+    "license":          "LGPL",
+    "url":              "http://www.pygame.org",
+    "author":           "Larkin",
+    "author_email":     "pygame@seul.org",
+    "description":      "Py++ Ogre Python Bindingd",
+    "long_description": DESCRIPTION,
+}
+
+cmdclass = {}
+import os, sys, time, shutil, glob
+import os.path
+import distutils.sysconfig
+from distutils.core import setup, Extension
+from distutils.extension import read_setup_file
+from distutils.ccompiler import new_compiler
+from distutils.command.install_data import install_data
+import environment
+
+
+sys.path.append( '..' )
+sys.path.append( '.' )
+sys.path.append( 'code_generators' )
+
+def GenerateSource ( module ):
+    sys.path.append ( 'code_generators/'+module )
+    import generate_code
+    start_time = time.clock()
+    generate_code.generate_code()
+    print 'Python-', module, ' source code was updated( %f minutes ).' % (  ( time.clock() - start_time )/60 )
+
+def BuildFileList ( basepath, ext='*.cpp', recurse = False ):   #module name is appended to basepath
+    found = glob.glob(os.path.join(basepath, ext))
+    sourcefiles = []
+    for f in found:
+        if os.path.isfile(f):
+            sourcefiles.append(f)
+    return sourcefiles
+def GetFileList ( basepath ):
+    filesout = []
+    for root, dirs, files in os.walk(basepath):
+        for name in files:
+            filesout.append(os.path.join(root, name))
+    return filesout
+        
+
+
+#headers to install
+#headers = glob.glob(os.path.join('src', '*.h'))
+
+
+if __name__ == '__main__':
+    if len (sys.argv) < 2 :
+        print "Need to specifiy which module to build"
+        sys.exit(-1)
+    sys.argv.append ('install')
+    try:
+        import bdist_mpkg_support
+    except ImportError:
+        pass
+#     else:
+#         cmdclass.update(bdist_mpkg_support.cmdclass)
+#     
+    #get us to the correct directory
+    path = os.path.split(os.path.abspath(sys.argv[0]))[0]
+    os.chdir(path)
+    module = sys.argv[2]
+    module = 'ogre'
+    # call Py++ to generate the necessary source files
+#    GenerateSource ( module )
+    # get a list of the source files
+    sourcefiles = BuildFileList(environment.__dict__[module].generated_dir)
+    print sourcefiles, environment.__dict__[module].generated_dir
+    # now get a list of the lib driectoried and associated library files needed for compile
+    lib_dirs = environment.__dict__[module].libs_dir
+    lib_files = environment.__dict__[module].libs_files
+    
+    # same for the include directories
+    inc_dirs = []
+    inc_dirs.append ( environment.__dict__[module].include_dir )
+    inc_dirs.append ( environment.__dict__[module].generated_dir ) #need to include the source dir as well
+    
+    extension = Extension ( 'Ogre', sourcefiles, 
+                            include_dirs = inc_dirs, 
+                            library_dirs=lib_dirs, libraries=lib_files,
+                            ) #extra_compile_args =[], extra_link_args=[], extra_objects =[] )
+    #ext_modules=[Extension('foo', ['foo.c'])],     
+    #print sourcefiles      
+    demo_files=GetFileList ( os.path.join(environment.root_dir, "demos") )
+    data_files = [('demos', demo_files), ]
+    
+    #finally,
+    #call distutils with all needed info
+    PACKAGEDATA = {
+ #          "cmdclass":    cmdclass,
+           "packages":    ['Ogre'],
+           "package_dir": {'': 'packages'},
+           #"headers":     headers, # we don't have an source headers to include..
+           "ext_modules": [extension],
+           "data_files" : data_files
+           #"data_files":  [['pygame', data_files]],
+    }
+    PACKAGEDATA.update(METADATA)
+    setup(**PACKAGEDATA)
+    
+
+# #extra files to install
+# data_path = os.path.join(distutils.sysconfig.get_python_lib(), 'pygame')
+# data_files = []
+
+# #add non .py files in lib directory
+# for f in glob.glob(os.path.join('lib', '*')):
+#     if not f[-3:] =='.py' and os.path.isfile(f):
+#         data_files.append(f)
+
+
+

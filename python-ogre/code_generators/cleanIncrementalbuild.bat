@@ -1,4 +1,3 @@
-rem del /Q cache\*
 call vcvars32
 cd ogre
 python generate_code.py >1
@@ -54,6 +53,33 @@ cd ..
 cd plib
 python generate_code.py >1
 cd ..
+cd ogrebulletd
+python generate_code.py >1
 cd ..
-#scons -i
+cd ogrebulletc
+python generate_code.py >1
+cd ..
+cd navi
+python generate_code.py >1
+cd ..
+cd ogreforests
+python generate_code.py >1
+cd ..
+cd et
+python generate_code.py >1
+cd ..
+cd caelum
+python generate_code.py >1
+cd ..
+cd ofusion
+python generate_code.py >1
+cd ..
+cd watermesh
+python generate_code.py >1
+cd ..
+cd noise
+python generate_code.py >1
+cd ..
+cd ..
+scons -i
 

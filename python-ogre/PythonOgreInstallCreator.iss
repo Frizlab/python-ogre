@@ -40,7 +40,10 @@ Source: docs\*; DestDir: {app}\docs; Flags: recursesubdirs
 ; the python modules - in the event we find python
 Source: packages_2.5\*; DestDir: {code:GetPythonSiteDir}; Flags: recursesubdirs; Check: SelectedPython('2.5')
 ; the python modules again - if we don't find python we install both versions in the app directory
-Source: packages_2.5\*; DestDir: {app}\packages_2.5; Flags: recursesubdirs; Check: NoPythonFound
+;Source: packages_2.5\*; DestDir: {app}\packages_2.5; Flags: recursesubdirs; Check: NoPythonFound
+
+; I'm going to install here anyway to make updates easier...
+Source: packages_2.5\*; DestDir: {app}\packages_2.5; Flags: recursesubdirs
 ;
 ; we need to remove the .pyc files when we uninstall
 ;
@@ -196,11 +199,11 @@ Name: {group}\Ogre Demos\Textures; Filename: {code:GetPythonExe}; Parameters: De
 Name: {group}\Ogre Demos\Transparency; Filename: {code:GetPythonExe}; Parameters: Demo_Transparency.py; WorkingDir: {app}\Demos\Ogre
 Name: {group}\Ogre Demos\WX Gui; Filename: {code:GetPythonExe}; Parameters: Demo_WX.py; WorkingDir: {app}\Demos\Ogre
 
-Name: {group}\GUI\CEGUI - Basic; Filename: {code:GetPythonExe}; Parameters: Demo_CEGUI_Gui.py; WorkingDir: {app}\Demos\gui
-Name: {group}\GUI\CEGUI Drag and Drop; Filename: {code:GetPythonExe}; Parameters: Demo_CEGUI_DragnDrop.py; WorkingDir: {app}\Demos\gui
-Name: {group}\GUI\CEGUI - Nice; Filename: {code:GetPythonExe}; Parameters: Demo_CEGUI_NewGui.py; WorkingDir: {app}\Demos\gui
-Name: {group}\GUI\QuickGUI-01; Filename: {code:GetPythonExe}; Parameters: Demo_QuickGUI01.py; WorkingDir: {app}\Demos\gui
-Name: {group}\GUI\Navi; Filename: {code:GetPythonExe}; Parameters: Demo_Navi.py; WorkingDir: {app}\Demos\gui
+Name: {group}\GUI\CEGUI - Basic; Filename: {code:GetPythonExe}; Parameters: Demo_CEGUI_Gui.py; WorkingDir: {app}\Demos\cegui
+Name: {group}\GUI\CEGUI Drag and Drop; Filename: {code:GetPythonExe}; Parameters: Demo_CEGUI_DragnDrop.py; WorkingDir: {app}\Demos\cegui
+Name: {group}\GUI\CEGUI - Nice; Filename: {code:GetPythonExe}; Parameters: Demo_CEGUI_NewGui.py; WorkingDir: {app}\Demos\cegui
+Name: {group}\GUI\QuickGUI-01; Filename: {code:GetPythonExe}; Parameters: Demo_QuickGUI01.py; WorkingDir: {app}\Demos\qgui
+Name: {group}\GUI\Navi; Filename: {code:GetPythonExe}; Parameters: Demo_Navi.py; WorkingDir: {app}\Demos\navi
 
 Name: {group}\ODE Demos\Multiple Scenes; Filename: {code:GetPythonExe}; Parameters: Demo_Scenes.py; WorkingDir: {app}\Demos\OgreOde
 Name: {group}\ODE Demos\Gran Turism; Filename: {code:GetPythonExe}; Parameters: GranTurismOgre.py; WorkingDir: {app}\Demos\OgreOde
@@ -228,9 +231,10 @@ Name: {group}\NxOgre\Demo103; Filename: {code:GetPythonExe}; Parameters: Demo_10
 
 Name: {group}\Plib Demos\Networking - Server; Filename: {code:GetPythonExe}; Parameters: Demo_Server.py; WorkingDir: {app}\Demos\plib
 Name: {group}\Plib Demos\Networking - Client; Filename: {code:GetPythonExe}; Parameters: Demo_Client.py; WorkingDir: {app}\Demos\plib
-Name: {group}\Plib Demos\Sound; Filename: {code:GetPythonExe}; Parameters: Demo_Sound.py; WorkingDir: {app}\Demos\plib
+;Name: {group}\Plib Demos\Sound; Filename: {code:GetPythonExe}; Parameters: Demo_Sound.py; WorkingDir: {app}\Demos\plib
 
-Name: {group}\OgreForests Demos\ogreoforests; Filename: {code:GetPythonExe}; Parameters: Demo_Forests.py; WorkingDir: {app}\Demos\ogreforests
+Name: {group}\OgreForests Demos\ogreforests; Filename: {code:GetPythonExe}; Parameters: Demo_Forest.py; WorkingDir: {app}\Demos\ogreforests
+Name: {group}\Editable Terrain Demo\Editable Terrain; Filename: {code:GetPythonExe}; Parameters: Demo_CEGUI_ET.py; WorkingDir: {app}\Demos\et
 
 Name: {group}\Uninstall Python-Ogre; Filename: {uninstallexe}
 Name: {group}\Python-Ogre API Documenatation; Filename: {app}\docs\Python-Ogre.chm
@@ -449,7 +453,8 @@ begin
 
 	DisplayedPythonWarning := False;
 	PythonVersion := '';
-	SupportedVersions := ['2.4', '2.5'];
+	SupportedVersions := [ '2.5'];
+
 	Debug := False;
 
 	NumPythonVersions := GetInstalledPythonVersions();
