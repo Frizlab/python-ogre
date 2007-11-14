@@ -101,13 +101,13 @@ def ManualTransformations ( mb ):
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
 
-    for x in main_ns.mem_funs('::caelum::UniversalClock::getGregorianDateFromJulianDay'):
+    for x in main_ns.mem_funs('::caelum::UniversalClock::getGregorianDateFromJulianDay',allow_empty=True ):
         x.add_transformation( ft.output('year'), ft.output('month'), ft.output('day'), alias = 'getGregorianDateFromJulianDay' )
         x.documentation = docit ("","JulianDay", "tuple - year,month,day")
         
-    x=main_ns.mem_fun('::caelum::UniversalClock::getGregorianDateTimeFromJulianDay')
-    x.add_transformation( ft.output('year'), ft.output('month'), ft.output('day'),ft.output('hour'), ft.output('minute'), ft.output('second') )
-    x.documentation = docit ("","JulianDay", "tuple - year,month,day,hour, minute, second")
+    #x=main_ns.mem_fun('::caelum::UniversalClock::getGregorianDateTimeFromJulianDay')
+    #x.add_transformation( ft.output('year'), ft.output('month'), ft.output('day'),ft.output('hour'), ft.output('minute'), ft.output('second') )
+    #x.documentation = docit ("","JulianDay", "tuple - year,month,day,hour, minute, second")
     
 ###############################################################################
 ##
