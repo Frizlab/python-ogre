@@ -94,8 +94,9 @@ def get_linkflags():
 # Let us select the projects to build
 
 possible_projects = []
-for name in environment.projects.keys():
-    possible_projects.append ( name )
+for name,cls in environment.projects.items():
+    if cls.active:
+        possible_projects.append ( name )
 #  ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',\
 #     'ogreode', 'ogreal', 'quickgui', 'opcode', 'nxogre', 'bullet', 'physx', 'betagui','theora',\
 #      'ogrevideoffmpeg', 'ogredshow', 'plib', 'ogrebulletc', 'ogrebulletd',
@@ -127,7 +128,7 @@ for name, cls in environment.projects.items():
         _env = Environment(ENV=os.environ)
         
         if environment.rpath:
-            _env.Append(RPATH=environment.rpath)
+            _env.Append(RPATH=_env.Literal(environment.rpath))
 
               
         ## Use custom compilier if wanted (things like ccache)
@@ -141,6 +142,8 @@ for name, cls in environment.projects.items():
         linkflags=get_linkflags()
         if hasattr ( cls, 'LINKFLAGS' ):
             linkflags += cls.LINKFLAGS
+	if environment.rpath:
+            linkflags += ' -z origin '
         _env.Append( LINKFLAGS=linkflags )
         _env.Append ( LIBS = cls.libs )
         
