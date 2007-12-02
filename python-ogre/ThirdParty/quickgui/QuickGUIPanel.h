@@ -3,8 +3,10 @@
 
 #include "OgreStringConverter.h"
 
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUIBorder.h"
 #include "QuickGUIButton.h"
+#include "QuickGUICheckBox.h"
 #include "QuickGUIComboBox.h"
 #include "QuickGUIConsole.h"
 #include "QuickGUIImage.h"
@@ -33,7 +35,7 @@ namespace QuickGUI
 	Panels are meant to be created via the Window and Sheet widget.
 	*/
 	class _QuickGUIExport Panel :
-		public Image,
+		public Widget,
 		public QuadContainer
 	{
 	public:
@@ -55,40 +57,58 @@ namespace QuickGUI
 			@param
 				parentWidget parent widget which created this widget.
         */
-		Panel(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm);		
+		Panel(const Ogre::String& name, GUIManager* gm);		
 
 		virtual void addChild(Widget* w);
 		virtual void allowScrolling(bool allow);
 
 		Button* createButton();
+		Button* createButton(const Ogre::String& name);
+
+		CheckBox* createCheckBox();
+		CheckBox* createCheckBox(const Ogre::String& name);
 
 		ComboBox* createComboBox();
+		ComboBox* createComboBox(const Ogre::String& name);
 
 		Console* createConsole();
+		Console* createConsole(const Ogre::String& name);
 
 		HorizontalScrollBar* createHorizontalScrollBar();
+		HorizontalScrollBar* createHorizontalScrollBar(const Ogre::String& name);
 
 		Image* createImage();
+		Image* createImage(const Ogre::String& name);
 
 		Label* createLabel();
+		Label* createLabel(const Ogre::String& name);
 
 		List* createList();
+		List* createList(const Ogre::String& name);
 
 		LabelArea* createMultiLineLabel();
+		LabelArea* createMultiLineLabel(const Ogre::String& name);
 
 		NStateButton* createNStateButton();
+		NStateButton* createNStateButton(const Ogre::String& name);
 
 		Panel* createPanel();
+		Panel* createPanel(const Ogre::String& name);
 
 		ProgressBar* createProgressBar();
+		ProgressBar* createProgressBar(const Ogre::String& name);
 
 		TextBox* createTextBox();
+		TextBox* createTextBox(const Ogre::String& name);
 
 		HorizontalTrackBar* createHorizontalTrackBar();
+		HorizontalTrackBar* createHorizontalTrackBar(const Ogre::String& name);
 
 		VerticalScrollBar* createVerticalScrollBar();
+		VerticalScrollBar* createVerticalScrollBar(const Ogre::String& name);
 
 		VerticalTrackBar* createVerticalTrackBar();
+		VerticalTrackBar* createVerticalTrackBar(const Ogre::String& name);
 
 		ScrollPane* getScrollPane();
 		virtual Widget* getTargetWidget(const Point& pixelPosition);
@@ -99,6 +119,7 @@ namespace QuickGUI
 	protected:
 		virtual ~Panel();
 		virtual void setQuadContainer(QuadContainer* container);
+		virtual Widget*	_createComponent(const Ogre::String& name, Type t);
 	protected:
 		ScrollPane* mScrollPane;
 		bool mScrollingAllowed;

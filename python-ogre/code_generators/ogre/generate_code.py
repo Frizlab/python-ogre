@@ -33,6 +33,7 @@ from pygccxml import declarations
 from pyplusplus import messages
 from pyplusplus import module_builder
 from pyplusplus import decl_wrappers
+from pyplusplus.code_creators import include
 
 from pyplusplus import function_transformers as ft
 from pyplusplus.module_builder import call_policies
@@ -103,19 +104,14 @@ def ManualExclude ( mb ):
     PartSys.class_( "CmdNonvisibleTimeout" ).exclude()
     PartSys.class_( "CmdSorted" ).exclude()
 
-    ## Functions defined in .h files but not implemented in source files
-#     main_ns.class_('Root').mem_fun('termHandler').exclude()
-#     main_ns.class_( "StaticGeometry" ).class_("Region").member_functions('getLights').exclude() 
-
+ 
     #exclude GpuLogicalIndexUseMap  NOTE:  Example use of Py++ to exclude a special variable........
     GpuLogicalBufferStruct = main_ns.class_( 'GpuLogicalBufferStruct' )
     GpuLogicalBufferStruct.variable( 'map' ).exclude()   
     
-    ## THIS IS A UNION
+    ## These are really unions
     main_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').variable('data').exclude()    
-    v = main_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').variable('fData')
-    v.exclude() 
-    
+    main_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').variable('fData').exclude()
     
     # functions that take pointers to pointers 
     main_ns.class_( 'VertexElement').member_functions('baseVertexPointerToElement').exclude() ## now as a transformed funct
@@ -130,12 +126,10 @@ def ManualExclude ( mb ):
     ## AJM Error at compile time - errors when compiling or linking
     main_ns.calldefs ('peekNextPtr').exclude ()
     main_ns.calldefs ('peekNextValuePtr').exclude ()    #in many of the Iterator classes
-    
         
     main_ns.class_( "ErrorDialog" ).exclude()   # doesn't exist for link time
     main_ns.class_( 'CompositorInstance').class_('RenderSystemOperation').exclude() # doesn't exist for link time
     main_ns.class_( 'CompositorChain').mem_fun('_queuedOperation').exclude() #needs RenderSystemOperation
-    
    
    ## changes due to expanded header file input
     try:             
@@ -172,20 +166,16 @@ def ManualExclude ( mb ):
     global_ns.class_('::Ogre::BillboardSet').mem_fun('getTextureCoords').exclude()
     global_ns.class_('::Ogre::BillboardSet').mem_fun('setTextureCoords').exclude()
     
-    ## these are hand wrapper -- 
-#     global_ns.class_('::Ogre::RenderQueueListener').mem_fun('renderQueueStarted').exclude()
-#     global_ns.class_('::Ogre::RenderQueueListener').mem_fun('renderQueueEnded').exclude()
-
     ## AJM 10/10/07 new excludes due to hand_make wrappers..
     global_ns.class_('::Ogre::SceneManager').mem_fun('setOption').exclude()
     global_ns.class_('::Ogre::SceneManager').mem_fun('getOption').exclude()
     global_ns.class_('::Ogre::ParticleSystem').mem_fun('_getIterator').exclude()
    
-    ## as we now include all protected functions tere are a couple of problem areas that popped up
+    ## as we now include all protected functions there are a couple of problem areas that popped up
     main_ns.constructor("IndexData",arg_types=['::Ogre::IndexData const &']).exclude()
     global_ns.class_('::Ogre::OverlayManager').\
         mem_fun('destroyOverlayElementImpl', arg_types=['::Ogre::OverlayElement *',None] ).exclude()
-        
+      
         
     excludes = ['::Ogre::Any::getType'  ## this returns a std::type_info which doesn't make any sense in Python
     ]
@@ -219,7 +209,11 @@ def ManualExclude ( mb ):
             cls.operator('=').exclude()
         except:
             pass
-
+# #         print "Setting Iterator to copyable:", cls
+#         print dir(cls)
+#         sys.exit()
+# #         cls.noncopyable = False
+        
     ## Remove private classes , and those that are internal to Ogre...
     private_decls = common_utils.private_decls_t(environment.ogre.include_dirs)
     for cls in main_ns.classes():
@@ -249,13 +243,12 @@ def ManualInclude ( mb ):
     main_ns.class_("VertexBoneAssignment_s").include()
     # A couple of Std's that need exposing
     std_ns = global_ns.namespace("std")
-    for c in std_ns.classes():
-        print c
-#     std_ns.class_("pair<unsigned int, unsigned int>").include()
-    std_ns.class_("pair<unsigned, unsigned>").include()
+    
+  
+    std_ns.class_("pair<unsigned int, unsigned int>").include()
+#     std_ns.class_("pair<unsigned, unsigned>").include()
     std_ns.class_("pair<bool, float>").include()
-    if not HACK:
-        std_ns.class_("pair<Ogre::SharedPtr<Ogre::Resource>, bool>").include()
+    std_ns.class_("pair<Ogre::SharedPtr<Ogre::Resource>, bool>").include()
     
     
     #RenderOperation class is marked as private, but I think this is a mistake
@@ -329,22 +322,15 @@ def ManualFixes ( mb ):
     c = mb.namespace( MAIN_NAMESPACE ).class_( 'Skeleton' )
     c.mem_fun( '_mergeSkeletonAnimations' ).arguments[-1].default_value = '::Ogre::StringVector()'
 
-            
-    ## we apply smart ptr to sharedptr classes automatically, however these are harder to identify   
-#     known = ['indexBuffer', 'vertexData', 'indexData']
-#     for v in mb.member_variables():
-#         if v.name in known:
-#             print "Setting ", v," to smart pointer"
-#             v.apply_smart_ptr_wa = True
-# \   cls = mb.class_( "IndexData" )
-#     v = cls.variable( "indexBuffer" )
-#     v.apply_smart_ptr_wa = True
-#     cls = mb.class_( "SubMesh" )
-#     v = cls.variable( "vertexData" )
-#     v.apply_smart_ptr_wa = True
-#     v = cls.variable( "indexData" )
-#     v.apply_smart_ptr_wa = True   
-#     
+    ## Special due to bug in gccxml
+    f=main_ns.class_('PatchMesh').mem_fun('define')
+    f.arguments[4].default_value = '::Ogre::PatchSurface::AUTO_LEVEL'
+    f.arguments[5].default_value = '::Ogre::PatchSurface::AUTO_LEVEL'
+    f=main_ns.class_('MeshManager').mem_fun('createBezierPatch')
+    f.arguments[6].default_value = '::Ogre::PatchSurface::AUTO_LEVEL'
+    f.arguments[7].default_value = '::Ogre::PatchSurface::AUTO_LEVEL'
+    
+    
     ## Functions that return objects we need to manage
     FunctionsToMemoryManage=[\
         '::Ogre::VertexData::clone',
@@ -360,32 +346,7 @@ def ManualFixes ( mb ):
     UTFString.mem_fun( 'asUTF8' ).alias = '__str__'
     UTFString.mem_fun( 'asWStr' ).alias = '__unicode__'
     
-    ## Math abs function is overloaded (with degree and radian) and doesn't know what to "return"
-    ## so exclude the overloads except the one that takes a real...
-#     cls = mb.class_("Math")
-#     cls.member_functions("Abs").exclude()
-#     cls.mem_fun('Abs', arg_types=['::Ogre::Real']).include()
-    
-    
-# #     # ensure functions that take UTFString can also take a python string
-# #     utf = main_ns.class_( 'UTFString' )
-# #     def has_utf_type( utf, var ): 
-# #         res =  declarations.is_same( utf, declarations.remove_const( var.type ) )
-# # # #         if "String" in var.type.decl_string:
-# # # #             print "***", utf, var
-# # # #             print var.type
-# # # #             print var.type.decl_string
-# # # #             nake_type1 = declarations.type_traits.remove_declarated( utf )
-# # # #             nake_type2 = declarations.type_traits.remove_declarated(  var.type  )
-# # # #         
-# # # #             print res, "Comparing NAKE ",nake_type1, nake_type2
-# # # #             print res, "Comparing  ",declarations.remove_const( var.type ), utf
-# #         if res:
-# #             print "UTFFIX", utf,var,var.type
-# #         return res
-# #     main_ns.variables( lambda var: has_utf_type( utf, var ) ).use_make_functions = True
-# #     #main_ns.variables( lambda var: has_utf_type( utf, var ) ).apply_smart_ptr_wa  = True
-
+   
     ## need some help here as the function overloads are causing issues
     f = global_ns.class_('::Ogre::GpuProgramParameters').\
         mem_fun('setNamedConstant', arg_types=['::Ogre::String const &','::Ogre::Real'] )
@@ -393,29 +354,6 @@ def ManualFixes ( mb ):
     f = global_ns.class_('::Ogre::GpuProgramParameters').\
         mem_fun('setNamedConstant', arg_types=['::Ogre::String const &','int'] )
     f.arguments[1].name="int"
-    
-    
-    f = global_ns.class_('::Ogre::GpuProgramParameters').\
-        mem_fun('setNamedConstant', arg_types=['::Ogre::String const &','float const *', None, None] )
-    f.add_transformation( ft.modify_type('val',common_utils._ReturnUnsignedInt ), alias='setNamedConstantFloat' )
-    f.documentation = docit ("Modified Input Argument (val) to work with CTypes",
-                                            "Argument val takes a CTypes.adddressof(xx)", "...")
-            
-    f = global_ns.class_('::Ogre::GpuProgramParameters').\
-        mem_fun('setNamedConstant', arg_types=['::Ogre::String const &','double const *', None, None] )
-    f.add_transformation( ft.modify_type('val',common_utils._ReturnUnsignedInt ), alias='setNamedConstantDouble' )
-    f.documentation = docit ("Modified Input Argument (val) to work with CTypes",
-                                            "Argument val takes a CTypes.adddressof(xx)", "...")
-        
-    f = global_ns.class_('::Ogre::GpuProgramParameters').\
-        mem_fun('setNamedConstant', arg_types=['::Ogre::String const &','int const *', None, None] )
-    f.add_transformation( ft.modify_type('val',common_utils._ReturnUnsignedInt ), alias='setNamedConstantInt' )
-    f.documentation = docit ("Modified Input Argument (val) to work with CTypes",
-                                            "Argument val takes a CTypes.adddressof(xx)", "...")
-    
-    
-    
-    #.default_value = "int(%s)" % VertexCacheProfiler.arguments[1].default_value    
 
 ##
 # fix up any ugly name alias
@@ -447,156 +385,158 @@ def ManualTransformations ( mb ):
         
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
-        
-    rt_cls = ns.class_('RenderTarget')
-    x=rt_cls.mem_fun('getMetrics')
-    x.add_transformation( *create_output(3) )
-    x.documentation = docit ( "","no arguments", "tuple containing width, height, colourDepth")
-    
-    x=rt_cls.mem_fun( 'getStatistics', arg_types=['float &']*4 )
-    x.add_transformation( ft.output(0),ft.output(1),ft.output(2),ft.output(3), alias="getStatisticsList" )
-    x.documentation = docit ("", "no arguments", "tuple - lastFPS, avgFPS, bestFPS, worstFPS")
-    
-    # This doesn't work at the moment as Py++ ignores it ??
-    
-#     x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueEnded')
-#     x.add_transformation(ft.inout('repeatThisInvocation'))
-#     x.documentation = docit ("","queueGroupId, invocation", "tuple - repeatThisInvocation")
-#     
-#     x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueStarted') 
-#     x.add_transformation(ft.inout('skipThisInvocation'))
-#     x.documentation = docit ("","queueGroupId, invocation", "tuple - skipThisInvocation")
-    
-    x=ns.mem_fun('::Ogre::RenderWindow::getMetrics')
-    x.add_transformation( *create_output(5) )
-    x.documentation = docit ("","no arguments", "tuple - width, height, colourDepth, left, top")
-    
-    x=ns.mem_fun('::Ogre::Viewport::getActualDimensions')
-    x.add_transformation( *create_output(4) )
-    x.documentation = docit ("","no arguments", "tuple - left, top, width, height")
-    
-    x=ns.mem_fun('::Ogre::BillboardSet::getParametricOffsets')
-    x.add_transformation( *create_output(4) )
-    x.documentation = docit ("","no arguments", "tuple - left, right, top, bottom")
-    
-    x=ns.mem_fun('::Ogre::Compiler2Pass::isFloatValue')
-    x.add_transformation( *create_output(2) )
-    x.documentation = docit ("","no arguments", "tuple - Return Value(True/False), fvalue, charsize")
-    
-    x=ns.mem_fun('::Ogre::UTFString::_utf16_to_utf32')
-    x.add_transformation( ft.output('out_uc') )
-    x.documentation = docit ("","uint16", "tuple - size_t, out character")
-    
-    x=ns.mem_fun('::Ogre::UTFString::_utf8_to_utf32')
-    x.add_transformation( ft.output('out_uc') )
-    x.documentation = docit ("","char", "tuple - size_t, out character")
-    
-    x=ns.mem_fun('::Ogre::Frustum::calcProjectionParameters')
-    x.add_transformation( *create_output(4) )
-    x.documentation = docit ("","no arguments", "tuple - left, right, bottom, top")
-    
-    x=ns.mem_fun('::Ogre::StaticGeometry::getRegionIndexes')
-    x.add_transformation( ft.output('x'), ft.output('y'), ft.output('z') )
-    x.documentation = docit ("","Vector", "tuple - x,y,z")
-    
-    x=ns.mem_fun('::Ogre::InstancedGeometry::getBatchInstanceIndexes')
-    x.add_transformation( ft.output('x'), ft.output('y'), ft.output('z') )
-    x.documentation = docit ("","Vector", "tuple - x,y,z")
-    
-    x=ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueStarted')
-    x.add_transformation(ft.inout("skipThisQueue"))
-    x.documentation = docit ("", "id, invocation", "skipThisQueue" )
-    
-    x=ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueEnded') 
-    x.add_transformation(ft.inout("repeatThisQueue"))
-    x.documentation = docit ("", "id, invocation", "repeatThisQueue" )
-    
-    x=ns.mem_fun('::Ogre::PanelOverlayElement::getUV') 
-    x.add_transformation(ft.output('u1'), ft.output('v1'), ft.output('u2'), ft.output('v2') )
-    x.documentation = docit ("", "no arguments", "tuple - u1, v1, u2, v2" )
-    
-    x=ns.mem_fun('::Ogre::ExternalTextureSource::getTextureTecPassStateLevel')
-    x.add_transformation( *create_output(3) )  
-    x.documentation = docit ("", "no arguments", "tuple - TechniqueLevel, PassLevel,StateLevel")
-              
-    x=ns.mem_fun('::Ogre::Mesh::suggestTangentVectorBuildParams' )
-    x.add_transformation(ft.output('outSourceCoordSet'), ft.output('outIndex') )
-    x.documentation = docit ("", "targetSemantic","outSourceCoordSet, outIndex" )
-      
-    x=ns.mem_fun('::Ogre::PixelUtil::getBitDepths')
-    x.add_transformation(ft.output_static_array('rgba',4) )
-    x.documentation = docit ("", "format", "rgba" )
-    
-    x=ns.mem_fun('::Ogre::PixelUtil::getBitMasks')
-    x.add_transformation(ft.output_static_array('rgba',4) )
-    x.documentation = docit ("", "format", "rgba" )
 
-    
-    ## these need updates to Py++ to handle pointers 
-# #     x = ns.mem_fun('::Ogre::PixelUtil::unpackColour', arg_types=['float *','float *','float *','float *',None,None])
-# #     x.add_transformation(ft.output('r'), ft.output('g'), ft.output('b'), ft.output('a') )
-# #     x.documentation = docit ("", "Pixelformat, src", "r,g,b,a" )
+    # this is now handled automatically in the common utilities...
+            
+# # #     rt_cls = ns.class_('RenderTarget')
+# # #     x=rt_cls.mem_fun('getMetrics')
+# # #     x.add_transformation( *create_output(3) )
+# # #     x.documentation = docit ( "","no arguments", "tuple containing width, height, colourDepth")
+# # #     
+# # #     x=rt_cls.mem_fun( 'getStatistics', arg_types=['float &']*4 )
+# # #     x.add_transformation( ft.output(0),ft.output(1),ft.output(2),ft.output(3), alias="getStatisticsList" )
+# # #     x.documentation = docit ("", "no arguments", "tuple - lastFPS, avgFPS, bestFPS, worstFPS")
+# # #     
+# # #     # This doesn't work at the moment as Py++ ignores it ??
+# # # #     
+# # # #     x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueEnded')
+# # # #     x.add_transformation(ft.inout('repeatThisInvocation'))
+# # # #     x.documentation = docit ("","queueGroupId, invocation", "tuple - repeatThisInvocation")
+# # # #     
+# # # #     x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueStarted') 
+# # # #     x.add_transformation(ft.inout('skipThisInvocation'))
+# # # #     x.documentation = docit ("","queueGroupId, invocation", "tuple - skipThisInvocation")
+# # #     
+# # #     x=ns.mem_fun('::Ogre::RenderWindow::getMetrics')
+# # #     x.add_transformation( *create_output(5) )
+# # #     x.documentation = docit ("","no arguments", "tuple - width, height, colourDepth, left, top")
+# # #     
+# # #     x=ns.mem_fun('::Ogre::Viewport::getActualDimensions')
+# # #     x.add_transformation( *create_output(4) )
+# # #     x.documentation = docit ("","no arguments", "tuple - left, top, width, height")
+# # #     
+# # #     x=ns.mem_fun('::Ogre::BillboardSet::getParametricOffsets')
+# # #     x.add_transformation( *create_output(4) )
+# # #     x.documentation = docit ("","no arguments", "tuple - left, right, top, bottom")
+# # #     
+# # #     x=ns.mem_fun('::Ogre::Compiler2Pass::isFloatValue')
+# # #     x.add_transformation( *create_output(2) )
+# # #     x.documentation = docit ("","no arguments", "tuple - Return Value(True/False), fvalue, charsize")
+# # #     
+# # #     x=ns.mem_fun('::Ogre::UTFString::_utf16_to_utf32')
+# # #     x.add_transformation( ft.output('out_uc') )
+# # #     x.documentation = docit ("","uint16", "tuple - size_t, out character")
+# # #     
+# # #     x=ns.mem_fun('::Ogre::UTFString::_utf8_to_utf32')
+# # #     x.add_transformation( ft.output('out_uc') )
+# # #     x.documentation = docit ("","char", "tuple - size_t, out character")
+# # #     
+# # #     x=ns.mem_fun('::Ogre::Frustum::calcProjectionParameters')
+# # #     x.add_transformation( *create_output(4) )
+# # #     x.documentation = docit ("","no arguments", "tuple - left, right, bottom, top")
+# # #     
+# # #     x=ns.mem_fun('::Ogre::StaticGeometry::getRegionIndexes')
+# # #     x.add_transformation( ft.output('x'), ft.output('y'), ft.output('z') )
+# # #     x.documentation = docit ("","Vector", "tuple - x,y,z")
+# # #     
+# # #     x=ns.mem_fun('::Ogre::InstancedGeometry::getBatchInstanceIndexes')
+# # #     x.add_transformation( ft.output('x'), ft.output('y'), ft.output('z') )
+# # #     x.documentation = docit ("","Vector", "tuple - x,y,z")
+# # #     
+# # #     x=ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueStarted')
+# # #     x.add_transformation(ft.inout("skipThisQueue"))
+# # #     x.documentation = docit ("", "id, invocation", "skipThisQueue" )
+# # #     
+# # #     x=ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueEnded') 
+# # #     x.add_transformation(ft.inout("repeatThisQueue"))
+# # #     x.documentation = docit ("", "id, invocation", "repeatThisQueue" )
+# # #     
+# # #     x=ns.mem_fun('::Ogre::PanelOverlayElement::getUV') 
+# # #     x.add_transformation(ft.output('u1'), ft.output('v1'), ft.output('u2'), ft.output('v2') )
+# # #     x.documentation = docit ("", "no arguments", "tuple - u1, v1, u2, v2" )
+# # #     
+# # #     x=ns.mem_fun('::Ogre::ExternalTextureSource::getTextureTecPassStateLevel')
+# # #     x.add_transformation( *create_output(3) )  
+# # #     x.documentation = docit ("", "no arguments", "tuple - TechniqueLevel, PassLevel,StateLevel")
+# # #               
+# # #     x=ns.mem_fun('::Ogre::Mesh::suggestTangentVectorBuildParams' )
+# # #     x.add_transformation(ft.output('outSourceCoordSet'), ft.output('outIndex') )
+# # #     x.documentation = docit ("", "targetSemantic","outSourceCoordSet, outIndex" )
+# # #       
+# # #     x=ns.mem_fun('::Ogre::PixelUtil::getBitDepths')
+# # #     x.add_transformation(ft.output_static_array('rgba',4) )
+# # #     x.documentation = docit ("", "format", "rgba" )
+# # #     
+# # #     x=ns.mem_fun('::Ogre::PixelUtil::getBitMasks')
+# # #     x.add_transformation(ft.output_static_array('rgba',4) )
+# # #     x.documentation = docit ("", "format", "rgba" )
+# # # 
+# # #     
+# # #     ## these need updates to Py++ to handle pointers 
+# # # # #     x = ns.mem_fun('::Ogre::PixelUtil::unpackColour', arg_types=['float *','float *','float *','float *',None,None])
+# # # # #     x.add_transformation(ft.output('r'), ft.output('g'), ft.output('b'), ft.output('a') )
+# # # # #     x.documentation = docit ("", "Pixelformat, src", "r,g,b,a" )
+# # # 
+# # # # #     x = ns.mem_fun('::Ogre::Frustum::projectSphere')
+# # # # #     x.add_transformation(ft.output('left'), ft.output('top'), ft.output('right'), ft.output('bottom') )
+# # # # #     x.documentation = docit ("", "Sphere", "result, left, top, right, bottom" )
+# # # # #             
+# # # # #     x = ns.mem_fun('::Ogre::Camera::projectSphere')
+# # # # #     x.add_transformation(ft.output('left'), ft.output('top'), ft.output('right'), ft.output('bottom') )
+# # # # #     x.documentation = docit ("", "Sphere", "result, left, top, right, bottom" )
+# # #     
+# # #     # these are * * 's so need more work
+# # # #     x = ns.mem_fun('::Ogre::AnimationTrack::getKeyFramesAtTime' )
+# # # #     x.add_transformation(ft.output('keyFrame1'), ft.output('keyFrame2') )
+# # #     
+# # # #     x = ns.mem_fun('::Ogre::Mesh::prepareMatricesForVertexBlend' )
+# # # #     x.add_transformation(ft.output('blendMatrices') )
+# # # #     
+# # # #     x = ns.mem_fun('::Ogre::Mesh::softwareVertexBlend' )
+# # # #     x.add_transformation(ft.output('blendMatrices') )
+# # # #     
+# # # #     x = ns.mem_fun('::Ogre::OptimisedUtil::softwareVertexSkinning' )
+# # # #     x.add_transformation(ft.output('blendMatrices') )
+# # #     
+# # # #     x = ns.mem_fun('::Ogre::NumericSolver::solveNxNLinearSysDestr')
+# # # #     x.add_transformation(ft.output('coeff') )
+# # #     
+# # # #     x = ns.mem_fun('::Ogre::SkeletonInstance::_getAnimationImpl')
+# # # #     x.add_transformation(ft.output('linker') )
+# # # #     x = ns.mem_fun('::Ogre::SkeletonInstance::getAnimation', arg_types=[None,None])
+# # # #     x.add_transformation(ft.output('linker') )
+# # # # #     x = ns.mem_fun('::Ogre::Skeleton::_getAnimationImpl')
+# # # # #     x.add_transformation(ft.output('linker') )
+# # # #     x = ns.mem_fun('::Ogre::Skeleton::getAnimation', arg_types=[None,None])
+# # # #     x.add_transformation(ft.output('linker') )
+# # #     
+# # # # # #     x = ns.mem_fun('::Ogre::RenderQueue::RenderableListener::renderableQueued')
+# # # # # #     x.add_transformation(ft.output('ppTech') )
+# # # # # #     x.documentation = docit ("UNTESTED", "rend, groupID, priority", "ppTech" )
+# # #     
+# # #     ##
+# # #     ## now we handle some specials..
+# # #     ##
 
-# #     x = ns.mem_fun('::Ogre::Frustum::projectSphere')
-# #     x.add_transformation(ft.output('left'), ft.output('top'), ft.output('right'), ft.output('bottom') )
-# #     x.documentation = docit ("", "Sphere", "result, left, top, right, bottom" )
-# #             
-# #     x = ns.mem_fun('::Ogre::Camera::projectSphere')
-# #     x.add_transformation(ft.output('left'), ft.output('top'), ft.output('right'), ft.output('bottom') )
-# #     x.documentation = docit ("", "Sphere", "result, left, top, right, bottom" )
-    
-    # these are * * 's so need more work
-#     x = ns.mem_fun('::Ogre::AnimationTrack::getKeyFramesAtTime' )
-#     x.add_transformation(ft.output('keyFrame1'), ft.output('keyFrame2') )
-    
-#     x = ns.mem_fun('::Ogre::Mesh::prepareMatricesForVertexBlend' )
-#     x.add_transformation(ft.output('blendMatrices') )
-#     
-#     x = ns.mem_fun('::Ogre::Mesh::softwareVertexBlend' )
-#     x.add_transformation(ft.output('blendMatrices') )
-#     
-#     x = ns.mem_fun('::Ogre::OptimisedUtil::softwareVertexSkinning' )
-#     x.add_transformation(ft.output('blendMatrices') )
-    
-#     x = ns.mem_fun('::Ogre::NumericSolver::solveNxNLinearSysDestr')
-#     x.add_transformation(ft.output('coeff') )
-    
-#     x = ns.mem_fun('::Ogre::SkeletonInstance::_getAnimationImpl')
-#     x.add_transformation(ft.output('linker') )
-#     x = ns.mem_fun('::Ogre::SkeletonInstance::getAnimation', arg_types=[None,None])
-#     x.add_transformation(ft.output('linker') )
-# #     x = ns.mem_fun('::Ogre::Skeleton::_getAnimationImpl')
-# #     x.add_transformation(ft.output('linker') )
-#     x = ns.mem_fun('::Ogre::Skeleton::getAnimation', arg_types=[None,None])
-#     x.add_transformation(ft.output('linker') )
-    
-# # #     x = ns.mem_fun('::Ogre::RenderQueue::RenderableListener::renderableQueued')
-# # #     x.add_transformation(ft.output('ppTech') )
-# # #     x.documentation = docit ("UNTESTED", "rend, groupID, priority", "ppTech" )
-    
-    ##
-    ## now we handle some specials..
-    ##
-
-
-    pixelBox_size = """ 
-namespace{ 
-struct PixelBoxSize{ 
-    bp::ssize_t operator()( boost::python::tuple args ) const{ 
-        boost::python::object self = args[0];
-        Ogre::PixelBox& pb = boost::python::extract<Ogre::PixelBox&>( self ); 
-        return pb.getSize(); 
-    } 
-}; 
-} 
-""" 
-#     c = ns.class_( 'PixelBox' ) 
-#     c.add_declaration_code( pixelBox_size ) 
-#     for f in c.mem_funs( 'getData' ): 
-#         f.call_policies = call_policies.return_range( f, 'ImageSize' ) 
-#         f.documentation = "Python-Ogre Modified Return Range \\n"
-#         if f.has_const: 
-#             f.alias = 'getReadOnlyData' 
+# # # 
+# # #     pixelBox_size = """ 
+# # # namespace{ 
+# # # struct PixelBoxSize{ 
+# # #     bp::ssize_t operator()( boost::python::tuple args ) const{ 
+# # #         boost::python::object self = args[0];
+# # #         Ogre::PixelBox& pb = boost::python::extract<Ogre::PixelBox&>( self ); 
+# # #         return pb.getSize(); 
+# # #     } 
+# # # }; 
+# # # } 
+# # # """ 
+# # # #     c = ns.class_( 'PixelBox' ) 
+# # # #     c.add_declaration_code( pixelBox_size ) 
+# # # #     for f in c.mem_funs( 'getData' ): 
+# # # #         f.call_policies = call_policies.return_range( f, 'ImageSize' ) 
+# # # #         f.documentation = "Python-Ogre Modified Return Range \\n"
+# # # #         if f.has_const: 
+# # # #             f.alias = 'getReadOnlyData' 
             
             
     image_size = """ 
@@ -636,38 +576,38 @@ struct MDSSize{
     f.call_policies = call_policies.return_range( f, 'MDSSize' ) 
     f.documentation = "Python-Ogre Modified Return Range \\n"
     
-    gpu_pp_int_size = """ 
-namespace{ 
-struct GpuProgramParametersGetIntPointerSize{ 
-    bp::ssize_t operator()( boost::python::tuple args ) const{ 
-        boost::python::object self = args[0]; 
-        Ogre::GpuProgramParameters& gpupp = boost::python::extract<Ogre::GpuProgramParameters&>( self ); 
-        boost::python::object pos_obj = args[1]; 
-        bp::ssize_t offset = boost::python::extract<bp::ssize_t>( pos_obj ); 
-        return gpupp.intBufferSize - offset; 
-        }
-}; 
-struct GpuProgramParametersGetFloatPointerSize{ 
-    bp::ssize_t operator()( boost::python::tuple args ) const{ 
-        boost::python::object self = args[0]; 
-        Ogre::GpuProgramParameters& gpupp = boost::python::extract<Ogre::GpuProgramParameters&>( self ); 
-        boost::python::object pos_obj = args[1]; 
-        bp::ssize_t offset = boost::python::extract<bp::ssize_t>( pos_obj ); 
-        return gpupp.floatBufferSize - offset; 
-        }
-}; 
-} 
-""" 
-  
- 
-#     GpuProgramParameters = ns.class_( 'GpuProgramParameters' ) 
-#     GpuProgramParameters.add_declaration_code( gpu_pp_int_size ) 
-#     f = GpuProgramParameters.mem_fun( 'getIntPointer' ) 
-#     f.call_policies = call_policies.return_range( f, 'GpuProgramParametersGetIntPointerSize' ) 
-#     f.documentation = "Python-Ogre Modified Return Range \\n"
-#     f = GpuProgramParameters.mem_fun( 'getFloatPointer' ) 
-#     f.call_policies = call_policies.return_range( f, 'GpuProgramParametersGetFloatPointerSize' ) 
-#     f.documentation = "Python-Ogre Modified Return Range \\n"
+# # #     gpu_pp_int_size = """ 
+# # # namespace{ 
+# # # struct GpuProgramParametersGetIntPointerSize{ 
+# # #     bp::ssize_t operator()( boost::python::tuple args ) const{ 
+# # #         boost::python::object self = args[0]; 
+# # #         Ogre::GpuProgramParameters& gpupp = boost::python::extract<Ogre::GpuProgramParameters&>( self ); 
+# # #         boost::python::object pos_obj = args[1]; 
+# # #         bp::ssize_t offset = boost::python::extract<bp::ssize_t>( pos_obj ); 
+# # #         return gpupp.intBufferSize - offset; 
+# # #         }
+# # # }; 
+# # # struct GpuProgramParametersGetFloatPointerSize{ 
+# # #     bp::ssize_t operator()( boost::python::tuple args ) const{ 
+# # #         boost::python::object self = args[0]; 
+# # #         Ogre::GpuProgramParameters& gpupp = boost::python::extract<Ogre::GpuProgramParameters&>( self ); 
+# # #         boost::python::object pos_obj = args[1]; 
+# # #         bp::ssize_t offset = boost::python::extract<bp::ssize_t>( pos_obj ); 
+# # #         return gpupp.floatBufferSize - offset; 
+# # #         }
+# # # }; 
+# # # } 
+# # # """ 
+# # #   
+# # #  
+# # #     GpuProgramParameters = ns.class_( 'GpuProgramParameters' ) 
+# # #     GpuProgramParameters.add_declaration_code( gpu_pp_int_size ) 
+# # #     f = GpuProgramParameters.mem_fun( 'getIntPointer' ) 
+# # #     f.call_policies = call_policies.return_range( f, 'GpuProgramParametersGetIntPointerSize' ) 
+# # #     f.documentation = "Python-Ogre Modified Return Range \\n"
+# # #     f = GpuProgramParameters.mem_fun( 'getFloatPointer' ) 
+# # #     f.call_policies = call_policies.return_range( f, 'GpuProgramParametersGetFloatPointerSize' ) 
+# # #     f.documentation = "Python-Ogre Modified Return Range \\n"
     
 ###############################################################################
 ##
@@ -697,9 +637,9 @@ def AutoFixes ( mb, MAIN_NAMESPACE ):
     
     # Functions that have void pointers in their argument list need to change to unsigned int's  
     pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', '::Ogre::uint8', '::Ogre::uint16'
-             'unsigned char', 'char']
-    ignore_names=['Matrices', 'Vertices']
-    common_utils.Fix_Void_Ptr_Args  ( main_ns, pointee_types, ignore_names )
+             'unsigned char', 'char', 'bool']
+    ignore_names=['Matrices', 'Vertices', 'ExceptionFactory', 'UTFString' ]
+# # #     common_utils.Fix_Void_Ptr_Args  ( main_ns, pointee_types, ignore_names )
 
     # and change functions that return a variety of pointers to instead return unsigned int's
     pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', '::Ogre::uint8', 'unsigned char', 'char']
@@ -779,6 +719,8 @@ def Fix_NT ( mb ):
     hwnd.opaque = True
     _iobuf = mb.global_ns.class_("_iobuf")# need the file handle in Ogre::FileHandleDataStream::FileHandleDataStream
     _iobuf.opaque = True
+    ## handle a problem hashmap
+    mb.member_function('::Ogre::Mesh::getSubMeshNameMap').exclude()
     
     
 def Fix_Ref_Not_Const ( mb ):
@@ -792,7 +734,7 @@ def Fix_Ref_Not_Const ( mb ):
         for arg in fun.arguments:
             if 'Ptr' in arg.type.decl_string:
                  if not 'const' in arg.type.decl_string and '&' in arg.type.decl_string:
-                    #print "Fixing Const", fun.parent.name,"::", fun.name, "::", arg_position
+                    print "Fixing Const", fun.parent.name,"::", fun.name, "::", arg_position
                     fun.add_transformation( ft.modify_type(arg_position,declarations.remove_reference ), alias=fun.name )
             arg_position +=1
  
@@ -875,30 +817,30 @@ def Set_Smart_Pointers( mb ):
 # the 'main'function
 #            
 def generate_code():  
-    messages.disable( 
-#           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-          messages.W1020
-        , messages.W1021
-        , messages.W1022
-        , messages.W1023
-        , messages.W1024
-        , messages.W1025
-        , messages.W1026
-        , messages.W1027
-        , messages.W1028
-        , messages.W1029
-        , messages.W1030
-        , messages.W1031
-        , messages.W1035
-        , messages.W1040 
-#         , messages.W1041 # overlapping names when creating a property
-#         , messages.W1038        
-#         , messages.W1036 # pointer to Python immutable member
-#         , messages.W1033 # unnamed variables
-#         , messages.W1018 # expose unnamed classes
-#         , messages.W1049 # returns reference to local variable
-#         , messages.W1014 # unsupported '=' operator
-         )
+#     messages.disable( 
+# #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+#           messages.W1020
+#         , messages.W1021
+#         , messages.W1022
+#         , messages.W1023
+#         , messages.W1024
+#         , messages.W1025
+#         , messages.W1026
+#         , messages.W1027
+#         , messages.W1028
+#         , messages.W1029
+#         , messages.W1030
+#         , messages.W1031
+#         , messages.W1035
+#         , messages.W1040 
+# #         , messages.W1041 # overlapping names when creating a property
+# #         , messages.W1038        
+# #         , messages.W1036 # pointer to Python immutable member
+# #         , messages.W1033 # unnamed variables
+# #         , messages.W1018 # expose unnamed classes
+# #         , messages.W1049 # returns reference to local variable
+# #         , messages.W1014 # unsupported '=' operator
+#          )
 #     sort_algorithms.USE_CALLDEF_ORGANIZER = True   ## tried this to remove a couple of order issues, without success :)
     #
     # Use GCCXML to create the controlling XML file.
@@ -931,6 +873,7 @@ def generate_code():
     
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
+        
     
         
     #
@@ -941,16 +884,20 @@ def generate_code():
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
     main_ns.include()
     
-   
+    
     common_utils.AutoExclude ( mb, MAIN_NAMESPACE )
     ManualExclude ( mb )
     common_utils.AutoInclude ( mb, MAIN_NAMESPACE )
     ManualInclude ( mb )
-    # here we fixup functions that expect to modifiy their 'passed' variables    
+    
+    # here we fixup functions that expect to modifiy their 'passed' variables and are not autmatically fixed  
     ManualTransformations ( mb )
+    
     ManualAlias ( mb )
     AutoFixes ( mb, MAIN_NAMESPACE )
     ManualFixes ( mb )
+    common_utils.Auto_Functional_Transformation ( main_ns, special_vars=['::Ogre::Real &','::Ogre::ushort &','size_t &'] )
+    
     for cls in main_ns.classes():
         if not cls.ignore:
             try:
@@ -1004,8 +951,30 @@ def generate_code():
     for inc in environment.ogre.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )
     mb.code_creator.user_defined_directories.append( environment.ogre.generated_dir )
-    mb.code_creator.replace_included_headers( customization_data.header_files( environment.ogre.version ) )
+    
+    # 21Nov07 - Change to include our own system header to allow precompiled headers..
+    if len ( customization_data.header_files( environment.ogre.version ) ) == 1:
+        # there is only a single include so lets insert it at the top of the list...
+        lastc = mb.code_creator.creators[ mb.code_creator.last_include_index() ]
+        mb.code_creator.remove_creator( lastc )  ## we need to remove the previous one
+        
+        # and now add our precompiled one..
+        mb.code_creator.adopt_creator ( include.include_t ( header=customization_data.header_files( environment.ogre.version )[0] ), 0)
+    else:
+        mb.code_creator.replace_included_headers( customization_data.header_files( environment.ogre.version ) ) ##, leave_system_headers=False )
+    
 
+# #     special = main_ns.class_('RenderQueueListener')
+# #     print "\n\n\nWRAPPER CODE"
+# #     print special
+# #     print dir(special)
+# #     print special.wrapper_code
+# #     print dir( special.wrapper_code )
+# #     for l in special.wrapper_code:
+# #         print "code:", l
+# #         print l.text
+# #     print "\n\n\n"
+        
     huge_classes = map( mb.class_, customization_data.huge_classes( environment.ogre.version ) )
 
     mb.split_module(environment.ogre.generated_dir, huge_classes, use_files_sum_repository=False )
@@ -1014,7 +983,7 @@ def generate_code():
     ## copied to the generaated directory..
     additional_files=[
             os.path.join( environment.shared_ptr_dir, 'py_shared_ptr.h'),
-            os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'python_ogre_masterlist.h' ),
+            os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'python_ogre_precompiled.h' ),
             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'generators.h' ),
             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'custom_rvalue.cpp' ),
             os.path.join( environment.include_dir, 'tuples.hpp' )
@@ -1029,5 +998,9 @@ def generate_code():
         
 if __name__ == '__main__':
     start_time = time.clock()
+#     import logging
+#     from pygccxml import utils
+#     logger = utils.loggers.cxx_parser
+# #     logger.setLevel(logging.DEBUG)
     generate_code()
     print 'Python-OGRE source code was updated( %f minutes ).' % (  ( time.clock() - start_time )/60 )

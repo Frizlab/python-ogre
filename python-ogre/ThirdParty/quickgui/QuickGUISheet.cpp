@@ -1,15 +1,20 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUISheet.h"
 #include "QuickGUIManager.h"
 #include "OgreFontManager.h"
 
 namespace QuickGUI
 {
-	Sheet::Sheet(const Ogre::String& name, const Ogre::String& texture, GUIManager* gm) :
-		Panel(name,Size(gm->getViewportWidth(),gm->getViewportHeight()),texture,gm)
+	Sheet::Sheet(const Ogre::String& name, const Ogre::String& skinName, GUIManager* gm) :
+		Panel(name,gm)
 	{
+		mGUIManager = gm;
 		mQuadContainer = this;
-		mSkinComponent = ".sheet";
 		mWidgetType = TYPE_SHEET;
+		mSkinName = skinName;
+		mSkinComponent = ".sheet";
+		setSize(gm->getViewportWidth(),gm->getViewportHeight());
 
 		Ogre::FontManager* fm = Ogre::FontManager::getSingletonPtr();
 		Ogre::ResourceManager::ResourceMapIterator rmi = fm->getResourceIterator();
@@ -17,8 +22,6 @@ namespace QuickGUI
 			mFontName = rmi.getNext()->getName();
 		else
 			Ogre::Exception(1,"No fonts have been defined!","Sheet::Sheet");
-
-		mQuad->setSize(mSize);
 	}
 
 	Sheet::~Sheet()
@@ -28,15 +31,22 @@ namespace QuickGUI
 
 	Window* Sheet::createWindow()
 	{
-		Ogre::String name = mGUIManager->generateName(TYPE_WINDOW);
-		mGUIManager->notifyNameUsed(name);
+		return createWindow(mGUIManager->generateName(TYPE_WINDOW));
+	}
 
-		Window* newWindow = new Window(name,Size(100,100),"qgui.window.png",mGUIManager);
-		addChild(newWindow);
-		newWindow->setPosition(0,0);
-		newWindow->setFont(mFontName,true);
-		
-		return newWindow;
+	Window* Sheet::createWindow(const Ogre::String& name)
+	{
+		if(mGUIManager->isNameUnique(name))
+		{
+			mGUIManager->notifyNameUsed(name);
+			return dynamic_cast<Window*>(_createChild(name,TYPE_WINDOW));
+		}
+		else
+		{
+			Ogre::String name = mGUIManager->generateName(TYPE_WINDOW);
+			mGUIManager->notifyNameUsed(name);
+			return dynamic_cast<Window*>(_createChild(name,TYPE_WINDOW));
+		}
 	}
 
 	Widget* Sheet::getTargetWidget(const Point& pixelPosition)
@@ -45,7 +55,7 @@ namespace QuickGUI
 
 		// Iterate through Menu Layer Child Widgets.
 		int widgetOffset = 0;
-		std::vector<Widget*>::iterator it;
+		WidgetArray::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 		{
 			if( (*it)->getQuadLayer() == Quad::LAYER_CHILD )
@@ -62,8 +72,8 @@ namespace QuickGUI
 			return w;
 
 		// Iterate through Windows, from highest offset to lowest.
-		std::list<QuadContainer*>* windowList = QuadContainer::getWindowList();
-		std::list<QuadContainer*>::reverse_iterator rit;
+		QuadContainerList* windowList = QuadContainer::getWindowList();
+		QuadContainerList::reverse_iterator rit;
 		for( rit = windowList->rbegin(); rit != windowList->rend(); ++rit )
 		{
 			w = (*rit)->getOwner();
@@ -76,7 +86,7 @@ namespace QuickGUI
 		}
 
 		// Iterate through Panels, from highest offset to lowest.
-		std::list<QuadContainer*>* panelList = QuadContainer::getPanelList();
+		QuadContainerList* panelList = QuadContainer::getPanelList();
 		for( rit = panelList->rbegin(); rit != panelList->rend(); ++rit )
 		{
 			w = (*rit)->getOwner();
@@ -110,9 +120,9 @@ namespace QuickGUI
 
 	Window* Sheet::getWindow(const Ogre::String& name)
 	{
-		if( name == "" ) return NULL;
+		if( name.empty() ) return NULL;
 
-		std::vector<Widget*>::iterator it;
+		WidgetArray::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 		{
 			if( ((*it)->getInstanceName() == name) && ((*it)->getWidgetType() == TYPE_WINDOW) ) 
@@ -122,8 +132,44 @@ namespace QuickGUI
 		return NULL;
 	}
 
+	void Sheet::setHeight(Ogre::Real pixelHeight)
+	{
+		Widget::setHeight(pixelHeight);
+	}
+
 	void Sheet::setQuadContainer(QuadContainer* container)
 	{
 		// do nothing, sheets don't belong inside another QuadContainer.
+	}
+
+	void Sheet::setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight)
+	{
+		Widget::setSize(pixelWidth,pixelHeight);
+	}
+
+	void Sheet::setSize(const Size& pixelSize)
+	{
+		Widget::setSize(pixelSize);
+	}
+
+	void Sheet::setTexture(const Ogre::String& textureName)
+	{
+		if(mTextureLocked)
+			return;
+
+		mQuad->setTexture(textureName);
+
+		if(Utility::textureExistsOnDisk(textureName))
+		{
+			Ogre::Image i;
+			i.load(textureName,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+			delete mWidgetImage;
+			mWidgetImage = new Ogre::Image(i);
+		}
+	}
+
+	void Sheet::setWidth(Ogre::Real pixelWidth)
+	{
+		Widget::setWidth(pixelWidth);
 	}
 }

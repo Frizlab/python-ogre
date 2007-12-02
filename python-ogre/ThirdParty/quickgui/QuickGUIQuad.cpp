@@ -1,6 +1,11 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUIQuad.h"
 #include "QuickGUIQuadContainer.h"
+#include "QuickGUISkinSetManager.h"
 #include "QuickGUIManager.h"
+#include "QuickGUIUtility.h"
+
 // for min/max
 #include <algorithm>
 
@@ -29,6 +34,7 @@ namespace QuickGUI
 		mInheritQuadLayer(true),
 		mShowWithOwner(true)
 	{
+		mSkinSetManager = SkinSetManager::getSingletonPtr();
 		mRenderSystem = Ogre::Root::getSingleton().getRenderSystem();
 		_updateVertexColor();
 	}
@@ -55,6 +61,7 @@ namespace QuickGUI
 		mDimensionsViaClipping(mPixelDimensions),
 		mTextureCoordinatesViaClipping(mTextureCoordinates)
 	{
+		mSkinSetManager = SkinSetManager::getSingletonPtr();
 		mRenderSystem = Ogre::Root::getSingleton().getRenderSystem();
 		_updateVertexColor();
 	}
@@ -132,6 +139,9 @@ namespace QuickGUI
 
 	void Quad::_computeVertices()
 	{
+		if(mGUIManager == NULL)
+			return;
+
 		// Convert pixel values into absolute coordinates.
 		Ogre::Real viewportWidth = mGUIManager->getViewportWidth();
 		Ogre::Real viewportHeight = mGUIManager->getViewportHeight();
@@ -142,7 +152,7 @@ namespace QuickGUI
 			mDimensionsViaClipping.width / viewportWidth,
 			mDimensionsViaClipping.height / viewportHeight);
 
-		/* Convert positions into -1, 1 coordinate space (homogenous clip space).
+		/* Convert positions into -1, 1 coordinate space (homogeneous clip space).
 			- Left / right is simple range conversion
 			- Top / bottom also need inverting since y is upside down - this means
 			that top will end up greater than bottom and when computing texture
@@ -154,6 +164,17 @@ namespace QuickGUI
 		Ogre::Real top = -((absDimensions.y * 2) - 1);
 		Ogre::Real bottom = top - (absDimensions.height * 2);
 
+#if VERTICES_PER_QUAD == 4
+		// TRIANGLE 1
+		mVertices[0].pos = Ogre::Vector3(left,  bottom, 0.f);	// left-bottom
+		mVertices[1].pos = Ogre::Vector3(right, bottom, 0.f);	// right-bottom
+
+		// TRIANGLE 2
+		mVertices[2].pos = Ogre::Vector3(right, top, 0.f);		// right-top
+		mVertices[3].pos = Ogre::Vector3(left,  top, 0.f);		// left-top
+
+		
+#else //VERTICES_PER_QUAD == 6
 		// TRIANGLE 1
 		mVertices[0].pos = Ogre::Vector3(left,bottom,0);	// left-bottom
 		mVertices[1].pos = Ogre::Vector3(right,bottom,0);	// right-bottom
@@ -163,6 +184,7 @@ namespace QuickGUI
 		mVertices[3].pos = Ogre::Vector3(right,bottom,0);	// right-bottom
 		mVertices[4].pos = Ogre::Vector3(right,top,0);		// right-top
 		mVertices[5].pos = Ogre::Vector3(left,top,0);		// left-top
+#endif
 	}
 
 	void Quad::_notifyAddedToRenderObjectGroup()
@@ -222,8 +244,19 @@ namespace QuickGUI
 
 	void Quad::_updateTextureCoords()
 	{
-		Ogre::Vector4 actualTextureCoords = mTextureCoordinatesViaClipping;
+		const Ogre::Vector4 actualTextureCoords(mTextureCoordinatesViaClipping);
 
+#if VERTICES_PER_QUAD == 4
+
+		// TRIANGLE 1 : bot-left, bot-right, top-left vertices
+		mVertices[0].uv = Ogre::Vector2(actualTextureCoords.x,actualTextureCoords.w);
+		mVertices[1].uv = Ogre::Vector2(actualTextureCoords.z,actualTextureCoords.w);
+		// TRIANGLE 2 : bot-right, top-right, top-left vertices
+		mVertices[2].uv = Ogre::Vector2(actualTextureCoords.z,actualTextureCoords.y);
+		mVertices[3].uv = Ogre::Vector2(actualTextureCoords.x,actualTextureCoords.y);
+
+
+#else //VERTICES_PER_QUAD == 6
 		// TRIANGLE 1 : bot-left, bot-right, top-left vertices
 		mVertices[0].uv = Ogre::Vector2(actualTextureCoords.x,actualTextureCoords.w);
 		mVertices[1].uv = Ogre::Vector2(actualTextureCoords.z,actualTextureCoords.w);
@@ -232,10 +265,22 @@ namespace QuickGUI
 		mVertices[3].uv = Ogre::Vector2(actualTextureCoords.z,actualTextureCoords.w);
 		mVertices[4].uv = Ogre::Vector2(actualTextureCoords.z,actualTextureCoords.y);
 		mVertices[5].uv = Ogre::Vector2(actualTextureCoords.x,actualTextureCoords.y);
+#endif
 	}
 
 	void Quad::_updateVertexColor()
 	{
+#if VERTICES_PER_QUAD == 4
+
+		// TRIANGLE 1
+		mRenderSystem->convertColourValue(mBottomColor,&( mVertices[0].color ));
+		mRenderSystem->convertColourValue(mBottomColor,&( mVertices[1].color ));
+		// TRIANGLE 2
+		mRenderSystem->convertColourValue(mTopColor,&( mVertices[2].color ));
+		mRenderSystem->convertColourValue(mTopColor,&( mVertices[3].color ));
+
+
+#else //VERTICES_PER_QUAD == 6
 		// TRIANGLE 1
 		mRenderSystem->convertColourValue(mBottomColor,&( mVertices[0].color ));
 		mRenderSystem->convertColourValue(mBottomColor,&( mVertices[1].color ));
@@ -244,6 +289,7 @@ namespace QuickGUI
 		mRenderSystem->convertColourValue(mBottomColor,&( mVertices[3].color ));
 		mRenderSystem->convertColourValue(mTopColor,&( mVertices[4].color ));
 		mRenderSystem->convertColourValue(mTopColor,&( mVertices[5].color ));
+#endif
 	}
 
 	void Quad::addToRenderObjectGroup()
@@ -321,21 +367,15 @@ namespace QuickGUI
 
 	bool Quad::isPointWithinBounds(const Point& pixelPosition)
 	{
-		float xPos = pixelPosition.x;
-		float yPos = pixelPosition.y;
-
+		const float xPos = pixelPosition.x;
 		if( (xPos < mPixelDimensions.x) || (xPos > (mPixelDimensions.x + mPixelDimensions.width)) )
 			return false;
 
+		const float yPos = pixelPosition.y;
 		if( (yPos < mPixelDimensions.y) || (yPos > (mPixelDimensions.y + mPixelDimensions.height)) )
 			return false;
 
 		return true;
-	}
-
-	Ogre::String Quad::getTextureName()
-	{
-		return mTextureName;
 	}
 
 	Vertex* Quad::getVertices()
@@ -343,7 +383,7 @@ namespace QuickGUI
 		return mVertices;
 	}
 
-	int Quad::getOffset()
+	const int Quad::getOffset() const
 	{
 		return mOffset;
 	}
@@ -480,7 +520,7 @@ namespace QuickGUI
 		if( mTextureName == textureName ) 
 			return;
 
-		if(!mGUIManager->textureExists(textureName)) 
+		if(!textureExists(textureName)) 
 		{
 			setTextureCoordinates(Ogre::Vector4(0,0,1,1));
 			_setTexture("");
@@ -497,9 +537,9 @@ namespace QuickGUI
 
 		// check for textures embedded in a skin SkinSet
 		Ogre::String skin = textureName.substr(0,textureName.find_first_of('.'));
-		if(mGUIManager->embeddedInSkinImageset(skin,textureName))
+		if(mSkinSetManager->embeddedInSkinSet(skin,textureName))
 		{
-			SkinSet* s = mGUIManager->getSkinImageSet(skin);
+			SkinSet* s = mSkinSetManager->getSkinSet(skin);
 			setTextureCoordinates(s->getTextureCoordinates(textureName));
 			// Don't update texture if they are the same.
 			if( mTextureName != skin )
@@ -572,6 +612,23 @@ namespace QuickGUI
 		return mTextureChanged;
 	}
 
+	bool Quad::textureExists(const Ogre::String& textureName)
+	{
+		if(textureName.empty())
+			return false;
+
+		if(Utility::textureExistsOnDisk(textureName))
+			return true;
+
+		if(Ogre::TextureManager::getSingletonPtr()->resourceExists(textureName)) 
+			return true;
+
+		if(SkinSetManager::getSingletonPtr()->embeddedInSkinSet(textureName))
+			return true;
+
+		return false;
+	}
+
 	void Quad::updateClippingWidget()
 	{
 		if(mOwner->getParentPanel() != NULL)
@@ -584,10 +641,6 @@ namespace QuickGUI
 			mClippingWidget = mOwner;
 	}
 
-	bool Quad::visible()
-	{
-		return mVisible;
-	}
 
 	bool Quad::offsetChanged()
 	{

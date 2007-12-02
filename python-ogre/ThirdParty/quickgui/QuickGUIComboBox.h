@@ -1,10 +1,12 @@
 #ifndef QUICKGUICOMBOBOX_H
 #define QUICKGUICOMBOBOX_H
 
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUIButton.h"
-#include "QuickGUIImage.h"
+#include "QuickGUIWidget.h"
 #include "QuickGUIMenuLabel.h"
 #include "QuickGUIList.h"
+#include "QuickGUITextHelper.h"
 
 #include <vector>
 
@@ -25,7 +27,7 @@ namespace QuickGUI
 	ComboBoxes are meant to be created via the Window widget.
 	*/
 	class _QuickGUIExport ComboBox :
-		public Image
+		public Widget
 	{
 	public:
 		/** Constructor
@@ -44,7 +46,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		ComboBox(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String textureName, GUIManager* gm);
+		ComboBox(const Ogre::String& name, GUIManager* gm);
 
 		MenuLabel* addItem();
 		/**
@@ -70,28 +72,19 @@ namespace QuickGUI
 		void setDropDownWidth(Ogre::Real pixelWidth);
 		virtual void setFont(const Ogre::String& fontScriptName, bool recursive = false);
 		virtual void setHeight(Ogre::Real pixelHeight);
-		/**
-		* Sets the material displayed when the mouse moves over a list item.
-		*/
-		void setHighlightTexture(const Ogre::String& texture);
 		void setRightToLeft(bool rightToLeft);
 		/**
 		* Manually set size of widget.
 		*/
 		virtual void setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight);
 		virtual void setSize(const Size& pixelSize);
-		virtual void setSkin(const Ogre::String& skinName, Ogre::String extension = ".png", bool recursive = false);
-		/**
-		* Applies the texture to the Quad if exists in some form, and updates the Image used for
-		* transparency picking.
-		*/
-		virtual void setTexture(const Ogre::String& textureName, bool updateBaseTexture = true);
+		virtual void setSkin(const Ogre::String& skinName, bool recursive = false);
 		void setVerticalPixelPadHeight(unsigned int height);
 
 	protected:
 		virtual ~ComboBox();
 
-		Text* mTextUtilities;
+		TextHelper* mTextHelper;
 		bool mAutoSize;
 		int mVPixelPadHeight;
 
@@ -114,8 +107,9 @@ namespace QuickGUI
 		void onSelection(const EventArgs& args);
 
 		Quad* mHighlightPanel;
-		Ogre::String mHighlightTexture;
-		MenuLabel* mHighlightedItem;
+		Ogre::String mHighlightSkinComponent;
+		// The Widget that has been clicked/selected by the user.
+		MenuLabel* mSelectedItem;
 
 		// Button that shows the drop down list.
 		Button* mButton;
@@ -130,7 +124,7 @@ namespace QuickGUI
 		bool mRightToLeft;
 
 		// User defined event handlers that are called when a Selection is made.
-		std::vector<MemberFunctionSlot*> mOnSelectUserEventHandlers;
+		EventHandlerArray mOnSelectUserEventHandlers;
 	};
 }
 

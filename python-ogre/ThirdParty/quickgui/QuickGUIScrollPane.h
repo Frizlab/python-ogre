@@ -1,6 +1,7 @@
 #ifndef QUICKGUISCROLLPANE_H
 #define QUICKGUISCROLLPANE_H
 
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUIVerticalScrollBar.h"
 #include "QuickGUIHorizontalScrollBar.h"
 #include "QuickGUIWidget.h"
@@ -51,7 +52,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		ScrollPane(const Ogre::String& instanceName, const Size& pixelSize, GUIManager* gm);
+		ScrollPane(const Ogre::String& name, GUIManager* gm);
 
 		// When widgets become managed/unmanaged, the pane may grow or shrink.
 		void _determinePaneBounds();
@@ -71,6 +72,7 @@ namespace QuickGUI
 		void setVerticalButtonLayout(VerticalScrollBar::ButtonLayout layout);
 
 		void unmanageWidget(Widget* w);
+		void unmanageWidgets();
 
 	protected:
 		~ScrollPane();

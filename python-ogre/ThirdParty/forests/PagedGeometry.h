@@ -44,14 +44,17 @@ scaled game area.
 
 
 \section C Getting Started
+
 The first thing you should do is follow the instructions in "Getting Started.txt" to
-get the examples compiled and running. Note: Keep in mind that the artwork in the
-examples is not the best, and they are there simply to demonstrate the performance of
+get PagedGeometry compiled and the examples running. Note: Keep in mind that the art
+in the examples is not the best, and is there simply to demonstrate the performance of
 the engine.
 
-When you're ready to start learning how to use PagedGeometry, the best place to start
-is at the PagedGeometry documentation. There you can read how the PagedGeometry class
-can be used, and how to set up PageLoader's, detail levels, etc.
+When you're ready to start learning how to use PagedGeometry, the best place to start is
+with Tutorial 1 (in the docs folder). The tutorials will teach you how to use many
+important PagedGeometry features, step by step. This API reference isn't recommended
+for learning, but is a valuable resource when you need specific in-depth information
+about a certain function or class.
 
 
 \section E Credits
@@ -90,6 +93,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 
 #include <limits> // numeric_limits<>
 
+#include "OgreRoot.h"
 #include "OgrePrerequisites.h"
 #include "OgreRenderSystem.h"
 #include "OgreEntity.h"
@@ -97,7 +101,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include "OgreCamera.h"
 #include "OgreVector3.h"
 #include "OgreTimer.h"
-#include "OgreRoot.h"
+
 
 class GeometryPageManager;
 class PageLoader;
@@ -923,7 +927,7 @@ public:
 	as well (see the PageInfo documentation for more info about this).
 	
 	Simply use the member function addEntity() to add all the entities you want. If you
-	create your own objects inside this function, you are resposible for deleting it
+	create your own objects inside this function, you are responsible for deleting it
 	appropriately in unloadPage() or somewhere else. The PageInfo::userData member is
 	useful here since you can point it to your data structures for later reference in
 	unloadPage().
@@ -951,6 +955,21 @@ public:
 	since addEntity() is usually all that is used.
 	*/
 	virtual void unloadPage(const PageInfo &page) {}
+
+	/**
+	\brief Provides a method for you to perform per-frame tasks for your PageLoader if overridden (optional)
+
+	frameUpdate() is completely optional, and unnecessary in most cases. However, if you ever
+	need to update anything in your PageLoader per-frame, this function is here for that purpose.
+
+	\warning This function is actually called every time PagedGeometry::update() is called, so if the
+	application doesn't call PagedGeometry::update() as it should, this function will not be called
+	either.
+	
+	\note frameUpdate() will be called after PagedGeometry::update() is called but before any
+	GeometryPage's are actually loaded/unloaded for the frame.
+	*/
+	virtual void frameUpdate() {}
 
 	/**
 	\brief Destructor
@@ -1092,7 +1111,7 @@ public:
 	The maxCacheInterval is basically a minimum rate at which pages are cached. Normally, a stopped
 	camera would cause the cache rate prediction algorithm to say 0 pages-per-second must be cached.
 	However, this is not optimal, since idle time should be taken advantage of to finish loading.
-	By adjusting this value, you can set how much cacheing you want going on when the camera is
+	By adjusting this value, you can set how much caching you want going on when the camera is
 	stopped or moving very slowly.
 
 	The inactivePageLife allows you to set how long inactive pages remain in memory. An inactive page
@@ -1165,7 +1184,7 @@ private:
 	inline GeometryPage *_getGridPage(const int x, const int z)
 	{
 		#ifdef _DEBUG
-		if(x>=geomGridX && z>=geomGridZ )
+		if(x >= geomGridX || z >= geomGridZ )
 			OGRE_EXCEPT(Ogre::Exception::ERR_INVALIDPARAMS,
 				"Grid dimension is out of bounds",
 				"GeometryPageManager::_getGridPage()");
@@ -1176,7 +1195,7 @@ private:
 	inline void _setGridPage(const int x, const int z, GeometryPage *page)
 	{
 		#ifdef _DEBUG
-		if(x>=geomGridX && z>=geomGridZ )
+		if(x >= geomGridX || z >= geomGridZ )
 			OGRE_EXCEPT(Ogre::Exception::ERR_INVALIDPARAMS,
 				"Grid dimension is out of bounds",
 				"GeometryPageManager::_setGridPage()");
@@ -1228,7 +1247,7 @@ template <class PageType> inline GeometryPageManager* PagedGeometry::addDetailLe
     _addDetailLevel(mgr, maxRange, transitionLength);
 	
 	//And initialize the paged (dependent on maximum viewing distance)
-//     mgr->initPages<PageType>(getBounds());
+    mgr->initPages<PageType>(getBounds());
 
     return mgr;
 }

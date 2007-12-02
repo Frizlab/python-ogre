@@ -16,6 +16,7 @@
 #include "OgrePrerequisites.h"
 #include "OgreUTFString.h"
 
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUIKeyCode.h"
 #include "QuickGUIMouseButtonID.h"
 #include "QuickGUIPoint.h"
@@ -86,6 +87,8 @@ namespace QuickGUI
 		MouseButtonID	button;
 		// holds the amount the scroll wheel has changed.
 		Ogre::Real		wheelChange;	
+		//! Bit field that holds status of Alt, Ctrl, Shift
+		unsigned int	keyModifiers;
 	};
 
 	/** Key EventArgs
@@ -102,6 +105,8 @@ namespace QuickGUI
 		Ogre::UTFString::unicode_char	codepoint;		
 		// Scan code of key that caused event (only used for key up & down inputs.
 		KeyCode							scancode;
+		//! Bit field that holds status of Alt, Ctrl, Shift
+		unsigned int					keyModifiers;
 	};
 
 	/** Text EventArgs

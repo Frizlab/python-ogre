@@ -33,29 +33,26 @@
 ** Boston, MA 02111-1307, USA.                                               **
 \*---------------------------------------------------------------------------*/
 
+#include "OgreALException.h"
 #include "OgreALSoundManager.h"
 
 template<> OgreAL::SoundManager* Ogre::Singleton<OgreAL::SoundManager>::ms_Singleton = 0;
 
 namespace OgreAL {
-	const Ogre::String SoundManager::FILE_TYPE = "FileType";
-	const Ogre::String SoundManager::OGG = "OggFile";
-	const Ogre::String SoundManager::WAV = "WavFile";
 	const Ogre::String SoundManager::SOUND_FILE = "SoundFile";
 	const Ogre::String SoundManager::LOOP_STATE = "LoopState";
-	const Ogre::String SoundManager::OUTPUT_TYPE = "OutputType";
-	const Ogre::String SoundManager::SOUND = "SoundOut";
-	const Ogre::String SoundManager::STREAM = "StreamOut";
-	const Ogre::String SoundManager::AUDIO_FORMAT = "AudioFormat";
+	const Ogre::String SoundManager::STREAM = "Stream";
 
 	const ALenum SoundManager::xRamAuto = alGetEnumValue("AL_STORAGE_AUTO");
 	const ALenum SoundManager::xRamHardware = alGetEnumValue("AL_STORAGE_HARDWARE");
 	const ALenum SoundManager::xRamAccessible = alGetEnumValue("AL_STORAGE_ACCESSIBLE");
 
-	SoundManager::SoundManager() : 
+	SoundManager::SoundManager(const Ogre::String& deviceName) : 
 		mEAXSupport(false),
 		mEAXVersion(0),
 		mXRAMSupport(false),
+		mContext(0),
+		mDevice(0),
 		mDopplerFactor(1.0),
 		mSpeedOfSound(343.3)
 	{
@@ -70,96 +67,9 @@ namespace OgreAL {
 
 		Ogre::LogManager::getSingleton().logMessage("*-*-* Creating OpenAL");
 
-		// Enumerate the available devices and choose one
-		alDeviceList(alcGetString(NULL, ALC_DEVICE_SPECIFIER));
-		/*
-		** Currently we just choose the default device, but we should allow the user to 
-		** pick which one they would like to use.
-		*/
-		ALCdevice *device = alcOpenDevice(NULL);
+		initializeDevice(deviceName);
 
-		Ogre::LogManager::getSingleton().logMessage("Choosing: " + Ogre::String(alcGetString(device, ALC_DEVICE_SPECIFIER)));
-
-		if(device == NULL)
-		{
-			throw Ogre::Exception(Ogre::Exception::ERR_INTERNAL_ERROR,
-				"Failed to open audio device", "OgreAL::SoundManager::ctor");
-		}
-
-		// Create OpenAL Context
-		ALCcontext *context = alcCreateContext(device, NULL);
-		if(context == NULL)
-		{
-			throw Ogre::Exception(Ogre::Exception::ERR_INTERNAL_ERROR,
-				"Failed to create OpenAL Context", "OgreAL::SoundManager::ctor");
-		}
-
-		alcMakeContextCurrent(context);
-		checkError("SoundManager::ctor");
-
-		// Check for Supported Formats
-		ALenum eBufferFormat = 0;
-		eBufferFormat = alcGetEnumValue(device, "AL_FORMAT_MONO16");
-		if(eBufferFormat) mSupportedFormats[MONO_CHANNEL] = 
-			new FormatData(eBufferFormat, "AL_FORMAT_MONO16", "Monophonic Sound");
-		eBufferFormat = alcGetEnumValue(device, "AL_FORMAT_STEREO16");
-		if(eBufferFormat) mSupportedFormats[STEREO_CHANNEL] = 
-			new FormatData(eBufferFormat, "AL_FORMAT_STEREO16", "Stereo Sound");
-		eBufferFormat = alcGetEnumValue(device, "AL_FORMAT_QUAD16");
-		if(eBufferFormat) mSupportedFormats[QUAD_CHANNEL] = 
-			new FormatData(eBufferFormat, "AL_FORMAT_QUAD16", "4 Channel Sound");
-		eBufferFormat = alcGetEnumValue(device, "AL_FORMAT_51CHN16");
-		if(eBufferFormat) mSupportedFormats[MULTI_CHANNEL_51] = 
-			new FormatData(eBufferFormat, "AL_FORMAT_51CHN16", "5.1 Surround Sound");
-		eBufferFormat = alcGetEnumValue(device, "AL_FORMAT_61CHN16");
-		if(eBufferFormat) mSupportedFormats[MULTI_CHANNEL_61] = 
-			new FormatData(eBufferFormat, "AL_FORMAT_61CHN16", "6.1 Surround Sound");
-		eBufferFormat = alcGetEnumValue(device, "AL_FORMAT_71CHN16");
-		if(eBufferFormat) mSupportedFormats[MULTI_CHANNEL_71] = 
-			new FormatData(eBufferFormat, "AL_FORMAT_71CHN16", "7.1 Surround Sound");
-
-		FormatMapIterator itr = getSupportedFormatIterator();
-		Ogre::LogManager::getSingleton().logMessage("Supported Formats");
-		Ogre::LogManager::getSingleton().logMessage("-----------------");
-		while(itr.hasMoreElements())
-		{
-			Ogre::LogManager::getSingleton().logMessage(" * " + std::string(static_cast<char*>
-				(itr.peekNextValue()->formatName)) + ", " + itr.peekNextValue()->formatDescription);
-			itr.getNext();
-		}
-
-		// Check for EAX Support
-		std::stringbuf versionString;
-		for(int version = 5; version >= 2; version--)
-		{
-			versionString.str("EAX"+Ogre::StringConverter::toString(version)+".0");
-			if(alIsExtensionPresent(versionString.str().data()) == AL_TRUE)
-			{
-				mEAXSupport = true;
-				mEAXVersion = version;
-				versionString.str("EAX " + Ogre::StringConverter::toString(version) + ".0 Detected");
-				Ogre::LogManager::getSingleton().logMessage(versionString.str());
-				break;
-			}
-		}
-
-		// See how many sources the harware allows
-		mMaxNumSources = _getMaxSources();
-
-		// Check for X-RAM extension
-		if(alIsExtensionPresent("EAX-RAM") == AL_TRUE)
-		{
-			mXRAMSupport = true;
-			Ogre::LogManager::getSingleton().logMessage("X-RAM Detected");
-
-			EAXSetBufferMode setXRamMode = (EAXSetBufferMode)alGetProcAddress("EAXSetBufferMode");
-			EAXGetBufferMode getXRamMode = (EAXGetBufferMode)alGetProcAddress("EAXGetBufferMode");
-			mXRamSize = alGetEnumValue("AL_EAX_RAM_SIZE");
-			mXRamFree = alGetEnumValue("AL_EAX_RAM_FREE");
-			
-			Ogre::LogManager::getSingleton().logMessage("X-RAM: " + Ogre::StringConverter::toString(mXRamSize) +
-				" (" + Ogre::StringConverter::toString(mXRamFree) + " free)");
-		}
+		checkFeatureSupport();
 
 		createListener();
 
@@ -185,15 +95,18 @@ namespace OgreAL {
 
 		// delete all FormatData pointers in the FormatMap;
 		std::for_each(mSupportedFormats.begin(), mSupportedFormats.end(), DeleteSecond());
+		mSupportedFormats.clear();
 
 		Ogre::LogManager::getSingleton().logMessage("*-*-* Releasing OpenAL");
 
 		// Release the OpenAL Context and the Audio device
-		ALCcontext *context = alcGetCurrentContext();
-		ALCdevice *device = alcGetContextsDevice(context);
 		alcMakeContextCurrent(NULL);
-		alcDestroyContext(context);
-		alcCloseDevice(device);
+		CheckError(alcGetError(mDevice), "Failed to make context current");
+
+		alcDestroyContext(mContext);
+		CheckError(alcGetError(mDevice), "Failed to destroy context");
+
+		alcCloseDevice(mDevice);
 	}
 
 	SoundManager* SoundManager::getSingletonPtr(void)
@@ -207,78 +120,23 @@ namespace OgreAL {
 	}
 
 	Sound* SoundManager::createSound(const Ogre::String& name, 
-		const Ogre::String& fileName, bool loop, AudioFormat format)
+		const Ogre::String& fileName, bool loop, bool stream)
 	{
+		CheckCondition(mSoundMap.find(name) == mSoundMap.end(), 13, "A Sound with name '" + name + "' already exists.");
+
 		mFileTypePair.clear();
-		mFileTypePair[OUTPUT_TYPE] = SOUND;
-		mFileTypePair[AUDIO_FORMAT] = Ogre::StringConverter::toString(format);
-
-		return _createSound(name, fileName, loop);
-	}
-
-	Sound* SoundManager::createSoundStream(const Ogre::String& name, 
-		const Ogre::String& fileName, bool loop, AudioFormat format)
-	{
-		mFileTypePair.clear();
-		mFileTypePair[OUTPUT_TYPE] = STREAM;
-		mFileTypePair[AUDIO_FORMAT] = Ogre::StringConverter::toString(format);
-
-		return _createSound(name, fileName, loop);
-	}
-
-	Sound* SoundManager::_createSound(const Ogre::String& name, const Ogre::String& fileName, bool loop)
-	{
-		Ogre::String path = "";
-		Ogre::String group = mResourceGroupManager->findGroupContainingResource(fileName);
-		Ogre::FileInfoListPtr resourceList = mResourceGroupManager->listResourceFileInfo(group);
-		Ogre::FileInfoList::iterator itr = resourceList->begin();
-		for(;itr != resourceList->end(); itr++)
-		{
-			if(itr->basename.compare(fileName) == 0)
-			{
-				path = itr->archive->getName();
-				break;
-			}
-		}
-		if(path.compare("") == 0)
-		{
-			throw Ogre::Exception(Ogre::Exception::ERR_FILE_NOT_FOUND,
-				"Unable to find " + fileName + ". Is it in the resources.cfg?",
-				"OgreAL::SoundManager::_createSound");
-		}	
-		if(fileName.find(".ogg") != std::string::npos || fileName.find(".OGG") != std::string::npos)
-		{
-			mFileTypePair[FILE_TYPE] = OGG;
-		}
-		else if(fileName.find(".wav") != std::string::npos || fileName.find(".WAV") != std::string::npos)
-		{
-			mFileTypePair[FILE_TYPE] = WAV;
-		}
-		else
-		{
-			throw Ogre::Exception(Ogre::Exception::ERR_INVALIDPARAMS,
-				"Sound file '" + fileName + "' is of an unsupported file type, ",
-				"OgreAL::SoundManager::_createSound");
-		}
-
-		mFileTypePair[SOUND_FILE] = path + "/" + fileName;
+		mFileTypePair[SOUND_FILE] = fileName;
 		mFileTypePair[LOOP_STATE] = Ogre::StringConverter::toString(loop);
-
-		if (mSoundMap.find(name) != mSoundMap.end())
-		{
-			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,
-				"A Sound with name '" + name + "' already exists.",
-				"OgreAL::SoundManager::_createSound");
-		}
-
+		mFileTypePair[STREAM] = Ogre::StringConverter::toString(stream);
+		
 		Sound *newSound = static_cast<Sound*>(mSoundFactory->createInstance(name, NULL, &mFileTypePair));
 		mSoundMap[name] = newSound;
 		return newSound;
 	}
 
-	Sound* SoundManager::getSound(const Ogre::String& name)
+	Sound* SoundManager::getSound(const Ogre::String& name) const
 	{
-		SoundMap::iterator soundItr = mSoundMap.find(name);
+		SoundMap::const_iterator soundItr = mSoundMap.find(name);
 		if(soundItr == mSoundMap.end())
 		{
 			throw Ogre::Exception(Ogre::Exception::ERR_ITEM_NOT_FOUND, 
@@ -343,7 +201,7 @@ namespace OgreAL {
 		mPauseResumeAll.clear();
 	} 
 
-	Listener* SoundManager::createListener()
+	void SoundManager::createListener()
 	{
 		Listener *listener = Listener::getSingletonPtr();
 		if(!listener)
@@ -351,11 +209,9 @@ namespace OgreAL {
 			listener = static_cast<Listener*>
 				(mListenerFactory->createInstance("ListenerSingleton", NULL));
 		}
-
-		return listener;
 	}
 
-	Listener* SoundManager::getListener()
+	Listener* SoundManager::getListener() const
 	{
 		return Listener::getSingletonPtr();
 	}
@@ -376,28 +232,55 @@ namespace OgreAL {
 		return true;
 	}
 
-	void SoundManager::checkError(const Ogre::String& reference) const
-	{
-		/*
-		** TODO: Handle this better, I should reall do a look up against the OpenAL
-		** error code in order to return some sort of helpful, textual feedback
-		*/
-		int error = alGetError();
-	 
-		if(error != AL_NO_ERROR)
-			throw Ogre::Exception(1, "OpenAL error was raised.", reference);
-	}
-
 	void SoundManager::setDopplerFactor(Ogre::Real dopplerFactor)
 	{
 		mDopplerFactor = dopplerFactor;
 		alDopplerFactor(mDopplerFactor);
+		CheckError(alGetError(), "Failed to set Doppler Factor");
 	}
 
 	void SoundManager::setSpeedOfSound(Ogre::Real speedOfSound)
 	{
 		mSpeedOfSound = speedOfSound;
 		alSpeedOfSound(mSpeedOfSound);
+		CheckError(alGetError(), "Failed to set Speed of Sound");
+	}
+
+	Ogre::StringVector SoundManager::getDeviceList()
+	{
+		const ALCchar* deviceList = alcGetString(NULL, ALC_DEVICE_SPECIFIER);
+
+		Ogre::StringVector deviceVector;
+		/*
+		** The list returned by the call to alcGetString has the names of the
+		** devices seperated by NULL characters and the list is terminated by
+		** two NULL characters, so we can cast the list into a string and it
+		** will automatically stop at the first NULL that it sees, then we
+		** can move the pointer ahead by the lenght of that string + 1 and we
+		** will be at the begining of the next string.  Once we hit an empty 
+		** string we know that we've found the double NULL that terminates the
+		** list and we can stop there.
+		*/
+		while(*deviceList != NULL)
+		{
+			ALCdevice *device = alcOpenDevice(deviceList);
+			if(device)
+			{
+				// Device seems to be valid
+				ALCcontext *context = alcCreateContext(device, NULL);
+				if(context)
+				{
+					// Context seems to be valid
+					alcMakeContextCurrent(context);
+					deviceVector.push_back(alcGetString(device, ALC_DEVICE_SPECIFIER));
+					alcDestroyContext(context);
+				}
+				alcCloseDevice(device);
+			}
+			deviceList += strlen(deviceList) + 1;
+		}
+
+		return deviceVector;
 	}
 
 	FormatMapIterator SoundManager::getSupportedFormatIterator()
@@ -405,7 +288,7 @@ namespace OgreAL {
 		return FormatMapIterator(mSupportedFormats.begin(), mSupportedFormats.end());
 	}
 
-	const FormatData* SoundManager::retrieveFormatData(AudioFormat format)
+	const FormatData* SoundManager::retrieveFormatData(AudioFormat format) const
 	{
 		FormatMap::const_iterator itr = mSupportedFormats.find(format);
 		if(itr != mSupportedFormats.end())
@@ -439,6 +322,11 @@ namespace OgreAL {
 		return mGetXRamMode(buffer, reserved);
 	}
 
+	void SoundManager::_removeBufferRef(const Ogre::String& bufferName)
+	{
+		mSoundFactory->_removeBufferRef(bufferName);
+	}
+
 	int SoundManager::_getMaxSources()
 	{
 		SourceRef source;
@@ -466,34 +354,113 @@ namespace OgreAL {
 		{
 			source = static_cast<SourceRef>(*it);
 			alDeleteSources(1, &source);
+			CheckError(alGetError(), "Failed to delete Source");
 		}
 
 		return numSources;
 	}
 
-	void SoundManager::alDeviceList(const ALCchar *devices) const
+	void SoundManager::initializeDevice(const Ogre::String& deviceName)
 	{
-		std::string deviceString = "OpenAL Devices: ";
+		bool deviceInList = false;
 
-		// go through device list (each device terminated with a single NULL, list terminated with double NULL)
-		while (*devices != NULL)
+		Ogre::LogManager::getSingleton().logMessage("OpenAL Devices");
+		Ogre::LogManager::getSingleton().logMessage("--------------");
+
+		std::stringstream ss;
+
+		// List devices in log and see if the sugested device is in the list
+		Ogre::StringVector deviceList = getDeviceList();
+		Ogre::StringVector::iterator deviceItr;
+		for(deviceItr = deviceList.begin(); deviceItr != deviceList.end(); deviceItr++)
 		{
-			ALCdevice *device = alcOpenDevice(devices);
-			if (device)
-			{
-				ALCcontext *context = alcCreateContext(device, NULL);
-				if (context)
-				{
-					alcMakeContextCurrent(context);
-					// if new actual device name isn't already in the list, then add it...
-					deviceString.append(alcGetString(device, ALC_DEVICE_SPECIFIER));
-					deviceString.append(", ");
-					alcDestroyContext(context);
-				}
-				alcCloseDevice(device);
-			}
-			devices += strlen(devices) + 1;
+			deviceInList = (*deviceItr).compare(deviceName) == 0;
+			ss << "  * " << (*deviceItr);
+			Ogre::LogManager::getSingleton().logMessage(ss.str());
+			ss.clear(); ss.str("");
 		}
-		Ogre::LogManager::getSingleton().logMessage(deviceString);
+
+		// If the suggested device is in the list we use it, otherwise select the default device
+		mDevice = alcOpenDevice(deviceInList ? deviceName.c_str() : NULL);
+		CheckError(alcGetError(mDevice), "Failed to open Device");
+		CheckCondition(mDevice != NULL, 13, "Failed to open audio device");
+
+		Ogre::LogManager::getSingleton().logMessage("Choosing: " + Ogre::String(alcGetString(mDevice, ALC_DEVICE_SPECIFIER)));
+
+		// Create OpenAL Context
+		mContext = alcCreateContext(mDevice, NULL);
+		CheckError(alcGetError(mDevice), "Failed to create Context");
+		CheckCondition(mContext != NULL, 13, "Failed to create OpenAL Context");
+
+		alcMakeContextCurrent(mContext);
+		CheckError(alcGetError(mDevice), "Failed to set current context");
+	}
+
+	void SoundManager::checkFeatureSupport()
+	{
+		// Check for Supported Formats
+		ALenum eBufferFormat = 0;
+		eBufferFormat = alcGetEnumValue(mDevice, "AL_FORMAT_MONO16");
+		if(eBufferFormat) mSupportedFormats[MONO_CHANNEL] = 
+			new FormatData(eBufferFormat, "AL_FORMAT_MONO16", "Monophonic Sound");
+		eBufferFormat = alcGetEnumValue(mDevice, "AL_FORMAT_STEREO16");
+		if(eBufferFormat) mSupportedFormats[STEREO_CHANNEL] = 
+			new FormatData(eBufferFormat, "AL_FORMAT_STEREO16", "Stereo Sound");
+		eBufferFormat = alcGetEnumValue(mDevice, "AL_FORMAT_QUAD16");
+		if(eBufferFormat) mSupportedFormats[QUAD_CHANNEL] = 
+			new FormatData(eBufferFormat, "AL_FORMAT_QUAD16", "4 Channel Sound");
+		eBufferFormat = alcGetEnumValue(mDevice, "AL_FORMAT_51CHN16");
+		if(eBufferFormat) mSupportedFormats[MULTI_CHANNEL_51] = 
+			new FormatData(eBufferFormat, "AL_FORMAT_51CHN16", "5.1 Surround Sound");
+		eBufferFormat = alcGetEnumValue(mDevice, "AL_FORMAT_61CHN16");
+		if(eBufferFormat) mSupportedFormats[MULTI_CHANNEL_61] = 
+			new FormatData(eBufferFormat, "AL_FORMAT_61CHN16", "6.1 Surround Sound");
+		eBufferFormat = alcGetEnumValue(mDevice, "AL_FORMAT_71CHN16");
+		if(eBufferFormat) mSupportedFormats[MULTI_CHANNEL_71] = 
+			new FormatData(eBufferFormat, "AL_FORMAT_71CHN16", "7.1 Surround Sound");
+
+		// Log supported formats
+		FormatMapIterator itr = getSupportedFormatIterator();
+		Ogre::LogManager::getSingleton().logMessage("Supported Formats");
+		Ogre::LogManager::getSingleton().logMessage("-----------------");
+		while(itr.hasMoreElements())
+		{
+			Ogre::LogManager::getSingleton().logMessage(" * " + std::string(static_cast<char*>
+				(itr.peekNextValue()->formatName)) + ", " + itr.peekNextValue()->formatDescription);
+			itr.getNext();
+		}
+
+		// Check for EAX Support
+		std::stringbuf versionString;
+		for(int version = 5; version >= 2; version--)
+		{
+			versionString.str("EAX"+Ogre::StringConverter::toString(version)+".0");
+			if(alIsExtensionPresent(versionString.str().data()) == AL_TRUE)
+			{
+				mEAXSupport = true;
+				mEAXVersion = version;
+				versionString.str("EAX " + Ogre::StringConverter::toString(version) + ".0 Detected");
+				Ogre::LogManager::getSingleton().logMessage(versionString.str());
+				break;
+			}
+		}
+
+		// Check for X-RAM extension
+		if(alIsExtensionPresent("EAX-RAM") == AL_TRUE)
+		{
+			mXRAMSupport = true;
+			Ogre::LogManager::getSingleton().logMessage("X-RAM Detected");
+
+			EAXSetBufferMode setXRamMode = (EAXSetBufferMode)alGetProcAddress("EAXSetBufferMode");
+			EAXGetBufferMode getXRamMode = (EAXGetBufferMode)alGetProcAddress("EAXGetBufferMode");
+			mXRamSize = alGetEnumValue("AL_EAX_RAM_SIZE");
+			mXRamFree = alGetEnumValue("AL_EAX_RAM_FREE");
+			
+			Ogre::LogManager::getSingleton().logMessage("X-RAM: " + Ogre::StringConverter::toString(mXRamSize) +
+				" (" + Ogre::StringConverter::toString(mXRamFree) + " free)");
+		}
+
+		// See how many sources the harware allows
+		mMaxNumSources = _getMaxSources();
 	}
 } // Namespace

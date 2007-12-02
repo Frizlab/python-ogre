@@ -1,6 +1,7 @@
 #ifndef QUICKGUIMOUSEBUTTONID_H
 #define QUICKGUIMOUSEBUTTONID_H
 
+#include "QuickGUIPrerequisites.h"
 namespace QuickGUI
 {
 	/* Copied from OISMouse.h */

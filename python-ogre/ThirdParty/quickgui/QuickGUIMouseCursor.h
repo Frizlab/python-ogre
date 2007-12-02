@@ -4,6 +4,7 @@
 #include "OgreImage.h"
 #include "OgrePrerequisites.h"
 
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUIExportDLL.h"
 #include "QuickGUIQuad.h"
 #include "QuickGUIVertexBuffer.h"
@@ -26,6 +27,18 @@ namespace QuickGUI
 	class _QuickGUIExport MouseCursor
 	{
 	public:
+		enum CursorState
+		{
+			CURSOR_STATE_HOVER				=  0,
+			CURSOR_STATE_NORMAL					,
+			CURSOR_STATE_RESIZE_HORIZONTAL		,
+			CURSOR_STATE_RESIZE_VERTICAL		,
+			CURSOR_STATE_RESIZE_DIAGONAL_1		,
+			CURSOR_STATE_RESIZE_DIAGONAL_2		,
+			CURSOR_STATE_SPECIAL_1				,
+			CURSOR_STATE_SPECIAL_2
+		};
+	public:
 		/** Constructor
 			@param
                 size The width, and height of the window in Relative Dimensions.
@@ -34,20 +47,14 @@ namespace QuickGUI
 			@param
 				textureName Ogre material defining the cursor image.
         */
-        MouseCursor(const Size& size, const Ogre::String& textureName, GUIManager* gm);
+        MouseCursor(const Size& size, const Ogre::String& skinName, GUIManager* gm);
 		/** Standard Destructor. */
 		~MouseCursor();
-
-		/**
-		* Places the offset at the center of the image used to texture the mouse.
-		*/
-		void centerOrigin();
 
 		/**
 		* Returns true if cursor is set to go invisible when mouse is off the screen, false otherwise.
 		*/
 		bool getHideWhenOffScreen();
-		Point getOriginOffset();
 		Point getPosition();
 		Size getSize();
 		/**
@@ -82,12 +89,6 @@ namespace QuickGUI
 		*/
 		bool mouseOnTopBorder();
 		/**
-		* Offset the origin of the cursor, used for mouse picking and firing mouse events.  By
-		* default, offset is (0,0), which leaves the origin at the top left corner of the quad representing
-		* the cursor image.  Applying pixel offsets are useful for cursors like a crosshair or target.
-		*/
-		void offsetOrigin(int xPixelOffset, int yPixelOffset);
-		/**
 		* Applies the pixel offset to the current cursor position.
 		*/
 		void offsetPosition(const int& xPixelOffset, const int& yPixelOffset);
@@ -95,15 +96,12 @@ namespace QuickGUI
 		* Render the mouse to screen.
 		*/
 		void render();
+		void setCursorState(CursorState s);
 		/**
 		* if toggled, the cursor will become invisible when the mouse moves away from the primary render window.
 		* only useful if you have the mouse created with the DISCL_NONEXCLUSIVE option. (Refer to OIS creation of the mouse)
 		*/
 		void setHideCursorWhenOSCursorOffscreen(bool hide);
-		/**
-		* Sets the Ogre material defining the mouse
-		*/
-		void setTexture(const Ogre::String& textureName);
 		/**
 		* Sets the position of the mouse cursor on the screen, in pixel coordinates.
 		*/
@@ -113,6 +111,10 @@ namespace QuickGUI
 		*/
 		void setSize(Ogre::Real pixelWidth, Ogre::Real pixelHeight);
 		/**
+		* Sets the Ogre material defining the mouse
+		*/
+		void setSkin(const Ogre::String& skinName);
+		/**
 		* Shows the cursor.
 		*/
 		void show();
@@ -120,15 +122,17 @@ namespace QuickGUI
 	protected:
 		GUIManager*		mGUIManager;
 
+		CursorState		mCursorState;
+
+		Ogre::String	mSkinName;
+		Ogre::String	mSkinComponent;
+
 		// Default texture.
 		Ogre::String	mTextureName;
+
 		// Width and Height in pixels
 		Size			mPixelSize;
 		Point			mPixelPosition;
-
-		// By default the cursor origin is in the top left of the quad, (0,0), but
-		// this value can change for other cursors. (A target, for example)
-		Point			mOriginOffset;
 		
 		// Specifies the area (in screen pixels) that the mouse can move around in.
 		Point			mConstraints;				
@@ -141,7 +145,7 @@ namespace QuickGUI
 		bool			mVisible;
 
 		Quad*			mQuad;
-		std::list<Quad*> mRenderObjectList;
+		QuadList mRenderObjectList;
 		VertexBuffer*	mVertexBuffer;
 
 		/**

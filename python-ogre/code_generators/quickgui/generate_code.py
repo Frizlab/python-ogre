@@ -37,6 +37,7 @@ from pyplusplus import decl_wrappers
 from pyplusplus import function_transformers as ft
 from pyplusplus.module_builder import call_policies
 from pyplusplus.module_creator import sort_algorithms
+from pyplusplus.code_creators import include
 
 import common_utils.extract_documentation as exdoc
 import common_utils.var_checker as varchecker
@@ -66,7 +67,15 @@ def ManualExclude ( mb ):
     NotExported=[]
     for c in NotExported:
         main_ns.class_( c ).exclude()
-                        
+        
+#     excludeName = ['vector<Ogre::Image>'
+#                 ]
+#     for c in global_ns.classes():
+#         print "class:", c
+#         if c.name in excludeName:
+#             print "Excluding:",c
+#             c.exclude()
+                                    
     
     NonExistant = []
     for cls in NonExistant:
@@ -86,6 +95,7 @@ def ManualExclude ( mb ):
             ,'::QuickGUI::ScrollPane::getHorizontalButtonLayout'
             ,'::QuickGUI::VerticalScrollBar::getScrollButtonSize'
             ,'::QuickGUI::Effect::linearInterpolate'
+            ,'::QuickGUI::SkinSet::buildTextureCoordinates' ## has a vector that isn't being exposed correctly
                 ]
     for e in excludes:
         print "excluding function", e
@@ -116,7 +126,7 @@ def ManualInclude ( mb ):
     global_ns.class_('::Ogre::RenderQueueListener').include(already_exposed=True)
     global_ns.class_('::Ogre::SceneManager').include(already_exposed=True)
     global_ns.class_('::Ogre::Viewport').include(already_exposed=True)
-    global_ns.class_('::Ogre::Image').include(already_exposed=True)
+#     global_ns.class_('::Ogre::Image').include(already_exposed=True)
 #     global_ns.class_('::Ogre::FloatRect').include(already_exposed=True)
     
     
@@ -463,7 +473,15 @@ def generate_code():
     for inc in environment.quickgui.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )
     mb.code_creator.user_defined_directories.append( environment.quickgui.generated_dir )
-    mb.code_creator.replace_included_headers( customization_data.header_files( environment.quickgui.version ) )
+#     mb.code_creator.replace_included_headers( customization_data.header_files( environment.quickgui.version ) )
+    ## we need to remove the previous one
+    lastc = mb.code_creator.creators[ mb.code_creator.last_include_index() ]
+    mb.code_creator.remove_creator( lastc )  
+    # and now add our precompiled ones..
+    for x in range (len (customization_data.header_files( environment.ogre.version ) ), 0 ,-1 ):
+        h = customization_data.header_files( environment.ogre.version )[x-1]        
+        mb.code_creator.adopt_creator ( include.include_t ( header= h ), 0)
+
 
     huge_classes = map( mb.class_, customization_data.huge_classes( environment.quickgui.version ) )
 

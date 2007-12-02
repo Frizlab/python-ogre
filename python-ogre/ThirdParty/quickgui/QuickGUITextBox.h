@@ -1,6 +1,7 @@
 #ifndef QUICKGUITEXTBOX_H
 #define QUICKGUITEXTBOX_H
 
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUILabel.h"
 #include "QuickGUIMouseCursor.h"
 
@@ -40,7 +41,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		TextBox(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm);
+		TextBox(const Ogre::String& name, GUIManager* gm);
 
 		/**
 		* Adds a character to the textBox right before text cursor.
@@ -137,17 +138,12 @@ namespace QuickGUI
 		*/
 		virtual void setAutoSize(bool autoSize);
 		/**
-		* Stores/Updates the texture used for the widget, and allows the widget to derive other needed textures. (by overriding this function)
-		*/
-		void setBaseTexture(const Ogre::String& textureName);
-		/**
 		* Text Cursor Indices start at 0, and are to the left of Text Indices.  
 		* Let () represent Text Cursor Indices and [] represent Text Indices: 
 		*	(0)[0](1)[1](2)[2](3)
 		*/
 		void setCursorIndex(int cursorIndex, bool clearSelection = true);
 		void setCursorIndex(Point position, bool clearSelection = true);
-		void setCursorTexture(const Ogre::String& textureName);
 		virtual void setFont(const Ogre::String& fontScriptName, bool recursive = false);
 		/**
 		* If set to true, cannot input text to textbox
@@ -158,12 +154,13 @@ namespace QuickGUI
 		*/
 		virtual void setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight);
 		virtual void setSize(const Size& pixelSize);
+		virtual void setSkin(const Ogre::String& skinName, bool recursive = false);
 		void setText(const Ogre::UTFString& text);
 		virtual void setWidth(Ogre::Real pixelWidth);
 		/**
 		* Default Handler for injecting Time.
 		*/
-		void timeElapsed(Ogre::Real time);
+		void timeElapsed(const Ogre::Real time);
 
 	protected:
 		virtual ~TextBox();
@@ -173,7 +170,7 @@ namespace QuickGUI
 		// Text Cursor Properties
 		Quad* mTextCursor;
 		size_t mCursorPixelWidth;
-		Ogre::String mTextCursorTexture;
+		Ogre::String mTextCursorSkinComponent;
 
 		// The full unmodified String stored by this textbox. Text boundaries and character
 		// masking will affect what the user sees on screen.
@@ -222,7 +219,7 @@ namespace QuickGUI
 
 		bool mReadOnly;
 
-		std::vector<MemberFunctionSlot*> mOnEnterPressedUserEventHandlers;
+		EventHandlerArray mOnEnterPressedUserEventHandlers;
 
 		// setCursorIndex functionality broken into parts.  Not to be called outside this function,
 		// and is order dependent.

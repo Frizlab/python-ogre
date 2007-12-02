@@ -22,6 +22,13 @@ typedef btAlignedAllocator<btBvhSubtreeInfo, 16> BvhSubtreeInfo16;
 typedef btAlignedAllocator<btQuantizedBvhNode, 16> QuantizedBvhNode16;
 typedef btAlignedAllocator<btOptimizedBvhNode, 16> OptimizedBvhNode16;
 
+typedef btAlignedAllocator<btSolverConstraint, 16u> SolverConstraint16u;
+typedef btAlignedAllocator<btSolverBody, 16u> SolverBody16u;
+typedef btAlignedObjectArray<btSolverConstraint> AlignedObjectArraySolverConstraint;
+typedef btAlignedObjectArray<btSolverBody>  AlignedObjectArraytSolverBody;
+
+
+
 typedef btAlignedAllocator<btCollisionShape*, 16> CollisionShapePtr16;
 typedef btAlignedAllocator<btTransform, 16> Transform16;
 typedef btAlignedAllocator<btCollisionObject*, 16> CollisionObjectPtr16;

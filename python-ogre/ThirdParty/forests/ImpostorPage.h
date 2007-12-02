@@ -87,9 +87,7 @@ public:
 	for example, results in final texture size of 1024 x 512.
 	
 	\note Calling this function will have no effect unless it is done before
-	any entities are added to any page. Also remember that you may have to
-	delete the old impostor renders (located in your exe's directory) in
-	order for the new ones to be generated.
+	any entities are added to any page.
 	*/
 	static void setImpostorResolution(int pixels) { impostorResolution = pixels; }
 
@@ -111,7 +109,11 @@ public:
 	delete the old impostor renders (located in your exe's directory) in
 	order for the new ones to be generated.
 	*/
-	static void setImpostorColor(const Ogre::ColourValue &color) { impostorBackgroundColor = color; }
+	static void setImpostorColor(const Ogre::ColourValue &color)
+	{
+		impostorBackgroundColor = color;
+		impostorBackgroundColor.a = 0.0f;
+	}
 
 	/**
 	\brief Regenerates the impostor texture for the specified entity

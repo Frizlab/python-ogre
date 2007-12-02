@@ -1,13 +1,14 @@
 #ifndef QUICKGUIVERTICALSCROLLBAR_H
 #define QUICKGUIVERTICALSCROLLBAR_H
 
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUIButton.h"
-#include "QuickGUIImage.h"
+#include "QuickGUIWidget.h"
 
 namespace QuickGUI
 {
 	class _QuickGUIExport VerticalScrollBar :
-		public Image
+		public Widget
 	{
 	public:
 		friend class ScrollPane;
@@ -41,7 +42,7 @@ namespace QuickGUI
 			@note
 				Vertical or Horizontal TrackBars are derived from a comparison between width and height.
         */
-		VerticalScrollBar(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm);
+		VerticalScrollBar(const Ogre::String& name, GUIManager* gm);
 
 		// Same as setValue, except that the scroll event is not fired.
 		void _setValue(Ogre::Real value);
@@ -75,10 +76,6 @@ namespace QuickGUI
 		void scrollUpSmall();
 		void scrollDownLarge();
 		void scrollDownSmall();
-		/**
-		* Stores/Updates the texture used for the widget, and allows the widget to derive other needed textures. (by overriding this function)
-		*/
-		void setBaseTexture(const Ogre::String& textureName);
 		void setButtonLayout(ButtonLayout layout);
 		void setLargeChange(Ogre::Real change);
 		/**
@@ -93,7 +90,7 @@ namespace QuickGUI
 		*/
 		void setValue(Ogre::Real value);
 
-		void timeElapsed(Ogre::Real time);
+		void timeElapsed(const Ogre::Real time);
 
 	protected:
 		~VerticalScrollBar();
@@ -141,7 +138,7 @@ namespace QuickGUI
 		void onSizeChanged(const EventArgs& args);
 		void onSliderDragged(const EventArgs& args);
 
-		std::vector<MemberFunctionSlot*> mOnScrollHandlers;
+		EventHandlerArray mOnScrollHandlers;
 
 		void _showButtons();
 	};

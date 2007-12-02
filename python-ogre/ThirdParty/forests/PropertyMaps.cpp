@@ -246,10 +246,15 @@ ColorMap::ColorMap(Texture *map, MapChannel channel)
 	VertexElementType format = Root::getSingleton().getRenderSystem()->getColourVertexElementType();
 	switch (format){
 		case VET_COLOUR_ARGB:
+			//DirectX9
 			pixels = new PixelBox(Box(0, 0, buff->getWidth(), buff->getHeight()), PF_A8R8G8B8);
 			break;
 		case VET_COLOUR_ABGR:
+			//OpenGL
 			pixels = new PixelBox(Box(0, 0, buff->getWidth(), buff->getHeight()), PF_A8B8G8R8);
+			//Patch for Ogre's incorrect blitToMemory() when copying from PF_L8 in OpenGL
+			if (buff->getFormat() == PF_L8)
+				channel = CHANNEL_RED;
 			break;
 		default:
 			OGRE_EXCEPT(0, "Unknown RenderSystem color format", "GrassLayer::setColorMap()");

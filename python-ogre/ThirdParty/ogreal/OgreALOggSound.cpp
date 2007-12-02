@@ -33,144 +33,278 @@
 ** Boston, MA 02111-1307, USA.                                               **
 \*---------------------------------------------------------------------------*/
 
-#include "OgreALOggSound.h"
-#include "OgreALSoundManager.h"
 #include "OgreALException.h"
+#include "OgreALOggSound.h"
+
+/*
+** These next four methods are custom accessor functions to allow the Ogg Vorbis
+** libraries to be able to stream audio data directly from an Ogre::DataStreamPtr
+*/
+size_t OgreALOggStreamRead(void *ptr, size_t size, size_t nmemb, void *datasource)
+{
+	Ogre::DataStreamPtr dataStream = *reinterpret_cast<Ogre::DataStreamPtr*>(datasource);
+	return dataStream->read(ptr, size);
+}
+
+int OgreALOggStreamSeek(void *datasource, ogg_int64_t offset, int whence)
+{
+	Ogre::DataStreamPtr dataStream = *reinterpret_cast<Ogre::DataStreamPtr*>(datasource);
+	switch(whence)
+	{
+	case SEEK_SET:
+		dataStream->seek(offset);
+		break;
+	case SEEK_END:
+		dataStream->seek(dataStream->size());
+		// Falling through purposefully here
+	case SEEK_CUR:
+		dataStream->skip(offset);
+		break;
+	}
+
+	return 0;
+}
+
+int OgreALOggStreamClose(void *datasource)
+{
+	return 0;
+}
+
+long OgreALOggStreamTell(void *datasource)
+{
+	Ogre::DataStreamPtr dataStream = *reinterpret_cast<Ogre::DataStreamPtr*>(datasource);
+	return static_cast<long>(dataStream->tell());
+}
+
+/*
+** End Custome Accessors
+*/
 
 namespace OgreAL {
-	OggSound::OggSound(const Ogre::String& name, const Ogre::String& soundFile, bool loop, AudioFormat format) :
-		Sound(name, soundFile),
-		mOggFile(0),
-		mVorbisInfo(0),
-		mVorbisComment(0)
+	OggSound::OggSound(const Ogre::String& name, const Ogre::DataStreamPtr& soundStream, bool loop, bool stream) :
+		Sound(name, soundStream->getName(), stream)
 	{
 		try
 		{
-			mOggFile = fopen(soundFile.c_str(), "rb");
-			OGREAL_CHECK(mOggFile != 0, 1, "Could not open Ogg file.");
+			mSoundStream = soundStream;
 
-			OGREAL_CHECK(ov_open(mOggFile, &mOggStream, NULL, 0) >= 0, 1, "Could not open Ogg stream.");
+			// Set up custom accessors
+			ov_callbacks callbacks;
+			callbacks.close_func = OgreALOggStreamClose;
+			callbacks.tell_func = OgreALOggStreamTell;
+			callbacks.read_func = OgreALOggStreamRead;
+			callbacks.seek_func = OgreALOggStreamSeek;
+
+			// Open the Ogre::DataStreamPtr
+			CheckCondition(ov_open_callbacks(&mSoundStream, &mOggStream, NULL, 0, callbacks) >= 0, 1, "Could not open Ogg stream.");
+
 			mVorbisInfo = ov_info(&mOggStream, -1);
-
 			unsigned long channels = mVorbisInfo->channels;
 			mFreq = mVorbisInfo->rate;
+			mChannels = mVorbisInfo->channels;
+			mBPS = 16;
 			mLoop = loop;
 
-			switch(channels)
-			{
-			case 1:
-				mFormat = AL_FORMAT_MONO16;
-				// Set BufferSize to 250ms (Frequency * 2 (16bit) divided by 4 (quarter of a second))
-				mBufferSize = mFreq >> 1;
-				// IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment ...
-				mBufferSize -= (mBufferSize % 2);
-				break;
-			case 2:
-				mFormat = AL_FORMAT_STEREO16;
-				// Set BufferSize to 250ms (Frequency * 4 (16bit stereo) divided by 4 (quarter of a second))
-				mBufferSize = mFreq;
-				// IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment ...
-				mBufferSize -= (mBufferSize % 4);
-				break;
-			case 4:
-				mFormat = alGetEnumValue("AL_FORMAT_QUAD16");
-				// Set BufferSize to 250ms (Frequency * 8 (16bit 4-channel) divided by 4 (quarter of a second))
-				mBufferSize = mFreq * 2;
-				// IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment ...
-				mBufferSize -= (mBufferSize % 8);
-				break;
-			case 6:
-				mFormat = alGetEnumValue("AL_FORMAT_51CHN16");
-				// Set BufferSize to 250ms (Frequency * 12 (16bit 6-channel) divided by 4 (quarter of a second))
-				mBufferSize = mFreq * 3;
-				// IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment ...
-				mBufferSize -= (mBufferSize % 12);
-				break;
-			case 7:
-				mFormat = alGetEnumValue("AL_FORMAT_61CHN16");
-				// Set BufferSize to 250ms (Frequency * 16 (16bit 7-channel) divided by 4 (quarter of a second))
-				mBufferSize = mFreq * 4;
-				// IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment ...
-				mBufferSize -= (mBufferSize % 16);
-				break;
-			case 8:
-				mFormat = alGetEnumValue("AL_FORMAT_71CHN16");
-				// Set BufferSize to 250ms (Frequency * 20 (16bit 8-channel) divided by 4 (quarter of a second))
-				mBufferSize = mFreq * 5;
-				// IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment ...
-				mBufferSize -= (mBufferSize % 20);
-				break;
-			default:
-				// Couldn't determine buffer format so log the error and default to mono
-				Ogre::LogManager::getSingleton().logMessage("!!WARNING!! Could not determine buffer format!  Defaulting to MONO");
+			calculateFormatInfo();
 
-				mFormat = AL_FORMAT_MONO16;
-				// Set BufferSize to 250ms (Frequency * 2 (16bit) divided by 4 (quarter of a second))
-				mBufferSize = mFreq >> 1;
-				// IMPORTANT : The Buffer Size must be an exact multiple of the BlockAlignment ...
-				mBufferSize -= (mBufferSize % 2);
-				break;
+			mLengthInSeconds = ov_time_total(&mOggStream, -1);
+
+			mBuffers = new BufferRef[mNumBuffers];
+			alGenBuffers(mNumBuffers, mBuffers);
+			CheckError(alGetError(), "Could not generate buffer");
+
+			for(int i = 0; i < mNumBuffers; i++)
+			{
+				CheckCondition(AL_NONE != mBuffers[i], 13, "Could not generate buffer");
+				Buffer buffer = bufferData(&mOggStream, mStream ? mBufferSize : 0);
+				alBufferData(mBuffers[i], mFormat, &buffer[0], static_cast<Size>(buffer.size()), mFreq);
+				CheckError(alGetError(), "Could not load buffer data");
 			}
 
-			alGenBuffers(1, &mBuffer);
-			OGREAL_CHECK(alGetError() == AL_NO_ERROR, 13, "Could not generate buffer");
-			int currSection;
-			long size = 0;
-			char data[4096*8];
-			std::vector<char> buffer;
-			do
+			createAndBindSource();
+			
+			if(mStream)
 			{
-				size = ov_read(&mOggStream, data, sizeof(data), 0, 2, 1, &currSection);
-				buffer.insert(buffer.end(), data, data + size);
-			}while(size > 0);
-
-			ov_clear(&mOggStream);
-			alBufferData(mBuffer, mFormat, &buffer[0], static_cast<ALsizei>(buffer.size()), mFreq);
-			OGREAL_CHECK(alGetError() == AL_NO_ERROR, 13, "Could not generate buffer");
+				// There is an issue with looping and streaming, so we will
+				// disable looping and deal with it on our own.
+				alSourcei (mSource, AL_LOOPING,	AL_FALSE);
+				CheckError(alGetError(), "Failed to set looping");
+			}
 		}
-		catch(Exception e)
+		catch(Ogre::Exception e)
 		{
-			if (mBuffer)
+			for(int i = 0; i < mNumBuffers; i++)
 			{
-				if (alIsBuffer(mBuffer) == AL_TRUE)
+				if (mBuffers[i] && alIsBuffer(mBuffers[i]) == AL_TRUE)
 				{
-					alDeleteBuffers(1, &mBuffer);
+					alDeleteBuffers(1, &mBuffers[i]);
+					CheckError(alGetError(), "Failed to delete Buffer");
 				}
-			}
-
-			if(mOggFile)
-			{
-				fclose(mOggFile);
-				mOggFile = 0;
 			}
 
 			ov_clear(&mOggStream);
 
 			throw (e);
 		}
-
-		createAndBindSource();
 	}
 
 	OggSound::~OggSound()
-	{}
-
-	Ogre::String OggSound::errorToString(int error) const
 	{
-		switch(error)
+		ov_clear(&mOggStream);
+	}
+
+	bool OggSound::play()
+	{
+		if(isStopped() && mStream)
 		{
-			case OV_EREAD:
-				return Ogre::String("Read from media.");
-			case OV_ENOTVORBIS:
-				return Ogre::String("Not Vorbis data.");
-			case OV_EVERSION:
-				return Ogre::String("Vorbis version mismatch.");
-			case OV_EBADHEADER:
-				return Ogre::String("Invalid Vorbis header.");
-			case OV_EFAULT:
-				return Ogre::String("Internal logic fault (bug or heap/stack corruption.");
-			default:
-				return Sound::errorToString(error);
+			for(int i = 0; i < mNumBuffers; i++)
+			{
+				CheckCondition(AL_NONE != mBuffers[i], 13, "Could not generate buffer");
+				Buffer buffer = bufferData(&mOggStream, mStream ? mBufferSize : 0);
+				alBufferData(mBuffers[i], mFormat, &buffer[0], static_cast<Size>(buffer.size()), mFreq);
+				CheckError(alGetError(), "Could not load buffer data");
+			}
+		    
+			alSourceQueueBuffers(mSource, mNumBuffers, mBuffers);
+			CheckError(alGetError(), "Failed to queue Buffers");
 		}
+
+		return Sound::play();
+	}
+
+	bool OggSound::stop()
+	{
+		if(Sound::stop())
+		{
+			return true;
+		}
+		else
+		{
+			if(mStream)
+			{
+				emptyQueues();
+				ov_time_seek(&mOggStream, 0);
+			}
+
+			return true;
+		}
+	}
+
+	void OggSound::setSecondOffset(Ogre::Real seconds)
+	{
+		if(!mStream)
+		{
+			Sound::setSecondOffset(seconds);
+		}
+		else
+		{
+			bool wasPlaying = isPlaying();
+			
+			stop();
+			ov_time_seek(&mOggStream, seconds);
+
+			if(wasPlaying) play();
+		}
+	}
+
+	Ogre::Real OggSound::getSecondOffset()
+	{
+		if(!mStream)
+		{
+			return Sound::getSecondOffset();
+		}
+		else
+		{
+			/*
+			** We know that we are playing a buffer and that we have another buffer loaded.
+			** We also know that each buffer is 1/4 of a second when full.
+			** We can get the current offset in the OggStream which will be after both bufers
+			** and subtract from that 1/4 of a second for the waiting buffer and 1/4 of a second
+			** minus the offset into the current buffer to get the current overall offset.
+			*/
+
+			Ogre::Real oggStreamOffset = ov_time_tell(&mOggStream);
+			Ogre::Real bufferOffset = Sound::getSecondOffset();
+
+			Ogre::Real totalOffset = oggStreamOffset - (0.25 + (0.25 - bufferOffset));
+			return totalOffset;
+		}
+	}
+
+	bool OggSound::_updateSound()
+	{
+		// Call the parent method to update the position
+		Sound::_updateSound();
+
+		bool eof = false;
+
+		if(mStream)
+		{
+			// Update the stream
+			int processed;
+
+			alGetSourcei(mSource, AL_BUFFERS_PROCESSED, &processed);
+			CheckError(alGetError(), "Failed to get source");
+		 
+			while(processed--)
+			{
+				ALuint buffer;
+		        
+				alSourceUnqueueBuffers(mSource, 1, &buffer);
+				CheckError(alGetError(), "Failed to unqueue buffers");
+		 
+				Buffer data = bufferData(&mOggStream, mBufferSize);
+				alBufferData(buffer, mFormat, &data[0], static_cast<Size>(data.size()), mFreq);
+
+				eof = mSoundStream->eof();
+		 
+				alSourceQueueBuffers(mSource, 1, &buffer);
+				CheckError(alGetError(), "Failed to queue buffers");
+
+				if(eof)
+				{
+					if(mLoop)
+					{
+						eof = false;
+						ov_time_seek(&mOggStream, 0);
+					}
+					else
+					{
+						// Doing it this way may cut off the last 0.5s of the audio
+						stop();
+					}
+				}
+			}
+		}
+	 
+		return !eof;
+	}
+
+	Buffer OggSound::bufferData(OggVorbis_File *oggVorbisFile, int size)
+	{
+		Buffer buffer;
+		char *data = new char[mBufferSize];
+		int section, sizeRead = 0;
+
+		if(size == 0)
+		{
+			// Read the rest of the file
+			do
+			{
+				sizeRead = ov_read(&mOggStream, data, mBufferSize, 0, 2, 1, &section);
+				buffer.insert(buffer.end(), data, data + sizeRead);
+			}while(sizeRead > 0);
+		}
+		else
+		{
+			// Read only what was asked for
+			while(buffer.size() < size)
+			{
+				sizeRead = ov_read(&mOggStream, data, mBufferSize, 0, 2, 1, &section);
+				buffer.insert(buffer.end(), data, data + sizeRead);
+			}
+		}
+
+		return buffer;
 	}
 } // Namespace

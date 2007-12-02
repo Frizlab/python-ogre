@@ -41,7 +41,7 @@ class TreeLoader3D: public PageLoader
 {
 public:
 	/** \brief Creates a new TreeLoader3D object.
-	\param geom The PagedGeometry object that this GrassLoader will be assigned to.
+	\param geom The PagedGeometry object that this TreeLoader3D will be assigned to.
 	\param bounds The rectangular boundary in which all trees will be placed. */
 	TreeLoader3D(PagedGeometry *geom, const Ogre::TRect<Ogre::Real> &bounds);
 	~TreeLoader3D();
@@ -159,11 +159,25 @@ private:
 
 	inline std::vector<TreeDef> &_getGridPage(std::vector<TreeDef> *grid, int x, int z)
 	{
+		#ifdef _DEBUG
+		if(x >= pageGridX || z >= pageGridZ )
+			OGRE_EXCEPT(Ogre::Exception::ERR_INVALIDPARAMS,
+			"Grid dimension is out of bounds",
+			"TreeLoader2D::_getGridPage()");
+		#endif
+
 		return grid[z * pageGridX + x];
 	}
 
 	inline void _setGridPage(std::vector<TreeDef> *grid, int x, int z, const std::vector<TreeDef> &page)
 	{
+		#ifdef _DEBUG
+		if(x >= pageGridX || z >= pageGridZ )
+			OGRE_EXCEPT(Ogre::Exception::ERR_INVALIDPARAMS,
+			"Grid dimension is out of bounds",
+			"TreeLoader2D::_getGridPage()");
+		#endif
+
 		grid[z * pageGridX + x] = page;
 	}
 };
@@ -241,4 +255,3 @@ private:
 
 
 #endif
-

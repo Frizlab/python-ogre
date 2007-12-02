@@ -1,15 +1,11 @@
 #ifndef QUICKGUIEFFECT_H
 #define QUICKGUIEFFECT_H
 
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUIManager.h"
 
 namespace QuickGUI
 {
-	class Effect;
-	class AlphaEffect;
-	class MoveEffect;
-	class SizeEffect;
-
 	//------------------------------------------------------------------------------------------------
 	class _QuickGUIExport Effect
 	{
@@ -38,7 +34,7 @@ namespace QuickGUI
 
 		virtual void updateValue(const Ogre::Real factor) = 0;
 
-		bool update(Ogre::Real timeElapsed);
+		bool update(const Ogre::Real timeElapsed);
 		Ogre::Real getTimeFactor() ;
 		bool getTimeOrIsFinished();
 		Ogre::Real linearInterpolate(const Ogre::Real start, 

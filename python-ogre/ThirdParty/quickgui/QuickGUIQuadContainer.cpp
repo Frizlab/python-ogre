@@ -1,3 +1,5 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUIQuadContainer.h"
 #include "QuickGUIWidget.h"
 
@@ -26,7 +28,7 @@ namespace QuickGUI
 		delete mChildVertexBuffer;
 		delete mMenuVertexBuffer;
 
-		std::list<Quad*>::iterator cIt;
+		QuadList::iterator cIt;
 		for( cIt = mChildRenderables.begin(); cIt != mChildRenderables.end(); ++cIt )
 			(*cIt)->_notifyRemovedFromQuadContainer();
 
@@ -34,14 +36,14 @@ namespace QuickGUI
 
 		mChildWindows.clear();
 
-		std::list<Quad*>::iterator mIt;
+		QuadList::iterator mIt;
 		for( mIt = mMenuRenderables.begin(); mIt != mMenuRenderables.end(); ++mIt )
 			(*mIt)->_notifyRemovedFromQuadContainer();
 	}
 
 	void QuadContainer::addChildRenderable(Quad* q)
 	{
-		std::list<Quad*>::iterator it;
+		QuadList::iterator it;
 		it = mChildRenderables.begin();
 		// run until:
 		// 1) end of list
@@ -66,8 +68,8 @@ namespace QuickGUI
 		mChildrenChanged = true;
 
 		// check if buffer needs to be resized.
-		size_t numQuads = static_cast<size_t>(mChildRenderables.size());
-		size_t numVertices = numQuads * 6;
+		const size_t numQuads = static_cast<size_t>(mChildRenderables.size());
+		const size_t numVertices = numQuads * VERTICES_PER_QUAD;
 		if( numVertices > mChildBufferSize.back() )
 		{
 			Ogre::uint32 newBufferSize = Ogre::Bitwise::firstPO2From(static_cast<Ogre::uint32>(numVertices));
@@ -83,7 +85,7 @@ namespace QuickGUI
 
 	void QuadContainer::addChildPanelContainer(QuadContainer* g)
 	{
-		std::list<QuadContainer*>::iterator it = mChildPanels.begin();
+		QuadContainerList::iterator it = mChildPanels.begin();
 		while( (it != mChildPanels.end()) && ((*it)->getOffset() < g->getOffset()) )
 			++it;
 		
@@ -95,7 +97,7 @@ namespace QuickGUI
 		if( (mOwner != NULL) && (mOwner->getWidgetType() != Widget::TYPE_SHEET) ) 
 			return;
 
-		std::list<QuadContainer*>::iterator it = mChildWindows.begin();
+		QuadContainerList::iterator it = mChildWindows.begin();
 		while( (it != mChildWindows.end()) && ((*it)->getOffset() <= g->getOffset()) )
 			++it;
 		
@@ -104,7 +106,7 @@ namespace QuickGUI
 
 	void QuadContainer::addMenuRenderable(Quad* q)
 	{
-		std::list<Quad*>::iterator it;
+		QuadList::iterator it;
 		it = mMenuRenderables.begin();
 		// run until:
 		// 1) end of list
@@ -129,8 +131,8 @@ namespace QuickGUI
 		mMenuChanged = true;
 
 		// check if buffer needs to be resized.
-		size_t numQuads = static_cast<size_t>(mMenuRenderables.size());
-		size_t numVertices = numQuads * 6;
+		const size_t numQuads = static_cast<size_t>(mMenuRenderables.size());
+		const size_t numVertices = numQuads * VERTICES_PER_QUAD;
 		if( numVertices > mMenuBufferSize.back() )
 		{
 			Ogre::uint32 newBufferSize = Ogre::Bitwise::firstPO2From(static_cast<Ogre::uint32>(numVertices));
@@ -154,24 +156,25 @@ namespace QuickGUI
 		return mOwner;
 	}
 
-	std::list<QuadContainer*>* QuadContainer::getPanelList()
+	QuadContainerList* QuadContainer::getPanelList()
 	{
 		return &mChildPanels;
 	}
 
-	std::list<QuadContainer*>* QuadContainer::getWindowList()
+	QuadContainerList* QuadContainer::getWindowList()
 	{
 		return &mChildWindows;
 	}
 
 	void QuadContainer::moveWindowGroupToEnd(QuadContainer* c)
 	{
+		assert(c);
 		if( (c->getOwner()->getWidgetType() != Widget::TYPE_WINDOW) && (c != mChildWindows.back()) ) 
 			return;
 
 		bool windowInList = false;
 
-		for( std::list<QuadContainer*>::iterator it = mChildWindows.begin(); it != mChildWindows.end(); ++it )
+		for( QuadContainerList::iterator it = mChildWindows.begin(); it != mChildWindows.end(); ++it )
 		{
 			if( (*it) == c )
 			{
@@ -187,6 +190,7 @@ namespace QuickGUI
 
 	void QuadContainer::notifyChildRenderableChanged(Quad* q)
 	{
+		assert(q);
 		if(q->offsetChanged() || q->textureChanged())
 		{
 			removeChildRenderable(q);
@@ -198,6 +202,7 @@ namespace QuickGUI
 
 	void QuadContainer::notifyMenuRenderableChanged(Quad* q)
 	{
+		assert(q);
 		if(q->offsetChanged() || q->textureChanged())
 		{
 			removeMenuRenderable(q);
@@ -209,7 +214,8 @@ namespace QuickGUI
 
 	void QuadContainer::removeChildRenderable(Quad* q)
 	{
-		std::list<Quad*>::iterator it;
+		assert(q);
+		QuadList::iterator it;
 		for( it = mChildRenderables.begin(); it != mChildRenderables.end(); ++it )
 		{
 			if( (*it) == q )
@@ -224,7 +230,8 @@ namespace QuickGUI
 
 	void QuadContainer::removeChildPanelContainer(QuadContainer* c)
 	{
-		std::list<QuadContainer*>::iterator it;
+		assert(c);
+		QuadContainerList::iterator it;
 		for( it = mChildPanels.begin(); it != mChildPanels.end(); ++it )
 		{
 			if( (*it) == c )
@@ -237,7 +244,8 @@ namespace QuickGUI
 
 	void QuadContainer::removeChildWindowContainer(QuadContainer* c)
 	{
-		std::list<QuadContainer*>::iterator it;
+		assert(c);
+		QuadContainerList::iterator it;
 		for( it = mChildWindows.begin(); it != mChildWindows.end(); ++it )
 		{
 			if( (*it) == c )
@@ -250,7 +258,8 @@ namespace QuickGUI
 
 	void QuadContainer::removeMenuRenderable(Quad* q)
 	{
-		std::list<Quad*>::iterator it;
+		assert(q);
+		QuadList::iterator it;
 		for( it = mMenuRenderables.begin(); it != mMenuRenderables.end(); ++it )
 		{
 			if( (*it) == q )
@@ -277,7 +286,7 @@ namespace QuickGUI
 
 		mChildVertexBuffer->render();
 
-		std::list<QuadContainer*>::iterator it;
+		QuadContainerList::iterator it;
 		for( it = mChildPanels.begin(); it != mChildPanels.end(); ++it )
 			(*it)->render();
 

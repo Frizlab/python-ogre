@@ -194,8 +194,58 @@ def Auto_Document ( mb, namespace=None ):
             s = ""
         c.documentation="<<protected declaration>>\\n"+s
        
-   
-def Fix_Void_Ptr_Args ( mb, pointee_types=['unsigned int','int', 'float', 'unsigned char', 'char'],  ignore_names=[] ):
+
+
+def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[], prefix_output=['get','is','calc','suggest'] ):                         
+    for fun in mb.member_functions():
+        fullname = fun.demangled.split('(')[0]
+        if fullname not in ignore_funs and not fun.ignore:
+            arg_position = 0
+            trans=[]
+            desc=""
+            for arg in fun.arguments:
+                rawarg =  declarations.remove_declarated(
+                    declarations.remove_const( 
+                        declarations.remove_reference( 
+                            declarations.remove_pointer ( arg.type ))))
+                print arg.type.decl_string                            
+                if declarations.is_arithmetic (rawarg)\
+                        or declarations.is_void_pointer(arg.type)\
+                        or arg.type.decl_string in special_vars:
+#                     print "Auto:", arg.type.decl_string," is_integral|floating|void|special|"
+                    if declarations.is_pointer(arg.type):   #we convert any pointers to unsigned int's
+                        trans.append( ft.modify_type(arg_position,_ReturnUnsignedInt ) )
+                        desc = desc +"Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
+                            arg.type.decl_string + " ) takes a CTypes.addressof(xx). \\n"
+#                         print fullname,"Ctype Mod for ", arg.name, arg.type.decl_string    
+                    elif declarations.is_reference(arg.type):  
+                        matched = False
+                        for pre in prefix_output:   # functions whose name starts in the list are consider output only
+                            if fun.name.startswith (pre):
+                                matched = True
+                                trans.append( ft.output(arg_position ) )
+                                desc = desc +"Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
+                                    arg.type.decl_string + " ) converted to an output only (no longer an input argument).\\n"
+    #                             print fullname," ft.output ", arg.name, arg.type.decl_string
+                        if not matched:    # otherwise a function is converted using inout
+                            trans.append( ft.inout(arg_position ) )
+                            desc = desc + "Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
+                                arg.type.decl_string + " ) converted to an input/output (change to return types).\\n"
+#                             print fullname," ft.inout ", arg.name, arg.type.decl_string    
+                arg_position += 1
+            if trans:
+                if fun.documentation:   # it's already be tweaked:
+                    print "AUTOFT ERROR: Duplicate Tranforms.", fun
+                elif fun.virtuality == "pure virtual":
+                    print "AUTOFT WARNING: PURE VIRTUAL function requires tranform.", fun
+                else:
+                    print "AUTOFT OK: Tranformed ", fun
+                    fun.add_transformation ( * trans , **{"alias":fun.name}  )
+                    fun.documentation = docit ("Auto Modified Arguments:",
+                                                    desc, "...")
+                      
+
+def Fix_Void_Ptr_Args ( mb, pointee_types=['unsigned int','int', 'float', 'unsigned char', 'char', 'bool'],  ignore_names=[] ):
     """ we modify functions that take void *'s in their argument list to instead take
     unsigned ints, which allows us to use CTypes buffers
     """
@@ -209,11 +259,14 @@ def Fix_Void_Ptr_Args ( mb, pointee_types=['unsigned int','int', 'float', 'unsig
                 desc = desc +"Argument: "+arg.name+ "( pos:" + str(arg_position) +") takes a CTypes.addressof(xx). "
             arg_position +=1
         if trans:
-            print "Tranformation applied to ", fun, desc
-            fun.add_transformation ( * trans , **{"alias":fun.name}  )
-            fun.documentation = docit ("Modified Input Argument to work with CTypes",
-                                            desc, "...")
-
+            if fun.virtuality == "pure virtual":
+                print "*** WARNING: Unable to apply transformation to PURE VIRTUAL function", fun, desc
+            else:
+                print "Tranformation applied to ", fun, desc, fun.virtuality
+                fun.add_transformation ( * trans , **{"alias":fun.name}  )
+                fun.documentation = docit ("Modified Input Argument to work with CTypes",
+                                                desc, "...")
+                                            
     for fun in mb.member_functions():
         fixVoids ( fun )
     
@@ -225,20 +278,32 @@ def Fix_Void_Ptr_Args ( mb, pointee_types=['unsigned int','int', 'float', 'unsig
     def fixPointerTypes ( fun,  pointee_types=[], ignore_names=[], Exclude=False ):
         if fun.documentation or fun.ignore: return ## means it's been tweaked somewhere else
         for n in ignore_names:
-            if n in fun.name:
+            if n in fun.name or n in fun.parent.name:  ## exclude class
+                print "Ignoring: ", fun
                 return
+        trans=[]
+        desc=""
+        arg_position=-1
         for arg in fun.arguments:
+            arg_position +=1
             if declarations.is_pointer(arg.type): ## and "const" not in arg.type.decl_string:
                 for i in pointee_types:
                     if arg.type.decl_string.startswith(i):
                         if Exclude: 
-                            print "Excluding:", fun," due to pointer argument", arg.type.decl_string
+                            print "WARNING: Excluding:", fun," due to pointer argument", arg.type.decl_string
                             fun.exclude()
                             return
-                        else:
-                            print "Function has pointer argument: ", fun, arg.type.decl_string
+                        else:                        
+#                             trans.append( ft.inout(arg_position) )
+#                             desc = desc +"Argument: "+arg.name+ "( pos:" + str(arg_position) +") now an in/out. "
+                            print "WARNING: Function has pointer argument: ", fun, arg.type.decl_string
                             fun.documentation=docit("SUSPECT - MAYBE BROKEN due to pointer argument", "....", "...")
                             return
+#         if trans:
+#             print "Tranformation (auto) applied to ", fun, desc, fun.virtuality
+#             fun.add_transformation ( * trans , **{"alias":fun.name}  )
+#             fun.documentation = docit ("Auto Modified Arguments:",
+#                                             desc, "...")
         
     for fun in mb.member_functions():
         fixPointerTypes ( fun, pointee_types, ignore_names )
@@ -246,7 +311,7 @@ def Fix_Void_Ptr_Args ( mb, pointee_types=['unsigned int','int', 'float', 'unsig
         fixPointerTypes ( fun, pointee_types, [], Exclude=True )
    
                     
-def Fix_Pointer_Returns ( mb, pointee_types=['unsigned int','int', 'float','char','unsigned char'], known_names=[] ):
+def Fix_Pointer_Returns ( mb, pointee_types=['unsigned int','int', 'float','char','unsigned char', 'bool'], known_names=[] ):
     """ Change out functions that return a variety of pointer to base types and instead
     have them return the address the pointer is pointing to (the pointer value)
     This allow us to use CTypes to handle in memory buffers from Python
@@ -258,13 +323,13 @@ def Fix_Pointer_Returns ( mb, pointee_types=['unsigned int','int', 'float','char
             for i in pointee_types:
                 if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
                     if not fun.name in known_names:
-                        print "Excluding (function):", fun, "as it returns (pointer)", i
+                        print "WARNING: Excluding (function):", fun, "as it returns (pointer)", i
                     fun.exclude()
     for fun in mb.member_operators( allow_empty = True ):
         if declarations.is_pointer (fun.return_type) and not fun.documentation:
             for i in pointee_types:
                 if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
-                    print "Excluding (operator):", fun
+                    print "WARNING: Excluding (operator):", fun
                     fun.exclude()
 
 def AutoExclude( mb, MAIN_NAMESPACE=None ):
@@ -487,3 +552,112 @@ def copyTree ( sourcePath, destPath, recursive=False, extensions=['cpp','h','hxx
             else:   # told to collapse so everything goes in the destination directory
                 for fileName in files:
                     copyFile ( fileName, currentDir, destPath )                      
+                    
+                    
+                    
+# # # OK this section is probaly way over the top.. The intention is to process arguments within a function to determine
+# # # if they need to be functionaly transformed (wrapped) or warnings issued.  I want this to be as generic as 
+# # # possible and still be overridden on a per module basis.
+# # # 
+# # # We define functions that handle the actual transformation and documentation generation ( tf_XXXXX )
+# # # 
+# # # And then feel a list of tranformHelper classes into the main loop -- it then process each in the list to see
+# # # if they want to handle the argument.  This does make the order important.  Also they can have a simple prefix
+# # # filter on the function name -- ie if the function starts with "get" then it probably needs an output only
+# # # transformation -- otherwise we default to an input/output transformation
+#     
+# def tf_modify_unsignedint ( arg, position, docin="" ):
+#     t = ft.modify_type(position,_ReturnUnsignedInt )
+#     desc = "Argument: "+arg.name+ "( pos:" + str(position) +") takes a CTypes.addressof(xx) - "\
+#                         arg.type.decl_string + "." + docin  
+#     return ( t, desc )
+#     
+# def tf_inout ( arg, position, docin="" ):
+#     t = ft.inout(position )
+#     desc = "Argument: "+arg.name+ "( pos:" + str(position) +") is now an in/out (added to the returned variables). " + docin  
+#     return ( t, desc ) 
+#      
+# def tf_output ( arg, position, docin="" ):
+#     t = ft.output(position )
+#     desc = "Argument: "+arg.name+ "( Original pos:" + str(position) +") is an output only (no longer in the input arg list). " + docin  
+#     return ( t, desc ) 
+#     
+# def tf_warn_unsupported_pointer ( arg, position, docin="" ):
+#     t = []
+#     desc = "WARNING: Argument: "+arg.name+ "( pos:" + str(position) +") is unsupported ! " + arg.type_decl_string + docin
+#     return ( t, desc ) 
+#             
+# class tranformHelper:
+#     def __init__ ( self, lookupType, actionFunctions, startswith=[""], docs=[""]  )
+#         self.lookupType = lookupType
+#         if isinstance ( actionFunctions, list ):
+#             self.actionFunctions = actionFunctions
+#         else:
+#             self.actionFunctions = [ actionFunctions ]
+#             
+#         if isinstance ( startswith, list ): self.startswith = startswith
+#         else : self.startswith = [ startswith ]  
+#         
+#         if isinstance ( docs, list ) : self.docs = docs
+#         else : self.docs = [ docs ]
+#         self.transforms=[]
+#         self.docstring = ""
+#  
+#     def process ( self, function, arg, position ):
+#         self.transforms = None
+#         self.docstring = None
+#         index = 0
+#         # first check if we match on the argument type
+#         if arg.type.decl_string != self.lookupType:
+#             return False
+#         
+#         # now do we care about the function name   
+#         for s in self.startswith:   # assume there will at least be an empty string which is match anything
+#             if function.name.startswith ( s ) or s == "" :  # we have a match
+#                 ( self.transforms, self.docstring ) = self.actionFunctions[ index ] ( function, arg, position, docs[ index ] )
+#                 return True   # we processed this argument    
+#             index += 1        
+#         return False    # wasn't ours...             
+#            
+#                    
+#           
+# def Auto_Functional_Transformation ( mb, additional_rules=[], ignore_functions=[], ignore_classes=[],
+#             base_rules=[
+#                         # may change these to tf_modify_unsignedint ????
+#                         transformHelper ('unsigned int *', tf_warn_unsupported_pointer )
+#                         ,transformHelper ('int *', tf_warn_unsupported_pointer )
+#                         ,transformHelper ('float *', tf_warn_unsupported_pointer )
+#                         ,transformHelper ('bool *', tf_warn_unsupported_pointer )
+#                         
+#                         # these ones are probably byte buffers
+#                         ,transformHelper ('char *', tf_modify_unsignedint )
+#                         ,transformHelper ('void *', tf_modify_unsignedint )
+#                         ,transformHelper ('unsigned char *', tf_modify_unsignedint  )
+#                         
+#                         # assume functions that are 'getXX' are probably returning functions only
+#                         ,transformHelper ('unsigned int &', tf_output, 'get') 
+#                         ,transformHelper ('int &', tf_output, 'get') 
+#                         ,transformHelper ('float &', tf_output, 'get') 
+#                         ,transformHelper ('unsigned char &', tf_output, 'get') 
+#                         ,transformHelper ('char &', tf_output, 'get') 
+#                         ,transformHelper ('bool &', tf_output, 'get') 
+#                         
+#                         # default is to make everything an in/out...
+#                         # could make const version of this input only 
+#                         ,transformHelper ('unsigned int &', tf_inout) 
+#                         ,transformHelper ('int &', tf_inout) 
+#                         ,transformHelper ('float &', tf_inout) 
+#                         ,transformHelper ('unsigned char &', tf_inout) 
+#                         ,transformHelper ('char &', tf_inout) 
+#                         ,transformHelper ('bool &', tf_inout)
+#                         
+#                         ,transformHelper ('unsigned int const &', tf_inout) 
+#                         ,transformHelper ('int const &', tf_inout) 
+#                         ,transformHelper ('float const &', tf_inout) 
+#                         ,transformHelper ('unsigned char const &', tf_inout) 
+#                         ,transformHelper ('char const &', tf_inout) 
+#                         ,transformHelper ('bool const &', tf_inout) 
+#                         
+#                         
+#                         ]          
+                    

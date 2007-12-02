@@ -40,14 +40,6 @@ class DllExport SkyDome : public CameraBoundElement {
 		 */
 		virtual ~SkyDome ();
 
-		/** @copydoc CameraBoundElement::notifyCameraChanged().
-		 */
-		void notifyCameraChanged (Ogre::Camera *cam);
-
-		/** @copydoc CameraBoundElement::setFarRadius().
-		 */
-		void setFarRadius (float radius);
-
 		/** Sets the sun direction.
 			@param dir The sun light direction.
 		 */
@@ -83,6 +75,14 @@ class DllExport SkyDome : public CameraBoundElement {
 		/** Internal method to destroy the sky dome material.
 		 */
 		void destroySkyDomeMaterial ();
+
+    public:
+		/// Handle camera change.
+		virtual void notifyCameraChanged (Ogre::Camera *cam);
+
+    protected:
+        /// Handle far radius.
+	    virtual void setFarRadius (Ogre::Real radius);
 };
 
 } // namespace caelum

@@ -1,3 +1,5 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUIUtility.h"
 
 namespace QuickGUI
@@ -65,7 +67,7 @@ namespace QuickGUI
 
 	bool Utility::textureExistsOnDisk(const Ogre::String& textureName)
 	{
-		if(textureName == "")
+		if(textureName.empty())
 			return false;
 
 		if(!isImageFile(textureName))

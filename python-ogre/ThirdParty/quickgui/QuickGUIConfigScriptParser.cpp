@@ -1,5 +1,6 @@
 //This code is public domain - you can do whatever you want with it
 //Original author: John Judnich
+#include "QuickGUIPrecompiledHeaders.h"
 
 #include "OgreScriptLoader.h"
 
@@ -7,19 +8,24 @@
 #include "OgreException.h"
 #include "OgreLogManager.h"
 
+#include "QuickGUISkinSetManager.h"
+
 #include "QuickGUIConfigScriptParser.h"
 
 using namespace Ogre;
 namespace QuickGUI
 {
-	ConfigScriptLoader *ConfigScriptLoader::singletonPtr = NULL;
+	void registerScriptParser()
+	{
+		// calling getSingleton will instantiate the class, 
+		// causing it to register itself
+		ConfigScriptLoader::getSingleton();
+	}
 
 	ConfigScriptLoader::ConfigScriptLoader()
 	{
-		//Init singleton
-		if (singletonPtr)
-			OGRE_EXCEPT(1, "Multiple ConfigScriptManager objects are not allowed", "ConfigScriptManager::ConfigScriptManager()");
-		singletonPtr = this;
+		// Create SkinSetManager
+		new SkinSetManager();
 
 		//Register as a ScriptLoader
 		mLoadOrder = 100.0f;
@@ -30,7 +36,8 @@ namespace QuickGUI
 
 	ConfigScriptLoader::~ConfigScriptLoader()
 	{
-		singletonPtr = NULL;
+		// Destroy SkinSetManager
+		delete SkinSetManager::getSingletonPtr();
 
 		//Delete all scripts
 		HashMap<String, ConfigNode*>::iterator i;
@@ -83,13 +90,21 @@ namespace QuickGUI
 		//Get first token
 		_nextToken();
 		if (tok == TOKEN_EOF)
+		{
+			//Delete the buffer
+			delete[] parseBuff;
 			return;
+		}
 
 		//Parse the script
 		_parseNodes(0);
 
 		if (tok == TOKEN_CLOSEBRACE)
+		{
+			//Delete the buffer
+			delete[] parseBuff;
 			OGRE_EXCEPT(3, "Parse Error: Closing brace out of place", "ConfigScript::load()");
+		}
 
 		//Delete the buffer
 		delete[] parseBuff;

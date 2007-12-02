@@ -44,7 +44,10 @@ namespace OgreBulletDynamics
     class RigidBody : public OgreBulletCollisions::Object
     {
     public:
-	    RigidBody(const Ogre::String &name, DynamicsWorld *world);
+	    RigidBody(const Ogre::String &name, 
+				  DynamicsWorld *world,
+				  const short collisionGroup = 0,
+				  const short collisionMask = 0);
 
 	    virtual ~RigidBody();
 
@@ -72,7 +75,9 @@ namespace OgreBulletDynamics
 
         void setLinearVelocity(const Ogre::Vector3 &vel);
         void setLinearVelocity(const Ogre::Real x, const Ogre::Real y, const Ogre::Real z);
+		Ogre::Vector3 getLinearVelocity();
         void applyImpulse(const Ogre::Vector3 &impulse, const Ogre::Vector3 &position);
+        void applyForce(const Ogre::Vector3 &impulse, const Ogre::Vector3 &position);
 
 
         inline btRigidBody*         getBulletRigidBody() const;
@@ -96,7 +101,9 @@ namespace OgreBulletDynamics
         Ogre::Vector3       getCenterOfMassPivot (const Ogre::Vector3 &pivotPosition) const;
         
         void setDamping( const Ogre::Real linearDamping, const Ogre::Real angularDamping );
-
+	protected:
+		short mCollisionGroup;
+		short mCollisionMask;
     };
     // -------------------------------------------------------------------------
     // basic rigid body class
@@ -120,7 +127,7 @@ namespace OgreBulletDynamics
         virtual ~WheeledRigidBody(){};
 
     protected:
-        RaycastVehicle *mVehicle;
+		RaycastVehicle *mVehicle;
 
     };
     // -------------------------------------------------------------------------

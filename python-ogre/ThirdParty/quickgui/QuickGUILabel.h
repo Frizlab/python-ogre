@@ -1,7 +1,7 @@
 #ifndef QUICKGUILABEL_H
 #define QUICKGUILABEL_H
 
-#include "QuickGUIImage.h"
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUIText.h"
 #include "QuickGUIWidget.h"
 
@@ -14,7 +14,7 @@ namespace QuickGUI
 		Labels must be created by the Window class.
 	*/
 	class _QuickGUIExport Label :
-		public Image
+		public Widget
 	{
 	public:
 		/**
@@ -52,7 +52,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		Label(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String textureName, GUIManager* gm);
+		Label(const Ogre::String& name, GUIManager* gm);
 		
 		/**
 		* Aligns the child Label widget horizontally and vertically
@@ -83,8 +83,6 @@ namespace QuickGUI
 		* Hides the widget, including text.
 		*/
 		void hide();
-		void onPositionChanged(const EventArgs& args);
-		void onSizeChanged(const EventArgs& args);
 		/**
 		* Force updating of the Widget's Quad position on screen.
 		*/
@@ -117,11 +115,6 @@ namespace QuickGUI
 		*/
 		void setOffset(int offset);
 		/**
-		* Manually set position of widget.
-		*/
-		void setPosition(const Ogre::Real& pixelX, const Ogre::Real& pixelY);
-		void setPosition(Point pixelPosition);
-		/**
 		* Manually set size of widget.
 		*/
 		virtual void setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight);
@@ -140,6 +133,8 @@ namespace QuickGUI
 
 	protected:
 		virtual ~Label();
+		virtual void onPositionChanged(const EventArgs& args);
+		virtual void onSizeChanged(const EventArgs& args);
 		virtual void setClippingWidget(Widget* w, bool recursive = false);
 		virtual void setGUIManager(GUIManager* gm);
 		virtual void setQuadContainer(QuadContainer* container);
@@ -154,10 +149,6 @@ namespace QuickGUI
 
 		Point mTextBoundsPixelOffset;
 		Size mTextBoundsRelativeSize;
-
-		// The widgets material changes often, so we need to keep track
-		// of the default original material.
-		Ogre::String mDefaultTexture;
 
 		Ogre::ColourValue mTextColor;
 		Ogre::ColourValue mDisabledTextColor;

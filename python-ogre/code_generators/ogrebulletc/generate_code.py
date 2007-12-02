@@ -52,8 +52,15 @@ def ManualExclude ( mb ):
     if MAIN_NAMESPACE:
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
-        main_ns = global_ns    
-
+        main_ns = global_ns   
+        
+    excludes = ['::OgreBulletCollisions::CollisionRayResultCallback::setWorld',
+                '::OgreBulletCollisions::CollisionRayResultCallback::setRay',
+                '::OgreBulletCollisions::CollisionRayResultCallback::setMaxDistance'
+                ]         
+    for e in excludes:
+        print "Excluding:",e
+        main_ns.member_functions(e).exclude()
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 
@@ -198,6 +205,7 @@ def generate_code():
     xml_cached_fc = parser.create_cached_source_fc(
                         os.path.join( environment.ogrebulletc.root_dir, "python_ogrebullet.h" )
                         , environment.ogrebulletc.cache_file )
+
     if os.name == 'nt':
         defined_symbols = ["WIN32","NDEBUG","_WINDOWS", "_PRECOMP", 'OGRE_NONCLIENT_BUILD' ]
     else:
@@ -285,7 +293,14 @@ def generate_code():
     ## copied to the generated directory..
     common_utils.copyTree ( sourcePath = os.path.join(environment.Config.PATH_OgreBullet, 'Collisions'),
                             destPath = environment.ogrebulletc.generated_dir, 
-                            recursive= True )
+                            recursive= True,
+                            extensions = ['h'] )
+    common_utils.copyTree ( sourcePath = os.path.join(environment.Config.PATH_OgreBullet, 'Collisions'),
+                            destPath = environment.ogrebulletc.generated_dir, 
+                            recursive= True,
+                            collapse = True, # put all the source in a single directory
+                            extensions = ['cpp'] )
+                            
             
 if __name__ == '__main__':
     start_time = time.clock()

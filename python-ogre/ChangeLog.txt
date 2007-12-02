@@ -1,3 +1,48 @@
+December 02 2007: SVN Update
+=============================
+* Full support for gccxml 0.9 (requires the latest gccxml and Py++) -- main change is in simplification of generated
+  template code and changes to noncopyable logic which has required tweaks to the generate_code in a number of libraries
+* Changes to use precompiled headers (Ogre and OIS at moment) which improves compile time significantly
+* Tweaked scons to put it's database file in each library source directory as the single one was getting huge
+* Automatic function added to common_utilites (Auto_Functional_Transformation) to handle function transformation 
+  of common cases where a function takes a non mutable variable (int etc) as a reference instead of passing by value. 
+  This does have potential minior API impacts as functions aren't hand wrapped anymore. 
+  Only implemented for Ogre at moment
+
+Module Specifics:
+* betagui -- now using version 2.x of the source code
+* bullet -- Updated to verssion 2.64
+* caleum -- SVN version r112 - small change to hanve noncopyable changes
+* cegui -- still using 0.5.0, small changes to generator for noncopyable classes
+* et -- no changes - built on 2.2 source
+* navi -- not part of this build due to errors
+* noise -- no changes
+* nxogre -- no changes, still using SVN r
+* ODE -- Updated to version 0.9 with changes due to noncopyable classes
+* ofusion -- no changes
+* ogre -- lots of changes to code generation due to new gccxml.  
+   New helper functions for bone and sceneNode to return them as nodes ( .castAsNode() ).  
+   Changes due to using precompiled headers -- python_ogre_precompiled.h is now the primary header which includes 
+   boost and python_ogre_masterlist.  The masterlist now uses Ogre.h and OgreStableHeaders.h to 
+   include most of the headers, so the missing list is smaller and easier to manage
+* ogreal -- updated to SVN r90
+* ogrebulletc and ogrebulletd -- updated to latest CVS and using bullet 2.64
+* ogredshow -- Not part of this release as not compatible with latest DirectX SDK (I think..)
+* ogreforests -- update to latest CVS
+* ogrenewt -- no changes
+* ogreode -- small change to remove list<Ogre::plane> from generated code as it's part of the ogre module
+* ogrerefapp -- no changes
+* ogrevideoffmpeg -- no changes
+* ois -- no change to source (1.0RC1) however full cleanup to code generator ready to move to SVN verison of OIS
+* opcode -- no change
+* physx -- update to SDK 2.7.3
+* plib -- no change
+* QuickGui -- Update: Svn r272
+* theora -- no change
+* watermesh -- no change
+
+
+
 October 20 2007: Version 1.1.b  SnapShot
 ========================================
 * Fixed Caelum demo

@@ -16,12 +16,14 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include "OgreException.h"
 #include "OgreVector3.h"
 #include "OgreQuaternion.h"
+#include "OgreLogManager.h"
+#include "OgreStringConverter.h"
 using namespace Ogre;
 
 
 TreeLoader2D::TreeLoader2D(PagedGeometry *geom, const TRect<Real> &bounds)
 {
-	//Calcualte grid size
+	//Calculate grid size
 	TreeLoader2D::geom = geom;
 	pageSize = geom->getPageSize();
 
@@ -37,8 +39,8 @@ TreeLoader2D::TreeLoader2D(PagedGeometry *geom, const TRect<Real> &bounds)
 	gridBounds.bottom = pageSize * Math::Ceil((gridBounds.bottom - geom->getBounds().top) / pageSize) + geom->getBounds().top;
 
 	//Calculate page grid size
-	pageGridX = (gridBounds.width() / pageSize) + 1;
-	pageGridZ = (gridBounds.height() / pageSize) + 1;
+	pageGridX = Math::Ceil(gridBounds.width() / pageSize) + 1;
+	pageGridZ = Math::Ceil(gridBounds.height() / pageSize) + 1;
 
 	//Reset color map
 	colorMap = NULL;
@@ -86,8 +88,8 @@ void TreeLoader2D::addTree(Entity *entity, const Vector2 &position, Degree yaw, 
 	}
 
 	//Calculate the gridbounds-relative position of the tree
-	float xrel = x - gridBounds.left;
-	float zrel = z - gridBounds.top;
+	Real xrel = x - gridBounds.left;
+	Real zrel = z - gridBounds.top;
 
 	//Get the appropriate grid element based on the new tree's position
 	int pageX = Math::Floor(xrel / pageSize);
@@ -126,7 +128,7 @@ void TreeLoader2D::deleteTrees(Real x, Real z, Real radius, Entity *type)
 		//Only scan entities of the given type
 		it = pageGridList.find(type);
 		assert(it != pageGridList.end());
-		end = ++it;
+		end = it; ++end;
 	}
 
 	//Scan all the grid blocks
@@ -170,25 +172,27 @@ void TreeLoader2D::deleteTrees(Real x, Real z, Real radius, Entity *type)
 
 void TreeLoader2D::setColorMap(const Ogre::String &mapFile, MapChannel channel)
 {
+	if (colorMap){
+		colorMap->unload();
+		colorMap = NULL;
+	}
 	if (mapFile != ""){
 		colorMap = ColorMap::load(mapFile, channel);
 		colorMap->setMapBounds(actualBounds);
 		colorMap->setFilter(colorMapFilter);
-	} else {
-		colorMap->unload();
-		colorMap = NULL;
 	}
 }
 
 void TreeLoader2D::setColorMap(Ogre::Texture *map, MapChannel channel)
 {
+	if (colorMap){
+		colorMap->unload();
+		colorMap = NULL;
+	}
 	if (map){
 		colorMap = ColorMap::load(map, channel);
 		colorMap->setMapBounds(actualBounds);
 		colorMap->setFilter(colorMapFilter);
-	} else {
-		colorMap->unload();
-		colorMap = NULL;
 	}
 }
 

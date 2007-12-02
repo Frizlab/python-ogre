@@ -29,12 +29,6 @@ namespace caelum {
     /// Resource group name for caelum resources.
     extern DllExport Ogre::String RESOURCE_GROUP_NAME;
 
-    /* Set a global camera distances modifier for the clipping distance. 
-       This threshold will be substracted from the far clipping distance if applicable, else it will be 
-       added to the near clipping distance (ie, if infinite far clipping distance is used).
-     */
-    const float CAMERA_DISTANCE_MODIFIER = 0;
-
     // Render group for caelum stuff
     // It's best to have them all together
     enum CaelumRenderQueueGroupId

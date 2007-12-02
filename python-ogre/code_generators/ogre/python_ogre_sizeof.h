@@ -3,6 +3,22 @@
 // sizeof ( Ogre::ConstVectorIterator );
 // sizeof ( Ogre::ConstMapIterator );
 
+sizeof ( Ogre::MapIterator< std::multimap<Ogre::String, Ogre::String> > );
+sizeof ( Ogre::MapIterator< std::map<Ogre::String, std::multimap<Ogre::String, Ogre::String>*> > );
+
+sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, Ogre::Node*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::Node*> >, false> > );
+//sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, unsigned short, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, unsigned short> >, false> > );
+sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, Ogre::SharedPtr<Ogre::Resource>, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::SharedPtr<Ogre::Resource> > >, false> > );
+sizeof( std::pair<Ogre::SharedPtr<Ogre::Resource>, bool> );
+sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> >, false> > );
+
+std::vector< int > v;
+std::set< std::string > s;
+std::multimap< std::string, std::string > ms;
+sizeof ( v );
+sizeof ( s );
+sizeof ( ms );
+
 Ogre::AnyNumeric AnyNumInt (1);
 Ogre::AnyNumeric AnyNumReal ((Ogre::Real)1.0);
 Ogre::AnyNumeric AnyNumUint8 ((Ogre::uint8)0);
@@ -24,7 +40,7 @@ Ogre::Any AnyUshort ((Ogre::ushort)0);
 Ogre::Any AnyUchar ((Ogre::uchar) 0);
 Ogre::Any AnyString ((Ogre::String) "");
 
-
+//sizeof ( Ogre::Any::placeholder );
 sizeof ( AnyNumInt );
 sizeof ( AnyNumReal );
 sizeof ( AnyNumUint8 );

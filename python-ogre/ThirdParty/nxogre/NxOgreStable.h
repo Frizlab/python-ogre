@@ -98,12 +98,12 @@
 #	define NX_MEMORY_COOKING 1
 #	define NX_DISK_COOKING 1
 
-// // #	if defined(NXOGRE_EXPORTS)
-// // #		define NxExport __declspec(dllexport)
-// // #	else
-// // #		define NxExport __declspec(dllimport)
-// // #	endif
-#define NxExport
+// #	if defined(NXOGRE_EXPORTS)
+// #		define NxExport __declspec(dllexport)
+// #	else
+// #		define NxExport __declspec(dllimport)
+// #	endif
+#	define NxExport
 
 #	if defined _DEBUG
 #		define NX_DEBUG

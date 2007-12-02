@@ -9,7 +9,6 @@ const Ogre::String Starfield::STARFIELD_DOME_NAME = "CaelumStarfieldDome";
 const Ogre::String Starfield::STARFIELD_MATERIAL_NAME = "CaelumStarfieldMaterial";
 
 Starfield::Starfield (Ogre::SceneManager *sceneMgr, const Ogre::String &textureName) {
-	mAutoRadius = true;
 	mInclination = Ogre::Degree (0);
 
 	createStarfieldMaterial ();
@@ -40,23 +39,13 @@ Starfield::~Starfield () {
 }
 
 void Starfield::notifyCameraChanged (Ogre::Camera *cam) {
+    CameraBoundElement::notifyCameraChanged (cam);
 	mNode->setPosition (cam->getRealPosition ());
-	if (mAutoRadius) {
-		if (cam->getFarClipDistance () > 0)
-			mNode->setScale (Ogre::Vector3::UNIT_SCALE * (cam->getFarClipDistance () - CAMERA_DISTANCE_MODIFIER));
-		else
-			mNode->setScale (Ogre::Vector3::UNIT_SCALE * (cam->getNearClipDistance () + CAMERA_DISTANCE_MODIFIER));
-	}
 }
 
-void Starfield::setFarRadius (float radius) {
-	if (radius > 0) {
-		mNode->setScale (Ogre::Vector3::UNIT_SCALE * radius);
-		mAutoRadius = false;
-	}
-	else {
-		mAutoRadius = true;
-	}
+void Starfield::setFarRadius (Ogre::Real radius) {
+    CameraBoundElement::setFarRadius(radius);
+	mNode->setScale (Ogre::Vector3::UNIT_SCALE * radius);
 }
 
 void Starfield::setInclination (Ogre::Degree inc) {

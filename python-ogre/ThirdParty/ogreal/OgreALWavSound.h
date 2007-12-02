@@ -59,28 +59,38 @@ namespace OgreAL {
 		** Constructor is protected to enforce the use of the 
 		** factory via SoundManager::createSound
 		*/
-
 		/**
 		 * Constructor.
 		 * @param name The name used to reference this sound
-		 * @param soundFile The name of the file to load
+		 * @param soundStream Ogre::DataStreamPtr for the sound resource
 		 * @param loop Should the sound loop once it has played
+		 * @param stream Should the sound be streamed or all loaded into memory at once
 		 */
-		WavSound(const Ogre::String& name, const Ogre::String& soundFile, bool loop, AudioFormat format);
+		WavSound(const Ogre::String& name, const Ogre::DataStreamPtr& soundStream, bool loop, bool stream);
+
+		/// This is called each frame to update the position, direction, etc
+		virtual bool _updateSound();
 
 	public:
 		/** Standard Destructor. */
 		virtual ~WavSound();
 
-	protected:
-		/// Translate the OpenAL error code to a string
-		virtual Ogre::String errorToString(int code) const;
-		ALvoid* mData;
+		/** Plays the sound. */
+		virtual bool play();
+		/** Stops the sound. @note Upon calling play again, the sound will resume from the begining */
+		virtual bool stop();
 
-		friend class SoundFactory;
+		/** Sets the offset within the audio stream in seconds */
+		virtual void setSecondOffset(Ogre::Real seconds);
+		/** Returns the current offset within the audio stream in seconds */
+		virtual Ogre::Real getSecondOffset();
 
 	private:
-		FILE*	mWavFile;
+		Buffer bufferData(Ogre::DataStreamPtr dataStream, int size);
+		size_t mDataStart;
+		unsigned long mDataSize;
+
+		friend class SoundFactory;
 	};
 } // Namespace
 #endif

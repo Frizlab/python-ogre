@@ -9,8 +9,6 @@ const Ogre::String SkyDome::SPHERIC_DOME_NAME = "CaelumSphericDome";
 const Ogre::String SkyDome::SKY_DOME_MATERIAL_NAME = "CaelumSkyDomeMaterial";
 
 SkyDome::SkyDome (Ogre::SceneManager *sceneMgr) {
-	mAutoRadius = true;
-
 	createSkyDomeMaterial ();
 
 	GeometryFactory::generateSphericDome (SPHERIC_DOME_NAME, 32);
@@ -38,25 +36,13 @@ SkyDome::~SkyDome () {
 }
 
 void SkyDome::notifyCameraChanged (Ogre::Camera *cam) {
+    CameraBoundElement::notifyCameraChanged (cam);
 	mNode->setPosition (cam->getRealPosition ());
-	if (mAutoRadius) {
-        if (cam->getFarClipDistance () > 0) {
-			mNode->setScale (Ogre::Vector3::UNIT_SCALE * (
-                    cam->getFarClipDistance () - CAMERA_DISTANCE_MODIFIER));
-        } else {
-			mNode->setScale (Ogre::Vector3::UNIT_SCALE * (
-                    cam->getNearClipDistance () + CAMERA_DISTANCE_MODIFIER));
-        }
-	}
 }
 
-void SkyDome::setFarRadius (float radius) {
-	if (radius > 0) {
-		mNode->setScale (Ogre::Vector3::UNIT_SCALE * radius);
-		mAutoRadius = false;
-	}   else {
-		mAutoRadius = true;
-	}
+void SkyDome::setFarRadius (Ogre::Real radius) {
+    CameraBoundElement::setFarRadius(radius);
+	mNode->setScale (Ogre::Vector3::UNIT_SCALE * radius);
 }
 
 void SkyDome::setSunDirection (Ogre::Vector3 sunDir) {

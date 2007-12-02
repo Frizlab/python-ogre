@@ -1,3 +1,5 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUIVertexBuffer.h"
 #include "QuickGUIManager.h"
 
@@ -10,9 +12,11 @@ namespace QuickGUI
 		mVertexBufferUsage(0),
 		mRenderObjectList(0)
 	{
+		mSkinSetManager = SkinSetManager::getSingletonPtr();
 		mRenderSystem = Ogre::Root::getSingleton().getRenderSystem();
 		mTextureManager = Ogre::TextureManager::getSingletonPtr();
 		_createVertexBuffer();
+		_createIndexBuffer();
 
 		// Initialise blending modes to be used. We use these every frame, so we'll set them up now to save time later.
 		mColorBlendMode.blendType	= Ogre::LBT_COLOUR;
@@ -33,6 +37,7 @@ namespace QuickGUI
 	VertexBuffer::~VertexBuffer()
 	{
 		_destroyVertexBuffer();
+		_destroyIndexBuffer();
 	}
 
 	void VertexBuffer::_createVertexBuffer()
@@ -54,6 +59,24 @@ namespace QuickGUI
 		mRenderOperation.vertexData->vertexBufferBinding->setBinding( 0, mVertexBuffer );
 		mRenderOperation.operationType = Ogre::RenderOperation::OT_TRIANGLE_LIST;
 		mRenderOperation.useIndexes = false;
+	}
+	void VertexBuffer::_createIndexBuffer()
+	{
+#if VERTICES_PER_QUAD == 4
+		mRenderOperation.useIndexes = true;
+		mRenderOperation.indexData = new Ogre::IndexData();
+		mRenderOperation.indexData->indexStart = 0;
+		
+		// Create the Index Buffer
+		size_t indexCount = (mVertexBufferSize / 4) * 6;
+
+		mIndexBuffer = Ogre::HardwareBufferManager::getSingleton( ).createIndexBuffer(
+			((mVertexBufferSize > 655534) ? Ogre::HardwareIndexBuffer::IT_32BIT: Ogre::HardwareIndexBuffer::IT_16BIT),
+			indexCount,
+			Ogre::HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE,
+			false);
+		mRenderOperation.indexData->indexBuffer = mIndexBuffer;
+#endif 
 	}
 
 	void VertexBuffer::_declareVertexStructure()
@@ -90,6 +113,14 @@ namespace QuickGUI
 		mRenderOperation.vertexData = NULL;
 		mVertexBuffer.setNull();
 	}
+	void VertexBuffer::_destroyIndexBuffer()
+	{
+#if VERTICES_PER_QUAD == 4
+		delete mRenderOperation.indexData;
+		mRenderOperation.indexData = NULL;
+		mIndexBuffer.setNull();
+#endif
+	}
 
 	void VertexBuffer::_initRenderState()
 	{
@@ -105,7 +136,7 @@ namespace QuickGUI
 		mRenderSystem->setLightingEnabled(false);
 		mRenderSystem->_setDepthBufferParams(false, false);
 		mRenderSystem->_setDepthBias(0, 0);
-		mRenderSystem->_setCullingMode(Ogre::CULL_NONE);
+		mRenderSystem->_setCullingMode(Ogre::CULL_CLOCKWISE);
 		mRenderSystem->_setFog(Ogre::FOG_NONE);
 		mRenderSystem->_setColourBufferWriteEnabled(true, true, true, true);
 		mRenderSystem->unbindGpuProgram(Ogre::GPT_FRAGMENT_PROGRAM);
@@ -116,6 +147,7 @@ namespace QuickGUI
 		// initialise texture settings
 		mRenderSystem->_setTextureCoordCalculation(0, Ogre::TEXCALC_NONE);
 		mRenderSystem->_setTextureCoordSet(0, 0);
+		//mRenderSystem->_setTextureUnitFiltering(0, Ogre::FO_NONE, Ogre::FO_NONE, Ogre::FO_NONE);
 		mRenderSystem->_setTextureUnitFiltering(0, Ogre::FO_LINEAR, Ogre::FO_LINEAR, Ogre::FO_POINT);
 		mRenderSystem->_setTextureAddressingMode(0, mTextureAddressMode);
 		mRenderSystem->_setTextureMatrix(0, Ogre::Matrix4::IDENTITY);
@@ -128,6 +160,7 @@ namespace QuickGUI
 		mRenderSystem->_setSceneBlending(Ogre::SBF_SOURCE_ALPHA, Ogre::SBF_ONE_MINUS_SOURCE_ALPHA);
 	}
 
+
 	void VertexBuffer::_renderVertexBuffer()
 	{
 		if( mVisibleRenderObjectList.empty() ) 
@@ -136,29 +169,106 @@ namespace QuickGUI
 		bool shadowsEnabled = mGUIManager->getViewport()->getShadowsEnabled();
 		mGUIManager->getViewport()->setShadowsEnabled(false);
 		
-		size_t bufferPosition = 0;
 
 		/*
 		* Since mRenderList is sorted by zOrder and by Texture, we can send quads with similar textures into one renderOperation.
 		* Everything rendered in one _render call will receive the texture set previously by _setTexture.
 		*/
-		int quadCounter = 0;
-		for(std::vector< std::pair<Ogre::String,int> >::iterator it = mTextureChangeList.begin(); it != mTextureChangeList.end(); ++it)
+		unsigned int quadCounter = 0;
+#if VERTICES_PER_QUAD == 4
+		size_t indexOffset = 0;
+		mRenderOperation.vertexData->vertexStart = 0;
+#else
+		size_t vertexOffset = 0;
+#endif
+		for(TextureChangeList::iterator textureChangeIt = mTextureChangeList.begin(); textureChangeIt != mTextureChangeList.end(); ++textureChangeIt)
 		{
-			mRenderOperation.vertexData->vertexStart = bufferPosition;
+			// tell the render operation how  many vertices to read. and where
+			{
+				const unsigned int textureChangeQuadSize = ((*textureChangeIt).second - quadCounter);
 
-			bufferPosition += ((*it).second - quadCounter) * VERTICES_PER_QUAD;
-			quadCounter = (*it).second;
+				mRenderOperation.vertexData->vertexCount = textureChangeQuadSize * VERTICES_PER_QUAD;
 
-			// tell the render operation how many vertices to read.
-			mRenderOperation.vertexData->vertexCount = bufferPosition - mRenderOperation.vertexData->vertexStart;
+	#if VERTICES_PER_QUAD == 4
+				mRenderOperation.indexData->indexStart = indexOffset;
+				mRenderOperation.indexData->indexCount = textureChangeQuadSize * 6;
+				indexOffset  += mRenderOperation.indexData->indexCount;
+	#else
+				mRenderOperation.vertexData->vertexStart = vertexOffset;		
+				vertexOffset += mRenderOperation.vertexData->vertexCount;
+	#endif
 
-			// set texture that will be applied to all vertices rendered.
-			mRenderSystem->_setTexture(0,true,(*it).first);
-			// set render properties prior to rendering.
-			_initRenderState();
-			// perform the rendering.
-			mRenderSystem->_render(mRenderOperation);
+			}
+			// Render
+			{
+#define _QUICKGUI_USEMATERIAL
+#ifdef _QUICKGUI_USEMATERIAL
+
+				// set render properties prior to rendering.
+				_initRenderState();
+
+				Ogre::SceneManager *scnMgr = mGUIManager->getViewport()->getCamera()->getSceneManager();
+				
+
+				SkinSet *s = mSkinSetManager->getSkinSetByTextureName((*textureChangeIt).first);	
+				Ogre::MaterialPtr mat;
+				if (s)
+				{								
+					mat = Ogre::MaterialManager::getSingleton().getByName(s->getMaterialName());
+				}
+
+				if (mat.isNull())
+				{
+					mat = Ogre::MaterialManager::getSingleton().getByName("QuickQuiSkinTemplate");
+				}
+
+				mat->load();
+				//mat->setLightingEnabled(false);
+				//mat->setDepthCheckEnabled(false);
+				Ogre::Technique *t = mat->getBestTechnique(0);
+
+				Ogre::Technique::PassIterator passIt= t->getPassIterator();
+				while (passIt.hasMoreElements())
+				{		
+					Ogre::Pass *pass = passIt.getNext();
+
+					pass->getTextureUnitState(0)->setTextureName((*textureChangeIt).first);
+					//pass->getTextureUnitState(0)->setTextureFiltering(Ogre::FO_NONE, Ogre::FO_NONE, Ogre::FO_NONE);
+
+					scnMgr->_setPass(pass);
+
+					// Do we need to update GPU program parameters?
+					if (pass->isProgrammable())
+					{
+						if (pass->hasVertexProgram())
+						{
+							mRenderSystem->bindGpuProgramParameters(Ogre::GPT_VERTEX_PROGRAM, 
+								pass->getVertexProgramParameters());
+						}
+						if (pass->hasFragmentProgram())
+						{
+							mRenderSystem->bindGpuProgramParameters(Ogre::GPT_FRAGMENT_PROGRAM, 
+								pass->getFragmentProgramParameters());
+						}
+					}
+					
+					// nfz: set up multipass rendering
+					mRenderSystem->setCurrentPassIterationCount(pass->getPassIterationCount());
+					mRenderSystem->_render(mRenderOperation);
+
+				}
+
+#else
+				// set texture that will be applied to all vertices rendered.
+				mRenderSystem->_setTexture (0, true, (*textureChangeIt).first);
+				// set render properties prior to rendering.
+				_initRenderState();
+				// perform the rendering.
+				mRenderSystem->_render(mRenderOperation);
+#endif
+			}
+			// store current Quad index Position to offset next render vertex/index Positions
+			quadCounter = (*textureChangeIt).second;
 		}
 
 		mGUIManager->getViewport()->setShadowsEnabled(shadowsEnabled);
@@ -186,18 +296,21 @@ namespace QuickGUI
 
 	void VertexBuffer::render()
 	{
-		if(mUpdateBeforeRender) update();
+		if(mUpdateBeforeRender) 
+			update();
 		_renderVertexBuffer();
 	}
 
-	void VertexBuffer::resizeVertexBuffer( size_t numberOfVertices )
+	void VertexBuffer::resizeVertexBuffer( const size_t numberOfVertices )
 	{
 		_destroyVertexBuffer();
+		_destroyIndexBuffer();
 		mVertexBufferSize = numberOfVertices;
 		_createVertexBuffer();
+		_createIndexBuffer();
 	}
 
-	void VertexBuffer::setData(std::list<Quad*>* l)
+	void VertexBuffer::setData(QuadList* l)
 	{
 		mRenderObjectList = l;
 	}
@@ -207,67 +320,123 @@ namespace QuickGUI
 		mUpdateBeforeRender = update;
 	}
 
+	
 	void VertexBuffer::update()
 	{
 		if((mRenderObjectList == NULL) || (mRenderObjectList->empty())) 
 			return;
 		
-		mVisibleRenderObjectList.clear();
-
-		// Note that locking with HBL_DISCARD will give us new, blank memory.
-		mVertexBufferPtr = (Vertex*)mVertexBuffer->lock ( Ogre::HardwareVertexBuffer::HBL_DISCARD );
-
-		size_t vertexCount = 0;
-
-		std::list<Quad*>::iterator it;
-		for( it = mRenderObjectList->begin(); it != mRenderObjectList->end(); ++it )
+		// check if visible.
 		{
-			Quad* o = (*it);
-			// skip all invisible RenderObjects
-			if( (!o->visible()) || (o->getTextureName() == "") ) 
-				continue;
+			mVisibleRenderObjectList.clear();
 
-			// get pointer to beginning of array.
-			Vertex* verts = o->getVertices();
-			for(int vertIndex = 0; vertIndex < VERTICES_PER_QUAD; ++vertIndex)
+			QuadList::iterator it;
+			for( it = mRenderObjectList->begin(); it != mRenderObjectList->end(); ++it )
 			{
-				mVertexBufferPtr[vertIndex].pos = verts->pos;
-				mVertexBufferPtr[vertIndex].color = verts->color;
-				mVertexBufferPtr[vertIndex].uv = verts->uv;
-
-				// increment pointer through array.
-				++verts;
+				// skip all invisible RenderObjects
+				if( (!(*it)->visible()) || (*it)->getTextureName().empty() ) 
+					continue;
+				mVisibleRenderObjectList.push_back(*it);
 			}
-			mVertexBufferPtr += VERTICES_PER_QUAD;
-			mVisibleRenderObjectList.push_back(*it);
+			// only updates if visible.
+			if(mVisibleRenderObjectList.empty())
+				return;
 		}
 
-		mVertexBuffer->unlock();
-		mVertexBufferPtr = NULL;
-
+		const size_t quadCount = mVisibleRenderObjectList.size();
+		const size_t vertexCount = quadCount * VERTICES_PER_QUAD;
 		mVertexBufferUsage = vertexCount;
+		assert (vertexCount <= mVertexBufferSize);
 
-		if(mVisibleRenderObjectList.empty())
-			return;
 
-		mTextureChangeList.clear();
-		int quadCounter = 0;
-		Ogre::String currentTexture = mVisibleRenderObjectList.front()->getTextureName();
-		mTextureChangeList.push_back( std::make_pair(currentTexture,0) );
-		for(std::list<Quad*>::iterator it = mVisibleRenderObjectList.begin(); it != mVisibleRenderObjectList.end(); ++it)
+
+		// batch per Texture.
 		{
-			// Every time a quad's texture is different than the previous quads, we record the quad's index.
-			// This is useful for texture batching, and speeds up the _renderVertexBuffer function some.
-			if((*it)->getTextureName() != currentTexture)
+			// already sorted by zOrder and Texture, now grouping them in one batch per texture.
+			mTextureChangeList.clear();
+			unsigned int quadCounter = 0;
+			Ogre::String currentTexture = mVisibleRenderObjectList.front()->getTextureName();
+			mTextureChangeList.push_back( std::make_pair(currentTexture,0) );
+			for(QuadList::iterator it = mVisibleRenderObjectList.begin(); it != mVisibleRenderObjectList.end(); ++it)
 			{
-				currentTexture = (*it)->getTextureName();
-				mTextureChangeList.back().second = quadCounter;
-				mTextureChangeList.push_back( std::make_pair(currentTexture,0) );
-			}
+				// Every time a quad's texture is different than the previous quads, we record the quad's index.
+				// This is useful for texture batching, and speeds up the _renderVertexBuffer function some.
+				if((*it)->getTextureName() != currentTexture)
+				{
+					currentTexture = (*it)->getTextureName();
+					mTextureChangeList.back().second = quadCounter;
+					mTextureChangeList.push_back( std::make_pair(currentTexture,0) );
+				}
 
-			++quadCounter;
+				++quadCounter;
+			}
+			// push one last value onto the list, so the remaining textures are taken into consideration, when list is used in _renderVertexBuffer
+			mTextureChangeList.back().second = quadCounter;
 		}
-		// push one last value onto the list, so the remaining textures are taken into consideration, when list is used in _renderVertexBuffer
-		mTextureChangeList.back().second = quadCounter;
+		// Fill Vertex Buffer
+		{
+			// Note that locking with HBL_DISCARD will give us new, blank memory.
+			Vertex *vertexBufferPtr = (Vertex*) mVertexBuffer->lock ( Ogre::HardwareVertexBuffer::HBL_DISCARD );
+			QuadList::iterator it;
+			for( it = mVisibleRenderObjectList.begin(); it != mVisibleRenderObjectList.end(); ++it )
+			{
+				// get pointer to beginning of array.
+				Vertex *verts = (*it)->getVertices();
+				for(size_t vertIndex = 0; vertIndex < VERTICES_PER_QUAD; ++vertIndex)
+				{
+					vertexBufferPtr[vertIndex].pos = verts->pos;
+					vertexBufferPtr[vertIndex].color = verts->color;
+					vertexBufferPtr[vertIndex].uv = verts->uv;
+
+					// increment pointer through array.
+					++verts;
+				}
+				vertexBufferPtr += VERTICES_PER_QUAD;
+			}
+			mVertexBuffer->unlock();
+		}
+
+#if VERTICES_PER_QUAD == 4
+		// Fill Index Buffer
+		{
+			// Handles 32bits indexes for really loud UI.
+			if (mIndexBuffer->getType() == Ogre::HardwareIndexBuffer::IT_32BIT)
+			{
+				unsigned int* mIndexBufferPtr = (unsigned int*)mIndexBuffer->lock ( Ogre::HardwareVertexBuffer::HBL_DISCARD );
+				unsigned int offset = 0;
+				for (size_t k = 0; k < quadCount; k++)
+				{
+					*mIndexBufferPtr++ = offset + 0;
+					*mIndexBufferPtr++ = offset + 1;
+					*mIndexBufferPtr++ = offset + 3;
+
+					*mIndexBufferPtr++ = offset + 1;
+					*mIndexBufferPtr++ = offset + 2;
+					*mIndexBufferPtr++ = offset + 3;
+
+					offset += 4;
+				}
+				mIndexBuffer->unlock();
+			}
+			else
+			{
+				unsigned short* mIndexBufferPtr = (unsigned short*)mIndexBuffer->lock ( Ogre::HardwareVertexBuffer::HBL_DISCARD );
+				unsigned short offset = 0;
+				for (size_t k = 0; k < quadCount; k++)
+				{
+					*mIndexBufferPtr++ = offset + 0;
+					*mIndexBufferPtr++ = offset + 1;
+					*mIndexBufferPtr++ = offset + 3;
+
+					*mIndexBufferPtr++ = offset + 1;
+					*mIndexBufferPtr++ = offset + 2;
+					*mIndexBufferPtr++ = offset + 3;
+
+					offset += 4;
+				}
+				mIndexBuffer->unlock();
+			}
+		}
+#endif
 	}
 }

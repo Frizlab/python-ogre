@@ -1,7 +1,8 @@
 #ifndef QUICKGUIBORDER_H
 #define QUICKGUIBORDER_H
 
-#include "QuickGUIImage.h"
+#include "QuickGUIPrerequisites.h"
+#include "QuickGUIWidget.h"
 
 namespace QuickGUI
 {
@@ -12,7 +13,7 @@ namespace QuickGUI
 		Images also support Render To Texture.
 	*/
 	class _QuickGUIExport Border :
-		public Image
+		public Widget
 	{
 	public:
 		enum BorderType
@@ -43,16 +44,20 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		Border(const Ogre::String& instanceName, BorderType bType, const Size& pixelSize, Ogre::String texture, GUIManager* gm);
+		Border(const Ogre::String& name, GUIManager* gm);
 
 		BorderType getBorderType();
 
+		void setBorderType(BorderType t);
 		void setSkin(const Ogre::String& skinName, Ogre::String extension = ".png", bool recursive = false);
 
 	protected:
 		virtual ~Border();
 
 		BorderType mBorderType;
+
+		Ogre::Real mThickness;
+		Ogre::Real mOverlap;
 
 		// used to restore mouse cursor when leaving.
 		Ogre::String mMouseCursorTexture;

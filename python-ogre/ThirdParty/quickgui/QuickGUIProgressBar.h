@@ -1,9 +1,10 @@
 #ifndef QUICKGUIPROGRESSBAR_H
 #define QUICKGUIPROGRESSBAR_H
 
+#include "QuickGUIPrerequisites.h"
 #include "OgreHardwarePixelBuffer.h"
 
-#include "QuickGUIImage.h"
+#include "QuickGUIWidget.h"
 
 namespace QuickGUI
 {
@@ -16,7 +17,7 @@ namespace QuickGUI
 		ProgressBars must be created by the Window class.
 	*/
 	class _QuickGUIExport ProgressBar :
-		public Image
+		public Widget
 	{
 	public:
 		/**
@@ -26,15 +27,27 @@ namespace QuickGUI
 		* FILLS_POSITIVE_TO_NEGATIVE: 
 		*	For Vertical Layouts, bar moves top to bottom. For Horizontal, bar moves right to left.
 		*/
-		typedef enum FillDirection
+		enum FillDirection
 		{
 			FILLS_NEGATIVE_TO_POSITIVE	=  0,
 			FILLS_POSITIVE_TO_NEGATIVE
 		};
-		typedef enum Layout
+		enum Layout
 		{
 			LAYOUT_HORIZONTAL	=  0,
 			LAYOUT_VERTICAL
+		};
+		/**
+		* Dictates what side of the texture to *chop*.
+		* CHOP_NEGATIVE: 
+		*	For Vertical Layouts, texture chopped at the bottom. For Horizontal, texture chopped at the left.
+		* CHOP_POSITIVE: 
+		*	For Vertical Layouts, texture chopped at the top. For Horizontal, texture chopped at the right.
+		*/
+		enum ClippingEdge
+		{
+			CLIP_LEFT_BOTTOM		=  0,
+			CLIP_RIGHT_TOP
 		};
 	public:
 		/** Constructor
@@ -55,7 +68,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		ProgressBar(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm);
+		ProgressBar(const Ogre::String& name, GUIManager* gm);
 
 		/**
 		* Add user defined event that will be called when amount of progress has changed.
@@ -77,7 +90,7 @@ namespace QuickGUI
 		* Force updating of the Widget's Quad position on screen.
 		*/
 		void redraw();
-		void setClippingRect(const Rect& r);
+		void setClippingEdge(ClippingEdge e);
 		void setFillDirection(FillDirection d);
 		/**
 		* Set the initial pixel padding added so that the progressbar will begin to show progress
@@ -89,7 +102,7 @@ namespace QuickGUI
 		* Sets progress.  Value should be between 0.0 and 1.0
 		*/
 		void setProgress(Ogre::Real progress);
-		void setTexture(const Ogre::String& texture);
+		virtual void setSkin(const Ogre::String& skinName, bool recursive = false);
 
 	protected:
 		virtual ~ProgressBar();
@@ -103,6 +116,7 @@ namespace QuickGUI
 
 		Ogre::Real mProgress;
 
+		Ogre::String mSkinExtension;
 		Ogre::TexturePtr mBarTexture;
 		Ogre::String mBarTextureName;
 		Ogre::Image mBarImage;
@@ -111,13 +125,16 @@ namespace QuickGUI
 		int mBarMinHeight;
 		int mBarMaxHeight;
 
-		std::vector<MemberFunctionSlot*> mOnProgressChangedHandlers;
+		EventHandlerArray mOnProgressChangedHandlers;
 
 		// How many pixels to add to the initial edge
 		int mInitialPixelOffset;
 
 		// Stores how this bar should fill as progress increases
 		ProgressBar::FillDirection mFillDirection;
+
+		// Stores how the bar texture is truncated.
+		ProgressBar::ClippingEdge mClippingEdge;
 	};
 }
 

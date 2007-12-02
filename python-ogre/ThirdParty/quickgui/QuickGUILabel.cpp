@@ -1,11 +1,12 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUILabel.h"
 #include "QuickGUIManager.h"
 
 namespace QuickGUI
 {
-	Label::Label(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
-		Image(instanceName,pixelSize,texture,gm),
-		mDefaultTexture(mTextureName),
+	Label::Label(const Ogre::String& name, GUIManager* gm) :
+		Widget(name,gm),
 		mVerticalAlignment(VA_MID),
 		mHorizontalAlignment(HA_MID),
 		mTextBoundsPixelOffset(Point::ZERO),
@@ -18,6 +19,8 @@ namespace QuickGUI
 	{
 		mWidgetType = TYPE_LABEL;
 		mSkinComponent = ".label";
+		mSize = Size::ZERO;
+
 		mText = new Text(mInstanceName+".Text",mQuadContainer,this);
 		mText->setQuadLayer(mQuadLayer);	
 	}
@@ -65,14 +68,14 @@ namespace QuickGUI
 		mTextColor = mText->getColor();
 		mText->setColor(mDisabledTextColor);
 
-		Image::disable();
+		Widget::disable();
 	}
 
 	void Label::enable()
 	{
 		mText->setColor(mTextColor);
 
-		Image::enable();
+		Widget::enable();
 	}
 
 	bool Label::getAutoSize()
@@ -107,20 +110,20 @@ namespace QuickGUI
 
 	void Label::hide()
 	{
-		Image::hide();
+		Widget::hide();
 		mText->hide();
 	}
 
 	void Label::onPositionChanged(const EventArgs& args)
 	{
-		Image::onPositionChanged(args);
+		Widget::onPositionChanged(args);
 
 		mText->redraw();
 	}
 
 	void Label::onSizeChanged(const EventArgs& args)
 	{
-		Image::onSizeChanged(args);
+		Widget::onSizeChanged(args);
 		mText->redraw();
 	}
 
@@ -131,7 +134,7 @@ namespace QuickGUI
 		if(mAutoSize)
 		{
 			setHeight(mText->getNewlineHeight() + mVPixelPadHeight);
-			setWidth(mText->calculateStringLength(mText->getCaption()) + mHPixelPadWidth);
+			setWidth(mText->getTextWidth(mText->getCaption()) + mHPixelPadWidth);
 		}
 	}
 
@@ -158,46 +161,38 @@ namespace QuickGUI
 
 	void Label::setClippingWidget(Widget* w, bool recursive)
 	{
-		Image::setClippingWidget(w,recursive);
+		Widget::setClippingWidget(w,recursive);
 		mText->_clipToWidgetDimensions(w);
 	}
 
 	void Label::setGUIManager(GUIManager* gm)
 	{
-		Image::setGUIManager(gm);
+		Widget::setGUIManager(gm);
 		mText->setGUIManager(mGUIManager);
 	}
 
 	void Label::setOffset(int offset)
 	{
-		Image::setOffset(offset);
+		Widget::setOffset(offset);
 		mText->setOffset(mOffset+1);
-	}
-
-	void Label::setPosition(const Ogre::Real& pixelX, const Ogre::Real& pixelY)
-	{
-		Image::setPosition(pixelX,pixelY);
-
-		mText->redraw();
-	}
-
-	void Label::setPosition(Point pixelPosition)
-	{
-		Label::setPosition(pixelPosition.x,pixelPosition.y);
 	}
 
 	void Label::setQuadContainer(QuadContainer* container)
 	{
-		Image::setQuadContainer(container);
+		Widget::setQuadContainer(container);
 		mText->_notifyQuadContainer(mQuadContainer);
 	}
 
 	void Label::setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight)
 	{
+		if((pixelWidth == 0) && (pixelHeight == 0))
+			return;
+
 		mAutoSize = false;
-		Image::setSize(pixelWidth,pixelHeight);
+		Widget::setSize(pixelWidth,pixelHeight);
 
 		mText->redraw();
+		alignText();
 	}
 
 	void Label::setSize(const Size& pixelSize)
@@ -207,7 +202,7 @@ namespace QuickGUI
 
 	void Label::redraw()
 	{
-		Image::redraw();
+		Widget::redraw();
 		alignText();
 	}
 
@@ -221,13 +216,16 @@ namespace QuickGUI
 
 	void Label::setFont(const Ogre::String& fontScriptName, bool recursive)
 	{
-		Image::setFont(fontScriptName,recursive);
+		if(fontScriptName == "")
+			return;
+
+		Widget::setFont(fontScriptName,recursive);
 		mText->setFont(mFontName);
 
 		if(mAutoSize)
 		{
 			setHeight(mText->getNewlineHeight() + mVPixelPadHeight);
-			setWidth(mText->calculateStringLength(mText->getCaption()) + mHPixelPadWidth);
+			setWidth(mText->getTextWidth(mText->getCaption()) + mHPixelPadWidth);
 			// setHeight sets mAutoSize to false..
 			mAutoSize = true;
 		}
@@ -236,14 +234,14 @@ namespace QuickGUI
 	void Label::setHeight(Ogre::Real pixelHeight)
 	{
 		mAutoSize = false;
-		Image::setHeight(pixelHeight);
+		Widget::setHeight(pixelHeight);
 
 		mText->redraw();
 	}
 
 	void Label::setQuadLayer(Quad::Layer l)
 	{
-		Image::setQuadLayer(l);
+		Widget::setQuadLayer(l);
 		mText->setQuadLayer(l);
 	}
 
@@ -252,7 +250,7 @@ namespace QuickGUI
 		if(mAutoSize)
 		{
 			mText->setCaption(text);
-			setWidth(mText->calculateStringLength(text) + mHPixelPadWidth);
+			setWidth(mText->getTextWidth(text) + mHPixelPadWidth);
 			// setWidth sets mAutoSize to false..
 			mAutoSize = true;
 		}
@@ -284,14 +282,14 @@ namespace QuickGUI
 	void Label::setWidth(Ogre::Real pixelWidth)
 	{
 		mAutoSize = false;
-		Image::setWidth(pixelWidth);
+		Widget::setWidth(pixelWidth);
 
 		mText->redraw();
 	}
 
 	void Label::show()
 	{
-		Image::show();
+		Widget::show();
 		mText->show();
 	}
 }

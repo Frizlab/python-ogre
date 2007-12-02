@@ -61,7 +61,7 @@ def ManualExclude ( mb ):
     global_ns = mb.global_ns
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
     
-    NotExported=[]
+    NotExported=['::BetaGUI::Slider']
     for c in NotExported:
         main_ns.class_( c ).exclude()
                         
@@ -71,16 +71,21 @@ def ManualExclude ( mb ):
             main_ns.class_(cls[0]).member_function(cls[1]).exclude()
         except  declarations.matcher.declaration_not_found_t, e:
             pass 
-    excludes=[]
+    excludes=['::BetaGUI::GUI::injectSpecialKey']
     for e in excludes:
         print "excluding function", e
         global_ns.member_functions(e).exclude()
+        
+    excludes=[]
+    for e in excludes:
+        print "excluding variable", e
+        global_ns.member_variable(e).exclude()
      
-    c = main_ns.class_('Callback')
-    for con in c.constructors():
-        if "BetaGUI::Button" in con.decl_string:
-            con.exclude()
-            print "Excluding: ", con
+#     c = main_ns.class_('Callback')
+#     for con in c.constructors():
+#         if "BetaGUI::Button" in con.decl_string:
+#             con.exclude()
+#             print "Excluding: ", con
                       
 # 				
 
@@ -333,30 +338,30 @@ def Remove_Static_Consts ( mb ):
 # the 'main'function
 #            
 def generate_code():  
-    messages.disable( 
-#           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-          messages.W1020
-        , messages.W1021
-        , messages.W1022
-        , messages.W1023
-        , messages.W1024
-        , messages.W1025
-        , messages.W1026
-        , messages.W1027
-        , messages.W1028
-        , messages.W1029
-        , messages.W1030
-        , messages.W1031
-# # #         , messages.W1035
-# # #         , messages.W1040 
-# # #         , messages.W1038        
-# # #         , messages.W1041
-# # #         , messages.W1036 # pointer to Python immutable member
-# # #         , messages.W1033 # unnamed variables
-# # #         , messages.W1018 # expose unnamed classes
-# # #         , messages.W1049 # returns reference to local variable
-# # #         , messages.W1014 # unsupported '=' operator
-         )
+#     messages.disable( 
+# #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+#           messages.W1020
+#         , messages.W1021
+#         , messages.W1022
+#         , messages.W1023
+#         , messages.W1024
+#         , messages.W1025
+#         , messages.W1026
+#         , messages.W1027
+#         , messages.W1028
+#         , messages.W1029
+#         , messages.W1030
+#         , messages.W1031
+# # # #         , messages.W1035
+# # # #         , messages.W1040 
+# # # #         , messages.W1038        
+# # # #         , messages.W1041
+# # # #         , messages.W1036 # pointer to Python immutable member
+# # # #         , messages.W1033 # unnamed variables
+# # # #         , messages.W1018 # expose unnamed classes
+# # # #         , messages.W1049 # returns reference to local variable
+# # # #         , messages.W1014 # unsupported '=' operator
+#          )
     #
     # Use GCCXML to create the controlling XML file.
     # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded

@@ -1,6 +1,7 @@
 #ifndef QUICKGUINSTATEBUTTON_H
 #define QUICKGUINSTATEBUTTON_H
 
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUIButton.h"
 
 #include <vector>
@@ -29,14 +30,14 @@ namespace QuickGUI
 		class State
 		{
 		public:
-			State(const Ogre::String& name, const Ogre::String& texture, Ogre::UTFString text="") :
+			State(const Ogre::String& name, const Ogre::String& baseTexture, Ogre::UTFString text="") :
 			  mName(name),
-			  mTextureName(texture),
+			  mTextureName(baseTexture),
 			  mText(text)
 			{}
 			~State() {}
 
-			Ogre::String getTextureName() { return mTextureName; }
+			Ogre::String getBaseTextureName() { return mTextureName; }
 			Ogre::String getName() { return mName; }
 			Ogre::UTFString getText() { return mText; }
 			
@@ -60,7 +61,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		NStateButton(const Ogre::String& instanceName, const Size& pixelSize, GUIManager* gm);
+		NStateButton(const Ogre::String& name, GUIManager* gm);
 
 		/**
 		* Add user defined event that will be called when the state of the button has changed.
@@ -74,6 +75,17 @@ namespace QuickGUI
 		* Adds (and creates) a state to the button.  If it is the first state, the state will be applied.
 		*/
 		void addState(const Ogre::String& name, const Ogre::String& texture, Ogre::UTFString text="");
+		/**
+		* Useful when you want to simulate the button being pressed down by the mouse.
+		* If you actually want to click the mouse, use the mouse, or call onMouseButtonDown.
+		*/
+		virtual void applyButtonDownTexture();
+		virtual void applyButtonOverTexture();
+		/**
+		* If supplying a method to simulate the button being pressed down, we need a method
+		* to restore the button to the normal looking state.
+		*/
+		virtual void applyDefaultTexture();
 
 		/**
 		* Removes (and destroys) all states.  Widget has no appearance after this, since no states are defined.
@@ -116,10 +128,6 @@ namespace QuickGUI
 		*/
 		void onStateChanged(const WidgetEventArgs& e);
 		/**
-		* Stores/Updates the texture used for the widget, and allows the widget to derive other needed textures. (by overriding this function)
-		*/
-		void setBaseTexture(const Ogre::String& textureName);
-		/**
 		* Manually setting the current State of the widget. onStateChanged will be called.
 		*/
 		void setCurrentState(State* s);
@@ -141,9 +149,11 @@ namespace QuickGUI
 		std::vector<State*>	mStates;
 
 		State* mCurrentState;
+		Ogre::String mBaseTexture;
+		Ogre::String mBase;
+		Ogre::String mExtension;
 
-		std::vector<MemberFunctionSlot*> mOnStateChangedUserEventHandlers;
-	private:
+		EventHandlerArray mOnStateChangedUserEventHandlers;
 	};
 }
 

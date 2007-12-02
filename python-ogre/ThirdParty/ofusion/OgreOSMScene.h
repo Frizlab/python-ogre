@@ -72,7 +72,7 @@ private:
 	Ogre::SceneNode* createNode(TiXmlElement* pElem, Ogre::SceneNode* pSceneRoot);
 
 	// Create SceneManager
-	Ogre::SceneNode* createSceneManager(TiXmlElement* sceneProp, BOOL& bHandled);
+	Ogre::SceneNode* createSceneManager(TiXmlElement* sceneProp, bool& bHandled);
 
 	// Set scene properties
 	void setSceneProperties(TiXmlElement* sceneProp);

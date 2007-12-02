@@ -1,8 +1,9 @@
 #ifndef QUICKGUIHORIZONTALTRACKBAR_H
 #define QUICKGUIHORIZONTALTRACKBAR_H
 
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUIButton.h"
-#include "QuickGUIImage.h"
+#include "QuickGUIWidget.h"
 
 #include <vector>
 
@@ -17,8 +18,10 @@ namespace QuickGUI
 		Must be created by a Panel, Window, or Sheet.
 	*/
 	class _QuickGUIExport HorizontalTrackBar :
-		public Image
+		public Widget
 	{
+	public:
+		friend class Panel;
 	public:
 		/** Constructor
             @param
@@ -38,7 +41,7 @@ namespace QuickGUI
 			@note
 				Vertical or Horizontal TrackBars are derived from a comparison between width and height.
         */
-		HorizontalTrackBar(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String textureName, GUIManager* gm);
+		HorizontalTrackBar(const Ogre::String& name, GUIManager* gm);
 
 		/**
 		* Add user defined event that will be called when amount of progress has changed.
@@ -82,10 +85,6 @@ namespace QuickGUI
 		* Overridden Handler.  Allows changing of slider position by clicking on trackbar.
 		*/
 		void onMouseButtonDown(const EventArgs& args);
-		/**
-		* Stores/Updates the texture used for the widget, and allows the widget to derive other needed textures. (by overriding this function)
-		*/
-		void setBaseTexture(const Ogre::String& textureName);
 		/*
 		* Set the value applied to the currentValue when the track bar is clicked.
 		*/
@@ -100,11 +99,6 @@ namespace QuickGUI
 		*/
 		void setNumTicks(unsigned int NumTicks);
 		void setSliderSize(Size pixelSize);
-		/**
-		* Applies the texture to the Quad if exists in some form, and updates the Image used for
-		* transparency picking.
-		*/
-		void setTexture(const Ogre::String& textureName, bool updateBaseTexture = true);
 		/**
 		* Sets the index of the Slider along the TrackBar.
 		* NOTE: In horizontal TrackBars, left side is index 0.  In vertical, bottom is 0.
@@ -139,7 +133,7 @@ namespace QuickGUI
 		void onMouseDownOnSlider(const EventArgs& args);
 		void onMouseUpOnSlider(const EventArgs& args);
 
-		std::vector<MemberFunctionSlot*> mOnValueChangedHandlers;
+		EventHandlerArray mOnValueChangedHandlers;
 	};
 }
 

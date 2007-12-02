@@ -45,14 +45,6 @@ class DllExport Starfield : public CameraBoundElement {
 		 */
 		virtual ~Starfield ();
 
-		/** @copydoc CameraBoundElement::notifyCameraChanged().
-		 */
-		void notifyCameraChanged (Ogre::Camera *cam);
-
-		/** @copydoc CameraBoundElement::setFarRadius().
-		 */
-		void setFarRadius (float radius);
-
 		/** Sets the starfield inclination. This inclination is the angle between the starfield rotation axis and the horizon plane.
 			@param inc The starfield inclination in degrees.
 		 */
@@ -76,6 +68,14 @@ class DllExport Starfield : public CameraBoundElement {
 		/** Internal method to destroy the starfield material.
 		 */
 		void destroyStarfieldMaterial ();
+
+    public:
+		/// Handle camera change.
+		virtual void notifyCameraChanged (Ogre::Camera *cam);
+
+    protected:
+        /// Handle far radius.
+	    virtual void setFarRadius (Ogre::Real radius);
 };
 
 } // namespace caelum;

@@ -55,11 +55,10 @@ namespace OgreAL {
 		** Constructors are protected to enforce the use of the 
 		** factory via SoundManager::createSound
 		*/
-
 		/** Default Constructor. */
 		Sound();
 		/** Normal Constructor. Should not be called directly! Use SoundManager::createSound */
-		Sound(const Ogre::String& name, const Ogre::String& fileName);
+		Sound(const Ogre::String& name, const Ogre::String& fileName, bool stream);
 		/** Constructor to be called if BufferRef exists */
 		Sound(BufferRef buffer, const Ogre::String& name, const Ogre::String& fileName, bool loop = false);
 
@@ -81,10 +80,11 @@ namespace OgreAL {
 		virtual bool isStopped() const;
 		/** Returns true if the source does not have a state yet, otherwise false */
 		virtual bool isInitial() const;
+
 		/**
 		 * Sets the pitch multiplier.
 		 * @param pitch The new pitch multiplier
-		 * @note pitch must always be positive
+		 * @note pitch must always be positive.  Valid values are [0.5 - 2.0] where 1.0 is the default
 		 */
 		void setPitch(Ogre::Real pitch);
 		/** Returns the pitch multiplier. */
@@ -191,7 +191,7 @@ namespace OgreAL {
 		 */
 		void setPosition(const Ogre::Vector3& vec);
 		/** Returns the position of the sound. */
-		const Ogre::Vector3& getPosition() const;
+		const Ogre::Vector3& getPosition() const {return mPosition;}
 		/**
 		 * Sets the direction of the sound.
 		 * @param x The x part of the direction vector
@@ -209,7 +209,7 @@ namespace OgreAL {
 		 */
 		void setDirection(const Ogre::Vector3& vec);
 		/** Returns the direction of the sound. */
-		const Ogre::Vector3& getDirection() const;
+		const Ogre::Vector3& getDirection() const {return mDirection;}
 		/**
 		 * Sets the gain outside the sound cone of a directional sound.
 		 * @param outerConeGain The gain outside the directional cone
@@ -224,7 +224,7 @@ namespace OgreAL {
 		Ogre::Real getOuterConeGain() const {return mOuterConeGain;}
 		/**
 		 * Sets the inner angle of the sound cone for a directional sound.
-		 * @param innerConeAngle The angle that defined the inner cone of a directional sound
+		 * @param innerConeAngle The angle that defines the inner cone of a directional sound.  Valid values are [0 - 360]
 		 * @note Each directional source has three zones:<ol><li>The inner zone as defined by the 
 		 *     <i>setInnerConeAngle</i> where the gain is constant and is set by <i>setGain</i></li>
 		 *     <li>The outer zone which is set by <i>setOuterConeAngle</i> and the gain is a linear 
@@ -236,7 +236,7 @@ namespace OgreAL {
 		Ogre::Real getInnerConeAngle() const {return mInnerConeAngle;}
 		/**
 		 * Sets the outer angle of the sound cone for a directional sound.
-		 * @param outerConeAngle The angle that defined the outer cone of a directional sound
+		 * @param outerConeAngle The angle that defines the outer cone of a directional sound.  Valid values are [0 - 360]
 		 * @note Each directional source has three zones:<ol><li>The inner zone as defined by the 
 		 *     <i>setInnerConeAngle</i> where the gain is constant and is set by <i>setGain</i></li>
 		 *     <li>The outer zone which is set by <i>setOuterConeAngle</i> and the gain is a linear 
@@ -250,10 +250,18 @@ namespace OgreAL {
 		virtual void setLoop(bool loop);
 		/** Returns looping state */
 		bool isLooping() const {return mLoop==AL_TRUE?true:false;}
+		/** Returns streaming state */
+		bool isStreaming() const {return mStream==AL_TRUE?true:false;}
+		/** Returns the duration of the audio in seconds */
+		Ogre::Real getSecondDuration() {return mLengthInSeconds;}
+		/** Sets the offset within the audio stream in seconds */
+		virtual void setSecondOffset(Ogre::Real seconds);
+		/** Returns the current offset within the audio stream in seconds */
+		virtual Ogre::Real getSecondOffset();
 		/** Returns the position of the sound including any transform from nodes it is attached to. */
-		const Ogre::Vector3& getDerivedPosition() const;
+		const Ogre::Vector3& getDerivedPosition() const {return mDerivedPosition;}
 		/** Returns the direction of the sound including any transform from nodes it is attached to. */
-		const Ogre::Vector3& getDerivedDirection() const;
+		const Ogre::Vector3& getDerivedDirection() const {return mDerivedDirection;}
 		/** Returns the name of the file used to create this Sound. */
 		const Ogre::String& getFileName() const {return mFileName;}
 		/** Overridden from MovableObject */
@@ -266,21 +274,25 @@ namespace OgreAL {
 		void _updateRenderQueue(Ogre::RenderQueue* queue);
 		/** Notifies the sound when it is attached to a node */
 		void _notifyAttached(Ogre::Node *parent, bool isTagPoint = false);
-
-		/// Updates the sound if need be
-		virtual bool _updateSound();
+#if(OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR == 5)
+		/** Overridden from MovableObject */
+		virtual void visitRenderables(Ogre::Renderable::Visitor* visitor, bool debugRenderables = false){}
+#endif
 
 	protected:
+		/// Updates the sound if need be
+		virtual bool _updateSound();
 		/// Creates the source and binds the buffer
 		void createAndBindSource();
 		/// Convienance method to reset the sound state
 		void initSource();
-		/// Checks for OpenAL errors
-		void checkError(const Ogre::String& source) const;
-		/// Translate the OpenAL error code to a string
-		virtual Ogre::String errorToString(int error) const;
+		/// Calculates format info for the sounds. @note requires mFreq, mChannels and mBPS;
+		void calculateFormatInfo();
+		/// Empties any queues that may still be active in the sound
+		void emptyQueues();
 
-		BufferRef getBufferRef() {return mBuffer;}
+		/// Returns the BufferRef for this sounds
+		BufferRef getBufferRef() const {return mBuffers[0];}
 
 		/// Postion taking into account the parent node
 		mutable Ogre::Vector3 mDerivedPosition;
@@ -309,13 +321,21 @@ namespace OgreAL {
 		ALboolean mLoop;
 		mutable bool mLocalTransformDirty;
 
+		Ogre::DataStreamPtr mSoundStream;
+
 		SourceRef mSource;
-        BufferFormat mFormat;
+		BufferRef *mBuffers;
+		int mNumBuffers;
+		int mBufferSize;
+		bool mStream;
 		Size mFreq;
 		Size mSize;
-		BufferRef mBuffer;
-		unsigned long mBufferSize;
+		Size mChannels;
+		Size mBPS;
+		BufferFormat mFormat;
 
+		Ogre::Real mLengthInSeconds;
+		
 		friend class SoundManager;
 		friend class SoundFactory;
 
@@ -334,6 +354,8 @@ namespace OgreAL {
 
 		const Ogre::String& getType() const;
 		void destroyInstance(Ogre::MovableObject* obj);
+
+		void _removeBufferRef(const Ogre::String& bufferName);
 
 	protected:
 		typedef std::map<std::string, BufferRef> BufferMap;

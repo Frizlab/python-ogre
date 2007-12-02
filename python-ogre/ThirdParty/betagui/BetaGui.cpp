@@ -1,1269 +1,463 @@
+// Betajaen's GUI "BetaGUI 2.0", Version 35-uncompressed, http://www.ogre3d.org/wiki/index.php/BetaGUI
+//
+// Copyright (c) 2007 Robin Southern <betajaen@ihoed.com>
+//
+// Permission is hereby granted, free of charge, to any person
+// obtaining a copy of this software and associated documentation
+// files (the "Software"), to deal in the Software without
+// restriction, including without limitation the rights to use,
+// copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following
+// conditions:
+//
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+// OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+// NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+// HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+// FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+// OTHER DEALINGS IN THE SOFTWARE.
+
 #include "BetaGUI.h"
+#include "OgreFontManager.h"
+#include "OgreFont.h"
+#include "OgreTextAreaOverlayElement.h"
 
-namespace BetaGUI 
-{
-    //------------------------------------------------------------------------------------------------
-	GUI::GUI(const String &baseOverlay, const String &font, int fontSize, RenderWindow *win)
-		:mNextWindowToDestroy(0),
-		 mMousePointerOverlay(0),
-		 mFont(font),
-		 mFontSize(fontSize),
-		 mWindowCount(0),
-		 mButtonCount(0),
-		 mTextCaptionCount(0),
-         mTextCaptionCountArea(0),
-         mButtonCountTextArea(0),
-         mNextMenuWindowPos(0,0),
-         mMenuWindow(0),
-         mRenderWindow(win),
-         mDragWindowAction(WA_NONE),
-         mActiveDraggedWindow(0),
-         mActiveTextInput(0),
-         mActiveButton(0),
-         mUpTime(0),
-         mFarZ(100),
-         mNearZ(101),
-         mName(baseOverlay)
-    {
-           
-    }
-    //------------------------------------------------------------------------------------------------
-	GUI::~GUI() 
-    {
-        for(std::vector<Window*>::iterator i=mWindows.begin();i!=mWindows.end();++i) 
-        {
-            delete (*i); 
-        }
-
-        std::list<Effect*>::iterator itEffect = mActiveEffects.begin();
-        while (itEffect != mActiveEffects.end())        
-        {
-            delete *itEffect;
-            ++itEffect;            
-        } 
-    }
-    //------------------------------------------------------------------------------------------------
-    void GUI::setZRangeOrder(int nearZ, int FarZ) 
-    {
-        assert (mNearZ > mFarZ);
-        mNearZ = nearZ;
-        mFarZ = FarZ;
-        sortZOrder();
-    };
-    //------------------------------------------------------------------------------------------------
-    void GUI::sortZOrder()
-    {
-        assert (mNearZ > mFarZ);
-        int farZ = mFarZ;
-        for(std::vector<Window*>::iterator i=mWindows.begin();i!=mWindows.end();++i) 
-        {
-            (*i)->setZOrder(farZ) ; 
-            if (farZ + 1 < mNearZ)
-                farZ++;
-        }
-        if (mActiveDraggedWindow)
-            mActiveDraggedWindow->setZOrder(mNearZ) ;
-    }
-    //------------------------------------------------------------------------------------------------
-    void GUI::update (Ogre::Real timeElapsed)
-    {
-        mUpTime += timeElapsed;
-
-        {
-            std::vector<Window*>::iterator itWindow = mWindows.begin();       
-            while (itWindow != mWindows.end())        
-            {
-                (*itWindow)->setUnderEffect(false);
-                ++itWindow;
-            } 
-        }
-        {
-            std::list<Effect*>::iterator itEffect = mActiveEffects.begin();       
-            while (itEffect != mActiveEffects.end())        
-            {
-                if ((*itEffect)->update(timeElapsed))
-                {
-                    delete *itEffect;
-                    itEffect = mActiveEffects.erase(itEffect);
-                }
-                else
-                {
-                    ++itEffect;
-                }
-            } 
-        }
-        if (mNextWindowToDestroy) 
-        {
-            for(std::vector<Window*>::iterator i=mWindows.begin();i!=mWindows.end();++i) 
-            {
-                if(mNextWindowToDestroy==(*i)) 
-                {
-                    delete mNextWindowToDestroy;
-                    mWindows.erase(i);
-                    mNextWindowToDestroy=0;
-                }
-            }
-        }
-    }
-    //------------------------------------------------------------------------------------------------
-    void GUI::addEffect (Effect* e)
-    {
-        mActiveEffects.push_back(e);
-    }
-    //-----------------------------------------------------------------------------
-    bool GUI::injectMouse(float x, float y, bool LMB)
-    {
-        return injectMouse ( int(x), int(y), LMB );
-    }   
-    
-	bool GUI::injectMouse(int x, int y, bool LMB) 
-    {		
-       // if (mMousePointerOverlay)
-       // {
-       //     mMousePointerOverlay->hide ();
-            mMousePointerOverlay->setPosition(x,y);
-       // }
-
-               
-        if (LMB)
-        {
-            if (mActiveTextInput) 
-            { 
-                mActiveTextInput->mMainOverlay->setMaterialName(mActiveTextInput->mMaterialName);
-                mActiveTextInput = 0;
-            }
-
-
-            if (mActiveButton && mActiveDraggedWindow) 
-            {
-                 if (mActiveDraggedWindow->mDragType == WA_MOVE) 
-                 {
-                       mDragWindowAction = WA_MOVE; 
-                       mActiveDraggedWindow->setPosition (
-                           mDragWindowX + (x - mDragX),
-                           mDragWindowY + (y - mDragY)
-                           );
-                       return true;
-                 } 
-                 else if (mActiveDraggedWindow->mDragType == WA_RESIZE) 
-                 {
-                     mDragWindowAction = WA_RESIZE; 
-                     mActiveDraggedWindow->setSize (
-                         mDragWindowX + (x - mDragX),
-                         mDragWindowY + (y - mDragY)
-                         );
-                       return true;
-                 } 
-            }
-        }
-        else if (mDragWindowAction != WA_NONE)
-        {
-            mDragWindowAction = WA_NONE;
-            mActiveDraggedWindow = 0; 
-            sortZOrder ();
-        }
-
-        assert (mDragWindowAction == WA_NONE) ;  
-        for(std::vector<Window*>::iterator i=mWindows.begin();i!=mWindows.end();++i) 
-        {
-		    if((*i)->isVisible() && 
-                (*i)->check(x, y, LMB)) 
-            {
-                mActiveDraggedWindow = (*i);
-                sortZOrder ();
-
-                //if (mMousePointerOverlay)
-                //   mMousePointerOverlay->show ();
-			    return true;
-		    }
-	    }      
-
-		return false;
-    }	
-    //------------------------------------------------------------------------------------------------
-	bool GUI::injectKey(const String &key, int x, int y) 
-    {
-        if (mActiveTextInput == 0 || key.empty()) 
-            return false;
-
-        if (key == "!b") 
-        {
-            mActiveTextInput->setValue(
-                mActiveTextInput->mValueText.substr(0, mActiveTextInput->mValueText.length()-1)
-                );
-            return true;
-        }
-
-        if (mActiveTextInput->mValueText.length() >= mActiveTextInput->length) 
-            return true;
-
-        mActiveTextInput->mCaptionOverlay->setCaption(mActiveTextInput->mValueText += key);
-        return false;
-    }
-    //------------------------------------------------------------------------------------------------
-	void GUI::injectBackspace(int x, int y) 
-    {
-		injectKey("!b", x, y);
-    }
-    //------------------------------------------------------------------------------------------------
-	OverlayContainer* GUI::createOverlay(const String &name, const Vector2 &position, 
-        const Vector2 &dimensions, const String &material, 
-        const String &caption) 
-    {
-        OverlayContainer* e;
-        const bool isTextArea = !caption.empty();
-        try
-        {
-            e =  static_cast<OverlayContainer*>
-                (OverlayManager::getSingleton().getOverlayElement (name));
-        }
-        catch (...) 
-        {    
-            e = static_cast<OverlayContainer*>
-                (OverlayManager::getSingleton().createOverlayElement(
-                    (isTextArea ? "TextArea" : "Panel" ), 
-                    name));
-        }
-
-        e->setMetricsMode(Ogre::GMM_PIXELS);
-        e->setDimensions(dimensions.x, dimensions.y);
-        e->setPosition(position.x, position.y);
-
-        if (!material.empty())
-            e->setMaterialName(material);
-
-        if (isTextArea) 
-        {
-            e->setCaption(caption);
-            e->setParameter("font_name", mFont);
-            e->setParameter("char_height", StringConverter::toString(mFontSize));
-
-            e->setParameter("colour_top", 
-                StringConverter::toString(ColourValue(0.57, 0.86, 0.68, 1.00)));
-            e->setParameter("colour_bottom", 
-                StringConverter::toString(ColourValue(0.68, 0.86, 0.68, 1.00)));
-        } 
-		return e;
-    }
-    //------------------------------------------------------------------------------------------------
-    OverlayContainer* GUI::createMousePointer(Vector2 d, const String &m) 
-    {
-        Overlay* o = (Overlay*)OverlayManager::getSingleton().getByName("BetaGUI.MP");
-		if (!o)
-            o = OverlayManager::getSingleton().create("BetaGUI.MP");
-
-		o->setZOrder(648);
-
-		mMousePointerOverlay = createOverlay("bg.mp", Vector2(0,0), d, m, "");
-
-        if (mMousePointerOverlay != o->getChild (mMousePointerOverlay->getName ()))
-		    o->add2D(mMousePointerOverlay);
-		o->show();
-        mMousePointerOverlay->show();
-		return mMousePointerOverlay;
-    }
-    //------------------------------------------------------------------------------------------------
-    Window* GUI::createWindow(const Vector4 &Dimensions, const String & Material, WindowFeatureType type, const String &caption) 
-    {
-        Window* window = new Window(Dimensions, Material, type, caption, this);
-        mWindows.push_back(window);
-        return window;
-    }
-    //------------------------------------------------------------------------------------------------
-    Window *GUI::addMenuWindow(const Vector2 dimensions)
-    {
-        assert (mMenuWindow == 0);       
-        mMenuWindow = createWindow(Vector4(0, 0, dimensions.x, dimensions.y),
-            "bgui.window", WFT_NONE,  ""); 
-
-        mNextMenuWindowPos.y = 25;
-        return mMenuWindow;
-    }
-    //------------------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------
-    Widget::Widget(const Ogre::Vector4 &Dimension, 
-        const Ogre::String &materialNameNormal,
-        bool hasOverState,
-        bool hasActiveState):
-        mPosX(Dimension.x),
-        mPosY(Dimension.y),
-        mWidth(Dimension.z),
-        mHeight(Dimension.w),
-        mMainOverlay(0), 
-        mCaptionOverlay(0),
-        mMaterialName(materialNameNormal),
-        mHasMaterial(!materialNameNormal.empty()),
-        mHasOverState(hasOverState && mHasMaterial),
-        mHasActiveState(hasActiveState && mHasMaterial),
-        mUnderEffect(false),
-        mOver(false),
-        mActive(false)
-    {
-
-    }
-    //------------------------------------------------------------------------------------------------
-    Widget::~Widget() 
-    {
-        if (mMainOverlay && mMainOverlay->getParent()) mMainOverlay->getParent()->removeChild(mMainOverlay->getName());
-        if (mCaptionOverlay && mCaptionOverlay->getParent()) mCaptionOverlay->getParent()->removeChild(mCaptionOverlay->getName());
-
-        for(std::vector<Widget*>::iterator i=mChildren.begin();i!=mChildren.end();++i)
-            delete (*i);
-    }  
-    //------------------------------------------------------------------------------------------------
-    void Widget::over(const bool a) 
-    {
-        assert(!mUnderEffect);
-        mOver = a;
-        if (!a && mHasMaterial && mMainOverlay)
-        {
-            mMainOverlay->setMaterialName(mMaterialName);
-
-            if (mCaptionOverlay)
-            {
-                mCaptionOverlay->setParameter("colour_top", 
-                    Ogre::StringConverter::toString(Ogre::ColourValue(0.57, 0.86, 0.68, 1.0)));
-                mCaptionOverlay->setParameter("colour_bottom", 
-                    Ogre::StringConverter::toString(Ogre::ColourValue(0.68, 0.86, 0.68, 1.00)));
-            }
-        }
-        if (a && mHasActiveState && mMainOverlay)
-        {
-            mMainOverlay->setMaterialName(mMaterialName + ".over");
-
-            if (mCaptionOverlay)
-            {
-                mCaptionOverlay->setParameter("colour_top", 
-                    Ogre::StringConverter::toString(Ogre::ColourValue(1.0, 0.96, 0.76, 1.0)));
-                mCaptionOverlay->setParameter("colour_bottom", 
-                    Ogre::StringConverter::toString(Ogre::ColourValue(1.0, 0.96, 0.76, 1.00)));
-            }
-        }
-        // propagate ?
-        //for(std::vector<Widget*>::iterator i=mChildren.begin();i!=mChildren.end();++i) 
-        //{
-        //    (*i)->over(a);
-        //}
-    }
-    //------------------------------------------------------------------------------------------------
-    void Widget::activate(const bool a) 
-    {
-        assert(!mUnderEffect);
-        mActive = a;
-        if (!a && mHasMaterial && mMainOverlay)
-        {
-            mMainOverlay->setMaterialName(mMaterialName);
-
-            if (mCaptionOverlay)
-            {
-                mCaptionOverlay->setParameter("colour_top", 
-                    Ogre::StringConverter::toString(Ogre::ColourValue(0.57, 0.86, 0.68, 1.0)));
-                mCaptionOverlay->setParameter("colour_bottom", 
-                    Ogre::StringConverter::toString(Ogre::ColourValue(0.68, 0.86, 0.68, 1.00)));
-            }
-        }
-        if (a && mHasActiveState && mMainOverlay)
-        {
-            mMainOverlay->setMaterialName(mMaterialName + ".active");
-
-            if (mCaptionOverlay)
-            {
-                mCaptionOverlay->setParameter("colour_top", 
-                    Ogre::StringConverter::toString(Ogre::ColourValue(1.0, 0.96, 0.76, 1.0)));
-                mCaptionOverlay->setParameter("colour_bottom", 
-                    Ogre::StringConverter::toString(Ogre::ColourValue(1.0, 0.96, 0.76, 1.00)));
-            }
-        }
-        // propagate ?
-        //for(std::vector<Widget*>::iterator i=mChildren.begin();i!=mChildren.end();++i) 
-        //{
-        //    (*i)->activate(a);
-        //}
-    }
-    //------------------------------------------------------------------------------------------------
-    void Widget::setUnderEffect(const bool effect)
-    {
-        if (effect)
-        {
-            if (mActive)
-                activate (false);
-            if (mOver)
-                over (false);
-        }
-        mUnderEffect = effect;
-    };
-    //------------------------------------------------------------------------------------------------
-    void Widget::instantiateMaterial(OverlayContainer * const oc, bool reset) const
-    {
-        if (oc->getMaterial ().isNull ())
-            return;
-
-        const String matName (oc->getMaterial ()->getName ());
-        const bool isInstantied = StringUtil::endsWith(matName, ".GuiInstance", false);
-        if (reset)
-        {
-            if (isInstantied)
-                oc->setMaterialName (
-                matName.substr(0, 
-                matName.length() - (oc->getName ().length() + 12)));
-        }
-        else if (!isInstantied)
-        {
-            const String newMatName(matName + oc->getName () + ".GuiInstance");
-            // need to instantiate a material there...
-            if (!MaterialManager::getSingleton ().resourceExists (newMatName))
-            {
-                oc->getMaterial ()->clone (newMatName);
-            }                    
-            oc->setMaterialName (newMatName);
-        }
-    }
-    //------------------------------------------------------------------------------------------------
-    void Widget::setOverlayAlpha(OverlayContainer * const oc, const Ogre::Real alpha) const
-    {
-        if (!oc->getMaterial ().isNull ())
-        {
-            TextureUnitState *t = oc->getMaterial ()->getBestTechnique ()->getPass(0)->getTextureUnitState (0);
-            if (t) t->setAlphaOperation (LBX_MODULATE, LBS_TEXTURE, LBS_MANUAL, alpha, alpha, alpha);
-        }
-    } 
-    //------------------------------------------------------------------------------------------------
-    void Widget::setAlpha(const Ogre::Real alpha, const bool isContainer)
-    {         
-        bool noAlpha = false;
-        Ogre::Real alphaValue = alpha;
-    
-        if (alphaValue - 1.0 > -std::numeric_limits<Real>::epsilon())
-        {
-            noAlpha = true;
-            if (isContainer) mMainOverlay->show ();   
-        }
-        else if (alphaValue < std::numeric_limits<Real>::epsilon())
-        {
-            noAlpha = true;
-            if (isContainer) mMainOverlay->hide ();
-        }
-        else if (isContainer)
-        {
-            mMainOverlay->show ();   
-        }        
-        if (noAlpha) alphaValue =  Ogre::Real(1.0);
-
-        //should save in a boolean the instantiated state...
-        if (mMainOverlay)
-        {
-            instantiateMaterial (mMainOverlay, noAlpha);
-            if (!noAlpha) setOverlayAlpha (mMainOverlay, alphaValue);
-        }
-        if (mCaptionOverlay)
-        {
-            instantiateMaterial (mCaptionOverlay, noAlpha);
-            if (!noAlpha) setOverlayAlpha (mCaptionOverlay, alphaValue);
-        }
-        for(std::vector<Widget*>::iterator i=mChildren.begin();i!=mChildren.end();++i) 
-        {
-            (*i)->setAlpha(alphaValue, false);
-        }
-    }
-    //------------------------------------------------------------------------------------------------
-    void Widget::setMaterialBlendFactor(const Ogre::Real blendFactor, const bool isContainer)
-    {
-        bool noBlendFactor = false;
-        Ogre::Real blendFactorValue = blendFactor;
-
-        if (blendFactorValue - 1.0 > -std::numeric_limits<Real>::epsilon())
-        {
-            noBlendFactor = true;
-        }
-        else if (blendFactorValue < std::numeric_limits<Real>::epsilon())
-        {
-            noBlendFactor = true;
-        }
-        if (noBlendFactor) blendFactorValue =  Ogre::Real(1.0);
-
-        //should save in a boolean the instantiated state...
-        if (mMainOverlay)
-        {
-            instantiateMaterial (mMainOverlay, noBlendFactor);
-            if (!noBlendFactor) setOverlayMaterialBlendFactor (mMainOverlay, blendFactorValue);
-        }
-        if (mCaptionOverlay)
-        {
-            instantiateMaterial (mCaptionOverlay, noBlendFactor);
-            if (!noBlendFactor) setOverlayMaterialBlendFactor (mCaptionOverlay, blendFactorValue);
-        }
-        for(std::vector<Widget*>::iterator i=mChildren.begin();i!=mChildren.end();++i) 
-        {
-            (*i)->setMaterialBlendFactor(noBlendFactor, false);
-        }
-    }
-    //------------------------------------------------------------------------------------------------
-    void Widget::setOverlayMaterialBlendFactor(OverlayContainer * const oc, const Ogre::Real blendFactor) const
-    {
-        if (!oc->getMaterial ().isNull ())
-        {
-            TextureUnitState *t = oc->getMaterial ()->getBestTechnique ()->getPass(0)->getTextureUnitState (1);
-            if (t) 
-                //t->setAlphaOperation (LBX_MODULATE, LBS_TEXTURE, LBS_MANUAL, blendFactor, blendFactor, blendFactor);
-                t->setColourOperationEx(LBX_BLEND_MANUAL, LBS_TEXTURE, LBS_CURRENT, ColourValue::White, ColourValue::White, blendFactor);
-        }
-    }
-    //------------------------------------------------------------------------------------------------
-    void Widget::adjustSizeToContent()
-    {
-        Ogre::Real w = 0;
-        Ogre::Real h = 0;
-        for(std::vector<Widget*>::iterator i=mChildren.begin();i!=mChildren.end();++i) 
-        {
-            const Vector2 pos ((*i)->getPosition());
-            const Vector2 size ((*i)->getSize());
-
-            w = std::max(w, pos.x + size.x);
-            h = std::max(h, pos.y + size.y);
-        }
-        setSize(w, h);
-    }
-    //------------------------------------------------------------------------------------------------
-    void Widget::setPosition(float X,float Y)
-    {
-        setPosition(int(X), int(Y));
-    }
-    void Widget::setPosition(const Ogre::Vector2 &position)
-    {
-        setPosition(position.x, position.y);
-    }
-    //------------------------------------------------------------------------------------------------
-    void Widget::setPosition(int X,int Y)
-    {
-        if (mMainOverlay) mMainOverlay->setPosition(mPosX=X,mPosY=Y);
-    }
-    //------------------------------------------------------------------------------------------------
-    void Widget::setSize(const Ogre::Vector2 &size)
-    {
-        setSize(size.x, size.y);
-    };
-    //------------------------------------------------------------------------------------------------
-    void Widget::setSize(int X,int Y)
-    {
-        if (mMainOverlay) mMainOverlay->setDimensions(mWidth=X, mHeight=Y);
-        if (mCaptionOverlay) mCaptionOverlay->setDimensions(mWidth, mHeight);
-    };
-    //------------------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------
-	Window::Window(const Vector4 &Dimensions, const String &material, WindowFeatureType t, const String &caption, GUI *gui)
-		: 
-          Widget(Dimensions, material, true, true),
-		  mGUI(gui),
-		  mTitleBarButton(0),
-          mCloseButton(0),
-		  mResizerButton(0),
-		  mActiveTextInput(0),
-		  mActiveButton(0),
-          mNextWidgetPos(0, 0),
-          mDragType(WA_NONE),
-		  mFadeOut(false)
-	{
- 
-        const String name(gui->mName + ".w" + StringConverter::toString(gui->mWindowCount++));
-        mGuiOverlay = (Overlay*)OverlayManager::getSingleton().getByName(name);
-        if (!mGuiOverlay)
-			mGuiOverlay = OverlayManager::getSingleton().create(name);
-		mGuiOverlay->show();
-
-        
-		mMainOverlay = gui->createOverlay(name, 
-                                Vector2(Dimensions.x, Dimensions.y), 
-                                Vector2(Dimensions.z, Dimensions.w), 
-                                material); 
-        if (mMainOverlay != mGuiOverlay->getChild (mMainOverlay->getName ()))
-            mGuiOverlay->add2D(mMainOverlay);
-        mMainOverlay->show();
-
-		if (t >= 2) 
-        {
-			Callback c;
-            c.mCallbackType=4;
-			mResizerButton = createButton(
-                Vector4(Dimensions.z-16, Dimensions.w-16, 16, 16),
-                material + ".resize", "", c);
-		}
-        
-        if ((t == 1 || t == 3) && !caption.empty()) 
-        {
-			Callback c;
-            c.mCallbackType=3;
-
-			mTitleBarButton = createButton(Vector4(0,0,Dimensions.z-22,22),
-                material + ".titlebar", caption, c);
-
-            mCloseButton = createMenuButton(Vector4(Dimensions.z-22,0,22,22),
-                material + ".close",  "", Callback(), this);
-
-            mNextWidgetPos.x += 12;
-            mNextWidgetPos.y += 22;
-        }  
-    }
-    //------------------------------------------------------------------------------------------------
-    Window::~Window()
-    {
-       //Widget::~Widget();
-       //OverlayManager::getSingleton ().destroy (mGuiOverlay->getName ());
-    }
-    //------------------------------------------------------------------------------------------------
-    void Window::addWidget(const Widget * const w, WindowPlacementType wpt)
-    {
-        switch(wpt)
-        {
-        case WPT_HORIZONTAL:
-            mNextWidgetPos.x += w->getSize().x; break;
-        case WPT_VERTICAL:
-            mNextWidgetPos.y += w->getSize().y; break;
-        case WPT_NONE:
-        default:
-            break;
-        }
-        adjustSizeToContent();
-    }
-    //------------------------------------------------------------------------------------------------
-    Window *Window::addMenuWindowTab(const String &label, 
-        bool titleBarWin,
-        WindowPlacementType wpt)
-    {
-        const size_t labelVisualSize = label.size()*7;
-        Window *aWindow = mGUI->createWindow(
-            Vector4(mGUI->mNextMenuWindowPos.x, mGUI->mNextMenuWindowPos.y, 200, 48), 
-            "bgui.window", 
-            titleBarWin? WFT_RESIZE_AND_MOVE : WFT_NONE,  
-            titleBarWin? label: "");
-
-        Button *aButton = addMenuButton(aWindow, label, WPT_HORIZONTAL);
-
-        if (wpt != WPT_NONE)
-            mGUI->mNextMenuWindowPos.y += aWindow->getSize ().y + 25;
-        return aWindow;
-    }
-    //------------------------------------------------------------------------------------------------
-    MenuButton *Window::addMenuButton(Window *target, const String &label,
-        WindowPlacementType wpt)
-    {
-        const size_t labelVisualSize = label.size()*7;
-        MenuButton *b = createMenuButton(
-            Vector4(mNextWidgetPos.x, mNextWidgetPos.y, labelVisualSize, 24),
-            "bgui.button", label, Callback(), target);
-
-        addWidget(b, wpt);
-        return b;
-    }
-    //------------------------------------------------------------------------------------------------
-    BoolButton *Window::addBoolButton(bool value, const String &label,
-        WindowPlacementType wpt)
-    {
-          const size_t labelVisualSize = label.size()*7;
-          BoolButton *b = createBoolButton(
-              Vector4(mNextWidgetPos.x, mNextWidgetPos.y, labelVisualSize, 24),
-              "bgui.button", label, Callback(), value);
-          
-          addWidget(b, wpt);
-          return b;
-    }
-    //------------------------------------------------------------------------------------------------
-    RealButton *Window::addRealButton(Ogre::Real value, 
-        const Ogre::Vector4 &SliderMoves, 
-        const String &label,
-        WindowPlacementType wpt)
-    {
-        RealButton *b = createRealButton (value, SliderMoves, label, mNextWidgetPos);
-
-        addWidget(b, wpt);
-        return b;
-    }
-    //------------------------------------------------------------------------------------------------
-    StaticText* Window::addStaticText(const String &label,
-        WindowPlacementType wpt)
-    {
-        const size_t labelVisualSize = label.size()*7;
-        StaticText* o = createStaticText(
-            Vector4(mNextWidgetPos.x, mNextWidgetPos.y, labelVisualSize, 24),
-            label);
-
-        addWidget(o, wpt);
-        return o;
-    }
-    //------------------------------------------------------------------------------------------------
-	void Window::setSize(int X,int Y) 
-    {
-        Widget::setSize(X, Y);		
-        if (mResizerButton)
-		    mResizerButton->mMainOverlay->setPosition(mResizerButton->mPosX=mWidth-16,mResizerButton->mPosY=mHeight-16);
-		if(mTitleBarButton)
-        {
-            mTitleBarButton->mMainOverlay->setWidth(mTitleBarButton->mWidth=mWidth-22);
-            mCloseButton->mMainOverlay->setPosition(mCloseButton->mPosX = mWidth-22, 0);
-		}
-    }
-    //------------------------------------------------------------------------------------------------
-	Button* Window::createButton(const Vector4 &D, const String &M, const String &T, Callback C) 
-    {
-		Button *x = new Button(D, M, T, C, this);
-        mButtons.push_back(x);
-        mChildren.push_back(x);
-		return x;
-    }
-    //------------------------------------------------------------------------------------------------
-    MenuButton* Window::createMenuButton(const Vector4 &D, const String &M, const String &T, Callback C, Window *t) 
-    {
-        MenuButton *x = new MenuButton(D, M, T, C, this, t);
-        mButtons.push_back(x);
-        mChildren.push_back(x);
-        return x;
-    }
-    //------------------------------------------------------------------------------------------------
-    BoolButton* Window::createBoolButton(const Vector4 &D, const String &M, const String &T, Callback C, bool boolValue) 
-    {
-        BoolButton *x = new BoolButton(D, M, T, C, this, boolValue);
-        mButtons.push_back(x);
-        mChildren.push_back(x);
-        return x;
-    }
-    //------------------------------------------------------------------------------------------------
-	TextInput* Window::createTextInput(const Vector4 &D, const String &M, const String &V, int L)
-    {
-		TextInput *x = new TextInput(D,M,V,L,this);
-        mTextInput.push_back(x);
-        mChildren.push_back(x);
-		return x;
-    }
-    //------------------------------------------------------------------------------------------------
-    RealButton *Window::createRealButton(Ogre::Real value, 
-        const Ogre::Vector4 &SliderMoves, 
-        const String &label,
-        const Ogre::Vector2 &pos)
-    {
-
-        RealButton *x = new RealButton(this, 
-            value, 
-            SliderMoves,
-            label, 
-            pos);
-
-        mChildren.push_back(x);
-
-        return x;
-    }
-    //------------------------------------------------------------------------------------------------
-	bool Window::checkKey(const String & k, int px, int py) {
+namespace BetaGUI {
+	////////////////////////////////////////////////////////////////////////////////////
+	WidgetStyle::WidgetStyle(const Ogre::String &style) {
+		mBackground = "default"; centerText = false; mColour = Ogre::ColourValue::White; mDecalSize = 0;
+		mHeight = 16; mFontSize = 0; mFontFace = ""; if (style.length()>=0) fromStyle(style);}
+	////////////////////////////////////////////////////////////////////////////////////
+	GUI::GUI(Ogre::RenderWindow* w) : mWindowToDestroy(0), mMousePointer(0), mWindowCount(0), mButtonCount(0),
+		mTextInputCount(0), mRenderWindowWidth(w->getWidth()), mRenderWindowHeight(w->getHeight()),
+		mWindowRatio(Ogre::Real(mRenderWindowWidth) / Ogre::Real(mRenderWindowHeight)) {
+			mOverlay = Ogre::OverlayManager::getSingleton().create("BetaGUI");
+			mOverlay->show();}
+	////////////////////////////////////////////////////////////////////////////////////
+	GUI::~GUI() {
+		for(unsigned int i=0;i < mWindow.size();i++) delete mWindow[i];
+		for (std::map<Ogre::String, Style*>::iterator it = mStyle.begin();it!=mStyle.end();it++) delete (*it).second;
+		mStyle.clear(); mWindow.clear();}
+	////////////////////////////////////////////////////////////////////////////////////
+	bool GUI::injectRelMouse(int x, int y, bool LMB) {
+		return injectMouse(mMousePointer->getLeft() + x, mMousePointer->getTop() + y, LMB);}
+	////////////////////////////////////////////////////////////////////////////////////
+	bool GUI::injectMouse(unsigned int x, unsigned int y, bool LMB) {
 		
-		if (!mMainOverlay->isVisible())
+		if (mMousePointer)
+			mMousePointer->setPosition(x,y);
+
+		for(std::vector<Window*>::iterator i=mWindow.begin();i!=mWindow.end();i++) {
+			if (mWindowToDestroy == (*i)) {
+				delete (*i);
+				mWindow.erase(i);
+				mWindowToDestroy = 0;
+				return false;
+			}
+
+			if((*i)->check(x,y,LMB)) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+	bool GUI::injectKey(const Ogre::String& key, unsigned int x, unsigned int y) {
+		for(unsigned int i=0;i<mWindow.size();i++) {
+			if(mWindow[i]->checkKey(key,x,y)) {
+				return true;}}
+		return false;
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+/*	void GUI::injectBackspace(unsigned int x, unsigned int y) {
+		injectKey("!b", x, y);
+	}
+*/
+	////////////////////////////////////////////////////////////////////////////////////
+	Ogre::OverlayContainer* GUI::__getOverlay(const Ogre::String& name, const Ogre::String& type,int x,int y, int w, int h) {
+		Ogre::OverlayContainer* oc; try { oc = static_cast<Ogre::OverlayContainer*>(Ogre::OverlayManager::getSingleton().getOverlayElement(name));
+		}catch(...) {oc = static_cast<Ogre::OverlayContainer*>(Ogre::OverlayManager::getSingleton().createOverlayElement(type, name));}
+		oc->setMetricsMode(Ogre::GMM_PIXELS);
+		if (x==0&&y==0&&w==0)return oc; oc->setPosition(x,y); oc->setDimensions(w,h); return oc;
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+	Ogre::OverlayContainer* GUI::createOverlayFromWidgetStyle(const Ogre::String &name, const Ogre::String &styleName, const Ogre::String &widgetType, int x, int y, const Ogre::String &text) {
+		WidgetStyle ws = mStyle[styleName]->mWidgets[widgetType];
+		Ogre::OverlayContainer* oc = __getOverlay(name,"Panel", x,y, 32, ws.mHeight);
+		oc->setMaterialName(ws.mBackground);
+		if (text.length() >= 1) {
+			int fontSize = ws.mFontSize ? ws.mFontSize : mStyle[styleName]->mFontSize;
+			Ogre::String fontName = ws.mFontFace.length() ? ws.mFontFace : mStyle[styleName]->mFontFace;
+			Ogre::OverlayContainer* caption = __getOverlay(name + "-caption", "TextArea", 0,((ws.mHeight * 0.5f) - ((float) fontSize) * 0.5f) * mWindowRatio, 32, fontSize);
+			oc->addChild(caption);
+			caption->setCaption(text);caption->setParameter("font_name", fontName);caption->setParameter("char_height", Ogre::StringConverter::toString(fontSize));
+			Ogre::Font* f = dynamic_cast<Ogre::Font*>(Ogre::FontManager::getSingletonPtr()->getByName(fontName).get());
+			f->setTrueTypeSize(fontSize);	float textWidth = 0; Ogre::Real sp = f->getGlyphAspectRatio(0x0030) * fontSize;
+			for(unsigned int i=0; i < text.length();i++){	
+				if (text[i] == 0x0020)	textWidth += sp;
+				else textWidth += f->getGlyphAspectRatio(text[i]) * fontSize;}
+			oc->setWidth(Ogre::Math::Ceil(textWidth * 1.25f));	caption->setWidth(textWidth); caption->setHeight(fontSize);
+			if (ws.centerText) caption->setLeft(textWidth * 0.125f);
+			caption->setColour(ws.mColour);}
+		return oc;
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+	Ogre::OverlayContainer* GUI::createOverlayFromWindowStyle(const Ogre::String &name, const Ogre::String &styleName, int x, int y, int w, int h) {
+		Ogre::OverlayContainer* oc = __getOverlay(name);
+		oc->setPosition(x,y);oc->setDimensions(w,h);oc->setMaterialName(mStyle[styleName]->mWindow_Background);
+		return oc;
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+	void GUI::__updateCenteredOverlay(Ogre::OverlayContainer* overlay) {
+		Ogre::OverlayContainer* caption = static_cast<Ogre::OverlayContainer*>(overlay->getChild(overlay->getName() + "-caption"));
+		caption->setLeft((overlay->getWidth() * 0.5f) - (caption->getWidth() * 0.5f));
+		caption->setTop(2 + (overlay->getHeight() * 0.5f) - (caption->getHeight() * 0.5f));
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+	Ogre::OverlayContainer* GUI::createMousePointer(const Ogre::String& m, unsigned int w, unsigned int h) {
+		Ogre::Overlay* o = Ogre::OverlayManager::getSingleton().create("BetaGUI.MP");
+		mMousePointer = __getOverlay("BetaGUI.MousePointer", "Panel", mRenderWindowWidth * 0.5f, mRenderWindowHeight * 0.5f, w, h);
+		mMousePointer->setMaterialName(m);
+		o->setZOrder(649); o->add2D(mMousePointer); o->show(); mMousePointer->show();
+		return mMousePointer;
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+	Style*	GUI::createStyle(const Ogre::String& name) {
+		mStyle[name] = new Style;
+		return mStyle[name];
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+	Window*	 GUI::createWindow(int x, int y, unsigned int width, unsigned int height, const Ogre::String& style, WindowFeatureType type, const Ogre::String& caption, GUIListener* listener) {
+		Window* window = new BetaGUI::Window(x,y,width,height, style,type,caption, listener, this);
+		mWindow.push_back(window);
+		return window;
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+	void GUI::destroyWindow(Window *window) {
+		mWindowToDestroy=window;}
+	////////////////////////////////////////////////////////////////////////////////////
+	Window::Window(int X, int Y, unsigned int width, unsigned int height, const Ogre::String& style, WindowFeatureType type, const Ogre::String& caption, GUIListener* listener, GUI* gui) 
+		: x(X), y(Y), w(width), h(height), mGUI(gui), mTitlebarButton(0), mResizeButton(0), mActiveTextInput(0), mActiveButton(0), mStyle(style), mMode(WM_NONE), mListener(listener)
+	{
+
+		const Ogre::String overlayID = gui->mOverlay->getName() + "/window;" + Ogre::StringConverter::toString(gui->mWindowCount++);
+		mOverlay = gui->createOverlayFromWindowStyle(overlayID,style,x,y,w,h);
+		gui->mOverlay->add2D(mOverlay);
+		mOverlay->show();
+
+		if (type == WFT_RESIZE || type == WFT_RESIZE_AND_MOVE) {
+	//		Callback c;c.t=4;
+	//		mResizeButton=createButton(Ogre::Vector4(width-16,height-16,16,16),"bgui.button", "",c);
+	//		mResizeButton = new Button(0,0,mWidth,0, caption, this, WR_RESIZE);
+//			mButtons.push_back(mResizeButton);
+		}
+
+		if (type == WFT_MOVE || type == WFT_RESIZE_AND_MOVE) {
+			mTitlebarButton = new Button(0,0,w,32,caption, this, WR_DRAG);
+			mButtons.push_back(mTitlebarButton);
+		}
+
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+	Window::~Window() {
+		for(unsigned int i=0;i<mButtons.size();i++)			delete mButtons[i];
+		for(unsigned int i=0;i<mTextInputs.size();i++)		delete mTextInputs[i];
+		mGUI->mOverlay->remove2D(mOverlay);
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+	void Window::setPosition(unsigned int X,unsigned int Y) {
+		mOverlay->setPosition(x=X,y=Y);
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+	Ogre::Vector2 Window::getPosition() {	return Ogre::Vector2(x,y);		}
+	Ogre::Vector2 Window::getSize()		{	return Ogre::Vector2(w,h);		}
+	////////////////////////////////////////////////////////////////////////////////////
+	void Window::setSize(unsigned int X,unsigned int Y) {
+		mOverlay->setDimensions(w=X,h=Y);
+		if (mResizeButton)			mResizeButton->mOverlay->setPosition(mResizeButton->x=w-16,mResizeButton->y=h-16);
+		if(mTitlebarButton)			mTitlebarButton->mOverlay->setWidth(mTitlebarButton->w=w);}
+	////////////////////////////////////////////////////////////////////////////////////
+	Button* Window::createButton(int x, int y, const Ogre::String& caption, ButtonMethodPtr method) {
+		Button *button = new Button(x,y, caption, method, this);
+		mButtons.push_back(button);
+		return button;
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+	Button::Button(int X, int Y, const Ogre::String& caption, ButtonMethodPtr method, Window *parent)
+		:x(X), y(Y), mMethod(method), mParent(parent), mOverlay(0), mCaptionOverlay(0), mDecalLeft(0), mDecalRight(0), mRole(WR_NONE)
+	{
+
+		int decalWidth = parent->mGUI->mStyle[parent->mStyle]->mWidgets["button"].mDecalSize;
+		Ogre::String overlayID = parent->mOverlay->getName() + "/button;" + Ogre::StringConverter::toString(parent->mGUI->mButtonCount++);
+		mOverlay = mParent->mGUI->createOverlayFromWidgetStyle(overlayID, parent->mStyle, "button", x + decalWidth, y, caption);
+
+		h = mOverlay->getHeight();
+
+		parent->mOverlay->addChild(mOverlay);
+		mOverlay->show();
+
+		mBackground_Normal = mOverlay->getMaterialName();
+		mBackground_Active = mBackground_Normal + "-active";
+		
+		if (decalWidth != 0){	mOverlay->addChild(mDecalLeft = parent->mGUI->__getOverlay(mOverlay->getName() + ",L", "Panel", -decalWidth,0, decalWidth, mOverlay->getHeight()));
+								mDecalLeft->setMaterialName(mOverlay->getMaterialName() + "L");
+								mOverlay->addChild(mDecalRight = parent->mGUI->__getOverlay(mOverlay->getName() + ",R", "Panel", mOverlay->getWidth(),0, decalWidth, mOverlay->getHeight())); 
+								mDecalRight->setMaterialName(mOverlay->getMaterialName() + "R");
+								w = mOverlay->getWidth() + mDecalLeft->getWidth();}
+
+		else{					w = mOverlay->getWidth();}
+
+		if (caption.length() == 0) return;
+		if (x < 0){		x = parent->getSize().x - w - Ogre::Math::Abs(x);
+						mOverlay->setLeft(x);}
+
+		if (y < 0){		y = parent->getSize().y - h - Ogre::Math::Abs(y);
+						mOverlay->setTop(y);}
+
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+	Button::Button(int X, int Y, int W, int H, const Ogre::String& caption, Window *parent, WindowRole role)
+		:x(X), y(Y), w(W), h(H), mParent(parent), mOverlay(0), mCaptionOverlay(0), mDecalLeft(0),
+		mDecalRight(0), mRole(role) {
+
+		Ogre::String overlayID = parent->mOverlay->getName() + "/titlebar";
+		parent->mGUI->mButtonCount++;
+		if (mRole == WR_DRAG) {
+			mOverlay = mParent->mGUI->createOverlayFromWidgetStyle(overlayID, parent->mStyle, "titlebar", x, y, caption);
+			parent->mOverlay->addChild(mOverlay);
+			mOverlay->setWidth(W);
+			parent->mGUI->__updateCenteredOverlay(mOverlay);
+			mOverlay->show();
+			
+			w = mOverlay->getWidth();
+			h = mOverlay->getHeight();
+			mBackground_Normal = mOverlay->getMaterialName();
+			mBackground_Active = mBackground_Normal;
+			return;
+		}
+
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+	void Button::setToActive() {
+		mOverlay->setMaterialName(mBackground_Active);
+		if (mDecalLeft == 0)
+			return;
+		mDecalLeft->setMaterialName(mBackground_Active + "L");
+		mDecalRight->setMaterialName(mBackground_Active + "R");
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+	void Button::setToNormal() {
+		mOverlay->setMaterialName(mBackground_Normal);
+		if (mDecalLeft == 0)
+			return;
+		mDecalLeft->setMaterialName(mBackground_Normal + "L");
+		mDecalRight->setMaterialName(mBackground_Normal + "R");
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+	TextInput* Window::createTextInput(int x, int y, int w, const Ogre::String& initialValue, unsigned maxLength) {
+		TextInput *textinput = new TextInput(x,y,w, initialValue, maxLength, this);
+		mTextInputs.push_back(textinput);
+		return textinput;
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+	Ogre::OverlayContainer* Window::createStaticText(int x, int y, const Ogre::String& caption) {
+		Ogre::OverlayContainer* text = mGUI->__getOverlay(mOverlay->getName() + "/text;" + Ogre::StringConverter::toString(mGUI->mButtonCount++), "TextArea", x,y,64,30);
+		text->setCaption(caption);
+		text->setParameter("font_name", mGUI->mStyle[mStyle]->mFontFace);
+		text->setParameter("char_height", Ogre::StringConverter::toString(mGUI->mStyle[mStyle]->mFontSize));
+		text->show();
+		mOverlay->addChild(text);
+		return text;
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+	TextInput::TextInput(int X, int Y, int W, const Ogre::String& initialValue, unsigned maxLength, Window *parent)
+		: x(X), y(Y), mValue(initialValue), mLength(maxLength), mParent(parent)
+	//	: x(D.x),y(D.y),w(D.z),h(D.w),value(V),mBackground_Normal(M), mBackground_Active(M), length(L) 
+	{
+		int decalWidth = parent->mGUI->mStyle[parent->mStyle]->mWidgets["textinput"].mDecalSize;
+		
+		Ogre::String overlayID = parent->mOverlay->getName() + "/textinput;" + Ogre::StringConverter::toString(parent->mGUI->mTextInputCount++);
+		mOverlay = mParent->mGUI->createOverlayFromWidgetStyle(overlayID, parent->mStyle, "textinput", x + 0, y, initialValue);
+		parent->mOverlay->addChild(mOverlay);
+		mOverlay->show();
+
+		if (mOverlay->getWidth() < W) {
+			mOverlay->setWidth(W);
+		}
+
+
+		if (decalWidth != 0) {
+			mDecalLeft = static_cast<Ogre::OverlayContainer*>(Ogre::OverlayManager::getSingleton().createOverlayElement("Panel", mOverlay->getName() + ",L"));
+			mOverlay->addChild(mDecalLeft);
+			mDecalLeft->setMetricsMode(Ogre::GMM_PIXELS);
+			mDecalLeft->setPosition(-decalWidth,0);
+			mDecalLeft->setDimensions(decalWidth,mOverlay->getHeight());
+			mDecalLeft->setMaterialName(mOverlay->getMaterialName() + "L");
+
+			mDecalRight = static_cast<Ogre::OverlayContainer*>(mDecalLeft->clone(mOverlay->getName() + ",R"));
+			mOverlay->addChild(mDecalRight);
+			mDecalRight->setLeft(mOverlay->getWidth());
+			mDecalRight->setMaterialName(mOverlay->getMaterialName() + "R");
+		
+			w = mOverlay->getWidth() + mDecalLeft->getWidth();
+		}
+		else {
+			w = mOverlay->getWidth();
+		}
+		h = mOverlay->getHeight();
+
+
+		mBackground_Normal = mOverlay->getMaterialName();
+		mBackground_Active = mBackground_Normal + "-active";
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+	bool Window::checkKey(const Ogre::String& k, unsigned int px, unsigned int py) {
+		
+		if (!mOverlay->isVisible())
 			return false;
 
-		if(isOut(px, py)) {
-			if (mFadeOut) {
-				mGUI->addEffect(new BetaGUI::AlphaEffect(this, 0.25f, 1, 0,0));
-			}
-		    return false;
-		}
-        
+		if(!(px>=x&&py>=y)||!(px<=x+w&&py<=y+h))return false;
+		
 		if(mActiveTextInput == 0)
 			return false;
 		
-		if(k=="!b") 
-        {
-			mActiveTextInput->setValue(mActiveTextInput->mValueText.substr(0,mActiveTextInput->mValueText.length()-1));
+		if(k=="!b") {
+			mActiveTextInput->setValue(mActiveTextInput->mValue.substr(0,mActiveTextInput->mValue.length()-1));
 			return true;
 		}
 
-		if(mActiveTextInput->mValueText.length() >= mActiveTextInput->length)
+		if(mActiveTextInput->mValue.length() >= mActiveTextInput->mLength)
 			return true;
 		
-		mActiveTextInput->mCaptionOverlay->setCaption(mActiveTextInput->mValueText+=k);
+		mActiveTextInput->mCaptionOverlay->setCaption(mActiveTextInput->mValue+=k);
 		return true;
-    }
-    //------------------------------------------------------------------------------------------------
-	bool Window::check(int px, int py, bool LMB) 
-    {   
-		if (mUnderEffect)
-            return false;
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+	bool Window::check(unsigned int px, unsigned int py, bool LMB) {
+		if (!mOverlay->isVisible())	return false;
+		if (mMode == WM_DRAG) {
+			if (LMB){	setPosition(px + dx, py + dy);
+			}else		mMode = WM_NONE;
+			return true;}
+		if (mMode == WM_LMB_DOWN){
+				if (!LMB){	(mListener->*mActiveButton->mMethod)(mActiveButton, FS_SELECT_OFF);
+								mMode = WM_NONE;}
+				else{	return false;}}
+		if (!(px >= x && py >= y) || !(px <= x + w && py <= y + h)){
+			if (mActiveButton){		mActiveButton->setToNormal();
+									mActiveButton = 0;}
+			return false;}
+		
+		for (unsigned int i=0;i < mButtons.size();i++) {
 
-        if (isOut(px, py))
-        {
-
-			if (mActiveButton) 
-            {
-                mActiveButton->over(false);
-				if (mActiveButton->mCallback.mCallbackType == 2) 
-                {
-					mActiveButton->mCallback.mListener->onButtonPress(mActiveButton, 3);
-					
+			if (mButtons[i]->out(px,py,x,y)) {
+				if (mActiveButton) {
+					mActiveButton->setToNormal();
+					mActiveButton = 0;
 				}
-                mGUI->mActiveButton = 0;
-				mActiveButton = 0;
-			}
-            if (mActiveTextInput)
-            {
-                mGUI->mActiveTextInput = 0;
-                mActiveTextInput = 0;
-            }
-
-			if (mFadeOut) {
-				mGUI->addEffect(new BetaGUI::AlphaEffect(this, 0.25f, 1, 0,0));
-			}
-
-            over(false);
-            return false;
-		}
-
-
-        bool event_consumed = false;
-       // if we're inside window, local_x and local_y has to be positive
-        const int local_x = px - mPosX;
-        const int local_y = py - mPosY;
-        for(std::vector<Button*>::iterator i=mButtons.begin();i!=mButtons.end();++i)
-        {
-			
-
-			if ((*i)->isOut(local_x, local_y))
 				continue;
+			}
 		
-			if (mActiveButton) 
-            {
-				if (mActiveButton != (*i)) 
-                {
-					mActiveButton->over(false);
-					if (mActiveButton->mCallback.mCallbackType == 2) 
-                    {
-						mActiveButton->mCallback.mListener->onButtonPress(mActiveButton, 3);
-                        mDragType = WA_NONE;
-                        mGUI->mActiveButton = 0;
-                        mActiveButton = 0;
-					}
+			mActiveButton=mButtons[i];
+
+			if (LMB) {
+				mActiveButton->setToActive();
+
+				if (mActiveButton->mRole == WR_NONE) {
+					mMode = WM_LMB_DOWN;
+					(mListener->*mActiveButton->mMethod)(mActiveButton, FS_SELECT);
 				}
+				else if(mActiveButton->mRole==WR_DRAG) {
+					mMode = WM_DRAG;
+					dx = (int) x - px;	dy = (int) y - py;
+					return true;
+				}
+				// Call function
+				// Some how make sure it only calls it once.
+			}
+			else {
+				mActiveButton->setToNormal();
 			}
 
-			
-			if(mActiveTextInput && LMB) 
-            {
-				mActiveTextInput->mMainOverlay->setMaterialName(mActiveTextInput->mMaterialName);
-                mGUI->mActiveTextInput = 0;
-                mActiveTextInput=0;
+			if(mActiveTextInput && LMB) {
+				// mActiveTextInput->setToNormal();
+				mActiveTextInput=0;
 			}
 
-            mActiveButton = (*i);
-            mActiveButton->over(true);
-            mGUI->mActiveButton = mActiveButton;
-            if (LMB)
-            {
-                if (mActiveButton == mTitleBarButton) 
-                {
-                    mDragType = WA_MOVE;
-                    mGUI->mDragX = px;
-                    mGUI->mDragY = py;
-                    mGUI->mDragWindowX = mPosX;
-                    mGUI->mDragWindowY = mPosY;
-                    mActiveButton->activate(true);
-                    return true;
-                }
-                else if (mActiveButton == mResizerButton) 
-                {
-                    mDragType = WA_RESIZE;
-                    mGUI->mDragX = px;
-                    mGUI->mDragY = py;
-                    mGUI->mDragWindowX = mWidth;
-                    mGUI->mDragWindowY = mHeight;
-                    mActiveButton->activate(true);
-                    return true;
-                }
-                else 
-                {
-                    mDragType = WA_PRESS;
-                }               
-            }
-            else
-            {
-                mDragType = WA_NONE;
-            }
-
-            switch (mActiveButton->mCallback.mCallbackType) 
-            {
-            case 1: 
-                mActiveButton->mCallback.fp(mActiveButton, LMB);
-                break; 
-            case 2:
-                mActiveButton->mCallback.mListener->onButtonPress(mActiveButton, LMB);
-                break;        
-            default: 
-                if (LMB) 
-                    mActiveButton->activate(true);
-                break; 
-            }
-
-            event_consumed = true;
+			return true;
 		}
 
-        if (!event_consumed)
-        {
-            if (mActiveButton) 
-            {
-                mActiveButton->over(false);
-                if (mActiveButton->mCallback.mCallbackType == 2) 
-                {
-                    mActiveButton->mCallback.mListener->onButtonPress(mActiveButton, 3);
+		if (!LMB)
+			return false;
 
-                    mDragType = WA_NONE;
-                    mGUI->mActiveButton = 0;
-                    mActiveButton = 0;
-                }
-            }
+		for (unsigned int i=0;i<mTextInputs.size();i++) {
+	
+			if (mTextInputs[i]->in(px,py,x,y))
+				continue;
 
-        
-            for(std::vector<TextInput*>::iterator i=mTextInput.begin();i!=mTextInput.end();++i)
-            {    	
-		        if ((*i)->isOut(local_x, local_y))
-			        continue;
-
-                mGUI->mActiveTextInput = (*i);
-		        mActiveTextInput = (*i);
-		        mActiveTextInput->mMainOverlay->setMaterialName(mActiveTextInput->mMaterialName + ".over");
-		        
-                event_consumed = true;
-	        }
-        }
-
-	    if (!event_consumed && mActiveTextInput) 
-        {
-		    mActiveTextInput->mMainOverlay->setMaterialName(mActiveTextInput->mMaterialName);
-            mActiveTextInput=0;
-            mGUI->mActiveTextInput = 0;
-        }        
-
-        over(true);
-		return event_consumed;
-    }
-    //------------------------------------------------------------------------------------------------
-    StaticText* Window::createStaticText(const Vector4 &D, const String & T) 
-    {
-        StaticText *x = new StaticText(D, T, this); 
-        mChildren.push_back(x);
-        return x;
-    }
-    //------------------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------
-    Button::Button(const Vector4 &Dimensions, const String & m, const String &Text, Callback cb, Window *parent)
-		: 
-     Widget (Dimensions, m)
-	{
-		Ogre::ResourcePtr ma=Ogre::MaterialManager::getSingleton().getByName(mMaterialName + ".active");
+			mActiveTextInput=mTextInputs[i];
+			mActiveTextInput->mOverlay->setMaterialName(mActiveTextInput->mBackground_Active);
+			return true;
+		}
 		
-		mMainOverlay = parent->mGUI->createOverlay(parent->mMainOverlay->getName() + "b" + StringConverter::toString(parent->mGUI->mButtonCount++), 
-            Vector2(mPosX, mPosY),
-            Vector2(mWidth, mHeight),
-            m,
-            "");
-		mCaptionOverlay = parent->mGUI->createOverlay(mMainOverlay->getName() + "c" + StringConverter::toString(parent->mGUI->mButtonCountTextArea++),
-                                            Vector2(4,(mHeight - parent->mGUI->mFontSize) / 2),
-                                            Vector2(mWidth, mHeight),
-                                            "",
-                                            Text);
-
-        if (mCaptionOverlay->getParent () != mMainOverlay)
-            mMainOverlay->addChild(mCaptionOverlay);
-
-        if (mMainOverlay->getParent () != parent->mMainOverlay)
-            parent->mMainOverlay->addChild(mMainOverlay);
-
-        mCaptionOverlay->show ();
-        mMainOverlay->show ();
-        mCallback = cb;
-     }
-     //------------------------------------------------------------------------------------------------
-     //------------------------------------------------------------------------------------------------
-     //------------------------------------------------------------------------------------------------
-     void MenuButton::activate(const bool a) 
-     {       
-         if (mTarget->getUnderEffect())
-             return;
-
-         Widget::activate (a);
-
-         GUI * const g = mTarget->getGUI();
-         const Ogre::Real t = g->getUpTime ();
-         if (mTarget->isVisible ())
-             g->addEffect(new AlphaEffect(mTarget, 0.5, 1, 0, 0));
-         else
-             g->addEffect(new AlphaEffect(mTarget, 0.5, 0, 1, 0));
-     }
-     //------------------------------------------------------------------------------------------------
-     //------------------------------------------------------------------------------------------------
-     //------------------------------------------------------------------------------------------------
-     void BoolButton::activate(const bool a) 
-     {      
-         Widget::activate (a);
-         mBoolValue = !mBoolValue;
-     }
-     //------------------------------------------------------------------------------------------------
-     //------------------------------------------------------------------------------------------------
-     //------------------------------------------------------------------------------------------------
-     TextInput::TextInput(const Vector4 &D, const String & M, const String & V, unsigned int L, Window *P)
-		: Widget (D, M), mValueText(V), length(L) 
-	{
-		ResourcePtr ma=Ogre::MaterialManager::getSingleton().getByName(mMaterialName);
-
-        mMainOverlay = P->mGUI->createOverlay(
-            P->mMainOverlay->getName() + "t" + StringConverter::toString(P->mGUI->mTextCaptionCount++),
-            Vector2(mPosX, mPosY),
-            Vector2(mWidth, mHeight),
-            M,"");
-		mCaptionOverlay = P->mGUI->createOverlay(
-            mMainOverlay->getName() + "c" + StringConverter::toString(P->mGUI->mTextCaptionCountArea++),
-            Vector2(4, (mHeight - P->mGUI->mFontSize) / 2),
-            Vector2(mWidth, mHeight),"",V);
-
-        if (mMainOverlay->getParent () != P->mMainOverlay)
-            P->mMainOverlay->addChild(mMainOverlay);
-		mMainOverlay->show();
-
-        if (mCaptionOverlay->getParent () != mMainOverlay)
-            mMainOverlay->addChild(mCaptionOverlay);
-		mCaptionOverlay->show();
-    }
-     //------------------------------------------------------------------------------------------------
-     //------------------------------------------------------------------------------------------------
-     //------------------------------------------------------------------------------------------------
-     StaticText::StaticText(const Vector4 &D, const String & V, Window *P)
-        : 
-            Widget (D, ""), 
-          mParent(P),
-          mValueText(V)
-    {        
-
-        mMainOverlay = P->mGUI->createOverlay(
-            P->mMainOverlay->getName() + "st" + StringConverter::toString(P->mGUI->mTextCaptionCount++),
-            Vector2(mPosX, mPosY),
-            Vector2(mWidth, mHeight),"","");
-        mCaptionOverlay = P->mGUI->createOverlay(
-            mMainOverlay->getName() + "c" + StringConverter::toString(P->mGUI->mTextCaptionCountArea++),
-            Vector2(4, (mHeight - P->mGUI->mFontSize) / 2),
-            Vector2(mWidth, mHeight),
-            "",V);
-
-        if (mMainOverlay->getParent () != P->mMainOverlay)
-            P->mMainOverlay->addChild(mMainOverlay);
-        mMainOverlay->show();
-
-        if (mCaptionOverlay->getParent () != mMainOverlay)
-            mMainOverlay->addChild(mCaptionOverlay);
-        mCaptionOverlay->show();
-    }
-    //------------------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------
-    RealButton::RealButton(
-        Window*            window, 
-        Real              value, 
-        const Vector4 &    SliderMoves,
-        const String  &    label, 
-        const Vector2 &    widgetPos) :
-        Widget(Vector4 (widgetPos.x, widgetPos.y, 0, 0), ""),
-        mValue           (value),
-        mValueText (Ogre::StringConverter::toString (value)),
-        mLowSlideUnit    (SliderMoves.x),
-        mFastSlideUnit   (SliderMoves.y),
-        mMinValue        (SliderMoves.z),
-        mMaxValue        (SliderMoves.w)
-      {
-        const Real charheight =  24.0;
-        const Real charlength =  7.0;
-        const Real labelLength =  charlength * label.size();
-        const Real inputLength =  charlength * 5;
-
-        Vector2 pos (widgetPos);
-
-        mPosX = pos.x; 
-        mPosY = pos.y;
-        mWidth = labelLength           // value label.
-            + inputLength    // input text value.
-            + charlength + 1 // 2 buttons with single char to change value.
-            + 2 * charlength + 2 // 2 buttons with 2 char to change value.
-            + 12; // each item is has 1 inter space.
-        mHeight = charheight;
-
-        Vector4 itemDimension (pos.x, pos.y, labelLength, mHeight);
-
-        window->createStaticText(itemDimension, label);
-
-        pos.x += labelLength + 1; 
-        itemDimension.x = pos.x;
-        itemDimension.z = charlength*2 + 2;
-        mFastRewind    = window->createButton(itemDimension,  "bgui.button", "<=", Callback(this));
-
-        pos.x += charlength*2 + 4;
-        itemDimension.x = pos.x;
-        itemDimension.z = charlength + 1;
-        mRewind        = window->createButton(itemDimension, "bgui.button", "-",  Callback(this));
-
-        pos.x += charlength + 2;
-        itemDimension.x = pos.x;
-        itemDimension.z = inputLength;
-        mtextValueInput             = window->createTextInput(itemDimension, 
-            "bgui.textinput", 
-            StringConverter::toString (value), 5);
-
-        pos.x += inputLength + 1;
-        itemDimension.x = pos.x;
-        itemDimension.z = charlength + 1;
-        mForward       = window->createButton(itemDimension, "bgui.button", "+",  Callback(this));
-
-        pos.x += charlength*2 + 2;
-        itemDimension.x = pos.x;
-        itemDimension.z = charlength*2 + 2;
-        mFastForward   = window->createButton(itemDimension, "bgui.button", "=>", Callback(this));
-
-        pos.x += charlength*2 + 2;
-
-        mWidth = pos.x;
-        mHeight = pos.y;
-    } 
-    //------------------------------------------------------------------------------------------------
-    void RealButton::setValue(const Ogre::Real v) 
-    {
-        mValue = std::min(mMaxValue, std::max(v, mMinValue)); 
-        mValueText = Ogre::StringConverter::toString (v); 
-        mtextValueInput->setValue(mValueText);
-    }
-    //------------------------------------------------------------------------------------------------
-    void RealButton::onButtonPress(Button *ref, Ogre::uchar type)
-    {
-        if(type == 1) // button down
-        {
-            if(ref == mForward)
-            {
-                setValue(getValue () + mLowSlideUnit);
-            }
-            else if(ref == mFastForward)
-            {
-                setValue(getValue () + mFastSlideUnit);
-            }
-            else if(ref == mRewind)
-            {
-                setValue(getValue () - mLowSlideUnit);
-            }
-            else if(ref == mFastRewind)
-            {
-                setValue(getValue () - mFastSlideUnit);
-            }
-        }
-    }
-    //------------------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------
-    bool Effect::update(Ogre::Real timeElapsed)
-    {
-        mCurrTime += timeElapsed;
-        if (mCurrTime >= mStartTime)
-        {
-            const bool finished = getTimeOrIsFinished();
-
-            if (finished)
-            {
-                updateValue(Ogre::Real(1.0));
-            }
-            else
-            {
-                mWidget->setUnderEffect(true);
-                updateValue(getTimeFactor());
-            }
-            return finished;
-        }
-        // not yet started.
-        return false;
-    }
-    //------------------------------------------------------------------------------------------------
-    Ogre::Real Effect::getTimeFactor() 
-    {          
-        return (mCurrTime - mStartTime) / mDuration;
-    }
-    //------------------------------------------------------------------------------------------------
-    bool Effect::getTimeOrIsFinished()
-    {
-        if (mCurrTime - mStartTime > mDuration)
-        {
-            if (!mRepeat)
-            {
-               mCurrTime = mStartTime + mDuration;
-               return true;
-            }
-            while (mCurrTime - mStartTime > mDuration)
-                mCurrTime -= mDuration;
-        }
-        return false;
-    }
-    //------------------------------------------------------------------------------------------------
-    Ogre::Real Effect::interpolate(const Ogre::Real start, 
-        const Ogre::Real end, 
-        const Ogre::Real timeFactor) const
-    {
-        Ogre::Real factor;
-        switch(mType)
-        {
-        case EFFECT_SIN:
-            factor = Math::Sin(Radian(timeFactor * Math::TWO_PI));
-            break;
-        case EFFECT_LINEARX4:
-            factor = timeFactor * timeFactor * timeFactor * timeFactor;
-            break;
-        case EFFECT_LINEARX2:
-            factor = timeFactor * timeFactor;
-            break;
-        case EFFECT_LINEAR:
-        default:
-            factor = timeFactor;
-            break;
-        }
-        return (factor*end + (1 - factor)*start);
-    }
-    //------------------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------
-    void AlphaEffect::updateValue(const Ogre::Real factor)
-    {
-        mWidget->setAlpha(interpolate(mStartAlpha, mEndAlpha, factor), true);
-    }
-    //------------------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------
-    void SizeEffect::updateValue(const Ogre::Real factor)
-    {
-        mWidget->setSize(
-            Vector2(interpolate(mStartSize.x, mEndSize.x, factor),
-                    interpolate(mStartSize.y, mEndSize.y, factor))
-            );
-    }
-    //------------------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------
-    void MoveEffect::updateValue(const Ogre::Real factor)
-    {
-        mWidget->setPosition(
-             Vector2(interpolate(mStartPosition.x, mEndPosition.x, factor),
-                     interpolate(mStartPosition.y, mEndPosition.y, factor))
-            );
-    }
-    //------------------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------
-    void ActivateEffect::updateValue(const Ogre::Real factor)
-    {
-        mWidget->setMaterialBlendFactor(interpolate (0, 1, factor), true);
-    } 
-    //------------------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------
-    //------------------------------------------------------------------------------------------------
-    void OverEffect::updateValue(const Ogre::Real factor)
-    {
-        mWidget->setMaterialBlendFactor(interpolate (0, 1, factor), true);
-    }
-     //------------------------------------------------------------------------------------------------
-
-} // End of Betajaen's GUI. Normal programming
+		if(mActiveTextInput) {
+			mActiveTextInput->mOverlay->setMaterialName(mActiveTextInput->mBackground_Normal);
+			mActiveTextInput=0;
+			return true;
+		}
+		
+		return false;
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+	void Style::addStyle(Ogre::String widgetName, const Ogre::String& style) {
+		std::transform(widgetName.begin(),widgetName.end(),widgetName.begin(),tolower);
+		mWidgets[widgetName] = WidgetStyle(style);
+}
+	////////////////////////////////////////////////////////////////////////////////////
+	void WidgetStyle::fromStyle(const Ogre::String& p) {
+		static const std::string delims = " \t\r";
+		std::vector<std::string> ds = Ogre::StringUtil::split(p,";");
+		std::pair<std::string,std::string> d;
+		size_t dp;
+		for(std::vector<std::string>::iterator it = ds.begin();it != ds.end();++it) {
+			dp = (*it).find_first_of(":");
+			d.first = (*it).substr(0,dp);d.second = (*it).substr(dp+1, (*it).length() - dp - 1);
+			d.first.erase(d.first.find_last_not_of(delims)+1);d.first.erase(0,d.first.find_first_not_of(delims));
+			d.second.erase(d.second.find_last_not_of(delims)+1);d.second.erase(0,d.second.find_first_not_of(delims));
+			std::transform(d.first.begin(),d.first.end(),d.first.begin(),tolower);
+			if (Style::_set("background", d, mBackground)) continue;
+			if (Style::_set("font-face", d, mFontFace)) continue;
+			if (Style::_set("font-size", d, mFontSize)) continue;
+			if (Style::_set("decal-size", d, mDecalSize)) continue;
+			if (Style::_set("height", d, mHeight)) continue;
+			if (Style::_set("colour", d, mColour)) continue;
+			if (Style::_set("color", d, mColour)) continue;
+			if (d.first == "text-align"){
+				std::transform(d.second.begin(),d.second.end(),d.second.begin(),tolower);
+				if(d.second=="centre"||d.second=="center"){centerText=true;}
+			}
+		}
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+	bool Style::_set(const Ogre::String& i, std::pair<Ogre::String,Ogre::String>& d , unsigned int& t) {
+		if (d.first == i) {	t = Ogre::StringConverter::parseUnsignedInt(d.second); return true;}return false;}
+	bool Style::_set(const Ogre::String& i, std::pair<Ogre::String,Ogre::String>& d , int& t) {
+		if (d.first == i) {	t = Ogre::StringConverter::parseInt(d.second); return true;} return false;}
+	bool Style::_set(const Ogre::String& i, std::pair<Ogre::String,Ogre::String>& d, bool& t) {
+		if (d.first == i) {	t = Ogre::StringConverter::parseBool(d.second); return true;} return false;}
+	bool Style::_set(const Ogre::String& i , std::pair<Ogre::String,Ogre::String>& d, Ogre::Real& t) {
+		if (d.first == i) {	t = Ogre::StringConverter::parseReal(d.second);	return true;}return false;}
+	bool Style::_set(const Ogre::String& i, std::pair<Ogre::String,Ogre::String>& d, Ogre::String& t) {
+		if (d.first == i) {	t = d.second;return true;}return false;}
+	bool Style::_set(const Ogre::String& i, std::pair<Ogre::String,Ogre::String>& d, Ogre::ColourValue& t) {
+		if (d.first == i) {	t = Ogre::StringConverter::parseColourValue(d.second);return true;}return false;}
+	////////////////////////////////////////////////////////////////////////////////////
+	
+} // End of Betajaen's GUI. Normal programming can resume now. 

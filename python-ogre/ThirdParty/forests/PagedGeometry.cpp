@@ -151,9 +151,14 @@ void PagedGeometry::update()
 		camSpeed = (camPos - oldCamPos) / deltaTime;
 	}
 	oldCamPos = camPos;
+
+
 	
-	//Update all the page managers
 	if (pageLoader != 0){
+		//Update the PageLoader
+		pageLoader->frameUpdate();
+
+		//Update all the page managers
 		bool enableCache = true;
 		std::list<GeometryPageManager *>::iterator it;
 		GeometryPageManager *prevMgr = NULL;
@@ -181,7 +186,8 @@ void PagedGeometry::reloadGeometry()
 
 void PagedGeometry::reloadGeometryPage(const Vector3 &point)
 {
-	assert(pageLoader);
+	if (!pageLoader)
+		return;
 
 	std::list<GeometryPageManager *>::iterator it;
 	for (it = managerList.begin(); it != managerList.end(); ++it){

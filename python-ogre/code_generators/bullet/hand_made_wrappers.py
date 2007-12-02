@@ -3,7 +3,7 @@ import environment
 
 WRAPPER_WRAPPER_getName =\
 """
-    virtual char * getName(  ) const {
+    virtual const char * getName(  ) const {
         bp::override func_getName = this->get_override( "getName" );
         return func_getName(  );
     }
@@ -123,7 +123,6 @@ def apply_reg ( class_, code ):
         class_.add_registration_code ( c )
         
 def apply( mb ):
-
     rt = mb.class_( 'btCollisionShape' )   
     rt.add_wrapper_code ( WRAPPER_WRAPPER_getName )
     

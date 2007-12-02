@@ -1,15 +1,8 @@
-#include "boost/python.hpp"
+#include "python_ogre_precompiled.h"
 #include "boost/python/object.hpp"  //len function
 #include "boost/python/ssize_t.hpp" //ssize_t type definition
 #include "boost/python/detail/none.hpp"
 #include "tuples.hpp"
-#include "OgreColourValue.h"
-#include "OgreVector2.h"
-#include "OgreVector3.h"
-#include "OgreVector4.h"
-#include "OgreUTFString.h"
-#include "OgreMatrix3.h"
-#include "OgreMatrix4.h"
 
 namespace bpl = boost::python;
 

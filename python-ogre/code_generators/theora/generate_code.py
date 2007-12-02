@@ -458,6 +458,8 @@ def generate_code():
                         , environment.theora.cache_file )
 
     defined_symbols = [ 'THEORAVIDEO_PLUGIN_EXPORTS','OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY']
+    if os.name == 'nt':
+        defined_symbols.append ( 'WIN32' )
     if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')
         defined_symbols.append('BOOST_HAS_WINTHREADS')

@@ -1,51 +1,42 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUILabelArea.h"
 
 namespace QuickGUI
 {
-	LabelArea::LabelArea(const Ogre::String& instanceName, Size pixelSize, Ogre::String textureName, GUIManager* gm) :
-		Label(instanceName,pixelSize,textureName,gm),
-		mOffset(0.0),
+	LabelArea::LabelArea(const Ogre::String& name, GUIManager* gm) :
+		Label(name,gm),
+		mTextOffset(0.0),
 		mCaption("")
 	{
 		mWidgetType = TYPE_LABELAREA;
 		mSkinComponent = ".labelarea";
+		mSize = Size(200,100);
 		mAutoSize = false;
 
-		mTextList = new List(mInstanceName+".TextList",mSize,"",mGUIManager);
-		addChild(mTextList);
+		mTextList = dynamic_cast<List*>(_createComponent(mInstanceName+".List",TYPE_LIST));
+		mTextList->setSize(mSize);
 		mTextList->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 		mTextList->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
 
 		allowScrolling(true);
+
+		mTextHelper = new TextHelper();
 	}
 
 	LabelArea::~LabelArea()
 	{
+		delete mTextHelper;
 	}
 
 	int LabelArea::_getLine(int startIndex)
 	{
 		int end = startIndex + 1;
 		
-		Ogre::Real length = 0;
-		Ogre::FontPtr font = mText->getFont();
-		Ogre::Real fontTextureWidth = mText->getFontTextureWidth();
-		Ogre::Font::UVRect uvRect;
-		while( (end < static_cast<int>(mCaption.length())) && (length <= (mSize.width - mOffset)))
+		Ogre::Real width = 0;
+		while( (end < static_cast<int>(mCaption.length())) && (width <= (mSize.width - mTextOffset)))
 		{
-			if(mText->isWhiteSpace(mCaption[end]))
-			{
-				if(mText->isSpace(mCaption[end]))
-					uvRect = font->getGlyphTexCoords('r');
-				else if(mText->isTab(mCaption[end]))
-				{
-					uvRect = font->getGlyphTexCoords('r');
-					uvRect.right = uvRect.right + ((uvRect.right - uvRect.left) * (SPACES_PER_TAB - 1));
-				}
-			}
-			else
-				uvRect = font->getGlyphTexCoords(mCaption[end]);
-			length += (((uvRect.right - uvRect.left) * TEXT_MULTIPLIER) * fontTextureWidth);
+			width += mTextHelper->getGlyphWidth(mCaption[end]);
 			++end;
 		}
 
@@ -55,11 +46,19 @@ namespace QuickGUI
 		// Remaining portion of caption is larger than the width of the widget.
 		else
 		{
+			// end was incremented until larger than text width, decrement to ensure its less than text width.
+			--end;
+
+			int space = end;
 			// Iterate backwards until we find a space.
-			while( !mText->isSpace(mCaption[end]) )
-				--end;
+			while( (space > 0) && (!mTextHelper->isSpace(mCaption[space])) )
+				--space;
 			
-			return end;
+			// Gaurd against one long word
+			if(space == (startIndex - 1))
+				return end;
+			else
+				return space;
 		}
 	}
 
@@ -73,9 +72,9 @@ namespace QuickGUI
 		mTextList->allowScrolling(mScrollingAllowed);
 
 		if(allow)
-			mOffset = mTextList->mRightScrollBar->getWidth();
+			mTextOffset = mTextList->mRightScrollBar->getWidth();
 		else
-			mOffset = 0.0;
+			mTextOffset = 0.0;
 	}
 
 	void LabelArea::clearText()
@@ -92,7 +91,7 @@ namespace QuickGUI
 			dynamic_cast<TextBox*>(mTextList->getItem(i))->setTextColor(mDisabledTextColor);
 		}
 
-		Label::disable();
+		Widget::disable();
 	}
 
 	void LabelArea::enable()
@@ -102,7 +101,7 @@ namespace QuickGUI
 			dynamic_cast<TextBox*>(mTextList->getItem(i))->setTextColor(mTextColor);
 		}
 
-		Label::enable();
+		Widget::enable();
 	}
 
 	Ogre::UTFString LabelArea::getText()
@@ -130,7 +129,11 @@ namespace QuickGUI
 
 	void LabelArea::setFont(const Ogre::String& fontScriptName, bool recursive)
 	{
-		Label::setFont(fontScriptName,recursive);
+		if(fontScriptName == "")
+			return;
+
+		mTextHelper->setFont(fontScriptName);
+		Widget::setFont(fontScriptName,recursive);
 		setText(mCaption);
 	}
 
@@ -163,7 +166,6 @@ namespace QuickGUI
 			if( textBoxIndex >= mTextList->getNumberOfItems() )
 			{
 				tb = mTextList->addTextBox();
-				tb->setTexture("");
 			}
 			else
 				tb = dynamic_cast<TextBox*>(mTextList->getItem(textBoxIndex));

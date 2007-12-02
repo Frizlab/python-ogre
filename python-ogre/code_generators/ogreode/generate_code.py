@@ -38,7 +38,8 @@ def filter_declarations( mb ):
     global_ns = mb.global_ns
     global_ns.exclude()
 
-    global_ns.namespace("std").class_('list<Ogre::Plane, std::allocator<Ogre::Plane> >').exclude()
+# #     global_ns.namespace("std").class_('list<Ogre::Plane, std::allocator<Ogre::Plane> >').exclude()
+    
     if not environment.ogre.version.startswith("1.2") and os.name =='nt':
         mb.global_ns.class_( 'vector<Ogre::Vector4, std::allocator<Ogre::Vector4> >' ).exclude( )
     
@@ -116,12 +117,13 @@ def filter_declarations( mb ):
 #     print "\nCLASSES:::  Std"
 #     for c in global_ns.namespace('std').classes():
 #         print c.name, c
-    global_ns.namespace("std").class_('list<Ogre::Plane, std::allocator<Ogre::Plane> >').exclude()
-            
-#     print "\nCLASSES:::  Ode"
-#     for c in global_ns.namespace('OgreOde').classes():
+    global_ns.namespace("std").class_('list<Ogre::Plane, std::allocator<Ogre::Plane> >').include(already_exposed=True)  
+#     global_ns.class_('::std::list<Ogre::Plane, std::allocator<Ogre::Plane> >').include(already_exposed=True)      
+#     print "\nCLASSES:::  std"
+#     for c in global_ns.namespace('std').classes():
 #         print c.name, c
-#     print "\nCLASSES:::  Prefab"
+#     sys.exit()        
+# #     print "\nCLASSES:::  Prefab"
 #     for c in global_ns.namespace('OgreOde_Prefab').classes():
 #         print c.name, c
 #     print "\nCLASSES:::  Loader"

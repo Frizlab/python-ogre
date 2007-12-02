@@ -3,6 +3,7 @@
 
 #include "OgrePrerequisites.h"
 
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUIExportDLL.h"
 #include "QuickGUISize.h"
 

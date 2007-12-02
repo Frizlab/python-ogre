@@ -4,23 +4,29 @@
 #ifndef __QuickGuiSkinSetParser_h_
 #define __QuickGuiSkinSetParser_h_
 
-#include "OgrePrerequisites.h"
 #include "OgreScriptLoader.h"
+#include "OgrePrerequisites.h"
 
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUIExportDLL.h"
 
 namespace QuickGUI
 {
 	class ConfigNode;
 
+	// necessary to make use of QuickGUI's script parser.
+	void _QuickGUIExport registerScriptParser();
+
 	class _QuickGUIExport ConfigScriptLoader: public Ogre::ScriptLoader
 	{
 	public:
-		ConfigScriptLoader();
-		~ConfigScriptLoader();
+		static ConfigScriptLoader& getSingleton() 
+		{
+			static ConfigScriptLoader theLog;
+			return theLog;
+		}
 
-		inline static ConfigScriptLoader &getSingleton() { return *singletonPtr; }
-		inline static ConfigScriptLoader *getSingletonPtr() { return singletonPtr; }
+		inline static ConfigScriptLoader *getSingletonPtr() { return &getSingleton(); }
 
 		Ogre::Real getLoadingOrder() const;
 		const Ogre::StringVector &getScriptPatterns() const;
@@ -30,12 +36,15 @@ namespace QuickGUI
 		void parseScript(Ogre::DataStreamPtr &stream, const Ogre::String &groupName);
 
 	private:
-		static ConfigScriptLoader *singletonPtr;
+		ConfigScriptLoader();   // ctor is hidden
+		ConfigScriptLoader(ConfigScriptLoader const&);	// copy ctor is hidden
+		ConfigScriptLoader& operator=(ConfigScriptLoader const&);	// assign op is hidden
+		~ConfigScriptLoader();	// dtor is hidden
 
 		Ogre::Real mLoadOrder;
 		Ogre::StringVector mScriptPatterns;
 
-		HashMap <Ogre::String, ConfigNode*> scriptList;
+		HashMap<Ogre::String, ConfigNode*> scriptList;
 
 		//Parsing
 		char *parseBuff, *parseBuffEnd, *buffPtr;
@@ -86,7 +95,7 @@ namespace QuickGUI
 			values.clear();
 		}
 
-		inline std::vector<Ogre::String> &getValues()
+		inline Ogre::StringVector &getValues()
 		{
 			return values;
 		}
@@ -108,7 +117,7 @@ namespace QuickGUI
 
 	private:
 		Ogre::String name;
-		std::vector<Ogre::String> values;
+		Ogre::StringVector values;
 		std::vector<ConfigNode*> children;
 		ConfigNode *parent;
 

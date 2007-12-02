@@ -166,10 +166,7 @@ def ManualExclude ( mb ):
             ]
     for e in excludes:
         print "excluding ", e
-        try:
-            main_ns.member_functions(e).exclude()
-        except:
-            pass
+        main_ns.member_functions(e).exclude()
  
     ## this is probably excessive :)
     names = ['_begin','_end', '_atEnd', '_next']
@@ -200,20 +197,6 @@ def ManualExclude ( mb ):
                 ]
     for e in excludes:
         main_ns.class_(e).exclude()
-
-#    if os.name != 'nt':
-#        ## Classes
-#        excludes = ['::NxOgre::FluidDrains'
-#                    ,'::NxOgre::FluidEmitters'
-#                    ,'::NxOgre::FluidMesh'
-#                    ,'::NxOgre::FluidParams'
-#                    ,'::NxOgre::Fluids'
-#                    
-#                    # not yet implemented in source
-#                    ]
-#        for e in excludes:
-#            main_ns.class_(e).exclude()
-
 # # #     
 # # #         
     ## I have a challenge that Py++ doesn't recognise these classes by full name (perhaps because they are structs?)
@@ -253,10 +236,7 @@ def ManualExclude ( mb ):
     excludes=['::NxOgre::Container<std::string, NxOgre::FluidDrain*>::operator[]'
             ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::operator[]']
     for e in excludes:
-        try:
-            main_ns.operators(e).exclude()
-        except:
-            pass
+        main_ns.operators(e).exclude()
         
     ### Constructors
     for c in main_ns.class_('::NxOgre::Pose').constructors():  ## these hide the working constructors
@@ -459,14 +439,26 @@ def Fix_NT ( mb ):
 def Fix_Implicit_Conversions ( mb ):
     """By default we disable explicit conversion, however sometimes it makes sense
     """
-    for c in mb.classes():
-        if c.name.endswith ('Params'):
-            print "Implicit Conversion:", c
-            c.constructors().allow_implicit_conversion = True
+    return
+#     for c in mb.classes():
+#         if c.name.endswith ('Params'):
+#             print "Implicit Conversion:", c
+#             for con in c.constructors():
+#                 print con.decl_string
+#                 con.allow_implicit_conversion = True
             
     ImplicitClasses=['::NxOgre::Pose'] 
     for className in ImplicitClasses:
-        mb.class_(className).constructors().allow_implicit_conversion = True
+        for c in mb.class_(className).constructors():
+            print "Checking", c.decl_string
+            if "Quat" in c.decl_string or "Real" in c.decl_string:   ## exclude quats as cause issues
+                c.allow_implicit_conversion = False
+                print "NOT OK"
+            elif "Vector" in c.decl_string :
+                c.allow_implicit_conversion = True
+                print "OK"
+            else:
+                print "NOT OK"
                     
 def Add_Auto_Conversions( mb ):
     pass
@@ -636,9 +628,8 @@ def generate_code():
     xml_cached_fc = parser.create_cached_source_fc(
                         os.path.join( environment.nxogre.root_dir, "python_nxogre.h" )
                         , environment.nxogre.cache_file )
-
     if os.name == 'nt':
-        defined_symbols = [ 'NXOGRE_EXPORTS','OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY']
+        defined_symbols = [ 'NXOGRE_EXPORTS','OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', 'WIN32']
     else:
         defined_symbols = [ 'LINUX','NX_LINUX', 'NX_DISABLE_FLUIDS', 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY']
 

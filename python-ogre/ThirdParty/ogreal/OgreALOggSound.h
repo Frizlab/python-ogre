@@ -49,8 +49,7 @@ namespace OgreAL {
 	/**
 	 * OggSound.
 	 * @note
-	 * This object is only to be instantiated using the SoundManager::createSound
-	 * method.
+	 * This object is only to be instantiated using the SoundManager::createSound method.
 	 * @remark This is a sound that plays OggVorbis files
 	 *
 	 * @see OgreAL::Sound
@@ -62,30 +61,40 @@ namespace OgreAL {
 		** Constructor is protected to enforce the use of the 
 		** factory via SoundManager::createSound
 		*/
-
 		/**
 		 * Constructor.
 		 * @param name The name used to reference this sound
-		 * @param soundFile The name of the file to load
+		 * @param soundStream Ogre::DataStreamPtr for the sound resource
 		 * @param loop Should the sound loop once it has played
+		 * @param stream Should the sound be streamed or all loaded into memory at once
 		 */
-		OggSound(const Ogre::String& name, const Ogre::String& soundFile, bool loop, AudioFormat format);
+		OggSound(const Ogre::String& name, const Ogre::DataStreamPtr& soundStream, bool loop, bool stream);
+
+		/// This is called each frame to update the position, direction, etc
+		virtual bool _updateSound();
 
 	public:
 		/** Standard Destructor. */
 		virtual ~OggSound();
 
-	protected:
-		/// Translate the OpenAL error code to a string
-		virtual Ogre::String errorToString(int error) const;
+		/** Plays the sound. */
+		virtual bool play();
+		/** Stops the sound. @note Upon calling play again, the sound will resume from the begining */
+		virtual bool stop();
+
+		/** Sets the offset within the audio stream in seconds */
+		virtual void setSecondOffset(Ogre::Real seconds);
+		/** Returns the current offset within the audio stream in seconds */
+		virtual Ogre::Real getSecondOffset();
+
+	private:
+		/// Returns a buffer containing the next chunk of length size
+		Buffer bufferData(OggVorbis_File *oggVorbisFile, int size);
+
+        OggVorbis_File mOggStream;
+        vorbis_info *mVorbisInfo;
 
 		friend class SoundFactory;
-
-	private: 
-        FILE*           mOggFile;       // file handle
-        OggVorbis_File  mOggStream;     // stream handle
-        vorbis_info*    mVorbisInfo;    // some formatting data
-        vorbis_comment* mVorbisComment; // user comments 
 	};
 } // Namespace
 #endif

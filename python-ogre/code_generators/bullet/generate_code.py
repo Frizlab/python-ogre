@@ -79,12 +79,13 @@ def ManualExclude ( mb ):
             ,'::btCapsuleShape::batchedUnitVectorGetSupportingVertexWithoutMargin'
             
             ,'::btAxisSweep3Internal<unsigned short>::createProxy'
-            ,'::btAxisSweep3Internal<unsigned>::createProxy'
+            ,'::btAxisSweep3Internal<unsigned int>::createProxy'
             ,'::btBU_Simplex1to4::getName'
             ,'::btBoxShape::getName'
             ,'::btBvhTriangleMeshShape::getName'
+            ,'::btCollisionShape::getName'
             ,'::btDispatcher::getInternalManifoldPointer'
-            ,'::btAxisSweep3Internal<unsigned>::processAllOverlappingPairs'
+            ,'::btAxisSweep3Internal<unsigned int>::processAllOverlappingPairs'
             ,'::btAxisSweep3Internal<unsigned short>::processAllOverlappingPairs'
             
             
@@ -97,12 +98,19 @@ def ManualExclude ( mb ):
         print "Excluding:", e
         global_ns.free_functions(e).exclude()
     
-    excludes = ['btAlignedAllocator<btCollisionObject*, 16>'
+    excludes = ['btAlignedAllocator<btCollisionObject*, 16u>'
 #             ,'btAlignedAllocator<btCollisionShape*, 16>'
-            ,'btAlignedAllocator<int, 16>'
-            ,'btAlignedAllocator<btPersistentManifold*, 16>'
-            ,'btAlignedAllocator<btTypedConstraint*, 16>'
-            ,'btAlignedAllocator<btRaycastVehicle*, 16>'
+            ,'btAlignedAllocator<int, 16u>'
+            ,'btAlignedAllocator<btPersistentManifold*, 16u>'
+            ,'btAlignedAllocator<btTypedConstraint*, 16u>'
+            ,'btAlignedAllocator<btRaycastVehicle*, 16u>'
+            
+            
+            ,'btAlignedObjectArray<btIndexedMesh>'
+            ,'btAlignedObjectArray<int>'
+            ,'btAlignedObjectArray<btQuantizedBvhNode>'
+            ,'btAlignedObjectArray<btOptimizedBvhNode>'
+            ,'btAlignedObjectArray<btCollisionObject*>'
             ]
     for e in excludes:
         print "excluding class", e

@@ -173,7 +173,7 @@ bool OSMScene::createScene(Ogre::SceneNode* pParent)
 		msg += "' node";
 		LogManager::getSingleton().logMessage(msg);
 
-		BOOL bHandled = FALSE;
+		bool bHandled = FALSE;
 
 		TiXmlElement* rootElem = mXMLDoc->RootElement();		
 
@@ -504,7 +504,7 @@ Ogre::SceneNode* OSMScene::createNode(TiXmlElement* pElem, Ogre::SceneNode* pSce
 }
 
 // Create SceneManager
-Ogre::SceneNode* OSMScene::createSceneManager(TiXmlElement* sceneProp, BOOL& bHandled)
+Ogre::SceneNode* OSMScene::createSceneManager(TiXmlElement* sceneProp, bool& bHandled)
 {
 	assert(sceneProp);
 

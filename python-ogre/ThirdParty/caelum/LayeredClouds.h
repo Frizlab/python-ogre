@@ -2,6 +2,7 @@
 #define LAYEREDCLOUDS_H
 
 #include "CaelumPrerequisites.h"
+#include "CameraBoundElement.h"
 
 namespace caelum {
 
@@ -14,7 +15,7 @@ namespace caelum {
  *  Cloud offsets and speeds are not in any meaningful world units. Maybe they should
  *  be in radians or something?
  */
-class DllExport LayeredClouds {
+class DllExport LayeredClouds: public CameraBoundElement {
 	public:
 		/** Standard constructor.
 		 *  @param scene: Scene to add cloud dome to. This class takes control
@@ -41,9 +42,6 @@ class DllExport LayeredClouds {
 				const Ogre::Vector3& sunDirection,
 				const Ogre::ColourValue& sunColour,
 				const Ogre::ColourValue& fogColour);
-
-		/// Handle camera change.
-		virtual void notifyCameraChanged (Ogre::Camera *cam);
 
 		/** Sets cloud cover, between 0 (completely clear) and 1 (completely covered)
 		 *  @param cloudCover Cloud cover between 0 and 1
@@ -168,8 +166,15 @@ class DllExport LayeredClouds {
 
 		/// Reference to scene manager.
 		Ogre::SceneManager *mSceneMgr;
-};
 
-}; // namespace caelum
+    public:
+		/// Handle camera change.
+		virtual void notifyCameraChanged (Ogre::Camera *cam);
+
+    protected:
+        /// Handle far radius.
+	    virtual void setFarRadius (Ogre::Real radius);
+};
+}  // namespace caelum
 
 #endif // LAYEREDCLOUDS_H

@@ -16,6 +16,7 @@ import datetime
 ##
 
 _LOGGING_ON = False
+_PreCompiled = True
 
 ##
 ## set this to True if you compiled Ogre with Threads enabled
@@ -173,6 +174,12 @@ class ogre:
 #     
     
     if os.name =='nt': 
+        # requirements to build a precompiled header on the fly
+        if _PreCompiled:
+            pchstop = 'python_ogre_precompiled.h'
+            pchbuild = 'buildpch.cpp'
+            pchincludes = ['python_ogre_precompiled.h']
+#         
         libs=[Config.LIB_Boost, 'OgreMain' ] #,  'OgreGUIRenderer', 'CEGUIBase']
         lib_dirs = [ Config.PATH_LIB_Boost
                     ,  Config.PATH_LIB_Ogre_CEGUIRenderer
@@ -183,7 +190,7 @@ class ogre:
         include_dirs = [ Config.PATH_Boost 
                     , Config.PATH_INCLUDE_Ogre 
                     ]
-        CCFLAGS =  ' -DBOOST_PYTHON_MAX_ARITY=19'
+        CCFLAGS =  '  -DBOOST_PYTHON_MAX_ARITY=19 '
         LINKFLAGS = ''
         externalFiles=['OgreMain.dll', 'OgreGuiRender.dll', Config.LIB_Boost+'.dll']
     elif os.sys.platform <> 'darwin':
@@ -193,7 +200,7 @@ class ogre:
         include_dirs = [ Config.PATH_Boost 
                     , Config.PATH_INCLUDE_Ogre 
                     ]
-        CCFLAGS =  ' -DBOOST_PYTHON_MAX_ARITY=19'
+        CCFLAGS =  '' ## -DBOOST_PYTHON_MAX_ARITY=19'
         LINKFLAGS = ''
     else:
         libs=[Config.LIB_Boost]
@@ -222,6 +229,11 @@ class ois:
     cflags=''
     parent = "ogre/io"
     if os.name=='nt':
+        if _PreCompiled:
+            pchstop = 'OIS.h'
+            pchbuild = 'buildpch.cpp'
+            pchincludes = ['boost/python.hpp', 'OIS.h']
+        
         libs=['OIS_Static',Config.LIB_Boost]
     else:
         libs=['OIS',Config.LIB_Boost]
@@ -290,6 +302,10 @@ class cegui:
     version = "0.5.0b" 
     parent = "ogre/gui"
     if os.name=='nt':
+        if _PreCompiled:
+            pchstop = 'cegui.h'
+            pchbuild = 'buildpch.cpp'
+            pchincludes = ['boost/python.hpp', 'cegui.h']
         libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain', 'OgreGUIRenderer' ]
     else:
         libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain', 'CEGUIOgreRenderer' ]
@@ -409,6 +425,10 @@ class quickgui:
     if os.name=='nt': 
         ## note the defined for _QuickGUIExport forces non dll usage 
         CCFLAGS = ' -DWIN32 -DNDEBUG -DWINDOWS -D_QuickGUIExport="" ' 
+#         if _PreCompiled:
+#             pchstop = 'boost/python.hpp'
+#             pchbuild = 'buildpch.cpp'
+#             pchincludes = ['boost/python.hpp']
     else:
         CCFLAGS = ' -D_QuickGUIExport="" '
     cflags=""
@@ -446,10 +466,10 @@ class navi:
             'kernel32.lib', 'gdi32.lib', 'winspool.lib', 'comdlg32.lib', 'advapi32.lib',
             'shell32.lib','ole32.lib','oleaut32.lib','uuid.lib' ]
     ModuleName="navi"   
-    active=True
+    active=False
 
 class betagui:
-    version="0.16"
+    version="2.0"
     parent="ogre/gui"
     CCFLAGS = ' ' # -D"FT2_BUILD_LIBRARY"
     cflags=""
@@ -495,6 +515,11 @@ class nxogre:
         include_dirs.append( d )
     if os.name == 'nt':
         CCFLAGS = ' -D"WIN32" '
+#         if _PreCompiled:
+#             pchstop = 'nxogre.h'
+#             pchbuild = 'buildpch.cpp'
+#             pchincludes = ['boost/python.hpp', 'nxogre.h']
+
     else:
         CCFLAGS = ' -DNX_LINUX -DLINUX -DNX_DISABLE_FLUIDS '                
     lib_dirs = [Config.PATH_LIB_Boost,
@@ -555,7 +580,7 @@ class plib:
     active = True
     
 class physx:
-    version="2.7.2"
+    version="2.7.3"
     parent="ogre/physics"
     cflags=""
     include_dirs = [ Config.PATH_Boost,
@@ -666,7 +691,7 @@ class ogredshow:
     CheckIncludes=[]
     libs=[  Config.LIB_Boost, 'OgreMain','Strmiids' , 'ole32']
     ModuleName="ogredshow"   
-    active=True 
+    active=False ### Dec 01 -- seems like dxtrans.h is missing from newer Directx DSK?
     
 class et:  ## editable terrain
     version= "2.2"
@@ -685,9 +710,11 @@ class et:  ## editable terrain
     cflags = ""
     
 class bullet:
-    version= "2.62"
+    version= "2.64"
     parent = "ogre/physics"
-    libs=[Config.LIB_Boost,  'LibBulletCollision', 'LibBulletDynamics'] #,'libbulletmath']
+    libs=[Config.LIB_Boost,  'LibBulletCollision', 'LibBulletDynamics']
+    if os.name == 'nt':
+        libs.append('libbulletmath')
     lib_dirs = [ Config.PATH_LIB_Boost
                 ,  Config.PATH_LIB_Bullet
                 ]

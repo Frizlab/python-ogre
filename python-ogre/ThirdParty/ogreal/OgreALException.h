@@ -32,14 +32,19 @@
 ** 59 Temple Place - Suite 330,                                              **
 ** Boston, MA 02111-1307, USA.                                               **
 \*---------------------------------------------------------------------------*/
-#ifndef _OGREAL_EXCEPTION_H_
-#define _OGREAL_EXCEPTION_H_
+#ifndef _OGRE_AL_EXCEPTION_H_
+#define _OGRE_AL_EXCEPTION_H_
 
 #include "OgreString.h"
+#include "OgreALPrereqs.h"
 
 namespace OgreAL {
 	void check(bool condition, const int errorNumber, const Ogre::String& description, const Ogre::String& source);
+	void check(const Error error, const Ogre::String& description, const Ogre::String& source);
 
-	#define OGREAL_CHECK(condition, errorNumber, description) check((condition), (errorNumber), (description), __FUNCTION__)
+	Ogre::String getErrorDescription(const Error error);
+
+	#define CheckCondition(condition, errorNumber, description) check((condition), (errorNumber), (description), __FUNCTION__)
+	#define CheckError(error, description) check((error), (description), __FUNCTION__)
 } // Namespace
 #endif

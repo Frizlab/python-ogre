@@ -1,10 +1,12 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUIHorizontalScrollBar.h"
 #include "QuickGUIManager.h"
 
 namespace QuickGUI
 {
-	HorizontalScrollBar::HorizontalScrollBar(const Ogre::String& instanceName, const Size& pixelSize, const Ogre::String& texture, GUIManager* gm) :
-		Image(instanceName,pixelSize,texture,gm),
+	HorizontalScrollBar::HorizontalScrollBar(const Ogre::String& name, GUIManager* gm) :
+		Widget(name,gm),
 		mMinSliderPosition(0),
 		mMaxSliderPosition(mSize.width),
 		mMouseDownOnTrack(false),
@@ -16,17 +18,16 @@ namespace QuickGUI
 	{
 		mWidgetType = TYPE_SCROLLBAR_HORIZONTAL;
 		mSkinComponent = ".scrollbar.horizontal";
+		mSize = Size(100,20);
+
 		mGUIManager->registerTimeListener(this);
 		addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&HorizontalScrollBar::onMouseDownOnTrack,this);
 		addEventHandler(EVENT_MOUSE_BUTTON_UP,&HorizontalScrollBar::onMouseUpOnTrack,this);
 		addEventHandler(EVENT_MOUSE_LEAVE,&HorizontalScrollBar::onMouseLeaveTrack,this);
 
-		mSliderTextureName = mTextureName + ".slider" + mTextureExtension;
-		mScrollLeftTextureName = mTextureName + ".left" + mTextureExtension;
-		mScrollRightTextureName = mTextureName + ".right" + mTextureExtension;
-
-		mSlider = new Button(mInstanceName+".Slider",Size(mSize.height,mSize.height),mSliderTextureName,mGUIManager);
-		addChild(mSlider);
+		mSlider = dynamic_cast<Button*>(_createComponent(mInstanceName+".Slider",TYPE_BUTTON));
+		mSlider->setSkinComponent(".scrollbar.horizontal.slider");
+		mSlider->setSize(mSize.height,mSize.height);
 		mSlider->setPosition(mSize.height,0);
 		mSlider->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
 		mSlider->enableDragging(true);
@@ -35,15 +36,17 @@ namespace QuickGUI
 		mSlider->addEventHandler(EVENT_DRAGGED,&HorizontalScrollBar::onSliderDragged,this);
 		
 		Ogre::Real scrollBarHeight = mSize.height;
-		mScrollLeft1 = new Button(mInstanceName+".Left1",Size(mSize.height,mSize.height),mScrollLeftTextureName,mGUIManager);
-		addChild(mScrollLeft1);
+		mScrollLeft1 = dynamic_cast<Button*>(_createComponent(mInstanceName+".Left1",TYPE_BUTTON));
+		mScrollLeft1->setSkinComponent(".scrollbar.horizontal.left");
+		mScrollLeft1->setSize(mSize.height,mSize.height);
 		mScrollLeft1->setPosition(0,0);
 		mScrollLeft1->setAutoSize(false);
 		mScrollLeft1->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
 		mScrollLeft1->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&HorizontalScrollBar::onScrollLeftDown,this);
 		
-		mScrollRight1 = new Button(mInstanceName+".Right1",Size(mSize.height,mSize.height),mScrollRightTextureName,mGUIManager);
-		addChild(mScrollRight1);
+		mScrollRight1 = dynamic_cast<Button*>(_createComponent(mInstanceName+".Right1",TYPE_BUTTON));
+		mScrollRight1->setSkinComponent(".scrollbar.horizontal.right");
+		mScrollRight1->setSize(mSize.height,mSize.height);
 		mScrollRight1->setPosition(mSize.height,0);
 		mScrollRight1->setAutoSize(false);
 		mScrollRight1->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
@@ -51,8 +54,9 @@ namespace QuickGUI
 		mScrollRight1->hide();
 		mScrollRight1->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&HorizontalScrollBar::onScrollRightDown,this);
 
-		mScrollLeft2 = new Button(mInstanceName+".Left2",Size(mSize.height,mSize.height),mScrollLeftTextureName,mGUIManager);
-		addChild(mScrollLeft2);
+		mScrollLeft2 = dynamic_cast<Button*>(_createComponent(mInstanceName+".Left2",TYPE_BUTTON));
+		mScrollLeft2->setSkinComponent(".scrollbar.horizontal.left");
+		mScrollLeft2->setSize(mSize.height,mSize.height);
 		mScrollLeft2->setPosition(mSize.width - (mSize.height*2.0),0);
 		mScrollLeft2->setAutoSize(false);
 		mScrollLeft2->setHorizontalAnchor(ANCHOR_HORIZONTAL_RIGHT);
@@ -61,8 +65,9 @@ namespace QuickGUI
 		mScrollLeft2->hide();
 		mScrollLeft2->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&HorizontalScrollBar::onScrollLeftDown,this);
 		
-		mScrollRight2 = new Button(mInstanceName+".Right2",Size(mSize.height,mSize.height),mScrollRightTextureName,mGUIManager);
-		addChild(mScrollRight2);
+		mScrollRight2 = dynamic_cast<Button*>(_createComponent(mInstanceName+".Right2",TYPE_BUTTON));
+		mScrollRight2->setSkinComponent(".scrollbar.horizontal.right");
+		mScrollRight2->setSize(mSize.height,mSize.height);
 		mScrollRight2->setPosition(mSize.width - mSize.height,0);
 		mScrollRight2->setAutoSize(false);
 		mScrollRight2->setHorizontalAnchor(ANCHOR_HORIZONTAL_RIGHT);
@@ -131,7 +136,7 @@ namespace QuickGUI
 
 		_constrainSlider();
 
-		std::vector<MemberFunctionSlot*>::iterator it;
+		EventHandlerArray::iterator it;
 		for( it = mOnScrollHandlers.begin(); it != mOnScrollHandlers.end(); ++it )
 			(*it)->execute(args);
 	}
@@ -325,7 +330,7 @@ namespace QuickGUI
 
 	void HorizontalScrollBar::onSizeChanged(const EventArgs& args)
 	{
-		Image::onSizeChanged(args);
+		Widget::onSizeChanged(args);
 		_determineMinMax();
 		_constrainSlider();
 	}
@@ -403,15 +408,6 @@ namespace QuickGUI
 		_scroll(mSmallChange,scrollArgs);
 	}
 
-	void HorizontalScrollBar::setBaseTexture(const Ogre::String& textureName)
-	{
-		Image::setBaseTexture(textureName);
-
-		mSliderTextureName = mTextureName + ".slider" + mTextureExtension;
-		mScrollLeftTextureName = mTextureName + ".left" + mTextureExtension;
-		mScrollRightTextureName = mTextureName + ".right" + mTextureExtension;
-	}
-
 	void HorizontalScrollBar::setButtonLayout(ButtonLayout layout)
 	{
 		mButtonLayout = layout;
@@ -461,9 +457,9 @@ namespace QuickGUI
 		_scroll(0,scrollArgs);
 	}
 
-	void HorizontalScrollBar::timeElapsed(Ogre::Real time)
+	void HorizontalScrollBar::timeElapsed(const Ogre::Real time)
 	{
-		Image::timeElapsed(time);
+		Widget::timeElapsed(time);
 		mRepeatTimer += time;
 
 		if(mRepeatTimer > mScrollRepeatTime)

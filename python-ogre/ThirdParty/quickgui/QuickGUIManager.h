@@ -8,15 +8,16 @@
 #include "OgreSceneManager.h"
 #include "OgreViewport.h"
 
-#include "QuickGUISkinSet.h"
+#include "QuickGUIPrerequisites.h"
+#include "QuickGUISkinSetManager.h"
 #include "QuickGUIKeyCode.h"
 #include "QuickGUIMouseButtonID.h"
 #include "QuickGUIMouseCursor.h"
 #include "QuickGUISheet.h"
 #include "QuickGUIUtility.h"
 
-
 #include <algorithm>
+#include <deque>
 #include <list>
 #include <map>
 #include <set>
@@ -24,7 +25,6 @@
 #include <utility>
 #include <ctype.h>
 #include <vector>
-
 
 namespace QuickGUI
 {
@@ -50,17 +50,15 @@ namespace QuickGUI
 	{
 	public:
 		friend class ComboBox;
+		friend class Widget;
 	public:
-		/** Constructor must be called before resource loading or you won't catch skinset fileload.
-        */
-		GUIManager();
+		/** Constructor */
+		GUIManager(Ogre::Viewport* vp);
 		/** Standard Destructor. */
 		~GUIManager();
 
-		/**
-		* Init has to be postponed after resource loading or you won't catch skinset fileload.
-		*/
-		void init(Ogre::Viewport* vp, const Ogre::String &skinName);
+		void _notifyViewportDimensionsChanged();
+
 		/**
 		* Iterates through Window List and destroys it, which properly destroys all child widgets.
 		*/
@@ -100,10 +98,6 @@ namespace QuickGUI
 		* Returns the default sheet, automatically created with the GUI manager.
 		*/
 		Sheet* getDefaultSheet();
-		/**
-		* Returns the SkinSet if exists, NULL otherwise.
-		*/
-		SkinSet* getSkinImageSet(const Ogre::String& name);
 
 		MouseCursor* getMouseCursor();
 		Widget* getMouseOverWidget();
@@ -126,12 +120,6 @@ namespace QuickGUI
 		*/
 		Sheet* getSheet(const Ogre::String& name);
 
-		/**
-		* Checks if skinName is a loaded skin SkinSet, and if textureName is an
-		* embedded texture within the skin SkinSet.
-		*/
-		bool embeddedInSkinImageset(const Ogre::String& skinName, const Ogre::String& textureName);
-
 		Ogre::String generateName(Widget::Type t);
 
 		/**
@@ -140,7 +128,7 @@ namespace QuickGUI
 		bool injectChar(Ogre::UTFString::unicode_char c);
 		bool injectKeyDown(const KeyCode& kc);
 		bool injectKeyUp(const KeyCode& kc);
-		
+
 		bool injectMouseButtonDown(const MouseButtonID& button);
 		bool injectMouseButtonUp(const MouseButtonID& button);
 		/**
@@ -152,13 +140,12 @@ namespace QuickGUI
 		bool injectMouseWheelChange(float delta);
 		void injectTime(Ogre::Real time);
 
+		bool isKeyModifierDown(KeyModifier k);
 		/**
 		* Checks if the desired widget name already exists.  If it already exists,
 		* false is returned.
 		*/
 		bool isNameUnique(const Ogre::String& name);
-
-		void loadSkin(const Ogre::String& skinName);
 
 		void notifyNameFree(const Ogre::String& name);
 		void notifyNameUsed(const Ogre::String& name);
@@ -196,15 +183,11 @@ namespace QuickGUI
 		* Set the list of code points that will be accepted by the injectChar function.  English code points 9,32-166
 		* are supported by default.
 		*/
-		void setSupportedCodePoints(const std::vector<Ogre::UTFString::code_point>& list);
+		void setSupportedCodePoints(const std::set<Ogre::UTFString::code_point>& list);
 		/*
 		* Sets the viewport all widgets of this manager will render to.
 		*/
 		void setViewport(Ogre::Viewport* vp);
-		/*
-		* Returns true if a skin has been loaded with the name skinName, false otherwise.
-		*/
-		bool skinLoaded(const Ogre::String& skinName);
 
 		/*
 		* Returns true if the textureName represents:
@@ -228,14 +211,12 @@ namespace QuickGUI
 		// ID of the queue that we are hooked into
 		Ogre::uint8				mQueueID;
 
-		std::map<Ogre::String,SkinSet*> mSkinSets;
-
 		MouseCursor*			mMouseCursor;
 
 		std::set<Ogre::String>	mWidgetNames;
 
 		// range of supported codepoints used for injectChar function.
-		std::vector<Ogre::UTFString::code_point> mSupportedCodePoints;
+		std::set<Ogre::UTFString::code_point> mSupportedCodePoints;
 
 		QuickGUI::Sheet*		mDefaultSheet;
 		// Sheet currently being shown.
@@ -245,8 +226,14 @@ namespace QuickGUI
 
 		Ogre::String			mDebugString;
 
+		void					_destroyWidget(Widget* w);
 		// list of widgets to delete on next frame.
-		std::vector<Widget*>	mFreeList;
+		WidgetArray	mFreeList;
+
+		bool					mUseMouseTimer;
+		unsigned long			mMouseTimer;
+		unsigned long			mDoubleClickTime;
+		std::deque<Widget::Event> mMouseButtonEvents;
 
 		// timer used to get time readings
 		Ogre::Timer*			mTimer;
@@ -270,9 +257,19 @@ namespace QuickGUI
 		// Keep track of effect, to update.
 		std::list<Effect*> mActiveEffects;
 
-		std::vector<Widget*>	mTimeListeners;
+		WidgetArray	mTimeListeners;
 
 		void _createDefaultTextures();
+
+		SkinSetManager*			mSkinSetManager;
+
+		//! Bit field that holds status of Alt, Ctrl, Shift
+		unsigned int			mKeyModifiers;
+	protected:
+		void _handleMouseDown(const MouseButtonID& button);
+		void _handleMouseUp(const MouseButtonID& button);
+		void _handleMouseClick(const MouseButtonID& button);
+		void _handleMouseDoubleClick(const MouseButtonID& button);
     };
 }
 

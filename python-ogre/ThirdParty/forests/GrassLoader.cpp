@@ -68,7 +68,7 @@ GrassLayer *GrassLoader::addLayer(const String &material)
 	return layer;
 }
 
-void GrassLoader::updateAnimation()
+void GrassLoader::frameUpdate()
 {
 	static unsigned long lastTime = 0;
 	unsigned long currentTime = windTimer.getMilliseconds();
@@ -83,18 +83,20 @@ void GrassLoader::updateAnimation()
 		GrassLayer *layer = *it;
 
 		layer->_updateShaders();
+
+		GpuProgramParametersSharedPtr params = layer->material->getTechnique(0)->getPass(0)->getVertexProgramParameters();
 		if (layer->animate){
-			//Incriment animation frame
+			//Increment animation frame
 			layer->waveCount += ellapsed * (layer->animSpeed * Math::PI);
 			if (layer->waveCount > Math::PI*2) layer->waveCount -= Math::PI*2;
 
 			//Set vertex shader parameters
-			GpuProgramParametersSharedPtr params = layer->material->getTechnique(0)->getPass(0)->getVertexProgramParameters();
 			params->setNamedConstant("time", layer->waveCount);
 			params->setNamedConstant("frequency", layer->animFreq);
 
 			Vector3 direction = windDir * layer->animMag;
 			params->setNamedConstant("direction", Vector4(direction.x, direction.y, direction.z, 0));
+
 		}
 	}
 }
@@ -132,179 +134,20 @@ void GrassLoader::loadPage(PageInfo &page)
 
 		//Don't build a mesh unless it contains something
 		if (grassCount != 0){
-			//Calculate the number of quads to be added
-			unsigned int quadCount;
-			if (layer->renderTechnique == GRASSTECH_CROSSQUADS)
-				quadCount = grassCount * 2;
-			else
-				quadCount = grassCount;
-			
-			//Create manual mesh to store grass quads
-			MeshPtr mesh = MeshManager::getSingleton().createManual(getUniqueID(), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-			SubMesh *subMesh = mesh->createSubMesh();
-			subMesh->useSharedVertices = false;
-
-			//Setup vertex format information
-			subMesh->vertexData = new VertexData;
-			subMesh->vertexData->vertexStart = 0;
-			subMesh->vertexData->vertexCount = 4 * quadCount;
-		
-			VertexDeclaration* dcl = subMesh->vertexData->vertexDeclaration;
-			size_t offset = 0;
-			dcl->addElement(0, offset, VET_FLOAT3, VES_POSITION);
-			offset += VertexElement::getTypeSize(VET_FLOAT3);
-			dcl->addElement(0, offset, VET_COLOUR, VES_DIFFUSE);
-			offset += VertexElement::getTypeSize(VET_COLOUR);
-			dcl->addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES);
-			offset += VertexElement::getTypeSize(VET_FLOAT2);
-
-			//Populate a new vertex buffer with grass
-			HardwareVertexBufferSharedPtr vbuf = HardwareBufferManager::getSingleton()
-												.createVertexBuffer(offset, subMesh->vertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY, false);
-			float* pReal = static_cast<float*>(vbuf->lock(HardwareBuffer::HBL_DISCARD));
-
-			//Calculate size variance
-			float rndWidth = layer->maxWidth - layer->minWidth;
-			float rndHeight = layer->maxHeight - layer->minHeight;
-
-			float minY = Math::POS_INFINITY, maxY = Math::NEG_INFINITY;
-			float *posPtr = position;	//Position array "iterator"
-			for (uint16 i = 0; i < grassCount; ++i)
-			{
-				//Get the x and z positions from the position array
-				float x = *posPtr++;
-				float z = *posPtr++;
-
-				//Get the color at the grass position
-				uint32 color;
-				if (layer->colorMap)
-					color = layer->colorMap->getColorAt(x, z);
-				else
-					color = 0xFFFFFFFF;
-
-				//Calculate size
-				float rnd = Math::UnitRandom();	//The same rnd value is used for width and height to maintain aspect ratio
-				float halfScaleX = (layer->minWidth + rndWidth * rnd) * 0.5f;
-				float scaleY = (layer->minHeight + rndHeight * rnd);
-
-				//Calculate rotation
-				float angle = Math::RangeRandom(0, 6.28318f);
-				float xTrans = Math::Cos(angle) * halfScaleX;
-				float zTrans = Math::Sin(angle) * halfScaleX;
-
-				//Calculate heights and edge positions
-				float x1 = x - xTrans, z1 = z - zTrans;
-				float x2 = x + xTrans, z2 = z + zTrans;
-
-				float y1, y2;
-				if (heightFunction){
-					y1 = heightFunction(x1, z1);
-					y2 = heightFunction(x2, z2);
-				} else {
-					y1 = 0;
-					y2 = 0;
-				}
-				
-				//Add vertices
-				*pReal++ = (x1 - page.centerPoint.x); *pReal++ = (y1 + scaleY); *pReal++ = (z1 - page.centerPoint.z);	//pos
-				*((uint32*)pReal++) = color;							//color
-				*pReal++ = 0; *pReal++ = 0;								//uv
-				
-				*pReal++ = (x2 - page.centerPoint.x); *pReal++ = (y2 + scaleY); *pReal++ = (z2 - page.centerPoint.z);	//pos
-				*((uint32*)pReal++) = color;							//color
-				*pReal++ = 1; *pReal++ = 0;								//uv
-
-				*pReal++ = (x1 - page.centerPoint.x); *pReal++ = (y1); *pReal++ = (z1 - page.centerPoint.z);			//pos
-				*((uint32*)pReal++) = color;							//color
-				*pReal++ = 0; *pReal++ = 1;								//uv
-
-				*pReal++ = (x2 - page.centerPoint.x); *pReal++ = (y2); *pReal++ = (z2 - page.centerPoint.z);			//pos
-				*((uint32*)pReal++) = color;							//color
-				*pReal++ = 1; *pReal++ = 1;								//uv
-				
-				//Update bounds
-				if (y1 < minY) minY = y1;
-				if (y2 < minY) minY = y2;
-				if (y1 + scaleY > maxY) maxY = y1 + scaleY;
-				if (y2 + scaleY > maxY) maxY = y2 + scaleY;
-
-				if (layer->renderTechnique == GRASSTECH_CROSSQUADS){
-					//Calculate heights and edge positions
-					float x3 = x + zTrans, z3 = z - xTrans;
-					float x4 = x - zTrans, z4 = z + xTrans;
-
-					float y3, y4;
-					if (heightFunction){
-						y3 = heightFunction(x3, z3);
-						y4 = heightFunction(x4, z4);
-					} else {
-						y3 = 0;
-						y4 = 0;
-					}
-
-					//Add vertices
-					*pReal++ = (x3 - page.centerPoint.x); *pReal++ = (y3 + scaleY); *pReal++ = (z3 - page.centerPoint.z);	//pos
-					*((uint32*)pReal++) = color;							//color
-					*pReal++ = 0; *pReal++ = 0;								//uv
-					
-					*pReal++ = (x4 - page.centerPoint.x); *pReal++ = (y4 + scaleY); *pReal++ = (z4 - page.centerPoint.z);	//pos
-					*((uint32*)pReal++) = color;							//color
-					*pReal++ = 1; *pReal++ = 0;								//uv
-
-					*pReal++ = (x3 - page.centerPoint.x); *pReal++ = (y3); *pReal++ = (z3 - page.centerPoint.z);			//pos
-					*((uint32*)pReal++) = color;							//color
-					*pReal++ = 0; *pReal++ = 1;								//uv
-
-					*pReal++ = (x4 - page.centerPoint.x); *pReal++ = (y4); *pReal++ = (z4 - page.centerPoint.z);			//pos
-					*((uint32*)pReal++) = color;							//color
-					*pReal++ = 1; *pReal++ = 1;								//uv
-
-					//Update bounds
-					if (y3 < minY) minY = y1;
-					if (y4 < minY) minY = y2;
-					if (y3 + scaleY > maxY) maxY = y3 + scaleY;
-					if (y4 + scaleY > maxY) maxY = y4 + scaleY;
-				}
+			Mesh *mesh = NULL;
+			switch (layer->renderTechnique){
+				case GRASSTECH_QUAD:
+					mesh = generateGrass_QUAD(page, layer, position, grassCount);
+					break;
+				case GRASSTECH_CROSSQUADS:
+					mesh = generateGrass_CROSSQUADS(page, layer, position, grassCount);
+					break;
+				case GRASSTECH_SPRITE:
+					mesh = generateGrass_SPRITE(page, layer, position, grassCount);
+					break;
 			}
-			
-			vbuf->unlock();
-			subMesh->vertexData->vertexBufferBinding->setBinding(0, vbuf);
-			
-			//Populate index buffer
-			subMesh->indexData->indexStart = 0;
-			subMesh->indexData->indexCount = 6 * quadCount;
-			subMesh->indexData->indexBuffer = HardwareBufferManager::getSingleton()
-								.createIndexBuffer(HardwareIndexBuffer::IT_16BIT, subMesh->indexData->indexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
-			uint16* pI = static_cast<uint16*>(subMesh->indexData->indexBuffer->lock(HardwareBuffer::HBL_DISCARD));
-			for (uint16 i = 0; i < quadCount; ++i)
-			{
-				uint16 offset = i * 4;
+			assert(mesh);
 
-				*pI++ = 0 + offset;
-				*pI++ = 2 + offset;
-				*pI++ = 1 + offset;
-
-				*pI++ = 1 + offset;
-				*pI++ = 2 + offset;
-				*pI++ = 3 + offset;
-			}
-			
-			subMesh->indexData->indexBuffer->unlock();
-
-			//Finish up mesh
-			AxisAlignedBox bounds(page.bounds.left - page.centerPoint.x, minY, page.bounds.top - page.centerPoint.z,
-				page.bounds.right - page.centerPoint.x, maxY, page.bounds.bottom - page.centerPoint.z);
-			mesh->_setBounds(bounds);
-			Vector3 temp = bounds.getMaximum() - bounds.getMinimum();
-			mesh->_setBoundingSphereRadius(temp.length() * 0.5f);
-
-			LogManager::getSingleton().setLogDetail(static_cast<LoggingLevel>(0));
-			mesh->load();
-			LogManager::getSingleton().setLogDetail(LL_NORMAL);
-
-			//Apply grass material to mesh
-			subMesh->setMaterialName(layer->material->getName());
-			
 			//Add the mesh to PagedGeometry
 			Entity *entity = geom->getCamera()->getSceneManager()->createEntity(getUniqueID(), mesh->getName());
 			entity->setRenderQueueGroup(renderQueue);
@@ -312,9 +155,10 @@ void GrassLoader::loadPage(PageInfo &page)
 			addEntity(entity, page.centerPoint, Quaternion::IDENTITY, Vector3::UNIT_SCALE);
 			geom->getSceneManager()->destroyEntity(entity);
 
-			//Store mesh for later deallocation
-			page.userData = mesh.getPointer();
+			//Store the mesh pointer
+			page.userData = mesh;
 		} else {
+			//No mesh
 			page.userData = NULL;
 		}
 
@@ -331,6 +175,462 @@ void GrassLoader::unloadPage(const PageInfo &page)
 		MeshManager::getSingleton().remove(mesh->getName());
 }
 
+Mesh *GrassLoader::generateGrass_QUAD(PageInfo &page, GrassLayer *layer, float *grassPositions, unsigned int grassCount)
+{
+	//Calculate the number of quads to be added
+	unsigned int quadCount;
+	quadCount = grassCount;
+
+	//Create manual mesh to store grass quads
+	MeshPtr mesh = MeshManager::getSingleton().createManual(getUniqueID(), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	SubMesh *subMesh = mesh->createSubMesh();
+	subMesh->useSharedVertices = false;
+
+	//Setup vertex format information
+	subMesh->vertexData = new VertexData;
+	subMesh->vertexData->vertexStart = 0;
+	subMesh->vertexData->vertexCount = 4 * quadCount;
+
+	VertexDeclaration* dcl = subMesh->vertexData->vertexDeclaration;
+	size_t offset = 0;
+	dcl->addElement(0, offset, VET_FLOAT3, VES_POSITION);
+	offset += VertexElement::getTypeSize(VET_FLOAT3);
+	dcl->addElement(0, offset, VET_COLOUR, VES_DIFFUSE);
+	offset += VertexElement::getTypeSize(VET_COLOUR);
+	dcl->addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES);
+	offset += VertexElement::getTypeSize(VET_FLOAT2);
+
+	//Populate a new vertex buffer with grass
+	HardwareVertexBufferSharedPtr vbuf = HardwareBufferManager::getSingleton()
+		.createVertexBuffer(offset, subMesh->vertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY, false);
+	float* pReal = static_cast<float*>(vbuf->lock(HardwareBuffer::HBL_DISCARD));
+
+	//Calculate size variance
+	float rndWidth = layer->maxWidth - layer->minWidth;
+	float rndHeight = layer->maxHeight - layer->minHeight;
+
+	float minY = Math::POS_INFINITY, maxY = Math::NEG_INFINITY;
+	float *posPtr = grassPositions;	//Position array "iterator"
+	for (uint16 i = 0; i < grassCount; ++i)
+	{
+		//Get the x and z positions from the position array
+		float x = *posPtr++;
+		float z = *posPtr++;
+
+		//Get the color at the grass position
+		uint32 color;
+		if (layer->colorMap)
+			color = layer->colorMap->getColorAt(x, z);
+		else
+			color = 0xFFFFFFFF;
+
+		//Calculate size
+		float rnd = Math::UnitRandom();	//The same rnd value is used for width and height to maintain aspect ratio
+		float halfScaleX = (layer->minWidth + rndWidth * rnd) * 0.5f;
+		float scaleY = (layer->minHeight + rndHeight * rnd);
+
+		//Calculate rotation
+		float angle = Math::RangeRandom(0, Math::TWO_PI);
+		float xTrans = Math::Cos(angle) * halfScaleX;
+		float zTrans = Math::Sin(angle) * halfScaleX;
+
+		//Calculate heights and edge positions
+		float x1 = x - xTrans, z1 = z - zTrans;
+		float x2 = x + xTrans, z2 = z + zTrans;
+
+		float y1, y2;
+		if (heightFunction){
+			y1 = heightFunction(x1, z1);
+			y2 = heightFunction(x2, z2);
+		} else {
+			y1 = 0;
+			y2 = 0;
+		}
+
+		//Add vertices
+		*pReal++ = (x1 - page.centerPoint.x); *pReal++ = (y1 + scaleY); *pReal++ = (z1 - page.centerPoint.z);	//pos
+		*((uint32*)pReal++) = color;							//color
+		*pReal++ = 0; *pReal++ = 0;								//uv
+
+		*pReal++ = (x2 - page.centerPoint.x); *pReal++ = (y2 + scaleY); *pReal++ = (z2 - page.centerPoint.z);	//pos
+		*((uint32*)pReal++) = color;							//color
+		*pReal++ = 1; *pReal++ = 0;								//uv
+
+		*pReal++ = (x1 - page.centerPoint.x); *pReal++ = (y1); *pReal++ = (z1 - page.centerPoint.z);			//pos
+		*((uint32*)pReal++) = color;							//color
+		*pReal++ = 0; *pReal++ = 1;								//uv
+
+		*pReal++ = (x2 - page.centerPoint.x); *pReal++ = (y2); *pReal++ = (z2 - page.centerPoint.z);			//pos
+		*((uint32*)pReal++) = color;							//color
+		*pReal++ = 1; *pReal++ = 1;								//uv
+
+		//Update bounds
+		if (y1 < minY) minY = y1;
+		if (y2 < minY) minY = y2;
+		if (y1 + scaleY > maxY) maxY = y1 + scaleY;
+		if (y2 + scaleY > maxY) maxY = y2 + scaleY;
+	}
+
+	vbuf->unlock();
+	subMesh->vertexData->vertexBufferBinding->setBinding(0, vbuf);
+
+	//Populate index buffer
+	subMesh->indexData->indexStart = 0;
+	subMesh->indexData->indexCount = 6 * quadCount;
+	subMesh->indexData->indexBuffer = HardwareBufferManager::getSingleton()
+		.createIndexBuffer(HardwareIndexBuffer::IT_16BIT, subMesh->indexData->indexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+	uint16* pI = static_cast<uint16*>(subMesh->indexData->indexBuffer->lock(HardwareBuffer::HBL_DISCARD));
+	for (uint16 i = 0; i < quadCount; ++i)
+	{
+		uint16 offset = i * 4;
+
+		*pI++ = 0 + offset;
+		*pI++ = 2 + offset;
+		*pI++ = 1 + offset;
+
+		*pI++ = 1 + offset;
+		*pI++ = 2 + offset;
+		*pI++ = 3 + offset;
+	}
+
+	subMesh->indexData->indexBuffer->unlock();
+
+	//Finish up mesh
+	AxisAlignedBox bounds(page.bounds.left - page.centerPoint.x, minY, page.bounds.top - page.centerPoint.z,
+		page.bounds.right - page.centerPoint.x, maxY, page.bounds.bottom - page.centerPoint.z);
+	mesh->_setBounds(bounds);
+	Vector3 temp = bounds.getMaximum() - bounds.getMinimum();
+	mesh->_setBoundingSphereRadius(temp.length() * 0.5f);
+
+	LogManager::getSingleton().setLogDetail(static_cast<LoggingLevel>(0));
+	mesh->load();
+	LogManager::getSingleton().setLogDetail(LL_NORMAL);
+
+	//Apply grass material to mesh
+	subMesh->setMaterialName(layer->material->getName());
+
+	//Return the mesh
+	return mesh.getPointer();
+}
+
+Mesh *GrassLoader::generateGrass_CROSSQUADS(PageInfo &page, GrassLayer *layer, float *grassPositions, unsigned int grassCount)
+{
+	//Calculate the number of quads to be added
+	unsigned int quadCount;
+	quadCount = grassCount * 2;
+
+	//Create manual mesh to store grass quads
+	MeshPtr mesh = MeshManager::getSingleton().createManual(getUniqueID(), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	SubMesh *subMesh = mesh->createSubMesh();
+	subMesh->useSharedVertices = false;
+
+	//Setup vertex format information
+	subMesh->vertexData = new VertexData;
+	subMesh->vertexData->vertexStart = 0;
+	subMesh->vertexData->vertexCount = 4 * quadCount;
+
+	VertexDeclaration* dcl = subMesh->vertexData->vertexDeclaration;
+	size_t offset = 0;
+	dcl->addElement(0, offset, VET_FLOAT3, VES_POSITION);
+	offset += VertexElement::getTypeSize(VET_FLOAT3);
+	dcl->addElement(0, offset, VET_COLOUR, VES_DIFFUSE);
+	offset += VertexElement::getTypeSize(VET_COLOUR);
+	dcl->addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES);
+	offset += VertexElement::getTypeSize(VET_FLOAT2);
+
+	//Populate a new vertex buffer with grass
+	HardwareVertexBufferSharedPtr vbuf = HardwareBufferManager::getSingleton()
+		.createVertexBuffer(offset, subMesh->vertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY, false);
+	float* pReal = static_cast<float*>(vbuf->lock(HardwareBuffer::HBL_DISCARD));
+
+	//Calculate size variance
+	float rndWidth = layer->maxWidth - layer->minWidth;
+	float rndHeight = layer->maxHeight - layer->minHeight;
+
+	float minY = Math::POS_INFINITY, maxY = Math::NEG_INFINITY;
+	float *posPtr = grassPositions;	//Position array "iterator"
+	for (uint16 i = 0; i < grassCount; ++i)
+	{
+		//Get the x and z positions from the position array
+		float x = *posPtr++;
+		float z = *posPtr++;
+
+		//Get the color at the grass position
+		uint32 color;
+		if (layer->colorMap)
+			color = layer->colorMap->getColorAt(x, z);
+		else
+			color = 0xFFFFFFFF;
+
+		//Calculate size
+		float rnd = Math::UnitRandom();	//The same rnd value is used for width and height to maintain aspect ratio
+		float halfScaleX = (layer->minWidth + rndWidth * rnd) * 0.5f;
+		float scaleY = (layer->minHeight + rndHeight * rnd);
+
+		//Calculate rotation
+		float angle = Math::RangeRandom(0, Math::TWO_PI);
+		float xTrans = Math::Cos(angle) * halfScaleX;
+		float zTrans = Math::Sin(angle) * halfScaleX;
+
+		//Calculate heights and edge positions
+		float x1 = x - xTrans, z1 = z - zTrans;
+		float x2 = x + xTrans, z2 = z + zTrans;
+
+		float y1, y2;
+		if (heightFunction){
+			y1 = heightFunction(x1, z1);
+			y2 = heightFunction(x2, z2);
+		} else {
+			y1 = 0;
+			y2 = 0;
+		}
+
+		//Add vertices
+		*pReal++ = (x1 - page.centerPoint.x); *pReal++ = (y1 + scaleY); *pReal++ = (z1 - page.centerPoint.z);	//pos
+		*((uint32*)pReal++) = color;							//color
+		*pReal++ = 0; *pReal++ = 0;								//uv
+
+		*pReal++ = (x2 - page.centerPoint.x); *pReal++ = (y2 + scaleY); *pReal++ = (z2 - page.centerPoint.z);	//pos
+		*((uint32*)pReal++) = color;							//color
+		*pReal++ = 1; *pReal++ = 0;								//uv
+
+		*pReal++ = (x1 - page.centerPoint.x); *pReal++ = (y1); *pReal++ = (z1 - page.centerPoint.z);			//pos
+		*((uint32*)pReal++) = color;							//color
+		*pReal++ = 0; *pReal++ = 1;								//uv
+
+		*pReal++ = (x2 - page.centerPoint.x); *pReal++ = (y2); *pReal++ = (z2 - page.centerPoint.z);			//pos
+		*((uint32*)pReal++) = color;							//color
+		*pReal++ = 1; *pReal++ = 1;								//uv
+
+		//Update bounds
+		if (y1 < minY) minY = y1;
+		if (y2 < minY) minY = y2;
+		if (y1 + scaleY > maxY) maxY = y1 + scaleY;
+		if (y2 + scaleY > maxY) maxY = y2 + scaleY;
+
+		//Calculate heights and edge positions
+		float x3 = x + zTrans, z3 = z - xTrans;
+		float x4 = x - zTrans, z4 = z + xTrans;
+
+		float y3, y4;
+		if (heightFunction){
+			y3 = heightFunction(x3, z3);
+			y4 = heightFunction(x4, z4);
+		} else {
+			y3 = 0;
+			y4 = 0;
+		}
+
+		//Add vertices
+		*pReal++ = (x3 - page.centerPoint.x); *pReal++ = (y3 + scaleY); *pReal++ = (z3 - page.centerPoint.z);	//pos
+		*((uint32*)pReal++) = color;							//color
+		*pReal++ = 0; *pReal++ = 0;								//uv
+
+		*pReal++ = (x4 - page.centerPoint.x); *pReal++ = (y4 + scaleY); *pReal++ = (z4 - page.centerPoint.z);	//pos
+		*((uint32*)pReal++) = color;							//color
+		*pReal++ = 1; *pReal++ = 0;								//uv
+
+		*pReal++ = (x3 - page.centerPoint.x); *pReal++ = (y3); *pReal++ = (z3 - page.centerPoint.z);			//pos
+		*((uint32*)pReal++) = color;							//color
+		*pReal++ = 0; *pReal++ = 1;								//uv
+
+		*pReal++ = (x4 - page.centerPoint.x); *pReal++ = (y4); *pReal++ = (z4 - page.centerPoint.z);			//pos
+		*((uint32*)pReal++) = color;							//color
+		*pReal++ = 1; *pReal++ = 1;								//uv
+
+		//Update bounds
+		if (y3 < minY) minY = y1;
+		if (y4 < minY) minY = y2;
+		if (y3 + scaleY > maxY) maxY = y3 + scaleY;
+		if (y4 + scaleY > maxY) maxY = y4 + scaleY;
+	}
+
+	vbuf->unlock();
+	subMesh->vertexData->vertexBufferBinding->setBinding(0, vbuf);
+
+	//Populate index buffer
+	subMesh->indexData->indexStart = 0;
+	subMesh->indexData->indexCount = 6 * quadCount;
+	subMesh->indexData->indexBuffer = HardwareBufferManager::getSingleton()
+		.createIndexBuffer(HardwareIndexBuffer::IT_16BIT, subMesh->indexData->indexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+	uint16* pI = static_cast<uint16*>(subMesh->indexData->indexBuffer->lock(HardwareBuffer::HBL_DISCARD));
+	for (uint16 i = 0; i < quadCount; ++i)
+	{
+		uint16 offset = i * 4;
+
+		*pI++ = 0 + offset;
+		*pI++ = 2 + offset;
+		*pI++ = 1 + offset;
+
+		*pI++ = 1 + offset;
+		*pI++ = 2 + offset;
+		*pI++ = 3 + offset;
+	}
+
+	subMesh->indexData->indexBuffer->unlock();
+
+	//Finish up mesh
+	AxisAlignedBox bounds(page.bounds.left - page.centerPoint.x, minY, page.bounds.top - page.centerPoint.z,
+		page.bounds.right - page.centerPoint.x, maxY, page.bounds.bottom - page.centerPoint.z);
+	mesh->_setBounds(bounds);
+	Vector3 temp = bounds.getMaximum() - bounds.getMinimum();
+	mesh->_setBoundingSphereRadius(temp.length() * 0.5f);
+
+	LogManager::getSingleton().setLogDetail(static_cast<LoggingLevel>(0));
+	mesh->load();
+	LogManager::getSingleton().setLogDetail(LL_NORMAL);
+
+	//Apply grass material to mesh
+	subMesh->setMaterialName(layer->material->getName());
+
+	//Return the mesh
+	return mesh.getPointer();
+}
+
+Mesh *GrassLoader::generateGrass_SPRITE(PageInfo &page, GrassLayer *layer, float *grassPositions, unsigned int grassCount)
+{
+	//Calculate the number of quads to be added
+	unsigned int quadCount;
+	quadCount = grassCount;
+
+	//Create manual mesh to store grass quads
+	MeshPtr mesh = MeshManager::getSingleton().createManual(getUniqueID(), ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+	SubMesh *subMesh = mesh->createSubMesh();
+	subMesh->useSharedVertices = false;
+
+	//Setup vertex format information
+	subMesh->vertexData = new VertexData;
+	subMesh->vertexData->vertexStart = 0;
+	subMesh->vertexData->vertexCount = 4 * quadCount;
+
+	VertexDeclaration* dcl = subMesh->vertexData->vertexDeclaration;
+	size_t offset = 0;
+	dcl->addElement(0, offset, VET_FLOAT3, VES_POSITION);
+	offset += VertexElement::getTypeSize(VET_FLOAT3);
+	dcl->addElement(0, offset, VET_FLOAT4, VES_NORMAL);
+	offset += VertexElement::getTypeSize(VET_FLOAT4);
+	dcl->addElement(0, offset, VET_COLOUR, VES_DIFFUSE);
+	offset += VertexElement::getTypeSize(VET_COLOUR);
+	dcl->addElement(0, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES);
+	offset += VertexElement::getTypeSize(VET_FLOAT2);
+
+	//Populate a new vertex buffer with grass
+	HardwareVertexBufferSharedPtr vbuf = HardwareBufferManager::getSingleton()
+		.createVertexBuffer(offset, subMesh->vertexData->vertexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY, false);
+	float* pReal = static_cast<float*>(vbuf->lock(HardwareBuffer::HBL_DISCARD));
+
+	//Calculate size variance
+	float rndWidth = layer->maxWidth - layer->minWidth;
+	float rndHeight = layer->maxHeight - layer->minHeight;
+
+	float minY = Math::POS_INFINITY, maxY = Math::NEG_INFINITY;
+	float *posPtr = grassPositions;	//Position array "iterator"
+	for (uint16 i = 0; i < grassCount; ++i)
+	{
+		//Get the x and z positions from the position array
+		float x = *posPtr++;
+		float z = *posPtr++;
+
+		//Calculate height
+		float y;
+		if (heightFunction){
+			y = heightFunction(x, z);
+		} else {
+			y = 0;
+		}
+
+		float x1 = (x - page.centerPoint.x);
+		float z1 = (z - page.centerPoint.z);
+
+		//Get the color at the grass position
+		uint32 color;
+		if (layer->colorMap)
+			color = layer->colorMap->getColorAt(x, z);
+		else
+			color = 0xFFFFFFFF;
+
+		//Calculate size
+		float rnd = Math::UnitRandom();	//The same rnd value is used for width and height to maintain aspect ratio
+		float halfXScale = (layer->minWidth + rndWidth * rnd) * 0.5f;
+		float scaleY = (layer->minHeight + rndHeight * rnd);
+
+		//Randomly mirror grass textures
+		float uvLeft, uvRight;
+		if (Math::UnitRandom() > 0.5f){
+			uvLeft = 0;
+			uvRight = 1;
+		} else {
+			uvLeft = 1;
+			uvRight = 0;
+		}
+
+		//Add vertices
+		*pReal++ = x1; *pReal++ = y; *pReal++ = z1;					//center position
+		*pReal++ = -halfXScale; *pReal++ = scaleY; *pReal++ = 0; *pReal++ = 0;	//normal (used to store relative corner positions)
+		*((uint32*)pReal++) = color;								//color
+		*pReal++ = uvLeft; *pReal++ = 0;							//uv
+
+		*pReal++ = x1; *pReal++ = y; *pReal++ = z1;					//center position
+		*pReal++ = +halfXScale; *pReal++ = scaleY; *pReal++ = 0; *pReal++ = 0;	//normal (used to store relative corner positions)
+		*((uint32*)pReal++) = color;								//color
+		*pReal++ = uvRight; *pReal++ = 0;							//uv
+
+		*pReal++ = x1; *pReal++ = y; *pReal++ = z1;					//center position
+		*pReal++ = -halfXScale; *pReal++ = 0.0f; *pReal++ = 0; *pReal++ = 0;		//normal (used to store relative corner positions)
+		*((uint32*)pReal++) = color;								//color
+		*pReal++ = uvLeft; *pReal++ = 1;							//uv
+
+		*pReal++ = x1; *pReal++ = y; *pReal++ = z1;					//center position
+		*pReal++ = +halfXScale; *pReal++ = 0.0f; *pReal++ = 0; *pReal++ = 0;		//normal (used to store relative corner positions)
+		*((uint32*)pReal++) = color;								//color
+		*pReal++ = uvRight; *pReal++ = 1;							//uv
+
+		//Update bounds
+		if (y < minY) minY = y;
+		if (y + scaleY > maxY) maxY = y + scaleY;
+	}
+
+	vbuf->unlock();
+	subMesh->vertexData->vertexBufferBinding->setBinding(0, vbuf);
+
+	//Populate index buffer
+	subMesh->indexData->indexStart = 0;
+	subMesh->indexData->indexCount = 6 * quadCount;
+	subMesh->indexData->indexBuffer = HardwareBufferManager::getSingleton()
+		.createIndexBuffer(HardwareIndexBuffer::IT_16BIT, subMesh->indexData->indexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+	uint16* pI = static_cast<uint16*>(subMesh->indexData->indexBuffer->lock(HardwareBuffer::HBL_DISCARD));
+	for (uint16 i = 0; i < quadCount; ++i)
+	{
+		uint16 offset = i * 4;
+
+		*pI++ = 0 + offset;
+		*pI++ = 2 + offset;
+		*pI++ = 1 + offset;
+
+		*pI++ = 1 + offset;
+		*pI++ = 2 + offset;
+		*pI++ = 3 + offset;
+	}
+
+	subMesh->indexData->indexBuffer->unlock();
+
+	//Finish up mesh
+	AxisAlignedBox bounds(page.bounds.left - page.centerPoint.x, minY, page.bounds.top - page.centerPoint.z,
+		page.bounds.right - page.centerPoint.x, maxY, page.bounds.bottom - page.centerPoint.z);
+	mesh->_setBounds(bounds);
+	Vector3 temp = bounds.getMaximum() - bounds.getMinimum();
+	mesh->_setBoundingSphereRadius(temp.length() * 0.5f);
+
+	LogManager::getSingleton().setLogDetail(static_cast<LoggingLevel>(0));
+	mesh->load();
+	LogManager::getSingleton().setLogDetail(LL_NORMAL);
+
+	//Apply grass material to mesh
+	subMesh->setMaterialName(layer->material->getName());
+
+	//Return the mesh
+	return mesh.getPointer();
+}
 
 
 GrassLayer::GrassLayer(PagedGeometry *geom, GrassLoader *ldr)
@@ -371,7 +671,6 @@ void GrassLayer::setMaterialName(const String &matName)
 	if (material.isNull() || matName != material->getName()){
 		material = MaterialManager::getSingleton().getByName(matName);
 		shaderNeedsUpdate = true;
-		_updateShaders();
 	}
 }
 
@@ -387,15 +686,14 @@ void GrassLayer::setMaximumSize(float width, float height)
 	if (maxHeight != height){
 		maxHeight = height;
 		shaderNeedsUpdate = true;
-		_updateShaders();
 	}
 }
 
 void GrassLayer::setRenderTechnique(GrassTechnique style, bool blendBase)
 {
-	renderTechnique = style;
-	if (blend != blendBase){
+	if (blend != blendBase || renderTechnique != style){
 		blend = blendBase;
+		renderTechnique = style;
 		shaderNeedsUpdate = true;
 	}
 }
@@ -418,24 +716,26 @@ void GrassLayer::setAnimationEnabled(bool enabled)
 
 void GrassLayer::setDensityMap(const String &mapFile, MapChannel channel)
 {
+	if (densityMap){
+		densityMap->unload();
+		densityMap = NULL;
+	}
 	if (mapFile != ""){
 		densityMap = DensityMap::load(mapFile, channel);
 		densityMap->setMapBounds(mapBounds);
 		densityMap->setFilter(densityMapFilter);
-	} else {
-		densityMap->unload();
-		densityMap = NULL;
 	}
 }
 void GrassLayer::setDensityMap(Texture *map, MapChannel channel)
 {
+	if (densityMap){
+		densityMap->unload();
+		densityMap = NULL;
+	}
 	if (map){
 		densityMap = DensityMap::load(map, channel);
 		densityMap->setMapBounds(mapBounds);
-		densityMap->setFilter(colorMapFilter);
-	} else {
-		densityMap->unload();
-		densityMap = NULL;
+		densityMap->setFilter(densityMapFilter);
 	}
 }
 
@@ -458,9 +758,14 @@ unsigned int GrassLayer::_populateGrassList_Uniform(PageInfo page, float *posBuf
 			float x = Math::RangeRandom(page.bounds.left, page.bounds.right);
 			float z = Math::RangeRandom(page.bounds.top, page.bounds.bottom);
 
-			//Add to list
-			*posPtr++ = x;
-			*posPtr++ = z;
+			//Add to list in within bounds
+			if (!colorMap){
+				*posPtr++ = x;
+				*posPtr++ = z;
+			} else if (x >= mapBounds.left && x <= mapBounds.right && z >= mapBounds.top && z <= mapBounds.bottom){
+				*posPtr++ = x;
+				*posPtr++ = z;
+			}
 		}
 	} else {
 		//Height range
@@ -478,8 +783,14 @@ unsigned int GrassLayer::_populateGrassList_Uniform(PageInfo page, float *posBuf
 
 			//Add to list if in range
 			if (y >= min && y <= max){
-				*posPtr++ = x;
-				*posPtr++ = z;
+				//Add to list in within bounds
+				if (!colorMap){
+					*posPtr++ = x;
+					*posPtr++ = z;
+				} else if (x >= mapBounds.left && x <= mapBounds.right && z >= mapBounds.top && z <= mapBounds.bottom){
+					*posPtr++ = x;
+					*posPtr++ = z;
+				}
 			}
 		}
 	}
@@ -502,7 +813,7 @@ unsigned int GrassLayer::_populateGrassList_UnfilteredDM(PageInfo page, float *p
 
 			//Determine whether this grass will be added based on the local density.
 			//For example, if localDensity is .32, grasses will be added 32% of the time.
-			if (Math::UnitRandom() <= densityMap->_getDensityAt_Unfiltered(x, z)){
+			if (Math::UnitRandom() < densityMap->_getDensityAt_Unfiltered(x, z)){
 				//Add to list
 				*posPtr++ = x;
 				*posPtr++ = z;
@@ -521,7 +832,7 @@ unsigned int GrassLayer::_populateGrassList_UnfilteredDM(PageInfo page, float *p
 
 			//Determine whether this grass will be added based on the local density.
 			//For example, if localDensity is .32, grasses will be added 32% of the time.
-			if (Math::UnitRandom() <= densityMap->_getDensityAt_Unfiltered(x, z)){
+			if (Math::UnitRandom() < densityMap->_getDensityAt_Unfiltered(x, z)){
 				//Calculate height
 				float y = parent->heightFunction(x, z);
 
@@ -552,7 +863,7 @@ unsigned int GrassLayer::_populateGrassList_BilinearDM(PageInfo page, float *pos
 
 			//Determine whether this grass will be added based on the local density.
 			//For example, if localDensity is .32, grasses will be added 32% of the time.
-			if (Math::UnitRandom() <= densityMap->_getDensityAt_Bilinear(x, z)){
+			if (Math::UnitRandom() < densityMap->_getDensityAt_Bilinear(x, z)){
 				//Add to list
 				*posPtr++ = x;
 				*posPtr++ = z;
@@ -571,7 +882,7 @@ unsigned int GrassLayer::_populateGrassList_BilinearDM(PageInfo page, float *pos
 
 			//Determine whether this grass will be added based on the local density.
 			//For example, if localDensity is .32, grasses will be added 32% of the time.
-			if (Math::UnitRandom() <= densityMap->_getDensityAt_Bilinear(x, z)){
+			if (Math::UnitRandom() < densityMap->_getDensityAt_Bilinear(x, z)){
 				//Calculate height
 				float y = parent->heightFunction(x, z);
 
@@ -591,25 +902,27 @@ unsigned int GrassLayer::_populateGrassList_BilinearDM(PageInfo page, float *pos
 
 void GrassLayer::setColorMap(const String &mapFile, MapChannel channel)
 {
+	if (colorMap){
+		colorMap->unload();
+		colorMap = NULL;
+	}
 	if (mapFile != ""){
 		colorMap = ColorMap::load(mapFile, channel);
 		colorMap->setMapBounds(mapBounds);
 		colorMap->setFilter(colorMapFilter);
-	} else {
-		colorMap->unload();
-		colorMap = NULL;
 	}
 }
 
 void GrassLayer::setColorMap(Texture *map, MapChannel channel)
 {
+	if (colorMap){
+		colorMap->unload();
+		colorMap = NULL;
+	}
 	if (map){
 		colorMap = ColorMap::load(map, channel);
 		colorMap->setMapBounds(mapBounds);
 		colorMap->setFilter(colorMapFilter);
-	} else {
-		colorMap->unload();
-		colorMap = NULL;
 	}
 }
 
@@ -625,46 +938,38 @@ void GrassLayer::_updateShaders()
 	if (shaderNeedsUpdate){
 		shaderNeedsUpdate = false;
 
-		//Disable lighting and shadows
-		material->setLightingEnabled(false);
-		//material->setReceiveShadows(false);
-
-		//Make sure the user's computer supports vertex shaders
+		//Proceed only if there is no custom vertex shader and the user's computer supports vertex shaders
 		const RenderSystemCapabilities *caps = Root::getSingleton().getRenderSystem()->getCapabilities();
 		if (caps->hasCapability(RSC_VERTEX_PROGRAM)){
-			Pass *pass = material->getTechnique(0)->getPass(0);
+			//Generate a string ID that identifies the current set of vertex shader options
+			StringUtil::StrStreamType tmpName;
+			tmpName << "GrassVS_";
+			if (animate)
+				tmpName << "anim_";
+			if (blend)
+				tmpName << "blend_";
+			tmpName << renderTechnique << "_";
+			tmpName << fadeTechnique << "_";
+			if (fadeTechnique == FADETECH_GROW || fadeTechnique == FADETECH_ALPHAGROW)
+				tmpName << maxHeight << "_";
+			tmpName << "vp";
+			const String vsName = tmpName.str();
+			
+			//Generate a string ID that identifies the material combined with the vertex shader
+			const String matName = material->getName() + "_" + vsName;
 
-			//Check if it's ok to set a shader (user's shaders shouldn't be overwritten)
-			bool shaderOK;
-			if (pass->hasVertexProgram()){
-				const String &vName = pass->getVertexProgramName();
-				if (vName.substr(0,11)  == "GrassLoader")
-					shaderOK = true;
-				else
-					shaderOK = false;
-			} else {
-				shaderOK = true;
-			}
+			//Check if the desired material already exists (if not, create it)
+			MaterialPtr tmpMat = MaterialManager::getSingleton().getByName(matName);
+			if (tmpMat.isNull()){
+				//Clone the original material
+				tmpMat = material->clone(matName);
 
-			//Set up the vertex shader if appropriate
-			if (shaderOK){
-				//Compile the CG shader script based on the user's options
-				StringUtil::StrStreamType tmpName;
-				tmpName << "GrassLoader_";
-				if (animate)
-					tmpName << "anim_";
-				if (blend)
-					tmpName << "blend_";
-				tmpName << fadeTechnique << "_";
-				if (fadeTechnique == FADETECH_GROW || fadeTechnique == FADETECH_ALPHAGROW)
-					tmpName << maxHeight << "_";
-				tmpName << "vp";
+				//Disable lighting
+				tmpMat->setLightingEnabled(false);
+				//tmpMat->setReceiveShadows(false);
 
-				const String vertexProgName = tmpName.str();
-
-				//Check if this shader already exists (if not, compile it)
-				HighLevelGpuProgramPtr vertexShader;
-				vertexShader = HighLevelGpuProgramManager::getSingleton().getByName(vertexProgName);
+				//Check if the desired shader already exists (if not, compile it)
+				HighLevelGpuProgramPtr vertexShader = HighLevelGpuProgramManager::getSingleton().getByName(vsName);
 				if (vertexShader.isNull()){
 					//Generate the grass shader
 					String vertexProgSource;
@@ -685,6 +990,9 @@ void GrassLayer::_updateShaders()
 					if (fadeTechnique == FADETECH_GROW || fadeTechnique == FADETECH_ALPHAGROW) vertexProgSource +=
 						"	uniform float grassHeight,	\n";
 
+					if (renderTechnique == GRASSTECH_SPRITE) vertexProgSource +=
+						"	float4 iNormal : NORMAL, \n";
+
 					vertexProgSource +=
 						"	uniform float4x4 worldViewProj,	\n"
 						"	uniform float3 camPos, \n"
@@ -695,15 +1003,24 @@ void GrassLayer::_updateShaders()
 						"	float dist = distance(camPos.xz, position.xz);	\n";
 
 					if (fadeTechnique == FADETECH_ALPHA || fadeTechnique == FADETECH_ALPHAGROW) vertexProgSource +=
-							//Fade out in the distance
+						//Fade out in the distance
 						"	oColor.a = 2.0f - (2.0f * dist / fadeRange);   \n";
 					else vertexProgSource +=
 						"	oColor.a = 1.0f;   \n";
 
+					vertexProgSource +=
+						"	float oldposx = position.x;	\n";
+
+					if (renderTechnique == GRASSTECH_SPRITE) vertexProgSource +=
+						//Face the camera
+						"	float3 dirVec = (float3)position - (float3)camPos;		\n"
+						"	float3 p = normalize(cross(float4(0,1,0,0), dirVec));	\n"
+						"	position += float4(p.x * iNormal.x, iNormal.y, p.z * iNormal.x, 0);	\n";
+
 					if (animate) vertexProgSource +=
 						"	if (iUV.y == 0.0f){	\n"
-								//Wave grass in breeze
-						"		float offset = sin(time + position.x * frequency);	\n"
+						//Wave grass in breeze
+						"		float offset = sin(time + oldposx * frequency);	\n"
 						"		position += direction * offset;	\n"
 						"	}	\n";
 
@@ -713,7 +1030,7 @@ void GrassLayer::_updateShaders()
 						"	if (iUV.y != 0.0f){	\n";
 
 					if (blend) vertexProgSource +=
-								//Blend the base of nearby grass into the terrain
+						//Blend the base of nearby grass into the terrain
 						"		if (oColor.a >= 1.0f) \n"
 						"			oColor.a = 4.0f * ((dist / fadeRange) - 0.1f);	\n"
 						"	}	\n";
@@ -723,37 +1040,43 @@ void GrassLayer::_updateShaders()
 						"	position.y -= grassHeight * clamp(offset, 0, 1); ";
 
 					vertexProgSource +=
-						"	oPosition = mul(worldViewProj, position);  \n"
+						"	oPosition = mul(worldViewProj, position);  \n";
 
+					vertexProgSource +=
 						"	oUV = iUV;\n"
 						"}"; 
-						
-						vertexShader = HighLevelGpuProgramManager::getSingleton().createProgram(
-							vertexProgName,
-							ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-							"cg", GPT_VERTEX_PROGRAM);
 
-						vertexShader->setSource(vertexProgSource);
-						vertexShader->setParameter("profiles", "vs_1_1 arbvp1");
-						vertexShader->setParameter("entry_point", "main");
-						vertexShader->load();
+					vertexShader = HighLevelGpuProgramManager::getSingleton().createProgram(
+						vsName,
+						ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+						"cg", GPT_VERTEX_PROGRAM);
+
+					vertexShader->setSource(vertexProgSource);
+					vertexShader->setParameter("profiles", "vs_1_1 arbvp1");
+					vertexShader->setParameter("entry_point", "main");
+					vertexShader->load();
 				}
+				//Now the vertex shader (vertexShader) has either been found or just generated
+				//(depending on whether or not it was already generated). 
 
 				//Apply the shader to the material
-				pass->setVertexProgram(vertexProgName);
-				pass->getVertexProgramParameters()->setNamedAutoConstant("worldViewProj", GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
-				pass->getVertexProgramParameters()->setNamedAutoConstant("camPos", GpuProgramParameters::ACT_CAMERA_POSITION_OBJECT_SPACE);
-				pass->getVertexProgramParameters()->setNamedAutoConstant("fadeRange", GpuProgramParameters::ACT_CUSTOM, 1);
+				Pass *pass = tmpMat->getTechnique(0)->getPass(0);
+				pass->setVertexProgram(vsName);
+				GpuProgramParametersSharedPtr params = pass->getVertexProgramParameters();
+
+				params->setNamedAutoConstant("worldViewProj", GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
+				params->setNamedAutoConstant("camPos", GpuProgramParameters::ACT_CAMERA_POSITION_OBJECT_SPACE);
+				params->setNamedAutoConstant("fadeRange", GpuProgramParameters::ACT_CUSTOM, 1);
 
 				if (animate){
-					pass->getVertexProgramParameters()->setNamedAutoConstant("time", GpuProgramParameters::ACT_CUSTOM, 1);
-					pass->getVertexProgramParameters()->setNamedAutoConstant("frequency", GpuProgramParameters::ACT_CUSTOM, 1);
-					pass->getVertexProgramParameters()->setNamedAutoConstant("direction", GpuProgramParameters::ACT_CUSTOM, 4);
+					params->setNamedAutoConstant("time", GpuProgramParameters::ACT_CUSTOM, 1);
+					params->setNamedAutoConstant("frequency", GpuProgramParameters::ACT_CUSTOM, 1);
+					params->setNamedAutoConstant("direction", GpuProgramParameters::ACT_CUSTOM, 4);
 				}
-				
+
 				if (fadeTechnique == FADETECH_GROW || fadeTechnique == FADETECH_ALPHAGROW){
-					pass->getVertexProgramParameters()->setNamedAutoConstant("grassHeight", GpuProgramParameters::ACT_CUSTOM, 1);
-					pass->getVertexProgramParameters()->setNamedConstant("grassHeight", maxHeight * 1.05f);
+					params->setNamedAutoConstant("grassHeight", GpuProgramParameters::ACT_CUSTOM, 1);
+					params->setNamedConstant("grassHeight", maxHeight * 1.05f);
 				}
 
 				float farViewDist = geom->getDetailLevels().front()->getFarRange();
@@ -762,6 +1085,11 @@ void GrassLayer::_updateShaders()
 				//of pages, while the vertex shader needs to fade grass completely out (including the closest corner)
 				//before the page center is out of range.
 			}
+			//Now the material (tmpMat) has either been found or just created (depending on whether or not it was already
+			//created). The appropriate vertex shader should be applied and the material is ready for use.
+
+			//Apply the new material
+			material = tmpMat;
 		}
 	}
 }

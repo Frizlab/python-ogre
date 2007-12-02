@@ -170,10 +170,8 @@ NxSoftBodyMesh*	SoftBody::__createCubeSoftBodyMesh(NxReal wx, NxReal wy, NxReal 
 
 		NxThrow_Error(s.str());
 	}
-    MemoryReadBuffer  readbuffer (buf.data);
-    NxStream & streambuffer = dynamic_cast< NxStream & > (readbuffer);
-		
-    mSoftBodyMesh = mOwner->getNxScene()->getPhysicsSDK().createSoftBodyMesh(streambuffer);
+	
+  mSoftBodyMesh = mOwner->getNxScene()->getPhysicsSDK().createSoftBodyMesh(MemoryReadBuffer(buf.data));
 
 #else
 
@@ -321,10 +319,8 @@ NxSoftBodyMesh* SoftBody::__createSoftBodyMesh(const NxString& name, const NxStr
 
 		NxThrow_Error(s.str());
 	}
-	MemoryReadBuffer  readbuffer (buf.data);
-    NxStream & streambuffer = dynamic_cast< NxStream & > (readbuffer);
 	
-    mSoftBodyMesh = mOwner->getNxScene()->getPhysicsSDK().createSoftBodyMesh(streambuffer);
+  mSoftBodyMesh = mOwner->getNxScene()->getPhysicsSDK().createSoftBodyMesh(MemoryReadBuffer(buf.data));
 
 #else
 

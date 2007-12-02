@@ -51,11 +51,9 @@ def get_ccflags(cls):
     if os.name=='nt':
         CCFLAGS=''
         #CCFLAGS += '-DBOOST_PYTHON_MAX_ARITY=19'
-        CCFLAGS += '  /nologo' # -Zm800
+        CCFLAGS += '  /nologo -Zm200 '
         CCFLAGS += ' /W3 /wd4675' # warning level  -Zc:wchar_t 
-        CCFLAGS += ' /TP /MD /Zc:forScope  /EHs /c'
-        ##CCFLAGS += '  /Ogisyb2 /Gs /GR ' #/Op /Ox /O2
-        CCFLAGS += ' /Ox /Ob2 /Oi /Ot /Oy /GS- /GR '
+        CCFLAGS += ' /TP /MD /Zc:forScope /EHs /c /Ox /Ob2 /Oi /Ot /Oy /GS- /GR '
     elif os.name =='posix':
         if os.sys.platform <> 'darwin':
             CCFLAGS = ' `pkg-config --cflags OGRE` '        ## needs to change I think :)
@@ -70,11 +68,22 @@ def get_ccflags(cls):
             CCFLAGS  = ' -I -pipe -Os -I./'
     return CCFLAGS
 
-def get_source_files(_dir):
+def get_source_files(cls, _dir, usepch = False):
+
+    def filterfunc ( filein ):
+        validext = ['.cpp', '.cxx', '.c']
+        if usepch:
+            if filein == cls.pchbuild:
+                return False
+        for e in validext:
+            if filein.endswith ( e ):
+                return True
+        return False
+        
     try:
-        source_files = filter( lambda s: (s.endswith( '.cpp' ) or s.endswith('.cxx') or s.endswith('.c') ), os.listdir(_dir) )
+        source_files = filter( filterfunc , os.listdir(_dir) )
     except OSError,e:
-        print 'WARNING: Generate the sources this directory: "%s"' % _dir
+        print 'WARNING: Generate the sources in this directory: "%s"' % _dir
         raise e
     source_files.sort()
     return source_files ## "Image.pypp.cpp" ##source_files
@@ -82,7 +91,7 @@ def get_source_files(_dir):
 def get_linkflags():
     if os.name=='nt':
         #LINKFLAGS = " /NOLOGO /INCREMENTAL:NO /DLL /OPT:NOREF /OPT:NOICF /OPT:NOWIN98 /subsystem:console " # no change
-        LINKFLAGS = " /MAP:FULL /MAPINFO:EXPORTS /NOLOGO /OPT:REF /INCREMENTAL:NO /DLL /OPT:ICF /OPT:NOWIN98 /subsystem:console " # 7 minutes 25% smaller 16.6 Meg
+        LINKFLAGS = " /MAP:FULL /MAPINFO:EXPORTS /NOLOGO /OPT:REF /INCREMENTAL:NO /DLL /OPT:ICF /subsystem:console " # 7 minutes 25% smaller 16.6 Meg
         #LINKFLAGS = " /NOLOGO /INCREMENTAL:NO /DLL /subsystem:console " ### LONG Link , 80 minutes - 15.7 meg
     elif os.name == 'posix':
         if os.sys.platform <> 'darwin':
@@ -91,17 +100,28 @@ def get_linkflags():
             LINKFLAGS = ''
     return LINKFLAGS
 
+def build_pch( cls, pchfile ):
+    """ lets create a source file that we will use to create the PCH file from """
+    fout = open ( pchfile, 'w' ) ## delete it if it's already there
+    for i in cls.pchincludes:
+        fout.write ( '#include "' + i + '"\n' )
+    fout.write ( "\n" )
+    fout.close()
+  
 # Let us select the projects to build
 
 possible_projects = []
 for name,cls in environment.projects.items():
-    if cls.active:
-        possible_projects.append ( name )
+    possible_projects.append ( name )
 #  ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',\
 #     'ogreode', 'ogreal', 'quickgui', 'opcode', 'nxogre', 'bullet', 'physx', 'betagui','theora',\
 #      'ogrevideoffmpeg', 'ogredshow', 'plib', 'ogrebulletc', 'ogrebulletd',
 #      'ogreforests', 'et', 'navi', 'caelum', 'noise', 'watermesh' ]  # , 'raknet'
-default_projects =  possible_projects ## environment.projects
+default_projects = []
+for name,cls in environment.projects.items():
+    if cls.active:
+        default_projects.append ( name )
+#default_projects =  possible_projects ## environment.projects
 # ['ogre' , 'ois', 'ogrerefapp', 'ogrenewt', 'cegui', 'ode',\
 #     'ogreode', 'ogreal',  'quickgui', 'opcode', 'nxogre', 'bullet', 'physx', 'betagui','theora',\
 #      'ogrevideoffmpeg', 'ogredshow', 'plib',  'ogrebulletc', 'ogrebulletd',
@@ -114,7 +134,8 @@ opts.Add(ListOption('PROJECTS', 'Project to build wrappers for',
 temp_env = Environment(options = opts)
 tobuild = temp_env['PROJECTS']
 del temp_env    
-    
+
+   
         
 for name, cls in environment.projects.items():
     ##if name.active:
@@ -128,8 +149,11 @@ for name, cls in environment.projects.items():
         _env = Environment(ENV=os.environ)
         
         if environment.rpath:
-            _env.Append(RPATH=_env.Literal(environment.rpath))
-
+            _env.Append(RPATH=environment.rpath)
+        
+        # Stores signatures in a separate .sconsign file 
+        # in each directory as the single one was getting huge
+        _env.SConsignFile(os.path.join( cls.generated_dir, "sconsign") )
               
         ## Use custom compilier if wanted (things like ccache)
         if hasattr(environment, 'cxx_compiler'):
@@ -142,8 +166,6 @@ for name, cls in environment.projects.items():
         linkflags=get_linkflags()
         if hasattr ( cls, 'LINKFLAGS' ):
             linkflags += cls.LINKFLAGS
-	if environment.rpath:
-            linkflags += ' -z origin '
         _env.Append( LINKFLAGS=linkflags )
         _env.Append ( LIBS = cls.libs )
         
@@ -154,8 +176,17 @@ for name, cls in environment.projects.items():
             ccflags += cls.CCFLAGS
         _env.Append ( CCFLAGS=ccflags )
         
+        if hasattr( cls, 'pchbuild' ) and hasattr( cls, 'pchstop' ):
+            usepch = True
+            _env['PCHSTOP']= cls.pchstop
+            build_pch ( cls, os.path.join(cls._source, cls.pchbuild) )  ## we build the source pch file here
+            _env['PCH']=_env.PCH( os.path.join(cls._source, cls.pchbuild) )[0]  
+        else:
+            usepch = False  
+
         ## create a list of source files to include
-        _env.Append ( FILES= get_source_files(cls._source) )
+        sourcefiles = get_source_files(cls, cls._source, usepch)
+        _env.Append ( FILES= sourcefiles )
         ##cls._env = _env.Copy()  ## NOT sure this is needed...
         
         ## build it to somewhere else
@@ -165,7 +196,7 @@ for name, cls in environment.projects.items():
         ## create a dynamic Sconscript file in the source directory (only if it doesn't exist)
         create_SConscript ( cls )
 # #         _env.LINKCOM  = [_env['LINKCOM'],\
-# #         				'mt.exe -nologo -manifest %(name)s.manifest -outputresource:%(name)s;2' % {'name':cls._name} ]
+# #                         'mt.exe -nologo -manifest %(name)s.manifest -outputresource:%(name)s;2' % {'name':cls._name} ]
         ## now call the SConscript file in the source directory
         Export ( '_env' ) 
         package = _env.SConscript(os.path.join( cls._build_dir, 'SConscript' ) )
@@ -175,11 +206,11 @@ for name, cls in environment.projects.items():
         if os.name=="nt":
             ## and lets have it install the output into the 'package_dir_name/ModuleName' dir and rename to the PydName
             _env.AddPostAction(package,\
-            	 'mt.exe -nologo -manifest %(name)s.manifest -outputresource:%(name)s;2' % { 'name':package[index] } )
-        else:            	 
+                 'mt.exe -nologo -manifest %(name)s.manifest -outputresource:%(name)s;2' % { 'name':package[index] } )
+        else:                
             _env.AddPostAction(package,\
-            	 '-strip -g -S -d --strip-debug -s %(name)s' % { 'name':package[index] } )
-            	         
+                 '-strip -g -S -d --strip-debug -s %(name)s' % { 'name':package[index] } )
+                         
         _env.InstallAs(os.path.join(environment.package_dir_name, cls.parent,
                                     cls.ModuleName, cls.PydName), 
                                      package[index] )

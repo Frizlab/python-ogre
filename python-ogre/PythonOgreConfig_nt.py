@@ -56,7 +56,7 @@ PATH_ofusion=        os.path.join(PATH_THIRDPARTY, 'ofusion')
 
 PATH_ogrevideoffmpeg = os.path.join(PATH_THIRDPARTY,'ffmpeg')
 PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.64') 
-PATH_PhysX=         "c:/program files/AGEIA Technologies/SDK/v2.7.2/SDKs"
+PATH_PhysX=         "c:/program files/AGEIA Technologies/SDK/v2.7.3/SDKs"
 PATH_Theora=        os.path.join(PATH_OgreAddons,'videoplugin','TheoraVideo')
 PATH_ffmpeg=        os.path.join(BASE_DIR, 'ffmpeg')
 PATH_navi =         os.path.join(BASE_DIR, 'navi','Navi')
@@ -148,7 +148,8 @@ PATH_INCLUDE_ogreforests =         PATH_ogreforests
 PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ,os.path.join(BASE_DIR, 'vorbis', 'include')
                         ,os.path.join(PATH_OgreAddons,'videoplugin','theora','include')
-                        ,os.path.join(PATH_OgreAddons,'videoplugin','ptypes-2.1.1','include')
+#                         ,os.path.join(PATH_OgreAddons,'videoplugin','ptypes-2.1.1','include')
+                        ,os.path.join(PATH_THIRDPARTY,'ptypes','include')
                         ]
 
 PATH_INCLUDE_PhysX= [ os.path.join(PATH_PhysX, 'Physics','include')

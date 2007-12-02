@@ -1,54 +1,39 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUIProgressBar.h"
 #include "QuickGUIWindow.h"
 
 namespace QuickGUI
 {
-	ProgressBar::ProgressBar(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
-		Image(instanceName,pixelSize,texture,gm),
+	ProgressBar::ProgressBar(const Ogre::String& name, GUIManager* gm) :
+		Widget(name,gm),
 		mInitialPixelOffset(0),
 		mProgress(1.0),
-		mFillDirection(FILLS_NEGATIVE_TO_POSITIVE)
+		mFillDirection(FILLS_NEGATIVE_TO_POSITIVE),
+		mClippingEdge(CLIP_LEFT_BOTTOM)
 	{
 		mWidgetType = TYPE_PROGRESSBAR;
 		mSkinComponent = ".progressbar";
+		mSize = Size(100,25);
+
 		if( mSize.width > mSize.height )
 			mLayout = LAYOUT_HORIZONTAL;
 		else
 			mLayout = LAYOUT_VERTICAL;
 
-		mBarTextureName = mTextureName + ".bar" + mTextureExtension;
-		mBarImage.load(mBarTextureName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-		_getBarExtents();
-
-		Ogre::TextureManager* tm = Ogre::TextureManager::getSingletonPtr();
-		// resource may already exist, for example, creating the texture, clearing all gui, then creating gui again.
-		if( tm->resourceExists(mInstanceName + ".bar.temp") )
-			mBarTexture = tm->getByName(mInstanceName + ".bar.temp");
-		else
-		{
-			mBarTexture = Ogre::TextureManager::getSingletonPtr()->createManual(mInstanceName + ".bar.temp", 
-				Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
-				Ogre::TEX_TYPE_2D,
-				(Ogre::uint)mWidgetImage->getWidth(),
-				(Ogre::uint)mWidgetImage->getHeight(),
-				0, 
-				Ogre::PF_B8G8R8A8,
-				Ogre::TU_STATIC);
-		}
+		
+		//_getBarExtents();
 
 		mBarPanel = _createQuad();
 		mBarPanel->setPosition(getScreenPosition());
 		mBarPanel->setSize(mSize);
 		mBarPanel->setOffset(mOffset+1);
-		mBarPanel->setTexture(mBarTexture->getName());
 		mBarPanel->_notifyQuadContainer(mQuadContainer);
-
-		setProgress(1.0);
 	}
 
 	ProgressBar::~ProgressBar()
 	{
-		std::vector<MemberFunctionSlot*>::iterator it;
+		EventHandlerArray::iterator it;
 		for( it = mOnProgressChangedHandlers.begin(); it != mOnProgressChangedHandlers.end(); ++it )
 			delete (*it);
 		mOnProgressChangedHandlers.clear();
@@ -92,7 +77,7 @@ namespace QuickGUI
 	void ProgressBar::_modifyBarTexture(Ogre::Real progress)
 	{
 		Ogre::Image barContainer;
-		barContainer.load(mFullTextureName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		barContainer.load(mSkinName + mSkinComponent + mSkinExtension, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
 		// Hardware Pixel Buffer for moving pixels around, and correctly creating the barTexture.
 		Ogre::HardwarePixelBufferSharedPtr buf = mBarTexture->getBuffer();
@@ -109,7 +94,7 @@ namespace QuickGUI
 		// First, we want to make the barTexture appear like the barContainer. (looks like 0 progress)
 		buf->blitFromMemory(barContainer.getPixelBox(),Ogre::Image::Box(0, 0, barContainer.getWidth(), barContainer.getHeight()));
 
-		// if progress is too small, there is not bar texture to create.
+		// if progress is too small, there is no bar texture to create.
 		if(progress <= 0.01)
 			return;
 
@@ -130,14 +115,32 @@ namespace QuickGUI
 			// FILLS_LEFT_TO_RIGHT
 			if(mFillDirection == FILLS_NEGATIVE_TO_POSITIVE)
 			{
-				srcBox = mBarImage.getPixelBox().getSubVolume(Ogre::Box((mBarMinWidth + spaceWidth), 0, mBarMaxWidth, barContainer.getHeight()));
-				dstBox = Ogre::Image::Box(mBarMinWidth, 0, (mBarMinWidth + barWidth), barContainer.getHeight());
+				if(mClippingEdge == CLIP_LEFT_BOTTOM)
+				{
+					srcBox = mBarImage.getPixelBox().getSubVolume(Ogre::Box((mBarMinWidth + spaceWidth), 0, mBarMaxWidth, barContainer.getHeight()));
+					dstBox = Ogre::Image::Box(mBarMinWidth, 0, (mBarMinWidth + barWidth), barContainer.getHeight());
+				}
+				// CLIP_RIGHT_TOP
+				else
+				{
+					srcBox = mBarImage.getPixelBox().getSubVolume(Ogre::Box(mBarMinWidth, 0, (mBarMinWidth + barWidth), barContainer.getHeight()));
+					dstBox = Ogre::Image::Box(mBarMinWidth, 0, (mBarMinWidth + barWidth), barContainer.getHeight());
+				}
 			}
 			// FILLS_RIGHT_TO_LEFT
 			else
 			{
-				srcBox = mBarImage.getPixelBox().getSubVolume(Ogre::Box(mBarMinWidth, 0, (mBarMinWidth + barWidth), barContainer.getHeight()));
-				dstBox = Ogre::Image::Box((mBarMinWidth + spaceWidth), 0, mBarMaxWidth, barContainer.getHeight());
+				if(mClippingEdge == CLIP_LEFT_BOTTOM)
+				{
+					srcBox = mBarImage.getPixelBox().getSubVolume(Ogre::Box(mBarMinWidth, 0, (mBarMinWidth + barWidth), barContainer.getHeight()));
+					dstBox = Ogre::Image::Box((mBarMinWidth + spaceWidth), 0, mBarMaxWidth, barContainer.getHeight());
+				}
+				// CLIP_RIGHT_TOP
+				else
+				{
+					srcBox = mBarImage.getPixelBox().getSubVolume(Ogre::Box((mBarMaxWidth - barWidth), 0, mBarMaxWidth, barContainer.getHeight()));
+					dstBox = Ogre::Image::Box((mBarMinWidth + spaceWidth), 0, mBarMaxWidth, barContainer.getHeight());
+				}
 			}
 		}
 		else // mLayout == LAYOUT_VERTICAL
@@ -150,14 +153,32 @@ namespace QuickGUI
 			// FILLS_BOTTOM_TO_TOP
 			if(mFillDirection == FILLS_NEGATIVE_TO_POSITIVE)
 			{
-				srcBox = mBarImage.getPixelBox().getSubVolume(Ogre::Box(0, mBarMinHeight, barContainer.getWidth(), (mBarMinHeight + barHeight)));
-				dstBox = Ogre::Image::Box(0, mBarMinHeight + spaceHeight, barContainer.getWidth(), mBarMaxHeight);
+				if(mClippingEdge == CLIP_LEFT_BOTTOM)
+				{
+					srcBox = mBarImage.getPixelBox().getSubVolume(Ogre::Box(0, mBarMinHeight, barContainer.getWidth(), (mBarMinHeight + barHeight)));
+					dstBox = Ogre::Image::Box(0, mBarMinHeight + spaceHeight, barContainer.getWidth(), mBarMaxHeight);
+				}
+				// CLIP_RIGHT_TOP
+				else
+				{
+					srcBox = mBarImage.getPixelBox().getSubVolume(Ogre::Box(0, (mBarMaxHeight - barHeight), barContainer.getWidth(), mBarMaxHeight));
+					dstBox = Ogre::Image::Box(0, mBarMinHeight + spaceHeight, barContainer.getWidth(), mBarMaxHeight);
+				}
 			}
 			// FILLS_TOP_TO_BOTTOM
 			else
 			{
-				srcBox = mBarImage.getPixelBox().getSubVolume(Ogre::Box(0, mBarMinHeight + spaceHeight, barContainer.getWidth(), mBarMaxHeight));
-				dstBox = Ogre::Image::Box(0, mBarMinHeight, barContainer.getWidth(), (mBarMinHeight + barHeight));
+				if(mClippingEdge == CLIP_LEFT_BOTTOM)
+				{
+					srcBox = mBarImage.getPixelBox().getSubVolume(Ogre::Box(0, mBarMaxHeight - barHeight, barContainer.getWidth(), mBarMaxHeight));
+					dstBox = Ogre::Image::Box(0, mBarMinHeight, barContainer.getWidth(), (mBarMinHeight + barHeight));
+				}
+				// CLIP_RIGHT_TOP
+				else
+				{
+					srcBox = mBarImage.getPixelBox().getSubVolume(Ogre::Box(0, mBarMinHeight, barContainer.getWidth(), (mBarMinHeight + barHeight)));
+					dstBox = Ogre::Image::Box(0, mBarMinHeight, barContainer.getWidth(), (mBarMinHeight + barHeight));
+				}
 			}
 		}
 
@@ -209,14 +230,14 @@ namespace QuickGUI
 
 	void ProgressBar::onProgressChanged(const WidgetEventArgs& e)
 	{
-		std::vector<MemberFunctionSlot*>::iterator it;
+		EventHandlerArray::iterator it;
 		for( it = mOnProgressChangedHandlers.begin(); it != mOnProgressChangedHandlers.end(); ++it )
 			(*it)->execute(e);
 	}
 
 	void ProgressBar::onPositionChanged(const EventArgs& args)
 	{
-		Image::onPositionChanged(args);
+		Widget::onPositionChanged(args);
 		mBarPanel->setPosition(getScreenPosition());
 	}
 
@@ -227,14 +248,14 @@ namespace QuickGUI
 
 	void ProgressBar::redraw()
 	{
-		Image::redraw();
+		Widget::redraw();
 		mBarPanel->setPosition(mQuad->getPosition());
 	}
 
-	void ProgressBar::setClippingRect(const Rect& r)
+	void ProgressBar::setClippingEdge(ClippingEdge e)
 	{
-//		Image::setClippingRect(r);
-//		mBarPanel->setClippingRect(r);
+		mClippingEdge = e;
+		setProgress(mProgress);
 	}
 
 	void ProgressBar::setFillDirection(FillDirection d)
@@ -257,9 +278,12 @@ namespace QuickGUI
 	void ProgressBar::setProgress(Ogre::Real progress)
 	{
 		// Check to make sure we get acceptable values
-		if(progress >= 0.99) mProgress = 1.0;
-		else if(progress < 0.01) mProgress = 0.0;
-		else mProgress = progress;
+		if(progress >= 0.99) 
+			mProgress = 1.0;
+		else if(progress < 0.01) 
+			mProgress = 0.0;
+		else 
+			mProgress = progress;
 
 		// update the bar's texture to match the progress.
 		_modifyBarTexture(progress);
@@ -270,9 +294,38 @@ namespace QuickGUI
 		onProgressChanged(e);
 	}
 
-	void ProgressBar::setTexture(const Ogre::String& texture)
+	void ProgressBar::setSkin(const Ogre::String& skinName, bool recursive)
 	{
-		Widget::setTexture(texture);
-		mBarPanel->setTexture(mTextureName + ".bar.png");
+		Widget::setSkin(skinName,recursive);
+
+		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(skinName);
+		if(ss == NULL)
+			return;
+
+		mSkinExtension = ss->getImageExtension();
+		mBarTextureName = mSkinName + mSkinComponent + ".bar" + mSkinExtension;
+		mBarImage.load(mBarTextureName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+
+		_getBarExtents();
+
+		Ogre::TextureManager* tm = Ogre::TextureManager::getSingletonPtr();
+		// resource may already exist, for example, creating the texture, clearing all gui, then creating gui again.
+		if( tm->resourceExists(mInstanceName + ".bar.temp") )
+			mBarTexture = tm->getByName(mInstanceName + ".bar.temp");
+		else
+		{
+			mBarTexture = Ogre::TextureManager::getSingletonPtr()->createManual(mInstanceName + ".bar.temp", 
+				Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
+				Ogre::TEX_TYPE_2D,
+				(Ogre::uint)mWidgetImage->getWidth(),
+				(Ogre::uint)mWidgetImage->getHeight(),
+				0, 
+				Ogre::PF_B8G8R8A8,
+				Ogre::TU_STATIC);
+		}
+
+		setProgress(1.0);
+
+		mBarPanel->setTexture(mBarTexture->getName());
 	}
 }
