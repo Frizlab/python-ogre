@@ -1,25 +1,28 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUIMouseCursor.h"
 #include "QuickGUIManager.h"
+#include "QuickGUISkinSetManager.h"
 
 namespace QuickGUI
 {
-	MouseCursor::MouseCursor(const Size& size, const Ogre::String& textureName, GUIManager* gm) :
+	MouseCursor::MouseCursor(const Size& size, const Ogre::String& skinName, GUIManager* gm) :
 		mGUIManager(gm),
-		mTextureName(textureName),
 		mVisible(true),
 		mHideWhenOffScreen(true),
 		mOnTopBorder(0),
 		mOnBotBorder(0),
 		mOnLeftBorder(0),
 		mOnRightBorder(0),
-		mOriginOffset(Point::ZERO)
+		mCursorState(CURSOR_STATE_NORMAL),
+		mSkinComponent(".cursor")
 	{
 		mQuad = new Quad(mGUIManager);
 		setSize(size.width,size.height);
-		mQuad->setTexture(mTextureName);
+		setSkin(skinName);
 		mRenderObjectList.push_back(mQuad);
 
-		mVertexBuffer = new VertexBuffer(6,mGUIManager);
+		mVertexBuffer = new VertexBuffer(VERTICES_PER_QUAD, mGUIManager);
 		mVertexBuffer->setData(&mRenderObjectList);
 		mVertexBuffer->setUpdateBeforeRender(true);
 	}
@@ -31,18 +34,6 @@ namespace QuickGUI
 		delete mVertexBuffer;
 	}
 
-	void MouseCursor::centerOrigin()
-	{
-		if(!mGUIManager->textureExists(mTextureName)) 
-			return;
-
-		Ogre::Image i;
-		i.load(mTextureName,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-
-		mOriginOffset.x = static_cast<Ogre::Real>(i.getWidth()) / 2.0;
-		mOriginOffset.y = static_cast<Ogre::Real>(i.getHeight()) / 2.0;
-	}
-
 	void MouseCursor::constrainPosition()
 	{
 		bool offScreen = false;
@@ -51,16 +42,16 @@ namespace QuickGUI
 		mOnTopBorder = false;
 		mOnLeftBorder = false;
 
-		if (mPixelPosition.x >= (mGUIManager->getViewportWidth() - 1))
+		if (mPixelPosition.x >= (mGUIManager->getViewportWidth() - 1 - mPixelSize.width))
 		{
-			mPixelPosition.x = mGUIManager->getViewportWidth() - 1;
+			mPixelPosition.x = mGUIManager->getViewportWidth() - 1 - mPixelSize.width;
 			mOnRightBorder = true;
 			offScreen = true;
 		}
 
-		if (mPixelPosition.y >= (mGUIManager->getViewportHeight() - 1))
+		if (mPixelPosition.y >= (mGUIManager->getViewportHeight() - 1 - mPixelSize.height))
 		{
-			mPixelPosition.y = mGUIManager->getViewportHeight() - 1;
+			mPixelPosition.y = mGUIManager->getViewportHeight() - 1 - mPixelSize.height;
 			mOnBotBorder = true;
 			offScreen = true;
 		}
@@ -92,7 +83,8 @@ namespace QuickGUI
 		}
 
 		// Perform the actual moving of the mouse quad
-		mQuad->setPosition(mPixelPosition);
+		Point p = mPixelPosition;
+		mQuad->setPosition(p);
 	}
 
 	bool MouseCursor::getHideWhenOffScreen()
@@ -105,14 +97,9 @@ namespace QuickGUI
 		return mTextureName;
 	}
 
-	Point MouseCursor::getOriginOffset()
-	{
-		return mOriginOffset;
-	}
-
 	Point MouseCursor::getPosition()
 	{
-		return Point(mPixelPosition.x + mOriginOffset.x,mPixelPosition.y + mOriginOffset.y);
+		return Point(mPixelPosition.x + (mPixelSize.width/2.0),mPixelPosition.y + (mPixelSize.height/2.0));
 	}
 
 	Size MouseCursor::getSize()
@@ -156,12 +143,6 @@ namespace QuickGUI
 		return mOnTopBorder;
 	}
 
-	void MouseCursor::offsetOrigin(int xPixelOffset, int yPixelOffset)
-	{
-		mOriginOffset.x = xPixelOffset;
-		mOriginOffset.y = yPixelOffset;
-	}
-
 	void MouseCursor::offsetPosition(const int& xPixelOffset, const int& yPixelOffset)
 	{
 		mPixelPosition.x += xPixelOffset;
@@ -175,10 +156,28 @@ namespace QuickGUI
 		mVertexBuffer->render();
 	}
 
-	void MouseCursor::setTexture(const Ogre::String& textureName)
+	void MouseCursor::setCursorState(CursorState s)
 	{
-		mTextureName = textureName;
-		mQuad->setTexture(mTextureName);
+		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(mSkinName);
+
+		switch(s)
+		{
+		case CURSOR_STATE_NORMAL:					mSkinComponent = ".cursor";							break;
+		case CURSOR_STATE_RESIZE_DIAGONAL_1:		mSkinComponent = ".cursor.resize.diagonal1";		break;
+		case CURSOR_STATE_RESIZE_DIAGONAL_2:		mSkinComponent = ".cursor.resize.diagonal2";		break;
+		case CURSOR_STATE_RESIZE_HORIZONTAL:		mSkinComponent = ".cursor.resize.leftright";		break;
+		case CURSOR_STATE_RESIZE_VERTICAL:			mSkinComponent = ".cursor.resize.updown";			break;
+		}
+
+		Ogre::String textureName = ss->getSkinName() + mSkinComponent + ss->getImageExtension();
+		mQuad->setTexture(textureName);
+
+		if(mGUIManager->textureExists(textureName))
+		{
+			Ogre::Image i;
+			i.load(textureName,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+			setSize(i.getWidth(),i.getHeight());
+		}
 	}
 
 	void MouseCursor::setHideCursorWhenOSCursorOffscreen(bool hide)
@@ -188,18 +187,44 @@ namespace QuickGUI
 
 	void MouseCursor::setPosition(Ogre::Real pixelX, Ogre::Real pixelY)
 	{
-		mPixelPosition.x = pixelX - mOriginOffset.x;
-		mPixelPosition.y = pixelY - mOriginOffset.y;
+		mPixelPosition.x = pixelX - (mPixelSize.width/2.0);
+		mPixelPosition.y = pixelY - (mPixelSize.height/2.0);
 
 		constrainPosition();
 	}
 
 	void MouseCursor::setSize(Ogre::Real pixelWidth, Ogre::Real pixelHeight)
 	{
+		Point currentPosition = getPosition();
+
 		mPixelSize.width = pixelWidth;
 		mPixelSize.height = pixelHeight;
 
 		mQuad->setSize(mPixelSize);
+
+		mPixelPosition.x = currentPosition.x - (mPixelSize.width/2.0);
+		mPixelPosition.y = currentPosition.y - (mPixelSize.height/2.0);
+
+		mQuad->setPosition(mPixelPosition);
+	}
+
+	void MouseCursor::setSkin(const Ogre::String& skinName)
+	{
+		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(skinName);
+		if(ss == NULL)
+			return;
+
+		mSkinName = skinName;
+
+		Ogre::String textureName = mSkinName + mSkinComponent + ss->getImageExtension();
+		mQuad->setTexture(textureName);
+
+		if(mGUIManager->textureExists(textureName))
+		{
+			Ogre::Image i;
+			i.load(textureName,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+			setSize(i.getWidth(),i.getHeight());
+		}
 	}
 
 	void MouseCursor::show()

@@ -2,6 +2,12 @@
 #define __python_ogre_h_5B402FBF_8DE8_49C9_AF71_1CF9634B5344__
 
 //See best practices section in Py++ documentation
+#include <string>
+#include <iostream>
+#include <vector>
+#include <set>
+#include <map>
+
 #include "python_ogre_masterlist.h"
 
 

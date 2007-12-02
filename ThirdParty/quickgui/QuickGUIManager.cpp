@@ -1,10 +1,12 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUIManager.h"
 #include "QuickGUIEffect.h"
 #include "QuickGUIConfigScriptParser.h"
 
 namespace QuickGUI
 {
-	GUIManager::GUIManager() :		
+	GUIManager::GUIManager(Ogre::Viewport* vp) :		
 		mViewport(0),
 		mActiveSheet(0),
 		mWidgetContainingMouse(0),
@@ -14,8 +16,13 @@ namespace QuickGUI
 		mMouseCursor(0),
 		mSceneManager(0),
 		mDraggingWidget(false),
-		mDebugString("")
+		mDebugString(""),
+		mUseMouseTimer(false),
+		mMouseTimer(0),
+		mDoubleClickTime(700)
 	{
+		mSkinSetManager = SkinSetManager::getSingletonPtr();
+
 		mWidgetNames.clear();
 
 		mMouseButtonDown[0] = NULL;
@@ -25,45 +32,18 @@ namespace QuickGUI
 		mMouseButtonDown[4] = NULL;
 		mMouseButtonDown[5] = NULL;
 		mMouseButtonDown[6] = NULL;
-		mMouseButtonDown[7] = NULL;
-
-		new ConfigScriptLoader();
+		mMouseButtonDown[7] = NULL;		
 
 		// by default, we support codepoints 9, and 32-166.
-		mSupportedCodePoints.push_back(9);
+		mSupportedCodePoints.insert(9);
 		for(Ogre::UTFString::code_point i = 32; i < 167; ++i)
-			mSupportedCodePoints.push_back(i);
-
+			mSupportedCodePoints.insert(i);
 
 		mTimer = new Ogre::Timer();
-	}
 
-	GUIManager::~GUIManager()
-	{
-		delete mTimer;
-
-		removeFromRenderQueue();
-		clearAll();
-
-		delete mMouseCursor;
-		mMouseCursor = NULL;
-
-		// delete imagesets
-		std::map<Ogre::String,SkinSet*>::iterator it;
-		for( it = mSkinSets.begin(); it != mSkinSets.end(); ++it )
-			delete (it->second);
-		mSkinSets.clear();
-
-		delete ConfigScriptLoader::getSingletonPtr();
-	}
-
-	void GUIManager::init(Ogre::Viewport* vp, const Ogre::String &skinName) 
-	{
 		mViewport = vp;
-		// load default skin into an SkinSet Texture - must be done before we start rendering.
-		loadSkin(skinName);
 
-		mMouseCursor = new MouseCursor(Size(13,17),"qgui.cursor.png",this);
+		mMouseCursor = new MouseCursor(Size(24,32),"qgui",this);
 		mMouseCursor->setPosition(getViewportWidth()/2.0,getViewportHeight()/2.0);
 
 		mDefaultSheet = createSheet();
@@ -71,6 +51,19 @@ namespace QuickGUI
 		mActiveWidget = mWidgetContainingMouse = mActiveSheet = mDefaultSheet;
 
 		_createDefaultTextures();
+	}
+
+	GUIManager::~GUIManager()
+	{
+		delete mTimer;
+
+		mViewport = NULL;
+
+		removeFromRenderQueue();
+		clearAll();
+
+		delete mMouseCursor;
+		mMouseCursor = NULL;
 	}
 
 	void GUIManager::_createDefaultTextures()
@@ -115,6 +108,68 @@ namespace QuickGUI
 		}
 	}
 
+	void GUIManager::_destroyWidget(Widget* w)
+	{
+		if( w == NULL )
+			return;
+
+		mFreeList.push_back(w);
+	}
+
+	void GUIManager::_handleMouseDown(const MouseButtonID& button)
+	{
+		MouseEventArgs args(mWidgetContainingMouse);
+		args.position = mMouseCursor->getPosition();
+		args.button = button;
+		args.keyModifiers = mKeyModifiers;
+
+		// Feature, allowing widgets to be clicked, without transferring focus.  Widget will receive
+		// Mouse Button Down Event.
+		if(!mWidgetContainingMouse->getGainFocusOnClick())
+		{
+			mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_BUTTON_DOWN,args);
+		}
+
+		// mActiveWidget is the last widget the user clicked on, ie TextBox, ComboBox, etc.
+		if( mActiveWidget != mWidgetContainingMouse )
+		{
+			mActiveWidget->fireEvent(Widget::EVENT_LOSE_FOCUS,args);
+
+			// Update active widget reference.
+			mActiveWidget = mWidgetContainingMouse;
+		}
+		
+		args.widget = mActiveWidget;
+		args.position = mMouseCursor->getPosition();
+		args.button = button;
+
+		mActiveWidget->fireEvent(Widget::EVENT_MOUSE_BUTTON_DOWN,args);
+		mActiveWidget->fireEvent(Widget::EVENT_GAIN_FOCUS,args);
+		mActiveWidget->setGrabbed(true);
+			
+		// If the user clicked on a widget that is a part of a window, make sure the window is brought to front.
+		Window* w = mActiveWidget->getParentWindow();
+		if( w != NULL ) 
+			w->bringToFront();
+
+		// Record that the mouse button went down on this widget (non-window)
+		mMouseButtonDown[args.button] = mActiveWidget;
+		
+		mMouseButtonTimings[button] = mTimer->getMilliseconds();
+	}
+
+	void GUIManager::_handleMouseUp(const MouseButtonID& button)
+	{
+	}
+
+	void GUIManager::_handleMouseClick(const MouseButtonID& button)
+	{
+	}
+
+	void GUIManager::_handleMouseDoubleClick(const MouseButtonID& button)
+	{
+	}
+
 	void GUIManager::_menuOpened(Widget* w)
 	{
 		if(w == NULL)
@@ -133,6 +188,15 @@ namespace QuickGUI
 			return;
 
 		mOpenMenus.erase(mOpenMenus.find(w));
+	}
+
+	void GUIManager::_notifyViewportDimensionsChanged()
+	{
+		if(mViewport == NULL)
+			return;
+
+		for(std::list<Sheet*>::iterator it = mSheets.begin(); it != mSheets.end(); ++it )
+			(*it)->setSize(mViewport->getActualWidth(),mViewport->getActualHeight());
 	}
 
 	void GUIManager::clearAll()
@@ -165,20 +229,23 @@ namespace QuickGUI
 			delete (*it);
 		mSheets.clear();
 
-		// create default sheet
-		mDefaultSheet = createSheet();
-		mActiveSheet = mDefaultSheet;
+		// This function is called by the destructor, and we don't want to create a sheet at this time.
+		if(mViewport != NULL)
+		{
+			// create default sheet
+			mDefaultSheet = createSheet();
+			mActiveSheet = mDefaultSheet;
 
-		mActiveWidget = mActiveSheet;
-		mWidgetContainingMouse = mActiveSheet;
+			mActiveWidget = mActiveSheet;
+			mWidgetContainingMouse = mActiveSheet;
+		}
 	}
 
 	Sheet* GUIManager::createSheet()
 	{
 		Ogre::String name = generateName(Widget::TYPE_SHEET);
 		notifyNameUsed(name);
-
-		Sheet* newSheet = new Sheet(name,"",this);
+		Sheet* newSheet = new Sheet(name,"qgui",this);
 		mSheets.push_back(newSheet);
 
 		return newSheet;
@@ -187,7 +254,7 @@ namespace QuickGUI
 	void GUIManager::destroySheet(const Ogre::String& name)
 	{
 		// Cannot destroy active sheet!
-		if( (name == "") || (mActiveSheet->getInstanceName() == name) ) 
+		if( (name.empty()) || (mActiveSheet->getInstanceName() == name) ) 
 			return;
 
 		std::list<Sheet*>::iterator it;
@@ -219,14 +286,15 @@ namespace QuickGUI
 			return;
 		}
 
-		mFreeList.push_back(w);
+		if(w->getParentWidget() != NULL)
+			w->getParentWidget()->removeAndDestroyChild(w);
+		else
+			mFreeList.push_back(w);
 	}
 
 	void GUIManager::destroyWidget(const Ogre::String& widgetName)
 	{
-		Widget* w = mActiveSheet->getChildWidget(widgetName);
-		if( w != NULL )
-			destroyWidget(w);
+		destroyWidget(mActiveSheet->getChildWidget(widgetName));
 	}
 
 	Sheet* GUIManager::getActiveSheet()
@@ -247,12 +315,6 @@ namespace QuickGUI
 	Sheet* GUIManager::getDefaultSheet()
 	{
 		return mDefaultSheet;
-	}
-
-	SkinSet* GUIManager::getSkinImageSet(const Ogre::String& name)
-	{
-		if(!skinLoaded(name)) return NULL;
-		else return mSkinSets[name];
 	}
 
 	MouseCursor* GUIManager::getMouseCursor()
@@ -282,7 +344,7 @@ namespace QuickGUI
 
 	Sheet* GUIManager::getSheet(const Ogre::String& name)
 	{
-		if( name == "" ) return NULL;
+		if( name.empty() ) return NULL;
 
 		std::list<Sheet*>::iterator it;
 		for( it = mSheets.begin(); it != mSheets.end(); ++it )
@@ -294,15 +356,11 @@ namespace QuickGUI
 		return NULL;
 	}
 
-	bool GUIManager::embeddedInSkinImageset(const Ogre::String& skinName, const Ogre::String& textureName)
-	{
-		if(!skinLoaded(skinName)) return false;
-		else return mSkinSets[skinName]->containsImage(textureName);
-	}
-	void GUIManager::addEffect (Effect* e)
+	void GUIManager::addEffect(Effect* e)
 	{
 		mActiveEffects.push_back(e);
 	}
+
 	Ogre::String GUIManager::generateName(Widget::Type t)
 	{
 		Ogre::String s;
@@ -310,14 +368,15 @@ namespace QuickGUI
 		{
 			case Widget::TYPE_BORDER:				s = "Border";			break;
 			case Widget::TYPE_BUTTON:				s = "Button";			break;
+			case Widget::TYPE_CHECKBOX:				s = "CheckBox";			break;
 			case Widget::TYPE_COMBOBOX:				s = "ComboBox";			break;
 			case Widget::TYPE_CONSOLE:				s = "Console";			break;
 			case Widget::TYPE_IMAGE:				s = "Image";			break;
 			case Widget::TYPE_LABEL:				s = "Label";			break;
 			case Widget::TYPE_LIST:					s = "List";				break;
 			case Widget::TYPE_MENULABEL:			s = "MenuLabel";		break;
-			case Widget::TYPE_LABELAREA:		s = "LabelArea";	break;
-			case Widget::TYPE_TEXTAREA:		s = "TextArea";	break;
+			case Widget::TYPE_LABELAREA:			s = "LabelArea";		break;
+			case Widget::TYPE_TEXTAREA:				s = "TextArea";			break;
 			case Widget::TYPE_NSTATEBUTTON:			s = "NStateButton";		break;
 			case Widget::TYPE_PANEL:				s = "Panel";			break;
 			case Widget::TYPE_PROGRESSBAR:			s = "ProgressBar";		break;
@@ -342,7 +401,7 @@ namespace QuickGUI
 
 	bool GUIManager::injectChar(Ogre::UTFString::unicode_char c)
 	{
-		if( std::find(mSupportedCodePoints.begin(),mSupportedCodePoints.end(),c) == mSupportedCodePoints.end() )
+		if( mSupportedCodePoints.find(c) == mSupportedCodePoints.end() )
 			return false;
 
 		KeyEventArgs args(mActiveWidget);
@@ -353,16 +412,34 @@ namespace QuickGUI
 
 	bool GUIManager::injectKeyDown(const KeyCode& kc)
 	{
+		// Turn on modifier
+		if( (kc == KC_LCONTROL) || (kc == KC_RCONTROL) )
+			mKeyModifiers |= CTRL;
+		else if( (kc == KC_LSHIFT) || (kc == KC_RSHIFT) )
+			mKeyModifiers |= SHIFT;
+		else if( (kc == KC_LMENU) || (kc == KC_RMENU) )
+			mKeyModifiers |= ALT;
+
 		KeyEventArgs args(mActiveWidget);
 		args.scancode = kc;
+		args.keyModifiers = mKeyModifiers;
 
 		return mActiveWidget->fireEvent(Widget::EVENT_KEY_DOWN,args);
 	}
 
 	bool GUIManager::injectKeyUp(const KeyCode& kc)
 	{
+		//Turn off modifier
+		if( (kc == KC_LCONTROL) || (kc == KC_RCONTROL) )
+			mKeyModifiers &= ~CTRL;
+		else if( (kc == KC_LSHIFT) || (kc == KC_RSHIFT) )
+			mKeyModifiers &= ~SHIFT;
+		else if( (kc == KC_LMENU) || (kc == KC_RMENU) )
+			mKeyModifiers &= ~ALT;
+
 		KeyEventArgs args(mActiveWidget);
 		args.scancode = kc;
+		args.keyModifiers = mKeyModifiers;
 
 		return mActiveWidget->fireEvent(Widget::EVENT_KEY_UP,args);
 	}
@@ -374,46 +451,27 @@ namespace QuickGUI
 
 		bool eventHandled = false;
 
-		MouseEventArgs args(mActiveWidget);
-		args.position = mMouseCursor->getPosition();
-		args.button = button;
-
-		// Feature, allowing widgets to be clicked, without transfering focus.  Widget will receive
-		// Mouse Button Down Event.
-		if(!mWidgetContainingMouse->getGainFocusOnClick())
+		_handleMouseDown(button);
+		/*
+		if(mMouseButtonEvents.empty())
 		{
-			return mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_BUTTON_DOWN,args);
+			mMouseButtonEvents.push_back(Widget::EVENT_MOUSE_BUTTON_DOWN);
+			mUseMouseTimer = true;
+			mMouseTimer = 0;
+			mMouseButtonDown[button] = mWidgetContainingMouse;
+			return ((mWidgetContainingMouse->getNumberOfHandlers(Widget::EVENT_MOUSE_BUTTON_DOWN) > 0) ||
+					(mWidgetContainingMouse->getNumberOfHandlers(Widget::EVENT_MOUSE_CLICK) > 0) ||
+					(mWidgetContainingMouse->getNumberOfHandlers(Widget::EVENT_MOUSE_CLICK_DOUBLE) > 0));
 		}
 
-		// mActiveWidget is the last widget the user clicked on, ie TextBox, ComboBox, etc.
-		if( mActiveWidget != mWidgetContainingMouse )
-		{
-			if(mActiveWidget->fireEvent(Widget::EVENT_LOSE_FOCUS,args))
-				eventHandled = true;
+		if((mMouseButtonEvents.front() == Widget::EVENT_MOUSE_CLICK) && (mMouseButtonDown[button] != mWidgetContainingMouse))
+			return false;
 
-			// Update active widget reference.
-			mActiveWidget = mWidgetContainingMouse;
-		}
-		
-		args.widget = mActiveWidget;
-		args.position = mMouseCursor->getPosition();
-		args.button = button;
+		if(mMouseButtonEvents.front() == Widget::EVENT_MOUSE_CLICK_DOUBLE)
+			return false;
 
-		if(mActiveWidget->fireEvent(Widget::EVENT_MOUSE_BUTTON_DOWN,args))
-			eventHandled = true;
-		if(mActiveWidget->fireEvent(Widget::EVENT_GAIN_FOCUS,args))
-			eventHandled = true;
-		mActiveWidget->setGrabbed(true);
-			
-		// If the user clicked on a widget that is a part of a window, make sure the window is brought to front.
-		Window* w = mActiveWidget->getParentWindow();
-		if( w != NULL ) 
-			w->bringToFront();
-
-		// Record that the mouse button went down on this widget (non-window)
-		mMouseButtonDown[args.button] = mActiveWidget;
-		
-		mMouseButtonTimings[button] = mTimer->getMilliseconds();
+		mMouseButtonEvents.push_back(Widget::EVENT_MOUSE_BUTTON_DOWN);
+		*/
 
 		return eventHandled;
 	}
@@ -428,6 +486,7 @@ namespace QuickGUI
 		MouseEventArgs args(mActiveWidget);
 		args.position = mMouseCursor->getPosition();
 		args.button = button;
+		args.keyModifiers = mKeyModifiers;
 
 		// If dragging a widget, fire EVENT_DROPPED event
 		if(mDraggingWidget)
@@ -496,6 +555,7 @@ namespace QuickGUI
 		args.position = mMouseCursor->getPosition();
 		args.moveDelta.x = xPixelOffset;
 		args.moveDelta.y = yPixelOffset;
+		args.keyModifiers = mKeyModifiers;
 
 		if( mMouseCursor->mouseOnTopBorder() && yPixelOffset < 0 ) 
 			args.moveDelta.y = 0;
@@ -568,22 +628,24 @@ namespace QuickGUI
 	{
 		MouseEventArgs args(mWidgetContainingMouse);
 		args.wheelChange = delta;
+		args.keyModifiers = mKeyModifiers;
 
 		return mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_WHEEL,args);
 	}
 
-	void GUIManager::injectTime(Ogre::Real time)
+	void GUIManager::injectTime(const Ogre::Real time)
 	{
 		{
-			std::vector<Widget*>::iterator it;
+			WidgetArray::iterator it;
 			for( it = mTimeListeners.begin(); it != mTimeListeners.end(); ++it )
-				(*it)->timeElapsed(time);
+				if ((*it)->isUnderTiming())
+					(*it)->timeElapsed(time);
 		}
 
 		// Effects.
 		{
 			/*
-			std::vector<Widget*>::iterator it;   
+			WidgetArray::iterator it;   
 			while (itWindow != mWidgets.end())        
 			{
 				(*itWindow)->setUnderEffect(false);
@@ -591,6 +653,7 @@ namespace QuickGUI
 			} 
 			*/
 		}
+		if(!mActiveEffects.empty())
 		{
 			std::list<Effect*>::iterator itEffect = mActiveEffects.begin();       
 			while (itEffect != mActiveEffects.end())        
@@ -604,24 +667,35 @@ namespace QuickGUI
 				{
 					++itEffect;
 				}
-			} 
+			}
+
+			injectMouseMove(0,0);
 		}
+
+		if(mUseMouseTimer)
+			mMouseTimer += time;
+
+		if(mMouseTimer >= mDoubleClickTime)
+		{
+			// handle events on stack
+			mMouseButtonEvents.clear();
+
+			mMouseTimer = 0;
+			mUseMouseTimer = false;
+		}
+	}
+
+	bool GUIManager::isKeyModifierDown(KeyModifier k)
+	{
+		return ((mKeyModifiers & k) > 0);
 	}
 
 	bool GUIManager::isNameUnique(const Ogre::String& name)
 	{
-		if(name == "")
+		if(name.empty())
 			return false;
 
 		return (mWidgetNames.find(name) == mWidgetNames.end());
-	}
-
-	void GUIManager::loadSkin(const Ogre::String& skinName)
-	{
-		// check if imageset is already created for this skin
-		if( mSkinSets.find(skinName) != mSkinSets.end() ) return;
-
-		mSkinSets[skinName] = new SkinSet(skinName);
 	}
 
 	void GUIManager::notifyNameFree(const Ogre::String& name)
@@ -647,7 +721,7 @@ namespace QuickGUI
 			return;
 
 		// check if widget already in list.
-		std::vector<Widget*>::iterator it;
+		WidgetArray::iterator it;
 		for( it = mTimeListeners.begin(); it != mTimeListeners.end(); ++it )
 		{
 			if(w == (*it))
@@ -679,7 +753,7 @@ namespace QuickGUI
 			mWidgetContainingMouse = mActiveSheet;
 		}
 
-		std::vector<Widget*>::iterator it;
+		WidgetArray::iterator it;
 		for( it = mFreeList.begin(); it != mFreeList.end(); ++it )
 			delete (*it);
 		mFreeList.clear();
@@ -758,10 +832,9 @@ namespace QuickGUI
 			mSceneManager->addRenderQueueListener(this);
 	}
 
-	void GUIManager::setSupportedCodePoints(const std::vector<Ogre::UTFString::code_point>& list)
+	void GUIManager::setSupportedCodePoints(const std::set<Ogre::UTFString::code_point>& list)
 	{
-		mSupportedCodePoints.clear();
-		mSupportedCodePoints.assign(list.begin(),list.end());
+		mSupportedCodePoints = list;
 	}
 
 	void GUIManager::setViewport(Ogre::Viewport* vp)
@@ -769,14 +842,9 @@ namespace QuickGUI
 		mViewport = vp;
 	}
 
-	bool GUIManager::skinLoaded(const Ogre::String& skinName)
-	{
-		return (mSkinSets.find(skinName) != mSkinSets.end());
-	}
-
 	bool GUIManager::textureExists(const Ogre::String& textureName)
 	{
-		if(textureName == "")
+		if(textureName.empty())
 			return false;
 
 		if(Utility::textureExistsOnDisk(textureName))
@@ -785,10 +853,8 @@ namespace QuickGUI
 		if(Ogre::TextureManager::getSingletonPtr()->resourceExists(textureName)) 
 			return true;
 
-		std::map<Ogre::String,SkinSet*>::iterator it;
-		for( it = mSkinSets.begin(); it != mSkinSets.end(); ++it )
-			if( it->second->containsImage(textureName) )
-				return true;
+		if(mSkinSetManager->embeddedInSkinSet(textureName))
+			return true;
 
 		return false;
 	}
@@ -798,7 +864,7 @@ namespace QuickGUI
 		if(w == NULL)
 			return;
 
-		std::vector<Widget*>::iterator it;
+		WidgetArray::iterator it;
 		for( it = mTimeListeners.begin(); it != mTimeListeners.end(); ++it )
 		{
 			if(w == (*it))

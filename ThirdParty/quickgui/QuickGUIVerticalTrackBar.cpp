@@ -1,23 +1,30 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUIVerticalTrackBar.h"
 #include "QuickGUIManager.h"
 #include "QuickGUIMouseCursor.h"
 
 namespace QuickGUI
 {
-	VerticalTrackBar::VerticalTrackBar(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
-		Image(instanceName,pixelSize,texture,gm),
+	VerticalTrackBar::VerticalTrackBar(const Ogre::String& name, GUIManager* gm) :
+		Widget(name,gm),
 		mNumRegions(1),
 		mCurrentValue(0),
 		mLargeChange(3)
 	{
 		mWidgetType = TYPE_TRACKBAR_VERTICAL;
 		mSkinComponent = ".trackbar.vertical";
+		mSize = Size(20,80);
+
 		addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&VerticalTrackBar::onMouseButtonDown,this);
 
-		// Creat slider button at the beginning of the VerticalTrackBar, whether horizonal (left) or vertical (bot)
-		mSliderButton = new Button(mInstanceName+".SliderButton",Size(mSize.width,13),mSliderTextureName,mGUIManager);
-		addChild(mSliderButton);
-		mSliderButton->setPosition(0,0);
+		mOnValueChangedHandlers.clear();
+
+		// Create slider button at the beginning of the VerticalTrackBar.
+		mSliderButton = dynamic_cast<Button*>(_createComponent(mInstanceName+".Slider",TYPE_BUTTON));
+		mSliderButton->setSkinComponent(".trackbar.vertical.slider");
+		mSliderButton->setSkin(mSkinName);
+		mSliderButton->setSize(getWidth(),13);
 		mSliderButton->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 		mSliderButton->enableDragging(true);
 		mSliderButton->constrainDragging(false,true);
@@ -29,10 +36,7 @@ namespace QuickGUI
 		
 		_getSliderPositions();
 
-		setTexture(mFullTextureName,true);
 		setValue(0);
-
-		mOnValueChangedHandlers.clear();
 	}
 
 	VerticalTrackBar::~VerticalTrackBar()
@@ -40,7 +44,7 @@ namespace QuickGUI
 		Widget::removeAndDestroyAllChildWidgets();
 		mSliderButton = NULL;
 
-		std::vector<MemberFunctionSlot*>::iterator it;
+		EventHandlerArray::iterator it;
 		for( it = mOnValueChangedHandlers.begin(); it != mOnValueChangedHandlers.end(); ++it )
 			delete (*it);
 		mOnValueChangedHandlers.clear();
@@ -148,16 +152,9 @@ namespace QuickGUI
 		if(!mEnabled)
 			return;
 
-		std::vector<MemberFunctionSlot*>::iterator it;
+		EventHandlerArray::iterator it;
 		for( it = mOnValueChangedHandlers.begin(); it != mOnValueChangedHandlers.end(); ++it )
 			(*it)->execute(args);
-	}
-
-	void VerticalTrackBar::setBaseTexture(const Ogre::String& textureName)
-	{
-		Image::setBaseTexture(textureName);
-
-		mSliderTextureName = mTextureName + ".slider" + mTextureExtension;
 	}
 
 	void VerticalTrackBar::setLargeChange(unsigned int jumpValue)
@@ -179,13 +176,6 @@ namespace QuickGUI
 	void VerticalTrackBar::setNumTicks(unsigned int NumTicks)
 	{
 		setNumRegions(NumTicks - 1);
-	}
-
-	void VerticalTrackBar::setTexture(const Ogre::String& textureName, bool updateBaseTexture)
-	{
-		Image::setTexture(textureName,updateBaseTexture);
-
-		mSliderButton->setTexture(mSliderTextureName);
 	}
 
 	void VerticalTrackBar::setValue(int Value)

@@ -75,12 +75,13 @@ namespace caelum
 	}
 
 	void LayeredClouds::notifyCameraChanged (Ogre::Camera *cam) {
+        CameraBoundElement::notifyCameraChanged (cam);
 		mNode->setPosition (cam->getRealPosition ());
-		if (cam->getFarClipDistance () > 0) {
-			mNode->setScale (Ogre::Vector3::UNIT_SCALE * (cam->getFarClipDistance () - CAMERA_DISTANCE_MODIFIER));
-		} else {
-			mNode->setScale (Ogre::Vector3::UNIT_SCALE * (cam->getNearClipDistance () + CAMERA_DISTANCE_MODIFIER));
-		}
+    }
+
+	void LayeredClouds::setFarRadius (Ogre::Real radius) {
+        CameraBoundElement::setFarRadius (radius);
+		mNode->setScale (Ogre::Vector3::UNIT_SCALE * radius);
 	}
 
 	Ogre::GpuProgramParametersSharedPtr LayeredClouds::getVpParams() {

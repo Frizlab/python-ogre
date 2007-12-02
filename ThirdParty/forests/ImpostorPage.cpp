@@ -449,7 +449,8 @@ void ImpostorTexture::renderTextures(bool force)
 
 	//Calculate the filename used to identity this render
 	ResourceGroupManager::getSingleton().addResourceLocation(".", "FileSystem", "BinFolder");
-	String fileName = "Impostor." + entity->getMesh()->getGroup() + '.' + entity->getMesh()->getName() + ".png";
+	String fileName = "Impostor." + entity->getMesh()->getGroup() + '.' + entity->getMesh()->getName()
+		+ '.' + StringConverter::toString(textureSize) + ".png";
 
 	//Attempt to load the pre-render file if allowed
 	bool needsRegen = force;

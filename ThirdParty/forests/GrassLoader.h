@@ -34,9 +34,6 @@ To add grass, just call addLayer(). addLayer() returns a GrassLayer object point
 use to further configure your newly added grass. Properties like size, density, color, animation, etc.
 can be controlled through the GrassLayer class.
 
-If you enable animation on any of your grass layers, remember to call updateAnimation() every frame.
-If you don't call this function, the grass will not be animated correctly.
-
 \note By default, the GrassLoader doesn't know what shape your terrain so all grass will be placed at
 0 height. To inform GrassLoader of the shape of your terrain, you must specify a height function
 that returns the height (y coordinate) of your terrain at the given x and z coordinates. See
@@ -74,13 +71,6 @@ public:
 	This function returns a std::list<GrassLayer*> reference, which contains all grass
 	layers which have been added to this GrassLoader. */
 	inline std::list<GrassLayer*> &getLayerList() { return layerList; }
-
-	/** \brief Updates the grass animation state.
-	
-	You should to call this function every frame in order for the grass animation to
-	be updated. Otherwise, any breeze animation you enabled for the grass will freeze
-	until you resume calling this function. */
-	void updateAnimation();
 
 	/** \brief Sets the global wind direction for this GrassLoader.
 
@@ -161,9 +151,16 @@ public:
 	void loadPage(PageInfo &page);
 	/** INTERNAL FUNCTION - DO NOT USE */
 	void unloadPage(const PageInfo &page);
+	/** INTERNAL FUNCTION - DO NOT USE */
+	void frameUpdate();
 
 private:
 	friend class GrassLayer;
+
+	//Helper functions
+	Ogre::Mesh *generateGrass_QUAD(PageInfo &page, GrassLayer *layer, float *grassPositions, unsigned int grassCount);
+	Ogre::Mesh *generateGrass_CROSSQUADS(PageInfo &page, GrassLayer *layer, float *grassPositions, unsigned int grassCount);
+	Ogre::Mesh *generateGrass_SPRITE(PageInfo &page, GrassLayer *layer, float *grassPositions, unsigned int grassCount);
 
 	//List of grass types
 	std::list<GrassLayer*> layerList;
@@ -191,10 +188,12 @@ private:
 /** \brief A technique used to render grass. Passed to GrassLayer::setRenderTechnique(). */
 enum GrassTechnique
 {
-	/// Grass constructed of randomely placed and rotated quads
+	/// Grass constructed of randomly placed and rotated quads
 	GRASSTECH_QUAD,
 	/// Grass constructed of two quads forming a "X" cross shape
-	GRASSTECH_CROSSQUADS
+	GRASSTECH_CROSSQUADS,
+	/// Grass constructed of camera-facing billboard quads
+	GRASSTECH_SPRITE
 };
 
 /** \brief A technique used to fade grass into the distance. Passed to GrassLayer::setFadeTechnique(). */
@@ -212,14 +211,13 @@ enum FadeTechnique
 
 /** \brief A data structure giving you full control over grass properties.
 
-Grass is added to the scene through GrassLoader::addLayer(). This function returns a
-pointer to a GrassLayer object; through this object you can configure the grass layer
-any way you like - size, density, render technique, animation, etc. Simply call the
-appropriate "set" member function to set the desired property.
+Grass is added to the scene through GrassLoader::addLayer(). Through this class you
+can configure your grass layer any way you like - size, density, render technique,
+animation, etc. Simply call the appropriate "set" member function to set the desired property.
 
 Remember that you cannot create or delete layers directly. Layers can only be created
 with GrassLoader::addLayer(), and may not be deleted manually (they will be deleted when
-their GrassLoader is deleted).
+the associated GrassLoader is deleted).
 */
 class GrassLayer
 {
@@ -267,7 +265,7 @@ public:
 	alpha channel, in which case you would use CHANNEL_ALPHA. By default, CHANNEL_COLOR is used,
 	which means the image color is converted to greyscale internally and used as a density map.
 	
-	Note that since GrassLayer by default has no idea of your terrain/world boundaries, so you
+	Note that GrassLayer by default has no idea of your terrain/world boundaries, so you
 	must specify a rectangular/square area of your world that is affected by density/color maps.
 	To do this, use the setMapBounds() function. Normally this is set to your terrain's bounds
 	so the density/color map is aligned to your heightmap, but you could apply it anywhere you
@@ -310,7 +308,7 @@ public:
 	a single channel, it is converted to a greyscale color). By default, CHANNEL_COLOR is used,
 	which uses the full color information available in the image.
 	
-	Remember that since GrassLayer by default has no idea of your terrain/world boundaries, so you
+	Remember that GrassLayer by default has no idea of your terrain/world boundaries, so you
 	must specify a rectangular/square area of your world that is affected by density/color maps.
 	To do this, use the setMapBounds() function. Normally this is set to your terrain's bounds
 	so the density/color map is aligned to your heightmap, but you could apply it anywhere you

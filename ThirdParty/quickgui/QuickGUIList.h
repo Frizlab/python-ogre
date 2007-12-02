@@ -1,10 +1,12 @@
 #ifndef QUICKGUILIST_H
 #define QUICKGUILIST_H
 
-#include "QuickGUIImage.h"
+#include "QuickGUIPrerequisites.h"
+#include "QuickGUIWidget.h"
 #include "QuickGUIMenuLabel.h"
 #include "QuickGUIScrollPane.h"
 #include "QuickGUITextBox.h"
+#include "QuickGUITextHelper.h"
 
 #include <vector>
 
@@ -20,7 +22,7 @@ namespace QuickGUI
 		Lists are generally created from the Menu, ComboBox, and even List Widget.
 	*/
 	class _QuickGUIExport List :
-		public Image
+		public Widget
 	{
 	public:
 		friend class ComboBox;
@@ -42,7 +44,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		List(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm);
+		List(const Ogre::String& name, GUIManager* gm);
 
 		MenuLabel* addMenuLabel();
 		TextBox* addTextBox();
@@ -80,7 +82,7 @@ namespace QuickGUI
 	protected:
 		virtual ~List();
 
-		Text* mTextUtilities;
+		TextHelper* mTextHelper;
 		bool mAutoSizeListItems;
 
 		ScrollPane* mScrollPane;
@@ -94,7 +96,7 @@ namespace QuickGUI
 
 		int mVPixelPadHeight;
 
-		std::vector<Widget*> mItems;
+		WidgetArray mItems;
 
 		void onChildAdded(const EventArgs& args);
 		void onChildRemoved(const EventArgs& args);

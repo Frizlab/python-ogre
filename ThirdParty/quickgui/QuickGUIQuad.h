@@ -1,15 +1,18 @@
 #ifndef QUICKGUIQUAD_H
 #define QUICKGUIQUAD_H
 
+#include "QuickGUIPrerequisites.h"
+
 #include "OgreCommon.h"
 #include "OgreRenderSystem.h"
 #include "OgreVector4.h"
 
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUIExportDLL.h"
 #include "QuickGUIRect.h"
+#include "QuickGUISkinSetManager.h"
 #include "QuickGUIVertex.h"
 
-#define VERTICES_PER_QUAD 6
 
 namespace QuickGUI
 {
@@ -53,9 +56,14 @@ namespace QuickGUI
 		Layer getLayer();
 		Ogre::Real getOpacity();
 		bool getShowWithOwner();
-		Ogre::String getTextureName();
+
+		inline const Ogre::String getTextureName() const
+		{
+			return mTextureName;
+		}
+
 		Vertex* getVertices();
-		int getOffset();
+		const int getOffset() const;
 		Point getPosition();
 		Size getSize();
 
@@ -86,10 +94,15 @@ namespace QuickGUI
 		void setYPosition(Ogre::Real pixelY);
 
 		bool textureChanged();
+		bool textureExists(const Ogre::String& textureName);
 
 		void updateClippingWidget();
 
-		bool visible();
+
+		inline bool visible() const
+		{
+			return mVisible;
+		}
 
 		bool offsetChanged();
 
@@ -127,6 +140,8 @@ namespace QuickGUI
 		bool				mOffsetChanged;
 
 		Vertex				mVertices[VERTICES_PER_QUAD];
+
+		SkinSetManager*		mSkinSetManager;
 
 		/*
 		* Resizes and adjusts texture coords to display any visible portions that lie

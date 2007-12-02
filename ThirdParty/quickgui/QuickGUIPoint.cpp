@@ -1,3 +1,5 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUIPoint.h"
 
 namespace QuickGUI

@@ -71,15 +71,12 @@ StringList EnumsBlueprint::asStringPairList() {
 		case FT_NxSphericalJointFlag:		return AsNxSphericalJointFlag();		break;
 		case FT_NxPulleyJointFlag:			return AsNxPulleyJointFlag();			break;
 		case FT_NxContactPairFlag:			return AsNxContactPairFlag();			break;
-		
-#ifndef NX_DISABLE_FLUIDS
 		case FT_NxFluidSimulationMethod:	return AsNxFluidSimulationMethod();		break;
 		case FT_NxFluidCollisionMethod:		return AsNxFluidCollisionMethod();		break;
 		case FT_NxFluidFlag:				return AsNxFluidFlag();					break;
-		case FT_NxFluidEmitterFlag:			return AsNxFluidEmitterFlag();			break;
-#endif		
 		case FT_NxEmitterType:				return AsNxEmitterType();				break;
 		case FT_NxEmitterShape:				return AsNxEmitterShape();				break;
+		case FT_NxFluidEmitterFlag:			return AsNxFluidEmitterFlag();			break;
 		case FT_NxClothFlag:				return AsNxClothFlag();					break;
 		case FT_NxForceFieldCoordinates:	return AsNxForceFieldCoordinates();		break;
 		case FT_NxSceneFlags:				return AsNxSceneFlags();				break;
@@ -570,10 +567,6 @@ StringList EnumsBlueprint::AsNxContactPairFlag() {
 
 }
 
-
-
-#ifndef NX_DISABLE_FLUIDS
-
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 StringList EnumsBlueprint::AsNxFluidSimulationMethod() {
@@ -639,6 +632,42 @@ StringList EnumsBlueprint::AsNxFluidFlag() {
 	return l;
 
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+StringList EnumsBlueprint::AsNxEmitterType() {
+
+	StringList l;
+
+	if (mEnum & NX_AF_DISABLE_COLLISION)
+		l.insert(NxString("NX_AF_DISABLE_COLLISION"));
+
+    if (mEnum & NX_FE_CONSTANT_PRESSURE)
+		l.insert(NxString("NX_FE_CONSTANT_PRESSURE"));
+    
+	if (mEnum & NX_FE_CONSTANT_FLOW_RATE)
+		l.insert(NxString("NX_FE_CONSTANT_FLOW_RATE"));
+
+	return l;
+
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+StringList EnumsBlueprint::AsNxEmitterShape() {
+
+	StringList l;
+
+	if (mEnum & NX_FE_RECTANGULAR)
+		l.insert(NxString("NX_FE_RECTANGULAR"));
+    
+	if (mEnum & NX_FE_ELLIPSE)
+		l.insert(NxString("NX_FE_ELLIPSE"));
+	
+	return l;
+
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 StringList EnumsBlueprint::AsNxFluidEmitterFlag() {
@@ -686,45 +715,6 @@ StringList EnumsBlueprint::AsNxFluidEmitterFlag() {
 	return l;
 
 }
-
-#endif  // NX_DISABLE_FLUIDS
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-
-StringList EnumsBlueprint::AsNxEmitterType() {
-
-	StringList l;
-
-	if (mEnum & NX_AF_DISABLE_COLLISION)
-		l.insert(NxString("NX_AF_DISABLE_COLLISION"));
-#ifndef NX_DISABLE_FLUIDS
-    if (mEnum & NX_FE_CONSTANT_PRESSURE)
-		l.insert(NxString("NX_FE_CONSTANT_PRESSURE"));
-    
-	if (mEnum & NX_FE_CONSTANT_FLOW_RATE)
-		l.insert(NxString("NX_FE_CONSTANT_FLOW_RATE"));
-#endif
-	return l;
-
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-
-StringList EnumsBlueprint::AsNxEmitterShape() {
-
-	StringList l;
-#ifndef NX_DISABLE_FLUIDS
-	if (mEnum & NX_FE_RECTANGULAR)
-		l.insert(NxString("NX_FE_RECTANGULAR"));
-    
-	if (mEnum & NX_FE_ELLIPSE)
-		l.insert(NxString("NX_FE_ELLIPSE"));
-	#endif
-	return l;
-
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -1,61 +1,23 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUIBorder.h"
 #include "QuickGUIManager.h"
 
 namespace QuickGUI
 {
-	Border::Border(const Ogre::String& instanceName, BorderType bType, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
-		Image(instanceName,pixelSize,texture,gm),
-		mBorderType(bType)
+	Border::Border(const Ogre::String& name, GUIManager* gm) :
+		Widget(name,gm),
+		mThickness(5),
+		mOverlap(1)
 	{
 		mWidgetType = TYPE_BORDER;
 		mScrollPaneAccessible = false;
 		mInheritClippingWidget = false;
 		mDraggingEnabled = true;
 		mWidgetToDrag = NULL;
+		mSize = Size(mThickness,mThickness);
 
-		switch(mBorderType)
-		{
-		case BORDER_TYPE_TOP_LEFT:
-			mSkinComponent = ".border.topleft";
-			mHorizontalAnchor = ANCHOR_HORIZONTAL_LEFT;
-			mVerticalAnchor = ANCHOR_VERTICAL_TOP;
-			break;
-		case BORDER_TYPE_TOP_RIGHT:
-			mSkinComponent = ".border.topright";
-			mHorizontalAnchor = ANCHOR_HORIZONTAL_RIGHT;
-			mVerticalAnchor = ANCHOR_VERTICAL_TOP;
-			break;
-		case BORDER_TYPE_BOTTOM_LEFT:
-			mSkinComponent = ".border.bottomleft";
-			mHorizontalAnchor = ANCHOR_HORIZONTAL_LEFT;
-			mVerticalAnchor = ANCHOR_VERTICAL_BOTTOM;
-			break;
-		case BORDER_TYPE_BOTTOM_RIGHT:
-			mSkinComponent = ".border.bottomright";
-			mHorizontalAnchor = ANCHOR_HORIZONTAL_RIGHT;
-			mVerticalAnchor = ANCHOR_VERTICAL_BOTTOM;
-			break;
-		case BORDER_TYPE_LEFT:
-			mSkinComponent = ".border.left";
-			mHorizontalAnchor = ANCHOR_HORIZONTAL_LEFT;
-			mVerticalAnchor = ANCHOR_VERTICAL_TOP_BOTTOM;
-			break;
-		case BORDER_TYPE_TOP:
-			mSkinComponent = ".border.top";
-			mHorizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
-			mVerticalAnchor = ANCHOR_VERTICAL_TOP;
-			break;
-		case BORDER_TYPE_RIGHT:
-			mSkinComponent = ".border.right";
-			mHorizontalAnchor = ANCHOR_HORIZONTAL_RIGHT;
-			mVerticalAnchor = ANCHOR_VERTICAL_TOP_BOTTOM;
-			break;
-		case BORDER_TYPE_BOTTOM:
-			mSkinComponent = ".border.bottom";
-			mHorizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
-			mVerticalAnchor = ANCHOR_VERTICAL_BOTTOM;
-			break;
-		}
+		mQuad->setClippingWidget(NULL);
 
 		addEventHandler(EVENT_DRAGGED,&Border::onDragged,this);
 		addEventHandler(EVENT_MOUSE_ENTER,&Border::onMouseEnter,this);
@@ -125,34 +87,30 @@ namespace QuickGUI
 		switch(mBorderType)
 		{
 		case BORDER_TYPE_TOP_LEFT:
-			mc->setTexture(skin+".cursor.resize.diagonal1.png");
+			mc->setCursorState(MouseCursor::CURSOR_STATE_RESIZE_DIAGONAL_1);
 			break;
 		case BORDER_TYPE_TOP_RIGHT:
-			mc->setTexture(skin+".cursor.resize.diagonal2.png");
+			mc->setCursorState(MouseCursor::CURSOR_STATE_RESIZE_DIAGONAL_2);
 			break;
 		case BORDER_TYPE_BOTTOM_LEFT:
-			mc->setTexture(skin+".cursor.resize.diagonal2.png");
+			mc->setCursorState(MouseCursor::CURSOR_STATE_RESIZE_DIAGONAL_2);
 			break;
 		case BORDER_TYPE_BOTTOM_RIGHT:
-			mc->setTexture(skin+".cursor.resize.diagonal1.png");
+			mc->setCursorState(MouseCursor::CURSOR_STATE_RESIZE_DIAGONAL_1);
 			break;
 		case BORDER_TYPE_LEFT:
-			mc->setTexture(skin+".cursor.resize.leftright.png");
+			mc->setCursorState(MouseCursor::CURSOR_STATE_RESIZE_HORIZONTAL);
 			break;
 		case BORDER_TYPE_TOP:
-			mc->setTexture(skin+".cursor.resize.updown.png");
+			mc->setCursorState(MouseCursor::CURSOR_STATE_RESIZE_VERTICAL);
 			break;
 		case BORDER_TYPE_RIGHT:
-			mc->setTexture(skin+".cursor.resize.leftright.png");
+			mc->setCursorState(MouseCursor::CURSOR_STATE_RESIZE_HORIZONTAL);
 			break;
 		case BORDER_TYPE_BOTTOM:
-			mc->setTexture(skin+".cursor.resize.updown.png");
+			mc->setCursorState(MouseCursor::CURSOR_STATE_RESIZE_VERTICAL);
 			break;
 		}
-
-		Point currentPosition = mc->getPosition();
-		mc->centerOrigin();
-		mc->setPosition(currentPosition.x,currentPosition.y);
 	}
 
 	void Border::onMouseLeave(const EventArgs& args)
@@ -160,25 +118,89 @@ namespace QuickGUI
 		if((mParentWidget == NULL) || (!mParentWidget->resizingAllowed()))
 			return;
 
-		MouseCursor* mc = mGUIManager->getMouseCursor();
-		mc->setTexture(mMouseCursorTexture);
-		Point currentPosition = mc->getPosition();
-		mc->offsetOrigin(0,0);
-		mc->setPosition(currentPosition.x,currentPosition.y);
+		mGUIManager->getMouseCursor()->setCursorState(MouseCursor::CURSOR_STATE_NORMAL);
+	}
+
+	void Border::setBorderType(BorderType t)
+	{
+		if(mParentWidget == NULL)
+			return;
+
+		mBorderType = t;
+		Size parentSize = mParentWidget->getSize();
+		Ogre::String parentSkinComponent = mParentWidget->getSkinComponent();
+
+		switch(mBorderType)
+		{
+		case BORDER_TYPE_TOP_LEFT:
+			mSkinComponent = parentSkinComponent + ".border.topleft";
+			setPosition(-mThickness + mOverlap,-mThickness + mOverlap);
+			break;
+		case BORDER_TYPE_TOP_RIGHT:
+			mSkinComponent = parentSkinComponent + ".border.topright";
+			setPosition(parentSize.width - mOverlap,-mThickness + mOverlap);
+			mHorizontalAnchor = ANCHOR_HORIZONTAL_RIGHT;
+			break;
+		case BORDER_TYPE_BOTTOM_LEFT:
+			mSkinComponent = parentSkinComponent + ".border.bottomleft";
+			setPosition(-mThickness + mOverlap,parentSize.height - mOverlap);
+			mVerticalAnchor = ANCHOR_VERTICAL_BOTTOM;
+			break;
+		case BORDER_TYPE_BOTTOM_RIGHT:
+			mSkinComponent = parentSkinComponent + ".border.bottomright";
+			setPosition(parentSize.width - mOverlap,parentSize.height - mOverlap);
+			mHorizontalAnchor = ANCHOR_HORIZONTAL_RIGHT;
+			mVerticalAnchor = ANCHOR_VERTICAL_BOTTOM;
+			break;
+		case BORDER_TYPE_LEFT:
+			mSkinComponent = parentSkinComponent + ".border.left";
+			setPosition(-mThickness + mOverlap,0);
+			setHeight(parentSize.height);
+			mHorizontalAnchor = ANCHOR_HORIZONTAL_LEFT;
+			mVerticalAnchor = ANCHOR_VERTICAL_TOP_BOTTOM;
+			break;
+		case BORDER_TYPE_TOP:
+			mSkinComponent = parentSkinComponent + ".border.top";
+			setPosition(0,-mThickness + mOverlap);
+			setWidth(parentSize.width);
+			mHorizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
+			break;
+		case BORDER_TYPE_RIGHT:
+			mSkinComponent = parentSkinComponent + ".border.right";
+			setPosition(parentSize.width - mOverlap,0);
+			setHeight(parentSize.height);
+			mHorizontalAnchor = ANCHOR_HORIZONTAL_RIGHT;
+			mVerticalAnchor = ANCHOR_VERTICAL_TOP_BOTTOM;
+			break;
+		case BORDER_TYPE_BOTTOM:
+			mSkinComponent = parentSkinComponent + ".border.bottom";
+			setPosition(0,parentSize.height - mOverlap);
+			setWidth(parentSize.width);
+			mHorizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
+			mVerticalAnchor = ANCHOR_VERTICAL_BOTTOM;
+			break;
+		}
+
+		_deriveAnchorValues();
+		setSkin(mSkinName);
 	}
 
 	void Border::setSkin(const Ogre::String& skinName, Ogre::String extension, bool recursive)
 	{
+		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(skinName);
+		if(ss == NULL)
+			return;
+
 		mSkinName = skinName;
 		if(mParentWidget != NULL)
-			setTexture(mSkinName + mParentWidget->getSkinComponent() + mSkinComponent + extension);
+			mQuad->setTexture(mSkinName + mParentWidget->getSkinComponent() + mSkinComponent + ss->getImageExtension());
 		else
-			setTexture(mSkinName + mSkinComponent + extension);
+			mQuad->setTexture(mSkinName + mSkinComponent + ss->getImageExtension());
 
 		if(recursive)
 		{
-			for(std::vector<Widget*>::iterator it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it)
-				(*it)->setSkin(skinName,extension,recursive);
+			for(WidgetArray::iterator it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it)
+				(*it)->setSkin(skinName,recursive);
 		}
 	}
 }

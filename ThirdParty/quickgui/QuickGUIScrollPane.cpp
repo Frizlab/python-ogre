@@ -1,20 +1,24 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUIScrollPane.h"
 #include "QuickGUISheet.h"
 
 namespace QuickGUI
 {
-	ScrollPane::ScrollPane(const Ogre::String& instanceName, const Size& pixelSize, GUIManager* gm) :
-		Widget(instanceName,pixelSize,"",gm),
+	ScrollPane::ScrollPane(const Ogre::String& name, GUIManager* gm) :
+		Widget(name,gm),
 		mScrollBarWidth(20),
 		mHorizontalButtonLayout(HorizontalScrollBar::BUTTON_LAYOUT_OPPOSITE),
 		mVerticalButtonLayout(VerticalScrollBar::BUTTON_LAYOUT_OPPOSITE)
 	{
 		mWidgetType = TYPE_SCROLL_PANE;
 		mSkinComponent = ".scrollpane";
+		mSize = Size(100,100);
 		mScrollPaneAccessible = false;
 		mGainFocusOnClick = false;
 
-		mBottomBar = new HorizontalScrollBar(mInstanceName+".BottomScrollBar",Size(mSize.width - 20,20),"qgui.scrollbar.horizontal.png",gm);
+		mBottomBar = dynamic_cast<HorizontalScrollBar*>(_createChild(mInstanceName+".BottomScrollBar",TYPE_SCROLLBAR_HORIZONTAL));
+		mBottomBar->setSize(mSize.width - 20,20);
 		mBottomBar->setScrollPaneAccessible(false);
 		mBottomBar->setQuadLayer(Quad::LAYER_MENU);
 		mBottomBar->setInheritQuadLayer(false);
@@ -22,8 +26,10 @@ namespace QuickGUI
 		mBottomBar->setVerticalAnchor(ANCHOR_VERTICAL_BOTTOM);
 		mBottomBar->setShowWithParent(false);
 		mBottomBar->addOnScrollEventHandler(&ScrollPane::onHorizontalScroll,this);
+		removeChild(mBottomBar);
 
-		mRightBar = new VerticalScrollBar(mInstanceName+".RightScrollBar",Size(20,mSize.height - 20),"qgui.scrollbar.vertical.png",gm);
+		mRightBar = dynamic_cast<VerticalScrollBar*>(_createChild(mInstanceName+".RightScrollBar",TYPE_SCROLLBAR_VERTICAL));
+		mRightBar->setSize(20,mSize.height - 20);
 		mRightBar->setScrollPaneAccessible(false);
 		mRightBar->setQuadLayer(Quad::LAYER_MENU);
 		mRightBar->setInheritQuadLayer(false);
@@ -31,6 +37,7 @@ namespace QuickGUI
 		mRightBar->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
 		mRightBar->setShowWithParent(false);
 		mRightBar->addOnScrollEventHandler(&ScrollPane::onVerticalScroll,this);
+		removeChild(mRightBar);
 	}
 
 	ScrollPane::~ScrollPane()
@@ -169,8 +176,8 @@ namespace QuickGUI
 
 		// Manage Parent widgets, except for TitleBar, Borders, and 2 Scroll Bars:
 		mManagedWidgets.clear();
-		std::vector<Widget*>* parentChildren = mParentWidget->getChildWidgetList();
-		std::vector<Widget*>::iterator it;
+		WidgetArray* parentChildren = mParentWidget->getChildWidgetList();
+		WidgetArray::iterator it;
 		for(it = parentChildren->begin(); it != parentChildren->end(); ++it)
 		{
 			manageWidget((*it));
@@ -343,6 +350,13 @@ namespace QuickGUI
 			return;
 
 		mManagedWidgets.erase(it);
+
+		_determinePaneBounds();
+	}
+
+	void ScrollPane::unmanageWidgets()
+	{
+		mManagedWidgets.clear();
 
 		_determinePaneBounds();
 	}

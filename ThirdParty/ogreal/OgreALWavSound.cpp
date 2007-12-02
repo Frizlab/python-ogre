@@ -33,28 +33,17 @@
 ** Boston, MA 02111-1307, USA.                                               **
 \*---------------------------------------------------------------------------*/
 
-#include "OgreALWavSound.h"
-#include "OgreALSoundManager.h"
 #include "OgreALException.h"
+#include "OgreALWavSound.h"
 
 namespace OgreAL {
-	WavSound::WavSound(const Ogre::String& name, const Ogre::String& soundFile, bool loop, AudioFormat format) :
-		Sound(name, soundFile),
-		mWavFile(0)
+	WavSound::WavSound(const Ogre::String& name, const Ogre::DataStreamPtr& soundStream, bool loop, bool stream) :
+		Sound(name, soundStream->getName(), stream)
 	{
-		const unsigned int BUFFER_SIZE = 32768;     // 32 KB buffers
-		size_t bytes;
-		std::vector <char> data;
-
-		// Local resources
-		char *array = NULL;
-
-		// Main process
 		try
 		{
-			// Open for binary reading
-			mWavFile = fopen(soundFile.c_str(), "rb");
-			OGREAL_CHECK(mWavFile != 0, 13, "Could not load wav from " + soundFile);
+			 mSoundStream = soundStream;
+			 mLoop = loop?AL_TRUE:AL_FALSE;
 
 			// buffers
 			char magic[5];
@@ -63,133 +52,264 @@ namespace OgreAL {
 			unsigned char buffer16[2];
 
 			// check magic
-			OGREAL_CHECK(fread(magic,4,1,mWavFile) == 1, 13, "Cannot read wav file "+ soundFile );
-			OGREAL_CHECK(std::string(magic) == "RIFF", 13, "Wrong wav file format. This file is not a .wav file (no RIFF magic): "+ soundFile );
+			CheckCondition(mSoundStream->read(magic, 4) == 4, 13, "Cannot read wav file " + mFileName);
+			CheckCondition(std::string(magic) == "RIFF", 13, "Wrong wav file format. This file is not a .wav file (no RIFF magic): " + mFileName);
 
-			// skip 4 bytes (file size)
-			fseek(mWavFile,4,SEEK_CUR);
+			// The next 4 bytes are the file size, we can skip this since we get the size from the DataStream
+			mSoundStream->skip(4);
+			mSize = static_cast<Size>(mSoundStream->size());
 
 			// check file format
-			OGREAL_CHECK(fread(magic,4,1,mWavFile) == 1, 13, "Cannot read wav file "+ soundFile );
-			OGREAL_CHECK(std::string(magic) == "WAVE", 13, "Wrong wav file format. This file is not a .wav file (no WAVE format): "+ soundFile );
+			CheckCondition(mSoundStream->read(magic, 4) == 4, 13, "Cannot read wav file " + mFileName);
+			CheckCondition(std::string(magic) == "WAVE", 13, "Wrong wav file format. This file is not a .wav file (no WAVE format): " + mFileName);
 
 			// check 'fmt ' sub chunk (1)
-			OGREAL_CHECK(fread(magic,4,1,mWavFile) == 1, 13, "Cannot read wav file "+ soundFile );
-			OGREAL_CHECK(std::string(magic) == "fmt ", 13, "Wrong wav file format. This file is not a .wav file (no 'fmt ' subchunk): "+ soundFile );
+			CheckCondition(mSoundStream->read(magic, 4) == 4, 13, "Cannot read wav file " + mFileName);
+			CheckCondition(std::string(magic) == "fmt ", 13, "Wrong wav file format. This file is not a .wav file (no 'fmt ' subchunk): " + mFileName);
 
 			// read (1)'s size
-			OGREAL_CHECK(fread(buffer32,4,1,mWavFile) == 1, 13, "Cannot read wav file "+ soundFile );
+			CheckCondition(mSoundStream->read(buffer32, 4) == 4, 13, "Cannot read wav file " + mFileName);
 			unsigned long subChunk1Size = readByte32(buffer32);
-			OGREAL_CHECK(subChunk1Size >= 16, 13, "Wrong wav file format. This file is not a .wav file ('fmt ' chunk too small, truncated file?): "+ soundFile );
+			CheckCondition(subChunk1Size >= 16, 13, "Wrong wav file format. This file is not a .wav file ('fmt ' chunk too small, truncated file?): " + mFileName);
 
 			// check PCM audio format
-			OGREAL_CHECK(fread(buffer16,2,1,mWavFile) == 1, 13, "Cannot read wav file "+ soundFile );
+			CheckCondition(mSoundStream->read(buffer16, 2) == 2, 13, "Cannot read wav file " + mFileName);
 			unsigned short audioFormat = readByte16(buffer16);
-			OGREAL_CHECK(audioFormat == 1, 13, "Wrong wav file format. This file is not a .wav file (audio format is not PCM): "+ soundFile );
+			CheckCondition(audioFormat == 1, 13, "Wrong wav file format. This file is not a .wav file (audio format is not PCM): " + mFileName);
 
 			// read number of channels
-			OGREAL_CHECK(fread(buffer16,2,1,mWavFile) == 1, 13, "Cannot read wav file "+ soundFile );
-			unsigned short channels = readByte16(buffer16);
+			CheckCondition(mSoundStream->read(buffer16, 2) == 2, 13, "Cannot read wav file " + mFileName);
+			mChannels = readByte16(buffer16);
 
 			// read frequency (sample rate)
-			OGREAL_CHECK(fread(buffer32,4,1,mWavFile) == 1, 13, "Cannot read wav file "+ soundFile );
-			unsigned long frequency = readByte32(buffer32);
+			CheckCondition(mSoundStream->read(buffer32, 4) == 4, 13, "Cannot read wav file " + mFileName);
+			mFreq = readByte32(buffer32);
 
 			// skip 6 bytes (Byte rate (4), Block align (2))
-			fseek(mWavFile,6,SEEK_CUR);
+			mSoundStream->skip(6);
 
 			// read bits per sample
-			OGREAL_CHECK(fread(buffer16,2,1,mWavFile) == 1, 13, "Cannot read wav file "+ soundFile );
-			unsigned short bps = readByte16(buffer16);
-
-			if (channels == 1)
-				mFormat = (bps == 8) ? AL_FORMAT_MONO8 : AL_FORMAT_MONO16;
-			else
-				mFormat = (bps == 8) ? AL_FORMAT_STEREO8 : AL_FORMAT_STEREO16;
+			CheckCondition(mSoundStream->read(buffer16, 2) == 2, 13, "Cannot read wav file " + mFileName);
+			mBPS = readByte16(buffer16);
 
 			// check 'data' sub chunk (2)
-			OGREAL_CHECK(fread(magic,4,1,mWavFile) == 1, 13, "Cannot read wav file "+ soundFile );
-			OGREAL_CHECK(std::string(magic) == "data" || std::string(magic) == "fact", 13, "Wrong wav file format. This file is not a .wav file (no data subchunk): "+ soundFile );
+			CheckCondition(mSoundStream->read(magic, 4) == 4, 13, "Cannot read wav file " + mFileName);
+			CheckCondition(std::string(magic) == "data" || std::string(magic) == "fact", 13, "Wrong wav file format. This file is not a .wav file (no data subchunk): " + mFileName);
 
 			// fact is an option section we don't need to worry about
 			if(std::string(magic) == "fact")
 			{
-				fseek(mWavFile,8,SEEK_CUR);
+				mSoundStream->skip(8);
+
+				// Now we shoudl hit the data chunk
+				CheckCondition(mSoundStream->read(magic, 4) == 4, 13, "Cannot read wav file " + mFileName);
+				CheckCondition(std::string(magic) == "data", 13, "Wrong wav file format. This file is not a .wav file (no data subchunk): " + mFileName);
 			}
 
-			OGREAL_CHECK(fread(buffer32,4,1,mWavFile) == 1, 13, "Cannot read wav file "+ soundFile );
-			unsigned long subChunk2Size = readByte32(buffer32);
+			// The next four bytes are the size remaing of the file
+			CheckCondition(mSoundStream->read(buffer32, 4) == 4, 13, "Cannot read wav file " + mFileName);
+			mDataSize = readByte32(buffer32);
+			mDataStart = mSoundStream->tell();
 
-			// The frequency of the sampling rate
-			mFreq = frequency;
-			OGREAL_CHECK(sizeof(mFreq) == sizeof(frequency), 13, "freq and frequency different sizes");
+			calculateFormatInfo();
 
-			array = new char[BUFFER_SIZE];
+			// mBufferSize is equal to 1/4 of a second of audio
+			mLengthInSeconds = mDataSize / (mBufferSize * 4);
 
-			while (data.size() != subChunk2Size)
+			mBuffers = new BufferRef[mNumBuffers];
+			alGenBuffers(mNumBuffers, mBuffers);
+			CheckError(alGetError(), "Could not generate buffer");
+
+			for(int i = 0; i < mNumBuffers; i++)
 			{
-				// Read up to a buffer's worth of decoded sound data
-				bytes = fread(array, 1, BUFFER_SIZE, mWavFile);
-
-				if (bytes <= 0)
-					break;
-
-				if (data.size() + bytes > subChunk2Size)
-					bytes = subChunk2Size - data.size();
-
-				// Append to end of buffer
-				data.insert(data.end(), array, array + bytes);
+				CheckCondition(AL_NONE != mBuffers[i], 13, "Could not generate buffer");
+				Buffer buffer = bufferData(mSoundStream, mStream?mBufferSize:mDataSize);
+				alBufferData(mBuffers[i], mFormat, &buffer[0], static_cast<Size>(buffer.size()), mFreq);
+				CheckError(alGetError(), "Could not load buffer data");
 			}
 
-			delete []array;
-			array = NULL;
+			createAndBindSource();
 
-			fclose(mWavFile);
-			mWavFile = 0;
-
-			alGenBuffers(1, &mBuffer);
-			OGREAL_CHECK(alGetError() == AL_NO_ERROR, 13, "Could not generate buffer");
-			OGREAL_CHECK(AL_NONE != mBuffer, 13, "Could not generate buffer");
-
-			alBufferData(mBuffer, mFormat, &data[0], Size(data.size()), mFreq);
-			OGREAL_CHECK(alGetError() == AL_NO_ERROR, 13, "Could not load buffer data");
-
-			//return buffer;
+			if(mStream)
+			{
+				// There is an issue with looping and streaming, so we will
+				// disable looping and deal with it on our own.
+				alSourcei (mSource, AL_LOOPING,	AL_FALSE);
+				CheckError(alGetError(), "Failed to set looping");
+			}
 		}
-		catch(Exception e)
+		catch(Ogre::Exception e)
 		{
-			if (mBuffer)
+			for(int i = 0; i < mNumBuffers; i++)
 			{
-				if (alIsBuffer(mBuffer) == AL_TRUE)
+				if (mBuffers[i] && alIsBuffer(mBuffers[i]) == AL_TRUE)
 				{
-					alDeleteBuffers(1, &mBuffer);
+					alDeleteBuffers(1, &mBuffers[i]);
+					CheckError(alGetError(), "Failed to delete Buffer");
 				}
-			}
-
-			if (array)
-			{
-				delete []array;
-			}
-
-			if(mWavFile)
-			{
-				fclose(mWavFile);
-				mWavFile = 0;
 			}
 
 			throw (e);
 		}
-
-		mLoop = loop?AL_TRUE:AL_FALSE;
-
-		createAndBindSource();
 	}
 
 	WavSound::~WavSound()
 	{}
 
-	Ogre::String WavSound::errorToString(int error) const
+	bool WavSound::play()
 	{
-		return Sound::errorToString(error);
+		if(isStopped() && mStream)
+		{
+			for(int i = 0; i < mNumBuffers; i++)
+			{
+				CheckCondition(AL_NONE != mBuffers[i], 13, "Could not generate buffer");
+				Buffer buffer = bufferData(mSoundStream, mStream?mBufferSize:mDataSize);
+				alBufferData(mBuffers[i], mFormat, &buffer[0], static_cast<Size>(buffer.size()), mFreq);
+				CheckError(alGetError(), "Could not load buffer data");
+			}
+		    
+			alSourceQueueBuffers(mSource, mNumBuffers, mBuffers);
+			CheckError(alGetError(), "Failed to queue Buffers");
+		}
+
+		return Sound::play();
+	}
+
+	bool WavSound::stop()
+	{
+		if(Sound::stop())
+		{
+			return true;
+		}
+		else
+		{
+			if(mStream)
+			{
+				emptyQueues();
+				mSoundStream->seek(mDataStart);
+			}
+
+			return true;
+		}
+	}
+
+	void WavSound::setSecondOffset(Ogre::Real seconds)
+	{
+		if(!mStream)
+		{
+			Sound::setSecondOffset(seconds);
+		}
+		else
+		{
+			bool wasPlaying = isPlaying();
+
+			stop();
+
+			// mBufferSize is 1/4 of a second
+			size_t dataOffset = static_cast<size_t>(seconds * mBufferSize * 4);
+			mSoundStream->seek(dataOffset + mDataStart);
+
+			if(wasPlaying) play();
+		}
+	}
+
+	Ogre::Real WavSound::getSecondOffset()
+	{
+		if(!mStream)
+		{
+			return Sound::getSecondOffset();
+		}
+		else
+		{
+			/*
+			** We know that we are playing a buffer and that we have another buffer loaded.
+			** We also know that each buffer is 1/4 of a second when full.
+			** We can get the current offset in the OggStream which will be after both bufers
+			** and subtract from that 1/4 of a second for the waiting buffer and 1/4 of a second
+			** minus the offset into the current buffer to get the current overall offset.
+			*/
+
+			// mBufferSize is 1/4 of a second
+			Ogre::Real wavStreamOffset = (mSoundStream->tell() - mDataStart) / (mBufferSize * 4);
+			Ogre::Real bufferOffset = Sound::getSecondOffset();
+
+			Ogre::Real totalOffset = wavStreamOffset + (0.25 - bufferOffset);
+			return totalOffset;
+		}
+	}
+
+	bool WavSound::_updateSound()
+	{
+		// Call the parent method to update the position
+		Sound::_updateSound();
+
+		bool eof = false;
+
+		if(mStream)
+		{
+			// Update the stream
+			int processed;
+
+			alGetSourcei(mSource, AL_BUFFERS_PROCESSED, &processed);
+			CheckError(alGetError(), "Failed to get source");
+		 
+			while(processed--)
+			{
+				ALuint buffer;
+		        
+				alSourceUnqueueBuffers(mSource, 1, &buffer);
+				CheckError(alGetError(), "Failed to unqueue buffers");
+		 
+				Buffer data = bufferData(mSoundStream, mBufferSize);
+				alBufferData(buffer, mFormat, &data[0], static_cast<Size>(data.size()), mFreq);
+
+				eof = mSoundStream->eof();
+		 
+				alSourceQueueBuffers(mSource, 1, &buffer);
+				CheckError(alGetError(), "Failed to queue buffers");
+
+				if(eof)
+				{
+					if(mLoop)
+					{
+						eof = false;
+						mSoundStream->seek(mDataStart);
+					}
+					else
+					{
+						stop();
+					}
+				}
+			}
+		}
+	 
+		return !eof;
+	}
+
+	Buffer WavSound::bufferData(Ogre::DataStreamPtr dataStream, int size)
+	{
+		size_t bytes;
+		std::vector<char> data;
+		char *array = new char[mBufferSize];
+
+		while(data.size() != size)
+		{
+			// Read up to a buffer's worth of decoded sound data
+			bytes = mSoundStream->read(array, mBufferSize);
+
+			if (bytes <= 0)
+				break;
+
+			if (data.size() + bytes > size)
+				bytes = size - data.size();
+
+			// Append to end of buffer
+			data.insert(data.end(), array, array + bytes);
+		}
+
+		delete []array;
+		array = NULL;
+
+		return data;
 	}
 } // Namespace

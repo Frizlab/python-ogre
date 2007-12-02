@@ -1,9 +1,11 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUIMenuLabel.h"
 
 namespace QuickGUI
 {
-	MenuLabel::MenuLabel(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String textureName, GUIManager* gm) :
-		Label(instanceName,pixelSize,textureName,gm),
+	MenuLabel::MenuLabel(const Ogre::String& name, GUIManager* gm) :
+		Label(name,gm),
 		mIcon(0),
 		mIconTextureName(""),
 		mButton(0),
@@ -11,6 +13,8 @@ namespace QuickGUI
 	{
 		mWidgetType = TYPE_MENULABEL;
 		mSkinComponent = ".menulabel";
+		mSize = Size::ZERO;
+
 		mTextBoundsPixelOffset.x = mSize.height;
 		mTextBoundsRelativeSize.width = (mSize.width - (mSize.height * 2.0)) / mSize.width;
 
@@ -21,12 +25,12 @@ namespace QuickGUI
 	{
 	}
 
-	Ogre::String MenuLabel::getButtonTexture()
+	Ogre::String MenuLabel::getButtonSkin()
 	{
 		if(mButton == NULL)
 			return "";
 
-		return mButton->getTextureName();
+		return mButton->getSkin();
 	}
 
 	Ogre::String MenuLabel::getIconTexture()
@@ -45,13 +49,11 @@ namespace QuickGUI
 		mButton->addEventHandler(EVENT_MOUSE_BUTTON_UP,function);
 	}
 
-	void MenuLabel::setButtonTexture(const Ogre::String& textureName)
+	void MenuLabel::setButtonSkin(const Ogre::String& skinName)
 	{
-		mButtonTextureName = textureName;
-
 		if(mButton != NULL)
 		{
-			mButton->setTexture(mButtonTextureName);
+			mButton->setSkin(skinName);
 			return;
 		}
 
@@ -69,8 +71,8 @@ namespace QuickGUI
 			hAnchor = ANCHOR_HORIZONTAL_RIGHT;
 		}
 
-		mButton = new Button(mInstanceName+".Icon",Size(mSize.height,mSize.height),mButtonTextureName,mGUIManager);
-		addChild(mButton);
+		mButton = dynamic_cast<Button*>(_createChild(mInstanceName+".Button",TYPE_BUTTON));
+		mButton->setSize(mSize.height,mSize.height);
 		mButton->setPosition(buttonPosition);
 		mButton->setAutoSize(false);
 		mButton->setHorizontalAnchor(hAnchor);
@@ -80,6 +82,9 @@ namespace QuickGUI
 
 	void MenuLabel::setIconTexture(const Ogre::String& textureName)
 	{
+		if(textureName == "")
+			return;
+
 		mIconTextureName = textureName;
 
 		if(mIcon != NULL)
@@ -102,12 +107,13 @@ namespace QuickGUI
 			hAnchor = ANCHOR_HORIZONTAL_LEFT;
 		}
 
-		mIcon = new Image(mInstanceName+".Icon",Size(mSize.height,mSize.height),mIconTextureName,mGUIManager);
-		addChild(mIcon);
+		mIcon = dynamic_cast<Image*>(_createChild(mInstanceName+".Image",TYPE_IMAGE));
+		mIcon->setSize(mSize.height,mSize.height);
 		mIcon->setPosition(iconPosition);
 		mIcon->setHorizontalAnchor(hAnchor);
 		mIcon->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
 		mIcon->setPropogateEventFiring(EVENT_MOUSE_BUTTON_UP,true);
+		mIcon->setTexture(mIconTextureName);
 	}
 
 	void MenuLabel::onSizeChanged(const EventArgs& args)

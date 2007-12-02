@@ -54,4 +54,3 @@ namespace OgreBulletDynamics
 }
 
 #endif //_OGREBULLETDYNAMICS_PREREQUISITES_H
-

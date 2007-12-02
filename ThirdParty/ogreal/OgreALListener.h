@@ -57,7 +57,6 @@ namespace OgreAL {
 		** Constructors are protected to enforce the use of the 
 		** factory via SoundManager::createListener
 		*/
-
 		/** Default Constructor. */
 		Listener();
 		/** Normal Constructor. Should not be called directly! Use SoundManager::getListener */
@@ -95,7 +94,7 @@ namespace OgreAL {
 		 */
 		void setPosition(const Ogre::Vector3& vec);
 		/** Returns the position of the sound. */
-		const Ogre::Vector3& getPosition() const;
+		const Ogre::Vector3& getPosition() const {return mPosition;}
 		/**
 		 * Sets the direction of the listener.
 		 * @param x The x part of the direction vector
@@ -111,7 +110,7 @@ namespace OgreAL {
 		 */
 		void setDirection(const Ogre::Vector3& vec);
 		/** Returns the direction of the sound. */
-		const Ogre::Vector3& getDirection() const;
+		const Ogre::Vector3& getDirection() const {return mDirection;}
 		/**
 		 * Sets the velocity of the listener.
 		 * @param x The x part of the velocity vector
@@ -125,7 +124,7 @@ namespace OgreAL {
 		 */
 		void setVelocity(const Ogre::Vector3& vec);
 		/** Returns the velocity of the sound. */
-		const Ogre::Vector3& getVelocity() const;
+		const Ogre::Vector3& getVelocity() const {return mVelocity;}
 		/** Returns the position of the sound including any transform from nodes it is attached to. */
 		const Ogre::Vector3& getDerivedPosition() const;
 		/** Returns the direction of the sound including any transform from nodes it is attached to. */
@@ -141,6 +140,10 @@ namespace OgreAL {
 		void _updateRenderQueue(Ogre::RenderQueue* queue);
 		/** Overridden from MovableObject */
 		void _notifyAttached(Ogre::Node* parent, bool isTagPoint = false);
+#if OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR == 5
+		/** Overridden from MovableObject */
+		virtual void visitRenderables(Ogre::Renderable::Visitor* visitor, bool debugRenderables = false){}
+#endif
 
 	protected:
 		/// Internal method for synchronising with parent node (if any)

@@ -73,96 +73,104 @@ StaticBillboardSet::StaticBillboardSet(SceneManager *mgr, BillboardMethod method
 		//Load vertex shader to align billboards to face the camera (if not loaded already)
 		if (++selfInstances == 1){
 			//First shader, simple camera-alignment
-			String vertexProg = 
-				"void Sprite_vp(	\n"
-				"	float4 position : POSITION,	\n"
-				"	float3 normal   : NORMAL,	\n"
-				"	float4 color	: COLOR,	\n"
-				"	float2 uv       : TEXCOORD0,	\n"
-				"	out float4 oPosition : POSITION,	\n"
-				"	out float2 oUv       : TEXCOORD0,	\n"
-				"	out float4 oColor    : COLOR, \n"
-				"	out float4 oFog      : FOG,	\n"
-				"	uniform float4x4 worldViewProj,	\n"
-				"	uniform float    uScroll, \n"
-				"	uniform float    vScroll, \n"
-				"	uniform float4   preRotatedQuad[4] )	\n"
-				"{	\n"
-				//Face the camera
-				"	float4 vCenter = float4( position.x, position.y, position.z, 1.0f );	\n"
-				"	float4 vScale = float4( normal.x, normal.y, normal.x, 1.0f );	\n"
-				"	oPosition = mul( worldViewProj, vCenter + (preRotatedQuad[normal.z] * vScale) );  \n"
-				
-				//Color
-				"	oColor = color;   \n"
-				
-				//UV Scroll
-				"	oUv = uv;	\n"
-				"	oUv.x += uScroll; \n"
-				"	oUv.y += vScroll; \n"
-				
-				//Fog
-				"	oFog.x = oPosition.z; \n"
-				"}"; 
+			HighLevelGpuProgramPtr vertexShader;
+			vertexShader = HighLevelGpuProgramManager::getSingleton().getByName("Sprite_vp");
+			if (vertexShader.isNull()){
+				String vertexProg = 
+					"void Sprite_vp(	\n"
+					"	float4 position : POSITION,	\n"
+					"	float3 normal   : NORMAL,	\n"
+					"	float4 color	: COLOR,	\n"
+					"	float2 uv       : TEXCOORD0,	\n"
+					"	out float4 oPosition : POSITION,	\n"
+					"	out float2 oUv       : TEXCOORD0,	\n"
+					"	out float4 oColor    : COLOR, \n"
+					"	out float4 oFog      : FOG,	\n"
+					"	uniform float4x4 worldViewProj,	\n"
+					"	uniform float    uScroll, \n"
+					"	uniform float    vScroll, \n"
+					"	uniform float4   preRotatedQuad[4] )	\n"
+					"{	\n"
+					//Face the camera
+					"	float4 vCenter = float4( position.x, position.y, position.z, 1.0f );	\n"
+					"	float4 vScale = float4( normal.x, normal.y, normal.x, 1.0f );	\n"
+					"	oPosition = mul( worldViewProj, vCenter + (preRotatedQuad[normal.z] * vScale) );  \n"
+					
+					//Color
+					"	oColor = color;   \n"
+					
+					//UV Scroll
+					"	oUv = uv;	\n"
+					"	oUv.x += uScroll; \n"
+					"	oUv.y += vScroll; \n"
+					
+					//Fog
+					"	oFog.x = oPosition.z; \n"
+					"}"; 
 
-			HighLevelGpuProgramPtr vertexShader = HighLevelGpuProgramManager::getSingleton()
-				.createProgram("Sprite_vp",
-				ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-				"cg", GPT_VERTEX_PROGRAM);
-			vertexShader->setSource(vertexProg);
-			vertexShader->setParameter("profiles", "vs_1_1 arbvp1");
-			vertexShader->setParameter("entry_point", "Sprite_vp");
-			vertexShader->load();
-
+				vertexShader = HighLevelGpuProgramManager::getSingleton()
+					.createProgram("Sprite_vp",
+					ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+					"cg", GPT_VERTEX_PROGRAM);
+				vertexShader->setSource(vertexProg);
+				vertexShader->setParameter("profiles", "vs_1_1 arbvp1");
+				vertexShader->setParameter("entry_point", "Sprite_vp");
+				vertexShader->load();
+			}
+			
 			//Second shader, camera alignment and distance based fading
-			String vertexProg2 = 
-				"void SpriteFade_vp(	\n"
-				"	float4 position : POSITION,	\n"
-				"	float3 normal   : NORMAL,	\n"
-				"	float4 color	: COLOR,	\n"
-				"	float2 uv       : TEXCOORD0,	\n"
-				"	out float4 oPosition : POSITION,	\n"
-				"	out float2 oUv       : TEXCOORD0,	\n"
-				"	out float4 oColor    : COLOR, \n"
-				"	out float4 oFog      : FOG,	\n"
-				"	uniform float4x4 worldViewProj,	\n"
+			HighLevelGpuProgramPtr vertexShader2;
+			vertexShader2 = HighLevelGpuProgramManager::getSingleton().getByName("SpriteFade_vp");
+			if (vertexShader2.isNull()){
+				String vertexProg2 = 
+					"void SpriteFade_vp(	\n"
+					"	float4 position : POSITION,	\n"
+					"	float3 normal   : NORMAL,	\n"
+					"	float4 color	: COLOR,	\n"
+					"	float2 uv       : TEXCOORD0,	\n"
+					"	out float4 oPosition : POSITION,	\n"
+					"	out float2 oUv       : TEXCOORD0,	\n"
+					"	out float4 oColor    : COLOR, \n"
+					"	out float4 oFog      : FOG,	\n"
+					"	uniform float4x4 worldViewProj,	\n"
 
-				"	uniform float3 camPos, \n"
-				"	uniform float fadeGap, \n"
-				"   uniform float invisibleDist, \n"
+					"	uniform float3 camPos, \n"
+					"	uniform float fadeGap, \n"
+					"   uniform float invisibleDist, \n"
 
-				"	uniform float    uScroll, \n"
-				"	uniform float    vScroll, \n"
-				"	uniform float4   preRotatedQuad[4] )	\n"
-				"{	\n"
-				//Face the camera
-				"	float4 vCenter = float4( position.x, position.y, position.z, 1.0f );	\n"
-				"	float4 vScale = float4( normal.x, normal.y, normal.x, 1.0f );	\n"
-				"	oPosition = mul( worldViewProj, vCenter + (preRotatedQuad[normal.z] * vScale) );  \n"
-				
-				"	oColor.rgb = color.rgb;   \n"
+					"	uniform float    uScroll, \n"
+					"	uniform float    vScroll, \n"
+					"	uniform float4   preRotatedQuad[4] )	\n"
+					"{	\n"
+					//Face the camera
+					"	float4 vCenter = float4( position.x, position.y, position.z, 1.0f );	\n"
+					"	float4 vScale = float4( normal.x, normal.y, normal.x, 1.0f );	\n"
+					"	oPosition = mul( worldViewProj, vCenter + (preRotatedQuad[normal.z] * vScale) );  \n"
+					
+					"	oColor.rgb = color.rgb;   \n"
 
-				//Fade out in the distance
-				"	float dist = distance(camPos.xz, position.xz);	\n"
-				"	oColor.a = (invisibleDist - dist) / fadeGap;   \n"
-				
-				//UV scroll
-				"	oUv = uv;	\n"
-				"	oUv.x += uScroll; \n"
-				"	oUv.y += vScroll; \n"
+					//Fade out in the distance
+					"	float dist = distance(camPos.xz, position.xz);	\n"
+					"	oColor.a = (invisibleDist - dist) / fadeGap;   \n"
+					
+					//UV scroll
+					"	oUv = uv;	\n"
+					"	oUv.x += uScroll; \n"
+					"	oUv.y += vScroll; \n"
 
-				//Fog
-				"	oFog.x = oPosition.z; \n"
-				"}"; 
+					//Fog
+					"	oFog.x = oPosition.z; \n"
+					"}"; 
 
-			HighLevelGpuProgramPtr vertexShader2 = HighLevelGpuProgramManager::getSingleton()
-				.createProgram("SpriteFade_vp",
-				ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-				"cg", GPT_VERTEX_PROGRAM);
-			vertexShader2->setSource(vertexProg2);
-			vertexShader2->setParameter("profiles", "vs_1_1 arbvp1");
-			vertexShader2->setParameter("entry_point", "SpriteFade_vp");
-			vertexShader2->load();
+				vertexShader2 = HighLevelGpuProgramManager::getSingleton()
+					.createProgram("SpriteFade_vp",
+					ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+					"cg", GPT_VERTEX_PROGRAM);
+				vertexShader2->setSource(vertexProg2);
+				vertexShader2->setParameter("profiles", "vs_1_1 arbvp1");
+				vertexShader2->setParameter("entry_point", "SpriteFade_vp");
+				vertexShader2->load();
+			}
 
 		}
 	} else {
@@ -189,10 +197,6 @@ StaticBillboardSet::~StaticBillboardSet()
 		if (--selfInstances == 0){
 			//Delete fade materials
 			fadedMaterialMap.clear();
-
-			//Remove vertex shaders
-			HighLevelGpuProgramManager::getSingleton().remove("Sprite_vp");
-			HighLevelGpuProgramManager::getSingleton().remove("SpriteFade_vp");
 		}
 	} else {
 		//Delete scene node
@@ -648,6 +652,8 @@ void SBMaterialRef::addMaterialRef(const MaterialPtr &matP)
 		//Material does not exist in selfList - add it
 		matRef = new SBMaterialRef(mat);
 		selfList[mat] = matRef;
+		//No need to set refCount to 1 here because the SBMaterialRef
+		//constructor sets refCount to 1.
 	}
 }
 

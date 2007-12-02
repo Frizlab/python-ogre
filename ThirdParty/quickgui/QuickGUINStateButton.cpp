@@ -1,13 +1,19 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUINStateButton.h"
+#include "QuickGUIUtility.h" 
 
 namespace QuickGUI
 {
-	NStateButton::NStateButton(const Ogre::String& instanceName, const Size& pixelSize, GUIManager* gm) :
-		Button(instanceName,pixelSize,"",gm)
+	NStateButton::NStateButton(const Ogre::String& name, GUIManager* gm) :
+		Button(name,gm),
+		mBaseTexture("")
 	{
 		mWidgetType = TYPE_NSTATEBUTTON;
 		mSkinComponent = "";
+		mSize = Size(75,25);
 		mAutoSize = false;
+
 		addEventHandler(EVENT_MOUSE_BUTTON_UP,&NStateButton::onMouseButtonUp,this);
 
 		mOnStateChangedUserEventHandlers.clear();
@@ -33,6 +39,23 @@ namespace QuickGUI
 		{
 			setCurrentState(mStates[0]);
 		}
+	}
+
+	void NStateButton::applyButtonDownTexture()
+	{
+		// apply button ".down" texture
+		mQuad->setTexture(mBase + ".down" + mExtension);
+	}
+
+	void NStateButton::applyButtonOverTexture()
+	{
+		// apply button ".over" texture
+		mQuad->setTexture(mBase + ".over" + mExtension);
+	}
+
+	void NStateButton::applyDefaultTexture()
+	{
+		mQuad->setTexture(mBase + mExtension);
 	}
 
 	void NStateButton::clearStates()
@@ -116,16 +139,9 @@ namespace QuickGUI
 
 	void NStateButton::onStateChanged(const WidgetEventArgs& args)
 	{
-		std::vector<MemberFunctionSlot*>::iterator it;
+		EventHandlerArray::iterator it;
 		for( it = mOnStateChangedUserEventHandlers.begin(); it != mOnStateChangedUserEventHandlers.end(); ++it )
 			(*it)->execute(args);
-	}
-
-	void NStateButton::setBaseTexture(const Ogre::String& textureName)
-	{
-		Button::setBaseTexture(textureName);
-
-		mDisabledTextureName = mTextureName + ".disabled" + mTextureExtension;
 	}
 
 	void NStateButton::setCurrentState(State* s)
@@ -138,9 +154,20 @@ namespace QuickGUI
 			return;
 
 		mCurrentState = s;
-		setTexture(mCurrentState->getTextureName());
-		mDefaultTexture = mTextureName;
+		mBaseTexture = mCurrentState->getBaseTextureName();
+		mBase = mBaseTexture.substr(0,mBaseTexture.find_last_of('.'));
+		mExtension = mBaseTexture.substr(mBaseTexture.find_last_of('.'));
+		mQuad->setTexture(mBaseTexture);
 		mText->setCaption(mCurrentState->getText());
+
+		// Load Image, used for transparency picking.
+		if(Utility::textureExistsOnDisk(mBaseTexture))
+		{
+			Ogre::Image i;
+			i.load(mBaseTexture,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+			delete mWidgetImage;
+			mWidgetImage = new Ogre::Image(i);
+		}
 
 		WidgetEventArgs args(this);
 		onStateChanged(args);
@@ -149,14 +176,16 @@ namespace QuickGUI
 	void NStateButton::setCurrentState(Ogre::ushort index)
 	{
 		State* s = getState(index);
-		if( s == NULL ) return;
+		if( s == NULL ) 
+			return;
 		setCurrentState(s);
 	}
 
 	void NStateButton::setCurrentState(const Ogre::String& name)
 	{
 		State* s = getState(name);
-		if( s == NULL ) return;
+		if( s == NULL ) 
+			return;
 		setCurrentState(s);
 	}
 
@@ -166,7 +195,8 @@ namespace QuickGUI
 		
 		int nextStateIndex = index + 1;
 		
-		if( nextStateIndex >= static_cast<int>(mStates.size()) ) nextStateIndex =  0;
+		if( nextStateIndex >= static_cast<int>(mStates.size()) ) 
+			nextStateIndex =  0;
 
 		setCurrentState(mStates[nextStateIndex]);
 	}
@@ -177,7 +207,8 @@ namespace QuickGUI
 
 		int prevStateIndex = index - 1;
 		
-		if( prevStateIndex < 0 ) prevStateIndex = static_cast<int>(mStates.size()) - 1;
+		if( prevStateIndex < 0 ) 
+			prevStateIndex = static_cast<int>(mStates.size()) - 1;
 
 		setCurrentState(mStates[prevStateIndex]);
 	}

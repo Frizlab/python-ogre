@@ -15,7 +15,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 
 #include "BatchedGeometry.h"
 
-/*#include "OgreRoot.h"
+#include "OgreRoot.h"
 #include "OgreRenderSystem.h"
 #include "OgreCamera.h"
 #include "OgreVector3.h"
@@ -30,8 +30,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include "OgreHardwareBufferManager.h"
 #include "OgreHardwareBuffer.h"
 #include "OgreMaterialManager.h"
-#include "OgreMaterial.h"*/
-
+#include "OgreMaterial.h"
 using namespace Ogre;
 
 
@@ -54,12 +53,6 @@ BatchedGeometry::~BatchedGeometry()
 	clear();
 }
 
-#if (OGRE_VERSION >=  ((1 << 16) | (5 << 8) | 0)) // must have at least shoggoth (1.5.0)
-void BatchedGeometry::visitRenderables(Ogre::Renderable::Visitor*, bool)
-{
-}
-#endif
-
 void BatchedGeometry::addEntity(Entity *ent, const Vector3 &position, const Quaternion &orientation, const Vector3 &scale, const Ogre::ColourValue &color)
 {
 	//For each submesh
@@ -69,6 +62,8 @@ void BatchedGeometry::addEntity(Entity *ent, const Vector3 &position, const Quat
 		SubMesh *mesh = i.peekNext();
 
 		//Generate a format string that uniquely identifies this material & vertex/index format
+		if (mesh->vertexData == NULL)
+			OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "BatchedGeometry cannot use meshes with shared vertex data", "BatchedGeometry::addEntity()");
 		String formatStr = getFormatString(mesh);
 		
 		//If a batch using an identical format exists...

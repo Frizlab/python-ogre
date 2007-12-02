@@ -203,7 +203,14 @@ def filter_declarations( mb ):
     g12.exclude()
     #g12.getter_call_policies = call_policies.return_value_policy( call_policies.return_opaque_pointer )
 
-    
+    ode_ns.class_( 'dBox' ).noncopyable = True
+    ode_ns.class_( 'dCapsule' ).noncopyable = True
+    ode_ns.class_( 'dGeom' ).noncopyable = True
+    ode_ns.class_( 'dGeomTransform' ).noncopyable = True
+    ode_ns.class_( 'dPlane' ).noncopyable = True
+    ode_ns.class_( 'dQuadTreeSpace' ).noncopyable = True
+    ode_ns.class_( 'dRay' ).noncopyable = True
+    ode_ns.class_( 'dSphere' ).noncopyable = True
 
     
     

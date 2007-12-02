@@ -38,6 +38,7 @@
 
 #include "OgreALListener.h"
 #include "OgreALOggSound.h"
+#include "OgreALWavSound.h"
 #include "OgreALSound.h"
 #include "OgreALSoundManager.h"
 

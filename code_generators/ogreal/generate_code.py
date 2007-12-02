@@ -75,7 +75,11 @@ def filter_declarations( mb ):
 #     
 #     global_ns.namespace( 'Ogre' ).class_('MapIterator<OgreAL::FormatMap>').include(already_exposed=True)
 
-
+    ogreal_ns.class_('SoundManager').variable('WAV').exclude()
+    ogreal_ns.class_('SoundManager').variable('OGG').exclude()
+    ogreal_ns.class_('SoundManager').variable('FILE_TYPE').exclude()
+    ogreal_ns.class_('SoundManager').variable('AUDIO_FORMAT').exclude()
+    
 
   
 def set_call_policies( mb ):

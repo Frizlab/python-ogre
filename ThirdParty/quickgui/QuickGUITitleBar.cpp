@@ -1,3 +1,5 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUITitleBar.h"
 #include "QuickGUIManager.h"
 
@@ -6,27 +8,30 @@
 
 namespace QuickGUI
 {
-	TitleBar::TitleBar(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
-		Label(instanceName,pixelSize,texture,gm)
+	TitleBar::TitleBar(const Ogre::String& name, GUIManager* gm) :
+		Label(name,gm)
 	{	
 		mWidgetType = TYPE_TITLEBAR;
 		mSkinComponent = ".titlebar";
+		mSize = Size(100,25);
 		mScrollPaneAccessible = false;
 		setQuadLayer(Quad::LAYER_MENU);
 		mInheritQuadLayer = false;
 		mHorizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
 		mHorizontalAlignment = HA_LEFT;
 
+		mTextBoundsRelativeSize = Size(mSize.width - (mSize.height - 2),mSize.height) / mSize;
+
 		// Create CloseButton
 		Ogre::Real ButtonSize = mSize.height - 2;
-		mCloseButton = new Button(mInstanceName+".CloseButton",Size(ButtonSize,ButtonSize),mTextureName + ".button" + mTextureExtension,mGUIManager);
-		addChild(mCloseButton);
+		mCloseButton = dynamic_cast<Button*>(_createComponent(mInstanceName+".CloseButton",TYPE_BUTTON));
+		mCloseButton->setSkinComponent(".titleBar.button");
+		mCloseButton->setSkin(mSkinName);
+		mCloseButton->setSize(ButtonSize,ButtonSize);
 		mCloseButton->setPosition(mSize.width - ButtonSize - 1,1);
 		mCloseButton->setAutoSize(false);
 		mCloseButton->setHorizontalAnchor(ANCHOR_HORIZONTAL_RIGHT);
 		mCloseButton->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
-
-		mTextBoundsRelativeSize = Size(mSize.width - ButtonSize,mSize.height) / mSize;
 	}
 
 	TitleBar::~TitleBar()
@@ -66,7 +71,10 @@ namespace QuickGUI
 
 	void TitleBar::setFont(const Ogre::String& fontScriptName, bool recursive)
 	{
-		Image::setFont(fontScriptName,recursive);
+		if(fontScriptName == "")
+			return;
+
+		Label::setFont(fontScriptName,recursive);
 		mText->setFont(mFontName);
 
 		if(mAutoSize)
@@ -81,51 +89,6 @@ namespace QuickGUI
 		}
 	}
 
-	void TitleBar::setParent(Widget* parent)
-	{
-		mParentWidget = parent;
-
-		if(mParentWidget != NULL)
-		{
-			setQuadContainer(parent->getQuadContainer());
-			setGUIManager(parent->getGUIManager());
-
-			// set the correct offset
-			setOffset(mParentWidget->getOffset() + 1);
-			// calculated properties
-			_deriveAnchorValues();
-			// inheritted properties
-			if(mInheritClippingWidget)
-				setClippingWidget(mParentWidget,true);
-			if(!mParentWidget->isVisible())
-				hide();
-			if(mInheritQuadLayer)
-				setQuadLayer(mParentWidget->getQuadLayer());
-			mGainFocusOnClick = mParentWidget->getGainFocusOnClick();
-
-			mCloseButton->addEventHandler(Widget::EVENT_MOUSE_CLICK,&Window::onMouseUpOverCloseButton,dynamic_cast<Window*>(mParentWidget));
-			mCloseButton->addEventHandler(Widget::EVENT_MOUSE_BUTTON_UP,&Window::onMouseUpOverCloseButton,dynamic_cast<Window*>(mParentWidget));
-		}
-
-		WidgetEventArgs args(this);
-		fireEvent(EVENT_PARENT_CHANGED,args);
-	}
-
-	void TitleBar::setSkin(const Ogre::String& skinName, Ogre::String extension, bool recursive)
-	{
-		mSkinName = skinName;
-		if(mParentWidget != NULL)
-			setTexture(mSkinName + mParentWidget->getSkinComponent() + mSkinComponent + extension);
-		else
-			setTexture(mSkinName + mSkinComponent + extension);
-
-		if(recursive)
-		{
-			for(std::vector<Widget*>::iterator it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it)
-				(*it)->setSkin(skinName,extension,recursive);
-		}
-	}
-
 	void TitleBar::setText(const Ogre::UTFString& text)
 	{
 		mText->setCaption(text);
@@ -133,7 +96,7 @@ namespace QuickGUI
 
 	void TitleBar::setWidth(Ogre::Real pixelWidth)
 	{
-		Image::setWidth(pixelWidth);
+		Label::setWidth(pixelWidth);
 
 		mText->redraw();
 	}

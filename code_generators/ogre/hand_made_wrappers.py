@@ -112,14 +112,43 @@ WRAPPER_REGISTRATION_OverlayElement = [
 #     bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
 # ]
 
+WRAPPER_DEFINITION_Bone = \
+"""
+    Ogre::Node * 
+    Bone_castAsNode ( Ogre::Bone * n ) {
+    return ( (Ogre::Node* ) n );
+    }   
+    """
     
+WRAPPER_REGISTRATION_Bone = [
+    'def( "castAsNode", &::Bone_castAsNode,\
+    "Python-Ogre Helper Function\\nCast a Bone as a pure node",\
+    bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());'
+    ]
+    
+WRAPPER_DEFINITION_SceneNode = \
+"""
+    Ogre::Node * 
+    SceneNode_castAsNode ( Ogre::SceneNode * n ) {
+    return ( (Ogre::Node* ) n );
+    }   
+    """
+    
+WRAPPER_REGISTRATION_SceneNode = [
+    'def( "castAsNode", &::SceneNode_castAsNode,\
+    "Python-Ogre Helper Function\\nCast a Bone as a pure node",\
+    bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());'
+    ]
+
+            
 WRAPPER_DEFINITION_Node = \
 """
 Ogre::SceneNode * 
 Node_castAsSceneNode ( Ogre::Node * n ) {
     return ( (Ogre::SceneNode* ) n );
     }
-Ogre::Node * Node_castNode(Ogre::Node * n){
+    
+Ogre::Node * Node_castAutomatic(Ogre::Node * n){
     if( dynamic_cast< Ogre::SceneNode * >( n ) ){
         return  (Ogre::SceneNode*) n ;
     }    
@@ -130,24 +159,22 @@ Ogre::Node * Node_castNode(Ogre::Node * n){
 }
 
 Ogre::Node * Node_getChild_short(Ogre::Node& me, unsigned short index){
-    return Node_castNode( me.getChild( index ) );
+    return Node_castAutomatic( me.getChild( index ) );
 }
-
 Ogre::Node * Node_getChild_string(Ogre::Node& me, const Ogre::String& name){
-    return Node_castNode( me.getChild( name ) );
+    return Node_castAutomatic( me.getChild( name ) );
 }
 Ogre::Node * Node_getParent(Ogre::Node& me){
-    return Node_castNode( me.getParent( ) );
+    return Node_castAutomatic( me.getParent( ) );
 }
-
 Ogre::Node * Node_removeChild1(Ogre::Node& me, unsigned short index){
-    return Node_castNode( me.removeChild( index ) );
+    return Node_castAutomatic( me.removeChild( index ) );
 }
 Ogre::Node * Node_removeChild2(Ogre::Node& me, const Ogre::String& name){
-    return Node_castNode( me.removeChild( name ) );
+    return Node_castAutomatic( me.removeChild( name ) );
 }
 Ogre::Node * Node_removeChild3(Ogre::Node& me, Ogre::Node * child){
-    return Node_castNode( me.removeChild( child ) );
+    return Node_castAutomatic( me.removeChild( child ) );
 }
 """
 
@@ -173,7 +200,7 @@ WRAPPER_REGISTRATION_Node = [
     'def( "castAsSceneNode", &::Node_castAsSceneNode,\
     "Python-Ogre Helper Function\\nCast a Node as a Scene Node",\
     bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());'
-    'def( "castNode", &::Node_castNode,\
+    'def( "castAutomatic", &::Node_castAutomatic,\
     "Python-Ogre Helper Function\\nCast a Node as a Scene Node or Bone Node (automatic)",\
     bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());'
     ]
@@ -802,6 +829,14 @@ def apply( mb ):
     rt.add_declaration_code( WRAPPER_DEFINITION_Node )
     apply_reg (rt,  WRAPPER_REGISTRATION_Node )
 
+    rt = mb.class_( 'Bone' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_Bone )
+    apply_reg (rt,  WRAPPER_REGISTRATION_Bone )
+
+    rt = mb.class_( 'SceneNode' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_SceneNode )
+    apply_reg (rt,  WRAPPER_REGISTRATION_SceneNode )
+
     rt = mb.class_( 'PixelBox' )
     rt.add_declaration_code( WRAPPER_DEFINITION_PixelBox )
     apply_reg (rt,  WRAPPER_REGISTRATION_PixelBox )
@@ -850,11 +885,13 @@ def apply( mb ):
         iter_as_generator_map( cls ) 
         
     rt = mb.class_( 'RenderQueueListener' )   
-    print "WRAPPER CODE\n\n"
-    print rt.wrapper_code
-    rt.add_wrapper_code ( WRAPPER_WRAPPER_RenderQueueListener )
-    print "NOW\n\n"
-    print rt.wrapper_code
+#     print "WRAPPER CODE\n\n"
+#     print rt.wrapper_code
+#     print rt
+#     print dir(rt)
+# #     rt.add_wrapper_code ( WRAPPER_WRAPPER_RenderQueueListener )
+#     print "NOW\n\n"
+#     print rt.wrapper_code
              
 #     cls = mb.class_('Animation').class_('NodeTrackIterator')
 #     iter_as_generator_map( cls )

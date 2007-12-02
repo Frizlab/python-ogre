@@ -1,8 +1,10 @@
 #ifndef QUICKGUIMULTILINELABEL_H
 #define QUICKGUIMULTILINELABEL_H
 
-#include "QuickGUIList.h"
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUILabel.h"
+#include "QuickGUIList.h"
+#include "QuickGUITextHelper.h"
 
 #include <vector>
 
@@ -12,7 +14,9 @@ namespace QuickGUI
 		public Label
 	{
 	public:
-		LabelArea(const Ogre::String& instanceName, Size pixelSize, Ogre::String textureName, GUIManager* gm);
+		friend class Console;
+	public:
+		LabelArea(const Ogre::String& name, GUIManager* gm);
 		~LabelArea();
 
 		/**
@@ -55,9 +59,11 @@ namespace QuickGUI
 		Ogre::UTFString mCaption;
 		List* mTextList;
 		// if ScrollBar is visible, width used to calculating a line of text is modified.
-		Ogre::Real mOffset;
+		Ogre::Real mTextOffset;
 
 		bool mScrollingAllowed;
+
+		TextHelper* mTextHelper;
 
 		// Properties that are used across all TextBoxes
 		Ogre::String mTextBoxTextureName;

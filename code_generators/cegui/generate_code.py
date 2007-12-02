@@ -23,6 +23,7 @@ from pyplusplus import decl_wrappers
 from pyplusplus import function_transformers as ft
 from pyplusplus.module_builder import call_policies
 from pyplusplus.module_creator import sort_algorithms
+from pyplusplus.code_creators import include
 
 import common_utils.extract_documentation as exdoc
 import common_utils.var_checker as varchecker
@@ -64,7 +65,13 @@ def filter_declarations( mb ):
             cls.variable('WidgetTypeName').exclude()
         except:
             pass
-            
+    ## fix due to new gccxml        
+    try:
+        global_ns.member_function('::CEGUI::ListboxItem::setSelectionColours', arg_types=['__restrict__ ::CEGUI::colour &']).exclude()
+        global_ns.member_function('::CEGUI::ListboxTextItem::setTextColours', arg_types=['__restrict__ ::CEGUI::colour &']).exclude()
+    except:
+        pass       
+
     ## Exclude protected and private that are not pure virtual
     query = declarations.access_type_matcher_t( 'private' ) \
             & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
@@ -148,7 +155,14 @@ def filter_declarations( mb ):
     ## Replaced these with 'useful' functions in the handwrappers - take and return python objects
     CEGUI_ns.class_( "Window" ).member_functions("setUserData").exclude()
     CEGUI_ns.class_( "Window" ).member_functions("getUserData").exclude()
+
+    # Py++ doesn't know that this should be noncopyable so we set it here        
+    CEGUI_ns.class_('EventSet').noncopyable = True
+    CEGUI_ns.class_('GlobalEventSet').noncopyable = True
+    CEGUI_ns.class_('MouseCursor').noncopyable = True
+    CEGUI_ns.class_('OgreCEGUIRenderer').noncopyable = True
     
+        
     global_ns.namespace( 'Ogre' ).class_('SceneManager').include(already_exposed=True)
             
     global_ns.namespace( 'Ogre' ).class_('RenderWindow').include(already_exposed=True)
@@ -309,7 +323,17 @@ def generate_code():
     for incs in environment.cegui.include_dirs:
         mb.code_creator.user_defined_directories.append( incs )
     mb.code_creator.user_defined_directories.append( environment.cegui.generated_dir )
-    mb.code_creator.replace_included_headers( customization_data.header_files(environment.cegui.version) )
+    
+#     mb.code_creator.replace_included_headers( customization_data.header_files(environment.cegui.version) )
+    ## we need to remove the previous one
+    lastc = mb.code_creator.creators[ mb.code_creator.last_include_index() ]
+    mb.code_creator.remove_creator( lastc )  
+    # and now add our precompiled ones..
+    for x in range (len (customization_data.header_files( environment.ogre.version ) ), 0 ,-1 ):
+        h = customization_data.header_files( environment.ogre.version )[x-1]        
+        mb.code_creator.adopt_creator ( include.include_t ( header= h ), 0)
+
+
     huge_classes = map( mb.class_, customization_data.huge_classes(environment.cegui.version) )
     mb.split_module(environment.cegui.generated_dir, huge_classes)
 

@@ -152,21 +152,22 @@ namespace caelum {
 
 	void GroundFog::notifyCameraChanged (Ogre::Camera *cam)
 	{
-		// Move and sky to fill the sky.
-        // Adjust for radius 50.
+        CameraBoundElement::notifyCameraChanged (cam);
+
+		// Move dome node.
 		mDomeNode->setPosition (cam->getRealPosition ());
-		if (cam->getFarClipDistance () > 0) {
-			mDomeNode->setScale (Ogre::Vector3::UNIT_SCALE * (1 / 50.0) *
-                    (cam->getFarClipDistance () - CAMERA_DISTANCE_MODIFIER));
-		} else {
-			mDomeNode->setScale (Ogre::Vector3::UNIT_SCALE * (1 / 50.0) *
-                    (cam->getNearClipDistance () + CAMERA_DISTANCE_MODIFIER));
-		}
 
 		// Send camera height to shader.
 		Ogre::GpuProgramParametersSharedPtr params = 
 			mDomeMaterial->getBestTechnique()->getPass(0)->getFragmentProgramParameters();
 		params->setNamedConstant("cameraHeight", cam->getDerivedPosition().y);
+    }
+
+    void GroundFog::setFarRadius (Ogre::Real radius)
+    {
+        CameraBoundElement::setFarRadius(radius);
+        // Adjust for radius 50.
+        mDomeNode->setScale(Ogre::Vector3::UNIT_SCALE * radius / 50.0);
 	}
 
 	void GroundFog::updateSkyFogging() {

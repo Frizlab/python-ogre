@@ -1,6 +1,7 @@
 #ifndef QUICKGUIMENULABEL_H
 #define QUICKGUIMENULABEL_H
 
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUIButton.h"
 #include "QuickGUIImage.h"
 #include "QuickGUILabel.h"
@@ -18,12 +19,12 @@ namespace QuickGUI
 			LAYOUT_RIGHT_TO_LEFT
 		};
 	public:
-		MenuLabel(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String textureName, GUIManager* gm);
+		MenuLabel(const Ogre::String& name, GUIManager* gm);
 
-		Ogre::String getButtonTexture();
+		Ogre::String getButtonSkin();
 		Ogre::String getIconTexture();
 
-		void setButtonTexture(const Ogre::String& textureName);
+		void setButtonSkin(const Ogre::String& skinName);
 		void setIconTexture(const Ogre::String& textureName);
 		template<typename T> void setMouseButtonUpOnButtonHandler(void (T::*function)(const EventArgs&), T* obj)
 		{

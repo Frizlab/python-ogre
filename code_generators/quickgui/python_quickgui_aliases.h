@@ -1,6 +1,7 @@
 // typedef name nicename;
 typedef std::vector<QuickGUI::Widget*, std::allocator<QuickGUI::Widget*> > VectorWidget;
 typedef std::vector<unsigned short, std::allocator<unsigned short> > VectorShort;
+//typedef std::vector<Ogre::Image> VectorImage;
 
 //typedef std::list<QuickGUI::RenderObject*, std::allocator<QuickGUI::RenderObject*> > ListRenderObject;
 typedef std::map<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >\

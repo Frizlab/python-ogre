@@ -1,3 +1,7 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
+#include "QuickGUISkinSetManager.h"
+
 #include "QuickGUIButton.h"
 #include "QuickGUIManager.h"
 #include "OgreFontManager.h"
@@ -5,14 +9,13 @@
 
 namespace QuickGUI
 {
-	Button::Button(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
-		Label(instanceName,pixelSize,texture,gm),
+	Button::Button(const Ogre::String& name, GUIManager* gm) :
+		Label(name,gm),
 		mButtonDown(false)
 	{
 		mWidgetType = TYPE_BUTTON;
 		mSkinComponent = ".button";
-		mButtonDownTexture = mTextureName + ".down" + mTextureExtension;
-		mButtonOverTexture = mTextureName + ".over" + mTextureExtension;
+		mSize = Size(75,25);
 
 		addEventHandler(EVENT_MOUSE_ENTER,&Button::onMouseEnters,this);
 		addEventHandler(EVENT_MOUSE_LEAVE,&Button::onMouseLeaves,this);
@@ -27,18 +30,18 @@ namespace QuickGUI
 	void Button::applyButtonDownTexture()
 	{
 		// apply button ".down" texture
-		setTexture(mButtonDownTexture,false);
+		mQuad->setTexture(mSkinName + mSkinComponent + ".down" + SkinSetManager::getSingleton().getSkinSet(mSkinName)->getImageExtension());
 	}
 
 	void Button::applyButtonOverTexture()
 	{
 		// apply button ".over" texture
-		setTexture(mButtonOverTexture,false);
+		mQuad->setTexture(mSkinName + mSkinComponent + ".over" + SkinSetManager::getSingleton().getSkinSet(mSkinName)->getImageExtension());
 	}
 
 	void Button::applyDefaultTexture()
 	{
-		setTexture(mFullTextureName,false);
+		mQuad->setTexture(mSkinName + mSkinComponent + SkinSetManager::getSingleton().getSkinSet(mSkinName)->getImageExtension());
 	}
 
 	bool Button::isDown()
@@ -79,22 +82,5 @@ namespace QuickGUI
 	{ 
 		applyDefaultTexture();
 		mButtonDown = false;
-	}
-
-	void Button::setBaseTexture(const Ogre::String& textureName)
-	{
-		Label::setBaseTexture(textureName);
-		mButtonDownTexture = mTextureName + ".down" + mTextureExtension;
-		mButtonOverTexture = mTextureName + ".over" + mTextureExtension;
-	}
-
-	void Button::setButtonDownTexture(const Ogre::String& textureName)
-	{
-		mButtonDownTexture = textureName;
-	}
-
-	void Button::setButtonOverTexture(const Ogre::String& textureName)
-	{
-		mButtonOverTexture = textureName;
 	}
 }

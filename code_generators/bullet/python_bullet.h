@@ -3,6 +3,7 @@
 #include "btBulletDynamicsCommon.h"
 
 #include "LinearMath/btStackAlloc.h"
+#include "LinearMath/btPoolAllocator.h"
 #include "BulletCollision/CollisionDispatch/btSimulationIslandManager.h"
 //#include "../../Extras/SATConvexCollision/Hull.h"
 

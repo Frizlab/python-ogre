@@ -33,6 +33,7 @@
 ** Boston, MA 02111-1307, USA.                                               **
 \*---------------------------------------------------------------------------*/
 
+#include "OgreALException.h"
 #include "OgreALListener.h"
 
 template<> OgreAL::Listener* Ogre::Singleton<OgreAL::Listener>::ms_Singleton = 0;
@@ -76,13 +77,15 @@ namespace OgreAL {
 
 	Listener& Listener::getSingleton(void)
 	{  
-		assert( ms_Singleton );  return ( *ms_Singleton );  
+		assert(ms_Singleton);  return (*ms_Singleton);  
 	}
 
 	void Listener::setGain(Ogre::Real gain)
 	{
 		mGain = gain;
+
 		alListenerf(AL_GAIN, mGain);
+		CheckError(alGetError(), "Failed to set Gain");
 	}
 	
 	void Listener::setPosition(Ogre::Real x, Ogre::Real y, Ogre::Real z)
@@ -99,11 +102,6 @@ namespace OgreAL {
 		mLocalTransformDirty = true;
 	}
 
-	const Ogre::Vector3& Listener::getPosition() const
-	{
-		return mPosition;
-	}
-
 	void Listener::setDirection(Ogre::Real x, Ogre::Real y, Ogre::Real z)
 	{
 		mDirection.x = x;
@@ -118,28 +116,19 @@ namespace OgreAL {
 		mLocalTransformDirty = true;
 	}
 
-	const Ogre::Vector3& Listener::getDirection() const
-	{
-		return mDirection;
-	}
-
 	void Listener::setVelocity(Ogre::Real x, Ogre::Real y, Ogre::Real z)
 	{
 		mVelocity.x = x;
 		mVelocity.y = y;
 		mVelocity.z = z;
+
 		alListener3f(AL_VELOCITY, mVelocity.x, mVelocity.y, mVelocity.z);
+		CheckError(alGetError(), "Failed to set Velocity");
 	}
 
 	void Listener::setVelocity(const Ogre::Vector3& vec)
 	{
-		mVelocity = vec;
-		alListener3f(AL_VELOCITY, mVelocity.x, mVelocity.y, mVelocity.z);
-	}
-
-	const Ogre::Vector3& Listener::getVelocity() const
-	{
-		return mVelocity;
+		setVelocity(vec.x, vec.y, vec.z);
 	}
 
 	const Ogre::Vector3& Listener::getDerivedPosition(void) const
@@ -151,7 +140,7 @@ namespace OgreAL {
 	const Ogre::Vector3& Listener::getDerivedDirection(void) const
 	{
 		update();
-		return mDerivedPosition;
+		return mDerivedDirection;
 	}
 
 	void Listener::initListener()
@@ -165,9 +154,16 @@ namespace OgreAL {
 		mOrientation[5]= mUp.z; // Up.z
 
 		alListener3f(AL_POSITION, mPosition.x, mPosition.y, mPosition.z);
+		CheckError(alGetError(), "Failed to set Position");
+
 		alListenerfv(AL_ORIENTATION, mOrientation);
+		CheckError(alGetError(), "Failed to set Orientation");
+
 		alListenerf (AL_GAIN, 1.0f);
+		CheckError(alGetError(), "Failed to set Gain");
+
 		alListener3f(AL_VELOCITY, 0.0f, 0.0f, 0.0f);
+		CheckError(alGetError(), "Failed to set Velocity");
 	}
 
 	void Listener::update() const
@@ -204,6 +200,8 @@ namespace OgreAL {
 			mUp = mLastParentOrientation.yAxis();
 		}
 		alListener3f(AL_POSITION, mPosition.x, mPosition.y, mPosition.z);
+		CheckError(alGetError(), "Failed to set Position");
+
 		mOrientation[0]= -mDirection.x; // Forward.x
 		mOrientation[1]= -mDirection.y; // Forward.y
 		mOrientation[2]= -mDirection.z; // Forward.z
@@ -211,7 +209,9 @@ namespace OgreAL {
 		mOrientation[3]= mUp.x; // Up.x
 		mOrientation[4]= mUp.y; // Up.y
 		mOrientation[5]= mUp.z; // Up.z
+
 		alListenerfv(AL_ORIENTATION, mOrientation); 
+		CheckError(alGetError(), "Failed to set Orientation");
 	}
 
 	const Ogre::String& Listener::getMovableType() const

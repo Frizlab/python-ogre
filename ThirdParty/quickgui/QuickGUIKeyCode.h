@@ -1,6 +1,7 @@
 #ifndef QUICKGUIKEYCODE_H
 #define QUICKGUIKEYCODE_H
 
+#include "QuickGUIPrerequisites.h"
 namespace QuickGUI
 {
 	/* Copied from OISKeyboard.h */
@@ -152,6 +153,14 @@ namespace QuickGUI
 		KC_MYCOMPUTER  = 0xEB,    // My Computer
 		KC_MAIL        = 0xEC,    // Mail
 		KC_MEDIASELECT = 0xED     // Media Select
+	};
+
+	//! Enum of bit position of modifer
+	enum KeyModifier
+	{
+		SHIFT = 0x0000001,
+		CTRL  = 0x0000010,
+		ALT   = 0x0000100
 	};
 }
 

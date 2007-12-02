@@ -1,6 +1,7 @@
 #ifndef QUICKGUIBUTTON_H
 #define QUICKGUIBUTTON_H
 
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUILabel.h"
 
 namespace QuickGUI
@@ -39,22 +40,27 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		Button(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String textureName, GUIManager* gm);
+		Button(const Ogre::String& name, GUIManager* gm);
 
 		/**
 		* Useful when you want to simulate the button being pressed down by the mouse.
 		* If you actually want to click the mouse, use the mouse, or call onMouseButtonDown.
 		*/
-		void applyButtonDownTexture();
-		void applyButtonOverTexture();
+		virtual void applyButtonDownTexture();
+		virtual void applyButtonOverTexture();
 		/**
 		* If supplying a method to simulate the button being pressed down, we need a method
 		* to restore the button to the normal looking state.
 		*/
-		void applyDefaultTexture();
+		virtual void applyDefaultTexture();
 
 		bool isDown();
 
+	protected:
+		virtual ~Button();
+
+		bool mButtonDown;
+	protected:
 		/**
 		* Event Handler for the EVENT_MOUSE_ENTER event.
 		*/
@@ -70,22 +76,7 @@ namespace QuickGUI
 		/**
 		* Event Handler for the EVENT_MOUSE_BUTTON_DOWN event.
 		*/
-		void onMouseButtonDown(const EventArgs& args);
-
-		/**
-		* Stores/Updates the texture used for the widget, and allows the widget to derive other needed textures. (by overriding this function)
-		*/
-		void setBaseTexture(const Ogre::String& textureName);
-		void setButtonDownTexture(const Ogre::String& textureName);
-		void setButtonOverTexture(const Ogre::String& textureName);
-
-	protected:
-		virtual ~Button();
-
-		Ogre::String mButtonDownTexture;
-		Ogre::String mButtonOverTexture;
-
-		bool mButtonDown;
+		virtual void onMouseButtonDown(const EventArgs& args);
 	};
 }
 

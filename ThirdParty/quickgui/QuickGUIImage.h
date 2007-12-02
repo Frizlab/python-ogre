@@ -1,6 +1,7 @@
 #ifndef QUICKGUIIMAGE_H
 #define QUICKGUIIMAGE_H
 
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUIWidget.h"
 
 namespace QuickGUI
@@ -31,10 +32,20 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		Image(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String textureName, GUIManager* gm);
+		Image(const Ogre::String& name, GUIManager* gm);
+
+		Ogre::String getTextureName();
+
+		/**
+		* Applies the texture to the Quad if exists in some form, and updates the Image used for
+		* transparency picking.
+		*/
+		virtual void setTexture(const Ogre::String& textureName);
 
 	protected:
 		virtual ~Image();
+
+		Ogre::String mTextureName;
 	};
 }
 

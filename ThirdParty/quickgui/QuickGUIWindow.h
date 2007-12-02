@@ -26,6 +26,7 @@ namespace QuickGUI
 		public Panel
 	{
 	public:
+		friend class Sheet;
 		friend class TitleBar;
 	public:
 		/** Constructor - Default Window
@@ -48,7 +49,7 @@ namespace QuickGUI
 			@note
 				This Window will have a TitleBar
         */
-		Window(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm);
+		Window(const Ogre::String& name, GUIManager* gm);
 
 		virtual void allowScrolling(bool allow);
 

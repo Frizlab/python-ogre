@@ -114,7 +114,6 @@ namespace OgreBulletCollisions
         CollisionShape*         mShape;
         DebugCollisionShape *   mDebugShape;
 
-
     public:
         static const Ogre::String mMovableType;
     };

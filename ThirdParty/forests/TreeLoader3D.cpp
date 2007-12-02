@@ -34,8 +34,9 @@ TreeLoader3D::TreeLoader3D(PagedGeometry *geom, const TRect<Real> &bounds)
 	gridBounds.bottom = pageSize * Math::Ceil((gridBounds.bottom - geom->getBounds().top) / pageSize) + geom->getBounds().top;
 
 	//Calculate page grid size
-	pageGridX = (gridBounds.width() / pageSize) + 1;
-	pageGridZ = (gridBounds.height() / pageSize) + 1;
+	pageGridX = Math::Ceil(gridBounds.width() / pageSize) + 1;
+	pageGridZ = Math::Ceil(gridBounds.height() / pageSize) + 1;
+
 	//Reset color map
 	colorMap = NULL;
 	colorMapFilter = MAPFILTER_NONE;
@@ -79,8 +80,8 @@ void TreeLoader3D::addTree(Entity *entity, const Ogre::Vector3 &position, Degree
 	}
 
 	//Calculate the gridbounds-relative position of the tree
-	float xrel = position.x - gridBounds.left;
-	float zrel = position.z - gridBounds.top;
+	Real xrel = position.x - gridBounds.left;
+	Real zrel = position.z - gridBounds.top;
 
 	//Get the appropriate grid element based on the new tree's position
 	int pageX = Math::Floor(xrel / pageSize);
@@ -120,7 +121,7 @@ void TreeLoader3D::deleteTrees(Real x, Real z, Real radius, Entity *type)
 		//Only scan entities of the given type
 		it = pageGridList.find(type);
 		assert(it != pageGridList.end());
-		end = ++it;
+		end = it; ++end;
 	}
 
 	//Scan all the grid blocks
@@ -164,25 +165,27 @@ void TreeLoader3D::deleteTrees(Real x, Real z, Real radius, Entity *type)
 
 void TreeLoader3D::setColorMap(const Ogre::String &mapFile, MapChannel channel)
 {
+	if (colorMap){
+		colorMap->unload();
+		colorMap = NULL;
+	}
 	if (mapFile != ""){
 		colorMap = ColorMap::load(mapFile, channel);
 		colorMap->setMapBounds(actualBounds);
 		colorMap->setFilter(colorMapFilter);
-	} else {
-		colorMap->unload();
-		colorMap = NULL;
 	}
 }
 
 void TreeLoader3D::setColorMap(Ogre::Texture *map, MapChannel channel)
 {
+	if (colorMap){
+		colorMap->unload();
+		colorMap = NULL;
+	}
 	if (map){
 		colorMap = ColorMap::load(map, channel);
 		colorMap->setMapBounds(actualBounds);
 		colorMap->setFilter(colorMapFilter);
-	} else {
-		colorMap->unload();
-		colorMap = NULL;
 	}
 }
 

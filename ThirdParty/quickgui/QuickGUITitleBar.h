@@ -1,6 +1,7 @@
 #ifndef QUICKGUITITLELBAR_H
 #define QUICKGUITITLELBAR_H
 
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUIButton.h"
 #include "QuickGUILabel.h"
 
@@ -29,6 +30,8 @@ namespace QuickGUI
 		public Label
 	{
 	public:
+		friend class Sheet;
+	public:
 		/** Constructor
             @param
                 name The name to be given to the widget (must be unique).
@@ -49,7 +52,7 @@ namespace QuickGUI
 			@note
 				height it default at 0.05 absolute coordinates.	Height can be modified.
         */
-		TitleBar(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm);
+		TitleBar(const Ogre::String& name, GUIManager* gm);
 
 		/**
 		* Gets a handle to the Button widget used for this Widget.
@@ -70,7 +73,6 @@ namespace QuickGUI
 		*/
 		void setCaption(const Ogre::UTFString& caption);
 		virtual void setFont(const Ogre::String& fontScriptName, bool recursive = false);
-		void setSkin(const Ogre::String& skinName, Ogre::String extension = ".png", bool recursive = false);
 		virtual void setText(const Ogre::UTFString& text);
 		virtual void setWidth(Ogre::Real pixelWidth);
 		/**
@@ -80,7 +82,6 @@ namespace QuickGUI
 
 	protected:
 		virtual ~TitleBar();
-		virtual void setParent(Widget* parent);
 
 		Button* mCloseButton;
 		Ogre::Real mRelativeButtonWidth;

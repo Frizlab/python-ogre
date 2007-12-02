@@ -10,7 +10,6 @@ const Ogre::String Sun::SUN_MATERIAL_NAME = "CaelumSunMaterial";
 Sun::Sun (Ogre::SceneManager *sceneMgr): mScene(sceneMgr) {
 	mSunSphereColour = Ogre::ColourValue::White;
 	mSunLightColour = Ogre::ColourValue::White;
-	mAutoRadius = true;
 	mSunPositionModel = 0;
 
 	mDiffuseMultiplier = Ogre::ColourValue(1, 1, 0.9);
@@ -58,33 +57,22 @@ Sun::~Sun () {
 }
 
 void Sun::notifyCameraChanged (Ogre::Camera *cam) {
-	float sunRadius0 = 1;
-	if (mAutoRadius) {
-		if (cam->getFarClipDistance () > 0) {
-			mRadius = (cam->getFarClipDistance () - CAMERA_DISTANCE_MODIFIER) * 0.5;
-			sunRadius0 = -1;
-		}
-		else {
-			mRadius = (cam->getNearClipDistance () + CAMERA_DISTANCE_MODIFIER) * 2;
-			sunRadius0 = 1;
-		}
-	}
-	sunRadius0 *= mRadius * Ogre::Math::Tan (Ogre::Degree (0.01));
-	mSunNode->setPosition (cam->getRealPosition () - mSunDirection * (mRadius + sunRadius0));
-    // Scale the sun.
+    // This calls setFarRadius
+    CameraBoundElement::notifyCameraChanged(cam);
+
+    // Set sun position.
+    Ogre::Real sunRadius = -mRadius * Ogre::Math::Tan (Ogre::Degree (0.01));
+	mSunNode->setPosition (cam->getRealPosition () - mSunDirection * (mRadius + sunRadius));
+
+    // Set sun scaling.
     float factor = 2 - mSunSphereColour.b / 3;
-    float scale = factor * (mRadius + sunRadius0) * Ogre::Math::Tan (Ogre::Degree (0.01));
+    float scale = factor * (mRadius + sunRadius) * Ogre::Math::Tan (Ogre::Degree (0.01));
     mSunNode->setScale (Ogre::Vector3::UNIT_SCALE * scale);
 }
 
-void Sun::setFarRadius (float radius) {
-	if (radius > 0) {
-		mRadius = radius;
-		mAutoRadius = false;
-	}
-	else {
-		mAutoRadius = true;
-	}
+void Sun::setFarRadius (Ogre::Real radius) {
+    CameraBoundElement::setFarRadius(radius);
+	mRadius = radius;
 }
 
 void Sun::update (const float time) {

@@ -46,11 +46,8 @@
 #include "OgreString.h"
 
 #include "OgreALListener.h"
-#include "OgreALOggSound.h"
-#include "OgreALOggSoundStream.h"
 #include "OgreALPrereqs.h"
 #include "OgreALSound.h"
-#include "OgreALWavSound.h"
 
 namespace OgreAL {
 	/**
@@ -95,9 +92,10 @@ namespace OgreAL {
 	public:
 		/**
 		 * Constructor.
-		 * @param sceneManager A pointer to the Ogre::SceneManager being used
+		 * @param deviceName An optional parameter that allows the user to dictate which device to use.
+		 *		The list of valid devices can be obtained by calling SoundManager::getDeviceList()
 		 */
-		SoundManager();
+		SoundManager(const Ogre::String& deviceName = "");
 		/** Standard Destructor. */
 		virtual ~SoundManager();
 		/** Returns the Listener singleton object */
@@ -109,21 +107,12 @@ namespace OgreAL {
 		 * @param name The name used to refer to the sound
 		 * @param fileName The name of the sound file to load
 		 * @param loop Should the sound be looped once it has finished playing
-		 * @param format This allows you to use a non-default AudioFormat, this is needed in order for sounds that are encoded as multi-channel to play properly
+		 * @param stream Should the sound be streamed or should the whole thing be loaded into memory at once
 		 * @return Returns a pointer to the newly created sound
 		 */
-		virtual Sound* createSound(const Ogre::String& name, const Ogre::String& fileName, bool loop = false, AudioFormat format = DEFAULT);
-		/**
-		 * Creates a sound stream.  This is the only way sound streams should be instantiated
-		 * @param name The name used to refer to the sound stream
-		 * @param fileName The name of the sound file to load
-		 * @param loop Should the sound stream be looped once it has finished playing
-		 * @param format This allows you to use a non-default AudioFormat, this is needed in order for sounds that are encoded as multi-channel to play properly
-		 * @return Returns a pointer to the newly created sound object
-		 */
-		virtual Sound* createSoundStream(const Ogre::String& name, const Ogre::String& fileName, bool loop = false, AudioFormat format = DEFAULT);
+		virtual Sound* createSound(const Ogre::String& name, const Ogre::String& fileName, bool loop = false, bool stream = false);
 		/** Returns the requested sound object. @param name The name of the sound to return */
-        virtual Sound* getSound(const Ogre::String& name);
+        virtual Sound* getSound(const Ogre::String& name) const;
 		/** Returns true is the specified sound is loaded into the SoundManager. @param name The name of the sound to check for */
 		virtual bool hasSound(const Ogre::String& name) const;
 		/** Destroys the specified sound. @param name The name of the sound to destroy */
@@ -135,11 +124,9 @@ namespace OgreAL {
 		/** Pauses all sounds that are currently playing. */
 		virtual void pauseAllSounds();
 		/** Resumes all sounds that were paused with the previous call to pauseAllSounds(). */
-		virtual void resumeAllSounds(); 
-		/** This should never be called and is included only for completeness */
-		virtual Listener* createListener();
+		virtual void resumeAllSounds();
 		/** This is how you should get a pointer to the listener object. */
-		virtual Listener* getListener();
+		virtual Listener* getListener() const;
 		/** This callback in envoked each frame and serves to update the sounds and the listener */
 		bool frameStarted(const Ogre::FrameEvent& evt);
 		/**
@@ -162,13 +149,15 @@ namespace OgreAL {
 		void setSpeedOfSound(Ogre::Real speedOfSound);
 		/** Returns the speed of sound */
 		Ogre::Real getSpeedOfSound() const {return mSpeedOfSound;}
+		/** Returns a list of all posible sound devices on the system. */
+		static Ogre::StringVector getDeviceList();
 		/** Returns an iterator for the list of supported buffer formats */
 		FormatMapIterator getSupportedFormatIterator();
 		/**
 		 * Returns the FormatData containing information for the specified buffer format
 		 * or NULL if the specified format is not found.
 		 */
-		const FormatData* retrieveFormatData(AudioFormat format);
+		const FormatData* retrieveFormatData(AudioFormat format) const;
 		/** Returns the maximum number of sources allowed by the hardware */
 		int maxSources() const {return mMaxNumSources;}
 		/** 
@@ -182,14 +171,14 @@ namespace OgreAL {
 		ALboolean eaxSetBufferMode(Size numBuffers, BufferRef *buffers, EAXMode bufferMode);
 		/** Returns the eaxBufferMode if X-Ram is supported */
 		ALenum eaxGetBufferMode(BufferRef buffer, ALint *reserved = 0);
+		/** Removes a BufferRef from the BufferMap */
+		void _removeBufferRef(const Ogre::String& bufferName);
 
 		static const Ogre::String FILE_TYPE;
 		static const Ogre::String OGG;
 		static const Ogre::String WAV;
 		static const Ogre::String SOUND_FILE;
 		static const Ogre::String LOOP_STATE;
-		static const Ogre::String OUTPUT_TYPE;
-		static const Ogre::String SOUND;
 		static const Ogre::String STREAM;
 		static const Ogre::String AUDIO_FORMAT;
 
@@ -200,10 +189,6 @@ namespace OgreAL {
 	protected:
 		/// Translate the OpenAL error code to a string
 		const Ogre::String errorToString(int code) const;
-		/// Checks for OpenAL errors
-		void checkError(const Ogre::String& reference) const;
-		/// Enumerates the valid OpenAL devices
-		void alDeviceList(const ALCchar *devices) const;
 		
 		SoundFactory *mSoundFactory;
 		ListenerFactory *mListenerFactory;
@@ -217,8 +202,10 @@ namespace OgreAL {
 		Ogre::Real mSpeedOfSound;
 
 	private:
-		Sound* _createSound(const Ogre::String& name, const Ogre::String& fileName, bool loop);
 		int _getMaxSources();
+		void createListener();
+		void initializeDevice(const Ogre::String& deviceName);
+		void checkFeatureSupport();
 		struct UpdateSound;
 
 		int mMaxNumSources;
@@ -226,6 +213,9 @@ namespace OgreAL {
 
 		SoundMap mSoundMap;
 		SoundList mPauseResumeAll;
+
+		ALCcontext *mContext;
+		ALCdevice *mDevice;
 
 		Size mXRamSize;
 		Size mXRamFree;

@@ -7,6 +7,7 @@
 #include "OgreResourceGroupManager.h"
 #include "OgreVector4.h"
 
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUIExportDLL.h"
 
 namespace QuickGUI

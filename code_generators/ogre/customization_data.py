@@ -1,8 +1,11 @@
 
 def header_files( version ):
     if not version.startswith("1.2"):
-        return [ 'python_ogre_masterlist.h'
-                 ,'boost/python/ssize_t.hpp' ## needed for python2.4 as it doesn't define ssize_t
+        ## 21Nov07; Change to precompiled header support
+        return [ 'Python_ogre_precompiled.h'
+# #                  ,'boost/python.hpp'
+# #                  ,'python_ogre_masterlist.h'
+# #                  ,'boost/python/ssize_t.hpp' ## needed for python2.4 as it doesn't define ssize_t
 
         ]
 

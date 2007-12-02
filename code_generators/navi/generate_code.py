@@ -62,13 +62,21 @@ def ManualExclude ( mb ):
                     m.exclude()
     
     ### Member Functions
-    excludes=[ '::NaviLibrary::NaviDataValue::isEmpty'
-               ,'::NaviLibrary::NaviDataValue::isNumber' ## inline functions
-         ]
+    excludes=[ ]
+#     ['::NaviLibrary::NaviDataValue::isEmpty'
+#                ,'::NaviLibrary::NaviDataValue::isNumber' ## inline functions
+#          ]
     for e in excludes:
         print "excluding ", e
         main_ns.member_functions(e).exclude()
+    
         
+    for c in main_ns.classes():
+        print "Class:", c.name
+        if c.name.startswith ( "Inline" ):
+            print "setting noncopyable on ", c
+            c.noncopyable = True
+                
     ### Free Functions
     excludes = []
     for e in excludes:
@@ -102,7 +110,7 @@ def ManualExclude ( mb ):
     for e in excludes:
         main_ns.operators(e).exclude()
         
-    main_ns.class_('::NaviLibrary::NaviDataValue').constructor(arg_types=['bool']).exclude()    
+#     main_ns.class_('::NaviLibrary::NaviDataValue').constructor(arg_types=['bool']).exclude()    
 #     ### Constructors
 #     for c in main_ns.class_('NaviDataValue').constructor(arg_types=['bool']):  ## these hide the working constructors
 #         for a in c.arguments:
@@ -412,7 +420,9 @@ def generate_code():
                         os.path.join( environment.navi.root_dir, "python_navi.h" )
                         , environment.navi.cache_file )
 
-    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY']
+    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', 'NAVI_NONCLIENT_BUILD', '__VECTOR_C']
+#     undefined_symbols = ['FASTDLGT_HASINHERITANCE_KEYWORDS']
+    
     if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')
         defined_symbols.append('BOOST_HAS_WINTHREADS')
@@ -429,6 +439,7 @@ def generate_code():
                                           , define_symbols=defined_symbols
                                           , indexing_suite_version=2
                                           , cflags=environment.navi.cflags
+#                                           , undefine_symbols = undefined_symbols
                                            )
     # NOTE THE CHANGE HERE                                           
     mb.constructors().allow_implicit_conversion = False                                           

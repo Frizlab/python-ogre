@@ -281,11 +281,23 @@ def generate_code():
     ## copied to the generated directory..
     common_utils.copyTree ( sourcePath = os.path.join(environment.Config.PATH_OgreBullet, 'Dynamics'),
                             destPath = environment.ogrebulletd.generated_dir, 
-                            recursive= True )
+                            recursive= True,
+                            extensions = ['h'] )
+    common_utils.copyTree ( sourcePath = os.path.join(environment.Config.PATH_OgreBullet, 'Dynamics'),
+                            destPath = environment.ogrebulletd.generated_dir, 
+                            recursive= True,
+                            collapse = True,
+                            extensions = ['cpp'] )
     ## we need bullet collisions as a basis for dynamics...                            
     common_utils.copyTree ( sourcePath = os.path.join(environment.Config.PATH_OgreBullet, 'Collisions'),
                             destPath = environment.ogrebulletd.generated_dir, 
-                            recursive= True )
+                            recursive= True,
+                            extensions = ['h'] )
+    common_utils.copyTree ( sourcePath = os.path.join(environment.Config.PATH_OgreBullet, 'Collisions'),
+                            destPath = environment.ogrebulletd.generated_dir, 
+                            recursive= True,
+                            collapse = True, # put all the source in a single directory
+                            extensions = ['cpp'] )
             
         
 if __name__ == '__main__':

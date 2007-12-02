@@ -5,6 +5,7 @@
 #include "OgreVector3.h"
 #include "OgreVector2.h"
 
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUIExportDLL.h"
 
 // From OpenGUI: Renderer_Ogre_Renderer.h

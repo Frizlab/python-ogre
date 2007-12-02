@@ -1,10 +1,12 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUIVerticalScrollBar.h"
 #include "QuickGUIManager.h"
 
 namespace QuickGUI
 {
-	VerticalScrollBar::VerticalScrollBar(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
-		Image(instanceName,pixelSize,texture,gm),
+	VerticalScrollBar::VerticalScrollBar(const Ogre::String& name, GUIManager* gm) :
+		Widget(name,gm),
 		mMinSliderPosition(0),
 		mMaxSliderPosition(mSize.height),
 		mMouseDownOnTrack(false),
@@ -16,17 +18,16 @@ namespace QuickGUI
 	{
 		mWidgetType = TYPE_SCROLLBAR_VERTICAL;
 		mSkinComponent = ".scrollbar.vertical";
+		mSize = Size(20,100);
+
 		mGUIManager->registerTimeListener(this);
 		addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&VerticalScrollBar::onMouseDownOnTrack,this);
 		addEventHandler(EVENT_MOUSE_BUTTON_UP,&VerticalScrollBar::onMouseUpOnTrack,this);
 		addEventHandler(EVENT_MOUSE_LEAVE,&VerticalScrollBar::onMouseLeaveTrack,this);
 
-		mSliderTextureName = mTextureName + ".slider" + mTextureExtension;
-		mScrollUpTextureName = mTextureName + ".up" + mTextureExtension;
-		mScrollDownTextureName = mTextureName + ".down" + mTextureExtension;
-
-		mSlider = new Button(mInstanceName+".Slider",Size(mSize.width,mSize.width),mSliderTextureName,mGUIManager);
-		addChild(mSlider);
+		mSlider = dynamic_cast<Button*>(_createComponent(mInstanceName+".Slider",TYPE_BUTTON));
+		mSlider->setSkinComponent(".scrollbar.vertical.slider");
+		mSlider->setSize(mSize.width,mSize.width);
 		mSlider->setPosition(0,mSize.width);
 		mSlider->setAutoSize(false);
 		mSlider->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
@@ -35,16 +36,16 @@ namespace QuickGUI
 		mSlider->getQuad()->setLayer(mQuad->getLayer());
 		mSlider->addEventHandler(EVENT_DRAGGED,&VerticalScrollBar::onSliderDragged,this);
 		
-		Ogre::Real scrollBarWidth = mSize.width;
-		mScrollUp1 = new Button(mInstanceName+".Up1",Size(mSize.width,mSize.width),mScrollUpTextureName,mGUIManager);
-		addChild(mScrollUp1);
-		mScrollUp1->setPosition(0,0);
+		mScrollUp1 = dynamic_cast<Button*>(_createComponent(mInstanceName+".Up1",TYPE_BUTTON));
+		mScrollUp1->setSkinComponent(".scrollbar.vertical.up");
+		mScrollUp1->setSize(mSize.width,mSize.width);
 		mScrollUp1->setAutoSize(false);
 		mScrollUp1->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 		mScrollUp1->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&VerticalScrollBar::onScrollUpDown,this);
 
-		mScrollDown1 = new Button(mInstanceName+".Down1",Size(mSize.width,mSize.width),mScrollDownTextureName,mGUIManager);
-		addChild(mScrollDown1);
+		mScrollDown1 = dynamic_cast<Button*>(_createComponent(mInstanceName+".Down1",TYPE_BUTTON));
+		mScrollDown1->setSkinComponent(".scrollbar.vertical.down");
+		mScrollDown1->setSize(mSize.width,mSize.width);
 		mScrollDown1->setPosition(0,mSize.width);
 		mScrollDown1->setAutoSize(false);
 		mScrollDown1->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
@@ -52,8 +53,9 @@ namespace QuickGUI
 		mScrollDown1->hide();
 		mScrollDown1->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&VerticalScrollBar::onScrollDownDown,this);
 
-		mScrollUp2 = new Button(mInstanceName+".Up2",Size(mSize.width,mSize.width),mScrollUpTextureName,mGUIManager);
-		addChild(mScrollUp2);
+		mScrollUp2 = dynamic_cast<Button*>(_createComponent(mInstanceName+".Up2",TYPE_BUTTON));
+		mScrollUp2->setSkinComponent(".scrollbar.vertical.up");
+		mScrollUp2->setSize(mSize.width,mSize.width);
 		mScrollUp2->setPosition(0,mSize.height - (mSize.width*2.0));
 		mScrollUp2->setAutoSize(false);
 		mScrollUp2->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
@@ -62,8 +64,9 @@ namespace QuickGUI
 		mScrollUp2->hide();
 		mScrollUp2->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&VerticalScrollBar::onScrollUpDown,this);
 
-		mScrollDown2 = new Button(mInstanceName+".Down2",Size(mSize.width,mSize.width),mScrollDownTextureName,mGUIManager);
-		addChild(mScrollDown2);
+		mScrollDown2 = dynamic_cast<Button*>(_createComponent(mInstanceName+".Down2",TYPE_BUTTON));
+		mScrollDown2->setSkinComponent(".scrollbar.vertical.down");
+		mScrollDown2->setSize(mSize.width,mSize.width);
 		mScrollDown2->setPosition(0,mSize.height - mSize.width);
 		mScrollDown2->setAutoSize(false);
 		mScrollDown2->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
@@ -132,7 +135,7 @@ namespace QuickGUI
 
 		_constrainSlider();
 
-		std::vector<MemberFunctionSlot*>::iterator it;
+		EventHandlerArray::iterator it;
 		for( it = mOnScrollHandlers.begin(); it != mOnScrollHandlers.end(); ++it )
 			(*it)->execute(args);
 	}
@@ -326,7 +329,7 @@ namespace QuickGUI
 
 	void VerticalScrollBar::onSizeChanged(const EventArgs& args)
 	{
-		Image::onSizeChanged(args);
+		Widget::onSizeChanged(args);
 		_determineMinMax();
 		_constrainSlider();
 	}
@@ -404,15 +407,6 @@ namespace QuickGUI
 		_scroll(mSmallChange,scrollArgs);
 	}
 
-	void VerticalScrollBar::setBaseTexture(const Ogre::String& textureName)
-	{
-		Image::setBaseTexture(textureName);
-
-		mSliderTextureName = mTextureName + ".slider" + mTextureExtension;
-		mScrollUpTextureName = mTextureName + ".up" + mTextureExtension;
-		mScrollDownTextureName = mTextureName + ".down" + mTextureExtension;
-	}
-
 	void VerticalScrollBar::setButtonLayout(ButtonLayout layout)
 	{
 		mButtonLayout = layout;
@@ -462,9 +456,9 @@ namespace QuickGUI
 		_scroll(0,scrollArgs);
 	}
 
-	void VerticalScrollBar::timeElapsed(Ogre::Real time)
+	void VerticalScrollBar::timeElapsed(const Ogre::Real time)
 	{
-		Image::timeElapsed(time);
+		Widget::timeElapsed(time);
 		mRepeatTimer += time;
 
 		if(mRepeatTimer > mScrollRepeatTime)

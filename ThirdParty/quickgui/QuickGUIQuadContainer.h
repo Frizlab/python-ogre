@@ -4,6 +4,7 @@
 #include "OgreBitwise.h"
 #include "OgrePrerequisites.h"
 
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUIExportDLL.h"
 #include "QuickGUIQuad.h"
 #include "QuickGUIVertexBuffer.h"
@@ -11,8 +12,9 @@
 #include <list>
 #include <vector>
 
-// 150 vertices / 6 vertices per quad = 25 quads initially
-#define MIN_VERTEX_BUFFER_SIZE 150
+
+//vertices per quad = 25 quads initially
+#define MIN_VERTEX_BUFFER_SIZE (25*VERTICES_PER_QUAD)
 
 namespace QuickGUI
 {
@@ -58,22 +60,22 @@ namespace QuickGUI
 		VertexBuffer* mChildVertexBuffer;
 		VertexBuffer* mMenuVertexBuffer;
 		// stores a list of all buffer sizes, to allow easy shrinking and growing.
-		std::vector<size_t> mChildBufferSize;
-		std::vector<size_t> mMenuBufferSize;
+		std::vector<unsigned int> mChildBufferSize;
+		std::vector<unsigned int> mMenuBufferSize;
 
 		bool mChildrenChanged;
 		bool mMenuChanged;
 
 		// These variables order relate to zOrdering
 		Quad* mBaseQuad;
-		std::list<Quad*> mChildRenderables;
-		std::list<QuadContainer*> mChildPanels;
+		QuadList mChildRenderables;
+		QuadContainerList mChildPanels;
 		// Only Sheet widgets will make use of Window List
-		std::list<QuadContainer*> mChildWindows;
-		std::list<Quad*> mMenuRenderables;	// Highest zOrder of this group
+		QuadContainerList mChildWindows;
+		QuadList mMenuRenderables;	// Highest zOrder of this group
 
-		std::list<QuadContainer*>* getPanelList();
-		std::list<QuadContainer*>* getWindowList();
+		QuadContainerList* getPanelList();
+		QuadContainerList* getWindowList();
 
 		void _populateRenderObjectList();
 		void _updateRenderQueue();

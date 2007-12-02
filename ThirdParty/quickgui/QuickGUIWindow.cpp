@@ -1,27 +1,32 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUIWindow.h"
 // included to get access to default font/fontsize
 #include "QuickGUIManager.h"
 
 namespace QuickGUI
 {
-	Window::Window(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
-		Panel(instanceName,pixelSize,texture,gm),
+	Window::Window(const Ogre::String& name, GUIManager* gm) :
+		Panel(name,gm),
 		mTitleBar(0),
 		mBringToFrontOnFocus(true)
 	{
+		mSkinComponent = ".window";
 		mWidgetType = TYPE_WINDOW;
 		mShowWithParent = false;
 		mCanResize = true;
 		addEventHandler(EVENT_GAIN_FOCUS,&Window::onGainFocus,this);
 
 		// Create TitleBar - tradition titlebar dimensions: across the top of the window
-		mGUIManager->notifyNameUsed(mInstanceName + ".TitleBar");
-		mTitleBar = new TitleBar(mInstanceName + ".TitleBar",Size(mSize.width,25),mTextureName + ".titlebar" + mTextureExtension,mGUIManager);
-		addChild(mTitleBar);
-		mTitleBar->setPosition(0,0);
+		mTitleBar = dynamic_cast<TitleBar*>(_createComponent(mInstanceName+".TitleBar",TYPE_TITLEBAR));
+		mTitleBar->setSize(mSize.width,25);
 		mTitleBar->enableDragging(true);
 		mTitleBar->setDraggingWidget(this);
 
+		mTitleBar->getCloseButton()->addEventHandler(Widget::EVENT_MOUSE_CLICK,&Window::onMouseUpOverCloseButton,this);
+		mTitleBar->getCloseButton()->addEventHandler(Widget::EVENT_MOUSE_BUTTON_UP,&Window::onMouseUpOverCloseButton,this);
+
+		// Create borders.
 		setUseBorders(true);
 	}
 
@@ -38,9 +43,8 @@ namespace QuickGUI
 		{
 			if(mScrollPane == NULL)
 			{
-				mScrollPane = new ScrollPane(mInstanceName+".ScrollPane",Size(mSize.width,mSize.height),mGUIManager);
-				addChild(mScrollPane);
-				mScrollPane->setPosition(0,0);
+				mScrollPane = dynamic_cast<ScrollPane*>(_createChild(mInstanceName+".ScrollPane",TYPE_SCROLL_PANE));
+				mScrollPane->setSize(mSize);
 
 				mRightScrollBar = mScrollPane->mRightBar;
 				addChild(mRightScrollBar);

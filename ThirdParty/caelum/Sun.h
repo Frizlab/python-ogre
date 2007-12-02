@@ -74,14 +74,6 @@ class DllExport Sun : public CameraBoundElement {
 		 */
 		virtual ~Sun ();
 
-		/** @copydoc CameraBoundElement::notifyCameraChanged().
-		 */
-		void notifyCameraChanged (Ogre::Camera *cam);
-
-		/** @copydoc CameraBoundElement::setFarRadius().
-		 */
-		void setFarRadius (float radius);
-
 		/** Updates the sun position according to the local time.
 			@param time The local day time.
 		 */
@@ -151,6 +143,14 @@ class DllExport Sun : public CameraBoundElement {
 
 		/// Destroys the sun material.
 		void destroySunMaterial ();
+
+    public:
+		/// Handle camera change.
+		virtual void notifyCameraChanged (Ogre::Camera *cam);
+
+    protected:
+        /// Handle far radius.
+	    virtual void setFarRadius (Ogre::Real radius);
 };
 
 } // namespace caelum

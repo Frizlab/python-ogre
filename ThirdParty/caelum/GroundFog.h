@@ -2,6 +2,7 @@
 #define GROUNDFOG_H
 
 #include "CaelumPrerequisites.h"
+#include "CameraBoundElement.h"
 
 namespace caelum {
 
@@ -18,7 +19,7 @@ namespace caelum {
  *	You can set verticalDecay to 0 and get standard GL_EXP fog. Don't actually
  *	do that though because you'll get a division by 0.
  */
-class DllExport GroundFog {
+class DllExport GroundFog: public CameraBoundElement {
 	public:
 		static const Ogre::String DEFAULT_PASS_NAME;
 
@@ -31,9 +32,6 @@ class DllExport GroundFog {
 		/** Virtual destructor.
 		 */
 		virtual ~GroundFog ();
-
-		/// Handle camera change.
-		void notifyCameraChanged (Ogre::Camera *cam);
 
 		/** Typedef for easier manipulation of a set of Passes.
 		 */
@@ -119,6 +117,14 @@ class DllExport GroundFog {
 
 		// Called whenever something changes to update the sky dome.
 		void updateSkyFogging();
+
+    public:
+		/// Handle camera change.
+		virtual void notifyCameraChanged (Ogre::Camera *cam);
+
+    protected:
+        /// Handle far radius.
+	    virtual void setFarRadius (Ogre::Real radius);
 };
 
 }

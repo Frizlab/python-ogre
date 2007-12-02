@@ -81,6 +81,8 @@ def ManualFixes ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns
+    # Py++ doesn't know that this should be noncopyable so we set it here        
+    main_ns.class_('CaelumSystem').noncopyable = True
               
 ############################################################
 ##
@@ -101,13 +103,13 @@ def ManualTransformations ( mb ):
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
 
-    for x in main_ns.mem_funs('::caelum::UniversalClock::getGregorianDateFromJulianDay',allow_empty=True ):
-        x.add_transformation( ft.output('year'), ft.output('month'), ft.output('day'), alias = 'getGregorianDateFromJulianDay' )
-        x.documentation = docit ("","JulianDay", "tuple - year,month,day")
-        
-    #x=main_ns.mem_fun('::caelum::UniversalClock::getGregorianDateTimeFromJulianDay')
-    #x.add_transformation( ft.output('year'), ft.output('month'), ft.output('day'),ft.output('hour'), ft.output('minute'), ft.output('second') )
-    #x.documentation = docit ("","JulianDay", "tuple - year,month,day,hour, minute, second")
+#     for x in main_ns.mem_funs('::caelum::UniversalClock::getGregorianDateFromJulianDay'):
+#         x.add_transformation( ft.output('year'), ft.output('month'), ft.output('day'), alias = 'getGregorianDateFromJulianDay' )
+#         x.documentation = docit ("","JulianDay", "tuple - year,month,day")
+#         
+#     x=main_ns.mem_fun('::caelum::UniversalClock::getGregorianDateTimeFromJulianDay')
+#     x.add_transformation( ft.output('year'), ft.output('month'), ft.output('day'),ft.output('hour'), ft.output('minute'), ft.output('second') )
+#     x.documentation = docit ("","JulianDay", "tuple - year,month,day,hour, minute, second")
     
 ###############################################################################
 ##

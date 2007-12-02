@@ -1,6 +1,7 @@
 #ifndef QUICKGUIMULTILINETEXTBOX_H
 #define QUICKGUIMULTILINETEXTBOX_H
 
+#include "QuickGUIPrerequisites.h"
 #include "QuickGUILabelArea.h"
 
 namespace QuickGUI
@@ -9,7 +10,7 @@ namespace QuickGUI
 		public LabelArea
 	{
 	public:
-		TextArea(const Ogre::String& instanceName, Size pixelSize, Ogre::String textureName, GUIManager* gm);
+		TextArea(const Ogre::String& name, GUIManager* gm);
 		~TextArea();
 
 	protected:

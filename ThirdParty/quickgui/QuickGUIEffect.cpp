@@ -1,3 +1,5 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUIEffect.h"
 
 namespace QuickGUI
@@ -5,7 +7,7 @@ namespace QuickGUI
 	//------------------------------------------------------------------------------------------------
 	//------------------------------------------------------------------------------------------------
 	//------------------------------------------------------------------------------------------------
-	bool Effect::update(Ogre::Real timeElapsed)
+	bool Effect::update(const Ogre::Real timeElapsed)
 	{
 		mCurrTime += timeElapsed;
 		if (mCurrTime >= mStartTime)

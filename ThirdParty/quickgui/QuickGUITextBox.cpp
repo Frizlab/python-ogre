@@ -1,10 +1,12 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUITextBox.h"
 #include "QuickGUIManager.h"
 
 namespace QuickGUI
 {
-	TextBox::TextBox(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
-		Label(instanceName,pixelSize,texture,gm),
+	TextBox::TextBox(const Ogre::String& name, GUIManager* gm) :
+		Label(name,gm),
 		mMaskUserInput(0),
 		mBackSpaceDown(0),
 		mBackSpaceTimer(0.0),
@@ -25,10 +27,13 @@ namespace QuickGUI
 		mLShiftDown(false),
 		mRShiftDown(false),
 		mLCtrlDown(false),
-		mRCtrlDown(false)
+		mRCtrlDown(false),
+		mTextCursorSkinComponent(".textbox.textcursor")
 	{
 		mWidgetType = TYPE_TEXTBOX;
 		mSkinComponent = ".textbox";
+		mSize = Size(100,0);
+
 		mHorizontalAlignment = HA_LEFT;
 		mMouseCursor = mGUIManager->getMouseCursor();
 		mGUIManager->registerTimeListener(this);
@@ -44,22 +49,17 @@ namespace QuickGUI
 		mTextCursor = _createQuad();
 		mTextCursor->setLayer(Quad::LAYER_CHILD);
 		mTextCursor->setShowWithOwner(false);
-		mTextCursorTexture = mTextureName + ".textcursor" + mTextureExtension;
-		mTextCursor->setTexture(mTextCursorTexture);
 		mTextCursor->setOffset(mOffset+1);
 		mTextCursor->setVisible(false);
 		mTextCursor->setSize(Size(mCursorPixelWidth,mSize.height));
-		mTextCursor->setVisible(false);
 		mTextCursor->_notifyQuadContainer(mQuadContainer);
-
-		setUseBorders(true);
 	}
 
 	TextBox::~TextBox()
 	{
 		mGUIManager->unregisterTimeListener(this);
 
-		std::vector<MemberFunctionSlot*>::iterator it;
+		EventHandlerArray::iterator it;
 		for( it = mOnEnterPressedUserEventHandlers.begin(); it != mOnEnterPressedUserEventHandlers.end(); ++it )
 			delete (*it);
 		mOnEnterPressedUserEventHandlers.clear();
@@ -110,17 +110,22 @@ namespace QuickGUI
 	{
 		Ogre::Real maxTextWidth = getTextBounds().width;
 
+		Ogre::Real width = 0;
 		// Shift text left to show portion of caption starting at cursorIndex.
 		if( cursorIndex < mVisibleStart )
 		{
 			mVisibleStart = cursorIndex;
 			mVisibleEnd = mVisibleStart + 1;
-			while( (mText->calculateStringLength(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart)) <= maxTextWidth )
-				&& (mVisibleEnd < static_cast<int>(mCaption.length())) )
+
+			width = mText->getTextWidth(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart));
+			while( (mVisibleEnd < static_cast<int>(mCaption.length())) && (width <= maxTextWidth) )
+			{
+				width += mText->getGlyphWidth(mCaption[mVisibleEnd]);
 				++mVisibleEnd;
+			}
 
 			// When we exit the while loop, we are either at visibleStart == mCaption.length(), or we have exceeded the width limitation.
-			if( mText->calculateStringLength(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart)) > maxTextWidth )
+			if( mVisibleEnd != static_cast<int>(mCaption.length()) )
 				--mVisibleEnd;
 		}
 		// Shift text right to show portion of caption ending at cursorIndex.
@@ -128,24 +133,32 @@ namespace QuickGUI
 		{
 			mVisibleEnd = cursorIndex;
 			mVisibleStart = mVisibleEnd - 1;
-			while( (mText->calculateStringLength(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart)) <= maxTextWidth) 
-				&& (mVisibleStart > 0) )
+
+			width = mText->getTextWidth(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart));
+			while( (mVisibleStart > 0) && (width <= maxTextWidth) )
+			{
 				--mVisibleStart;
+				width += mText->getGlyphWidth(mCaption[mVisibleStart]);
+			}
 
 			// When we exit the while loop, we are either at visibleStart == 0, or we have exceeded the width limitation.
-			if( mText->calculateStringLength(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart)) > maxTextWidth )
+			if( mVisibleStart > 0 )
 				++mVisibleStart;
 		}
 		// start from visible start and display the maximum number of characters until text bounds reached.
 		else
 		{
 			mVisibleEnd = mVisibleStart + 1;
-			while( (mText->calculateStringLength(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart)) <=maxTextWidth )
-				&& (mVisibleEnd < static_cast<int>(mCaption.length())) )
+
+			width = mText->getTextWidth(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart));
+			while( (mVisibleEnd < static_cast<int>(mCaption.length())) && (width <= maxTextWidth) )
+			{
+				width += mText->getGlyphWidth(mCaption[mVisibleEnd]);
 				++mVisibleEnd;
+			}
 
 			// When we exit the while loop, we are either at visibleStart == mCaption.length(), or we have exceeded the width limitation.
-			if( mText->calculateStringLength(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart)) > maxTextWidth )
+			if( mVisibleEnd != static_cast<int>(mCaption.length()) )
 				--mVisibleEnd;
 		}
 	}
@@ -190,7 +203,7 @@ namespace QuickGUI
 			// Now that the correct text will be displayed, we can correctly position the text cursor.
 			if( (mCursorIndex - mVisibleStart) == 0 )
 			{
-				if( mCaption == "" )
+				if( mCaption.empty() )
 				{
 					switch(mHorizontalAlignment)
 					{
@@ -311,7 +324,7 @@ namespace QuickGUI
 
 	void TextBox::backSpace()
 	{
-		if(mReadOnly || (mCaption == ""))
+		if(mReadOnly || (mCaption.empty()))
 			return;
 
 		mMouseLeftDown = false;
@@ -346,7 +359,7 @@ namespace QuickGUI
 
 	void TextBox::deleteCharacter()
 	{
-		if(mReadOnly || (mCaption == ""))
+		if(mReadOnly || (mCaption.empty()))
 			return;
 
 		mMouseLeftDown = false;
@@ -390,7 +403,7 @@ namespace QuickGUI
 	int TextBox::getNextWordIndex()
 	{
 		// cover bounds.
-		if(mCaption == "")
+		if(mCaption.empty())
 			return 0;
 		else if(mCursorIndex == (static_cast<int>(mCaption.length())))
 			return mCursorIndex;
@@ -414,7 +427,7 @@ namespace QuickGUI
 	int TextBox::getPreviousWordIndex()
 	{
 		// cover bounds.
-		if(mCaption == "")
+		if(mCaption.empty())
 			return 0;
 		else if(mCursorIndex == 0)
 			return mCursorIndex;
@@ -503,7 +516,7 @@ namespace QuickGUI
 
 	void TextBox::onEnterPressed(const KeyEventArgs& args)
 	{
-		std::vector<MemberFunctionSlot*>::iterator it;
+		EventHandlerArray::iterator it;
 		for( it = mOnEnterPressedUserEventHandlers.begin(); it != mOnEnterPressedUserEventHandlers.end(); ++it )
 			(*it)->execute(args);
 	}
@@ -674,13 +687,6 @@ namespace QuickGUI
 			setHeight(mText->getNewlineHeight() + mVPixelPadHeight);
 	}
 
-	void TextBox::setBaseTexture(const Ogre::String& textureName)
-	{
-		Label::setBaseTexture(textureName);
-
-		mTextCursorTexture = mTextureName + ".cursor" + mTextureExtension;
-	}
-
 	void TextBox::setCursorIndex(int cursorIndex, bool clearSelection)
 	{
 		if( cursorIndex < 0 )
@@ -710,18 +716,12 @@ namespace QuickGUI
 		setCursorIndex(mVisibleStart + mText->getTextCursorIndex(position),clearSelection);
 	}
 
-	void TextBox::setCursorTexture(const Ogre::String& textureName)
-	{
-		if(mTextCursorTexture == textureName)
-			return;
-
-		mTextCursorTexture = textureName;
-		mTextCursor->setTexture(mTextCursorTexture);
-	}
-
 	void TextBox::setFont(const Ogre::String& fontScriptName, bool recursive)
 	{
-		Image::setFont(fontScriptName,recursive);
+		if(fontScriptName == "")
+			return;
+
+		Widget::setFont(fontScriptName,recursive);
 		mText->setFont(mFontName);
 
 		if(mAutoSize)
@@ -751,20 +751,24 @@ namespace QuickGUI
 
 	void TextBox::setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight)
 	{
-		if(pixelWidth == 0)
+		Label::setSize(pixelWidth,pixelHeight);
+
+		if(pixelHeight == 0)
 			mAutoSize = true;
-		else
-			mAutoSize = false;
-
-		Image::setSize(pixelWidth,pixelHeight);
-
-		mText->redraw();
-		alignText();
 	}
 
 	void TextBox::setSize(const Size& pixelSize)
 	{
 		TextBox::setSize(pixelSize.width,pixelSize.height);
+	}
+
+	void TextBox::setSkin(const Ogre::String& skinName, bool recursive)
+	{
+		Label::setSkin(skinName,recursive);
+
+		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(mSkinName);
+		if(ss != NULL)
+			mTextCursor->setTexture(mSkinName + mTextCursorSkinComponent + ss->getImageExtension());
 	}
 
 	void TextBox::setText(const Ogre::UTFString& text)
@@ -787,16 +791,16 @@ namespace QuickGUI
 
 	void TextBox::setWidth(Ogre::Real pixelWidth)
 	{
-		Image::setWidth(pixelWidth);
+		bool temp = mAutoSize;
+		Label::setWidth(pixelWidth);
+		mAutoSize = temp;
 
 		mText->redraw();
 		alignText();
 	}
 
-	void TextBox::timeElapsed(Ogre::Real time)
+	void TextBox::timeElapsed(const Ogre::Real time)
 	{
-		if(!mEnabled) return;
-
 		if(mHasFocus && mMouseLeftDown)
 		{
 			int index = mVisibleStart + mText->getTextCursorIndex(mMouseCursor->getPosition());

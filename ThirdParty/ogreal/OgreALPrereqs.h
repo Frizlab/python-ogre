@@ -79,23 +79,17 @@ namespace OgreAL{
 		MULTI_CHANNEL_71
 	};
 
-	enum Exception
-	{
-		SOUND_MANAGER	 = 0x100,
-		SOUND_FACTORY	 = 0x200,
-		SOUND			 = 0x300,
-		LISTENER_FACTORY = 0x400,
-		LISTENER		 = 0x500
-	};
-
 	typedef ALenum BufferFormat;
 	typedef ALenum State;
+	typedef ALenum Error;
 	typedef ALuint SourceRef;
 	typedef ALuint BufferRef;
 	typedef ALuint EAXMode;
 	typedef ALsizei Size;
 	typedef ALchar* ALString;
+	typedef std::vector<char> Buffer;
 
+	/// Struct used with STL containers
 	struct DeleteObject
 	{
 		template<typename T>
@@ -105,6 +99,7 @@ namespace OgreAL{
 		}
 	};
 
+	/// Struct used with STL containers
 	struct DeleteFirst
 	{
 		template<typename T1, typename T2>
@@ -114,6 +109,7 @@ namespace OgreAL{
 		}
 	};
 
+	/// Struct used with STL containers
 	struct DeleteSecond
 	{
 		template<typename T1, typename T2>
@@ -123,6 +119,7 @@ namespace OgreAL{
 		}
 	};
 
+	/// Returns the next 16 bytes from a buffer
 	static unsigned short readByte16(const unsigned char buffer[2])
 	{
 		#if(OGRE_ENDIAN == OGRE_ENDIAN_BIG)
@@ -131,6 +128,8 @@ namespace OgreAL{
 			return (buffer[1] << 8) + buffer[0];
 		#endif
 	}
+
+	/// Returns the next 32 bytes from a buffer
 	static unsigned long readByte32(const unsigned char buffer[4])
 	{
 		#if(OGRE_ENDIAN == OGRE_ENDIAN_BIG)

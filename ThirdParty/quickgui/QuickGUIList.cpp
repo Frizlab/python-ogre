@@ -1,11 +1,13 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUIList.h"
 #include "QuickGUIManager.h"
 #include "QuickGUIMouseCursor.h"
 
 namespace QuickGUI
 {
-	List::List(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
-		Image(instanceName,pixelSize,texture,gm),
+	List::List(const Ogre::String& name, GUIManager* gm) :
+		Widget(name,gm),
 		mScrollPane(0),
 		mAutoNameWidgetCounter(0),
 		mScrollingAllowed(false),
@@ -15,9 +17,9 @@ namespace QuickGUI
 	{
 		mWidgetType = TYPE_LIST;
 		mSkinComponent = ".list";
+		mSize = Size(100,100);
 
-		mTextUtilities = new Text(mInstanceName+".TextUtilities",mQuadContainer,this);
-		mTextUtilities->disable();
+		mTextHelper = new TextHelper();
 
 		addEventHandler(EVENT_CHILD_ADDED,&List::onChildAdded,this);
 		addEventHandler(EVENT_CHILD_REMOVED,&List::onChildRemoved,this);
@@ -27,17 +29,8 @@ namespace QuickGUI
 
 	List::~List()
 	{
-		if(mScrollPane != NULL)
-			delete mScrollPane;
 		mScrollPane = NULL;
-
-		delete mTextUtilities;
-
-		if(mScrollPane != NULL)
-		{
-			delete mScrollPane;
-			mScrollPane = NULL;
-		}
+		delete mTextHelper;
 
 		mItems.clear();
 	}
@@ -52,14 +45,11 @@ namespace QuickGUI
 		Ogre::String name = mInstanceName+".Item"+Ogre::StringConverter::toString(mAutoNameWidgetCounter);
 		mGUIManager->notifyNameUsed(name);
 
-		MenuLabel* newMenuLabel = new MenuLabel(name,s,"qgui.menulabel.png",mGUIManager);
-		addChild(newMenuLabel);
+		MenuLabel* newMenuLabel = dynamic_cast<MenuLabel*>(_createChild(mInstanceName+".ChildMenuLabel",TYPE_MENULABEL));
+		newMenuLabel->setSize(s);
 		newMenuLabel->setPosition(p);
 		newMenuLabel->setAutoSize(false);
-		newMenuLabel->setFont(mFontName,true);
-
-		if(!mVisible)
-			newMenuLabel->hide();
+		newMenuLabel->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 
 		mItems.push_back(newMenuLabel);
 
@@ -76,15 +66,12 @@ namespace QuickGUI
 		Ogre::String name = mInstanceName+".Item"+Ogre::StringConverter::toString(mAutoNameWidgetCounter);
 		mGUIManager->notifyNameUsed(name);
 
-		TextBox* newTextBox = new TextBox(name,s,"qgui.textbox.png",mGUIManager);
-		addChild(newTextBox);
-		newTextBox->setUseBorders(false);
+		TextBox* newTextBox = dynamic_cast<TextBox*>(_createChild(mInstanceName+".ChildTextBox"+Ogre::StringConverter::toString(mItems.size()),TYPE_TEXTBOX));
+		newTextBox->setSize(s);
+		newTextBox->hideSkin();
 		newTextBox->setPosition(p);
 		newTextBox->setAutoSize(false);
-		newTextBox->setFont(mFontName,true);
-
-		if(!mVisible)
-			newTextBox->hide();
+		newTextBox->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 
 		mItems.push_back(newTextBox);
 
@@ -99,19 +86,18 @@ namespace QuickGUI
 		{
 			if(mScrollPane == NULL)
 			{
-				mScrollPane = new ScrollPane(mInstanceName+".ScrollPane",Size(mSize.width,mSize.height),mGUIManager);
-				addChild(mScrollPane);
-				mScrollPane->setPosition(0,0);
+				mScrollPane = dynamic_cast<ScrollPane*>(_createComponent(mInstanceName+".ScrollPane",TYPE_SCROLL_PANE));
+				mScrollPane->setSize(mSize);
 //				mScrollPane->setHorizontalSliderMinWidth(20);
 //				mScrollPane->setVerticalSliderMinHeight(20);
 
 				mRightScrollBar = mScrollPane->mRightBar;
-				mRightScrollBar->setOffset(mOffset+2);
+				mRightScrollBar->setSkin(mSkinName,true);
 				addChild(mRightScrollBar);
 				mRightScrollBar->setPosition(mSize.width - 20,0);
 				
 				mBottomScrollBar = mScrollPane->mBottomBar;
-				mBottomScrollBar->setOffset(mOffset+2);
+				mBottomScrollBar->setSkin(mSkinName,true);
 				addChild(mBottomScrollBar);
 				mBottomScrollBar->setPosition(0,mSize.height - 20);
 
@@ -135,7 +121,7 @@ namespace QuickGUI
 
 	void List::clear()
 	{
-		std::vector<Widget*>::iterator it;
+		WidgetArray::iterator it;
 		for( it = mItems.begin(); it != mItems.end(); ++it )
 			mGUIManager->destroyWidget((*it));
 		mItems.clear();
@@ -159,7 +145,7 @@ namespace QuickGUI
 		Ogre::String name = w->getInstanceName();
 
 		int counter = 0;
-		std::vector<Widget*>::iterator it;
+		WidgetArray::iterator it;
 		for( it = mItems.begin(); it != mItems.end(); ++it )
 		{
 			if( name == (*it)->getInstanceName() )
@@ -200,7 +186,7 @@ namespace QuickGUI
 
 	void List::onSizeChanged(const EventArgs& args)
 	{
-		Image::onSizeChanged(args);
+		Widget::onSizeChanged(args);
 
 		if(mScrollPane != NULL)
 			mScrollPane->onParentSizeChanged(args);
@@ -211,13 +197,15 @@ namespace QuickGUI
 		if( index >= mItems.size() )
 			return;
 
+		Widget* w = NULL;
+
 		unsigned int counter = 0;
-		std::vector<Widget*>::iterator it;
+		WidgetArray::iterator it;
 		for( it = mItems.begin(); it != mItems.end(); ++it )
 		{
 			if( counter == index )
 			{
-				mGUIManager->destroyWidget((*it));
+				w = (*it);
 				mItems.erase(it);
 				break;
 			}
@@ -225,9 +213,18 @@ namespace QuickGUI
 			++counter;
 		}
 
-		for( ; counter < mItems.size(); ++counter )
+		if(w != NULL)
 		{
-			mItems[counter]->setYPosition(counter * mItemHeight);
+			for( ; counter < mItems.size(); ++counter )
+			{
+				mItems[counter]->setYPosition(counter * mItemHeight);
+			}
+
+			// Remove child so that ScrollPane, if exists, will be notified.
+			// Make sure this is done after all remaining items are correctly positioned,
+			// since ScrollPane will adjust dimensions and scrollbars according to managed widgets.
+			removeChild(w);
+			mGUIManager->destroyWidget(w);
 		}
 	}
 
@@ -242,7 +239,7 @@ namespace QuickGUI
 
 		if(mAutoSizeListItems)
 		{
-			setItemPixelHeight(mTextUtilities->getNewlineHeight());
+			setItemPixelHeight(mTextHelper->getGlyphHeight());
 			mAutoSizeListItems = true;
 
 			if(mScrollPane != NULL)
@@ -252,12 +249,15 @@ namespace QuickGUI
 
 	void List::setFont(const Ogre::String& fontScriptName, bool recursive)
 	{
-		Image::setFont(fontScriptName,recursive);
-		mTextUtilities->setFont(fontScriptName);
+		if(fontScriptName == "")
+			return;
+
+		Widget::setFont(fontScriptName,recursive);
+		mTextHelper->setFont(fontScriptName);
 
 		if(mAutoSizeListItems)
 		{
-			setItemPixelHeight(mTextUtilities->getNewlineHeight() + mVPixelPadHeight);
+			setItemPixelHeight(mTextHelper->getGlyphHeight() + mVPixelPadHeight);
 			mAutoSizeListItems = true;
 
 			if(mScrollPane != NULL)
@@ -271,7 +271,7 @@ namespace QuickGUI
 		mAutoSizeListItems = false;
 
 		Ogre::Real counter = 0;
-		std::vector<Widget*>::iterator it;
+		WidgetArray::iterator it;
 		for( it = mItems.begin(); it != mItems.end(); ++it )
 		{
 			(*it)->setYPosition(mItemHeight * counter);
@@ -296,7 +296,7 @@ namespace QuickGUI
 
 	void List::show()
 	{
-		Image::show();
+		Widget::show();
 
 		if(mScrollPane != NULL)
 			mScrollPane->_syncBarWithParentDimensions();

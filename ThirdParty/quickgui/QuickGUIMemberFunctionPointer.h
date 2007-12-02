@@ -14,6 +14,7 @@
 #include "OgrePrerequisites.h"
 #include "QuickGUIExportDLL.h"
 
+#include "QuickGUIPrerequisites.h"
 namespace QuickGUI
 {
 	class _QuickGUIExport MemberFunctionSlot

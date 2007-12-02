@@ -1,3 +1,5 @@
+#include "QuickGUIPrecompiledHeaders.h"
+
 #include "QuickGUIComboBox.h"
 #include "QuickGUIManager.h"
 #include "QuickGUIMouseCursor.h"
@@ -5,29 +7,27 @@
 
 namespace QuickGUI
 {
-	ComboBox::ComboBox(const Ogre::String& instanceName, const Size& pixelSize, Ogre::String texture, GUIManager* gm) :
-		Image(instanceName,pixelSize,texture,gm),
+	ComboBox::ComboBox(const Ogre::String& name, GUIManager* gm) :
+		Widget(name,gm),
 		mRightToLeft(false),
-		mHighlightedItem(0),
+		mSelectedItem(0),
 		mAutoSize(true),
 		mVPixelPadHeight(10)
 	{
 		mWidgetType = TYPE_COMBOBOX;
 		mSkinComponent = ".combobox";
+		mSize = Size(125,25);
+
 		addEventHandler(EVENT_LOSE_FOCUS,&ComboBox::onLoseFocus,this);
 		addEventHandler(EVENT_MOUSE_ENTER,&ComboBox::onMouseEnters,this);
 		addEventHandler(EVENT_MOUSE_LEAVE,&ComboBox::onMouseLeaves,this);
 		addEventHandler(EVENT_MOUSE_BUTTON_UP,&ComboBox::onMouseButtonUp,this);
 		addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&ComboBox::onMouseButtonDown,this);
 
-		mTextUtilities = new Text(mInstanceName+".TextUtilities",mQuadContainer,this);
-		mTextUtilities->disable();
+		mTextHelper = new TextHelper();
 
-		Ogre::String name = mInstanceName+".DropDownList";
-		mGUIManager->notifyNameUsed(mInstanceName+".DropDownList");
-
-		mList = new List(name,Size(mSize.width,100),mTextureName + ".list" + mTextureExtension,mGUIManager);
-		addChild(mList);
+		mList = dynamic_cast<List*>(_createComponent(mInstanceName+".DropDownList",TYPE_LIST));
+		mList->setSize(mSize.width,100);
 		mList->setPosition(0,mSize.height);
 		mList->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 		mList->setVerticalAnchor(ANCHOR_VERTICAL_BOTTOM);
@@ -44,9 +44,8 @@ namespace QuickGUI
 		mList->setPropogateEventFiring(EVENT_MOUSE_ENTER,true);
 		mList->setPropogateEventFiring(EVENT_MOUSE_LEAVE,true);
 
-		mGUIManager->notifyNameUsed(mInstanceName+".SelectedItem");
-		mMenuLabel = new MenuLabel(mInstanceName+".SelectedItem",Size(mSize.width - mSize.height,mSize.height),mTextureName + ".menulabel" + mTextureExtension,mGUIManager);
-		addChild(mMenuLabel);
+		mMenuLabel = dynamic_cast<MenuLabel*>(_createComponent(mInstanceName+".SelectedItem",TYPE_MENULABEL));
+		mMenuLabel->setSize(mSize.width - mSize.height,mSize.height);
 		mMenuLabel->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
 		mMenuLabel->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 		mMenuLabel->setPosition(0,0);
@@ -54,9 +53,9 @@ namespace QuickGUI
 		mMenuLabel->setPropogateEventFiring(EVENT_MOUSE_ENTER,true);
 		mMenuLabel->setPropogateEventFiring(EVENT_MOUSE_LEAVE,true);
 
-		mGUIManager->notifyNameUsed(mInstanceName+".DropDownButton");
-		mButton = new Button(mInstanceName+".DropDownButton",Size(mSize.height,mSize.height),mTextureName + ".button" + mTextureExtension,mGUIManager);
-		addChild(mButton);
+		mButton = dynamic_cast<Button*>(_createComponent(mInstanceName+".DropDownButton",TYPE_BUTTON));
+		mButton->setSkinComponent(".combobox.button");
+		mButton->setSize(mSize.height,mSize.height);
 		mButton->setPosition(mSize.width - mSize.height,0);
 		mButton->setAutoSize(false);
 		mButton->setHorizontalAnchor(ANCHOR_HORIZONTAL_RIGHT);
@@ -65,7 +64,7 @@ namespace QuickGUI
 		mButton->setPropogateEventFiring(EVENT_MOUSE_ENTER,true);
 		mButton->setPropogateEventFiring(EVENT_MOUSE_LEAVE,true);
 
-		mHighlightTexture = mTextureName + ".highlight" + mTextureExtension;
+		mHighlightSkinComponent = ".combobox.highlight";
 
 		// create highlight container for the list
 		mHighlightPanel = _createQuad();
@@ -74,7 +73,6 @@ namespace QuickGUI
 		mHighlightPanel->setLayer(Quad::LAYER_MENU);
 		mHighlightPanel->setInheritLayer(false);
 		mHighlightPanel->setShowWithOwner(false);
-		mHighlightPanel->setTexture(mHighlightTexture);
 		// offset + 3, to be able to show over ListItems with Images and Buttons and Text
 		mHighlightPanel->setOffset(mOffset+3);
 		mHighlightPanel->_notifyQuadContainer(mQuadContainer);
@@ -82,11 +80,11 @@ namespace QuickGUI
 
 	ComboBox::~ComboBox()
 	{
-		delete mTextUtilities;
+		delete mTextHelper;
 
 		Widget::removeAndDestroyAllChildWidgets();
 
-		std::vector<MemberFunctionSlot*>::iterator it;
+		EventHandlerArray::iterator it;
 		for( it = mOnSelectUserEventHandlers.begin(); it != mOnSelectUserEventHandlers.end(); ++it )
 			delete (*it);
 		mOnSelectUserEventHandlers.clear();
@@ -113,10 +111,8 @@ namespace QuickGUI
 	void ComboBox::clearSelection()
 	{
 		mHighlightPanel->setVisible(false);
-		mHighlightedItem = NULL;
-		mMenuLabel->setText("");
-		mMenuLabel->setIconTexture("");
-		mMenuLabel->setButtonTexture("");
+		mSelectedItem = NULL;
+		mMenuLabel->hide();
 	}
 
 	int ComboBox::getItemIndex(MenuLabel* l)
@@ -131,15 +127,15 @@ namespace QuickGUI
 
 	MenuLabel* ComboBox::getSelectedItem()
 	{
-		return mHighlightedItem;
+		return mSelectedItem;
 	}
 
 	int ComboBox::getSelectedItemIndex()
 	{
-		if(mHighlightedItem == NULL)
+		if(mSelectedItem == NULL)
 			return -1;
 
-		return mList->getItemIndex(mHighlightedItem);
+		return mList->getItemIndex(mSelectedItem);
 	}
 
 	int ComboBox::getVerticalPixelPadHeight()
@@ -157,9 +153,8 @@ namespace QuickGUI
 		if(l == NULL)
 			return;
 
-		mHighlightedItem = l;
-		mHighlightPanel->setPosition(mHighlightedItem->getScreenPosition() + mHighlightedItem->getScrollOffset());
-		mHighlightPanel->setSize(mHighlightedItem->getSize());
+		mHighlightPanel->setPosition(l->getScreenPosition() + l->getScrollOffset());
+		mHighlightPanel->setSize(l->getSize());
 		mHighlightPanel->setVisible(true);
 	}
 
@@ -189,22 +184,21 @@ namespace QuickGUI
 			highlightListItem(dynamic_cast<MenuLabel*>(mea.widget));
 		}
 		
-		setTexture(mTextureName + ".over" + mTextureExtension,false);
+		mQuad->setTexture(mSkinName + mSkinComponent + ".over" + SkinSetManager::getSingleton().getSkinSet(mSkinName)->getImageExtension());
 		mButton->applyButtonOverTexture();
 	}
 
 	void ComboBox::onMouseLeaves(const EventArgs& args)
 	{
 		mHighlightPanel->setVisible(false);
-		mHighlightedItem = NULL;
 		
-		setTexture(mTextureName + mTextureExtension,false);
+		mQuad->setTexture(mSkinName + mSkinComponent + SkinSetManager::getSingleton().getSkinSet(mSkinName)->getImageExtension());
 		mButton->applyDefaultTexture();
 	}
 
 	void ComboBox::onMouseButtonDown(const EventArgs& args)
 	{
-		setTexture(mTextureName + ".down" + mTextureExtension,false);
+		mQuad->setTexture(mSkinName + mSkinComponent + ".down" + SkinSetManager::getSingleton().getSkinSet(mSkinName)->getImageExtension());
 		mButton->applyButtonDownTexture();
 	}
 
@@ -230,12 +224,18 @@ namespace QuickGUI
 
 	void ComboBox::onSelection(const EventArgs& args)
 	{
-		selectItem(dynamic_cast<MenuLabel*>(dynamic_cast<const WidgetEventArgs&>(args).widget));
-		setTexture(mTextureName + mTextureExtension,false);
+		mQuad->setTexture(mSkinName + mSkinComponent + SkinSetManager::getSingleton().getSkinSet(mSkinName)->getImageExtension());
 		mButton->applyDefaultTexture();
 		mList->hide();
 
-		std::vector<MemberFunctionSlot*>::iterator it;
+		Widget* targetWidget = dynamic_cast<const WidgetEventArgs&>(args).widget;
+		// If the combobox drop list is bigger than the number of items, the user can click an empty space.
+		if(targetWidget->getWidgetType() == TYPE_LIST)
+			return;
+
+		selectItem(dynamic_cast<MenuLabel*>(targetWidget));
+
+		EventHandlerArray::iterator it;
 		for( it = mOnSelectUserEventHandlers.begin(); it != mOnSelectUserEventHandlers.end(); ++it )
 			(*it)->execute(args);
 	}
@@ -251,9 +251,15 @@ namespace QuickGUI
 
 	void ComboBox::selectItem(MenuLabel* l)
 	{
+		if(l == NULL)
+			return;
+
+		mSelectedItem = l;
 		mMenuLabel->setText(l->getText());
+		mMenuLabel->setSkin(l->getSkin());
 		mMenuLabel->setIconTexture(l->getIconTexture());
-		mMenuLabel->setButtonTexture(l->getButtonTexture());
+		if(mVisible)
+			mMenuLabel->show();
 		mHighlightPanel->setVisible(false);
 	}
 
@@ -272,26 +278,23 @@ namespace QuickGUI
 
 	void ComboBox::setFont(const Ogre::String& fontScriptName, bool recursive)
 	{
-		Image::setFont(fontScriptName,recursive);
-		mTextUtilities->setFont(fontScriptName);
+		if(fontScriptName == "")
+			return;
+
+		Widget::setFont(fontScriptName,recursive);
+		mTextHelper->setFont(fontScriptName);
 
 		if(mAutoSize)
 		{
-			setHeight(mTextUtilities->getNewlineHeight() + mVPixelPadHeight);
+			setHeight(mTextHelper->getGlyphHeight() + mVPixelPadHeight);
 			mAutoSize = true;
 		}
 	}
 
 	void ComboBox::setHeight(Ogre::Real pixelHeight)
 	{
-		Image::setHeight(pixelHeight);
+		Widget::setHeight(pixelHeight);
 		mAutoSize = false;
-	}
-
-	void ComboBox::setHighlightTexture(const Ogre::String& texture)
-	{
-		mHighlightTexture = texture;
-		mHighlightPanel->setTexture(mHighlightTexture);
 	}
 
 	void ComboBox::setRightToLeft(bool rightToLeft)
@@ -319,7 +322,7 @@ namespace QuickGUI
 
 	void ComboBox::setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight)
 	{
-		Image::setSize(pixelWidth,pixelHeight);
+		Widget::setSize(pixelWidth,pixelHeight);
 		mAutoSize = false;
 	}
 
@@ -328,25 +331,11 @@ namespace QuickGUI
 		ComboBox::setSize(pixelSize.width,pixelSize.height);
 	}
 
-	void ComboBox::setSkin(const Ogre::String& skinName, Ogre::String extension, bool recursive)
+	void ComboBox::setSkin(const Ogre::String& skinName, bool recursive)
 	{
-		mSkinName = skinName;
-		setTexture(mSkinName + mSkinComponent + extension);
-	}
+		Widget::setSkin(skinName,recursive);
 
-	void ComboBox::setTexture(const Ogre::String& textureName, bool updateBaseTexture)
-	{
-		Image::setTexture(textureName,updateBaseTexture);
-
-		if(updateBaseTexture)
-		{
-			mList->setTexture(mTextureName + ".list" + mTextureExtension);
-			mMenuLabel->setTexture(mTextureName + ".menulabel" + mTextureExtension);
-			mButton->setTexture(mTextureName + ".button" + mTextureExtension);
-
-			mHighlightTexture = mTextureName + ".highlight" + mTextureExtension;
-			mHighlightPanel->setTexture(mHighlightTexture);
-		}
+		mHighlightPanel->setTexture(skinName + mHighlightSkinComponent + SkinSetManager::getSingleton().getSkinSet(skinName)->getImageExtension());
 	}
 
 	void ComboBox::setVerticalPixelPadHeight(unsigned int height)
@@ -355,7 +344,7 @@ namespace QuickGUI
 
 		if(mAutoSize)
 		{
-			setHeight(mTextUtilities->getNewlineHeight() + mVPixelPadHeight);
+			setHeight(mTextHelper->getGlyphHeight() + mVPixelPadHeight);
 			mAutoSize = true;
 		}
 	}

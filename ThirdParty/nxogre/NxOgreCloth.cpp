@@ -568,11 +568,8 @@ NxClothMesh* Cloth::__createClothMeshFromOgreMesh(const NxString& name, const Nx
 
 		NxThrow_Error(s.str());
 	}
-	
-    MemoryReadBuffer  readbuffer (buf.data);
-    NxStream & streambuffer = dynamic_cast< NxStream & > (readbuffer);
-	
-	mClothMesh = mOwner->getNxScene()->getPhysicsSDK().createClothMesh(streambuffer);
+
+	mClothMesh = mOwner->getNxScene()->getPhysicsSDK().createClothMesh(MemoryReadBuffer(buf.data));
 
 #else
 
@@ -732,9 +729,8 @@ NxClothMesh* Cloth::__createClothMesh(NxReal width, NxReal height, NxReal vDista
 
 		NxThrow_Error(s.str());
 	}
-    MemoryReadBuffer  readbuffer (buf.data);
-    NxStream & streambuffer = dynamic_cast< NxStream & > (readbuffer);
-	mClothMesh = mOwner->getNxScene()->getPhysicsSDK().createClothMesh(streambuffer);
+
+	mClothMesh = mOwner->getNxScene()->getPhysicsSDK().createClothMesh(MemoryReadBuffer(buf.data));
 	
 #else
 
