@@ -8,8 +8,8 @@
  AC_SUBST(CFLAGS_VISIBILITY)
  AC_LANG_POP
 
---- OgreMain/include/OgreDataStream.h	23 Aug 2006 08:18:33 -0000	1.12
-+++ OgreMain/include/OgreDataStream.h	24 Nov 2007 00:35:47 -0000
+--- ogrenew/OgreMain/include/OgreDataStream.h	23 Aug 2006 08:18:33 -0000	1.12
++++ ogrenew/OgreMain/include/OgreDataStream.h	24 Nov 2007 00:35:47 -0000
 @@ -79,7 +79,7 @@
  		@param count Number of bytes to read
  		@returns The number of bytes read
@@ -20,8 +20,8 @@
  		@remarks
  			The delimiter character is not included in the data
 
- --- OgreMain/include/OgreHardwareBuffer.h	23 Aug 2006 08:18:33 -0000	1.17
-+++ OgreMain/include/OgreHardwareBuffer.h	24 Nov 2007 00:37:00 -0000
+--- ogrenew/OgreMain/include/OgreHardwareBuffer.h	23 Aug 2006 08:18:33 -0000	1.17
++++ ogrenew/OgreMain/include/OgreHardwareBuffer.h	24 Nov 2007 00:37:00 -0000
 @@ -244,7 +244,7 @@
              @param pDest The area of memory in which to place the data, must be large enough to 
                  accommodate the data!
@@ -32,8 +32,8 @@
                  ensure that your buffer is big enough.
  		    @param offset The byte offset from the start of the buffer to start writing
 
---- OgreMain/include/OgreRenderQueueListener.h	23 Aug 2006 08:18:35 -0000	1.10
-+++ OgreMain/include/OgreRenderQueueListener.h	24 Nov 2007 00:34:52 -0000
+--- ogrenew/OgreMain/include/OgreRenderQueueListener.h	23 Aug 2006 08:18:35 -0000	1.10
++++ ogrenew/OgreMain/include/OgreRenderQueueListener.h	24 Nov 2007 00:34:52 -0000
 @@ -65,7 +65,7 @@
  			for this queue group.
          */
