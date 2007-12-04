@@ -38,8 +38,6 @@ PATH_OGG =          os.path.join(BASE_DIR, 'libogg-1.1.3')
 PATH_VORBIS=        os.path.join(BASE_DIR, 'libvorbis-1.2.0')
 PATH_OPENAL=        os.path.join(BASE_DIR, 'openal-0.0.8')
 PATH_OgreOde=       os.path.join(PATH_OgreAddons,'ogreode')
-# PATH_OgreBullet=    os.path.join(PATH_OgreAddons,'ogrebullet')
-# PATH_ogreforests=    os.path.join(PATH_OgreAddons,'forests')
 
 PATH_OgreBullet=    os.path.join(PATH_THIRDPARTY,'ogrebullet')
 PATH_ogreforests=   os.path.join(PATH_THIRDPARTY,'forests')
@@ -57,8 +55,8 @@ PATH_ofusion=       os.path.join(PATH_THIRDPARTY, 'ofusion')
 PATH_ogrevideoffmpeg = os.path.join(PATH_THIRDPARTY,'ffmpeg')
 PATH_NxOgre=        os.path.join(PATH_THIRDPARTY, 'nxogre')
 # PATH_NxOgre=        os.path.join(BASE_DIR, 'nxogre/NxOgre')
-PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.63final') 
-###PATH_PhysX=         os.path.join(BASE_DIR, 'Physx/v2.7.2/SDKs')
+PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.64') 
+###PATH_PhysX=         os.path.join(BASE_DIR, 'Physx/v2.7.3/SDKs')
 PATH_Theora=        os.path.join(PATH_OgreAddons,'videoplugin','TheoraVideo')
 PATH_ffmpeg=        os.path.join(BASE_DIR, 'ffmpeg')
 PATH_navi =         os.path.join(BASE_DIR, 'navi','Navi')
@@ -86,7 +84,7 @@ PATH_LIB_OgreAL =               os.path.join( LOCAL_LIB ) #PATH_OGREAL, 'lib/Rel
 PATH_LIB_betagui =              PATH_betagui
 PATH_LIB_quickgui =             PATH_quickgui
 # PATH_LIB_NxOgre=                os.path.join(LOCAL_LIB )
-PATH_LIB_PhysX =                os.path.join(LOCAL_LIB, 'PhysX','v2.7.2')
+PATH_LIB_PhysX =                os.path.join(LOCAL_LIB, 'PhysX','v2.7.3')
 PATH_LIB_Bullet = 		        os.path.join( LOCAL_LIB )
 PATH_LIB_Theora=                os.path.join(PATH_Theora, 'bin', 'Release')
 PATH_LIB_ogrevideoffmpeg =      PATH_ogrevideoffmpeg
@@ -137,9 +135,10 @@ PATH_INCLUDE_ogreforests =         PATH_ogreforests
 PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ,os.path.join(BASE_DIR, 'vorbis', 'include')
                         ,os.path.join(PATH_OgreAddons,'videoplugin','theora','include')
-                        ,os.path.join(PATH_OgreAddons,'videoplugin','ptypes-1.8.3','include')
+                        ##,os.path.join(PATH_OgreAddons,'videoplugin','ptypes-1.8.3','include')
+                        ,os.path.join(PATH_THIRDPARTY,'ptypes','include')
                         ]
-physxbase = os.path.join(LOCAL_INCLUDE, 'PhysX','v2.7.2', 'SDKs')
+physxbase = os.path.join(LOCAL_INCLUDE, 'PhysX','v2.7.3', 'SDKs')
 PATH_INCLUDE_PhysX= [ physxbase
                     ,os.path.join(physxbase, 'Cooking','Include')
                     ,os.path.join(physxbase, 'Foundation','include')
