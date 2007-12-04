@@ -130,3 +130,4 @@ class DllExport GroundFog: public CameraBoundElement {
 }
 
 #endif //GROUNDFOG_H
+

@@ -64,7 +64,7 @@ popd
 # Bullet
 # 
 echo " -- Building Bullet --"
-pushd bullet-2.63final
+pushd bullet-2.64
 cmake . -DCMAKE_INSTALL_PREFIX:PATH=$PREFIX
 make
 find . -name *.a -execdir cp {} $PREFIX/lib \;
