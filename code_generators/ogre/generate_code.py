@@ -680,7 +680,10 @@ def Fix_Posix ( mb ):
     elif sys.platform.startswith ('linux'):
         pass
     mb.global_ns.class_('vector<int, std::allocator<int> >').alias='VectorInt'
-    mb.global_ns.class_('vector<std::pair<unsigned, unsigned>, std::allocator<std::pair<unsigned, unsigned> > >').alias='VectorUnsignedUnsigned'
+    try:
+        mb.global_ns.class_('vector<std::pair<unsigned int, unsigned int>, std::allocator<std::pair<unsigned int, unsigned int> > >').alias='VectorUnsignedUnsigned'
+    except:
+        pass
     #as reported by mike with linux:bp::arg("flags")=(std::_Ios_Fmtflags)0
     mb.namespace( MAIN_NAMESPACE ).class_('StringConverter').member_functions('toString').exclude()    
 
@@ -984,6 +987,7 @@ def generate_code():
     additional_files=[
             os.path.join( environment.shared_ptr_dir, 'py_shared_ptr.h'),
             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'python_ogre_precompiled.h' ),
+            os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'python_ogre_masterlist.h' ),
             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'generators.h' ),
             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'custom_rvalue.cpp' ),
             os.path.join( environment.include_dir, 'tuples.hpp' )
