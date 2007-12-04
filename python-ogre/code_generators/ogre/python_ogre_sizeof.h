@@ -6,11 +6,14 @@
 sizeof ( Ogre::MapIterator< std::multimap<Ogre::String, Ogre::String> > );
 sizeof ( Ogre::MapIterator< std::map<Ogre::String, std::multimap<Ogre::String, Ogre::String>*> > );
 
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, Ogre::Node*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::Node*> >, false> > );
 //sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, unsigned short, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, unsigned short> >, false> > );
 sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, Ogre::SharedPtr<Ogre::Resource>, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::SharedPtr<Ogre::Resource> > >, false> > );
-sizeof( std::pair<Ogre::SharedPtr<Ogre::Resource>, bool> );
 sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> >, false> > );
+#endif
+
+sizeof ( std::pair<Ogre::SharedPtr<Ogre::Resource>, bool> );
 
 std::vector< int > v;
 std::set< std::string > s;
