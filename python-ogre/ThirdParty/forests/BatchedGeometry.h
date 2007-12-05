@@ -16,6 +16,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 #ifndef __BatchedGeometry_H__
 #define __BatchedGeometry_H__
 
+#include "Ogre.h"
 #include "OgrePrerequisites.h"
 #include "OgreMovableObject.h"
 #include "OgreSceneNode.h"
