@@ -1,6 +1,7 @@
 
 def header_files( version ):
-    return [ "GrassLoader.h"
+    return [ "Ogre.h"
+            ,"GrassLoader.h"
             ,"TreeLoader3D.h"
             ,"TreeLoader2D.h"
             ,"BatchPage.h"

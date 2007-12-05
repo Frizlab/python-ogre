@@ -25,6 +25,7 @@ Module Specifics:
    Changes due to using precompiled headers -- python_ogre_precompiled.h is now the primary header which includes 
    boost and python_ogre_masterlist.  The masterlist now uses Ogre.h and OgreStableHeaders.h to 
    include most of the headers, so the missing list is smaller and easier to manage
+   There is a newer patch file for the Ogre C++ library that changes certain functions from 'Pure virtual' to 'virtual' as this is required to allow function transformations to work (RenderQueueListener::RenderQueueStarted etc)
 * ogreal -- updated to SVN r90
 * ogrebulletc and ogrebulletd -- updated to latest CVS and using bullet 2.64
 * ogredshow -- Not part of this release as not compatible with latest DirectX SDK (I think..)
