@@ -1,0 +1,71 @@
+<?xml version="1.0" ?>
+<GUILayout>
+<Window Type="DefaultGUISheet" Name="root">
+    <Window Type="DefaultGUISheet" Name="ParticleUniverseViewer">
+		<Property Name="UnifiedSize" Value="{{1,0},{1,0}}" />
+
+		<Window Type="TaharezLook/FrameWindow" Name="ParticleUniverseViewer/WindowPropertiesWindow">
+			<Property Name="UnifiedSize" Value="{{0.25,0},{0.8,0}}"  />
+	            <Property Name="UnifiedPosition" Value="{{0,0},{0,0}}" />
+	            <Property Name="TitlebarEnabled" Value="true" />
+	            <Property Name="CloseButtonEnabled" Value="false" />
+			<Property Name="Text" Value="Particle Universe Viewer" />
+
+			<Window Type="TaharezLook/Listbox" Name="ParticleUniverseViewer/ListboxTemplates">
+				<Property Name="UnifiedPosition" Value="{{0.05,0},{0.05,0}}"  />
+				<Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
+				<Property Name="UnifiedSize" Value="{{0.9,0},{0.46,0}}"  />
+			</Window>
+
+			<Window Type="TaharezLook/StaticText" Name="ParticleUniverseViewer/SelectedName">
+				<Property Name="UnifiedPosition" Value="{{0.05,0},{0.52,0}}"  />
+				<Property Name="UnifiedSize" Value="{{0.9,0},{0.05,0}}"  />
+				<Property Name="BackgroundEnabled" Value="True" />
+			</Window>
+
+			<Window Type="TaharezLook/Button" Name="ParticleUniverseViewer/ButtonStart">
+				<Property Name="UnifiedPosition" Value="{{0.1,0},{0.58,0}}"  />
+				<Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
+				<Property Name="UnifiedSize" Value="{{0.8,0},{0.05,0}}"  />
+				<Property Name="Text" Value="Start" />
+			</Window>
+
+			<Window Type="TaharezLook/Button" Name="ParticleUniverseViewer/ButtonPause">
+				<Property Name="UnifiedPosition" Value="{{0.1,0},{0.64,0}}"  />
+				<Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
+				<Property Name="UnifiedSize" Value="{{0.8,0},{0.05,0}}"  />
+				<Property Name="Text" Value="Pause" />
+			</Window>
+
+			<Window Type="TaharezLook/Button" Name="ParticleUniverseViewer/ButtonResume">
+				<Property Name="UnifiedPosition" Value="{{0.1,0},{0.70,0}}"  />
+				<Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
+				<Property Name="UnifiedSize" Value="{{0.8,0},{0.05,0}}"  />
+				<Property Name="Text" Value="Resume" />
+			</Window>
+
+			<Window Type="TaharezLook/Button" Name="ParticleUniverseViewer/ButtonStop">
+				<Property Name="UnifiedPosition" Value="{{0.1,0},{0.76,0}}"  />
+				<Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
+				<Property Name="UnifiedSize" Value="{{0.8,0},{0.05,0}}"  />
+				<Property Name="Text" Value="Stop" />
+			</Window>
+
+			<Window Type="TaharezLook/Checkbox" Name="ParticleUniverseViewer/CheckResetCamera" >
+				<Property Name="UnifiedPosition" Value="{{0.1,0},{0.82,0}}"  />
+				<Property Name="Text" Value="Reset Camera" />
+				<Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
+				<Property Name="UnifiedSize" Value="{{0.8,0},{0.05,0}}"  />
+			</Window>
+
+			<Window Type="TaharezLook/Checkbox" Name="ParticleUniverseViewer/CheckSkybox" >
+				<Property Name="UnifiedPosition" Value="{{0.1,0},{0.88,0}}"  />
+				<Property Name="Text" Value="Skybox" />
+				<Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
+				<Property Name="UnifiedSize" Value="{{0.8,0},{0.05,0}}"  />
+			</Window>
+        </Window>
+	</Window>
+</Window>
+
+</GUILayout>
