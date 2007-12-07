@@ -60,6 +60,7 @@ PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.64')
 PATH_Theora=        os.path.join(PATH_OgreAddons,'videoplugin','TheoraVideo')
 PATH_ffmpeg=        os.path.join(BASE_DIR, 'ffmpeg')
 PATH_navi =         os.path.join(BASE_DIR, 'navi','Navi')
+PATH_particleuniverse = os.path.join(PATH_Ogre, 'PlugIns', 'ParticleUniverse' )
 
 
 ###
@@ -91,6 +92,7 @@ PATH_LIB_ogrevideoffmpeg =      PATH_ogrevideoffmpeg
 PATH_LIB_ffmpeg=                os.path.join(PATH_ffmpeg, 'lib')
 PATH_LIB_plib =                 PATH_plib
 PATH_LIB_navi=                  os.path.join(PATH_navi, 'lib')
+PATH_LIB_particleuniverse =     os.path.join(PATH_particleuniverse, 'bin', 'release')
 
 
 PATH_INCLUDE_Ogre=          os.path.join(LOCAL_INCLUDE,'OGRE')  # os.path.join(PATH_Ogre,'OgreMain/include') 
@@ -131,6 +133,7 @@ PATH_INCLUDE_navi =     os.path.join (PATH_navi,'include')
 PATH_INCLUDE_noise = PATH_noise 
 PATH_INCLUDE_ogredshow =    PATH_ogredshow
 PATH_INCLUDE_ogreforests =         PATH_ogreforests
+PATH_INCLUDE_particleuniverse = os.path.join(PATH_particleuniverse, 'include' )
 
 PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ,os.path.join(BASE_DIR, 'vorbis', 'include')
