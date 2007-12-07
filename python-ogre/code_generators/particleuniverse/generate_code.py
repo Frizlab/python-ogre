@@ -53,6 +53,11 @@ def ManualExclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns    
+        
+    NotExported=['ParticleSystemManagerTokens'      ## this one is defined in a strange way within the header so lets not use it...
+                ]
+    for c in NotExported:
+        main_ns.class_( c ).exclude()
 
 ############################################################
 ##
@@ -210,7 +215,7 @@ def generate_code():
                                            )
                                            
     # if this module depends on another set it here                                           
-    ## mb.register_module_dependency ( environment.ogre.generated_dir )
+    mb.register_module_dependency ( environment.ogre.generated_dir )
     
     # normally implicit conversions work OK, however they can cause strange things to happen so safer to leave off
     mb.constructors().allow_implicit_conversion = False                                           
@@ -234,6 +239,9 @@ def generate_code():
     ManualTransformations ( mb )
     AutoFixes ( mb, MAIN_NAMESPACE )
     ManualFixes ( mb )
+    
+    common_utils.Auto_Functional_Transformation ( main_ns, special_vars=['::Ogre::Real &','::Ogre::ushort &','size_t &'] )
+    
     #
     # We need to tell boost how to handle calling (and returning from) certain functions
     #
@@ -268,6 +276,7 @@ def generate_code():
         mb.code_creator.user_defined_directories.append(inc )
     mb.code_creator.user_defined_directories.append( environment.particleuniverse.generated_dir )
     mb.code_creator.replace_included_headers( customization_data.header_files( environment.particleuniverse.version ) )
+    print "1111", customization_data.header_files( environment.particleuniverse.version )
 
     huge_classes = map( mb.class_, customization_data.huge_classes( environment.particleuniverse.version ) )
 
