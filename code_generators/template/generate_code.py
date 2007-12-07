@@ -23,7 +23,7 @@ import environment
 import common_utils
 import customization_data
 import hand_made_wrappers
-import register_exceptions
+
 
 from pygccxml import parser
 from pygccxml import declarations
@@ -211,7 +211,7 @@ def generate_code():
                                            )
                                            
     # if this module depends on another set it here                                           
-    ## mb.register_module_dependency ( environment.ogre.generated_dir )
+    mb.register_module_dependency ( environment.ogre.generated_dir )
     
     # normally implicit conversions work OK, however they can cause strange things to happen so safer to leave off
     mb.constructors().allow_implicit_conversion = False                                           
