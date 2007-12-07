@@ -5,6 +5,19 @@ DOWNLOADS=$INSTALL_DIR/downloads
 WGETARGS="-c -nc --tries=3 --random-wait"
 WGET="`which wget` $WGETARGS"
 
+
+TEMPFILE=`mktemp -t temp.XXXXX`
+cat << EOF > $TEMPFILE
+#!/usr/bin/python
+import sys,os
+if sys.platform=='darwin':
+   print 1
+else : print 0
+EOF
+DARWIN=`python $TEMPFILE`
+rm $TEMPFILE
+
+
 TEMPFILE=`mktemp`
 cat << EOF > $TEMPFILE
 #!/usr/bin/python

@@ -61,6 +61,8 @@ PATH_Theora=        os.path.join(PATH_OgreAddons,'videoplugin','TheoraVideo')
 PATH_ffmpeg=        os.path.join(BASE_DIR, 'ffmpeg')
 PATH_navi =         os.path.join(BASE_DIR, 'navi','Navi')
 
+PATH_particleuniverse = os.path.join(PATH_Ogre, 'PlugIns', 'ParticleUniverse' )
+
 # it's time for the SDK version
 if SDK:
     PATH_CEGUI =        os.path.join(BASE_DIR, 'Ogrenew')
@@ -96,7 +98,7 @@ PATH_LIB_ffmpeg=                os.path.join(PATH_ffmpeg, 'lib')
 PATH_LIB_plib =                 PATH_plib
 PATH_LIB_navi=                  os.path.join(PATH_navi, 'lib')
 PATH_LIB_ogredshow =            PATH_ogredshow
-
+PATH_LIB_particleuniverse =     os.path.join(PATH_particleuniverse, 'bin', 'release')
 if SDK:
     PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'lib')
     PATH_LIB_OIS =                  os.path.join( PATH_Ogre, 'Dependencies/lib/Release') ## NOTE Posix platforms this lives in'lib' not 'dll'
@@ -144,6 +146,7 @@ PATH_INCLUDE_navi =         os.path.join (PATH_navi,'include')
 PATH_INCLUDE_noise = PATH_noise 
 ##PATH_INCLUDE_ogreforests =         os.path.join (PATH_ogreforests,'include')
 PATH_INCLUDE_ogreforests =         PATH_ogreforests
+PATH_INCLUDE_particleuniverse = os.path.join(PATH_particleuniverse, 'include' )
 
 PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ,os.path.join(BASE_DIR, 'vorbis', 'include')

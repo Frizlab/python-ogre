@@ -503,6 +503,24 @@ class ogreforests:
     ModuleName="ogreforests"   
     active=True
     
+class particleuniverse:
+    version="0.4"
+    parent="ogre/addons"
+    CCFLAGS = ' ' 
+    cflags=""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_Ogre,
+                    Config.PATH_INCLUDE_particleuniverse
+                    ]
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain,
+                Config.PATH_LIB_particleuniverse
+                ]
+    CheckIncludes=[]
+    libs=[  Config.LIB_Boost, 'OgreMain', 'ParticleUniverse' ]
+    ModuleName="particleuniverse"   
+    active=True
+
 class nxogre:
     version="0.9"
     parent="ogre/physics"
@@ -864,6 +882,7 @@ projects = {
     , 'noise' : noise
     , 'watermesh' : watermesh
     , 'ofusion' : ofusion
+    , 'particleuniverse' : particleuniverse
 }        
 
 #
