@@ -30,37 +30,30 @@ class SmokeApplication(sf.Application):
         sceneManager = self.sceneManager
         camera = self.camera
 
-        sceneManager.ambientLight = ogre.ColourValue(0.5, 0.5, 0.5)
+        sceneManager.ambientLight = ogre.ColourValue(1.0, 1.0, 1.0)
 #         sceneManager.setSkyDome(True, 'Examples/CloudySky', 5.0, 8.0)
 
+        # create a main node to hang the effects off
         self.fountainNode = sceneManager.getRootSceneNode().createChildSceneNode()
+        self.fountainNode.setPosition(ogre.Vector3(0, 0, -800))
+        ## Setup Camera
+        camera.setPosition(ogre.Vector3(0,0,500))
+        camera.lookAt(ogre.Vector3(0,0,-300))
         
-        print dir(PU)
-        sm = PU.ParticleSystemManager.getSingletonPtr()
-        print sm
-# 	std::vector<Ogre::String> names;
-# 	mParticleSystemManager->particleSystemTemplateNames(names);
-# 	std::vector<Ogre::String>::iterator it;
-# 	std::vector<Ogre::String>::iterator itEnd = names.end();
-# 	CEGUI::ListboxTextItem* item;
-# 	for (it = names.begin(); it != itEnd; ++it)
-# 	{
-# 		item = new CEGUI::ListboxTextItem((*it), 0);
-# 		mListBox->addItem(item);
-# 	}
-
+        # here is how to get the list of available templates
+        names = ogre.StringVector()
+        PU.ParticleSystemManager.getSingleton().particleSystemTemplateNames(names)
+        for n in names:
+            print "PU template:", n
+            
+        # create the particle system
+        self.particleSystem2 = PU.ParticleSystemManager.getSingleton().createParticleSystem("mySystem", "fireSystem", sceneManager)
         
+        # attach it to the node
+        self.fountainNode.attachObject(self.particleSystem2)
         
-#         particleSystem1 = sceneManager.createParticleSystem('fountain1', 'Examples/Smoke')
-        
-        particleSystem2 = PU.ParticleSystemManager.getSingleton().createParticleSystem("mySystem", "example_003", sceneManager)
-        print particleSystem2
-        
-        node = self.fountainNode.createChildSceneNode()
-        node.attachObject(particleSystem2)
-        
-        
-       
+        # and don't forget to start it
+        self.particleSystem2.start()
                 
 if __name__ == '__main__':
     try:
