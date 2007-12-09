@@ -150,7 +150,7 @@ for name, cls in environment.projects.items():
         
         if environment.rpath:
             _env.Append(RPATH=_env.Literal(environment.rpath))
-            print "****", _env['RPATH']
+            _env.Append( LINKFLAGS = Split('-z origin') )
         
         # Stores signatures in a separate .sconsign file 
         # in each directory as the single one was getting huge

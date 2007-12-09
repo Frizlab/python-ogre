@@ -67,6 +67,7 @@ popd
 # Install Ogre (Object Oriented Graphics Rendering Engine)
 #
 echo " -- Building Ogre"
+export ZZIPLIB_LIBS="-lzzip"
 pushd ogrenew 
 aclocal
 ./bootstrap
