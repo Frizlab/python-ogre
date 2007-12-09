@@ -5,6 +5,7 @@ DOWNLOADS=$INSTALL_DIR/downloads
 WGETARGS="-c -nc --tries=3 --random-wait"
 WGET="`which wget` $WGETARGS"
 
+
 TEMPFILE=`mktemp`
 cat << EOF > $TEMPFILE
 #!/usr/bin/python
@@ -19,6 +20,7 @@ export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$PREFIX/lib/pkgconfig
 export LD_LIBRARY_PATH=$PREFIX/lib
 export CFLAGS="-I$PREFIX/include -L$PREFIX/lib"
 export CXXFLAGS=$CFLAGS
+export LDFLAGS="-Wl,-rpath='\$\$ORIGIN/../../lib' -Wl,-rpath='\$\$ORIGIN' -Wl,-z,origin"
 export PATH=$PREFIX/bin:$PATH
 export PYTHONPATH=$PREFIX/lib/python$PYTHONVERSION/site-packages
 

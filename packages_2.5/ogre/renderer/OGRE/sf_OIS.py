@@ -19,7 +19,8 @@ def getPluginPath():
     import os
     import os.path
     
-    paths = [os.path.join(os.getcwd(), 'plugins.cfg'),
+    paths = [os.path.join(os.getcwd(), '../plugins.cfg'),
+             os.path.join(os.getcwd(), 'plugins.cfg'),
              '/etc/OGRE/plugins.cfg',
              os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               'plugins.cfg')]
