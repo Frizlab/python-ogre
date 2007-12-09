@@ -18,7 +18,7 @@ PATH_LIB_Boost = LOCAL_LIB
 LIB_Boost = 'libboost_python-gcc41-1_34'
 
 # in Linux we need to code in the Relative path for the library
-RPATH=os.path.join('\\$$ORIGIN',os.pardir,os.pardir, 'lib') 
+RPATH=os.path.join('\\$$ORIGIN',os.pardir,os.pardir, 'lib') #+ '\'' 
 
 # We need to know where to find gccxml......
 gccxml_bin = os.path.join(BASE_DIR,'gccxml-build/bin')
