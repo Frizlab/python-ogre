@@ -164,7 +164,9 @@ def generate_code():
                         os.path.join( environment.ogreal.root_dir, "python_ogreal.h" )
                         , environment.ogreal.cache_file )
 
-    defined_symbols = [ 'OGREAL_NONCLIENT_BUILD', 'OGRE_NONCLIENT_BUILD', 'WIN32', '_LIB', '_MBCS', 'NDEBUG' ]
+    defined_symbols = [ 'OGREAL_NONCLIENT_BUILD', 'OGRE_NONCLIENT_BUILD' ]
+    if os.name=='nt':
+        defined_symbols= defined_symbols + [ 'WIN32', '_LIB', '_MBCS', 'NDEBUG' ]
     defined_symbols.append( 'OGREAL_VERSION_' + environment.ogreal.version )  
     
     #
