@@ -51,6 +51,8 @@ namespace OgreAL {
 		mEAXSupport(false),
 		mEAXVersion(0),
 		mXRAMSupport(false),
+		mEFXSupport(false),
+		mSendsPerSource(10),
 		mContext(0),
 		mDevice(0),
 		mDopplerFactor(1.0),
@@ -86,16 +88,28 @@ namespace OgreAL {
 		destroyAllSounds();
 		delete Listener::getSingletonPtr();
 
+		// Clean out mActiveSounds and mQueuedSounds
+		mActiveSounds.clear();
+		mQueuedSounds.clear();
+
+		// Clean up the SourcePool
+		while(!mSourcePool.empty())
+		{
+			alDeleteSources(1, &mSourcePool.front());
+			CheckError(alcGetError(mDevice), "Failed to destroy source");
+			mSourcePool.pop();
+		}
+
+		// delete all FormatData pointers in the FormatMap;
+		std::for_each(mSupportedFormats.begin(), mSupportedFormats.end(), DeleteSecond());
+		mSupportedFormats.clear();
+
 		// Unregister the Sound and Listener Factories
 		Ogre::Root::getSingleton().removeMovableObjectFactory(mSoundFactory);
 		Ogre::Root::getSingleton().removeMovableObjectFactory(mListenerFactory);
 
 		delete mListenerFactory;
 		delete mSoundFactory;
-
-		// delete all FormatData pointers in the FormatMap;
-		std::for_each(mSupportedFormats.begin(), mSupportedFormats.end(), DeleteSecond());
-		mSupportedFormats.clear();
 
 		Ogre::LogManager::getSingleton().logMessage("*-*-* Releasing OpenAL");
 
@@ -220,7 +234,101 @@ namespace OgreAL {
 	{
 		void operator()(std::pair<std::string, Sound*> pair)const
 		{
-			pair.second->_updateSound();
+			pair.second->updateSound();
+		}
+	};
+
+	struct SoundManager::SortLowToHigh
+	{
+		bool operator()(const Sound *sound1, const Sound *sound2)const
+		{
+			// First we see if either sound has stopped and not given up its source
+			if(sound1->isStopped())
+				return true;
+			else if(sound2->isStopped())
+				return false;
+
+			// If they are both playing we'll test priority
+			if(sound1->getPriority() < sound2->getPriority())
+				return true;
+			else if (sound1->getPriority() > sound2->getPriority())
+				return false;
+
+			// If they are the same priority we'll test against the
+			// distance from the listener
+			Ogre::Real distSound1, distSound2;
+			Ogre::Vector3 listenerPos = Listener::getSingleton().getDerivedPosition();
+			if(sound1->isRelativeToListener())
+			{
+				distSound1 = sound1->getPosition().length();
+			}
+			else
+			{
+				distSound1 = sound1->getDerivedPosition().distance(listenerPos);
+			}
+
+			if(sound2->isRelativeToListener())
+			{
+				distSound2 = sound1->getPosition().length();
+			}
+			else
+			{
+				distSound2 = sound2->getDerivedPosition().distance(listenerPos);
+			}
+
+			if(distSound1 > distSound2)
+				return true;
+			else if(distSound1 < distSound2)
+				return false;
+
+			// If they are at the same priority and distance from the listener then
+			// they are both equally well suited to being sacrificed so we compare
+			// their pointers since it really doesn't matter
+			return sound1 < sound2;
+		}
+	};
+
+	struct SoundManager::SortHighToLow
+	{
+		bool operator()(const Sound *sound1, const Sound *sound2)const
+		{
+			// First we'll test priority
+			if(sound1->getPriority() > sound2->getPriority())
+				return true;
+			else if (sound1->getPriority() < sound2->getPriority())
+				return false;
+
+			// If they are the same priority we'll test against the
+			// distance from the listener
+			Ogre::Real distSound1, distSound2;
+			Ogre::Vector3 listenerPos = Listener::getSingleton().getDerivedPosition();
+			if(sound1->isRelativeToListener())
+			{
+				distSound1 = sound1->getPosition().length();
+			}
+			else
+			{
+				distSound1 = sound1->getDerivedPosition().distance(listenerPos);
+			}
+
+			if(sound2->isRelativeToListener())
+			{
+				distSound2 = sound1->getPosition().length();
+			}
+			else
+			{
+				distSound2 = sound2->getDerivedPosition().distance(listenerPos);
+			}
+
+			if(distSound1 < distSound2)
+				return true;
+			else if(distSound1 > distSound2)
+				return false;
+
+			// If they are at the same priority and distance from the listener then
+			// they are both equally well suited to stealing a source so we compare
+			// their pointers since it really doesn't matter
+			return sound1 < sound2;
 		}
 	};
 
@@ -229,6 +337,13 @@ namespace OgreAL {
 		// Update the Sound and Listeners if necessary	
 		std::for_each(mSoundMap.begin(), mSoundMap.end(), UpdateSound());
 		Listener::getSingleton().updateListener();
+
+		// Sort the active and queued sounds
+		std::sort(mActiveSounds.begin(), mActiveSounds.end(), SortLowToHigh());
+		std::sort(mQueuedSounds.begin(), mQueuedSounds.end(), SortHighToLow());
+
+		// Check to see if we should sacrifice any sounds
+		updateSourceAllocations();
 		return true;
 	}
 
@@ -249,6 +364,7 @@ namespace OgreAL {
 	Ogre::StringVector SoundManager::getDeviceList()
 	{
 		const ALCchar* deviceList = alcGetString(NULL, ALC_DEVICE_SPECIFIER);
+		CheckError(alGetError(), "Unable to list devices");
 
 		Ogre::StringVector deviceVector;
 		/*
@@ -263,20 +379,33 @@ namespace OgreAL {
 		*/
 		while(*deviceList != NULL)
 		{
-			ALCdevice *device = alcOpenDevice(deviceList);
-			if(device)
+			try
 			{
-				// Device seems to be valid
-				ALCcontext *context = alcCreateContext(device, NULL);
-				if(context)
+				ALCdevice *device = alcOpenDevice(deviceList);
+				CheckError(alGetError(), "Unable to open device");
+
+				if(device)
 				{
-					// Context seems to be valid
-					alcMakeContextCurrent(context);
-					deviceVector.push_back(alcGetString(device, ALC_DEVICE_SPECIFIER));
-					alcDestroyContext(context);
+					// Device seems to be valid
+					ALCcontext *context = alcCreateContext(device, NULL);
+					CheckError(alGetError(), "Unable to create context");
+					if(context)
+					{
+						// Context seems to be valid
+						alcMakeContextCurrent(context);
+						CheckError(alGetError(), "Unable to make context current");
+						deviceVector.push_back(alcGetString(device, ALC_DEVICE_SPECIFIER));
+						alcDestroyContext(context);
+						CheckError(alGetError(), "Unable to destroy context");
+					}
+					alcCloseDevice(device);
 				}
-				alcCloseDevice(device);
 			}
+			catch(...)
+			{
+				// Don't die here, we'll just skip this device.
+			}
+
 			deviceList += strlen(deviceList) + 1;
 		}
 
@@ -327,19 +456,118 @@ namespace OgreAL {
 		mSoundFactory->_removeBufferRef(bufferName);
 	}
 
-	int SoundManager::_getMaxSources()
+	SourceRef SoundManager::_requestSource(Sound *sound)
+	{
+		if(sound->getSource() != AL_NONE)
+		{
+			// This sound already has a source, so we'll just return the same one
+			return sound->getSource();
+		}
+
+		SoundList::iterator soundItr;
+		for(soundItr = mQueuedSounds.begin(); soundItr != mQueuedSounds.end(); soundItr++)
+		{
+			if((*soundItr) == sound)
+			{
+				// This sound has already requested a source
+				return AL_NONE;
+				break;
+			}
+		}
+
+		if(!mSourcePool.empty())
+		{
+			mActiveSounds.push_back(sound);
+			SourceRef source = mSourcePool.front();
+			mSourcePool.pop();
+			return source;
+		}
+		else
+		{
+			Sound *activeSound = mActiveSounds.front();
+			Ogre::Vector3 listenerPos = Listener::getSingleton().getDerivedPosition();
+			Ogre::Real distSound = sound->getDerivedPosition().distance(listenerPos);
+			Ogre::Real distActiveSound = activeSound->getDerivedPosition().distance(listenerPos);
+
+			if(sound->getPriority() > activeSound->getPriority() ||
+				sound->getPriority() == activeSound->getPriority() && distSound < distActiveSound)
+			{
+				activeSound->pause();
+				SourceRef source = activeSound->getSource();
+				mActiveSounds.erase(mActiveSounds.begin());
+				mQueuedSounds.push_back(activeSound);
+
+				mActiveSounds.push_back(sound);
+				return source;
+			}
+			else
+			{
+				mQueuedSounds.push_back(sound);
+				return AL_NONE;
+			}
+		}
+	}
+
+	SourceRef SoundManager::_releaseSource(Sound *sound)
+	{
+		bool soundFound = false;
+		SoundList::iterator soundItr;
+		for(soundItr = mActiveSounds.begin(); soundItr != mActiveSounds.end(); soundItr++)
+		{
+			if((*soundItr) == sound)
+			{
+				mActiveSounds.erase(soundItr);
+				soundFound = true;
+				break;
+			}
+		}
+
+		// If it's not in the active list, check the queued list
+		if(!soundFound)
+		{
+			for(soundItr = mQueuedSounds.begin(); soundItr != mQueuedSounds.end(); soundItr++)
+			{
+				if((*soundItr) == sound)
+				{
+					mQueuedSounds.erase(soundItr);
+					break;
+				}
+			}
+		}
+
+		SourceRef source = sound->getSource();
+		if(source != AL_NONE)
+		{
+			if(!mQueuedSounds.empty())
+			{
+				Sound *queuedSound = mQueuedSounds.front();
+				mQueuedSounds.erase(mQueuedSounds.begin());
+
+				queuedSound->setSource(source);
+				queuedSound->play();
+				mActiveSounds.push_back(queuedSound);
+			}
+			else
+			{
+				mSourcePool.push(source);
+			}
+		}
+
+		return AL_NONE;
+	}
+
+	int SoundManager::createSourcePool()
 	{
 		SourceRef source;
-		std::vector<SourceRef> sources;
 
 		int numSources = 0;
-		while (alGetError() == AL_NO_ERROR && numSources < 32)
+		while(alGetError() == AL_NO_ERROR && numSources < 100)
 		{
 			source = 0;
 			alGenSources(1, &source);
-			if (source != 0)
+			if(source != 0)
 			{
-				sources.push_back(source);
+				mSourcePool.push(source);
 				numSources++;
 			}
 			else
@@ -350,20 +578,11 @@ namespace OgreAL {
 			}
 		}
 
-		for(std::vector<SourceRef>::iterator it = sources.begin(); it != sources.end(); it++)
-		{
-			source = static_cast<SourceRef>(*it);
-			alDeleteSources(1, &source);
-			CheckError(alGetError(), "Failed to delete Source");
-		}
-
 		return numSources;
 	}
 
 	void SoundManager::initializeDevice(const Ogre::String& deviceName)
 	{
-		bool deviceInList = false;
-
 		Ogre::LogManager::getSingleton().logMessage("OpenAL Devices");
 		Ogre::LogManager::getSingleton().logMessage("--------------");
 
@@ -371,8 +590,9 @@ namespace OgreAL {
 
 		// List devices in log and see if the sugested device is in the list
 		Ogre::StringVector deviceList = getDeviceList();
+		bool deviceInList = false;
 		Ogre::StringVector::iterator deviceItr;
-		for(deviceItr = deviceList.begin(); deviceItr != deviceList.end(); deviceItr++)
+		for(deviceItr = deviceList.begin(); deviceItr != deviceList.end() && (*deviceItr).compare("") != 0; deviceItr++)
 		{
 			deviceInList = (*deviceItr).compare(deviceName) == 0;
 			ss << "  * " << (*deviceItr);
@@ -445,6 +665,12 @@ namespace OgreAL {
 			}
 		}
 
+		// Check for EFX Support
+		if(alcIsExtensionPresent(mDevice, "ALC_EXT_EFX") == AL_TRUE)
+		{
+			Ogre::LogManager::getSingleton().logMessage("EFX Extension Found");
+		}
+
 		// Check for X-RAM extension
 		if(alIsExtensionPresent("EAX-RAM") == AL_TRUE)
 		{
@@ -460,7 +686,63 @@ namespace OgreAL {
 				" (" + Ogre::StringConverter::toString(mXRamFree) + " free)");
 		}
 
-		// See how many sources the harware allows
-		mMaxNumSources = _getMaxSources();
+		// Create our pool of sources
+		mMaxNumSources = createSourcePool();
+	}
+
+	void SoundManager::updateSourceAllocations()
+	{
+		while(!mQueuedSounds.empty())
+		{
+			Sound *queuedSound = mQueuedSounds.front();
+			Sound *activeSound = mActiveSounds.front();
+
+			Ogre::Real distQueuedSound, distActiveSound;
+			Ogre::Vector3 listenerPos = Listener::getSingleton().getDerivedPosition();
+			if(queuedSound->isRelativeToListener())
+			{
+				distQueuedSound = queuedSound->getPosition().length();
+			}
+			else
+			{
+				distQueuedSound = queuedSound->getDerivedPosition().distance(listenerPos);
+			}
+
+			if(activeSound->isRelativeToListener())
+			{
+				distActiveSound = activeSound->getPosition().length();
+			}
+			else
+			{
+				distActiveSound = activeSound->getDerivedPosition().distance(listenerPos);
+			}
+
+			if(queuedSound->getPriority() > activeSound->getPriority() ||
+				queuedSound->getPriority() == activeSound->getPriority() && distQueuedSound < distActiveSound)
+			{
+				// Remove the sounds from their respective lists
+				mActiveSounds.erase(mActiveSounds.begin());
+				mQueuedSounds.erase(mQueuedSounds.begin());
+
+				// Steal the source from the currently active sound
+				activeSound->pause();
+				activeSound->unqueueBuffers();
+				SourceRef source = activeSound->getSource();
+				activeSound->setSource(AL_NONE);
+
+				// Kickstart the currently queued sound
+				queuedSound->setSource(source);
+				queuedSound->play();
+
+				// Add the sound back to the correct lists
+				mActiveSounds.push_back(queuedSound);
+				mQueuedSounds.push_back(activeSound);
+			}
+			else
+			{
+				// We have no more sounds that we can sacrifice
+				break;
+			}
+		}
 	}
 } // Namespace

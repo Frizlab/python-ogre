@@ -83,6 +83,7 @@ def ManualFixes ( mb ):
         main_ns = global_ns
     # Py++ doesn't know that this should be noncopyable so we set it here        
     main_ns.class_('CaelumSystem').noncopyable = True
+    main_ns.class_('LayeredClouds').noncopyable = True
               
 ############################################################
 ##

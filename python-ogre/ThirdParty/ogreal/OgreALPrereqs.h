@@ -88,6 +88,7 @@ namespace OgreAL{
 	typedef ALsizei Size;
 	typedef ALchar* ALString;
 	typedef std::vector<char> Buffer;
+	typedef std::queue<SourceRef> SourcePool;
 
 	/// Struct used with STL containers
 	struct DeleteObject

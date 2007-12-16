@@ -70,22 +70,22 @@ namespace OgreAL {
 		 */
 		OggSound(const Ogre::String& name, const Ogre::DataStreamPtr& soundStream, bool loop, bool stream);
 
-		/// This is called each frame to update the position, direction, etc
-		virtual bool _updateSound();
-
 	public:
 		/** Standard Destructor. */
 		virtual ~OggSound();
-
-		/** Plays the sound. */
-		virtual bool play();
-		/** Stops the sound. @note Upon calling play again, the sound will resume from the begining */
-		virtual bool stop();
 
 		/** Sets the offset within the audio stream in seconds */
 		virtual void setSecondOffset(Ogre::Real seconds);
 		/** Returns the current offset within the audio stream in seconds */
 		virtual Ogre::Real getSecondOffset();
+
+	protected:
+		/// This is called each frame to update the position, direction, etc
+		virtual bool updateSound();
+		/// Loads the buffers to be played.  Returns whether the buffer is loaded.
+		virtual bool loadBuffers();
+		/// Unloads the buffers.  Returns true if the buffers are still loaded.
+		virtual bool unloadBuffers();
 
 	private:
 		/// Returns a buffer containing the next chunk of length size

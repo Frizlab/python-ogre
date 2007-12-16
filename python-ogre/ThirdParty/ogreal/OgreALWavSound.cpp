@@ -114,29 +114,9 @@ namespace OgreAL {
 			calculateFormatInfo();
 
 			// mBufferSize is equal to 1/4 of a second of audio
-			mLengthInSeconds = mDataSize / (mBufferSize * 4);
+			mLengthInSeconds = (float)mDataSize / ((float)mBufferSize * 4);
 
-			mBuffers = new BufferRef[mNumBuffers];
-			alGenBuffers(mNumBuffers, mBuffers);
-			CheckError(alGetError(), "Could not generate buffer");
-
-			for(int i = 0; i < mNumBuffers; i++)
-			{
-				CheckCondition(AL_NONE != mBuffers[i], 13, "Could not generate buffer");
-				Buffer buffer = bufferData(mSoundStream, mStream?mBufferSize:mDataSize);
-				alBufferData(mBuffers[i], mFormat, &buffer[0], static_cast<Size>(buffer.size()), mFreq);
-				CheckError(alGetError(), "Could not load buffer data");
-			}
-
-			createAndBindSource();
-
-			if(mStream)
-			{
-				// There is an issue with looping and streaming, so we will
-				// disable looping and deal with it on our own.
-				alSourcei (mSource, AL_LOOPING,	AL_FALSE);
-				CheckError(alGetError(), "Failed to set looping");
-			}
+			generateBuffers();
 		}
 		catch(Ogre::Exception e)
 		{
@@ -156,39 +136,28 @@ namespace OgreAL {
 	WavSound::~WavSound()
 	{}
 
-	bool WavSound::play()
+	bool WavSound::loadBuffers()
 	{
-		if(isStopped() && mStream)
+		for(int i = 0; i < mNumBuffers; i++)
 		{
-			for(int i = 0; i < mNumBuffers; i++)
-			{
-				CheckCondition(AL_NONE != mBuffers[i], 13, "Could not generate buffer");
-				Buffer buffer = bufferData(mSoundStream, mStream?mBufferSize:mDataSize);
-				alBufferData(mBuffers[i], mFormat, &buffer[0], static_cast<Size>(buffer.size()), mFreq);
-				CheckError(alGetError(), "Could not load buffer data");
-			}
-		    
-			alSourceQueueBuffers(mSource, mNumBuffers, mBuffers);
-			CheckError(alGetError(), "Failed to queue Buffers");
+			CheckCondition(AL_NONE != mBuffers[i], 13, "Could not generate buffer");
+			Buffer buffer = bufferData(mSoundStream, mStream?mBufferSize:mDataSize);
+			alBufferData(mBuffers[i], mFormat, &buffer[0], static_cast<Size>(buffer.size()), mFreq);
+			CheckError(alGetError(), "Could not load buffer data");
 		}
 
-		return Sound::play();
+		return true;
 	}
 
-	bool WavSound::stop()
+	bool WavSound::unloadBuffers()
 	{
-		if(Sound::stop())
+		if(mStream)
 		{
-			return true;
+			mSoundStream->seek(mDataStart);
+			return false;
 		}
 		else
 		{
-			if(mStream)
-			{
-				emptyQueues();
-				mSoundStream->seek(mDataStart);
-			}
-
 			return true;
 		}
 	}
@@ -203,7 +172,7 @@ namespace OgreAL {
 		{
 			bool wasPlaying = isPlaying();
 
-			stop();
+			pause();
 
 			// mBufferSize is 1/4 of a second
 			size_t dataOffset = static_cast<size_t>(seconds * mBufferSize * 4);
@@ -230,7 +199,7 @@ namespace OgreAL {
 			*/
 
 			// mBufferSize is 1/4 of a second
-			Ogre::Real wavStreamOffset = (mSoundStream->tell() - mDataStart) / (mBufferSize * 4);
+			Ogre::Real wavStreamOffset = (float)(mSoundStream->tell() - mDataStart) / (float)(mBufferSize * 4);
 			Ogre::Real bufferOffset = Sound::getSecondOffset();
 
 			Ogre::Real totalOffset = wavStreamOffset + (0.25 - bufferOffset);
@@ -238,14 +207,14 @@ namespace OgreAL {
 		}
 	}
 
-	bool WavSound::_updateSound()
+	bool WavSound::updateSound()
 	{
 		// Call the parent method to update the position
-		Sound::_updateSound();
+		Sound::updateSound();
 
 		bool eof = false;
 
-		if(mStream)
+		if(mStream && mSource != AL_NONE)
 		{
 			// Update the stream
 			int processed;

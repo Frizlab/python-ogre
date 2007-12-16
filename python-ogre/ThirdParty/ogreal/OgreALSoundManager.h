@@ -174,6 +174,9 @@ namespace OgreAL {
 		/** Removes a BufferRef from the BufferMap */
 		void _removeBufferRef(const Ogre::String& bufferName);
 
+		SourceRef _requestSource(Sound *sound);
+		SourceRef _releaseSource(Sound *sound);
+
 		static const Ogre::String FILE_TYPE;
 		static const Ogre::String OGG;
 		static const Ogre::String WAV;
@@ -198,21 +201,30 @@ namespace OgreAL {
 		bool mEAXSupport;
 		int mEAXVersion;
 		bool mXRAMSupport;
+		bool mEFXSupport;
+		int mSendsPerSource;
 		Ogre::Real mDopplerFactor;
 		Ogre::Real mSpeedOfSound;
 
 	private:
-		int _getMaxSources();
+		int createSourcePool();
 		void createListener();
 		void initializeDevice(const Ogre::String& deviceName);
 		void checkFeatureSupport();
+		void updateSourceAllocations();
 		struct UpdateSound;
+		struct SortLowToHigh;
+		struct SortHighToLow;
 
 		int mMaxNumSources;
 		FormatMap mSupportedFormats;
 
 		SoundMap mSoundMap;
 		SoundList mPauseResumeAll;
+
+		SourcePool mSourcePool;
+		SoundList mActiveSounds;
+		SoundList mQueuedSounds;
 
 		ALCcontext *mContext;
 		ALCdevice *mDevice;

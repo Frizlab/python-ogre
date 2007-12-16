@@ -53,6 +53,26 @@ class DllExport LayeredClouds: public CameraBoundElement {
 		 */
 		Ogre::Real getCloudCover () const;
 
+        /** Set the image used to lookup the cloud coverage threshold.
+         *  This image is used to calculate the cloud coverage threshold
+         *  based on the desired cloud cover.
+         *
+         *  The cloud coverage threshold is substracted from cloud intensity
+         *  at any point; to generate fewer or more clouds. That threshold is
+         *  not linear, a lookup is required to ensure that setCloudCover(0.1)
+         *  will actually have 10% the clouds at setCloudCover(1).
+         *
+         *  The lookup is the inverse of the sum on the histogram, and was
+         *  calculated with a small hacky tool.
+         */
+        void setCloudCoverLookup (const Ogre::String& fileName);
+
+        /** Disable any cloud cover lookup.
+         *  @see setCloudCoverLookup.
+         */
+        void disableCloudCoverLookup ();
+
+
 		/** Sets blending factor between the two cloud mass layers.
 		 */
 		void setCloudMassBlend (const Ogre::Real cloudCover);
@@ -138,6 +158,10 @@ class DllExport LayeredClouds: public CameraBoundElement {
 
 		/// Current cloud detail layer offset.
 		Ogre::Vector2 mCloudDetailOffset;
+
+        /// Lookup used for cloud coverage.
+        /// see setCloudCoverLookup.
+        std::auto_ptr<Ogre::Image> mCloudCoverLookup;
 
 
 		/// If this class controls animation for itself.
