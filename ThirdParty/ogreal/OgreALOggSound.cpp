@@ -109,27 +109,7 @@ namespace OgreAL {
 
 			mLengthInSeconds = ov_time_total(&mOggStream, -1);
 
-			mBuffers = new BufferRef[mNumBuffers];
-			alGenBuffers(mNumBuffers, mBuffers);
-			CheckError(alGetError(), "Could not generate buffer");
-
-			for(int i = 0; i < mNumBuffers; i++)
-			{
-				CheckCondition(AL_NONE != mBuffers[i], 13, "Could not generate buffer");
-				Buffer buffer = bufferData(&mOggStream, mStream ? mBufferSize : 0);
-				alBufferData(mBuffers[i], mFormat, &buffer[0], static_cast<Size>(buffer.size()), mFreq);
-				CheckError(alGetError(), "Could not load buffer data");
-			}
-
-			createAndBindSource();
-			
-			if(mStream)
-			{
-				// There is an issue with looping and streaming, so we will
-				// disable looping and deal with it on our own.
-				alSourcei (mSource, AL_LOOPING,	AL_FALSE);
-				CheckError(alGetError(), "Failed to set looping");
-			}
+			generateBuffers();
 		}
 		catch(Ogre::Exception e)
 		{
@@ -153,39 +133,28 @@ namespace OgreAL {
 		ov_clear(&mOggStream);
 	}
 
-	bool OggSound::play()
+	bool OggSound::loadBuffers()
 	{
-		if(isStopped() && mStream)
+		for(int i = 0; i < mNumBuffers; i++)
 		{
-			for(int i = 0; i < mNumBuffers; i++)
-			{
-				CheckCondition(AL_NONE != mBuffers[i], 13, "Could not generate buffer");
-				Buffer buffer = bufferData(&mOggStream, mStream ? mBufferSize : 0);
-				alBufferData(mBuffers[i], mFormat, &buffer[0], static_cast<Size>(buffer.size()), mFreq);
-				CheckError(alGetError(), "Could not load buffer data");
-			}
-		    
-			alSourceQueueBuffers(mSource, mNumBuffers, mBuffers);
-			CheckError(alGetError(), "Failed to queue Buffers");
+			CheckCondition(AL_NONE != mBuffers[i], 13, "Could not generate buffer");
+			Buffer buffer = bufferData(&mOggStream, mStream ? mBufferSize : 0);
+			alBufferData(mBuffers[i], mFormat, &buffer[0], static_cast<Size>(buffer.size()), mFreq);
+			CheckError(alGetError(), "Could not load buffer data");
 		}
 
-		return Sound::play();
+		return true;
 	}
 
-	bool OggSound::stop()
+	bool OggSound::unloadBuffers()
 	{
-		if(Sound::stop())
+		if(mStream)
 		{
-			return true;
+			ov_time_seek(&mOggStream, 0);
+			return false;
 		}
 		else
 		{
-			if(mStream)
-			{
-				emptyQueues();
-				ov_time_seek(&mOggStream, 0);
-			}
-
 			return true;
 		}
 	}
@@ -200,7 +169,7 @@ namespace OgreAL {
 		{
 			bool wasPlaying = isPlaying();
 			
-			stop();
+			pause();
 			ov_time_seek(&mOggStream, seconds);
 
 			if(wasPlaying) play();
@@ -231,14 +200,14 @@ namespace OgreAL {
 		}
 	}
 
-	bool OggSound::_updateSound()
+	bool OggSound::updateSound()
 	{
 		// Call the parent method to update the position
-		Sound::_updateSound();
+		Sound::updateSound();
 
 		bool eof = false;
 
-		if(mStream)
+		if(mStream && mSource != AL_NONE)
 		{
 			// Update the stream
 			int processed;
@@ -256,7 +225,7 @@ namespace OgreAL {
 				Buffer data = bufferData(&mOggStream, mBufferSize);
 				alBufferData(buffer, mFormat, &data[0], static_cast<Size>(data.size()), mFreq);
 
-				eof = mSoundStream->eof();
+				eof = (mOggStream.offset == mOggStream.end);
 		 
 				alSourceQueueBuffers(mSource, 1, &buffer);
 				CheckError(alGetError(), "Failed to queue buffers");
@@ -301,10 +270,12 @@ namespace OgreAL {
 			while(buffer.size() < size)
 			{
 				sizeRead = ov_read(&mOggStream, data, mBufferSize, 0, 2, 1, &section);
+				if(sizeRead == 0) break;
 				buffer.insert(buffer.end(), data, data + sizeRead);
 			}
 		}
-
+		
+		delete[] data;
 		return buffer;
 	}
 } // Namespace

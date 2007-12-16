@@ -50,7 +50,10 @@ namespace OgreAL {
 		mLengthInSeconds(0),
 		mBuffers(0),
 		mBufferSize(0),
-		mNumBuffers(1),
+		mBuffersLoaded(false),
+		mBuffersQueued(false),
+		mPriority(NORMAL),
+		mStartTime(0),
 		mStream(false),
 		mPitch(1.0),
 		mGain(1.0),
@@ -83,7 +86,11 @@ namespace OgreAL {
 		mLengthInSeconds(0),
 		mBuffers(0),
 		mBufferSize(0),
+		mBuffersLoaded(false),
+		mBuffersQueued(false),
 		mNumBuffers(stream?2:1),
+		mPriority(NORMAL),
+		mStartTime(0),
 		mStream(stream),
 		MovableObject(name),
 		mPitch(1.0), mGain(1.0),
@@ -116,7 +123,11 @@ namespace OgreAL {
 		mChannels(0),
 		mLengthInSeconds(0),
 		mBufferSize(0),
+		mBuffersLoaded(true),
+		mBuffersQueued(false),
 		mNumBuffers(1),
+		mPriority(NORMAL),
+		mStartTime(0),
 		mStream(false),
 		MovableObject(name),
 		mLoop(loop?AL_TRUE:AL_FALSE),
@@ -150,13 +161,11 @@ namespace OgreAL {
 
 		// mBufferSize is equal to 1/4 of a second of audio
 		mLengthInSeconds = mSize / (mBufferSize * 4);
-
-		createAndBindSource();
 	}
 
 	Sound::~Sound()
 	{
-		emptyQueues();
+		stop();
 
 		try
 		{
@@ -169,26 +178,64 @@ namespace OgreAL {
 			// Don't die because of this.
 		}
 
-		alSourcei(mSource, AL_BUFFER, 0);
-		CheckError(alGetError(), "Failed to release buffer");
+		if(mSource != AL_NONE)
+		{
+			alSourcei(mSource, AL_BUFFER, 0);
+			CheckError(alGetError(), "Failed to release buffer");
+		}
 
-		alDeleteSources(1, &mSource);
-		CheckError(alGetError(), "Failed to release source");
+		delete[] mBuffers;
+
+		SoundManager::getSingleton()._releaseSource(this);
 	}
 
 	bool Sound::play()
 	{
 		if(isPlaying()) return true;
 
-		alSourcePlay(mSource);
-		CheckError(alGetError(), "Failed to play sound");
+		if(mStartTime == 0)
+		{
+			time(&mStartTime);
+		}
+		else if(!isPaused())
+		{
+			time_t currentTime;
+			time(&currentTime);
+
+			setSecondOffset(currentTime - mStartTime);
+		}
+
+		if(mSource != AL_NONE || (mSource = SoundManager::getSingleton()._requestSource(this)) != AL_NONE)
+		{
+			if(!mBuffersLoaded)
+			{
+				mBuffersLoaded = loadBuffers();
+			}
+
+			if(!mBuffersQueued)
+			{
+				// Unqueue any buffers that may be left over
+				unqueueBuffers();
+				queueBuffers();
+			}
+
+			initSource();
+
+			alSourcePlay(mSource);
+			CheckError(alGetError(), "Failed to play sound");
+		}
 
 		return false;
 	}
 
 	bool Sound::isPlaying() const
 	{
-		State state;    
+		if(mSource == AL_NONE)
+		{
+			return false;
+		}
+
+		State state;
 		alGetSourcei(mSource, AL_SOURCE_STATE, &state);
 		CheckError(alGetError(), "Failed to get State");
 
@@ -199,14 +246,22 @@ namespace OgreAL {
 	{
 		if(!isPlaying()) return true;
 
-		alSourcePause(mSource);
-		CheckError(alGetError(), "Failed to pause sound");
+		if(mSource != AL_NONE)
+		{
+			alSourcePause(mSource);
+			CheckError(alGetError(), "Failed to pause sound");
+		}
 
 		return false;
 	}
 
 	bool Sound::isPaused() const
 	{
+		if(mSource == AL_NONE)
+		{
+			return false;
+		}
+
 		State state;    
 		alGetSourcei(mSource, AL_SOURCE_STATE, &state);
 		CheckError(alGetError(), "Failed to get State");
@@ -216,16 +271,39 @@ namespace OgreAL {
 
 	bool Sound::stop()
 	{
-		if(isStopped()) return true;
+		if(isStopped())
+		{
+			if(mSource != AL_NONE)
+			{
+				mSource = SoundManager::getSingleton()._releaseSource(this);
+				return true;
+			}
+		}
+		else if(mSource != AL_NONE)
+		{
+			// Stop the source
+			alSourceStop(mSource);
+			CheckError(alGetError(), "Failed to stop sound");
 
-		alSourceStop(mSource);
-		CheckError(alGetError(), "Failed to stop sound");
+			unqueueBuffers();
 
-		return false;
+			mBuffersLoaded = unloadBuffers();
+		}
+
+		mSource = SoundManager::getSingleton()._releaseSource(this);
+
+		mStartTime = 0;
+
+		return true;
 	}
 
 	bool Sound::isStopped() const
 	{
+		if(mSource == AL_NONE)
+		{
+			return true;
+		}
+
 		State state;    
 		alGetSourcei(mSource, AL_SOURCE_STATE, &state);
 		CheckError(alGetError(), "Failed to get State");
@@ -235,6 +313,11 @@ namespace OgreAL {
 
 	bool Sound::isInitial() const
 	{
+		if(mSource == AL_NONE)
+		{
+			return true;
+		}
+
 		State state;    
 		alGetSourcei(mSource, AL_SOURCE_STATE, &state);
 		CheckError(alGetError(), "Failed to get State");
@@ -245,50 +328,78 @@ namespace OgreAL {
 	void Sound::setPitch(Ogre::Real pitch)
 	{
 		mPitch = pitch;
-		alSourcef(mSource, AL_PITCH, mPitch);
-		CheckError(alGetError(), "Failed to set Pitch");
+
+		if(mSource != AL_NONE)
+		{
+			alSourcef(mSource, AL_PITCH, mPitch);
+			CheckError(alGetError(), "Failed to set Pitch");
+		}
 	}
 
 	void Sound::setGain(Ogre::Real gain)
 	{
 		mGain = gain;
-		alSourcef(mSource, AL_GAIN, mGain);
-		CheckError(alGetError(), "Failed to set Gain");
+
+		if(mSource != AL_NONE)
+		{
+			alSourcef(mSource, AL_GAIN, mGain);
+			CheckError(alGetError(), "Failed to set Gain");
+		}
 	}
 
 	void Sound::setMaxGain(Ogre::Real maxGain)
 	{
 		mMaxGain = maxGain;
-		alSourcef(mSource, AL_MAX_GAIN, mMaxGain);
-		CheckError(alGetError(), "Failed to set Max Gain");
+		
+		if(mSource != AL_NONE)
+		{
+			alSourcef(mSource, AL_MAX_GAIN, mMaxGain);
+			CheckError(alGetError(), "Failed to set Max Gain");
+		}
 	}
 
 	void Sound::setMinGain(Ogre::Real minGain)
 	{
 		mMinGain = minGain;
-		alSourcef(mSource, AL_MIN_GAIN, mMinGain);
-		CheckError(alGetError(), "Failed to set Min Gain");
+
+		if(mSource != AL_NONE)
+		{
+			alSourcef(mSource, AL_MIN_GAIN, mMinGain);
+			CheckError(alGetError(), "Failed to set Min Gain");
+		}
 	}
 
 	void Sound::setMaxDistance(Ogre::Real maxDistance)
 	{
 		mMaxDistance = maxDistance;
-		alSourcef(mSource, AL_MAX_DISTANCE, mMaxDistance);
-		CheckError(alGetError(), "Failed to set Max Distance");
+
+		if(mSource != AL_NONE)
+		{
+			alSourcef(mSource, AL_MAX_DISTANCE, mMaxDistance);
+			CheckError(alGetError(), "Failed to set Max Distance");
+		}
 	}
 
 	void Sound::setRolloffFactor(Ogre::Real rolloffFactor)
 	{
 		mRolloffFactor = rolloffFactor;
-		alSourcef(mSource, AL_ROLLOFF_FACTOR, mRolloffFactor);
-		CheckError(alGetError(), "Failed to set Rolloff Factor");
+
+		if(mSource != AL_NONE)
+		{
+			alSourcef(mSource, AL_ROLLOFF_FACTOR, mRolloffFactor);
+			CheckError(alGetError(), "Failed to set Rolloff Factor");
+		}
 	}
 
 	void Sound::setReferenceDistance(Ogre::Real refDistance)
 	{
 		mReferenceDistance = refDistance;
-		alSourcef(mSource, AL_REFERENCE_DISTANCE, mReferenceDistance);
-		CheckError(alGetError(), "Failed to set Reference Distance");
+
+		if(mSource != AL_NONE)
+		{
+			alSourcef(mSource, AL_REFERENCE_DISTANCE, mReferenceDistance);
+			CheckError(alGetError(), "Failed to set Reference Distance");
+		}
 	}
 
 	void Sound::setDistanceValues(Ogre::Real maxDistance, Ogre::Real rolloffFactor, Ogre::Real refDistance)
@@ -303,8 +414,12 @@ namespace OgreAL {
 		mVelocity.x = x;
 		mVelocity.y = y;
 		mVelocity.z = z;
-		alSource3f(mSource, AL_VELOCITY, mVelocity.x, mVelocity.y, mVelocity.z);
-		CheckError(alGetError(), "Failed to set Velocity");
+
+		if(mSource != AL_NONE)
+		{
+			alSource3f(mSource, AL_VELOCITY, mVelocity.x, mVelocity.y, mVelocity.z);
+			CheckError(alGetError(), "Failed to set Velocity");
+		}
 	}
 
 	void Sound::setVelocity(const Ogre::Vector3& vec)
@@ -318,49 +433,77 @@ namespace OgreAL {
 		if(mParentNode) return;
 
 		mSourceRelative = relative;
-		alSourcei(mSource, AL_SOURCE_RELATIVE, mSourceRelative);
-		CheckError(alGetError(), "Failed to set Source Relative");
+
+		if(mSource != AL_NONE)
+		{
+			alSourcei(mSource, AL_SOURCE_RELATIVE, mSourceRelative);
+			CheckError(alGetError(), "Failed to set Source Relative");
+		}
 	}
 
 	void Sound::setOuterConeGain(Ogre::Real outerConeGain)
 	{
 		mOuterConeGain = outerConeGain;
-		alSourcef(mSource, AL_CONE_OUTER_GAIN, mOuterConeGain);
-		CheckError(alGetError(), "Failed to set Outer Cone Gain");
+
+		if(mSource != AL_NONE)
+		{
+			alSourcef(mSource, AL_CONE_OUTER_GAIN, mOuterConeGain);
+			CheckError(alGetError(), "Failed to set Outer Cone Gain");
+		}
 	}
 
 	void Sound::setInnerConeAngle(Ogre::Real innerConeAngle)
 	{
 		mInnerConeAngle = innerConeAngle;
-		alSourcef(mSource, AL_CONE_INNER_ANGLE, mInnerConeAngle);
-		CheckError(alGetError(), "Failed to set Inner Cone Angle");
+
+		if(mSource != AL_NONE)
+		{
+			alSourcef(mSource, AL_CONE_INNER_ANGLE, mInnerConeAngle);
+			CheckError(alGetError(), "Failed to set Inner Cone Angle");
+		}
 	}
 
 	void Sound::setOuterConeAngle(Ogre::Real outerConeAngle)
 	{
 		mOuterConeAngle = outerConeAngle;
-		alSourcef(mSource, AL_CONE_OUTER_ANGLE, mOuterConeAngle);
-		CheckError(alGetError(), "Failed to set Outer Cone Angle");
+
+		if(mSource != AL_NONE)
+		{
+			alSourcef(mSource, AL_CONE_OUTER_ANGLE, mOuterConeAngle);
+			CheckError(alGetError(), "Failed to set Outer Cone Angle");
+		}
 	}
 
 	void Sound::setLoop(bool loop)
 	{
 		mLoop = loop?AL_TRUE:AL_FALSE;
-		alSourcei(mSource, AL_LOOPING, mLoop);
-		CheckError(alGetError(), "Failed to set Looping");
+
+		if(mSource != AL_NONE)
+		{
+			alSourcei(mSource, AL_LOOPING, mLoop);
+			CheckError(alGetError(), "Failed to set Looping");
+		}
 	}
 
 	void Sound::setSecondOffset(Ogre::Real seconds)
 	{
-		alSourcef(mSource, AL_SEC_OFFSET, seconds);
-		CheckError(alGetError(), "Failed to set offset");
+		if(mSource != AL_NONE)
+		{
+			alSourcef(mSource, AL_SEC_OFFSET, seconds);
+			CheckError(alGetError(), "Failed to set offset");
+		}
 	}
 
 	Ogre::Real Sound::getSecondOffset()
 	{
 		Ogre::Real offset = 0;
-		alGetSourcef(mSource, AL_SEC_OFFSET, &offset);
-		CheckError(alGetError(), "Failed to set Looping");
+
+		if(mSource != AL_NONE)
+		{
+			alGetSourcef(mSource, AL_SEC_OFFSET, &offset);
+			CheckError(alGetError(), "Failed to set Looping");
+		}
+
 		return offset;
 	}
 
@@ -416,35 +559,29 @@ namespace OgreAL {
         mLocalTransformDirty = false;
 	}
 
-	bool Sound::_updateSound()
+	bool Sound::updateSound()
 	{
 		_update();
-		alSource3f(mSource, AL_POSITION, mDerivedPosition.x, mDerivedPosition.y, mDerivedPosition.z);
-		CheckError(alGetError(), "Failed to set Position");
 
-		alSource3f(mSource, AL_DIRECTION, mDerivedDirection.x, mDerivedDirection.y, mDerivedDirection.z);
-		CheckError(alGetError(), "Failed to set Direction");
-		return true;
-	}
-
-	void Sound::createAndBindSource()
-	{
-		if(SoundManager::getSingleton().xRamSupport())
+		if(mSource != AL_NONE)
 		{
-			SoundManager::getSingleton().eaxSetBufferMode(mNumBuffers, mBuffers, SoundManager::xRamHardware);
+			alSource3f(mSource, AL_POSITION, mDerivedPosition.x, mDerivedPosition.y, mDerivedPosition.z);
+			CheckError(alGetError(), "Failed to set Position");
+
+			alSource3f(mSource, AL_DIRECTION, mDerivedDirection.x, mDerivedDirection.y, mDerivedDirection.z);
+			CheckError(alGetError(), "Failed to set Direction");
 		}
 
-		alGenSources(1, &mSource);		
-		CheckError(alGetError(), "Failed to generate source");
-
-		initSource();
-		
-		alSourceQueueBuffers(mSource, mNumBuffers, mBuffers);
-		CheckError(alGetError(), "Failed to bind Buffer");
+		return true;
 	}
 
 	void Sound::initSource()
 	{
+		if(mSource == AL_NONE)
+		{
+			return;
+		}
+
 		alSourcef (mSource, AL_PITCH,				mPitch);
 		alSourcef (mSource, AL_GAIN,				mGain);
 		alSourcef (mSource, AL_MAX_GAIN,			mMaxGain);
@@ -459,8 +596,22 @@ namespace OgreAL {
 		alSource3f(mSource, AL_VELOCITY,			mVelocity.x, mVelocity.y, mVelocity.z);
 		alSource3f(mSource, AL_DIRECTION,			mDerivedDirection.x, mDerivedDirection.y, mDerivedDirection.z);
 		alSourcei (mSource, AL_SOURCE_RELATIVE,		mSourceRelative);
-		alSourcei (mSource, AL_LOOPING,				mLoop);
+		// There is an issue with looping and streaming, so we will
+		// disable looping and deal with it on our own.
+		alSourcei (mSource, AL_LOOPING,				mStream ? AL_FALSE : mLoop);
 		CheckError(alGetError(), "Failed to initialize source");
+	}
+
+	void Sound::generateBuffers()
+	{
+		mBuffers = new BufferRef[mNumBuffers];
+		alGenBuffers(mNumBuffers, mBuffers);
+		CheckError(alGetError(), "Could not generate buffer");
+
+		if(SoundManager::getSingleton().xRamSupport())
+		{
+			SoundManager::getSingleton().eaxSetBufferMode(mNumBuffers, mBuffers, SoundManager::xRamHardware);
+		}
 	}
 
 	void Sound::calculateFormatInfo()
@@ -542,15 +693,22 @@ namespace OgreAL {
 		}
 	}
 
-	void Sound::emptyQueues()
+	void Sound::queueBuffers()
+	{
+		alSourceQueueBuffers(mSource, mNumBuffers, mBuffers);
+		CheckError(alGetError(), "Failed to bind Buffer");
+	}
+
+	void Sound::unqueueBuffers()
 	{
 		/*
 		** If the sound doens't have a state yet it causes an
-		** error when you try to unqueue the buffers! :S
+		** error when you try to unqueue the buffers! :S  In 
+		** order to get around this we stop the source even if
+		** it wasn't playing.
 		*/
-		if(isInitial()) play();
-
-		stop();
+		alSourceStop(mSource);
+		CheckError(alGetError(), "Failed to stop sound");
 
 		int queued;
 		alGetSourcei(mSource, AL_BUFFERS_QUEUED, &queued);
@@ -558,6 +716,9 @@ namespace OgreAL {
 
 		alSourceUnqueueBuffers(mSource, queued, mBuffers);
 		CheckError(alGetError(), "Failed to unqueue Buffers");
+
+		
+		mBuffersQueued = false;
 	}
 
 	const Ogre::String& Sound::getMovableType(void) const
@@ -583,8 +744,11 @@ namespace OgreAL {
 		if(mSourceRelative)
 		{
 			mSourceRelative = false;
-			alSourcei(mSource, AL_SOURCE_RELATIVE, AL_FALSE);
-			CheckCondition(alGetError() == AL_NO_ERROR, 13, "Inalid Value");
+			if(mSource != AL_NONE)
+			{
+				alSourcei(mSource, AL_SOURCE_RELATIVE, AL_FALSE);
+				CheckCondition(alGetError() == AL_NO_ERROR, 13, "Inalid Value");
+			}
 		}
 		mParentNode = parent;
 		_update();

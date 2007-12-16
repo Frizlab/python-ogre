@@ -1,6 +1,7 @@
 #include "CaelumPrecompiled.h"
 #include "LayeredClouds.h"
 #include "CaelumExceptions.h"
+#include "ImageHelper.h"
 
 namespace
 {
@@ -22,13 +23,14 @@ namespace caelum
 			const Ogre::String &meshName,
 			const Ogre::String &entityName
 	):
-			mSceneMgr(scene)
+			mSceneMgr(scene),
+            mCloudCoverLookup(0)
 	{
 		// Create cloud plane mesh if it doesn't exist.
 		if (Ogre::MeshManager::getSingleton ().getByName (meshName).isNull ()) {
 			Ogre::Plane plane = Ogre::Plane(Ogre::Vector3::NEGATIVE_UNIT_Y, -0.1);
 			Ogre::MeshManager::getSingleton ().createCurvedPlane(
-					meshName, resourceGroupName, plane, 2, 2, .4, 16, 16,
+					meshName, resourceGroupName, plane, 2, 2, .4, 64, 64,
 					false, 1, 1, 1, Ogre::Vector3::UNIT_Z);
 		}
 
@@ -54,6 +56,8 @@ namespace caelum
 		getVpParams()->setIgnoreMissingParams(true);
 
 		// Default parameter values
+        assert(mCloudCoverLookup.get() == 0);
+        setCloudCoverLookup("CloudCoverLookup.png");
 		setCloudCover(0.5);
 		setCloudMassOffset(Ogre::Vector2(0, 0));
 		setCloudDetailOffset(Ogre::Vector2(0, 0));
@@ -191,10 +195,27 @@ namespace caelum
 	}
 
 	void LayeredClouds::setCloudCover(const Ogre::Real cloudCover) {
-		getFpParams()->setNamedConstant("cloudCover", mCloudCover = cloudCover);
+        mCloudCover = cloudCover;
+        float cloudCoverageThreshold = 0;
+        if (mCloudCoverLookup.get() != 0) {
+            cloudCoverageThreshold = getInterpolatedColour(cloudCover, 1, mCloudCoverLookup.get(), false).r;
+        } else {
+            cloudCoverageThreshold = 1 - cloudCover;
+        }
+        getFpParams()->setNamedConstant("cloudCoverageThreshold", cloudCoverageThreshold);
 	}
 
 	Ogre::Real LayeredClouds::getCloudCover() const {
 		return mCloudCover;
 	}
+
+    void LayeredClouds::setCloudCoverLookup (const Ogre::String& fileName) {
+        mCloudCoverLookup.reset(0);
+        mCloudCoverLookup.reset(new Ogre::Image());
+        mCloudCoverLookup->load (fileName, RESOURCE_GROUP_NAME);
+    }
+
+    void LayeredClouds::disableCloudCoverLookup () {
+        mCloudCoverLookup = 0;
+    }
 } // namespace caelum

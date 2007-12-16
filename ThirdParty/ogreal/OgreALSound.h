@@ -66,8 +66,15 @@ namespace OgreAL {
 		/** Standard Destructor */
 		virtual ~Sound();
 
+		enum Priority
+		{
+			LOW,
+			NORMAL,
+			HIGH
+		};
+
 		/** Plays the sound. */
-		virtual bool play();
+		bool play();
 		/** Returns true if the sound is playing, otherwise false. */
 		virtual bool isPlaying() const;
 		/** Pauses the sound. @note Upon calling play again, the sound will resume where it left off */
@@ -75,7 +82,7 @@ namespace OgreAL {
 		/** Returns true if the sound is paused, otherwise false. */
 		virtual bool isPaused() const;
 		/** Stops the sound. @note Upon calling play again, the sound will resume from the begining */
-		virtual bool stop();
+		bool stop();
 		/** Returns true if the sound is stopped, otherwise false. */
 		virtual bool isStopped() const;
 		/** Returns true if the source does not have a state yet, otherwise false */
@@ -252,6 +259,10 @@ namespace OgreAL {
 		bool isLooping() const {return mLoop==AL_TRUE?true:false;}
 		/** Returns streaming state */
 		bool isStreaming() const {return mStream==AL_TRUE?true:false;}
+		/** Sets the priority of the sound */
+		void setPriority(Priority priority) {mPriority = priority;}
+		/** Returns the current Priority for the sound */
+		Priority getPriority() const {return mPriority;}
 		/** Returns the duration of the audio in seconds */
 		Ogre::Real getSecondDuration() {return mLengthInSeconds;}
 		/** Sets the offset within the audio stream in seconds */
@@ -264,6 +275,7 @@ namespace OgreAL {
 		const Ogre::Vector3& getDerivedDirection() const {return mDerivedDirection;}
 		/** Returns the name of the file used to create this Sound. */
 		const Ogre::String& getFileName() const {return mFileName;}
+
 		/** Overridden from MovableObject */
 		const Ogre::String& getMovableType() const;
 		/** Overridden from MovableObject */
@@ -281,15 +293,25 @@ namespace OgreAL {
 
 	protected:
 		/// Updates the sound if need be
-		virtual bool _updateSound();
-		/// Creates the source and binds the buffer
-		void createAndBindSource();
+		virtual bool updateSound();
+		/// Sets the source for the sound
+		void setSource(SourceRef source) {mSource = source;}
+		/// Returns the SourceRef
+		SourceRef getSource() {return mSource;}
 		/// Convienance method to reset the sound state
 		void initSource();
+		/// Convienance method for creating buffers
+		void generateBuffers();
 		/// Calculates format info for the sounds. @note requires mFreq, mChannels and mBPS;
 		void calculateFormatInfo();
+		/// Queues buffers to be played
+		void queueBuffers();
 		/// Empties any queues that may still be active in the sound
-		void emptyQueues();
+		void unqueueBuffers();
+		/// Loads the buffers to be played.  Returns whether the buffer is loaded.
+		virtual bool loadBuffers() {return true;}
+		/// Unloads the buffers.  Returns true if the buffers are still loaded.
+		virtual bool unloadBuffers() {return true;}
 
 		/// Returns the BufferRef for this sounds
 		BufferRef getBufferRef() const {return mBuffers[0];}
@@ -328,11 +350,18 @@ namespace OgreAL {
 		int mNumBuffers;
 		int mBufferSize;
 		bool mStream;
+		bool mBuffersLoaded;
+		bool mBuffersQueued;
 		Size mFreq;
 		Size mSize;
 		Size mChannels;
 		Size mBPS;
 		BufferFormat mFormat;
+
+		Priority mPriority;
+
+		// This allows us to start a sound back where is should be after being sacrificed
+		time_t mStartTime;
 
 		Ogre::Real mLengthInSeconds;
 		

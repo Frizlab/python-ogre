@@ -1,5 +1,6 @@
 #include "CaelumPrecompiled.h"
 #include "SkyColourModel.h"
+#include "ImageHelper.h"
 
 namespace caelum {
 
@@ -81,46 +82,6 @@ Ogre::ColourValue SkyColourModel::getSunLightColour (float time, const Ogre::Vec
     col = Ogre::ColourValue(val, val, val, 1.0);
     assert(Ogre::Math::RealEqual(col.a, 1));
     return col;
-}
-
-Ogre::ColourValue SkyColourModel::getInterpolatedColour (float fx, float fy, Ogre::Image *img, bool wrapX) {
-	// Don't -> all the time, and avoid unsigned warnings
-    int imgWidth = static_cast<int>(img->getWidth ());
-    int imgHeight = static_cast<int>(img->getHeight ());
-
-	// Calculate pixel y coord.
-    int py = Ogre::Math::IFloor(Ogre::Math::Abs (fy) * (imgHeight - 1));
-    // Snap to py image bounds.
-    py = std::max(0, std::min(py, imgHeight - 1));
-
-	// Get the two closest pixels on x.
-    // px1 and px2 are the closest integer pixels to px.
-    float px = fx * (img->getWidth () - 1);
-	int px1, px2;
-    px1 = Ogre::Math::IFloor(px);
-    px2 = Ogre::Math::ICeil(px);
-
-    if (wrapX) {
-        // Wrap x coords. The funny addition ensures that it does
-        // "the right thing" for negative values.
-        px1 = (px1 % imgWidth + imgWidth) % imgWidth;
-        px2 = (px2 % imgWidth + imgWidth) % imgWidth;
-    } else {
-        px1 = std::max(0, std::min(px1, imgWidth - 1));
-        px2 = std::max(0, std::min(px2, imgWidth - 1));
-    }
-
-	// Calculate the interpolated pixel
-	Ogre::ColourValue c1, c2, cf;
-    c1 = img->getColourAt (px1, py, 0);
-    c2 = img->getColourAt (px2, py, 0);
-
-    // Blend the two pixels together.
-    // diff is the weight between pixel 1 and pixel 2.
-    float diff = px - px1;
-	cf = c1 * (1 - diff) + c2 * diff;
-
-	return cf;
 }
 
 } // namespace caelum
