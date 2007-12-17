@@ -1,0 +1,314 @@
+//**************************************************************************************//
+//											//
+//					BASIC STUFF					//
+//											//
+//**************************************************************************************//
+ 
+
+vertex_program Tiny cg
+{
+	source ARNOLD.cg
+	entry_point Tiny_vp
+	profiles vs_1_1 arbvp1
+}
+
+vertex_program OneTexture cg
+{
+	source ARNOLD.cg
+
+	default_params
+	{
+		param_named_auto worldViewProj worldviewproj_matrix
+	}
+
+	entry_point OneTexture_vp
+	profiles vs_1_1 arbvp1
+}
+
+vertex_program Ambient cg
+{
+	source ARNOLD.cg 
+
+	default_params
+	{
+		param_named_auto worldViewProj worldviewproj_matrix
+		param_named ambient float4 0.0 0.0 0.0 1.0
+	}
+
+	entry_point Ambient_vp
+	profiles vs_1_1 arbvp1
+}
+
+vertex_program Ogre/BasicVertexPrograms/AmbientOneTexture cg
+{
+	source ARNOLD.cg
+	entry_point AmbientOneTexture_vp
+	profiles vs_1_1 arbvp1
+}
+ 
+
+material WhiteVertex
+{
+	technique
+	{
+		pass
+		{
+			lighting on 
+
+			ambient  0.0 0.0 0.0 1
+			diffuse  1 1 1 1
+	 		specular 1 1 1 1 127
+		}
+	}
+} 
+
+vertex_program PerVertex_Vert cg 
+{ 
+      source ARNOLD.cg 
+
+       default_params 
+       { 
+             	param_named_auto lightPosition light_position_object_space 0
+
+		param_named_auto lightDiffuse light_diffuse_colour 0
+		param_named_auto lightSpecular light_specular_colour 0 
+
+             	param_named_auto worldviewproj worldviewproj_matrix 
+
+		param_named_auto eyePosition camera_position_object_space
+		param_named exponent float 127
+       } 
+
+       entry_point PerVertex_Vert 
+       profiles vs_1_1 arbvp1 
+}
+
+material PerVertex
+{
+	technique 
+       {
+		 // Base ambient pass
+		pass
+ 		{
+			
+			vertex_program_ref Ambient
+			{
+			}
+		}
+		pass 
+		{ 
+			// do this for each light
+			iteration once_per_light
+			scene_blend add  
+
+                     vertex_program_ref PerVertex_Vert
+                     { 
+                     } 
+              } 
+       }
+}
+
+//**************************************************************************************//
+//											//
+//				PERPIXEL LIGHTING					//
+//				    A + D + S						//
+//				(NO TEXTURING ADDED)					//
+//**************************************************************************************//
+
+vertex_program Simple_Perpixel_Vert cg 
+{ 
+       source ARNOLD.cg  
+
+       default_params 
+       { 
+              	param_named_auto lightPosition0 light_position_object_space 0
+//		param_named_auto lightPosition1 light_position_object_space 1
+//		param_named_auto lightPosition2 light_position_object_space 2 
+
+              	param_named_auto worldviewproj worldviewproj_matrix
+       } 
+
+       entry_point Simple_Perpixel_Vert 
+       profiles vs_1_1 arbvp1 
+} 
+
+fragment_program Simple_PerPixel_Frag cg 
+{ 
+       source ARNOLD.cg  
+
+       default_params 
+       {
+		param_named_auto eyePosition camera_position_object_space
+
+              	param_named_auto lightDiffuse0 light_diffuse_colour 0
+//		param_named_auto lightDiffuse1 light_diffuse_colour 1
+//		param_named_auto lightDiffuse2 light_diffuse_colour 2
+
+		param_named_auto lightSpecular0 light_specular_colour 0
+//		param_named_auto lightSpecular1 light_specular_colour 1
+//		param_named_auto lightSpecular2 light_specular_colour 2 
+
+		param_named exponent0 float 127
+//		param_named exponent1 float 127
+//		param_named exponent2 float 127
+		//If changed, needs adjusting in Fragshader's every lit!!!!! 
+
+		param_named ambient float4 0.0 0.0 0.0 1.0
+       }  
+
+       entry_point Simple_PerPixel_Frag 
+       profiles ps_2_0 arbfp1 
+} 
+
+vertex_program PerPixel_Vert cg
+{
+	source ARNOLD.cg 
+
+	default_params
+	{
+		param_named_auto lightPosition light_position_object_space 0
+		param_named_auto eyePosition camera_position_object_space
+		param_named_auto worldviewproj worldviewproj_matrix
+	} 
+
+ 	entry_point PerPixel_Vert
+	profiles vs_1_1 arbvp1
+} 
+
+fragment_program PerPixel_Frag cg
+{
+	source ARNOLD.cg
+
+	default_params
+	{
+		param_named_auto lightDiffuse light_diffuse_colour 0
+		param_named_auto lightSpecular light_specular_colour 0
+		param_named exponent float 127
+	}
+
+	entry_point PerPixel_Frag
+	profiles ps_2_0 arbfp1
+} 
+
+vertex_program PerPixel_Lim3_Vert cg
+{
+	source ARNOLD.cg
+
+	default_params
+	{
+		param_named_auto lightPosition0 light_position_object_space 0
+		param_named_auto lightPosition1 light_position_object_space 1
+		param_named_auto lightPosition2 light_position_object_space 2
+		param_named_auto eyePosition camera_position_object_space
+		param_named_auto worldviewproj worldviewproj_matrix
+	} 
+
+	entry_point PerPixel_Lim3_Vert
+	profiles vs_1_1 arbvp1
+}
+
+fragment_program PerPixel_Lim3_Frag cg
+{
+	source ARNOLD.cg 
+
+	default_params
+	{
+		param_named_auto lightDiffuse0 light_diffuse_colour 0
+		param_named_auto lightDiffuse1 light_diffuse_colour 1
+		param_named_auto lightDiffuse2 light_diffuse_colour 2
+
+		param_named_auto lightSpecular0 light_specular_colour 0
+		param_named_auto lightSpecular1 light_specular_colour 1
+		param_named_auto lightSpecular2 light_specular_colour 2 
+
+		param_named exponent0 float 127
+//		param_named exponent1 float 127
+//		param_named exponent2 float 127
+		//If changed, needs adjusting in Fragshader's every lit!!!!!
+
+		param_named ambient float4 0.0 0.0 0.0 1.0
+	} 
+
+	entry_point PerPixel_Lim3_Frag
+	profiles ps_2_0 arbfp1
+} 
+
+material Simple_Perpixel 
+{ 
+       technique 
+       {
+		 // Base ambient pass
+		pass
+		{
+			
+			vertex_program_ref Ambient
+			{
+			}
+		}
+		pass 
+		{ 
+			// do this for each light
+			iteration once_per_light
+			scene_blend add  
+
+                     vertex_program_ref Simple_Perpixel_Vert
+                     { 
+                     }   
+
+                     fragment_program_ref Simple_PerPixel_Frag
+                     { 
+                     } 
+              } 
+       } 
+}
+
+material Perpixel
+{ 
+	technique 
+	{ 
+		// Base ambient pass
+		pass
+		{
+			
+			vertex_program_ref Ambient
+			{
+			}
+		}
+		pass 
+		{ 
+			// do this for each light
+			iteration once_per_light
+			scene_blend add  
+
+			vertex_program_ref PerPixel_Vert
+			{ 
+			} 
+
+			fragment_program_ref PerPixel_Frag 
+			{
+			} 
+		}   
+
+	}   
+
+}  
+
+//The limitation worth us ~20..100 FPS.It worth it.
+material Perpixel_Limited_3
+{ 
+	technique 
+	{ 
+		pass 
+		{
+			vertex_program_ref PerPixel_Lim3_Vert
+			{ 
+			}   
+
+			fragment_program_ref PerPixel_Lim3_Frag
+			{
+			} 
+		}  
+
+	}  
+
+}

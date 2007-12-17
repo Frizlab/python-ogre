@@ -1,0 +1,170 @@
+float3 expand (float3 v)
+{
+  return (v - 0.5) * 2;
+}
+
+
+
+void main_vert (float4 position : POSITION,
+          float3 uvw : TEXCOORD0,
+          float3 inNormal : NORMAL,
+		  out float4 oPosition : POSITION,
+		  out float2 largeWaves : TEXCOORD0,
+		  out float4 vPosition : TEXCOORD1,
+		  //out float2 mediumWaves : TEXCOORD1,
+		  //out float2 smallWaves : TEXCOORD2,
+		  out float3 normal : TEXCOORD2,
+		  out float4 projectionCoord : TEXCOORD3,
+		  out float3 vVec : TEXCOORD4,
+		  out float3 noiseUV : TEXCOORD5,
+          	  out float3 oUVW : TEXCOORD6,
+
+
+		  uniform float4x4 worldViewProj,
+		  uniform float time_0_X,
+		  uniform float2 largeWaveDirection,
+		  uniform float2 mediumWaveDirection,
+		  //uniform float2 smallWaveDirection,
+		  uniform float3 eyePosition,
+		  uniform float3 scale
+		  )
+{
+	oPosition = mul(worldViewProj, position);
+	vPosition = oPosition;
+	oUVW = uvw;
+	largeWaves = uvw.xz + (largeWaveDirection * time_0_X);
+	//mediumWaves = uvw.xz + (mediumWaveDirection * time_0_X);
+	//smallWaves = uv + (smallWaveDirection * time_0_X);
+    noiseUV = position.xyz * scale;
+    //noiseUV.xz += largeWaveDirection * time_0_X;
+    //noiseUV.y += noiseUV.y + 0.8 * time_0_X;
+
+    vVec = position.xyz - eyePosition;
+
+    normal = inNormal;
+
+    float4x4 scalemat = float4x4(0.5,   0,   0, 0.5,
+	                               0,-0.5,   0, 0.5,
+								   0,   0, 0.5, 0.5,
+								   0,   0,   0,   1);
+    projectionCoord = mul(scalemat, oPosition);
+}
+
+void main_frag (
+
+            float2 largeWaves: TEXCOORD0,
+            float4 vPosition: TEXCOORD1,
+            float3 normal: TEXCOORD2,
+            float4 projectionCoord: TEXCOORD3,
+            float3 vVec: TEXCOORD4,
+            float3 noiseUV: TEXCOORD5,
+            float3 uvw : TEXCOORD6,
+
+
+            uniform sampler2D LargeNoise : register(s0),
+            uniform sampler2D Rtt : register(s1),
+            uniform sampler2D MedNoise : register(s2),
+
+            // uniform sampler SmallNoise,
+            // dds noise texture
+            uniform sampler3D procNoise : register(s3),
+            uniform float4 waterColour,
+            uniform float fadeBias,
+            uniform float fadeExp,
+            uniform float fresnelScale,
+            uniform float4 lightPosition,
+            uniform float4 lightSpecular,
+            uniform float4 lightDiffuse,
+            uniform float4 ambient,
+
+            out float4 oCol: COLOR )
+{
+    float3 baseNoise = tex3D(procNoise, noiseUV).xyz;
+    float3 LN = tex2D(LargeNoise, largeWaves);
+    //float4 MN = tex2D(MedNoise, mediumWaves);
+    //float4 SN = tex2D(SmallNoise, smallWaves);
+    //waterColour.xyz += LN;
+    //float3 col = baseNoise + LN;
+
+    //float4 col = (0.5, 0.5, 0.0, 1.0);
+
+
+    //float4 sea = waterColour;
+    //baseNoise.xz *= 0.15;
+    float2 final = projectionCoord.xyz / projectionCoord.w;
+
+    //float3 noisy = (baseNoise * 0.05) + (baseNoise * 0.5) + baseNoise;
+    float3 bump = 2 * baseNoise - 1;// 2 * noisy - 1;
+    //bump.y = 0.8 * abs(bump.y) + 0.2;
+    // Offset the surface normal with the bump
+    bump = normalize(normal + bump.xyz);
+    //col *= waterColour;
+    // Find the reflection vector
+    float3 normView = normalize(vVec);
+
+
+    //float3 light = normalize (lightDir);
+    //float3 normal2 = expand(tex3D (Noise, uvw).xyz);
+
+    //float diffuse = max (dot (noisy, light), 0.5);
+    //diffuse = -diffuse;
+    //color.a = 1;
+    //float3 normView = vVec;
+    //float3 reflVec = reflect(-normView, -bump);
+    // Ogre has z flipped for cubemaps
+    //reflVec.z = -reflVec.z;
+    //float4 refl = tex2D(skyBox, reflVec);
+    final += bump.xz;
+    //float4 refl = tex2D(skyBox, reflVec);
+    //set up for fresnel calc
+    //float lrp = 1 - dot(normView, bump);
+    //float fresScale = 1.8
+    float fresnel = fadeBias + fresnelScale * pow(1 + dot(normView, normal), fadeExp);
+    float4 refl = tex2D(Rtt, final);
+
+    //oCol = tex2D(Rtt, projectionCoord);
+
+    float4 noLight = lerp(waterColour, refl, fresnel);
+
+    // THIS IS THE LIGHTING PART WHAT SEEMS TO BE WORKING!!!!
+
+    float3 L = cross((lightPosition.xyz - vPosition.xyz), normView);
+    float3 E = normalize(-vPosition.xyz);
+    float3 R = normalize(-reflect(L.xyz, bump));
+
+    float4 specular = lightSpecular * pow(max(dot(R,E),0.0), 8.0);
+
+    specular.a = noLight.a;
+    ambient.a = noLight.a;
+
+    oCol = noLight; //+ specular;
+
+    //oCol = refl;
+    //oCol = col;
+
+   // float3 N = normalize(normal);
+    //float NdotL = dot(normalize(lightDir), N);
+    //float NdotH = dot(normalize(halfAngle), N);
+
+    //float4 Lit = lit(NdotL,NdotH,exponent);
+    //float4 oColor = lightDiffuse * Lit.y + lightSpecular * Lit.z; //+ ambient;
+
+    //waterColor *= (2 * oColor -1);
+
+
+
+    //return waterColor;
+
+    //float4 noBumps = lerp(waterColor, refl, fresnel);
+    //float preAlpha = noBumps.a;
+    //float4 waves = saturate (0.25 + diffuse) * noBumps;
+    //float4 waves = (0.5 + diffuse) * noBumps;
+    //waves.a = preAlpha;
+    //return waves;
+    //float4 oCol = (baseNoise.xyz, preAlpha);
+    //return oCol;
+    // Interpolate between the water color and reflection for fresnel effect
+    //return lerp(waterColor, refl, saturate(fadeBias + pow(lrp, fadeExp)));
+    //return lerp(waterColor, refl, fresnel); // * oColor;
+
+}

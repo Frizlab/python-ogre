@@ -1,0 +1,32 @@
+material Tree/Bark
+{
+    technique
+    {
+        pass
+        {
+            ambient 1.0 1.0 1.0
+            texture_unit
+            {
+                texture Bark1.tga 
+            }
+        }
+    }
+}
+
+material Tree/Branch
+{
+    technique
+    {
+        pass
+        {
+            ambient 1.0 1.0 1.0
+	   	cull_hardware none
+		alpha_rejection greater_equal 84
+            texture_unit
+            {
+		
+                texture Branch1.tga 
+            }
+        }
+    }
+}

@@ -1,0 +1,329 @@
+//**************************************************************************************//
+//											//
+//				BASIC STUFF						//
+//		SOME WITH A + D + S (PER-VERTEX)					//
+//											//
+//**************************************************************************************//
+
+
+void Tiny_vp	(float4 position : POSITION,
+	  
+		  out float4 oPosition : POSITION, 
+
+		  uniform float4x4 worldViewProj)
+{
+	oPosition = mul(worldViewProj, position);
+}
+
+void OneTexture_vp(float4 position : POSITION,
+		  float2 uv		  : TEXCOORD0,
+	  
+		  out float4 oPosition : POSITION,
+		  out float2 oUv	   : TEXCOORD0, 
+
+		  uniform float4x4 worldViewProj,
+		  uniform float scale)
+{
+	oPosition = mul(worldViewProj, position);
+	oUv = uv * scale;
+}
+
+void Ambient_vp(float4 position : POSITION, 
+
+		  out float4 oPosition : POSITION,
+		  out float4 colour    : COLOR,
+
+		  uniform float4x4 worldViewProj,
+		  uniform float4 ambient)
+{
+	oPosition = mul(worldViewProj, position);
+	colour = ambient;
+} 
+
+void AmbientOneTexture_vp(float4 position : POSITION,
+			  float2 uv		  : TEXCOORD0,
+					  
+			  out float4 oPosition : POSITION,
+			  out float2 oUv	   : TEXCOORD0,
+			  out float4 colour    : COLOR,
+
+			  uniform float4x4 worldViewProj,
+			  uniform float4 ambient)
+{
+	oPosition = mul(worldViewProj, position);
+	oUv = uv;
+	colour = ambient;
+}
+
+void PerVertex_Vert (	float4 position : POSITION,
+			float3 normal   : NORMAL,
+
+			uniform float4 lightPosition,
+			uniform float3 eyePosition,
+			uniform float4x4 worldviewproj,
+
+			uniform float4 lightDiffuse,
+			uniform float4 lightSpecular,
+			uniform float exponent, 
+
+			out float4 oColor : COLOR,
+			out float4 oPos : POSITION
+		) 
+{
+	oPos = mul(worldviewproj, position);
+    
+	float3 EyeDir = normalize(eyePosition - position.xyz);
+
+	float3 LightDir = normalize(lightPosition.xyz -  (position.xyz * lightPosition.w)); 
+
+	float3 HalfAngle   = normalize(LightDir + EyeDir);
+
+	float3 N = normalize(normal);
+
+	float NdotL = dot(LightDir, N);
+	float NdotH = dot(HalfAngle, N);
+	float4 Lit = lit(NdotL,NdotH,exponent);
+	oColor = lightDiffuse * Lit.y + lightSpecular * Lit.z;	
+}
+
+//**************************************************************************************//
+//											//
+//				PERPIXEL LIGHTING					//
+//				    A + D + S						//
+//											//
+//**************************************************************************************//
+
+
+
+void Simple_Perpixel_Vert(
+                    float4 position : POSITION, 
+                    float3 normal   : NORMAL, 
+
+
+                     	uniform float4 lightPosition0,
+//			uniform float4 lightPosition1,
+//			uniform float4 lightPosition2,
+			
+                     	uniform float4x4 worldviewproj, 
+//			uniform float3 eyePosition,
+
+                     	out float4 oClipPos	: POSITION, 
+
+                    	out float3 oNorm	: TEXCOORD0, 
+
+                    	out float4 oLightPos0	: TEXCOORD1,
+//			out float4 oLightPos1	: TEXCOORD2,
+//			out float4 oLightPos2	: TEXCOORD3,
+			
+		     	out float4 oPos		: TEXCOORD4,
+			out float3 EyeDir	: TEXCOORD5
+             ) 
+{ 
+	oClipPos = mul(worldviewproj, position); 
+
+	oLightPos0 = lightPosition0;
+//	oLightPos1 = lightPosition1;
+//	oLightPos2 = lightPosition2;
+
+	oPos = position;
+
+	
+
+	oNorm     = normal; 
+} 
+
+void Simple_PerPixel_Frag(
+			float3 normal		: TEXCOORD0, 
+                     	float4 LightPos0	: TEXCOORD1,
+//			float4 LightPos1	: TEXCOORD2,
+//			float4 LightPos2	: TEXCOORD3,
+
+		     	float4 position 	: TEXCOORD4,
+
+			uniform float3 eyePosition, 
+
+			uniform float4 lightDiffuse0,
+//			uniform float4 lightDiffuse1,
+//			uniform float4 lightDiffuse2,
+
+			uniform float4 lightSpecular0,
+//			uniform float4 lightSpecular1,
+//			uniform float4 lightSpecular2,
+
+			uniform float exponent0,
+//			uniform float exponent1,
+//			uniform float exponent2,
+
+			uniform float4 ambient,
+
+                     	out float4 oColor : COLOR 
+) 
+{ 
+	
+		//could I do this, or whole halfangle calculus in vertex shader?
+	float3 N = normalize(normal);
+
+	float3 EyeDir = normalize(eyePosition - position.xyz);
+
+	float3 LightDir = normalize(LightPos0.xyz -  (position * LightPos0.w));
+	float3 HalfAngle = normalize(LightDir + EyeDir);
+	float NdotL = dot(LightDir, N);
+	float NdotH = dot(HalfAngle, N);
+	float4 Lit = lit(NdotL,NdotH,exponent0);
+	oColor = lightDiffuse0 * Lit.y + lightSpecular0 * Lit.z + ambient;
+
+
+//	LightDir = normalize(LightPos1.xyz -  (position * LightPos1.w));
+//	HalfAngle = normalize(LightDir + EyeDir);
+//	NdotL = dot(LightDir, N);
+//	NdotH = dot(HalfAngle, N);
+//	Lit = lit(NdotL,NdotH,exponent0);
+//	oColor += lightDiffuse1 * Lit.y + lightSpecular1 * Lit.z;
+
+
+//	LightDir = normalize(LightPos2.xyz -  (position * LightPos2.w));
+//	HalfAngle = normalize(LightDir + EyeDir);
+//	NdotL = dot(LightDir, N);
+//	NdotH = dot(HalfAngle, N);
+//	Lit = lit(NdotL,NdotH,exponent0);
+//	oColor += lightDiffuse2 * Lit.y + lightSpecular2 * Lit.z + ambient;
+
+		//do I need to normalize here the normal?
+}  
+
+void PerPixel_Vert (	float4 position : POSITION,
+			float3 normal   : NORMAL, 
+
+			uniform float4 lightPosition,
+			uniform float3 eyePosition,
+			uniform float4x4 worldviewproj, 
+
+			out float4 oPos : POSITION,
+			out float3 oNorm: TEXCOORD0,
+			out float3 oLightDir: TEXCOORD1,
+			out float3 oHalfAngle: TEXCOORD2
+		) 
+{
+	oPos = mul(worldviewproj, position);
+   
+	float3 EyeDir = normalize(eyePosition - position.xyz);
+
+	oLightDir = normalize(lightPosition.xyz -  (position.xyz * lightPosition.w)); 
+
+	oHalfAngle   = normalize(oLightDir + EyeDir); 
+
+	oNorm = normal;
+
+	//what if I leave normalization of normal, and oHalfAngle to Fragshader?
+}
+ 
+
+void PerPixel_Frag (	float3 normal: TEXCOORD0,
+			float3 LightDir  : TEXCOORD1,
+			float3 HalfAngle : TEXCOORD2, 
+
+			uniform float4 lightDiffuse,
+			uniform float4 lightSpecular,
+			uniform float exponent,
+
+		    out float4 oColor : COLOR	  
+		   )
+{  
+	float3 N = normalize(normal);
+
+	float NdotL = dot(normalize(LightDir), N);
+	float NdotH = dot(normalize(HalfAngle), N);
+
+	float4 Lit = lit(NdotL,NdotH,exponent);
+	
+	oColor = lightDiffuse * Lit.y + lightSpecular * Lit.z;
+		//do I need to normalize here the normal? 
+
+//	oColor = float4(normal,1);
+}
+
+
+void PerPixel_Lim3_Vert(float4 position : POSITION,
+			float3 normal   : NORMAL, 
+
+	 		uniform float4 lightPosition0,
+			uniform float4 lightPosition1,
+			uniform float4 lightPosition2,
+			uniform float3 eyePosition,
+			uniform float4x4 worldviewproj,
+	  
+			out float4 oPos : POSITION,
+			out float3 oNorm: TEXCOORD0,
+			out float3 oLightDir0: TEXCOORD1,
+			out float3 oLightDir1: TEXCOORD2,
+			out float3 oLightDir2: TEXCOORD3,
+			out float3 oHalfAngle0: TEXCOORD4,
+			out float3 oHalfAngle1: TEXCOORD5,
+			out float3 oHalfAngle2: TEXCOORD6
+		) 
+{
+    	oPos = mul(worldviewproj, position);
+   
+	oLightDir0 = normalize(lightPosition0.xyz -  (position * lightPosition0.w));
+	oLightDir1 = normalize(lightPosition1.xyz -  (position * lightPosition1.w));
+	oLightDir2 = normalize(lightPosition2.xyz -  (position * lightPosition2.w));
+
+	float3 EyeDir = normalize(eyePosition - position.xyz);
+
+	oHalfAngle0   = normalize(oLightDir0 + EyeDir);
+	oHalfAngle1   = normalize(oLightDir1 + EyeDir);
+	oHalfAngle2   = normalize(oLightDir2 + EyeDir);
+
+	oNorm     = normal;
+
+	//what if I leave normalization of normal and oHalfAngle to Fragshader?
+}
+ 
+
+void PerPixel_Lim3_Frag(float3 normal: TEXCOORD0,
+		    	float3 LightDir0  : TEXCOORD1,
+			float3 LightDir1  : TEXCOORD2,
+			float3 LightDir2  : TEXCOORD3,
+			float3 HalfAngle0: TEXCOORD4,
+			float3 HalfAngle1: TEXCOORD5,
+			float3 HalfAngle2: TEXCOORD6, 
+
+			uniform float4 lightDiffuse0,
+			uniform float4 lightDiffuse1,
+			uniform float4 lightDiffuse2, 
+
+			uniform float4 lightSpecular0,
+			uniform float4 lightSpecular1,
+			uniform float4 lightSpecular2,
+
+			uniform float exponent0,
+//			uniform float exponent1,
+//			uniform float exponent2,
+
+			uniform float4 ambient, 
+
+		   	out float4 oColor : COLOR
+		   )
+{ 
+	float3 N = normalize(normal);
+
+	float NdotL = dot(normalize(LightDir0), N);
+	float NdotH = dot(normalize(HalfAngle0), N);
+ 
+ 	float4 Lit = lit(NdotL,NdotH,exponent0);
+ 	oColor = lightDiffuse0 * Lit.y + lightSpecular0 * Lit.z;
+
+	NdotL = dot(normalize(LightDir1), N);
+	NdotH = dot(normalize(HalfAngle1), N);
+
+	Lit = lit(NdotL,NdotH,exponent0);
+ 	oColor += lightDiffuse1 * Lit.y + lightSpecular1 * Lit.z; 
+ 
+ 	NdotL = dot(normalize(LightDir2), N);
+ 	NdotH = dot(normalize(HalfAngle2), N);
+
+	Lit = lit(NdotL,NdotH,exponent0);
+	oColor += lightDiffuse2 * Lit.y + lightSpecular2 * Lit.z + ambient; 
+ 
+		//do I need to normalize here the normal?
+}

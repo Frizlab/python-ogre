@@ -1,0 +1,37 @@
+float4x4 matViewProjection; // view projection matrix
+float2 fAnimSpeed; // 2D vector for animation speed
+float fTime0_1; // Time from Ogre, range [0.0, 1.0]
+float4 fTexScales; // Scaling for both textures, 2 float2's together; see material file comments
+
+struct VS_INPUT
+{
+   float4 Position : POSITION0;
+   float2 TexCoord : TEXCOORD0;
+   
+};
+
+struct VS_OUTPUT
+{
+   float4 Position : POSITION0;
+   float2 TexCoord0 : TEXCOORD0;
+   float2 TexCoord1 : TEXCOORD1; 
+};
+
+VS_OUTPUT vs_main( VS_INPUT Input )
+{
+   VS_OUTPUT Output;
+   
+   // Get final vertex position
+   Output.Position = mul( matViewProjection, Input.Position );
+
+   // Speed vector multiplied by time gives you current offset
+   float2 fAnimBonus = float2(fAnimSpeed.x,fAnimSpeed.y)*fTime0_1;
+
+   // When scaling texture coordinates, you're basically repeating the texture faster for larger values, so I reversed it
+   // Just scales the texture coordinates and adds the offset
+   Output.TexCoord0 = float2(Input.TexCoord.x * 1/fTexScales.x, Input.TexCoord.y * 1/fTexScales.y) + fAnimBonus;
+   Output.TexCoord1 = float2(Input.TexCoord.x * 1/fTexScales.z, Input.TexCoord.y * 1/fTexScales.w) + fAnimBonus;
+   
+   return( Output );
+   
+}
