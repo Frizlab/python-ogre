@@ -1,0 +1,30 @@
+material SOLID/TEX/bark23.jpg
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				texture bark23.jpg
+			}
+		}
+	}
+}
+material ALPHA/TEX/leaves4.png/TWOSIDE
+{
+	technique
+	{
+		pass
+		{
+			alpha_rejection greater_equal 200
+			scene_blend alpha_blend 
+			cull_hardware none
+			cull_software none
+			texture_unit
+			{
+				texture leaves5.png
+			}
+		}
+	}
+}

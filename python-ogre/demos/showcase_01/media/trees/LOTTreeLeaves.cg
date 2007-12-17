@@ -1,0 +1,23 @@
+void LOTTreeLeavesNoBones_vp(
+	float4 position : POSITION,
+	float4 uv	: TEXCOORD0,
+	float4 colour	: COLOR,
+  	out float4 oPosition : POSITION,
+	out float2 oUv	   : TEXCOORD0,
+	out float4 oColour    : COLOR,
+	uniform float4x4 worldViewProj,
+	uniform float4   preRotatedQuad[4] )
+						  
+{
+
+  float4 vCenter = float4( position.x, position.y, position.z, 1.0f );
+
+  oPosition = mul( worldViewProj, vCenter + preRotatedQuad[uv.z] * uv.w );
+
+  uv.z = 0.0f;
+  uv.w = 1.0f;
+
+  oColour = colour;  
+  oUv = uv;
+
+}

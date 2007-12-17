@@ -1,0 +1,64 @@
+material Grid
+{
+	technique
+	{
+		pass
+		{
+			//lighting off
+			//cull_hardware none
+			//cull_software none
+			//scene_blend alpha_blend
+			polygon_mode solid
+			//depth_write off
+			texture_unit
+			{
+				texture grid.png
+				tex_address_mode wrap
+				filtering trilinear
+			}
+		}
+	}
+}
+
+material AxesMaterialY
+{
+	technique
+	{
+		pass
+		{
+			//lighting off
+			ambient 0.000000 1.000000 0.000000 1.000000
+			diffuse 0.000000 1.000000 0.000000 1.000000
+			polygon_mode solid
+		}
+	}
+}
+
+material AxesMaterialX
+{
+	technique
+	{
+		pass
+		{
+			//lighting off
+			ambient 1.000000 0.000000 0.000000 1.000000
+			diffuse 1.000000 0.000000 0.000000 1.000000
+			polygon_mode solid
+		}
+	}
+}
+
+material AxesMaterialZ
+{
+	technique
+	{
+		pass
+		{
+			//lighting off
+			ambient 0.000000 0.000000 1.000000 1.000000
+			diffuse 0.000000 0.000000 1.000000 1.000000
+			polygon_mode solid
+		}
+	}
+}
+

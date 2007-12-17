@@ -1,0 +1,81 @@
+fragment_program skydomePS cg
+{
+   source skydomePS1_4.cg
+   profiles ps_2_0 arbfp1 fp30 
+ 
+   entry_point ps_main
+}
+
+vertex_program skydomeVS cg
+{
+   source skydomeVS1_1.cg
+   profiles vs_2_0 arbvp1 vp30
+   entry_point vs_main
+}
+
+
+material SkydomeShaderBlend
+{
+   technique
+   {
+      pass
+      {
+         fragment_program_ref skydomePS
+         {
+            //Shader Constant: fBlend
+            param_named fBlend float 0.000000
+
+
+         }
+
+         vertex_program_ref skydomeVS
+         {
+            //Shader Constant: matViewProjection
+            param_named_auto matViewProjection viewproj_matrix
+
+            //Shader Constant: fAnimSpeed
+            param_named fAnimSpeed float2 -5.0 2.5
+
+            //Shader Constant: fTime0_1
+            param_named_auto fTime0_1 time_0_1 120.0
+
+            // This is a weird one - I just smashed two float2's together
+            // The first two float parameters are for the first texture
+            // The second two floats are for the second texture
+            // Thus, texture 0 is scaled 5 in both x and y
+            // and texture 1 is scaled 10 in both x and y
+            // When using float4's you get x,y,z, and w,
+            // so just pretend it's x,y ; x,y instead of x,y ; z,w
+            param_named fTexScales float4 3.0 3.0 5.0 5.0
+         }
+
+         texture_unit
+         {
+            texture nightcloud2.png 2d
+         }
+
+         texture_unit
+         {
+            texture daycloud.png 2d
+         }
+      }
+   }
+}
+
+material starFlare
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			scene_blend add
+			depth_write off
+
+			texture_unit
+			{
+				texture starFlare.png
+			}
+		}
+	}
+}

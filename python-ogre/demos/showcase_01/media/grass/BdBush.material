@@ -1,0 +1,20 @@
+material ALPHA/TEX/bush3_IMG_1409.tga.bmp/TWOSIDE
+{
+	technique
+	{
+		pass
+		{
+
+			//lighting off
+			cull_hardware none
+			cull_software none
+			scene_blend alpha_blend
+			alpha_rejection greater_equal 128
+			//depth_write offf
+			texture_unit
+			{
+				texture bush3_IMG_1409.png
+			}
+		}
+	}
+}
