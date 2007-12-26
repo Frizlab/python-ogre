@@ -5,17 +5,19 @@ module_dir = os.path.abspath(os.path.dirname(__file__) )## The root directory is
 ## lets assume that the base development directory is one level higher
 BASE_DIR,ignore = os.path.split(module_dir) ##  r'/home/andy/development'
 
+FRAMEWORK_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', 'Library','Frameworks'))   ## need this for the Mac
+
 # the base of the /usr/... dircetory structure that we are using
 ROOT_DIR = os.path.join(BASE_DIR,'root')
 LOCAL_LIB = os.path.join(ROOT_DIR,'usr/lib')
 LOCAL_INCLUDE = os.path.join(ROOT_DIR, 'usr/include')
 
 ## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
-PATH_Boost = os.path.join(LOCAL_INCLUDE, 'boost-1_34')
+PATH_Boost = os.path.join(LOCAL_INCLUDE, 'boost-1_34_1')
 ## Path to your boost_pythonxxxx lib file
 PATH_LIB_Boost = LOCAL_LIB
 ## and the name of the boost python library
-LIB_Boost = 'libboost_python-gcc41-1_34'
+LIB_Boost = 'libboost_python-gcc41-1_34_1'
 
 # in Linux we need to code in the Relative path for the library
 RPATH=os.path.join('\\$$ORIGIN',os.pardir,os.pardir, 'lib') #+ '\'' 
@@ -25,6 +27,7 @@ gccxml_bin = os.path.join(BASE_DIR,'gccxml-build/bin')
 # and the Py++ directory as sometimes we need access to the code repository there
 pyplusplus_install_dir = os.path.join(BASE_DIR,'pygccxml')
 
+SDK = True
 
 # # ## Parent directories of the libraries
 PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
@@ -32,6 +35,11 @@ PATH_Ogre =         os.path.join(BASE_DIR,'ogrenew')
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'ogreaddons')
 PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.5.0')
 PATH_OIS =          os.path.join(BASE_DIR, 'ois-1.0RC1')
+
+if SDK:
+    PATH_CEGUI =        os.path.join(BASE_DIR, 'ogrenew','Dependencies')
+    PATH_OIS =          os.path.join(BASE_DIR, 'ogrenew','Dependencies')
+    
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonSDK','sdk')
 PATH_ODE =          os.path.join(BASE_DIR, 'ode-0.9')
 PATH_OGG =          os.path.join(BASE_DIR, 'libogg-1.1.3')
@@ -73,8 +81,14 @@ PATH_LIB_Ogre_Dependencies =    os.path.join( LOCAL_LIB ) # , 'Dependencies/lib/
 PATH_LIB_OgreRefApp =           os.path.join( LOCAL_LIB ) # PATH_Ogre, 'ReferenceApplication/ReferenceAppLayer/lib/Release')
 PATH_LIB_OgreNewt =             os.path.join( LOCAL_LIB ) #PATH_OgreAddons, r'ogrenewt/OgreNewt_Main/lib/Release') 
 PATH_LIB_Newton =               os.path.join( LOCAL_LIB ) # PATH_Newton ,'dll')  ##NOTE Posix platforms this lives in 'lib-mt'
+
 PATH_LIB_OIS =                  os.path.join( LOCAL_LIB ) #PATH_OIS, 'dll') ## NOTE Posix platforms this lives in'lib' not 'dll'
 PATH_LIB_CEGUI =                os.path.join( LOCAL_LIB ) #PATH_Ogre, r'Dependencies/lib/Release' )
+if SDK:
+    PATH_LIB_OIS =                  os.path.join( PATH_OIS,'lib', 'Release' ) #PATH_OIS, 'dll') ## NOTE Posix platforms this lives in'lib' not 'dll'
+    PATH_LIB_CEGUI =                os.path.join( PATH_CEGUI,'lib', 'Release' ) #PATH_Ogre, r'Dependencies/lib/Release' )
+    PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'OgreMain/lib/Release' )
+
 PATH_LIB_ODE =                  os.path.join( LOCAL_LIB ) #PATH_ODE, 'lib/releasedll')## probable releaselib for posix
 PATH_LIB_OPCODE =               os.path.join( PATH_OPCODE ) 
 PATH_LIB_OgreOde =              os.path.join( LOCAL_LIB ) #PATH_OgreOde, 'lib/Release') 
@@ -97,10 +111,17 @@ PATH_LIB_particleuniverse =     os.path.join(PATH_particleuniverse, 'bin', 'rele
 
 PATH_INCLUDE_Ogre=          os.path.join(LOCAL_INCLUDE,'OGRE')  # os.path.join(PATH_Ogre,'OgreMain/include') 
 PATH_INCLUDE_Ogre_Dependencies =    PATH_INCLUDE_Ogre #      os.path.join( PATH_Ogre, 'Dependencies/include')
+
 PATH_INCLUDE_OIS =          os.path.join(LOCAL_INCLUDE,'OIS') #os.path.join(PATH_OIS,'includes')    ## Note the plural include's
+PATH_INCLUDE_CEGUI =        os.path.join(LOCAL_INCLUDE,'CEGUI') #os.path.join(PATH_CEGUI, r'include/CEGUI')
+if SDK:
+    PATH_INCLUDE_OIS =          os.path.join(PATH_OIS,'include','OIS') #os.path.join(PATH_OIS,'includes')    ## Note the plural include's
+    PATH_INCLUDE_CEGUI =        os.path.join(PATH_CEGUI,'include','CEGUI') #os.path.join(PATH_CEGUI, r'include/CEGUI')
+    PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include') 
+    PATH_INCLUDE_Ogre_Dependencies =    os.path.join( PATH_Ogre, 'Dependencies/include')
+
 PATH_INCLUDE_OgreRefApp =   os.path.join(PATH_Ogre,'ReferenceApplication/ReferenceAppLayer/include') 
 PATH_INCLUDE_OgreNewt =     os.path.join(LOCAL_INCLUDE,'OgreNewt') #os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')
-PATH_INCLUDE_CEGUI =        os.path.join(LOCAL_INCLUDE,'CEGUI') #os.path.join(PATH_CEGUI, r'include/CEGUI')
 PATH_INCLUDE_ODE =          os.path.join(LOCAL_INCLUDE,'ode') #os.path.join( PATH_ODE, 'include')
 PATH_INCLUDE_OPCODE =       PATH_OPCODE
 PATH_INCLUDE_ODESOURCE =    '' #      os.path.join( PATH_ODE, 'ode/src')
