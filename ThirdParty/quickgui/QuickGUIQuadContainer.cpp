@@ -57,7 +57,7 @@ namespace QuickGUI
 			// 1) end of list
 			// 2) Higher zOrder found
 			// 3) we find Quad with same texture
-			while( (it != mChildRenderables.end()) && ((*it)->getOffset() == q->getOffset()) && ((*it)->getTextureName() != q->getTextureName()) )
+			while( (it != mChildRenderables.end()) && ((*it)->getOffset() == q->getOffset()) && ((*it)->getMaterialName() != q->getMaterialName()) )
 				++it;
 		}
 
@@ -120,7 +120,7 @@ namespace QuickGUI
 			// 1) end of list
 			// 2) Higher zOrder found
 			// 3) we find Quad with same texture
-			while( (it != mMenuRenderables.end()) && ((*it)->getOffset() == q->getOffset()) && ((*it)->getTextureName() != q->getTextureName()) )
+			while( (it != mMenuRenderables.end()) && ((*it)->getOffset() == q->getOffset()) && ((*it)->getMaterialName() != q->getMaterialName()) )
 				++it;
 		}
 
@@ -129,7 +129,7 @@ namespace QuickGUI
 		q->_notifyAddedToRenderObjectGroup();
 
 		mMenuChanged = true;
-
+/*
 		// check if buffer needs to be resized.
 		const size_t numQuads = static_cast<size_t>(mMenuRenderables.size());
 		const size_t numVertices = numQuads * VERTICES_PER_QUAD;
@@ -144,6 +144,7 @@ namespace QuickGUI
 			mMenuBufferSize.pop_back();
 			mMenuVertexBuffer->resizeVertexBuffer(mMenuBufferSize.back());
 		}
+		*/
 	}
 
 	int QuadContainer::getOffset()

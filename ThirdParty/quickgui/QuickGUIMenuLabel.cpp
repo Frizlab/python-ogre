@@ -7,7 +7,7 @@ namespace QuickGUI
 	MenuLabel::MenuLabel(const Ogre::String& name, GUIManager* gm) :
 		Label(name,gm),
 		mIcon(0),
-		mIconTextureName(""),
+		mIconMaterialName(""),
 		mButton(0),
 		mButtonTextureName("")
 	{
@@ -18,7 +18,7 @@ namespace QuickGUI
 		mTextBoundsPixelOffset.x = mSize.height;
 		mTextBoundsRelativeSize.width = (mSize.width - (mSize.height * 2.0)) / mSize.width;
 
-		setPropogateEventFiring(EVENT_MOUSE_BUTTON_UP,true);
+		setPropagateEventFiring(EVENT_MOUSE_BUTTON_UP,true);
 	}
 
 	MenuLabel::~MenuLabel()
@@ -33,12 +33,12 @@ namespace QuickGUI
 		return mButton->getSkin();
 	}
 
-	Ogre::String MenuLabel::getIconTexture()
+	Ogre::String MenuLabel::getIconMaterial()
 	{
 		if(mIcon == NULL)
 			return "";
 
-		return mIcon->getTextureName();
+		return mIcon->getMaterialName();
 	}
 
 	void MenuLabel::setMouseButtonUpOnButtonHandler(MemberFunctionSlot* function)
@@ -77,19 +77,19 @@ namespace QuickGUI
 		mButton->setAutoSize(false);
 		mButton->setHorizontalAnchor(hAnchor);
 		mButton->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
-		mButton->setPropogateEventFiring(EVENT_MOUSE_BUTTON_UP,true);
+		mButton->setPropagateEventFiring(EVENT_MOUSE_BUTTON_UP,true);
 	}
 
-	void MenuLabel::setIconTexture(const Ogre::String& textureName)
+	void MenuLabel::setIconMaterial(const Ogre::String& materialName)
 	{
-		if(textureName == "")
+		if(materialName == "")
 			return;
 
-		mIconTextureName = textureName;
+		mIconMaterialName = materialName;
 
 		if(mIcon != NULL)
 		{
-			mIcon->setTexture(mIconTextureName);
+			mIcon->setMaterial(mIconMaterialName);
 			return;
 		}
 
@@ -112,8 +112,8 @@ namespace QuickGUI
 		mIcon->setPosition(iconPosition);
 		mIcon->setHorizontalAnchor(hAnchor);
 		mIcon->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
-		mIcon->setPropogateEventFiring(EVENT_MOUSE_BUTTON_UP,true);
-		mIcon->setTexture(mIconTextureName);
+		mIcon->setPropagateEventFiring(EVENT_MOUSE_BUTTON_UP,true);
+		mIcon->setMaterial(mIconMaterialName);
 	}
 
 	void MenuLabel::onSizeChanged(const EventArgs& args)

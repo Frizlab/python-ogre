@@ -31,14 +31,15 @@ namespace QuickGUI
 		if(!Ogre::MaterialManager::getSingleton().resourceExists(mMaterialName))
 			buildMaterial();
 	}
+
 	SkinSet::~SkinSet()
 	{
 		// Remove Texture for this SkinSet from Texture Manager
-		if(Ogre::TextureManager::getSingletonPtr() != NULL)
-			Ogre::TextureManager::getSingleton().remove(mTextureName);
+		if(Ogre::TextureManager::getSingletonPtr()->resourceExists(mTextureName))
+			Ogre::TextureManager::getSingletonPtr()->remove(mTextureName);
 
-		if(Ogre::MaterialManager::getSingletonPtr() != NULL)
-			Ogre::MaterialManager::getSingleton().remove(mMaterialName);
+		if(Ogre::MaterialManager::getSingletonPtr()->resourceExists(mMaterialName))
+			Ogre::MaterialManager::getSingletonPtr()->remove(mMaterialName);
 	}
 
 	void SkinSet::_determineExtension(ImageType t)
@@ -443,7 +444,6 @@ namespace QuickGUI
 
 	Ogre::Vector4 SkinSet::getTextureCoordinates(const Ogre::String &imageName) const
 	{
-
 		std::map<Ogre::String,Ogre::Vector4>::const_iterator itTexMap = mTextureMap.find(imageName);
 		if (itTexMap == mTextureMap.end() )
 			return Ogre::Vector4(0,0,1,1);

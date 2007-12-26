@@ -169,25 +169,25 @@ namespace OgreAL {
 	void Listener::update() const
 	{
 		if (mParentNode)
-        {
-            if (!(mParentNode->_getDerivedOrientation() == mLastParentOrientation &&
-                mParentNode->_getDerivedPosition() == mLastParentPosition)
-                || mLocalTransformDirty)
-            {
-                // Ok, we're out of date with SceneNode we're attached to
-                mLastParentOrientation = mParentNode->_getDerivedOrientation();
-                mLastParentPosition = mParentNode->_getDerivedPosition();
-                mDerivedDirection = mLastParentOrientation * mDirection;
-                mDerivedPosition = (mLastParentOrientation * mPosition) + mLastParentPosition;
-            }
-        }
-        else
-        {
-            mDerivedPosition = mPosition;
-            mDerivedDirection = mDirection;
-        }
+		{
+		    if (!(mParentNode->_getDerivedOrientation() == mLastParentOrientation &&
+			mParentNode->_getDerivedPosition() == mLastParentPosition)
+			|| mLocalTransformDirty)
+		    {
+			// Ok, we're out of date with SceneNode we're attached to
+			mLastParentOrientation = mParentNode->_getDerivedOrientation();
+			mLastParentPosition = mParentNode->_getDerivedPosition();
+			mDerivedDirection = mLastParentOrientation * mDirection;
+			mDerivedPosition = (mLastParentOrientation * mPosition) + mLastParentPosition;
+		    }
+		}
+		else
+		{
+		    mDerivedPosition = mPosition;
+		    mDerivedDirection = mDirection;
+		}
 
-        mLocalTransformDirty = false;
+		mLocalTransformDirty = false;
 	}
 
 	void Listener::updateListener()

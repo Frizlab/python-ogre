@@ -53,7 +53,7 @@ namespace OgreAL {
 
 			// check magic
 			CheckCondition(mSoundStream->read(magic, 4) == 4, 13, "Cannot read wav file " + mFileName);
-			CheckCondition(std::string(magic) == "RIFF", 13, "Wrong wav file format. This file is not a .wav file (no RIFF magic): " + mFileName);
+			CheckCondition(std::string(magic) == "RIFF", 13, "Wrong wav file format. (no RIFF magic): " + mFileName);
 
 			// The next 4 bytes are the file size, we can skip this since we get the size from the DataStream
 			mSoundStream->skip(4);
@@ -61,16 +61,16 @@ namespace OgreAL {
 
 			// check file format
 			CheckCondition(mSoundStream->read(magic, 4) == 4, 13, "Cannot read wav file " + mFileName);
-			CheckCondition(std::string(magic) == "WAVE", 13, "Wrong wav file format. This file is not a .wav file (no WAVE format): " + mFileName);
+			CheckCondition(std::string(magic) == "WAVE", 13, "Wrong wav file format. (no WAVE format): " + mFileName);
 
 			// check 'fmt ' sub chunk (1)
 			CheckCondition(mSoundStream->read(magic, 4) == 4, 13, "Cannot read wav file " + mFileName);
-			CheckCondition(std::string(magic) == "fmt ", 13, "Wrong wav file format. This file is not a .wav file (no 'fmt ' subchunk): " + mFileName);
+			CheckCondition(std::string(magic) == "fmt ", 13, "Wrong wav file format. (no 'fmt ' subchunk): " + mFileName);
 
 			// read (1)'s size
 			CheckCondition(mSoundStream->read(buffer32, 4) == 4, 13, "Cannot read wav file " + mFileName);
 			unsigned long subChunk1Size = readByte32(buffer32);
-			CheckCondition(subChunk1Size >= 16, 13, "Wrong wav file format. This file is not a .wav file ('fmt ' chunk too small, truncated file?): " + mFileName);
+			CheckCondition(subChunk1Size >= 16, 13, "Wrong wav file format. ('fmt ' chunk too small, truncated file?): " + mFileName);
 
 			// check PCM audio format
 			CheckCondition(mSoundStream->read(buffer16, 2) == 2, 13, "Cannot read wav file " + mFileName);
@@ -94,7 +94,8 @@ namespace OgreAL {
 
 			// check 'data' sub chunk (2)
 			CheckCondition(mSoundStream->read(magic, 4) == 4, 13, "Cannot read wav file " + mFileName);
-			CheckCondition(std::string(magic) == "data" || std::string(magic) == "fact", 13, "Wrong wav file format. This file is not a .wav file (no data subchunk): " + mFileName);
+			CheckCondition(std::string(magic) == "data" || std::string(magic) == "fact", 13,
+				 "Wrong wav file format. (no data subchunk): " + mFileName);
 
 			// fact is an option section we don't need to worry about
 			if(std::string(magic) == "fact")
@@ -103,7 +104,7 @@ namespace OgreAL {
 
 				// Now we shoudl hit the data chunk
 				CheckCondition(mSoundStream->read(magic, 4) == 4, 13, "Cannot read wav file " + mFileName);
-				CheckCondition(std::string(magic) == "data", 13, "Wrong wav file format. This file is not a .wav file (no data subchunk): " + mFileName);
+				CheckCondition(std::string(magic) == "data", 13, "Wrong wav file format. (no data subchunk): " + mFileName);
 			}
 
 			// The next four bytes are the size remaing of the file
@@ -164,6 +165,8 @@ namespace OgreAL {
 
 	void WavSound::setSecondOffset(Ogre::Real seconds)
 	{
+		if(seconds < 0) return;
+
 		if(!mStream)
 		{
 			Sound::setSecondOffset(seconds);

@@ -48,6 +48,7 @@ GrassLoader::GrassLoader(PagedGeometry *geom)
 	renderQueue = RENDER_QUEUE_6;
 
 	windTimer.reset();
+	lastTime = 0;
 }
 
 GrassLoader::~GrassLoader()
@@ -70,7 +71,6 @@ GrassLayer *GrassLoader::addLayer(const String &material)
 
 void GrassLoader::frameUpdate()
 {
-	static unsigned long lastTime = 0;
 	unsigned long currentTime = windTimer.getMilliseconds();
 	unsigned long ellapsedTime = currentTime - lastTime;
 	lastTime = currentTime;
@@ -1100,11 +1100,17 @@ unsigned long GrassPage::GUID = 0;
 void GrassPage::init(PagedGeometry *geom)
 {
 	sceneMgr = geom->getSceneManager();
+	rootNode = geom->getSceneNode();
+}
+
+GrassPage::~GrassPage()
+{
+	removeEntities();
 }
 
 void GrassPage::addEntity(Entity *entity, const Vector3 &position, const Quaternion &rotation, const Vector3 &scale, const Ogre::ColourValue &color)
 {
-	SceneNode *node = sceneMgr->getRootSceneNode()->createChildSceneNode();
+	SceneNode *node = rootNode->createChildSceneNode();
 	node->setPosition(position);
 	nodeList.push_back(node);
 

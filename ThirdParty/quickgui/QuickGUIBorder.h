@@ -53,6 +53,8 @@ namespace QuickGUI
 
 	protected:
 		virtual ~Border();
+		virtual void setParent(Widget* parent);
+	protected:
 
 		BorderType mBorderType;
 

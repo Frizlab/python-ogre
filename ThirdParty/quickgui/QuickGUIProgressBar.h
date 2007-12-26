@@ -2,9 +2,10 @@
 #define QUICKGUIPROGRESSBAR_H
 
 #include "QuickGUIPrerequisites.h"
-#include "OgreHardwarePixelBuffer.h"
-
 #include "QuickGUIWidget.h"
+
+#include "OgreHardwarePixelBuffer.h"
+#include "OgreMaterialManager.h"
 
 namespace QuickGUI
 {
@@ -120,6 +121,7 @@ namespace QuickGUI
 		Ogre::TexturePtr mBarTexture;
 		Ogre::String mBarTextureName;
 		Ogre::Image mBarImage;
+		Ogre::MaterialPtr mBarMaterial;
 		int mBarMinWidth;
 		int mBarMaxWidth;
 		int mBarMinHeight;

@@ -41,6 +41,7 @@ namespace QuickGUI
 		switch(t)
 		{
 			case TYPE_BORDER:				w = new Border(name,mGUIManager);				break;
+		    case TYPE_TREE:					w = new Tree(name,mGUIManager);					break;
 			case TYPE_BUTTON:				w = new Button(name,mGUIManager);				break;
 			case TYPE_CHECKBOX:				w = new CheckBox(name,mGUIManager);				break;
 			case TYPE_COMBOBOX:				w = new ComboBox(name,mGUIManager);				break;
@@ -66,7 +67,9 @@ namespace QuickGUI
 		}
 
 		w->setSize(w->getSize());
-		w->setSkin(mSkinName,true);
+		// Some Composition widgets will create components before inheritting skin name.
+		if(mSkinName != "")
+			w->setSkin(mSkinName,true);
 		w->setFont(mFontName,true);
 		mComponents.push_back(w);
 		
@@ -151,6 +154,26 @@ namespace QuickGUI
 			}
 		}
 	}
+
+   Tree* Panel::createTree()
+   {
+      return createTree(mGUIManager->generateName(TYPE_TREE));
+   }
+
+   Tree* Panel::createTree(const Ogre::String& name)
+   {
+      if(mGUIManager->isNameUnique(name))
+      {
+         mGUIManager->notifyNameUsed(name);
+         return dynamic_cast<Tree*>(_createChild(name,TYPE_TREE));
+      }
+      else
+      {
+         Ogre::String name = mGUIManager->generateName(TYPE_TREE);
+         mGUIManager->notifyNameUsed(name);
+         return dynamic_cast<Tree*>(_createChild(name,TYPE_TREE));
+      }
+	}	 
 
 	Button* Panel::createButton()
 	{

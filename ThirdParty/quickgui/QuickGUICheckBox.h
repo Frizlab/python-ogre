@@ -21,6 +21,10 @@ namespace QuickGUI
 		}
 		void addOnCheckChangedEventHandler(MemberFunctionSlot* function);
 
+		bool getChecked();
+
+		void setChecked(bool checked);
+
 	protected:
 		bool mChecked;
 

@@ -92,12 +92,14 @@ namespace QuickGUI
 //				mScrollPane->setVerticalSliderMinHeight(20);
 
 				mRightScrollBar = mScrollPane->mRightBar;
-				mRightScrollBar->setSkin(mSkinName,true);
+				if(mSkinName != "")
+					mRightScrollBar->setSkin(mSkinName,true);
 				addChild(mRightScrollBar);
 				mRightScrollBar->setPosition(mSize.width - 20,0);
 				
 				mBottomScrollBar = mScrollPane->mBottomBar;
-				mBottomScrollBar->setSkin(mSkinName,true);
+				if(mSkinName != "")
+					mBottomScrollBar->setSkin(mSkinName,true);
 				addChild(mBottomScrollBar);
 				mBottomScrollBar->setPosition(0,mSize.height - 20);
 

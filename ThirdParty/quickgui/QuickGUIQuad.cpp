@@ -18,11 +18,11 @@ namespace QuickGUI
 		mLayer(LAYER_CHILD),
 		mColorChanged(false),
 		mDimensionsChanged(false),
-		mTextureChanged(false),
+		mMaterialChanged(false),
 		mTextureCoordsChanged(false),
 		mOffsetChanged(false),
 		mAddedToRenderGroup(false),
-		mTextureName(""),
+		mMaterialName(""),
 		mOffset(0),
 		mPixelDimensions(Rect::ZERO),
 		mTextureCoordinates(Ogre::Vector4(0,0,1,1)),
@@ -34,7 +34,6 @@ namespace QuickGUI
 		mInheritQuadLayer(true),
 		mShowWithOwner(true)
 	{
-		mSkinSetManager = SkinSetManager::getSingletonPtr();
 		mRenderSystem = Ogre::Root::getSingleton().getRenderSystem();
 		_updateVertexColor();
 	}
@@ -46,11 +45,11 @@ namespace QuickGUI
 		mLayer(LAYER_CHILD),
 		mColorChanged(false),
 		mDimensionsChanged(false),
-		mTextureChanged(false),
+		mMaterialChanged(false),
 		mTextureCoordsChanged(false),
 		mOffsetChanged(false),
 		mAddedToRenderGroup(false),
-		mTextureName(""),
+		mMaterialName(""),
 		mOffset(0),
 		mPixelDimensions(Rect::ZERO),
 		mTextureCoordinates(Ogre::Vector4(0,0,1,1)),
@@ -61,7 +60,6 @@ namespace QuickGUI
 		mDimensionsViaClipping(mPixelDimensions),
 		mTextureCoordinatesViaClipping(mTextureCoordinates)
 	{
-		mSkinSetManager = SkinSetManager::getSingletonPtr();
 		mRenderSystem = Ogre::Root::getSingleton().getRenderSystem();
 		_updateVertexColor();
 	}
@@ -164,7 +162,6 @@ namespace QuickGUI
 		Ogre::Real top = -((absDimensions.y * 2) - 1);
 		Ogre::Real bottom = top - (absDimensions.height * 2);
 
-#if VERTICES_PER_QUAD == 4
 		// TRIANGLE 1
 		mVertices[0].pos = Ogre::Vector3(left,  bottom, 0.f);	// left-bottom
 		mVertices[1].pos = Ogre::Vector3(right, bottom, 0.f);	// right-bottom
@@ -174,7 +171,8 @@ namespace QuickGUI
 		mVertices[3].pos = Ogre::Vector3(left,  top, 0.f);		// left-top
 
 		
-#else //VERTICES_PER_QUAD == 6
+		/* Reference code, back when the index buffer was not used, and there were 6 vertices per quad.
+		
 		// TRIANGLE 1
 		mVertices[0].pos = Ogre::Vector3(left,bottom,0);	// left-bottom
 		mVertices[1].pos = Ogre::Vector3(right,bottom,0);	// right-bottom
@@ -184,7 +182,8 @@ namespace QuickGUI
 		mVertices[3].pos = Ogre::Vector3(right,bottom,0);	// right-bottom
 		mVertices[4].pos = Ogre::Vector3(right,top,0);		// right-top
 		mVertices[5].pos = Ogre::Vector3(left,top,0);		// left-top
-#endif
+
+		*/
 	}
 
 	void Quad::_notifyAddedToRenderObjectGroup()
@@ -196,7 +195,7 @@ namespace QuickGUI
 	{
 		mColorChanged = false;
 		mDimensionsChanged = false;
-		mTextureChanged = false;
+		mMaterialChanged = false;
 		mTextureCoordsChanged = false;
 		mOffsetChanged = false;
 	}
@@ -234,19 +233,9 @@ namespace QuickGUI
 		}
 	}
 
-	void Quad::_setTexture(const Ogre::String& textureName)
-	{
-		mTextureName = textureName;
-		mTextureChanged = true;
-
-		_notifyQuadContainerNeedsUpdate();
-	}
-
 	void Quad::_updateTextureCoords()
 	{
 		const Ogre::Vector4 actualTextureCoords(mTextureCoordinatesViaClipping);
-
-#if VERTICES_PER_QUAD == 4
 
 		// TRIANGLE 1 : bot-left, bot-right, top-left vertices
 		mVertices[0].uv = Ogre::Vector2(actualTextureCoords.x,actualTextureCoords.w);
@@ -255,8 +244,8 @@ namespace QuickGUI
 		mVertices[2].uv = Ogre::Vector2(actualTextureCoords.z,actualTextureCoords.y);
 		mVertices[3].uv = Ogre::Vector2(actualTextureCoords.x,actualTextureCoords.y);
 
+		/* Reference code, back when the index buffer was not used, and there were 6 vertices per quad.
 
-#else //VERTICES_PER_QUAD == 6
 		// TRIANGLE 1 : bot-left, bot-right, top-left vertices
 		mVertices[0].uv = Ogre::Vector2(actualTextureCoords.x,actualTextureCoords.w);
 		mVertices[1].uv = Ogre::Vector2(actualTextureCoords.z,actualTextureCoords.w);
@@ -265,13 +254,12 @@ namespace QuickGUI
 		mVertices[3].uv = Ogre::Vector2(actualTextureCoords.z,actualTextureCoords.w);
 		mVertices[4].uv = Ogre::Vector2(actualTextureCoords.z,actualTextureCoords.y);
 		mVertices[5].uv = Ogre::Vector2(actualTextureCoords.x,actualTextureCoords.y);
-#endif
+
+		*/
 	}
 
 	void Quad::_updateVertexColor()
 	{
-#if VERTICES_PER_QUAD == 4
-
 		// TRIANGLE 1
 		mRenderSystem->convertColourValue(mBottomColor,&( mVertices[0].color ));
 		mRenderSystem->convertColourValue(mBottomColor,&( mVertices[1].color ));
@@ -279,8 +267,8 @@ namespace QuickGUI
 		mRenderSystem->convertColourValue(mTopColor,&( mVertices[2].color ));
 		mRenderSystem->convertColourValue(mTopColor,&( mVertices[3].color ));
 
+		/* Reference code, back when the index buffer was not used, and there were 6 vertices per quad.
 
-#else //VERTICES_PER_QUAD == 6
 		// TRIANGLE 1
 		mRenderSystem->convertColourValue(mBottomColor,&( mVertices[0].color ));
 		mRenderSystem->convertColourValue(mBottomColor,&( mVertices[1].color ));
@@ -289,7 +277,8 @@ namespace QuickGUI
 		mRenderSystem->convertColourValue(mBottomColor,&( mVertices[3].color ));
 		mRenderSystem->convertColourValue(mTopColor,&( mVertices[4].color ));
 		mRenderSystem->convertColourValue(mTopColor,&( mVertices[5].color ));
-#endif
+
+		*/
 	}
 
 	void Quad::addToRenderObjectGroup()
@@ -353,6 +342,11 @@ namespace QuickGUI
 	Quad::Layer Quad::getLayer()
 	{
 		return mLayer;
+	}
+
+	Ogre::String Quad::getMaterialName()
+	{
+		return mMaterialName;
 	}
 
 	Ogre::Real Quad::getOpacity()
@@ -469,6 +463,14 @@ namespace QuickGUI
 		addToRenderObjectGroup();
 	}
 
+	void Quad::setMaterial(const Ogre::String& materialName)
+	{
+		mMaterialName = materialName;
+		mMaterialChanged = true;
+
+		_notifyQuadContainerNeedsUpdate();
+	}
+
 	void Quad::setOffset(int offset)
 	{
 		mOffset = offset;
@@ -513,46 +515,6 @@ namespace QuickGUI
 		mDimensionsChanged = true;
 
 		_clip();
-	}
-
-	void Quad::setTexture(const Ogre::String& textureName)
-	{
-		if( mTextureName == textureName ) 
-			return;
-
-		if(!textureExists(textureName)) 
-		{
-			setTextureCoordinates(Ogre::Vector4(0,0,1,1));
-			_setTexture("");
-			return;
-		}
-
-		// check for RTT or Manually created Textures
-		if(Ogre::TextureManager::getSingletonPtr()->resourceExists(textureName)) // render to texture, or manually created texture
-		{
-			setTextureCoordinates(Ogre::Vector4(0,0,1,1));
-			_setTexture(textureName);
-			return;
-		}
-
-		// check for textures embedded in a skin SkinSet
-		Ogre::String skin = textureName.substr(0,textureName.find_first_of('.'));
-		if(mSkinSetManager->embeddedInSkinSet(skin,textureName))
-		{
-			SkinSet* s = mSkinSetManager->getSkinSet(skin);
-			setTextureCoordinates(s->getTextureCoordinates(textureName));
-			// Don't update texture if they are the same.
-			if( mTextureName != skin )
-				_setTexture(s->getTextureName());
-		}
-		else
-		{
-			// If we make it here, the texture is referring to a particular image file on disk,
-			// that is not embedded in any skin ImageSets. Make sure it is loaded
-			Ogre::TextureManager::getSingleton().load(textureName,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-			setTextureCoordinates(Ogre::Vector4(0,0,1,1));
-			_setTexture(textureName);
-		}
 	}
 
 	void Quad::setTextureCoordinates(const Ogre::Vector4& textureCoordinates)
@@ -609,7 +571,7 @@ namespace QuickGUI
 
 	bool Quad::textureChanged()
 	{
-		return mTextureChanged;
+		return mMaterialChanged;
 	}
 
 	bool Quad::textureExists(const Ogre::String& textureName)

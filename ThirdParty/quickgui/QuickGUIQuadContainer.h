@@ -1,5 +1,5 @@
-#ifndef QUICKGUIQUADCONTAINER_H
-#define QUICKGUIQUADCONTAINER_H
+#ifndef QUICKGUIQuadContainer_H
+#define QUICKGUIQuadContainer_H
 
 #include "OgreBitwise.h"
 #include "OgrePrerequisites.h"
@@ -12,15 +12,24 @@
 #include <list>
 #include <vector>
 
-
 //vertices per quad = 25 quads initially
-#define MIN_VERTEX_BUFFER_SIZE (25*VERTICES_PER_QUAD)
+#define MIN_VERTEX_BUFFER_SIZE (250*VERTICES_PER_QUAD)
 
 namespace QuickGUI
 {
 	// Forward declarations
 	class Widget;
 
+	/** Container for RenderBatches.
+		@remarks
+		This class creates, destroys, and organizes RenderBatches.  The organization is done
+		by defining 4 sets of render lists: Child, Panel Render Managers, Window Render Managers, Menu.
+		Menu RenderBatches are rendered last, which gives them the highest zOrder (or offset in QuickGUI).
+		@note
+		Only Sheets can make use of the Window Render Manager list.
+		@note
+		QuadContainers can hold references to other QuadContainers.
+	*/
 	class _QuickGUIExport QuadContainer
 	{
 	public:
@@ -71,8 +80,8 @@ namespace QuickGUI
 		QuadList mChildRenderables;
 		QuadContainerList mChildPanels;
 		// Only Sheet widgets will make use of Window List
-		QuadContainerList mChildWindows;
-		QuadList mMenuRenderables;	// Highest zOrder of this group
+		QuadContainerList mChildWindows;		
+		QuadList mMenuRenderables;	
 
 		QuadContainerList* getPanelList();
 		QuadContainerList* getWindowList();

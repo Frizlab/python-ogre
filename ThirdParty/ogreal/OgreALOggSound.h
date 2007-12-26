@@ -33,8 +33,8 @@
 ** Boston, MA 02111-1307, USA.                                               **
 \*---------------------------------------------------------------------------*/
 
-#ifndef _OGRE_AL_OGG_SOUND_H_
-#define _OGRE_AL_OGG_SOUND_H_
+#ifndef _OGREAL_OGG_SOUND_H_
+#define _OGREAL_OGG_SOUND_H_
 
 #include <string>
 #include <vector>
@@ -91,8 +91,8 @@ namespace OgreAL {
 		/// Returns a buffer containing the next chunk of length size
 		Buffer bufferData(OggVorbis_File *oggVorbisFile, int size);
 
-        OggVorbis_File mOggStream;
-        vorbis_info *mVorbisInfo;
+		OggVorbis_File mOggStream;
+		vorbis_info *mVorbisInfo;
 
 		friend class SoundFactory;
 	};

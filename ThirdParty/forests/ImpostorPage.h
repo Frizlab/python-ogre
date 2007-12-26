@@ -116,6 +116,20 @@ public:
 	}
 
 	/**
+	\brief Sets the billboard pivot point used when rendering camera-facing impostors
+
+	This function can be used to set how impostors should rotate to face the camera. By default,
+	impostors are pointed towards the camera by rotating around the impostor billboard's center.
+	By choosing an alternate pivot point with this function, you can acheive better results under
+	certain conditions. For example, when looking up or down very steep hills, you'll probably want
+	to set BBO_BOTTOM_CENTER as the pivot point. For most other cases, however, the default pivot
+	point of BBO_CENTER works best.
+
+	\note Only BBO_CENTER and BBO_BOTTOM_CENTER is supported by this function currently.
+	*/
+	static void setImpostorPivot(Ogre::BillboardOrigin origin);
+
+	/**
 	\brief Regenerates the impostor texture for the specified entity
 	\param ent The entity which will have it's impostor texture regenerated
 	
@@ -154,6 +168,7 @@ protected:
 	ImpostorBlendMode blendMode;
 	static int impostorResolution;
 	static Ogre::ColourValue impostorBackgroundColor;
+	static Ogre::BillboardOrigin impostorPivot;
 	
 	static unsigned int selfInstances;
 	static unsigned int updateInstanceID;
@@ -198,6 +213,8 @@ public:
 		bbset->setFade(enabled, visibleDist, invisibleDist);
 	}
 
+	void setBillboardOrigin(Ogre::BillboardOrigin origin);
+
 	inline void addBillboard(const Ogre::Vector3 &position, const Ogre::Quaternion &rotation, const Ogre::Vector3 &scale, const Ogre::ColourValue &color = Ogre::ColourValue::White);
 
 	void setAngle(float pitchDeg, float yawDeg);
@@ -207,6 +224,8 @@ protected:
 
 	ImpostorTexture *tex;
 	StaticBillboardSet *bbset;
+
+	Ogre::Vector3 entityBBCenter;
 
 	ImpostorPage *igroup;
 
@@ -286,7 +305,7 @@ void ImpostorBatch::addBillboard(const Ogre::Vector3 &position, const Ogre::Quat
 	int n = IMPOSTOR_YAW_ANGLES * (degrees / 360.0f) + 0.5f;
 	Ogre::uint16 texCoordIndx = (IMPOSTOR_YAW_ANGLES - n) % IMPOSTOR_YAW_ANGLES;
 
-	bbset->createBillboard(position + (rotation * tex->entityCenter) * scale,
+	bbset->createBillboard(position + (rotation * entityBBCenter) * scale,
 							tex->entityDiameter * 0.5f * (scale.x + scale.z),
 							tex->entityDiameter * scale.y, color,
 							texCoordIndx);

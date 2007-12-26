@@ -39,19 +39,19 @@ namespace QuickGUI
 		mList->setOffset(mOffset + 2);
 		mList->allowScrolling(true);
 		mList->hide();
-		mList->setPropogateEventFiring(EVENT_MOUSE_BUTTON_UP,true);
-		mList->setPropogateEventFiring(EVENT_MOUSE_BUTTON_DOWN,true);
-		mList->setPropogateEventFiring(EVENT_MOUSE_ENTER,true);
-		mList->setPropogateEventFiring(EVENT_MOUSE_LEAVE,true);
+		mList->setPropagateEventFiring(EVENT_MOUSE_BUTTON_UP,true);
+		mList->setPropagateEventFiring(EVENT_MOUSE_BUTTON_DOWN,true);
+		mList->setPropagateEventFiring(EVENT_MOUSE_ENTER,true);
+		mList->setPropagateEventFiring(EVENT_MOUSE_LEAVE,true);
 
 		mMenuLabel = dynamic_cast<MenuLabel*>(_createComponent(mInstanceName+".SelectedItem",TYPE_MENULABEL));
 		mMenuLabel->setSize(mSize.width - mSize.height,mSize.height);
 		mMenuLabel->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
 		mMenuLabel->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 		mMenuLabel->setPosition(0,0);
-		mMenuLabel->setPropogateEventFiring(EVENT_LOSE_FOCUS,true);
-		mMenuLabel->setPropogateEventFiring(EVENT_MOUSE_ENTER,true);
-		mMenuLabel->setPropogateEventFiring(EVENT_MOUSE_LEAVE,true);
+		mMenuLabel->setPropagateEventFiring(EVENT_LOSE_FOCUS,true);
+		mMenuLabel->setPropagateEventFiring(EVENT_MOUSE_ENTER,true);
+		mMenuLabel->setPropagateEventFiring(EVENT_MOUSE_LEAVE,true);
 
 		mButton = dynamic_cast<Button*>(_createComponent(mInstanceName+".DropDownButton",TYPE_BUTTON));
 		mButton->setSkinComponent(".combobox.button");
@@ -60,9 +60,9 @@ namespace QuickGUI
 		mButton->setAutoSize(false);
 		mButton->setHorizontalAnchor(ANCHOR_HORIZONTAL_RIGHT);
 		mButton->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
-		mButton->setPropogateEventFiring(EVENT_MOUSE_BUTTON_UP,true);
-		mButton->setPropogateEventFiring(EVENT_MOUSE_ENTER,true);
-		mButton->setPropogateEventFiring(EVENT_MOUSE_LEAVE,true);
+		mButton->setPropagateEventFiring(EVENT_MOUSE_BUTTON_UP,true);
+		mButton->setPropagateEventFiring(EVENT_MOUSE_ENTER,true);
+		mButton->setPropagateEventFiring(EVENT_MOUSE_LEAVE,true);
 
 		mHighlightSkinComponent = ".combobox.highlight";
 
@@ -93,8 +93,8 @@ namespace QuickGUI
 	MenuLabel* ComboBox::addItem()
 	{
 		MenuLabel* newMenuLabel = mList->addMenuLabel();
-		newMenuLabel->setPropogateEventFiring(EVENT_MOUSE_ENTER,true);
-		newMenuLabel->setPropogateEventFiring(EVENT_MOUSE_LEAVE,true);
+		newMenuLabel->setPropagateEventFiring(EVENT_MOUSE_ENTER,true);
+		newMenuLabel->setPropagateEventFiring(EVENT_MOUSE_LEAVE,true);
 		return newMenuLabel;
 	}
 
@@ -184,7 +184,8 @@ namespace QuickGUI
 			highlightListItem(dynamic_cast<MenuLabel*>(mea.widget));
 		}
 		
-		mQuad->setTexture(mSkinName + mSkinComponent + ".over" + SkinSetManager::getSingleton().getSkinSet(mSkinName)->getImageExtension());
+		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(mSkinName);
+		mQuad->setTextureCoordinates(ss->getTextureCoordinates(mSkinName + mSkinComponent + ".over" + ss->getImageExtension()));
 		mButton->applyButtonOverTexture();
 	}
 
@@ -192,13 +193,15 @@ namespace QuickGUI
 	{
 		mHighlightPanel->setVisible(false);
 		
-		mQuad->setTexture(mSkinName + mSkinComponent + SkinSetManager::getSingleton().getSkinSet(mSkinName)->getImageExtension());
+		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(mSkinName);
+		mQuad->setTextureCoordinates(ss->getTextureCoordinates(mSkinName + mSkinComponent + ss->getImageExtension()));
 		mButton->applyDefaultTexture();
 	}
 
 	void ComboBox::onMouseButtonDown(const EventArgs& args)
 	{
-		mQuad->setTexture(mSkinName + mSkinComponent + ".down" + SkinSetManager::getSingleton().getSkinSet(mSkinName)->getImageExtension());
+		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(mSkinName);
+		mQuad->setTextureCoordinates(ss->getTextureCoordinates(mSkinName + mSkinComponent + ".down" + ss->getImageExtension()));
 		mButton->applyButtonDownTexture();
 	}
 
@@ -224,7 +227,8 @@ namespace QuickGUI
 
 	void ComboBox::onSelection(const EventArgs& args)
 	{
-		mQuad->setTexture(mSkinName + mSkinComponent + SkinSetManager::getSingleton().getSkinSet(mSkinName)->getImageExtension());
+		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(mSkinName);
+		mQuad->setTextureCoordinates(ss->getTextureCoordinates(mSkinName + mSkinComponent + ss->getImageExtension()));
 		mButton->applyDefaultTexture();
 		mList->hide();
 
@@ -257,7 +261,7 @@ namespace QuickGUI
 		mSelectedItem = l;
 		mMenuLabel->setText(l->getText());
 		mMenuLabel->setSkin(l->getSkin());
-		mMenuLabel->setIconTexture(l->getIconTexture());
+		mMenuLabel->setIconMaterial(l->getIconMaterial());
 		if(mVisible)
 			mMenuLabel->show();
 		mHighlightPanel->setVisible(false);
@@ -335,7 +339,9 @@ namespace QuickGUI
 	{
 		Widget::setSkin(skinName,recursive);
 
-		mHighlightPanel->setTexture(skinName + mHighlightSkinComponent + SkinSetManager::getSingleton().getSkinSet(skinName)->getImageExtension());
+		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(mSkinName);
+		mHighlightPanel->setMaterial(ss->getMaterialName());
+		mHighlightPanel->setTextureCoordinates(ss->getTextureCoordinates(mSkinName + mHighlightSkinComponent+ ss->getImageExtension()));
 	}
 
 	void ComboBox::setVerticalPixelPadHeight(unsigned int height)

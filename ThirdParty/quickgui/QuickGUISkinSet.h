@@ -36,9 +36,6 @@ namespace QuickGUI
 			IMAGE_TYPE_BMP
 		};
 	public:
-		// Delete this SkinSet
-		~SkinSet();
-
 		/*
 		* Adds a texture name to the list of textures that will be included in the
 		* SkinSet texture.  
@@ -134,6 +131,8 @@ namespace QuickGUI
 	private:
 		// Generate a new SkinSet using the skin's image files.
 		SkinSet(const Ogre::String& skinName, ImageType t, const Ogre::String &resourceGroup);
+		// Delete this SkinSet
+		~SkinSet();
 
 		void _determineExtension(ImageType t);
 		void buildMaterial();

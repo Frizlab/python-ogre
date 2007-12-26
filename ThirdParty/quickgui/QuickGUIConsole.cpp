@@ -9,7 +9,8 @@ namespace QuickGUI
 		LabelArea(name,gm),
 		mMaxLines(30),
 		mInputBox(0),
-		inputIndex(-1)
+		inputIndex(-1),
+		mBlockInput(false)
 	{
 		mWidgetType = TYPE_CONSOLE;
 		mSkinComponent = ".console";
@@ -17,16 +18,11 @@ namespace QuickGUI
 
 		mInputBox = dynamic_cast<TextBox*>(_createComponent(mInstanceName+".InputBox",TYPE_TEXTBOX));
 		mInputBox->setWidth(mSize.width);
-		mInputBox->setPosition(0,mSize.height - mInputBox->getHeight());
 		mInputBox->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 		mInputBox->setVerticalAnchor(ANCHOR_VERTICAL_BOTTOM);
 		mInputBox->setUseBorders(true);
-		mInputBox->addEventHandler(EVENT_SIZE_CHANGED,&Console::onInputBoxSizeChanged,this);
 		mInputBox->addEventHandler(EVENT_KEY_DOWN,&Console::onKeyPressed,this);
 		mInputBox->addOnEnterPressedEventHandler(&Console::onEnterPressed,this);
-
-		// assumption that the InputBox top border is 5 pixels or less.
-		mTextList->setHeight(mSize.height - mInputBox->getHeight() - 5);
 
 		// Create borders.
 		setUseBorders(true);
@@ -73,15 +69,24 @@ namespace QuickGUI
 		mTextList->getScrollPane()->scrollIntoView(mTextList->getItem(mTextList->getNumberOfItems() - 1));
 	}
 
-	void Console::clearText()
+	void Console::clearInputText()
 	{
-		LabelArea::clearText();
 		mInputBox->clearText();
 	}
 
 	void Console::focus()
 	{
 		mGUIManager->setActiveWidget(mInputBox);
+	}
+
+	bool Console::getBlockInput()
+	{
+		return mBlockInput;
+	}
+
+	Ogre::UTFString Console::getInputText()
+	{
+		return mInputBox->getText(); 
 	}
 
 	int Console::getMaxLines()
@@ -93,20 +98,24 @@ namespace QuickGUI
 	{
 		mInputBox->hide();
 		mInputBox->setShowWithParent(false);
+		// expand list to full height.
+		mTextList->setHeight(mSize.height);
 	}
 
 	void Console::onEnterPressed(const EventArgs& args)
 	{
+		if(mBlockInput)
+			return;
+
 		addText(mInputBox->getText());
 		mInputBox->clearText();
 		// set input index to the most recent input.
 		inputIndex = static_cast<int>(mInputHistory.size());
 	}
 
-	void Console::onInputBoxSizeChanged(const EventArgs& args)
+	void Console::setBlockInput(bool block)
 	{
-		mTextList->setHeight(mSize.height - mInputBox->getHeight());
-		mInputBox->setYPosition(mSize.height - mInputBox->getHeight());
+		mBlockInput = block;
 	}
 
 	void Console::setDisabledTextColor(const Ogre::ColourValue& c)
@@ -133,6 +142,12 @@ namespace QuickGUI
 
 		mTextHelper->setFont(fontScriptName);
 		Widget::setFont(fontScriptName,recursive);
+
+		if(mInputBox->isVisible())
+		{
+			mTextList->setHeight(mSize.height - mInputBox->getHeight() - 5);
+			mInputBox->setPosition(0,mSize.height - mInputBox->getHeight());
+		}
 	}
 
 	void Console::setText(const Ogre::UTFString& text)
@@ -157,6 +172,8 @@ namespace QuickGUI
 	{
 		mInputBox->show();
 		mInputBox->setShowWithParent(true);
+		// shrink list height to accomodate input box.
+		mTextList->setHeight(mSize.height - mInputBox->getHeight());
 	}
 
 	void Console::onKeyPressed(const EventArgs& args)

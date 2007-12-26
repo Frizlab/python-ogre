@@ -33,27 +33,29 @@
 ** Boston, MA 02111-1307, USA.                                               **
 \*---------------------------------------------------------------------------*/
 
-#ifndef _OGRE_AL_PREREQS_H_
-#define _OGRE_AL_PREREQS_H_
+#ifndef _OGREAL_PREREQS_H_
+#define _OGREAL_PREREQS_H_
 
 #include "Ogre.h"
 
 namespace OgreAL{
-	#if OGRE_COMPILER == OGRE_COMPILER_MSVC
+	#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	#	include "al.h"
 	#	include "alc.h"
 	#	include "xram.h"
-	#   ifndef OgreAL_Export
-    	#	ifdef OGRE_AL_EXPORT 
-    	#		define OgreAL_Export __declspec(dllexport)
-    	#	else
-    	#		define OgreAL_Export __declspec(dllimport)
-	    #	endif
-	#   endif    
+	#	if OGRE_COMPILER == OGRE_COMPILER_MSVC
+// 	#		ifdef OGREAL_EXPORT
+// 	#			define OgreAL_Export __declspec(dllexport)
+// 	#		else
+// 	#			define OgreAL_Export __declspec(dllimport)
+// 	#		endif
+// 	#	else
+// 	#		define OgreAL_Export
+	#	endif
 	#elif OGRE_COMPILER == OGRE_COMPILER_GNUC
 	#	include "AL/al.h"
 	#	include "AL/alc.h"
-	#	if defined(OGRE_AL_EXPORT) && OGRE_COMP_VER >= 400
+	#	if defined(OGREAL_EXPORT) && OGRE_COMP_VER >= 400
 	#		define OgreAL_Export __attribute__ ((visibility("default")))
 	#	else
 	#		define OgreAL_Export
@@ -66,6 +68,19 @@ namespace OgreAL{
 	#	include "alc.h"
 	#	include "xram.h"
 	#	define OgreAL_Export
+	#endif
+
+	#ifndef OGREAL_THREADED
+	#	define OGREAL_THREADED 0
+	#endif
+
+	#define OGREAL_AUTO_MUTEX_NAME ogrealMutex
+	#if OGREAL_THREADED
+	#	define OGREAL_AUTO_MUTEX mutable boost::recursive_mutex OGREAL_AUTO_MUTEX_NAME;
+	#	define OGREAL_LOCK_AUTO_MUTEX boost::recursive_mutex::scoped_lock ogrealAutoMutexLock(OGREAL_AUTO_MUTEX_NAME);
+	#else
+	#	define OGREAL_AUTO_MUTEX
+	#	define OGREAL_LOCK_AUTO_MUTEX
 	#endif
 
 	enum AudioFormat

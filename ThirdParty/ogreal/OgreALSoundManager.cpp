@@ -38,6 +38,11 @@
 
 template<> OgreAL::SoundManager* Ogre::Singleton<OgreAL::SoundManager>::ms_Singleton = 0;
 
+#if OGREAL_THREADED
+	boost::thread *OgreAL::SoundManager::mOgreALThread = 0;
+	bool OgreAL::SoundManager::mShuttingDown = false;
+#endif
+
 namespace OgreAL {
 	const Ogre::String SoundManager::SOUND_FILE = "SoundFile";
 	const Ogre::String SoundManager::LOOP_STATE = "LoopState";
@@ -56,14 +61,17 @@ namespace OgreAL {
 		mContext(0),
 		mDevice(0),
 		mDopplerFactor(1.0),
-		mSpeedOfSound(343.3)
+		mSpeedOfSound(343.3),
+		mMaxNumSources(0),
+		mMajorVersion(0),
+		mMinorVersion(0)
 	{
 		Ogre::LogManager::getSingleton().logMessage("*-*-* OgreAL Initialization");
 
 		// Create and register Sound and Listener Factories
 		mSoundFactory = new SoundFactory();
 		mListenerFactory = new ListenerFactory();
-		mResourceGroupManager = Ogre::ResourceGroupManager::getSingletonPtr();
+		
 		Ogre::Root::getSingleton().addMovableObjectFactory(mSoundFactory);
 		Ogre::Root::getSingleton().addMovableObjectFactory(mListenerFactory);
 
@@ -75,17 +83,36 @@ namespace OgreAL {
 
 		createListener();
 
-		Ogre::Root::getSingleton().addFrameListener(this);
+		#if OGREAL_THREADED
+			// Kick off the update thread
+			Ogre::LogManager::getSingleton().logMessage("Creating OgreAL Thread");
+			mOgreALThread = new boost::thread(boost::function0<void>(&SoundManager::threadUpdate));
+		#else
+			// Register for frame events
+			Ogre::Root::getSingleton().addFrameListener(this);
+		#endif
 	}
 
 	SoundManager::~SoundManager()
 	{
 		Ogre::LogManager::getSingleton().logMessage("*-*-* OgreAL Shutdown");
 
-		Ogre::Root::getSingleton().removeFrameListener(this);
+		#if OGREAL_THREADED
+			// Clean up the threading
+			Ogre::LogManager::getSingleton().logMessage("Shutting Down OgreAL Thread");
+			mShuttingDown = true;
+			mOgreALThread->join();
+			delete mOgreALThread;
+			mOgreALThread = 0;
+		#else
+			// Unregister for frame events
+			Ogre::Root::getSingleton().removeFrameListener(this);
+		#endif
+
+		// delete all Sound pointers in the SoundMap
+		destroyAllSounds();
 
 		// Destroy the Listener and all Sounds
-		destroyAllSounds();
 		delete Listener::getSingletonPtr();
 
 		// Clean out mActiveSounds and mQueuedSounds
@@ -96,7 +123,7 @@ namespace OgreAL {
 		while(!mSourcePool.empty())
 		{
 			alDeleteSources(1, &mSourcePool.front());
-			CheckError(alcGetError(mDevice), "Failed to destroy source");
+			CheckError(alGetError(), "Failed to destroy source");
 			mSourcePool.pop();
 		}
 
@@ -107,7 +134,6 @@ namespace OgreAL {
 		// Unregister the Sound and Listener Factories
 		Ogre::Root::getSingleton().removeMovableObjectFactory(mSoundFactory);
 		Ogre::Root::getSingleton().removeMovableObjectFactory(mListenerFactory);
-
 		delete mListenerFactory;
 		delete mSoundFactory;
 
@@ -115,11 +141,7 @@ namespace OgreAL {
 
 		// Release the OpenAL Context and the Audio device
 		alcMakeContextCurrent(NULL);
-		CheckError(alcGetError(mDevice), "Failed to make context current");
-
 		alcDestroyContext(mContext);
-		CheckError(alcGetError(mDevice), "Failed to destroy context");
-
 		alcCloseDevice(mDevice);
 	}
 
@@ -136,20 +158,26 @@ namespace OgreAL {
 	Sound* SoundManager::createSound(const Ogre::String& name, 
 		const Ogre::String& fileName, bool loop, bool stream)
 	{
+		// Lock Mutex
+		OGREAL_LOCK_AUTO_MUTEX
+
 		CheckCondition(mSoundMap.find(name) == mSoundMap.end(), 13, "A Sound with name '" + name + "' already exists.");
 
-		mFileTypePair.clear();
-		mFileTypePair[SOUND_FILE] = fileName;
-		mFileTypePair[LOOP_STATE] = Ogre::StringConverter::toString(loop);
-		mFileTypePair[STREAM] = Ogre::StringConverter::toString(stream);
+		Ogre::NameValuePairList fileTypePair;
+		fileTypePair[SOUND_FILE] = fileName;
+		fileTypePair[LOOP_STATE] = Ogre::StringConverter::toString(loop);
+		fileTypePair[STREAM] = Ogre::StringConverter::toString(stream);
 		
-		Sound *newSound = static_cast<Sound*>(mSoundFactory->createInstance(name, NULL, &mFileTypePair));
+		Sound *newSound = static_cast<Sound*>(mSoundFactory->createInstance(name, NULL, &fileTypePair));
 		mSoundMap[name] = newSound;
 		return newSound;
 	}
 
 	Sound* SoundManager::getSound(const Ogre::String& name) const
 	{
+		// Lock Mutex
+		OGREAL_LOCK_AUTO_MUTEX
+
 		SoundMap::const_iterator soundItr = mSoundMap.find(name);
 		if(soundItr == mSoundMap.end())
 		{
@@ -163,6 +191,9 @@ namespace OgreAL {
 
 	bool SoundManager::hasSound(const Ogre::String& name) const
 	{
+		// Lock Mutex
+		OGREAL_LOCK_AUTO_MUTEX
+
 		SoundMap::const_iterator soundItr = mSoundMap.find(name);
 		if(soundItr != mSoundMap.end())
 			return true;
@@ -172,11 +203,17 @@ namespace OgreAL {
 
 	void SoundManager::destroySound(Sound *sound)
 	{
+		// Lock Mutex
+		OGREAL_LOCK_AUTO_MUTEX
+
 		destroySound(sound->getName());
 	}
 
 	void SoundManager::destroySound(const Ogre::String& name)
 	{
+		// Lock Mutex
+		OGREAL_LOCK_AUTO_MUTEX
+
 		SoundMap::iterator soundItr = mSoundMap.find(name);
 		if(soundItr != mSoundMap.end())
 		{			
@@ -187,6 +224,9 @@ namespace OgreAL {
 
 	void SoundManager::destroyAllSounds()
 	{
+		// Lock Mutex
+		OGREAL_LOCK_AUTO_MUTEX
+
 		// delete all Sound pointers in the SoundMap
 		std::for_each(mSoundMap.begin(), mSoundMap.end(), DeleteSecond());
 		mSoundMap.clear();
@@ -194,6 +234,9 @@ namespace OgreAL {
 	
 	void SoundManager::pauseAllSounds()
 	{
+		// Lock Mutex
+		OGREAL_LOCK_AUTO_MUTEX
+
 		SoundMap::iterator soundItr;
 		for(soundItr = mSoundMap.begin(); soundItr != mSoundMap.end(); soundItr++)
 		{
@@ -207,6 +250,9 @@ namespace OgreAL {
 
 	void SoundManager::resumeAllSounds()
 	{
+		// Lock Mutex
+		OGREAL_LOCK_AUTO_MUTEX
+
 		SoundList::iterator soundItr;
 		for(soundItr = mPauseResumeAll.begin(); soundItr != mPauseResumeAll.end(); soundItr++)
 		{
@@ -227,6 +273,9 @@ namespace OgreAL {
 
 	Listener* SoundManager::getListener() const
 	{
+		// Lock Mutex
+		OGREAL_LOCK_AUTO_MUTEX
+
 		return Listener::getSingletonPtr();
 	}
 
@@ -243,10 +292,12 @@ namespace OgreAL {
 		bool operator()(const Sound *sound1, const Sound *sound2)const
 		{
 			// First we see if either sound has stopped and not given up its source
-			if(sound1->isStopped())
+			if(sound1->isStopped() && !sound2->isStopped())
 				return true;
-			else if(sound2->isStopped())
+			else if(sound2->isStopped() && !sound1->isStopped())
 				return false;
+			else if(sound1->isStopped() && sound2->isStopped())
+				return sound1 < sound2;
 
 			// If they are both playing we'll test priority
 			if(sound1->getPriority() < sound2->getPriority())
@@ -334,21 +385,18 @@ namespace OgreAL {
 
 	bool SoundManager::frameStarted(const Ogre::FrameEvent& evt)
 	{
-		// Update the Sound and Listeners if necessary	
-		std::for_each(mSoundMap.begin(), mSoundMap.end(), UpdateSound());
-		Listener::getSingleton().updateListener();
-
-		// Sort the active and queued sounds
-		std::sort(mActiveSounds.begin(), mActiveSounds.end(), SortLowToHigh());
-		std::sort(mQueuedSounds.begin(), mQueuedSounds.end(), SortHighToLow());
-
-		// Check to see if we should sacrifice any sounds
-		updateSourceAllocations();
+		updateSounds();
 		return true;
 	}
 
 	void SoundManager::setDopplerFactor(Ogre::Real dopplerFactor)
 	{
+		// Negative values are invalid
+		if(dopplerFactor < 0) return;
+
+		// Lock Mutex
+		OGREAL_LOCK_AUTO_MUTEX
+
 		mDopplerFactor = dopplerFactor;
 		alDopplerFactor(mDopplerFactor);
 		CheckError(alGetError(), "Failed to set Doppler Factor");
@@ -356,6 +404,12 @@ namespace OgreAL {
 
 	void SoundManager::setSpeedOfSound(Ogre::Real speedOfSound)
 	{
+		// Negative values are invalid
+		if(speedOfSound < 0) return;
+
+		// Lock Mutex
+		OGREAL_LOCK_AUTO_MUTEX
+
 		mSpeedOfSound = speedOfSound;
 		alSpeedOfSound(mSpeedOfSound);
 		CheckError(alGetError(), "Failed to set Speed of Sound");
@@ -364,7 +418,6 @@ namespace OgreAL {
 	Ogre::StringVector SoundManager::getDeviceList()
 	{
 		const ALCchar* deviceList = alcGetString(NULL, ALC_DEVICE_SPECIFIER);
-		CheckError(alGetError(), "Unable to list devices");
 
 		Ogre::StringVector deviceVector;
 		/*
@@ -382,21 +435,23 @@ namespace OgreAL {
 			try
 			{
 				ALCdevice *device = alcOpenDevice(deviceList);
-				CheckError(alGetError(), "Unable to open device");
+				CheckError(alcGetError(device), "Unable to open device");
 
 				if(device)
 				{
 					// Device seems to be valid
 					ALCcontext *context = alcCreateContext(device, NULL);
-					CheckError(alGetError(), "Unable to create context");
+					CheckError(alcGetError(device), "Unable to create context");
 					if(context)
 					{
 						// Context seems to be valid
 						alcMakeContextCurrent(context);
-						CheckError(alGetError(), "Unable to make context current");
+						CheckError(alcGetError(device), "Unable to make context current");
 						deviceVector.push_back(alcGetString(device, ALC_DEVICE_SPECIFIER));
+						alcMakeContextCurrent(NULL);
+						CheckError(alcGetError(device), "Unable to clear current context");
 						alcDestroyContext(context);
-						CheckError(alGetError(), "Unable to destroy context");
+						CheckError(alcGetError(device), "Unable to destroy context");
 					}
 					alcCloseDevice(device);
 				}
@@ -414,11 +469,17 @@ namespace OgreAL {
 
 	FormatMapIterator SoundManager::getSupportedFormatIterator()
 	{
+		// Lock Mutex
+		OGREAL_LOCK_AUTO_MUTEX
+
 		return FormatMapIterator(mSupportedFormats.begin(), mSupportedFormats.end());
 	}
 
 	const FormatData* SoundManager::retrieveFormatData(AudioFormat format) const
 	{
+		// Lock Mutex
+		OGREAL_LOCK_AUTO_MUTEX
+
 		FormatMap::const_iterator itr = mSupportedFormats.find(format);
 		if(itr != mSupportedFormats.end())
 			return itr->second;
@@ -428,6 +489,9 @@ namespace OgreAL {
 
 	ALboolean SoundManager::eaxSetBufferMode(Size numBuffers, BufferRef *buffers, EAXMode bufferMode)
 	{
+		// Lock Mutex
+		OGREAL_LOCK_AUTO_MUTEX
+
 		Ogre::LogManager::getSingleton().logMessage(" === Setting X-RAM Buffer Mode");
 		if(bufferMode == xRamHardware)
 		{
@@ -448,16 +512,33 @@ namespace OgreAL {
 	
 	ALenum SoundManager::eaxGetBufferMode(BufferRef buffer, ALint *reserved)
 	{
+		// Lock Mutex
+		OGREAL_LOCK_AUTO_MUTEX
+
 		return mGetXRamMode(buffer, reserved);
 	}
 
 	void SoundManager::_removeBufferRef(const Ogre::String& bufferName)
 	{
+		// Lock Mutex
+		OGREAL_LOCK_AUTO_MUTEX
+
 		mSoundFactory->_removeBufferRef(bufferName);
+	}
+
+	void SoundManager::_addBufferRef(const Ogre::String& bufferName, BufferRef buffer)
+	{
+		// Lock Mutex
+		OGREAL_LOCK_AUTO_MUTEX
+
+		mSoundFactory->_addBufferRef(bufferName, buffer);
 	}
 
 	SourceRef SoundManager::_requestSource(Sound *sound)
 	{
+		// Lock Mutex
+		OGREAL_LOCK_AUTO_MUTEX
+
 		if(sound->getSource() != AL_NONE)
 		{
 			// This sound already has a source, so we'll just return the same one
@@ -510,6 +591,9 @@ namespace OgreAL {
 
 	SourceRef SoundManager::_releaseSource(Sound *sound)
 	{
+		// Lock Mutex
+		OGREAL_LOCK_AUTO_MUTEX
+
 		bool soundFound = false;
 		SoundList::iterator soundItr;
 		for(soundItr = mActiveSounds.begin(); soundItr != mActiveSounds.end(); soundItr++)
@@ -583,21 +667,37 @@ namespace OgreAL {
 
 	void SoundManager::initializeDevice(const Ogre::String& deviceName)
 	{
-		Ogre::LogManager::getSingleton().logMessage("OpenAL Devices");
-		Ogre::LogManager::getSingleton().logMessage("--------------");
+		alcGetIntegerv(NULL, ALC_MAJOR_VERSION, sizeof(mMajorVersion), &mMajorVersion);
+		CheckError(alcGetError(NULL), "Failed to retrieve version info");
+		alcGetIntegerv(NULL, ALC_MINOR_VERSION, sizeof(mMinorVersion), &mMinorVersion);
+		CheckError(alcGetError(NULL), "Failed to retrieve version info");
 
-		std::stringstream ss;
+		Ogre::LogManager::getSingleton().logMessage("OpenAL Version: " +
+			Ogre::StringConverter::toString(mMajorVersion) + "." +
+			Ogre::StringConverter::toString(mMinorVersion));
 
-		// List devices in log and see if the sugested device is in the list
-		Ogre::StringVector deviceList = getDeviceList();
+		/*
+		** OpenAL versions prior to 1.0 DO NOT support device enumeration, so we
+		** need to test the current version and decide if we should try to find 
+		** an appropriate device or if we should just open the default device.
+		*/
 		bool deviceInList = false;
-		Ogre::StringVector::iterator deviceItr;
-		for(deviceItr = deviceList.begin(); deviceItr != deviceList.end() && (*deviceItr).compare("") != 0; deviceItr++)
+		if(mMajorVersion >= 1 && mMinorVersion >= 1)
 		{
-			deviceInList = (*deviceItr).compare(deviceName) == 0;
-			ss << "  * " << (*deviceItr);
-			Ogre::LogManager::getSingleton().logMessage(ss.str());
-			ss.clear(); ss.str("");
+			Ogre::LogManager::getSingleton().logMessage("Available Devices");
+			Ogre::LogManager::getSingleton().logMessage("-----------------");
+
+			// List devices in log and see if the sugested device is in the list
+			Ogre::StringVector deviceList = getDeviceList();
+			std::stringstream ss;
+			Ogre::StringVector::iterator deviceItr;
+			for(deviceItr = deviceList.begin(); deviceItr != deviceList.end() && (*deviceItr).compare("") != 0; deviceItr++)
+			{
+				deviceInList = (*deviceItr).compare(deviceName) == 0;
+				ss << " * " << (*deviceItr);
+				Ogre::LogManager::getSingleton().logMessage(ss.str());
+				ss.clear(); ss.str("");
+			}
 		}
 
 		// If the suggested device is in the list we use it, otherwise select the default device
@@ -688,6 +788,23 @@ namespace OgreAL {
 
 		// Create our pool of sources
 		mMaxNumSources = createSourcePool();
+	}
+
+	void SoundManager::updateSounds()
+	{
+		// Lock Mutex
+		OGREAL_LOCK_AUTO_MUTEX
+
+		// Update the Sound and Listeners if necessary	
+		std::for_each(mSoundMap.begin(), mSoundMap.end(), UpdateSound());
+		Listener::getSingleton().updateListener();
+
+		// Sort the active and queued sounds
+		std::sort(mActiveSounds.begin(), mActiveSounds.end(), SortLowToHigh());
+		std::sort(mQueuedSounds.begin(), mQueuedSounds.end(), SortHighToLow());
+
+		// Check to see if we should sacrifice any sounds
+		updateSourceAllocations();
 	}
 
 	void SoundManager::updateSourceAllocations()

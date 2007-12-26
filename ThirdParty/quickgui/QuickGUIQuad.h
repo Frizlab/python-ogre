@@ -13,7 +13,6 @@
 #include "QuickGUISkinSetManager.h"
 #include "QuickGUIVertex.h"
 
-
 namespace QuickGUI
 {
 	// forward declaration
@@ -54,14 +53,9 @@ namespace QuickGUI
 		bool getInheritClippingWidget();
 		bool getInheritLayer();
 		Layer getLayer();
+		Ogre::String getMaterialName();
 		Ogre::Real getOpacity();
 		bool getShowWithOwner();
-
-		inline const Ogre::String getTextureName() const
-		{
-			return mTextureName;
-		}
-
 		Vertex* getVertices();
 		const int getOffset() const;
 		Point getPosition();
@@ -80,12 +74,12 @@ namespace QuickGUI
 		void setInheritClippingWidget(bool inherit);
 		void setInheritLayer(bool inherit);
 		void setLayer(Layer l);
+		void setMaterial(const Ogre::String& materialName);
 		void setOffset(int offset);
 		void setOpacity(Ogre::Real opacity);
 		void setPosition(const Point& pixelPosition);
 		void setShowWithOwner(bool showWithOwner);
 		void setSize(const Size& pixelSize);
-		void setTexture(const Ogre::String& textureName);
 		void setTextureCoordinates(const Ogre::Vector4& textureCoordinates);
 		void setTextureCoordinates(const Ogre::FloatRect& textureCoordinates);
 		void setVisible(bool visible);
@@ -97,7 +91,6 @@ namespace QuickGUI
 		bool textureExists(const Ogre::String& textureName);
 
 		void updateClippingWidget();
-
 
 		inline bool visible() const
 		{
@@ -115,7 +108,7 @@ namespace QuickGUI
 		Layer				mLayer;
 		bool				mInheritQuadLayer;
 
-		Ogre::String		mTextureName;
+		Ogre::String		mMaterialName;
 		// number of parent iterations away from sheet quad.
 		int					mOffset;
 		Rect				mPixelDimensions;
@@ -135,13 +128,11 @@ namespace QuickGUI
 		bool				mAddedToRenderGroup;
 		bool				mColorChanged;
 		bool				mDimensionsChanged;
-		bool				mTextureChanged;
+		bool				mMaterialChanged;
 		bool				mTextureCoordsChanged;
 		bool				mOffsetChanged;
 
 		Vertex				mVertices[VERTICES_PER_QUAD];
-
-		SkinSetManager*		mSkinSetManager;
 
 		/*
 		* Resizes and adjusts texture coords to display any visible portions that lie
@@ -153,8 +144,6 @@ namespace QuickGUI
 		void _computeVertices();
 		void _updateTextureCoords();
 		void _updateVertexColor();
-
-		void _setTexture(const Ogre::String& textureName);
 	};
 }
 

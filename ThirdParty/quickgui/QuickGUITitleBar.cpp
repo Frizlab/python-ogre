@@ -26,7 +26,6 @@ namespace QuickGUI
 		Ogre::Real ButtonSize = mSize.height - 2;
 		mCloseButton = dynamic_cast<Button*>(_createComponent(mInstanceName+".CloseButton",TYPE_BUTTON));
 		mCloseButton->setSkinComponent(".titleBar.button");
-		mCloseButton->setSkin(mSkinName);
 		mCloseButton->setSize(ButtonSize,ButtonSize);
 		mCloseButton->setPosition(mSize.width - ButtonSize - 1,1);
 		mCloseButton->setAutoSize(false);

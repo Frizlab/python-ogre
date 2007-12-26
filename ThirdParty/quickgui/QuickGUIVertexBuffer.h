@@ -55,7 +55,7 @@ namespace QuickGUI
 		bool mUpdateBeforeRender;
 
 		// Stores the Texture of a quad, and the index of the first quad following it with a different texture.
-		TextureChangeList mTextureChangeList;
+		TextureChangeList mMaterialChangeList;
 
 		// required to ensure textures are loaded before used
 		Ogre::TextureManager* mTextureManager;

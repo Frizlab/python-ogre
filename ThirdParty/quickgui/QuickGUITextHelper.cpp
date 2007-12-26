@@ -42,6 +42,14 @@ namespace QuickGUI
 		return mFontTextureWidth;
 	}
 
+	Ogre::String TextHelper::getFontMaterialName()
+	{
+		if(mFont.isNull())
+			throw Ogre::Exception( Ogre::Exception::ERR_ITEM_NOT_FOUND, "Font has not been set, cannot get font material name!","Text::getFontMaterialName" );
+
+		return mFont->getMaterial()->getName();
+	}
+
 	Size TextHelper::getGlyphSize(Ogre::UTFString::unicode_char c)
 	{
 		if(mFont.isNull())

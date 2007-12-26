@@ -24,9 +24,6 @@ namespace QuickGUI
 
 	ConfigScriptLoader::ConfigScriptLoader()
 	{
-		// Create SkinSetManager
-		new SkinSetManager();
-
 		//Register as a ScriptLoader
 		mLoadOrder = 100.0f;
 		mScriptPatterns.push_back("*.skinset");
@@ -36,9 +33,6 @@ namespace QuickGUI
 
 	ConfigScriptLoader::~ConfigScriptLoader()
 	{
-		// Destroy SkinSetManager
-		delete SkinSetManager::getSingletonPtr();
-
 		//Delete all scripts
 		HashMap<String, ConfigNode*>::iterator i;
 		for (i = scriptList.begin(); i != scriptList.end(); i++){
@@ -282,7 +276,6 @@ namespace QuickGUI
 		//Add self to parent's child list (unless this is the root node being created)
 		if (parent != NULL){
 			parent->children.push_back(this);
-			_iter = --(parent->children.end());
 		}
 	}
 
@@ -299,7 +292,16 @@ namespace QuickGUI
 
 		//Remove self from parent's child list
 		if (_removeSelf && parent != NULL)
-			parent->children.erase(_iter);
+		{
+			for(std::vector<ConfigNode*>::iterator it = parent->children.begin(); it != parent->children.end(); ++it) 
+			{ 
+				if((*it) == this) 
+				{ 
+					parent->children.erase(it); 
+					break; 
+				} 
+			}
+		}
 	}
 
 	ConfigNode *ConfigNode::addChild(const String &name)
@@ -332,14 +334,20 @@ namespace QuickGUI
 	void ConfigNode::setParent(ConfigNode *newParent)
 	{
 		//Remove self from current parent
-		parent->children.erase(_iter);
+		for(std::vector<ConfigNode*>::iterator it = parent->children.begin(); it != parent->children.end(); ++it) 
+		{ 
+			if((*it) == this) 
+			{ 
+				parent->children.erase(it); 
+				break; 
+			} 
+		}
 
 		//Set new parent
 		parent = newParent;
 
 		//Add self to new parent
 		parent->children.push_back(this);
-		_iter = --(parent->children.end());
 	}
 
 

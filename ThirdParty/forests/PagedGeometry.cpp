@@ -25,22 +25,33 @@ using namespace Ogre;
 //-------------------------------------------------------------------------------------
 PagedGeometry::PagedGeometry(Camera* cam, const Real pageSize)
 {
-	//Setup camera and scene manager
+	//Setup camera, scene manager, and scene node
 	if (cam){
 		sceneCam = cam;
 		sceneMgr = sceneCam->getSceneManager();
 		oldCamPos = sceneCam->getDerivedPosition();
+
+		#ifdef PAGEDGEOMETRY_ALTERNATE_COORDSYSTEM
+		rootNode = sceneMgr->getRootSceneNode()->createChildSceneNode();	//Create PagedGeometry's root node
+		#else
+		rootNode = sceneMgr->getRootSceneNode();
+		#endif
 	} else {
 		sceneCam = NULL;
 		sceneMgr = NULL;
+		rootNode = NULL;
 		oldCamPos = Vector3::ZERO;
 	}
 	
+	#ifdef PAGEDGEOMETRY_ALTERNATE_COORDSYSTEM
+	//Setup default coordinate system
+	coordinateSystemQuat = Quaternion::IDENTITY;
+	#endif
+
 	//Init. timer
 	timer.reset();
 	lastTime = 0;
 
-	
 	//Setup page size / bounds
 	PagedGeometry::pageSize = pageSize;
 	m_bounds = TBounds(0, 0, 0, 0);
@@ -51,6 +62,12 @@ PagedGeometry::PagedGeometry(Camera* cam, const Real pageSize)
 
 PagedGeometry::~PagedGeometry()
 {
+	#ifdef PAGEDGEOMETRY_ALTERNATE_COORDSYSTEM
+	//Remove PagedGeometry's coordinate system node
+	if (rootNode)
+		sceneMgr->destroySceneNode(rootNode->getName());
+	#endif
+
 	//Remove all page managers and the geometry associated with them
 	removeDetailLevels();
 }
@@ -83,8 +100,47 @@ void PagedGeometry::setCamera(Camera *cam)
 		//then set the scene manager (it won't change after this point).
 		if (sceneMgr == NULL)
 			sceneMgr = sceneCam->getSceneManager();
+
+		//If rootNode is NULL (this also only occurs the first time a camera is set),
+		//the create a scene node (it won't change after this point) for the coordinate
+		//system translations.
+		if (rootNode == NULL){
+			#ifdef PAGEDGEOMETRY_ALTERNATE_COORDSYSTEM
+			rootNode = sceneMgr->getRootSceneNode()->createChildSceneNode();
+			rootNode->setOrientation(coordinateSystemQuat);
+			#else
+			rootNode = sceneMgr->getRootSceneNode();
+			#endif
+		}
 	}
 }
+
+#ifdef PAGEDGEOMETRY_ALTERNATE_COORDSYSTEM
+void PagedGeometry::setCoordinateSystem(Vector3 up, Vector3 right)
+{
+	up.z = -up.z;
+	Vector3 forward = right.crossProduct(up);
+	coordinateSystemQuat = Quaternion(right, up, forward);
+
+	if (rootNode)
+		rootNode->setOrientation(coordinateSystemQuat);
+}
+#endif
+
+#ifdef PAGEDGEOMETRY_ALTERNATE_COORDSYSTEM
+Vector3 PagedGeometry::_convertToLocal(const Vector3 &globalVec)
+{
+	assert(getSceneNode());
+	//Convert from the given global position to the local coordinate system of PagedGeometry's root scene node.
+	return (getSceneNode()->getOrientation().Inverse() * globalVec);
+}
+#else
+//Default coordinate system - no conversion
+Vector3 PagedGeometry::_convertToLocal(const Vector3 &globalVec)
+{
+	return globalVec;
+}
+#endif
 
 void PagedGeometry::setPageSize(Real size)
 {
@@ -141,7 +197,7 @@ void PagedGeometry::update()
 	lastTime = tmp;
 
 	//Get camera position and speed
-	Vector3 camPos = sceneCam->getDerivedPosition();
+	Vector3 camPos = _convertToLocal(sceneCam->getDerivedPosition());
 	Vector3 camSpeed;	//Speed in units-per-millisecond
 	if (deltaTime == 0){
 		camSpeed.x = 0;
@@ -151,8 +207,6 @@ void PagedGeometry::update()
 		camSpeed = (camPos - oldCamPos) / deltaTime;
 	}
 	oldCamPos = camPos;
-
-
 	
 	if (pageLoader != 0){
 		//Update the PageLoader
@@ -170,7 +224,7 @@ void PagedGeometry::update()
 	}
 
 	//Update misc. subsystems
-	StaticBillboardSet::updateAll(getCamera());
+	StaticBillboardSet::updateAll(_convertToLocal(getCamera()->getDerivedDirection()));
 }
 
 void PagedGeometry::reloadGeometry()
@@ -218,7 +272,6 @@ void PagedGeometry::_addDetailLevel(GeometryPageManager *mgr, Real maxRange, Rea
 
 	managerList.push_back(mgr);
 }
-
 
 //-------------------------------------------------------------------------------------
 

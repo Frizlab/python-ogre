@@ -22,6 +22,11 @@ namespace QuickGUI
 		mOnCheckChangedUserEventHandlers.push_back(function);
 	}
 
+	bool CheckBox::getChecked()
+	{
+		return mChecked;
+	}
+
 	void CheckBox::onMouseButtonDown(const EventArgs& args)
 	{
 		Button::onMouseButtonDown(args);
@@ -39,6 +44,27 @@ namespace QuickGUI
 		// Event has been fired, call user defined handlers.
 		EventHandlerArray::iterator it;
 		for( it = mOnCheckChangedUserEventHandlers.begin(); it != mOnCheckChangedUserEventHandlers.end(); ++it )
+			(*it)->execute(args);
+	}
+
+	void CheckBox::setChecked(bool checked)
+	{
+		if(mChecked == checked)
+			return;
+
+		mChecked = checked;
+
+		// change skin component and apply skin
+		if(mChecked)
+			mSkinComponent = ".checkbox.checked";
+		else
+			mSkinComponent = ".checkbox.unchecked";
+
+		setSkin(mSkinName,true);
+
+		// Event has been fired, call user defined handlers.
+		WidgetEventArgs args(this);
+		for( EventHandlerArray::iterator it = mOnCheckChangedUserEventHandlers.begin(); it != mOnCheckChangedUserEventHandlers.end(); ++it )
 			(*it)->execute(args);
 	}
 }

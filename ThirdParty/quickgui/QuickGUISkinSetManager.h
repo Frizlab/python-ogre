@@ -15,7 +15,7 @@ namespace QuickGUI
 		public Ogre::Singleton<SkinSetManager>
 	{
 	public:
-		friend class ConfigScriptLoader;
+		friend class Root;
 	public:
 		static SkinSetManager& getSingleton(void); 
 		static SkinSetManager* getSingletonPtr(void);
@@ -37,7 +37,7 @@ namespace QuickGUI
 		SkinSet* getSkinSetByTextureName(const Ogre::String& texName);
 		std::map<Ogre::String,SkinSet*>* getSkinSetList();
 
-		void loadSkin(const Ogre::String& skinName, SkinSet::ImageType t, const Ogre::String &resourceGroup = Ogre::ResourceGroupManager::AUTODETECT_RESOURCE_GROUP_NAME);
+		void loadSkin(const Ogre::String& skinName, SkinSet::ImageType t, const Ogre::String &resourceGroup = Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
 		/*
 		* Returns true if a skin has been loaded with the name skinName, false otherwise.

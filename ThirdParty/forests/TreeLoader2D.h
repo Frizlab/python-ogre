@@ -31,23 +31,23 @@ Using a TreeLoader is simple - simply create an instance, attach it to your Page
 with PagedGeometry::setPageLoader(), and add your trees.
 
 To add trees, just call TreeLoader2D::addTree(), supplying the appropriate parameters. You may notice that
-TreeLoader2D restricts trees to uniform scale, x/z position, and yaw rotation. This is done to conserve
-memory; TreeLoader2D packs trees into memory as effeciently as possible, taking only 6 bytes per tree. This
-means 1 million trees only takes 5.72 MB of RAM (additionally, adding 1 million trees takes less than a
-second in a release build).
+TreeLoader2D restricts trees to uniform scale, yaw rotation, and a position value with no vertical component.
+This is done to conserve memory; TreeLoader2D packs trees into memory as effeciently as possible, taking only
+6 bytes per tree. This means 1 million trees only takes 5.72 MB of RAM (additionally, adding 1 million trees
+takes less than a second in a release build).
 
 \note By default, TreeLoader2D doesn't know what shape your terrain is, so all trees will be placed
 at 0 height. To inform TreeLoader2D of the shape of your terrain, you must specify a height function
-that returns the height (y coordinate) of your terrain at the given x and z coordinates. See
-the TreeLoader2D::setHeightFunction() documentation for more information.
+that returns the height (vertical coordinate) of your terrain at the given coordinates. See the
+TreeLoader2D::setHeightFunction() documentation for more information.
 
 \warning If you attempt to use Ogre's scene queries to get the terrain height,
 keep in mind that calculating the height of Ogre's built-in terrain this way can
 be VERY slow if not done properly, and may cause stuttering due to long paging delays.
 
-If using only x/z positions are too limiting, or you are unable to implement a fast enough height function,
-refer to TreeLoader3D. TreeLoader3D allows you to provide full 3D x/y/z coordinates, although 40% more memory
-is required per tree.
+If the inability to supply a vertical coordinate to addTree() is too limiting, or you are unable to implement 
+a fast enough height function, please refer to TreeLoader3D. TreeLoader3D allows you to provide full 3D x/y/z
+coordinates, although 40% more memory is required per tree.
 */
 class TreeLoader2D: public PageLoader
 {
@@ -60,33 +60,38 @@ public:
 	
 	/** \brief Adds an entity to the scene with the specified location, rotation, and scale.
 	\param entity The entity to be added to the scene.
-	\param position The 2-dimensional x/z position of the tree
-	\param yaw The desired rotation around the Y axis in degrees
+	\param position The desired position of the tree
+	\param yaw The desired rotation around the vertical axis in degrees
 	\param scale The desired scale of the entity
 
-	Trees are restricted to x/z positions, only yaw rotation, and only uniform scale.
-	This conserves memory by avoiding storage of useless data (for example, storing the
-	height of each tree when this can be easily calculated from the terrain's shape).
+	Trees added with TreeLoader2D are restricted to yaw rotation only, and uniform scale
+	values. This conserves memory by avoiding storage of useless data (for example, storing
+	the height of each tree when this can be easily calculated from the terrain's shape).
 
-	The y position of each tree is calculated with a height function, which you must
-	specify with setHeightFunction() (otherwise all trees will be placed at 0 height). */
-	void addTree(Ogre::Entity *entity, const Ogre::Vector2 &position, Ogre::Degree yaw = Ogre::Degree(0), Ogre::Real scale = 1.0f);
+	Unlike TreeLoader3D, the vertical position of each tree is NOT stored (therefore
+	TreeLoader2D takes less memory than TreeLoader3D), but this means you must provide
+	a height function with setHeightFunction() in order for TreeLoader2D to be able to
+	calculate the desired height values when the time comes. If you do not specify a
+	height function, all trees will appear at 0 height.
+	
+	\warning By default, scale values may not exceed 2.0. If you need to use higher scale
+	values than 2.0, use setMaximumScale() to reconfigure the maximum. */
+	void addTree(Ogre::Entity *entity, const Ogre::Vector3 &position, Ogre::Degree yaw = Ogre::Degree(0), Ogre::Real scale = 1.0f);
 
 	/** \brief Deletes trees within a certain radius of the given coordinates.
-	\param x The x coordinate of the tree(s) to delete
-	\param z The z coordinate of the tree(s) to delete
-	\param radius The radius from the coordinates where trees will be deleted (optional)
+	\param position The coordinate of the tree(s) to delete
+	\param radius The radius from the given coordinate where trees will be deleted
 	\param type The type of tree to delete (optional)
 
 	\note If the "type" parameter is set to an entity, only trees created with that entity
 	will be deleted. */
-	void deleteTrees(Ogre::Real x, Ogre::Real z, float radius, Ogre::Entity *type = NULL);
+	void deleteTrees(const Ogre::Vector3 &position, float radius, Ogre::Entity *type = NULL);
 
-	/** \brief Sets the height function used to calculate tree Y coordinates
+	/** \brief Sets the height function used to calculate tree height coordinates
 	\param heightFunction A pointer to a height function
-
+	
 	Unless you want all your trees placed at 0 height, you need to specify a height function
-	so TreeLoader2D will be able to calculate the Y coordinate. The height function given
+	so TreeLoader2D will be able to calculate the height coordinate. The height function given
 	to setHeightFunction() should use the following prototype (although you can name the
 	function anything you want):
 
@@ -94,6 +99,9 @@ public:
 	Real getHeightAt(Real x, Real z);
 	\endcode
 
+	\note If you're not using the default coordinate system (where x = right, z = back), the
+	x/z parameters will actually be representing the appropriate equivalents.
+	
 	After you've defined a height function, using setHeightFunction is easy:
 	
 	\code
@@ -162,6 +170,54 @@ public:
 			colorMap->setFilter(colorMapFilter);
 	}
 
+	/** \brief Sets the maximum tree scale value
+
+	When calling addTree() to add trees, the scale values you are allowed to use are restricted
+	to 2.0 maximum by default. With this function, you can adjust the maximum scale you are allowed
+	to use for trees. However, keep in mind that the higher the maximum scale is, the less precision
+	there will be in storing the tree scales (since scale values are actually packed into a single byte).
+
+	\warning Be sure to call this before adding any trees - otherwise adjusting this value will cause
+	the size of the currently added trees to change. */
+	void setMaximumScale(Ogre::Real maxScale)
+	{
+		maximumScale = maxScale;
+	}
+
+	/** \brief Gets the maximum tree scale value
+	\returns The maximum tree scale value
+
+	This function will return the maximum tree scale value as set by setMaximumScale(). By
+	default this value will be 2.0. */
+	float getMaximumScale()
+	{
+		return maximumScale;
+	}
+
+	/** \brief Sets the minimum tree scale value
+
+	When calling addTree() to add trees, the scale values you are allowed to use are restricted
+	in the range of 0.0 - 2.0 by default. With this function, you can adjust the minimum scale you are
+	allowed to use for trees. The closer this minimum value is to the maximum tree scale, the more
+	precision there will be when storing trees with addTree().
+
+	\warning Be sure to call this before adding any trees - otherwise adjusting this value will cause
+	the size of the currently added trees to change. */
+	void setMinimumScale(Ogre::Real minScale)
+	{
+		minimumScale = minScale;
+	}
+
+	/** \brief Gets the minimum tree scale value
+	\returns The minimum tree scale value
+
+	This function will return the minimum tree scale value as set by setMinimumScale(). By
+	default this value will be 0. */
+	float getMinimumScale()
+	{
+		return minimumScale;
+	}
+
 	void loadPage(PageInfo &page);
 
 private:
@@ -177,6 +233,8 @@ private:
 	int pageGridX, pageGridZ;
 	Ogre::Real pageSize;
 	Ogre::TRect<Ogre::Real> gridBounds, actualBounds;
+
+	Ogre::Real maximumScale, minimumScale;
 
 	//Colormap
 	ColorMap *colorMap;
@@ -293,5 +351,3 @@ private:
 
 
 #endif
-
-

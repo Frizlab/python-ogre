@@ -46,12 +46,13 @@ unsigned long StaticBillboardSet::GUID = 0;
 unsigned int StaticBillboardSet::selfInstances = 0;
 StaticBillboardSet::FadedMaterialMap StaticBillboardSet::fadedMaterialMap;
 
-StaticBillboardSet::StaticBillboardSet(SceneManager *mgr, BillboardMethod method)
+StaticBillboardSet::StaticBillboardSet(SceneManager *mgr, SceneNode *rootSceneNode, BillboardMethod method)
 {
 	sceneMgr = mgr;
 	renderMethod = method;
 	visible = true;
 	fadeEnabled = false;
+	bbOrigin = BBO_CENTER;
 	
 	//Fall back to BB_METHOD_COMPATIBLE if vertex shaders are not available
 	if (renderMethod == BB_METHOD_ACCELERATED){
@@ -60,7 +61,7 @@ StaticBillboardSet::StaticBillboardSet(SceneManager *mgr, BillboardMethod method
 			renderMethod = BB_METHOD_COMPATIBLE;
 	}
 	
-	node = sceneMgr->getRootSceneNode()->createChildSceneNode();
+	node = rootSceneNode->createChildSceneNode();
 	entityName = getUniqueID("SBSentity");
 
 	if (renderMethod == BB_METHOD_ACCELERATED){
@@ -440,9 +441,9 @@ void StaticBillboardSet::setMaterial(const String &materialName)
 			materialPtr = MaterialManager::getSingleton().getByName(materialName);
 			if (fadeEnabled) {
 				fadeMaterialPtr = getFadeMaterial(fadeVisibleDist, fadeInvisibleDist);
-				SBMaterialRef::addMaterialRef(fadeMaterialPtr);
+				SBMaterialRef::addMaterialRef(fadeMaterialPtr, bbOrigin);
 			} else {
-				SBMaterialRef::addMaterialRef(materialPtr);
+				SBMaterialRef::addMaterialRef(materialPtr, bbOrigin);
 			}
 			
 			//Apply material to entity
@@ -479,7 +480,7 @@ void StaticBillboardSet::setFade(bool enabled, Real visibleDist, Real invisibleD
 			}
 
 			fadeMaterialPtr = getFadeMaterial(visibleDist, invisibleDist);
-			SBMaterialRef::addMaterialRef(fadeMaterialPtr);
+			SBMaterialRef::addMaterialRef(fadeMaterialPtr, bbOrigin);
 			
 			//Apply material to entity
 			if (entity)
@@ -494,7 +495,7 @@ void StaticBillboardSet::setFade(bool enabled, Real visibleDist, Real invisibleD
 				assert(!fadeMaterialPtr.isNull());
 				assert(!materialPtr.isNull());
 				SBMaterialRef::removeMaterialRef(fadeMaterialPtr);
-				SBMaterialRef::addMaterialRef(materialPtr);
+				SBMaterialRef::addMaterialRef(materialPtr, bbOrigin);
 				
 				//Apply material to entity
 				if (entity)
@@ -572,11 +573,11 @@ MaterialPtr StaticBillboardSet::getFadeMaterial(Real visibleDist, Real invisible
 	return fadeMaterial;
 }
 
-void StaticBillboardSet::updateAll(const Camera *cam)
+void StaticBillboardSet::updateAll(const Vector3 &cameraDirection)
 {
 	if (selfInstances > 0){  //selfInstances will only be greater than 0 if one or more StaticBillboardSet's are using BB_METHOD_ACCELERATED
 		//Set shader parameter so material will face camera
-		Vector3 forward = cam->getDerivedDirection();
+		Vector3 forward = cameraDirection;
 		Vector3 vRight = forward.crossProduct(Vector3::UNIT_Y);
 		Vector3 vUp = forward.crossProduct(vRight);
 		vRight.normalise();
@@ -585,26 +586,35 @@ void StaticBillboardSet::updateAll(const Camera *cam)
 		//Even if camera is upside down, the billboards should remain upright
 		if (vUp.y < 0) vUp *= -1;
 
-		Vector3 vPoint0 = (-vRight + vUp);
-		Vector3 vPoint1 = ( vRight + vUp);
-		Vector3 vPoint2 = (-vRight - vUp);
-		Vector3 vPoint3 = ( vRight - vUp);
-
-		//single prerotated quad oriented towards the camera
-		float preRotatedQuad[16] =
-		{
-			vPoint0.x, vPoint0.y, vPoint0.z, 0.0f,
-			vPoint1.x, vPoint1.y, vPoint1.z, 0.0f,
-			vPoint2.x, vPoint2.y, vPoint2.z, 0.0f,
-			vPoint3.x, vPoint3.y, vPoint3.z, 0.0f
-		};
-		
 		//For each material in use by the billboard system..
 		SBMaterialRefList::iterator i1, i2;
 		i1 = SBMaterialRef::getList().begin();
 		i2 = SBMaterialRef::getList().end();
 		while (i1 != i2){
 			Material *mat = i1->second->getMaterial();
+			BillboardOrigin bbOrigin = i1->second->getOrigin();
+
+			Vector3 vPoint0, vPoint1, vPoint2, vPoint3;
+			if (bbOrigin == BBO_CENTER){
+				vPoint0 = (-vRight + vUp);
+				vPoint1 = ( vRight + vUp);
+				vPoint2 = (-vRight - vUp);
+				vPoint3 = ( vRight - vUp);
+			}
+			else if (bbOrigin == BBO_BOTTOM_CENTER){
+				vPoint0 = (-vRight + vUp + vUp);
+				vPoint1 = ( vRight + vUp + vUp);
+				vPoint2 = (-vRight);
+				vPoint3 = ( vRight);
+			}
+
+			//single prerotated quad oriented towards the camera
+			float preRotatedQuad[16] = {
+				vPoint0.x, vPoint0.y, vPoint0.z, 0.0f,
+				vPoint1.x, vPoint1.y, vPoint1.z, 0.0f,
+				vPoint2.x, vPoint2.y, vPoint2.z, 0.0f,
+				vPoint3.x, vPoint3.y, vPoint3.z, 0.0f
+			};
 
 			//Ensure material is set up with the vertex shader
 			Pass *p = mat->getTechnique(0)->getPass(0);
@@ -630,13 +640,25 @@ void StaticBillboardSet::updateAll(const Camera *cam)
 	}
 }
 
+void StaticBillboardSet::setBillboardOrigin(BillboardOrigin origin)
+{
+	if (origin != BBO_CENTER && origin != BBO_BOTTOM_CENTER)
+		OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Invalid origin - only BBO_CENTER and BBO_BOTTOM_CENTER is supported", "StaticBillboardSet::setBillboardOrigin()");
+
+	if (renderMethod == BB_METHOD_ACCELERATED){
+		bbOrigin = origin;
+	} else {
+		bbOrigin = origin;
+		fallbackSet->setBillboardOrigin(origin);
+	}
+}
 
 
 //-------------------------------------------------------------------------------------
 
 SBMaterialRefList SBMaterialRef::selfList;
 
-void SBMaterialRef::addMaterialRef(const MaterialPtr &matP)
+void SBMaterialRef::addMaterialRef(const MaterialPtr &matP, Ogre::BillboardOrigin o)
 {
 	Material *mat = matP.getPointer();
 
@@ -650,7 +672,7 @@ void SBMaterialRef::addMaterialRef(const MaterialPtr &matP)
 		++matRef->refCount;
 	} else {
 		//Material does not exist in selfList - add it
-		matRef = new SBMaterialRef(mat);
+		matRef = new SBMaterialRef(mat, o);
 		selfList[mat] = matRef;
 		//No need to set refCount to 1 here because the SBMaterialRef
 		//constructor sets refCount to 1.
@@ -676,8 +698,9 @@ void SBMaterialRef::removeMaterialRef(const MaterialPtr &matP)
 	}
 }
 
-SBMaterialRef::SBMaterialRef(Material *mat)
+SBMaterialRef::SBMaterialRef(Material *mat, Ogre::BillboardOrigin o)
 {
 	material = mat;
+	origin = o;
 	refCount = 1;
 }

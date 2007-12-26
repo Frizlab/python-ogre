@@ -51,13 +51,12 @@ namespace QuickGUI
 	public:
 		friend class ComboBox;
 		friend class Widget;
+		friend class Root;
 	public:
-		/** Constructor */
-		GUIManager(Ogre::Viewport* vp);
-		/** Standard Destructor. */
-		~GUIManager();
-
 		void _notifyViewportDimensionsChanged();
+
+		// Keep track of effect so that manager can update them.
+		void addEffect(Effect* e);
 
 		/**
 		* Iterates through Window List and destroys it, which properly destroys all child widgets.
@@ -101,6 +100,7 @@ namespace QuickGUI
 
 		MouseCursor* getMouseCursor();
 		Widget* getMouseOverWidget();
+		Ogre::String getName();
 		/**
 		* Get viewport all widgets of this manager are rendering to.
 		*/
@@ -199,10 +199,8 @@ namespace QuickGUI
 
 		void unregisterTimeListener(Widget* w);
 
-		// Keep track of effect so that manager can update them.
-		void addEffect (Effect* e);
-
 	protected:
+		Ogre::String			mName;
 		// Viewport which renders all widgets belonging to this manager.
 		Ogre::Viewport*			mViewport;
 
@@ -259,13 +257,16 @@ namespace QuickGUI
 
 		WidgetArray	mTimeListeners;
 
-		void _createDefaultTextures();
-
 		SkinSetManager*			mSkinSetManager;
 
 		//! Bit field that holds status of Alt, Ctrl, Shift
 		unsigned int			mKeyModifiers;
 	protected:
+		/** Constructor */
+		GUIManager(const Ogre::String& name, Ogre::Viewport* vp);
+		/** Standard Destructor. */
+		~GUIManager();
+
 		void _handleMouseDown(const MouseButtonID& button);
 		void _handleMouseUp(const MouseButtonID& button);
 		void _handleMouseClick(const MouseButtonID& button);

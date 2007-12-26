@@ -30,18 +30,21 @@ namespace QuickGUI
 	void Button::applyButtonDownTexture()
 	{
 		// apply button ".down" texture
-		mQuad->setTexture(mSkinName + mSkinComponent + ".down" + SkinSetManager::getSingleton().getSkinSet(mSkinName)->getImageExtension());
+		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(mSkinName);
+		mQuad->setTextureCoordinates(ss->getTextureCoordinates(mSkinName + mSkinComponent + ".down" + ss->getImageExtension()));
 	}
 
 	void Button::applyButtonOverTexture()
 	{
 		// apply button ".over" texture
-		mQuad->setTexture(mSkinName + mSkinComponent + ".over" + SkinSetManager::getSingleton().getSkinSet(mSkinName)->getImageExtension());
+		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(mSkinName);
+		mQuad->setTextureCoordinates(ss->getTextureCoordinates(mSkinName + mSkinComponent + ".over" + ss->getImageExtension()));
 	}
 
 	void Button::applyDefaultTexture()
 	{
-		mQuad->setTexture(mSkinName + mSkinComponent + SkinSetManager::getSingleton().getSkinSet(mSkinName)->getImageExtension());
+		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(mSkinName);
+		mQuad->setTextureCoordinates(ss->getTextureCoordinates(mSkinName + mSkinComponent + ss->getImageExtension()));
 	}
 
 	bool Button::isDown()
