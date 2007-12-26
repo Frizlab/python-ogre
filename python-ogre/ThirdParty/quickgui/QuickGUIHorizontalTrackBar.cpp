@@ -22,7 +22,6 @@ namespace QuickGUI
 		// Create slider button at the beginning of the HorizontalTrackBar.
 		mSliderButton = dynamic_cast<Button*>(_createComponent(mInstanceName+".Slider",TYPE_BUTTON));
 		mSliderButton->setSkinComponent(".trackbar.horizontal.slider");
-		mSliderButton->setSkin(mSkinName);
 		mSliderButton->setSize(13,getHeight());
 		mSliderButton->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
 		mSliderButton->enableDragging(true);

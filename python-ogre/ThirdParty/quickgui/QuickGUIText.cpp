@@ -39,7 +39,8 @@ namespace QuickGUI
 		// Order dependent, this code must go before call to setFont, since that removes selection, which
 		// affects the character background.
 		mCharacterBackground = new Quad(mOwner);
-		mCharacterBackground->setTexture("QuickGUI.TextSelection");
+		mCharacterBackground->setMaterial(SkinSetManager::getSingleton().getSkinSet("qgui")->getMaterialName());
+		mCharacterBackground->setTextureCoordinates(SkinSetManager::getSingleton().getSkinSet("qgui")->getTextureCoordinates("qgui.textselection.png"));
 		mCharacterBackground->setColor(mBackgroundSelectColor);
 		mCharacterBackground->setOffset(mOffset-1);
 		mCharacterBackground->setVisible(false);
@@ -148,11 +149,7 @@ namespace QuickGUI
 				Ogre::UTFString::code_point tempcp;
 				// Find next space, or go to new line if there is no space
 				// before we run out of room.
-                #if defined(__x86_64__)
-                for(long int i = 0; (it+i) != text.end(); i++)
-                #else
-                for(int i = 0; (it+i) != text.end(); i++)
-				#endif
+                for(size_t i = 0; (it+i) != text.end(); i++)
 				{
 					tempcp = (it+i).getCharacter();
 					tempx += mTextHelper->getGlyphWidth(tempcp);
@@ -200,7 +197,7 @@ namespace QuickGUI
 			if(!isspace(cp))
 			{
 				// set texture
-				q->setTexture(mTextHelper->getFontTexturePtr()->getName());
+				q->setMaterial(mTextHelper->getFontMaterialName());
 
 				// set texture coords
 				q->setTextureCoordinates(mTextHelper->getGlyphTexCoords(cp));
@@ -252,7 +249,7 @@ namespace QuickGUI
 			pos.y += size.height;
 
 			// set texture
-			q->setTexture(mTextHelper->getFontTexturePtr()->getName());
+			q->setMaterial(mTextHelper->getFontMaterialName());
 
 			// set texture coords
 			q->setTextureCoordinates(mTextHelper->getGlyphTexCoords(cp));

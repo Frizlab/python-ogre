@@ -33,8 +33,8 @@
 ** Boston, MA 02111-1307, USA.                                               **
 \*---------------------------------------------------------------------------*/
 
-#ifndef _OGRE_AL_LISTENER_H_
-#define _OGRE_AL_LISTENER_H_
+#ifndef _OGREAL_LISTENER_H_
+#define _OGREAL_LISTENER_H_
 
 #include "OgreALPrereqs.h"
 
@@ -140,10 +140,10 @@ namespace OgreAL {
 		void _updateRenderQueue(Ogre::RenderQueue* queue);
 		/** Overridden from MovableObject */
 		void _notifyAttached(Ogre::Node* parent, bool isTagPoint = false);
-#if OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR == 5
+	#if OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR == 5
 		/** Overridden from MovableObject */
 		virtual void visitRenderables(Ogre::Renderable::Visitor* visitor, bool debugRenderables = false){}
-#endif
+	#endif
 
 	protected:
 		/// Internal method for synchronising with parent node (if any)

@@ -7,13 +7,7 @@
 namespace QuickGUI
 {
 	////////////DRAWING/////////////
-
-#define _USE_INDEX_BUFFER
-#ifdef _USE_INDEX_BUFFER
 	#define VERTICES_PER_QUAD 4
-#else
-	#define VERTICES_PER_QUAD 6
-#endif
 
 	class Rect;
 	class Point;
@@ -33,7 +27,6 @@ namespace QuickGUI
 
 	typedef std::list<QuadContainer*> QuadContainerList;
 
-
 	////////////EVENTS/////////////
 	class MemberFunctionSlot;
 	class EventArgs;
@@ -46,7 +39,6 @@ namespace QuickGUI
 	class MouseCursor;
 	class Utility;
 	class ConfigScriptLoader;
-
 
 	////////////Handlers/////////////
 	class GUIManager;
@@ -62,7 +54,6 @@ namespace QuickGUI
 	////////////Widgets/////////////
 	class Widget;
 	typedef std::vector<Widget*> WidgetArray;
-
 
 	class Window;
 
@@ -85,13 +76,13 @@ namespace QuickGUI
 	class List;
 	class ComboBox;
 	class TitleBar;
+	class Tree;
 
 	class ProgressBar;
 	class HorizontalTrackBar;
 	class VerticalTrackBar;
 	class VerticalScrollBar;
 	class HorizontalScrollBar;
-
 
 }
 #endif //__QUICKPREQUISITES_H

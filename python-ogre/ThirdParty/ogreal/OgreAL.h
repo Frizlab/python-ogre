@@ -33,8 +33,8 @@
 ** Boston, MA 02111-1307, USA.                                               **
 \*---------------------------------------------------------------------------*/
 
-#ifndef _OGRE_AL_H_
-#define _OGRE_AL_H_
+#ifndef _OGREAL_H_
+#define _OGREAL_H_
 
 #include "OgreALListener.h"
 #include "OgreALOggSound.h"

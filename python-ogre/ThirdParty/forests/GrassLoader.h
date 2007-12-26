@@ -176,6 +176,7 @@ private:
 	//Animation
 	Ogre::Timer windTimer;
 	Ogre::Vector3 windDir;
+	unsigned long lastTime;
 
 	static unsigned long GUID;
 	static inline Ogre::String getUniqueID()
@@ -501,6 +502,8 @@ class GrassPage: public GeometryPage
 {
 public:
 	void init(PagedGeometry *geom);
+	~GrassPage();
+
 	void addEntity(Ogre::Entity *ent, const Ogre::Vector3 &position, const Ogre::Quaternion &rotation, const Ogre::Vector3 &scale, const Ogre::ColourValue &color);
 	void removeEntities();
 	void setFade(bool enabled, Ogre::Real visibleDist, Ogre::Real invisibleDist) {}
@@ -508,6 +511,7 @@ public:
 
 private:
 	Ogre::SceneManager *sceneMgr;
+	Ogre::SceneNode *rootNode;
 
 	std::list<Ogre::SceneNode*> nodeList;
 
@@ -519,4 +523,3 @@ private:
 };
 
 #endif
-

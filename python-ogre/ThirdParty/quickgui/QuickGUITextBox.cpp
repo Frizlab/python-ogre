@@ -768,7 +768,10 @@ namespace QuickGUI
 
 		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(mSkinName);
 		if(ss != NULL)
-			mTextCursor->setTexture(mSkinName + mTextCursorSkinComponent + ss->getImageExtension());
+		{
+			mTextCursor->setMaterial(ss->getMaterialName());
+			mTextCursor->setTextureCoordinates(ss->getTextureCoordinates(skinName + mTextCursorSkinComponent + ss->getImageExtension()));
+		}
 	}
 
 	void TextBox::setText(const Ogre::UTFString& text)

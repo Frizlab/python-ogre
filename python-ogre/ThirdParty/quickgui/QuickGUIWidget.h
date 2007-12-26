@@ -66,6 +66,7 @@ namespace QuickGUI
 			TYPE_TITLEBAR				,
 			TYPE_TRACKBAR_HORIZONTAL	,
 			TYPE_TRACKBAR_VERTICAL		,
+			TYPE_TREE					,
 			TYPE_WINDOW
 		};
 		/**
@@ -162,6 +163,13 @@ namespace QuickGUI
 			mUserEventHandlers[EVENT].push_back(new MemberFunctionPointer<T>(function,obj));
 		}
 		void addEventHandler(Event EVENT, MemberFunctionSlot* function);
+
+		template<typename T> void addEventListener(Event EVENT, void (T::*function)(const EventArgs&), T* obj)
+		{
+			mEventListeners.push_back(new MemberFunctionPointer<T>(function,obj));
+		}
+		void addEventListener(MemberFunctionSlot* function);
+
 		void allowResizing(bool allow);
 		/**
 		* Alters the widgets offset to be higher than widget w.  Widget w must be in the
@@ -200,7 +208,7 @@ namespace QuickGUI
 		* Event Handler that executes the appropriate User defined Event Handlers for a given event.
 		* Returns true if the event was handled, false otherwise.
 		*/
-		bool fireEvent(Event e, const EventArgs& args);
+		bool fireEvent(Event e, EventArgs& args);
 		/**
 		* Sets focus to the widget by firing an activation event.
 		*/
@@ -402,7 +410,7 @@ namespace QuickGUI
 		*/
 		virtual void setPosition(const Ogre::Real& pixelX, const Ogre::Real& pixelY);
 		virtual void setPosition(const Point& pixelPoint);
-		void setPropogateEventFiring(Event e, bool propogate);
+		void setPropagateEventFiring(Event e, bool propogate);
 		virtual void setQuadLayer(Quad::Layer l);
 		/**
 		* Manually set position of widget.
@@ -511,6 +519,9 @@ namespace QuickGUI
 		Ogre::Real					mPixelsFromParentRight;
 		Ogre::Real					mPixelsFromParentBottom;
 
+		// Implement the Enter/Leave functionality.
+		bool						mEntered;
+
 		// state that this widget property are subject 
 		// to modification upon time
 		bool						mUnderEffect;
@@ -544,6 +555,8 @@ namespace QuickGUI
 		// Event handlers! One List per event per widget
 		EventHandlerArray mUserEventHandlers[EVENT_END_OF_LIST];
 		bool mPropogateEventFiring[EVENT_END_OF_LIST];
+
+		EventHandlerArray mEventListeners;
 
 		void _initEventHandlers();
 

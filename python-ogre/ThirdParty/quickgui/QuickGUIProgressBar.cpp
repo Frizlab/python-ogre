@@ -21,14 +21,19 @@ namespace QuickGUI
 		else
 			mLayout = LAYOUT_VERTICAL;
 
-		
-		//_getBarExtents();
-
 		mBarPanel = _createQuad();
 		mBarPanel->setPosition(getScreenPosition());
 		mBarPanel->setSize(mSize);
 		mBarPanel->setOffset(mOffset+1);
 		mBarPanel->_notifyQuadContainer(mQuadContainer);
+
+		mBarMaterial = Ogre::MaterialManager::getSingleton().create(mInstanceName + ".barMaterial",Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		Ogre::Pass* p = mBarMaterial->getTechnique(0)->getPass(0);
+		p->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+		p->setLightingEnabled(false);
+		p->setCullingMode(Ogre::CULL_CLOCKWISE);
+		Ogre::TextureUnitState* tus = p->createTextureUnitState();
+		mBarMaterial->load();
 	}
 
 	ProgressBar::~ProgressBar()
@@ -37,6 +42,8 @@ namespace QuickGUI
 		for( it = mOnProgressChangedHandlers.begin(); it != mOnProgressChangedHandlers.end(); ++it )
 			delete (*it);
 		mOnProgressChangedHandlers.clear();
+
+		mBarMaterial.setNull();
 	}
 
 	void ProgressBar::_getBarExtents()
@@ -311,21 +318,24 @@ namespace QuickGUI
 		Ogre::TextureManager* tm = Ogre::TextureManager::getSingletonPtr();
 		// resource may already exist, for example, creating the texture, clearing all gui, then creating gui again.
 		if( tm->resourceExists(mInstanceName + ".bar.temp") )
-			mBarTexture = tm->getByName(mInstanceName + ".bar.temp");
-		else
 		{
-			mBarTexture = Ogre::TextureManager::getSingletonPtr()->createManual(mInstanceName + ".bar.temp", 
-				Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
-				Ogre::TEX_TYPE_2D,
-				(Ogre::uint)mWidgetImage->getWidth(),
-				(Ogre::uint)mWidgetImage->getHeight(),
-				0, 
-				Ogre::PF_B8G8R8A8,
-				Ogre::TU_STATIC);
+			tm->remove(mInstanceName + ".bar.temp");
 		}
+		
+		mBarTexture = Ogre::TextureManager::getSingletonPtr()->createManual(mInstanceName + ".bar.temp", 
+			Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
+			Ogre::TEX_TYPE_2D,
+			(Ogre::uint)mWidgetImage->getWidth(),
+			(Ogre::uint)mWidgetImage->getHeight(),
+			0, 
+			Ogre::PF_B8G8R8A8,
+			Ogre::TU_STATIC);
+
+		Ogre::TextureUnitState* tus = mBarMaterial->getBestTechnique(0)->getPass(0)->getTextureUnitState(0);
+		tus->setTextureName(mBarTexture->getName());
 
 		setProgress(1.0);
 
-		mBarPanel->setTexture(mBarTexture->getName());
+		mBarPanel->setMaterial(mBarMaterial->getName());
 	}
 }

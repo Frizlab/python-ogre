@@ -121,7 +121,6 @@ namespace QuickGUI
 		std::vector<ConfigNode*> children;
 		ConfigNode *parent;
 
-		std::vector<ConfigNode*>::iterator _iter;
 		bool _removeSelf;
 	};
 

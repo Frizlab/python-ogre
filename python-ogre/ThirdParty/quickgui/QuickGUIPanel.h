@@ -16,10 +16,10 @@
 #include "QuickGUIScrollPane.h"
 #include "QuickGUIText.h"
 #include "QuickGUITextBox.h"
+#include "QuickGUITree.h"
 #include "QuickGUIHorizontalTrackBar.h"
 #include "QuickGUIVerticalTrackBar.h"
 #include "QuickGUIWidget.h"
-
 #include "QuickGUIQuadContainer.h"
 
 namespace QuickGUI
@@ -38,8 +38,6 @@ namespace QuickGUI
 		public Widget,
 		public QuadContainer
 	{
-	public:
-		friend class QuadContainer;
 	public:
 		/** Constructor
             @param
@@ -61,6 +59,7 @@ namespace QuickGUI
 
 		virtual void addChild(Widget* w);
 		virtual void allowScrolling(bool allow);
+
 
 		Button* createButton();
 		Button* createButton(const Ogre::String& name);
@@ -100,6 +99,9 @@ namespace QuickGUI
 
 		TextBox* createTextBox();
 		TextBox* createTextBox(const Ogre::String& name);
+
+		Tree* createTree();
+		Tree* createTree(const Ogre::String& name);
 
 		HorizontalTrackBar* createHorizontalTrackBar();
 		HorizontalTrackBar* createHorizontalTrackBar(const Ogre::String& name);

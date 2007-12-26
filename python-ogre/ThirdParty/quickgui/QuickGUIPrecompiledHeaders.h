@@ -1,7 +1,6 @@
 #ifndef QUICKPRECOMPILEDHEADERS_H
 #define QUICKPRECOMPILEDHEADERS_H
 
-
 #ifdef _PRECOMP
 
 	#include <algorithm>
@@ -88,6 +87,7 @@
 	#include "QuickGUIList.h"
 	#include "QuickGUIComboBox.h"
 	#include "QuickGUITitleBar.h"
+	#include "QuickGUITree.h"
 
 	#include "QuickGUIProgressBar.h"
 	#include "QuickGUIHorizontalTrackBar.h"

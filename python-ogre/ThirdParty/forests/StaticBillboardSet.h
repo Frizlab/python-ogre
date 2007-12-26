@@ -83,7 +83,7 @@ public:
 	documentation for more information. In almost all cases, this should be set to
 	BB_METHOD_ACCELERATED for optimal speed and efficiency.
 	*/
-	StaticBillboardSet(Ogre::SceneManager *mgr, BillboardMethod method = BB_METHOD_ACCELERATED);
+	StaticBillboardSet(Ogre::SceneManager *mgr, Ogre::SceneNode *rootSceneNode, BillboardMethod method = BB_METHOD_ACCELERATED);
 	~StaticBillboardSet();
 	
 	/**
@@ -123,6 +123,37 @@ public:
 
 			bb->setColour(color);
 		}
+	}
+
+	/**
+	\brief Sets the billboard's origin (pivotal point)
+
+	This function can be used to set what part of the billboard image is considered the
+	origin, or "center". By default, the center of the image is used, so billboards will
+	pivot around the center and positioning a billboard will place it's center at the desired
+	location. Other origins, like BBO_BOTTOM_CENTER are good for trees, etc. BBO_CENTER is
+	used by default.
+	*/
+	void setBillboardOrigin(Ogre::BillboardOrigin origin);
+
+	/** Returns the current billboard origin
+
+	This returns the current billboard origin as set by setBillboardOrigin().
+	*/
+	inline Ogre::BillboardOrigin getBillboardOrigin()
+	{
+		return bbOrigin;
+	}
+
+	/**
+	\brief Returns the method used to render billboards
+
+	The billboard render method is set in the constructor. See the BillboardMethod enum
+	documentation for more information on billboard render methods.
+	*/
+	inline BillboardMethod getRenderMethod()
+	{
+		return renderMethod;
 	}
 	
 	/**
@@ -207,7 +238,7 @@ public:
 	manually per frame from your program loop. If updateAll() doesn't get called one way
 	or another, your billboards will not be updated to face the camera.
 	*/
-	static void updateAll(const Ogre::Camera *cam);
+	static void updateAll(const Ogre::Vector3 &cameraDirection);
 
 private:
 	Ogre::SceneManager *sceneMgr;
@@ -226,6 +257,8 @@ private:
 
 	BillboardMethod renderMethod;
 	Ogre::BillboardSet *fallbackSet;
+
+	Ogre::BillboardOrigin bbOrigin;
 
 	Ogre::MaterialPtr getFadeMaterial(Ogre::Real visibleDist, Ogre::Real invisibleDist);
 	typedef std::map<Ogre::String, Ogre::MaterialPtr> FadedMaterialMap;
@@ -253,20 +286,22 @@ private:
 class SBMaterialRef
 {
 public:
-	static void addMaterialRef(const Ogre::MaterialPtr &matP);
+	static void addMaterialRef(const Ogre::MaterialPtr &matP, Ogre::BillboardOrigin o);
 	static void removeMaterialRef(const Ogre::MaterialPtr &matP);
 
 	inline static SBMaterialRefList &getList() { return selfList; }
 
 	inline Ogre::Material *getMaterial() { return material; }
+	inline Ogre::BillboardOrigin getOrigin() { return origin; }
 
 private:
-	SBMaterialRef(Ogre::Material *mat);
+	SBMaterialRef(Ogre::Material *mat, Ogre::BillboardOrigin o);
 
 	static SBMaterialRefList selfList;
 
 	unsigned int refCount;
 	Ogre::Material *material;
+	Ogre::BillboardOrigin origin;
 };
 
 

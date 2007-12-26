@@ -42,7 +42,7 @@
 namespace OgreAL {
 	Sound::Sound() :
 		mSource(0),
-        mFormat(0),
+		mFormat(0),
 		mFreq(0),
 		mSize(0),
 		mBPS(0),
@@ -116,7 +116,7 @@ namespace OgreAL {
 
 	Sound::Sound(BufferRef buffer, const Ogre::String& name, const Ogre::String& fileName, bool loop) :
 		mSource(0),
-        mFormat(0),
+		mFormat(0),
 		mFreq(0),
 		mSize(0),
 		mBPS(0),
@@ -160,7 +160,7 @@ namespace OgreAL {
 		calculateFormatInfo();
 
 		// mBufferSize is equal to 1/4 of a second of audio
-		mLengthInSeconds = mSize / (mBufferSize * 4);
+		mLengthInSeconds = (float)mSize / (float)(mBufferSize * 4);
 	}
 
 	Sound::~Sound()
@@ -327,6 +327,8 @@ namespace OgreAL {
 
 	void Sound::setPitch(Ogre::Real pitch)
 	{
+		if(pitch <= 0) return;
+
 		mPitch = pitch;
 
 		if(mSource != AL_NONE)
@@ -338,6 +340,8 @@ namespace OgreAL {
 
 	void Sound::setGain(Ogre::Real gain)
 	{
+		if(gain < 0) return;
+
 		mGain = gain;
 
 		if(mSource != AL_NONE)
@@ -349,6 +353,8 @@ namespace OgreAL {
 
 	void Sound::setMaxGain(Ogre::Real maxGain)
 	{
+		if(maxGain < 0 || maxGain > 1) return;
+		
 		mMaxGain = maxGain;
 		
 		if(mSource != AL_NONE)
@@ -360,6 +366,8 @@ namespace OgreAL {
 
 	void Sound::setMinGain(Ogre::Real minGain)
 	{
+		if(minGain < 0 || minGain > 1) return;
+
 		mMinGain = minGain;
 
 		if(mSource != AL_NONE)
@@ -371,6 +379,8 @@ namespace OgreAL {
 
 	void Sound::setMaxDistance(Ogre::Real maxDistance)
 	{
+		if(maxDistance < 0) return;
+
 		mMaxDistance = maxDistance;
 
 		if(mSource != AL_NONE)
@@ -382,6 +392,8 @@ namespace OgreAL {
 
 	void Sound::setRolloffFactor(Ogre::Real rolloffFactor)
 	{
+		if(rolloffFactor < 0) return;
+
 		mRolloffFactor = rolloffFactor;
 
 		if(mSource != AL_NONE)
@@ -393,6 +405,8 @@ namespace OgreAL {
 
 	void Sound::setReferenceDistance(Ogre::Real refDistance)
 	{
+		if(refDistance < 0) return;
+
 		mReferenceDistance = refDistance;
 
 		if(mSource != AL_NONE)
@@ -443,6 +457,8 @@ namespace OgreAL {
 
 	void Sound::setOuterConeGain(Ogre::Real outerConeGain)
 	{
+		if(outerConeGain < 0 || outerConeGain > 1) return;
+
 		mOuterConeGain = outerConeGain;
 
 		if(mSource != AL_NONE)
@@ -478,7 +494,7 @@ namespace OgreAL {
 	{
 		mLoop = loop?AL_TRUE:AL_FALSE;
 
-		if(mSource != AL_NONE)
+		if(mSource != AL_NONE && !mStream)
 		{
 			alSourcei(mSource, AL_LOOPING, mLoop);
 			CheckError(alGetError(), "Failed to set Looping");
@@ -487,6 +503,8 @@ namespace OgreAL {
 
 	void Sound::setSecondOffset(Ogre::Real seconds)
 	{
+		if(seconds < 0) return;
+
 		if(mSource != AL_NONE)
 		{
 			alSourcef(mSource, AL_SEC_OFFSET, seconds);
@@ -538,25 +556,25 @@ namespace OgreAL {
 	void Sound::_update() const
 	{
 		if (mParentNode)
-        {
-            if (!(mParentNode->_getDerivedOrientation() == mLastParentOrientation &&
-                mParentNode->_getDerivedPosition() == mLastParentPosition)
-                || mLocalTransformDirty)
-            {
-                // Ok, we're out of date with SceneNode we're attached to
-                mLastParentOrientation = mParentNode->_getDerivedOrientation();
-                mLastParentPosition = mParentNode->_getDerivedPosition();
-                mDerivedDirection = mLastParentOrientation * mDirection;
-                mDerivedPosition = (mLastParentOrientation * mPosition) + mLastParentPosition;
-            }
-        }
-        else
-        {
-            mDerivedPosition = mPosition;
-            mDerivedDirection = mDirection;
-        }
+		{
+		    if (!(mParentNode->_getDerivedOrientation() == mLastParentOrientation &&
+			mParentNode->_getDerivedPosition() == mLastParentPosition)
+			|| mLocalTransformDirty)
+		    {
+			// Ok, we're out of date with SceneNode we're attached to
+			mLastParentOrientation = mParentNode->_getDerivedOrientation();
+			mLastParentPosition = mParentNode->_getDerivedPosition();
+			mDerivedDirection = mLastParentOrientation * mDirection;
+			mDerivedPosition = (mLastParentOrientation * mPosition) + mLastParentPosition;
+		    }
+		}
+		else
+		{
+		    mDerivedPosition = mPosition;
+		    mDerivedDirection = mDirection;
+		}
 
-        mLocalTransformDirty = false;
+		mLocalTransformDirty = false;
 	}
 
 	bool Sound::updateSound()
@@ -582,23 +600,23 @@ namespace OgreAL {
 			return;
 		}
 
-		alSourcef (mSource, AL_PITCH,				mPitch);
-		alSourcef (mSource, AL_GAIN,				mGain);
-		alSourcef (mSource, AL_MAX_GAIN,			mMaxGain);
-		alSourcef (mSource, AL_MIN_GAIN,			mMinGain);
+		alSourcef (mSource, AL_PITCH,			mPitch);
+		alSourcef (mSource, AL_GAIN,			mGain);
+		alSourcef (mSource, AL_MAX_GAIN,		mMaxGain);
+		alSourcef (mSource, AL_MIN_GAIN,		mMinGain);
 		alSourcef (mSource, AL_MAX_DISTANCE,		mMaxDistance);
 		alSourcef (mSource, AL_ROLLOFF_FACTOR,		mRolloffFactor);
 		alSourcef (mSource, AL_REFERENCE_DISTANCE,	mReferenceDistance);
 		alSourcef (mSource, AL_CONE_OUTER_GAIN,		mOuterConeGain);
 		alSourcef (mSource, AL_CONE_INNER_ANGLE,	mInnerConeAngle);
 		alSourcef (mSource, AL_CONE_OUTER_ANGLE,	mOuterConeAngle);
-		alSource3f(mSource, AL_POSITION,			mDerivedPosition.x, mDerivedPosition.y, mDerivedPosition.z);
-		alSource3f(mSource, AL_VELOCITY,			mVelocity.x, mVelocity.y, mVelocity.z);
-		alSource3f(mSource, AL_DIRECTION,			mDerivedDirection.x, mDerivedDirection.y, mDerivedDirection.z);
+		alSource3f(mSource, AL_POSITION,		mDerivedPosition.x, mDerivedPosition.y, mDerivedPosition.z);
+		alSource3f(mSource, AL_VELOCITY,		mVelocity.x, mVelocity.y, mVelocity.z);
+		alSource3f(mSource, AL_DIRECTION,		mDerivedDirection.x, mDerivedDirection.y, mDerivedDirection.z);
 		alSourcei (mSource, AL_SOURCE_RELATIVE,		mSourceRelative);
 		// There is an issue with looping and streaming, so we will
 		// disable looping and deal with it on our own.
-		alSourcei (mSource, AL_LOOPING,				mStream ? AL_FALSE : mLoop);
+		alSourcei (mSource, AL_LOOPING,			mStream ? AL_FALSE : mLoop);
 		CheckError(alGetError(), "Failed to initialize source");
 	}
 
@@ -836,5 +854,16 @@ namespace OgreAL {
 		{
 			mBufferMap.erase(bufferItr);
 		}
+	}
+
+	void SoundFactory::_addBufferRef(const Ogre::String& bufferName, BufferRef buffer)
+	{
+		BufferMap::const_iterator bufferItr = mBufferMap.find(bufferName);
+		CheckCondition(bufferItr != mBufferMap.end(), 13, "Buffer named " + bufferName + " already exists!");
+
+		CheckCondition(alIsBuffer(buffer) == AL_TRUE, 13, "Not a valid BufferRef");
+		CheckError(alGetError(), "Failed to check buffer");
+
+		mBufferMap[bufferName] = buffer;
 	}
 } // Namespace

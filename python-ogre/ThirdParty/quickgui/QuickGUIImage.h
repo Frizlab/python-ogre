@@ -34,18 +34,18 @@ namespace QuickGUI
         */
 		Image(const Ogre::String& name, GUIManager* gm);
 
-		Ogre::String getTextureName();
+		Ogre::String getMaterialName();
 
 		/**
 		* Applies the texture to the Quad if exists in some form, and updates the Image used for
 		* transparency picking.
 		*/
-		virtual void setTexture(const Ogre::String& textureName);
+		virtual void setMaterial(const Ogre::String& materialName);
 
 	protected:
 		virtual ~Image();
 
-		Ogre::String mTextureName;
+		Ogre::String mMaterialName;
 	};
 }
 

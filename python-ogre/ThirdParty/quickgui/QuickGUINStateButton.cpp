@@ -29,9 +29,9 @@ namespace QuickGUI
 		mOnStateChangedUserEventHandlers.push_back(function);
 	}
 
-	void NStateButton::addState(const Ogre::String& name, const Ogre::String& texture, Ogre::UTFString text)
+	void NStateButton::addState(const Ogre::String& name, const Ogre::String& skin, const Ogre::String& skinComponent, Ogre::UTFString text)
 	{
-		NStateButton::State* s = new NStateButton::State(name,texture,text);
+		NStateButton::State* s = new NStateButton::State(name,skin,skinComponent,text);
 		mStates.push_back(s);
 
 		// The widget has an image when the first state gets added
@@ -44,18 +44,46 @@ namespace QuickGUI
 	void NStateButton::applyButtonDownTexture()
 	{
 		// apply button ".down" texture
-		mQuad->setTexture(mBase + ".down" + mExtension);
+		Ogre::String skin = mCurrentState->getSkin();
+		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(skin);
+		if(ss == NULL)
+			throw Ogre::Exception(Ogre::Exception::ERR_ITEM_NOT_FOUND,"SkinSet " + skin + " has not been loaded!","NStateButton::applyButtonDownTexture");
+
+		mQuad->setMaterial(ss->getMaterialName());
+		mQuad->setTextureCoordinates(ss->getTextureCoordinates(skin + mCurrentState->getSkinComponent() + ".down" + ss->getImageExtension()));
 	}
 
 	void NStateButton::applyButtonOverTexture()
 	{
 		// apply button ".over" texture
-		mQuad->setTexture(mBase + ".over" + mExtension);
+		Ogre::String skin = mCurrentState->getSkin();
+		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(skin);
+		if(ss == NULL)
+			throw Ogre::Exception(Ogre::Exception::ERR_ITEM_NOT_FOUND,"SkinSet " + skin + " has not been loaded!","NStateButton::applyButtonDownTexture");
+
+		mQuad->setMaterial(ss->getMaterialName());
+		mQuad->setTextureCoordinates(ss->getTextureCoordinates(skin + mCurrentState->getSkinComponent() + ".over" + ss->getImageExtension()));
 	}
 
 	void NStateButton::applyDefaultTexture()
 	{
-		mQuad->setTexture(mBase + mExtension);
+		Ogre::String skin = mCurrentState->getSkin();
+		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(skin);
+		if(ss == NULL)
+			throw Ogre::Exception(Ogre::Exception::ERR_ITEM_NOT_FOUND,"SkinSet " + skin + " has not been loaded!","NStateButton::applyButtonDownTexture");
+
+		mQuad->setMaterial(ss->getMaterialName());
+		Ogre::String texture = skin + mCurrentState->getSkinComponent() + ss->getImageExtension();
+		mQuad->setTextureCoordinates(ss->getTextureCoordinates(texture));
+
+		// Load Image, used for transparency picking.
+		if(Utility::textureExistsOnDisk(texture))
+		{
+			Ogre::Image i;
+			i.load(texture,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+			delete mWidgetImage;
+			mWidgetImage = new Ogre::Image(i);
+		}
 	}
 
 	void NStateButton::clearStates()
@@ -92,7 +120,8 @@ namespace QuickGUI
 		
 		int nextStateIndex = index + 1;
 		
-		if( nextStateIndex >= static_cast<int>(mStates.size()) ) nextStateIndex =  0;
+		if( nextStateIndex >= static_cast<int>(mStates.size()) ) 
+			nextStateIndex =  0;
 
 		return mStates[nextStateIndex];
 	}
@@ -103,7 +132,8 @@ namespace QuickGUI
 
 		int prevStateIndex = index - 1;
 		
-		if( prevStateIndex < 0 ) prevStateIndex = static_cast<int>(mStates.size()) - 1;
+		if( prevStateIndex < 0 ) 
+			prevStateIndex = static_cast<int>(mStates.size()) - 1;
 
 		return mStates[prevStateIndex];
 	}
@@ -154,20 +184,8 @@ namespace QuickGUI
 			return;
 
 		mCurrentState = s;
-		mBaseTexture = mCurrentState->getBaseTextureName();
-		mBase = mBaseTexture.substr(0,mBaseTexture.find_last_of('.'));
-		mExtension = mBaseTexture.substr(mBaseTexture.find_last_of('.'));
-		mQuad->setTexture(mBaseTexture);
+		applyDefaultTexture();
 		mText->setCaption(mCurrentState->getText());
-
-		// Load Image, used for transparency picking.
-		if(Utility::textureExistsOnDisk(mBaseTexture))
-		{
-			Ogre::Image i;
-			i.load(mBaseTexture,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-			delete mWidgetImage;
-			mWidgetImage = new Ogre::Image(i);
-		}
 
 		WidgetEventArgs args(this);
 		onStateChanged(args);
@@ -176,16 +194,20 @@ namespace QuickGUI
 	void NStateButton::setCurrentState(Ogre::ushort index)
 	{
 		State* s = getState(index);
+
 		if( s == NULL ) 
 			return;
+
 		setCurrentState(s);
 	}
 
 	void NStateButton::setCurrentState(const Ogre::String& name)
 	{
 		State* s = getState(name);
+
 		if( s == NULL ) 
 			return;
+		
 		setCurrentState(s);
 	}
 

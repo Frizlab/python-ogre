@@ -33,8 +33,8 @@
 ** Boston, MA 02111-1307, USA.                                               **
 \*---------------------------------------------------------------------------*/
 
-#ifndef _OGRE_AL_SOUND_H_
-#define _OGRE_AL_SOUND_H_
+#ifndef _OGREAL_SOUND_H_
+#define _OGREAL_SOUND_H_
 
 #include "OgreALPrereqs.h"
 
@@ -91,7 +91,7 @@ namespace OgreAL {
 		/**
 		 * Sets the pitch multiplier.
 		 * @param pitch The new pitch multiplier
-		 * @note pitch must always be positive.  Valid values are [0.5 - 2.0] where 1.0 is the default
+		 * @note pitch must always be positive non-zero, all other values will be ignored
 		 */
 		void setPitch(Ogre::Real pitch);
 		/** Returns the pitch multiplier. */
@@ -99,7 +99,7 @@ namespace OgreAL {
 		/** 
 		 * Sets the gain. 
 		 * @param gain The gain where 1.0 is full volume and 0.0 is off
-		 * @note Gain should be positive
+		 * @note Negative values will be ignored
 		 */
 		void setGain(Ogre::Real gain);
 		/** Returns the gain. */
@@ -107,13 +107,15 @@ namespace OgreAL {
 		/** 
 		 * Sets the max gain. 
 		 * @param maxGain The maximum amount of gain allowed for this source
+		 * @note Valid range is [0.0 - 1.0] all other values will be ignored
 		 */
 		void setMaxGain(Ogre::Real maxGain);
 		/** Returns the max gain. */
 		Ogre::Real getMaxGain() const {return mMaxGain;}
 		/** 
 		 * Sets the min gain. 
-		 * @param minGain The minimum amount of gain allowed for this source
+		 * @param minGain The minimum amount of gain allowed for this source.
+		 * @note Valid range is [0.0 - 1.0] all other values will be ignored
 		 */
 		void setMinGain(Ogre::Real minGain);
 		/** Returns the gain. */
@@ -130,6 +132,7 @@ namespace OgreAL {
 		 * Sets the Max Distance.
 		 * @param maxDistance The max distance used in the Inverse Clamped Distance Model
 		 * @note This is the distance where there will be no further attenuation of the source
+		 * @note Negative values will be ignored
 		 */
 		void setMaxDistance(Ogre::Real maxDistance);
 		/** Returns the max distance */
@@ -138,6 +141,7 @@ namespace OgreAL {
 		 * Sets the rolloff factor.
 		 * @param rolloffFactor The rolloff rate for the source 
 		 * @note Used for distance attenuation
+		 * @note Negative values will be ignored
 		 */
 		void setRolloffFactor(Ogre::Real rolloffFactor);
 		/** Returns the rolloff factor */
@@ -147,6 +151,7 @@ namespace OgreAL {
 		 * @param refDistance The reference distance used in attenuation calculations.
 		 * @note This is the distance under which the volume for the
 		 *     source would normally drop by half
+		 * @note Negative values will be ignored
 		 */
 		void setReferenceDistance(Ogre::Real refDistance);
 		/** Returns the reference distance. */
@@ -225,6 +230,7 @@ namespace OgreAL {
 		 *     <li>The outer zone which is set by <i>setOuterConeAngle</i> and the gain is a linear 
 		 *     transition between the gain and the outerConeGain</li><li>Outside of the sound cone.  
 		 *     The gain in this zone is set by <i>setOuterConeGain</i></li></ol>
+		 * @note Valid range is [0.0 - 1.0] all other values will be ignored
 		 */
 		void setOuterConeGain(Ogre::Real outerConeGain);
 		/** Returns the outerConeGain */
@@ -265,7 +271,7 @@ namespace OgreAL {
 		Priority getPriority() const {return mPriority;}
 		/** Returns the duration of the audio in seconds */
 		Ogre::Real getSecondDuration() {return mLengthInSeconds;}
-		/** Sets the offset within the audio stream in seconds */
+		/** Sets the offset within the audio stream in seconds. @note Negative values will be ignored */
 		virtual void setSecondOffset(Ogre::Real seconds);
 		/** Returns the current offset within the audio stream in seconds */
 		virtual Ogre::Real getSecondOffset();
@@ -286,10 +292,10 @@ namespace OgreAL {
 		void _updateRenderQueue(Ogre::RenderQueue* queue);
 		/** Notifies the sound when it is attached to a node */
 		void _notifyAttached(Ogre::Node *parent, bool isTagPoint = false);
-#if(OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR == 5)
+	#if(OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR == 5)
 		/** Overridden from MovableObject */
 		virtual void visitRenderables(Ogre::Renderable::Visitor* visitor, bool debugRenderables = false){}
-#endif
+	#endif
 
 	protected:
 		/// Updates the sound if need be
@@ -385,6 +391,7 @@ namespace OgreAL {
 		void destroyInstance(Ogre::MovableObject* obj);
 
 		void _removeBufferRef(const Ogre::String& bufferName);
+		void _addBufferRef(const Ogre::String& bufferName, BufferRef buffer);
 
 	protected:
 		typedef std::map<std::string, BufferRef> BufferMap;

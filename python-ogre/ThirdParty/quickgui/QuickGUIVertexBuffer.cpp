@@ -60,9 +60,9 @@ namespace QuickGUI
 		mRenderOperation.operationType = Ogre::RenderOperation::OT_TRIANGLE_LIST;
 		mRenderOperation.useIndexes = false;
 	}
+
 	void VertexBuffer::_createIndexBuffer()
 	{
-#if VERTICES_PER_QUAD == 4
 		mRenderOperation.useIndexes = true;
 		mRenderOperation.indexData = new Ogre::IndexData();
 		mRenderOperation.indexData->indexStart = 0;
@@ -76,7 +76,6 @@ namespace QuickGUI
 			Ogre::HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE,
 			false);
 		mRenderOperation.indexData->indexBuffer = mIndexBuffer;
-#endif 
 	}
 
 	void VertexBuffer::_declareVertexStructure()
@@ -113,13 +112,12 @@ namespace QuickGUI
 		mRenderOperation.vertexData = NULL;
 		mVertexBuffer.setNull();
 	}
+
 	void VertexBuffer::_destroyIndexBuffer()
 	{
-#if VERTICES_PER_QUAD == 4
 		delete mRenderOperation.indexData;
 		mRenderOperation.indexData = NULL;
 		mIndexBuffer.setNull();
-#endif
 	}
 
 	void VertexBuffer::_initRenderState()
@@ -168,73 +166,45 @@ namespace QuickGUI
 
 		bool shadowsEnabled = mGUIManager->getViewport()->getShadowsEnabled();
 		mGUIManager->getViewport()->setShadowsEnabled(false);
-		
 
 		/*
 		* Since mRenderList is sorted by zOrder and by Texture, we can send quads with similar textures into one renderOperation.
 		* Everything rendered in one _render call will receive the texture set previously by _setTexture.
 		*/
 		unsigned int quadCounter = 0;
-#if VERTICES_PER_QUAD == 4
+
 		size_t indexOffset = 0;
 		mRenderOperation.vertexData->vertexStart = 0;
-#else
-		size_t vertexOffset = 0;
-#endif
-		for(TextureChangeList::iterator textureChangeIt = mTextureChangeList.begin(); textureChangeIt != mTextureChangeList.end(); ++textureChangeIt)
+
+		for(TextureChangeList::iterator materialChangeIt = mMaterialChangeList.begin(); materialChangeIt != mMaterialChangeList.end(); ++materialChangeIt)
 		{
 			// tell the render operation how  many vertices to read. and where
 			{
-				const unsigned int textureChangeQuadSize = ((*textureChangeIt).second - quadCounter);
+				const unsigned int textureChangeQuadSize = ((*materialChangeIt).second - quadCounter);
 
 				mRenderOperation.vertexData->vertexCount = textureChangeQuadSize * VERTICES_PER_QUAD;
 
-	#if VERTICES_PER_QUAD == 4
 				mRenderOperation.indexData->indexStart = indexOffset;
 				mRenderOperation.indexData->indexCount = textureChangeQuadSize * 6;
 				indexOffset  += mRenderOperation.indexData->indexCount;
-	#else
-				mRenderOperation.vertexData->vertexStart = vertexOffset;		
-				vertexOffset += mRenderOperation.vertexData->vertexCount;
-	#endif
-
 			}
+
 			// Render
 			{
-#define _QUICKGUI_USEMATERIAL
-#ifdef _QUICKGUI_USEMATERIAL
-
 				// set render properties prior to rendering.
 				_initRenderState();
 
 				Ogre::SceneManager *scnMgr = mGUIManager->getViewport()->getCamera()->getSceneManager();
 				
-
-				SkinSet *s = mSkinSetManager->getSkinSetByTextureName((*textureChangeIt).first);	
-				Ogre::MaterialPtr mat;
-				if (s)
-				{								
-					mat = Ogre::MaterialManager::getSingleton().getByName(s->getMaterialName());
-				}
-
-				if (mat.isNull())
-				{
-					mat = Ogre::MaterialManager::getSingleton().getByName("QuickQuiSkinTemplate");
-				}
-
+				Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().getByName((*materialChangeIt).first);
 				mat->load();
-				//mat->setLightingEnabled(false);
-				//mat->setDepthCheckEnabled(false);
+				mat->setLightingEnabled(false);
 				Ogre::Technique *t = mat->getBestTechnique(0);
 
 				Ogre::Technique::PassIterator passIt= t->getPassIterator();
 				while (passIt.hasMoreElements())
 				{		
 					Ogre::Pass *pass = passIt.getNext();
-
-					pass->getTextureUnitState(0)->setTextureName((*textureChangeIt).first);
-					//pass->getTextureUnitState(0)->setTextureFiltering(Ogre::FO_NONE, Ogre::FO_NONE, Ogre::FO_NONE);
-
 					scnMgr->_setPass(pass);
 
 					// Do we need to update GPU program parameters?
@@ -254,21 +224,13 @@ namespace QuickGUI
 					
 					// nfz: set up multipass rendering
 					mRenderSystem->setCurrentPassIterationCount(pass->getPassIterationCount());
+					//mRenderSystem->_setTexture(0,true,"Examples/Rockwall");
 					mRenderSystem->_render(mRenderOperation);
 
 				}
-
-#else
-				// set texture that will be applied to all vertices rendered.
-				mRenderSystem->_setTexture (0, true, (*textureChangeIt).first);
-				// set render properties prior to rendering.
-				_initRenderState();
-				// perform the rendering.
-				mRenderSystem->_render(mRenderOperation);
-#endif
 			}
 			// store current Quad index Position to offset next render vertex/index Positions
-			quadCounter = (*textureChangeIt).second;
+			quadCounter = (*materialChangeIt).second;
 		}
 
 		mGUIManager->getViewport()->setShadowsEnabled(shadowsEnabled);
@@ -334,7 +296,7 @@ namespace QuickGUI
 			for( it = mRenderObjectList->begin(); it != mRenderObjectList->end(); ++it )
 			{
 				// skip all invisible RenderObjects
-				if( (!(*it)->visible()) || (*it)->getTextureName().empty() ) 
+				if( (!(*it)->visible()) || (*it)->getMaterialName().empty() ) 
 					continue;
 				mVisibleRenderObjectList.push_back(*it);
 			}
@@ -353,25 +315,25 @@ namespace QuickGUI
 		// batch per Texture.
 		{
 			// already sorted by zOrder and Texture, now grouping them in one batch per texture.
-			mTextureChangeList.clear();
+			mMaterialChangeList.clear();
 			unsigned int quadCounter = 0;
-			Ogre::String currentTexture = mVisibleRenderObjectList.front()->getTextureName();
-			mTextureChangeList.push_back( std::make_pair(currentTexture,0) );
+			Ogre::String currentMaterial = mVisibleRenderObjectList.front()->getMaterialName();
+			mMaterialChangeList.push_back( std::make_pair(currentMaterial,0) );
 			for(QuadList::iterator it = mVisibleRenderObjectList.begin(); it != mVisibleRenderObjectList.end(); ++it)
 			{
 				// Every time a quad's texture is different than the previous quads, we record the quad's index.
 				// This is useful for texture batching, and speeds up the _renderVertexBuffer function some.
-				if((*it)->getTextureName() != currentTexture)
+				if((*it)->getMaterialName() != currentMaterial)
 				{
-					currentTexture = (*it)->getTextureName();
-					mTextureChangeList.back().second = quadCounter;
-					mTextureChangeList.push_back( std::make_pair(currentTexture,0) );
+					currentMaterial = (*it)->getMaterialName();
+					mMaterialChangeList.back().second = quadCounter;
+					mMaterialChangeList.push_back( std::make_pair(currentMaterial,0) );
 				}
 
 				++quadCounter;
 			}
 			// push one last value onto the list, so the remaining textures are taken into consideration, when list is used in _renderVertexBuffer
-			mTextureChangeList.back().second = quadCounter;
+			mMaterialChangeList.back().second = quadCounter;
 		}
 		// Fill Vertex Buffer
 		{
@@ -396,7 +358,6 @@ namespace QuickGUI
 			mVertexBuffer->unlock();
 		}
 
-#if VERTICES_PER_QUAD == 4
 		// Fill Index Buffer
 		{
 			// Handles 32bits indexes for really loud UI.
@@ -437,6 +398,5 @@ namespace QuickGUI
 				mIndexBuffer->unlock();
 			}
 		}
-#endif
 	}
 }

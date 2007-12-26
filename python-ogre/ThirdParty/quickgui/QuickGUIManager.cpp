@@ -6,8 +6,9 @@
 
 namespace QuickGUI
 {
-	GUIManager::GUIManager(Ogre::Viewport* vp) :		
-		mViewport(0),
+	GUIManager::GUIManager(const Ogre::String& name, Ogre::Viewport* vp) :
+		mName(name),
+		mViewport(vp),
 		mActiveSheet(0),
 		mWidgetContainingMouse(0),
 		mActiveWidget(0),
@@ -41,16 +42,12 @@ namespace QuickGUI
 
 		mTimer = new Ogre::Timer();
 
-		mViewport = vp;
-
 		mMouseCursor = new MouseCursor(Size(24,32),"qgui",this);
 		mMouseCursor->setPosition(getViewportWidth()/2.0,getViewportHeight()/2.0);
 
 		mDefaultSheet = createSheet();
 		// Initialize all widget tracking pointers.
 		mActiveWidget = mWidgetContainingMouse = mActiveSheet = mDefaultSheet;
-
-		_createDefaultTextures();
 	}
 
 	GUIManager::~GUIManager()
@@ -64,48 +61,6 @@ namespace QuickGUI
 
 		delete mMouseCursor;
 		mMouseCursor = NULL;
-	}
-
-	void GUIManager::_createDefaultTextures()
-	{
-		Ogre::TextureManager* tm = Ogre::TextureManager::getSingletonPtr();
-		// QuickGUI.White - Plain White
-		if( !tm->resourceExists("QuickGUI.White") )
-		{
-			Ogre::TexturePtr tp = 
-				tm->createManual("QuickGUI.White",Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,Ogre::TEX_TYPE_2D,1,1,1,0,Ogre::PF_A8B8G8R8);
-
-			Ogre::HardwarePixelBufferSharedPtr buf = tp->getBuffer();
-			buf->lock(Ogre::HardwareBuffer::HBL_NORMAL);
-			const Ogre::PixelBox& pb = buf->getCurrentLock();
-			Ogre::uint8* pixelData = static_cast<Ogre::uint8*>(pb.data);
-
-			*pixelData++ = 255;	// Blue
-			*pixelData++ = 255; // Green
-			*pixelData++ = 255; // Red
-			*pixelData++ = 255; // Alpha
-
-			buf->unlock();
-		}
-
-		// QuickGUI.TextSelection - Used for text selections.  Has half alpha value.
-		if( !tm->resourceExists("QuickGUI.TextSelection") )
-		{
-			Ogre::TexturePtr tp = 
-				tm->createManual("QuickGUI.TextSelection",Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,Ogre::TEX_TYPE_2D,1,1,1,0,Ogre::PF_A8B8G8R8);
-
-			Ogre::HardwarePixelBufferSharedPtr buf = tp->getBuffer();
-			buf->lock(Ogre::HardwareBuffer::HBL_NORMAL);
-			const Ogre::PixelBox& pb = buf->getCurrentLock();
-			Ogre::uint8* pixelData = static_cast<Ogre::uint8*>(pb.data);
-
-			*pixelData++ = 255;	// Blue
-			*pixelData++ = 255; // Green
-			*pixelData++ = 255; // Red
-			*pixelData++ = 200; // Alpha
-
-			buf->unlock();
-		}
 	}
 
 	void GUIManager::_destroyWidget(Widget* w)
@@ -325,6 +280,11 @@ namespace QuickGUI
 	Widget* GUIManager::getMouseOverWidget()
 	{
 		return mWidgetContainingMouse;
+	}
+
+	Ogre::String GUIManager::getName()
+	{
+		return mName;
 	}
 
 	Ogre::Viewport* GUIManager::getViewport()

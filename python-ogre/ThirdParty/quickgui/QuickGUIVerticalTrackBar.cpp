@@ -23,7 +23,6 @@ namespace QuickGUI
 		// Create slider button at the beginning of the VerticalTrackBar.
 		mSliderButton = dynamic_cast<Button*>(_createComponent(mInstanceName+".Slider",TYPE_BUTTON));
 		mSliderButton->setSkinComponent(".trackbar.vertical.slider");
-		mSliderButton->setSkin(mSkinName);
 		mSliderButton->setSize(getWidth(),13);
 		mSliderButton->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 		mSliderButton->enableDragging(true);

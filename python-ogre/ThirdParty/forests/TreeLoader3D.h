@@ -49,22 +49,24 @@ public:
 	/** \brief Adds an entity to the scene with the specified location, rotation, and scale.
 	\param entity The entity to be added to the scene.
 	\param position The desired position of the tree
-	\param yaw The desired rotation around the Y axis in degrees
+	\param yaw The desired rotation around the vertical axis in degrees
 	\param scale The desired scale of the entity
 
 	While TreeLoader3D allows you to provide full 3-dimensional x/y/z coordinates,
-	you are restricted to only yaw rotation, and only uniform scale. */
+	you are restricted to only yaw rotation, and only uniform scale. 
+	
+	\warning By default, scale values may not exceed 2.0. If you need to use higher scale
+	values than 2.0, use setMaximumScale() to reconfigure the maximum. */
 	void addTree(Ogre::Entity *entity, const Ogre::Vector3 &position, Ogre::Degree yaw = Ogre::Degree(0), Ogre::Real scale = 1.0f);
 
 	/** \brief Deletes trees within a certain radius of the given coordinates.
-	\param x The x coordinate of the tree(s) to delete
-	\param z The z coordinate of the tree(s) to delete
-	\param radius The radius from the coordinates where trees will be deleted (optional)
+	\param position The coordinate of the tree(s) to delete
+	\param radius The radius from the given coordinate where trees will be deleted
 	\param type The type of tree to delete (optional)
 
 	\note If the "type" parameter is set to an entity, only trees created with that entity
 	will be deleted. */
-	void deleteTrees(Ogre::Real x, Ogre::Real z, float radius, Ogre::Entity *type = NULL);
+	void deleteTrees(const Ogre::Vector3 &position, float radius, Ogre::Entity *type = NULL);
 
 	/** \brief Gets an iterator which can be used to access all added trees.
 
@@ -126,6 +128,54 @@ public:
 			colorMap->setFilter(colorMapFilter);
 	}
 
+	/** \brief Sets the maximum tree scale value
+
+	When calling addTree() to add trees, the scale values you are allowed to use are restricted
+	to 2.0 maximum by default. With this function, you can adjust the maximum scale you are allowed
+	to use for trees. However, keep in mind that the higher the maximum scale is, the less precision
+	there will be in storing the tree scales (since scale values are actually packed into a single byte).
+
+	\warning Be sure to call this before adding any trees - otherwise adjusting this value will cause
+	the size of the currently added trees to change. */
+	void setMaximumScale(Ogre::Real maxScale)
+	{
+		maximumScale = maxScale;
+	}
+
+	/** \brief Gets the maximum tree scale value
+	\returns The maximum tree scale value
+
+	This function will return the maximum tree scale value as set by setMaximumScale(). By
+	default this value will be 2.0. */
+	float getMaximumScale()
+	{
+		return maximumScale;
+	}
+
+	/** \brief Sets the minimum tree scale value
+
+	When calling addTree() to add trees, the scale values you are allowed to use are restricted
+	in the range of 0.0 - 2.0 by default. With this function, you can adjust the minimum scale you are
+	allowed to use for trees. The closer this minimum value is to the maximum tree scale, the more
+	precision there will be when storing trees with addTree().
+
+	\warning Be sure to call this before adding any trees - otherwise adjusting this value will cause
+	the size of the currently added trees to change. */
+	void setMinimumScale(Ogre::Real minScale)
+	{
+		minimumScale = minScale;
+	}
+
+	/** \brief Gets the minimum tree scale value
+	\returns The minimum tree scale value
+
+	This function will return the minimum tree scale value as set by setMinimumScale(). By
+	default this value will be 0. */
+	float getMinimumScale()
+	{
+		return minimumScale;
+	}
+
 	void loadPage(PageInfo &page);
 
 private:
@@ -142,6 +192,8 @@ private:
 	int pageGridX, pageGridZ;
 	Ogre::Real pageSize;
 	Ogre::TRect<Ogre::Real> gridBounds, actualBounds;
+
+	Ogre::Real maximumScale, minimumScale;
 
 	//Colormap
 	ColorMap *colorMap;
@@ -255,5 +307,3 @@ private:
 
 
 #endif
-
-

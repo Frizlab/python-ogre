@@ -182,20 +182,53 @@ namespace QuickGUI
 		}
 
 		_deriveAnchorValues();
-		setSkin(mSkinName);
+		if(mSkinName != "")
+			setSkin(mSkinName);
+	}
+
+	void Border::setParent(Widget* parent)
+	{
+		mParentWidget = parent;
+
+		if(mParentWidget != NULL)
+		{
+			setQuadContainer(parent->getQuadContainer());
+			setGUIManager(parent->getGUIManager());
+
+			// set the correct offset
+			setOffset(mParentWidget->getOffset() + 1);
+			// calculated properties
+			_deriveAnchorValues();
+			// inheritted properties
+			setClippingWidget(mParentWidget->getParentWidget(),true);
+			if(!mParentWidget->isVisible())
+				hide();
+			if(mInheritQuadLayer)
+				setQuadLayer(mParentWidget->getQuadLayer());
+			mGainFocusOnClick = mParentWidget->getGainFocusOnClick();
+		}
+
+		WidgetEventArgs args(this);
+		fireEvent(EVENT_PARENT_CHANGED,args);
 	}
 
 	void Border::setSkin(const Ogre::String& skinName, Ogre::String extension, bool recursive)
 	{
 		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(skinName);
 		if(ss == NULL)
-			return;
+			throw Ogre::Exception(Ogre::Exception::ERR_ITEM_NOT_FOUND,"Skin \"" + skinName + "\" does not exist!  Did you forget to load it using the SkinSetManager?","Border::setSkin");
 
 		mSkinName = skinName;
 		if(mParentWidget != NULL)
-			mQuad->setTexture(mSkinName + mParentWidget->getSkinComponent() + mSkinComponent + ss->getImageExtension());
+		{
+			mQuad->setMaterial(ss->getMaterialName());
+			mQuad->setTextureCoordinates(ss->getTextureCoordinates(mSkinName + mParentWidget->getSkinComponent() + mSkinComponent + ss->getImageExtension()));
+		}
 		else
-			mQuad->setTexture(mSkinName + mSkinComponent + ss->getImageExtension());
+		{
+			mQuad->setMaterial(ss->getMaterialName());
+			mQuad->setTextureCoordinates(ss->getTextureCoordinates(mSkinName + mSkinComponent + ss->getImageExtension()));
+		}
 
 		if(recursive)
 		{

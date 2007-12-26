@@ -32,8 +32,8 @@
 ** 59 Temple Place - Suite 330,                                              **
 ** Boston, MA 02111-1307, USA.                                               **
 \*---------------------------------------------------------------------------*/
-#ifndef _OGRE_AL_EXCEPTION_H_
-#define _OGRE_AL_EXCEPTION_H_
+#ifndef _OGREAL_EXCEPTION_H_
+#define _OGREAL_EXCEPTION_H_
 
 #include "OgreString.h"
 #include "OgreALPrereqs.h"

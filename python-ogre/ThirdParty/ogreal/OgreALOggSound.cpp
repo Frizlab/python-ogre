@@ -161,6 +161,8 @@ namespace OgreAL {
 
 	void OggSound::setSecondOffset(Ogre::Real seconds)
 	{
+		if(seconds < 0) return;
+
 		if(!mStream)
 		{
 			Sound::setSecondOffset(seconds);

@@ -33,8 +33,8 @@
 ** Boston, MA 02111-1307, USA.                                               **
 \*---------------------------------------------------------------------------*/
 
-#ifndef _OGRE_AL_WAV_SOUND_H_
-#define _OGRE_AL_WAV_SOUND_H_
+#ifndef _OGREAL_WAV_SOUND_H_
+#define _OGREAL_WAV_SOUND_H_
 
 #include <string>
 #include <iostream>

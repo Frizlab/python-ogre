@@ -36,14 +36,14 @@ using namespace Ogre;
 
 //-------------------------------------------------------------------------------------
 
-BatchedGeometry::BatchedGeometry(SceneManager *mgr)
+BatchedGeometry::BatchedGeometry(SceneManager *mgr, SceneNode *rootSceneNode)
  :	withinFarDistance(0),
 	minDistanceSquared(0),
 	sceneNode(NULL),
 	sceneMgr(mgr),
 	built(false),
-	boundsUndefined(true)
-
+	boundsUndefined(true),
+	parentSceneNode(rootSceneNode)
 {
 	clear();
 }
@@ -144,7 +144,7 @@ void BatchedGeometry::build()
 		radius = bounds.getMaximum().length();	//Calculate BB radius
 		
 		//Create scene node
-		sceneNode = sceneMgr->getRootSceneNode()->createChildSceneNode(center);
+		sceneNode = parentSceneNode->createChildSceneNode(center);
 
 		//Build each batch
 		for (SubBatchMap::iterator i = subBatchMap.begin(); i != subBatchMap.end(); ++i){
@@ -207,7 +207,7 @@ void BatchedGeometry::_notifyCurrentCamera(Camera *cam)
 		withinFarDistance = true;
 	} else {
 		//Calculate camera distance
-		Vector3 camVec = cam->getDerivedPosition() - center;
+		Vector3 camVec = _convertToLocal(cam->getDerivedPosition()) - center;
 		Real centerDistanceSquared = camVec.squaredLength();
 		minDistanceSquared = std::max(0.0f, centerDistanceSquared - (radius * radius));
 		//Note: centerDistanceSquared measures the distance between the camera and the center of the GeomBatch,
@@ -217,6 +217,13 @@ void BatchedGeometry::_notifyCurrentCamera(Camera *cam)
 		//Determine whether the BatchedGeometry is within the far rendering distance
 		withinFarDistance = minDistanceSquared <= Math::Sqr(getRenderingDistance());
 	}
+}
+
+Ogre::Vector3 BatchedGeometry::_convertToLocal(const Vector3 &globalVec) const
+{
+	assert(parentSceneNode);
+	//Convert from the given global position to the local coordinate system of the parent scene node.
+	return (parentSceneNode->getOrientation().Inverse() * globalVec);
 }
 
 
@@ -306,15 +313,21 @@ void BatchedGeometry::SubBatch::build()
 	//Misc. setup
 	Vector3 batchCenter = parent->center;
 
+	HardwareIndexBuffer::IndexType srcIndexType = meshType->indexData->indexBuffer->getType();
+	HardwareIndexBuffer::IndexType destIndexType;
+	if (vertexData->vertexCount > 0xFFFF || srcIndexType == HardwareIndexBuffer::IT_32BIT)
+		destIndexType = HardwareIndexBuffer::IT_32BIT;
+	else
+		destIndexType = HardwareIndexBuffer::IT_16BIT;
+
 	//Allocate the index buffer
-	HardwareIndexBuffer::IndexType indexType = meshType->indexData->indexBuffer->getType();
 	indexData->indexBuffer = HardwareBufferManager::getSingleton()
-		.createIndexBuffer(indexType, indexData->indexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+		.createIndexBuffer(destIndexType, indexData->indexCount, HardwareBuffer::HBU_STATIC_WRITE_ONLY);
 
 	//Lock the index buffer
 	uint32 *indexBuffer32;
 	uint16 *indexBuffer16;
-	if (indexType == HardwareIndexBuffer::IT_32BIT)
+	if (destIndexType == HardwareIndexBuffer::IT_32BIT)
 		indexBuffer32 = static_cast<uint32*>(indexData->indexBuffer->lock(HardwareBuffer::HBL_DISCARD));
 	else
 		indexBuffer16 = static_cast<uint16*>(indexData->indexBuffer->lock(HardwareBuffer::HBL_DISCARD));
@@ -498,7 +511,7 @@ void BatchedGeometry::SubBatch::build()
 
 
 		//Copy mesh index data into the index buffer
-		if (indexType == HardwareIndexBuffer::IT_32BIT) {
+		if (srcIndexType == HardwareIndexBuffer::IT_32BIT) {
 			//Lock the input buffer
 			uint32 *source = static_cast<uint32*>(sourceIndexData->indexBuffer->lock(
 				sourceIndexData->indexStart, sourceIndexData->indexCount, HardwareBuffer::HBL_READ_ONLY
@@ -516,22 +529,43 @@ void BatchedGeometry::SubBatch::build()
 			//Increment the index offset
 			indexOffset += sourceVertexData->vertexCount;
 		} else {
-			//Lock the input buffer
-			uint16 *source = static_cast<uint16*>(sourceIndexData->indexBuffer->lock(
-				sourceIndexData->indexStart, sourceIndexData->indexCount, HardwareBuffer::HBL_READ_ONLY
-				));
-			uint16 *sourceEnd = source + sourceIndexData->indexCount;
+			if (destIndexType == HardwareIndexBuffer::IT_32BIT){
+				//-- Convert 16 bit to 32 bit indices --
+				//Lock the input buffer
+				uint16 *source = static_cast<uint16*>(sourceIndexData->indexBuffer->lock(
+					sourceIndexData->indexStart, sourceIndexData->indexCount, HardwareBuffer::HBL_READ_ONLY
+					));
+				uint16 *sourceEnd = source + sourceIndexData->indexCount;
 
-			//And copy it to the output buffer
-			while (source != sourceEnd) {
-				*indexBuffer16++ = static_cast<uint16>(*source++ + indexOffset);
+				//And copy it to the output buffer
+				while (source != sourceEnd) {
+					uint32 indx = *source++;
+					*indexBuffer32++ = (indx + indexOffset);
+				}
+
+				//Unlock the input buffer
+				sourceIndexData->indexBuffer->unlock();
+
+				//Increment the index offset
+				indexOffset += sourceVertexData->vertexCount;
+			} else {
+				//Lock the input buffer
+				uint16 *source = static_cast<uint16*>(sourceIndexData->indexBuffer->lock(
+					sourceIndexData->indexStart, sourceIndexData->indexCount, HardwareBuffer::HBL_READ_ONLY
+					));
+				uint16 *sourceEnd = source + sourceIndexData->indexCount;
+
+				//And copy it to the output buffer
+				while (source != sourceEnd) {
+					*indexBuffer16++ = static_cast<uint16>(*source++ + indexOffset);
+				}
+
+				//Unlock the input buffer
+				sourceIndexData->indexBuffer->unlock();
+
+				//Increment the index offset
+				indexOffset += sourceVertexData->vertexCount;
 			}
-
-			//Unlock the input buffer
-			sourceIndexData->indexBuffer->unlock();
-
-			//Increment the index offset
-			indexOffset += sourceVertexData->vertexCount;
 		}
 	}
 
@@ -590,7 +624,7 @@ void BatchedGeometry::SubBatch::getRenderOperation(RenderOperation& op)
 
 Real BatchedGeometry::SubBatch::getSquaredViewDepth(const Camera* cam) const
 {
-	Vector3 camVec = cam->getDerivedPosition() - parent->center;
+	Vector3 camVec = parent->_convertToLocal(cam->getDerivedPosition()) - parent->center;
 	return camVec.squaredLength();
 }
 

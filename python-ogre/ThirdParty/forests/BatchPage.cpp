@@ -36,7 +36,7 @@ unsigned long BatchPage::GUID = 0;
 void BatchPage::init(PagedGeometry *geom)
 {
 	sceneMgr = geom->getSceneManager();
-	batch = new BatchedGeometry(sceneMgr);
+	batch = new BatchedGeometry(sceneMgr, geom->getSceneNode());
 
 	fadeEnabled = false;
 

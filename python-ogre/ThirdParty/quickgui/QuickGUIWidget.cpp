@@ -17,6 +17,7 @@ namespace QuickGUI
 		mDragYOnly(false),
 		mDraggingEnabled(false),
 		mEnabled(true),
+		mEntered(false),
 		mGainFocusOnClick(true),
 		mGrabbed(false),
 		mGUIManager(gm),
@@ -53,6 +54,9 @@ namespace QuickGUI
 		// This is important for widgets to position themself correctly.
 		addEventHandler(EVENT_POSITION_CHANGED,&Widget::onPositionChanged,this);
 		addEventHandler(EVENT_SIZE_CHANGED,&Widget::onSizeChanged,this);
+
+		setPropagateEventFiring(EVENT_MOUSE_ENTER,true);
+		setPropagateEventFiring(EVENT_MOUSE_LEAVE,true);
 	}
 
 	Widget::~Widget()
@@ -185,12 +189,14 @@ namespace QuickGUI
 			case TYPE_TITLEBAR:				w = new TitleBar(name,mGUIManager);				break;
 			case TYPE_TRACKBAR_HORIZONTAL:	w = new HorizontalTrackBar(name,mGUIManager);	break;
 			case TYPE_TRACKBAR_VERTICAL:	w = new VerticalTrackBar(name,mGUIManager);		break;
+			case TYPE_TREE:					w = new Tree(name,mGUIManager);					break;
 			case TYPE_WINDOW:				w = new Window(name,mGUIManager);				break;
 			default:						w = new Widget(name,mGUIManager);				break;
 		}
 
 		w->setSize(w->getSize());
-		w->setSkin(mSkinName,true);
+		if(mSkinName != "")
+			w->setSkin(mSkinName,true);
 		w->setFont(mFontName,true);
 		addChild(w);
 		w->setPosition(0,0);
@@ -235,7 +241,9 @@ namespace QuickGUI
 		}
 
 		w->setSize(w->getSize());
-		w->setSkin(mSkinName,true);
+		// Some Composition widgets will create components before inheritting skin name.
+		if(mSkinName != "")
+			w->setSkin(mSkinName,true);
 		w->setFont(mFontName,true);
 		mComponents.push_back(w);
 		//addChild(w);
@@ -326,6 +334,11 @@ namespace QuickGUI
 	void Widget::addEventHandler(Event EVENT, MemberFunctionSlot* function)
 	{
 		mUserEventHandlers[EVENT].push_back(function);
+	}
+
+	void Widget::addEventListener(MemberFunctionSlot* function)
+	{
+		mEventListeners.push_back(function);
 	}
 
 	void Widget::allowResizing(bool allow)
@@ -802,7 +815,7 @@ namespace QuickGUI
 	{
 		mHideSkin = true;
 
-		mQuad->setTexture("");
+		mQuad->setMaterial("");
 
 		for(WidgetArray::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
 			hideSkin();
@@ -832,7 +845,7 @@ namespace QuickGUI
 		WidgetArray::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 		{
-			if( w == (*it) )
+			if( w == (*it) || (*it)->isChild(w) )
 				return true;
 		}
 
@@ -868,17 +881,39 @@ namespace QuickGUI
 		setYPosition(mPosition.y + pixelY);
 	}
 
-	bool Widget::fireEvent(Event e, const EventArgs& args)
+	bool Widget::fireEvent(Event e, EventArgs& args)
 	{
-		if(!mEnabled || (mUserEventHandlers[e].empty() && !mPropogateEventFiring[e])) 
+		if(mUserEventHandlers[e].empty() && !mPropogateEventFiring[e]) 
 			return false;
 
+		if(e == EVENT_MOUSE_ENTER)
+		{
+			if(mEntered)
+				return false;
+			else
+				mEntered = true;
+		}
+		else if(e == EVENT_MOUSE_LEAVE)
+		{
+			if(!mEntered)
+				return false;
+			else
+				mEntered = false;
+		}
+
+		args.eventType = e;
+
+		// Notify any listeners
 		EventHandlerArray::iterator it;
+		for( it = mEventListeners.begin(); it != mEventListeners.end(); ++it )
+			(*it)->execute(args);
+
+		// Execute registered handlers
 		EventHandlerArray* userEventHandlers = &(mUserEventHandlers[e]);
 		for( it = userEventHandlers->begin(); it != userEventHandlers->end(); ++it )
 			(*it)->execute(args);
 
-		if(mPropogateEventFiring[e])
+		if(mPropogateEventFiring[e] && (mParentWidget != NULL))
 			mParentWidget->fireEvent(e,args);
 
 		return true; 
@@ -1182,7 +1217,7 @@ namespace QuickGUI
 		setPosition(pixelPoint.x,pixelPoint.y);
 	}
 
-	void Widget::setPropogateEventFiring(Event e, bool propogate)
+	void Widget::setPropagateEventFiring(Event e, bool propogate)
 	{
 		mPropogateEventFiring[e] = propogate;
 	}
@@ -1220,12 +1255,17 @@ namespace QuickGUI
 	{
 		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(skinName);
 		if(ss == NULL)
-			return;
+			throw Ogre::Exception(Ogre::Exception::ERR_ITEM_NOT_FOUND,"Skin \"" + skinName + "\" does not exist!  Did you forget to load it using the SkinSetManager?","Widget::setSkin");
 
 		mSkinName = skinName;
 
 		Ogre::String textureName = mSkinName + mSkinComponent + ss->getImageExtension();
-		mQuad->setTexture(textureName);
+
+		if(!ss->containsImage(textureName))
+			return;
+
+		mQuad->setMaterial(ss->getMaterialName());
+		mQuad->setTextureCoordinates(ss->getTextureCoordinates(textureName));
 
 		// Load Image, used for transparency picking.
 		if(Utility::textureExistsOnDisk(textureName))
@@ -1455,6 +1495,10 @@ namespace QuickGUI
 	void Widget::setSkinComponent(const Ogre::String& skinComponent)
 	{
 		mSkinComponent = skinComponent;
+
+		// update widget appearance
+		if(mSkinName != "")
+			setSkin(mSkinName);
 	}
 
 	void Widget::unlockTexture()

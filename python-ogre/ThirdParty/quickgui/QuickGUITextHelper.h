@@ -37,6 +37,7 @@ namespace QuickGUI
 		Ogre::FontPtr getFontTexturePtr();
 		Ogre::Real getFontTextureHeight();
 		Ogre::Real getFontTextureWidth();
+		Ogre::String getFontMaterialName();
 		Size getGlyphSize(Ogre::UTFString::unicode_char c);
 		Ogre::Real getGlyphWidth(Ogre::UTFString::unicode_char c);
 		Ogre::Real getGlyphHeight();

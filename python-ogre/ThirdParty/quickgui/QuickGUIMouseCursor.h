@@ -1,6 +1,7 @@
 #ifndef QUICKGUIMOUSECURSOR_H
 #define QUICKGUIMOUSECURSOR_H
 
+#include "OgreException.h"
 #include "OgreImage.h"
 #include "OgrePrerequisites.h"
 

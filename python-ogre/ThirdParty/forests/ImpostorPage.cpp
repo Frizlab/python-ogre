@@ -31,6 +31,7 @@ unsigned int ImpostorPage::selfInstances = 0;
 
 int ImpostorPage::impostorResolution = 128;
 ColourValue ImpostorPage::impostorBackgroundColor = ColourValue(0.0f, 0.3f, 0.0f, 0.0f);
+BillboardOrigin ImpostorPage::impostorPivot = BBO_CENTER;
 
 
 void ImpostorPage::init(PagedGeometry *geom)
@@ -44,7 +45,7 @@ void ImpostorPage::init(PagedGeometry *geom)
 		
 	if (++selfInstances == 1){
 		//Set up a single instance of a scene node which will be used when rendering impostor textures
-		sceneMgr->getRootSceneNode()->createChildSceneNode("ImpostorPage::renderNode");
+		geom->getSceneNode()->createChildSceneNode("ImpostorPage::renderNode");
 	}
 }
 
@@ -139,8 +140,8 @@ void ImpostorPage::removeEntities()
 void ImpostorPage::update()
 {
 	//Calculate the direction the impostor batches should be facing
-	Vector3 camPos = geom->getCamera()->getDerivedPosition();
-		
+	Vector3 camPos = geom->_convertToLocal(geom->getCamera()->getDerivedPosition());
+	
 	//Update all batches
 	float distX = camPos.x - center.x;
 	float distZ = camPos.z - center.z;
@@ -152,7 +153,7 @@ void ImpostorPage::update()
 	if (distRelZ > geom->getPageSize() * 3) {
 		yaw = Math::ATan2(distX, distZ);
 	} else {
-		Vector3 dir = geom->getCamera()->getDerivedDirection();
+		Vector3 dir = geom->_convertToLocal(geom->getCamera()->getDerivedDirection());
 		yaw = Math::ATan2(-dir.x, -dir.z);
 	}
 
@@ -175,6 +176,12 @@ void ImpostorPage::regenerateAll()
 	ImpostorTexture::regenerateAll();
 }
 
+void ImpostorPage::setImpostorPivot(BillboardOrigin origin)
+{
+	if (origin != BBO_CENTER && origin != BBO_BOTTOM_CENTER)
+		OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Invalid origin - only BBO_CENTER and BBO_BOTTOM_CENTER is supported", "ImpostorPage::setImpostorPivot()");
+	impostorPivot = origin;
+}
 
 //-------------------------------------------------------------------------------------
 
@@ -188,8 +195,10 @@ ImpostorBatch::ImpostorBatch(ImpostorPage *group, Entity *entity)
 	tex = ImpostorTexture::getTexture(group, entity);
 	
 	//Create billboard set
-	bbset = new StaticBillboardSet(group->sceneMgr);
+	bbset = new StaticBillboardSet(group->sceneMgr, group->geom->getSceneNode());
 	bbset->setTextureStacksAndSlices(IMPOSTOR_PITCH_ANGLES, IMPOSTOR_YAW_ANGLES);
+
+	setBillboardOrigin(ImpostorPage::impostorPivot);
 
 	//Default the angle to 0 degrees
 	pitchIndex = -1;
@@ -258,6 +267,15 @@ void ImpostorBatch::setAngle(float pitchDeg, float yawDeg)
 	}
 }
 
+void ImpostorBatch::setBillboardOrigin(BillboardOrigin origin)
+{
+	bbset->setBillboardOrigin(origin);
+
+	if (bbset->getBillboardOrigin() == BBO_CENTER)
+		entityBBCenter = tex->entityCenter;
+	else if (bbset->getBillboardOrigin() == BBO_BOTTOM_CENTER)
+		entityBBCenter = Vector3(tex->entityCenter.x, -tex->entityCenter.y, tex->entityCenter.z);
+}
 
 //-------------------------------------------------------------------------------------
 

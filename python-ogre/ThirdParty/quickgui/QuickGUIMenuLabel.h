@@ -22,10 +22,10 @@ namespace QuickGUI
 		MenuLabel(const Ogre::String& name, GUIManager* gm);
 
 		Ogre::String getButtonSkin();
-		Ogre::String getIconTexture();
+		Ogre::String getIconMaterial();
 
 		void setButtonSkin(const Ogre::String& skinName);
-		void setIconTexture(const Ogre::String& textureName);
+		void setIconMaterial(const Ogre::String& materialName);
 		template<typename T> void setMouseButtonUpOnButtonHandler(void (T::*function)(const EventArgs&), T* obj)
 		{
 			if(mButton == NULL)
@@ -41,7 +41,7 @@ namespace QuickGUI
 		Layout mLayout;
 
 		Image* mIcon;
-		Ogre::String mIconTextureName;
+		Ogre::String mIconMaterialName;
 
 		Button* mButton;
 		Ogre::String mButtonTextureName;

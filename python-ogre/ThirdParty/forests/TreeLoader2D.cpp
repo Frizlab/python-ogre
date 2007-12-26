@@ -45,6 +45,10 @@ TreeLoader2D::TreeLoader2D(PagedGeometry *geom, const TRect<Real> &bounds)
 	//Reset color map
 	colorMap = NULL;
 	colorMapFilter = MAPFILTER_NONE;
+
+	//Default scale range
+	maximumScale = 2.0f;
+	minimumScale = 0.0f;
 }
 
 TreeLoader2D::~TreeLoader2D()
@@ -57,18 +61,36 @@ TreeLoader2D::~TreeLoader2D()
 	pageGridList.clear();
 }
 
-void TreeLoader2D::addTree(Entity *entity, const Vector2 &position, Degree yaw, Real scale)
+void TreeLoader2D::addTree(Entity *entity, const Vector3 &position, Degree yaw, Real scale)
 {
-	Real x = position.x;
-	Real z = position.y;
+	//First convert the coordinate to PagedGeometry's local system
+	#ifdef PAGEDGEOMETRY_ALTERNATE_COORDSYSTEM
+	Vector3 pos = geom->_convertToLocal(position);
+	#else
+	Vector3 pos = position;
+	#endif
+
+	//If the tree is slightly out of bounds (due to imprecise coordinate conversion), fix it
+	if (pos.x < actualBounds.left)
+		pos.x = actualBounds.left;
+	else if (pos.x > actualBounds.right)
+		pos.x = actualBounds.right;
+
+	if (pos.z < actualBounds.top)
+		pos.z = actualBounds.top;
+	else if (pos.x > actualBounds.bottom)
+		pos.z = actualBounds.bottom;
+
+	Real x = pos.x;
+	Real z = pos.z;
 
 	//Check that the tree is within bounds (DEBUG)
 	#ifdef _DEBUG
-	if (x < actualBounds.left || x > actualBounds.right || z < actualBounds.top || z > actualBounds.bottom){
-		OGRE_EXCEPT(Ogre::Exception::ERR_INVALIDPARAMS,
-				"Tree position is out of bounds",
-				"TreeLoader::addTree()");
-	}
+	const Real smallVal = 0.01f;
+	if (pos.x < actualBounds.left-smallVal || pos.x > actualBounds.right+smallVal || pos.z < actualBounds.top-smallVal || pos.z > actualBounds.bottom+smallVal)
+		OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Tree position is out of bounds", "TreeLoader::addTree()");
+	if (scale < minimumScale || scale > maximumScale)
+		OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Tree scale out of range", "TreeLoader::addTree()");
 	#endif
 
 	//Find the appropriate page grid for the entity
@@ -101,7 +123,7 @@ void TreeLoader2D::addTree(Entity *entity, const Vector2 &position, Degree yaw, 
 	tree.xPos = 65535 * (xrel - (pageX * pageSize)) / pageSize;
 	tree.zPos = 65535 * (zrel - (pageZ * pageSize)) / pageSize;
 	tree.rotation = 255 * (yaw.valueDegrees() / 360.0f);
-	tree.scale = 255 * (scale / 2.0f);
+	tree.scale = 255 * ((scale - minimumScale) / maximumScale);
 
 	//Add it to the tree list
 	treeList.push_back(tree);
@@ -110,8 +132,29 @@ void TreeLoader2D::addTree(Entity *entity, const Vector2 &position, Degree yaw, 
 	geom->reloadGeometryPage(Vector3(x, 0, z));
 }
 
-void TreeLoader2D::deleteTrees(Real x, Real z, Real radius, Entity *type)
+void TreeLoader2D::deleteTrees(const Ogre::Vector3 &position, Real radius, Entity *type)
 {
+	//First convert the coordinate to PagedGeometry's local system
+	#ifdef PAGEDGEOMETRY_ALTERNATE_COORDSYSTEM
+	Vector3 pos = geom->_convertToLocal(position);
+	#else
+	Vector3 pos = position;
+	#endif
+
+	//If the position is slightly out of bounds, fix it
+	if (pos.x < actualBounds.left)
+		pos.x = actualBounds.left;
+	else if (pos.x > actualBounds.right)
+		pos.x = actualBounds.right;
+
+	if (pos.z < actualBounds.top)
+		pos.z = actualBounds.top;
+	else if (pos.x > actualBounds.bottom)
+		pos.z = actualBounds.bottom;
+
+	Real x = pos.x;
+	Real z = pos.z;
+
 	//Determine the grid blocks which might contain the requested trees
 	int minPageX = Math::Floor(((x-radius) - gridBounds.left) / pageSize);
 	int minPageZ = Math::Floor(((z-radius) - gridBounds.top) / pageSize);
@@ -234,7 +277,7 @@ void TreeLoader2D::loadPage(PageInfo &page)
 
 			//Get scale
 			Vector3 scale;
-			scale.y = (Real)o->scale * (2.0f / 255);
+			scale.y = (Real)o->scale * (maximumScale / 255) + minimumScale;
 			scale.x = scale.y;
 			scale.z = scale.y;
 
@@ -342,7 +385,7 @@ void TreeIterator2D::_readTree()
 	currentTreeDat.yaw = Degree((Real)treeDef.rotation * (360.0f / 255));
 
 	//Get scale
-	currentTreeDat.scale = (Real)treeDef.scale * (2.0f / 255);
+	currentTreeDat.scale = (Real)treeDef.scale * (trees->maximumScale / 255) + trees->minimumScale;
 
 	//Get entity
 	currentTreeDat.entity = currentGrid->first;

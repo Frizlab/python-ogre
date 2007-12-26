@@ -30,20 +30,23 @@ namespace QuickGUI
 		class State
 		{
 		public:
-			State(const Ogre::String& name, const Ogre::String& baseTexture, Ogre::UTFString text="") :
+			State(const Ogre::String& name, const Ogre::String& skin, const Ogre::String& skinComponent, Ogre::UTFString text="") :
 			  mName(name),
-			  mTextureName(baseTexture),
+			  mSkinName(skin),
+			  mSkinComponentName(skinComponent),
 			  mText(text)
 			{}
 			~State() {}
 
-			Ogre::String getBaseTextureName() { return mTextureName; }
+			Ogre::String getSkin() { return mSkinName; }
+			Ogre::String getSkinComponent() { return mSkinComponentName; }
 			Ogre::String getName() { return mName; }
 			Ogre::UTFString getText() { return mText; }
 			
 		protected:
 			Ogre::String mName;
-			Ogre::String mTextureName;
+			Ogre::String mSkinName;
+			Ogre::String mSkinComponentName;
 			Ogre::UTFString mText;
 		};
 
@@ -74,7 +77,7 @@ namespace QuickGUI
 		/**
 		* Adds (and creates) a state to the button.  If it is the first state, the state will be applied.
 		*/
-		void addState(const Ogre::String& name, const Ogre::String& texture, Ogre::UTFString text="");
+		void addState(const Ogre::String& name, const Ogre::String& skin, const Ogre::String& skinComponent, Ogre::UTFString text="");
 		/**
 		* Useful when you want to simulate the button being pressed down by the mouse.
 		* If you actually want to click the mouse, use the mouse, or call onMouseButtonDown.

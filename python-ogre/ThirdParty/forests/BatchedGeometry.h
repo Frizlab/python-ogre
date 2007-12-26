@@ -16,7 +16,6 @@ Permission is granted to anyone to use this software for any purpose, including 
 #ifndef __BatchedGeometry_H__
 #define __BatchedGeometry_H__
 
-#include "Ogre.h"
 #include "OgrePrerequisites.h"
 #include "OgreMovableObject.h"
 #include "OgreSceneNode.h"
@@ -26,12 +25,14 @@ Permission is granted to anyone to use this software for any purpose, including 
 class BatchedGeometry: public Ogre::MovableObject
 {
 public:
-	BatchedGeometry(Ogre::SceneManager *mgr);
+	BatchedGeometry(Ogre::SceneManager *mgr, Ogre::SceneNode *rootSceneNode);
 	~BatchedGeometry();
 
 	void addEntity(Ogre::Entity *ent, const Ogre::Vector3 &position, const Ogre::Quaternion &orientation = Ogre::Quaternion::IDENTITY, const Ogre::Vector3 &scale = Ogre::Vector3::UNIT_SCALE, const Ogre::ColourValue &color = Ogre::ColourValue::White);
 	void build();
 	void clear();
+
+	Ogre::Vector3 _convertToLocal(const Ogre::Vector3 &globalVec) const;
 
 	void _notifyCurrentCamera(Ogre::Camera *cam);
 	void _updateRenderQueue(Ogre::RenderQueue *queue);
@@ -110,7 +111,7 @@ private:
 	Ogre::Real radius;
 
 	Ogre::SceneManager *sceneMgr;
-	Ogre::SceneNode *sceneNode;
+	Ogre::SceneNode *sceneNode, *parentSceneNode;
 
 	Ogre::Real minDistanceSquared;
 	bool withinFarDistance;

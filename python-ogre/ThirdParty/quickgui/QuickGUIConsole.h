@@ -29,14 +29,20 @@ namespace QuickGUI
 
 		void addText(const Ogre::UTFString& text);
 
-		virtual void clearText();
+		void clearInputText();
 
 		virtual void focus();
 
+		bool getBlockInput();
+		/*
+		* Gets the Text currently in the Console Input Box.
+		*/
+		Ogre::UTFString getInputText();
 		int getMaxLines();
 
 		void hideInputBox();
 
+		void setBlockInput(bool block);
 		/**
 		* Sets the color of the text when the widget is disabled.
 		*/
@@ -47,6 +53,7 @@ namespace QuickGUI
 		*/
 		virtual void setHorizontalAlignment(HorizontalAlignment ha);
 		void setMaxLines(unsigned int maxLines);
+		void setReadOnly(bool readOnly);
 		virtual void setText(const Ogre::UTFString& text);
 		virtual void setTextColor(Ogre::ColourValue color);
 		/**
@@ -66,8 +73,8 @@ namespace QuickGUI
 
 		// specifies the maximum number of lines of text the Console will store at any given time.
 		int mMaxLines;
+		bool mBlockInput;
 
-		void onInputBoxSizeChanged(const EventArgs& args);
 		void onEnterPressed(const EventArgs& args);
 	};
 }
