@@ -662,7 +662,6 @@ def AutoFixes ( mb, MAIN_NAMESPACE ):
     elif os.name =='posix':
         Fix_Posix( mb )
         
-    common_utils.Auto_Document( mb, MAIN_NAMESPACE )
  
 ###############################################################################
 ##
@@ -680,10 +679,7 @@ def Fix_Posix ( mb ):
     elif sys.platform.startswith ('linux'):
         pass
     mb.global_ns.class_('vector<int, std::allocator<int> >').alias='VectorInt'
-    try:
-        mb.global_ns.class_('vector<std::pair<unsigned int, unsigned int>, std::allocator<std::pair<unsigned int, unsigned int> > >').alias='VectorUnsignedUnsigned'
-    except:
-        pass
+    mb.global_ns.class_('vector<std::pair<unsigned, unsigned>, std::allocator<std::pair<unsigned, unsigned> > >').alias='VectorUnsignedUnsigned'
     #as reported by mike with linux:bp::arg("flags")=(std::_Ios_Fmtflags)0
     mb.namespace( MAIN_NAMESPACE ).class_('StringConverter').member_functions('toString').exclude()    
 
@@ -816,6 +812,48 @@ def Set_Smart_Pointers( mb ):
 #~ # #         c.exclude() ## exclude the first constructor..
 #~ # #         break
 
+def autoCasting ( main_ns, ignores = ['ParamCommand','MovableObjectFactory']  ):
+    """ looks for classes that have parents (bases) and there are overlapping/hidden functions
+    When we find one insert a asPARENT helper function just in case it might be needed 
+    
+    Only real world case I know of is casting a Bone to a Node so you can create a new node.
+    
+    """
+   
+    CastReg=\
+    """
+    def( "%(functionName)s", &::%(className)s_%(functionName)s,\
+        "Python-Ogre Hand Wrapped to cast to a parent(base) type\\n\
+        In this case from a %(className)s to a %(castName)s",\
+        bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+        """
+    CastDec=\
+    """
+    %(returnType)s * 
+    %(className)s_%(functionName)s ( %(classDecl)s * me ) {
+    return ( (%(returnType)s * ) me );
+    }   
+    """
+    
+    for c in main_ns.classes():
+        if len(c.bases) > 0:
+            for b in c.bases:
+                r = b.related_class
+                if not '<' in r.decl_string : ##and c.name != 'BillboardSet':  # don't worry about templates or factories..
+                    if not r.name in ignores: # there are some bases that we don't care about overlaps on
+                        for f in c.member_functions(allow_empty=True):
+                            if r.member_functions(f.name, allow_empty=True ):
+                                values = {  'returnType':r.decl_string, 'functionName': "as"+r.name, 
+                                            'className':c.name, 'classDecl': c.decl_string,
+                                            'castName':r.name }
+                                
+                                regcode = CastReg % values
+                                deccode = CastDec % values
+                                c.add_declaration_code( deccode )
+                                c.add_registration_code( regcode )
+                                print "Hand wrapper (as"+r.name+") created to cast from", c.name, "to", r.name ## b.access
+                                break
+
 #
 # the 'main'function
 #            
@@ -878,7 +916,7 @@ def generate_code():
     mb.classes().always_expose_using_scope = True
         
     
-        
+
     #
     # We filter (both include and exclude) specific classes and functions that we want to wrap
     # 
@@ -887,7 +925,8 @@ def generate_code():
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
     main_ns.include()
     
-    
+    autoCasting ( main_ns ) ## 
+                                            
     common_utils.AutoExclude ( mb, MAIN_NAMESPACE )
     ManualExclude ( mb )
     common_utils.AutoInclude ( mb, MAIN_NAMESPACE )
@@ -899,6 +938,9 @@ def generate_code():
     ManualAlias ( mb )
     AutoFixes ( mb, MAIN_NAMESPACE )
     ManualFixes ( mb )
+#     # indicated where underlying libraries are protected etc in the doc strings
+    common_utils.Auto_Document( mb, MAIN_NAMESPACE )
+
     common_utils.Auto_Functional_Transformation ( main_ns, special_vars=['::Ogre::Real &','::Ogre::ushort &','size_t &'] )
     
     for cls in main_ns.classes():
@@ -928,6 +970,7 @@ def generate_code():
     # the manual stuff all done here !!!
     #
     hand_made_wrappers.apply( mb )
+    
 
     NoPropClasses = ["UTFString"]
     for cls in main_ns.classes():
