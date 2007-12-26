@@ -14,9 +14,11 @@ import SampleFramework as sf
 import math, random, ctypes
 warnings.simplefilter('default', RuntimeWarning)
 
-import psyco
-psyco.full()
-
+try:
+    import psyco
+    psyco.full()
+except:
+    pass
 
 WORLD_SIZE = 5000
 WATER_LEVEL = 80
