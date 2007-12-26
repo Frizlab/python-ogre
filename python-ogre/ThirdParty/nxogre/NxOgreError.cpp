@@ -22,6 +22,9 @@
 #include "NxOgrePhysXDriver.h"			// For: World Access
 #include "NxOgreWorld.h"				// For: World->Shutodwn
 
+#include "OgreRoot.h"
+#include "OgreSingleton.h"
+
 namespace NxOgre {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -40,7 +43,6 @@ Error::Error(PhysXDriver *d, bool b) {
 		return;
 	}
 
-
 	nbErrors = 0;
 	nbWarnings = 0;
 	mDriver = d;
@@ -51,13 +53,11 @@ Error::Error(PhysXDriver *d, bool b) {
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 Error::~Error() {
-
 #ifdef NX_DEBUG
 	mReporters.dumpToConsole();
 #endif
-
 	mReporters.destroyAllOwned();
-
+	mError = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -70,26 +70,29 @@ unsigned int Error::addReporter(ErrorReporter* e,bool o) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-void Error::reportError (NxErrorCode code, const char *message, const char* file, int line) {
+void Error::removeReporter(unsigned int id) {
+	if (mReporters.isLocked(id))
+		delete mReporters.get(id);
+	mReporters.remove(id);
+}
 
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+void Error::reportError (NxErrorCode code, const char *message, const char* file, int line) {
 	std::stringstream ss;	
 	ss << "PhysX Error (" << getErrorCode(code) << ") ";
 	ss << "'" << message << "' " << "in line " << line << " of " << file << std::endl;
 	NxThrow_Warning(ss.str());
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 NxAssertResponse Error::reportAssertViolation (const char *message, const char *file,int line) {
-	
 	std::stringstream ss;
 	ss << "PhysX Assertion! ";
 	ss << "'" << message << "' " << "in line " << line << " of " << file << std::endl;
 	NxThrow_Error(ss.str());
-
 	return NX_AR_CONTINUE;
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -99,6 +102,8 @@ void Error::print (const char *message) {
 	m << message;
 	NxDebug(m.str());
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////
 
 NxString Error::getErrorCode(NxErrorCode c) {
 
@@ -129,8 +134,11 @@ void Error::report(const ErrorReport& er) {
 	else
 		nbWarnings++;
 
-	for(ErrorReporter* reporter = mReporters.begin();reporter = mReporters.next();) {
-			reporter->report(er);
+	if (mReporters.count()) {
+		for(ErrorReporter* reporter = mReporters.begin();reporter = mReporters.next();) {
+			if (reporter)
+				reporter->report(er);
+		}
 	}
 
 	if (ShutdownOnErrors)

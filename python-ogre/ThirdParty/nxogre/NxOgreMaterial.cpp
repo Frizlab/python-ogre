@@ -21,6 +21,9 @@
 #include "NxOgreMaterial.h"
 #include "NxOgreScene.h"			// For: CreateMaterial in NxScene
 #include "NxOgreHelpers.h"			// For: Ogre::Vector3 to NxVec3 conversion.
+#include "NxOgreResourceSystem.h"
+#include "NxOgreResourceStreamPtr.h"
+#include "NxOgreResourceStream.h"
 
 namespace NxOgre {
 
@@ -141,7 +144,7 @@ NxReal Material::getStaticFrictionV() const {
 //////////////////////////////////////////////////////////////////////
 
 void Material::setDirOfAnisotropy(const Ogre::Vector3 &vec) {
-	mMaterial->setDirOfAnisotropy(toNxVec3(vec));
+	mMaterial->setDirOfAnisotropy(NxConvert<NxVec3, Ogre::Vector3>(vec));
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -184,6 +187,93 @@ void Material::setRestitutionCombineMode(NxCombineMode combMode) {
 
 NxCombineMode Material::getRestitutionCombineMode() {
 	return mMaterial->getRestitutionCombineMode();
+}
+
+//////////////////////////////////////////////////////////////////////
+
+MaterialAlias::MaterialAlias(ResourceStreamPtr rs, bool deleteResourceStream) {
+	load(rs, deleteResourceStream);
+}
+
+//////////////////////////////////////////////////////////////////////
+
+MaterialAlias::MaterialAlias() {
+
+}
+
+//////////////////////////////////////////////////////////////////////
+				
+void MaterialAlias::add(NxMaterialIndex index, const NxString& identifier) {
+	mAliases[identifier] = index;
+}
+
+//////////////////////////////////////////////////////////////////////
+
+void MaterialAlias::remove(const NxString& identifier) {
+	mAliases.erase(identifier);
+}
+
+//////////////////////////////////////////////////////////////////////
+
+void MaterialAlias::dumpToConsole() {
+	for (std::map<NxString, NxMaterialIndex>::iterator it = mAliases.begin(); it != mAliases.end();++it) {
+		std::cout << (*it).second << " => " << (*it).first << std::endl;
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
+
+void MaterialAlias::load(ResourceStreamPtr rs, bool deleteResourceStream) {
+
+	rs->seek(0);
+
+	NxString headerCheck = rs->getString();
+
+	if (headerCheck != "NXM") {
+		NxThrow_Error("Not a Material Alias file");
+		rs->close();
+		return;
+	}
+	
+	NxU32 nbAliases = rs->getUInt();
+
+	for (NxU32 i=0;i < nbAliases;i++) {
+		NxMaterialIndex index = rs->getUInt();
+		std::string identifier = rs->getString();
+		add(index, identifier);
+	}
+
+	rs->close();
+
+}
+
+//////////////////////////////////////////////////////////////////////
+
+void MaterialAlias::save(ResourceStreamPtr rs, bool deleteResourceStream) {
+	
+	rs->writeString("NXM");
+
+	NxU32 nbAliases = mAliases.size();
+	rs->writeUInt(mAliases.size());
+
+	for (std::map<NxString, NxMaterialIndex>::iterator it = mAliases.begin(); it != mAliases.end();++it) {
+		rs->writeUInt((*it).second);
+		rs->writeString((*it).first);
+	}
+
+	rs->close();
+
+}
+
+//////////////////////////////////////////////////////////////////////
+
+NxMaterialIndex MaterialAlias::get(const NxString& identifier) {
+
+	std::map<NxString, NxMaterialIndex>::iterator it = mAliases.find(identifier);
+	if (it == mAliases.end())
+		return 0;
+
+	return (*it).second;
 }
 
 //////////////////////////////////////////////////////////////////////

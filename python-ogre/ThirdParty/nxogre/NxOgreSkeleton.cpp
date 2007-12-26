@@ -20,7 +20,7 @@
 #include "NxOgreStable.h"
 #include "NxOgreSkeleton.h"
 #include "NxOgreShapeBlueprintPrimitives.h"
-#include "NxOgreMeshManager.h"
+#include "NxOgreResourceManager.h"
 
 namespace NxOgre {
 

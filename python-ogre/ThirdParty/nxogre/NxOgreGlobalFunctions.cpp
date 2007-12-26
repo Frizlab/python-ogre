@@ -25,9 +25,9 @@ namespace NxOgre {
 	
 	void NxThrow(NxString a, int b, NxString c, unsigned int d) {
 
-#if defined NX_DEBUG && (NX_CONSOLE_CHATTER == 1)
+//#if defined NX_DEBUG && (NX_CONSOLE_CHATTER == 1)
 		std::cout << c << "#" << d << " (" << b << ")" << std::endl << a << std::endl;
-#endif
+//#endif
 
 		if (Error::getInstance()) {
 			ErrorReport rp = Error::getInstance()->getNewReport();

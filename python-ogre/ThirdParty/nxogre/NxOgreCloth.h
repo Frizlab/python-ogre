@@ -25,6 +25,9 @@
 
 //#if (NX_USE_CLOTH_API == 1)
 
+#include "OgreMesh.h"
+#include "OgreAxisAlignedBox.h"
+
 namespace NxOgre {
 
 

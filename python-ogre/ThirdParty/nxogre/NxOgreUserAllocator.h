@@ -24,37 +24,101 @@
 
 namespace NxOgre {
 
-	class UserAllocator : public NxUserAllocator {
-
-	public:
-
-							 UserAllocator();
-		virtual				~UserAllocator();
-
-				void		reset();
+#ifdef NX_DEBUG
+	
+	#define NxCreateAllocator(s) new NxOgre::UserAllocator(s);
+		
+	class NxExport UserAllocator : public NxUserAllocator {
+		
+		public:
+			
+			UserAllocator(const NxString& name) : mName(name), m(0),md(0), r(0), f(0) {}
+			
+			~UserAllocator() {
+				
+				std::stringstream ss;
+				
+				ss	<<	"Allocator '" << mName << 
+						"' =>  m:" << m <<
+						", md: " << md <<
+						", r: " << r <<
+						", f: " << f << 
+					std::endl;
+					
+				NxDebug(ss.str());
+					
+			}
 
 	#include <OgreNoMemoryMacros.h>
-
-				void*		malloc(NxU32 size);
-				void*		malloc(NxU32 size, NxMemoryType type);
-				void*		mallocDEBUG(NxU32 size, const char* file, int line);
-				void*		mallocDEBUG(NxU32 size, const char* file, int line, const char* className, NxMemoryType type);
-				void*		realloc(void* memory, NxU32 size);
-				void		free(void* memory);
-
+			void *malloc(NxU32 size)
 	#include <OgreMemoryMacros.h>
+			{
+				m++;
+				return malloc(size);
+			}
+	
 
-				NxU32*		mMemBlockList;
-				NxU32		mMemBlockListSize;
-				NxU32		mMemBlockFirstFree;
-				NxU32		mMemBlockUsed;
+	#include <OgreNoMemoryMacros.h>
+			void *mallocDEBUG(NxU32 size,const char *fileName, int line)
+	#include <OgreMemoryMacros.h>			
+			{
+				md++;
+				return _malloc_dbg(size,_NORMAL_BLOCK, fileName, line);
+			} 
+	
 
-				NxI32		mNbAllocatedBytes;
-				NxI32		mHighWaterMark;
-				NxI32		mTotalNbAllocs;
-				NxI32		mNbAllocs;
-				NxI32		mNbReallocs;
+
+	#include <OgreNoMemoryMacros.h>
+			void * realloc(void * memory, NxU32 size)
+	#include <OgreMemoryMacros.h>
+			{
+				r++;
+				return realloc(memory,size);
+			}
+
+	#include <OgreNoMemoryMacros.h>
+			void free(void * memory)
+	#include <OgreMemoryMacros.h>
+			{
+				f++;
+				free(memory);
+			}
+	
+
+			NxString mName;
+			NxI32 m,md,r,f;
+			
+
 	};
+#else
+
+	#define NxCreateAllocator(s) new NxOgre::UserAllocator();
+
+	class NxExport UserAllocator : public NxUserAllocator {
+	
+		public:
+			
+			UserAllocator() {}
+			~UserAllocator() {}
+			
+			void *malloc(NxU32 size) {
+					return ::malloc(size);
+			}
+			
+			void *mallocDEBUG(NxU32 size,const char *fileName, int line) {
+				return ::_malloc_dbg(size,_NORMAL_BLOCK, fileName, line);
+			} 
+			
+			void * realloc(void * memory, NxU32 size) {
+				return ::realloc(memory,size);
+			}
+			
+			void free(void * memory) {
+				::free(memory);
+			}
+
+	};
+#endif
 
 };
 

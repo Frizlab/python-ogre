@@ -25,6 +25,7 @@
 #include "NxOgreParams.h"
 
 #if (NX_USE_FLUID_API == 1)
+
 namespace NxOgre {
 
 	///	Params
@@ -67,6 +68,7 @@ namespace NxOgre {
 			NxCollisionGroup			collisionGroup;
 			NxGroupsMask				groupsMask;
 			NxU32						flags;
+
 #if NX_SDK_VERSION_NUMBER >= 260
 			NxCompartment*				compartment;
 #endif

@@ -27,7 +27,7 @@ namespace NxOgre {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-	Ground::Ground(GroundShape& desc, Actor* actor, NxArray<NxShapeDesc*>& shapes) : Shape(actor) {
+Ground::Ground(GroundShape& desc, Actor* actor, NxArray<NxShapeDesc*>& shapes) : Shape(actor) {
 	desc.mShapeDescription.userData = this;
 }
 
@@ -71,7 +71,7 @@ ShapeBlueprint*	Ground::getBlueprint() {
 	mShape->saveToDesc(desc);	
 	__descriptionToParams(desc, params);
 
-	GroundShape* shape = new GroundShape(desc.d, toVector3(desc.normal), params);
+	GroundShape* shape = new GroundShape(desc.d, NxConvert<Ogre::Vector3, NxVec3>(desc.normal), params);
 
 	return shape;
 }

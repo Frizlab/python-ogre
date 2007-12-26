@@ -21,6 +21,7 @@
 #include "NxOgreScene.h"
 #include "NxOgreSceneBlueprint.h"
 #include "NxOgreSceneController.h"				// For: Controlling the TimeStep of the Scene
+#include "NxOgreSceneRenderer.h"
 #include "NxOgreSceneContactController.h"		// For: SceneContactController
 #include "NxOgreSceneTriggerController.h"		// For: SceneTriggerController
 #include "NxOgreContainer.h"					// For: Scene::mActors
@@ -37,9 +38,16 @@
 #include "NxOgreJoint.h"						// For: Creation of abstract joints and releasing them.
 #include "NxOgreJointSet1.h"					// For: Creation of Joints
 #include "NxOgreJointSet2.h"					// For: Creation of Joints
-#include "NxOgreCharacterController.h"			// For: Creation of Characters
-#include "NxOgreCharacter.h"					// For: Character Simulation and Render
-#include "NxOgreHelper.h"						// For: Helpers
+
+#if (NX_USE_LEGACY_NXCONTROLLER == 1)
+#	include "NxOgreLegacyCharacterController.h"			// For: Creation of Characters
+#	include "NxOgreLegacyCharacter.h"					// For: Character Simulation and Render
+#else
+#	include "NxOgreCharacterSystem.h"
+#	include "NxOgreCharacter.h"							// For: Character Simulation and Render
+#endif
+
+//#include "NxOgreHelper.h"						// For: Helpers
 #include "NxOgreCloth.h"						// For: Cloths
 #include "NxOgreFluid.h"						// For: Fluids
 #include "NxOgreSoftBody.h"						// For: SoftBodies
@@ -48,10 +56,17 @@
 #include "NxOgreIntersection.h"					// For: Intersections (mSceneIntersection)
 #include "NxOgreRaycaster.h"					// For: Raycasting (mSceneRayCaster)
 #include "NxOgreSimpleShape.h"					// For: Intersections (SimpleBox in getActorsFromLastRegion)
+#include "NxOgreMachine.h"						// For: Machines
 
 #if (NX_UNSTABLE_USE_SCENE_ACTIVE_TRANSFORM == 1)
 #	include "NxOgreUserData.h"						// For: UserData in NxTransformCode
 #endif
+
+#include "NxOgreNodeRenderable.h"
+
+#include "NxOgreOgreSceneRenderer.h"
+#include "OgreStringConverter.h"
+#include "OgreSceneManager.h"
 
 namespace NxOgre {
 
@@ -66,7 +81,8 @@ void SceneParams::setToDefault() {
 	defaultMaterialDynamicFriction		= 0.5f;
 	max_timestep						= 1.0f / 60.0f;
 	max_iter							= 8;
-	time_step_method					= CN_FIXED;	// fixed, variable, superfixed
+	controller							= CN_FIXED;	// fixed, variable, accumulator, async
+	renderer							= RN_OGRE;
 	max_bounds							= NULL;
 	limits								= NULL;
 	sim_type							= NX_SIMULATION_SW;
@@ -82,9 +98,11 @@ void SceneParams::setToDefault() {
 	worker_thread_stack_size			= 0;
 	worker_thread_priority				= NX_TP_NORMAL;
 	up_axis								= 0;
+	
 	subdivision_level					= 5;
 	static_structure					= NX_PRUNING_DYNAMIC_AABB_TREE;
 	dynamic_structure					= NX_PRUNING_NONE;
+
 
 }
 
@@ -107,26 +125,41 @@ void SceneParams::parse(Parameters P) {
 				gravity.set(0,-9.80665,0);
 			}
 			else {
-				gravity.set(toNxVec3(Ogre::StringConverter::parseVector3((*p).second)));
+				gravity.set(NxConvert<NxVec3, Ogre::Vector3>(Ogre::StringConverter::parseVector3((*p).second)));
 				continue;
 			}
 		}
 
-		if ((*p).first == "time-step-method") {
+		if ((*p).first == "controller") {
 			
-			if ((*p).second.substr(0,1) == "v" || (*p).second.substr(0,1) == "V") {
-				time_step_method = CN_VARIABLE;
+			if((*p).second.substr(0,1) == "f" || (*p).second.substr(0,1) == "F") {
+				controller = CN_FIXED;
+			}
+			else if ((*p).second.substr(0,1) == "v" || (*p).second.substr(0,1) == "V") {
+				controller = CN_VARIABLE;
 			}
 #if (NX_UNSTABLE == 1)
-			else if((*p).second.substr(0,1) == "s" || (*p).second.substr(0,1) == "S") {
-				time_step_method = CN_SUPER_FIXED;
-			}
 			else if((*p).second.substr(0,1) == "a" || (*p).second.substr(0,1) == "A") {
-				time_step_method = CN_ASYNC;
+				controller = CN_ACCUMULATOR;
+			}
+			else if((*p).second.substr(0,1) == "n" || (*p).second.substr(0,1) == "N") {
+				controller = CN_NULL;
 			}
 #endif
 			else {
-				time_step_method = CN_FIXED;
+				controller = CN_FIXED;
+			}
+
+		}
+
+
+		if ((*p).first == "renderer") {
+			
+			if ((*p).second.substr(0,1) == "o" || (*p).second.substr(0,1) == "O") {
+				renderer = RN_OGRE;
+			}
+			else {
+				renderer = RN_NULL;
 			}
 
 		}
@@ -162,10 +195,10 @@ void Scene::_paramsToDescription(SceneParams sp) {
 
 ///////////////////////////////////////////////////////////////////////
 
-Scene::Scene(const NxString& name, Ogre::SceneManager* s, World* world, SceneParams p) :
+Scene::Scene(const NxString& name, World* world, SceneParams p) :
 mName(name),
 mNxID(mName.c_str()),
-mSceneMgr(s),
+mSceneMgr(0),				// Temp.
 mOwner(world),
 mStaticGeometry(0),
 mBatchProcessSimulate(false),
@@ -181,17 +214,18 @@ mSceneIntersection(0)
 	mDescription.flags |= NX_SF_ENABLE_ACTIVETRANSFORMS;
 #endif
 
-	if (p.time_step_method == p.CN_VARIABLE) {
+	if (p.controller == p.CN_FIXED) {
+		mSceneController = new FixedSceneController(this);
+	}
+	else if (p.controller == p.CN_VARIABLE) {
 		mSceneController = new VariableSceneController(this);
 	}
-#if (NX_UNSTABLE == 1)
-	else if (p.time_step_method == p.CN_SUPER_FIXED) {
-		mSceneController = new SuperFixedSceneController(this);
+	else if (p.controller == p.CN_ACCUMULATOR) {
+		mSceneController = new AccumulatorSceneController(this);
 	}
-	else if (p.time_step_method == p.CN_ASYNC) {
-		mSceneController = new ASyncSceneController(this);
+	else if (p.controller == p.CN_NULL) {
+		mSceneController = new NullSceneController(this);
 	}
-#endif
 	else {
 		mSceneController = new FixedSceneController(this);
 	}
@@ -212,9 +246,22 @@ mSceneIntersection(0)
 		NxThrow_Error(ss.str());
 		return;
 	}
-
 	
-	mScene->userData = (void*) s;
+	mScene->userData = (void*) this;
+
+	if (p.renderer == p.RN_OGRE) {
+		mSceneRenderer = new OgreSceneRenderer(this, p.rendererUserData);
+		
+		// Temp. For old style classes.
+		{
+			OgreSceneRenderer* osr = static_cast<OgreSceneRenderer*>(mSceneRenderer);
+			mSceneMgr = osr->getSceneMgr();
+		}
+
+	}
+	else {
+		mSceneRenderer = new NullSceneRenderer(this, p.rendererUserData);
+	}
 
 	_createDefaultActorGroup();
 	_createDefaultShapeGroup();
@@ -248,7 +295,7 @@ Scene::Scene(const NxString& identifier, World* world, Ogre::SceneManager* s, Nx
 	mScene->getTiming(mxts, mxit, tsm, &nbss);
 
 
-	// TODO: Superfixed and thingy. Perhaps via a the userData string thing
+	// TODO: Accumulator and thingy. Perhaps via a the userData string thing
 	if (tsm == NX_TIMESTEP_FIXED) {
 		mSceneController = new FixedSceneController(this);
 	}
@@ -265,13 +312,15 @@ Scene::Scene(const NxString& identifier, World* world, Ogre::SceneManager* s, Nx
 
 	mSceneController->init(mScene);
 
+	// Temp
+	mSceneRenderer = new OgreSceneRenderer(this, "#first");
+
 	_createDefaultActorGroup();
 	_createDefaultShapeGroup();
 	_createDefaultDominanceGroup();
 
 	NxMaterial* dm = mScene->getMaterialFromIndex(0);	
 	_createDefaultMaterial(dm->getRestitution(),dm->getDynamicFriction(),dm->getStaticFriction());
-
 
 }
 
@@ -432,6 +481,9 @@ Scene::~Scene() {
 	if (mSceneRayCaster)
 		delete mSceneRayCaster;
 
+
+	delete mSceneRenderer;
+
 	delete mSceneController;
 
 	//////////////////////////////
@@ -452,13 +504,41 @@ Scene::~Scene() {
 
 ///////////////////////////////////////////////////////////////////////
 
+void Scene::setName(const NxOgre::NxString &name) {
+	mOwner->mScenes.rename(mName, name);
+	mName = name;
+}
+
+///////////////////////////////////////////////////////////////////////
+
 void Scene::setSceneController(SceneController* controller) {
 	
 	if (mSceneController)
 		delete mSceneController;
 	mSceneController = controller;
 }
-		
+
+void Scene::setSceneRenderer(SceneRenderer* renderer) {
+	
+	if (mSceneRenderer)
+		delete mSceneRenderer;
+	
+	mSceneRenderer = renderer;
+
+}
+
+///////////////////////////////////////////////////////////////////////
+
+NxReal Scene::getLastDeltaTime() const {
+	return mSceneController->getDeltaTime();
+}
+
+///////////////////////////////////////////////////////////////////////
+
+NxReal Scene::getLastAlphaValue() const {
+	return mSceneController->getAlphaValue();
+}
+
 ///////////////////////////////////////////////////////////////////////
 
 void Scene::batchCreateActors(const NxString& identifierPattern, NxU32 nbActors, ShapeBlueprint* collisionModel, const Pose& pose, const Pose& poseDelta, BatchActionTimeFrame batchTime, ActorParams actorParams) {
@@ -769,13 +849,39 @@ Body* Scene::createBody(const NxString& identifier, ShapeBlueprint *firstShapeDe
 
 ///////////////////////////////////////////////////////////////////////
 
+Body* Scene::createBody(const NxString& identifier, ShapeBlueprint* firstShapeDescription, const Pose& pose, NodeRenderableParams nrparams, ActorParams params) {
+	Body* body = new Body(identifier, this, firstShapeDescription, pose, nrparams, params);
+	mActors.lock(body->getName(), true);
+	return body;
+}
+			
+
+///////////////////////////////////////////////////////////////////////
+
 void Scene::destroyBody(const NxString& name) {
 	Actor* body = mActors.get(name);
 	if (mActors.isLocked(name))
 		delete body;
 }
 
-#if (NX_USE_CHARACTER_API == 1)
+#if (NX_USE_LEGACY_NXCONTROLLER == 0)
+
+///////////////////////////////////////////////////////////////////////
+
+Character* Scene::createCharacter(const NxString &identifier, Pose pose, CharacterModel*, CharacterParams params) {
+	NxUnderConstruction;
+	return NULL;
+}
+
+///////////////////////////////////////////////////////////////////////
+
+void Scene::destroyCharacter(const NxString& identifer) {
+	NxUnderConstruction;
+}
+
+///////////////////////////////////////////////////////////////////////
+
+#else
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -1069,12 +1175,10 @@ void Scene::simulate(NxReal time) {
 	if (!mSceneController->Simulate(time))
 		return;
 	
+	NxReal deltaTime = mSceneController->getDeltaTime();
 	
-	for(Actor* actor = mActors.begin();actor = mActors.next();) {
-		actor->simulate(time);
-	}
-
-#if (NX_USE_CHARACTER_API == 1)
+#if (NX_USE_LEGACY_NXCONTROLLER)
+#	if (NX_USE_CHARACTER_API == 1)
 	mScene->getTiming(mControllers_MaxTimestep, mControllers_MaxIter, mControllers_Method, &mControllers_NumSubSteps);
 	
 	if (mControllers_NumSubSteps) {	
@@ -1083,15 +1187,20 @@ void Scene::simulate(NxReal time) {
 		}
 	}
 	mOwner->getCharacterController()->getNxControllerManager()->updateControllers();
-#endif
+#	endif
+#else
+	
+	// ...
 
-	for(Helper* helper = mHelpers.begin();helper = mHelpers.next();) {
-		helper->simulate(time);
+#endif
+	
+	for (Machine* machine = mMachines.begin();machine = mMachines.next();) {
+		machine->simulate(deltaTime);
 	}
 
 #if (NX_USE_CLOTH_API == 1)
 	for(Cloth* cloth = mCloths.begin();cloth = mCloths.next();) {
-		cloth->simulate(time);
+		cloth->simulate(deltaTime);
 	}
 #endif
 
@@ -1134,10 +1243,17 @@ void Scene::idle() {
 
 ///////////////////////////////////////////////////////////////////////
 
+void Scene::render() {
+	mSceneRenderer->render();
+}
+
+#if 0
 void Scene::render(NxReal time) {
 
 	if (!mSceneController->Render(time))
 		return;
+
+	time = mSceneController->mRenderTime;
 
 #if (NX_UNSTABLE_USE_SCENE_ACTIVE_TRANSFORM == 1)
 
@@ -1197,6 +1313,8 @@ void Scene::render(NxReal time) {
 #endif
 
 }
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -1354,7 +1472,7 @@ void Scene::addFloor() {
 ///////////////////////////////////////////////////////////////////////
 
 void Scene::setGravity(const Ogre::Vector3& v) {
-	mScene->setGravity(toNxVec3(v));
+	mScene->setGravity(NxConvert<NxVec3, Ogre::Vector3>(v));
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -1362,19 +1480,7 @@ void Scene::setGravity(const Ogre::Vector3& v) {
 Ogre::Vector3 Scene::getGravity() const {
 	NxVec3 g;
 	mScene->getGravity(g);
-	return toVector3(g);
-}
-
-///////////////////////////////////////////////////////////////////////
-
-void Scene::_registerHelper(const NxString& name, Helper* h) {
-	mHelpers.insert(name, h);
-}
-
-///////////////////////////////////////////////////////////////////////
-
-void Scene::_unregisterHelper(const NxString& name) {
-	mHelpers.remove(name);
+	return NxConvert<Ogre::Vector3, NxVec3>(g);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -1703,5 +1809,81 @@ void Scene::removeStaticGeometry() {
 }
 
 ///////////////////////////////////////////////////////////////////////
+
+Renderables Scene::getRenderable(NxOgre::Scene::RenderableType type) {
+	
+	Renderables r;
+	
+	switch (type) {
+		
+		case RT_EVERYTHING:
+			mActors.CopyTo(r.actors);
+			// ...
+			// Characters, etc.
+
+		break;
+
+		case RT_MOVED:
+		{	
+			for (Actor* actor = mActors.begin();actor = mActors.next();) {
+//				if (actor->hasVisualChanged())
+//					r.actors.insert(actor->getName(), actor);
+			}
+		}
+		break;
+
+		case RT_TRANSFORM:
+		{
+				NxU32 nbActors = 0;
+				NxActiveTransform *actors = mScene->getActiveTransforms(nbActors);
+
+				if(nbActors == 0)
+					break;
+
+				NxActorUserData* aud;
+				for(NxU32 i = 0; i < nbActors; ++i) {
+
+					if (actors[i].actor == 0)
+						continue;
+				
+					aud = static_cast<NxActorUserData*>(actors[i].userData);
+
+						switch (aud->getType()) {
+							case NxActorUserData::T_Actor:
+								{
+								Actor* a = aud->toActor();
+								r.actors.insert(a->getName(), a);
+								}
+							break;
+
+							case NxActorUserData::T_Character:
+							//	aud->toCharacter()->render(time);
+							break;
+					}
+				}
+		}
+		break;
+
+	};
+
+	return r;
+}
+
+///////////////////////////////////////////////////////////////////////
+
+void Scene::registerMachine(Machine *machine) {
+	NxMachineID id = mMachines.count() + 1;
+	machine->mMachineID = id;
+	mMachines.insert(id, machine);
+}
+
+///////////////////////////////////////////////////////////////////////
+
+void Scene::unregisterMachine(Machine* machine) {
+	mMachines.remove(machine->mMachineID);
+}
+
+///////////////////////////////////////////////////////////////////////
+
 
 }; //End of NxOgre namespace.

@@ -25,6 +25,10 @@
 
 #if (NX_USE_SOFTBODY_API == 1)
 
+#include "OgreMesh.h"
+#include "OgreSubMesh.h"
+#include "OgreAxisAlignedBox.h"
+
 namespace NxOgre {
 
 

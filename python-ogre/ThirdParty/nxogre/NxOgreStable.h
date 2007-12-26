@@ -21,70 +21,93 @@
 #define __NXOGRE_STABLE_H__
 
 
-
 ///////////////////////////////////////////////////////////////
 //															 //
-//		Configuration										 //
+//						Configuration						 //
 //															 //
 ///////////////////////////////////////////////////////////////
 
 
 
-// Report any variables in containers, that are not "locked" as 
-// possible leaks in the log.
-// - Comment to disable, Uncomment to enable
-#define NX_TREAT_POSSIBLE_LEAKS_AS_LEAKS
+/** @brief Report any variables in containers, that are not "locked" as 
+	possible leaks as thrown Errors, see log or your own Error Reporter for details.
+	0 - Disallow, 1 - Allow (Default)
+*/
+#define NX_TREAT_POSSIBLE_LEAKS_AS_LEAKS 1
 
 
-// Allow the DebugRenderer to be used.
-// 0 - Disallow (Default) 1 - Allow
-#define NX_USE_DEBUG_RENDERER_API 0
+/** @brief Allow the DebugRenderer to be used.
+	0 - Disallow (Default), 1 - Allow
+*/
+#define NX_USE_DEBUG_RENDERER_API 1
 
 
-// Compile with some of the unstable parts of the NxOgre API.
-// 0 - Disallow (Default) 1 - Allow
-#define NX_UNSTABLE 0
+/** @brief Compile with some of the unstable parts of the NxOgre API.
+	0 - Disallow (Default), 1 - Allow
+*/
+#define NX_UNSTABLE 1
 
 
-// Use some of the older terms of the API with NxOgre
-// 0 - Disallow (Default) 1 - Allow
-//	->	MeshShape as TriangleMeshShape
+/** @brief Use some of the older terms of the API with NxOgre
+	0 - Disallow (Default) 1 - Allow
+*/
 #define NX_USE_LEGACY_TERMS 0
 
 
-// Print any Reported Errors, Debug messages or Warnings to the Console.
-// 0 - Disallow (Default) 1 - Allow
+/** @brief Print any Reported Errors, Debug messages or Warnings to the Console.
+	0 - Disallow (Default) 1 - Allow
+*/
 #define NX_CONSOLE_CHATTER 1
 
 
-// Use JSON import/export fileformat. Requires JSONCPP dependency.
-// Remember to add or remove jsoncpp.lib/jsoncppD.lib in the linker settings!
-// 0 - Disallow (Default) 1 - Allow
+/** @brief Use JSON import/export fileformat. Requires JSONCPP dependency.
+	@note Remember to add or remove jsoncpp.lib/jsoncppD.lib in the linker settings!
+	0 - Disallow (Default) 1 - Allow
+*/
 #define NX_USE_JSON 0
 
 
-// Use TinyXML for NxOgreXML format. Requires TinyXML dependency.
-// Remember to add or remove tinyxml.lib/tinyxmlD.lib in the linker settings!
-// 0 - Disallow (Default) 1 - Allow
-#define NX_USE_TINYXML 0
-
-
-// Use NxuStream serialisation system by Ageia. Requires NxuStream dependency.
-// Remember to add or remove nxustream.lib/nxustream.lib in the linker settings!
-// 0 - Disallow (Default) 1 - Allow
+/** @brief Use NxuStream serialisation system by Ageia. Requires NxuStream dependency.
+	@note Remember to add or remove nxustream.lib/nxustream.lib in the linker settings!
+	0 - Disallow (Default) 1 - Allow
+*/
 #define NX_USE_NXUSTREAM 0
 
 
-// Use NxSceneTransform to move actors in the Scene.
-// Will be stable in '38
-// 0 - Disallow 1 - Allow (Default)
+/** @brief Use NxSceneTransform to move actors in the Scene.
+	@note Will be stable in '40
+	0 - Disallow 1 - Allow (Default)
+*/
 #define NX_UNSTABLE_USE_SCENE_ACTIVE_TRANSFORM 1
 
 
-// When a framelistener is bound to the PhysXDriver, it will call render scene
-// at the beginning of the frame, rather than the end.
-// 0 - Render at the end of the frame, 1 - Render at the beginning of the frame.
+/** @brief When a framelistener is bound to the PhysXDriver, it will call render scene 
+	at the beginning of the frame, rather than the end.
+	0 - Render at the end of the frame, 1 - Render at the beginning of the frame.
+*/
 #define NX_RENDER_IN_FRAMESTARTED 1
+
+
+/** @brief Use Ogre Resource System within NxOgre to load text, nxs and other related files
+	0 - Disallow 1 - Allow (Default)
+*/
+#define NX_USE_OGRE_RESOURCE_SYSTEM 1
+
+
+/** @brief Temporary Disk Cooking to Disk
+	0 - Disallow (Default) 1 - Allow
+*/
+#define NX_USE_TEMPORARYCOOKING_TO_DISK 0
+
+
+/** @brief Temporary Disk Cooking to Disk full path name
+*/
+#define NX_USE_TEMPORARYCOOKING_TO_DISK_PATH "NxOgre.tmp"
+
+
+/** @brief Use Legacy Character Controller
+*/
+#define NX_USE_LEGACY_NXCONTROLLER 0
 
 
 ///////////////////////////////////////////////////////////////
@@ -103,7 +126,7 @@
 // #	else
 // #		define NxExport __declspec(dllimport)
 // #	endif
-#	define NxExport
+#define NxExport
 
 #	if defined _DEBUG
 #		define NX_DEBUG
@@ -139,15 +162,14 @@
 #	endif
 
 #else
-	#define NX_USE_CHARACTER_API 0
-	#define NX_USE_FORCEFIELD_API 0
-	#define NX_DISABLE_FLUIDS
-	#define NX_DISABLE_SOFTBODY
-	#define NX_DISABLE_CLOTH
-#endif
 
-// Temp
-#define NX_USE_FORCEFIELD_API 1
+#	define NX_USE_CHARACTER_API 0
+#	define NX_USE_FORCEFIELD_API 0
+#	define NX_DISABLE_FLUIDS
+#	define NX_DISABLE_SOFTBODY
+#	define NX_DISABLE_CLOTH
+
+#endif
 
 //
 //////////////////////////////////////////////////////////////
@@ -159,20 +181,24 @@
 //
 //////////////////////////////////////////////////////////////
 //
-#include <list>
-#include <Ogre.h>
+
+#include <Nx.h>
+#include <NxPhysics.h>
+
+
+
+#include "OgrePrerequisites.h"
 
 #ifdef NX_WIN32
 #	include <OgreNoMemoryMacros.h>
 #endif
 
-#include <Nx.h>
-#include <NxPhysics.h>
-#include <ControllerManager.h>
+
 
 #ifdef NX_WIN32
 #	include <OgreMemoryMacros.h>
 #endif
+
 //
 //////////////////////////////////////////////////////////////
 

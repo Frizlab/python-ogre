@@ -21,6 +21,8 @@
 #include "NxOgrePose.h"
 #include "NxOgreHelpers.h"
 
+#include "OgreStringConverter.h"
+
 namespace NxOgre {
 
 //////////////////////////////////////////////////////////
@@ -163,6 +165,18 @@ NxMat33 Pose::toMat33() const {
 	NxMat33 m;
 	m.fromQuat(q);
 	return m;
+}
+
+//////////////////////////////////////////////////////////
+
+NxString Pose::toString() const {
+		return	Ogre::StringConverter::toString(v.x) + "," +
+				Ogre::StringConverter::toString(v.y) + "," +
+				Ogre::StringConverter::toString(v.z) + " " +
+				Ogre::StringConverter::toString(q.w) + "," +
+				Ogre::StringConverter::toString(q.x) + "," +
+				Ogre::StringConverter::toString(q.y) + "," +
+				Ogre::StringConverter::toString(q.z);
 }
 
 //////////////////////////////////////////////////////////

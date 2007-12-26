@@ -51,8 +51,6 @@ namespace NxOgre {
 
 			virtual bool isDynamic() {return false;}
 			virtual bool isStaticOnly(){return false;}
-			void simulate(float) {} // Not used.
-			void render(float) {} // Not used.
 			void _bindNxShapeToShape(NxShape*);
 
 			NxPlaneShape *mShape;
@@ -85,8 +83,6 @@ namespace NxOgre {
 
 			virtual bool isDynamic()		{return false;}
 			virtual bool isStaticOnly()		{return false;}
-			void simulate(float) {} // Not used.
-			void render(float) {} // Not used.
 			void _bindNxShapeToShape(NxShape*);
 
 			NxBoxShape *mShape;	
@@ -119,8 +115,6 @@ namespace NxOgre {
 
 			virtual bool isDynamic() {return false;}
 			virtual bool isStaticOnly(){return false;}
-			void simulate(float) {} // Not used.
-			void render(float) {} // Not used.
 			void _bindNxShapeToShape(NxShape*);
 
 			NxSphereShape *mShape;		
@@ -153,8 +147,8 @@ namespace NxOgre {
 
 			virtual bool isDynamic() {return false;}
 			virtual bool isStaticOnly(){return false;}
-			void simulate(float) {} // Not used.
-			void render(float) {} // Not used.
+
+
 			void _bindNxShapeToShape(NxShape*);
 
 			NxCapsuleShape *mShape;			

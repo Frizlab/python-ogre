@@ -37,12 +37,13 @@ namespace NxOgre {
 
 
 
-WheelShape::WheelShape(NxReal radius, const ShapeParams& p, const WheelParams& wp) : ShapeBlueprint(p) {
+WheelShape::WheelShape(NxReal radius, ShapeParams p, WheelParams wp, NodeRenderableParams vp) : ShapeBlueprint(p) {
 
 	mShapeDescription.setToDefault();
 	mShapeDescription.radius = radius;
 	
 	wheelParams = wp;
+	renderableParams = vp;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -63,7 +64,7 @@ Shape* WheelShape::_bindToNxActor(Actor* actor, NxShapeIndex id) {
 	
 	__paramsToDescription(mShapeDescription, mParams, actor->getScene());
 
-	Wheel* wheel = new Wheel(*this, wheelParams, actor);
+	Wheel* wheel = new Wheel(*this, wheelParams, renderableParams, actor);
 	
 	actor->mDynamicCollisionModel.insert(actor->mDynamicCollisionModel.count(), wheel);
 	actor->mCollisionModel.insert(id, wheel);

@@ -38,11 +38,10 @@ namespace NxOgre {
 
 			virtual bool isDynamic() {return false;}
 			virtual bool isStaticOnly(){return true;}
-			void simulate(float) {} // Not used.
-			void render(float) {} // Not used.
+
 			void _bindNxShapeToShape(NxShape*);
 
-			NxTriangleMeshShape *mTriangleMeshShape;			
+			NxTriangleMeshShape *mShape;			
 
 		private:
 	

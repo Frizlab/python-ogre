@@ -51,6 +51,7 @@ ShapeBlueprint* ShapeBlueprint::getDefaultShape() {
 
 void ShapeBlueprint::__paramsToDescription(NxShapeDesc& desc, const ShapeParams& p, Scene* s) {
 	
+
 	desc.density = p.mDensity;
 
 	if (p.mGroupAsIndex != 0)

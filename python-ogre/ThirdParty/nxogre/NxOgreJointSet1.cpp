@@ -56,7 +56,7 @@ SphericalJoint::SphericalJoint(Actor *a, const Ogre::Vector3 &anchor, JointParam
 void SphericalJoint::__createJoint(const Ogre::Vector3 &anchor, JointParams& jp) {
 	
 	mCallback = 0;
-	mDescription.setGlobalAnchor(toNxVec3(anchor));
+	mDescription.setGlobalAnchor(NxConvert<NxVec3, Ogre::Vector3>(anchor));
 	mDescription.userData = this;
 	
 	if (jp.mHasSpring) {
@@ -71,6 +71,9 @@ void SphericalJoint::__createJoint(const Ogre::Vector3 &anchor, JointParams& jp)
 	if (jp.mHasSwingLimit) {
 		mDescription.swingLimit.restitution		= jp.mSwingLimit_Restitution;
 		mDescription.swingLimit.value			= jp.mSwingLimit_Value;
+#if (NX_SDK_VERSION_NUMBER >= 272)
+		mDescription.swingLimit.hardness		= jp.mSwingLimit_Hardness;
+#endif
 		mDescription.flags |= NX_SJF_SWING_LIMIT_ENABLED;
 	}
 	
@@ -84,8 +87,15 @@ void SphericalJoint::__createJoint(const Ogre::Vector3 &anchor, JointParams& jp)
 	if (jp.mHasTwistLimit) {
 		mDescription.twistLimit.high.restitution	= jp.mTwistLimit_High_Restitution;
 		mDescription.twistLimit.high.value			= jp.mTwistLimit_High_Value;
+#if (NX_SDK_VERSION_NUMBER >= 272)
+		mDescription.twistLimit.high.hardness		= jp.mTwistLimit_High_Hardness;
+#endif
 		mDescription.twistLimit.low.restitution		= jp.mTwistLimit_Low_Restitution;
 		mDescription.twistLimit.low.value			= jp.mTwistLimit_Low_Value;
+#if (NX_SDK_VERSION_NUMBER >= 272)
+		mDescription.twistLimit.low.hardness		= jp.mTwistLimit_Low_Hardness;
+#endif
+
 		mDescription.flags |= NX_SJF_TWIST_LIMIT_ENABLED;
 	}
 
@@ -166,16 +176,22 @@ RevoluteJoint::RevoluteJoint(Actor *a, const Ogre::Vector3 &axis, const Ogre::Ve
 void RevoluteJoint::__createJoint(const Ogre::Vector3 &axis, const Ogre::Vector3 &anchor, JointParams& jp) {
 	
 	mCallback = 0;
-	mDescription.setGlobalAnchor(toNxVec3(anchor));
-	mDescription.setGlobalAxis(toNxVec3(axis));
+	mDescription.setGlobalAnchor(NxConvert<NxVec3, Ogre::Vector3>(anchor));
+	mDescription.setGlobalAxis(NxConvert<NxVec3, Ogre::Vector3>(axis));
 	mDescription.userData = this;
 	
 	if (jp.mHasLimits) {
 		mDescription.limit.high.setToDefault();
 		mDescription.limit.high.restitution = jp.mUpperLimitRestitution;
 		mDescription.limit.high.value = jp.mUpperLimit;
+#if (NX_SDK_VERSION_NUMBER >= 272)
+		mDescription.limit.high.hardness = jp.mUpperLimitHardness;
+#endif
 		mDescription.limit.low.value = jp.mLowerLimitRestitution;
 		mDescription.limit.low.value = jp.mLowerLimit;
+#if (NX_SDK_VERSION_NUMBER >= 272)
+		mDescription.limit.low.hardness = jp.mLowerLimitHardness;
+#endif
 		mDescription.flags |= NX_RJF_LIMIT_ENABLED;
 	}
 
@@ -247,8 +263,8 @@ PrismaticJoint::PrismaticJoint(Actor *a, const Ogre::Vector3 &axis, const Ogre::
 void PrismaticJoint::__createJoint(const Ogre::Vector3 &axis, const Ogre::Vector3 &anchor, JointParams& jp) {
 	
 	mCallback = 0;
-	mDescription.setGlobalAnchor(toNxVec3(anchor));
-	mDescription.setGlobalAxis(toNxVec3(axis));
+	mDescription.setGlobalAnchor(NxConvert<NxVec3, Ogre::Vector3>(anchor));
+	mDescription.setGlobalAxis(NxConvert<NxVec3, Ogre::Vector3>(axis));
 	mDescription.userData = this;
 
 	mCallback = jp.mBreakableCallback;

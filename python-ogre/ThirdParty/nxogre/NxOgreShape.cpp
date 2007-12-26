@@ -22,6 +22,8 @@
 #include "NxOgreHelpers.h"
 #include "NxOgreSkeleton.h"
 
+#include "OgreStringConverter.h"
+
 namespace NxOgre {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -40,7 +42,7 @@ void ShapeParams::setToDefault() {
 	mMeshScale.set(1,1,1);
 	mDensity = 1.0f;
 	mMass = -1.0f;
-	mFlags = 0;
+	mFlags = NX_SF_VISUALIZATION;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -54,7 +56,7 @@ void ShapeParams::parse(Parameters P) {
 		if (Set("material-index", (*p), mMaterialAsIndex)) continue;
 		if (Set("offset", (*p), mLocalPose.t)) continue;
 		if ((*p).first == "orientation") {
-			NxQuat q = toNxQuat(Ogre::StringConverter::parseQuaternion((*p).second));
+			NxQuat q = NxConvert<NxQuat, Ogre::Quaternion>(Ogre::StringConverter::parseQuaternion((*p).second));
 			mLocalPose.M.fromQuat(q);
 		}
 		if (Set("generateccd", (*p), mGenerateCCD)) continue;

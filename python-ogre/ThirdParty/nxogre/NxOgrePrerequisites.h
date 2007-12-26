@@ -21,34 +21,58 @@
 #define __NXOGRE_PREREQUISITES_H__
 
 #include "NxOgreStable.h"
+#include "NxOgreExtendedTypes.h"
 
 namespace NxOgre {
 
 	///////////////////////////////////////////////////////
 
+
 	class Actor;
 	class ActorGroup;
-#if (NX_UNSTABLE == 1)
 	template<typename Class> class NxExport ActorGroupMethodPointer;
-#endif
+	class AccumulatorSceneController;
+	class AccumulatorSceneRenderer;
 	class BaseCharacterHitReport;
 	class Body;
 	class Compartment;
 	class Capsule;
 	class CapsuleShape;
+
+#if (NX_USE_LEGACY_NXCONTROLLER == 1)
+
 #if (NX_USE_CHARACTER_API == 1)
 	class Character;
 	class CharacterController;
 	class CharacterHitReport;
 	class CharacterMovementVectorController;
 #endif
+
+#else
+	class Character;
+	class CharacterSystem;
+	class CharacterHitReport;
+	class CharacterController;
+	class CharacterModel;
+	class CharacterMovementModel;
+	class NxActorController;
+#if (NX_USE_CHARACTER_API == 1)
+	class NxCharacterController;
+#endif
+	class Performer;
+	
+#endif
+
 #if (NX_USE_CLOTH_API == 1)
 	class Cloth;
 	class ClothRayCaster;
 	struct ClothVertex;
 #endif
+	class CombustionEngine;
 	class CompoundShape;
+	class ContactStream;
 	class Convex;
+	class ConvexMeshIntermediary;
 	class ConvexShape;
 	template<typename TI, typename TT> class Container;
 	class Cube;
@@ -61,10 +85,12 @@ namespace NxOgre {
 #if (NX_SDK_VERSION_NUMBER >= 272) 
 	class DominanceGroup;
 #endif
-	class DriveShaft;
+	class Engine;
 	class Error;
 	struct ErrorReport;
 	class ErrorReporter;
+	class FileResourceStream;
+	class FileResourceSystem;
 	class FixedSceneController;
 	class FixedJoint;
 #if (NX_USE_FLUID_API == 1)
@@ -86,16 +112,24 @@ namespace NxOgre {
 	class Ground;
 	class GroundShape;
 	class GroupCallback;
+	class InternalCombustionEngine;
+	class Intersection;
 	class Joint;
 	class JointCallback;
-	class Helper;
-	class Intersection;
 	template<typename TT> class List;
 	class Log;
+	class Machine;
 	class Material;
-	class MeshManager;
+	class MaterialAlias;
+	class MaterialAliasResource;
+	class MeshResource;
 	class Motor;
+	class NodeRenderable;
+	class NullSceneController;
+	class NullSceneRenderer;
 	class NxActorUserData;
+	class OgreResourceStream;
+	class OgreResourceSystem;
 	class Prism;
 	class PrismShape;
 	class PrismaticJoint;
@@ -104,11 +138,20 @@ namespace NxOgre {
 	class Pose;
 	class RayCaster;
 	struct RayCastHit;
+	class Renderable;
+	class Renderables;
+	class RenderableSource;
 	class RemoteDebuggerConnection;
 	class RevoluteJoint;
+	class Resource;
+	class ResourceManager;
+	class ResourceStreamPtr;
+	class ResourceStream;
+	class ResourceSystem;
 	class Scene;
 	class SceneContactController;
 	class SceneController;
+	class SceneRenderer;
 	class SceneTriggerController;
 	class Shape;
 	class ShapeBlueprint;
@@ -128,10 +171,10 @@ namespace NxOgre {
 	class SoftBody;
 #endif
 	class StringPairList;
-	class SuperFixedSceneController;
 	class Terrain;
 	class TerrainShape;
 	class TriangleMesh;
+	class TriangleMeshIntermediary;
 	class TriangleMeshShape;
 	class Trigger;
 	class TriggerCallback;
@@ -141,6 +184,11 @@ namespace NxOgre {
 	class WheelSet;
 	class WheelShape;
 	class World;
+	
+	////////////////////////////////////////////////////////
+
+	class OgreSceneRenderer;
+	class OgreNodeRenderable;
 
 	////////////////////////////////////////////////////////
 
@@ -166,13 +214,18 @@ namespace NxOgre {
 
 	////////////////////////////////////////////////////////
 
-	typedef Ogre::String NxString;
-	typedef NxU32		 NxShapeIndex;
-	typedef NxU32		 NxErrorIndex;
-	typedef NxU32		 NxMeshID;
-	typedef NxU32		 NxSkeletonID;
-	typedef NxU32		 NxJointID;
-
+	typedef Ogre::String	NxString;
+	typedef NxU32			NxShapeIndex;
+	typedef NxU32			NxErrorIndex;
+	typedef NxU32			NxMeshID;
+	typedef NxU32			NxSkeletonID;
+	typedef NxU32			NxJointID;
+	typedef NxReal			NxRadian;
+	typedef unsigned long	NxHashIdentifier;
+	typedef NxU16			NxShortHashIdentifier;
+	typedef NxU32			NxRenderableSourceID;
+	typedef NxU32			NxMachineID;
+	
 	////////////////////////////////////////////////////////
 
 	namespace Serialiser {
@@ -239,34 +292,87 @@ namespace NxOgre {
 
 	////////////////////////////////////////////////////////
 
+	/** @brief Simple identifier to identify a resource, and a resource type.
+
+		@example
+
+			"file://myMesh.mesh" - Use the FileResourceSystem to read myMesh.mesh
+			"file://media/resources/myMesh.mesh +write" - Use the FileResourceSystem to write to myMesh.mesh"
+			"ogre://myMesh.mesh" - Use the OgreResourceSystem to load myMesh.mesh
+			"myMesh.mesh" - Use the FileResourceSystem to load myMesh.mesh 
+							Wihout a resourcetype header; file is assumed.
+
+	*/
+	typedef NxString ResourceIdentifier;
+
+	/** @brief A list of resources, with an attached ResourceIdentifier
+		First = Name of the resource (without extension);
+		Second = Full ResourceIdentifier
+	*/
+	typedef std::map<NxString,NxString>	ResourceAccessList;
+
+	/** @brief A list of actors, organised by name.
+	*/
 	typedef Container<NxString, Actor*>							Actors;
+	
+	/** @brief A list of actor groups, organised by name.
+	*/
 	typedef Container<NxString, ActorGroup*>					ActorGroups;
+	
+	/** @brief A list of actor groups, organised by NxActorGroup (unsigned short).
+	*/
 	typedef Container<NxActorGroup, ActorGroup*>				ActorGroupsByIndex;
+		
+	/** @brief A list of string based properties identified by key and value.
+	*/
 	typedef Container<NxString, NxString>						BlueprintUserData;
+
+	/** @brief A list of Shapes for an Actor, identified by NxShapeIndex (unsigned int).
+	*/
 	typedef Container<NxShapeIndex, Shape*>						CollisionModel;
+
+	/** @brief A list of Shape Blueprints for an Actor, identified by NxShapeIndex (unsigned int).
+	*/
 	typedef Container<NxShapeIndex, ShapeBlueprint*>			CollisionDescriptionModel;
 
 #if (NX_USE_CLOTH_API == 1)
+	
+	/** @brief A list of cloths, organised by name.
+	*/
 	typedef Container<NxString, Cloth*>							Cloths;
 #endif
 	
 #if (NX_SDK_VERSION_NUMBER >= 272) 
+	
+	/** @brief A list of dominance groups, organised by name.
+	*/
 	typedef Container<NxString, DominanceGroup*>				DominanceGroups;
+	
+	/** @brief A list of dominance groups, organised by NxDominanceGroup (unsigned short).
+	*/
 	typedef Container<NxDominanceGroup, DominanceGroup*>		DominanceGroupsByIndex;
 #endif
-
+	
+	/** @brief A list of error reporters, organised by NxErrorIndex (unsigned int).
+	*/
 	typedef Container<NxErrorIndex, ErrorReporter*>				ErrorReporterList;
 
 #if (NX_USE_FORCEFIELD_API == 1)
+	
+	/** @brief A list of forcefields, organised by name.
+	*/
 	typedef Container<NxString, ForceField*>					ForceFields;
 #endif
 
-	typedef Container<NxString, Helper*>						Helpers;
+//	typedef Container<NxString, Helper*>						Helpers;
 	typedef Container<NxJointID, Joint*>						Joints;
+	typedef Container<NxMachineID, Machine*>					Machines;
 	typedef Container<NxString, Material*>						MaterialList;
 	typedef Container<NxMaterialIndex, Material*>				MaterialListByIndex;
 	typedef Container<NxString, NxMaterialIndex>				MaterialPair;
 	typedef Container<NxString, RayCastHit>						RayCastReport;
+	typedef Container<NxString, ResourceSystem*>				ResourceSystems;
+	typedef Container<NxRenderableSourceID, RenderableSource*>	RenderableSources;
 	typedef Container<NxString, Scene*>							Scenes;
 	typedef Container<NxString, ShapeGroup*>					ShapeGroups;
 	typedef Container<NxCollisionGroup, ShapeGroup*>			ShapeGroupsByIndex;
@@ -274,14 +380,16 @@ namespace NxOgre {
 	
 	////////////////////////////////////////////////////////
 
-	typedef List<Wheel*>										Wheels;
+	typedef Container<unsigned int, Wheel*>						Wheels;
 	typedef List<NxString>										StringList;
 	
 	////////////////////////////////////////////////////////
 
-#if (NX_USE_CHARACTER_API == 1)
 	typedef Container<NxString, Character*>						Characters;
 	typedef List<CharacterHitReport*>							CharacterHitReports;
+
+#if (NX_USE_LEGACY_NXCONTROLLER == 0)
+	typedef Container<NxString, CharacterMovementModel*>		CharacterMovementModels;
 #endif
 
 	////////////////////////////////////////////////////////
@@ -298,18 +406,25 @@ namespace NxOgre {
 	typedef Container<NxString, SoftBody*>						SoftBodies;
 #endif
 
+	/** @brief Used to convert the material id's in a mesh to our own, aided with a MaterialAlias.
+		@note  First is meshes material ID, second is the MaterialList's
+	*/
+	typedef std::map<NxMaterialIndex, NxMaterialIndex> MaterialConversionList;
+
 	////////////////////////////////////////////////////////
 
 	void NxExport NxThrow(NxString, int, NxString, unsigned int);
 
-	#define NxDelete(x)				if(x){delete x;x=0;}
-	#define NxThrow_Conflict(a)		NxThrow(a, 0, __FUNCTION__, __LINE__);
-	#define NxThrow_Warning(a)		NxThrow(a, 1, __FUNCTION__, __LINE__);
-	#define NxThrow_Error(a)		NxThrow(a, 2, __FUNCTION__, __LINE__);
-	#define NxDebug(a)				NxThrow(a, 3, __FUNCTION__, __LINE__);
-	#define NxLeakDump(a)			NxThrow(a, 4, __FUNCTION__, __LINE__);
-	#define NxUnderConstruction		NxDebug("This function called contains no or little code.");
-	#define	NxToConsole(x)			NxDebug(x);
+	#define NxDelete(x)						if(x){delete x;x=0;}
+	#define NxThrow_Conflict(a)				NxThrow(a, 0, __FUNCTION__, __LINE__);
+	#define NxThrow_Warning(a)				NxThrow(a, 1, __FUNCTION__, __LINE__);
+	#define NxThrow_Error(a)				NxThrow(a, 2, __FUNCTION__, __LINE__);
+	#define NxDebug(a)						NxThrow(a, 3, __FUNCTION__, __LINE__);
+	#define NxLeakDump(a)					NxThrow(a, 4, __FUNCTION__, __LINE__);
+	#define NxUnderConstruction				NxDebug("This function called contains no or little code.");
+	#define	NxToConsole(x)					NxDebug(x);
+
+	#define NxMemoryStreamIdentifier		"memory://"
 
 	////////////////////////////////////////////////////////
 
@@ -322,15 +437,25 @@ namespace NxOgre {
 		NxVec3( 0, 0,-1)
 	};
 
+	enum NxDirection {
+		NX_DIRECTION_X = 0,
+		NX_DIRECTION_Y = 1,
+		NX_DIRECTION_Z = 2
+	};
+
 #if (NX_USE_LEGACY_TERMS == 1)
 	typedef TriangleMeshShape	MeshShape
 	typedef ShapeBlueprint		ShapeDescription
 #endif
 
+	////////////////////////////////////////////////////////
+
 	enum NxStringOperator {
 		SO_STARTS_WITH,
 		SO_ENDS_WITH
 	};
+
+	////////////////////////////////////////////////////////
 
 	enum NxComparisonOperator {
 		CO_MORE_THAN,
@@ -338,20 +463,28 @@ namespace NxOgre {
 		CO_EXACTLY,
 		CO_NOT
 	};
+
 	////////////////////////////////////////////////////////
 
 	#define Nx_Version_Major    0
 	#define Nx_Version_Minor    9
-	#define Nx_Version_Commit   38
+	#define Nx_Version_Commit   39
 	#define Nx_Version_Codename "I Heart NxOgre"
 
 	#ifndef NX_DEBUG
-		static NxString Nx_Version_Full = "NxOgre 0.9-38";
+		static NxString Nx_Version_Full = "NxOgre 0.9-39";
 	#else
-		static NxString Nx_Version_Full = "NxOgre 0.9-38.Debug";
+		static NxString Nx_Version_Full = "NxOgre 0.9-39.Debug";
 	#endif
 
 	////////////////////////////////////////////////////////
+
+	// NxOgre-Actor
+	#define NxHashes_Actor	54846
+	// NxOgre-Example-Actor
+	#define NxHashes_Body	46412
+	// NxOgre-Wheel
+	#define NxHashes_Wheel	28186
 
 };
 

@@ -23,6 +23,8 @@
 #include "NxOgreHelpers.h"
 #include "NxOgreContainer.h"
 
+#include "OgreCamera.h"
+
 namespace NxOgre {
 	
 ////////////////////////////////////////////////////////////
@@ -68,8 +70,11 @@ void RemoteDebuggerConnection::simulate(NxReal) {
 //			NX_DBG_CREATE_PARAMETER(mCameraPos, this, "Origin", mCameraID);
 //			NX_DBG_CREATE_PARAMETER(mCameraTarget, this, "Target", mCameraID);
 		
-			NX_DBG_SET_PARAMETER(toNxVec3((*i).mCamera->getPosition()), this, "Origin", (*i).mID);
-			NX_DBG_SET_PARAMETER(toNxVec3((*i).mCamera->getRealDirection() * 10), this, "Target", (*i).mID);
+			NxVec3 origin = NxConvert<NxVec3, Ogre::Vector3>((*i).mCamera->getPosition());
+			NxVec3 target = NxConvert<NxVec3, Ogre::Vector3>((*i).mCamera->getRealDirection() * 10);
+
+			NX_DBG_SET_PARAMETER(origin, this, "Origin", (*i).mID);
+			NX_DBG_SET_PARAMETER(target, this, "Target", (*i).mID);
 
 	}
 
@@ -94,8 +99,8 @@ void RemoteDebuggerConnection::addCamera(Ogre::Camera* cam) {
 	
 	NX_DBG_CREATE_OBJECT(this, NX_DBG_OBJECTTYPE_CAMERA, cam->getName().c_str(), c.mID);
 	
-	NxVec3 mCameraPos = toNxVec3(cam->getPosition());
-	NxVec3 mCameraTarget = toNxVec3(cam->getRealDirection());
+	NxVec3 mCameraPos = NxConvert<NxVec3, Ogre::Vector3>(cam->getPosition());
+	NxVec3 mCameraTarget = NxConvert<NxVec3, Ogre::Vector3>(cam->getRealDirection());
 
 	NX_DBG_CREATE_PARAMETER(mCameraPos, this, "Origin", c.mID);
 	NX_DBG_CREATE_PARAMETER(mCameraTarget, this, "Target", c.mID);

@@ -21,9 +21,14 @@
 #include "NxOgreParams.h"
 #include "NxOgreHelpers.h"
 
+#include "OgreString.h"
+#include "OgreStringConverter.h"
+#include "OgreVector3.h"
+#include "OgreQuaternion.h"
+
 namespace NxOgre {
 
-
+/////////////////////////////////////////////////////////////
 
 void Params::process(const NxString& p) {
 	
@@ -37,6 +42,8 @@ void Params::process(const NxString& p) {
 
 }
 
+/////////////////////////////////////////////////////////////
+
 Params::Parameters Params::fromString(const NxString& p) {
 	Parameters pm;
 	std::vector<NxString> d = Ogre::StringUtil::split(p,",");
@@ -49,6 +56,7 @@ Params::Parameters Params::fromString(const NxString& p) {
 	return pm;
 }
 
+/////////////////////////////////////////////////////////////
 
 bool Params::Set(const NxString& i, Parameter &d, int &t) {
 	if (d.first == i) {
@@ -58,6 +66,8 @@ bool Params::Set(const NxString& i, Parameter &d, int &t) {
 	return false;
 }
 
+/////////////////////////////////////////////////////////////
+
 bool Params::Set(const NxString& i, Parameter &d, unsigned int &t) {
 	if (d.first == i) {
 		t = Ogre::StringConverter::parseUnsignedInt(d.second);
@@ -65,6 +75,8 @@ bool Params::Set(const NxString& i, Parameter &d, unsigned int &t) {
 	}
 	return false;
 }
+
+/////////////////////////////////////////////////////////////
 
 bool Params::Set(const NxString& i, Parameter &d, NxMaterialIndex &t) {
 	if (d.first == i) {
@@ -74,6 +86,8 @@ bool Params::Set(const NxString& i, Parameter &d, NxMaterialIndex &t) {
 	return false;
 }
 
+/////////////////////////////////////////////////////////////
+
 bool Params::Set(const NxString& i, Parameter &d, bool &t) {
 	if (d.first == i) {
 		t = Ogre::StringConverter::parseBool(d.second);
@@ -81,6 +95,8 @@ bool Params::Set(const NxString& i, Parameter &d, bool &t) {
 	}
 	return false;
 }
+
+/////////////////////////////////////////////////////////////
 
 bool Params::Set(const NxString& i, Parameter &d, NxReal &t) {
 	if (d.first == i) {
@@ -90,9 +106,11 @@ bool Params::Set(const NxString& i, Parameter &d, NxReal &t) {
 	return false;
 }
 
+/////////////////////////////////////////////////////////////
+
 bool Params::Set(const NxString& i, Parameter &d, NxVec3& t) {
 	if (d.first == i) {
-		t = toNxVec3(Ogre::StringConverter::parseVector3(d.second));
+		t = NxConvert<NxVec3, Ogre::Vector3>(Ogre::StringConverter::parseVector3(d.second));
 		return true;
 	}
 	return false;
@@ -107,6 +125,8 @@ bool Params::Set(const NxString &i , Parameter &d, NxQuat& t) {
 	return false;
 }
 
+/////////////////////////////////////////////////////////////
+
 bool Params::Set(const NxString& i, Parameter &d, Ogre::Vector3 &t) {
 	if (d.first == i) {
 		t = Ogre::StringConverter::parseVector3(d.second);
@@ -114,6 +134,8 @@ bool Params::Set(const NxString& i, Parameter &d, Ogre::Vector3 &t) {
 	}
 	return false;
 }
+
+/////////////////////////////////////////////////////////////
 
 bool Params::Set(const NxString& i, Parameter &d, Ogre::Quaternion &t) {
 	if (d.first == i) {
@@ -123,6 +145,8 @@ bool Params::Set(const NxString& i, Parameter &d, Ogre::Quaternion &t) {
 	return false;
 }
 
+/////////////////////////////////////////////////////////////
+
 bool Params::Set(const NxString& i, Parameter &d, NxString &t) {
 	if (d.first == i) {
 		t = d.second;
@@ -130,6 +154,8 @@ bool Params::Set(const NxString& i, Parameter &d, NxString &t) {
 	}
 	return false;
 }
+
+/////////////////////////////////////////////////////////////
 
 bool Params::Set(const NxOgre::NxString& i, Parameter &d, NxHeightFieldAxis &t) {
 	if (d.first == i) {
@@ -153,6 +179,8 @@ bool Params::Set(const NxOgre::NxString& i, Parameter &d, NxHeightFieldAxis &t) 
 	return false;
 }
 
+/////////////////////////////////////////////////////////////
+
 void Params::toParameter(const NxString& s, Parameter &d) {
 	int dp = s.find_first_of(":");
 
@@ -173,9 +201,13 @@ void Params::toParameter(const NxString& s, Parameter &d) {
 	std::transform(d.first.begin(),d.first.end(),d.first.begin(),tolower);
 }
 
+/////////////////////////////////////////////////////////////
+
 void Params::toLower(NxString& s) {
 	std::transform(s.begin(),s.end(),s.begin(),tolower);
 }
+
+/////////////////////////////////////////////////////////////
 
 }; //End of NxOgre namespace.
 

@@ -21,6 +21,8 @@
 #define __NXOGRE_POSE_H__
 
 #include "NxOgrePrerequisites.h"
+#include "OgreVector3.h"
+#include "OgreQuaternion.h"
 
 namespace NxOgre {
 
@@ -45,16 +47,17 @@ namespace NxOgre {
 			void				set(const Ogre::Quaternion& _q);
 			bool				isZero();
 
-			void				fromMat34(const NxMat34&);
-			NxMat34				toMat34() const;
-			void				fromMat33(const NxMat33&);
-			NxMat33				toMat33() const;
+			void						fromMat34(const NxMat34&);
+			NxMat34						toMat34() const;
+			void						fromMat33(const NxMat33&);
+			NxMat33						toMat33() const;
 
 			Ogre::Vector3		getVector3() const;
 			NxVec3				getVec3() const;
 			Ogre::Quaternion	getQuaternion() const;
 			NxQuat				getQuat() const;
 
+			NxString	toString() const;
 
 			////////////////////////////////////////////////////////////////////////////////
 
@@ -75,13 +78,7 @@ namespace NxOgre {
 			}
 
 			operator Ogre::String(void) const {
-				return	Ogre::StringConverter::toString(v.x) + "," +
-						Ogre::StringConverter::toString(v.y) + "," +
-						Ogre::StringConverter::toString(v.z) + " " +
-						Ogre::StringConverter::toString(q.w) + "," +
-						Ogre::StringConverter::toString(q.x) + "," +
-						Ogre::StringConverter::toString(q.y) + "," +
-						Ogre::StringConverter::toString(q.z);
+				return toString();
 			}
 
 			Pose& operator= (const Ogre::Vector3& _v) {

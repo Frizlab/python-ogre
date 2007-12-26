@@ -19,95 +19,73 @@
 
 #ifndef __NXOGRE_CHARACTER_CONTROLLER_H__
 #define __NXOGRE_CHARACTER_CONTROLLER_H__
-#if (NX_USE_CHARACTER_API == 1)
 
 #include "NxOgrePrerequisites.h"
-#include "NxOgreContainer.h"		// For: mCharacters
-#include "NxOgreParams.h"			// For: CharacterParams
-#include "NxController.h"			// For: NxUserControllerHitReport
+
+#if (NX_USE_LEGACY_NXCONTROLLER == 0)
 
 namespace NxOgre {
-
-	class NxExport CharacterParams : public Params {
-
-		public:
-
-			CharacterParams() {}
-			CharacterParams(const char* p)  {setToDefault();process(p);}
-			CharacterParams(NxString p) {setToDefault();process(p);}
-
-			void setToDefault();
-			void parse(Parameters);
-
-			enum CharacterType {
-				CT_Box,
-				CT_Capsule
-			};
-
-			CharacterType mType;
-			NxVec3 mDimensions;
-			NxHeightFieldAxis mUpAxis;
-			NxReal mSlopeLimit;
-			NxReal mStepOffset;
-			NxReal mSkinWidth;
-			NxU32  mActiveGroupsMask;
-			NxF32  mSharpness;
-			NxGroupsMask mGroupMask;
-
-
-	};// End of CharacterParams class
 	
-	class NxExport CharacterMovementVectorController {
-		public:
+	////////////////////////////////////////////
+	
+	class NxExport CharacterController {
 			
-			virtual void move(NxVec3 &out, NxVec3 &moveVector, NxQuat &direction, NxVec3 &g, float t, Character*);
-	};
-
-	class NxExport CharacterController : public NxUserControllerHitReport, public CharacterMovementVectorController {
-
-		friend class World;		
 		friend class Character;
 
-
 		public:
 			
-			Character* create(const NxString &name, Pose, CharacterParams, Scene*);
-			void destroy(const NxString &name);
-			Character* get(const NxString &name);
+			CharacterController(NxMat34 pose, SimpleShape*, NxScene*);
+			virtual ~CharacterController();
+		
+			virtual NxActorGroup		getActorGroup()							{return 0;}
+			virtual NxCollisionGroup	getCollisionGroup()						{return 0;}
 
-			NxControllerAction onShapeHit(const NxControllerShapeHit &);
-			NxControllerAction onControllerHit(const NxControllersHit &);
-			NxControllerManager* getNxControllerManager() {return mControllerManager;}
-
-			virtual void move(NxVec3 &out, NxVec3 &moveVector, NxVec3 g, float t) {
-				out = (moveVector + g) * t;
-			}
-
-			void addHitReport(CharacterHitReport* report) {
-				mHitReports.insert(report);
-			}
-
+			virtual void				setActorGroup(NxActorGroup)				{}
+			virtual void				setCollisionGroup(NxCollisionGroup)		{}
+		
 		protected:
+
+			virtual void				init(NxMat34 pose)						{}
+
+			virtual void				move(const NxVec3& direction)			{}
 			
-			void _registerCharacter(const NxString& name, Character*);
-			void _unregisterCharacter(const NxString&);
-
-			CharacterController();
-			~CharacterController();
-
-			UserAllocator* mAllocator;
-
-			CharacterHitReports			mHitReports;
-			BaseCharacterHitReport*		mBaseHitReport;
-
+			virtual void				setPosition(const NxVec3& position)		{}
+			virtual NxVec3				getPosition() const						{return NxVec3(0,0,0);}
 			
+			virtual void				setOrientation(const NxQuat& orientation) {}
+			virtual NxQuat				getOrientation() const					{NxQuat quat;quat.id();return quat;}
+						
+			virtual void				setSize(const NxVec3& size)				{}
+			virtual void				getSize(NxVec3& size)					{}	
+
+			virtual void				setSize(const NxVec2& size)				{}
+			virtual void				getSize(NxVec2& size)					{}
+			
+			virtual void				setStepSize(NxReal stepSize)			{}
+			virtual NxReal				getStepSize() const						{return 0;}
+			
+			virtual void				setSlopeLimit(NxRadian slopeLimit)		{}
+			virtual NxRadian			getSlopeLimit() const					{return 0;}
+
+			virtual void				setGravityEnabled(bool gravity)			{}
+			virtual bool				getGravityEnabled() const				{return false;}
+
+			virtual void				setUpDirection(NxVec3 upDirection)		{}
+			virtual NxVec3				getUpDirection() const					{return NxVec3(0,0,0);}
+
+
+			virtual NxString			getType() { return NxString("CharacterController"); };
+		
+			/////////////////////////////////////////////////
+
+			NxScene*					mNxScene;
 
 		private:
-
-			Characters mCharacters;
-			NxControllerManager*	mControllerManager;
+	
 
 	};
+		
+	////////////////////////////////////////////
 
 };// End of namespace
 

@@ -145,6 +145,7 @@ NxStream& UserStream::storeBuffer(const void* buffer, NxU32 size) {
 	return *this;
 }
 
+#if 0
 //////////////////////////////////////////////////////////////////////
 
 MemoryWriteBuffer::MemoryWriteBuffer() : currentSize(0), maxSize(0), data(NULL) {
@@ -286,5 +287,5 @@ void MemoryReadBuffer::readBuffer(void* dest, NxU32 size) const {
 }
 
 //////////////////////////////////////////////////////////////////////
-
+#endif
 #include <OgreMemoryMacros.h>

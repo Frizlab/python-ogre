@@ -22,34 +22,64 @@
 
 #include "NxOgrePrerequisites.h"
 #include "NxOgreActor.h"			// For: Body inherits Actor
+#include "NxOgrePose.h"
+#include "NxOgreRenderableSource.h"
+#include "NxOgreRenderable.h"
+#include "NxOgreNodeRenderable.h"
 
 namespace NxOgre {
 
-	class NxExport Body : public Actor {
+	class NxExport Body : public Actor, public RenderableSource {
 
 		public:
 
-			Body(const NxString& name, Scene*);
-			Body(const NxString& name, Scene*, ShapeBlueprint*, const Pose&, ActorParams = ActorParams());
+			Body(const NxString& NameAndOrShorthandVisualIdentifier, Scene*);
+
+			/** @brief Body constructor with limited short-hand visualisation specification.
+				How the body is visualised is built into the identifier.
+					
+					- "myBody"
+						No Visualisation
+
+					- "myBody; cow.mesh"
+						Visualisation as "cow.mesh" as the graphics model loading it from
+						the rendersystems resource system.
+						(Default behaviour)
+
+					- "myBody; (reference) cow.mesh"
+						Visualisation as "cow.mesh" from a pre-existing model that has
+						already been loaded and in the scene already.
+						(Moving it from one visualisation node to this one)
+			*/
+			Body(const NxString& Identifier, Scene*, ShapeBlueprint*, const Pose&, ActorParams = ActorParams());
+			
+			/** Body constructor with full visualisation.
+					
+				mSceneMgr->createBody("myBody", new CubeShape(2,2,2), Vector3(0,5,0), "model: cube.1m.mesh, scale: 2 2 2", "mass: 10");
+
+			*/
+			Body(const NxString& Identifier, Scene*, ShapeBlueprint*, const Pose&, NodeRenderableParams, ActorParams = ActorParams());
+			
+			/** @brief Body destructor. If you hate memory leaks and crashes, use mScene->destroyActor(...);
+			*/
+
 			virtual ~Body();
 
-			virtual bool			hasVisualisation() const	{return true;}
-			Ogre::SceneNode*		getNode()					{return mNode;}
-			Ogre::Entity*			getEntity()					{return mEntity;}
-			void					setNode(Ogre::SceneNode*);
-			void					setEntity(Ogre::Entity*);
-			void					simulate(float);
-			void					render(float);
+			NxShortHashIdentifier	getType() const {return NxHashes_Body;	/* "NxOgre-Example-Body" */}
+			NxString				getStringType() const {return "NxOgre-Example-Body";}
+
 
 			StringPairList			saveCustom();
 			void					restoreCustom(StringPairList);
 
-			void					disableVisualisation();
 
 		protected:
 
-			Ogre::SceneNode*		mNode;
-			Ogre::Entity*			mEntity;
+			void					__renderSelf();
+
+			NodeRenderable*			mNodeRenderable;
+
+
 
 	};
 

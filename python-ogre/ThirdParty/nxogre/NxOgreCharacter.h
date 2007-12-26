@@ -19,138 +19,176 @@
 
 #ifndef __NXOGRE_CHARACTER_H__
 #define __NXOGRE_CHARACTER_H__
-#if (NX_USE_CHARACTER_API == 1)
 
 #include "NxOgrePrerequisites.h"
-#include "NxOgreContainer.h"		// For: mCollisionList
-#include "NxOgreParams.h"			// For: CharacterParams
+
+#if (NX_USE_LEGACY_NXCONTROLLER == 0)
+
+#include "NxOgreParams.h"
+#include "NxOgrePose.h"
 
 namespace NxOgre {
-
-	class NxExport Character {
-
-		friend class CharacterHitReport;
-
-	public:
-
-		enum Movement {
-			MV_Idle,
-			MV_Walk,
-			MV_Run,
-			MV_Fall,
-			MV_Jump_Up,
-			MV_Jump_Directional,
-			MV_Crouch,
-			MV_Crouch_Walk,
-			MV_SideStep,
-			MV_Ladder,
-			MV_Vehicle,
-			MV_None
-		};
-
-		enum Direction {
-			DR_Forward,
-			DR_Backward,
-			DR_StepLeft,
-			DR_StepRight,
-			DR_Jump_Up,
-			DR_Jump_Directional,
-			DR_Ladder_Up,
-			DR_Ladder_Down,
-			DR_None
-		};
-
-		Character(const NxString&, Scene*, CharacterController*, Pose, CharacterParams);
-		~Character();
-
-		void createNode();
-		void attachMesh(const NxString&);
-		void attachSkeletonMesh(const NxString&);
-		void bindToAnimation(Movement, const NxString& AnimationName);
-		void bindFeet(const NxString& leftBone, const NxString& rightBone);
-		void unBindFeet();
-
-		Ogre::Vector3 getGlobalPosition();
-		Ogre::Quaternion getGlobalOrientation();
-
-		void simulate(float);
-		void render(float);
-
-		void addMovement(Direction);
-		void setDirection(const Ogre::Radian&);
-		void setDirection(const Ogre::Quaternion&);
-
-		void setRawNextMovementDirection(const NxVec3& direction);
-		void setMovementVectorController(CharacterMovementVectorController*);
-		void setPosition(const Ogre::Vector3&);
-
-		NxString					getName() const		{
-															return mName;
-														}
-
-
-		Ogre::SceneNode*			getNode()			{
-															return mNode;
-														}
-
-
-		Ogre::Entity*				getEntity()			{
-															return mEntity;
-														}
-
-		Scene*						getScene()			{
-															return mScene;
-														}
-
-		
-
-		NxController*				getNxController()	{
-															return mCharacter;
-														}
-
 	
-		NxReal						getMass()			{
-															return mMass;
-														}
-	protected:
-
-		NxString mName;
-		Scene* mScene;
-		CharacterController* mCharacterController;
-		NxController* mCharacter;
-		Ogre::SceneNode* mNode;
-		Ogre::Entity* mEntity;
-
-		std::pair<Ogre::Bone*, Ogre::Bone*> mFeet;
+	/////////////////////////////////////////////////////////
+	
+	class NxExport CharacterParams : public Params {
 		
-		RayCaster*			mFootRaycaster;
-		RayCaster*			mDepthCheckCaster;
+		public:
+		
+			CharacterParams()					{	
+													setToDefault();
+												}
+			
+			CharacterParams(const char* p)		{	
+													process(p);
+												}
 
-		NxVec3				mNextMovementDirection;
-		NxQuat				mDirection;
+			CharacterParams(NxString p)			{	
+													process(p);
+												}
 
-		int					mType;
-		NxVec3				mDimensions;
-		NxHeightFieldAxis	mUpAxis;
-		NxReal				mSlopeLimit;
-		NxReal				mStepOffset;
-		NxReal				mSkinWidth;
-		NxU32				mMove_ActiveGroupsMask;
-		NxF32				mMove_Sharpness;
-		NxF32				mMove_MinDistance;
-		NxGroupsMask		mMove_GroupMask;
-		NxU32				mCollisionFlags;
-		NxReal				mMass;
+			void								setToDefault();
 
-		NxActorUserData*	mNxActorUserData;
+			enum ControllerType {
+#if (NX_USE_CHARACTER_API == 1)
+				CT_NXCONTROLLER,
+#endif
+				CT_NXACTOR,
+				CT_CUSTOM
+			};
 
-		CharacterMovementVectorController* mMoveVectorController;
+			ControllerType					mControllerType;
+			NxReal							mStepOffset;
+			NxRadian						mSlopeLimit;
+			NxAxisType						mUpDirection;
+			NxGroupsMask					mGroupMask;
 
-	private:
+			/** @brief Collision shape for NxActor and NxCharacter controllers.
+				@note The function "setToDefault" sets the pointer to zero. You
+					  have to assign one after setting the basic params using
+					  the new operator or the SimpleShape::createShapeFromString method
 
+				@see Controllers for what shapes they can and cannot use
+				@see SimpleShape::createShapeFromString
+					
+
+			*/
+
+			SimpleShape*					mControllerCollisionShape;
+		
+
+	 };
+		
+	/////////////////////////////////////////////////////////
+		
+	/** Character
+
+	*/
+	class NxExport Character {
+		
+		public:
+
+			enum LocalMovementDirection {
+				LMD_FORWARD		= 0,
+				LMD_BACKWARD	= 1,
+				LMD_LEFT		= 2,
+				LMD_RIGHT		= 3,
+				LMB_UP			= 4,
+				LMB_DOWN		= 5
+			};
+		
+			Character(NxString identifier, Pose, CharacterModel*, CharacterParams = CharacterParams(), CharacterController* character_controller = 0, Scene* scene = 0);
+			~Character();
+			
+			NxString getName() const {return mName;}
+			
+			virtual void simulate(NxReal dTime)									{}
+			virtual void render(NxReal dTime)									{}
+			
+			CharacterController*		getController() const {
+				return mController;
+			}
+
+			CharacterModel*				getModel() const {
+				return mModel;
+			}
+
+			CharacterMovementModel*		getCurrentMovementModel() const {
+				return mCurrentMovement;
+			}
+
+			void setModel(CharacterModel* newModel) {
+				mModel = newModel;
+				resetMovement();
+			}
+			
+			void resetMovement()										{}
+			void setMovement(NxString movement);
+			void setMovement(Ogre::Vector3 movementVector);
+			void setLocalMovement(Ogre::Vector3 movementVector);
+
+			inline void forward();
+			inline void backward();
+			inline void left();
+			inline void right();
+			inline void up();
+			inline void down();
+			
+			void injectMovement(LocalMovementDirection);
+			void setDirection(const NxQuat& orientation);
+			void setDirection(const Ogre::Quaternion& orientation);
+			void moveTowards(Ogre::Vector3 globalPosition, NxReal force);
+			void setYaw(NxRadian Yaw);
+			void setYaw(Ogre::Radian Yaw);
+			void setPitch(NxRadian Pitch);
+			void setPitch(Ogre::Radian Pitch);
+			void setRoll(NxRadian Roll);
+			void setRoll(Ogre::Radian Roll);
+
+			
+			/** @brief Forces height to a new one, without a transitional movement period.
+				Forces the local height of the character shape to a new one whilst moving
+				the character to half-height below.
+				
+				@param height Height of the character
+			*/
+			void setHeight(NxReal height);
+
+			
+			/** @brief Forces height to a new one, with a transitional movement period.
+				Forces the local height of the character shape to a new one whilst leaving it
+				at the existing position. Naturaly gravity or a custom vector will kick in and
+				move the character into the correct new position over the upcoming frames.
+
+				@param height Height of the character
+			*/
+			void changeHeight(NxReal height);
+
+			void setSize(const NxVec3& size);
+			void setSize(const NxVec2& size);
+
+			void setGravityEnabled(bool);
+			bool isGravityEnabled();
+
+			bool isDead() const {return mDead;}
+
+		protected:
+		
+			CharacterController*		mController;
+			CharacterModel*				mModel;
+			CharacterMovementModel*		mCurrentMovement;
+		
+		private:
+		
+		
+			NxString	mName;
+			bool		mDead;
+		
 	};
-
+		
+	////////////////////////////////////////////
 
 };// End of namespace
+
 #endif
 #endif

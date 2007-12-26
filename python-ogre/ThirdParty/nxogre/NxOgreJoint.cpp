@@ -93,12 +93,12 @@ void JointParams::setToDefault() {
 	mHasLimits = false;
 	mUpperLimit = 0;
 	mUpperLimitRestitution = 0 ;
-#if (NX_SDK_VERSION_NUMBER > 10000)
+#if (NX_SDK_VERSION_NUMBER >= 272)
 	mUpperLimitHardness = 1;
 #endif
 	mLowerLimit = 0;
 	mLowerLimitRestitution = 0;
-#if (NX_SDK_VERSION_NUMBER > 10000)
+#if (NX_SDK_VERSION_NUMBER >= 272)
 	mLowerLimitHardness = 1;
 #endif
 
@@ -124,16 +124,26 @@ void JointParams::setToDefault() {
 	mSwingLimit_Restitution = 0;
 	mSwingLimit_Value = 0;
 
+#if (NX_SDK_VERSION_NUMBER >= 272)
+	mSwingLimit_Hardness = 1;
+#endif
+
 	mHasSwingSpring = false;
 	mSwingSpring_Damper = 0;
 	mSwingSpring_Spring = 0;
 	mSwingSpring_Target = 0;
 
-	mHasTwistLimit = false;
-	mTwistLimit_High_Restitution = 0;
-	mTwistLimit_High_Value = 0;
+ 	mHasTwistLimit = false;
+ 	mTwistLimit_High_Restitution = 0;
+ 	mTwistLimit_High_Value = 0;
+#if (NX_SDK_VERSION_NUMBER >= 272)
+	mTwistLimit_High_Hardness = 1;
+#endif
 	mTwistLimit_Low_Restitution = 0;
 	mTwistLimit_Low_Value = 0;
+#if (NX_SDK_VERSION_NUMBER >= 272)
+	mTwistLimit_Low_Hardness = 1;
+#endif
 
 	
 	mHasTwistSpring = false;
@@ -173,7 +183,7 @@ Scene* Joint::getScene() {
 ////////////////////////////////////////////////////////////////////////////////////
 
 void Joint::setGlobalAnchor(const Ogre::Vector3& a) {
-	mJoint->setGlobalAnchor(toNxVec3(a));
+	mJoint->setGlobalAnchor(NxConvert<NxVec3, Ogre::Vector3>(a));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -185,7 +195,7 @@ void Joint::setGlobalAnchor(const NxVec3 & a) {
 ////////////////////////////////////////////////////////////////////////////////////
 
 void Joint::setGlobalAxis(const Ogre::Vector3& a) {
-	mJoint->setGlobalAxis(toNxVec3(a));
+	mJoint->setGlobalAxis(NxConvert<NxVec3, Ogre::Vector3>(a));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -197,7 +207,7 @@ void Joint::setGlobalAxis(const NxVec3 &a) {
 ////////////////////////////////////////////////////////////////////////////////////
 
 Ogre::Vector3 Joint::getGlobalAnchor() const {
-	return toVector3(mJoint->getGlobalAnchor());
+	return NxConvert<Ogre::Vector3, NxVec3>(mJoint->getGlobalAnchor());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -209,7 +219,7 @@ NxVec3 Joint::getGlobalAnchorAsNxVec3()	const {
 ////////////////////////////////////////////////////////////////////////////////////
 
 Ogre::Vector3 Joint::getGlobalAxis() const {
-	return toVector3(mJoint->getGlobalAxis());
+	return NxConvert<Ogre::Vector3, NxVec3>(mJoint->getGlobalAxis());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -250,7 +260,7 @@ NxReal Joint::getBreakableMaxTorque() {
 ////////////////////////////////////////////////////////////////////////////////////
 
 void Joint::setLimitPoint(const Ogre::Vector3& point, bool onActorB) {
-	mJoint->setLimitPoint(toNxVec3(point), onActorB);
+	mJoint->setLimitPoint(NxConvert<NxVec3, Ogre::Vector3>(point), onActorB);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////
@@ -264,7 +274,7 @@ void Joint::setLimitPoint(const NxVec3 &point, bool onActorB) {
 Ogre::Vector3 Joint::getLimitPoint() const {
 	NxVec3 point;
 	mJoint->getLimitPoint(point);
-	return toVector3(point);
+	return NxConvert<Ogre::Vector3, NxVec3>(point);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////

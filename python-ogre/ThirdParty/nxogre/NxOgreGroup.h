@@ -38,9 +38,9 @@ namespace NxOgre {
 
 				public:
 
-					virtual void onStartTouch(Actor*, Actor*)	{}
-					virtual void onEndTouch(Actor*, Actor*)		{}
-					virtual void onTouch(Actor*, Actor*)		{}
+					virtual void onStartTouch(Actor*, Actor*, ContactStream*)	{}
+					virtual void onEndTouch(Actor*, Actor*, ContactStream*)		{}
+					virtual void onTouch(Actor*, Actor*, ContactStream*)		{}
 
 			};
 
@@ -48,9 +48,9 @@ namespace NxOgre {
 				
 				public:
 					
-					virtual void onStartTouch(Actor*, Actor*)	{}
-					virtual void onEndTouch(Actor*, Actor*)		{}
-					virtual void onTouch(Actor*, Actor*)		{}
+					virtual void onStartTouch(Actor*, Actor*, ContactStream*)	{}
+					virtual void onEndTouch(Actor*, Actor*, ContactStream*)		{}
+					virtual void onTouch(Actor*, Actor*, ContactStream*)		{}
 
 			};
 
@@ -61,64 +61,79 @@ namespace NxOgre {
 
 					TriMethodCallback(
 					T* v,
-					void (T::*Start)(Actor*, Actor*),
-					void (T::*End)(Actor*, Actor*),
-					void (T::*Touch)(Actor*, Actor*))
+					void (T::*Start)(Actor*, Actor*, ContactStream*),
+					void (T::*End)(Actor*, Actor*, ContactStream*),
+					void (T::*Touch)(Actor*, Actor*, ContactStream*))
 					: mInstance(v), StartTouchPtr(Start), EndTouchPtr(End), TouchPtr(Touch)
 					{}
 
 					/////////////////////////////////////////////////////
 
-					void onStartTouch(Actor* a, Actor* b) {
-						(mInstance->*StartTouchPtr)(a,b);
+					void onStartTouch(Actor* a, Actor* b, ContactStream* s) {
+						(mInstance->*StartTouchPtr)(a,b,s);
 					}
 
-					void onEndTouch(Actor* a, Actor* b) {
-						(mInstance->*EndTouchPtr)(a,b);
+					void onEndTouch(Actor* a, Actor* b, ContactStream* s) {
+						(mInstance->*EndTouchPtr)(a,b,s);
 					}
 
-					void onTouch(Actor* a, Actor* b) {
-						(mInstance->*TouchPtr)(a,b);
+					void onTouch(Actor* a, Actor* b, ContactStream* s) {
+						(mInstance->*TouchPtr)(a,b,s);
 					}
 
 					/////////////////////////////////////////////////////
 
 					T* mInstance;
-					void (T::*StartTouchPtr)(Actor*, Actor*);
-					void (T::*EndTouchPtr)(Actor*, Actor*);
-					void (T::*TouchPtr)(Actor*, Actor*);
+					void (T::*StartTouchPtr)(Actor*, Actor*, ContactStream* s);
+					void (T::*EndTouchPtr)(Actor*, Actor*, ContactStream* s);
+					void (T::*TouchPtr)(Actor*, Actor*, ContactStream* s);
 			
 			};
 
 			//////////////////////////////////////////////////////////
 
-			GroupCallback(InheritedCallback* cb) : mCallback(cb) {}
+			/** @brief Inherited Class Constructor */
 
-			template <typename T> explicit
-			GroupCallback(T* v,
-			void (T::*Start)(Actor*, Actor*),			
-			void (T::*End)(Actor*, Actor*),			
-			void (T::*Touch)(Actor*, Actor*))
-			: mCallback(new TriMethodCallback<T>(v, Start, End, Touch)) {}
-	
+			GroupCallback(InheritedCallback* cb, bool ownCallback = true) : mCallback(cb), mCallbackOwned(ownCallback) {}
 
 			//////////////////////////////////////////////////////////
 
-			void onStartTouch(Actor* a, Actor* b) {
-				mCallback->onStartTouch(a,b);
+// 			/** @brief Method Ptr Constructor */
+// 
+// 			template <typename T> explicit
+// 			GroupCallback(T* v,
+// 			void (T::*Start)(Actor*, Actor*),			
+// 			void (T::*End)(Actor*, Actor*),			
+// 			void (T::*Touch)(Actor*, Actor*))
+// 			: mCallback(new TriMethodCallback<T>(v, Start, End, Touch), bool callbackOwned),mCallbackOwned(callbackOwned) {}
+	
+			//////////////////////////////////////////////////////////
+
+
+			~GroupCallback() {
+				if(mCallbackOwned) {
+					NxDelete(mCallback);
+				}
+			} 
+
+			//////////////////////////////////////////////////////////
+
+			inline void onStartTouch(Actor* a, Actor* b, ContactStream* s) {
+				mCallback->onStartTouch(a,b,s);
 			}
 
-			void onEndTouch(Actor* a, Actor* b) {
-				mCallback->onEndTouch(a,b);
+			inline void onEndTouch(Actor* a, Actor* b, ContactStream* s) {
+				mCallback->onEndTouch(a,b,s);
 			}
 
-			void onTouch(Actor* a, Actor* b) {
-				mCallback->onTouch(a,b);
+			inline void onTouch(Actor* a, Actor* b, ContactStream* s) {
+				mCallback->onTouch(a,b,s);
 			}
 
 			//////////////////////////////////////////////////////////
 
 			ContactCallback*	mCallback;
+			bool				mCallbackOwned;
 
 	};
 
@@ -138,10 +153,9 @@ namespace NxOgre {
 			NxString				getName() const		{return mName;}
 			NxActorGroup			getGroupID() const	{return mGroupID;}
 
-			void setCallback(GroupCallback::InheritedCallback* cb) {
-//				std::cout << "Inherited Constructor (" << cb << ")" << std::endl;
-				mCallback = new GroupCallback(cb);
-				mCallbackOwned = true;
+			void setCallback(GroupCallback::InheritedCallback* cb, bool ownCallback = true) {
+				NxDelete(mCallback);
+				mCallback = new GroupCallback(cb, ownCallback);
 			}
 
 			template <typename T> 
@@ -149,25 +163,26 @@ namespace NxOgre {
 				T* v,
 				void (T::*Start)(Actor*, Actor*),			
 				void (T::*End)(Actor*, Actor*),			
-				void (T::*Touch)(Actor*, Actor*)
+				void (T::*Touch)(Actor*, Actor*),
+				bool ownCallback = true
 			)
 			{
-				mCallback = new GroupCallback(v, Start, End, Touch);	
+				NxDelete(mCallback);
+				mCallback = new GroupCallback(v, Start, End, Touch, ownCallback);	
 			}
 
 			void					setCollisionCallback(ActorGroup* B, NxContactPairFlag flag, bool ForBGroup);
 
 		protected:
 
-			void					onStartTouch(Actor*, Actor*);
-			void					onEndTouch(Actor*, Actor*);
-			void					onTouch(Actor*, Actor*);
+			void					onStartTouch(Actor*, Actor*, ContactStream*);
+			void					onEndTouch(Actor*, Actor*, ContactStream*); 
+			void					onTouch(Actor*, Actor*, ContactStream*);
 
 			NxString				mName;
 			NxActorGroup			mGroupID;
 			Scene*					mScene;
 			GroupCallback*			mCallback;
-			bool					mCallbackOwned;
 
 			static					NxActorGroup mNextFreeID;
 	};

@@ -22,10 +22,15 @@
 #include "NxOgreActor.h"			// For: Actor binding
 #include "NxOgreShapeConvex.h"		// For: Convex
 #include "NxOgreHelpers.h"			// For: Conversions
-#include "NxOgreCooking.h"			// For: Cooking the convex shapes
 #include "NxOgreScene.h"			// For: Materials
-#include "NxOgreUserStream.h"		// For: Loading in .nxs files
 #include "NxOgreGroup.h"			// For: ShapeGroups
+#include "NxOgreResourceManager.h"	// For: Convex Fetching/Cooking/Storage.
+#include "NxOgreResourceSystem.h"
+#include "NxOgreResourceMesh.h"
+#include "NxOgreResourceStream.h"
+#include "NxOgreResourceStreamPtr.h"
+
+#include "OgreMeshManager.h"
 
 namespace NxOgre {
 
@@ -70,13 +75,63 @@ Shape* ConvexShape::_bindToActorDescription(Actor* actor, NxU32 id, NxArray<NxSh
 	else if (mParams.mGroupAsName != "")
 		mShapeDescription.group = actor->getScene()->getShapeGroup(mParams.mGroupAsName)->getGroupID();
 
-	if (Ogre::StringUtil::endsWith(meshname, ".nxs")) {
-		UserStream rbuf(meshname.c_str(), true);
-		mShapeDescription.meshData = actor->getNxScene()->getPhysicsSDK().createConvexMesh(rbuf);
-		fclose(rbuf.fp);
-	}
-	else {
-		mShapeDescription.meshData = NxGenerateConvexMeshFromOgreMesh(meshname, actor->getNxScene(), mParams.mMeshScale);
+
+	NxString meshIdentifier = ResourceManager::getSingleton()->getMeshIdentifier(meshname, mParams.mMeshScale);
+
+	mShapeDescription.meshData = ResourceManager::getSingleton()->getConvexMesh(meshIdentifier);
+
+	if (mShapeDescription.meshData == 0) {
+		
+		if (Ogre::StringUtil::endsWith(meshname, ".mesh")) {
+
+			Ogre::MeshManager::getSingleton().load(meshname, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+			Ogre::MeshPtr meshPtr = Ogre::MeshManager::getSingleton().getByName(meshname);
+
+			if (meshPtr.isNull()) {
+				NxThrow_Error("Ogre Mesh '" + meshname + "' could not be found.");
+			}
+
+			ConvexMeshIntermediary* cmi = ResourceManager::getSingleton()->generateConvexMeshDescription(meshPtr, mParams.mMeshScale);
+			
+#if (NX_USE_TEMPORARYCOOKING_TO_DISK == 1)
+			if (ResourceManager::getSingleton()->cookConvexMesh(cmi, ResourceStreamPtr(
+				"file:"
+				NX_USE_TEMPORARYCOOKING_TO_DISK_PATH
+				" +write"))) {
+				ResourceManager::getSingleton()->loadConvexMesh(meshIdentifier, ResourceStreamPtr(
+					"file:"
+					NX_USE_TEMPORARYCOOKING_TO_DISK_PATH
+				));
+				mShapeDescription.meshData = ResourceManager::getSingleton()->getConvexMesh(meshIdentifier);
+			}
+			else {
+				NxThrow_Warning("Convex mesh '" + meshname +  "' could not be used with ConvexShape. Cooking process failed.");
+			}
+#else
+
+			ResourceStreamPtr memoryStream(NxMemoryStreamIdentifier);
+
+
+			if (ResourceManager::getSingleton()->cookConvexMesh(cmi, memoryStream)) {
+				memoryStream->rewind();
+
+				ResourceManager::getSingleton()->loadConvexMesh(meshIdentifier, memoryStream);
+				mShapeDescription.meshData = ResourceManager::getSingleton()->getConvexMesh(meshIdentifier);
+			}
+			else {
+				NxThrow_Warning("Convex mesh '" + meshname +  "' could not be used with ConvexShape. Cooking process failed.");
+			}
+
+			memoryStream->close();
+#endif
+
+			delete cmi;
+
+		}
+		else {
+			NxThrow_Warning("Convex mesh '" + meshname +  "' could not be used with ConvexShape. It could not be found.");
+		}
+
 	}
 
 	Convex* convex = new Convex(*this, actor, shapes);
@@ -121,22 +176,68 @@ PrismShape::~PrismShape() {
 
 Shape* PrismShape::_bindToActorDescription(Actor* actor, NxU32 id, NxArray<NxShapeDesc*>& shapes) {
 
-	NxVec3* verts = new NxVec3[s * 2];
+	std::stringstream ss;
+	ss << "Prism-" << r << "-" << h << "-" << s;
+	NxString prismIdentifier = ss.str();
 
-	NxReal Angle,Cosine,Sine;
-	NxU32 j = 0;
+	NxConvexMesh* mesh = ResourceManager::getSingleton()->getConvexMesh(prismIdentifier);
+	
+	if (mesh == 0) {
 
-	for (unsigned int i = 0; i < s; i++)  {
-		Angle = 360 * ( i / (NxReal) s);
-		Cosine = NxMath::cos(Angle*(NxPi/180))*r;
-		Sine = NxMath::sin(Angle*(NxPi/180))*r;
-		verts[j++] = NxVec3(Sine, - h / 2, Cosine);
-		verts[j++] = NxVec3(Sine, h / 2, Cosine);
+		ConvexMeshIntermediary* cmi = new ConvexMeshIntermediary();
+		cmi->setToNormal();
+		cmi->createVertices(s * 2);
+		NxReal Angle,Cosine,Sine;
+		NxU32 j = 0;
+
+		for (unsigned int i = 0; i < s; i++)  {
+			Angle = 360 * ( i / (NxReal) s);
+			Cosine = NxMath::cos(Angle*(NxPi/180))*r;
+			Sine = NxMath::sin(Angle*(NxPi/180))*r;
+			cmi->mVertices[j++] = NxVec3(Sine, - h / 2, Cosine);
+			cmi->mVertices[j++] = NxVec3(Sine, h / 2, Cosine);
+		}
+
+		cmi->verticesToDescription();
+
+#if (NX_USE_TEMPORARYCOOKING_TO_DISK == 1)
+			if (ResourceManager::getSingleton()->cookConvexMesh(cmi, ResourceStreamPtr(
+				"file:"
+				NX_USE_TEMPORARYCOOKING_TO_DISK_PATH
+				" +write"))) {
+				ResourceManager::getSingleton()->loadConvexMesh(prismIdentifier, ResourceStreamPtr(
+					"file:"
+					NX_USE_TEMPORARYCOOKING_TO_DISK_PATH
+				));
+				mShapeDescription.meshData = ResourceManager::getSingleton()->getConvexMesh(prismIdentifier);
+			}
+			else {
+				NxThrow_Warning("Prism could not be used with ConvexShape. Cooking process failed.");
+			}
+#else
+
+			ResourceStreamPtr memoryStream(NxMemoryStreamIdentifier);
+
+			if (ResourceManager::getSingleton()->cookConvexMesh(cmi, memoryStream)) {
+				memoryStream->rewind();
+
+				ResourceManager::getSingleton()->loadConvexMesh(prismIdentifier, memoryStream);
+				mShapeDescription.meshData = ResourceManager::getSingleton()->getConvexMesh(prismIdentifier);
+			}
+			else {
+				NxThrow_Warning("Prism could not be used with ConvexShape. Cooking process failed.");
+			}
+
+			memoryStream->close();
+#endif
+
+
+		delete cmi;
+
 	}
-
-	mShapeDescription.meshData = NxGenerateConvexMeshFromVertices(verts, s * 2, actor->getNxScene());
-
-	delete []verts;
+	else {
+		mShapeDescription.meshData = mesh;
+	}
 
 	if (mParams.mMaterialAsIndex != 0)
 		mShapeDescription.materialIndex = mParams.mMaterialAsIndex;

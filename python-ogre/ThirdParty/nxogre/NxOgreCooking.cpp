@@ -19,390 +19,19 @@
 
 #include "NxOgreStable.h"
 #include "NxOgreCooking.h"
-#include "NxOgreUserStream.h"
+#include "NxOgreMemoryStream.h"
 #include "NxCooking.h"
 #include "NxOgreHelpers.h"
 
+#include "OgreImage.h"
+#include "OgreResourceGroupManager.h"
+#include "OgreRoot.h"
+#include "OgreSingleton.h"
+#include "OgreMesh.h"
+#include "OgreSubMesh.h"
+#include "OgreVector3.h"
+
 namespace NxOgre {
-
-NxConvexMesh* NxGenerateConvexMeshFromOgreMesh(const NxString& meshname, NxScene *scene, NxVec3 scale, const NxString& meshGroup) {
-
-	NxU32	RawVertexCount = 0;
-	NxU32	SafeVertexCount = 0;
-	NxVec3*	RawVertices;
-	NxVec3* SafeVertices;
-
-	bool added_shared = false;
-	size_t current_offset = 0;
-	size_t shared_offset = 0;
-	size_t next_offset = 0;
-
-	
-	Ogre::Root::getSingleton().getMeshManager()->load(meshname, meshGroup);
-	Ogre::Mesh* mesh = reinterpret_cast<Ogre::Mesh *>(Ogre::Root::getSingleton().getMeshManager()->getByName(meshname).get() );
-
-	for ( unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i) {
-		Ogre::SubMesh* submesh = mesh->getSubMesh( i );
-
-		if(submesh->useSharedVertices) {
-			if( !added_shared ) {
-				RawVertexCount += mesh->sharedVertexData->vertexCount;
-				added_shared = true;
-			}
-		}
-		else {
-			RawVertexCount += submesh->vertexData->vertexCount;
-		}
-
-	}
-
-	RawVertices = new NxVec3[RawVertexCount];
-
-	for ( unsigned short i = 0; i < mesh->getNumSubMeshes();i++) {
-
-		Ogre::SubMesh* submesh = mesh->getSubMesh(i);
-		Ogre::VertexData* vertex_data = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
-
-		if((!submesh->useSharedVertices)||(submesh->useSharedVertices && !added_shared)) {
-
-			if(submesh->useSharedVertices) {
-				added_shared = true;
-				shared_offset = current_offset;
-			}
-
-			const Ogre::VertexElement* posElem = vertex_data->vertexDeclaration->findElementBySemantic(Ogre::VES_POSITION);
-			Ogre::HardwareVertexBufferSharedPtr vbuf = vertex_data->vertexBufferBinding->getBuffer(posElem->getSource());
-			unsigned char* vertex = static_cast<unsigned char*>(vbuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
-
-			Ogre::Real* pReal;
-
-			for( size_t j = 0; j < vertex_data->vertexCount; ++j, vertex += vbuf->getVertexSize()) {
-				posElem->baseVertexPointerToElement(vertex, &pReal);
-				RawVertices[current_offset + j] = NxVec3(pReal[0] * scale.x,pReal[1] * scale.y, pReal[2] * scale.z);
-			}
-
-			vbuf->unlock();
-			next_offset += vertex_data->vertexCount;
-		}
-
-		current_offset = next_offset;
-	}
-
-	// Safe-Vertices
-	SafeVertices = new NxVec3[RawVertexCount];
-	{
-		NxVec3 vertex;
-		bool d=false;
-		for (NxU32 i=0;i < RawVertexCount;++i) {
-			vertex = RawVertices[i];
-			d = false;
-			for (NxU32 j=0;j < SafeVertexCount;++j) {
-				if (vertex == SafeVertices[j]) {
-					d = true;
-				}
-			}
-			if (!d)	SafeVertices[SafeVertexCount++] = vertex;
-		}
-	}
-
-	delete []RawVertices;
-
-	NxConvexMeshDesc mMeshDesc;
-
-	mMeshDesc.numVertices = SafeVertexCount;
-	mMeshDesc.pointStrideBytes = sizeof(NxVec3);
-	mMeshDesc.points = SafeVertices;
-	mMeshDesc.flags = NX_CF_COMPUTE_CONVEX;// | NX_CF_USE_LEGACY_COOKER;
-	
-	NxConvexMesh* cm;
-
-#ifndef NX_DEBUG
-
-	MemoryWriteBuffer buf;
-	bool status = NxCookConvexMesh(mMeshDesc,buf);
-
-	if (!status)
-		NxDebug("Convex '" + meshname + "' failed to cook.");
-
-	cm = scene->getPhysicsSDK().createConvexMesh(MemoryReadBuffer(buf.data));
-
-#else
-
-	NxString filename;
-	if (Ogre::StringUtil::endsWith(meshname, ".mesh")) {
-		filename = meshname.substr(0, meshname.length() - 5) + ".Convex.nxs";	
-	}
-	else {
-		filename = meshname + ".Convex.nxs";
-	}
-
-
-	UserStream buf(filename.c_str(),false);
-	bool status = NxCookConvexMesh(mMeshDesc, buf);
-
-	if (!status) {
-		std::stringstream s;
-		s	<< "Convex '" << meshname << "' failed to cook" << std::endl
-			<< "Vertices = " << SafeVertexCount;
-
-		NxThrow_Error(s.str());
-	}
-
-	fclose(buf.fp);
-
-	UserStream rbuf(filename.c_str(), true);
-
-	cm = scene->getPhysicsSDK().createConvexMesh(rbuf);
-
-	fclose(rbuf.fp);
-
-	
-#endif
-
-	delete []SafeVertices;
-
-	return cm;
-
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-NxConvexMesh* NxGenerateConvexMeshFromVertices(NxVec3 *verts, unsigned int nbVerts, NxScene *scene) {
-
-	// Create descriptor for gear center convex mesh
-
-	NxConvexMeshDesc mMeshDesc;
-	mMeshDesc.numVertices			= nbVerts;
-	mMeshDesc.pointStrideBytes		= sizeof(NxVec3);
-	mMeshDesc.points				= verts;
-	mMeshDesc.flags					= NX_CF_COMPUTE_CONVEX;// | NX_CF_USE_LEGACY_COOKER;
-
-#ifndef NX_DEBUG
-
-	MemoryWriteBuffer buf;
-	bool status = NxCookConvexMesh(mMeshDesc,buf);
-
-	if (!status)
-		NxDebug("Convex failed to cook.");
-
-	return scene->getPhysicsSDK().createConvexMesh(MemoryReadBuffer(buf.data));
-
-#else
-
-	NxString filename;
-	
-	filename = Ogre::StringConverter::toString(nbVerts) + "-" + Ogre::StringConverter::toString(int(verts[0].x)) + "-" + Ogre::StringConverter::toString(int(verts[0].z)) + ".ConvexShape.nxs";
-
-	UserStream buf(filename.c_str(),false);
-	bool status = NxCookConvexMesh(mMeshDesc, buf);
-
-	if (!status)
-		NxDebug("Convex failed to cook.");
-
-	fclose(buf.fp);
-
-	UserStream rbuf(filename.c_str(), true);
-
-	NxConvexMesh* cm = scene->getPhysicsSDK().createConvexMesh(rbuf);
-
-	fclose(rbuf.fp);
-
-	return cm;
-#endif
-
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-NxTriangleMesh* NxGenerateTriangleMeshFromOgreMesh(const NxString& meshName, NxScene *scene, NxVec3 scale) {
-
-
-	unsigned int	mVertexCount = 0, mIndexCount  = 0;
-	size_t			vertex_count = 0;
-	Ogre::Vector3*	vertices;
-	size_t			index_count = 0;
-	unsigned long*	indices;
-
-	bool added_shared = false;
-
-	size_t current_offset = 0;
-	size_t shared_offset = 0;
-	size_t next_offset = 0;
-	size_t index_offset = 0;
-
-	Ogre::Root::getSingleton().getMeshManager()->load(meshName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	Ogre::Mesh* mesh = reinterpret_cast<Ogre::Mesh *>(Ogre::Root::getSingleton().getMeshManager()->getByName(meshName).get());
-
-	for ( unsigned short i = 0; i < mesh->getNumSubMeshes(); ++i) {
-		Ogre::SubMesh* submesh = mesh->getSubMesh( i );
-		if(submesh->useSharedVertices) {
-			if( !added_shared ) {
-				mVertexCount += mesh->sharedVertexData->vertexCount;
-				added_shared = true;
-			}
-		}
-		else {
-			mVertexCount += submesh->vertexData->vertexCount;
-		}
-
-		mIndexCount += submesh->indexData->indexCount;
-	}
-
-
-	vertices = new Ogre::Vector3[mVertexCount];
-	indices = new unsigned long[mIndexCount];
-
-	NxVec3* mMeshVertices = new NxVec3[mVertexCount];
-	NxU32* mMeshFaces = new NxU32[mIndexCount];
-	NxMaterialIndex* mMaterials = new NxMaterialIndex[mIndexCount];
-
-	NxMaterialIndex currentMaterialIndex = 0;
-	added_shared = false;
-	bool use32bitindexes;
-
-	for (unsigned short i=0;i<mesh->getNumSubMeshes();i++) {
-
-		Ogre::SubMesh* submesh = mesh->getSubMesh(i);
-		Ogre::VertexData* vertex_data = submesh->useSharedVertices ? mesh->sharedVertexData : submesh->vertexData;
-
-		// Material Aliases..
-
-		//currentMaterialIndex = _scene->findMaterialIndex(submesh->getMaterialName());
-		// Temp...
-		currentMaterialIndex = 0;
-
-		if((!submesh->useSharedVertices)||(submesh->useSharedVertices && !added_shared)) {
-
-			if(submesh->useSharedVertices) {
-				added_shared = true;
-				shared_offset = current_offset;
-			}
-
-			const Ogre::VertexElement* posElem = vertex_data->vertexDeclaration->findElementBySemantic(Ogre::VES_POSITION);
-			Ogre::HardwareVertexBufferSharedPtr vbuf = vertex_data->vertexBufferBinding->getBuffer(posElem->getSource());
-			unsigned char* vertex = static_cast<unsigned char*>(vbuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
-
-			Ogre::Real* pReal;
-
-			for( size_t j = 0; j < vertex_data->vertexCount; ++j, vertex += vbuf->getVertexSize()) {
-				posElem->baseVertexPointerToElement(vertex, &pReal);
-				mMeshVertices[current_offset + j] = NxVec3(pReal[0]*scale.x, pReal[1]*scale.y, pReal[2]*scale.z); 
-			}
-
-			vbuf->unlock();
-			next_offset += vertex_data->vertexCount;
-		}
-
-		Ogre::IndexData* index_data = submesh->indexData;
-
-		size_t numTris = index_data->indexCount / 3;
-		Ogre::HardwareIndexBufferSharedPtr ibuf = index_data->indexBuffer;
-
-		use32bitindexes = (ibuf->getType() == Ogre::HardwareIndexBuffer::IT_32BIT);
-
-
-		if ( use32bitindexes )	{
-			unsigned int*  pInt = static_cast<unsigned int*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
-			size_t offset = (submesh->useSharedVertices)? shared_offset : current_offset;
-
-			for ( size_t k = 0; k < numTris*3; ++k) {
-				mMeshFaces[index_offset] = pInt[k] + static_cast<unsigned int>(offset);			
-				mMaterials[index_offset++] = currentMaterialIndex;
-
-			}
-		}
-		else {
-
-			unsigned short* pShort = reinterpret_cast<unsigned short*>(ibuf->lock(Ogre::HardwareBuffer::HBL_READ_ONLY));
-			size_t offset = (submesh->useSharedVertices)? shared_offset : current_offset;
-
-			for ( size_t k = 0; k < numTris*3; ++k) {
-				mMeshFaces[index_offset] = static_cast<unsigned int>(pShort[k]) + static_cast<unsigned int>(offset);
-				mMaterials[index_offset++] = currentMaterialIndex;
-
-			}
-
-		}
-
-		ibuf->unlock();
-		current_offset = next_offset;
-	}
-
-
-	NxTriangleMeshDesc mTriangleMeshDescription;
-
-	// Vertices
-	mTriangleMeshDescription.numVertices				= mVertexCount;
-	mTriangleMeshDescription.points						= mMeshVertices;							
-	mTriangleMeshDescription.pointStrideBytes			= sizeof(NxVec3);
-	// Triangles
-	mTriangleMeshDescription.numTriangles				= mIndexCount / 3;
-	mTriangleMeshDescription.triangles					= mMeshFaces;
-	mTriangleMeshDescription.triangleStrideBytes		= 3 * sizeof(NxU32);
-	// Materials
-	//#if 0
-	mTriangleMeshDescription.materialIndexStride		= sizeof(NxMaterialIndex);
-
-	mTriangleMeshDescription.materialIndices			= mMaterials;
-	//#endif
-	//mTriangleMeshDescription.flags					= NX_MF_HARDWARE_MESH;
-
-	NxTriangleMesh* trimesh;
-
-#ifndef NX_DEBUG
-
-	MemoryWriteBuffer buf;
-	if (!NxCookTriangleMesh(mTriangleMeshDescription, buf)) {
-		std::stringstream s;
-		s	<< "Mesh '" << meshName << "' failed to cook"
-			<< "V(" << mMeshVertices << ") F(" << mMeshFaces << ")";
-
-		NxThrow_Error(s.str());
-	}
-	trimesh = scene->getPhysicsSDK().createTriangleMesh(MemoryReadBuffer(buf.data));
-
-#else
-
-	NxString filename;
-	if (Ogre::StringUtil::endsWith(meshName, ".mesh")) {
-		filename = meshName.substr(0, meshName.length() - 5) + ".TriangleMeshShape.nxs";	
-	}
-	else {
-		filename = meshName + ".TriangleMeshShape.nxs";
-	}
-
-	UserStream buf(filename.c_str(),false);
-
-	if (!NxCookTriangleMesh(mTriangleMeshDescription, buf)) {
-		std::stringstream s;
-		s	<< "Mesh '" << meshName << "' failed to cook"
-			<< "V(" << mMeshVertices << ") F(" << mMeshFaces << ")";
-
-		NxThrow_Error(s.str());
-	}
-
-	fclose(buf.fp);
-
-	UserStream rbuf(filename.c_str(), true);
-
-	trimesh = scene->getPhysicsSDK().createTriangleMesh(rbuf);
-
-	fclose(rbuf.fp);
-
-
-
-#endif
-
-	delete []vertices;
-	delete []indices;
-
-	delete []mMeshVertices;
-	delete []mMeshFaces;
-	delete []mMaterials;
-
-	return trimesh;
-
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -422,43 +51,46 @@ NxTriangleMesh* NxGenerateTriangleMeshFromVertices(NxVec3 *verts, NxU32 nbVerts,
 
 	NxTriangleMesh* trimesh;
 
-#ifndef NX_DEBUG
+#if 0
+				#ifndef NX_DEBUG
 
-	MemoryWriteBuffer buf;
-	if (!NxCookTriangleMesh(mTriangleMeshDescription, buf)) {
-		std::stringstream s;
-		s	<< "Mesh  failed to cook"
-			<< "V(" << nbVerts << ") F(" << nbIndices << ")";
+					MemoryWriteBuffer buf;
+					if (!NxCookTriangleMesh(mTriangleMeshDescription, buf)) {
+						std::stringstream s;
+						s	<< "Mesh  failed to cook"
+							<< "V(" << nbVerts << ") F(" << nbIndices << ")";
 
-		NxThrow_Error(s.str());
-	}
-	trimesh = scene->getPhysicsSDK().createTriangleMesh(MemoryReadBuffer(buf.data));
+						NxThrow_Error(s.str());
+					}
+					trimesh = scene->getPhysicsSDK().createTriangleMesh(MemoryReadBuffer(buf.data));
 
-#else
+				#else
 
-	NxString filename;
-	
-	filename = Ogre::StringConverter::toString(nbVerts) + "-" + Ogre::StringConverter::toString(int(verts[0].x)) + "-" + Ogre::StringConverter::toString(int(verts[0].z)) + ".TriangleMeshShape.nxs";
+					NxString filename;
+					
+					filename = Ogre::StringConverter::toString(nbVerts) + "-" + Ogre::StringConverter::toString(int(verts[0].x)) + "-" + Ogre::StringConverter::toString(int(verts[0].z)) + ".TriangleMeshShape.nxs";
 
-	UserStream buf(filename.c_str(),false);
+					UserStream buf(filename.c_str(),false);
 
-	if (!NxCookTriangleMesh(mTriangleMeshDescription, buf)) {
-		std::stringstream s;
-		s	<< "Mesh  failed to cook"
-			<< "V(" << nbVerts << ") F(" << nbIndices << ")";
-		NxThrow_Error(s.str());
-	}
+					if (!NxCookTriangleMesh(mTriangleMeshDescription, buf)) {
+						std::stringstream s;
+						s	<< "Mesh  failed to cook"
+							<< "V(" << nbVerts << ") F(" << nbIndices << ")";
+						NxThrow_Error(s.str());
+					}
 
-	fclose(buf.fp);
+					fclose(buf.fp);
 
-	UserStream rbuf(filename.c_str(), true);
-	trimesh = scene->getPhysicsSDK().createTriangleMesh(rbuf);
-	fclose(rbuf.fp);
+					UserStream rbuf(filename.c_str(), true);
+					trimesh = scene->getPhysicsSDK().createTriangleMesh(rbuf);
+					fclose(rbuf.fp);
+
+				#endif
 
 #endif
-
 	return trimesh;
 }
+
 
 #if 0
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -522,7 +154,6 @@ NxHeightField* NxGenerateHeightFieldFromImage(const NxString& imageFilename, uns
 
 }
 #endif
-
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 NxHeightField* NxGenerateHeightFieldFromImage(const NxString& imageFilename, NxScene* scene) {

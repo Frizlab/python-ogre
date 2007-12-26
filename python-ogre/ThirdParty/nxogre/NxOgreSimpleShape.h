@@ -24,6 +24,10 @@
 #include "NxOgreParams.h"
 #include "NxOgrePose.h"
 
+#include "OgrePlane.h"				// For Ogre Plane
+#include "OgreVector3.h"			// For Various
+#include "OgreQuaternion.h"			// For Various
+
 namespace NxOgre {
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
@@ -31,6 +35,21 @@ namespace NxOgre {
 	class NxExport SimpleShape {
 
 		public:
+
+			/** @brief Creates a Simple Shape from a basic string.
+
+				@example
+					<code>
+						"cube: 1 1 1"
+						"box: 1 1 1"
+						"capsule: 1 1"
+						"sphere: 1"
+						"plane: 1 1 1 1.0"
+						"convex: convexName"
+						"trianglemesh: triangleName"
+					</code>
+			*/
+			static SimpleShape*	createFromString(const NxString&);
 
 			enum SimpleShapeType{
 				SST_Plane,
