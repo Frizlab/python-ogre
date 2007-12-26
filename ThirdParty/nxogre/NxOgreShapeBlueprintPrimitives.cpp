@@ -25,7 +25,7 @@
 #include "NxOgreScene.h"			// For: Materials
 #include "NxOgreGroup.h"			// For: ShapeGroups
 #include "NxOgreContainer.h"		// For: mShapeBlueprints in CompoundShape;
-#include "NxOgreMeshManager.h"		// For: Creating/Getting Skeletons
+#include "NxOgreResourceManager.h"		// For: Creating/Getting Skeletons
 #include "NxOgreSkeleton.h"			// For: Skeleton::getSkeleton()
 
 namespace NxOgre {
@@ -45,7 +45,7 @@ GroundShape::GroundShape(NxReal distance, Ogre::Vector3 normal, const ShapeParam
 
 	mShapeDescription.setToDefault();
 	mShapeDescription.d = distance;
-	mShapeDescription.normal = toNxVec3(normal);
+	mShapeDescription.normal = NxConvert<NxVec3, Ogre::Vector3>(normal);
 
 }
 
@@ -133,8 +133,8 @@ Shape* CubeShape::_bindToActorDescription(Actor* actor, NxU32 id, NxArray<NxShap
 		mShapeDescription.ccdSkeleton = mParams.mCCDSkeleton->getSkeleton();
 	}
 	else if (mParams.mGenerateCCD) {
-		skeleton = NxOgre::MeshManager::getInstance()->getCubeSkeleton(mShapeDescription.dimensions * mParams.mGenerateCCDDelta, NxMat33());
-		mShapeDescription.ccdSkeleton = skeleton->getSkeleton();
+///////		skeleton = NxOgre::ResourceManager::getSingleton()->getCubeSkeleton(mShapeDescription.dimensions * mParams.mGenerateCCDDelta, NxMat33());
+//////		mShapeDescription.ccdSkeleton = skeleton->getSkeleton();
 	}
 
 	Cube* cube = new Cube(*this, actor, shapes, skeleton);
@@ -194,8 +194,8 @@ Shape* SphereShape::_bindToActorDescription(Actor* actor, NxU32 id, NxArray<NxSh
 	__paramsToDescription(mShapeDescription, mParams, actor->getScene());
 
 	if (mParams.mCCDSkeleton == 0 && mParams.mGenerateCCD) {
-		Skeleton* skeleton = NxOgre::MeshManager::getInstance()->getSphereSkeleton(mShapeDescription.radius * mParams.mGenerateCCDDelta, NxMat33());
-		mShapeDescription.ccdSkeleton = skeleton->getSkeleton();
+/////////		Skeleton* skeleton = NxOgre::ResourceManager::getSingleton()->getSphereSkeleton(mShapeDescription.radius * mParams.mGenerateCCDDelta, NxMat33());
+/////////		mShapeDescription.ccdSkeleton = skeleton->getSkeleton();
 	}
 
 	Sphere* sphere = new Sphere(*this, actor, shapes);

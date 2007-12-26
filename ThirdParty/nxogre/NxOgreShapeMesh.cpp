@@ -38,7 +38,16 @@ TriangleMesh::~TriangleMesh() {
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 void TriangleMesh::_bindNxShapeToShape(NxShape* s) {
-	//mShape = s;
+		
+	mBaseShape = s;
+
+	if (s->isTriangleMesh()) {
+		mShape = static_cast<NxTriangleMeshShape*>(s);
+	}
+	else {
+		NxThrow_Warning("Attempted to bind wrong NxShape to NxOgre shape");
+	}
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////

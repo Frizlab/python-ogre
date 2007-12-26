@@ -24,6 +24,7 @@
 #include "NxOgreShapeBlueprint.h"		// For: These classes inherit ShapeBlueprint
 #include "NxOgreShape.h"				// For: Default Params
 #include "NxOgreShapeWheel.h"			// For: WheelParams
+#include "NxOgreNodeRenderable.h"		// For: NodeRenderableParams
 
 namespace NxOgre {
 
@@ -31,15 +32,16 @@ namespace NxOgre {
 
 		public:
 
-			WheelShape(NxReal radius, const ShapeParams& = "", const WheelParams& = "");
+			WheelShape(NxReal radius, ShapeParams = ShapeParams(), WheelParams = WheelParams(), NodeRenderableParams = NodeRenderableParams());
 			~WheelShape();
 
 			NxWheelShapeDesc mShapeDescription;
 
-		protected:
+	protected:
 
 			NxString meshname;
 			WheelParams wheelParams;
+			NodeRenderableParams renderableParams;
 
 			virtual bool isDynamic() {return true;}
 			virtual bool isStaticOnly(){return false;}

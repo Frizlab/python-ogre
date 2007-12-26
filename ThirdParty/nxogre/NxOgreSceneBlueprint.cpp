@@ -108,8 +108,8 @@ void SceneBlueprint::parseNxSceneDesc(NxSceneDesc& desc) {
   mMaxIter = desc.maxIter;
   mTimeStepMethod.setFlag( EnumsBlueprint::FT_NxTimeStepMethod, desc.timeStepMethod);
   mSimType.setFlag( EnumsBlueprint::FT_NxSimulationType, desc.simType);
-  mGroundPlane = desc.groundPlane;
-  mBoundsPlanes = desc.boundsPlanes;
+  mGroundPlane = !!desc.groundPlane;
+  mBoundsPlanes = !!desc.boundsPlanes;
   mFlags.setFlag( EnumsBlueprint::FT_NxSceneFlags, desc.flags);
   mInternalThreadCount = desc.internalThreadCount;
   mBackgroundThreadCount = desc.backgroundThreadCount;

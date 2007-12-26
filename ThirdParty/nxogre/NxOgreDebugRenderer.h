@@ -25,6 +25,12 @@
 
 #if (NX_USE_DEBUG_RENDERER_API == 1)
 
+#include "OgreSimpleRenderable.h"
+#include "OgreMovableObject.h"
+#include "OgreRenderable.h"
+#include "OgreAxisAlignedBox.h"
+#include "OgreCamera.h"
+
 namespace NxOgre {
 
 

@@ -83,8 +83,8 @@ ActorGroup::~ActorGroup() {
 	mScene->_unregisterActorGroup(mName);
 	mNextFreeID = mGroupID;
 
-	if (mCallbackOwned)
-		delete mCallback;
+	NxDelete(mCallback);
+
 #ifdef NX_DEBUG
 	std::stringstream ss;
 	ss << "Destroyed ActorGroup '" << mName << "'." << std::endl;
@@ -103,23 +103,23 @@ void ActorGroup::setCollisionCallback(ActorGroup* b, NxContactPairFlag flag, boo
 
 //////////////////////////////////////////////////////////////////////
 
-void ActorGroup::onStartTouch(Actor* a, Actor* b) {
+void ActorGroup::onStartTouch(Actor* a, Actor* b, ContactStream* s) {
 	if (mCallback)
-		mCallback->onStartTouch(a,b);
+		mCallback->onStartTouch(a,b,s);
 }
 
 //////////////////////////////////////////////////////////////////////
 
-void ActorGroup::onEndTouch(Actor* a, Actor* b) {
+void ActorGroup::onEndTouch(Actor* a, Actor* b, ContactStream* s) {
 	if (mCallback)
-		mCallback->onEndTouch(a,b);
+		mCallback->onEndTouch(a,b,s);
 }
 
 //////////////////////////////////////////////////////////////////////
 
-void ActorGroup::onTouch(Actor* a, Actor* b) {
+void ActorGroup::onTouch(Actor* a, Actor* b, ContactStream* s) {
 	if (mCallback)
-		mCallback->onTouch(a,b);
+		mCallback->onTouch(a,b,s);
 }
 
 //////////////////////////////////////////////////////////////////////

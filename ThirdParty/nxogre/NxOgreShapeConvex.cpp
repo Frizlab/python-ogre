@@ -39,7 +39,16 @@ Convex::~Convex() {
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Convex::_bindNxShapeToShape(NxShape* s) {
-	//mShape = s;
+		
+	mBaseShape = s;
+
+	if (s->isConvexMesh()) {
+		mShape = static_cast<NxConvexShape*>(s);
+	}
+	else {
+		NxThrow_Warning("Attempted to bind wrong NxShape to NxOgre shape");
+	}
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -56,7 +65,16 @@ Prism::~Prism() {
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Prism::_bindNxShapeToShape(NxShape* s) {
-	//mShape = s;
+		
+	mBaseShape = s;
+
+	if (s->isConvexMesh()) {
+		mShape = static_cast<NxConvexShape*>(s);
+	}
+	else {
+		NxThrow_Warning("Attempted to bind wrong NxShape to NxOgre shape");
+	}
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////

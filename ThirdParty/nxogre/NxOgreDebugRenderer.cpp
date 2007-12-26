@@ -22,6 +22,12 @@
 
 #if (NX_USE_DEBUG_RENDERER_API == 1)
 
+#include "OgreSceneManager.h"
+#include "OgreMaterialManager.h"
+#include "OgreMaterial.h"
+#include "OgreHardwareBufferManager.h"
+#include "OgreSingleton.h"
+#include "OgreRoot.h"
 
 namespace NxOgre {
 
@@ -38,12 +44,9 @@ DebugRenderer::DebugRenderer(Ogre::SceneManager *_mgr) {
 	if(!Ogre::MaterialManager::getSingleton().resourceExists("NxOgre.DebugRenderer")) {
 	
 		Ogre::MaterialPtr debugMat = Ogre::MaterialManager::getSingleton().create("NxOgre.DebugRenderer", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-
-		Ogre::Technique* tech = debugMat->createTechnique();
-		Ogre::Pass* pass = tech->createPass();
-		pass->setVertexColourTracking(Ogre::TVC_AMBIENT|Ogre::TVC_DIFFUSE);
-		pass->setDepthWriteEnabled(true);
-		pass->setLightingEnabled(true);
+		debugMat->getTechnique(0)->getPass(0)->setVertexColourTracking(Ogre::TVC_AMBIENT|Ogre::TVC_DIFFUSE);
+		debugMat->getTechnique(0)->getPass(0)->setDepthWriteEnabled(true);
+		debugMat->getTechnique(0)->getPass(0)->setLightingEnabled(true);
 
 	}
 
@@ -175,12 +178,23 @@ unsigned int DebugRenderer::stop() {
 		bind->setBinding(1,vbuf);
 
 		Ogre::RGBA* pClr = static_cast<Ogre::ABGR*>(vbuf->lock(Ogre::HardwareBuffer::HBL_DISCARD));
+		Ogre::ColourValue cv;
+		Ogre::RGBA clr;
 
 		for (size_t i = 0; i < size; ++i) {
-			Ogre::ColourValue cv((Ogre::Real)((mPoints[i].second & 0xff000000) >> 24)/255.0f,(Ogre::Real)((mPoints[i].second & 0x00ff0000) >> 16)/255.0f,(Ogre::Real)((mPoints[i].second & 0x0000ff00) >> 8)/255.0f,(Ogre::Real)(mPoints[i].second & 0x000000ff)/255.0f);
-			Ogre::RGBA clr;
 
-			
+			cv = Ogre::ColourValue(
+				(Ogre::Real)((mPoints[i].second & 0xff000000) >> 24)/255.0f,
+				(Ogre::Real)((mPoints[i].second & 0x00ff0000) >> 16)/255.0f,
+				(Ogre::Real)((mPoints[i].second & 0x0000ff00) >> 8)/255.0f,
+				(Ogre::Real)(mPoints[i].second & 0x000000ff)/255.0f
+			);
+
+
+			// Because I like black.
+			if (cv == Ogre::ColourValue::White)
+				cv = Ogre::ColourValue::Black;
+
 			Ogre::Root::getSingleton().convertColourValue(cv, &clr);
 			
 			*pClr++ = clr;

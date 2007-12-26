@@ -42,7 +42,7 @@ namespace NxOgre {
 
 			////////////////////////////////////////////////////////////////
 			
-			NxActorUserData(void* ptr, PtrType type) : Ptr(ptr), Type(type) {}
+			NxActorUserData(void* ptr, PtrType type) : Ptr(ptr), Type(type), RenderPtr(0) {}
 
 			PtrType getType() {
 				return Type;
@@ -62,16 +62,15 @@ namespace NxOgre {
 			}
 #endif
 
-#if (NX_USE_CHARACTER_API == 1)
 			Character* toCharacter() {
 				return static_cast<Character*>(Ptr);
 			}
-#endif
 
 			////////////////////////////////////////////////////////////////
 
 			void* Ptr;
 			PtrType Type;
+			RenderableSource* RenderPtr;
 
 	};
 	

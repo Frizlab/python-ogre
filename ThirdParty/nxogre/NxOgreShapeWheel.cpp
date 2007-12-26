@@ -24,6 +24,11 @@
 #include "NxOgreScene.h"
 #include "NxOgreHelpers.h"
 #include "NxOgreContainer.h"
+#include "NxOgreSceneRenderer.h"
+
+#include "OgreSceneManager.h"
+#include "OgreMovableObject.h"
+#include "OgreEntity.h"
 
 namespace NxOgre {
 
@@ -122,46 +127,39 @@ void WheelParams::parse(Parameters P) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-Wheel::Wheel(WheelShape& desc, WheelParams& params, Actor* actor) : Shape(actor) {
-	desc.mShapeDescription.userData = this;
+Wheel::Wheel(WheelShape ws, WheelParams params, NodeRenderableParams visualParams, Actor* actor)
+: Shape(actor), mWheelRollAngle(0) {
 
-	
-	desc.mShapeDescription.brakeTorque = params.brake_torque;
-	//desc.mShapeDescription.ccdSkeleton;
-	desc.mShapeDescription.density = params.density;
-	//desc.mShapeDescription.group
-	//desc.mShapeDescription.groupsMask;
-	desc.mShapeDescription.inverseWheelMass = params.inverseWheelMass;
-	desc.mShapeDescription.lateralTireForceFunction.asymptoteSlip = params.lateral_tire_asymptoteSlip;
-	desc.mShapeDescription.lateralTireForceFunction.asymptoteValue = params.lateral_tire_asymptoteValue;
-	desc.mShapeDescription.lateralTireForceFunction.extremumSlip = params.lateral_tire_extremumSlip;
-	desc.mShapeDescription.lateralTireForceFunction.extremumValue = params.lateral_tire_extremumValue;
-	desc.mShapeDescription.lateralTireForceFunction.stiffnessFactor = params.lateral_tire_stiffnessFactor;
-	//desc.mShapeDescription.localPose;
-	desc.mShapeDescription.longitudalTireForceFunction.asymptoteSlip = params.longitudal_tire_asymptoteSlip;
-	desc.mShapeDescription.longitudalTireForceFunction.asymptoteValue = params.longitudal_tire_asymptoteValue;
-	desc.mShapeDescription.longitudalTireForceFunction.extremumSlip = params.longitudal_tire_extremumSlip;
-	desc.mShapeDescription.longitudalTireForceFunction.extremumValue = params.longitudal_tire_extremumValue;
-	desc.mShapeDescription.longitudalTireForceFunction.stiffnessFactor = params.longitudal_tire_stiffnessFactor;
-
-
-	desc.mShapeDescription.mass = params.mass;
-//	desc.mShapeDescription.materialIndex;
-	desc.mShapeDescription.motorTorque = params.motor_torque;
-//	desc.mShapeDescription.name;
-//	desc.mShapeDescription.radius
+	ws.mShapeDescription.userData = this;
+	ws.mShapeDescription.brakeTorque = params.brake_torque;
+	ws.mShapeDescription.density = params.density;
+	ws.mShapeDescription.inverseWheelMass = params.inverseWheelMass;
+	ws.mShapeDescription.lateralTireForceFunction.asymptoteSlip = params.lateral_tire_asymptoteSlip;
+	ws.mShapeDescription.lateralTireForceFunction.asymptoteValue = params.lateral_tire_asymptoteValue;
+	ws.mShapeDescription.lateralTireForceFunction.extremumSlip = params.lateral_tire_extremumSlip;
+	ws.mShapeDescription.lateralTireForceFunction.extremumValue = params.lateral_tire_extremumValue;
+	ws.mShapeDescription.lateralTireForceFunction.stiffnessFactor = params.lateral_tire_stiffnessFactor;
+	ws.mShapeDescription.longitudalTireForceFunction.asymptoteSlip = params.longitudal_tire_asymptoteSlip;
+	ws.mShapeDescription.longitudalTireForceFunction.asymptoteValue = params.longitudal_tire_asymptoteValue;
+	ws.mShapeDescription.longitudalTireForceFunction.extremumSlip = params.longitudal_tire_extremumSlip;
+	ws.mShapeDescription.longitudalTireForceFunction.extremumValue = params.longitudal_tire_extremumValue;
+	ws.mShapeDescription.longitudalTireForceFunction.stiffnessFactor = params.longitudal_tire_stiffnessFactor;
+	ws.mShapeDescription.mass = params.mass;
+	//ws.mShapeDescription.materialIndex;
+	ws.mShapeDescription.motorTorque = params.motor_torque;
+	//ws.mShapeDescription.name;
+	//ws.mShapeDescription.radius
 
 	// TODO:
-	//desc.mShapeDescription.shapeFlags;
-	
-	//desc.mShapeDescription.skinWidth;
-	desc.mShapeDescription.steerAngle = params.steer_angle.valueRadians();
-	desc.mShapeDescription.suspension.damper = params.suspension_damper;
-	desc.mShapeDescription.suspension.spring = params.suspension_spring;
-	desc.mShapeDescription.suspension.targetValue = params.suspension_target;
-	desc.mShapeDescription.suspensionTravel = params.suspension_travel;
-	//desc.mShapeDescription.wheelContactModify = ..
-	//desc.mShapeDescription.wheelFlags;
+	//ws.mShapeDescription.shapeFlags;
+	//ws.mShapeDescription.skinWidth;
+	ws.mShapeDescription.steerAngle = params.steer_angle.valueRadians();
+	ws.mShapeDescription.suspension.damper = params.suspension_damper;
+	ws.mShapeDescription.suspension.spring = params.suspension_spring;
+	ws.mShapeDescription.suspension.targetValue = params.suspension_target;
+	ws.mShapeDescription.suspensionTravel = params.suspension_travel;
+	//ws.mShapeDescription.wheelContactModify = ..
+	//ws.mShapeDescription.wheelFlags;
 
 	/*
 	// ------------ material  (default values)
@@ -170,43 +168,232 @@ Wheel::Wheel(WheelShape& desc, WheelParams& params, Actor* actor) : Shape(actor)
 		NxMaterialDesc materialDesc;
 		// It may be a good idea to use this when all friction is to be performed
 		// using the tire friction model (see bellow)
-		materialDesc.flags |=  NX_MF_DISABLE_FRICTION;
+		materialws.flags |=  NX_MF_DISABLE_FRICTION;
 		mDummyMaterial = W->getNxWheelShape()->getActor().getScene().createMaterial(materialDesc);
 	}
 	W->getNxWheelShape()->setMaterial( mDummyMaterial->getMaterialIndex() );
 
 	*/
+	
+	if (visualParams.Intent.size() == 0)
+		visualParams.Intent = getStringType();
 
-	mNode = actor->getScene()->getSceneManager()->getRootSceneNode()->createChildSceneNode(NxCreateID(mActor->getNbShapes(), mActor->getName() + "wheel"));
-	mWheelRollAngle = 0;
-	mEntity = 0;
-	mPose.zero();
+	setLevelOfDetail(LOD_Medium);
+	setInterpolation(I_Linear);
+	mRenderable = mActor->getScene()->getSceneRenderer()->createNodeRenderable(visualParams);
+	mActor->getScene()->getSceneRenderer()->registerSource(this);
+
+	mWheelLocalPose = ws.mShapeDescription.localPose;
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 Wheel::~Wheel() {
-	while (mNode->numAttachedObjects() > 0) {
-		Ogre::Entity* ent = static_cast<Ogre::Entity*>( mNode->getAttachedObject(0) );
-		mActor->getScene()->getSceneManager()->destroyEntity(ent);
-	}
 
-	mNode->detachAllObjects();
-	mNode->removeAndDestroyAllChildren();
-	mActor->getScene()->getSceneManager()->destroySceneNode(mNode->getName());
+	mActor->getScene()->getSceneRenderer()->unregisterSource(this);
+
+	if (mRenderable) {
+		delete mRenderable;
+		mRenderable = 0;
+	}
 
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Wheel::_bindNxShapeToShape(NxShape* s) {
+	
 	mBaseShape = s;
-	mWheel = static_cast<NxWheelShape*>(mBaseShape);
+
+	if (s->isWheel()) {
+		mWheel = static_cast<NxWheelShape*>(s);
+	}
+	else {
+		NxThrow_Warning("Attempted to bind wrong NxShape to NxOgre shape");
+	}
+
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-void Wheel::simulate(float dt) {
+void Wheel::__renderSelf() {
+	switch (mLOD) {
+		case LOD_High:
+			mRenderable->setPose(__calculatePositionHigh()); break;
+		case LOD_Medium:
+			{
+				Pose calculated_pose = __calculatePositionMedium();
+				Pose blended_pose = NxInterpolate(mLastPose, calculated_pose, mActor->getScene()->getLastAlphaValue());
+				mLastPose = calculated_pose;
+				mRenderable->setPose(blended_pose);
+
+			}
+			break; 
+
+		case LOD_Low: {
+			mDeltaPose = __calculatePositionLow();
+
+			if (mDeltaPose.v != mLastPose.v) {
+				//mRenderable->setPose(mDeltaPose);
+				Pose inpose = NxInterpolate(mLastPose, mDeltaPose, 0.5f);
+				mRenderable->setPose(inpose);
+			}
+
+			mLastPose = mDeltaPose;
+			break; 
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+Pose Wheel::__calculatePositionHigh() {
+	NxMat34 pose;	
+	mWheelRollAngle += mWheel->getAxleSpeed() * mActor->getScene()->getLastDeltaTime();
+	
+	while (mWheelRollAngle > NxTwoPi)	//normally just 1x
+		mWheelRollAngle -= NxTwoPi;
+	while (mWheelRollAngle < -NxTwoPi)	//normally just 1x
+		mWheelRollAngle += NxTwoPi;
+
+	pose = mWheel->getGlobalPose();
+
+//// 2.7.0
+	NxWheelContactData wcd;
+	wcd.contactPosition = 0;
+
+	NxShape* contact_shape = mWheel->getContact(wcd);
+	NxReal suspension_travel = mWheel->getSuspensionTravel();
+	NxReal wheel_radius = mWheel->getRadius();
+
+	if (contact_shape) {
+		pose.t += mWheel->getLocalOrientation() * pose.M * NxVec3(0, wheel_radius - wcd.contactPosition, 0);
+	}
+	else {
+		pose.t += pose.M * NxVec3(0, -suspension_travel, 0);
+	}
+
+	NxMat33 Heading, Pitch;
+	Heading.rotY(mWheel->getSteerAngle());
+	Pitch.rotX(mWheelRollAngle);
+
+	pose.M = pose.M * Heading * Pitch;
+
+////////////
+
+	Pose return_pose;
+	return_pose.v = pose.t;
+	pose.M.toQuat(return_pose.q);
+
+	return return_pose;
+
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+Pose Wheel::__calculatePositionMedium() {
+	
+	mWheelRollAngle += mWheel->getAxleSpeed() * mActor->getScene()->getLastDeltaTime();
+	
+	while (mWheelRollAngle > NxTwoPi)	//normally just 1x
+		mWheelRollAngle -= NxTwoPi;
+	while (mWheelRollAngle < -NxTwoPi)	//normally just 1x
+		mWheelRollAngle += NxTwoPi;
+
+
+	NxMat34 pose;
+	pose = mWheel->getGlobalPose();
+
+	NxWheelContactData wcd;
+	NxShape* s = mWheel->getContact(wcd);	
+
+	NxReal r = mWheel->getRadius();
+	NxReal st = mWheel->getSuspensionTravel();
+	NxReal steerAngle = mWheel->getSteerAngle();
+
+	//					NxWheelShapeDesc state;	
+	//					mWheel->saveToDesc(state);
+
+	NxVec3 p0;
+	NxVec3 dir;
+	/*
+	getWorldSegmentFast(seg);
+	seg.computeDirection(dir);
+	dir.normalize();
+	*/
+	p0 = pose.t;  //cast from shape origin
+	pose.M.getColumn(1, dir);
+	dir = -dir;	//cast along -Y.
+	NxReal castLength = r + st;	//cast ray this long
+
+	//					renderer.addArrow(p0, dir, castLength, 1.0f);
+
+	//have ground contact?
+	// This code is from WheelShape.cpp in SDKs/core/common/src
+	// if (contactPosition != NX_MAX_REAL)  
+	if (s && wcd.contactForce > -1000)
+	{
+	//						pose.t = p0 + dir * wcd.contactPoint;
+	//						pose.t -= dir * state.radius;	//go from contact pos to center pos.
+		pose.t = wcd.contactPoint;
+		pose.t -= dir * r;	//go from contact pos to center pos.
+	}
+	else
+	{
+		pose.t = p0 + dir * st;
+	}
+
+	NxMat33 rot, axisRot;
+	rot.rotY(steerAngle);
+	axisRot.rotY(0);
+
+	//					NxReal rollAngle = ((ShapeUserData*)(wheel->userData))->rollAngle;
+
+	NxMat33 rollRot;
+	rollRot.rotX(mWheelRollAngle);
+
+	pose.M = rot * pose.M * axisRot * rollRot;
+
+
+	Pose return_pose;
+	return_pose.v = pose.t;
+	pose.M.toQuat(return_pose.q);
+	return return_pose;
+
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+Pose Wheel::__calculatePositionLow() {
+	
+	NxMat34 actor_pose = mActor->getNxActor()->getGlobalPose();
+	
+	NxMat34 pose = actor_pose * mWheelLocalPose;
+
+	mWheelRollAngle += mWheel->getAxleSpeed() * mActor->getScene()->getLastDeltaTime();
+	
+	while (mWheelRollAngle > NxTwoPi)	//normally just 1x
+		mWheelRollAngle -= NxTwoPi;
+	while (mWheelRollAngle < -NxTwoPi)	//normally just 1x
+		mWheelRollAngle += NxTwoPi;
+
+	NxMat33 Heading, Pitch;
+	Heading.rotY(mWheel->getSteerAngle());
+	Pitch.rotX(mWheelRollAngle);
+	pose.M = pose.M * Heading * Pitch;
+
+	Pose return_pose;
+	return_pose.v = pose.t;
+	pose.M.toQuat(return_pose.q);
+	return return_pose;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+#if 0
+{
 	mWheelRollAngle += mWheel->getAxleSpeed() * dt;
 	
 	while (mWheelRollAngle > NxTwoPi)	//normally just 1x
@@ -217,7 +404,7 @@ void Wheel::simulate(float dt) {
     mPose = mWheel->getGlobalPose();
 
 
-#if (NX_SDK_VERSION_MAJOR >= 2) && (NX_SDK_VERSION_MINOR >= 7)
+#if (NX_SDK_VERSION_NUMBER >= 270)
 
     NxWheelContactData wcd;
 	wcd.contactPosition = 0;
@@ -263,30 +450,9 @@ void Wheel::simulate(float dt) {
  	
 	// user should take care of waking up, see Wheelset class
 	// mWheel->getActor().wakeUp();
-
 }
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-
-void Wheel::render(float) {
-	if (mNode) {
-		mNode->setPosition( mPose.t.x, mPose.t.y, mPose.t.z );
-		mNode->setOrientation( toQuaternion(mPose.M) );
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-
-void Wheel::addMesh(const NxString& meshName) {
-	if (mEntity == 0) {
-		mEntity = mActor->getScene()->getSceneManager()->createEntity(NxCreateID(mActor->getNbShapes(), mNode->getName()), meshName);
-		mNode->attachObject(mEntity);
-	}
-	else {
-		Ogre::Entity* entity = mActor->getScene()->getSceneManager()->createEntity(NxCreateID(mActor->getNbShapes(), mNode->getName()), meshName);
-		mNode->attachObject(entity);
-	}
-}
+#endif
+////////////////////////////////////////////////////////////////////////////
 
 void Wheel::turn(Ogre::Radian angle) {
 	mWheel->setSteerAngle(Ogre::Radian(mWheel->getSteerAngle()+angle.valueRadians()).valueRadians());
@@ -300,7 +466,7 @@ void Wheel::setRadius(float radius) {
  
 ////////////////////////////////////////////////////////////////////////////
 
-void Wheel::setSuspensionTravel (float travel) {
+void Wheel::setSuspensionTravel(float travel) {
 	mWheel->setSuspensionTravel(travel);
 }
  
@@ -322,6 +488,8 @@ void Wheel::setSteeringAngle(Ogre::Radian angle) {
 	mWheel->setSteerAngle(angle.valueRadians());
 }
  
+
+#if 0
 ////////////////////////////////////////////////////////////////////////////
 
 WheelSet WheelSet::createFourWheelSet(Actor* actor, Ogre::Vector3 frontLeft, Ogre::Vector3 backLeft, NxReal radius, ShapeParams sp, WheelParams wp) {
@@ -329,31 +497,33 @@ WheelSet WheelSet::createFourWheelSet(Actor* actor, Ogre::Vector3 frontLeft, Ogr
 	WheelSet w;
 
 	sp.mLocalPose.id();
-	sp.mLocalPose.t = toNxVec3(frontLeft);
+	sp.mLocalPose.t = NxConvert<NxVec3, Ogre::Vector3>(frontLeft);
 
 	w.frontLeft = static_cast<Wheel*>(actor->addShape(new WheelShape(radius, sp, wp)));
 	
 	frontLeft.x = -frontLeft.x;
-	sp.mLocalPose.t = toNxVec3(frontLeft);
+	sp.mLocalPose.t = NxConvert<NxVec3, Ogre::Vector3>(frontLeft);
 	w.frontRight = static_cast<Wheel*>(actor->addShape(new WheelShape(radius, sp, wp)));
 	
-	sp.mLocalPose.t = toNxVec3(backLeft);
+	sp.mLocalPose.t = NxConvert<NxVec3, Ogre::Vector3>(backLeft);
 	w.backLeft = static_cast<Wheel*>(actor->addShape(new WheelShape(radius, sp, wp)));
 	
 	backLeft.x = -backLeft.x;
-	sp.mLocalPose.t = toNxVec3(backLeft);
+	sp.mLocalPose.t = NxConvert<NxVec3, Ogre::Vector3>(backLeft);
 	w.backRight = static_cast<Wheel*>(actor->addShape(new WheelShape(radius, sp, wp)));
 	
-	w.mWheels.insert(w.frontLeft);
-	w.mWheels.insert(w.frontRight);
-	w.mWheels.insert(w.backLeft);
-	w.mWheels.insert(w.backRight);
+	w.mWheels.insert(0, w.frontLeft);
+	w.mWheels.insert(1, w.frontRight);
+	w.mWheels.insert(2, w.backLeft);
+	w.mWheels.insert(3, w.backRight);
 
+	std::cout << "Number of Wheels => " << mWheels.count() << std::endl;
+	
 	// TODO: FWD, RWD fixing.
-	w.Drive.insert(w.frontLeft);
-	w.Drive.insert(w.frontRight);
-	w.Steering.insert(w.frontLeft);
-	w.Steering.insert(w.frontRight);
+	w.Drive.insert(0, w.frontLeft);
+	w.Drive.insert(1, w.frontRight);
+	w.Steering.insert(0, w.frontLeft);
+	w.Steering.insert(1, w.frontRight);
 
 	return w;
 }
@@ -361,8 +531,10 @@ WheelSet WheelSet::createFourWheelSet(Actor* actor, Ogre::Vector3 frontLeft, Ogr
 ////////////////////////////////////////////////////////////////////////////
 
 void WheelSet::addMeshes(Ogre::String meshName, Ogre::Vector3 offset) {
-	for(Wheels::Iterator i = mWheels.items.begin();i != mWheels.items.end();++i) {
-		(*i)->addMesh(meshName);
+	std::cout << "Adding wheels (" << mWheels.count() << ")" << std::endl;
+	for(Wheel* wheel = mWheels.begin();wheel = mWheels.next();) {
+		wheel->addMesh(meshName);
+		std::cout << " -> " << wheel << std::endl;
 	}
 }
  
@@ -370,24 +542,24 @@ void WheelSet::addMeshes(Ogre::String meshName, Ogre::Vector3 offset) {
 
 void WheelSet::turn(Ogre::Radian angle) {
 	
-	for(Wheels::Iterator i = Steering.items.begin();i != Steering.items.end();++i) {
-		(*i)->turn(angle);
+	for(Wheel* wheel = mWheels.begin();wheel = mWheels.next();) {
+		wheel->turn(angle);
 	}
 }
  
 ////////////////////////////////////////////////////////////////////////////
 
 void WheelSet::setMotorTorque(NxReal torque) {
-	for(Wheels::Iterator i = Drive.items.begin();i != Drive.items.end();++i) {
-		(*i)->setMotorTorque(torque);
+	for(Wheel* wheel = mWheels.begin();wheel = mWheels.next();) {
+		wheel->setMotorTorque(torque);
 	}
 }
  
 ////////////////////////////////////////////////////////////////////////////
 
 void WheelSet::setBrakeTorque(NxReal torque) {
-	for(Wheels::Iterator i = mWheels.items.begin();i != mWheels.items.end();++i) {
-			(*i)->setBrakeTorque(torque);
+	for(Wheel* wheel = mWheels.begin();wheel = mWheels.next();) {
+		wheel->setBrakeTorque(torque);
 	}
 }
  
@@ -398,5 +570,17 @@ void WheelSet::attachDriveShaft(DriveShaft *ds) {
 }
  
 ////////////////////////////////////////////////////////////////////////////
+
+void Wheel::setEntity(Ogre::Entity* e) {
+	
+	mNode->attachObject(e);
+	
+	if (mEntity==0) {
+		mEntity = e;
+	}
+
+}
+
+#endif 
 
 }; //End of NxOgre namespace.

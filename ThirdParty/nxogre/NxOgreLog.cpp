@@ -23,6 +23,8 @@
 #include "NxOgrePhysXDriver.h"			// For: World Access
 #include "NxOgreWorld.h"				// For: World->Shutodwn
 
+#include "OgreStringConverter.h"
+
 namespace NxOgre {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -169,6 +171,7 @@ void Log::openAsPHPBB(const NxString& f) {
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 std::string Log::encodeHTML(std::string text) {
+
 	{
 		std::string::size_type found_at = text.find( ">" );
 		while( std::string::npos != found_at ) {
@@ -176,6 +179,7 @@ std::string Log::encodeHTML(std::string text) {
 			found_at = text.find( ">", found_at + 1 );
 		}
 	}
+
 	{
 		std::string::size_type found_at = text.find( "<" );
 		while( std::string::npos != found_at ) {
@@ -203,7 +207,7 @@ void Log::reportAsHTML(const ErrorReport& r) {
 					"	<pre><code>" << message << "</code></pre>" << std::endl << 
 					"</div>";
 	}
-	else if (r.type == ErrorReport::ET_Conflic) {
+	else if (r.type == ErrorReport::ET_Conflict) {
 		mStream <<	"<div class=\"log conflict\">" << std::endl <<
 					"	<h2>" << caller << "<small>T" << r.second << " F" << r.frame << "</small></h2>" << std::endl <<
 					"	<pre><code>" << message << "</code></pre>" << std::endl << 

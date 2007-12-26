@@ -24,14 +24,6 @@
 
 namespace NxOgre {
 
-	// Convex
-	NxExport NxConvexMesh* NxGenerateConvexMeshFromOgreMesh(const NxString& meshname, NxScene *scene, NxVec3 scale = NxVec3(1,1,1), const NxString& meshGroup = "General");
-	NxExport NxConvexMesh* NxGenerateConvexMeshFromVertices(NxVec3 *verts, NxU32 nbVerts, NxScene *scene);
-	
-	// TriangleMeshShape
-	NxExport NxTriangleMesh* NxGenerateTriangleMeshFromOgreMesh(const NxString&, NxScene *scene, NxVec3 scale = NxVec3(1,1,1));
-	NxExport NxTriangleMesh* NxGenerateTriangleMeshFromVertices(NxVec3 *verts, NxU32 nbVerts, NxU32* indices, NxU32 nbIndices, NxScene*);
-
 	// Heightfields
 	NxExport NxHeightField* NxGenerateHeightFieldFromImage(const NxString& imageFilename, NxScene*);
 	NxExport NxHeightField*	NxGenerateHeightFieldFromRaw(const NxString& imageFilename, NxScene*);

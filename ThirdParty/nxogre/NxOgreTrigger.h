@@ -232,16 +232,21 @@ namespace NxOgre {
 					,Character_Enter, Character_Leave, Character_Inside
 #endif			
 				);	
-
+			
 			}
-
+			
 			//////////////////////////////////////////////////////////
-
+			
+			virtual NxShortHashIdentifier	getType() const {return 44953;	/* "NxOgre-Trigger" */}
+			virtual NxString				getStringType() const {return "NxOgre-Trigger";}
+			
+			//////////////////////////////////////////////////////////
+			
 			void _createActor(ShapeBlueprint *shape, const Pose& pose, ActorParams params);
 			void _destroyActor();
-
+			
 			//////////////////////////////////////////////////////////
-
+			
 		protected:
 
 			void onEnter(Actor*);

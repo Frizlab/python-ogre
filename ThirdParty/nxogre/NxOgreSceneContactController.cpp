@@ -21,6 +21,7 @@
 #include "NxOgreSceneContactController.h"
 #include "NxOgreScene.h"
 #include "NxOgreGroup.h"
+#include "NxOgreContactStream.h"
 #include "NxOgreUserData.h"
 
 namespace NxOgre {
@@ -54,10 +55,13 @@ void SceneContactController::onContactNotify(NxContactPair &pair, NxU32 events) 
 		return;
 	}
 
+	
 	NxActorGroup agid = pair.actors[0]->getGroup();
 	NxActorGroup bgid = pair.actors[1]->getGroup();
-
+	
 	ActorGroup *ag, *bg;
+
+	ContactStream* stream = new ContactStream(pair.stream);
 
 	switch(events) {
 
@@ -67,10 +71,10 @@ void SceneContactController::onContactNotify(NxContactPair &pair, NxU32 events) 
 			bg = mActorGroupsIndexed->get(bgid);
 			
 			if (ag)
-				ag->onTouch(a, b);
+				ag->onTouch(a, b, stream);
 
 			if (bg)
-				bg->onTouch(b, a);
+				bg->onTouch(b, a, stream);
 
 		break;
 
@@ -80,10 +84,10 @@ void SceneContactController::onContactNotify(NxContactPair &pair, NxU32 events) 
 			bg = mActorGroupsIndexed->get(bgid);
 			
 			if (ag)
-				ag->onStartTouch(a, b);
+				ag->onStartTouch(a, b, stream);
 
 			if (bg)
-				bg->onStartTouch(b, a);
+				bg->onStartTouch(b, a, stream);
 
 		break;
 
@@ -93,13 +97,15 @@ void SceneContactController::onContactNotify(NxContactPair &pair, NxU32 events) 
 			bg = mActorGroupsIndexed->get(bgid);
 			
 			if (ag)
-				ag->onEndTouch(a, b);
+				ag->onEndTouch(a, b, stream);
 
 			if (bg)
-				bg->onEndTouch(b, a);
+				bg->onEndTouch(b, a, stream);
 
 		break;
 	}
+
+	delete stream;
 
 }
 

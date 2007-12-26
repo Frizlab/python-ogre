@@ -25,11 +25,15 @@
 #include "NxOgreUserAllocator.h"
 #include "NxCooking.h"				// For: NxInitCooking
 #include "NxOgreRemoteDebuggerConnection.h"
-#include "NxOgreMeshManager.h"
+#include "NxOgreResourceManager.h"
+#include "NxOgreOgreResourceSystem.h"
 
 #if defined NX_WIN32 && defined NX_DEBUG
-#include "windows.h"
+#	include "windows.h"
 #endif
+
+#include "OgreRoot.h"
+#include "OgreSingleton.h"
 
 namespace NxOgre {
 
@@ -37,17 +41,14 @@ namespace NxOgre {
 
 void PhysXDriverParams::setToDefault() {
 	
-	useFrameListener = true;
-	use_SDK_ID = false;
-	SDK_ID_CompanyName = "";
-	SDK_ID_ApplicationName = "";
-	SDK_ID_ApplicationVersion = "";
-	SKD_ID_ApplicationUserDefined = "";
-	shutdownOnErrors = false;
+	mHasFrameListener = true;
+	mShutdownOnErrors = false;
+	mInitResources = true;
+
 #ifdef NX_DEBUG
-	logtype = LT_HTML;
+	mLogType = LT_HTML;
 #else
-	logtype = LT_NONE;
+	mLogType = LT_NONE;
 #endif
 }
 
@@ -60,16 +61,18 @@ void PhysXDriverParams::parse(Parameters P) {
 
 	for (Parameters::iterator p = P.begin(); p != P.end();p++) {
 
-		if (Set("framelistener", (*p), useFrameListener)) continue;
-		if (Set("shutdown-on-errors", (*p), shutdownOnErrors)) continue;
+		if (Set("framelistener", (*p), mHasFrameListener)) continue;
+		if (Set("shutdown-on-errors", (*p), mShutdownOnErrors)) continue;
+		if (Set("init-resources", (*p), mInitResources)) continue;
+
 		
 		if ((*p).first == "log") {
 
 			toLower((*p).second);
-			if ((*p).second == "none")			logtype = LT_NONE;
-			else if ((*p).second == "text")		logtype = LT_TEXT;
-			else if ((*p).second == "html")		logtype = LT_HTML;
-			else if ((*p).second == "phpbb")	logtype = LT_PHPBB;
+			if ((*p).second == "none")			mLogType = LT_NONE;
+			else if ((*p).second == "text")		mLogType = LT_TEXT;
+			else if ((*p).second == "html")		mLogType = LT_HTML;
+			else if ((*p).second == "phpbb")	mLogType = LT_PHPBB;
 			continue;
 		}
 	}
@@ -84,18 +87,18 @@ PhysXDriver::PhysXDriver(World* w, PhysXDriverParams params) : mFramelistener(fa
 	NxDebug("NxOgre " + Nx_Version_Full + "'" + Nx_Version_Codename + "'");
 #endif
 	
-	mError = new Error(this, params.shutdownOnErrors);
-	mAllocator = new NxOgre::UserAllocator();
+	mError = new Error(this, params.mShutdownOnErrors);
+	mAllocator = NxCreateAllocator("Global");
 
-	if (params.logtype == params.LT_TEXT) {
+	if (params.mLogType == params.LT_TEXT) {
 		mLog = new Log(Log::TEXT);
 		mError->addReporter(mLog, true);
 	}
-	else if (params.logtype == params.LT_HTML) {
+	else if (params.mLogType == params.LT_HTML) {
 		mLog = new Log(Log::HTML);
 		mError->addReporter(mLog, true);
 	}
-	else if (params.logtype == params.LT_PHPBB) {
+	else if (params.mLogType == params.LT_PHPBB) {
 		mLog = new Log(Log::PHPBB);
 		mError->addReporter(mLog, true);
 	}
@@ -103,13 +106,10 @@ PhysXDriver::PhysXDriver(World* w, PhysXDriverParams params) : mFramelistener(fa
 		mLog = 0;
 	}
 
-	if (params.useFrameListener)
+	if (params.mHasFrameListener)
 		_createFrameListener();
 
-	if (!params.use_SDK_ID)
-		_createSDK();
-	else
-		_createSDKfromID(params.SDK_ID_CompanyName,params.SDK_ID_ApplicationName,params.SDK_ID_ApplicationVersion, params.SKD_ID_ApplicationUserDefined);
+	_createSDK();
 
 	std::stringstream s;
 	s	<< "NxOgre (" << Nx_Version_Full << ") Started, working with:" << std::endl << std::endl
@@ -143,8 +143,6 @@ PhysXDriver::PhysXDriver(World* w, PhysXDriverParams params) : mFramelistener(fa
 	
 	NxInitCooking(NULL, NULL);
 
-	mMeshManager = new NxOgre::MeshManager(this);
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -157,7 +155,7 @@ PhysXDriver::~PhysXDriver() {
 	if (mDebugger)
 		destroyDebuggerConnection();
 
-	delete mMeshManager;
+	NxCloseCooking();
 
 	_destroySDK();
 
@@ -192,36 +190,103 @@ void PhysXDriver::_destroyFrameListener() {
 
 void PhysXDriver::_createSDK() {
 	
+	
+
+	NxSDKCreateError errorCode = NXCE_NO_ERROR;
+
 	NxPhysicsSDKDesc desc;
 	desc.setToDefault();
-	mSDK = NxCreatePhysicsSDK(NX_PHYSICS_SDK_VERSION, mAllocator, mError, desc, 0);
-	//mSDK = NxCreatePhysicsSDK(NX_PHYSICS_SDK_VERSION, mAllocator); ///* To-Implement:, mAllocator, mError */);
+	mSDK = NxCreatePhysicsSDK(NX_PHYSICS_SDK_VERSION, mAllocator, mError, desc, &errorCode);
 	
-	if(!mSDK) {
+	if(!mSDK && errorCode != 0) {
 		std::stringstream s;
 #ifdef NX_DEBUG
-		s   << "Unable to start the PhysX SDK!" << std::endl << std::endl 
-			<< "Possible problems:" << std::endl
-			<< std::endl
-			<< "1.	Do you have the SystemSoftware.exe installed?" << std::endl
-			<< "	http://www.ageia.com/drivers/" << std::endl
-			<< std::endl << std::endl
-			<< "2.	Does the System software support the NxOgre version you have?" << std::endl 
-			<< "	PhysX DLL version: " << NX_SDK_VERSION_MAJOR << "." << NX_SDK_VERSION_MINOR << "." << NX_SDK_VERSION_BUGFIX << std::endl
-			<< std::endl << std::endl 
-			<< "3.	Are you using the latest version of NxOgre?" << std::endl
-			<< "	" << Nx_Version_Full << std::endl
-			<< "	Most recent versions are at http://get.nxogre.org/" << std::endl;
+
+		s   << "Unable to start the PhysX SDK!" << std::endl << std::endl;
+		
+		switch (errorCode) {
+
+			default: 
+				s << "Unknown Error." 
+				  << "Please report to the NxOgre team. " << std::endl;
+			break;
+						
+			case NXCE_PHYSX_NOT_FOUND:
+				s << "Unable to find the PhysX libraries. The PhysX drivers are not installed correctly." << std::endl;
+				s << "- You can download the PhysX Drivers (also known as SystemSoftware) from http://www.ageia.com/drivers/" << std::endl;
+				s << "- Install/Reinstall the drivers. Make sure the version of the SystemSoftware is compatible with the SDK." << std::endl;
+				s << "- Look at the SDK release notes for further information, or visit http://devsupport.ageia.com" << std::endl;
+			break;
+
+			case NXCE_WRONG_VERSION:
+				s << "The application supplied a version number that does not match with the libraries." << std::endl;
+				s << "- Make sure that the NxCreatePhysicsSDK function passes on NX_PHYSICS_SDK_VERSION." << std::endl;
+			break;
+
+			case NXCE_DESCRIPTOR_INVALID:
+				s << "The supplied SDK descriptor is invalid." << std::endl;
+				s << " - Look at NxPhysicsSDKDesc in nxphysicssdk.h for more information." << std::endl;
+			break;
+			
+			case NXCE_CONNECTION_ERROR:
+				s << "A PhysX card was found, but there are problems when communicating with the card." << std::endl;
+				s << " - Please visit http://support.ageia.com and/or your PhysX card manufacture." << std::endl; 
+			break;
+			
+			case NXCE_RESET_ERROR: 
+				s << "A PhysX card was found, but it did not reset (or initialize) properly." << std::endl;
+				s << " - Please visit http://support.ageia.com and/or your PhysX card manufacture." << std::endl; 
+			break;
+
+			case NXCE_IN_USE_ERROR:
+				s << "A PhysX card was found, but it is already in use by another application." << std::endl;
+				s << " - Close down all programs using the PhysX hardware before using this application." << std::endl; 
+			break;
+
+			case NXCE_BUNDLE_ERROR:
+				s << "A PhysX card was found, but there are issues with loading the firmware." << std::endl;
+				s << " - Please visit http://support.ageia.com and/or your PhysX card manufacture." << std::endl;
+			break;
+
+		}
 #else
 		s << "Unable to start the PhysX SDK!" << std::endl << std::endl << "Please refer to the developer or publisher's website or support line for information relating to the errors detailed."
-		  << std::endl << std::endl << "	-> Error Code: PhysX SDK is unavailable. Please install the PhysX System Software." << std::endl;
+		  << std::endl << std::endl << "	-> Error Code: ";
+
+		switch (errorCode) {
+			case NXCE_NO_ERROR:				s << "NXCE_NO_ERROR" << std::endl; break;
+			case NXCE_PHYSX_NOT_FOUND:		s << "NXCE_PHYSX_NOT_FOUND" << std::endl; break;
+			case NXCE_WRONG_VERSION:		s << "NXCE_WRONG_VERSION" << std::endl; break;
+			case NXCE_DESCRIPTOR_INVALID:	s << "NXCE_DESCRIPTOR_INVALID" << std::endl; break;
+			case NXCE_CONNECTION_ERROR:		s << "NXCE_CONNECTION_ERROR" << std::endl; break;
+			case NXCE_RESET_ERROR:			s << "NXCE_RESET_ERROR" << std::endl; break;
+			case NXCE_IN_USE_ERROR:			s << "NXCE_IN_USE_ERROR" << std::endl; break;
+			case NXCE_BUNDLE_ERROR:			s << "NXCE_BUNDLE_ERROR" << std::endl; break;
+		}
+
+		s   << " - Reason: ";
+		
+		switch (errorCode) {
+			default: s << "Unknown Error" << std::endl; break;
+			case NXCE_NO_ERROR: s << "No Error(!!?)" << std::endl; break;
+			case NXCE_PHYSX_NOT_FOUND: s << "Unable to find the PhysX libraries. The PhysX drivers are not installed correctly." << std::endl; break;
+			case NXCE_WRONG_VERSION: s << "The application supplied a version number that does not match with the libraries." << std::endl; break;
+			case NXCE_DESCRIPTOR_INVALID: s << "The supplied SDK descriptor is invalid." << std::endl; break;
+			case NXCE_CONNECTION_ERROR: s << "A PhysX card was found, but there are problems when communicating with the card." << std::endl; break;
+			case NXCE_RESET_ERROR: s << "A PhysX card was found, but it did not reset (or initialize) properly." << std::endl; break;
+			case NXCE_IN_USE_ERROR: s << "A PhysX card was found, but it is already in use by another application." << std::endl; break;
+			case NXCE_BUNDLE_ERROR: s << "A PhysX card was found, but there are issues with loading the firmware." << std::endl; break;
+		}
+
+		s << std::endl;
 #endif
 
-		s <<  std::endl << std::endl << std::endl <<  "Version information:" << std::endl
+		s <<  std::endl << std::endl << std::endl <<  "Application information:" << std::endl
 		<< "- PhysX    => " << NX_SDK_VERSION_MAJOR << "." << NX_SDK_VERSION_MINOR << "." << NX_SDK_VERSION_BUGFIX << std::endl
 		<< "- NxOgre   => " << Nx_Version_Full << std::endl
 		<< "- Ogre     => " << OGRE_VERSION_MAJOR << "." << OGRE_VERSION_MINOR << "." << OGRE_VERSION_PATCH << " '" << OGRE_VERSION_NAME << "'." << std::endl;
-			
+	
+
 		#ifdef NX_WIN32
 		s	<< "- Platform => Windows";
 		#endif
@@ -237,11 +302,24 @@ void PhysXDriver::_createSDK() {
 
 		s << std::endl;
 
+		s << "- Error  => ";
+		
+		switch (errorCode) {
+			case NXCE_NO_ERROR:				s << "NXCE_NO_ERROR" << std::endl; break;
+			case NXCE_PHYSX_NOT_FOUND:		s << "NXCE_PHYSX_NOT_FOUND" << std::endl; break;
+			case NXCE_WRONG_VERSION:		s << "NXCE_WRONG_VERSION" << std::endl; break;
+			case NXCE_DESCRIPTOR_INVALID:	s << "NXCE_DESCRIPTOR_INVALID" << std::endl; break;
+			case NXCE_CONNECTION_ERROR:		s << "NXCE_CONNECTION_ERROR" << std::endl; break;
+			case NXCE_RESET_ERROR:			s << "NXCE_RESET_ERROR" << std::endl; break;
+			case NXCE_IN_USE_ERROR:			s << "NXCE_IN_USE_ERROR" << std::endl; break;
+			case NXCE_BUNDLE_ERROR:			s << "NXCE_BUNDLE_ERROR" << std::endl; break;
+		}
+
 		NxThrow_Error(s.str());
 
 #if defined NX_WIN32 && defined NX_DEBUG
-		s << std::endl << "On clicking of OK this Application will quit. See log or console window for more information.";
-		MessageBox( NULL, s.str().c_str(), "Unable to start the PhysX SDK!", MB_OK | MB_ICONERROR | MB_TASKMODAL);
+		s << std::endl << "On clicking of OK this Application will quit. See log or console window for a copy of this message and further information.";
+ 		MessageBox( NULL, s.str().c_str(), "Unable to start the PhysX SDK!", MB_OK | MB_ICONERROR | MB_TASKMODAL);
 #endif
 
 
@@ -295,6 +373,7 @@ bool PhysXDriver::frameEnded(const Ogre::FrameEvent& evt) {
 #if (NX_RENDER_IN_FRAMESTARTED == 0)
 	render(evt.timeSinceLastFrame);
 #endif
+
 	return true;
 }
 
@@ -323,5 +402,13 @@ void PhysXDriver::destroyDebuggerConnection() {
 		mDebugger = 0;
 	}
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+bool PhysXDriver::hasHardware() {
+	return (mSDK->getHWVersion() != NX_HW_VERSION_NONE);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////
 
 }; //End of NxOgre namespace.

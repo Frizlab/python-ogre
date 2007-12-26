@@ -62,8 +62,8 @@ CylindricalJoint::CylindricalJoint(Actor *a, const Ogre::Vector3 &axis, const Og
 void CylindricalJoint::__createJoint(const Ogre::Vector3 &axis, const Ogre::Vector3 &anchor, JointParams& jp) {
 	
 	mCallback = 0;
-	mDescription.setGlobalAnchor(toNxVec3(anchor));
-	mDescription.setGlobalAxis(toNxVec3(axis));
+	mDescription.setGlobalAnchor(NxConvert<NxVec3, Ogre::Vector3>(anchor));
+	mDescription.setGlobalAxis(NxConvert<NxVec3, Ogre::Vector3>(axis));
 	mDescription.userData = this;
 
 	mCallback = jp.mBreakableCallback;
@@ -139,6 +139,100 @@ FixedJoint::~FixedJoint() {
 		mScene->getNxScene()->releaseJoint(*mJoint);
 
 	mFixedJoint = 0;
+	if (mCallback)
+		delete mCallback;
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+// DistanceJoint
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////
+
+DistanceJoint::DistanceJoint(Actor* a, Actor* b, JointParams jp) : Joint(a,b){
+	mDescription.setToDefault();
+	mDescription.jointFlags = 0;
+	ActorsToDescription(a, b, mDescription);
+	ParamsToDescription(jp, mDescription);
+	__createJoint(jp,0,0);
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+DistanceJoint::DistanceJoint(Actor* a, JointParams jp) : Joint (a) {
+	mDescription.setToDefault();
+	mDescription.jointFlags = 0;
+	ActorToDescription(a, mDescription);
+	ParamsToDescription(jp, mDescription);
+	__createJoint(jp,0,0);
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+DistanceJoint::DistanceJoint(Actor* a, Actor* b, NxReal maxDistance, NxReal minDistance, JointParams jp) : Joint(a,b){
+	mDescription.setToDefault();
+	mDescription.jointFlags = 0;
+	ActorsToDescription(a, b, mDescription);
+	ParamsToDescription(jp, mDescription);
+	__createJoint(jp,maxDistance, minDistance);
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+DistanceJoint::DistanceJoint(Actor* a, NxReal maxDistance, NxReal minDistance, JointParams jp) : Joint (a) {
+	mDescription.setToDefault();
+	mDescription.jointFlags = 0;
+	ActorToDescription(a, mDescription);
+	ParamsToDescription(jp, mDescription);
+	__createJoint(jp,maxDistance, minDistance);
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+void DistanceJoint::__createJoint(JointParams& jp, NxReal maxD, NxReal minD) {
+	
+	mCallback = 0;
+
+	mDescription.userData = this;
+
+	if (maxD) {
+		mDescription.maxDistance = maxD;
+		mDescription.flags |= NX_DJF_MIN_DISTANCE_ENABLED;
+	}
+
+	if (minD) {
+		mDescription.minDistance = minD;
+		mDescription.flags |= NX_DJF_MAX_DISTANCE_ENABLED;
+	}
+
+	if (jp.mHasSpring) {
+		mDescription.spring.spring = jp.mSpring;
+		mDescription.spring.damper = jp.mSpringDamper;
+		mDescription.spring.targetValue = jp.mSpringTarget;
+		mDescription.flags |= NX_DJF_SPRING_ENABLED;
+	}
+
+	mCallback = jp.mBreakableCallback;
+	mJoint = mScene->getNxScene()->createJoint(mDescription);
+	mDistanceJoint = static_cast<NxDistanceJoint*>(mJoint);
+	
+}
+
+////////////////////////////////////////////////////////////////////////////////////
+
+DistanceJoint::~DistanceJoint() {
+	
+	if (mJoint)
+		mScene->getNxScene()->releaseJoint(*mJoint);
+
+	mDistanceJoint = 0;
 	if (mCallback)
 		delete mCallback;
 }

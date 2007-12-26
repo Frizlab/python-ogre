@@ -30,44 +30,51 @@
 #include "NxOgreContainer.h"			// For Getting an ActorGroup
 #include "NxOgreActorBlueprint.h"		// For Quick Duplication.
 
+#include "OgreStringConverter.h"
+#include "OgreRoot.h"
+#include "OgreSingleton.h"
+#include "OgreMatrix3.h"
+
 namespace NxOgre {
 
 //////////////////////////////////////////////////////////
 
 void ActorParams::setToDefault() {
 
-	mDensity				= 0.0f;
-	mActorFlags				= 0;
-	mGroupAsIndex			= 0;
-	mGroupAsName			= "";
+
+	mDensity				 = 0.0f;
+	mActorFlags				 = 0;
+	mGroupAsIndex			 = 0;
+	mGroupAsName			 = "";
 #if NX_SDK_VERSION_NUMBER >= 272 
-	mDominanceGroupAsIndex	= 0;
-	mDominanceGroupAsName	= "";
+	mDominanceGroupAsIndex	 = 0;
+	mDominanceGroupAsName	 = "";
 #endif
 #if NX_SDK_VERSION_NUMBER >= 260
-	mCompartment			= NULL;
+	mCompartment			 = NULL;
 #endif
-	mMassLocalPose			. id();
-	mMassSpaceInertia		. zero();
-	mLinearVelocity			. zero();
-	mAngularVelocity		. zero();
-	mWakeUpCounter			= 20.0f*0.02f;
-	mMass					= 10.0f;
-	mLinearDamping			= 0.0f;
-	mAngularDamping			= 0.05f;
-	mMaxAngularVelocity		= -1.0f;
-	mBodyFlags				= NX_BF_VISUALIZATION;
-	mSleepLinearVelocity	= -1.0f;
-	mSleepAngularVelocity	= -1.0f;
-	mCCDMotionThreshold		= 0.0f;
-	mSolverIterationCount   = 4;
-	mBodyFlags				= NX_BF_ENERGY_SLEEP_TEST;
-	mSleepEnergyThreshold	= -1.0f;
-	mSleepDamping			= 0.0f;
+	mMassLocalPose			 . id();
+	mMassSpaceInertia		 . zero();
+	mLinearVelocity			 . zero();
+	mAngularVelocity		 . zero();
+	mWakeUpCounter			 = 20.0f * 0.02f;
+	mMass					 = 10.0f;
+	mLinearDamping			 = 0.0f;
+	mAngularDamping			 = 0.05f;
+	mMaxAngularVelocity		 = -1.0f;
+	mBodyFlags				 = NX_BF_VISUALIZATION;
+	mBodyFlags				|= NX_BF_ENERGY_SLEEP_TEST;
+	mSleepLinearVelocity	 = -1.0f;
+	mSleepAngularVelocity	 = -1.0f;
+	mCCDMotionThreshold		 = 0.0f;
+	mSolverIterationCount    = 4;
+	mSleepEnergyThreshold	 = -1.0f;
+	mSleepDamping			 = 0.0f;
 
-	mNodeScale				= Ogre::Vector3(1,1,1);
-	mNodeName				= "";
-	mNodeShadows			= true;
+	mNodeScale				 = Ogre::Vector3(1,1,1);
+	mNodeName				 = "";
+	mNodeShadows			 = true;
+	mNodePose				 . id();
 
 }
 
@@ -122,6 +129,8 @@ void ActorParams::parse(Parameters P) {
 		if (Set("node-scale", (*p), mNodeScale)) continue;
 		if (Set("node-shadows", (*p), mNodeShadows)) continue;
 		if (Set("node", (*p), mNodeName)) continue;
+		if (Set("node-orientation", (*p), mNodePose.q)) continue;
+		if (Set("node-offset", (*p), mNodePose.v)) continue;
 
 	}
 
@@ -176,11 +185,11 @@ Actor::Actor(const NxString& Identifier, Scene* scene, bool isActorBased) : mNam
 
 //////////////////////////////////////////////////////////
 
-Actor::Actor(const NxString& name, Scene* scene, ShapeBlueprint *shape, const Pose& pose, ActorParams params) : mName(name), mOwner(scene) {
+Actor::Actor(const NxString& name, Scene* scene, ShapeBlueprint *shape, const Pose& pose, ActorParams params)
+: mName(name), mOwner(scene) {
 
 	if (name.length() == 0) {
 		mName = NxCreateID(scene->getNbActors(), "Actor");
-		mVisualIdentifier = NxString();
 	}
 	else {
 
@@ -190,12 +199,9 @@ Actor::Actor(const NxString& name, Scene* scene, ShapeBlueprint *shape, const Po
 
 		if (splitID.size() == 1) {
 			identifier = name;
-			mVisualIdentifier = name;
 		}
 		else {
 			identifier = splitID[0];
-			mVisualIdentifier = splitID[1];
-			Ogre::StringUtil::trim(mVisualIdentifier);
 		}
 
 		Ogre::StringUtil::trim(identifier);
@@ -310,7 +316,7 @@ void Actor::_createActor(ShapeBlueprint *shape, const Pose& pose, ActorParams pa
 		bd.wakeUpCounter = params.mWakeUpCounter;
 		ad.body = &bd;
 	}
-	
+
 	shape->_bindToActorDescription(this, 0, ad.shapes);
 
 	mActor = mOwner->mScene->createActor(ad);
@@ -334,7 +340,7 @@ void Actor::_createActor(ShapeBlueprint *shape, const Pose& pose, ActorParams pa
 		i++;
 	}
 
-#if (OGRE_VERSION_MINOR >= 5)
+#if (OGRE_VERSION_MAJOR >= 1) && (OGRE_VERSION_MINOR >= 5)
 	mBirthFrame = Ogre::Root::getSingletonPtr()->getNextFrameNumber() - 1;
 #else
 	mBirthFrame = Ogre::Root::getSingletonPtr()->getCurrentFrameNumber();
@@ -352,32 +358,6 @@ void Actor::_destroyActor() {
 
 //////////////////////////////////////////////////////////
 
-void Actor::simulate(float dT) {
-	shapeSimulate(dT);
-}
-
-//////////////////////////////////////////////////////////
-
-void Actor::render(float) {
-	// No.
-}
-
-//////////////////////////////////////////////////////////
-
-void Actor::shapeSimulate(float t) {
-	for(Shape* shape = mDynamicCollisionModel.begin();shape = mDynamicCollisionModel.next();)
-		shape->simulate(t);
-}
-
-//////////////////////////////////////////////////////////
-
-void Actor::shapeRender(float t) {
-	for(Shape* shape = mDynamicCollisionModel.begin();shape = mDynamicCollisionModel.next();)
-		shape->render(t);
-}
-
-//////////////////////////////////////////////////////////
-
 void Actor::setName(NxString name) {
 	mOwner->mActors.rename(mName, name);
 	mName = name;
@@ -385,7 +365,7 @@ void Actor::setName(NxString name) {
 
 //////////////////////////////////////////////////////////
 
-NxString Actor::getName() {
+NxString Actor::getName() const {
 	return mName;
 }
 
@@ -423,25 +403,25 @@ Pose Actor::getGlobalPose() {
 //////////////////////////////////////////////////////////
 
 Ogre::Quaternion Actor::getGlobalOrientation() {
-	return toQuaternion(mActor->getGlobalOrientationQuat());
+	return NxConvert<Ogre::Quaternion, NxQuat>(mActor->getGlobalOrientationQuat());
 }
 
 //////////////////////////////////////////////////////////
 
 void Actor::setGlobalOrientation(const Ogre::Quaternion& quat) {
-	mActor->setGlobalOrientation(toNxQuat(quat));
+	mActor->setGlobalOrientation(NxConvert<NxQuat, Ogre::Quaternion>(quat));
 }
 
 //////////////////////////////////////////////////////////
 
 Ogre::Vector3 Actor::getGlobalPosition() {
-	return toVector3(mActor->getGlobalPosition());
+	return NxConvert<Ogre::Vector3, NxVec3>(mActor->getGlobalPosition());
 }
 
 //////////////////////////////////////////////////////////
 
 void Actor::setGlobalPosition(const Ogre::Vector3& vec) {
-	mActor->setGlobalPosition(toNxVec3(vec));
+	mActor->setGlobalPosition(NxConvert<NxVec3, Ogre::Vector3>(vec));
 }
 
 //////////////////////////////////////////////////////////
@@ -453,13 +433,13 @@ void Actor::moveGlobalPose(const Pose& pose) {
 //////////////////////////////////////////////////////////
 
 void Actor::moveGlobalPosition(const Ogre::Vector3& vec) {
-	mActor->moveGlobalPosition(toNxVec3(vec));
+	mActor->moveGlobalPosition(NxConvert<NxVec3, Ogre::Vector3>(vec));
 }
 
 //////////////////////////////////////////////////////////
 
 void Actor::moveGlobalOrientation(const Ogre::Quaternion& quat) {
-	mActor->moveGlobalOrientationQuat(toNxQuat(quat));
+	mActor->moveGlobalOrientationQuat(NxConvert<NxQuat, Ogre::Quaternion>(quat));
 }
 
 ////////////////////////////////////////////////////////
@@ -474,6 +454,7 @@ void Actor::moveTowards(const Pose& p, float force) {
 ////////////////////////////////////////////////////////
 
 #if 0
+
 const ShapeBlueprint& Actor::createShapeDescription(const ShapeBlueprint& s) {
 	NxUnderConstruction;
 	return s;
@@ -512,6 +493,7 @@ ShapeBlueprint Actor::getShapeDescription(Ogre::uint id) {
 	NxUnderConstruction;
 	return NULL;
 }
+
 #endif
 
 //////////////////////////////////////////////////////////
@@ -571,7 +553,7 @@ void Actor::setCMassOffsetLocalPose(const Pose& pose) {
 //////////////////////////////////////////////////////////
 
 void Actor::setCMassOffsetLocalPosition(const Ogre::Vector3& vec) {
-	mActor->setCMassOffsetLocalPosition(toNxVec3(vec));
+	mActor->setCMassOffsetLocalPosition(NxConvert<NxVec3, Ogre::Vector3>(vec));
 }
 
 //////////////////////////////////////////////////////////
@@ -584,7 +566,6 @@ void Actor::setCMassOffsetLocalOrientation(const NxMat33& m) {
 
 void Actor::setCMassOffsetLocalOrientation(const Ogre::Matrix3& vec) {
 	NxUnderConstruction;
-
 }
 
 //////////////////////////////////////////////////////////
@@ -596,7 +577,7 @@ void Actor::setCMassOffsetGlobalPose(const Pose& pose) {
 //////////////////////////////////////////////////////////
 
 void Actor::setCMassOffsetGlobalPosition(const Ogre::Vector3& vec) {
-	mActor->setCMassOffsetGlobalPosition(toNxVec3(vec));
+	mActor->setCMassOffsetGlobalPosition(NxConvert<NxVec3, Ogre::Vector3>(vec));
 }
 
 //////////////////////////////////////////////////////////
@@ -622,7 +603,7 @@ void Actor::setCMassGlobalPose(const Pose& pose) {
 //////////////////////////////////////////////////////////
 
 void Actor::setCMassGlobalPosition(const Ogre::Vector3& vec) {
-	mActor->setCMassGlobalPosition(toNxVec3(vec));
+	mActor->setCMassGlobalPosition(NxConvert<NxVec3, Ogre::Vector3>(vec));
 }
 
 //////////////////////////////////////////////////////////
@@ -644,13 +625,13 @@ Pose Actor::getCMassLocalPose()	const {
 //////////////////////////////////////////////////////////
 
 Ogre::Vector3 Actor::getCMassLocalPosition()	const {
-	return toVector3(mActor->getCMassLocalPosition());
+	return NxConvert<Ogre::Vector3, NxVec3>(mActor->getCMassLocalPosition());
 }
 
 //////////////////////////////////////////////////////////
 
 Ogre::Quaternion Actor::getCMassLocalOrientation() const {
-	return toQuaternion(mActor->getCMassLocalOrientation());
+	return NxConvert<Ogre::Quaternion, NxQuat>(mActor->getCMassLocalOrientation());
 }
 
 //////////////////////////////////////////////////////////
@@ -664,7 +645,7 @@ Pose Actor::getCMassGlobalPose() const {
 //////////////////////////////////////////////////////////
 
 Ogre::Vector3 Actor::getCMassGlobalPosition() const {
-	return toVector3(mActor->getCMassGlobalPosition());
+	return NxConvert<Ogre::Vector3, NxVec3>(mActor->getCMassGlobalPosition());
 }
 
 //////////////////////////////////////////////////////////
@@ -672,7 +653,7 @@ Ogre::Vector3 Actor::getCMassGlobalPosition() const {
 Ogre::Quaternion Actor::getCMassGlobalOrientation()	const {
 	NxQuat quat;
 	mActor->getCMassGlobalOrientation().toQuat(quat);
-	return toQuaternion(quat);
+	return NxConvert<Ogre::Quaternion, NxQuat>(quat);
 }
 
 //////////////////////////////////////////////////////////
@@ -692,13 +673,13 @@ NxReal Actor::getMass() const {
 
 
 void Actor::setMassSpaceInertiaTensor(const Ogre::Vector3& vec) {
-	mActor->setMassSpaceInertiaTensor(toNxVec3(vec));
+	mActor->setMassSpaceInertiaTensor(NxConvert<NxVec3, Ogre::Vector3>(vec));
 }
 
 //////////////////////////////////////////////////////////
 
 Ogre::Vector3 Actor::getMassSpaceInertiaTensor()	const {
-	return toVector3(mActor->getMassSpaceInertiaTensor());
+	return NxConvert<Ogre::Vector3, NxVec3>(mActor->getMassSpaceInertiaTensor());
 }
 
 //////////////////////////////////////////////////////////
@@ -758,26 +739,26 @@ NxReal Actor::getAngularDamping() const {
 //////////////////////////////////////////////////////////
 
 void Actor::setLinearVelocity(const Ogre::Vector3& vec) {
-	mActor->setLinearVelocity(toNxVec3(vec));
+	mActor->setLinearVelocity(NxConvert<NxVec3, Ogre::Vector3>(vec));
 }
 
 //////////////////////////////////////////////////////////
 
 void Actor::setAngularVelocity(const Ogre::Vector3& vec) {
-	mActor->setAngularVelocity(toNxVec3(vec));
+	mActor->setAngularVelocity(NxConvert<NxVec3, Ogre::Vector3>(vec));
 }
 
 //////////////////////////////////////////////////////////
 
 
 Ogre::Vector3 Actor::getLinearVelocity()	const {
-	return toVector3(mActor->getLinearVelocity());
+	return NxConvert<Ogre::Vector3, NxVec3>(mActor->getLinearVelocity());
 }
 
 //////////////////////////////////////////////////////////
 
 Ogre::Vector3 Actor::getAngularVelocity() const {
-	return toVector3(mActor->getAngularVelocity());
+	return NxConvert<Ogre::Vector3, NxVec3>(mActor->getAngularVelocity());
 }
 
 //////////////////////////////////////////////////////////
@@ -808,73 +789,91 @@ NxReal Actor::getCCDMotionThreshold()	const {
 //////////////////////////////////////////////////////////
 
 void Actor::setLinearMomentum(const Ogre::Vector3& vec) {
-	mActor->setLinearMomentum(toNxVec3(vec));
+	mActor->setLinearMomentum(NxConvert<NxVec3, Ogre::Vector3>(vec));
 }
 
 //////////////////////////////////////////////////////////
 
 void Actor::setAngularMomentum(const Ogre::Vector3& vec) {
-	mActor->setAngularMomentum(toNxVec3(vec));
+	mActor->setAngularMomentum(NxConvert<NxVec3, Ogre::Vector3>(vec));
 }
 
 //////////////////////////////////////////////////////////
 
 Ogre::Vector3 Actor::getLinearMomentum()		const {
-	return toVector3(mActor->getLinearMomentum());
+	return NxConvert<Ogre::Vector3, NxVec3>(mActor->getLinearMomentum());
 }
 
 //////////////////////////////////////////////////////////
 
 Ogre::Vector3 Actor::getAngularMomentum()	const {
-	return toVector3(mActor->getAngularMomentum());
+	return NxConvert<Ogre::Vector3, NxVec3>(mActor->getAngularMomentum());
 }
 
 //////////////////////////////////////////////////////////
 
 void Actor::addForceAtPos(const Ogre::Vector3& force, const Ogre::Vector3& pos, NxForceMode mode, bool wakeup) {
-	mActor->addForceAtPos(toNxVec3(force), toNxVec3(pos), mode, wakeup);
+	mActor->addForceAtPos(NxConvert<NxVec3, Ogre::Vector3>(force), NxConvert<NxVec3, Ogre::Vector3>(pos), mode, wakeup);
 }
 
 //////////////////////////////////////////////////////////
 
 void Actor::addForceAtLocalPos(const Ogre::Vector3& force, const Ogre::Vector3& pos, NxForceMode mode, bool wakeup) {
-	mActor->addForceAtLocalPos(toNxVec3(force), toNxVec3(pos), mode, wakeup);
+	mActor->addForceAtLocalPos(NxConvert<NxVec3, Ogre::Vector3>(force), NxConvert<NxVec3, Ogre::Vector3>(pos), mode, wakeup);
 }
 
 //////////////////////////////////////////////////////////
 
 void Actor::addLocalForceAtPos(const Ogre::Vector3& force, const Ogre::Vector3& pos, NxForceMode mode, bool wakeup) {
-	mActor->addLocalForceAtPos(toNxVec3(force), toNxVec3(pos), mode, wakeup);
+	mActor->addLocalForceAtPos(NxConvert<NxVec3, Ogre::Vector3>(force), NxConvert<NxVec3, Ogre::Vector3>(pos), mode, wakeup);
 }
 
 //////////////////////////////////////////////////////////
 
 void Actor::addLocalForceAtLocalPos(const Ogre::Vector3& force, const Ogre::Vector3& pos, NxForceMode mode, bool wakeup) {
-	mActor->addLocalForceAtLocalPos(toNxVec3(force), toNxVec3(pos), mode, wakeup);
+	mActor->addLocalForceAtLocalPos(NxConvert<NxVec3, Ogre::Vector3>(force), NxConvert<NxVec3, Ogre::Vector3>(pos), mode, wakeup);
 }
 
 //////////////////////////////////////////////////////////
 
 void Actor::addForce(const Ogre::Vector3& force, NxForceMode mode, bool wakeup) {
-	mActor->addForce(toNxVec3(force), mode, wakeup);
+	mActor->addForce(NxConvert<NxVec3, Ogre::Vector3>(force), mode, wakeup);
+}
+
+//////////////////////////////////////////////////////////
+
+void Actor::addForce(const NxVec3& force, NxForceMode mode, bool wakeup) {
+	mActor->addForce(force, mode, wakeup);
+}
+
+//////////////////////////////////////////////////////////
+
+void Actor::addForce(NxReal x, NxReal y, NxReal z, NxForceMode mode, bool wakeup) {
+	mActor->addForce(NxVec3(x,y,z), mode, wakeup);
 }
 
 //////////////////////////////////////////////////////////
 
 void Actor::addLocalForce(const Ogre::Vector3& force, NxForceMode mode, bool wakeup) {
-	mActor->addLocalForce(toNxVec3(force), mode, wakeup);
+	mActor->addLocalForce(NxConvert<NxVec3, Ogre::Vector3>(force), mode, wakeup);
+}
+
+//////////////////////////////////////////////////////////
+
+void Actor::addTorque(const NxVec3& torque, NxForceMode mode, bool wakeup) {
+	mActor->addTorque(torque, mode, wakeup);
 }
 
 //////////////////////////////////////////////////////////
 
 void Actor::addTorque(const Ogre::Vector3& torque, NxForceMode mode, bool wakeup) {
-	mActor->addTorque(toNxVec3(torque), mode, wakeup);
+	mActor->addTorque(NxConvert<NxVec3, Ogre::Vector3>(torque), mode, wakeup);
 }
 
 //////////////////////////////////////////////////////////
 
 void Actor::addLocalTorque(const Ogre::Vector3& torque, NxForceMode mode, bool wakeup) {
-	mActor->addLocalTorque(toNxVec3(torque), mode, wakeup);
+	mActor->addLocalTorque(NxConvert<NxVec3, Ogre::Vector3>(torque), mode, wakeup);
 }
 
 //////////////////////////////////////////////////////////
@@ -886,13 +885,13 @@ NxReal Actor::computeKineticEnergy() const {
 //////////////////////////////////////////////////////////
 
 Ogre::Vector3 Actor::getPointVelocity(const Ogre::Vector3& vec) const {
-	return toVector3(mActor->getPointVelocity(toNxVec3(vec)));
+	return NxConvert<Ogre::Vector3, NxVec3>(mActor->getPointVelocity(NxConvert<NxVec3, Ogre::Vector3>(vec)));
 }
 
 //////////////////////////////////////////////////////////
 
 Ogre::Vector3 Actor::getLocalPointVelocity(const Ogre::Vector3& vec) const {
-	return toVector3(mActor->getLocalPointVelocity(toNxVec3(vec)));
+	return NxConvert<Ogre::Vector3, NxVec3>(mActor->getLocalPointVelocity(NxConvert<NxVec3, Ogre::Vector3>(vec)));
 }
 
 //////////////////////////////////////////////////////////
@@ -990,7 +989,7 @@ NxU32 Actor::getSolverIterationCount() const {
 #if NX_SUPPORT_SWEEP_API
 
 NxU32 Actor::linearSweep(const Ogre::Vector3& motion, NxU32 flags, void* userData, NxU32 nbShapeDescriptions, NxSweepQueryHit* shapes, NxUserEntityReport<NxSweepQueryHit>* callback, const NxSweepCache* sweepCache) {
-	return mActor->linearSweep(toNxVec3(motion), flags, userData, nbShapeDescriptions, shapes, callback, sweepCache);
+	return mActor->linearSweep(NxConvert<NxVec3, Ogre::Vector3>(motion), flags, userData, nbShapeDescriptions, shapes, callback, sweepCache);
 }
 
 #endif
@@ -1083,6 +1082,12 @@ void* Actor::getNxActorUserData() {
 
 //////////////////////////////////////////////////////////
 
+NxActorUserData* Actor::getUserData() {
+	return mNxActorUserData;
+}
+
+//////////////////////////////////////////////////////////
+
 StringPairList Actor::saveCustom() {
 	StringPairList l;
 	l.insert("ActorType", "Actor");
@@ -1093,6 +1098,7 @@ StringPairList Actor::saveCustom() {
 //////////////////////////////////////////////////////////
 
 void Actor::disable() {
+
 	mActor->raiseActorFlag(NX_AF_DISABLE_COLLISION);
 	mActor->raiseActorFlag(NX_AF_DISABLE_RESPONSE);
 	mActor->raiseActorFlag(NX_AF_FLUID_DISABLE_COLLISION);
@@ -1103,7 +1109,7 @@ void Actor::disable() {
 	mActor->setLinearMomentum(NxVec3(0,0,0));
 	mActor->setLinearVelocity(NxVec3(0,0,0));
 
-	disableVisualisation();
+//	disableVisualisation();
 }
 
 //////////////////////////////////////////////////////////

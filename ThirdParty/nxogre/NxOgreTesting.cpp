@@ -28,6 +28,8 @@
 #include "NxOgrePose.h"
 #include "NxOgrePhysXDriver.h"
 
+#include "OgreStringConverter.h"
+
 namespace NxOgre {
 
 //////////////////////////////////////////////////////////////////////

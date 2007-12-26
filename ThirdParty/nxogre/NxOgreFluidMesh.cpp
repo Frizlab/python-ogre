@@ -26,6 +26,18 @@
 #include "NxOgreScene.h"				// For Actor::mOwner
 #include "NxOgreFluid.h"				// For Fluid
 
+#include "OgreMesh.h"
+#include "OgreSubMesh.h"
+#include "OgreMatrix4.h"
+#include "OgreCamera.h"
+#include "OgreMeshManager.h"
+#include "OgreResourceGroupManager.h"
+#include "OgreSingleton.h"
+#include "OgreHardwareBufferManager.h"
+#include "OgreSceneManager.h"
+#include "OgreEntity.h"
+#include "OgreMovableObject.h"
+
 namespace NxOgre {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////

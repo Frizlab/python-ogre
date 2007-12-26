@@ -22,8 +22,13 @@
 #include "NxOgreActor.h"			// For: Actor binding
 #include "NxOgreShapeMesh.h"		// For: Convex
 #include "NxOgreHelpers.h"			// For: Conversions
-#include "NxOgreCooking.h"			// For: Cooking the TriMesh shapes
-#include "NxOgreUserStream.h"		// For: Loading in previously cooked shapes.
+#include "NxOgreResourceManager.h"	// For: Triangle Fetching/Cooking/Storage.
+#include "NxOgreResourceSystem.h"
+#include "NxOgreResourceMesh.h"
+#include "NxOgreResourceStream.h"
+#include "NxOgreResourceStreamPtr.h"
+
+#include "OgreMeshManager.h"
 
 namespace NxOgre {
 
@@ -39,11 +44,9 @@ namespace NxOgre {
 
 
 TriangleMeshShape::TriangleMeshShape(const NxString& meshName, const ShapeParams& p) : ShapeBlueprint(p) {
-
-
 	mShapeDescription.setToDefault();
+	mShapeDescription.density  = 0.0f;
 	meshname = meshName;
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -55,6 +58,65 @@ TriangleMeshShape::~TriangleMeshShape() {
 
 Shape* TriangleMeshShape::_bindToActorDescription(Actor* actor, NxU32 id, NxArray<NxShapeDesc*>& shapes) {
 
+	NxString meshIdentifier = ResourceManager::getSingleton()->getMeshIdentifier(meshname, mParams.mMeshScale);
+
+	mShapeDescription.meshData = ResourceManager::getSingleton()->getTriangleMesh(meshIdentifier);
+
+	if (mShapeDescription.meshData == 0) {
+		
+		if (Ogre::StringUtil::endsWith(meshname, ".mesh")) {
+
+			Ogre::MeshManager::getSingleton().load(meshname, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+			Ogre::MeshPtr meshPtr = Ogre::MeshManager::getSingleton().getByName(meshname);
+
+			if (meshPtr.isNull()) {
+				NxThrow_Error("Ogre Mesh '" + meshname + "' could not be found.");
+			}
+
+			TriangleMeshIntermediary* tmi = ResourceManager::getSingleton()->generateTriangleMeshDescription(meshPtr, 0, mParams.mMeshScale);
+			
+#if (NX_USE_TEMPORARYCOOKING_TO_DISK == 1)
+			if (ResourceManager::getSingleton()->cookTriangleMesh(tmi, ResourceStreamPtr(
+				"file:"
+				NX_USE_TEMPORARYCOOKING_TO_DISK_PATH
+				" +write"))) {
+				ResourceManager::getSingleton()->loadTriangleMesh(meshIdentifier, ResourceStreamPtr(
+					"file:"
+					NX_USE_TEMPORARYCOOKING_TO_DISK_PATH
+				));
+				mShapeDescription.meshData = ResourceManager::getSingleton()->getTriangleMesh(meshIdentifier);
+			}
+			else {
+				NxThrow_Warning("Convex mesh '" + meshname +  "' could not be used with ConvexShape. Cooking process failed.");
+			}
+#else
+
+			ResourceStreamPtr memoryStream(NxMemoryStreamIdentifier);
+
+
+			if (ResourceManager::getSingleton()->cookTriangleMesh(tmi, memoryStream)) {
+				memoryStream->rewind();
+
+				ResourceManager::getSingleton()->loadTriangleMesh(meshIdentifier, memoryStream);
+				mShapeDescription.meshData = ResourceManager::getSingleton()->getTriangleMesh(meshIdentifier);
+			}
+			else {
+				NxThrow_Warning("Triangle mesh '" + meshname +  "' could not be used with TriangleMeshShape. Cooking process failed.");
+			}
+
+			memoryStream->close();
+#endif
+
+			delete tmi;
+
+		}
+		else {
+			NxThrow_Warning("Triangle mesh '" + meshname +  "' could not be used with TriangleMeshShape. It could not be found.");
+		}
+
+	}
+
+#if 0
 	if (Ogre::StringUtil::endsWith(meshname, ".nxs")) {
 		UserStream rbuf(meshname.c_str(), true);
 		mShapeDescription.meshData = actor->getNxScene()->getPhysicsSDK().createTriangleMesh(rbuf);
@@ -63,6 +125,11 @@ Shape* TriangleMeshShape::_bindToActorDescription(Actor* actor, NxU32 id, NxArra
 	else {
 		mShapeDescription.meshData = NxGenerateTriangleMeshFromOgreMesh(meshname, actor->getNxScene(), mParams.mMeshScale);
 	}
+#endif
+	
+///////////////////	mShapeDescription.meshData = ResourceManager::getSingleton()->getTriangleMesh(meshname, mParams.mMeshScale);
+
+	
 
 	__paramsToDescription(mShapeDescription, mParams, actor->getScene());
 

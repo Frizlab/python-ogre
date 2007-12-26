@@ -25,8 +25,20 @@
 #include "NxOgreHelpers.h"				// For conversions
 #include "NxOgreScene.h"				// For Cloth::mOwner
 #include "NxOgreCooking.h"				// For Cooking NxClothMesh and Ogre::Mesh
-#include "NxOgreUserStream.h"
+#include "NxOgreMemoryStream.h"
 #include "NxCooking.h"
+
+#include "OgreMesh.h"
+#include "OgreSubMesh.h"
+#include "OgreSceneManager.h"
+#include "OgreSceneNode.h"
+#include "OgreEntity.h"
+#include "OgreMovableObject.h"
+#include "OgreRoot.h"
+#include "OgreSingleton.h"
+#include "OgreMeshManager.h"
+
+
 namespace NxOgre {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -266,8 +278,77 @@ void Cloth::__createCloth(ClothParams params) {
 	*mReceiveBuffers.numIndicesPtr = 0;
 	mClothDescription.meshData = mReceiveBuffers;
 	
-	if (!mClothDescription.isValid())
-		NxThrow_Error("Cloth description is invalid");
+	if (!mClothDescription.isValid()) {
+		
+		std::stringstream ss;
+		ss << "Cloth description is invalid. Reason(s) are:" << std::endl;
+
+		if(!mClothDescription.clothMesh)
+			ss << "+ Cloth mesh pointer is null" << std::endl;
+		
+		if(!mClothDescription.globalPose.isFinite())
+			ss << "+ Global pose is infinite" << std::endl;
+		
+		if(mClothDescription.thickness < 0.0f)
+			ss << "+ Has negative thickness" << std::endl;
+		
+		if(mClothDescription.density <= 0.0f)
+			ss << "+ Has negative density" << std::endl;
+		
+		if(mClothDescription.bendingStiffness < 0.0f || mClothDescription.bendingStiffness > 1.0f)
+			ss << "+ Bending stiffness is out of range (0..1)" << std::endl;
+
+		if(mClothDescription.stretchingStiffness <= 0.0f || mClothDescription.stretchingStiffness > 1.0f)
+			ss << "+ Stretching stiffness is out of range (0..1)" << std::endl;
+
+		if(mClothDescription.pressure < 0.0f)
+			ss << "+ Has negative pressure" << std::endl;
+		
+		if(mClothDescription.tearFactor <= 1.0f)
+			ss << "+ Tear factor is less or equal to 1" << std::endl;
+		
+		if(mClothDescription.attachmentTearFactor <= 1.0f)
+			ss << "+ Attachment tear factor is less or equal to 1" << std::endl;
+		
+		if(mClothDescription.solverIterations < 1)
+			ss << "+ Number of solver iterations is less than 1" << std::endl;
+
+		if(mClothDescription.friction < 0.0f || mClothDescription.friction > 1.0f)
+			ss << "+ Friction is out of range" << std::endl;
+
+		if(!mClothDescription.meshData.isValid())
+			ss << "+ Mesh data is invalid" << std::endl;
+		
+		if(mClothDescription.dampingCoefficient < 0.0f || mClothDescription.dampingCoefficient > 1.0f)
+			ss << "+ Damping coefficient is out of range (0..1)" << std::endl;
+
+		if(mClothDescription.collisionResponseCoefficient < 0.0f)
+			ss << "+ Collision response coefficient is less than 0" << std::endl;
+		
+		if(mClothDescription.wakeUpCounter < 0.0f)
+			ss << "+ WakeUp counter is less than 0" << std::endl;
+
+		if(mClothDescription.attachmentResponseCoefficient < 0.0f)
+			ss << "+ Attachment response coefficient is less than 0" << std::endl;
+
+		if(mClothDescription.toFluidResponseCoefficient < 0.0f)
+			ss << "+ To fluid response coefficient is less than 0" << std::endl;
+		
+		if(mClothDescription.fromFluidResponseCoefficient < 0.0f)
+			ss << "+ From fluid response coefficient is less than 0" << std::endl;
+		
+		if(mClothDescription.relativeGridSpacing < 0.01f)
+			ss << "+ Relative grid spacing is less than 0.01" << std::endl;
+		
+		if(mClothDescription.collisionGroup >= 32)
+			ss << "+ Collision group number is more or equal to 32" << std::endl; // We only support 32 different collision groups
+		
+		if(mClothDescription.compartment && (!(mClothDescription.flags & NX_CLF_HARDWARE)))
+			ss << "+ Software cloth cannot be used in compartments" << std::endl; //only hw cloth can go in compartments
+
+		NxThrow_Error(ss.str());
+		
+	}	
 	mCloth = mOwner->getNxScene()->createCloth(mClothDescription);
 	
 
@@ -559,43 +640,44 @@ NxClothMesh* Cloth::__createClothMeshFromOgreMesh(const NxString& name, const Nx
 	desc.vertexMasses            = 0;
 	desc.vertexFlags            = 0;
 
-#ifndef NX_DEBUG
+#if 0
+		#ifndef NX_DEBUG
 
-	MemoryWriteBuffer buf;
-	if (!NxCookClothMesh(desc, buf)) {
-		std::stringstream s;
-		s << "Cloth Mesh failed to cook";
+			MemoryWriteBuffer buf;
+			if (!NxCookClothMesh(desc, buf)) {
+				std::stringstream s;
+				s << "Cloth Mesh failed to cook";
 
-		NxThrow_Error(s.str());
-	}
+				NxThrow_Error(s.str());
+			}
 
-	mClothMesh = mOwner->getNxScene()->getPhysicsSDK().createClothMesh(MemoryReadBuffer(buf.data));
+			mClothMesh = mOwner->getNxScene()->getPhysicsSDK().createClothMesh(MemoryReadBuffer(buf.data));
 
-#else
+		#else
 
-	NxString filename;
-	if (Ogre::StringUtil::endsWith(meshName, ".mesh")) {
-		filename = meshName.substr(0, meshName.length() - 5) + ".ClothShape.nxs";	
-	}
-	else {
-		filename = meshName + ".ClothShape.nxs";
-	}
+			NxString filename;
+			if (Ogre::StringUtil::endsWith(meshName, ".mesh")) {
+				filename = meshName.substr(0, meshName.length() - 5) + ".ClothShape.nxs";	
+			}
+			else {
+				filename = meshName + ".ClothShape.nxs";
+			}
 
-	UserStream buf(filename.c_str(),false);
+			UserStream buf(filename.c_str(),false);
 
-	if (!NxCookClothMesh(desc, buf)) {
-		std::stringstream s;
-		s << "Cloth Mesh failed to cook";
-		NxThrow_Error(s.str());
-	}
-	fclose(buf.fp);
+			if (!NxCookClothMesh(desc, buf)) {
+				std::stringstream s;
+				s << "Cloth Mesh failed to cook";
+				NxThrow_Error(s.str());
+			}
+			fclose(buf.fp);
 
-	UserStream rbuf(filename.c_str(), true);
-	mClothMesh = mOwner->getNxScene()->getPhysicsSDK().createClothMesh(rbuf);
-	fclose(rbuf.fp);
+			UserStream rbuf(filename.c_str(), true);
+			mClothMesh = mOwner->getNxScene()->getPhysicsSDK().createClothMesh(rbuf);
+			fclose(rbuf.fp);
 
+		#endif
 #endif
-
 	return mClothMesh;
 
 }
@@ -719,35 +801,35 @@ NxClothMesh* Cloth::__createClothMesh(NxReal width, NxReal height, NxReal vDista
 		desc.flags |= NX_CLOTH_VERTEX_TEARABLE;
 	}
 
+#if 0
+		#ifndef NX_DEBUG
 
-#ifndef NX_DEBUG
+			MemoryWriteBuffer buf;
+			if (!NxCookClothMesh(desc, buf)) {
+				std::stringstream s;
+				s << "Cloth Mesh failed to cook";
 
-	MemoryWriteBuffer buf;
-	if (!NxCookClothMesh(desc, buf)) {
-		std::stringstream s;
-		s << "Cloth Mesh failed to cook";
+				NxThrow_Error(s.str());
+			}
 
-		NxThrow_Error(s.str());
-	}
+			mClothMesh = mOwner->getNxScene()->getPhysicsSDK().createClothMesh(MemoryReadBuffer(buf.data));
+			
+		#else
 
-	mClothMesh = mOwner->getNxScene()->getPhysicsSDK().createClothMesh(MemoryReadBuffer(buf.data));
-	
-#else
+			UserStream buf("cloth.cooked.nxs",false);
 
-	UserStream buf("cloth.cooked.nxs",false);
+			if (!NxCookClothMesh(desc, buf)) {
+				std::stringstream s;
+				s << "Cloth Mesh failed to cook";
+				NxThrow_Error(s.str());
+			}
+			fclose(buf.fp);
 
-	if (!NxCookClothMesh(desc, buf)) {
-		std::stringstream s;
-		s << "Cloth Mesh failed to cook";
-		NxThrow_Error(s.str());
-	}
-	fclose(buf.fp);
-
-	UserStream rbuf("cloth.cooked.nxs", true);
-	mClothMesh = mOwner->getNxScene()->getPhysicsSDK().createClothMesh(rbuf);
-	fclose(rbuf.fp);
+			UserStream rbuf("cloth.cooked.nxs", true);
+			mClothMesh = mOwner->getNxScene()->getPhysicsSDK().createClothMesh(rbuf);
+			fclose(rbuf.fp);
+		#endif
 #endif
-
 	return mClothMesh;
 }
 
@@ -852,8 +934,8 @@ void Cloth::__createMesh(const NxString& name) {
 
 	NxBounds3 bounds;
 	mCloth->getWorldBounds(bounds);
-	aa.setMaximum(toVector3(bounds.max));
-	aa.setMinimum(toVector3(bounds.min));
+	aa.setMaximum(NxConvert<Ogre::Vector3, NxVec3>(bounds.max));
+	aa.setMinimum(NxConvert<Ogre::Vector3, NxVec3>(bounds.min));
 
 	mMesh->_setBounds(aa);    
 
@@ -935,8 +1017,8 @@ void Cloth::render(NxReal t) {
 	// Update Bounding Box.
 	if (mUpdateBB) {
 		mCloth->getWorldBounds(mNxBounds);
-		mAABox.setMaximum(toVector3(mNxBounds.max));
-		mAABox.setMinimum(toVector3(mNxBounds.min));
+		mAABox.setMaximum(NxConvert<Ogre::Vector3, NxVec3>(mNxBounds.max));
+		mAABox.setMinimum(NxConvert<Ogre::Vector3, NxVec3>(mNxBounds.min));
 
 		mMesh->_setBounds(mAABox);
 		mNode->_updateBounds();
@@ -1348,7 +1430,7 @@ NxU32 Cloth::getFlags() const {
 //////////////////////////////////////////////////////////
 
 void Cloth::addForceAtVertex(const Ogre::Vector3& force, NxU32 vertexId, NxForceMode mode) {
-	mCloth->addForceAtVertex(toNxVec3(force), vertexId, mode);
+	mCloth->addForceAtVertex(NxConvert<NxVec3, Ogre::Vector3>(force), vertexId, mode);
 }
 
 //////////////////////////////////////////////////////////
@@ -1380,7 +1462,7 @@ unsigned int Cloth::getNbVertices() {
 Ogre::Vector3 ClothVertex::getGlobalPosition() const {
 	NxVec3* vertices = new NxVec3();
 	cloth->getPositions((void*) vertices);
-	return toVector3(vertices[vertex]);
+	return NxConvert<Ogre::Vector3, NxVec3>(vertices[vertex]);
 }
 
 }  //End of NxOgre namespace.

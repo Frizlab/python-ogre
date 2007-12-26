@@ -38,11 +38,10 @@ namespace NxOgre {
 
 			virtual bool isDynamic() {return false;}
 			virtual bool isStaticOnly(){return false;}
-			void simulate(float) {} // Not used.
-			void render(float) {} // Not used.
+
 			void _bindNxShapeToShape(NxShape*);
 
-			NxConvexShape *mConvexShape;			
+			NxConvexShape *mShape;			
 
 		private:
 	
@@ -61,11 +60,11 @@ namespace NxOgre {
 
 			virtual bool isDynamic() {return false;}
 			virtual bool isStaticOnly(){return false;}
-			void simulate(float) {} // Not used.
-			void render(float) {} // Not used.
+
 			void _bindNxShapeToShape(NxShape*);
 
-			NxConvexShape *mConvexShape;			
+			NxConvexShape *mShape;			
+	
 
 		private:
 	};

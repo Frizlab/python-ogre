@@ -131,12 +131,12 @@ namespace NxOgre {
 			bool							mHasLimits;
 			NxReal							mUpperLimit; // Radian
 			NxReal							mUpperLimitRestitution;
-#if (NX_SDK_VERSION_NUMBER > 10000)
+#if (NX_SDK_VERSION_NUMBER >= 272)
 			NxReal							mUpperLimitHardness;
 #endif
 			NxReal							mLowerLimit; // Radian
 			NxReal							mLowerLimitRestitution;
-#if (NX_SDK_VERSION_NUMBER > 10000)
+#if (NX_SDK_VERSION_NUMBER >= 272)
 			NxReal							mLowerLimitHardness;
 #endif
 
@@ -165,27 +165,32 @@ namespace NxOgre {
 			//	For:
 			//		SphericalJoint		SwingLimit Restitution
 			//		SphericalJoint		SwingLimit Value
+			//		SphericalJoint		SwingLimit Hardness
 			bool							mHasSwingLimit;
 			NxReal							mSwingLimit_Restitution;
 			NxReal							mSwingLimit_Value;
-			
+#if (NX_SDK_VERSION_NUMBER >= 272)
+			NxReal							mSwingLimit_Hardness;
+#endif
+
 			// For:
 			//		SphericalJoint		SwingSpring	Damper
 			//		SphericalJoint		SwingSpring	Spring
 			//		SphericalJoint		SwingSpring TargetValue
-			bool							mHasSwingSpring;
-			NxReal							mSwingSpring_Damper;
-			NxReal							mSwingSpring_Spring;
-			NxReal							mSwingSpring_Target;
-
-			//	For:
-			//		SphericalJoint		SwingLimit Restitution
-			//		SphericalJoint		SwingLimit Value
-			bool							mHasTwistLimit;
-			NxReal							mTwistLimit_High_Restitution;
-			NxReal							mTwistLimit_High_Value;
-			NxReal							mTwistLimit_Low_Restitution;
-			NxReal							mTwistLimit_Low_Value;
+			//		SphericalJoint		TwistLimit High/Low Restitution
+			//		SphericalJoint		TwistLimit High/Low Value
+			//		SphericalJoint		TwistLimit High/Low Hardness
+ 			bool							mHasTwistLimit;
+ 			NxReal							mTwistLimit_High_Restitution;
+ 			NxReal							mTwistLimit_High_Value;
+#if (NX_SDK_VERSION_NUMBER >= 272)
+			NxReal							mTwistLimit_High_Hardness;
+#endif
+ 			NxReal							mTwistLimit_Low_Restitution;
+ 			NxReal							mTwistLimit_Low_Value;
+#if (NX_SDK_VERSION_NUMBER >= 272)
+			NxReal							mTwistLimit_Low_Hardness;
+#endif
 			
 			// For:
 			//		SphericalJoint		SwingSpring	Damper
@@ -195,6 +200,15 @@ namespace NxOgre {
 			NxReal							mTwistSpring_Damper;
 			NxReal							mTwistSpring_Spring;
 			NxReal							mTwistSpring_Target;
+
+			// For:
+			//		SphericalJoint		SwingSpring	Damper
+			//		SphericalJoint		SwingSpring	Spring
+			//		SphericalJoint		SwingSpring TargetValue
+			bool							mHasSwingSpring;
+			NxReal							mSwingSpring_Damper;
+			NxReal							mSwingSpring_Spring;
+			NxReal							mSwingSpring_Target;
 
 	};
 

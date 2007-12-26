@@ -62,9 +62,6 @@ namespace NxOgre {
 		The fixed joint effectively glues two bodies together with no remaining degrees of freedom 
 		for relative motion.
 
-		@note Params specific to FixedJoint
-
-
 	*/
 
 	class NxExport FixedJoint : public Joint {
@@ -83,6 +80,42 @@ namespace NxOgre {
 
 		NxFixedJoint*		mFixedJoint;
 		NxFixedJointDesc	mDescription;
+
+	};
+
+	
+	/** Distance Joint
+		The distance joint tries to maintain a certain minimum and/or maximum distance 
+		between two points attached to a pair of actors. 
+
+		@note Params specific to DistanceJoint
+		
+		Springs
+			Is the Joint Springy or not.
+			-> JointParams::mHasSpring	
+			-> JointParams::mSpring;
+			-> JointParams::mSpringDamper;
+
+	*/
+
+	class NxExport DistanceJoint : public Joint {
+		
+	public:
+
+		DistanceJoint(Actor*, Actor*, JointParams = JointParams());
+		DistanceJoint(Actor*, JointParams = JointParams());
+		DistanceJoint(Actor*, Actor*, NxReal maxDistance = 0, NxReal minDistance = 0, JointParams = JointParams());
+		DistanceJoint(Actor*, NxReal maxDistance = 0, NxReal minDistance = 0, JointParams = JointParams());
+		~DistanceJoint();
+
+		NxDistanceJoint* getJoint() {return mDistanceJoint;}
+
+	protected:
+
+		void __createJoint(JointParams&, NxReal maxD, NxReal minD);
+
+		NxDistanceJoint*		mDistanceJoint;
+		NxDistanceJointDesc		mDescription;
 
 	};
 };

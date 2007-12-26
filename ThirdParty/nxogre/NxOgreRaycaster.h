@@ -23,6 +23,7 @@
 #include "NxOgrePrerequisites.h"
 #include "NxOgreContainer.h"			// For: mActors
 
+#include "OgreVector3.h"				// For HitImpacts and HitNormal
 namespace NxOgre {
 
 	struct NxExport RayCastHit {
@@ -61,11 +62,11 @@ namespace NxOgre {
 		/// Raycast with a specific type of raycast.
 		/// Simply return true if the ray that is specified hits any shape’s axis aligned bounding box, or the shape itself. 
 		/// No actor is returned.
-		/// @params origin Origin of the ray
-		/// @params direction Direction of the ray
-		/// @params distance maxDistance The furthest the ray will go.
-		/// @params RayCastType Type of ray cast
-		/// @params Scene* Scene to ray cast into.
+		/// @param origin Origin of the ray
+		/// @param direction Direction of the ray
+		/// @param distance maxDistance The furthest the ray will go.
+		/// @param RayCastType Type of ray cast
+		/// @param Scene* Scene to ray cast into.
 		/// 
 		/// Use RayCaster::cast() to cast the ray, and the result will be if the ray hit anything or not.
 		RayCaster(Ogre::Vector3 origin, Ogre::Vector3 direction, NxReal maxDistance, Scene*);
@@ -74,11 +75,11 @@ namespace NxOgre {
 		/// Any - Just returns if the ray hit anything or not, which is the result of RayCaster::cast.
 		/// Closest - Same as above but the actor is returned through RayCaster::getClosestActor();
 		/// All - Same as above but with all actors the ray went through, Use RayCaster::mActors to access them.
-		/// @params origin Origin of the ray
-		/// @params direction Direction of the ray
-		/// @params distance maxDistance The furthest the ray will go.
-		/// @params RayCastType Type of ray cast
-		/// @params Scene* Scene to ray cast into.
+		/// @param origin Origin of the ray
+		/// @param direction Direction of the ray
+		/// @param distance maxDistance The furthest the ray will go.
+		/// @param RayCastType Type of ray cast
+		/// @param Scene* Scene to ray cast into.
 		RayCaster(Ogre::Vector3 origin, Ogre::Vector3 direction, NxReal maxDistance, RayCastType, Scene*);
 
 		/// RayCaster destructor

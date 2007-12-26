@@ -24,6 +24,9 @@
 #include "NxOgreShape.h"				// For: Primitives inherits Shape
 #include "NxOgreParams.h"				// For: WheelParams
 #include "NxOgreContainer.h"			// For: List<Wheel>/Wheels
+#include "NxOgreRenderableSource.h"
+#include "NxOgreNodeRenderable.h"
+
 namespace NxOgre {
 		
 	//////////////////////////////////////////////////////////////////////////////////////
@@ -85,52 +88,53 @@ namespace NxOgre {
 	
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	class NxExport Wheel : public Shape {
+	class NxExport Wheel : public Shape, public RenderableSource {
 	
 		friend class WheelShape;
 
 		public:
 
-			Wheel(WheelShape&, WheelParams&, Actor*);
+			Wheel(WheelShape, WheelParams, NodeRenderableParams, Actor*);
 			~Wheel();
 
-			void simulate(float);
-			void render(float);
+			NxShortHashIdentifier	getType() const {return NxHashes_Wheel;	/* "NxOgre-Wheel" */}
+			NxString				getStringType() const {return "NxOgre-Wheel";}
 
-			
 			void turn(Ogre::Radian angle);
-
-			void addEntity(Ogre::String meshName, Ogre::Vector3 offset = Ogre::Vector3(0,0,0));
-            void setEntity(Ogre::Entity* e){mNode->attachObject(e);if (mEntity==0){mEntity = e;}}
 			void setRadius(NxReal);
-            void setSuspensionTravel(NxReal);
-            void setMotorTorque(NxReal);
-            void setBrakeTorque(NxReal);
-            void setSteeringAngle(Ogre::Radian);
+			void setSuspensionTravel(NxReal);
+			void setMotorTorque(NxReal);
+			void setBrakeTorque(NxReal);
+			void setSteeringAngle(Ogre::Radian);
 
-			void addMesh(const NxString&);
 
-			Ogre::SceneNode*	getNode(){return mNode;}
 			NxWheelShape*		getNxWheelShape(void) { return mWheel; }
 
+		
 		protected:
+
+			Pose					__calculatePositionHigh();
+			Pose					__calculatePositionMedium();
+			Pose					__calculatePositionLow();
+
+			void					__renderSelf();
 
 			virtual bool isDynamic() {return true;}
 			virtual bool isStaticOnly(){return false;}
+
 			void _bindNxShapeToShape(NxShape*);
 
-			Ogre::SceneNode* mNode;
-			Ogre::Entity* mEntity;
 			NxWheelShape *mWheel;
 
-			NxReal mWheelRollAngle;
-            NxMat34 mPose;
-			
+			NxReal  mWheelRollAngle;
+			NxMat34 mWheelLocalPose;
+			//NxMat34 mLastPose;
+
 		private:
 	};
 
 	//////////////////////////////////////////////////////////////////////////////////////
-
+#if 0
 	
 	class NxExport WheelSet {
     public:
@@ -194,7 +198,7 @@ namespace NxOgre {
 
 	};
 
-
+#endif
 };
 
 #endif

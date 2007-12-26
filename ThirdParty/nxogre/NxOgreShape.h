@@ -23,6 +23,8 @@
 #include "NxOgrePrerequisites.h"
 #include "NxOgreParams.h"
 
+#include "OgreVector3.h"
+
 namespace NxOgre {
 
 	/**
@@ -115,7 +117,7 @@ namespace NxOgre {
 				@default mLocalPose.id()
 			 */
 			NxMat34				mLocalPose;
-		
+
 			/**  Automatically generate a CCD skeleton
 				 @default	false
 			 */
@@ -228,18 +230,6 @@ namespace NxOgre {
 			/**
 
 			*/
-			virtual void simulate(float)					{
-															}
-
-			/**
-
-			*/
-			virtual void render(float)						{
-															}
-
-			/**
-
-			*/
 			virtual ShapeBlueprint*	getBlueprint()			{
 																NxThrow_Warning("Returning NULL shape blueprint.");
 																return NULL;
@@ -331,8 +321,8 @@ namespace NxOgre {
 
 			/** __descriptionToParams
 				Copies the all of the values of the ShapeParams to a NxShapeDesc
-				@params desc NxShapeDesc to copy to.
-				@params params Params to work with.
+				@param desc NxShapeDesc to copy to.
+				@param params Params to work with.
 			*/
 			void	__descriptionToParams(NxShapeDesc& desc, ShapeParams& params);
 

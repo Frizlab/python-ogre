@@ -114,8 +114,8 @@ void ForceFieldFormula::asExplosive(NxReal explosiveConstant, Ogre::Vector3 velo
 	
 	coords = NX_FFC_SPHERICAL;
 	K.set(explosiveConstant,0,0);
-	V = toNxVec3(velocityTarget);
-	Anoise = toNxVec3(noise);
+	V = NxConvert<NxVec3, Ogre::Vector3>(velocityTarget);
+	Anoise = NxConvert<NxVec3, Ogre::Vector3>(noise);
 	Mv.zero();
 	Mv.diagonal(NxVec3(1,0,0));
 
@@ -276,9 +276,11 @@ void ForceField::addForceFieldShape(SimpleShape* sh, bool Inclusion) {
 			NxBoxForceFieldShapeDesc desc;
 			desc.dimensions = sb->getDimensions();
 			desc.pose = sb->getPose();
-			
+	
 			if (sb->getInverse())
 				desc.flags = NX_FFS_EXCLUDE;
+
+			mForceField->createShape(desc);
 
 		} break;
 
@@ -291,6 +293,8 @@ void ForceField::addForceFieldShape(SimpleShape* sh, bool Inclusion) {
 			if (ss->getInverse())
 				desc.flags = NX_FFS_EXCLUDE;
 
+			mForceField->createShape(desc);
+
 		} break;
 
 		case SimpleShape::SST_Capsule: {
@@ -302,6 +306,8 @@ void ForceField::addForceFieldShape(SimpleShape* sh, bool Inclusion) {
 			
 			if (sc->getInverse())
 				desc.flags = NX_FFS_EXCLUDE;
+
+			mForceField->createShape(desc);
 
 		} break;
 
@@ -350,7 +356,7 @@ ForceFieldConvexShape::ForceFieldConvexShape(NxString meshName, Scene* scene, co
 
 	mDescription.setToDefault();
 	mDescription.pose = p.toMat34();
-	mDescription.meshData = NxGenerateConvexMeshFromOgreMesh(meshName, scene->getNxScene(), toNxVec3(scale));
+	mDescription.meshData = NxGenerateConvexMeshFromOgreMesh(meshName, scene->getNxScene(), NxConvert<NxVec3, Ogre::Vector3>(scale));
 
 }
 

@@ -21,10 +21,14 @@
 #define __NXOGRE_FLUID_MESH_H__
 
 #include "NxOgrePrerequisites.h"
-#include "NxOgreContainer.h"		// For: mCollisionList
-#include "NxOgreParams.h"
 
 #if (NX_USE_FLUID_API == 1)
+
+#include "NxOgreContainer.h"		// For: mCollisionList
+#include "NxOgreParams.h"
+#include "OgreMesh.h"
+#include "OgreMatrix4.h"
+
 namespace NxOgre {
 
 	///	Params

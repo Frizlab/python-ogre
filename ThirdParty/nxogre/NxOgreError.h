@@ -33,7 +33,7 @@ namespace NxOgre {
 		NxString Message;
 
 		enum ErrorType {
-			ET_Conflic		= 0,
+			ET_Conflict		= 0,
 			ET_Warning		= 1,
 			ET_FatalError	= 2,
 			ET_Debug		= 3,
@@ -56,6 +56,8 @@ namespace NxOgre {
 			~Error();
 
 			unsigned int addReporter(ErrorReporter*,bool own);
+			void removeReporter(unsigned int id);
+
 			void report(const ErrorReport&);
 			void setShutdownOnErrors(bool);
 

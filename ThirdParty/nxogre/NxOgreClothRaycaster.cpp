@@ -44,7 +44,7 @@ ClothRayCaster::~ClothRayCaster() {
 
 bool ClothRayCaster::castCloth(Cloth* cloth, const Ogre::Vector3& worldPosition, const Ogre::Vector3& normal) {
 	mCloth = cloth;
-	NxRay ray(toNxVec3(worldPosition), toNxVec3(normal));
+	NxRay ray(NxConvert<NxVec3, Ogre::Vector3>(worldPosition), NxConvert<NxVec3, Ogre::Vector3>(normal));
 	mLastHitPosition.zero();
 	mLastVertexId = 0;
 	return cloth->raycast(ray, mLastHitPosition, mLastVertexId);
@@ -59,7 +59,7 @@ bool ClothRayCaster::castAllCloths(const Ogre::Vector3& worldPosition, const Ogr
 	Cloths* cloths = mScene->getCloths();
 	mLastHitPosition.zero();
 	mLastVertexId = 0;
-	NxRay ray(toNxVec3(worldPosition), toNxVec3(normal));
+	NxRay ray(NxConvert<NxVec3, Ogre::Vector3>(worldPosition), NxConvert<NxVec3, Ogre::Vector3>(normal));
 	
 	
 	for(Cloth* cloth = cloths->begin();cloth = cloths->next();) {
@@ -75,7 +75,7 @@ bool ClothRayCaster::castAllCloths(const Ogre::Vector3& worldPosition, const Ogr
 ////////////////////////////////////////////////////////////////////////////////
 
 Ogre::Vector3 ClothRayCaster::getHitPosition() {
-	return toVector3(mLastHitPosition);
+	return NxConvert<Ogre::Vector3, NxVec3>(mLastHitPosition);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

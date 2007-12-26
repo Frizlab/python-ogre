@@ -27,11 +27,16 @@
 
 namespace NxOgre {
 
-	/** The container of all Scenes and everything therein.
-		@remarks
-			World is the top-most NxOgre class, it's similar to Ogre's Root. It is the
-			first NxOgre class to be created and the last to be destroyed.
+	/** @brief The container of all Scenes and everything therein.
+		
+		World is the top-most NxOgre class, it's similar to Ogre's Root. It is the
+		first NxOgre class to be created and the last to be destroyed.
 
+		<code>
+			World* mWorld = new World();									<br />
+			// ...															<br />
+			delete mWorld;													<br />
+		</code>
 	 */
 	class NxExport World {
 
@@ -41,74 +46,103 @@ namespace NxOgre {
 		
 		public:
 
-			/** Constructor
-				@remarks
-					Starts up World, and creates the PhysX singleton.
-
+			/** @brief World Constructor
+				
+				Starts up World, and creates the PhysX singleton.
+				
 				@param PhysXDriverParams Basic parameters of the World; Log type used.
-
 				@see PhysXDriverParams
+			
 			*/
 			World(PhysXDriverParams = PhysXDriverParams());
 
 			
-			/** Destructor
-				@remarks
-					Destroys the entire World and shut's down PhysX.All owned Scenes and 
-					owned instances of classes in the scene will be	deleted. All custom classes, 
-					or custom storage types should delete them 	before deleting World.
-			  */
+			/** @brief Completely shuts down NxOgre.
+				
+				Destroys the entire World and shut's down PhysX.All owned Scenes and 
+				owned instances of classes in the scene will be	deleted. All custom classes, 
+				or custom storage types should delete them 	before deleting World.
+			*/
 			~World();
 
+			/** @brief Creates a Scene.
 
-			/** createScene
-				@remarks
-					A Scene is a sub-section of a World. Although a Scene is infinite in size like World. 
-					Scenes are considered to be seperate from each other. Actors from one scene cannot 
-					interact with ones from another. Scenes have also their own Materials, Groups, etc. 
-					which cannot be shared.	Scenes are used in containers. Creating a Scene through the World factory method makes the Scene "owned"
-					by NxOgre, on deletion of the Scene it will remove the presence of the Scene and delete the pointer.
-					Manually creating the Scene "new Scene()" will only add a presence, it is up to you to delete it at the
-					correct time.
+				Creates a new Scene within NxOgre, as well as default Groups, Materials, etc. Depending
+				on the SceneParams it may create a static Actor with a ground shape for the floor and
+				assign some gravity.
 
+				@note	A Scene is a sub-section of a World. Although a Scene is infinite in size like World. 
+						Scenes are considered to be seperate from each other. Actors from one scene cannot 
+						interact with ones from another. Scenes have also their own Materials, Groups, etc. 
+						which cannot be shared.	Scenes are used in containers. Creating a Scene through the World factory method makes the Scene "owned"
+						by NxOgre, on deletion of the Scene it will remove the presence of the Scene and delete the pointer.
+						Manually creating the Scene "<code>new Scene()</code>" will only add a presence, it is up to you to delete it at the
+						correct time.
 
-				@param Identifier Unique identifier of the Scene
-				@param Ogre::SceneManager* SceneManger for this Scene to Use.
-				@param SceneParams SceneParams for this Scene to use.
-
+				@param Identifier			Unique identifier of the Scene
+				@param SceneParams			SceneParams for this Scene to use.
 				@see SceneParams
+				@return Scene				The scene itself.
+			 */
+			Scene*					createScene(const NxString& Identifier, SceneParams = "");
 
+
+			/** @brief Deprecated. Creates a Scene (For Ogre)
+
+				Creates a new Scene within NxOgre, as well as default Groups, Materials, etc. Depending
+				on the SceneParams it may create a static Actor with a ground shape for the floor and
+				assign some gravity.
+
+				@note	A Scene is a sub-section of a World. Although a Scene is infinite in size like World. 
+						Scenes are considered to be seperate from each other. Actors from one scene cannot 
+						interact with ones from another. Scenes have also their own Materials, Groups, etc. 
+						which cannot be shared.	Scenes are used in containers. Creating a Scene through the World factory method makes the Scene "owned"
+						by NxOgre, on deletion of the Scene it will remove the presence of the Scene and delete the pointer.
+						Manually creating the Scene "<code>new Scene()</code>" will only add a presence, it is up to you to delete it at the
+						correct time.
+
+				@param Identifier			Unique identifier of the Scene
+				@param Ogre::SceneManager*	SceneManager for this Scene to Use.
+				@param SceneParams			SceneParams for this Scene to use.
+				@see SceneParams
 				@return Scene				The scene itself.
 			 */
 			Scene*					createScene(const NxString& Identifier, Ogre::SceneManager*, SceneParams = "");
 
 
-			/** destroyScene
-				@remarks
-					Destroys the Scene and the contents therein. 
-					
-					If the Scene is owned by NxOgre use World::SceneDestroy, if not then use "delete mScene".
+			/** @brief Destroys the Scene and the contents therein. 
 
+				Destroys the entire contents of the scene with every owned object inside; Actors, Shapes, Groups,
+				Materials, ForceFields, Triggers, etc.
+
+				@note If the Scene is owned by NxOgre use World::SceneDestroy, if not then use "delete mScene".
 				@see World::destroyScene
 			*/
 			void					destroyScene(const NxString& name);
 
-		   /** getRoot
-				@remarks
-					Returns the Ogre Root pointer, equivalent to Ogre::Root::GetSingletonPtr()
+			/** @brief Destroys all of the Scenes and the contents therein. 
 
-				@return Ogre::Scene
+				Destroys the entire contents of every scene with every owned object inside; Actors, Shapes, Groups,
+				Materials, ForceFields, Triggers, etc.
+
+				@note If the Scene is owned by NxOgre use World::SceneDestroy, if not then use "delete mScene".
+				@see World::destroyScene
+			*/
+			
+			void					destroyAllScenes();
+
+		   /** @brief Returns the Ogre Root pointer, equivalent to Ogre::Root::GetSingletonPtr()
+				@return Ogre::Root
 			*/
 			Ogre::Root*				getRoot()					{
 																	return mRoot;
 																}
 			
-			/** getPhysXDriver
-				
-				@remarks
-					Returns the PhysXDriver, the inbetween PhysX and NxOgre, and the class responsible
-					for frame by frame operations. Automatically created during the construction
-					of the World.
+			/** @brief Gets the PhysXDriver.
+			
+				Returns the PhysX Driver t he in between PhysX and NxOgre, and the class responsible
+				for frame by frame operations. Automatically created during the construction
+				of the World.
 
 			 @return The PhysXDriver
 			 */
@@ -118,12 +152,26 @@ namespace NxOgre {
 
 
 #if (NX_USE_CHARACTER_API == 1)
-			/** getCharacterController
-				
-				@remarks
-					Returns the CharacterController. The main class responsible and controls for
-					all characters for all Scenes. Automatically created during the construction
-					of the World.
+
+			/** @brief Get's the CharacterSystem. 
+			
+				The main class responsible and controls for
+				all characters for all Scenes. Automatically created during the construction
+				of the World.
+
+			 @return The CharacterController
+			 */
+			CharacterSystem*	getCharacterSystem()			{
+																	return mCharacterSystem;
+																}
+
+#else
+
+			/** @brief Get's the CharacterController. 
+			
+				The main class responsible and controls for
+				all characters for all Scenes. Automatically created during the construction
+				of the World.
 
 			 @return The CharacterController
 			 */
@@ -131,103 +179,110 @@ namespace NxOgre {
 																	return mCharacterController;
 																}
 #endif
-			/** getSDK
-				
-				@remarks
-					Returns the PhysX SDK instance. Thar be Sea monsters.
-
-			 @return The NxPhysicsSDK instance
+			/** @brief Returns the PhysX SDK instance.
+			
+				Thar be sea monsters.
+				@return The NxPhysicsSDK instance
 			 */
 			NxPhysicsSDK*			getSDK();
 
-			/** simulate
-				
-				@remarks
-					Advances the state of the scene by x seconds. This is automatically controlled
-					by PhysXDriver if NxOgre is attached to a frameListener. To advance the simulation by
-					hand or without an attached FrameListener; Provide a "FrameListener: no" params
-					to the World constructor, and advance the simulation in PhysXDriver::simulate(..).
+			/** @brief Advances the state of the scene by x seconds. 
+			
+				This is automatically controlled by PhysXDriver if NxOgre is attached to a frameListener. 
+				To advance the simulation by hand or without an attached FrameListener; Provide a 
+				<code>"FrameListener: no"</code> params to the World constructor, and advance the simulation in 
+				<code>PhysXDriver::simulate(..)</code>.
 
 				@param time Seconds passed since last simulate
-				
 				@see PhysXDriver::simulate
 
 			 */
 			void					simulate(float time);
 			
-			/** simulate
-				
-				@remarks
-					Renders the new state of the scene. This is automatically controlled
-					by PhysXDriver if NxOgre is attached to a frameListener. To render the simulation by
-					hand or without an attached FrameListener. Provide a "FrameListener: no" params
-					to the World constructor, and call PhysXDriver::render(..).
+			/** @brief Renders the new state of the scene.
+			
+				This is automatically controlled by PhysXDriver if NxOgre is attached to a frameListener. 
+				To render the simulation by	hand or without an attached FrameListener. Provide a 
+				<code>"FrameListener: no"</code> params to the World constructor, and call 
+				<code>PhysXDriver::render(..).</code>
 
 				@param time Seconds passed since last simulate. Must be as the same as the previous simulate.
-				
 				@see PhysXDriver::render
-
 			 */
 			void					render(float time);
 
 
+			/** @brief Get a container of pointers of all the Scenes used with NxOgre.
+			*/
 			Scenes*					getScenes();
 		
 			////////////////////////////////////////////////////////////
 
 #if (NX_USE_DEBUG_RENDERER_API == 1)
 
-			/** createDebugRenderable
-				
-				@remarks
-					...
-
-				@param Ogre::SceneManager SceneManager to render to.
-				
-
+			/** @brief Creates the Debug renderer on the screen.
+				@param scenemanager		SceneManager to render to. This should be active
+										scenemanager on the screen.
 			 */
-			void					createDebugRenderer(Ogre::SceneManager* s);
+			void					createDebugRenderer(Ogre::SceneManager* scenemanager);
 			
-			/** destroyDebugRenderable
-				@remarks
-					Removes the Debug render from the Scene.
+			/** @brief Destroys the current Debug Renderer.
 			 */
 			void					destroyDebugRenderer();
+
 #endif
 
 
+			/** @brief Enables or Disabled Continuous Collision Detection, with an epsilon value
+			*/
 			void					setCCD(bool enabled, NxReal epsilon = 0.01f);
+
+			/** @brief Gets if CCD is enabled or not.
+				@return If the CCD is enabled.
+			*/
 			bool					getCCD();
+			
+			/** @brief Gets the epsilon value of Continous Collision Detection.
+				@return Epsilon of CCD.
+			*/
 			NxReal					getCCDEpsilon();
 
 		protected:
 
-			void _registerScene(const NxString& name, Scene*);
-			void _unregisterScene(const NxString&);
+			void		_registerScene(const NxString& name, Scene*);
+			void		_unregisterScene(const NxString&);
+			void		shutdown();
 
 			////////////////////////////////////////////////////////////
 
-
-			/// Ogre Root Pointer
-			Ogre::Root					*mRoot;
+			/** Ogre Root Pointer */
+			Ogre::Root				   *mRoot;
 			
-			/// PhysXDriver
+			/** PhysXDriver */
 			PhysXDriver*				mDriver;
 
-			/// Scenes
+			/** Scenes */
 			Scenes						mScenes;
 
-#if (NX_USE_CHARACTER_API == 1)
+#if (NX_USE_LEGACY_NXCONTROLLER == 0)
+			/** CharacterSystem */
+			CharacterSystem*			mCharacterSystem;
+#else
+#	if (NX_USE_CHARACTER_API == 1)
+			/** CharacterController  */
 			CharacterController*		mCharacterController;
+#	endif
 #endif
 
 #if (NX_USE_DEBUG_RENDERER_API == 1)
+			/** DebugRenderer */
 			DebugRenderer*				mDebugRenderer;
 #endif
 
-			void						shutdown();
+			// Serialisation
+			// Serialiser*				mSerialiser;
 
-//			Serialiser*					mSerialiser;
+			ResourceManager*			mResourceManager;
 
 		private:
 

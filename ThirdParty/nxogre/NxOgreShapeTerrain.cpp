@@ -41,17 +41,20 @@ Terrain::~Terrain() {
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Terrain::_bindNxShapeToShape(NxShape* s) {
-	//mShape = s;
+			
+	mBaseShape = s;
+
+	if (s->isHeightField()) {
+		mShape = static_cast<NxHeightFieldShape*>(s);
+	}
+	else {
+		NxThrow_Warning("Attempted to bind wrong NxShape to NxOgre shape");
+	}
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
-Actor* simulateWorldGeometry(Scene*, const Ogre::String& filename) {
-	// Stuff here. Loads in file and reads it in and then does things.
-
-	return 0;
-}
 
 }; //End of NxOgre namespace.

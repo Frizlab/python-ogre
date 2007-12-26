@@ -21,43 +21,42 @@
 #define __NXOGRE_CONTAINER_H__
 
 #include "NxOgrePrerequisites.h"
+#include "OgreString.h"
 
 namespace NxOgre {
 
-	/** Container
+	/** @brief A list of stored classes with an attached name with optional garbage collection.
 
+		@example
+		<code>
 
+			// With: Object*														
 
-
-		How to use the iterator interface:
-
-			With: Object*
-
-			Container<NxString, Object*> Objects;
+			Container<NxString, Object*> Objects;										
 			Objects myObjects;
-			...
+			// ...
 			for (Object* object = myObjects.begin();object = myObjects.next();) {
-				..
+				// ...
 			}
 
-			With: Object
+			// With: Object
 
 			Container<NxString, Object> Objects
 			Objects myObjects;
-			...
+			// ...
 			if (myObjects.count()) {
 				for (Object object = myObjects._begin();myObjects._atEnd();object = myObjects._next()) {
-
+					// ...
 				}
 			}
-
+		</code>
 
 	*/
 	template <
 				typename TI, // Identifier
 				typename TT  // Type
 			 >
-	class NxExport Container {
+	class Container {
 
 		public:
 
@@ -67,28 +66,43 @@ namespace NxOgre {
 				TT t;
 				bool owned;
 			};
+			////////////////////////////////////////////////////////////
+
+			NX_INLINE Container<TI, TT>() {}
+			NX_INLINE ~Container() {}
 
 			////////////////////////////////////////////////////////////
 
-			TT get(TI t) {
+			/** @brief Get an item from the container
+				@param t	The identifier of the item
+				@return The item or NULL if it does not exist
+			*/
+			NX_INLINE TT get(TI t) {
 				if (has(t))
-					return items[t].t;
+					return mItems[t].t;
 				else
 					return NULL;
 			}
 
 			////////////////////////////////////////////////////////////
 
-			TT getFirst() {
-				Iterator it = items.begin();
+			/** @brief Get the first item in the container, and reset the iterator.
+				@return The first item.
+			*/
+			NX_INLINE TT getFirst() {
+				Iterator it = mItems.begin();
 				return it->second.t;
 			}
 
 			////////////////////////////////////////////////////////////
 
-			bool has(TI t) {
-				Iterator i = items.find(t);
-				if (i == items.end()) {
+			/** @brief Returns if an item with an identifier exists.
+				@param The identifier of the wanted item.
+				@return If the item exists or not.
+			*/
+			NX_INLINE bool has(TI t) {
+				Iterator i = mItems.find(t);
+				if (i == mItems.end()) {
 					return false;
 				}
 				return true;
@@ -96,30 +110,32 @@ namespace NxOgre {
 
 			////////////////////////////////////////////////////////////
 
-			void remove(TI t) {
-				//Iterator i = items.find(t); 
-				//if (i != items.end()) {
-				//	items.erase(i);
-				//}
-
-				items.erase(t);
-
+			/** @brief Removes an item from the list. Does <strong>not</strong> delete the item.
+				@param The identifier of the item to be deleted.
+			*/
+			NX_INLINE void remove(TI t) {
+				mItems.erase(t);
 			}
 
 			////////////////////////////////////////////////////////////
 
-			void insert(TI ts, TT t) {
-				Iterator i = items.find(ts);
-				if (i == items.end()) {
-					items[ts] = Containee(t, false);
-				}
+			/** @brief Removes an item from the list. Does <strong>not</strong> delete the item.
+				@param The identifier of the item to be deleted.
+			*/
+			NX_INLINE void insert(TI ts, TT t) {
+				Iterator i = mItems.find(ts);
+				if (i == mItems.end())
+					mItems[ts] = Containee(t, false);
 			}
 
 			////////////////////////////////////////////////////////////
 
-			TT begin() {
-				mIterator = items.begin();
-				if (mIterator != items.end())
+			
+			/** @brief Resets the iterator, and returns the first item. For (Object*) use only.
+			*/
+			NX_INLINE TT begin() {
+				mIterator = mItems.begin();
+				if (mIterator != mItems.end())
 					return mIterator->second.t;
 				else
 					return NULL;
@@ -127,8 +143,12 @@ namespace NxOgre {
 
 			////////////////////////////////////////////////////////////
 
-			TT next() {
-				if (mIterator == items.end())
+			
+			/** @brief From the current iterator position, increment and return the item. For (Object*) use only.
+				@return The item or NULL when the iterator is at the past the end.
+			*/
+			NX_INLINE TT next() {
+				if (mIterator == mItems.end())
 					return NULL;
 
 				return (mIterator++)->second.t;
@@ -136,75 +156,116 @@ namespace NxOgre {
 
 			////////////////////////////////////////////////////////////
 
-			TT _begin() {
-				mIterator = items.begin();
+			/** @brief Resets the iterator, and returns the first item. For (Object) use only.
+				@return The first item.
+			*/
+			NX_INLINE TT _begin() {
+				mIterator = mItems.begin();
 				return (mIterator)->second.t;
 			}
 
 			////////////////////////////////////////////////////////////
 
-			TT _next() {
+			/** @brief From the current iterator position, increment and return the item. For (Object) use only.
+				@return The item or NULL when the iterator is at the past the end.
+			*/
+			NX_INLINE TT _next() {
 				return (mIterator++)->second.t;
 			}
 
 			////////////////////////////////////////////////////////////
-
-			bool _atEnd() {
-				return (mIterator == items.end());
+			
+			/** @brief If the iterator is at the end or not. For (Object) use only.
+				@return The iterator is at the end or not.
+			*/
+			NX_INLINE bool _atEnd() {
+				return (mIterator == mItems.end());
 			}
 
 			////////////////////////////////////////////////////////////
 
-			NxU32 count() const {
-				return items.size();
+			
+			/** @brief Returns the number of mItems in the container.
+				@return The number of mItems.
+			*/
+			NX_INLINE NxU32 count() const {
+				return mItems.size();
 			}
 
 			////////////////////////////////////////////////////////////
 
-			void empty() {
-				items.clear();
+			/** @brief Clears everything in the list. Does <strong>not</strong> delete the mItems.
+				@see Container<TI,TT>::destroyAllOwned
+				@see Container<TI,TT>::destroyAndEraseAll
+			*/
+			NX_INLINE void empty() {
+				mItems.clear();
 			}
 
 			////////////////////////////////////////////////////////////
 
-			void rename(TI a, TI b) {
-				Iterator i = items.find(a);
+			/** @brief Changes an identifier of an item with a new identifier
+				@param a The item to be renamed.
+				@param b The new identifier of the item.
+			*/
+			NX_INLINE void rename(TI a, TI b) {
+				Iterator i = mItems.find(a);
 				
-				if (i == items.end())
+				if (i == mItems.end())
 					return;
 
-				items[b] = Containee((*i).second.t, (*i).second.owned);
-				items.erase(i);
+				mItems[b] = Containee((*i).second.t, (*i).second.owned);
+				mItems.erase(i);
 
 			}
 
 			////////////////////////////////////////////////////////////
 
-			void lock(TI t, bool b) {
-				items[t].owned = b;
+			/** @brief "Locks" the item, turning it into an owned class for garbage collection.
+			
+
+				On the result of destroyAllOwned, these classes will be owned. All NxOgre
+				classes created by it's factory method is owned by NxOgre, otherwise it
+				is upto the developer to delete them at the correct time.
+
+				@param t Identifier of the item
+				@param b If it is owned or not.
+				@see Container<TI,TT>::isLocked
+			*/
+			NX_INLINE void lock(TI t, bool b) {
+				mItems[t].owned = b;
 			}
 
 			////////////////////////////////////////////////////////////
 
-			bool isLocked(TI t) {
+			/** @brief Returns if a class is owned/locked by the container.
+				@param t Identifier of the item
+				@see Container<TI,TT>::lock
+			*/
+			NX_INLINE bool isLocked(TI t) {
 				 if (has(t))
-					return items[t].owned;
+					return mItems[t].owned;
 				return false;
 			}
 
 			////////////////////////////////////////////////////////////
 
-			void dumpToConsole() {
+			/** @brief Prints out all of the mItems in the list to the developer console
+				with identifier (if it is printable) and the class contents (a pointer is
+				printed if it cannot be printed).
+
+			*/
+			NX_INLINE void dumpToConsole() {
 
 				std::stringstream ss;
 				ss << "Dump of Container:";
 				ss << "-> Identifier type = " << typeid(TI).name() << std::endl << "-> Data Type = " << typeid(TT).name() << std::endl << std::endl;
 
-				for(Iterator tt = items.begin();tt != items.end();tt++) {
+				for(Iterator tt = mItems.begin();tt != mItems.end();tt++) {
 					ss << "\t- Identifier => '" << (*tt).first << "', Value => '" << (*tt).second.t << "', Owned => " << (*tt).second.owned << std::endl;
 				}
 
-				ss << std::endl << "Done, " << items.size() << " item(s).";
+				ss << std::endl << "Done, " << mItems.size() << " item(s).";
 
 				NxToConsole(ss.str());
 
@@ -212,24 +273,30 @@ namespace NxOgre {
 
 			////////////////////////////////////////////////////////////
 
-			void destroyAllOwned() {
+			/** @brief Deletes all owned classes within the container.
+				@note Does not remove the entry of the class from the container
+					  as it is assumed once you've destroyAllOwned you are finished
+					  with the container forever.
 
-				if (items.size() == 0)
+			*/
+			NX_INLINE void destroyAllOwned() {
+
+				if (mItems.size() == 0)
 					return;
 
-#if defined NX_DEBUG && defined NX_TREAT_POSSIBLE_LEAKS_AS_LEAKS
+#if defined NX_DEBUG && (NX_TREAT_POSSIBLE_LEAKS_AS_LEAKS == 1)
 				std::stringstream leaks;
 				NxU32 leakCount = 0;
 #endif
 
-				for(Iterator tt = items.begin();tt != items.end();) {
+				for(Iterator tt = mItems.begin();tt != mItems.end();) {
 					
 					if ((*tt).second.owned) {
 						delete (*tt++).second.t;
 					}
 					else {
 
-#if defined NX_DEBUG && defined NX_TREAT_POSSIBLE_LEAKS_AS_LEAKS
+#if defined NX_DEBUG && (NX_TREAT_POSSIBLE_LEAKS_AS_LEAKS == 1)
 						leaks << "\t- " << (*tt).second.t << " => Indentifier '" << (*tt).first << "'." << std::endl;
 						leakCount++;
 #endif
@@ -237,7 +304,7 @@ namespace NxOgre {
 					}
 				}
 
-#if defined NX_DEBUG && defined NX_TREAT_POSSIBLE_LEAKS_AS_LEAKS
+#if defined NX_DEBUG && (NX_TREAT_POSSIBLE_LEAKS_AS_LEAKS == 1)
 				if (leakCount>0) {
 					std::stringstream formattedLeak;
 					formattedLeak << "Possible leaks detected with non-owned class in a container" << std::endl << std::endl;
@@ -253,12 +320,14 @@ namespace NxOgre {
 
 			////////////////////////////////////////////////////////////
 
-			void destroyAndEraseAll() {
+			/** @brief Deletes every item regardless if it is owned or not.
+			*/
+			NX_INLINE void destroyAndEraseAll() {
 			
-				if (items.size() == 0)
+				if (mItems.size() == 0)
 					return;
 
-				for(Iterator tt = items.begin();tt != items.end();) {
+				for(Iterator tt = mItems.begin();tt != mItems.end();) {
 					delete (*tt++).second.t;
 				}
 
@@ -268,32 +337,59 @@ namespace NxOgre {
 
 			////////////////////////////////////////////////////////////
 
-			void CopyTo(Container<TI, TT>* c) {
-				c->items = items;
+			/** @brief Copies the contents of this container to another.
+				@example
+				<code>
+					Container<String, String> A;
+					Container<String, String> B;
+					...
+					A.CopyTo(B);
+				</code>
+			*/
+			NX_INLINE void CopyTo(Container<TI, TT>* c) {
+				c->mItems = mItems;
 				c->begin();
 			}
 
 			////////////////////////////////////////////////////////////
 
-			void CopyTo(Container<TI, TT>& c) {
-				c.items = items;
+			/** @brief Copies the contents of this container to another.
+				@example
+				<code>
+					Container<String, String> A;
+					Container<String, String> B;
+					...
+					A.CopyTo(B);
+				</code>
+			*/
+			NX_INLINE void CopyTo(Container<TI, TT>& c) {
+				c.mItems = mItems;
 				c.begin();
 			}
 
 			////////////////////////////////////////////////////////////
 
-			TT operator[](TI ti) {
+			
+			/** @brief Operator access, equilvent to Container<TI,TT>::get
+				@example
+				<code>
+					Container<String, String> A;
+					...
+					NxString foo = A["Foo"]
+				</code>
+			*/
+			NX_INLINE TT operator[](TI ti) {
 				return get(ti);
 			}
 
 			////////////////////////////////////////////////////////////
 
-			typedef std::map<TI, Containee > Type;
-			typedef typename Type::iterator Iterator;
+			typedef std::map<TI, Containee > TypeMap;
+			typedef typename TypeMap::iterator Iterator;
 
 			////////////////////////////////////////////////////////////
 
-			Type items;
+			TypeMap mItems;
 			Iterator mIterator;
 
 			////////////////////////////////////////////////////////////
@@ -360,7 +456,7 @@ namespace NxOgre {
 			////////////////////////////////////////////////////////////
 
 			void empty() {
-				items.empty();
+				items.clear();
 			}
 
 			////////////////////////////////////////////////////////////

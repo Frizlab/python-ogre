@@ -25,8 +25,10 @@
 #include "NxOgreHelpers.h"				// For conversions
 #include "NxOgreScene.h"				// For Cloth::mOwner
 #include "NxOgreCooking.h"				// For Cooking NxClothMesh and Ogre::Mesh
-#include "NxOgreUserStream.h"
+#include "NxOgreMemoryStream.h"
 #include "NxCooking.h"
+
+#include "OgreStringConverter.h"
 
 namespace NxOgre {
 
@@ -161,36 +163,38 @@ NxSoftBodyMesh*	SoftBody::__createCubeSoftBodyMesh(NxReal wx, NxReal wy, NxReal 
 		}
 	}
 
-#ifndef NX_DEBUG
+#if 0
+						#ifndef NX_DEBUG
 
-	MemoryWriteBuffer buf;
-	if (!NxCookSoftBodyMesh(mSoftBodyMeshDescription, buf)) {
-		std::stringstream s;
-		s << "Cloth Mesh failed to cook";
+							MemoryWriteBuffer buf;
+							if (!NxCookSoftBodyMesh(mSoftBodyMeshDescription, buf)) {
+								std::stringstream s;
+								s << "Cloth Mesh failed to cook";
 
-		NxThrow_Error(s.str());
-	}
-	
-  mSoftBodyMesh = mOwner->getNxScene()->getPhysicsSDK().createSoftBodyMesh(MemoryReadBuffer(buf.data));
+								NxThrow_Error(s.str());
+							}
+							
+						  mSoftBodyMesh = mOwner->getNxScene()->getPhysicsSDK().createSoftBodyMesh(MemoryReadBuffer(buf.data));
 
-#else
+						#else
 
-	NxString filename = mName + ".SoftBody.nxs";
-	
-	UserStream buf(filename.c_str(),false);
+							NxString filename = mName + ".SoftBody.nxs";
+							
+							UserStream buf(filename.c_str(),false);
 
-	if (!NxCookSoftBodyMesh(mSoftBodyMeshDescription, buf)) {
-		std::stringstream s;
-		s << "SoftBody Mesh failed to cook";
-		NxThrow_Error(s.str());
-	}
-	fclose(buf.fp);
+							if (!NxCookSoftBodyMesh(mSoftBodyMeshDescription, buf)) {
+								std::stringstream s;
+								s << "SoftBody Mesh failed to cook";
+								NxThrow_Error(s.str());
+							}
+							fclose(buf.fp);
 
-	UserStream rbuf(filename.c_str(), true);
+							UserStream rbuf(filename.c_str(), true);
 
-	mSoftBodyMesh = mOwner->getNxScene()->getPhysicsSDK().createSoftBodyMesh(rbuf);
-	fclose(rbuf.fp);
+							mSoftBodyMesh = mOwner->getNxScene()->getPhysicsSDK().createSoftBodyMesh(rbuf);
+							fclose(rbuf.fp);
 
+						#endif
 #endif
 
   return mSoftBodyMesh;
@@ -309,39 +313,39 @@ NxSoftBodyMesh* SoftBody::__createSoftBodyMesh(const NxString& name, const NxStr
 		*vDest = (*vSrc) - mOffset;
 	memcpy((NxU32*)mSoftBodyMeshDescription.tetrahedra, tempIndices.begin(), sizeof(NxU32)*mSoftBodyMeshDescription.numTetrahedra*4);
 
+#if 0
+				#ifndef NX_DEBUG
 
-#ifndef NX_DEBUG
+					MemoryWriteBuffer buf;
+					if (!NxCookSoftBodyMesh(mSoftBodyMeshDescription, buf)) {
+						std::stringstream s;
+						s << "SoftBody Mesh failed to cook";
 
-	MemoryWriteBuffer buf;
-	if (!NxCookSoftBodyMesh(mSoftBodyMeshDescription, buf)) {
-		std::stringstream s;
-		s << "SoftBody Mesh failed to cook";
+						NxThrow_Error(s.str());
+					}
+					
+				  mSoftBodyMesh = mOwner->getNxScene()->getPhysicsSDK().createSoftBodyMesh(MemoryReadBuffer(buf.data));
 
-		NxThrow_Error(s.str());
-	}
-	
-  mSoftBodyMesh = mOwner->getNxScene()->getPhysicsSDK().createSoftBodyMesh(MemoryReadBuffer(buf.data));
+				#else
 
-#else
+					NxString filename = mName + ".SoftBody.nxs";
+					
+					UserStream buf(filename.c_str(),false);
 
-	NxString filename = mName + ".SoftBody.nxs";
-	
-	UserStream buf(filename.c_str(),false);
+					if (!NxCookSoftBodyMesh(mSoftBodyMeshDescription, buf)) {
+						std::stringstream s;
+						s << "SoftBody Mesh failed to cook";
+						NxThrow_Error(s.str());
+					}
+					fclose(buf.fp);
 
-	if (!NxCookSoftBodyMesh(mSoftBodyMeshDescription, buf)) {
-		std::stringstream s;
-		s << "SoftBody Mesh failed to cook";
-		NxThrow_Error(s.str());
-	}
-	fclose(buf.fp);
+					UserStream rbuf(filename.c_str(), true);
 
-	UserStream rbuf(filename.c_str(), true);
+					mSoftBodyMesh = mOwner->getNxScene()->getPhysicsSDK().createSoftBodyMesh(rbuf);
+					fclose(rbuf.fp);
 
-	mSoftBodyMesh = mOwner->getNxScene()->getPhysicsSDK().createSoftBodyMesh(rbuf);
-	fclose(rbuf.fp);
-
+				#endif
 #endif
-
   return mSoftBodyMesh;
 
 }

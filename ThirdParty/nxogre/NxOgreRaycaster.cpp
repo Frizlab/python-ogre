@@ -24,9 +24,17 @@
 #include "NxOgreScene.h"		// So I can raycast
 #include "NxOgreContainer.h"	// For container access.
 #include "NxOgreActor.h"		// For getName()
-#if (NX_USE_CHARACTER_API == 1)
+
+
+#if (NX_USE_LEGACY_NXCONTROLLER == 1)
+#	include "NxOgreLegacyCharacter.h"
+#else
 #	include "NxOgreCharacter.h"
 #endif
+
+#include "OgreVector3.h"
+#include "OgreQuaternion.h"
+
 namespace NxOgre {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,7 +44,7 @@ RayCaster::RayCaster(Ogre::Vector3 origin, Ogre::Vector3 direction, NxReal maxDi
 	mScene(s),
 	mType(RayCaster::RCT_ANY)
 {
-	mRay = NxRay(toNxVec3(origin), toNxVec3(direction));
+	mRay = NxRay(NxConvert<NxVec3, Ogre::Vector3>(origin), NxConvert<NxVec3, Ogre::Vector3>(direction));
 	
 	mHitNormal.zero();
 	mHitImpact.zero();
@@ -50,7 +58,7 @@ RayCaster::RayCaster(Ogre::Vector3 origin, Ogre::Vector3 direction, NxReal maxDi
 	mScene(s),
 	mType(t)
 {
-	mRay = NxRay(toNxVec3(origin), toNxVec3(direction));
+	mRay = NxRay(NxConvert<NxVec3, Ogre::Vector3>(origin), NxConvert<NxVec3, Ogre::Vector3>(direction));
 	
 	mHitNormal.zero();
 	mHitImpact.zero();
@@ -103,8 +111,8 @@ bool RayCaster::_castClosest(ActorFilter f) {
 		else
 			return false;
 
-		mHit.mWorldImpact = toVector3(hit.worldImpact);
-		mHit.mWorldNormal = toVector3(hit.worldNormal);
+		mHit.mWorldImpact = NxConvert<Ogre::Vector3, NxVec3>(hit.worldImpact);
+		mHit.mWorldNormal = NxConvert<Ogre::Vector3, NxVec3>(hit.worldNormal);
 		
 		mReport.insert(mHit.mActor->getName(), mHit);
 		
@@ -126,8 +134,8 @@ bool RayCaster::_castClosest(ActorFilter f) {
 			case NxActorUserData::T_Actor:
 				mHit.mActor = static_cast<NxActorUserData*>(hitShape->getActor().userData)->toActor();
 				mHit.mCharacter = 0;
-				mHit.mWorldImpact = toVector3(mHit.mRaycastHit.worldImpact);
-				mHit.mWorldNormal = toVector3(mHit.mRaycastHit.worldNormal);
+				mHit.mWorldImpact = NxConvert<Ogre::Vector3, NxVec3>(mHit.mRaycastHit.worldImpact);
+				mHit.mWorldNormal = NxConvert<Ogre::Vector3, NxVec3>(mHit.mRaycastHit.worldNormal);
 
 				mReport.insert(mHit.mActor->getName(), mHit);
 			break;
@@ -135,8 +143,8 @@ bool RayCaster::_castClosest(ActorFilter f) {
 			case NxActorUserData::T_Character:
 				mHit.mActor = 0;
 				mHit.mCharacter = static_cast< NxActorUserData* >(hitShape->getActor().userData)->toCharacter();
-				mHit.mWorldImpact = toVector3(mHit.mRaycastHit.worldImpact);
-				mHit.mWorldNormal = toVector3(mHit.mRaycastHit.worldNormal);
+				mHit.mWorldImpact = NxConvert<Ogre::Vector3, NxVec3>(mHit.mRaycastHit.worldImpact);
+				mHit.mWorldNormal = NxConvert<Ogre::Vector3, NxVec3>(mHit.mRaycastHit.worldNormal);
 				mReport.insert(mHit.mCharacter->getName(), mHit);
 			break;
 
@@ -166,7 +174,7 @@ Actor* RayCaster::getClosestActor() {
 	if (mReport.count() == 0)
 		return 0;
 
-	RayCastReport::Iterator mIterator = mReport.items.begin();
+	RayCastReport::Iterator mIterator = mReport.mItems.begin();
 	return (*mIterator).second.t.mActor;
 
 }
@@ -178,7 +186,7 @@ RayCastHit RayCaster::getClosestRaycastHit() {
 		return RayCastHit();
 	}
 
-	RayCastReport::Iterator mIterator = mReport.items.begin();
+	RayCastReport::Iterator mIterator = mReport.mItems.begin();
 	return (*mIterator).second.t;
 }
 
@@ -202,8 +210,8 @@ bool RayCaster::onHit(const NxRaycastHit& hit)  {
 		else
 			return true;
 
-		raycastHit.mWorldImpact = toVector3(hit.worldImpact);
-		raycastHit.mWorldNormal = toVector3(hit.worldNormal);
+		raycastHit.mWorldImpact = NxConvert<Ogre::Vector3, NxVec3>(hit.worldImpact);
+		raycastHit.mWorldNormal = NxConvert<Ogre::Vector3, NxVec3>(hit.worldNormal);
 		
 		mReport.insert(raycastHit.mActor->getName(), raycastHit);
 		
@@ -224,8 +232,8 @@ bool RayCaster::onHit(const NxRaycastHit& hit)  {
 			case NxActorUserData::T_Actor:
 				raycastHit.mActor = static_cast<NxActorUserData*>(hit.shape->getActor().userData)->toActor();
 				raycastHit.mCharacter = 0;
-				raycastHit.mWorldImpact = toVector3(raycastHit.mRaycastHit.worldImpact);
-				raycastHit.mWorldNormal = toVector3(raycastHit.mRaycastHit.worldNormal);
+				raycastHit.mWorldImpact = NxConvert<Ogre::Vector3, NxVec3>(raycastHit.mRaycastHit.worldImpact);
+				raycastHit.mWorldNormal = NxConvert<Ogre::Vector3, NxVec3>(raycastHit.mRaycastHit.worldNormal);
 
 				mReport.insert(raycastHit.mActor->getName(), raycastHit);
 			break;
@@ -233,8 +241,8 @@ bool RayCaster::onHit(const NxRaycastHit& hit)  {
 			case NxActorUserData::T_Character:
 				raycastHit.mActor = 0;
 				raycastHit.mCharacter = static_cast< NxActorUserData* >(hit.shape->getActor().userData)->toCharacter();
-				raycastHit.mWorldImpact = toVector3(raycastHit.mRaycastHit.worldImpact);
-				raycastHit.mWorldNormal = toVector3(raycastHit.mRaycastHit.worldNormal);
+				raycastHit.mWorldImpact = NxConvert<Ogre::Vector3, NxVec3>(raycastHit.mRaycastHit.worldImpact);
+				raycastHit.mWorldNormal = NxConvert<Ogre::Vector3, NxVec3>(raycastHit.mRaycastHit.worldNormal);
 				mReport.insert(raycastHit.mCharacter->getName(), raycastHit);
 			break;
 
@@ -250,13 +258,13 @@ bool RayCaster::onHit(const NxRaycastHit& hit)  {
 ////////////////////////////////////////////////////////////////////////////////
 
 void RayCaster::setOrigin(const Ogre::Vector3& o) {
-	mRay.orig = toNxVec3(o);
+	mRay.orig = NxConvert<NxVec3, Ogre::Vector3>(o);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void RayCaster::setDirection(const Ogre::Vector3& d) {
-	mRay.dir = toNxVec3(d);
+	mRay.dir = NxConvert<NxVec3, Ogre::Vector3>(d);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -274,7 +282,7 @@ Character * RayCaster::getClosestCharacter() {
 	if (mReport.count() == 0)
 		return 0;
 	
-	RayCastReport::Iterator mIterator = mReport.items.begin();
+	RayCastReport::Iterator mIterator = mReport.mItems.begin();
 
 	return (*mIterator).second.t.mCharacter;
 }

@@ -23,11 +23,11 @@
 #include "NxOgrePrerequisites.h"
 #include "NxOgreContainer.h"		// For: mCollisionList
 #include "NxOgreParams.h"
+#include "NxOgrePose.h"
 
 namespace NxOgre {
 
-	/**
-	 	\page actorparams ActorParams
+	/**	\page actorparams ActorParams
 		
 		String base params are case and space insensitive.
 
@@ -173,109 +173,180 @@ namespace NxOgre {
 						
 	*/
 	
+
 	/** ActorParams
 
-		See \ref actorparams for the full string argument documentation.
+		@see \ref actorparams for the full string argument documentation.
 	*/		
 	class NxExport ActorParams : public Params {
 
 		public:
 
+			/** @brief Class based params.
+				@note Faster, less readable and reusable.
+				@see \ref actorparams
+				@example
+				<code>
+					ActorParams ap;
+					ap.mMass = 10;
+					ap.mGroup = "myGroup";
+					..., ap, ...
+				</code>
 
-			ActorParams(){setToDefault();}
-			ActorParams(const char* p) {process(p);}
-			ActorParams(NxString p) {process(p);}
+			*/
+			ActorParams()						{
+													setToDefault();
+												}
 
+			/** @brief String based params. "mass: 10, group: myGroup"
+				@note Slower but readable.
+				@params String of params.
+				@see \ref actorparams
+				@example
+				<code>
+					..., "mass: 10, group: myGroup", ...
+				</code>
+			*/
+			ActorParams(const char* p)			{
+													process(p);
+												}
+
+			/** @brief String based params. "mass: 10, group: myGroup"
+				@note Slower but readable.
+				@params 
+				@see \ref actorparams
+				@example
+				<code>
+					..., "mass: 10, group: myGroup", ...
+				</code>
+			*/
+			ActorParams(NxString p)				{
+													process(p);
+												}
+
+			/** @brief Set's the Params to default based on NxActorDesc and NxBodyDesc defaults.
+			*/
 			void			setToDefault();
-			void			parse(Parameters);			
+
+			/** @brief Set's the Params based from an NxActorDesc
+			*/
 			void			fromNxActorDesc(NxActorDesc&);
+
+			/** @brief Set's the Params based from a NxBodyDesc
+			*/
 			void			fromNxBodyDesc(NxBodyDesc&);
 
 			////////////////////////////////////////////////////////////////
 
 #if NX_SDK_VERSION_NUMBER >= 260
-			/// NxCompartment of the Actor to sit in.
-			///	@todo NxOgre-ify
-			/// @default NULL
+			/** NxCompartment of the Actor to sit in.
+				@todo NxOgre-ify
+				@default NULL
+			*/
 			NxCompartment*		mCompartment;
 #endif
 
-			/// Density, mass must be 0 when density is used.
+			/** Density, mass must be 0 when density is used.
+				@default 0
+				@see ActorParams::mMass
+			*/
 			NxReal				mDensity;
 			
 #if NX_SDK_VERSION_NUMBER >= 272 
 
-			/// DominanceGroup (as Name).
-			/// @default ""
+			/** @brief DominanceGroup (as Name).
+			    @default "" (Resorts to dominance group with identifier "Default")
+			*/
 			NxString			mDominanceGroupAsName;
 
-			/// DominanceGroup (as Index)
-			/// @default 0
+			/** @brief DominanceGroup (as Index)
+				@default 0
+			*/
 			NxDominanceGroup	mDominanceGroupAsIndex;
+
 #endif
 
-			/// Flags for the NxActor
-			/// @see NxActorFlags
-			/// @default 0
+			/** @brief Flags for the NxActor
+				@see NxActorFlags
+				@default 0
+			*/
 			NxU32				mActorFlags;
 			
 
-			/// Group to use as index. GroupAsName must be blank.
-			/// @default 0
+			/** @brief Group to use as index. GroupAsName must be blank.
+				@default 0
+			*/
 			NxActorGroup		mGroupAsIndex;
 			
 
-			/// Group to use from name. GroupAsIndex must be 0.
-			/// @default Blank String
+			/** @brief Group to use from name. GroupAsIndex must be 0.
+				@default Blank String (Resorts to actor group with identifier "Default")
+			*/
 			NxString			mGroupAsName;
 
 
 			////////////////////////////////////////////////////////////////
 
 			
-			/// Angular Damping
+			/** @brief Angular Damping
+			*/
 			NxReal				mAngularDamping;
 
 
-			/// Angular Velocity
+			/** @brief Angular Velocity
+			*/
 			NxVec3				mAngularVelocity;
 
 
-			///
+			/** @brief CCD Motion Threshold
+			*/
 			NxReal				mCCDMotionThreshold;
 
 
-			///
+			/** @brief Flags for the Body portion of an Actor, assuming it is dynamic.
+				@see NxBodyDesc
+			*/
 			NxU32				mBodyFlags;
 
 
-			///
+			/** @brief Linear Damping of the Actor
+			*/
 			NxReal				mLinearDamping;
 
 			
-			///
+			/** @brief Initial linear velocity of the actor
+			*/
 			NxVec3				mLinearVelocity;
 
 
-			/// Mass of the Actor. When used, make sure density is zero.
+			/** @brief Mass of the Actor.
+				@note When used, make sure density is zero.
+				@default 10
+			*/
 			NxReal				mMass;
 
 
-			///
+			/** @brief Mass Local Pose of the body portion of the Actor
+				@default NxMatrix34.id()
+			*/
 			NxMat34				mMassLocalPose;
 			
-			///
+			/** @brief Mass Space Inertia of the body portion of the Actor
+			*/
 			NxVec3				mMassSpaceInertia;
 
 
-			///
+			/** @brief Maximum angular velocity of the Actor
+			*/
 			NxReal				mMaxAngularVelocity;
 			
-			///
+			/**
+			*/
 			NxReal				mSleepAngularVelocity;
 			
 
-			///
+			/**
+			*/
 			NxReal				mSleepDamping;
 			
 
@@ -307,10 +378,24 @@ namespace NxOgre {
 			/// Set the first Entity of the Visual based Actors to have shadows or not.
 			bool			mNodeShadows;
 
+			Pose			mNodePose;
 
+
+			private:
+			
+			//! \internal
+			void			parse(Parameters);
 
 	}; // End of ActorParams class
 
+	/** Actor
+		 An Actor is a single unit of matter in the Scene. It is physically represented by a "Collision Model" or a shape. If the actor
+		 has some mass then it is known as a Dynamic Actor, capable of scurrying around in the Scene. If the Actor has
+		 no mass then it is a static actor which never ever moves.
+
+
+
+	*/
 	class NxExport Actor {
 
 		public:
@@ -329,13 +414,12 @@ namespace NxOgre {
 
 			//////////////////////////////////////////////////////////
 
-			virtual bool					hasVisualisation() const {return false;}
-			virtual void					simulate(float);
-			virtual void					render(float);
-			virtual void					shapeSimulate(float);
-			virtual void					shapeRender(float);
-			bool							isDead() { return (mActor == NULL); }
+			virtual NxShortHashIdentifier	getType() const {return NxHashes_Actor;	/* "NxOgre-Actor" */}
+			virtual NxString				getStringType() const {return "NxOgre-Actor";}
 
+			virtual bool					hasVisualisation() const {return false;}
+			bool							isDead() { return (mActor == NULL); }
+			
 
 			/** Duplicate this actor
 				
@@ -359,7 +443,7 @@ namespace NxOgre {
 			//////////////////////////////////////////////////////////
 
 			void							setName(NxString);
-			NxString						getName();
+			NxString						getName() const;
 
 			////////////////////////////////////////////////////////
 
@@ -473,8 +557,17 @@ namespace NxOgre {
 			void							addForceAtLocalPos(const Ogre::Vector3& force, const Ogre::Vector3& pos, NxForceMode mode = NX_FORCE, bool wakeup = true);
 			void							addLocalForceAtPos(const Ogre::Vector3& force, const Ogre::Vector3& pos, NxForceMode mode = NX_FORCE, bool wakeup = true);
 			void							addLocalForceAtLocalPos(const Ogre::Vector3& force, const Ogre::Vector3& pos, NxForceMode mode = NX_FORCE, bool wakeup = true);
+			
+
 			void							addForce(const Ogre::Vector3& force, NxForceMode mode = NX_FORCE, bool wakeup = true);
+			void							addForce(const NxVec3& force, NxForceMode = NX_FORCE, bool wakeup = true);
+			void							addForce(NxReal x, NxReal y, NxReal z, NxForceMode = NX_FORCE, bool wakeup = true);
 			void							addLocalForce(const Ogre::Vector3& force, NxForceMode mode = NX_FORCE, bool wakeup = true);
+			
+			void							addTorque(NxReal x, NxReal y, NxReal z, NxForceMode mode = NX_FORCE, bool wakeup = true) {
+				addTorque(NxVec3(x,y,z), mode, wakeup);
+			}
+			void							addTorque(const NxVec3& torque, NxForceMode mode = NX_FORCE, bool wakeup = true); 
 			void							addTorque(const Ogre::Vector3& torque, NxForceMode mode = NX_FORCE, bool wakeup = true);
 			void							addLocalTorque(const Ogre::Vector3& torque, NxForceMode mode = NX_FORCE, bool wakeup = true);
 			NxReal							computeKineticEnergy() const;
@@ -521,6 +614,7 @@ namespace NxOgre {
 											mDynamicCollisionModel;
 
 			void*							getNxActorUserData();
+			NxActorUserData*				getUserData();
 
 			/** joinWith
 
@@ -543,8 +637,6 @@ namespace NxOgre {
 
 			*/
 			void							disable();
-			virtual void					disableVisualisation() {}
-
 			NxU32							getBirthFrame() {return mBirthFrame;}
 
 			//////////////////////////////////////////////////////////
@@ -558,9 +650,8 @@ namespace NxOgre {
 			NxActor*						mActor;
 			NxString						mName;
 			NxActorUserData*				mNxActorUserData;
-			NxString						mVisualIdentifier;
 			NxU32							mBirthFrame;
-
+			
 		private:
 
 

@@ -19,8 +19,35 @@
 
 #include "NxOgreStable.h"
 #include "NxOgreSimpleShape.h"
+#include "NxOgreHelpers.h"
+
+#include "OgreString.h"
 
 namespace NxOgre {
+
+//////////////////////////////////////////////////////////////////////////////////////
+
+SimpleShape*	SimpleShape::createFromString(const NxString& str) {
+	std::vector<NxString> strings = Ogre::StringUtil::split(str, ":", 2);
+
+	SimpleShape* shape = 0;
+
+	if (strings.size() != 2)
+		return shape;
+
+	Ogre::StringUtil::toLowerCase(strings[0]);
+	Ogre::StringUtil::trim(strings[0]);
+	Ogre::StringUtil::trim(strings[1]);
+
+	if (strings[0] == "cube" || strings[0] == "box") {
+		NxVec3 size(1,1,1);
+		size = NxFromString<NxVec3>(strings[1]);
+		shape = new SimpleBox(size);
+	}
+	
+
+	return shape;
+}
 
 //////////////////////////////////////////////////////////////////////////////////////
 
