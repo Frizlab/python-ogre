@@ -13,7 +13,7 @@ sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, Ogre::SharedPtr<Ogre::Re
 sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> >, false> > );
 #endif
 
-sizeof ( std::pair<Ogre::SharedPtr<Ogre::Resource>, bool> );
+sizeof( std::pair<Ogre::SharedPtr<Ogre::Resource>, bool> );
 
 std::vector< int > v;
 std::set< std::string > s;
