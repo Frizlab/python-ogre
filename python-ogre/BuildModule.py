@@ -74,9 +74,9 @@ def spawnTask ( task, cwdin = '' ):
         ##env["LDFLAGS"]="-Wl,-rpath='\$\$ORIGIN/../../lib' -Wl,-rpath='\$\$ORIGIN' -Wl,-z,origin"  ### Mac GCC 4.0.1 doesn't support rpath
         env["PYTHONPATH"]=PREFIX+"/lib/python2.5/site-packages"
     else:
-        env["CFLAGS"]="\"-I"+PREFIX+"/include -L"+PREFIX+"/lib\""  
-        env["CXXFLAGS"]="\"-I"+PREFIX+"/include -L"+PREFIX+"/lib\""
-        env["LDFLAGS"]="\"-Wl,-rpath='\$\$ORIGIN/../../lib' -Wl,-rpath='\$\$ORIGIN' -Wl,-z,origin\""
+        env["CFLAGS"]="-I"+PREFIX+"/include -L"+PREFIX+"/lib"  
+        env["CXXFLAGS"]="-I"+PREFIX+"/include -L"+PREFIX+"/lib"
+        env["LDFLAGS"]="-Wl,-rpath='\$\$ORIGIN/../../lib' -Wl,-rpath='\$\$ORIGIN' -Wl,-z,origin"
         env["PYTHONPATH"]=PREFIX+"/lib/python25/site-packages"
     env["PATH"]=PREFIX+"/bin:" + PATH
     
@@ -135,7 +135,7 @@ def parseInput():
     usage = "usage: %prog [options] moduleName"
     parser = OptionParser(usage=usage, version="%prog 1.0")
     parser.add_option("-r", "--retrieve", action="store_true", default=False,dest="retrieve", help="Retrieve the appropiate source before building")
-    parser.add_option("-n", "--build", action="store_true", default=False ,dest="build", help="Build the appropiate module")
+    parser.add_option("-b", "--build", action="store_true", default=False ,dest="build", help="Build the appropiate module")
     parser.add_option("-g", "--gen", action="store_true", default=False ,dest="gencode", help="Generate Source Code for the module")
     parser.add_option("-c", "--compile", action="store_true", default=False ,dest="compilecode", help="Compile Source Code for the module")
    
@@ -148,31 +148,34 @@ if __name__ == '__main__':
     classList = getClassList ()
     
     (options, args) = parseInput()
-    if len(args) != 1:
+    if len(args) == 0:
         exit("The module to build wasn't specified.  Use -h for help")
         
     if options.retrieve==False and options.build==False and options.gencode==False and options.compilecode==False:
         exit ( "You need to specific at least one option. Use -h for help")
             
-    moduleName = args[0]        
-    if not classList.has_key( moduleName ):
-        exit("Module specificed was not found (%s is not in environment.py) " % moduleName )
-    
     if not os.path.exists( environment.downloadPath ):
         os.mkdir ( environment.downloadPath )    
-    if options.retrieve:    
-        retrieveSource ( classList[ moduleName ] )
-    if options.build :       
-        buildModule ( classList[ moduleName ] )
-    if options.gencode :
-        if classList[ moduleName ].pythonModule == True:
-            generateCode ( classList[ moduleName ] )
-        else:
-            exit ( "Module specificed does not generate source code (%s is a supporting module)" % moduleName )
-    if options.compilecode :
-        if classList[ moduleName ].pythonModule == True:
-            compileCode ( classList[ moduleName ] )
-        else:
-            exit ( "Module specificed does not need compiling (%s is a supporting module)" % moduleName )
+
+    if not os.path.exists( environment.Config.ROOT_DIR ):
+        os.mkdir ( environment.Config.ROOT_DIR )    
+
+    for moduleName  in args:        
+        if not classList.has_key( moduleName ):
+            exit("Module specificed was not found (%s is not in environment.py) " % moduleName )
+        if options.retrieve:    
+            retrieveSource ( classList[ moduleName ] )
+        if options.build :       
+            buildModule ( classList[ moduleName ] )
+        if options.gencode :
+            if classList[ moduleName ].pythonModule == True:
+                generateCode ( classList[ moduleName ] )
+            else:
+                exit ( "Module specificed does not generate source code (%s is a supporting module)" % moduleName )
+        if options.compilecode :
+            if classList[ moduleName ].pythonModule == True:
+                compileCode ( classList[ moduleName ] )
+            else:
+                exit ( "Module specificed does not need compiling (%s is a supporting module)" % moduleName )
             
                 

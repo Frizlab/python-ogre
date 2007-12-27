@@ -137,6 +137,10 @@ else:
     unzip = "unzip "
     cvs = "cvs -z3 -q  "
     svn = "svn --non-interactive "
+    if isMac():
+        sed_ = "sed -i '' "
+    else:
+        sed_ = "sed --in-place "
  
 if isMac():    
     Config.PATH_Boost = os.path.join(Config.LOCAL_INCLUDE, 'boost-1_34_1')
@@ -206,7 +210,7 @@ class cg:
     if isLinux():
         base = 'Cg-2.0_Dec2007_x86'
         source = [
-                    [wget, " http://developer.download.nvidia.com/cg/Cg_1.5/1.5.0/0022/"+base+".tar.gz",downloadPath]
+                    [wget, " http://developer.download.nvidia.com/cg/Cg_2.0/2.0.0010/"+base+".tar.gz",downloadPath]
                  ]
                  
         buildCmds =  [
@@ -351,9 +355,9 @@ class boost:    ## also included bjam
                 ## and now boost
                 [0, tar + ' zxf ' + os.path.join(downloadPath, base) + '.tar.gz', ''],
                 [0,'chmod -R +rw *', os.path.join(os.getcwd(), base ) ],
-                [0,cp + ' -R'+os.path.join('python-ogre','boost') + '* ' + base , ''],  # need to overwrite the boost with our files
-                [0,"sed -i '' 's/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/' boost_1_34_1/configure", '' ],
-                [0,"sed -i '' s/'BOOST_PYTHON_MAX_ARITY 15'/'BOOST_PYTHON_MAX_ARITY 19'/ boost_1_34_1/boost/python/detail/preprocessor.hpp", ''],
+                [0,cp + ' -R '+os.path.join('python-ogre','boost','*')  +' ' + base , ''],  # need to overwrite the boost with our files
+                [0, sed_ + " 's/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/' boost_1_34_1/configure", '' ],
+                [0, sed_ + " s/'BOOST_PYTHON_MAX_ARITY 15'/'BOOST_PYTHON_MAX_ARITY 19'/ boost_1_34_1/boost/python/detail/preprocessor.hpp", ''],
                 [0,"./configure --with-libraries=python --prefix=%s"  % PREFIX, os.path.join(os.getcwd(), base )],
                 [0,'make', os.path.join(os.getcwd(), base )],
                 [0,'make install', os.path.join(os.getcwd(), base )],
