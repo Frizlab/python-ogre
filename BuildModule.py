@@ -14,12 +14,12 @@ import os
 
 logger = None
 
-def setupLogging ():
+def setupLogging (logfilename):
     # set up logging to file
     logging.basicConfig(level=logging.DEBUG,
                         format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
                         datefmt='%m-%d %H:%M',
-                        filename='log.out',
+                        filename=logfilename,
                         filemode='w')
     # define a Handler which writes INFO messages or higher to the sys.stderr
     console = logging.StreamHandler()
@@ -77,7 +77,7 @@ def spawnTask ( task, cwdin = '' ):
         env["CFLAGS"]="-I"+os.path.join(PREFIX,"include")+ " -L"+os.path.join(PREFIX,"lib")  
         env["CXXFLAGS"]=env["CFLAGS"]
         env["LDFLAGS"]="-Wl,-rpath='$$ORIGIN/../../lib' -Wl,-rpath='$$ORIGIN' -Wl,-z,origin"
-        env["PYTHONPATH"]=PREFIX+"/lib/python25/site-packages"
+        env["PYTHONPATH"]=PREFIX+"/lib/python2.5/site-packages"
         env["ZZIPLIB_LIBS"]="-lzzip"
 
     env["PATH"]=PREFIX+"/bin:" + PATH
@@ -140,13 +140,12 @@ def parseInput():
     parser.add_option("-b", "--build", action="store_true", default=False ,dest="build", help="Build the appropiate module")
     parser.add_option("-g", "--gen", action="store_true", default=False ,dest="gencode", help="Generate Source Code for the module")
     parser.add_option("-c", "--compile", action="store_true", default=False ,dest="compilecode", help="Compile Source Code for the module")
+    parser.add_option("-l", "--logfilename",  default="log.out" ,dest="logfilename", help="Override the default log file name")
    
     (options, args) = parser.parse_args()
     return (options,args)
     
 if __name__ == '__main__':
-    setupLogging()
-    logger = logging.getLogger('PythonOgre.BuildModule')
     classList = getClassList ()
     
     (options, args) = parseInput()
@@ -156,11 +155,16 @@ if __name__ == '__main__':
     if options.retrieve==False and options.build==False and options.gencode==False and options.compilecode==False:
         exit ( "You need to specific at least one option. Use -h for help")
             
+    setupLogging(options.logfilename)
+    logger = logging.getLogger('PythonOgre.BuildModule')
+
     if not os.path.exists( environment.downloadPath ):
         os.mkdir ( environment.downloadPath )    
 
     if not os.path.exists( environment.Config.ROOT_DIR ):
         os.mkdir ( environment.Config.ROOT_DIR )    
+    if not os.path.exists( os.path.join(environment.Config.ROOT_DIR, 'usr' ) ):
+        os.mkdir ( os.path.join(environment.Config.ROOT_DIR, 'usr' )  )    
 
     for moduleName  in args:        
         if not classList.has_key( moduleName ):

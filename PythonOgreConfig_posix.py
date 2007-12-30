@@ -28,6 +28,7 @@ gccxml_bin = os.path.join(BASE_DIR,'gccxml-build/bin')
 pyplusplus_install_dir = os.path.join(BASE_DIR,'pygccxml')
 
 SDK = True
+SDK = False
 
 # # ## Parent directories of the libraries
 PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )

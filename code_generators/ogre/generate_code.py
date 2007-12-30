@@ -679,7 +679,7 @@ def Fix_Posix ( mb ):
     elif sys.platform.startswith ('linux'):
         pass
     mb.global_ns.class_('vector<int, std::allocator<int> >').alias='VectorInt'
-    mb.global_ns.class_('vector<std::pair<unsigned, unsigned>, std::allocator<std::pair<unsigned, unsigned> > >').alias='VectorUnsignedUnsigned'
+    mb.global_ns.class_('vector<std::pair<unsigned int, unsigned int>, std::allocator<std::pair<unsigned int, unsigned int> > >').alias='VectorUnsignedUnsigned'
     #as reported by mike with linux:bp::arg("flags")=(std::_Ios_Fmtflags)0
     mb.namespace( MAIN_NAMESPACE ).class_('StringConverter').member_functions('toString').exclude()    
 
