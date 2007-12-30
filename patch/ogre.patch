@@ -7,6 +7,7 @@
 +CFLAGS_VISIBILITY=""
  AC_SUBST(CFLAGS_VISIBILITY)
  AC_LANG_POP
+
 --- ogrenew/OgreMain/include/OgreDataStream.h	23 Aug 2006 08:18:33 -0000	1.12
 +++ ogrenew/OgreMain/include/OgreDataStream.h	24 Nov 2007 00:35:47 -0000
 @@ -33,6 +33,7 @@

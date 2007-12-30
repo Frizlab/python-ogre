@@ -189,6 +189,38 @@ class gccxml:
                     [0,"make install",os.path.join(os.getcwd(),'gccxml-build')]
                     ]   
                          
+class newton:
+    pythonModule = False
+    active = True
+    if not os.path.exists( os.path.join(os.getcwd(), 'ogreaddons/ogrenewt')):
+        os.makedirs ( os.path.join(os.getcwd(), 'ogreaddons/ogrenewt') )    
+
+    if isLinux():
+        base = 'newton'
+        source = [
+                    [wget, "http://www.newtondynamics.com/downloads/newtonLinux-1.53.tar.gz", downloadPath]
+                 ]
+                 
+        buildCmds =  [
+            [0, "tar zxf " + os.path.join(downloadPath, "newtonLinux-1.53.tar.gz"), ''],
+            [0,"patch -s -i ./python-ogre/patch/Newton.patch -p0 ", ''],
+            [0, "cp newtonSDK/sdk/Newton.h %s/include" % PREFIX, ''],
+            [0, "cp newtonSDK/sdk/*.a %s/lib" % PREFIX, ''],
+            [0, "cp newtonSDK/sdk/*.a ogreaddons/ogrenewt",'']
+            ]
+    if isMac():
+        base = 'newton'
+        source = [
+                    [wget, "http://www.newtondynamics.com/downloads/newtonMac-1.53.zip", donwloadPath]
+                 ]
+                 
+        buildCmds =  [
+            [0, "unzip -q -o " + os.path.join(downloadPath, "newtonMac-1.53.zip"), ''],
+            [0,"patch -s -i ./python-ogre/patch/Newton.patch -p0 ", ''],
+            [0, "cp newtonSDK/sdk/Newton.h %s/include" % PREFIX, ''],
+            [0, "cp newtonSDK/sdk/*.a %s/lib" % PREFIX, ''],
+            [0, "cp newtonSDK/sdk/*.a ogreaddons/ogrenewt" % PREFIX, '']
+            ]
                     
 class pygccxml:
     pythonModule = False
@@ -251,12 +283,12 @@ class freeimage:
     if isLinux() or isMac():
         base = 'FreeImage'
         source = [
-                    [wget, " http://prdownloads.sourceforge.net/freeimage/FreeImage393.zip",downloadPath],
+                    [wget, " http://prdownloads.sourceforge.net/freeimage/FreeImage3100.zip",downloadPath],
                  ]
                  
         if isLinux():
             buildCmds =  [
-                    [0, unzip + " -q -o " + os.path.join(downloadPath,base) + "393.zip", ''],
+                    [0, unzip + " -q -o " + os.path.join(downloadPath,base) + "3100.zip", ''],
                     ##
                     # Note the use of a single command that does multiple sed's 
                     ##
@@ -269,7 +301,7 @@ class freeimage:
                     ]    
         if isMac(): ## mac has a crap sed command implementation and a different shell interaction, plus make file is a little different (or course)
             buildCmds =  [
-                    [0, unzip + " -q -o " + os.path.join(downloadPath,base) + "393.zip", ''],
+                    [0, unzip + " -q -o " + os.path.join(downloadPath,base) + "3100.zip", ''],
                     ##
                     # Note the use of a single command that does multiple sed's 
                     ##
@@ -428,6 +460,24 @@ class ogre:
         externalFiles=['OgreMain.dll', 'OgreGuiRender.dll', Config.LIB_Boost+'.dll']
     elif isLinux():
         libs=[Config.LIB_Boost, 'OgreMain' ] #,  'OgreGUIRenderer', 'CEGUIBase']
+        base = "ogre-linux_osx-v1-4-6"
+        source = [
+            [wget, "http://prdownloads.sourceforge.net/ogre/"+base+".tar.bz2",downloadPath],
+        ]
+        buildCmds  = [
+                [0, "env >1", ''],
+                [0, tar + " jxf " + os.path.join(downloadPath,base)+".tar.bz2 --overwrite",os.getcwd() ],
+                [0, "patch -s -N -i ./python-ogre/patch/ogre.patch -p0 ", os.getcwd()],
+                [0, "aclocal", os.path.join(os.getcwd(), 'ogrenew')],
+                [0, "./bootstrap", os.path.join(os.getcwd(), 'ogrenew')],
+                #[1, "import os\nos.environ['ZZIPLIB_LIBS']='-lzzip'", ''],
+                [0, "./configure --prefix=%s --with-gui=Xt --disable-devil" % PREFIX, os.path.join(os.getcwd(), 'ogrenew')],
+                #export ZZIPLIB_LIBS="-lzzip"
+                [0, "make", os.path.join(os.getcwd(), 'ogrenew')],
+                [0, "make install", os.path.join(os.getcwd(), 'ogrenew')],
+                ]
+        
+        libs=[Config.LIB_Boost, 'OgreMain' ] #,  'OgreGUIRenderer', 'CEGUIBase']
         lib_dirs = [ Config.LOCAL_LIB
                     ]
         include_dirs = [ Config.PATH_Boost 
@@ -436,7 +486,7 @@ class ogre:
         CCFLAGS =  '' ## -DBOOST_PYTHON_MAX_ARITY=19'
         LINKFLAGS = ''
     elif isMac():
-        base = "ogre-linux_osx-v1-4-5"
+        base = "ogre-linux_osx-v1-4-6"
         basedep = "OgreDependenciesOSX_20070929"
         source = [
             [wget, "http://prdownloads.sourceforge.net/ogre/"+base+".tar.bz2",downloadPath],
@@ -482,6 +532,18 @@ class ois:
     parent = "ogre/io"
     if isMac():
         source=[]
+    if isLinux():
+        base = "ois-1.0RC1"
+        source=[
+            [wget, "http://prdownloads.sourceforge.net/wgois/ois-1.0RC1.tar.gz", downloadPath]
+            ]
+        buildCmds  = [
+                [0, tar + " zxf " + os.path.join(downloadPath,base)+".tar.gz --overwrite",os.getcwd() ],
+                [0, "./bootstrap" ,os.path.join(os.getcwd(), base )],
+                [0,"./configure --prefix=%s --includedir=%s/include" %(PREFIX,PREFIX) ,os.path.join(os.getcwd(), base )],
+                [0,'make', os.path.join(os.getcwd(), base )],
+                [0,'make install', os.path.join(os.getcwd(), base )]
+                ]
     if os.name=='nt':
         if _PreCompiled:
             pchstop = 'OIS.h'
@@ -511,7 +573,16 @@ class ogrerefapp:
     version = "1.4"
     name = 'ogrerefapp'
     parent = "ogre/physics"
-    if os.name=="nt":
+    baseDir = os.path.join(os.getcwd(),'ogrenew', 'ReferenceApplication')
+    source = []
+    buildCmds=[
+                [0, "aclocal", baseDir],
+                [0, "./bootstrap", baseDir],
+                [0, "./configure --prefix=%s " % PREFIX, baseDir],
+                [0, "make", baseDir],
+                [0, "make install", baseDir],
+                ]
+    if isWindows():
         libs=[Config.LIB_Boost, 'OgreMain', 'ode', 'ReferenceAppLayer']
     else:
         libs=[Config.LIB_Boost, 'OgreMain', 'ode', 'ReferenceAppLayer']
@@ -535,10 +606,23 @@ class ogrenewt:
     version = "1.0"
     name = 'ogrenewt'
     parent = "ogre/physics"
-    if os.name =="nt":
+    base = 'ogreaddons/ogrenewt'
+    if isWindows():
         libs = ['Newton', Config.LIB_Boost, 'OgreNewt_Main', 'OgreMain']
     else:
         libs = ['Newton', Config.LIB_Boost, 'OgreNewt', 'OgreMain']
+    source = [
+                    [cvs, " -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -P "+base, os.getcwd()]
+                 ]
+    baseDir = os.path.join(os.getcwd(), base )
+    buildCmds = [
+            [0, "patch -s -N -i ../../python-ogre/patch/ogrenewt.patch -p0", baseDir], 
+            [0, "cp SConscript OgreNewt_Main", baseDir],
+            #[0, "rm SConscript", baseDir],
+            [0, "rm -r ./OgreNewt_Main/inc/boost", baseDir],
+            [0, "scons prefix=%s boost=%s/include/%s install" % (PREFIX, PREFIX, boost.base), baseDir],
+            ]
+
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_Newton   # only one path for Newton
                     , Config.PATH_INCLUDE_Ogre 
@@ -561,7 +645,7 @@ class cegui:
     version = "0.5.0b" 
     parent = "ogre/gui"
     name = 'cegui'
-    if os.name=='nt':
+    if isWindows():
         if _PreCompiled:
             pchstop = 'cegui.h'
             pchbuild = 'buildpch.cpp'
@@ -569,6 +653,23 @@ class cegui:
         libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain', 'OgreGUIRenderer' ]
     else:
         libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain', 'CEGUIOgreRenderer' ]
+
+    if isLinux():
+        base = "CEGUI-0.5.0"
+        source=[
+            [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.5.0b.tar.gz", downloadPath]
+            ]
+        buildCmds  = [
+                [0, tar + " zxf " + os.path.join(downloadPath,base)+"b.tar.gz --overwrite",os.getcwd() ],
+                [0, "patch -s -N -i ../python-ogre/patch/cegui.patch -p0", os.path.join(os.getcwd(),base)],
+                [0, "echo 'EMPTY' >>./INSTALL", os.path.join(os.getcwd(),base)],
+                [0, "echo 'EMPTY' >>./NEWS", os.path.join(os.getcwd(),base)],
+                [0, "aclocal", os.path.join(os.getcwd(),base)],
+                [0, "automake" ,os.path.join(os.getcwd(), base )],
+                [0,"./configure --prefix=%s --enable-freeimage=yes --disable-samples --without-ogre-renderer --includedir=%s/include" %(PREFIX,PREFIX) ,os.path.join(os.getcwd(), base )],
+                [0,'make', os.path.join(os.getcwd(), base )],
+                [0,'make install', os.path.join(os.getcwd(), base )]
+                ]
 
     include_dirs = [Config.PATH_Boost
                     ,Config.PATH_INCLUDE_CEGUI
@@ -588,9 +689,7 @@ class cegui:
     ModuleName = 'CEGUI'
     CheckIncludes = ['boost/python.hpp', 'Ogre.h', 'CEGUI.h', 'OgreCEGUIRenderer.h'] 
 
-                    
-#############  these are under construction and DO NOT WORK (Yet) #####################  
-  
+
 class ode:
     active = True
     pythonModule = True
@@ -610,10 +709,19 @@ class ode:
 
     ModuleName = 'ODE'
     CheckIncludes = ['boost/python.hpp',  'ode/ode.h'] 
-    Source = [
-        ["wget", "http://prdownloads.sourceforge.net/opende/ode-src-0.8.zip",'']
+    source = [
+        ["wget", "http://prdownloads.sourceforge.net/opende/ode-src-0.9.zip",downloadPath]
     ]
-        
+    baseDir = os.path.join(os.getcwd(),"ode-0.9")
+    buildCmds = [
+        [0, "unzip -q -o "+ os.path.join(downloadPath,"ode-src-0.9.zip"), ''],
+        [0, "chmod +x autogen.sh", baseDir],
+        [0, "./autogen.sh", baseDir],
+        [0, "./configure --prefix=%s --includedir=%s/include" %(PREFIX, PREFIX), baseDir],
+        [0, "make", baseDir],
+        [0, "make install", baseDir]
+
+        ]
 class opcode:
     active = True
     pythonModule = True
@@ -656,6 +764,7 @@ class ogreode:
     version= "1.0"
     name='ogreode'
     parent = "ogre/physics"
+    base = 'ogreaddons/ogreode'
 
     lib_dirs = [ Config.PATH_LIB_Boost
                 , Config.PATH_LIB_OgreOde
@@ -671,6 +780,18 @@ class ogreode:
                 , Config.PATH_INCLUDE_OgreOdeLoader
                 , Config.PATH_INCLUDE_Ogre
                 ]
+    source = [
+                    [cvs, " -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -P "+base, os.getcwd()]
+                 ]
+    baseDir = os.path.join(os.getcwd(), base )
+    buildCmds = [
+            [0, "patch -s -N -i ../../python-ogre/patch/ogreode.patch -p0", baseDir], 
+            [0, "chmod +x autogen.sh", baseDir],
+            [0, "./autogen.sh", baseDir],
+            [0, "./configure --prefix=%s" % PREFIX, baseDir],
+            [0, "make", baseDir],
+            [0, "make install", baseDir],
+            ]
 
     libs=[Config.LIB_Boost, 'OgreMain', 'ode', 'OgreOde_Core', 'OgreOde_Prefab', 'OgreOde_Loader' ]
     CCFLAGS =  ' -DBOOST_PYTHON_MAX_ARITY=19'
@@ -1019,6 +1140,8 @@ class bullet:
     pythonModule = True
     version= "2.64"
     name='bullet'
+    base = "bullet-2.64"
+    baseDir = os.path.join(os.getcwd(), base)
     parent = "ogre/physics"
     libs=[Config.LIB_Boost,  'LibBulletCollision', 'LibBulletDynamics']
     if os.name == 'nt':
@@ -1029,6 +1152,15 @@ class bullet:
     include_dirs = [ Config.PATH_Boost 
                     ,  Config.PATH_INCLUDE_Bullet
                     ]
+    source=[
+        [wget, "http://downloads.sourceforge.net/bullet/"+base+".tgz", downloadPath]
+        ]
+    buildCmds = [
+        [0, "tar zxf " +os.path.join(downloadPath, base)+".tgz", ''],
+        [0, "cmake . -DCMAKE_INSTALL_PREFIX:PATH=%s" % PREFIX, baseDir],
+        [0, "make", baseDir],
+        [0, "find . -name *.a -execdir cp {} %s/lib \;" % PREFIX, baseDir]
+        ]
 
     ModuleName = 'bullet'
     CheckIncludes = ['boost/python.hpp'] 

@@ -66,18 +66,20 @@ def spawnTask ( task, cwdin = '' ):
     PREFIX = environment.PREFIX
     PATH = os.environ["PATH"]
     env = os.environ
-    env["PKG_CONFIG_PATH"]=PREFIX+"/lib/pkgconfig"
-    env["LD_LIBRARY_PATH"]=PREFIX+"/lib"
+    env["PKG_CONFIG_PATH"]=os.path.join(PREFIX,"lib/pkgconfig")
+    env["LD_LIBRARY_PATH"]=os.path.join(PREFIX,"lib")
     if environment.isMac():
-        env["CFLAGS"]="-I"+PREFIX+"/include -L"+PREFIX+"/lib"  ### XXX Note the space after the -I needed for the MAC, not tested yet on Linux
+        env["CFLAGS"]="-I"+PREFIX+"/include -L"+PREFIX+"/lib"  
         env["CXXFLAGS"]="-I"+PREFIX+"/include -L"+PREFIX+"/lib"
         ##env["LDFLAGS"]="-Wl,-rpath='\$\$ORIGIN/../../lib' -Wl,-rpath='\$\$ORIGIN' -Wl,-z,origin"  ### Mac GCC 4.0.1 doesn't support rpath
         env["PYTHONPATH"]=PREFIX+"/lib/python2.5/site-packages"
     else:
-        env["CFLAGS"]="-I"+PREFIX+"/include -L"+PREFIX+"/lib"  
-        env["CXXFLAGS"]="-I"+PREFIX+"/include -L"+PREFIX+"/lib"
-        env["LDFLAGS"]="-Wl,-rpath='\$\$ORIGIN/../../lib' -Wl,-rpath='\$\$ORIGIN' -Wl,-z,origin"
+        env["CFLAGS"]="-I"+os.path.join(PREFIX,"include")+ " -L"+os.path.join(PREFIX,"lib")  
+        env["CXXFLAGS"]=env["CFLAGS"]
+        env["LDFLAGS"]="-Wl,-rpath='$$ORIGIN/../../lib' -Wl,-rpath='$$ORIGIN' -Wl,-z,origin"
         env["PYTHONPATH"]=PREFIX+"/lib/python25/site-packages"
+        env["ZZIPLIB_LIBS"]="-lzzip"
+
     env["PATH"]=PREFIX+"/bin:" + PATH
     
      
