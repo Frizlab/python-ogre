@@ -21,7 +21,7 @@ class SimpleScenes_Chain (SimpleScenes):
         self._first_body = None
         self._box_body = None
         self._force = 0
-        self._force_to_apply = 0
+        self._force_to_apply = ogre.Vector3.ZERO
 
         ## Set up the sizes of stuff
         link_size = 0.4
@@ -91,7 +91,7 @@ class SimpleScenes_Chain (SimpleScenes):
         ## Forward/back
         elif (input.isKeyDown(OIS.KC_K)): self._force_to_apply += forward * self._force
         elif (input.isKeyDown(OIS.KC_I)): self._force_to_apply -= forward * self._force
-        else: self._force_to_apply = 0
+        else: self._force_to_apply = ogre.Vector3.ZERO
 
         self._mgr.getCamera("PlayerCam")
 
