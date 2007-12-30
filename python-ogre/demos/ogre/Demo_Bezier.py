@@ -91,14 +91,7 @@ class BezierApplication(sf.Application):
         # register our listener
         self.currentLog.addListener ( self.myLog )    
         
-    def __del__(self):
-        global pVert
-        if (self.patchCtlPoints):
-            del self.patchCtlPoints
-        del pVert
-        sf.Application.__del__(self) 
-
-           
+         
     def _createScene(self):
         global patchPass, patch, pVert
         sceneManager = self.sceneManager
@@ -237,7 +230,9 @@ class BezierApplication(sf.Application):
             ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME) 
         pMat.getTechnique(0).getPass(0).createTextureUnitState( "BumpyMetal.jpg" ) 
         patchEntity.setMaterialName("TextMat") 
-      
+        patchPass = pMat.getTechnique(0).getPass(0)
+
+
         ## Attach the entity to the root of the scene
         sceneManager.getRootSceneNode().attachObject(patchEntity) 
 
