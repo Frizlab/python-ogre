@@ -211,7 +211,7 @@ class newton:
     if isMac():
         base = 'newton'
         source = [
-                    [wget, "http://www.newtondynamics.com/downloads/newtonMac-1.53.zip", donwloadPath]
+                    [wget, "http://www.newtondynamics.com/downloads/newtonMac-1.53.zip", downloadPath]
                  ]
                  
         buildCmds =  [
@@ -219,7 +219,7 @@ class newton:
             [0,"patch -s -i ./python-ogre/patch/Newton.patch -p0 ", ''],
             [0, "cp newtonSDK/sdk/Newton.h %s/include" % PREFIX, ''],
             [0, "cp newtonSDK/sdk/*.a %s/lib" % PREFIX, ''],
-            [0, "cp newtonSDK/sdk/*.a ogreaddons/ogrenewt" % PREFIX, '']
+            [0, "cp newtonSDK/sdk/*.a ogreaddons/ogrenewt" , '']
             ]
                     
 class pygccxml:
