@@ -72,12 +72,12 @@ def spawnTask ( task, cwdin = '' ):
         env["CFLAGS"]="-I"+PREFIX+"/include -L"+PREFIX+"/lib"  
         env["CXXFLAGS"]="-I"+PREFIX+"/include -L"+PREFIX+"/lib"
         ##env["LDFLAGS"]="-Wl,-rpath='\$\$ORIGIN/../../lib' -Wl,-rpath='\$\$ORIGIN' -Wl,-z,origin"  ### Mac GCC 4.0.1 doesn't support rpath
-        env["PYTHONPATH"]=PREFIX+"/lib/python2.5/site-packages"
+        env["PYTHONPATH"]=PREFIX+"/lib/python"+environment.PythonVersionString+"/site-packages"
     else:
         env["CFLAGS"]="-I"+os.path.join(PREFIX,"include")+ " -L"+os.path.join(PREFIX,"lib")  
         env["CXXFLAGS"]=env["CFLAGS"]
         env["LDFLAGS"]="-Wl,-rpath='$$ORIGIN/../../lib' -Wl,-rpath='$$ORIGIN' -Wl,-z,origin"
-        env["PYTHONPATH"]=PREFIX+"/lib/python2.5/site-packages"
+        env["PYTHONPATH"]=PREFIX+"/lib/python"+environment.PythonVersionString+"/site-packages"
         env["ZZIPLIB_LIBS"]="-lzzip"
 
     env["PATH"]=PREFIX+"/bin:" + PATH
