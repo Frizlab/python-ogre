@@ -83,7 +83,7 @@ def spawnTask ( task, cwdin = '' ):
     env["PATH"]=PREFIX+"/bin:" + PATH
     
      
-    logger.debug ( "Spawning '%s' in '%s' %s " % (task,cwdin, env["PYTHONPATH"]) )
+    logger.debug ( "Spawning '%s' in '%s'" % (task,cwdin) )
     process = subprocess.Popen (task, shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd = cwdin, env=env)
     out,err = process.communicate()
     returncode = process.returncode
@@ -141,6 +141,8 @@ def parseInput():
     parser.add_option("-g", "--gen", action="store_true", default=False ,dest="gencode", help="Generate Source Code for the module")
     parser.add_option("-c", "--compile", action="store_true", default=False ,dest="compilecode", help="Compile Source Code for the module")
     parser.add_option("-l", "--logfilename",  default="log.out" ,dest="logfilename", help="Override the default log file name")
+    parser.add_option("-G", "--genall", action="store_true", default=False ,dest="gencodeall", help="Generate Source Code for all possible modules")
+    parser.add_option("-C", "--compileall", action="store_true", default=False ,dest="compilecodeall", help="Compile Source Code for all posssible modules")
    
     (options, args) = parser.parse_args()
     return (options,args)
@@ -152,7 +154,8 @@ if __name__ == '__main__':
     if len(args) == 0:
         exit("The module to build wasn't specified.  Use -h for help")
         
-    if options.retrieve==False and options.build==False and options.gencode==False and options.compilecode==False:
+    if options.retrieve==False and options.build==False and options.gencode==False and options.compilecode==False\
+            and options.compilecodeall==False and options.gencodeall==False:
         exit ( "You need to specific at least one option. Use -h for help")
             
     setupLogging(options.logfilename)
@@ -165,23 +168,31 @@ if __name__ == '__main__':
         os.mkdir ( environment.Config.ROOT_DIR )    
     if not os.path.exists( os.path.join(environment.Config.ROOT_DIR, 'usr' ) ):
         os.mkdir ( os.path.join(environment.Config.ROOT_DIR, 'usr' )  )    
+    if options.gencodeall or options.compilecodeall:
+        for name,cls in environment.projects.items():
+            if cls.active and cls.PythonModule:
+                if options.gencodeall:
+                    generateCode( cls )
+                if options.compilecodeall:
+                    compileCode( cls )                    
 
-    for moduleName  in args:        
-        if not classList.has_key( moduleName ):
-            exit("Module specificed was not found (%s is not in environment.py) " % moduleName )
-        if options.retrieve:    
-            retrieveSource ( classList[ moduleName ] )
-        if options.build :       
-            buildModule ( classList[ moduleName ] )
-        if options.gencode :
-            if classList[ moduleName ].pythonModule == True:
-                generateCode ( classList[ moduleName ] )
-            else:
-                exit ( "Module specificed does not generate source code (%s is a supporting module)" % moduleName )
-        if options.compilecode :
-            if classList[ moduleName ].pythonModule == True:
-                compileCode ( classList[ moduleName ] )
-            else:
-                exit ( "Module specificed does not need compiling (%s is a supporting module)" % moduleName )
+    else:
+        for moduleName  in args:        
+            if not classList.has_key( moduleName ):
+                exit("Module specificed was not found (%s is not in environment.py) " % moduleName )
+            if options.retrieve:    
+                retrieveSource ( classList[ moduleName ] )
+            if options.build :       
+                buildModule ( classList[ moduleName ] )
+            if options.gencode :
+                if classList[ moduleName ].pythonModule == True:
+                    generateCode ( classList[ moduleName ] )
+                else:
+                    exit ( "Module specificed does not generate source code (%s is a supporting module)" % moduleName )
+            if options.compilecode :
+                if classList[ moduleName ].pythonModule == True:
+                    compileCode ( classList[ moduleName ] )
+                else:
+                    exit ( "Module specificed does not need compiling (%s is a supporting module)" % moduleName )
             
                 
