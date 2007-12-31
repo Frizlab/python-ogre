@@ -27,8 +27,9 @@ gccxml_bin = os.path.join(BASE_DIR,'gccxml-build/bin')
 # and the Py++ directory as sometimes we need access to the code repository there
 pyplusplus_install_dir = os.path.join(BASE_DIR,'pygccxml')
 
-SDK = True
 SDK = False
+if os.sys.platform == 'darwin':  # we use the pre built sdk for OSX
+   SDK = True
 
 # # ## Parent directories of the libraries
 PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
