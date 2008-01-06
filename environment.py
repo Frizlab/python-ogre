@@ -228,7 +228,7 @@ class pygccxml:
     if isLinux() or isMac():
         base = 'pygccxml'
         source = [
-                    [svn, " co https://pygccxml.svn.sourceforge.net/svnroot/pygccxml "+base, os.getcwd()]
+                    [svn, " co http://pygccxml.svn.sourceforge.net/svnroot/pygccxml "+base, os.getcwd()]
                  ]
                  
         buildCmds =  [
