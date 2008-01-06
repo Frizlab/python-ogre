@@ -65,7 +65,7 @@ def get_ccflags(cls):
                 CCFLAGS += ' ' 
             
         else:
-            CCFLAGS  = ' -I -pipe -Os -I./'
+            CCFLAGS  = ' -I -pipe -O3 -I./'
     return CCFLAGS
 
 def get_source_files(cls, _dir, usepch = False):
@@ -89,15 +89,15 @@ def get_source_files(cls, _dir, usepch = False):
     return source_files ## "Image.pypp.cpp" ##source_files
 
 def get_linkflags():
-    if os.name=='nt':
+    if environment.isWindows():
         #LINKFLAGS = " /NOLOGO /INCREMENTAL:NO /DLL /OPT:NOREF /OPT:NOICF /OPT:NOWIN98 /subsystem:console " # no change
         LINKFLAGS = " /MAP:FULL /MAPINFO:EXPORTS /NOLOGO /OPT:REF /INCREMENTAL:NO /DLL /OPT:ICF /subsystem:console " # 7 minutes 25% smaller 16.6 Meg
         #LINKFLAGS = " /NOLOGO /INCREMENTAL:NO /DLL /subsystem:console " ### LONG Link , 80 minutes - 15.7 meg
-    elif os.name == 'posix':
+    if environment.isLinux():
         if os.sys.platform <> 'darwin':
             LINKFLAGS = ' `pkg-config --libs OGRE` --strip-all -lstdc++ '
-        else:
-            LINKFLAGS = ''
+    if environment.isMac():
+            LINKFLAGS = ' -Wl,-x -framework Python -framework Ogre -framework Carbon -F' + environment.Config.FRAMEWORK_DIR + ' '
     return LINKFLAGS
 
 def build_pch( cls, pchfile ):
@@ -149,8 +149,7 @@ for name, cls in environment.projects.items():
         _env = Environment(ENV=os.environ)
         
         if environment.rpath:
-            _env.Append(RPATH=_env.Literal(environment.rpath))
-            _env.Append( LINKFLAGS = Split('-z origin') )
+            _env.Append(RPATH=environment.rpath)
         
         # Stores signatures in a separate .sconsign file 
         # in each directory as the single one was getting huge
@@ -204,13 +203,16 @@ for name, cls in environment.projects.items():
         
         ## ugly hack - scons returns a list of targets from SharedLibrary - we have to choose the one we want
         index = 0  # this is the index into a list of targets - '0' should be the platform default
-        if os.name=="nt":
+        if environment.isWindows():
             ## and lets have it install the output into the 'package_dir_name/ModuleName' dir and rename to the PydName
             _env.AddPostAction(package,\
                  'mt.exe -nologo -manifest %(name)s.manifest -outputresource:%(name)s;2' % { 'name':package[index] } )
-        else:                
+        if environment.isLinux():                
             _env.AddPostAction(package,\
                  '-strip -g -S -d --strip-debug -s %(name)s' % { 'name':package[index] } )
+        if environment.isMac():                
+            _env.AddPostAction(package,\
+                 '-strip -s %(name)s' % { 'name':package[index] } )
                          
         _env.InstallAs(os.path.join(environment.package_dir_name, cls.parent,
                                     cls.ModuleName, cls.PydName), 

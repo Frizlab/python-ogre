@@ -134,7 +134,7 @@ else:
     mv = "mv "
     rm = "rm -f "
     cp = "cp -f "
-    unzip = "unzip "
+    unzip = "unzip -o "
     cvs = "cvs -z3 -q  "
     svn = "svn --non-interactive "
     if isMac():
@@ -494,15 +494,15 @@ class ogre:
         ]
         buildCmds  = [
                 [0, tar + " jxf " + os.path.join(downloadPath,base)+".tar.bz2 --overwrite",os.getcwd() ],
-                [0, unzip + os.path.join(downloadPath,base)+".zip ",os.path.join(os.getcwd(), 'ogrenew') ],
+                [0, unzip + os.path.join(downloadPath,basedep)+".zip ",os.path.join(os.getcwd(), 'ogrenew') ],
                 [0, "mkdir ~/Library/Frameworks", ''], ## Note that this will fail if the directory exists !!!
-                [0,cp + " -R "+os.path.join(os.getcwd(), 'ogrenew', '__MACOS','Dependencies')+'/*.framework ' + Config.FRAMEWORK_DIR,''],
+                [0,cp + " -R "+os.path.join(os.getcwd(), 'ogrenew', '__MACOSX','Dependencies')+'/*.framework ' + Config.FRAMEWORK_DIR,''],
                 [0, "patch -s -N -i ./python-ogre/patch/ogre.patch -p0 ", os.getcwd()],
                 [0, "mkdir Ogre",os.path.join(os.getcwd() ,'ogrenew','OgreMain', 'include') ],
                 # need copies of these in an 'Ogre/..' directory due to includes in the OSX directory -- or get the framework right
                 [0, "cp OgreRoot.h Ogre",os.path.join(os.getcwd() ,'ogrenew','OgreMain', 'include') ],
                 [0, "cp OgreRenderSystem.h Ogre",os.path.join(os.getcwd() ,'ogrenew','OgreMain', 'include') ],
-                [0, "cp OgrePreRequisities.h Ogre",os.path.join(os.getcwd() ,'ogrenew','OgreMain', 'include') ],
+                [0, "cp OgrePrerequisites.h Ogre",os.path.join(os.getcwd() ,'ogrenew','OgreMain', 'include') ],
                 [0, "xcodebuild -project ogrenew/Mac/Ogre/Ogre.xcodeproj -configuration Release", ''],
                 [0, "xcodebuild -project ogrenew/Mac/Samples/Samples.xcodeproj -configuration Release", ''],
                 [0, "cp -R *.framework " + Config.FRAMEWORK_DIR, os.path.join(os.getcwd() ,'ogrenew',"Mac", "build", "Release") ]
@@ -1074,7 +1074,8 @@ class ogreal:
         [0, "tar zxf " + os.path.join(downloadPath, "libvorbis-1.2.0.tar.gz"), ''],
         [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "libogg-1.1.3")],
         [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "libvorbis-1.2.0")],
-        [0, "./autogen.sh\n./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "openal-0.0.8")]
+        [0, "aclocal\n./autogen.sh", os.path.join(os.getcwd(),"openal-0.0.8")],
+        [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "openal-0.0.8")]
         ]
 
       
