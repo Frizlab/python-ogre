@@ -151,7 +151,7 @@ if __name__ == '__main__':
     classList = getClassList ()
     
     (options, args) = parseInput()
-    if len(args) == 0:
+    if len(args) == 0 and not (options.compilecodeall or options.gencodeall):
         exit("The module to build wasn't specified.  Use -h for help")
         
     if options.retrieve==False and options.build==False and options.gencode==False and options.compilecode==False\
@@ -170,7 +170,7 @@ if __name__ == '__main__':
         os.mkdir ( os.path.join(environment.Config.ROOT_DIR, 'usr' )  )    
     if options.gencodeall or options.compilecodeall:
         for name,cls in environment.projects.items():
-            if cls.active and cls.PythonModule:
+            if cls.active and cls.pythonModule:
                 if options.gencodeall:
                     generateCode( cls )
                 if options.compilecodeall:
