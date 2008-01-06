@@ -188,6 +188,15 @@ class gccxml:
                     [0,"make", os.path.join(os.getcwd(),'gccxml-build')],
                     [0,"make install",os.path.join(os.getcwd(),'gccxml-build')]
                     ]   
+class install:
+    pythonModule = False
+    active = True
+    source = [
+                 ]
+                 
+    buildCmds =  [
+                    [0,"python setup.py install --prefix=%s" % PREFIX, os.path.join(os.getcwd(),'python-ogre')]
+                    ]  
                          
 class newton:
     pythonModule = False
@@ -211,11 +220,11 @@ class newton:
     if isMac():
         base = 'newton'
         source = [
-                    [wget, "http://www.newtondynamics.com/downloads/newtonMac-1.53.zip", downloadPath]
+                    [wget, "http://www.newtondynamics.com/downloads/NewtonMac-1.53.zip", downloadPath]
                  ]
                  
         buildCmds =  [
-            [0, "unzip -q -o " + os.path.join(downloadPath, "newtonMac-1.53.zip"), ''],
+            [0, "unzip -q -o " + os.path.join(downloadPath, "NewtonMac-1.53.zip"), ''],
             [0,"patch -s -i ./python-ogre/patch/Newton.patch -p0 ", ''],
             [0, "cp newtonSDK/sdk/Newton.h %s/include" % PREFIX, ''],
             [0, "cp newtonSDK/sdk/*.a %s/lib" % PREFIX, ''],
@@ -513,12 +522,11 @@ class ogre:
         include_dirs = [ Config.PATH_Boost 
                         , Config.PATH_INCLUDE_Ogre
                         , python_include_dirs
-                        , '/Developer/SDKs/MacOSX10.4u.sdk/Developer/Headers/CFMCarbon' 
                         ]
                                 
-        CCFLAGS = ' -DBOOST_PYTHON_MAX_ARITY=19 -D_POSIX_C_SOURCE -DCF_OPEN_SOURCE'
+        CCFLAGS = ''
         LINKFLAGS = ''
-        cflags += '--gccxml-cxxflags "-DCF_OPEN_SOURCE -D_POSIX_C_SOURCE -isysroot /Developer/SDKs/MacOSX10.4u.sdk"'
+        cflags += ''
         
     CheckIncludes=['boost/python.hpp', 'Ogre.h']
     
@@ -1365,7 +1373,7 @@ rpath= Config.RPATH
                           
 for name, cls in projects.items():
 
-    # little hack to allow overriding of settings from the config file
+    # little hack to allow overriding of settings from the PythonOgreConfig_xxxxx.py file
     if hasattr(Config, name):   # look to see if the class exists in the config file
         print "Using Override for class ", name
         _class = Config.__dict__[name]  # get the class
@@ -1373,12 +1381,28 @@ for name, cls in projects.items():
             if not key.startswith('_'):
                 cls.__dict__[key] = value   
                 print "Set %s.%s to %s" % (name, key, value) 
-                
-    CheckPaths( cls, name )
+    
+    	            
+    ##CheckPaths( cls, name )
     cls.root_dir = os.path.join( root_dir, 'code_generators', name )
     cls.dir_name = name + '_' + str(cls.version)
     cls.generated_dir = os.path.join( generated_dir, cls.dir_name )
     cls.cache_file = os.path.join( declarations_cache_dir, cls.dir_name + '_cache.xml' )
+
+    if isMac():  # On the mac the Ogre library is lined in with the -framework command in scons
+       try: 
+          cls.libs.remove('OgreMain') 
+       except:
+          pass
+       ## and we have a commond set of flags that I will set here...
+       cls.include_dirs.append(Config.MAC_SDK_INCLUDE)
+       if not hasattr(cls, 'CCFLAGS'):
+           cls.CCFLAGS=''
+       cls.CCFLAGS += Config.MAC_CCFLAGS
+       if not hasattr(cls, 'cflags'):
+           cls.cflags=''
+       cls.cflags += Config.MAC_cflags
+
     if not hasattr (cls, 'ModuleName'):
         cls.ModuleName = name[0].upper() + name[1:]
     if not hasattr (cls, 'PydName'):
