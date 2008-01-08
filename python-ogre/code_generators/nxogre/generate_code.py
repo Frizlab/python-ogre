@@ -86,6 +86,11 @@ def ManualExclude ( mb ):
         
     # problem with a constructor on Cloth   
     main_ns.class_('::NxOgre::Cloth').constructor(arg_types=[None,'::NxClothDesc','::NxMeshData',None,None]).exclude()
+    
+    # functions specified in the headers but not implemented
+    main_ns.class_('::NxOgre::Blueprints::ActorBlueprint').member_function('unserialise',arg_types=[None]).exclude()
+    
+    
 # # #         
 # # #     ### Member Functions
     excludes=[
@@ -97,48 +102,16 @@ def ManualExclude ( mb ):
             ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::_next'
             ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::_begin'
             ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::_next'
-            
             ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::getFirst'
             ,'::NxOgre::List<NxOgre::RemoteDebuggerConnection::Camera>::destroyAndEraseAll'
             ,'::NxOgre::List<NxOgre::RemoteDebuggerConnection::Camera>::dumpToConsole'
-            
-            
-#             ,'::NxOgre::Container<std::string, NxOgre::Joint*>::dumpToConsole'
-#             ,'::NxOgre::Container<std::string, NxOgre::Joint*>::count'
-#             ,'::NxOgre::Container<std::string, NxOgre::Joint*>::empty'
-#             ,'::NxOgre::Container<std::string, NxOgre::Joint*>::insert'
-#             ,'::NxOgre::Container<std::string, NxOgre::Joint*>::lock'
-#             ,'::NxOgre::Container<std::string, NxOgre::Joint*>::isLocked'
-#             ,'::NxOgre::Container<std::string, NxOgre::Joint*>::has'
-#             ,'::NxOgre::Container<std::string, NxOgre::Joint*>::getFirst'
-            
-            
             ,'::NxOgre::UserAllocator::realloc'
-# # #             # not yet implemented in source
-            ,'::NxOgre::WheelSet::attachNewWheel'
-            ,'::NxOgre::WheelSet::createThreeWheelSet'
-            ,'::NxOgre::WheelSet::createSixWheelSet'
-            ,'::NxOgre::Wheel::addEntity'
             ,'::NxOgre::Cloth::duplicate'
             ,'::NxOgre::ClothRayCaster::getClosestCloth'
             ,'::NxOgre::Joint::getBreakableMaxForce'
             ,'::NxOgre::Joint::getBreakableMaxTorque'
             ,'::NxOgre::Joint::getGlobalAxis'
             ,'::NxOgre::Joint::setGlobalAxis'
-# # #             ,'::NxOgre::Joint::getType'
-#             ,'::NxOgre::Joint::hasMoreLimitPlanes'
-#             ,'::NxOgre::Joint::purgeLimitPlanes'
-#             ,'::NxOgre::Joint::resetLimitPlaneIterator'
-#             ,'::NxOgre::Joint::addLimitPlane'
-#             ,'::NxOgre::Joint::setBreakable'
-#             ,'::NxOgre::Joint::getGlobalAnchor'
-#             ,'::NxOgre::Joint::setGlobalAnchor'
-#             ,'::NxOgre::Joint::getState'
-#             ,'::NxOgre::Joint::getNextLimitPlane'
-#             ,'::NxOgre::Joint::setLimitPoint'
-#             ,'::NxOgre::Joint::getLimitPoint'
-#             ,'::NxOgre::Joint::getActorA'
-#             ,'::NxOgre::Joint::getActorB'
             ,'::NxOgre::JointParams::setSpring'
             ,'::NxOgre::JointParams::setMotor'
             ,'::NxOgre::JointParams::setLimits'
@@ -158,11 +131,30 @@ def ManualExclude ( mb ):
             ,'::NxOgre::SimpleIntersection::getResult'
             ,'::NxOgre::SoftBody::simulate'
             ,'::NxOgre::SoftBody::render'
-            ,'::NxOgre::PhysXDriver::stop'
-            ,'::NxOgre::PhysXDriver::start'
-            ,'::NxOgre::PhysXDriver::reset'
-            ,'::NxOgre::PhysXDriver::hasHardware'
-           
+            
+            ,'::NxOgre::FileResourceSystem::getStream'  # takes ::NxOgre::ResourceIdentifier as argument which needs fixing
+            ,'::NxOgre::OgreResourceSystem::getStream'
+            ,'::NxOgre::ResourceSystem::getStream'
+            ,'::NxOgre::RenderableSource::getStringType' # so we don't need a wrapper as it doesn't compile
+            ,'::NxOgre::RenderableSource::getType'
+            ,'::NxOgre::UserAllocator::mallocDEBUG'
+            
+#             ,'::NxOgre::Blueprints::ActorFactory' # not implemented, only in header..
+            ,'::NxOgre::ContactStream::getShape'
+            ,'::NxOgre::ContactStream::getPatchNormal'
+            ,'::NxOgre::ContactStream::getPoint'
+            ,'::NxOgre::ContactStream::getNxActor'
+            ,'::NxOgre::ContactStream::getActor'
+            ,'::NxOgre::MemoryStream::skip'
+            ,'::NxOgre::MemoryStream::seek'
+            ,'::NxOgre::WheelSet::setMotorTorque'
+            ,'::NxOgre::WheelSet::setBrakeTorque'
+            ,'::NxOgre::WheelSet::turn'
+            ,'::NxOgre::Material::setDirOfAnisotropy'
+            ,'::NxOgre::OgreNodeRenderable::addSceneNode'
+#             ,'::NxOgre::ResourceStreamPtr::ResourceStreamPtr'
+            ,'::NxOgre::MaterialAlias::generateConversionList'
+            
             ]
     for e in excludes:
         print "excluding ", e
@@ -184,18 +176,20 @@ def ManualExclude ( mb ):
         main_ns.free_functions(e).exclude()
         
     ## Classes
-    excludes = ['::NxOgre::BaseCharacterHitReport'
-                ,'::NxOgre::CharacterHitReport'
-                ,'::NxOgre::Blueprints::ActorBlueprint'
-                ,'::NxOgre::Blueprints::ActorFactory'
-                ,'::NxOgre::Blueprints::WorldBlueprint'
-                ,'::NxOgre::Serialiser::SerialiserBase'
-                ,'::NxOgre::UserAllocator'
-                ,'::NxOgre::State'
-                
-                # not yet implemented in source
+    excludes = [
+               'DistanceJoint'      ## constructor issue TOFIX
+               ,'JointCallback'     ## also no suitable/defaul constructor TOFIX
+               ,'Character'         ## defined in header but not very much implementation
+#                ,'RenderableSource'
+               ,'ResourceManager'
+#                ,'ResourceStreamPtr'
+               ,'::NxOgre::Blueprints::ActorFactory'
+               ,'State'
+               ,'MeshResource'
+               ,'::NxOgre::Serialiser::SerialiserBase'
                 ]
     for e in excludes:
+        print "Excluding", e
         main_ns.class_(e).exclude()
 # # #     
 # # #         
@@ -222,13 +216,14 @@ def ManualExclude ( mb ):
                     f.exclude()    
       
     ### Variables        
-    excludes = ['::NxOgre::CharacterController::mHitReports'
+    excludes = ['::NxOgre::WheelSet::mEngine'   # desctuctor in WheelSet is protected so can't wrap this..
                 ]
     for e in excludes:
         main_ns.variable(e).exclude()
         
     ### Typedefs    
-    excludes = ['::NxOgre::CharacterHitReports']
+    excludes = [
+                ]
     for e in excludes:
         main_ns.typedefs(e).exclude()
         
@@ -264,26 +259,26 @@ def ManualInclude ( mb ):
         m.exclude()
     c.member_function('getGlobalPosition').include()  ## this is the only function implemented
     
-    global_ns.namespace( 'Ogre' ).class_('AxisAlignedBox').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Radian').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('SceneNode').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('IndexData').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('SceneManager').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Vector3').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Matrix4').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Degree').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Quaternion').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Node').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Serializer').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('FrameListener').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Matrix3').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Material').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Camera').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('MeshPtr').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('FrameEvent').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Root').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Entity').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('SubMesh').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('AxisAlignedBox').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('Radian').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('SceneNode').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('IndexData').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('SceneManager').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('Vector3').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('Matrix4').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('Degree').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('Quaternion').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('Node').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('Serializer').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('FrameListener').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('Matrix3').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('Material').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('Camera').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('MeshPtr').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('FrameEvent').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('Root').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('Entity').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('SubMesh').include(already_exposed=True)
         
     
         
@@ -298,6 +293,7 @@ def ManualFixes ( mb ):
     
     # fix issue where the namespace isn't in the default values
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    
     for c in main_ns.constructors():
         for a in c.arguments:
             if a.default_value and a.default_value.startswith("param"):
@@ -327,9 +323,9 @@ def ManualTransformations ( mb ):
         
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
-    c = main_ns.mem_fun('::NxOgre::Cloth::raycast')
-    c.add_transformation(ft.inout('vertexId'))
-    c.documentation = docit('','VertexId is in/out','bool, vertexId')
+#     c = main_ns.mem_fun('::NxOgre::Cloth::raycast')
+#     c.add_transformation(ft.inout('vertexId'))
+#     c.documentation = docit('','VertexId is in/out','bool, vertexId')
     
 #     for x in ns.member_functions('::NxOgre::Params::Set'):    
 #         x.add_transformation(ft.inout("arg2"))
@@ -402,18 +398,24 @@ def AutoFixes ( mb ):
     #Fix_Ref_Not_Const ( main_ns )
     
     # Functions that have void pointers in their argument list need to change to unsigned int's  
-    Fix_Void_Ptr_Args  ( main_ns )
-    
-    # and change functions that return a variety of pointers to instead return unsigned int's
-    Fix_Pointer_Returns ( main_ns )   
+# #     Fix_Void_Ptr_Args  ( main_ns )
 
+    # and change functions that return a variety of pointers to instead return unsigned int's
+    pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', '::Ogre::uint8', 'unsigned char', 'char']
+    ignore_names=['ptr', 'useCountPointer']  # these are function names we know it's cool to exclude
+    common_utils.Fix_Pointer_Returns ( main_ns, pointee_types, ignore_names )   
+    
     # functions that need to have implicit conversions turned off
-    Fix_Implicit_Conversions ( main_ns)
+    ImplicitClasses=[] 
+    common_utils.Fix_Implicit_Conversions ( main_ns, ImplicitClasses )
+
     
     if os.name =='nt':
         Fix_NT( mb )
     elif os.name =='posix':
         Fix_Posix( mb )
+        
+    common_utils.Auto_Document( mb, MAIN_NAMESPACE )
         
  
 ###############################################################################
@@ -459,7 +461,10 @@ def Fix_Implicit_Conversions ( mb ):
                 print "OK"
             else:
                 print "NOT OK"
-                    
+        for op in mb.class_(className).operators():
+            print "Checking **", op.decl_string
+            
+            
 def Add_Auto_Conversions( mb ):
     pass
     
@@ -629,7 +634,7 @@ def generate_code():
                         os.path.join( environment.nxogre.root_dir, "python_nxogre.h" )
                         , environment.nxogre.cache_file )
     if os.name == 'nt':
-        defined_symbols = [ 'NXOGRE_EXPORTS','OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', 'WIN32']
+        defined_symbols = [ 'NxExport','OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', 'WIN32']#NXOGRE_EXPORTS'
     else:
         defined_symbols = [ 'LINUX','NX_LINUX', 'NX_DISABLE_FLUIDS', 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY']
 
@@ -675,6 +680,7 @@ def generate_code():
     AutoInclude ( mb )
     ManualInclude ( mb )
     # here we fixup functions that expect to modifiy their 'passed' variables    
+    common_utils.Auto_Functional_Transformation ( main_ns )  #, special_vars=['::Ogre::Real &','::Ogre::ushort &','size_t &'] )
     ManualTransformations ( mb )
     
     AutoFixes ( mb )
@@ -685,6 +691,22 @@ def generate_code():
     #
     Set_Call_Policies ( mb.global_ns.namespace (MAIN_NAMESPACE) )
     
+# #     for op in main_ns.operators():
+# #         print "op1", op
+# # #         if op.allow_implicit_conversion:
+# # #             print "Implicit conversion on operator ", op
+# #     print dir(op)
+# #     for op in main_ns.constructors():
+# #         print "con1", op
+# #         if op.allow_implicit_conversion:
+# #             print "Implicit conversion on constructor ", op
+# #     print dir(op)            
+# #     for op in main_ns.free_operators():
+# #         print "op2", op
+# # #         if op.allow_implicit_conversion:
+# # #             print "Implicit conversion on free operator ", op
+# #     print dir(op)
+            
     #
     # the manual stuff all done here !!!
     #

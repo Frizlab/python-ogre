@@ -1,5 +1,8 @@
 
-#include "../ogre/python_ogre_aliases.h"
+// #include "../ogre/python_ogre_aliases.h"
+typedef std::list<Ogre::Plane> StdListPlane;
+typedef std::map< std::string, std::string > StdMapStringString;
+typedef std::vector< std::string > StdVectorString;
 
 typedef OgreOde::CircularBuffer<OgreOde::BodyState*> CircularBufferBodyStatePtr;
 typedef OgreOde::MaintainedList<OgreOde::Geometry> MaintainedListGeometry;

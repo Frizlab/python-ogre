@@ -67,6 +67,6 @@ def apply_reg ( class_, code ):
         
 def apply( mb ):
     rt = mb.class_( 'NaviManager' )
-    rt.add_declaration_code( WRAPPER_DEFINITION_NaviManager )
-    apply_reg (rt,  WRAPPER_REGISTRATION_NaviManager )
+# # #     rt.add_declaration_code( WRAPPER_DEFINITION_NaviManager )
+# # #     apply_reg (rt,  WRAPPER_REGISTRATION_NaviManager )
    
