@@ -1,3 +1,16 @@
+Janurary 08 2008: Snapshot
+==========================
+New Modules:
+* calunetree -- generates cool trees
+* particleuniverse -- very cool particle system
+
+Updates:
+* Quickgui, Caelum, ogreforests
+* NxOgre -- using bleeding from the SVN
+
+Removals:
+* dshow no longer complies due to changes in DirectX -- use Theora or ffmpeg for video display
+
 December 02 2007: SVN Update
 =============================
 * Full support for gccxml 0.9 (requires the latest gccxml and Py++) -- main change is in simplification of generated
