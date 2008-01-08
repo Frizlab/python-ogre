@@ -1296,6 +1296,24 @@ class ofusion:
     CheckIncludes=[]
     libs=[  Config.LIB_Boost, 'OgreMain' ]
     ModuleName="ofusion"   
+ 
+class cadunetree:
+    active = True
+    pythonModule = True
+    version="0.6"
+    name='cadunetree'
+    parent="ogre/addons"
+    cflags = ""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_cadunetree
+                    , Config.PATH_INCLUDE_Ogre
+                    ]
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain
+                ]
+    CheckIncludes=[]
+    libs=[  Config.LIB_Boost, 'OgreMain' ]
+    ModuleName="cadunetree"          
     
 ############################################################################################
 
@@ -1332,6 +1350,7 @@ projects = {
     , 'watermesh' : watermesh
     , 'ofusion' : ofusion
     , 'particleuniverse' : particleuniverse
+    , 'cadunetree' : cadunetree
 }        
 
 #

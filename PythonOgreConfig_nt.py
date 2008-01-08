@@ -52,6 +52,7 @@ PATH_watermesh=        os.path.join(PATH_THIRDPARTY, 'watermesh')
 # PATH_NxOgre=        os.path.join(BASE_DIR, 'nxogre/NxOgre')
 PATH_noise=        os.path.join(PATH_THIRDPARTY, 'noise')
 PATH_ofusion=        os.path.join(PATH_THIRDPARTY, 'ofusion')
+PATH_cadunetree=        os.path.join(PATH_THIRDPARTY, 'cadunetree')
 
 
 PATH_ogrevideoffmpeg = os.path.join(PATH_THIRDPARTY,'ffmpeg')
