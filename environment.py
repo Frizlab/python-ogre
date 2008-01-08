@@ -399,7 +399,7 @@ class boost:    ## also included bjam
                 [0,cp + ' -R '+os.path.join('python-ogre','boost','*')  +' ' + base , ''],  # need to overwrite the boost with our files
                 [0, sed_ + " 's/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/' boost_1_34_1/configure", '' ],
                 [0, sed_ + " s/'BOOST_PYTHON_MAX_ARITY 15'/'BOOST_PYTHON_MAX_ARITY 19'/ boost_1_34_1/boost/python/detail/preprocessor.hpp", ''],
-                [0,"./configure --with-libraries=python --prefix=%s"  % PREFIX, os.path.join(os.getcwd(), base )],
+                [0,"./configure --with-libraries=python --prefix=%s --without-icu"  % PREFIX, os.path.join(os.getcwd(), base )],
                 [0,'make', os.path.join(os.getcwd(), base )],
                 [0,'make install', os.path.join(os.getcwd(), base )],
                 ]
