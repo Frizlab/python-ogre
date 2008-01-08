@@ -96,8 +96,14 @@ def ManualExclude ( mb ):
             c.exclude()
       
     ### Variables        
-    excludes = []
+#     cls = main_ns.class_('::NaviLibrary::detail::ClosurePtr< void (NaviLibrary::detail::GenericClass::*)(NaviLibrary::NaviData const&), void (*)(NaviLibrary::NaviData const&), void (*)(NaviLibrary::NaviData const&) >')
+#     cls.variable("ClosureMemPtr").exclude()
+#     cls.variable("StaticFunction").exclude()
+#     
+    
+    excludes = []# 'FastDelegate1::m_Closure']
     for e in excludes:
+        print "Excluding Var", e
         main_ns.variable(e).exclude()
         
     ### Typedefs    
@@ -117,7 +123,7 @@ def ManualExclude ( mb ):
 #             if 'NxVec3' in a.type.decl_string or 'NxQuat' in a.type.decl_string:
 #                 c.exclude()
 #                 break
-                
+    main_ns.namespace('detail').exclude()           
 
 ############################################################
 ##
@@ -201,29 +207,49 @@ def AutoInclude( mb ):
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
 
     
-def AutoFixes ( mb ): 
+def AutoFixes ( mb, MAIN_NAMESPACE ): 
     """ now we fix a range of things automatically - typically by going through 
     the entire name space trying to guess stuff and fix it:)
-    """       
+    """    
     global_ns = mb.global_ns
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    if MAIN_NAMESPACE:
+        main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    else:
+        main_ns = global_ns
     
-    # arguments passed as refs but not const are not liked by boost
-    #Fix_Ref_Not_Const ( main_ns )
+    
+    # Allow conversion between Vectors/Colourvalue etc and Python lists      
+    Add_Auto_Conversions( mb )
     
     # Functions that have void pointers in their argument list need to change to unsigned int's  
-    Fix_Void_Ptr_Args  ( main_ns )
-    
+    pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', '::Ogre::uint8', '::Ogre::uint16'
+             'unsigned char', 'char', 'bool']
+    ignore_names=['Matrices', 'Vertices', 'ExceptionFactory', 'UTFString' ]
+    ## Now done with auto transform....
+# # #     common_utils.Fix_Void_Ptr_Args  ( main_ns, pointee_types, ignore_names )
+
     # and change functions that return a variety of pointers to instead return unsigned int's
-    Fix_Pointer_Returns ( main_ns )   
+    pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', '::Ogre::uint8', 'unsigned char', 'char']
+    ignore_names=['ptr', 'useCountPointer']  # these are function names we know it's cool to exclude
+    common_utils.Fix_Pointer_Returns ( main_ns, pointee_types, ignore_names )   
 
     # functions that need to have implicit conversions turned off
-    Fix_Implicit_Conversions ( main_ns)
+    ImplicitClasses=[] 
+    common_utils.Fix_Implicit_Conversions ( main_ns, ImplicitClasses )
+    
+    # variables that are readonly and mutable need to be changed from 'vars' to properties so there
+    # is a copy made of the C++ variable before passing into Python
+    ToFixClasses=[]  
+    knownNonMutable=['unsigned int','int', 'float','::Ogre::Real', '::Ogre::uchar',
+                      '::Ogre::uint8', 'unsigned char', 'char']
+    common_utils.Fix_ReadOnly_Vars ( mb, ToFixClasses, knownNonMutable )
     
     if os.name =='nt':
         Fix_NT( mb )
     elif os.name =='posix':
         Fix_Posix( mb )
+        
+    common_utils.Auto_Document( mb, MAIN_NAMESPACE )
         
  
 ###############################################################################
@@ -456,18 +482,22 @@ def generate_code():
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
     main_ns.include()
     
-   
-    AutoExclude ( mb )
+    
+    common_utils.AutoExclude ( mb, MAIN_NAMESPACE )
     ManualExclude ( mb )
-    AutoInclude ( mb )
+    common_utils.AutoInclude ( mb, MAIN_NAMESPACE )
     ManualInclude ( mb )
-    # here we fixup functions that expect to modifiy their 'passed' variables    
+    
+    # here we fixup functions that expect to modifiy their 'passed' variables and are not autmatically fixed  
     ManualTransformations ( mb )
     
-    AutoFixes ( mb )
+    AutoFixes ( mb, MAIN_NAMESPACE )
     ManualFixes ( mb )
-
-            
+    
+    common_utils.Auto_Functional_Transformation ( main_ns, special_vars=['::Ogre::Real &','::Ogre::ushort &','size_t &'] )
+    
+    
+             
     #
     # We need to tell boost how to handle calling (and returning from) certain functions
     #

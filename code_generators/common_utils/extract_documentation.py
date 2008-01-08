@@ -194,6 +194,9 @@ def clear_str(_str):
     _str = clean(_str, "@ref", "@see")
     _str = clean(_str, "\\ref", "@see")
     _str = clean(_str, "@copydoc", "Ref: ")
+    _str = clean(_str, "\\verbatim", "" )
+    _str = clean(_str, "\\endverbatim", "" )
+    
     
     _str = clean(_str, "\\sa", "@see")   # comment _string in OgreNewt
     _str = clean(_str, "\\codeblock", "::")    

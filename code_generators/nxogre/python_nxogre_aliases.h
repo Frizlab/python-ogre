@@ -13,7 +13,7 @@ typedef std::pair<std::basic_string<char, std::char_traits<char>, std::allocator
 typedef NxOgre::List<std::basic_string<char, std::char_traits<char>, std::allocator<char> > > ListString;
 typedef NxOgre::List<NxOgre::Blueprints::ActorBlueprint*> ListBlueprints;
 typedef  NxOgre::Container<unsigned, NxOgre::ShapeBlueprint const&> ContainerShapeBlueprint;
-typedef NxOgre::Container<std::string, NxOgre::ActorBlueprint> ContainerActorBlueprint;
+//typedef NxOgre::Container<std::string, NxOgre::ActorBlueprint> ContainerActorBlueprint;
 //typedef NxOgre::Container<NxOgre::Scene::Renderables, float> ContainerSceneRencerables;
 typedef std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >,float,std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >,std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, float> > >\
     MapStrings;
@@ -35,20 +35,20 @@ typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::Actor*>::Co
      MapContainerActor;
 typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::Cloth*>::Containee, std::less<std::string> >\
      MapContainerCloth;
-typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::Helper*>::Containee, std::less<std::string> >\
-     MapContainerHelper;
+// typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::Helper*>::Containee, std::less<std::string> >\
+//      MapContainerHelper;
 typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::Joint*>::Containee, std::less<std::string> >\
      MapContainerJoint;
 typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::Material*>::Containee, std::less<std::string> >\
      MapContainerMaterial;
 typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::Character*>::Containee, std::less<std::string> >\
      MapContainerCharacter;
-//typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::Fluid*>::Containee, std::less<std::string> >\
-//     MapContainerFluid;
-//typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::FluidDrain*>::Containee, std::less<std::string> >\
-//     MapContainerFluidDrain;
-//typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::FluidEmitter*>::Containee, std::less<std::string> >\
-//     MapContainerFluidEmitter;
+typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::Fluid*>::Containee, std::less<std::string> >\
+     MapContainerFluid;
+typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::FluidDrain*>::Containee, std::less<std::string> >\
+     MapContainerFluidDrain;
+typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::FluidEmitter*>::Containee, std::less<std::string> >\
+     MapContainerFluidEmitter;
 typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::SoftBody*>::Containee, std::less<std::string> >\
      MapContainerSoftBody;
      
@@ -92,21 +92,31 @@ typedef NxOgre::Container<NxOgre::NxString, NxOgre::Trigger*>   Triggers;
 typedef NxOgre::List<NxOgre::Wheel*>     Wheels;
 typedef NxOgre::Container<NxOgre::NxString, NxOgre::Character*>   Characters;
 typedef NxOgre::List<NxOgre::CharacterHitReport*>    CharacterHitReports;
-//typedef NxOgre::Container<NxOgre::NxString, NxOgre::Fluid*>    Fluids;
-//typedef NxOgre::Container<NxOgre::NxString, NxOgre::FluidDrain*>   FluidDrains;
-//typedef NxOgre::Container<NxOgre::NxString, NxOgre::FluidEmitter*>   FluidEmitters;
+typedef NxOgre::Container<NxOgre::NxString, NxOgre::Fluid*>    Fluids;
+typedef NxOgre::Container<NxOgre::NxString, NxOgre::FluidDrain*>   FluidDrains;
+typedef NxOgre::Container<NxOgre::NxString, NxOgre::FluidEmitter*>   FluidEmitters;
 typedef NxOgre::Container<NxOgre::NxString, NxOgre::SoftBody*>   SoftBodies;
 typedef std::pair<NxOgre::NxString,NxOgre::NxString> Parameter;
 typedef std::vector<Parameter> Parameters;
 typedef Ogre::String NxString;
 typedef NxOgre::Container<NxOgre::NxString, NxOgre::Actor*>    Actors;
+
+typedef NxOgre::Container<std::string, NxConvexMesh*> NxConvexMeshes;
+typedef NxOgre::Container<std::string, NxTriangleMesh*> NxTriangleMeshes;
+typedef NxOgre::Container<std::string, NxOgre::MaterialAlias*> MaterialAliases;
+
+typedef NxOgre::Container<unsigned int, NxTriangleMesh*> NxTriangleMesheInts;
+typedef NxOgre::Container<unsigned int, NxOgre::ResourceSystem*> ResourceSystemInts;
+typedef NxOgre::Container<unsigned int, NxOgre::MaterialAlias*> MaterialAliasInts;
+typedef NxOgre::Container<unsigned int, NxOgre::CharacterMovementModel*> CharacterMovementModelInts;
+
 // typedef NxOgre::Container<NxOgre::NxString, ::ActorGroup*>   ActorGroups;
 // typedef NxOgre::Container<NxOgre::NxActorGroup, NxOgre::ActorGroup*>  ActorGroupsByIndex;
 typedef NxOgre::Container<NxOgre::NxShapeIndex, NxOgre::Shape*>   CollisionModel;
 //typedef NxOgre::Container<NxOgre::NxShapeIndex, const NxOgre::ShapeDescription&> CollisionDescriptionModel;
 typedef NxOgre::Container<NxOgre::NxString, NxOgre::Cloth*>    Cloths;
 typedef NxOgre::Container<NxOgre::NxErrorIndex, NxOgre::ErrorReporter*>  ErrorReporterList;
-typedef NxOgre::Container<NxOgre::NxString, NxOgre::Helper*>   Helpers;
+// // typedef NxOgre::Container<NxOgre::NxString, NxOgre::Helper*>   Helpers;
 typedef NxOgre::Container<NxOgre::NxString, NxOgre::Joint*>    JointsClass;
 typedef NxOgre::Container<NxOgre::NxString, NxOgre::Material*>   MaterialList;
 // typedef NxOgre::Container<NxOgre::NxMaterialIndex, NxOgre::Material*>  MaterialListByIndex;
@@ -115,8 +125,8 @@ typedef NxOgre::Container<NxOgre::NxString, NxOgre::Material*>   MaterialList;
 // typedef std::vector<NxOgre::Feature> FeatureSet;
 typedef std::map<std::string, NxOgre::Container<std::string, std::string>::Containee, std::less<std::string>, std::allocator<std::pair<std::string const, NxOgre::Container<std::string, std::string>::Containee> > >\
     MapContainerString;
-typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::ActorBlueprint>::Containee, std::less<std::string>, std::allocator<std::pair<std::string const, NxOgre::Container<std::string, NxOgre::ActorBlueprint>::Containee> > >\
-    MapContainerActorBlueprint;
+//typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::ActorBlueprint>::Containee, std::less<std::string>, std::allocator<std::pair<std::string const, NxOgre::Container<std::string, NxOgre::ActorBlueprint>::Containee> > >\
+//    MapContainerActorBlueprint;
 typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::ForceField*>::Containee, std::less<std::string>, std::allocator<std::pair<std::string const, NxOgre::Container<std::string, NxOgre::ForceField*>::Containee> > >\
     MapContainerForceField;
 typedef std::map<unsigned, NxOgre::Container<unsigned, NxOgre::ShapeBlueprint const&>::Containee, std::less<unsigned>, std::allocator<std::pair<unsigned const, NxOgre::Container<unsigned, NxOgre::ShapeBlueprint const&>::Containee> > >\
@@ -129,3 +139,31 @@ typedef std::map<unsigned, NxOgre::Container<unsigned, NxOgre::Joint*>::Containe
     MapContainerJointContainee;
 typedef std::map<unsigned short, NxOgre::Container<unsigned short, NxOgre::DominanceGroup*>::Containee, std::less<unsigned short>, std::allocator<std::pair<unsigned short const, NxOgre::Container<unsigned short, NxOgre::DominanceGroup*>::Containee> > >\
     MapContainerDominanceGroupContainee;
+    
+typedef std::map<unsigned int, NxOgre::Container<unsigned int, NxOgre::ShapeBlueprint*>::Containee, std::less<unsigned int>, std::allocator<std::pair<unsigned int const, NxOgre::Container<unsigned int, NxOgre::ShapeBlueprint*>::Containee> > >\
+    MapContainerShapeBluePrint;
+typedef std::map<unsigned int, NxOgre::Container<unsigned int, NxOgre::Machine*>::Containee, std::less<unsigned int>, std::allocator<std::pair<unsigned int const, NxOgre::Container<unsigned int, NxOgre::Machine*>::Containee> > >\
+    MapContainerMachine;
+typedef std::map<unsigned int, NxOgre::Container<unsigned int, NxOgre::Wheel*>::Containee, std::less<unsigned int>, std::allocator<std::pair<unsigned int const, NxOgre::Container<unsigned int, NxOgre::Wheel*>::Containee> > >\
+    MapContainerWheel;
+typedef std::map<unsigned int, NxOgre::Container<unsigned int, NxOgre::RenderableSource*>::Containee, std::less<unsigned int>, std::allocator<std::pair<unsigned int const, NxOgre::Container<unsigned int, NxOgre::RenderableSource*>::Containee> > >\
+    MapContainerRenderableSource;
+
+typedef std::map<unsigned int, NxOgre::Container<unsigned int, NxOgre::CharacterMovementModel*>::Containee, std::less<unsigned int>, std::allocator<std::pair<unsigned int const, NxOgre::Container<unsigned int, NxOgre::CharacterMovementModel*>::Containee> > >\
+    MapContainerCharacterMovementModel;
+typedef std::map<unsigned int, NxOgre::Container<unsigned int, NxOgre::MaterialAlias*>::Containee, std::less<unsigned int>, std::allocator<std::pair<unsigned int const, NxOgre::Container<unsigned int, NxOgre::MaterialAlias*>::Containee> > >\
+    MapContainerMaterialAlias;
+typedef std::map<unsigned int, NxOgre::Container<unsigned int, NxOgre::ResourceSystem*>::Containee, std::less<unsigned int>, std::allocator<std::pair<unsigned int const, NxOgre::Container<unsigned int, NxOgre::ResourceSystem*>::Containee> > >\
+    MapContainerResourceSystem;
+typedef std::map<unsigned int, NxOgre::Container<unsigned int, NxTriangleMesh*>::Containee, std::less<unsigned int>, std::allocator<std::pair<unsigned int const, NxOgre::Container<unsigned int, NxTriangleMesh*>::Containee> > >\
+    MapContainerNxTriangleMesh;
+    
+typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::MaterialAlias*>::Containee, std::less<std::string>, std::allocator<std::pair<std::string const, NxOgre::Container<std::string, NxOgre::MaterialAlias*>::Containee> > >\
+    MapStringContainerMaterialAlias;
+typedef std::map<std::string, NxOgre::Container<std::string, NxTriangleMesh*>::Containee, std::less<std::string>, std::allocator<std::pair<std::string const, NxOgre::Container<std::string, NxTriangleMesh*>::Containee> > >\
+    MapStringContainerNxTriangleMesh;
+typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::CharacterMovementModel*>::Containee, std::less<std::string>, std::allocator<std::pair<std::string const, NxOgre::Container<std::string, NxOgre::CharacterMovementModel*>::Containee> > >\
+    MapStringContainerCharacterMovementModel;
+typedef std::map<std::string, NxOgre::Container<std::string, NxConvexMesh*>::Containee, std::less<std::string>, std::allocator<std::pair<std::string const, NxOgre::Container<std::string, NxConvexMesh*>::Containee> > >\
+    MapStringContainerNxConvexMesh;
+        
