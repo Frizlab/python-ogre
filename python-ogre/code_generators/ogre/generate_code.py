@@ -245,8 +245,15 @@ def ManualInclude ( mb ):
     std_ns = global_ns.namespace("std")
     
   
-    std_ns.class_("pair<unsigned int, unsigned int>").include()
-#     std_ns.class_("pair<unsigned, unsigned>").include()
+    try:
+        std_ns.class_("pair<unsigned int, unsigned int>").include()
+    except:
+        print "** Failed including unsigned int"
+    try:
+        std_ns.class_("pair<unsigned, unsigned>").include()
+    except:
+        print "** Failed including unsigned"
+        
     std_ns.class_("pair<bool, float>").include()
     std_ns.class_("pair<Ogre::SharedPtr<Ogre::Resource>, bool>").include()
     
