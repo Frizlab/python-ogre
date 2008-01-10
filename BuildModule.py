@@ -85,8 +85,12 @@ def spawnTask ( task, cwdin = '' ):
      
     logger.debug ( "Spawning '%s' in '%s'" % (task,cwdin) )
     process = subprocess.Popen (task, shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd = cwdin, env=env)
-    out,err = process.communicate()
-    returncode = process.returncode
+    try:
+        out,err = process.communicate()
+        returncode = process.returncode
+    except:
+        returncode = -1
+                
     if returncode != 0:
         logger.warning ( "Task Failed" )
         logger.debug ( out )
