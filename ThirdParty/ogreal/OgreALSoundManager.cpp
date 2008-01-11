@@ -64,7 +64,8 @@ namespace OgreAL {
 		mSpeedOfSound(343.3),
 		mMaxNumSources(0),
 		mMajorVersion(0),
-		mMinorVersion(0)
+		mMinorVersion(0),
+		mLastDeltaTime(0.0)
 	{
 		Ogre::LogManager::getSingleton().logMessage("*-*-* OgreAL Initialization");
 
@@ -385,6 +386,8 @@ namespace OgreAL {
 
 	bool SoundManager::frameStarted(const Ogre::FrameEvent& evt)
 	{
+		// Do this before any fading gets updated
+		mLastDeltaTime = evt.timeSinceLastFrame;
 		updateSounds();
 		return true;
 	}

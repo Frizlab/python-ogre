@@ -181,8 +181,11 @@ namespace OgreAL {
 		void _removeBufferRef(const Ogre::String& bufferName);
 		/** Adds a BufferRef to the BufferMap to be used later */
 		void _addBufferRef(const Ogre::String& bufferName, BufferRef buffer);
-
+		/** Used by the fading: returns the time since last frame. */
+		Ogre::Real _getLastDeltaTime() const {return mLastDeltaTime;}
+		/** Requests a dynamically allocated Source. */
 		SourceRef _requestSource(Sound *sound);
+		/** Releases a dynamically allocated Source. */
 		SourceRef _releaseSource(Sound *sound);
 
 		static const Ogre::String FILE_TYPE;
@@ -242,6 +245,8 @@ namespace OgreAL {
 
 		ALCcontext *mContext;
 		ALCdevice *mDevice;
+
+		Ogre::Real mLastDeltaTime;
 
 		// Mutex so we can protect against corruption
 		OGREAL_AUTO_MUTEX

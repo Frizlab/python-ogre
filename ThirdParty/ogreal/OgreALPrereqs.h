@@ -42,16 +42,8 @@ namespace OgreAL{
 	#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 	#	include "al.h"
 	#	include "alc.h"
-	#	include "xram.h"
-	#	if OGRE_COMPILER == OGRE_COMPILER_MSVC
-// 	#		ifdef OGREAL_EXPORT
-// 	#			define OgreAL_Export __declspec(dllexport)
-// 	#		else
-// 	#			define OgreAL_Export __declspec(dllimport)
-// 	#		endif
-// 	#	else
-// 	#		define OgreAL_Export
-	#	endif
+	#   include "xram.h"
+    #	define OgreAL_Export
 	#elif OGRE_COMPILER == OGRE_COMPILER_GNUC
 	#	include "AL/al.h"
 	#	include "AL/alc.h"

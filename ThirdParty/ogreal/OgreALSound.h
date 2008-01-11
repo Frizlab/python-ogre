@@ -87,6 +87,10 @@ namespace OgreAL {
 		virtual bool isStopped() const;
 		/** Returns true if the source does not have a state yet, otherwise false */
 		virtual bool isInitial() const;
+		/** Starts playing the song while fading in.*/
+		bool fadeIn(Ogre::Real fadeTime);
+		/** Fades out, but keeps playing at volume 0, so it can be faded in again.*/
+		bool fadeOut(Ogre::Real fadeTime);
 
 		/**
 		 * Sets the pitch multiplier.
@@ -376,6 +380,18 @@ namespace OgreAL {
 
 	private:
 		void _update() const;
+		void _updateFading();
+
+		enum FadeMode
+		{
+			FADE_NONE,
+			FADE_IN,
+			FADE_OUT
+		};
+
+		FadeMode    mFadeMode;
+		Ogre::Real  mFadeTime;
+		Ogre::Real  mRunning;
 	};
 
 	/** Factory object for creating sounds */
