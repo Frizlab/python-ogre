@@ -59,6 +59,8 @@ namespace OgreAL {
 		mGain(1.0),
 		mMaxGain(1.0),
 		mMinGain(0.0),
+		mFadeMode(FADE_NONE),
+		mFadeTime(0.0),
 		mMaxDistance(3400.0),
 		mRolloffFactor(1.0),
 		mReferenceDistance(150.0),
@@ -96,6 +98,8 @@ namespace OgreAL {
 		mPitch(1.0), mGain(1.0),
 		mMaxGain(1.0),
 		mMinGain(0.0),
+		mFadeMode(FADE_NONE),
+		mFadeTime(0.0),
 		mMaxDistance(3400.0),
 		mRolloffFactor(1.0),
 		mReferenceDistance(150.0),
@@ -133,6 +137,8 @@ namespace OgreAL {
 		mLoop(loop?AL_TRUE:AL_FALSE),
 		mPitch(1.0), mGain(1.0),
 		mMaxGain(1.0), mMinGain(0.0),
+		mFadeMode(FADE_NONE),
+		mFadeTime(0.0),
 		mMaxDistance(3400.0),
 		mRolloffFactor(1.0),
 		mReferenceDistance(150.0),
@@ -323,6 +329,51 @@ namespace OgreAL {
 		CheckError(alGetError(), "Failed to get State");
 
 		return (state == AL_INITIAL);
+	}
+
+	bool Sound::fadeIn(Ogre::Real fadeTime)
+	{
+		// Don't interrupt a current fade
+		if(!isPlaying() && mFadeMode == FADE_NONE)
+		{
+			// This won't work as expected when the sound is attached to a node,
+			// so disallow it.
+			if(mParentNode)
+			{
+				Ogre::LogManager::getSingleton().logMessage("Cannot fade a Sound that is attached to a node");
+				return false;
+			}
+
+			mFadeMode = FADE_IN;
+			mFadeTime = fadeTime;
+			mRunning = 0.0;
+			// Start at min gain..
+			setGain(mMinGain);
+			// ..and play
+			return play();
+		}
+		return false;
+	}
+
+	bool Sound::fadeOut(Ogre::Real fadeTime)
+	{
+		// Don't interrupt a current fade
+		if(isPlaying() && mFadeMode == FADE_NONE)
+		{
+			// This won't work as expected when the sound is attached to a node,
+			// so disallow it.
+			if(mParentNode)
+			{
+				Ogre::LogManager::getSingleton().logMessage("Cannot fade a Sound that is attached to a node");
+				return false;
+			}
+
+			mFadeMode = FADE_OUT;
+			mFadeTime = fadeTime;
+			mRunning = 0.0;
+			return true;
+		}
+		return false;
 	}
 
 	void Sound::setPitch(Ogre::Real pitch)
@@ -577,6 +628,41 @@ namespace OgreAL {
 		mLocalTransformDirty = false;
 	}
 
+	void Sound::_updateFading()
+	{
+		if(mFadeMode != FADE_NONE)
+		{   
+			mRunning += SoundManager::getSingletonPtr()->_getLastDeltaTime();
+			// Calculate volume between min and max Gain over fade time
+			Ogre::Real delta = mMaxGain - mMinGain;
+			Ogre::Real gain;
+
+			if(mFadeMode == FADE_IN)
+			{
+				gain = mMinGain + (delta * mRunning / mFadeTime);
+				// Clamp & stop if needed
+				if (gain > mMaxGain)
+				{
+					gain = mMaxGain;
+					mFadeMode = FADE_NONE;
+				}
+			}
+			else if(mFadeMode == FADE_OUT)
+			{
+				gain = mMaxGain - (delta * mRunning / mFadeTime);
+				// Clamp & stop if needed
+				if(gain < mMinGain)
+				{
+					gain = mMinGain;
+					mFadeMode = FADE_NONE;
+				}
+			}
+
+			// Set the adjusted gain
+			setGain(gain);
+		}
+	}
+
 	bool Sound::updateSound()
 	{
 		_update();
@@ -588,6 +674,9 @@ namespace OgreAL {
 
 			alSource3f(mSource, AL_DIRECTION, mDerivedDirection.x, mDerivedDirection.y, mDerivedDirection.z);
 			CheckError(alGetError(), "Failed to set Direction");
+
+			// Fading
+			_updateFading();
 		}
 
 		return true;
