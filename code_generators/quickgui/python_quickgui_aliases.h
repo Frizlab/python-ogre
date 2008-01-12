@@ -1,4 +1,5 @@
 // typedef name nicename;
+typedef std::string String;
 typedef std::vector<QuickGUI::Widget*, std::allocator<QuickGUI::Widget*> > VectorWidget;
 typedef std::vector<unsigned short, std::allocator<unsigned short> > VectorShort;
 //typedef std::vector<Ogre::Image> VectorImage;

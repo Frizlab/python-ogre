@@ -69,6 +69,12 @@ GrassLayer *GrassLoader::addLayer(const String &material)
 	return layer;
 }
 
+void GrassLoader::deleteLayer(GrassLayer *layer)
+{
+	layerList.remove(layer);
+	delete layer;
+}
+
 void GrassLoader::frameUpdate()
 {
 	unsigned long currentTime = windTimer.getMilliseconds();
@@ -631,7 +637,6 @@ Mesh *GrassLoader::generateGrass_SPRITE(PageInfo &page, GrassLayer *layer, float
 	//Return the mesh
 	return mesh.getPointer();
 }
-
 
 GrassLayer::GrassLayer(PagedGeometry *geom, GrassLoader *ldr)
 {

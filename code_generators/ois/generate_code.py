@@ -80,6 +80,9 @@ def ManualFixes ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns
+    mb.class_( "Mouse" ).member_function( "getMouseState" ).call_policies =\
+        call_policies.return_value_policy( call_policies.reference_existing_object )
+        
                  
 ############################################################
 ##

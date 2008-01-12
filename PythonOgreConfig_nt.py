@@ -6,6 +6,12 @@ SDK=False # True ## set to true if buiding from 1.4 release source...
 module_dir = os.path.abspath(os.path.dirname(__file__) )
 BASE_DIR, ignore = os.path.split(module_dir)
 
+# the base of the /usr/... dircetory structure that we are using
+ROOT_DIR = os.path.join(BASE_DIR,'root')
+LOCAL_LIB = os.path.join(ROOT_DIR,'usr/lib')
+LOCAL_INCLUDE = os.path.join(ROOT_DIR, 'usr/include')
+
+
 ## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
 PATH_Boost =        os.path.join(BASE_DIR, 'boost')
 ## Path to your boost_pythonxxxx lib file

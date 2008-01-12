@@ -66,6 +66,11 @@ public:
 	\see GrassLayer class for more information. */
 	GrassLayer *addLayer(const Ogre::String &material);
 
+	/** \brief Removes and deletes a grass layer from the scene
+
+	This function simply deletes a GrassLayer previously created with addLayer(). */
+	void deleteLayer(GrassLayer *layer);
+
 	/** \brief Returns a list of added grass layers.
 	
 	This function returns a std::list<GrassLayer*> reference, which contains all grass

@@ -1,5 +1,6 @@
 
 // #include "../ogre/python_ogre_aliases.h"
+typedef std::string String;
 typedef std::list<Ogre::Plane> StdListPlane;
 typedef std::map< std::string, std::string > StdMapStringString;
 typedef std::vector< std::string > StdVectorString;

@@ -4,7 +4,7 @@ set _SVN="c:\apps\svn-win32-1.4.5\bin\svn.exe"
 set _CVS="c:\Program Files\cvsnt\cvs.exe"
 set _VCBUILD="c:\Program Files\Microsoft Visual Studio 8\vc\vcpackages\vcbuild.exe"
 set _ROOT=c:\development
-set _TP=c:\development\pywork\ThirdParty
+set _TP=c:\development\python-ogre\ThirdParty
 
 cd %_ROOT%\ogrenew
 %_CVS% up

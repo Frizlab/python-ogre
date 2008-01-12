@@ -13,7 +13,7 @@
 #include <vector>
 
 //vertices per quad = 25 quads initially
-#define MIN_VERTEX_BUFFER_SIZE (250*VERTICES_PER_QUAD)
+#define MIN_VERTEX_BUFFER_SIZE (25*VERTICES_PER_QUAD)
 
 namespace QuickGUI
 {

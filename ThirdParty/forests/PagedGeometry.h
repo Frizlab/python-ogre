@@ -536,7 +536,7 @@ public:
 	void reloadGeometryPage(const Ogre::Vector3 &point);
 
 
-	/**
+	/*
 	\brief Immediately loads visible geometry.
 	\param maxTime The maximum amount of time (in milliseconds) which cacheGeometry()
 	is allowed to use before returning (roughly).
