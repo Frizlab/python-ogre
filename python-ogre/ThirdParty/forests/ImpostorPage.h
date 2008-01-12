@@ -86,7 +86,7 @@ public:
 	will be stored in a single texture (8 x 4), so a impostor resolution of 128,
 	for example, results in final texture size of 1024 x 512.
 	
-	\note Calling this function will have no effect unless it is done before
+	\warning Calling this function will have no effect unless it is done before
 	any entities are added to any page.
 	*/
 	static void setImpostorResolution(int pixels) { impostorResolution = pixels; }
@@ -104,7 +104,7 @@ public:
 	The default background color is ColourValue(0.0f, 0.3f, 0.0f, 0.0f), or dark green
 	(this color was chosen because the main use of ImpostorPage is for trees, bushes, etc.)
 
-	\note Calling this function will have no effect unless it is done before
+	\warning Calling this function will have no effect unless it is done before
 	any entities are added to any page. Also remember that you may have to
 	delete the old impostor renders (located in your exe's directory) in
 	order for the new ones to be generated.
@@ -126,6 +126,9 @@ public:
 	point of BBO_CENTER works best.
 
 	\note Only BBO_CENTER and BBO_BOTTOM_CENTER is supported by this function currently.
+
+	\warning Calling this function will have no effect unless it is done before
+	any entities are added to any page.
 	*/
 	static void setImpostorPivot(Ogre::BillboardOrigin origin);
 

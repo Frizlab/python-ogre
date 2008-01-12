@@ -1,4 +1,5 @@
 // placeholder for any aliaiss that are needed
+typedef std::string String;
 typedef OIS::ParamList ParamList;
 typedef std::vector<OIS::Axis> AxisVector;
 //typedef OIS::SupportedEffectList SupportedEffectList;

@@ -129,7 +129,7 @@ namespace QuickGUI
 		q->_notifyAddedToRenderObjectGroup();
 
 		mMenuChanged = true;
-/*
+
 		// check if buffer needs to be resized.
 		const size_t numQuads = static_cast<size_t>(mMenuRenderables.size());
 		const size_t numVertices = numQuads * VERTICES_PER_QUAD;
@@ -144,7 +144,6 @@ namespace QuickGUI
 			mMenuBufferSize.pop_back();
 			mMenuVertexBuffer->resizeVertexBuffer(mMenuBufferSize.back());
 		}
-		*/
 	}
 
 	int QuadContainer::getOffset()

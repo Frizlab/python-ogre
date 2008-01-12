@@ -17,10 +17,8 @@ import sys
 sys.path.insert(0,'..')
 import PythonOgreConfig
 
-#include "ExampleApplication.h"
 import ogre.renderer.OGRE as Ogre
 import ogre.io.OIS as OIS
-#import WaterMesh as WaterMesh
 import ogre.addons.watermesh as WaterMesh
 import math
 import SampleFramework as sf
@@ -255,18 +253,17 @@ def prepareCircleMaterial():
 class WaterListener(sf.FrameListener):
 
     def processcircles(self,timeSinceLastFrame):
-
         for  i in self.circles :
             i.animate(timeSinceLastFrame) 
         found = False
-#         while not found:
-        for count in range (len(self.circles)):
-            if self.circles[count].lvl >= 16:
-                c = self.circles[count]
-                del self.circles[count]
-                del c
-                found = True
-                break
+        while not found:
+            for count in range (len(self.circles)):
+                if self.circles[count].lvl >= 16:
+                    c = self.circles[count]
+                    del self.circles[count]
+                    del c
+                    found = True
+                    break
         
 # # #         do :
 # # #             found = False  
@@ -611,9 +608,9 @@ class WaterApplication(sf.Application,Ogre.RenderTargetListener):
 
 #     ## Create new frame listener
     def _createFrameListener(self):
-         self.frameListener = WaterListener(self.renderWindow, self.camera,
-                                            self.WaterMesh, self.waterEntity, self)
-         self.root.addFrameListener(self.frameListener)
+        self.frameListener = WaterListener(self.renderWindow, self.camera,
+                                        self.WaterMesh, self.waterEntity, self)
+        self.root.addFrameListener(self.frameListener)
 
  
 

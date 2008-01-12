@@ -274,7 +274,7 @@ void ImpostorBatch::setBillboardOrigin(BillboardOrigin origin)
 	if (bbset->getBillboardOrigin() == BBO_CENTER)
 		entityBBCenter = tex->entityCenter;
 	else if (bbset->getBillboardOrigin() == BBO_BOTTOM_CENTER)
-		entityBBCenter = Vector3(tex->entityCenter.x, -tex->entityCenter.y, tex->entityCenter.z);
+		entityBBCenter = Vector3(tex->entityCenter.x, tex->entityCenter.y - tex->entityRadius, tex->entityCenter.z);
 }
 
 //-------------------------------------------------------------------------------------

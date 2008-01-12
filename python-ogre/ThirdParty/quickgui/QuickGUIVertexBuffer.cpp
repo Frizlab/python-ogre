@@ -224,7 +224,6 @@ namespace QuickGUI
 					
 					// nfz: set up multipass rendering
 					mRenderSystem->setCurrentPassIterationCount(pass->getPassIterationCount());
-					//mRenderSystem->_setTexture(0,true,"Examples/Rockwall");
 					mRenderSystem->_render(mRenderOperation);
 
 				}

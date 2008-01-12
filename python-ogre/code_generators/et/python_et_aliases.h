@@ -1,5 +1,4 @@
-
-
+typedef std::string String;
 typedef std::map<std::string, std::string> MapStringString;
 typedef std::pair<float, float> StdPairFloatFloat;
 
@@ -20,8 +19,8 @@ typedef std::pair<bool, std::allocator<Ogre::Vector3> > stdPairBoolVector;
 //typedef std::vector<Ogre::Image> ImageList;
 
 //3
-typedef ET::ColourList ColourList;
-typedef ET::ImageList ImageList;
+// typedef ET::ColourList ColourList;
+// typedef ET::ImageList ImageList;
 
 // these are uglys to remove messages in the generate_code output - doesn't impact the generated code :)
 //typedef std::vector<Ogre::Image> ImageList;

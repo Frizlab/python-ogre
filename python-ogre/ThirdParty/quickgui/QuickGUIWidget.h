@@ -92,6 +92,7 @@ namespace QuickGUI
 			EVENT_MOUSE_BUTTON_UP		,
 			EVENT_MOUSE_CLICK			,
 			EVENT_MOUSE_CLICK_DOUBLE	,
+			EVENT_MOUSE_CLICK_TRIPLE	,
 			EVENT_MOUSE_ENTER			,
 			EVENT_MOUSE_LEAVE			,
 			EVENT_MOUSE_MOVE			,
@@ -315,6 +316,7 @@ namespace QuickGUI
 		Ogre::Real getWidth();
 		Ogre::Real getXPosition();
 		Ogre::Real getYPosition();
+		bool hasMouseButtonHandlers();
 		/**
 		* Sets mVisible to false.  Widgets should override this to implement how they handle
 		* hiding.
