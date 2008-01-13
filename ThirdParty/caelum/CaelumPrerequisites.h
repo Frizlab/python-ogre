@@ -26,16 +26,16 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 // Define the dll export qualifier if compiling for Windows
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	#ifdef CAELUM_LIB
-		#define DllExport __declspec (dllexport)
-	#else
-		#ifdef __MINGW32__
-			#define DllExport
-		#else
-			#define DllExport __declspec (dllimport)
-		#endif
-	#endif
-#else
+// 	#ifdef CAELUM_LIB
+// 		#define DllExport __declspec (dllexport)
+// 	#else
+// 		#ifdef __MINGW32__
+// 			#define DllExport
+// 		#else
+// 			#define DllExport __declspec (dllimport)
+// 		#endif
+// 	#endif
+// #else
 	#define DllExport
 #endif
 

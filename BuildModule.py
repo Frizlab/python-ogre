@@ -33,14 +33,14 @@ def setupLogging (logfilename):
   
     
 def getClassList ():
-    """ create a dictionary of classes from the enfironment modules
+    """ create a dictionary of classes from the environment modules
     """
     dict = {}
     for c in dir(environment):
         var = environment.__dict__[c]
         if isinstance ( var, types.ClassType ) :    ## OK so we know it's a class      
 #             logger.debug ( "getClassList: Checking %s" % c )
-            if hasattr(var, 'active') and hasattr(var, 'pythonModule'):   # and it looks like one we can about
+            if hasattr(var, 'active') and hasattr(var, 'pythonModule'):   # and it looks like one we care about
 #                 logger.debug ( "getClassList: it's one of ours")
                 dict[c] = var
     return dict
@@ -192,11 +192,11 @@ if __name__ == '__main__':
                 if classList[ moduleName ].pythonModule == True:
                     generateCode ( classList[ moduleName ] )
                 else:
-                    exit ( "Module specificed does not generate source code (%s is a supporting module)" % moduleName )
+                    print ( "Module specificed does not generate source code (%s is a supporting module)" % moduleName )
             if options.compilecode :
                 if classList[ moduleName ].pythonModule == True:
                     compileCode ( classList[ moduleName ] )
                 else:
-                    exit ( "Module specificed does not need compiling (%s is a supporting module)" % moduleName )
+                    print ( "Module specificed does not need compiling (%s is a supporting module)" % moduleName )
             
                 
