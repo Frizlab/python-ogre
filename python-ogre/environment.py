@@ -201,8 +201,8 @@ class install:
 class newton:
     pythonModule = False
     active = True
-    if not os.path.exists( os.path.join(os.getcwd(), 'ogreaddons/ogrenewt')):
-        os.makedirs ( os.path.join(os.getcwd(), 'ogreaddons/ogrenewt') )    
+#     if not os.path.exists( os.path.join(os.getcwd(), 'ogreaddons/ogrenewt')):
+#         os.makedirs ( os.path.join(os.getcwd(), 'ogreaddons/ogrenewt') )    
 
     if isLinux():
         base = 'newton'

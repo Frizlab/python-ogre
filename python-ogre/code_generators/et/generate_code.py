@@ -66,7 +66,18 @@ def ManualExclude ( mb ):
         if f.return_type.decl_string.startswith("::std::pair"):
             print "Excluding Class (%s) Function(%s) which return %s. These return List[bool,tuple(x,y,x)] " % (f.name, f.parent, f.return_type)
             f.exclude()
-        
+    std_ns = global_ns.namespace("std")
+    
+    excludes=['::ET::SplattingManager::createColourMap',    # forces a vector(Ogre::ColourValue) which fails
+                '::ET::SplattingManager::createBaseTexture'
+                ]
+    for e in excludes:
+        print "excluding function", e
+        global_ns.member_functions(e).exclude()
+            
+#     std_ns.class_('vector<Ogre::ColourValue, std::allocator<Ogre::ColourValue> >').exclude()
+#      std_ns.class_('vector<Ogre::Image, std::allocator<Ogre::Image> >').exclude()
+           
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 
@@ -79,7 +90,8 @@ def ManualInclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns    
-        
+    global_ns.namespace( 'Ogre' ).class_('MaterialPtr').include(already_exposed=True)
+    
 ############################################################
 ##
 ##  And things that need manual fixes, but not necessarly hand wrapped
@@ -174,30 +186,30 @@ def Fix_NT ( mb ):
 # the 'main'function
 #            
 def generate_code():  
-    messages.disable( 
-#           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-          messages.W1020
-        , messages.W1021
-        , messages.W1022
-        , messages.W1023
-        , messages.W1024
-        , messages.W1025
-        , messages.W1026
-        , messages.W1027
-        , messages.W1028
-        , messages.W1029
-        , messages.W1030
-        , messages.W1031
-        , messages.W1035
-        , messages.W1040 
-        , messages.W1038        
-        , messages.W1041
-        , messages.W1036 # pointer to Python immutable member
-        , messages.W1033 # unnamed variables
-        , messages.W1018 # expose unnamed classes
-        , messages.W1049 # returns reference to local variable
-        , messages.W1014 # unsupported '=' operator
-         )
+#     messages.disable( 
+# #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+#           messages.W1020
+#         , messages.W1021
+#         , messages.W1022
+#         , messages.W1023
+#         , messages.W1024
+#         , messages.W1025
+#         , messages.W1026
+#         , messages.W1027
+#         , messages.W1028
+#         , messages.W1029
+#         , messages.W1030
+#         , messages.W1031
+#         , messages.W1035
+#         , messages.W1040 
+#         , messages.W1038        
+#         , messages.W1041
+#         , messages.W1036 # pointer to Python immutable member
+#         , messages.W1033 # unnamed variables
+#         , messages.W1018 # expose unnamed classes
+#         , messages.W1049 # returns reference to local variable
+#         , messages.W1014 # unsupported '=' operator
+#          )
     #
     # Use GCCXML to create the controlling XML file.
     # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded

@@ -12,3 +12,5 @@ sizeof (::std::pair<bool, float> );
 //sizeof ( ::std::pair<bool, Ogre::Vector3> );
 //sizeof (std::pair<bool, Ogre::Vector3> );
 sizeof ( std::pair<bool, std::allocator<Ogre::Vector3> > );
+// sizeof ( std::vector<Ogre::ColourValue> );
+// sizeof ( std::vector<Ogre::Image> );
