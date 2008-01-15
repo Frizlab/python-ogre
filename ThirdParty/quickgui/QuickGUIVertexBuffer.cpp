@@ -16,7 +16,6 @@ namespace QuickGUI
 		mRenderSystem = Ogre::Root::getSingleton().getRenderSystem();
 		mTextureManager = Ogre::TextureManager::getSingletonPtr();
 		_createVertexBuffer();
-		_createIndexBuffer();
 
 		// Initialise blending modes to be used. We use these every frame, so we'll set them up now to save time later.
 		mColorBlendMode.blendType	= Ogre::LBT_COLOUR;
@@ -37,7 +36,6 @@ namespace QuickGUI
 	VertexBuffer::~VertexBuffer()
 	{
 		_destroyVertexBuffer();
-		_destroyIndexBuffer();
 	}
 
 	void VertexBuffer::_createVertexBuffer()
@@ -59,23 +57,6 @@ namespace QuickGUI
 		mRenderOperation.vertexData->vertexBufferBinding->setBinding( 0, mVertexBuffer );
 		mRenderOperation.operationType = Ogre::RenderOperation::OT_TRIANGLE_LIST;
 		mRenderOperation.useIndexes = false;
-	}
-
-	void VertexBuffer::_createIndexBuffer()
-	{
-		mRenderOperation.useIndexes = true;
-		mRenderOperation.indexData = new Ogre::IndexData();
-		mRenderOperation.indexData->indexStart = 0;
-		
-		// Create the Index Buffer
-		size_t indexCount = (mVertexBufferSize / 4) * 6;
-
-		mIndexBuffer = Ogre::HardwareBufferManager::getSingleton( ).createIndexBuffer(
-			((mVertexBufferSize > 655534) ? Ogre::HardwareIndexBuffer::IT_32BIT: Ogre::HardwareIndexBuffer::IT_16BIT),
-			indexCount,
-			Ogre::HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE,
-			false);
-		mRenderOperation.indexData->indexBuffer = mIndexBuffer;
 	}
 
 	void VertexBuffer::_declareVertexStructure()
@@ -113,13 +94,6 @@ namespace QuickGUI
 		mVertexBuffer.setNull();
 	}
 
-	void VertexBuffer::_destroyIndexBuffer()
-	{
-		delete mRenderOperation.indexData;
-		mRenderOperation.indexData = NULL;
-		mIndexBuffer.setNull();
-	}
-
 	void VertexBuffer::_initRenderState()
 	{
 		// make sure we're rendering to the correct viewport
@@ -145,7 +119,6 @@ namespace QuickGUI
 		// initialise texture settings
 		mRenderSystem->_setTextureCoordCalculation(0, Ogre::TEXCALC_NONE);
 		mRenderSystem->_setTextureCoordSet(0, 0);
-		//mRenderSystem->_setTextureUnitFiltering(0, Ogre::FO_NONE, Ogre::FO_NONE, Ogre::FO_NONE);
 		mRenderSystem->_setTextureUnitFiltering(0, Ogre::FO_LINEAR, Ogre::FO_LINEAR, Ogre::FO_POINT);
 		mRenderSystem->_setTextureAddressingMode(0, mTextureAddressMode);
 		mRenderSystem->_setTextureMatrix(0, Ogre::Matrix4::IDENTITY);
@@ -173,8 +146,7 @@ namespace QuickGUI
 		*/
 		unsigned int quadCounter = 0;
 
-		size_t indexOffset = 0;
-		mRenderOperation.vertexData->vertexStart = 0;
+		size_t vertexOffset = 0;
 
 		for(TextureChangeList::iterator materialChangeIt = mMaterialChangeList.begin(); materialChangeIt != mMaterialChangeList.end(); ++materialChangeIt)
 		{
@@ -184,9 +156,8 @@ namespace QuickGUI
 
 				mRenderOperation.vertexData->vertexCount = textureChangeQuadSize * VERTICES_PER_QUAD;
 
-				mRenderOperation.indexData->indexStart = indexOffset;
-				mRenderOperation.indexData->indexCount = textureChangeQuadSize * 6;
-				indexOffset  += mRenderOperation.indexData->indexCount;
+				mRenderOperation.vertexData->vertexStart = vertexOffset;		
+				vertexOffset += mRenderOperation.vertexData->vertexCount;
 			}
 
 			// Render
@@ -265,10 +236,8 @@ namespace QuickGUI
 	void VertexBuffer::resizeVertexBuffer( const size_t numberOfVertices )
 	{
 		_destroyVertexBuffer();
-		_destroyIndexBuffer();
 		mVertexBufferSize = numberOfVertices;
 		_createVertexBuffer();
-		_createIndexBuffer();
 	}
 
 	void VertexBuffer::setData(QuadList* l)
@@ -355,47 +324,6 @@ namespace QuickGUI
 				vertexBufferPtr += VERTICES_PER_QUAD;
 			}
 			mVertexBuffer->unlock();
-		}
-
-		// Fill Index Buffer
-		{
-			// Handles 32bits indexes for really loud UI.
-			if (mIndexBuffer->getType() == Ogre::HardwareIndexBuffer::IT_32BIT)
-			{
-				unsigned int* mIndexBufferPtr = (unsigned int*)mIndexBuffer->lock ( Ogre::HardwareVertexBuffer::HBL_DISCARD );
-				unsigned int offset = 0;
-				for (size_t k = 0; k < quadCount; k++)
-				{
-					*mIndexBufferPtr++ = offset + 0;
-					*mIndexBufferPtr++ = offset + 1;
-					*mIndexBufferPtr++ = offset + 3;
-
-					*mIndexBufferPtr++ = offset + 1;
-					*mIndexBufferPtr++ = offset + 2;
-					*mIndexBufferPtr++ = offset + 3;
-
-					offset += 4;
-				}
-				mIndexBuffer->unlock();
-			}
-			else
-			{
-				unsigned short* mIndexBufferPtr = (unsigned short*)mIndexBuffer->lock ( Ogre::HardwareVertexBuffer::HBL_DISCARD );
-				unsigned short offset = 0;
-				for (size_t k = 0; k < quadCount; k++)
-				{
-					*mIndexBufferPtr++ = offset + 0;
-					*mIndexBufferPtr++ = offset + 1;
-					*mIndexBufferPtr++ = offset + 3;
-
-					*mIndexBufferPtr++ = offset + 1;
-					*mIndexBufferPtr++ = offset + 2;
-					*mIndexBufferPtr++ = offset + 3;
-
-					offset += 4;
-				}
-				mIndexBuffer->unlock();
-			}
 		}
 	}
 }

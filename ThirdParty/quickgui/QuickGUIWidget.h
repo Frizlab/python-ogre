@@ -165,7 +165,7 @@ namespace QuickGUI
 		}
 		void addEventHandler(Event EVENT, MemberFunctionSlot* function);
 
-		template<typename T> void addEventListener(Event EVENT, void (T::*function)(const EventArgs&), T* obj)
+		template<typename T> void addEventListener(void (T::*function)(const EventArgs&), T* obj)
 		{
 			mEventListeners.push_back(new MemberFunctionPointer<T>(function,obj));
 		}
@@ -214,6 +214,7 @@ namespace QuickGUI
 		* Sets focus to the widget by firing an activation event.
 		*/
 		virtual void focus();
+		Rect getActualDimensions();
 		Ogre::Real getActualOpacity();
 		/**
 		* Returns the position of the widget as it would be drawn on the screen.
@@ -221,9 +222,11 @@ namespace QuickGUI
 		*  getScreenPosition() + getScrollOffset().
 		*/
 		Point getActualPosition();
+		Size getActualSize();
 		WidgetArray* getChildWidgetList();
 		Widget* getChildWidget(const Ogre::String& name);
 		Widget* getChildWidget(Type t, unsigned int index);
+		bool getClippingEnabled();
 		Rect getDimensions();
 		GUIManager* getGUIManager();
 		int getNumberOfHandlers(Event e);
@@ -362,6 +365,7 @@ namespace QuickGUI
 		void removeAndDestroyChild(Widget* w);
 		void removeAndDestroyChild(const Ogre::String& widgetName);
 		bool resizingAllowed();
+		void setClippingEnabled(bool enable);
 		/**
 		* Manually set the Dimensions of the widget.
 		*/
@@ -486,6 +490,7 @@ namespace QuickGUI
 
 		// PROPERTIES
 		bool						mCanResize;
+		bool						mClippingEnabled;
 		Widget*						mClippingWidget;
 		bool						mInheritClippingWidget;
 		bool						mDragXOnly;

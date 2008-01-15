@@ -4,9 +4,6 @@
 #ifndef __QuickGuiSkinSetParser_h_
 #define __QuickGuiSkinSetParser_h_
 
-#include "OgreScriptLoader.h"
-#include "OgrePrerequisites.h"
-
 #include "QuickGUIPrerequisites.h"
 #include "QuickGUIExportDLL.h"
 
