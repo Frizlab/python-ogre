@@ -25,7 +25,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "Ogre.h"
 
 // Define the dll export qualifier if compiling for Windows
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+// #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 // 	#ifdef CAELUM_LIB
 // 		#define DllExport __declspec (dllexport)
 // 	#else
@@ -37,7 +37,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 // 	#endif
 // #else
 	#define DllExport
-#endif
+// #endif
 
 // Define the version code
 #define CAELUM_VERSION_MAIN 0
