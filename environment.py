@@ -1082,6 +1082,7 @@ class ogreal:
         [0, "tar zxf " + os.path.join(downloadPath, "libvorbis-1.2.0.tar.gz"), ''],
         [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "libogg-1.1.3")],
         [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "libvorbis-1.2.0")],
+        [0, "sed --in-place -s 's|( ALCvoid )|()|' alc.h",os.path.join(os.getcwd(),"openal-0.0.8","common", "include", "AL")],
         [0, "aclocal\n./autogen.sh", os.path.join(os.getcwd(),"openal-0.0.8")],
         [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "openal-0.0.8")]
         ]
