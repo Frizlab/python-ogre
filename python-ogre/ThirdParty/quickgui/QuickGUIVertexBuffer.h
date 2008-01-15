@@ -63,10 +63,6 @@ namespace QuickGUI
 		Ogre::HardwareVertexBufferSharedPtr mVertexBuffer;
 		size_t mVertexBufferSize;	// the maximum number of vertices the buffer can hold.
 		size_t mVertexBufferUsage;	// the current number of vertices stored in the buffer.
-		
-#if VERTICES_PER_QUAD == 4
-		Ogre::HardwareIndexBufferSharedPtr mIndexBuffer;
-#endif
 
 		// Every RenderSystem::_render(mRenderOperation) constitutes a batch.
 		Ogre::RenderOperation mRenderOperation;
@@ -83,7 +79,6 @@ namespace QuickGUI
 
 		// NOTE: we do not need a _clearVertexBuffer function, since we get new, blank memory when locking with HBL_DISCARD.
 		void _createVertexBuffer();
-		void _createIndexBuffer();
 
 		/*
 		* Define the size and data types that form a *Vertex*, to be used in the VertexBuffer.
@@ -92,8 +87,6 @@ namespace QuickGUI
 		void _declareVertexStructure();
 		void _destroyVertexBuffer();
 		void _renderVertexBuffer();
-
-		void _destroyIndexBuffer();
 	};
 }
 

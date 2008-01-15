@@ -12,6 +12,7 @@ namespace QuickGUI
 {
 	Widget::Widget(const Ogre::String& name, GUIManager* gm) :
 		mCanResize(false),
+		mClippingEnabled(true),
 		mClippingWidget(0),
 		mDragXOnly(false),
 		mDragYOnly(false),
@@ -440,6 +441,11 @@ namespace QuickGUI
 		mGUIManager->setActiveWidget(this);
 	}
 
+	Rect Widget::getActualDimensions()
+	{
+		return Rect(getActualPosition(),getActualSize());
+	}
+
 	Ogre::Real Widget::getActualOpacity()
 	{
 		if((mParentWidget == NULL) || (!mInheritOpacity))
@@ -451,6 +457,16 @@ namespace QuickGUI
 	Point Widget::getActualPosition()
 	{
 		return getScreenPosition() + getScrollOffset();
+	}
+
+	Size Widget::getActualSize()
+	{
+		if( (mParentWidget == NULL) || !mClippingEnabled )
+			return mSize;
+
+		Rect r = getDimensions().getIntersection(Rect(mParentWidget->getActualPosition(),mParentWidget->getActualSize()));
+
+		return Size(r.width,r.height);
 	}
 
 	WidgetArray* Widget::getChildWidgetList()
@@ -492,6 +508,11 @@ namespace QuickGUI
 		}
 
 		return NULL;
+	}
+
+	bool Widget::getClippingEnabled()
+	{
+		return mClippingEnabled;
 	}
 
 	bool Widget::getGainFocusOnClick()
@@ -1020,12 +1041,15 @@ namespace QuickGUI
 		{
 			if((*it)->getInstanceName() == widgetName)
 			{
-				WidgetEventArgs args((*it));
-				fireEvent(EVENT_CHILD_REMOVED,args);
+				Widget* w = (*it);
 
 				(*it)->setQuadContainer(NULL);
 				(*it)->setParent(NULL);
 				mChildWidgets.erase(it);
+
+				WidgetEventArgs args(w);
+				fireEvent(EVENT_CHILD_REMOVED,args);
+
 				return;
 			}
 		}
@@ -1048,7 +1072,7 @@ namespace QuickGUI
 
 	void Widget::removeAndDestroyChild(Widget* w)
 	{
-		if((w == NULL) || (mGUIManager == NULL) || (std::find(mChildWidgets.begin(),mChildWidgets.end(),w) == mChildWidgets.end()))
+		if((w == NULL) || (mGUIManager == NULL) || (w->getParentWidget() != this))
 			return;
 
 		removeChild(w);
@@ -1096,6 +1120,11 @@ namespace QuickGUI
 					(*it)->setClippingWidget(w);
 			}
 		}
+	}
+
+	void Widget::setClippingEnabled(bool enable)
+	{
+		mClippingEnabled = enable;
 	}
 
 	void Widget::setDimensions(const Rect& pixelDimensions)

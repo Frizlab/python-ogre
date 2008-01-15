@@ -111,9 +111,10 @@ namespace QuickGUI
 				delete mScrollPane;
 				mScrollPane = NULL;
 
-				mGUIManager->destroyWidget(mRightScrollBar);
+				removeAndDestroyChild(mRightScrollBar);
 				mRightScrollBar = NULL;
-				mGUIManager->destroyWidget(mBottomScrollBar);
+
+				removeAndDestroyChild(mBottomScrollBar);
 				mBottomScrollBar = NULL;
 			}
 		}

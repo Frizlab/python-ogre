@@ -2,15 +2,14 @@
 //Original author: John Judnich
 #include "QuickGUIPrecompiledHeaders.h"
 
-#include "OgreScriptLoader.h"
-
-#include "OgreResourceGroupManager.h"
 #include "OgreException.h"
 #include "OgreLogManager.h"
-
-#include "QuickGUISkinSetManager.h"
+#include "OgrePrerequisites.h"
+#include "OgreResourceGroupManager.h"
+#include "OgreScriptLoader.h"
 
 #include "QuickGUIConfigScriptParser.h"
+#include "QuickGUISkinSetManager.h"
 
 using namespace Ogre;
 namespace QuickGUI
@@ -262,6 +261,7 @@ namespace QuickGUI
 			_nextToken();
 		};
 	}
+
 
 
 

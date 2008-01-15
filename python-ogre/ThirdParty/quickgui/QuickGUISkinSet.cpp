@@ -21,6 +21,9 @@ namespace QuickGUI
 	{
 		_determineExtension(t);
 
+		mHorizontalTexelOffset = Ogre::Root::getSingleton().getRenderSystem()->getHorizontalTexelOffset();
+		mVerticalTexelOffset = Ogre::Root::getSingleton().getRenderSystem()->getVerticalTexelOffset();
+
 		// if skinset doesn't exists
 		if (loadSkin() == false)
 		{
@@ -81,10 +84,10 @@ namespace QuickGUI
 					Ogre::Vector4 texCoord;
 					if (dimension)
 					{
-						texCoord.x = Ogre::StringConverter::parseReal(dimension->getValues()[0]);
-						texCoord.y = Ogre::StringConverter::parseReal(dimension->getValues()[1]);
-						texCoord.z = Ogre::StringConverter::parseReal(dimension->getValues()[2]);
-						texCoord.w = Ogre::StringConverter::parseReal(dimension->getValues()[3]);
+						texCoord.x = Ogre::StringConverter::parseReal(dimension->getValues()[0]) + (mHorizontalTexelOffset / mTextureWidth);
+						texCoord.y = Ogre::StringConverter::parseReal(dimension->getValues()[1]) + (mVerticalTexelOffset / mTextureHeight);
+						texCoord.z = Ogre::StringConverter::parseReal(dimension->getValues()[2]) + (mHorizontalTexelOffset / mTextureWidth);
+						texCoord.w = Ogre::StringConverter::parseReal(dimension->getValues()[3]) + (mVerticalTexelOffset / mTextureHeight);
 					}
 
 					//ConfigNode *rotation = skinRootNode->findChild("rotation");
@@ -106,6 +109,11 @@ namespace QuickGUI
 			mDirtyTextureCoordinates = false;
 			return true;
 		}
+		return false;
+	}
+
+	bool SkinSet::overTransparentPixel(const Ogre::String& skinComponent, int xPos, int yPos)
+	{
 		return false;
 	}
 

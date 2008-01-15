@@ -549,7 +549,7 @@ namespace QuickGUI
 
 	void Text::selectCharacters(unsigned int startIndex, unsigned int endIndex)
 	{
-		if( (mCaption.length() == 0) || (startIndex >= mCaption.length()) )
+		if( (mCaption.length() == 0) || (startIndex >= static_cast<unsigned int>(mCharacters.size())) )
 			return;
 
 		mSelectStart = startIndex;

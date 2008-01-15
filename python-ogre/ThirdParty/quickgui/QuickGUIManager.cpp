@@ -67,6 +67,10 @@ namespace QuickGUI
 		if( w == NULL )
 			return;
 
+		// If widget already queued for destruction, return.
+		if(std::find(mFreeList.begin(),mFreeList.end(),w) != mFreeList.end())
+			return;
+
 		mFreeList.push_back(w);
 	}
 
@@ -185,6 +189,10 @@ namespace QuickGUI
 			destroySheet(dynamic_cast<Sheet*>(w));
 			return;
 		}
+
+		// If widget already queued for destruction, return.
+		if(std::find(mFreeList.begin(),mFreeList.end(),w) != mFreeList.end())
+			return;
 
 		if(w->getParentWidget() != NULL)
 			w->getParentWidget()->removeAndDestroyChild(w);

@@ -7,7 +7,7 @@
 namespace QuickGUI
 {
 	////////////DRAWING/////////////
-	#define VERTICES_PER_QUAD 4
+	#define VERTICES_PER_QUAD 6
 
 	class Rect;
 	class Point;

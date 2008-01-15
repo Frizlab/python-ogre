@@ -32,14 +32,9 @@ namespace QuickGUI
 		mClippingWidget(NULL),
 		mInheritClippingWidget(true),
 		mInheritQuadLayer(true),
-		mShowWithOwner(true),
-		mDirectXUsed(false)
+		mShowWithOwner(true)
 	{
 		mRenderSystem = Ogre::Root::getSingleton().getRenderSystem();
-
-		// Determine if dirext X renderer used.
-		if(mRenderSystem->getName().find("Direct") != Ogre::String::npos)
-			mDirectXUsed = true;
 
 		_updateVertexColor();
 	}
@@ -168,6 +163,8 @@ namespace QuickGUI
 		Ogre::Real top = -((absDimensions.y * 2) - 1);
 		Ogre::Real bottom = top - (absDimensions.height * 2);
 
+		/* Reference code, back when the index buffer was used, and there were 4 vertices per quad.
+
 		// TRIANGLE 1
 		mVertices[0].pos = Ogre::Vector3(left,  bottom, 0.f);	// left-bottom
 		mVertices[1].pos = Ogre::Vector3(right, bottom, 0.f);	// right-bottom
@@ -176,8 +173,7 @@ namespace QuickGUI
 		mVertices[2].pos = Ogre::Vector3(right, top, 0.f);		// right-top
 		mVertices[3].pos = Ogre::Vector3(left,  top, 0.f);		// left-top
 
-		
-		/* Reference code, back when the index buffer was not used, and there were 6 vertices per quad.
+		*/
 		
 		// TRIANGLE 1
 		mVertices[0].pos = Ogre::Vector3(left,bottom,0);	// left-bottom
@@ -188,8 +184,6 @@ namespace QuickGUI
 		mVertices[3].pos = Ogre::Vector3(right,bottom,0);	// right-bottom
 		mVertices[4].pos = Ogre::Vector3(right,top,0);		// right-top
 		mVertices[5].pos = Ogre::Vector3(left,top,0);		// left-top
-
-		*/
 	}
 
 	void Quad::_notifyAddedToRenderObjectGroup()
@@ -243,6 +237,8 @@ namespace QuickGUI
 	{
 		const Ogre::Vector4 actualTextureCoords(mTextureCoordinatesViaClipping);
 
+		/* Reference code, back when the index buffer was used, and there were 4 vertices per quad.
+
 		// TRIANGLE 1 : bot-left, bot-right, top-left vertices
 		mVertices[0].uv = Ogre::Vector2(actualTextureCoords.x,actualTextureCoords.w);
 		mVertices[1].uv = Ogre::Vector2(actualTextureCoords.z,actualTextureCoords.w);
@@ -250,7 +246,7 @@ namespace QuickGUI
 		mVertices[2].uv = Ogre::Vector2(actualTextureCoords.z,actualTextureCoords.y);
 		mVertices[3].uv = Ogre::Vector2(actualTextureCoords.x,actualTextureCoords.y);
 
-		/* Reference code, back when the index buffer was not used, and there were 6 vertices per quad.
+		*/
 
 		// TRIANGLE 1 : bot-left, bot-right, top-left vertices
 		mVertices[0].uv = Ogre::Vector2(actualTextureCoords.x,actualTextureCoords.w);
@@ -260,12 +256,12 @@ namespace QuickGUI
 		mVertices[3].uv = Ogre::Vector2(actualTextureCoords.z,actualTextureCoords.w);
 		mVertices[4].uv = Ogre::Vector2(actualTextureCoords.z,actualTextureCoords.y);
 		mVertices[5].uv = Ogre::Vector2(actualTextureCoords.x,actualTextureCoords.y);
-
-		*/
 	}
 
 	void Quad::_updateVertexColor()
 	{
+		/* Reference code, back when the index buffer was used, and there were 4 vertices per quad.
+
 		// TRIANGLE 1
 		mRenderSystem->convertColourValue(mBottomColor,&( mVertices[0].color ));
 		mRenderSystem->convertColourValue(mBottomColor,&( mVertices[1].color ));
@@ -273,7 +269,7 @@ namespace QuickGUI
 		mRenderSystem->convertColourValue(mTopColor,&( mVertices[2].color ));
 		mRenderSystem->convertColourValue(mTopColor,&( mVertices[3].color ));
 
-		/* Reference code, back when the index buffer was not used, and there were 6 vertices per quad.
+		*/
 
 		// TRIANGLE 1
 		mRenderSystem->convertColourValue(mBottomColor,&( mVertices[0].color ));
@@ -283,8 +279,6 @@ namespace QuickGUI
 		mRenderSystem->convertColourValue(mBottomColor,&( mVertices[3].color ));
 		mRenderSystem->convertColourValue(mTopColor,&( mVertices[4].color ));
 		mRenderSystem->convertColourValue(mTopColor,&( mVertices[5].color ));
-
-		*/
 	}
 
 	void Quad::addToRenderObjectGroup()
@@ -525,21 +519,7 @@ namespace QuickGUI
 
 	void Quad::setTextureCoordinates(const Ogre::Vector4& textureCoordinates)
 	{
-		// DirectX interprets UV coords from a different location than OpenGL, so
-		// we have to modify the coordinates to get the same results.
-/*		if(mDirectXUsed)
-		{
-			Ogre::Real xVal = 0.5 / mPixelDimensions.width; 
-			Ogre::Real yVal = 0.5 / mPixelDimensions.height;
-
-			mTextureCoordinates = Ogre::Vector4(
-				textureCoordinates.x + xVal,
-				textureCoordinates.y + yVal,
-				textureCoordinates.z + xVal,
-				textureCoordinates.w + yVal);
-		}
-		else */
-			mTextureCoordinates = textureCoordinates;
+		mTextureCoordinates = textureCoordinates;
 
 		mTextureCoordsChanged = true;
 

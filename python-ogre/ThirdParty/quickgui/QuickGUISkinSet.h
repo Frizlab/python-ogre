@@ -68,6 +68,10 @@ namespace QuickGUI
 		bool containsImage(Ogre::String textureName);
 
 		Ogre::String getImageExtension() const;
+		/*
+		* Retrieve material used for this Skinset.
+		*/
+		Ogre::String getMaterialName() { return mMaterialName; }
 		Ogre::String getSkinName() const;
 		// Return the name of the skin for this SkinSet
 		Ogre::String getTextureName() const;
@@ -94,10 +98,16 @@ namespace QuickGUI
 		*/
 		bool loadSkin();
 
-		/*
-		* Retrieve material used for this Skinset.
-		*/
-		Ogre::String getMaterialName() { return mMaterialName; }
+		/** Returns true if the relative coordinates are over a transparent pixel, false otherwise.
+            @param
+                skinComponent The name to be embedded Image to query.
+            @param
+                xPos The relative position of the horizontal pixel in the image.
+			@param
+				yPos The relative position of the vertical pixel in the image.
+        */
+		bool overTransparentPixel(const Ogre::String& skinComponent, int xPos, int yPos);
+		
 		/*
 		* set material used for this Skinset.
 		*/
@@ -120,6 +130,9 @@ namespace QuickGUI
 		// The actual texture that stores the imageset
 		Ogre::uint mTextureWidth;
 		Ogre::uint mTextureHeight;
+
+		Ogre::Real mHorizontalTexelOffset;
+		Ogre::Real mVerticalTexelOffset;
 
 		// This map connects individual textures to its UV coordinates, within
 		// the SkinSet Texture.
