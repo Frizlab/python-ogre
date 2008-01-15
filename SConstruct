@@ -91,7 +91,7 @@ def get_source_files(cls, _dir, usepch = False):
 def get_linkflags():
     if environment.isWindows():
         #LINKFLAGS = " /NOLOGO /INCREMENTAL:NO /DLL /OPT:NOREF /OPT:NOICF /OPT:NOWIN98 /subsystem:console " # no change
-        LINKFLAGS = " /MAP:FULL /MAPINFO:EXPORTS /NOLOGO /OPT:REF /INCREMENTAL:NO /DLL /OPT:ICF /subsystem:console " # 7 minutes 25% smaller 16.6 Meg
+        LINKFLAGS = " /MAP /MAPINFO:EXPORTS /NOLOGO /OPT:REF /INCREMENTAL:NO /DLL /OPT:ICF /subsystem:console " # 7 minutes 25% smaller 16.6 Meg
         #LINKFLAGS = " /NOLOGO /INCREMENTAL:NO /DLL /subsystem:console " ### LONG Link , 80 minutes - 15.7 meg
     if environment.isLinux():
         if os.sys.platform <> 'darwin':
