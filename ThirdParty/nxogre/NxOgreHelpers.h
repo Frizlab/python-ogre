@@ -281,7 +281,7 @@ namespace NxOgre {
 
 	/** @brief  Interpolates 
 	*/
-	inline Pose NxExport NxInterpolate(Pose First, Pose Second, NxReal c = 0.5f);
+	Pose NxExport NxInterpolate(Pose First, Pose Second, NxReal c = 0.5f);
 
 };
 

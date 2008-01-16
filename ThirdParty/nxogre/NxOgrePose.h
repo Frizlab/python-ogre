@@ -52,12 +52,12 @@ namespace NxOgre {
 			void						fromMat33(const NxMat33&);
 			NxMat33						toMat33() const;
 
-			inline	Ogre::Vector3		getVector3() const;
-			inline	NxVec3				getVec3() const;
-			inline	Ogre::Quaternion	getQuaternion() const;
-			inline	NxQuat				getQuat() const;
+				Ogre::Vector3		getVector3() const;
+				NxVec3				getVec3() const;
+				Ogre::Quaternion	getQuaternion() const;
+				NxQuat				getQuat() const;
 
-			inline				NxString	toString() const;
+							NxString	toString() const;
 
 			////////////////////////////////////////////////////////////////////////////////
 

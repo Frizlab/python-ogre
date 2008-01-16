@@ -30,14 +30,14 @@ namespace NxOgre {
 
 //////////////////////////////////////////////////////////////////////////////////
 
-inline NxExtendedVec3 toNxExtendedVec3(const Ogre::Vector3& v) {
+NxExtendedVec3 toNxExtendedVec3(const Ogre::Vector3& v) {
 	return NxExtendedVec3(v.x,v.y,v.z);
 }
 
 //////////////////////////////////////////////////////////////////////////////////
 
 // Generates a 8 digit ID, based on groupCount and type of object (typeHash)
-inline NxString NxCreateID(unsigned int groupCount, NxString typeHash) {
+NxString NxCreateID(unsigned int groupCount, NxString typeHash) {
 	std::stringstream ss;
 	ss << typeHash << "-" << std::hex << (rand() % 1024) << "-" << groupCount;
 	return ss.str();
@@ -45,7 +45,7 @@ inline NxString NxCreateID(unsigned int groupCount, NxString typeHash) {
 
 //////////////////////////////////////////////////////////////////////////////////
 
-inline NxMat33 toNxMat33(const Ogre::Matrix3& matrix) {
+NxMat33 toNxMat33(const Ogre::Matrix3& matrix) {
 	
 	NxReal* c = new NxReal[9];
 	c[0] = matrix[0][0];	c[1] = matrix[1][0];		c[2] = matrix[2][0];
@@ -63,7 +63,7 @@ inline NxMat33 toNxMat33(const Ogre::Matrix3& matrix) {
 
 //////////////////////////////////////////////////////////////////////////////////
 
-inline NxMat34 toNxMat34(const Ogre::Matrix4& matrix) {
+NxMat34 toNxMat34(const Ogre::Matrix4& matrix) {
 	
 	NxUnderConstruction;
 
@@ -274,7 +274,7 @@ NxShortHashIdentifier NxCreateShortHashFromString(const NxString& str) {
 
 ////////////////////////////////////////////////////////////////
 
-inline Pose NxInterpolate(Pose First, Pose Second, NxReal c) {
+Pose NxInterpolate(Pose First, Pose Second, NxReal c) {
 
 	Pose r;
 	
