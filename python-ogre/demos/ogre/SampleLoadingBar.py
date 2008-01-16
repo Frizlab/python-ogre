@@ -38,6 +38,7 @@ class ExampleLoadingBar (ogre.ResourceGroupListener):
 #   */
     def __init__ ( self ):
         ogre.ResourceGroupListener.__init__(self)
+        
     def start(self, window,numGroupsInit = 1, numGroupsLoad = 1,initProportion = 0.70):
         self.mWindow = window
         self.mNumGroupsInit = numGroupsInit
@@ -82,7 +83,7 @@ class ExampleLoadingBar (ogre.ResourceGroupListener):
             # Lets assume script loading is 70%
             self.mProgressBarInc = self.mProgressBarMaxSize * self.mInitProportion / scriptCount
             self.mProgressBarInc /= self.mNumGroupsInit
-            self.mLoadingDescriptionElement.setCaption(ogre.UTFString("Parsing scripts..."))
+            self.mLoadingDescriptionElement.setCaption(ogre.UTFString("Parsing scripts.."))
             self.mWindow.update()
     
     def scriptParseStarted(self, scriptName):
@@ -104,13 +105,15 @@ class ExampleLoadingBar (ogre.ResourceGroupListener):
         pass
     
     def resourceGroupLoadStarted(self, groupName, resourceCount):
+        ogre.LogManager.getSingleton().logMessage("GroupLoadStarted " + groupName )
         if self.mNumGroupsLoad >0 :
             self.mProgressBarInc = self.mProgressBarMaxSize * (1-self.mInitProportion) / resourceCount
             self.mProgressBarInc /= self.mNumGroupsLoad
-            self.mLoadingDescriptionElement.setCaption(ogre.UTFString("Loading resources..."))
+            self.mLoadingDescriptionElement.setCaption(ogre.UTFString("Loading resources.."))
             self.mWindow.update()
         
     def resourceLoadStarted(self, resource):
+        ogre.LogManager.getSingleton().logMessage("GroupLoadEnded" )
         self.mLoadingCommentElement.setCaption(ogre.UTFString(resource.getName()))
         self.mWindow.update()
     
@@ -118,10 +121,12 @@ class ExampleLoadingBar (ogre.ResourceGroupListener):
         pass
         
     def worldGeometryStageStarted(self, description):
+        ogre.LogManager.getSingleton().logMessage("StageStarted " + description )
         self.mLoadingCommentElement.setCaption(ogre.UTFString(description))
         self.mWindow.update()
         
     def worldGeometryStageEnded(self):
+        ogre.LogManager.getSingleton().logMessage("StageEnded")
         self.mLoadingBarElement.setWidth(
             self.mLoadingBarElement.getWidth() + self.mProgressBarInc)
         self.mWindow.update()

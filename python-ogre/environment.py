@@ -957,7 +957,36 @@ class nxogre:
         libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'PhysXCore','PhysXLoader','OgreMain' ]
     ModuleName="NxOgre"   
     
+class nxogre_09:
+    active = True
+    pythonModule = True
+    version="0.9"
+    name='nxogre_09'
+    parent="ogre/physics"
+    cflags=""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_Ogre,
+                    Config.PATH_INCLUDE_NxOgre,
+                    ]
+    for d in Config.PATH_INCLUDE_PhysX:
+        include_dirs.append( d )
+    if os.name == 'nt':
+        CCFLAGS = ' -DWIN32 -DNxExport="" '
+
+    else:
+        CCFLAGS = ' -DNX_LINUX -DLINUX -DNX_DISABLE_FLUIDS '                
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain,
+                Config.PATH_LIB_PhysX
+                ]
+    CheckIncludes=[]
+    if os.name =='nt':
+        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' ]
+    else:
+        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'PhysXCore','PhysXLoader','OgreMain' ]
+    ModuleName="NxOgre_09"   
     
+        
 class theora:
     active = True
     pythonModule = True
@@ -1334,6 +1363,7 @@ projects = {
     , 'quickgui' : quickgui
     , 'opcode' : opcode
     , 'nxogre' : nxogre
+    , 'nxogre_09' : nxogre_09
     , 'bullet' : bullet
     , 'physx' : physx
     , 'betagui': betagui
