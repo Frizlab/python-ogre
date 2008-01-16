@@ -55,12 +55,12 @@ class BspApplication (sf.Application):
 
         cf.load("quake3settings.cfg")
 
-        self.mQuakePk3 = cf.getSetting("Pak0Location")
+        self.mQuakePk3 = cf.getSetting("Pak1Location")
         self.mQuakeLevel = cf.getSetting("Map")
 
         sf.Application._setUpResources(self)
         ogre.ResourceGroupManager.getSingleton().addResourceLocation(
-            self.mQuakePk3, "Zip", ogre.ResourceGroupManager.getSingleton().getWorldResourceGroupName())
+            self.mQuakePk3, "FileSystem", 'General') #ogre.ResourceGroupManager.getSingleton().getWorldResourceGroupName())
 
     # Override scene manager (use indoor instead of generic)
     def _chooseSceneManager(self):

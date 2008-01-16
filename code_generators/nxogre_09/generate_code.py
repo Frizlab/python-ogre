@@ -631,8 +631,8 @@ def generate_code():
     # NOTE: If you update the source library code you need to manually delete the cache .XML file   
     #
     xml_cached_fc = parser.create_cached_source_fc(
-                        os.path.join( environment.nxogre_0.9.root_dir, "python_nxogre.h" )
-                        , environment.nxogre_0.9.cache_file )
+                        os.path.join( environment.nxogre_09.root_dir, "python_nxogre.h" )
+                        , environment.nxogre_09.cache_file )
     if os.name == 'nt':
         defined_symbols = [ 'NxExport','OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', 'WIN32', 'GCC_XML']#NXOGRE_EXPORTS'
     else:
@@ -641,7 +641,7 @@ def generate_code():
     if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')
         defined_symbols.append('BOOST_HAS_WINTHREADS')
-    defined_symbols.append( 'VERSION_' + environment.nxogre_0.9.version )  
+    defined_symbols.append( 'VERSION_' + environment.nxogre_09.version )  
     
     undefined_symbols = []
     #
@@ -650,7 +650,7 @@ def generate_code():
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
-                                          , include_paths=environment.nxogre_0.9.include_dirs
+                                          , include_paths=environment.nxogre_09.include_dirs
                                           , define_symbols=defined_symbols
 # #                                           , undefine_symbols = undefined_symbols
                                           , indexing_suite_version=2
@@ -717,7 +717,7 @@ def generate_code():
         if cls.name not in NoPropClasses:
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
             
-    common_utils.add_constants( mb, { 'PROJECT_version' :  '"%s"' % environment.nxogre_0.9.version.replace("\n", "\\\n") 
+    common_utils.add_constants( mb, { 'PROJECT_version' :  '"%s"' % environment.nxogre_09.version.replace("\n", "\\\n") 
                                       , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
                                       
     ## need to create a welcome doc string for this...                                  
@@ -730,21 +730,21 @@ def generate_code():
     #
     ##########################################################################################
     extractor = exdoc.doc_extractor("") # I'm excluding the UTFstring docs as lots about nothing 
-    mb.build_code_creator (module_name='_nxogre_0.9_' , doc_extractor= extractor )
+    mb.build_code_creator (module_name='_nxogre_09_' , doc_extractor= extractor )
     
-    for inc in environment.nxogre_0.9.include_dirs:
+    for inc in environment.nxogre_09.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )
-    mb.code_creator.user_defined_directories.append( environment.nxogre_0.9.generated_dir )
-    mb.code_creator.replace_included_headers( customization_data.header_files( environment.nxogre_0.9.version ) )
+    mb.code_creator.user_defined_directories.append( environment.nxogre_09.generated_dir )
+    mb.code_creator.replace_included_headers( customization_data.header_files( environment.nxogre_09.version ) )
 
-    huge_classes = map( mb.class_, customization_data.huge_classes( environment.nxogre_0.9.version ) )
+    huge_classes = map( mb.class_, customization_data.huge_classes( environment.nxogre_09.version ) )
 
-    mb.split_module(environment.nxogre_0.9.generated_dir, huge_classes,use_files_sum_repository=False)
+    mb.split_module(environment.nxogre_09.generated_dir, huge_classes,use_files_sum_repository=False)
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generaated directory..
-    common_utils.copyTree ( sourcePath = environment.Config.PATH_NxOgre_0.9, 
-                            destPath = environment.nxogre_0.9.generated_dir, 
+    common_utils.copyTree ( sourcePath = environment.Config.PATH_NxOgre_09, 
+                            destPath = environment.nxogre_09.generated_dir, 
                             recursive=False )
         
 if __name__ == '__main__':
