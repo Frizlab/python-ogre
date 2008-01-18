@@ -624,11 +624,11 @@ class ogrenewt:
                  ]
     baseDir = os.path.join(os.getcwd(), base )
     buildCmds = [
-            #[0, "patch -s -N -i ../../python-ogre/patch/ogrenewt.patch -p0", baseDir], 
+            [0, "patch -s -N -i ../../python-ogre/patch/ogrenewt.patch -p0", baseDir], 
             #[0, "cp SConscript OgreNewt_Main", baseDir],
             #[0, "rm SConscript", baseDir],
             [0, "rm -r ./OgreNewt_Main/inc/boost", baseDir],
-            [0, "scons prefix=%s boost=%s/include/boost-1_34_1" % (PREFIX, PREFIX), baseDir],  ##WARNING -- boost include dir name is different than  build name (dash not underscore)
+            [0, "scons prefix=%s boost=%s/include/boost-1_34_1 install" % (PREFIX, PREFIX), baseDir],  ##WARNING -- boost include dir name is different than  build name (dash not underscore)
             ]
 
     include_dirs = [Config.PATH_Boost
