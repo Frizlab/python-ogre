@@ -236,6 +236,6 @@ namespace caelum
     }
 
     void LayeredClouds::disableCloudCoverLookup () {
-        mCloudCoverLookup = 0;
+        mCloudCoverLookup.reset(0);
     }
 } // namespace caelum
