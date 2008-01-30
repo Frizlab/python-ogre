@@ -58,6 +58,7 @@ def filter_declarations( mb ):
     ## these need to be excluded due to callback functions - Have been wrapped 
     ogrenewt_ns.class_( "World" ).member_functions("setLeaveWorldCallback").exclude()
     
+    
     ogrenewt_ns.class_( "Body" ).member_functions("addBouyancyForce").exclude()
     
     ogrenewt_ns.class_( "Body" ).member_functions("setAutoactiveCallback").exclude()
@@ -75,6 +76,10 @@ def filter_declarations( mb ):
     ogrenewt_ns.class_( "Joint" ).member_functions("setUserData").exclude()
     ogrenewt_ns.class_( "Body" ).member_functions("getUserData").exclude()
     ogrenewt_ns.class_( "Joint" ).member_functions("getUserData").exclude()
+    
+    ## This one needs a list of vertices given to it
+    ogrenewt_ns.class_( "TreeCollision" ).member_functions("addPoly").exclude()
+    
      
     # ConvexHull has an overloaded constructor that takes 5 args, one is a pointer to a list of vectors which we can't
     # handle, so we created a helper function caller createConvexHull that takes a python list instead.

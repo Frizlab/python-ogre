@@ -5,12 +5,12 @@ WRAPPER_DEFINITION_TreeLoader2D = \
 """
 static PyObject*  mSubscriber_tree;
 static std::string mName_tree;
-Ogre::Real HelperHeightFunction_Tree2D ( Ogre::Real x, Ogre::Real z) {
+Ogre::Real HelperHeightFunction_Tree2D ( Ogre::Real x, Ogre::Real z, void *userData) {
     Ogre::Real y;
     if (mName_tree.length() == 0 )
-        y = boost::python::call<Ogre::Real>(mSubscriber_tree, x, z);
+        y = boost::python::call<Ogre::Real>(mSubscriber_tree, x, z, userData);
     else
-        y = boost::python::call_method<Ogre::Real>(mSubscriber_tree, mName_tree.c_str(), x, z);
+        y = boost::python::call_method<Ogre::Real>(mSubscriber_tree, mName_tree.c_str(), x, z, userData);
     return y;
     } 
 
@@ -25,12 +25,12 @@ WRAPPER_DEFINITION_GrassLoader = \
 """
 static PyObject*  mSubscriber_grass;
 static std::string mName_grass;
-Ogre::Real HelperHeightFunction_Grass ( Ogre::Real x, Ogre::Real z) {
+Ogre::Real HelperHeightFunction_Grass ( Ogre::Real x, Ogre::Real z, void * userData) {
     Ogre::Real y;
     if (mName_grass.length() == 0 )
-        y = boost::python::call<Ogre::Real>(mSubscriber_grass, x, z);
+        y = boost::python::call<Ogre::Real>(mSubscriber_grass, x, z, userData );
     else
-        y = boost::python::call_method<Ogre::Real>(mSubscriber_grass, mName_grass.c_str(), x, z);
+        y = boost::python::call_method<Ogre::Real>(mSubscriber_grass, mName_grass.c_str(), x, z, userData);
     return y;
     } 
 

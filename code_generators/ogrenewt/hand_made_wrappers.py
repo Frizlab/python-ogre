@@ -398,6 +398,37 @@ WRAPPER_REGISTRATION_EventCallback = [
     'def ("setAutoactiveCallback", &::Body_setAutoactiveCallback);',
     'def ("setCustomTransformCallback", &::Body_setCustomTransformCallback);'
     ]
+    
+    
+    
+WRAPPER_DEFINITION_TreeCollision=\
+"""
+void
+TreeCollision_addPoly( ::OgreNewt::CollisionPrimitives::TreeCollision & me, boost::python::list polys, unsigned int ID )
+   {
+    
+	Ogre::Vector3* newverts = new Ogre::Vector3[ 3 ];
+	Ogre::Vector3* startpos = newverts;
+    int index;
+    if (len(polys) < 3 ) {
+        throw std::runtime_error ( std::string ("addPoly called with a list with less than 3 verticies") );
+        return;
+        }
+    for (index=0;index<3;index++ ) {
+        *newverts++ = boost::python::extract<Ogre::Vector3> (polys[index]);
+        }
+	me.addPoly( startpos, ID );
+    return;
+	}
+	"""
+WRAPPER_REGISTRATION_TreeCollision= [
+    """def ("addPoly", &::TreeCollision_addPoly,\
+                "Python-Ogre Helper Function: Adds a list of 3 Ogre:Vector3's to the collision system.\\n\\
+                Input: List of 3 Ogre::Vector3's, ID\\n\\
+                Output: Nothing"  );"""
+    ]
+    
+        
 ########################################################################################
 WRAPPER_DEFINITION_General=\
 """
@@ -458,6 +489,10 @@ def apply( mb ):
     cs.add_declaration_code( WRAPPER_DEFINITION_BodyIterator )
     apply_reg (cs,  WRAPPER_REGISTRATION_BodyIterator )
     
+    cs = mb.class_( 'TreeCollision' )
+    cs.add_declaration_code( WRAPPER_DEFINITION_TreeCollision )
+    apply_reg (cs,  WRAPPER_REGISTRATION_TreeCollision )
+
     mb.add_declaration_code( WRAPPER_DEFINITION_General )
     apply_reg (mb,  WRAPPER_REGISTRATION_General )
       
