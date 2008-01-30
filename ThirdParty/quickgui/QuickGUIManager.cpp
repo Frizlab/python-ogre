@@ -6,9 +6,10 @@
 
 namespace QuickGUI
 {
-	GUIManager::GUIManager(const Ogre::String& name, Ogre::Viewport* vp) :
+	GUIManager::GUIManager(const std::string& name, Ogre::Viewport* vp, const std::string& defaultSkin) :
 		mName(name),
 		mViewport(vp),
+		mDefaultSkin(defaultSkin),
 		mActiveSheet(0),
 		mWidgetContainingMouse(0),
 		mActiveWidget(0),
@@ -41,7 +42,7 @@ namespace QuickGUI
 
 		mTimer = new Ogre::Timer();
 
-		mMouseCursor = new MouseCursor(Size(24,32),"qgui",this);
+		mMouseCursor = new MouseCursor(Size(24,32),mDefaultSkin,this);
 		mMouseCursor->setPosition(getViewportWidth()/2.0,getViewportHeight()/2.0);
 
 		mDefaultSheet = createSheet();
@@ -147,15 +148,22 @@ namespace QuickGUI
 
 	Sheet* GUIManager::createSheet()
 	{
-		Ogre::String name = generateName(Widget::TYPE_SHEET);
+		return createSheet(generateName(Widget::TYPE_SHEET));
+	}
+
+	Sheet* GUIManager::createSheet(const std::string& name)
+	{
+		if(!isNameUnique(name))
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"Name \"" + name + "\" is already used!","GUIManager::createSheet");
+
 		notifyNameUsed(name);
-		Sheet* newSheet = new Sheet(name,"qgui",this);
+		Sheet* newSheet = new Sheet(name,mDefaultSkin,this);
 		mSheets.push_back(newSheet);
 
 		return newSheet;
 	}
 
-	void GUIManager::destroySheet(const Ogre::String& name)
+	void GUIManager::destroySheet(const std::string& name)
 	{
 		// Cannot destroy active sheet!
 		if( (name.empty()) || (mActiveSheet->getInstanceName() == name) ) 
@@ -200,7 +208,7 @@ namespace QuickGUI
 			mFreeList.push_back(w);
 	}
 
-	void GUIManager::destroyWidget(const Ogre::String& widgetName)
+	void GUIManager::destroyWidget(const std::string& widgetName)
 	{
 		destroyWidget(mActiveSheet->getChildWidget(widgetName));
 	}
@@ -215,7 +223,7 @@ namespace QuickGUI
 		return mActiveWidget;
 	}
 
-	Ogre::String GUIManager::getDebugString()
+	std::string GUIManager::getDebugString()
 	{
 		return mDebugString;
 	}
@@ -240,7 +248,7 @@ namespace QuickGUI
 		return mWidgetContainingMouse;
 	}
 
-	Ogre::String GUIManager::getName()
+	std::string GUIManager::getName()
 	{
 		return mName;
 	}
@@ -250,17 +258,17 @@ namespace QuickGUI
 		return mViewport;
 	}
 
-	Ogre::Real GUIManager::getViewportWidth()
+	float GUIManager::getViewportWidth()
 	{
-		return static_cast<Ogre::Real>(mViewport->getActualWidth());
+		return static_cast<float>(mViewport->getActualWidth());
 	}
 
-	Ogre::Real GUIManager::getViewportHeight()
+	float GUIManager::getViewportHeight()
 	{
-		return static_cast<Ogre::Real>(mViewport->getActualHeight());
+		return static_cast<float>(mViewport->getActualHeight());
 	}
 
-	Sheet* GUIManager::getSheet(const Ogre::String& name)
+	Sheet* GUIManager::getSheet(const std::string& name)
 	{
 		if( name.empty() ) return NULL;
 
@@ -279,9 +287,9 @@ namespace QuickGUI
 		mActiveEffects.push_back(e);
 	}
 
-	Ogre::String GUIManager::generateName(Widget::Type t)
+	std::string GUIManager::generateName(Widget::Type t)
 	{
-		Ogre::String s;
+		std::string s;
 		switch(t)
 		{
 			case Widget::TYPE_BORDER:				s = "Border";			break;
@@ -621,7 +629,7 @@ namespace QuickGUI
 		return mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_WHEEL,args);
 	}
 
-	void GUIManager::injectTime(const Ogre::Real time)
+	void GUIManager::injectTime(const float time)
 	{
 		{
 			WidgetArray::iterator it;
@@ -666,7 +674,7 @@ namespace QuickGUI
 		return ((mKeyModifiers & k) > 0);
 	}
 
-	bool GUIManager::isNameUnique(const Ogre::String& name)
+	bool GUIManager::isNameUnique(const std::string& name)
 	{
 		if(name.empty())
 			return false;
@@ -674,16 +682,16 @@ namespace QuickGUI
 		return (mWidgetNames.find(name) == mWidgetNames.end());
 	}
 
-	void GUIManager::notifyNameFree(const Ogre::String& name)
+	void GUIManager::notifyNameFree(const std::string& name)
 	{
-		std::set<Ogre::String>::iterator it = mWidgetNames.find(name);
+		std::set<std::string>::iterator it = mWidgetNames.find(name);
 		if( it == mWidgetNames.end() )
 			return;
 
 		mWidgetNames.erase(it);
 	}
 
-	void GUIManager::notifyNameUsed(const Ogre::String& name)
+	void GUIManager::notifyNameUsed(const std::string& name)
 	{
 		if(!isNameUnique(name))
 			return;
@@ -707,17 +715,9 @@ namespace QuickGUI
 		mTimeListeners.push_back(w);
 	}
 
-	void GUIManager::renderQueueStarted(Ogre::uint8 id, const Ogre::String& invocation, bool& skipThisQueue)
+	void GUIManager::renderQueueStarted(Ogre::uint8 id, const std::string& invocation, bool& skipThisQueue)
 	{
-		if(mQueueID == id)
-		{
-			mActiveSheet->render();
-			mMouseCursor->render();
-		}
-	}
-
-	void GUIManager::renderQueueEnded(Ogre::uint8 id, const Ogre::String& invocation, bool& repeatThisQueue)
-	{
+		// Look for widgets queued for deletion.
 		if(mFreeList.empty())
 			return;
 
@@ -736,6 +736,16 @@ namespace QuickGUI
 
 		if(activeWidgetDestroyed)
 			injectMouseMove(0,0);
+	}
+
+	void GUIManager::renderQueueEnded(Ogre::uint8 id, const std::string& invocation, bool& repeatThisQueue)
+	{
+		// Perform rendering of GUI
+		if(mQueueID == id)
+		{
+			mActiveSheet->render();
+			mMouseCursor->render();
+		}
 	}
 
 	void GUIManager::removeFromRenderQueue()
@@ -786,7 +796,7 @@ namespace QuickGUI
 		mActiveWidget->fireEvent(Widget::EVENT_GAIN_FOCUS,args);
 	}
 
-	void GUIManager::setDebugString(const Ogre::String s)
+	void GUIManager::setDebugString(const std::string s)
 	{
 		mDebugString = s;
 	}
@@ -821,23 +831,6 @@ namespace QuickGUI
 	void GUIManager::setViewport(Ogre::Viewport* vp)
 	{
 		mViewport = vp;
-	}
-
-	bool GUIManager::textureExists(const Ogre::String& textureName)
-	{
-		if(textureName.empty())
-			return false;
-
-		if(Utility::textureExistsOnDisk(textureName))
-			return true;
-
-		if(Ogre::TextureManager::getSingletonPtr()->resourceExists(textureName)) 
-			return true;
-
-		if(mSkinSetManager->embeddedInSkinSet(textureName))
-			return true;
-
-		return false;
 	}
 
 	void GUIManager::unregisterTimeListener(Widget* w)

@@ -4,7 +4,7 @@
 
 namespace QuickGUI
 {
-	TextArea::TextArea(const Ogre::String& name, GUIManager* gm) :
+	TextArea::TextArea(const std::string& name, GUIManager* gm) :
 		LabelArea(name,gm)
 	{
 		mWidgetType = TYPE_TEXTAREA;

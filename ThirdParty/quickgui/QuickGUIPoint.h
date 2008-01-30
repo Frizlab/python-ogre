@@ -3,7 +3,7 @@
 
 #include "OgrePrerequisites.h"
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIExportDLL.h"
 #include "QuickGUISize.h"
 
@@ -13,7 +13,7 @@ namespace QuickGUI
 	{
 	public:
 		Point();
-		Point(Ogre::Real X, Ogre::Real Y);
+		Point(float X, float Y);
 
 		inline Point( const Point& p )
             : x( p.x ), y( p.y )
@@ -34,7 +34,7 @@ namespace QuickGUI
                 y != p.y );
         }
 
-		inline Point operator * ( const Ogre::Real r ) const
+		inline Point operator * ( const float r ) const
         {
             return Point(x * r,y * r);
         }
@@ -69,8 +69,8 @@ namespace QuickGUI
             return Point(x - p.x,y - p.y);
         }
 
-		Ogre::Real x;
-		Ogre::Real y;
+		float x;
+		float y;
 
 		static const Point ZERO;
 	};

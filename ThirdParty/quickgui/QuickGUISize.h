@@ -3,7 +3,7 @@
 
 #include "OgrePrerequisites.h"
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIExportDLL.h"
 
 namespace QuickGUI
@@ -12,7 +12,7 @@ namespace QuickGUI
 	{
 	public:
 		Size();
-		Size(Ogre::Real Width, Ogre::Real Height);
+		Size(float Width, float Height);
 
 		inline Size( const Size& s )
             : width( s.width ), height( s.height )
@@ -33,7 +33,7 @@ namespace QuickGUI
                 height != s.height );
         }
 
-		inline Size operator * ( const Ogre::Real& r ) const
+		inline Size operator * ( const float& r ) const
         {
             return Size(width * r,height * r);
         }
@@ -58,8 +58,8 @@ namespace QuickGUI
             return Size(width - s.width,height - s.height);
         }
 
-		Ogre::Real width;
-		Ogre::Real height;
+		float width;
+		float height;
 
 		static const Size ZERO;
 	};

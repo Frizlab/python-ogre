@@ -5,7 +5,7 @@
 #include "OgreImage.h"
 #include "OgrePrerequisites.h"
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIExportDLL.h"
 #include "QuickGUIQuad.h"
 #include "QuickGUIVertexBuffer.h"
@@ -32,6 +32,7 @@ namespace QuickGUI
 		{
 			CURSOR_STATE_HOVER				=  0,
 			CURSOR_STATE_NORMAL					,
+			CURSOR_STATE_TEXTSELECT				,
 			CURSOR_STATE_RESIZE_HORIZONTAL		,
 			CURSOR_STATE_RESIZE_VERTICAL		,
 			CURSOR_STATE_RESIZE_DIAGONAL_1		,
@@ -48,10 +49,11 @@ namespace QuickGUI
 			@param
 				textureName Ogre material defining the cursor image.
         */
-        MouseCursor(const Size& size, const Ogre::String& skinName, GUIManager* gm);
+        MouseCursor(const Size& size, const std::string& skinName, GUIManager* gm);
 		/** Standard Destructor. */
 		~MouseCursor();
 
+		CursorState getCursorState();
 		/**
 		* Returns true if cursor is set to go invisible when mouse is off the screen, false otherwise.
 		*/
@@ -69,7 +71,9 @@ namespace QuickGUI
 		*/
 		void _hide();
 
-		Ogre::String getTexture();
+		std::string getTexture();
+
+		void hideSkin();
 		
 		bool isVisible();
 		
@@ -106,30 +110,33 @@ namespace QuickGUI
 		/**
 		* Sets the position of the mouse cursor on the screen, in pixel coordinates.
 		*/
-		void setPosition(Ogre::Real pixelX, Ogre::Real pixelY);
+		void setPosition(float pixelX, float pixelY);
 		/**
 		* Sets the Size of the mouse cursor on the screen, in pixel dimensions.
 		*/
-		void setSize(Ogre::Real pixelWidth, Ogre::Real pixelHeight);
+		void setSize(float pixelWidth, float pixelHeight);
 		/**
 		* Sets the Ogre material defining the mouse
 		*/
-		void setSkin(const Ogre::String& skinName);
+		void setSkin(const std::string& skinName);
 		/**
 		* Shows the cursor.
 		*/
 		void show();
+		void showSkin();
 
 	protected:
 		GUIManager*		mGUIManager;
 
 		CursorState		mCursorState;
 
-		Ogre::String	mSkinName;
-		Ogre::String	mSkinComponent;
+		std::string	mSkinName;
+		std::string	mSkinComponent;
 
 		// Default texture.
-		Ogre::String	mTextureName;
+		std::string	mTextureName;
+
+		bool			mHideSkin;
 
 		// Width and Height in pixels
 		Size			mPixelSize;

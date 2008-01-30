@@ -24,32 +24,32 @@ namespace QuickGUI
 		* Checks if skinName is a loaded skin SkinSet, and if textureName is an
 		* embedded texture within the skin SkinSet.
 		*/
-		bool embeddedInSkinSet(const Ogre::String& skinName, const Ogre::String& textureName);
-		bool embeddedInSkinSet(const Ogre::String& textureName);
+		bool embeddedInSkinSet(const std::string& skinName, const std::string& textureName);
+		bool embeddedInSkinSet(const std::string& textureName);
 
 		/**
 		* Returns the SkinSet if exists, NULL otherwise.
 		*/
-		SkinSet* getSkinSet(const Ogre::String& name);
+		SkinSet* getSkinSet(const std::string& name);
 		/*
 		* Returns skinset which has this texture name, null otherwise
 		*/
-		SkinSet* getSkinSetByTextureName(const Ogre::String& texName);
-		std::map<Ogre::String,SkinSet*>* getSkinSetList();
+		SkinSet* getSkinSetByTextureName(const std::string& texName);
+		std::map<std::string,SkinSet*>* getSkinSetList();
 
-		void loadSkin(const Ogre::String& skinName, SkinSet::ImageType t, const Ogre::String &resourceGroup = Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		void loadSkin(const std::string& skinName, SkinSet::ImageType t, const std::string &resourceGroup = Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 
 		/*
 		* Returns true if a skin has been loaded with the name skinName, false otherwise.
 		*/
-		bool skinLoaded(const Ogre::String& skinName);
+		bool skinLoaded(const std::string& skinName);
 
 	protected:
 		SkinSetManager();
 		~SkinSetManager();
 
-		std::map<Ogre::String,SkinSet*> mSkinSets;
-		std::map<Ogre::String,SkinSet*> mSkinSetsbyTextureName;
+		std::map<std::string,SkinSet*> mSkinSets;
+		std::map<std::string,SkinSet*> mSkinSetsbyTextureName;
 	};
 }
 

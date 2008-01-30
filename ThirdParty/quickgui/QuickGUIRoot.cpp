@@ -15,7 +15,7 @@ namespace QuickGUI
 
 	Root::~Root()
 	{
-		for(std::map<Ogre::String,GUIManager*>::iterator it = mGUIManagers.begin(); it != mGUIManagers.end(); ++it)
+		for(std::map<std::string,GUIManager*>::iterator it = mGUIManagers.begin(); it != mGUIManagers.end(); ++it)
 			delete (*it).second;
 		mGUIManagers.clear();
 
@@ -34,22 +34,22 @@ namespace QuickGUI
 		return ( *ms_Singleton ); 
 	}
 
-	GUIManager* Root::createGUIManager(const Ogre::String& name, Ogre::Viewport* v)
+	GUIManager* Root::createGUIManager(const std::string& name, Ogre::Viewport* v, const std::string& defaultSkin)
 	{
 		// make sure name does not already exist.
 		if(mGUIManagers.find(name) != mGUIManagers.end())
 			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A GUIManager with name \"" + name + "\" already exists!","Root::createGUIManager");
 
-		GUIManager* newGUIManager = new GUIManager(name,v);
+		GUIManager* newGUIManager = new GUIManager(name,v,defaultSkin);
 		mGUIManagers[name] = newGUIManager;
 
 		return newGUIManager;
 	}
 
-	GUIManager* Root::createGUIManager(Ogre::Viewport* v)
+	GUIManager* Root::createGUIManager(Ogre::Viewport* v, const std::string& defaultSkin)
 	{
 		++mGUIManagerCounter;
-		return createGUIManager("GUIManager" + Ogre::StringConverter::toString(mGUIManagerCounter),v);
+		return createGUIManager("GUIManager" + Ogre::StringConverter::toString(mGUIManagerCounter),v,defaultSkin);
 	}
 
 	void Root::destroyGUIManager(GUIManager* gm)
@@ -60,14 +60,14 @@ namespace QuickGUI
 		destroyGUIManager(gm->getName());
 	}
 
-	void Root::destroyGUIManager(const Ogre::String& name)
+	void Root::destroyGUIManager(const std::string& name)
 	{
 		GUIManager* gm = mGUIManagers[name];
 		mGUIManagers.erase(mGUIManagers.find(name));
 		delete gm;
 	}
 
-	GUIManager* Root::getGUIManager(const Ogre::String& name)
+	GUIManager* Root::getGUIManager(const std::string& name)
 	{
 		if(mGUIManagers.find(name) == mGUIManagers.end())
 			return NULL;

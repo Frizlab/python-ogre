@@ -29,6 +29,7 @@ TreeLoader2D::TreeLoader2D(PagedGeometry *geom, const TRect<Real> &bounds)
 
 	//Reset height function
 	heightFunction = NULL;
+	heightFunctionUserData = NULL;
 
 	//Make sure the bounds are aligned with PagedGeometry's grid, so the TreeLoader's grid tiles will have a 1:1 relationship
 	actualBounds = bounds;
@@ -267,7 +268,7 @@ void TreeLoader2D::loadPage(PageInfo &page)
 
 			//Calculate terrain height at pos.x / pos.z to get pos.y
 			if (heightFunction != NULL)
-				pos.y = heightFunction(pos.x, pos.z);
+				pos.y = heightFunction(pos.x, pos.z, heightFunctionUserData);
 			else
 				pos.y = 0.0f;
 			
@@ -377,7 +378,7 @@ void TreeIterator2D::_readTree()
 
 	//Calculate terrain height at x / z to get y
 	if (trees->heightFunction != NULL)
-		currentTreeDat.position.y = trees->heightFunction(currentTreeDat.position.x, currentTreeDat.position.z);
+		currentTreeDat.position.y = trees->heightFunction(currentTreeDat.position.x, currentTreeDat.position.z, trees->heightFunctionUserData);
 	else
 		currentTreeDat.position.y = 0.0f;
 	

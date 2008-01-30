@@ -4,7 +4,7 @@
 
 namespace QuickGUI
 {
-	CheckBox::CheckBox(const Ogre::String& name, GUIManager* gm) :
+	CheckBox::CheckBox(const std::string& name, GUIManager* gm) :
 		Button(name,gm),
 		mChecked(false)
 	{

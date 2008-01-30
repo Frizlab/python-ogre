@@ -5,7 +5,7 @@
 
 namespace QuickGUI
 {
-	Border::Border(const Ogre::String& name, GUIManager* gm) :
+	Border::Border(const std::string& name, GUIManager* gm) :
 		Widget(name,gm),
 		mThickness(5),
 		mOverlap(1)
@@ -82,7 +82,7 @@ namespace QuickGUI
 		MouseCursor* mc = mGUIManager->getMouseCursor();
 		mMouseCursorTexture = mc->getTexture();
 
-		Ogre::String skin = mParentWidget->getSkin();
+		std::string skin = mParentWidget->getSkin();
 
 		switch(mBorderType)
 		{
@@ -128,7 +128,7 @@ namespace QuickGUI
 
 		mBorderType = t;
 		Size parentSize = mParentWidget->getSize();
-		Ogre::String parentSkinComponent = mParentWidget->getSkinComponent();
+		std::string parentSkinComponent = mParentWidget->getSkinComponent();
 
 		switch(mBorderType)
 		{
@@ -212,7 +212,7 @@ namespace QuickGUI
 		fireEvent(EVENT_PARENT_CHANGED,args);
 	}
 
-	void Border::setSkin(const Ogre::String& skinName, Ogre::String extension, bool recursive)
+	void Border::setSkin(const std::string& skinName, std::string extension, bool recursive)
 	{
 		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(skinName);
 		if(ss == NULL)

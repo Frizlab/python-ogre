@@ -3,7 +3,7 @@
 
 #include "OgreStringConverter.h"
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIBorder.h"
 #include "QuickGUIButton.h"
 #include "QuickGUICheckBox.h"

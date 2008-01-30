@@ -2,12 +2,14 @@
 
 #include "QuickGUISkinSet.h"
 #include "QuickGUIConfigScriptParser.h"
-
+#include "Ogre.h"
+#include "OgreColourValue.h"
+#include "OgreImage.h"
 #include "OgreStringConverter.h"
 
 namespace QuickGUI
 {
-	SkinSet::SkinSet(const Ogre::String& skinName, ImageType t, const Ogre::String &resourceGroup) :
+	SkinSet::SkinSet(const std::string& skinName, ImageType t, const std::string &resourceGroup) :
 		mSkinName(skinName),
 		mResourceGroup(resourceGroup),
 		mNumIndividualTextures(0),
@@ -17,7 +19,8 @@ namespace QuickGUI
 		mMaterialName(mSkinName + "Material"),
 		mDirtyTexture(true),
 		mDirtyTextureCoordinates(true),
-		mImageExtension("")
+		mImageExtension(""),
+		mSkinSetImage(0)
 	{
 		_determineExtension(t);
 
@@ -33,10 +36,17 @@ namespace QuickGUI
 
 		if(!Ogre::MaterialManager::getSingleton().resourceExists(mMaterialName))
 			buildMaterial();
+
+		// Load image for use in overTransparentPixel function
+		Ogre::Image i;
+		i.load(mTextureName,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		mSkinSetImage = new Ogre::Image(i);
 	}
 
 	SkinSet::~SkinSet()
 	{
+		delete mSkinSetImage;
+
 		// Remove Texture for this SkinSet from Texture Manager
 		if(Ogre::TextureManager::getSingletonPtr()->resourceExists(mTextureName))
 			Ogre::TextureManager::getSingletonPtr()->remove(mTextureName);
@@ -79,9 +89,9 @@ namespace QuickGUI
 				ConfigNode* currNode = *it;
 				if (currNode->getName() == "element")
 				{
-					const Ogre::String elementName = currNode->getValues()[0];
+					const std::string elementName = currNode->getValues()[0];
 					ConfigNode *dimension = currNode->findChild("dimension");
-					Ogre::Vector4 texCoord;
+					Vector4 texCoord;
 					if (dimension)
 					{
 						texCoord.x = Ogre::StringConverter::parseReal(dimension->getValues()[0]) + (mHorizontalTexelOffset / mTextureWidth);
@@ -98,7 +108,7 @@ namespace QuickGUI
 					//   rotation.z = Ogre::StringConverter::parseReal(rotation->getValues()[2]);
 					//}
 
-					const Ogre::String texName (mSkinName + "." + elementName + ".png");
+					const std::string texName (mSkinName + "." + elementName + ".png");
 
 					mTextureMap[texName] = texCoord;
 					mContainedTextures.insert(texName);
@@ -112,9 +122,16 @@ namespace QuickGUI
 		return false;
 	}
 
-	bool SkinSet::overTransparentPixel(const Ogre::String& skinComponent, int xPos, int yPos)
+	bool SkinSet::overTransparentPixel(const std::string& skinComponent, int xPos, int yPos)
 	{
-		return false;
+		Vector4 UVCoords = getTextureCoordinates(mSkinName + skinComponent + getImageExtension());
+
+		int actualX = (mTextureWidth * UVCoords.x) + xPos;
+		int actualY = (mTextureHeight * UVCoords.y) + yPos;
+
+		Ogre::ColourValue cv = mSkinSetImage->getColourAt(actualX,actualY,0);
+
+		return (cv.a < 0.01);
 	}
 
 	void SkinSet::saveSkin()
@@ -138,13 +155,13 @@ namespace QuickGUI
 				}
 			}
 
-			std::map<Ogre::String, Ogre::Vector4>::iterator it;
+			std::map<std::string, Vector4>::iterator it;
 			for (it = mTextureMap.begin(); it != mTextureMap.end(); ++it)
 			{
-				const Ogre::String texName (it->first);
+				const std::string texName (it->first);
 
 				Ogre::StringVector nameParts = Ogre::StringUtil::split(texName, ".");
-				Ogre::String elementName;
+				std::string elementName;
 				Ogre::StringVector::iterator itTexName;
 				if (nameParts.size() > 2)
 				{
@@ -158,7 +175,7 @@ namespace QuickGUI
 				{
 					serializer.writeAttribute(2, "dimension ");
 					{
-						const Ogre::Vector4 val (it->second);
+						const Vector4 val (it->second);
 						serializer.writeValue(Ogre::StringConverter::toString(val.x));
 						serializer.writeValue(Ogre::StringConverter::toString(val.y));
 						serializer.writeValue(Ogre::StringConverter::toString(val.z));
@@ -192,7 +209,7 @@ namespace QuickGUI
 				//buf->unlock();  
 			}
 			// find where to store it.
-			Ogre::String resourcePath;
+			std::string resourcePath;
 			{
 				Ogre::ResourceGroupManager* rgm = Ogre::ResourceGroupManager::getSingletonPtr();
 				Ogre::StringVector resourceGroupNames = rgm->getResourceGroups();
@@ -231,13 +248,13 @@ namespace QuickGUI
 
 			for( Ogre::FileInfoList::iterator fileItr = files->begin(); fileItr != files->end(); ++fileItr ) 
 			{
-				Ogre::String fileName = (*fileItr).filename;
+				std::string fileName = (*fileItr).filename;
 				mTextureNames.push_back(fileName);
 			}
 		}
 	}
 
-	void SkinSet::addTexture(const Ogre::String& textureName, const Ogre::Vector4 &texCoord)
+	void SkinSet::addTexture(const std::string& textureName, const Vector4 &texCoord)
 	{
 		// make sure texture is not already in the list.	
 		if (std::find(mTextureNames.begin(), mTextureNames.end(), textureName) == mTextureNames.end())
@@ -253,26 +270,26 @@ namespace QuickGUI
 		// add it to the list of textures to be used to create SkinSet texture!
 		mTextureNames.push_back(textureName);
 
-		if (texCoord != Ogre::Vector4::ZERO)
+		if (texCoord != Vector4::ZERO)
 			mTextureMap[textureName] = texCoord;
 		else
 			mDirtyTextureCoordinates = true;
 		mDirtyTexture = true;
 	}
 	
-	void SkinSet::removeTexture(const Ogre::String& textureName)
+	void SkinSet::removeTexture(const std::string& textureName)
 	{
 		// make sure texture is already in the list.
 		Ogre::StringVector::iterator texNameItr = std::find(mTextureNames.begin(), mTextureNames.end(), textureName);
 		assert (texNameItr != mTextureNames.end());
 		mTextureNames.erase(texNameItr);
 
-		std::set<Ogre::String>::iterator containedTexItr = std::find(mContainedTextures.begin(), mContainedTextures.end(), textureName);
+		std::set<std::string>::iterator containedTexItr = std::find(mContainedTextures.begin(), mContainedTextures.end(), textureName);
 		assert(containedTexItr != mContainedTextures.end());
 		mContainedTextures.erase(containedTexItr);
 
 
-		std::map<Ogre::String,Ogre::Vector4>::iterator itTexMap = mTextureMap.find(textureName);
+		std::map<std::string,Vector4>::iterator itTexMap = mTextureMap.find(textureName);
 		assert (itTexMap != mTextureMap.end());
 		mTextureMap.erase(itTexMap);
 		
@@ -290,7 +307,7 @@ namespace QuickGUI
 		for(size_t i = 1; i < mNumIndividualTextures; i++ )
 		{
 			Ogre::Image img = images.at(i);
-			Ogre::String name = mTextureNames.at(i);
+			std::string name = mTextureNames.at(i);
 			size_t j = i;
 			while( j-- > 0 && images.at(j).getHeight() > img.getHeight() )
 			{
@@ -335,7 +352,7 @@ namespace QuickGUI
 
 			// Store the image name associated with its Texture Coordinates (UV).  
 			// UV coordinates are float values between 0 and 1.
-			const Ogre::Vector4 dimension(
+			const Vector4 dimension(
 				cur_x * invTextureWidth, 
 				cur_y * invTextureHeight, 
 				(img.getWidth() + cur_x)  * invTextureWidth, 
@@ -407,7 +424,7 @@ namespace QuickGUI
 		// Minimum of 1 pixel between each image at all times
 		for(size_t i = 0; i < mNumIndividualTextures; i++)
 		{
-			Ogre::Vector4 texCoord = mTextureMap[mTextureNames.at(i)];
+			Vector4 texCoord = mTextureMap[mTextureNames.at(i)];
 
 			// Blit to the specified location on the texture
 			buf->blitFromMemory(images.at(i).getPixelBox(),
@@ -427,7 +444,7 @@ namespace QuickGUI
 		saveSkin();
 	}
 
-	bool SkinSet::containsImage(Ogre::String textureName)
+	bool SkinSet::containsImage(std::string textureName)
 	{
 		if(mContainedTextures.find(textureName) != mContainedTextures.end())
 			return true;
@@ -435,32 +452,46 @@ namespace QuickGUI
 		return false;
 	}
 
-	Ogre::String SkinSet::getImageExtension() const
+	std::string SkinSet::getImageExtension() const
 	{
 		return mImageExtension;
 	}
 
-	Ogre::String SkinSet::getSkinName() const
+	int SkinSet::getImageHeight(const std::string& textureName)
+	{
+		Vector4 UVCoords = getTextureCoordinates(textureName);
+
+		return ((UVCoords.w - UVCoords.y) * mTextureHeight);
+	}
+
+	int SkinSet::getImageWidth(const std::string& textureName)
+	{
+		Vector4 UVCoords = getTextureCoordinates(textureName);
+
+		return ((UVCoords.z - UVCoords.x) * mTextureWidth);
+	}
+
+	std::string SkinSet::getSkinName() const
 	{
 		return mSkinName;
 	}
 
-	Ogre::String SkinSet::getTextureName() const
+	std::string SkinSet::getTextureName() const
 	{
 		return mTextureName;
 	}
 
-	Ogre::Vector4 SkinSet::getTextureCoordinates(const Ogre::String &imageName) const
+	Vector4 SkinSet::getTextureCoordinates(const std::string &imageName) const
 	{
-		std::map<Ogre::String,Ogre::Vector4>::const_iterator itTexMap = mTextureMap.find(imageName);
+		std::map<std::string,Vector4>::const_iterator itTexMap = mTextureMap.find(imageName);
 		if (itTexMap == mTextureMap.end() )
-			return Ogre::Vector4(0,0,1,1);
+			return Vector4(0,0,1,1);
 		return itTexMap->second;
 	}
 
-	void SkinSet::setTextureCoordinates(const Ogre::String &imageName, const Ogre::Vector4 &texCoord)
+	void SkinSet::setTextureCoordinates(const std::string &imageName, const Vector4 &texCoord)
 	{
-		std::map<Ogre::String,Ogre::Vector4>::iterator itTexMap = mTextureMap.find(imageName);
+		std::map<std::string,Vector4>::iterator itTexMap = mTextureMap.find(imageName);
 		if (itTexMap == mTextureMap.end() )
 			return;
 		itTexMap->second = texCoord;

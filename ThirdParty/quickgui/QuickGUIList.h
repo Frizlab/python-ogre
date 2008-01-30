@@ -1,7 +1,7 @@
 #ifndef QUICKGUILIST_H
 #define QUICKGUILIST_H
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIWidget.h"
 #include "QuickGUIMenuLabel.h"
 #include "QuickGUIScrollPane.h"
@@ -44,7 +44,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		List(const Ogre::String& name, GUIManager* gm);
+		List(const std::string& name, GUIManager* gm);
 
 		MenuLabel* addMenuLabel();
 		TextBox* addTextBox();
@@ -68,11 +68,11 @@ namespace QuickGUI
 		* font used by this widget.
 		*/
 		void setAutoSizeListItems(bool autoSize);
-		virtual void setFont(const Ogre::String& fontScriptName, bool recursive = false);
+		virtual void setFont(const std::string& fontScriptName, bool recursive = false);
 		/**
 		* Sets the pixel height of each ListItem.
 		*/
-		void setItemPixelHeight(const Ogre::Real& heightInPixels);
+		void setItemPixelHeight(const float& heightInPixels);
 		void setVerticalPixelPadHeight(unsigned int height);
 		/**
 		* Shows the widget, including any child widgets.
@@ -92,7 +92,7 @@ namespace QuickGUI
 		HorizontalScrollBar* mBottomScrollBar;
 
 		int mAutoNameWidgetCounter;
-		Ogre::Real mItemHeight;
+		float mItemHeight;
 
 		int mVPixelPadHeight;
 

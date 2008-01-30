@@ -21,6 +21,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include "OgreVector3.h"
 #include "OgreQuaternion.h"
 #include "OgreEntity.h"
+#include "OgreSubEntity.h"
 #include "OgreHardwarePixelBuffer.h"
 using namespace Ogre;
 
@@ -52,7 +53,7 @@ void ImpostorPage::init(PagedGeometry *geom)
 ImpostorPage::~ImpostorPage()
 {
 	//Delete all impostor batches
-	std::map<ResourceHandle, ImpostorBatch *>::iterator iter;
+	std::map<String, ImpostorBatch *>::iterator iter;
 	for (iter = impostorBatches.begin(); iter != impostorBatches.end(); ++iter){
 		ImpostorBatch *ibatch = iter->second;
 		delete ibatch;
@@ -96,7 +97,7 @@ void ImpostorPage::build()
 		center.y = 0.0f;
 
 	//Build all batches
-	std::map<ResourceHandle, ImpostorBatch *>::iterator iter;
+	std::map<String, ImpostorBatch *>::iterator iter;
 	for (iter = impostorBatches.begin(); iter != impostorBatches.end(); ++iter){
 		ImpostorBatch *ibatch = iter->second;
 		ibatch->build();
@@ -106,7 +107,7 @@ void ImpostorPage::build()
 void ImpostorPage::setVisible(bool visible)
 {
 	//Update visibility status of all batches
-	std::map<ResourceHandle, ImpostorBatch *>::iterator iter;
+	std::map<String, ImpostorBatch *>::iterator iter;
 	for (iter = impostorBatches.begin(); iter != impostorBatches.end(); ++iter){
 		ImpostorBatch *ibatch = iter->second;
 		ibatch->setVisible(visible);
@@ -116,7 +117,7 @@ void ImpostorPage::setVisible(bool visible)
 void ImpostorPage::setFade(bool enabled, Real visibleDist, Real invisibleDist)
 {
 	//Update fade status of all batches
-	std::map<ResourceHandle, ImpostorBatch *>::iterator iter;
+	std::map<String, ImpostorBatch *>::iterator iter;
 	for (iter = impostorBatches.begin(); iter != impostorBatches.end(); ++iter){
 		ImpostorBatch *ibatch = iter->second;
 		ibatch->setFade(enabled, visibleDist, invisibleDist);
@@ -126,7 +127,7 @@ void ImpostorPage::setFade(bool enabled, Real visibleDist, Real invisibleDist)
 void ImpostorPage::removeEntities()
 {
 	//Clear all impostor batches
-	std::map<ResourceHandle, ImpostorBatch *>::iterator iter;
+	std::map<String, ImpostorBatch *>::iterator iter;
 	for (iter = impostorBatches.begin(); iter != impostorBatches.end(); ++iter){
 		ImpostorBatch *ibatch = iter->second;
 		ibatch->clear();
@@ -157,7 +158,7 @@ void ImpostorPage::update()
 		yaw = Math::ATan2(-dir.x, -dir.z);
 	}
 
-	std::map<ResourceHandle, ImpostorBatch *>::iterator iter;
+	std::map<String, ImpostorBatch *>::iterator iter;
 	for (iter = impostorBatches.begin(); iter != impostorBatches.end(); ++iter){
 		ImpostorBatch *ibatch = iter->second;
 		ibatch->setAngle(pitch.valueDegrees(), yaw.valueDegrees());
@@ -189,8 +190,6 @@ unsigned long ImpostorBatch::GUID = 0;
 
 ImpostorBatch::ImpostorBatch(ImpostorPage *group, Entity *entity)
 {
-	typedef std::pair<ResourceHandle, ImpostorBatch *> ListItem;
-	
 	//Render impostor texture for this entity
 	tex = ImpostorTexture::getTexture(group, entity);
 	
@@ -204,9 +203,6 @@ ImpostorBatch::ImpostorBatch(ImpostorPage *group, Entity *entity)
 	pitchIndex = -1;
 	yawIndex = -1;
 	setAngle(0.0f, 0.0f);
-
-	//Add self to impostorBatches list
-	group->impostorBatches.insert(ListItem(tex->sourceMesh, this));
 
 	//Init. variables
 	igroup = group;
@@ -225,16 +221,24 @@ ImpostorBatch::~ImpostorBatch()
 ImpostorBatch *ImpostorBatch::getBatch(ImpostorPage *group, Entity *entity)
 {
 	//Search for an existing impostor batch for this entity
-	std::map<ResourceHandle, ImpostorBatch *>::iterator iter;
-	iter = group->impostorBatches.find(entity->getMesh()->getHandle());
+	String entityKey = ImpostorBatch::generateEntityKey(entity);
+	std::map<String, ImpostorBatch *>::iterator iter;
+	iter = group->impostorBatches.find(entityKey);
 
 	//If found..
 	if (iter != group->impostorBatches.end()){
 		//Return it
 		return iter->second;
 	} else {
-		//Otherwise, return a new batch
-		return (new ImpostorBatch(group, entity));
+		//Otherwise, create a new batch
+		ImpostorBatch *batch = new ImpostorBatch(group, entity);
+
+		//Add it to the impostorBatches list
+		typedef std::pair<String, ImpostorBatch *> ListItem;
+		group->impostorBatches.insert(ListItem(entityKey, batch));
+		
+		//Return it
+		return batch;
 	}
 }
 
@@ -277,24 +281,34 @@ void ImpostorBatch::setBillboardOrigin(BillboardOrigin origin)
 		entityBBCenter = Vector3(tex->entityCenter.x, tex->entityCenter.y - tex->entityRadius, tex->entityCenter.z);
 }
 
+String ImpostorBatch::generateEntityKey(Entity *entity)
+{
+	StringUtil::StrStreamType entityKey;
+	entityKey << entity->getMesh()->getName();
+	for (uint i = 0; i < entity->getNumSubEntities(); ++i){
+		entityKey << "-" << entity->getSubEntity(i)->getMaterialName();
+	}
+
+	return entityKey.str();
+}
+
 //-------------------------------------------------------------------------------------
 
-std::map<ResourceHandle, ImpostorTexture *> ImpostorTexture::selfList;
+std::map<String, ImpostorTexture *> ImpostorTexture::selfList;
 unsigned long ImpostorTexture::GUID = 0;
 
 //Do not use this constructor yourself - instead, call getTexture()
 //to get/create an ImpostorTexture for an Entity.
 ImpostorTexture::ImpostorTexture(ImpostorPage *group, Entity *entity)
 {
-	typedef std::pair<ResourceHandle, ImpostorTexture *> ListItem;
-
 	//Store scene manager and entity
 	ImpostorTexture::sceneMgr = group->sceneMgr;
 	ImpostorTexture::entity = entity;
 
 	//Add self to list of ImpostorTexture's
-	sourceMesh = entity->getMesh()->getHandle();
-	selfList.insert(ListItem(sourceMesh, this));
+	entityKey = ImpostorBatch::generateEntityKey(entity);
+	typedef std::pair<String, ImpostorTexture *> ListItem;
+	selfList.insert(ListItem(entityKey, this));
 	
 	//Calculate the entity's bounding box and it's diameter
 	boundingBox = entity->getBoundingBox();
@@ -378,7 +392,7 @@ ImpostorTexture::~ImpostorTexture()
 	}
 	
 	//Remove self from list of ImpostorTexture's
-	selfList.erase(sourceMesh);
+	selfList.erase(entityKey);
 }
 
 void ImpostorTexture::regenerate()
@@ -395,7 +409,7 @@ void ImpostorTexture::regenerate()
 
 void ImpostorTexture::regenerateAll()
 {
-	std::map<ResourceHandle, ImpostorTexture *>::iterator iter;
+	std::map<String, ImpostorTexture *>::iterator iter;
 	for (iter = selfList.begin(); iter != selfList.end(); ++iter){
 		iter->second->regenerate();
 	}
@@ -465,10 +479,20 @@ void ImpostorTexture::renderTextures(bool force)
 	//uint8 oldRenderQueueGroup = entity->getRenderQueueGroup();
 	entity->setRenderQueueGroup(RENDER_QUEUE_6);
 
-	//Calculate the filename used to identity this render
+	//Calculate the filename used to uniquely identity this render
+	String strKey = entityKey;
+	char key[32] = {0};
+	unsigned int i = 0;
+	for (String::const_iterator it = entityKey.begin(); it != entityKey.end(); ++it)
+	{
+		key[i] ^= *it;
+		i = (i+1) % sizeof(key);
+	}
+	for (i = 0; i < sizeof(key); ++i)
+		key[i] = (key[i] % 26) + 'A';
+
 	ResourceGroupManager::getSingleton().addResourceLocation(".", "FileSystem", "BinFolder");
-	String fileName = "Impostor." + entity->getMesh()->getGroup() + '.' + entity->getMesh()->getName()
-		+ '.' + StringConverter::toString(textureSize) + ".png";
+	String fileName = "Impostor." + String(key, sizeof(key)) + '.' + StringConverter::toString(textureSize) + ".png";
 
 	//Attempt to load the pre-render file if allowed
 	bool needsRegen = force;
@@ -538,10 +562,26 @@ void ImpostorTexture::renderTextures(bool force)
 		TextureManager::getSingleton().remove(texName2);
 }
 
+String ImpostorTexture::removeInvalidCharacters(String s)
+{
+	StringUtil::StrStreamType s2;
+
+	for (unsigned int i = 0; i < s.length(); ++i){
+		char c = s[i];
+		if (c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '\"' || c == '<' || c == '>' || c == '|'){
+			s2 << '-';
+		} else {
+			s2 << c;
+		}
+	}
+
+	return s2.str();
+}
+
 void ImpostorTexture::removeTexture(ImpostorTexture* Texture)
 {
 	//Search for an existing impostor texture, in case it was already deleted
-	for(std::map<ResourceHandle, ImpostorTexture *>::iterator iter=selfList.begin();
+	for(std::map<String, ImpostorTexture *>::iterator iter=selfList.begin();
 		iter!=selfList.end(); ++iter)
 	{
 		if(iter->second==Texture)
@@ -556,8 +596,9 @@ void ImpostorTexture::removeTexture(ImpostorTexture* Texture)
 ImpostorTexture *ImpostorTexture::getTexture(ImpostorPage *group, Entity *entity)
 {
 	//Search for an existing impostor texture for the given entity
-	std::map<ResourceHandle, ImpostorTexture *>::iterator iter;
-	iter = selfList.find(entity->getMesh()->getHandle());
+	String entityKey = ImpostorBatch::generateEntityKey(entity);
+	std::map<String, ImpostorTexture *>::iterator iter;
+	iter = selfList.find(entityKey);
 	
 	//If found..
 	if (iter != selfList.end()){

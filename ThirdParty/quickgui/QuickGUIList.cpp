@@ -6,7 +6,7 @@
 
 namespace QuickGUI
 {
-	List::List(const Ogre::String& name, GUIManager* gm) :
+	List::List(const std::string& name, GUIManager* gm) :
 		Widget(name,gm),
 		mScrollPane(0),
 		mAutoNameWidgetCounter(0),
@@ -42,7 +42,7 @@ namespace QuickGUI
 
 		++mAutoNameWidgetCounter;
 
-		Ogre::String name = mInstanceName+".Item"+Ogre::StringConverter::toString(mAutoNameWidgetCounter);
+		std::string name = mInstanceName+".Item"+Ogre::StringConverter::toString(mAutoNameWidgetCounter);
 		mGUIManager->notifyNameUsed(name);
 
 		MenuLabel* newMenuLabel = dynamic_cast<MenuLabel*>(_createChild(mInstanceName+".ChildMenuLabel",TYPE_MENULABEL));
@@ -50,6 +50,7 @@ namespace QuickGUI
 		newMenuLabel->setPosition(p);
 		newMenuLabel->setAutoSize(false);
 		newMenuLabel->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
+		newMenuLabel->setUseTransparencyPicking(false);
 
 		mItems.push_back(newMenuLabel);
 
@@ -63,7 +64,7 @@ namespace QuickGUI
 
 		++mAutoNameWidgetCounter;
 
-		Ogre::String name = mInstanceName+".Item"+Ogre::StringConverter::toString(mAutoNameWidgetCounter);
+		std::string name = mInstanceName+".Item"+Ogre::StringConverter::toString(mAutoNameWidgetCounter);
 		mGUIManager->notifyNameUsed(name);
 
 		TextBox* newTextBox = dynamic_cast<TextBox*>(_createChild(mInstanceName+".ChildTextBox"+Ogre::StringConverter::toString(mItems.size()),TYPE_TEXTBOX));
@@ -72,6 +73,7 @@ namespace QuickGUI
 		newTextBox->setPosition(p);
 		newTextBox->setAutoSize(false);
 		newTextBox->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
+		newTextBox->setUseTransparencyPicking(false);
 
 		mItems.push_back(newTextBox);
 
@@ -143,7 +145,7 @@ namespace QuickGUI
 
 	int List::getItemIndex(Widget* w)
 	{
-		Ogre::String name = w->getInstanceName();
+		std::string name = w->getInstanceName();
 
 		int counter = 0;
 		WidgetArray::iterator it;
@@ -248,7 +250,7 @@ namespace QuickGUI
 		}
 	}
 
-	void List::setFont(const Ogre::String& fontScriptName, bool recursive)
+	void List::setFont(const std::string& fontScriptName, bool recursive)
 	{
 		if(fontScriptName == "")
 			return;
@@ -266,12 +268,12 @@ namespace QuickGUI
 		}
 	}
 
-	void List::setItemPixelHeight(const Ogre::Real& heightInPixels)
+	void List::setItemPixelHeight(const float& heightInPixels)
 	{
 		mItemHeight = heightInPixels;
 		mAutoSizeListItems = false;
 
-		Ogre::Real counter = 0;
+		float counter = 0;
 		WidgetArray::iterator it;
 		for( it = mItems.begin(); it != mItems.end(); ++it )
 		{

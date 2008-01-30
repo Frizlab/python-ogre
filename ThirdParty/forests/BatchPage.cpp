@@ -230,28 +230,35 @@ void BatchPage::_updateShaders()
 					Pass *pass = tech->getPass(p);
 
 					//Setup vertex program
-					pass->setVertexProgram(vertexProgName);
-					GpuProgramParametersSharedPtr params = pass->getVertexProgramParameters();
+					if (pass->getVertexProgramName() == "")
+						pass->setVertexProgram(vertexProgName);
 
-					params->setNamedAutoConstant("objSpaceLight", GpuProgramParameters::ACT_LIGHT_POSITION_OBJECT_SPACE);
-					params->setNamedAutoConstant("lightDiffuse", GpuProgramParameters::ACT_DERIVED_LIGHT_DIFFUSE_COLOUR);
-					params->setNamedAutoConstant("lightAmbient", GpuProgramParameters::ACT_DERIVED_AMBIENT_LIGHT_COLOUR);
+					try{
+						GpuProgramParametersSharedPtr params = pass->getVertexProgramParameters();
 
-					params->setNamedAutoConstant("matAmbient", GpuProgramParameters::ACT_SURFACE_AMBIENT_COLOUR);
-					params->setNamedAutoConstant("worldViewProj", GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
+						params->setNamedAutoConstant("objSpaceLight", GpuProgramParameters::ACT_LIGHT_POSITION_OBJECT_SPACE);
+						params->setNamedAutoConstant("lightDiffuse", GpuProgramParameters::ACT_DERIVED_LIGHT_DIFFUSE_COLOUR);
+						params->setNamedAutoConstant("lightAmbient", GpuProgramParameters::ACT_DERIVED_AMBIENT_LIGHT_COLOUR);
 
-					if (fadeEnabled){
-						params->setNamedAutoConstant("camPos", GpuProgramParameters::ACT_CAMERA_POSITION_OBJECT_SPACE);
+						params->setNamedAutoConstant("matAmbient", GpuProgramParameters::ACT_SURFACE_AMBIENT_COLOUR);
+						params->setNamedAutoConstant("worldViewProj", GpuProgramParameters::ACT_WORLDVIEWPROJ_MATRIX);
 
-						//Set fade ranges
-						params->setNamedAutoConstant("invisibleDist", GpuProgramParameters::ACT_CUSTOM);
-						params->setNamedConstant("invisibleDist", invisibleDist);
+						if (fadeEnabled){
+							params->setNamedAutoConstant("camPos", GpuProgramParameters::ACT_CAMERA_POSITION_OBJECT_SPACE);
 
-						params->setNamedAutoConstant("fadeGap", GpuProgramParameters::ACT_CUSTOM);
-						params->setNamedConstant("fadeGap", invisibleDist - visibleDist);
+							//Set fade ranges
+							params->setNamedAutoConstant("invisibleDist", GpuProgramParameters::ACT_CUSTOM);
+							params->setNamedConstant("invisibleDist", invisibleDist);
 
-						if (pass->getAlphaRejectFunction() == CMPF_ALWAYS_PASS)
-							pass->setSceneBlending(SBT_TRANSPARENT_ALPHA);
+							params->setNamedAutoConstant("fadeGap", GpuProgramParameters::ACT_CUSTOM);
+							params->setNamedConstant("fadeGap", invisibleDist - visibleDist);
+
+							if (pass->getAlphaRejectFunction() == CMPF_ALWAYS_PASS)
+								pass->setSceneBlending(SBT_TRANSPARENT_ALPHA);
+						}
+					}
+					catch (...) {
+						OGRE_EXCEPT(Exception::ERR_INTERNAL_ERROR, "Error configuring batched geometry transitions. If you're using materials with custom vertex shaders, they will need to implement fade transitions to be compatible with BatchPage.", "BatchPage::_updateShaders()");
 					}
 				}
 			}

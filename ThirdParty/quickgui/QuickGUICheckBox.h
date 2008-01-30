@@ -9,7 +9,7 @@ namespace QuickGUI
 		public Button
 	{
 	public:
-		CheckBox(const Ogre::String& name, GUIManager* gm);
+		CheckBox(const std::string& name, GUIManager* gm);
 		~CheckBox();
 
 		/**

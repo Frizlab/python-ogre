@@ -8,7 +8,7 @@
 
 namespace QuickGUI
 {
-	TitleBar::TitleBar(const Ogre::String& name, GUIManager* gm) :
+	TitleBar::TitleBar(const std::string& name, GUIManager* gm) :
 		Label(name,gm)
 	{	
 		mWidgetType = TYPE_TITLEBAR;
@@ -23,7 +23,7 @@ namespace QuickGUI
 		mTextBoundsRelativeSize = Size(mSize.width - (mSize.height - 2),mSize.height) / mSize;
 
 		// Create CloseButton
-		Ogre::Real ButtonSize = mSize.height - 2;
+		float ButtonSize = mSize.height - 2;
 		mCloseButton = dynamic_cast<Button*>(_createComponent(mInstanceName+".CloseButton",TYPE_BUTTON));
 		mCloseButton->setSkinComponent(".titleBar.button");
 		mCloseButton->setSize(ButtonSize,ButtonSize);
@@ -68,7 +68,7 @@ namespace QuickGUI
 		mText->setCaption(caption);
 	}
 
-	void TitleBar::setFont(const Ogre::String& fontScriptName, bool recursive)
+	void TitleBar::setFont(const std::string& fontScriptName, bool recursive)
 	{
 		if(fontScriptName == "")
 			return;
@@ -93,7 +93,7 @@ namespace QuickGUI
 		mText->setCaption(text);
 	}
 
-	void TitleBar::setWidth(Ogre::Real pixelWidth)
+	void TitleBar::setWidth(float pixelWidth)
 	{
 		Label::setWidth(pixelWidth);
 

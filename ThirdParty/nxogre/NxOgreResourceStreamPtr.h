@@ -50,7 +50,7 @@ namespace NxOgre {
 		ResourceStreamPtr();
 
 		ResourceStreamPtr(ResourceIdentifier);
-		//ResourceStreamPtr(ResourceIdentifier, void*);
+		ResourceStreamPtr(ResourceIdentifier, void*);
 
 		ResourceStreamPtr(const ResourceStreamPtr& r)
             : pStream(0), pUseCount(0)

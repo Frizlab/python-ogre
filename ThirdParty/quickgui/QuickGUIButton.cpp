@@ -9,7 +9,7 @@
 
 namespace QuickGUI
 {
-	Button::Button(const Ogre::String& name, GUIManager* gm) :
+	Button::Button(const std::string& name, GUIManager* gm) :
 		Label(name,gm),
 		mButtonDown(false)
 	{

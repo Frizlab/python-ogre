@@ -1,5 +1,5 @@
 #include "QuickGUIPrecompiledHeaders.h"
-
+#include "Ogre.h"
 #include "QuickGUITextHelper.h"
 
 namespace QuickGUI
@@ -16,7 +16,7 @@ namespace QuickGUI
 		mFontTexture.setNull();
 	}
 
-	Ogre::String TextHelper::getFont()
+	std::string TextHelper::getFont()
 	{
 		if(mFont.isNull())
 			return "";
@@ -32,17 +32,17 @@ namespace QuickGUI
 		return (Ogre::FontPtr)mFontTexture; 
 	}
 
-	Ogre::Real TextHelper::getFontTextureHeight()
+	float TextHelper::getFontTextureHeight()
 	{
 		return mFontTextureHeight;
 	}
 
-	Ogre::Real TextHelper::getFontTextureWidth()
+	float TextHelper::getFontTextureWidth()
 	{
 		return mFontTextureWidth;
 	}
 
-	Ogre::String TextHelper::getFontMaterialName()
+	std::string TextHelper::getFontMaterialName()
 	{
 		if(mFont.isNull())
 			throw Ogre::Exception( Ogre::Exception::ERR_ITEM_NOT_FOUND, "Font has not been set, cannot get font material name!","Text::getFontMaterialName" );
@@ -72,7 +72,7 @@ namespace QuickGUI
 			return Size(width,height) * TEXT_MULTIPLIER;
 	}
 
-	Ogre::Real TextHelper::getGlyphWidth(Ogre::UTFString::unicode_char c)
+	float TextHelper::getGlyphWidth(Ogre::UTFString::unicode_char c)
 	{
 		if(mFont.isNull())
 			throw Ogre::Exception( Ogre::Exception::ERR_ITEM_NOT_FOUND, "Font has not been set, cannot get glyph width!","Text::getGlyphWidth" );
@@ -93,7 +93,7 @@ namespace QuickGUI
 			return (width * TEXT_MULTIPLIER);
 	}
 
-	Ogre::Real TextHelper::getGlyphHeight()
+	float TextHelper::getGlyphHeight()
 	{
 		if(mFont.isNull())
 			throw Ogre::Exception( Ogre::Exception::ERR_ITEM_NOT_FOUND, "Font has not been set, cannot get glyph height!","Text::getGlyphHeight" );
@@ -113,19 +113,19 @@ namespace QuickGUI
 		return mFont->getGlyphTexCoords(c);
 	}
 
-	Ogre::Real TextHelper::getSpaceWidth()
+	float TextHelper::getSpaceWidth()
 	{
 		return getGlyphWidth('r');
 	}
 
-	Ogre::Real TextHelper::getTabWidth()
+	float TextHelper::getTabWidth()
 	{
 		return (getSpaceWidth() * SPACES_PER_TAB);
 	}
 
-	Ogre::Real TextHelper::getTextWidth(const Ogre::String& text)
+	float TextHelper::getTextWidth(const std::string& text)
 	{
-		Ogre::Real width = 0;
+		float width = 0;
 		
 		Ogre::Font::UVRect uvRect;
 		unsigned int index = 0;
@@ -138,7 +138,7 @@ namespace QuickGUI
 		return width;
 	}
 
-	void TextHelper::setFont(const Ogre::String& fontName)
+	void TextHelper::setFont(const std::string& fontName)
 	{
 		if(fontName == "")
 			return;

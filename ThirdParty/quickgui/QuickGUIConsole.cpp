@@ -5,7 +5,7 @@
 
 namespace QuickGUI
 {
-	Console::Console(const Ogre::String& name, GUIManager* gm) :
+	Console::Console(const std::string& name, GUIManager* gm) :
 		LabelArea(name,gm),
 		mMaxLines(30),
 		mInputBox(0),
@@ -135,7 +135,7 @@ namespace QuickGUI
 		mMaxLines = maxLines;
 	}
 
-	void Console::setFont(const Ogre::String& fontScriptName, bool recursive)
+	void Console::setFont(const std::string& fontScriptName, bool recursive)
 	{
 		if(fontScriptName == "")
 			return;

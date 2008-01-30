@@ -1,7 +1,7 @@
 #ifndef QUICKGUIMULTILINELABEL_H
 #define QUICKGUIMULTILINELABEL_H
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUILabel.h"
 #include "QuickGUIList.h"
 #include "QuickGUITextHelper.h"
@@ -16,7 +16,7 @@ namespace QuickGUI
 	public:
 		friend class Console;
 	public:
-		LabelArea(const Ogre::String& name, GUIManager* gm);
+		LabelArea(const std::string& name, GUIManager* gm);
 		~LabelArea();
 
 		/**
@@ -43,7 +43,7 @@ namespace QuickGUI
 		* Sets the color of the text when the widget is disabled.
 		*/
 		virtual void setDisabledTextColor(const Ogre::ColourValue& c);
-		virtual void setFont(const Ogre::String& fontScriptName, bool recursive = false);
+		virtual void setFont(const std::string& fontScriptName, bool recursive = false);
 		/**
 		* Sets text horizontal alignment.
 		*/
@@ -59,15 +59,15 @@ namespace QuickGUI
 		Ogre::UTFString mCaption;
 		List* mTextList;
 		// if ScrollBar is visible, width used to calculating a line of text is modified.
-		Ogre::Real mTextOffset;
+		float mTextOffset;
 
 		bool mScrollingAllowed;
 
 		TextHelper* mTextHelper;
 
 		// Properties that are used across all TextBoxes
-		Ogre::String mTextBoxTextureName;
-		Ogre::String mTextBoxFont;
+		std::string mTextBoxTextureName;
+		std::string mTextBoxFont;
 
 		// Finds the end of the last word that can fit in one text box.
 		int _getLine(int startIndex);

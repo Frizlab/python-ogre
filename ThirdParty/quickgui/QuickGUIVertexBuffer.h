@@ -10,7 +10,7 @@
 #include "OgreTextureManager.h"
 #include "OgreTextureUnitState.h"
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIExportDLL.h"
 #include "QuickGUIQuad.h"
 #include "QuickGUISkinSetManager.h"

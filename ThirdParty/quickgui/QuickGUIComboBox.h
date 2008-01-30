@@ -1,7 +1,7 @@
 #ifndef QUICKGUICOMBOBOX_H
 #define QUICKGUICOMBOBOX_H
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIButton.h"
 #include "QuickGUIWidget.h"
 #include "QuickGUIMenuLabel.h"
@@ -46,7 +46,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		ComboBox(const Ogre::String& name, GUIManager* gm);
+		ComboBox(const std::string& name, GUIManager* gm);
 
 		MenuLabel* addItem();
 		/**
@@ -68,17 +68,17 @@ namespace QuickGUI
 		int getVerticalPixelPadHeight();
 		
 		void selectItem(unsigned int index);
-		void setDropDownHeight(Ogre::Real pixelHeight);
-		void setDropDownWidth(Ogre::Real pixelWidth);
-		virtual void setFont(const Ogre::String& fontScriptName, bool recursive = false);
-		virtual void setHeight(Ogre::Real pixelHeight);
+		void setDropDownHeight(float pixelHeight);
+		void setDropDownWidth(float pixelWidth);
+		virtual void setFont(const std::string& fontScriptName, bool recursive = false);
+		virtual void setHeight(float pixelHeight);
 		void setRightToLeft(bool rightToLeft);
 		/**
 		* Manually set size of widget.
 		*/
-		virtual void setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight);
+		virtual void setSize(const float& pixelWidth, const float& pixelHeight);
 		virtual void setSize(const Size& pixelSize);
-		virtual void setSkin(const Ogre::String& skinName, bool recursive = false);
+		virtual void setSkin(const std::string& skinName, bool recursive = false);
 		void setVerticalPixelPadHeight(unsigned int height);
 
 	protected:
@@ -107,7 +107,7 @@ namespace QuickGUI
 		void onSelection(const EventArgs& args);
 
 		Quad* mHighlightPanel;
-		Ogre::String mHighlightSkinComponent;
+		std::string mHighlightSkinComponent;
 		// The Widget that has been clicked/selected by the user.
 		MenuLabel* mSelectedItem;
 
@@ -118,8 +118,8 @@ namespace QuickGUI
 		// Drop down list.
 		List* mList;
 
-		Ogre::Real mDropDownHeight;
-		Ogre::Real mDropDownWidth;
+		float mDropDownHeight;
+		float mDropDownWidth;
 
 		bool mRightToLeft;
 

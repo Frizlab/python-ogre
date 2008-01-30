@@ -1,7 +1,7 @@
 #ifndef QUICKGUINSTATEBUTTON_H
 #define QUICKGUINSTATEBUTTON_H
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIButton.h"
 
 #include <vector>
@@ -30,7 +30,7 @@ namespace QuickGUI
 		class State
 		{
 		public:
-			State(const Ogre::String& name, const Ogre::String& skin, const Ogre::String& skinComponent, Ogre::UTFString text="") :
+			State(const std::string& name, const std::string& skin, const std::string& skinComponent, Ogre::UTFString text="") :
 			  mName(name),
 			  mSkinName(skin),
 			  mSkinComponentName(skinComponent),
@@ -38,15 +38,15 @@ namespace QuickGUI
 			{}
 			~State() {}
 
-			Ogre::String getSkin() { return mSkinName; }
-			Ogre::String getSkinComponent() { return mSkinComponentName; }
-			Ogre::String getName() { return mName; }
+			std::string getSkin() { return mSkinName; }
+			std::string getSkinComponent() { return mSkinComponentName; }
+			std::string getName() { return mName; }
 			Ogre::UTFString getText() { return mText; }
 			
 		protected:
-			Ogre::String mName;
-			Ogre::String mSkinName;
-			Ogre::String mSkinComponentName;
+			std::string mName;
+			std::string mSkinName;
+			std::string mSkinComponentName;
 			Ogre::UTFString mText;
 		};
 
@@ -64,7 +64,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		NStateButton(const Ogre::String& name, GUIManager* gm);
+		NStateButton(const std::string& name, GUIManager* gm);
 
 		/**
 		* Add user defined event that will be called when the state of the button has changed.
@@ -77,7 +77,7 @@ namespace QuickGUI
 		/**
 		* Adds (and creates) a state to the button.  If it is the first state, the state will be applied.
 		*/
-		void addState(const Ogre::String& name, const Ogre::String& skin, const Ogre::String& skinComponent, Ogre::UTFString text="");
+		void addState(const std::string& name, const std::string& skin, const std::string& skinComponent, Ogre::UTFString text="");
 		/**
 		* Useful when you want to simulate the button being pressed down by the mouse.
 		* If you actually want to click the mouse, use the mouse, or call onMouseButtonDown.
@@ -120,7 +120,7 @@ namespace QuickGUI
 		* Returns the state with the name provided.
 		* No exception is state does not exist.
 		*/
-		State* getState(const Ogre::String& name);
+		State* getState(const std::string& name);
 
 		/**
 		* Default Handler for the EVENT_MOUSE_BUTTON_UP event.
@@ -135,7 +135,7 @@ namespace QuickGUI
 		*/
 		void setCurrentState(State* s);
 		void setCurrentState(Ogre::ushort index);
-		void setCurrentState(const Ogre::String& name);
+		void setCurrentState(const std::string& name);
 
 		/**
 		* Advancing the state of the Widget.(circular) onStateChanged will be called.
@@ -152,9 +152,11 @@ namespace QuickGUI
 		std::vector<State*>	mStates;
 
 		State* mCurrentState;
-		Ogre::String mBaseTexture;
-		Ogre::String mBase;
-		Ogre::String mExtension;
+		std::string mBaseTexture;
+		std::string mBase;
+		std::string mExtension;
+
+		std::string mCurrentTexture;
 
 		EventHandlerArray mOnStateChangedUserEventHandlers;
 	};

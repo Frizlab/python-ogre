@@ -1,7 +1,7 @@
 #ifndef QUICKGUIPROGRESSBAR_H
 #define QUICKGUIPROGRESSBAR_H
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIWidget.h"
 
 #include "OgreHardwarePixelBuffer.h"
@@ -69,7 +69,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		ProgressBar(const Ogre::String& name, GUIManager* gm);
+		ProgressBar(const std::string& name, GUIManager* gm);
 
 		/**
 		* Add user defined event that will be called when amount of progress has changed.
@@ -79,7 +79,7 @@ namespace QuickGUI
 			mOnProgressChangedHandlers.push_back(new MemberFunctionPointer<T>(function,obj));
 		}
 		void addOnProgressChangedEventHandler(MemberFunctionSlot* function);
-		Ogre::Real getProgress();
+		float getProgress();
 		/**
 		* Default Handler for handling progress changes.
 		* Note that this event is not passed to its parents, the event is specific to this widget.
@@ -102,24 +102,24 @@ namespace QuickGUI
 		/**
 		* Sets progress.  Value should be between 0.0 and 1.0
 		*/
-		void setProgress(Ogre::Real progress);
-		virtual void setSkin(const Ogre::String& skinName, bool recursive = false);
+		void setProgress(float progress);
+		virtual void setSkin(const std::string& skinName, bool recursive = false);
 
 	protected:
 		virtual ~ProgressBar();
 
 		void _getBarExtents();
-		void _modifyBarTexture(Ogre::Real progress);
+		void _modifyBarTexture(float progress);
 
 	private:
 		Quad* mBarPanel;
 		Layout mLayout;
 
-		Ogre::Real mProgress;
+		float mProgress;
 
-		Ogre::String mSkinExtension;
+		std::string mSkinExtension;
 		Ogre::TexturePtr mBarTexture;
-		Ogre::String mBarTextureName;
+		std::string mBarTextureName;
 		Ogre::Image mBarImage;
 		Ogre::MaterialPtr mBarMaterial;
 		int mBarMinWidth;

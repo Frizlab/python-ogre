@@ -1,7 +1,7 @@
 #ifndef QUICKGUIVERTICALTRACKBAR_H
 #define QUICKGUIVERTICALTRACKBAR_H
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIButton.h"
 #include "QuickGUIWidget.h"
 
@@ -41,7 +41,7 @@ namespace QuickGUI
 			@note
 				Vertical or Horizontal TrackBars are derived from a comparison between width and height.
         */
-		VerticalTrackBar(const Ogre::String& name, GUIManager* gm);
+		VerticalTrackBar(const std::string& name, GUIManager* gm);
 
 		/**
 		* Add user defined event that will be called when amount of progress has changed.
@@ -71,7 +71,7 @@ namespace QuickGUI
 		/**
 		* Returns a decimal between 0.0 and 1.0 signifying the location of the slider.
 		*/
-		Ogre::Real getPercentage();
+		float getPercentage();
 		/**
 		* Returns the Value, or current slider index, of the TrackBar.
 		*/
@@ -117,14 +117,14 @@ namespace QuickGUI
 		// number of available positions for positioning the slider.
 		int mNumRegions;
 		// Length between a region begin and endpoint;
-		Ogre::Real mRegionLength;
+		float mRegionLength;
 
-		std::vector<Ogre::Real> mSliderPositions;
+		std::vector<float> mSliderPositions;
 		void _getSliderPositions();
 
 		// ----- SLIDER BUTTON PROPERTIES --------------------
 		Button* mSliderButton;
-		Ogre::String mSliderTextureName;
+		std::string mSliderTextureName;
 
 		void onSliderDragged(const EventArgs& args);
 

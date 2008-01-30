@@ -5,7 +5,7 @@
 
 namespace QuickGUI
 {
-	HorizontalScrollBar::HorizontalScrollBar(const Ogre::String& name, GUIManager* gm) :
+	HorizontalScrollBar::HorizontalScrollBar(const std::string& name, GUIManager* gm) :
 		Widget(name,gm),
 		mMinSliderPosition(0),
 		mMaxSliderPosition(mSize.width),
@@ -35,7 +35,7 @@ namespace QuickGUI
 		mSlider->setAutoSize(false);
 		mSlider->addEventHandler(EVENT_DRAGGED,&HorizontalScrollBar::onSliderDragged,this);
 		
-		Ogre::Real scrollBarHeight = mSize.height;
+		float scrollBarHeight = mSize.height;
 		mScrollLeft1 = dynamic_cast<Button*>(_createComponent(mInstanceName+".Left1",TYPE_BUTTON));
 		mScrollLeft1->setSkinComponent(".scrollbar.horizontal.left");
 		mScrollLeft1->setSize(mSize.height,mSize.height);
@@ -86,8 +86,8 @@ namespace QuickGUI
 	void HorizontalScrollBar::_constrainSlider()
 	{
 		Rect sliderDimensions = mSlider->getDimensions();
-		Ogre::Real sliderStart = sliderDimensions.x;
-		Ogre::Real sliderEnd = sliderDimensions.x + sliderDimensions.width;
+		float sliderStart = sliderDimensions.x;
+		float sliderEnd = sliderDimensions.x + sliderDimensions.width;
 
 		if(sliderStart < mMinSliderPosition)
 			mSlider->setXPosition(mMinSliderPosition);
@@ -130,7 +130,7 @@ namespace QuickGUI
 		}
 	}
 
-	void HorizontalScrollBar::_scroll(Ogre::Real change, ScrollEventArgs args)
+	void HorizontalScrollBar::_scroll(float change, ScrollEventArgs args)
 	{
 		mSlider->moveX(change * (mMaxSliderPosition - mMinSliderPosition));
 
@@ -141,9 +141,9 @@ namespace QuickGUI
 			(*it)->execute(args);
 	}
 
-	void HorizontalScrollBar::_setValue(Ogre::Real value)
+	void HorizontalScrollBar::_setValue(float value)
 	{
-		Ogre::Real pixelX = (value * (mMaxSliderPosition - mMinSliderPosition)) + mMinSliderPosition;
+		float pixelX = (value * (mMaxSliderPosition - mMinSliderPosition)) + mMinSliderPosition;
 
 		mSlider->setXPosition(pixelX);
 		_constrainSlider();
@@ -239,29 +239,29 @@ namespace QuickGUI
 		return mButtonLayout;
 	}
 
-	Ogre::Real HorizontalScrollBar::getLargeChange()
+	float HorizontalScrollBar::getLargeChange()
 	{
 		return mLargeChange;
 	}
 
-	Ogre::Real HorizontalScrollBar::getRepeatTime()
+	float HorizontalScrollBar::getRepeatTime()
 	{
 		return mScrollRepeatTime;
 	}
 
-	Ogre::Real HorizontalScrollBar::getSliderWidth()
+	float HorizontalScrollBar::getSliderWidth()
 	{
 		return mSlider->getWidth();
 	}
 
-	Ogre::Real HorizontalScrollBar::getSmallChange()
+	float HorizontalScrollBar::getSmallChange()
 	{
 		return mSmallChange;
 	}
 
-	Ogre::Real HorizontalScrollBar::getValue()
+	float HorizontalScrollBar::getValue()
 	{
-		Ogre::Real retVal = ((mSlider->getXPosition() - mMinSliderPosition) / (mMaxSliderPosition - mMinSliderPosition));
+		float retVal = ((mSlider->getXPosition() - mMinSliderPosition) / (mMaxSliderPosition - mMinSliderPosition));
 		return retVal;
 	}
 
@@ -416,28 +416,28 @@ namespace QuickGUI
 		_determineMinMax();
 	}
 
-	void HorizontalScrollBar::setLargeChange(Ogre::Real change)
+	void HorizontalScrollBar::setLargeChange(float change)
 	{
 		mLargeChange = change;
 	}
 
-	void HorizontalScrollBar::setScrollRepeatTime(Ogre::Real timeInSeconds)
+	void HorizontalScrollBar::setScrollRepeatTime(float timeInSeconds)
 	{
 		mScrollRepeatTime = timeInSeconds;
 	}
 
-	void HorizontalScrollBar::setSliderWidth(Ogre::Real pixelWidth)
+	void HorizontalScrollBar::setSliderWidth(float pixelWidth)
 	{
 		mSlider->setWidth(pixelWidth * (mMaxSliderPosition - mMinSliderPosition));
 		_constrainSlider();
 	}
 
-	void HorizontalScrollBar::setSmallChange(Ogre::Real change)
+	void HorizontalScrollBar::setSmallChange(float change)
 	{
 		mSmallChange = change;
 	}
 
-	void HorizontalScrollBar::setValue(Ogre::Real value)
+	void HorizontalScrollBar::setValue(float value)
 	{
 		ScrollEventArgs scrollArgs(this);
 		if(value < getValue())
@@ -445,7 +445,7 @@ namespace QuickGUI
 		else
 			scrollArgs.sliderIncreasedPosition = true;
 
-		Ogre::Real pixelX = (value * (mMaxSliderPosition - mMinSliderPosition)) + mMinSliderPosition;
+		float pixelX = (value * (mMaxSliderPosition - mMinSliderPosition)) + mMinSliderPosition;
 
 		if( pixelX < 0.0 )
 			pixelX = 0.0;
@@ -457,7 +457,7 @@ namespace QuickGUI
 		_scroll(0,scrollArgs);
 	}
 
-	void HorizontalScrollBar::timeElapsed(const Ogre::Real time)
+	void HorizontalScrollBar::timeElapsed(const float time)
 	{
 		Widget::timeElapsed(time);
 		mRepeatTimer += time;

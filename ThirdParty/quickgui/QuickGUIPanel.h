@@ -3,7 +3,7 @@
 
 #include "OgreStringConverter.h"
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIBorder.h"
 #include "QuickGUIButton.h"
 #include "QuickGUICheckBox.h"
@@ -55,62 +55,62 @@ namespace QuickGUI
 			@param
 				parentWidget parent widget which created this widget.
         */
-		Panel(const Ogre::String& name, GUIManager* gm);		
+		Panel(const std::string& name, GUIManager* gm);		
 
 		virtual void addChild(Widget* w);
 		virtual void allowScrolling(bool allow);
 
 
 		Button* createButton();
-		Button* createButton(const Ogre::String& name);
+		Button* createButton(const std::string& name);
 
 		CheckBox* createCheckBox();
-		CheckBox* createCheckBox(const Ogre::String& name);
+		CheckBox* createCheckBox(const std::string& name);
 
 		ComboBox* createComboBox();
-		ComboBox* createComboBox(const Ogre::String& name);
+		ComboBox* createComboBox(const std::string& name);
 
 		Console* createConsole();
-		Console* createConsole(const Ogre::String& name);
+		Console* createConsole(const std::string& name);
 
 		HorizontalScrollBar* createHorizontalScrollBar();
-		HorizontalScrollBar* createHorizontalScrollBar(const Ogre::String& name);
+		HorizontalScrollBar* createHorizontalScrollBar(const std::string& name);
 
 		Image* createImage();
-		Image* createImage(const Ogre::String& name);
+		Image* createImage(const std::string& name);
 
 		Label* createLabel();
-		Label* createLabel(const Ogre::String& name);
+		Label* createLabel(const std::string& name);
 
 		List* createList();
-		List* createList(const Ogre::String& name);
+		List* createList(const std::string& name);
 
 		LabelArea* createMultiLineLabel();
-		LabelArea* createMultiLineLabel(const Ogre::String& name);
+		LabelArea* createMultiLineLabel(const std::string& name);
 
 		NStateButton* createNStateButton();
-		NStateButton* createNStateButton(const Ogre::String& name);
+		NStateButton* createNStateButton(const std::string& name);
 
 		Panel* createPanel();
-		Panel* createPanel(const Ogre::String& name);
+		Panel* createPanel(const std::string& name);
 
 		ProgressBar* createProgressBar();
-		ProgressBar* createProgressBar(const Ogre::String& name);
+		ProgressBar* createProgressBar(const std::string& name);
 
 		TextBox* createTextBox();
-		TextBox* createTextBox(const Ogre::String& name);
+		TextBox* createTextBox(const std::string& name);
 
 		Tree* createTree();
-		Tree* createTree(const Ogre::String& name);
+		Tree* createTree(const std::string& name);
 
 		HorizontalTrackBar* createHorizontalTrackBar();
-		HorizontalTrackBar* createHorizontalTrackBar(const Ogre::String& name);
+		HorizontalTrackBar* createHorizontalTrackBar(const std::string& name);
 
 		VerticalScrollBar* createVerticalScrollBar();
-		VerticalScrollBar* createVerticalScrollBar(const Ogre::String& name);
+		VerticalScrollBar* createVerticalScrollBar(const std::string& name);
 
 		VerticalTrackBar* createVerticalTrackBar();
-		VerticalTrackBar* createVerticalTrackBar(const Ogre::String& name);
+		VerticalTrackBar* createVerticalTrackBar(const std::string& name);
 
 		ScrollPane* getScrollPane();
 		virtual Widget* getTargetWidget(const Point& pixelPosition);
@@ -121,7 +121,7 @@ namespace QuickGUI
 	protected:
 		virtual ~Panel();
 		virtual void setQuadContainer(QuadContainer* container);
-		virtual Widget*	_createComponent(const Ogre::String& name, Type t);
+		virtual Widget*	_createComponent(const std::string& name, Type t);
 	protected:
 		ScrollPane* mScrollPane;
 		bool mScrollingAllowed;

@@ -4,8 +4,11 @@
 #ifndef __QuickGuiSkinSetParser_h_
 #define __QuickGuiSkinSetParser_h_
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIExportDLL.h"
+
+#include "OgreScriptLoader.h"
+#include "OgreStringVector.h"
 
 namespace QuickGUI
 {
@@ -25,12 +28,12 @@ namespace QuickGUI
 
 		inline static ConfigScriptLoader *getSingletonPtr() { return &getSingleton(); }
 
-		Ogre::Real getLoadingOrder() const;
+		float getLoadingOrder() const;
 		const Ogre::StringVector &getScriptPatterns() const;
 
-		ConfigNode *getConfigScript(const Ogre::String &type, const Ogre::String &name);
+		ConfigNode *getConfigScript(const std::string &type, const std::string &name);
 
-		void parseScript(Ogre::DataStreamPtr &stream, const Ogre::String &groupName);
+		void parseScript(Ogre::DataStreamPtr &stream, const std::string &groupName);
 
 	private:
 		ConfigScriptLoader();   // ctor is hidden
@@ -38,10 +41,10 @@ namespace QuickGUI
 		ConfigScriptLoader& operator=(ConfigScriptLoader const&);	// assign op is hidden
 		~ConfigScriptLoader();	// dtor is hidden
 
-		Ogre::Real mLoadOrder;
+		float mLoadOrder;
 		Ogre::StringVector mScriptPatterns;
 
-		HashMap<Ogre::String, ConfigNode*> scriptList;
+		HashMap<std::string, ConfigNode*> scriptList;
 
 		//Parsing
 		char *parseBuff, *parseBuffEnd, *buffPtr;
@@ -57,7 +60,7 @@ namespace QuickGUI
 		};
 
 		Token tok, lastTok;
-		Ogre::String tokVal, lastTokVal;
+		std::string tokVal, lastTokVal;
 		char *lastTokPos;
 
 		void _parseNodes(ConfigNode *parent);
@@ -69,20 +72,20 @@ namespace QuickGUI
 	class _QuickGUIExport ConfigNode
 	{
 	public:
-		ConfigNode(ConfigNode *parent, const Ogre::String &name = "untitled");
+		ConfigNode(ConfigNode *parent, const std::string &name = "untitled");
 		~ConfigNode();
 
-		inline void setName(const Ogre::String &name)
+		inline void setName(const std::string &name)
 		{
 			this->name = name;
 		}
 
-		inline Ogre::String &getName()
+		inline std::string &getName()
 		{
 			return name;
 		}
 
-		inline void addValue(const Ogre::String &value)
+		inline void addValue(const std::string &value)
 		{
 			values.push_back(value);
 		}
@@ -97,8 +100,8 @@ namespace QuickGUI
 			return values;
 		}
 
-		ConfigNode *addChild(const Ogre::String &name = "untitled");
-		ConfigNode *findChild(const Ogre::String &name, bool recursive = false);
+		ConfigNode *addChild(const std::string &name = "untitled");
+		ConfigNode *findChild(const std::string &name, bool recursive = false);
 
 		inline std::vector<ConfigNode*> &getChildren()
 		{
@@ -113,7 +116,7 @@ namespace QuickGUI
 		}
 
 	private:
-		Ogre::String name;
+		std::string name;
 		Ogre::StringVector values;
 		std::vector<ConfigNode*> children;
 		ConfigNode *parent;
@@ -127,13 +130,13 @@ namespace QuickGUI
 	public:
 		void beginSection(const unsigned short level);
 		void endSection(const unsigned short level);
-		void writeAttribute(const unsigned short level, const Ogre::String& att);
-		void writeValue(const Ogre::String& val);
+		void writeAttribute(const unsigned short level, const std::string& att);
+		void writeValue(const std::string& val);
 		void clearQueue();
-		void exportQueued(const Ogre::String &fileName);
+		void exportQueued(const std::string &fileName);
 
 	private:
-		Ogre::String mBuffer;
+		std::string mBuffer;
 	};
 }
 

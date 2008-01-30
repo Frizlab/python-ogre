@@ -25,6 +25,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include "OgreStringConverter.h"
 #include "OgreEntity.h"
 #include "OgreSubMesh.h"
+#include "OgreSubEntity.h"
 #include "OgreMesh.h"
 #include "OgreMeshManager.h"
 #include "OgreHardwareBufferManager.h"
@@ -55,16 +56,16 @@ BatchedGeometry::~BatchedGeometry()
 
 void BatchedGeometry::addEntity(Entity *ent, const Vector3 &position, const Quaternion &orientation, const Vector3 &scale, const Ogre::ColourValue &color)
 {
-	//For each submesh
-	Mesh::SubMeshIterator i = ent->getMesh()->getSubMeshIterator();
-	while (i.hasMoreElements()){
-		//Get the submesh
-		SubMesh *mesh = i.peekNext();
+	//For each subentity
+	for (uint i = 0; i < ent->getNumSubEntities(); ++i){
+		//Get the subentity
+		SubEntity *subEntity = ent->getSubEntity(i);
+		SubMesh *subMesh = subEntity->getSubMesh();
 
 		//Generate a format string that uniquely identifies this material & vertex/index format
-		if (mesh->vertexData == NULL)
+		if (subMesh->vertexData == NULL)
 			OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "BatchedGeometry cannot use meshes with shared vertex data", "BatchedGeometry::addEntity()");
-		String formatStr = getFormatString(mesh);
+		String formatStr = getFormatString(subEntity);
 		
 		//If a batch using an identical format exists...
 		SubBatch *batch;
@@ -74,15 +75,12 @@ void BatchedGeometry::addEntity(Entity *ent, const Vector3 &position, const Quat
 			batch = batchIter->second;
 		} else {
 			//Otherwise create a new batch
-			batch = new SubBatch(this, mesh);
+			batch = new SubBatch(this, subEntity);
 			subBatchMap.insert(std::pair<String, SubBatch*>(formatStr, batch));
 		}
 
 		//Now add the submesh to the compatible batch
-		batch->addSubMesh(mesh, position, orientation, scale, color);
-
-		//Next item
-		i.getNext();
+		batch->addSubEntity(subEntity, position, orientation, scale, color);
 	}
 
 	//Update bounding box
@@ -110,14 +108,14 @@ BatchedGeometry::SubBatchIterator BatchedGeometry::getSubBatchIterator() const
 	return BatchedGeometry::SubBatchIterator((SubBatchMap&)subBatchMap);
 }
 
-String BatchedGeometry::getFormatString(SubMesh *mesh)
+String BatchedGeometry::getFormatString(SubEntity *ent)
 {
 	StringUtil::StrStreamType str;
 
-	str << mesh->getMaterialName() << "|";
-	str << mesh->indexData->indexBuffer->getType() << "|";
+	str << ent->getMaterialName() << "|";
+	str << ent->getSubMesh()->indexData->indexBuffer->getType() << "|";
 
-	const VertexDeclaration::VertexElementList &elemList = mesh->vertexData->vertexDeclaration->getElements();
+	const VertexDeclaration::VertexElementList &elemList = ent->getSubMesh()->vertexData->vertexDeclaration->getElements();
 	VertexDeclaration::VertexElementList::const_iterator i;
 	for (i = elemList.begin(); i != elemList.end(); ++i)
 	{
@@ -229,16 +227,18 @@ Ogre::Vector3 BatchedGeometry::_convertToLocal(const Vector3 &globalVec) const
 
 
 
-BatchedGeometry::SubBatch::SubBatch(BatchedGeometry *parent, SubMesh *mesh)
+BatchedGeometry::SubBatch::SubBatch(BatchedGeometry *parent, SubEntity *ent)
 {
-	meshType = mesh;
-	material = MaterialManager::getSingleton().getByName(mesh->getMaterialName());
+	meshType = ent->getSubMesh();
 	this->parent = parent;
 	built = false;
 
+	Material *origMat = ((MaterialPtr)MaterialManager::getSingleton().getByName(ent->getMaterialName())).getPointer();
+	material = MaterialManager::getSingleton().getByName(getMaterialClone(origMat)->getName());
+
 	//Setup vertex/index data structure
-	vertexData = mesh->vertexData->clone(false);
-	indexData = mesh->indexData->clone(false);
+	vertexData = meshType->vertexData->clone(false);
+	indexData = meshType->indexData->clone(false);
 
 	//Remove blend weights from vertex format
 	const VertexElement* blendIndices = vertexData->vertexDeclaration->findElementBySemantic(VES_BLEND_INDICES);
@@ -275,13 +275,23 @@ BatchedGeometry::SubBatch::~SubBatch()
 	delete indexData;
 }
 
-void BatchedGeometry::SubBatch::addSubMesh(SubMesh *mesh, const Vector3 &position, const Quaternion &orientation, const Vector3 &scale, const Ogre::ColourValue &color)
+Material *BatchedGeometry::SubBatch::getMaterialClone(Material *mat)
+{
+	String clonedName = mat->getName() + "_Batched";
+	MaterialPtr clonedMat = MaterialManager::getSingleton().getByName(clonedName);
+	if (clonedMat.isNull())
+		clonedMat = mat->clone(clonedName);
+	
+	return clonedMat.getPointer();
+}
+
+void BatchedGeometry::SubBatch::addSubEntity(SubEntity *ent, const Vector3 &position, const Quaternion &orientation, const Vector3 &scale, const Ogre::ColourValue &color)
 {
 	assert(!built);
 
 	//Add this submesh to the queue
 	QueuedMesh newMesh;
-	newMesh.mesh = mesh;
+	newMesh.mesh = ent->getSubMesh();
 	newMesh.position = position;
 	newMesh.orientation = orientation;
 	newMesh.scale = scale;
@@ -302,8 +312,8 @@ void BatchedGeometry::SubBatch::addSubMesh(SubMesh *mesh, const Vector3 &positio
 	meshQueue.push_back(newMesh);
 
 	//Increment the vertex/index count so the buffers will have room for this mesh
-	vertexData->vertexCount += mesh->vertexData->vertexCount;
-	indexData->indexCount += mesh->indexData->indexCount;
+	vertexData->vertexCount += ent->getSubMesh()->vertexData->vertexCount;
+	indexData->indexCount += ent->getSubMesh()->indexData->indexCount;
 }
 
 void BatchedGeometry::SubBatch::build()
@@ -640,4 +650,5 @@ const Ogre::LightList& BatchedGeometry::SubBatch::getLights(void) const
 {
 	return parent->queryLights();
 }
+
 #endif

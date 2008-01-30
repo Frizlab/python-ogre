@@ -5,7 +5,7 @@
 
 namespace QuickGUI
 {
-	ScrollPane::ScrollPane(const Ogre::String& name, GUIManager* gm) :
+	ScrollPane::ScrollPane(const std::string& name, GUIManager* gm) :
 		Widget(name,gm),
 		mScrollBarWidth(20),
 		mHorizontalButtonLayout(HorizontalScrollBar::BUTTON_LAYOUT_OPPOSITE),
@@ -20,8 +20,6 @@ namespace QuickGUI
 		mBottomBar = dynamic_cast<HorizontalScrollBar*>(_createChild(mInstanceName+".BottomScrollBar",TYPE_SCROLLBAR_HORIZONTAL));
 		mBottomBar->setSize(mSize.width - 20,20);
 		mBottomBar->setScrollPaneAccessible(false);
-		mBottomBar->setQuadLayer(Quad::LAYER_MENU);
-		mBottomBar->setInheritQuadLayer(false);
 		mBottomBar->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 		mBottomBar->setVerticalAnchor(ANCHOR_VERTICAL_BOTTOM);
 		mBottomBar->setShowWithParent(false);
@@ -30,8 +28,6 @@ namespace QuickGUI
 		mRightBar = dynamic_cast<VerticalScrollBar*>(_createChild(mInstanceName+".RightScrollBar",TYPE_SCROLLBAR_VERTICAL));
 		mRightBar->setSize(20,mSize.height - 20);
 		mRightBar->setScrollPaneAccessible(false);
-		mRightBar->setQuadLayer(Quad::LAYER_MENU);
-		mRightBar->setInheritQuadLayer(false);
 		mRightBar->setHorizontalAnchor(ANCHOR_HORIZONTAL_RIGHT);
 		mRightBar->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
 		mRightBar->setShowWithParent(false);
@@ -48,8 +44,8 @@ namespace QuickGUI
 		Size parentSize = mParentWidget->getSize();
 
 		// find the minimum and maximum region encompassing the managed widgets.
-		Ogre::Real width = parentSize.width;
-		Ogre::Real height = parentSize.height;
+		float width = parentSize.width;
+		float height = parentSize.height;
 
 		// Get min/max bounds for scroll pane.  By default, pane has same bounds as parent.
 		// This may change depending on managed widgets that may lie above/below/left/right of current pane bounds.
@@ -328,7 +324,7 @@ namespace QuickGUI
 		mRightBar->setButtonLayout(mVerticalButtonLayout);
 	}
 
-	void ScrollPane::setPosition(const Ogre::Real& pixelX, const Ogre::Real& pixelY)
+	void ScrollPane::setPosition(const float& pixelX, const float& pixelY)
 	{
 		Widget::setPosition(pixelX,pixelY);
 	}

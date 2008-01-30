@@ -1,7 +1,7 @@
 #ifndef QUICKGUILABEL_H
 #define QUICKGUILABEL_H
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIText.h"
 #include "QuickGUIWidget.h"
 
@@ -52,7 +52,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		Label(const Ogre::String& name, GUIManager* gm);
+		Label(const std::string& name, GUIManager* gm);
 		
 		/**
 		* Aligns the child Label widget horizontally and vertically
@@ -97,9 +97,10 @@ namespace QuickGUI
 		* Sets the color of the text when the widget is disabled.
 		*/
 		virtual void setDisabledTextColor(const Ogre::ColourValue& c);
-		virtual void setFont(const Ogre::String& fontScriptName, bool recursive = false);
-		virtual void setHeight(Ogre::Real pixelHeight);
+		virtual void setFont(const std::string& fontScriptName, bool recursive = false);
+		virtual void setHeight(float pixelHeight);
 		virtual void setQuadLayer(Quad::Layer l);
+		virtual void setSkin(const std::string& skinName, bool recursive = false);
 		virtual void setText(const Ogre::UTFString& text);
 		/**
 		* Sets text vertical alignment.
@@ -117,7 +118,7 @@ namespace QuickGUI
 		/**
 		* Manually set size of widget.
 		*/
-		virtual void setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight);
+		virtual void setSize(const float& pixelWidth, const float& pixelHeight);
 		virtual void setSize(const Size& pixelSize);
 		/**
 		* Sets the dimensions of the area used for text aligning and displaying.
@@ -125,7 +126,7 @@ namespace QuickGUI
 		void setTextBounds(const Point& relativePixelOffset, const Size& relativePixelSize);
 		virtual void setTextColor(Ogre::ColourValue color);
 		void setVerticalPixelPadHeight(unsigned int height);
-		virtual void setWidth(Ogre::Real pixelWidth);
+		virtual void setWidth(float pixelWidth);
 		/*
 		* Shows the widget, including text.
 		*/

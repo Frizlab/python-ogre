@@ -4,7 +4,7 @@
 #include "OgreBitwise.h"
 #include "OgrePrerequisites.h"
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIExportDLL.h"
 #include "QuickGUIQuad.h"
 #include "QuickGUIVertexBuffer.h"

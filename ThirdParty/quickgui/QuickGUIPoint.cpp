@@ -10,7 +10,7 @@ namespace QuickGUI
 	{
 	}
 
-	Point::Point(Ogre::Real X, Ogre::Real Y) :
+	Point::Point(float X, float Y) :
 		x(X),
 		y(Y)
 	{

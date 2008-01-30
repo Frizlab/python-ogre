@@ -1,7 +1,7 @@
 #ifndef QUICKGUIBORDER_H
 #define QUICKGUIBORDER_H
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIWidget.h"
 
 namespace QuickGUI
@@ -44,12 +44,12 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		Border(const Ogre::String& name, GUIManager* gm);
+		Border(const std::string& name, GUIManager* gm);
 
 		BorderType getBorderType();
 
 		void setBorderType(BorderType t);
-		void setSkin(const Ogre::String& skinName, Ogre::String extension = ".png", bool recursive = false);
+		void setSkin(const std::string& skinName, std::string extension = ".png", bool recursive = false);
 
 	protected:
 		virtual ~Border();
@@ -58,11 +58,11 @@ namespace QuickGUI
 
 		BorderType mBorderType;
 
-		Ogre::Real mThickness;
-		Ogre::Real mOverlap;
+		float mThickness;
+		float mOverlap;
 
 		// used to restore mouse cursor when leaving.
-		Ogre::String mMouseCursorTexture;
+		std::string mMouseCursorTexture;
 
 		void onDragged(const EventArgs& args);
 		void onMouseEnter(const EventArgs& args);

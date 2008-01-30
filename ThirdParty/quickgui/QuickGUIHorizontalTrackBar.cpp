@@ -5,7 +5,7 @@
 
 namespace QuickGUI
 {
-	HorizontalTrackBar::HorizontalTrackBar(const Ogre::String& name, GUIManager* gm) :
+	HorizontalTrackBar::HorizontalTrackBar(const std::string& name, GUIManager* gm) :
 		Widget(name,gm),
 		mNumRegions(1),
 		mCurrentValue(0),
@@ -52,11 +52,11 @@ namespace QuickGUI
 	{
 		mSliderPositions.clear();
 		
-		Ogre::Real sliderPixelWidth = mSliderButton->getWidth();
-		Ogre::Real trackLength = mSize.width - sliderPixelWidth;
+		float sliderPixelWidth = mSliderButton->getWidth();
+		float trackLength = mSize.width - sliderPixelWidth;
 		mRegionLength = trackLength / mNumRegions;
 
-		Ogre::Real xStart = (sliderPixelWidth/2.0);
+		float xStart = (sliderPixelWidth/2.0);
 		mSliderPositions.push_back(xStart);
 		for( int i = 0; i < mNumRegions; ++i )
 		{
@@ -108,9 +108,9 @@ namespace QuickGUI
 		return mCurrentValue;
 	}
 
-	Ogre::Real HorizontalTrackBar::getPercentage()
+	float HorizontalTrackBar::getPercentage()
 	{
-		return static_cast<Ogre::Real>(mCurrentValue) / static_cast<Ogre::Real>(mNumRegions);
+		return static_cast<float>(mCurrentValue) / static_cast<float>(mNumRegions);
 	}
 
 	void HorizontalTrackBar::onMouseDownOnSlider(const EventArgs& args)

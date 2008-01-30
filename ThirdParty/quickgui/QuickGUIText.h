@@ -7,12 +7,11 @@
 #include "OgreStringConverter.h"
 #include "OgreUTFString.h"
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIEventArgs.h"
 #include "QuickGUIExportDLL.h"
 #include "QuickGUIMemberFunctionPointer.h"
 #include "QuickGUIQuad.h"
-#include "QuickGUIQuadContainer.h"
 #include "QuickGUITextHelper.h"
 
 #include <vector>
@@ -23,6 +22,7 @@ namespace QuickGUI
 	class Widget;
 	class Label;
 	class GUIManager;
+	class QuadContainer;
 
 	class _QuickGUIExport Text
 	{
@@ -44,7 +44,7 @@ namespace QuickGUI
 			ALIGNMENT_RIGHT
 		};
 	public:
-		Text(const Ogre::String& name, QuadContainer* container, Label* owner);
+		Text(const std::string& name, QuadContainer* container, Label* owner);
 		~Text();
 
 		// Internal function that sets the widget dimensions to use for clipping.
@@ -74,16 +74,16 @@ namespace QuickGUI
 		Ogre::UTFString getCaption();
 		Quad* getCharacter(unsigned int index);
 		Ogre::ColourValue getColor();
-		Ogre::String getFont();
-		Ogre::Real getGlyphHeight();
+		std::string getFont();
+		float getGlyphHeight();
 		Size getGlyphSize(Ogre::UTFString::code_point c);
-		Ogre::Real getGlyphWidth(Ogre::UTFString::code_point c);
+		float getGlyphWidth(Ogre::UTFString::code_point c);
 		Ogre::ColourValue getInverseColor(const Ogre::ColourValue& c);
 		/*
 		* Get the current linespacing this text is using
 		*/
-		Ogre::Real getLineSpacing();
-		Ogre::Real getNewlineHeight();
+		float getLineSpacing();
+		float getNewlineHeight();
 		/*
 		* Returns the number of characters rendered to the screen.
 		* NOTE: this may not be the same as the Caption length, since
@@ -124,7 +124,7 @@ namespace QuickGUI
 		* The cursor index to the left of character 0 is 0, for example.
 		*/
 		int getTextCursorIndex(const Rect& pixelDimensions);
-		Ogre::Real getTextWidth(const Ogre::String& text);
+		float getTextWidth(const std::string& text);
 		bool getVisible();
 
 		void hide();
@@ -162,7 +162,7 @@ namespace QuickGUI
 		* Sets the text Caption.  Size will be calculated from glyph dimensions.
 		*/
 		void setCaption(const Ogre::UTFString& text, Layout l = LAYOUT_HORIZONTAL, Alignment a = ALIGNMENT_LEFT);
-		void setFont(const Ogre::String& fontName);
+		void setFont(const std::string& fontName);
 		void setQuadLayer(Quad::Layer layer);
 		void setOffset(int offset);
 		/*
@@ -179,7 +179,11 @@ namespace QuickGUI
 		/*
 		* Sets the multiple of normal line spacing that will be used to draw multiple lines of text.
 		*/
-		void setLineSpacing(Ogre::Real spacing);
+		void setLineSpacing(float spacing);
+		/*
+		* Sets the skin that will provide the image used for text selection.
+		*/
+		void setSkin(const std::string& skin);
 		void show();
 
 	private:
@@ -187,7 +191,7 @@ namespace QuickGUI
 		Quad::Layer mLayer;
 		GUIManager* mGUIManager;
 
-		Ogre::String mName;
+		std::string mName;
 		QuadContainer* mQuadContainer;
 		int mOffset;
 		bool mVisible;
@@ -197,7 +201,7 @@ namespace QuickGUI
 		Ogre::UTFString mCaption;
 		Layout mLayout;
 		Alignment mAlignment;
-		Ogre::Real mLineSpacing;
+		float mLineSpacing;
 
 		TextHelper* mTextHelper;
 

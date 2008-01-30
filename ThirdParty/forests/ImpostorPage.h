@@ -182,7 +182,7 @@ protected:
 	Ogre::Vector3 center;
 	int aveCount;
 	
-	std::map<Ogre::ResourceHandle, ImpostorBatch *> impostorBatches;
+	std::map<Ogre::String, ImpostorBatch *> impostorBatches;
 };
 
 
@@ -217,10 +217,10 @@ public:
 	}
 
 	void setBillboardOrigin(Ogre::BillboardOrigin origin);
-
 	inline void addBillboard(const Ogre::Vector3 &position, const Ogre::Quaternion &rotation, const Ogre::Vector3 &scale, const Ogre::ColourValue &color = Ogre::ColourValue::White);
-
 	void setAngle(float pitchDeg, float yawDeg);
+
+	static Ogre::String generateEntityKey(Ogre::Entity *entity);
 
 protected:
 	ImpostorBatch(ImpostorPage *group, Ogre::Entity *entity);
@@ -274,9 +274,12 @@ protected:
 	void renderTextures(bool force);	// Renders the impostor texture grid
 	void updateMaterials();				// Updates the materials to use the latest rendered impostor texture grid
 
-	static std::map<Ogre::ResourceHandle, ImpostorTexture *> selfList;
+	Ogre::String removeInvalidCharacters(Ogre::String s);
+
+	static std::map<Ogre::String, ImpostorTexture *> selfList;
 	Ogre::SceneManager *sceneMgr;
 	Ogre::Entity *entity;
+	Ogre::String entityKey;
 
 	Ogre::MaterialPtr material[IMPOSTOR_PITCH_ANGLES][IMPOSTOR_YAW_ANGLES];
 	Ogre::TexturePtr texture;

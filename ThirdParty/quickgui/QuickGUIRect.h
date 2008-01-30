@@ -3,7 +3,7 @@
 
 #include "OgrePrerequisites.h"
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIExportDLL.h"
 #include "QuickGUIPoint.h"
 #include "QuickGUISize.h"
@@ -14,7 +14,7 @@ namespace QuickGUI
 	{
 	public:
 		Rect();
-		Rect(Ogre::Real x, Ogre::Real y, Ogre::Real width, Ogre::Real height);
+		Rect(float x, float y, float width, float height);
 		Rect(Point p, Size s);
 
 		inline Rect( const Rect& r )
@@ -46,10 +46,10 @@ namespace QuickGUI
 		bool intersectsRect(const Rect& r);
 		bool isPointWithinBounds(const Point& pixelPosition);
 
-		Ogre::Real x;
-		Ogre::Real y;
-		Ogre::Real width;
-		Ogre::Real height;
+		float x;
+		float y;
+		float width;
+		float height;
 
 		static const Rect ZERO;
 	};
