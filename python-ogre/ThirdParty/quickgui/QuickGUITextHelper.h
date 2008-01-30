@@ -33,31 +33,31 @@ namespace QuickGUI
 		TextHelper();
 		~TextHelper();
 
-		Ogre::String getFont();
+		std::string getFont();
 		Ogre::FontPtr getFontTexturePtr();
-		Ogre::Real getFontTextureHeight();
-		Ogre::Real getFontTextureWidth();
-		Ogre::String getFontMaterialName();
+		float getFontTextureHeight();
+		float getFontTextureWidth();
+		std::string getFontMaterialName();
 		Size getGlyphSize(Ogre::UTFString::unicode_char c);
-		Ogre::Real getGlyphWidth(Ogre::UTFString::unicode_char c);
-		Ogre::Real getGlyphHeight();
+		float getGlyphWidth(Ogre::UTFString::unicode_char c);
+		float getGlyphHeight();
 		Ogre::Font::UVRect getGlyphTexCoords(Ogre::UTFString::unicode_char c);
 		/*
 		* Returns space width. (Actually, width of 'r')
 		*/
-		Ogre::Real getSpaceWidth();
+		float getSpaceWidth();
 		/*
 		* Returns tab width. (Actually, width of 'r' times SPACES_PER_TAB)
 		*/
-		Ogre::Real getTabWidth();
-		Ogre::Real getTextWidth(const Ogre::String& text);
+		float getTabWidth();
+		float getTextWidth(const std::string& text);
 
 		static inline bool	isTab			(Ogre::UTFString::unicode_char c) { return c == UNICODE_TAB; }
 		static inline bool	isSpace			(Ogre::UTFString::unicode_char c) { return c == UNICODE_SPACE; }
 		static inline bool	isNewLine		(Ogre::UTFString::unicode_char c) { return c == UNICODE_CR || c == UNICODE_LF || c == UNICODE_NEL; }
 		static inline bool	isWhiteSpace	(Ogre::UTFString::unicode_char c) { return isTab(c) || isSpace(c) || isNewLine(c); }
 
-		void setFont(const Ogre::String& fontName);
+		void setFont(const std::string& fontName);
 
 	protected:
 		Ogre::FontPtr mFont;

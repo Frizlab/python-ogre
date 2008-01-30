@@ -1,7 +1,7 @@
 #ifndef QUICKGUIBUTTON_H
 #define QUICKGUIBUTTON_H
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUILabel.h"
 
 namespace QuickGUI
@@ -40,7 +40,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		Button(const Ogre::String& name, GUIManager* gm);
+		Button(const std::string& name, GUIManager* gm);
 
 		/**
 		* Useful when you want to simulate the button being pressed down by the mouse.

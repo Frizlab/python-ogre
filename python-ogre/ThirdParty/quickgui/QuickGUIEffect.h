@@ -1,7 +1,7 @@
 #ifndef QUICKGUIEFFECT_H
 #define QUICKGUIEFFECT_H
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIManager.h"
 
 namespace QuickGUI
@@ -18,8 +18,8 @@ namespace QuickGUI
 			EFFECT_SIN
 		};
 	public:
-		Effect(Widget * const widget, const Ogre::Real duration, 
-			const Ogre::Real startTime, const Ogre::Real currTime = 0, const bool repeat = false,
+		Effect(Widget * const widget, const float duration, 
+			const float startTime, const float currTime = 0, const bool repeat = false,
 			EffectInterpolatorType type = EFFECT_LINEARX4) : 
 		mWidget(widget), 
 			mStartTime(startTime), 
@@ -32,25 +32,25 @@ namespace QuickGUI
 		}
 		virtual ~Effect(){};
 
-		virtual void updateValue(const Ogre::Real factor) = 0;
+		virtual void updateValue(const float factor) = 0;
 
-		bool update(const Ogre::Real timeElapsed);
-		Ogre::Real getTimeFactor() ;
+		bool update(const float timeElapsed);
+		float getTimeFactor() ;
 		bool getTimeOrIsFinished();
-		Ogre::Real linearInterpolate(const Ogre::Real start, 
-			const Ogre::Real end, 
-			const Ogre::Real timeFactor) const;
-		Ogre::Real interpolate(const Ogre::Real start, 
-			const Ogre::Real end, 
-			const Ogre::Real timeFactor) const;
+		float linearInterpolate(const float start, 
+			const float end, 
+			const float timeFactor) const;
+		float interpolate(const float start, 
+			const float end, 
+			const float timeFactor) const;
 
 	protected:
 		Widget * const mWidget;
-		const Ogre::Real mStartTime; 
-		const Ogre::Real mDuration;
+		const float mStartTime; 
+		const float mDuration;
 		const bool mRepeat;
 
-		Ogre::Real mCurrTime;
+		float mCurrTime;
 		const EffectInterpolatorType mType;
 	};
 	//------------------------------------------------------------------------------------------------
@@ -59,11 +59,11 @@ namespace QuickGUI
 	public:
 
 		AlphaEffect(Widget * const widget, 
-			const Ogre::Real duration, 
-			const Ogre::Real startAlpha,
-			const Ogre::Real endAlpha,
-			const Ogre::Real startTime, 
-			const Ogre::Real currTime = 0, 
+			const float duration, 
+			const float startAlpha,
+			const float endAlpha,
+			const float startTime, 
+			const float currTime = 0, 
 			const bool repeat = false,
 			EffectInterpolatorType type = EFFECT_LINEARX4) : 
 		Effect(widget, duration, startTime,  currTime, repeat), 
@@ -75,21 +75,21 @@ namespace QuickGUI
 		}
 		virtual ~AlphaEffect(){};
 
-		void updateValue(const Ogre::Real factor);
+		void updateValue(const float factor);
 	private:
-		const Ogre::Real mStartAlpha;
-		const Ogre::Real mEndAlpha;
+		const float mStartAlpha;
+		const float mEndAlpha;
 	};
 	//------------------------------------------------------------------------------------------------
 	class _QuickGUIExport MoveEffect : public Effect
 	{
 	public:
 		MoveEffect(Widget * const widget, 
-			const Ogre::Real duration, 
+			const float duration, 
 			const Point &startPosition,
 			const Point &endPosition,
-			const Ogre::Real startTime, 
-			const Ogre::Real currTime = 0, 
+			const float startTime, 
+			const float currTime = 0, 
 			const bool repeat = false,
 			EffectInterpolatorType type = EFFECT_LINEARX4) : 
 		Effect(widget, duration, startTime,  currTime, repeat), 
@@ -97,7 +97,7 @@ namespace QuickGUI
 			mEndPosition(endPosition)
 		{}
 		virtual ~MoveEffect(){};
-		void updateValue(const Ogre::Real factor);
+		void updateValue(const float factor);
 
 	private:
 		const Point mStartPosition;
@@ -108,11 +108,11 @@ namespace QuickGUI
 	{
 	public:
 		SizeEffect(Widget * const widget, 
-			const Ogre::Real duration, 
+			const float duration, 
 			const Size &startSize,
 			const Size &endSize,
-			const Ogre::Real startTime, 
-			const Ogre::Real currTime = 0, 
+			const float startTime, 
+			const float currTime = 0, 
 			const bool repeat = false,
 			EffectInterpolatorType type = EFFECT_LINEARX4) : 
 		Effect(widget, duration, startTime, currTime, repeat), 
@@ -120,7 +120,7 @@ namespace QuickGUI
 			mEndSize(endSize)
 		{}
 		virtual ~SizeEffect(){};
-		void updateValue(const Ogre::Real factor);
+		void updateValue(const float factor);
 
 	private:
 		const Size mStartSize;
@@ -131,15 +131,15 @@ namespace QuickGUI
 	{
 	public:
 		ActivateEffect(Widget * const widget, 
-			const Ogre::Real duration, 
-			const Ogre::Real startTime, 
-			const Ogre::Real currTime = 0, 
+			const float duration, 
+			const float startTime, 
+			const float currTime = 0, 
 			const bool repeat = false,
 			EffectInterpolatorType type = EFFECT_LINEARX4): 
 		Effect(widget, duration, startTime, currTime, repeat)
 		{};
 		virtual ~ActivateEffect(){};
-		void updateValue(const Ogre::Real factor);
+		void updateValue(const float factor);
 
 	};
 	//------------------------------------------------------------------------------------------------
@@ -147,15 +147,15 @@ namespace QuickGUI
 	{
 	public:
 		OverEffect(Widget * const widget, 
-			const Ogre::Real duration, 
-			const Ogre::Real startTime, 
-			const Ogre::Real currTime = 0, 
+			const float duration, 
+			const float startTime, 
+			const float currTime = 0, 
 			const bool repeat = false,
 			EffectInterpolatorType type = EFFECT_LINEARX4): 
 		Effect(widget, duration, startTime, currTime, repeat)
 		{};
 		virtual ~OverEffect(){};
-		void updateValue(const Ogre::Real factor);
+		void updateValue(const float factor);
 
 	};
 	//------------------------------------------------------------------------------------------------

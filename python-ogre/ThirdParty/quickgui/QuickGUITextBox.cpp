@@ -5,7 +5,7 @@
 
 namespace QuickGUI
 {
-	TextBox::TextBox(const Ogre::String& name, GUIManager* gm) :
+	TextBox::TextBox(const std::string& name, GUIManager* gm) :
 		Label(name,gm),
 		mMaskUserInput(0),
 		mBackSpaceDown(0),
@@ -28,6 +28,7 @@ namespace QuickGUI
 		mRShiftDown(false),
 		mLCtrlDown(false),
 		mRCtrlDown(false),
+		mUseTextSelectCursor(true),
 		mTextCursorSkinComponent(".textbox.textcursor")
 	{
 		mWidgetType = TYPE_TEXTBOX;
@@ -43,6 +44,8 @@ namespace QuickGUI
 		addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&TextBox::onMouseButtonDown,this);
 		addEventHandler(EVENT_MOUSE_BUTTON_UP,&TextBox::onMouseButtonUp,this);
 		addEventHandler(EVENT_MOUSE_CLICK,&TextBox::onMouseClicked,this);
+		addEventHandler(EVENT_MOUSE_ENTER,&TextBox::onMouseEnter,this);
+		addEventHandler(EVENT_MOUSE_LEAVE,&TextBox::onMouseLeave,this);
 		addEventHandler(EVENT_KEY_DOWN,&TextBox::onKeyDown,this);
 		addEventHandler(EVENT_KEY_UP,&TextBox::onKeyUp,this);
 
@@ -108,9 +111,9 @@ namespace QuickGUI
 
 	void TextBox::_determineVisibleTextBounds(int cursorIndex)
 	{
-		Ogre::Real maxTextWidth = getTextBounds().width;
+		float maxTextWidth = getTextBounds().width;
 
-		Ogre::Real width = 0;
+		float width = 0;
 		// Shift text left to show portion of caption starting at cursorIndex.
 		if( cursorIndex < mVisibleStart )
 		{
@@ -679,6 +682,18 @@ namespace QuickGUI
 		}
 	}
 
+	void TextBox::onMouseEnter(const EventArgs& args)
+	{
+		if(mUseTextSelectCursor && !mReadOnly)
+			mMouseCursor->setCursorState(MouseCursor::CURSOR_STATE_TEXTSELECT);
+	}
+
+	void TextBox::onMouseLeave(const EventArgs& args)
+	{
+		if(mMouseCursor->getCursorState() == MouseCursor::CURSOR_STATE_TEXTSELECT)
+			mMouseCursor->setCursorState(MouseCursor::CURSOR_STATE_NORMAL);
+	}
+
 	void TextBox::setAutoSize(bool autoSize)
 	{
 		mAutoSize = autoSize;
@@ -716,7 +731,7 @@ namespace QuickGUI
 		setCursorIndex(mVisibleStart + mText->getTextCursorIndex(position),clearSelection);
 	}
 
-	void TextBox::setFont(const Ogre::String& fontScriptName, bool recursive)
+	void TextBox::setFont(const std::string& fontScriptName, bool recursive)
 	{
 		if(fontScriptName == "")
 			return;
@@ -749,7 +764,7 @@ namespace QuickGUI
 		mReadOnly = readOnly;
 	}
 
-	void TextBox::setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight)
+	void TextBox::setSize(const float& pixelWidth, const float& pixelHeight)
 	{
 		Label::setSize(pixelWidth,pixelHeight);
 
@@ -762,7 +777,7 @@ namespace QuickGUI
 		TextBox::setSize(pixelSize.width,pixelSize.height);
 	}
 
-	void TextBox::setSkin(const Ogre::String& skinName, bool recursive)
+	void TextBox::setSkin(const std::string& skinName, bool recursive)
 	{
 		Label::setSkin(skinName,recursive);
 
@@ -792,7 +807,12 @@ namespace QuickGUI
 		mTextCursor->setVisible(false);
 	}
 
-	void TextBox::setWidth(Ogre::Real pixelWidth)
+	void TextBox::setUseTextSelectCursor(bool use)
+	{
+		mUseTextSelectCursor = use;
+	}
+
+	void TextBox::setWidth(float pixelWidth)
 	{
 		bool temp = mAutoSize;
 		Label::setWidth(pixelWidth);
@@ -802,7 +822,7 @@ namespace QuickGUI
 		alignText();
 	}
 
-	void TextBox::timeElapsed(const Ogre::Real time)
+	void TextBox::timeElapsed(const float time)
 	{
 		if(mHasFocus && mMouseLeftDown)
 		{

@@ -5,7 +5,7 @@
 
 namespace QuickGUI
 {
-	ProgressBar::ProgressBar(const Ogre::String& name, GUIManager* gm) :
+	ProgressBar::ProgressBar(const std::string& name, GUIManager* gm) :
 		Widget(name,gm),
 		mInitialPixelOffset(0),
 		mProgress(1.0),
@@ -43,6 +43,7 @@ namespace QuickGUI
 			delete (*it);
 		mOnProgressChangedHandlers.clear();
 
+		Ogre::MaterialManager::getSingletonPtr()->remove(mInstanceName + ".barMaterial");
 		mBarMaterial.setNull();
 	}
 
@@ -81,7 +82,7 @@ namespace QuickGUI
 		}
 	}
 
-	void ProgressBar::_modifyBarTexture(Ogre::Real progress)
+	void ProgressBar::_modifyBarTexture(float progress)
 	{
 		Ogre::Image barContainer;
 		barContainer.load(mSkinName + mSkinComponent + mSkinExtension, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
@@ -230,7 +231,7 @@ namespace QuickGUI
 		mOnProgressChangedHandlers.push_back(function);
 	}
 
-	Ogre::Real ProgressBar::getProgress()
+	float ProgressBar::getProgress()
 	{
 		return mProgress;
 	}
@@ -282,7 +283,7 @@ namespace QuickGUI
 		setProgress(mProgress);
 	}
 
-	void ProgressBar::setProgress(Ogre::Real progress)
+	void ProgressBar::setProgress(float progress)
 	{
 		// Check to make sure we get acceptable values
 		if(progress >= 0.99) 
@@ -301,7 +302,7 @@ namespace QuickGUI
 		onProgressChanged(e);
 	}
 
-	void ProgressBar::setSkin(const Ogre::String& skinName, bool recursive)
+	void ProgressBar::setSkin(const std::string& skinName, bool recursive)
 	{
 		Widget::setSkin(skinName,recursive);
 
@@ -325,8 +326,8 @@ namespace QuickGUI
 		mBarTexture = Ogre::TextureManager::getSingletonPtr()->createManual(mInstanceName + ".bar.temp", 
 			Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
 			Ogre::TEX_TYPE_2D,
-			(Ogre::uint)mWidgetImage->getWidth(),
-			(Ogre::uint)mWidgetImage->getHeight(),
+			(Ogre::uint)ss->getImageWidth(mBarTextureName),
+			(Ogre::uint)ss->getImageHeight(mBarTextureName),
 			0, 
 			Ogre::PF_B8G8R8A8,
 			Ogre::TU_STATIC);

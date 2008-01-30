@@ -6,7 +6,7 @@
 
 namespace QuickGUI
 {
-	Window::Window(const Ogre::String& name, GUIManager* gm) :
+	Window::Window(const std::string& name, GUIManager* gm) :
 		Panel(name,gm),
 		mTitleBar(0),
 		mBringToFrontOnFocus(true)
@@ -154,7 +154,7 @@ namespace QuickGUI
 		mRightScrollBar->setYPosition(mTitleBar->getHeight());
 		mRightScrollBar->setHeight(mRightScrollBar->getHeight() - mTitleBar->getHeight());
 
-		Ogre::Real titlebarHeight = mTitleBar->getHeight();
+		float titlebarHeight = mTitleBar->getHeight();
 		setYPosition(mPosition.y + titlebarHeight);
 		setHeight(mSize.height - titlebarHeight);
 	}

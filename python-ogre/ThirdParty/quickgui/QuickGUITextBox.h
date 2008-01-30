@@ -1,7 +1,7 @@
 #ifndef QUICKGUITEXTBOX_H
 #define QUICKGUITEXTBOX_H
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUILabel.h"
 #include "QuickGUIMouseCursor.h"
 
@@ -41,7 +41,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		TextBox(const Ogre::String& name, GUIManager* gm);
+		TextBox(const std::string& name, GUIManager* gm);
 
 		/**
 		* Adds a character to the textBox right before text cursor.
@@ -144,7 +144,7 @@ namespace QuickGUI
 		*/
 		void setCursorIndex(int cursorIndex, bool clearSelection = true);
 		void setCursorIndex(Point position, bool clearSelection = true);
-		virtual void setFont(const Ogre::String& fontScriptName, bool recursive = false);
+		virtual void setFont(const std::string& fontScriptName, bool recursive = false);
 		/**
 		* If set to true, cannot input text to textbox
 		*/
@@ -152,25 +152,31 @@ namespace QuickGUI
 		/**
 		* Manually set size of widget.
 		*/
-		virtual void setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight);
+		virtual void setSize(const float& pixelWidth, const float& pixelHeight);
 		virtual void setSize(const Size& pixelSize);
-		virtual void setSkin(const Ogre::String& skinName, bool recursive = false);
+		virtual void setSkin(const std::string& skinName, bool recursive = false);
 		void setText(const Ogre::UTFString& text);
-		virtual void setWidth(Ogre::Real pixelWidth);
+		// Set whether to change mouse cursor to text select cursor when over textbox
+		void setUseTextSelectCursor(bool use);
+		virtual void setWidth(float pixelWidth);
 		/**
 		* Default Handler for injecting Time.
 		*/
-		void timeElapsed(const Ogre::Real time);
+		void timeElapsed(const float time);
 
 	protected:
 		virtual ~TextBox();
 
 		MouseCursor* mMouseCursor;
 
+		// For changing the mouse cursor to text select cursor
+		void onMouseEnter(const EventArgs& args);
+		void onMouseLeave(const EventArgs& args);
+
 		// Text Cursor Properties
 		Quad* mTextCursor;
 		size_t mCursorPixelWidth;
-		Ogre::String mTextCursorSkinComponent;
+		std::string mTextCursorSkinComponent;
 
 		// The full unmodified String stored by this textbox. Text boundaries and character
 		// masking will affect what the user sees on screen.
@@ -195,13 +201,13 @@ namespace QuickGUI
 		bool mMaskUserInput;
 		Ogre::UTFString::unicode_char mMaskSymbol;
 
-		Ogre::Real mBackSpaceTimer;
+		float mBackSpaceTimer;
 		bool mBackSpaceDown;
 
-		Ogre::Real mDeleteTimer;
+		float mDeleteTimer;
 		bool mDeleteDown;
 
-		Ogre::Real mMoveCursorTimer;
+		float mMoveCursorTimer;
 		bool mLeftArrowDown;
 		bool mRightArrowDown;
 
@@ -211,13 +217,15 @@ namespace QuickGUI
 		bool mLCtrlDown;
 		bool mRCtrlDown;
 
-		Ogre::Real mCursorVisibilityTimer;
+		float mCursorVisibilityTimer;
 
 		bool mMouseLeftDown;
 		// Used to determine if cursor should blink.
 		bool mHasFocus;
 
 		bool mReadOnly;
+
+		bool mUseTextSelectCursor;
 
 		EventHandlerArray mOnEnterPressedUserEventHandlers;
 

@@ -4,7 +4,7 @@
 
 namespace QuickGUI
 {
-	MenuLabel::MenuLabel(const Ogre::String& name, GUIManager* gm) :
+	MenuLabel::MenuLabel(const std::string& name, GUIManager* gm) :
 		Label(name,gm),
 		mIcon(0),
 		mIconMaterialName(""),
@@ -25,7 +25,7 @@ namespace QuickGUI
 	{
 	}
 
-	Ogre::String MenuLabel::getButtonSkin()
+	std::string MenuLabel::getButtonSkin()
 	{
 		if(mButton == NULL)
 			return "";
@@ -33,7 +33,7 @@ namespace QuickGUI
 		return mButton->getSkin();
 	}
 
-	Ogre::String MenuLabel::getIconMaterial()
+	std::string MenuLabel::getIconMaterial()
 	{
 		if(mIcon == NULL)
 			return "";
@@ -49,7 +49,7 @@ namespace QuickGUI
 		mButton->addEventHandler(EVENT_MOUSE_BUTTON_UP,function);
 	}
 
-	void MenuLabel::setButtonSkin(const Ogre::String& skinName)
+	void MenuLabel::setButtonSkin(const std::string& skinName)
 	{
 		if(mButton != NULL)
 		{
@@ -80,7 +80,7 @@ namespace QuickGUI
 		mButton->setPropagateEventFiring(EVENT_MOUSE_BUTTON_UP,true);
 	}
 
-	void MenuLabel::setIconMaterial(const Ogre::String& materialName)
+	void MenuLabel::setIconMaterial(const std::string& materialName)
 	{
 		if(materialName == "")
 			return;

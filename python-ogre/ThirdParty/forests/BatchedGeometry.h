@@ -49,10 +49,10 @@ public:
 	class SubBatch: public Ogre::Renderable
 	{
 	public:
-		SubBatch(BatchedGeometry *parent, Ogre::SubMesh *mesh);
+		SubBatch(BatchedGeometry *parent, Ogre::SubEntity *ent);
 		~SubBatch();
 
-		void addSubMesh(Ogre::SubMesh *mesh, const Ogre::Vector3 &position, const Ogre::Quaternion &orientation, const Ogre::Vector3 &scale, const Ogre::ColourValue &color = Ogre::ColourValue::White);
+		void addSubEntity(Ogre::SubEntity *ent, const Ogre::Vector3 &position, const Ogre::Quaternion &orientation, const Ogre::Vector3 &scale, const Ogre::ColourValue &color = Ogre::ColourValue::White);
 		void build();
 		void clear();
 		
@@ -73,6 +73,11 @@ public:
 		bool castsShadows(void) const { return parent->getCastShadows(); }
 
 	private:
+		//This function is used to make a single clone of materials used, since the materials
+		//will be modified by the batch system (and it wouldn't be good to modify the original materials
+		//that the user may be using somewhere else).
+		Ogre::Material *getMaterialClone(Ogre::Material *mat);
+
 		//A structure defining the desired position/orientation/scale of a batched mesh. The
 		//SubMesh is not specified since that can be determined by which MeshQueue this belongs to.
 		struct QueuedMesh
@@ -100,7 +105,7 @@ public:
 	};
 
 private:
-	Ogre::String getFormatString(Ogre::SubMesh *mesh);
+	Ogre::String getFormatString(Ogre::SubEntity *ent);
 
 	typedef std::map<Ogre::String, SubBatch*> SubBatchMap;	//Stores a list of GeomBatch'es, using a format string (generated with getGeometryFormatString()) as the key value
 	SubBatchMap subBatchMap;

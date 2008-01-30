@@ -1,7 +1,7 @@
 #ifndef QUICKGUITITLELBAR_H
 #define QUICKGUITITLELBAR_H
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIButton.h"
 #include "QuickGUILabel.h"
 
@@ -52,7 +52,7 @@ namespace QuickGUI
 			@note
 				height it default at 0.05 absolute coordinates.	Height can be modified.
         */
-		TitleBar(const Ogre::String& name, GUIManager* gm);
+		TitleBar(const std::string& name, GUIManager* gm);
 
 		/**
 		* Gets a handle to the Button widget used for this Widget.
@@ -72,9 +72,9 @@ namespace QuickGUI
 		* Convenience method to set the text of the titlebar.
 		*/
 		void setCaption(const Ogre::UTFString& caption);
-		virtual void setFont(const Ogre::String& fontScriptName, bool recursive = false);
+		virtual void setFont(const std::string& fontScriptName, bool recursive = false);
 		virtual void setText(const Ogre::UTFString& text);
-		virtual void setWidth(Ogre::Real pixelWidth);
+		virtual void setWidth(float pixelWidth);
 		/**
 		* Shows the Close Button.
 		*/
@@ -84,7 +84,7 @@ namespace QuickGUI
 		virtual ~TitleBar();
 
 		Button* mCloseButton;
-		Ogre::Real mRelativeButtonWidth;
+		float mRelativeButtonWidth;
 	};
 }
 

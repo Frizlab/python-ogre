@@ -12,7 +12,7 @@
 
 namespace QuickGUI
 {
-	Panel::Panel(const Ogre::String& name, GUIManager* gm) :
+	Panel::Panel(const std::string& name, GUIManager* gm) :
 		Widget(name,gm),
 		QuadContainer(this),
 		mScrollingAllowed(false),
@@ -35,7 +35,7 @@ namespace QuickGUI
 		setQuadContainer(NULL);
 	}
 
-	Widget*	Panel::_createComponent(const Ogre::String& name, Type t)
+	Widget*	Panel::_createComponent(const std::string& name, Type t)
 	{
 		Widget* w;
 		switch(t)
@@ -162,7 +162,7 @@ namespace QuickGUI
       return createTree(mGUIManager->generateName(TYPE_TREE));
    }
 
-   Tree* Panel::createTree(const Ogre::String& name)
+   Tree* Panel::createTree(const std::string& name)
    {
       if(mGUIManager->isNameUnique(name))
       {
@@ -171,7 +171,7 @@ namespace QuickGUI
       }
       else
       {
-         Ogre::String name = mGUIManager->generateName(TYPE_TREE);
+         std::string name = mGUIManager->generateName(TYPE_TREE);
          mGUIManager->notifyNameUsed(name);
          return dynamic_cast<Tree*>(_createChild(name,TYPE_TREE));
       }
@@ -182,7 +182,7 @@ namespace QuickGUI
 		return createButton(mGUIManager->generateName(TYPE_BUTTON));
 	}
 
-	Button* Panel::createButton(const Ogre::String& name)
+	Button* Panel::createButton(const std::string& name)
 	{
 		if(mGUIManager->isNameUnique(name))
 		{
@@ -191,7 +191,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			Ogre::String name = mGUIManager->generateName(TYPE_BUTTON);
+			std::string name = mGUIManager->generateName(TYPE_BUTTON);
 			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<Button*>(_createChild(name,TYPE_BUTTON));
 		}
@@ -202,7 +202,7 @@ namespace QuickGUI
 		return createCheckBox(mGUIManager->generateName(TYPE_CHECKBOX));
 	}
 
-	CheckBox* Panel::createCheckBox(const Ogre::String& name)
+	CheckBox* Panel::createCheckBox(const std::string& name)
 	{
 		if(mGUIManager->isNameUnique(name))
 		{
@@ -211,7 +211,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			Ogre::String name = mGUIManager->generateName(TYPE_CHECKBOX);
+			std::string name = mGUIManager->generateName(TYPE_CHECKBOX);
 			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<CheckBox*>(_createChild(name,TYPE_CHECKBOX));
 		}
@@ -222,7 +222,7 @@ namespace QuickGUI
 		return createComboBox(mGUIManager->generateName(TYPE_COMBOBOX));
 	}
 
-	ComboBox* Panel::createComboBox(const Ogre::String& name)
+	ComboBox* Panel::createComboBox(const std::string& name)
 	{
 		if(mGUIManager->isNameUnique(name))
 		{
@@ -231,7 +231,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			Ogre::String name = mGUIManager->generateName(TYPE_COMBOBOX);
+			std::string name = mGUIManager->generateName(TYPE_COMBOBOX);
 			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<ComboBox*>(_createChild(name,TYPE_COMBOBOX));
 		}
@@ -242,7 +242,7 @@ namespace QuickGUI
 		return createConsole(mGUIManager->generateName(TYPE_CONSOLE));
 	}
 
-	Console* Panel::createConsole(const Ogre::String& name)
+	Console* Panel::createConsole(const std::string& name)
 	{
 		if(mGUIManager->isNameUnique(name))
 		{
@@ -251,7 +251,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			Ogre::String name = mGUIManager->generateName(TYPE_CONSOLE);
+			std::string name = mGUIManager->generateName(TYPE_CONSOLE);
 			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<Console*>(_createChild(name,TYPE_CONSOLE));
 		}
@@ -275,7 +275,7 @@ namespace QuickGUI
 		sb->mSlider->setAutoSize(false);
 		sb->mSlider->addEventHandler(EVENT_DRAGGED,&HorizontalScrollBar::onSliderDragged,sb);
 
-		Ogre::Real scrollBarHeight = mSize.height;
+		float scrollBarHeight = mSize.height;
 		sb->mScrollLeft1 = dynamic_cast<Button*>(sb->_createComponent(TYPE_BUTTON));
 		sb->mScrollLeft1->setSkinComponent(".scrollbar.horizontal.left");
 		sb->mScrollLeft1->setSize(sb->getHeight(),sb->getHeight());
@@ -320,7 +320,7 @@ namespace QuickGUI
 		return sb;
 */	}
 
-	HorizontalScrollBar* Panel::createHorizontalScrollBar(const Ogre::String& name)
+	HorizontalScrollBar* Panel::createHorizontalScrollBar(const std::string& name)
 	{
 		if(mGUIManager->isNameUnique(name))
 		{
@@ -329,7 +329,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			Ogre::String name = mGUIManager->generateName(TYPE_SCROLLBAR_HORIZONTAL);
+			std::string name = mGUIManager->generateName(TYPE_SCROLLBAR_HORIZONTAL);
 			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<HorizontalScrollBar*>(_createChild(name,TYPE_SCROLLBAR_HORIZONTAL));
 		}
@@ -340,7 +340,7 @@ namespace QuickGUI
 		return createHorizontalTrackBar(mGUIManager->generateName(TYPE_TRACKBAR_HORIZONTAL));
 	}
 
-	HorizontalTrackBar* Panel::createHorizontalTrackBar(const Ogre::String& name)
+	HorizontalTrackBar* Panel::createHorizontalTrackBar(const std::string& name)
 	{
 		if(mGUIManager->isNameUnique(name))
 		{
@@ -349,7 +349,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			Ogre::String name = mGUIManager->generateName(TYPE_TRACKBAR_HORIZONTAL);
+			std::string name = mGUIManager->generateName(TYPE_TRACKBAR_HORIZONTAL);
 			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<HorizontalTrackBar*>(_createChild(name,TYPE_TRACKBAR_HORIZONTAL));
 		}
@@ -360,7 +360,7 @@ namespace QuickGUI
 		return createImage(mGUIManager->generateName(TYPE_IMAGE));
 	}
 
-	Image* Panel::createImage(const Ogre::String& name)
+	Image* Panel::createImage(const std::string& name)
 	{
 		if(mGUIManager->isNameUnique(name))
 		{
@@ -369,7 +369,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			Ogre::String name = mGUIManager->generateName(TYPE_IMAGE);
+			std::string name = mGUIManager->generateName(TYPE_IMAGE);
 			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<Image*>(_createChild(name,TYPE_IMAGE));
 		}
@@ -380,7 +380,7 @@ namespace QuickGUI
 		return createLabel(mGUIManager->generateName(TYPE_LABEL));
 	}
 
-	Label* Panel::createLabel(const Ogre::String& name)
+	Label* Panel::createLabel(const std::string& name)
 	{
 		if(mGUIManager->isNameUnique(name))
 		{
@@ -389,7 +389,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			Ogre::String name = mGUIManager->generateName(TYPE_LABEL);
+			std::string name = mGUIManager->generateName(TYPE_LABEL);
 			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<Label*>(_createChild(name,TYPE_LABEL));
 		}
@@ -400,7 +400,7 @@ namespace QuickGUI
 		return createList(mGUIManager->generateName(TYPE_LIST));
 	}
 
-	List* Panel::createList(const Ogre::String& name)
+	List* Panel::createList(const std::string& name)
 	{
 		if(mGUIManager->isNameUnique(name))
 		{
@@ -409,7 +409,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			Ogre::String name = mGUIManager->generateName(TYPE_LIST);
+			std::string name = mGUIManager->generateName(TYPE_LIST);
 			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<List*>(_createChild(name,TYPE_LIST));
 		}
@@ -420,7 +420,7 @@ namespace QuickGUI
 		return createMultiLineLabel(mGUIManager->generateName(TYPE_LABELAREA));
 	}
 
-	LabelArea* Panel::createMultiLineLabel(const Ogre::String& name)
+	LabelArea* Panel::createMultiLineLabel(const std::string& name)
 	{
 		if(mGUIManager->isNameUnique(name))
 		{
@@ -429,7 +429,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			Ogre::String name = mGUIManager->generateName(TYPE_LABELAREA);
+			std::string name = mGUIManager->generateName(TYPE_LABELAREA);
 			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<LabelArea*>(_createChild(name,TYPE_LABELAREA));
 		}
@@ -440,7 +440,7 @@ namespace QuickGUI
 		return createNStateButton(mGUIManager->generateName(TYPE_NSTATEBUTTON));
 	}
 
-	NStateButton* Panel::createNStateButton(const Ogre::String& name)
+	NStateButton* Panel::createNStateButton(const std::string& name)
 	{
 		if(mGUIManager->isNameUnique(name))
 		{
@@ -449,7 +449,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			Ogre::String name = mGUIManager->generateName(TYPE_NSTATEBUTTON);
+			std::string name = mGUIManager->generateName(TYPE_NSTATEBUTTON);
 			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<NStateButton*>(_createChild(name,TYPE_NSTATEBUTTON));
 		}
@@ -460,7 +460,7 @@ namespace QuickGUI
 		return createPanel(mGUIManager->generateName(TYPE_PANEL));
 	}
 
-	Panel* Panel::createPanel(const Ogre::String& name)
+	Panel* Panel::createPanel(const std::string& name)
 	{
 		if(mGUIManager->isNameUnique(name))
 		{
@@ -469,7 +469,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			Ogre::String name = mGUIManager->generateName(TYPE_PANEL);
+			std::string name = mGUIManager->generateName(TYPE_PANEL);
 			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<Panel*>(_createChild(name,TYPE_PANEL));
 		}
@@ -480,7 +480,7 @@ namespace QuickGUI
 		return createProgressBar(mGUIManager->generateName(TYPE_PROGRESSBAR));
 	}
 
-	ProgressBar* Panel::createProgressBar(const Ogre::String& name)
+	ProgressBar* Panel::createProgressBar(const std::string& name)
 	{
 		if(mGUIManager->isNameUnique(name))
 		{
@@ -489,7 +489,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			Ogre::String name = mGUIManager->generateName(TYPE_PROGRESSBAR);
+			std::string name = mGUIManager->generateName(TYPE_PROGRESSBAR);
 			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<ProgressBar*>(_createChild(name,TYPE_PROGRESSBAR));
 		}
@@ -500,7 +500,7 @@ namespace QuickGUI
 		return createTextBox(mGUIManager->generateName(TYPE_TEXTBOX));
 	}
 
-	TextBox* Panel::createTextBox(const Ogre::String& name)
+	TextBox* Panel::createTextBox(const std::string& name)
 	{
 		TextBox* tb;
 		if(mGUIManager->isNameUnique(name))
@@ -510,7 +510,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			Ogre::String name = mGUIManager->generateName(TYPE_TEXTBOX);
+			std::string name = mGUIManager->generateName(TYPE_TEXTBOX);
 			mGUIManager->notifyNameUsed(name);
 			tb = dynamic_cast<TextBox*>(_createChild(name,TYPE_TEXTBOX));
 		}
@@ -526,7 +526,7 @@ namespace QuickGUI
 		return createVerticalScrollBar(mGUIManager->generateName(TYPE_SCROLLBAR_VERTICAL));
 	}
 
-	VerticalScrollBar* Panel::createVerticalScrollBar(const Ogre::String& name)
+	VerticalScrollBar* Panel::createVerticalScrollBar(const std::string& name)
 	{
 		if(mGUIManager->isNameUnique(name))
 		{
@@ -535,7 +535,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			Ogre::String name = mGUIManager->generateName(TYPE_SCROLLBAR_VERTICAL);
+			std::string name = mGUIManager->generateName(TYPE_SCROLLBAR_VERTICAL);
 			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<VerticalScrollBar*>(_createChild(name,TYPE_SCROLLBAR_VERTICAL));
 		}
@@ -546,7 +546,7 @@ namespace QuickGUI
 		return createVerticalTrackBar(mGUIManager->generateName(TYPE_TRACKBAR_VERTICAL));
 	}
 
-	VerticalTrackBar* Panel::createVerticalTrackBar(const Ogre::String& name)
+	VerticalTrackBar* Panel::createVerticalTrackBar(const std::string& name)
 	{
 		if(mGUIManager->isNameUnique(name))
 		{
@@ -555,7 +555,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			Ogre::String name = mGUIManager->generateName(TYPE_TRACKBAR_VERTICAL);
+			std::string name = mGUIManager->generateName(TYPE_TRACKBAR_VERTICAL);
 			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<VerticalTrackBar*>(_createChild(name,TYPE_TRACKBAR_VERTICAL));
 		}

@@ -4,7 +4,7 @@
 #include "OgreException.h"
 #include "OgrePrerequisites.h"
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIEventArgs.h"
 #include "QuickGUIMemberFunctionPointer.h"
 #include "QuickGUIRect.h"
@@ -140,7 +140,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		Widget(const Ogre::String& name, GUIManager* gm);
+		Widget(const std::string& name, GUIManager* gm);
 
 		virtual void addChild(Widget* w);
 		/** Adds an event handler to this widget
@@ -187,7 +187,7 @@ namespace QuickGUI
 		* Moves draggingWidget.  By default, dragging widget is this widget, but this can be changed.
 		* Allows dragging the titlebar or it's text to drag the window, for example.
 		*/
-		void drag(const Ogre::Real& pixelX, const Ogre::Real& pixelY);
+		void drag(const float& pixelX, const float& pixelY);
 		/**
 		* Returns true if the widget is able to be dragged, false otherwise.
 		*/
@@ -215,7 +215,7 @@ namespace QuickGUI
 		*/
 		virtual void focus();
 		Rect getActualDimensions();
-		Ogre::Real getActualOpacity();
+		float getActualOpacity();
 		/**
 		* Returns the position of the widget as it would be drawn on the screen.
 		* NOTE: This is a convenience method. Actual Position is the same as
@@ -224,25 +224,25 @@ namespace QuickGUI
 		Point getActualPosition();
 		Size getActualSize();
 		WidgetArray* getChildWidgetList();
-		Widget* getChildWidget(const Ogre::String& name);
+		Widget* getChildWidget(const std::string& name);
 		Widget* getChildWidget(Type t, unsigned int index);
 		bool getClippingEnabled();
 		Rect getDimensions();
 		GUIManager* getGUIManager();
 		int getNumberOfHandlers(Event e);
 		bool getInheritOpacity();
-		Ogre::Real getOpacity();
+		float getOpacity();
 		Point getPosition();
 		Point getScrollOffset();
 		Size getSize();
 
-		Ogre::String getFontName();
+		std::string getFontName();
 		/**
 		* Returns true if the widget will gain focus when clicked, false otherwise.
 		*/
 		bool getGainFocusOnClick();
 		bool getGrabbed();
-		Ogre::Real getHeight();
+		float getHeight();
 		/**
 		* Returns true if this widget is hidden when its parent is hidden.
 		*/
@@ -254,7 +254,7 @@ namespace QuickGUI
 		HorizontalAnchor getHorizontalAnchor();
 		bool getInheritClippingWidget();
 		bool getInheritQuadLayer();
-		Ogre::String getInstanceName();
+		std::string getInstanceName();
 		/**
 		* Returns true if window is able to be repositions, false otherwise.
 		*/
@@ -300,25 +300,26 @@ namespace QuickGUI
 		*/
 		Point getScreenPosition();
 		bool getScrollPaneAccessible();
-		Ogre::String getSkinComponent();
+		std::string getSkinComponent();
 		/**
 		* Get whether or not this widget is shown when its parent is shown.
 		*/
 		bool getShowWithParent();
-		Ogre::String getSkin();
+		std::string getSkin();
 		/**
 		* Iterates through visible Children widgets to find and return the widget that is *hit* by the point.
 		* Returns NULL is nothing is *hit*.
 		*/
 		virtual Widget* getTargetWidget(const Point& pixelPosition);
+		bool getUseTransparencyPicking();
 		/**
 		* Returns the type of the widget, as enumerated above. ex. TYPE_BUTTON.
 		*/
 		Type getWidgetType();
 		VerticalAnchor getVerticalAnchor();
-		Ogre::Real getWidth();
-		Ogre::Real getXPosition();
-		Ogre::Real getYPosition();
+		float getWidth();
+		float getXPosition();
+		float getYPosition();
 		bool hasMouseButtonHandlers();
 		/**
 		* Sets mVisible to false.  Widgets should override this to implement how they handle
@@ -339,10 +340,10 @@ namespace QuickGUI
 		/**
 		* Offset the widget position.  Useful for dragging/moving widgets.
 		*/
-		void move(const Ogre::Real& pixelX, const Ogre::Real& pixelY);
+		void move(const float& pixelX, const float& pixelY);
 		void move(const Point& pixelOffset);
-		void moveX(Ogre::Real pixelX);
-		void moveY(Ogre::Real pixelY);
+		void moveX(float pixelX);
+		void moveY(float pixelY);
 		/*
 		* Function disabling ability to change widget's texture.
 		*/
@@ -351,19 +352,19 @@ namespace QuickGUI
 		* Determins if the mouse if over a transparent part of the image defining the widget.
 		* Used to determin if the mouse is *over* a widget. (non transparent parts)
 		*/
-		bool overTransparentPixel(const Point& mousePixelPosition);
+		virtual bool overTransparentPixel(const Point& mousePixelPosition);
 		/**
 		* Force updating of the Widget's Quad position on screen.
 		*/
 		virtual void redraw();
 		void removeChild(Widget* w);
-		void removeChild(const Ogre::String& widgetName);
+		void removeChild(const std::string& widgetName);
 		/**
 		* Properly cleans up all child widgets.
 		*/
 		void removeAndDestroyAllChildWidgets();
 		void removeAndDestroyChild(Widget* w);
-		void removeAndDestroyChild(const Ogre::String& widgetName);
+		void removeAndDestroyChild(const std::string& widgetName);
 		bool resizingAllowed();
 		void setClippingEnabled(bool enable);
 		/**
@@ -377,7 +378,7 @@ namespace QuickGUI
 		*/
 		void setDraggingWidget(Widget* w);
 
-		virtual void setFont(const Ogre::String& fontScriptName, bool recursive = false);
+		virtual void setFont(const std::string& fontScriptName, bool recursive = false);
 		/**
 		* Allows clicking on a widget to not change the active widget.
 		*/
@@ -386,7 +387,7 @@ namespace QuickGUI
 		* Manually set mGrabbed to true.
 		*/
 		void setGrabbed(bool grabbed);
-		virtual void setHeight(Ogre::Real pixelHeight);
+		virtual void setHeight(float pixelHeight);
 		/**
 		* If set to true, this widget will be hidden when its parent's widget is hidden.
 		* NOTE: All widgets have this set to true by default.
@@ -408,13 +409,13 @@ namespace QuickGUI
 		* Manipulates the offset used to determine this widgets zOrder in rendering.
 		*/
 		virtual void setOffset(int offset);
-		void setOpacity(Ogre::Real opacity);
+		void setOpacity(float opacity);
 		/**
 		* Manually set position of widget.
 		* NOTE: the values given are relative to the parent's top left corner, and not the screen!  For screen positioning,
 		*  user the setScreenPosition function.
 		*/
-		virtual void setPosition(const Ogre::Real& pixelX, const Ogre::Real& pixelY);
+		virtual void setPosition(const float& pixelX, const float& pixelY);
 		virtual void setPosition(const Point& pixelPoint);
 		void setPropagateEventFiring(Event e, bool propogate);
 		virtual void setQuadLayer(Quad::Layer l);
@@ -422,16 +423,16 @@ namespace QuickGUI
 		* Manually set position of widget.
 		* NOTE: the values given are relative to the render windows's top left corner, and not the parent widget!
 		*/
-		void setScreenPosition(const Ogre::Real& pixelX, const Ogre::Real& pixelY);
-		void setScreenXPosition(const Ogre::Real& pixelX);
-		void setScreenYPosition(const Ogre::Real& pixelY);
+		void setScreenPosition(const float& pixelX, const float& pixelY);
+		void setScreenXPosition(const float& pixelX);
+		void setScreenYPosition(const float& pixelY);
 		void setScrollPaneAccessible(bool accessible);
-		virtual void setSkin(const Ogre::String& skinName, bool recursive = false);
-		void setSkinComponent(const Ogre::String& skinComponent);
+		virtual void setSkin(const std::string& skinName, bool recursive = false);
+		void setSkinComponent(const std::string& skinComponent);
 		/**
 		* Manually set size of widget.
 		*/
-		virtual void setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight);
+		virtual void setSize(const float& pixelWidth, const float& pixelHeight);
 		virtual void setSize(const Size& pixelSize);
 		/**
 		* If set to true, this widget will be shown when its parent's widget is shown.
@@ -443,10 +444,15 @@ namespace QuickGUI
 		* If set to false, any borders that have been created will be destroyed.
 		*/
 		void setUseBorders(bool use);
+		/*
+		* If set to true, mouse LEAVE and ENTER events will take into account the exact pixel
+		* the cursor is over.
+		*/
+		void setUseTransparencyPicking(bool use, bool recursive = true);
 		void setVerticalAnchor(VerticalAnchor a);
-		virtual void setWidth(Ogre::Real pixelWidth);
-		void setXPosition(Ogre::Real pixelX);
-		virtual void setYPosition(Ogre::Real pixelY);
+		virtual void setWidth(float pixelWidth);
+		void setXPosition(float pixelX);
+		virtual void setYPosition(float pixelY);
 		/**
 		* Sets mVisible to true.  Widgets should override this to implement how they handle
 		* showing.
@@ -456,7 +462,7 @@ namespace QuickGUI
 		/**
 		* Function required for certain widgets/functions to function properly, ie TextBox and fade.
 		*/
-		virtual void timeElapsed(const Ogre::Real time);
+		virtual void timeElapsed(const float time);
 		inline bool isUnderTiming() const {return mEnabled;};
 
 		/*
@@ -485,7 +491,7 @@ namespace QuickGUI
 		virtual ~Widget();
 
 		GUIManager*					mGUIManager;
-		Ogre::String				mInstanceName;
+		std::string					mInstanceName;
 		Type						mWidgetType;
 
 		// PROPERTIES
@@ -495,8 +501,8 @@ namespace QuickGUI
 		bool						mInheritClippingWidget;
 		bool						mDragXOnly;
 		bool						mDragYOnly;
-		Ogre::String				mFontName;
-		Ogre::String				mSkinName;
+		std::string					mFontName;
+		std::string					mSkinName;
 		bool						mHideSkin;
 		bool						mVisible;
 		bool						mEnabled;
@@ -507,24 +513,27 @@ namespace QuickGUI
 		bool						mInheritQuadLayer;
 		bool						mMovingEnabled;
 		bool						mDraggingEnabled;
-		Ogre::String				mSkinComponent;
+		std::string					mSkinComponent;
 		bool						mScrollPaneAccessible;
 		bool						mInheritOpacity;
-		Ogre::Real					mOpacity;
+		float						mOpacity;
 		// number of parents iterated to get to sheet.
 		int							mOffset;
 		bool						mHideWithParent;
 		bool						mShowWithParent;
-		// used for transparency picking
-		Ogre::Image*				mWidgetImage;
+		bool						mUseTransparencyPicking;
+		
 		Widget*						mParentWidget;
 		Widget*						mWidgetToDrag;
+
+		// Used for overTransparentPixel function
+		SkinSet*					mSkinSet;
 
 		// ANCHORS
 		HorizontalAnchor			mHorizontalAnchor;
 		VerticalAnchor				mVerticalAnchor;
-		Ogre::Real					mPixelsFromParentRight;
-		Ogre::Real					mPixelsFromParentBottom;
+		float						mPixelsFromParentRight;
+		float						mPixelsFromParentBottom;
 
 		// Implement the Enter/Leave functionality.
 		bool						mEntered;
@@ -541,11 +550,11 @@ namespace QuickGUI
 		// Keeping track of the QuadContainer this Quad belongs to.
 		QuadContainer*				mQuadContainer;
 
-		Widget*						_createChild(const Ogre::String& name, Type t);
+		Widget*						_createChild(const std::string& name, Type t);
 		// List of any child widgets this widget may have.
 		WidgetArray					mChildWidgets;
 
-		virtual Widget*				_createComponent(const Ogre::String& name, Type t);
+		virtual Widget*				_createComponent(const std::string& name, Type t);
 		WidgetArray					mComponents;
 
 		// Pixel position relative to parent.  (0,0) is the Parent Widgets top Left corner.
@@ -567,8 +576,8 @@ namespace QuickGUI
 
 		void _initEventHandlers();
 
-		virtual void _setScrollXOffset(Ogre::Real pixelXOffset);
-		virtual void _setScrollYOffset(Ogre::Real pixelYOffset);
+		virtual void _setScrollXOffset(float pixelXOffset);
+		virtual void _setScrollYOffset(float pixelYOffset);
 	protected:
 		virtual void onPositionChanged(const EventArgs& args);
 		virtual void onSizeChanged(const EventArgs& args);

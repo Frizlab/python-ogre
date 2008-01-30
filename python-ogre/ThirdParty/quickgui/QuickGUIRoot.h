@@ -24,18 +24,18 @@ namespace QuickGUI
 		static Root& getSingleton(void); 
 		static Root* getSingletonPtr(void);
 
-		GUIManager* createGUIManager(const Ogre::String& name, Ogre::Viewport* v);
-		GUIManager* createGUIManager(Ogre::Viewport* v);
+		GUIManager* createGUIManager(const std::string& name, Ogre::Viewport* v, const std::string& defaultSkin);
+		GUIManager* createGUIManager(Ogre::Viewport* v, const std::string& defaultSkin);
 
 		void destroyGUIManager(GUIManager* gm);
-		void destroyGUIManager(const Ogre::String& name);
+		void destroyGUIManager(const std::string& name);
 
-		GUIManager* getGUIManager(const Ogre::String& name);
+		GUIManager* getGUIManager(const std::string& name);
 
 	protected:
 		int mGUIManagerCounter;
 
-		std::map<Ogre::String,GUIManager*> mGUIManagers;
+		std::map<std::string,GUIManager*> mGUIManagers;
 	};
 }
 

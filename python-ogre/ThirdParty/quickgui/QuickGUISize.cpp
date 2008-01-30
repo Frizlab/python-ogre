@@ -10,7 +10,7 @@ namespace QuickGUI
 	{
 	}
 
-	Size::Size(Ogre::Real Width, Ogre::Real Height) :
+	Size::Size(float Width, float Height) :
 		width(Width),
 		height(Height)
 	{

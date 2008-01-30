@@ -49,7 +49,7 @@ namespace QuickGUI
 			@note
 				This Window will have a TitleBar
         */
-		Window(const Ogre::String& name, GUIManager* gm);
+		Window(const std::string& name, GUIManager* gm);
 
 		virtual void allowScrolling(bool allow);
 

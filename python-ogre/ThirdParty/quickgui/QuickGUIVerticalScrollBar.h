@@ -1,7 +1,7 @@
 #ifndef QUICKGUIVERTICALSCROLLBAR_H
 #define QUICKGUIVERTICALSCROLLBAR_H
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIButton.h"
 #include "QuickGUIWidget.h"
 
@@ -42,10 +42,10 @@ namespace QuickGUI
 			@note
 				Vertical or Horizontal TrackBars are derived from a comparison between width and height.
         */
-		VerticalScrollBar(const Ogre::String& name, GUIManager* gm);
+		VerticalScrollBar(const std::string& name, GUIManager* gm);
 
 		// Same as setValue, except that the scroll event is not fired.
-		void _setValue(Ogre::Real value);
+		void _setValue(float value);
 
 		/**
 		* Add user defined event that will be called when amount of progress has changed.
@@ -57,75 +57,75 @@ namespace QuickGUI
 		void addOnScrollEventHandler(MemberFunctionSlot* function);
 
 		ButtonLayout getButtonLayout();
-		Ogre::Real getLargeChange();
+		float getLargeChange();
 		/**
 		* Gets the amount of time the left mouse button is down over a button or bar
 		* before another scroll occurs.
 		*/
-		Ogre::Real getRepeatTime();
+		float getRepeatTime();
 		Size getScrollButtonSize();
-		Ogre::Real getSliderHeight();
-		Ogre::Real getSmallChange();
+		float getSliderHeight();
+		float getSmallChange();
 		/**
 		* Gets the numerical value representing the position of the left end of the slider, relative to the track bounds.
 		* NOTE: value should be between 0.0 and 1.0
 		*/
-		Ogre::Real getValue();
+		float getValue();
 
 		void scrollUpLarge();
 		void scrollUpSmall();
 		void scrollDownLarge();
 		void scrollDownSmall();
 		void setButtonLayout(ButtonLayout layout);
-		void setLargeChange(Ogre::Real change);
+		void setLargeChange(float change);
 		/**
 		* Sets the amount of time the left mouse button is down over a button or bar
 		* before another scroll occurs.
 		*/
-		void setScrollRepeatTime(Ogre::Real timeInSeconds);
-		void setSmallChange(Ogre::Real change);
+		void setScrollRepeatTime(float timeInSeconds);
+		void setSmallChange(float change);
 		/**
 		* Sets the numerical value representing the position of the left end of the slider, relative to the track bounds.
 		* NOTE: value should be between 0.0 and 1.0
 		*/
-		void setValue(Ogre::Real value);
+		void setValue(float value);
 
-		void timeElapsed(const Ogre::Real time);
+		void timeElapsed(const float time);
 
 	protected:
 		~VerticalScrollBar();
 
 		// time in seconds, ie 0.5
-		Ogre::Real mScrollRepeatTime;
-		Ogre::Real mRepeatTimer;
+		float mScrollRepeatTime;
+		float mRepeatTimer;
 
 		// last recorded slider position
 		Point mSliderPosition;
 
-		Ogre::Real mMinSliderPosition;
-		Ogre::Real mMaxSliderPosition;
+		float mMinSliderPosition;
+		float mMaxSliderPosition;
 		void _determineMinMax();
 
-		Ogre::Real mLargeChange;
-		Ogre::Real mSmallChange;
+		float mLargeChange;
+		float mSmallChange;
 
 		ButtonLayout mButtonLayout;
 
 		Button* mSlider;
-		Ogre::String mSliderTextureName;
+		std::string mSliderTextureName;
 
-		void setSliderHeight(Ogre::Real relativeHeight);
+		void setSliderHeight(float relativeHeight);
 		void _constrainSlider();
 
-		Ogre::String mScrollUpTextureName;
-		Ogre::String mScrollDownTextureName;
+		std::string mScrollUpTextureName;
+		std::string mScrollDownTextureName;
 
 		Button* mScrollUp1;
 		Button* mScrollUp2;
 		Button* mScrollDown1;
 		Button* mScrollDown2;
 
-		void _scroll(Ogre::Real change, ScrollEventArgs args);
+		void _scroll(float change, ScrollEventArgs args);
 		void onScrollUpDown(const EventArgs& args);
 		void onScrollDownDown(const EventArgs& args);
 

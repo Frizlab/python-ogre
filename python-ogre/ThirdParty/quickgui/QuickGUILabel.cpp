@@ -5,7 +5,7 @@
 
 namespace QuickGUI
 {
-	Label::Label(const Ogre::String& name, GUIManager* gm) :
+	Label::Label(const std::string& name, GUIManager* gm) :
 		Widget(name,gm),
 		mVerticalAlignment(VA_MID),
 		mHorizontalAlignment(HA_MID),
@@ -34,8 +34,8 @@ namespace QuickGUI
 	{
 		Rect textDimensions = mText->getDimensions();
 		// 1 pixel buffer used
-		Ogre::Real horizontalBuffer = 1.0 / mGUIManager->getViewportWidth();
-		Ogre::Real verticalBuffer = 1.0 / mGUIManager->getViewportHeight();
+		float horizontalBuffer = 1.0 / mGUIManager->getViewportWidth();
+		float verticalBuffer = 1.0 / mGUIManager->getViewportHeight();
 
 		Rect textBounds = getTextBounds();
 
@@ -184,7 +184,7 @@ namespace QuickGUI
 		mText->_notifyQuadContainer(mQuadContainer);
 	}
 
-	void Label::setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight)
+	void Label::setSize(const float& pixelWidth, const float& pixelHeight)
 	{
 		if((pixelWidth == 0) && (pixelHeight == 0))
 			return;
@@ -215,7 +215,7 @@ namespace QuickGUI
 			mText->setColor(c);
 	}
 
-	void Label::setFont(const Ogre::String& fontScriptName, bool recursive)
+	void Label::setFont(const std::string& fontScriptName, bool recursive)
 	{
 		if(fontScriptName == "")
 			return;
@@ -232,7 +232,7 @@ namespace QuickGUI
 		}
 	}
 
-	void Label::setHeight(Ogre::Real pixelHeight)
+	void Label::setHeight(float pixelHeight)
 	{
 		mAutoSize = false;
 		Widget::setHeight(pixelHeight);
@@ -244,6 +244,12 @@ namespace QuickGUI
 	{
 		Widget::setQuadLayer(l);
 		mText->setQuadLayer(l);
+	}
+
+	void Label::setSkin(const std::string& skinName, bool recursive)
+	{
+		Widget::setSkin(skinName,recursive);
+		mText->setSkin(skinName);
 	}
 
 	void Label::setText(const Ogre::UTFString& text)
@@ -280,7 +286,7 @@ namespace QuickGUI
 		mVPixelPadHeight = height;
 	}
 
-	void Label::setWidth(Ogre::Real pixelWidth)
+	void Label::setWidth(float pixelWidth)
 	{
 		mAutoSize = false;
 		Widget::setWidth(pixelWidth);

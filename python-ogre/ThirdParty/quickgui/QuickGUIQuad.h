@@ -1,25 +1,18 @@
 #ifndef QUICKGUIQUAD_H
 #define QUICKGUIQUAD_H
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 
-#include "OgreCommon.h"
-#include "OgreRenderSystem.h"
-#include "OgreVector4.h"
-
-#include "QuickGUIPrerequisites.h"
 #include "QuickGUIExportDLL.h"
 #include "QuickGUIRect.h"
-#include "QuickGUISkinSetManager.h"
+#include "QuickGUITypedef.h"
+#include "QuickGUIVector4.h"
 #include "QuickGUIVertex.h"
+
+#include <string>
 
 namespace QuickGUI
 {
-	// forward declaration
-	class QuadContainer;
-	class GUIManager;
-	class Widget;
-
 	class _QuickGUIExport Quad
 	{
 	public:
@@ -53,8 +46,8 @@ namespace QuickGUI
 		bool getInheritClippingWidget();
 		bool getInheritLayer();
 		Layer getLayer();
-		Ogre::String getMaterialName();
-		Ogre::Real getOpacity();
+		std::string getMaterialName();
+		float getOpacity();
 		bool getShowWithOwner();
 		Vertex* getVertices();
 		const int getOffset() const;
@@ -70,25 +63,23 @@ namespace QuickGUI
 		void setColor(const Ogre::ColourValue& topColor, const Ogre::ColourValue& botColor);
 		void setDimensions(const Rect& pixelDimensions);
 		void setGUIManager(GUIManager* gm);
-		void setHeight(Ogre::Real pixelHeight);
+		void setHeight(float pixelHeight);
 		void setInheritClippingWidget(bool inherit);
 		void setInheritLayer(bool inherit);
 		void setLayer(Layer l);
-		void setMaterial(const Ogre::String& materialName);
+		void setMaterial(const std::string& materialName);
 		void setOffset(int offset);
-		void setOpacity(Ogre::Real opacity);
+		void setOpacity(float opacity);
 		void setPosition(const Point& pixelPosition);
 		void setShowWithOwner(bool showWithOwner);
 		void setSize(const Size& pixelSize);
-		void setTextureCoordinates(const Ogre::Vector4& textureCoordinates);
-		void setTextureCoordinates(const Ogre::FloatRect& textureCoordinates);
+		void setTextureCoordinates(Vector4 textureCoordinates);
 		void setVisible(bool visible);
-		void setWidth(Ogre::Real pixelWidth);
-		void setXPosition(Ogre::Real pixelX);
-		void setYPosition(Ogre::Real pixelY);
+		void setWidth(float pixelWidth);
+		void setXPosition(float pixelX);
+		void setYPosition(float pixelY);
 
-		bool textureChanged();
-		bool textureExists(const Ogre::String& textureName);
+		bool materialChanged();
 
 		void updateClippingWidget();
 
@@ -108,12 +99,12 @@ namespace QuickGUI
 		Layer				mLayer;
 		bool				mInheritQuadLayer;
 
-		Ogre::String		mMaterialName;
+		std::string			mMaterialName;
 		// number of parent iterations away from sheet quad.
 		int					mOffset;
 		Rect				mPixelDimensions;
 		// UV coordinates: (left,top,right,bottom)
-		Ogre::Vector4		mTextureCoordinates;
+		Vector4				mTextureCoordinates;
 		bool				mVisible;
 		bool				mShowWithOwner;
 		Ogre::ColourValue	mTopColor;
@@ -123,7 +114,7 @@ namespace QuickGUI
 		bool				mInheritClippingWidget;
 		// Store changes made via Clipping.
 		Rect				mDimensionsViaClipping;
-		Ogre::Vector4		mTextureCoordinatesViaClipping;
+		Vector4				mTextureCoordinatesViaClipping;
 
 		bool				mAddedToRenderGroup;
 		bool				mColorChanged;

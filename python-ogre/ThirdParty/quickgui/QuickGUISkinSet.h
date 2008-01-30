@@ -8,11 +8,11 @@
 #include "OgrePrerequisites.h"
 #include "OgreResourceGroupManager.h"
 #include "OgreTextureManager.h"
-#include "OgreVector4.h"
 #include "OgreLogManager.h"
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIExportDLL.h"
+#include "QuickGUIVector4.h"
 
 #include <algorithm>
 #include <map>
@@ -41,14 +41,14 @@ namespace QuickGUI
 		* SkinSet texture.  
 		* NOTE: Texture will not be present until buildTexture function is executed.
 		*/
-		void addTexture(const Ogre::String& textureName, const Ogre::Vector4 &texCoord = Ogre::Vector4::ZERO);
+		void addTexture(const std::string& textureName, const Vector4 &texCoord = Vector4::ZERO);
 
 		/*
 		* Removes a texture name to the list of textures that will be included in the
 		* SkinSet texture.  
 		* NOTE: Texture will not be removed until buildTexture function is executed.
 		*/
-		void removeTexture(const Ogre::String& textureName);
+		void removeTexture(const std::string& textureName);
 
 		/*
 		* Builds the resulting Image from all added Images.  If Texture has already
@@ -65,29 +65,37 @@ namespace QuickGUI
 		/*
 		* Returns true if SkinSet Texture contains texture, false otherwise.
 		*/
-		bool containsImage(Ogre::String textureName);
+		bool containsImage(std::string textureName);
 
-		Ogre::String getImageExtension() const;
+		std::string getImageExtension() const;
+		/*
+		* Returns the pixel height of the embedded image or texture.
+		*/
+		int getImageHeight(const std::string& textureName);
+		/*
+		* Returns the pixel width of the embedded image or texture.
+		*/
+		int getImageWidth(const std::string& textureName);
 		/*
 		* Retrieve material used for this Skinset.
 		*/
-		Ogre::String getMaterialName() { return mMaterialName; }
-		Ogre::String getSkinName() const;
+		std::string getMaterialName() { return mMaterialName; }
+		std::string getSkinName() const;
 		// Return the name of the skin for this SkinSet
-		Ogre::String getTextureName() const;
+		std::string getTextureName() const;
 
 		/*
 		* Return the UV coordinates of the image, assuming the image is a part of the image set.
 		* Return form is (left,top,right,bot). (left and right refer to x-coordinate, top and
 		* bottom refer to y-coordinates)
 		*/
-		Ogre::Vector4 getTextureCoordinates(const Ogre::String &imageName) const;
+		Vector4 getTextureCoordinates(const std::string &imageName) const;
 		/*
 		* set the UV coordinates of the image, assuming the image is a part of the image set.
 		* Vector4 form is (left,top,right,bot). (left and right refer to x-coordinate, top and
 		* bottom refer to y-coordinates)
 		*/
-		void setTextureCoordinates(const Ogre::String &imageName, const Ogre::Vector4 &texCoord);
+		void setTextureCoordinates(const std::string &imageName, const Vector4 &texCoord);
 		/*
 		* saves skin to a .skinset file in the folder containing first 
 		* place found in the resource group.
@@ -106,55 +114,57 @@ namespace QuickGUI
 			@param
 				yPos The relative position of the vertical pixel in the image.
         */
-		bool overTransparentPixel(const Ogre::String& skinComponent, int xPos, int yPos);
+		bool overTransparentPixel(const std::string& skinComponent, int xPos, int yPos);
 		
 		/*
 		* set material used for this Skinset.
 		*/
-		void setMaterialName(const Ogre::String& materialName){ mMaterialName = materialName; }
+		void setMaterialName(const std::string& materialName){ mMaterialName = materialName; }
 
 		const Ogre::StringVector &getTextureNames() const {return mTextureNames;}
 
 
 	protected:
-		Ogre::String mSkinName;
+		std::string mSkinName;
 
 		// Corresponding to the Image Type. (IMAGE_TYPE_PNG -> ".png")
-		Ogre::String mImageExtension;
+		std::string mImageExtension;
 
 		// list of textures used to build the SkinSet Texture.
 		Ogre::StringVector mTextureNames;
 		// list of textures that are currently in the SkinSet Texture.
-		std::set<Ogre::String> mContainedTextures;
+		std::set<std::string> mContainedTextures;
 
 		// The actual texture that stores the imageset
 		Ogre::uint mTextureWidth;
 		Ogre::uint mTextureHeight;
 
-		Ogre::Real mHorizontalTexelOffset;
-		Ogre::Real mVerticalTexelOffset;
+		float mHorizontalTexelOffset;
+		float mVerticalTexelOffset;
 
 		// This map connects individual textures to its UV coordinates, within
 		// the SkinSet Texture.
-		std::map<Ogre::String,Ogre::Vector4> mTextureMap;
+		std::map<std::string,Vector4> mTextureMap;
 
 		// Number of images that this SkinSet has
 		size_t mNumIndividualTextures;
 
 	private:
 		// Generate a new SkinSet using the skin's image files.
-		SkinSet(const Ogre::String& skinName, ImageType t, const Ogre::String &resourceGroup);
+		SkinSet(const std::string& skinName, ImageType t, const std::string &resourceGroup);
 		// Delete this SkinSet
 		~SkinSet();
 
 		void _determineExtension(ImageType t);
 		void buildMaterial();
 		void _findSkinTextures();
-		Ogre::String mTextureName;
-		Ogre::String mResourceGroup;
-		Ogre::String mMaterialName;
+		std::string mTextureName;
+		std::string mResourceGroup;
+		std::string mMaterialName;
 		bool mDirtyTexture;
 		bool mDirtyTextureCoordinates;
+
+		Ogre::Image* mSkinSetImage;
 	};
 }
 

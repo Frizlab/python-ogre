@@ -99,21 +99,14 @@ namespace NxOgre {
 			//////////////////////////////////////////////////////////
 
 			/** @brief Method Ptr Constructor */
-            #ifndef GCC_XML
+
 			template <typename T> explicit
 			GroupCallback(T* v,
 			void (T::*Start)(Actor*, Actor*),			
 			void (T::*End)(Actor*, Actor*),			
 			void (T::*Touch)(Actor*, Actor*))
-			: mCallback(new TriMethodCallback<T>(v, Start, End, Touch), bool callbackOwned),mCallbackOwned(callbackOwned) {}
-			#else
-            template <typename T> explicit
-			GroupCallback(T* v,
-			void (T::*Start)(Actor*, Actor*),			
-			void (T::*End)(Actor*, Actor*),			
-			void (T::*Touch)(Actor*, Actor*))
-			: mCallback(new TriMethodCallback<T>(v, Start, End, Touch)) {}
-		    #endif
+			:  mCallback(new TriMethodCallback<T>(v, Start, End, Touch)) {}
+	
 			//////////////////////////////////////////////////////////
 
 

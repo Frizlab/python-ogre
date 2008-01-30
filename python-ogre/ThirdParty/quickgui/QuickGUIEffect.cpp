@@ -7,7 +7,7 @@ namespace QuickGUI
 	//------------------------------------------------------------------------------------------------
 	//------------------------------------------------------------------------------------------------
 	//------------------------------------------------------------------------------------------------
-	bool Effect::update(const Ogre::Real timeElapsed)
+	bool Effect::update(const float timeElapsed)
 	{
 		mCurrTime += timeElapsed;
 		if (mCurrTime >= mStartTime)
@@ -16,7 +16,7 @@ namespace QuickGUI
 
 			if (finished)
 			{
-				updateValue(Ogre::Real(1.0));
+				updateValue(float(1.0));
 			}
 			else
 			{
@@ -29,7 +29,7 @@ namespace QuickGUI
 		return false;
 	}
 	//------------------------------------------------------------------------------------------------
-	Ogre::Real Effect::getTimeFactor() 
+	float Effect::getTimeFactor() 
 	{          
 		return (mCurrTime - mStartTime) / mDuration;
 	}
@@ -49,11 +49,11 @@ namespace QuickGUI
 		return false;
 	}
 	//------------------------------------------------------------------------------------------------
-	Ogre::Real Effect::interpolate(const Ogre::Real start, 
-								   const Ogre::Real end, 
-								   const Ogre::Real timeFactor) const
+	float Effect::interpolate(const float start, 
+								   const float end, 
+								   const float timeFactor) const
 	{
-		Ogre::Real factor;
+		float factor;
 		switch(mType)
 		{
 		case EFFECT_SIN:
@@ -75,14 +75,14 @@ namespace QuickGUI
 	//------------------------------------------------------------------------------------------------
 	//------------------------------------------------------------------------------------------------
 	//------------------------------------------------------------------------------------------------
-	void AlphaEffect::updateValue(const Ogre::Real factor)
+	void AlphaEffect::updateValue(const float factor)
 	{
 		//mWidget->setAlpha(interpolate(mStartAlpha, mEndAlpha, factor), true);
 	}
 	//------------------------------------------------------------------------------------------------
 	//------------------------------------------------------------------------------------------------
 	//------------------------------------------------------------------------------------------------
-	void SizeEffect::updateValue(const Ogre::Real factor)
+	void SizeEffect::updateValue(const float factor)
 	{
 		mWidget->setSize(
 			Size(interpolate(mStartSize.width, mEndSize.width, factor),
@@ -93,7 +93,7 @@ namespace QuickGUI
 	//------------------------------------------------------------------------------------------------
 	//------------------------------------------------------------------------------------------------
 	//------------------------------------------------------------------------------------------------
-	void MoveEffect::updateValue(const Ogre::Real factor)
+	void MoveEffect::updateValue(const float factor)
 	{
 		mWidget->setPosition(
 			Point(interpolate(mStartPosition.x, mEndPosition.x, factor),
@@ -104,14 +104,14 @@ namespace QuickGUI
 	//------------------------------------------------------------------------------------------------
 	//------------------------------------------------------------------------------------------------
 	//------------------------------------------------------------------------------------------------
-	void ActivateEffect::updateValue(const Ogre::Real factor)
+	void ActivateEffect::updateValue(const float factor)
 	{
 		//mWidget->setMaterialBlendFactor(interpolate (0, 1, factor), true);
 	} 
 	//------------------------------------------------------------------------------------------------
 	//------------------------------------------------------------------------------------------------
 	//------------------------------------------------------------------------------------------------
-	void OverEffect::updateValue(const Ogre::Real factor)
+	void OverEffect::updateValue(const float factor)
 	{
 		//mWidget->setMaterialBlendFactor(interpolate (0, 1, factor), true);
 	}

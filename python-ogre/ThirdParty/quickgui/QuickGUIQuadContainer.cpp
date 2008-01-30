@@ -191,7 +191,7 @@ namespace QuickGUI
 	void QuadContainer::notifyChildRenderableChanged(Quad* q)
 	{
 		assert(q);
-		if(q->offsetChanged() || q->textureChanged())
+		if(q->offsetChanged() || q->materialChanged())
 		{
 			removeChildRenderable(q);
 			addChildRenderable(q);
@@ -203,7 +203,7 @@ namespace QuickGUI
 	void QuadContainer::notifyMenuRenderableChanged(Quad* q)
 	{
 		assert(q);
-		if(q->offsetChanged() || q->textureChanged())
+		if(q->offsetChanged() || q->materialChanged())
 		{
 			removeMenuRenderable(q);
 			addMenuRenderable(q);

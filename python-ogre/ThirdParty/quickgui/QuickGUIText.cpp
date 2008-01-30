@@ -4,11 +4,12 @@
 #include "QuickGUILabel.h"
 #include "QuickGUIManager.h"
 
+#include "OgreFont.h"
 #include "OgreMaterialManager.h"
 
 namespace QuickGUI
 {
-	Text::Text(const Ogre::String& name, QuadContainer* container, Label* owner) :
+	Text::Text(const std::string& name, QuadContainer* container, Label* owner) :
 		mOwner(owner),
 		mLayer(Quad::LAYER_CHILD),
 		mName(name),
@@ -39,12 +40,9 @@ namespace QuickGUI
 		// Order dependent, this code must go before call to setFont, since that removes selection, which
 		// affects the character background.
 		mCharacterBackground = new Quad(mOwner);
-		mCharacterBackground->setMaterial(SkinSetManager::getSingleton().getSkinSet("qgui")->getMaterialName());
-		mCharacterBackground->setTextureCoordinates(SkinSetManager::getSingleton().getSkinSet("qgui")->getTextureCoordinates("qgui.textselection.png"));
 		mCharacterBackground->setColor(mBackgroundSelectColor);
 		mCharacterBackground->setOffset(mOffset-1);
 		mCharacterBackground->setVisible(false);
-		mCharacterBackground->_notifyQuadContainer(mQuadContainer);
 
 		mSelectColor = getInverseColor(mColor);
 		mBackgroundSelectColor = mColor;
@@ -66,10 +64,10 @@ namespace QuickGUI
 			return;
 		}
 
-		Ogre::Real minX = 9999;
-		Ogre::Real minY = 9999;
-		Ogre::Real maxX = -9999;
-		Ogre::Real maxY = -9999;
+		float minX = 9999;
+		float minY = 9999;
+		float maxX = -9999;
+		float maxY = -9999;
 
 		QuadArray::iterator it;
 		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
@@ -126,7 +124,8 @@ namespace QuickGUI
 	}
 
 	void Text::_setCaptionHorizontal(const Ogre::UTFString& text)
-	{		
+	{
+        // Parsing the text
 		int charCounter = 0;
 		Rect textArea = mOwner->getTextBounds();
 		Point pos(textArea.x,textArea.y);
@@ -134,7 +133,7 @@ namespace QuickGUI
 		for( it = text.begin(); it != text.end(); ++it )
 		{
 			Ogre::UTFString::code_point cp = it.getCharacter();
-			
+
 			if(mTextHelper->isNewLine(cp))
 			{
 				pos.x = textArea.x;
@@ -145,7 +144,8 @@ namespace QuickGUI
 			// Wrap only at a space
 			if(mTextHelper->isSpace(cp))
 			{
-				Ogre::Real tempx = pos.x;
+			    bool ignore = false;
+				float tempx = pos.x;
 				Ogre::UTFString::code_point tempcp;
 				// Find next space, or go to new line if there is no space
 				// before we run out of room.
@@ -158,18 +158,20 @@ namespace QuickGUI
 						pos.x = textArea.x;
 						pos.y += getNewlineHeight();
 						// Ignore this space, because it is used for wrapping
-						it.moveNext();
-						cp = it.getCharacter(); 
+						ignore = true;
 						break;
 					}
 					if( i != 0 && mTextHelper->isSpace(tempcp) )
 						break;	// There is another space before we need a new line
 				}
+
+				if (ignore)
+                    continue;
 			}
 			// check dimensions to see if wrap around should occur.
 			Size size = mTextHelper->getGlyphSize(cp);
 
-			// if parent is a label (is could be a derived widget, like textbox) and has auto sizing enabled, 
+			// if parent is a label (is could be a derived widget, like textbox) and has auto sizing enabled,
 			// we do not confine text to any bounds.
 			if(!mOwner->getAutoSize() || (mOwner->getWidgetType() != Widget::TYPE_LABEL))
 			{
@@ -194,13 +196,14 @@ namespace QuickGUI
 
 			// We need to have quads that represent spaces for text indexing.  We don't need
 			// to render them, however.
-			if(!isspace(cp))
+			if(!mTextHelper->isWhiteSpace(cp))
 			{
 				// set texture
 				q->setMaterial(mTextHelper->getFontMaterialName());
 
 				// set texture coords
-				q->setTextureCoordinates(mTextHelper->getGlyphTexCoords(cp));
+				Ogre::Font::UVRect r = mTextHelper->getGlyphTexCoords(cp);
+				q->setTextureCoordinates(Vector4(r.left,r.top,r.right,r.bottom));
 
 				// set default color
 				q->setColor(mColor);
@@ -223,7 +226,7 @@ namespace QuickGUI
 		for( it = text.begin(); it != text.end(); ++it )
 		{
 			Ogre::UTFString::code_point cp = it.getCharacter();
-			
+
 			if(mTextHelper->isWhiteSpace(cp))
 			{
 				if(mTextHelper->isSpace(cp))
@@ -237,7 +240,7 @@ namespace QuickGUI
 				}
 				continue;
 			}
-	
+
 			Quad* q = new Quad(mOwner);
 			q->setOffset(mOffset);
 			q->setLayer(mLayer);
@@ -252,7 +255,8 @@ namespace QuickGUI
 			q->setMaterial(mTextHelper->getFontMaterialName());
 
 			// set texture coords
-			q->setTextureCoordinates(mTextHelper->getGlyphTexCoords(cp));
+			Ogre::Font::UVRect r = mTextHelper->getGlyphTexCoords(cp);
+			q->setTextureCoordinates(Vector4(r.left,r.top,r.right,r.bottom));
 
 			// notify render object group
 			q->_notifyQuadContainer(mQuadContainer);
@@ -290,7 +294,7 @@ namespace QuickGUI
 		}
 		else
 			_calculateDimensions();
-		
+
 		// Maintain visibility. Must be called before setting clip rect!
 		if(!mVisible)
 			hide();
@@ -333,12 +337,12 @@ namespace QuickGUI
 		return mColor;
 	}
 
-	Ogre::String Text::getFont()
+	std::string Text::getFont()
 	{
 		return mTextHelper->getFont();
 	}
 
-	Ogre::Real Text::getGlyphHeight()
+	float Text::getGlyphHeight()
 	{
 		return mTextHelper->getGlyphHeight();
 	}
@@ -348,7 +352,7 @@ namespace QuickGUI
 		return mTextHelper->getGlyphSize(c);
 	}
 
-	Ogre::Real Text::getGlyphWidth(Ogre::UTFString::code_point c)
+	float Text::getGlyphWidth(Ogre::UTFString::code_point c)
 	{
 		return mTextHelper->getGlyphWidth(c);
 	}
@@ -362,12 +366,12 @@ namespace QuickGUI
 			c.a);
 	}
 
-	Ogre::Real Text::getLineSpacing()
+	float Text::getLineSpacing()
 	{
 		return mLineSpacing;
 	}
 
-	Ogre::Real Text::getNewlineHeight()
+	float Text::getNewlineHeight()
 	{
 		return mTextHelper->getGlyphHeight();
 	}
@@ -485,7 +489,7 @@ namespace QuickGUI
 		return textIndex;
 	}
 
-	Ogre::Real Text::getTextWidth(const Ogre::String& text)
+	float Text::getTextWidth(const std::string& text)
 	{
 		return mTextHelper->getTextWidth(text);
 	}
@@ -571,7 +575,7 @@ namespace QuickGUI
 
 		// set dimensions of background selection quad.
 		Rect dimensions;
-		
+
 		Quad* q;
 
 		// Get the dimensions of the starting position of the selection quad.
@@ -609,10 +613,10 @@ namespace QuickGUI
 		onTextChanged(e);
 	}
 
-	void Text::setFont(const Ogre::String& fontName)
+	void Text::setFont(const std::string& fontName)
 	{
 		mTextHelper->setFont(fontName);
-		
+
 		// update visual displaying of text
 		redraw();
 
@@ -634,7 +638,7 @@ namespace QuickGUI
 		}
 	}
 
-	void Text::setLineSpacing(Ogre::Real spacing)
+	void Text::setLineSpacing(float spacing)
 	{
 		mLineSpacing = spacing;
 		redraw();
@@ -691,6 +695,13 @@ namespace QuickGUI
 		QuadArray::iterator it;
 		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
 			(*it)->setGUIManager(mGUIManager);
+	}
+
+	void Text::setSkin(const std::string& skin)
+	{
+		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(skin);
+		mCharacterBackground->setMaterial(ss->getMaterialName());
+		mCharacterBackground->setTextureCoordinates(ss->getTextureCoordinates(skin + ".textselection" + ss->getImageExtension()));
 	}
 
 	void Text::show()

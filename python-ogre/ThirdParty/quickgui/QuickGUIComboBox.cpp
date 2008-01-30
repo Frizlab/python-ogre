@@ -7,7 +7,7 @@
 
 namespace QuickGUI
 {
-	ComboBox::ComboBox(const Ogre::String& name, GUIManager* gm) :
+	ComboBox::ComboBox(const std::string& name, GUIManager* gm) :
 		Widget(name,gm),
 		mRightToLeft(false),
 		mSelectedItem(0),
@@ -267,20 +267,20 @@ namespace QuickGUI
 		mHighlightPanel->setVisible(false);
 	}
 
-	void ComboBox::setDropDownHeight(Ogre::Real pixelHeight)
+	void ComboBox::setDropDownHeight(float pixelHeight)
 	{
 		mDropDownHeight = pixelHeight;
 		mList->setHeight(mDropDownHeight);
 	}
 
-	void ComboBox::setDropDownWidth(Ogre::Real pixelWidth)
+	void ComboBox::setDropDownWidth(float pixelWidth)
 	{
 		mDropDownWidth = pixelWidth;
 		mList->setWidth(mDropDownWidth);
 		mList->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT);
 	}
 
-	void ComboBox::setFont(const Ogre::String& fontScriptName, bool recursive)
+	void ComboBox::setFont(const std::string& fontScriptName, bool recursive)
 	{
 		if(fontScriptName == "")
 			return;
@@ -295,7 +295,7 @@ namespace QuickGUI
 		}
 	}
 
-	void ComboBox::setHeight(Ogre::Real pixelHeight)
+	void ComboBox::setHeight(float pixelHeight)
 	{
 		Widget::setHeight(pixelHeight);
 		mAutoSize = false;
@@ -324,7 +324,7 @@ namespace QuickGUI
 		//mMenuLabel->setRightToLeft(mRightToLeft);
 	}
 
-	void ComboBox::setSize(const Ogre::Real& pixelWidth, const Ogre::Real& pixelHeight)
+	void ComboBox::setSize(const float& pixelWidth, const float& pixelHeight)
 	{
 		Widget::setSize(pixelWidth,pixelHeight);
 		mAutoSize = false;
@@ -335,7 +335,7 @@ namespace QuickGUI
 		ComboBox::setSize(pixelSize.width,pixelSize.height);
 	}
 
-	void ComboBox::setSkin(const Ogre::String& skinName, bool recursive)
+	void ComboBox::setSkin(const std::string& skinName, bool recursive)
 	{
 		Widget::setSkin(skinName,recursive);
 

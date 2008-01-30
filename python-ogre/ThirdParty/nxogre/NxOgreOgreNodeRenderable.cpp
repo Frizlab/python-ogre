@@ -315,7 +315,7 @@ void OgreNodeRenderable::__destroyObjects(Ogre::SceneNode* node) {
 	node->detachAllObjects();
 	node->removeAndDestroyAllChildren();
 
-	mSceneMgr->destroySceneNode(node->getName());
+	mSceneMgr->destroySceneNode(node);
 
 }
 

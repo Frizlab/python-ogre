@@ -1,9 +1,9 @@
 #ifndef QUICKGUIMOUSEBUTTONID_H
 #define QUICKGUIMOUSEBUTTONID_H
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 
-#define NUM_MOUSE_BUTTONS (MB_Button7 + 1)
+const int NUM_MOUSE_BUTTONS = 8;
 
 namespace QuickGUI
 {

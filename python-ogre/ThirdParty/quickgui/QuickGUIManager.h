@@ -8,13 +8,12 @@
 #include "OgreSceneManager.h"
 #include "OgreViewport.h"
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUISkinSetManager.h"
 #include "QuickGUIKeyCode.h"
 #include "QuickGUIMouseButtonID.h"
 #include "QuickGUIMouseCursor.h"
 #include "QuickGUISheet.h"
-#include "QuickGUIUtility.h"
 
 #include <algorithm>
 #include <list>
@@ -63,6 +62,7 @@ namespace QuickGUI
 		void clearAll();
 
 		Sheet* createSheet();
+		Sheet* createSheet(const std::string& name);
 
 		/** Destroys a Window and all child widgets that exist
 		    @param
@@ -72,7 +72,7 @@ namespace QuickGUI
 			@note 
 				no exception is thrown if window does not exist
 		*/
-		void destroySheet(const Ogre::String& name);
+		void destroySheet(const std::string& name);
 		/** Destroys a Window and all child widgets that exist
 		    @param
 				window Window to destroy.
@@ -84,14 +84,14 @@ namespace QuickGUI
 		* next frame.
 		*/
 		void destroyWidget(Widget* w);
-		void destroyWidget(const Ogre::String& widgetName);
+		void destroyWidget(const std::string& widgetName);
 
 		/**
 		* Returns the sheet currently being used, whether shown or hidden.
 		*/
 		Sheet* getActiveSheet();
 		Widget* getActiveWidget();
-		Ogre::String getDebugString();
+		std::string getDebugString();
 		/**
 		* Returns the default sheet, automatically created with the GUI manager.
 		*/
@@ -100,7 +100,7 @@ namespace QuickGUI
 
 		MouseCursor* getMouseCursor();
 		Widget* getMouseOverWidget();
-		Ogre::String getName();
+		std::string getName();
 		/**
 		* Get viewport all widgets of this manager are rendering to.
 		*/
@@ -108,19 +108,19 @@ namespace QuickGUI
 		/**
 		* Get primary render window width in pixels
 		*/
-		Ogre::Real getViewportWidth();
+		float getViewportWidth();
 		/**
 		* Get primary render window height in pixels
 		*/
-		Ogre::Real getViewportHeight();
+		float getViewportHeight();
 
 		/**
 		* Iterates through sheet list and returns the Sheet with the
 		* matching name.  Null if no match found.
 		*/
-		Sheet* getSheet(const Ogre::String& name);
+		Sheet* getSheet(const std::string& name);
 
-		Ogre::String generateName(Widget::Type t);
+		std::string generateName(Widget::Type t);
 
 		/**
 		* Useful for Text Input Widgets, like the TextBox
@@ -141,22 +141,22 @@ namespace QuickGUI
 		bool injectMouseMove(const int& xPixelOffset, const int& yPixelOffset);
 		bool injectMousePosition(const int& xPixelPosition, const int& yPixelPosition);
 		bool injectMouseWheelChange(float delta);
-		void injectTime(Ogre::Real time);
+		void injectTime(float time);
 
 		bool isKeyModifierDown(KeyModifier k);
 		/**
 		* Checks if the desired widget name already exists.  If it already exists,
 		* false is returned.
 		*/
-		bool isNameUnique(const Ogre::String& name);
+		bool isNameUnique(const std::string& name);
 
-		void notifyNameFree(const Ogre::String& name);
-		void notifyNameUsed(const Ogre::String& name);
+		void notifyNameFree(const std::string& name);
+		void notifyNameUsed(const std::string& name);
 
 		void registerTimeListener(Widget* w);
 
-		virtual void renderQueueStarted(Ogre::uint8 id, const Ogre::String& invocation, bool& skipThisQueue);
-		virtual void renderQueueEnded(Ogre::uint8 id, const Ogre::String& invocation, bool& repeatThisQueue);
+		virtual void renderQueueStarted(Ogre::uint8 id, const std::string& invocation, bool& skipThisQueue);
+		virtual void renderQueueEnded(Ogre::uint8 id, const std::string& invocation, bool& repeatThisQueue);
 
 		void removeFromRenderQueue();
 
@@ -172,7 +172,7 @@ namespace QuickGUI
 		* Activates the widget w, and deactivates the previously active widget. (if exists)
 		*/
 		void setActiveWidget(Widget* w);
-		void setDebugString(const Ogre::String s);
+		void setDebugString(const std::string s);
 		void setDetermineClickEvents(bool determine);
 		/*
 		* Sets the Render Queue Group to render on.  By default, this is RENDER_QUEUE_OVERLAY.
@@ -193,20 +193,14 @@ namespace QuickGUI
 		*/
 		void setViewport(Ogre::Viewport* vp);
 
-		/*
-		* Returns true if the textureName represents:
-		*  - an image file on disk. (ie *.png, *.jpg, etc)
-		*  - an Ogre texture resource. (ie RenderToTexture, or Manually create Texture)
-		*  - an image embedded within a skin SkinSet
-		*/
-		bool textureExists(const Ogre::String& textureName);
-
 		void unregisterTimeListener(Widget* w);
 
 	protected:
-		Ogre::String			mName;
+		std::string			mName;
 		// Viewport which renders all widgets belonging to this manager.
 		Ogre::Viewport*			mViewport;
+
+		std::string			mDefaultSkin;
 
 		// required to hook into the RenderQueue
 		Ogre::SceneManager*		mSceneManager;
@@ -215,7 +209,7 @@ namespace QuickGUI
 
 		MouseCursor*			mMouseCursor;
 
-		std::set<Ogre::String>	mWidgetNames;
+		std::set<std::string>	mWidgetNames;
 
 		// range of supported codepoints used for injectChar function.
 		std::set<Ogre::UTFString::code_point> mSupportedCodePoints;
@@ -226,7 +220,7 @@ namespace QuickGUI
 		// Includes the Default Sheet.
 		std::list<Sheet*>		mSheets;
 
-		Ogre::String			mDebugString;
+		std::string			mDebugString;
 
 		void					_destroyWidget(Widget* w);
 		// list of widgets to delete on next frame.
@@ -270,7 +264,7 @@ namespace QuickGUI
 		unsigned int			mKeyModifiers;
 	protected:
 		/** Constructor */
-		GUIManager(const Ogre::String& name, Ogre::Viewport* vp);
+		GUIManager(const std::string& name, Ogre::Viewport* vp, const std::string& defaultSkin);
 		/** Standard Destructor. */
 		~GUIManager();
     };

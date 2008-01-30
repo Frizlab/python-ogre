@@ -5,7 +5,7 @@
 
 namespace QuickGUI
 {
-	VerticalScrollBar::VerticalScrollBar(const Ogre::String& name, GUIManager* gm) :
+	VerticalScrollBar::VerticalScrollBar(const std::string& name, GUIManager* gm) :
 		Widget(name,gm),
 		mMinSliderPosition(0),
 		mMaxSliderPosition(mSize.height),
@@ -85,8 +85,8 @@ namespace QuickGUI
 	void VerticalScrollBar::_constrainSlider()
 	{
 		Rect sliderDimensions = mSlider->getDimensions();
-		Ogre::Real sliderStart = sliderDimensions.y;
-		Ogre::Real sliderEnd = sliderDimensions.y + sliderDimensions.height;
+		float sliderStart = sliderDimensions.y;
+		float sliderEnd = sliderDimensions.y + sliderDimensions.height;
 
 		if(sliderStart < mMinSliderPosition)
 			mSlider->setYPosition(mMinSliderPosition);
@@ -129,7 +129,7 @@ namespace QuickGUI
 		}
 	}
 
-	void VerticalScrollBar::_scroll(Ogre::Real change, ScrollEventArgs args)
+	void VerticalScrollBar::_scroll(float change, ScrollEventArgs args)
 	{
 		mSlider->moveY(change * (mMaxSliderPosition - mMinSliderPosition));
 
@@ -140,9 +140,9 @@ namespace QuickGUI
 			(*it)->execute(args);
 	}
 
-	void VerticalScrollBar::_setValue(Ogre::Real value)
+	void VerticalScrollBar::_setValue(float value)
 	{
-		Ogre::Real pixelY = (value * (mMaxSliderPosition - mMinSliderPosition)) + mMinSliderPosition;
+		float pixelY = (value * (mMaxSliderPosition - mMinSliderPosition)) + mMinSliderPosition;
 
 		mSlider->setYPosition(pixelY);
 		_constrainSlider();
@@ -238,29 +238,29 @@ namespace QuickGUI
 		return mButtonLayout;
 	}
 
-	Ogre::Real VerticalScrollBar::getLargeChange()
+	float VerticalScrollBar::getLargeChange()
 	{
 		return mLargeChange;
 	}
 
-	Ogre::Real VerticalScrollBar::getRepeatTime()
+	float VerticalScrollBar::getRepeatTime()
 	{
 		return mScrollRepeatTime;
 	}
 
-	Ogre::Real VerticalScrollBar::getSliderHeight()
+	float VerticalScrollBar::getSliderHeight()
 	{
 		return mSlider->getHeight();
 	}
 
-	Ogre::Real VerticalScrollBar::getSmallChange()
+	float VerticalScrollBar::getSmallChange()
 	{
 		return mSmallChange;
 	}
 
-	Ogre::Real VerticalScrollBar::getValue()
+	float VerticalScrollBar::getValue()
 	{
-		Ogre::Real retVal = ((mSlider->getYPosition() - mMinSliderPosition) / (mMaxSliderPosition - mMinSliderPosition));
+		float retVal = ((mSlider->getYPosition() - mMinSliderPosition) / (mMaxSliderPosition - mMinSliderPosition));
 		return retVal;
 	}
 
@@ -415,28 +415,28 @@ namespace QuickGUI
 		_determineMinMax();
 	}
 
-	void VerticalScrollBar::setLargeChange(Ogre::Real change)
+	void VerticalScrollBar::setLargeChange(float change)
 	{
 		mLargeChange = change;
 	}
 
-	void VerticalScrollBar::setScrollRepeatTime(Ogre::Real timeInSeconds)
+	void VerticalScrollBar::setScrollRepeatTime(float timeInSeconds)
 	{
 		mScrollRepeatTime = timeInSeconds;
 	}
 
-	void VerticalScrollBar::setSliderHeight(Ogre::Real relativeHeight)
+	void VerticalScrollBar::setSliderHeight(float relativeHeight)
 	{
 		mSlider->setHeight(relativeHeight * (mMaxSliderPosition - mMinSliderPosition));
 		_constrainSlider();
 	}
 
-	void VerticalScrollBar::setSmallChange(Ogre::Real change)
+	void VerticalScrollBar::setSmallChange(float change)
 	{
 		mSmallChange = change;
 	}
 
-	void VerticalScrollBar::setValue(Ogre::Real value)
+	void VerticalScrollBar::setValue(float value)
 	{
 		ScrollEventArgs scrollArgs(this);
 		if(value < getValue())
@@ -444,7 +444,7 @@ namespace QuickGUI
 		else
 			scrollArgs.sliderIncreasedPosition = true;
 
-		Ogre::Real pixelY = (value * (mMaxSliderPosition - mMinSliderPosition)) + mMinSliderPosition;
+		float pixelY = (value * (mMaxSliderPosition - mMinSliderPosition)) + mMinSliderPosition;
 
 		if( pixelY < 0.0 )
 			pixelY = 0.0;
@@ -456,7 +456,7 @@ namespace QuickGUI
 		_scroll(0,scrollArgs);
 	}
 
-	void VerticalScrollBar::timeElapsed(const Ogre::Real time)
+	void VerticalScrollBar::timeElapsed(const float time)
 	{
 		Widget::timeElapsed(time);
 		mRepeatTimer += time;

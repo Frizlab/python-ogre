@@ -285,7 +285,7 @@ namespace QuickGUI
 			// already sorted by zOrder and Texture, now grouping them in one batch per texture.
 			mMaterialChangeList.clear();
 			unsigned int quadCounter = 0;
-			Ogre::String currentMaterial = mVisibleRenderObjectList.front()->getMaterialName();
+			std::string currentMaterial = mVisibleRenderObjectList.front()->getMaterialName();
 			mMaterialChangeList.push_back( std::make_pair(currentMaterial,0) );
 			for(QuadList::iterator it = mVisibleRenderObjectList.begin(); it != mVisibleRenderObjectList.end(); ++it)
 			{

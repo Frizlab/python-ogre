@@ -12,7 +12,7 @@ namespace QuickGUI
 	{
 	}
 
-	Rect::Rect(Ogre::Real X, Ogre::Real Y, Ogre::Real Width, Ogre::Real Height) :
+	Rect::Rect(float X, float Y, float Width, float Height) :
 		x(X),
 		y(Y),
 		width(Width),

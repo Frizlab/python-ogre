@@ -4,7 +4,7 @@
 
 namespace QuickGUI
 {
-	LabelArea::LabelArea(const Ogre::String& name, GUIManager* gm) :
+	LabelArea::LabelArea(const std::string& name, GUIManager* gm) :
 		Label(name,gm),
 		mTextOffset(0.0),
 		mCaption("")
@@ -33,7 +33,7 @@ namespace QuickGUI
 	{
 		int end = startIndex + 1;
 		
-		Ogre::Real width = 0;
+		float width = 0;
 		while( (end < static_cast<int>(mCaption.length())) && (width <= (mSize.width - mTextOffset)))
 		{
 			width += mTextHelper->getGlyphWidth(mCaption[end]);
@@ -127,7 +127,7 @@ namespace QuickGUI
 			disable();
 	}
 
-	void LabelArea::setFont(const Ogre::String& fontScriptName, bool recursive)
+	void LabelArea::setFont(const std::string& fontScriptName, bool recursive)
 	{
 		if(fontScriptName == "")
 			return;

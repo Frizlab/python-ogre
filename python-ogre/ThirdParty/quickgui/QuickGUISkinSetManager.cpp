@@ -1,6 +1,6 @@
 #include "QuickGUIPrecompiledHeaders.h"
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 
 #include "QuickGUISkinSetManager.h"
 
@@ -15,7 +15,7 @@ namespace QuickGUI
 	SkinSetManager::~SkinSetManager()
 	{
 		// delete imagesets
-		std::map<Ogre::String,SkinSet*>::iterator it;
+		std::map<std::string,SkinSet*>::iterator it;
 		for( it = mSkinSets.begin(); it != mSkinSets.end(); ++it )
 			delete (it->second);
 		mSkinSets.clear();
@@ -25,7 +25,7 @@ namespace QuickGUI
 	SkinSetManager* SkinSetManager::getSingletonPtr(void) { return ms_Singleton; } 
 	SkinSetManager& SkinSetManager::getSingleton(void) { assert( ms_Singleton );  return ( *ms_Singleton ); } 
 
-	bool SkinSetManager::embeddedInSkinSet(const Ogre::String& skinName, const Ogre::String& textureName)
+	bool SkinSetManager::embeddedInSkinSet(const std::string& skinName, const std::string& textureName)
 	{
 		if(!skinLoaded(skinName)) 
 			return false;
@@ -33,9 +33,9 @@ namespace QuickGUI
 			return mSkinSets[skinName]->containsImage(textureName);
 	}
 
-	bool SkinSetManager::embeddedInSkinSet(const Ogre::String& textureName)
+	bool SkinSetManager::embeddedInSkinSet(const std::string& textureName)
 	{
-		std::map<Ogre::String,SkinSet*>::iterator it;
+		std::map<std::string,SkinSet*>::iterator it;
 		for( it = mSkinSets.begin(); it != mSkinSets.end(); ++it )
 			if( it->second->containsImage(textureName) )
 				return true;
@@ -43,7 +43,7 @@ namespace QuickGUI
 		return false;
 	}
 
-	SkinSet* SkinSetManager::getSkinSet(const Ogre::String& name)
+	SkinSet* SkinSetManager::getSkinSet(const std::string& name)
 	{
 		if(!skinLoaded(name)) 
 			return NULL;
@@ -51,20 +51,20 @@ namespace QuickGUI
 			return mSkinSets[name];
 	}
 
-	SkinSet* SkinSetManager::getSkinSetByTextureName(const Ogre::String& texName)
+	SkinSet* SkinSetManager::getSkinSetByTextureName(const std::string& texName)
 	{
-		std::map<Ogre::String,SkinSet*>::iterator skinSetIt = mSkinSetsbyTextureName.find(texName);
+		std::map<std::string,SkinSet*>::iterator skinSetIt = mSkinSetsbyTextureName.find(texName);
 		if (skinSetIt != mSkinSetsbyTextureName.end())
 			return skinSetIt->second;
 		return NULL;
 	}
 
-	std::map<Ogre::String,SkinSet*>* SkinSetManager::getSkinSetList()
+	std::map<std::string,SkinSet*>* SkinSetManager::getSkinSetList()
 	{
 		return &mSkinSets;
 	}
 
-	void SkinSetManager::loadSkin(const Ogre::String& skinName, SkinSet::ImageType t, const Ogre::String &resourceGroup)
+	void SkinSetManager::loadSkin(const std::string& skinName, SkinSet::ImageType t, const std::string &resourceGroup)
 	{
 		// check if imageset is already created for this skin
 		if( mSkinSets.find(skinName) != mSkinSets.end() )
@@ -75,7 +75,7 @@ namespace QuickGUI
 		mSkinSetsbyTextureName[skinSet->getTextureName()] = skinSet;
 	}
 
-	bool SkinSetManager::skinLoaded(const Ogre::String& skinName)
+	bool SkinSetManager::skinLoaded(const std::string& skinName)
 	{
 		return (mSkinSets.find(skinName) != mSkinSets.end());
 	}

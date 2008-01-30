@@ -56,8 +56,6 @@
 
 	#include "QuickGUIMouseCursor.h"
 
-	#include "QuickGUIUtility.h"
-
 	#include "QuickGUIManager.h"
 
 	#include "QuickGUIConfigScriptParser.h"

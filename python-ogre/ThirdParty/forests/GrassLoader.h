@@ -140,16 +140,32 @@ public:
 	function anything you want):
 
 	\code
-	Real getHeightAt(Real x, Real z);
+	Real getHeightAt(Real x, Real z, void *userData);
 	\endcode
-	
+
+	\note If you're not using the default coordinate system (where x = right, z = back), the
+	x/z parameters will actually be representing the appropriate equivalents.
+
+	The userData parameter allows you to include any additional data you want when your height
+	function is called, and is completely optional (although you can't actually omit it from the
+	declaration, you can ignore it). Any userData value you choose to supply to setHeightFunction()
+	will be passed on to your height function every time it is called.
+
 	After you've defined a height function, using setHeightFunction is easy:
 
 	\code
 	pageLoader2D->setHeightFunction(&getHeightAt);
+	//Or (if you want to pass additional data on to your height function)...
+	pageLoader2D->setHeightFunction(&getHeightAt, myUserData);
 	\endcode
+
+	In most cases, you may not even need to use the extra "userData" parameter, but it's there in
+	the event that your height function needs extra contextual data.
 	*/
-	void setHeightFunction(Ogre::Real (*heightFunction)(Ogre::Real x, Ogre::Real z)) { this->heightFunction = heightFunction; }
+	void setHeightFunction(Ogre::Real (*heightFunction)(Ogre::Real x, Ogre::Real z, void *userData), void *userData = NULL) {
+		this->heightFunction = heightFunction;
+		heightFunctionUserData = userData;
+	}
 
 
 	/** INTERNAL FUNCTION - DO NOT USE */
@@ -171,7 +187,8 @@ private:
 	std::list<GrassLayer*> layerList;
 
 	//Height data
-	Ogre::Real (*heightFunction)(Ogre::Real x, Ogre::Real z);	//Pointer to height function
+	Ogre::Real (*heightFunction)(Ogre::Real x, Ogre::Real z, void *userData);	//Pointer to height function
+	void *heightFunctionUserData;
 
 	//Misc.
 	PagedGeometry *geom;

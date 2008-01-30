@@ -1,7 +1,7 @@
 #ifndef QUICKGUICONSOLE_H
 #define QUICKGUICONSOLE_H
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUILabelArea.h"
 #include "QuickGUITextBox.h"
 
@@ -15,7 +15,7 @@ namespace QuickGUI
 	public:
 		friend class Panel;
 	public:
-		Console(const Ogre::String& name, GUIManager* gm);
+		Console(const std::string& name, GUIManager* gm);
 		~Console();
 
 		/**
@@ -47,7 +47,7 @@ namespace QuickGUI
 		* Sets the color of the text when the widget is disabled.
 		*/
 		virtual void setDisabledTextColor(const Ogre::ColourValue& c);
-		virtual void setFont(const Ogre::String& fontScriptName, bool recursive = false);
+		virtual void setFont(const std::string& fontScriptName, bool recursive = false);
 		/**
 		* Sets text horizontal alignment.
 		*/
@@ -67,7 +67,7 @@ namespace QuickGUI
 		TextBox* mInputBox;
 
 		// record input to support up/down toggling of previous input feature.
-		std::deque<Ogre::String> mInputHistory;
+		std::deque<std::string> mInputHistory;
 		int inputIndex;
 		void onKeyPressed(const EventArgs& args);
 

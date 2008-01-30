@@ -1,10 +1,15 @@
 #include "QuickGUIPrecompiledHeaders.h"
 
 #include "QuickGUIQuad.h"
-#include "QuickGUIQuadContainer.h"
-#include "QuickGUISkinSetManager.h"
+
 #include "QuickGUIManager.h"
-#include "QuickGUIUtility.h"
+#include "QuickGUIQuadContainer.h"
+#include "QuickGUIRect.h"
+#include "QuickGUISkinSetManager.h"
+
+#include "OgreCommon.h"
+#include "OgreRenderSystem.h"
+#include "OgreVector4.h"
 
 // for min/max
 #include <algorithm>
@@ -25,14 +30,14 @@ namespace QuickGUI
 		mMaterialName(""),
 		mOffset(0),
 		mPixelDimensions(Rect::ZERO),
-		mTextureCoordinates(Ogre::Vector4(0,0,1,1)),
 		mVisible(true),
 		mTopColor(Ogre::ColourValue::White),
 		mBottomColor(Ogre::ColourValue::White),
 		mClippingWidget(NULL),
 		mInheritClippingWidget(true),
 		mInheritQuadLayer(true),
-		mShowWithOwner(true)
+		mShowWithOwner(true),
+		mTextureCoordinates(0,0,1,1)
 	{
 		mRenderSystem = Ogre::Root::getSingleton().getRenderSystem();
 
@@ -53,15 +58,15 @@ namespace QuickGUI
 		mMaterialName(""),
 		mOffset(0),
 		mPixelDimensions(Rect::ZERO),
-		mTextureCoordinates(Ogre::Vector4(0,0,1,1)),
 		mVisible(true),
 		mTopColor(Ogre::ColourValue::White),
 		mBottomColor(Ogre::ColourValue::White),
 		mClippingWidget(NULL),
 		mDimensionsViaClipping(mPixelDimensions),
-		mTextureCoordinatesViaClipping(mTextureCoordinates)
+		mTextureCoordinates(0,0,1,1)
 	{
 		mRenderSystem = Ogre::Root::getSingleton().getRenderSystem();
+
 		_updateVertexColor();
 	}
 
@@ -106,8 +111,8 @@ namespace QuickGUI
 			_computeVertices();
 
 			// calculate distance between top/bottom and left/right of the UV coords.
-			Ogre::Real uvWidth = mTextureCoordinates.z - mTextureCoordinates.x;
-			Ogre::Real uvHeight = mTextureCoordinates.w - mTextureCoordinates.y;
+			float uvWidth = mTextureCoordinates.z - mTextureCoordinates.x;
+			float uvHeight = mTextureCoordinates.w - mTextureCoordinates.y;
 			
 			mTextureCoordinatesViaClipping.x = mTextureCoordinates.x + (((mDimensionsViaClipping.x - mPixelDimensions.x) / mPixelDimensions.width) * uvWidth);
 			mTextureCoordinatesViaClipping.y = mTextureCoordinates.y + (((mDimensionsViaClipping.y - mPixelDimensions.y) / mPixelDimensions.height) * uvHeight);
@@ -142,8 +147,8 @@ namespace QuickGUI
 			return;
 
 		// Convert pixel values into absolute coordinates.
-		Ogre::Real viewportWidth = mGUIManager->getViewportWidth();
-		Ogre::Real viewportHeight = mGUIManager->getViewportHeight();
+		float viewportWidth = mGUIManager->getViewportWidth();
+		float viewportHeight = mGUIManager->getViewportHeight();
 
 		Rect absDimensions(
 			mDimensionsViaClipping.x / viewportWidth,
@@ -158,10 +163,10 @@ namespace QuickGUI
 			coordinates, we have to flip the v-axis (ie. subtract the value from
 			1.0 to get the actual correct value).
 		*/
-		Ogre::Real left = (absDimensions.x * 2) - 1;
-		Ogre::Real right = left + (absDimensions.width * 2);
-		Ogre::Real top = -((absDimensions.y * 2) - 1);
-		Ogre::Real bottom = top - (absDimensions.height * 2);
+		float left = (absDimensions.x * 2) - 1;
+		float right = left + (absDimensions.width * 2);
+		float top = -((absDimensions.y * 2) - 1);
+		float bottom = top - (absDimensions.height * 2);
 
 		/* Reference code, back when the index buffer was used, and there were 4 vertices per quad.
 
@@ -235,8 +240,6 @@ namespace QuickGUI
 
 	void Quad::_updateTextureCoords()
 	{
-		const Ogre::Vector4 actualTextureCoords(mTextureCoordinatesViaClipping);
-
 		/* Reference code, back when the index buffer was used, and there were 4 vertices per quad.
 
 		// TRIANGLE 1 : bot-left, bot-right, top-left vertices
@@ -249,13 +252,13 @@ namespace QuickGUI
 		*/
 
 		// TRIANGLE 1 : bot-left, bot-right, top-left vertices
-		mVertices[0].uv = Ogre::Vector2(actualTextureCoords.x,actualTextureCoords.w);
-		mVertices[1].uv = Ogre::Vector2(actualTextureCoords.z,actualTextureCoords.w);
-		mVertices[2].uv = Ogre::Vector2(actualTextureCoords.x,actualTextureCoords.y);
+		mVertices[0].uv = Ogre::Vector2(mTextureCoordinatesViaClipping.x,mTextureCoordinatesViaClipping.w);
+		mVertices[1].uv = Ogre::Vector2(mTextureCoordinatesViaClipping.z,mTextureCoordinatesViaClipping.w);
+		mVertices[2].uv = Ogre::Vector2(mTextureCoordinatesViaClipping.x,mTextureCoordinatesViaClipping.y);
 		// TRIANGLE 2 : bot-right, top-right, top-left vertices
-		mVertices[3].uv = Ogre::Vector2(actualTextureCoords.z,actualTextureCoords.w);
-		mVertices[4].uv = Ogre::Vector2(actualTextureCoords.z,actualTextureCoords.y);
-		mVertices[5].uv = Ogre::Vector2(actualTextureCoords.x,actualTextureCoords.y);
+		mVertices[3].uv = Ogre::Vector2(mTextureCoordinatesViaClipping.z,mTextureCoordinatesViaClipping.w);
+		mVertices[4].uv = Ogre::Vector2(mTextureCoordinatesViaClipping.z,mTextureCoordinatesViaClipping.y);
+		mVertices[5].uv = Ogre::Vector2(mTextureCoordinatesViaClipping.x,mTextureCoordinatesViaClipping.y);
 	}
 
 	void Quad::_updateVertexColor()
@@ -344,12 +347,12 @@ namespace QuickGUI
 		return mLayer;
 	}
 
-	Ogre::String Quad::getMaterialName()
+	std::string Quad::getMaterialName()
 	{
 		return mMaterialName;
 	}
 
-	Ogre::Real Quad::getOpacity()
+	float Quad::getOpacity()
 	{
 		return mTopColor.a;
 	}
@@ -440,7 +443,7 @@ namespace QuickGUI
 		_computeVertices();
 	}
 
-	void Quad::setHeight(Ogre::Real pixelHeight)
+	void Quad::setHeight(float pixelHeight)
 	{
 		mPixelDimensions.height = pixelHeight;
 
@@ -463,7 +466,7 @@ namespace QuickGUI
 		addToRenderObjectGroup();
 	}
 
-	void Quad::setMaterial(const Ogre::String& materialName)
+	void Quad::setMaterial(const std::string& materialName)
 	{
 		mMaterialName = materialName;
 		mMaterialChanged = true;
@@ -480,7 +483,7 @@ namespace QuickGUI
 		_notifyQuadContainerNeedsUpdate();
 	}
 
-	void Quad::setOpacity(Ogre::Real opacity)
+	void Quad::setOpacity(float opacity)
 	{
 		mTopColor.a = opacity;
 		mBottomColor.a = opacity;
@@ -517,18 +520,13 @@ namespace QuickGUI
 		_clip();
 	}
 
-	void Quad::setTextureCoordinates(const Ogre::Vector4& textureCoordinates)
+	void Quad::setTextureCoordinates(Vector4 textureCoordinates)
 	{
 		mTextureCoordinates = textureCoordinates;
-
+		
 		mTextureCoordsChanged = true;
 
 		_clip();
-	}
-
-	void Quad::setTextureCoordinates(const Ogre::FloatRect& textureCoordinates)
-	{
-		setTextureCoordinates(Ogre::Vector4(textureCoordinates.left,textureCoordinates.top,textureCoordinates.right,textureCoordinates.bottom));
 	}
 
 	void Quad::setVisible(bool visible)
@@ -542,7 +540,7 @@ namespace QuickGUI
 			_notifyQuadContainerNeedsUpdate();
 	}
 
-	void Quad::setWidth(Ogre::Real pixelWidth)
+	void Quad::setWidth(float pixelWidth)
 	{
 		mPixelDimensions.width = pixelWidth;
 
@@ -551,7 +549,7 @@ namespace QuickGUI
 		_clip();
 	}
 
-	void Quad::setXPosition(Ogre::Real pixelX)
+	void Quad::setXPosition(float pixelX)
 	{
 		mPixelDimensions.x = pixelX;
 
@@ -560,7 +558,7 @@ namespace QuickGUI
 		_clip();
 	}
 
-	void Quad::setYPosition(Ogre::Real pixelY)
+	void Quad::setYPosition(float pixelY)
 	{
 		mPixelDimensions.y = pixelY;
 
@@ -569,26 +567,9 @@ namespace QuickGUI
 		_clip();
 	}
 
-	bool Quad::textureChanged()
+	bool Quad::materialChanged()
 	{
 		return mMaterialChanged;
-	}
-
-	bool Quad::textureExists(const Ogre::String& textureName)
-	{
-		if(textureName.empty())
-			return false;
-
-		if(Utility::textureExistsOnDisk(textureName))
-			return true;
-
-		if(Ogre::TextureManager::getSingletonPtr()->resourceExists(textureName)) 
-			return true;
-
-		if(SkinSetManager::getSingletonPtr()->embeddedInSkinSet(textureName))
-			return true;
-
-		return false;
 	}
 
 	void Quad::updateClippingWidget()

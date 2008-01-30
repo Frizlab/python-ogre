@@ -1,7 +1,7 @@
 #ifndef QUICKGUISCROLLPANE_H
 #define QUICKGUISCROLLPANE_H
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIVerticalScrollBar.h"
 #include "QuickGUIHorizontalScrollBar.h"
 #include "QuickGUIWidget.h"
@@ -52,7 +52,7 @@ namespace QuickGUI
 			@param
 				ParentWidget parent widget which created this widget.
         */
-		ScrollPane(const Ogre::String& name, GUIManager* gm);
+		ScrollPane(const std::string& name, GUIManager* gm);
 
 		// When widgets become managed/unmanaged, the pane may grow or shrink.
 		void _determinePaneBounds();
@@ -78,7 +78,7 @@ namespace QuickGUI
 		~ScrollPane();
 	protected:
 
-		Ogre::Real mScrollBarWidth;
+		float mScrollBarWidth;
 
 		HorizontalScrollBar* mBottomBar;
 		HorizontalScrollBar::ButtonLayout mHorizontalButtonLayout;
@@ -108,7 +108,7 @@ namespace QuickGUI
 		* NOTE: the values given are relative to the parent's top left corner, and not the screen!  For screen positioning,
 		*  user the setScreenPosition function.
 		*/
-		void setPosition(const Ogre::Real& pixelX, const Ogre::Real& pixelY);
+		void setPosition(const float& pixelX, const float& pixelY);
 		void setPosition(const Point& pixelPosition);
 	};
 }

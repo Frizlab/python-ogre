@@ -43,6 +43,9 @@ GrassLoader::GrassLoader(PagedGeometry *geom)
 {
 	GrassLoader::geom = geom;
 	
+	heightFunction = NULL;
+	heightFunctionUserData = NULL;
+
 	windDir = Vector3::UNIT_X;
 	densityFactor = 1.0f;
 	renderQueue = RENDER_QUEUE_6;
@@ -246,8 +249,8 @@ Mesh *GrassLoader::generateGrass_QUAD(PageInfo &page, GrassLayer *layer, float *
 
 		float y1, y2;
 		if (heightFunction){
-			y1 = heightFunction(x1, z1);
-			y2 = heightFunction(x2, z2);
+			y1 = heightFunction(x1, z1, heightFunctionUserData);
+			y2 = heightFunction(x2, z2, heightFunctionUserData);
 		} else {
 			y1 = 0;
 			y2 = 0;
@@ -384,8 +387,8 @@ Mesh *GrassLoader::generateGrass_CROSSQUADS(PageInfo &page, GrassLayer *layer, f
 
 		float y1, y2;
 		if (heightFunction){
-			y1 = heightFunction(x1, z1);
-			y2 = heightFunction(x2, z2);
+			y1 = heightFunction(x1, z1, heightFunctionUserData);
+			y2 = heightFunction(x2, z2, heightFunctionUserData);
 		} else {
 			y1 = 0;
 			y2 = 0;
@@ -420,8 +423,8 @@ Mesh *GrassLoader::generateGrass_CROSSQUADS(PageInfo &page, GrassLayer *layer, f
 
 		float y3, y4;
 		if (heightFunction){
-			y3 = heightFunction(x3, z3);
-			y4 = heightFunction(x4, z4);
+			y3 = heightFunction(x3, z3, heightFunctionUserData);
+			y4 = heightFunction(x4, z4, heightFunctionUserData);
 		} else {
 			y3 = 0;
 			y4 = 0;
@@ -540,7 +543,7 @@ Mesh *GrassLoader::generateGrass_SPRITE(PageInfo &page, GrassLayer *layer, float
 		//Calculate height
 		float y;
 		if (heightFunction){
-			y = heightFunction(x, z);
+			y = heightFunction(x, z, heightFunctionUserData);
 		} else {
 			y = 0;
 		}
@@ -675,6 +678,8 @@ void GrassLayer::setMaterialName(const String &matName)
 {
 	if (material.isNull() || matName != material->getName()){
 		material = MaterialManager::getSingleton().getByName(matName);
+		if (material.isNull())
+			OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "The specified grass material does not exist", "GrassLayer::setMaterialName()");
 		shaderNeedsUpdate = true;
 	}
 }
@@ -784,7 +789,7 @@ unsigned int GrassLayer::_populateGrassList_Uniform(PageInfo page, float *posBuf
 			float z = Math::RangeRandom(page.bounds.top, page.bounds.bottom);
 
 			//Calculate height
-			float y = parent->heightFunction(x, z);
+			float y = parent->heightFunction(x, z, parent->heightFunctionUserData);
 
 			//Add to list if in range
 			if (y >= min && y <= max){
@@ -839,7 +844,7 @@ unsigned int GrassLayer::_populateGrassList_UnfilteredDM(PageInfo page, float *p
 			//For example, if localDensity is .32, grasses will be added 32% of the time.
 			if (Math::UnitRandom() < densityMap->_getDensityAt_Unfiltered(x, z)){
 				//Calculate height
-				float y = parent->heightFunction(x, z);
+				float y = parent->heightFunction(x, z, parent->heightFunctionUserData);
 
 				//Add to list if in range
 				if (y >= min && y <= max){
@@ -889,7 +894,7 @@ unsigned int GrassLayer::_populateGrassList_BilinearDM(PageInfo page, float *pos
 			//For example, if localDensity is .32, grasses will be added 32% of the time.
 			if (Math::UnitRandom() < densityMap->_getDensityAt_Bilinear(x, z)){
 				//Calculate height
-				float y = parent->heightFunction(x, z);
+				float y = parent->heightFunction(x, z, parent->heightFunctionUserData);
 
 				//Add to list if in range
 				if (y >= min && y <= max){

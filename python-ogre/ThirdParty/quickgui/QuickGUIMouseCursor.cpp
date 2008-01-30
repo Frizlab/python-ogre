@@ -6,10 +6,11 @@
 
 namespace QuickGUI
 {
-	MouseCursor::MouseCursor(const Size& size, const Ogre::String& skinName, GUIManager* gm) :
+	MouseCursor::MouseCursor(const Size& size, const std::string& skinName, GUIManager* gm) :
 		mGUIManager(gm),
 		mVisible(true),
 		mHideWhenOffScreen(true),
+		mHideSkin(false),
 		mOnTopBorder(0),
 		mOnBotBorder(0),
 		mOnLeftBorder(0),
@@ -87,12 +88,17 @@ namespace QuickGUI
 		mQuad->setPosition(p);
 	}
 
+	MouseCursor::CursorState MouseCursor::getCursorState()
+	{
+		return mCursorState;
+	}
+
 	bool MouseCursor::getHideWhenOffScreen()
 	{
 		return mHideWhenOffScreen;
 	}
 
-	Ogre::String MouseCursor::getTexture()
+	std::string MouseCursor::getTexture()
 	{
 		return mTextureName;
 	}
@@ -111,6 +117,12 @@ namespace QuickGUI
 	{
 		mQuad->setVisible(false);
 		mVisible = false;
+	}
+
+	void MouseCursor::hideSkin()
+	{
+		mHideSkin = true;
+		mQuad->setMaterial("");
 	}
 
 	void MouseCursor::_hide()
@@ -159,26 +171,23 @@ namespace QuickGUI
 	void MouseCursor::setCursorState(CursorState s)
 	{
 		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(mSkinName);
+		mCursorState = s;
 
 		switch(s)
 		{
 		case CURSOR_STATE_NORMAL:					mSkinComponent = ".cursor";							break;
+		case CURSOR_STATE_TEXTSELECT:				mSkinComponent = ".cursor.textselect";				break;
 		case CURSOR_STATE_RESIZE_DIAGONAL_1:		mSkinComponent = ".cursor.resize.diagonal1";		break;
 		case CURSOR_STATE_RESIZE_DIAGONAL_2:		mSkinComponent = ".cursor.resize.diagonal2";		break;
 		case CURSOR_STATE_RESIZE_HORIZONTAL:		mSkinComponent = ".cursor.resize.leftright";		break;
 		case CURSOR_STATE_RESIZE_VERTICAL:			mSkinComponent = ".cursor.resize.updown";			break;
 		}
 
-		Ogre::String textureName = ss->getSkinName() + mSkinComponent + ss->getImageExtension();
+		std::string textureName = ss->getSkinName() + mSkinComponent + ss->getImageExtension();
 		mQuad->setMaterial(ss->getMaterialName());
 		mQuad->setTextureCoordinates(ss->getTextureCoordinates(textureName));
 
-		if(mGUIManager->textureExists(textureName))
-		{
-			Ogre::Image i;
-			i.load(textureName,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-			setSize(i.getWidth(),i.getHeight());
-		}
+		setSize(ss->getImageWidth(textureName),ss->getImageHeight(textureName));
 	}
 
 	void MouseCursor::setHideCursorWhenOSCursorOffscreen(bool hide)
@@ -186,7 +195,7 @@ namespace QuickGUI
 		mHideWhenOffScreen = hide;
 	}
 
-	void MouseCursor::setPosition(Ogre::Real pixelX, Ogre::Real pixelY)
+	void MouseCursor::setPosition(float pixelX, float pixelY)
 	{
 		mPixelPosition.x = pixelX - (mPixelSize.width/2.0);
 		mPixelPosition.y = pixelY - (mPixelSize.height/2.0);
@@ -194,7 +203,7 @@ namespace QuickGUI
 		constrainPosition();
 	}
 
-	void MouseCursor::setSize(Ogre::Real pixelWidth, Ogre::Real pixelHeight)
+	void MouseCursor::setSize(float pixelWidth, float pixelHeight)
 	{
 		Point currentPosition = getPosition();
 
@@ -209,7 +218,7 @@ namespace QuickGUI
 		mQuad->setPosition(mPixelPosition);
 	}
 
-	void MouseCursor::setSkin(const Ogre::String& skinName)
+	void MouseCursor::setSkin(const std::string& skinName)
 	{
 		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(skinName);
 		if(ss == NULL)
@@ -217,21 +226,25 @@ namespace QuickGUI
 
 		mSkinName = skinName;
 
-		Ogre::String textureName = mSkinName + mSkinComponent + ss->getImageExtension();
+		std::string textureName = mSkinName + mSkinComponent + ss->getImageExtension();
 		mQuad->setMaterial(ss->getMaterialName());
 		mQuad->setTextureCoordinates(ss->getTextureCoordinates(textureName));
 
-		if(mGUIManager->textureExists(textureName))
-		{
-			Ogre::Image i;
-			i.load(textureName,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-			setSize(i.getWidth(),i.getHeight());
-		}
+		setSize(ss->getImageWidth(textureName),ss->getImageHeight(textureName));
+
+		if(mHideSkin)
+			hideSkin();
 	}
 
 	void MouseCursor::show()
 	{
 		mQuad->setVisible(true);
 		mVisible = true;
+	}
+
+	void MouseCursor::showSkin()
+	{
+		mHideSkin = false;
+		setSkin(mSkinName);
 	}
 }

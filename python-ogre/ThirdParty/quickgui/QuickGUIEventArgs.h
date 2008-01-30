@@ -16,7 +16,7 @@
 #include "OgrePrerequisites.h"
 #include "OgreUTFString.h"
 
-#include "QuickGUIPrerequisites.h"
+#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIKeyCode.h"
 #include "QuickGUIMouseButtonID.h"
 #include "QuickGUIPoint.h"
@@ -87,7 +87,7 @@ namespace QuickGUI
 		// holds the mouse button that was down for the given event
 		MouseButtonID	button;
 		// holds the amount the scroll wheel has changed.
-		Ogre::Real		wheelChange;	
+		float		wheelChange;	
 		//! Bit field that holds status of Alt, Ctrl, Shift
 		unsigned int	keyModifiers;
 	};
