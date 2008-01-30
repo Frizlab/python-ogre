@@ -203,22 +203,29 @@ def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[], prefix
             arg_position = 0
             trans=[]
             desc=""
+#             print "Checking", fun.decl_string
             for arg in fun.arguments:
                 rawarg =  declarations.remove_declarated(
                     declarations.remove_const( 
                         declarations.remove_reference( 
                             declarations.remove_pointer ( arg.type ))))
-                print arg.type.decl_string                            
+                                           
+#                 print fun.name, arg.type.decl_string, rawarg     
+                
+                ## now check if the arg is a fundemental type (int float etc), a void
+                ##  or a special ..
                 if declarations.is_arithmetic (rawarg)\
-                        or declarations.is_void_pointer(arg.type)\
+                        or declarations.is_void(rawarg)\
                         or arg.type.decl_string in special_vars:
 #                     print "Auto:", arg.type.decl_string," is_integral|floating|void|special|"
                     if declarations.is_pointer(arg.type):   #we convert any pointers to unsigned int's
+#                         print "Pointer"
                         trans.append( ft.modify_type(arg_position,_ReturnUnsignedInt ) )
                         desc = desc +"Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
                             arg.type.decl_string + " ) takes a CTypes.addressof(xx). \\n"
 #                         print fullname,"Ctype Mod for ", arg.name, arg.type.decl_string    
                     elif declarations.is_reference(arg.type):  
+#                         print "Ref"
                         matched = False
                         for pre in prefix_output:   # functions whose name starts in the list are consider output only
                             if fun.name.startswith (pre):
@@ -232,6 +239,12 @@ def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[], prefix
                             desc = desc + "Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
                                 arg.type.decl_string + " ) converted to an input/output (change to return types).\\n"
 #                             print fullname," ft.inout ", arg.name, arg.type.decl_string    
+                    else:
+                        pass
+#                         print "Not Handled"
+                else:
+                    pass
+#                     print "Not valid to process"
                 arg_position += 1
             if trans:
                 if fun.documentation:   # it's already be tweaked:

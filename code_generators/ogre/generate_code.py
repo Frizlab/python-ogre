@@ -642,11 +642,15 @@ def AutoFixes ( mb, MAIN_NAMESPACE ):
     # now we fix up the smart pointers ...
     Set_Smart_Pointers ( main_ns )  
     
-    # Functions that have void pointers in their argument list need to change to unsigned int's  
-    pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', '::Ogre::uint8', '::Ogre::uint16'
-             'unsigned char', 'char', 'bool']
-    ignore_names=['Matrices', 'Vertices', 'ExceptionFactory', 'UTFString' ]
+    ### This is now handled by Auto_Funtional_Transformation...
+    
+# # #     # Functions that have void pointers in their argument list need to change to unsigned int's  
+# # #     pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', '::Ogre::uint8', '::Ogre::uint16'
+# # #              'unsigned char', 'char', 'bool']
+# # #     ignore_names=['Matrices', 'Vertices', 'ExceptionFactory', 'UTFString' ]
 # # #     common_utils.Fix_Void_Ptr_Args  ( main_ns, pointee_types, ignore_names )
+
+
 
     # and change functions that return a variety of pointers to instead return unsigned int's
     pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', '::Ogre::uint8', 'unsigned char', 'char']
