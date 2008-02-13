@@ -34,7 +34,7 @@ import common_utils.extract_documentation as exdoc
 import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
 
-MAIN_NAMESPACE = 'physx'
+MAIN_NAMESPACE = '' ## it doesn't have one
 
 ## small helper function
 def docit ( general, i, o ): 
@@ -82,6 +82,16 @@ def ManualExclude ( mb ):
     for e in excludes:
         print "Excluding:", e
         global_ns.free_functions(e).exclude()
+        
+    excludes = ['NxArray<NxShapeDesc*, NxAllocatorDefault>', ## doesn't have a defult constructor for ElemType
+                'NxArray<NxFluidEmitterDesc, NxAllocatorDefault>' ## needs ElemType changed to NxFluidEmitterDesc
+
+                ]
+    for c in global_ns.classes():
+        print c                
+    for e in excludes:
+        print "Excluding Class:", e
+        global_ns.class_(e).exclude()
     
     excludes = ['::NxPairFlag::objects']
     for e in excludes:
@@ -148,16 +158,16 @@ def AutoExclude( mb ):
     main_ns = global_ns   # No namespaces in NxPhysics
 
     # vars that are static consts but have their values set in the header file are bad
-    Remove_Static_Consts ( main_ns )
+# #     Remove_Static_Consts ( main_ns )
     
-    ## Exclude protected and private that are not pure virtual
-    query = ~declarations.access_type_matcher_t( 'public' ) \
-            & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
-    try:
-        non_public_non_pure_virtual = main_ns.calldefs( query )
-        non_public_non_pure_virtual.exclude()
-    except:
-        pass
+#     ## Exclude protected and private that are not pure virtual
+#     query = ~declarations.access_type_matcher_t( 'public' ) \
+#             & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
+#     try:
+#         non_public_non_pure_virtual = main_ns.calldefs( query )
+#         non_public_non_pure_virtual.exclude()
+#     except:
+#         pass
 
     #Virtual functions that return reference could not be overriden from Python
     query = declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.VIRTUAL ) \
@@ -167,6 +177,9 @@ def AutoExclude( mb ):
     except:
         pass
                
+    
+        
+        
 def AutoInclude( mb ):
     global_ns = mb.global_ns
     global_ns.exclude()
@@ -181,6 +194,7 @@ def AutoInclude( mb ):
     for funcs in main_ns.free_functions ():
         if funcs.name[0:2]=='Nx' and funcs.name[2].isupper():
             funcs.include()
+            print "Included Free Function", funcs
             
     for var in main_ns.variables ():
         if len(var.name) > 2:
@@ -382,30 +396,30 @@ def Remove_Static_Consts ( mb ):
 # the 'main'function
 #            
 def generate_code():  
-    messages.disable( 
-# #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-          messages.W1020
-        , messages.W1021
-        , messages.W1022
-        , messages.W1023
-        , messages.W1024
-        , messages.W1025
-        , messages.W1026
-        , messages.W1027
-        , messages.W1028
-        , messages.W1029
-        , messages.W1030
-        , messages.W1031
-#         , messages.W1035
-#         , messages.W1040 
-#         , messages.W1038        
-        , messages.W1041
-        , messages.W1036 # pointer to Python immutable member
-#         , messages.W1033 # unnamed variables
-#         , messages.W1018 # expose unnamed classes
-        , messages.W1049 # returns reference to local variable
-        , messages.W1014 # unsupported '=' operator
-         )
+#     messages.disable( 
+# # #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+#           messages.W1020
+#         , messages.W1021
+#         , messages.W1022
+#         , messages.W1023
+#         , messages.W1024
+#         , messages.W1025
+#         , messages.W1026
+#         , messages.W1027
+#         , messages.W1028
+#         , messages.W1029
+#         , messages.W1030
+#         , messages.W1031
+# #         , messages.W1035
+# #         , messages.W1040 
+# #         , messages.W1038        
+#         , messages.W1041
+#         , messages.W1036 # pointer to Python immutable member
+# #         , messages.W1033 # unnamed variables
+# #         , messages.W1018 # expose unnamed classes
+#         , messages.W1049 # returns reference to local variable
+#         , messages.W1014 # unsupported '=' operator
+#          )
     #
     # Use GCCXML to create the controlling XML file.
     # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded
@@ -446,8 +460,8 @@ def generate_code():
     global_ns.exclude()
     AutoInclude ( mb )
     
-   
-    AutoExclude ( mb )
+    common_utils.AutoExclude ( mb, MAIN_NAMESPACE )
+    
     ManualExclude ( mb )
     ManualInclude ( mb )
     # here we fixup functions that expect to modifiy their 'passed' variables    
@@ -459,7 +473,7 @@ def generate_code():
     #
     # We need to tell boost how to handle calling (and returning from) certain functions
     #
-    Set_Call_Policies ( mb.global_ns )
+    common_utils.Set_DefaultCall_Policies ( mb.global_ns )
     
     #
     # the manual stuff all done here !!!
@@ -478,6 +492,12 @@ def generate_code():
     ## need to create a welcome doc string for this...                                  
     common_utils.add_constants( mb, { '__doc__' :  '"PhysX DESCRIPTION"' } ) 
     
+#     for func in mb.global_ns.free_functions ():
+#         if not func.ignore:
+#             print "Free Func Included", func
+#             print func.exportable, func.why_not_exportable()
+        
+ 
     
     ##########################################################################################
     #

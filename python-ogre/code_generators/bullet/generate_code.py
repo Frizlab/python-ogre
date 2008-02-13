@@ -60,8 +60,13 @@ def ManualExclude ( mb ):
             for m in c.member_functions():
                 if m.name in excludes:
                     m.exclude()
-    excludes=['::btAlignedObjectArray<int>::expand'
-            ,'::btCollisionDispatcher::getNewManifold'
+    excludes=['resize', 'expand'] #needs 'T' changed to native class
+    for c in global_ns.classes():
+        if 'btAlignedObjectArray' in c.name:
+            for m in c.member_functions():
+                if m.name in excludes:
+                    m.exclude()
+    excludes=[ '::btCollisionDispatcher::getNewManifold'
             ,'::btCollisionDispatcher::defaultNearCallback'
             ,'::btCollisionDispatcher::getInternalManifoldPointer'
             ,'::btCollisionDispatcher::getNearCallback'
@@ -101,16 +106,16 @@ def ManualExclude ( mb ):
     excludes = ['btAlignedAllocator<btCollisionObject*, 16u>'
 #             ,'btAlignedAllocator<btCollisionShape*, 16>'
             ,'btAlignedAllocator<int, 16u>'
+            ,'btAlignedAllocator<float, 16u>'
             ,'btAlignedAllocator<btPersistentManifold*, 16u>'
             ,'btAlignedAllocator<btTypedConstraint*, 16u>'
             ,'btAlignedAllocator<btRaycastVehicle*, 16u>'
             
-            
-            ,'btAlignedObjectArray<btIndexedMesh>'
-            ,'btAlignedObjectArray<int>'
-            ,'btAlignedObjectArray<btQuantizedBvhNode>'
-            ,'btAlignedObjectArray<btOptimizedBvhNode>'
-            ,'btAlignedObjectArray<btCollisionObject*>'
+#             ,'btAlignedObjectArray<btIndexedMesh>'
+#             ,'btAlignedObjectArray<int>'
+#             ,'btAlignedObjectArray<btQuantizedBvhNode>'
+#             ,'btAlignedObjectArray<btOptimizedBvhNode>'
+#             ,'btAlignedObjectArray<btCollisionObject*>'
             ]
     for e in excludes:
         print "excluding class", e

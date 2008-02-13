@@ -13,5 +13,5 @@ typedef std::vector<std::string, std::allocator<std::string> > VectorString;
 typedef std::list<QuickGUI::QuadContainer*, std::allocator<QuickGUI::QuadContainer*> > QuadContainerList;
 typedef std::map<std::string, QuickGUI::SkinSet*> MapSkinSets;
 typedef std::vector<QuickGUI::ConfigNode*> VectorConfigNode;
-typedef std::vector<QuickGUI::TreeItem*> VectorTreeItem;
+// typedef std::vector<QuickGUI::TreeItem*> VectorTreeItem;
 

@@ -52,6 +52,9 @@ def docit ( general, i, o ):
 def ManualExclude ( mb ):
     global_ns = mb.global_ns
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    return
+    
+    
     for c in main_ns.classes():
         if c.decl_string.startswith('::NxOgre::Container<') and '*' not in c.decl_string:
             print "EXCLUDING: ", c
@@ -158,7 +161,7 @@ def ManualExclude ( mb ):
             ]
     for e in excludes:
         print "excluding ", e
-        main_ns.member_functions(e).exclude()
+# # #         main_ns.member_functions(e).exclude()
  
     ## this is probably excessive :)
     names = ['_begin','_end', '_atEnd', '_next']
@@ -190,7 +193,7 @@ def ManualExclude ( mb ):
                 ]
     for e in excludes:
         print "Excluding", e
-        main_ns.class_(e).exclude()
+# #         main_ns.class_(e).exclude()
 # # #     
 # # #         
     ## I have a challenge that Py++ doesn't recognise these classes by full name (perhaps because they are structs?)
@@ -207,19 +210,19 @@ def ManualExclude ( mb ):
         print ("Checking:",c.name)
         if c.name in excludeName:
             print ("SPECIAL excluding ", c.name)
-            c.exclude()
+# #             c.exclude()
         # a temporary fix for container based classes -- still an issue with them though...
         # AND this is an overkill -- not all classes need these removed...
-        if c.decl_string.startswith ('::NxOgre::Container<'):
-            for f in c.member_functions(allow_empty=True):
-                if f.name in ['begin','get','next','destroyAndEraseAll','destroyAllOwned','CopyTo']:
-                    f.exclude()    
+# #         if c.decl_string.startswith ('::NxOgre::Container<'):
+# #             for f in c.member_functions(allow_empty=True):
+# #                 if f.name in ['begin','get','next','destroyAndEraseAll','destroyAllOwned','CopyTo']:
+# #                     f.exclude()    
       
     ### Variables        
     excludes = ['::NxOgre::WheelSet::mEngine'   # desctuctor in WheelSet is protected so can't wrap this..
                 ]
-    for e in excludes:
-        main_ns.variable(e).exclude()
+#     for e in excludes:
+#         main_ns.variable(e).exclude()
         
     ### Typedefs    
     excludes = [
@@ -230,15 +233,15 @@ def ManualExclude ( mb ):
     ### Operators        
     excludes=['::NxOgre::Container<std::string, NxOgre::FluidDrain*>::operator[]'
             ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::operator[]']
-    for e in excludes:
-        main_ns.operators(e).exclude()
-        
+#     for e in excludes:
+#         main_ns.operators(e).exclude()
+#         
     ### Constructors
-    for c in main_ns.class_('::NxOgre::Pose').constructors():  ## these hide the working constructors
-        for a in c.arguments:
-            if 'NxVec3' in a.type.decl_string or 'NxQuat' in a.type.decl_string:
-                c.exclude()
-                break
+# #     for c in main_ns.class_('::NxOgre::Pose').constructors():  ## these hide the working constructors
+# #         for a in c.arguments:
+# #             if 'NxVec3' in a.type.decl_string or 'NxQuat' in a.type.decl_string:
+# #                 c.exclude()
+# #                 break
 # # #                 
 
 ############################################################
@@ -250,6 +253,7 @@ def ManualExclude ( mb ):
 def ManualInclude ( mb ):
     global_ns = mb.global_ns
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    return
 #     for f in main_ns.member_functions():
 #         print f
 #     sys.exit()
@@ -257,7 +261,7 @@ def ManualInclude ( mb ):
     c.include()
     for m in c.member_functions():
         m.exclude()
-    c.member_function('getGlobalPosition').include()  ## this is the only function implemented
+#     c.member_function('getGlobalPosition').include()  ## this is the only function implemented
     
 # #     global_ns.namespace( 'Ogre' ).class_('AxisAlignedBox').include(already_exposed=True)
 # #     global_ns.namespace( 'Ogre' ).class_('Radian').include(already_exposed=True)
@@ -293,6 +297,7 @@ def ManualFixes ( mb ):
     
     # fix issue where the namespace isn't in the default values
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    return
     
     for c in main_ns.constructors():
         for a in c.arguments:

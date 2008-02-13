@@ -5,7 +5,7 @@ WRAPPER_DEFINITION_NxActor_Wrapper = \
 """
 virtual ::NxShape * const * getShapes(  ) const {
     bp::override func_getShapes = this->get_override( "getShapes" );
-    func_getShapes( );
+    return func_getShapes( );
     }
 """
 
@@ -96,7 +96,7 @@ PointerWrapper = \
 """
 virtual %(returnType)s  %(function_name)s(  ) const {
     bp::override func_%(function_name)s = this->get_override( "%(function_name)s" );
-    func_%(function_name)s( );
+    %(returnSomething)s func_%(function_name)s( );
     }
 """
 
@@ -139,9 +139,13 @@ def apply( mb ):
             if getSizeFunctions.has_key(funcname):
                 getsizefunction = getSizeFunctions[funcname]
                 returnType = f.return_type.decl_string
+                if 'void' in returnType or returnType == '' :
+                    returnSomething = ''
+                else
+                    returnSomething = 'return'
                 values = { 'returnType':returnType, 'function_name':funcname, 
                     'classname':classname, 'getsizefunction' : getsizefunction,
-                    'returnbase':retbase }
+                    'returnbase':retbase, 'returnSomething':returnSomething }
                     
                 if f.parent.is_wrapper_needed:
                     wrapper_code = PointerWrapper % values

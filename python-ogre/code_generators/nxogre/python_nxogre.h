@@ -1,7 +1,7 @@
 
 #include "NxOgre.h"
-#include "NxOgreSkeleton.h"  //missing ??
-#include "NxOgreResourceMesh.h" // not included anywhere by default...
+// // #include "NxOgreSkeleton.h"  //missing ??
+// // #include "NxOgreResourceMesh.h" // not included anywhere by default...
 #include "Ogre.h"
 #include "OgrePlugin.h"
 #include <NxPhysics.h>
