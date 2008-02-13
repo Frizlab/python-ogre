@@ -1,21 +1,23 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreMaterial.h
+ *  \brief   Header for the Material and MaterialAlias classes.
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #ifndef __NXOGRE_MATERIAL_H__
 #define __NXOGRE_MATERIAL_H__
@@ -24,7 +26,7 @@
 
 namespace NxOgre {
 
-	class NxExport Material {
+	class NxPublicClass Material {
 
 		public:
 
@@ -37,10 +39,10 @@ namespace NxOgre {
 				Manually creating the Material "new Material()" will only add a presence, it is up to you to delete it at the
 				correct time.
 
-			@param	Identifier		Unique identifier of the Material
-			@param Material*		Scene pointer which would contain the Material.
+			\param	Identifier		Unique identifier of the Material
+			\param Material*		Scene pointer which would contain the Material.
 
-			@see Scene::createMaterial
+			\see Scene::createMaterial
 			*/
 			Material(const NxString& identifier, Scene*);
 
@@ -54,11 +56,11 @@ namespace NxOgre {
 				Manually creating the Material "new Material()" will only add a presence, it is up to you to delete it at the
 				correct time.
 
-			@param	NxMaterialIndex			MaterialIndex to use.
-			@param	Identifier				Unique identifier of the Material
-			@param Material*				Scene pointer which would contain the Material.
+			\param	NxMaterialIndex			MaterialIndex to use.
+			\param	Identifier				Unique identifier of the Material
+			\param Material*				Scene pointer which would contain the Material.
 
-			@see Scene::createMaterial
+			\see Scene::createMaterial
 			*/
 			Material(NxMaterialIndex, const NxString&, Scene*);
 
@@ -71,7 +73,7 @@ namespace NxOgre {
 					Manually creating the Material "new Material()" will only add a presence, it is up to you to delete it at the
 					correct time.
 			
-				@note Although the material class will be destroyed, the presence of the material index
+				\note Although the material class will be destroyed, the presence of the material index
 				      will remain in the Scene, as any shapes assigned to the material index will not be
 					  changed to another. This index may be recycled later, and may cause unexpected
 					  effects to shapes using the old index.
@@ -82,7 +84,7 @@ namespace NxOgre {
 			/** getMaterialIndex
 				 Returns the NxMaterialIndex assigned to this Material.
 
-				 @return The material index
+				 \return The material index
 			*/
 			NxMaterialIndex	getMaterialIndex();
 	
@@ -97,7 +99,7 @@ namespace NxOgre {
 
 			/** getScene
 				 Returns the Scene that this material belongs to.
-				 @return Return the Scene used.
+				 \return Return the Scene used.
 			*/
 			Scene*			getScene()								{
 																		return mScene;
@@ -105,37 +107,37 @@ namespace NxOgre {
 
 			/** setAll
 				Set Restitution, Dynamic Friction and Static Friction at once.
-				@param bounce Resitution of the material (0..1)
-				@param dFriction Dynamic Friction of the material (0..inf)
-				@param sFriction Static Friction of the material (0..inf)
+				\param bounce Resitution of the material (0..1)
+				\param dFriction Dynamic Friction of the material (0..inf)
+				\param sFriction Static Friction of the material (0..inf)
 
-				@see Material::setDynamicFriction
-				@see Material::getDynamicFriction
-				@see Material::setStaticFriction
-				@see Material::getStaticFriction
-				@see Material::setRestitution
-				@see Material::getRestitution
+				\see Material::setDynamicFriction
+				\see Material::getDynamicFriction
+				\see Material::setStaticFriction
+				\see Material::getStaticFriction
+				\see Material::setRestitution
+				\see Material::getRestitution
 			*/
 			void			setAll(NxReal bounce, NxReal dFriction, NxReal sFriction);
 
 
 			/** setDynamicFriction
 				Set's the dynamic friction of the material
-				@param coef Dynamic Friction to set (0..inf)
+				\param coef Dynamic Friction to set (0..inf)
 			*/
 			void			setDynamicFriction(NxReal coef);
 			
 
 			/** setDynamicFriction
 				Set's the dynamic friction of the material
-				@param coef Dynamic Friction to set (0..inf)
+				\param coef Dynamic Friction to set (0..inf)
 			*/
 			NxReal			getDynamicFriction() const;
 			
 
 			/** setStaticFriction
 				Set's the dynamic friction of the material
-				@param coef Dynamic Friction to set (0..inf)
+				\param coef Dynamic Friction to set (0..inf)
 			*/
 			void			setStaticFriction(NxReal coef);
 
@@ -149,7 +151,7 @@ namespace NxOgre {
 
 			/** setRestitution
 				Set's the Restitution (bounce) of the material
-				@param rest The restitution (0..inf)
+				\param rest The restitution (0..inf)
 			*/
 			void			setRestitution(NxReal rest);
 
@@ -163,7 +165,7 @@ namespace NxOgre {
 				Sets the dynamic friction along the secondary (V) axis, used when anistropic
 				friction is assigned to the material.
 
-				@param coef Amount of Dynamic Friction to apply (0..1)
+				\param coef Amount of Dynamic Friction to apply (0..1)
 			*/
 			void			setDynamicFrictionV(NxReal coef);
 
@@ -171,7 +173,7 @@ namespace NxOgre {
 			/** getDynamicFrictionV
 				Gets the dynamic friction along the secondary (V) axis
 
-				@see Material::setDynamicFrictionV
+				\see Material::setDynamicFrictionV
 			*/
 			NxReal			getDynamicFrictionV() const;
 
@@ -180,7 +182,7 @@ namespace NxOgre {
 				Sets the static friction along the secondary (V) axis, used when anistropic
 				friction is assigned to the material.
 
-				@param coef Amount of static friction to apply (0..1)
+				\param coef Amount of static friction to apply (0..1)
 			*/
 			void			setStaticFrictionV(NxReal coef);
 
@@ -188,7 +190,7 @@ namespace NxOgre {
 			/** getStaticFrictionV
 				Gets the static friction along the secondary (V) axis
 
-				@see Material::setStaticFrictionV
+				\see Material::setStaticFrictionV
 			*/
 			NxReal			getStaticFrictionV() const;
 
@@ -197,7 +199,7 @@ namespace NxOgre {
 				Sets the shape space direction (unit vector) of anisotropy. Only applies
 				when the material is anisotrophic.
 
-				@see Material::setDirOfAnisotropy
+				\see Material::setDirOfAnisotropy
 			*/
 			void			setDirOfAnisotropy(const Ogre::Vector3 &vec);
 			
@@ -206,7 +208,7 @@ namespace NxOgre {
 				Sets the shape space direction (unit vector) of anisotropy. Only applies
 				when the material is anisotrophic.
 
-				@see Material::setDirOfAnisotropy
+				\see Material::setDirOfAnisotropy
 			*/			
 			void			setDirOfAnisotropy(const NxVec3& vec);
 
@@ -215,22 +217,22 @@ namespace NxOgre {
 			/** getDirOfAnisotropy
 				Returns the vector of anistrophy of the material.
 
-				@see Material::getDirOfAnisotropy
+				\see Material::getDirOfAnisotropy
 			*/
 			NxVec3			getDirOfAnisotropy() const;
 
 			/** setFlags
 				Sets flags of the material
 				
-				@see NxMaterialFlag
-				@param Flag to apply
+				\see NxMaterialFlag
+				\param Flag to apply
 			*/
 			void			setFlags(NxU32 flags);
 
 			/** getFlags
 				Gets flags of the material
 
-				@see NxMaterialFlag
+				\see NxMaterialFlag
 			*/
 			NxU32			getFlags() const;
 			
@@ -272,7 +274,7 @@ namespace NxOgre {
 
 	*/
 
-	/** @brief A list of MaterialIndexes matched to a string identifier.
+	/** \brief A list of MaterialIndexes matched to a string identifier.
 
 		A material alias is a way to handle saved meshes with material indexes per face. As it is likely
 		that materials will vary from application to appliaction, particually the material indexes. By
@@ -282,7 +284,7 @@ namespace NxOgre {
 		In short it makes things happy.
 
 	*/
-	class NxExport MaterialAlias {
+	class NxPublicClass MaterialAlias {
 
 		public:
 

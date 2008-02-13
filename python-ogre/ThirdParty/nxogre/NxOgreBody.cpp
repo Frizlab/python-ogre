@@ -1,21 +1,23 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreBody.cpp
+ *  \see     NxOgreBody.h
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #include "NxOgreStable.h"
 #include "NxOgreBody.h"
@@ -43,14 +45,14 @@ Body::Body(const NxString& name, Scene* scene) : Actor(name, scene) {
 
 //////////////////////////////////////////////////////////
 
-Body::Body(const NxString& identifier, Scene* scene, ShapeBlueprint *firstShapeDescription, const Pose& pose, ActorParams params)
+Body::Body(const NxString& identifier, Scene* scene, Shape *firstShapeDescription, const Pose& pose, ActorParams params)
 :	Actor(identifier, scene, firstShapeDescription, pose, params)
 	
 {
 
 	NodeRenderableParams visualParams;
-
-	visualParams.Identifier = identifier;
+	visualParams.setToDefault();
+	visualParams.Identifier = mName;
 	visualParams.IdentifierType = visualParams.IT_CREATE;
 	visualParams.Intent = getStringType();
 
@@ -79,83 +81,18 @@ Body::Body(const NxString& identifier, Scene* scene, ShapeBlueprint *firstShapeD
 	}
 
 	setLevelOfDetail(LOD_High);
+	setInterpolation(I_Absolute);
 	mRenderable = mOwner->getSceneRenderer()->createNodeRenderable(visualParams);
 	mNodeRenderable = static_cast<NodeRenderable*>(mRenderable);
-	mNxActorUserData->RenderPtr = this;
+	mNxUserData->RenderPtr = this;
 	mDeltaPose = mLastPose = getGlobalPose();
 
 	
 	mOwner->getSceneRenderer()->registerSource(this);
 
-#if 0
-
-	if (params.mNodeName.length() == 0) {
-		mNode = mOwner->getSceneManager()->createSceneNode();
-	}
-	else {
-
-		if (mOwner->getSceneManager()->hasSceneNode(params.mNodeName)) {
-			mNode = mOwner->getSceneManager()->getSceneNode(params.mNodeName);
-			if (mNode->getParent() != NULL) {
-				mNode->getParent()->removeChild(mNode);
-			}
-		}
-		else {
-			mNode = mOwner->getSceneManager()->createSceneNode(params.mNodeName);
-		}
-	}
-
-
-	if (mActor->getMass()) {
-		mOwner->getSceneManager()->getRootSceneNode()->addChild(mNode);
-	}
-	else {
-		if (mOwner->getStaticGeometry()) {
-			mOwner->getStaticGeometry()->addSceneNode(mNode);	
-		}
-		else {
-			mOwner->getSceneManager()->getRootSceneNode()->addChild(mNode);
-		}
-	}
-
-	
-	if (Ogre::StringUtil::startsWith(mVisualIdentifier, "(entity)")) {
-		
-		NxString entityName = mVisualIdentifier.substr(8, entityName.length() - 8);
-		Ogre::StringUtil::trim(entityName);
-		mEntity = mOwner->getSceneManager()->getEntity(entityName);
-	}
-	else if (Ogre::StringUtil::endsWith(mVisualIdentifier, ".mesh")) {
-		mEntity = mOwner->getSceneManager()->createEntity(mName + "-0", mVisualIdentifier);
-		mEntity->setCastShadows(params.mNodeShadows);
-	}
-
-	if (mActor->getMass() == 0 && mOwner->getStaticGeometry()) {
-		mOwner->getSceneManager()->getRootSceneNode()->removeChild(mNode);
-		mOwner->getStaticGeometry()->addSceneNode(mNode);
-	}
-
-	if (params.mNodePose.isZero() && mEntity && mNode) {
-		mNode->attachObject(mEntity);
-	}
-	else if (mEntity && mNode) {
-		Ogre::SceneNode* childNode = mNode->createChildSceneNode(params.mNodePose.getVector3(), params.mNodePose.getQuaternion());
-		childNode->attachObject(mEntity);
-	}
-
-	if (params.mNodeScale != Ogre::Vector3(1,1,1)) {
-		mNode->scale(params.mNodeScale);
-	}
-
-	if (mNode) {
-		mNode->setPosition(pose);
-		mNode->setOrientation(pose);
-	}
-
-#endif
 }
 
-Body::Body(const NxString& identifier, Scene* scene, ShapeBlueprint *firstShapeDescription, const Pose& pose, NodeRenderableParams visualParams, ActorParams params)
+Body::Body(const NxString& identifier, Scene* scene, Shape *firstShapeDescription, const Pose& pose, NodeRenderableParams visualParams, ActorParams params)
 :	Actor(identifier, scene, firstShapeDescription, pose, params)
 {
 
@@ -167,7 +104,7 @@ Body::Body(const NxString& identifier, Scene* scene, ShapeBlueprint *firstShapeD
 	mLastPoseCount = 0;
 	mRenderable = mOwner->getSceneRenderer()->createNodeRenderable(visualParams);
 	mNodeRenderable = static_cast<NodeRenderable*>(mRenderable);
-	mNxActorUserData->RenderPtr = this;
+	mNxUserData->RenderPtr = this;
 	
 
 	mOwner->getSceneRenderer()->registerSource(this);
@@ -184,31 +121,7 @@ Body::~Body() {
 		mRenderable = 0;
 	}
 
-#if 0
-	if (mNode == 0)
-		return;
-	
-	Ogre::SceneNode::ObjectIterator object_it = mNode->getAttachedObjectIterator();
-	Ogre::MovableObject *m;
-	while(object_it.hasMoreElements()) {
-		m = object_it.getNext();
-		if (m->getMovableType() == "Entity") {
-			mOwner->getSceneManager()->destroyEntity((Ogre::Entity*) m);
-		}
-		else {
-			mNode->detachObject(m);
-			mOwner->getSceneManager()->getRootSceneNode()->attachObject(m);
-		}
-	}
 
-	mNode->detachAllObjects();
-	mNode->removeAndDestroyAllChildren();
-
-	if (mNode)
-		mOwner->getSceneManager()->destroySceneNode(mNode->getName());
-
-#endif
-	
 }
 
 //////////////////////////////////////////////////////////
@@ -216,6 +129,7 @@ Body::~Body() {
 void Body::__renderSelf() {
 
 	switch (mInterpolation) {
+
 		case I_Absolute:
 			{
 				mDeltaPose = getGlobalPose();
@@ -223,7 +137,7 @@ void Body::__renderSelf() {
 				mLastPose = mDeltaPose;
 			}
 		break;
-	
+
 		case I_Linear:
 			{
 				Pose blended_pose = NxInterpolate(mLastPose, getGlobalPose(), mOwner->getLastAlphaValue());
@@ -240,7 +154,7 @@ void Body::__renderSelf() {
 					
 					mDeltaPose = getGlobalPose();
 
-					if (mDeltaPose.v != mLastPose.v) {
+					if (mDeltaPose.m.t != mLastPose.m.t) {
 						mDeltaPose = NxInterpolate(mDeltaPose, mLastPose);
 						mLastPose = getGlobalPose();
 						mLastPoseCount = 0;
@@ -264,7 +178,7 @@ void Body::__renderSelf() {
 					
 					mDeltaPose = getGlobalPose();
 
-					if (mDeltaPose.v != mLastPose.v) {
+					if (mDeltaPose.m.t != mLastPose.m.t) {
 						mDeltaPose = NxInterpolate(mDeltaPose, mLastPose);
 						mLastPose = getGlobalPose();
 						mLastPoseCount = 0;

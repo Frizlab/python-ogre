@@ -13,6 +13,7 @@
 #include "QuickGUILabelArea.h"
 #include "QuickGUINStateButton.h"
 #include "QuickGUIProgressBar.h"
+#include "QuickGUIRadioButtonGroup.h"
 #include "QuickGUIScrollPane.h"
 #include "QuickGUIText.h"
 #include "QuickGUITextBox.h"
@@ -36,7 +37,8 @@ namespace QuickGUI
 	*/
 	class _QuickGUIExport Panel :
 		public Widget,
-		public QuadContainer
+		public QuadContainer,
+		public RadioButtonGroup
 	{
 	public:
 		/** Constructor
@@ -55,7 +57,7 @@ namespace QuickGUI
 			@param
 				parentWidget parent widget which created this widget.
         */
-		Panel(const std::string& name, GUIManager* gm);		
+		Panel(const std::string& name, GUIManager* gm);
 
 		virtual void addChild(Widget* w);
 		virtual void allowScrolling(bool allow);
@@ -100,8 +102,8 @@ namespace QuickGUI
 		TextBox* createTextBox();
 		TextBox* createTextBox(const std::string& name);
 
-		Tree* createTree();
-		Tree* createTree(const std::string& name);
+//		Tree* createTree();
+//		Tree* createTree(const std::string& name);
 
 		HorizontalTrackBar* createHorizontalTrackBar();
 		HorizontalTrackBar* createHorizontalTrackBar(const std::string& name);
@@ -114,6 +116,7 @@ namespace QuickGUI
 
 		ScrollPane* getScrollPane();
 		virtual Widget* getTargetWidget(const Point& pixelPosition);
+		virtual const Widget* getTargetWidget(const Point& pixelPosition) const;
 
 		bool scrollingAllowed();
 		virtual void show();

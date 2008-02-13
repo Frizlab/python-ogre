@@ -1,21 +1,23 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgrePhysXDriver.h
+ *  \brief   Header for the PhysXDriver and PhysXDriverParams classes.
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #ifndef __NXOGRE_PHYSXDRIVER_H__
 #define __NXOGRE_PHYSXDRIVER_H__
@@ -35,9 +37,7 @@ namespace NxOgre {
 		
 		<code>
 			"floor: yes"
-
 			"floor: yes, gravity: 0 -9 0"
-
 			"floor: yes, gravity: 0 -9 0, defaultmaterialresitition: 0.9"
 		</code>
 
@@ -77,7 +77,7 @@ namespace NxOgre {
 			- Description: Log format to write to.
 			- Example: "log: html"
 			- See: PhysXDriverParams::mLogType.	
-		
+
 		-	init-resources (bool)
 			- Description: Initalises and loads in resources on creation of world. In some cases this may
 						   want to be delayed until a custom ResourceSystem is loaded in, or until a
@@ -99,7 +99,7 @@ namespace NxOgre {
 
 		See \ref physxdriverparams for the full string argument documentation.
 	*/	
-	class NxExport PhysXDriverParams : Params {
+	class NxPublicClass PhysXDriverParams : Params {
 
 		public:
 
@@ -109,26 +109,20 @@ namespace NxOgre {
 
 			void setToDefault();
 			void parse(Parameters);
-
-			/** @brief Create and use a frame listener inject itself with regular time events.
-				@param framelistener (bool)
-				@default true
-			*/
-			bool mHasFrameListener;
 			
-			/** @brief On an instance of a Error, shutdown the application straight away.
-				@param shutdown-on-errors (bool)
-				@default true
+			/** \brief On an instance of a Error, shutdown the application straight away.
+				\param shutdown-on-errors (bool)
+				\default true
 			*/
 			bool mShutdownOnErrors;
 
-			/** @brief Auto initalise (and load) resources
-				@param init-resources (bool)
-				@default true
+			/** \brief Auto initalise (and load) resources
+				\param init-resources (bool)
+				\default true
 			*/
 			bool mInitResources;
 			
-			/** @brief Formats of Log */
+			/** \brief Formats of Log */
 			enum LogType {
 				LT_NONE = 0,
 				LT_TEXT = 1,
@@ -136,149 +130,172 @@ namespace NxOgre {
 				LT_PHPBB
 			};
 
-			/** @brief Format of the log to write to 
-				@param log (multiple-choice: none, text, html, phpbb)
-				@default LT_HTML(Debug) or LT_NONE (Release)
+			/** \brief Format of the log to write to 
+				\param log (multiple-choice: none, text, html, phpbb)
+				\default LT_HTML(Debug) or LT_NONE (Release)
 			*/
 			LogType mLogType;
 
+			enum TimeControllerType {
+				TC_NONE,
+				TC_CUSTOM
+#if (NX_USE_OGRE == 1)
+				, TC_OGRE
+#endif
+			};
+
+			/** \brief Time controller to use.
+				\default TC_NONE
+			*/
+			TimeControllerType mTimeController;
+
+			/** \brief Custom time controller (make sure TC_CUSTOM) mTimeController is set.
+				\default 0
+			*/
+			TimeController* mCustomTimeControllerPtr;
+
 	};
 
-	/////////////////////////////////////////////////////////////////////////////////////////////////////
+	/////////////////////////////////////////////////////////
 
-	/** PhysXDriver
-	@brief The PhysXDriver is the direct interface between the NxPhysicsSDK.
-
+	/** \brief The PhysXDriver is the direct interface between
+			   the NxPhysicsSDK and NxOgre.
 	*/
-	class NxExport PhysXDriver : public Ogre::FrameListener {
+	class NxPublicClass PhysXDriver {
 
-		public:
+		friend class World;
 
-			/** Creates the PhysXDriver, Starts up the PhysX instance and gets
-			    everything ready for World.
+		protected:
 
-				@note As PhysXDriver and World work together, World should be created first.
+			/** \brief Creates the PhysXDriver, Starts up the PhysX instance and gets
+				       everything ready for World.
+				\note As PhysXDriver and World work together, World should be created first.
 					  The World creates the PhysXDriver for you.
 			*/
 			PhysXDriver(World*, PhysXDriverParams = PhysXDriverParams());
 
-			/** Totally shuts down PhysX and NxOgre.
+			/** \brief Totally shuts down PhysX and NxOgre.
 			*/
 			~PhysXDriver();
 
-			/** Get's a copy of the PhysicsSDK, the top-most PhysX class.
-				@return The SDK
+		public:
+
+			/** \brief Get's a copy of the PhysicsSDK, the top-most PhysX class.
+				\return The SDK
 			*/
 			NxPhysicsSDK*	getSDK();
 
-			/** Reports if the current computer has a PhysX PPU or not.
-				@return if it has a PPU or not.
+			/** \brief Checks if the current hardware
+			has a PhysX PPU or not.
 			*/
 			bool hasHardware();
 
-			/** Frame listener frame started binding. Depending on compiler settings the frame
-			    may be rendered in here.
 
-				@see NX_RENDER_IN_FRAMESTARTED
-
-			*/
-			bool frameStarted(const Ogre::FrameEvent& evt);
-			
-			/** Frame listener frame ended binding. Depending on compiler settings the frame
-			    may be rendered in here.
-
-				@see NX_RENDER_IN_FRAMESTARTED
-
-			*/
-			bool frameEnded(const Ogre::FrameEvent& evt);
-
-			/** Advances the simulation since time last passed. Does not visually update
-			    the Scene.
-
-				@param Time passed since last simulation.
-
-				@code	<code>
-							mPhysXDriver->simulate(0.16667f);
-							mPhysXDriver->render(0.16667f);
-						</code>
+			/** \brief Advances the simulation since time last passed. Does not 
+					   visually update the Scene.
+				\param Time passed since last simulation.
+				\example <code>
+						   mPhysXDriver->simulate(0.16667f);
+						   mPhysXDriver->render(0.16667f);
+						 </code>
 			*/
 			void simulate(const float time);
 
-			/** Move all Scenenodes, update all meshes and update anything visually.
-				
-				@note If you use your own frameListener system, you need to use this
-					  method to render the frame, after it has been simulated. Else
-					  this shouldn't be touch if you use the NxOgre framelistener
-					  system.
-
-				@param Time passed since last simulation.
+			/** \brief Renders the changes of the simulation, using each SceneRenderer
+				       for each Scene.
+				\param Time passed since last simulation.
+				\example <code>
+						   mPhysXDriver->simulate(0.16667f);
+						   mPhysXDriver->render(0.16667f);
+						 </code>
 			*/
 			void render(const float time);
 
-			/** Sets the time modifier for injected timeModifier
-				@param modifier value (1.0 is real-time, 2.0 is twice real-time, 0.5 half real-time).
+			/** \brief Sets the time modifier for injected timeModifier
+				\param modifier value (1.0 is real-time, 2.0 is twice real-time, 0.5 half real-time).
 			*/
-			void setTimeModifier(NxReal modifier)		{
-															mTimeModifier = modifier;
-														}
+			void setTimeModifier(NxReal modifier) {
+			                                       mTimeModifier = modifier;
+			                                      }
 
-			/** Returns a copy of the World class
-				@return The World.
+			/** \brief Returns a copy of the World class
+				\return The World.
 			*/
-			World*	getWorld()							{
-															return mWorld;
-														}
+			World*	getWorld() {
+			                    return mWorld;
+			                   }
 
-
-			/** Returns a copy of the Error singleton class
-				@return the error class
+			/** \brief Returns a copy of the Error singleton class
+				\return the error class
 			*/
-			Error*  getError()							{
-															return mError;
-														}
+			Error*  getError() {
+			                    return mError;
+			                   }
 
-			/** Returns the total time passed in NxOgre
-				@return time passed in seconds
+			/** \brief Returns the total time simulated.
+				\return time passed in seconds
 			*/
-			NxReal	getTime()							{
-															return mTime;
-														}
+			NxReal	getTime() const {
+			                         return mTime;
+			                        }
 
-			/** Creates the remote debugger connection class, and attempts to communicate
+			/** \brief Retuns the total number of times simulated.
+			*/
+			unsigned int getNbSimulations() const {
+			                                       return mNbSimulations;
+			                                      }
+
+
+			/** \brief Creates the remote debugger connection class, and attempts to communicate
 			    with the remote debugger based on the network address and port given.
-
-				@param address The network address of the computer running the the debugger (default: localhost). 
-				@param port The port the remote debugger is running at (default: 5245).
+				\param address The network address of the computer running the the debugger (default: localhost). 
+				\param port The port the remote debugger is running at (default: 5245).
 			*/
 			void	createDebuggerConnection(const NxString& address = "localhost", unsigned int port = 5425);
 			
-			/** Removes the remote debugger connection class, and stops communicating
+			/** \brief Removes the remote debugger connection class, and stops communicating
 				with the remote debugger.
 			*/
 			void	destroyDebuggerConnection();
 
-			/** Returns a copy of the RemoteDebuggerConnection class
+			/** \brief Returns a copy of the RemoteDebuggerConnection class.
 			*/
-			RemoteDebuggerConnection* getRemoteDebuggerConnection() {return mDebugger;}
+			RemoteDebuggerConnection* getRemoteDebuggerConnection() {
+			                                                         return mDebugger;
+			                                                        }
+
+			/** \brief Get's a copy of the TimeController class.
+			*/
+			TimeController*  getTimeController() {
+				return mTimeController;
+			}
 
 		protected:
 
-			void	_createSDK();
-			void	_createSDKfromID(NxString,NxString,NxString,NxString);
-			void	_createFrameListener();
-			void	_destroyFrameListener();
-			void	_destroySDK();
+			/** \internal
+			*/
+			void  _createSDK();
 
-			World						*mWorld;
-			NxPhysicsSDK*				mSDK;
-			bool						mFramelistener;
-			NxOgre::UserAllocator*		mAllocator;
-			Error*						mError;
-			Log*						mLog;
-			NxReal						mTime,
-										mTimeModifier;
-			RemoteDebuggerConnection*	mDebugger;
-			
+			/** \internal
+			*/
+			void  _createSDKfromID(NxString, NxString, NxString, NxString);
+
+			/** \internal
+			*/
+			void  _destroySDK();
+
+			Allocator*                  mAllocator;
+			World*                      mWorld;
+			NxPhysicsSDK*               mSDK;
+			bool                        mFramelistener;
+			UserAllocator*              mUserAllocator;
+			Error*                      mError;
+			Log*                        mLog;
+			NxReal                      mTime,
+			                            mTimeModifier;
+			unsigned int                mNbSimulations;
+			RemoteDebuggerConnection*   mDebugger;
+			TimeController*             mTimeController;
 
 		private:
 

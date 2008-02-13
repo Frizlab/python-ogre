@@ -18,6 +18,7 @@ namespace QuickGUI
 {
 	Quad::Quad(Widget* owner) :
 		mOwner(owner),
+		mClipMode(CLIPMODE_CONTAINER),
 		mGUIManager(owner->getGUIManager()),
 		mQuadContainer(NULL),
 		mLayer(LAYER_CHILD),
@@ -33,8 +34,6 @@ namespace QuickGUI
 		mVisible(true),
 		mTopColor(Ogre::ColourValue::White),
 		mBottomColor(Ogre::ColourValue::White),
-		mClippingWidget(NULL),
-		mInheritClippingWidget(true),
 		mInheritQuadLayer(true),
 		mShowWithOwner(true),
 		mTextureCoordinates(0,0,1,1)
@@ -61,7 +60,6 @@ namespace QuickGUI
 		mVisible(true),
 		mTopColor(Ogre::ColourValue::White),
 		mBottomColor(Ogre::ColourValue::White),
-		mClippingWidget(NULL),
 		mDimensionsViaClipping(mPixelDimensions),
 		mTextureCoordinates(0,0,1,1)
 	{
@@ -72,13 +70,13 @@ namespace QuickGUI
 
 	Quad::~Quad()
 	{
-		if(mAddedToRenderGroup) 
+		if(mAddedToRenderGroup)
 			removeFromRenderObjectGroup();
 	}
 
 	void Quad::_clip()
 	{
-		if(mClippingWidget == NULL)
+		if(mClipMode == CLIPMODE_NONE)
 		{
 			mDimensionsViaClipping = mPixelDimensions;
 			_computeVertices();
@@ -113,12 +111,12 @@ namespace QuickGUI
 			// calculate distance between top/bottom and left/right of the UV coords.
 			float uvWidth = mTextureCoordinates.z - mTextureCoordinates.x;
 			float uvHeight = mTextureCoordinates.w - mTextureCoordinates.y;
-			
+
 			mTextureCoordinatesViaClipping.x = mTextureCoordinates.x + (((mDimensionsViaClipping.x - mPixelDimensions.x) / mPixelDimensions.width) * uvWidth);
 			mTextureCoordinatesViaClipping.y = mTextureCoordinates.y + (((mDimensionsViaClipping.y - mPixelDimensions.y) / mPixelDimensions.height) * uvHeight);
 			mTextureCoordinatesViaClipping.z = mTextureCoordinates.z - ((((mPixelDimensions.x + mPixelDimensions.width) - (mDimensionsViaClipping.x + mDimensionsViaClipping.width)) / mPixelDimensions.width) * uvWidth);
 			mTextureCoordinatesViaClipping.w = mTextureCoordinates.w - ((((mPixelDimensions.y + mPixelDimensions.height) - (mDimensionsViaClipping.y + mDimensionsViaClipping.height)) / mPixelDimensions.height) * uvHeight);
-			
+
 			_updateTextureCoords();
 
 			if(mOwner->isVisible())
@@ -179,7 +177,7 @@ namespace QuickGUI
 		mVertices[3].pos = Ogre::Vector3(left,  top, 0.f);		// left-top
 
 		*/
-		
+
 		// TRIANGLE 1
 		mVertices[0].pos = Ogre::Vector3(left,bottom,0);	// left-bottom
 		mVertices[1].pos = Ogre::Vector3(right,bottom,0);	// right-bottom
@@ -224,12 +222,12 @@ namespace QuickGUI
 	void Quad::_notifyQuadContainerNeedsUpdate()
 	{
 		// notify QuadContainer of change (if exists)
-		if( (mQuadContainer != NULL) && (mAddedToRenderGroup) ) 
+		if( (mQuadContainer != NULL) && (mAddedToRenderGroup) )
 		{
 			switch(mLayer)
 			{
 			case Quad::LAYER_CHILD:
-				mQuadContainer->notifyChildRenderableChanged(this);	
+				mQuadContainer->notifyChildRenderableChanged(this);
 				break;
 			case Quad::LAYER_MENU:
 				mQuadContainer->notifyMenuRenderableChanged(this);
@@ -286,7 +284,7 @@ namespace QuickGUI
 
 	void Quad::addToRenderObjectGroup()
 	{
-		if( mAddedToRenderGroup || (mQuadContainer == NULL) ) 
+		if( mAddedToRenderGroup || (mQuadContainer == NULL) )
 			return;
 
 		switch(mLayer)
@@ -302,9 +300,11 @@ namespace QuickGUI
 		mAddedToRenderGroup = true;
 	}
 
-	void Quad::setClippingWidget(Widget* w)
+	void Quad::setClipMode(Quad::ClipMode m)
 	{
-		mClippingWidget = w;
+		mClipMode = m;
+
+		_clip();
 	}
 
 	bool Quad::dimensionsChanged()
@@ -314,22 +314,46 @@ namespace QuickGUI
 
 	Rect Quad::getClippingRect()
 	{
-		return Rect(mClippingWidget->getScreenPosition() + mClippingWidget->getScrollOffset(), mClippingWidget->getSize());
+		if((mClipMode == CLIPMODE_NONE) || (mQuadContainer == NULL))
+			return Rect::ZERO;
+
+		Rect r;
+
+		switch(mClipMode)
+		{
+		case CLIPMODE_OWNER:
+			if(mOwner->getParentWidget() == NULL)
+				r = mOwner->getDimensions();
+			else
+				r = mOwner->getParentWidget()->getActualDimensions();
+			break;
+		case CLIPMODE_CONTAINER:
+			r = mQuadContainer->getOwner()->getActualDimensions();
+			break;
+		case CLIPMODE_PARENT_CONTAINER:
+			if(mQuadContainer->getParentContainer() == NULL)
+				r = mQuadContainer->getOwner()->getDimensions();
+			else
+				r = mQuadContainer->getParentContainer()->getOwner()->getActualDimensions();
+			break;
+		}
+
+		if(r.x < 0)
+			r.x = 0;
+		if(r.y < 0)
+			r.y = 0;
+
+		return r;
 	}
 
-	Widget* Quad::getClippingWidget()
+	Quad::ClipMode Quad::getClipMode()
 	{
-		return mClippingWidget;
+		return mClipMode;
 	}
 
 	Rect Quad::getDimensions()
 	{
 		return mPixelDimensions;
-	}
-
-	bool Quad::getInheritClippingWidget()
-	{
-		return mInheritClippingWidget;
 	}
 
 	bool Quad::getInheritLayer()
@@ -362,7 +386,7 @@ namespace QuickGUI
 		return mShowWithOwner;
 	}
 
-	bool Quad::isPointWithinBounds(const Point& pixelPosition)
+	bool Quad::isPointWithinBounds(const Point& pixelPosition) const
 	{
 		const float xPos = pixelPosition.x;
 		if( (xPos < mPixelDimensions.x) || (xPos > (mPixelDimensions.x + mPixelDimensions.width)) )
@@ -452,11 +476,6 @@ namespace QuickGUI
 		_clip();
 	}
 
-	void Quad::setInheritClippingWidget(bool inherit)
-	{
-		mInheritClippingWidget = inherit;
-	}
-
 	void Quad::setLayer(Layer l)
 	{
 		if( (l == mLayer) && mAddedToRenderGroup ) return;
@@ -523,7 +542,7 @@ namespace QuickGUI
 	void Quad::setTextureCoordinates(Vector4 textureCoordinates)
 	{
 		mTextureCoordinates = textureCoordinates;
-		
+
 		mTextureCoordsChanged = true;
 
 		_clip();
@@ -571,19 +590,6 @@ namespace QuickGUI
 	{
 		return mMaterialChanged;
 	}
-
-	void Quad::updateClippingWidget()
-	{
-		if(mOwner->getParentPanel() != NULL)
-			mClippingWidget = mOwner->getParentPanel();
-		else if(mOwner->getParentWindow() != NULL)
-			mClippingWidget = mOwner->getParentWindow();
-		else if(mOwner->getParentSheet() != NULL)
-			mClippingWidget = mOwner->getParentSheet();
-		else
-			mClippingWidget = mOwner;
-	}
-
 
 	bool Quad::offsetChanged()
 	{

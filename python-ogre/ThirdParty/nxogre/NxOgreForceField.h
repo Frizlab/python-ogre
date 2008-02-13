@@ -1,56 +1,108 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreForceField.h
+ *  \brief   Header for the ForceFieldForumula struct, the ForceFieldParams
+ *           and ForceField classes
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #ifndef __NXOGRE_FORCEFIELD_H__
 #define __NXOGRE_FORCEFIELD_H__
 
 #include "NxOgrePrerequisites.h"
 #include "NxOgreActor.h"
+#include "NxOgreSimpleActor.h"
+#include "NxOgreEffectsSystem.h"
 #include "NxOgreParams.h"
 #include "NxOgrePose.h"
 
 namespace NxOgre {
 
+	/* \brief A collection of constants which are used in the following equation
+		f_i = [K + M_p(P-p) + Mv(V-v) + N a_noise]_i / [1 + l_i|P_i-p_i| + qi(P_i-p_i)^2]
+		to calculate the velocity of a single actor within the forcefield equation
+		shape.
+	*/
+	class NxPublicClass ForceFieldFunction {
+
+		public:
+
+			/** \brief Constant(K) part of the function.
+			*/
+			NxVec3  Constant;
+			/** \brief Position Dependence Matrix(Mp) part of the function.
+				\see   NxForceFieldDesc::position 
+			*/
+			NxMat33 PositionDependence;
+
+			/** \brief Position Target (P)
+				\see   NxForceFieldDesc::positionTarget 
+			*/
+			NxVec3  PositionTarget;
+
+			/** \brief Velocity Dependence Matrix (Mv)
+				\see   NxForceFieldDesc::velocityMultiplier
+			*/
+			NxMat33 VelocityDependence;
+
+			/** \brief V is the velocity target, from NxForceFieldDesc.velocityTarget 
+			*/
+			NxVec3  VelocityTarget;
+
+			/** \brief Noise is the noise multiplier, from NxForceFieldDesc.noise 
+			*/
+			NxVec3  Noise;
+
+			/** \brief l is the linear falloff term, from NxForceFieldDesc.falloffLinear 
+			*/
+			NxVec3  LinearFalloff;
+
+			/** \brief q is the quadratic falloff term, from NxForceFieldDesc.falloffQuadratic 
+			*/
+			NxVec3  QuadraticFalloff;
+
+			/** \brief Coordinate system to use
+			*/
+			NxForceFieldCoordinates CoordinateSystem;
+
+			static ForceFieldFunction Tornado();
+			static ForceFieldFunction Explosion();
+
+	};
+	
+	class NxPublicClass ForceField : public SimpleActor, public EffectsSystem {
+
+		public:
+
+			ForceField(SimpleShape* inclusion_shape, Scene* scene, ForceFieldFunction constants)  : SimpleActor(scene) {}
+			~ForceField() {}
+
+
+	};
+
+}; // End of NxOgre namespace
+
+#endif 
+
+#if 0
+
 	// Helper Class for ForceFieldParams.
 	// fi = [K + Mp(P-p) + Mv(V-v) + N anoise]i / [1 + li|Pi-pi| + qi(Pi-pi)^2]
-	struct NxExport ForceFieldFormula {
-
-		// p is the position of the object, in the force field coordinate system 
-		// v is the velocity of the object, in the force field coordinate system 
-
-		/////////////////////////////////////////////////////////////////
-
-		NxVec3 K;		//K is the constant part, from NxForceFieldDesc.constant 
-
-		NxMat33 Mp;		//Mp is the position dependence matrix, from NxForceFieldDesc.position 
-
-		NxVec3 P;		//P is the position target, from NxForceFieldDesc.positionTarget 
-		 
-		NxMat33 Mv;		//Mv is the velocity dependence matrix, from NxForceFieldDesc.velocityMultiplier
-
-		NxVec3 V;		//V is the velocity target, from NxForceFieldDesc.velocityTarget 
-		
-		NxVec3 Anoise;	//anoise is the noise multiplier, from NxForceFieldDesc.noise 
-		
-		NxVec3 l;		//l is the linear falloff term, from NxForceFieldDesc.falloffLinear 
-
-		NxVec3 q;		//q is the quadratic falloff term, from NxForceFieldDesc.falloffQuadratic 
+	struct NxPublicClass ForceFieldFormula {
 
 
 		NxForceFieldCoordinates coords;
@@ -75,7 +127,7 @@ namespace NxOgre {
 
 	/////////////////////////////////////////////////////////////////
 
-	class NxExport ForceFieldParams : public Params {
+	class NxPublicClass ForceFieldParams : public Params {
 
 		public:
 
@@ -115,118 +167,14 @@ namespace NxOgre {
 			NxReal					softBodyScale;			//!< Force scale factor for soft bodies
 			NxReal					rigidBodyScale;			//!< Force scale factor for rigid bodies
 
-			NxU32					flags;					//!< Force field flags; @see NxForceFieldShapeFlags
+			NxU32					flags;					//!< Force field flags; \see NxForceFieldShapeFlags
 
 
 	}; // End of ActorParams class
-#if 0
-	//////////////////////////////////////////////////////////
-
-	class NxExport ForceFieldShape {
-		
-		friend class ForceField;
-
-		protected:
-
-			virtual NxForceFieldShape* __bindToForceField(NxForceField*, bool Inclusion = true)		{
-																										return 0;
-																									}
-
-	};
 
 	//////////////////////////////////////////////////////////
 
-	class NxExport ForceFieldCubeShape : public ForceFieldShape {
-		
-		public:
-
-			ForceFieldCubeShape(NxReal w, NxReal h, NxReal d, const Pose& p = Pose())
-			{
-				createShape(NxVec3(w*0.5f,h*0.5f,d*0.5f), p);
-			}
-
-			ForceFieldCubeShape(NxReal c, const Pose& p = Pose())
-			{
-				createShape(NxVec3(c*0.5f,c*0.5f,c*0.5f), p);
-			}
-
-			void	createShape(NxVec3 size, const Pose& p)
-			{
-				mDescription.setToDefault();
-				mDescription.dimensions = size;
-				mDescription.pose = p.toMat34();
-			}
-			
-			NxBoxForceFieldShapeDesc mDescription;
-
-		protected:
-
-			virtual NxForceFieldShape* __bindToForceField(NxForceField*, bool Inclusion = true);
-
-	};
-
-	//////////////////////////////////////////////////////////
-
-	class NxExport ForceFieldSphereShape : public ForceFieldShape {
-		
-		public:
-
-			ForceFieldSphereShape(NxReal radius, const Pose& p = Pose())
-			{
-				mDescription.setToDefault();
-				mDescription.radius = radius;
-				mDescription.pose = p.toMat34();
-			}
-			
-			NxSphereForceFieldShapeDesc mDescription;
-		
-		protected:
-
-			virtual NxForceFieldShape* __bindToForceField(NxForceField*, bool Inclusion = true);
-
-	};
-
-	//////////////////////////////////////////////////////////
-
-	class NxExport ForceFieldCapsuleShape : public ForceFieldShape {
-		
-		public:
-
-			ForceFieldCapsuleShape(NxReal height, NxReal radius, const Pose& p = Pose())
-			{
-				mDescription.setToDefault();
-				mDescription.height = height;
-				mDescription.radius = radius;
-				mDescription.pose = p.toMat34();
-			}
-
-			NxCapsuleForceFieldShapeDesc mDescription;
-		
-		protected:
-
-			virtual NxForceFieldShape* __bindToForceField(NxForceField*, bool Inclusion = true);
-
-	};
-
-	//////////////////////////////////////////////////////////
-
-	class NxExport ForceFieldConvexShape : public ForceFieldShape {
-		
-		public:
-
-			ForceFieldConvexShape(NxString meshName, Scene* scene, const Pose& p = Pose(), const Ogre::Vector3& scale = Ogre::Vector3(1,1,1));
-			NxConvexForceFieldShapeDesc mDescription;
-		
-		protected:
-
-			virtual NxForceFieldShape* __bindToForceField(NxForceField*, bool Inclusion = true);
-
-	};
-#endif
-
-	//////////////////////////////////////////////////////////
-
-	class NxExport ForceField : public Actor {
+	class NxPublicClass ForceField : public Actor {
 
 		friend class Scene;
 
@@ -234,12 +182,12 @@ namespace NxOgre {
 
 			ForceField(const NxString& Identifier, Scene*);
 			// identifier, this, pose, actorShape, aparams, fparams
-			ForceField(const NxString& identifier, Scene*, const Pose&, ShapeBlueprint* actorShape, ActorParams = "", ForceFieldParams = "");
+			ForceField(const NxString& identifier, Scene*, const Pose&, Shape* actorShape, ActorParams = "", ForceFieldParams = "");
 			~ForceField();
 
 			//////////////////////////////////////////////////////////
 
-			void _createActor(ShapeBlueprint *shape, const Pose& pose, ActorParams params);
+			void _createActor(Shape *shape, const Pose& pose, ActorParams params);
 			void _destroyActor();
 			void _createForceField(ForceFieldParams params);
 			void _destroyForceField();

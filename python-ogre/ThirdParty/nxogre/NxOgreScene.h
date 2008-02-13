@@ -1,21 +1,23 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreScene.h
+ *  \brief   Header for the Scene and SceneParams classes.
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #ifndef __NXOGRE_SCENE_H__
 #define __NXOGRE_SCENE_H__
@@ -27,6 +29,7 @@
 #include "NxOgreParams.h"			// For: Params
 #include "NxOgrePose.h"
 #include "NxOgreNodeRenderable.h"	// For: NodeRenderableParams (for Body)
+#include "NxOgreSimpleActor.h"		// For BetajaenCC SharedList<SimpleActor>
 
 namespace NxOgre {
 
@@ -78,7 +81,7 @@ namespace NxOgre {
 
 		See \ref sceneparams for the full string argument documentation.
 	*/	
-	class NxExport SceneParams : Params {
+	class NxPublicClass SceneParams : Params {
 
 		public:
 
@@ -90,152 +93,152 @@ namespace NxOgre {
 			void setToDefault();
 			void parse(Parameters);
 
-			/**	@brief An infinite ground plane on the +Y axis.
-				@default false;
+			/**	\brief An infinite ground plane on the +Y axis.
+				\default false;
 			 */
 			bool				floor;
 
-			/** @brief The acceleration of gravity in a scene.
-				@default 0 -9.80665 0
+			/** \brief The acceleration of gravity in a scene.
+				\default 0 -9.80665 0
 			 */
 			NxVec3				gravity;
 
-			/** @brief The restitution (bounce) value of the default material.
-				@default 0
+			/** \brief The restitution (bounce) value of the default material.
+				\default 0
 			 */
 			NxReal				defaultMaterialRestitution;
 
-			/** @brief The dynamic friction value of the default material.
-				@default 0.5
+			/** \brief The dynamic friction value of the default material.
+				\default 0.5
 			 */
 			NxReal				defaultMaterialDynamicFriction;
 
-			/** @brief The static friction value of the default material.
-				@default 0.5
+			/** \brief The static friction value of the default material.
+				\default 0.5
 			 */
 			NxReal				defaultMaterialStaticFriction;
 
 			
-			/** @brief maximum Timestep
-				@default 0.016667
+			/** \brief maximum Timestep
+				\default 0.016667
 			 */
 			NxReal				max_timestep;
 			
 			
-			/** @brief maximum Iterator
-				@default 8
+			/** \brief maximum Iterator
+				\default 8
 			 */
 			NxU32				max_iter;
 
 			
-			/** @brief maximum bound
-				@default NULL
+			/** \brief maximum bound
+				\default NULL
 			 */
 			NxBounds3*			max_bounds;
 
 			
-			/** @brief scene limits
-				@default NULL
+			/** \brief scene limits
+				\default NULL
 			 */
 			NxSceneLimits*		limits;
 
 			
-			/** @brief Is the simulation on a CPU (Software) or on a PPU (Hardware)
-				@default NX_SIMULATION_SW
+			/** \brief Is the simulation on a CPU (Software) or on a PPU (Hardware)
+				\default NX_SIMULATION_SW
 			 */
 			NxSimulationType	sim_type;
 
 			
-			/** @brief Has bounds planes
-				@default false
+			/** \brief Has bounds planes
+				\default false
 			 */
 			bool				bounds_planes;
 
 
-			/** @brief Initial flags of the scene
-				@default NX_SF_SIMULATE_SEPARATE_THREAD | NX_SF_DISABLE_SCENE_MUTEX
+			/** \brief Initial flags of the scene
+				\default NX_SF_SIMULATE_SEPARATE_THREAD | NX_SF_DISABLE_SCENE_MUTEX
 			 */
 			NxU32				flags;
 
 
-			/** @brief Internal thread count
-				@default 0
+			/** \brief Internal thread count
+				\default 0
 			 */
 			NxU32				internal_thread_count;
 			
 
-			/** @brief Background thread count
-				@default 0
+			/** \brief Background thread count
+				\default 0
 			 */
 			NxU32				background_thread_count;
 
 
-			/** @brief Custom Scheduler
-				@default NULL
+			/** \brief Custom Scheduler
+				\default NULL
 			 */
 			NxUserScheduler*	custom_scheduler;
 			
 
-			/** @brief Thread Mask
-				@default 0x55555554
+			/** \brief Thread Mask
+				\default 0x55555554
 			 */
 			NxU32				thread_mask;
 						
 
-			/** @brief Background Thread Mask
-				@default 0x55555554
+			/** \brief Background Thread Mask
+				\default 0x55555554
 			 */
 			NxU32				background_thread_mask;
 						
 
-			/** @brief Simulation thread stack size
-				@default 0
+			/** \brief Simulation thread stack size
+				\default 0
 			 */
 			NxU32				sim_thread_stack_size;
 									
 
-			/** @brief Simulation thread priority
-				@default NX_TP_NORMAL
-				@see NxSceneDesc::simThreadPriority
+			/** \brief Simulation thread priority
+				\default NX_TP_NORMAL
+				\see NxSceneDesc::simThreadPriority
 			 */
 			NxThreadPriority	sim_thread_priority;
 						
 
-			/** @brief Worker thread stack size
-				@default 0
-				@see NxSceneDesc::workerThreadStackSize
+			/** \brief Worker thread stack size
+				\default 0
+				\see NxSceneDesc::workerThreadStackSize
 			 */
 			NxU32				worker_thread_stack_size;
 									
 
-			/** @brief Worker thread priority
-				@default NX_TP_NORMAL
-				@see NxSceneDesc::workerThreadPriority
+			/** \brief Worker thread priority
+				\default NX_TP_NORMAL
+				\see NxSceneDesc::workerThreadPriority
 			 */
 			NxThreadPriority	worker_thread_priority;
 			
 									
-			/** @brief What is up?
-				@default 0
-				@see NxSceneDesc::upAxis
+			/** \brief What is up?
+				\default 0
+				\see NxSceneDesc::upAxis
 			 */
 			NxU32				up_axis;
 
 									
-			/** @brief Subdivision level
-				@default 5
+			/** \brief Subdivision level
+				\default 5
 			 */
 			NxU32				subdivision_level;
 			
 									
-			/** @brief Static structure
-				@default  NX_PRUNING_DYNAMIC_AABB_TREE
+			/** \brief Static structure
+				\default  NX_PRUNING_DYNAMIC_AABB_TREE
 			 */
 			NxPruningStructure	static_structure;
 			
 									
-			/** @brief Dynamic structure
-				@default NX_PRUNING_NONE
+			/** \brief Dynamic structure
+				\default NX_PRUNING_NONE
 			 */
 			NxPruningStructure	dynamic_structure;
 			
@@ -246,9 +249,9 @@ namespace NxOgre {
 				CN_ACCUMULATOR
 			};
 
-			/** @brief Scene Controller to use (Fixed, Variable, Accumulator or Null)
-				@note If your using your own scenecontroller, supply a Null controller as a param first.
-				@default CN_FIXED (Fixed timestep)
+			/** \brief Scene Controller to use (Fixed, Variable, Accumulator or Null)
+				\note If your using your own scenecontroller, supply a Null controller as a param first.
+				\default CN_FIXED (Fixed timestep)
 			*/
 			SceneControllerType		controller;
 
@@ -257,14 +260,14 @@ namespace NxOgre {
 				RN_OGRE
 			};
 
-			/** @brief Scene Renderer to use (Ogre or Null)
-				@note If your using your own scene renderer, supply a Null renderer as a param first.
-				@default RN_GENERIC
+			/** \brief Scene Renderer to use (Ogre or Null)
+				\note If your using your own scene renderer, supply a Null renderer as a param first.
+				\default RN_GENERIC
 			*/
 			SceneRendererType		renderer;
 
 
-			/** @brief Scene Renderer UserData (RenderSystem specific)
+			/** \brief Scene Renderer UserData (RenderSystem specific)
 			*/
 			NxString				rendererUserData;
 
@@ -274,14 +277,14 @@ namespace NxOgre {
 		considered to be seperate from each other. Actors from one scene cannot interact with ones from
 		another. Scenes have also their own Materials, Groups, etc. which cannot be shared.
 
-		@warning <strong>Containers and Garbage Collection</strong> \n
+		\warning <strong>Containers and Garbage Collection</strong> \n
 			Scenes are used in containers. Creating a Scene through the World factory method makes the Scene "owned"
 			by NxOgre, on deletion of the Scene it will remove the presence of the Scene and delete the pointer.
 			Manually creating the Scene "new Scene()" will only add a presence, it is up to you to delete it at the
 			correct time.
 
 	*/
-	class NxExport Scene {
+	class NxPublicClass Scene : public NxUserNotify {
 
 		friend class Actor;
 		friend class ActorGroup;
@@ -302,9 +305,10 @@ namespace NxOgre {
 #if (NX_SDK_VERSION_NUMBER >= 272)
 		friend class DominanceGroup;
 #endif
+
 		public:
 
-			/** @brief Used to specify when an batched action will happen.
+			/** \brief Used to specify when an batched action will happen.
 			*/
 			enum BatchActionTimeFrame {
 				BT_NOW,	
@@ -314,7 +318,7 @@ namespace NxOgre {
 				BT_NEVER
 			};
 
-			/** @brief Renderable types
+			/** \brief Renderable types
 			*/
 			enum RenderableType {
 				RT_EVERYTHING	= 0,
@@ -322,197 +326,183 @@ namespace NxOgre {
 				RT_TRANSFORM	= 2
 			};
 
-			/**@brief Scene Constructor
+			/**\brief Scene Constructor
 			
 				 Create's a Scene, and NxScene withing physics. It also creates default material, actor groups, 
 				 shape groups and dominance groups. Based on the SceneParams, Gravity may be set, and an actor
 				 created with a GroundShape to represent the ground plane or the floor.
  
-			   @warning <strong>Containers and Garbage Collection</strong> \n
+			   \warning <strong>Containers and Garbage Collection</strong> \n
 			   	 Scenes are used in containers. Creating a Scene through the World factory method makes the Scene "owned"
 			     by NxOgre, on deletion of the Scene it will remove the presence of the Scene and delete the pointer.
 			     Manually creating the Scene "<code>new Scene()</code>" will only add a presence, it is up to you to delete it at the
 			     correct time.
 			   
-			    @param Identifier				Unique identifier of the Scene
-			   	@param World*					World pointer which would contain the Scene.
-			    @param SceneParams				SceneParams for this Scene to use.
+			    \param Identifier				Unique identifier of the Scene
+			   	\param World*					World pointer which would contain the Scene.
+			    \param SceneParams				SceneParams for this Scene to use.
 			   
-			    @see World::createScene
-			    @see SceneParams
+			    \see World::createScene
+			    \see SceneParams
 			*/  	
 			Scene(const NxString& identifier, World*, SceneParams = SceneParams());
 
 
 			/** Alternate Scene Constructor. Used for to bind a Scene to a previously made NxScene.
 					
-				@param Identifier				Unique identifier of the Scene
-			   	@param Ogre::SceneManager*		SceneManger for this Scene to Use.
-			    @param World*					World pointer which would contain the Scene.
-			    @param NxScene*					NxScene to bind to.
+				\param Identifier				Unique identifier of the Scene
+			   	\param Ogre::SceneManager*		SceneManger for this Scene to Use.
+			    \param World*					World pointer which would contain the Scene.
+			    \param NxScene*					NxScene to bind to.
 			   
-			    @see World::createScene
-			    @see SceneParams
+			    \see World::createScene
+			    \see SceneParams
 			 */ 
-			Scene(const NxString& identifier, World*, Ogre::SceneManager*, NxScene*);
+			Scene(const NxString& identifier, World*, NxScene*);
 
 			/** Scene Destructor
 			   
-			    @note Containers and Garbage Collection
+			    \note Containers and Garbage Collection
 			     If the Scene is owned by NxOgre use World::SceneDestroy, if not then use "delete mScene".
 			   
-			    @see World::destroyScene
+			    \see World::destroyScene
 			*/
 			~Scene();
 
-			/**  @brief Returns the name of the Scene.
-
-			     @return NxString Scene identifier
+			/**  \brief Returns the name of the Scene.
+			     \return NxString Scene identifier
 			 */
 			NxString getName()								{
 																return mName;
 															}
 
-			/**  @brief Returns the SceneManager instance the Scene is using
-
-			     @return SceneManager SceneManager pointer.
-			 */
-			Ogre::SceneManager* getSceneManager()			{
-																return mSceneMgr;
-															}
-
-			/**  @brief Returns a copy of a pointer of the NxScene which the Scene works with.
-
-			     @return NxScene The NxScene's pointer
+			/**  \brief Returns a copy of a pointer of the NxScene which the Scene works with.
+			     \return NxScene The NxScene's pointer
 			 */
 			NxScene* getNxScene()							{
 																return mScene;
 															}
 
-			/** @brief Returns a copy of the World which the Scene is part of.
-			   
-			    @return World The World itself.
+			/** \brief Returns a copy of the World which the Scene is part of.
+			    \return World The World itself.
 			 */
 			World* getWorld()								{
 																return mOwner;
 															}
 
 
-			/**@brief Sets the Scene Controller for simulation/rendering control of the Scene.
+			/**\brief Sets the Scene Controller for simulation/rendering control of the Scene.
 
 				Sets the Controller used for Simulation and Rendering of the NxScene. These can be Variable, Fixed,
 			   	or Accumulator. You can use your own SceneController if you wish, otherwise the SceneController should
 				be specified in the SceneParams "time-step-method" with Fixed, Variable or Accumulator as an option.
 			   
-			   @warning <strong>Containers and Garbage Collection</strong> \n
+			   \warning <strong>Containers and Garbage Collection</strong> \n
 			   		SceneController instance will be deleted on the destruction of the Scene.	
 			   
-			   @param SceneController Instance of the SceneController to use.
+			   \param SceneController Instance of the SceneController to use.
 			 */  	
 			void setSceneController(SceneController*);
 
 
-			/** @brief Gets the Scene Controller which is controls of the Physics simulation.
+			/** \brief Gets the Scene Controller which is controls of the Physics simulation.
 			*/
 			SceneController* getSceneController() {return mSceneController;}
 
-			/** @brief Gets the last known deltaTime injected into the controller.
+			/** \brief Gets the last known deltaTime injected into the controller.
 			*/
 			NxReal getLastDeltaTime() const;
 
-			/** @brief Gets the last known alpha value of the controller.
+			/** \brief Gets the last known alpha value of the controller.
 			*/
 			NxReal getLastAlphaValue() const;
 
-			/** @brief Gets the Scene Renderer which renders the results of the Physics simulation
+			/** \brief Gets the Scene Renderer which renders the results of the Physics simulation
 			*/
 			SceneRenderer* getSceneRenderer() {return mSceneRenderer;}
 
-			/** @brief Set's the Scene Renderer, and will delete the previous one
+			/** \brief Set's the Scene Renderer, and will delete the previous one
 			*/
 			void setSceneRenderer(SceneRenderer*);
 
-			/** @brief Get a list of renderables based on time
+			/** \brief Get a list of renderables based on time
 			*/
 			Renderables	getRenderable(RenderableType);
 
-			/**	 @brief Save the current Scene and contents to a SceneBlueprint
-			 */
-			Blueprints::SceneBlueprint  save();
-
-			/**	 @brief Returns the NxSimulationType (Hardware/Software) of the Scene.
-			   	 @returns NxSimulationType		Simulation Type
+			/**	 \brief Returns the NxSimulationType (Hardware/Software) of the Scene.
+			   	 \returns NxSimulationType		Simulation Type
 			 */	 	
 			NxSimulationType getSimType() const;
 
 
-			/**	 @brief Sets the gravitional constant for the Scene. 
-				 @param Ogre::Vector3(Acceleration/metres per second)	Gravitional Constant
+			/**	 \brief Sets the gravitional constant for the Scene. 
+				 \param Ogre::Vector3(Acceleration/metres per second)	Gravitional Constant
 			 */  	
 			void setGravity(const Ogre::Vector3&);
 
 
-			/**  @brief Gets the gravitional constant for the Scene. 
-				 @return	Ogre::Vector3(Acceleration/metres per second)	Gravitional Constant
+			/**  \brief Gets the gravitional constant for the Scene. 
+				 \return	Ogre::Vector3(Acceleration/metres per second)	Gravitional Constant
 			 */	  	
 			Ogre::Vector3 getGravity() const;
 
 
-			/**@brief Creates an Actor within the Scene.
+			/**\brief Creates an Actor within the Scene.
 
-			   @warning <strong>Containers and Garbage Collection</strong> \n
+			   \warning <strong>Containers and Garbage Collection</strong> \n
 			   	   Actor are used in containers. Creating a Actor through the Scene factory method makes the Actor "owned"
 			       by NxOgre, on deletion of the Scene it will remove the presence of the Scene and delete the pointer.
 			       Manually creating the Scene "new Actor()" will only add a presence, it is up to you to delete it at the
 			       correct time.
 			   
-			   	 @param identifier			Unique name of the Actor. (Leave blank for a auto-generated identifier)
-			   	 @param ShapeBlueprint*	The first shape to use for the Actor (new ShapeName(...))
-			   	 @param Pose				Global Pose of the Actor
-			   	 @param ActorParams		ActorParams for this actor
+			   	 \param identifier			Unique name of the Actor. (Leave blank for a auto-generated identifier)
+			   	 \param ShapeBlueprint*	The first shape to use for the Actor (new ShapeName(...))
+			   	 \param Pose				Global Pose of the Actor
+			   	 \param ActorParams		ActorParams for this actor
 			   
-			   	 @return The created Actor
+			   	 \return The created Actor
 			 */	 	
-			Actor*	createActor(const NxString& identifier, ShapeBlueprint*, const Pose&, ActorParams = ActorParams());
+			Actor*	createActor(const NxString& identifier, Shape*, const Pose&, ActorParams = ActorParams());
 
 
-			/**@brief Creates many actors within the Scene now or sometime in the future.
+			/**\brief Creates many actors within the Scene now or sometime in the future.
 				
-			   @warning <strong>Containers and Garbage Collection</strong> \n
+			   \warning <strong>Containers and Garbage Collection</strong> \n
 			   	   Actor are used in containers. Creating a Actor through the Scene factory method makes the Actor "owned"
 			       by NxOgre, on deletion of the Scene it will remove the presence of the Scene and delete the pointer.
 			       Manually creating the Scene "new Actor()" will only add a presence, it is up to you to delete it at the
 			       correct time.
 			   
-			   	 @param identifierPattern		identifierPattern of the Actors; "Cake" -> "Cake, Cake1, Cake2"
-				 @param nbActors				Number of Actors to create
-			   	 @param ShapeBlueprint*		The first shape to use for the Actor (new ShapeName(...))
-			   	 @param Pose					Global Pose of the first actor
-				 @param Pose					Pose difference between the next actor
-				 @param BatchActionTimeFrame	When to create the Actors
-			   	 @param ActorParams			ActorParams for the actors
+			   	 \param identifierPattern		identifierPattern of the Actors; "Cake" -> "Cake, Cake1, Cake2"
+				 \param nbActors				Number of Actors to create
+			   	 \param ShapeBlueprint*		The first shape to use for the Actor (new ShapeName(...))
+			   	 \param Pose					Global Pose of the first actor
+				 \param Pose					Pose difference between the next actor
+				 \param BatchActionTimeFrame	When to create the Actors
+			   	 \param ActorParams			ActorParams for the actors
 			   
 
 			*/
 
-			void	batchCreateActors(const NxString& identifierPattern, NxU32 nbActors, ShapeBlueprint*, const Pose& poseOrigin, const Pose& poseDifference, BatchActionTimeFrame = BT_NOW, ActorParams = ActorParams());
+			void	batchCreateActors(const NxString& identifierPattern, NxU32 nbActors, Shape*, const Pose& poseOrigin, const Pose& poseDifference, BatchActionTimeFrame = BT_NOW, ActorParams = ActorParams());
 			
-			/**@brief Destroys an Actor (or any inherited Actor) within the scene.
+			/**\brief Destroys an Actor (or any inherited Actor) within the scene.
 		
-				  @warning <strong>Containers and Garbage Collection</strong> \n
+				  \warning <strong>Containers and Garbage Collection</strong> \n
 			   	   Actor are used in containers. Creating a Actor through the Scene factory method makes the Actor "owned"
 			       by NxOgre, on deletion of the Scene it will remove the presence of the Scene and delete the pointer.
 			       Manually creating the Scene "new Actor()" will only add a presence, it is up to you to delete it at the
 			       correct time.
 			   
-			   	  @param identifier Unique name of the Actor to destroy.
+			   	  \param identifier Unique name of the Actor to destroy.
 			 */	  	
 			void	destroyActor(const NxString&);
 
-
-			/**
-
+			/**  \brief Destroy an Actor at the nearest best oppunitnity. Best used within callbacks when
+			            the state of the simulation cannot be changed.
 			*/
+			void    destroyActorDelayed(Actor*);
+
 			void	batchDestroyActor(const NxString& identifier, BatchActionTimeFrame = BT_NEXT_AVAILABLE_BATCH);
 			
 			/**
@@ -525,315 +515,286 @@ namespace NxOgre {
 			*/
 			void	batchDestroyActors(Actors, BatchActionTimeFrame = BT_NEXT_AVAILABLE_BATCH);
 
-			/** @brief Returns a pointer to the Actor
+			/** \brief Returns a pointer to the Actor
 
 				In the case of a unknown actor a NULL pointer is return.
 				
-				@note Identifiers are case-sensitve.
+				\note Identifiers are case-sensitve.
 
-			   	@param identifier		Unique name of the Actor to fetch.
-			   	@return Actor			The Actor or NULL.
+			   	\param identifier		Unique name of the Actor to fetch.
+			   	\return Actor			The Actor or NULL.
 			 */	  	
 			Actor*	getActor(const NxString&);
 
 
-			/**	 @brief Get's all Actors in the Scene.
+			/**	 \brief Get's all Actors in the Scene.
 
 				 Returns a container of of the pointers of all the Actors in this Scene. Since your working with the 
 				 "Master" list of actors, you should be careful when handling with those Actors during a FrameSimulation. 
 				 When when adding or cloning Actors within a loop with the Master Loop may make the application freeze.
 			   
-			   	 @param Actors The Master list of Actors.
+			   	 \param Actors The Master list of Actors.
 			 */	  	
 			Actors*	getActors();
 
 
-			/** @brief Gets all Actors with a similar identifier; Cake1, Cake2, Cake3, etc.
-				@param NxStringOperator Does the identifier start or end with identifierPattern
-				@param identifierPattern The pattern to look for
-				@return The container of actors that matches.
+			/** \brief Gets all Actors with a similar identifier; Cake1, Cake2, Cake3, etc.
+				\param NxStringOperator Does the identifier start or end with identifierPattern
+				\param identifierPattern The pattern to look for
+				\return The container of actors that matches.
 			*/
 			Actors getActorsFromIdentifier(NxStringOperator, const NxString& identifierPattern);
 			
-			/** @brief Gets all Actors created that have been created, not created, newer
+			/** \brief Gets all Actors created that have been created, not created, newer
 					   or older than a frame number
-				@param NxComparisonOperator The operator to use on the frame number
-				@param frame The frame number in question.
+				\param NxComparisonOperator The operator to use on the frame number
+				\param frame The frame number in question.
 			*/
 			Actors getActorsFromFrame(NxComparisonOperator, NxU32 frame);
 
-			/** @brief Gets all Actors from a specific region in the Scene.
-				@param SimpleShape	The Shape used to specificy the region in space
-				@param NxShapeType	The types of shapes to look for (Dynamic, Static or both)
-				@return The Actors within the region.
+			/** \brief Gets all Actors from a specific region in the Scene.
+				\param SimpleShape	The Shape used to specificy the region in space
+				\param NxShapeType	The types of shapes to look for (Dynamic, Static or both)
+				\return The Actors within the region.
 			*/
 			Actors& getActorsFromRegion(SimpleShape*, NxShapesType);
 			
-			/** @brief Gets All actors from a specific region in the Scene, without re-specificing a Shape.
-				@param NxShapeType	The types of shapes to look for (Dynamic, Static or both)
-				@return The Actors within the region.
+			/** \brief Gets All actors from a specific region in the Scene, without re-specificing a Shape.
+				\param NxShapeType	The types of shapes to look for (Dynamic, Static or both)
+				\return The Actors within the region.
 			*/
 			Actors& getActorsFromLastRegion(NxShapesType);
 
-			/**	@brief Gets All actors from a raycast in the Scene.
-				@param Position	Origin of the Raycast
-				@param normal	Normalised Direction of the Raycast
-				@param range	Maximum range of the ray can travel.
-				@return The Actors within the sight of the ray.
+			/**	\brief Gets All actors from a raycast in the Scene.
+				\param Position	Origin of the Raycast
+				\param normal	Normalised Direction of the Raycast
+				\param range	Maximum range of the ray can travel.
+				\return The Actors within the sight of the ray.
 			*/
 			Actors getActorsFromRaycast(Ogre::Vector3 position, Ogre::Vector3 normal, NxReal range);
 
-			/**@brief Gets the number of Actors in the scene.
+			/**\brief Gets the number of Actors in the scene.
 			   	
 				Gets the number of NxOgre Actors within the Scene. This does not keep account of NxActors with
 			   	a different UserData class such as Triggers or ForceFields, or manually created NxActors.
 			   
-			   	@return NxU32 Total count of NxOgre Actors in this Scene.
+			   	\return NxU32 Total count of NxOgre Actors in this Scene.
 			 */  	  	
 			NxU32	getNbActors() const;
 
 
-			/**@brief Creates a Actor with some visualation.
+			/**\brief Creates a Actor with some visualation.
 			   
 			   Creates a Body (An Actor with an SceneNode) within a Scene. 
 
-			   @see Scene::createActor for more information.
+			   \see Scene::createActor for more information.
 			   
-			   @warning <strong>Containers and Garbage Collection</strong> \n
+			   \warning <strong>Containers and Garbage Collection</strong> \n
 			   	 Actor are used in containers. Creating a Actor through the Scene factory method makes the Actor "owned"
 			     by NxOgre, on deletion of the Scene it will remove the presence of the Scene and delete the pointer.
 			     Manually creating the Scene "new Actor()" will only add a presence, it is up to you to delete it at the
 			     correct time.
 			   
-			   @param meshIdentifier	Visual Identifier of the Body.
-			   @see	  Scene::createActor for other Arguments.
-			   @see	  Body::Body
-			   @return The created Body
+			   \param meshIdentifier	Visual Identifier of the Body.
+			   \see	  Scene::createActor for other Arguments.
+			   \see	  Body::Body
+			   \return The created Body
 			*/
-			Body*	createBody(const NxString& visualIdentifier, ShapeBlueprint*, const Pose&, ActorParams = "");
+			Body*	createBody(const NxString& visualIdentifier, Shape*, const Pose&, ActorParams = "");
 			
-			/**@brief Creates a Actor with some visualation.
+			/**\brief Creates a Actor with some visualation.
 			   
 			   Creates a Body (An Actor with an SceneNode) within a Scene. 
 
-			   @see Scene::createActor for more information.
+			   \see Scene::createActor for more information.
 			   
-			   @warning <strong>Containers and Garbage Collection</strong> \n
-			   	 Actor are used in containers. Creating a Actor through the Scene factory method makes the Actor "owned"
+			   \warning <strong>Containers and Garbage Collection</strong> \n
+			     Actor are used in containers. Creating a Actor through the Scene factory method makes the Actor "owned"
 			     by NxOgre, on deletion of the Scene it will remove the presence of the Scene and delete the pointer.
 			     Manually creating the Scene "new Actor()" will only add a presence, it is up to you to delete it at the
 			     correct time.
 			   
-			   @param meshIdentifier	Visual Identifier of the Body.
-			   @see	  Scene::createActor for other Arguments.
-			   @see	  Body::Body
-			   @return The created Body
+			   \param meshIdentifier	Visual Identifier of the Body.
+			   \see	  Scene::createActor for other Arguments.
+			   \see	  Body::Body
+			   \return The created Body
 			*/
-			Body*	createBody(const NxString& visualIdentifier, ShapeBlueprint*, const Pose&, NodeRenderableParams, ActorParams = "");
+			Body*	createBody(const NxString& visualIdentifier, Shape*, const Pose&, NodeRenderableParams, ActorParams = "");
 			
 
-			/**@brief Creates many bodies within the Scene now or sometime in the future.
+			/**\brief Creates many bodies within the Scene now or sometime in the future.
 				
-			   @warning <strong>Containers and Garbage Collection</strong> \n
+			   \warning <strong>Containers and Garbage Collection</strong> \n
 			   	   Actor are used in containers. Creating a Actor through the Scene factory method makes the Actor "owned"
 			       by NxOgre, on deletion of the Scene it will remove the presence of the Scene and delete the pointer.
 			       Manually creating the Scene "new Actor()" will only add a presence, it is up to you to delete it at the
 			       correct time.
 			   
-			   	 @param identifierPattern		identifierPattern of the Actors; "Cake" -> "Cake, Cake1, Cake2"
-				 @param visualData				visualData of the Body "(entity) entityName" or "box.mesh"
-				 @param nbActors				Number of Actors to create
-			   	 @param ShapeBlueprint*		The first shape to use for the Actor (new ShapeName(...))
-			   	 @param Pose					Global Pose of the first actor
-				 @param Pose					Pose difference between the next actor
-				 @param BatchActionTimeFrame	When to create the Actors
-			   	 @param ActorParams			ActorParams for the actors
+			   	 \param identifierPattern		identifierPattern of the Actors; "Cake" -> "Cake, Cake1, Cake2"
+				 \param visualData				visualData of the Body "(entity) entityName" or "box.mesh"
+				 \param nbActors				Number of Actors to create
+			   	 \param ShapeBlueprint*		The first shape to use for the Actor (new ShapeName(...))
+			   	 \param Pose					Global Pose of the first actor
+				 \param Pose					Pose difference between the next actor
+				 \param BatchActionTimeFrame	When to create the Actors
+			   	 \param ActorParams			ActorParams for the actors
 			   
 			*/
-			void	batchCreateBodies(const NxString& identifierPattern, const NxString& visualData, NxU32 nbActors, ShapeBlueprint*, const Pose& poseOrigin, const Pose& poseDifference, BatchActionTimeFrame = BT_NOW, ActorParams = ActorParams());
+			void	batchCreateBodies(const NxString& identifierPattern, const NxString& visualData, NxU32 nbActors, Shape*, const Pose& poseOrigin, const Pose& poseDifference, BatchActionTimeFrame = BT_NOW, ActorParams = ActorParams());
 			
 
-			/**@brief Destroy a Body in the scene.
+			/**\brief Destroy a Body in the scene.
 
-			   @note This function is the same as destroyActor.
+			   \note This function is the same as destroyActor.
 			   
-			   @warning <strong>Containers and Garbage Collection</strong> \n
+			   \warning <strong>Containers and Garbage Collection</strong> \n
 			   	   Actor are used in containers. Creating a Actor through the Scene factory method makes the Actor "owned"
 			       by NxOgre, on deletion of the Scene it will remove the presence of the Scene and delete the pointer.
 			       Manually creating the Scene "new Actor()" will only add a presence, it is up to you to delete it at the
 			       correct time.
 			   
-			   @param identifier		Unique name of the Body to destroy.
+			   \param identifier		Unique name of the Body to destroy.
 			 */  	
 			void	destroyBody(const NxString&);
 			
 			//////////////////////////////////////////////////////////////////////////////
 			
-			/**@brief Creates a portion of the Scene where when Actors or Characters enter, leave or exist within it
+			/**\brief Creates a portion of the Scene where when Actors or Characters enter, leave or exist within it
 					  calls some code.
-
-			   Triggers are pretty much the same as Actors, so the creation and usage is nearly the same. 
-			   To assign a callback use the see Trigger::setCallback after the trigger has been ceated.
-
-			   @warning <strong>Containers and Garbage Collection</strong> \n
-			   	   Actor are used in containers. Creating a Actor through the Scene factory method makes the Actor "owned"
-			       by NxOgre, on deletion of the Scene it will remove the presence of the Scene and delete the pointer.
-			       Manually creating the Scene "new Actor()" will only add a presence, it is up to you to delete it at the
-			       correct time.
-				@see Trigger::Trigger
-				@see Trigger::setCallback
-			    @param identifier Unique name of the Body to destroy.
+				\see Trigger::Trigger
+				\see Trigger::setCallback
 			*/
-			Trigger* createTrigger(const NxString& identifier, ShapeBlueprint*, const Pose&, ActorParams = "");
+			Trigger* createTrigger(SimpleShape*, TriggerContactCallback*);
 
 
-			/**@brief Destroy a Trigger in the scene.
+			/**\brief Destroy a Trigger in the scene.
 
-			   @note This function is the same as destroyActor.
+			   \note This function is the same as destroyActor.
 			   
-			   @warning <strong>Containers and Garbage Collection</strong> \n
+			   \warning <strong>Containers and Garbage Collection</strong> \n
 			   	   Actor are used in containers. Creating a Actor through the Scene factory method makes the Actor "owned"
 			       by NxOgre, on deletion of the Scene it will remove the presence of the Scene and delete the pointer.
 			       Manually creating the Scene "new Actor()" will only add a presence, it is up to you to delete it at the
 			       correct time.
 			   
-			   @param identifier		Unique name of the Body to destroy.
+			   \param identifier		Unique name of the Body to destroy.
 			 */ 
-			void	 destroyTrigger(const NxString&);
-			
-			/** @brief Returns a pointer to the Trigger
+			void	 destroyTrigger(Trigger*);
 
-				In the case of a unknown actor a NULL pointer is return. Identifiers are case-sensitve.
 
-			   	@param identifier		Unique name of the Actor to fetch.
-			   	@return Trigger			The Trigger or NULL.
-			 */	  
-			Trigger* getTrigger(const NxString&);
-
-			/**	 @brief Get's all Trigger in the Scene.
-
-				 Returns a container of of the pointers of all the Triggers in this Scene. Since your working with the 
-				 "Master" list of triggers, you should be careful when handling with those Triggers during a FrameSimulation. 
-				 When when adding or cloning Triggers within a loop with the Master Loop may make the application freeze.
-			   
-			   	 @param Actors The Master list of Triggers.
-			 */	  	
-			Triggers* getTriggers();
-			
-
-			/**@brief Gets the number of Actors in the scene.
-		       @return NxU32 Total count of NxOgre Triggers in this Scene.
+			/**\brief Gets the number of Actors in the scene.
+		       \return NxU32 Total count of NxOgre Triggers in this Scene.
 			 */ 
 			NxU32	 getNbTriggers();
 
 			//////////////////////////////////////////////////////////////////////////////
 
-			/**	@brief Create a spherical joint between two actors
-				@param Actor		First Actor
-				@param Actor		Second Actor
-				@param anchor		Global Anchor of the joint
-				@param JointParams	Parameters for the Joint
-				@return The joint
+			/**	\brief Create a spherical joint between two actors
+				\param Actor		First Actor
+				\param Actor		Second Actor
+				\param anchor		Global Anchor of the joint
+				\param JointParams	Parameters for the Joint
+				\return The joint
 			*/
 			SphericalJoint*		createSphericalJoint(Actor*, Actor*, const Ogre::Vector3 &anchor, JointParams = JointParams());
 			
-			/**	@brief Create a spherical joint between an actor and the world
-				@param Actor		First Actor
-				@param anchor		Global Anchor of the joint
-				@param JointParams	Parameters for the Joint
-				@return The joint
+			/**	\brief Create a spherical joint between an actor and the world
+				\param Actor		First Actor
+				\param anchor		Global Anchor of the joint
+				\param JointParams	Parameters for the Joint
+				\return The joint
 			*/
 			SphericalJoint*		createSphericalJoint(Actor*, const Ogre::Vector3 &anchor, JointParams = JointParams());
 
-			/**	@brief Create a spherical joint between two actors
-				@param Actor		First Actor
-				@param Actor		Second Actor
-				@param axis			Axis of the joint
-				@param anchor		Global Anchor of the joint
-				@param JointParams	Parameters for the Joint
-				@return The joint
+			/**	\brief Create a spherical joint between two actors
+				\param Actor		First Actor
+				\param Actor		Second Actor
+				\param axis			Axis of the joint
+				\param anchor		Global Anchor of the joint
+				\param JointParams	Parameters for the Joint
+				\return The joint
 			*/
 			RevoluteJoint*		createRevoluteJoint(Actor*, Actor*, const Ogre::Vector3 &axis, const Ogre::Vector3 &anchor, JointParams = JointParams());
 			
 			
-			/**	@brief Create a revolute joint between an actor and the world
-				@param Actor		First Actor
-				@param axis			Axis of the joint
-				@param anchor		Global Anchor of the joint
-				@param JointParams	Parameters for the Joint
-				@return The joint
+			/**	\brief Create a revolute joint between an actor and the world
+				\param Actor		First Actor
+				\param axis			Axis of the joint
+				\param anchor		Global Anchor of the joint
+				\param JointParams	Parameters for the Joint
+				\return The joint
 			*/
 			RevoluteJoint*		createRevoluteJoint(Actor*, const Ogre::Vector3 &axis, const Ogre::Vector3 &anchor, JointParams = JointParams());
 		
 			
-			/**	@brief Create a prismatic joint  between two actors
-				@param Actor		First Actor
-				@param Actor		Second Actor
-				@param axis			Axis of the joint
-				@param anchor		Global Anchor of the joint
-				@param JointParams	Parameters for the Joint
-				@return The joint
+			/**	\brief Create a prismatic joint  between two actors
+				\param Actor		First Actor
+				\param Actor		Second Actor
+				\param axis			Axis of the joint
+				\param anchor		Global Anchor of the joint
+				\param JointParams	Parameters for the Joint
+				\return The joint
 			*/
 			PrismaticJoint*		createPrismaticJoint(Actor*, Actor*, const Ogre::Vector3 &axis, const Ogre::Vector3 &anchor, JointParams = JointParams());
 			
 			
-			/**	@brief Create a prismatic joint between an actor and the world
-				@param Actor		First Actor
-				@param axis			Axis of the joint
-				@param anchor		Global Anchor of the joint
-				@param JointParams	Parameters for the Joint
-				@return The joint
+			/**	\brief Create a prismatic joint between an actor and the world
+				\param Actor		First Actor
+				\param axis			Axis of the joint
+				\param anchor		Global Anchor of the joint
+				\param JointParams	Parameters for the Joint
+				\return The joint
 			*/
 			PrismaticJoint*		createPrismaticJoint(Actor*, const Ogre::Vector3 &axis, const Ogre::Vector3 &anchor, JointParams = JointParams());
 	
 			
-			/**	@brief Create a cylindrical joint between two actors
-				@param Actor		First Actor
-				@param Actor		Second Actor
-				@param axis			Axis of the joint
-				@param anchor		Global Anchor of the joint
-				@param JointParams	Parameters for the Joint
-				@return The joint
+			/**	\brief Create a cylindrical joint between two actors
+				\param Actor		First Actor
+				\param Actor		Second Actor
+				\param axis			Axis of the joint
+				\param anchor		Global Anchor of the joint
+				\param JointParams	Parameters for the Joint
+				\return The joint
 			*/
 			CylindricalJoint*	createCylindricalJoint(Actor*, Actor*, const Ogre::Vector3 &axis, const Ogre::Vector3 &anchor, JointParams = JointParams());
 			
 			
-			/**	@brief Create a cylindrical joint between an actor and the world
-				@param Actor		First Actor
-				@param axis			Axis of the joint
-				@param anchor		Global Anchor of the joint
-				@param JointParams	Parameters for the Joint
-				@return The joint
+			/**	\brief Create a cylindrical joint between an actor and the world
+				\param Actor		First Actor
+				\param axis			Axis of the joint
+				\param anchor		Global Anchor of the joint
+				\param JointParams	Parameters for the Joint
+				\return The joint
 			*/
 			CylindricalJoint*	createCylindricalJoint(Actor*, const Ogre::Vector3 &axis, const Ogre::Vector3 &anchor, JointParams = JointParams());
 		
 					
-			/**	@brief Create a fixed joint between two actors
-				@param Actor		First Actor
-				@param Actor		Second Actor
-				@param JointParams	Parameters for the Joint
-				@return The joint
+			/**	\brief Create a fixed joint between two actors
+				\param Actor		First Actor
+				\param Actor		Second Actor
+				\param JointParams	Parameters for the Joint
+				\return The joint
 			*/
 			FixedJoint*			createFixedJoint(Actor*, Actor*, JointParams = JointParams());
 		
 					
-			/**	@brief Create a fixed joint between two actors
-				@param Actor		First Actor
-				@param JointParams	Parameters for the Joint
-				@return The joint
+			/**	\brief Create a fixed joint between two actors
+				\param Actor		First Actor
+				\param JointParams	Parameters for the Joint
+				\return The joint
 			*/
 			FixedJoint*			createFixedJoint(Actor*, JointParams = JointParams());
 			
 
 			//////////////////////////////////////////////////////////////////////////////
 
-			/** @brief Destroys a joint 
-				@param Joint The Joint to destroy
+			/** \brief Destroys a joint 
+				\param Joint The Joint to destroy
 			*/
 			void releaseJoint(Joint*);
 
-			/** @brief Destroys a joint 
-				@param NxJoint The ID of the joint to destroy
+			/** \brief Destroys a joint 
+				\param NxJoint The ID of the joint to destroy
 			*/
 			void releaseJoint(NxJointID);
 
@@ -841,42 +802,42 @@ namespace NxOgre {
 
 #if (NX_USE_LEGACY_CHARACTER_API == 0)
 
-			/** @brief Creates a Character (A raycasted kinematic actor intended to simulate human characters)
+			/** \brief Creates a Character (A raycasted kinematic actor intended to simulate human characters)
 				
-				@param identifier	The identifier of the character
-				@param pose			The pose to place the character
-				@param params		Character params for the character
+				\param identifier	The identifier of the character
+				\param pose			The pose to place the character
+				\param params		Character params for the character
 			
-				@see Character::Character
-				@see CharacterParams
-				@return A fresh new, unpacked, with that new car-smell character
+				\see Character::Character
+				\see CharacterParams
+				\return A fresh new, unpacked, with that new car-smell character
 			*/
 			Character* createCharacter(const NxString &identifier, Pose pose, CharacterModel*, CharacterParams params);
 
 
-			/** @brief Destroys a character from the Scene
-				@param identifier	The character to destroy
+			/** \brief Destroys a character from the Scene
+				\param identifier	The character to destroy
 			*/
 			void  destroyCharacter(const NxString& identifer);
 
 #else
 #if (NX_USE_CHARACTER_API)
 
-			/** @brief Creates a Character (A raycasted kinematic actor intended to simulate human characters)
+			/** \brief Creates a Character (A raycasted kinematic actor intended to simulate human characters)
 				
-				@param identifier	The identifier of the character
-				@param pose			The pose to place the character
-				@param params		Character params for the character
+				\param identifier	The identifier of the character
+				\param pose			The pose to place the character
+				\param params		Character params for the character
 			
-				@see Character::Character
-				@see CharacterParams
-				@return A fresh new, unpacked, with that new car-smell character
+				\see Character::Character
+				\see CharacterParams
+				\return A fresh new, unpacked, with that new car-smell character
 			*/
 			Character* createCharacter(const NxString &identifier, Pose pose, CharacterParams params);
 
 
-			/** @brief Destroys a character from the Scene
-				@param identifier	The character to destroy
+			/** \brief Destroys a character from the Scene
+				\param identifier	The character to destroy
 			*/
 			void  destroyCharacter(const NxString& identifer);
 #endif
@@ -884,42 +845,42 @@ namespace NxOgre {
 
 			//////////////////////////////////////////////////////////////////////////////
 
-			/**	@brief Creates a material for a shape
-				@params identifier The identifier of the material
-				@return The material
+			/**	\brief Creates a material for a shape
+				\params identifier The identifier of the material
+				\return The material
 			*/
 			Material*		createMaterial(const NxString& identifier);
 
-			/**	@brief Destroys a material from a scene.
-				@note This will destroy the material from the Scene class, but any Shapes using the material
+			/**	\brief Destroys a material from a scene.
+				\note This will destroy the material from the Scene class, but any Shapes using the material
 				      index will not change. In most cases it is better to leave the material until the very
 					  end of the scene.
 				@identifier The material name to delete
 			*/
 			void			destroyMaterial(const NxString& identifier);
 			
-			/** @brief Gets a material from it's identifier
-				@return the material, or a null pointer if the material does not exist.
+			/** \brief Gets a material from it's identifier
+				\return the material, or a null pointer if the material does not exist.
 			*/
 			Material*		getMaterial(const NxString& identifier);
 			
-			/** @brief Gets a material from it's material index
-				@return the material, or a null pointer if the material does not exist.
+			/** \brief Gets a material from it's material index
+				\return the material, or a null pointer if the material does not exist.
 			*/
 			Material*		getMaterial(NxMaterialIndex);
 			
-			/** @brief Gets all materials in the scene
-				@return All of the materials
+			/** \brief Gets all materials in the scene
+				\return All of the materials
 			*/
 			MaterialList*	getMaterials();
 			
-			/** @brief Gets the total number of materials in the scene
-				@return The number of materials
+			/** \brief Gets the total number of materials in the scene
+				\return The number of materials
 			*/
 			NxU32			getNbMaterials();
 			
-			/** @brief Gets a material index based of the material's identifier
-				@return The material index, or 0 if the material does not exist.
+			/** \brief Gets a material index based of the material's identifier
+				\return The material index, or 0 if the material does not exist.
 			*/
 			NxMaterialIndex getMaterialIndex(const NxString& identifier);
 
@@ -967,7 +928,7 @@ namespace NxOgre {
 			// setStaticGeometry
 			//  All future Actors with visualisations that are static, will now use the StaticGeometry
 			//  Remember to build the static-geometry after adding all your static actors.
-			// @param Ogre::StaticGeometry Current StaticGeometry to work with.
+			// \param Ogre::StaticGeometry Current StaticGeometry to work with.
 			void setStaticGeometry(Ogre::StaticGeometry*);
 
 			// getStaticGeometry
@@ -992,7 +953,7 @@ namespace NxOgre {
 #endif
 
 			//////////////////////////////////////////////////////////////////////////////
-		
+#if 0
 #if (NX_USE_CLOTH_API == 1)
 			Actor*	createDeformableActor(const NxString& meshName, ShapeBlueprint* roughShape, const Pose&, ActorParams, ClothParams, NxReal impulseThreshold, NxReal penetrationDepth = 0.0f);
 			Cloth*	createCloth(const NxString& identifier, const Pose&, ClothParams);
@@ -1002,7 +963,7 @@ namespace NxOgre {
 			Cloths*	getCloths();
 			NxU32 getNbCloths();
 #endif
-	
+#endif
 			//////////////////////////////////////////////////////////////////////////////
 
 #if (NX_USE_SOFTBODY_API == 1)
@@ -1016,8 +977,8 @@ namespace NxOgre {
 			//////////////////////////////////////////////////////////////////////////////
 
 #if (NX_USE_FORCEFIELD_API == 1)
-			ForceField*		createForceField(const NxString& identifier, const Pose&, ShapeBlueprint* actorShape, ActorParams, ForceFieldParams);
-			void			destroyForceField(const NxString&);
+			ForceField*		createForceField();
+			void			destroyForceField();
 			NxU32			getNbForceFields();
 			ForceFields*	getForceFields();
 #endif
@@ -1029,19 +990,31 @@ namespace NxOgre {
 
 			//////////////////////////////////////////////////////////////////////////////
 
-			void		idle();
+			void			idle();
+
+			/** \brief Set the sleep callback, and destruction policy;
+			*/
+			void setSleepCallback(SleepCallback*, GarbageCollectionPolicy);
+
+			/** \brief Get the sleep callback
+			*/
+			SleepCallback* getSleepCallback();
+
+  			bool onJointBreak(NxReal,NxJoint &);
+			void onWake(NxActor **,NxU32);
+			void onSleep(NxActor **,NxU32);
 
 		protected:
 
-			/**  @brief Advances the state of the Scene
-				 @note Do not control by hand. World will automatically perform this operation for you. 
-			     @param time	Time to advance since last Simulation		
+			/**  \brief Advances the state of the Scene
+				 \note Do not control by hand. World will automatically perform this operation for you. 
+			     \param time	Time to advance since last Simulation		
 			 */  	
 			void simulate(NxReal time);
 
 
-			/** @brief Reflects the changes of the simulation to Ogre
-				@see SceneRenderer
+			/** \brief Reflects the changes of the simulation to Ogre
+				\see SceneRenderer
 			 */
 			void render();
 
@@ -1104,7 +1077,6 @@ namespace NxOgre {
 			//////////////////////////////////////////////////////////////////////////////
 
 			World*							mOwner;
-			Ogre::SceneManager*				mSceneMgr;
 
 			//////////////////////////////////////////////////////////////////////////////
 
@@ -1142,13 +1114,14 @@ namespace NxOgre {
 			SoftBodies						mSoftBodies;
 #endif
 
-			MaterialList					mMaterials;
-			MaterialListByIndex				mMaterialsByIndex;
-			MaterialPair					mMaterialPair;
-			Machines						mMachines;
+			MaterialList					  mMaterials;
+			MaterialListByIndex				  mMaterialsByIndex;
+			MaterialPair					  mMaterialPair;
+			Machines						  mMachines;
 
-			ShapeGroups						mShapeGroups;
-			ShapeGroupsByIndex				mShapeGroupsByIndex;
+			Betajaen::SharedList<SimpleActor> mSimpleActors;
+			ShapeGroups						  mShapeGroups;
+			ShapeGroupsByIndex				  mShapeGroupsByIndex;
 
 #if (NX_SDK_VERSION_NUMBER >= 272) 
 			DominanceGroups					mDominanceGroups;
@@ -1177,7 +1150,9 @@ namespace NxOgre {
 
 			Ogre::StaticGeometry*			mStaticGeometry;
 
-		
+
+			SleepCallback*					mSleepCallback;
+			GarbageCollectionPolicy			mSleepCallbackPolicy;
 
 		private:
 
@@ -1185,7 +1160,7 @@ namespace NxOgre {
 				NxString			identifierPattern;
 				NxString			visualData;
 				NxU32				nbActors;
-				ShapeBlueprint*		collisionModel;
+				Shape*				collisionModel;
 				Pose				poseOrigin;
 				Pose				poseDelta;
 				ActorParams			params;

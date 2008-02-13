@@ -136,7 +136,6 @@ namespace QuickGUI
 		virtual ~Label();
 		virtual void onPositionChanged(const EventArgs& args);
 		virtual void onSizeChanged(const EventArgs& args);
-		virtual void setClippingWidget(Widget* w, bool recursive = false);
 		virtual void setGUIManager(GUIManager* gm);
 		virtual void setQuadContainer(QuadContainer* container);
 	protected:

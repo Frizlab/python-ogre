@@ -82,7 +82,7 @@ namespace NxOgre {
 				NxString					mCompartment;
 #endif
 
-				CollisionDescriptionModel	mShapes;
+				CollisionModel	mShapes;
 
 #if NX_SDK_VERSION_NUMBER >= 272
 				NxU16						mDominanceGroup;

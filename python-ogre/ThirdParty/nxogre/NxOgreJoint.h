@@ -1,21 +1,23 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreJoint.h
+ *  \brief   Header for the JointCallback, JointParams and Joint classes.
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #ifndef __NXOGRE_JOINT_H__
 #define __NXOGRE_JOINT_H__
@@ -25,7 +27,7 @@
 
 namespace NxOgre {
 
-	class NxExport JointCallback {
+	class NxPublicClass JointCallback {
 		
 		public:
 
@@ -84,7 +86,7 @@ namespace NxOgre {
 
 	//////////////////////////////////////////////////////////////
 
-	class NxExport JointParams : public Params {
+	class NxPublicClass JointParams : public Params {
 
 		public:
 
@@ -236,19 +238,19 @@ namespace NxOgre {
 
 	*/
 
-	class NxExport Joint {
+	class NxPublicClass Joint {
 		
 	public:
 
 		/** Joint Constructor (Two actors Joint)
-			@note
+			\note
 				This is an "empty" class, use the correct constructor in the related joint you want.
 		*/
 		Joint(Actor*,Actor*);
 		
 
 		/** Joint Constructor (Actors/World Joint)
-			@note
+			\note
 				This is an "empty" class, use the correct constructor in the related joint you want.
 		*/
 		Joint(Actor*);
@@ -278,7 +280,7 @@ namespace NxOgre {
 		
 		/** getActorA
 			Returns the Actor which is assigned to "A".
-			@return Actor A
+			\return Actor A
 		*/
 		Actor*						getActorA()							{
 																			return mActorA;
@@ -286,9 +288,9 @@ namespace NxOgre {
 
 		/** getActorB
 			Returns the Actor which is assigned to "B".
-			@note
+			\note
 				If there is no B, or the Joint is attached to the World. A NULL pointer is returned.
-			@return Actor B
+			\return Actor B
 		*/
 		Actor*						getActorB()							{
 																			return mActorB;
@@ -301,14 +303,14 @@ namespace NxOgre {
 		
 		/** getID
 			Returns the unique ID of this joint.
-			@return	The Joint ID
+			\return	The Joint ID
 		*/
 		NxJointID					getID()								{
 																			return mID;
 																		}
 		/** setID
 			Set's the ID of the Joint
-			@note
+			\note
 				This will not update the container the joint is stored in.
 		*/
 		void						setID(NxJointID id)					{
@@ -317,7 +319,7 @@ namespace NxOgre {
 
 		/** getNxJoint
 			Returns the abstract NxJoint class.
-			@return The NxJoint
+			\return The NxJoint
 		*/
 		NxJoint*					getNxJoint()						{
 																			return mJoint;
@@ -326,63 +328,63 @@ namespace NxOgre {
 
 		/** setGlobalAnchor
 			Sets the point where ActorA and ActorB are attached (in global coordinates).
-			@param anchor	The point of attachment.
+			\param anchor	The point of attachment.
 		*/
 		void						setGlobalAnchor(const Ogre::Vector3 &anchor);
 		
 
 		/** setGlobalAnchor
 			Sets the point where ActorA and ActorB are attached (in global coordinates).
-			@param anchor	The point of attachment.
+			\param anchor	The point of attachment.
 		*/
 		void						setGlobalAnchor(const NxVec3 &anchor);
 
 
 		/** setGlobalAxis
 			Set the normalised direction of the joint axis.
-			@param axis		The Joint axis
+			\param axis		The Joint axis
 		*/
 		void						setGlobalAxis(const Ogre::Vector3 &axis);
 
 
 		/** setGlobalAxis
 			Set the normalised direction of the joint axis.
-			@param axis		The Joint axis
+			\param axis		The Joint axis
 		*/
 		void						setGlobalAxis(const NxVec3 &axis);
 
 		
 		/** getGlobalAnchor
 			Gets the point where ActorA and ActorB are attached (in global coordinates).
-			@return The point of attachment.
+			\return The point of attachment.
 		*/
 		Ogre::Vector3				getGlobalAnchor() const;
 	
 		
 		/** getGlobalAnchor
 			Gets the point where ActorA and ActorB are attached (in global coordinates).
-			@return The point of attachment.
+			\return The point of attachment.
 		*/
 		NxVec3						getGlobalAnchorAsNxVec3() const;
 
 
 		/** getGlobalAxis
 			Get's the normalised direction of the joint axis.
-			@param axis		The Joint axis
+			\param axis		The Joint axis
 		*/
 		Ogre::Vector3				getGlobalAxis() const;
 
 
 		/** getGlobalAxis
 			Get's the normalised direction of the joint axis.
-			@param axis		The Joint axis
+			\param axis		The Joint axis
 		*/
 		NxVec3						getGlobalAxisAsNxVec3()	const;
 
 
 		/** getGlobalAxis
 			Get's the normalised direction of the joint axis.
-			@param axis		The Joint axis
+			\param axis		The Joint axis
 		*/
 		NxJointState				getState();
 
@@ -419,23 +421,23 @@ namespace NxOgre {
 
 		/** getLimitPoint
 			Get's the limit point of the Joint
-			@return The Limit point 
+			\return The Limit point 
 		*/
 		Ogre::Vector3				getLimitPoint() const;
 
 
 		/** getLimitPoint
 			Get's the limit point of the Joint
-			@return The Limit point 
+			\return The Limit point 
 		*/
 		NxVec3						getLimitPointAsNxVec3() const;
 
 
 		/** addLimitPlane
 			Get's the limit point of the Joint
-			@param normal Normal for the limit plane in global coordinates.
-			@param pointInPlane Point in the limit plane in global coordinates.
-			@param restitution Restitution of the limit plane.
+			\param normal Normal for the limit plane in global coordinates.
+			\param pointInPlane Point in the limit plane in global coordinates.
+			\param restitution Restitution of the limit plane.
 		*/
 		void						addLimitPlane(const NxVec3 &normal, const NxVec3 & pointInPlane, NxReal restitution = 0.0f);
 		

@@ -2,7 +2,7 @@
 This file is part of Caelum.
 See http://www.ogre3d.org/wiki/index.php/Caelum 
 
-Copyright (c) 2006-2007 Caelum team. See Contributors.txt for details.
+Copyright (c) 2006-2008 Caelum team. See Contributors.txt for details.
 
 Caelum is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published
@@ -27,14 +27,13 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "CaelumListener.h"
 #include "CaelumSystem.h"
 #include "CameraBoundElement.h"
-#include "EarthSunPositionModel.h"
 #include "GeometryFactory.h"
-#include "SimpleSunPositionModel.h"
 #include "SkyColourModel.h"
 #include "SkyDome.h"
 #include "Sun.h"
-#include "SunPositionModel.h"
 #include "LayeredClouds.h"
 #include "UniversalClock.h"
+#include "SolarSystemModel.h"
+#include "Astronomy.h"
 
 #endif //CAELUM_H

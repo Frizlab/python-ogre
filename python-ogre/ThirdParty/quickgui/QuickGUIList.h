@@ -91,12 +91,17 @@ namespace QuickGUI
 		VerticalScrollBar* mRightScrollBar;
 		HorizontalScrollBar* mBottomScrollBar;
 
-		int mAutoNameWidgetCounter;
 		float mItemHeight;
 
 		int mVPixelPadHeight;
 
-		WidgetArray mItems;
+		//WidgetArray mItems;
+		/*
+		* Iterates through item list and looks for the next 
+		* available integer used for naming convention.
+		*/
+		int _getNextInstanceCounter();
+		std::map<int,Widget*> mItems;
 
 		void onChildAdded(const EventArgs& args);
 		void onChildRemoved(const EventArgs& args);

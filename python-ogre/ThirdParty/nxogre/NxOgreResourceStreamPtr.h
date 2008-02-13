@@ -1,21 +1,23 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreResourceStreamPtr.h
+ *  \brief   Header for the ResourceStreamPtr classes.
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #ifndef __NXOGRE_RESOURCESTREAMPTR_H__
 #define __NXOGRE_RESOURCESTREAMPTR_H__
@@ -24,16 +26,16 @@
 
 namespace NxOgre {
 
-	/** @brief A generic abstract class to read or to write to a Resource, without exacting knowing
+	/** \brief A generic abstract class to read or to write to a Resource, without exacting knowing
 		       what exactly it is. It takes on a SmartPtr role in life, and the resource will be only
 			   deleted from memory when it is no longer used.
 
-		@note	All of ResourceStreamPtr code was used from the Ogre SmartPtr class, except for a changed
+		\note	All of ResourceStreamPtr code was used from the Ogre SmartPtr class, except for a changed
 				constructor and removal of template.
 				
-		@see Ogre::SmartPtr
+		\see Ogre::SmartPtr
 	*/
-	class NxExport ResourceStreamPtr {
+	class NxPublicClass ResourceStreamPtr {
 
 	protected:
 

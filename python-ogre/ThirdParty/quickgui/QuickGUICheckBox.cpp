@@ -11,6 +11,8 @@ namespace QuickGUI
 		mWidgetType = TYPE_CHECKBOX;
 		mSkinComponent = ".checkbox.unchecked";
 		mSize = Size(75,25);
+
+		addEventHandler(EVENT_MOUSE_BUTTON_UP,&CheckBox::onMouseButtonUp,this);
 	}
 
 	CheckBox::~CheckBox()
@@ -27,7 +29,7 @@ namespace QuickGUI
 		return mChecked;
 	}
 
-	void CheckBox::onMouseButtonDown(const EventArgs& args)
+	void CheckBox::onMouseButtonUp(const EventArgs& args)
 	{
 		Button::onMouseButtonDown(args);
 

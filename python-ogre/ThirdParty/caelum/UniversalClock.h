@@ -2,7 +2,7 @@
 This file is part of Caelum.
 See http://www.ogre3d.org/wiki/index.php/Caelum 
 
-Copyright (c) 2006-2007 Caelum team. See Contributors.txt for details.
+Copyright (c) 2006-2008 Caelum team. See Contributors.txt for details.
 
 Caelum is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published
@@ -26,94 +26,47 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 namespace caelum {
 
 /** The system's time model.
- * This class is responsible of keeping track of the current time, transform it to the system's time model, 
- * and return the values associated (time of day, day of year...).
- * @author Jesús Alonso Abad.
+ *  This class is responsible of keeping track of current astronomical time
+ *  and syncronising with ogre time.
+ *
+ *  It maintains a snapshot point: At mCurrentTime == 0 julian day was mJulianDayBase.
+ *  At any time the julian day can be calculated from mCurrentTime and mJulianDayBase.
+ *  This increases precission; mCurrentTime is tracked in seconds while mJulianDayBase
+ *  uses days. It would be silly to track the current time in days.
  */
-class DllExport UniversalClock {
-// Attributes -----------------------------------------------------------------
-	protected:
-		/// Number of seconds per day.
-		Ogre::Real mSecondsPerDay;
+class DllExport UniversalClock
+{
+	private:
+        /// Astronomical julian day at mCurrentTime = 0;
+		LongReal mJulianDayBase;
 
-		/// Number of days per year.
-		Ogre::Real mDaysPerYear;
+        /// Seconds since mJulianDayBase.
+        LongReal mCurrentTime;
 
-		/// Number of seconds per year.
-		Ogre::Real mSecondsPerYear;
-
-		/// The current second of the year.
-		Ogre::Real mCurrentSecond;
-
-		/// The time scale.
-		Ogre::Real mTimeScale;
-
-		/// The update rate.
-		Ogre::Real mUpdateRate;
+		/// Seconds since mJulianDayBase at last update.
+		LongReal mLastUpdateTime;
 
 		/// The time elapsed since the last update.
-		Ogre::Real mTimeSinceLastUpdate;
+        /// This is regular ogre time, not scaled.
+        Ogre::Real mTimeSinceLastUpdate;
+
+		/// The update rate.
+        Ogre::Real mUpdateRate;
+
+        /// Time scale.
+        Ogre::Real mTimeScale;
+
+        /// Make sure an update is done next frame.
+        /// This work by hacking mTimeSinceLastUpdate.
+        void forceUpdate();
 
 // Methods --------------------------------------------------------------------
 	public:
-		/** Standard constructor.
-		 * @note Will set the initial values to the earth's approximation (24 hours/day and 365 days/year).
+        static const LongReal SECONDS_PER_DAY;
+
+		/** Constructor.
 		 */
 		UniversalClock ();
-
-		/** Sets the total number of seconds a day has in this time model.
-		 * @param secs The number of seconds per day.
-		 */
-		void setSecondsPerDay (const Ogre::Real secs);
-
-		/** Gets the number of seconds a day currently has.
-		 * @return The seconds per day.
-		 */
-		Ogre::Real getSecondsPerDay () const;
-
-		/** Sets the total number of days a year has in this time model.
-		 * @param days The number of days per year.
-		 */
-		void setDaysPerYear (const Ogre::Real days);
-
-		/** Gets the number of days a year currently has.
-		 * @return The days per year.
-		 */
-		Ogre::Real getDaysPerYear () const;
-
-		/** Sets the current time in a "second per year" fashion.
-		 * @param sec The current second relative to the start of the year. 
-		 * 	If the value is larger than the year length, it will be wrapped.
-		 * 	Negative values will be treated as positive.
-		 */
-		void setCurrentTime (const Ogre::Real sec);
-
-		/** Sets the current year time in the range [0, 1].
-		 * @param time The relative year time.
-		 * 	If the value is greater than 1, it will be wrapped.
-		 * 	Negative values will be treated as positive.
-		 */
-		void setCurrentRelativeTime (const Ogre::Real time);
-
-		/** Gets the current time.
-		 * @return The second relative to the start of the year.
-		 */
-		Ogre::Real getCurrentTime () const;
-
-		/** Gets the current relative year time.
-		 * @return The relative time respective to the whole year length.
-		 */
-		Ogre::Real getCurrentRelativeTime () const;
-
-		/** Gets the current day time.
-		 * @return The second relative to the start of the current day.
-		 */
-		Ogre::Real getCurrentDayTime () const;
-
-		/** Gets the current relative day time.
-		 * @return The relative time respective to the whole day length.
-		 */
-		Ogre::Real getCurrentRelativeDayTime () const;
 
 		/** Sets the time scale.
 		 * @param scale The new time scale. If negative, time will move backwards; 2.0 means double speed...
@@ -121,35 +74,59 @@ class DllExport UniversalClock {
 		void setTimeScale (const Ogre::Real scale);
 
 		/** Gets the time scale.
-		 * @return The current time scale. Defaults to 1.
+		 *  @return The current time scale. Defaults to 1.
 		 */
 		Ogre::Real getTimeScale () const;
 
 		/** Sets the update rate.
-		 * @param rate A positive number representing the number of seconds to be elapsed (in real time) since 
-		 * 	the last update. Negative numbers will be clamped to 0 (update every frame).
+		 *  @param rate A positive number representing the number of seconds
+         *  to be elapsed (in real time) since the last update.
+         *  Negative numbers will be clamped to 0 (update every frame).
 		 */
 		void setUpdateRate (const Ogre::Real rate);
 
 		/** Gets the update rate.
-		 * @return The amount of time to be elapsed (at least) between updates.
+		 *  @return The amount of time to be elapsed (at least) between updates.
 		 */
 		Ogre::Real getUpdateRate () const;
 
 		/** Updates the clock.
-		 * @param time The time to be added to the clock. Note this will be affected by the time scale.
+		 * @param time The time to be added to the clock. Note this will be
+         * affected by the time scale.
 		 * @return True if an update has been fired (depending on the update rate).
 		 */
 		bool update (const Ogre::Real time);
 
-	private:
-		/** Updates the number of seconds per year according to the seconds per day and days per year.
-		 */
-		void updateSecondsPerYear ();
+        /** Set the current time as a julian day.
+         *  Set the current time as a julian day, which you build using one
+         *  of the static getJulianDayFromXXX functions.
+         */
+        void setJulianDay(LongReal value);
 
-		/** Queries an update next time the clock is updated.
-		 */
-		void forceUpdate ();
+        // Set the current time as a gregorian date.
+        // This is here as an easy to use function.
+        void setGregorianDateTime(
+                int year, int month, int day,
+                int hour, int minute, double second);
+
+        /** Get current julian day.
+         */
+        LongReal getJulianDay() const;
+
+        /** Get the difference in julian day between this and the last update.
+         *  This is most likely very small and unprecise.
+         */
+        LongReal getJulianDayDifference() const;
+
+        /** Get the current julian second (getJulianDay * SECONDS_PER_DAY)
+         *  This is most likely very very large and unprecise.
+         */
+        LongReal getJulianSecond() const;
+
+        /** Get the difference in seconds between this and the last update.
+         *  This is what you want for per-frame updates.
+         */
+        LongReal getJulianSecondDifference() const;
 };
 
 } // namespace caelum

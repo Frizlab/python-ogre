@@ -9,7 +9,6 @@ namespace QuickGUI
 	List::List(const std::string& name, GUIManager* gm) :
 		Widget(name,gm),
 		mScrollPane(0),
-		mAutoNameWidgetCounter(0),
 		mScrollingAllowed(false),
 		mItemHeight(20),
 		mAutoSizeListItems(true),
@@ -35,47 +34,57 @@ namespace QuickGUI
 		mItems.clear();
 	}
 
+	int List::_getNextInstanceCounter()
+	{
+		int counter = 0;
+		while(mItems.find(counter) != mItems.end())
+			++counter;
+
+		return counter;
+	}
+
 	MenuLabel* List::addMenuLabel()
 	{
-		Point p(0,(mAutoNameWidgetCounter * mItemHeight));
+		int counter = _getNextInstanceCounter();
+		// Add items to the end of the list
+		Point p(0,(static_cast<int>(mItems.size()) * mItemHeight));
 		Size s(mSize.width,mItemHeight);
 
-		++mAutoNameWidgetCounter;
-
-		std::string name = mInstanceName+".Item"+Ogre::StringConverter::toString(mAutoNameWidgetCounter);
+		std::string name = mInstanceName + ".Item" + Ogre::StringConverter::toString(counter);
 		mGUIManager->notifyNameUsed(name);
 
-		MenuLabel* newMenuLabel = dynamic_cast<MenuLabel*>(_createChild(mInstanceName+".ChildMenuLabel",TYPE_MENULABEL));
+		MenuLabel* newMenuLabel = dynamic_cast<MenuLabel*>(_createChild(mInstanceName+".ChildMenuLabel" + Ogre::StringConverter::toString(mItems.size()),TYPE_MENULABEL));
 		newMenuLabel->setSize(s);
 		newMenuLabel->setPosition(p);
 		newMenuLabel->setAutoSize(false);
 		newMenuLabel->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 		newMenuLabel->setUseTransparencyPicking(false);
 
-		mItems.push_back(newMenuLabel);
+		mItems[counter] = newMenuLabel;
 
 		return newMenuLabel;
 	}
 
 	TextBox* List::addTextBox()
 	{
-		Point p(0,(mAutoNameWidgetCounter * mItemHeight));
+		int counter = _getNextInstanceCounter();
+		// Add items to the end of the list
+		Point p(0,(static_cast<int>(mItems.size()) * mItemHeight));
 		Size s(mSize.width,mItemHeight);
 
-		++mAutoNameWidgetCounter;
-
-		std::string name = mInstanceName+".Item"+Ogre::StringConverter::toString(mAutoNameWidgetCounter);
+		std::string name = mInstanceName+".Item"+Ogre::StringConverter::toString(counter);
 		mGUIManager->notifyNameUsed(name);
 
-		TextBox* newTextBox = dynamic_cast<TextBox*>(_createChild(mInstanceName+".ChildTextBox"+Ogre::StringConverter::toString(mItems.size()),TYPE_TEXTBOX));
+		TextBox* newTextBox = dynamic_cast<TextBox*>(_createChild(mInstanceName+".ChildTextBox" + Ogre::StringConverter::toString(mItems.size()),TYPE_TEXTBOX));
 		newTextBox->setSize(s);
+		newTextBox->setUseBorders(false);
 		newTextBox->hideSkin();
 		newTextBox->setPosition(p);
 		newTextBox->setAutoSize(false);
 		newTextBox->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 		newTextBox->setUseTransparencyPicking(false);
 
-		mItems.push_back(newTextBox);
+		mItems[counter] = newTextBox;
 
 		return newTextBox;
 	}
@@ -124,9 +133,9 @@ namespace QuickGUI
 
 	void List::clear()
 	{
-		WidgetArray::iterator it;
+		std::map<int,Widget*>::iterator it;
 		for( it = mItems.begin(); it != mItems.end(); ++it )
-			mGUIManager->destroyWidget((*it));
+			mGUIManager->destroyWidget((*it).second);
 		mItems.clear();
 	}
 
@@ -148,10 +157,10 @@ namespace QuickGUI
 		std::string name = w->getInstanceName();
 
 		int counter = 0;
-		WidgetArray::iterator it;
+		std::map<int,Widget*>::iterator it;
 		for( it = mItems.begin(); it != mItems.end(); ++it )
 		{
-			if( name == (*it)->getInstanceName() )
+			if( name == (*it).second->getInstanceName() )
 				return counter;
 
 			++counter;
@@ -203,12 +212,12 @@ namespace QuickGUI
 		Widget* w = NULL;
 
 		unsigned int counter = 0;
-		WidgetArray::iterator it;
+		std::map<int,Widget*>::iterator it;
 		for( it = mItems.begin(); it != mItems.end(); ++it )
 		{
 			if( counter == index )
 			{
-				w = (*it);
+				w = (*it).second;
 				mItems.erase(it);
 				break;
 			}
@@ -220,7 +229,7 @@ namespace QuickGUI
 		{
 			for( ; counter < mItems.size(); ++counter )
 			{
-				mItems[counter]->setYPosition(counter * mItemHeight);
+				(*it).second->setYPosition(counter * mItemHeight);
 			}
 
 			// Remove child so that ScrollPane, if exists, will be notified.
@@ -274,11 +283,11 @@ namespace QuickGUI
 		mAutoSizeListItems = false;
 
 		float counter = 0;
-		WidgetArray::iterator it;
+		std::map<int,Widget*>::iterator it;
 		for( it = mItems.begin(); it != mItems.end(); ++it )
 		{
-			(*it)->setYPosition(mItemHeight * counter);
-			(*it)->setHeight(mItemHeight);
+			(*it).second->setYPosition(mItemHeight * counter);
+			(*it).second->setHeight(mItemHeight);
 			++counter;
 		}
 	}

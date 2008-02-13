@@ -19,6 +19,7 @@ namespace QuickGUI
 		mSkinComponent(".cursor")
 	{
 		mQuad = new Quad(mGUIManager);
+		mQuad->setClipMode(Quad::CLIPMODE_NONE);
 		setSize(size.width,size.height);
 		setSkin(skinName);
 		mRenderObjectList.push_back(mQuad);

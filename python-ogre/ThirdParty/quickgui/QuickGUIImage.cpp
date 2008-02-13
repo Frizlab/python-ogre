@@ -29,7 +29,7 @@ namespace QuickGUI
 		return mMaterialName;
 	}
 
-	bool Image::overTransparentPixel(const Point& mousePixelPosition)
+	bool Image::overTransparentPixel(const Point& mousePixelPosition) const
 	{
 		if(mMaterialName == "")
 			return Widget::overTransparentPixel(mousePixelPosition);

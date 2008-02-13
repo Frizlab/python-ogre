@@ -160,12 +160,6 @@ namespace QuickGUI
 		mHPixelPadWidth = width;
 	}
 
-	void Label::setClippingWidget(Widget* w, bool recursive)
-	{
-		Widget::setClippingWidget(w,recursive);
-		mText->_clipToWidgetDimensions(w);
-	}
-
 	void Label::setGUIManager(GUIManager* gm)
 	{
 		Widget::setGUIManager(gm);

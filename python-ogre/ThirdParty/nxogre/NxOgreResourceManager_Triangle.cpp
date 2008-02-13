@@ -1,23 +1,23 @@
-
-
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreResourceManager_Triangle.cpp
+ *  \see     NxOgreResourceManager.h
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #include "NxOgreStable.h"
 #include "NxOgreResourceManager.h"
@@ -53,7 +53,7 @@ bool ResourceManager::loadTriangleMesh(MeshIdentifier identifier, ResourceStream
 	NxTriangleMesh* triangleMesh = 0;
 	NxPhysicsSDK*	sdk = NxGetPhysicsSDK();
 	if (sdk == 0) {
-		NxThrow_Error("PhysX SDK has not been started");	
+		NxThrow("PhysX SDK has not been started");	
 		return false; 
 	}
 	triangleMesh = sdk->createTriangleMesh(*resource);
@@ -62,7 +62,7 @@ bool ResourceManager::loadTriangleMesh(MeshIdentifier identifier, ResourceStream
 		mTriangleMeshes.insert(identifier, triangleMesh);
 	}
 	else {
-		NxThrow_Error("TriangleMesh '" + identifier + "' could not be loaded.");
+		NxThrow(NxString("TriangleMesh '" + identifier + "' could not be loaded.").c_str());
 		return false;
 	}
 
@@ -88,7 +88,7 @@ bool ResourceManager::loadTriangleMesh(MeshIdentifier identifier, NxTriangleMesh
 bool ResourceManager::saveTriangleMesh(MeshIdentifier identifier, ResourceStreamPtr resource) {
 	
 	if (!mTriangleMeshes.has(identifier)) {
-		NxDebug("TriangleMesh with name '" + identifier + "' could not be found.");
+		NxDebug(NxString("TriangleMesh with name '" + identifier + "' could not be found.").c_str());
 		return false;
 	}
 
@@ -109,7 +109,7 @@ bool ResourceManager::cookTriangleMesh(TriangleMeshIntermediary* tmi, ResourceSt
 	
 	if (!tmi->mDescription.isValid()) {
 
-		std::string ss;
+		std::string ss("Triangle Mesh is invalid. Reason(s) are: \n");
 		
 		if(tmi->mDescription.numVertices < 3)
 			ss.append("+ Vertex count less than three");
@@ -121,7 +121,7 @@ bool ResourceManager::cookTriangleMesh(TriangleMeshIntermediary* tmi, ResourceSt
 			ss.append("+ Material index stride is not the size of a material index");
 
 
-		NxThrow_Warning("Triangle Mesh is invalid. Reason(s) are: \n" + ss);
+		NxThrow_AsWarning(ss.c_str());
 
 		return false;
 

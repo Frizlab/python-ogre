@@ -1,30 +1,35 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreHelpers.cpp
+ *  \see     NxOgreHelpers.h
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #include "NxOgreStable.h"
 #include "NxOgreHelpers.h"
 #include "NxOgrePose.h"
+#include "NxOgreContainer.h"
 
 #include "OgreVector3.h"
 #include "OgreQuaternion.h"
 #include "OgreMatrix3.h"
 #include "OgreMatrix4.h"
+
+#include <sstream>
 
 namespace NxOgre {
 
@@ -171,6 +176,25 @@ template <typename Type>
 
 ////////////////////////////////////////////////////////////////
 
+template <>
+	unsigned int NxPublicFunction NxFromString<unsigned int>(const NxString& string) {
+	std::istringstream str(string);
+	unsigned int val = 0;
+	str >> val;
+	return val;
+}
+
+////////////////////////////////////////////////////////////////
+
+template <>
+	bool NxPublicFunction NxFromString<bool>(const NxString& str) {
+		if (str.substr(0, 1) == "y" || str.substr(0, 1) == "t" || str.substr(0, 1) == "Y" || str.substr(0, 1) == "T" || str.substr(0, 1) == "1")
+			return true;
+		return false;
+}
+
+////////////////////////////////////////////////////////////////
+
 template <> 
   NxVec3 NxFromString<NxVec3>(const NxString &string) {
 	
@@ -211,7 +235,7 @@ template <>
 ////////////////////////////////////////////////////////////////
 
 template <>
-  Ogre::Vector3 NxExport NxFromString<Ogre::Vector3>(const NxString& string) {
+  Ogre::Vector3 NxPublicClass NxFromString<Ogre::Vector3>(const NxString& string) {
 
 	Ogre::Vector3 vector(0,0,0);
 	std::vector<NxString> units = NxStringSplit(string, ' ', 3, true);
@@ -229,7 +253,7 @@ template <>
 ////////////////////////////////////////////////////////////////
 
 template <>	
-  Ogre::Quaternion NxExport NxFromString<Ogre::Quaternion>(const NxString& string) {
+  Ogre::Quaternion NxPublicClass NxFromString<Ogre::Quaternion>(const NxString& string) {
 
 	Ogre::Quaternion quat(1,0,0,0);
 	std::vector<NxString> units = NxStringSplit(string, ' ', 4, true);
@@ -278,12 +302,200 @@ inline Pose NxInterpolate(Pose First, Pose Second, NxReal c) {
 
 	Pose r;
 	
-	r.v.x = First.v.x * (1 - c) + Second.v.x * c;
-	r.v.y = First.v.y * (1 - c) + Second.v.y * c;
-	r.v.z = First.v.z * (1 - c) + Second.v.z * c;
-	r.q.slerp(c, First.q, Second.q);
+	NxVec3 v;
+	v.x = First.m.t.x * (1-c) + Second.m.t.x * c;
+	v.y = First.m.t.y * (1-c) + Second.m.t.y * c;
+	v.z = First.m.t.z * (1-c) + Second.m.t.z * c;
 
-	return r;
+	NxQuat q, q1, q2;
+	
+	First.m.M.toQuat(q1); Second.m.M.toQuat(q2); q.slerp(c, q2, q2);
+
+	return Second; //Pose(v, q);
+}
+
+////////////////////////////////////////////////////////////////
+
+void NxPublicClass NxStringToLower(NxString& s) {
+	std::transform(s.begin(),s.end(),s.begin(),tolower);
+}
+
+////////////////////////////////////////////////////////////////
+
+void NxPublicClass NxStringToUpper(NxString& s) {
+	std::transform(s.begin(),s.end(),s.begin(),toupper);
+}
+
+////////////////////////////////////////////////////////////////
+
+void NxPublicClass NxStringTrim(NxString& s) {
+	static const std::string delims = " \t\r";
+	s.erase(s.find_last_not_of(delims) + 1);
+	s.erase(0, s.find_first_not_of(delims));
+}
+
+////////////////////////////////////////////////////////////////
+
+void NxPublicClass NxStringSplit(const NxString& s, char delimiter, NxString& a, NxString &b) {
+	NxU32 d = s.find_first_of(delimiter);
+
+	a = s.substr(0,d);
+	b = s.substr(d + 1, s.length() - d - 1);
+}
+
+////////////////////////////////////////////////////////////////
+
+bool NxPublicClass NxStringStartsWith(const NxString& string, const NxString& pattern, bool lowercaseCheck) {
+	
+	if (string.length() < pattern.length() || pattern.length() == 0)
+		return false;
+
+	NxString firstBit = string.substr(0, pattern.length());
+	
+	if (lowercaseCheck)
+		NxStringToLower(firstBit);
+
+	return (firstBit == pattern);
+
+}
+
+////////////////////////////////////////////////////////////////
+
+bool NxPublicClass NxStringEndsWith(const NxString& string, const NxString& pattern, bool lowercaseCheck) {
+	
+	if (string.length() < pattern.length() || pattern.length() == 0)
+		return false;
+
+	NxString lastBit = string.substr(string.length() - pattern.length(), pattern.length());
+	
+	if (lowercaseCheck)
+		NxStringToLower(lastBit);
+
+	return (lastBit == pattern);
+
+}
+
+////////////////////////////////////////////////////////////////
+
+NxU32 NxStringWhereIs(const NxString& string, const NxString& pattern) {
+	return string.find_first_of(pattern);
+}
+
+////////////////////////////////////////////////////////////////
+
+Container<NxU32, NxString> NxStringTokenize(const NxString& str, const NxString& pattern, bool trim) {
+
+	Container<NxU32, NxString> strings;
+#if 1
+
+	NxString::size_type lastPos = str.find_first_not_of(pattern, 0);
+	NxString::size_type pos = str.find_first_of(pattern, lastPos);
+
+	while(NxString::npos != pos || NxString::npos != lastPos) {
+		
+		NxString token = str.substr(lastPos, pos - lastPos);
+
+		if (trim)
+			NxStringTrim(token);
+		strings.insert(strings.count(), token);
+
+		lastPos = str.find_first_not_of(pattern, pos);
+		pos = str.find_first_of(pattern, lastPos);
+	}
+
+
+#else
+	size_t start, pos;
+	start = 0;
+	NxU32 id = 0;
+
+	do {
+
+		pos = str.find_first_of(pattern, start);
+		
+		if (pos == start) {
+			start = pos + 1;
+		}
+		else if (pos == NxString::npos) {
+			NxString tstring(str.substr(start));
+			if (trim) NxStringTrim(tstring);
+			strings.insert(id, tstring);
+			id++;
+			break;
+		}
+		else {
+			NxString tstring(str.substr(start, pos - start));
+			if (trim) NxStringTrim(tstring);
+			strings.insert(id, tstring);
+			id++;
+			start = pos + 1;
+		}
+
+		start = str.find_first_not_of(pattern, start);
+		
+	} while (pos != NxString::npos);
+#endif
+
+	/*
+	if (strings.count()) {
+		for (NxString s = strings._begin();!strings._atEnd();s = strings._next()) {
+			std::cout << "[] => " << s << std::endl;
+		}
+
+		for (NxU32 i=0;i < strings.count();i++) {
+			std::cout << strings[i] << std::endl;
+		}
+	}
+	*/
+	return strings;
+}
+
+////////////////////////////////////////////////////////////////
+
+void NxPublicFunction NxStringTokenize2(const NxString& string, const NxString& pattern, NxString& first, NxString& second, bool trim) {
+	
+	size_t slice_point = string.find_first_of(pattern);
+
+	// Split
+	first = string.substr(0, slice_point);
+	second = string.substr(slice_point + 1, string.length() - slice_point - 1);
+	
+	if (trim) {
+		static const std::string delims = " \t\r";
+		first.erase(first.find_last_not_of(delims)+1 );
+		first.erase(0, first.find_first_not_of(delims)) ;
+		
+		second.erase( second.find_last_not_of(delims) + 1 );
+		second.erase(0,  second.find_first_not_of(delims) );
+	}
+
+}
+
+////////////////////////////////////////////////////////////////
+
+NxReal NxStringToReal(const NxString& string) {
+	std::istringstream istream(string);
+	NxReal return_real = 0;
+	istream >> return_real;
+	return return_real;
+}
+
+////////////////////////////////////////////////////////////////
+
+NxString NxStringFromReal(NxReal r) {
+	std::ostringstream ostream;
+	ostream << r;
+	return ostream.str();
+}
+
+////////////////////////////////////////////////////////////////
+
+void NxStringFindAndReplace(NxString& str, const NxString& search, const NxString& replacement) {
+	std::string::size_type found_at = str.find( search );
+	while( std::string::npos != found_at ) {
+		str.replace( found_at, 1, replacement );
+		found_at = str.find( search, found_at + 1 );
+	}
 }
 
 ////////////////////////////////////////////////////////////////

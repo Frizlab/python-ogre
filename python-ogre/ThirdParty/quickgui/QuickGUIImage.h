@@ -38,7 +38,7 @@ namespace QuickGUI
 
 		std::string getMaterialName();
 
-		virtual bool overTransparentPixel(const Point& mousePixelPosition);
+		virtual bool overTransparentPixel(const Point& mousePixelPosition) const;
 
 		/**
 		* Applies the texture to the Quad if exists in some form, and updates the Image used for

@@ -16,18 +16,6 @@ namespace QuickGUI
 		public Widget
 	{
 	public:
-		enum BorderType
-		{
-			BORDER_TYPE_TOP_LEFT		=  0,
-			BORDER_TYPE_TOP_RIGHT			,
-			BORDER_TYPE_BOTTOM_LEFT			,
-			BORDER_TYPE_BOTTOM_RIGHT		,
-			BORDER_TYPE_LEFT				,
-			BORDER_TYPE_TOP					,
-			BORDER_TYPE_RIGHT				,
-			BORDER_TYPE_BOTTOM
-		};
-	public:
 		/** Constructor
             @param
                 name The name to be given to the widget (must be unique).
@@ -46,10 +34,20 @@ namespace QuickGUI
         */
 		Border(const std::string& name, GUIManager* gm);
 
+		/*
+		* Allows widgets to notify their borders their skin component has changed,
+		* which is used for situations such as Button down/over/default states, which
+		* affect a border's appearance. (skim component)
+		*/
+		void _notifyParentSkinComponent(const std::string& skinComponent);
+
 		BorderType getBorderType();
+		int getOverlap();
+		int getThickness();
 
 		void setBorderType(BorderType t);
-		void setSkin(const std::string& skinName, std::string extension = ".png", bool recursive = false);
+		void setOverlap(int lengthInPixels);
+		void setThickness(int lengthInPixels);
 
 	protected:
 		virtual ~Border();

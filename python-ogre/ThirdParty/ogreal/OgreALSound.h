@@ -37,6 +37,7 @@
 #define _OGREAL_SOUND_H_
 
 #include "OgreALPrereqs.h"
+#include "OgreALMemberFunctionPointer.h"
 
 namespace OgreAL {
 	/**
@@ -91,7 +92,6 @@ namespace OgreAL {
 		bool fadeIn(Ogre::Real fadeTime);
 		/** Fades out, but keeps playing at volume 0, so it can be faded in again.*/
 		bool fadeOut(Ogre::Real fadeTime);
-
 		/**
 		 * Sets the pitch multiplier.
 		 * @param pitch The new pitch multiplier
@@ -285,6 +285,17 @@ namespace OgreAL {
 		const Ogre::Vector3& getDerivedDirection() const {return mDerivedDirection;}
 		/** Returns the name of the file used to create this Sound. */
 		const Ogre::String& getFileName() const {return mFileName;}
+		/** Sets a callback to alert the user when the Sound has stopped playing */
+		template<typename T>
+		void addSoundFinishedHandler(T *object, void(T::*function)(Sound *sound))
+		{
+			mFinishedCallback = new MemberFunctionPointer<T>(function, object);
+		}
+		template<typename T>
+		void addSoundLoopedHandler(T *object, void(T::*function)(Sound *sound))
+		{
+			mLoopedCallback = new MemberFunctionPointer<T>(function, object);
+		}
 
 		/** Overridden from MovableObject */
 		const Ogre::String& getMovableType() const;
@@ -367,13 +378,20 @@ namespace OgreAL {
 		Size mChannels;
 		Size mBPS;
 		BufferFormat mFormat;
+		Ogre::Real mLengthInSeconds;
+
+		bool mManualRestart;
+		bool mManualStop;
+		Ogre::Real mPreviousOffset;
 
 		Priority mPriority;
 
+		// Callbacks to alert the user of specific events
+		MemberFunctionSlot *mFinishedCallback;
+		MemberFunctionSlot *mLoopedCallback;
+
 		// This allows us to start a sound back where is should be after being sacrificed
 		time_t mStartTime;
-
-		Ogre::Real mLengthInSeconds;
 		
 		friend class SoundManager;
 		friend class SoundFactory;

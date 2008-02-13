@@ -1,5 +1,5 @@
 #include "QuickGUIPrecompiledHeaders.h"
-#include "Ogre.h"
+
 #include "QuickGUITextHelper.h"
 
 namespace QuickGUI

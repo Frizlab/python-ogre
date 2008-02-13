@@ -238,11 +238,15 @@ namespace OgreAL {
 					{
 						eof = false;
 						ov_time_seek(&mOggStream, 0);
+						if(mLoopedCallback)
+							mLoopedCallback->execute(static_cast<Sound*>(this));
 					}
 					else
 					{
 						// Doing it this way may cut off the last 0.5s of the audio
 						stop();
+						if(mFinishedCallback)
+							mFinishedCallback->execute(static_cast<Sound*>(this));
 					}
 				}
 			}

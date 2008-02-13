@@ -218,7 +218,7 @@ namespace OgreAL {
 		SoundMap::iterator soundItr = mSoundMap.find(name);
 		if(soundItr != mSoundMap.end())
 		{			
-			mSoundFactory->destroyInstance(soundItr->second);
+			mSoundsToDestroy.push_back(soundItr->second);
 			mSoundMap.erase(soundItr);
 		}
 	}
@@ -388,6 +388,15 @@ namespace OgreAL {
 	{
 		// Do this before any fading gets updated
 		mLastDeltaTime = evt.timeSinceLastFrame;
+
+		// Destroy any sounds that were queued last frame
+		SoundList::iterator soundItr = mSoundsToDestroy.begin();
+		while(!mSoundsToDestroy.empty())
+		{
+			destroySound(*soundItr);
+			soundItr = mSoundsToDestroy.erase(soundItr);
+		}
+
 		updateSounds();
 		return true;
 	}

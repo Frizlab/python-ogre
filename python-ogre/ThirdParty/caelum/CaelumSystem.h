@@ -29,6 +29,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "SkyDome.h"
 #include "Starfield.h"
 #include "LayeredClouds.h"
+#include "SolarSystemModel.h"
 #include "GroundFog.h"
 #include "Sun.h"
 
@@ -96,28 +97,25 @@ class DllExport CaelumSystem : public Ogre::FrameListener, public Ogre::RenderTa
         /// Ground fog density multiplier.
         double mGroundFogDensityMultiplier;
 		
-		/** The sky dome.
-		 */
-        std::auto_ptr<SkyDome> mSkyDome;
-
-		/** Reference to the sun.
-		 */
-        std::auto_ptr<Sun> mSun;
-
-		/** Reference to the clouds.
-		 */
-        std::auto_ptr<LayeredClouds> mClouds;
-
-		/** Reference to the starfield.
-		 */
-        std::auto_ptr<Starfield> mStarfield;
-
-		/** Reference to the sky colour model in use.
-		 */
+		/// Reference to the sky colour model, if enabled.
         std::auto_ptr<SkyColourModel> mSkyColourModel;
         
-		/** Reference to ground fog; if enabled.
-		 */
+		/// Reference to the sky dome, if enabled.
+        std::auto_ptr<SkyDome> mSkyDome;
+
+		/// Reference to the solar system model, if enabled.
+        std::auto_ptr<SolarSystemModel> mSolarSystemModel;
+        
+		/// Reference to the sun, if enabled.
+        std::auto_ptr<Sun> mSun;
+
+		/// Reference to the starfield, if enabled.
+        std::auto_ptr<Starfield> mStarfield;
+
+		/// Reference to the clouds, if enabled.
+        std::auto_ptr<LayeredClouds> mClouds;
+
+		/// Reference to ground fog, if enabled.
         std::auto_ptr<GroundFog> mGroundFog;
 
 // Methods --------------------------------------------------------------------
@@ -139,14 +137,19 @@ class DllExport CaelumSystem : public Ogre::FrameListener, public Ogre::RenderTa
         {
             CAELUM_COMPONENT_SKY_COLOUR_MODEL   = 1 << 0,
             CAELUM_COMPONENT_SKY_DOME           = 1 << 1,
-            CAELUM_COMPONENT_SUN                = 1 << 2,
-            CAELUM_COMPONENT_STARFIELD          = 1 << 3,
-            CAELUM_COMPONENT_CLOUDS             = 1 << 4,
-            CAELUM_COMPONENT_GROUND_FOG         = 1 << 5,
+            CAELUM_COMPONENT_SOLAR_SYSTEM_MODEL = 1 << 2,
+            CAELUM_COMPONENT_SUN                = 1 << 3,
+            // TODO: CAELUM_COMPONENT_MOON      = 1 << 4,
+            CAELUM_COMPONENT_STARFIELD          = 1 << 5,
+            CAELUM_COMPONENT_CLOUDS             = 1 << 6,
 
-            CAELUM_COMPONENTS_NONE              = 0x0000,
-            CAELUM_COMPONENTS_DEFAULT           = 0x001F,
-            CAELUM_COMPONENTS_ALL               = 0x002F,
+            // These have nasty dependencies on materials.
+            CAELUM_COMPONENT_GROUND_FOG         = 1 << (16 + 0),
+            // TODO: CAELUM_COMPONENT_HAZE      = 1 << (16 + 1),
+
+            CAELUM_COMPONENTS_NONE              = 0x00000000,
+            CAELUM_COMPONENTS_DEFAULT           = 0x0000007F,
+            CAELUM_COMPONENTS_ALL               = 0x0002007F,
         };
     
 		/** Constructor.
@@ -273,6 +276,16 @@ class DllExport CaelumSystem : public Ogre::FrameListener, public Ogre::RenderTa
 		 */
         inline SkyColourModel* getSkyColourModel () const {
             return mSkyColourModel.get();
+        }
+
+		/// Set the solar system model to use, or null to disable.
+        inline void setSolarSystemModel (SolarSystemModel *model) {
+            mSolarSystemModel.reset(model);
+        }
+
+		/// Set the current solar system model.
+        inline SolarSystemModel* getSolarSystemModel () const {
+            return mSolarSystemModel.get();
         }
 
 		/** Sets ground fog system.

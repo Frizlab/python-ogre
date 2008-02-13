@@ -28,7 +28,7 @@ namespace QuickGUI
 	{
 	}
 
-	Rect Rect::getIntersection( const Rect& r )
+	Rect Rect::getIntersection( const Rect& r ) const
 	{
 		Rect retVal = Rect::ZERO;
 
@@ -43,7 +43,7 @@ namespace QuickGUI
 		return retVal;
 	}
 
-	bool Rect::inside(const Rect& r)
+	bool Rect::inside(const Rect& r) const
 	{
 		if( (x >= r.x) &&
 			(y >= r.y) &&
@@ -54,7 +54,7 @@ namespace QuickGUI
 		return false;
 	}
 
-	bool Rect::intersectsRect(const Rect& r)
+	bool Rect::intersectsRect(const Rect& r) const
 	{
 		// if our left side is greater than r's right side, or our right side is less than r's left side, intersection is not possible.
 		if( (x >= (r.x + r.width)) || ((x + width) <= r.x) )
@@ -68,7 +68,7 @@ namespace QuickGUI
 		return true;
 	}
 
-	bool Rect::isPointWithinBounds(const Point& pixelPosition)
+	bool Rect::isPointWithinBounds(const Point& pixelPosition) const
 	{
 		float xPos = pixelPosition.x;
 		float yPos = pixelPosition.y;

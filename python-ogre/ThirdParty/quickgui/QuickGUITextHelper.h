@@ -5,6 +5,8 @@
 #include "OgreFont.h"
 #include "OgreFontManager.h"
 #include "OgrePrerequisites.h"
+#include "OgreTechnique.h"
+#include "OgreTextureManager.h"
 #include "OgreUTFString.h"
 
 #include "QuickGUIExportDLL.h"

@@ -254,7 +254,7 @@ namespace QuickGUI
 		void _menuClosed(Widget* w);
 
 		// Keep track of effect, to update.
-		std::list<Effect*> mActiveEffects;
+		std::list<Effect*>		mActiveEffects;
 
 		WidgetArray	mTimeListeners;
 

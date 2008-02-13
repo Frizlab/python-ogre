@@ -20,12 +20,8 @@ namespace QuickGUI
 		mInputBox->setWidth(mSize.width);
 		mInputBox->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
 		mInputBox->setVerticalAnchor(ANCHOR_VERTICAL_BOTTOM);
-		mInputBox->setUseBorders(true);
 		mInputBox->addEventHandler(EVENT_KEY_DOWN,&Console::onKeyPressed,this);
 		mInputBox->addOnEnterPressedEventHandler(&Console::onEnterPressed,this);
-
-		// Create borders.
-		setUseBorders(true);
 	}
 
 	Console::~Console()

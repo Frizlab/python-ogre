@@ -40,11 +40,19 @@ namespace QuickGUI
                 height != r.height );
         }
 
-		Rect getIntersection( const Rect& r );
+		bool operator == ( const Rect& r ) const
+        {
+			return ( x == r.x &&
+				y == r.y &&
+				width == r.width &&
+				height == r.height );
+        }
 
-		bool inside(const Rect& r);
-		bool intersectsRect(const Rect& r);
-		bool isPointWithinBounds(const Point& pixelPosition);
+		Rect getIntersection( const Rect& r ) const;
+
+		bool inside(const Rect& r) const;
+		bool intersectsRect(const Rect& r) const;
+		bool isPointWithinBounds(const Point& pixelPosition) const;
 
 		float x;
 		float y;

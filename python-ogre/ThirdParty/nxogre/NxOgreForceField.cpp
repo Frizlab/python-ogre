@@ -1,27 +1,28 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
-
+/** \file    NxOgreForceField.cpp
+ *  \see     NxOgreForceField.h
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 #include "NxOgreStable.h"
 #include "NxOgreForceField.h"
 #include "NxOgreActor.h"			// ForceField Inherits Actors
 #include "NxOgreScene.h"			// Scene owns ForceFields
-#include "NxOgreUserData.h"			// For NxActorUserData for NxActor
+#include "NxOgreUserData.h"			// For NxUserData for NxActor
 #include "NxOgreShapeBlueprint.h"
 #include "NxOgreShape.h"
 #include "NxOgreGroup.h"
@@ -33,6 +34,9 @@
 
 namespace NxOgre {
 	
+}; // End of namespace
+
+#if 0
 //////////////////////////////////////////////////////////////////////
 
 void ForceFieldParams::setToDefault() {
@@ -123,10 +127,12 @@ void ForceFieldFormula::asExplosive(NxReal explosiveConstant, Ogre::Vector3 velo
 
 //////////////////////////////////////////////////////////////////////
 
-void ForceFieldParams::parse(Parameters P) {
+void ForceFieldParams::parse(Parameters params) {
 
-	for (Parameters::iterator p = P.begin(); p != P.end();p++) {
-	
+	setToDefault();
+
+	for (Parameter* parameter = params.Begin(); parameter = params.Next();) {
+
 
 	}
 
@@ -143,7 +149,7 @@ ForceField::ForceField(const NxString& Identifier, Scene* scene) : Actor(Identif
 
 //////////////////////////////////////////////////////////////////////
 
-ForceField::ForceField(const NxString& identifier, Scene* scene, const Pose& pose, ShapeBlueprint* actorShape, ActorParams aparams, ForceFieldParams fparams) : Actor(identifier, scene) {
+ForceField::ForceField(const NxString& identifier, Scene* scene, const Pose& pose, Shape* actorShape, ActorParams aparams, ForceFieldParams fparams) : Actor(identifier, scene) {
 	_createActor(actorShape, pose, aparams);
 	_createForceField(fparams);
 	mOwner->_registerForceField(mName, this);
@@ -159,13 +165,13 @@ ForceField::~ForceField() {
 
 //////////////////////////////////////////////////////////////////////
 
-void ForceField::_createActor(ShapeBlueprint *shape, const Pose& pose, ActorParams params) {
+void ForceField::_createActor(Shape *shape, const Pose& pose, ActorParams params) {
 
 
 	NxActorDesc ad;
 	NxBodyDesc bd;
 
-	mNxActorUserData = new NxActorUserData(this, NxActorUserData::T_ForceField);
+	mNxUserData = new NxUserData(this, 999999);			// TEMP!
 #if NX_SDK_VERSION_NUMBER >= 260
 	ad.compartment = params.mCompartment;
 #endif
@@ -178,15 +184,14 @@ void ForceField::_createActor(ShapeBlueprint *shape, const Pose& pose, ActorPara
 #endif
 	ad.flags = params.mActorFlags;	
 	
-	ad.globalPose.t = pose.getVec3();
-	ad.globalPose.M.fromQuat(pose.getQuat());
-	
+	ad.globalPose = pose;
+
 	if (params.mGroupAsIndex != 0)
 		ad.group = params.mGroupAsIndex;
 	else if (params.mGroupAsName.length() > 0)
 		ad.group = mOwner->getActorGroup(params.mGroupAsName)->getGroupID();
 
-	ad.userData = mNxActorUserData;
+	ad.userData = mNxUserData;
 
 	if (params.mDensity == 0 && params.mMass == 0) {
 		ad.body = NULL;
@@ -210,12 +215,25 @@ void ForceField::_createActor(ShapeBlueprint *shape, const Pose& pose, ActorPara
 		bd.wakeUpCounter = params.mWakeUpCounter;
 		ad.body = &bd;
 	}
-	shape->_bindToActorDescription(this, 0, ad.shapes);
+//	shape->_bindToActorDescription(this, 0, ad.shapes);
 
+	shape->createShape(ad.shapes, 0, mOwner);
 	mActor = mOwner->mScene->createActor(ad);
-
 	
-    delete shape;
+	if (!mActor) {
+		NxThrow(NxString("Creation of Forcefield with the identifier '" + mName + "' failed.").c_str());
+		return;
+	}
+
+	NxU32 nbShapes = mActor->getNbShapes();
+	NxShape*const* shapes = mActor->getShapes();
+
+	int i=0;
+	while (nbShapes--) {
+		mCollisionModel[i]->setNxShape(shapes[nbShapes]);
+		mCollisionModel[i]->setIndex(i);
+		i++;
+	}
 
 }
 
@@ -224,8 +242,13 @@ void ForceField::_createActor(ShapeBlueprint *shape, const Pose& pose, ActorPara
 void ForceField::_destroyActor() {
 	mOwner->getNxScene()->releaseActor(*mActor);
 	mActor=0;
-	delete mNxActorUserData;
-	mCollisionModel.destroyAllOwned();
+	delete mNxUserData;
+
+	// There is no need to destroy the collision model. The Garbage collection will destroy it
+	// right.........
+	
+	
+	// now.
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -355,7 +378,7 @@ NxForceFieldShape* ForceFieldCapsuleShape::__bindToForceField(NxForceField* ff, 
 ForceFieldConvexShape::ForceFieldConvexShape(NxString meshName, Scene* scene, const Pose& p, const Ogre::Vector3& scale) {
 
 	mDescription.setToDefault();
-	mDescription.pose = p.toMat34();
+	mDescription.pose = p;
 	mDescription.meshData = NxGenerateConvexMeshFromOgreMesh(meshName, scene->getNxScene(), NxConvert<NxVec3, Ogre::Vector3>(scale));
 
 }
@@ -392,3 +415,4 @@ void ForceField::restoreCustom(StringPairList spl) {
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 }; //End of NxOgre namespace.
+#endif

@@ -2,7 +2,7 @@
 This file is part of Caelum.
 See http://www.ogre3d.org/wiki/index.php/Caelum 
 
-Copyright (c) 2006-2007 Caelum team. See Contributors.txt for details.
+Copyright (c) 2006-2008 Caelum team. See Contributors.txt for details.
 
 Caelum is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published
@@ -20,61 +20,52 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 #include "CaelumPrecompiled.h"
 #include "UniversalClock.h"
+#include "Astronomy.h"
 
 namespace caelum {
 
+const caelum::LongReal UniversalClock::SECONDS_PER_DAY = 86400.0;
+
 UniversalClock::UniversalClock () {
-	setSecondsPerDay (86400);
-	setDaysPerYear (365);
-
 	setTimeScale (1.0);
-	setUpdateRate (0);	// Sets a new mTimeSinceLastUpdate value as well
+	setUpdateRate (0);
+    // The above call does forceUpdate but let's be explicit for clarity.
+    forceUpdate ();
 }
 
-void UniversalClock::setSecondsPerDay (const Ogre::Real secs) {
-	mSecondsPerDay = secs;
-
-	updateSecondsPerYear ();
+void UniversalClock::setJulianDay (caelum::LongReal value) {
+    mJulianDayBase = value;
+    mCurrentTime = 0;
+    mLastUpdateTime = 0;
 }
 
-Ogre::Real UniversalClock::getSecondsPerDay () const {
-	return mSecondsPerDay;
+void UniversalClock::setGregorianDateTime(
+        int year, int month, int day,
+        int hour, int minute, double second)
+{
+    int fpmode = Astronomy::enterHighPrecissionFloatingPointMode ();
+    setJulianDay(Astronomy::getJulianDayFromGregorianDateTime(year, month, day, hour, minute, second));
+    Astronomy::restoreFloatingPointMode(fpmode);
 }
 
-void UniversalClock::setDaysPerYear (const Ogre::Real days) {
-	mDaysPerYear = days;
-
-	updateSecondsPerYear ();
+caelum::LongReal UniversalClock::getJulianDay () const
+{
+    int fpmode = Astronomy::enterHighPrecissionFloatingPointMode ();
+    caelum::LongReal res = mJulianDayBase + mCurrentTime / SECONDS_PER_DAY;
+    Astronomy::restoreFloatingPointMode(fpmode);
+    return res;
 }
 
-Ogre::Real UniversalClock::getDaysPerYear () const {
-	return mDaysPerYear;
+caelum::LongReal UniversalClock::getJulianDayDifference () const {
+    return (mCurrentTime - mLastUpdateTime) / SECONDS_PER_DAY;
 }
 
-void UniversalClock::setCurrentTime (const Ogre::Real sec) {
-	mCurrentSecond = Ogre::Math::Abs (sec);
-
-	mCurrentSecond -= mSecondsPerYear * Ogre::Math::Floor (mCurrentSecond / mSecondsPerYear);
+caelum::LongReal UniversalClock::getJulianSecond () const {
+    return mJulianDayBase * SECONDS_PER_DAY + mCurrentTime;
 }
 
-void UniversalClock::setCurrentRelativeTime (const Ogre::Real time) {
-	setCurrentTime (mSecondsPerYear * time);
-}
-
-Ogre::Real UniversalClock::getCurrentTime () const {
-	return mCurrentSecond;
-}
-
-Ogre::Real UniversalClock::getCurrentRelativeTime () const {
-	return getCurrentTime () / mSecondsPerYear;
-}
-
-Ogre::Real UniversalClock::getCurrentDayTime () const {
-	return mCurrentSecond - (mSecondsPerDay * Ogre::Math::Floor (mCurrentSecond / mSecondsPerDay));
-}
-
-Ogre::Real UniversalClock::getCurrentRelativeDayTime () const {
-	return getCurrentDayTime () / mSecondsPerDay;
+caelum::LongReal UniversalClock::getJulianSecondDifference () const {
+    return mCurrentTime - mLastUpdateTime;
 }
 
 void UniversalClock::setTimeScale (const Ogre::Real scale) {
@@ -88,10 +79,11 @@ Ogre::Real UniversalClock::getTimeScale () const {
 void UniversalClock::setUpdateRate (const Ogre::Real rate) {
 	mUpdateRate = rate;
 
-	if (mUpdateRate < 0)
+    if (mUpdateRate < 0) {
 		mUpdateRate = 0;
+    }
 
-	forceUpdate ();
+    forceUpdate();
 }
 
 Ogre::Real UniversalClock::getUpdateRate () const {
@@ -99,28 +91,20 @@ Ogre::Real UniversalClock::getUpdateRate () const {
 }
 
 bool UniversalClock::update (const Ogre::Real time) {
-	setCurrentTime (mCurrentSecond + time * mTimeScale);
-
 	mTimeSinceLastUpdate += time;
 
 	if (mTimeSinceLastUpdate > mUpdateRate) {
-		mTimeSinceLastUpdate -= mUpdateRate * Ogre::Math::Floor (mUpdateRate > 0 ? mTimeSinceLastUpdate / mUpdateRate : 0);
-
+        mLastUpdateTime = mCurrentTime;
+        mCurrentTime += mTimeSinceLastUpdate * mTimeScale;
+        mTimeSinceLastUpdate = 0;
 		return true;
-	}
-	else {
+	} else {
 		return false;
 	}
 }
 
-void UniversalClock::updateSecondsPerYear () {
-	mSecondsPerYear = mSecondsPerDay * mDaysPerYear;
-
-	forceUpdate ();
-}
-
 void UniversalClock::forceUpdate () {
-	mTimeSinceLastUpdate = mUpdateRate + 1;
+    mTimeSinceLastUpdate = mUpdateRate;
 }
 
 } // namespace caelum

@@ -2,7 +2,7 @@
 This file is part of Caelum.
 See http://www.ogre3d.org/wiki/index.php/Caelum 
 
-Copyright (c) 2006-2007 Caelum team. See Contributors.txt for details.
+Copyright (c) 2006-2008 Caelum team. See Contributors.txt for details.
 
 Caelum is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published
@@ -25,7 +25,19 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "Ogre.h"
 
 // Define the dll export qualifier if compiling for Windows
+// // #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+// // 	#ifdef CAELUM_LIB
+// // 		#define DllExport __declspec (dllexport)
+// // 	#else
+// // 		#ifdef __MINGW32__
+// // 			#define DllExport
+// // 		#else
+// // 			#define DllExport __declspec (dllimport)
+// // 		#endif
+// // 	#endif
+// // #else
 	#define DllExport
+// // #endif
 
 // Define the version code
 #define CAELUM_VERSION_MAIN 0
@@ -47,6 +59,10 @@ namespace caelum {
         CAELUM_RENDER_QUEUE_CLOUDS = Ogre::RENDER_QUEUE_SKIES_EARLY + 3,
         CAELUM_RENDER_QUEUE_GROUND_FOG = Ogre::RENDER_QUEUE_SKIES_EARLY + 4,
     };
+
+    // Caelum needs a lot of precission for astronomical calculations.
+    // Very few calculations use it, and the precission IS required.
+    typedef double LongReal;
 }
 
 // Log macro

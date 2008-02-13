@@ -1,3 +1,4 @@
+#if 0
 //
 //	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
 //	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
@@ -127,39 +128,39 @@ void WheelParams::parse(Parameters P) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-Wheel::Wheel(WheelShape ws, WheelParams params, NodeRenderableParams visualParams, Actor* actor)
+Wheel::Wheel(WheelShape* ws, WheelParams params, NodeRenderableParams visualParams, Actor* actor)
 : Shape(actor), mWheelRollAngle(0) {
 
-	ws.mShapeDescription.userData = this;
-	ws.mShapeDescription.brakeTorque = params.brake_torque;
-	ws.mShapeDescription.density = params.density;
-	ws.mShapeDescription.inverseWheelMass = params.inverseWheelMass;
-	ws.mShapeDescription.lateralTireForceFunction.asymptoteSlip = params.lateral_tire_asymptoteSlip;
-	ws.mShapeDescription.lateralTireForceFunction.asymptoteValue = params.lateral_tire_asymptoteValue;
-	ws.mShapeDescription.lateralTireForceFunction.extremumSlip = params.lateral_tire_extremumSlip;
-	ws.mShapeDescription.lateralTireForceFunction.extremumValue = params.lateral_tire_extremumValue;
-	ws.mShapeDescription.lateralTireForceFunction.stiffnessFactor = params.lateral_tire_stiffnessFactor;
-	ws.mShapeDescription.longitudalTireForceFunction.asymptoteSlip = params.longitudal_tire_asymptoteSlip;
-	ws.mShapeDescription.longitudalTireForceFunction.asymptoteValue = params.longitudal_tire_asymptoteValue;
-	ws.mShapeDescription.longitudalTireForceFunction.extremumSlip = params.longitudal_tire_extremumSlip;
-	ws.mShapeDescription.longitudalTireForceFunction.extremumValue = params.longitudal_tire_extremumValue;
-	ws.mShapeDescription.longitudalTireForceFunction.stiffnessFactor = params.longitudal_tire_stiffnessFactor;
-	ws.mShapeDescription.mass = params.mass;
-	//ws.mShapeDescription.materialIndex;
-	ws.mShapeDescription.motorTorque = params.motor_torque;
-	//ws.mShapeDescription.name;
-	//ws.mShapeDescription.radius
+	ws->mShapeDescription.userData = this;
+	ws->mShapeDescription.brakeTorque = params.brake_torque;
+	ws->mShapeDescription.density = params.density;
+	ws->mShapeDescription.inverseWheelMass = params.inverseWheelMass;
+	ws->mShapeDescription.lateralTireForceFunction.asymptoteSlip = params.lateral_tire_asymptoteSlip;
+	ws->mShapeDescription.lateralTireForceFunction.asymptoteValue = params.lateral_tire_asymptoteValue;
+	ws->mShapeDescription.lateralTireForceFunction.extremumSlip = params.lateral_tire_extremumSlip;
+	ws->mShapeDescription.lateralTireForceFunction.extremumValue = params.lateral_tire_extremumValue;
+	ws->mShapeDescription.lateralTireForceFunction.stiffnessFactor = params.lateral_tire_stiffnessFactor;
+	ws->mShapeDescription.longitudalTireForceFunction.asymptoteSlip = params.longitudal_tire_asymptoteSlip;
+	ws->mShapeDescription.longitudalTireForceFunction.asymptoteValue = params.longitudal_tire_asymptoteValue;
+	ws->mShapeDescription.longitudalTireForceFunction.extremumSlip = params.longitudal_tire_extremumSlip;
+	ws->mShapeDescription.longitudalTireForceFunction.extremumValue = params.longitudal_tire_extremumValue;
+	ws->mShapeDescription.longitudalTireForceFunction.stiffnessFactor = params.longitudal_tire_stiffnessFactor;
+	ws->mShapeDescription.mass = params.mass;
+	//ws->mShapeDescription.materialIndex;
+	ws->mShapeDescription.motorTorque = params.motor_torque;
+	//ws->mShapeDescription.name;
+	//ws->mShapeDescription.radius
 
 	// TODO:
-	//ws.mShapeDescription.shapeFlags;
-	//ws.mShapeDescription.skinWidth;
-	ws.mShapeDescription.steerAngle = params.steer_angle.valueRadians();
-	ws.mShapeDescription.suspension.damper = params.suspension_damper;
-	ws.mShapeDescription.suspension.spring = params.suspension_spring;
-	ws.mShapeDescription.suspension.targetValue = params.suspension_target;
-	ws.mShapeDescription.suspensionTravel = params.suspension_travel;
-	//ws.mShapeDescription.wheelContactModify = ..
-	//ws.mShapeDescription.wheelFlags;
+	//ws->mShapeDescription.shapeFlags;
+	//ws->mShapeDescription.skinWidth;
+	ws->mShapeDescription.steerAngle = params.steer_angle.valueRadians();
+	ws->mShapeDescription.suspension.damper = params.suspension_damper;
+	ws->mShapeDescription.suspension.spring = params.suspension_spring;
+	ws->mShapeDescription.suspension.targetValue = params.suspension_target;
+	ws->mShapeDescription.suspensionTravel = params.suspension_travel;
+	//ws->mShapeDescription.wheelContactModify = ..
+	//ws->mShapeDescription.wheelFlags;
 
 	/*
 	// ------------ material  (default values)
@@ -183,7 +184,9 @@ Wheel::Wheel(WheelShape ws, WheelParams params, NodeRenderableParams visualParam
 	mRenderable = mActor->getScene()->getSceneRenderer()->createNodeRenderable(visualParams);
 	mActor->getScene()->getSceneRenderer()->registerSource(this);
 
-	mWheelLocalPose = ws.mShapeDescription.localPose;
+	mWheelLocalPose = ws->mShapeDescription.localPose;
+
+	NxShape* s = actor->getNxActor()->createShape(mShapeDescription);
 
 }
 
@@ -202,26 +205,19 @@ Wheel::~Wheel() {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-void Wheel::_bindNxShapeToShape(NxShape* s) {
-	
-	mBaseShape = s;
-
-	if (s->isWheel()) {
-		mWheel = static_cast<NxWheelShape*>(s);
-	}
-	else {
-		NxThrow_Warning("Attempted to bind wrong NxShape to NxOgre shape");
-	}
-
-
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-
 void Wheel::__renderSelf() {
+
+	// (TODO) No interpolation, different thingys.
+
 	switch (mLOD) {
 		case LOD_High:
-			mRenderable->setPose(__calculatePositionHigh()); break;
+			{
+				Pose calculated_pose = __calculatePositionHigh();
+				Pose blended_pose = NxInterpolate(mLastPose, calculated_pose, mActor->getScene()->getLastAlphaValue());
+				mLastPose = calculated_pose;
+				mRenderable->setPose(blended_pose);
+			}
+			break; 
 		case LOD_Medium:
 			{
 				Pose calculated_pose = __calculatePositionMedium();
@@ -233,18 +229,17 @@ void Wheel::__renderSelf() {
 			break; 
 
 		case LOD_Low: {
-			mDeltaPose = __calculatePositionLow();
+			{
+				Pose calculated_pose = __calculatePositionLow();
+				Pose blended_pose = NxInterpolate(mLastPose, calculated_pose, mActor->getScene()->getLastAlphaValue());
+				mLastPose = calculated_pose;
+				mRenderable->setPose(blended_pose);
 
-			if (mDeltaPose.v != mLastPose.v) {
-				//mRenderable->setPose(mDeltaPose);
-				Pose inpose = NxInterpolate(mLastPose, mDeltaPose, 0.5f);
-				mRenderable->setPose(inpose);
 			}
-
-			mLastPose = mDeltaPose;
 			break; 
 		}
 	}
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -584,3 +579,4 @@ void Wheel::setEntity(Ogre::Entity* e) {
 #endif 
 
 }; //End of NxOgre namespace.
+#endif

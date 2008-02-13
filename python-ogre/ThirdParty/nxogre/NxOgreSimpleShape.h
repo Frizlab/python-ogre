@@ -1,21 +1,24 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreSimpleShape.h
+ *  \brief   Header for the SimpleShape, SimpleBoxShape, SimpleSphereShape,
+ *           SimpleCapsuleShape and SimpleConvexShape classes.
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #ifndef __NXOGRE_SIMPLE_SHAPE_H__
 #define __NXOGRE_SIMPLE_SHAPE_H__
@@ -32,13 +35,13 @@ namespace NxOgre {
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 
-	class NxExport SimpleShape {
+	class NxPublicClass SimpleShape {
 
 		public:
 
-			/** @brief Creates a Simple Shape from a basic string.
+			/** \brief Creates a Simple Shape from a basic string.
 
-				@example
+				\example
 					<code>
 						"cube: 1 1 1"
 						"box: 1 1 1"
@@ -88,8 +91,10 @@ namespace NxOgre {
 
 	///////////////////////////////////////////////////////////////////////
 
-	class NxExport SimplePlane : public SimpleShape {
+	class NxPublicClass SimplePlane : public SimpleShape {
 	
+// 		friend class SimplePlane;
+
 		public:
 
 			SimplePlane(NxReal x, NxReal y, NxReal z, NxReal d) : SimpleShape(SimpleShape::SST_Plane), 
@@ -121,7 +126,7 @@ namespace NxOgre {
 
 	///////////////////////////////////////////////////////////////////////
 
-	class NxExport SimpleBox : public SimpleShape {
+	class NxPublicClass SimpleBox : public SimpleShape {
 		
 		friend class SimpleShape;
 
@@ -130,7 +135,7 @@ namespace NxOgre {
 			SimpleBox(NxReal s) : SimpleShape(SimpleShape::SST_Box) {mDimensions.set(s,s,s);mPose.id();}
 			SimpleBox(NxReal w, NxReal h, NxReal d) : SimpleShape(SimpleShape::SST_Box), mDimensions(w,h,d) {mPose.id();}
 			SimpleBox(Ogre::Vector3 d) : SimpleShape(SimpleShape::SST_Box) {mDimensions.set(d.x,d.y,d.z);mPose.id();}
-			SimpleBox(Ogre::Vector3 d, NxOgre::Pose p) : SimpleShape(SimpleShape::SST_Box) {mDimensions.set(d.x,d.y,d.z);mPose = p.toMat34();}
+			SimpleBox(Ogre::Vector3 d, NxOgre::Pose p) : SimpleShape(SimpleShape::SST_Box) {mDimensions.set(d.x,d.y,d.z);mPose = p;}
 			SimpleBox(NxVec3 d) : SimpleShape(SimpleShape::SST_Box), mDimensions(d) {mPose.id();}
 			SimpleBox(NxVec3 d, NxMat34 p) : SimpleShape(SimpleShape::SST_Box), mDimensions(d), mPose(p) {}
 			~SimpleBox() {}
@@ -147,14 +152,14 @@ namespace NxOgre {
 
 	///////////////////////////////////////////////////////////////////////
 
-	class NxExport SimpleSphere : public SimpleShape {
+	class NxPublicClass SimpleSphere : public SimpleShape {
 		
 		friend class SimpleShape;
 
 		public:
 
 			SimpleSphere(NxReal radius) : SimpleShape(SimpleShape::SST_Sphere), mRadius(radius) {}
-			SimpleSphere(NxReal radius, NxOgre::Pose p) : SimpleShape(SimpleShape::SST_Sphere), mRadius(radius) {mPose = p.toMat34();}
+			SimpleSphere(NxReal radius, NxOgre::Pose p) : SimpleShape(SimpleShape::SST_Sphere), mRadius(radius) {mPose = p;}
 			SimpleSphere(NxReal radius, NxMat34 pose) : SimpleShape(SimpleShape::SST_Sphere), mRadius(radius), mPose(pose) {}
 			~SimpleSphere()			{}
 
@@ -169,14 +174,14 @@ namespace NxOgre {
 
 	///////////////////////////////////////////////////////////////////////
 
-	class NxExport SimpleCapsule : public SimpleShape {
+	class NxPublicClass SimpleCapsule : public SimpleShape {
 		
 		friend class SimpleShape;
 
 		public:
 
 			SimpleCapsule(NxReal r, NxReal h) : SimpleShape(SimpleShape::SST_Sphere), mRadius(r), mHeight(h) {}
-			SimpleCapsule(NxReal r, NxReal h, NxOgre::Pose p) : SimpleShape(SimpleShape::SST_Sphere), mRadius(r), mHeight(h) {mPose = p.toMat34();}
+			SimpleCapsule(NxReal r, NxReal h, NxOgre::Pose p) : SimpleShape(SimpleShape::SST_Sphere), mRadius(r), mHeight(h) {mPose = p;}
 			SimpleCapsule(NxReal r, NxReal h, NxMat34 pose) : SimpleShape(SimpleShape::SST_Sphere), mRadius(r), mHeight(h) {}
 			~SimpleCapsule() {}
 
@@ -196,7 +201,7 @@ namespace NxOgre {
 	/** SimpleConvex
 		@todo
 	 */
-	class NxExport SimpleConvex : public SimpleShape {
+	class NxPublicClass SimpleConvex : public SimpleShape {
 
 		friend class SimpleShape;
 

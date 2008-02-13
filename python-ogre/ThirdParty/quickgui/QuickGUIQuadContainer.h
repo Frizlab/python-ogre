@@ -35,10 +35,10 @@ namespace QuickGUI
 	public:
 		QuadContainer(Widget* owner);
 		~QuadContainer();
-	
+
 		void addChildRenderable(Quad* q);
-		void addChildPanelContainer(QuadContainer* g);
-		void addChildWindowContainer(QuadContainer* g);
+		void addChildPanelContainer(QuadContainer* c);
+		void addChildWindowContainer(QuadContainer* c);
 		void addMenuRenderable(Quad* q);
 
 		/**
@@ -46,6 +46,7 @@ namespace QuickGUI
 		*/
 		int getOffset();
 		Widget* getOwner();
+		QuadContainer* getParentContainer();
 
 		/**
 		* Removes the Window Group from its current location and appends to the end
@@ -63,8 +64,11 @@ namespace QuickGUI
 		void removeMenuRenderable(Quad* q);
 		void render();
 
+		void setParentContainer(QuadContainer* c);
+
 	protected:
 		Widget* mOwner;
+		QuadContainer* mParentContainer;
 
 		VertexBuffer* mChildVertexBuffer;
 		VertexBuffer* mMenuVertexBuffer;
@@ -76,15 +80,16 @@ namespace QuickGUI
 		bool mMenuChanged;
 
 		// These variables order relate to zOrdering
-		Quad* mBaseQuad;
 		QuadList mChildRenderables;
 		QuadContainerList mChildPanels;
 		// Only Sheet widgets will make use of Window List
-		QuadContainerList mChildWindows;		
-		QuadList mMenuRenderables;	
+		QuadContainerList mChildWindows;
+		QuadList mMenuRenderables;
 
 		QuadContainerList* getPanelList();
+		const QuadContainerList* getPanelList() const;
 		QuadContainerList* getWindowList();
+		const QuadContainerList* getWindowList() const;
 
 		void _populateRenderObjectList();
 		void _updateRenderQueue();

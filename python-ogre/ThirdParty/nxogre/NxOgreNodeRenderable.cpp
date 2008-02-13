@@ -1,26 +1,30 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreNodeRenderable.cpp
+ *  \see     NxOgreNodeRenderable.h
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #include "NxOgreStable.h"
 #include "NxOgreNodeRenderable.h"
 #include "NxOgreScene.h"
 #include "NxOgrePose.h"
+#include "NxOgreHelpers.h"
+
 namespace NxOgre {
 
 //////////////////////////////////////////////////////////
@@ -40,18 +44,20 @@ void NodeRenderableParams::setToDefault() {
 
 //////////////////////////////////////////////////////////
 
-void NodeRenderableParams::parse(Parameters P) {
+void NodeRenderableParams::parse(Parameters params) {
 
-	for (Parameters::iterator p = P.begin(); p != P.end();p++) {
+	setToDefault();
 
-		if (Set("identifier", (*p), Identifier)) continue;
+	for (Parameter* parameter = params.Begin(); parameter = params.Next();) {
 
-		if ((*p).first == "identifier-usage") {
+		if (Set("identifier", parameter, Identifier)) continue;
+
+		if (parameter->i == "identifier-type") {
 			
-			if ((*p).second.substr(0,1) == "c" || (*p).second.substr(0,1) == "C") {
+			if (parameter->j.substr(0,1) == "c" || parameter->j.substr(0,1) == "C") {
 				IdentifierType = IT_CREATE;
 			}
-			else if ((*p).second.substr(0,1) == "u" || (*p).second.substr(0,1) == "U") {
+			else if (parameter->j.substr(0,1) == "r" || parameter->j.substr(0,1) == "R") {
 				IdentifierType = IT_USE;
 			}
 			else {
@@ -60,12 +66,12 @@ void NodeRenderableParams::parse(Parameters P) {
 
 		}
 
-		if (Set("model", (*p), GraphicsModel)) continue;
+		if (Set("model", parameter, GraphicsModel)) continue;
 
-		if ((*p).first == "model-type") {
+		if (parameter->i == "model-type") {
 			
-			NxString mt = (*p).second;
-			toLower(mt);
+			NxString mt = parameter->j;
+			NxStringToLower(mt);
 
 			if (mt == "resource") {
 				GraphicsModelType = GMT_RESOURCE_IDENTIFIER;
@@ -82,12 +88,12 @@ void NodeRenderableParams::parse(Parameters P) {
 
 		}
 
-		if (Set("scale", (*p), GraphicsModelScale)) continue;
-		if (Set("position", (*p), GraphicsModelPose.v)) continue;
-		if (Set("orientation", (*p), GraphicsModelPose.q)) continue;
-		if (Set("offset-position", (*p), GraphicsModelOffset.v)) continue;
-		if (Set("offset-orientation", (*p), GraphicsModelOffset.q)) continue;
-		if (Set("material", (*p), GraphicsModelMaterial)) continue;
+		if (Set("scale", parameter, GraphicsModelScale)) continue;
+		if (Set("position", parameter, GraphicsModelPose.m.t)) continue;
+		if (Set("orientation", parameter, GraphicsModelPose.m.M)) continue;
+		if (Set("offset-position", parameter, GraphicsModelOffset.m.t)) continue;
+		if (Set("offset-orientation", parameter, GraphicsModelOffset.m.M)) continue;
+		if (Set("material", parameter, GraphicsModelMaterial)) continue;
 
 	}
 

@@ -1,3 +1,4 @@
+#if 0
 //
 //	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
 //	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
@@ -44,6 +45,7 @@ WheelShape::WheelShape(NxReal radius, ShapeParams p, WheelParams wp, NodeRendera
 	
 	wheelParams = wp;
 	renderableParams = vp;
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -62,21 +64,18 @@ Shape* WheelShape::_bindToActorDescription(Actor* actor, NxU32 id, NxArray<NxSha
 
 Shape* WheelShape::_bindToNxActor(Actor* actor, NxShapeIndex id) {
 	
-	__paramsToDescription(mShapeDescription, mParams, actor->getScene());
+	__genericParamsToDescription(mShapeDescription, mParams, actor->getScene());
 
-	Wheel* wheel = new Wheel(*this, wheelParams, renderableParams, actor);
-	
-	actor->mDynamicCollisionModel.insert(actor->mDynamicCollisionModel.count(), wheel);
+	Wheel* wheel = new Wheel(this, wheelParams, renderableParams, actor);
+
 	actor->mCollisionModel.insert(id, wheel);
 	actor->mCollisionModel.lock(id, true);
-	
-	NxShape* s = actor->getNxActor()->createShape(mShapeDescription);
-
-	wheel->_bindNxShapeToShape(s);
+	wheel->setIndex(id);
 
 	return wheel;
 }
 
-
+////////////////////////////////////////////////////////////////////////////////////////////////
 
 }; //End of NxOgre namespace.
+#endif

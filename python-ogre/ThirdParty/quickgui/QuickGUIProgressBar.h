@@ -120,7 +120,7 @@ namespace QuickGUI
 		std::string mSkinExtension;
 		Ogre::TexturePtr mBarTexture;
 		std::string mBarTextureName;
-		Ogre::Image mBarImage;
+		Ogre::Image* mBarImage;
 		Ogre::MaterialPtr mBarMaterial;
 		int mBarMinWidth;
 		int mBarMaxWidth;

@@ -59,6 +59,7 @@ namespace QuickGUI
 
 		HorizontalScrollBar::ButtonLayout getHorizontalButtonLayout();
 		virtual Widget* getTargetWidget(const Point& pixelPosition);
+		virtual const Widget* getTargetWidget(const Point& pixelPosition) const;
 		VerticalScrollBar::ButtonLayout getVerticalButtonLayout();
 
 		void manageWidget(Widget* w);
@@ -82,9 +83,9 @@ namespace QuickGUI
 
 		HorizontalScrollBar* mBottomBar;
 		HorizontalScrollBar::ButtonLayout mHorizontalButtonLayout;
-		
+
 		VerticalScrollBar* mRightBar;
-		VerticalScrollBar::ButtonLayout mVerticalButtonLayout;	
+		VerticalScrollBar::ButtonLayout mVerticalButtonLayout;
 
 		void onChildAddedToParent(const EventArgs& args);
 		void onChildRemovedFromParent(const EventArgs& args);

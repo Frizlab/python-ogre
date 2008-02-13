@@ -1,39 +1,41 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreScene.cpp
+ *  \see     NxOgreScene.h
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #include "NxOgreStable.h"
 #include "NxOgreScene.h"
-#include "NxOgreSceneBlueprint.h"
+///////////#include "NxOgreSceneBlueprint.h"
 #include "NxOgreSceneController.h"				// For: Controlling the TimeStep of the Scene
 #include "NxOgreSceneRenderer.h"
 #include "NxOgreSceneContactController.h"		// For: SceneContactController
 #include "NxOgreSceneTriggerController.h"		// For: SceneTriggerController
 #include "NxOgreContainer.h"					// For: Scene::mActors
 #include "NxOgreActor.h"						// For: Actor operations
-#include "NxOgreActorBlueprint.h"				// For: Saving Actors
+////////////#include "NxOgreActorBlueprint.h"				// For: Saving Actors
 #include "NxOgreBody.h"							// For: Body operations
 #include "NxOgreTrigger.h"						// For: Trigger operations
 #include "NxOgreForceField.h"					// For: ForceField operations
 #include "NxOgreWorld.h"						// For: Scene::mOwner
 #include "NxOgreHelpers.h"						// For: simple conversions
-#include "NxOgreShapeBlueprintPrimitives.h"		// For: hasFloor and Floor params (GroundShape)
-#include "NxOgrePose.h"							// For: hasFloor (GroundShape)
+#include "NxOgreShapePrimitives.h"				// For: hasFloor and Floor params (Ground)
+#include "NxOgrePose.h"							// For: hasFloor (Ground)
 #include "NxOgreMaterial.h"						// For: Material operations
 #include "NxOgreJoint.h"						// For: Creation of abstract joints and releasing them.
 #include "NxOgreJointSet1.h"					// For: Creation of Joints
@@ -57,10 +59,9 @@
 #include "NxOgreRaycaster.h"					// For: Raycasting (mSceneRayCaster)
 #include "NxOgreSimpleShape.h"					// For: Intersections (SimpleBox in getActorsFromLastRegion)
 #include "NxOgreMachine.h"						// For: Machines
-
-#if (NX_UNSTABLE_USE_SCENE_ACTIVE_TRANSFORM == 1)
-#	include "NxOgreUserData.h"						// For: UserData in NxTransformCode
-#endif
+#include "NxOgreUserData.h"						// For: UserData in NxTransformCode
+#include "NxOgreSleepCallback.h"				// For: delete mSleepCallback
+#include "NxOgreEffectsSystem.h"				// For: delete an EffectsSystem.
 
 #include "NxOgreNodeRenderable.h"
 
@@ -108,41 +109,42 @@ void SceneParams::setToDefault() {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-void SceneParams::parse(Parameters P) {
+void SceneParams::parse(Parameters params) {
 
-	for (Parameters::iterator p = P.begin(); p != P.end();p++) {
+	for (Parameter* parameter = params.Begin(); parameter = params.Next();) {
 
-		if (Set("floor", (*p), floor)) continue;
-		if (Set("default-material-restitution", (*p), defaultMaterialRestitution)) continue;
-		if (Set("default-material-dynamic-friction", (*p), defaultMaterialDynamicFriction)) continue;
-		if (Set("default-material-static-friction", (*p), defaultMaterialStaticFriction)) continue;
-		if (Set("max-timestep", (*p), max_timestep)) continue;
+		if (Set("floor", parameter, floor)) continue;
+		if (Set("default-material-restitution", parameter, defaultMaterialRestitution)) continue;
+		if (Set("default-material-dynamic-friction", parameter, defaultMaterialDynamicFriction)) continue;
+		if (Set("default-material-static-friction", parameter, defaultMaterialStaticFriction)) continue;
+		if (Set("max-timestep", parameter, max_timestep)) continue;
 
 
-		if ((*p).first == "gravity") {
-			if ((*p).second.substr(0,1) == "y" || (*p).second.substr(0,1) == "Y") {
+		if (parameter->i == "gravity") {
 
+			// TODO: Use Native String functions
+			if (parameter->j.substr(0,1) == "y" || parameter->j.substr(0,1) == "Y") {
 				gravity.set(0,-9.80665,0);
 			}
 			else {
-				gravity.set(NxConvert<NxVec3, Ogre::Vector3>(Ogre::StringConverter::parseVector3((*p).second)));
+				gravity.set(NxConvert<NxVec3, Ogre::Vector3>(Ogre::StringConverter::parseVector3(parameter->j)));
 				continue;
 			}
 		}
 
-		if ((*p).first == "controller") {
+		if (parameter->i == "controller") {
 			
-			if((*p).second.substr(0,1) == "f" || (*p).second.substr(0,1) == "F") {
+			if(parameter->j.substr(0,1) == "f" || parameter->j.substr(0,1) == "F") {
 				controller = CN_FIXED;
 			}
-			else if ((*p).second.substr(0,1) == "v" || (*p).second.substr(0,1) == "V") {
+			else if (parameter->j.substr(0,1) == "v" || parameter->j.substr(0,1) == "V") {
 				controller = CN_VARIABLE;
 			}
 #if (NX_UNSTABLE == 1)
-			else if((*p).second.substr(0,1) == "a" || (*p).second.substr(0,1) == "A") {
+			else if(parameter->j.substr(0,1) == "a" || parameter->j.substr(0,1) == "A") {
 				controller = CN_ACCUMULATOR;
 			}
-			else if((*p).second.substr(0,1) == "n" || (*p).second.substr(0,1) == "N") {
+			else if(parameter->j.substr(0,1) == "n" || parameter->j.substr(0,1) == "N") {
 				controller = CN_NULL;
 			}
 #endif
@@ -153,9 +155,9 @@ void SceneParams::parse(Parameters P) {
 		}
 
 
-		if ((*p).first == "renderer") {
+		if (parameter->i == "renderer") {
 			
-			if ((*p).second.substr(0,1) == "o" || (*p).second.substr(0,1) == "O") {
+			if (parameter->j.substr(0,1) == "o" || parameter->j.substr(0,1) == "O") {
 				renderer = RN_OGRE;
 			}
 			else {
@@ -198,12 +200,13 @@ void Scene::_paramsToDescription(SceneParams sp) {
 Scene::Scene(const NxString& name, World* world, SceneParams p) :
 mName(name),
 mNxID(mName.c_str()),
-mSceneMgr(0),				// Temp.
 mOwner(world),
 mStaticGeometry(0),
 mBatchProcessSimulate(false),
 mSceneRayCaster(0),
-mSceneIntersection(0)
+mSceneIntersection(0),
+mSleepCallback(0),
+mSleepCallbackPolicy(GC_Never_Delete)
 {
 	mOwner->_registerScene(mName, this);
 
@@ -215,52 +218,50 @@ mSceneIntersection(0)
 #endif
 
 	if (p.controller == p.CN_FIXED) {
-		mSceneController = new FixedSceneController(this);
+		mSceneController = NxNew(FixedSceneController) FixedSceneController(this);
 	}
 	else if (p.controller == p.CN_VARIABLE) {
-		mSceneController = new VariableSceneController(this);
+		mSceneController = NxNew(VariableSceneController) VariableSceneController(this);
 	}
 	else if (p.controller == p.CN_ACCUMULATOR) {
-		mSceneController = new AccumulatorSceneController(this);
+		mSceneController = NxNew(AccumulatorSceneController) AccumulatorSceneController(this);
 	}
 	else if (p.controller == p.CN_NULL) {
-		mSceneController = new NullSceneController(this);
+		mSceneController = NxNew(NullSceneController) NullSceneController(this);
 	}
 	else {
-		mSceneController = new FixedSceneController(this);
+		mSceneController = NxNew(FixedSceneController) FixedSceneController(this);
 	}
 
 	mSceneController->setTiming(mDescription, p.max_timestep, p.max_iter,0);
 
-	mSceneContactController = new SceneContactController(this);
-	mSceneTriggerController = new SceneTriggerController(this);
+	mSceneContactController = NxNew(SceneContactController) SceneContactController(this);
+	mSceneTriggerController = NxNew(SceneTriggerController) SceneTriggerController(this);
 
 	mDescription.userContactReport = mSceneContactController;
 	mDescription.userTriggerReport = mSceneTriggerController;
-	
+	mDescription.userNotify        = this;
+
 	mScene = mOwner->getSDK()->createScene(mDescription);
 
 	if (!mScene) {
-		std::stringstream ss;
-		ss << "Scene creation of '" << name << "' failed." << std::endl;
-		NxThrow_Error(ss.str());
+		NxThrow(NxString("Scene creation of '" + name + "' failed.").c_str());
 		return;
 	}
+
+#if (NX_DEBUG == 1)
+	NxDebug(NxString("Created Scene '" + name + "'.").c_str());
+#endif
 	
 	mScene->userData = (void*) this;
 
 	if (p.renderer == p.RN_OGRE) {
-		mSceneRenderer = new OgreSceneRenderer(this, p.rendererUserData);
-		
-		// Temp. For old style classes.
-		{
-			OgreSceneRenderer* osr = static_cast<OgreSceneRenderer*>(mSceneRenderer);
-			mSceneMgr = osr->getSceneMgr();
-		}
+
+		mSceneRenderer = NxNew(OgreSceneRenderer) OgreSceneRenderer(this, p.rendererUserData);
 
 	}
 	else {
-		mSceneRenderer = new NullSceneRenderer(this, p.rendererUserData);
+		mSceneRenderer = NxNew(NullSceneRenderer) NullSceneRenderer(this, p.rendererUserData);
 	}
 
 	_createDefaultActorGroup();
@@ -277,11 +278,53 @@ mSceneIntersection(0)
 
 	mSceneController->init(mScene);
 
+	
+	NxLabelContainer(Scene, mActors, Actors);
+	NxLabelContainer(Scene, mActorGroups, ActorGroups);
+	NxLabelContainer(Scene, mActorGroupsByIndex, ActorGroupsByIndex);
+	NxLabelContainer(Scene, mJoints, Joints);
+	NxLabelContainer(Scene, mTriggers, Triggers);
+
+
+#if (NX_USE_CLOTH_API == 1)
+	NxLabelContainer(Scene, mCloths, Cloths);
+#endif
+
+#if (NX_USE_CHARACTER_API == 1)
+	NxLabelContainer(Scene, mCharacters, Characters);
+#endif
+
+#if (NX_USE_FLUID_API == 1)
+	NxLabelContainer(Scene, mFluids, Fluids);
+#endif
+
+#if (NX_USE_FORCEFIELD_API == 1)
+	NxLabelContainer(Scene, mForceFields, ForceFields);
+#endif
+
+#if (NX_USE_SOFTBODY_API == 1)
+	NxLabelContainer(Scene, mSoftBodies, SoftBodies);
+#endif
+
+	NxLabelContainer(Scene, mMaterials, MaterialList);
+	NxLabelContainer(Scene, mMaterialsByIndex, MaterialListByIndex);
+	NxLabelContainer(Scene, mMaterialPair, MaterialPair);
+	NxLabelContainer(Scene, mMachines, Machines);
+
+	NxLabelContainer(Scene, mShapeGroups, ShapeGroups);
+	NxLabelContainer(Scene, mShapeGroupsByIndex, ShapeGroupsByIndex);
+
+#if (NX_SDK_VERSION_NUMBER >= 272) 
+	NxLabelContainer(Scene, mDominanceGroups, DominanceGroups);
+	NxLabelContainer(Scene, mDominanceGroupsByIndex, DominanceGroupsByIndex);
+#endif
+
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-Scene::Scene(const NxString& identifier, World* world, Ogre::SceneManager* s, NxScene* nxscene) : mName(identifier), mNxID(mName.c_str()), mSceneMgr(s), mOwner(world), mBatchProcessSimulate(false)  {
+Scene::Scene(const NxString& identifier, World* world, NxScene* nxscene)
+: mName(identifier), mNxID(mName.c_str()), mOwner(world), mBatchProcessSimulate(false)  {
 
 	mOwner->_registerScene(mName, this);
 	mScene = nxscene;
@@ -297,15 +340,15 @@ Scene::Scene(const NxString& identifier, World* world, Ogre::SceneManager* s, Nx
 
 	// TODO: Accumulator and thingy. Perhaps via a the userData string thing
 	if (tsm == NX_TIMESTEP_FIXED) {
-		mSceneController = new FixedSceneController(this);
+		mSceneController = NxNew(FixedSceneController) FixedSceneController(this);
 	}
 	else {
-		mSceneController = new VariableSceneController(this);
+		mSceneController = NxNew(VariableSceneController) VariableSceneController(this);
 	}
 	mSceneController->setTiming(mxts, mxit, nbss);
 
-	mSceneContactController = new SceneContactController(this);
-	mSceneTriggerController = new SceneTriggerController(this);
+	mSceneContactController = NxNew(SceneContactController) SceneContactController(this);
+	mSceneTriggerController = NxNew(SceneTriggerController) SceneTriggerController(this);
 
 	mScene->setUserContactReport(mSceneContactController);
 	mScene->setUserTriggerReport(mSceneTriggerController);
@@ -313,7 +356,7 @@ Scene::Scene(const NxString& identifier, World* world, Ogre::SceneManager* s, Nx
 	mSceneController->init(mScene);
 
 	// Temp
-	mSceneRenderer = new OgreSceneRenderer(this, "#first");
+	mSceneRenderer = NxNew(OgreSceneRenderer) OgreSceneRenderer(this, "#first");
 
 	_createDefaultActorGroup();
 	_createDefaultShapeGroup();
@@ -332,15 +375,19 @@ Scene::~Scene() {
 	
 	NxString stats;
 
-	#ifndef NX_DEBUG
+	#if (NX_DEBUG == 0)
 		std::stringstream ss;
 		ss << "End of scene '" << mName << "' stats" << std::endl << "\t";
 	#endif
 
+	if (mSleepCallback)
+		if (mSleepCallbackPolicy == GC_Delete)
+			delete mSleepCallback;
+
 	//////////////////////////////
 	#if (NX_USE_FORCEFIELD_API == 1)
 
-		#ifdef NX_DEBUG
+		#if (NX_DEBUG == 1)
 			if (mForceFields.count())
 				mForceFields.dumpToConsole();
 		#else
@@ -357,7 +404,7 @@ Scene::~Scene() {
 
 	#if (NX_USE_FLUID_API == 1)
 
-		#ifdef NX_DEBUG
+		#if (NX_DEBUG == 1)
 			if (mFluids.count())
 				mFluids.dumpToConsole();
 		#else
@@ -373,7 +420,7 @@ Scene::~Scene() {
 
 	#if (NX_USE_CLOTH_API == 1)
 
-		#ifdef NX_DEBUG
+		#if (NX_DEBUG == 1)
 		if (mCloths.count())
 			mCloths.dumpToConsole();
 		#else
@@ -391,7 +438,7 @@ Scene::~Scene() {
 
 	#if (NX_USE_SOFTBODY_API == 1)
 
-		#ifdef NX_DEBUG
+		#if (NX_DEBUG == 1)
 		if (mSoftBodies.count())
 			mSoftBodies.dumpToConsole();
 		#else
@@ -403,7 +450,7 @@ Scene::~Scene() {
 
 	//////////////////////////////
 	
-	#ifdef NX_DEBUG
+	#if (NX_DEBUG == 1)
 		if (mJoints.count())
 			mJoints.dumpToConsole();
 	#else
@@ -417,7 +464,7 @@ Scene::~Scene() {
 
 	#if (NX_USE_CHARACTER_API == 1)
 
-		#ifdef NX_DEBUG
+		#if (NX_DEBUG == 1)
 			if (mCharacters.count())
 				mCharacters.dumpToConsole();
 		#else
@@ -431,7 +478,7 @@ Scene::~Scene() {
 
 	//////////////////////////////
 
-	#ifdef NX_DEBUG
+	#if (NX_DEBUG == 1)
 		if (mTriggers.count())
 			mTriggers.dumpToConsole();
 	#else
@@ -439,11 +486,11 @@ Scene::~Scene() {
 			ss << "Triggers (" << mTriggers.count() << "), ";
 	#endif
 	
-	mTriggers.destroyAllOwned();
+	mSimpleActors.DestroyAll();
 
 	//////////////////////////////
 
-	#ifdef NX_DEBUG
+	#if (NX_DEBUG == 1)
 		if (mActors.count())
 			mActors.dumpToConsole();
 	#else
@@ -455,7 +502,7 @@ Scene::~Scene() {
 
 	//////////////////////////////
 
-	#ifdef NX_DEBUG
+	#if (NX_DEBUG == 1)
 		if (mMaterials.count())
 			mMaterials.dumpToConsole();
 	#else
@@ -476,30 +523,29 @@ Scene::~Scene() {
 	mDominanceGroups.empty();
 
 	if (mSceneIntersection)
-		delete mSceneIntersection;
+		NxDelete(mSceneIntersection);
 
 	if (mSceneRayCaster)
-		delete mSceneRayCaster;
+		NxDelete(mSceneRayCaster);
 
 
-	delete mSceneRenderer;
-
-	delete mSceneController;
+	NxDelete(mSceneRenderer);
+	NxDelete(mSceneController);
 
 	//////////////////////////////
 
 	mOwner->getSDK()->releaseScene(*mScene);
 
-	#ifndef NX_DEBUG
-		ss << std::endl << " - Destroyed." << std::endl;
-		NxDebug(ss.str());
-	#endif
-
-	delete mSceneContactController;
-	delete mSceneTriggerController;
+	NxDelete(mSceneContactController);
+	NxDelete(mSceneTriggerController);
 
 	//////////////////////////////
 
+	
+#if (NX_DEBUG == 1)
+	NxDebug(NxString("Destroyed Scene '" + mName + "'.").c_str());
+#endif
+	
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -517,6 +563,8 @@ void Scene::setSceneController(SceneController* controller) {
 		delete mSceneController;
 	mSceneController = controller;
 }
+
+///////////////////////////////////////////////////////////////////////
 
 void Scene::setSceneRenderer(SceneRenderer* renderer) {
 	
@@ -541,7 +589,7 @@ NxReal Scene::getLastAlphaValue() const {
 
 ///////////////////////////////////////////////////////////////////////
 
-void Scene::batchCreateActors(const NxString& identifierPattern, NxU32 nbActors, ShapeBlueprint* collisionModel, const Pose& pose, const Pose& poseDelta, BatchActionTimeFrame batchTime, ActorParams actorParams) {
+void Scene::batchCreateActors(const NxString& identifierPattern, NxU32 nbActors, Shape* collisionModel, const Pose& pose, const Pose& poseDelta, BatchActionTimeFrame batchTime, ActorParams actorParams) {
 
 	BatchActorBlueprint bp;
 	bp.collisionModel = collisionModel;
@@ -565,7 +613,7 @@ void Scene::batchCreateActors(const NxString& identifierPattern, NxU32 nbActors,
 		
 ///////////////////////////////////////////////////////////////////////
 
-void Scene::batchCreateBodies(const NxString& identifierPattern, const NxString& visualData, NxU32 nbActors, ShapeBlueprint* collisionModel, const Pose& pose, const Pose& poseDelta, BatchActionTimeFrame batchTime, ActorParams actorParams) {
+void Scene::batchCreateBodies(const NxString& identifierPattern, const NxString& visualData, NxU32 nbActors, Shape* collisionModel, const Pose& pose, const Pose& poseDelta, BatchActionTimeFrame batchTime, ActorParams actorParams) {
 
 	BatchActorBlueprint bp;
 	bp.collisionModel = collisionModel;
@@ -590,20 +638,20 @@ void Scene::batchCreateBodies(const NxString& identifierPattern, const NxString&
 ///////////////////////////////////////////////////////////////////////
 
 void Scene::_batchActorCreate(BatchActorBlueprint& bp) {
-	
+#if 0
 	if (bp.visualData.length() != 0) {
 		_batchBodyCreate(bp);
 		return;
 	}
 
 	Pose poseNext = bp.poseOrigin;
-	bp.collisionModel->setShared(true);
+//	bp.collisionModel->setShared(true);
 
 	NxString actorIdentifier = ">" + bp.identifierPattern;
 	Actor* actor;
 	for (NxU32 i=0;i < bp.nbActors;i++) {
 	
-		actor = new Actor(
+		actor = NxNew(Actor) Actor(
 				actorIdentifier + Ogre::StringConverter::toString(i),
 				this,
 				bp.collisionModel,
@@ -616,12 +664,14 @@ void Scene::_batchActorCreate(BatchActorBlueprint& bp) {
 		// TODO: Quaternions.
 	}
 
-	delete bp.collisionModel;
+//	delete bp.collisionModel;
+#endif
 }
 		
 ///////////////////////////////////////////////////////////////////////
 	
 void Scene::_batchBodyCreate(BatchActorBlueprint& bp) {
+#if 0
 	Pose poseNext = bp.poseOrigin;
 	bp.collisionModel->setShared(true);
 
@@ -629,7 +679,7 @@ void Scene::_batchBodyCreate(BatchActorBlueprint& bp) {
 	Actor* actor;
 	for (NxU32 i=0;i < bp.nbActors;i++) {
 		
-		actor = new Body(
+		actor = NxNew(Body) Body(
 				actorIdentifier + Ogre::StringConverter::toString(i) + ";" + bp.visualData,
 				this,
 				bp.collisionModel,
@@ -643,6 +693,7 @@ void Scene::_batchBodyCreate(BatchActorBlueprint& bp) {
 	}
 
 	delete bp.collisionModel;
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -678,8 +729,8 @@ void Scene::_batchActorDestroy(Actors& actors) {
 		
 ///////////////////////////////////////////////////////////////////////
 
-Actor* Scene::createActor(const NxString& identifier, ShapeBlueprint *firstShapeDescription, const Pose& pose, ActorParams params) {
-	Actor* actor = new Actor(identifier, this, firstShapeDescription, pose, params);
+Actor* Scene::createActor(const NxString& identifier, Shape *firstShapeDescription, const Pose& pose, ActorParams params) {
+	Actor* actor = NxNew(Actor) Actor(identifier, this, firstShapeDescription, pose, params);
 	mActors.lock(actor->getName(), true);
 	return actor;
 }
@@ -776,7 +827,7 @@ Actors Scene::getActorsFromFrame(NxComparisonOperator op, NxU32 frame) {
 Actors& Scene::getActorsFromRegion(SimpleShape* shape, NxShapesType shapesType) {
 	
 	if (mSceneIntersection == 0) {
-		mSceneIntersection = new Intersection(this, shape, shapesType);
+		mSceneIntersection = NxNew(Intersection) Intersection(this, shape, shapesType);
 		return *mSceneIntersection;
 	}
 	
@@ -791,7 +842,7 @@ Actors& Scene::getActorsFromRegion(SimpleShape* shape, NxShapesType shapesType) 
 Actors& Scene::getActorsFromLastRegion(NxShapesType shapesType) {
 	
 	if (mSceneIntersection == 0) {
-		mSceneIntersection = new Intersection(this, new SimpleBox(1), shapesType);
+		mSceneIntersection = NxNew(Intersection) Intersection(this, new SimpleBox(1), shapesType);
 		return *mSceneIntersection;
 	}
 
@@ -804,7 +855,7 @@ Actors& Scene::getActorsFromLastRegion(NxShapesType shapesType) {
 Actors Scene::getActorsFromRaycast(Ogre::Vector3 position, Ogre::Vector3 normal, NxReal range) {
 
 	if (mSceneRayCaster == 0) {
-		mSceneRayCaster = new RayCaster(position, normal, range, RayCaster::RCT_ALL, this);	
+		mSceneRayCaster = NxNew(RayCaster) RayCaster(position, normal, range, RayCaster::RCT_ALL, this);	
 	}
 	else {
 		mSceneRayCaster->setOrigin(position);
@@ -841,16 +892,16 @@ NxU32 Scene::getNbActors() const {
 
 ///////////////////////////////////////////////////////////////////////
 
-Body* Scene::createBody(const NxString& identifier, ShapeBlueprint *firstShapeDescription, const Pose& pose, ActorParams params) {
-	Body* body = new Body(identifier, this, firstShapeDescription, pose, params);
+Body* Scene::createBody(const NxString& identifier, Shape *firstShapeDescription, const Pose& pose, ActorParams params) {
+	Body* body = NxNew(Body) Body(identifier, this, firstShapeDescription, pose, params);
 	mActors.lock(body->getName(), true);
 	return body;
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-Body* Scene::createBody(const NxString& identifier, ShapeBlueprint* firstShapeDescription, const Pose& pose, NodeRenderableParams nrparams, ActorParams params) {
-	Body* body = new Body(identifier, this, firstShapeDescription, pose, nrparams, params);
+Body* Scene::createBody(const NxString& identifier, Shape* firstShapeDescription, const Pose& pose, NodeRenderableParams nrparams, ActorParams params) {
+	Body* body = NxNew(Body) Body(identifier, this, firstShapeDescription, pose, nrparams, params);
 	mActors.lock(body->getName(), true);
 	return body;
 }
@@ -900,7 +951,7 @@ void Scene::destroyCharacter(const NxString &name) {
 #endif
 
 Material* Scene::createMaterial(const NxString& name) {
-	Material *m = new Material(name, this);
+	Material *m = NxNew(Material) Material(name, this);
 	mMaterials.lock(m->getName(), true);
 	mMaterialsByIndex.lock(m->getMaterialIndex(), true);
 	return m;
@@ -917,7 +968,7 @@ void Scene::destroyMaterial(const NxString& name) {
 ///////////////////////////////////////////////////////////////////////
 
 void Scene::_createDefaultShapeGroup() {
-	ShapeGroup* sag = new ShapeGroup(0, "Default", this);
+	ShapeGroup* sag = NxNew(ShapeGroup) ShapeGroup(0, "Default", this);
 	mShapeGroups.lock(sag->getName(), true);
 	mShapeGroupsByIndex.lock(sag->getGroupID(), true);
 }
@@ -925,7 +976,7 @@ void Scene::_createDefaultShapeGroup() {
 ///////////////////////////////////////////////////////////////////////
 
 void Scene::_createDefaultActorGroup() {
-	ActorGroup* dag = new ActorGroup(0, "Default", this);
+	ActorGroup* dag = NxNew(ActorGroup) ActorGroup(0, "Default", this);
 	mActorGroups.lock(dag->getName(), true);
 	mActorGroupsByIndex.lock(dag->getGroupID(), true);
 }
@@ -934,7 +985,7 @@ void Scene::_createDefaultActorGroup() {
 ///////////////////////////////////////////////////////////////////////
 
 void Scene::_createDefaultDominanceGroup() {
-	DominanceGroup* ddg = new DominanceGroup(0, "Default", this);
+	DominanceGroup* ddg = NxNew(DominanceGroup) DominanceGroup(0, "Default", this);
 	mDominanceGroups.lock(ddg->getName(), true);
 	mDominanceGroupsByIndex.lock(ddg->getGroupID(), true);
 }
@@ -942,7 +993,7 @@ void Scene::_createDefaultDominanceGroup() {
 ///////////////////////////////////////////////////////////////////////
 
 ActorGroup*	Scene::createActorGroup(const NxString& name) {
-	ActorGroup* ag = new ActorGroup(name, this);
+	ActorGroup* ag = NxNew(ActorGroup) ActorGroup(name, this);
 	mActorGroups.lock(ag->getName(), true);
 	mActorGroupsByIndex.lock(ag->getGroupID(), true);
 	return ag;
@@ -977,7 +1028,7 @@ ActorGroupsByIndex* Scene::getActorGroupsByIndex() {
 ///////////////////////////////////////////////////////////////////////
 
 ShapeGroup*	Scene::createShapeGroup(const NxString& name) {
-	ShapeGroup* ag = new ShapeGroup(name, this);
+	ShapeGroup* ag = NxNew(ShapeGroup) ShapeGroup(name, this);
 	mShapeGroups.lock(ag->getName(), true);
 	mShapeGroupsByIndex.lock(ag->getGroupID(), true);
 	return ag;	
@@ -1014,7 +1065,7 @@ ShapeGroupsByIndex* Scene::getShapeGroupsByIndex() {
 ///////////////////////////////////////////////////////////////////////
 
 DominanceGroup*	Scene::createDominanceGroup(const NxString& name) {
-	DominanceGroup* ag = new DominanceGroup(name, this);
+	DominanceGroup* ag = NxNew(DominanceGroup) DominanceGroup(name, this);
 	mDominanceGroups.lock(ag->getName(), true);
 	mDominanceGroupsByIndex.lock(ag->getGroupID(), true);
 	return ag;	
@@ -1162,7 +1213,7 @@ void Scene::_unregisterDominanceGroup(const NxString& name) {
 #endif
 
 void Scene::_createDefaultMaterial(NxReal r, NxReal d, NxReal s) {
-	Material *m = new Material(0, "Default", this);
+	Material *m = NxNew(Material) Material(0, "Default", this);
 	m->setAll(r,d,s);
 	mMaterials.lock(m->getName(), true);
 	mMaterialsByIndex.lock(0, true);
@@ -1197,13 +1248,13 @@ void Scene::simulate(NxReal time) {
 	for (Machine* machine = mMachines.begin();machine = mMachines.next();) {
 		machine->simulate(deltaTime);
 	}
-
+#if 0
 #if (NX_USE_CLOTH_API == 1)
 	for(Cloth* cloth = mCloths.begin();cloth = mCloths.next();) {
 		cloth->simulate(deltaTime);
 	}
 #endif
-
+#endif
 	if (mBatchProcessSimulate) {
 
 		for (NxU32 i=0;i < mBatchActorCreation.size();i++) {
@@ -1247,79 +1298,10 @@ void Scene::render() {
 	mSceneRenderer->render();
 }
 
-#if 0
-void Scene::render(NxReal time) {
-
-	if (!mSceneController->Render(time))
-		return;
-
-	time = mSceneController->mRenderTime;
-
-#if (NX_UNSTABLE_USE_SCENE_ACTIVE_TRANSFORM == 1)
-
-	NxU32 nbActors = 0;
-	NxActiveTransform *actors = mScene->getActiveTransforms(nbActors);
-
-	if(nbActors) {
-		NxActorUserData* aud;
-		for(NxU32 i = 0; i < nbActors; ++i) {
-
-			if (actors[i].actor == 0)
-				continue;
-	
-			aud = static_cast<NxActorUserData*>(actors[i].userData);
-
-#	if (NX_USE_CHARACTER_API == 1)
-
-			switch (aud->getType()) {
-				case NxActorUserData::T_Actor:
-					aud->toActor()->render(time);
-				break;
-
-				case NxActorUserData::T_Character:
-					aud->toCharacter()->render(time);
-				break;
-			}
-
-#	else
-			aud->toActor()->render(time);
-#	endif
-
-		}
-	}
-
-#else
-
-	for(Actor* actor = mActors.begin();actor = mActors.next();) {
-		actor->render(time);
-	}
-
-#endif
-
-#if (NX_UNSTABLE_USE_SCENE_ACTIVE_TRANSFORM == 0)
-#	if (NX_USE_CHARACTER_API == 1)
-	if (mControllers_NumSubSteps) {	
-		for(Character* character = mCharacters.begin();character = mCharacters.next();) {
-			character->render(time);
-		}
-	}
-#	endif
-#endif
-
-#if (NX_USE_CLOTH_API == 1)
-	for(Cloth* cloth = mCloths.begin();cloth = mCloths.next();) {
-		cloth->render(time);
-	}
-#endif
-
-}
-
-#endif
-
 ///////////////////////////////////////////////////////////////////////
 
 RevoluteJoint* Scene::createRevoluteJoint(Actor* a, const Ogre::Vector3 &axis, const Ogre::Vector3 &anchor, JointParams jp) {
-	RevoluteJoint* j = new RevoluteJoint(a,axis,anchor,jp);
+	RevoluteJoint* j = NxNew(RevoluteJoint) RevoluteJoint(a,axis,anchor,jp);
 	NxJointID jid = mJoints.count();
 	mJoints.insert(jid, j);
 	mJoints.lock(jid, true);
@@ -1330,7 +1312,7 @@ RevoluteJoint* Scene::createRevoluteJoint(Actor* a, const Ogre::Vector3 &axis, c
 ///////////////////////////////////////////////////////////////////////
 
 RevoluteJoint* Scene::createRevoluteJoint(Actor* a, Actor* b, const Ogre::Vector3 & axis, const Ogre::Vector3 &anchor, JointParams jp) {
-	RevoluteJoint* j = new RevoluteJoint(a,b,axis,anchor,jp);
+	RevoluteJoint* j = NxNew(RevoluteJoint) RevoluteJoint(a,b,axis,anchor,jp);
 	NxJointID jid = mJoints.count();
 	mJoints.insert(jid, j);
 	mJoints.lock(jid, true);
@@ -1341,7 +1323,7 @@ RevoluteJoint* Scene::createRevoluteJoint(Actor* a, Actor* b, const Ogre::Vector
 ///////////////////////////////////////////////////////////////////////
 
 SphericalJoint* Scene::createSphericalJoint(Actor* a, Actor* b, const Ogre::Vector3 &anchor, JointParams jp) {
-	SphericalJoint* j = new SphericalJoint(a,b,anchor,jp);
+	SphericalJoint* j = NxNew(SphericalJoint) SphericalJoint(a,b,anchor,jp);
 	NxJointID jid = mJoints.count();
 	mJoints.insert(jid, j);
 	mJoints.lock(jid, true);
@@ -1352,7 +1334,7 @@ SphericalJoint* Scene::createSphericalJoint(Actor* a, Actor* b, const Ogre::Vect
 ///////////////////////////////////////////////////////////////////////
 
 SphericalJoint* Scene::createSphericalJoint(Actor* a, const Ogre::Vector3 &anchor, JointParams jp) {
-	SphericalJoint* j = new SphericalJoint(a,anchor,jp);
+	SphericalJoint* j = NxNew(SphericalJoint) SphericalJoint(a,anchor,jp);
 	NxJointID jid = mJoints.count();
 	mJoints.insert(jid, j);
 	mJoints.lock(jid, true);
@@ -1363,7 +1345,7 @@ SphericalJoint* Scene::createSphericalJoint(Actor* a, const Ogre::Vector3 &ancho
 ///////////////////////////////////////////////////////////////////////
 
 PrismaticJoint* Scene::createPrismaticJoint(Actor* a, Actor* b, const Ogre::Vector3 &axis, const Ogre::Vector3 &anchor, JointParams jp) {
-	PrismaticJoint* j = new PrismaticJoint(a,b,axis,anchor,jp);
+	PrismaticJoint* j = NxNew(PrismaticJoint) PrismaticJoint(a,b,axis,anchor,jp);
 	NxJointID jid = mJoints.count();
 	mJoints.insert(jid, j);
 	mJoints.lock(jid, true);
@@ -1374,7 +1356,7 @@ PrismaticJoint* Scene::createPrismaticJoint(Actor* a, Actor* b, const Ogre::Vect
 ///////////////////////////////////////////////////////////////////////
 
 PrismaticJoint* Scene::createPrismaticJoint(Actor* a, const Ogre::Vector3 &axis, const Ogre::Vector3 &anchor, JointParams jp) {
-	PrismaticJoint* j = new PrismaticJoint(a,axis,anchor,jp);
+	PrismaticJoint* j = NxNew(PrismaticJoint) PrismaticJoint(a,axis,anchor,jp);
 	NxJointID jid = mJoints.count();
 	mJoints.insert(jid, j);
 	mJoints.lock(jid, true);
@@ -1385,7 +1367,7 @@ PrismaticJoint* Scene::createPrismaticJoint(Actor* a, const Ogre::Vector3 &axis,
 ///////////////////////////////////////////////////////////////////////
 
 CylindricalJoint* Scene::createCylindricalJoint(Actor* a, Actor* b, const Ogre::Vector3 &axis, const Ogre::Vector3 &anchor, JointParams jp) {
-	CylindricalJoint* j = new CylindricalJoint(a,b,axis,anchor,jp);
+	CylindricalJoint* j = NxNew(CylindricalJoint) CylindricalJoint(a,b,axis,anchor,jp);
 	NxJointID jid = mJoints.count();
 	mJoints.insert(jid, j);
 	mJoints.lock(jid, true);
@@ -1396,7 +1378,7 @@ CylindricalJoint* Scene::createCylindricalJoint(Actor* a, Actor* b, const Ogre::
 ///////////////////////////////////////////////////////////////////////
 
 CylindricalJoint* Scene::createCylindricalJoint(Actor* a, const Ogre::Vector3 &axis, const Ogre::Vector3 &anchor, JointParams jp) {
-	CylindricalJoint* j = new CylindricalJoint(a,axis,anchor,jp);
+	CylindricalJoint* j = NxNew(CylindricalJoint) CylindricalJoint(a,axis,anchor,jp);
 	NxJointID jid = mJoints.count();
 	mJoints.insert(jid, j);
 	mJoints.lock(jid, true);
@@ -1407,7 +1389,7 @@ CylindricalJoint* Scene::createCylindricalJoint(Actor* a, const Ogre::Vector3 &a
 ///////////////////////////////////////////////////////////////////////
 
 FixedJoint* Scene::createFixedJoint(Actor* a, Actor* b, JointParams jp) {
-	FixedJoint* j = new FixedJoint(a,b,jp);
+	FixedJoint* j = NxNew(FixedJoint) FixedJoint(a,b,jp);
 	NxJointID jid = mJoints.count();
 	mJoints.insert(jid, j);
 	mJoints.lock(jid, true);
@@ -1419,7 +1401,7 @@ FixedJoint* Scene::createFixedJoint(Actor* a, Actor* b, JointParams jp) {
 ///////////////////////////////////////////////////////////////////////
 
 FixedJoint* Scene::createFixedJoint(Actor* a, JointParams jp) {
-	FixedJoint* j = new FixedJoint(a, jp);
+	FixedJoint* j = NxNew(FixedJoint) FixedJoint(a, jp);
 	NxJointID jid = mJoints.count();
 	mJoints.insert(jid, j);
 	mJoints.lock(jid, true);
@@ -1465,7 +1447,11 @@ void Scene::_unregisterCharacter(const NxString& name) {
 ///////////////////////////////////////////////////////////////////////
 
 void Scene::addFloor() {
-	Actor* actor = new Actor(NxCreateID(0,"Ground"), this, new GroundShape(), Ogre::Vector3(0,0,0), "static:yes");
+	ActorParams ap;
+	ap.setToDefault();
+	ap.mMass = 0;
+	ap.mDensity = 0;
+	Actor* actor = NxNew(Actor) Actor("Ground", this, new Ground(), Pose(), ap);
 	mActors.lock(actor->getName(), true);
 }
 
@@ -1493,7 +1479,7 @@ NxMaterialIndex Scene::getMaterialIndex(const NxString& name) {
 }
 
 ///////////////////////////////////////////////////////////////////////
-
+#if 0
 #if (NX_USE_CLOTH_API == 1)
 
 ///////////////////////////////////////////////////////////////////////
@@ -1559,13 +1545,13 @@ NxU32 Scene::getNbCloths() {
 ///////////////////////////////////////////////////////////////////////
 
 #endif
-
+#endif
 #if (NX_USE_FLUID_API == 1)
 
 ///////////////////////////////////////////////////////////////////////
 
 Fluid*	Scene::createFluid(const Pose& p, FluidParams fp) {
-	Fluid *f = new Fluid(this, p, fp);
+	Fluid *f = NxNew(Fluid) Fluid(this, p, fp);
 	mFluids.lock(f->getName(), true);
 	return f;
 }
@@ -1611,7 +1597,7 @@ Fluids* Scene::getFluids() {
 ///////////////////////////////////////////////////////////////////////
 
 SoftBody* Scene::createSoftBody(const NxString& TetAndMeshFilePrefix, const Pose& pose, SoftBodyParams sp) {
-	SoftBody* softbody = new SoftBody(TetAndMeshFilePrefix, this, pose, sp);
+	SoftBody* softbody = NxNew(SoftBody) SoftBody(TetAndMeshFilePrefix, this, pose, sp);
 	mSoftBodies.lock(softbody->getName(), true);
 	return softbody;
 }
@@ -1619,7 +1605,7 @@ SoftBody* Scene::createSoftBody(const NxString& TetAndMeshFilePrefix, const Pose
 ///////////////////////////////////////////////////////////////////////
 
 SoftBody* Scene::createSoftBody(NxReal width, NxReal height, NxReal depth, const Pose& pose, SoftBodyParams sbp) {
-	SoftBody* softbody = new SoftBody(width, height, depth, this, pose, sbp);
+	SoftBody* softbody = NxNew(SoftBody) SoftBody(width, height, depth, this, pose, sbp);
 	mSoftBodies.lock(softbody->getName(), true);
 	return softbody;
 }
@@ -1678,36 +1664,25 @@ ShapeGroup*	Scene::getShapeGroup(const NxString& identifier) {
 
 ///////////////////////////////////////////////////////////////////////
 
-Trigger* Scene::createTrigger(const NxString& identifier, ShapeBlueprint *firstShapeDescription, const Pose& pose, ActorParams params) {
-	Trigger* trigger = new Trigger(identifier, this, firstShapeDescription, pose, params);
-	mTriggers.lock(trigger->getName(), true);
+Trigger* Scene::createTrigger(SimpleShape* shape, TriggerContactCallback* callback) {
+	Trigger* trigger = NxNew(Trigger) Trigger(shape, callback, this);
+	mSimpleActors.Insert(trigger);
 	return trigger;
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-void Scene::destroyTrigger(const NxString& name) {
-	Trigger* trigger = mTriggers.get(name);
-	if (mTriggers.isLocked(name))
-		delete trigger;
-}
-
-///////////////////////////////////////////////////////////////////////
-
-Trigger* Scene::getTrigger(const NxString& identifier) {
-	return mTriggers.get(identifier);
-}
-
-///////////////////////////////////////////////////////////////////////
-
-Triggers* Scene::getTriggers() {
-	return &mTriggers;
+void Scene::destroyTrigger(Trigger*) {
+//	Trigger* trigger = mTriggers.get(name);
+//	if (mTriggers.isLocked(name))
+//		delete trigger;
 }
 
 ///////////////////////////////////////////////////////////////////////
 
 NxU32	 Scene::getNbTriggers() {
-	return mTriggers.count();
+//	return mTriggers.count();
+	return 0;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -1726,18 +1701,20 @@ void Scene::_unregisterTrigger(const NxString& name) {
 
 #if (NX_USE_FORCEFIELD_API == 1)
 
-ForceField* Scene::createForceField(const NxString& identifier, const Pose& pose, ShapeBlueprint* actorShape, ActorParams aparams, ForceFieldParams fparams) {
-	ForceField* forcefield = new ForceField(identifier, this, pose, actorShape, aparams, fparams);
-	mForceFields.lock(identifier, true);
-	return forcefield;
+ForceField* Scene::createForceField() {
+//	ForceField* forcefield = new ForceField(identifier, this, pose, actorShape, aparams, fparams);
+//	mForceFields.lock(identifier, true);
+//	return forcefield;
+
+	return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-void Scene::destroyForceField(const NxString& name) {
-	ForceField* forcefield = mForceFields.get(name);
-	if (mForceFields.isLocked(name))
-		delete forcefield;
+void Scene::destroyForceField() {
+//	ForceField* forcefield = mForceFields.get(name);
+//	if (mForceFields.isLocked(name))
+//		delete forcefield;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -1840,23 +1817,23 @@ Renderables Scene::getRenderable(NxOgre::Scene::RenderableType type) {
 				if(nbActors == 0)
 					break;
 
-				NxActorUserData* aud;
+				NxUserData* aud;
 				for(NxU32 i = 0; i < nbActors; ++i) {
 
 					if (actors[i].actor == 0)
 						continue;
 				
-					aud = static_cast<NxActorUserData*>(actors[i].userData);
+					aud = static_cast<NxUserData*>(actors[i].userData);
 
 						switch (aud->getType()) {
-							case NxActorUserData::T_Actor:
+							case NxUserData::T_Actor:
 								{
 								Actor* a = aud->toActor();
 								r.actors.insert(a->getName(), a);
 								}
 							break;
 
-							case NxActorUserData::T_Character:
+							case NxUserData::T_Character:
 							//	aud->toCharacter()->render(time);
 							break;
 					}
@@ -1885,5 +1862,71 @@ void Scene::unregisterMachine(Machine* machine) {
 
 ///////////////////////////////////////////////////////////////////////
 
+void Scene::setSleepCallback(SleepCallback* callback, NxOgre::GarbageCollectionPolicy gcp) {
+	mSleepCallback = callback;
+	mSleepCallbackPolicy = gcp;
+}
+
+///////////////////////////////////////////////////////////////////////
+
+SleepCallback* Scene::getSleepCallback() {
+	return mSleepCallback;
+}
+
+///////////////////////////////////////////////////////////////////////
+
+bool Scene::onJointBreak(NxReal,NxJoint &) {
+
+	// Call the JointCallback here.
+
+	// (Delete the joint here.
+	return false; // False, doesn't delete the joint. Just been deleted there.
+				  // But may have to delete the Joint, but not release it from the scene.
+				  // then return true..... Some testing needed.
+}
+
+///////////////////////////////////////////////////////////////////////
+
+void Scene::onWake(NxActor **actors_iterator, NxU32 count) {
+	
+	if (mSleepCallback == 0)
+		return;
+
+	while(count--) {
+		NxActor* actor = *actors_iterator;
+
+		if (actor->userData == 0)
+			return;
+
+		NxUserData* ud = static_cast<NxUserData*>(actor->userData);
+		mSleepCallback->ActorWake(ud->toActor());
+
+		actors_iterator++;
+	}
+
+}
+
+///////////////////////////////////////////////////////////////////////
+
+void Scene::onSleep(NxActor **actors_iterator, NxU32 count) {
+	
+	if (mSleepCallback == 0)
+		return;
+
+	while(count--) {
+		NxActor* actor = *actors_iterator;
+
+		if (actor->userData == 0)
+			return;
+
+		NxUserData* ud = static_cast<NxUserData*>(actor->userData);
+		mSleepCallback->ActorSleep(ud->toActor());
+
+		actors_iterator++;
+	}
+
+}
+
+///////////////////////////////////////////////////////////////////////
 
 }; //End of NxOgre namespace.

@@ -1,21 +1,23 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreRaycaster.h
+ *  \brief   Header for the RayCastHist struct and RayCaster class.
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #ifndef __NXOGRE_RAYCASTER_H__
 #define __NXOGRE_RAYCASTER_H__
@@ -26,7 +28,7 @@
 #include "OgreVector3.h"				// For HitImpacts and HitNormal
 namespace NxOgre {
 
-	struct NxExport RayCastHit {
+	struct NxPublicClass RayCastHit {
 
 			NxRaycastHit	mRaycastHit;
 
@@ -39,7 +41,7 @@ namespace NxOgre {
 
 	};
 
-	class NxExport RayCaster : public NxUserRaycastReport {
+	class NxPublicClass RayCaster : public NxUserRaycastReport {
 		
 		friend class Scene;
 
@@ -62,11 +64,11 @@ namespace NxOgre {
 		/// Raycast with a specific type of raycast.
 		/// Simply return true if the ray that is specified hits any shape’s axis aligned bounding box, or the shape itself. 
 		/// No actor is returned.
-		/// @param origin Origin of the ray
-		/// @param direction Direction of the ray
-		/// @param distance maxDistance The furthest the ray will go.
-		/// @param RayCastType Type of ray cast
-		/// @param Scene* Scene to ray cast into.
+		/// \param origin Origin of the ray
+		/// \param direction Direction of the ray
+		/// \param distance maxDistance The furthest the ray will go.
+		/// \param RayCastType Type of ray cast
+		/// \param Scene* Scene to ray cast into.
 		/// 
 		/// Use RayCaster::cast() to cast the ray, and the result will be if the ray hit anything or not.
 		RayCaster(Ogre::Vector3 origin, Ogre::Vector3 direction, NxReal maxDistance, Scene*);
@@ -75,11 +77,11 @@ namespace NxOgre {
 		/// Any - Just returns if the ray hit anything or not, which is the result of RayCaster::cast.
 		/// Closest - Same as above but the actor is returned through RayCaster::getClosestActor();
 		/// All - Same as above but with all actors the ray went through, Use RayCaster::mActors to access them.
-		/// @param origin Origin of the ray
-		/// @param direction Direction of the ray
-		/// @param distance maxDistance The furthest the ray will go.
-		/// @param RayCastType Type of ray cast
-		/// @param Scene* Scene to ray cast into.
+		/// \param origin Origin of the ray
+		/// \param direction Direction of the ray
+		/// \param distance maxDistance The furthest the ray will go.
+		/// \param RayCastType Type of ray cast
+		/// \param Scene* Scene to ray cast into.
 		RayCaster(Ogre::Vector3 origin, Ogre::Vector3 direction, NxReal maxDistance, RayCastType, Scene*);
 
 		/// RayCaster destructor

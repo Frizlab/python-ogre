@@ -1,28 +1,31 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreOgreResourceSystem.cpp
+ *  \see     NxOgreOgreResourceSystem.h
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #include "NxOgreStable.h"
 #include "NxOgreOgreResourceSystem.h"
+#include "NxOgreOgreResourceStream.h"
 #include "NxOgreResourceManager.h"
-#include "NxOgreMaterial.h"
 
 #include "OgreResourceGroupManager.h"
+
 namespace NxOgre {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -102,194 +105,6 @@ void OgreResourceSystem::loadThese(ResourceAccessList) {
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//////////////////////////////////////////////////////////////////////
-
-OgreResourceStream::OgreResourceStream(ResourceIdentifier identifier) : ResourceStream(identifier) {
-	reuse(identifier);
-}
-
-//////////////////////////////////////////////////////////////////////
-
-OgreResourceStream::OgreResourceStream(ResourceIdentifier identifier, void* ds) : ResourceStream(identifier) {
-	// Temp: Check first.
-	ds = static_cast<Ogre::DataStream*>(ds);
-}
-
-//////////////////////////////////////////////////////////////////////
-
-OgreResourceStream::~OgreResourceStream() {
-	close();
-}
-
-//////////////////////////////////////////////////////////////////////
-
-void OgreResourceStream::close() {
-	data->close();
-}
-
-//////////////////////////////////////////////////////////////////////
-
-void OgreResourceStream::seek(long p)	 {
-	data->seek(p);
-}
-
-//////////////////////////////////////////////////////////////////////
-
-void OgreResourceStream::skip(long p) {
-	data->skip(p);
-}
-
-//////////////////////////////////////////////////////////////////////
-
-size_t OgreResourceStream::tell() const	{
-	return data->tell();
-}					
-
-//////////////////////////////////////////////////////////////////////
-
-NxU32 OgreResourceStream::size() const {
-	return data->size();
-}
-
-//////////////////////////////////////////////////////////////////////
-
-void OgreResourceStream::rewind() {
-	seek(0);
-}
-
-//////////////////////////////////////////////////////////////////////
-
-void OgreResourceStream::reuse(ResourceIdentifier fileName) {
-	
-	if (!data.isNull())
-		close();
-
-
-	// Remove the ogre:// bit
-	fileName = fileName.substr(7, fileName.length() - 7);
-	Ogre::StringUtil::trim(fileName);
-
-	data = Ogre::ResourceGroupManager::getSingleton().openResource(fileName);
-
-	if (data.isNull())
-		NxThrow_Error("Ogre DataStream '" + fileName + "' could not be opened for reading");
-
-}
-
-//////////////////////////////////////////////////////////////////////
-
-unsigned char OgreResourceStream::getUChar() const {
-	unsigned char d=0;data->read(&d, sizeof(unsigned char));
-	return d;
-}
-
-//////////////////////////////////////////////////////////////////////
-
-NxU16 OgreResourceStream::getShort() const {
-	NxU16 d=0;data->read(&d, sizeof(NxU16));
-	return d;
-}
-
-//////////////////////////////////////////////////////////////////////
-
-unsigned int OgreResourceStream::getUInt() const{
-	unsigned int d=0;data->read(&d, sizeof(unsigned int));
-	return d;
-}
-
-//////////////////////////////////////////////////////////////////////
-
-float OgreResourceStream::getFloat() const{
-	float d=0;data->read(&d, sizeof(float));
-	return d;
-}
-
-//////////////////////////////////////////////////////////////////////
-
-double OgreResourceStream::getDouble() const{
-	double d=0;data->read(&d, sizeof(double));
-	return d;
-}
-
-//////////////////////////////////////////////////////////////////////
-
-std::string OgreResourceStream::getString()	const {
-
-	std::stringstream ss;
-	char c;
-
-	while (!data->eof()) {
-		data->read(&c, sizeof(NxU8));
-		if (c == 0) break;
-		ss << c;
-	}
-
-	return ss.str();
-}
-
-//////////////////////////////////////////////////////////////////////
-
-void OgreResourceStream::get(void* buffer, size_t size) const {
-	data->read(buffer, size);
-}
-
-//////////////////////////////////////////////////////////////////////
-
-
-
-#if 0
-
-//////////////////////////////////////////////////////////////////////
-
-NxString OgreResourceStream::readString()	const	{
-	return NxString();
-}
-
-//////////////////////////////////////////////////////////////////////
-
-NxStream& OgreResourceStream::storeString(NxString)	{
-
-	return *this;
-}
-
-//////////////////////////////////////////////////////////////////////
-#endif
 #if 0
 ResourceSystem::ResourceType OgreResourceStream::getResourceType() {
 	

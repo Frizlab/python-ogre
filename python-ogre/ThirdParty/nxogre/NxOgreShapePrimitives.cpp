@@ -1,266 +1,272 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreShapePrimitives.cpp
+ *  \see     NxOgreShapePrimitives.h
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #include "NxOgreStable.h"
 #include "NxOgreShapePrimitives.h"
-#include "NxOgreShapeBlueprintPrimitives.h"	// For CubeShape
 #include "NxOgreActor.h"
 #include "NxOgreHelpers.h"
+#include "NxOgreUserData.h"
 
 namespace NxOgre {
 
-////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
-Ground::Ground(GroundShape& desc, Actor* actor, NxArray<NxShapeDesc*>& shapes) : Shape(actor) {
-	desc.mShapeDescription.userData = this;
+Ground::Ground(NxReal d, Ogre::Vector3 n, const ShapeParams& params)
+: Shape(&mShapeDescription, params)
+{
+	mShapeDescription.d = d;
+	mShapeDescription.normal = NxConvert<NxVec3, Ogre::Vector3>(n);
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
-Ground::Ground(GroundShape& desc, Actor* actor) : Shape(actor)  {
-	desc.mShapeDescription.userData = this;	
+Ground::Ground(NxReal d, NxVec3 n, const ShapeParams& params)
+: Shape(&mShapeDescription, params)
+{
+	mShapeDescription.d = d;
+	mShapeDescription.normal = n;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
 Ground::~Ground() {
+	// Shape does not get released, as most of the time the destruction of
+	// this shape, shortly results in the shape's actor.
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
-void Ground::_bindNxShapeToShape(NxShape* s) {
-	if (s->isPlane()) {
-		mShape = static_cast<NxPlaneShape*>(s);
+void Ground::createShape(NxActor* actor, NxShapeIndex index, Scene* scene) {
+	extendedParamsToDescription(scene, mParams, &mShapeDescription);
+	mShapeIndex = index;
+	mActor = actor;
+	mUserData = new NxUserData(this, NxUserData::T_Shape);
+	mShapeDescription.userData = mUserData;
+	if (mParams.mTrigger) {
+		mTriggerCallback = mParams.mTriggerCallback;
+		mShapeDescription.shapeFlags |= NX_TRIGGER_ENABLE;
 	}
-	else {
-		NxThrow_Warning("Attempted to bind wrong NxShape to NxOgre shape");
-	}
+	NxShape* shape = actor->createShape(mShapeDescription);
+	setNxShape(shape);
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
+
+void Ground::createShape(NxArray<NxShapeDesc*>& shapes, NxShapeIndex index, Scene* scene) {
+	extendedParamsToDescription(scene, mParams, &mShapeDescription);
+	mUserData = new NxUserData(this, NxUserData::T_Shape);
+	mShapeDescription.userData = mUserData;
+	if (mParams.mTrigger) {
+		mTriggerCallback = mParams.mTriggerCallback;
+		mShapeDescription.shapeFlags |= NX_TRIGGER_ENABLE;
+	}
+	shapes.push_back(&mShapeDescription);
+	mShapeIndex = index;
+}
+
+/////////////////////////////////////////////////////////////
 
 void Ground::releaseShape() {
-	mActor->getNxActor()->releaseShape(*mShape);
+	mActor->releaseShape(*mNxShape);
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
-ShapeBlueprint*	Ground::getBlueprint() {
-	
-	
-	NxPlaneShapeDesc desc;
-	ShapeParams params;
-	params.setToDefault();
-
-	mShape->saveToDesc(desc);	
-	__descriptionToParams(desc, params);
-
-	GroundShape* shape = new GroundShape(desc.d, NxConvert<Ogre::Vector3, NxVec3>(desc.normal), params);
-
-	return shape;
+Cube::Cube(Ogre::Vector3 size, const ShapeParams& params)
+: Shape(&mShapeDescription, params)
+{
+	mShapeDescription.dimensions.set(NxConvert<NxVec3, Ogre::Vector3>(0.5f * size));
 }
 
+/////////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////////////////////////////////////////////
-
-void Ground::copyTo(Actor* a) {
-	// ...
+Cube::Cube(NxVec3 size, const ShapeParams& params)
+: Shape(&mShapeDescription, params)
+{
+	mShapeDescription.dimensions.set(size.x * 0.5f, size.y * 0.5f, size.z * 0.5f);
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
-void Ground::moveTo(Actor*) {
-	// ...
+Cube::Cube(NxReal size, const ShapeParams& params)
+: Shape(&mShapeDescription, params)
+{
+	mShapeDescription.dimensions.set(size * 0.5f, size * 0.5f, size * 0.5f);
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
-Cube::Cube(CubeShape& desc, Actor* actor, NxArray<NxShapeDesc*>& shapes, Skeleton* skeleton) : Shape(actor), mShape(0) {
-	
-	desc.mShapeDescription.userData = this;
-	mSkeleton = skeleton;
-	
+Cube::Cube(NxReal sizeX, NxReal sizeY, NxReal sizeZ, const ShapeParams& params)
+: Shape(&mShapeDescription, params)
+{
+	mShapeDescription.dimensions.set(sizeX * 0.5f, sizeY * 0.5f, sizeZ * 0.5f);
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
-
-Cube::Cube(CubeShape& desc, Actor* actor, Skeleton* skeleton) : Shape(actor), mShape(0)  {
-	
-	desc.mShapeDescription.userData = this;	
-	mSkeleton = skeleton;
-
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
 Cube::~Cube() {
-
+	// Shape does not get released, as most of the time the destruction of
+	// this shape, shortly results in the shape's actor.
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
-void Cube::_bindNxShapeToShape(NxShape* s) {
-
-	mBaseShape = s;
-
-	
-	if (s->isBox()) {
-		mShape = s->isBox();
+void Cube::createShape(NxActor* actor, NxShapeIndex index, Scene* scene) {
+	extendedParamsToDescription(scene, mParams, &mShapeDescription);
+	mShapeIndex = index;
+	mActor = actor;
+	mUserData = new NxUserData(this, NxUserData::T_Shape);
+	mShapeDescription.userData = mUserData;
+	if (mParams.mTrigger) {
+		mTriggerCallback = mParams.mTriggerCallback;
+		printf("Trigger callback ptr = %p", mTriggerCallback);
+		mShapeDescription.shapeFlags |= NX_TRIGGER_ENABLE;
 	}
-#ifdef NX_DEBUG
-	else {
-		NxThrow_Warning("Attempted to bind wrong NxShape to NxOgre shape");
-	}
-#endif
-
+	NxShape* shape = actor->createShape(mShapeDescription);
+	setNxShape(shape);
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
+
+void Cube::createShape(NxArray<NxShapeDesc*>& shapes, NxShapeIndex index, Scene* scene) {
+	extendedParamsToDescription(scene, mParams, &mShapeDescription);
+	mUserData = new NxUserData(this, NxUserData::T_Shape);
+	mShapeDescription.userData = mUserData;
+	if (mParams.mTrigger) {
+		mTriggerCallback = mParams.mTriggerCallback;
+		printf("Trigger callback ptr = %p", mTriggerCallback);
+		mShapeDescription.shapeFlags |= NX_TRIGGER_ENABLE;
+	}
+	shapes.push_back(&mShapeDescription);
+	mShapeIndex = index;
+}
+
+/////////////////////////////////////////////////////////////
 
 void Cube::releaseShape() {
-	mActor->getNxActor()->releaseShape(*mBaseShape);
+	mActor->releaseShape(*mNxShape);
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
-ShapeBlueprint*	Cube::getBlueprint() {
-		
-	NxBoxShapeDesc desc;
-	ShapeParams params;
-	params.setToDefault();
-	
-	mShape->saveToDesc(desc);	
-	__descriptionToParams(desc, params);
-
-	CubeShape* shape = new CubeShape(desc.dimensions.x * 2, desc.dimensions.y * 2, desc.dimensions.z * 2, params);
-
-	return shape;
+Sphere::Sphere(NxReal radius, const ShapeParams& params)
+: Shape(&mShapeDescription, params)
+{
+	mShapeDescription.radius = radius;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
-
-void Cube::copyTo(Actor* a) {
-
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-
-void Cube::moveTo(Actor*) {
-	// ...
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-
-Sphere::Sphere(SphereShape& desc, Actor* actor, NxArray<NxShapeDesc*>& shapes) : Shape(actor) {
-	desc.mShapeDescription.userData = this;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-
-Sphere::Sphere(SphereShape& desc, Actor* actor) : Shape(actor) {
-	desc.mShapeDescription.userData = this;	
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
 Sphere::~Sphere() {
+	// Shape does not get released, as most of the time the destruction of
+	// this shape, shortly results in the shape's actor.
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
-void Sphere::_bindNxShapeToShape(NxShape* s) {
-	
-	mBaseShape = s;
-
-	if (s->isSphere()) {
-		mShape = static_cast<NxSphereShape*>(s);
+void Sphere::createShape(NxActor* actor, NxShapeIndex index, Scene* scene) {
+	extendedParamsToDescription(scene, mParams, &mShapeDescription);
+	mShapeIndex = index;
+	mUserData = new NxUserData(this, NxUserData::T_Shape);
+	mShapeDescription.userData = mUserData;
+	if (mParams.mTrigger) {
+		mTriggerCallback = mParams.mTriggerCallback;
+		mShapeDescription.shapeFlags |= NX_TRIGGER_ENABLE;
 	}
-	else {
-		NxThrow_Warning("Attempted to bind wrong NxShape to NxOgre shape");
+	NxShape* shape = actor->createShape(mShapeDescription);
+	setNxShape(shape);
+}
+
+/////////////////////////////////////////////////////////////
+
+void Sphere::createShape(NxArray<NxShapeDesc*>& shapes, NxShapeIndex index, Scene* scene) {
+	extendedParamsToDescription(scene, mParams, &mShapeDescription);
+	mUserData = new NxUserData(this, NxUserData::T_Shape);
+	mShapeDescription.userData = mUserData;
+	if (mParams.mTrigger) {
+		mTriggerCallback = mParams.mTriggerCallback;
+		mShapeDescription.shapeFlags |= NX_TRIGGER_ENABLE;
 	}
-
+	shapes.push_back(&mShapeDescription);
+	mShapeIndex = index;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
-ShapeBlueprint*	Sphere::getBlueprint() {
-	
-	NxSphereShapeDesc desc;
-	ShapeParams params;
-	params.setToDefault();
-	
-	mShape->saveToDesc(desc);	
-	__descriptionToParams(desc, params);
-
-	CubeShape* shape = new CubeShape(desc.radius, params);
-
-	return shape;
-
+void Sphere::releaseShape() {
+	mActor->releaseShape(*mNxShape);
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
-Capsule::Capsule(CapsuleShape& desc, Actor* actor, NxArray<NxShapeDesc*>& shapes) : Shape(actor)  {
-	desc.mShapeDescription.userData = this;
+Capsule::Capsule(NxReal radius, NxReal height, const ShapeParams& params)
+: Shape(&mShapeDescription, params)
+{
+	mShapeDescription.radius = radius;
+	mShapeDescription.height = height;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
-
-Capsule::Capsule(CapsuleShape& desc, Actor* actor) : Shape(actor)  {
-	desc.mShapeDescription.userData = this;	
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
 Capsule::~Capsule() {
+	// Shape does not get released, as most of the time the destruction of
+	// this shape, shortly results in the shape's actor.
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
-void Capsule::_bindNxShapeToShape(NxShape* s) {
-	
-	mBaseShape = s;
-
-	if (s->isCapsule()) {
-		mShape = static_cast<NxCapsuleShape*>(s);
+void Capsule::createShape(NxActor* actor, NxShapeIndex index, Scene* scene) {
+	extendedParamsToDescription(scene, mParams, &mShapeDescription);
+	mShapeIndex = index;
+	mUserData = new NxUserData(this, NxUserData::T_Shape);
+	mShapeDescription.userData = mUserData;
+	if (mParams.mTrigger) {
+		mTriggerCallback = mParams.mTriggerCallback;
+		mShapeDescription.shapeFlags |= NX_TRIGGER_ENABLE;
 	}
-	else {
-		NxThrow_Warning("Attempted to bind wrong NxShape to NxOgre shape");
+	NxShape* shape = actor->createShape(mShapeDescription);
+	setNxShape(shape);
+}
+
+/////////////////////////////////////////////////////////////
+
+void Capsule::createShape(NxArray<NxShapeDesc*>& shapes, NxShapeIndex index, Scene* scene) {
+	extendedParamsToDescription(scene, mParams, &mShapeDescription);
+	mUserData = new NxUserData(this, NxUserData::T_Shape);
+	mShapeDescription.userData = mUserData;
+	if (mParams.mTrigger) {
+		mTriggerCallback = mParams.mTriggerCallback;
+		mShapeDescription.shapeFlags |= NX_TRIGGER_ENABLE;
 	}
-
+	shapes.push_back(&mShapeDescription);
+	mShapeIndex = index;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
-ShapeBlueprint*	Capsule::getBlueprint() {
-	
-	NxCapsuleShapeDesc desc;
-	ShapeParams params;
-	params.setToDefault();
-	
-	mShape->saveToDesc(desc);	
-	__descriptionToParams(desc, params);
-
-	CapsuleShape* shape = new CapsuleShape(desc.radius, desc.height, params);
-
-	return shape;
-
+void Capsule::releaseShape() {
+	mActor->releaseShape(*mNxShape);
 }
+
+/////////////////////////////////////////////////////////////
 
 }; //End of NxOgre namespace.
+

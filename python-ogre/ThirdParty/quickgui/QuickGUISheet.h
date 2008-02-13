@@ -12,7 +12,7 @@ namespace QuickGUI
 	/** Represents a transparent area for holding widgets.
 		@remarks
 		The Sheet class is derived from a Window, although it
-		differs because it is the size of the screen.  
+		differs because it is the size of the screen.
 		In addition, the Sheet class can create Windows.
 	*/
 	class _QuickGUIExport Sheet :
@@ -33,11 +33,12 @@ namespace QuickGUI
         */
 		Window* createWindow();
 		Window* createWindow(const std::string& name);
-		
+
 		virtual Widget* getTargetWidget(const Point& pixelPosition);
+		virtual const Widget* getTargetWidget(const Point& pixelPosition) const;
 		Window* getWindow(const std::string& name);
 
-		virtual bool overTransparentPixel(const Point& mousePixelPosition);
+		virtual bool overTransparentPixel(const Point& mousePixelPosition) const;
 
 		/**
 		* Applies the texture to the Quad if exists in some form, and updates the Image used for

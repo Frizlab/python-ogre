@@ -1,21 +1,23 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreResourceStream.h
+ *  \brief   Header for the ResourceStream classes.
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #ifndef __NXOGRE_RESOURCE_STREAM_H__
 #define __NXOGRE_RESOURCE_STREAM_H__
@@ -30,12 +32,12 @@ namespace NxOgre {
 	/** An abstract pool of data to write or to read to, to be used with the ResourceStreamPtr and a specific
 		ResourceStream
 
-		@see ResourceStreamPtr
-		@see FileResourceStream
-		@see MemoryResourceStream
-		@see OgreResourceStream
+		\see ResourceStreamPtr
+		\see FileResourceStream
+		\see MemoryResourceStream
+		\see OgreResourceStream
 	*/
-	class NxExport ResourceStream : public NxStream {
+	class NxPublicClass ResourceStream : public NxStream {
 
 		friend class ResourceStreamPtr;
 
@@ -66,7 +68,7 @@ namespace NxOgre {
 			virtual		size_t			tell()		const	{return 0;}							
 			
 			/** Reset the readPointer to the beginning.
-				@note <strong>Must</strong> be used with MemoryStreams after writing and reading is about to commence.
+				\note <strong>Must</strong> be used with MemoryStreams after writing and reading is about to commence.
 			*/
 			virtual		void			rewind()			{}
 		
@@ -114,75 +116,75 @@ namespace NxOgre {
 
 		protected:
 
-			/** PhysX Interface. Do not override or use. @See ResourceStreamPtr::getUChar
-				@internal
+			/** PhysX Interface. Do not override or use. \see ResourceStreamPtr::getUChar
+				\internal
 			*/
 			NxU8	readByte()		const	{return getUChar();}
 
-			/** PhysX Interface. Do not override or use. @See ResourceStreamPtr::getUChar
-				@internal
+			/** PhysX Interface. Do not override or use. \see ResourceStreamPtr::getUChar
+				\internal
 			*/
 			NxU16	readWord()		const	{return getShort();}
 
-			/** PhysX Interface. Do not override or use. @See ResourceStreamPtr::getUChar
-				@internal
+			/** PhysX Interface. Do not override or use. \see ResourceStreamPtr::getUChar
+				\internal
 			*/
 			NxU32	readDword()		const	{return getUInt();}
 
-			/** PhysX Interface. Do not override or use. @See ResourceStreamPtr::getUChar
-				@internal
+			/** PhysX Interface. Do not override or use. \see ResourceStreamPtr::getUChar
+				\internal
 			*/
 			NxReal	readFloat()		const	{return getFloat();}
 
 			
-			/** PhysX Interface. Do not override or use. @See ResourceStreamPtr::getUChar
-				@internal
+			/** PhysX Interface. Do not override or use. \see ResourceStreamPtr::getUChar
+				\internal
 			*/
 			double	readDouble()	const	{return getDouble();}
 			
 			
-			/** PhysX Interface. Do not override or use. @See ResourceStreamPtr::getUChar
-				@internal
+			/** PhysX Interface. Do not override or use. \see ResourceStreamPtr::getUChar
+				\internal
 			*/
 			void	readBuffer(void* buffer, NxU32 size) const {return get(buffer, size);}
 
 			
-			/** PhysX Interface. Do not override or use. @See ResourceStreamPtr::getUChar
-				@internal
+			/** PhysX Interface. Do not override or use. \see ResourceStreamPtr::getUChar
+				\internal
 			*/
 			NxStream&	storeByte(NxU8 b)		{writeUChar(b);return *this;}
 
 			
-			/** PhysX Interface. Do not override or use. @See ResourceStreamPtr::getUChar
-				@internal
+			/** PhysX Interface. Do not override or use. \see ResourceStreamPtr::getUChar
+				\internal
 			*/
 			NxStream&	storeWord(NxU16 w)		{writeUShort(w);return *this;}
 
 			
 			/** PhysX Interface. Do not override or use.
-				@See ResourceStreamPtr::storeFloat
-				@internal
+				\see ResourceStreamPtr::storeFloat
+				\internal
 			*/
 			NxStream&	storeDword(NxU32 d)		{writeUInt(d);return *this;}
 
 			
 			/** PhysX Interface. Do not override or use.
-				@See ResourceStreamPtr::storeFloat
-				@internal
+				\see ResourceStreamPtr::storeFloat
+				\internal
 			*/
 			NxStream&	storeFloat(NxReal f)	{writeFloat(f);return *this;}
 
 			
 			/** PhysX Interface. Do not override or use.
-				@See ResourceStreamPtr::storeDouble
-				@internal
+				\see ResourceStreamPtr::storeDouble
+				\internal
 			*/
 			NxStream&	storeDouble(NxF64 f)	{writeDouble(f);return *this;}
 
 			
 			/** PhysX Interface. Do not override or use.
-				@See ResourceStreamPtr::store
-				@internal
+				\see ResourceStreamPtr::store
+				\internal
 			*/
 			NxStream&	storeBuffer(const void* buffer, NxU32 size)	{write(buffer, size);return *this;}
 

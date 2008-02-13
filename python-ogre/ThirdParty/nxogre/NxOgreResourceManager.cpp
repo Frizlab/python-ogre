@@ -1,21 +1,23 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreResourceManager.cpp
+ *  \see     NxOgreResourceManager.h
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #include "NxOgreStable.h"
 #include "NxOgreResourceManager.h"
@@ -31,6 +33,8 @@
 #include "NxOgreFileResourceSystem.h"
 #include "NxOgreOgreResourceSystem.h"
 #include "NxOgreContainer.h"
+#include "NxOgreResourceMesh.h"
+#include "NxOgreDynamicMesh.h"
 
 namespace NxOgre {
 
@@ -46,7 +50,7 @@ ResourceManager* ResourceManager::mResourceManager = 0;
 ResourceManager::ResourceManager(PhysXDriver* driver) {
 
 	if (mResourceManager) {
-		NxThrow_Error("ResourceManager has already created.");
+		NxThrow("ResourceManager has already created.");
 		return;
 	}
 
@@ -77,13 +81,14 @@ ResourceManager::~ResourceManager() {
 	// Remove every soft body
 
 	// Remove every cloth
+	mClothMeshes.destroyAndEraseAll();
 
 	// Delete every material alias
 	mMaterialAliases.destroyAllOwned();
 
 	////////////////////////////////////
 	
-	#ifdef NX_DEBUG
+	#if (NX_DEBUG == 1)
 		if (mDriver)
 			mResourceSystems.dumpToConsole();
 	#endif
@@ -104,7 +109,7 @@ void ResourceManager::addResourceSystem(const NxString& identifier, ResourceSyst
 		mResourceSystems.lock(identifier, true);
 
 	if (mDriver)
-		NxDebug("Added " + identifier + " as Resource System");
+		NxDebug(NxString("Added " + identifier + " as Resource System").c_str());
 
 }
 
@@ -196,7 +201,7 @@ bool ResourceManager::loadUnknownNXS(MeshIdentifier identifier, ResourceStreamPt
 	std::cout << "Header is = " << hdr << std::endl;
 
 	if (NxString(hdr) != "NXS") {
-		NxThrow_Warning("'" + identifier + "' is not a NXS file!");
+		NxThrow(NxString("'" + identifier + "' is not a NXS file!").c_str());
 		resource->rewind();
 		return false;
 	}

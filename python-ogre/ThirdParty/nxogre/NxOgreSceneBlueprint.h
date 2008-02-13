@@ -114,7 +114,7 @@ namespace NxOgre {
 
 				// NxArray< NxMaterialDesc * >                    mMaterials;
 				
-				List<Blueprints::ActorBlueprint*>				  mActors;
+//////////				List<Blueprints::ActorBlueprint*>				  mActors;
 
 				// NxArray< NxJointDesc *>                        mJoints;
 				

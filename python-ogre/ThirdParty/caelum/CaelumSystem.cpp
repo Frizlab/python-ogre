@@ -2,7 +2,7 @@
 This file is part of Caelum.
 See http://www.ogre3d.org/wiki/index.php/Caelum 
 
-Copyright (c) 2006-2007 Caelum team. See Contributors.txt for details.
+Copyright (c) 2006-2008 Caelum team. See Contributors.txt for details.
 
 Caelum is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published
@@ -80,6 +80,9 @@ CaelumSystem::CaelumSystem
     }
     if (componentsToCreate & CAELUM_COMPONENT_SKY_DOME) {
 		this->setSkyDome (new SkyDome (mSceneMgr));
+    }
+    if (componentsToCreate & CAELUM_COMPONENT_SOLAR_SYSTEM_MODEL) {
+        this->setSolarSystemModel (new SolarSystemModel ());
     }
     if (componentsToCreate & CAELUM_COMPONENT_SUN) {
 		this->setSun (new Sun (mSceneMgr));
@@ -184,24 +187,21 @@ bool CaelumSystem::frameStarted (const Ogre::FrameEvent &e) {
 
 	if (mUniversalClock->update (e.timeSinceLastFrame)) {
 		// Call every listener before doing anything
-		if (!fireStartedEvent (e))
+        if (!fireStartedEvent (e)) {
 			return false;
+        }
 
-        // Get relative time of the day.
-        float relDayTime = mUniversalClock->getCurrentRelativeDayTime ();
+        // Get current julian day.
+        LongReal julDay = mUniversalClock->getJulianDay ();
+        LongReal relDayTime = fmod(julDay, 1);
 
         // Get the sun's direction.
         Ogre::Vector3 sunDir;
-        if (getSun ()) {
-            sunDir = getSun ()->getSunDirection();
+        if (getSolarSystemModel ()) {
+            sunDir = getSolarSystemModel ()->getSunDirection(julDay);
         } else {
             sunDir = Ogre::Vector3::UNIT_Y;
         }
-           
-        // Update sun.
-		if (getSun ()) {
-			getSun ()->update (relDayTime);
-		}
 
         // Update starfield
 		if (getStarfield ()) {
@@ -213,16 +213,21 @@ bool CaelumSystem::frameStarted (const Ogre::FrameEvent &e) {
 			getSkyDome ()->setSunDirection (sunDir);
 		}
 
-        // Init fog properties from sky colour model.
+        // Init various properties from sky colour model.
         double fogDensity;
         Ogre::ColourValue fogColour;
+        Ogre::ColourValue sunLightColour;
+        Ogre::ColourValue sunSphereColour;
         if (getSkyColourModel ()) {
             fogDensity = getSkyColourModel ()->getFogDensity (relDayTime, sunDir);
             fogDensity *= mGlobalFogDensityMultiplier;
             fogColour = mSkyColourModel->getFogColour (relDayTime, sunDir);
+            sunLightColour = getSkyColourModel ()->getSunLightColour (relDayTime, sunDir);
+            sunSphereColour = getSkyColourModel ()->getSunSphereColour (relDayTime, sunDir);
         } else {
             fogDensity = 0;
             fogColour = Ogre::ColourValue::Black;
+            sunLightColour = sunSphereColour = Ogre::ColourValue::White;
         }
 
         // Update scene fog.
@@ -238,28 +243,21 @@ bool CaelumSystem::frameStarted (const Ogre::FrameEvent &e) {
 		    getGroundFog ()->setDensity (fogDensity * mGroundFogDensityMultiplier);
 		}
 
-        // Set sun colours.
+        // Update sun
 		if (getSun () && getSkyColourModel ()) {
-			mSun->setSunSphereColour (getSkyColourModel ()->getSunSphereColour (relDayTime, sunDir));
-			mSun->setSunLightColour (getSkyColourModel ()->getSunLightColour (relDayTime, sunDir));
+			mSun->update (sunDir, sunLightColour, sunSphereColour);
 		}
+
+        // Update clouds
+        if (getClouds()) {
+            mClouds->update (mUniversalClock->getJulianSecondDifference(),
+				    sunDir, sunLightColour, fogColour);
+	    }
 
 		// Call every listener before quiting
         if (!fireFinishedEvent (e)) {
 			return false;
         }
-	}
-
-    // Update clouds
-	// This has to be moved out of here, but Universal clock doesn't calculate deltaT
-    // Maybe it's better to update everything every frame?
-    if (getClouds()) {
-		double time = mUniversalClock->getCurrentRelativeDayTime ();
-		Ogre::Vector3 sunDir = getSun() ? mSun->getSunDirection() : Ogre::Vector3::UNIT_Y;
-		mClouds->update (e.timeSinceLastFrame * mUniversalClock->getTimeScale(),
-				getSun () ? mSun->getSunDirection() : Ogre::Vector3::UNIT_Y,
-				getSun () ? mSun->getSunLightColour() : Ogre::ColourValue::White,
-				getSkyColourModel() ? mSkyColourModel->getFogColour (time, sunDir) : Ogre::ColourValue::Black);
 	}
 
 	return true;

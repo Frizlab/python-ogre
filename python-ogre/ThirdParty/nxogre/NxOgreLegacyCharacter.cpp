@@ -1,21 +1,23 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreLegacyCharacter.cpp
+ *  \legacy
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #include "NxOgreStable.h"
 
@@ -97,13 +99,13 @@ Character::Character(const NxString &name, Scene* scene, CharacterController* cc
 	}
 	
 	if (mCharacter == 0) {
-		NxThrow_Error("Character '" + mName + "' could not be created.");
+		NxThrow("Character '" + mName + "' could not be created.");
 		return;
 	}
 
-	mNxActorUserData = new NxActorUserData(this, NxActorUserData::T_Character);
+	mNxUserData = new NxUserData(this, NxUserData::T_Character);
 	mCharacter->getActor()->setGroup(0);	
-	mCharacter->getActor()->userData = mNxActorUserData;
+	mCharacter->getActor()->userData = mNxUserData;
 	mCharacter->setCollision(true);
 
 }
@@ -138,7 +140,7 @@ Character::~Character() {
 	if (mNode)
 		mScene->getSceneManager()->destroySceneNode(mNode->getName());
 
-	delete mNxActorUserData;
+	delete mNxUserData;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////

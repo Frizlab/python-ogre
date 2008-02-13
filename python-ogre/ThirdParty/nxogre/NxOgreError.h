@@ -1,21 +1,23 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreError.h
+ *  \brief   Header for the ErrorReport struct, the Error and ErrorReporter classes.
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #ifndef __NXOGRE_ERROR_H__
 #define __NXOGRE_ERROR_H__
@@ -27,28 +29,32 @@ namespace NxOgre {
 
 	///////////////////////////////////////////////////////////////////////
 
-	struct ErrorReport {
+	class NxPublicClass ErrorReport {
 
-		NxString Caller;
-		NxString Message;
+		public:
+		
+			enum ErrorType {
+				ET_Debug   = 0,
+				ET_Warning = 1,
+				ET_Error   = 2
+			};
 
-		enum ErrorType {
-			ET_Conflict		= 0,
-			ET_Warning		= 1,
-			ET_FatalError	= 2,
-			ET_Debug		= 3,
-			ET_Leak			= 4
-		};
+			struct TimeFrame {
+				unsigned int seconds_passed;
+				unsigned int simulations_passed;
+			};
 
-		ErrorType		type;
-		NxU32			frame;
-		NxReal			second;
+			const char*  mSource;
+			unsigned int mSourceLine;
+			const char*  mMessage;
+			ErrorType    mType;
+			TimeFrame    mTimeFrame;
 
 	};
 
 	///////////////////////////////////////////////////////////////////////
 
-	class NxExport Error : public NxUserOutputStream {
+	class NxPublicClass Error : public NxUserOutputStream {
 
 		public:
 
@@ -97,13 +103,15 @@ namespace NxOgre {
 
 	///////////////////////////////////////////////////////////////////////
 
-	class NxExport ErrorReporter {
+	class NxPublicClass ErrorReporter {
 
 		public:
 
 			ErrorReporter()										{}
 			virtual ~ErrorReporter()							{}
+			virtual void startReporting()						{}
 			virtual void report(const ErrorReport&)				{}
+			virtual void stopReporting()						{}
 	};
 
 /*

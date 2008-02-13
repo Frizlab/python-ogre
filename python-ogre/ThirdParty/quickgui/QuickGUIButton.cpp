@@ -11,7 +11,8 @@ namespace QuickGUI
 {
 	Button::Button(const std::string& name, GUIManager* gm) :
 		Label(name,gm),
-		mButtonDown(false)
+		mButtonDown(false),
+		mDefaultSkinComponent("")
 	{
 		mWidgetType = TYPE_BUTTON;
 		mSkinComponent = ".button";
@@ -30,27 +31,42 @@ namespace QuickGUI
 	void Button::applyButtonDownTexture()
 	{
 		// apply button ".down" texture
-		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(mSkinName);
-		if(ss == NULL)
-			throw Ogre::Exception(Ogre::Exception::ERR_ITEM_NOT_FOUND,"Skin \"" + mSkinName + "\" does not exist!  Did you forget to load it using the SkinSetManager?","Button::applyButtonDownTexture");
-		mQuad->setTextureCoordinates(ss->getTextureCoordinates(mSkinName + mSkinComponent + ".down" + ss->getImageExtension()));
+		mQuad->setTextureCoordinates(mSkinSet->getTextureCoordinates(mSkinName + mSkinComponent + ".down" + mSkinSet->getImageExtension()));
+
+		for(std::vector<Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
+		{
+			if((*it)->getWidgetType() == TYPE_BORDER)
+			{
+				dynamic_cast<Border*>(*it)->_notifyParentSkinComponent(mSkinComponent + ".down");
+			}
+		}
 	}
 
 	void Button::applyButtonOverTexture()
 	{
 		// apply button ".over" texture
-		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(mSkinName);
-		if(ss == NULL)
-			throw Ogre::Exception(Ogre::Exception::ERR_ITEM_NOT_FOUND,"Skin \"" + mSkinName + "\" does not exist!  Did you forget to load it using the SkinSetManager?","Button::applyButtonOverTexture");
-		mQuad->setTextureCoordinates(ss->getTextureCoordinates(mSkinName + mSkinComponent + ".over" + ss->getImageExtension()));
+		mQuad->setTextureCoordinates(mSkinSet->getTextureCoordinates(mSkinName + mSkinComponent + ".over" + mSkinSet->getImageExtension()));
+
+		for(std::vector<Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
+		{
+			if((*it)->getWidgetType() == TYPE_BORDER)
+			{
+				dynamic_cast<Border*>(*it)->_notifyParentSkinComponent(mSkinComponent + ".over");
+			}
+		}
 	}
 
 	void Button::applyDefaultTexture()
 	{
-		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(mSkinName);
-		if(ss == NULL)
-			throw Ogre::Exception(Ogre::Exception::ERR_ITEM_NOT_FOUND,"Skin \"" + mSkinName + "\" does not exist!  Did you forget to load it using the SkinSetManager?","Button::applyDefaultTexture");
-		mQuad->setTextureCoordinates(ss->getTextureCoordinates(mSkinName + mSkinComponent + ss->getImageExtension()));
+		mQuad->setTextureCoordinates(mSkinSet->getTextureCoordinates(mSkinName + mSkinComponent + mSkinSet->getImageExtension()));
+
+		for(std::vector<Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
+		{
+			if((*it)->getWidgetType() == TYPE_BORDER)
+			{
+				dynamic_cast<Border*>(*it)->_notifyParentSkinComponent(mSkinComponent);
+			}
+		}
 	}
 
 	bool Button::isDown()
@@ -91,5 +107,11 @@ namespace QuickGUI
 	{ 
 		applyDefaultTexture();
 		mButtonDown = false;
+	}
+
+	void Button::setSkinComponent(const std::string& skinComponent)
+	{
+		Widget::setSkinComponent(skinComponent);
+		mDefaultSkinComponent = skinComponent;
 	}
 }

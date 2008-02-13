@@ -1,3 +1,4 @@
+#if 0
 //
 //	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
 //	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
@@ -58,3 +59,4 @@ void Terrain::_bindNxShapeToShape(NxShape* s) {
 
 
 }; //End of NxOgre namespace.
+#endif

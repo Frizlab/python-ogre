@@ -1,34 +1,35 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreShape.h
+ *  \brief   Header for the ShapeParams and Shape classes.
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #ifndef __NXOGRE_SHAPE_H__
 #define __NXOGRE_SHAPE_H__
 
 #include "NxOgrePrerequisites.h"
 #include "NxOgreParams.h"
-
-#include "OgreVector3.h"
+#include "NxOgreDualIdentifier.h"
 
 namespace NxOgre {
 
 	/**
-	 	\page shapeparams ShapeParams
+		\page shapeparams ShapeParams
 		
 		String base params are case and space insensitive.
 
@@ -102,7 +103,7 @@ namespace NxOgre {
 
 		See \ref shapeparams for the full string argument documentation.
 	*/		
-	class NxExport ShapeParams : public Params {
+	class NxPublicClass ShapeParams : public Params {
 
 		public:
 
@@ -111,91 +112,99 @@ namespace NxOgre {
 			////////////////////////////////////////////////////////////
 
 			/** LocalPose of the shape from the Actors center.
-				@note				
+				\note				
 					For Quaternions use: m.M.fromQuat(NxQuat(w,x,y,z));
 					For Vector3's use: m.t = NxVec3(x,y,z)
-				@default mLocalPose.id()
+				\default mLocalPose.id()
 			 */
-			NxMat34				mLocalPose;
+			NxMat34 mLocalPose;
 
 			/**  Automatically generate a CCD skeleton
-				 @default	false
+				 \default	false
 			 */
-			bool				mGenerateCCD;
+			bool mGenerateCCD;
 			
 			/**  Delta value for the CCD generator (How much the mesh will be scaled).
-				 @default 0.8
+				 \default 0.8
 			  */
-			NxReal				mGenerateCCDDelta;
+			NxReal mGenerateCCDDelta;
 
 			/** Allow Dynamic Dynamic CCD. (Sets NX_SF_DYNAMIC_DYNAMIC_CCD in mFlag to true).
-				@default false
+				\default false
 			 */
-			bool				mDynamicDynamicCCD;
+			bool mDynamicDynamicCCD;
 			
 			/**  Use a CCDSkeleton, but with this skeleton only.
-			 	 @default NULL
+			 	 \default NULL
 			*/
-			Skeleton*			mCCDSkeleton;
-			
-			/** Use the material from this materialIndex. Use this or mMaterialAsName do not set both.
-				@default 0
-			 */
-			NxMaterialIndex		mMaterialAsIndex;
-			
-			/** Use the material from this name. Use this or mMaterialAsIndex do not set both.
-			  	@default <blank string>
-			  */
-			NxString			mMaterialAsName;
-			
+			Skeleton* mCCDSkeleton;
+
+			/** \brief Material to use. 
+				\default 0, <blank string>
+			*/
+			MaterialIdentifier mMaterial;
+
 			/** Use the ShapeGroup(NxCollisionGroup) from this name
-			  	@default <blank string>
+			  	\default <blank string>
 			 */
-			NxString			mGroupAsName;
+			NxString mGroupAsName;
 			
 			/** Use the ShapeGroup(NxCollisionGroup) from this index
-				 @default 0
+				 \default 0
 			 */
-			NxCollisionGroup	mGroupAsIndex;
+			NxCollisionGroup mGroupAsIndex;
 
 			/**	GroupMask
 
 			 */
-			NxGroupsMask		mGroupsMask;
+			NxGroupsMask mGroupsMask;
 			
 			/** SkinWidth of the shape
 
 			 */
-			NxReal				mSkinWidth;
+			NxReal mSkinWidth;
 
-			/** Scale all generated meshes used with this shape by this scale (default: 1 1 1)
-			
-			 */
-			NxVec3				mMeshScale;
-			
+
 			/** Mass of this individual shape when computing mass inertial properties for a rigidbody.
 			    default (-1.0, calculate from density). Make sure density is 0.0 before changing.
 			 */
-			NxReal				mMass;
+			NxReal mMass;
 
 			/** Density
 				Density of this individual shape when computing mass inertial properties for a rigidbody.
 				(Unless a valid mass >0.0 is provided). Make sure mass is -1.0 before changing.
-				@default 1.0
+				\default 1.0
 			 */
-			NxReal				mDensity;
+			NxReal mDensity;
 			
 			/**  Specific ShapeFlags to be appended to the shape (NxBoxShape, NxConvexShape, etc.) flags.
-				@default 0
+				\default 0
 			 */
-			NxU32				mFlags;
+			NxU32 mFlags;
 			
+			/** \brief Is the shape a trigger shape?
+			*/
+			bool  mTrigger;
 			
+			/** \brief The callback when the shape is a trigger
+			*/
+			TriggerContactCallback* mTriggerCallback;
+
 			////////////////////////////////////////////////////////////
 
-			ShapeParams()				{}
-			ShapeParams(const char* p)	{setToDefault();process(p);}
-			ShapeParams(NxString p)		{setToDefault();process(p);}
+			ShapeParams() {
+			               setToDefault();
+			              }
+
+			ShapeParams(const char* p) {
+			                            setToDefault();
+			                            process(p);
+			                           }
+
+			ShapeParams(NxString p) {
+			                         setToDefault();
+			                         process(p);
+			                        }
 
 			void setToDefault();
 			void parse(Parameters);
@@ -208,133 +217,124 @@ namespace NxOgre {
 
 	////////////////////////////////////////////////////////////////////////////////////////////////
 
-	class NxExport Shape {
-
-		friend class Actor;
-		friend class Blueprints::ActorBlueprint;
-		friend class ShapeBlueprint;
+	/** \brief Shapes are wonderful things, they make matter spongy.
+	*/
+	class NxPublicClass Shape {
 
 		public:
 
-			/** Shape Constructor
+
+			/** \brief Shape Constructor
 				This is an empty class, create a shape using the constructor
 				of the shape you wish to create; new CubeShape(), new SphereShape(), etc.
 			*/
-			Shape(Actor*);
+			Shape(NxShapeDesc* shape_description, const ShapeParams& shape_params = ShapeParams());
 
-			/** Shape Destructor
-				
+
+			/** \brief Shape Destructor				
 			*/
 			virtual ~Shape();
 
-			/**
 
+			/** \brief Copy this shape to another Actor
 			*/
-			virtual ShapeBlueprint*	getBlueprint()			{
-																NxThrow_Warning("Returning NULL shape blueprint.");
-																return NULL;
-															}
+			virtual void copyTo(Actor*, ShapeParams = ShapeParams()) = 0;
 
-			/**
 
+			/** \brief Move this shape to another Actor
 			*/
-			virtual void copyTo(Actor*)						{
-															}
+			virtual void moveTo(Actor*, ShapeParams = ShapeParams()) = 0;
 
-			/**
 
+			/** \brief Get the abstract NxShape.
 			*/
-			virtual void copyTo(Actor*, Ogre::Vector3 positionOverride)	{
-																		}
+			virtual NxShape*	getNxShape() {
+			                                  return mNxShape;
+			                                 }
 
-			/**
 
+			/** \brief Get the CCD skeleton used with this shape
 			*/
-			virtual void moveTo(Actor*)						{
-															}
-														
+			virtual Skeleton*  getSkeleton() {
+			                                  return mSkeleton;
+			                                 }
 
-			/**
 
+			/** \brief Get the index assigned to this shape of an actor.
 			*/
-			virtual void moveTo(Actor*, Ogre::Vector3 positionOverride)	{
-																		}
+			NxShapeIndex  getIndex() const {
+			                                return mShapeIndex;
+			                               }
 
-			/**
 
+			/** \brief Set the index assigned to this shape of an actor.
 			*/
-			virtual NxShape*	getNxShape()				{
-																return NULL;
-															}
+			void  setIndex(NxShapeIndex index) {
+			                                    mShapeIndex = index;
+			                                   }
 
-			/**
 
+			/** \brief Get the String type of this shape
 			*/
-			virtual void	releaseShape()					{
-															}
+			virtual NxString getType()	const
+			 { return "NxOgre-Shape"; }
 
-			/**
 
+			/** \brief Get the Hash type of this shape.
 			*/
-			Skeleton*		getSkeleton();
+			virtual NxShortHashIdentifier getTypeHash() const {
+			                                                   return 64630;
+			                                                  }
 
-
-			/**
-
+			/** \brief Has the shape been attached to an actor yet?
 			*/
-			NxShapeIndex	getIndex()						{
-																return mID;
-															}
+			virtual bool isAttached() const {
+			                                 return (mActor != NULL);
+			                                }
 
-
-			/**
-
+			/** \brief Get's a copy of the TriggerCallback, otherwise NULL if the
+				       Shape does not have one.
 			*/
-			void	setIndex(NxShapeIndex index)			{
-																mID = index;
-															}
+			TriggerContactCallback* getTriggerCallback() {
+			                                              return mTriggerCallback;
+			                                             }
 
 
-		protected:
-
-			/**
-
+			/** \brief Implement the shape based on description and parameters to an existing
+					   actor.
 			*/
-			virtual bool isDynamic()						{
-																return false;
-															}
+			virtual void createShape(NxActor* actor, NxShapeIndex, Scene* scene) = 0;
 
-			/**
 
+			/** \brief Implement the shape based on description and parameters to an actor
+					   description.
 			*/
-			virtual bool isStaticOnly()						{
-																return false;
-															}
-			
+			virtual void createShape(NxArray<NxShapeDesc*>& shapes, NxShapeIndex, Scene* scene) = 0;
 
-			/** _bindNxShapeToShape
-				Called after NxActor is created, Shape is referred by userData.
-				@param NxShape Shape to bind to.
+
+			/** \brief Recieve the copy of the NxShape, and it's index to the actor.
+				\note  Used after creating the NxShape, the actor gives the shape the nxshape
+					   and it's index.
 			*/
-			virtual void _bindNxShapeToShape(NxShape*)		{
-															}
+			virtual void setNxShape(NxShape*);
 
-			/** __descriptionToParams
-				Copies the all of the values of the ShapeParams to a NxShapeDesc
-				@param desc NxShapeDesc to copy to.
-				@param params Params to work with.
+
+			/** \brief Release the shape based on description and parameters
 			*/
-			void	__descriptionToParams(NxShapeDesc& desc, ShapeParams& params);
+			virtual void releaseShape() = 0;
 
-			////////////////////////////////////////////////////////////////////
 
-			NxShapeIndex	mID;
-			ShapeParams		mParams;
-			Actor*			mActor;
-			NxShape*		mBaseShape;
-			Skeleton*		mSkeleton;
-			
-		private:
+			/** \brief Extended Shape params to description
+			*/
+			void extendedParamsToDescription(Scene*, const ShapeParams& params, NxShapeDesc*);
+
+			NxShapeIndex                mShapeIndex;
+			ShapeParams                 mParams;
+			NxActor*                    mActor;
+			NxShape*                    mNxShape;
+			Skeleton*                   mSkeleton;
+			NxUserData*                 mUserData;
+			TriggerContactCallback*     mTriggerCallback;
 
 	};
 

@@ -5,13 +5,19 @@
 #include "OgreException.h"
 #include "OgreHardwarePixelBuffer.h"
 #include "OgreMaterialManager.h"
+#include "OgrePass.h"
 #include "OgrePrerequisites.h"
+#include "OgreRenderSystem.h"
 #include "OgreResourceGroupManager.h"
+#include "OgreRoot.h"
+#include "OgreTechnique.h"
 #include "OgreTextureManager.h"
 #include "OgreLogManager.h"
 
 #include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIExportDLL.h"
+#include "QuickGUIPoint.h"
+#include "QuickGUISize.h"
 #include "QuickGUIVector4.h"
 
 #include <algorithm>
@@ -21,7 +27,7 @@
 
 namespace QuickGUI
 {
-	/** 
+	/**
 	* Stores a generated SkinSet from the individual widget images
 	*/
 	class _QuickGUIExport SkinSet
@@ -38,14 +44,14 @@ namespace QuickGUI
 	public:
 		/*
 		* Adds a texture name to the list of textures that will be included in the
-		* SkinSet texture.  
+		* SkinSet texture.
 		* NOTE: Texture will not be present until buildTexture function is executed.
 		*/
 		void addTexture(const std::string& textureName, const Vector4 &texCoord = Vector4::ZERO);
 
 		/*
 		* Removes a texture name to the list of textures that will be included in the
-		* SkinSet texture.  
+		* SkinSet texture.
 		* NOTE: Texture will not be removed until buildTexture function is executed.
 		*/
 		void removeTexture(const std::string& textureName);
@@ -67,11 +73,14 @@ namespace QuickGUI
 		*/
 		bool containsImage(std::string textureName);
 
+		Ogre::Image* getImage(const std::string& textureName);
 		std::string getImageExtension() const;
 		/*
 		* Returns the pixel height of the embedded image or texture.
 		*/
 		int getImageHeight(const std::string& textureName);
+		Point getImagePosition(const std::string& textureName);
+		Size getImageSize(const std::string& textureName);
 		/*
 		* Returns the pixel width of the embedded image or texture.
 		*/
@@ -97,7 +106,7 @@ namespace QuickGUI
 		*/
 		void setTextureCoordinates(const std::string &imageName, const Vector4 &texCoord);
 		/*
-		* saves skin to a .skinset file in the folder containing first 
+		* saves skin to a .skinset file in the folder containing first
 		* place found in the resource group.
 		*/
 		void saveSkin();
@@ -114,8 +123,8 @@ namespace QuickGUI
 			@param
 				yPos The relative position of the vertical pixel in the image.
         */
-		bool overTransparentPixel(const std::string& skinComponent, int xPos, int yPos);
-		
+		bool overTransparentPixel(const std::string& skinComponent, int xPos, int yPos) const;
+
 		/*
 		* set material used for this Skinset.
 		*/
@@ -148,6 +157,8 @@ namespace QuickGUI
 
 		// Number of images that this SkinSet has
 		size_t mNumIndividualTextures;
+
+		std::map<std::string,Ogre::Image*> mCreatedImages;
 
 	private:
 		// Generate a new SkinSet using the skin's image files.

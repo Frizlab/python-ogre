@@ -1,21 +1,23 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreOgreNodeRenderable.cpp
+ *  \see     NxOgreOgreNodeRenderable.h
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #include "NxOgreStable.h"
 #include "NxOgreOgreNodeRenderable.h"
@@ -53,7 +55,7 @@ OgreNodeRenderable::OgreNodeRenderable(NodeRenderableParams params, OgreSceneRen
 	Ogre::SceneNode* entityNode = 0;
 
 	__createNode(params.Identifier, params.GraphicsModelPose);
-	
+
 	if (mNode == 0)
 		return;
 
@@ -69,7 +71,6 @@ OgreNodeRenderable::OgreNodeRenderable(NodeRenderableParams params, OgreSceneRen
 	}
 
 	if (params.GraphicsModel.size() >= 1 && entityNode) {
-		
 
 		Ogre::Entity* e = 0;
 
@@ -81,6 +82,9 @@ OgreNodeRenderable::OgreNodeRenderable(NodeRenderableParams params, OgreSceneRen
 		if (e)
 			entityNode->attachObject(e);
 
+		if (params.GraphicsModelMaterial.size()) {
+			e->setMaterialName(params.GraphicsModelMaterial);
+		}
 	}
 
 	if (params.GraphicsModelScale != NxVec3(1,1,1))
@@ -88,6 +92,7 @@ OgreNodeRenderable::OgreNodeRenderable(NodeRenderableParams params, OgreSceneRen
 
 
 	mKnownScale = params.GraphicsModelScale;
+
 
 }
 
@@ -116,7 +121,7 @@ void OgreNodeRenderable::__createNode(const NxString& identifier, const Pose& po
 		mNode = mSceneMgr->createSceneNode(identifier);
 
 	if (mNode == NULL) {
-		NxThrow_Error("Scenenode with identifier '" + identifier + "' could not be created!");
+		NxThrow(NxString("Scenenode with identifier '" + identifier + "' could not be created!").c_str());
 		return;
 	}
 
@@ -136,7 +141,7 @@ void OgreNodeRenderable::__createOffsetNode(const NxString& identifier, const Po
 		mOffsetNode = mSceneMgr->createSceneNode(identifier);
 
 	if (mNode == NULL) {
-		NxThrow_Error("Scenenode with identifier '" + identifier + "' could not be created!");
+		NxThrow(NxString("Scenenode with identifier '" + identifier + "' could not be created!").c_str());
 		return;
 	}
 
@@ -315,7 +320,12 @@ void OgreNodeRenderable::__destroyObjects(Ogre::SceneNode* node) {
 	node->detachAllObjects();
 	node->removeAndDestroyAllChildren();
 
+#if (OGRE_VERSION_MAJOR >= 1) && (OGRE_VERSION_MINOR >= 5)
 	mSceneMgr->destroySceneNode(node);
+#else
+	mSceneMgr->destroySceneNode(node->getName());
+#endif
+	
 
 }
 
@@ -347,6 +357,18 @@ void OgreNodeRenderable::__parseMovableObject(Ogre::MovableObject* mo) {
 		node->detachObject(mo);
 	}
 
+}
+
+/////////////////////////////////////////////////////////////////////
+
+Ogre::SceneNode* OgreNodeRenderable::createSceneNode(const NxString& name, const Ogre::Vector3& vec, const Ogre::Quaternion& quat) {
+	
+	if (mNode == 0)
+		return NULL;
+
+	Ogre::SceneNode* node = mNode->createChildSceneNode(name, vec, quat);
+
+	return node;
 }
 
 /////////////////////////////////////////////////////////////////////

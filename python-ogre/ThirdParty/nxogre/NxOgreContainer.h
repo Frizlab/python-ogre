@@ -1,21 +1,24 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreContainer.h
+ *  \brief   Header for the Container, List and StringPairList classes.
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
 
 #ifndef __NXOGRE_CONTAINER_H__
 #define __NXOGRE_CONTAINER_H__
@@ -25,9 +28,18 @@
 
 namespace NxOgre {
 
-	/** @brief A list of stored classes with an attached name with optional garbage collection.
+#if (NX_DEBUG == 1)
+#define NxLabelContainer(ThisClassName, ContainerVariable, ContainerName) \
+	ContainerVariable.mShortName = #ContainerName " in " #ThisClassName "::" #ContainerVariable " ";
 
-		@example
+#else
+#define NxLabelContainer(ThisClassName, ContainerVariable, ContainerName) \
+	// Not Used.
+#endif
+
+	/** \brief A list of stored classes with an attached name with optional garbage collection.
+
+		\example
 		<code>
 
 			// With: Object*														
@@ -45,7 +57,7 @@ namespace NxOgre {
 			Objects myObjects;
 			// ...
 			if (myObjects.count()) {
-				for (Object object = myObjects._begin();myObjects._atEnd();object = myObjects._next()) {
+				for (Object object = myObjects._begin();!myObjects._atEnd();object = myObjects._next()) {
 					// ...
 				}
 			}
@@ -66,18 +78,26 @@ namespace NxOgre {
 				TT t;
 				bool owned;
 			};
-			////////////////////////////////////////////////////////////
-
-			NX_INLINE Container<TI, TT>() {}
-			NX_INLINE ~Container() {}
 
 			////////////////////////////////////////////////////////////
 
-			/** @brief Get an item from the container
-				@param t	The identifier of the item
-				@return The item or NULL if it does not exist
+			NxTemplateFunction Container<TI, TT>() {
+#if (NX_DEBUG == 1)
+				mShortName = NxString();
+#endif
+			}
+
+			NxTemplateFunction ~Container() { 
+				empty();
+			}
+
+			////////////////////////////////////////////////////////////
+
+			/** \brief Get an item from the container
+				\param t	The identifier of the item
+				\return The item or NULL if it does not exist
 			*/
-			NX_INLINE TT get(TI t) {
+			NxTemplateFunction TT get(TI t) {
 				if (has(t))
 					return mItems[t].t;
 				else
@@ -86,21 +106,21 @@ namespace NxOgre {
 
 			////////////////////////////////////////////////////////////
 
-			/** @brief Get the first item in the container, and reset the iterator.
-				@return The first item.
+			/** \brief Get the first item in the container, and reset the iterator.
+				\return The first item.
 			*/
-			NX_INLINE TT getFirst() {
+			NxTemplateFunction TT getFirst() {
 				Iterator it = mItems.begin();
 				return it->second.t;
 			}
 
 			////////////////////////////////////////////////////////////
 
-			/** @brief Returns if an item with an identifier exists.
-				@param The identifier of the wanted item.
-				@return If the item exists or not.
+			/** \brief Returns if an item with an identifier exists.
+				\param The identifier of the wanted item.
+				\return If the item exists or not.
 			*/
-			NX_INLINE bool has(TI t) {
+			NxTemplateFunction bool has(TI t) {
 				Iterator i = mItems.find(t);
 				if (i == mItems.end()) {
 					return false;
@@ -110,19 +130,19 @@ namespace NxOgre {
 
 			////////////////////////////////////////////////////////////
 
-			/** @brief Removes an item from the list. Does <strong>not</strong> delete the item.
-				@param The identifier of the item to be deleted.
+			/** \brief Removes an item from the list. Does <strong>not</strong> delete the item.
+				\param The identifier of the item to be deleted.
 			*/
-			NX_INLINE void remove(TI t) {
+			NxTemplateFunction void remove(TI t) {
 				mItems.erase(t);
 			}
 
 			////////////////////////////////////////////////////////////
 
-			/** @brief Removes an item from the list. Does <strong>not</strong> delete the item.
-				@param The identifier of the item to be deleted.
+			/** \brief Removes an item from the list. Does <strong>not</strong> delete the item.
+				\param The identifier of the item to be deleted.
 			*/
-			NX_INLINE void insert(TI ts, TT t) {
+			NxTemplateFunction void insert(TI ts, TT t) {
 				Iterator i = mItems.find(ts);
 				if (i == mItems.end())
 					mItems[ts] = Containee(t, false);
@@ -131,9 +151,9 @@ namespace NxOgre {
 			////////////////////////////////////////////////////////////
 
 			
-			/** @brief Resets the iterator, and returns the first item. For (Object*) use only.
+			/** \brief Resets the iterator, and returns the first item. For (Object*) use only.
 			*/
-			NX_INLINE TT begin() {
+			NxTemplateFunction TT begin() {
 				mIterator = mItems.begin();
 				if (mIterator != mItems.end())
 					return mIterator->second.t;
@@ -144,10 +164,10 @@ namespace NxOgre {
 			////////////////////////////////////////////////////////////
 
 			
-			/** @brief From the current iterator position, increment and return the item. For (Object*) use only.
-				@return The item or NULL when the iterator is at the past the end.
+			/** \brief From the current iterator position, increment and return the item. For (Object*) use only.
+				\return The item or NULL when the iterator is at the past the end.
 			*/
-			NX_INLINE TT next() {
+			NxTemplateFunction TT next() {
 				if (mIterator == mItems.end())
 					return NULL;
 
@@ -156,59 +176,59 @@ namespace NxOgre {
 
 			////////////////////////////////////////////////////////////
 
-			/** @brief Resets the iterator, and returns the first item. For (Object) use only.
-				@return The first item.
+			/** \brief Resets the iterator, and returns the first item. For (Object) use only.
+				\return The first item.
 			*/
-			NX_INLINE TT _begin() {
+			NxTemplateFunction TT _begin() {
 				mIterator = mItems.begin();
 				return (mIterator)->second.t;
 			}
 
 			////////////////////////////////////////////////////////////
 
-			/** @brief From the current iterator position, increment and return the item. For (Object) use only.
-				@return The item or NULL when the iterator is at the past the end.
+			/** \brief From the current iterator position, increment and return the item. For (Object) use only.
+				\return The item or NULL when the iterator is at the past the end.
 			*/
-			NX_INLINE TT _next() {
+			NxTemplateFunction TT _next() {
 				return (mIterator++)->second.t;
 			}
 
 			////////////////////////////////////////////////////////////
 			
-			/** @brief If the iterator is at the end or not. For (Object) use only.
-				@return The iterator is at the end or not.
+			/** \brief If the iterator is at the end or not. For (Object) use only.
+				\return The iterator is at the end or not.
 			*/
-			NX_INLINE bool _atEnd() {
+			NxTemplateFunction bool _atEnd() {
 				return (mIterator == mItems.end());
 			}
 
 			////////////////////////////////////////////////////////////
 
 			
-			/** @brief Returns the number of mItems in the container.
-				@return The number of mItems.
+			/** \brief Returns the number of mItems in the container.
+				\return The number of mItems.
 			*/
-			NX_INLINE NxU32 count() const {
+			NxTemplateFunction NxU32 count() const {
 				return mItems.size();
 			}
 
 			////////////////////////////////////////////////////////////
 
-			/** @brief Clears everything in the list. Does <strong>not</strong> delete the mItems.
-				@see Container<TI,TT>::destroyAllOwned
-				@see Container<TI,TT>::destroyAndEraseAll
+			/** \brief Clears everything in the list. Does <strong>not</strong> delete the mItems.
+				\see Container<TI,TT>::destroyAllOwned
+				\see Container<TI,TT>::destroyAndEraseAll
 			*/
-			NX_INLINE void empty() {
+			NxTemplateFunction void empty() {
 				mItems.clear();
 			}
 
 			////////////////////////////////////////////////////////////
 
-			/** @brief Changes an identifier of an item with a new identifier
-				@param a The item to be renamed.
-				@param b The new identifier of the item.
+			/** \brief Changes an identifier of an item with a new identifier
+				\param a The item to be renamed.
+				\param b The new identifier of the item.
 			*/
-			NX_INLINE void rename(TI a, TI b) {
+			NxTemplateFunction void rename(TI a, TI b) {
 				Iterator i = mItems.find(a);
 				
 				if (i == mItems.end())
@@ -221,28 +241,28 @@ namespace NxOgre {
 
 			////////////////////////////////////////////////////////////
 
-			/** @brief "Locks" the item, turning it into an owned class for garbage collection.
+			/** \brief "Locks" the item, turning it into an owned class for garbage collection.
 			
 
 				On the result of destroyAllOwned, these classes will be owned. All NxOgre
 				classes created by it's factory method is owned by NxOgre, otherwise it
 				is upto the developer to delete them at the correct time.
 
-				@param t Identifier of the item
-				@param b If it is owned or not.
-				@see Container<TI,TT>::isLocked
+				\param t Identifier of the item
+				\param b If it is owned or not.
+				\see Container<TI,TT>::isLocked
 			*/
-			NX_INLINE void lock(TI t, bool b) {
+			NxTemplateFunction void lock(TI t, bool b) {
 				mItems[t].owned = b;
 			}
 
 			////////////////////////////////////////////////////////////
 
-			/** @brief Returns if a class is owned/locked by the container.
-				@param t Identifier of the item
-				@see Container<TI,TT>::lock
+			/** \brief Returns if a class is owned/locked by the container.
+				\param t Identifier of the item
+				\see Container<TI,TT>::lock
 			*/
-			NX_INLINE bool isLocked(TI t) {
+			NxTemplateFunction bool isLocked(TI t) {
 				 if (has(t))
 					return mItems[t].owned;
 				return false;
@@ -250,82 +270,107 @@ namespace NxOgre {
 
 			////////////////////////////////////////////////////////////
 
-			/** @brief Prints out all of the mItems in the list to the developer console
+			/** \brief Prints out all of the mItems in the list to the developer console
 				with identifier (if it is printable) and the class contents (a pointer is
 				printed if it cannot be printed).
 
 			*/
-			NX_INLINE void dumpToConsole() {
+			NxTemplateFunction void dumpToConsole() {
 
 				std::stringstream ss;
-				ss << "Dump of Container:";
-				ss << "-> Identifier type = " << typeid(TI).name() << std::endl << "-> Data Type = " << typeid(TT).name() << std::endl << std::endl;
 
+#if (NX_DEBUG == 1)
+
+				if (mShortName.size() != 0)
+					ss << "Contents of " << mShortName << std::endl;
+#else
+				ss << "Contents of of Container" << std::endl;
+				if (typeid(TI).name() == typeid(NxString).name()) {
+					ss << "(NxString" << ", " << typeid(TT).name() << ")" << std::endl << std::endl;
+				}
+				else {
+					ss << "(" << typeid(TI).name() << std::endl << ", " << typeid(TT).name() << ")" << std::endl << std::endl;
+				}
+#endif
+				
+
+				bool nl = false;
 				for(Iterator tt = mItems.begin();tt != mItems.end();tt++) {
-					ss << "\t- Identifier => '" << (*tt).first << "', Value => '" << (*tt).second.t << "', Owned => " << (*tt).second.owned << std::endl;
+					
+					ss << "  <" << (*tt).second.t << ">" << (*tt).first << "";
+					if (!(*tt).second.owned)
+						ss << " (Not Owned)";	
+					
+					if (nl) {
+						ss << std::endl;
+						nl = false;
+					} else {
+						ss << "\t";
+						nl = true;
+					}
 				}
 
-				ss << std::endl << "Done, " << mItems.size() << " item(s).";
+				if (mItems.size() > 3) {
+					if (nl)
+						ss << std::endl;
+					ss << "    " << mItems.size() << " items." << std::endl << std::endl;
+				}
+				else {
+					ss << std::endl;
+				}
 
-				NxToConsole(ss.str());
+				NxDebug(ss.str().c_str());
 
 			}
 
 			////////////////////////////////////////////////////////////
 
-			/** @brief Deletes all owned classes within the container.
-				@note Does not remove the entry of the class from the container
+			/** \brief Deletes all owned classes within the container.
+				\note Does not remove the entry of the class from the container
 					  as it is assumed once you've destroyAllOwned you are finished
 					  with the container forever.
 
 			*/
-			NX_INLINE void destroyAllOwned() {
+			NxTemplateFunction void destroyAllOwned() {
 
 				if (mItems.size() == 0)
 					return;
 
-#if defined NX_DEBUG && (NX_TREAT_POSSIBLE_LEAKS_AS_LEAKS == 1)
-				std::stringstream leaks;
-				NxU32 leakCount = 0;
-#endif
-
-				for(Iterator tt = mItems.begin();tt != mItems.end();) {
-					
-					if ((*tt).second.owned) {
-						delete (*tt++).second.t;
-					}
-					else {
-
-#if defined NX_DEBUG && (NX_TREAT_POSSIBLE_LEAKS_AS_LEAKS == 1)
-						leaks << "\t- " << (*tt).second.t << " => Indentifier '" << (*tt).first << "'." << std::endl;
-						leakCount++;
-#endif
-						(*tt++);
-					}
+				for (TT tt = begin(); tt = next();) {
+					NxDelete(tt);
 				}
 
-#if defined NX_DEBUG && (NX_TREAT_POSSIBLE_LEAKS_AS_LEAKS == 1)
-				if (leakCount>0) {
-					std::stringstream formattedLeak;
-					formattedLeak << "Possible leaks detected with non-owned class in a container" << std::endl << std::endl;
-					formattedLeak << "-> Identifier type = " << typeid(TI).name() << std::endl 
-								  << "-> Data Type = " << typeid(TT).name() << std::endl;
-					formattedLeak << std::endl << leaks.str();
-					formattedLeak << std::endl << leakCount << " leaks." << std::endl << std::endl << "To turn off this warning; disable \"NX_TREAT_POSSIBLE_LEAKS_AS_LEAKS\" in NxOgreStable.h" << std::endl;
-					NxLeakDump(formattedLeak.str());
-				}
-#endif
-				
+				/*
+				unsigned int i = 0;
+
+				Iterator iterator = mItems.begin();
+				while (iterator != mItems.end()) {
+
+					if ((*iterator).second.owned) {
+						TT ptr = (*iterator).second.t;
+						NxDelete(ptr);
+					}
+					printf("Iterator pos = %i of %i", i, mItems.size());
+					i++;
+					iterator++;
+
+				}*/
+
+
+				mItems.clear();
+
 			}
 
 			////////////////////////////////////////////////////////////
 
-			/** @brief Deletes every item regardless if it is owned or not.
+			/** \brief Deletes every item regardless if it is owned or not.
 			*/
-			NX_INLINE void destroyAndEraseAll() {
-			
+			NxTemplateFunction void destroyAndEraseAll() {
+
 				if (mItems.size() == 0)
 					return;
+
+
 
 				for(Iterator tt = mItems.begin();tt != mItems.end();) {
 					delete (*tt++).second.t;
@@ -337,8 +382,8 @@ namespace NxOgre {
 
 			////////////////////////////////////////////////////////////
 
-			/** @brief Copies the contents of this container to another.
-				@example
+			/** \brief Copies the contents of this container to another.
+				\example
 				<code>
 					Container<String, String> A;
 					Container<String, String> B;
@@ -346,15 +391,15 @@ namespace NxOgre {
 					A.CopyTo(B);
 				</code>
 			*/
-			NX_INLINE void CopyTo(Container<TI, TT>* c) {
+			NxTemplateFunction void CopyTo(Container<TI, TT>* c) {
 				c->mItems = mItems;
 				c->begin();
 			}
 
 			////////////////////////////////////////////////////////////
 
-			/** @brief Copies the contents of this container to another.
-				@example
+			/** \brief Copies the contents of this container to another.
+				\example
 				<code>
 					Container<String, String> A;
 					Container<String, String> B;
@@ -362,7 +407,7 @@ namespace NxOgre {
 					A.CopyTo(B);
 				</code>
 			*/
-			NX_INLINE void CopyTo(Container<TI, TT>& c) {
+			NxTemplateFunction void CopyTo(Container<TI, TT>& c) {
 				c.mItems = mItems;
 				c.begin();
 			}
@@ -370,15 +415,15 @@ namespace NxOgre {
 			////////////////////////////////////////////////////////////
 
 			
-			/** @brief Operator access, equilvent to Container<TI,TT>::get
-				@example
+			/** \brief Operator access, equilvent to Container<TI,TT>::get
+				\example
 				<code>
 					Container<String, String> A;
 					...
 					NxString foo = A["Foo"]
 				</code>
 			*/
-			NX_INLINE TT operator[](TI ti) {
+			NxTemplateFunction TT operator[](TI ti) {
 				return get(ti);
 			}
 
@@ -389,15 +434,17 @@ namespace NxOgre {
 
 			////////////////////////////////////////////////////////////
 
-			TypeMap mItems;
-			Iterator mIterator;
-
+			TypeMap     mItems;
+			Iterator    mIterator;
+#if (NX_DEBUG == 1)
+			NxString    mShortName;
+#endif
 			////////////////////////////////////////////////////////////
 
 	};
 
 	template<typename TT /* Type */>
-	class NxExport List {
+	class NxPublicClass List {
 
 		public:
 

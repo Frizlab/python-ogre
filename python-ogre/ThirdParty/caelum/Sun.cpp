@@ -20,8 +20,6 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 #include "CaelumPrecompiled.h"
 #include "Sun.h"
-#include "SimpleSunPositionModel.h"
-#include "EarthSunPositionModel.h"
 
 namespace caelum {
 
@@ -30,7 +28,6 @@ const Ogre::String Sun::SUN_MATERIAL_NAME = "CaelumSunMaterial";
 Sun::Sun (Ogre::SceneManager *sceneMgr): mScene(sceneMgr) {
 	mSunSphereColour = Ogre::ColourValue::White;
 	mSunLightColour = Ogre::ColourValue::White;
-	mSunPositionModel = 0;
 
 	mDiffuseMultiplier = Ogre::ColourValue(1, 1, 0.9);
 	mSpecularMultiplier = Ogre::ColourValue(1, 1, 1);
@@ -65,11 +62,6 @@ Sun::~Sun () {
 
 	destroySunMaterial ();
 
-	if (mSunPositionModel) {
-		delete mSunPositionModel;
-		mSunPositionModel = 0;
-	}
-
 	if (mMainLight) {
 		mMainLight->_getManager ()->destroyLight (mMainLight);
 		mMainLight = 0;
@@ -95,36 +87,25 @@ void Sun::setFarRadius (Ogre::Real radius) {
 	mRadius = radius;
 }
 
-void Sun::update (const float time) {
-	Ogre::Vector3 dir = Ogre::Vector3::NEGATIVE_UNIT_Y;
-
-	if (mSunPositionModel) {
-		dir = mSunPositionModel->update (time);
-	}
-
-	// Update the main light direction
-	if (mMainLight != 0) {
-		mMainLight->setDirection (dir);
-	}
-
-	// Store the latest sun direction.
-	mSunDirection = dir;
-}
-
-SunPositionModel *Sun::setSunPositionModel (SunPositionModel *model) {
-	SunPositionModel *temp = mSunPositionModel;
-
-	mSunPositionModel = model;
-
-	return temp;
-}
-
-SunPositionModel *Sun::getSunPositionModel () const {
-	return mSunPositionModel;
+void Sun::update (
+        const Ogre::Vector3& sunDirection,
+        const Ogre::ColourValue &sunLightColour,
+        const Ogre::ColourValue &sunSphereColour)
+{
+    setSunDirection(sunDirection);
+    setSunLightColour(sunLightColour);
+    setSunSphereColour(sunSphereColour);
 }
 
 Ogre::Vector3 Sun::getSunDirection () const {
 	return mSunDirection;
+}
+
+void Sun::setSunDirection (const Ogre::Vector3 &dir) {
+	mSunDirection = dir;
+	if (mMainLight != 0) {
+		mMainLight->setDirection (dir);
+	}
 }
 
 void Sun::setSunSphereColour (const Ogre::ColourValue &colour) {

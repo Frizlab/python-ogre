@@ -238,6 +238,7 @@ namespace OgreAL {
 
 		SoundMap mSoundMap;
 		SoundList mPauseResumeAll;
+		SoundList mSoundsToDestroy;
 
 		SourcePool mSourcePool;
 		SoundList mActiveSounds;
