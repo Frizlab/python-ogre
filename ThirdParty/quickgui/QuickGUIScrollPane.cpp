@@ -53,7 +53,7 @@ namespace QuickGUI
 		for( it = mManagedWidgets.begin(); it != mManagedWidgets.end(); ++it )
 		{
 			Rect wPixelDimensions = (*it)->getDimensions();
-			
+
 			if( (wPixelDimensions.x + wPixelDimensions.width) > width )
 				width = (wPixelDimensions.x + wPixelDimensions.width);
 
@@ -103,7 +103,7 @@ namespace QuickGUI
 			parentSize.width -= mRightBar->getWidth();
 		if(mBottomBar->isVisible())
 			parentSize.height -= mBottomBar->getHeight();
-		
+
 		mBottomBar->setSliderWidth(parentSize.width / mSize.width);
 		mRightBar->setSliderHeight(parentSize.height / mSize.height);
 	}
@@ -114,6 +114,11 @@ namespace QuickGUI
 	}
 
 	Widget* ScrollPane::getTargetWidget(const Point& pixelPosition)
+	{
+		return NULL;
+	}
+
+	const Widget* ScrollPane::getTargetWidget(const Point& pixelPosition) const
 	{
 		return NULL;
 	}
@@ -180,12 +185,12 @@ namespace QuickGUI
 
 	void ScrollPane::onChildAddedToParent(const EventArgs& args)
 	{
-		manageWidget(dynamic_cast<const WidgetEventArgs&>(args).widget);		
+		manageWidget(dynamic_cast<const WidgetEventArgs&>(args).widget);
 	}
 
 	void ScrollPane::onChildRemovedFromParent(const EventArgs& args)
 	{
-		unmanageWidget(dynamic_cast<const WidgetEventArgs&>(args).widget);		
+		unmanageWidget(dynamic_cast<const WidgetEventArgs&>(args).widget);
 	}
 
 	void ScrollPane::onChildClicked(const EventArgs& args)

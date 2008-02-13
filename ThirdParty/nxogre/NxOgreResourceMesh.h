@@ -1,21 +1,25 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreResourceMesh.h
+ *  \brief   Header for the ConvexMeshIntermediary, TriangleMeshIntermediary,
+ *           HeightfieldIntermediary, SoftbodyIntermediary and
+ *           ClothMeshIntermediary classes.
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #ifndef __NXOGRE_RESOURCEMESH_H__
 #define __NXOGRE_RESOURCEMESH_H__
@@ -25,11 +29,11 @@
 
 namespace NxOgre {
 
-	/** @brief A small class to wrap a NxConvexMeshDescription, as well to look after and store
+	/** \brief A small class to wrap a NxConvexMeshDescription, as well to look after and store
 		vertices for the purposes of garbage collection.
 
 	*/
-	class ConvexMeshIntermediary {
+	class NxPublicClass  ConvexMeshIntermediary {
 
 		public:
 
@@ -49,7 +53,7 @@ namespace NxOgre {
 
 	};
 
-	class TriangleMeshIntermediary {
+	class NxPublicClass  TriangleMeshIntermediary {
 	
 		public:
 
@@ -86,34 +90,40 @@ namespace NxOgre {
 
 	};
 
-	class HeightfieldIntermediary {
+	class NxPublicClass  HeightfieldIntermediary {
 
 	};
 
-	class SoftbodyIntermediary {
+	class NxPublicClass  SoftbodyIntermediary {
 
 	};
 
-	class ClothIntermediary {
-
-	};
-
-
-	////////////////////////////////////////////////////////////////////
-
-	/** A generic abstract Resource for handling/storage of Nx Meshes
-
-	*/
-	class MeshResource : public Resource {
-		
+	class NxPublicClass ClothMeshIntermediary {
+	
 		public:
+			
+			ClothMeshIntermediary();
+			~ClothMeshIntermediary();
 
-			MeshResource(const NxString& id, NxConvexMesh*);
-			MeshResource(const NxString& id, NxTriangleMesh*);
-			MeshResource(const NxString& id, NxHeightField*);
-			MeshResource(const NxString& id, NxSoftBody*);
-			MeshResource(const NxString& id, NxCloth*);
-			~MeshResource();
+			void createVertices(NxU32 length);
+			void destroyVertices();
+			void replaceVertices(NxVec3* vertices, NxU32 length);
+			void verticesToDescription();
+
+			void createIndices(NxU32 length);
+			void destroyIndices();
+			void replaceIndices(NxU32* indices, NxU32 length);
+			void indicesToDescription();
+
+			void setToNormal();
+
+			NxClothMeshDesc		mDescription;
+
+			NxVec3*				mVertices;
+			NxU32				mNbVertices;
+
+			NxU32*				mIndices;
+			NxU32				mNbIndices;
 
 	};
 

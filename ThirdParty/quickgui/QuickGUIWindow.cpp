@@ -25,9 +25,6 @@ namespace QuickGUI
 
 		mTitleBar->getCloseButton()->addEventHandler(Widget::EVENT_MOUSE_CLICK,&Window::onMouseUpOverCloseButton,this);
 		mTitleBar->getCloseButton()->addEventHandler(Widget::EVENT_MOUSE_BUTTON_UP,&Window::onMouseUpOverCloseButton,this);
-
-		// Create borders.
-		setUseBorders(true);
 	}
 
 	Window::~Window()

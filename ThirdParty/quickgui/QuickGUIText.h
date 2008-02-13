@@ -47,8 +47,6 @@ namespace QuickGUI
 		Text(const std::string& name, QuadContainer* container, Label* owner);
 		~Text();
 
-		// Internal function that sets the widget dimensions to use for clipping.
-		void _clipToWidgetDimensions(Widget* w);
 		void _notifyQuadContainer(QuadContainer* container);
 
 		/**
@@ -195,8 +193,6 @@ namespace QuickGUI
 		QuadContainer* mQuadContainer;
 		int mOffset;
 		bool mVisible;
-
-		Widget* mClippingWidget;
 
 		Ogre::UTFString mCaption;
 		Layout mLayout;

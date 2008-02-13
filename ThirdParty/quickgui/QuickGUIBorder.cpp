@@ -12,12 +12,9 @@ namespace QuickGUI
 	{
 		mWidgetType = TYPE_BORDER;
 		mScrollPaneAccessible = false;
-		mInheritClippingWidget = false;
 		mDraggingEnabled = true;
 		mWidgetToDrag = NULL;
 		mSize = Size(mThickness,mThickness);
-
-		mQuad->setClippingWidget(NULL);
 
 		addEventHandler(EVENT_DRAGGED,&Border::onDragged,this);
 		addEventHandler(EVENT_MOUSE_ENTER,&Border::onMouseEnter,this);
@@ -28,9 +25,53 @@ namespace QuickGUI
 	{
 	}
 
+	void Border::_notifyParentSkinComponent(const std::string& skinComponent)
+	{
+		switch(mBorderType)
+		{
+		case BORDER_TYPE_TOP_LEFT:
+			mSkinComponent = skinComponent + ".border.topleft";
+			break;
+		case BORDER_TYPE_TOP_RIGHT:
+			mSkinComponent = skinComponent + ".border.topright";
+			break;
+		case BORDER_TYPE_BOTTOM_LEFT:
+			mSkinComponent = skinComponent + ".border.bottomleft";
+			break;
+		case BORDER_TYPE_BOTTOM_RIGHT:
+			mSkinComponent = skinComponent + ".border.bottomright";
+			break;
+		case BORDER_TYPE_LEFT:
+			mSkinComponent = skinComponent + ".border.left";
+			break;
+		case BORDER_TYPE_TOP:
+			mSkinComponent = skinComponent + ".border.top";
+			break;
+		case BORDER_TYPE_RIGHT:
+			mSkinComponent = skinComponent + ".border.right";
+			break;
+		case BORDER_TYPE_BOTTOM:
+			mSkinComponent = skinComponent + ".border.bottom";
+			break;
+		}
+
+		if(mSkinName != "")
+			setSkin(mSkinName);
+	}
+
 	Border::BorderType Border::getBorderType()
 	{
 		return mBorderType;
+	}
+
+	int Border::getOverlap()
+	{
+		return mOverlap;
+	}
+
+	int Border::getThickness()
+	{
+		return mThickness;
 	}
 
 	void Border::onDragged(const EventArgs& args)
@@ -126,6 +167,9 @@ namespace QuickGUI
 		if(mParentWidget == NULL)
 			return;
 
+		// Set size to default values.
+		mSize = Size(mThickness,mThickness);
+
 		mBorderType = t;
 		Size parentSize = mParentWidget->getSize();
 		std::string parentSkinComponent = mParentWidget->getSkinComponent();
@@ -186,6 +230,78 @@ namespace QuickGUI
 			setSkin(mSkinName);
 	}
 
+	void Border::setOverlap(int lengthInPixels)
+	{
+		mOverlap = lengthInPixels;
+		Size parentSize = mParentWidget->getSize();
+
+		switch(mBorderType)
+		{
+		case BORDER_TYPE_TOP_LEFT:
+			setPosition(-mThickness + mOverlap,-mThickness + mOverlap);
+			break;
+		case BORDER_TYPE_TOP_RIGHT:
+			setPosition(parentSize.width - mOverlap,-mThickness + mOverlap);
+			break;
+		case BORDER_TYPE_BOTTOM_LEFT:
+			setPosition(-mThickness + mOverlap,parentSize.height - mOverlap);
+			break;
+		case BORDER_TYPE_BOTTOM_RIGHT:
+			setPosition(parentSize.width - mOverlap,parentSize.height - mOverlap);
+			break;
+		case BORDER_TYPE_LEFT:
+			setPosition(-mThickness + mOverlap,0);
+			break;
+		case BORDER_TYPE_TOP:
+			setPosition(0,-mThickness + mOverlap);
+			break;
+		case BORDER_TYPE_RIGHT:
+			setPosition(parentSize.width - mOverlap,0);
+			break;
+		case BORDER_TYPE_BOTTOM:
+			setPosition(0,parentSize.height - mOverlap);
+			break;
+		}
+
+		_deriveAnchorValues();
+	}
+
+	void Border::setThickness(int lengthInPixels)
+	{
+		mThickness = lengthInPixels;
+		Size parentSize = mParentWidget->getSize();
+
+		switch(mBorderType)
+		{
+		case BORDER_TYPE_TOP_LEFT:
+			setPosition(-mThickness + mOverlap,-mThickness + mOverlap);
+			break;
+		case BORDER_TYPE_TOP_RIGHT:
+			setPosition(parentSize.width - mOverlap,-mThickness + mOverlap);
+			break;
+		case BORDER_TYPE_BOTTOM_LEFT:
+			setPosition(-mThickness + mOverlap,parentSize.height - mOverlap);
+			break;
+		case BORDER_TYPE_BOTTOM_RIGHT:
+			setPosition(parentSize.width - mOverlap,parentSize.height - mOverlap);
+			break;
+		case BORDER_TYPE_LEFT:
+			setPosition(-mThickness + mOverlap,0);
+			break;
+		case BORDER_TYPE_TOP:
+			setPosition(0,-mThickness + mOverlap);
+			break;
+		case BORDER_TYPE_RIGHT:
+			setPosition(parentSize.width - mOverlap,0);
+			break;
+		case BORDER_TYPE_BOTTOM:
+			setPosition(0,parentSize.height - mOverlap);
+			break;
+		}
+
+		_deriveAnchorValues();
+	}
+
 	void Border::setParent(Widget* parent)
 	{
 		mParentWidget = parent;
@@ -200,7 +316,6 @@ namespace QuickGUI
 			// calculated properties
 			_deriveAnchorValues();
 			// inheritted properties
-			setClippingWidget(mParentWidget->getParentWidget(),true);
 			if(!mParentWidget->isVisible())
 				hide();
 			if(mInheritQuadLayer)
@@ -210,30 +325,5 @@ namespace QuickGUI
 
 		WidgetEventArgs args(this);
 		fireEvent(EVENT_PARENT_CHANGED,args);
-	}
-
-	void Border::setSkin(const std::string& skinName, std::string extension, bool recursive)
-	{
-		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(skinName);
-		if(ss == NULL)
-			throw Ogre::Exception(Ogre::Exception::ERR_ITEM_NOT_FOUND,"Skin \"" + skinName + "\" does not exist!  Did you forget to load it using the SkinSetManager?","Border::setSkin");
-
-		mSkinName = skinName;
-		if(mParentWidget != NULL)
-		{
-			mQuad->setMaterial(ss->getMaterialName());
-			mQuad->setTextureCoordinates(ss->getTextureCoordinates(mSkinName + mParentWidget->getSkinComponent() + mSkinComponent + ss->getImageExtension()));
-		}
-		else
-		{
-			mQuad->setMaterial(ss->getMaterialName());
-			mQuad->setTextureCoordinates(ss->getTextureCoordinates(mSkinName + mSkinComponent + ss->getImageExtension()));
-		}
-
-		if(recursive)
-		{
-			for(WidgetArray::iterator it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it)
-				(*it)->setSkin(skinName,recursive);
-		}
 	}
 }

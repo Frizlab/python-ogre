@@ -1,21 +1,23 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreActor.h
+ *  \brief   Header for the ActorParams and Actor classes.
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #ifndef __NXOGRE_ACTOR_H__
 #define __NXOGRE_ACTOR_H__
@@ -24,6 +26,8 @@
 #include "NxOgreContainer.h"		// For: mCollisionList
 #include "NxOgreParams.h"
 #include "NxOgrePose.h"
+#include "BetajaenCC.h"
+#include "NxOgreShape.h"			// For: SharedList<Shape>
 
 namespace NxOgre {
 
@@ -35,9 +39,7 @@ namespace NxOgre {
 		
 		<code>
 			"mass: 1"
-
 			"mass: 1, group: myActors"
-
 			"mass: 1, group: myActors, lineardamping: 3"
 		</code>
 
@@ -63,11 +65,7 @@ namespace NxOgre {
 		Current Supported String Params
 		-----------------------------
 		
-		-	density (float)
-			- Description: Density of this Actor. Use this or mass, do not use both.
-			- Example: "Density: 1.5"
-			- See: ActorParams::mDensity and NxActorDesc::density for more information.	
-	
+
 		-	group	(string)
 			- Description: Actor Group name of this actor. Use this or group-index, but not both.
 			- Example: "group: myGroup"
@@ -176,16 +174,16 @@ namespace NxOgre {
 
 	/** ActorParams
 
-		@see \ref actorparams for the full string argument documentation.
+		\see \ref actorparams for the full string argument documentation.
 	*/		
-	class NxExport ActorParams : public Params {
+	class NxPublicClass ActorParams : public Params {
 
 		public:
 
-			/** @brief Class based params.
-				@note Faster, less readable and reusable.
-				@see \ref actorparams
-				@example
+			/** \brief Class based params.
+				\note Faster, less readable and reusable.
+				\see \ref actorparams
+				\example
 				<code>
 					ActorParams ap;
 					ap.mMass = 10;
@@ -194,310 +192,491 @@ namespace NxOgre {
 				</code>
 
 			*/
-			ActorParams()						{
-													setToDefault();
-												}
+			ActorParams()  {
+			                setToDefault();
+			               }
 
-			/** @brief String based params. "mass: 10, group: myGroup"
-				@note Slower but readable.
-				@params String of params.
-				@see \ref actorparams
-				@example
+			/** \brief String based params. "mass: 10, group: myGroup"
+				\note Slower but readable.
+				\params String of params.
+				\see \ref actorparams
+				\example
 				<code>
 					..., "mass: 10, group: myGroup", ...
 				</code>
 			*/
-			ActorParams(const char* p)			{
-													process(p);
-												}
+			ActorParams(const char* p)  {
+			                             process(p);
+			                            }
 
-			/** @brief String based params. "mass: 10, group: myGroup"
-				@note Slower but readable.
-				@params 
-				@see \ref actorparams
-				@example
+			/** \brief String based params. "mass: 10, group: myGroup"
+				\note Slower but readable.
+				\params 
+				\see \ref actorparams
+				\example
 				<code>
 					..., "mass: 10, group: myGroup", ...
 				</code>
 			*/
-			ActorParams(NxString p)				{
-													process(p);
-												}
+			ActorParams(NxString p)  {
+			                          process(p);
+			                         }
 
-			/** @brief Set's the Params to default based on NxActorDesc and NxBodyDesc defaults.
+			/** \brief Set's the Params to default based on NxActorDesc and NxBodyDesc defaults.
 			*/
-			void			setToDefault();
+			void  setToDefault();
 
-			/** @brief Set's the Params based from an NxActorDesc
+			/** \brief Set's the Params based from an NxActorDesc
 			*/
-			void			fromNxActorDesc(NxActorDesc&);
+			void  fromNxActorDesc(NxActorDesc&);
 
-			/** @brief Set's the Params based from a NxBodyDesc
+			/** \brief Set's the Params based from a NxBodyDesc
 			*/
-			void			fromNxBodyDesc(NxBodyDesc&);
+			void  fromNxBodyDesc(NxBodyDesc&);
 
 			////////////////////////////////////////////////////////////////
 
 #if NX_SDK_VERSION_NUMBER >= 260
-			/** NxCompartment of the Actor to sit in.
-				@todo NxOgre-ify
-				@default NULL
+			
+			/** \brief Compartment.
+				\default NULL
+				\example
+					C++     ->  mActorParams.mCompartment = CompartmentPtr;
+					String  ->  N/A
+				\see NxActorDesc::compartment for more information.
 			*/
-			NxCompartment*		mCompartment;
+			NxCompartment*  mCompartment;
+
 #endif
 
-			/** Density, mass must be 0 when density is used.
-				@default 0
-				@see ActorParams::mMass
+			/** \brief Density (mass calculated by volume).
+				\default 0
+				\example
+					C++     ->  mActorParams.density = 10.0f;
+					String  ->  "density: 10"
+				\note
+					Due how PhysX works then the mass of the Actor must be zero, else
+					it uses Mass instead. If you wish to make the Actor static then both
+					the density and the mass of the actor must be zero, or if you use
+					string params then "static: yes" is equilvent to "mass: 0, density: 0".
+				\see NxActorDesc::density for more information.
+				\see ActorParams::mMass
 			*/
-			NxReal				mDensity;
+			NxReal  mDensity;
 			
 #if NX_SDK_VERSION_NUMBER >= 272 
 
-			/** @brief DominanceGroup (as Name).
-			    @default "" (Resorts to dominance group with identifier "Default")
+			/** \brief DominanceGroup (as Name).
+			    \default "" (Resorts to dominance group with identifier "Default")
 			*/
-			NxString			mDominanceGroupAsName;
+			NxString  mDominanceGroupAsName;
 
-			/** @brief DominanceGroup (as Index)
-				@default 0
+			/** \brief DominanceGroup (as Index)
+				\default 0
 			*/
-			NxDominanceGroup	mDominanceGroupAsIndex;
+			NxDominanceGroup  mDominanceGroupAsIndex;
 
 #endif
 
-			/** @brief Flags for the NxActor
-				@see NxActorFlags
-				@default 0
+			/** \brief Flags of the Actor.
+				\default 0
+				\example
+					C++     ->  mActorParams.mActorFlags = NX_AF_DISABLE_COLLISION | NX_AF_DISABLE_RESPONSE;
+					String  ->  N/A
+				\see NxActorDesc::flags for more information.
+				\see NxActorFlag enum.
 			*/
-			NxU32				mActorFlags;
+			NxU32  mActorFlags;
+
+
+			// TODO: Turn these to DualIdentifier
+			NxActorGroup  mGroupAsIndex;
+			NxString  mGroupAsName;
+
+
+			/** \brief Angular Damping.
+				\default 0.05f;
+				\example
+					C++     ->  mActorParams.mAngularDamping = 1.0f;
+					String  ->  "angulardamping: 1"
+				\see NxActorDesc::angular for more information.
+			*/
+			NxReal  mAngularDamping;
+
+
+			/** \brief Angular Damping.
+				\default 0
+				\example
+					C++     ->  mActorParams.mAngularDamping = 1.0f;
+					String  ->  "angulardamping: 1 1 1"
+				\see NxActorDesc::density for more information.
+				\see ActorParams::mMass
+			*/
+			NxVec3  mAngularVelocity;
+
+
+			/** \brief CCD Motion Threshold
+			*/
+			NxReal  mCCDMotionThreshold;
+
+
+			/** \brief Flags for the Body portion of an Actor, assuming it is dynamic.
+				\see NxBodyDesc
+			*/
+			NxU32  mBodyFlags;
+
+
+			/** \brief Linear Damping of the Actor
+			*/
+			NxReal  mLinearDamping;
+
+
+			/** \brief Initial linear velocity of the actor
+			*/
+			NxVec3  mLinearVelocity;
+
+
+			/** \brief Mass of the Actor.
+				\note When used, make sure density is zero.
+				\default 10
+			*/
+			NxReal  mMass;
+
+
+			/** \brief Mass Local Pose of the body portion of the Actor
+				\default NxMatrix34.id()
+			*/
+			NxMat34  mMassLocalPose;
+
+
+			/** \brief Mass Space Inertia of the body portion of the Actor
+			*/
+			NxVec3  mMassSpaceInertia;
+
+
+			/** \brief Maximum angular velocity of the Actor
+			*/
+			NxReal  mMaxAngularVelocity;
 			
-
-			/** @brief Group to use as index. GroupAsName must be blank.
-				@default 0
+			/** \brief I forget.
 			*/
-			NxActorGroup		mGroupAsIndex;
-			
+			NxReal  mSleepAngularVelocity;
 
-			/** @brief Group to use from name. GroupAsIndex must be 0.
-				@default Blank String (Resorts to actor group with identifier "Default")
+
+			/** \brief
 			*/
-			NxString			mGroupAsName;
+			NxReal  mSleepDamping;
 
 
-			////////////////////////////////////////////////////////////////
-
-			
-			/** @brief Angular Damping
+			/** \brief
 			*/
-			NxReal				mAngularDamping;
-
-
-			/** @brief Angular Velocity
-			*/
-			NxVec3				mAngularVelocity;
-
-
-			/** @brief CCD Motion Threshold
-			*/
-			NxReal				mCCDMotionThreshold;
-
-
-			/** @brief Flags for the Body portion of an Actor, assuming it is dynamic.
-				@see NxBodyDesc
-			*/
-			NxU32				mBodyFlags;
-
-
-			/** @brief Linear Damping of the Actor
-			*/
-			NxReal				mLinearDamping;
-
-			
-			/** @brief Initial linear velocity of the actor
-			*/
-			NxVec3				mLinearVelocity;
-
-
-			/** @brief Mass of the Actor.
-				@note When used, make sure density is zero.
-				@default 10
-			*/
-			NxReal				mMass;
-
-
-			/** @brief Mass Local Pose of the body portion of the Actor
-				@default NxMatrix34.id()
-			*/
-			NxMat34				mMassLocalPose;
-			
-			/** @brief Mass Space Inertia of the body portion of the Actor
-			*/
-			NxVec3				mMassSpaceInertia;
-
-
-			/** @brief Maximum angular velocity of the Actor
-			*/
-			NxReal				mMaxAngularVelocity;
-			
-			/**
-			*/
-			NxReal				mSleepAngularVelocity;
-			
-
-			/**
-			*/
-			NxReal				mSleepDamping;
-			
-
-			///
 			NxReal				mSleepEnergyThreshold;
 
 
-			///
+			/** \brief
+			*/
 			NxReal				mSleepLinearVelocity;
 
 
-			///
+			/** \brief
+			*/
 			NxU32				mSolverIterationCount;
 
 
-			///
+			/** \brief
+			*/
 			NxReal				mWakeUpCounter;
 
 
-			////////////////////////////////////////////////////////////////
-
-
-			/// SceneNode for Visual based Actors. If the node already exists then it will use it.
-			NxString		mNodeName;
-
-			/// Scale the SceneNode for Visual based Actors
-			Ogre::Vector3	mNodeScale;
-
-			/// Set the first Entity of the Visual based Actors to have shadows or not.
-			bool			mNodeShadows;
-
-			Pose			mNodePose;
-
-
 			private:
-			
-			//! \internal
-			void			parse(Parameters);
+
+
+			/** \internal
+			*/
+			void  parse(Parameters);
 
 	}; // End of ActorParams class
 
-	/** Actor
-		 An Actor is a single unit of matter in the Scene. It is physically represented by a "Collision Model" or a shape. If the actor
-		 has some mass then it is known as a Dynamic Actor, capable of scurrying around in the Scene. If the Actor has
-		 no mass then it is a static actor which never ever moves.
+	/** \brief An Actor is a single unit of matter in the Scene.
+		  It is physically represented by a "Collision Model" or a shape. If the actor
+		  has some mass then it is known as a Dynamic Actor, capable of scurrying around
+		  in the Scene. If the Actor has no mass then it is a static actor which never
+		  ever moves.
 
-
+		 \note
+		  By default the Actor class has no form of visualisation it is completely
+		  invisible. If your looking for a Actor class that does require visualisation
+		  then you can use the Body class, or your own.
 
 	*/
-	class NxExport Actor {
+	class NxPublicClass Actor {
 
 		public:
 
-			Actor(const NxString& Identifier, Scene*, bool isActorBased = true);
-			Actor(const NxString& Identifier, Scene*, ShapeBlueprint*, const Pose&, ActorParams = ActorParams());
+			/** \brief Main actor constructor. 
+				\note  For many purposes, Actors must be created through its parent's
+				       createActor function.
+				\param Identifier     Unique identifier of the Actor.
+				\param Scene          Parent scene to use.
+				\param Shape          Shape/Collision Model of the actor
+				\param Pose           First pose of the Actor
+				\param ActorParams    Additional creation information wrapped in a ActorParams class.
+			*/
+			Actor(const NxString& Identifier, Scene*, Shape*, const Pose&, ActorParams = ActorParams());
+
+			/** \brief Pretty much obvious Actor destructor
+			*/
 			virtual ~Actor();
 
-			//////////////////////////////////////////////////////////
+		protected:
 
-			Scene*		getScene()			{
-												return mOwner;
-											}
+			/** \brief Constructor that must be used for inherited actors only.
+			*/
+			Actor(const NxString& Identifier, Scene*, bool isActorBased = true);
 
-			NxScene*	getNxScene();
+		public:
 
-			//////////////////////////////////////////////////////////
+			/** \brief A list of Shapes used in an Actor
+			*/
+			typedef Betajaen::SharedList<Shape>		CollisionModel;
 
-			virtual NxShortHashIdentifier	getType() const {return NxHashes_Actor;	/* "NxOgre-Actor" */}
-			virtual NxString				getStringType() const {return "NxOgre-Actor";}
+		public:
 
-			virtual bool					hasVisualisation() const {return false;}
-			bool							isDead() { return (mActor == NULL); }
-			
+			Scene* getScene()  {
+			                     return mOwner;
+			                    }
 
-			/** Duplicate this actor
-				
-				@param	name	Name of the new Actor
-				@param	pose	Position/Orientation of the new actor.
+			/** \brief Get's a copy of the NxScene pointer that Scene represents.
+			*/
+			NxScene* getNxScene();
 
-				@note
-					This function is rather slow and inefficent when used repeatedly. Use a ActorBlueprint instead to
-					keep a single blueprint of the actor and create as many as you want from that.
+			/** \brief Unique Hash of this class as a string (using getStringType)
+			*/
+			virtual NxShortHashIdentifier getType() const {
+			  return NxHashes_Actor; /* "NxOgre-Actor" */
+			}
 
+			/** \brief Unique class identifier.
+			*/
+			virtual NxString getStringType() const {
+			  return "NxOgre-Actor";
+			}
+
+			/** \brief Is the actor dead, usually if the NxActor is missing or null. But this 
+					   "deadness" is can be specified by the inherited actor.
+			*/
+			virtual bool isDead() const {
+			  return (mActor == NULL);
+			}
+
+			/** \brief Duplicate this actor
+				\param	name	Name of the new Actor
+				\param	pose	Position/Orientation of the new actor.
+				\note
+				  This function is rather slow and inefficent when used repeatedly. Use a
+				  ActorBlueprint instead to keep a single blueprint of the actor and create
+				  as many as you want from that.
 			 */
-			Actor*							duplicate(const NxString& name, const Pose& p);
+			Actor* duplicate(const NxString& name, const Pose& p);
 
-			//////////////////////////////////////////////////////////
 
-			void							_createActor(ShapeBlueprint*,const Pose&,ActorParams params);
-			void							_destroyActor();
+			/** \internal
+				\brief Creates the NxActor. Must be used by inherited actors in their constructor
+				       or create method.
+			*/
+			void _createActor(Shape*, const Pose&,ActorParams params);
+			
+			/** \internal
+				\brief Destroys the NxActor. Must be used by interited actors in their destructor
+				       or destroy method.
+			*/
+			void _destroyActor();
 
-			NxActor*						getNxActor(){return mActor;}
+			/** \brief Get's a copy of the NxActor which this Actor is representing.
+			*/
+			NxActor* getNxActor() {
+			                        return mActor;
+			                       }
 
-			//////////////////////////////////////////////////////////
+			/** \brief Renames this Actor to something else, it also updates the container
+			           in Scene parent mScene container.
+			*/
+			void setName(NxString);
 
-			void							setName(NxString);
-			NxString						getName() const;
+			/** \brief Get's the name of this Actor
+			*/
+			NxString getName() const;
 
-			////////////////////////////////////////////////////////
+			/** \brief Set's the pose of the actor in the global frame.
+			*/
+			void setGlobalPose(const Pose&);
+			
+			/** \brief Get's the pose fo the actor from the global frame.
+			*/
+			Pose getGlobalPose() const;
 
-			void							setGlobalPose(const Pose&);
-			Pose							getGlobalPose();
+#if (NX_USE_OGRE == 1)
+			/** \brief Get's the orientiation only of this actor as a Ogre quaternion.
+				\note Ogre::Quaternion's w, x, y, z represent w, x, y, z in order given.
+			*/
+			Ogre::Quaternion  getGlobalOrientationAsOgreQuaternion() const;
 
-			Ogre::Quaternion				getGlobalOrientation();
-			void							setGlobalOrientation(const Ogre::Quaternion&);
+			/** \brief Set's the orientation of this actor from a Ogre quaternion.
+			*/
+			void setGlobalOrientation(const Ogre::Quaternion&);
 
-			Ogre::Vector3					getGlobalPosition();
-			void							setGlobalPosition(const Ogre::Vector3&);
+			/** \brief Get's the global position only of this actor as a Ogre Vector3
+			*/
+			Ogre::Vector3  getGlobalPositionAsOgreVector3() const;
 
-			void							moveGlobalPose(const Pose&);
-			void							moveGlobalPosition(const Ogre::Vector3&);
-			void							moveGlobalOrientation(const Ogre::Quaternion&);
+			/** \brief Set's the global position only of this actor from a Ogre Vector3
+			*/
+			void setGlobalPosition(const Ogre::Vector3&);
+#endif
 
-			void							moveTowards(const Pose&, float force = 10.0f);
+			/** \brief Get's the orientation only of this actor as a 3x3 matrix placed
+				into a NxMat33 class.
+			*/
+			NxMat33 getGlobalOrientation() const;
 
-			//////////////////////////////////////////////////////////
+			/** \brief Set's the orientation only of this actor as a 3x3 matrix placed
+				into a NxMat33 class.
+			*/
+			void setGlobalOrientation(const NxMat33& matrix);
 
-			Shape*							addShape(ShapeBlueprint*);
-			void							removeShape(Shape*);
-			void							removeShape(NxShapeIndex);
-			NxU32							getNbShapes() const;
-			CollisionModel*					getCollisionModel();
-			CollisionModel*					getDynamicCollisionModel();
+			/** \brief Get's the orientation only of this actor as a quaternion placed
+				inside a float4 vector.
 
-			//////////////////////////////////////////////////////////
+				\note float4's i, j, k, l represent w, x, y, z in order given.
+			*/
+			float4 getGlobalOrientationAsFloat4() const;
 
-			void							setGroup(ActorGroup*);
-			void							setGroup(const NxString& GroupIdentifier);
-			void							setGroup(NxActorGroup);
-			ActorGroup*						getGroup()	const;
+			/** \brief Set's the orientation only of this actor as a quaternion placed
+				inside a float4 vector.
 
-			//////////////////////////////////////////////////////////
+				\note float4's i, j, k, l represent w, x, y, z in order given.
+			*/
+			void setGlobalOrientation(const float4& quaternion);
 
-			void							raiseActorFlag(NxActorFlag);
-			void							clearActorFlag(NxActorFlag);
-			bool							hasActorFlag(NxActorFlag)	const;
-			bool							isDynamic()	const;
+			/** \brief Get's the global position only of this Actor as a float3
+				\note  float3's i, j, k represent x, y, z in order given.
+			*/
+			float3 getGlobalPositionAsFloat3() const;
 
-			//////////////////////////////////////////////////////////
+			/** \brief Set's the global position only of this Actor as a float3
+				\note  float3's i, j, k represent x, y, z in order given.
+			*/
+			void setGlobalPosition(const float3& vector);
 
-			void							setCMassOffsetLocalPose(const Pose&);
-			void							setCMassOffsetLocalPosition(const Ogre::Vector3&);
-			void							setCMassOffsetLocalOrientation(const NxMat33&);
-			void							setCMassOffsetLocalOrientation(const Ogre::Matrix3&);
-			void							setCMassOffsetGlobalPose(const Pose&);
-			void							setCMassOffsetGlobalPosition(const Ogre::Vector3&);
-			void							setCMassOffsetGlobalOrientation(const NxMat33&);
-			void							setCMassOffsetGlobalOrientation(const Ogre::Matrix3&);
-			void							setCMassGlobalPose(const Pose&);
-			void							setCMassGlobalPosition(const Ogre::Vector3&);
-			void							setCMassGlobalOrientation(const Ogre::Quaternion&);
+
+			/** \brief Get's the orientation only of this actor as a quaternion placed
+				inside a NxQuat.
+				\note NxQuat's w, x, y, z represent w, x, y, z in order given.
+			*/
+			NxQuat getGlobalOrientationAsNxQuat() const;
+
+
+			/** \brief Set's the orientation only of this actor as a quaternion placed
+				inside a NxQuat.
+				\note NxQuat's w, x, y, z represent w, x, y, z in order given.
+			*/
+			void setGlobalOrientation(const NxQuat& quaternion);
+
+			/** \brief Get's the global position only of this Actor as a NxVec3
+			*/
+			NxVec3 getGlobalPositionAsNxVec3() const;
+
+			/** \brief Set's the global position only of this Actor as a float3
+			*/
+			void setGlobalPosition(const NxVec3& vector);
+
+			/** \brief 
+			*/
+			void moveGlobalPose(const Pose&);
+			
+			/** \brief
+			*/
+			void moveGlobalPosition(const Ogre::Vector3&);
+			
+			/** \brief
+			*/
+			void moveGlobalOrientation(const Ogre::Quaternion&);
+
+			/** \brief Calculates a rough force and applies it to this actor towards a 
+			           specific point in global space.
+			    \param Pose  The point in space to move towards too.
+			    \param Force The "oomph" to move it.
+			*/
+			void moveTowards(const Pose&, float force = 10.0f);
+
+
+			/** \brief Add a shape to this Actor.
+			*/
+			Shape* addShape(Shape*);
+
+			/** \brief Remove a shape from this Actor.
+				\note Removing the last shape from this actor will cause PhysX to go boom.
+			*/
+			bool removeShape(Shape*);
+			
+			/** \brief Remove a shape from this Actor.
+				\note Removing the last shape from this actor will cause PhysX to go boom.
+			*/
+			bool removeShape(NxShapeIndex);
+			
+			/** \brief Returns the number of shapes used with this Actor
+			*/
+			NxU32 getNbShapes() const;
+
+			/** \brief Get's a copy of the container of the pointer of Shapes that are
+			           used with this Actor
+			*/
+			CollisionModel getCollisionModel();
+
+			/** \brief Set's this Actor to another ActorGroup.
+			*/
+			void setGroup(ActorGroup*);
+
+			/** \brief Set's this Actor to another ActorGroup.
+			*/
+			void setGroup(const NxString& GroupIdentifier);
+			
+			
+			/** \brief Set's this Actor to another ActorGroup.
+			*/
+			void setGroup(NxActorGroup);
+			
+			/** \brief Get's a copy of the ActorGroup that this Actor is under.
+			*/
+			ActorGroup* getGroup() const;
+
+			/** \brief
+			*/
+			void raiseActorFlag(NxActorFlag);
+			
+			/** \brief
+			*/
+			void clearActorFlag(NxActorFlag);
+			
+			/** \brief
+			*/
+			bool hasActorFlag(NxActorFlag) const;
+			
+			/** \brief Does the Actor have any mass, hence movable and reacts to forces.
+			*/
+			bool isDynamic() const;
+
+			void setCMassOffsetLocalPose(const Pose&);
+			void setCMassOffsetLocalPosition(const Ogre::Vector3&);
+			void setCMassOffsetLocalOrientation(const NxMat33&);
+			void setCMassOffsetLocalOrientation(const Ogre::Matrix3&);
+			void setCMassOffsetGlobalPose(const Pose&);
+			void setCMassOffsetGlobalPosition(const Ogre::Vector3&);
+			void setCMassOffsetGlobalOrientation(const NxMat33&);
+			void setCMassOffsetGlobalOrientation(const Ogre::Matrix3&);
+			void setCMassGlobalPose(const Pose&);
+			void setCMassGlobalPosition(const Ogre::Vector3&);
+			void setCMassGlobalOrientation(const Ogre::Quaternion&);
 
 			Pose							getCMassLocalPose()	const;
 			Ogre::Vector3 					getCMassLocalPosition()	const;
@@ -610,11 +789,10 @@ namespace NxOgre {
 #endif
 			//////////////////////////////////////////////////////////
 
-			CollisionModel					mCollisionModel,
-											mDynamicCollisionModel;
+			CollisionModel					mCollisionModel;
 
-			void*							getNxActorUserData();
-			NxActorUserData*				getUserData();
+			void*							getNxUserData();
+			NxUserData*						getUserData();
 
 			/** joinWith
 
@@ -649,7 +827,7 @@ namespace NxOgre {
 			Scene						   *mOwner;
 			NxActor*						mActor;
 			NxString						mName;
-			NxActorUserData*				mNxActorUserData;
+			NxUserData*						mNxUserData;
 			NxU32							mBirthFrame;
 			
 		private:
@@ -667,7 +845,7 @@ namespace NxOgre {
 	The Header of "IActor", the inherited Actor.
 
 	<code>
-	class NxExport IActor : public Actor {
+	class NxPublicClass IActor : public Actor {
 
 		public:
 

@@ -32,9 +32,9 @@ namespace QuickGUI
 		EventHandlerArray mOnCheckChangedUserEventHandlers;
 	protected:
 		/**
-		* Event Handler for the EVENT_MOUSE_BUTTON_DOWN event.
+		* Event Handler for the EVENT_MOUSE_BUTTON_UP event.
 		*/
-		virtual void onMouseButtonDown(const EventArgs& args);
+		virtual void onMouseButtonUp(const EventArgs& args);
 	};
 }
 

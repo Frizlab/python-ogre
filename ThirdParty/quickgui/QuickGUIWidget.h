@@ -35,9 +35,11 @@ namespace QuickGUI
 	public:
 		// GUIManager is the only manager that can destroy widgets.
 		friend class GUIManager;
-		friend class Panel;
-		friend class ScrollPane;
 		friend class List;
+		friend class Panel;
+		friend class QuadContainer;
+		friend class RadioButtonGroup;
+		friend class ScrollPane;
 
 		/**
 		* Outlining Types of widgets in the library.
@@ -58,6 +60,7 @@ namespace QuickGUI
 			TYPE_NSTATEBUTTON			,
 			TYPE_PANEL					,
 			TYPE_PROGRESSBAR			,
+			TYPE_RADIOBUTTON			,
 			TYPE_SCROLL_PANE			,
 			TYPE_SCROLLBAR_HORIZONTAL	,
 			TYPE_SCROLLBAR_VERTICAL		,
@@ -122,6 +125,18 @@ namespace QuickGUI
 			ANCHOR_VERTICAL_BOTTOM				,
 			ANCHOR_VERTICAL_TOP_BOTTOM			,
 			ANCHOR_VERTICAL_NONE
+		};
+
+		enum BorderType
+		{
+			BORDER_TYPE_TOP_LEFT		=  0,
+			BORDER_TYPE_TOP_RIGHT			,
+			BORDER_TYPE_BOTTOM_LEFT			,
+			BORDER_TYPE_BOTTOM_RIGHT		,
+			BORDER_TYPE_LEFT				,
+			BORDER_TYPE_TOP					,
+			BORDER_TYPE_RIGHT				,
+			BORDER_TYPE_BOTTOM
 		};
 	public:
 		/** Constructor
@@ -191,7 +206,7 @@ namespace QuickGUI
 		/**
 		* Returns true if the widget is able to be dragged, false otherwise.
 		*/
-		bool draggingEnabled();
+		bool draggingEnabled() const;
 		/**
 		* Enable Widget, allowing it to accept and handle events.
 		* NOTE: Sheets cannot be enabled/disabled
@@ -200,7 +215,7 @@ namespace QuickGUI
 		/**
 		* Returns true is widget is enabled, false otherwise.
 		*/
-		bool enabled();
+		bool enabled() const;
 		/**
 		* Enable or Disable dragging.
 		*/
@@ -214,113 +229,126 @@ namespace QuickGUI
 		* Sets focus to the widget by firing an activation event.
 		*/
 		virtual void focus();
-		Rect getActualDimensions();
-		float getActualOpacity();
+		Rect getActualDimensions() const;
+		float getActualOpacity() const;
 		/**
 		* Returns the position of the widget as it would be drawn on the screen.
 		* NOTE: This is a convenience method. Actual Position is the same as
 		*  getScreenPosition() + getScrollOffset().
 		*/
-		Point getActualPosition();
-		Size getActualSize();
+		Point getActualPosition() const;
+		Size getActualSize() const;
+		Border* getBorder(BorderType t);
+		const Border* getBorder(BorderType t) const;
 		WidgetArray* getChildWidgetList();
+		const WidgetArray* getChildWidgetList() const;
 		Widget* getChildWidget(const std::string& name);
+		const Widget* getChildWidget(const std::string& name) const;
 		Widget* getChildWidget(Type t, unsigned int index);
-		bool getClippingEnabled();
-		Rect getDimensions();
+		const Widget* getChildWidget(Type t, unsigned int index) const;
+		Quad::ClipMode getClipMode() const;
+		Rect getDimensions() const;
 		GUIManager* getGUIManager();
-		int getNumberOfHandlers(Event e);
-		bool getInheritOpacity();
-		float getOpacity();
-		Point getPosition();
-		Point getScrollOffset();
-		Size getSize();
+		const GUIManager* getGUIManager() const;
+		int getNumberOfHandlers(Event e) const;
+		bool getInheritOpacity() const;
+		float getOpacity() const;
+		Point getPosition() const;
+		Point getScrollOffset() const;
+		Size getSize() const;
 
-		std::string getFontName();
+		std::string getFontName() const;
 		/**
 		* Returns true if the widget will gain focus when clicked, false otherwise.
 		*/
-		bool getGainFocusOnClick();
-		bool getGrabbed();
-		float getHeight();
+		bool getGainFocusOnClick() const;
+		bool getGrabbed() const;
+		float getHeight() const;
 		/**
 		* Returns true if this widget is hidden when its parent is hidden.
 		*/
-		bool getHideWithParent();
+		bool getHideWithParent() const;
 		/**
 		* Iterates through all child widgets and retrieves the highest offset.
 		*/
-		int getHighestOffset();
-		HorizontalAnchor getHorizontalAnchor();
-		bool getInheritClippingWidget();
-		bool getInheritQuadLayer();
-		std::string getInstanceName();
+		int getHighestOffset() const;
+		HorizontalAnchor getHorizontalAnchor() const;
+		bool getInheritQuadLayer() const;
+		std::string getInstanceName() const;
 		/**
 		* Returns true if window is able to be repositions, false otherwise.
 		*/
-		bool getMovingEnabled();
+		bool getMovingEnabled() const;
 		/**
 		* Returns the number of parent iterations required to get to Sheet widget.
 		*/
-		int getOffset();
+		int getOffset() const;
 		/**
 		* Get Panel this widget belongs to.
 		* NOTE: This value may be NULL.
 		*/
 		Panel* getParentPanel();
+		const Panel* getParentPanel() const;
 		/**
 		* Get Sheet this widget belongs to.
 		* NOTE: This value may be NULL.
 		*/
 		Sheet* getParentSheet();
+		const Sheet* getParentSheet() const;
 		/**
 		* Get Widget this widget belongs to.
 		* NOTE: This value may be NULL.
 		*/
 		Widget* getParentWidget();
+		const Widget* getParentWidget() const;
 		/**
 		* Get Window this widget belongs to.
 		* NOTE: This value may be NULL.
 		*/
 		Window* getParentWindow();
-		bool getPropogateEventFiring(Event e);
+		const Window* getParentWindow() const;
+		bool getPropogateEventFiring(Event e) const;
 		/*
 		* Get Render Object that visually represents the widget.
 		*/
 		Quad* getQuad();
+		const Quad* getQuad() const;
 		/*
 		* Get Render Object Group this widget's Quad belongs in.
 		*/
 		QuadContainer* getQuadContainer();
+		const QuadContainer* getQuadContainer() const;
 		Quad::Layer getQuadLayer();
+		const Quad::Layer getQuadLayer() const;
 		/*
 		* Get the screen pixel coordinates this widget is drawn at.
 		* NOTE: This is not the same as getPosition, which returns a value relative to parent.
 		* NOTE: This may not be the actual screen coordinates, since QuickGUI supports scrolling.
 		*/
-		Point getScreenPosition();
-		bool getScrollPaneAccessible();
-		std::string getSkinComponent();
+		Point getScreenPosition() const;
+		bool getScrollPaneAccessible() const;
+		std::string getSkinComponent() const;
 		/**
 		* Get whether or not this widget is shown when its parent is shown.
 		*/
-		bool getShowWithParent();
-		std::string getSkin();
+		bool getShowWithParent() const;
+		std::string getSkin() const;
 		/**
 		* Iterates through visible Children widgets to find and return the widget that is *hit* by the point.
 		* Returns NULL is nothing is *hit*.
 		*/
 		virtual Widget* getTargetWidget(const Point& pixelPosition);
-		bool getUseTransparencyPicking();
+		virtual const Widget* getTargetWidget(const Point& pixelPosition) const;
+		bool getUseTransparencyPicking() const;
 		/**
 		* Returns the type of the widget, as enumerated above. ex. TYPE_BUTTON.
 		*/
-		Type getWidgetType();
-		VerticalAnchor getVerticalAnchor();
-		float getWidth();
-		float getXPosition();
-		float getYPosition();
-		bool hasMouseButtonHandlers();
+		Type getWidgetType() const;
+		VerticalAnchor getVerticalAnchor() const;
+		float getWidth() const;
+		float getXPosition() const;
+		float getYPosition() const;
+		bool hasMouseButtonHandlers() const;
 		/**
 		* Sets mVisible to false.  Widgets should override this to implement how they handle
 		* hiding.
@@ -330,12 +358,12 @@ namespace QuickGUI
 		/**
 		* Returns true if pixel point p is inside the pixel dimensions of this widget.
 		*/
-		virtual bool isPointWithinBounds(const Point& pixelPosition);
-		bool isVisible();
+		virtual bool isPointWithinBounds(const Point& pixelPosition) const;
+		bool isVisible() const;
 		/**
 		* Returns true if Widget w is a child of this widget, false otherwise.
 		*/
-		bool isChild(Widget* w);
+		bool isChild(const Widget* w) const;
 
 		/**
 		* Offset the widget position.  Useful for dragging/moving widgets.
@@ -350,9 +378,9 @@ namespace QuickGUI
 		void lockTexture();
 		/**
 		* Determins if the mouse if over a transparent part of the image defining the widget.
-		* Used to determin if the mouse is *over* a widget. (non transparent parts)
+		* Used to determine if the mouse is *over* a widget. (non transparent parts)
 		*/
-		virtual bool overTransparentPixel(const Point& mousePixelPosition);
+		virtual bool overTransparentPixel(const Point& mousePixelPosition) const;
 		/**
 		* Force updating of the Widget's Quad position on screen.
 		*/
@@ -366,7 +394,7 @@ namespace QuickGUI
 		void removeAndDestroyChild(Widget* w);
 		void removeAndDestroyChild(const std::string& widgetName);
 		bool resizingAllowed();
-		void setClippingEnabled(bool enable);
+		virtual void setClipMode(Quad::ClipMode m, bool recursive = false);
 		/**
 		* Manually set the Dimensions of the widget.
 		*/
@@ -394,11 +422,6 @@ namespace QuickGUI
 		*/
 		void setHideWithParent(bool hide);
 		void setHorizontalAnchor(HorizontalAnchor a);
-		/**
-		* When set to true, the widget will inherit it's parent's clipping widget.
-		* NOTE: The clipping widget's bounds are the bounds used to clip the widget.
-		*/
-		void setInheritClippingWidget(bool inherit);
 		void setInheritOpacity(bool inherit);
 		void setInheritQuadLayer(bool inherit);
 		/**
@@ -428,7 +451,7 @@ namespace QuickGUI
 		void setScreenYPosition(const float& pixelY);
 		void setScrollPaneAccessible(bool accessible);
 		virtual void setSkin(const std::string& skinName, bool recursive = false);
-		void setSkinComponent(const std::string& skinComponent);
+		virtual void setSkinComponent(const std::string& skinComponent);
 		/**
 		* Manually set size of widget.
 		*/
@@ -444,6 +467,14 @@ namespace QuickGUI
 		* If set to false, any borders that have been created will be destroyed.
 		*/
 		void setUseBorders(bool use);
+		/*
+		* Sets the thickness of the borders on this widget
+		*/
+		void setBorderThickness(float thickness);
+		/*
+		* Sets the overlap of the borders on this widget
+		*/
+		void setBorderOverlap(float overlap);
 		/*
 		* If set to true, mouse LEAVE and ENTER events will take into account the exact pixel
 		* the cursor is over.
@@ -469,7 +500,7 @@ namespace QuickGUI
 		* Allows texture of widget to change. (behavior by default)
 		*/
 		void unlockTexture();
-		/** Checks if this widget property are subject 
+		/** Checks if this widget property are subject
 		*   to modification upon time
 		*/
 		inline bool getUnderEffect() const { return mUnderEffect; }
@@ -479,7 +510,6 @@ namespace QuickGUI
 		void setUnderEffect(bool val) { mUnderEffect = val; }
 
 	protected:
-		virtual void setClippingWidget(Widget* w, bool recursive = false);
 		virtual void setGUIManager(GUIManager* gm);
 		virtual void setParent(Widget* parent);
 		virtual void setQuadContainer(QuadContainer* container);
@@ -496,9 +526,7 @@ namespace QuickGUI
 
 		// PROPERTIES
 		bool						mCanResize;
-		bool						mClippingEnabled;
-		Widget*						mClippingWidget;
-		bool						mInheritClippingWidget;
+		Quad::ClipMode				mClipMode;
 		bool						mDragXOnly;
 		bool						mDragYOnly;
 		std::string					mFontName;
@@ -522,7 +550,7 @@ namespace QuickGUI
 		bool						mHideWithParent;
 		bool						mShowWithParent;
 		bool						mUseTransparencyPicking;
-		
+
 		Widget*						mParentWidget;
 		Widget*						mWidgetToDrag;
 
@@ -538,7 +566,7 @@ namespace QuickGUI
 		// Implement the Enter/Leave functionality.
 		bool						mEntered;
 
-		// state that this widget property are subject 
+		// state that this widget property are subject
 		// to modification upon time
 		bool						mUnderEffect;
 
@@ -555,6 +583,7 @@ namespace QuickGUI
 		WidgetArray					mChildWidgets;
 
 		virtual Widget*				_createComponent(const std::string& name, Type t);
+		bool						_hasComponent(const std::string& name);
 		WidgetArray					mComponents;
 
 		// Pixel position relative to parent.  (0,0) is the Parent Widgets top Left corner.
@@ -565,8 +594,10 @@ namespace QuickGUI
 		Size						mSize;
 
 		bool						mUseBorders;
-		void _createBorders();
-		void _destroyBorders();
+		void						_createBorders();
+		void						_destroyBorders();
+		float						mBorderThickness;
+		float						mBorderOverlap;
 
 		// Event handlers! One List per event per widget
 		EventHandlerArray mUserEventHandlers[EVENT_END_OF_LIST];

@@ -6,14 +6,13 @@
 #include "QuickGUIWindow.h"
 #include "QuickGUISheet.h"
 #include "QuickGUIBorder.h"
-#include "QuickGUITextArea.h" 
+#include "QuickGUITextArea.h"
 
 namespace QuickGUI
 {
 	Widget::Widget(const std::string& name, GUIManager* gm) :
 		mCanResize(false),
-		mClippingEnabled(true),
-		mClippingWidget(0),
+		mClipMode(Quad::CLIPMODE_CONTAINER),
 		mDragXOnly(false),
 		mDragYOnly(false),
 		mDraggingEnabled(false),
@@ -25,7 +24,6 @@ namespace QuickGUI
 		mHideSkin(false),
 		mHideWithParent(true),
 		mHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT),
-		mInheritClippingWidget(true),
 		mInheritOpacity(true),
 		mInheritQuadLayer(true),
 		mInstanceName(name),
@@ -41,8 +39,9 @@ namespace QuickGUI
 		mShowWithParent(true),
 		mSkinComponent(""),
 		mSkinName(""),
+		mSkinSet(NULL),
 		mTextureLocked(false),
-		mUseBorders(false),
+		mUseBorders(true),
 		mUseTransparencyPicking(true),
 		mVerticalAnchor(ANCHOR_VERTICAL_TOP),
 		mVisible(true)
@@ -133,33 +132,63 @@ namespace QuickGUI
 
 	void Widget::_createBorders()
 	{
-		// By default, borders have a 5 pixel thickness
-		float overlap = 1;
-		float thickness = 5;
+		Border* b;
 
-		Border* b = dynamic_cast<Border*>(_createComponent(mInstanceName+".TopLeftBorder",TYPE_BORDER));
-		b->setBorderType(Border::BORDER_TYPE_TOP_LEFT);
-	
-		b = dynamic_cast<Border*>(_createComponent(mInstanceName+".TopRightBorder",TYPE_BORDER));
-		b->setBorderType(Border::BORDER_TYPE_TOP_RIGHT);
+		if( !_hasComponent(mInstanceName+".TopLeftBorder") &&
+			mSkinSet->containsImage(mSkinName + mSkinComponent + ".border.topleft" + mSkinSet->getImageExtension()))
+		{
+			b = dynamic_cast<Border*>(_createComponent(mInstanceName+".TopLeftBorder",TYPE_BORDER));
+			b->setBorderType(Border::BORDER_TYPE_TOP_LEFT);
+		}
 
-		b = dynamic_cast<Border*>(_createComponent(mInstanceName+".BottomLeftBorder",TYPE_BORDER));
-		b->setBorderType(Border::BORDER_TYPE_BOTTOM_LEFT);
+		if( !_hasComponent(mInstanceName+".TopRightBorder") &&
+			mSkinSet->containsImage(mSkinName + mSkinComponent + ".border.topright" + mSkinSet->getImageExtension()))
+		{
+			b = dynamic_cast<Border*>(_createComponent(mInstanceName+".TopRightBorder",TYPE_BORDER));
+			b->setBorderType(Border::BORDER_TYPE_TOP_RIGHT);
+		}
 
-		b = dynamic_cast<Border*>(_createComponent(mInstanceName+".BottomRightBorder",TYPE_BORDER));
-		b->setBorderType(Border::BORDER_TYPE_BOTTOM_RIGHT);
+		if( !_hasComponent(mInstanceName+".BottomLeftBorder") &&
+			mSkinSet->containsImage(mSkinName + mSkinComponent + ".border.bottomleft" + mSkinSet->getImageExtension()))
+		{
+			b = dynamic_cast<Border*>(_createComponent(mInstanceName+".BottomLeftBorder",TYPE_BORDER));
+			b->setBorderType(Border::BORDER_TYPE_BOTTOM_LEFT);
+		}
 
-		b = dynamic_cast<Border*>(_createComponent(mInstanceName+".LeftBorder",TYPE_BORDER));
-		b->setBorderType(Border::BORDER_TYPE_LEFT);
+		if( !_hasComponent(mInstanceName+".BottomRightBorder") &&
+			mSkinSet->containsImage(mSkinName + mSkinComponent + ".border.bottomright" + mSkinSet->getImageExtension()))
+		{
+			b = dynamic_cast<Border*>(_createComponent(mInstanceName+".BottomRightBorder",TYPE_BORDER));
+			b->setBorderType(Border::BORDER_TYPE_BOTTOM_RIGHT);
+		}
 
-		b = dynamic_cast<Border*>(_createComponent(mInstanceName+".TopBorder",TYPE_BORDER));
-		b->setBorderType(Border::BORDER_TYPE_TOP);
+		if( !_hasComponent(mInstanceName+".LeftBorder") &&
+			mSkinSet->containsImage(mSkinName + mSkinComponent + ".border.left" + mSkinSet->getImageExtension()))
+		{
+			b = dynamic_cast<Border*>(_createComponent(mInstanceName+".LeftBorder",TYPE_BORDER));
+			b->setBorderType(Border::BORDER_TYPE_LEFT);
+		}
 
-		b = dynamic_cast<Border*>(_createComponent(mInstanceName+".RightBorder",TYPE_BORDER));
-		b->setBorderType(Border::BORDER_TYPE_RIGHT);
+		if( !_hasComponent(mInstanceName+".TopBorder") &&
+			mSkinSet->containsImage(mSkinName + mSkinComponent + ".border.top" + mSkinSet->getImageExtension()))
+		{
+			b = dynamic_cast<Border*>(_createComponent(mInstanceName+".TopBorder",TYPE_BORDER));
+			b->setBorderType(Border::BORDER_TYPE_TOP);
+		}
 
-		b = dynamic_cast<Border*>(_createComponent(mInstanceName+".BottomBorder",TYPE_BORDER));
-		b->setBorderType(Border::BORDER_TYPE_BOTTOM);
+		if( !_hasComponent(mInstanceName+".RightBorder") &&
+			mSkinSet->containsImage(mSkinName + mSkinComponent + ".border.right" + mSkinSet->getImageExtension()))
+		{
+			b = dynamic_cast<Border*>(_createComponent(mInstanceName+".RightBorder",TYPE_BORDER));
+			b->setBorderType(Border::BORDER_TYPE_RIGHT);
+		}
+
+		if( !_hasComponent(mInstanceName+".BottomBorder") &&
+			mSkinSet->containsImage(mSkinName + mSkinComponent + ".border.bottom" + mSkinSet->getImageExtension()))
+		{
+			b = dynamic_cast<Border*>(_createComponent(mInstanceName+".BottomBorder",TYPE_BORDER));
+			b->setBorderType(Border::BORDER_TYPE_BOTTOM);
+		}
 	}
 
 	Widget* Widget::_createChild(const std::string& name, Type t)
@@ -180,6 +209,7 @@ namespace QuickGUI
 			case TYPE_NSTATEBUTTON:			w = new NStateButton(name,mGUIManager);			break;
 			case TYPE_PANEL:				w = new Panel(name,mGUIManager);				break;
 			case TYPE_PROGRESSBAR:			w = new ProgressBar(name,mGUIManager);			break;
+			case TYPE_RADIOBUTTON:			w = new RadioButton(name,mGUIManager);			break;
 			case TYPE_SCROLL_PANE:			w = new ScrollPane(name,mGUIManager);			break;
 			case TYPE_SCROLLBAR_HORIZONTAL: w = new HorizontalScrollBar(name,mGUIManager);	break;
 			case TYPE_SCROLLBAR_VERTICAL:	w = new VerticalScrollBar(name,mGUIManager);	break;
@@ -188,7 +218,7 @@ namespace QuickGUI
 			case TYPE_TITLEBAR:				w = new TitleBar(name,mGUIManager);				break;
 			case TYPE_TRACKBAR_HORIZONTAL:	w = new HorizontalTrackBar(name,mGUIManager);	break;
 			case TYPE_TRACKBAR_VERTICAL:	w = new VerticalTrackBar(name,mGUIManager);		break;
-			case TYPE_TREE:					w = new Tree(name,mGUIManager);					break;
+//			case TYPE_TREE:					w = new Tree(name,mGUIManager);					break;
 			case TYPE_WINDOW:				w = new Window(name,mGUIManager);				break;
 			default:						w = new Widget(name,mGUIManager);				break;
 		}
@@ -227,6 +257,7 @@ namespace QuickGUI
 			case TYPE_NSTATEBUTTON:			w = new NStateButton(name,mGUIManager);			break;
 			case TYPE_PANEL:				w = new Panel(name,mGUIManager);				break;
 			case TYPE_PROGRESSBAR:			w = new ProgressBar(name,mGUIManager);			break;
+			case TYPE_RADIOBUTTON:			w = new RadioButton(name,mGUIManager);			break;
 			case TYPE_SCROLL_PANE:			w = new ScrollPane(name,mGUIManager);			break;
 			case TYPE_SCROLLBAR_HORIZONTAL: w = new HorizontalScrollBar(name,mGUIManager);	break;
 			case TYPE_SCROLLBAR_VERTICAL:	w = new VerticalScrollBar(name,mGUIManager);	break;
@@ -240,14 +271,14 @@ namespace QuickGUI
 		}
 
 		w->setSize(w->getSize());
+		w->setFont(mFontName,true);
+		w->setClipMode(mClipMode);
+		mComponents.push_back(w);
+		w->setParent(this);
+		w->setPosition(0,0);
 		// Some Composition widgets will create components before inheritting skin name.
 		if(mSkinName != "")
 			w->setSkin(mSkinName,true);
-		w->setFont(mFontName,true);
-		mComponents.push_back(w);
-		//addChild(w);
-		w->setParent(this);
-		w->setPosition(0,0);
 
 		if(!mVisible && w->getHideWithParent())
 			w->hide();
@@ -288,6 +319,17 @@ namespace QuickGUI
 		Quad* newQuad = new Quad(this);
 		mQuads.push_back(newQuad);
 		return newQuad;
+	}
+
+	bool Widget::_hasComponent(const std::string& name)
+	{
+		for(std::vector<Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
+		{
+			if((*it)->getInstanceName() == name)
+				return true;
+		}
+
+		return false;
 	}
 
 	void Widget::_initEventHandlers()
@@ -373,7 +415,7 @@ namespace QuickGUI
 
 	void Widget::disable()
 	{
-		if((mWidgetType == Widget::TYPE_SHEET)) 
+		if((mWidgetType == Widget::TYPE_SHEET))
 			return;
 
 		//setTexture(mDisabledTextureName,false);
@@ -386,15 +428,15 @@ namespace QuickGUI
 
 	void Widget::drag(const float& pixelX, const float& pixelY)
 	{
-		if(!mDraggingEnabled) 
+		if(!mDraggingEnabled)
 			return;
 
 		MouseEventArgs args(this);
 		args.position = mGUIManager->getMouseCursor()->getPosition();
 		args.moveDelta.x = pixelX;
 		args.moveDelta.y = pixelY;
-		
-		if(mWidgetToDrag != NULL) 
+
+		if(mWidgetToDrag != NULL)
 		{
 			if(mDragXOnly)
 				mWidgetToDrag->moveX(pixelX);
@@ -404,18 +446,18 @@ namespace QuickGUI
 				mWidgetToDrag->move(pixelX,pixelY);
 		}
 
-		// fire onDragged Event.		
+		// fire onDragged Event.
 		fireEvent(EVENT_DRAGGED,args);
 	}
 
-	bool Widget::draggingEnabled()
+	bool Widget::draggingEnabled() const
 	{
 		return mDraggingEnabled;
 	}
 
 	void Widget::enable()
 	{
-		if(mWidgetType == Widget::TYPE_SHEET) 
+		if(mWidgetType == Widget::TYPE_SHEET)
 			return;
 
 		mEnabled = true;
@@ -426,7 +468,7 @@ namespace QuickGUI
 		fireEvent(EVENT_ENABLED,args);
 	}
 
-	bool Widget::enabled()
+	bool Widget::enabled() const
 	{
 		return mEnabled;
 	}
@@ -441,12 +483,12 @@ namespace QuickGUI
 		mGUIManager->setActiveWidget(this);
 	}
 
-	Rect Widget::getActualDimensions()
+	Rect Widget::getActualDimensions() const
 	{
 		return Rect(getActualPosition(),getActualSize());
 	}
 
-	float Widget::getActualOpacity()
+	float Widget::getActualOpacity() const
 	{
 		if((mParentWidget == NULL) || (!mInheritOpacity))
 			return mOpacity;
@@ -454,19 +496,44 @@ namespace QuickGUI
 		return mParentWidget->getActualOpacity() * mOpacity;
 	}
 
-	Point Widget::getActualPosition()
+	Point Widget::getActualPosition() const
 	{
 		return getScreenPosition() + getScrollOffset();
 	}
 
-	Size Widget::getActualSize()
+	Size Widget::getActualSize() const
 	{
-		if( (mParentWidget == NULL) || !mClippingEnabled )
+		if( (mParentWidget == NULL) || (mClipMode == Quad::CLIPMODE_NONE) )
 			return mSize;
 
-		Rect r = getDimensions().getIntersection(Rect(mParentWidget->getActualPosition(),mParentWidget->getActualSize()));
+		Rect parentDimensions(mParentWidget->getActualPosition(),mParentWidget->getActualSize());
+		Rect myDimensions(getActualPosition(),mSize);
+
+		Rect r = myDimensions.getIntersection(parentDimensions);
 
 		return Size(r.width,r.height);
+	}
+
+	Border* Widget::getBorder(BorderType t)
+	{
+		for(std::vector<Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
+		{
+			if(((*it)->getWidgetType() == TYPE_BORDER) && (dynamic_cast<Border*>(*it)->getBorderType() == t))
+				return dynamic_cast<Border*>(*it);
+		}
+
+		return NULL;
+	}
+
+	const Border* Widget::getBorder(BorderType t) const
+	{
+		for(std::vector<Widget*>::const_iterator it = mComponents.begin(); it != mComponents.end(); ++it)
+		{
+			if(((*it)->getWidgetType() == TYPE_BORDER) && (dynamic_cast<Border*>(*it)->getBorderType() == t))
+				return dynamic_cast<Border*>(*it);
+		}
+
+		return NULL;
 	}
 
 	WidgetArray* Widget::getChildWidgetList()
@@ -474,11 +541,16 @@ namespace QuickGUI
 		return &mChildWidgets;
 	}
 
+	const WidgetArray* Widget::getChildWidgetList() const
+	{
+		return &mChildWidgets;
+	}
+
 	Widget* Widget::getChildWidget(const std::string& name)
 	{
-		if( name.empty() ) 
+		if( name.empty() )
 			return NULL;
-		if( mInstanceName == name ) 
+		if( mInstanceName == name )
 			return this;
 
 		Widget* w = NULL;
@@ -494,10 +566,30 @@ namespace QuickGUI
 		return NULL;
 	}
 
-	Widget* Widget::getChildWidget(Type t, unsigned int index)
+	const Widget* Widget::getChildWidget(const std::string& name) const
+	{
+		if( name.empty() )
+			return NULL;
+		if( mInstanceName == name )
+			return this;
+
+		Widget* w = NULL;
+		WidgetArray::const_iterator it;
+		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
+		{
+			if( (w = (*it)->getChildWidget(name)) != NULL )
+			{
+				return w;
+			}
+		}
+
+		return NULL;
+	}
+
+	const Widget* Widget::getChildWidget(Type t, unsigned int index) const
 	{
 		int count = -1;
-		WidgetArray::iterator it;
+		WidgetArray::const_iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 		{
 			if((*it)->getWidgetType() == t)
@@ -510,38 +602,33 @@ namespace QuickGUI
 		return NULL;
 	}
 
-	bool Widget::getClippingEnabled()
-	{
-		return mClippingEnabled;
-	}
-
-	bool Widget::getGainFocusOnClick()
+	bool Widget::getGainFocusOnClick() const
 	{
 		return mGainFocusOnClick;
 	}
 
-	bool Widget::getGrabbed()
+	bool Widget::getGrabbed() const
 	{
 		return mGrabbed;
 	}
 
-	float Widget::getHeight()
+	float Widget::getHeight() const
 	{
 		return mSize.height;
 	}
 
-	bool Widget::getHideWithParent()
+	bool Widget::getHideWithParent() const
 	{
 		return mHideWithParent;
 	}
 
-	int Widget::getHighestOffset()
+	int Widget::getHighestOffset() const
 	{
 		// iterate through child widgets..
 		Widget* w = NULL;
 		// Get the widget with the highest offset
 		int widgetOffset = mOffset;
-		WidgetArray::iterator it;
+		WidgetArray::const_iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 		{
 			if( (*it)->getWidgetType() == TYPE_SCROLL_PANE )
@@ -555,32 +642,27 @@ namespace QuickGUI
 		return widgetOffset;
 	}
 
-	Widget::HorizontalAnchor Widget::getHorizontalAnchor()
+	Widget::HorizontalAnchor Widget::getHorizontalAnchor() const
 	{
 		return mHorizontalAnchor;
 	}
 
-	bool Widget::getInheritClippingWidget()
-	{
-		return mInheritClippingWidget;
-	}
-
-	bool Widget::getInheritQuadLayer()
+	bool Widget::getInheritQuadLayer() const
 	{
 		return mInheritQuadLayer;
 	}
 
-	std::string Widget::getInstanceName()
+	std::string Widget::getInstanceName() const
 	{
 		return mInstanceName;
 	}
 
-	bool Widget::getMovingEnabled()
+	bool Widget::getMovingEnabled() const
 	{
 		return mMovingEnabled;
 	}
 
-	int Widget::getOffset()
+	int Widget::getOffset() const
 	{
 		return mOffset;
 	}
@@ -594,6 +676,15 @@ namespace QuickGUI
 		return dynamic_cast<Panel*>(w);
 	}
 
+	const Panel* Widget::getParentPanel() const
+	{
+		Widget* w = mParentWidget;
+		while((w != NULL) && (w->getWidgetType() != TYPE_PANEL))
+			w = w->getParentWidget();
+
+		return dynamic_cast<const Panel*>(w);
+	}
+
 	Sheet* Widget::getParentSheet()
 	{
 		Widget* w = mParentWidget;
@@ -603,7 +694,21 @@ namespace QuickGUI
 		return dynamic_cast<Sheet*>(w);
 	}
 
+	const Sheet* Widget::getParentSheet() const
+	{
+		Widget* w = mParentWidget;
+		while((w != NULL) && (w->getWidgetType() != TYPE_SHEET))
+			w = w->getParentWidget();
+
+		return dynamic_cast<const Sheet*>(w);
+	}
+
 	Widget* Widget::getParentWidget()
+	{
+		return mParentWidget;
+	}
+
+	const Widget* Widget::getParentWidget() const
 	{
 		return mParentWidget;
 	}
@@ -617,7 +722,16 @@ namespace QuickGUI
 		return dynamic_cast<Window*>(w);
 	}
 
-	bool Widget::getPropogateEventFiring(Event e)
+	const Window* Widget::getParentWindow() const
+	{
+		Widget* w = mParentWidget;
+		while((w != NULL) && (w->getWidgetType() != TYPE_WINDOW))
+			w = w->getParentWidget();
+
+		return dynamic_cast<const Window*>(w);
+	}
+
+	bool Widget::getPropogateEventFiring(Event e) const
 	{
 		return mPropogateEventFiring[e];
 	}
@@ -627,7 +741,17 @@ namespace QuickGUI
 		return mQuad;
 	}
 
+	const Quad* Widget::getQuad() const
+	{
+		return mQuad;
+	}
+
 	QuadContainer* Widget::getQuadContainer()
+	{
+		return mQuadContainer;
+	}
+
+	const QuadContainer* Widget::getQuadContainer() const
 	{
 		return mQuadContainer;
 	}
@@ -637,40 +761,50 @@ namespace QuickGUI
 		return mQuadLayer;
 	}
 
-	Point Widget::getScreenPosition()
+	const Quad::Layer Widget::getQuadLayer() const
+	{
+		return mQuadLayer;
+	}
+
+	Point Widget::getScreenPosition() const
 	{
 		if(mParentWidget == NULL)
 			return Point::ZERO;
-		
+
 		return mParentWidget->getScreenPosition() + mPosition;
 	}
 
-	bool Widget::getScrollPaneAccessible()
+	bool Widget::getScrollPaneAccessible() const
 	{
 		return mScrollPaneAccessible;
 	}
 
-	std::string Widget::getSkinComponent()
+	std::string Widget::getSkinComponent() const
 	{
 		return mSkinComponent;
 	}
 
-	bool Widget::getShowWithParent()
+	bool Widget::getShowWithParent() const
 	{
 		return mShowWithParent;
 	}
 
-	std::string Widget::getSkin()
+	std::string Widget::getSkin() const
 	{
 		return mSkinName;
 	}
 
-	Rect Widget::getDimensions()
+	Quad::ClipMode Widget::getClipMode() const
+	{
+		return mClipMode;
+	}
+
+	Rect Widget::getDimensions() const
 	{
 		return Rect(mPosition,mSize);
 	}
 
-	std::string Widget::getFontName()
+	std::string Widget::getFontName() const
 	{
 		return mFontName;
 	}
@@ -680,27 +814,32 @@ namespace QuickGUI
 		return mGUIManager;
 	}
 
-	bool Widget::getInheritOpacity()
+	const GUIManager* Widget::getGUIManager() const
+	{
+		return mGUIManager;
+	}
+
+	bool Widget::getInheritOpacity() const
 	{
 		return mInheritOpacity;
 	}
 
-	int Widget::getNumberOfHandlers(Event e)
+	int Widget::getNumberOfHandlers(Event e) const
 	{
 		return static_cast<int>(mUserEventHandlers[e].size());
 	}
 
-	float Widget::getOpacity()
+	float Widget::getOpacity() const
 	{
 		return mOpacity;
 	}
 
-	Point Widget::getPosition()
+	Point Widget::getPosition() const
 	{
 		return mPosition;
 	}
 
-	Point Widget::getScrollOffset()
+	Point Widget::getScrollOffset() const
 	{
 		if( mParentWidget == NULL )
 			return mScrollOffset;
@@ -708,7 +847,7 @@ namespace QuickGUI
 		return mParentWidget->getScrollOffset() + mScrollOffset;
 	}
 
-	Size Widget::getSize()
+	Size Widget::getSize() const
 	{
 		return mSize;
 	}
@@ -719,7 +858,6 @@ namespace QuickGUI
 			return NULL;
 
 		Widget* w = NULL;
-
 		for(WidgetArray::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
 		{
 			if((w = (*it)->getTargetWidget(pixelPosition)) != NULL)
@@ -728,79 +866,144 @@ namespace QuickGUI
 
 		// If position is not inside this widget, it can't be inside a child widget. (except menus, which are handled differently)
 		if( !isPointWithinBounds(pixelPosition) ) 
-			return NULL;		
+			return NULL;
 
-		// Iterate through Menu Layer Child Widgets.
-		int widgetOffset = 0;
+		// Iterate through Child Widgets and record the highest offset menu and child layer widget.
+		Widget* highestMenuLayerWidget = NULL;
+		int highestMenuOffset = -1;
+
+		Widget* highestChildLayerWidget = NULL;
+		int highestChildOffset = -1;
+
 		WidgetArray::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 		{
 			if( (*it)->getQuadLayer() == Quad::LAYER_CHILD )
-				continue;
-
-			Widget* temp = (*it)->getTargetWidget(pixelPosition);
-			if( (temp != NULL) && (temp->getOffset() > widgetOffset) )
 			{
-				widgetOffset = temp->getOffset();
-				w = temp;
+				Widget* temp = (*it)->getTargetWidget(pixelPosition);
+				if( (temp != NULL) && (temp->getOffset() > highestChildOffset) )
+				{
+					highestChildOffset = temp->getOffset();
+					highestChildLayerWidget = temp;
+				}
+			}
+			else // LAYER_MENU
+			{
+				Widget* temp = (*it)->getTargetWidget(pixelPosition);
+				if( (temp != NULL) && (temp->getOffset() > highestMenuOffset) )
+				{
+					highestMenuOffset = temp->getOffset();
+					highestMenuLayerWidget = temp;
+				}
 			}
 		}
-		if(w != NULL)
-			return w;
 
-		// Iterate through Child Layer Child Widgets.
-		widgetOffset = 0;
-		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
-		{
-			if( (*it)->getQuadLayer() == Quad::LAYER_MENU )
-				continue;
+		if(highestMenuLayerWidget != NULL)
+			return highestMenuLayerWidget;
+		if(highestChildLayerWidget != NULL)
+			return highestChildLayerWidget;
 
-			Widget* temp = (*it)->getTargetWidget(pixelPosition);
-			if( (temp != NULL) && (temp->getOffset() > widgetOffset) )
-			{
-				widgetOffset = temp->getOffset();
-				w = temp;
-			}
-		}
-		if(w != NULL)
-			return w;
+		// If we made it here, we are inside this Widget's bounds, but not over any non-transparent child widget areas.
 
-		return this;
+		if( !overTransparentPixel(pixelPosition) )
+			return this;
+		else // We're over a transparent pixel
+			return NULL;
 	}
 
-	bool Widget::getUseTransparencyPicking()
+	const Widget* Widget::getTargetWidget(const Point& pixelPosition) const
+	{
+		if( !mQuad->visible() || !mEnabled )
+			return NULL;
+
+		Widget* w = NULL;
+
+		for(WidgetArray::const_iterator it = mComponents.begin(); it != mComponents.end(); ++it)
+		{
+			if((w = (*it)->getTargetWidget(pixelPosition)) != NULL)
+				return w;
+		}
+
+		// If position is not inside this widget, it can't be inside a child widget. (except menus, which are handled differently)
+		if( !isPointWithinBounds(pixelPosition) )
+			return NULL;
+
+		// Iterate through Child Widgets and record the highest offset menu and child layer widget.
+		Widget* highestMenuLayerWidget = NULL;
+		int highestMenuOffset = -1;
+
+		Widget* highestChildLayerWidget = NULL;
+		int highestChildOffset = -1;
+
+		WidgetArray::const_iterator it;
+		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
+		{
+			if( (*it)->getQuadLayer() == Quad::LAYER_CHILD )
+			{
+				Widget* temp = (*it)->getTargetWidget(pixelPosition);
+				if( (temp != NULL) && (temp->getOffset() > highestChildOffset) )
+				{
+					highestChildOffset = temp->getOffset();
+					highestChildLayerWidget = temp;
+				}
+			}
+			else // LAYER_MENU
+			{
+				Widget* temp = (*it)->getTargetWidget(pixelPosition);
+				if( (temp != NULL) && (temp->getOffset() > highestMenuOffset) )
+				{
+					highestMenuOffset = temp->getOffset();
+					highestMenuLayerWidget = temp;
+				}
+			}
+		}
+
+		if(highestMenuLayerWidget != NULL)
+			return highestMenuLayerWidget;
+		if(highestChildLayerWidget != NULL)
+			return highestChildLayerWidget;
+
+		// If we made it here, we are inside this Widget's bounds, but not over any non-transparent child widget areas.
+
+		if( !overTransparentPixel(pixelPosition) )
+			return this;
+		else // We're over a transparent pixel
+			return NULL;
+	}
+
+	bool Widget::getUseTransparencyPicking() const
 	{
 		return mUseTransparencyPicking;
 	}
 
-	Widget::Type Widget::getWidgetType()
+	Widget::Type Widget::getWidgetType() const
 	{
 		return mWidgetType;
 	}
 
-	Widget::VerticalAnchor Widget::getVerticalAnchor()
+	Widget::VerticalAnchor Widget::getVerticalAnchor() const
 	{
 		return mVerticalAnchor;
 	}
 
-	float Widget::getWidth()
+	float Widget::getWidth() const
 	{
 		return mSize.width;
 	}
 
-	float Widget::getXPosition()
+	float Widget::getXPosition() const
 	{
 		return mPosition.x;
 	}
 
-	float Widget::getYPosition()
+	float Widget::getYPosition() const
 	{
 		return mPosition.y;
 	}
 
-	bool Widget::hasMouseButtonHandlers()
+	bool Widget::hasMouseButtonHandlers() const
 	{
-		return !(mUserEventHandlers[EVENT_MOUSE_BUTTON_DOWN].empty() && 
+		return !(mUserEventHandlers[EVENT_MOUSE_BUTTON_DOWN].empty() &&
 				 mUserEventHandlers[EVENT_MOUSE_BUTTON_UP].empty() &&
 				 mUserEventHandlers[EVENT_MOUSE_CLICK].empty() &&
 				 mUserEventHandlers[EVENT_MOUSE_CLICK_DOUBLE].empty() &&
@@ -853,10 +1056,10 @@ namespace QuickGUI
 		mQuad->setMaterial("");
 
 		for(WidgetArray::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
-			hideSkin();
+			(*it)->hideSkin();
 	}
 
-	bool Widget::isPointWithinBounds(const Point& pixelPosition)
+	bool Widget::isPointWithinBounds(const Point& pixelPosition) const
 	{
 		if(!mQuad->visible())
 			return false;
@@ -864,20 +1067,17 @@ namespace QuickGUI
 		if(!mQuad->isPointWithinBounds(pixelPosition))
 			return false;
 
-		if(overTransparentPixel(pixelPosition))
-			return false;
-
 		return true;
 	}
 
-	bool Widget::isVisible()
+	bool Widget::isVisible() const
 	{
 		return mVisible;
 	}
 
-	bool Widget::isChild(Widget* w)
+	bool Widget::isChild(const Widget* w) const
 	{
-		WidgetArray::iterator it;
+		WidgetArray::const_iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 		{
 			if( w == (*it) || (*it)->isChild(w) )
@@ -889,7 +1089,7 @@ namespace QuickGUI
 
 	void Widget::move(const float& pixelX, const float& pixelY)
 	{
-		if(!mMovingEnabled) 
+		if(!mMovingEnabled)
 			return;
 
 		setPosition(mPosition.x + pixelX,mPosition.y + pixelY);
@@ -902,7 +1102,7 @@ namespace QuickGUI
 
 	void Widget::moveX(float pixelX)
 	{
-		if(!mMovingEnabled) 
+		if(!mMovingEnabled)
 			return;
 
 		setXPosition(mPosition.x + pixelX);
@@ -910,7 +1110,7 @@ namespace QuickGUI
 
 	void Widget::moveY(float pixelY)
 	{
-		if(!mMovingEnabled) 
+		if(!mMovingEnabled)
 			return;
 
 		setYPosition(mPosition.y + pixelY);
@@ -918,7 +1118,7 @@ namespace QuickGUI
 
 	bool Widget::fireEvent(Event e, EventArgs& args)
 	{
-		if(mUserEventHandlers[e].empty() && !mPropogateEventFiring[e]) 
+		if(mUserEventHandlers[e].empty() && !mPropogateEventFiring[e])
 			return false;
 
 		if(e == EVENT_MOUSE_ENTER)
@@ -951,7 +1151,7 @@ namespace QuickGUI
 		if(mPropogateEventFiring[e] && (mParentWidget != NULL))
 			mParentWidget->fireEvent(e,args);
 
-		return true; 
+		return true;
 	}
 
 	void Widget::lockTexture()
@@ -974,7 +1174,7 @@ namespace QuickGUI
 	void Widget::onSizeChanged(const EventArgs& args)
 	{
 		WidgetArray::iterator it;
-		
+
 		for( it = mComponents.begin(); it != mComponents.end(); ++it )
 			(*it)->_applyAnchors();
 
@@ -982,19 +1182,16 @@ namespace QuickGUI
 			(*it)->_applyAnchors();
 	}
 
-	bool Widget::overTransparentPixel(const Point& mousePixelPosition)
+	bool Widget::overTransparentPixel(const Point& mousePixelPosition) const
 	{
-		if(!mUseTransparencyPicking)
+		if(!mUseTransparencyPicking || (mSkinSet == NULL))
 			return false;
 
 		Point pt = mousePixelPosition - (getScreenPosition() + getScrollOffset());
 
-		if (pt.x < 0.01 || pt.y < 0.01)
-		{
-			// something is wrong here
-			Ogre::LogManager::getSingletonPtr()->logMessage("Quickgui : error in Widget::overTransparentPixel getting correct Mouse to widget position");
-			return false;
-		}
+		// Scale pt to skinset size
+		pt.x *= mSkinSet->getImageWidth(mSkinName + mSkinComponent + mSkinSet->getImageExtension()) / mSize.width;
+		pt.y *= mSkinSet->getImageHeight(mSkinName + mSkinComponent + mSkinSet->getImageExtension()) / mSize.height;
 
 		return mSkinSet->overTransparentPixel(mSkinComponent,pt.x,pt.y);
 	}
@@ -1076,39 +1273,27 @@ namespace QuickGUI
 		return mCanResize;
 	}
 
-	void Widget::timeElapsed(const float time) 
+	void Widget::timeElapsed(const float time)
 	{
 		if(!mEnabled)
 			return;
 	}
 
-	void Widget::setClippingWidget(Widget* w, bool recursive)
+	void Widget::setClipMode(Quad::ClipMode m, bool recursive)
 	{
+		mClipMode = m;
+
 		for(QuadArray::iterator it = mQuads.begin(); it != mQuads.end(); ++it)
-		{
-			if( (*it)->getInheritClippingWidget() )
-				(*it)->setClippingWidget(w);
-		}
+			(*it)->setClipMode(mClipMode);
 
 		for(WidgetArray::iterator it = mComponents.begin(); it != mComponents.end(); ++it )
-		{
-			if( (*it)->getInheritClippingWidget() )
-					(*it)->setClippingWidget(w);
-		}
+			(*it)->setClipMode(mClipMode);
 
 		if(recursive)
 		{
 			for(WidgetArray::iterator it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it)
-			{
-				if( (*it)->getInheritClippingWidget() )
-					(*it)->setClippingWidget(w);
-			}
+				(*it)->setClipMode(mClipMode);
 		}
-	}
-
-	void Widget::setClippingEnabled(bool enable)
-	{
-		mClippingEnabled = enable;
 	}
 
 	void Widget::setDimensions(const Rect& pixelDimensions)
@@ -1122,8 +1307,8 @@ namespace QuickGUI
 		mWidgetToDrag = w;
 	}
 
-	void Widget::setFont(const std::string& fontScriptName, bool recursive) 
-	{ 
+	void Widget::setFont(const std::string& fontScriptName, bool recursive)
+	{
 		if(fontScriptName == "")
 			return;
 
@@ -1171,11 +1356,6 @@ namespace QuickGUI
 	void Widget::setHorizontalAnchor(Widget::HorizontalAnchor a)
 	{
 		mHorizontalAnchor = a;
-	}
-
-	void Widget::setInheritClippingWidget(bool inherit)
-	{
-		mInheritClippingWidget = inherit;
 	}
 
 	void Widget::setInheritOpacity(bool inherit)
@@ -1230,7 +1410,7 @@ namespace QuickGUI
 
 		// update anchors
 		_deriveAnchorValues();
-		
+
 		mQuad->setPosition(getScreenPosition() + getScrollOffset());
 	}
 
@@ -1277,7 +1457,7 @@ namespace QuickGUI
 	{
 		mSkinSet = SkinSetManager::getSingleton().getSkinSet(skinName);
 		if(mSkinSet == NULL)
-			throw Ogre::Exception(Ogre::Exception::ERR_ITEM_NOT_FOUND,"Skin \"" + skinName + "\" does not exist!  Did you forget to load it using the SkinSetManager?","Widget::setSkin");		
+			throw Ogre::Exception(Ogre::Exception::ERR_ITEM_NOT_FOUND,"Skin \"" + skinName + "\" does not exist!  Did you forget to load it using the SkinSetManager?","Widget::setSkin");
 
 		for(WidgetArray::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
 			(*it)->setSkin(skinName,true);
@@ -1297,6 +1477,11 @@ namespace QuickGUI
 
 		mQuad->setMaterial(mSkinSet->getMaterialName());
 		mQuad->setTextureCoordinates(mSkinSet->getTextureCoordinates(textureName));
+
+		if(mUseBorders)
+			_createBorders();
+		else
+			_destroyBorders();
 
 		if(mHideSkin)
 			hideSkin();
@@ -1358,6 +1543,30 @@ namespace QuickGUI
 			_destroyBorders();
 	}
 
+	void Widget::setBorderThickness(float thickness)
+	{
+		if(mUseBorders)
+		{
+			for(std::vector<Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
+			{
+				if((*it)->getWidgetType() == TYPE_BORDER)
+					dynamic_cast<Border*>(*it)->setThickness(thickness);
+			}
+		}
+	}
+
+	void Widget::setBorderOverlap(float overlap)
+	{
+		if(mUseBorders)
+		{
+			for(std::vector<Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
+			{
+				if((*it)->getWidgetType() == TYPE_BORDER)
+					dynamic_cast<Border*>(*it)->setOverlap(overlap);
+			}
+		}
+	}
+
 	void Widget::setUseTransparencyPicking(bool use, bool recursive)
 	{
 		mUseTransparencyPicking = use;
@@ -1408,7 +1617,7 @@ namespace QuickGUI
 
 		WidgetEventArgs args(this);
 		fireEvent(EVENT_POSITION_CHANGED,args);
-		
+
 		mQuad->setXPosition(getScreenPosition().x + getScrollOffset().x);
 	}
 
@@ -1425,7 +1634,7 @@ namespace QuickGUI
 
 		WidgetEventArgs args(this);
 		fireEvent(EVENT_POSITION_CHANGED,args);
-		
+
 		mQuad->setYPosition(getScreenPosition().y + getScrollOffset().y);
 	}
 
@@ -1496,8 +1705,6 @@ namespace QuickGUI
 			// calculated properties
 			_deriveAnchorValues();
 			// inheritted properties
-			if(mInheritClippingWidget)
-				setClippingWidget(mParentWidget,true);
 			if(!mParentWidget->isVisible())
 				hide();
 			if(mInheritQuadLayer)
@@ -1512,7 +1719,7 @@ namespace QuickGUI
 	void Widget::setQuadContainer(QuadContainer* container)
 	{
 		mQuadContainer = container;
-		
+
 		for(QuadArray::iterator it = mQuads.begin(); it != mQuads.end(); ++it)
 			(*it)->_notifyQuadContainer(mQuadContainer);
 

@@ -1,39 +1,43 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreActor.cpp
+ *  \see     NxOgreActor.h
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #include "NxOgreStable.h"
 #include "NxOgreActor.h"
-#include "NxOgreActorBlueprint.h"
-#include "NxOgreUserData.h"				// For NxActorUserData for NxActor
+
+#include "NxOgreUserData.h"				// For NxUserData for NxActor
 #include "NxOgrePose.h"					// For conversions
 #include "NxOgreHelpers.h"				// For conversions
 #include "NxOgreScene.h"				// For Actor::mOwner
-#include "NxOgreShapeBlueprint.h"		// For ShapeBlueprint System
+#include "NxOgreWorld.h"				// For mBirthFrame
+#include "NxOgreShape.h"				// For Collision Model
 #include "NxOgreDominanceGroup.h"		// For Dominance Groups
 #include "NxOgreGroup.h"				// For ActorGroup and ShapeGroups
 #include "NxOgreContainer.h"			// For Getting an ActorGroup
-#include "NxOgreActorBlueprint.h"		// For Quick Duplication.
 
-#include "OgreStringConverter.h"
-#include "OgreRoot.h"
-#include "OgreSingleton.h"
-#include "OgreMatrix3.h"
+#if (NX_USE_OGRE == 1)
+#  include "OgreStringConverter.h"
+#  include "OgreRoot.h"
+#  include "OgreSingleton.h"
+#  include "OgreMatrix3.h"
+#endif
 
 namespace NxOgre {
 
@@ -71,21 +75,18 @@ void ActorParams::setToDefault() {
 	mSleepEnergyThreshold	 = -1.0f;
 	mSleepDamping			 = 0.0f;
 
-	mNodeScale				 = Ogre::Vector3(1,1,1);
-	mNodeName				 = "";
-	mNodeShadows			 = true;
-	mNodePose				 . id();
-
 }
 
 //////////////////////////////////////////////////////////
 
-void ActorParams::parse(Parameters P) {
+void ActorParams::parse(Parameters params) {
 
-	for (Parameters::iterator p = P.begin(); p != P.end();p++) {
+	setToDefault();
 
-		if ((*p).first == "static") {
-			if ( (*p).second.substr(0,1) == "y" || (*p).second.substr(0,1) == "Y") {
+	for (Parameter* parameter = params.Begin(); parameter = params.Next();) {
+
+		if (parameter->i == "static") {
+			if (isYes(parameter->j)) {
 				mMass = 0;
 				mDensity = 0;
 				continue;
@@ -96,8 +97,8 @@ void ActorParams::parse(Parameters P) {
 			}
 		}
 		
-		if ((*p).first == "kinematic") {
-			if ( (*p).second.substr(0,1) == "y" || (*p).second.substr(0,1) == "Y") {
+		if (parameter->i == "kinematic") {
+			if (isYes(parameter->j)) {
 				mBodyFlags |= NX_BF_KINEMATIC;
 				if (mMass == 0 || mDensity == 0) {
 					mMass = 1;
@@ -106,31 +107,26 @@ void ActorParams::parse(Parameters P) {
 			}
 		}
 		
-		if (Set("density", (*p), mDensity))	continue;
-		if (Set("group", (*p), mGroupAsName))	continue;
-		if (Set("group-index", (*p), mGroupAsIndex))	continue;
+		if (Set("density", parameter, mDensity))	continue;
+		if (Set("group", parameter, mGroupAsName))	continue;
+		if (Set("group-index", parameter, mGroupAsIndex))	continue;
 #if NX_SDK_VERSION_NUMBER >= 272 
-		if (Set("dominancegroup", (*p), mDominanceGroupAsName)) continue;
-		if (Set("dominancegroup-index", (*p), mDominanceGroupAsIndex))	continue;
+		if (Set("dominancegroup", parameter, mDominanceGroupAsName)) continue;
+		if (Set("dominancegroup-index", parameter, mDominanceGroupAsIndex))	continue;
 #endif
-		if (Set("massspaceinertia", (*p), mMassSpaceInertia))	continue;
-		if (Set("linearvelocity", (*p), mLinearVelocity)) continue;
-		if (Set("angularvelocity", (*p), mAngularVelocity)) continue;
-		if (Set("wakeupcounter", (*p), mWakeUpCounter)) continue;
-		if (Set("mass", (*p), mMass)) continue;
-		if (Set("lineardamping", (*p), mLinearDamping)) continue;
-		if (Set("angulardamping", (*p), mAngularDamping)) continue;
-		if (Set("maxangularvelocity", (*p), mMaxAngularVelocity)) continue;
-		if (Set("sleepangularvelocity", (*p), mSleepAngularVelocity)) continue;
-		if (Set("ccdmotionthreshold", (*p), mCCDMotionThreshold)) continue;
-		if (Set("solveriterationcount", (*p), mSolverIterationCount)) continue;
-		if (Set("sleepenergythreshold", (*p), mSleepEnergyThreshold)) continue;
-		if (Set("sleepdamping", (*p), mSleepDamping)) continue;
-		if (Set("node-scale", (*p), mNodeScale)) continue;
-		if (Set("node-shadows", (*p), mNodeShadows)) continue;
-		if (Set("node", (*p), mNodeName)) continue;
-		if (Set("node-orientation", (*p), mNodePose.q)) continue;
-		if (Set("node-offset", (*p), mNodePose.v)) continue;
+		if (Set("massspaceinertia", parameter, mMassSpaceInertia))	continue;
+		if (Set("linearvelocity", parameter, mLinearVelocity)) continue;
+		if (Set("angularvelocity", parameter, mAngularVelocity)) continue;
+		if (Set("wakeupcounter", parameter, mWakeUpCounter)) continue;
+		if (Set("mass", parameter, mMass)) continue;
+		if (Set("lineardamping", parameter, mLinearDamping)) continue;
+		if (Set("angulardamping", parameter, mAngularDamping)) continue;
+		if (Set("maxangularvelocity", parameter, mMaxAngularVelocity)) continue;
+		if (Set("sleepangularvelocity", parameter, mSleepAngularVelocity)) continue;
+		if (Set("ccdmotionthreshold", parameter, mCCDMotionThreshold)) continue;
+		if (Set("solveriterationcount", parameter, mSolverIterationCount)) continue;
+		if (Set("sleepenergythreshold", parameter, mSleepEnergyThreshold)) continue;
+		if (Set("sleepdamping", parameter, mSleepDamping)) continue;
 
 	}
 
@@ -140,52 +136,55 @@ void ActorParams::parse(Parameters P) {
 
 void ActorParams::fromNxActorDesc(NxActorDesc& desc) {
 	
-	mDensity				= desc.density;
-	mActorFlags				= desc.flags;
-	mGroupAsIndex			= desc.group;
+	mDensity                = desc.density;
+	mActorFlags             = desc.flags;
+	mGroupAsIndex           = desc.group;
 #if NX_SDK_VERSION_NUMBER >= 272 
-	mDominanceGroupAsIndex	= desc.dominanceGroup;
+	mDominanceGroupAsIndex  = desc.dominanceGroup;
 #endif
 #if NX_SDK_VERSION_NUMBER >= 260
-	mCompartment			= desc.compartment;
+	mCompartment            = desc.compartment;
 #endif
+
 }
 
 //////////////////////////////////////////////////////////
 
 void ActorParams::fromNxBodyDesc(NxBodyDesc& desc) {
 
-	mMassLocalPose			= desc.massLocalPose;
-	mMassSpaceInertia		= desc.massSpaceInertia;
-	mLinearVelocity			= desc.linearVelocity;
-	mAngularVelocity		= desc.angularVelocity;
-	mWakeUpCounter			= desc.wakeUpCounter;
-	mMass					= desc.mass;
-	mLinearDamping			= desc.linearDamping;
-	mAngularDamping			= desc.angularDamping;
-	mMaxAngularVelocity		= desc.maxAngularVelocity;
-	mBodyFlags				= desc.flags;
-	mSleepLinearVelocity	= desc.sleepLinearVelocity;
-	mSleepAngularVelocity	= desc.sleepAngularVelocity;
-	mCCDMotionThreshold		= desc.CCDMotionThreshold;
+	mMassLocalPose          = desc.massLocalPose;
+	mMassSpaceInertia       = desc.massSpaceInertia;
+	mLinearVelocity         = desc.linearVelocity;
+	mAngularVelocity        = desc.angularVelocity;
+	mWakeUpCounter          = desc.wakeUpCounter;
+	mMass                   = desc.mass;
+	mLinearDamping          = desc.linearDamping;
+	mAngularDamping         = desc.angularDamping;
+	mMaxAngularVelocity     = desc.maxAngularVelocity;
+	mBodyFlags              = desc.flags;
+	mSleepLinearVelocity    = desc.sleepLinearVelocity;
+	mSleepAngularVelocity   = desc.sleepAngularVelocity;
+	mCCDMotionThreshold     = desc.CCDMotionThreshold;
 	mSolverIterationCount   = desc.solverIterationCount;
-	mBodyFlags				= desc.flags;
-	mSleepEnergyThreshold	= desc.sleepEnergyThreshold;
-	mSleepDamping			= desc.sleepDamping;
+	mBodyFlags              = desc.flags;
+	mSleepEnergyThreshold   = desc.sleepEnergyThreshold;
+	mSleepDamping           = desc.sleepDamping;
 
 }
 
 //////////////////////////////////////////////////////////
 
 Actor::Actor(const NxString& Identifier, Scene* scene, bool isActorBased) : mName(Identifier), mOwner(scene) {
+
 	mActor = 0;
 	if (isActorBased)
 		mOwner->_registerActor(mName, this);
+
 }
 
 //////////////////////////////////////////////////////////
 
-Actor::Actor(const NxString& name, Scene* scene, ShapeBlueprint *shape, const Pose& pose, ActorParams params)
+Actor::Actor(const NxString& name, Scene* scene, Shape *shape, const Pose& pose, ActorParams params)
 : mName(name), mOwner(scene) {
 
 	if (name.length() == 0) {
@@ -209,7 +208,7 @@ Actor::Actor(const NxString& name, Scene* scene, ShapeBlueprint *shape, const Po
 		if (identifier.substr(0,1) == ">") {
 			mName = identifier.substr(1, identifier.length() - 1);
 			if (scene->getActors()->has(mName)) {
-				NxThrow_Error("Duplicate Actor with identifier '" + mName + "' found!");
+				NxThrow(NxString("Duplicate Actor with identifier '" + mName + "' found!").c_str());
 			}
 
 		}
@@ -218,7 +217,6 @@ Actor::Actor(const NxString& name, Scene* scene, ShapeBlueprint *shape, const Po
 			// i.e.
 			//			myBody	-> myBody 1
 			//			myBody10 -> myBody 11
-
 			Actors actors;
 			scene->getActors()->CopyTo(actors);
 
@@ -262,14 +260,14 @@ Actor::~Actor() {
 
 //////////////////////////////////////////////////////////
 
-void Actor::_createActor(ShapeBlueprint *shape, const Pose& pose, ActorParams params) {
+void Actor::_createActor(Shape *shape, const Pose& pose, ActorParams params) {
 	
 	NxActorDesc ad;
 	NxBodyDesc bd;
 	ad.setToDefault();
 	bd.setToDefault();
 
-	mNxActorUserData = new NxActorUserData(this, NxActorUserData::T_Actor);
+	mNxUserData = new NxUserData(this, NxUserData::T_Actor);
 #if NX_SDK_VERSION_NUMBER >= 260
 	ad.compartment = params.mCompartment;
 #endif
@@ -283,15 +281,14 @@ void Actor::_createActor(ShapeBlueprint *shape, const Pose& pose, ActorParams pa
 #endif
 	ad.flags = params.mActorFlags;	
 	
-	ad.globalPose.t = pose.getVec3();
-	ad.globalPose.M.fromQuat(pose.getQuat());
+	ad.globalPose = pose;
 	
 	if (params.mGroupAsIndex != 0)
 		ad.group = params.mGroupAsIndex;
 	else if (params.mGroupAsName.length() > 0)
 		ad.group = mOwner->getActorGroup(params.mGroupAsName)->getGroupID();
 
-	ad.userData = mNxActorUserData;
+	ad.userData = mNxUserData;
 
 	if (params.mDensity == 0 && params.mMass == 0) {
 		ad.body = NULL;
@@ -317,41 +314,34 @@ void Actor::_createActor(ShapeBlueprint *shape, const Pose& pose, ActorParams pa
 		ad.body = &bd;
 	}
 
-	shape->_bindToActorDescription(this, 0, ad.shapes);
+	NxWatchDescribed(Shape, shape, mName.c_str());
+	shape->createShape(ad.shapes, 0, mOwner);
+	mCollisionModel.Insert(shape);
 
 	mActor = mOwner->mScene->createActor(ad);
 
 	if (!mActor) {
-		std::stringstream ss;
-		ss << "Creation of Actor with the identifier '" << mName << "' failed." << std::endl;
-		NxThrow_Error(ss.str());
+		NxThrow(NxString("Creation of Actor with the identifier '" + mName + "' failed.").c_str());
 		return;
 	}
 
-	if (!shape->isShared())
-		delete shape;
-
 	NxU32 nbShapes = mActor->getNbShapes();
-	NxShape*const* shapes = mActor->getShapes();
+	NxShape* const* nx_shapes = mActor->getShapes();
 
-	int i=0;
-	while (nbShapes--) {
-		mCollisionModel[i]->_bindNxShapeToShape(shapes[nbShapes]);
-		i++;
+	for (NxU32 i=0;i < nbShapes;i++) {
+		mCollisionModel[i]->setNxShape(nx_shapes[i]);
 	}
 
-#if (OGRE_VERSION_MAJOR >= 1) && (OGRE_VERSION_MINOR >= 5)
-	mBirthFrame = Ogre::Root::getSingletonPtr()->getNextFrameNumber() - 1;
-#else
-	mBirthFrame = Ogre::Root::getSingletonPtr()->getCurrentFrameNumber();
-#endif
+	mBirthFrame = mOwner->getWorld()->getNbFrames();
+
 }
 
 //////////////////////////////////////////////////////////
 
 void Actor::_destroyActor() {
-	mCollisionModel.destroyAllOwned();
-	delete mNxActorUserData;
+//	mCollisionModel.destroyAllOwned();
+	delete mNxUserData;
+	mCollisionModel.DestroyAll();
 	mOwner->mScene->releaseActor(*mActor);
 	mActor = 0;
 }
@@ -378,56 +368,132 @@ NxScene* Actor::getNxScene() {
 //////////////////////////////////////////////////////////
 
 Actor*	Actor::duplicate(const NxString& name, const Pose& p) {
+#if 0
 	Blueprints::ActorBlueprint* ab = new Blueprints::ActorBlueprint();
 	ab->serialise(this, mOwner);
 	Actor* a = ab->unserialise(name, mOwner);
 	a->setGlobalPose(p);
 	delete ab;
 	return a;
+#endif
+
+	return NULL;
 }
 
 //////////////////////////////////////////////////////////
-
+			
 void Actor::setGlobalPose(const Pose& pose) {
-	mActor->setGlobalPose(pose.toMat34());
+	mActor->setGlobalPose(pose);
 }
 
 //////////////////////////////////////////////////////////
 
-Pose Actor::getGlobalPose() {
-	static Pose p;
-	p.fromMat34(mActor->getGlobalPose());
-	return p;
+Pose Actor::getGlobalPose() const {
+	return Pose(mActor->getGlobalPose());
 }
 
 //////////////////////////////////////////////////////////
 
-Ogre::Quaternion Actor::getGlobalOrientation() {
-	return NxConvert<Ogre::Quaternion, NxQuat>(mActor->getGlobalOrientationQuat());
+#if (NX_USE_OGRE == 1)
+
+Ogre::Quaternion Actor::getGlobalOrientationAsOgreQuaternion() const {
+	return Pose(mActor->getGlobalPose());
 }
 
 //////////////////////////////////////////////////////////
 
-void Actor::setGlobalOrientation(const Ogre::Quaternion& quat) {
-	mActor->setGlobalOrientation(NxConvert<NxQuat, Ogre::Quaternion>(quat));
+void Actor::setGlobalOrientation(const Ogre::Quaternion& quaternion) {
+	NxQuat nx_quaternion; nx_quaternion.setWXYZ(quaternion.w, quaternion.x, quaternion.y, quaternion.z);
+	mActor->setGlobalOrientationQuat(nx_quaternion);
 }
 
 //////////////////////////////////////////////////////////
 
-Ogre::Vector3 Actor::getGlobalPosition() {
-	return NxConvert<Ogre::Vector3, NxVec3>(mActor->getGlobalPosition());
+Ogre::Vector3 Actor::getGlobalPositionAsOgreVector3() const {
+	NxVec3 nx_vector = mActor->getGlobalPosition();
+	return Ogre::Vector3(nx_vector.x, nx_vector.y, nx_vector.z);
 }
 
 //////////////////////////////////////////////////////////
 
-void Actor::setGlobalPosition(const Ogre::Vector3& vec) {
-	mActor->setGlobalPosition(NxConvert<NxVec3, Ogre::Vector3>(vec));
+void Actor::setGlobalPosition(const Ogre::Vector3& vector) {
+	NxVec3 nx_vector(vector.x, vector.y, vector.z);
+	mActor->setGlobalPosition(nx_vector);
+}
+
+//////////////////////////////////////////////////////////
+
+#endif
+
+
+//////////////////////////////////////////////////////////
+
+NxMat33 Actor::getGlobalOrientation() const {
+	return mActor->getGlobalOrientation();
+}
+
+//////////////////////////////////////////////////////////
+
+void Actor::setGlobalOrientation(const NxMat33& matrix) {
+	mActor->setGlobalOrientation(matrix);
+}
+
+//////////////////////////////////////////////////////////
+
+float4 Actor::getGlobalOrientationAsFloat4() const {
+	NxQuat nx_quaternion = mActor->getGlobalOrientationQuat();
+	return float4(nx_quaternion.w, nx_quaternion.x, nx_quaternion.y, nx_quaternion.z);
+}
+
+//////////////////////////////////////////////////////////
+
+void Actor::setGlobalOrientation(const float4& quaternion) {
+	NxQuat nx_quaternion; nx_quaternion.setWXYZ(quaternion.i, quaternion.j, quaternion.k, quaternion.l);
+	mActor->setGlobalOrientationQuat(nx_quaternion);
+}
+
+//////////////////////////////////////////////////////////
+
+float3 Actor::getGlobalPositionAsFloat3() const {
+	NxVec3 nx_vector = mActor->getGlobalPosition();
+	return float3(nx_vector.x, nx_vector.y, nx_vector.z);
+}
+
+//////////////////////////////////////////////////////////
+
+void Actor::setGlobalPosition(const float3& vector) {
+	NxVec3 nx_vector(vector.i, vector.j, vector.k);
+	mActor->setGlobalPosition(nx_vector);
+}
+
+//////////////////////////////////////////////////////////
+
+NxQuat Actor::getGlobalOrientationAsNxQuat() const {
+	return mActor->getGlobalOrientationQuat();
+}
+
+//////////////////////////////////////////////////////////
+
+void Actor::setGlobalOrientation(const NxQuat& quaternion) {
+	mActor->setGlobalOrientationQuat(quaternion);
+}
+
+//////////////////////////////////////////////////////////
+
+NxVec3 Actor::getGlobalPositionAsNxVec3() const {
+	return mActor->getGlobalPosition();
+}
+
+//////////////////////////////////////////////////////////
+
+void Actor::setGlobalPosition(const NxVec3& vector) {
+	mActor->setGlobalPosition(vector);
 }
 
 //////////////////////////////////////////////////////////
 
 void Actor::moveGlobalPose(const Pose& pose) {
-	mActor->moveGlobalPose(pose.toMat34());
+	mActor->moveGlobalPose(pose);
 }
 
 //////////////////////////////////////////////////////////
@@ -445,56 +511,11 @@ void Actor::moveGlobalOrientation(const Ogre::Quaternion& quat) {
 ////////////////////////////////////////////////////////
 
 void Actor::moveTowards(const Pose& p, float force) {
-	NxVec3 fc = p.v - mActor->getGlobalPosition();
+	NxVec3 fc = p.m.t - mActor->getGlobalPosition();
 	fc *= force;
 	fc -= mActor->getPointVelocity(mActor->getGlobalPosition());
 	mActor->addForceAtPos(fc, mActor->getGlobalPosition());
 }
-
-////////////////////////////////////////////////////////
-
-#if 0
-
-const ShapeBlueprint& Actor::createShapeDescription(const ShapeBlueprint& s) {
-	NxUnderConstruction;
-	return s;
-}
-
-//////////////////////////////////////////////////////////
-
-void Actor::destroyShapeDescription(const ShapeBlueprint&) {
-	NxUnderConstruction;
-}
-
-//////////////////////////////////////////////////////////
-
-Ogre::uint Actor::getNbShapeDescriptions() {
-	return mActor->getNbShapeDescriptions();
-}
-
-//////////////////////////////////////////////////////////
-
-std::vector<const ShapeBlueprint&> Actor::getAllShapeDescriptions() {
-	NxUnderConstruction;
-	std::vector<const ShapeBlueprint&> s;
-	return s;
-}
-
-//////////////////////////////////////////////////////////
-
-ShapeBlueprint Actor::getFirstShapeDescription() {
-	NxUnderConstruction;
-	return NULL;
-}
-
-//////////////////////////////////////////////////////////
-
-ShapeBlueprint Actor::getShapeDescription(Ogre::uint id) {
-	NxUnderConstruction;
-	return NULL;
-}
-
-#endif
 
 //////////////////////////////////////////////////////////
 
@@ -547,7 +568,7 @@ bool Actor::isDynamic()	const {
 //////////////////////////////////////////////////////////
 
 void Actor::setCMassOffsetLocalPose(const Pose& pose) {
-	mActor->setCMassOffsetLocalPose(pose.toMat34());
+	mActor->setCMassOffsetLocalPose(pose);
 }
 
 //////////////////////////////////////////////////////////
@@ -571,7 +592,7 @@ void Actor::setCMassOffsetLocalOrientation(const Ogre::Matrix3& vec) {
 //////////////////////////////////////////////////////////
 
 void Actor::setCMassOffsetGlobalPose(const Pose& pose) {
-	mActor->setCMassOffsetGlobalPose(pose.toMat34());
+	mActor->setCMassOffsetGlobalPose(pose);
 }
 
 //////////////////////////////////////////////////////////
@@ -597,7 +618,7 @@ void Actor::setCMassOffsetGlobalOrientation(const Ogre::Matrix3& quat) {
 //////////////////////////////////////////////////////////
 
 void Actor::setCMassGlobalPose(const Pose& pose) {
-	mActor->setCMassGlobalPose(pose.toMat34());
+	mActor->setCMassGlobalPose(pose);
 }
 
 //////////////////////////////////////////////////////////
@@ -617,8 +638,7 @@ void Actor::setCMassGlobalOrientation(const Ogre::Quaternion& quat) {
 
 
 Pose Actor::getCMassLocalPose()	const {
-	Pose pose;
-	pose.fromMat34(mActor->getCMassLocalPose());
+	Pose pose = mActor->getCMassLocalPose();
 	return pose;
 }
 
@@ -638,7 +658,7 @@ Ogre::Quaternion Actor::getCMassLocalOrientation() const {
 
 Pose Actor::getCMassGlobalPose() const {
 	Pose pose;
-	pose.fromMat34(mActor->getCMassGlobalPose());
+	pose = mActor->getCMassGlobalPose();
 	return pose;
 }
 
@@ -1007,83 +1027,69 @@ Compartment* Actor::getCompartment() const {
 
 //////////////////////////////////////////////////////////
 
-Shape* Actor::addShape(ShapeBlueprint* sd) {
-
-
-	NxShapeIndex id = mCollisionModel.count();
-	sd->_bindToNxActor(this, id);
-	delete sd;
-	Shape* s = mCollisionModel.get(id);
-	
-
-	return s;
-
+Shape* Actor::addShape(Shape* shape) {
+	shape->createShape(mActor, mCollisionModel.Size() - 1, mOwner);
+	mCollisionModel.Insert(shape);
+	return shape;
 }
 
 //////////////////////////////////////////////////////////
 
-void Actor::removeShape(Shape* sh) {
-	
+bool Actor::removeShape(Shape* shape) {
 
-	for (Shape* shape = mCollisionModel.begin();shape = mCollisionModel.next();) {
-		if (shape == sh) {
-			mActor->releaseShape(*sh->getNxShape());
-			mCollisionModel.remove(sh->getIndex());		
-			
-			if (mDynamicCollisionModel.has(sh->getIndex()))
-				mDynamicCollisionModel.remove(sh->getIndex());
+	if (mCollisionModel.Size() == 1 || mActor->getNbShapes() == 1)
+		return false;
 
-			delete shape;
-			
-			return;
-		}
-	}
+	if (!mCollisionModel.Has(shape))
+		return false;
 
+	mActor->releaseShape(*shape->getNxShape());
+
+	unsigned int position = mCollisionModel.WhereIs(shape);
+	mCollisionModel.Destroy(position);
+
+	return true;
 }
 
 //////////////////////////////////////////////////////////
 
-void Actor::removeShape(NxShapeIndex id) {
+bool Actor::removeShape(NxShapeIndex id) {
 	
+	if (mCollisionModel.Size() == 1 || mActor->getNbShapes() == 1 || id > mActor->getNbShapes())
+		return false;
+
 	Shape* shape = mCollisionModel[id];
 
-	if (shape == 0)
-		return;
-
-	shape->releaseShape();
-	mCollisionModel.remove(id);
+	mActor->releaseShape(*shape->getNxShape());
 	
-	delete shape;
+	unsigned int position = mCollisionModel.WhereIs(shape);
+	mCollisionModel.Destroy(position);
+
+	return true;
 }
 
 //////////////////////////////////////////////////////////
 
 NxU32 Actor::getNbShapes() const {
-	return mCollisionModel.count();
+	return mCollisionModel.Size();
 }
 
 //////////////////////////////////////////////////////////
 
-CollisionModel* Actor::getCollisionModel() {
-	return &mCollisionModel;
+Actor::CollisionModel Actor::getCollisionModel() {
+	return mCollisionModel;
 }
 
 //////////////////////////////////////////////////////////
 
-CollisionModel* Actor::getDynamicCollisionModel() {
-	return &mDynamicCollisionModel;
-}
-
-//////////////////////////////////////////////////////////
-
-void* Actor::getNxActorUserData() {
+void* Actor::getNxUserData() {
 	return mActor->userData;
 }
 
 //////////////////////////////////////////////////////////
 
-NxActorUserData* Actor::getUserData() {
-	return mNxActorUserData;
+NxUserData* Actor::getUserData() {
+	return mNxUserData;
 }
 
 //////////////////////////////////////////////////////////
@@ -1109,7 +1115,6 @@ void Actor::disable() {
 	mActor->setLinearMomentum(NxVec3(0,0,0));
 	mActor->setLinearVelocity(NxVec3(0,0,0));
 
-//	disableVisualisation();
 }
 
 //////////////////////////////////////////////////////////

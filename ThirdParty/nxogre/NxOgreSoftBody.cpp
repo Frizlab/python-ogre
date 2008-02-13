@@ -1,21 +1,23 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreSoftBody.cpp
+ *  \see     NxOgreSoftBody.h
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #include "NxOgreStable.h"
 #include "NxOgreSoftBody.h"
@@ -43,9 +45,11 @@ void SoftBodyParams::setToDefault() {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-void SoftBodyParams::parse(Parameters P) {
-	for (Parameters::iterator p = P.begin(); p != P.end();p++) {
-		
+void SoftBodyParams::parse(Parameters params) {
+
+	setToDefault();
+
+	for (Parameter* parameter = params.Begin(); parameter = params.Next();) {
 
 	}
 }
@@ -164,14 +168,14 @@ NxSoftBodyMesh*	SoftBody::__createCubeSoftBodyMesh(NxReal wx, NxReal wy, NxReal 
 	}
 
 #if 0
-						#ifndef NX_DEBUG
+						#if (NX_DEBUG == 0)
 
 							MemoryWriteBuffer buf;
 							if (!NxCookSoftBodyMesh(mSoftBodyMeshDescription, buf)) {
 								std::stringstream s;
 								s << "Cloth Mesh failed to cook";
 
-								NxThrow_Error(s.str());
+								NxThrow(s.str());
 							}
 							
 						  mSoftBodyMesh = mOwner->getNxScene()->getPhysicsSDK().createSoftBodyMesh(MemoryReadBuffer(buf.data));
@@ -185,7 +189,7 @@ NxSoftBodyMesh*	SoftBody::__createCubeSoftBodyMesh(NxReal wx, NxReal wy, NxReal 
 							if (!NxCookSoftBodyMesh(mSoftBodyMeshDescription, buf)) {
 								std::stringstream s;
 								s << "SoftBody Mesh failed to cook";
-								NxThrow_Error(s.str());
+								NxThrow(s.str());
 							}
 							fclose(buf.fp);
 
@@ -314,14 +318,14 @@ NxSoftBodyMesh* SoftBody::__createSoftBodyMesh(const NxString& name, const NxStr
 	memcpy((NxU32*)mSoftBodyMeshDescription.tetrahedra, tempIndices.begin(), sizeof(NxU32)*mSoftBodyMeshDescription.numTetrahedra*4);
 
 #if 0
-				#ifndef NX_DEBUG
+				#if (NX_DEBUG == 0)
 
 					MemoryWriteBuffer buf;
 					if (!NxCookSoftBodyMesh(mSoftBodyMeshDescription, buf)) {
 						std::stringstream s;
 						s << "SoftBody Mesh failed to cook";
 
-						NxThrow_Error(s.str());
+						NxThrow(s.str());
 					}
 					
 				  mSoftBodyMesh = mOwner->getNxScene()->getPhysicsSDK().createSoftBodyMesh(MemoryReadBuffer(buf.data));
@@ -335,7 +339,7 @@ NxSoftBodyMesh* SoftBody::__createSoftBodyMesh(const NxString& name, const NxStr
 					if (!NxCookSoftBodyMesh(mSoftBodyMeshDescription, buf)) {
 						std::stringstream s;
 						s << "SoftBody Mesh failed to cook";
-						NxThrow_Error(s.str());
+						NxThrow(s.str());
 					}
 					fclose(buf.fp);
 

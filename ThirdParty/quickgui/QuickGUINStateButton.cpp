@@ -52,6 +52,14 @@ namespace QuickGUI
 		mQuad->setMaterial(mSkinSet->getMaterialName());
 		mCurrentTexture = skin + mCurrentState->getSkinComponent() + ".down" + mSkinSet->getImageExtension();
 		mQuad->setTextureCoordinates(mSkinSet->getTextureCoordinates(mCurrentTexture));
+
+		for(std::vector<Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
+		{
+			if((*it)->getWidgetType() == TYPE_BORDER)
+			{
+				dynamic_cast<Border*>(*it)->_notifyParentSkinComponent(mSkinComponent + ".down");
+			}
+		}
 	}
 
 	void NStateButton::applyButtonOverTexture()
@@ -65,6 +73,14 @@ namespace QuickGUI
 		mQuad->setMaterial(mSkinSet->getMaterialName());
 		mCurrentTexture = skin + mCurrentState->getSkinComponent() + ".over" + mSkinSet->getImageExtension();
 		mQuad->setTextureCoordinates(mSkinSet->getTextureCoordinates(mCurrentTexture));
+
+		for(std::vector<Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
+		{
+			if((*it)->getWidgetType() == TYPE_BORDER)
+			{
+				dynamic_cast<Border*>(*it)->_notifyParentSkinComponent(mSkinComponent + ".over");
+			}
+		}
 	}
 
 	void NStateButton::applyDefaultTexture()
@@ -77,6 +93,15 @@ namespace QuickGUI
 		mQuad->setMaterial(mSkinSet->getMaterialName());
 		mCurrentTexture = skin + mCurrentState->getSkinComponent() + mSkinSet->getImageExtension();
 		mQuad->setTextureCoordinates(mSkinSet->getTextureCoordinates(mCurrentTexture));
+		mSkinComponent = mCurrentState->getSkinComponent();
+
+		for(std::vector<Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
+		{
+			if((*it)->getWidgetType() == TYPE_BORDER)
+			{
+				dynamic_cast<Border*>(*it)->_notifyParentSkinComponent(mSkinComponent);
+			}
+		}
 	}
 
 	void NStateButton::clearStates()
@@ -177,7 +202,9 @@ namespace QuickGUI
 			return;
 
 		mCurrentState = s;
-		applyDefaultTexture();
+		mSkinComponent = mCurrentState->getSkinComponent();
+		setSkin(mCurrentState->getSkin());
+		//applyDefaultTexture();
 		mText->setCaption(mCurrentState->getText());
 
 		WidgetEventArgs args(this);

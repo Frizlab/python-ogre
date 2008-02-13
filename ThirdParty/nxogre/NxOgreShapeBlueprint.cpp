@@ -1,3 +1,4 @@
+#if 0
 //
 //	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
 //	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
@@ -49,7 +50,7 @@ ShapeBlueprint* ShapeBlueprint::getDefaultShape() {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ShapeBlueprint::__paramsToDescription(NxShapeDesc& desc, const ShapeParams& p, Scene* s) {
+void ShapeBlueprint::__genericParamsToDescription(NxShapeDesc& desc, const ShapeParams& p, Scene* s) {
 	
 
 	desc.density = p.mDensity;
@@ -82,3 +83,4 @@ void ShapeBlueprint::__paramsToDescription(NxShapeDesc& desc, const ShapeParams&
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 }; //End of NxOgre namespace.
+#endif

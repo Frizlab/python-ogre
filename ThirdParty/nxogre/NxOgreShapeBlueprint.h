@@ -1,3 +1,4 @@
+#if 0
 //
 //	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
 //	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
@@ -60,7 +61,7 @@ namespace NxOgre {
 			virtual Shape* _bindToActorDescription(Actor*, NxShapeIndex id, NxArray<NxShapeDesc*>&) {return 0;}
 			virtual Shape* _bindToNxActor(Actor*, NxShapeIndex) {return 0;}
 
-			void __paramsToDescription(NxShapeDesc& desc, const ShapeParams& p, Scene* s);
+			void __genericParamsToDescription(NxShapeDesc& desc, const ShapeParams& p, Scene* s);
 		
 			
 			NxU32		mID;
@@ -73,4 +74,5 @@ namespace NxOgre {
 
 };
 
+#endif
 #endif

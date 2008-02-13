@@ -49,20 +49,20 @@ namespace QuickGUI
 
 	void ProgressBar::_getBarExtents()
 	{
-		mBarMinWidth = static_cast<int>(mBarImage.getWidth());
+		mBarMinWidth = static_cast<int>(mBarImage->getWidth());
 		mBarMaxWidth = 0;
-		mBarMinHeight = static_cast<int>(mBarImage.getHeight());
+		mBarMinHeight = static_cast<int>(mBarImage->getHeight());
 		mBarMaxHeight = 0;
 
-		const Ogre::PixelBox& pb = mBarImage.getPixelBox();
+		const Ogre::PixelBox& pb = mBarImage->getPixelBox();
 
 		// Pointers to the pixel data of the bar, and the destination image
 		Ogre::uint8* ptr = static_cast<Ogre::uint8*>(pb.data);
 
 		// iterate through pixel by pixel, to determine the min/max bar bounds.
-		for( int i = 0; i < static_cast<int>(mBarImage.getHeight()); i++ )
+		for( int i = 0; i < static_cast<int>(mBarImage->getHeight()); i++ )
 		{
-			for( int j = 0; j < static_cast<int>(mBarImage.getWidth()); j++ )
+			for( int j = 0; j < static_cast<int>(mBarImage->getWidth()); j++ )
 			{
 				// skip R,B,G channels
 				ptr += 3;
@@ -84,8 +84,7 @@ namespace QuickGUI
 
 	void ProgressBar::_modifyBarTexture(float progress)
 	{
-		Ogre::Image barContainer;
-		barContainer.load(mSkinName + mSkinComponent + mSkinExtension, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		Ogre::Image* barContainer = mSkinSet->getImage(mSkinName + mSkinComponent + mSkinExtension);
 
 		// Hardware Pixel Buffer for moving pixels around, and correctly creating the barTexture.
 		Ogre::HardwarePixelBufferSharedPtr buf = mBarTexture->getBuffer();
@@ -93,14 +92,14 @@ namespace QuickGUI
 		// if 100 percent, just copy over the entire bar image.
 		if(progress >= 0.99)
 		{
-			buf->blitFromMemory(mBarImage.getPixelBox(),Ogre::Image::Box(0, 0, mBarImage.getWidth(), mBarImage.getHeight()));
+			buf->blitFromMemory(mBarImage->getPixelBox(),Ogre::Image::Box(0, 0, mBarImage->getWidth(), mBarImage->getHeight()));
 			return;
 		}
 
 		// At this point we are less than 100% progress, so we will have to manipulate the bar texture.
 
-		// First, we want to make the barTexture appear like the barContainer. (looks like 0 progress)
-		buf->blitFromMemory(barContainer.getPixelBox(),Ogre::Image::Box(0, 0, barContainer.getWidth(), barContainer.getHeight()));
+		// First, we want to make the barTexture appear like the barContainer-> (looks like 0 progress)
+		buf->blitFromMemory(barContainer->getPixelBox(),Ogre::Image::Box(0, 0, barContainer->getWidth(), barContainer->getHeight()));
 
 		// if progress is too small, there is no bar texture to create.
 		if(progress <= 0.01)
@@ -125,14 +124,14 @@ namespace QuickGUI
 			{
 				if(mClippingEdge == CLIP_LEFT_BOTTOM)
 				{
-					srcBox = mBarImage.getPixelBox().getSubVolume(Ogre::Box((mBarMinWidth + spaceWidth), 0, mBarMaxWidth, barContainer.getHeight()));
-					dstBox = Ogre::Image::Box(mBarMinWidth, 0, (mBarMinWidth + barWidth), barContainer.getHeight());
+					srcBox = mBarImage->getPixelBox().getSubVolume(Ogre::Box((mBarMinWidth + spaceWidth), 0, mBarMaxWidth, barContainer->getHeight()));
+					dstBox = Ogre::Image::Box(mBarMinWidth, 0, (mBarMinWidth + barWidth), barContainer->getHeight());
 				}
 				// CLIP_RIGHT_TOP
 				else
 				{
-					srcBox = mBarImage.getPixelBox().getSubVolume(Ogre::Box(mBarMinWidth, 0, (mBarMinWidth + barWidth), barContainer.getHeight()));
-					dstBox = Ogre::Image::Box(mBarMinWidth, 0, (mBarMinWidth + barWidth), barContainer.getHeight());
+					srcBox = mBarImage->getPixelBox().getSubVolume(Ogre::Box(mBarMinWidth, 0, (mBarMinWidth + barWidth), barContainer->getHeight()));
+					dstBox = Ogre::Image::Box(mBarMinWidth, 0, (mBarMinWidth + barWidth), barContainer->getHeight());
 				}
 			}
 			// FILLS_RIGHT_TO_LEFT
@@ -140,14 +139,14 @@ namespace QuickGUI
 			{
 				if(mClippingEdge == CLIP_LEFT_BOTTOM)
 				{
-					srcBox = mBarImage.getPixelBox().getSubVolume(Ogre::Box(mBarMinWidth, 0, (mBarMinWidth + barWidth), barContainer.getHeight()));
-					dstBox = Ogre::Image::Box((mBarMinWidth + spaceWidth), 0, mBarMaxWidth, barContainer.getHeight());
+					srcBox = mBarImage->getPixelBox().getSubVolume(Ogre::Box(mBarMinWidth, 0, (mBarMinWidth + barWidth), barContainer->getHeight()));
+					dstBox = Ogre::Image::Box((mBarMinWidth + spaceWidth), 0, mBarMaxWidth, barContainer->getHeight());
 				}
 				// CLIP_RIGHT_TOP
 				else
 				{
-					srcBox = mBarImage.getPixelBox().getSubVolume(Ogre::Box((mBarMaxWidth - barWidth), 0, mBarMaxWidth, barContainer.getHeight()));
-					dstBox = Ogre::Image::Box((mBarMinWidth + spaceWidth), 0, mBarMaxWidth, barContainer.getHeight());
+					srcBox = mBarImage->getPixelBox().getSubVolume(Ogre::Box((mBarMaxWidth - barWidth), 0, mBarMaxWidth, barContainer->getHeight()));
+					dstBox = Ogre::Image::Box((mBarMinWidth + spaceWidth), 0, mBarMaxWidth, barContainer->getHeight());
 				}
 			}
 		}
@@ -163,14 +162,14 @@ namespace QuickGUI
 			{
 				if(mClippingEdge == CLIP_LEFT_BOTTOM)
 				{
-					srcBox = mBarImage.getPixelBox().getSubVolume(Ogre::Box(0, mBarMinHeight, barContainer.getWidth(), (mBarMinHeight + barHeight)));
-					dstBox = Ogre::Image::Box(0, mBarMinHeight + spaceHeight, barContainer.getWidth(), mBarMaxHeight);
+					srcBox = mBarImage->getPixelBox().getSubVolume(Ogre::Box(0, mBarMinHeight, barContainer->getWidth(), (mBarMinHeight + barHeight)));
+					dstBox = Ogre::Image::Box(0, mBarMinHeight + spaceHeight, barContainer->getWidth(), mBarMaxHeight);
 				}
 				// CLIP_RIGHT_TOP
 				else
 				{
-					srcBox = mBarImage.getPixelBox().getSubVolume(Ogre::Box(0, (mBarMaxHeight - barHeight), barContainer.getWidth(), mBarMaxHeight));
-					dstBox = Ogre::Image::Box(0, mBarMinHeight + spaceHeight, barContainer.getWidth(), mBarMaxHeight);
+					srcBox = mBarImage->getPixelBox().getSubVolume(Ogre::Box(0, (mBarMaxHeight - barHeight), barContainer->getWidth(), mBarMaxHeight));
+					dstBox = Ogre::Image::Box(0, mBarMinHeight + spaceHeight, barContainer->getWidth(), mBarMaxHeight);
 				}
 			}
 			// FILLS_TOP_TO_BOTTOM
@@ -178,14 +177,14 @@ namespace QuickGUI
 			{
 				if(mClippingEdge == CLIP_LEFT_BOTTOM)
 				{
-					srcBox = mBarImage.getPixelBox().getSubVolume(Ogre::Box(0, mBarMaxHeight - barHeight, barContainer.getWidth(), mBarMaxHeight));
-					dstBox = Ogre::Image::Box(0, mBarMinHeight, barContainer.getWidth(), (mBarMinHeight + barHeight));
+					srcBox = mBarImage->getPixelBox().getSubVolume(Ogre::Box(0, mBarMaxHeight - barHeight, barContainer->getWidth(), mBarMaxHeight));
+					dstBox = Ogre::Image::Box(0, mBarMinHeight, barContainer->getWidth(), (mBarMinHeight + barHeight));
 				}
 				// CLIP_RIGHT_TOP
 				else
 				{
-					srcBox = mBarImage.getPixelBox().getSubVolume(Ogre::Box(0, mBarMinHeight, barContainer.getWidth(), (mBarMinHeight + barHeight)));
-					dstBox = Ogre::Image::Box(0, mBarMinHeight, barContainer.getWidth(), (mBarMinHeight + barHeight));
+					srcBox = mBarImage->getPixelBox().getSubVolume(Ogre::Box(0, mBarMinHeight, barContainer->getWidth(), (mBarMinHeight + barHeight)));
+					dstBox = Ogre::Image::Box(0, mBarMinHeight, barContainer->getWidth(), (mBarMinHeight + barHeight));
 				}
 			}
 		}
@@ -193,15 +192,15 @@ namespace QuickGUI
 		buf->blitFromMemory(srcBox,dstBox);
 
 		// Pointer to the pixel buffer of the bar texture, at full progress.
-		Ogre::uint8* refPtr = static_cast<Ogre::uint8*>((mBarImage.getPixelBox()).data);
+		Ogre::uint8* refPtr = static_cast<Ogre::uint8*>((mBarImage->getPixelBox()).data);
 		// Pointer to the pixel buffer of the currently created bar progress texture.
 		buf->lock(Ogre::HardwareBuffer::HBL_NORMAL);
 		Ogre::uint8* bufPtr = static_cast<Ogre::uint8*>((buf->getCurrentLock()).data);
 
 		// iterate through pixel by pixel, to Make sure the newly created bar texture does not exceed original bar bounds.
-		for( int i = 0; i < static_cast<int>(mBarImage.getHeight()); ++i )
+		for( int i = 0; i < static_cast<int>(mBarImage->getHeight()); ++i )
 		{
-			for( int j = 0; j < static_cast<int>(mBarImage.getWidth()); ++j )
+			for( int j = 0; j < static_cast<int>(mBarImage->getWidth()); ++j )
 			{
 				// skip R,B,G channels
 				refPtr += 3;
@@ -312,7 +311,7 @@ namespace QuickGUI
 
 		mSkinExtension = ss->getImageExtension();
 		mBarTextureName = mSkinName + mSkinComponent + ".bar" + mSkinExtension;
-		mBarImage.load(mBarTextureName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		mBarImage = mSkinSet->getImage(mBarTextureName);
 
 		_getBarExtents();
 

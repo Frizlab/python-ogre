@@ -1,21 +1,23 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreWorld.cpp
+ *  \see     NxOgreWorld.h
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #include "NxOgreStable.h"
 #include "NxOgreWorld.h"
@@ -23,9 +25,9 @@
 #include "NxOgreHelpers.h"				// For: Incase of Scene duplicate names.
 
 #if (NX_USE_LEGACY_NXCONTROLLER == 1)
-#	include "NxOgreLegacyCharacterController.h"
+#   include "NxOgreLegacyCharacterController.h"
 #else
-#	include "NxOgreCharacterSystem.h"	// For: Setting up character controller
+#   include "NxOgreCharacterSystem.h"	// For: Setting up character controller
 #endif
 
 #include "NxOgreDebugRenderer.h"		// For: Times when it's really needed.
@@ -36,8 +38,10 @@
 #include "NxOgreFileResourceSystem.h"
 #include "NxOgreOgreResourceSystem.h"
 
-#include "OgreRoot.h"
-#include "OgreSingleton.h"
+#if (NX_USE_OGRE == 1)
+#   include "OgreRoot.h"
+#   include "OgreSingleton.h"
+#endif
 
 namespace NxOgre {
 
@@ -47,7 +51,8 @@ World::World(PhysXDriverParams driverParams) {
 
 	mRoot = Ogre::Root::getSingletonPtr();
 	mDriver = new PhysXDriver(this, driverParams);
-
+	
+	mNbFrames = 0;
 	srand((unsigned)time(0));
 
 	mDriver->getSDK()->setParameter(NX_VISUALIZATION_SCALE, 1.0f);
@@ -75,6 +80,8 @@ World::World(PhysXDriverParams driverParams) {
 		mResourceManager->initAllResourceSystems();
 	}
 
+	NxLabelContainer(World, mScenes, Scenes);
+
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -87,7 +94,7 @@ World::~World() {
 
 void World::shutdown() {
 
-	#ifdef NX_DEBUG
+	#if (NX_DEBUG == 1)
 		NxDebug("NxOgre shutting down.");
 	#endif
 
@@ -97,11 +104,12 @@ void World::shutdown() {
 		NxDelete(mDebugRenderer);
 	#endif
 
-	#ifdef NX_DEBUG
+	#if (NX_DEBUG == 1)
 		mScenes.dumpToConsole();
 	#endif
 
 	mScenes.destroyAllOwned();
+
 #if (NX_USE_LEGACY_NXCONTROLLER == 1)
 #	if (NX_USE_CHARACTER_API == 1)
 		NxDelete(mCharacterController);
@@ -109,8 +117,11 @@ void World::shutdown() {
 #else
 		NxDelete(mCharacterSystem);
 #endif
-	delete mResourceManager;
+
+	NxDelete(mResourceManager);
+#if (NX_DEBUG == 1)
 	NxDebug("Destroyed ResourceManager.");
+#endif
 
 	NxDelete(mDriver);
 }
@@ -121,7 +132,7 @@ void World::_registerScene(const NxString& name, Scene* scene) {
 
 	if (mScenes.has(name)) {
 		NxString newname = NxCreateID(mScenes.count(), name);
-		NxThrow_Conflict("Tried to register a scene with a duplicate name '" + scene->getName() + "', name is now '" + newname + "'.");
+		NxThrow_AsWarning(NxString("Tried to register a scene with a duplicate name '" + scene->getName() + "', name is now '" + newname + "'.").c_str());
 		mScenes.insert(newname, scene);
 		return;
 	}
@@ -134,6 +145,7 @@ void World::_registerScene(const NxString& name, Scene* scene) {
 void World::_unregisterScene(const NxString& name) {
 	mScenes.remove(name);
 }
+
 ///////////////////////////////////////////////////////////////////////
 
 Scene* World::createScene(const NxString& name, Ogre::SceneManager* s, SceneParams params) {
@@ -145,15 +157,15 @@ Scene* World::createScene(const NxString& name, Ogre::SceneManager* s, ScenePara
 
 Scene* World::createScene(const NxString& name, SceneParams p) {
 
-	Scene* scene;
+	Scene* scene = 0;
 
 	if (mScenes.has(name)) {
 		NxString newname = NxCreateID(mScenes.count(), name);
-		NxThrow_Conflict("Tried to create a scene with a duplicate name '" + name + "', name is now '" + newname + "'.");
-		scene = new Scene(NxCreateID(mScenes.count(), newname), this, p);
+		NxThrow_AsWarning(NxString("Tried to create a scene with a duplicate name '" + name + "', name is now '" + newname + "'.").c_str());
+		scene = NxNew(Scene) Scene(NxCreateID(mScenes.count(), newname), this, p);
 	}
 	else {
-		scene = new Scene(name, this, p);
+		scene = NxNew(Scene) Scene(name, this, p);
 	}
 
 	mScenes.lock(scene->getName(), true);
@@ -164,8 +176,9 @@ Scene* World::createScene(const NxString& name, SceneParams p) {
 
 void World::destroyScene(const NxString& name) {
 	Scene* s = mScenes.get(name);
-	if (mScenes.isLocked(name))
-		delete s;
+	if (mScenes.isLocked(name)) {
+		NxDelete(s);
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -183,22 +196,22 @@ NxPhysicsSDK* World::getSDK() {
 ///////////////////////////////////////////////////////////////////////
 
 void World::simulate(NxReal time) {
+	
+	mNbFrames++;
 
-	for(Scene* scene = mScenes.begin();scene = mScenes.next();) {
+	for(Scene* scene = mScenes.begin();scene = mScenes.next();)
 		scene->simulate(time);
-		
-	}
 
 	#if (NX_USE_DEBUG_RENDERER_API == 1)
 		if (mDebugRenderer) {
 
 			mDebugRenderer->start();
 
-			for(Scene* scene = mScenes.begin();scene = mScenes.next();) {
+			for(Scene* scene = mScenes.begin();scene = mScenes.next();)
 				mDebugRenderer->render(*scene->getNxScene()->getDebugRenderable());
-			}
-			
+
 			mDebugRenderer->stop();
+
 		}
 	#endif
 
@@ -208,9 +221,8 @@ void World::simulate(NxReal time) {
 
 void World::render(NxReal time) {
 
-	for(Scene* scene = mScenes.begin();scene = mScenes.next();) {
+	for(Scene* scene = mScenes.begin();scene = mScenes.next();)
 		scene->render();
-	}
 
 }
 
@@ -225,6 +237,7 @@ Scenes*	World::getScenes() {
 #if (NX_USE_DEBUG_RENDERER_API == 1)
 
 void World::createDebugRenderer(Ogre::SceneManager* s) {
+
 	if (mDebugRenderer)
 		return;
 
@@ -287,8 +300,8 @@ void World::createDebugRenderer(Ogre::SceneManager* s) {
 	sdk->setParameter(NX_VISUALIZE_SOFTBODY_TEARING, true);
 	sdk->setParameter(NX_VISUALIZE_SOFTBODY_ATTACHMENT, true); 
 
-
 	mDebugRenderer = new DebugRenderer(s);
+
 }
 
 ///////////////////////////////////////////////////////////////////////

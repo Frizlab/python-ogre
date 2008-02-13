@@ -474,10 +474,10 @@ void ImpostorTexture::renderTextures(bool force)
 	
 	//Only render the entity
 	sceneMgr->setSpecialCaseRenderQueueMode(Ogre::SceneManager::SCRQM_INCLUDE); 
-	sceneMgr->addSpecialCaseRenderQueue(RENDER_QUEUE_6);
+	sceneMgr->addSpecialCaseRenderQueue(RENDER_QUEUE_6 + 1);
 
 	//uint8 oldRenderQueueGroup = entity->getRenderQueueGroup();
-	entity->setRenderQueueGroup(RENDER_QUEUE_6);
+	entity->setRenderQueueGroup(RENDER_QUEUE_6 + 1);
 
 	//Calculate the filename used to uniquely identity this render
 	String strKey = entityKey;
@@ -537,7 +537,7 @@ void ImpostorTexture::renderTextures(bool force)
 	
 
 	//entity->setRenderQueueGroup(oldRenderQueueGroup);
-	sceneMgr->removeSpecialCaseRenderQueue(RENDER_QUEUE_6);
+	sceneMgr->removeSpecialCaseRenderQueue(RENDER_QUEUE_6 + 1);
 	sceneMgr->setSpecialCaseRenderQueueMode(Ogre::SceneManager::SCRQM_EXCLUDE); 
 
 	//Re-enable mipmapping

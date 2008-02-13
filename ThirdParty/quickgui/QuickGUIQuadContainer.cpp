@@ -7,6 +7,7 @@ namespace QuickGUI
 {
 	QuadContainer::QuadContainer(Widget* owner) :
 		mOwner(owner),
+		mParentContainer(NULL),
 		mChildrenChanged(false),
 		mMenuChanged(false)
 	{
@@ -19,8 +20,14 @@ namespace QuickGUI
 		mMenuVertexBuffer = new VertexBuffer(MIN_VERTEX_BUFFER_SIZE,mOwner->getGUIManager());
 		mMenuVertexBuffer->setData(&mMenuRenderables);
 
-		mBaseQuad = mOwner->getQuad();
-		mBaseQuad->_notifyQuadContainer(this);
+		mOwner->mQuadContainer = this;
+		mOwner->setClipMode(Quad::CLIPMODE_PARENT_CONTAINER);
+		
+		for(QuadArray::iterator it = mOwner->mQuads.begin(); it != mOwner->mQuads.end(); ++it)
+			(*it)->_notifyQuadContainer(this);
+
+		for(WidgetArray::iterator it = mOwner->mComponents.begin(); it != mOwner->mComponents.end(); ++it)
+			(*it)->setQuadContainer(this);
 	}
 
 	QuadContainer::~QuadContainer()
@@ -83,25 +90,29 @@ namespace QuickGUI
 		}
 	}
 
-	void QuadContainer::addChildPanelContainer(QuadContainer* g)
+	void QuadContainer::addChildPanelContainer(QuadContainer* c)
 	{
 		QuadContainerList::iterator it = mChildPanels.begin();
-		while( (it != mChildPanels.end()) && ((*it)->getOffset() < g->getOffset()) )
+		while( (it != mChildPanels.end()) && ((*it)->getOffset() < c->getOffset()) )
 			++it;
-		
-		mChildPanels.insert(it,g);
+
+		mChildPanels.insert(it,c);
+
+		c->setParentContainer(this);
 	}
 
-	void QuadContainer::addChildWindowContainer(QuadContainer* g)
+	void QuadContainer::addChildWindowContainer(QuadContainer* c)
 	{
-		if( (mOwner != NULL) && (mOwner->getWidgetType() != Widget::TYPE_SHEET) ) 
+		if( (mOwner != NULL) && (mOwner->getWidgetType() != Widget::TYPE_SHEET) )
 			return;
 
 		QuadContainerList::iterator it = mChildWindows.begin();
-		while( (it != mChildWindows.end()) && ((*it)->getOffset() <= g->getOffset()) )
+		while( (it != mChildWindows.end()) && ((*it)->getOffset() <= c->getOffset()) )
 			++it;
-		
-		mChildWindows.insert(it,g);
+
+		mChildWindows.insert(it,c);
+
+		c->setParentContainer(this);
 	}
 
 	void QuadContainer::addMenuRenderable(Quad* q)
@@ -148,7 +159,9 @@ namespace QuickGUI
 
 	int QuadContainer::getOffset()
 	{
-		return mBaseQuad->getOffset();
+		if(mOwner == NULL)
+			return 0;
+		return mOwner->getOffset();
 	}
 
 	Widget* QuadContainer::getOwner()
@@ -161,7 +174,22 @@ namespace QuickGUI
 		return &mChildPanels;
 	}
 
+	const QuadContainerList* QuadContainer::getPanelList() const
+	{
+		return &mChildPanels;
+	}
+
+	QuadContainer* QuadContainer::getParentContainer()
+	{
+		return mParentContainer;
+	}
+
 	QuadContainerList* QuadContainer::getWindowList()
+	{
+		return &mChildWindows;
+	}
+
+	const QuadContainerList* QuadContainer::getWindowList() const
 	{
 		return &mChildWindows;
 	}
@@ -169,7 +197,7 @@ namespace QuickGUI
 	void QuadContainer::moveWindowGroupToEnd(QuadContainer* c)
 	{
 		assert(c);
-		if( (c->getOwner()->getWidgetType() != Widget::TYPE_WINDOW) && (c != mChildWindows.back()) ) 
+		if( (c->getOwner()->getWidgetType() != Widget::TYPE_WINDOW) && (c != mChildWindows.back()) )
 			return;
 
 		bool windowInList = false;
@@ -183,8 +211,8 @@ namespace QuickGUI
 				break;
 			}
 		}
-		
-		if(windowInList) 
+
+		if(windowInList)
 			mChildWindows.push_back(c);
 	}
 
@@ -237,6 +265,7 @@ namespace QuickGUI
 			if( (*it) == c )
 			{
 				mChildPanels.erase(it);
+				c->setParentContainer(NULL);
 				return;
 			}
 		}
@@ -251,6 +280,7 @@ namespace QuickGUI
 			if( (*it) == c )
 			{
 				mChildWindows.erase(it);
+				c->setParentContainer(NULL);
 				return;
 			}
 		}
@@ -294,5 +324,10 @@ namespace QuickGUI
 			(*it)->render();
 
 		mMenuVertexBuffer->render();
+	}
+
+	void QuadContainer::setParentContainer(QuadContainer* c)
+	{
+		mParentContainer = c;
 	}
 }

@@ -1,39 +1,43 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgrePhysXDriver.cpp
+ *  \see     NxOgrePhysXDriver.h
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #include "NxOgreStable.h"
 #include "NxOgrePhysXDriver.h"
 #include "NxOgreWorld.h"			// For: World & PhysXDriver work together.
 #include "NxOgreError.h"			// For: Starting up Error.
 #include "NxOgreLog.h"				// For: Setting up Log, and passing on to Error.
+#include "NxOgreHelpers.h"			// For: String manipulation in PhysXDriverParams.
 #include "NxOgreUserAllocator.h"
 #include "NxCooking.h"				// For: NxInitCooking
 #include "NxOgreRemoteDebuggerConnection.h"
 #include "NxOgreResourceManager.h"
 #include "NxOgreOgreResourceSystem.h"
 
-#if defined NX_WIN32 && defined NX_DEBUG
-#	include "windows.h"
+#if defined NX_PLATFORM_WINDOWS && (NX_DEBUG == 1)
+#  include "windows.h"
 #endif
 
-#include "OgreRoot.h"
-#include "OgreSingleton.h"
+#if (NX_USE_OGRE == 1)
+#  include "NxOgreOgreTimeController.h"
+#endif
 
 namespace NxOgre {
 
@@ -41,55 +45,99 @@ namespace NxOgre {
 
 void PhysXDriverParams::setToDefault() {
 	
-	mHasFrameListener = true;
 	mShutdownOnErrors = false;
 	mInitResources = true;
 
-#ifdef NX_DEBUG
+#if (NX_DEBUG == 1)
 	mLogType = LT_HTML;
 #else
 	mLogType = LT_NONE;
 #endif
+
+	mCustomTimeControllerPtr = 0;
+	mTimeController = TC_NONE;
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-void PhysXDriverParams::parse(Parameters P) {
+void PhysXDriverParams::parse(Parameters params) {
 
-	NxUnderConstruction;
 	setToDefault();
 
-	for (Parameters::iterator p = P.begin(); p != P.end();p++) {
+	for (Parameter* parameter = params.Begin(); parameter = params.Next();) {
 
-		if (Set("framelistener", (*p), mHasFrameListener)) continue;
-		if (Set("shutdown-on-errors", (*p), mShutdownOnErrors)) continue;
-		if (Set("init-resources", (*p), mInitResources)) continue;
-
-		
-		if ((*p).first == "log") {
-
-			toLower((*p).second);
-			if ((*p).second == "none")			mLogType = LT_NONE;
-			else if ((*p).second == "text")		mLogType = LT_TEXT;
-			else if ((*p).second == "html")		mLogType = LT_HTML;
-			else if ((*p).second == "phpbb")	mLogType = LT_PHPBB;
+		if (parameter->i == "timecontroller") {
+			NxStringToLower(parameter->j);
+#if (NX_USE_OGRE == 1)
+			if (parameter->j == "ogre") {
+				mTimeController = TC_OGRE;
+				continue;
+			}
+#endif
+			if (parameter->j == "custom")
+				mTimeController = TC_CUSTOM;
+			else if (parameter->j == "none")
+				mTimeController = TC_NONE;
 			continue;
 		}
+
+		if (Set("shutdown-on-errors", parameter, mShutdownOnErrors)) continue;
+		if (Set("init-resources", parameter, mInitResources)) continue;
+		
+		if (parameter->i == "log") {
+			NxStringToLower(parameter->j);
+			if (parameter->j == "none")        mLogType = LT_NONE;
+			else if (parameter->j == "text")   mLogType = LT_TEXT;
+			else if (parameter->j == "html")   mLogType = LT_HTML;
+			else if (parameter->j == "phpbb")  mLogType = LT_PHPBB;
+			continue;
+		}
+
 	}
 
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-PhysXDriver::PhysXDriver(World* w, PhysXDriverParams params) : mFramelistener(false), mWorld(w), mSDK(0), mTime(0), mTimeModifier(1), mLog(0), mDebugger(0) {
+PhysXDriver::PhysXDriver(World* w, PhysXDriverParams params)
+: mFramelistener(false),
+  mWorld(w),
+  mSDK(0),
+  mTime(0),
+  mTimeModifier(1),
+  mNbSimulations(0),
+  mLog(0),
+  mDebugger(0),
+  mTimeController(0)
+{
 
-#ifdef NX_DEBUG
-	NxDebug("NxOgre " + Nx_Version_Full + "'" + Nx_Version_Codename + "'");
+#if (NX_DEBUG == 1)
+	NxDebug(Nx_Version_Full);
 #endif
-	
-	mError = new Error(this, params.mShutdownOnErrors);
-	mAllocator = NxCreateAllocator("Global");
 
+	mAllocator = new Allocator();
+	mError = new Error(this, params.mShutdownOnErrors);
+	mUserAllocator = NxCreateAllocator("Global");
+
+	switch(params.mTimeController) {
+		case PhysXDriverParams::TC_CUSTOM:
+			mTimeController = params.mCustomTimeControllerPtr;
+		break;
+
+#if (NX_USE_OGRE == 1)
+		case PhysXDriverParams::TC_OGRE:
+			mTimeController = new OgreTimeController(this);
+		break;
+#endif
+
+	};
+	//	mTimeController = params.mTimeController;
+
+	mLog = NxNew(HTMLLog) HTMLLog();
+	mError->addReporter(mLog, true);
+
+/*
 	if (params.mLogType == params.LT_TEXT) {
 		mLog = new Log(Log::TEXT);
 		mError->addReporter(mLog, true);
@@ -105,9 +153,7 @@ PhysXDriver::PhysXDriver(World* w, PhysXDriverParams params) : mFramelistener(fa
 	else {
 		mLog = 0;
 	}
-
-	if (params.mHasFrameListener)
-		_createFrameListener();
+*/
 
 	_createSDK();
 
@@ -125,21 +171,21 @@ PhysXDriver::PhysXDriver(World* w, PhysXDriverParams params) : mFramelistener(fa
 		s << std::endl;
 	}
 
-	#ifdef NX_WIN32
+	#ifdef NX_PLATFORM_WINDOWS
 	s	<< "  - Platform => Windows";
 	#endif
 
-	#ifdef NX_LINUX
+	#ifdef NX_PLATFORM_LINUX
 			s	<< "  - Platform => Linux";
 	#endif
 
-	#ifdef NX_DEBUG
+	#if (NX_DEBUG == 1)
 			s	<< " Debug";
 	#endif
 
 	s	<< std::endl;
 
-	NxDebug(s.str());
+	NxDebug(s.str().c_str());
 	
 	NxInitCooking(NULL, NULL);
 
@@ -149,21 +195,20 @@ PhysXDriver::PhysXDriver(World* w, PhysXDriverParams params) : mFramelistener(fa
 
 PhysXDriver::~PhysXDriver() {
 
-	if (mFramelistener)
-		_destroyFrameListener();
-
 	if (mDebugger)
 		destroyDebuggerConnection();
 
-	NxCloseCooking();
+	if (mTimeController)
+		delete mTimeController;
 
+	NxCloseCooking();
 	_destroySDK();
 
 	NxDebug("PhysX SDK has stopped.");
 
-	delete mAllocator;
+	delete mUserAllocator;
 	delete mError;
-
+	delete mAllocator;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -174,34 +219,19 @@ NxPhysicsSDK* PhysXDriver::getSDK() {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-void PhysXDriver::_createFrameListener() {
-	mWorld->getRoot()->addFrameListener(this);
-	mFramelistener = true;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-
-void PhysXDriver::_destroyFrameListener() {
-	mWorld->getRoot()->removeFrameListener(this);
-	mFramelistener = false;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-
 void PhysXDriver::_createSDK() {
 	
-	
-
 	NxSDKCreateError errorCode = NXCE_NO_ERROR;
 
 	NxPhysicsSDKDesc desc;
 	desc.setToDefault();
-	mSDK = NxCreatePhysicsSDK(NX_PHYSICS_SDK_VERSION, mAllocator, mError, desc, &errorCode);
+	mSDK = NxCreatePhysicsSDK(NX_PHYSICS_SDK_VERSION, mUserAllocator, mError, desc, &errorCode);
+	// mSDK = NxCreatePhysicsSDK(NX_PHYSICS_SDK_VERSION, NULL, mError, desc, &errorCode);
 	
 	if(!mSDK && errorCode != 0) {
 		std::stringstream s;
-#ifdef NX_DEBUG
 
+#if (NX_DEBUG == 1)
 		s   << "Unable to start the PhysX SDK!" << std::endl << std::endl;
 		
 		switch (errorCode) {
@@ -235,7 +265,7 @@ void PhysXDriver::_createSDK() {
 			
 			case NXCE_RESET_ERROR: 
 				s << "A PhysX card was found, but it did not reset (or initialize) properly." << std::endl;
-				s << " - Please visit http://support.ageia.com and/or your PhysX card manufacture." << std::endl; 
+				s << " - Please visit http://support.ageia.com and/or your PhysX card manufacturer." << std::endl; 
 			break;
 
 			case NXCE_IN_USE_ERROR:
@@ -245,7 +275,7 @@ void PhysXDriver::_createSDK() {
 
 			case NXCE_BUNDLE_ERROR:
 				s << "A PhysX card was found, but there are issues with loading the firmware." << std::endl;
-				s << " - Please visit http://support.ageia.com and/or your PhysX card manufacture." << std::endl;
+				s << " - Please visit http://support.ageia.com and/or your PhysX card manufacturer." << std::endl;
 			break;
 
 		}
@@ -287,16 +317,16 @@ void PhysXDriver::_createSDK() {
 		<< "- Ogre     => " << OGRE_VERSION_MAJOR << "." << OGRE_VERSION_MINOR << "." << OGRE_VERSION_PATCH << " '" << OGRE_VERSION_NAME << "'." << std::endl;
 	
 
-		#ifdef NX_WIN32
+		#ifdef NX_PLATFORM_WINDOWS
 		s	<< "- Platform => Windows";
 		#endif
 
 
-		#ifdef NX_LINUX
+		#ifdef NX_PLATFORM_LINUX
 				s	<< "- Platform => Linux";
 		#endif
 
-		#ifdef NX_DEBUG
+		#if (NX_DEBUG == 1)
 				s	<< " Debug";
 		#endif
 
@@ -315,9 +345,9 @@ void PhysXDriver::_createSDK() {
 			case NXCE_BUNDLE_ERROR:			s << "NXCE_BUNDLE_ERROR" << std::endl; break;
 		}
 
-		NxThrow_Error(s.str());
+		NxThrow(s.str().c_str());
 
-#if defined NX_WIN32 && defined NX_DEBUG
+#if defined NX_PLATFORM_WINDOWS && (NX_DEBUG == 1)
 		s << std::endl << "On clicking of OK this Application will quit. See log or console window for a copy of this message and further information.";
  		MessageBox( NULL, s.str().c_str(), "Unable to start the PhysX SDK!", MB_OK | MB_ICONERROR | MB_TASKMODAL);
 #endif
@@ -344,16 +374,6 @@ void PhysXDriver::_destroySDK() {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool PhysXDriver::frameStarted(const Ogre::FrameEvent& evt) {
-	simulate(evt.timeSinceLastFrame);
-#if (NX_RENDER_IN_FRAMESTARTED == 1)
-	render(evt.timeSinceLastFrame);
-#endif
-	return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-
 void PhysXDriver::simulate(float time) {
 	
 	if (mTimeModifier) {
@@ -361,20 +381,10 @@ void PhysXDriver::simulate(float time) {
 		mWorld->simulate(time * mTimeModifier);
 		if (mDebugger)
 			mDebugger->simulate(time);
+		mNbSimulations++;
 	}
 
 	
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-
-bool PhysXDriver::frameEnded(const Ogre::FrameEvent& evt) {
-
-#if (NX_RENDER_IN_FRAMESTARTED == 0)
-	render(evt.timeSinceLastFrame);
-#endif
-
-	return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////

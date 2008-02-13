@@ -1,21 +1,23 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreRaycaster.cpp
+ *  \see     NxOgreRaycaster.h
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #include "NxOgreStable.h"
 #include "NxOgreRaycaster.h"
@@ -107,7 +109,7 @@ bool RayCaster::_castClosest(ActorFilter f) {
 		mHit.mRaycastHit = hit;
 		
 		if (hitShape->getActor().userData)
-			mHit.mActor = (static_cast<NxActorUserData*>(hitShape->getActor().userData))->toActor();
+			mHit.mActor = (static_cast<NxUserData*>(hitShape->getActor().userData))->toActor();
 		else
 			return false;
 
@@ -129,10 +131,10 @@ bool RayCaster::_castClosest(ActorFilter f) {
 		mHit = RayCastHit();
 		mHit.mRaycastHit = hit;
 
-		switch( static_cast< NxActorUserData* >( hitShape->getActor().userData )->getType()) {
+		switch( static_cast< NxUserData* >( hitShape->getActor().userData )->getType()) {
 		
-			case NxActorUserData::T_Actor:
-				mHit.mActor = static_cast<NxActorUserData*>(hitShape->getActor().userData)->toActor();
+			case NxUserData::T_Actor:
+				mHit.mActor = static_cast<NxUserData*>(hitShape->getActor().userData)->toActor();
 				mHit.mCharacter = 0;
 				mHit.mWorldImpact = NxConvert<Ogre::Vector3, NxVec3>(mHit.mRaycastHit.worldImpact);
 				mHit.mWorldNormal = NxConvert<Ogre::Vector3, NxVec3>(mHit.mRaycastHit.worldNormal);
@@ -140,9 +142,9 @@ bool RayCaster::_castClosest(ActorFilter f) {
 				mReport.insert(mHit.mActor->getName(), mHit);
 			break;
 			
-			case NxActorUserData::T_Character:
+			case NxUserData::T_Character:
 				mHit.mActor = 0;
-				mHit.mCharacter = static_cast< NxActorUserData* >(hitShape->getActor().userData)->toCharacter();
+				mHit.mCharacter = static_cast< NxUserData* >(hitShape->getActor().userData)->toCharacter();
 				mHit.mWorldImpact = NxConvert<Ogre::Vector3, NxVec3>(mHit.mRaycastHit.worldImpact);
 				mHit.mWorldNormal = NxConvert<Ogre::Vector3, NxVec3>(mHit.mRaycastHit.worldNormal);
 				mReport.insert(mHit.mCharacter->getName(), mHit);
@@ -206,7 +208,7 @@ bool RayCaster::onHit(const NxRaycastHit& hit)  {
 		raycastHit.mRaycastHit = hit;
 		
 		if (hit.shape->getActor().userData)
-			raycastHit.mActor = (static_cast<NxActorUserData*>(hit.shape->getActor().userData))->toActor();
+			raycastHit.mActor = (static_cast<NxUserData*>(hit.shape->getActor().userData))->toActor();
 		else
 			return true;
 
@@ -227,10 +229,10 @@ bool RayCaster::onHit(const NxRaycastHit& hit)  {
 		raycastHit = RayCastHit();
 		raycastHit.mRaycastHit = hit;
 
-		switch( static_cast< NxActorUserData* >( hit.shape->getActor().userData )->getType()) {
+		switch( static_cast< NxUserData* >( hit.shape->getActor().userData )->getType()) {
 		
-			case NxActorUserData::T_Actor:
-				raycastHit.mActor = static_cast<NxActorUserData*>(hit.shape->getActor().userData)->toActor();
+			case NxUserData::T_Actor:
+				raycastHit.mActor = static_cast<NxUserData*>(hit.shape->getActor().userData)->toActor();
 				raycastHit.mCharacter = 0;
 				raycastHit.mWorldImpact = NxConvert<Ogre::Vector3, NxVec3>(raycastHit.mRaycastHit.worldImpact);
 				raycastHit.mWorldNormal = NxConvert<Ogre::Vector3, NxVec3>(raycastHit.mRaycastHit.worldNormal);
@@ -238,9 +240,9 @@ bool RayCaster::onHit(const NxRaycastHit& hit)  {
 				mReport.insert(raycastHit.mActor->getName(), raycastHit);
 			break;
 			
-			case NxActorUserData::T_Character:
+			case NxUserData::T_Character:
 				raycastHit.mActor = 0;
-				raycastHit.mCharacter = static_cast< NxActorUserData* >(hit.shape->getActor().userData)->toCharacter();
+				raycastHit.mCharacter = static_cast< NxUserData* >(hit.shape->getActor().userData)->toCharacter();
 				raycastHit.mWorldImpact = NxConvert<Ogre::Vector3, NxVec3>(raycastHit.mRaycastHit.worldImpact);
 				raycastHit.mWorldNormal = NxConvert<Ogre::Vector3, NxVec3>(raycastHit.mRaycastHit.worldNormal);
 				mReport.insert(raycastHit.mCharacter->getName(), raycastHit);

@@ -1,21 +1,23 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreGroup.h
+ *  \brief   Header for the GroupCallback, ActorGroup and ShapeGroup classes.
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #ifndef __NXOGRE_GROUP_H__
 #define __NXOGRE_GROUP_H__
@@ -27,7 +29,7 @@ namespace NxOgre {
 	
 	//////////////////////////////////////////////////////////
 
-	class NxExport	GroupCallback {
+	class NxPublicClass	GroupCallback {
 		
 		public:
 
@@ -92,20 +94,20 @@ namespace NxOgre {
 
 			//////////////////////////////////////////////////////////
 
-			/** @brief Inherited Class Constructor */
+			/** \brief Inherited Class Constructor */
 
 			GroupCallback(InheritedCallback* cb, bool ownCallback = true) : mCallback(cb), mCallbackOwned(ownCallback) {}
 
 			//////////////////////////////////////////////////////////
 
-			/** @brief Method Ptr Constructor */
+			/** \brief Method Ptr Constructor */
 
 			template <typename T> explicit
 			GroupCallback(T* v,
 			void (T::*Start)(Actor*, Actor*),			
 			void (T::*End)(Actor*, Actor*),			
 			void (T::*Touch)(Actor*, Actor*))
-			:  mCallback(new TriMethodCallback<T>(v, Start, End, Touch)) {}
+			: mCallback(new TriMethodCallback<T>(v, Start, End, Touch), bool callbackOwned),mCallbackOwned(callbackOwned) {}
 	
 			//////////////////////////////////////////////////////////
 
@@ -139,7 +141,7 @@ namespace NxOgre {
 
 	//////////////////////////////////////////////////////////
 
-	class NxExport ActorGroup {
+	class NxPublicClass ActorGroup {
 
 		friend class Scene;
 		friend class SceneContactController;
@@ -189,7 +191,7 @@ namespace NxOgre {
 	
 	//////////////////////////////////////////////////////////
 
-	class NxExport ShapeGroup {
+	class NxPublicClass ShapeGroup {
 
 		public:
 

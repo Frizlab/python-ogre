@@ -48,11 +48,16 @@ namespace OgreAL {
 		mBPS(0),
 		mChannels(0),
 		mLengthInSeconds(0),
+		mManualRestart(false),
+		mManualStop(false),
+		mPreviousOffset(0),
 		mBuffers(0),
 		mBufferSize(0),
 		mBuffersLoaded(false),
 		mBuffersQueued(false),
 		mPriority(NORMAL),
+		mFinishedCallback(0),
+		mLoopedCallback(0),
 		mStartTime(0),
 		mStream(false),
 		mPitch(1.0),
@@ -86,12 +91,17 @@ namespace OgreAL {
 		mBPS(0),
 		mChannels(0),
 		mLengthInSeconds(0),
+		mManualRestart(false),
+		mManualStop(false),
+		mPreviousOffset(0),
 		mBuffers(0),
 		mBufferSize(0),
 		mBuffersLoaded(false),
 		mBuffersQueued(false),
 		mNumBuffers(stream?2:1),
 		mPriority(NORMAL),
+		mFinishedCallback(0),
+		mLoopedCallback(0),
 		mStartTime(0),
 		mStream(stream),
 		MovableObject(name),
@@ -126,11 +136,16 @@ namespace OgreAL {
 		mBPS(0),
 		mChannels(0),
 		mLengthInSeconds(0),
+		mManualRestart(false),
+		mManualStop(false),
+		mPreviousOffset(0),
 		mBufferSize(0),
 		mBuffersLoaded(true),
 		mBuffersQueued(false),
 		mNumBuffers(1),
 		mPriority(NORMAL),
+		mFinishedCallback(0),
+		mLoopedCallback(0),
 		mStartTime(0),
 		mStream(false),
 		MovableObject(name),
@@ -198,6 +213,13 @@ namespace OgreAL {
 	bool Sound::play()
 	{
 		if(isPlaying()) return true;
+
+		if(!isPaused())
+		{
+			mManualRestart = false;
+			mManualStop = false;		
+			mPreviousOffset = 0;
+		}
 
 		if(mStartTime == 0)
 		{
@@ -287,6 +309,8 @@ namespace OgreAL {
 		}
 		else if(mSource != AL_NONE)
 		{
+			mManualStop = true;
+
 			// Stop the source
 			alSourceStop(mSource);
 			CheckError(alGetError(), "Failed to stop sound");
@@ -669,6 +693,19 @@ namespace OgreAL {
 
 		if(mSource != AL_NONE)
 		{
+			if(isStopped() && !mManualStop && mFinishedCallback)
+			{
+				mFinishedCallback->execute(this);
+				mManualStop = true;
+			}
+
+			Ogre::Real currOffset = getSecondOffset();
+			if(currOffset < mPreviousOffset && !mManualRestart && mLoopedCallback)
+			{
+				mLoopedCallback->execute(this);
+			}
+			mPreviousOffset = currOffset;
+
 			alSource3f(mSource, AL_POSITION, mDerivedPosition.x, mDerivedPosition.y, mDerivedPosition.z);
 			CheckError(alGetError(), "Failed to set Position");
 
@@ -689,23 +726,23 @@ namespace OgreAL {
 			return;
 		}
 
-		alSourcef (mSource, AL_PITCH,			mPitch);
-		alSourcef (mSource, AL_GAIN,			mGain);
-		alSourcef (mSource, AL_MAX_GAIN,		mMaxGain);
-		alSourcef (mSource, AL_MIN_GAIN,		mMinGain);
+		alSourcef (mSource, AL_PITCH,				mPitch);
+		alSourcef (mSource, AL_GAIN,				mGain);
+		alSourcef (mSource, AL_MAX_GAIN,			mMaxGain);
+		alSourcef (mSource, AL_MIN_GAIN,			mMinGain);
 		alSourcef (mSource, AL_MAX_DISTANCE,		mMaxDistance);
 		alSourcef (mSource, AL_ROLLOFF_FACTOR,		mRolloffFactor);
 		alSourcef (mSource, AL_REFERENCE_DISTANCE,	mReferenceDistance);
 		alSourcef (mSource, AL_CONE_OUTER_GAIN,		mOuterConeGain);
 		alSourcef (mSource, AL_CONE_INNER_ANGLE,	mInnerConeAngle);
 		alSourcef (mSource, AL_CONE_OUTER_ANGLE,	mOuterConeAngle);
-		alSource3f(mSource, AL_POSITION,		mDerivedPosition.x, mDerivedPosition.y, mDerivedPosition.z);
-		alSource3f(mSource, AL_VELOCITY,		mVelocity.x, mVelocity.y, mVelocity.z);
-		alSource3f(mSource, AL_DIRECTION,		mDerivedDirection.x, mDerivedDirection.y, mDerivedDirection.z);
+		alSource3f(mSource, AL_POSITION,			mDerivedPosition.x, mDerivedPosition.y, mDerivedPosition.z);
+		alSource3f(mSource, AL_VELOCITY,			mVelocity.x, mVelocity.y, mVelocity.z);
+		alSource3f(mSource, AL_DIRECTION,			mDerivedDirection.x, mDerivedDirection.y, mDerivedDirection.z);
 		alSourcei (mSource, AL_SOURCE_RELATIVE,		mSourceRelative);
 		// There is an issue with looping and streaming, so we will
 		// disable looping and deal with it on our own.
-		alSourcei (mSource, AL_LOOPING,			mStream ? AL_FALSE : mLoop);
+		alSourcei (mSource, AL_LOOPING,				mStream ? AL_FALSE : mLoop);
 		CheckError(alGetError(), "Failed to initialize source");
 	}
 

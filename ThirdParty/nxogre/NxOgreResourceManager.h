@@ -1,21 +1,23 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreResourceManager.h
+ *  \brief   Header for the ResourceManager and Resource classes.
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #ifndef __NXOGRE_RESOURCE_MANAGER_H__
 #define __NXOGRE_RESOURCE_MANAGER_H__
@@ -30,10 +32,10 @@ namespace NxOgre {
 
 	/////////////////////////////////////////////////////////////////////
 
-	/** @brief A lovely little class to handle pretty much anything external to NxOgre and PhysX.
+	/** \brief A lovely little class to handle pretty much anything external to NxOgre and PhysX.
 
 	*/
-	class NxExport ResourceManager {
+	class NxPublicClass ResourceManager {
 
 		friend class ResourceSystem;
 
@@ -48,15 +50,15 @@ namespace NxOgre {
 															return mResourceManager;
 														}
 
-			/** @brief Add a Resource System to NxOgre.
-				@param identifier		Identifier of the Resource System
-				@param system			Instance of the ResourceSystem
-				@param owned			NxOgre "owns" this Resource System, and deletes it on shutdown.
+			/** \brief Add a Resource System to NxOgre.
+				\param identifier		Identifier of the Resource System
+				\param system			Instance of the ResourceSystem
+				\param owned			NxOgre "owns" this Resource System, and deletes it on shutdown.
 			*/
 			void					addResourceSystem(const NxString& identifier, ResourceSystem* system, bool owned = true);
 			
-			/** @brief Gets a Reource System by it's identifier.
-				@note Identifiers of Resource Systems are always in lowercase.
+			/** \brief Gets a Reource System by it's identifier.
+				\note Identifiers of Resource Systems are always in lowercase.
 			*/
 			ResourceSystem*			getResourceSystem(const NxString& identifier);
 
@@ -80,19 +82,46 @@ namespace NxOgre {
 			bool					loadTriangleMesh(MeshIdentifier, NxTriangleMesh*);
 			bool					saveTriangleMesh(MeshIdentifier, ResourceStreamPtr);
 			bool					cookTriangleMesh(TriangleMeshIntermediary*, ResourceStreamPtr);
-// #ifdef NX_USE_OGRE
+#if (NX_USE_OGRE == 1)
 			TriangleMeshIntermediary*	generateTriangleMeshDescription(Ogre::MeshPtr, MaterialAlias*, NxVec3 scale = NxVec3(1,1,1));
-// #endif
+#endif
 			TriangleMeshIntermediary*	generateTriangleMeshDescription(NxTriangleMesh*, MaterialConversionList, NxVec3 scale = NxVec3(1,1,1));
 
+#if (NX_USE_CLOTH_API == 1)
+			// Cloth Meshes
+			DynamicClothMesh*		getDynamicClothMesh(MeshIdentifier);
+			NxClothMesh*			getClothMesh(MeshIdentifier);
+			bool					loadClothMesh(MeshIdentifier, DynamicClothMesh*);
+			bool					loadClothMesh(MeshIdentifier, ResourceStreamPtr);
+			bool					loadClothMesh(MeshIdentifier, NxClothMesh*);
+			bool					saveClothMesh(MeshIdentifier, ResourceStreamPtr);
+			bool					cookClothMesh(ClothMeshIntermediary*, ResourceStreamPtr);
+#if (NX_USE_OGRE == 1)
+			ClothMeshIntermediary*	generateClothMesh(NxReal width, NxReal height, NxReal verticesPerRow = 10, NxReal verticesPerColumn = 10);
+#endif
+			ClothMeshIntermediary*	generateClothMesh(Ogre::MeshPtr*, NxVec3 scale = NxVec3(1,1,1));
+
+#endif
+
 			// Convex Meshes
-			NxConvexMesh*			getConvexMesh(MeshIdentifier);
+			
+			/** \brief getConvexMesh based on an identifier.
+
+				\examples
+					<code>
+						"convexName"
+						"file://convex1.obj"
+						"ogre://convex1.mesh"
+						"ogre://convex1.mesh +scale(2,2,2)"
+					</code>
+			*/
+			NxConvexMesh*			getConvexMesh(const NxString& identifier);
 			bool					loadConvexMesh(MeshIdentifier, ResourceStreamPtr);
 			bool					loadConvexMesh(MeshIdentifier, NxConvexMesh*);
 			bool					saveConvexMesh(MeshIdentifier, ResourceStreamPtr);
-// #ifdef NX_USE_OGRE
+#if (NX_USE_OGRE == 1)
 			ConvexMeshIntermediary*	generateConvexMeshDescription(Ogre::MeshPtr, NxVec3 scale = NxVec3(1,1,1));
-// #endif
+#endif
 			bool					cookConvexMesh(ConvexMeshIntermediary*, ResourceStreamPtr);
 			NxConvexMesh*			cookConvexMesh(NxConvexMesh*, NxReal scale);
 
@@ -123,9 +152,9 @@ namespace NxOgre {
 			void					storeHeightField(NxString identifier, NxHeightField*);
 			
 			/** Creates a MaterialAlias for the materials referenced in a Heightfield.
-				@param identifier Heightfield to use; run through getMeshIndentifier first.
-				@param saveCopy	  Save and own a copy in the ResourceManager.
-				@return The material alias
+				\param identifier Heightfield to use; run through getMeshIndentifier first.
+				\param saveCopy	  Save and own a copy in the ResourceManager.
+				\return The material alias
 			*/
 			MaterialAlias*			createMaterialAliasForHeightfield(NxString identifier, bool saveCopy);
 
@@ -135,14 +164,6 @@ namespace NxOgre {
 			void					saveSoftBodyMesh(NxString identifier, NxString filename);
 			NxSoftBodyMesh*			cookSoftBodyMesh(NxSoftBodyMeshDesc);
 			void					storeSoftBodyMesh(NxString identifier, NxSoftBodyMesh*);
-
-
-			////// Cloth
-			NxClothMesh*			getClothMesh(NxString identifier);
-			NxClothMesh*			cookClothMesh(NxSoftBodyMeshDesc);
-			void					saveClothMesh(NxString identifier, ResourceStreamPtr);
-			void					storeClothMesh(NxString identifier, NxClothMesh*);
-
 
 			////// Skeleton
 			Skeleton*				getSkeletonFromName(NxString identifier);
@@ -166,7 +187,7 @@ namespace NxOgre {
 
 
 			/// NxClothMeshes active in a Scene, that have some scale (or not).
-			std::map<NxString, NxClothMesh*>			mClothMeshes;
+			Container<NxString, DynamicClothMesh*>		mClothMeshes;
 			
 			
 			/// NxSoftBodyMeshes active in a Scene, that have some scale (or not).
@@ -179,6 +200,9 @@ namespace NxOgre {
 			///
 			std::map<NxSkeletonID,		Skeleton*>				mSkeletons;
 
+			///
+			///
+			///
 			std::map<NxString,			Skeleton*>				mSkeletonsByName;
 
 			// SkeletonHashID
@@ -197,13 +221,13 @@ namespace NxOgre {
 
 			// GeneratedMeshHash
 			//
-			// @param dimensions Size of the mesh/shape. In the case of convex or trianglemesh
+			// \param dimensions Size of the mesh/shape. In the case of convex or trianglemesh
 			//												Bounding boxes, or number of vertices/indices
 			//												can be the dimensions.
 			//
-			// @param ht		  Type of Shape.
+			// \param ht		  Type of Shape.
 			//
-			// @notes	  Undoubtibly there will be collisions, but it won't be important
+			// \notes	  Undoubtibly there will be collisions, but it won't be important
 			//			  it is expected (in the case of Skeletons; size/type) that 
 			//			  additional data will be used to check if the mesh is really the mesh.
 

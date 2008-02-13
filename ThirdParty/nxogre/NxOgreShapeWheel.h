@@ -1,3 +1,4 @@
+#if 0
 //
 //	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
 //	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
@@ -35,7 +36,7 @@ namespace NxOgre {
 
 		public:
 
-			WheelParams() {}
+			WheelParams() {setToDefault();}
 			WheelParams(const char* p) {process(p);}
 			WheelParams(NxString p) {process(p);}
 
@@ -94,7 +95,7 @@ namespace NxOgre {
 
 		public:
 
-			Wheel(WheelShape, WheelParams, NodeRenderableParams, Actor*);
+			Wheel(WheelShape*, WheelParams, NodeRenderableParams, Actor*);
 			~Wheel();
 
 			NxShortHashIdentifier	getType() const {return NxHashes_Wheel;	/* "NxOgre-Wheel" */}
@@ -201,4 +202,5 @@ namespace NxOgre {
 #endif
 };
 
+#endif
 #endif

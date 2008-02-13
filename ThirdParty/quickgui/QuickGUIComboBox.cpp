@@ -33,8 +33,7 @@ namespace QuickGUI
 		mList->setVerticalAnchor(ANCHOR_VERTICAL_BOTTOM);
 		mList->setQuadLayer(Quad::LAYER_MENU);
 		mList->setInheritQuadLayer(false);
-		mList->setClippingWidget(NULL);
-		mList->setInheritClippingWidget(false);
+		mList->setClipMode(Quad::CLIPMODE_NONE);
 		mList->setShowWithParent(false);
 		mList->setOffset(mOffset + 2);
 		mList->allowScrolling(true);
@@ -68,8 +67,6 @@ namespace QuickGUI
 
 		// create highlight container for the list
 		mHighlightPanel = _createQuad();
-		mHighlightPanel->setClippingWidget(mList);
-		mHighlightPanel->setInheritClippingWidget(false);
 		mHighlightPanel->setLayer(Quad::LAYER_MENU);
 		mHighlightPanel->setInheritLayer(false);
 		mHighlightPanel->setShowWithOwner(false);

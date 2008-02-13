@@ -246,10 +246,14 @@ namespace OgreAL {
 					{
 						eof = false;
 						mSoundStream->seek(mDataStart);
+						if(mLoopedCallback)
+							mLoopedCallback->execute(static_cast<Sound*>(this));
 					}
 					else
 					{
 						stop();
+						if(mFinishedCallback)
+							mFinishedCallback->execute(static_cast<Sound*>(this));
 					}
 				}
 			}

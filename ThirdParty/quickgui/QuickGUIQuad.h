@@ -16,6 +16,14 @@ namespace QuickGUI
 	class _QuickGUIExport Quad
 	{
 	public:
+		typedef enum ClipMode
+		{
+			CLIPMODE_CONTAINER		=  0,
+			CLIPMODE_NONE				,
+			CLIPMODE_OWNER				,
+			CLIPMODE_PARENT_CONTAINER
+		};
+
 		/**
 		* Used to determine Render Ordering in Quad Container.  Menu Layer is rendered last.
 		*/
@@ -28,7 +36,7 @@ namespace QuickGUI
 		Quad(Widget* owner);
 		Quad(GUIManager* gm);
 		~Quad();
-	
+
 		void _notifyAddedToRenderObjectGroup();
 		// Allows the renderer to notify the quad its changes were accepted.
 		void _notifyChangesHandled();
@@ -40,10 +48,13 @@ namespace QuickGUI
 
 		bool dimensionsChanged();
 
+		/*
+		* Returns true if this quad clips to its QuadContainer's Widget's dimensionsl,
+		* false otherwise.
+		*/
+		ClipMode getClipMode();
 		Rect getClippingRect();
-		Widget* getClippingWidget();
 		Rect getDimensions();
-		bool getInheritClippingWidget();
 		bool getInheritLayer();
 		Layer getLayer();
 		std::string getMaterialName();
@@ -54,17 +65,16 @@ namespace QuickGUI
 		Point getPosition();
 		Size getSize();
 
-		bool isPointWithinBounds(const Point& pixelPosition);
+		bool isPointWithinBounds(const Point& pixelPosition) const;
 
 		void removeFromRenderObjectGroup();
 
-		void setClippingWidget(Widget* w);
+		void setClipMode(ClipMode m);
 		void setColor(const Ogre::ColourValue& color);
 		void setColor(const Ogre::ColourValue& topColor, const Ogre::ColourValue& botColor);
 		void setDimensions(const Rect& pixelDimensions);
 		void setGUIManager(GUIManager* gm);
 		void setHeight(float pixelHeight);
-		void setInheritClippingWidget(bool inherit);
 		void setInheritLayer(bool inherit);
 		void setLayer(Layer l);
 		void setMaterial(const std::string& materialName);
@@ -80,8 +90,6 @@ namespace QuickGUI
 		void setYPosition(float pixelY);
 
 		bool materialChanged();
-
-		void updateClippingWidget();
 
 		inline bool visible() const
 		{
@@ -110,8 +118,7 @@ namespace QuickGUI
 		Ogre::ColourValue	mTopColor;
 		Ogre::ColourValue	mBottomColor;
 
-		Widget*				mClippingWidget;
-		bool				mInheritClippingWidget;
+		ClipMode			mClipMode;
 		// Store changes made via Clipping.
 		Rect				mDimensionsViaClipping;
 		Vector4				mTextureCoordinatesViaClipping;

@@ -306,6 +306,7 @@ namespace QuickGUI
 			case Widget::TYPE_NSTATEBUTTON:			s = "NStateButton";		break;
 			case Widget::TYPE_PANEL:				s = "Panel";			break;
 			case Widget::TYPE_PROGRESSBAR:			s = "ProgressBar";		break;
+			case Widget::TYPE_RADIOBUTTON:			s = "RadioButton";		break;
 			case Widget::TYPE_SCROLL_PANE:			s = "ScrollPane";		break;
 			case Widget::TYPE_SCROLLBAR_HORIZONTAL: s = "HScrollBar";		break;
 			case Widget::TYPE_SCROLLBAR_VERTICAL:	s = "VScrollBar";		break;

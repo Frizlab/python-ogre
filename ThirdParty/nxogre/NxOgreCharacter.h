@@ -1,21 +1,23 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreCharacter.h
+ *  \brief   Header for the CharacterParams and Character classes.
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #ifndef __NXOGRE_CHARACTER_H__
 #define __NXOGRE_CHARACTER_H__
@@ -31,7 +33,7 @@ namespace NxOgre {
 	
 	/////////////////////////////////////////////////////////
 	
-	class NxExport CharacterParams : public Params {
+	class NxPublicClass CharacterParams : public Params {
 		
 		public:
 		
@@ -63,13 +65,13 @@ namespace NxOgre {
 			NxAxisType						mUpDirection;
 			NxGroupsMask					mGroupMask;
 
-			/** @brief Collision shape for NxActor and NxCharacter controllers.
-				@note The function "setToDefault" sets the pointer to zero. You
+			/** \brief Collision shape for NxActor and NxCharacter controllers.
+				\note The function "setToDefault" sets the pointer to zero. You
 					  have to assign one after setting the basic params using
 					  the new operator or the SimpleShape::createShapeFromString method
 
-				@see Controllers for what shapes they can and cannot use
-				@see SimpleShape::createShapeFromString
+				\see Controllers for what shapes they can and cannot use
+				\see SimpleShape::createShapeFromString
 					
 
 			*/
@@ -84,7 +86,7 @@ namespace NxOgre {
 	/** Character
 
 	*/
-	class NxExport Character {
+	class NxPublicClass Character {
 		
 		public:
 
@@ -146,26 +148,26 @@ namespace NxOgre {
 			void setRoll(Ogre::Radian Roll);
 
 			
-			/** @brief Forces height to a new one, without a transitional movement period.
+			/** \brief Forces height to a new one, without a transitional movement period.
 				Forces the local height of the character shape to a new one whilst moving
 				the character to half-height below.
 				
-				@param height Height of the character
+				\param height Height of the character
 			*/
 			void setHeight(NxReal height);
 
 			
-			/** @brief Forces height to a new one, with a transitional movement period.
+			/** \brief Forces height to a new one, with a transitional movement period.
 				Forces the local height of the character shape to a new one whilst leaving it
 				at the existing position. Naturaly gravity or a custom vector will kick in and
 				move the character into the correct new position over the upcoming frames.
 
-				@param height Height of the character
+				\param height Height of the character
 			*/
 			void changeHeight(NxReal height);
 
 			void setSize(const NxVec3& size);
-			void setSize(const NxVec2& size);
+			void setSize(const float2& size);
 
 			void setGravityEnabled(bool);
 			bool isGravityEnabled();

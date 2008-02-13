@@ -56,10 +56,14 @@ namespace QuickGUI
 
 		bool isDown();
 
+		virtual void setSkinComponent(const std::string& skinComponent);
+
 	protected:
 		virtual ~Button();
 
 		bool mButtonDown;
+
+		std::string mDefaultSkinComponent;
 	protected:
 		/**
 		* Event Handler for the EVENT_MOUSE_ENTER event.

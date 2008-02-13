@@ -120,16 +120,20 @@ namespace QuickGUI
 			mVisibleStart = cursorIndex;
 			mVisibleEnd = mVisibleStart + 1;
 
-			width = mText->getTextWidth(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart));
-			while( (mVisibleEnd < static_cast<int>(mCaption.length())) && (width <= maxTextWidth) )
+			if( mVisibleEnd < static_cast<int>(mCaption.length()) )
 			{
-				width += mText->getGlyphWidth(mCaption[mVisibleEnd]);
-				++mVisibleEnd;
+				width = mText->getGlyphWidth(mCaption[mVisibleEnd]);
+			
+				while( mVisibleEnd < static_cast<int>(mCaption.length()) - 1 )
+				{
+					width += mText->getGlyphWidth(mCaption[mVisibleEnd+1]);
+					
+					if( width < maxTextWidth )
+						++mVisibleEnd;
+					else
+						break;
+				}
 			}
-
-			// When we exit the while loop, we are either at visibleStart == mCaption.length(), or we have exceeded the width limitation.
-			if( mVisibleEnd != static_cast<int>(mCaption.length()) )
-				--mVisibleEnd;
 		}
 		// Shift text right to show portion of caption ending at cursorIndex.
 		else if( cursorIndex > mVisibleEnd )
@@ -137,16 +141,20 @@ namespace QuickGUI
 			mVisibleEnd = cursorIndex;
 			mVisibleStart = mVisibleEnd - 1;
 
-			width = mText->getTextWidth(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart));
-			while( (mVisibleStart > 0) && (width <= maxTextWidth) )
+			if( mVisibleStart >= 0 )
 			{
-				--mVisibleStart;
-				width += mText->getGlyphWidth(mCaption[mVisibleStart]);
-			}
+				width = mText->getGlyphWidth(mCaption[mVisibleStart]);
+			
+				while( mVisibleStart > 0 )
+				{
+					width += mText->getGlyphWidth(mCaption[mVisibleStart-1]);
 
-			// When we exit the while loop, we are either at visibleStart == 0, or we have exceeded the width limitation.
-			if( mVisibleStart > 0 )
-				++mVisibleStart;
+					if( width < maxTextWidth )
+						--mVisibleStart;
+					else
+						break;
+				}
+			}
 		}
 		// start from visible start and display the maximum number of characters until text bounds reached.
 		else

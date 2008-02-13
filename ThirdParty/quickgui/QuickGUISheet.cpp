@@ -14,6 +14,7 @@ namespace QuickGUI
 	{
 		mGUIManager = gm;
 		mQuadContainer = this;
+		mQuad->_notifyQuadContainer(this);
 		mWidgetType = TYPE_SHEET;
 		mSkinName = skinName;
 		mSkinComponent = ".sheet";
@@ -21,7 +22,7 @@ namespace QuickGUI
 
 		Ogre::FontManager* fm = Ogre::FontManager::getSingletonPtr();
 		Ogre::ResourceManager::ResourceMapIterator rmi = fm->getResourceIterator();
-		if(rmi.hasMoreElements()) 
+		if(rmi.hasMoreElements())
 			mFontName = rmi.getNext()->getName();
 		else
 			Ogre::Exception(1,"No fonts have been defined!","Sheet::Sheet");
@@ -56,23 +57,38 @@ namespace QuickGUI
 	{
 		Widget* w = NULL;
 
-		// Iterate through Menu Layer Child Widgets.
-		int widgetOffset = 0;
+		// Iterate through Child Widgets and record the highest offset menu and child layer widget.
+		Widget* highestMenuLayerWidget = NULL;
+		int highestMenuOffset = -1;
+
+		Widget* highestChildLayerWidget = NULL;
+		int highestChildOffset = -1;
+
 		WidgetArray::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 		{
 			if( (*it)->getQuadLayer() == Quad::LAYER_CHILD )
-				continue;
-
-			Widget* temp = (*it)->getTargetWidget(pixelPosition);
-			if( (temp != NULL) && (temp->getOffset() > widgetOffset) )
 			{
-				widgetOffset = temp->getOffset();
-				w = temp;
+				Widget* temp = (*it)->getTargetWidget(pixelPosition);
+				if( (temp != NULL) && (temp->getOffset() > highestChildOffset) )
+				{
+					highestChildOffset = temp->getOffset();
+					highestChildLayerWidget = temp;
+				}
+			}
+			else // LAYER_MENU
+			{
+				Widget* temp = (*it)->getTargetWidget(pixelPosition);
+				if( (temp != NULL) && (temp->getOffset() > highestMenuOffset) )
+				{
+					highestMenuOffset = temp->getOffset();
+					highestMenuLayerWidget = temp;
+				}
 			}
 		}
-		if(w != NULL)
-			return w;
+
+		if(highestMenuLayerWidget != NULL)
+			return highestMenuLayerWidget;
 
 		// Iterate through Windows, from highest offset to lowest.
 		QuadContainerList* windowList = QuadContainer::getWindowList();
@@ -101,24 +117,90 @@ namespace QuickGUI
 			}
 		}
 
-		// Iterate through Child Layer Child Widgets.
-		widgetOffset = 0;
+		if(highestChildLayerWidget != NULL)
+			return highestChildLayerWidget;
+
+		// If we made it here, we are inside this Widget's bounds, but not over any non-transparent child widget areas.
+
+		if( !overTransparentPixel(pixelPosition) )
+			return this;
+		else // We're over a transparent pixel
+			return NULL;
+	}
+
+	const Widget* Sheet::getTargetWidget(const Point& pixelPosition) const
+	{
+		Widget* w = NULL;
+
+		// Iterate through Child Widgets and record the highest offset menu and child layer widget.
+		Widget* highestMenuLayerWidget = NULL;
+		int highestMenuOffset = -1;
+
+		Widget* highestChildLayerWidget = NULL;
+		int highestChildOffset = -1;
+
+		WidgetArray::const_iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 		{
-			if( (*it)->getQuadLayer() == Quad::LAYER_MENU )
-				continue;
-
-			Widget* temp = (*it)->getTargetWidget(pixelPosition);
-			if( (temp != NULL) && (temp->getOffset() > widgetOffset) )
+			if( (*it)->getQuadLayer() == Quad::LAYER_CHILD )
 			{
-				widgetOffset = temp->getOffset();
-				w = temp;
+				Widget* temp = (*it)->getTargetWidget(pixelPosition);
+				if( (temp != NULL) && (temp->getOffset() > highestChildOffset) )
+				{
+					highestChildOffset = temp->getOffset();
+					highestChildLayerWidget = temp;
+				}
+			}
+			else // LAYER_MENU
+			{
+				Widget* temp = (*it)->getTargetWidget(pixelPosition);
+				if( (temp != NULL) && (temp->getOffset() > highestMenuOffset) )
+				{
+					highestMenuOffset = temp->getOffset();
+					highestMenuLayerWidget = temp;
+				}
 			}
 		}
-		if(w != NULL)
-			return w;
 
-		return this;
+		if(highestMenuLayerWidget != NULL)
+			return highestMenuLayerWidget;
+
+		// Iterate through Windows, from highest offset to lowest.
+		const QuadContainerList* windowList = QuadContainer::getWindowList();
+		QuadContainerList::const_reverse_iterator rit;
+		for( rit = windowList->rbegin(); rit != windowList->rend(); ++rit )
+		{
+			w = (*rit)->getOwner();
+			if (w != NULL)
+			{
+				w = w->getTargetWidget(pixelPosition);
+				if (w != NULL)
+					return w;
+			}
+		}
+
+		// Iterate through Panels, from highest offset to lowest.
+		const QuadContainerList* panelList = QuadContainer::getPanelList();
+		for( rit = panelList->rbegin(); rit != panelList->rend(); ++rit )
+		{
+			w = (*rit)->getOwner();
+			if (w != NULL)
+			{
+				w = w->getTargetWidget(pixelPosition);
+				if (w != NULL)
+					return w;
+			}
+		}
+
+		if(highestChildLayerWidget != NULL)
+			return highestChildLayerWidget;
+
+		// If we made it here, we are inside this Widget's bounds, but not over any non-transparent child widget areas.
+
+		if( !overTransparentPixel(pixelPosition) )
+			return this;
+		else // We're over a transparent pixel
+			return NULL;
 	}
 
 	Window* Sheet::getWindow(const std::string& name)
@@ -128,14 +210,14 @@ namespace QuickGUI
 		WidgetArray::iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 		{
-			if( ((*it)->getInstanceName() == name) && ((*it)->getWidgetType() == TYPE_WINDOW) ) 
+			if( ((*it)->getInstanceName() == name) && ((*it)->getWidgetType() == TYPE_WINDOW) )
 				return dynamic_cast<Window*>(*it);
 		}
 
 		return NULL;
 	}
 
-	bool Sheet::overTransparentPixel(const Point& mousePixelPosition)
+	bool Sheet::overTransparentPixel(const Point& mousePixelPosition) const
 	{
 		if(mMaterialName == "")
 			return Widget::overTransparentPixel(mousePixelPosition);

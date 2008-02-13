@@ -28,15 +28,6 @@ namespace QuickGUI
 		Rect ownerDimensions = mOwner->getDimensions();
 		mPixelDimensions = Rect(ownerDimensions.x,ownerDimensions.y,0,0);
 
-		if(mOwner->getParentPanel() != NULL)
-			mClippingWidget = mOwner->getParentPanel();
-		else if(mOwner->getParentWindow() != NULL)
-			mClippingWidget = mOwner->getParentWindow();
-		else if(mOwner->getParentSheet() != NULL)
-			mClippingWidget = mOwner->getParentSheet();
-		else
-			mClippingWidget = mOwner;
-
 		// Order dependent, this code must go before call to setFont, since that removes selection, which
 		// affects the character background.
 		mCharacterBackground = new Quad(mOwner);
@@ -95,19 +86,6 @@ namespace QuickGUI
 			delete (*it);
 		}
 		mCharacters.clear();
-	}
-
-	void Text::_clipToWidgetDimensions(Widget* w)
-	{
-		mClippingWidget = w;
-
-		mCharacterBackground->setClippingWidget(mClippingWidget);
-
-		QuadArray::iterator it;
-		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
-		{
-			(*it)->setClippingWidget(mClippingWidget);
-		}
 	}
 
 	void Text::_notifyQuadContainer(QuadContainer* container)
@@ -186,6 +164,7 @@ namespace QuickGUI
 			}
 
 			Quad* q = new Quad(mOwner);
+			q->setClipMode(Quad::CLIPMODE_OWNER);
 			q->setOffset(mOffset);
 			q->setLayer(mLayer);
 
@@ -242,6 +221,7 @@ namespace QuickGUI
 			}
 
 			Quad* q = new Quad(mOwner);
+			q->setClipMode(Quad::CLIPMODE_OWNER);
 			q->setOffset(mOffset);
 			q->setLayer(mLayer);
 
@@ -298,8 +278,6 @@ namespace QuickGUI
 		// Maintain visibility. Must be called before setting clip rect!
 		if(!mVisible)
 			hide();
-
-		_clipToWidgetDimensions(mClippingWidget);
 	}
 
 	void Text::removeSelection()
@@ -432,7 +410,7 @@ namespace QuickGUI
 	int Text::getTextCursorIndex(const Point& pixelDimensions)
 	{
 		if(mCaption.length() <= 0)
-				return 0;
+			return 0;
 
 		// check bounds
 		if( pixelDimensions.x < mPixelDimensions.x )
@@ -449,7 +427,8 @@ namespace QuickGUI
 				float midX = (*it)->getPosition().x + ((*it)->getSize().width / 2);
 				if( mPixelDimensions.x < midX )
 					return textIndex;
-				else return textIndex + 1;
+				else 
+					return textIndex + 1;
 			}
 
 			++textIndex;

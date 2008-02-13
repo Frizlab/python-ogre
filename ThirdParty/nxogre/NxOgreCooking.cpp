@@ -1,21 +1,23 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreCooking.cpp
+ *  \see     NxOgreCooking.h
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #include "NxOgreStable.h"
 #include "NxOgreCooking.h"
@@ -32,64 +34,6 @@
 #include "OgreVector3.h"
 
 namespace NxOgre {
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-NxTriangleMesh* NxGenerateTriangleMeshFromVertices(NxVec3 *verts, NxU32 nbVerts, NxU32* indices, NxU32 nbIndices, NxScene* scene) {
-
-	NxTriangleMeshDesc mTriangleMeshDescription;
-
-	// Vertices
-	mTriangleMeshDescription.numVertices				= nbVerts;
-	mTriangleMeshDescription.points						= verts;							
-	mTriangleMeshDescription.pointStrideBytes			= sizeof(NxVec3);
-	// Triangles
-	mTriangleMeshDescription.numTriangles				= nbIndices / 3;
-	mTriangleMeshDescription.triangles					= indices;
-	mTriangleMeshDescription.triangleStrideBytes		= 3 * sizeof(NxU32);
-	// Materials
-
-	NxTriangleMesh* trimesh;
-
-#if 0
-				#ifndef NX_DEBUG
-
-					MemoryWriteBuffer buf;
-					if (!NxCookTriangleMesh(mTriangleMeshDescription, buf)) {
-						std::stringstream s;
-						s	<< "Mesh  failed to cook"
-							<< "V(" << nbVerts << ") F(" << nbIndices << ")";
-
-						NxThrow_Error(s.str());
-					}
-					trimesh = scene->getPhysicsSDK().createTriangleMesh(MemoryReadBuffer(buf.data));
-
-				#else
-
-					NxString filename;
-					
-					filename = Ogre::StringConverter::toString(nbVerts) + "-" + Ogre::StringConverter::toString(int(verts[0].x)) + "-" + Ogre::StringConverter::toString(int(verts[0].z)) + ".TriangleMeshShape.nxs";
-
-					UserStream buf(filename.c_str(),false);
-
-					if (!NxCookTriangleMesh(mTriangleMeshDescription, buf)) {
-						std::stringstream s;
-						s	<< "Mesh  failed to cook"
-							<< "V(" << nbVerts << ") F(" << nbIndices << ")";
-						NxThrow_Error(s.str());
-					}
-
-					fclose(buf.fp);
-
-					UserStream rbuf(filename.c_str(), true);
-					trimesh = scene->getPhysicsSDK().createTriangleMesh(rbuf);
-					fclose(rbuf.fp);
-
-				#endif
-
-#endif
-	return trimesh;
-}
 
 
 #if 0
@@ -210,7 +154,7 @@ NxHeightField* NxGenerateHeightFieldFromImage(const NxString& imageFilename, NxS
 
 	NxHeightField *hf = scene->getPhysicsSDK().createHeightField(heightFieldDesc);
 
-#ifdef NX_LINUX
+#ifdef NX_PLATFORM_LINUX
 	delete [] (NxU32*) heightFieldDesc.samples;
 #else
 	delete [] heightFieldDesc.samples;
@@ -311,7 +255,7 @@ NxHeightField* NxGenerateHeightFieldFromRaw(const NxString& imageFilename, NxSce
 
 	NxHeightField *hf = scene->getPhysicsSDK().createHeightField(heightFieldDesc);
 
-#ifdef NX_LINUX
+#ifdef NX_PLATFORM_LINUX
 	delete [] (NxU32*) heightFieldDesc.samples;
 #else
 	delete [] heightFieldDesc.samples;

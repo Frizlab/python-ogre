@@ -1,21 +1,23 @@
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreMaterial.cpp
+ *  \see     NxOgreMaterial.h
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #include "NxOgreStable.h"
 #include "NxOgreMaterial.h"
@@ -35,10 +37,6 @@ Material::Material(const NxString& identifier, Scene* scene) : mName(identifier)
 	mMaterial = scene->getNxScene()->createMaterial(d);
 	mMaterialIndex = mMaterial->getMaterialIndex();
 	scene->_registerMaterial(identifier, this);
-	std::stringstream ss;
-	ss << "Created material '" << identifier << "' with Material Index as " << mMaterialIndex << std::endl;
-	NxDebug(ss.str());
-
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -48,13 +46,6 @@ Material::Material(NxMaterialIndex index, const NxString& identifier, Scene* sce
 	mMaterialIndex = index;
 	mMaterial = mScene->getNxScene()->getMaterialFromIndex(index);
 	scene->_registerMaterial(identifier, this);
-
-#ifdef NX_DEBUG
-	std::stringstream ss;
-	ss << "Created material manually named '" << identifier << "' with Material Index as " << mMaterialIndex << std::endl;
-	NxDebug(ss.str());
-#endif
-
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -230,7 +221,7 @@ void MaterialAlias::load(ResourceStreamPtr rs, bool deleteResourceStream) {
 	NxString headerCheck = rs->getString();
 
 	if (headerCheck != "NXM") {
-		NxThrow_Error("Not a Material Alias file");
+		NxThrow("Not a Material Alias file");
 		rs->close();
 		return;
 	}

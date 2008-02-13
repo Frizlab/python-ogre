@@ -1,23 +1,23 @@
-
-
-//
-//	NxOgre a wrapper for the PhysX (formerly Novodex) physics library and the Ogre 3D rendering engine.
-//	Copyright (C) 2005 - 2007 Robin Southern and NxOgre.org http://www.nxogre.org
-//
-//	This library is free software; you can redistribute it and/or
-//	modify it under the terms of the GNU Lesser General Public
-//	License as published by the Free Software Foundation; either
-//	version 2.1 of the License, or (at your option) any later version.
-//
-//	This library is distributed in the hope that it will be useful,
-//	but WITHOUT ANY WARRANTY; without even the implied warranty of
-//	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//	Lesser General Public License for more details.
-//
-//	You should have received a copy of the GNU Lesser General Public
-//	License along with this library; if not, write to the Free Software
-//	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-//
+/** \file    NxOgreResourceManager_Convex.cpp
+ *  \see     NxOgreResourceManager.h
+ *  \version 1.0-20
+ *
+ *  \licence NxOgre a wrapper for the PhysX physics library.
+ *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
+ *           This library is free software; you can redistribute it and/or
+ *           modify it under the terms of the GNU Lesser General Public
+ *           License as published by the Free Software Foundation; either
+ *           version 2.1 of the License, or (at your option) any later version.
+ *           
+ *           This library is distributed in the hope that it will be useful,
+ *           but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *           Lesser General Public License for more details.
+ *           
+ *           You should have received a copy of the GNU Lesser General Public
+ *           License along with this library; if not, write to the Free Software
+ *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #include "NxOgreStable.h"
 #include "NxOgreResourceManager.h"
@@ -39,11 +39,37 @@ namespace NxOgre {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
-NxConvexMesh* ResourceManager::getConvexMesh(MeshIdentifier identifier) {
-	if (mConvexMeshes.has(identifier)) {
+NxConvexMesh* ResourceManager::getConvexMesh(const MeshIdentifier& identifier) {
+
+	// Does the identifier have a :// in it?
+	// Yes:
+	//  -
+	// No:
+	//	- Check to see if the identifier starts with
+
+	NxU32 d = NxStringWhereIs(identifier, "://");
+
+	if (d > 0) {
+		NxString resource_system_identifier = identifier.substr(0, d);
+		NxString resource_identifier = identifier.substr(d + 3, identifier.length() - d - 3);
+
+		NxStringToLower(resource_system_identifier);
+
+		if (mResourceSystems.has(resource_system_identifier)) {
+			NxString new_identifier = mResourceSystems.get(resource_system_identifier)->loadConvex(resource_identifier);
+			
+			if (new_identifier.size())
+				return mConvexMeshes.get(new_identifier);
+		}
+		else {
+			return NULL;
+		}
+	}
+	else if (mConvexMeshes.has(identifier)) {
 		return mConvexMeshes.get(identifier);
 	}
-	return 0;
+
+	return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -54,7 +80,7 @@ bool ResourceManager::loadConvexMesh(MeshIdentifier identifier, ResourceStreamPt
 	NxPhysicsSDK* sdk = NxGetPhysicsSDK();
 	
 	if (sdk == 0) {
-		NxThrow_Error("PhysX SDK has not been started");	
+		NxThrow("PhysX SDK has not been started");	
 		return false; 
 	}
 
@@ -64,7 +90,7 @@ bool ResourceManager::loadConvexMesh(MeshIdentifier identifier, ResourceStreamPt
 		mConvexMeshes.insert(identifier, convexMesh);
 	}
 	else {
-		NxThrow_Error("ConvexMesh '" + identifier + "' could not be loaded.");
+		NxThrow(NxString("ConvexMesh '" + identifier + "' could not be loaded.").c_str());
 		return false;
 	}
 
@@ -88,7 +114,7 @@ bool ResourceManager::loadConvexMesh(MeshIdentifier identifier, NxConvexMesh* co
 bool ResourceManager::saveConvexMesh(MeshIdentifier identifier, ResourceStreamPtr resource) {
 	
 	if (!mConvexMeshes.has(identifier)) {
-		NxDebug("ConvexMesh with name '" + identifier + "' could not be found.");
+		NxDebug(NxString("ConvexMesh with name '" + identifier + "' could not be found.").c_str());
 		return false;
 	}
 
@@ -211,19 +237,19 @@ ConvexMeshIntermediary* ResourceManager::generateConvexMeshDescription(Ogre::Mes
 bool ResourceManager::cookConvexMesh(ConvexMeshIntermediary* cmi, ResourceStreamPtr resource) {
 		
 	if (!cmi->mDescription.isValid()) {
-		std::string ss;
+		std::string ss("ConvexMesh is invalid. Reason(s) are: \n");
 		
 		if(cmi->mDescription.numVertices < 3 ||	(cmi->mDescription.numVertices > 0xffff && cmi->mDescription.flags & NX_CF_16_BIT_INDICES))
-			ss.append("+ Vertex count less than three");
+			ss.append("+ Vertex count less than three\n");
 		
 		if(!cmi->mDescription.points)
-			ss.append("+ No Vertices");
+			ss.append("+ No Vertices\n");
 
 		if(cmi->mDescription.pointStrideBytes < sizeof(NxPoint))
-			ss.append("+ PointStride is less than NxPoint");
+			ss.append("+ PointStride is less than NxPoint\n");
 
 
-		NxThrow_Warning("ConvexMesh is invalid. Reason(s) are: \n" + ss);
+		NxThrow_AsWarning(ss.c_str());
 	}
 
 	bool status = NxCookConvexMesh(cmi->mDescription, *resource);

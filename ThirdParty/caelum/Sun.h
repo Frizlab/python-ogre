@@ -23,7 +23,6 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 #include "CaelumPrerequisites.h"
 #include "CameraBoundElement.h"
-#include "SunPositionModel.h"
 
 namespace caelum {
 
@@ -38,9 +37,6 @@ class DllExport Sun : public CameraBoundElement {
 		static const Ogre::String SUN_MATERIAL_NAME;
 
 	private:
-		/// The sun positioning model.
-		SunPositionModel *mSunPositionModel;
-
 		/// Pointer to scene.
 		Ogre::SceneManager *mScene;
 
@@ -94,27 +90,25 @@ class DllExport Sun : public CameraBoundElement {
 		 */
 		virtual ~Sun ();
 
-		/** Updates the sun position according to the local time.
-			@param time The local day time.
+		/** Updates sun parameters.
+			@param sunDirection Sun direction.
+			@param sunLightColour Color for the sun's light source
+			@param sunSphereColour Color to draw the sun sphere itself.
 		 */
-		void update (const float time);
-
-		/** Sets the new sun positioning model.
-			If already exists one here, it will be returned so that it can be deleted.
-			@param model The new sun positioning model to use.
-			@return The existing model or 0 if there wasn't any.
-		 */
-		SunPositionModel *setSunPositionModel (SunPositionModel *model);
-
-		/** Returns the sun position model in use.
-			@return The current sun position model.
-		 */
-		SunPositionModel *getSunPositionModel () const;
+        void update (
+                const Ogre::Vector3& sunDirection,
+                const Ogre::ColourValue &sunLightColour,
+                const Ogre::ColourValue &sunSphereColour);
 
 		/** Retrieves the latest sun direction.
 			@return The sun direction.
 		 */
 		Ogre::Vector3 getSunDirection () const;
+
+		/** Set the sun direction.
+			@param dir The sun direction.
+		 */
+		void setSunDirection (const Ogre::Vector3 &dir);
 
 		/** Sets the sun sphere colour.
 			@param colour The colour used to draw the sun
