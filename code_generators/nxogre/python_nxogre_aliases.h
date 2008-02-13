@@ -11,8 +11,8 @@ typedef std::pair<std::basic_string<char, std::char_traits<char>, std::allocator
     PairString;
     
 typedef NxOgre::List<std::basic_string<char, std::char_traits<char>, std::allocator<char> > > ListString;
-typedef NxOgre::List<NxOgre::Blueprints::ActorBlueprint*> ListBlueprints;
-typedef  NxOgre::Container<unsigned, NxOgre::ShapeBlueprint const&> ContainerShapeBlueprint;
+// typedef NxOgre::List<NxOgre::Blueprints::ActorBlueprint*> ListBlueprints;
+// typedef  NxOgre::Container<unsigned, NxOgre::ShapeBlueprint const&> ContainerShapeBlueprint;
 //typedef NxOgre::Container<std::string, NxOgre::ActorBlueprint> ContainerActorBlueprint;
 //typedef NxOgre::Container<NxOgre::Scene::Renderables, float> ContainerSceneRencerables;
 typedef std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >,float,std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >,std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, float> > >\
@@ -20,7 +20,7 @@ typedef std::map<std::basic_string<char, std::char_traits<char>, std::allocator<
 typedef std::map<unsigned, float, std::less<unsigned>, std::allocator<std::pair<unsigned const, float> > >\
     MapUnsignedFloat;
 typedef std::vector<NxOgre::Scene*, std::allocator<NxOgre::Scene*> > VectorScene;
-typedef std::list<NxOgre::Blueprints::ActorBlueprint*, std::allocator<NxOgre::Blueprints::ActorBlueprint*> > ListBlueprintsActorBlueprint;
+// typedef std::list<NxOgre::Blueprints::ActorBlueprint*, std::allocator<NxOgre::Blueprints::ActorBlueprint*> > ListBlueprintsActorBlueprint;
 typedef std::list<std::pair<std::string, std::string>, std::allocator<std::pair<std::string, std::string> > >\
     ListPairString;
 typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::DominanceGroup*>::Containee, std::less<std::string>, std::allocator<std::pair<std::string const, NxOgre::Container<std::string, NxOgre::DominanceGroup*>::Containee> > >\
@@ -129,8 +129,8 @@ typedef std::map<std::string, NxOgre::Container<std::string, std::string>::Conta
 //    MapContainerActorBlueprint;
 typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::ForceField*>::Containee, std::less<std::string>, std::allocator<std::pair<std::string const, NxOgre::Container<std::string, NxOgre::ForceField*>::Containee> > >\
     MapContainerForceField;
-typedef std::map<unsigned, NxOgre::Container<unsigned, NxOgre::ShapeBlueprint const&>::Containee, std::less<unsigned>, std::allocator<std::pair<unsigned const, NxOgre::Container<unsigned, NxOgre::ShapeBlueprint const&>::Containee> > >\
-    MapContainerShapeBlueprint;
+// typedef std::map<unsigned, NxOgre::Container<unsigned, NxOgre::ShapeBlueprint const&>::Containee, std::less<unsigned>, std::allocator<std::pair<unsigned const, NxOgre::Container<unsigned, NxOgre::ShapeBlueprint const&>::Containee> > >\
+//     MapContainerShapeBlueprint;
 typedef std::vector<unsigned short, std::allocator<unsigned short> > VectorShort;
 typedef std::vector<std::pair<Ogre::Vector3, unsigned>, std::allocator<std::pair<Ogre::Vector3, unsigned> > > VectorPairVector3;
 typedef std::set<Ogre::Entity*,std::less<Ogre::Entity*>,std::allocator<Ogre::Entity*> > SetEntity;
@@ -140,8 +140,8 @@ typedef std::map<unsigned, NxOgre::Container<unsigned, NxOgre::Joint*>::Containe
 typedef std::map<unsigned short, NxOgre::Container<unsigned short, NxOgre::DominanceGroup*>::Containee, std::less<unsigned short>, std::allocator<std::pair<unsigned short const, NxOgre::Container<unsigned short, NxOgre::DominanceGroup*>::Containee> > >\
     MapContainerDominanceGroupContainee;
     
-typedef std::map<unsigned int, NxOgre::Container<unsigned int, NxOgre::ShapeBlueprint*>::Containee, std::less<unsigned int>, std::allocator<std::pair<unsigned int const, NxOgre::Container<unsigned int, NxOgre::ShapeBlueprint*>::Containee> > >\
-    MapContainerShapeBluePrint;
+// typedef std::map<unsigned int, NxOgre::Container<unsigned int, NxOgre::ShapeBlueprint*>::Containee, std::less<unsigned int>, std::allocator<std::pair<unsigned int const, NxOgre::Container<unsigned int, NxOgre::ShapeBlueprint*>::Containee> > >\
+//     MapContainerShapeBluePrint;
 typedef std::map<unsigned int, NxOgre::Container<unsigned int, NxOgre::Machine*>::Containee, std::less<unsigned int>, std::allocator<std::pair<unsigned int const, NxOgre::Container<unsigned int, NxOgre::Machine*>::Containee> > >\
     MapContainerMachine;
 typedef std::map<unsigned int, NxOgre::Container<unsigned int, NxOgre::Wheel*>::Containee, std::less<unsigned int>, std::allocator<std::pair<unsigned int const, NxOgre::Container<unsigned int, NxOgre::Wheel*>::Containee> > >\

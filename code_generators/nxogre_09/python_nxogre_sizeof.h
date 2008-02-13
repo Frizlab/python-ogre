@@ -1,4 +1,6 @@
 // sizeof ( NxControllersHit );
+sizeof (NxOgre::Container<NxOgre::NxString, NxOgre::RayCastHit>);
+
 sizeof ( NxBoxShapeDesc );
 sizeof ( NxPlaneShapeDesc );
 sizeof ( NxControllerManager );

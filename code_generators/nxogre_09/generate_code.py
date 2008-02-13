@@ -53,7 +53,7 @@ def ManualExclude ( mb ):
     global_ns = mb.global_ns
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
     for c in main_ns.classes():
-        if c.decl_string.startswith('::NxOgre::Container<') and '*' not in c.decl_string:
+        if c.decl_string.startswith('::NxOgre::Container<') and '&' in c.decl_string: # '*' not in c.decl_string:
             print "EXCLUDING: ", c
             c.exclude()
         
@@ -72,7 +72,7 @@ def ManualExclude ( mb ):
                 v.exclude()
                 print "excluded", v, v.access_type
     for t in main_ns.typedefs():
-        if t.decl_string.startswith('::NxOgre::Container<') and '*' not in t.decl_string:
+        if t.decl_string.startswith('::NxOgre::Container<') and '&' in t.decl_string:# '*' not in t.decl_string:
             t.exclude()
             print "EXCLUDING: ", t
 
@@ -132,28 +132,36 @@ def ManualExclude ( mb ):
             ,'::NxOgre::SoftBody::simulate'
             ,'::NxOgre::SoftBody::render'
             
-            ,'::NxOgre::FileResourceSystem::getStream'  # takes ::NxOgre::ResourceIdentifier as argument which needs fixing
-            ,'::NxOgre::OgreResourceSystem::getStream'
-            ,'::NxOgre::ResourceSystem::getStream'
-            ,'::NxOgre::RenderableSource::getStringType' # so we don't need a wrapper as it doesn't compile
-            ,'::NxOgre::RenderableSource::getType'
+# #             ,'::NxOgre::FileResourceSystem::getStream'  # takes ::NxOgre::ResourceIdentifier as argument which needs fixing
+# #             ,'::NxOgre::OgreResourceSystem::getStream'
+#             ,'::NxOgre::ResourceSystem::getStream'
+#             ,'::NxOgre::RenderableSource::getStringType' # so we don't need a wrapper as it doesn't compile
+#             ,'::NxOgre::RenderableSource::getType'
             ,'::NxOgre::UserAllocator::mallocDEBUG'
-            
-#             ,'::NxOgre::Blueprints::ActorFactory' # not implemented, only in header..
-            ,'::NxOgre::ContactStream::getShape'
-            ,'::NxOgre::ContactStream::getPatchNormal'
-            ,'::NxOgre::ContactStream::getPoint'
-            ,'::NxOgre::ContactStream::getNxActor'
-            ,'::NxOgre::ContactStream::getActor'
-            ,'::NxOgre::MemoryStream::skip'
-            ,'::NxOgre::MemoryStream::seek'
-            ,'::NxOgre::WheelSet::setMotorTorque'
-            ,'::NxOgre::WheelSet::setBrakeTorque'
-            ,'::NxOgre::WheelSet::turn'
-            ,'::NxOgre::Material::setDirOfAnisotropy'
-            ,'::NxOgre::OgreNodeRenderable::addSceneNode'
-#             ,'::NxOgre::ResourceStreamPtr::ResourceStreamPtr'
-            ,'::NxOgre::MaterialAlias::generateConversionList'
+#             
+# #             ,'::NxOgre::Blueprints::ActorFactory' # not implemented, only in header..
+#             ,'::NxOgre::ContactStream::getShape'
+#             ,'::NxOgre::ContactStream::getPatchNormal'
+#             ,'::NxOgre::ContactStream::getPoint'
+#             ,'::NxOgre::ContactStream::getNxActor'
+#             ,'::NxOgre::ContactStream::getActor'
+#             ,'::NxOgre::MemoryStream::skip'
+#             ,'::NxOgre::MemoryStream::seek'
+            ,'::NxOgre::WheelSet::createThreeWheelSet'
+            ,'::NxOgre::WheelSet::createSixWheelSet'
+            ,'::NxOgre::WheelSet::attachNewWheel'
+            ,'::NxOgre::Wheel::addEntity'
+            ,'::NxOgre::PhysXDriver::start'
+            ,'::NxOgre::PhysXDriver::stop'
+            ,'::NxOgre::PhysXDriver::hasHardware'
+            ,'::NxOgre::PhysXDriver::reset'
+
+#             ,'::NxOgre::WheelSet::setBrakeTorque'
+#             ,'::NxOgre::WheelSet::turn'
+#             ,'::NxOgre::Material::setDirOfAnisotropy'
+#             ,'::NxOgre::OgreNodeRenderable::addSceneNode'
+# #             ,'::NxOgre::ResourceStreamPtr::ResourceStreamPtr'
+#             ,'::NxOgre::MaterialAlias::generateConversionList'
             
             ]
     for e in excludes:
@@ -177,19 +185,19 @@ def ManualExclude ( mb ):
         
     ## Classes
     excludes = [
-               'DistanceJoint'      ## constructor issue TOFIX
-               ,'JointCallback'     ## also no suitable/defaul constructor TOFIX
+#                'DistanceJoint'      ## constructor issue TOFIX
+               'JointCallback'     ## also no suitable/defaul constructor TOFIX
                ,'Character'         ## defined in header but not very much implementation
 #                ,'RenderableSource'
-               ,'ResourceManager'
+#                ,'ResourceManager'
 #                ,'ResourceStreamPtr'
                ,'::NxOgre::Blueprints::ActorFactory'
                ,'State'
-               ,'MeshResource'
+#                ,'MeshResource'
                ,'::NxOgre::Serialiser::SerialiserBase'
                 ]
     for e in excludes:
-        print "Excluding", e
+        print "Excluding Class:", e
         main_ns.class_(e).exclude()
 # # #     
 # # #         
@@ -201,6 +209,8 @@ def ManualExclude ( mb ):
                 ,'List<NxOgre::RemoteDebuggerConnection::Camera>'
                 ,'List<NxOgre::Blueprints::ActorBlueprint*>'
                 ,'Container<std::string, NxOgre::Joint*>'
+                ,'Container<std::string, NxOgre::RayCastHit>'
+#                 ,'::NxOgre::Container< std::basic_string< char, std::char_traits< char >, std::allocator< char > >, NxOgre::RayCastHit >'
                 ]
     for c in main_ns.classes():
 #         print c.decl_string   
@@ -216,15 +226,16 @@ def ManualExclude ( mb ):
                     f.exclude()    
       
     ### Variables        
-    excludes = ['::NxOgre::WheelSet::mEngine'   # desctuctor in WheelSet is protected so can't wrap this..
+    excludes = [   ## '::NxOgre::WheelSet::mEngine'   # desctuctor in WheelSet is protected so can't wrap this..
                 ]
     for e in excludes:
         main_ns.variable(e).exclude()
         
     ### Typedefs    
-    excludes = [
+    excludes = [ '::NxOgre::RayCastReport'
                 ]
     for e in excludes:
+        print "Excluding Typedef", e
         main_ns.typedefs(e).exclude()
         
     ### Operators        

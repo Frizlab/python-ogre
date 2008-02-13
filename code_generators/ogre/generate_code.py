@@ -865,6 +865,15 @@ def autoCasting ( main_ns, ignores = ['ParamCommand','MovableObjectFactory']  ):
                                 print "Hand wrapper (as"+r.name+") created to cast from", c.name, "to", r.name ## b.access
                                 break
 
+def FindProtectedVars ( mb ):
+    global_ns = mb.global_ns
+    main_ns = global_ns.namespace( MAIN_NAMESPACE )
+
+    for c in main_ns.classes():
+        for v in c.variables(allow_empty=True):
+            if v.access_type == 'protected':
+                print "Protected Variable:", v, v.why_not_exportable(), v.exportable
+                                                                                
 #
 # the 'main'function
 #            
@@ -949,6 +958,8 @@ def generate_code():
     ManualAlias ( mb )
     AutoFixes ( mb, MAIN_NAMESPACE )
     ManualFixes ( mb )
+    
+    FindProtectedVars ( mb )
 #     # indicated where underlying libraries are protected etc in the doc strings
     common_utils.Auto_Document( mb, MAIN_NAMESPACE )
 

@@ -525,15 +525,19 @@ def generate_code():
 #IceMaths::Quat IceMaths::Matrix3x3::operator ::IceMaths::Quat() const [casting operator]
     c = mb.global_ns.namespace ( 'IceMaths').class_('Matrix3x3')
     for o in c.operators():
-        if 'Quat' in o._decl_string():
+#         print o
+#         print dir(o)
+#         print o.partial_decl_string
+#         print o.name
+        if 'Quat' in o.partial_decl_string:
             o.exclude()
-            print "Excluded Op", o, "\n", o._decl_string()
+            print "Excluded Op", o, "\n", o.partial_decl_string
 ##  OP float const * IceMaths::Point::operator float const *() const [casting operator]
     c = mb.global_ns.namespace ( 'IceMaths').class_('Point')
     for o in c.operators():
-        if 'float const *' in o._decl_string():
+        if 'float const *' in o.partial_decl_string:
             o.exclude()
-            print "Excluded Op", o, "\n", o._decl_string()
+            print "Excluded Op", o, "\n", o.partial_decl_string
     ##Spere(udword nb_verts, const Point* verts);  Not Implemented
     c = mb.global_ns.namespace ( 'IceMaths').class_('Sphere')
     for o in c.constructors(arg_types=("::udword","::IceMaths::Point const *") ):
@@ -544,7 +548,7 @@ def generate_code():
             o.exclude()
     for o in c.member_functions():
         if len (o.arguments) > 10:
-            print "Too Many Arguments - excluded:", o, o._decl_string()
+            print "Too Many Arguments - excluded:", o, o.partial_decl_string
             o.exclude()
     c = mb.global_ns.namespace ( 'IceMaths').class_('Matrix4x4')
     for o in c.casting_operators():

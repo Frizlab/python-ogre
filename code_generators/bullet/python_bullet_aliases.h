@@ -6,6 +6,7 @@ typedef btAlignedObjectArray<btWheelInfo>		BvhWheelInfoArray;
 typedef btAlignedObjectArray<btBvhSubtreeInfo>		BvhSubtreeInfoArray;
 typedef btAlignedAllocator<btWheelInfo, 16> btWheelInfo16;
 typedef btAlignedObjectArray<int> IntArray;
+typedef btAlignedObjectArray<float> FloatArray;
 typedef btAlignedObjectArray<btVector3> btVector3Array;
 typedef btAlignedObjectArray<btRaycastVehicle*> btRaycastVehiclePtrArray;
 typedef btAlignedObjectArray<btTypedConstraint*> btTypesConstraintPtrArray;

@@ -18,7 +18,66 @@ WRAPPER_REGISTRATION_PixelBox = [
                 bp::return_value_policy< bp::return_opaque_pointer >());"""
     ]
 
+WRAPPER_DEFINITION_MemoryDataStream =\
+"""
+// return the data buffer - can't be handled 'normally' by Py++
+unsigned long MemoryDataStream_data ( ::Ogre::MemoryDataStream & me )
+{
+    return (unsigned long) me.getPtr();
+}
 
+void MemoryDataStream_setDataList ( ::Ogre::MemoryDataStream & me, boost::python::list listin )
+{
+    Ogre::uchar * data = me.getPtr();
+    size_t maxlen = len ( listin );
+    size_t counter = 0;
+    for (counter=0;counter < maxlen; counter ++ )
+        *data++ =  boost::python::extract<Ogre::uchar> (listin[counter]);
+}
+
+void MemoryDataStream_setDataStr ( ::Ogre::MemoryDataStream & me, boost::python::str listin )
+{
+    Ogre::uchar * data = me.getPtr();
+    char const* c_str = boost::python::extract<char const*>(listin);
+    size_t maxlen = len(listin);
+    size_t counter;
+    for (counter=0; counter < maxlen; counter ++ )
+        *data++ = *c_str++;
+}
+
+boost::python::list
+MemoryDataStream_getData(::Ogre::MemoryDataStream & me)
+{
+    boost::python::list outlist;
+    size_t index;
+    Ogre::uchar * data = me.getPtr();
+    size_t size = me.size();
+    for (index=0;index<size;index++ ) {
+        outlist.append ( *data++ );
+        }
+    return outlist;
+}
+"""
+WRAPPER_REGISTRATION_MemoryDataStream = [
+    """def( "getDataPointer", &::MemoryDataStream_data,\\
+                "Python-Ogre Helper Function: Returns the data buffer.\\n\\
+                Input: \\n\\
+                Output: Unsigned Long address of the data buffer");""",
+    """def( "setData", &::MemoryDataStream_setDataList,\\
+                "Python-Ogre Helper Function: Takes a python list and loads it into the memory buffer (as unsigned chars).\\n\\
+                Input: Python List\\n\\
+                Output: None");""",
+    """def( "setData", &::MemoryDataStream_setDataStr,\\
+                "Python-Ogre Helper Function: Takes a python string and loads it into the memory buffer (as unsigned chars).\\n\\
+                Input: Python String\\n\\
+                Output: None");""",
+    """def( "getData", &::MemoryDataStream_getData,\\
+                "Python-Ogre Helper Function: Copies the data buffer to a python list.\\n\\
+                Input: None\\n\\
+                Output: Python List");"""
+    ]
+
+    
 WRAPPER_WRAPPER_RenderQueueListener =\
 """
     virtual void renderQueueEnded( ::Ogre::uint8 queueGroupId, ::Ogre::String const & invocation, bool & repeatThisInvocation ){
@@ -382,6 +441,28 @@ Utility_getUint16(void * ptrin,  int size)
     return outlist;
 }
 
+void
+Utility_setUchar(void * ptrin, boost::python::list listin)     // unsigned short
+{
+    int index;
+    Ogre::uchar * newptr = reinterpret_cast<Ogre::uchar *>(ptrin);
+    for (index=0;index<len(listin);index++ ) {
+        *newptr++ = boost::python::extract<Ogre::uchar> (listin[index]);
+        }
+}
+
+boost::python::list
+Utility_getUchar(void * ptrin,  int size)
+{
+    boost::python::list outlist;
+    int index;
+    Ogre::uchar * newptr = reinterpret_cast<Ogre::uchar *>(ptrin);
+    for (index=0;index<size;index++ ) {
+        outlist.append ( *newptr++ );
+        }
+    return outlist;
+}
+
 // sometimes we need to take the ctypess addressof(), an int, and recast it as a general void *
 void *
 Utility_CastVoidPtr ( unsigned long address )
@@ -488,6 +569,16 @@ WRAPPER_REGISTRATION_General = [
                 Input: void *, size\\n\\
                 Ouput: Python List\\n\\
                 The list is populated with ints from memory starting at the pointer" );""",
+    """bp::def( "setUchar", &Utility_setUchar,
+                "Python-Ogre Helper Function: Write Unsigned chars to Memory.\\n\\
+                Input: void *, Python List (numerics)\\n\\
+                Ouput: None\\n\\
+                The list is extracted as unsigned ints and written to memory starting at the pointer" );""",
+    """bp::def( "getUchar", &Utility_getUchar,
+                "Python-Ogre Helper Function: Reads unsigned chars into a python list.\\n\\
+                Input: void *, size\\n\\
+                Ouput: Python List\\n\\
+                The list is populated with ints from memory starting at the pointer" );""",                
     """bp::def( "setUint32", &Utility_setUint32,
                 "Python-Ogre Helper Function: Write Unsigned Ints 32 to Memory.\\n\\
                 Input: void *, Python List (numerics)\\n\\
@@ -868,6 +959,10 @@ def apply( mb ):
     rt = mb.class_( 'SceneManager' )
     rt.add_declaration_code( WRAPPER_DEFINITION_SceneManager )
     apply_reg (rt,  WRAPPER_REGISTRATION_SceneManager )
+    
+    rt = mb.class_( 'MemoryDataStream' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_MemoryDataStream )
+    apply_reg (rt,  WRAPPER_REGISTRATION_MemoryDataStream )
     
     rt = mb.class_( 'ParticleSystem' )
     rt.add_declaration_code( WRAPPER_DEFINITION_ParticleSystem )
