@@ -141,7 +141,7 @@ def apply( mb ):
                 returnType = f.return_type.decl_string
                 if 'void' in returnType or returnType == '' :
                     returnSomething = ''
-                else
+                else:
                     returnSomething = 'return'
                 values = { 'returnType':returnType, 'function_name':funcname, 
                     'classname':classname, 'getsizefunction' : getsizefunction,
