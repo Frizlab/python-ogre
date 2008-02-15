@@ -78,7 +78,7 @@ system rainSystem_1
 
 		affector							Scale
 		{
-			scale							40
+			xyz_scale						40
 		}
 	}
 	
@@ -214,7 +214,7 @@ system rainSystem_2
 
 		affector							Scale
 		{
-			scale							40
+			xyz_scale						40
 		}
 	}
 

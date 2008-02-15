@@ -73,7 +73,7 @@ system flameSystem
 		// Affector that affects all (visual) particles in general
 		affector							Scale
 		{
-			scale							-10
+			xyz_scale						-10
 		}
 
 		// Affect with a random Sine force (also affects the Gravity affector particles)
@@ -109,7 +109,7 @@ system fireSystem
 
 		renderer Billboard
 		{
-			// Put the fire in front of the smoke (just for testing)
+			// Put the fire in front of the smoke
 			render_queue_group				80
 		}
 
@@ -141,7 +141,7 @@ system fireSystem
 
 		affector							Scale
 		{
-			scale							-5
+			xyz_scale						-5
 		}
 
 		affector							Colour
@@ -179,7 +179,7 @@ system fireSystem
 
 		affector							Scale
 		{
-			scale							20
+			xyz_scale						20
 		}
 		
 		affector							Colour

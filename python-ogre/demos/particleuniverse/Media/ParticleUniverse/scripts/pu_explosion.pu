@@ -33,7 +33,7 @@ system explosionSystem
 		// Let it grow fast, equally in all dimensions
 		affector						Scale
 		{
-			scale						200
+			xyz_scale					200
 		}
 
 		// After 0.7 seconds, the emitters stops
@@ -133,7 +133,7 @@ system explosionSystem
 		// Make the projectile smaller over time
 		affector						Scale
 		{
-			scale						-5
+			xyz_scale					-5
 		}
 	}
 

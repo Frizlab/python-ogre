@@ -89,6 +89,8 @@ system example_002
 // ---------------------------------------------------------------------------------------------------------------
 system example_003
 {
+	scale 0.5 0.5 0.5
+	scale_velocity 0.5
 	technique
 	{
 		position						500 0 0
@@ -159,9 +161,10 @@ system example_004
 // ---------------------------------------------------------------------------------------------------------------
 system example_005
 {
+	scale								5 5 5
+	scale_velocity						5
 	technique
 	{
-		position						0 0 1000
 		// Use the billboard renderer defined in the *.pua script
 		use_alias						$defaultBillboardRenderer
 		material						ParticleUniverse/Star
@@ -175,7 +178,7 @@ system example_005
 			vertex_em_segments			5
 			vertex_em_iterations		5
 			position					0 0 0
-			emission_rate				500
+			emission_rate				400
 			angle						360
 			direction					0 1 0
 			velocity					2

@@ -58,13 +58,13 @@ system example_022
 	{
 		// Set the quota low
 		visual_particle_quota					40
-		default_particle_width					10
 		material								ParticleUniverse/RibbonTrail
 		renderer								RibbonTrail
 		{
 			ribbontrail_vertex_colours			true
 			ribbontrail_max_elements			60
 			ribbontrail_length					600
+			ribbontrail_width					10
 			ribbontrail_random_initial_colour	true
 			ribbontrail_colour_change			0.8 0.8 0.8 0.8
 		}
@@ -141,3 +141,115 @@ system example_023
 		}
 	}
 }
+
+// ---------------------------------------------------------------------------------------------------------------
+// example_024a and example_024b:
+// This is combination of Particle Systems where the emitter of Particle System 'example_024a' emits 
+// Particle System 'example_024b' particles.
+// With the use of the 'keep_local' attribute, the 'star' material sticks to the emitted particle system.
+// ---------------------------------------------------------------------------------------------------------------
+system example_024a
+{
+	technique
+	{
+		emitted_system_quota					10
+		visual_particle_quota					10
+		material								ParticleUniverse/RibbonTrail
+		renderer								RibbonTrail
+		{
+			ribbontrail_vertex_colours			true
+			ribbontrail_max_elements			40
+			ribbontrail_length					1000
+			ribbontrail_width					15
+			ribbontrail_random_initial_colour	true
+			ribbontrail_colour_change			0.8 0.8 0.8 0.8
+		}
+
+		emitter									Point
+		{
+			emits								system_particle	example_024b
+			angle								60
+			emission_rate						1
+			direction							0 1 0
+			velocity							400
+			time_to_live						7
+		}
+		affector								LinearForce
+		{
+			force_aff_vector					0 -200 0
+		}
+	}
+}
+
+system example_024b
+{
+	technique
+	{
+		default_particle_width					160
+		default_particle_height					160
+		visual_particle_quota					1
+		material								ParticleUniverse/Star
+		use_alias								$defaultBillboardRenderer
+		keep_local								true
+
+		emitter									Point
+		{
+			angle								360
+			emission_rate						1
+			force_emission						true
+			direction							0 0 0
+			velocity							0
+			time_to_live						7
+		}
+	}
+	technique
+	{
+		default_particle_width					10
+		default_particle_height					10
+		visual_particle_quota					100
+		use_alias								$defaultBillboardRenderer
+		material								Examples/Flare
+
+		emitter									Point
+		{
+			angle								360
+			emission_rate						50
+			direction							0 -1 0
+			velocity							100
+			time_to_live						2
+		}
+		affector								LinearForce
+		{
+			force_aff_vector					0 -200 0
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// example_025: PositionEmitter
+// ---------------------------------------------------------------------------------------------------------------
+system example_025
+{
+	technique
+	{
+		default_particle_width					100
+		default_particle_height					100
+		use_alias								$defaultBillboardRenderer
+		material								Examples/Flare
+		emitter									Position
+		{
+			emission_rate						10
+			time_to_live						3
+			random_position						true
+			add_position						200 100 300
+			add_position						0 400 0
+			add_position						-200 200 -100
+			add_position						100 -200 0
+		}
+		affector								LinearForce
+		{
+			force_aff_vector					0 -200 0
+		}
+	}
+}
+

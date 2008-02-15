@@ -101,7 +101,7 @@ system example_012
 		// Change the scale of the particle
 		affector						Scale
 		{
-			scale						10
+			xyz_scale					10
 		}
 
 		// Apply a boost if the Jet affector is enabled
@@ -124,6 +124,8 @@ system example_012
 // ---------------------------------------------------------------------------------------------------------------
 system example_013
 {
+	scale 0.5 0.5 0.5
+	scale_velocity 0.5
 	technique
 	{
 		use_alias						$defaultBillboardRenderer
@@ -218,6 +220,7 @@ system example_015
 // ---------------------------------------------------------------------------------------------------------------
 system example_016
 {
+
 	technique
 	{
 		renderer						Billboard
