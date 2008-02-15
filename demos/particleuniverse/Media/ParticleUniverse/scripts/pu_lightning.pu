@@ -31,7 +31,7 @@ system electricBeamSystem
 
 		affector						Line
 		{
-			line_aff_max_deviation		140
+			line_aff_max_deviation		100
 			line_aff_time_step			0.03
 			line_aff_end				1500 300 0
 			line_aff_drift				0.3
@@ -68,7 +68,7 @@ system electricBeamSystem
 
 		affector						Line
 		{
-			line_aff_max_deviation		200
+			line_aff_max_deviation		140
 			line_aff_time_step			0.01
 			line_aff_end				1500 300 0
 			line_aff_drift				0.1

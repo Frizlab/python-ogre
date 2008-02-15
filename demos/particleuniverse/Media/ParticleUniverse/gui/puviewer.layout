@@ -51,15 +51,22 @@
 				<Property Name="Text" Value="Stop" />
 			</Window>
 
-			<Window Type="TaharezLook/Checkbox" Name="ParticleUniverseViewer/CheckResetCamera" >
+			<Window Type="TaharezLook/Button" Name="ParticleUniverseViewer/ButtonQuit">
 				<Property Name="UnifiedPosition" Value="{{0.1,0},{0.82,0}}"  />
+				<Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
+				<Property Name="UnifiedSize" Value="{{0.8,0},{0.05,0}}"  />
+				<Property Name="Text" Value="Quit" />
+			</Window>
+
+			<Window Type="TaharezLook/Checkbox" Name="ParticleUniverseViewer/CheckResetCamera" >
+				<Property Name="UnifiedPosition" Value="{{0.1,0},{0.88,0}}"  />
 				<Property Name="Text" Value="Reset Camera" />
 				<Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
 				<Property Name="UnifiedSize" Value="{{0.8,0},{0.05,0}}"  />
 			</Window>
 
 			<Window Type="TaharezLook/Checkbox" Name="ParticleUniverseViewer/CheckSkybox" >
-				<Property Name="UnifiedPosition" Value="{{0.1,0},{0.88,0}}"  />
+				<Property Name="UnifiedPosition" Value="{{0.1,0},{0.94,0}}"  />
 				<Property Name="Text" Value="Skybox" />
 				<Property Name="UnifiedMaxSize" Value="{{1,0},{1,0}}" />
 				<Property Name="UnifiedSize" Value="{{0.8,0},{0.05,0}}"  />

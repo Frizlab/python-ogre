@@ -8,7 +8,7 @@ system tornadoSystem
 	{
 		renderer						Billboard
 		{			
-			billboard_sorting			true
+			sorting						true
 		}
 		material						ParticleUniverse/Tornado
 		default_particle_width			250
