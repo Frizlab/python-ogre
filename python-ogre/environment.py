@@ -546,6 +546,17 @@ class ois:
             [wget, "http://prdownloads.sourceforge.net/wgois/ois-1.0RC1.tar.gz", downloadPath]
             ]
         buildCmds  = [
+               [0, tar + " zxf " + os.path.join(downloadPath,base)+".tar.gz --overwrite",os.getcwd() ],
+               [0, "rm -rf autom4te.cache", os.path.join(os.getcwd(), base )],
+               [0, "libtoolize --force && aclocal $ACLOCAL_FLAGS && autoheader &&\
+                             automake --include-deps --add-missing --foreign && autoconf",
+                             os.path.join(os.getcwd(), base )],
+               [0,"./configure --prefix=%s --includedir=%s/include" % (PREFIX,PREFIX) ,os.path.join(os.getcwd(), base )],
+               [0,'make', os.path.join(os.getcwd(), base )],
+               [0,'make install', os.path.join(os.getcwd(), base )]
+               ]
+            
+        buildCmds  = [
                 [0, tar + " zxf " + os.path.join(downloadPath,base)+".tar.gz --overwrite",os.getcwd() ],
                 [0, "./bootstrap" ,os.path.join(os.getcwd(), base )],
                 [0,"./configure --prefix=%s --includedir=%s/include" %(PREFIX,PREFIX) ,os.path.join(os.getcwd(), base )],
@@ -905,7 +916,7 @@ class ogreforests:
 class particleuniverse:
     active = True
     pythonModule = True
-    version="0.5"
+    version="0.6"
     name='particleuniverse'
     parent="ogre/addons"
     CCFLAGS = ' ' 
@@ -925,7 +936,7 @@ class particleuniverse:
 class nxogre:
     active = True
     pythonModule = True
-    version="1.0a"
+    version="1.0-19"
     name='nxogre'
     parent="ogre/physics"
     cflags=""
@@ -966,7 +977,7 @@ class nxogre_09:
     cflags=""
     include_dirs = [ Config.PATH_Boost,
                     Config.PATH_INCLUDE_Ogre,
-                    Config.PATH_INCLUDE_NxOgre,
+                    Config.PATH_INCLUDE_NxOgre_09,
                     ]
     for d in Config.PATH_INCLUDE_PhysX:
         include_dirs.append( d )
@@ -1186,9 +1197,9 @@ class et:  ## editable terrain
 class bullet:
     active = True
     pythonModule = True
-    version= "2.64"
+    version= "2.66"
     name='bullet'
-    base = "bullet-2.64"
+    base = "bullet-2.66"
     baseDir = os.path.join(os.getcwd(), base)
     parent = "ogre/physics"
     libs=[Config.LIB_Boost,  'LibBulletCollision', 'LibBulletDynamics']
@@ -1201,7 +1212,7 @@ class bullet:
                     ,  Config.PATH_INCLUDE_Bullet
                     ]
     source=[
-        [wget, "http://downloads.sourceforge.net/bullet/"+base+".tgz", downloadPath]
+        [wget, "http://downloads.sourceforge.net/bullet/"+base+"A.tgz", downloadPath]
         ]
     buildCmds = [
         [0, "tar zxf " +os.path.join(downloadPath, base)+".tgz", ''],

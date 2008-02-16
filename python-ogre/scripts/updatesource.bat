@@ -14,8 +14,8 @@ cd %_ROOT%\ogreaddons\ogreode
 cd %_ROOT%\NxOgre
 %_SVN% up
 del /q %_TP%\nxogre
-xcopy /s /y NxOgre\include %_TP%\nxogre
-xcopy /s /y NxOgre\source %_TP%\nxogre
+xcopy /s /y include %_TP%\nxogre
+xcopy /s /y source %_TP%\nxogre
 
 cd %_ROOT%\ogreal
 %_SVN% up
@@ -49,6 +49,14 @@ cd %_ROOT%\ogreaddons\forests
 del /q %_TP%\forests
 copy include\*.h %_TP%\forests
 copy source\*.cpp %_TP%\forests
+
+cd %_ROOT%\opensteer
+%_SVN% up
+cd trunk
+xcopy /s include\* %_TP%\opensteer 
+copy src\*.cpp %_TP%\opensteer
+copy include\OpenSteer\*.h %_TP%\opensteer
+
 
 popd
 endlocal

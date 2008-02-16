@@ -27,7 +27,16 @@
  		/** Get a single line from the stream.
  		@remarks
  			The delimiter character is not included in the data
-
+@@ -146,7 +147,7 @@
+ 		/** Returns the total size of the data to be read from the stream, 
+ 			or 0 if this is indeterminate for this stream. 
+ 		*/
+-        size_t size(void) const { return mSize; }
++        virtual size_t size(void) const { return mSize; }
+ 
+         /** Close the stream; this makes further operations invalid. */
+         virtual void close(void) = 0;
+         
 --- ogrenew/OgreMain/include/OgreHardwareBuffer.h	23 Aug 2006 08:18:33 -0000	1.17
 +++ ogrenew/OgreMain/include/OgreHardwareBuffer.h	24 Nov 2007 00:37:00 -0000
 @@ -31,6 +31,8 @@
