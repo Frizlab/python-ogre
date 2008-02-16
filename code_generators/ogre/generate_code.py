@@ -654,7 +654,7 @@ def AutoFixes ( mb, MAIN_NAMESPACE ):
 
     # and change functions that return a variety of pointers to instead return unsigned int's
     pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', '::Ogre::uint8', 'unsigned char', 'char']
-    ignore_names=['ptr', 'useCountPointer']  # these are function names we know it's cool to exclude
+    ignore_names=[]## 'ptr', 'useCountPointer']  # these are function names we know it's cool to exclude
     common_utils.Fix_Pointer_Returns ( main_ns, pointee_types, ignore_names )   
 
     # functions that need to have implicit conversions turned off
