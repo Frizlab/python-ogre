@@ -3,33 +3,33 @@
 ;
 [Setup]
 AppName=Python-Ogre
-AppVerName=Python-Ogre 1.1
+AppVerName=Python-Ogre 1.2
 DefaultDirName=C:\PythonOgre
 DefaultGroupName=Python-Ogre
 OutputBaseFilename=PythonOgreInstaller
 OutputDir=C:\temp
 SourceDir=C:\Development\PythonOgreRelease
-VersionInfoDescription=Release 1.1 of Python-Ogre
+VersionInfoDescription=Release 1.2 of Python-Ogre
 AllowNoIcons=true
-AppPublisher=OpenSource
+AppPublisher=OpenSource (Andy and Team)
 AppPublisherURL=http://www.python-ogre.org
 AppSupportURL=http://www.python-ogre.org
 AppUpdatesURL=http://www.python-ogre.org
-AppVersion=1.1.0
+AppVersion=1.2.0
 LicenseFile=LICENSE.GPL
 Compression=lzma
 InfoBeforeFile=InstallWarning.rtf
 InfoAfterFile=postinstall.rtf
 SolidCompression=true
 AppCopyright=LPGL
-VersionInfoCompany=OpenSource
-VersionInfoTextVersion=1.1.0
+VersionInfoCompany=OpenSource (Andy and Team)
+VersionInfoTextVersion=1.2.0
 VersionInfoCopyright=PythonOgre Development Team
 RestartIfNeededByRun=false
 UninstallDisplayName=PythonOgre
 WizardImageFile=compiler:WizModernImage-IS.bmp
 WizardSmallImageFile=compiler:WizModernSmallImage-IS.bmp
-VersionInfoVersion=1.1.0
+VersionInfoVersion=1.2.0
 [Files]
 ; base files, demos and tools
 Source: *; DestDir: {app}

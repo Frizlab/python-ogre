@@ -1,3 +1,27 @@
+Feb 2008: Release
+=================
+Code Generation:
+* Fix to the Automatic Function transformation code as it wasn't picking up constant void pointers. 
+       This fixes PixelUtil::unpackColour and a number of other functions       
+* Fix to addPoly function in OgreNewt (takes an array of vertices)
+* Fix to OgreForests as the API had changed in base C++ library
+* Fix to Py++ to remove reference when building wrapper code in "transformers.py" - bug showed in renderQueueListener 
+* Fix to BuildModule.py to only set the environment once (-C now works for compiling everything)
+* Fix to ComonUtils/__init__.py - Free Functions wheren't being handled by Futional Transformation or Return Pointer fixing.
+* Enhancements to MemoryDataStream to make it simplier to use (can be used for any 'DataStream' requirements)
+
+Updates and General Library Improvements to:
+* NxOgre_09
+* QuickGui, Caelum, OgreForests
+* Particle Universe 0.6
+* Bullet 2.66
+* Caelum Rev 127 and updated media.
+* Physx - free functions are now exposed so should work as an independ library 
+
+New Modules:
+* Hydrax 0.1
+* opensteer
+
 Janurary 08 2008: Snapshot
 ==========================
 New Modules:

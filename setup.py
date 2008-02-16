@@ -64,7 +64,7 @@ PACKAGEDATA = {
                         'ogre.sound', 'ogre.sound.OgreAL', 
                         'ogre.physics', 'ogre.physics.ODE', 'ogre.physics.OgreRefApp',
                         'ogre.physics.OgreOde', 'ogre.physics.OgreNewt', 'ogre.physics.Opcode',
-                        'ogre.physics.bullet','ogre.physics.PhysX','ogre.physics.NxOgre',## 'ogre.physics.NxOgre_09',
+                        'ogre.physics.bullet','ogre.physics.PhysX','ogre.physics.NxOgre','ogre.physics.NxOgre_09',
                         'ogre.physics.OgreBulletC', 'ogre.physics.OgreBulletD',
                         'ogre.addons','ogre.addons.theora',
                         'ogre.addons.ogrevideoffmpeg', 'ogre.addons.ogredshow',

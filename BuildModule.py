@@ -11,8 +11,11 @@ import logging
 import sys
 import types
 import os
+import time
 
 logger = None
+FULL_LOGGING = False    # Set to true to log everything, even if successful
+ENV_SET = False         # global to ensure we don't set the environment too many times and break the shell.
 
 def setupLogging (logfilename):
     # set up logging to file
@@ -63,25 +66,27 @@ def exit( ExitMessage ):
 def spawnTask ( task, cwdin = '' ):
     """Execute a command line task and manage the return code etc
     """
+    global ENV_SET
     PREFIX = environment.PREFIX
     PATH = os.environ["PATH"]
     env = os.environ
-    env["PKG_CONFIG_PATH"]=os.path.join(PREFIX,"lib/pkgconfig")
-    env["LD_LIBRARY_PATH"]=os.path.join(PREFIX,"lib")
-    if environment.isMac():
-        env["CFLAGS"]="-I"+PREFIX+"/include -L"+PREFIX+"/lib"  
-        env["CXXFLAGS"]="-I"+PREFIX+"/include -L"+PREFIX+"/lib"
-        ##env["LDFLAGS"]="-Wl,-rpath='\$\$ORIGIN/../../lib' -Wl,-rpath='\$\$ORIGIN' -Wl,-z,origin"  ### Mac GCC 4.0.1 doesn't support rpath
-        env["PYTHONPATH"]=PREFIX+"/lib/python"+environment.PythonVersionString+"/site-packages"
-    else:
-        env["CFLAGS"]="-I"+os.path.join(PREFIX,"include")+ " -L"+os.path.join(PREFIX,"lib")  
-        env["CXXFLAGS"]=env["CFLAGS"]
-        env["LDFLAGS"]="-Wl,-rpath='$$ORIGIN/../../lib' -Wl,-rpath='$$ORIGIN' -Wl,-z,origin"
-        env["PYTHONPATH"]=PREFIX+"/lib/python"+environment.PythonVersionString+"/site-packages"
-        env["ZZIPLIB_LIBS"]="-lzzip"
-
-    env["PATH"]=PREFIX+"/bin:" + PATH
+    if not ENV_SET: # this actually changes the environment so we shouldn't do it more than once
+        env["PKG_CONFIG_PATH"]=os.path.join(PREFIX,"lib/pkgconfig")
+        env["LD_LIBRARY_PATH"]=os.path.join(PREFIX,"lib")
+        if environment.isMac():
+            env["CFLAGS"]="-I"+PREFIX+"/include -L"+PREFIX+"/lib"  
+            env["CXXFLAGS"]="-I"+PREFIX+"/include -L"+PREFIX+"/lib"
+            ##env["LDFLAGS"]="-Wl,-rpath='\$\$ORIGIN/../../lib' -Wl,-rpath='\$\$ORIGIN' -Wl,-z,origin"  ### Mac GCC 4.0.1 doesn't support rpath
+            env["PYTHONPATH"]=PREFIX+"/lib/python"+environment.PythonVersionString+"/site-packages"
+        else:
+            env["CFLAGS"]="-I"+os.path.join(PREFIX,"include")+ " -L"+os.path.join(PREFIX,"lib")  
+            env["CXXFLAGS"]=env["CFLAGS"]
+            env["LDFLAGS"]="-Wl,-rpath='$$ORIGIN/../../lib' -Wl,-rpath='$$ORIGIN' -Wl,-z,origin"
+            env["PYTHONPATH"]=PREFIX+"/lib/python"+environment.PythonVersionString+"/site-packages"
+            env["ZZIPLIB_LIBS"]="-lzzip"
     
+        env["PATH"]=PREFIX+"/bin:" + PATH
+        ENV_SET=True        
      
     logger.debug ( "Spawning '%s' in '%s'" % (task,cwdin) )
     process = subprocess.Popen (task, shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd = cwdin, env=env)
@@ -95,6 +100,11 @@ def spawnTask ( task, cwdin = '' ):
         logger.warning ( "Task Failed" )
         logger.debug ( out )
         logger.debug ( err )
+    elif FULL_LOGGING:
+        logger.warning ( "Full Logging ON" )
+        logger.debug ( out )
+        logger.debug ( err )
+            
     return returncode     
      
 def retrieveSource ( module ):
@@ -132,7 +142,9 @@ def compileCode ( module ):
     """
     logger.info ( "Compiling Source code for " + module.name )
     ### AJM -- note the assumption that environment.py is sitting in the 'python-ogre' directory...
-    ret = spawnTask ( 'scons PROJECTS='+module.name, os.path.join(environment.root_dir) )            
+    ret = spawnTask ( 'scons PROJECTS='+module.name, os.path.join(environment.root_dir) )     
+    if ret != 0 :
+        time.sleep(5)  ## not sure why scons doesn't work after first failure       
     
 
                          
