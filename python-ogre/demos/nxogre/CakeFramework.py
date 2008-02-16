@@ -443,11 +443,11 @@ class terrain ( Decoration ):
 
 ##/////////////////////////////////////////////////////////////////////////////
 
-class Frosting ( Decoration, BetaGUI.BetaGUIListener ):
+class Frosting ( Decoration, BetaGUI.GUIListener ):
 
 
     def __init__(self, r, i, t) : 
-        BetaGUI.BetaGUIListener.__init__(self)
+        BetaGUI.GUIListener.__init__(self)
         Decoration.__init__(self,r,i,t)
         self.SceneMgr = r.createSceneMgr("Main") 
         self.Camera = self.SceneMgr.createCamera("Main") 
@@ -513,13 +513,16 @@ class Frosting ( Decoration, BetaGUI.BetaGUIListener ):
             self.SceneMgr.setShadowCameraSetup(self.shadowCamera) 
 
 
-        self.Gui = BetaGUI.GUI("SandBoxGUI", "nxogrefont", 14, self.Renderer.getWindow()) 
+#         self.Gui = BetaGUI.GUI("SandBoxGUI", "nxogrefont", 14, self.Renderer.getWindow()) 
+        self.Gui = BetaGUI.GUI( self.Renderer.getWindow()) 
         
-        self.Cursor = self.Gui.createMousePointer(ogre.Vector2(24, 24), "bgui.pointer") 
+#         self.Cursor = self.Gui.createMousePointer(ogre.Vector2(24, 24), "bgui.pointer") 
+        self.Cursor = self.Gui.createMousePointer("bgui.pointer",24,24) 
         self.Gui.injectMouse(200,200, False) 
         self.Cursor.hide() 
         
-        self.WidgetMenu = self.Gui.createWindow(ogre.Vector4(100,100,64,128), "widget.mm", BetaGUI.WindowFeatureType.WFT_NONE, "") 
+#         self.WidgetMenu = self.Gui.createWindow(ogre.Vector4(100,100,64,128), "widget.mm", BetaGUI.WindowFeatureType.WFT_NONE, "") 
+        self.WidgetMenu = self.Gui.createWindow(100,100,64,128, "widget.mm", BetaGUI.WindowFeatureType.WFT_NONE, "", self) 
         
         self.callback = BetaGUI.Callback(self)
         self.WidgetMenuButton=[]

@@ -6,12 +6,17 @@ class MyRenderQueueListener(ogre.RenderQueueListener):
         ogre.RenderQueueListener.__init__(self)
         
    def renderQueueStarted (self, id , invocation, skipThisInvocation): 
-   
+      print "In Queue Started", id, invocation, skipThisInvocation  
+      print ogre.RENDER_QUEUE_OVERLAY
+      print type (id)
+      print type (ogre.RENDER_QUEUE_OVERLAY)
       if (id == ogre.RENDER_QUEUE_OVERLAY): 
           print "Queue Start Skip %i %i " % (id,ogre.RENDER_QUEUE_OVERLAY) 
           return True
+      print "returning false"
       return False
    def renderQueueEnded (self, id , invocation,repeatThisInvocation): 
+      print "In QueueEnded"
       if (id == ogre.RENDER_QUEUE_OVERLAY): 
           print "Queue End Repeat %i %i" % (id, ogre.RENDER_QUEUE_OVERLAY) 
           return False

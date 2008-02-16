@@ -6,7 +6,9 @@ import ctypes, math,sys
 class TestApplication(sf.Application):
     def _createScene(self):
         sceneManager = self.sceneManager
-        
+# #         result = materialManager.createOrRetrieve(texture, group) 
+# #         created = result.second 
+# #         material = materialManager.getByName(texture) 
         ## getByName returns a 'Resource' object
         tm=ogre.TextureManager.getSingleton()
         for r in tm.getResourceIterator():

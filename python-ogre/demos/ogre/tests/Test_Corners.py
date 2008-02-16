@@ -8,42 +8,14 @@ import ogre.renderer.OGRE as ogre
 import SampleFramework 
 import math 
 
-class FilePtr ( ogre.DataStream ):
-    def __init__ ( self, filename ):
-        ogre.DataStream.__init__(self)
-        datain = file(filename, 'r').read() # should put error checking etc here
-        self.length = len ( datain )
-        self.source = ctypes.create_string_buffer( datain ) ## Note it allocates one extra byte
-    def read ( self, dest, size ):
-        if size <= self.length:
-            print ogre.CastInt(dest)
-            ctypes.memmove ( ogre.CastInt(dest), self.source, size ) # again should check here for 
-    def size ( self ):
-        return self.length
-        
+       
 class TutorialApplication(SampleFramework.Application): 
 
 
     def _createScene(self): 
         sm = self.sceneManager 
-#         f= file("test.material", 'r')
-#         MatString = f.read()
-#         RawMemBuffer = ctypes.create_string_buffer( MatString ) ## Note it allocates one extra byte
-#         dataptr = ogre.MemoryDataStream ( ctypes.addressof ( RawMemBuffer ), len (MatString) + 1 )
-#         ogre.MaterialManager.getSingleton().parseScript( dataptr, "General" )   
-#         print "MATERIAL OK"     
-        
-        fp = FilePtr ( "test.material")
-        print "##", fp
-        dataptr = ogre.MemoryDataStream ( fp )
-        ogre.MaterialManager.getSingleton().parseScript( dataptr, "General" )   
-        print "MATERIAL OK"     
-        
         
         try:
-        
-        
-        
             entity = self.sceneManager.getEntity("Junk") 
         except ogre.OgreItemIdentityException, e:
             print"\nException OK: OgreItemIdentityException \n",e, "\n"
@@ -67,7 +39,12 @@ class TutorialApplication(SampleFramework.Application):
             node1.attachObject(ent1) # should fail as you can only attach once
         except ogre.OgreInvalidParametersException, e:
             print "Exception OK\n", e, "\n"
-        dummy = node1.getAttachedObject ("doesnt_exist")
+            
+        try:
+            dummy = node1.getAttachedObject ("doesnt_exist")
+        except ogre.OgreItemIdentityException, e:
+            print "Exception OK\n", e, "\n"
+                        
         
             
         ent2 = sm.createEntity("Robot2",'robot.mesh') 
