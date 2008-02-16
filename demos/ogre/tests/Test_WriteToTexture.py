@@ -13,8 +13,6 @@ import ogre.renderer.OGRE as ogre
 import SampleFramework as sf
 import ctypes
 
-
-
 def WriteToTexture(in_string, destTexture, destRectangle, font, color, justify = 'l',  wordwrap = True):
     if destTexture.getHeight() < destRectangle.bottom:
         destRectangle.bottom = destTexture.getHeight()

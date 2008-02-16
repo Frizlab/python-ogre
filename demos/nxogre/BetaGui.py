@@ -69,7 +69,7 @@ class GUI :
                          mDragWindowX + (x - self.mDragX),
                          mDragWindowY + (y - self.mDragY)
                          )
-                       return True
+                     return True
         elif (self.mDragWindowAction != WA_NONE):
             self.mDragWindowAction = WA_NONE
             self.mActiveDraggedWindow = None 

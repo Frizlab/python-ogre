@@ -23,7 +23,3 @@ while iter.hasMoreElements():
     for item in Section:
         print SectionName, item.key, item.value
        
-config = Ogre.ConfigFile()
-config.load_special('resources.cfg' ) #, '', False )
-for section, key, path in config.values:
-    print section, key, path
