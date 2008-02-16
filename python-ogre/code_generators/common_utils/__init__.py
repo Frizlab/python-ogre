@@ -196,66 +196,65 @@ def Auto_Document ( mb, namespace=None ):
        
 
 
-def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[], prefix_output=['get','is','calc','suggest'] ):                         
-    for fun in mb.member_functions():
-        fullname = fun.demangled.split('(')[0]
-        if fullname not in ignore_funs and not fun.ignore:
-            arg_position = 0
-            trans=[]
-            desc=""
-#             print "Checking", fun.decl_string
-            for arg in fun.arguments:
-                rawarg =  declarations.remove_declarated(
-                    declarations.remove_const( 
-                        declarations.remove_reference( 
-                            declarations.remove_pointer ( arg.type ))))
-                                           
-#                 print fun.name, arg.type.decl_string, rawarg     
-                
-                ## now check if the arg is a fundemental type (int float etc), a void
-                ##  or a special ..
-                if declarations.is_arithmetic (rawarg)\
-                        or declarations.is_void(rawarg)\
-                        or arg.type.decl_string in special_vars:
-#                     print "Auto:", arg.type.decl_string," is_integral|floating|void|special|"
-                    if declarations.is_pointer(arg.type):   #we convert any pointers to unsigned int's
-#                         print "Pointer"
-                        trans.append( ft.modify_type(arg_position,_ReturnUnsignedInt ) )
-                        desc = desc +"Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
-                            arg.type.decl_string + " ) takes a CTypes.addressof(xx). \\n"
-#                         print fullname,"Ctype Mod for ", arg.name, arg.type.decl_string    
-                    elif declarations.is_reference(arg.type):  
-#                         print "Ref"
-                        matched = False
-                        for pre in prefix_output:   # functions whose name starts in the list are consider output only
-                            if fun.name.startswith (pre):
-                                matched = True
-                                trans.append( ft.output(arg_position ) )
-                                desc = desc +"Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
-                                    arg.type.decl_string + " ) converted to an output only (no longer an input argument).\\n"
-    #                             print fullname," ft.output ", arg.name, arg.type.decl_string
-                        if not matched:    # otherwise a function is converted using inout
-                            trans.append( ft.inout(arg_position ) )
-                            desc = desc + "Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
-                                arg.type.decl_string + " ) converted to an input/output (change to return types).\\n"
-#                             print fullname," ft.inout ", arg.name, arg.type.decl_string    
+def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[], prefix_output=['get','is','calc','suggest'] ):
+    toprocess = []                       
+    for fun in mb.member_functions(allow_empty=True):
+        toprocess.append( fun )
+    for fun in mb.free_functions(allow_empty=True):
+        toprocess.append( fun )
+        
+    for fun in toprocess:
+        try:   # ugly wrapping in a try :(    
+            fullname = fun.demangled.split('(')[0]
+            if fullname not in ignore_funs and not fun.ignore:
+                arg_position = 0
+                trans=[]
+                desc=""
+                for arg in fun.arguments:
+                    rawarg =  declarations.remove_declarated(
+                        declarations.remove_const( 
+                            declarations.remove_reference( 
+                                declarations.remove_pointer ( arg.type ))))
+                                               
+                    
+                    ## now check if the arg is a fundemental type (int float etc), a void
+                    ##  or a special ..
+                    if declarations.is_arithmetic (rawarg)\
+                            or declarations.is_void(rawarg)\
+                            or arg.type.decl_string in special_vars:
+                        if declarations.is_pointer(arg.type):   #we convert any pointers to unsigned int's
+                            trans.append( ft.modify_type(arg_position,_ReturnUnsignedInt ) )
+                            desc = desc +"Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
+                                arg.type.decl_string + " ) takes a CTypes.addressof(xx). \\n"
+                        elif declarations.is_reference(arg.type):  
+                            matched = False
+                            for pre in prefix_output:   # functions whose name starts in the list are consider output only
+                                if fun.name.startswith (pre):
+                                    matched = True
+                                    trans.append( ft.output(arg_position ) )
+                                    desc = desc +"Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
+                                        arg.type.decl_string + " ) converted to an output only (no longer an input argument).\\n"
+                            if not matched:    # otherwise a function is converted using inout
+                                trans.append( ft.inout(arg_position ) )
+                                desc = desc + "Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
+                                    arg.type.decl_string + " ) converted to an input/output (change to return types).\\n"
+                        else:
+                            pass
                     else:
                         pass
-#                         print "Not Handled"
-                else:
-                    pass
-#                     print "Not valid to process"
-                arg_position += 1
-            if trans:
-                if fun.documentation:   # it's already be tweaked:
-                    print "AUTOFT ERROR: Duplicate Tranforms.", fun
-                elif fun.virtuality == "pure virtual":
-                    print "AUTOFT WARNING: PURE VIRTUAL function requires tranform.", fun
-                else:
-                    print "AUTOFT OK: Tranformed ", fun
-                    fun.add_transformation ( * trans , **{"alias":fun.name}  )
-                    fun.documentation = docit ("Auto Modified Arguments:",
-                                                    desc, "...")
+                    arg_position += 1
+                if trans:
+                    if fun.documentation:   # it's already be tweaked:
+                        print "AUTOFT ERROR: Duplicate Tranforms.", fun
+                    elif fun.virtuality == "pure virtual":
+                        print "AUTOFT WARNING: PURE VIRTUAL function requires tranform.", fun
+                    else:
+                        print "AUTOFT OK: Tranformed ", fun
+                        fun.add_transformation ( * trans , **{"alias":fun.name}  )
+                        fun.documentation = docit ("Auto Modified Arguments:",
+                                                        desc, "...")
+        except:
+            pass    
                       
 
 def Fix_Void_Ptr_Args ( mb, pointee_types=['unsigned int','int', 'float', 'unsigned char', 'char', 'bool'],  ignore_names=[] ):
@@ -337,13 +336,22 @@ def Fix_Pointer_Returns ( mb, pointee_types=['unsigned int','int', 'float','char
                 if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
                     if not fun.name in known_names:
                         print "WARNING: Excluding (function):", fun, "as it returns (pointer)", i
-                    fun.exclude()
+                        fun.exclude()
     for fun in mb.member_operators( allow_empty = True ):
         if declarations.is_pointer (fun.return_type) and not fun.documentation:
             for i in pointee_types:
                 if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
                     print "WARNING: Excluding (operator):", fun
                     fun.exclude()
+                    
+    # Change 15 Feb 2008 -- adding free function management                
+    for fun in mb.free_functions( allow_empty = True ):
+        if declarations.is_pointer (fun.return_type) and not fun.documentation:
+            for i in pointee_types:
+                if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
+                    if not fun.name in known_names:
+                        print "WARNING: Excluding (free function):", fun, "as it returns (pointer)", i
+                        fun.exclude()
 
 def AutoExclude( mb, MAIN_NAMESPACE=None ):
     """ Automaticaly exclude a range of things that don't convert well from C++ to Python

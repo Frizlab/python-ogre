@@ -73,12 +73,15 @@ def ManualExclude ( mb ):
                 # not in source
                 ,'::NxBitField::rangeToDenseMask'
                 ,'::NxBitField::maskToShift'
-                
+
                 ]
     for e in excludes:
         print "excluding function", e
         global_ns.member_functions(e).exclude()
-    excludes = []
+        
+    excludes = ['NxCreatePMap'  # refrences TriangleMEsh, however they don't expose the destructor
+                    ,'NxGetValue'    # unresolved external
+                    ]
     for e in excludes:
         print "Excluding:", e
         global_ns.free_functions(e).exclude()
@@ -218,11 +221,16 @@ def AutoFixes ( mb ):
     # arguments passed as refs but not const are not liked by boost
 #     Fix_Ref_Not_Const ( main_ns )
     
-    # Functions that have void pointers in their argument list need to change to unsigned int's  
-    Fix_Void_Ptr_Args  ( main_ns )
-    
+#     # Functions that have void pointers in their argument list need to change to unsigned int's  
+#     3_Args  ( main_ns )
+#     
+#     # and change functions that return a variety of pointers to instead return unsigned int's
+#     Fix_Pointer_Returns ( main_ns )   
+#     
     # and change functions that return a variety of pointers to instead return unsigned int's
-    Fix_Pointer_Returns ( main_ns )   
+    pointee_types=['unsigned int','int', 'float', 'unsigned char', 'char','::NxI32']
+    ignore_names=['getName']  # these are function names we know it's cool to exclude
+    common_utils.Fix_Pointer_Returns ( main_ns, pointee_types, ignore_names )   
 
     # functions that need to have implicit conversions turned off
     Fix_Implicit_Conversions ( main_ns)
@@ -264,22 +272,7 @@ def Add_Auto_Conversions( mb ):
     pass
     
       
-def Set_Call_Policies( mb ):
-    """ set the return call policies on classes that this hasn't already been done for.
-    Set the default policy to deal with pointer/reference return types to reference_existing object
-    """
-    mem_funs = mb.calldefs ()
-    mem_funs.create_with_signature = True #Generated code will not compile on
-    #MSVC 7.1 if function has throw modifier.
-    for mem_fun in mem_funs:
-        if mem_fun.call_policies:
-            continue
-        if not mem_fun.call_policies and \
-                    (declarations.is_reference (mem_fun.return_type) or declarations.is_pointer (mem_fun.return_type) ):
-            mem_fun.call_policies = call_policies.return_value_policy(
-                call_policies.reference_existing_object )
-
-                                
+                               
 def Set_Exception(mb):
     pass
     #~ """We don't exclude  Exception, because it contains functionality, that could
@@ -292,96 +285,7 @@ def Set_Exception(mb):
     #~ Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getFullDescription().c_str()' )
             
     
-def _ReturnUnsignedInt( type_ ):
-    """helper to return an UnsignedInt call for tranformation functions
-    """
-    return declarations.cpptypes.unsigned_int_t()
-    
-def Fix_Void_Ptr_Args ( mb ):
-    """ we modify functions that take void *'s in their argument list to instead take
-    unsigned ints, which allows us to use CTypes buffers
-    """
-    for fun in mb.member_functions():
-        arg_position = 0
-        trans=[]
-        desc=""
-        for arg in fun.arguments:
-            if declarations.type_traits.is_void_pointer(arg.type):
-                trans.append( ft.modify_type(arg_position,_ReturnUnsignedInt ) )
-                desc = desc + arg.name + "(pos:" + str(arg_position)+"), "
-            arg_position +=1
-        if trans:
-            fun.add_transformation ( * trans )
-            fun.documentation = docit ("Modified Input Argument to work with CTypes",
-                                        "Argument "+ desc + " takes a CTypes.adddressof(xx)", "...")
-   ## lets go and look for stuff that might be a problem        
-    pointee_types=['unsigned int','int', 'float', 'Real', 'uchar', 'uint8',
-             'unsigned char']
-    function_names=[]
-    for fun in mb.member_functions():
-        if fun.documentation or fun.ignore: continue ## means it's been tweaked somewhere else
-        for n in function_names:
-            if n in fun.name:
-                print "CHECK :", fun
-                break
-        arg_position = 0
-        for arg in fun.arguments:
-            if declarations.is_pointer(arg.type): ## and "const" not in arg.type.decl_string:
-                for i in pointee_types:
-                    if i in arg.type.decl_string:
-                        print "CHECK ", fun, str(arg_position)
-                        fun.documentation=docit("SUSPECT - MAYBE BROKEN", "....", "...")
-                        break
-            arg_position +=1
-
-## NEED To do the same for constructors
-    for fun in mb.constructors():
-        arg_position = 0
-        for arg in fun.arguments:
-            if declarations.is_pointer(arg.type): ## and "const" not in arg.type.decl_string:
-                for i in pointee_types:
-                    if i in arg.type.decl_string:
-                        print "Excluding: ", fun
-                        fun.exclude()
-                        break
-            arg_position +=1            
-                    
-def Fix_Pointer_Returns ( mb ):
-    """ Change out functions that return a variety of pointers to base types and instead
-    have them return the address the pointer is pointing to (the pointer value)
-    This allow us to use CTypes to handle in memory buffers from Python
-    
-    Also - if documentation has been set then ignore the class/function as it means it's been tweaked else where
-    """
-    pointee_types=['unsigned int','int', 'float', 'unsigned char'] #, 'char' ]
-    known_names=[]  # these are function names we know it's cool to exclude
-    for fun in mb.member_functions():
-        if declarations.is_pointer (fun.return_type) and not fun.documentation:
-            for i in pointee_types:
-                if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
-                    if not fun.name in known_names:
-                        print "Excluding (function):", fun, "as it returns (pointer)", i
-                    fun.exclude()
-    try:                
-        for fun in mb.member_operators():
-            if declarations.is_pointer (fun.return_type) and not fun.documentation:
-                for i in pointee_types:
-                    if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
-                        print "Excluding (operator):", fun
-                        fun.exclude()
-    except:
-        pass
-
-
-
-def query_containers_with_ptrs(decl):
-    if not isinstance( decl, declarations.class_types ):
-       return False
-    if not decl.indexing_suite:
-       return False
-    return declarations.is_pointer( decl.indexing_suite.element_type )
-
-    
+  
 def Remove_Static_Consts ( mb ):
     """ linux users have compile problems with vars that are static consts AND have values set in the .h files
     we can simply leave these out """
@@ -474,6 +378,11 @@ def generate_code():
     # We need to tell boost how to handle calling (and returning from) certain functions
     #
     common_utils.Set_DefaultCall_Policies ( mb.global_ns )
+    ignore=['mallocDEBUG',
+                '::NxUserAllocator::mallocDEBUG'
+                ,'NxUserAllocator::mallocDEBUG'
+                ]
+    common_utils.Auto_Functional_Transformation ( mb.global_ns, ignore_funs = ignore ) ## special_vars=['::Ogre::Real &','::Ogre::ushort &','size_t &'] )
     
     #
     # the manual stuff all done here !!!

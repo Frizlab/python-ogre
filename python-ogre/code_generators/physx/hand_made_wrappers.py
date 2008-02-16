@@ -94,7 +94,7 @@ PointerDec=\
 """     
 PointerWrapper = \
 """
-virtual %(returnType)s  %(function_name)s(  ) const {
+virtual %(returnType)s  %(function_name)s(  ) %(const)s {
     bp::override func_%(function_name)s = this->get_override( "%(function_name)s" );
     %(returnSomething)s func_%(function_name)s( );
     }
@@ -118,8 +118,13 @@ def apply( mb ):
         'getFluids':'getNbFluids','getImplicitScreenMeshes':'getNbImplicitScreenMeshes',
         'getCloths':'getNbCloths','getSoftBodies':'getNbSoftBodies'
         }
+#     ignoreClasses = ['NxPhysicsSDK']        
+    ignoreClasses = []        
     for f in global_ns.member_functions():
-    
+        if f.parent.name in ignoreClasses:
+            continue
+        else:
+            print "Class OK:", f.parent.name
         for a in f.arguments:
             if "unsigned int const * &" in a.type.decl_string:
                 f.exclude()
@@ -131,6 +136,13 @@ def apply( mb ):
                     f.parent.add_wrapper_code ( wrapper_code )
                 
         if "* const *" in f.return_type.decl_string or "* *" in f.return_type.decl_string :
+#             print f.decl_string
+#             print dir(f)
+#             sys.exit()
+            if "const" in  f.decl_string or "const" in f.return_type.decl_string:
+                const = "const"
+            else:
+                const  = ''
             funcname= f.name
             class_ = f.parent
             classname = class_.name
@@ -145,7 +157,8 @@ def apply( mb ):
                     returnSomething = 'return'
                 values = { 'returnType':returnType, 'function_name':funcname, 
                     'classname':classname, 'getsizefunction' : getsizefunction,
-                    'returnbase':retbase, 'returnSomething':returnSomething }
+                    'returnbase':retbase, 'returnSomething':returnSomething,
+                    'const':const }
                     
                 if f.parent.is_wrapper_needed:
                     wrapper_code = PointerWrapper % values
@@ -154,7 +167,7 @@ def apply( mb ):
                 deccode = PointerDec % values
                 class_.add_declaration_code( deccode )
                 class_.add_registration_code( regcode )
-                print "Wrapped:", f
+                print "Wrapped:", f, values
             else:
                 print "Excluded:",f
 
