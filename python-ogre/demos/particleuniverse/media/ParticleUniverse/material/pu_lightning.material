@@ -1,0 +1,17 @@
+material ParticleUniverse/Lightning
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			scene_blend alpha_blend
+			depth_write off
+
+			texture_unit
+			{
+				texture pu_lightning_20x64.png
+			}
+		}
+	}
+}

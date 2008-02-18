@@ -1,0 +1,102 @@
+// ---------------------------------------------- Begin: Tornado system ------------------------------------------
+// The Tornado system demonstrates the Vortex affector.
+// ---------------------------------------------------------------------------------------------------------------
+system tornadoSystem
+{
+	// --------------- The 'tornado' ---------------
+	technique
+	{
+		renderer						Billboard
+		{			
+			sorting						true
+		}
+		material						ParticleUniverse/Tornado
+		default_particle_width			250
+		default_particle_height			250
+		visual_particle_quota			3000
+		emitter							Circle
+		{
+			circle_em_radius			80
+			emission_rate				150
+			angle						0
+			direction					0 1 0
+			velocity					600
+			time_to_live				4
+		}
+		affector						Vortex
+		{
+			vortex_aff_vector			0 1 0
+			vortex_aff_speed			10
+		}
+		affector						Colour
+		{
+			colour_aff_time_colour		0 1 0.95 0.95 1
+			colour_aff_time_colour		0.5 1 0.95 0.95 0
+		}
+	}
+
+	// --------------- Debris (stones) ---------------
+	technique
+	{
+		visual_particle_quota			20
+		material						ParticleUniverse/Stone
+
+		renderer						Entity
+		{
+			entity_renderer_mesh_name	pu_stone.mesh
+		}
+		
+		emitter							Point
+		{
+			emission_rate				10
+			angle						50
+			direction					0 1 0
+			all_particle_dimensions		dyn_random
+			{
+				min						20
+				max						80
+			}
+			velocity					dyn_random
+			{
+				min						800
+				max						1200
+			}
+			duration					dyn_random
+			{
+				min						0.5
+				max						1.5
+			}
+			repeat_delay				dyn_random
+			{
+				min						0.5
+				max						2
+			}
+			time_to_live				5
+		}
+		
+		affector						PlaneCollider
+		{
+			position					0 -200 0
+			plane_collider_normal		0 1 0
+			collision_intersection		point
+			collision_type				bounce
+			collision_friction			0.5
+			collision_bouncyness		0.4
+
+		}
+		affector						LinearForce
+		{
+			force_aff_vector			0 -1200 0
+		}
+		affector						GeometryRotator
+		{
+			geom_rot_use_own_rotation	true
+			geom_rot_rotation_speed		dyn_random
+			{
+				min						1
+				max						30
+			}
+		}
+	}
+}
+// ---------------------------------------------- End: Tornado system ------------------------------------------
