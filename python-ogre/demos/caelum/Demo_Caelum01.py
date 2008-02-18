@@ -42,13 +42,14 @@ class TerrainFrameListener(sf.FrameListener):
         self.raySceneQuery.Ray = self.updateRay
         for queryResult in self.raySceneQuery.execute():
             if queryResult.worldFragment is not None:
-                pos = self.camera.getPosition()
-                self.camera.setPosition (pos.x, pos.y - queryResult.distance + 10.0, pos.z)
-                break
-##            mCamera.setPosition(mCamera.getPosition().x,
-##                i.worldFragment.singleIntersection.y + 10,
-##                mCamera.getPosition().z)
-
+#                 pos = self.camera.getPosition()
+#                 self.camera.setPosition (pos.x, pos.y - queryResult.distance + 10.0, pos.z)
+#                 break
+                wf = queryResult.worldFragment
+                self.camera.setPosition(self.camera.getPosition().x,
+                    wf.singleIntersection.y + 10,
+                    self.camera.getPosition().z)
+                break               
         return ret
 
 
@@ -119,18 +120,16 @@ class CaelumSpeedFrameListener(TerrainFrameListener):
                 else:
                     self.PostFiltering = True
                 ogre.CompositorManager.getSingleton().setCompositorEnabled (self.window.getViewport (0), "Bloom", self.PostFiltering)
-                
-        if self.caelumSystem.getSun():
-            t = self.caelumSystem.getSun().getSunPositionModel()
-            espm = caelum.castAsEarthSunPositionModel ( t )
-            if espm :
-                espm.setJulianDate (self.caelumSystem.getUniversalClock ().getCurrentRelativeTime ())
-        
-            ## EXTRA! Update the haze sun light position
-            mat =  ogre.MaterialManager.getSingleton().getByName("CaelumDemoTerrain")
-            if mat:
-                mat.getTechnique(0).getPass("CaelumHaze").getVertexProgramParameters().setNamedConstant("sunDirection", self.caelumSystem.getSun().getSunDirection())
 
+        ## Do some additional update. These should be removed from here;
+        ## CaelumSystem should do all required updates.
+
+        ## Update the haze sun light position
+        if (self.caelumSystem.getSun ()):
+            mat = ogre.MaterialManager.getSingleton ().getByName ("CaelumDemoTerrain")
+            if mat.getTechnique (0).getPass ("CaelumHaze"):
+                mat.getTechnique (0).getPass ("CaelumHaze").getVertexProgramParameters ().setNamedConstant ("sunDirection", 
+                                                                                        self.caelumSystem.getSun ().getSunDirection ())
         return ret
 
 class TerrainApplication(sf.Application):
@@ -152,8 +151,8 @@ class TerrainApplication(sf.Application):
         self.root.removeFrameListener(self.frameListener)
         self.frameListener = None
         print "deleted Listeners" 
-        t = self.caelumSystem.getSun().setSunPositionModel(None)
-        print "Sun is None", t
+#         t = self.caelumSystem.getSun().setSunPositionModel(None)
+#         print "Sun is None", t
         t = self.caelumSystem.getSun().getSunPositionModel()
         print "Sun is None", t
 
@@ -193,9 +192,20 @@ class TerrainApplication(sf.Application):
 
     def _createCamera(self):
         self.camera = self.sceneManager.createCamera('PlayerCam')
-        self.camera.setPosition (ogre.Vector3(1100,1000,1000))
+        
+        ## Start the camera on a hill in the middle of the terrain
+        ## looking towards Z+ (north).
+        ## Sun should rise in the east(left) and set in the west(right).
+        self.camera.setPosition (ogre.Vector3(775, 100, 997))
+        self.camera.lookAt (ogre.Vector3(775, 100, 1000))
+        
+        ## Set camera clip distances. Its important to test with
+        ## an infinite clip distance.
+        self.camera.setFarClipDistance(0);
+        self.camera.setNearClipDistance(5);
+        
         self.raySceneQuery = self.sceneManager.createRayQuery(ogre.Ray(self.camera.getPosition(), ogre.Vector3.NEGATIVE_UNIT_Y))
-
+        
 
     def _createScene(self):
         sceneManager = self.sceneManager
@@ -212,52 +222,68 @@ class TerrainApplication(sf.Application):
         else:
             ogre.CompositorManager.getSingleton().addCompositor(self.renderWindow.getViewport(0),"Bloom")
         camera.setNearClipDistance(0.01)
-
+        componentMask = caelum.CaelumSystem.CaelumComponent(
+                    caelum.CaelumSystem.CAELUM_COMPONENT_SKY_COLOUR_MODEL |
+                    caelum.CaelumSystem.CAELUM_COMPONENT_SUN |
+                    caelum.CaelumSystem.CAELUM_COMPONENT_SOLAR_SYSTEM_MODEL |
+                    ## these cause run time errors on my crap laptop
+                    caelum.CaelumSystem.CAELUM_COMPONENT_SKY_DOME | 
+                    caelum.CaelumSystem.CAELUM_COMPONENT_STARFIELD |
+                    caelum.CaelumSystem.CAELUM_COMPONENT_CLOUDS |
+                    caelum.CaelumSystem.CAELUM_COMPONENT_GROUND_FOG |
+                    0)
+        print componentMask
         ## Initialise Caelum
-        self.caelumSystem = caelum.CaelumSystem(self.root, self.sceneManager )
-#                                 ,createSkyDome=skyDome, createClouds=clouds
-#                                 )
+        self.caelumSystem = caelum.CaelumSystem(self.root, self.sceneManager,componentMask )
                 
-        ## Setup sun position model.
-        self.spm = caelum.SimpleSunPositionModel (ogre.Degree (13))
-        ## IMHO EarthSunPositionModel is broken, so it default to sspm.
-        ##caelum.SunPositionModel *spm = new caelum.EarthSunPositionModel (ogre.Radian (ogre.Degree (37)), 0.5)
+        ## KNOWN BUG: The horizon is pure white if setManageFog is False.
+        ## I blame it on the transparent skydome.
+        self.caelumSystem.setManageSceneFog(True)
+        self.caelumSystem.setSceneFogDensityMultiplier(0.0015)
         
         ## Setup sun options
-        self.caelumSystem.getSun ().setAmbientMultiplier (ogre.ColourValue(0.5, 0.5, 0.5))
-        self.caelumSystem.getSun ().setDiffuseMultiplier (ogre.ColourValue(3, 3, 2.7))
-        ## For green terrain:
-        ##self.caelumSystem.getSun ().setDiffuseMultiplier (ogre.ColourValue(0.1, 3, 0.1))
-        self.caelumSystem.getSun ().setSpecularMultiplier (ogre.ColourValue(5, 5, 5))
-        self.caelumSystem.getSun ().setSunPositionModel (self.spm)
-        self.caelumSystem.getSun ().setManageAmbientLight (True)
+        if self.caelumSystem.getSun ():
+           self.caelumSystem.getSun ().setAmbientMultiplier (ogre.ColourValue(0.5, 0.5, 0.5))
+           self.caelumSystem.getSun ().setDiffuseMultiplier (ogre.ColourValue(3, 3, 2.7))
+            ## For green terrain:
+            ##mCaelumSystem.getSun ().setDiffuseMultiplier (ogre.ColourValue(0.1, 3, 0.1))
+           self.caelumSystem.getSun ().setSpecularMultiplier (ogre.ColourValue(5, 5, 5))
+           self.caelumSystem.getSun ().setManageAmbientLight (True)
         
-        ## Basic fogging setup.
-        ## This is a hack until proper fogging is implemented.
-#         self.caelumSystem.getSkyColourModel().setFogDensityMultiplier(0.0015)
-#         self.caelumSystem.setManageFog(True)
+        ## Setup fog options.
+        if self.caelumSystem.getGroundFog():
+           self.caelumSystem.getGroundFog().findFogPassesByName()
         
-        ## Setup cloud options
-        if clouds:
-            self.caelumSystem.getClouds ().setCloudSpeed(ogre.Vector2(-0.00001, 0.00001))
-        
+
+        ## Setup cloud options.
+        ## Tweak these settings to make the demo look pretty.
+        if self.caelumSystem.getClouds ():
+           self.caelumSystem.getClouds ().setCloudSpeed(ogre.Vector2(0.000005, -0.000009))
+           self.caelumSystem.getClouds ().setCloudBlendTime(3600 * 24)
+           self.caelumSystem.getClouds ().setCloudCover(0.3)
         ## Setup starfield options
-        self.caelumSystem.getStarfield ().setInclination (ogre.Degree (13))
-        
-        ## Set some time parameters
+        if self.caelumSystem.getStarfield ():
+           self.caelumSystem.getStarfield ().setInclination (ogre.Degree (13))
+
+        ## Set time acceleration.
         self.caelumSystem.getUniversalClock ().setTimeScale (512)
-        self.caelumSystem.getUniversalClock ().setCurrentTime (18000) ## Jan 1st, 5am
-
-
-        ## Register all to the render window
-        self.renderWindow.addListener(self.caelumSystem)
-
-     
+        
+        ## Winter dawn in the southern hemisphere, looking north
+        self.caelumSystem.getUniversalClock ().setGregorianDateTime (2008, 7, 4, 20, 33, 0)
+        self.caelumSystem.getSolarSystemModel ().setObserverLongitude (ogre.Degree(151 + 12.0 / 60))
+        
+        ## Sidney
+        self.caelumSystem.getSolarSystemModel ().setObserverLatitude (ogre.Degree(-33 + 52.0 / 60))
+        ## Beyond the southern polar circle, no sunrise
+        ##mCaelumSystem.getSolarSystemModel ().setObserverLatitude (ogre.Degree(-70))
+        ## Beyond the northern polar circle, no sunset
+        ##mCaelumSystem.getSolarSystemModel ().setObserverLatitude (ogre.Degree(70))
+        
+        ## Register caelum to the render target
+        self.renderWindow.addListener (self.caelumSystem)
+        
         ## Put some terrain in the scene
-        terrain_cfg = "terrain.cfg"
-          
-        self.sceneManager.setWorldGeometry( terrain_cfg )
-     
+        self.sceneManager.setWorldGeometry ("CaelumDemoTerrain.cfg")
 
     def _createFrameListener(self):
     #    pass
