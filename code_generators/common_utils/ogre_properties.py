@@ -43,22 +43,36 @@ class ogre_property_recognizer_t( decl_wrappers.name_based_recognizer_t ):
         if mem_fun.has_const:
             return False
         return True
-             
+        
+    def create_property( self, fget, fset ):
+        if not self.check_type_compatibility( fget, fset ):
+            return None
+        found = self.find_out_prefixes( fget.name, fset.name )
+        if not found:
+            return None
+        ## Now we need to look for overlapping function declarations
+        pure_names = []
+        pure_names.append( fget.name[len( found[0] ):].lower())
+        pure_names.append( fset.name[len( found[1] ):].lower())
+        funcs =  self.class_accessors( fget.parent )[1] 
+        funcs.extend( self.inherited_accessors( fget.parent )[1] )
+        for f in funcs:
+            if f.name.lower() in pure_names:
+                print"Overloaded Property", fget.name, fset.name, f.name
+                return None
+        return decl_wrappers.property_t( self.find_out_property_name( fget, found[0] ), fget, fset )         
+            
     def create_read_only_property( self, fget ):
         found = self.find_out_ro_prefixes( fget.name )
         if found in ( None, '' ):
             return None
-
-        pure_name = fget.name[len( found ):]
-        pure_name = pure_name.lower()
-
-        setters = self.class_accessors( fget.parent )[1] 
-        setters.extend( self.inherited_accessors( fget.parent )[1] )
-        
-        setters = filter( lambda decl: decl.name.lower() == pure_name and self.is_setter( decl )
-                          , setters )
-        if setters:
-            #we found member function that could serve as setter. Py++ did not find it
-            #so there is a difference in cases.
-            return None
+        ## Now we need to look for overlapping function declarations
+        pure_names = []
+        pure_names.append( fget.name[len( found ):].lower())
+        funcs =  self.class_accessors( fget.parent )[1] 
+        funcs.extend( self.inherited_accessors( fget.parent )[1] )
+        for f in funcs:
+            if f.name.lower() in pure_names:
+                print"Overloaded Read Only Property", fget.name, f.name
+                return None
         return decl_wrappers.property_t( self.find_out_property_name( fget, found ), fget )
