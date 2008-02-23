@@ -7,6 +7,8 @@ from pyplusplus.decl_wrappers import property_t
 from pyplusplus import function_transformers as ft
 from pyplusplus.module_builder import call_policies
 
+import time
+
 
 import var_checker as varchecker
 import ogre_properties as ogre_properties
@@ -20,6 +22,14 @@ def docit ( general, i, o ):
     docs = docs + "Input: " + i + "\\n"
     docs = docs + "Output: " + o + "\\n\\\n"
     return docs
+    
+def docInfo ( mb, module ):
+    i = '"This module is part of the Python-Ogre project (www.python-ogre.org)\nIt was built on %(timestamp)s and is a member of the %(version)s release. "'
+    timestamp = time.ctime()
+    version = environment.PythonOgreMajorVersion +"."+environment.PythonOgreMinorVersion+"."+PythonOgrePatchVersion
+    t = i % {'timestamp':timestamp, 'version':version}
+    add_constants( mb, { '__info__' :  t } ) 
+  
     
 def _ReturnUnsignedInt( type_ ):
     """helper to return an UnsignedInt call for tranformation functions
