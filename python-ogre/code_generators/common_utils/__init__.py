@@ -207,7 +207,10 @@ def Auto_Document ( mb, namespace=None ):
 
 
 def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[], prefix_output=['get','is','calc','suggest'] ):
-    toprocess = []                       
+    toprocess = []   
+    # keep a dictionary of transformed functions so we can catch duplicates which is an issue on outputs... ie if we transform 2 functions with the same name (and
+    # probably a different number of arguments) to a pure output then there isn't any way for boost to know which one to use..... 
+    processed={}
     for fun in mb.member_functions(allow_empty=True):
         toprocess.append( fun )
     for fun in mb.free_functions(allow_empty=True):
@@ -217,6 +220,7 @@ def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[], prefix
         try:   # ugly wrapping in a try :(    
             fullname = fun.demangled.split('(')[0]
             if fullname not in ignore_funs and not fun.ignore:
+                outputonly = False
                 arg_position = 0
                 trans=[]
                 desc=""
@@ -244,6 +248,8 @@ def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[], prefix
                                     trans.append( ft.output(arg_position ) )
                                     desc = desc +"Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
                                         arg.type.decl_string + " ) converted to an output only (no longer an input argument).\\n"
+                                    if not outputonly:
+                                        outputonly = True
                             if not matched:    # otherwise a function is converted using inout
                                 trans.append( ft.inout(arg_position ) )
                                 desc = desc + "Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
@@ -258,8 +264,16 @@ def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[], prefix
                         print "AUTOFT ERROR: Duplicate Tranforms.", fun
                     elif fun.virtuality == "pure virtual":
                         print "AUTOFT WARNING: PURE VIRTUAL function requires tranform.", fun
+#                     elif fun.virtuality == "virtual":
+#                         print "AUTOFT WARNING: VIRTUAL function requires tranform.", fun
                     else:
-                        print "AUTOFT OK: Tranformed ", fun
+                        name = fun.parent.name+'::'+fun.name
+                        print "AUTOFT OK: Tranformed ", fun, " -- ",name
+                        if outputonly: # we only can about vague functions when making them output only -- as the number/type of args should handle rest..
+                            if processed.has_key(name):
+                                print "********* Duplicated function"
+                            else:
+                                processed[name]=fun                            
                         fun.add_transformation ( * trans , **{"alias":fun.name}  )
                         fun.documentation = docit ("Auto Modified Arguments:",
                                                         desc, "...")

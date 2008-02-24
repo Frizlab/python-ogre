@@ -12,11 +12,12 @@ set opcode=%root%\OpCode\Release
 set nxogre=%root%\NxOgre\NxOgre\lib
 set newton=%root%\NewtonSDK\sdk\dll
 set ogreode=%root%\ogreaddons\ogreode
-set physx="c:\program files\AGEIA Technologies\SDK\v2.7.2\bin\win32"
+set physx="c:\program files\AGEIA Technologies\SDK\v2.7.3\bin\win32"
 set theora=%root%\ogreaddons\videoplugin\TheoraVideo\bin\Release
 set ffmpeg=%root%\ffmpeg
 set navi=%root%\navi\Dependencies\win32\llmozlib\runtime\Release
 set boost=%root%\boost\bin.v2\libs\python2.5\build\msvc-8.0\release\threading-multi
+set particleuniverse=%root%\ogrenew\plugins\particleuniverse\bin\release
 
 set ogreal=%root%\OgreAL\lib\Release
 set freealut=%root%\FreeAlut\lib
@@ -32,23 +33,32 @@ copy /y %boost%\boost_python-vc80-mt-1_35.dll %package%\renderer\OGRE
 copy /y %ogre%\render*.dll ..\plugins
 copy /y %ogre%\plug*.dll ..\plugins
 
+rem ParticleUniverse
+copy /y %particleuniverse%\ParticleUniverse.dll ..\plugins
+copy /y %particleuniverse%\ParticleUniverse.dll %package%\addons\particleuniverse
+
 
 rem Physics
 copy /y %ogre%\ReferenceAppLayer.dll %package%\physics\OgreRefApp
 copy /y %opcode%\opcode.dll %package%\physics\OpCode
 copy /y %nxogre%\nxogre.dll %package%\physics\NxOgre
 copy /y %newton%\newton.dll %package%\physics\OgreNewt
+copy /y %boost%\boost_python-vc80-mt-1_35.dll %package%\physics\ode
+
 rem OgreODE
 copy /y %ogreode%\lib\Release\OgreOde_Core.dll %package%\physics\OgreOde
 copy /y %ogreode%\loader\lib\Release\OgreOde_Loader.dll %package%\physics\OgreOde
 copy /y %ogreode%\prefab\lib\Release\OgreOde_Prefab.dll %package%\physics\OgreOde
 rem Physx
-copy /y %physx%\Nx*.dll %package%\physics\NxOgre
+copy /y %physx%\Nx*.dll %package%\physics\PhysX
 copy /y %physx%\Ph*.dll %package%\physics\PhysX
+copy /y %physx%\Nx*.dll %package%\physics\NxOgre_09
 rem Theora
 copy /y %theora%\Plugin_TheoraVideoSystem.dll ..\plugin
+copy /y %theora%\Plugin_TheoraVideoSystem.dll %package%\addons\theora
+
 rem FFMpeg
-copy /y %ffmpeg%\*.dll %package%\addons\ogrevideoffmpeg
+copy /y %ffmpeg%\lib\*.dll %package%\addons\ogrevideoffmpeg
 
 rem  CEGUI
 copy /y %cegui%\CEGUIBase.dll %package%\gui\CEGUI

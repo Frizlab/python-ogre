@@ -62,7 +62,7 @@ def ManualExclude ( mb ):
                     m.exclude()
     
     ### Member Functions
-    excludes=[ ]
+    excludes=[] ## '::NaviLibrary::Navi::bind' ]  ## has a default parameter of InlineVector which we can't create :(
 #     ['::NaviLibrary::NaviDataValue::isEmpty'
 #                ,'::NaviLibrary::NaviDataValue::isNumber' ## inline functions
 #          ]
@@ -76,6 +76,8 @@ def ManualExclude ( mb ):
         if c.name.startswith ( "Inline" ):
             print "setting noncopyable on ", c
             c.noncopyable = True
+#             c.exclude() 
+           
                 
     ### Free Functions
     excludes = []
@@ -83,7 +85,7 @@ def ManualExclude ( mb ):
         main_ns.free_functions(e).exclude()
         
     ## Classes
-    excludes = []
+    excludes = [] ## '::NaviLibrary::NaviUtilities::InlineVector<std::string>'  ]
     for e in excludes:
         main_ns.class_(e).exclude()
     

@@ -59,7 +59,7 @@ PATH_watermesh=        os.path.join(PATH_THIRDPARTY, 'watermesh')
 PATH_noise=        os.path.join(PATH_THIRDPARTY, 'noise')
 PATH_ofusion=        os.path.join(PATH_THIRDPARTY, 'ofusion')
 PATH_cadunetree=        os.path.join(PATH_THIRDPARTY, 'cadunetree')
-
+PATH_opensteer =        os.path.join(BASE_DIR, 'opensteer', 'trunk')
 
 PATH_ogrevideoffmpeg = os.path.join(PATH_THIRDPARTY,'ffmpeg')
 PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.66') 
@@ -101,7 +101,7 @@ PATH_LIB_PhysX =                os.path.join(PATH_PhysX,'lib/win32')
 PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'out/release8/libs' )
 PATH_LIB_Theora=                os.path.join(PATH_Theora, 'bin', 'Release')
 PATH_LIB_ogrevideoffmpeg =      PATH_ogrevideoffmpeg
-PATH_LIB_ffmpeg=                os.path.join(PATH_ffmpeg, 'lib')
+PATH_LIB_ffmpeg=                os.path.join(BASE_DIR, 'ffmpeg', 'lib')
 PATH_LIB_plib =                 PATH_plib
 PATH_LIB_navi=                  os.path.join(PATH_navi, 'lib')
 PATH_LIB_ogredshow =            PATH_ogredshow
@@ -110,7 +110,8 @@ if SDK:
     PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'lib')
     PATH_LIB_OIS =                  os.path.join( PATH_Ogre, 'Dependencies/lib/Release') ## NOTE Posix platforms this lives in'lib' not 'dll'
     PATH_LIB_CEGUI =                os.path.join( PATH_Ogre, 'lib' )
-
+    
+PATH_LIB_opensteer = os.path.join(PATH_opensteer, 'win32','release')
 
 
 PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include') 
@@ -171,6 +172,8 @@ PATH_INCLUDE_PhysX= [ os.path.join(PATH_PhysX, 'Physics','include')
                     ,os.path.join(PATH_PhysX, 'NxCharacter','include')
                     ,os.path.join(PATH_PhysX, 'NxExtensions','include')
                     ]
+PATH_INCLUDE_opensteer = os.path.join(PATH_opensteer, 'include')
+PATH_INCLUDE_opensteer_opensteer = os.path.join(PATH_opensteer, 'include', 'OpenSteer')
 
 if SDK:
     PATH_INCLUDE_OIS =          os.path.join(PATH_Ogre,'Dependencies/include/OIS')    ## Note the plural include's

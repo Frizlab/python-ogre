@@ -25,16 +25,18 @@
 #include "NxOgreDebugRenderer.h"		// For: Times when it's really needed.
 #include "NxOgreSerialiser.h"			// For: Serialisation
 #include "time.h"						// For: Making sure NxGenerateID is random.
-
+#include <iostream>
 
 namespace NxOgre {
 
 ///////////////////////////////////////////////////////////////////////
 
 World::World(PhysXDriverParams driverParams) {
-
+    std::cout <<"World 1\n";
 	mRoot = Ogre::Root::getSingletonPtr();
+    std::cout <<"World 2\n";
 	mDriver = new PhysXDriver(this, driverParams);
+    std::cout <<"World 3\n";
 
 	srand((unsigned)time(0));
 
@@ -51,6 +53,7 @@ World::World(PhysXDriverParams driverParams) {
 #if (NX_USE_DEBUG_RENDERER_API == 1)
 	mDebugRenderer = 0;
 #endif
+    std::cout <<"World 4\n";
 
 //	mSerialiser = new Serialiser(this);
 

@@ -11,6 +11,12 @@ cd %_ROOT%\\ogreaddons\\ogreode\\scripts\\vc8
 %_VCBUILD% /useenv OgreOde_CVS.sln "Release|Win32"
 cd %_ROOT%\\ogreaddons\\ogrenewt
 %_VCBUILD% /useenv OgreNewt.sln "Release|Win32"
+cd %_ROOT%\\navi
+%_VCBUILD% /useenv navi.sln "Release|Win32"
+cd %_ROOT%\\ogreaddons\\videoplugin\theoravideo\scripts
+%_VCBUILD% /useenv VC8_TheoraVideo.sln "Release|Win32"
+cd %_ROOT%\\OgreNew
+%_VCBUILD% /useenv ParticleUniverse.sln "Release|Win32"
 
 popd
 endlocal

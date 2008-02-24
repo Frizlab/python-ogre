@@ -44,8 +44,8 @@ def isMac():
     
                     
 PythonOgreMajorVersion = "1"
-PythonOgreMinorVersion = "1" # change to 0.7 due to lowercase properties
-PythonOgrePatchVersion = "0"
+PythonOgreMinorVersion = "2" 
+PythonOgrePatchVersion = "rc1"
 
 
 ##
@@ -237,7 +237,7 @@ class pygccxml:
     if isLinux() or isMac():
         base = 'pygccxml'
         source = [
-                    [svn, " co http://pygccxml.svn.sourceforge.net/svnroot/pygccxml "+base, os.getcwd()]
+                    [svn, " co -r 1234 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml "+base, os.getcwd()]
                  ]
                  
         buildCmds =  [
@@ -828,7 +828,7 @@ class quickgui:
     ## note the defined for _QuickGUIExport forces non dll usage
     if os.name=='nt': 
         ## note the defined for _QuickGUIExport forces non dll usage 
-        CCFLAGS = ' -DWIN32 -DNDEBUG -DWINDOWS -D_QuickGUIExport="" ' 
+        CCFLAGS = ' -DWIN32 -DNDEBUG -DWINDOWS -D_QuickGUIExport=""  -D_PRECOMP' 
 #         if _PreCompiled:
 #             pchstop = 'boost/python.hpp'
 #             pchbuild = 'buildpch.cpp'
@@ -876,7 +876,7 @@ class navi:
 class betagui:
     active = True
     pythonModule = True
-    version="2.0"
+    version="1.7"
     name='betagui'
     parent="ogre/gui"
     CCFLAGS = ' ' # -D"FT2_BUILD_LIBRARY"
@@ -968,34 +968,6 @@ class nxogre:
         libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'PhysXCore','PhysXLoader','OgreMain' ]
     ModuleName="NxOgre"   
     
-class nxogre_09:
-    active = True
-    pythonModule = True
-    version="0.9"
-    name='nxogre_09'
-    parent="ogre/physics"
-    cflags=""
-    include_dirs = [ Config.PATH_Boost,
-                    Config.PATH_INCLUDE_Ogre,
-                    Config.PATH_INCLUDE_NxOgre_09,
-                    ]
-    for d in Config.PATH_INCLUDE_PhysX:
-        include_dirs.append( d )
-    if os.name == 'nt':
-        CCFLAGS = ' -DWIN32 -DNxExport="" '
-
-    else:
-        CCFLAGS = ' -DNX_LINUX -DLINUX -DNX_DISABLE_FLUIDS '                
-    lib_dirs = [Config.PATH_LIB_Boost,
-                Config.PATH_LIB_Ogre_OgreMain,
-                Config.PATH_LIB_PhysX
-                ]
-    CheckIncludes=[]
-    if os.name =='nt':
-        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' ]
-    else:
-        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'PhysXCore','PhysXLoader','OgreMain' ]
-    ModuleName="NxOgre_09"   
     
         
 class theora:
@@ -1069,7 +1041,36 @@ class physx:
     else:
         libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking',  'PhysXCore', 'PhysXLoader' ]
     ModuleName="PhysX"   
-           
+
+class nxogre_09:
+    active = True
+    pythonModule = True
+    version="0.9"
+    name='nxogre_09'
+    parent="ogre/physics"
+    cflags=""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_Ogre,
+                    Config.PATH_INCLUDE_NxOgre_09,
+                    ]
+    for d in Config.PATH_INCLUDE_PhysX:
+        include_dirs.append( d )
+    if os.name == 'nt':
+        CCFLAGS = ' -DWIN32 -DNxExport="" '
+
+    else:
+        CCFLAGS = ' -DNX_LINUX -DLINUX -DNX_DISABLE_FLUIDS '                
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain,
+                Config.PATH_LIB_PhysX
+                ]
+    CheckIncludes=[]
+    if os.name =='nt':
+        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' ]
+    else:
+        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'PhysXCore','PhysXLoader','OgreMain' ]
+    ModuleName="NxOgre_09"   
+
 class ogreal:
     active = True
     pythonModule = True
@@ -1147,7 +1148,7 @@ class ogrevideoffmpeg:
                 ]
     CheckIncludes=[]
     if os.name == 'nt':
-        libs=[  Config.LIB_Boost, 'OgreMain', 'avformat-51', 'avcodec-51', 'avutil-49' ]
+        libs=[  Config.LIB_Boost, 'OgreMain', 'avformat-52', 'avcodec-51', 'avutil-49' ]
     else:
         libs=[  Config.LIB_Boost, 'OgreMain', 'avformat', 'avcodec', 'avutil', 'z', 'GL', 'GLU', 'Xxf86vm', 'Xext', 'X11' ]
     ModuleName="ogrevideoffmpeg"   
@@ -1355,6 +1356,46 @@ class cadunetree:
     CheckIncludes=[]
     libs=[  Config.LIB_Boost, 'OgreMain' ]
     ModuleName="cadunetree"          
+
+class opensteer:
+    active = True
+    pythonModule = True
+    version="1.0"
+    name='opensteer'
+    parent="ogre/addons"
+    cflags = ""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_opensteer,
+                    Config.PATH_INCLUDE_opensteer_opensteer
+                    ]
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_opensteer
+                ]
+    CheckIncludes=[]
+    libs=[  Config.LIB_Boost, 'opensteer' ]
+    ModuleName="opensteer"          
+
+class hydrax:
+    active = True
+    pythonModule = True
+    version="0.1"
+    name='hydrax'
+    parent="ogre/addons"
+    cflags = ""
+    try:
+        include_dirs = [ Config.PATH_Boost,
+                        Config.PATH_hydrax
+                        , Config.PATH_INCLUDE_Ogre
+                        ]
+        lib_dirs = [Config.PATH_LIB_Boost,
+                    Config.PATH_LIB_hydrax,
+                    Config.PATH_LIB_Ogre_OgreMain
+                    ]
+    except:
+        pass                    
+    CheckIncludes=[]
+    libs=[  Config.LIB_Boost, 'OgreMain', 'hydrax' ]
+    ModuleName="hydrax"     
     
 ############################################################################################
 
@@ -1374,9 +1415,9 @@ projects = {
     , 'quickgui' : quickgui
     , 'opcode' : opcode
     , 'nxogre' : nxogre
+    , 'physx' : physx
     , 'nxogre_09' : nxogre_09
     , 'bullet' : bullet
-    , 'physx' : physx
     , 'betagui': betagui
     , 'theora' : theora
     , 'ogrevideoffmpeg' : ogrevideoffmpeg
@@ -1393,6 +1434,7 @@ projects = {
     , 'ofusion' : ofusion
     , 'particleuniverse' : particleuniverse
     , 'cadunetree' : cadunetree
+    ,'opensteer' : opensteer
 }        
 
 #

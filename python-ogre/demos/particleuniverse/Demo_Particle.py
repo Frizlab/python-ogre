@@ -40,9 +40,13 @@ class SmokeApplication(sf.Application):
         camera.setPosition(ogre.Vector3(0,0,500))
         camera.lookAt(ogre.Vector3(0,0,-300))
         
-        # here is how to get the list of available templates
-        names = ogre.StringVector()
-        PU.ParticleSystemManager.getSingleton().particleSystemTemplateNames(names)
+        
+        
+        mParticleSystemManager = PU.ParticleSystemManager.getSingletonPtr()
+        print "*****", mParticleSystemManager
+    	names = ogre.StringVector()
+        mParticleSystemManager.particleSystemTemplateNames(names)
+	    #.particleSystemTemplateNames(names)
         for n in names:
             print "PU template:", n
             

@@ -392,7 +392,7 @@ def generate_code():
                         , environment.quickgui.cache_file )
 
     defined_symbols = [ 'OGRE_NONCLIENT_BUILD',
-                    'WIN32', 'NDEBUG', 'WINDOWS' ]  ## , 'QUICKGUI_EXPORTS'
+                'WIN32', 'NDEBUG', 'WINDOWS' , '_PRECOMP']  ## , 'QUICKGUI_EXPORTS'
     if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')
         defined_symbols.append('BOOST_HAS_WINTHREADS')

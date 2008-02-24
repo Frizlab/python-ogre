@@ -360,9 +360,9 @@ GetOgreVersion () {
 }
 boost::python::tuple 
 GetPythonOgreVersion () {
-            return ( boost::python::make_tuple( """ + environment.PythonOgreMajorVersion + """,
-                                                """ + environment.PythonOgreMinorVersion + """,
-                                                """ + environment.PythonOgrePatchVersion + """
+            return ( boost::python::make_tuple( "\"" + environment.PythonOgreMajorVersion + "\"",
+                                                "\"" + environment.PythonOgreMinorVersion + "\"",
+                                                "\"" + environment.PythonOgrePatchVersion + "\""
                                                 ) );
 }
 

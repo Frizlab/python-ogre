@@ -1,5 +1,12 @@
-Feb 2008: Release
-=================
+Feb 19 2008: Release 1.2 RC1
+======================
+ISSUES:
+This is an "Release Candiate 1"  release so there are some things that are not completed:
+    NAVI -- Doesn't work
+    NxOgre -- Bleeding -- not yet wrapped
+    NxOgre_09 -- Wrapper improvements, not yet completed
+    QuickGUI - Demo needs to be rewritten
+    
 Code Generation:
 * Fix to the Automatic Function transformation code as it wasn't picking up constant void pointers. 
        This fixes PixelUtil::unpackColour and a number of other functions       
@@ -7,7 +14,7 @@ Code Generation:
 * Fix to OgreForests as the API had changed in base C++ library
 * Fix to Py++ to remove reference when building wrapper code in "transformers.py" - bug showed in renderQueueListener 
 * Fix to BuildModule.py to only set the environment once (-C now works for compiling everything)
-* Fix to ComonUtils/__init__.py - Free Functions wheren't being handled by Futional Transformation or Return Pointer fixing.
+* Fix to ComonUtils/__init__.py - Free Functions wheren't being handled by Futional Transformation or Return Pointer fixing
 * Enhancements to MemoryDataStream to make it simplier to use (can be used for any 'DataStream' requirements)
 
 Updates and General Library Improvements to:
@@ -16,11 +23,12 @@ Updates and General Library Improvements to:
 * Particle Universe 0.6
 * Bullet 2.66
 * Caelum Rev 127 and updated media.
-* Physx - free functions are now exposed so should work as an independ library 
+* Physx - free functions are now exposed so should work as an independ library
+* Ogrevideoffmpeg - updated to latest ffmpeg
 
-New Modules:
+No New Modules in this release -- however looking at...
 * Hydrax 0.1
-* opensteer
+* opensteer 
 
 Janurary 08 2008: Snapshot
 ==========================
@@ -48,7 +56,7 @@ December 02 2007: SVN Update
 
 Module Specifics:
 * betagui -- now using version 2.x of the source code
-* bullet -- Updated to verssion 2.64
+* bullet -- Updated to version 2.64
 * caleum -- SVN version r112 - small change to hanve noncopyable changes
 * cegui -- still using 0.5.0, small changes to generator for noncopyable classes
 * et -- no changes - built on 2.2 source

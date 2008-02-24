@@ -18,6 +18,9 @@
 ## Description: A place for me to try out stuff with OGRE.
 ## -----------------------------------------------------------------------------
 ## */
+
+## THIS NEEDS A CLEANUP TO MATCH THE CURRENT API's///
+
 import sys
 sys.path.insert(0,'..')
 import PythonOgreConfig
@@ -71,10 +74,10 @@ class GuiFrameListener ( sf.FrameListener, ois.MouseListener, ois.KeyListener ):
         if(self.mouseOverTB != None):
             self.mouseOverTB.setText(self.mGUIManager.getMouseOverWidget().getInstanceName())
         
-        if(self.debugTB == None):
-            self.debugTB = self.mGUIManager.getActiveSheet().getChildWidget("DebugTextBox") 
-        else:
-            self.debugTB.setText(self.mGUIManager.getMouseOverWidget().getOffset()) 
+# #         if(self.debugTB == None):
+# #             self.debugTB = self.mGUIManager.getActiveSheet().getChildWidget("DebugTextBox") 
+# #         else:
+# #             self.debugTB.setText(self.mGUIManager.getMouseOverWidget().getOffset()) 
     
         return sf.FrameListener.frameStarted(self,evt)
 
@@ -143,7 +146,8 @@ class QuickGUIDemoApp (sf.Application):
                     
     ## Just override the mandatory create scene method
     def _createScene(self):
-        self.mGUIManager = gui.GUIManager()
+        self.ResourceGroup = "quickgui"
+
         self.mDebugDisplayShown=True
         ## Set ambient light
         self.sceneManager.setAmbientLight((0.5, 0.5, 0.5))
@@ -197,8 +201,10 @@ class QuickGUIDemoApp (sf.Application):
         v.setOverlaysEnabled( False )
         v.setClearEveryFrame( True )
         v.setBackgroundColour( Ogre.ColourValue.Black )
-
-        self.mGUIManager.init(self.camera.getViewport(), "qgui" ) 
+        
+        self.guiroot = gui.Root()
+        gui.SkinSetManager.getSingleton().loadSkin("qgui",gui.SkinSet.IMAGE_TYPE_PNG,self.ResourceGroup);
+        self.mGUIManager = gui.Root.getSingleton().createGUIManager(self.camera.getViewport(),"qgui")
         self.mGUIManager.setSceneManager(self.sceneManager) 
 
         self.createGUI()
@@ -287,10 +293,11 @@ class QuickGUIDemoApp (sf.Application):
         logoLabel.setPosition( gui.Point(62,240))
         logoLabel.setText("Click Me >")
         self.imageToggleButton = self.mSheet.createNStateButton()
-        self.imageToggleButton.setDimensions(Rect(180,240,40,30))
-        self.imageToggleButton.addState("OgreLogo","qgui.checked.png")
-        self.imageToggleButton.addState("SimpleGUILogo","qgui.unchecked.png")
-
+        self.imageToggleButton.setDimensions(Rect(180,230,40,40))
+        self.imageToggleButton.addState("unchecked","qgui",".checkbox.unchecked")
+        self.imageToggleButton.addState("checkbox check","qgui",".checkbox.checked")
+        self.imageToggleButton.addState("check","qgui",".checked")
+        
         ## RTT Example Use
         rttImage = self.mSheet.createImage()
         rttImage.setDimensions(Rect(600,42,160,90))
@@ -308,7 +315,7 @@ class QuickGUIDemoApp (sf.Application):
         state = 0
         while( casi.hasMoreElements() ):
             animName = casi.getNext().getAnimationName()
-            animToggleButton.addState("State"+str(state),"qgui.button.png",animName)
+            animToggleButton.addState("State"+str(state),"qgui",".button",animName)
             if state == 0:
                 self.robotAnimationState = self.robot.getAnimationState(animName)
                 self.robotAnimationState.setEnabled(True)
@@ -319,42 +326,43 @@ class QuickGUIDemoApp (sf.Application):
 #         animToggleButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_changeAnimations) )
         animToggleButton.addOnStateChangedEventHandler(self.MakeCallback(self.evtHndlr_changeAnimations) )
         
-        hurtButton = ninjaWindow.createButton()
-        hurtButton.setDimensions(Rect(8,45,144,30))
-        hurtButton.setText("Hurt")
-        hurtButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_hurt) )
-        
-        healButton = ninjaWindow.createButton()
-        healButton.setDimensions(Rect(8,82.5,144,30))
-        healButton.setText("Heal")
-        healButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_heal) )
-        
-        ## TrackBar Setup
-        tb1 = self.mSheet.createHorizontalTrackBar() 
-        tb1.setDimensions(Rect(320,60,160,24))
-        tb1.setNumRegions(3)
-        #tb1.setTickPosition(4) # Does not work! 3 regions . ticks: 0/1/2/3
-        tb2 = self.mSheet.createVerticalTrackBar() 
-        tb2.setDimensions(Rect(320,90,24,120))
-        tb2.setNumTicks(10)
-        #tb2.setTickPosition(9)
-        
-        ## Progress Bar Setup
-        self.lifeBar = self.mSheet.createProgressBar()
-        self.lifeBar.setDimensions(Rect(320,330,160,18))
-        self.lifeBar.setInitialPixelOffset(0)
-        HPLabel = self.mSheet.createLabel()
-        HPLabel.setDimensions(Rect(320,315,56,42))
-        HPLabel.setTexture("")
-        HPLabel.setText("HP")
-        HPLabel.appearOverWidget(self.lifeBar)
-        
-        self.lifeBarValueLabel = self.mSheet.createLabel()
-        self.lifeBarValueLabel.setDimensions(Rect(440,315,56,42))
-        self.lifeBarValueLabel.setTexture("")
-        self.lifeBarValueLabel.setText("100")
-        self.lifeBarValueLabel.appearOverWidget(self.lifeBar)
-
+#         hurtButton = ninjaWindow.createButton()
+#         hurtButton.setDimensions(Rect(8,45,144,30))
+#         hurtButton.setText("Hurt")
+#         hurtButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_hurt) )
+#         
+#         healButton = ninjaWindow.createButton()
+#         healButton.setDimensions(Rect(8,82.5,144,30))
+#         healButton.setText("Heal")
+#         healButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_heal) )
+#         
+#         ## TrackBar Setup
+#         tb1 = self.mSheet.createHorizontalTrackBar() 
+#         tb1.setDimensions(Rect(320,60,160,24))
+#         tb1.setNumRegions(3)
+#         #tb1.setTickPosition(4) # Does not work! 3 regions . ticks: 0/1/2/3
+#         tb2 = self.mSheet.createVerticalTrackBar() 
+#         tb2.setDimensions(Rect(320,90,24,120))
+#         tb2.setNumTicks(10)
+#         #tb2.setTickPosition(9)
+#         
+#         ## Progress Bar Setup
+#         self.lifeBar = self.mSheet.createProgressBar()
+#         self.lifeBar.setDimensions(Rect(320,330,160,18))
+#         self.lifeBar.setInitialPixelOffset(0)
+#         
+#         HPLabel = self.mSheet.createLabel()
+#         HPLabel.setDimensions(Rect(320,315,56,42))
+#         HPLabel.setTexture("")
+#         HPLabel.setText("HP")
+#         HPLabel.appearOverWidget(self.lifeBar)
+#         
+#         self.lifeBarValueLabel = self.mSheet.createLabel()
+#         self.lifeBarValueLabel.setDimensions(Rect(440,315,56,42))
+#         self.lifeBarValueLabel.setTexture("")
+#         self.lifeBarValueLabel.setText("100")
+#         self.lifeBarValueLabel.appearOverWidget(self.lifeBar)
+# 
         ## Mouse Over window
         mouseOverWindow = self.mSheet.createWindow()
         mouseOverWindow.setDimensions(Rect(480,420,320,60))
@@ -368,93 +376,96 @@ class QuickGUIDemoApp (sf.Application):
         self.mouseOverTB.setDimensions(Rect(0,s.height,320,30))
         self.mouseOverTB.setReadOnly(True)
 
-        ## Login Portion
-        l=self.mSheet.createLabel()
-        l.setDimensions(Rect(16,360,160,30))
-        l.setText("User Name:")
-        
-        l=self.mSheet.createLabel()
-        l.setDimensions(Rect(16,390,160,30))
-        l.setText("Password:")
-        
-        self.usernameTB = self.mSheet.createTextBox()
-        self.usernameTB.setDimensions(Rect(180,360,200,30))
-        self.usernameTB.setText("\tThe quick brown fox jumped over the red fence.") 
-        
-        self.passwordTB = self.mSheet.createTextBox()
-        self.passwordTB.setDimensions(Rect(180,390,200,30))
-        self.passwordTB.maskUserInput(ord('*'))
-        
-        loginButton = self.mSheet.createButton()
-        loginButton.setDimensions(Rect(100,420,200,42))
-        loginButton.setText("Login")
-        loginButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_login) )
-        self.loginResultLabel = self.mSheet.createLabel()
-        self.loginResultLabel.setDimensions(Rect(0.0,462,480,30))
-        self.loginResultLabel.setTexture("")
-        
-        ## Set Text Window
-        self.stWindow = self.mSheet.createWindow()
-        self.stWindow.setDimensions(Rect(560,270,240,120))
-        self.stWindow.hide()
-        self.stWindow.getTitleBar().setText("Set Text Color:")
-        
-        closeButton = self.stWindow.getTitleBar().getCloseButton() 
+        tb = mouseOverWindow.createTextBox("DebugTextBox")
+        tb.setDimensions(Rect(0,60,320,30))
 
-        l=self.stWindow.createLabel()
-        l.setDimensions(Rect(40,30,60,30))
-        l.setText("Color:")
-        
-        colorCB = self.stWindow.createComboBox()
-        colorCB.setDimensions(Rect(125,30,100,30))
-        
-        colorCB.setDimensions(Rect(125,30,100,30))
-        item = colorCB.addItem()
-        item.setText("Red")
-        item = colorCB.addItem()
-        item.setText("Green")
-        item = colorCB.addItem()
-        item.setText("Blue")
-        item = colorCB.addItem()
-        item.setText("Black")
-        item = colorCB.addItem()
-        item.setText("White")
-        item = colorCB.addItem()
-        item.setText("Purple")
-        item = colorCB.addItem()
-        item.setText("Brown")
-        
-#         colorCBdropList = colorCB.getDropDownList()
-#         colorCBdropList.setNumberOfVisibleItems(6) 
+#         ## Login Portion
+#         l=self.mSheet.createLabel()
+#         l.setDimensions(Rect(16,360,160,30))
+#         l.setText("User Name:")
 #         
-#         colorCBdropList.addListItem("Red")
-#         colorCBdropList.addListItem("Green")
-#         colorCBdropList.addListItem("Blue")
-#         colorCBdropList.addListItem("Black")
-#         colorCBdropList.addListItem("White") 
-#         colorCBdropList.addListItem("Yellow") 
-#         colorCBdropList.addListItem("Purple") 
-#         colorCBdropList.addListItem("Brown") 
-        
-        setTextButton = self.stWindow.createButton()
-        setTextButton.setDimensions(Rect(80,70,50,30))
-        setTextButton.setText("Apply")
-        setTextButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_setTextColor) )
-        # colorCB.clearList()
-#         colorCBdropList.removeListItem(2)
-
-        testButton = self.mSheet.createButton()
-        testButton.setDimensions(Rect(1200,800,100,50))
-        testButton.setText("TEST") 
-        testButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.test)) 
-
-        testButton2 = self.stWindow.createButton() 
-        testButton2.setDimensions(Rect(500,190,100,50))
-        testButton2.setText("TEST") 
-        testButton2.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.test)) 
- 
-        tb=self.mSheet.createTextBox() 
-        tb.setDimensions(Rect(480,480,320,30))
+#         l=self.mSheet.createLabel()
+#         l.setDimensions(Rect(16,390,160,30))
+#         l.setText("Password:")
+#         
+#         self.usernameTB = self.mSheet.createTextBox()
+#         self.usernameTB.setDimensions(Rect(180,360,200,30))
+#         self.usernameTB.setText("\tThe quick brown fox jumped over the red fence.") 
+#         
+#         self.passwordTB = self.mSheet.createTextBox()
+#         self.passwordTB.setDimensions(Rect(180,390,200,30))
+#         self.passwordTB.maskUserInput(ord('*'))
+#         
+#         loginButton = self.mSheet.createButton()
+#         loginButton.setDimensions(Rect(100,420,200,42))
+#         loginButton.setText("Login")
+#         loginButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_login) )
+#         self.loginResultLabel = self.mSheet.createLabel()
+#         self.loginResultLabel.setDimensions(Rect(0.0,462,480,30))
+#         self.loginResultLabel.setTexture("")
+#         
+#         ## Set Text Window
+#         self.stWindow = self.mSheet.createWindow()
+#         self.stWindow.setDimensions(Rect(560,270,240,120))
+#         self.stWindow.hide()
+#         self.stWindow.getTitleBar().setText("Set Text Color:")
+#         
+#         closeButton = self.stWindow.getTitleBar().getCloseButton() 
+# 
+#         l=self.stWindow.createLabel()
+#         l.setDimensions(Rect(40,30,60,30))
+#         l.setText("Color:")
+#         
+#         colorCB = self.stWindow.createComboBox()
+#         colorCB.setDimensions(Rect(125,30,100,30))
+#         
+#         colorCB.setDimensions(Rect(125,30,100,30))
+#         item = colorCB.addItem()
+#         item.setText("Red")
+#         item = colorCB.addItem()
+#         item.setText("Green")
+#         item = colorCB.addItem()
+#         item.setText("Blue")
+#         item = colorCB.addItem()
+#         item.setText("Black")
+#         item = colorCB.addItem()
+#         item.setText("White")
+#         item = colorCB.addItem()
+#         item.setText("Purple")
+#         item = colorCB.addItem()
+#         item.setText("Brown")
+#         
+# #         colorCBdropList = colorCB.getDropDownList()
+# #         colorCBdropList.setNumberOfVisibleItems(6) 
+# #         
+# #         colorCBdropList.addListItem("Red")
+# #         colorCBdropList.addListItem("Green")
+# #         colorCBdropList.addListItem("Blue")
+# #         colorCBdropList.addListItem("Black")
+# #         colorCBdropList.addListItem("White") 
+# #         colorCBdropList.addListItem("Yellow") 
+# #         colorCBdropList.addListItem("Purple") 
+# #         colorCBdropList.addListItem("Brown") 
+#         
+#         setTextButton = self.stWindow.createButton()
+#         setTextButton.setDimensions(Rect(80,70,50,30))
+#         setTextButton.setText("Apply")
+#         setTextButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_setTextColor) )
+#         # colorCB.clearList()
+# #         colorCBdropList.removeListItem(2)
+# 
+#         testButton = self.mSheet.createButton()
+#         testButton.setDimensions(Rect(1200,800,100,50))
+#         testButton.setText("TEST") 
+#         testButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.test)) 
+# 
+#         testButton2 = self.stWindow.createButton() 
+#         testButton2.setDimensions(Rect(500,190,100,50))
+#         testButton2.setText("TEST") 
+#         testButton2.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.test)) 
+#  
+#         tb=self.mSheet.createTextBox() 
+#         tb.setDimensions(Rect(480,480,320,30))
 
 
     def test(self, args):

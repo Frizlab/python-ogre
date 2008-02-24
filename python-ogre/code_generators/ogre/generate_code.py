@@ -995,18 +995,18 @@ def generate_code():
     
 
     NoPropClasses = ["UTFString"]
+    
     for cls in main_ns.classes():
         if cls.name not in NoPropClasses:
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
             common_utils.remove_DuplicateProperties ( cls )
             ## because we want backwards pyogre compatibility lets add leading lowercase properties
             common_utils.add_LeadingLowerProperties ( cls )
-            
     common_utils.add_constants( mb, { 'ogre_version' :  '"%s"' % environment.ogre.version.replace("\n", "\\\n") 
                                       , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
                                       
     ## need to create a welcome doc string for this...                                  
-    common_utils.add_constants( mb, { '__doc__' :  '"Python-Ogre Wrapper Library"' } ) 
+    common_utils.add_constants( mb, { '__doc__' :  '"Python-Ogre Main Module for OGRE 3D"' } ) 
     
     ##########################################################################################
     #

@@ -21,7 +21,7 @@ import ogre.renderer.OGRE as ogre
 import ogre.gui.betagui as BetaGUI
 import ogre.io.OIS as OIS
 import ogre.physics.PhysX as PhysX
-import ogre.physics.NxOgre as nxogre
+import ogre.physics.NxOgre_09 as nxogre
 
 from Enums import *
 
@@ -123,25 +123,33 @@ class Cake ():
     def pre(self):
         self.getConfig() 
     
+        print "$$$$$$$ PRE 1"   
         self.Renderer = Renderer(self.RenderConfiguration) 
+        print "$$$$$$$ PRE 1"   
         self.InputHandler = InputHandler() 
-    
+        print "$$$$$$$ PRE 1"   
         window = self.Renderer.createWindow("NxOgre") 
+        print "$$$$$$$ PRE 1"   
     
         self.Decoration = Frosting(self.Renderer, self.InputHandler, self) 
+        print "$$$$$$$ PRE 1"   
     
         self.SceneMgr = self.Decoration.getSceneManager() 
         self.Camera = self.Decoration.getCamera() 
+        print "$$$$$$$ PRE 7"   
         
         self.Renderer.createViewportAndBindToCamera(self.Camera) 
         self.InputHandler.start(window, self.Camera) 
+        print "$$$$$$$ PRE 8"   
         
         ogre.TextureManager.getSingleton().setDefaultNumMipmaps(1) 
         ogre.MaterialManager.getSingleton().setDefaultTextureFiltering(ogre.TFO_ANISOTROPIC) 
         ogre.MaterialManager.getSingleton().setDefaultAnisotropy(8)  
         ogre.ResourceGroupManager.getSingleton().initialiseAllResourceGroups() 
+        print "$$$$$$$ PRE 9"   
     
         self.Decoration.decorate() 
+        print "$$$$$$$ PRE 10"   
 
 
     def post(self):
@@ -443,11 +451,11 @@ class terrain ( Decoration ):
 
 ##/////////////////////////////////////////////////////////////////////////////
 
-class Frosting ( Decoration, BetaGUI.GUIListener ):
+class Frosting ( Decoration, BetaGUI.BetaGUIListener ):
 
 
     def __init__(self, r, i, t) : 
-        BetaGUI.GUIListener.__init__(self)
+        BetaGUI.BetaGUIListener.__init__(self)
         Decoration.__init__(self,r,i,t)
         self.SceneMgr = r.createSceneMgr("Main") 
         self.Camera = self.SceneMgr.createCamera("Main") 
@@ -512,17 +520,16 @@ class Frosting ( Decoration, BetaGUI.GUIListener ):
             self.SceneMgr.setShadowColour(ogre.ColourValue(0.6, 0.6, 0.6)) 
             self.SceneMgr.setShadowCameraSetup(self.shadowCamera) 
 
-
-#         self.Gui = BetaGUI.GUI("SandBoxGUI", "nxogrefont", 14, self.Renderer.getWindow()) 
-        self.Gui = BetaGUI.GUI( self.Renderer.getWindow()) 
+        self.Gui = BetaGUI.GUI("SandBoxGUI", "nxogrefont", 14, self.Renderer.getWindow()) 
+#         self.Gui = BetaGUI.GUI( self.Renderer.getWindow()) 
         
-#         self.Cursor = self.Gui.createMousePointer(ogre.Vector2(24, 24), "bgui.pointer") 
-        self.Cursor = self.Gui.createMousePointer("bgui.pointer",24,24) 
+        self.Cursor = self.Gui.createMousePointer(ogre.Vector2(24, 24), "bgui.pointer") 
+#         self.Cursor = self.Gui.createMousePointer("bgui.pointer",24,24) 
         self.Gui.injectMouse(200,200, False) 
         self.Cursor.hide() 
         
-#         self.WidgetMenu = self.Gui.createWindow(ogre.Vector4(100,100,64,128), "widget.mm", BetaGUI.WindowFeatureType.WFT_NONE, "") 
-        self.WidgetMenu = self.Gui.createWindow(100,100,64,128, "widget.mm", BetaGUI.WindowFeatureType.WFT_NONE, "", self) 
+        self.WidgetMenu = self.Gui.createWindow(ogre.Vector4(100,100,64,128), "widget.mm", BetaGUI.WindowFeatureType.WFT_NONE, "") 
+#         self.WidgetMenu = self.Gui.createWindow(100,100,64,128, "widget.mm", BetaGUI.WindowFeatureType.WFT_NONE, "", None) 
         
         self.callback = BetaGUI.Callback(self)
         self.WidgetMenuButton=[]
@@ -1173,10 +1180,10 @@ class Sponge_Cake ( Cake ):
     
     def start(self):
 
-        self.World = nxogre.World("log: html")
-        self.Scene = self.World.createScene("Main", self.SceneMgr, "gravity: yes, floor: yes, time-step-method: variable")
+        self.World = nxogre.World(nxogre.PhysXDriverParams("log: html"))
+        self.Scene = self.World.createScene("Main", self.SceneMgr, nxogre.SceneParams("gravity: yes, floor: yes, time-step-method: variable"))
 
-        self.Scene.createBody("cube.1m.mesh", nxogre.CubeShape(1), ogre.Vector3(0,5,0), "mass: 10")
+        self.Scene.createBody("cube.1m.mesh", nxogre.CubeShape(1), ogre.Vector3(0,5,0), nxogre.ActorParams("mass: 10"))
 
     def stop(self):
         del self.World
@@ -1201,11 +1208,17 @@ if __name__ == '__main__':
     import exceptions,sys
     try:
         application = Sponge_Cake ()
+        print "**** ", application, " CREATED OK"
         application.pre()
+        print "**** ", application, " PRE OK"
         application.start()
+        print "**** ", application, "STARTED"
         application.WorldInstance = application.getWorld()
+        print "**** ", application
         application.startRendering(application)
+        print "**** ", application
         application.stop()
+        print "**** ", application
         application.post()
 
     except ogre.OgreException, e:

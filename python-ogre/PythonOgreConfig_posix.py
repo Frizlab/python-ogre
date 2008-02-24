@@ -77,6 +77,7 @@ PATH_ffmpeg=        os.path.join(BASE_DIR, 'ffmpeg')
 PATH_navi =         os.path.join(BASE_DIR, 'navi','Navi')
 PATH_particleuniverse = os.path.join(PATH_Ogre, 'PlugIns', 'ParticleUniverse' )
 PATH_cadunetree=        os.path.join(PATH_THIRDPARTY, 'cadunetree')
+PATH_opensteer =        os.path.join(BASE_DIR, 'opensteer', 'trunk')
 
 
 ###
@@ -115,6 +116,7 @@ PATH_LIB_ffmpeg=                os.path.join(PATH_ffmpeg, 'lib')
 PATH_LIB_plib =                 PATH_plib
 PATH_LIB_navi=                  os.path.join(PATH_navi, 'lib')
 PATH_LIB_particleuniverse =     os.path.join(PATH_particleuniverse, 'bin', 'release')
+PATH_LIB_opensteer = os.path.join(LOCAL_LIB)
 
 
 PATH_INCLUDE_Ogre=          os.path.join(LOCAL_INCLUDE,'OGRE')  # os.path.join(PATH_Ogre,'OgreMain/include') 
@@ -180,3 +182,5 @@ PATH_INCLUDE_PhysX= [ physxbase
                     ,os.path.join(physxbase, 'NxExtensions','include')
                     ,os.path.join(physxbase, 'Physics','include')
                     ]
+PATH_INCLUDE_opensteer = os.path.join(LOCAL_INCLUDE, 'OpenSteer')
+PATH_INCLUDE_opensteer_opensteer = os.path.join(LOCAL_INCLUDE, 'OpenSteer')
