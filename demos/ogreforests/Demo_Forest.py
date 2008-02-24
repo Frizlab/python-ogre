@@ -12,7 +12,7 @@ class ForestApplication(sf.Application):
         # self.sceneManager = self.root.createSceneManager("TerrainSceneManager")
         self.sceneManager = self.root.createSceneManager(ogre.ST_EXTERIOR_CLOSE)
 
-    def getTerrainHeight( self, x, z ):
+    def getTerrainHeight( self, x, z, UserData=None ):
         if ( x < 0 or z < 0 or x > 1500 or z > 1500 ):  return 0
         self.updateRay.setOrigin( ogre.Vector3(x, 0.0, z) )
         self.updateRay.setDirection( ogre.Vector3.UNIT_Y )
@@ -51,8 +51,17 @@ class ForestApplication(sf.Application):
         camera.lookAt(750, 100, 750+1)
         ##camera.setPolygonMode(PM_WIREFRAME)
         
-        ##---- PagedGeometry test ----
+        self.updateRay = ogre.Ray();
+    
+        ##RaySceneQuery for terrain height check
+        self.updateRay.setOrigin(camera.getPosition())
+        self.updateRay.setDirection(ogre.Vector3.NEGATIVE_UNIT_Y)
+        self.raySceneQuery = self.sceneManager.createRayQuery(self.updateRay)
+        self.raySceneQuery.setQueryTypeMask(ogre.SceneManager.WORLD_GEOMETRY_TYPE_MASK )   
+        self.raySceneQuery.setWorldFragmentType(ogre.SceneQuery.WFT_SINGLE_INTERSECTION) 
+        self.raySceneQueryListener = myRaySceneQueryListener()
         
+        ##---- PagedGeometry test ----
         ## TREES
         ##Initialize the PagedGeometry engine
         self.trees = forests.PagedGeometry()
@@ -89,7 +98,9 @@ class ForestApplication(sf.Application):
                 z = random.randrange(0, 1500)
             
             scale = random.randrange(9, 11) / 10
-            self.treeLoader.addTree(self.myTree, ogre.Vector2(x, z), ogre.Degree(yaw), scale)
+            y = self.getTerrainHeight(x, z);
+
+            self.treeLoader.addTree(self.myTree, ogre.Vector3(x, y, z), ogre.Degree(yaw), scale)
         
         ##Grass
         
@@ -130,15 +141,6 @@ class ForestApplication(sf.Application):
 
         grassLayer.setFadeTechnique(forests.FADETECH_GROW)
         
-        self.updateRay = ogre.Ray();
-    
-        ##RaySceneQuery for terrain height check
-        self.updateRay.setOrigin(camera.getPosition())
-        self.updateRay.setDirection(ogre.Vector3.NEGATIVE_UNIT_Y)
-        self.raySceneQuery = self.sceneManager.createRayQuery(self.updateRay)
-        self.raySceneQuery.setQueryTypeMask(ogre.SceneManager.WORLD_GEOMETRY_TYPE_MASK )   
-        self.raySceneQuery.setWorldFragmentType(ogre.SceneQuery.WFT_SINGLE_INTERSECTION) 
-        self.raySceneQueryListener = myRaySceneQueryListener()
 
     def _createFrameListener(self):
         self.frameListener = GrassFrameListener(self)
@@ -157,7 +159,7 @@ class GrassFrameListener(sf.FrameListener):
     def frameStarted(self, frameEvent):
         self.app.trees.update()
         self.app.grass.update()
-        self.app.grassLoader.updateAnimation()
+        ##self.app.grassLoader.update() ## Animation()
         
         updateRay = ogre.Ray()
         updateRay.setOrigin (self.camera.getPosition() + ogre.Vector3(0.0, 10.0, 0.0))

@@ -217,7 +217,7 @@ namespace OgreAL {
 
 		bool eof = false;
 
-		if(mStream && mSource != AL_NONE)
+		if(mStream && (mSource != AL_NONE) && isPlaying())
 		{
 			// Update the stream
 			int processed;

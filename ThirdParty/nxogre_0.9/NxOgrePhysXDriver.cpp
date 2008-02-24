@@ -26,6 +26,7 @@
 #include "NxCooking.h"				// For: NxInitCooking
 #include "NxOgreRemoteDebuggerConnection.h"
 #include "NxOgreMeshManager.h"
+#include <iostream>
 
 #if defined NX_WIN32 && defined NX_DEBUG
 #include "windows.h"
@@ -83,10 +84,11 @@ PhysXDriver::PhysXDriver(World* w, PhysXDriverParams params) : mFramelistener(fa
 #ifdef NX_DEBUG
 	NxDebug("NxOgre " + Nx_Version_Full + "'" + Nx_Version_Codename + "'");
 #endif
-	
+	std::cout << "Driver 1\n";
 	mError = new Error(this, params.shutdownOnErrors);
 	mAllocator = new NxOgre::UserAllocator();
-
+    std::cout << "Driver 2\n";
+	
 	if (params.logtype == params.LT_TEXT) {
 		mLog = new Log(Log::TEXT);
 		mError->addReporter(mLog, true);
@@ -102,15 +104,18 @@ PhysXDriver::PhysXDriver(World* w, PhysXDriverParams params) : mFramelistener(fa
 	else {
 		mLog = 0;
 	}
-
+    std::cout << "Driver 3\n";
+	
 	if (params.useFrameListener)
 		_createFrameListener();
-
+    std::cout << "Driver 4\n";
+	
 	if (!params.use_SDK_ID)
 		_createSDK();
 	else
 		_createSDKfromID(params.SDK_ID_CompanyName,params.SDK_ID_ApplicationName,params.SDK_ID_ApplicationVersion, params.SKD_ID_ApplicationUserDefined);
-
+    std::cout << "Driver 5\n";
+	
 	std::stringstream s;
 	s	<< "NxOgre (" << Nx_Version_Full << ") Started, working with:" << std::endl << std::endl
 		<< "  - PhysX    => " << NX_SDK_VERSION_MAJOR << "." << NX_SDK_VERSION_MINOR << "." << NX_SDK_VERSION_BUGFIX << std::endl

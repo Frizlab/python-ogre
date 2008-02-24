@@ -3,13 +3,13 @@
 ;
 [Setup]
 AppName=Python-Ogre
-AppVerName=Python-Ogre 1.2
+AppVerName=Python-Ogre 1.2 RC1
 DefaultDirName=C:\PythonOgre
 DefaultGroupName=Python-Ogre
 OutputBaseFilename=PythonOgreInstaller
 OutputDir=C:\temp
 SourceDir=C:\Development\PythonOgreRelease
-VersionInfoDescription=Release 1.2 of Python-Ogre
+VersionInfoDescription=Release 1.2 RC1 of Python-Ogre
 AllowNoIcons=true
 AppPublisher=OpenSource (Andy and Team)
 AppPublisherURL=http://www.python-ogre.org
@@ -220,7 +220,7 @@ Name: {group}\OgreNewt Demos\Custom Joints; Filename: {code:GetPythonExe}; Param
 Name: {group}\OgreNewt Demos\Ragdoll; Filename: {code:GetPythonExe}; Parameters: Demo08_ragdoll.py; WorkingDir: {app}\Demos\OgreNewt
 
 Name: {group}\Video Demos\ffmpeg Video; Filename: {code:GetPythonExe}; Parameters: Demo_Video.py; WorkingDir: {app}\Demos\ffmpeg
-Name: {group}\Video Demos\DirectShow Video; Filename: {code:GetPythonExe}; Parameters: Demo_Video.py; WorkingDir: {app}\Demos\dshow
+;Name: {group}\Video Demos\DirectShow Video; Filename: {code:GetPythonExe}; Parameters: Demo_Video.py; WorkingDir: {app}\Demos\dshow
 Name: {group}\Video Demos\Theora Video; Filename: {code:GetPythonExe}; Parameters: Demo_Video.py; WorkingDir: {app}\Demos\theora
 
 Name: {group}\NxOgre\Download AGEIA drivers first; Filename: http://www.ageia.com/drivers/drivers.html
@@ -233,8 +233,11 @@ Name: {group}\Plib Demos\Networking - Server; Filename: {code:GetPythonExe}; Par
 Name: {group}\Plib Demos\Networking - Client; Filename: {code:GetPythonExe}; Parameters: Demo_Client.py; WorkingDir: {app}\Demos\plib
 ;Name: {group}\Plib Demos\Sound; Filename: {code:GetPythonExe}; Parameters: Demo_Sound.py; WorkingDir: {app}\Demos\plib
 
-Name: {group}\OgreForests Demos\ogreforests; Filename: {code:GetPythonExe}; Parameters: Demo_Forest.py; WorkingDir: {app}\Demos\ogreforests
-Name: {group}\Editable Terrain Demo\Editable Terrain; Filename: {code:GetPythonExe}; Parameters: Demo_CEGUI_ET.py; WorkingDir: {app}\Demos\et
+Name: {group}\Special Effects\Forests; Filename: {code:GetPythonExe}; Parameters: Demo_Forest.py; WorkingDir: {app}\Demos\ogreforests
+Name: {group}\Special Effects\Editable Terrain; Filename: {code:GetPythonExe}; Parameters: Demo_CEGUI_ET.py; WorkingDir: {app}\Demos\et
+Name: {group}\Special Effects\Caelum Sky; Filename: {code:GetPythonExe}; Parameters: Demo_Caelum01.py; WorkingDir: {app}\Demos\caelum
+Name: {group}\Special Effects\Noise Generation; Filename: {code:GetPythonExe}; Parameters: Demo_Noise_01.py; WorkingDir: {app}\Demos\noise
+Name: {group}\Special Effects\Particle Universe; Filename: {code:GetPythonExe}; Parameters: Demo_Particle.py; WorkingDir: {app}\Demos\particleuniverse
 
 Name: {group}\Uninstall Python-Ogre; Filename: {uninstallexe}
 Name: {group}\Python-Ogre API Documenatation; Filename: {app}\docs\Python-Ogre.chm

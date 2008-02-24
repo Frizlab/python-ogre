@@ -317,6 +317,9 @@ def ManualFixes ( mb ):
             if a.default_value and a.default_value.startswith("param"):
                 t1,t2=a.default_value.split('<')
                 a.default_value="NxOgre::"+t1+"<NxOgre::"+t2
+                
+                
+    Fix_Implicit_Conversions ( main_ns )
 
               
 ############################################################
@@ -451,14 +454,17 @@ def Fix_NT ( mb ):
         
 def Fix_Implicit_Conversions ( mb ):
     """By default we disable explicit conversion, however sometimes it makes sense
+    
     """
+    
+    for c in mb.classes():
+        if c.name.endswith ('Params'):
+            print "Implicit Conversion:", c
+            c.allow_implicit_conversion = True
+            for con in c.constructors(allow_empty=True):
+                print con.decl_string
+                con.allow_implicit_conversion = True
     return
-#     for c in mb.classes():
-#         if c.name.endswith ('Params'):
-#             print "Implicit Conversion:", c
-#             for con in c.constructors():
-#                 print con.decl_string
-#                 con.allow_implicit_conversion = True
             
     ImplicitClasses=['::NxOgre::Pose'] 
     for className in ImplicitClasses:

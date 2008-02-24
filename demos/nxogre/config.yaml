@@ -1,5 +1,5 @@
 # Graphics
-device:opengl
+device:directx
 width:640
 height:480
 depth:32

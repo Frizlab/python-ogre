@@ -130,7 +130,7 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
 #         
         node = rootNode.createChildSceneNode( "Head" )
         node.attachObject( ogreHead )
-        sound = self.soundManager.createSound("Roar", "roar.wav", True)
+        sound = self.soundManager.createSound("Roar", "6 chan.ogg", True) ## "roar.wav", True)
         node.attachObject(sound)
         sound.play()
 

@@ -696,7 +696,6 @@ namespace OgreAL {
 			if(isStopped() && !mManualStop && mFinishedCallback)
 			{
 				mFinishedCallback->execute(this);
-				mManualStop = true;
 			}
 
 			Ogre::Real currOffset = getSecondOffset();

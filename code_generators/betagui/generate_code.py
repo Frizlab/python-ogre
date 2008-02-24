@@ -61,7 +61,7 @@ def ManualExclude ( mb ):
     global_ns = mb.global_ns
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
     
-    NotExported=['::BetaGUI::Slider']
+    NotExported=[] ## '::BetaGUI::Slider']
     for c in NotExported:
         main_ns.class_( c ).exclude()
                         
@@ -71,7 +71,7 @@ def ManualExclude ( mb ):
             main_ns.class_(cls[0]).member_function(cls[1]).exclude()
         except  declarations.matcher.declaration_not_found_t, e:
             pass 
-    excludes=['::BetaGUI::GUI::injectSpecialKey']
+    excludes=[] ##'::BetaGUI::GUI::injectSpecialKey']
     for e in excludes:
         print "excluding function", e
         global_ns.member_functions(e).exclude()
