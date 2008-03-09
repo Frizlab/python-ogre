@@ -70,8 +70,23 @@ def ManualInclude ( mb ):
     if MAIN_NAMESPACE:
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
-        main_ns = global_ns    
-        
+        main_ns = global_ns  
+#     global_ns.namespace('Ogre').include( already_exposed = True)        
+#     for c in global_ns.classes():
+#         print c      
+#     global_ns.class_("::Ogre::MaterialPtr").already_exposed = True
+    
+#     ## I have to include this with (already_exposed) -- simply setting already_exposed=True is not enough...
+#     print global_ns.class_("::Ogre::Compiler2Pass").already_exposed
+#     print global_ns.class_("::Ogre::Compiler2Pass").ignore
+#     
+#     global_ns.class_("::Ogre::Compiler2Pass").include(already_exposed=True)
+#     print global_ns.class_("::Ogre::Compiler2Pass").already_exposed
+#     print global_ns.class_("::Ogre::Compiler2Pass").ignore
+    
+#     global_ns.class_("Ogre::SharedPtr<Ogre::DataStream>").already_exposed = True
+#     global_ns.class_("Ogre::Singleton<ParticleUniverse::ParticleSystemManager>").already_exposed = True
+       
 ############################################################
 ##
 ##  And things that need manual fixes, but not necessarly hand wrapped
@@ -166,30 +181,30 @@ def Fix_NT ( mb ):
 # the 'main'function
 #            
 def generate_code():  
-    messages.disable( 
-#           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-          messages.W1020
-        , messages.W1021
-        , messages.W1022
-        , messages.W1023
-        , messages.W1024
-        , messages.W1025
-        , messages.W1026
-        , messages.W1027
-        , messages.W1028
-        , messages.W1029
-        , messages.W1030
-        , messages.W1031
-        , messages.W1035
-        , messages.W1040 
-        , messages.W1038        
-        , messages.W1041
-        , messages.W1036 # pointer to Python immutable member
-        , messages.W1033 # unnamed variables
-        , messages.W1018 # expose unnamed classes
-        , messages.W1049 # returns reference to local variable
-        , messages.W1014 # unsupported '=' operator
-         )
+#     messages.disable( 
+# #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+#           messages.W1020
+#         , messages.W1021
+#         , messages.W1022
+#         , messages.W1023
+#         , messages.W1024
+#         , messages.W1025
+#         , messages.W1026
+#         , messages.W1027
+#         , messages.W1028
+#         , messages.W1029
+#         , messages.W1030
+#         , messages.W1031
+#         , messages.W1035
+#         , messages.W1040 
+#         , messages.W1038        
+#         , messages.W1041
+#         , messages.W1036 # pointer to Python immutable member
+#         , messages.W1033 # unnamed variables
+#         , messages.W1018 # expose unnamed classes
+#         , messages.W1049 # returns reference to local variable
+#         , messages.W1014 # unsupported '=' operator
+#          )
     #
     # Use GCCXML to create the controlling XML file.
     # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded
@@ -214,8 +229,7 @@ def generate_code():
                                           , cflags=environment.particleuniverse.cflags
                                            )
                                            
-    # if this module depends on another set it here                                           
-    mb.register_module_dependency ( environment.ogre.generated_dir )
+    
     
     # normally implicit conversions work OK, however they can cause strange things to happen so safer to leave off
     mb.constructors().allow_implicit_conversion = False                                           
@@ -228,6 +242,13 @@ def generate_code():
     # 
     global_ns = mb.global_ns
     global_ns.exclude()
+    
+    # if this module depends on another set it here   -- we need to do this after the 'global' excludes as includes pulled from Ogre need to be considered                                        
+    mb.register_module_dependency ( environment.ogre.generated_dir )
+    print "AFTER LOAD"
+    print mb.global_ns.class_("::Ogre::Compiler2Pass").already_exposed
+    print mb.global_ns.class_("::Ogre::Compiler2Pass").ignore
+
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
     main_ns.include()
        

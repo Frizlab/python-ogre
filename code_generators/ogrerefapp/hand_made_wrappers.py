@@ -1,24 +1,6 @@
 import os
 import environment
 
-WRAPPER_DEFINITION_General = \
-"""
-boost::python::tuple 
-GetOgreVersion () {
-            return ( boost::python::make_tuple( Ogre::StringConverter::toString(OGRE_VERSION_MAJOR),
-                                                Ogre::StringConverter::toString(OGRE_VERSION_MINOR),
-                                                Ogre::StringConverter::toString(OGRE_VERSION_PATCH),
-                                                OGRE_VERSION_NAME 
-                                                ) );
-}
-boost::python::tuple 
-GetPythonOgreVersion () {
-            return ( boost::python::make_tuple( """ + environment.PythonOgreMajorVersion + """,
-                                                """ + environment.PythonOgreMinorVersion + """,
-                                                """ + environment.PythonOgrePatchVersion + """
-                                                ) );
-}
-"""            
 
 WRAPPER_DEFINITION_ConfigFile = \
 """
@@ -104,8 +86,5 @@ def apply( mb ):
     rt = mb.class_( 'Frustum' )
     rt.add_declaration_code( WRAPPER_DEFINITION_Frustum )
     rt.add_registration_code( WRAPPER_REGISTRATION_Frustum )
-    
-    mb.add_declaration_code( WRAPPER_DEFINITION_General )
-    mb.add_registration_code( WRAPPER_REGISTRATION_General )
     
 

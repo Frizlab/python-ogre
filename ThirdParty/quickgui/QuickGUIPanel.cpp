@@ -16,7 +16,6 @@ namespace QuickGUI
 		Widget(name,gm),
 		QuadContainer(this),
 		RadioButtonGroup(this),
-		mScrollingAllowed(false),
 		mScrollPane(0),
 		mRightScrollBar(0),
 		mBottomScrollBar(0)
@@ -27,6 +26,22 @@ namespace QuickGUI
 
 		addEventHandler(EVENT_CHILD_ADDED,&Panel::onChildAdded,this);
 		addEventHandler(EVENT_CHILD_REMOVED,&Panel::onChildRemoved,this);
+
+		// Set up the Scroll Pane to allow scrolling within the Panel.
+		mScrollPane = dynamic_cast<ScrollPane*>(_createComponent(mInstanceName+".ScrollPane",TYPE_SCROLL_PANE));
+		mScrollPane->setSize(mSize);
+
+		mScrollPane->removeChild(mScrollPane->mRightBar);
+		// store reference to the scroll bar
+		mRightScrollBar = mScrollPane->mRightBar;
+		addChild(mRightScrollBar);
+		mRightScrollBar->setPosition(mSize.width - 20,0);
+
+		mScrollPane->removeChild(mScrollPane->mBottomBar);
+		// store reference to the scroll bar
+		mBottomScrollBar = mScrollPane->mBottomBar;
+		addChild(mBottomScrollBar);
+		mBottomScrollBar->setPosition(0,mSize.height - 20);
 	}
 
 	Panel::~Panel()
@@ -67,20 +82,12 @@ namespace QuickGUI
 			default:						w = new Widget(name,mGUIManager);				break;
 		}
 
-		w->setSize(w->getSize());
-		w->setFont(mFontName,true);
-		w->setClipMode(mClipMode);
 		mComponents.push_back(w);
 
-		// The setParent method sets the widget's quad container to the
-		// quad container the parent belongs to.  However, Sheets, Panels, and Windows
-		// are quad containers themselves. So temporarily set mQuadContainer to ourself,
-		// make the call to setParent, and then restore the mQuadContainer reference.
-		QuadContainer* temp = mQuadContainer;
-		mQuadContainer = this;
 		w->setParent(this);
-		mQuadContainer = temp;
 
+		w->setSize(w->getSize());
+		w->setFont(mFontName,true);
 		w->setPosition(0,0);
 		// Some Composition widgets will create components before inheritting skin name.
 		if(mSkinName != "")
@@ -99,14 +106,7 @@ namespace QuickGUI
 
 		mChildWidgets.push_back(w);
 
-		// The setParent method sets the widget's quad container to the
-		// quad container the parent belongs to.  However, Sheets, Panels, and Windows
-		// are quad containers themselves. So temporarily set mQuadContainer to ourself,
-		// make the call to setParent, and then restore the mQuadContainer reference.
-		QuadContainer* temp = mQuadContainer;
-		mQuadContainer = this;
 		w->setParent(this);
-		mQuadContainer = temp;
 
 		// Convert Widget's position to be relative to new parent.
 		if(mScrollPane != NULL)
@@ -118,46 +118,6 @@ namespace QuickGUI
 		fireEvent(EVENT_CHILD_ADDED,args);
 	}
 
-	void Panel::allowScrolling(bool allow)
-	{
-		mScrollingAllowed = allow;
-
-		if(mScrollingAllowed)
-		{
-			if(mScrollPane == NULL)
-			{
-				mScrollPane = dynamic_cast<ScrollPane*>(_createComponent(mInstanceName+".ScrollPane",TYPE_SCROLL_PANE));
-				mScrollPane->setSize(mSize);
-
-				mScrollPane->removeChild(mScrollPane->mRightBar);
-				// store reference to the scroll bar
-				mRightScrollBar = mScrollPane->mRightBar;
-				addChild(mRightScrollBar);
-				mRightScrollBar->setPosition(mSize.width - 20,0);
-
-				mScrollPane->removeChild(mScrollPane->mBottomBar);
-				// store reference to the scroll bar
-				mBottomScrollBar = mScrollPane->mBottomBar;
-				addChild(mBottomScrollBar);
-				mBottomScrollBar->setPosition(0,mSize.height - 20);
-
-				mScrollPane->manageWidgets();
-			}
-		}
-		else
-		{
-			if(mScrollPane != NULL)
-			{
-				delete mScrollPane;
-				mScrollPane = NULL;
-
-				mGUIManager->destroyWidget(mRightScrollBar);
-				mRightScrollBar = NULL;
-				mGUIManager->destroyWidget(mBottomScrollBar);
-				mBottomScrollBar = NULL;
-			}
-		}
-	}
 /*
    Tree* Panel::createTree()
    {
@@ -193,6 +153,7 @@ namespace QuickGUI
 		}
 		else
 		{
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createButton");
 			std::string name = mGUIManager->generateName(TYPE_BUTTON);
 			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<Button*>(_createChild(name,TYPE_BUTTON));
@@ -213,9 +174,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			std::string name = mGUIManager->generateName(TYPE_CHECKBOX);
-			mGUIManager->notifyNameUsed(name);
-			return dynamic_cast<CheckBox*>(_createChild(name,TYPE_CHECKBOX));
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createCheckBox");
 		}
 	}
 
@@ -233,9 +192,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			std::string name = mGUIManager->generateName(TYPE_COMBOBOX);
-			mGUIManager->notifyNameUsed(name);
-			return dynamic_cast<ComboBox*>(_createChild(name,TYPE_COMBOBOX));
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createComboBox");
 		}
 	}
 
@@ -253,74 +210,14 @@ namespace QuickGUI
 		}
 		else
 		{
-			std::string name = mGUIManager->generateName(TYPE_CONSOLE);
-			mGUIManager->notifyNameUsed(name);
-			return dynamic_cast<Console*>(_createChild(name,TYPE_CONSOLE));
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createConsole");
 		}
 	}
 
 	HorizontalScrollBar* Panel::createHorizontalScrollBar()
 	{
 		return createHorizontalScrollBar(mGUIManager->generateName(TYPE_SCROLLBAR_HORIZONTAL));
-
-/*		HorizontalScrollBar* sb = dynamic_cast<HorizontalScrollBar*>(_createChild(TYPE_SCROLLBAR_HORIZONTAL));
-
-		sb->setSkin(mSkinName);
-
-		sb->mSlider = dynamic_cast<Button*>(sb->_createComponent(TYPE_BUTTON));
-		sb->mSlider->setSkinComponent(".scrollbar.horizontal.slider");
-		sb->mSlider->setSize(sb->getHeight(),sb->getHeight());
-		sb->mSlider->setPosition(sb->getHeight(),0);
-		sb->mSlider->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
-		sb->mSlider->enableDragging(true);
-		sb->mSlider->constrainDragging(true,false);
-		sb->mSlider->setAutoSize(false);
-		sb->mSlider->addEventHandler(EVENT_DRAGGED,&HorizontalScrollBar::onSliderDragged,sb);
-
-		float scrollBarHeight = mSize.height;
-		sb->mScrollLeft1 = dynamic_cast<Button*>(sb->_createComponent(TYPE_BUTTON));
-		sb->mScrollLeft1->setSkinComponent(".scrollbar.horizontal.left");
-		sb->mScrollLeft1->setSize(sb->getHeight(),sb->getHeight());
-		sb->mScrollLeft1->setPosition(0,0);
-		sb->mScrollLeft1->setAutoSize(false);
-		sb->mScrollLeft1->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
-		sb->mScrollLeft1->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&HorizontalScrollBar::onScrollLeftDown,sb);
-
-		sb->mScrollRight1 = dynamic_cast<Button*>(sb->_createComponent(TYPE_BUTTON));
-		sb->mScrollRight1->setSkinComponent(".scrollbar.horizontal.right");
-		sb->mScrollRight1->setSize(sb->getHeight(),sb->getHeight());
-		sb->mScrollRight1->setPosition(sb->getHeight(),0);
-		sb->mScrollRight1->setAutoSize(false);
-		sb->mScrollRight1->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
-		sb->mScrollRight1->setShowWithParent(false);
-		sb->mScrollRight1->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&HorizontalScrollBar::onScrollRightDown,sb);
-
-		sb->mScrollLeft2 = dynamic_cast<Button*>(sb->_createComponent(TYPE_BUTTON));
-		sb->mScrollLeft2->setSkinComponent(".scrollbar.horizontal.left");
-		sb->mScrollLeft2->setSize(sb->getHeight(),sb->getHeight());
-		sb->mScrollLeft2->setPosition(sb->getWidth() - (sb->getHeight()*2.0),0);
-		sb->mScrollLeft2->setAutoSize(false);
-		sb->mScrollLeft2->setHorizontalAnchor(ANCHOR_HORIZONTAL_RIGHT);
-		sb->mScrollLeft2->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
-		sb->mScrollLeft2->setShowWithParent(false);
-		sb->mScrollLeft2->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&HorizontalScrollBar::onScrollLeftDown,sb);
-
-		sb->mScrollRight2 = dynamic_cast<Button*>(sb->_createComponent(TYPE_BUTTON));
-		sb->mScrollRight2->setSkinComponent(".scrollbar.horizontal.right");
-		sb->mScrollRight2->setSize(sb->getHeight(),sb->getHeight());
-		sb->mScrollRight2->setPosition(sb->getWidth() - sb->getHeight(),0);
-		sb->mScrollRight2->setAutoSize(false);
-		sb->mScrollRight2->setHorizontalAnchor(ANCHOR_HORIZONTAL_RIGHT);
-		sb->mScrollRight2->setVerticalAnchor(ANCHOR_VERTICAL_TOP_BOTTOM);
-		sb->mScrollRight2->addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&HorizontalScrollBar::onScrollRightDown,sb);
-
-		sb->mMinSliderPosition = sb->mScrollRight1->getXPosition();
-		sb->mMaxSliderPosition = sb->mScrollRight2->getXPosition();
-
-		sb->mInitialized = true;
-
-		return sb;
-*/	}
+	}
 
 	HorizontalScrollBar* Panel::createHorizontalScrollBar(const std::string& name)
 	{
@@ -331,9 +228,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			std::string name = mGUIManager->generateName(TYPE_SCROLLBAR_HORIZONTAL);
-			mGUIManager->notifyNameUsed(name);
-			return dynamic_cast<HorizontalScrollBar*>(_createChild(name,TYPE_SCROLLBAR_HORIZONTAL));
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createHorizontalScrollBar");
 		}
 	}
 
@@ -351,9 +246,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			std::string name = mGUIManager->generateName(TYPE_TRACKBAR_HORIZONTAL);
-			mGUIManager->notifyNameUsed(name);
-			return dynamic_cast<HorizontalTrackBar*>(_createChild(name,TYPE_TRACKBAR_HORIZONTAL));
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createHorizontalTrackBar");
 		}
 	}
 
@@ -371,9 +264,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			std::string name = mGUIManager->generateName(TYPE_IMAGE);
-			mGUIManager->notifyNameUsed(name);
-			return dynamic_cast<Image*>(_createChild(name,TYPE_IMAGE));
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createImage");
 		}
 	}
 
@@ -391,9 +282,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			std::string name = mGUIManager->generateName(TYPE_LABEL);
-			mGUIManager->notifyNameUsed(name);
-			return dynamic_cast<Label*>(_createChild(name,TYPE_LABEL));
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createLabel");
 		}
 	}
 
@@ -411,18 +300,16 @@ namespace QuickGUI
 		}
 		else
 		{
-			std::string name = mGUIManager->generateName(TYPE_LIST);
-			mGUIManager->notifyNameUsed(name);
-			return dynamic_cast<List*>(_createChild(name,TYPE_LIST));
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createList");
 		}
 	}
 
-	LabelArea* Panel::createMultiLineLabel()
+	LabelArea* Panel::createLabelArea()
 	{
-		return createMultiLineLabel(mGUIManager->generateName(TYPE_LABELAREA));
+		return createLabelArea(mGUIManager->generateName(TYPE_LABELAREA));
 	}
 
-	LabelArea* Panel::createMultiLineLabel(const std::string& name)
+	LabelArea* Panel::createLabelArea(const std::string& name)
 	{
 		if(mGUIManager->isNameUnique(name))
 		{
@@ -431,9 +318,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			std::string name = mGUIManager->generateName(TYPE_LABELAREA);
-			mGUIManager->notifyNameUsed(name);
-			return dynamic_cast<LabelArea*>(_createChild(name,TYPE_LABELAREA));
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createLabelArea");
 		}
 	}
 
@@ -451,9 +336,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			std::string name = mGUIManager->generateName(TYPE_NSTATEBUTTON);
-			mGUIManager->notifyNameUsed(name);
-			return dynamic_cast<NStateButton*>(_createChild(name,TYPE_NSTATEBUTTON));
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createNStateButton");
 		}
 	}
 
@@ -471,9 +354,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			std::string name = mGUIManager->generateName(TYPE_PANEL);
-			mGUIManager->notifyNameUsed(name);
-			return dynamic_cast<Panel*>(_createChild(name,TYPE_PANEL));
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createPanel");
 		}
 	}
 
@@ -491,9 +372,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			std::string name = mGUIManager->generateName(TYPE_PROGRESSBAR);
-			mGUIManager->notifyNameUsed(name);
-			return dynamic_cast<ProgressBar*>(_createChild(name,TYPE_PROGRESSBAR));
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createProgressBar");
 		}
 	}
 
@@ -512,9 +391,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			std::string name = mGUIManager->generateName(TYPE_TEXTBOX);
-			mGUIManager->notifyNameUsed(name);
-			tb = dynamic_cast<TextBox*>(_createChild(name,TYPE_TEXTBOX));
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createTextBox");
 		}
 
 		tb->setUseBorders(true);
@@ -537,9 +414,7 @@ namespace QuickGUI
 		}
 		else
 		{
-			std::string name = mGUIManager->generateName(TYPE_SCROLLBAR_VERTICAL);
-			mGUIManager->notifyNameUsed(name);
-			return dynamic_cast<VerticalScrollBar*>(_createChild(name,TYPE_SCROLLBAR_VERTICAL));
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createVerticalScrollBar");
 		}
 	}
 
@@ -557,10 +432,13 @@ namespace QuickGUI
 		}
 		else
 		{
-			std::string name = mGUIManager->generateName(TYPE_TRACKBAR_VERTICAL);
-			mGUIManager->notifyNameUsed(name);
-			return dynamic_cast<VerticalTrackBar*>(_createChild(name,TYPE_TRACKBAR_VERTICAL));
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createVerticalTrackBar");
 		}
+	}
+
+	QuadContainer* Panel::getQuadContainer()
+	{
+		return this;
 	}
 
 	ScrollPane* Panel::getScrollPane()
@@ -706,12 +584,12 @@ namespace QuickGUI
 
 	void Panel::onChildAdded(const EventArgs& args)
 	{
-		if(mScrollPane != NULL)
-			mScrollPane->onChildAddedToParent(args);
+		mScrollPane->onChildAddedToParent(args);
 	}
 
 	void Panel::onChildRemoved(const EventArgs& args)
 	{
+		// Scroll Pane is deleted on destructor
 		if(mScrollPane != NULL)
 			mScrollPane->onChildRemovedFromParent(args);
 	}
@@ -720,8 +598,7 @@ namespace QuickGUI
 	{
 		Widget::onSizeChanged(args);
 
-		if(mScrollPane != NULL)
-			mScrollPane->onParentSizeChanged(args);
+		mScrollPane->onParentSizeChanged(args);
 	}
 
 	void Panel::setQuadContainer(QuadContainer* c)
@@ -733,11 +610,6 @@ namespace QuickGUI
 
 		if(mQuadContainer != NULL)
 			mQuadContainer->addChildPanelContainer(this);
-	}
-
-	bool Panel::scrollingAllowed()
-	{
-		return mScrollingAllowed;
 	}
 
 	void Panel::show()

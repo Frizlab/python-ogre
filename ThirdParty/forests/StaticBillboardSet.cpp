@@ -16,34 +16,35 @@ Permission is granted to anyone to use this software for any purpose, including 
 
 #include "StaticBillboardSet.h"
 
-#include "OgreRoot.h"
-#include "OgreCamera.h"
-#include "OgreVector3.h"
-#include "OgreMeshManager.h"
-#include "OgreMesh.h"
-#include "OgreSubMesh.h"
-#include "OgreMaterialManager.h"
-#include "OgreMaterial.h"
-#include "OgreBillboardSet.h"
-#include "OgreBillboard.h"
-#include "OgreSceneNode.h"
-#include "OgreString.h"
-#include "OgreStringConverter.h"
-#include "OgreRenderSystem.h"
-#include "OgreRenderSystemCapabilities.h"
-#include "OgreHighLevelGpuProgramManager.h"
-#include "OgreHighLevelGpuProgram.h"
-#include "OgreHardwareBufferManager.h"
-#include "OgreHardwareBuffer.h"
-#include "OgreLogManager.h"
-#include "OgreEntity.h"
+#include <OgreRoot.h>
+#include <OgreCamera.h>
+#include <OgreVector3.h>
+#include <OgreMeshManager.h>
+#include <OgreMesh.h>
+#include <OgreSubMesh.h>
+#include <OgreMaterialManager.h>
+#include <OgreMaterial.h>
+#include <OgreBillboardSet.h>
+#include <OgreBillboard.h>
+#include <OgreSceneNode.h>
+#include <OgreString.h>
+#include <OgreStringConverter.h>
+#include <OgreRenderSystem.h>
+#include <OgreRenderSystemCapabilities.h>
+#include <OgreHighLevelGpuProgramManager.h>
+#include <OgreHighLevelGpuProgram.h>
+#include <OgreHardwareBufferManager.h>
+#include <OgreHardwareBuffer.h>
+#include <OgreLogManager.h>
+#include <OgreEntity.h>
 using namespace Ogre;
 
+namespace PagedGeometry {
 
 //-------------------------------------------------------------------------------------
 
 unsigned long StaticBillboardSet::GUID = 0;
-unsigned int StaticBillboardSet::selfInstances = 0;
+uint32 StaticBillboardSet::selfInstances = 0;
 StaticBillboardSet::FadedMaterialMap StaticBillboardSet::fadedMaterialMap;
 
 StaticBillboardSet::StaticBillboardSet(SceneManager *mgr, SceneNode *rootSceneNode, BillboardMethod method)
@@ -703,4 +704,5 @@ SBMaterialRef::SBMaterialRef(Material *mat, Ogre::BillboardOrigin o)
 	material = mat;
 	origin = o;
 	refCount = 1;
+}
 }

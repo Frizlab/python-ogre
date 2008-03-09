@@ -41,6 +41,11 @@ namespace QuickGUI
 		virtual bool overTransparentPixel(const Point& mousePixelPosition) const;
 
 		/**
+		* Properly cleans up all child widgets.
+		*/
+		virtual void removeAndDestroyAllChildWidgets();
+
+		/**
 		* Applies the texture to the Quad if exists in some form, and updates the Image used for
 		* transparency picking.
 		*/

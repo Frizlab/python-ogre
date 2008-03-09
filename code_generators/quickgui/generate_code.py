@@ -98,6 +98,7 @@ def ManualExclude ( mb ):
             ,'::QuickGUI::SkinSet::buildTextureCoordinates' ## has a vector that isn't being exposed correctly
             ,'::QuickGUI::Console::setReadOnly'
             ,'::QuickGUI::Widget::getChildWidget'
+            ,'::QuickGUI::Quad::_update'
                 ]
     for e in excludes:
         print "excluding function", e

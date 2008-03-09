@@ -18,6 +18,7 @@ namespace QuickGUI
 		mWidgetType = TYPE_SHEET;
 		mSkinName = skinName;
 		mSkinComponent = ".sheet";
+		mQuad->setClipMode(Quad::CLIPMODE_NONE);
 		setSize(gm->getViewportWidth(),gm->getViewportHeight());
 
 		Ogre::FontManager* fm = Ogre::FontManager::getSingletonPtr();
@@ -26,6 +27,9 @@ namespace QuickGUI
 			mFontName = rmi.getNext()->getName();
 		else
 			Ogre::Exception(1,"No fonts have been defined!","Sheet::Sheet");
+
+		mRightScrollBar->setSkin(skinName);
+		mBottomScrollBar->setSkin(skinName);
 	}
 
 	Sheet::~Sheet()
@@ -122,10 +126,7 @@ namespace QuickGUI
 
 		// If we made it here, we are inside this Widget's bounds, but not over any non-transparent child widget areas.
 
-		if( !overTransparentPixel(pixelPosition) )
-			return this;
-		else // We're over a transparent pixel
-			return NULL;
+		return this;
 	}
 
 	const Widget* Sheet::getTargetWidget(const Point& pixelPosition) const
@@ -232,6 +233,15 @@ namespace QuickGUI
 	void Sheet::setQuadContainer(QuadContainer* container)
 	{
 		// do nothing, sheets don't belong inside another QuadContainer.
+	}
+
+	void Sheet::removeAndDestroyAllChildWidgets()
+	{
+		Widget::removeAndDestroyAllChildWidgets();
+		
+		mGUIManager->mActiveSheet = this;
+		mGUIManager->mActiveWidget = this;
+		mGUIManager->mWidgetContainingMouse = this;
 	}
 
 	void Sheet::setSize(const float& pixelWidth, const float& pixelHeight)

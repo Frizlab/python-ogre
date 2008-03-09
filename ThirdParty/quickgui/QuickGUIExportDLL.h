@@ -3,7 +3,7 @@
 
 #include "OgrePlatform.h"
 
-#ifndef _QuickGUIExport
+// #ifndef _QuickGUIExport
 //    #if defined(OGRE_PLATFORM)
 //       #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32 && !defined ( __MINGW32__ )
 //       #   if defined( QUICKGUI_EXPORTS )
@@ -18,5 +18,5 @@
       #define _QuickGUIExport
 //     #endif
 
-#endif
+// #endif
 #endif

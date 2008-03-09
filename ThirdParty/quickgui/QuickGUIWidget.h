@@ -246,7 +246,7 @@ namespace QuickGUI
 		const Widget* getChildWidget(const std::string& name) const;
 		Widget* getChildWidget(Type t, unsigned int index);
 		const Widget* getChildWidget(Type t, unsigned int index) const;
-		Quad::ClipMode getClipMode() const;
+		Rect getClippedDimensions();
 		Rect getDimensions() const;
 		GUIManager* getGUIManager();
 		const GUIManager* getGUIManager() const;
@@ -316,7 +316,7 @@ namespace QuickGUI
 		/*
 		* Get Render Object Group this widget's Quad belongs in.
 		*/
-		QuadContainer* getQuadContainer();
+		virtual QuadContainer* getQuadContainer();
 		const QuadContainer* getQuadContainer() const;
 		Quad::Layer getQuadLayer();
 		const Quad::Layer getQuadLayer() const;
@@ -390,11 +390,10 @@ namespace QuickGUI
 		/**
 		* Properly cleans up all child widgets.
 		*/
-		void removeAndDestroyAllChildWidgets();
+		virtual void removeAndDestroyAllChildWidgets();
 		void removeAndDestroyChild(Widget* w);
 		void removeAndDestroyChild(const std::string& widgetName);
 		bool resizingAllowed();
-		virtual void setClipMode(Quad::ClipMode m, bool recursive = false);
 		/**
 		* Manually set the Dimensions of the widget.
 		*/
@@ -526,7 +525,6 @@ namespace QuickGUI
 
 		// PROPERTIES
 		bool						mCanResize;
-		Quad::ClipMode				mClipMode;
 		bool						mDragXOnly;
 		bool						mDragYOnly;
 		std::string					mFontName;

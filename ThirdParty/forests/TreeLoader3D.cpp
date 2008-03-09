@@ -12,12 +12,13 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include "PagedGeometry.h"
 #include "PropertyMaps.h"
 
-#include "OgreRoot.h"
-#include "OgreException.h"
-#include "OgreVector3.h"
-#include "OgreQuaternion.h"
+#include <OgreRoot.h>
+#include <OgreException.h>
+#include <OgreVector3.h>
+#include <OgreQuaternion.h>
 using namespace Ogre;
 
+namespace PagedGeometry {
 
 TreeLoader3D::TreeLoader3D(PagedGeometry *geom, const TRect<Real> &bounds)
 {
@@ -56,7 +57,7 @@ TreeLoader3D::~TreeLoader3D()
 	pageGridList.clear();
 }
 
-void TreeLoader3D::addTree(Entity *entity, const Ogre::Vector3 &position, Degree yaw, Real scale)
+void TreeLoader3D::addTree(Entity *entity, const Ogre::Vector3 &position, Degree yaw, Real scale, void* userData)
 {
 	//First convert the coordinate to PagedGeometry's local system
 	#ifdef PAGEDGEOMETRY_ALTERNATE_COORDSYSTEM
@@ -73,7 +74,7 @@ void TreeLoader3D::addTree(Entity *entity, const Ogre::Vector3 &position, Degree
 
 	if (pos.z < actualBounds.top)
 		pos.z = actualBounds.top;
-	else if (pos.x > actualBounds.bottom)
+	else if (pos.z > actualBounds.bottom)
 		pos.z = actualBounds.bottom;
 	
 	//Check that the tree is within bounds (DEBUG)
@@ -118,6 +119,10 @@ void TreeLoader3D::addTree(Entity *entity, const Ogre::Vector3 &position, Degree
 	tree.rotation = 255 * (yaw.valueDegrees() / 360.0f);
 	tree.scale = 255 * ((scale - minimumScale) / maximumScale);
 
+#ifdef PAGEDGEOMETRY_USER_DATA
+	tree.userData = userData;
+#endif
+
 	//Add it to the tree list
 	treeList.push_back(tree);
 
@@ -125,7 +130,12 @@ void TreeLoader3D::addTree(Entity *entity, const Ogre::Vector3 &position, Degree
 	geom->reloadGeometryPage(pos);
 }
 
-void TreeLoader3D::deleteTrees(const Ogre::Vector3 &position, Real radius, Entity *type)
+#ifdef PAGEDGEOMETRY_USER_DATA
+   std::vector<void*>
+#else
+   void
+#endif
+TreeLoader3D::deleteTrees(const Ogre::Vector3 &position, Real radius, Entity *type)
 {
 	//First convert the coordinate to PagedGeometry's local system
 	#ifdef PAGEDGEOMETRY_ALTERNATE_COORDSYSTEM
@@ -134,6 +144,11 @@ void TreeLoader3D::deleteTrees(const Ogre::Vector3 &position, Real radius, Entit
 	Vector3 pos = position;
 	#endif
 
+#ifdef PAGEDGEOMETRY_USER_DATA
+	//Keep a list of user-defined data associated with deleted trees
+	std::vector<void*> deletedUserData;
+#endif
+	
 	//If the position is slightly out of bounds, fix it
 	if (pos.x < actualBounds.left)
 		pos.x = actualBounds.left;
@@ -179,7 +194,7 @@ void TreeLoader3D::deleteTrees(const Ogre::Vector3 &position, Real radius, Entit
 
 				//Scan all trees in grid block
 				std::vector<TreeDef> &treeList = _getGridPage(pageGrid, tileX, tileZ);
-				unsigned int i = 0;
+				uint32 i = 0;
 				while (i < treeList.size()){
 					//Get tree distance
 					float distX = (gridBounds.left + (tileX * pageSize) + ((Real)treeList[i].xPos / 65535) * pageSize) - pos.x;
@@ -189,6 +204,9 @@ void TreeLoader3D::deleteTrees(const Ogre::Vector3 &position, Real radius, Entit
 					if (distSq <= radiusSq){
 						//If it's within the radius, delete it
 						treeList[i] = treeList.back();
+#ifdef PAGEDGEOMETRY_USER_DATA
+						deletedUserData.push_back(treeList.back().userData);
+#endif
 						treeList.pop_back();
 						modified = true;
 					}
@@ -206,6 +224,10 @@ void TreeLoader3D::deleteTrees(const Ogre::Vector3 &position, Real radius, Entit
 
 		++it;
 	}
+
+#ifdef PAGEDGEOMETRY_USER_DATA
+	return deletedUserData;
+#endif
 }
 
 void TreeLoader3D::setColorMap(const Ogre::String &mapFile, MapChannel channel)
@@ -375,4 +397,5 @@ void TreeIterator3D::_readTree()
 
 	//Get entity
 	currentTreeDat.entity = currentGrid->first;
+}
 }

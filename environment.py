@@ -852,7 +852,7 @@ class quickgui:
 class navi:
     active = True
     pythonModule = True
-    version="1.4"
+    version="1.5"
     parent="ogre/gui"
     name ='navi'
     CCFLAGS = '-D"WIN32" -D"NDEBUG", -D"WINDOWS"' 

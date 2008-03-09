@@ -84,6 +84,7 @@ namespace QuickGUI
 			Ogre::StringVectorPtr results = Ogre::ResourceGroupManager::getSingleton().findResourceNames(mResourceGroup, mTextureName);
 			if(results.isNull() || results->empty())
 				return false;
+			results.setNull();
 
 			std::vector<ConfigNode*> children = skinRootNode->getChildren();
 			std::vector<ConfigNode*>::iterator it;
@@ -553,8 +554,18 @@ namespace QuickGUI
 	void SkinSet::buildMaterial()
 	{
 		Ogre::MaterialPtr mp = Ogre::MaterialManager::getSingleton().create(mMaterialName, mResourceGroup);
-		Ogre::Technique *t = mp->getTechnique(0);
-		Ogre::Pass *p = t->getPass(0);
+
+		Ogre::Technique *t;
+		if(mp->getNumTechniques() == 0)
+			t = mp->createTechnique();
+		else
+			t = mp->getTechnique(0);
+
+		Ogre::Pass *p;
+		if(t->getNumPasses() == 0)
+			p = t->createPass();
+		else
+			p = t->getPass(0);
 
 		p->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
 		p->setLightingEnabled(false);

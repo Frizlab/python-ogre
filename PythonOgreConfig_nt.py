@@ -66,7 +66,7 @@ PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.66')
 PATH_PhysX=         "c:/program files/AGEIA Technologies/SDK/v2.7.3/SDKs"
 PATH_Theora=        os.path.join(PATH_OgreAddons,'videoplugin','TheoraVideo')
 PATH_ffmpeg=        os.path.join(PATH_THIRDPARTY,'extra')
-PATH_navi =         os.path.join(BASE_DIR, 'navi','Navi')
+PATH_navi =         os.path.join(BASE_DIR, 'navi', 'navi')
 
 PATH_particleuniverse = os.path.join(PATH_Ogre, 'PlugIns', 'ParticleUniverse' )
 

@@ -18,7 +18,7 @@ namespace pyplusplus { namespace aliases {
 //
 namespace python_forests{ namespace details{
 inline void instantiate(){
- //using namespace OGRE;
+ using namespace PagedGeometry;
  #include "python_forests_sizeof.h"
  
 } } }

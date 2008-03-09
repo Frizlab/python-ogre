@@ -296,7 +296,10 @@ def generate_code():
 
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
-
+    
+    mb.class_('::CEGUI::EventSet').member_functions('subscribeEvent').exclude()
+#     mb.class_('::CEGUI::Scrollbar').member_functions('subscribeEvent').exclude()
+    
     configure_exception( mb )
 
     hand_made_wrappers.apply( mb )

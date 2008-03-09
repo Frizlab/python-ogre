@@ -123,7 +123,7 @@ namespace QuickGUI
 		return (getSpaceWidth() * SPACES_PER_TAB);
 	}
 
-	float TextHelper::getTextWidth(const std::string& text)
+	float TextHelper::getTextWidth(const Ogre::UTFString& text)
 	{
 		float width = 0;
 		

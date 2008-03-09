@@ -123,7 +123,10 @@ def ManualExclude ( mb ):
         main_ns.free_functions(e).exclude()
         
     ## Classes
-    excludes = ['ssgEntityBinding','ssgHit', 'ssgSimpleState']
+    excludes = ['ssgEntityBinding','ssgHit', 
+                    'ssgSimpleState','ssgSimpleStateArray'
+                    ,'ssgTextureArray'
+                    ]
     for e in excludes:
         main_ns.class_(e).exclude()
     

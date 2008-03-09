@@ -3,6 +3,7 @@
 #include "TheoraMovieClip.h"
 #include "TheoraAudioDriver.h"
 #include "TheoraPlayerPreReqs.h"
+#include "SoundManager.h"
 #include "Ogre.h"
 #include "OgreExternalTextureSource.h"
 #include "OgreExternalTextureSourceManager.h"

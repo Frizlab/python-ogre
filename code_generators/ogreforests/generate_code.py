@@ -39,7 +39,7 @@ import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
 from common_utils import docit
 
-MAIN_NAMESPACE = ''
+MAIN_NAMESPACE = 'PagedGeometry'
 
 ############################################################
 ##
@@ -54,7 +54,8 @@ def ManualExclude ( mb ):
     else:
         main_ns = global_ns    
 
-    Exclude= ['::TreeRef::getScale'
+    Exclude= ['::PagedGeometry::PagedGeometry::_addDetailLevel'
+            ,'::PagedGeometry::TreeRef::getScale'    
             ]
     for c in Exclude:
         print "Excluding:",c
@@ -73,51 +74,51 @@ def ManualInclude ( mb ):
     else:
         main_ns = global_ns    
         
-    Include=["::BatchedGeometry"
-#             ,"::SubBatch"
-            ,"::BatchPage"
-            ,"::GrassLayer"
-            ,"::GrassLoader"
-            ,"::GrassPage"
-#             ,"::ImpostorBatch"
-#             ,"::ImpostorTexture"
-#             ,"::ImpostorPage"
-            ,"::GeometryPageManager"
-            ,"::PageLoader"
-            ,"::PagedGeometry"
-            ,"::GeometryPage"
-#             ,"::StaticBillboard"
-#             ,"::StaticBillboardSet"
-#             ,"::SBMaterialRef"
-            ,"::TreeIterator3D"
-            ,"::TreeIterator2D"
-            ,"::TreeLoader2D"
-            ,"::TreeRef"
-            ,"::TreeIterator2D"
-            ,"::TreeLoader3D"
-            ]
-    for c in Include:
-        print "Including:",c
-        main_ns.class_( c ).include()
-                        
-    Include=["::GrassTechnique"
-            ,"::FadeTechnique"
-            ,"::MapChannel"
-            ,"::MapFilter"
-#             ,"::ImpostorBlendMode"
-#             ,"::BillboardMethod"
-            ]
-    for c in Include:
-        print "Including:",c
-        main_ns.enums( c ).include()
-        
-    Include=[
-            ]
-    for c in Include:
-        main_ns.typedefs( c ).include()
-
-#     for t in main_ns.typedefs():
-#         print "td", t
+# #     Include=[ #"::BatchedGeometry"
+# # #             ,"::SubBatch"
+# # #             "::BatchPage"
+# # #             "::GrassLayer"
+# #             ,"::GrassLoader"
+# #             ,"::GrassPage"
+# # #             ,"::ImpostorBatch"
+# # #             ,"::ImpostorTexture"
+# # #             ,"::ImpostorPage"
+# #             ,"::GeometryPageManager"
+# #             ,"::PageLoader"
+# #             ,"::PagedGeometry"
+# #             ,"::GeometryPage"
+# # #             ,"::StaticBillboard"
+# # #             ,"::StaticBillboardSet"
+# # #             ,"::SBMaterialRef"
+# #             ,"::TreeIterator3D"
+# #             ,"::TreeIterator2D"
+# #             ,"::TreeLoader2D"
+# #             ,"::TreeRef"
+# #             ,"::TreeIterator2D"
+# #             ,"::TreeLoader3D"
+# #             ]
+# #     for c in Include:
+# #         print "Including:",c
+# #         main_ns.class_( c ).include()
+# #                         
+# #     Include=["::GrassTechnique"
+# #             ,"::FadeTechnique"
+# #             ,"::MapChannel"
+# #             ,"::MapFilter"
+# # #             ,"::ImpostorBlendMode"
+# # #             ,"::BillboardMethod"
+# #             ]
+# #     for c in Include:
+# #         print "Including:",c
+# #         main_ns.enums( c ).include()
+# #         
+# #     Include=[
+# #             ]
+# #     for c in Include:
+# #         main_ns.typedefs( c ).include()
+# # 
+# # #     for t in main_ns.typedefs():
+# # #         print "td", t
     
 ############################################################
 ##
@@ -150,8 +151,8 @@ def ManualTransformations ( mb ):
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
         
-    x=main_ns.mem_fun('::GeometryPageManager::update')
-    x.add_transformation( ft.input('enableCache'))
+# #     x=main_ns.mem_fun('::GeometryPageManager::update')
+# #     x.add_transformation( ft.input('enableCache'))
     
 ###############################################################################
 ##
@@ -278,26 +279,33 @@ def generate_code():
     # 
     global_ns = mb.global_ns
     global_ns.exclude()
-    if MAIN_NAMESPACE:
-        main_ns = global_ns.namespace( MAIN_NAMESPACE )
-    else:
-        main_ns = global_ns
-        
-    main_ns.exclude()  ## no namespace so start with everything excluded
-       
+    main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    main_ns.include()
+    
     common_utils.AutoExclude ( mb, MAIN_NAMESPACE )
+    ManualExclude ( mb )
     common_utils.AutoInclude ( mb, MAIN_NAMESPACE )
     ManualInclude ( mb )
-    ManualExclude ( mb )
-    # here we fixup functions that expect to modifiy their 'passed' variables    
+    
+    # here we fixup functions that expect to modifiy their 'passed' variables and are not autmatically fixed  
     ManualTransformations ( mb )
+    
     AutoFixes ( mb, MAIN_NAMESPACE )
     ManualFixes ( mb )
+
+            
+    common_utils.Auto_Document( mb, MAIN_NAMESPACE )
+
+    ## note change to clear prefix_output as this will force all transforms to be inout (and not 'output') to ensure the arguments are matched
+    ## problem with overload virtual fuctions from parent class such as getMetrics in RenderWindow and RenderTarget
+    common_utils.Auto_Functional_Transformation ( main_ns ) ##, special_vars=['::Ogre::Real &','::Ogre::ushort &','size_t &']  )
+
     #
     # We need to tell boost how to handle calling (and returning from) certain functions
     #
     common_utils.Set_DefaultCall_Policies ( main_ns )
-    
+    for c in main_ns.classes():
+        print "CLass", c
     #
     # the manual stuff all done here !!!
     #

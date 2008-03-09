@@ -15,12 +15,13 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include "PagedGeometry.h"
 #include "StaticBillboardSet.h"
 
-#include "OgreRoot.h"
-#include "OgreTimer.h"
-#include "OgreCamera.h"
-#include "OgreVector3.h"
+#include <OgreRoot.h>
+#include <OgreTimer.h>
+#include <OgreCamera.h>
+#include <OgreVector3.h>
 using namespace Ogre;
 
+namespace PagedGeometry {
 
 //-------------------------------------------------------------------------------------
 PagedGeometry::PagedGeometry(Camera* cam, const Real pageSize)
@@ -806,4 +807,5 @@ void GeometryPage::clearBoundingBox()
 {
 	_trueBounds = AxisAlignedBox(0, 0, 0, 0, 0, 0);
 	_trueBoundsUndefined = true;
+}
 }

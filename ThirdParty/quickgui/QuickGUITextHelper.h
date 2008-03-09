@@ -52,7 +52,7 @@ namespace QuickGUI
 		* Returns tab width. (Actually, width of 'r' times SPACES_PER_TAB)
 		*/
 		float getTabWidth();
-		float getTextWidth(const std::string& text);
+		float getTextWidth(const Ogre::UTFString& text);
 
 		static inline bool	isTab			(Ogre::UTFString::unicode_char c) { return c == UNICODE_TAB; }
 		static inline bool	isSpace			(Ogre::UTFString::unicode_char c) { return c == UNICODE_SPACE; }

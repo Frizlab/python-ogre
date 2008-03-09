@@ -51,8 +51,6 @@ namespace QuickGUI
         */
 		Window(const std::string& name, GUIManager* gm);
 
-		virtual void allowScrolling(bool allow);
-
 		void bringToFront();
 		
 		bool getBringToFrontOnFocus();

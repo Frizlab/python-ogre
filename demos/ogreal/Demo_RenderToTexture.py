@@ -126,8 +126,11 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
         #
         #
 #         
-        self.soundManager  = OgreAL.SoundManager()
-#         
+        self.soundManager  = OgreAL.SoundManager("Generic Software")
+        
+        dl = self.soundManager.getDeviceList()
+        for dev in dl:
+            print "Device available:", dev
         node = rootNode.createChildSceneNode( "Head" )
         node.attachObject( ogreHead )
         sound = self.soundManager.createSound("Roar", "6 chan.ogg", True) ## "roar.wav", True)

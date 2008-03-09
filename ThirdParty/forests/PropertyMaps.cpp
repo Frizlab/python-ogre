@@ -10,17 +10,18 @@ Permission is granted to anyone to use this software for any purpose, including 
 
 #include "PropertyMaps.h"
 
-#include "OgreRoot.h"
-#include "OgrePrerequisites.h"
-#include "OgrePixelFormat.h"
-#include "OgreTexture.h"
-#include "OgreTextureManager.h"
-#include "OgreHardwarePixelBuffer.h"
-#include "OgreRenderSystem.h"
-#include "OgreString.h"
-#include "OgreStringConverter.h"
+#include <OgreRoot.h>
+#include <OgrePrerequisites.h>
+#include <OgrePixelFormat.h>
+#include <OgreTexture.h>
+#include <OgreTextureManager.h>
+#include <OgreHardwarePixelBuffer.h>
+#include <OgreRenderSystem.h>
+#include <OgreString.h>
+#include <OgreStringConverter.h>
 using namespace Ogre;
 
+namespace PagedGeometry {
 
 std::map<Ogre::String, DensityMap*> DensityMap::selfList;
 
@@ -60,7 +61,7 @@ void DensityMap::unload()
 DensityMap::~DensityMap()
 {
 	assert(pixels);
-	delete[] pixels->data;
+	delete[] static_cast<uint8*>(pixels->data);
 	delete pixels;
 
 	//Remove self from selfList
@@ -114,7 +115,7 @@ DensityMap::DensityMap(Texture *map, MapChannel channel)
 		}
 
 		//Finally, delete the temporary PF_R8G8B8A8 pixel buffer
-		delete[] tmpPixels.data;
+		delete[] static_cast<uint8*>(tmpPixels.data);
 	}
 }
 
@@ -125,13 +126,13 @@ float DensityMap::_getDensityAt_Unfiltered(float x, float z)
 {
 	assert(pixels);
 
-	unsigned int mapWidth = (unsigned int)pixels->getWidth();
-	unsigned int mapHeight = (unsigned int)pixels->getHeight();
+	uint32 mapWidth = (uint32)pixels->getWidth();
+	uint32 mapHeight = (uint32)pixels->getHeight();
 	float boundsWidth = mapBounds.width();
 	float boundsHeight = mapBounds.height();
 
-	unsigned int xindex = mapWidth * (x - mapBounds.left) / boundsWidth;
-	unsigned int zindex = mapHeight * (z - mapBounds.top) / boundsHeight;
+	uint32 xindex = mapWidth * (x - mapBounds.left) / boundsWidth;
+	uint32 zindex = mapHeight * (z - mapBounds.top) / boundsHeight;
 	if (xindex < 0 || zindex < 0 || xindex >= mapWidth || zindex >= mapHeight)
 		return 0.0f;
 
@@ -147,16 +148,16 @@ float DensityMap::_getDensityAt_Bilinear(float x, float z)
 {
 	assert(pixels);
 
-	unsigned int mapWidth = (unsigned int)pixels->getWidth();
-	unsigned int mapHeight = (unsigned int)pixels->getHeight();
+	uint32 mapWidth = (uint32)pixels->getWidth();
+	uint32 mapHeight = (uint32)pixels->getHeight();
 	float boundsWidth = mapBounds.width();
 	float boundsHeight = mapBounds.height();
 
 	float xIndexFloat = (mapWidth * (x - mapBounds.left) / boundsWidth) - 0.5f;
 	float zIndexFloat = (mapHeight * (z - mapBounds.top) / boundsHeight) - 0.5f;
 
-	unsigned int xIndex = xIndexFloat;
-	unsigned int zIndex = zIndexFloat;
+	uint32 xIndex = xIndexFloat;
+	uint32 zIndex = zIndexFloat;
 	if (xIndex < 0 || zIndex < 0 || xIndex >= mapWidth-1 || zIndex >= mapHeight-1)
 		return 0.0f;
 
@@ -222,7 +223,7 @@ void ColorMap::unload()
 ColorMap::~ColorMap()
 {
 	assert(pixels);
-	delete[] pixels->data;
+	delete[] static_cast<uint8*>(pixels->data);
 	delete pixels;
 
 	//Remove self from selfList
@@ -296,7 +297,7 @@ ColorMap::ColorMap(Texture *map, MapChannel channel)
 		}
 
 		//Finally, delete the temporary PF_R8G8B8A8 pixel buffer
-		delete[] tmpPixels.data;
+		delete[] static_cast<uint8*>(tmpPixels.data);
 	}
 }
 
@@ -305,13 +306,13 @@ uint32 ColorMap::_getColorAt(float x, float z)
 {
 	assert(pixels);
 
-	unsigned int mapWidth = (unsigned int)pixels->getWidth();
-	unsigned int mapHeight = (unsigned int)pixels->getHeight();
+	uint32 mapWidth = (uint32)pixels->getWidth();
+	uint32 mapHeight = (uint32)pixels->getHeight();
 	float boundsWidth = mapBounds.width();
 	float boundsHeight = mapBounds.height();
 
-	unsigned int xindex = mapWidth * (x - mapBounds.left) / boundsWidth;
-	unsigned int zindex = mapHeight * (z - mapBounds.top) / boundsHeight;
+	uint32 xindex = mapWidth * (x - mapBounds.left) / boundsWidth;
+	uint32 zindex = mapHeight * (z - mapBounds.top) / boundsHeight;
 	if (xindex < 0 || zindex < 0 || xindex >= mapWidth || zindex >= mapHeight)
 		return 0xFFFFFFFF;
 
@@ -347,16 +348,16 @@ uint32 ColorMap::_getColorAt_Bilinear(float x, float z)
 {
 	assert(pixels);
 
-	unsigned int mapWidth = (unsigned int)pixels->getWidth();
-	unsigned int mapHeight = (unsigned int)pixels->getHeight();
+	uint32 mapWidth = (uint32)pixels->getWidth();
+	uint32 mapHeight = (uint32)pixels->getHeight();
 	float boundsWidth = mapBounds.width();
 	float boundsHeight = mapBounds.height();
 
 	float xIndexFloat = (mapWidth * (x - mapBounds.left) / boundsWidth) - 0.5f;
 	float zIndexFloat = (mapHeight * (z - mapBounds.top) / boundsHeight) - 0.5f;
 
-	unsigned int xIndex = xIndexFloat;
-	unsigned int zIndex = zIndexFloat;
+	uint32 xIndex = xIndexFloat;
+	uint32 zIndex = zIndexFloat;
 	if (xIndex < 0 || zIndex < 0 || xIndex >= mapWidth-1 || zIndex >= mapHeight-1)
 		return 0.0f;
 
@@ -378,4 +379,5 @@ uint32 ColorMap::_getColorAt_Bilinear(float x, float z)
 	uint32 val = _interpolateColor(val1, val2, zRatio, zRatioInv);
 
 	return val;
+}
 }

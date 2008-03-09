@@ -164,7 +164,7 @@ namespace QuickGUI
 			}
 
 			Quad* q = new Quad(mOwner);
-			q->setClipMode(Quad::CLIPMODE_OWNER);
+			q->setClipMode(Quad::CLIPMODE_PARENT);
 			q->setOffset(mOffset);
 			q->setLayer(mLayer);
 
@@ -221,7 +221,7 @@ namespace QuickGUI
 			}
 
 			Quad* q = new Quad(mOwner);
-			q->setClipMode(Quad::CLIPMODE_OWNER);
+			q->setClipMode(Quad::CLIPMODE_PARENT);
 			q->setOffset(mOffset);
 			q->setLayer(mLayer);
 

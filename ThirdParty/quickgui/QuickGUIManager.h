@@ -49,6 +49,7 @@ namespace QuickGUI
 	public:
 		friend class ComboBox;
 		friend class Widget;
+		friend class Sheet;
 		friend class Root;
 	public:
 		void _notifyViewportDimensionsChanged();

@@ -15,25 +15,26 @@ Permission is granted to anyone to use this software for any purpose, including 
 
 #include "BatchedGeometry.h"
 
-#include "OgreRoot.h"
-#include "OgreRenderSystem.h"
-#include "OgreCamera.h"
-#include "OgreVector3.h"
-#include "OgreQuaternion.h"
-#include "OgreSceneNode.h"
-#include "OgreString.h"
-#include "OgreStringConverter.h"
-#include "OgreEntity.h"
-#include "OgreSubMesh.h"
-#include "OgreSubEntity.h"
-#include "OgreMesh.h"
-#include "OgreMeshManager.h"
-#include "OgreHardwareBufferManager.h"
-#include "OgreHardwareBuffer.h"
-#include "OgreMaterialManager.h"
-#include "OgreMaterial.h"
+#include <OgreRoot.h>
+#include <OgreRenderSystem.h>
+#include <OgreCamera.h>
+#include <OgreVector3.h>
+#include <OgreQuaternion.h>
+#include <OgreSceneNode.h>
+#include <OgreString.h>
+#include <OgreStringConverter.h>
+#include <OgreEntity.h>
+#include <OgreSubMesh.h>
+#include <OgreSubEntity.h>
+#include <OgreMesh.h>
+#include <OgreMeshManager.h>
+#include <OgreHardwareBufferManager.h>
+#include <OgreHardwareBuffer.h>
+#include <OgreMaterialManager.h>
+#include <OgreMaterial.h>
 using namespace Ogre;
 
+namespace PagedGeometry {
 
 //-------------------------------------------------------------------------------------
 
@@ -56,15 +57,19 @@ BatchedGeometry::~BatchedGeometry()
 
 void BatchedGeometry::addEntity(Entity *ent, const Vector3 &position, const Quaternion &orientation, const Vector3 &scale, const Ogre::ColourValue &color)
 {
+	MeshPtr mesh = ent->getMesh();
+	if (mesh->sharedVertexData != NULL)
+		OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Shared vertex data not allowed", "BatchedGeometry::addEntity()");
+
 	//For each subentity
-	for (uint i = 0; i < ent->getNumSubEntities(); ++i){
+	for (uint32 i = 0; i < ent->getNumSubEntities(); ++i){
 		//Get the subentity
 		SubEntity *subEntity = ent->getSubEntity(i);
 		SubMesh *subMesh = subEntity->getSubMesh();
 
 		//Generate a format string that uniquely identifies this material & vertex/index format
 		if (subMesh->vertexData == NULL)
-			OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "BatchedGeometry cannot use meshes with shared vertex data", "BatchedGeometry::addEntity()");
+			OGRE_EXCEPT(Exception::ERR_INTERNAL_ERROR, "SubMesh vertex data not found!", "BatchedGeometry::addEntity()");
 		String formatStr = getFormatString(subEntity);
 		
 		//If a batch using an identical format exists...
@@ -234,7 +239,15 @@ BatchedGeometry::SubBatch::SubBatch(BatchedGeometry *parent, SubEntity *ent)
 	built = false;
 
 	Material *origMat = ((MaterialPtr)MaterialManager::getSingleton().getByName(ent->getMaterialName())).getPointer();
+	if (origMat) {
 	material = MaterialManager::getSingleton().getByName(getMaterialClone(origMat)->getName());
+	} else {
+		MaterialManager::ResourceCreateOrRetrieveResult result = MaterialManager::getSingleton().createOrRetrieve("PagedGeometry_Batched_Material", "General");
+		if (result.first.isNull()) {
+			OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "BatchedGeometry failed to create a material for entity with invalid material.", "BatchedGeometry::SubBatch::SubBatch(BatchedGeometry *parent, SubEntity *ent)");
+		}
+		material = result.first;
+	}
 
 	//Setup vertex/index data structure
 	vertexData = meshType->vertexData->clone(false);
@@ -649,6 +662,8 @@ const Ogre::LightList& BatchedGeometry::SubBatch::getLights(void) const
 const Ogre::LightList& BatchedGeometry::SubBatch::getLights(void) const
 {
 	return parent->queryLights();
+}
+
 }
 
 #endif

@@ -12,7 +12,6 @@ namespace QuickGUI
 {
 	Widget::Widget(const std::string& name, GUIManager* gm) :
 		mCanResize(false),
-		mClipMode(Quad::CLIPMODE_CONTAINER),
 		mDragXOnly(false),
 		mDragYOnly(false),
 		mDraggingEnabled(false),
@@ -139,6 +138,7 @@ namespace QuickGUI
 		{
 			b = dynamic_cast<Border*>(_createComponent(mInstanceName+".TopLeftBorder",TYPE_BORDER));
 			b->setBorderType(Border::BORDER_TYPE_TOP_LEFT);
+			b->getQuad()->setClipMode(Quad::CLIPMODE_GREATGRANDPARENT);
 		}
 
 		if( !_hasComponent(mInstanceName+".TopRightBorder") &&
@@ -146,6 +146,7 @@ namespace QuickGUI
 		{
 			b = dynamic_cast<Border*>(_createComponent(mInstanceName+".TopRightBorder",TYPE_BORDER));
 			b->setBorderType(Border::BORDER_TYPE_TOP_RIGHT);
+			b->getQuad()->setClipMode(Quad::CLIPMODE_GREATGRANDPARENT);
 		}
 
 		if( !_hasComponent(mInstanceName+".BottomLeftBorder") &&
@@ -153,6 +154,7 @@ namespace QuickGUI
 		{
 			b = dynamic_cast<Border*>(_createComponent(mInstanceName+".BottomLeftBorder",TYPE_BORDER));
 			b->setBorderType(Border::BORDER_TYPE_BOTTOM_LEFT);
+			b->getQuad()->setClipMode(Quad::CLIPMODE_GREATGRANDPARENT);
 		}
 
 		if( !_hasComponent(mInstanceName+".BottomRightBorder") &&
@@ -160,6 +162,7 @@ namespace QuickGUI
 		{
 			b = dynamic_cast<Border*>(_createComponent(mInstanceName+".BottomRightBorder",TYPE_BORDER));
 			b->setBorderType(Border::BORDER_TYPE_BOTTOM_RIGHT);
+			b->getQuad()->setClipMode(Quad::CLIPMODE_GREATGRANDPARENT);
 		}
 
 		if( !_hasComponent(mInstanceName+".LeftBorder") &&
@@ -167,6 +170,7 @@ namespace QuickGUI
 		{
 			b = dynamic_cast<Border*>(_createComponent(mInstanceName+".LeftBorder",TYPE_BORDER));
 			b->setBorderType(Border::BORDER_TYPE_LEFT);
+			b->getQuad()->setClipMode(Quad::CLIPMODE_GREATGRANDPARENT);
 		}
 
 		if( !_hasComponent(mInstanceName+".TopBorder") &&
@@ -174,6 +178,7 @@ namespace QuickGUI
 		{
 			b = dynamic_cast<Border*>(_createComponent(mInstanceName+".TopBorder",TYPE_BORDER));
 			b->setBorderType(Border::BORDER_TYPE_TOP);
+			b->getQuad()->setClipMode(Quad::CLIPMODE_GREATGRANDPARENT);
 		}
 
 		if( !_hasComponent(mInstanceName+".RightBorder") &&
@@ -181,6 +186,7 @@ namespace QuickGUI
 		{
 			b = dynamic_cast<Border*>(_createComponent(mInstanceName+".RightBorder",TYPE_BORDER));
 			b->setBorderType(Border::BORDER_TYPE_RIGHT);
+			b->getQuad()->setClipMode(Quad::CLIPMODE_GREATGRANDPARENT);
 		}
 
 		if( !_hasComponent(mInstanceName+".BottomBorder") &&
@@ -188,6 +194,7 @@ namespace QuickGUI
 		{
 			b = dynamic_cast<Border*>(_createComponent(mInstanceName+".BottomBorder",TYPE_BORDER));
 			b->setBorderType(Border::BORDER_TYPE_BOTTOM);
+			b->getQuad()->setClipMode(Quad::CLIPMODE_GREATGRANDPARENT);
 		}
 	}
 
@@ -223,18 +230,22 @@ namespace QuickGUI
 			default:						w = new Widget(name,mGUIManager);				break;
 		}
 
+		addChild(w);
 		w->setSize(w->getSize());
+		w->setFont(mFontName,true);
+		w->setPosition(0,0);
 		if(mSkinName != "")
 			w->setSkin(mSkinName,true);
-		w->setFont(mFontName,true);
-		addChild(w);
-		w->setPosition(0,0);
 
 		WidgetEventArgs args(w);
 		fireEvent(EVENT_CHILD_CREATED,args);
 
 		if(!mVisible && w->getHideWithParent())
 			w->hide();
+
+		// Widgets that are created on the sheet directly do not get clipped.
+		if(mWidgetType == TYPE_SHEET)
+			w->getQuad()->setClipMode(Quad::CLIPMODE_NONE);
 
 		return w;
 	}
@@ -270,11 +281,11 @@ namespace QuickGUI
 			default:						w = new Widget(name,mGUIManager);				break;
 		}
 
-		w->setSize(w->getSize());
-		w->setFont(mFontName,true);
-		w->setClipMode(mClipMode);
 		mComponents.push_back(w);
 		w->setParent(this);
+
+		w->setSize(w->getSize());
+		w->setFont(mFontName,true);
 		w->setPosition(0,0);
 		// Some Composition widgets will create components before inheritting skin name.
 		if(mSkinName != "")
@@ -503,7 +514,7 @@ namespace QuickGUI
 
 	Size Widget::getActualSize() const
 	{
-		if( (mParentWidget == NULL) || (mClipMode == Quad::CLIPMODE_NONE) )
+		if( (mParentWidget == NULL) || (mQuad->getClipMode() == Quad::CLIPMODE_NONE) )
 			return mSize;
 
 		Rect parentDimensions(mParentWidget->getActualPosition(),mParentWidget->getActualSize());
@@ -794,9 +805,16 @@ namespace QuickGUI
 		return mSkinName;
 	}
 
-	Quad::ClipMode Widget::getClipMode() const
+	Rect Widget::getClippedDimensions()
 	{
-		return mClipMode;
+		if( (mParentWidget == NULL) || (mQuad->getClipMode() == Quad::CLIPMODE_NONE) )
+			return Rect(getActualPosition(),mSize);
+
+		Rect parentClippedDimensions = mParentWidget->getClippedDimensions();
+
+		Rect myActualDimensions = getActualDimensions();
+
+		return parentClippedDimensions.getIntersection(myActualDimensions);
 	}
 
 	Rect Widget::getDimensions() const
@@ -1277,23 +1295,6 @@ namespace QuickGUI
 	{
 		if(!mEnabled)
 			return;
-	}
-
-	void Widget::setClipMode(Quad::ClipMode m, bool recursive)
-	{
-		mClipMode = m;
-
-		for(QuadArray::iterator it = mQuads.begin(); it != mQuads.end(); ++it)
-			(*it)->setClipMode(mClipMode);
-
-		for(WidgetArray::iterator it = mComponents.begin(); it != mComponents.end(); ++it )
-			(*it)->setClipMode(mClipMode);
-
-		if(recursive)
-		{
-			for(WidgetArray::iterator it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it)
-				(*it)->setClipMode(mClipMode);
-		}
 	}
 
 	void Widget::setDimensions(const Rect& pixelDimensions)

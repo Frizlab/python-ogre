@@ -225,7 +225,7 @@ namespace caelum
         ::_controlfp (oldMode, _MCW_PC);
     }
 #else
-    void Astronomy::enterHighPrecissionFloatingPointMode ()
+    int Astronomy::enterHighPrecissionFloatingPointMode ()
     {
         // Meaningless
         return 0xC0FFEE;

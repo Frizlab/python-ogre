@@ -18,7 +18,7 @@ namespace QuickGUI
 {
 	Quad::Quad(Widget* owner) :
 		mOwner(owner),
-		mClipMode(CLIPMODE_CONTAINER),
+		mClipMode(CLIPMODE_PARENT),
 		mGUIManager(owner->getGUIManager()),
 		mQuadContainer(NULL),
 		mLayer(LAYER_CHILD),
@@ -31,6 +31,7 @@ namespace QuickGUI
 		mMaterialName(""),
 		mOffset(0),
 		mPixelDimensions(Rect::ZERO),
+		mDimensionsViaClipping(Rect::ZERO),
 		mVisible(true),
 		mTopColor(Ogre::ColourValue::White),
 		mBottomColor(Ogre::ColourValue::White),
@@ -312,36 +313,31 @@ namespace QuickGUI
 		return mDimensionsChanged;
 	}
 
+	Rect Quad::getClippedDimensions()
+	{
+		return mDimensionsViaClipping;
+	}
+
 	Rect Quad::getClippingRect()
 	{
-		if((mClipMode == CLIPMODE_NONE) || (mQuadContainer == NULL))
+		if(mClipMode == CLIPMODE_NONE)
 			return Rect::ZERO;
 
 		Rect r;
 
 		switch(mClipMode)
 		{
-		case CLIPMODE_OWNER:
-			if(mOwner->getParentWidget() == NULL)
-				r = mOwner->getDimensions();
-			else
-				r = mOwner->getParentWidget()->getActualDimensions();
+		case CLIPMODE_GREATGRANDPARENT:
+			r = mOwner->getParentWidget()->getParentWidget()->getClippedDimensions();
 			break;
-		case CLIPMODE_CONTAINER:
-			r = mQuadContainer->getOwner()->getActualDimensions();
-			break;
-		case CLIPMODE_PARENT_CONTAINER:
-			if(mQuadContainer->getParentContainer() == NULL)
-				r = mQuadContainer->getOwner()->getDimensions();
+		case CLIPMODE_PARENT:
+			// Some widget owners of Quads do not have a Parent when called, for example quads of a ProgressBar on creation
+			if( mOwner->getParentWidget() == NULL )
+				r = mOwner->getClippedDimensions();
 			else
-				r = mQuadContainer->getParentContainer()->getOwner()->getActualDimensions();
+				r = mOwner->getParentWidget()->getClippedDimensions();
 			break;
 		}
-
-		if(r.x < 0)
-			r.x = 0;
-		if(r.y < 0)
-			r.y = 0;
 
 		return r;
 	}

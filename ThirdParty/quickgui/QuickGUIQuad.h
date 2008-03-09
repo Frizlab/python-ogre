@@ -18,10 +18,9 @@ namespace QuickGUI
 	public:
 		typedef enum ClipMode
 		{
-			CLIPMODE_CONTAINER		=  0,
-			CLIPMODE_NONE				,
-			CLIPMODE_OWNER				,
-			CLIPMODE_PARENT_CONTAINER
+			CLIPMODE_GREATGRANDPARENT	=  0, // Used for Borders
+			CLIPMODE_NONE					, // Used for Lists and Drag/Drop Items
+			CLIPMODE_PARENT					  // Used for Text and Texture Quads
 		};
 
 		/**
@@ -43,6 +42,8 @@ namespace QuickGUI
 		void _notifyRemovedFromQuadContainer();
 		void _notifyQuadContainer(QuadContainer* container);
 		void _notifyQuadContainerNeedsUpdate();
+		// Checks if the Vertex data needs to be updated.
+		void _update();
 
 		void addToRenderObjectGroup();
 
@@ -53,6 +54,7 @@ namespace QuickGUI
 		* false otherwise.
 		*/
 		ClipMode getClipMode();
+		Rect getClippedDimensions();
 		Rect getClippingRect();
 		Rect getDimensions();
 		bool getInheritLayer();
