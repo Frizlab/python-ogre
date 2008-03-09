@@ -141,6 +141,9 @@ def ManualInclude ( mb ):
     main_ns.class_('::Ogre::RingBuffer').include(already_exposed=True)
     main_ns.class_('::Ogre::TexturePtr').include(already_exposed=True)
     
+    main_ns.class_('::Ogre::SoundManager').include()
+    
+    
 ############################################################
 ##
 ##  And things that need manual fixes, but not necessarly hand wrapped

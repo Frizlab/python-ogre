@@ -15,17 +15,18 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include "BatchPage.h"
 #include "BatchedGeometry.h"
 
-#include "OgreRoot.h"
-#include "OgreCamera.h"
-#include "OgreVector3.h"
-#include "OgreQuaternion.h"
-#include "OgreEntity.h"
-#include "OgreRenderSystem.h"
-#include "OgreRenderSystemCapabilities.h"
-#include "OgreHighLevelGpuProgram.h"
-#include "OgreHighLevelGpuProgramManager.h"
+#include <OgreRoot.h>
+#include <OgreCamera.h>
+#include <OgreVector3.h>
+#include <OgreQuaternion.h>
+#include <OgreEntity.h>
+#include <OgreRenderSystem.h>
+#include <OgreRenderSystemCapabilities.h>
+#include <OgreHighLevelGpuProgram.h>
+#include <OgreHighLevelGpuProgramManager.h>
 using namespace Ogre;
 
+namespace PagedGeometry {
 
 //-------------------------------------------------------------------------------------
 
@@ -115,13 +116,13 @@ void BatchPage::setFade(bool enabled, Real visibleDist, Real invisibleDist)
 	if (fadeEnabled != enabled){
 		fadeEnabled = enabled;
 
-		if (enabled) {
+// 		if (enabled) {
 			//Transparent batches should render after impostors
 			batch->setRenderQueueGroup(RENDER_QUEUE_6);
-		} else {
-			//Opaque batches should render in the normal render queue
-			batch->setRenderQueueGroup(RENDER_QUEUE_MAIN);
-		}
+// 		} else {
+// 			//Opaque batches should render in the normal render queue
+// 			batch->setRenderQueueGroup(RENDER_QUEUE_MAIN);
+// 		}
 
 		this->visibleDist = visibleDist;
 		this->invisibleDist = invisibleDist;
@@ -134,7 +135,7 @@ void BatchPage::_updateShaders()
 	if (!shadersSupported)
 		return;
 
-	unsigned int i = 0;
+	uint32 i = 0;
 	BatchedGeometry::SubBatchIterator it = batch->getSubBatchIterator();
 	while (it.hasMoreElements()){
 		BatchedGeometry::SubBatch *subBatch = it.getNext();
@@ -269,4 +270,5 @@ void BatchPage::_updateShaders()
 		subBatch->setMaterial(generatedMaterial);
 	}
 
+}
 }

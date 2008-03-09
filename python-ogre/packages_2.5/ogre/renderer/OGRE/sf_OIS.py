@@ -260,7 +260,8 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
         pass 
            
     def windowResized (self, rw):
-         [width, height, depth, left, top] = rw.getMetrics()  # Note the wrapped function as default needs unsigned int's
+         dummyint = 0
+         width, height, depth, left, top= rw.getMetrics(dummyint,dummyint,dummyint, dummyint, dummyint)  # Note the wrapped function as default needs unsigned int's
          ms = self.Mouse.getMouseState()
          ms.width = width
          ms.height = height

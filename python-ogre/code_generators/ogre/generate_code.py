@@ -963,7 +963,9 @@ def generate_code():
 #     # indicated where underlying libraries are protected etc in the doc strings
     common_utils.Auto_Document( mb, MAIN_NAMESPACE )
 
-    common_utils.Auto_Functional_Transformation ( main_ns, special_vars=['::Ogre::Real &','::Ogre::ushort &','size_t &'] )
+    ## note change to clear prefix_output as this will force all transforms to be inout (and not 'output') to ensure the arguments are matched
+    ## problem with overload virtual fuctions from parent class such as getMetrics in RenderWindow and RenderTarget
+    common_utils.Auto_Functional_Transformation ( main_ns, special_vars=['::Ogre::Real &','::Ogre::ushort &','size_t &']  )
     
     for cls in main_ns.classes():
         if not cls.ignore:

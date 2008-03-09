@@ -14,8 +14,9 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include "PagedGeometry.h"
 #include "PropertyMaps.h"
 
-#include "OgrePrerequisites.h"
+#include <OgrePrerequisites.h>
 
+namespace PagedGeometry {
 
 class TreeIterator3D;
 class TreeIterator2D;
@@ -76,7 +77,7 @@ public:
 	
 	\warning By default, scale values may not exceed 2.0. If you need to use higher scale
 	values than 2.0, use setMaximumScale() to reconfigure the maximum. */
-	void addTree(Ogre::Entity *entity, const Ogre::Vector3 &position, Ogre::Degree yaw = Ogre::Degree(0), Ogre::Real scale = 1.0f);
+	void addTree(Ogre::Entity *entity, const Ogre::Vector3 &position, Ogre::Degree yaw = Ogre::Degree(0), Ogre::Real scale = 1.0f, void* userData = NULL);
 
 	/** \brief Deletes trees within a certain radius of the given coordinates.
 	\param position The coordinate of the tree(s) to delete
@@ -85,7 +86,12 @@ public:
 
 	\note If the "type" parameter is set to an entity, only trees created with that entity
 	will be deleted. */
-	void deleteTrees(const Ogre::Vector3 &position, float radius, Ogre::Entity *type = NULL);
+	#ifdef PAGEDGEOMETRY_USER_DATA
+		std::vector<void*>
+	#else
+		void
+	#endif
+	deleteTrees(const Ogre::Vector3 &position, float radius, Ogre::Entity *type = NULL);
 
 	/** \brief Sets the height function used to calculate tree height coordinates
 	\param heightFunction A pointer to a height function
@@ -242,6 +248,9 @@ private:
 	{
 		Ogre::uint16 xPos, zPos;
 		Ogre::uint8 scale, rotation;
+#ifdef PAGEDGEOMETRY_USER_DATA
+		void* userData;
+#endif
 	};
 
 	//Information about the 2D grid of pages
@@ -319,6 +328,11 @@ public:
 	/** Returns the entity used to create the tree */
 	inline Ogre::Entity *getEntity() { return entity; }
 
+#ifdef PAGEDGEOMETRY_USER_DATA
+   /** Returns the user-defined data associated with this tree */
+   inline void* getUserData() { return userData; }
+#endif
+
 private:
 	friend class TreeIterator3D;
 	friend class TreeIterator2D;
@@ -326,6 +340,9 @@ private:
 	Ogre::Degree yaw;
 	Ogre::Real scale;
 	Ogre::Entity *entity;
+#ifdef PAGEDGEOMETRY_USER_DATA
+	void* userData;
+#endif
 };
 
 #endif
@@ -364,6 +381,6 @@ private:
 	bool hasMore;
 };
 
-
+}
 
 #endif

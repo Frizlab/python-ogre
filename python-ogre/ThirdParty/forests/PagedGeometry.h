@@ -93,15 +93,16 @@ Permission is granted to anyone to use this software for any purpose, including 
 
 #include <limits> // numeric_limits<>
 
-#include "OgreRoot.h"
-#include "OgrePrerequisites.h"
-#include "OgreRenderSystem.h"
-#include "OgreEntity.h"
-#include "OgreCommon.h"
-#include "OgreCamera.h"
-#include "OgreVector3.h"
-#include "OgreTimer.h"
+#include <OgreRoot.h>
+#include <OgrePrerequisites.h>
+#include <OgreRenderSystem.h>
+#include <OgreEntity.h>
+#include <OgreCommon.h>
+#include <OgreCamera.h>
+#include <OgreVector3.h>
+#include <OgreTimer.h>
 
+namespace PagedGeometry {
 
 class GeometryPageManager;
 class PageLoader;
@@ -112,6 +113,8 @@ typedef Ogre::TRect<Ogre::Real> TBounds;
 //Enable PagedGeometry::setCoordinateSystem()
 //#define PAGEDGEOMETRY_ALTERNATE_COORDSYSTEM
 
+//Enable per-entity user-defined data and callbacks
+//#define PAGEDGEOMETRY_USER_DATA
 
 //-------------------------------------------------------------------------------------
 /**
@@ -613,7 +616,7 @@ There are several virtual member functions you will need to implement in your cl
 \code
 virtual void init(SceneManager *mgr, Camera *cam) = 0;
 virtual void setRegion(Real left, Real top, Real right, Real bottom) = 0;
-virtual void addEntity(Entity *ent, const Vector3 &position, const Quaternion &rotation, const Vector3 &scale, const Ogre::ColourValue &color) = 0;
+virtual void addEntity(Entity *ent, const Vector3 &position, const Quaternion &rotation, const Vector3 &scale, const Ogre::ColourValue &color, void* userData = NULL) = 0;
 virtual void build() {}
 virtual void removeEntities() = 0;
 virtual void setVisible(bool visible) = 0;
@@ -1382,5 +1385,6 @@ template <class PageType> inline void GeometryPageManager::initPages(const TBoun
 			_setGridPage(x, z, page);
 		}
 	}
+}
 }
 #endif

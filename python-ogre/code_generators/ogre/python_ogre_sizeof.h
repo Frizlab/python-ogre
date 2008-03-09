@@ -5,6 +5,7 @@
 
 sizeof ( Ogre::MapIterator< std::multimap<Ogre::String, Ogre::String> > );
 sizeof ( Ogre::MapIterator< std::map<Ogre::String, std::multimap<Ogre::String, Ogre::String>*> > );
+sizeof ( Ogre::MaterialPtr );
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, Ogre::Node*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::Node*> >, false> > );
@@ -75,6 +76,7 @@ sizeof ( Ogre::RenderTarget::FrameStats );
 sizeof ( Ogre::SharedPtr<Ogre::AnimableValue> );
 sizeof ( Ogre::SharedPtr<Ogre::FileInfoList> );
 sizeof ( Ogre::SharedPtr<Ogre::Texture> );
+
 sizeof ( Ogre::TexturePtr );
 
 //sizeof ( Ogre::SharedPtr<Ogre::CodecData> );

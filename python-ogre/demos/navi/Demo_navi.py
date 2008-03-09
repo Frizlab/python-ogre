@@ -23,11 +23,14 @@ class NaviApplication(sf.Application, ogre.WindowEventListener):
     def _createScene(self):
         sceneManager = self.sceneManager
         camera = self.camera
-        self.naviMgr = navi.NaviManager(self.renderWindow)
+        print "\n\nHERE WE GO!"
+        self.naviMgr = navi.NaviManager(self.renderWindow, ".\\Media")
+        print "DONE"
+        
         self.shouldQuit = False # flag to allow the app to do a shutdown
         
         sceneManager.ambientLight = ogre.ColourValue(0.5, 0.5, 0.5)
-        sceneManager.setSkyDome(True, 'CloudySky', 5.0, 6, 8,)
+        sceneManager.setSkyDome(True, 'Examples/CloudySky', 5.0, 6, 8,)
         light = sceneManager.createLight( "Sun" )
         light.setType( ogre.Light.LT_DIRECTIONAL )
         light.setDiffuseColour( ogre.ColourValue( .82, .81, .7 ) )
@@ -46,12 +49,14 @@ class NaviApplication(sf.Application, ogre.WindowEventListener):
         
         ## Startup, create, and manage Navis 
 # #         self.naviMgr.Startup(self.renderWindow)
-    	
-        self.naviMgr.createNavi("menubar", "local://menubar.html", navi.NaviPosition(navi.BottomCenter), 1024, 128, False)
-        self.naviMgr.setNaviMask("menubar", "navimenu_bg.png")
-        self.naviMgr.bind("menubar", "turnOn", self, "turnOn", ["name"] )
-        self.naviMgr.bind("menubar", "turnOff", self, "turnOff", ["name"] )
-        self.naviMgr.bind("menubar", "hpChange", self,"hpChange", ["direction"] )
+	
+
+        self.menubar = self.naviMgr.createNavi("menubar", "local://menubar.html", navi.NaviPosition(navi.BottomCenter), 1024, 128)
+        self.menubar.setMask("navimenu_bg.png")
+        self.menubar.bind("turnOn", self, "turnOn", ["name"] )
+        self.menubar.bind( "turnOff", self, "turnOff", ["name"] )
+        self.menubar.bind("hpChange", self,"hpChange", ["direction"] )
+        self.menubar.setMovable(False)
     
         self.naviMgr.createNavi("status", "local://status.html", navi.NaviPosition(0, 0), 512, 256, True, False)
         self.naviMgr.setNaviMask("status", "status_bg.png")

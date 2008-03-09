@@ -18,18 +18,19 @@ Permission is granted to anyone to use this software for any purpose, including 
 #ifndef __StaticBillboardSet_H__
 #define __StaticBillboardSet_H__
 
-#include "OgrePrerequisites.h"
-#include "OgreRoot.h"
-#include "OgreRenderSystem.h"
-#include "OgreVector3.h"
-#include "OgreMesh.h"
-#include "OgreMaterial.h"
-#include "OgreBillboard.h"
-#include "OgreBillboardSet.h"
-#include "OgreMaterialManager.h"
-#include "OgreSceneNode.h"
-#include "OgreStringConverter.h"
+#include <OgrePrerequisites.h>
+#include <OgreRoot.h>
+#include <OgreRenderSystem.h>
+#include <OgreVector3.h>
+#include <OgreMesh.h>
+#include <OgreMaterial.h>
+#include <OgreBillboard.h>
+#include <OgreBillboardSet.h>
+#include <OgreMaterialManager.h>
+#include <OgreSceneNode.h>
+#include <OgreStringConverter.h>
 
+namespace PagedGeometry {
 
 class SBMaterialRef;
 typedef std::map<Ogre::Material*, SBMaterialRef*> SBMaterialRefList;
@@ -303,6 +304,6 @@ private:
 	Ogre::Material *material;
 	Ogre::BillboardOrigin origin;
 };
-
+}
 
 #endif

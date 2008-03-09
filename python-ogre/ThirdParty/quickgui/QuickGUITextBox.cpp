@@ -54,7 +54,6 @@ namespace QuickGUI
 		mTextCursor->setShowWithOwner(false);
 		mTextCursor->setOffset(mOffset+1);
 		mTextCursor->setVisible(false);
-		mTextCursor->setSize(Size(mCursorPixelWidth,mSize.height));
 		mTextCursor->_notifyQuadContainer(mQuadContainer);
 	}
 
@@ -750,7 +749,7 @@ namespace QuickGUI
 		if(mAutoSize)
 		{
 			setHeight(mText->getNewlineHeight() + mVPixelPadHeight);
-			mTextCursor->setHeight(mSize.height);
+			mTextCursor->setSize(Size(mCursorPixelWidth,mSize.height));
 			// setHeight sets mAutoSize to false..
 			mAutoSize = true;
 		}

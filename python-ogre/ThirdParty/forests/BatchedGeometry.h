@@ -16,11 +16,12 @@ Permission is granted to anyone to use this software for any purpose, including 
 #ifndef __BatchedGeometry_H__
 #define __BatchedGeometry_H__
 
-#include "OgrePrerequisites.h"
-#include "OgreMovableObject.h"
-#include "OgreSceneNode.h"
-#include "OgreMaterialManager.h"
+#include <OgrePrerequisites.h>
+#include <OgreMovableObject.h>
+#include <OgreSceneNode.h>
+#include <OgreMaterialManager.h>
 
+namespace PagedGeometry {
 
 class BatchedGeometry: public Ogre::MovableObject
 {
@@ -129,6 +130,6 @@ public:
 };
 
 
-
+}
 
 #endif

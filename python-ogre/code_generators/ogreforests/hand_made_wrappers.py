@@ -53,14 +53,14 @@ WRAPPER_REGISTRATION_GrassLoader =[
     
 WRAPPER_DEFINITION_PagedGeometry = \
 """
-void PagedGeometry_addDetailLevel_ImpostorPage( PagedGeometry & me, Ogre::Real maxRange, Ogre::Real transitionLength = 0) {
-    me.addDetailLevel<ImpostorPage>(maxRange, transitionLength);
+void PagedGeometry_addDetailLevel_ImpostorPage( PagedGeometry::PagedGeometry & me, Ogre::Real maxRange, Ogre::Real transitionLength = 0) {
+    me.addDetailLevel<PagedGeometry::ImpostorPage>(maxRange, transitionLength);
     }
-void PagedGeometry_addDetailLevel_BatchPage( PagedGeometry & me, Ogre::Real maxRange, Ogre::Real transitionLength = 0) {
-    me.addDetailLevel<BatchPage>(maxRange, transitionLength);
+void PagedGeometry_addDetailLevel_BatchPage( PagedGeometry::PagedGeometry & me, Ogre::Real maxRange, Ogre::Real transitionLength = 0) {
+    me.addDetailLevel<PagedGeometry::BatchPage>(maxRange, transitionLength);
     }
-void PagedGeometry_addDetailLevel_GrassPage( PagedGeometry & me, Ogre::Real maxRange, Ogre::Real transitionLength = 0) {
-    me.addDetailLevel<GrassPage>(maxRange, transitionLength);
+void PagedGeometry_addDetailLevel_GrassPage( PagedGeometry::PagedGeometry & me, Ogre::Real maxRange, Ogre::Real transitionLength = 0) {
+    me.addDetailLevel<PagedGeometry::GrassPage>(maxRange, transitionLength);
     } 
 """
 WRAPPER_REGISTRATION_PagedGeometry =[
@@ -81,13 +81,14 @@ def apply_reg ( class_, code ):
         class_.add_registration_code ( c )
         
 def apply( mb ):
-    rt = mb.class_( 'GrassLoader' )
-    rt.add_declaration_code( WRAPPER_DEFINITION_GrassLoader )
-    apply_reg (rt, WRAPPER_REGISTRATION_GrassLoader )
+#     pass
+#     rt = mb.class_( 'GrassLoader' )
+#     rt.add_declaration_code( WRAPPER_DEFINITION_GrassLoader )
+#     apply_reg (rt, WRAPPER_REGISTRATION_GrassLoader )
 
-    rt = mb.class_( 'TreeLoader2D' )
-    rt.add_declaration_code( WRAPPER_DEFINITION_TreeLoader2D )
-    apply_reg (rt, WRAPPER_REGISTRATION_TreeLoader2D )
+#     rt = mb.class_( 'TreeLoader2D' )
+#     rt.add_declaration_code( WRAPPER_DEFINITION_TreeLoader2D )
+#     apply_reg (rt, WRAPPER_REGISTRATION_TreeLoader2D )
     
     rt = mb.class_( 'PagedGeometry' )
     rt.add_declaration_code( WRAPPER_DEFINITION_PagedGeometry )

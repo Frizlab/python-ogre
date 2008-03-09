@@ -33,7 +33,7 @@ namespace QuickGUI
 		mList->setVerticalAnchor(ANCHOR_VERTICAL_BOTTOM);
 		mList->setQuadLayer(Quad::LAYER_MENU);
 		mList->setInheritQuadLayer(false);
-		mList->setClipMode(Quad::CLIPMODE_NONE);
+		mList->getQuad()->setClipMode(Quad::CLIPMODE_NONE);
 		mList->setShowWithParent(false);
 		mList->setOffset(mOffset + 2);
 		mList->allowScrolling(true);

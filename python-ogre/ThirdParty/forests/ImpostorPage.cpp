@@ -1,5 +1,6 @@
 /*-------------------------------------------------------------------------------------
 Copyright (c) 2006 John Judnich
+Modified 2008 by Erik Hjortsberg (erik.hjortsberg@iteam.se)
 
 This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.
 Permission is granted to anyone to use this software for any purpose, including commercial applications, and to alter it and redistribute it freely, subject to the following restrictions:
@@ -15,20 +16,21 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include "ImpostorPage.h"
 #include "StaticBillboardSet.h"
 
-#include "OgreRoot.h"
-#include "OgreTimer.h"
-#include "OgreCamera.h"
-#include "OgreVector3.h"
-#include "OgreQuaternion.h"
-#include "OgreEntity.h"
-#include "OgreSubEntity.h"
-#include "OgreHardwarePixelBuffer.h"
+#include <OgreRoot.h>
+#include <OgreTimer.h>
+#include <OgreCamera.h>
+#include <OgreVector3.h>
+#include <OgreQuaternion.h>
+#include <OgreEntity.h>
+#include <OgreSubEntity.h>
+#include <OgreHardwarePixelBuffer.h>
 using namespace Ogre;
 
+namespace PagedGeometry {
 
 //-------------------------------------------------------------------------------------
 
-unsigned int ImpostorPage::selfInstances = 0;
+uint32 ImpostorPage::selfInstances = 0;
 
 int ImpostorPage::impostorResolution = 128;
 ColourValue ImpostorPage::impostorBackgroundColor = ColourValue(0.0f, 0.3f, 0.0f, 0.0f);
@@ -285,14 +287,29 @@ String ImpostorBatch::generateEntityKey(Entity *entity)
 {
 	StringUtil::StrStreamType entityKey;
 	entityKey << entity->getMesh()->getName();
-	for (uint i = 0; i < entity->getNumSubEntities(); ++i){
+	for (uint32 i = 0; i < entity->getNumSubEntities(); ++i){
 		entityKey << "-" << entity->getSubEntity(i)->getMaterialName();
 	}
-
 	return entityKey.str();
 }
 
 //-------------------------------------------------------------------------------------
+
+
+ImpostorTextureResourceLoader::ImpostorTextureResourceLoader(ImpostorTexture& impostorTexture)
+: texture(impostorTexture)
+{
+}
+
+void ImpostorTextureResourceLoader::loadResource (Ogre::Resource *resource)
+{
+	if (resource->getLoadingState() == Ogre::Resource::LOADSTATE_UNLOADED) {
+		texture.regenerate();
+	}
+}
+
+//-------------------------------------------------------------------------------------
+
 
 std::map<String, ImpostorTexture *> ImpostorTexture::selfList;
 unsigned long ImpostorTexture::GUID = 0;
@@ -300,6 +317,7 @@ unsigned long ImpostorTexture::GUID = 0;
 //Do not use this constructor yourself - instead, call getTexture()
 //to get/create an ImpostorTexture for an Entity.
 ImpostorTexture::ImpostorTexture(ImpostorPage *group, Entity *entity)
+: loader(0)
 {
 	//Store scene manager and entity
 	ImpostorTexture::sceneMgr = group->sceneMgr;
@@ -361,7 +379,7 @@ void ImpostorTexture::updateMaterials()
 			Material *m = material[i][o].getPointer();
 			Pass *p = m->getTechnique(0)->getPass(0);       
 
-			int x = p->getNumTextureUnitStates();
+// 			int x = p->getNumTextureUnitStates();
 			TextureUnitState *t = p->getTextureUnitState(0);
 
 			t->setTextureName(texture->getName());
@@ -417,15 +435,23 @@ void ImpostorTexture::regenerateAll()
 
 void ImpostorTexture::renderTextures(bool force)
 {
+#if IMPOSTOR_FILE_SAVE
 	TexturePtr renderTexture;
+#else
+	TexturePtr renderTexture(texture);
+	//if we're not using a file image we need to set up a resource loader, so that the texture is regenerated if it's ever unloaded (such as switching between fullscreen and the desktop in win32)
+	loader = std::auto_ptr<ImpostorTextureResourceLoader>(new ImpostorTextureResourceLoader(*this));
+#endif
 	RenderTexture *renderTarget;
 	Camera *renderCamera;
 	Viewport *renderViewport;
 
 	//Set up RTT texture
-	unsigned int textureSize = ImpostorPage::impostorResolution;
+	uint32 textureSize = ImpostorPage::impostorResolution;
+	if (renderTexture.isNull()) {
 	renderTexture = TextureManager::getSingleton().createManual(getUniqueID("ImpostorTexture"), "Impostors",
-				TEX_TYPE_2D, textureSize * IMPOSTOR_YAW_ANGLES, textureSize * IMPOSTOR_PITCH_ANGLES, 0, PF_A8R8G8B8, TU_RENDERTARGET);
+				TEX_TYPE_2D, textureSize * IMPOSTOR_YAW_ANGLES, textureSize * IMPOSTOR_PITCH_ANGLES, 0, PF_A8R8G8B8, TU_RENDERTARGET, loader.get());
+	}
 	renderTexture->setNumMipmaps(MIP_UNLIMITED);
 	
 	//Set up render target
@@ -444,6 +470,10 @@ void ImpostorTexture::renderTextures(bool force)
 	//Set up scene node
 	SceneNode* node = sceneMgr->getSceneNode("ImpostorPage::renderNode");
 	
+	Ogre::SceneNode* oldSceneNode = entity->getParentSceneNode();
+	if (oldSceneNode) {
+		oldSceneNode->detachObject(entity);
+	}
 	node->attachObject(entity);
 	node->setPosition(-entityCenter);
 	
@@ -476,13 +506,19 @@ void ImpostorTexture::renderTextures(bool force)
 	sceneMgr->setSpecialCaseRenderQueueMode(Ogre::SceneManager::SCRQM_INCLUDE); 
 	sceneMgr->addSpecialCaseRenderQueue(RENDER_QUEUE_6 + 1);
 
-	//uint8 oldRenderQueueGroup = entity->getRenderQueueGroup();
+	uint8 oldRenderQueueGroup = entity->getRenderQueueGroup();
 	entity->setRenderQueueGroup(RENDER_QUEUE_6 + 1);
+	bool oldVisible = entity->getVisible();
+	entity->setVisible(true);
+	float oldMaxDistance = entity->getRenderingDistance();
+	entity->setRenderingDistance(0);
 
+	bool needsRegen = true;
+#if IMPOSTOR_FILE_SAVE
 	//Calculate the filename used to uniquely identity this render
 	String strKey = entityKey;
 	char key[32] = {0};
-	unsigned int i = 0;
+	uint32 i = 0;
 	for (String::const_iterator it = entityKey.begin(); it != entityKey.end(); ++it)
 	{
 		key[i] ^= *it;
@@ -495,7 +531,7 @@ void ImpostorTexture::renderTextures(bool force)
 	String fileName = "Impostor." + String(key, sizeof(key)) + '.' + StringConverter::toString(textureSize) + ".png";
 
 	//Attempt to load the pre-render file if allowed
-	bool needsRegen = force;
+	needsRegen = force;
 	if (!needsRegen){
 		try{
 			texture = TextureManager::getSingleton().load(fileName, "BinFolder", TEX_TYPE_2D, MIP_UNLIMITED);
@@ -504,6 +540,7 @@ void ImpostorTexture::renderTextures(bool force)
 			needsRegen = true;
 		}
 	}
+#endif
 
 	if (needsRegen){
 		//If this has not been pre-rendered, do so now
@@ -528,15 +565,21 @@ void ImpostorTexture::renderTextures(bool force)
 			}
 		}
 		
+#if IMPOSTOR_FILE_SAVE
 		//Save RTT to file
 		renderTarget->writeContentsToFile(fileName);
 
 		//Load the render into the appropriate texture view
 		texture = TextureManager::getSingleton().load(fileName, "BinFolder", TEX_TYPE_2D, MIP_UNLIMITED);
+#else
+		texture = renderTexture;
+#endif
 	}
 	
 
-	//entity->setRenderQueueGroup(oldRenderQueueGroup);
+	entity->setVisible(oldVisible);
+	entity->setRenderQueueGroup(oldRenderQueueGroup);
+	entity->setRenderingDistance(oldMaxDistance);
 	sceneMgr->removeSpecialCaseRenderQueue(RENDER_QUEUE_6 + 1);
 	sceneMgr->setSpecialCaseRenderQueueMode(Ogre::SceneManager::SCRQM_EXCLUDE); 
 
@@ -552,7 +595,10 @@ void ImpostorTexture::renderTextures(bool force)
 	
 	//Delete scene node
 	node->detachAllObjects();
-
+	if (oldSceneNode) {
+		oldSceneNode->attachObject(entity);
+	}
+#if IMPOSTOR_FILE_SAVE
 	//Delete RTT texture
 	assert(!renderTexture.isNull());
 	String texName2(renderTexture->getName());
@@ -560,13 +606,14 @@ void ImpostorTexture::renderTextures(bool force)
 	renderTexture.setNull();
 	if (TextureManager::getSingletonPtr())
 		TextureManager::getSingleton().remove(texName2);
+#endif
 }
 
 String ImpostorTexture::removeInvalidCharacters(String s)
 {
 	StringUtil::StrStreamType s2;
 
-	for (unsigned int i = 0; i < s.length(); ++i){
+	for (uint32 i = 0; i < s.length(); ++i){
 		char c = s[i];
 		if (c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '\"' || c == '<' || c == '>' || c == '|'){
 			s2 << '-';
@@ -613,4 +660,5 @@ ImpostorTexture *ImpostorTexture::getTexture(ImpostorPage *group, Entity *entity
 			return NULL;
 		}
 	}
+}
 }

@@ -60,8 +60,6 @@ namespace QuickGUI
 		Panel(const std::string& name, GUIManager* gm);
 
 		virtual void addChild(Widget* w);
-		virtual void allowScrolling(bool allow);
-
 
 		Button* createButton();
 		Button* createButton(const std::string& name);
@@ -87,8 +85,8 @@ namespace QuickGUI
 		List* createList();
 		List* createList(const std::string& name);
 
-		LabelArea* createMultiLineLabel();
-		LabelArea* createMultiLineLabel(const std::string& name);
+		LabelArea* createLabelArea();
+		LabelArea* createLabelArea(const std::string& name);
 
 		NStateButton* createNStateButton();
 		NStateButton* createNStateButton(const std::string& name);
@@ -114,11 +112,11 @@ namespace QuickGUI
 		VerticalTrackBar* createVerticalTrackBar();
 		VerticalTrackBar* createVerticalTrackBar(const std::string& name);
 
+		virtual QuadContainer* getQuadContainer();
 		ScrollPane* getScrollPane();
 		virtual Widget* getTargetWidget(const Point& pixelPosition);
 		virtual const Widget* getTargetWidget(const Point& pixelPosition) const;
 
-		bool scrollingAllowed();
 		virtual void show();
 
 	protected:
@@ -127,7 +125,6 @@ namespace QuickGUI
 		virtual Widget*	_createComponent(const std::string& name, Type t);
 	protected:
 		ScrollPane* mScrollPane;
-		bool mScrollingAllowed;
 
 		VerticalScrollBar* mRightScrollBar;
 		HorizontalScrollBar* mBottomScrollBar;

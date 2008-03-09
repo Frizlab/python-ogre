@@ -21,7 +21,6 @@ namespace QuickGUI
 		mMenuVertexBuffer->setData(&mMenuRenderables);
 
 		mOwner->mQuadContainer = this;
-		mOwner->setClipMode(Quad::CLIPMODE_PARENT_CONTAINER);
 		
 		for(QuadArray::iterator it = mOwner->mQuads.begin(); it != mOwner->mQuads.end(); ++it)
 			(*it)->_notifyQuadContainer(this);

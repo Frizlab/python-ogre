@@ -4,6 +4,7 @@ def header_files( version ):
              ,'TheoraVideoController.h'
             ,'TheoraMovieClip.h'
             ,'TheoraAudioDriver.h'
+            ,"SoundManager.h"
             ,'OgreExternalTextureSource.h'
             ,'OgreExternalTextureSourceManager.h'
              ]

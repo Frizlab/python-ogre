@@ -1,5 +1,6 @@
 /*-------------------------------------------------------------------------------------
 Copyright (c) 2006 John Judnich
+Modified 2008 by Erik Hjortsberg (erik.hjortsberg@iteam.se)
 
 This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.
 Permission is granted to anyone to use this software for any purpose, including commercial applications, and to alter it and redistribute it freely, subject to the following restrictions:
@@ -18,13 +19,16 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include "PagedGeometry.h"
 #include "StaticBillboardSet.h"
 
-#include "OgrePrerequisites.h"
-#include "OgreTextureManager.h"
-#include "OgreRenderTexture.h"
+#include <OgrePrerequisites.h>
+#include <OgreTextureManager.h>
+#include <OgreRenderTexture.h>
 
 
 #define IMPOSTOR_YAW_ANGLES 8
 #define IMPOSTOR_PITCH_ANGLES 4
+//If set to 1, imposter textures will be read and saved to disc; if set to 0 they will stay in memory and need to be regenerated each time the application is run.
+#define IMPOSTOR_FILE_SAVE 1
+namespace PagedGeometry {
 
 class ImpostorBatch;
 class ImpostorTexture;
@@ -46,7 +50,8 @@ so the PagedGeometry will know how you want your geometry displayed.
 To use this page type, use:
 \code
 PagedGeometry::addDetailLevel<ImpostorPage>(farRange);
-\endcode
+\endcode	TexturePtr renderTexture;
+
 
 Of all the page types included in the PagedGeometry engine, this one is the fastest. It
 uses impostors (billboards that look just like the real entity) to represent entities.
@@ -241,6 +246,27 @@ protected:
 	}
 };
 
+//-------------------------------------------------------------------------------------
+//Responsible for making sure that the texture is rerendered when the texture resource needs to //be reloaded.
+//
+class ImpostorTextureResourceLoader : public Ogre::ManualResourceLoader
+{
+public:
+	/**
+	 *    Ctor.
+	 * @param renderContext The ImpostorTexture to which this instance belongs.
+	 */
+	ImpostorTextureResourceLoader(ImpostorTexture& impostorTexture);
+	
+	
+	/**
+	 *    At load time the texture will be rerendered.
+	 * @param resource 
+	 */
+	virtual void loadResource (Ogre::Resource *resource);
+protected:
+	ImpostorTexture& texture;
+};
 
 //-------------------------------------------------------------------------------------
 //This is used internally by ImpostorPage. An ImpostorTexture is actually multiple
@@ -250,6 +276,7 @@ protected:
 class ImpostorTexture
 {
 	friend class ImpostorBatch;
+	friend class ImpostorTextureResourceLoader;
 
 public:
 	/** Returns a pointer to an ImpostorTexture for the specified entity. If one does not
@@ -294,6 +321,9 @@ protected:
 	{
 		return prefix + Ogre::StringConverter::toString(++GUID);
 	}
+	
+	//This will only be used when IMPOSTOR_FILE_SAVE is set to 0
+	std::auto_ptr<ImpostorTextureResourceLoader> loader;
 };
 
 
@@ -316,6 +346,6 @@ void ImpostorBatch::addBillboard(const Ogre::Vector3 &position, const Ogre::Quat
 							tex->entityDiameter * scale.y, color,
 							texCoordIndx);
 }
-
+}
 
 #endif

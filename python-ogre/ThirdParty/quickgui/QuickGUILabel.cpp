@@ -139,6 +139,12 @@ namespace QuickGUI
 		}
 	}
 
+	void Label::setQuadContainer(QuadContainer* container)
+	{
+		Widget::setQuadContainer(container);
+		mText->_notifyQuadContainer(container);
+	}
+
 	void Label::setVerticalAlignment(VerticalAlignment va)
 	{
 		mVerticalAlignment = va;
@@ -172,12 +178,6 @@ namespace QuickGUI
 		mText->setOffset(mOffset+1);
 	}
 
-	void Label::setQuadContainer(QuadContainer* container)
-	{
-		Widget::setQuadContainer(container);
-		mText->_notifyQuadContainer(mQuadContainer);
-	}
-
 	void Label::setSize(const float& pixelWidth, const float& pixelHeight)
 	{
 		if((pixelWidth == 0) && (pixelHeight == 0))
@@ -198,7 +198,8 @@ namespace QuickGUI
 	void Label::redraw()
 	{
 		Widget::redraw();
-		alignText();
+		// Redraws all quads and aligns text to label bounds.
+		mText->redraw();
 	}
 
 	void Label::setDisabledTextColor(const Ogre::ColourValue& c)

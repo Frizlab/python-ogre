@@ -12,7 +12,7 @@
 import sys
 sys.path.insert(0,'..')
 import PythonOgreConfig
-
+import ctypes
 import os
 
 if sys.platform == 'win32': 
@@ -62,7 +62,25 @@ class VideoApplication(sf.Application):
     
         mat.getTechnique(0).getPass(0).createTextureUnitState()
         self.Control.createDefinedTexture( "Example/TheoraVideoPlayer/Play", "General" )
-
+        print "****************\n", dir (self.Control)
+        
+# #         dmanager = ogre.DynLibManager.getSingletonPtr()
+# #         oalsound = dmanager.load ("OAL_MOD")
+# #         print dir (oalsound) 
+# #         OALManager = oalsound.getSymbol("getSoundSystem")
+# #         print "SYM:", OALManager 
+# #         OALManager.start()
+        
+        slib = ctypes.cdll.LoadLibrary("OAL_MOD")
+        print slib
+        print dir(slib)
+        f = slib.getSoundSystem()
+        print f
+        print dir(f)
+        f.start()
+     
+            
+        
         
         self.Clip =  self.Control.getMaterialNameClip("Example/TheoraVideoPlayer/Play")
         

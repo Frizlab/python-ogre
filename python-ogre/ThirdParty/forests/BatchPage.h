@@ -18,9 +18,10 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include "PagedGeometry.h"
 #include "BatchedGeometry.h"
 
-#include "OgrePrerequisites.h"
-#include "OgreStringConverter.h"
+#include <OgrePrerequisites.h>
+#include <OgreStringConverter.h>
 
+namespace PagedGeometry {
 
 /**
 \brief The BatchPage class renders entities as StaticGeometry.
@@ -74,5 +75,6 @@ private:
 	}
 };
 
+}
 
 #endif
