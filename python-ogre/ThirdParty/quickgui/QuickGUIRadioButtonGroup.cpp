@@ -16,20 +16,42 @@ namespace QuickGUI
 
 	RadioButton* RadioButtonGroup::createRadioButton()
 	{
-		return createRadioButton(mOwner->getGUIManager()->generateName(Widget::TYPE_RADIOBUTTON));
+		std::string name = "RadioButton";
+		int counter = 1;
+		int beginCounter = 0;
+		while (beginCounter != counter )
+		{
+			beginCounter = counter;
+			for(std::vector<RadioButton*>::iterator it = mRadioButtons.begin(); it != mRadioButtons.end(); ++it)
+			{
+				if((*it)->getInstanceName() == name)
+				{
+					name = name + Ogre::StringConverter::toString(counter);
+					counter++;
+					break;
+				}
+			}
+		}
+		return createRadioButton(name);
 	}
 
-	RadioButton* RadioButtonGroup::createRadioButton(const std::string& name)
+	RadioButton* RadioButtonGroup::createRadioButton(std::string& name)
 	{
-		GUIManager* gm = mOwner->getGUIManager();
-		if(gm->isNameUnique(name))
+
+		int counter = 1;
+		int beginCounter = 0;
+		while (beginCounter != counter )
 		{
-			gm->notifyNameUsed(name);
-		}
-		else
-		{
-			std::string name = gm->generateName(Widget::TYPE_RADIOBUTTON);
-			gm->notifyNameUsed(name);
+			beginCounter = counter;
+			for(std::vector<RadioButton*>::iterator it = mRadioButtons.begin(); it != mRadioButtons.end(); ++it)
+			{
+				if((*it)->getInstanceName() == name)
+				{
+					name = name + Ogre::StringConverter::toString(counter);
+					counter++;
+					break;
+				}
+			}
 		}
 
 		RadioButton* rb = dynamic_cast<RadioButton*>(mOwner->_createChild(name,Widget::TYPE_RADIOBUTTON));

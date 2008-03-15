@@ -115,7 +115,7 @@ namespace QuickGUI
 		* Each cursor location to the left and right of a character is a cursor index.  
 		* The cursor index to the left of character 0 is 0, for example.
 		*/
-		int getTextCursorIndex(const Point& pixelPosition);
+		int getTextCursorIndex(Point pixelPosition);
 		/*
 		* Tests if the given rectangle intersects with any characters of the text caption.
 		* Each cursor location to the left and right of a character is a cursor index.  

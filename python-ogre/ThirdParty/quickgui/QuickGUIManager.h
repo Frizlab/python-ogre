@@ -63,7 +63,9 @@ namespace QuickGUI
 		void clearAll();
 
 		Sheet* createSheet();
+		Sheet* createSheet(Size initialSize);
 		Sheet* createSheet(const std::string& name);
+		Sheet* createSheet(const std::string& name, Size initialSize);
 
 		/** Destroys a Window and all child widgets that exist
 		    @param
@@ -121,8 +123,6 @@ namespace QuickGUI
 		*/
 		Sheet* getSheet(const std::string& name);
 
-		std::string generateName(Widget::Type t);
-
 		/**
 		* Useful for Text Input Widgets, like the TextBox
 		*/
@@ -145,14 +145,6 @@ namespace QuickGUI
 		void injectTime(float time);
 
 		bool isKeyModifierDown(KeyModifier k);
-		/**
-		* Checks if the desired widget name already exists.  If it already exists,
-		* false is returned.
-		*/
-		bool isNameUnique(const std::string& name);
-
-		void notifyNameFree(const std::string& name);
-		void notifyNameUsed(const std::string& name);
 
 		void registerTimeListener(Widget* w);
 
@@ -197,6 +189,8 @@ namespace QuickGUI
 		void unregisterTimeListener(Widget* w);
 
 	protected:
+		std::string generateSheetName();
+
 		std::string			mName;
 		// Viewport which renders all widgets belonging to this manager.
 		Ogre::Viewport*			mViewport;
@@ -209,8 +203,6 @@ namespace QuickGUI
 		Ogre::uint8				mQueueID;
 
 		MouseCursor*			mMouseCursor;
-
-		std::set<std::string>	mWidgetNames;
 
 		// range of supported codepoints used for injectChar function.
 		std::set<Ogre::UTFString::code_point> mSupportedCodePoints;

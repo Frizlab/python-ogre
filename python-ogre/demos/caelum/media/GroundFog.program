@@ -20,7 +20,7 @@
 
 vertex_program CaelumGroundFogVP cg
 {
-	source CaelumShaders.cg
+	source CaelumGroundFog.cg
 	entry_point GroundFog_vp
 	profiles vs_2_x arbvp1 vp30
 	compile_arguments -posinv 
@@ -34,7 +34,7 @@ vertex_program CaelumGroundFogVP cg
 
 fragment_program CaelumGroundFogFP cg
 {
-	source CaelumShaders.cg
+	source CaelumGroundFog.cg
 	entry_point GroundFog_fp
 	profiles ps_2_x arbfp1 fp30
 	
@@ -53,7 +53,7 @@ fragment_program CaelumGroundFogFP cg
 
 vertex_program CaelumGroundFogDomeVP cg
 {
-	source CaelumShaders.cg
+	source CaelumGroundFog.cg
 	entry_point GroundFogDome_vp
 	profiles vs_2_0 arbvp1
 	compile_arguments -posinv
@@ -66,7 +66,7 @@ vertex_program CaelumGroundFogDomeVP cg
 
 fragment_program CaelumGroundFogDomeFP cg
 {
-	source CaelumShaders.cg
+	source CaelumGroundFog.cg
 	entry_point GroundFogDome_fp
 	profiles ps_2_0 arbfp1
 

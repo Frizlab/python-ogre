@@ -15,7 +15,7 @@ namespace QuickGUI
 		~RadioButtonGroup();
 
 		RadioButton* createRadioButton();
-		RadioButton* createRadioButton(const std::string& name);
+		RadioButton* createRadioButton(std::string& name);
 
 		RadioButton* getSelectedRadioButton();
 

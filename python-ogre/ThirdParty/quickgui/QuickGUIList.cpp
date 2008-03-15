@@ -51,7 +51,6 @@ namespace QuickGUI
 		Size s(mSize.width,mItemHeight);
 
 		std::string name = mInstanceName + ".Item" + Ogre::StringConverter::toString(counter);
-		mGUIManager->notifyNameUsed(name);
 
 		MenuLabel* newMenuLabel = dynamic_cast<MenuLabel*>(_createChild(mInstanceName+".ChildMenuLabel" + Ogre::StringConverter::toString(mItems.size()),TYPE_MENULABEL));
 		newMenuLabel->setSize(s);
@@ -73,7 +72,6 @@ namespace QuickGUI
 		Size s(mSize.width,mItemHeight);
 
 		std::string name = mInstanceName+".Item"+Ogre::StringConverter::toString(counter);
-		mGUIManager->notifyNameUsed(name);
 
 		TextBox* newTextBox = dynamic_cast<TextBox*>(_createChild(mInstanceName+".ChildTextBox" + Ogre::StringConverter::toString(mItems.size()),TYPE_TEXTBOX));
 		newTextBox->setSize(s);

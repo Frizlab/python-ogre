@@ -25,8 +25,6 @@ namespace QuickGUI
 	{
 		mSkinSetManager = SkinSetManager::getSingletonPtr();
 
-		mWidgetNames.clear();
-
 		for(int i = 0; i < NUM_MOUSE_BUTTONS; ++i)
 		{
 			mMouseButtonDown[i] = NULL;
@@ -106,7 +104,6 @@ namespace QuickGUI
 
 	void GUIManager::clearAll()
 	{
-		mWidgetNames.clear();
 
 		mMouseButtonDown[0] = NULL;
 		mMouseButtonDown[1] = NULL;
@@ -148,16 +145,29 @@ namespace QuickGUI
 
 	Sheet* GUIManager::createSheet()
 	{
-		return createSheet(generateName(Widget::TYPE_SHEET));
+		return createSheet(generateSheetName(),Size(mViewport->getActualWidth(),mViewport->getActualHeight()));
+	}
+
+	Sheet* GUIManager::createSheet(Size initialSize)
+	{
+		return createSheet(generateSheetName(),initialSize);
 	}
 
 	Sheet* GUIManager::createSheet(const std::string& name)
 	{
-		if(!isNameUnique(name))
-			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"Name \"" + name + "\" is already used!","GUIManager::createSheet");
+		return createSheet(name,Size(mViewport->getActualWidth(),mViewport->getActualHeight()));
+	}
 
-		notifyNameUsed(name);
-		Sheet* newSheet = new Sheet(name,mDefaultSkin,this);
+	Sheet* GUIManager::createSheet(const std::string& name, Size initialSize)
+	{
+		std::list<Sheet*>::const_iterator it;
+                for (it = mSheets.begin(); it != mSheets.end(); ++it)
+		{
+			if (name == (*it)->getInstanceName()) // if there is a sheet with the same name
+				throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"Name \"" + name + "\" is already used!","GUIManager::createSheet");
+		}
+
+		Sheet* newSheet = new Sheet(name,initialSize,mDefaultSkin,this);
 		mSheets.push_back(newSheet);
 
 		return newSheet;
@@ -287,43 +297,30 @@ namespace QuickGUI
 		mActiveEffects.push_back(e);
 	}
 
-	std::string GUIManager::generateName(Widget::Type t)
+	std::string GUIManager::generateSheetName()
 	{
-		std::string s;
-		switch(t)
-		{
-			case Widget::TYPE_BORDER:				s = "Border";			break;
-			case Widget::TYPE_BUTTON:				s = "Button";			break;
-			case Widget::TYPE_CHECKBOX:				s = "CheckBox";			break;
-			case Widget::TYPE_COMBOBOX:				s = "ComboBox";			break;
-			case Widget::TYPE_CONSOLE:				s = "Console";			break;
-			case Widget::TYPE_IMAGE:				s = "Image";			break;
-			case Widget::TYPE_LABEL:				s = "Label";			break;
-			case Widget::TYPE_LIST:					s = "List";				break;
-			case Widget::TYPE_MENULABEL:			s = "MenuLabel";		break;
-			case Widget::TYPE_LABELAREA:			s = "LabelArea";		break;
-			case Widget::TYPE_TEXTAREA:				s = "TextArea";			break;
-			case Widget::TYPE_NSTATEBUTTON:			s = "NStateButton";		break;
-			case Widget::TYPE_PANEL:				s = "Panel";			break;
-			case Widget::TYPE_PROGRESSBAR:			s = "ProgressBar";		break;
-			case Widget::TYPE_RADIOBUTTON:			s = "RadioButton";		break;
-			case Widget::TYPE_SCROLL_PANE:			s = "ScrollPane";		break;
-			case Widget::TYPE_SCROLLBAR_HORIZONTAL: s = "HScrollBar";		break;
-			case Widget::TYPE_SCROLLBAR_VERTICAL:	s = "VScrollBar";		break;
-			case Widget::TYPE_SHEET:				s = "Sheet";			break;
-			case Widget::TYPE_TEXTBOX:				s = "TextBox";			break;
-			case Widget::TYPE_TITLEBAR:				s = "TitleBar";			break;
-			case Widget::TYPE_TRACKBAR_HORIZONTAL:	s = "HTrackBar";		break;
-			case Widget::TYPE_TRACKBAR_VERTICAL:	s = "VTrackBar";		break;
-			case Widget::TYPE_WINDOW:				s = "Window";			break;
-			default:								s = "Widget";			break;
-		}
+		std::string name = "Sheet";
 
 		int counter = 1;
-		while( !isNameUnique(s + Ogre::StringConverter::toString(counter)) )
-			++counter;
+		int beginCounter = 0;
 
-		return (s + Ogre::StringConverter::toString(counter));
+		std::list<Sheet*>::const_iterator it;
+		while (beginCounter != counter) 
+		{
+			beginCounter = counter;
+			for (it = mSheets.begin(); it != mSheets.end(); ++it)
+			{
+				if (name == (*it)->getInstanceName()) // if there is a sheet with the same name
+				{
+					name = name + Ogre::StringConverter::toString(counter);
+					counter++;
+					break;
+				}
+			}
+		}
+
+
+		return name;
 	}
 
 	bool GUIManager::injectChar(Ogre::UTFString::unicode_char c)
@@ -481,7 +478,13 @@ namespace QuickGUI
 
 		// If the MouseButton was not pressed on this widget, do not register the button being released on the widget
 		if( mWidgetContainingMouse != mActiveWidget )
-			return mActiveWidget->fireEvent(Widget::EVENT_LOSE_FOCUS,args);
+		{
+			// If it is a textbox, don't lose focus, just fire a mouse button up event
+			if( mActiveWidget->getWidgetType() == Widget::TYPE_TEXTBOX )
+				return mActiveWidget->fireEvent(Widget::EVENT_MOUSE_BUTTON_UP,args);
+			else
+				return mActiveWidget->fireEvent(Widget::EVENT_LOSE_FOCUS,args);
+		}
 
 		// after this point, we know that the user had mouse button down on this widget, and is now doing mouse button up
 
@@ -675,31 +678,6 @@ namespace QuickGUI
 		return ((mKeyModifiers & k) > 0);
 	}
 
-	bool GUIManager::isNameUnique(const std::string& name)
-	{
-		if(name.empty())
-			return false;
-
-		return (mWidgetNames.find(name) == mWidgetNames.end());
-	}
-
-	void GUIManager::notifyNameFree(const std::string& name)
-	{
-		std::set<std::string>::iterator it = mWidgetNames.find(name);
-		if( it == mWidgetNames.end() )
-			return;
-
-		mWidgetNames.erase(it);
-	}
-
-	void GUIManager::notifyNameUsed(const std::string& name)
-	{
-		if(!isNameUnique(name))
-			return;
-
-		mWidgetNames.insert(name);
-	}
-
 	void GUIManager::registerTimeListener(Widget* w)
 	{
 		if(w == NULL)
@@ -761,6 +739,7 @@ namespace QuickGUI
 			return;
 
 		mActiveSheet = s;
+		mActiveSheet->setSize(mViewport->getActualWidth(),mViewport->getActualHeight());
 
 		MouseEventArgs args(mWidgetContainingMouse);
 		args.position = mMouseCursor->getPosition();

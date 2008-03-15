@@ -20,7 +20,7 @@
 
 vertex_program CaelumLayeredCloudsVP cg
 {
-	source CaelumShaders.cg
+	source CaelumLayeredClouds.cg
 	entry_point LayeredClouds_vp
 	profiles vs_2_0 arbvp1
 	compile_arguments -posinv
@@ -34,7 +34,7 @@ vertex_program CaelumLayeredCloudsVP cg
 
 fragment_program CaelumLayeredCloudsFP cg
 {
-    source CaelumShaders.cg
+	source CaelumLayeredClouds.cg
     entry_point LayeredClouds_fp
     profiles ps_2_0 arbfp1
 

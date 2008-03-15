@@ -60,7 +60,7 @@ namespace QuickGUI
 			@note
 				If you want a transparent background, pass "" as the material.
         */
-		Sheet(const std::string& name, const std::string &skinName, GUIManager* gm);
+		Sheet(const std::string& name, Size initialSize, const std::string &skinName, GUIManager* gm);
 		virtual ~Sheet();
 
 		virtual void setHeight(float pixelHeight);
