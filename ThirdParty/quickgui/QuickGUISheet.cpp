@@ -8,7 +8,7 @@
 
 namespace QuickGUI
 {
-	Sheet::Sheet(const std::string& name, const std::string& skinName, GUIManager* gm) :
+	Sheet::Sheet(const std::string& name, Size initialSize, const std::string& skinName, GUIManager* gm) :
 		Panel(name,gm),
 		mMaterialName("")
 	{
@@ -19,7 +19,7 @@ namespace QuickGUI
 		mSkinName = skinName;
 		mSkinComponent = ".sheet";
 		mQuad->setClipMode(Quad::CLIPMODE_NONE);
-		setSize(gm->getViewportWidth(),gm->getViewportHeight());
+		setSize(initialSize);
 
 		Ogre::FontManager* fm = Ogre::FontManager::getSingletonPtr();
 		Ogre::ResourceManager::ResourceMapIterator rmi = fm->getResourceIterator();
@@ -39,20 +39,18 @@ namespace QuickGUI
 
 	Window* Sheet::createWindow()
 	{
-		return createWindow(mGUIManager->generateName(TYPE_WINDOW));
+		return createWindow(generateName(TYPE_WINDOW));
 	}
 
 	Window* Sheet::createWindow(const std::string& name)
 	{
-		if(mGUIManager->isNameUnique(name))
+		if(isNameUnique(name))
 		{
-			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<Window*>(_createChild(name,TYPE_WINDOW));
 		}
 		else
 		{
-			std::string name = mGUIManager->generateName(TYPE_WINDOW);
-			mGUIManager->notifyNameUsed(name);
+			std::string name = generateName(TYPE_WINDOW);
 			return dynamic_cast<Window*>(_createChild(name,TYPE_WINDOW));
 		}
 	}

@@ -34,13 +34,15 @@ namespace QuickGUI
 		mScrollPane->removeChild(mScrollPane->mRightBar);
 		// store reference to the scroll bar
 		mRightScrollBar = mScrollPane->mRightBar;
-		addChild(mRightScrollBar);
+		mComponents.push_back(mRightScrollBar);
+		mRightScrollBar->setParent(this);
 		mRightScrollBar->setPosition(mSize.width - 20,0);
 
 		mScrollPane->removeChild(mScrollPane->mBottomBar);
 		// store reference to the scroll bar
 		mBottomScrollBar = mScrollPane->mBottomBar;
-		addChild(mBottomScrollBar);
+		mComponents.push_back(mBottomScrollBar);
+		mBottomScrollBar->setParent(this);
 		mBottomScrollBar->setPosition(0,mSize.height - 20);
 	}
 
@@ -104,6 +106,9 @@ namespace QuickGUI
 		if(w->getParentWidget() != NULL)
 			return;
 
+		if(!isNameUnique(w->getInstanceName()))
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + w->getInstanceName() + "\" already exists in " + getInstanceName(),"Panel::addChild");
+
 		mChildWidgets.push_back(w);
 
 		w->setParent(this);
@@ -126,272 +131,253 @@ namespace QuickGUI
 
    Tree* Panel::createTree(const std::string& name)
    {
-      if(mGUIManager->isNameUnique(name))
+      if(isNameUnique(name))
       {
-         mGUIManager->notifyNameUsed(name);
          return dynamic_cast<Tree*>(_createChild(name,TYPE_TREE));
       }
       else
       {
-         std::string name = mGUIManager->generateName(TYPE_TREE);
-         mGUIManager->notifyNameUsed(name);
+         std::string name = generateName(TYPE_TREE);
          return dynamic_cast<Tree*>(_createChild(name,TYPE_TREE));
       }
 	}
 */
 	Button* Panel::createButton()
 	{
-		return createButton(mGUIManager->generateName(TYPE_BUTTON));
+		return createButton(generateName(TYPE_BUTTON));
 	}
 
 	Button* Panel::createButton(const std::string& name)
 	{
-		if(mGUIManager->isNameUnique(name))
+		if(isNameUnique(name))
 		{
-			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<Button*>(_createChild(name,TYPE_BUTTON));
 		}
 		else
 		{
-			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createButton");
-			std::string name = mGUIManager->generateName(TYPE_BUTTON);
-			mGUIManager->notifyNameUsed(name);
-			return dynamic_cast<Button*>(_createChild(name,TYPE_BUTTON));
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists in " + getInstanceName(),"Panel::createButton");
 		}
 	}
 
 	CheckBox* Panel::createCheckBox()
 	{
-		return createCheckBox(mGUIManager->generateName(TYPE_CHECKBOX));
+		return createCheckBox(generateName(TYPE_CHECKBOX));
 	}
 
 	CheckBox* Panel::createCheckBox(const std::string& name)
 	{
-		if(mGUIManager->isNameUnique(name))
+		if(isNameUnique(name))
 		{
-			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<CheckBox*>(_createChild(name,TYPE_CHECKBOX));
 		}
 		else
 		{
-			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createCheckBox");
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists in " + getInstanceName(),"Panel::createCheckBox");
 		}
 	}
 
 	ComboBox* Panel::createComboBox()
 	{
-		return createComboBox(mGUIManager->generateName(TYPE_COMBOBOX));
+		return createComboBox(generateName(TYPE_COMBOBOX));
 	}
 
 	ComboBox* Panel::createComboBox(const std::string& name)
 	{
-		if(mGUIManager->isNameUnique(name))
+		if(isNameUnique(name))
 		{
-			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<ComboBox*>(_createChild(name,TYPE_COMBOBOX));
 		}
 		else
 		{
-			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createComboBox");
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists in " + getInstanceName(),"Panel::createComboBox");
 		}
 	}
 
 	Console* Panel::createConsole()
 	{
-		return createConsole(mGUIManager->generateName(TYPE_CONSOLE));
+		return createConsole(generateName(TYPE_CONSOLE));
 	}
 
 	Console* Panel::createConsole(const std::string& name)
 	{
-		if(mGUIManager->isNameUnique(name))
+		if(isNameUnique(name))
 		{
-			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<Console*>(_createChild(name,TYPE_CONSOLE));
 		}
 		else
 		{
-			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createConsole");
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists in " + getInstanceName(),"Panel::createConsole");
 		}
 	}
 
 	HorizontalScrollBar* Panel::createHorizontalScrollBar()
 	{
-		return createHorizontalScrollBar(mGUIManager->generateName(TYPE_SCROLLBAR_HORIZONTAL));
+		return createHorizontalScrollBar(generateName(TYPE_SCROLLBAR_HORIZONTAL));
 	}
 
 	HorizontalScrollBar* Panel::createHorizontalScrollBar(const std::string& name)
 	{
-		if(mGUIManager->isNameUnique(name))
+		if(isNameUnique(name))
 		{
-			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<HorizontalScrollBar*>(_createChild(name,TYPE_SCROLLBAR_HORIZONTAL));
 		}
 		else
 		{
-			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createHorizontalScrollBar");
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists in " + getInstanceName(),"Panel::createHorizontalScrollBar");
 		}
 	}
 
 	HorizontalTrackBar* Panel::createHorizontalTrackBar()
 	{
-		return createHorizontalTrackBar(mGUIManager->generateName(TYPE_TRACKBAR_HORIZONTAL));
+		return createHorizontalTrackBar(generateName(TYPE_TRACKBAR_HORIZONTAL));
 	}
 
 	HorizontalTrackBar* Panel::createHorizontalTrackBar(const std::string& name)
 	{
-		if(mGUIManager->isNameUnique(name))
+		if(isNameUnique(name))
 		{
-			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<HorizontalTrackBar*>(_createChild(name,TYPE_TRACKBAR_HORIZONTAL));
 		}
 		else
 		{
-			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createHorizontalTrackBar");
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists in " + getInstanceName(),"Panel::createHorizontalTrackBar");
 		}
 	}
 
 	Image* Panel::createImage()
 	{
-		return createImage(mGUIManager->generateName(TYPE_IMAGE));
+		return createImage(generateName(TYPE_IMAGE));
 	}
 
 	Image* Panel::createImage(const std::string& name)
 	{
-		if(mGUIManager->isNameUnique(name))
+		if(isNameUnique(name))
 		{
-			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<Image*>(_createChild(name,TYPE_IMAGE));
 		}
 		else
 		{
-			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createImage");
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists in " + getInstanceName(),"Panel::createImage");
 		}
 	}
 
 	Label* Panel::createLabel()
 	{
-		return createLabel(mGUIManager->generateName(TYPE_LABEL));
+		return createLabel(generateName(TYPE_LABEL));
 	}
 
 	Label* Panel::createLabel(const std::string& name)
 	{
-		if(mGUIManager->isNameUnique(name))
+		if(isNameUnique(name))
 		{
-			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<Label*>(_createChild(name,TYPE_LABEL));
 		}
 		else
 		{
-			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createLabel");
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists in " + getInstanceName(),"Panel::createLabel");
 		}
 	}
 
 	List* Panel::createList()
 	{
-		return createList(mGUIManager->generateName(TYPE_LIST));
+		return createList(generateName(TYPE_LIST));
 	}
 
 	List* Panel::createList(const std::string& name)
 	{
-		if(mGUIManager->isNameUnique(name))
+		if(isNameUnique(name))
 		{
-			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<List*>(_createChild(name,TYPE_LIST));
 		}
 		else
 		{
-			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createList");
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists in " + getInstanceName(),"Panel::createList");
 		}
 	}
 
 	LabelArea* Panel::createLabelArea()
 	{
-		return createLabelArea(mGUIManager->generateName(TYPE_LABELAREA));
+		return createLabelArea(generateName(TYPE_LABELAREA));
 	}
 
 	LabelArea* Panel::createLabelArea(const std::string& name)
 	{
-		if(mGUIManager->isNameUnique(name))
+		if(isNameUnique(name))
 		{
-			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<LabelArea*>(_createChild(name,TYPE_LABELAREA));
 		}
 		else
 		{
-			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createLabelArea");
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists in " + getInstanceName(),"Panel::createLabelArea");
 		}
 	}
 
 	NStateButton* Panel::createNStateButton()
 	{
-		return createNStateButton(mGUIManager->generateName(TYPE_NSTATEBUTTON));
+		return createNStateButton(generateName(TYPE_NSTATEBUTTON));
 	}
 
 	NStateButton* Panel::createNStateButton(const std::string& name)
 	{
-		if(mGUIManager->isNameUnique(name))
+		if(isNameUnique(name))
 		{
-			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<NStateButton*>(_createChild(name,TYPE_NSTATEBUTTON));
 		}
 		else
 		{
-			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createNStateButton");
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists in " + getInstanceName(),"Panel::createNStateButton");
 		}
 	}
 
 	Panel* Panel::createPanel()
 	{
-		return createPanel(mGUIManager->generateName(TYPE_PANEL));
+		return createPanel(generateName(TYPE_PANEL));
 	}
 
 	Panel* Panel::createPanel(const std::string& name)
 	{
-		if(mGUIManager->isNameUnique(name))
+		if(isNameUnique(name))
 		{
-			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<Panel*>(_createChild(name,TYPE_PANEL));
 		}
 		else
 		{
-			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createPanel");
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists in " + getInstanceName(),"Panel::createPanel");
 		}
 	}
 
 	ProgressBar* Panel::createProgressBar()
 	{
-		return createProgressBar(mGUIManager->generateName(TYPE_PROGRESSBAR));
+		return createProgressBar(generateName(TYPE_PROGRESSBAR));
 	}
 
 	ProgressBar* Panel::createProgressBar(const std::string& name)
 	{
-		if(mGUIManager->isNameUnique(name))
+		if(isNameUnique(name))
 		{
-			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<ProgressBar*>(_createChild(name,TYPE_PROGRESSBAR));
 		}
 		else
 		{
-			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createProgressBar");
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists in " + getInstanceName(),"Panel::createProgressBar");
 		}
 	}
 
 	TextBox* Panel::createTextBox()
 	{
-		return createTextBox(mGUIManager->generateName(TYPE_TEXTBOX));
+		return createTextBox(generateName(TYPE_TEXTBOX));
 	}
 
 	TextBox* Panel::createTextBox(const std::string& name)
 	{
 		TextBox* tb;
-		if(mGUIManager->isNameUnique(name))
+		if(isNameUnique(name))
 		{
-			mGUIManager->notifyNameUsed(name);
 			tb = dynamic_cast<TextBox*>(_createChild(name,TYPE_TEXTBOX));
 		}
 		else
 		{
-			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createTextBox");
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists in " + getInstanceName(),"Panel::createTextBox");
 		}
 
 		tb->setUseBorders(true);
@@ -402,37 +388,35 @@ namespace QuickGUI
 
 	VerticalScrollBar* Panel::createVerticalScrollBar()
 	{
-		return createVerticalScrollBar(mGUIManager->generateName(TYPE_SCROLLBAR_VERTICAL));
+		return createVerticalScrollBar(generateName(TYPE_SCROLLBAR_VERTICAL));
 	}
 
 	VerticalScrollBar* Panel::createVerticalScrollBar(const std::string& name)
 	{
-		if(mGUIManager->isNameUnique(name))
+		if(isNameUnique(name))
 		{
-			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<VerticalScrollBar*>(_createChild(name,TYPE_SCROLLBAR_VERTICAL));
 		}
 		else
 		{
-			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createVerticalScrollBar");
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists in " + getInstanceName(),"Panel::createVerticalScrollBar");
 		}
 	}
 
 	VerticalTrackBar* Panel::createVerticalTrackBar()
 	{
-		return createVerticalTrackBar(mGUIManager->generateName(TYPE_TRACKBAR_VERTICAL));
+		return createVerticalTrackBar(generateName(TYPE_TRACKBAR_VERTICAL));
 	}
 
 	VerticalTrackBar* Panel::createVerticalTrackBar(const std::string& name)
 	{
-		if(mGUIManager->isNameUnique(name))
+		if(isNameUnique(name))
 		{
-			mGUIManager->notifyNameUsed(name);
 			return dynamic_cast<VerticalTrackBar*>(_createChild(name,TYPE_TRACKBAR_VERTICAL));
 		}
 		else
 		{
-			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists!","Panel::createVerticalTrackBar");
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + name + "\" already exists in " + getInstanceName(),"Panel::createVerticalTrackBar");
 		}
 	}
 

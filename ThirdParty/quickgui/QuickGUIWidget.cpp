@@ -85,8 +85,6 @@ namespace QuickGUI
 			++index;
 		}
 
-		// Remove name from GUIManager name list. (So another widget can be created with this name, if desired)
-		mGUIManager->notifyNameFree(mInstanceName);
 	}
 
 	void Widget::_applyAnchors()
@@ -369,10 +367,64 @@ namespace QuickGUI
 		redraw();
 	}
 
+	bool Widget::isNameUnique(const std::string& name) const
+	{
+		WidgetArray::const_iterator it;
+		for (it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it)
+		{
+			if ((*it)->getInstanceName() == name)
+				return false;
+		}
+		return true;
+	}
+
+	std::string Widget::generateName(Widget::Type t)
+	{
+		std::string s;
+		switch(t)
+		{
+			case Widget::TYPE_BORDER:				s = "Border";			break;
+			case Widget::TYPE_BUTTON:				s = "Button";			break;
+			case Widget::TYPE_CHECKBOX:				s = "CheckBox";			break;
+			case Widget::TYPE_COMBOBOX:				s = "ComboBox";			break;
+			case Widget::TYPE_CONSOLE:				s = "Console";			break;
+			case Widget::TYPE_IMAGE:				s = "Image";			break;
+			case Widget::TYPE_LABEL:				s = "Label";			break;
+			case Widget::TYPE_LIST:					s = "List";				break;
+			case Widget::TYPE_MENULABEL:			s = "MenuLabel";		break;
+			case Widget::TYPE_LABELAREA:			s = "LabelArea";		break;
+			case Widget::TYPE_TEXTAREA:				s = "TextArea";			break;
+			case Widget::TYPE_NSTATEBUTTON:			s = "NStateButton";		break;
+			case Widget::TYPE_PANEL:				s = "Panel";			break;
+			case Widget::TYPE_PROGRESSBAR:			s = "ProgressBar";		break;
+			case Widget::TYPE_RADIOBUTTON:			s = "RadioButton";		break;
+			case Widget::TYPE_SCROLL_PANE:			s = "ScrollPane";		break;
+			case Widget::TYPE_SCROLLBAR_HORIZONTAL: s = "HScrollBar";		break;
+			case Widget::TYPE_SCROLLBAR_VERTICAL:	s = "VScrollBar";		break;
+			case Widget::TYPE_TEXTBOX:				s = "TextBox";			break;
+			case Widget::TYPE_TITLEBAR:				s = "TitleBar";			break;
+			case Widget::TYPE_TRACKBAR_HORIZONTAL:	s = "HTrackBar";		break;
+			case Widget::TYPE_TRACKBAR_VERTICAL:	s = "VTrackBar";		break;
+			case Widget::TYPE_WINDOW:				s = "Window";			break;
+			default:								s = "Widget";			break;
+		}
+
+		int counter = 1;
+		while( !isNameUnique(s + Ogre::StringConverter::toString(counter)) )
+			++counter;
+
+		return (s + Ogre::StringConverter::toString(counter));
+	}
+
 	void Widget::addChild(Widget* w)
 	{
 		if(w->getParentWidget() != NULL)
 			return;
+
+		if (!isNameUnique(w->getInstanceName()))
+		{
+			throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"Name \"" + w->getInstanceName() + "\" is already used in " + getInstanceName() ,"Widget::addChild");
+		}
 
 		mChildWidgets.push_back(w);
 
@@ -561,16 +613,13 @@ namespace QuickGUI
 	{
 		if( name.empty() )
 			return NULL;
-		if( mInstanceName == name )
-			return this;
 
-		Widget* w = NULL;
 		WidgetArray::iterator it;
-		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
+		for ( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 		{
-			if( (w = (*it)->getChildWidget(name)) != NULL )
+			if (name == (*it)->getInstanceName())
 			{
-				return w;
+				return (*it);
 			}
 		}
 
@@ -581,6 +630,43 @@ namespace QuickGUI
 	{
 		if( name.empty() )
 			return NULL;
+
+		WidgetArray::const_iterator it;
+		for ( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
+		{
+			if (name == (*it)->getInstanceName())
+			{
+				return (*it);
+			}
+		}
+
+		return NULL;
+	}
+
+	Widget* Widget::findChildWidget(const std::string& name)
+	{
+		if( name.empty() )
+			return NULL;
+		if( mInstanceName == name )
+			return this;
+
+		Widget* w = NULL;
+		WidgetArray::iterator it;
+		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
+		{
+			if( (w = (*it)->findChildWidget(name)) != NULL )
+			{
+				return w;
+			}
+		}
+
+		return NULL;
+	}
+
+	const Widget* Widget::findChildWidget(const std::string& name) const
+	{
+		if( name.empty() )
+			return NULL;
 		if( mInstanceName == name )
 			return this;
 
@@ -588,7 +674,7 @@ namespace QuickGUI
 		WidgetArray::const_iterator it;
 		for( it = mChildWidgets.begin(); it != mChildWidgets.end(); ++it )
 		{
-			if( (w = (*it)->getChildWidget(name)) != NULL )
+			if( (w = (*it)->findChildWidget(name)) != NULL )
 			{
 				return w;
 			}

@@ -385,7 +385,7 @@ namespace QuickGUI
 	int Text::getTextIndex(const Point& pixelDimensions)
 	{
 		if(mCaption.length() <= 0)
-				return -1;
+			return -1;
 
 		// check bounds
 		if( pixelDimensions.x < mPixelDimensions.x )
@@ -407,7 +407,7 @@ namespace QuickGUI
 		return -1;
 	}
 
-	int Text::getTextCursorIndex(const Point& pixelDimensions)
+	int Text::getTextCursorIndex(Point pixelDimensions)
 	{
 		if(mCaption.length() <= 0)
 			return 0;
@@ -417,6 +417,13 @@ namespace QuickGUI
 			return -1;
 		else if( pixelDimensions.x > (mPixelDimensions.x + mPixelDimensions.width) )
 			return (static_cast<int>(mCharacters.size()) + 1);
+
+		// If mouse cursor is above text, select from top line
+		if( pixelDimensions.y < mPixelDimensions.y )
+			pixelDimensions.y = mPixelDimensions.y + mCharacters[0]->getSize().height / 2;
+		// If mouse cursor is below text, select from bottom line
+		else if( pixelDimensions.y > mPixelDimensions.y + mPixelDimensions.height )
+			pixelDimensions.y = mPixelDimensions.y + mPixelDimensions.height - mCharacters[0]->getSize().height / 2;
 
 		int textIndex = 0;
 		QuadArray::iterator it;

@@ -244,8 +244,22 @@ namespace QuickGUI
 		const WidgetArray* getChildWidgetList() const;
 		Widget* getChildWidget(const std::string& name);
 		const Widget* getChildWidget(const std::string& name) const;
+		/**
+		* Find child by name
+		*/
 		Widget* getChildWidget(Type t, unsigned int index);
+		/**
+		* Find child by name
+		*/
 		const Widget* getChildWidget(Type t, unsigned int index) const;
+		/**
+		* Find child recursively by name
+		*/
+		Widget* findChildWidget(const std::string& name);
+		/**
+		* Find child recursively by name
+		*/
+		const Widget* findChildWidget(const std::string& name) const;
 		Rect getClippedDimensions();
 		Rect getDimensions() const;
 		GUIManager* getGUIManager();
@@ -256,6 +270,7 @@ namespace QuickGUI
 		Point getPosition() const;
 		Point getScrollOffset() const;
 		Size getSize() const;
+		bool isNameUnique(const std::string& name) const;
 
 		std::string getFontName() const;
 		/**
@@ -509,6 +524,8 @@ namespace QuickGUI
 		void setUnderEffect(bool val) { mUnderEffect = val; }
 
 	protected:
+		std::string generateName(Widget::Type t);
+
 		virtual void setGUIManager(GUIManager* gm);
 		virtual void setParent(Widget* parent);
 		virtual void setQuadContainer(QuadContainer* container);

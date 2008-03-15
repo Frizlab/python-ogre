@@ -48,6 +48,9 @@ class DllExport SkyDome : public CameraBoundElement {
 		/// Reference to the sky dome material.
 		Ogre::MaterialPtr mMaterial;
 
+        /// If haze is enabled.
+        bool mHazeEnabled;
+
 // Methods --------------------------------------------------------------------
 	public:
 		/** Constructor
@@ -85,6 +88,12 @@ class DllExport SkyDome : public CameraBoundElement {
 
         /// Set the atmosphere depthh gradient image.
         void setAtmosphereDepthImage (const Ogre::String& gradients);
+
+        /// If skydome haze is enabled.
+        bool getHazeEnabled () const;
+
+        /// Enable or disable skydome haze. This makes the sky darker.
+        void setHazeEnabled (bool value);
 
 	private:
 		/** Internal method to create the sky dome material.

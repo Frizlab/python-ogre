@@ -20,7 +20,7 @@
 
 vertex_program CaelumHazeVP cg
 {
-	source CaelumShaders.cg
+	source CaelumSkyDome.cg
 	entry_point Haze_vp
 	profiles vs_2_0 arbvp1 vp30
 	compile_arguments -posinv 
@@ -34,7 +34,7 @@ vertex_program CaelumHazeVP cg
 
 fragment_program CaelumHazeFP cg
 {
-	source CaelumShaders.cg
+	source CaelumSkyDome.cg
 	entry_point Haze_fp
 	profiles ps_2_0 arbfp1 fp30
 	compile_arguments -posinv 

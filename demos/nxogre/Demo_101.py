@@ -7,7 +7,7 @@ import PythonOgreConfig
 
 import ogre.renderer.OGRE as ogre
 import ogre.physics.PhysX as physx
-import ogre.physics.NxOgre as nxogre
+import ogre.physics.NxOgre_09 as nxogre
 import CakeFramework as cf
     
 class NxTutorial ( cf.Cake ):
