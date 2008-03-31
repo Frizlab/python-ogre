@@ -172,12 +172,13 @@ class GaussianListener( Ogre.CompositorInstance.Listener ):
 
 
 class ShadowsListener ( SampleFramework.FrameListener, OIS.MouseListener, OIS.KeyListener ):
-    def __init__ (self, win, cam, sm):
+    def __init__ (self, win, cam, sm, app):
         SampleFramework.FrameListener.__init__(self, win, cam, True, True)
         OIS.KeyListener.__init__(self)
         OIS.MouseListener.__init__(self)
+        self.app = app
         self.sceneManager = sm
-        self.mMain = win
+        self.mWindow = win
         self.camera=cam
         self.mShutdownRequested = False
         self.mLMBDown=False
@@ -191,9 +192,14 @@ class ShadowsListener ( SampleFramework.FrameListener, OIS.MouseListener, OIS.Ke
         self.mLastMousePositionSet=False
         self.mAvgFrameTime =0.1
         self.mWriteToFile = False
+        self.mTranslateVector = Ogre.Vector3.ZERO 
+        self.mQuit = False
+        self.mSkipCount = 0
+        self.mUpdateFreq=10
+        self.mRotX = 0 
+        self.mRotY = 0 
 
-
-# #         windowHnd = self.mMain.getRenderWindow().getCustomAttributeInt("WINDOW")
+# #         windowHnd = self.mWindow.getRenderWindow().getCustomAttributeInt("WINDOW")
 # #         self.mInputManager = \
 # #              OIS.createPythonInputSystem([("WINDOW",str(windowHnd))])
 # #         
@@ -201,7 +207,7 @@ class ShadowsListener ( SampleFramework.FrameListener, OIS.MouseListener, OIS.Ke
 # #         self.mKeyboard = self.mInputManager.createInputObjectKeyboard( OIS.OISKeyboard, True )
 # #         self.mMouse = self.mInputManager.createInputObjectMouse( OIS.OISMouse, True )
 
-# #         width, height, depth, left, top = self.mMain.getRenderWindow().getMetrics()
+# #         width, height, depth, left, top = self.mWindow.getRenderWindow().getMetrics()
 
 # #         ##Set Mouse Region.. if window resizes, we should alter this to reflect as well
 # #         ms = self.mMouse.getMouseState() 
@@ -250,8 +256,7 @@ class ShadowsListener ( SampleFramework.FrameListener, OIS.MouseListener, OIS.Ke
     def frameStarted( self, evt):
         self.Mouse.capture() 
         self.Keyboard.capture() 
-
-        if( self.mMain.getRenderWindow().isActive() == False ):
+        if( self.mWindow.isActive() == False ):
             return False 
     
         if (self.mQuit):
@@ -260,7 +265,7 @@ class ShadowsListener ( SampleFramework.FrameListener, OIS.MouseListener, OIS.Ke
             self.mSkipCount+=1 
             if (self.mSkipCount >= self.mUpdateFreq):
                 self.mSkipCount = 0 
-                self.updateStats() 
+# # #                 self.updateStats() 
             ## update movement process
             if(self.mProcessMovement or self.mUpdateMovement):
                 if self.mMoveLeft:
@@ -272,9 +277,9 @@ class ShadowsListener ( SampleFramework.FrameListener, OIS.MouseListener, OIS.Ke
                 if self.mMoveBck: 
                     self.mTranslateVector.z += self.mAvgFrameTime * MOVESPEED 
 
-                self.mMain.getCamera().yaw(Ogre.Degree(self.mRotX)) 
-                self.mMain.getCamera().pitch(Ogre.Degree(self.mRotY)) 
-                self.mMain.getCamera().moveRelative(self.mTranslateVector) 
+                self.camera.yaw(Ogre.Degree(self.mRotX)) 
+                self.camera.pitch(Ogre.Degree(self.mRotY)) 
+                self.camera.moveRelative(self.mTranslateVector) 
 
                 self.mUpdateMovement = False 
                 self.mRotX = 0 
@@ -283,17 +288,17 @@ class ShadowsListener ( SampleFramework.FrameListener, OIS.MouseListener, OIS.Ke
 
             if(self.mWriteToFile):
                 self.mNumScreenShots +=1
-                self.mMain.getRenderWindow().writeContentsToFile("frame_" +
+                self.mWindow.writeContentsToFile("frame_" +
                     str(self.mNumScreenShots) + ".png") 
             return True 
 
     def frameEnded( self, evt):
-        if (self.mAnimState):
-            self.mAnimState.addTime(evt.timeSinceLastFrame) 
+        if (self.app.mAnimState):
+            self.app.mAnimState.addTime(evt.timeSinceLastFrame) 
         if (self.mShutdownRequested):
             return False 
         else:
-            return ExampleFrameListener.frameEnded(self, evt) 
+            return SampleFramework.FrameListener.frameEnded(self, evt) 
 
 
 ##--------------------------------------------------------------------------
@@ -324,7 +329,7 @@ class ShadowsListener ( SampleFramework.FrameListener, OIS.MouseListener, OIS.Ke
 
         if (e.key == OIS.KC_SYSRQ ):
             ss = "screenshot_" + str(self.mNumScreenShots) + ".png" 
-            self.mMain.getRenderWindow().writeContentsToFile(ss.str()) 
+            self.mWindow.writeContentsToFile(ss.str()) 
             self.mDebugText = "Saved: " + ss.str() 
             ##self.mTimeUntilNextToggle = 0.5 
 
@@ -582,7 +587,7 @@ class ShadowsApplication ( SampleFramework.Application ):
         ## Prepare athene mesh for normalmapping
         pAthene = Ogre.MeshManager.getSingleton().load("athene.mesh", 
             Ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME) 
-        ret, src, dest =pAthene.suggestTangentVectorBuildParams( Ogre.VES_TANGENT )
+        ret, src, dest =pAthene.suggestTangentVectorBuildParams( Ogre.VES_TANGENT , 1, 1)
         if ( not ret):
             pAthene.buildTangentVectors(VES_TANGENT, src, dest) 
         
@@ -965,19 +970,20 @@ class ShadowsApplication ( SampleFramework.Application ):
         if (cbo.getSelectedItem()):
             proj = cbo.getSelectedItem().getID() 
             if (proj != self.mCurrentProjection):
-                ## AJM WRNIMG
+                ## AJM WARNING
                 if proj == self.UNIFORM:
                     self.mCurrentShadowCameraSetup = Ogre.ShadowCameraSetupPtr(Ogre.DefaultShadowCameraSetup()) 
                 elif proj == self.UNIFORM_FOCUSED:
+                    self.focused = Ogre.FocusedShadowCameraSetup()
                     self.mCurrentShadowCameraSetup =\
-                        ShadowCameraSetupPtr(Ogre.FocusedShadowCameraSetup()) 
+                        Ogre.ShadowCameraSetup(self.focused) 
                 elif proj == self.LISPSM:
-                        self.mLiSPSMSetup = LiSPSMShadowCameraSetup() 
+                        self.mLiSPSMSetup = Ogre.LiSPSMShadowCameraSetup() 
                         ##self.mLiSPSMSetup.setUseAggressiveFocusRegion=False 
                         self.mCurrentShadowCameraSetup = Ogre.ShadowCameraSetupPtr(self.mLiSPSMSetup) 
                 elif proj == self.PLANE_OPTIMAL:
                     self.mCurrentShadowCameraSetup =\
-                        ShadowCameraSetupPtr(Ogre.PlaneOptimalShadowCameraSetup(self.mPlane)) 
+                        Ogre.ShadowCameraSetupPtr(Ogre.PlaneOptimalShadowCameraSetup(self.mPlane)) 
 
                 self.mCurrentProjection = proj 
                 self.sceneManager.setShadowCameraSetup(self.mCurrentShadowCameraSetup) 
@@ -1131,7 +1137,7 @@ class ShadowsApplication ( SampleFramework.Application ):
     ## Create new frame listener
     def _createFrameListener(self):
 
-        shadowListener = ShadowsListener(self.renderWindow, self.camera, self.sceneManager) 
+        shadowListener = ShadowsListener(self.renderWindow, self.camera, self.sceneManager, self) 
         self.frameListener = shadowListener 
         self.frameListener.showDebugOverlay(True) 
         self.root.addFrameListener(self.frameListener) 

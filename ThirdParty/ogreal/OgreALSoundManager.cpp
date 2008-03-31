@@ -393,7 +393,7 @@ namespace OgreAL {
 		SoundList::iterator soundItr = mSoundsToDestroy.begin();
 		while(!mSoundsToDestroy.empty())
 		{
-			destroySound(*soundItr);
+			delete (*soundItr);
 			soundItr = mSoundsToDestroy.erase(soundItr);
 		}
 

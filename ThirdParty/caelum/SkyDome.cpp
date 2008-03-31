@@ -170,14 +170,14 @@ void SkyDome::createSkyDomeMaterial () {
                     "SkyDomeFP", RESOURCE_GROUP_NAME, "cg", Ogre::GPT_FRAGMENT_PROGRAM);
 			fp->setSourceFile ("CaelumSkyDome.cg");
 			fp->setParameter ("entry_point", "SkyDome_fp");
-            fp->setParameter("compile_arguments", "-DHAZE=1");
+            fp->setParameter("compile_arguments", "-DHAZE");
 			fp->setParameter ("profiles", "ps_2_0 arbfp1");
 
 			fp = Ogre::HighLevelGpuProgramManager::getSingleton().createProgram (
                     "SkyDomeFP_NoHaze", RESOURCE_GROUP_NAME, "cg", Ogre::GPT_FRAGMENT_PROGRAM);
 			fp->setSourceFile ("CaelumSkyDome.cg");
 			fp->setParameter ("entry_point", "SkyDome_fp");
-            fp->setParameter ("compile_arguments", "-DHAZE=0");
+            fp->setParameter ("compile_arguments", "");
 			fp->setParameter ("profiles", "ps_2_0 arbfp1");
         }
 

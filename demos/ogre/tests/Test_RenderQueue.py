@@ -12,15 +12,15 @@ class MyRenderQueueListener(ogre.RenderQueueListener):
       print type (ogre.RENDER_QUEUE_OVERLAY)
       if (id == ogre.RENDER_QUEUE_OVERLAY): 
           print "Queue Start Skip %i %i " % (id,ogre.RENDER_QUEUE_OVERLAY) 
-          return True
+          return 1 # True
       print "returning false"
-      return False
+      return 0 # False
    def renderQueueEnded (self, id , invocation,repeatThisInvocation): 
       print "In QueueEnded"
       if (id == ogre.RENDER_QUEUE_OVERLAY): 
           print "Queue End Repeat %i %i" % (id, ogre.RENDER_QUEUE_OVERLAY) 
-          return False
-      return False
+          return 0 # False
+      return 0 # False
 
 class EnvMapApplication(sf.Application): 
     def _createScene( self ): 
