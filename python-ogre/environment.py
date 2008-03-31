@@ -127,9 +127,11 @@ if isWindows():
     mv = "move /Y "
     rm = "del /Q "
     cp = "copy /Y "
-    unzip = "unzip "
+    unzip = "unzip -o "
     cvs = "cvs -z3 -q  "
     svn = "svn "
+    VCBUILD="'c:\\Program Files\\Microsoft Visual Studio 8\\vc\\vcpackages\\vcbuild.exe'  /useenv  "
+    VCBUILD = '"c:/Program Files/Microsoft Visual Studio 8/vc/vcpackages/vcbuild.exe" /useenv '
 else:
     mv = "mv "
     rm = "rm -f "
@@ -534,16 +536,16 @@ class ogre:
 class ois:
     active = True
     pythonModule = True
-    version= "1.1"
+    version= "1.2"
     name = 'ois'
     cflags=''
     parent = "ogre/io"
     if isMac():
         source=[]
     if isLinux():
-        base = "ois-1.0RC1"
+        base = "ois-1.2"
         source=[
-            [wget, "http://prdownloads.sourceforge.net/wgois/ois-1.0RC1.tar.gz", downloadPath]
+            [wget, "http://prdownloads.sourceforge.net/wgois/ois-1.2.tar.gz", downloadPath]
             ]
         buildCmds  = [
                [0, tar + " zxf " + os.path.join(downloadPath,base)+".tar.gz --overwrite",os.getcwd() ],
@@ -563,6 +565,15 @@ class ois:
                 [0,'make', os.path.join(os.getcwd(), base )],
                 [0,'make install', os.path.join(os.getcwd(), base )]
                 ]
+    if isWindows():
+        base = "ois"
+        source = [ wget,"http://downloads.sourceforge.net/wgois/ois_1.2.0.zip", downloadPath]
+        buildCmds = [
+            [0, unzip + downloadPath + "/" + "ois_1.2.0.zip"  ,os.getcwd() ],
+#             [0, '"c:/Program Files/Microsoft Visual Studio 8/vc/vcpackages/vcbuild.exe" /useenv ois_VC8.sln ', os.path.join(os.getcwd(), base, 'Win32' )],
+#             [0, VCBUILD + " ois_vc8.sln " + "\"Release|Win32\"", os.path.join(os.getcwd(), base, 'Win32' )]
+            ]
+                         
     if os.name=='nt':
         if _PreCompiled:
             pchstop = 'OIS.h'

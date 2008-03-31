@@ -66,25 +66,25 @@ class HighlightQueueListener ( ogre.RenderQueueListener ):
         ogre.RenderQueueListener.__init__(self)       
 
     def renderQueueStarted(self, queueGroupId, invocation, skipThisInvocation):
-      ##RenderQueue containing the object to be highlighted
-      if (queueGroupId == 90):
-
-         rendersys = ogre.Root.getSingleton().getRenderSystem() 
-
-         rendersys.clearFrameBuffer(ogre.FBT_STENCIL) 
-         rendersys.setStencilCheckEnabled(True) 
-         rendersys.setStencilBufferParams(ogre.CMPF_ALWAYS_PASS,1,0xFFFFFFFF,
+        ##RenderQueue containing the object to be highlighted
+        if (queueGroupId == 90):
+        
+            rendersys = ogre.Root.getSingleton().getRenderSystem() 
+            
+            rendersys.clearFrameBuffer(ogre.FBT_STENCIL) 
+            rendersys.setStencilCheckEnabled(True) 
+            rendersys.setStencilBufferParams(ogre.CMPF_ALWAYS_PASS,1,0xFFFFFFFF,
                            ogre.SOP_KEEP,ogre.SOP_KEEP,ogre.SOP_REPLACE,False)       
-
-      ##RenderQueue containing the outline
-      if (queueGroupId == 91):
-
-         rendersys = ogre.Root.getSingleton().getRenderSystem() 
-
-         rendersys.setStencilCheckEnabled(True) 
-         rendersys.setStencilBufferParams(ogre.CMPF_NOT_EQUAL,1,0xFFFFFFFF,
-                  ogre.SOP_KEEP,ogre.SOP_KEEP,ogre.SOP_KEEP,False)       
-      return skipThisInvocation
+        
+        ##RenderQueue containing the outline
+        if (queueGroupId == 91):
+        
+             rendersys = ogre.Root.getSingleton().getRenderSystem() 
+            
+             rendersys.setStencilCheckEnabled(True) 
+             rendersys.setStencilBufferParams(ogre.CMPF_NOT_EQUAL,1,0xFFFFFFFF,
+                      ogre.SOP_KEEP,ogre.SOP_KEEP,ogre.SOP_KEEP,False)
+        return skipThisInvocation
 
 
     def renderQueueEnded(self,queueGroupId,  invocation,repeatThisInvocation):
@@ -123,9 +123,7 @@ class Cake ():
     def pre(self):
         self.getConfig() 
     
-        print "$$$$$$$ PRE 1"   
         self.Renderer = Renderer(self.RenderConfiguration) 
-        print "$$$$$$$ PRE 1"   
         self.InputHandler = InputHandler() 
         print "$$$$$$$ PRE 1"   
         window = self.Renderer.createWindow("NxOgre") 
@@ -292,6 +290,7 @@ class Renderer ( ogre.FrameListener ):
     
     def getRoot(self):
         return self.Root
+        
     def getWindow(self):
         return self.Window
 
@@ -391,15 +390,19 @@ class Renderer ( ogre.FrameListener ):
 
 
     def frameStarted(self, evt):
+        print "FS"
         self.InputHandler.onFrame(evt.timeSinceLastFrame) 
+        print "FS1"
         self.Cake.onFramePre(evt.timeSinceLastFrame) 
-    
+        print "FS2"
+        
         if (self.Shutdown):
             return False 
         else :
             return True 
 
     def frameEnded( self, evt):
+        print "FE"
         if (self.Shutdown):
             return False 
         if (self.Window.isClosed()) :
@@ -1183,7 +1186,7 @@ class Sponge_Cake ( Cake ):
         self.World = nxogre.World(nxogre.PhysXDriverParams("log: html"))
         self.Scene = self.World.createScene("Main", self.SceneMgr, nxogre.SceneParams("gravity: yes, floor: yes, time-step-method: variable"))
 
-        self.Scene.createBody("cube.1m.mesh", nxogre.CubeShape(1), ogre.Vector3(0,5,0), nxogre.ActorParams("mass: 10"))
+        self.Scene.createBody("cube.1m.mesh", nxogre.CubeShape(1), nxogre.Pose(ogre.Vector3(0,5,0)), nxogre.ActorParams("mass: 10"))
 
     def stop(self):
         del self.World

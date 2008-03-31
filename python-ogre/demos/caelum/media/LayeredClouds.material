@@ -45,7 +45,7 @@ fragment_program CaelumLayeredCloudsFP cg
         param_named sunColour float4 1 1 1 1
         
         // Fog colour; used as the base cloud colour.
-        param_named fogColour float4
+        param_named fogColour float4 0 0 0 0
         
         
         // The inverse of the cloud forms scale
