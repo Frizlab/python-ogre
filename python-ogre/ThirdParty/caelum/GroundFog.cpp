@@ -27,10 +27,13 @@ namespace caelum {
 
 	GroundFog::GroundFog(
 			Ogre::SceneManager *scene,
+			Ogre::SceneNode *caelumRootNode,
 			const Ogre::String &domeMaterialName,
 			const Ogre::String &domeEntityName):
 			mScene(scene)
 	{
+		scene->getRenderQueue()->getQueueGroup(CAELUM_RENDER_QUEUE_GROUND_FOG)->setShadowsEnabled(false);
+		
 		// Create dome entity, using a prefab sphere.
         // The prefab sphere has a radius of 50 units.
         // If this changes in future version of ogre this might break.
@@ -39,7 +42,7 @@ namespace caelum {
         mDomeEntity->setCastShadows(false);
         mDomeEntity->setRenderQueueGroup (CAELUM_RENDER_QUEUE_GROUND_FOG);
 
-		mDomeNode = mScene->getRootSceneNode ()->createChildSceneNode ();
+		mDomeNode = caelumRootNode->createChildSceneNode ();
 		mDomeNode->attachObject (mDomeEntity);
 
 		// Maybe it would be better to create the material at runtime instead.
@@ -176,13 +179,10 @@ namespace caelum {
 	{
         CameraBoundElement::notifyCameraChanged (cam);
 
-		// Move dome node.
-		mDomeNode->setPosition (cam->getRealPosition ());
-
 		// Send camera height to shader.
 		Ogre::GpuProgramParametersSharedPtr params = 
 			mDomeMaterial->getBestTechnique()->getPass(0)->getFragmentProgramParameters();
-		params->setNamedConstant("cameraHeight", cam->getDerivedPosition().y);
+		params->setNamedConstant("cameraHeight", cam->getDerivedPosition().dotProduct(mDomeNode->_getDerivedOrientation() * Ogre::Vector3::UNIT_Y));
     }
 
     void GroundFog::setFarRadius (Ogre::Real radius)

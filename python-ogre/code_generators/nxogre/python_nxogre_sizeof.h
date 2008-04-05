@@ -1,7 +1,7 @@
 // sizeof ( NxControllersHit );
 sizeof ( NxBoxShapeDesc );
 sizeof ( NxPlaneShapeDesc );
-sizeof ( NxControllerManager );
+// sizeof ( NxControllerManager );
 // sizeof ( NxControllerShapeHit );
 sizeof ( NxPruningStructure );
 sizeof ( NxVec3 );
@@ -39,7 +39,7 @@ sizeof ( NxContactPair );
 sizeof ( NxForceMode );
 //sizeof ( NxOgre::Compartment );
 sizeof ( NxCombineMode );
-sizeof ( NxExtendedVec3 );
+// sizeof ( NxExtendedVec3 );
 sizeof ( NxThreadPriority );
 sizeof ( NxConvexMesh );
 sizeof ( NxContactPair );

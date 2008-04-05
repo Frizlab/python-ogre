@@ -237,10 +237,10 @@ BatchedGeometry::SubBatch::SubBatch(BatchedGeometry *parent, SubEntity *ent)
 	meshType = ent->getSubMesh();
 	this->parent = parent;
 	built = false;
-
+	// Material must always exist
 	Material *origMat = ((MaterialPtr)MaterialManager::getSingleton().getByName(ent->getMaterialName())).getPointer();
 	if (origMat) {
-	material = MaterialManager::getSingleton().getByName(getMaterialClone(origMat)->getName());
+	material = MaterialManager::getSingleton().getByName(getMaterialClone(*origMat)->getName());
 	} else {
 		MaterialManager::ResourceCreateOrRetrieveResult result = MaterialManager::getSingleton().createOrRetrieve("PagedGeometry_Batched_Material", "General");
 		if (result.first.isNull()) {
@@ -288,12 +288,12 @@ BatchedGeometry::SubBatch::~SubBatch()
 	delete indexData;
 }
 
-Material *BatchedGeometry::SubBatch::getMaterialClone(Material *mat)
+Material *BatchedGeometry::SubBatch::getMaterialClone(Material &mat)
 {
-	String clonedName = mat->getName() + "_Batched";
+	String clonedName = mat.getName() + "_Batched";
 	MaterialPtr clonedMat = MaterialManager::getSingleton().getByName(clonedName);
 	if (clonedMat.isNull())
-		clonedMat = mat->clone(clonedName);
+		clonedMat = mat.clone(clonedName);
 	
 	return clonedMat.getPointer();
 }

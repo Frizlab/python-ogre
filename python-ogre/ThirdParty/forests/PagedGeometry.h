@@ -1348,7 +1348,8 @@ template <class PageType> inline void GeometryPageManager::initPages(const TBoun
 	{
 		//Bounded mode
 		gridBounds = bounds;
-		geomGridX = (gridBounds.width() / mainGeom->getPageSize());
+		// In case the devision does not give the round number use the next largest integer
+		geomGridX = std::ceil(gridBounds.width() / mainGeom->getPageSize());
 	}
 	geomGridZ = geomGridX; //Note: geomGridX == geomGridZ; Need to merge.
 
@@ -1356,10 +1357,6 @@ template <class PageType> inline void GeometryPageManager::initPages(const TBoun
 	//Allocate grid array
 	geomGrid = new GeometryPage *[geomGridX * geomGridZ];
 
-	
-	//Create GeometryPage's
-	int offsetx = Ogre::Math::Floor(gridBounds.left / mainGeom->getPageSize());
-	int offsetz = Ogre::Math::Floor(gridBounds.top / mainGeom->getPageSize());
 	for (int x = 0; x < geomGridX; ++x)
 	{
 		for (int z = 0; z < geomGridZ; ++z)
@@ -1370,8 +1367,8 @@ template <class PageType> inline void GeometryPageManager::initPages(const TBoun
 			page->_centerPoint.x = ((x + 0.5f) * mainGeom->getPageSize()) + gridBounds.left;
 			page->_centerPoint.z = ((z + 0.5f) * mainGeom->getPageSize()) + gridBounds.top;
 			page->_centerPoint.y = 0.0f;
-			page->_xIndex = x + offsetx;
-			page->_zIndex = z + offsetz;
+			page->_xIndex = x;
+			page->_zIndex = z;
 			page->_inactiveTime = 0;
 			page->_loaded = false;
 			page->_needsUnload = false;

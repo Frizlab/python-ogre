@@ -202,11 +202,11 @@ TreeLoader3D::deleteTrees(const Ogre::Vector3 &position, Real radius, Entity *ty
 					float distSq = distX * distX + distZ * distZ;
 
 					if (distSq <= radiusSq){
+#ifdef PAGEDGEOMETRY_USER_DATA
+						deletedUserData.push_back(treeList[i].userData);
+#endif
 						//If it's within the radius, delete it
 						treeList[i] = treeList.back();
-#ifdef PAGEDGEOMETRY_USER_DATA
-						deletedUserData.push_back(treeList.back().userData);
-#endif
 						treeList.pop_back();
 						modified = true;
 					}

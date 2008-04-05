@@ -74,13 +74,13 @@ public:
 		bool castsShadows(void) const { return parent->getCastShadows(); }
 
 	private:
-		//This function is used to make a single clone of materials used, since the materials
-		//will be modified by the batch system (and it wouldn't be good to modify the original materials
-		//that the user may be using somewhere else).
-		Ogre::Material *getMaterialClone(Ogre::Material *mat);
+		// This function is used to make a single clone of materials used, since the materials
+		// will be modified by the batch system (and it wouldn't be good to modify the original materials
+		// that the user may be using somewhere else).
+		Ogre::Material *getMaterialClone(Ogre::Material &mat);
 
-		//A structure defining the desired position/orientation/scale of a batched mesh. The
-		//SubMesh is not specified since that can be determined by which MeshQueue this belongs to.
+		// A structure defining the desired position/orientation/scale of a batched mesh. The
+		// SubMesh is not specified since that can be determined by which MeshQueue this belongs to.
 		struct QueuedMesh
 		{
 			Ogre::SubMesh *mesh;

@@ -420,6 +420,16 @@ namespace QuickGUI
 		}
 	}
 
+	void Panel::enableScrollPane()
+	{
+		mScrollPane->enable();
+	}
+
+	void Panel::disableScrollPane()
+	{
+		mScrollPane->disable();
+	}
+
 	QuadContainer* Panel::getQuadContainer()
 	{
 		return this;

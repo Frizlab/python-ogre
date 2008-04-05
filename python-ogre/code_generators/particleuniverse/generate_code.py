@@ -58,7 +58,13 @@ def ManualExclude ( mb ):
                 ]
     for c in NotExported:
         main_ns.class_( c ).exclude()
-
+        
+    excludes = ['::ParticleUniverse::ParticleTechnique::setSpatialHashingParticleSizeUsed',
+                    '::ParticleUniverse::ParticleTechnique::isSpatialHashingParticleSizeUsed'
+            ]     
+    for e in excludes:
+        print "excluding ", e
+        main_ns.member_functions(e).exclude()
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 

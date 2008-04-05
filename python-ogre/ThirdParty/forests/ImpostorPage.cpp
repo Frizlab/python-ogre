@@ -502,6 +502,8 @@ void ImpostorTexture::renderTextures(bool force)
 	Real oldFogEnd = sceneMgr->getFogEnd();
 	sceneMgr->setFog(FOG_NONE);
 	
+	// Get current status of the queue mode
+	Ogre::SceneManager::SpecialCaseRenderQueueMode OldSpecialCaseRenderQueueMode = sceneMgr->getSpecialCaseRenderQueueMode();
 	//Only render the entity
 	sceneMgr->setSpecialCaseRenderQueueMode(Ogre::SceneManager::SCRQM_INCLUDE); 
 	sceneMgr->addSpecialCaseRenderQueue(RENDER_QUEUE_6 + 1);
@@ -581,7 +583,8 @@ void ImpostorTexture::renderTextures(bool force)
 	entity->setRenderQueueGroup(oldRenderQueueGroup);
 	entity->setRenderingDistance(oldMaxDistance);
 	sceneMgr->removeSpecialCaseRenderQueue(RENDER_QUEUE_6 + 1);
-	sceneMgr->setSpecialCaseRenderQueueMode(Ogre::SceneManager::SCRQM_EXCLUDE); 
+	// Restore original state
+	sceneMgr->setSpecialCaseRenderQueueMode(OldSpecialCaseRenderQueueMode); 
 
 	//Re-enable mipmapping
 	mm->setDefaultTextureFiltering(oldMinFilter, oldMagFilter, oldMipFilter);

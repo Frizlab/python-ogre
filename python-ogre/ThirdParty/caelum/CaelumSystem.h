@@ -57,7 +57,7 @@ namespace caelum {
     from Caelum could be refactor to only transfer a number of "common sky
     parameter" around; but that is a lot harder and ultimately less flexible.
 
-	@author Jesús Alonso Abad
+	@author JesË™s Alonso Abad
  */
 class DllExport CaelumSystem : public Ogre::FrameListener, public Ogre::RenderTargetListener {
 // Attributes -----------------------------------------------------------------
@@ -69,6 +69,10 @@ class DllExport CaelumSystem : public Ogre::FrameListener, public Ogre::RenderTa
 		/** Scene manager.
 		 */
 		Ogre::SceneManager *mSceneMgr;
+
+		/** Caelum root scene node.
+		 */
+		Ogre::SceneNode *mCaelumRootNode;
 
 		/** Cleanup requested flag.
 		 */
@@ -107,7 +111,7 @@ class DllExport CaelumSystem : public Ogre::FrameListener, public Ogre::RenderTa
         std::auto_ptr<SolarSystemModel> mSolarSystemModel;
         
 		/// Reference to the sun, if enabled.
-        std::auto_ptr<Sun> mSun;
+        std::auto_ptr<BaseSun> mSun;
 
 		/// Reference to the starfield, if enabled.
         std::auto_ptr<Starfield> mStarfield;
@@ -207,6 +211,10 @@ class DllExport CaelumSystem : public Ogre::FrameListener, public Ogre::RenderTa
 		 */
 		UniversalClock *getUniversalClock () const;
 		
+		/** Gets caelum root scene node.
+		 */
+        Ogre::SceneNode* getRootNode(void) const { return mCaelumRootNode; }
+
 		/** Updates the system.
 			@param e The frame event (contains the elapsed time since the last update).
 		 */
@@ -228,14 +236,14 @@ class DllExport CaelumSystem : public Ogre::FrameListener, public Ogre::RenderTa
 		/** Set the sun.
          *  @param sun A new sun or null to disable.
 		 */
-        inline void setSun (Sun* sun) {
+        inline void setSun (BaseSun* sun) {
             mSun.reset(sun);
         }
 
 		/** Gets the current sun.
 			@return The sun in use.
 		 */
-        Sun* getSun () const {
+        BaseSun* getSun () const {
             return mSun.get();
         }
 

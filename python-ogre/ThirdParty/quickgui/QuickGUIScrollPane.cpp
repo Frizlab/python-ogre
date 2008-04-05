@@ -108,6 +108,21 @@ namespace QuickGUI
 		mRightBar->setSliderHeight(parentSize.height / mSize.height);
 	}
 
+	void ScrollPane::enable()
+	{
+		Widget::enable();
+
+		unmanageWidgets();
+		manageWidgets();
+	}
+
+	void ScrollPane::disable()
+	{
+		mBottomBar->hide();
+		mRightBar->hide();
+		Widget::disable();
+	}
+
 	HorizontalScrollBar::ButtonLayout ScrollPane::getHorizontalButtonLayout()
 	{
 		return mHorizontalButtonLayout;
@@ -130,6 +145,9 @@ namespace QuickGUI
 
 	void ScrollPane::manageWidget(Widget* w)
 	{
+		if(!mEnabled)
+			return;
+
 		if(w->getParentWidget() != mParentWidget)
 			return;
 
@@ -167,7 +185,7 @@ namespace QuickGUI
 
 	void ScrollPane::manageWidgets()
 	{
-		if(mParentWidget == NULL)
+		if(mParentWidget == NULL || !mEnabled)
 			return;
 
 		setSize(mParentWidget->getSize());

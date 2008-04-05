@@ -178,22 +178,18 @@ def unTarGz ( base, source ):
 class gccxml:
     pythonModule = False
     active = True
-    base = 'gccxml'
-    source = [
-                [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co "+base, os.getcwd()]
-             ]
     if isLinux() or isMac():
+        base = 'gccxml'
+        source = [
+                    [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co "+base, os.getcwd()]
+                 ]
+                 
         buildCmds =  [
                     [0,"mkdir -p gccxml-build", ''],
                     [0,"cmake ../gccxml -DCMAKE_INSTALL_PREFIX:PATH="+ PREFIX,os.path.join(os.getcwd(),'gccxml-build')],
                     [0,"make", os.path.join(os.getcwd(),'gccxml-build')],
                     [0,"make install",os.path.join(os.getcwd(),'gccxml-build')]
                     ]   
-    else:
-#         print "Use cmake to create a build file for gccxml (point cmake at your ./gccxml directory"
-#         print "Then use MSVC to build gccxml"
-        buildCmds=[]
-                            
 class install:
     pythonModule = False
     active = True
@@ -240,7 +236,7 @@ class newton:
 class pygccxml:
     pythonModule = False
     active = True
-    if isLinux() or isMac() or isWindows():
+    if isLinux() or isMac():
         base = 'pygccxml'
         source = [
                     [svn, " co -r 1234 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml "+base, os.getcwd()]
@@ -346,10 +342,6 @@ class cmake:
                     [0,tar + " xzf "+ os.path.join(downloadPath,base) + ".tar.gz --overwrite", ''],   # unpack it
                     [0,cp + "-R  * " + PREFIX, os.path.join (os.getcwd(), base) ]   # copy to our bin area
                     ]
-    if isWindows():
-        print "Retrieve latest from http://www.cmake.org and install it yourself"
-        source=[]
-        buildCmds=[]                    
                         
 class scons:
     pythonModule = False
@@ -360,7 +352,7 @@ class scons:
              ]
              
     # the utils in Windows don't handle paths or tar spawing gzip hence the work arounds             
-    if isLinux() or isMac():
+    if isLinux():
         buildCmds =  [
                 [0, tar + " zxf " + os.path.join(downloadPath,base)+".tar.gz --overwrite",'' ],
                 [0,"python setup.py install  --prefix=%s" % PREFIX , os.path.join (os.getcwd(), base) ]
@@ -369,7 +361,7 @@ class scons:
     else:
         buildCmds =  unTarGz( base, downloadPath ) +\
                 [
-                [0,"python setup.py install" , os.path.join (os.getcwd(), base) ]
+                [0,"python setup.py install  --prefix=%s" % PREFIX , os.path.join (os.getcwd(), base) ]
                 ]
              
 class boost:    ## also included bjam
@@ -935,7 +927,7 @@ class ogreforests:
 class particleuniverse:
     active = True
     pythonModule = True
-    version="0.6"
+    version="0.7"
     name='particleuniverse'
     parent="ogre/addons"
     CCFLAGS = ' ' 
@@ -955,7 +947,7 @@ class particleuniverse:
 class nxogre:
     active = True
     pythonModule = True
-    version="1.0-19"
+    version="1.0-21"
     name='nxogre'
     parent="ogre/physics"
     cflags=""
@@ -976,13 +968,13 @@ class nxogre:
         CCFLAGS = ' -DNX_LINUX -DLINUX -DNX_DISABLE_FLUIDS '                
     lib_dirs = [Config.PATH_LIB_Boost,
                 Config.PATH_LIB_Ogre_OgreMain,
-#                 Config.PATH_LIB_NxOgre,
+                Config.PATH_LIB_NxOgre,
                 Config.PATH_LIB_PhysX
                 ]
     CheckIncludes=[]
 #     libs=[  Config.LIB_Boost, 'NxOgre','NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' ]
     if os.name =='nt':
-        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' ]
+        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' , 'NxOgreStatic']
     else:
         libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'PhysXCore','PhysXLoader','OgreMain' ]
     ModuleName="NxOgre"   
@@ -1504,7 +1496,7 @@ for name, cls in projects.items():
                 cls.__dict__[key] = value   
                 print "Set %s.%s to %s" % (name, key, value) 
     
-                    
+    	            
     ##CheckPaths( cls, name )
     cls.root_dir = os.path.join( root_dir, 'code_generators', name )
     cls.dir_name = name + '_' + str(cls.version)
