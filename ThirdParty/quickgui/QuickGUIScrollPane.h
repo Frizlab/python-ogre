@@ -57,6 +57,18 @@ namespace QuickGUI
 		// When widgets become managed/unmanaged, the pane may grow or shrink.
 		void _determinePaneBounds();
 
+		/**
+		* Enable Widget, allowing it to accept and handle events.
+		* NOTE: Sheets cannot be enabled/disabled
+		*/
+		virtual void enable();
+
+		/**
+		* Disable Widget, making it unresponsive to events.
+		* NOTE: Sheets cannot be disabled.
+		*/
+		virtual void disable();
+
 		HorizontalScrollBar::ButtonLayout getHorizontalButtonLayout();
 		virtual Widget* getTargetWidget(const Point& pixelPosition);
 		virtual const Widget* getTargetWidget(const Point& pixelPosition) const;

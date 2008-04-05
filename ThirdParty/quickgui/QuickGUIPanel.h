@@ -112,6 +112,10 @@ namespace QuickGUI
 		VerticalTrackBar* createVerticalTrackBar();
 		VerticalTrackBar* createVerticalTrackBar(const std::string& name);
 
+		void enableScrollPane();
+
+		void disableScrollPane();
+
 		virtual QuadContainer* getQuadContainer();
 		ScrollPane* getScrollPane();
 		virtual Widget* getTargetWidget(const Point& pixelPosition);

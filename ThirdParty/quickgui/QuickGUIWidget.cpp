@@ -1385,8 +1385,9 @@ namespace QuickGUI
 
 	void Widget::setDimensions(const Rect& pixelDimensions)
 	{
-		setPosition(pixelDimensions.x,pixelDimensions.y);
+		// Its important to set the size before the position, as this may affect scrollbars.
 		setSize(pixelDimensions.width,pixelDimensions.height);
+		setPosition(pixelDimensions.x,pixelDimensions.y);
 	}
 
 	void Widget::setDraggingWidget(Widget* w)

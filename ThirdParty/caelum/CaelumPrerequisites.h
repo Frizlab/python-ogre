@@ -22,22 +22,28 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #define CAELUMPREREQUISITES_H
 
 // Include external headers
+#ifdef __APPLE__
+#include "Ogre/Ogre.h"
+#else
 #include "Ogre.h"
+#endif
 
-// Define the dll export qualifier if compiling for Windows
-// // #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-// // 	#ifdef CAELUM_LIB
-// // 		#define DllExport __declspec (dllexport)
-// // 	#else
-// // 		#ifdef __MINGW32__
-// // 			#define DllExport
-// // 		#else
-// // 			#define DllExport __declspec (dllimport)
-// // 		#endif
-// // 	#endif
-// // #else
+// // Define the dll export qualifier if compiling for Windows
+// #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+// 	#ifdef CAELUM_LIB
+// 		#define DllExport __declspec (dllexport)
+// 	#else
+// 		#ifdef __MINGW32__
+// 			#define DllExport
+// 		#else
+// 			#define DllExport __declspec (dllimport)
+// 		#endif
+// 	#endif
+// #elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+// 	#define DllExport __attribute__ ((visibility("default")))
+// #else
 	#define DllExport
-// // #endif
+// #endif
 
 // Define the version code
 #define CAELUM_VERSION_MAIN 0

@@ -28,11 +28,13 @@ const Ogre::String Starfield::STARFIELD_DOME_NAME = "CaelumStarfieldDome";
 
 const Ogre::String Starfield::STARFIELD_MATERIAL_NAME = "CaelumStarfieldMaterial";
 
-Starfield::Starfield (Ogre::SceneManager *sceneMgr, const Ogre::String &textureName) {
+Starfield::Starfield (Ogre::SceneManager *sceneMgr, Ogre::SceneNode *caelumRootNode, const Ogre::String &textureName) {
 	mInclination = Ogre::Degree (0);
 
 	createStarfieldMaterial ();
     setTexture (textureName);
+
+	sceneMgr->getRenderQueue()->getQueueGroup(CAELUM_RENDER_QUEUE_STARFIELD)->setShadowsEnabled(false);
 
 	GeometryFactory::generateSphericDome (STARFIELD_DOME_NAME, 32, GeometryFactory::DT_STARFIELD);
 	Ogre::Entity *ent = sceneMgr->createEntity ("StarfieldDome", STARFIELD_DOME_NAME);
@@ -40,7 +42,7 @@ Starfield::Starfield (Ogre::SceneManager *sceneMgr, const Ogre::String &textureN
 	ent->setRenderQueueGroup (CAELUM_RENDER_QUEUE_STARFIELD);
 	ent->setCastShadows (false);
 
-	mNode = sceneMgr->getRootSceneNode ()->createChildSceneNode ();
+	mNode = caelumRootNode->createChildSceneNode ();
 	mNode->attachObject (ent);
 }
 
@@ -60,7 +62,6 @@ Starfield::~Starfield () {
 
 void Starfield::notifyCameraChanged (Ogre::Camera *cam) {
     CameraBoundElement::notifyCameraChanged (cam);
-	mNode->setPosition (cam->getRealPosition ());
 }
 
 void Starfield::setFarRadius (Ogre::Real radius) {
@@ -108,6 +109,7 @@ void Starfield::createStarfieldMaterial () {
 	}
 	else {
 		mat = static_cast<Ogre::MaterialPtr>(Ogre::MaterialManager::getSingleton ().getByName (STARFIELD_MATERIAL_NAME));
+		mat->load();
 	}
 	LOG ("DONE");
 

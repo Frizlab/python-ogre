@@ -28,8 +28,10 @@ namespace caelum {
 const Ogre::String SkyDome::SPHERIC_DOME_NAME = "CaelumSphericDome";
 const Ogre::String SkyDome::SKY_DOME_MATERIAL_NAME = "CaelumSkyDomeMaterial";
 
-SkyDome::SkyDome (Ogre::SceneManager *sceneMgr) {
+SkyDome::SkyDome (Ogre::SceneManager *sceneMgr, Ogre::SceneNode *caelumRootNode) {
 	createSkyDomeMaterial ();
+
+	sceneMgr->getRenderQueue()->getQueueGroup(CAELUM_RENDER_QUEUE_SKYDOME)->setShadowsEnabled(false);
 
 	GeometryFactory::generateSphericDome (SPHERIC_DOME_NAME, 32);
 	Ogre::Entity *ent = sceneMgr->createEntity ("Dome", SPHERIC_DOME_NAME);
@@ -37,7 +39,7 @@ SkyDome::SkyDome (Ogre::SceneManager *sceneMgr) {
 	ent->setRenderQueueGroup (CAELUM_RENDER_QUEUE_SKYDOME);
 	ent->setCastShadows (false);
 
-	mNode = sceneMgr->getRootSceneNode ()->createChildSceneNode ();
+	mNode = caelumRootNode->createChildSceneNode ();
 	mNode->attachObject (ent);
 }
 
@@ -57,7 +59,6 @@ SkyDome::~SkyDome () {
 
 void SkyDome::notifyCameraChanged (Ogre::Camera *cam) {
     CameraBoundElement::notifyCameraChanged (cam);
-	mNode->setPosition (cam->getRealPosition ());
 }
 
 void SkyDome::setFarRadius (Ogre::Real radius) {
@@ -222,20 +223,23 @@ void SkyDome::createSkyDomeMaterial () {
 		LOG ("\tDONE");
 	} else {
 		mMaterial = static_cast<Ogre::MaterialPtr>(Ogre::MaterialManager::getSingleton ().getByName (SKY_DOME_MATERIAL_NAME));
+		mMaterial->load ();
 	}
 
 	LOG ("DONE");
 }
 
 void SkyDome::destroySkyDomeMaterial () {
-	LOG ("Removing sky dome material...");
-	if ((Ogre::HighLevelGpuProgramManager::getSingletonPtr()->resourceExists("SkyDomeFP"))) {
-		LOG ("Removing sky dome SkyDomeFP...");
+	LOG ("Removing sky dome materials...");
+	if (!Ogre::HighLevelGpuProgramManager::getSingletonPtr()->resourceExists("SkyDomeFP")) {
 		Ogre::HighLevelGpuProgramManager::getSingletonPtr()->remove("SkyDomeFP");
 	}
 
-	if ((Ogre::HighLevelGpuProgramManager::getSingletonPtr()->resourceExists("SkyDomeVP"))) {
-		LOG ("Removing sky dome SkyDomeVP...");
+	if (!Ogre::HighLevelGpuProgramManager::getSingletonPtr()->resourceExists("SkyDomeFP_NoHaze")) {
+		Ogre::HighLevelGpuProgramManager::getSingletonPtr()->remove("SkyDomeFP_NoHaze");
+	}
+
+	if (!Ogre::HighLevelGpuProgramManager::getSingletonPtr()->resourceExists("SkyDomeVP")) {
 		Ogre::HighLevelGpuProgramManager::getSingletonPtr()->remove("SkyDomeVP");
 	}
 
