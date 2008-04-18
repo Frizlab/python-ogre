@@ -178,18 +178,27 @@ def unTarGz ( base, source ):
 class gccxml:
     pythonModule = False
     active = True
+    base = 'gccxml'
+    source = [
+                [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co "+base, os.getcwd()]
+             ]
     if isLinux() or isMac():
-        base = 'gccxml'
-        source = [
-                    [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co "+base, os.getcwd()]
-                 ]
-                 
         buildCmds =  [
                     [0,"mkdir -p gccxml-build", ''],
                     [0,"cmake ../gccxml -DCMAKE_INSTALL_PREFIX:PATH="+ PREFIX,os.path.join(os.getcwd(),'gccxml-build')],
                     [0,"make", os.path.join(os.getcwd(),'gccxml-build')],
                     [0,"make install",os.path.join(os.getcwd(),'gccxml-build')]
                     ]   
+    else:
+        
+        buildCmds = [ 
+                    [0,'echo Please use CMAKE to create a msvc build projects for gccxml',''],
+                    [0,'echo  ie. Run Cmake (from the windows menu)',''],
+                    [0,'echo      specific the gccxml for both directories and run configure',''],
+                    [0,'echo      ignore any errors - you will need to run configure twice and then OK',''],
+                    [0,'echo      Now run MSVC and load the gccxml project (in the gccxml directory) and build it','']
+                    ]
+        
 class install:
     pythonModule = False
     active = True
@@ -236,15 +245,26 @@ class newton:
 class pygccxml:
     pythonModule = False
     active = True
-    if isLinux() or isMac():
-        base = 'pygccxml'
+    base = 'pygccxml'
+    if isLinux() or isMac() :
         source = [
                     [svn, " co -r 1234 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml "+base, os.getcwd()]
+                 ]
+        source = [
+                    [svn, " co http://pygccxml.svn.sourceforge.net/svnroot/pygccxml "+base, os.getcwd()]
                  ]
                  
         buildCmds =  [
                 [0,"python setup.py install  --prefix="+ PREFIX , os.path.join (os.getcwd(), base, "pygccxml_dev") ],
                 [0,"python setup.py install  --prefix=" + PREFIX , os.path.join (os.getcwd(), base, "pyplusplus_dev") ]
+                    ]                       
+    if isWindows():
+        source = [
+                    [svn, " co http://pygccxml.svn.sourceforge.net/svnroot/pygccxml "+base, os.getcwd()]
+                 ]
+        buildCmds =  [
+                [0,"python setup.py install  " , os.path.join (os.getcwd(), base, "pygccxml_dev") ],
+                [0,"python setup.py install  " , os.path.join (os.getcwd(), base, "pyplusplus_dev") ]
                     ]                       
                     
 class cg:
@@ -342,17 +362,23 @@ class cmake:
                     [0,tar + " xzf "+ os.path.join(downloadPath,base) + ".tar.gz --overwrite", ''],   # unpack it
                     [0,cp + "-R  * " + PREFIX, os.path.join (os.getcwd(), base) ]   # copy to our bin area
                     ]
-                        
+    if isWindows():
+        source = [ [wget, "http://www.cmake.org/files/v2.4/cmake-2.4.8-win32-x86.exe", downloadPath ]]
+        buildCmds = [
+                [0, os.path.join(downloadPath, "cmake-2.4.8-win32-x86.exe"), '' ]
+                ]
+                
+                                
 class scons:
     pythonModule = False
     active = True
-    base = 'scons-0.97.0d20071212'
+    base = 'scons-0.98.0'
     source = [
                 [wget, "http://downloads.sourceforge.net/scons/"+base+".tar.gz",downloadPath],
              ]
              
     # the utils in Windows don't handle paths or tar spawing gzip hence the work arounds             
-    if isLinux():
+    if isLinux() or isMac():
         buildCmds =  [
                 [0, tar + " zxf " + os.path.join(downloadPath,base)+".tar.gz --overwrite",'' ],
                 [0,"python setup.py install  --prefix=%s" % PREFIX , os.path.join (os.getcwd(), base) ]
@@ -361,7 +387,7 @@ class scons:
     else:
         buildCmds =  unTarGz( base, downloadPath ) +\
                 [
-                [0,"python setup.py install  --prefix=%s" % PREFIX , os.path.join (os.getcwd(), base) ]
+                [0,"python setup.py install ", os.path.join (os.getcwd(), base) ]
                 ]
              
 class boost:    ## also included bjam
@@ -369,6 +395,7 @@ class boost:    ## also included bjam
     version = "3.4"
     pythonModule = False
     ModuleName = ""
+    base = 'boost_1_35_0'  #this doesn't work yet AJM 17/04/08
     base = 'boost_1_34_1'
         
     myLibraryPaths = [ 'boost/bin.v2/libs/python2.5/build/msvc-8.0/release/threading-multi' ]
@@ -399,8 +426,8 @@ class boost:    ## also included bjam
                 [0, tar + ' zxf ' + os.path.join(downloadPath, base) + '.tar.gz', ''],
                 [0,'chmod -R +rw *', os.path.join(os.getcwd(), base ) ],
                 [0,cp + ' -R '+os.path.join('python-ogre','boost','*')  +' ' + base , ''],  # need to overwrite the boost with our files
-                [0, sed_ + " 's/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/' boost_1_34_1/configure", '' ],
-                [0, sed_ + " s/'BOOST_PYTHON_MAX_ARITY 15'/'BOOST_PYTHON_MAX_ARITY 19'/ boost_1_34_1/boost/python/detail/preprocessor.hpp", ''],
+                [0, sed_ + " 's/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/' boost_1_35_0/configure", '' ],
+                [0, sed_ + " s/'BOOST_PYTHON_MAX_ARITY 15'/'BOOST_PYTHON_MAX_ARITY 19'/ boost_1_35_0/boost/python/detail/preprocessor.hpp", ''],
                 [0,"./configure --with-libraries=python --prefix=%s --without-icu"  % PREFIX, os.path.join(os.getcwd(), base )],
                 [0,'make', os.path.join(os.getcwd(), base )],
                 [0,'make install', os.path.join(os.getcwd(), base )],
@@ -409,20 +436,20 @@ class boost:    ## also included bjam
     if isWindows():
         bjambase = 'boost-jam-3.1.16-1-ntx86'
         source = [
-             [wget,'http://downloads.sourceforge.net/boost/boost-jam-3.1.16-1-ntx86.zip',downloadPath] ,
-             [wget,'http://downloads.sourceforge.net/boost/boost_1_34_1.tar.gz',downloadPath]
+             [wget,'http://downloads.sourceforge.net/boost/'+bjambase+'.zip',downloadPath] ,
+             [wget,'http://downloads.sourceforge.net/boost/'+base+'.zip',downloadPath]
              ] 
                          
-        buildCmds =  unTarGz( base, downloadPath ) +\
-                [
-                [0,cp + ' -r '+os.path.join('python-ogre','boost') + '* ' + base , ''],  # need to overwrite the boost with our files
-                [0,'sed -i s/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/ boost_1_34_1/configure', '' ],
-                [0,"sed -i s/'BOOST_PYTHON_MAX_ARITY 15'/'BOOST_PYTHON_MAX_ARITY 19'/ boost_1_34_1/boost/python/detail/preprocessor.hpp", ''],
-                [0, unzip + " " + os.path.join ( downloadPath, bjambase) + ".zip", ''],
+        buildCmds =  [
+                [0,unzip + os.path.join(downloadPath, bjambase+".zip"), ''],
+                [0,unzip + os.path.join(downloadPath, base + ".zip"), ''],
+                [0,'xcopy /s /i /y '+os.path.join('python-ogre','boost') + ' ' + base , ''],  # need to overwrite the boost with our files
+                [0,'sed -i s/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/ '+base+'/configure', '' ],
+                [0,'sed -i s/"BOOST_PYTHON_MAX_ARITY 15"/"BOOST_PYTHON_MAX_ARITY 19"/ '+base+'/boost/python/detail/preprocessor.hpp', ''],
+                [0,os.path.join(os.getcwd(), bjambase, "bjam.exe") + ' release --with-python --toolset=msvc-8',os.path.join(os.getcwd(),base)]
                 ]
                              
-    BuildCmds = []    # commands to build the library with
-       
+     
     
     
 ####################################################
@@ -450,6 +477,18 @@ class ogre:
 #     
     
     if isWindows(): 
+        
+        source = [
+            [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_VC8SP1_Eihort_20071227.zip", downloadPath],
+            [ wget, "http://downloads.sourceforge.net/ogre/ogre-win32-v1-4-7.zip", downloadPath],
+            ]
+        buildCmds  = [
+                [0, unzip + os.path.join(downloadPath,"ogre-win32-v1-4-7.zip"),os.getcwd() ],
+                [0, unzip + os.path.join(downloadPath,"OgreDependencies_VC8SP1_Eihort_20071227.zip"),
+                                            os.path.join(os.getcwd(), 'ogrenew') ],
+                [0, "patch -s -N -i ./python-ogre/patch/ogre.patch -p0 ", os.getcwd()]
+                ]                                             
+            
         # requirements to build a precompiled header on the fly
         if _PreCompiled:
             pchstop = 'python_ogre_precompiled.h'
@@ -567,9 +606,9 @@ class ois:
                 ]
     if isWindows():
         base = "ois"
-        source = [ wget,"http://downloads.sourceforge.net/wgois/ois_1.2.0.zip", downloadPath]
+        source = [ [wget,"http://downloads.sourceforge.net/wgois/ois_1.2.0.zip", downloadPath] ]
         buildCmds = [
-            [0, unzip + downloadPath + "/" + "ois_1.2.0.zip"  ,os.getcwd() ],
+            [0, unzip + downloadPath + "/" + "ois_1.2.0.zip"  ,os.getcwd() ]
 #             [0, '"c:/Program Files/Microsoft Visual Studio 8/vc/vcpackages/vcbuild.exe" /useenv ois_VC8.sln ', os.path.join(os.getcwd(), base, 'Win32' )],
 #             [0, VCBUILD + " ois_vc8.sln " + "\"Release|Win32\"", os.path.join(os.getcwd(), base, 'Win32' )]
             ]
@@ -1496,7 +1535,7 @@ for name, cls in projects.items():
                 cls.__dict__[key] = value   
                 print "Set %s.%s to %s" % (name, key, value) 
     
-    	            
+                    
     ##CheckPaths( cls, name )
     cls.root_dir = os.path.join( root_dir, 'code_generators', name )
     cls.dir_name = name + '_' + str(cls.version)

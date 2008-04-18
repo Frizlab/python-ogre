@@ -13,11 +13,17 @@ LOCAL_INCLUDE = os.path.join(ROOT_DIR, 'usr/include')
 
 
 ## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
-PATH_Boost =        os.path.join(BASE_DIR, 'boost')
+PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_34_1')
+# PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_35_0')
+PATH_Boost =        os.path.join(BASE_DIR, 'boost-trunk')
+
 ## Path to your boost_pythonxxxx lib file
-PATH_LIB_Boost =    os.path.join(BASE_DIR, 'boost/bin.v2/libs/python2.5/build/msvc-8.0/release/threading-multi')
+PATH_LIB_Boost =    os.path.join(BASE_DIR, PATH_Boost,'bin.v2/libs/python/build/msvc-8.0/release/threading-multi')
+##PATH_LIB_Boost =    os.path.join(BASE_DIR, 'boost/bin.v2/libs/python2.5/build/msvc-9.0express/release/threading-multi')
 ## and the name of the boost python library
-LIB_Boost =         r'boost_python-vc80-mt-1_35'
+LIB_Boost =         r'boost_python-vc90-mt-1_35'
+LIB_Boost =         r'boost_python-vc80-mt-1_34_1'
+# LIB_Boost =         r'boost_python-vc-mt-1_35'
 
 # in Linux we need to code in the Relative path for the library
 RPATH=""
