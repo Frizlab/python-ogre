@@ -147,7 +147,7 @@ def compileCode ( module ):
         time.sleep(5)  ## not sure why scons doesn't work after first failure       
     
 
-                         
+
 def parseInput():
     """Handle command line input """
     usage = "usage: %prog [options] moduleName"
@@ -159,46 +159,46 @@ def parseInput():
     parser.add_option("-l", "--logfilename",  default="log.out" ,dest="logfilename", help="Override the default log file name")
     parser.add_option("-G", "--genall", action="store_true", default=False ,dest="gencodeall", help="Generate Source Code for all possible modules")
     parser.add_option("-C", "--compileall", action="store_true", default=False ,dest="compilecodeall", help="Compile Source Code for all posssible modules")
-   
+
     (options, args) = parser.parse_args()
     return (options,args)
-    
+
 if __name__ == '__main__':
     classList = getClassList ()
-    
+
     (options, args) = parseInput()
     if len(args) == 0 and not (options.compilecodeall or options.gencodeall):
         exit("The module to build wasn't specified.  Use -h for help")
-        
+
     if options.retrieve==False and options.build==False and options.gencode==False and options.compilecode==False\
             and options.compilecodeall==False and options.gencodeall==False:
         exit ( "You need to specific at least one option. Use -h for help")
-            
+
     setupLogging(options.logfilename)
     logger = logging.getLogger('PythonOgre.BuildModule')
 
     if not os.path.exists( environment.downloadPath ):
-        os.mkdir ( environment.downloadPath )    
+        os.mkdir ( environment.downloadPath )
 
     if not os.path.exists( environment.Config.ROOT_DIR ):
-        os.mkdir ( environment.Config.ROOT_DIR )    
+        os.mkdir ( environment.Config.ROOT_DIR )
     if not os.path.exists( os.path.join(environment.Config.ROOT_DIR, 'usr' ) ):
-        os.mkdir ( os.path.join(environment.Config.ROOT_DIR, 'usr' )  )    
+        os.mkdir ( os.path.join(environment.Config.ROOT_DIR, 'usr' )  )
     if options.gencodeall or options.compilecodeall:
         for name,cls in environment.projects.items():
             if cls.active and cls.pythonModule:
                 if options.gencodeall:
                     generateCode( cls )
                 if options.compilecodeall:
-                    compileCode( cls )                    
+                    compileCode( cls )
 
     else:
-        for moduleName  in args:        
+        for moduleName  in args:
             if not classList.has_key( moduleName ):
                 exit("Module specificed was not found (%s is not in environment.py) " % moduleName )
-            if options.retrieve:    
+            if options.retrieve:
                 retrieveSource ( classList[ moduleName ] )
-            if options.build :       
+            if options.build :
                 buildModule ( classList[ moduleName ] )
             if options.gencode :
                 if classList[ moduleName ].pythonModule == True:
@@ -210,5 +210,5 @@ if __name__ == '__main__':
                     compileCode ( classList[ moduleName ] )
                 else:
                     print ( "Module specificed does not need compiling (%s is a supporting module)" % moduleName )
-            
-                
+
+
