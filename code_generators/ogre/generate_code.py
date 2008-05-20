@@ -228,7 +228,12 @@ def ManualExclude ( mb ):
             func.exclude()
             print '{*} function "%s" is marked as internal' % declarations.full_name( func )
 
-
+    # changes for Ogre 1.5
+    if environment.ogre.version =="1.5":
+        main_ns.class_("ResourceBackgroundQueue").exclude() # Ogre::ResourceBackgroundQueue::_fireBackgroundLoadingComplete isn't implemented
+        main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageEnded").exclude()
+        main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageStarted").exclude()
+        
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 

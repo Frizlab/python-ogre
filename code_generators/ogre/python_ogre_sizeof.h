@@ -146,7 +146,9 @@ sizeof( Ogre::RaySceneQueryResult );
 sizeof( Ogre::SceneQueryResultWorldFragmentList );
 sizeof( Ogre::SceneQueryResultMovableList );
 sizeof( Ogre::BackgroundProcessTicket );
-sizeof( Ogre::DLL_CREATERENDERWINDOW );
+#if OGRE_VERSION_MINOR == 4
+    sizeof( Ogre::DLL_CREATERENDERWINDOW );
+#endif
 sizeof( Ogre::RenderTargetPriorityMap );
 sizeof( Ogre::RenderTargetMap );
 sizeof( Ogre::ConfigOptionMap );
