@@ -97,14 +97,14 @@ try:
     Config = __import__(  s  )
     _ConfigSet = True
     log ( "Loaded Config (based on username) from %s" % (s ))
-except:
+except ImportError:
     try:
         s= 'PythonOgreConfig_' + _SystemType ## + '.py'
         
         Config = __import__(  s  )
         _ConfigSet = True
         log ( "Loaded Config (based on systemtype) from %s" % (s))
-    except:
+    except ImportError:
         pass   
 
 if not _ConfigSet:
