@@ -180,7 +180,7 @@ def apply( mb ):
     rt.add_wrapper_code(WRAPPER_WRAPPER_DEF_NxForceField)
 #     rt = mb.class_( 'NxHeightFieldShape' )
 #     rt.add_wrapper_code(WRAPPER_WRAPPER_DEF_NxHeightFieldShape)
-    rt = mb.class_( 'NxImplicitScreenMesh' )
-    rt.add_wrapper_code(WRAPPER_WRAPPER_DEF_NxImplicitScreenMesh)
+#     rt = mb.class_( 'NxImplicitScreenMesh' )
+#     rt.add_wrapper_code(WRAPPER_WRAPPER_DEF_NxImplicitScreenMesh)
 
     

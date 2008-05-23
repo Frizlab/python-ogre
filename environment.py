@@ -17,6 +17,8 @@ import datetime
 
 _LOGGING_ON = False
 _PreCompiled = True
+_STABLE = False # set to true if using specific versions of CVS and SVN checkouts..
+
 
 ##
 ## set this to True if you compiled Ogre with Threads enabled
@@ -45,7 +47,7 @@ def isMac():
                     
 PythonOgreMajorVersion = "1"
 PythonOgreMinorVersion = "2" 
-PythonOgrePatchVersion = "rc1"
+PythonOgrePatchVersion = "rc2"
 
 
 ##
@@ -179,7 +181,12 @@ class gccxml:
     pythonModule = False
     active = True
     base = 'gccxml'
-    source = [
+    if _STABLE:
+       source = [
+                [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co -D 22052008 "+base, os.getcwd()]
+             ]
+    else:
+       source = [
                 [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co "+base, os.getcwd()]
              ]
     if isLinux() or isMac():
@@ -246,28 +253,28 @@ class pygccxml:
     pythonModule = False
     active = True
     base = 'pygccxml'
-    if isLinux() or isMac() :
+    if _STABLE:
         source = [
-                    [svn, " co -r 1234 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml "+base, os.getcwd()]
+                    [svn, " co -r 1300 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml "+base, os.getcwd()]
                  ]
+    else:                 
         source = [
                     [svn, " co http://pygccxml.svn.sourceforge.net/svnroot/pygccxml "+base, os.getcwd()]
-                 ]
-                 
+                 ]             
+    if isLinux() or isMac() :
         buildCmds =  [
                 [0,"python setup.py install  --prefix="+ PREFIX , os.path.join (os.getcwd(), base, "pygccxml_dev") ],
                 [0,"python setup.py install  --prefix=" + PREFIX , os.path.join (os.getcwd(), base, "pyplusplus_dev") ]
                     ]                       
     if isWindows():
-        source = [
-                    [svn, " co http://pygccxml.svn.sourceforge.net/svnroot/pygccxml "+base, os.getcwd()]
-                 ]
         buildCmds =  [
                 [0,"python setup.py install  " , os.path.join (os.getcwd(), base, "pygccxml_dev") ],
                 [0,"python setup.py install  " , os.path.join (os.getcwd(), base, "pyplusplus_dev") ]
                     ]                       
                     
 class cg:
+    ## we don't need this for Windows as it's part of the Ogre dependencies package
+    
     pythonModule = False
     active = True
     if isLinux():
@@ -395,12 +402,13 @@ class boost:    ## also included bjam
     version = "3.4"
     pythonModule = False
     ModuleName = ""
-    base = 'boost_1_35_0'  #this doesn't work yet AJM 17/04/08
-    base = 'boost_1_34_1'
-        
-    myLibraryPaths = [ 'boost/bin.v2/libs/python2.5/build/msvc-8.0/release/threading-multi' ]
-    myLibraries = [ 'boost_python-vc80-mt-1_35']
-    
+    if _STABLE:
+        base = 'boost_1_34_1'
+    else:        
+        # this doesn't work yet AJM 17/04/08 (in an automated fashion)
+        # as boost/python/detail/preprocessor.hpp and possibly boost/python/docstring_options.hpp
+        # need to have "#define BOOST_PYTHON_NO_PY_SIGNATURES" added to them
+        base = 'boost_1_35_0'  
         
     if isLinux() or isMac():
         bjambase = 'boost-jam-3.1.16'
@@ -413,7 +421,7 @@ class boost:    ## also included bjam
                     
         source = [
              [wget,'http://downloads.sourceforge.net/boost/boost-jam-3.1.16.tgz', downloadPath],
-             [wget,'http://downloads.sourceforge.net/boost/boost_1_34_1.tar.gz',downloadPath]
+             [wget,'http://downloads.sourceforge.net/boost/'+base+'.tar.gz',downloadPath]
              ]   
         buildCmds  = [
                 ## first handle bjam
@@ -426,8 +434,8 @@ class boost:    ## also included bjam
                 [0, tar + ' zxf ' + os.path.join(downloadPath, base) + '.tar.gz', ''],
                 [0,'chmod -R +rw *', os.path.join(os.getcwd(), base ) ],
                 [0,cp + ' -R '+os.path.join('python-ogre','boost','*')  +' ' + base , ''],  # need to overwrite the boost with our files
-                [0, sed_ + " 's/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/' boost_1_35_0/configure", '' ],
-                [0, sed_ + " s/'BOOST_PYTHON_MAX_ARITY 15'/'BOOST_PYTHON_MAX_ARITY 19'/ boost_1_35_0/boost/python/detail/preprocessor.hpp", ''],
+                [0, sed_ + " 's/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/' "+base+"/configure", '' ],
+                [0, sed_ + " s/'BOOST_PYTHON_MAX_ARITY 15'/'BOOST_PYTHON_MAX_ARITY 19'/ "+base+"/boost/python/detail/preprocessor.hpp", ''],
                 [0,"./configure --with-libraries=python --prefix=%s --without-icu"  % PREFIX, os.path.join(os.getcwd(), base )],
                 [0,'make', os.path.join(os.getcwd(), base )],
                 [0,'make install', os.path.join(os.getcwd(), base )],
@@ -461,7 +469,7 @@ class boost:    ## also included bjam
 class ogre:
     active = True
     pythonModule = True
-    version = "1.4"
+    version = "1.5"
     name='ogre'
     ModuleName='OGRE'
     cflags = ""
@@ -471,10 +479,6 @@ class ogre:
     myLibraryPaths = []
     myLibraries = ['OgreMain']
     libraries = myLibraries
-    
-#     for mod in dependsOn:
-#         libraries += mod.libraries   
-#     
     
     if isWindows(): 
         
@@ -680,8 +684,13 @@ class ogrenewt:
         libs = ['Newton', Config.LIB_Boost, 'OgreNewt_Main', 'OgreMain']
     else:
         libs = ['Newton', Config.LIB_Boost, 'OgreNewt', 'OgreMain']
-    source = [
-                    [cvs, " -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -P "+base, os.getcwd()]
+    if _STABLE:
+        source = [
+                 [cvs, " -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -D 01052008 -P "+base, os.getcwd()]
+                 ]
+    else:
+        source = [
+                 [cvs, " -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -P "+base, os.getcwd()]
                  ]
     baseDir = os.path.join(os.getcwd(), base )
     buildCmds = [
@@ -711,9 +720,12 @@ class ogrenewt:
 class cegui:
     active = True
     pythonModule = True
-    version = "0.5.0b" 
     parent = "ogre/gui"
     name = 'cegui'
+    if _STABLE:
+        version = "0.5.0b" 
+    else:
+        version = "0.6.0"        
     if isWindows():
         if _PreCompiled:
             pchstop = 'cegui.h'
@@ -724,10 +736,17 @@ class cegui:
         libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain', 'CEGUIOgreRenderer' ]
 
     if isLinux():
-        base = "CEGUI-0.5.0"
-        source=[
-            [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.5.0b.tar.gz", downloadPath]
-            ]
+        if _STABLE:
+            base = "CEGUI-0.5.0"
+            source=[
+                [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.5.0b.tar.gz", downloadPath]
+                ]
+        else:
+            base = "CEGUI-0.6.0"
+            source=[
+                [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.6.0.tar.gz", downloadPath]
+                ]
+                        
         buildCmds  = [
                 [0, tar + " zxf " + os.path.join(downloadPath,base)+"b.tar.gz --overwrite",os.getcwd() ],
                 [0, "patch -s -N -i ../python-ogre/patch/cegui.patch -p0", os.path.join(os.getcwd(),base)],
@@ -739,7 +758,11 @@ class cegui:
                 [0,'make', os.path.join(os.getcwd(), base )],
                 [0,'make install', os.path.join(os.getcwd(), base )]
                 ]
-
+    if isWindows():                
+        source=[
+            [wget, "http://sourceforge.net/project/downloading.php?groupname=crayzedsgui&filename=CEGUI-0.6.0.zip", downloadPath]
+            ]
+            
     include_dirs = [Config.PATH_Boost
                     ,Config.PATH_INCLUDE_CEGUI
                     ,Config.PATH_CEGUI
@@ -849,9 +872,14 @@ class ogreode:
                 , Config.PATH_INCLUDE_OgreOdeLoader
                 , Config.PATH_INCLUDE_Ogre
                 ]
-    source = [
-                    [cvs, " -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -P "+base, os.getcwd()]
-                 ]
+    if _STABLE:
+        source = [
+             [cvs, " -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -D 01052008 -P "+base, os.getcwd()]
+             ]
+    else:
+        source = [
+             [cvs, " -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -P "+base, os.getcwd()]
+             ]
     baseDir = os.path.join(os.getcwd(), base )
     buildCmds = [
             [0, "patch -s -N -i ../../python-ogre/patch/ogreode.patch -p0", baseDir], 
@@ -1013,7 +1041,7 @@ class nxogre:
     CheckIncludes=[]
 #     libs=[  Config.LIB_Boost, 'NxOgre','NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' ]
     if os.name =='nt':
-        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' , 'NxOgreStatic']
+        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking',  'PhysXLoader','OgreMain' , 'NxOgreStatic'] #'NxExtensions',
     else:
         libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'PhysXCore','PhysXLoader','OgreMain' ]
     ModuleName="NxOgre"   
@@ -1068,7 +1096,7 @@ class plib:
 class physx:
     active = True
     pythonModule = True
-    version="2.7.3"
+    version="2.8.1"
     name='physx'
     parent="ogre/physics"
     cflags=""
@@ -1079,6 +1107,7 @@ class physx:
         include_dirs.append( d )
     if os.name == 'nt':
         CCFLAGS = ' -D"WIN32" '
+        CCFLAGS = ' ' ## try to not define WIN 32 to remove inline assembly code that GCCxml doesn't like
     else:
         CCFLAGS = ' -D"LINUX" '                
     lib_dirs = [Config.PATH_LIB_Boost,

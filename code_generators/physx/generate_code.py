@@ -65,10 +65,10 @@ def ManualExclude ( mb ):
 #                 ,'::NxCloth::overlapAABBTriangles'  # ugly argument that boost doesn't like.. To Fix in hand wrappers
                 # these have const refs to classes with protected desctuctors - a bad combination for boost
                 ,'::NxCookingInterface::NxCreatePMap'
-                ,'::NxForceField::releaseShape'
+# #                 ,'::NxForceField::releaseShape'
                 ,'::NxUtilLib::NxGetBoxEdgesAxes'
 #                 ,'::NxHeightFieldShape::overlapAABBTrianglesDeprecated'
-                ,'::NxImplicitScreenMesh::getProjectionMatrix'  # returns a const int pointer
+# #                 ,'::NxImplicitScreenMesh::getProjectionMatrix'  # returns a const int pointer
                 ,'::NxVec3::get'
                 # not in source
                 ,'::NxBitField::rangeToDenseMask'
@@ -334,7 +334,7 @@ def generate_code():
                         , environment.physx.cache_file )
 
     if os.name == 'nt':
-        defined_symbols = ['NXPHYSICS_EXPORTS', 'WIN32', 'PHYSX_EXPORTS'] 
+        defined_symbols = ['NXPHYSICS_EXPORTS', 'WIN32', 'PHYSX_EXPORTS'] #'WIN32',
     else:
         defined_symbols = ['LINUX']
     defined_symbols.append( 'VERSION_' + environment.physx.version )  
@@ -348,7 +348,7 @@ def generate_code():
                                           , include_paths=environment.physx.include_dirs
                                           , define_symbols=defined_symbols
                                           , indexing_suite_version=2
-                                          , cflags=environment.ogre.cflags
+                                          , cflags=environment.physx.cflags
                                            )
     # NOTE THE CHANGE HERE                                           
     mb.constructors().allow_implicit_conversion = False                                           

@@ -13,16 +13,17 @@ LOCAL_INCLUDE = os.path.join(ROOT_DIR, 'usr/include')
 
 
 ## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
-PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_34_1')
+# # # # # # PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_34_1')
 # PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_35_0')
 PATH_Boost =        os.path.join(BASE_DIR, 'boost-trunk')
 
 ## Path to your boost_pythonxxxx lib file
-PATH_LIB_Boost =    os.path.join(BASE_DIR, PATH_Boost,'bin.v2/libs/python/build/msvc-8.0/release/threading-multi')
-##PATH_LIB_Boost =    os.path.join(BASE_DIR, 'boost/bin.v2/libs/python2.5/build/msvc-9.0express/release/threading-multi')
+# PATH_LIB_Boost =    os.path.join(BASE_DIR, PATH_Boost,'bin.v2/libs/python/build/msvc-8.0/release/threading-multi')
+# # # # # # # PATH_LIB_Boost =    os.path.join(PATH_Boost, 'bin.v2/libs/python/build/msvc/release/threading-multi')
+PATH_LIB_Boost =    os.path.join(PATH_Boost, 'bin.v2/libs/python/build/msvc-9.0express/release/threading-multi')
 ## and the name of the boost python library
 LIB_Boost =         r'boost_python-vc90-mt-1_35'
-LIB_Boost =         r'boost_python-vc80-mt-1_34_1'
+# # LIB_Boost =         r'boost_python-vc80-mt-1_34_1'
 # LIB_Boost =         r'boost_python-vc-mt-1_35'
 
 # in Linux we need to code in the Relative path for the library
@@ -35,9 +36,11 @@ pyplusplus_install_dir = os.path.join(BASE_DIR, 'pygccxml')
 
 ## Parent directories of the libraries
 PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
-PATH_Ogre =         os.path.join(BASE_DIR, 'ogrenew')
+PATH_Ogre =         os.path.join(BASE_DIR, 'ogre')
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
 PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.5.0')
+PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.6.0')
+
 PATH_OIS =          os.path.join(BASE_DIR, 'ois' ) ##'ois-1.0RC1')
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonsdk','sdk')
 PATH_FMOD =         os.path.join(BASE_DIR, 'fmod')
@@ -69,7 +72,7 @@ PATH_opensteer =        os.path.join(BASE_DIR, 'opensteer', 'trunk')
 
 PATH_ogrevideoffmpeg = os.path.join(PATH_THIRDPARTY,'ffmpeg')
 PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.66') 
-PATH_PhysX=         "c:/program files/AGEIA Technologies/SDK/v2.7.3/SDKs"
+PATH_PhysX=         "c:/program files/NVIDIA Corporation/NVIDIA Physx SDK/v2.8.1/SDKs"
 PATH_Theora=        os.path.join(PATH_OgreAddons,'videoplugin','TheoraVideo')
 PATH_ffmpeg=        os.path.join(PATH_THIRDPARTY,'extra')
 PATH_navi =         os.path.join(BASE_DIR, 'navi', 'navi')
@@ -78,8 +81,8 @@ PATH_particleuniverse = os.path.join(PATH_Ogre, 'PlugIns', 'ParticleUniverse' )
 
 # it's time for the SDK version
 if SDK:
-    PATH_CEGUI =        os.path.join(BASE_DIR, 'Ogrenew')
-    PATH_OIS =          os.path.join(BASE_DIR, 'Ogrenew')
+    PATH_CEGUI =        os.path.join(BASE_DIR, 'ogre')
+    PATH_OIS =          os.path.join(BASE_DIR, 'ogre')
     
 ###
 ### these paths assume you've left all the directory structure as standard
@@ -175,7 +178,7 @@ PATH_INCLUDE_PhysX= [ os.path.join(PATH_PhysX, 'Physics','include')
                     ,os.path.join(PATH_PhysX, 'Foundation','include')
                     ,os.path.join(PATH_PhysX, 'PhysXLoader','include')
                     ,os.path.join(PATH_PhysX, 'NxCharacter','include')
-                    ,os.path.join(PATH_PhysX, 'NxExtensions','include')
+# #                     ,os.path.join(PATH_PhysX, 'NxExtensions','include')
                     ]
 PATH_INCLUDE_opensteer = os.path.join(PATH_opensteer, 'include')
 PATH_INCLUDE_opensteer_opensteer = os.path.join(PATH_opensteer, 'include', 'OpenSteer')

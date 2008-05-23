@@ -3,7 +3,7 @@
 #include "NxCooking.h"
 #include "NxFoundation.h"
 #include "NxCharacter.h"
-#include "NxExtensions.h"
+// #include "NxExtensions.h"
 #include "PhysXLoader.h"
 #include "NxStream.h" // not included by default
 
