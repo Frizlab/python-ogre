@@ -38,9 +38,9 @@ def filter_declarations( mb ):
     CEGUI_ns = global_ns.namespace( 'CEGUI' )
     CEGUI_ns.include()
     
-    ## not available at link time..
-    CEGUI_ns.free_function("lbi_greater").exclude()
-    CEGUI_ns.free_function("lbi_less").exclude()
+    ## not available at link time.. seems fixed in CEGUI 0.6.0
+#     CEGUI_ns.free_function("lbi_greater").exclude()
+#     CEGUI_ns.free_function("lbi_less").exclude()
     
     ## Dumb fix to remove all Properties classes -  unfortunately the properties in these classes are indicated as public
     ## however within their 'parent' class they are defined as private..
@@ -97,17 +97,17 @@ def filter_declarations( mb ):
 #     fm.member_function( name='createFont', function=is_my_case ).exclude()
 #   
     ## couple of functions that fail when compiling
-    
-    if environment.ogre.version == "1.4":    
-        CEGUI_ns.class_( "RawDataContainer" ).member_functions( 'getDataPtr' ).exclude()
-        CEGUI_ns.class_( "ItemListBase" ).member_functions( 'getSortCallback' ).exclude()
-    else:   
-        CEGUI_ns.class_("DataContainer<unsigned char>").exclude()
-        CEGUI_ns.class_("Menubar").exclude()
-        CEGUI_ns.class_("MenuBase").exclude()
-        CEGUI_ns.class_("PopupMenu").exclude()
-        CEGUI_ns.class_("Referenced").exclude()
-        CEGUI_ns.class_("System").member_functions("getXMLParser").exclude()
+    ## Not sure why this is related to Ogre 1.4 and not the CEGUI version...
+#     if environment.ogre.version == "1.4":    
+#         CEGUI_ns.class_( "RawDataContainer" ).member_functions( 'getDataPtr' ).exclude()
+#         CEGUI_ns.class_( "ItemListBase" ).member_functions( 'getSortCallback' ).exclude()
+#     else:   
+#         CEGUI_ns.class_("DataContainer<unsigned char>").exclude()
+#         CEGUI_ns.class_("Menubar").exclude()
+#         CEGUI_ns.class_("MenuBase").exclude()
+#         CEGUI_ns.class_("PopupMenu").exclude()
+#         CEGUI_ns.class_("Referenced").exclude()
+#         CEGUI_ns.class_("System").member_functions("getXMLParser").exclude()
 
     ## now have functions in String that return uint arrays a need to be wrapped
     sc = CEGUI_ns.class_( "String" )
