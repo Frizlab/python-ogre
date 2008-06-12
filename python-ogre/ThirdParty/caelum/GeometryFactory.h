@@ -29,7 +29,7 @@ namespace caelum {
 	@author Jesús Alonso Abad.
 	@version 0.1
  */
-class DllExport GeometryFactory {
+class CAELUM_EXPORT GeometryFactory {
 // Types and enums ------------------------------------------------------------
 	public:
 		/** Enumeration of types of sky domes.

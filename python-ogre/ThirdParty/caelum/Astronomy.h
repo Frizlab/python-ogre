@@ -34,28 +34,53 @@ namespace caelum
      *  moon are actually useful for caelum.
      *
      *  The formulas are isolated here in pure procedural code for easier
-     *  testing (Tests are done as assert in the demo).
+     *  testing (Tests are done as assertions in the demo).
      *
-     *  Precision is vital here, and this class should be converted to use
-     *  caelum::LongReal instead of Ogre::Real and Ogre::Degree.
+     *  Precision is vital here, so this class uses caelum::LongReal(double)
+     *  instead of Ogre::Real(float) for precission. All angles are in degrees
+     *  unless otherwise mentioned. Ogre::Degree and Ogre::Radian use
+     *  Ogre::Real and should be avoided here.
      */
-    class DllExport Astronomy
+    class CAELUM_EXPORT Astronomy
     {
     private:
         Astronomy() {}
 
-    public:
+        static const LongReal PI;
+
         /** Normalize an angle to the 0, 360 range.
          *  @param x The angle to normalize
          */
-        static const Ogre::Degree normalizeAngle(Ogre::Degree x);
+        static LongReal normalizeDegrees (LongReal x);
 
-        static void convertRectangularToSpherical (
+        /// Convert radians to degrees.
+        static LongReal radToDeg (LongReal x);
+
+        /// Convert degrees to radians.
+        static LongReal degToRad (LongReal x);
+
+        static LongReal sinDeg (LongReal x);
+        static LongReal cosDeg (LongReal x);
+        static LongReal atan2Deg (LongReal y, LongReal x);
+
+    public:
+        /** Convert from ecliptic to ecuatorial spherical coordinates, in radians.
+         *  @param lon Ecliptic longitude
+         *  @param lat Ecliptic latitude
+         *  @param rasc Right ascension
+         *  @param decl Declination
+         *  @warning: This function works in radians.
+         */
+		static void convertEclipticToEquatorialRad (
+                LongReal lon, LongReal lat,
+                LongReal& rasc, LongReal& decl);
+
+		static void convertRectangularToSpherical (
                 LongReal x, LongReal y, LongReal z,
-                Ogre::Degree &rasc, Ogre::Degree &decl, LongReal &dist);
+                LongReal &rasc, LongReal &decl, LongReal &dist);
 
         static void convertSphericalToRectangular (
-                Ogre::Degree rasc, Ogre::Degree decl, LongReal dist,
+                LongReal rasc, LongReal decl, LongReal dist,
                 LongReal &x, LongReal &y, LongReal &z);
 
         /** Convert from equatorial to horizontal coordinates.
@@ -71,9 +96,9 @@ namespace caelum
          */
         static void convertEquatorialToHorizontal (
                 LongReal jday,
-                Ogre::Degree longitude, Ogre::Degree latitude,
-                Ogre::Degree rasc,      Ogre::Degree decl,
-                Ogre::Degree &azimuth,  Ogre::Degree &altitude);
+                LongReal longitude, LongReal latitude,
+                LongReal rasc,      LongReal decl,
+                LongReal &azimuth,  LongReal &altitude);
 
         /** Get the sun's position in the sky in, relative to the horizon.
          *  @param jday Astronomical time as julian day.
@@ -84,6 +109,28 @@ namespace caelum
          */
         static void getHorizontalSunPosition (
                 LongReal jday,
+                LongReal longitude, LongReal latitude,
+                LongReal &azimuth, LongReal &altitude);
+
+        static void getHorizontalSunPosition (
+                LongReal jday,
+                Ogre::Degree longitude, Ogre::Degree latitude,
+                Ogre::Degree &azimuth, Ogre::Degree &altitude);
+
+        /// Gets the moon position at a specific time in ecliptic coordinates
+        /// @param lon: Ecliptic longitude, in radians.
+        /// @param lat: Ecliptic latitude, in radians.
+		static void getEclipticMoonPositionRad (
+                LongReal jday,
+                LongReal &lon,
+                LongReal &lat);
+
+        static void getHorizontalMoonPosition (
+                LongReal jday,
+                LongReal longitude, LongReal latitude,
+                LongReal &azimuth, LongReal &altitude);
+		static void getHorizontalMoonPosition (
+                LongReal jday,
                 Ogre::Degree longitude, Ogre::Degree latitude,
                 Ogre::Degree &azimuth, Ogre::Degree &altitude);
 
@@ -93,7 +140,7 @@ namespace caelum
          *  noon Universal Time (UT) Monday, January 1, 4713 BC
          *  @note this is the time at noon, not midnight.
          */
-        static int getJulianDayFromGregorianDate(
+        static int getJulianDayFromGregorianDate (
                 int year, int month, int day); 
 
         /** Get astronomical julian day from normal gregorian calendar.
@@ -101,28 +148,28 @@ namespace caelum
          *  Time should be given as UTC.
          *  @see http://en.wikipedia.org/wiki/Julian_day
          */
-        static LongReal getJulianDayFromGregorianDateTime(
+        static LongReal getJulianDayFromGregorianDateTime (
                 int year, int month, int day,
                 int hour, int minute, LongReal second); 
 
         /** Get astronomical julian day from normal gregorian calendar.
          *  @see above (I don't know the proper doxygen syntax).
          */
-        static LongReal getJulianDayFromGregorianDateTime(
+        static LongReal getJulianDayFromGregorianDateTime (
                 int year, int month, int day,
                 LongReal secondsFromMidnight); 
 
         /// Get gregorian date from integer julian day.
-        static void getGregorianDateFromJulianDay(
+        static void getGregorianDateFromJulianDay (
                 int julianDay, int &year, int &month, int &day);
 
         /// Get gregorian date time from floating point julian day.
-        static void getGregorianDateTimeFromJulianDay(
+        static void getGregorianDateTimeFromJulianDay (
                 LongReal julianDay, int &year, int &month, int &day,
                 int &hour, int &minute, LongReal &second);
 
         /// Get gregorian date from floating point julian day.
-        static void getGregorianDateFromJulianDay(
+        static void getGregorianDateFromJulianDay (
                 LongReal julianDay, int &year, int &month, int &day);
 
         /** Enter high-precission floating-point mode.

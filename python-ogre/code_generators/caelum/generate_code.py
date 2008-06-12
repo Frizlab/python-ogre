@@ -52,8 +52,13 @@ def ManualExclude ( mb ):
     if MAIN_NAMESPACE:
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
-        main_ns = global_ns    
-
+        main_ns = global_ns 
+    excludes=['::caelum::Astronomy::normalizeAngle']
+    excludes=[]
+    for m in excludes:
+        global_ns.member_functions(m).exclude()
+        
+        
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 

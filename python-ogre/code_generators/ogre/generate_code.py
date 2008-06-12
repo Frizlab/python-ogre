@@ -217,6 +217,7 @@ def ManualExclude ( mb ):
     ## Remove private classes , and those that are internal to Ogre...
     private_decls = common_utils.private_decls_t(environment.ogre.include_dirs)
     for cls in main_ns.classes():
+        print "MC:", cls
         if private_decls.is_private( cls ):
             cls.exclude()
             print '{*} class "%s" is marked as private' % cls.decl_string
@@ -228,13 +229,19 @@ def ManualExclude ( mb ):
             func.exclude()
             print '{*} function "%s" is marked as internal' % declarations.full_name( func )
 
-    # changes for Ogre 1.5
-    if environment.ogre.version =="1.5":
+    # changes for Ogre 1.7
+    if environment.ogre.version =="1.7":
         main_ns.class_("ResourceBackgroundQueue").exclude() # Ogre::ResourceBackgroundQueue::_fireBackgroundLoadingComplete isn't implemented
         main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageEnded").exclude()
         main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageStarted").exclude()
-        
-############################################################
+        for cls in main_ns.classes():
+            if cls.decl_string.startswith ("::Ogre::AllocatedObject") or\
+                cls.decl_string.startswith("::Ogre::STLAllocator") or\
+                cls.decl_string.startswith("::Ogre::CategorisedAllocPolicy") :
+                    print "Excluding Allocator class", cls
+                    cls.exclude()
+                            
+####################b########################################
 ##
 ##  And there are things that manually need to be INCLUDED 
 ##
