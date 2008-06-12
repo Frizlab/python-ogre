@@ -23,14 +23,13 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 #include "CaelumPrerequisites.h"
 #include "CameraBoundElement.h"
-#include "Sun.h"
 
 namespace caelum {
 
 /** A sky dome element.
-	@author Jesús Alonso Abad
+	@author JesË™s Alonso Abad
  */
-class DllExport SkyDome : public CameraBoundElement {
+class CAELUM_EXPORT SkyDome : public CameraBoundElement {
 // Attributes -----------------------------------------------------------------
 	private:
 		/** Control scene node.
@@ -47,6 +46,9 @@ class DllExport SkyDome : public CameraBoundElement {
 
 		/// Reference to the sky dome material.
 		Ogre::MaterialPtr mMaterial;
+
+		/// True if selected technique has shaders.
+		bool mShadersEnabled;
 
         /// If haze is enabled.
         bool mHazeEnabled;
@@ -67,6 +69,9 @@ class DllExport SkyDome : public CameraBoundElement {
 			@param dir The sun light direction.
 		 */
 		void setSunDirection (Ogre::Vector3 dir);
+
+        /// Explicit haze colour.
+        void setHazeColour (Ogre::ColourValue hazeColour);
 
 		/** Sets the new light absorption factor.
 			@param absorption The light absorption factor; a number in the range [0, 1], the lower, the less light the atmosphere will absorb.
@@ -92,18 +97,10 @@ class DllExport SkyDome : public CameraBoundElement {
         /// If skydome haze is enabled.
         bool getHazeEnabled () const;
 
-        /// Enable or disable skydome haze. This makes the sky darker.
+        /** Enable or disable skydome haze. This makes the sky darker.
+         *  By default haze is disabled.
+         */
         void setHazeEnabled (bool value);
-
-	private:
-		/** Internal method to create the sky dome material.
-		 * @throws UnsupportedException if the material isn't supported.
-		 */
-		void createSkyDomeMaterial ();
-
-		/** Internal method to destroy the sky dome material.
-		 */
-		void destroySkyDomeMaterial ();
 
     public:
 		/// Handle camera change.

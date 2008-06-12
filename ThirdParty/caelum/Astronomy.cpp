@@ -21,64 +21,140 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "CaelumPrecompiled.h"
 #include "Astronomy.h"
 
-using Ogre::Degree;
-using Ogre::Radian;
-using Ogre::Math;
-
 namespace caelum
 {
-    const Ogre::Degree Astronomy::normalizeAngle (Ogre::Degree value)
+    const LongReal Astronomy::PI = 3.1415926535897932384626433832795029L;
+
+    LongReal Astronomy::radToDeg (LongReal value)
     {
-        value = fmod (value.valueDegrees (), 360);
-        if (value < Degree (0)) {
-            value += Degree (360);
+        return value * 180 / PI;
+    }
+
+    LongReal Astronomy::degToRad (LongReal value)
+    {
+        return value * PI / 180;
+    }
+
+    LongReal Astronomy::sinDeg (LongReal x) {
+        return std::sin (degToRad (x));
+    }
+
+    LongReal Astronomy::cosDeg (LongReal x) {
+        return std::cos (degToRad (x));
+    }
+
+    LongReal Astronomy::atan2Deg (LongReal y, LongReal x) {
+        return radToDeg(std::atan2 (y, x));
+    }
+
+    LongReal Astronomy::normalizeDegrees (LongReal value)
+    {
+        value = fmod (value, 360);
+        if (value < LongReal (0)) {
+            value += LongReal (360);
         }
         return value;
     }
 
+	void Astronomy::convertEclipticToEquatorialRad (
+            LongReal lon, LongReal lat,
+            LongReal &rasc, LongReal &decl)
+	{
+		double ecl = Astronomy::degToRad(23.439281);
+
+		double x = cos(lon) * cos(lat);
+		double y = cos(ecl) * sin(lon) * cos(lat) - sin(ecl) * sin(lat);
+		double z = sin(ecl) * sin(lon) * cos(lat) + cos(ecl) * sin(lat);
+
+        double r = sqrt(x * x + y * y);
+        rasc = atan2(y, x);
+        decl = atan2(z, r);
+	} 
+
     void Astronomy::convertRectangularToSpherical (
             LongReal x, LongReal y, LongReal z,
-            Degree &rasc, Degree &decl, LongReal &dist)
+            LongReal &rasc, LongReal &decl, LongReal &dist)
     {
-        dist = Math::Sqrt (x * x + y * y + z * z);
-        rasc = Math::ATan2 (y, x);
-        decl = Math::ATan2 (z, Math::Sqrt (x * x + y * y));
+        dist = sqrt (x * x + y * y + z * z);
+        rasc = atan2Deg (y, x);
+        decl = atan2Deg (z, sqrt (x * x + y * y));
     }
 
     void Astronomy::convertSphericalToRectangular (
-            Degree rasc, Degree decl, LongReal dist,
+            LongReal rasc, LongReal decl, LongReal dist,
             LongReal &x, LongReal &y, LongReal &z)
     {
-        x = dist * Math::Cos (rasc) * Math::Cos (decl);
-        y = dist * Math::Sin (rasc) * Math::Cos (decl);
-        z = dist * Math::Sin (decl);
+        x = dist * cosDeg (rasc) * cosDeg (decl);
+        y = dist * sinDeg (rasc) * cosDeg (decl);
+        z = dist * sinDeg (decl);
     }
 
-    void Astronomy::convertEquatorialToHorizontal (
+	void Astronomy::convertEquatorialToHorizontal (
             LongReal jday,
-            Degree longitude,   Degree latitude,
-            Degree rasc,        Degree decl,
-            Degree &azimuth,    Degree &altitude)
+            LongReal longitude,   LongReal latitude,
+            LongReal rasc,        LongReal decl,
+            LongReal &azimuth,    LongReal &altitude)
     {
         LongReal d = jday - 2451543.5;
-        Degree w = Degree (282.9404 + 4.70935E-5 * d);
-        Degree M = Degree (356.0470 + 0.9856002585 * d);
+        LongReal w = LongReal (282.9404 + 4.70935E-5 * d);
+        LongReal M = LongReal (356.0470 + 0.9856002585 * d);
         // Sun's mean longitude
-        Degree L = w + M;
+        LongReal L = w + M;
         // Universal time of day in degrees.
-        Degree UT = Degree(fmod(d, 1) * 360);
-        Degree hourAngle = longitude + L + Degree (180) + UT - rasc;
+        LongReal UT = LongReal(fmod(d, 1) * 360);
+        LongReal hourAngle = longitude + L + LongReal (180) + UT - rasc;
 
-        LongReal x = Math::Cos (hourAngle) * Math::Cos (decl);
-        LongReal y = Math::Sin (hourAngle) * Math::Cos (decl);
-        LongReal z = Math::Sin (decl);
+        LongReal x = cosDeg (hourAngle) * cosDeg (decl);
+        LongReal y = sinDeg (hourAngle) * cosDeg (decl);
+        LongReal z = sinDeg (decl);
 
-        LongReal xhor = x * Math::Sin (latitude) - z * Math::Cos (latitude);
+        LongReal xhor = x * sinDeg (latitude) - z * cosDeg (latitude);
         LongReal yhor = y;
-        LongReal zhor = x * Math::Cos (latitude) + z * Math::Sin (latitude);
+        LongReal zhor = x * cosDeg (latitude) + z * sinDeg (latitude);
 
-        azimuth = Math::ATan2 (yhor, xhor) + Degree (180);
-        altitude = Math::ATan2 (zhor, Math::Sqrt (xhor * xhor + yhor * yhor));
+        azimuth = atan2Deg (yhor, xhor) + LongReal (180);
+        altitude = atan2Deg (zhor, sqrt (xhor * xhor + yhor * yhor));
+    }
+
+    void Astronomy::getHorizontalSunPosition (
+            LongReal jday,
+            LongReal longitude, LongReal latitude,
+            LongReal &azimuth, LongReal &altitude)
+    {
+        // 2451544.5 == Astronomy::getJulianDayFromGregorianDateTime(2000, 1, 1, 0, 0, 0));
+        // 2451543.5 == Astronomy::getJulianDayFromGregorianDateTime(1999, 12, 31, 0, 0, 0));
+        LongReal d = jday - 2451543.5;
+
+        // Sun's Orbital elements:
+        // argument of perihelion
+        LongReal w = LongReal (282.9404 + 4.70935E-5 * d);
+        // eccentricity (0=circle, 0-1=ellipse, 1=parabola)
+        LongReal e = 0.016709 - 1.151E-9 * d;
+        // mean anomaly (0 at perihelion; increases uniformly with time)
+        LongReal M = LongReal(356.0470 + 0.9856002585 * d);
+        // Obliquity of the ecliptic.
+        //LongReal oblecl = LongReal (23.4393 - 3.563E-7 * d);
+
+        // Eccentric anomaly
+        LongReal E = M + radToDeg(e * sinDeg (M) * (1 + e * cosDeg (M)));
+
+        // Sun's Distance(R) and true longitude(L)
+        LongReal xv = cosDeg (E) - e;
+        LongReal yv = sinDeg (E) * sqrt (1 - e * e);
+        //LongReal r = sqrt (xv * xv + yv * yv);
+        LongReal lon = atan2Deg (yv, xv) + w;
+        LongReal lat = 0;
+
+		LongReal lambda = degToRad(lon);
+		LongReal beta = degToRad(lat);
+        LongReal rasc, decl;
+		convertEclipticToEquatorialRad (lambda, beta, rasc, decl);
+		rasc = radToDeg(rasc);
+		decl = radToDeg(decl);
+
+        // Horizontal spherical.
+        Astronomy::convertEquatorialToHorizontal (
+                jday, longitude, latitude, rasc, decl, azimuth, altitude);
     }
 
     void Astronomy::getHorizontalSunPosition (
@@ -86,46 +162,78 @@ namespace caelum
             Ogre::Degree longitude, Ogre::Degree latitude,
             Ogre::Degree &azimuth, Ogre::Degree &altitude)
     {
-        // Midnight at the start of 31 december 2000 
-        // 2451543.5 == Astronomy::getJulianDayFromGregorianDateTime(1999, 12, 31, 0, 0, 0));
-        LongReal d = jday - 2451543.5;
+        LongReal az, al;
+        getHorizontalSunPosition(jday, longitude.valueDegrees (), latitude.valueDegrees (), az, al);
+        azimuth = Ogre::Degree(az);                
+        altitude = Ogre::Degree(al);                
+    }
 
-        // Sun's Orbital elements:
-        // argument of perihelion
-        Degree w = Degree (282.9404 + 4.70935E-5 * d);
-        // eccentricity (0=circle, 0-1=ellipse, 1=parabola)
-        LongReal e = 0.016709 - 1.151E-9 * d;
-        // mean anomaly (0 at perihelion; increases uniformly with time)
-        Degree M = Degree(356.0470 + 0.9856002585 * d);
-        // Obliquity of the ecliptic.
-        Degree oblecl = Degree (23.4393 - 3.563E-7 * d);
+	void Astronomy::getEclipticMoonPositionRad (
+            LongReal jday,
+            LongReal &lon, LongReal &lat)
+	{
+        // Julian centuries since January 1, 2000
+		double T = (jday - 2451545.0L) / 36525.0L; 
+		double lprim = 3.8104L + 8399.7091L * T;
+		double mprim = 2.3554L + 8328.6911L * T;
+		double m = 6.2300L + 648.3019L * T;
+		double d = 5.1985L + 7771.3772L * T;
+		double f = 1.6280L + 8433.4663L * T;
+		lon = lprim
+                + 0.1098L * sin(mprim)
+                + 0.0222L * sin(2.0L * d - mprim)
+                + 0.0115L * sin(2.0L * d)
+				+ 0.0037L * sin(2.0L * mprim)
+                - 0.0032L * sin(m)
+                - 0.0020L * sin(2.0L * f)
+                + 0.0010L * sin(2.0L * d - 2.0L * mprim)
+				+ 0.0010L * sin(2.0L * d - m - mprim)
+                + 0.0009L * sin(2.0L * d + mprim)
+                + 0.0008L * sin(2.0L * d - m)
+				+ 0.0007L * sin(mprim - m)
+                - 0.0006L * sin(d)
+                - 0.0005L * sin(m + mprim);
+		lat =
+                + 0.0895L * sin(f)
+                + 0.0049L * sin(mprim + f)
+                + 0.0048L * sin(mprim - f)
+                + 0.0030L * sin(2.0L * d - f)
+                + 0.0010L * sin(2.0L * d + f - mprim)
+                + 0.0008  * sin(2.0L * d - f - mprim)
+                + 0.0006L * sin(2.0L * d + f);
+	}
 
-        // Eccentric anomaly
-        Degree E = M + Radian(e * Math::Sin (M) * (1 + e * Math::Cos (M)));
+    void Astronomy::getHorizontalMoonPosition (
+            LongReal jday,
+            LongReal longitude, LongReal latitude,
+            LongReal &azimuth, LongReal &altitude)
+    {
+        // Ecliptic spherical
+		LongReal lonecl, latecl;
+		Astronomy::getEclipticMoonPositionRad (jday, lonecl, latecl);
 
-        // Sun's Distance(R) and true longitude(L)
-        LongReal xv = Math::Cos (E) - e;
-        LongReal yv = Math::Sin (E) * Math::Sqrt (1 - e * e);
-        LongReal r = Math::Sqrt (xv * xv + yv * yv);
-        Degree lon = Math::ATan2 (yv, xv) + w;
+		// Equatorial spherical
+        LongReal rasc, decl; 
+		Astronomy::convertEclipticToEquatorialRad (lonecl, latecl, rasc, decl);
 
-        // Ecliptic rectangular.
-        LongReal xecl = r * Math::Cos(lon);
-        LongReal yecl = r * Math::Sin(lon);
-        LongReal zecl = 0;
+		// Radians to degrees (all angles are in radians up to this point)
+        rasc = radToDeg(rasc);
+		decl = radToDeg(decl);
 
-        // Equatorial rectangular.
-        LongReal xequ = xecl;
-        LongReal yequ = yecl * Math::Cos (oblecl) - zecl * Math::Sin (oblecl);
-        LongReal zequ = yecl * Math::Sin (oblecl) + zecl * Math::Cos (oblecl);
-
-        // Equatorial spherical.
-        Degree rasc, decl;
-        Astronomy::convertRectangularToSpherical (xequ, yequ, zequ, rasc, decl, r);
-
-        // Horizontal spherical.
+		// Equatorial to horizontal
         Astronomy::convertEquatorialToHorizontal (
                 jday, longitude, latitude, rasc, decl, azimuth, altitude);
+    }
+
+    void Astronomy::getHorizontalMoonPosition (
+            LongReal jday,
+            Ogre::Degree longitude, Ogre::Degree latitude,
+            Ogre::Degree &azimuth, Ogre::Degree &altitude)
+    {
+        LongReal az, al;
+        getHorizontalMoonPosition(jday, longitude.valueDegrees (), latitude.valueDegrees (), az, al);
+        azimuth = Ogre::Degree(az);                
+        altitude = Ogre::Degree(al);  
     }
 
     int Astronomy::getJulianDayFromGregorianDate(

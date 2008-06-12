@@ -454,6 +454,8 @@ class boost:    ## also included bjam
                 [0,'xcopy /s /i /y '+os.path.join('python-ogre','boost') + ' ' + base , ''],  # need to overwrite the boost with our files
                 [0,'sed -i s/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/ '+base+'/configure', '' ],
                 [0,'sed -i s/"BOOST_PYTHON_MAX_ARITY 15"/"BOOST_PYTHON_MAX_ARITY 19"/ '+base+'/boost/python/detail/preprocessor.hpp', ''],
+                [0,'sed -i s/"# include <boost\/preprocessor\/cat.hpp>"/"\\n#define BOOST_PYTHON_NO_PY_SIGNATURES\\n# include <boost\/preprocessor\/cat.hpp>"/ '+base+'/boost/python/detail/preprocessor.hpp', '' ],
+                [0,'sed -i s/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/ '+base+'/boost/python/detail/preprocessor.hpp', '' ],
                 [0,os.path.join(os.getcwd(), bjambase, "bjam.exe") + ' release --with-python --toolset=msvc-8',os.path.join(os.getcwd(),base)]
                 ]
                              
@@ -469,7 +471,7 @@ class boost:    ## also included bjam
 class ogre:
     active = True
     pythonModule = True
-    version = "1.5"
+    version = "1.7"
     name='ogre'
     ModuleName='OGRE'
     cflags = ""
@@ -1122,7 +1124,7 @@ class physx:
     ModuleName="PhysX"   
 
 class nxogre_09:
-    active = True
+    active = False  # True
     pythonModule = True
     version="0.9"
     name='nxogre_09'
@@ -1164,7 +1166,8 @@ class ogreal:
                 , Config.PATH_INCLUDE_VORBIS
                 , Config.PATH_INCLUDE_OPENAL
                 ]  
-    if os.name=='nt':                  
+                
+    if isWindows():                  
         lib_dirs = [ Config.PATH_LIB_Boost
                 ,Config.PATH_LIB_Ogre_OgreMain    
                 ,os.path.join(Config.PATH_OGG, 'win32', 'Static_Release')
@@ -1173,39 +1176,50 @@ class ogreal:
                 ,os.path.join(Config.PATH_VORBIS, 'win32','VorbisFile_Static_Release')
                 ,os.path.join(Config.PATH_OPENAL, 'libs','Win32')
                   ] 
-    else:
-        lib_dirs = [ Config.PATH_LIB_Boost
-                ,Config.PATH_LIB_Ogre_OgreMain    
-                  ] 
-                  
-    if os.name =='nt':
         CCFLAGS = ' -DOgreAL_Export="" -DWIN32 -DNDEBUG -D_LIB -D_WIN32 -D_WINDOWS -DVORBIS_IEEE_FLOAT32 -D_USE_NON_INTEL_COMPILER '              
         libs=[Config.LIB_Boost, 'OgreMain', 
                     'ogg_static', 
                     'vorbis_static','vorbisfile_static','vorbisenc_static',
                     'OpenAL32', 'EFX-Util']  ##  'OgreAL' -- going to compile OgreAL ourselves
-    else:                    
+        source = [
+            ["wget", "http://connect.creativelabs.com/openal/Downloads/OpenAL11CoreSDK.zip",downloadPath],
+            ["wget", "http://downloads.xiph.org/releases/ogg/libogg-1.1.3.zip",downloadPath],
+            ["wget", "http://downloads.xiph.org/releases/vorbis/libvorbis-1.2.0.zip",downloadPath],
+            ]
+        buildCmds = [
+            [0, "unzip -q -o  " + os.path.join(downloadPath, "OpenAL11CoreSDK.zip"), ''],
+            [0, "OpenAL11CoreSDK.exe", ''],
+            [0, "unzip -q -o  " + os.path.join(downloadPath, "libogg-1.1.3.zip"), ''],
+            [0, "ren libogg-1.1.3 ogg",''],
+            [0, "unzip -q -o  " + os.path.join(downloadPath, "libvorbis-1.2.0.zip"), ''],
+            [0, "ren libvorbis-1.2.0 vorbis", ''],
+            ]
+    else:
+        lib_dirs = [ Config.PATH_LIB_Boost
+                ,Config.PATH_LIB_Ogre_OgreMain    
+                  ] 
+        source = [
+            ["wget", "http://www.openal.org/openal_webstf/downloads/openal-0.0.8.tar.gz",downloadPath],
+            ["wget", "http://downloads.xiph.org/releases/ogg/libogg-1.1.3.tar.gz",downloadPath],
+            ["wget", "http://downloads.xiph.org/releases/vorbis/libvorbis-1.2.0.tar.gz",downloadPath],
+            ]
+        buildCmds = [
+            [0, "tar zxf " + os.path.join(downloadPath, "openal-0.0.8.tar.gz"), ''],
+            [0, "tar zxf " + os.path.join(downloadPath, "libogg-1.1.3.tar.gz"), ''],
+            [0, "tar zxf " + os.path.join(downloadPath, "libvorbis-1.2.0.tar.gz"), ''],
+            [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "libogg-1.1.3")],
+            [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "libvorbis-1.2.0")],
+            [0, "sed --in-place -s 's|( ALCvoid )|()|' alc.h",os.path.join(os.getcwd(),"openal-0.0.8","common", "include", "AL")],
+            [0, "aclocal\n./autogen.sh", os.path.join(os.getcwd(),"openal-0.0.8")],
+            [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "openal-0.0.8")]
+            ]
         libs=[Config.LIB_Boost, 'OgreMain', 
                     'ogg', 
                     'vorbis','vorbisfile','vorbisenc',
                     'openal']  ##  'OgreAL' -- going to compile OgreAL ourselves
+                  
     ModuleName = 'OgreAL'
     CheckIncludes = ['OgreAL.h']
-    source = [
-        ["wget", "http://www.openal.org/openal_webstf/downloads/openal-0.0.8.tar.gz",downloadPath],
-        ["wget", "http://downloads.xiph.org/releases/ogg/libogg-1.1.3.tar.gz",downloadPath],
-        ["wget", "http://downloads.xiph.org/releases/vorbis/libvorbis-1.2.0.tar.gz",downloadPath],
-        ]
-    buildCmds = [
-        [0, "tar zxf " + os.path.join(downloadPath, "openal-0.0.8.tar.gz"), ''],
-        [0, "tar zxf " + os.path.join(downloadPath, "libogg-1.1.3.tar.gz"), ''],
-        [0, "tar zxf " + os.path.join(downloadPath, "libvorbis-1.2.0.tar.gz"), ''],
-        [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "libogg-1.1.3")],
-        [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "libvorbis-1.2.0")],
-        [0, "sed --in-place -s 's|( ALCvoid )|()|' alc.h",os.path.join(os.getcwd(),"openal-0.0.8","common", "include", "AL")],
-        [0, "aclocal\n./autogen.sh", os.path.join(os.getcwd(),"openal-0.0.8")],
-        [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "openal-0.0.8")]
-        ]
 
       
 class ogrevideoffmpeg:

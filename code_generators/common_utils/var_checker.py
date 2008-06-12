@@ -13,7 +13,7 @@ class var_checker:
         self.source = None
         
     def __call__(self, declaration):
-        #print "var_checker called with:", declaration
+#         print "var_checker called with:", declaration
         try:    
             if self.file_name != declaration.location.file_name:            
                 self.file_name = declaration.location.file_name
@@ -24,7 +24,12 @@ class var_checker:
             
         ## note the gccxml uses a 1 based line scheme whereas we are using python arrays - 0 based
         ## so we need to subtract 1 from the line number.
-        varline = self.source[declaration.location.line-1]
+#         print declaration.location.line, len(self.source)
+        try:
+            varline = self.source[declaration.location.line-1]
+        except IndexError:
+            return False # Bug showed up with Caelum where decl location was bigger than source ??
+                        
 #         print "Checker info:",declaration.location.line, declaration.location.file_name
 #         print "Checker Line:", varline
         if not '=' in varline:

@@ -20,6 +20,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 #include "CaelumPrecompiled.h"
 #include "CaelumSystem.h"
+#include "Moon.h"
 
 namespace caelum {
 
@@ -34,14 +35,25 @@ CaelumSystem::CaelumSystem
 	bool manageResGroup/* = true*/, 
 	const Ogre::String &resGroupName/* = RESOURCE_GROUP_NAME*/
 ):
-    mCleanup(false)
+    mOgreRoot (root),
+    mSceneMgr (sceneMgr),
+    mCleanup (false),
+
+    mManageSceneFog (false),
+	mGlobalFogDensityMultiplier (1),
+	mSceneFogDensityMultiplier (1),
+    mSceneFogColourMultiplier (0.7, 0.7, 0.7, 0.7),
+	mGroundFogDensityMultiplier (1),
+    mGroundFogColourMultiplier (1.0, 1.0, 1.0, 1.0),
+
+    mManageAmbientLight (false),
+    mMinimumAmbientLight (Ogre::ColourValue::Black),
+    mEnsureSingleLightSource (false),
+    mEnsureSingleShadowSource (false)
 {
-	LOG ("Initialising Caelum system...");
-	mOgreRoot = root;
-	mSceneMgr = sceneMgr;
+	Ogre::LogManager::getSingleton().logMessage ("Caelum: Initialising Caelum system...");
 	mCaelumRootNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("CaelumRoot");
 
-	mCleanup = false;
 	RESOURCE_GROUP_NAME = resGroupName;
 
 	// Create resource group
@@ -56,7 +68,8 @@ CaelumSystem::CaelumSystem
 		if (it == iend) {
 			Ogre::ResourceGroupManager::getSingleton ().createResourceGroup (RESOURCE_GROUP_NAME);
 			mManageResourceGroup = true;
-			LOG (Ogre::String ("Created Caelum resource group (") + RESOURCE_GROUP_NAME + ")");
+			Ogre::LogManager::getSingleton ().logMessage (
+                    "Caelum: Created resource group (" + RESOURCE_GROUP_NAME + ")");
 		} else {
 			mManageResourceGroup = false;
 		}
@@ -67,13 +80,7 @@ CaelumSystem::CaelumSystem
 	// Clock
 	mUniversalClock = new UniversalClock ();
 
-	// Set-up attributes
-	mManageSceneFog = false;
-	mGlobalFogDensityMultiplier = 1;
-	mSceneFogDensityMultiplier = 1;
-	mGroundFogDensityMultiplier = 1;
-
-	LOG ("System attributes set up.");
+	Ogre::LogManager::getSingleton ().logMessage ("Caelum: System attributes set up.");
 
 	// Create default components; as requested.
     if (componentsToCreate & CAELUM_COMPONENT_SKY_COLOUR_MODEL) {
@@ -88,7 +95,10 @@ CaelumSystem::CaelumSystem
     if (componentsToCreate & CAELUM_COMPONENT_SUN) {
 		this->setSun (new SpriteSun (mSceneMgr, mCaelumRootNode));
     }
-    if (componentsToCreate & CAELUM_COMPONENT_STARFIELD) {
+    if (componentsToCreate & CAELUM_COMPONENT_MOON) {
+		this->setMoon (new Moon (mSceneMgr, mCaelumRootNode));
+    }
+	if (componentsToCreate & CAELUM_COMPONENT_STARFIELD) {
 		this->setStarfield (new Starfield (mSceneMgr, mCaelumRootNode));
     }
     if (componentsToCreate & CAELUM_COMPONENT_CLOUDS) {
@@ -98,24 +108,15 @@ CaelumSystem::CaelumSystem
 		this->setGroundFog (new GroundFog (mSceneMgr, mCaelumRootNode));
     }
 
-	// Auto-register itself as a frame listener
-	mOgreRoot->addFrameListener (this);
-
-	LOG ("DONE");
+	Ogre::LogManager::getSingleton ().logMessage ("Caelum: DONE initializing");
 }
 
 CaelumSystem::~CaelumSystem () {
-	LOG ("Caelum system destroyed.");
+    destroySubcomponents();
+	Ogre::LogManager::getSingleton ().logMessage ("Caelum: CaelumSystem destroyed.");
 }
 
-void CaelumSystem::shutdown (const bool cleanup) {
-	LOG ("Shutting down Caelum system...");
-	// Remove itself as a frame listener
-	mOgreRoot->removeFrameListener (this);
-
-	// Unregister all the caelum listeners
-	mListeners.clear ();
-
+void CaelumSystem::destroySubcomponents () {
 	// Destroy the elements
 	setSkyDome (0);
 	setSun (0);
@@ -123,6 +124,7 @@ void CaelumSystem::shutdown (const bool cleanup) {
 	setClouds (0);
     setGroundFog (0);
     setSkyColourModel (0);
+    setMoon (0);
 
 	// Destroy the clock
 	if (mUniversalClock) {
@@ -133,33 +135,37 @@ void CaelumSystem::shutdown (const bool cleanup) {
 	// Remove resource group
 	if (mManageResourceGroup) {
 		Ogre::ResourceGroupManager::getSingleton ().destroyResourceGroup (RESOURCE_GROUP_NAME);
-		LOG ("Destroyed Caelum resource group");
+		Ogre::LogManager::getSingleton ().logMessage ("Caelum: Destroyed Caelum resource group");
+        mManageResourceGroup = false;
 	}
 
-	static_cast<Ogre::SceneNode*>(mCaelumRootNode->getParent())->
-		removeAndDestroyChild(mCaelumRootNode->getName());
-	mCaelumRootNode = 0;
-
-    if (cleanup) {
-		delete this;
-    } else {
-		mCleanup = true;
+    if (mCaelumRootNode) {
+        static_cast<Ogre::SceneNode*>(mCaelumRootNode->getParent())->
+                removeAndDestroyChild(mCaelumRootNode->getName());
+        mCaelumRootNode = 0;
     }
 }
 
-void CaelumSystem::addListener (CaelumListener *listener) {
-	mListeners.insert (listener);
-}
+void CaelumSystem::shutdown (const bool cleanup) {
+	Ogre::LogManager::getSingleton ().logMessage ("Caelum: Shutting down Caelum system...");
 
-void CaelumSystem::removeListener (CaelumListener *listener) {
-	mListeners.erase (listener);
+    destroySubcomponents();
+
+    if (cleanup) {
+        mOgreRoot->removeFrameListener (this);
+		delete this;
+    } else {
+        // We'll delete later. Make sure we're registered as a frame listener, or we'd leak.
+        mOgreRoot->addFrameListener(this);
+		mCleanup = true;
+    }
 }
 
 void CaelumSystem::preViewportUpdate (const Ogre::RenderTargetViewportEvent &e) {
 	Ogre::Camera *cam = e.source->getCamera ();
 	
 	// Move root node.
-	mCaelumRootNode->setPosition(cam->getRealPosition());
+	mCaelumRootNode->setPosition(cam->getDerivedPosition());
 
 	if (getSkyDome ()) {
 		getSkyDome ()->notifyCameraChanged (cam);
@@ -167,6 +173,10 @@ void CaelumSystem::preViewportUpdate (const Ogre::RenderTargetViewportEvent &e) 
 
 	if (getSun ()) {
 		getSun ()->notifyCameraChanged (cam);
+	}
+
+	if (getMoon ()) {
+		getMoon ()->notifyCameraChanged (cam);
 	}
 
 	if (getStarfield ()) {
@@ -187,88 +197,138 @@ UniversalClock *CaelumSystem::getUniversalClock () const {
 }
 				
 bool CaelumSystem::frameStarted (const Ogre::FrameEvent &e) {
-	// First of all, check if a cleanup has been requested or not, and if so, self-destruction
 	if (mCleanup) {
+        // Delayed destruction.
+        mOgreRoot->removeFrameListener (this);
 		delete this;
 		return true;
 	}
 
-	if (mUniversalClock->update (e.timeSinceLastFrame)) {
-		// Call every listener before doing anything
-        if (!fireStartedEvent (e)) {
-			return false;
-        }
+    updateSubcomponents(e.timeSinceLastFrame);
 
-        // Get current julian day.
-        LongReal julDay = mUniversalClock->getJulianDay ();
-        LongReal relDayTime = fmod(julDay, 1);
+    return true;
+}
 
-        // Get the sun's direction.
-        Ogre::Vector3 sunDir;
-        if (getSolarSystemModel ()) {
-            sunDir = getSolarSystemModel ()->getSunDirection(julDay);
-        } else {
-            sunDir = Ogre::Vector3::UNIT_Y;
-        }
+void CaelumSystem::updateSubcomponents (double timeSinceLastFrame) {
+	if (!mUniversalClock->update (timeSinceLastFrame)) {
+        return;
+    }
 
-        // Update starfield
-		if (getStarfield ()) {
-			getStarfield ()->update (relDayTime);
-		}
+    // Get current julian day.
+    LongReal julDay = mUniversalClock->getJulianDay ();
+    LongReal relDayTime = fmod(julDay, 1);
 
-        // Update skydome.
-		if (getSkyDome ()) {
-			getSkyDome ()->setSunDirection (sunDir);
-		}
+    // Get parameters from SolarSystemModel.
+    Ogre::Vector3 sunDir;
+    Ogre::Vector3 moonDir;
+	double moonPhase = 0.3;
+    if (getSolarSystemModel ()) {
+        sunDir = getSolarSystemModel ()->getSunDirection(julDay);
+        moonDir = getSolarSystemModel ()->getMoonDirection(julDay);
+		moonPhase = getSolarSystemModel ()->getMoonPhase(julDay);
+    } else {
+        sunDir = Ogre::Vector3::UNIT_Y;
+		moonDir = Ogre::Vector3(0.5, 0.5, 0.5).normalisedCopy();
+		moonPhase = 0.3;
+    }
 
-        // Init various properties from sky colour model.
-        double fogDensity;
-        Ogre::ColourValue fogColour;
-        Ogre::ColourValue sunLightColour;
-        Ogre::ColourValue sunSphereColour;
-        if (getSkyColourModel ()) {
-            fogDensity = getSkyColourModel ()->getFogDensity (relDayTime, sunDir);
-            fogDensity *= mGlobalFogDensityMultiplier;
-            fogColour = mSkyColourModel->getFogColour (relDayTime, sunDir);
-            sunLightColour = getSkyColourModel ()->getSunLightColour (relDayTime, sunDir);
-            sunSphereColour = getSkyColourModel ()->getSunSphereColour (relDayTime, sunDir);
-        } else {
-            fogDensity = 0;
-            fogColour = Ogre::ColourValue::Black;
-            sunLightColour = sunSphereColour = Ogre::ColourValue::White;
-        }
+    // Get parameters from sky colour model.
+    double fogDensity;
+    Ogre::ColourValue fogColour;
+    Ogre::ColourValue sunLightColour;
+    Ogre::ColourValue sunSphereColour;
+    Ogre::ColourValue moonLightColour;
+    Ogre::ColourValue moonBodyColour;
+    if (getSkyColourModel ()) {
+        fogDensity = getSkyColourModel ()->getFogDensity (relDayTime, sunDir);
+        fogDensity *= mGlobalFogDensityMultiplier;
+        fogColour = mSkyColourModel->getFogColour (relDayTime, sunDir);
+        sunLightColour = getSkyColourModel ()->getSunLightColour (relDayTime, sunDir);
+        sunSphereColour = getSkyColourModel ()->getSunSphereColour (relDayTime, sunDir);
+        moonLightColour = getSkyColourModel ()->getMoonLightColour (moonDir);
+        moonBodyColour = getSkyColourModel ()->getMoonBodyColour (moonDir);
+    } else {
+        fogDensity = 0;
+        fogColour = Ogre::ColourValue::Black;
+        sunLightColour = sunSphereColour = Ogre::ColourValue::White;
+        moonLightColour = Ogre::ColourValue::Blue / 3;
+        moonBodyColour = Ogre::ColourValue::White;
+    }
 
-        // Update scene fog.
-        if (getManageSceneFog ()) {
-			mSceneMgr->setFog (Ogre::FOG_EXP2,
-                    fogColour * 0.7,
-                    fogDensity * mSceneFogDensityMultiplier);
-        }
+    // Update starfield
+    if (getStarfield ()) {
+        getStarfield ()->update (relDayTime);
+    }
 
-        // Update ground fog.
-        if (getGroundFog ()) {
-			getGroundFog ()->setColour (fogColour);
-		    getGroundFog ()->setDensity (fogDensity * mGroundFogDensityMultiplier);
-		}
+    // Update skydome.
+    if (getSkyDome ()) {
+        getSkyDome ()->setSunDirection (sunDir);
+        getSkyDome ()->setHazeColour (fogColour * mSceneFogColourMultiplier);
+    }
 
-        // Update sun
-		if (getSun () && getSkyColourModel ()) {
-			mSun->update (sunDir, sunLightColour, sunSphereColour);
-		}
+    // Update scene fog.
+    if (getManageSceneFog ()) {
+        mSceneMgr->setFog (Ogre::FOG_EXP2,
+                fogColour * mSceneFogColourMultiplier,
+                fogDensity * mSceneFogDensityMultiplier);
+    }
 
-        // Update clouds
-        if (getClouds()) {
-            mClouds->update (mUniversalClock->getJulianSecondDifference(),
-				    sunDir, sunLightColour, fogColour);
-	    }
+    // Update ground fog.
+    if (getGroundFog ()) {
+        getGroundFog ()->setColour (fogColour * mGroundFogColourMultiplier);
+        getGroundFog ()->setDensity (fogDensity * mGroundFogDensityMultiplier);
+    }
 
-		// Call every listener before quiting
-        if (!fireFinishedEvent (e)) {
-			return false;
-        }
+    // Update sun
+    if (getSun ()) {
+        mSun->update (sunDir, sunLightColour, sunSphereColour);
+    }
+
+    // Update moon.
+	if (getMoon () && getSkyColourModel ()) {
+		mMoon->update (
+				moonDir,
+                moonLightColour,
+                moonBodyColour);
+		mMoon->setPhase (moonPhase);
 	}
 
-	return true;
+    // Update clouds
+    if (getClouds()) {
+        mClouds->update (mUniversalClock->getJulianSecondDifference(),
+                sunDir, sunLightColour, fogColour);
+    }
+
+    // Update ambient lighting.
+    if (getManageAmbientLight ()) {
+        Ogre::ColourValue ambient = Ogre::ColourValue::Black;
+        if (getMoon ()) {
+            ambient += getMoon ()->getLightColour () * getMoon() ->getAmbientMultiplier ();
+        }
+        if (getSun ()) {
+            ambient += getSun ()->getLightColour () * getSun() ->getAmbientMultiplier ();
+        }
+        ambient.r = std::max(ambient.r, mMinimumAmbientLight.r);
+        ambient.g = std::max(ambient.g, mMinimumAmbientLight.g);
+        ambient.b = std::max(ambient.b, mMinimumAmbientLight.b);
+        ambient.a = std::max(ambient.a, mMinimumAmbientLight.a);
+        mSceneMgr->setAmbientLight (ambient);
+    }
+
+    if (getSun() && getMoon ()) {
+        Ogre::Real moonBrightness = moonLightColour.r + moonLightColour.g + moonLightColour.b + moonLightColour.a;
+        Ogre::Real sunBrightness = sunLightColour.r + sunLightColour.g + sunLightColour.b + sunLightColour.a;
+        bool sunBrighterThanMoon = (sunBrightness > moonBrightness);
+
+        if (getEnsureSingleLightSource ()) {
+            getMoon ()->setForceDisable (sunBrighterThanMoon);
+            getSun ()->setForceDisable (!sunBrighterThanMoon);
+        }
+        if (getEnsureSingleShadowSource ()) {
+            getMoon ()->getMainLight ()->setCastShadows (!sunBrighterThanMoon);
+            getSun ()->getMainLight ()->setCastShadows (sunBrighterThanMoon);
+        }
+    }
 }
 
 void CaelumSystem::setManageSceneFog (bool value) {
@@ -306,35 +366,4 @@ void CaelumSystem::setGlobalFogDensityMultiplier (double value) {
 double  CaelumSystem::getGlobalFogDensityMultiplier () const {
     return mGlobalFogDensityMultiplier;
 }
-
-bool CaelumSystem::fireStartedEvent (const Ogre::FrameEvent &e) {
-	std::set<CaelumListener *>::iterator it, iend = mListeners.end ();
-	bool flag = true;
-
-	it = mListeners.begin ();
-
-	while (it != iend && flag) {
-		flag &= (*it)->caelumStarted (e, this);
-
-		++it;
-	}
-
-	return flag;
-}
-
-bool CaelumSystem::fireFinishedEvent (const Ogre::FrameEvent &e) {
-	std::set<CaelumListener *>::iterator it, iend = mListeners.end ();
-	bool flag = true;
-
-	it = mListeners.begin ();
-
-	while (it != iend && flag) {
-		flag &= (*it)->caelumFinished (e, this);
-
-		++it;
-	}
-
-	return flag;
-}
-
 } // namespace caelum

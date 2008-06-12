@@ -57,8 +57,11 @@ typedef std::list<Ogre::Plane> StdListPlane;
 typedef std::list<Ogre::Particle*> StdListParticlePtr;
 typedef std::pair<bool, float> StdPairBoolFloat;
 typedef std::pair<unsigned, unsigned> StdPairUnsignedUnsigned;
-typedef Ogre::AlignedAllocator<Ogre::Vector4, 0> AlignedAllocatorVector40;
-typedef Ogre::AlignedAllocator<Ogre::Vector4, 0>::rebind<Ogre::Vector4> AlignedAllocatorVector40Rebind;
+
+#if OGRE_VERSION_MINOR == 4
+    typedef Ogre::AlignedAllocator<Ogre::Vector4, 0> AlignedAllocatorVector40;
+    typedef Ogre::AlignedAllocator<Ogre::Vector4, 0>::rebind<Ogre::Vector4> AlignedAllocatorVector40Rebind;
+#endif
 
 typedef std::vector<Ogre::Vector4> VectorVector4;
 typedef Ogre::MapIterator<Ogre::VertexAnimationTrack*> MapIVertexAnimationTrackPtr;

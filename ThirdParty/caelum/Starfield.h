@@ -29,7 +29,7 @@ namespace caelum {
 /** Starfield dome class.
 	@author Jesús Alonso Abad
  */
-class DllExport Starfield : public CameraBoundElement {
+class CAELUM_EXPORT Starfield : public CameraBoundElement {
 // Attributes -----------------------------------------------------------------
 	protected:
 		/** Reference to the dome node.
@@ -80,15 +80,6 @@ class DllExport Starfield : public CameraBoundElement {
 			@param mapName The new starfield texture map name.
 		 */
 		void setTexture (const Ogre::String &mapName);
-
-	private:
-		/** Internal method to create the starfield material.
-		 */
-		void createStarfieldMaterial ();
-
-		/** Internal method to destroy the starfield material.
-		 */
-		void destroyStarfieldMaterial ();
 
     public:
 		/// Handle camera change.

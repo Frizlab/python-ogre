@@ -28,7 +28,7 @@ namespace caelum {
 /** Exception class for unsupported features.
  * @author Jesús Alonso Abad.
  */
-class DllExport UnsupportedException : public Ogre::Exception {
+class CAELUM_EXPORT UnsupportedException : public Ogre::Exception {
 	public:
 		/** Constructor.
 		 */
