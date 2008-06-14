@@ -248,7 +248,18 @@ class newton:
             [0, "cp newtonSDK/sdk/*.a %s/lib" % PREFIX, ''],
             [0, "cp newtonSDK/sdk/*.a ogreaddons/ogrenewt" , '']
             ]
-                    
+            
+    if isWindows():
+        base = 'newton'
+        source = [
+                    [wget, "http://www.newtondynamics.com/downloads/NewtonWin-1.53.zip", downloadPath]
+                 ]
+                 
+        buildCmds =  [
+            [0, unzip + os.path.join(downloadPath, "NewtonWin-1.53.zip"), ''],
+            [0, "setup.exe", ''],
+            ]
+            
 class pygccxml:
     pythonModule = False
     active = True
@@ -691,16 +702,21 @@ class ogrenewt:
                  [cvs, " -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -D 01052008 -P "+base, os.getcwd()]
                  ]
     else:
-        source = [
-                 [cvs, " -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -P "+base, os.getcwd()]
+        source = [ ##to fix
+                 [svn, " co :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -P "+base, os.getcwd()]
                  ]
     baseDir = os.path.join(os.getcwd(), base )
     buildCmds = [
             [0, "patch -s -N -i ../../python-ogre/patch/ogrenewt.patch -p0", baseDir], 
             #[0, "cp SConscript OgreNewt_Main", baseDir],
             #[0, "rm SConscript", baseDir],
-            [0, "rm -r ./OgreNewt_Main/inc/boost", baseDir],
+            [0, rm + " ./OgreNewt_Main/inc/boost", baseDir],
             [0, "scons prefix=%s boost=%s/include/boost-1_34_1 install" % (PREFIX, PREFIX), baseDir],  ##WARNING -- boost include dir name is different than  build name (dash not underscore)
+            ]
+    if isWindows():
+        buildCmds = [
+            [0, "patch -s -N -i ../../python-ogre/patch/ogrenewt.patch -p0", baseDir], 
+            [0, "rm -r ./OgreNewt_Main/inc/boost", baseDir],
             ]
 
     include_dirs = [Config.PATH_Boost
@@ -807,15 +823,22 @@ class ode:
         ["wget", "http://prdownloads.sourceforge.net/opende/ode-src-0.9.zip",downloadPath]
     ]
     baseDir = os.path.join(os.getcwd(),"ode-0.9")
-    buildCmds = [
-        [0, "unzip -q -o "+ os.path.join(downloadPath,"ode-src-0.9.zip"), ''],
-        [0, "chmod +x autogen.sh", baseDir],
-        [0, "./autogen.sh", baseDir],
-        [0, "./configure --prefix=%s --includedir=%s/include" %(PREFIX, PREFIX), baseDir],
-        [0, "make", baseDir],
-        [0, "make install", baseDir]
-
-        ]
+    if not isWindows():
+        buildCmds = [
+            [0, unzip + os.path.join(downloadPath,"ode-src-0.9.zip"), ''],
+            [0, "chmod +x autogen.sh", baseDir],
+            [0, "./autogen.sh", baseDir],
+            [0, "./configure --prefix=%s --includedir=%s/include" %(PREFIX, PREFIX), baseDir],
+            [0, "make", baseDir],
+            [0, "make install", baseDir]
+    
+            ]
+    else:
+        buildCmds = [
+            [0, unzip + os.path.join(downloadPath,"ode-src-0.9.zip"), ''],
+            ]   
+            
+                     
 class opcode:
     active = True
     pythonModule = True
@@ -937,6 +960,7 @@ class navi:
     name ='navi'
     CCFLAGS = '-D"WIN32" -D"NDEBUG", -D"WINDOWS"' 
     cflags=""
+    base = 'navi'
     include_dirs = [ Config.PATH_Boost
                     ,Config.PATH_INCLUDE_Ogre
                     ,Config.PATH_INCLUDE_navi
@@ -952,7 +976,11 @@ class navi:
             'kernel32.lib', 'gdi32.lib', 'winspool.lib', 'comdlg32.lib', 'advapi32.lib',
             'shell32.lib','ole32.lib','oleaut32.lib','uuid.lib' ]
     ModuleName="navi"   
-
+    source = [
+             [svn, " checkout http://navi.googlecode.com/svn/trunk/ "+base, os.getcwd()]
+             ]
+    
+    
 class betagui:
     active = True
     pythonModule = True
@@ -996,7 +1024,7 @@ class ogreforests:
 class particleuniverse:
     active = True
     pythonModule = True
-    version="0.7"
+    version="0.8"
     name='particleuniverse'
     parent="ogre/addons"
     CCFLAGS = ' ' 
@@ -1291,9 +1319,9 @@ class et:  ## editable terrain
 class bullet:
     active = True
     pythonModule = True
-    version= "2.66"
+    version= "2.69"
     name='bullet'
-    base = "bullet-2.66"
+    base = "bullet-" + version
     baseDir = os.path.join(os.getcwd(), base)
     parent = "ogre/physics"
     libs=[Config.LIB_Boost,  'LibBulletCollision', 'LibBulletDynamics']
@@ -1305,16 +1333,24 @@ class bullet:
     include_dirs = [ Config.PATH_Boost 
                     ,  Config.PATH_INCLUDE_Bullet
                     ]
-    source=[
-        [wget, "http://downloads.sourceforge.net/bullet/"+base+"A.tgz", downloadPath]
+    if not isWindows():
+        source=[
+            [wget, "http://bullet.googlecode.com/files/"+base+".tgz", downloadPath]
+            ]
+        buildCmds = [
+            [0, "tar zxf " +os.path.join(downloadPath, base)+".tgz", ''],
+            [0, "cmake . -DCMAKE_INSTALL_PREFIX:PATH=%s" % PREFIX, baseDir],
+            [0, "make", baseDir],
+            [0, "find . -name *.a -execdir cp {} %s/lib \;" % PREFIX, baseDir]
+            ]
+    else:
+        source=[
+        [wget, "http://bullet.googlecode.com/files/"+base+".zip", downloadPath]
         ]
-    buildCmds = [
-        [0, "tar zxf " +os.path.join(downloadPath, base)+".tgz", ''],
-        [0, "cmake . -DCMAKE_INSTALL_PREFIX:PATH=%s" % PREFIX, baseDir],
-        [0, "make", baseDir],
-        [0, "find . -name *.a -execdir cp {} %s/lib \;" % PREFIX, baseDir]
-        ]
-
+        buildCmds = [
+            [0, unzip +os.path.join(downloadPath, base)+".zip", ''],
+            ]
+            
     ModuleName = 'bullet'
     CheckIncludes = ['boost/python.hpp'] 
     cflags = ""
@@ -1451,7 +1487,7 @@ class cadunetree:
     ModuleName="cadunetree"          
 
 class opensteer:
-    active = True
+    active = False
     pythonModule = True
     version="1.0"
     name='opensteer'

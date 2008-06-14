@@ -51,15 +51,15 @@
 #   include "OgrePrerequisites.h"
 #endif
 
-#if NX_USE_OGRE
-#   include <OgreNoMemoryMacros.h>
-#endif
+// #if NX_USE_OGRE
+// #   include <OgreNoMemoryMacros.h>
+// #endif
 
 #include <Nx.h>
 #include <NxPhysics.h>
 
-#if NX_USE_OGRE
-#   include <OgreMemoryMacros.h>
-#endif
+// #if NX_USE_OGRE
+// #   include <OgreMemoryMacros.h>
+// #endif
 
 #endif
