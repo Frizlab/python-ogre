@@ -160,8 +160,9 @@ def add_transformations ( mb ):
     global_ns = mb.global_ns
 #     global_ns.member_functions('::OgreOde_Prefab::Ragdoll::pick').exclude()
 #     global_ns.mem_fun('::OgreOde_Prefab::Ragdoll::pick', arg_types=[None,None,None]).include()
-    f = global_ns.mem_fun('::OgreOde_Prefab::Ragdoll::pick', arg_types=[None,None,None])
-    f.add_transformation(ft.output('body'), ft.output('position') , alias='pick') 
+
+# #     f = global_ns.mem_fun('::OgreOde_Prefab::Ragdoll::pick', arg_types=[None,None,None])
+# #     f.add_transformation(ft.output('body'), ft.output('position') , alias='pick') 
      
 
     

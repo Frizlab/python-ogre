@@ -119,7 +119,7 @@ def filter_declarations( mb ):
     
     ## CEGUI::WindowManager::loadWindowLayout can take a function pointer as an agrument whcih isn't supported yet
     ## so lets remove the versions that expose the pointer 
-    lo = CEGUI_ns.class_( 'WindowManager' ).member_function( 'loadWindowLayout' )
+    lo = CEGUI_ns.class_( 'WindowManager' ).member_function( 'loadWindowLayout', arg_types=[None, None, None, None, None] )
     lo.arguments[3].type = lo.arguments[4].type     #AJM Not sure how args work so setting the func pointer to a void pointer
     
     ## OgreCEGUIRenderer.h has an assumed namespace in one of the default agrs that we need to fix

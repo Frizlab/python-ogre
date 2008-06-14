@@ -310,7 +310,7 @@ def generate_code():
                         os.path.join( environment.bullet.root_dir, "python_bullet.h" )
                         , environment.bullet.cache_file )
 
-    defined_symbols = [ 'BULLET_EXPORTS' ]
+    defined_symbols = [ 'BULLET_EXPORTS', 'BT_DECLARE_ALIGNED_ALLOCATOR()' ]
     defined_symbols.append( 'VERSION_' + environment.bullet.version )  
     
     #

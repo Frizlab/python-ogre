@@ -231,9 +231,30 @@ def ManualExclude ( mb ):
 
     # changes for Ogre 1.7
     if environment.ogre.version =="1.7":
-        main_ns.class_("ResourceBackgroundQueue").exclude() # Ogre::ResourceBackgroundQueue::_fireBackgroundLoadingComplete isn't implemented
+#         main_ns.class_("ResourceBackgroundQueue").exclude() # Ogre::ResourceBackgroundQueue::_fireBackgroundLoadingComplete isn't implemented
         main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageEnded").exclude()
         main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageStarted").exclude()
+# #         # fix vistrenderables issues:
+# # # #         for mf in main_ns.member_functions():
+# # # #             if mf.name == 'visitRenderables':
+# # # #                 mf.exclude()        ## can't do this as too much exclusion
+# # BillboardChain::visitRenderables
+# # Entity
+# # InstancedGeometry::GeometryBucket
+# # InstancedGeometry::BatchInstance
+# # Light
+# # MovablePlane
+# # SimpleRenderable
+# # BillboardSet
+# # Frustum
+# # ManualObject
+# # ParticleSystem
+# # StaticGeometry::Region
+
+
+        noncopy=['Camera','Frustum', 'Log']
+        for c in noncopy:
+            main_ns.class_(c).noncopyable = True
         for cls in main_ns.classes():
             if cls.decl_string.startswith ("::Ogre::AllocatedObject") or\
                 cls.decl_string.startswith("::Ogre::STLAllocator") or\

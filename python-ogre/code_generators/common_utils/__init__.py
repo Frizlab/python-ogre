@@ -94,10 +94,18 @@ def fix_unnamed_classes( classes, namespace ):
                 continue
             if mvar.ignore:
                 continue
-            if declarations.is_array (mvar.type):
-                template = '''def_readonly("%(mvar)s", &%(ns)s::%(parent)s::%(mvar)s)'''
-            else:
-                template = '''def_readwrite("%(mvar)s", &%(ns)s::%(parent)s::%(mvar)s)'''
+            if type (mvar) == type (declarations.destructor_t):
+                continue 
+            try:               
+                if declarations.is_array (mvar.type):
+                    template = '''def_readonly("%(mvar)s", &%(ns)s::%(parent)s::%(mvar)s)'''
+                else:
+                    template = '''def_readwrite("%(mvar)s", &%(ns)s::%(parent)s::%(mvar)s)'''
+            except AttributeError:
+                continue
+            except:
+                print "**** Error in unnamed_classes", mvar
+                                        
             named_parent.add_code( template % dict( ns=namespace, mvar=mvar.name, parent=named_parent.name ) )
 
 def set_declaration_aliases(global_ns, aliases):

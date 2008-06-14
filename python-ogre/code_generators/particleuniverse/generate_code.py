@@ -60,7 +60,8 @@ def ManualExclude ( mb ):
         main_ns.class_( c ).exclude()
         
     excludes = ['::ParticleUniverse::ParticleTechnique::setSpatialHashingParticleSizeUsed',
-                    '::ParticleUniverse::ParticleTechnique::isSpatialHashingParticleSizeUsed'
+                    '::ParticleUniverse::ParticleTechnique::isSpatialHashingParticleSizeUsed',
+                    '::ParticleUniverse::ParticleSystem::setBounds'
             ]     
     for e in excludes:
         print "excluding ", e
