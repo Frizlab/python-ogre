@@ -1137,7 +1137,7 @@ class physx:
         include_dirs.append( d )
     if os.name == 'nt':
         CCFLAGS = ' -D"WIN32" '
-        CCFLAGS = ' ' ## try to not define WIN 32 to remove inline assembly code that GCCxml doesn't like
+        ## CCFLAGS = ' ' ## try to not define WIN 32 to remove inline assembly code that GCCxml doesn't like
     else:
         CCFLAGS = ' -D"LINUX" '                
     lib_dirs = [Config.PATH_LIB_Boost,
@@ -1146,7 +1146,7 @@ class physx:
                 ]
     CheckIncludes=[]
     if os.name == 'nt':
-        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader' ]
+        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'PhysXLoader' ]
     else:
         libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking',  'PhysXCore', 'PhysXLoader' ]
     ModuleName="PhysX"   
