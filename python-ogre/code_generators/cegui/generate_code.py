@@ -38,9 +38,9 @@ def filter_declarations( mb ):
     CEGUI_ns = global_ns.namespace( 'CEGUI' )
     CEGUI_ns.include()
     
-    ## not available at link time.. seems fixed in CEGUI 0.6.0
-#     CEGUI_ns.free_function("lbi_greater").exclude()
-#     CEGUI_ns.free_function("lbi_less").exclude()
+    ## not available at link time.. 
+    CEGUI_ns.free_functions("lbi_greater").exclude()
+    CEGUI_ns.free_functions("lbi_less").exclude()
     
     ## Dumb fix to remove all Properties classes -  unfortunately the properties in these classes are indicated as public
     ## however within their 'parent' class they are defined as private..
@@ -88,31 +88,12 @@ def filter_declarations( mb ):
     ## this one fails at link time
     mb.class_( 'ScriptFunctor' ).exclude()   
     mb.class_( 'CEGUIRQListener' ).exclude()     
-    ## one version of createFont fails so lets find it and exclude it
-#     fm = mb.class_( 'FontManager' )
-#     ## can't use the simple, if it had 2 args exclude it as there is a version with 2 args that we want
-#     ## i.e.      fm.member_function( 'createFont', arg_types=[None,None ] ).exclude() 
-#     ## so instead need a function that looks for arg 2 to be XMLAttributes
-#     is_my_case = lambda decl: len( decl.arguments ) == 2 and 'XMLAttributes' in decl.arguments[1].type.decl_string 
-#     fm.member_function( name='createFont', function=is_my_case ).exclude()
-#   
-    ## couple of functions that fail when compiling
-    ## Not sure why this is related to Ogre 1.4 and not the CEGUI version...
-#     if environment.ogre.version == "1.4":    
-#         CEGUI_ns.class_( "RawDataContainer" ).member_functions( 'getDataPtr' ).exclude()
-#         CEGUI_ns.class_( "ItemListBase" ).member_functions( 'getSortCallback' ).exclude()
-#     else:   
-#         CEGUI_ns.class_("DataContainer<unsigned char>").exclude()
-#         CEGUI_ns.class_("Menubar").exclude()
-#         CEGUI_ns.class_("MenuBase").exclude()
-#         CEGUI_ns.class_("PopupMenu").exclude()
-#         CEGUI_ns.class_("Referenced").exclude()
-#         CEGUI_ns.class_("System").member_functions("getXMLParser").exclude()
 
     ## now have functions in String that return uint arrays a need to be wrapped
     sc = CEGUI_ns.class_( "String" )
     sc.member_functions('data').exclude()
     sc.member_functions('ptr').exclude()
+    
     ## and only remove the at functions that are not returning constants
     ## the const version returns by value which is good, the non const returns a reference which doesn't compile
     sc.member_function( 'at', lambda decl: decl.has_const == False ).exclude()
@@ -161,13 +142,19 @@ def filter_declarations( mb ):
     CEGUI_ns.class_('GlobalEventSet').noncopyable = True
     CEGUI_ns.class_('MouseCursor').noncopyable = True
     CEGUI_ns.class_('OgreCEGUIRenderer').noncopyable = True
+
+    # changes to latest py++ can gccxml etc June 15 2008
+    excludes = ['::CEGUI::ItemListBase::getSortCallback'  ]
+    for f in excludes:
+        CEGUI_ns.member_function(f).exclude()
+    CEGUI_ns.class_('RawDataContainer').exclude() # has pointers that need to be handled -- hopefully not needed    
+    CEGUI_ns.member_function("::CEGUI::WindowManager::loadWindowLayout", arg_types=[None,None,None,None,None]).exclude()   
     
-        
+    
+    
     global_ns.namespace( 'Ogre' ).class_('SceneManager').include(already_exposed=True)
-            
     global_ns.namespace( 'Ogre' ).class_('RenderWindow').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('TexturePtr').include(already_exposed=True)
-#     global_ns.namespace( 'Ogre' ).class_('SimpleRenderable').include(already_exposed=True)
             
     
 def set_call_policies( mb ):

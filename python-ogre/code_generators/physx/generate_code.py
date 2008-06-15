@@ -60,6 +60,8 @@ def ManualExclude ( mb ):
                 
                    
     excludes=[  '::NxArray<NxShapeDesc*, NxAllocatorDefault>::begin'
+                ,'::NxArray< NxForceFieldShapeDesc*, NxAllocatorDefault >::resize'
+                ,'::NxArray< NxForceFieldShapeGroup*, NxAllocatorDefault >::resize'
                 ,'::NxArray<NxFluidEmitterDesc, NxAllocatorDefault>::deleteEntry'
                 ,'::NxArray<NxShapeDesc*, NxAllocatorDefault>::end'
 #                 ,'::NxCloth::overlapAABBTriangles'  # ugly argument that boost doesn't like.. To Fix in hand wrappers
@@ -73,6 +75,8 @@ def ManualExclude ( mb ):
                 # not in source
                 ,'::NxBitField::rangeToDenseMask'
                 ,'::NxBitField::maskToShift'
+                ,'::NxVec3::setNotUsed'
+                ,'::NxVec3::isNotUsed'
 
                 ]
     for e in excludes:
@@ -87,11 +91,14 @@ def ManualExclude ( mb ):
         global_ns.free_functions(e).exclude()
         
     excludes = ['NxArray<NxShapeDesc*, NxAllocatorDefault>', ## doesn't have a defult constructor for ElemType
-                'NxArray<NxFluidEmitterDesc, NxAllocatorDefault>' ## needs ElemType changed to NxFluidEmitterDesc
+                'NxArray<NxFluidEmitterDesc, NxAllocatorDefault>', ## needs ElemType changed to NxFluidEmitterDesc
+                'NxArray<NxForceFieldShapeDesc*, NxAllocatorDefault>', ## Elemtype issue
+                'NxArray<NxForceFieldShapeGroup*, NxAllocatorDefault>', ## Elemtype issue
+                'NxForceFieldShapeGroup' ## seems to have access issues..
 
                 ]
-    for c in global_ns.classes():
-        print c                
+#     for c in global_ns.classes():
+#         print c                
     for e in excludes:
         print "Excluding Class:", e
         global_ns.class_(e).exclude()

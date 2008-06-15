@@ -4,7 +4,6 @@ def header_files( version ):
         ,"NxCooking.h"
         ,"NxFoundation.h"
         ,"NxCharacter.h"
-        ,"NxExtensions.h"
         ,"PhysXLoader.h"
         ,"NxStream.h"
         ]
