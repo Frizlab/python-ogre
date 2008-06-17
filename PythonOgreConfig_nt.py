@@ -111,7 +111,9 @@ PATH_LIB_PhysX =                os.path.join(PATH_PhysX,'lib/win32')
 PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'out/release8/libs' )
 PATH_LIB_Theora=                os.path.join(PATH_Theora, 'bin', 'Release')
 PATH_LIB_ogrevideoffmpeg =      PATH_ogrevideoffmpeg
-PATH_LIB_ffmpeg=                os.path.join(BASE_DIR, 'ffmpeg', 'lib')
+# PATH_LIB_ffmpeg=                os.path.join(BASE_DIR, 'ffmpeg', 'lib')
+PATH_LIB_ffmpeg=                os.path.join(PATH_ffmpeg, 'lib')
+
 PATH_LIB_plib =                 PATH_plib
 PATH_LIB_navi=                  os.path.join(PATH_navi, 'lib')
 PATH_LIB_ogredshow =            PATH_ogredshow
@@ -169,7 +171,7 @@ PATH_INCLUDE_particleuniverse = os.path.join(PATH_particleuniverse, 'include' )
 
 PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ,os.path.join(BASE_DIR, 'vorbis', 'include')
-                        ,os.path.join(BASE_DIR, 'libtheora-1.0beta2', 'include')
+                        ,os.path.join(BASE_DIR, 'theora', 'include')
 #                         ,os.path.join(PATH_OgreAddons,'videoplugin','theoravideo','include')
 #                         ,os.path.join(PATH_OgreAddons,'videoplugin','ptypes-2.1.1','include')
                         ,os.path.join(PATH_THIRDPARTY,'ptypes','include')

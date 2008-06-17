@@ -131,12 +131,11 @@ system fireSystem
 			}
 		}
 		
-		
 		// Use a gravity affector to attract the particles a bit
 		affector							Gravity
 		{
 			position						0 200 0
-			gravity						1000
+			gravity							1000
 		}
 
 		affector							Scale
@@ -186,6 +185,111 @@ system fireSystem
 		{
 			colour_aff_time_colour			0 1 0.9 0 1
 			colour_aff_time_colour			1 1 1 1 0
+		}
+	}
+}
+
+// ------------------------------------------ Begin: Windy Fire system -------------------------------------------
+// This particle system demonstrates a flip-flop mechanism with muliple observers
+// ---------------------------------------------------------------------------------------------------------------
+system windyFireSystem
+{
+	// ---------------- Fire ----------------
+	technique
+	{
+		material							ParticleUniverse/Fire
+		default_particle_width				60
+		default_particle_height				60
+		visual_particle_quota				500
+
+		renderer Billboard
+		{
+			// Put the fire in front of the smoke
+			render_queue_group				80
+		}
+
+		// Emission of fire particles
+		emitter								Point
+		{
+			emission_rate					100
+			angle							30
+			direction						0 1 0
+			velocity						dyn_random
+			{
+				min							100
+				max							140
+			}
+			time_to_live					dyn_random
+			{
+				min							3
+				max							6
+			}
+		}
+		
+		// The two observers are switching each other on and off, while they also switch 
+		// between two LinearForceAffectors. This flip/flop mechanism creates a windy-like effect.
+		observer							OnRandom				ObserverRight
+		{
+			observe_interval				0.6
+			random_threshold				0.4
+			handler													DoEnableComponent
+			{
+                enable_component			affector_component		LinearForceLeft			false
+			}
+			handler													DoEnableComponent
+			{
+                enable_component			affector_component		LinearForceRight		true
+			}
+			handler													DoEnableComponent
+			{
+                enable_component			observer_component		ObserverRight			false
+			}
+			handler													DoEnableComponent
+			{
+                enable_component			observer_component		ObserverLeft			true
+			}
+		}
+		observer							OnRandom				ObserverLeft
+		{
+			observe_interval				0.6
+			random_threshold				0.6
+			handler													DoEnableComponent
+			{
+                enable_component			affector_component		LinearForceLeft			true
+			}
+			handler													DoEnableComponent
+			{
+                enable_component			affector_component		LinearForceRight		false
+			}
+			handler													DoEnableComponent
+			{
+                enable_component			observer_component		ObserverRight			true
+			}
+			handler													DoEnableComponent
+			{
+                enable_component			observer_component		ObserverLeft			false
+			}
+		}
+		affector							LinearForce				LinearForceRight
+		{
+			enabled							false
+			force_aff_vector				100 0 0
+		}
+		affector							LinearForce				LinearForceLeft
+		{
+			enabled							false
+			force_aff_vector				-100 0 0
+		}
+
+		affector							Scale
+		{
+			xyz_scale						-5
+		}
+
+		affector							Colour
+		{
+			colour_aff_time_colour			0 1 1 1
+			colour_aff_time_colour			1 0 0 0
 		}
 	}
 }

@@ -1269,13 +1269,16 @@ class ogrevideoffmpeg:
                 ]
     CheckIncludes=[]
     if os.name == 'nt':
-        libs=[  Config.LIB_Boost, 'OgreMain', 'avformat-52', 'avcodec-51', 'avutil-49' ]
+        libs=[  Config.LIB_Boost, 'OgreMain', 'libavformat', 'libavcodec', 'libavutil',
+            'libavdevice','libswscale','liba52','libmingwex','libfaac','libfaad',
+            'libz','libxvidcore','libx264','libpthreadGC2','libwsock32','libvorbis','libmp3lame','libogg',
+            'libvorbisenc','libvorbisfile','libtheora','libgsm','libvfw32','libgcc' ]
     else:
         libs=[  Config.LIB_Boost, 'OgreMain', 'avformat', 'avcodec', 'avutil', 'z', 'GL', 'GLU', 'Xxf86vm', 'Xext', 'X11' ]
     ModuleName="ogrevideoffmpeg"   
 
 class ogredshow:
-    active = False
+    active = True
     pythonModule = True
     version="0.1"
     name='ogredshow'

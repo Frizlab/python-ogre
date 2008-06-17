@@ -183,6 +183,7 @@ system example_024a
 
 system example_024b
 {
+	keep_local									true
 	technique
 	{
 		default_particle_width					160
@@ -190,7 +191,6 @@ system example_024b
 		visual_particle_quota					1
 		material								ParticleUniverse/Star
 		use_alias								$defaultBillboardRenderer
-		keep_local								true
 
 		emitter									Point
 		{
@@ -252,4 +252,285 @@ system example_025
 		}
 	}
 }
+// ---------------------------------------------------------------------------------------------------------------
+// example_026: Interparticle Collision
+// ---------------------------------------------------------------------------------------------------------------
+system example_026
+{
+	technique
+	{
+		use_alias							$defaultBillboardRenderer
+		material							ParticleUniverse/GreenBall
+		default_particle_width				80
+		default_particle_height				80
+		default_particle_depth				80
+		visual_particle_quota				1000
+		emitter								Box
+		{
+			position						0 400 0
+			emission_rate					4
+			angle							0
+			box_em_width					500
+			box_em_height					1
+			box_em_depth					1
+			direction						0 -1 0
+			velocity						dyn_random
+			{
+				min							10
+				max							300
+			}
+			time_to_live					15
+		}
+		emitter								Box
+		{
+			position						0 -400 0
+			emission_rate					4
+			angle							0
+			box_em_width					500
+			box_em_height					1
+			box_em_depth					1
+			direction						0 1 0
+			velocity						dyn_random
+			{
+				min							10
+				max							300
+			}
+			time_to_live					15
+		}
+		affector							InterParticleCollider
+		{
+			ip_adjustment					0.8
+		}
+	}
+}
+// ---------------------------------------------------------------------------------------------------------------
+// example_027: Flocking Fish
+// ---------------------------------------------------------------------------------------------------------------
+system example_027
+{
+	technique
+	{
+		spatial_hashing_cell_dimension		100
+		spatial_hashing_cell_overlap		40
+		spatial_hashtable_size				50
+		default_particle_width				40
+		default_particle_height				40
+		default_particle_depth				40
+		max_velocity						200
+		visual_particle_quota				500
+		material							Examples/Fish
 
+		renderer							Entity
+		{
+			entity_renderer_mesh_name		fish.mesh
+			entity_orientation_type			ent_oriented_self_mirrored
+		}
+
+		emitter								Box
+		{
+			position						-800 0 0
+			emission_rate					20
+			box_em_width					500
+			box_em_height					500
+			box_em_depth					500
+			angle							25
+			direction						1 0 0
+			velocity						200
+			time_to_live					50
+			duration						2
+		}
+
+		// Switch the 3 Gravity Affectors on/off after a certain period of time
+		observer							OnTime				TopLeftGravityObserver
+		{
+			on_time							greater_than		10
+			observe_until_event				true
+			since_start_system				true
+			handler							DoEnableComponent
+			{
+				enable_component			affector_component	CenterGravity false
+			}
+			handler							DoEnableComponent
+			{
+				enable_component			affector_component	TopLeftGravity true
+			}
+		}
+		observer							OnTime				TopRightGravityObserver
+		{
+			on_time							greater_than		20
+			observe_until_event				true
+			since_start_system				true
+			handler							DoEnableComponent
+			{
+				enable_component			affector_component	TopLeftGravity false
+			}
+			handler							DoEnableComponent
+			{
+				enable_component			affector_component	TopRightGravity true
+			}
+		}
+		affector							Gravity				CenterGravity
+		{
+			position						0 -200 0
+			gravity							20000
+		}
+		affector							Gravity				TopLeftGravity
+		{
+			enabled							false
+			position						-400 200 0
+			gravity							20000
+		}
+		affector							Gravity				TopRightGravity
+		{
+			enabled							false
+			position						400 200 0
+			gravity							20000
+		}
+
+		// Flocking affectors
+		affector							FlockCentering
+		{
+		}
+		affector							CollisionAvoidance
+		{
+			avoidance_radius				100
+		}
+		affector							VelocityMatching
+		{
+			velocity_matching_radius		100
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------------------------------------------
+// example_028: Fireballs; Test of SlaveEmitter and SlaveBehaviour
+// ---------------------------------------------------------------------------------------------------------------
+system example_028
+{
+    // Particles from this technique follow the smoke
+    technique
+    {
+        material                                    ParticleUniverse/Nucleus
+        default_particle_width                      30
+        default_particle_height                     30
+        visual_particle_quota                       2000
+        renderer Billboard
+        {
+            render_queue_group                      50
+        }
+
+        emitter                                     Slave
+        {
+            time_to_live                            5
+            master_technique_name                   testTechnique
+            master_emitter_name                     PointEmitter
+            colour                                  1 0.6 0.3
+        }
+
+        behaviour                                   Slave
+        {
+        }
+
+        affector                                    Scale
+        {
+            xyz_scale                               dyn_curved_linear
+            {
+
+                control_point                       0 50
+                control_point                       1 0
+            }
+        }
+
+        affector                                    Colour
+        {
+            colour_operation                        multiply
+            colour_aff_time_colour                  0 1 1 1
+            colour_aff_time_colour                  0.05 0.3 0.3 0.3
+            colour_aff_time_colour                  1 0 0 0
+        }
+
+        affector                                    TextureRotator
+        {
+            tex_rot_use_own_rotation                true
+            tex_rot_speed                           0.5
+            tex_rot_rotation                        dyn_random
+            {
+                min                                 1
+                max                                 40
+            }
+        }
+
+    }
+
+    // Emission of the smoke particles is leading. Changing emission the other way around doesn´t give a good visual effect.
+    technique                                       testTechnique
+    {
+        material                                    PUMediaPack/Smoke
+        default_particle_width                      1
+        default_particle_height                     1
+        visual_particle_quota                       2000
+        emitted_emitter_quota                       100
+        renderer Billboard
+        {
+            render_queue_group                      50
+        }
+
+        emitter                                     Point
+        {
+            emission_rate                           1
+            emits                                   emitter_particle   PointEmitter
+            time_to_live                            7
+            angle                                   60
+            direction                               0 1 0
+            velocity                                300
+        }
+
+        emitter                                     Point    PointEmitter
+        {
+            emission_rate                           40
+            angle                                   360
+            velocity                                20
+            direction                               0 1 0
+            time_to_live                            4
+            colour                                  0 0 0 0
+        }
+
+        affector                                    Colour
+        {
+            colour_aff_time_colour                  0 0 0 0 0
+            colour_aff_time_colour                  0.06 0 0 0 0
+            colour_aff_time_colour                  0.1 0.1 0.1 0.1 1
+            colour_aff_time_colour                  0.5 0.2 0.2 0.2 0.3
+            colour_aff_time_colour                  0.8 0.2 0.2 0.2 0.3
+            colour_aff_time_colour                  1 0 0 0 0
+        }
+ 
+        affector                                    Scale
+        {
+            xyz_scale                               dyn_curved_linear
+            {
+
+                control_point                       0 10
+                control_point                       0.4 80
+                control_point                       1 0
+            }
+        }
+
+        affector                                    TextureRotator
+        {
+            tex_rot_use_own_rotation                true
+            tex_rot_speed                           0.5
+            tex_rot_rotation                        dyn_random
+            {
+                min                                 1
+                max                                 40
+            }
+        }
+
+        affector                                    LinearForce
+        {
+            force_aff_vector                        0 -100 0
+            exclude_emitter                         "PointEmitter"
+        }
+    }
+}

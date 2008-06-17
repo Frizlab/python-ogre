@@ -92,6 +92,8 @@ def ManualExclude ( mb ):
             ,'::btDispatcher::getInternalManifoldPointer'
             ,'::btAxisSweep3Internal<unsigned int>::processAllOverlappingPairs'
             ,'::btAxisSweep3Internal<unsigned short>::processAllOverlappingPairs'
+            ,'::btMultiSapBroadphase::createProxy'
+            ,'::btMultiSapBroadphase::quicksort'
             
             
             ]
@@ -110,12 +112,40 @@ def ManualExclude ( mb ):
             ,'btAlignedAllocator<btPersistentManifold*, 16u>'
             ,'btAlignedAllocator<btTypedConstraint*, 16u>'
             ,'btAlignedAllocator<btRaycastVehicle*, 16u>'
+            ,'btAlignedAllocator<btBroadphaseInterface*, 16u>'
             
+            ,'btAlignedAllocator<btDbvt::Node const*, 16u>'
+#             ,'btAlignedObjectArray<short>'
+#             ,'btAlignedAllocator<btDbvt::sStkNN, 16u>'
+#             ,'btAlignedAllocator<btDbvt::sStkNP, 16u>'
+#             ,'btAlignedAllocator<btDbvt::sStkNPS, 16u>'
+            ,'btAlignedAllocator<btMultiSapBroadphase::btBridgeProxy*, 16u>'
+            ,'btAlignedAllocator<btMultiSapBroadphase::btMultiSapProxy*, 16u>'
+#             ,'btAlignedAllocator<btOdeContactJoint, 16u>'
+            ,'btAlignedAllocator<btOdeJoint*, 16u>'
+#             ,'btAlignedAllocator<btOdeSolverBody, 16u>'
+            ,'btAlignedAllocator<btOdeSolverBody*, 16u>'
+#             ,'btAlignedAllocator<btOdeTypedJoint, 16u>'
+            ,'btAlignedAllocator<short, 16u>'
+#             ,'btAlignedObjectArray<btDbvt::Node const*>'
+#             ,'btAlignedObjectArray<btDbvt::sStkNN>'
+#             ,'btAlignedObjectArray<btDbvt::sStkNP>'
+#             ,'btAlignedObjectArray<btDbvt::sStkNPS>'
+            ,'btAlignedObjectArray<btMultiSapBroadphase::btBridgeProxy*>'
+            ,'btAlignedObjectArray<btMultiSapBroadphase::btMultiSapProxy*>'
+#             ,'btAlignedObjectArray<btOdeContactJoint>'
+#             ,'btAlignedObjectArray<btOdeJoint*>'
+#             ,'btAlignedObjectArray<btOdeSolverBody>'
+#             ,'btAlignedObjectArray<btOdeSolverBody*>'
+#             ,'btAlignedObjectArray<btOdeTypedJoint>'
+
 #             ,'btAlignedObjectArray<btIndexedMesh>'
 #             ,'btAlignedObjectArray<int>'
 #             ,'btAlignedObjectArray<btQuantizedBvhNode>'
 #             ,'btAlignedObjectArray<btOptimizedBvhNode>'
 #             ,'btAlignedObjectArray<btCollisionObject*>'
+            ,'btDbvtBroadphase'
+            ,'btSorLcpSolver'
             ]
     for e in excludes:
         print "excluding class", e
@@ -310,7 +340,7 @@ def generate_code():
                         os.path.join( environment.bullet.root_dir, "python_bullet.h" )
                         , environment.bullet.cache_file )
 
-    defined_symbols = [ 'BULLET_EXPORTS', 'BT_DECLARE_ALIGNED_ALLOCATOR()' ]
+    defined_symbols = [ 'BULLET_EXPORTS', '__GCCXML__' ]
     defined_symbols.append( 'VERSION_' + environment.bullet.version )  
     
     #

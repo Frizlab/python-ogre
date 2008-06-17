@@ -222,12 +222,35 @@ bool cVideoPlayer::open(Ogre::String fileName)
 
 bool cVideoPlayer::refresh(unsigned long time)
 {
+    static struct SwsContext *img_convert_ctx;
+
     if (state == playing)
     {
         if (time - lastTime > (SecondsPerFrame*1000))
          {
+             
         if (GetNextFrame(FormatCtx, CodecCtx, VideoStream, Frame))
         {
+            
+// //             // Convert the image into YUV format that SDL uses
+// //             if(img_convert_ctx == NULL) {
+// //               int w = is->video_st->codec->width;
+// //               int h = is->video_st->codec->height;
+// //               img_convert_ctx = sws_getContext(w, h, 
+// //                                 is->video_st->codec->pix_fmt, 
+// //                                 w, h, dst_pix_fmt, SWS_BICUBIC, 
+// //                                 NULL, NULL, NULL);
+// //               if(img_convert_ctx == NULL) {
+// //             	fprintf(stderr, "Cannot initialize the conversion context!\n");
+// //             	exit(1);
+// //                   }
+// //             }
+// //             sws_scale(img_convert_ctx, pFrame->data, 
+// //                       pFrame->linesize, 0, 
+// //                       is->video_st->codec->height, 
+// //                       pict.data, pict.linesize);
+
+            
             img_convert((AVPicture *)FrameRGB, PIX_FMT_RGB32, (AVPicture*)Frame,
                         CodecCtx->pix_fmt, CodecCtx->width, CodecCtx->height);
 
