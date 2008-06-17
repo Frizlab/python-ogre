@@ -131,7 +131,8 @@ def ManualFixes ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns
-              
+    main_ns.class_("::PagedGeometry::ImpostorTexture").noncopyable = True
+                 
 ############################################################
 ##
 ##  And things that need to have their argument and call values fixed.

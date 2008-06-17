@@ -123,8 +123,8 @@ system rainSystem_1
 			// Only observe the visual particles that are emitted
 			observe_particle_type			visual_particle
 
-			// Handle in case the particle positions´ y-value < -195
-			position_y						less_than -195
+			// Handle in case the particle positions´ y-value < -200
+			position_y						less_than -200
 			handler							DoExpire {}
 		}
 
@@ -264,8 +264,8 @@ system rainSystem_2
 			// Only observe the visual particles that are emitted
 			observe_particle_type			visual_particle
 
-			// Handle in case the particle positions´ y-value < -195
-			position_y						less_than -195
+			// Handle in case the particle positions´ y-value < -200
+			position_y						less_than -200
 			handler							DoExpire {}
 		}
 
