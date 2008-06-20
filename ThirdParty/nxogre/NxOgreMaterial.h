@@ -30,7 +30,7 @@ namespace NxOgre {
 
 		public:
 
-			/**Material Constructor
+			/** \brief Material Constructor
 			    Creates a material for a shape, and automatically assign a NxMaterialIndex to it.
 
 			Containers and Garbage Collection
@@ -47,8 +47,8 @@ namespace NxOgre {
 			Material(const NxString& identifier, Scene*);
 
 
-			/**	Material Constructor
-				 Creates a material for a shape, with a specific NxMaterialIndex
+			/** \brief Material Constructor
+			     Creates a material for a shape, with a specific NxMaterialIndex
 
 			Containers and Garbage Collection
 				Materials are used in containers. Creating a Material through the Scene factory method makes the Material "owned"
@@ -274,6 +274,7 @@ namespace NxOgre {
 
 	*/
 
+#if 0
 	/** \brief A list of MaterialIndexes matched to a string identifier.
 
 		A material alias is a way to handle saved meshes with material indexes per face. As it is likely
@@ -310,6 +311,7 @@ namespace NxOgre {
 			std::map<NxString, NxMaterialIndex> mAliases;
 
 	};
+#endif
 
 };
 

@@ -1,7 +1,7 @@
 /** \file    NxOgreTriggerCallback.h
  *  \brief   Header for the TriggerContactCallback and TriggerContactPtrCallback
  *           classes.
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -35,22 +35,22 @@ namespace NxOgre {
 
 		protected:
 
-				virtual ~TriggerContactCallback()                {}
+				virtual ~TriggerContactCallback()                          {}
 
-				virtual void Enter(Trigger*, Actor*)             {}
-				virtual void Enter(Trigger*, Character*)         {}
-				virtual void Enter(Shape*, Actor*)               {}
-				virtual void Enter(Shape*, Character*)           {}
+				virtual void Enter(Trigger*, Actor*)                       {}
+				virtual void Enter(Trigger*, CharacterSystem::Character*)  {}
+				virtual void Enter(Shape*, Actor*)                         {}
+				virtual void Enter(Shape*, CharacterSystem::Character*)    {}
 
-				virtual void Stay(Trigger*, Actor*)              {}
-				virtual void Stay(Trigger*, Character*)          {}
-				virtual void Stay(Shape*, Actor*)                {}
-				virtual void Stay(Shape*, Character*)            {}
+				virtual void Stay(Trigger*, Actor*)                        {}
+				virtual void Stay(Trigger*, CharacterSystem::Character*)   {}
+				virtual void Stay(Shape*, Actor*)                          {}
+				virtual void Stay(Shape*, CharacterSystem::Character*)     {}
 
-				virtual void Exit(Trigger*, Actor*)              {}
-				virtual void Exit(Trigger*, Character*)          {}
-				virtual void Exit(Shape*, Actor*)                {}
-				virtual void Exit(Shape*, Character*)            {}
+				virtual void Exit(Trigger*, Actor*)                        {}
+				virtual void Exit(Trigger*, CharacterSystem::Character*)   {}
+				virtual void Exit(Shape*, Actor*)                          {}
+				virtual void Exit(Shape*, CharacterSystem::Character*)     {}
 
 				/** \brief Should this Callback be deleted when the trigger using it is destroyed.
 					\note As the a the TriggerContactCallback has no constructor the behaviour
@@ -68,9 +68,9 @@ namespace NxOgre {
 		public:
 
 			typedef void (TargetClass::*TriggerActorPtr)(Trigger*, Actor*);
-			typedef void (TargetClass::*TriggerCharacterPtr)(Trigger*, Character*);
+			typedef void (TargetClass::*TriggerCharacterPtr)(Trigger*, CharacterSystem::Character*);
 			typedef void (TargetClass::*ShapeActorPtr)(Shape*, Actor*);
-			typedef void (TargetClass::*ShapeCharacterPtr)(Shape*, Character*);
+			typedef void (TargetClass::*ShapeCharacterPtr)(Shape*, CharacterSystem::Character*);
 
 			template <class TargetClass1>
 			explicit TriggerContactPtrCallback()
@@ -78,39 +78,39 @@ namespace NxOgre {
 			      mDeletionPolicy = GC_Delete;
 			}
 
-			template <class TargetClas1s>
-			explicit TriggerContactPtrCallback(TargetClass1* target_class)
+			template <class TargetClass2>
+			explicit TriggerContactPtrCallback(TargetClass2* target_class)
 			{     empty();
 			      mDeletionPolicy = GC_Delete;
 			      mClass = target_class;
 			}
 
 
-			template <class TargetClass1>
-			explicit TriggerContactPtrCallback(TargetClass1* target_class, TriggerActorPtr stay)
+			template <class TargetClass3>
+			explicit TriggerContactPtrCallback(TargetClass3* target_class, TriggerActorPtr stay)
 			{     empty();
 			      mDeletionPolicy = GC_Delete;
 			      mClass = target_class;
 			      Stay_TriggerActorPtr = stay;
 			}
 
-			template <class TargetClass1>
-			explicit TriggerContactPtrCallback(TargetClass1* target_class, TriggerActorPtr enter, TriggerActorPtr exit)
+			template <class TargetClass4>
+			explicit TriggerContactPtrCallback(TargetClass4* target_class, TriggerActorPtr enter, TriggerActorPtr exit)
 			{     empty(); 
 			      mDeletionPolicy = GC_Delete;
 			      mClass = target_class;
 			      Enter_TriggerActorPtr = enter;
-			      Exit_TriggerActorPtr = exit;
+			      ExiNxOgreClass_TriggerActorPtr = exit;
 			}
 
-			template <class TargetClass1>
-			explicit TriggerContactPtrCallback(TargetClass1* target_class, TriggerActorPtr enter, TriggerActorPtr stay, TriggerActorPtr exit)
+			template <class TargetClass5>
+			explicit TriggerContactPtrCallback(TargetClass5* target_class, TriggerActorPtr enter, TriggerActorPtr stay, TriggerActorPtr exit)
 			{     empty(); 
 			      mDeletionPolicy = GC_Delete;
-			      mClass = targetClass;
+			      mClass = target_class;
 			      Enter_TriggerActorPtr = enter;
 			      Stay_TriggerActorPtr = stay;
-			      Exit_TriggerActorPtr = exit;
+			      ExiNxOgreClass_TriggerActorPtr = exit;
 			}
 
 
@@ -124,8 +124,8 @@ namespace NxOgre {
 				Stay_TriggerCharacterPtr = 0;
 				Stay_ShapeActorPtr = 0;
 				Stay_ShapeCharacterPtr = 0;
-				Exit_TriggerActorPtr = 0;
-				Exit_TriggerCharacterPtr = 0;
+				ExiNxOgreClass_TriggerActorPtr = 0;
+				ExiNxOgreClass_TriggerCharacterPtr = 0;
 				Exit_ShapeActorPtr = 0;
 				Exit_ShapeCharacterPtr = 0;
 			}
@@ -135,7 +135,7 @@ namespace NxOgre {
 					(mClass->*Enter_TriggerActorPtr)(t, a);
 			}
 
-			void NxTemplateFunction Enter(Trigger* t, Character* c) {
+			void NxTemplateFunction Enter(Trigger* t, CharacterSystem::Character* c) {
 				if (Enter_TriggerCharacterPtr)
 					(mClass->*Enter_TriggerCharacterPtr)(t, c);
 			}
@@ -145,7 +145,7 @@ namespace NxOgre {
 					(mClass->*Enter_ShapeActorPtr)(s, a);
 			}
 				
-			void NxTemplateFunction Enter(Shape* s, Character* c) {
+			void NxTemplateFunction Enter(Shape* s, CharacterSystem::Character* c) {
 				if (Enter_ShapeCharacterPtr)
 					(mClass->*Enter_ShapeCharacterPtr)(s, c);
 			}
@@ -155,7 +155,7 @@ namespace NxOgre {
 					(mClass->*Stay_TriggerActorPtr)(t, a);
 			}
 
-			void NxTemplateFunction Stay(Trigger* t, Character* c) {
+			void NxTemplateFunction Stay(Trigger* t, CharacterSystem::Character* c) {
 				if (Stay_TriggerCharacterPtr)
 					(mClass->*Stay_TriggerCharacterPtr)(t, c);
 			}
@@ -165,19 +165,19 @@ namespace NxOgre {
 					(mClass->*Stay_ShapeActorPtr)(s, a);
 			}
 
-			void NxTemplateFunction Stay(Shape* s, Character* c) {
+			void NxTemplateFunction Stay(Shape* s, CharacterSystem::Character* c) {
 				if (Stay_ShapeCharacterPtr)
 					(mClass->*Stay_ShapeCharacterPtr)(s, c);
 			}
 
 			void NxTemplateFunction Exit(Trigger* t, Actor* a) {
-				if (Exit_TriggerActorPtr)
-					(mClass->*Exit_TriggerActorPtr)(t, a);
+				if (ExiNxOgreClass_TriggerActorPtr)
+					(mClass->*ExiNxOgreClass_TriggerActorPtr)(t, a);
 			}
 
-			void Exit(Trigger* t, Character* c) {
-				if (Exit_TriggerCharacterPtr)
-					(mClass->*Exit_TriggerCharacterPtr)(t, c);
+			void Exit(Trigger* t, CharacterSystem::Character* c) {
+				if (ExiNxOgreClass_TriggerCharacterPtr)
+					(mClass->*ExiNxOgreClass_TriggerCharacterPtr)(t, c);
 			}
 
 			void NxTemplateFunction Exit(Shape* s, Actor* a) {
@@ -185,7 +185,7 @@ namespace NxOgre {
 					(mClass->*Exit_ShapeActorPtr)(s, a);
 			}
 
-			void Exit(Shape* s, Character* c) {
+			void Exit(Shape* s, CharacterSystem::Character* c) {
 				if (Exit_ShapeCharacterPtr)
 					(mClass->*Exit_ShapeCharacterPtr)(s, c);
 			}
@@ -202,8 +202,8 @@ namespace NxOgre {
 			TriggerCharacterPtr        Stay_TriggerCharacterPtr;
 			ShapeActorPtr              Stay_ShapeActorPtr;
 			ShapeCharacterPtr          Stay_ShapeCharacterPtr;
-			TriggerActorPtr            Exit_TriggerActorPtr;
-			TriggerCharacterPtr        Exit_TriggerCharacterPtr;
+			TriggerActorPtr            ExiNxOgreClass_TriggerActorPtr;
+			TriggerCharacterPtr        ExiNxOgreClass_TriggerCharacterPtr;
 			ShapeActorPtr              Exit_ShapeActorPtr;
 			ShapeCharacterPtr          Exit_ShapeCharacterPtr;
 

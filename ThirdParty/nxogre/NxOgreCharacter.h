@@ -30,9 +30,9 @@
 #include "NxOgrePose.h"
 
 namespace NxOgre {
-	
-	/////////////////////////////////////////////////////////
-	
+namespace CharacterSystem {
+
+
 	class NxPublicClass CharacterParams : public Params {
 		
 		public:
@@ -53,13 +53,15 @@ namespace NxOgre {
 
 			enum ControllerType {
 #if (NX_USE_CHARACTER_API == 1)
-				CT_NXCONTROLLER,
+				CT_KINEMATIC,
 #endif
 				CT_NXACTOR,
-				CT_CUSTOM
+				CT_PTR
 			};
 
 			ControllerType					mControllerType;
+			CharacterController*			mControllerPtr;
+
 			NxReal							mStepOffset;
 			NxRadian						mSlopeLimit;
 			NxAxisType						mUpDirection;
@@ -99,13 +101,12 @@ namespace NxOgre {
 				LMB_DOWN		= 5
 			};
 		
-			Character(NxString identifier, Pose, CharacterModel*, CharacterParams = CharacterParams(), CharacterController* character_controller = 0, Scene* scene = 0);
-			~Character();
+			Character(const NxString& identifier, Pose, CharacterModel*, CharacterParams, Scene*);
+			virtual ~Character();
 			
 			NxString getName() const {return mName;}
 			
-			virtual void simulate(NxReal dTime)									{}
-			virtual void render(NxReal dTime)									{}
+			virtual void simulate(const TimeStep&);
 			
 			CharacterController*		getController() const {
 				return mController;
@@ -180,16 +181,18 @@ namespace NxOgre {
 			CharacterModel*				mModel;
 			CharacterMovementModel*		mCurrentMovement;
 		
+			NxString		mName;
+			Scene*			mOwner;
+			VoidPointer*	mVoidPointer;
+
 		private:
-		
-		
-			NxString	mName;
+
 			bool		mDead;
 		
 	};
 		
 	////////////////////////////////////////////
-
+};// End of CharacterSystem
 };// End of namespace
 
 #endif

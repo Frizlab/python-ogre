@@ -30,8 +30,7 @@
 #include "NxOgreCharacterController.h"
 
 namespace NxOgre {
-	
-/////////////////////////////////////////////////////////////
+namespace CharacterSystem {
 
 	class NxPublicClass NxActorController : public CharacterController {
 			
@@ -39,7 +38,7 @@ namespace NxOgre {
 		
 		protected:
 
-			NxActorController(NxMat34 pose, SimpleShape*, NxScene*);
+			NxActorController(NxMat34 pose, SimpleShape*, Scene*, VoidPointer*);
 
 		public:
 			
@@ -56,7 +55,7 @@ namespace NxOgre {
 				return mActor;
 			}
 
-			NxUserData*	getUserData() {
+			VoidPointer*	getUserData() {
 				return mUserData;
 			}
 
@@ -96,15 +95,15 @@ namespace NxOgre {
 		private:
 
 			NxActor*			mActor;
-			NxUserData*	mUserData;
+			VoidPointer*	mUserData;
 			NxShape*			mShape;
 
 	};
 
 	/////////////////////////////////////////////////////////
 
-	
-};// End of namespace
+}; // End of CharacterSystem namespace.
+}; // End of NxOgre namespace.
 
 #endif
 #endif

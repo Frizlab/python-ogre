@@ -23,7 +23,7 @@
 #include "NxOgreScene.h"
 #include "NxOgreGroup.h"
 #include "NxOgreContactStream.h"
-#include "NxOgreUserData.h"
+#include "NxOgreVoidPointer.h"
 
 namespace NxOgre {
 
@@ -49,8 +49,8 @@ void SceneContactController::onContactNotify(NxContactPair &pair, NxU32 events) 
 	Actor *a, *b;
 	
 	if (pair.actors[0]->userData && pair.actors[1]->userData) {
-		a = (static_cast<NxUserData*>(pair.actors[0]->userData))->toActor();
-		b = (static_cast<NxUserData*>(pair.actors[1]->userData))->toActor();
+		a = (static_cast<VoidPointer*>(pair.actors[0]->userData))->toActor();
+		b = (static_cast<VoidPointer*>(pair.actors[1]->userData))->toActor();
 	}
 	else {
 		return;

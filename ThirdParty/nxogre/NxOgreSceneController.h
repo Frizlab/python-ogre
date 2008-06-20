@@ -41,57 +41,22 @@ namespace NxOgre {
 			SceneController(Scene*);
 			virtual ~SceneController();
 
-			//////////////////////////////////////////////////////////////////////////////
-
+			virtual TimeStep Simulate(NxReal);
 			virtual NxString getType() const {return NxString("SceneController");}
-			virtual void setTiming(NxSceneDesc &desc, NxReal maxTimestep, NxU32 matIter, NxU32 numSubSteps);
-			virtual void setTiming(NxReal maxTimestep, NxU32 matIter, NxU32 numSubSteps);
-			virtual void init(NxScene*);
-			virtual bool Simulate(NxReal);
-			virtual NxReal	getIterationsPerSecond() {return mIPS;}
-			virtual NxReal	getDeltaTime() const {return mDeltaTime;}
-			virtual NxReal	getAlphaValue()	const {return 0.5f;}
-
-			//////////////////////////////////////////////////////////////////////////////
-			
-			NxReal		mRenderTime;
-			NxReal		mIPS;
-			NxReal		mDeltaTime;
 
 		protected:
 
+			virtual void setTiming(NxSceneDesc &desc, NxReal maxTimestep, NxU32 matIter, NxU32 numSubSteps);
+			virtual void setTiming(NxReal maxTimestep, NxU32 matIter, NxU32 numSubSteps);
+			virtual void init(NxScene*);
+
 			Scene*		mScene;
 			NxScene*	mNxScene;
-
-			//////////////////////////////////////////////////////////////////////////////
 
 		private:
 
 	};
 
-	//////////////////////////////////////////////////////////////////////////////
-
-	class NxPublicClass NullSceneController : public SceneController {
-
-		friend class Scene;
-
-		public:
-
-			NullSceneController(Scene*);
-			virtual ~NullSceneController();
-
-			//////////////////////////////////////////////////////////////////////////////
-
-			virtual NxString getType() const {return NxString("Null");}
-
-			virtual void setTiming(NxSceneDesc &desc, NxReal maxTimestep, NxU32 matIter, NxU32 numSubSteps);
-			virtual void setTiming(NxReal maxTimestep, NxU32 matIter, NxU32 numSubSteps);
-			virtual void init(NxScene*);
-			virtual bool Simulate(NxReal);
-		
-			//////////////////////////////////////////////////////////////////////////////
-
-	};
 	//////////////////////////////////////////////////////////////////////////////
 
 	class NxPublicClass VariableSceneController : public SceneController {
@@ -110,10 +75,8 @@ namespace NxOgre {
 			virtual void setTiming(NxSceneDesc &desc, NxReal maxTimestep, NxU32 matIter, NxU32 numSubSteps);
 			virtual void setTiming(NxReal maxTimestep, NxU32 matIter, NxU32 numSubSteps);
 			virtual void init(NxScene*);
-			virtual bool Simulate(NxReal);
-	
+			virtual TimeStep Simulate(NxReal);
 
-			//////////////////////////////////////////////////////////////////////////////
 
 	};
 
@@ -135,8 +98,8 @@ namespace NxOgre {
 			virtual void setTiming(NxSceneDesc &desc, NxReal maxTimestep, NxU32 matIter, NxU32 numSubSteps);
 			virtual void setTiming(NxReal maxTimestep, NxU32 matIter, NxU32 numSubSteps);
 			virtual void init(NxScene*);
-			virtual bool Simulate(NxReal);
-	
+			virtual TimeStep Simulate(NxReal);
+
 			NxReal	mTiming_MaxStep;
 			NxReal	mTiming_CurrentStep;
 			bool	mRenderFrame;
@@ -162,27 +125,16 @@ namespace NxOgre {
 			virtual void setTiming(NxSceneDesc &desc, NxReal maxTimestep, NxU32 matIter, NxU32 numSubSteps);
 			virtual void setTiming(NxReal maxTimestep, NxU32 matIter, NxU32 numSubSteps);
 			virtual void init(NxScene*);
-			virtual bool Simulate(NxReal);
-			virtual NxReal getAlphaValue() const {return mAlpha;}
+			virtual TimeStep Simulate(NxReal);
 
-			unsigned long getTime();
-
-#ifdef WIN32
-			
-			LARGE_INTEGER	mFreq;
-			LARGE_INTEGER	mCounter;
-#else
-			
-#endif
+			Timer*    mTimer;
 
 		private:
 
-			NxReal	mDt;
-			NxReal	mAccumulator;
-			NxReal	mSecond;
-			NxU32	mSimCount;
-			NxReal	mAlpha;
-			NxU32	mPreviousTime;
+			NxF64     mMaxStep;
+			NxF64     mAccumulator;
+			NxReal    mAlpha;
+			NxU32     mPreviousTime;
 
 			
 			//////////////////////////////////////////////////////////////////////////////

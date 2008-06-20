@@ -92,27 +92,22 @@ void Error::removeReporter(unsigned int id) {
 void Error::reportError(NxErrorCode code, const char *message, const char* file, int line) {
 
 	NxString str_code = getErrorCode(code);
-
-	char* str = new char[str_code.length() + strlen(message) + strlen(file) + 16];
-	sprintf(str, "%s => '%s' in %s#%i", code, message, file, line);
-	
-	NxThrow_AsWarning(NxString(str).c_str());
-
+	printf("PhysX Error! %s (%s:%i)\n%s\n", str_code.c_str(), file, line, message);
+	/// \todo Report as a message.
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 NxAssertResponse Error::reportAssertViolation(const char *message, const char *file,int line) {
-
-	char* str = new char[strlen(message) + strlen(file) + 16];
-	sprintf(str, "PhysX Assertion => '%s' in %s#%i", message, file, line);
-	
+	printf("PhysX Assertion! (%s:%i)\n%s\n", file, line, message);
+	/// \todo Report as a message.
 	return NX_AR_CONTINUE;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Error::print (const char *message) {
+	printf("PhysX message\n%s\n", message);
 	NxDebug(message);
 }
 

@@ -1,6 +1,6 @@
 /** \file    NxOgreMeshRenderableSource.h
  *  \brief   Header for the MeshRenderable and MeshRenderableParams classes.
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -128,7 +128,7 @@ namespace NxOgre {
 
 		public:
 
-			MeshRenderable(MeshRenderableParams, DynamicMesh*, SceneRenderer*);
+			MeshRenderable(MeshRenderableParams, Resources::Mesh*, SceneRenderer*);
 
 			virtual void renderMesh() = 0;
 
@@ -144,7 +144,7 @@ namespace NxOgre {
 			virtual NxString getType() {return "NxOgre-NodeRenderable";}
 			virtual NxShortHashIdentifier getHashType() const {return 42719;}
 
-			DynamicMesh* mMesh;
+			Resources::Mesh* mMesh;
 
 	};
 	

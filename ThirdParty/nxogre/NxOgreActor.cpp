@@ -1,6 +1,6 @@
 /** \file    NxOgreActor.cpp
  *  \see     NxOgreActor.h
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -22,7 +22,7 @@
 #include "NxOgreStable.h"
 #include "NxOgreActor.h"
 
-#include "NxOgreUserData.h"				// For NxUserData for NxActor
+#include "NxOgreVoidPointer.h"			// For VoidPointer for NxActor
 #include "NxOgrePose.h"					// For conversions
 #include "NxOgreHelpers.h"				// For conversions
 #include "NxOgreScene.h"				// For Actor::mOwner
@@ -86,6 +86,7 @@ void ActorParams::parse(Parameters params) {
 	for (Parameter* parameter = params.Begin(); parameter = params.Next();) {
 
 		if (parameter->i == "static") {
+
 			if (isYes(parameter->j)) {
 				mMass = 0;
 				mDensity = 0;
@@ -184,7 +185,7 @@ Actor::Actor(const NxString& Identifier, Scene* scene, bool isActorBased) : mNam
 
 //////////////////////////////////////////////////////////
 
-Actor::Actor(const NxString& name, Scene* scene, Shape *shape, const Pose& pose, ActorParams params)
+Actor::Actor(const NxString& name, Scene* scene, Shape *shape, const Pose& pose, const ActorParams& params)
 : mName(name), mOwner(scene) {
 
 	if (name.length() == 0) {
@@ -192,25 +193,14 @@ Actor::Actor(const NxString& name, Scene* scene, Shape *shape, const Pose& pose,
 	}
 	else {
 
-		std::vector<NxString> splitID = Ogre::StringUtil::split(name, ";", 2);
-
-		NxString identifier;
-
-		if (splitID.size() == 1) {
-			identifier = name;
-		}
-		else {
-			identifier = splitID[0];
-		}
-
-		Ogre::StringUtil::trim(identifier);
+		// Urgh.
+		NxString identifier = name;
 
 		if (identifier.substr(0,1) == ">") {
 			mName = identifier.substr(1, identifier.length() - 1);
 			if (scene->getActors()->has(mName)) {
 				NxThrow(NxString("Duplicate Actor with identifier '" + mName + "' found!").c_str());
 			}
-
 		}
 		else if (scene->getActors()->has(identifier)) {
 			// Generate a identifier based on the the suggested name.
@@ -267,7 +257,7 @@ void Actor::_createActor(Shape *shape, const Pose& pose, ActorParams params) {
 	ad.setToDefault();
 	bd.setToDefault();
 
-	mNxUserData = new NxUserData(this, NxUserData::T_Actor);
+	mVoidPointer = new VoidPointer(this, NxOgreClass_Actor);
 #if NX_SDK_VERSION_NUMBER >= 260
 	ad.compartment = params.mCompartment;
 #endif
@@ -288,7 +278,7 @@ void Actor::_createActor(Shape *shape, const Pose& pose, ActorParams params) {
 	else if (params.mGroupAsName.length() > 0)
 		ad.group = mOwner->getActorGroup(params.mGroupAsName)->getGroupID();
 
-	ad.userData = mNxUserData;
+	ad.userData = mVoidPointer;
 
 	if (params.mDensity == 0 && params.mMass == 0) {
 		ad.body = NULL;
@@ -316,8 +306,10 @@ void Actor::_createActor(Shape *shape, const Pose& pose, ActorParams params) {
 
 	NxWatchDescribed(Shape, shape, mName.c_str());
 	shape->createShape(ad.shapes, 0, mOwner);
-	mCollisionModel.Insert(shape);
 
+	if (shape->getTypeHash() == NxOgreClass_Shape)
+		mCollisionModel.Insert(shape);
+	
 	mActor = mOwner->mScene->createActor(ad);
 
 	if (!mActor) {
@@ -325,11 +317,29 @@ void Actor::_createActor(Shape *shape, const Pose& pose, ActorParams params) {
 		return;
 	}
 
-	NxU32 nbShapes = mActor->getNbShapes();
-	NxShape* const* nx_shapes = mActor->getShapes();
+	if (shape->getTypeHash() == NxOgreClass_Shape) {
+		NxU32 nbShapes = mActor->getNbShapes();
+		NxShape* const* nx_shapes = mActor->getShapes();
 
-	for (NxU32 i=0;i < nbShapes;i++) {
-		mCollisionModel[i]->setNxShape(nx_shapes[i]);
+		for (NxU32 i=0;i < nbShapes;i++) {
+			mCollisionModel[i]->setNxShape(nx_shapes[i]);
+		}
+
+	}
+	else if (shape->getTypeHash() == NxOgreClass_CompoundShape) {
+
+		NxU32 nbShapes = mActor->getNbShapes();
+		NxShape* const* nx_shapes = mActor->getShapes();
+		CompoundShape* compound_shape = static_cast<CompoundShape*>(shape);
+		
+		for (NxU32 i=0;i < nbShapes;i++) {
+			compound_shape->mShapes[i]->setNxShape(nx_shapes[i]);
+			mCollisionModel.Insert(compound_shape->mShapes[i]);
+		}
+
+		delete shape;
+		shape = 0;
+		compound_shape = 0;
 	}
 
 	mBirthFrame = mOwner->getWorld()->getNbFrames();
@@ -340,8 +350,8 @@ void Actor::_createActor(Shape *shape, const Pose& pose, ActorParams params) {
 
 void Actor::_destroyActor() {
 //	mCollisionModel.destroyAllOwned();
-	delete mNxUserData;
 	mCollisionModel.DestroyAll();
+	delete mVoidPointer;
 	mOwner->mScene->releaseActor(*mActor);
 	mActor = 0;
 }
@@ -1008,8 +1018,8 @@ NxU32 Actor::getSolverIterationCount() const {
 
 #if NX_SUPPORT_SWEEP_API
 
-NxU32 Actor::linearSweep(const Ogre::Vector3& motion, NxU32 flags, void* userData, NxU32 nbShapeDescriptions, NxSweepQueryHit* shapes, NxUserEntityReport<NxSweepQueryHit>* callback, const NxSweepCache* sweepCache) {
-	return mActor->linearSweep(NxConvert<NxVec3, Ogre::Vector3>(motion), flags, userData, nbShapeDescriptions, shapes, callback, sweepCache);
+NxU32 Actor::linearSweep(const Ogre::Vector3& motion, NxU32 flags, void* VoidPointer, NxU32 nbShapeDescriptions, NxSweepQueryHit* shapes, NxUserEntityReport<NxSweepQueryHit>* callback, const NxSweepCache* sweepCache) {
+	return mActor->linearSweep(NxConvert<NxVec3, Ogre::Vector3>(motion), flags, VoidPointer, nbShapeDescriptions, shapes, callback, sweepCache);
 }
 
 #endif
@@ -1082,14 +1092,14 @@ Actor::CollisionModel Actor::getCollisionModel() {
 
 //////////////////////////////////////////////////////////
 
-void* Actor::getNxUserData() {
+void* Actor::getVoidPointer() {
 	return mActor->userData;
 }
 
 //////////////////////////////////////////////////////////
 
-NxUserData* Actor::getUserData() {
-	return mNxUserData;
+VoidPointer* Actor::getUserData() {
+	return mVoidPointer;
 }
 
 //////////////////////////////////////////////////////////

@@ -1,7 +1,7 @@
 /** \file    NxOgreSimpleShape.h
  *  \brief   Header for the SimpleShape, SimpleBoxShape, SimpleSphereShape,
  *           SimpleCapsuleShape and SimpleConvexShape classes.
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -93,7 +93,7 @@ namespace NxOgre {
 
 	class NxPublicClass SimplePlane : public SimpleShape {
 	
-// 		friend class SimplePlane;
+		friend class SimpleShape;
 
 		public:
 
@@ -132,17 +132,70 @@ namespace NxOgre {
 
 		public:
 
-			SimpleBox(NxReal s) : SimpleShape(SimpleShape::SST_Box) {mDimensions.set(s,s,s);mPose.id();}
-			SimpleBox(NxReal w, NxReal h, NxReal d) : SimpleShape(SimpleShape::SST_Box), mDimensions(w,h,d) {mPose.id();}
-			SimpleBox(Ogre::Vector3 d) : SimpleShape(SimpleShape::SST_Box) {mDimensions.set(d.x,d.y,d.z);mPose.id();}
-			SimpleBox(Ogre::Vector3 d, NxOgre::Pose p) : SimpleShape(SimpleShape::SST_Box) {mDimensions.set(d.x,d.y,d.z);mPose = p;}
-			SimpleBox(NxVec3 d) : SimpleShape(SimpleShape::SST_Box), mDimensions(d) {mPose.id();}
-			SimpleBox(NxVec3 d, NxMat34 p) : SimpleShape(SimpleShape::SST_Box), mDimensions(d), mPose(p) {}
+			SimpleBox(NxReal s) : SimpleShape(SimpleShape::SST_Box) {
+				setDimensions(s,s,s);
+				mPose.id();
+			}
+			
+			SimpleBox(NxReal w, NxReal h, NxReal d) : SimpleShape(SimpleShape::SST_Box) {
+				setDimensions(w, h, d);
+				mPose.id();
+			}
+
+#if NX_USE_OGRE == 1
+			SimpleBox(const Ogre::Vector3& d) : SimpleShape(SimpleShape::SST_Box) {
+				setDimensions(d);
+				mPose.id();
+			}
+#endif
+
+#if NX_USE_OGRE == 1
+			SimpleBox(const Ogre::Vector3& d, const NxOgre::Pose& p) : SimpleShape(SimpleShape::SST_Box) {
+				setDimensions(d);
+				setPose(p);
+			}
+
+#endif
+			SimpleBox(const NxVec3& d) : SimpleShape(SimpleShape::SST_Box) {
+				setDimensions(d);
+				mPose.id();
+			}
+
+			SimpleBox(const NxVec3& d, const NxMat34& p) : SimpleShape(SimpleShape::SST_Box) {
+				setDimensions(d);
+				setPose(p);
+			}
+			
+			SimpleBox(const float3& d) : SimpleShape(SimpleShape::SST_Box) {
+				setDimensions(d);
+				mPose.id();
+			}
+
+			SimpleBox(const float3& d, const NxOgre::Pose& p) : SimpleShape(SimpleShape::SST_Box)  {
+				setDimensions(d);
+				setPose(p);
+			}
+
 			~SimpleBox() {}
 
-			NxVec3 getDimensions()		{return mDimensions;}
-			NxMat34 getPose()			{return mPose;}
+			void setDimensions(NxReal x, NxReal y, NxReal z)  {mDimensions.set(x, y, z);}
+			void setDimensions(const NxVec3& d)         {mDimensions = d;}
+			void setDimensions(const float3& d)         {mDimensions.set(d.i, d.j, d.k);}
+#if NX_USE_OGRE == 1
+			void setDimensions(const Ogre::Vector3& d)  {mDimensions.set(d.x, d.y, d.z);}
+#endif
 
+			void setPose(const NxMat34& p)              {mPose = p;}
+			void setPose(const NxOgre::Pose& p)         {mPose = p;}
+
+			NxVec3 getDimensionsAsNxVec3()              {return mDimensions;}
+			float3 getDimensions()                      {return float3(mDimensions.x, mDimensions.y, mDimensions.z);}
+#if NX_USE_OGRE == 1
+			Ogre::Vector3 getDimensionsAsOgreVector3()  {return Ogre::Vector3(mDimensions.x, mDimensions.y, mDimensions.z);}
+#endif
+
+			NxMat34 getPoseAsNxMat34()                  {return mPose;}
+			Pose    getPose()                           {return NxOgre::Pose(mPose);}
 		protected:
 			
 			NxVec3		mDimensions;

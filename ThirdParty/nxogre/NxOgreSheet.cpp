@@ -22,11 +22,13 @@
 #include "NxOgreStable.h"
 #include "NxOgreSheet.h"
 
+#if 0
+
 #include "NxOgrePose.h"					// For conversions
 #include "NxOgreHelpers.h"				// For conversions
 #include "NxOgreScene.h"				// For Cloth::mOwner
 #include "NxOgreResourceManager.h"		// For Dynamic Cloth fetching
-#include "NxOgreDynamicMesh.h"
+/// #include "NxOgreDynamicMesh.h"
 #include "NxOgreResourceMesh.h"
 #include "NxOgreResourceStream.h"
 #include "NxOgreResourceStreamPtr.h"
@@ -186,3 +188,4 @@ void Sheet::__generateTextureCoordinatesAndNormals(NxReal w, NxReal wD, NxReal h
 } //End of NxOgre namespace.
 
 ////#endif
+#endif

@@ -21,15 +21,15 @@
 
 #include "NxOgreStable.h"
 
-#if (NX_USE_LEGACY_NXCONTROLLER == 0)
-
 #include "NxOgreCharacterController.h"
 
 namespace NxOgre {
+namespace CharacterSystem {
 
 ////////////////////////////////////////////////////
 
-CharacterController::CharacterController(NxMat34 pose, SimpleShape*, NxScene* scene) : mNxScene(scene) {
+CharacterController::CharacterController(Scene* scene, VoidPointer*)
+: mScene(scene) {
 
 }
 
@@ -41,6 +41,5 @@ CharacterController::~CharacterController() {
 
 ////////////////////////////////////////////////////
 
-};
-
-#endif
+}; // End of CharacterSystem namespace.
+}; // End of NxOgre namespace.

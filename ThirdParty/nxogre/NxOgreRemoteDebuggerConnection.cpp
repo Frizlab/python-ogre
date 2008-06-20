@@ -21,6 +21,9 @@
 
 #include "NxOgreStable.h"
 #include "NxOgreRemoteDebuggerConnection.h"
+
+#ifndef NX_SMALL
+
 #include "NxOgrePhysXDriver.h"
 #include "NxOgreHelpers.h"
 #include "NxOgreContainer.h"
@@ -110,3 +113,4 @@ void RemoteDebuggerConnection::addCamera(Ogre::Camera* cam) {
 ////////////////////////////////////////////////////////////
 
 }
+#endif

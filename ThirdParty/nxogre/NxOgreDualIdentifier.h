@@ -45,7 +45,7 @@ namespace NxOgre {
 			NxTemplateFunction DualIdentifier(First _first, Second _second)
 				: first(_first), second(_second), firstSet(true), secondSet(true) {}
 
-			NxTemplateFunction DualIdentifier(Second second, First first)
+			NxTemplateFunction DualIdentifier(Second _second, First _first)
 				: first(_first), second(_second), firstSet(true), secondSet(true) {}
 
 			NxTemplateFunction First getFirst() const {return first;}
@@ -57,12 +57,45 @@ namespace NxOgre {
 			NxTemplateFunction bool hasFirst() const {return firstSet;}
 			NxTemplateFunction bool hasSecond() const {return secondSet;}
 
-		private:
+		protected:
 
 			First first;
 			Second second;
 
 			bool firstSet, secondSet;
+
+	};
+
+	/** \brief Simple class that allows some sort of visual reference passed along as an identifier
+	           for a class.
+	    \example
+	      <code>
+	       new ClassName("identifier");
+	       new ClassName("identifier; visualIdentifier");
+	       new ClassName(VisualIdentifier("identifier","visualIdentifier"));
+	      </code>
+	*/
+	class NxPublicClass VisualIdentifier {
+
+		public:
+
+			VisualIdentifier();
+			VisualIdentifier(const char*);
+			VisualIdentifier(const NxString&);
+			VisualIdentifier(const NxString& _identifier, const NxString& _visualisation);
+			
+			NxString getIdentifier() const {
+				return mIdentifier;
+			}
+
+			NxString getVisualIdentifier() const {
+				return mVisualIdentifier;
+			}
+			
+		protected:
+
+			NxString mIdentifier;
+			NxString mVisualIdentifier;
 
 	};
 

@@ -32,16 +32,18 @@ namespace NxOgre {
 
 		public:
 
+			Machine();
 			Machine(Scene* scene);
 			virtual ~Machine();
 
-			NxMachineID getMachineID()			{
-												return mMachineID;
-											}
+			void registerMachine(Scene*);
+			void unregisterMachine();
 
-			virtual NxString getIdentifierType() {return "NxOgre-Machine";}
-			virtual NxShortHashIdentifier getIdentifierTypeHash() const {return 22170;}
-			virtual void simulate(NxReal deltaTime) = 0;
+			NxMachineID getMachineID();
+
+			virtual NxString getIdentifierType();
+			virtual NxShortHashIdentifier getIdentifierTypeHash() const;
+			virtual void simulate(const TimeStep&) = 0;
 						
 		private:
 			

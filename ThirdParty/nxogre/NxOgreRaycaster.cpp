@@ -21,7 +21,7 @@
 
 #include "NxOgreStable.h"
 #include "NxOgreRaycaster.h"
-#include "NxOgreUserData.h"
+#include "NxOgreVoidPointer.h"
 #include "NxOgreHelpers.h"		// For conversions
 #include "NxOgreScene.h"		// So I can raycast
 #include "NxOgreContainer.h"	// For container access.
@@ -109,7 +109,7 @@ bool RayCaster::_castClosest(ActorFilter f) {
 		mHit.mRaycastHit = hit;
 		
 		if (hitShape->getActor().userData)
-			mHit.mActor = (static_cast<NxUserData*>(hitShape->getActor().userData))->toActor();
+			mHit.mActor = (static_cast<VoidPointer*>(hitShape->getActor().userData))->toActor();
 		else
 			return false;
 
@@ -131,10 +131,10 @@ bool RayCaster::_castClosest(ActorFilter f) {
 		mHit = RayCastHit();
 		mHit.mRaycastHit = hit;
 
-		switch( static_cast< NxUserData* >( hitShape->getActor().userData )->getType()) {
+		switch( static_cast< VoidPointer* >( hitShape->getActor().userData )->getType()) {
 		
-			case NxUserData::T_Actor:
-				mHit.mActor = static_cast<NxUserData*>(hitShape->getActor().userData)->toActor();
+			case NxOgreClass_Actor:
+				mHit.mActor = static_cast<VoidPointer*>(hitShape->getActor().userData)->toActor();
 				mHit.mCharacter = 0;
 				mHit.mWorldImpact = NxConvert<Ogre::Vector3, NxVec3>(mHit.mRaycastHit.worldImpact);
 				mHit.mWorldNormal = NxConvert<Ogre::Vector3, NxVec3>(mHit.mRaycastHit.worldNormal);
@@ -142,9 +142,9 @@ bool RayCaster::_castClosest(ActorFilter f) {
 				mReport.insert(mHit.mActor->getName(), mHit);
 			break;
 			
-			case NxUserData::T_Character:
+			case NxOgreClass_Character:
 				mHit.mActor = 0;
-				mHit.mCharacter = static_cast< NxUserData* >(hitShape->getActor().userData)->toCharacter();
+				mHit.mCharacter = static_cast< VoidPointer* >(hitShape->getActor().userData)->toCharacter();
 				mHit.mWorldImpact = NxConvert<Ogre::Vector3, NxVec3>(mHit.mRaycastHit.worldImpact);
 				mHit.mWorldNormal = NxConvert<Ogre::Vector3, NxVec3>(mHit.mRaycastHit.worldNormal);
 				mReport.insert(mHit.mCharacter->getName(), mHit);
@@ -196,7 +196,6 @@ RayCastHit RayCaster::getClosestRaycastHit() {
 
 bool RayCaster::onHit(const NxRaycastHit& hit)  {
 	
-	std::cout << hit.distance << std::endl;
 
 	RayCastHit raycastHit;
 	
@@ -208,7 +207,7 @@ bool RayCaster::onHit(const NxRaycastHit& hit)  {
 		raycastHit.mRaycastHit = hit;
 		
 		if (hit.shape->getActor().userData)
-			raycastHit.mActor = (static_cast<NxUserData*>(hit.shape->getActor().userData))->toActor();
+			raycastHit.mActor = (static_cast<VoidPointer*>(hit.shape->getActor().userData))->toActor();
 		else
 			return true;
 
@@ -229,10 +228,10 @@ bool RayCaster::onHit(const NxRaycastHit& hit)  {
 		raycastHit = RayCastHit();
 		raycastHit.mRaycastHit = hit;
 
-		switch( static_cast< NxUserData* >( hit.shape->getActor().userData )->getType()) {
+		switch( static_cast< VoidPointer* >( hit.shape->getActor().userData )->getType()) {
 		
-			case NxUserData::T_Actor:
-				raycastHit.mActor = static_cast<NxUserData*>(hit.shape->getActor().userData)->toActor();
+			case NxOgreClass_Actor:
+				raycastHit.mActor = static_cast<VoidPointer*>(hit.shape->getActor().userData)->toActor();
 				raycastHit.mCharacter = 0;
 				raycastHit.mWorldImpact = NxConvert<Ogre::Vector3, NxVec3>(raycastHit.mRaycastHit.worldImpact);
 				raycastHit.mWorldNormal = NxConvert<Ogre::Vector3, NxVec3>(raycastHit.mRaycastHit.worldNormal);
@@ -240,9 +239,9 @@ bool RayCaster::onHit(const NxRaycastHit& hit)  {
 				mReport.insert(raycastHit.mActor->getName(), raycastHit);
 			break;
 			
-			case NxUserData::T_Character:
+			case NxOgreClass_Character:
 				raycastHit.mActor = 0;
-				raycastHit.mCharacter = static_cast< NxUserData* >(hit.shape->getActor().userData)->toCharacter();
+				raycastHit.mCharacter = static_cast< VoidPointer* >(hit.shape->getActor().userData)->toCharacter();
 				raycastHit.mWorldImpact = NxConvert<Ogre::Vector3, NxVec3>(raycastHit.mRaycastHit.worldImpact);
 				raycastHit.mWorldNormal = NxConvert<Ogre::Vector3, NxVec3>(raycastHit.mRaycastHit.worldNormal);
 				mReport.insert(raycastHit.mCharacter->getName(), raycastHit);
@@ -277,9 +276,7 @@ void RayCaster::setMaxDistance(NxReal d) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#if (NX_USE_CHARACTER_API == 1)
-
-Character * RayCaster::getClosestCharacter() {
+CharacterSystem::Character * RayCaster::getClosestCharacter() {
 	
 	if (mReport.count() == 0)
 		return 0;
@@ -290,7 +287,5 @@ Character * RayCaster::getClosestCharacter() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-#endif
 
 }; //End of NxOgre namespace.

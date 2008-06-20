@@ -48,8 +48,8 @@ DebugRenderer::DebugRenderer(Ogre::SceneManager *_mgr) {
 		Ogre::MaterialPtr debugMat = Ogre::MaterialManager::getSingleton().create("NxOgre.DebugRenderer", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 		debugMat->getTechnique(0)->getPass(0)->setVertexColourTracking(Ogre::TVC_AMBIENT|Ogre::TVC_DIFFUSE);
 		debugMat->getTechnique(0)->getPass(0)->setDepthWriteEnabled(true);
-		debugMat->getTechnique(0)->getPass(0)->setLightingEnabled(true);
-
+		debugMat->getTechnique(0)->getPass(0)->setLightingEnabled(false);
+		debugMat->getTechnique(0)->getPass(0)->setShadingMode(Ogre::SO_FLAT);
 	}
 
 	this->setMaterial("NxOgre.DebugRenderer");
@@ -57,6 +57,8 @@ DebugRenderer::DebugRenderer(Ogre::SceneManager *_mgr) {
 	mRenderOp.vertexData = new Ogre::VertexData();
 
 	mNode->setVisible(true);
+	this->setCastShadows(false);
+
 	setVisible(true);
 	
 }

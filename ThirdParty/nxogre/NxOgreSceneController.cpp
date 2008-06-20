@@ -21,8 +21,9 @@
 #include "NxOgreStable.h"
 #include "NxOgreSceneController.h"
 #include "NxOgreScene.h"
+#include "NxOgreTimeStep.h"
 
-#include "OgreTimer.h"
+#include "NxOgreTimer.h"
 
 #include "Nx.h"
 
@@ -35,18 +36,12 @@ namespace NxOgre {
 
 ///////////////////////////////////////////////////////////////////////
 
-SceneController::SceneController(Scene* scene) : mScene(scene) {
-	mRenderTime = 0;
-	mIPS = 0.0f;
-	mDeltaTime = 0;
-}
-
+SceneController::SceneController(Scene* scene) : mScene(scene) {}
 
 ///////////////////////////////////////////////////////////////////////
 
-SceneController::~SceneController() {
+SceneController::~SceneController() {}
 
-}
 ///////////////////////////////////////////////////////////////////////
 
 void SceneController::setTiming(NxReal maxTimestep, NxU32 matIter, NxU32 numSubSteps) {
@@ -67,75 +62,29 @@ void SceneController::init(NxScene* nxscene) {
 
 ///////////////////////////////////////////////////////////////////////
 
-bool SceneController::Simulate(NxReal deltaTime) {
-	mDeltaTime = deltaTime;
+TimeStep SceneController::Simulate(NxReal deltaTime) {
+
 	mNxScene->simulate(deltaTime);
 	mNxScene->flushStream();
-	while (!mNxScene->fetchResults(NX_RIGID_BODY_FINISHED, false));
-	return true;
+
+	while (!mNxScene->fetchResults(NX_RIGID_BODY_FINISHED, false))
+		;
+
+	TimeStep ts;
+	ts.Delta = deltaTime;
+	ts.Alpha = 1.0f;
+
+	return ts;
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-NullSceneController::NullSceneController(Scene* scene) : SceneController(scene) {
-	
-}
+VariableSceneController::VariableSceneController(Scene* scene) : SceneController(scene) {}
 
 
 ///////////////////////////////////////////////////////////////////////
 
-NullSceneController::~NullSceneController() {
-
-}
-
-///////////////////////////////////////////////////////////////////////
-
-void NullSceneController::init(NxScene* nxscene) {
-	mNxScene = nxscene;
-}
-///////////////////////////////////////////////////////////////////////
-
-void NullSceneController::setTiming(NxReal maxTimestep, NxU32 matIter, NxU32 numSubSteps) {
-
-}
-
-///////////////////////////////////////////////////////////////////////
-
-void NullSceneController::setTiming(NxSceneDesc &desc, NxReal maxTimestep, NxU32 matIter, NxU32 numSubSteps) {
-	desc.maxIter = 8;
-	desc.maxTimestep = 1.0f/60.0f;
-}
-
-///////////////////////////////////////////////////////////////////////
-
-bool NullSceneController::Simulate(NxReal deltaTime) {
-	mDeltaTime = deltaTime;
-	return true;
-}
-
-///////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////
-
-VariableSceneController::VariableSceneController(Scene* scene) : SceneController(scene) {
-	
-}
-
-
-///////////////////////////////////////////////////////////////////////
-
-VariableSceneController::~VariableSceneController() {
-
-}
+VariableSceneController::~VariableSceneController() {}
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -158,13 +107,19 @@ void VariableSceneController::setTiming(NxSceneDesc &desc, NxReal maxTimestep, N
 
 ///////////////////////////////////////////////////////////////////////
 
-bool VariableSceneController::Simulate(NxReal deltaTime) {
-	mDeltaTime = deltaTime;
+TimeStep VariableSceneController::Simulate(NxReal deltaTime) {
+
 	mNxScene->simulate(deltaTime);
 	mNxScene->flushStream();
-	while (!mNxScene->fetchResults(NX_RIGID_BODY_FINISHED, false));
-	mRenderTime = deltaTime;
-	return true;
+
+	while (!mNxScene->fetchResults(NX_RIGID_BODY_FINISHED, false))
+		;
+
+	TimeStep ts;
+	ts.Delta = deltaTime;
+	ts.Alpha = 1.0f;
+
+	return ts;
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -196,8 +151,7 @@ void FixedSceneController::setTiming(NxReal maxTimestep, NxU32 matIter, NxU32 nu
 	
 	mTiming_MaxStep = maxTimestep;
 	mTiming_CurrentStep = 0.0f;
-	mRenderTime = 0;
-	mRenderFrame = false;
+
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -210,141 +164,102 @@ void FixedSceneController::setTiming(NxSceneDesc &desc, NxReal maxTimestep, NxU3
 	desc.maxTimestep = mTiming_MaxStep;
 	desc.maxIter = matIter;
 	desc.timeStepMethod = NX_TIMESTEP_FIXED;
-	mRenderTime = 0;
-	mRenderFrame = false;
+
 }
 
 ///////////////////////////////////////////////////////////////////////
 
-bool FixedSceneController::Simulate(NxReal deltaTime) {
-	mDeltaTime = deltaTime;
+TimeStep FixedSceneController::Simulate(NxReal deltaTime) {
+
 	mTiming_CurrentStep += deltaTime;
 
 	if (mTiming_CurrentStep < mTiming_MaxStep) {
-		mRenderFrame = false;
-		return false;
+		TimeStep ts;ts.Delta = 0;
+		return ts;
 	}
 
-	mNxScene->simulate(mTiming_MaxStep - (mTiming_MaxStep - mTiming_CurrentStep));
+	TimeStep ts;
+	ts.Delta = mTiming_MaxStep - (mTiming_MaxStep - mTiming_CurrentStep);
+
+	mNxScene->simulate(ts.Delta);
 	mNxScene->flushStream();
 
-	while(!mNxScene->checkResults(NX_RIGID_BODY_FINISHED, false)) {}
+	while(!mNxScene->checkResults(NX_RIGID_BODY_FINISHED, false))
+		;
 
 	mNxScene->fetchResults(NX_RIGID_BODY_FINISHED, true);
 	
-	mRenderFrame = true;
-	mRenderTime = deltaTime;		
 	mTiming_CurrentStep=0;
 
-	return true;
+	return ts;
 }
 
 ///////////////////////////////////////////////////////////////////////
 
 AccumulatorSceneController::AccumulatorSceneController(Scene* scene) : SceneController(scene) {
-	
+	mTimer = new Timer();
 }
 
 ///////////////////////////////////////////////////////////////////////
 
 AccumulatorSceneController::~AccumulatorSceneController() {
-
+	delete mTimer;
 }
 
 ///////////////////////////////////////////////////////////////////////
 
 void AccumulatorSceneController::init(NxScene* nxscene) {
-
-#if (NX_DEBUG == 1)
-	NxDebug("AccumulatorSceneController Initalised");
-#endif
 	mNxScene = nxscene;
-	mSecond = 0.0f;
-	mSimCount = 0;
-	
+	mTimer->reset();
 }
 
 ///////////////////////////////////////////////////////////////////////
 
 
 void AccumulatorSceneController::setTiming(NxReal maxTimestep, NxU32 matIter, NxU32 numSubSteps) {
-	
-	mDt = maxTimestep;
-	mSecond = 0.0f;
-	mRenderTime = 0;
-	mSimCount = 0;
-	mIPS = 0;
-	mAccumulator = 0;
-
+	mMaxStep = maxTimestep;
 }
 
 ///////////////////////////////////////////////////////////////////////
 
 void AccumulatorSceneController::setTiming(NxSceneDesc &desc, NxReal maxTimestep, NxU32 matIter, NxU32 numSubSteps) {
-	
 
 	desc.maxTimestep = maxTimestep;
 	desc.maxIter = matIter;
 	desc.timeStepMethod = NX_TIMESTEP_FIXED;
-	
-	mDt = maxTimestep;
-	mSecond = 0.0f;
-	mRenderTime = 0;
-	mSimCount = 0;
-	mIPS = 0;
+	mMaxStep = maxTimestep;
 	mAccumulator = 0;
-	mPreviousTime = getTime();
+
 }
 
 ///////////////////////////////////////////////////////////////////////
-#ifdef WIN32
 
-unsigned long AccumulatorSceneController::getTime() {
-	QueryPerformanceFrequency(&mFreq);
-	unsigned long long ticksPerMillisecond = mFreq.QuadPart / 1000;
+TimeStep AccumulatorSceneController::Simulate(NxReal) {
 
-	QueryPerformanceCounter(&mCounter);
-	return (unsigned long)(mCounter.QuadPart/ticksPerMillisecond);
-}
+	double deltaTime = mTimer->micro() * 1.0e-6;
+	if( deltaTime > 0.2 ) // 5hz
+	{
+		mTimer->reset();
+		deltaTime = 0.2;
+	}
 
-#else
+	mAccumulator += deltaTime;
 
-unsigned long AccumulatorSceneController::getTime() {
-	// Some fancy code for Linux goes in here.
-	return 0;
-}
-
-#endif
-///////////////////////////////////////////////////////////////////////
-
-bool AccumulatorSceneController::Simulate(NxReal deltaTime) {
-	
-	unsigned long currentTime = getTime();
-	unsigned long elapsedTime = currentTime - mPreviousTime;
-	mPreviousTime = currentTime;
-	mDeltaTime = (float)(elapsedTime)*0.001f;
-
-	mAccumulator += mDeltaTime;
-
-	while (mAccumulator>=mDt) {
-		mNxScene->simulate(mDt);
+	while (mAccumulator >= mMaxStep) {
+		mNxScene->simulate(mMaxStep);
 		mNxScene->flushStream();
-		mSecond += mDt;
-		mSimCount++;
-		//while(!mNxScene->checkResults(NX_RIGID_BODY_FINISHED, false)) {}
 		mNxScene->fetchResults(NX_RIGID_BODY_FINISHED, true);
-		mAccumulator -= mDt;
+		mAccumulator -= mMaxStep;
 	}
 
-	if (mSecond >= 1.0f) {
-		mIPS =  mDt * mSimCount;
-		mSecond = 0.0f;
-		mSimCount = 0;
-	}
+	mAlpha = mAccumulator / mMaxStep;
+	mTimer->reset();
 
-	mAlpha = mAccumulator / mDt;
+	TimeStep ts;
+	ts.Delta = mMaxStep;
+	ts.Alpha = mAlpha;
 
-	return true;
+	return ts;
 
 }
 

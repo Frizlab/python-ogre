@@ -22,6 +22,8 @@
 #ifndef __NXOGRE_SHEET_H__
 #define __NXOGRE_SHEET_H__
 
+#if 0
+
 #include "NxOgrePrerequisites.h"
 #include "NxOgreCloth.h"
 #include "NxOgrePose.h"
@@ -60,4 +62,6 @@ namespace NxOgre {
 };// End of namespace
 
 //#endif
+#endif
+
 #endif

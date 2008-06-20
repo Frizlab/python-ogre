@@ -1,6 +1,6 @@
 /** \file    NxOgreOgreSceneRenderer.h
  *  \brief   Header for the OgreSceneRenderer class.
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -74,7 +74,7 @@ namespace NxOgre {
 			/** \brief Create a specific MeshRenderable to the MeshRenderable
 
 			*/
-			virtual MeshRenderable* createMeshRenderable(MeshRenderableParams, DynamicMesh*);
+			virtual MeshRenderable* createMeshRenderable(MeshRenderableParams, Resources::Mesh*);
 
 			// Nothing special with these, so we just use the defaults.
 			//void renderAll();

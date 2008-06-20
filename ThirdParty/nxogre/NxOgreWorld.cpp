@@ -1,6 +1,6 @@
 /** \file    NxOgreWorld.cpp
  *  \see     NxOgreWorld.h
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -24,19 +24,8 @@
 #include "NxOgreScene.h"				// For: Scene operations
 #include "NxOgreHelpers.h"				// For: Incase of Scene duplicate names.
 
-#if (NX_USE_LEGACY_NXCONTROLLER == 1)
-#   include "NxOgreLegacyCharacterController.h"
-#else
-#   include "NxOgreCharacterSystem.h"	// For: Setting up character controller
-#endif
-
 #include "NxOgreDebugRenderer.h"		// For: Times when it's really needed.
-#include "NxOgreSerialiser.h"			// For: Serialisation
 #include "time.h"						// For: Making sure NxGenerateID is random.
-
-#include "NxOgreResourceManager.h"
-#include "NxOgreFileResourceSystem.h"
-#include "NxOgreOgreResourceSystem.h"
 
 #if (NX_USE_OGRE == 1)
 #   include "OgreRoot.h"
@@ -47,38 +36,18 @@ namespace NxOgre {
 
 ///////////////////////////////////////////////////////////////////////
 
-World::World(PhysXDriverParams driverParams) {
+World::World(PhysXParams driverParams, bool loadResources) {
 
-	mRoot = Ogre::Root::getSingletonPtr();
-	mDriver = new PhysXDriver(this, driverParams);
+	mDriver = NxNew(PhysXDriver)(this, driverParams);
 	
 	mNbFrames = 0;
 	srand((unsigned)time(0));
-
-	mDriver->getSDK()->setParameter(NX_VISUALIZATION_SCALE, 1.0f);
-	mDriver->getSDK()->setParameter(NX_SKIN_WIDTH,0.01f);
-	mDriver->getSDK()->setParameter(NX_VISUALIZE_WORLD_AXES, true);
-	mDriver->getSDK()->setParameter(NX_CONTINUOUS_CD, true);
-	mDriver->getSDK()->setParameter(NX_CCD_EPSILON, 0.01);
-
-#if (NX_USE_LEGACY_NXCONTROLLER == 0)
-	mCharacterSystem = new CharacterSystem(this);
-#else
-	mCharacterController = new CharacterController();
-#endif
-
 
 #if (NX_USE_DEBUG_RENDERER_API == 1)
 	mDebugRenderer = 0;
 #endif
 
 //	mSerialiser = new Serialiser(this);
-
-	mResourceManager = new ResourceManager(mDriver);
-	
-	if (driverParams.mInitResources) {
-		mResourceManager->initAllResourceSystems();
-	}
 
 	NxLabelContainer(World, mScenes, Scenes);
 
@@ -110,20 +79,8 @@ void World::shutdown() {
 
 	mScenes.destroyAllOwned();
 
-#if (NX_USE_LEGACY_NXCONTROLLER == 1)
-#	if (NX_USE_CHARACTER_API == 1)
-		NxDelete(mCharacterController);
-#	endif
-#else
-		NxDelete(mCharacterSystem);
-#endif
-
-	NxDelete(mResourceManager);
-#if (NX_DEBUG == 1)
-	NxDebug("Destroyed ResourceManager.");
-#endif
-
 	NxDelete(mDriver);
+
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -149,7 +106,7 @@ void World::_unregisterScene(const NxString& name) {
 ///////////////////////////////////////////////////////////////////////
 
 Scene* World::createScene(const NxString& name, Ogre::SceneManager* s, SceneParams params) {
-	params.rendererUserData = s->getName();
+	params.mRendererUserdata = s->getName();
 	return createScene(name, params);
 }
 
@@ -162,10 +119,10 @@ Scene* World::createScene(const NxString& name, SceneParams p) {
 	if (mScenes.has(name)) {
 		NxString newname = NxCreateID(mScenes.count(), name);
 		NxThrow_AsWarning(NxString("Tried to create a scene with a duplicate name '" + name + "', name is now '" + newname + "'.").c_str());
-		scene = NxNew(Scene) Scene(NxCreateID(mScenes.count(), newname), this, p);
+		scene = NxNew(Scene)(NxCreateID(mScenes.count(), newname), this, p);
 	}
 	else {
-		scene = NxNew(Scene) Scene(name, this, p);
+		scene = NxNew(Scene)(name, this, p);
 	}
 
 	mScenes.lock(scene->getName(), true);
@@ -266,7 +223,9 @@ void World::createDebugRenderer(Ogre::SceneManager* s) {
 	sdk->setParameter(NX_VISUALIZE_COLLISION_FNORMALS, true);
 	sdk->setParameter(NX_VISUALIZE_COLLISION_EDGES, true);
 	sdk->setParameter(NX_VISUALIZE_COLLISION_SPHERES, true);
+#if (NX_SDK_VERSION_NUMBER < 280)
 	sdk->setParameter(NX_VISUALIZE_COLLISION_SAP, true);
+#endif
 	sdk->setParameter(NX_VISUALIZE_COLLISION_STATIC, true);
 	sdk->setParameter(NX_VISUALIZE_COLLISION_DYNAMIC, true);
 	sdk->setParameter(NX_VISUALIZE_COLLISION_FREE, true);
@@ -300,7 +259,7 @@ void World::createDebugRenderer(Ogre::SceneManager* s) {
 	sdk->setParameter(NX_VISUALIZE_SOFTBODY_TEARING, true);
 	sdk->setParameter(NX_VISUALIZE_SOFTBODY_ATTACHMENT, true); 
 
-	mDebugRenderer = new DebugRenderer(s);
+	mDebugRenderer = NxNew(DebugRenderer)(s);
 
 }
 

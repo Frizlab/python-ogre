@@ -25,6 +25,7 @@
 #include "NxOgreActor.h"			// For: a::getNxActor, b::getNxActor
 #include "NxOgreHelpers.h"			// For: Vector3 to NxVec3 conversion
 #include "NxOgreScene.h"			// For: mScene::getNxScene()
+#include "NxOgreJointCallback.h"
 
 namespace NxOgre {
 

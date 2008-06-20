@@ -106,8 +106,9 @@ namespace NxOgre {
 			GroupCallback(T* v,
 			void (T::*Start)(Actor*, Actor*),			
 			void (T::*End)(Actor*, Actor*),			
-			void (T::*Touch)(Actor*, Actor*))
-			: mCallback(new TriMethodCallback<T>(v, Start, End, Touch), bool callbackOwned),mCallbackOwned(callbackOwned) {}
+			void (T::*Touch)(Actor*, Actor*),
+			bool ownCallback =true)
+			: mCallback(new TriMethodCallback<T>(v, Start, End, Touch), ownCallback ),mCallbackOwned(ownCallback) {}
 	
 			//////////////////////////////////////////////////////////
 

@@ -1,6 +1,6 @@
 /** \file    NxOgreLog.h
  *  \brief   Header for the Log class.
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -44,7 +44,7 @@ namespace NxOgre {
 
 		protected:
 
-			FileResourceStream* mStream;
+			NxOgre::Resources::Resource* mStream;
 	};
 
 	/////////////////////////////////////////////////////////////

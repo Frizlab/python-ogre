@@ -23,9 +23,7 @@
 #include "NxOgreMaterial.h"
 #include "NxOgreScene.h"			// For: CreateMaterial in NxScene
 #include "NxOgreHelpers.h"			// For: Ogre::Vector3 to NxVec3 conversion.
-#include "NxOgreResourceSystem.h"
-#include "NxOgreResourceStreamPtr.h"
-#include "NxOgreResourceStream.h"
+#include "NxOgreResource.h"
 
 namespace NxOgre {
 
@@ -180,6 +178,8 @@ NxCombineMode Material::getRestitutionCombineMode() {
 	return mMaterial->getRestitutionCombineMode();
 }
 
+#if 0
+
 //////////////////////////////////////////////////////////////////////
 
 MaterialAlias::MaterialAlias(ResourceStreamPtr rs, bool deleteResourceStream) {
@@ -268,5 +268,7 @@ NxMaterialIndex MaterialAlias::get(const NxString& identifier) {
 }
 
 //////////////////////////////////////////////////////////////////////
+
+#endif
 
 }; //End of NxOgre namespace.

@@ -1,6 +1,6 @@
 /** \file    NxOgreIntersection.cpp
  *  \see     NxOgreIntersection.h
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -21,7 +21,7 @@
 
 #include "NxOgreStable.h"
 #include "NxOgreIntersection.h"
-#include "NxOgreUserData.h"
+#include "NxOgreVoidPointer.h"
 #include "NxOgreContainer.h"
 #include "NxOgreSimpleShape.h"
 #include "NxOgreHelpers.h"
@@ -69,7 +69,7 @@ void Intersection::intersect() {
 		case SimpleShape::SST_Box:
 			{
 				SimpleBox* shape = static_cast<SimpleBox*>(mShape);
-				NxBox box = NxBox(shape->getPose().t, shape->getDimensions(), shape->getPose().M);
+				NxBox box = NxBox(shape->getPoseAsNxMat34().t, shape->getDimensionsAsNxVec3(), shape->getPoseAsNxMat34().M);
 				mScene->getNxScene()->overlapOBBShapes(box, mShapeFilter, 0, NULL, this);
 			}
 		break;
@@ -84,16 +84,9 @@ void Intersection::intersect() {
 
 		case SimpleShape::SST_Capsule:
 			{
-				//  SimpleCapsule* shape = static_cast<SimpleCapsule*>(mShape);
-				//	NxSphere sphere = NxCapsule(NxSegment(
-				//	mScene->getNxScene()->overlapSphereShapes(sphere, mShapeFilter, 0, NULL, this);
-			}
-		break;
-
-		case SimpleShape::SST_Convex:
-			{
-				//
-				//
+				// SimpleCapsule* capsule = static_cast<SimpleCapsule*>(mShape);
+				// NxCapsule capsule = NxCapsule(NxSegment(urgh, urgh2), capsule->getRadius());
+				// mScene->getNxScene()->overlapCapsuleShapes(capsuleShape, mShapeFilter, 0, NULL, this);
 			}
 		break;
 
@@ -110,9 +103,9 @@ bool Intersection::onEvent(NxU32 nbShapes, NxShape** shapes) {
 		if (shapes[i]->getActor().userData == 0)
 			continue;
 
-		NxUserData* aud = static_cast< NxUserData* >(shapes[i]->getActor().userData);
+		VoidPointer* aud = static_cast< VoidPointer* >(shapes[i]->getActor().userData);
 
-		if (aud->getType() ==  NxUserData::T_Actor) {
+		if (aud->getType() ==  NxOgreClass_Actor) {
 			Actor* a = aud->toActor();
 			insert(a->getName(), a);
 		}
@@ -163,9 +156,9 @@ bool CulledIntersection::onEvent(NxU32 nbShapes, NxShape** shapes) {
 		if (shapes[i]->getActor().userData == 0)
 			continue;
 
-		NxUserData* aud = static_cast< NxUserData* >(shapes[i]->getActor().userData);
+		VoidPointer* aud = static_cast< VoidPointer* >(shapes[i]->getActor().userData);
 
-		if (aud->getType() ==  NxUserData::T_Actor) {
+		if (aud->getType() ==  NxOgreClass_Actor) {
 			Actor* a = aud->toActor();
 			insert(a->getName(), a);
 		}
@@ -214,7 +207,7 @@ bool SimpleIntersection::intersect() {
 		case SimpleShape::SST_Box:
 			{
 				SimpleBox* shape = static_cast<SimpleBox*>(mShape);
-				NxBox box = NxBox(shape->getPose().t, shape->getDimensions(), shape->getPose().M);
+				NxBox box = NxBox(shape->getPoseAsNxMat34().t, shape->getDimensionsAsNxVec3(), shape->getPoseAsNxMat34().M);
 				mIntersectionValue = mScene->getNxScene()->checkOverlapOBB(box, mShapeFilter);
 			}
 		break;
@@ -232,13 +225,6 @@ bool SimpleIntersection::intersect() {
 				//  SimpleCapsule* shape = static_cast<SimpleCapsule*>(mShape);
 				//	NxSphere sphere = NxCapsule(NxSegment(
 				//	mScene->getNxScene()->overlapSphereShapes(sphere, mShapeFilter, 0, NULL, this);
-			}
-		break;
-
-		case SimpleShape::SST_Convex:
-			{
-				//
-				//
 			}
 		break;
 

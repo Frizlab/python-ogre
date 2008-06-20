@@ -1,6 +1,6 @@
 /** \file    NxOgreParams.h
  *  \brief   Header for the Params class.
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -28,31 +28,32 @@
 
 namespace NxOgre {
 
+
 	/** \brief Params, a way of giving a method or a constructor of a class. A
-	  *        a number of arguments in any order, or using the default values
-	  *        given.
-	  *        
-	  * \usage Params can be given in a string format.
-	  *        <code><pre>
-	  *          ClassName* c = new ClassName("parameter: value, parameter2: value2");
-	  *        </pre></code>
-	  *        
-	  *        Or a class based format.
-	  *        
-	  *        <code><pre>
-	  *          ClassNameParams params;
-	  *          params.setToDefault();
-	  *          params.parameter = value;
-	  *          params.parameter2 = value2;
-	  *          ClassName* c = new ClassName(params);
-	  *        </pre></code>
-	  *        
-	  *        Strings are regared as much easier, and quicker to implement. But slighty
-	  *        slower than the class based params. If you are supplying more than 5 params
-	  *        to a class, or converting many intergrals to strings then you should use the
-	  *        class based params.
-	  *
-	  */
+	           a number of arguments in any order, or using the default values
+	           given.
+	           
+	    \usage Params can be given in a string format.
+	           <code><pre>
+	             ClassName* c = new ClassName("parameter: value, parameter2: value2");
+	           </pre></code>
+	           
+	           Or a class based format.
+	           
+	           <code><pre>
+	             ClassNameParams params;
+	             params.setToDefault();
+	             params.parameter = value;
+	             params.parameter2 = value2;
+	             ClassName* c = new ClassName(params);
+	           </pre></code>
+	           
+	           Strings are regared as much easier, and quicker to implement. But slighty
+	           slower than the class based params. If you are supplying more than 5 params
+	           to a class, or converting many intergrals to strings then you should use the
+	           class based params.
+	   
+	*/
 	class NxPublicClass Params  {
 
 		public:
@@ -64,6 +65,24 @@ namespace NxOgre {
 			Parameters fromString(const NxString&);
 
 			virtual void setToDefault() {}
+
+			struct NxPublicClass Flags {
+
+				virtual void toDefault()             {}
+				virtual void fromNxU32(NxU32)        {}
+				virtual NxU32 toNxU32() const        {return 0;}
+				virtual void parse(const NxString&)  {}
+
+				bool set(const NxString& match_str, const NxString& flag_str, bool& flag) {
+					if (match_str == flag_str) {
+						flag = true;
+						return true;
+					}
+					return false;
+				}
+
+
+			};
 
 		protected:
 
@@ -83,7 +102,16 @@ namespace NxOgre {
 #endif
 			bool Set(const NxString&, Parameter *, NxString&) const;
 			bool Set(const NxString&, Parameter *, NxHeightFieldAxis&) const;
+			bool Set(const NxString&, Parameter *, NxU32&, NxU32 enumA, NxString enumAStr, NxU32 enumB, NxString enumBStr) const;
+			bool Set(const NxString&, Parameter *, NxU32&, NxU32 enumA, NxString enumAStr, NxU32 enumB, NxString enumBStr, NxU32 enumC, NxString enumCStr) const;
+			bool Set(const NxString&, Parameter *, NxU32&, NxU32 enumA, NxString enumAStr, NxU32 enumB, NxString enumBStr, NxU32 enumC, NxString enumCStr, NxU32 enumD, NxString enumDStr) const;
+			bool Set(const NxString&, Parameter *, NxU32&, NxU32 enumA, NxString enumAStr, NxU32 enumB, NxString enumBStr, NxU32 enumC, NxString enumCStr, NxU32 enumD, NxString enumDStr, NxU32 enumE, NxString enumEStr) const;
+			bool Set(const NxString&, Parameter *, NxU32&, NxU32 enumA, NxString enumAStr, NxU32 enumB, NxString enumBStr, NxU32 enumC, NxString enumCStr, NxU32 enumD, NxString enumDStr, NxU32 enumE, NxString enumEStr, NxU32 enumF, NxString enumFStr) const;
+			bool Set(const NxString&, Parameter *, NxThreadPriority&) const;
+
 			bool isYes(const NxString& yes) const;
+
+			bool is(const NxString&, Parameter*);
 
 	};
 

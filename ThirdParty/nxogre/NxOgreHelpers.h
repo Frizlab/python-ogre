@@ -1,7 +1,7 @@
 /** \file    NxOgreHelpers.h
  *  \brief   Header for the many type conversion functions, NxString handling, ID
  *           generation and hash generation functions.
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -24,7 +24,7 @@
 #define __NXOGRE_HELPERS_H__
 
 #include "NxOgrePrerequisites.h"
-#include "NxExtended.h"
+//#include "NxExtended.h"
 #include "OgreVector3.h"
 #include "OgreQuaternion.h"
 
@@ -34,7 +34,9 @@ namespace NxOgre {
 //	Ogre::Vector3 NxPublicFunction NxConvert<Ogre::Vector3, NxVec3>(const NxVec3& v);
 //	Ogre::Quaternion NxPublicFunction NxConvert<Ogre::Quaternion, NxQuat>(const NxQuat& q);
 //	NxQuat NxPublicFunction NxConvert<NxQuat, Ogre::Quaternion>(const Ogre::Quaternion& q);
-	NxExtendedVec3 NxPublicFunction toNxExtendedVec3(const Ogre::Vector3& v);
+
+///// Removed from NxOgre (due to ignoring of character system).
+/////	NxExtendedVec3 NxPublicFunction toNxExtendedVec3(const Ogre::Vector3& v);
 	NxMat33 toNxMat33(const Ogre::Matrix3&);
 	NxMat34 toNxMat34(const Ogre::Matrix4&);
 	NxString NxPublicFunction NxCreateID(unsigned int groupCount, NxString typeHash);
@@ -53,7 +55,7 @@ namespace NxOgre {
 
 	/** \brief  Interpolates 
 	*/
-	inline Pose NxPublicFunction NxInterpolate(Pose First, Pose Second, NxReal c = 0.5f);
+	Pose NxPublicFunction NxInterpolate(Pose First, Pose Second, NxReal c = 0.5f);
 
 	/** \brief To Lower
 	*/
@@ -66,6 +68,22 @@ namespace NxOgre {
 	/** \brief Trim String
 	*/
 	void NxPublicFunction NxStringTrim(NxString& string);
+
+	/** \brief Get parts of a string
+	*/
+	NxString NxPublicFunction NxStringSubstr(const NxString& string, unsigned int pos);
+
+	/** \brief Get parts of a string
+	*/
+	NxString NxPublicFunction NxStringSubstr(const NxString& string, unsigned int pos, unsigned int length);
+
+	/** \brief Get the first x characters of a string
+	*/
+	NxString NxPublicFunction NxStringSubstrLeft(NxString& string, unsigned int length);
+
+	/** \brief Get the last x characters of a string
+	*/
+	NxString NxPublicFunction NxStringSubstrRight(NxString& string, unsigned int length);
 
 	/** \brief Split
 	*/

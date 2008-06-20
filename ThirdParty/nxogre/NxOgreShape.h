@@ -1,6 +1,6 @@
 /** \file    NxOgreShape.h
  *  \brief   Header for the ShapeParams and Shape classes.
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -25,11 +25,11 @@
 #include "NxOgrePrerequisites.h"
 #include "NxOgreParams.h"
 #include "NxOgreDualIdentifier.h"
+#include "BetajaenCC.h"
 
 namespace NxOgre {
 
-	/**
-		\page shapeparams ShapeParams
+	/** \page shapeparams ShapeParams
 		
 		String base params are case and space insensitive.
 
@@ -96,22 +96,31 @@ namespace NxOgre {
 			- Example: "Density: 1.5"
 			- See: ShapeParams::mDensity and NxShape::density for more information.				
 	*/
-	
-	/** ShapeParams
-	 	Parameters for the ShapeBlueprint system.
-		
 
-		See \ref shapeparams for the full string argument documentation.
-	*/		
+	/** \brief Params for all of the Shapes. Setting optional settings for the shape without
+	           having a 50+ argument constructor.
+	    \note  The Wheel shape uses it's own Params based upon the ShapeParams.
+	    \See   \ref shapeparams for the full string argument documentation.
+	*/
 	class NxPublicClass ShapeParams : public Params {
 
 		public:
 
+			ShapeParams() {
+			               setToDefault();
+			              }
 
+			ShapeParams(const char* p) {
+			                            setToDefault();
+			                            process(p);
+			                           }
 
-			////////////////////////////////////////////////////////////
+			ShapeParams(const NxString& p) {
+			                                setToDefault();
+			                                process(p);
+			                                }
 
-			/** LocalPose of the shape from the Actors center.
+			/** \brief LocalPose of the shape from the Actors center.
 				\note				
 					For Quaternions use: m.M.fromQuat(NxQuat(w,x,y,z));
 					For Vector3's use: m.t = NxVec3(x,y,z)
@@ -178,7 +187,7 @@ namespace NxOgre {
 			NxReal mDensity;
 			
 			/**  Specific ShapeFlags to be appended to the shape (NxBoxShape, NxConvexShape, etc.) flags.
-				\default 0
+				 \default NX_SF_VISUALISATION (Debug), 0 (Release)
 			 */
 			NxU32 mFlags;
 			
@@ -190,27 +199,8 @@ namespace NxOgre {
 			*/
 			TriggerContactCallback* mTriggerCallback;
 
-			////////////////////////////////////////////////////////////
-
-			ShapeParams() {
-			               setToDefault();
-			              }
-
-			ShapeParams(const char* p) {
-			                            setToDefault();
-			                            process(p);
-			                           }
-
-			ShapeParams(NxString p) {
-			                         setToDefault();
-			                         process(p);
-			                        }
-
 			void setToDefault();
 			void parse(Parameters);
-			
-			////////////////////////////////////////////////////////////
-
 
 			
 	};// End of ShapeParams class
@@ -224,120 +214,157 @@ namespace NxOgre {
 		public:
 
 
-			/** \brief Shape Constructor
+			/** \brief Shape Constructor.
 				This is an empty class, create a shape using the constructor
 				of the shape you wish to create; new CubeShape(), new SphereShape(), etc.
 			*/
-			Shape(NxShapeDesc* shape_description, const ShapeParams& shape_params = ShapeParams());
+			Shape(NxShapeDesc* shape_description, const ShapeParams& = ShapeParams());
 
-
-			/** \brief Shape Destructor				
+			/** \brief Alternate Shape constructor.
+				This is an empty class, create a shape using the constructor
+				of the shape you wish to create; new CubeShape(), new SphereShape(), etc.
+				\note For usage when you don't want the params to be transfered to the NxShapeDesc
+				      straight away.
 			*/
-			virtual ~Shape();
+			Shape();
+
+			/** \brief Shape Destructor.
+			*/
+			virtual  ~Shape();
 
 
 			/** \brief Copy this shape to another Actor
 			*/
-			virtual void copyTo(Actor*, ShapeParams = ShapeParams()) = 0;
+			virtual void  copyTo(Actor*, ShapeParams = ShapeParams()) = 0;
 
 
 			/** \brief Move this shape to another Actor
 			*/
-			virtual void moveTo(Actor*, ShapeParams = ShapeParams()) = 0;
+			virtual void  moveTo(Actor*, ShapeParams = ShapeParams()) = 0;
 
 
 			/** \brief Get the abstract NxShape.
 			*/
-			virtual NxShape*	getNxShape() {
-			                                  return mNxShape;
-			                                 }
+			virtual NxShape*  getNxShape();
 
 
 			/** \brief Get the CCD skeleton used with this shape
 			*/
-			virtual Skeleton*  getSkeleton() {
-			                                  return mSkeleton;
-			                                 }
+			virtual Skeleton*  getSkeleton();
 
 
 			/** \brief Get the index assigned to this shape of an actor.
 			*/
-			NxShapeIndex  getIndex() const {
-			                                return mShapeIndex;
-			                               }
+			NxShapeIndex  getIndex() const;
 
 
 			/** \brief Set the index assigned to this shape of an actor.
 			*/
-			void  setIndex(NxShapeIndex index) {
-			                                    mShapeIndex = index;
-			                                   }
+			void  setIndex(NxShapeIndex index);
 
 
 			/** \brief Get the String type of this shape
 			*/
-			virtual NxString getType()	const
-			 { return "NxOgre-Shape"; }
-
+			virtual NxString  getShapeAsString()	const;
 
 			/** \brief Get the Hash type of this shape.
 			*/
-			virtual NxShortHashIdentifier getTypeHash() const {
-			                                                   return 64630;
-			                                                  }
+			virtual NxShortHashIdentifier  getTypeHash() const;
 
 			/** \brief Has the shape been attached to an actor yet?
 			*/
-			virtual bool isAttached() const {
-			                                 return (mActor != NULL);
-			                                }
+			virtual bool  isAttached() const;
+
 
 			/** \brief Get's a copy of the TriggerCallback, otherwise NULL if the
 				       Shape does not have one.
 			*/
-			TriggerContactCallback* getTriggerCallback() {
-			                                              return mTriggerCallback;
-			                                             }
+			TriggerContactCallback*  getTriggerCallback();
 
 
 			/** \brief Implement the shape based on description and parameters to an existing
-					   actor.
+			           actor.
 			*/
-			virtual void createShape(NxActor* actor, NxShapeIndex, Scene* scene) = 0;
+			virtual void  createShape(NxActor* actor, NxShapeIndex, Scene* scene) = 0;
 
 
 			/** \brief Implement the shape based on description and parameters to an actor
-					   description.
+			           description.
 			*/
-			virtual void createShape(NxArray<NxShapeDesc*>& shapes, NxShapeIndex, Scene* scene) = 0;
+			virtual void  createShape(NxArray<NxShapeDesc*>& shapes, NxShapeIndex, Scene* scene) = 0;
 
 
 			/** \brief Recieve the copy of the NxShape, and it's index to the actor.
 				\note  Used after creating the NxShape, the actor gives the shape the nxshape
 					   and it's index.
 			*/
-			virtual void setNxShape(NxShape*);
+			virtual void  setNxShape(NxShape*);
 
 
 			/** \brief Release the shape based on description and parameters
 			*/
-			virtual void releaseShape() = 0;
+			virtual void  releaseShape() = 0;
+
+			
+			/** \brief Shape params to description
+			*/
+			virtual void  paramsToDescription(NxShapeDesc*, ShapeParams*);
 
 
 			/** \brief Extended Shape params to description
 			*/
-			void extendedParamsToDescription(Scene*, const ShapeParams& params, NxShapeDesc*);
+			void  extendedParamsToDescription(Scene*, const ShapeParams& params, NxShapeDesc*);
+
+			/** \brief Is the shape description valid? In Debug mode details of why it's invalid
+				is reported to the error.
+			*/
+			bool  isValid(NxShapeDesc&) const;
 
 			NxShapeIndex                mShapeIndex;
 			ShapeParams                 mParams;
 			NxActor*                    mActor;
 			NxShape*                    mNxShape;
 			Skeleton*                   mSkeleton;
-			NxUserData*                 mUserData;
+			VoidPointer*                mVoidPointer;
 			TriggerContactCallback*     mTriggerCallback;
 
 	};
 
+	/////////////////////////////////////////////////////////
+
+	
+	/** \brief A Compound Shape, isn't really a shape. It just groups many shapes together that
+	           can be used as one. Usually Compound shapes are used to make complicated actors
+	           that can't be represented solely by one shape; Tables are a good example of this.
+	    \note  After the CompoundShape has been passed to the Actor, the contents are taken out
+	           and the CompoundShape pointer is deleted.
+	*/
+	class NxPublicClass CompoundShape : public Shape {
+
+		friend class Actor;
+
+		public:
+			
+			CompoundShape();
+			~CompoundShape();
+
+			void add(Shape*);
+
+			virtual void copyTo(Actor*, ShapeParams = ShapeParams()) {NxUnderConstruction;}
+			virtual void moveTo(Actor*, ShapeParams = ShapeParams()) {NxUnderConstruction;}
+
+			NxShortHashIdentifier  getTypeHash() const;
+
+		protected:
+
+			virtual void createShape(NxActor* actor, NxShapeIndex, Scene* scene);
+			virtual void createShape(NxArray<NxShapeDesc*>& shapes, NxShapeIndex, Scene* scene);
+			virtual void releaseShape();
+
+			unsigned int                 mNbShapes;
+			Betajaen::SharedMap<unsigned int, Shape>  mShapes;
+
+	};
 };
 
 #endif

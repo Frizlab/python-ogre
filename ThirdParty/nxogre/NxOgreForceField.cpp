@@ -22,13 +22,11 @@
 #include "NxOgreForceField.h"
 #include "NxOgreActor.h"			// ForceField Inherits Actors
 #include "NxOgreScene.h"			// Scene owns ForceFields
-#include "NxOgreUserData.h"			// For NxUserData for NxActor
-#include "NxOgreShapeBlueprint.h"
+#include "NxOgreVoidPointer.h"			// For VoidPointer for NxActor
 #include "NxOgreShape.h"
 #include "NxOgreGroup.h"
 #include "NxOgreDominanceGroup.h"
 #include "NxOgrePose.h"
-#include "NxOgreCooking.h"
 #include "NxOgreHelpers.h"
 #include "NxOgreSimpleShape.h"
 
@@ -171,7 +169,7 @@ void ForceField::_createActor(Shape *shape, const Pose& pose, ActorParams params
 	NxActorDesc ad;
 	NxBodyDesc bd;
 
-	mNxUserData = new NxUserData(this, 999999);			// TEMP!
+	mVoidPointer = new VoidPointer(this, 999999);			// TEMP!
 #if NX_SDK_VERSION_NUMBER >= 260
 	ad.compartment = params.mCompartment;
 #endif
@@ -191,7 +189,7 @@ void ForceField::_createActor(Shape *shape, const Pose& pose, ActorParams params
 	else if (params.mGroupAsName.length() > 0)
 		ad.group = mOwner->getActorGroup(params.mGroupAsName)->getGroupID();
 
-	ad.userData = mNxUserData;
+	ad.userData = mVoidPointer;
 
 	if (params.mDensity == 0 && params.mMass == 0) {
 		ad.body = NULL;
@@ -242,7 +240,7 @@ void ForceField::_createActor(Shape *shape, const Pose& pose, ActorParams params
 void ForceField::_destroyActor() {
 	mOwner->getNxScene()->releaseActor(*mActor);
 	mActor=0;
-	delete mNxUserData;
+	delete mVoidPointer;
 
 	// There is no need to destroy the collision model. The Garbage collection will destroy it
 	// right.........

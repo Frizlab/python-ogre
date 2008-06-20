@@ -1,6 +1,6 @@
 /** \file    NxOgreOgreMeshRenderable.cpp
  *  \see     NxOgreOgreMeshRenderable.h
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -25,7 +25,6 @@
 #include "NxOgreOgreSceneRenderer.h"
 #include "NxOgrePose.h"
 #include "NxOgreHelpers.h"
-#include "NxOgreDynamicMesh.h"
 
 #include <OgreCamera.h>
 #include <OgreHardwareBufferManager.h>
@@ -35,7 +34,7 @@ namespace NxOgre {
 /////////////////////////////////////////////////////////////////////
 
 OgreMeshRenderable::OgreMeshRenderable(MeshRenderableParams params,
-                                       DynamicMesh* mesh, OgreSceneRenderer* renderer)
+                                       Resources::Mesh* mesh, OgreSceneRenderer* renderer)
                                       : MeshRenderable(params, mesh, renderer)
 {
 	mSceneMgr = renderer->getSceneMgr();
@@ -43,13 +42,11 @@ OgreMeshRenderable::OgreMeshRenderable(MeshRenderableParams params,
 	initialize(Ogre::RenderOperation::OT_TRIANGLE_LIST, true);
 	//MeshRenderable::setMaterial("BaseWhiteNoLighting");	// temp
 
-	std::cout << "OMR-CONSTRUCTOR" << std::endl;
 }
 
 /////////////////////////////////////////////////////////////////////
 
 OgreMeshRenderable::~OgreMeshRenderable() {
-	std::cout << "OMR-DESTRUCTOR" << std::endl;
 	delete mRenderOp.vertexData;
 	delete mRenderOp.indexData;
 }
@@ -72,7 +69,6 @@ void OgreMeshRenderable::initialize(Ogre::RenderOperation::OperationType operati
   // Create vertex declaration
   createVertexDeclaration();
 
-  std::cout << "OMR-INITIALIZE" << std::endl;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -191,7 +187,7 @@ void OgreMeshRenderable::createVertexDeclaration() {
 /////////////////////////////////////////////////////////////////////
 
 void OgreMeshRenderable::fillHardwareBuffers() {
-	
+#if 0
 	std::cout << "fill" << std::endl;
 	
 	prepareHardwareBuffers(mMesh->mNbVertices, mMesh->mNbIndices);
@@ -233,7 +229,7 @@ void OgreMeshRenderable::fillHardwareBuffers() {
 	
 	mBox.setExtents(min, max);
 	std::cout << "fill.e" << std::endl;
-	
+#endif
 }
 
 /////////////////////////////////////////////////////////////////////

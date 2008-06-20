@@ -1,6 +1,6 @@
 /** \file    NxOgreMeshRenderable.cpp
  *  \see     NxOgreMeshRenderable.h
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -80,7 +80,7 @@ void MeshRenderableParams::parse(Parameters params) {
 
 //////////////////////////////////////////////////////////
 
-MeshRenderable::MeshRenderable(MeshRenderableParams, DynamicMesh* m, SceneRenderer* r)
+MeshRenderable::MeshRenderable(MeshRenderableParams, Resources::Mesh* m, SceneRenderer* r)
 	: Renderable(r), mMesh(m)
 {}
 

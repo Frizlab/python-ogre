@@ -1,7 +1,6 @@
-/** \file    NxOgreConfig.h
- *  \brief   Configuration file of the NxOgre library, using macros to
- *           switch on and off features of NxOgre.
- *  \version 1.0-20
+/** \file    NxOgre.h
+ *  \brief   NxOgre in all it's splendid glory.
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -20,90 +19,82 @@
  *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#ifndef I_HEART_NXOGRE
-#define I_HEART_NXOGRE
-
-///////////////////////////////////////////
-
-#include "NxOgreStable.h"
-#include "NxOgrePlatform.h"
-#include "NxOgrePrerequisites.h"
-#include "NxOgrePhysXDriver.h"
-#include "BetajaenCC.h"
-#include "FireState.h"
-#include "NxOgreExtendedTypes.h"
-
-/////////////////////////////////////////////
+#ifndef BLEEDING
+#define BLEEDING
 
 #include "NxOgreActor.h"
 #include "NxOgreActors.h"
+#include "NxOgreAllocator.h"
 #include "NxOgreAnimatedRenderable.h"
 #include "NxOgreBody.h"
 #include "NxOgreCharacter.h"
 #include "NxOgreCharacterController.h"
 #include "NxOgreCharacterModel.h"
 #include "NxOgreCharacterMovementModel.h"
-#include "NxOgreCharacterSystem.h"
 #include "NxOgreCloth.h"
 #include "NxOgreClothRaycaster.h"
-#include "NxOgreCollisionModel.h"
-#include "NxOgreCompound.h"
 #include "NxOgreCompoundActor.h"
 #include "NxOgreConfig.h"
 #include "NxOgreContactCallback.h"
 #include "NxOgreContactCallbackController.h"
 #include "NxOgreContactStream.h"
 #include "NxOgreContainer.h"
-#include "NxOgreCooking.h"
 #include "NxOgreDebugRenderer.h"
+#include "NxOgreDeletionCallback.h"
 #include "NxOgreDominanceGroup.h"
 #include "NxOgreDualIdentifier.h"
-#include "NxOgreDynamicMesh.h"
 #include "NxOgreEffectsSystem.h"
 #include "NxOgreEngine.h"
-#include "NxOgreEnumsDefinesTypedefs.h"
 #include "NxOgreError.h"
-#include "NxOgreFileResourceStream.h"
-#include "NxOgreFileResourceSystem.h"
+#include "NxOgreExtendedTypes.h"
+#include "NxOgreFileResource.h"
+#include "NxOgreFileResourceManager.h"
 #include "NxOgreFluid.h"
-#include "NxOgreFluidMesh.h"
 #include "NxOgreForceField.h"
 #include "NxOgreGroup.h"
 #include "NxOgreHash.h"
+#include "NxOgreHeightfield.h"
 #include "NxOgreHelpers.h"
-#include "NxOgreInflatable.h"
 #include "NxOgreIntersection.h"
 #include "NxOgreJoint.h"
 #include "NxOgreJointCallback.h"
 #include "NxOgreJointSet1.h"
 #include "NxOgreJointSet2.h"
-#include "NxOgreLegacyCharacter.h"
-#include "NxOgreLegacyCharacterController.h"
-#include "NxOgreLegacyCharacterHitReport.h"
+#include "NxOgreKinematicCharacter.h"
+#include "NxOgreKinematicCharacterSweep.h"
 #include "NxOgreLog.h"
 #include "NxOgreMachine.h"
+#include "NxOgreManualHeightfield.h"
+#include "NxOgreManualMesh.h"
+#include "NxOgreManualMeshUtil.h"
 #include "NxOgreMaterial.h"
-#include "NxOgreMemoryStream.h"
+#include "NxOgreMaterialAlias.h"
+#include "NxOgreMemoryResource.h"
+#include "NxOgreMemoryResourceManager.h"
+#include "NxOgreMesh.h"
+#include "NxOgreMeshParams.h"
 #include "NxOgreMeshRenderable.h"
 #include "NxOgreNodeRenderable.h"
 #include "NxOgreNxActorController.h"
-#include "NxOgreNxCharacterController.h"
-#include "NxOgreNXM.h"
-#include "NxOgreNxSerialiser.h"
-#include "NxOgreNxuStreamSerialiser.h"
-#include "NxOgreOBJStream.h"
+#include "NxOgreOgreMeshRenderable.h"
+#include "NxOgreOgreNodeRenderable.h"
+#include "NxOgreOgreSceneRenderer.h"
+#include "NxOgreOgreTimeController.h"
 #include "NxOgreParams.h"
 #include "NxOgreParticleSystem.h"
 #include "NxOgrePerformer.h"
+#include "NxOgrePhysXDriver.h"
+#include "NxOgrePlatform.h"
 #include "NxOgrePose.h"
+#include "NxOgrePrerequisites.h"
+#include "NxOgrePrerequisitesOgre.h"
 #include "NxOgreRaycaster.h"
 #include "NxOgreRemoteDebuggerConnection.h"
 #include "NxOgreRenderable.h"
 #include "NxOgreRenderableSource.h"
+#include "NxOgreResource.h"
+#include "NxOgreResourceCallback.h"
 #include "NxOgreResourceManager.h"
-#include "NxOgreResourceMesh.h"
-#include "NxOgreResourceStream.h"
-#include "NxOgreResourceStreamPtr.h"
 #include "NxOgreResourceSystem.h"
 #include "NxOgreScene.h"
 #include "NxOgreSceneContactController.h"
@@ -111,10 +102,8 @@
 #include "NxOgreSceneRenderer.h"
 #include "NxOgreSceneSource.h"
 #include "NxOgreSceneTriggerController.h"
-#include "NxOgreSerialiser.h"
 #include "NxOgreShape.h"
-#include "NxOgreShapeConvex.h"
-#include "NxOgreShapeMesh.h"
+#include "NxOgreShapeMeshes.h"
 #include "NxOgreShapePrimitives.h"
 #include "NxOgreShapeTerrain.h"
 #include "NxOgreShapeWheel.h"
@@ -126,28 +115,21 @@
 #include "NxOgreSleepCallback.h"
 #include "NxOgreSoftBody.h"
 #include "NxOgreSpriteRenderable.h"
-#include "NxOgreState.h"
-#include "NxOgreStateMachine.h"
-#include "NxOgreTestIdea.h"
+#include "NxOgreStable.h"
 #include "NxOgreTesting.h"
 #include "NxOgreTimeController.h"
-#include "NxOgreTransitionalMesh.h"
+#include "NxOgreTimer.h"
 #include "NxOgreTrigger.h"
 #include "NxOgreTriggerCallback.h"
+#include "NxOgreTriggerFunction.h"
 #include "NxOgreUserAllocator.h"
-#include "NxOgreUserData.h"
+#include "NxOgreVoidPointer.h"
 #include "NxOgreVoxelRenderable.h"
 #include "NxOgreWheelSet.h"
+#include "NxOgreWhen.h"
 #include "NxOgreWorld.h"
 
-// Ogre bits.
-/////////	Disabled -> #include "NxOgreOgreMesh.h"
-#include "NxOgreOgreMeshRenderable.h"
-#include "NxOgreOgreNodeRenderable.h"
-#include "NxOgreOgreResourceStream.h"
-#include "NxOgreOgreResourceSystem.h"
-#include "NxOgreOgreSceneRenderer.h"
-#include "NxOgreOgreTimeController.h"
+#include "BetajaenCC.h"
 
 /** \mainpage NxOgre
 \section licence Licence
@@ -207,7 +189,7 @@ parent directory as Ogre. Once the installation is completed, create a Environme
 	- Go to the parent directory of Ogre and the PhysX SDK i.e. (c:/dev/)
 	- New Folder, name as NxOgre, and go inside
 	- File, SVN, SVN Checkout
-	- Set the URL to http://latest.nxogre.org/nxogre3/
+	- Set the URL to http://svn.nxogre.org/branches/1,0/
 	- Click okay
 	- Open up the project and compile.
 

@@ -1,6 +1,6 @@
 /** \file    NxOgreOgreSceneRenderer.cpp
  *  \see     NxOgreOgreSceneRenderer.h
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -73,7 +73,7 @@ NodeRenderable* OgreSceneRenderer::createNodeRenderable(NodeRenderableParams par
 
 /////////////////////////////////////////////////////////////////////
 
-MeshRenderable* OgreSceneRenderer::createMeshRenderable(MeshRenderableParams params, DynamicMesh* mesh) {
+MeshRenderable* OgreSceneRenderer::createMeshRenderable(MeshRenderableParams params, Resources::Mesh* mesh) {
 	OgreMeshRenderable* renderable = new OgreMeshRenderable(params, mesh, this);
 	return renderable;
 }

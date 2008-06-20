@@ -1,6 +1,6 @@
 /** \file    NxOgreAllocator.h
  *  \brief   Header for the Allocator and WatchedPointer classes and the Allocator macros.
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -11,10 +11,10 @@
  *           
  *           This library is distributed in the hope that it will be useful,
  *           but WITHOUT ANY WARRANTY; without even the implied warranty of
- *           MERCHANTABILITY or FITNESS FOR l PARTICULAR PURPOSE.  See the GNU
+ *           MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  *           Lesser General Public License for more details.
  *           
- *           You should have received l copy of the GNU Lesser General Public
+ *           You should have received a copy of the GNU Lesser General Public
  *           License along with this library; if not, write to the Free Software
  *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
@@ -25,45 +25,49 @@
 #include "NxOgreConfig.h"
 #include "BetajaenCC.h"
 
+// Prototyping of the Resource class in Resources. Because Allocator is defined before ANYTHING.
+namespace NxOgre { namespace Resources {
+class Resource;
+};};
+
 namespace NxOgre {
-    class Allocator;
-    
-#if (NX_DEBUG == 1 && NX_USE_ALLOCATOR_MACROS == 1)
+// #if (NX_DEBUG == 1 && NX_USE_ALLOCATOR_MACROS == 1)
 
-	/** \brief NxNew macro. Replaces new operator when you want to watch a pointer
-		\example
-			<code>
-				MyClass* inst = NxNew(MyClass) MyClass(5, 4, 3, 2, 1);
-			</code>
-	*/
-	#define NxNew(T) ::NxOgre::WatchMyPointer<T>(__FILE__, __FUNCTION__, __LINE__, 0) = new
-	#define NxNewDescribed(T, Description) ::NxOgre::WatchMyPointer<T>(__FILE__, __FUNCTION__, __LINE__, Description) = new
+// 	/** \brief NxNew macro. Replaces new operator when you want to watch a pointer
+// 		\example
+// 			<code>
+// 				MyClass* inst = NxNew(MyClass) MyClass(5, 4, 3, 2, 1);
+// 			</code>
+// 	*/
+// 	#define NxNew(T) ::NxOgre::WatchMyPointer<T>(__FILE__, __FUNCTION__, __LINE__, 0) = new T
+// 	#define NxNewDescribed(T, Description) ::NxOgre::WatchMyPointer<T>(__FILE__, __FUNCTION__, __LINE__, Description) = new T
 
-	/** \brief Pass on a pre-made pointer into the watch list
-		\example
-			<code>
-				NxWatch(MyClass, inst);
-			</code>
-	*/
-	#define NxWatch(T, PTR) {::NxOgre::Allocator::getPtr()->watch_ptr<T>(PTR, __FILE__, __FUNCTION__, __LINE__, 0);}
-	#define NxWatchDescribed(T, PTR, Description) {::NxOgre::Allocator::getPtr()->watch_ptr<T>(PTR, __FILE__, __FUNCTION__, __LINE__, Description);}
+// 	/** \brief Pass on a pre-made pointer into the watch list
+// 		\example
+// 			<code>
+// 				NxWatch(MyClass, inst);
+// 			</code>
+// 	*/
+// 	#define NxWatch(T, PTR) {::NxOgre::Allocator::getPtr()->watch_ptr<T>(PTR, __FILE__, __FUNCTION__, __LINE__, 0);}
+// 	#define NxWatchDescribed(T, PTR, Description) {::NxOgre::Allocator::getPtr()->watch_ptr<T>(PTR, __FILE__, __FUNCTION__, __LINE__, Description);}
 
-	/** \brief Deletes a watched pointer and set's it to zero.
-		\note  Non watched pointers can be passed through, but a warning is placed
-			   into the console window.
-		\example
-			<code>
-				NxDelete(inst);
-			</code>
-	*/
-	#define NxDelete(ptr) {::NxOgre::Allocator::getPtr()->watch_delete(static_cast<void*>(ptr));};delete ptr;ptr=0;
-#else
-	#define NxNew(T)
-	#define NxNewDescribed(T, D)
+// 	/** \brief Deletes a watched pointer and set's it to zero.
+// 		\note  Non watched pointers can be passed through, but a warning is placed
+// 			   into the console window.
+// 		\example
+// 			<code>
+// 				NxDelete(inst);
+// 			</code>
+// 	*/
+// 	#define NxDelete(ptr) {::NxOgre::Allocator::getPtr()->watch_delete(static_cast<void*>(ptr));};delete ptr;ptr=0;
+
+// #else
+	#define NxNew(T) new T
+	#define NxNewDescribed(T, D) new T
 	#define NxWatch(T, PTR)
-	#define NxWatch(T, PTR, D)
-	#define NxDelete delete ptr;ptr = 0;
-#endif
+	#define NxWatchDescribed(T, PTR, D)
+	#define NxDelete(ptr) delete ptr;ptr = 0;
+// #endif
 
 	/** \brief Tells the allocator to watch a pointer. Used with the NxNew macro.
 		\example
@@ -73,9 +77,9 @@ namespace NxOgre {
 	*/
 	template <class T>
 	class WatchMyPointer {
-		
+
 		public:
-		
+
 			NxTemplateFunction WatchMyPointer(const char* _file, const char* _function, unsigned int _line, const char* _description = 0)
 			: ptr(0), file(_file), function(_function), line(_line), description(_description)
 			{}
@@ -83,15 +87,15 @@ namespace NxOgre {
 			template <class T1>
 			explicit NxTemplateFunction WatchMyPointer(T1* _t) : ptr(_t) {}
 
-			template <class T1>
-			NxTemplateFunction WatchMyPointer& operator=(T1* _t) {
-				ptr = _t;
-				::NxOgre::Allocator::getPtr()->watch_new(static_cast<void*>(ptr), typeid(T1).name(), file, function, line, sizeof(T1), description);
-				return *this;
-			}
+// 			template <class T2>
+// 			NxTemplateFunction WatchMyPointer& operator=(T2* _t) {
+// 				ptr = _t;
+// 				::NxOgre::Allocator::getPtr()->watch_new(static_cast<void*>(ptr), typeid(T2).name(), file, function, line, sizeof(T2), description);
+// 				return *this;
+// 			}
 
-			template <class T1>
-			NxTemplateFunction operator T1*() const {
+			template <class T3>
+			NxTemplateFunction operator T3*() const {
 				return ptr;
 			}
 
@@ -113,7 +117,7 @@ namespace NxOgre {
 		protected:
 
 			class NxPublicClass WatchedPointer {
-				
+
 				friend class Allocator;
 
 				public:
@@ -142,6 +146,7 @@ namespace NxOgre {
 					unsigned int mLine;
 					unsigned int mSize;
 
+
 			};
 
 		public:
@@ -154,25 +159,31 @@ namespace NxOgre {
 			*/
 			template <class T>
 			void watch_ptr(T* ptr, const char* fileName, const char* function, unsigned int line, const char* description) {
-				watch_new((void*) ptr, typeid(T).name(), fileName, function, line, sizeof(T), description);
+//				watch_new((void*) ptr, typeid(T).name(), fileName, function, line, sizeof(T), description);
 			}
 
 			/** \brief Add an newely created pointer, used with the NxNew macro
 			*/
 			void watch_new(void* ptr, const char* type_id, const char* fileName, const char* function, unsigned int line, unsigned int sz, const char* description);
-			
+
 			/** \brief Remove a watched pointer from the list, used with the NxDelete macro
 			*/
 			void watch_delete(void* ptr);
-			
+
 			/** \brief Dump the full list of the watched pointers to a file.
 			*/
 			void dump();
 
+			/** \brief Create a leak file (then dump it to).
+				\note Must be created after the ResourceSystem is created.
+			*/
+			void createLeakFile();
+
+
 		protected:
 
 			unsigned int NbNew, NbDelete;
-
+			NxOgre::Resources::Resource* mLeakFile;
 			static Allocator* mAllocatorPtr;
 			Betajaen::SharedList<WatchedPointer> mAllocations;
 

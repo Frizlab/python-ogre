@@ -1,7 +1,7 @@
 /** \file    NxOgreStable.h
  *  \brief   NxOgre pre-compiled header and common headers include used by 
  *           all NxOgre source (cpp) files with no exceptions.
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -38,13 +38,13 @@
 
 #define Nx_Version_Major    1
 #define Nx_Version_Minor    0
-#define Nx_Version_Commit   19
+#define Nx_Version_Commit   21
 #define Nx_Version_Codename "Bleeding Edge"
 
 #if (NX_DEBUG == 0)
-#   define Nx_Version_Full "NxOgre 1.0.19 Bleeding Edge"
+#   define Nx_Version_Full "NxOgre 1.0.20 Bleeding Edge"
 #else
-#   define Nx_Version_Full "NxOgre 1.0.19 Bleeding Edge (Debug)"
+#   define Nx_Version_Full "NxOgre 1.0.20 Bleeding Edge (Debug)"
 #endif
 
 #if NX_USE_OGRE

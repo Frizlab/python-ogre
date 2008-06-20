@@ -25,6 +25,8 @@
 #include "NxOgrePrerequisites.h"
 #include "NxOgreParams.h"
 
+#if 0
+
 namespace NxOgre {
 
 	class NxPublicClass ClothParams : public Params {
@@ -1140,6 +1142,8 @@ namespace NxOgre {
 	//////////////////////////////////////////////////////////////////
 
 };// End of namespace
+
+#endif 
 
 //#endif
 #endif

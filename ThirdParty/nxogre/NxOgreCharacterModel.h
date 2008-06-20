@@ -29,34 +29,26 @@
 #include "NxOgreContainer.h"
 
 namespace NxOgre {
-	
-	/////////////////////////////////////////////////////////
-		
+namespace CharacterSystem {
+
 	class NxPublicClass CharacterModel {
 
 		friend class Character;
 
 		public:
 
-			CharacterModel(bool isShared = false, bool owned = false);
-
-			bool isShared()	{return mShared;}
-
-			bool isOwned()	{return mOwned;}
+			virtual ~CharacterModel() {}
 
 			CharacterMovementModel*	mDefaultMovementModel;
 			CharacterMovementModels mMovementModels;
 
 		protected:
 
-			virtual void init()			{}
-			
-			// Shared betwen Characters.
-			bool mShared;
+			virtual void setGC()  {
+			                       mDeletionPolicy = GC_Delete;
+			                      }
 
-			// Owned by NxOgre, and deleted by Character. Or owned by application and deleted by it.
-			// shared CharacterModels won't be deleted.
-			bool mOwned;
+			GarbageCollectionPolicy     mDeletionPolicy;
 
 		private:
 		
@@ -64,7 +56,8 @@ namespace NxOgre {
 		
 	////////////////////////////////////////////
 
-};// End of namespace
+}; // End of CharacterSystem namespace.
+}; // End of NxOgre namespace.
 
 #endif
 #endif

@@ -26,7 +26,7 @@
 #include "NxOgrePrerequisites.h"
 #include "NxOgreParams.h"
 
-#if (NX_USE_SOFTBODY_API == 1)
+#if (NX_USE_SOFTBODY_API == 0)
 
 #include "OgreMesh.h"
 #include "OgreSubMesh.h"

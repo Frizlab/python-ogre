@@ -1,3 +1,4 @@
+#if 0
 /** \file    NxOgreSkeleton.h
  *  \brief   Header for the Skeleton, CubeSkeleton, SphereSkeleton classes.
  *  \version 1.0-20
@@ -71,4 +72,5 @@ namespace NxOgre {
 
 };
 
+#endif
 #endif

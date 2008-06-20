@@ -21,5 +21,52 @@
 
 #include "NxOgreStable.h"
 #include "NxOgreDualIdentifier.h"
+#include "NxOgreHelpers.h"
 
-// This page has been intentionally left blank.
+namespace NxOgre {
+
+/////////////////////////////////////////////////////////////////////
+
+VisualIdentifier::VisualIdentifier() {
+
+}
+
+/////////////////////////////////////////////////////////////////////
+
+VisualIdentifier::VisualIdentifier(const NxString& str) {
+	
+	if (NxStringWhereIs(str,";")) {
+		NxStringTokenize2(str, ";", mIdentifier, mVisualIdentifier, true);
+	}
+	else {
+		mIdentifier = str;
+		mVisualIdentifier = NxString();
+	}
+
+}
+
+/////////////////////////////////////////////////////////////////////
+
+VisualIdentifier::VisualIdentifier(const NxString& _identifier, const NxString& _visualisation) {
+	mIdentifier = _identifier;
+	mVisualIdentifier = _visualisation;
+}
+
+/////////////////////////////////////////////////////////////////////
+
+VisualIdentifier::VisualIdentifier(const char* str) {
+
+	NxString nx_str = NxString(str);
+	if (NxStringWhereIs(nx_str, ";")) {
+		NxStringTokenize2(nx_str, ";", mIdentifier, mVisualIdentifier, true);
+	}
+	else {
+		mIdentifier = str;
+		mVisualIdentifier = NxString();
+	}
+
+}
+
+/////////////////////////////////////////////////////////////////////
+
+}; // End of NxOgre namespace

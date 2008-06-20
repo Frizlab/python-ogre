@@ -25,6 +25,7 @@
 #include "NxOgreActor.h"			// For: a::getNxActor, b::getNxActor
 #include "NxOgreHelpers.h"			// For: Vector3 to NxVec3 conversion
 #include "NxOgreScene.h"			// For: mScene::getNxScene()
+#include "NxOgreJointCallback.h"	// For: Joint callbacks.
 
 namespace NxOgre {
 
@@ -189,7 +190,7 @@ void RevoluteJoint::__createJoint(const Ogre::Vector3 &axis, const Ogre::Vector3
 #if (NX_SDK_VERSION_NUMBER >= 272)
 		mDescription.limit.high.hardness = jp.mUpperLimitHardness;
 #endif
-		mDescription.limit.low.value = jp.mLowerLimitRestitution;
+		mDescription.limit.low.restitution = jp.mLowerLimitRestitution;
 		mDescription.limit.low.value = jp.mLowerLimit;
 #if (NX_SDK_VERSION_NUMBER >= 272)
 		mDescription.limit.low.hardness = jp.mLowerLimitHardness;

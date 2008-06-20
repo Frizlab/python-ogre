@@ -23,6 +23,9 @@
 #define __NXOGRE_REMOTEDEBUGGERCONNECTION_H__
 
 #include "NxOgrePrerequisites.h"
+
+#ifndef NX_SMALL
+
 #include "NxOgreContainer.h"
 
 namespace NxOgre {
@@ -56,4 +59,5 @@ namespace NxOgre {
 
 };
 
+#endif
 #endif

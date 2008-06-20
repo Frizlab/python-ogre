@@ -1,6 +1,6 @@
 /** \file    NxOgreBody.h
  *  \brief   Header for the Body class.
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -23,68 +23,82 @@
 #define __NXOGRE_BODY_H__
 
 #include "NxOgrePrerequisites.h"
-#include "NxOgreActor.h"			// For: Body inherits Actor
-#include "NxOgrePose.h"
-#include "NxOgreRenderableSource.h"
-#include "NxOgreRenderable.h"
-#include "NxOgreNodeRenderable.h"
+#include "NxOgreActor.h"                  // For: Body inherits Actor
+#include "NxOgrePose.h"                   // For: getSourcePose()
+#include "NxOgreRenderableSource.h"       // For: Body inherits RenderableSource
+#include "NxOgreRenderable.h"             // For: Body uses a Renderable (Abstract).
+#include "NxOgreNodeRenderable.h"         // For: Body uses a NodeRenderable
 
 namespace NxOgre {
 
+	/** \brief Body is an example of an Actor using a NodeRenderable
+	    \note  This is merely an example on how to uses visualisation in NxOgre, it shouldn't
+	           be used for serious things.
+	*/
 	class NxPublicClass Body : public Actor, public RenderableSource {
 
 		public:
 
-			Body(const NxString& NameAndOrShorthandVisualIdentifier, Scene*);
 
 			/** \brief Body constructor with limited short-hand visualisation specification.
-				How the body is visualised is built into the identifier.
-					
-					- "myBody"
-						No Visualisation
-
-					- "myBody; cow.mesh"
-						Visualisation as "cow.mesh" as the graphics model loading it from
-						the rendersystems resource system.
-						(Default behaviour)
-
-					- "myBody; (reference) cow.mesh"
-						Visualisation as "cow.mesh" from a pre-existing model that has
-						already been loaded and in the scene already.
-						(Moving it from one visualisation node to this one)
+			           How the body is visualised is built into the identifier.
+			                                                                             
+			        - "myBody"
+			            No Visualisation
+			                                                                             
+			        - "myBody; cow.mesh"
+			            Visualisation as "cow.mesh" as the graphics model loading it from
+			            the rendersystems resource system.
+			            (Default behaviour)
+			                                                                              
+			        - "myBody; (reference) cow.mesh"
+			            Visualisation as "cow.mesh" from a pre-existing model that has
+			            already been loaded and in the scene already.
+			            (Moving it from one visualisation node to this one)
 			*/
-			Body(const NxString& Identifier, Scene*, Shape*, const Pose&, ActorParams);
-			
-			/** Body constructor with full visualisation.
-					
-				mSceneMgr->createBody("myBody", new CubeShape(2,2,2), Vector3(0,5,0), "model: cube.1m.mesh, scale: 2 2 2", "mass: 10");
+			Body(const VisualIdentifier&, Scene*, Shape*, const Pose&, const ActorParams&);
 
+
+			/** \brief Body constructor with full visualisation.
+			    \example
+			     <code>
+			      mSceneMgr->createBody("myBody", new CubeShape(2,2,2), Vector3(0,5,0), "model: cube.1m.mesh, scale: 2 2 2", "mass: 10");
+			     </code>
 			*/
-			Body(const NxString& Identifier, Scene*, Shape*, const Pose&, NodeRenderableParams, ActorParams);
-			
+			Body(const NxString&, Scene*, Shape*, const Pose&, const NodeRenderableParams&, const ActorParams&);
+
+
 			/** \brief Body destructor. If you hate memory leaks and crashes, use mScene->destroyActor(...);
 			*/
-
 			virtual ~Body();
 
-			NxShortHashIdentifier	getType() const {return NxHashes_Body;	/* "NxOgre-Example-Body" */}
-			NxString				getStringType() const {return "NxOgre-Example-Body";}
+
+			/** \brief Get HashType of this class
+			*/
+			NxShortHashIdentifier  getType() const {
+				return NxOgreClass_Body;
+			}
 
 
-			StringPairList			saveCustom();
-			void					restoreCustom(StringPairList);
-
+			/** \brief Get String type of this class
+			*/
+			NxString  getStringType() const {
+				return "NxOgre-Example-Body";
+			}
 
 		protected:
 
-			void					__renderSelf();
+			/** \brief Get the Source Pose of this class
+			    \internal
+			*/
+			Pose              getSourcePose(const TimeStep&) const;
 
-			NodeRenderable*			mNodeRenderable;
+		protected:
 
+			NodeRenderable*   mNodeRenderable;
 
+	}; // End of Body class.
 
-	};
-
-};
+}; // End of NxOgre namespace.
 
 #endif

@@ -1,6 +1,6 @@
 /** \file    NxOgreWorld.h
  *  \brief   Header for the World class
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -47,12 +47,12 @@ namespace NxOgre {
 
 		public:
 
-			/** \brief World Constructor
-				  Starts up World, and creates the PhysX singleton.
-				\param PhysXDriverParams Basic parameters of the World; Log type used.
-				\see PhysXDriverParams
+			/** \brief Starts up World, and creates the PhysXDriver singleton.
+				\param PhysXParams    Inital parameters and customisation of the PhysXSDK.
+				\param loadResources  Load the default Resource systems and load in resources.
+				\see PhysXParams
 			*/
-			World(PhysXDriverParams = PhysXDriverParams());
+			World(PhysXParams = PhysXParams(), bool loadResources = true);
 
 
 			/** \brief Completely shuts down NxOgre.
@@ -126,13 +126,7 @@ namespace NxOgre {
 			
 			void   destroyAllScenes();
 
-		   /** \brief Returns the Ogre Root pointer, equivalent to Ogre::Root::GetSingletonPtr()
-				\return Ogre::Root
-			*/
-			Ogre::Root*   getRoot()  {
-			                          return mRoot;
-			                         }
-			
+
 			/** \brief Gets the PhysXDriver.
 			
 				Returns the PhysX Driver t he in between PhysX and NxOgre, and the class responsible
@@ -145,44 +139,8 @@ namespace NxOgre {
 			                                  return mDriver;
 			                                 }
 
-
-#if (NX_USE_CHARACTER_API == 1)
-
-			/** \brief Get's the CharacterSystem. 
-			
-				The main class responsible and controls for
-				all characters for all Scenes. Automatically created during the construction
-				of the World.
-
-			 \return The CharacterController
-			 */
-			CharacterSystem*   getCharacterSystem()  {
-			                                          return mCharacterSystem;
-			                                         }
-
-#else
-
-			/** \brief Get's the CharacterController. 
-			
-				The main class responsible and controls for
-				all characters for all Scenes. Automatically created during the construction
-				of the World.
-
-			 \return The CharacterController
-			 */
-			CharacterController*	getCharacterController()	{
-																	return mCharacterController;
-																}
-#endif
-			/** \brief Returns the Resource Manager
-			*/
-			ResourceManager*   getResourceManager()  {
-			                                          return mResourceManager;
-			                                         }
-
 			/** \brief Returns the PhysX SDK instance.
-			
-				Thar be sea monsters.
+				\warning Thar be sea monsters.
 				\return The NxPhysicsSDK instance
 			 */
 			NxPhysicsSDK*   getSDK();
@@ -261,9 +219,6 @@ namespace NxOgre {
 
 		protected:
 
-			// \brief Local Copy of the Ogre Root pointer.
-			Ogre::Root				   *mRoot;
-
 			// \brief First PhysXDriver instance.
 			PhysXDriver*				mDriver;
 
@@ -273,23 +228,10 @@ namespace NxOgre {
 			// \brief Number of frames simulated.
 			NxU32						mNbFrames;
 
-#if (NX_USE_LEGACY_NXCONTROLLER == 0)
-			// \brief First CharacterSystem instance.
-			CharacterSystem*			mCharacterSystem;
-#else
-#	if (NX_USE_CHARACTER_API == 1)
-			// \brief First CharacterController instance (Legacy Character)
-			CharacterController*		mCharacterController;
-#	endif
-#endif
-
 #if (NX_USE_DEBUG_RENDERER_API == 1)
 			// \brief DebugRenderer
 			DebugRenderer*				mDebugRenderer;
 #endif
-
-			// \brief First ResourceManager instance.
-			ResourceManager*			mResourceManager;
 
 	};
 

@@ -1,6 +1,6 @@
 /** \file    NxOgreJoint.h
  *  \brief   Header for the JointCallback, JointParams and Joint classes.
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -26,65 +26,6 @@
 #include "NxOgreParams.h"
 
 namespace NxOgre {
-
-	class NxPublicClass JointCallback {
-		
-		public:
-
-			//////////////////////////////////////////////////////////////
-
-			class JointBreakCallback {
-
-				public:
-
-					virtual void onBreak(Joint*, NxReal, Actor*, Actor*) {}
-
-			};
-
-			//////////////////////////////////////////////////////////////
-
-			template <typename T>
-			class JointBreakMethodCallback : public JointBreakCallback {
-			
-				public:
-
-					JointBreakMethodCallback(
-					T* v,
-					void (T::*BreakCallback)(Joint*, NxReal, Actor*, Actor*))
-					: mInstance(v), mMethod(BreakCallback)
-					{}
-
-					/////////////////////////////////////////////////////
-
-					void onBreak(Joint* j, NxReal i, Actor* a, Actor* b) {
-						(mInstance->*mMethod)(j,i,a,b);
-					}
-
-					/////////////////////////////////////////////////////
-
-					T* mInstance;
-					void (T::*mMethod)(Joint, NxReal, Actor*, Actor*);
-			
-			};
-
-			//////////////////////////////////////////////////////////
-
-			template <typename T> explicit
-			JointCallback(T* v,
-			void (T::*JointBreakMethod)(Joint*, NxReal, Actor*, Actor*))
-			: mCallback(new JointBreakMethodCallback<T>(v, JointBreakMethod)) {}
-
-			void onBreak(Joint* j, NxReal impulse, Actor* a, Actor* b) {
-				mCallback->onBreak(j,impulse, a,b);
-			}
-
-			//////////////////////////////////////////////////////////
-
-			JointBreakCallback*	mCallback;
-
-	};
-
-	//////////////////////////////////////////////////////////////
 
 	class NxPublicClass JointParams : public Params {
 
