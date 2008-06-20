@@ -1,6 +1,6 @@
 /** \file    NxOgreOgreNodeRenderable.h
  *  \brief   Header for the OgreNodeRenderable class.
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -28,7 +28,9 @@
 
 namespace NxOgre {
 
-	#define NxHashes_OgreNodeRenderable 51417
+	enum {
+		NxOgreClass_OgreNodeRenderable = 51417
+	};
 
 	/** \brief SceneNode/Entity combination implementation of NodeRenderable for Ogre.
 			
@@ -106,16 +108,21 @@ namespace NxOgre {
 			*/
 			void setScale(const NxVec3&);
 
+			/** \brief Set the scale of the node from a float3
+			*/
+			void setScale(const float3&);
 
 			/** \brief Get the known scale of the node as a Vector3
 			*/
-			Ogre::Vector3 getScale() const;
-
+			Ogre::Vector3 getScaleAsOgreVector3() const;
 
 			/** \brief Get the known scale of the node as a NxVec3
 			*/
 			NxVec3 getScaleAsNxVec3() const;
 
+			/** \brief Get the known scale of the node as a float3
+			*/
+			float3 getScaleAsFloat3() const;
 
 			/** \brief Set the offset of the node
 			*/
@@ -134,7 +141,7 @@ namespace NxOgre {
 
 			/** \brief Get the Type identifier as a NxShortHashIdentifier
 			*/
-			NxShortHashIdentifier getHashType() const {return NxHashes_OgreNodeRenderable;}
+			NxShortHashIdentifier getHashType() const {return NxOgreClass_OgreNodeRenderable;}
 
 			/** \brief Create a child scene node
 			*/

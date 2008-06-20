@@ -1,6 +1,6 @@
 /** \file    NxOgreRenderableSource.h
  *  \brief   Header for the RenderableSource class.
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -24,106 +24,88 @@
 
 #include "NxOgrePrerequisites.h"
 #include "NxOgrePose.h"
+#include "NxOgreTimeStep.h"
 
 namespace NxOgre {
 
+	/** \brief A Renderable source owns and controls a "Renderable"; a thing which is considered
+	           visible thus be rendered through the RenderSystem. NxOgre classes which need to be
+	           rendered inherit the RenderableSource class and set up their own Rendersystem specific
+	           Renderable.
+	*/
 	class NxPublicClass RenderableSource {
 
 		/* best */ friend class SceneRenderer;
 
 		public:
 
-
-			/**\brief Level Of Detail
+			/** \brief RenderFunction function signature. Used with setCustomRenderMode
 			*/
-			enum LevelOfDetail {
-				LOD_Low,		// Pose only.
-				LOD_Medium,		// Pose and "half" of the detail.
-				LOD_High		// Pose and all of the detail possible.
+			typedef void (RenderableSource::*RenderFunctionPtr)(const TimeStep&);
+
+			/** \brief Type of mode (and function used to Render)
+			*/
+			enum RenderMode {
+				RM_Absolute     = 0,
+				RM_Interpolate  = 1,
+				RM_Custom       = 2
 			};
 
-
-			/**\brief Type of Render (used with Level of Detail). This is considered
-					  advice by the RenderableSource and may not be used.
+			/** \brief Set the render mode used.
 			*/
-			enum Interpolation {
-				I_Absolute,		// Render as absolute position
-				I_Linear,		// Render as a blend between this and last frame.
-				I_Linear_x4,	// Render as a blend between this and every four frames.
-				I_Linear_x8		// Render as a blend between this and every eight frames.
-			};
-
-			/**\brief Set the type of Render, absolute or blend.
+			void setRenderMode(RenderMode);
+			
+			/** \brief Ignore the types of RenderModes and use your own.
+			    \note  Function siganture must be the same as RenderFunctionPtr, thus
+			           your function must be inside a derrivate of RenderableSource.
 			*/
-			void	setInterpolation(Interpolation i)		{
-																mInterpolation = i;
-																mLastPoseCount = 0;
-															}
+			void setCustomRenderMode(RenderFunctionPtr);
 
-
-			/**\brief Gets the type of Render, absolute or blend
+			/** \brief Replaces the current Renderable with a new one.
+			    \note  Inproper usage will result in sudden hair loss and stress.
 			*/
-			Interpolation	getInterpolation() const		{
-																return mInterpolation;
-															}
+			void setRenderable(Renderable*);
 
-
-			/**\brief Sets the Level of Detail that the RenderableSource will use.
-			*/
-			void	setLevelOfDetail(LevelOfDetail lod)		{
-																mLOD = lod;
-															}
-
-
-			LevelOfDetail getLevelOfDetail() const			{
-																return mLOD;
-															}
-
-
-			/**\brief Replaces the current Renderable with a new one.
-			   \note This function can be quite dangerous.
-			*/
-			void	setRenderable(Renderable*);
-
-
-			/** \brief Hash Identifier type of this Renderable, must implemented
-				by the class inheriting it.
-			*/
-			virtual NxShortHashIdentifier	getType() const = 0;
-
-
-			/** \brief String Identifier tpy of this Renderable, must be implemented
-				by the class inheriting it.
-			*/
-			virtual NxString				getStringType() const = 0;
-
-
-			/** \brief Get a copy of the Renderable
+			/** \brief Returns the renderable associated with this RenderableSource.
 			*/
 			Renderable* getRenderable();
 
-
 			/** \brief What exactly the Renderable is.
 			*/
-			NxString	getRenderableType();
+			NxString getRenderableType() const;
 
-
-			/** \brief What exactly the Renderable is as a hash
+			/** \brief What exactly the Renderable is as a hash.
 			*/
 			NxShortHashIdentifier getRenderableTypeHash();
 
+			/** \brief "Render" the Renderable.
+			*/
+			void render(const TimeStep&);
+
+			void reset();
+
+			/** \brief Get the pose from the source
+			*/
+			virtual Pose getSourcePose(const TimeStep&) const = 0;
 
 		protected:
 
-			virtual void __renderSelf() = 0;
+			/** \brief Set's the render pose to absolute
+			    \internal
+			*/
+			void render_Absolute(const TimeStep&);
 
-			Renderable*				mRenderable;
-			NxRenderableSourceID	mRenderableSourceID;
-			LevelOfDetail			mLOD;
-			Interpolation			mInterpolation;
-			Pose					mLastPose;
-			Pose					mDeltaPose;
-			NxU32					mLastPoseCount;
+			/** \brief Set's the render pose to interpolated pose.
+			    \internal
+			*/
+			void render_Interpolate(const TimeStep&);
+
+			NxU32                   mRenderableSourceID;
+			Renderable*             mRenderable;
+			RenderFunctionPtr       mRenderFunction;
+			RenderMode              mRenderMode;
+			Pose                    mRenderPose;
+			Pose                    mAlphaPose;
 
 	};
 

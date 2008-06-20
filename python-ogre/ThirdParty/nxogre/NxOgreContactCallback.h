@@ -80,8 +80,8 @@ namespace NxOgre {
 		protected:
 			typedef void (TargetClass::*ContactFunctionPtr)(Actor*, Actor*, NxContactPair, NxU32 ContactFlags);
 			
-			template <class TargetClass>
-			explicit ContactPtrCallback(TargetClass* _instance, ContactFunctionPtr _function_ptr) {
+			template <class TargetClass1>
+			explicit ContactPtrCallback(TargetClass1* _instance, ContactFunctionPtr _function_ptr) {
 				mDeletionPolicy = GC_Delete;
 				mClass = _instance;
 				mFunction = _function_ptr;

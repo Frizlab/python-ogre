@@ -22,7 +22,7 @@
 #include "NxOgreStable.h"
 #include "NxOgreSoftBody.h"
 
-#if (NX_USE_SOFTBODY_API == 1)
+#if (NX_USE_SOFTBODY_API == 0)
 #include "NxOgrePose.h"					// For conversions
 #include "NxOgreHelpers.h"				// For conversions
 #include "NxOgreScene.h"				// For Cloth::mOwner

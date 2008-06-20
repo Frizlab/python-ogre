@@ -1,6 +1,6 @@
 /** \file    NxOgreParams.cpp
  *  \see     NxOgreParams.h
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -47,9 +47,8 @@ bool Params::isYes(const NxString& yes) const {
 	if (yes.size() == 0)
 		return false;
 
-	const char* y = yes.substr(0,1).c_str();
-	
-	return (y == "y" || y == "Y" || y == "t" || y == "T");
+	NxString y = NxStringSubstr(yes, 0, 1);
+	return (y == "y" || y == "Y" || y == "t" || y == "T" || "1");
 
 }
 
@@ -58,7 +57,7 @@ bool Params::isYes(const NxString& yes) const {
 Params::Parameters Params::fromString(const NxString& _string) {
 
 	Container<unsigned int, NxString> str_params;
-	str_params = NxStringTokenize(_string, ",", true);
+	str_params = NxStringTokenize(_string, ",\n", true);
 	
 	Parameters params;
 
@@ -217,6 +216,158 @@ bool Params::Set(const NxOgre::NxString& i, Parameter *d, NxHeightFieldAxis &t) 
 	
 	return false;
 
+}
+
+/////////////////////////////////////////////////////////////
+
+bool Params::Set(const NxString& i, Parameter * d, NxU32& t, NxU32 enumA, NxString enumAStr, NxU32 enumB, NxString enumBStr) const {
+	if (d->i == i) { 
+		
+		NxString j_lower = d->j;
+		NxStringToLower(j_lower);
+
+		if (j_lower == enumAStr)
+			t = enumA;
+		else if (j_lower == enumBStr)
+			t = enumB;
+
+		return true;
+	}
+	return false;
+}
+
+/////////////////////////////////////////////////////////////
+
+bool Params::Set(const NxString& i, Parameter *d, NxU32& t, NxU32 enumA, NxString enumAStr, NxU32 enumB, NxString enumBStr, NxU32 enumC, NxString enumCStr) const {
+
+	if (d->i == i) { 
+		
+		NxString j_lower = d->j;
+		NxStringToLower(j_lower);
+
+		if (j_lower == enumAStr)
+			t = enumA;
+		else if (j_lower == enumBStr)
+			t = enumB;
+		else if (j_lower == enumCStr)
+			t = enumC;
+
+		return true;
+	}
+	return false;
+
+}
+
+/////////////////////////////////////////////////////////////
+
+bool Params::Set(const NxString& i, Parameter * d, NxU32& t, NxU32 enumA, NxString enumAStr, NxU32 enumB, NxString enumBStr, NxU32 enumC, NxString enumCStr, NxU32 enumD, NxString enumDStr) const  {
+
+	if (d->i == i) { 
+		
+		NxString j_lower = d->j;
+		NxStringToLower(j_lower);
+
+		if (j_lower == enumAStr)
+			t = enumA;
+		else if (j_lower == enumBStr)
+			t = enumB;
+		else if (j_lower == enumCStr)
+			t = enumC;
+		else if (j_lower == enumDStr)
+			t = enumD;
+
+		return true;
+	}
+	return false;
+
+}
+
+
+/////////////////////////////////////////////////////////////
+
+bool Params::Set(const NxString& i, Parameter *d, NxU32& t, NxU32 enumA, NxString enumAStr, NxU32 enumB, NxString enumBStr, NxU32 enumC, NxString enumCStr, NxU32 enumD, NxString enumDStr, NxU32 enumE, NxString enumEStr) const  {
+
+	if (d->i == i) { 
+		
+		NxString j_lower = d->j;
+		NxStringToLower(j_lower);
+
+		if (j_lower == enumAStr)
+			t = enumA;
+		else if (j_lower == enumBStr)
+			t = enumB;
+		else if (j_lower == enumCStr)
+			t = enumC;
+		else if (j_lower == enumDStr)
+			t = enumD;
+		else if (j_lower == enumEStr)
+			t = enumE;
+
+		return true;
+	}
+	return false;
+
+}
+
+/////////////////////////////////////////////////////////////
+
+bool Params::Set(const NxString&i, Parameter *d, NxU32& t, NxU32 enumA, NxString enumAStr, NxU32 enumB, NxString enumBStr, NxU32 enumC, NxString enumCStr, NxU32 enumD, NxString enumDStr, NxU32 enumE, NxString enumEStr, NxU32 enumF, NxString enumFStr) const {
+
+	if (d->i == i) { 
+		
+		NxString j_lower = d->j;
+		NxStringToLower(j_lower);
+
+		if (j_lower == enumAStr)
+			t = enumA;
+		else if (j_lower == enumBStr)
+			t = enumB;
+		else if (j_lower == enumCStr)
+			t = enumC;
+		else if (j_lower == enumDStr)
+			t = enumD;
+		else if (j_lower == enumEStr)
+			t = enumE;
+		else if (j_lower == enumFStr)
+			t = enumF;
+
+		return true;
+	}
+	return false;
+
+}
+
+
+/////////////////////////////////////////////////////////////
+
+bool Params::Set(const NxString& i, Parameter *d, NxThreadPriority& t) const {
+	
+	if (d->i == i) { 
+		
+		NxString j_lower = d->j;
+		NxStringToLower(j_lower);
+
+		if (j_lower == "high")
+			t = NX_TP_HIGH;
+		else if (j_lower == "above-normal")
+			t = NX_TP_ABOVE_NORMAL;
+		else if (j_lower == "normal")
+			t = NX_TP_NORMAL;
+		else if (j_lower == "below-normal")
+			t = NX_TP_BELOW_NORMAL;
+		else if (j_lower == "low")
+			t = NX_TP_LOW;
+
+		return true;
+	}
+	return false;
+
+}
+
+/////////////////////////////////////////////////////////////
+
+bool Params::is(const NxString& i, Parameter* d) {
+	return (i == d->i);
 }
 
 /////////////////////////////////////////////////////////////

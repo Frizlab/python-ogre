@@ -1,6 +1,6 @@
 /** \file    NxOgreRenderable.cpp
  *  \see     NxOgreRenderable.h
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -22,8 +22,8 @@
 #include "NxOgreStable.h"
 #include "NxOgreRenderable.h"
 #include "NxOgrePose.h"
-namespace NxOgre {
 
+namespace NxOgre {
 
 //////////////////////////////////////////////////////////
 

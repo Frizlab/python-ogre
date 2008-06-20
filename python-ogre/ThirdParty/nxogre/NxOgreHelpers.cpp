@@ -1,6 +1,6 @@
 /** \file    NxOgreHelpers.cpp
  *  \see     NxOgreHelpers.h
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -34,15 +34,15 @@
 namespace NxOgre {
 
 //////////////////////////////////////////////////////////////////////////////////
-
+/*
 inline NxExtendedVec3 toNxExtendedVec3(const Ogre::Vector3& v) {
 	return NxExtendedVec3(v.x,v.y,v.z);
 }
-
+*/
 //////////////////////////////////////////////////////////////////////////////////
 
 // Generates a 8 digit ID, based on groupCount and type of object (typeHash)
-inline NxString NxCreateID(unsigned int groupCount, NxString typeHash) {
+NxString NxCreateID(unsigned int groupCount, NxString typeHash) {
 	std::stringstream ss;
 	ss << typeHash << "-" << std::hex << (rand() % 1024) << "-" << groupCount;
 	return ss.str();
@@ -298,37 +298,56 @@ NxShortHashIdentifier NxCreateShortHashFromString(const NxString& str) {
 
 ////////////////////////////////////////////////////////////////
 
-inline Pose NxInterpolate(Pose First, Pose Second, NxReal c) {
+NxQuat NxQuat_nlerp(NxReal fT, const NxQuat& rkP, const NxQuat& rkQ, bool shortestPath) {
+	NxQuat result, rkT;
+	NxReal fCos = rkP.dot(rkQ);
+	result = rkP;
 
-	Pose r;
-	
-	NxVec3 v;
-	v.x = First.m.t.x * (1-c) + Second.m.t.x * c;
-	v.y = First.m.t.y * (1-c) + Second.m.t.y * c;
-	v.z = First.m.t.z * (1-c) + Second.m.t.z * c;
+	if (fCos < 0.0f && shortestPath)
+		rkT = (-rkQ);    // result = rkP + fT * ((-rkQ) - rkP);
+	else
+		rkT = rkQ;       // result = rkP + fT * (rkQ - rkP);
 
-	NxQuat q, q1, q2;
-	
-	First.m.M.toQuat(q1); Second.m.M.toQuat(q2); q.slerp(c, q2, q2);
+	rkT -= rkP;
+	rkT *= fT;
+	result += rkT;
 
-	return Second; //Pose(v, q);
+	result.normalize();
+	return result;
 }
 
 ////////////////////////////////////////////////////////////////
 
-void NxPublicClass NxStringToLower(NxString& s) {
+Pose NxInterpolate(Pose First, Pose Second, NxReal c) {
+
+	Pose r;
+	r.m.t = c * (Second.m.t - First.m.t) + First.m.t;
+
+	NxQuat q1, q2, q3;
+	First.m.M.toQuat(q1); Second.m.M.toQuat(q2);
+	q3 = NxQuat_nlerp(c, q1, q2, true);
+
+	r.m.M.fromQuat(q3);
+
+	return r;
+
+}
+
+////////////////////////////////////////////////////////////////
+
+void NxPublicFunction NxStringToLower(NxString& s) {
 	std::transform(s.begin(),s.end(),s.begin(),tolower);
 }
 
 ////////////////////////////////////////////////////////////////
 
-void NxPublicClass NxStringToUpper(NxString& s) {
+void NxPublicFunction NxStringToUpper(NxString& s) {
 	std::transform(s.begin(),s.end(),s.begin(),toupper);
 }
 
 ////////////////////////////////////////////////////////////////
 
-void NxPublicClass NxStringTrim(NxString& s) {
+void NxPublicFunction NxStringTrim(NxString& s) {
 	static const std::string delims = " \t\r";
 	s.erase(s.find_last_not_of(delims) + 1);
 	s.erase(0, s.find_first_not_of(delims));
@@ -336,7 +355,31 @@ void NxPublicClass NxStringTrim(NxString& s) {
 
 ////////////////////////////////////////////////////////////////
 
-void NxPublicClass NxStringSplit(const NxString& s, char delimiter, NxString& a, NxString &b) {
+NxString NxPublicFunction NxStringSubstr(const NxString& string, unsigned int pos) {
+	return string.substr(pos, string.length() - pos);
+}
+
+////////////////////////////////////////////////////////////////
+
+NxString NxPublicFunction NxStringSubstr(const NxString& string, unsigned int pos, unsigned int length) {
+	return string.substr(pos, length);
+}
+
+////////////////////////////////////////////////////////////////
+
+NxString NxPublicFunction NxStringSubstrLeft(NxString& string, unsigned int length) {
+	return string.substr(0, length);
+}
+
+////////////////////////////////////////////////////////////////
+
+NxString NxPublicFunction NxStringSubstrRight(NxString& string, unsigned int length) {
+	return string.substr(string.length() - length, length);
+}
+
+////////////////////////////////////////////////////////////////
+
+void NxPublicFunction NxStringSplit(const NxString& s, char delimiter, NxString& a, NxString &b) {
 	NxU32 d = s.find_first_of(delimiter);
 
 	a = s.substr(0,d);
@@ -436,17 +479,6 @@ Container<NxU32, NxString> NxStringTokenize(const NxString& str, const NxString&
 	} while (pos != NxString::npos);
 #endif
 
-	/*
-	if (strings.count()) {
-		for (NxString s = strings._begin();!strings._atEnd();s = strings._next()) {
-			std::cout << "[] => " << s << std::endl;
-		}
-
-		for (NxU32 i=0;i < strings.count();i++) {
-			std::cout << strings[i] << std::endl;
-		}
-	}
-	*/
 	return strings;
 }
 

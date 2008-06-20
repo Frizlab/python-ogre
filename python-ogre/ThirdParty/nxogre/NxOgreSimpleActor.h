@@ -53,7 +53,7 @@ namespace NxOgre {
 			/** \brief Unique class hash identifier
 			*/
 			virtual NxShortHashIdentifier getType() const {
-			  return NxHashes_SimpleActor; /* "NxOgre-SimpleActor" */
+			  return NxOgreClass_SimpleActor; /* "NxOgre-SimpleActor" */
 			}
 
 			/** \brief Unique class identifier.
@@ -68,7 +68,7 @@ namespace NxOgre {
 
 			NxActor*     mActor;
 			Scene*       mScene;
-			NxUserData*  mUserData;
+			VoidPointer*  mUserData;
 	};
 
 };

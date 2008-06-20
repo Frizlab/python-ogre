@@ -20,3 +20,9 @@
  */
 
 #include "NxOgreStable.h"
+#include "NxOgreTesting.h"
+
+#ifndef NX_SMALL
+
+
+#endif

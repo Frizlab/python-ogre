@@ -20,6 +20,7 @@
  */
 
 #include "NxOgreStable.h"
+#if 0
 #include "NxOgreSkeleton.h"
 #include "NxOgreShapeBlueprintPrimitives.h"
 #include "NxOgreResourceManager.h"
@@ -125,3 +126,4 @@ SphereSkeleton::~SphereSkeleton() {
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 }; //End of NxOgre namespace.
+#endif

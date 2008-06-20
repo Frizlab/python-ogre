@@ -1,6 +1,6 @@
 /** \file    NxOgreShapePrimitives.h
  *  \brief   Header for the Ground, Cube, Sphere and Capsule classes.
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -103,6 +103,16 @@ namespace NxOgre {
 			/** \brief Cube destructor
 			*/
 			~Cube();
+
+			/** \brief Set the dimensions of the Cube.
+				\note If you are setting the dimensions once the shape is created, the actor is not
+					  woken to notice the changes.
+			*/
+			void setDimensions(const NxVec3& size);
+
+			/** \brief Get's the dimensions of the Cube
+			*/
+			NxVec3 getDimensions() const;
 
 			virtual void copyTo(Actor*, ShapeParams = ShapeParams()) {NxUnderConstruction;}
 			virtual void moveTo(Actor*, ShapeParams = ShapeParams()) {NxUnderConstruction;}

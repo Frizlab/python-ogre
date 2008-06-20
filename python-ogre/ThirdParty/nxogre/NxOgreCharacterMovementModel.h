@@ -29,16 +29,17 @@
 #include "NxOgreHelpers.h"
 
 namespace NxOgre {
-	
-	/////////////////////////////////////////////////////////
-		
+namespace CharacterSystem {
+
 	class NxPublicClass CharacterMovementModel {
 		
 		public:
 			
-			virtual void		enter(CharacterMovementModel* from, NxMat34 pose)	{mPose = pose;}
+			virtual void		enter(CharacterMovementModel* from, NxMat34 pose)	{mPose = pose;mMovement.zero();mOrientation.id();}
 			virtual NxMat34		exit()												{return mPose;}
 			
+			virtual void		simulate(NxReal dTime)								{}
+			virtual void		simulateAfter(NxReal dTime)							{}
 			virtual void		reset(Character* c)									{mCharacter = c;}// mPose = c->getPose();}
 			virtual void		forward()											{}
 			virtual void		backward()											{}
@@ -51,6 +52,7 @@ namespace NxOgre {
 				// mOrientation
 			}
 			
+			void				setPose(NxMat34 pose)								{mPose = pose;}
 			virtual	void		setPitch(NxRadian pitch)							{}
 			virtual void		setRoll(NxRadian roll)								{}
 			
@@ -61,8 +63,8 @@ namespace NxOgre {
 			
 			virtual NxString	getType()											{return NxString("Default");}
 			
-			virtual NxVec3		getGlobalMovementVector() {
-				return mOrientation * mMovement;
+			virtual NxVec3		getGlobalMovementVector(NxReal dT) {
+				return (mOrientation * mMovement) * dT;
 			}
 			
 			virtual NxVec3		getMovementVector() {
@@ -86,7 +88,8 @@ namespace NxOgre {
 		
 	////////////////////////////////////////////
 
-};// End of namespace
+}; // End of CharacterSystem namespace.
+}; // End of NxOgre namespace.
 
 #endif
 #endif

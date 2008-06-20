@@ -1,6 +1,6 @@
 /** \file    NxOgreAllocator.cpp
  *  \see     NxOgreAllocator.h
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -21,7 +21,8 @@
 
 #include "NxOgreStable.h"
 #include "NxOgreAllocator.h"
-#include "NxOgreFileResourceStream.h"
+#include "NxOgreResourceSystem.h"
+#include "NxOgreResource.h"
 
 namespace NxOgre {
 
@@ -35,48 +36,50 @@ Allocator::Allocator() {
 	mAllocatorPtr = this;
 	NbNew = 0;
 	NbDelete = 0;
+	mLeakFile = 0;
 }
 
 /////////////////////////////////////////////////////////////
 
 Allocator::~Allocator() {
 
-	dump();
+	if (mLeakFile)
+		dump();
 
 #if 0
-	mStream->writeString("NxOgre leaks report at ");
+	mLeakFile->writeString("NxOgre leaks report at ");
 	char* timeStr = new char[32];
 	time_t t = time(NULL);
 	struct tm *tme = localtime(&t);
 	unsigned int timeStrLen = sprintf(timeStr, " %02d/%02d/%04d %02d:%02d:%02d", tme->tm_mon + 1, tme->tm_mday, tme->tm_year + 1900, tme->tm_hour, tme->tm_min, tme->tm_sec);
-	mStream->write(timeStr, timeStrLen);
+	mLeakFile->write(timeStr, timeStrLen);
 	delete [] timeStr;
-	mStream->writeString(" .\n\n");
+	mLeakFile->writeString(" .\n\n");
 
 	if (mAllocations.Size()) {
 		
 		{
 			char* str = new char[25];
 			unsigned int strLen = sprintf(str, "%i leaks found!\n\n", mAllocations.Size());
-			mStream->write(str, strLen);
+			mLeakFile->write(str, strLen);
 			delete [] str;
 		}
 
 		for (WatchedPointer* item = mAllocations.Begin(); item = mAllocations.Next();) {
-			mStream->write(item->getDescription(), item->getDescriptionLength());
-			mStream->writeUChar('\n');
+			mLeakFile->write(item->getDescription(), item->getDescriptionLength());
+			mLeakFile->writeUChar('\n');
 		}
 
 	}
 	else {
-		mStream->writeString("No leaks found.\n\n");
+		mLeakFile->writeString("No leaks found.\n\n");
 	}
 
 	char* str = new char[64];
 	unsigned int strl = sprintf(str, "\n\nNb of NxNew: %i, Nb of NxDelete: %i\n", NbNew, NbDelete);
-	mStream->write(str, strl);
+	mLeakFile->write(str, strl);
 	delete [] str;
-	mStream->writeString("Leaks marked with a (0) indicate the pointer is zero and may be deleted, otherwise at the time this log has been written the data is still there.");
+	mLeakFile->writeString("Leaks marked with a (0) indicate the pointer is zero and may be deleted, otherwise at the time this log has been written the data is still there.");
 #endif
 
 }
@@ -85,6 +88,13 @@ Allocator::~Allocator() {
 
 Allocator* Allocator::getPtr() {
 	return mAllocatorPtr;
+}
+
+/////////////////////////////////////////////////////////////
+
+void Allocator::createLeakFile() {
+	if (mLeakFile == 0)
+		mLeakFile = Resources::ResourceSystem::getSingleton()->get("file://NxOgre.leaks.html", Resources::RA_ReadWrite);
 }
 
 /////////////////////////////////////////////////////////////
@@ -136,7 +146,7 @@ void Allocator::watch_delete(void* ptr) {
 		}
 	}
 
-	printf("Warning; Trying to NxDelete a non-watched pointer (%p), pointer is however deleted. \n", ptr);
+	// printf("Warning; Trying to NxDelete a non-watched pointer (%p), pointer is however deleted. \n", ptr);
 
 }
 
@@ -144,9 +154,11 @@ void Allocator::watch_delete(void* ptr) {
 
 void Allocator::dump() {
 
-	FileResourceStream* mStream = new FileResourceStream("file://NxOgre.leaks.html +write");
+	// This should be done...But probably the resource system is dead right now.
+	
+	//FileResourceStream* mLeakFile = new FileResourceStream("file://NxOgre.leaks.html +write");
 
-
+#ifndef NX_SMALL
 	char header[3294] = {60, 33, 68, 79, 67, 84, 89, 80, 69, 32, 104, 116, 109, 108, 32, 80, 85, 66, 76, 73, 67, 
 	32, 34, 45, 47, 47, 87, 51, 67, 47, 47, 68, 84, 68, 32, 88, 72, 84, 77, 76, 32, 49, 
 	46, 48, 32, 83, 116, 114, 105, 99, 116, 47, 47, 69, 78, 34, 13, 10, 9, 34, 104, 116, 116, 
@@ -306,72 +318,112 @@ void Allocator::dump() {
 	32, 109, 101, 109, 111, 114, 121, 32, 108, 101, 97, 107, 115, 60, 47, 104, 50, 62
 	};
 
-	mStream->write(header, 3294);
+	mLeakFile->write(header, 3294);
+#else
+	mLeakFile->writeString("<pre>");
+#endif
 
 	if (mAllocations.Size() == 0) {
+#ifndef NX_SMALL
 		char none[36] = {60, 100, 105, 118, 32, 105, 100, 61, 34, 110, 111, 110, 101, 34, 62, 78, 111, 32, 108, 101, 97, 
 		107, 115, 32, 102, 111, 117, 110, 100, 46, 60, 47, 100, 105, 118, 62};
-		mStream->write(none, 36);
+		mLeakFile->write(none, 36);
+#else
+		mLeakFile->writeString("No leaks.");
+#endif
+
 	}
 	else {
 
+#ifndef NX_SMALL
 		char leak_hdr[18] = {60, 100, 105, 118, 32, 99, 108, 97, 115, 115, 61, 34, 108, 101, 97, 107, 34, 62 };
 		char leak_footer[6] = {60, 47, 100, 105, 118, 62};
 
 		for (WatchedPointer* item = mAllocations.Begin(); item = mAllocations.Next();) {
 			// div header.
-			mStream->write(leak_hdr, 18);
+			mLeakFile->write(leak_hdr, 18);
 
 			// header start.
-			mStream->writeString("<h5>");
+			mLeakFile->writeString("<h5>");
 
 			// class name
-			mStream->write(item->mPtrType.str, item->mPtrType.len);
+			mLeakFile->write(item->mPtrType.str, item->mPtrType.len);
 			
 			// size
 			char* size_str = new char[24];
 			unsigned size_str_length = sprintf(size_str, " (%i bytes)", item->mSize);
-			mStream->write(size_str, size_str_length);
+			mLeakFile->write(size_str, size_str_length);
 			delete [] size_str;
 
 			// Optional description
 			if (item->mDescription.len != 0) {
-				mStream->writeString(" '");
-				mStream->write(item->mDescription.str, item->mDescription.len);
-				mStream->writeString("'");
+				mLeakFile->writeString(" '");
+				mLeakFile->write(item->mDescription.str, item->mDescription.len);
+				mLeakFile->writeString("'");
 			}
 			// header end.
-			mStream->writeString("</h5>\n");
+			mLeakFile->writeString("</h5>\n");
 
 			char* mfl_str = new char[item->mFile.len + item->mMethod.len + item->mPtrType.len + 64];
 			unsigned int mfl_str_length = sprintf(mfl_str, "Function <em>%s</em> in file <em>%s</em> line <em>%i</em>\n", item->mMethod.str, item->mFile.str, item->mLine);
-			mStream->write(mfl_str, mfl_str_length);
+			mLeakFile->write(mfl_str, mfl_str_length);
 			delete [] mfl_str;
 
 			// div footer.
-			mStream->write(leak_footer, 6);
+			mLeakFile->write(leak_footer, 6);
 		}
+#else
 
+		for (WatchedPointer* item = mAllocations.Begin(); item = mAllocations.Next();) {
+
+			mLeakFile->write(item->mPtrType.str, item->mPtrType.len);
+			
+			// size
+			char* size_str = new char[24];
+			unsigned size_str_length = sprintf(size_str, " (%i bytes)", item->mSize);
+			mLeakFile->write(size_str, size_str_length);
+			delete [] size_str;
+
+			// Optional description
+			if (item->mDescription.len != 0) {
+				mLeakFile->writeString(" '");
+				mLeakFile->write(item->mDescription.str, item->mDescription.len);
+				mLeakFile->writeString("'");
+			}
+
+			mLeakFile->writeString("\n");
+
+			char* mfl_str = new char[item->mFile.len + item->mMethod.len + item->mPtrType.len + 64];
+			unsigned int mfl_str_length = sprintf(mfl_str, "Function %s in file %s line %i\n", item->mMethod.str, item->mFile.str, item->mLine);
+			mLeakFile->write(mfl_str, mfl_str_length);
+			delete [] mfl_str;
+
+			mLeakFile->writeString("\n----\n");
+		}
+#endif
 	}
 
-
+#ifndef NX_SMALL
 	char stats_hdr[16] = {60, 100, 105, 118, 32, 105, 100, 61, 34, 115, 116, 97, 116, 115, 34, 62};
-	mStream->write(stats_hdr, 16);
+	mLeakFile->write(stats_hdr, 16);
 	{
 		char* str = new char[72];
 		unsigned int strLength = sprintf(str, "NxNew <strong>%i</strong>, NxDelete <strong>%i</strong>", NbNew, NbDelete);
-		mStream->write(str, strLength);
+		mLeakFile->write(str, strLength);
 		delete [] str;
 	}
 
 	char footer[25] = {46, 60, 47, 100, 105, 118, 62, 13, 10, 60, 47, 98, 111, 100, 121, 62, 13, 10, 60, 47, 104, 
 	116, 109, 108, 62};
-	mStream->write(footer, 25);
+	mLeakFile->write(footer, 25);
 
-	if (mStream)
-		mStream->close();
+	if (mLeakFile)
+		mLeakFile->close();
+#else
+	mLeakFile->writeString("</pre>");
 
-	delete mStream;
+#endif
+	delete mLeakFile;
 }
 
 /////////////////////////////////////////////////////////////

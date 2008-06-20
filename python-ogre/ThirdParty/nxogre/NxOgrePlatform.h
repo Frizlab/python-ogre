@@ -1,7 +1,7 @@
 /** \file    NxOgrePlatform.h
  *  \brief   Specific platform configuration (Windows or Linux) and using
  *           macros to replace code for that specific to a platform.
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -33,29 +33,29 @@
 #if defined(WIN32) || defined(__WIN32__) || defined(_WIN32)
 #   define NX_PLATFORM_WINDOWS
 #
-// // #   if defined(NXOGRE_EXPORTS)
-// // #       define NxPublicClass __declspec(dllexport)
-// // #       define NxPublicFunction __declspec(dllexport)
-// // #       define NxPublicFinalClass(K) \
-// //         K; \
-// //         namespace Private { class K { \
-// //            private: \
-// //              friend class ::K; \
-// //              K() {} \
-// //         };} \
-// //         class __declspec(dllexport) K : private virtual Private::K
-// // #	else
-// // #       define NxPublicClass __declspec(dllimport)
-// // #       define NxPublicFunction __declspec(dllexport)
-// // #       define NxPublicFinal_Class(K) \
-// //         K; \
-// //         namespace Private { class K { \
-// //            private: \
-// //              friend class ::K; \
-// //              K() {} \
-// //         };} \
-// //         class __declspec(dllexport) K : private virtual Private::K
-// // #   endif
+#   if defined(NXOGRE_EXPORTS)
+#       define NxPublicClass __declspec(dllexport)
+#       define NxPublicFunction __declspec(dllexport)
+#       define NxPublicFinalClass(K) \
+        K; \
+        namespace Private { class K { \
+           private: \
+             friend class ::K; \
+             K() {} \
+        };} \
+        class __declspec(dllexport) K : private virtual Private::K
+#	else
+#       define NxPublicClass
+#       define NxPublicFunction
+#       define NxPublicFinal_Class(K) \
+        K; \
+        namespace Private { class K { \
+           private: \
+             friend class ::K; \
+             K() {} \
+        };} \
+        class K : private virtual Private::K
+#   endif
 #
 #   define NX_USE_CHARACTER_API 1
 #

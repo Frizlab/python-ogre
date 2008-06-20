@@ -28,20 +28,20 @@
 
 namespace NxOgre {
 
-	typedef Betajaen::Vector2<double> double2;
-	typedef Betajaen::Vector2<float> float2;
-	typedef Betajaen::Vector2<unsigned int> uint2;
-	typedef Betajaen::Vector2<int> int2;
+   typedef Betajaen::Vector2<double>         double2;
+   typedef Betajaen::Vector2<float>          float2;
+   typedef Betajaen::Vector2<unsigned int>   uint2;
+   typedef Betajaen::Vector2<int>            int2;
 
-	typedef Betajaen::Vector2<double> double3;
-	typedef Betajaen::Vector3<float> float3;
-	typedef Betajaen::Vector3<unsigned int> uint3;
-	typedef Betajaen::Vector3<int> int3;
+   typedef Betajaen::Vector2<double>         double3;
+   typedef Betajaen::Vector3<float>          float3;
+   typedef Betajaen::Vector3<unsigned int>   uint3;
+   typedef Betajaen::Vector3<int>            int3;
 
-	typedef Betajaen::Vector2<double> double4;
-	typedef Betajaen::Vector4<float> float4;
-	typedef Betajaen::Vector4<unsigned int> uint4;
-	typedef Betajaen::Vector4<int> int4;
+   typedef Betajaen::Vector2<double>         double4;
+   typedef Betajaen::Vector4<float>          float4;
+   typedef Betajaen::Vector4<unsigned int>   uint4;
+   typedef Betajaen::Vector4<int>            int4;
 
 };
 

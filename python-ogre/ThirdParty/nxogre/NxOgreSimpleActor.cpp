@@ -45,27 +45,18 @@ void SimpleActor::_addShapeToDescription(SimpleShape* shape, NxActorDesc* actor_
 
 		case SimpleShape::SST_Box: {
 
-			std::cout << "Box.a" << std::endl;
 
 			SimpleBox* sb = shape->getAsBox();
 			NxBoxShapeDesc shape_description;
 			shape_description.setToDefault();
-			shape_description.dimensions  = sb->getDimensions();
-
-			std::cout << "Box.b" << std::endl;
+			shape_description.dimensions  = sb->getDimensionsAsNxVec3();
 
 			if (gp)
 				actor_description->globalPose = sb->getPose();
 			else
 				shape_description.localPose = sb->getPose();
 
-			std::cout << "Box.c" << std::endl;
-
-			std::cout << "Box is valid -> " << shape_description.isValid() << std::endl;
-
 			actor_description->shapes.push_back(&shape_description);
-
-			std::cout << "Box.d" << std::endl;
 
 		} break;
 

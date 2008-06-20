@@ -1,6 +1,6 @@
 /** \file    NxOgreShape.cpp
  *  \see     NxOgreShape.h
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -27,7 +27,8 @@
 #include "NxOgreScene.h"
 #include "NxOgreGroup.h"
 #include "NxOgreDualIdentifier.h"
-#include "NxOgreUserData.h"
+#include "NxOgreVoidPointer.h"
+#include "BetajaenCC.h"
 
 #if NX_USE_OGRE
 #	include "OgreStringConverter.h"
@@ -48,7 +49,13 @@ void ShapeParams::setToDefault() {
 	mSkinWidth = -1.0f;
 	mDensity = 1.0f;
 	mMass = -1.0f;
+
+#if (NX_DEBUG == 1)
 	mFlags = NX_SF_VISUALIZATION;
+#else
+	mFlags = 0;
+#endif
+
 	mTrigger = false;
 	mTriggerCallback = 0;
 }
@@ -64,6 +71,10 @@ void ShapeParams::parse(Parameters params) {
 		//if (Set("material", parameter, mMaterial)) continue;
 		//if (Set("material-index", parameter, mMaterial)) continue;
 		if (Set("offset", parameter, mLocalPose.t)) continue;
+		if (Set("position", parameter, mLocalPose.t)) {
+			std::cout << "POSITION!!!" << std::endl;
+			continue;
+		}
 
 		if (parameter->i == "orientation") {
 			NxQuat q = NxConvert<NxQuat, Ogre::Quaternion>(Ogre::StringConverter::parseQuaternion(parameter->j));
@@ -85,46 +96,63 @@ void ShapeParams::parse(Parameters params) {
 
 /////////////////////////////////////////////////////////////
 
-Shape::Shape(NxShapeDesc* shape_description, const ShapeParams& shape_params)
-: mShapeIndex(0), mParams(shape_params), mActor(NULL), mNxShape(NULL), mUserData(0), mSkeleton(NULL), mTriggerCallback(0)
+Shape::Shape()
+: mShapeIndex(0), mActor(NULL), mNxShape(NULL), mVoidPointer(0), mSkeleton(NULL), mTriggerCallback(0)
 {
+}
 
-	if (shape_params.mCCDSkeleton)
-		shape_description->ccdSkeleton = shape_params.mCCDSkeleton->getSkeleton();
+/////////////////////////////////////////////////////////////
 
-	shape_description->density = shape_params.mDensity;
-	shape_description->group = shape_params.mGroupAsIndex;
-	shape_description->groupsMask = shape_params.mGroupsMask;
-	shape_description->localPose = shape_params.mLocalPose;
-	shape_description->mass = shape_params.mMass;
-	
-	if (shape_params.mMaterial.hasFirst())
-		shape_description->materialIndex = shape_params.mMaterial.getFirst();
-	// else
-	//	convert string to material index.
-	
-	shape_description->shapeFlags = shape_params.mFlags;
-	shape_description->skinWidth = shape_params.mSkinWidth;
-
+Shape::Shape(NxShapeDesc* shape_description, const ShapeParams& shape_params)
+: mShapeIndex(0), mParams(shape_params), mActor(NULL), mNxShape(NULL), mVoidPointer(0), mSkeleton(NULL), mTriggerCallback(0)
+{
+	paramsToDescription(shape_description, &mParams);
 }
 
 /////////////////////////////////////////////////////////////
 
 Shape::~Shape() {
-	if (mUserData)
-		delete mUserData;
+	if (mVoidPointer)
+		delete mVoidPointer;
 }
+
 
 /////////////////////////////////////////////////////////////
 
 void Shape::setNxShape(NxShape *shape) {
 
 	if (shape == NULL) {
-		NxThrow(NxString("NULL or invalid shape was attempted to be assigned to this shape '" + getType() + "'.").c_str());
+		NxThrow(NxString("NULL or invalid shape was attempted to be assigned to this shape '" + getShapeAsString() + "'.").c_str());
 	}
 
 	mNxShape = shape;
 	mActor = &shape->getActor();
+
+}
+
+/////////////////////////////////////////////////////////////
+
+void Shape::paramsToDescription(NxShapeDesc* shape_description, ShapeParams* shape_params) {
+
+	//	if (shape_params.mCCDSkeleton)
+	//		shape_description->ccdSkeleton = shape_params.mCCDSkeleton->getSkeleton();
+
+	// This is done by the resource system/meshutil now.
+
+	shape_description->density = shape_params->mDensity;
+	shape_description->group = shape_params->mGroupAsIndex;
+	shape_description->groupsMask = shape_params->mGroupsMask;
+	
+	shape_description->localPose = shape_params->mLocalPose;
+	shape_description->mass = shape_params->mMass;
+	
+	if (shape_params->mMaterial.hasFirst())
+		shape_description->materialIndex = shape_params->mMaterial.getFirst();
+	// else
+	//	convert string to material index.
+	
+	shape_description->shapeFlags = shape_params->mFlags;
+	shape_description->skinWidth = shape_params->mSkinWidth;
 
 }
 
@@ -138,6 +166,146 @@ void Shape::extendedParamsToDescription(Scene* scene, const ShapeParams& params,
 	if (params.mMaterial.hasSecond())
 		shape_description->materialIndex = scene->getMaterialIndex(params.mMaterial.getSecond());
 
+}
+
+/////////////////////////////////////////////////////////////
+
+bool Shape::isValid(NxShapeDesc& description) const {
+
+	bool result = true;
+
+	if (!description.localPose.isFinite()) {
+#ifdef NX_DEBUG
+		printf("Shape::isValid (False) -> localPose is not finite.");
+#endif
+		result = false;	
+	}
+
+	if (description.group >= 32) {
+#ifdef NX_DEBUG
+		printf("Shape::isValid (False) -> Group Index is out of bounds (< 32).");
+#endif
+		result = false;	
+	}
+
+	if (description.materialIndex == 0xffff) {
+#ifdef NX_DEBUG
+		printf("Shape::isValid (False) -> Material Index is using a internal reserved PhysX index (0xffff)");
+#endif
+		result = false;	
+	}
+
+	if (description.skinWidth != -1 && description.skinWidth < 0) {
+#ifdef NX_DEBUG
+		printf("Shape::isValid (False) -> Skin width is invalid. (!= -1 && < 0)");
+#endif
+		result = false;	
+	}
+
+	return result;
+}
+
+/////////////////////////////////////////////////////////////
+
+NxString Shape::getShapeAsString() const {
+	return "NxOgre-Shape";
+}
+
+/////////////////////////////////////////////////////////////
+
+NxShape* Shape::getNxShape() {
+	return mNxShape;
+}
+
+/////////////////////////////////////////////////////////////
+
+Skeleton* Shape::getSkeleton() {
+	return mSkeleton;
+}
+
+/////////////////////////////////////////////////////////////
+
+NxShapeIndex Shape::getIndex() const {
+	return mShapeIndex;
+}
+
+/////////////////////////////////////////////////////////////
+
+void  Shape::setIndex(NxShapeIndex index) {
+	mShapeIndex = index;
+}
+
+/////////////////////////////////////////////////////////////
+
+NxShortHashIdentifier  Shape::getTypeHash() const {
+	return NxOgreClass_Shape;
+}
+
+/////////////////////////////////////////////////////////////
+
+bool  Shape::isAttached() const {
+	return (mActor != NULL);
+}
+
+/////////////////////////////////////////////////////////////
+
+TriggerContactCallback*  Shape::getTriggerCallback() {
+	return mTriggerCallback;
+}
+
+/////////////////////////////////////////////////////////////
+
+CompoundShape::CompoundShape() : Shape(), mNbShapes(0)
+{
+}
+
+/////////////////////////////////////////////////////////////
+
+CompoundShape::~CompoundShape() {
+	mShapes.RemoveAll();
+}
+
+/////////////////////////////////////////////////////////////
+
+void CompoundShape::add(NxOgre::Shape* shape) {
+	mShapes.Insert(mNbShapes, shape);
+	mNbShapes++;
+}
+
+/////////////////////////////////////////////////////////////
+
+void CompoundShape::createShape(NxActor* actor, NxShapeIndex index, Scene* scene) {
+
+	for (NxU32 i=0;i < mNbShapes;i++) {
+		mShapes[i]->createShape(actor, index, scene);
+	}
+
+}
+
+/////////////////////////////////////////////////////////////
+
+void CompoundShape::createShape(NxArray<NxShapeDesc*>& shapes, NxShapeIndex index, Scene* scene) {
+
+	for (NxU32 i=0;i < mNbShapes;i++) {
+		mShapes[i]->createShape(shapes, index, scene);
+	}
+
+}
+
+/////////////////////////////////////////////////////////////
+
+void CompoundShape::releaseShape() {
+
+	for (NxU32 i=0;i < mNbShapes;i++) {
+		mShapes[i]->releaseShape();
+	}
+
+}
+
+/////////////////////////////////////////////////////////////
+
+NxShortHashIdentifier CompoundShape::getTypeHash() const {
+	return NxOgreClass_CompoundShape;
 }
 
 /////////////////////////////////////////////////////////////

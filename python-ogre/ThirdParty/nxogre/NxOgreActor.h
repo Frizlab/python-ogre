@@ -1,6 +1,6 @@
 /** \file    NxOgreActor.h
  *  \brief   Header for the ActorParams and Actor classes.
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -422,7 +422,7 @@ namespace NxOgre {
 				\param Pose           First pose of the Actor
 				\param ActorParams    Additional creation information wrapped in a ActorParams class.
 			*/
-			Actor(const NxString& Identifier, Scene*, Shape*, const Pose&, ActorParams = ActorParams());
+			Actor(const NxString& Identifier, Scene*, Shape*, const Pose&, const ActorParams& = ActorParams());
 
 			/** \brief Pretty much obvious Actor destructor
 			*/
@@ -453,7 +453,7 @@ namespace NxOgre {
 			/** \brief Unique Hash of this class as a string (using getStringType)
 			*/
 			virtual NxShortHashIdentifier getType() const {
-			  return NxHashes_Actor; /* "NxOgre-Actor" */
+			  return NxOgreClass_Actor; /* "NxOgre-Actor" */
 			}
 
 			/** \brief Unique class identifier.
@@ -780,7 +780,7 @@ namespace NxOgre {
 			//////////////////////////////////////////////////////////
 
 #if NX_SUPPORT_SWEEP_API
-			NxU32							linearSweep(const Ogre::Vector3& motion, NxU32 flags, void* userData, NxU32 nbShapeDescriptions, NxSweepQueryHit* ShapeDescriptions, NxUserEntityReport<NxSweepQueryHit>* callback, const NxSweepCache* sweepCache=NULL);
+			NxU32							linearSweep(const Ogre::Vector3& motion, NxU32 flags, void* VoidPointer, NxU32 nbShapeDescriptions, NxSweepQueryHit* ShapeDescriptions, NxUserEntityReport<NxSweepQueryHit>* callback, const NxSweepCache* sweepCache=NULL);
 #endif
 
 			//////////////////////////////////////////////////////////
@@ -791,8 +791,8 @@ namespace NxOgre {
 
 			CollisionModel					mCollisionModel;
 
-			void*							getNxUserData();
-			NxUserData*						getUserData();
+			void*							getVoidPointer();
+			VoidPointer*						getUserData();
 
 			/** joinWith
 
@@ -827,7 +827,7 @@ namespace NxOgre {
 			Scene						   *mOwner;
 			NxActor*						mActor;
 			NxString						mName;
-			NxUserData*						mNxUserData;
+			VoidPointer*					mVoidPointer;
 			NxU32							mBirthFrame;
 			
 		private:

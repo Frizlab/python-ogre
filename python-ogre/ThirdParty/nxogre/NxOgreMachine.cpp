@@ -25,15 +25,51 @@
 namespace NxOgre {
 
 /////////////////////////////////////
-	
-Machine::Machine(Scene* scene) : mScene(scene), mMachineID(0) {
-	scene->registerMachine(this);
+
+Machine::Machine() : mScene(0), mMachineID(0) {}
+
+/////////////////////////////////////
+
+Machine::Machine(Scene* scene) : mScene(0), mMachineID(0) {
+	registerMachine(scene);
+}
+
+/////////////////////////////////////
+
+void Machine::registerMachine(Scene* s) {
+	mScene = s;
+	mScene->registerMachine(this);
+}
+
+/////////////////////////////////////
+
+void Machine::unregisterMachine() {
+	mScene->unregisterMachine(this);
 }
 
 /////////////////////////////////////
 
 Machine::~Machine() {
-	mScene->unregisterMachine(this);
+	if (mScene)
+		unregisterMachine();
+}
+
+/////////////////////////////////////
+
+NxMachineID Machine::getMachineID() {
+	return mMachineID;
+}
+
+/////////////////////////////////////
+
+NxString Machine::getIdentifierType() {
+	return "NxOgre-Machine";
+}
+
+/////////////////////////////////////
+
+NxShortHashIdentifier Machine::getIdentifierTypeHash() const {
+	return 22170;
 }
 
 /////////////////////////////////////

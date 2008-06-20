@@ -1,5 +1,5 @@
 /** \file    NxOgreFluid.h
- *  \brief   Header for the FluidParams and Fluid classes.
+ *  \brief   Header for the ...
  *  \version 1.0-20
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
@@ -23,107 +23,11 @@
 #define __NXOGRE_FLUID_H__
 
 #include "NxOgrePrerequisites.h"
-#include "NxOgreContainer.h"		// For: mCollisionList
-#include "NxOgreParams.h"
 
-#if (NX_USE_FLUID_API == 1)
 
 namespace NxOgre {
 
-	///	Params
-	///		->	Kinematic: <bool>
 
-	class NxPublicClass FluidParams : Params {
+}; // End of NxOgre namespace
 
-		public:
-
-
-			FluidParams() {}
-			FluidParams(const char* p) {process(p);}
-			FluidParams(NxString p) {process(p);}
-
-			void			setToDefault();
-			void			parse(Parameters);			
-			
-			NxU32						maxParticles;
-			NxU32						numReserveParticles;
-			NxReal						restParticlesPerMeter;
-			NxReal						restDensity;
-			NxReal						kernelRadiusMultiplier;
-			NxReal						motionLimitMultiplier;
-			NxReal						collisionDistanceMultiplier;
-			NxU32						packetSizeMultiplier;
-			NxReal						stiffness;
-			NxReal						viscosity;
-			NxReal						damping;
-			NxReal						fadeInTime;
-			NxVec3						externalAcceleration;
-			NxReal						staticCollisionRestitution;
-			NxReal						staticCollisionAdhesion;
-			NxReal						staticCollisionAttraction;
-			NxReal						dynamicCollisionRestitution;
-			NxReal						dynamicCollisionAdhesion;
-			NxReal						dynamicCollisionAttraction;
-			NxReal						collisionResponseCoefficient;
-			NxU32						simulationMethod;
-			NxU32						collisionMethod;
-			NxCollisionGroup			collisionGroup;
-			NxGroupsMask				groupsMask;
-			NxU32						flags;
-
-#if NX_SDK_VERSION_NUMBER >= 260
-			NxCompartment*				compartment;
-#endif
-
-
-	}; // End of ActorParams class
-
-	class NxPublicClass Fluid {
-
-		public:
-
-			Fluid(Scene*, const Pose&, FluidParams = "");
-			virtual ~Fluid();
-
-			//////////////////////////////////////////////////////////
-
-			Scene*		getScene() {return mOwner;}
-			NxScene*	getNxScene();
-			NxFluid*	getNxFluid() {return mFluid;}
-			FluidMesh*	getFluidMesh() {return mFluidMesh;}
-			NxU32		getNbParticles() {return mNbParticles;}
-			void		createFluidMesh(Ogre::Camera*);
-			void		destroyFluidMesh();
-
-			//////////////////////////////////////////////////////////
-
-			void						setName(NxString);
-			NxString					getName() {return mName;}
-
-
-			FluidEmitters				mEmitters;
-			FluidDrains					mDrains;
-
-		protected:
-
-			Scene					   *mOwner;
-			NxActor*					mActor;
-			NxString					mName;
-
-			enum FLUID_CONSTANTS {
-				FC_MAX_PARTICLES = 10000
-			};
-
-			NxVec3*						mParticles;
-			NxU32						mNbParticles;
-			NxFluid*					mFluid;
-			FluidMesh*					mFluidMesh;
-			
-
-		private:
-
-	};// End of Actor Class
-
-};// End of namespace
-#endif
 #endif

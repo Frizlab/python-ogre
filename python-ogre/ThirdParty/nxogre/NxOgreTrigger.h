@@ -1,6 +1,6 @@
 /** \file    NxOgreTrigger.h
  *  \brief   Header for the Trigger and TriggerCallback classes.
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -27,22 +27,23 @@
 
 namespace NxOgre {
 
+	/** \brief
+	*/
 	class NxPublicClass Trigger : public SimpleActor {
 
 		friend class SceneTriggerController;
-		friend class NxUserData;
+		friend class VoidPointer;
 
 		public:
 
 			Trigger(SimpleShape*, TriggerContactCallback*, Scene*);
 			~Trigger();
 
-
 			/** \brief Get the callback associated with this trigger
 			*/
-			TriggerContactCallback* getCallback() {
-			                                       return mCallback;
-			                                      }
+			TriggerContactCallback* getCallback()  {
+			                                        return mCallback;
+			                                       }
 
 			void addSimpleShape(SimpleShape*);
 
@@ -50,11 +51,61 @@ namespace NxOgre {
 			Actors getActors();
 
 		protected:
+			TriggerContactCallback*  mCallback;
+			VoidPointer*             mUserData;
+	};
 
-			TriggerContactCallback* mCallback;
-			NxUserData*             mUserData;
+#if 0
+	/** \brief
+	*/
+	class NxPublicClass SimpleTrigger : public Trigger {
+
+		SimpleTrigger(SimpleShape*, TriggerContactCallback*, Scene*);
+		~SimpleTrigger();
+
+	protected:
+
+		void __no_gravity_e_ta(Trigger*, Actor*);
+		void __no_gravity_e_ta(Trigger*, CharacterSystem::Character*);
+		void __no_gravity_e_sa(Shape*, Actor*);
+		void __no_gravity_e_sc(Shape*, Character*);
+		void __no_gravity_x_ta(Trigger*, Actor*);
+		void __no_gravity_x_ta(Trigger*, CharacterSystem::Character*);
+		void __no_gravity_x_sa(Shape*, Actor*);
+		void __no_gravity_x_sc(Shape*, Character*);
+		void __no_gravity_i_ta(Trigger*, Actor*);
+		void __no_gravity_i_ta(Trigger*, CharacterSystem::Character*);
+		void __no_gravity_i_sa(Shape*, Actor*);
+		void __no_gravity_i_sc(Shape*, Character*);
+
+		void __add_gravity_e_ta(Trigger*, Actor*);
+		void __add_gravity_e_ta(Trigger*, CharacterSystem::Character*);
+		void __add_gravity_e_sa(Shape*, Actor*);
+		void __add_gravity_e_sc(Shape*, Character*);
+		void __add_gravity_x_ta(Trigger*, Actor*);
+		void __add_gravity_x_ta(Trigger*, CharacterSystem::Character*);
+		void __add_gravity_x_sa(Shape*, Actor*);
+		void __add_gravity_x_sc(Shape*, Character*);
+		void __add_gravity_i_ta(Trigger*, Actor*);
+		void __add_gravity_i_ta(Trigger*, CharacterSystem::Character*);
+		void __add_gravity_i_sa(Shape*, Actor*);
+		void __add_gravity_i_sc(Shape*, Character*);
+
+		void __replace_gravity_e_ta(Trigger*, Actor*);
+		void __replace_gravity_e_ta(Trigger*, CharacterSystem::Character*);
+		void __replace_gravity_e_sa(Shape*, Actor*);
+		void __replace_gravity_e_sc(Shape*, Character*);
+		void __replace_gravity_x_ta(Trigger*, Actor*);
+		void __replace_gravity_x_ta(Trigger*, CharacterSystem::Character*);
+		void __replace_gravity_x_sa(Shape*, Actor*);
+		void __replace_gravity_x_sc(Shape*, Character*);
+		void __replace_gravity_i_ta(Trigger*, Actor*);
+		void __replace_gravity_i_ta(Trigger*, CharacterSystem::Character*);
+		void __replace_gravity_i_sa(Shape*, Actor*);
+		void __replace_gravity_i_sc(Shape*, Character*);
 
 	};
+#endif
 
 }; // End of NxOgre namespace.
 

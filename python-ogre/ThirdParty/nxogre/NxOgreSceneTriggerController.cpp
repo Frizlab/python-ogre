@@ -1,6 +1,6 @@
 /** \file    NxOgreSceneTriggerController.cpp
  *  \see     NxOgreSceneTriggerController.h
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -24,7 +24,7 @@
 #include "NxOgreScene.h"
 #include "NxOgreTrigger.h"
 #include "NXOgreTriggerCallback.h"
-#include "NxOgreUserData.h"
+#include "NxOgreVoidPointer.h"
 
 namespace NxOgre {
 
@@ -45,23 +45,23 @@ SceneTriggerController::~SceneTriggerController() {
 void SceneTriggerController::onTrigger(NxShape& trigger_shape, NxShape& collision_shape, NxTriggerFlag flags) {
 
 	// Check to see if both Trigger and Actor are NxOgre created. This won't work will
-	// all cases, there is bound to be one developer who thinks UserData is their own
+	// all cases, there is bound to be one developer who thinks VoidPointer is their own
 	// personal playground. But the next piece of code will crash for them, and they'll
 	// see this message if they bother to debug it. Well done you.
 
 	if (!trigger_shape.getActor().userData && !collision_shape.getActor().userData)
 		return;
 
-	NxUserData* trigger_ud = static_cast<NxUserData*>(trigger_shape.getActor().userData);
+	VoidPointer* trigger_ud = static_cast<VoidPointer*>(trigger_shape.getActor().userData);
 	TriggerContactCallback* callback = 0;
-	NxUserData* collision_shape_actor_ud = static_cast<NxUserData*>(collision_shape.getActor().userData);
+	VoidPointer* collision_shape_actor_ud = static_cast<VoidPointer*>(collision_shape.getActor().userData);
 
-	if (trigger_ud->getType() == NxUserData::T_Trigger) {
+	if (trigger_ud->getType() == NxOgreClass_Trigger) {
 
 		callback = trigger_ud->toTrigger()->getCallback();
 		Trigger* trigger = trigger_ud->toTrigger();
 
-		if (collision_shape_actor_ud->getType() == NxUserData::T_Actor) {
+		if (collision_shape_actor_ud->getType() == NxOgreClass_Actor) {
 
 			Actor* actor = collision_shape_actor_ud->toActor();
 
@@ -81,9 +81,9 @@ void SceneTriggerController::onTrigger(NxShape& trigger_shape, NxShape& collisio
 			}
 
 		}
-		else if (collision_shape_actor_ud->getType() == NxUserData::T_Character) {
+		else if (collision_shape_actor_ud->getType() == NxOgreClass_Character) {
 
-			Character* character = collision_shape_actor_ud->toCharacter();
+			CharacterSystem::Character* character = collision_shape_actor_ud->toCharacter();
 
 			switch (flags) {
 				case NX_TRIGGER_ON_ENTER:
@@ -103,13 +103,13 @@ void SceneTriggerController::onTrigger(NxShape& trigger_shape, NxShape& collisio
 		}
 
 	}
-	else if (trigger_ud->getType() == NxUserData::T_Actor) {
+	else if (trigger_ud->getType() == NxOgreClass_Actor) {
 
-		NxUserData* trigger_shape_ud = static_cast<NxUserData*>(trigger_shape.userData);
+		VoidPointer* trigger_shape_ud = static_cast<VoidPointer*>(trigger_shape.userData);
 		Shape* shape = trigger_shape_ud->toShape();
 		callback = shape->getTriggerCallback();
 
-		if (collision_shape_actor_ud->getType() == NxUserData::T_Actor) {
+		if (collision_shape_actor_ud->getType() == NxOgreClass_Actor) {
 
 			Actor* actor = collision_shape_actor_ud->toActor();
 
@@ -129,9 +129,9 @@ void SceneTriggerController::onTrigger(NxShape& trigger_shape, NxShape& collisio
 			}
 
 		}
-		else if (collision_shape_actor_ud->getType() == NxUserData::T_Character) {
+		else if (collision_shape_actor_ud->getType() == NxOgreClass_Character) {
 
-			Character* character = collision_shape_actor_ud->toCharacter();
+			CharacterSystem::Character* character = collision_shape_actor_ud->toCharacter();
 
 			switch (flags) {
 				case NX_TRIGGER_ON_ENTER:

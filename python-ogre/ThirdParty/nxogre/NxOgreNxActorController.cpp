@@ -26,11 +26,13 @@
 #include "NxOgreNxActorController.h"
 
 namespace NxOgre {
+namespace CharacterSystem {
 
 ////////////////////////////////////////////////////
 
-NxActorController::NxActorController(NxMat34 pose, SimpleShape* shape, NxScene* scene) : CharacterController(pose, shape, scene) {
-	
+NxActorController::NxActorController(NxMat34 pose, SimpleShape* shape, Scene* scene, VoidPointer* ptr)
+ : CharacterController(scene, ptr) {
+
 }
 
 ////////////////////////////////////////////////////
@@ -65,6 +67,7 @@ void NxActorController::setCollisionGroup(NxCollisionGroup) {
 
 ////////////////////////////////////////////////////
 
-};
+}; // End of CharacterSystem namespace.
+}; // End of NxOgre namespace.
 
 #endif

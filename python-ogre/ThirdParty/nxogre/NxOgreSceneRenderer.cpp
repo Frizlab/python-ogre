@@ -23,7 +23,7 @@
 #include "NxOgreSceneRenderer.h"
 #include "NxOgreScene.h"
 #include "NxOgreRenderableSource.h"
-#include "NxOgreUserData.h"
+#include "NxOgreVoidPointer.h"
 
 namespace NxOgre {
 
@@ -48,28 +48,9 @@ void SceneRenderer::setAccuracy(RenderAccuracy ra) {
 
 ///////////////////////////////////////////////////////////////////////
 
-void SceneRenderer::render() {
-
-	switch (mRenderAccuracy) {
-		case RA_ALL:
-			renderAll();
-		break;
-
-		case RA_NX_TRANSFORM:
-			{
-				NxU32 nbActors = 0;
-				NxActiveTransform* transform = mNxScene->getActiveTransforms(nbActors);
-				if (nbActors)
-					renderNxTransform(transform, nbActors);
-			}
-		break;
-
-		case RA_SOURCES:
-			{
-				renderSources();
-			}
-		break;
-	}
+void SceneRenderer::render(const TimeStep& ts) {
+	if (ts.Delta > 0)
+		mSources.Each<const TimeStep&>(&RenderableSource::render, ts);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -83,41 +64,6 @@ void SceneRenderer::registerSource(NxOgre::RenderableSource *source) {
 
 void SceneRenderer::unregisterSource(RenderableSource* source) {
 	mSources.Remove(mSources.WhereIs(source));
-}
-
-///////////////////////////////////////////////////////////////////////
-
-void SceneRenderer::renderAll() {
-
-}
-
-///////////////////////////////////////////////////////////////////////
-
-void SceneRenderer::renderNxTransform(NxActiveTransform* transform, NxU32 nbActors) {
-
-	NxUserData* ud;
-	
-	for (NxU32 i=0;i < nbActors;++i) {
-		
-		ud = static_cast<NxUserData*>(transform[i].userData);
-		
-		if (ud == 0)
-			continue;
-
-		// (TODO) combine with this if with the above.
-		if (ud->RenderPtr == 0)
-			continue;
-
-		ud->RenderPtr->__renderSelf();
-
-	}
-
-}
-
-///////////////////////////////////////////////////////////////////////
-
-void SceneRenderer::renderSources() {
-	mSources.Each(&RenderableSource::__renderSelf);
 }
 
 ///////////////////////////////////////////////////////////////////////

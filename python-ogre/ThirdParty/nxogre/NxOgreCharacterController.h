@@ -28,16 +28,15 @@
 #if (NX_USE_LEGACY_NXCONTROLLER == 0)
 
 namespace NxOgre {
-	
-	////////////////////////////////////////////
-	
+namespace CharacterSystem {
+
 	class NxPublicClass CharacterController {
 			
 		friend class Character;
 
 		public:
 			
-			CharacterController(NxMat34 pose, SimpleShape*, NxScene*);
+			CharacterController(Scene*, VoidPointer*);
 			virtual ~CharacterController();
 		
 			virtual NxActorGroup		getActorGroup()							{return 0;}
@@ -46,8 +45,6 @@ namespace NxOgre {
 			virtual void				setActorGroup(NxActorGroup)				{}
 			virtual void				setCollisionGroup(NxCollisionGroup)		{}
 		
-		protected:
-
 			virtual void				init(NxMat34 pose)						{}
 
 			virtual void				move(const NxVec3& direction)			{}
@@ -58,6 +55,8 @@ namespace NxOgre {
 			virtual void				setOrientation(const NxQuat& orientation) {}
 			virtual NxQuat				getOrientation() const					{NxQuat quat;quat.id();return quat;}
 						
+			virtual NxMat34				getPose() const							{NxMat34 m;m.id();return m;}
+
 			virtual void				setSize(const NxVec3& size)				{}
 			virtual void				getSize(NxVec3& size)					{}	
 
@@ -81,7 +80,7 @@ namespace NxOgre {
 		
 			/////////////////////////////////////////////////
 
-			NxScene*					mNxScene;
+			Scene*						mScene;
 
 		private:
 	
@@ -90,7 +89,8 @@ namespace NxOgre {
 		
 	////////////////////////////////////////////
 
-};// End of namespace
+};// End of CharacterSystem namespace.
+};// End of NxOgre namespace.
 
 #endif
 #endif

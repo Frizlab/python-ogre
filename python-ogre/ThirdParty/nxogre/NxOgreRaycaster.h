@@ -33,9 +33,7 @@ namespace NxOgre {
 			NxRaycastHit	mRaycastHit;
 
 			Actor*			mActor;
-#if (NX_USE_CHARACTER_API == 1)
-			Character*		mCharacter;
-#endif
+			CharacterSystem::Character*		mCharacter;
 			Ogre::Vector3	mWorldImpact;
 			Ogre::Vector3	mWorldNormal;
 
@@ -115,9 +113,7 @@ namespace NxOgre {
 		/// Returns the most closest actor hit (Use with Closest or All).
 		Actor* getClosestActor();
 
-#if (NX_USE_CHARACTER_API == 1)
-		Character* getClosestCharacter();
-#endif
+		CharacterSystem::Character* getClosestCharacter();
 
 		RayCastHit getClosestRaycastHit();
 

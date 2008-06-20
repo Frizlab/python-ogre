@@ -28,30 +28,40 @@
 #if (NX_USE_LEGACY_NXCONTROLLER == 0)
 
 #include "NxOgreCharacter.h"
+#include "NxOgreRenderableSource.h"
+#include "NxOgreRenderable.h"
+#include "NxOgreNodeRenderable.h"
 
 namespace NxOgre {
-			
-	////////////////////////////////////////////
-	
+namespace CharacterSystem {
+
 	/**	Performers are Characters with Visualations
 	*/
-	class NxPublicClass Performer : public Character {
+	class NxPublicClass Performer : public Character, public RenderableSource {
 		
 		public:
 		
-			Performer();
+			Performer(const VisualIdentifier&, const Pose&, CharacterModel*, const CharacterParams&, Scene*);
+			Performer(const NxString&, const Pose&, CharacterModel*, const CharacterParams&, const NodeRenderableParams&, Scene*);
 			~Performer();
 		
+
+			NxShortHashIdentifier	getType() const {return NxOgreClass_Performer;	/* "NxOgre-Example-Performer" */}
+			NxString				getStringType() const {return "NxOgre-Example-Performer";}
+
+
 		protected:
-		
-		private:
-		
+
+			Pose getSourcePose(const TimeStep&) const;
+
+			NodeRenderable*			mNodeRenderable;
 		
 	};
 		
 	////////////////////////////////////////////
 
-};// End of namespace
+}; // End of CharacterSystem namespace.
+}; // End of NxOgre namespace.
 
 #endif
 #endif

@@ -26,23 +26,28 @@
 #include "NxOgreCharacter.h"
 #include "NxOgreScene.h"
 #include "NxOgreNxActorController.h"
+#include "NxOgreKinematicCharacter.h"
 
-#if (NX_USE_CHARACTER_API == 1)
-#	include "NxOgreNxCharacterController.h"
-#endif
+#include "NxOgreCharacterModel.h"
+#include "NxOgreCharacterMovementModel.h"
+
+#include "NxOgreVoidPointer.h"
+#include "NxOgreTimeStep.h"
 
 namespace NxOgre {
+namespace CharacterSystem {
 
 /////////////////////////////////////////////////////////////
 
 void CharacterParams::setToDefault() {
 
 #if (NX_USE_CHARACTER_API == 1)
-	mControllerType = CT_NXCONTROLLER;
+	mControllerType = CT_KINEMATIC;
 #else
 	mControllerType = CT_NXACTOR;
 #endif
 
+	mControllerPtr = 0;
 	mStepOffset = 0.0f;
 	mSlopeLimit = 0.0f;
 	mUpDirection = NX_AXIS_PLUS_Y;
@@ -53,45 +58,129 @@ void CharacterParams::setToDefault() {
 
 /////////////////////////////////////////////////////////////
 
-Character::Character(NxString identifier, Pose pose, CharacterModel* model, CharacterParams params, CharacterController* character_controller, Scene* scene) {
-	
+Character::Character(const NxString& identifier, Pose pose, CharacterModel* model, CharacterParams params, Scene* scene)
+: mName(identifier), mModel(model), mOwner(scene), mVoidPointer(0)
+{
+
 	if (model == 0) {
 		NxThrow("Character Model pointer is null!");
 		mDead = true;
 		return;
 	}
 
-	if (params.mControllerType == CharacterParams::CT_CUSTOM && character_controller == 0) {
-		NxThrow("ControllerType is Custom but pointer is null!");
+	if (params.mControllerType == params.CT_PTR && params.mControllerPtr == 0) {
+		NxThrow("ControllerType is custom but given pointer is null!");
 		mDead = true;
 		return;
 	}
 
-	mName = identifier;
-	
+	mVoidPointer = new VoidPointer(this, NxOgreClass_Character);
+
+	// (TODO) Pass on voidpointer to controllers here.
 	if (params.mControllerType == CharacterParams::CT_NXACTOR) {
-		mController = new NxActorController(pose, params.mControllerCollisionShape, scene->getNxScene());
+		mController = NxNew(NxActorController)(pose, params.mControllerCollisionShape, scene, mVoidPointer);
 	}
 #if (NX_USE_CHARACTER_API == 1)
-	else if (params.mControllerType == CharacterParams::CT_NXCONTROLLER) {
-		mController = new NxCharacterController(pose, params.mControllerCollisionShape, scene->getNxScene());
-
+	else if (params.mControllerType == CharacterParams::CT_KINEMATIC) {
+		mController = NxNew(KinematicCharacter)(pose, params.mControllerCollisionShape, scene, mVoidPointer);
 	}
 #endif
 	else {
-		mController = character_controller;
+		mController = params.mControllerPtr;
+		NxWatch(CharacterController, mController);
 	}
 
+	// Watch Model and set the garbage collection mode.
+	NxWatch(CharacterModel, mModel);
+	mModel->setGC();
+
+	// Current movement model to default.
+	mCurrentMovement = mModel->mDefaultMovementModel;
+
+	// Reset all movemenet models to this.
+	for (CharacterMovementModel* model = mModel->mMovementModels.begin(); model = mModel->mMovementModels.next();) {
+		model->reset(this);
+	}
+
+	mCurrentMovement->enter(0, mController->getPose());
+
+	mOwner->_registerCharacter(mName, this);
 }
 
 /////////////////////////////////////////////////////////////
 
 Character::~Character() {
 
+	mOwner->_unregisterCharacter(mName);
+
+	mCurrentMovement->exit();
+
+	// Delete bleh bleh here.
+	if (mModel->mDeletionPolicy == GC_Delete)
+		NxDelete(mModel);
+
+
+	delete mController;
+	delete mVoidPointer;
+
 }
 
 /////////////////////////////////////////////////////////////
 
+void Character::simulate(const TimeStep& ts) {
+
+	mCurrentMovement->simulate(ts.Delta);
+
+	// get new movement vector
+	const NxVec3 movementVector = mCurrentMovement->getGlobalMovementVector(ts.Delta);
+
+	// get controller to move that vector.
+	mController->move(movementVector);
+
+	mCurrentMovement->setPose(mController->getPose());
+	mCurrentMovement->simulateAfter(ts.Delta);
+
 }
+
+/////////////////////////////////////////////////////////////
+
+void Character::forward() {
+	mCurrentMovement->forward();
+}
+
+/////////////////////////////////////////////////////////////
+
+void Character::backward() {
+	mCurrentMovement->backward();
+}
+
+/////////////////////////////////////////////////////////////
+
+void Character::left() {
+	mCurrentMovement->left();
+}
+
+/////////////////////////////////////////////////////////////
+
+void Character::right() {
+	mCurrentMovement->right();
+}
+
+/////////////////////////////////////////////////////////////
+
+void Character::up() {
+	mCurrentMovement->up();
+}
+
+/////////////////////////////////////////////////////////////
+
+void Character::down() {
+	mCurrentMovement->down();
+}
+
+/////////////////////////////////////////////////////////////
+
+}; // End of Character namespace.
+}; // End of NxOgre namespace.
 
 #endif

@@ -24,6 +24,93 @@
 #if (NX_USE_LEGACY_NXCONTROLLER == 0)
 
 #include "NxOgrePerformer.h"
+#include "NxOgreCharacter.h"
+#include "NxOgreDualIdentifier.h"
+#include "NxOgreOgreNodeRenderable.h"
+#include "NxOgreRenderable.h"
+#include "NxOgreRenderableSource.h"
+#include "NxOgreNodeRenderable.h"
+#include "NxOgreSceneRenderer.h"
+#include "NxOgreVoidPointer.h"
+#include "NxOgreScene.h"
+#include "NxOgreVoidPointer.h"
+#include "NxOgreHelpers.h"
+#include "NxOgreCharacterController.h"
 
+namespace NxOgre {
+namespace CharacterSystem {
+
+/////////////////////////////////////////////////////////////////////
+
+Performer::Performer(const VisualIdentifier& identifier, const Pose& pose, CharacterModel* model, const CharacterParams& params, Scene* scene)
+: Character(identifier.getIdentifier(), pose, model, params, scene)
+{
+
+	NodeRenderableParams visualParams;
+	visualParams.setToDefault();
+	visualParams.mIdentifier = mName;
+	visualParams.mIdentifierUsage = NodeRenderableParams::IU_Create;
+	visualParams.mIntent = getStringType();
+
+	NxString visualIdentifier = identifier.getVisualIdentifier();
+
+	if (NxStringStartsWith(visualIdentifier, "(reference)")) {
+		NxString graphicsModel = NxStringSubstr(visualIdentifier, 11);
+		NxStringTrim(graphicsModel);
+		visualParams.mGraphicsModel = graphicsModel;
+		visualParams.mGraphicsModelType = NodeRenderableParams::GMU_Reference;
+	}
+	else {
+		visualParams.mGraphicsModel = visualIdentifier;
+		visualParams.mGraphicsModelType = NodeRenderableParams::GMU_Resource;
+	}
+
+	setRenderMode(RM_Absolute);
+	mRenderable = mOwner->getSceneRenderer()->createNodeRenderable(visualParams);
+	mNodeRenderable = static_cast<NodeRenderable*>(mRenderable);
+	mVoidPointer->RenderPtr = this;
+
+	mOwner->getSceneRenderer()->registerSource(this);
+
+}
+
+/////////////////////////////////////////////////////////////////////
+
+Performer::Performer(const NxString& identifier, const Pose& pose, CharacterModel* model, const CharacterParams& params, const NodeRenderableParams& visualParams, Scene* scene)
+: Character(identifier, pose, model, params, scene)
+{
+	
+	setRenderMode(RM_Absolute);
+
+	mRenderable = mOwner->getSceneRenderer()->createNodeRenderable(visualParams);
+	mNodeRenderable = static_cast<NodeRenderable*>(mRenderable);
+	mVoidPointer->RenderPtr = this;
+
+	mOwner->getSceneRenderer()->registerSource(this);
+}
+
+/////////////////////////////////////////////////////////////////////
+
+Performer::~Performer() {
+
+	mOwner->getSceneRenderer()->unregisterSource(this);
+
+	if (mRenderable) {
+		delete mRenderable;
+		mRenderable = 0;
+	}
+
+}
+
+/////////////////////////////////////////////////////////////////////
+
+Pose Performer::getSourcePose(const TimeStep&) const {
+	return Pose(mController->getPose());
+}
+
+/////////////////////////////////////////////////////////////////////
+
+}; // End of CharacterSystem namespace.
+}; // End of NxOgre namespace.
 
 #endif

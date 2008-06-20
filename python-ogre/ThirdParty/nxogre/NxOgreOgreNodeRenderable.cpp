@@ -1,6 +1,6 @@
 /** \file    NxOgreOgreNodeRenderable.cpp
  *  \see     NxOgreOgreNodeRenderable.h
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -47,21 +47,20 @@ OgreNodeRenderable::OgreNodeRenderable(NodeRenderableParams params, OgreSceneRen
 	mSceneMgr = renderer->getSceneMgr();
 	mOgreRenderer = renderer;
 
-	if (params.IdentifierType == params.IT_USE) {
-		mNode = renderer->getSceneMgr()->getSceneNode(params.Identifier);
+	if (params.mIdentifierUsage == NodeRenderableParams::IU_Use) {
+		mNode = renderer->getSceneMgr()->getSceneNode(params.mIdentifier);
 		return;
 	}
 
 	Ogre::SceneNode* entityNode = 0;
 
-	__createNode(params.Identifier, params.GraphicsModelPose);
+	__createNode(params.mIdentifier, params.mGraphicsModelPose);
 
 	if (mNode == 0)
 		return;
 
-	if (params.GraphicsModelOffset.isZero() == false ) {
-
-		__createOffsetNode(params.Identifier + "-offset", params.GraphicsModelOffset);
+	if (!params.mGraphicsModelOffset.isIdentity()) {
+		__createOffsetNode(params.mIdentifier + "-offset", params.mGraphicsModelOffset);
 
 		if (mOffsetNode)
 			entityNode = mOffsetNode;
@@ -70,28 +69,28 @@ OgreNodeRenderable::OgreNodeRenderable(NodeRenderableParams params, OgreSceneRen
 		entityNode = mNode;
 	}
 
-	if (params.GraphicsModel.size() >= 1 && entityNode) {
+	if (params.mGraphicsModel.size() && entityNode) {
 
 		Ogre::Entity* e = 0;
 
-		if (params.GraphicsModelType == params.GMT_EXISTING_REFERENCE)
-			e = __getEntity(params.GraphicsModel, false);
+		if (params.mGraphicsModelType == NodeRenderableParams::GMU_Reference)
+			e = __getEntity(params.mGraphicsModel, false);
 		else
-			e = __getEntity(mNode->getName() + "-entity", true, params.GraphicsModel);
+			e = __getEntity(mNode->getName() + "-entity", true, params.mGraphicsModel);
 
 		if (e)
 			entityNode->attachObject(e);
 
-		if (params.GraphicsModelMaterial.size()) {
-			e->setMaterialName(params.GraphicsModelMaterial);
+		if (params.mGraphicsModelMaterial.size()) {
+			e->setMaterialName(params.mGraphicsModelMaterial);
 		}
 	}
 
-	if (params.GraphicsModelScale != NxVec3(1,1,1))
-		mNode->scale(NxConvert<Ogre::Vector3, NxVec3>(params.GraphicsModelScale));
+	if (params.mGraphicsModelScale != NxVec3(1,1,1))
+		mNode->scale(NxConvert<Ogre::Vector3, NxVec3>(params.mGraphicsModelScale));
 
 
-	mKnownScale = params.GraphicsModelScale;
+	mKnownScale = params.mGraphicsModelScale;
 
 
 }
@@ -199,18 +198,37 @@ Pose OgreNodeRenderable::getPose() const {
 
 void OgreNodeRenderable::setMaterial(const NxString& materialIdentifier) {
 	
-	Ogre::SceneNode::ObjectIterator object_it = mNode->getAttachedObjectIterator();
-	Ogre::MovableObject *m;
-	
-	while(object_it.hasMoreElements()) {
+	if (mNode) {
+
+		Ogre::SceneNode::ObjectIterator object_it = mNode->getAttachedObjectIterator();
+		Ogre::MovableObject *m;
 		
-		m = object_it.getNext();
-		
-		if (m->getMovableType() == "Entity") {
-			Ogre::Entity* ent = static_cast<Ogre::Entity*>(m);
-			ent->setMaterialName(materialIdentifier);
+		while(object_it.hasMoreElements()) {
+			
+			m = object_it.getNext();
+
+			if (m->getMovableType() == "Entity") {
+				Ogre::Entity* ent = static_cast<Ogre::Entity*>(m);
+				ent->setMaterialName(materialIdentifier);
+			}
+			
 		}
+	}
+	
+	if (mOffsetNode) {
+
+		Ogre::SceneNode::ObjectIterator object_it = mOffsetNode->getAttachedObjectIterator();
+		Ogre::MovableObject *m;
 		
+		while(object_it.hasMoreElements()) {
+			
+			m = object_it.getNext();
+			if (m->getMovableType() == "Entity") {
+				Ogre::Entity* ent = static_cast<Ogre::Entity*>(m);
+				ent->setMaterialName(materialIdentifier);
+			}
+			
+		}
 	}
 
 }
@@ -238,6 +256,12 @@ NxString OgreNodeRenderable::getMaterial() const {
 
 /////////////////////////////////////////////////////////////////////
 
+void OgreNodeRenderable::setScale(const float3& val) {
+	mNode->scale(val.i, val.j, val.k);
+}
+
+/////////////////////////////////////////////////////////////////////
+
 void OgreNodeRenderable::setScale(const Ogre::Vector3& val) {
 	mNode->scale(val);
 }
@@ -250,7 +274,7 @@ void OgreNodeRenderable::setScale(const NxVec3& val) {
 
 /////////////////////////////////////////////////////////////////////
 
-Ogre::Vector3 OgreNodeRenderable::getScale() const {
+Ogre::Vector3 OgreNodeRenderable::getScaleAsOgreVector3() const {
 	return mNode->getScale();
 }
 
@@ -258,6 +282,13 @@ Ogre::Vector3 OgreNodeRenderable::getScale() const {
 
 NxVec3 OgreNodeRenderable::getScaleAsNxVec3() const {
 	return NxConvert<NxVec3, Ogre::Vector3>(mNode->getScale());
+}
+
+/////////////////////////////////////////////////////////////////////
+
+float3 OgreNodeRenderable::getScaleAsFloat3() const {
+	Ogre::Vector3 scale = mNode->getScale();
+	return float3(scale.x, scale.y, scale.z);
 }
 
 /////////////////////////////////////////////////////////////////////

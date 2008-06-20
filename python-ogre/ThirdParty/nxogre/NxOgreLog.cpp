@@ -1,6 +1,6 @@
 /** \file    NxOgreLog.cpp
  *  \see     NxOgreLog.h
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -24,7 +24,8 @@
 #include "NxOgreError.h"				// For: Log inherits ErrorReporter
 #include "NxOgrePhysXDriver.h"			// For: World Access
 #include "NxOgreWorld.h"				// For: World->Shutodwn
-#include "NxOgreFileResourceStream.h"
+#include "NxOgreResourceSystem.h"
+#include "NxOgreResource.h"
 #include "NxOgreHelpers.h"
 
 #if (NX_USE_OGRE == 1)
@@ -45,13 +46,7 @@ Log::~Log() {}
 
 void Log::startReporting() {
 
-	std::cout << "START REPORTING" << std::endl;
-
-	// This is naughty. This should be done via a ResourceStreamPtr, but most likely the
-	// resource system hasn't been started yet, so we have no choice.
-
-	mStream = new FileResourceStream("file://NxOgre." + getFileExtension() + " +write");
-
+	mStream = Resources::ResourceSystem::getSingleton()->get("file://NxOgre."  + getFileExtension(), Resources::RA_Write);
 	createHeader();
 
 }
@@ -80,6 +75,7 @@ HTMLLog::~HTMLLog() {}
 
 void HTMLLog::createHeader() {
 
+#ifndef NX_SMALL
 	static const char hdr1[166] = {
 	60, 33, 68, 79, 67, 84, 89, 80, 69, 32, 104, 116, 109, 108, 32, 80, 85, 66, 76, 73, 67, 
 	32, 34, 45, 47, 47, 87, 51, 67, 47, 47, 68, 84, 68, 32, 88, 72, 84, 77, 76, 32, 49, 
@@ -91,9 +87,13 @@ void HTMLLog::createHeader() {
 	57, 57, 57, 47, 120, 104, 116, 109, 108, 34, 62, 13, 10, 60, 104, 101, 97, 100, 62 };
 
 	mStream->write(hdr1, 166);
-	
-	mStream->writeString("\n\t<title>Log of " Nx_Version_Full "</title>\n"); 
 
+	mStream->writeString("\n\t<title>Log of " Nx_Version_Full "</title>\n"); 
+#else
+	mStream->writeString("<pre>Log of " Nx_Version_Full "\n</pre>");
+#endif
+
+#ifndef NX_SMALL
 	createCSSStyle();
 
 	char hdr2[37] = {
@@ -127,6 +127,7 @@ void HTMLLog::createHeader() {
 	};
 
 	mStream->write(hdr3, 377);
+#endif
 
 }
 
@@ -134,6 +135,7 @@ void HTMLLog::createHeader() {
 
 void HTMLLog::createCSSStyle() {
 
+#ifndef NX_SMALL
 	static const char css[3829] = {
 	9, 9, 9, 60, 115, 116, 121, 108, 101, 62, 13, 10, 9, 9, 9, 9, 98, 111, 100, 121, 32, 
 	123, 98, 97, 99, 107, 103, 114, 111, 117, 110, 100, 58, 35, 49, 50, 49, 50, 49, 50, 59, 99, 
@@ -321,13 +323,17 @@ void HTMLLog::createCSSStyle() {
 	};
 
 	mStream->write(css, 3829);
+#endif
 
 }
 
 /////////////////////////////////////////////////////////////
 
 void HTMLLog::report(const ErrorReport& report) {
-	
+
+	NxPrint(report.mMessage);
+
+#ifndef NX_SMALL
 	const char* report_type_str;
 
 	switch (report.mType) {
@@ -343,22 +349,40 @@ void HTMLLog::report(const ErrorReport& report) {
 	int strSize = sprintf(str, "<div class=\"log %s\"><h2>%s</h2><p>%s</p></div>", report_type_str, report.mSource, formatted_message.c_str());
 	mStream->write(str, strSize);
 	delete [] str;
+#else
+
+	char* str = new char[8 + strlen(report.mSource) + strlen(report.mMessage)];
+	int strSize = sprintf(str, "--> %s\n\n%s\n", report.mSource, report.mMessage);
+	mStream->write(str, strSize);
+	delete [] str;
+
+#endif
 
 }
 
 /////////////////////////////////////////////////////////////
 
 void HTMLLog::createFooter() {
+
+#ifndef NX_SMALL
 	mStream->writeString("\n<div><em>Done</em>.</div>\n</body>\n</html>");
+#else
+	mStream->writeString("</pre");
+#endif
+
 }
 
 /////////////////////////////////////////////////////////////
 
 void HTMLLog::formatAsHTML(NxString& str) {
+
+#ifndef NX_SMALL
 	NxStringFindAndReplace(str, "<", "&lt;");
 	NxStringFindAndReplace(str, ">", "&gt;");
 	NxStringFindAndReplace(str, "\n", "<br />");
 	NxStringFindAndReplace(str, "\t", "<span style=\"padding-left:1em\"></span>");
+#endif
+
 }
 
 /////////////////////////////////////////////////////////////

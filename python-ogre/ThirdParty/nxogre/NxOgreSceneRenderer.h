@@ -31,9 +31,17 @@
 #include "NxOgreMeshRenderable.h"			// For: MeshRenderableParams
 
 namespace NxOgre {
-	
+
 	//////////////////////////////////////////////////////////////////////////////
-		
+
+	class NxPublicClass RenderEvent {
+		public:
+			NxReal Delta;
+			NxReal Accumulated;
+	};
+
+	//////////////////////////////////////////////////////////////////////////////
+
 	class NxPublicClass Renderables {
 			
 		public:
@@ -54,7 +62,7 @@ namespace NxOgre {
 			
 			SceneRenderer(Scene*, NxString rendererUserData);
 			virtual ~SceneRenderer();
-			void render();
+			void render(const TimeStep&);
 
 			void registerSource(RenderableSource*);
 			void unregisterSource(RenderableSource*);
@@ -77,11 +85,8 @@ namespace NxOgre {
 			void setAccuracy(RenderAccuracy);
 
 			virtual NodeRenderable* createNodeRenderable(NodeRenderableParams) = 0;
-			virtual MeshRenderable* createMeshRenderable(MeshRenderableParams, DynamicMesh*) = 0;
+			virtual MeshRenderable* createMeshRenderable(MeshRenderableParams, Resources::Mesh*) = 0;
 
-			virtual void renderAll();
-			virtual void renderNxTransform(NxActiveTransform* transform, NxU32 nbActors);
-			virtual void renderSources();
 
 			virtual void setCustom(const NxString& identifier, void* ptr) = 0;
 			virtual void setCustom(const NxString& identifier, const NxString& value) = 0;
@@ -117,13 +122,9 @@ namespace NxOgre {
 				return NULL;
 			}
 
-			MeshRenderable* createMeshRenderable(MeshRenderableParams, DynamicMesh*) {
+			MeshRenderable* createMeshRenderable(MeshRenderableParams, Resources::Mesh*) {
 				return NULL;
 			}
-
-			void renderAll() {}
-			void renderNxTransform(Actors*, Characters*) {}
-			void renderSources() {}
 			
 			void setCustom(const NxString& identifier, void* ptr) {}
 			void setCustom(const NxString& identifier, const NxString& value) {}

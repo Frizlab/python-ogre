@@ -1,6 +1,6 @@
 /** \file    NxOgreTrigger.cpp
  *  \see     NxOgreTrigger.h
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -25,7 +25,7 @@
 #include "NxOgreSimpleActor.h"
 #include "NxOgreScene.h"
 #include "NxOgreSimpleShape.h"
-#include "NxOgreUserData.h"
+#include "NxOgreVoidPointer.h"
 
 namespace NxOgre {
 
@@ -45,7 +45,7 @@ Trigger::Trigger(SimpleShape* shape, TriggerContactCallback* callback, Scene* sc
 			SimpleBox* sb = shape->getAsBox();
 			NxBoxShapeDesc shape_description;
 			shape_description.setToDefault();
-			shape_description.dimensions  = sb->getDimensions();
+			shape_description.dimensions  = sb->getDimensionsAsNxVec3();
 			shape_description.shapeFlags |= NX_TRIGGER_ENABLE;
 
 			actor_description.globalPose = sb->getPose();
@@ -84,7 +84,7 @@ Trigger::Trigger(SimpleShape* shape, TriggerContactCallback* callback, Scene* sc
 
 	delete shape;
 
-	mUserData = new NxUserData(this, NxUserData::T_Trigger);
+	mUserData = new VoidPointer(this, NxOgreClass_Trigger);
 	actor_description.userData = mUserData;
 
 	mActor = scene->getNxScene()->createActor(actor_description);

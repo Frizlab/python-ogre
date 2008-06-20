@@ -1,6 +1,6 @@
 /** \file    NxOgreRenderableSource.cpp
  *  \see     NxOgreRenderableSource.h
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -22,33 +22,102 @@
 #include "NxOgreStable.h"
 #include "NxOgreRenderableSource.h"
 #include "NxOgreRenderable.h"
+#include "NxOgreHelpers.h"
 
 namespace NxOgre {
 
-//////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
+
+void RenderableSource::setRenderMode(RenderMode rm) {
+	
+	reset();
+
+	mRenderMode = rm;
+
+	switch (rm) {
+
+		default:
+		case RM_Absolute:
+			{
+				mRenderFunction = &RenderableSource::render_Absolute;
+			}
+		break;
+		
+		case RM_Interpolate:
+			{
+				mRenderFunction = &RenderableSource::render_Interpolate;
+			}
+		break;
+
+	};
+
+}
+
+/////////////////////////////////////////////////////////////
+
+void RenderableSource::setCustomRenderMode(RenderFunctionPtr func) {
+	mRenderMode = RM_Custom;
+	mRenderFunction = func;
+}
+
+/////////////////////////////////////////////////////////////
+
+void RenderableSource::setRenderable(Renderable* renderable) {
+	mRenderable = renderable;
+}
+
+/////////////////////////////////////////////////////////////
 
 Renderable* RenderableSource::getRenderable() {
 	return mRenderable;
 }
 
-//////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
-NxString	RenderableSource::getRenderableType() {
+NxString RenderableSource::getRenderableType() const {
+	if (mRenderable == 0)
+		return "Unknown";
 	return mRenderable->getType();
 }
 
-//////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
 NxShortHashIdentifier RenderableSource::getRenderableTypeHash() {
+	if (mRenderable == 0)
+		return 0;
 	return mRenderable->getHashType();
 }
 
-//////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////
 
-void	RenderableSource::setRenderable(Renderable* r) {
-	if (mRenderable)
-		delete mRenderable;
-	mRenderable = r;
+void RenderableSource::render(const TimeStep& ts) {
+	(this->*mRenderFunction)(ts);
 }
+
+/////////////////////////////////////////////////////////////
+
+void RenderableSource::render_Absolute(const TimeStep& ts) {
+	mRenderPose = getSourcePose(ts);
+	mRenderable->setPose(mRenderPose);
+}
+
+/////////////////////////////////////////////////////////////
+
+void RenderableSource::render_Interpolate(const TimeStep& ts) {
+	Pose sourcePose = getSourcePose(ts);
+	mRenderPose = NxInterpolate(mAlphaPose, sourcePose, ts.Alpha);
+	mRenderable->setPose(mRenderPose);
+	mAlphaPose = sourcePose; /// \note May be mRenderPose, need to check with Luis.
+
+}
+
+/////////////////////////////////////////////////////////////
+
+void RenderableSource::reset() {
+	mRenderPose.id();
+	mAlphaPose.id();
+}
+
+/////////////////////////////////////////////////////////////
 
 }; //End of NxOgre namespace.

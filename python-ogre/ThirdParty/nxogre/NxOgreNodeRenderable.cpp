@@ -1,6 +1,6 @@
 /** \file    NxOgreNodeRenderable.cpp
  *  \see     NxOgreNodeRenderable.h
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -24,6 +24,7 @@
 #include "NxOgreScene.h"
 #include "NxOgrePose.h"
 #include "NxOgreHelpers.h"
+#include "NxOgreRenderableSource.h"
 
 namespace NxOgre {
 
@@ -31,14 +32,15 @@ namespace NxOgre {
 
 void NodeRenderableParams::setToDefault() {
 
-	Identifier              = NxString();
-	IdentifierType          = IT_CREATE;
-	GraphicsModel           = NxString();
-	GraphicsModelType       = GMT_RESOURCE_IDENTIFIER;
-	GraphicsModelScale      = NxVec3(1,1,1);
-	GraphicsModelPose       = Pose();
-	GraphicsModelOffset     = Pose();
-	GraphicsModelMaterial   = NxString();
+	mMode                   = RenderableSource::RM_Absolute;
+	mIdentifier             = NxString();
+	mIdentifierUsage        = IU_Create;
+	mGraphicsModel          = NxString();
+	mGraphicsModelType      = GMU_Resource;
+	mGraphicsModelScale     = NxVec3(1,1,1);
+	mGraphicsModelPose      = Pose();
+	mGraphicsModelOffset    = Pose();
+	mGraphicsModelMaterial  = NxString();
 
 }
 
@@ -50,23 +52,23 @@ void NodeRenderableParams::parse(Parameters params) {
 
 	for (Parameter* parameter = params.Begin(); parameter = params.Next();) {
 
-		if (Set("identifier", parameter, Identifier)) continue;
+		if (Set("identifier", parameter, mIdentifier)) continue;
 
 		if (parameter->i == "identifier-type") {
 			
 			if (parameter->j.substr(0,1) == "c" || parameter->j.substr(0,1) == "C") {
-				IdentifierType = IT_CREATE;
+				mIdentifierUsage = IU_Create;
 			}
 			else if (parameter->j.substr(0,1) == "r" || parameter->j.substr(0,1) == "R") {
-				IdentifierType = IT_USE;
+				mIdentifierUsage = IU_Use;
 			}
 			else {
-				IdentifierType = IT_CREATE;
+				mIdentifierUsage = IU_Create;
 			}
 
 		}
 
-		if (Set("model", parameter, GraphicsModel)) continue;
+		if (Set("model", parameter, mGraphicsModel)) continue;
 
 		if (parameter->i == "model-type") {
 			
@@ -74,26 +76,26 @@ void NodeRenderableParams::parse(Parameters params) {
 			NxStringToLower(mt);
 
 			if (mt == "resource") {
-				GraphicsModelType = GMT_RESOURCE_IDENTIFIER;
+				mGraphicsModelType = GMU_Resource;
 			}
 			else if (mt == "file") {
-				GraphicsModelType = GMT_FILE;
+				mGraphicsModelType = GMU_File;
 			}
 			else if (mt == "reference"){
-				GraphicsModelType = GMT_EXISTING_REFERENCE;
+				mGraphicsModelType = GMU_Reference;
 			}
 			else {
-				GraphicsModelType = GMT_RESOURCE_IDENTIFIER;
+				mGraphicsModelType = GMU_Resource;
 			}
 
 		}
 
-		if (Set("scale", parameter, GraphicsModelScale)) continue;
-		if (Set("position", parameter, GraphicsModelPose.m.t)) continue;
-		if (Set("orientation", parameter, GraphicsModelPose.m.M)) continue;
-		if (Set("offset-position", parameter, GraphicsModelOffset.m.t)) continue;
-		if (Set("offset-orientation", parameter, GraphicsModelOffset.m.M)) continue;
-		if (Set("material", parameter, GraphicsModelMaterial)) continue;
+		if (Set("scale", parameter, mGraphicsModelScale)) continue;
+		if (Set("position", parameter, mGraphicsModelPose.m.t)) continue;
+		if (Set("orientation", parameter, mGraphicsModelPose.m.M)) continue;
+		if (Set("offset-position", parameter, mGraphicsModelOffset.m.t)) continue;
+		if (Set("offset-orientation", parameter, mGraphicsModelOffset.m.M)) continue;
+		if (Set("material", parameter, mGraphicsModelMaterial)) continue;
 
 	}
 
@@ -101,8 +103,7 @@ void NodeRenderableParams::parse(Parameters params) {
 
 //////////////////////////////////////////////////////////
 
-NodeRenderable::NodeRenderable(NodeRenderableParams, SceneRenderer* r)
-	: Renderable(r)
+NodeRenderable::NodeRenderable(const NodeRenderableParams&, SceneRenderer* r) : Renderable(r)
 {}
 
 //////////////////////////////////////////////////////////

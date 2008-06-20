@@ -130,8 +130,12 @@ namespace NxOgre {
 				m.id();
 			}
 
-			bool isZero() {
+			inline bool isZero() const {
 				return (m.M.isZero() && m.t.isZero());
+			}
+
+			inline bool isIdentity() const {
+				return (m.isIdentity());
 			}
 
 			Pose& operator=(const Pose& pose) {

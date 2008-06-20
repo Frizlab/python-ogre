@@ -1,6 +1,6 @@
 /** \file    NxOgreOgreMeshRenderable.h
  *  \brief   Header for the OgreMeshRenderable class.
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -31,7 +31,9 @@
 namespace NxOgre {
 
 	// "OgreMeshRenderable"
-	#define NxHashes_OgreMeshRenderable 51360
+	enum {
+		NxOgreClass_OgreMeshRenderable = 51360
+	};
 
 	/** \brief Ogre Mesh representive of DynamicMesh, with an optional SceneNode/Entity
 			   combination.
@@ -43,9 +45,9 @@ namespace NxOgre {
 		public:
 
 			NxString getType() {return "Ogre-MeshRenderable";}
-			NxShortHashIdentifier getHashType() const {return NxHashes_OgreMeshRenderable;}
+			NxShortHashIdentifier getHashType() const {return NxOgreClass_OgreMeshRenderable;}
 		
-			OgreMeshRenderable(MeshRenderableParams, DynamicMesh*, OgreSceneRenderer*);
+			OgreMeshRenderable(MeshRenderableParams, Resources::Mesh*, OgreSceneRenderer*);
 			~OgreMeshRenderable();
 
 			enum VertexElements{

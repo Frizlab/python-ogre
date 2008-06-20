@@ -21,8 +21,11 @@
 
 #include "NxOgreStable.h"
 #include "NxOgreCloth.h"
+
+#if 0
+
 #include "NxOgreScene.h"				// For Cloth::mOwner
-#include "NxOgreDynamicMesh.h"			// For Dynamic Cloth Mesh
+///#include "NxOgreDynamicMesh.h"			// For Dynamic Cloth Mesh
 #include "NxOgreResourceManager.h"		// For Dynamic Cloth fetching
 
 namespace NxOgre {
@@ -187,3 +190,5 @@ void Cloth::destroyCloth() {
 } //End of NxOgre namespace.
 
 ////#endif
+
+#endif

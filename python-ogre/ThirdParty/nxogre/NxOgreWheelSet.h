@@ -19,75 +19,145 @@
  *           Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#if 0
 
 #ifndef __NXOGRE_WHEELSET_H__
 #define __NXOGRE_WHEELSET_H__
 
 #include "NxOgrePrerequisites.h"
-#include "NxOgreMachine.h"
-#include "NxOgreContainer.h"
-#include "NxOgreShape.h"
-#include "NxOgreShapeBlueprintWheel.h"
-#include "NxOgreNodeRenderable.h"
+#include "BetajaenCC.h"                // For: WheelSet stores Wheel pointers in the WheelSet
+#include "NxOgreShapeWheel.h"          // For: WheelSet use Betajaen::SharedMap, which requires Wheel
+#include "NxOgreMachine.h"             // For: WheelSet inherits from Machine
 
 namespace NxOgre {
 	
 	//////////////////////////////////////////////////////////////////////////////////////
 	
 	class NxPublicClass WheelSet : public Machine {
-		
+
 		public:
-			
-			NxString getIdentifierType() {return "NxOgre-WheelSet";}
-			NxShortHashIdentifier getIdentifierTypeHash() const {return 24166;}
-			
-			enum WheelIdentifier {
-				FRONT			= 0,
-				FRONT_LEFT		= 1,
-				FRONT_RIGHT		= 2,
-				BACK			= 3,
-				BACK_LEFT		= 4,
-				BACK_RIGHT		= 5,
-				MIDDLE_LEFT		= 6,
-				MIDDLE_RIGHT	= 7
+
+			class ExtendedWheel {
+
+				public:
+
+					ExtendedWheel();
+					~ExtendedWheel();
+
+					/** \brief Set's the Wheels motor torque regardless of Wheel function.
+					*/
+					void  setMotorTorque(NxReal torque);
+
+					/** \brief Set's the Wheels braking torque regardless of Wheel function.
+					*/
+					void  setBrakingTorque(NxReal torque);
+
+					/** \brief Engine function to ALL Driving Wheels
+					*/
+					void  drive(NxReal torque);
+					
+					/** \brief Transmission function to ALL Braking Wheels
+					*/
+					void  brake(NxReal torque);
+
+					/** \brief Transmission function to ALL Steering wheels.
+					*/
+					void  steer(NxRadian angle);
+					
+					Wheel* mWheel;
+
+					void  set(bool drive, bool steer, bool brake);
+
+					bool  mIsDriving;
+					bool  mIsSteering;
+					bool  mIsBraking;
+
 			};
-			
-			static WheelSet* createFourWheelSet(
-				Actor*,
-				const Ogre::Vector3& frontLeft,
-				const Ogre::Vector3& backLeft,
-				NxReal wheelRadius = 0.5f,
-				ShapeParams shape_params = ShapeParams(),
-				WheelParams wheel_params = "use-params:normal",
-				NodeRenderableParams left_wheels = NodeRenderableParams(),
-				NodeRenderableParams right_wheels = NodeRenderableParams(),
-				NxDirection forwardDirection = NX_DIRECTION_X
+
+			enum SimpleWheelIdentifier {
+				FrontLeft = 0,
+				FL = 0,
+				FrontRight = 1,
+				FR = 1,
+				RearLeft = 2,
+				RL = 2,
+				RearRight = 3,
+				RR = 3
+			};
+
+			enum TransmissionLayout {
+				TL_Front,
+				TL_Rear,
+				TL_Four
+			};
+
+			void setAs(TransmissionLayout);
+
+			static WheelSet*  createFourWheelSet(
+					NxReal radius,
+					float3 forward_left,
+					float3 backward_right,
+					Actor*, 
+					WheelParams
+				);
+
+			static WheelSet*  createFourWheelSet(
+					NxReal radius,
+					float3 forward_left,
+					float3 backward_right,
+					Actor*, 
+					WheelParams,
+					NodeRenderableParams
 			);
+
+			static WheelSet*  createFourWheelSet(
+					NxReal radius,
+					float3 forward_left,
+					float3 backward_right,
+					Actor*,
+					WheelParams,
+					NodeRenderableParams left_wheels,
+					NodeRenderableParams right_wheels
+			);
+
+			void  simulate(const TimeStep&);
+
+			Wheel* get(SimpleWheelIdentifier);
+			Wheel* get(unsigned int);
+
+			/** \brief Set Motor Torque to ALL wheels.
+			*/
+			void  setMotorTorque(NxReal);
+
+			/** \brief Set Braking Torque to ALL Wheels.
+			*/
+			void  setBrakingTorque(NxReal);
+
+
+			/** \brief Engine function to ALL Driving Wheels
+			*/
+			void  drive(NxReal torque);
 			
-			void simulate(NxReal deltaTime);
-			
-			void turn(NxRadian);
-			void turn(const Ogre::Radian&);
-			
-			void setMotorTorque(NxReal motorTorqueValue);
-			void setBrakeTorque(NxReal brakeTorqueValue);
-			
-			Wheels				mWheels;
-			Wheels				mDrive;
-			Wheels				mSteering;
-			CombustionEngine*	mEngine;
-			
+			/** \brief Transmission function to ALL Braking Wheels
+			*/
+			void  brake(NxReal torque);
+
+			/** \brief Transmission function to ALL Steering wheels.
+			*/
+			void  steer(NxRadian angle);
+
+			WheelSet::ExtendedWheel*  createWheel(unsigned int identifier, NxReal radius, float3 position, Actor*, WheelParams);
+			WheelSet::ExtendedWheel*  createWheel(unsigned int identifier, NxReal radius, float3 position, Actor*, WheelParams, NodeRenderableParams);
+
 		protected:
-			
-			WheelSet(Actor*);
+
+			WheelSet();
 			~WheelSet();
 
-			Actor* mActor;
-		
-	};
+			Betajaen::SharedMap<unsigned int, ExtendedWheel>  mWheels;
+
+	}; // End of WheelSet class.
 	
 	
-};
-#endif
+}; // End of NxOgre namespace.
+
 #endif

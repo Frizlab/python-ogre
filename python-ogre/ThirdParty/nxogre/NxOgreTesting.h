@@ -24,6 +24,9 @@
 #define __NXOGRE_TESTING_H__
 
 #include "NxOgrePrerequisites.h"
+
+#if 0
+
 #include "NxOgreContainer.h"
 
 namespace NxOgre {
@@ -147,4 +150,5 @@ namespace NxOgre {
 
 };
 
+#endif
 #endif

@@ -22,20 +22,5 @@
 #include "NxOgreStable.h"
 
 #if (NX_USE_LEGACY_NXCONTROLLER == 0)
-
-#include "NxOgreCharacterModel.h"
-
-namespace NxOgre {
-
-/////////////////////////////////////////////////////////////
-
-CharacterModel::CharacterModel(bool isShared, bool isOwned) {
-	mShared = isShared;
-	mOwned = isOwned;
-}
-
-/////////////////////////////////////////////////////////////
-
-}
-
+#  include "NxOgreCharacterModel.h"
 #endif

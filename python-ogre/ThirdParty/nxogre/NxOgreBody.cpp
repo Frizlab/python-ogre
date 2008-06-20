@@ -1,6 +1,6 @@
 /** \file    NxOgreBody.cpp
  *  \see     NxOgreBody.h
- *  \version 1.0-20
+ *  \version 1.0-21
  *
  *  \licence NxOgre a wrapper for the PhysX physics library.
  *           Copyright (C) 2005-8 Robin Southern of NxOgre.org http://www.nxogre.org
@@ -25,86 +25,69 @@
 #include "NxOgrePose.h"			// For: conversions
 #include "NxOgreHelpers.h"		// For: conversions
 #include "NxOgreScene.h"		// For: Actor::mOwner
-#include "NxOgreShapeBlueprint.h"
 #include "NxOgreContainer.h"
 #include "NxOgreOgreNodeRenderable.h"
 #include "NxOgreRenderable.h"
 #include "NxOgreRenderableSource.h"
 #include "NxOgreNodeRenderable.h"
 #include "NxOgreSceneRenderer.h"
-#include "NxOgreUserData.h"
+#include "NxOgreVoidPointer.h"
 #include "NxOgreHelpers.h"
 
 namespace NxOgre {
 
 //////////////////////////////////////////////////////////
 
-Body::Body(const NxString& name, Scene* scene) : Actor(name, scene) {
-	
-}
-
-//////////////////////////////////////////////////////////
-
-Body::Body(const NxString& identifier, Scene* scene, Shape *firstShapeDescription, const Pose& pose, ActorParams params)
-:	Actor(identifier, scene, firstShapeDescription, pose, params)
+Body::Body(const VisualIdentifier& identifier, Scene* scene, Shape *firstShapeDescription,
+		   const Pose& pose, const ActorParams& params)
+:	Actor(identifier.getIdentifier(), scene, firstShapeDescription, pose, params)
 	
 {
 
 	NodeRenderableParams visualParams;
 	visualParams.setToDefault();
-	visualParams.Identifier = mName;
-	visualParams.IdentifierType = visualParams.IT_CREATE;
-	visualParams.Intent = getStringType();
+	visualParams.mIdentifier = mName;
+	visualParams.mIdentifierUsage = NodeRenderableParams::IU_Create;
+	visualParams.mIntent = getStringType();
 
-	std::vector<NxString> splitID = Ogre::StringUtil::split(identifier, ";", 2);
-
-	NxString visualIdentifier;
-
-	if (splitID.size() == 1) {
-		visualIdentifier = identifier;
-	}
-	else {
-		visualIdentifier = splitID[1];
-	}
-
-	Ogre::StringUtil::trim(visualIdentifier);
-
-	if (Ogre::StringUtil::startsWith(visualIdentifier, "(reference)")) {
-		NxString entityName = visualIdentifier.substr(11, entityName.length() - 11);
-		Ogre::StringUtil::trim(entityName);
-		visualParams.GraphicsModel = entityName;
-		visualParams.GraphicsModelType = visualParams.GMT_EXISTING_REFERENCE;
-	}
-	else {
-		visualParams.GraphicsModel = visualIdentifier;
-		visualParams.GraphicsModelType = visualParams.GMT_RESOURCE_IDENTIFIER;
-	}
-
-	setLevelOfDetail(LOD_High);
-	setInterpolation(I_Absolute);
-	mRenderable = mOwner->getSceneRenderer()->createNodeRenderable(visualParams);
-	mNodeRenderable = static_cast<NodeRenderable*>(mRenderable);
-	mNxUserData->RenderPtr = this;
-	mDeltaPose = mLastPose = getGlobalPose();
+	NxString visualIdentifier = identifier.getVisualIdentifier();
 
 	
+	if (NxStringStartsWith(visualIdentifier, "(reference)")) {
+		// (TODO) (Less STL references) Make a function for.
+		NxString entityName = visualIdentifier.substr(11, entityName.length() - 11);
+		NxStringTrim(entityName);
+		visualParams.mGraphicsModel = entityName;
+		visualParams.mGraphicsModelType = NodeRenderableParams::GMU_Reference;
+	}
+	else {
+		visualParams.mGraphicsModel = visualIdentifier;
+		visualParams.mGraphicsModelType = NodeRenderableParams::GMU_Resource;
+	}
+
+
+	setRenderMode(visualParams.mMode);
+
+	mRenderable = mOwner->getSceneRenderer()->createNodeRenderable(visualParams);
+	mNodeRenderable = static_cast<NodeRenderable*>(mRenderable);
+	mVoidPointer->RenderPtr = this;
+
 	mOwner->getSceneRenderer()->registerSource(this);
 
 }
 
-Body::Body(const NxString& identifier, Scene* scene, Shape *firstShapeDescription, const Pose& pose, NodeRenderableParams visualParams, ActorParams params)
-:	Actor(identifier, scene, firstShapeDescription, pose, params)
+//////////////////////////////////////////////////////////
+
+Body::Body(const NxString& identifier, Scene* scene, Shape *firstShapeDescription,
+		   const Pose& pose, const NodeRenderableParams& visualParams, const ActorParams& params)
+: Actor(identifier, scene, firstShapeDescription, pose, params)
 {
 
-	if (visualParams.Intent.size() == 0)
-		visualParams.Intent = getStringType();
+	setRenderMode(visualParams.mMode);
 
-	setLevelOfDetail(LOD_High);
-	setInterpolation(I_Absolute);
-	mLastPoseCount = 0;
 	mRenderable = mOwner->getSceneRenderer()->createNodeRenderable(visualParams);
 	mNodeRenderable = static_cast<NodeRenderable*>(mRenderable);
-	mNxUserData->RenderPtr = this;
+	mVoidPointer->RenderPtr = this;
 	
 
 	mOwner->getSceneRenderer()->registerSource(this);
@@ -126,309 +109,8 @@ Body::~Body() {
 
 //////////////////////////////////////////////////////////
 
-void Body::__renderSelf() {
-
-	switch (mInterpolation) {
-
-		case I_Absolute:
-			{
-				mDeltaPose = getGlobalPose();
-				mRenderable->setPose(mDeltaPose);
-				mLastPose = mDeltaPose;
-			}
-		break;
-
-		case I_Linear:
-			{
-				Pose blended_pose = NxInterpolate(mLastPose, getGlobalPose(), mOwner->getLastAlphaValue());
-				mLastPose = getGlobalPose();
-				mRenderable->setPose(blended_pose);
-			}
-		break;
-
-		case I_Linear_x4:
-			{
-				mLastPoseCount++;
-
-				if (mLastPoseCount == 4) {
-					
-					mDeltaPose = getGlobalPose();
-
-					if (mDeltaPose.m.t != mLastPose.m.t) {
-						mDeltaPose = NxInterpolate(mDeltaPose, mLastPose);
-						mLastPose = getGlobalPose();
-						mLastPoseCount = 0;
-					}
-					else {
-						mLastPoseCount--;
-						mDeltaPose = mLastPose;
-					}
-
-				}
-				
-				mRenderable->setPose(mDeltaPose);
-			}
-		break;
-
-		case I_Linear_x8:
-			{
-				mLastPoseCount++;
-
-				if (mLastPoseCount == 8) {
-					
-					mDeltaPose = getGlobalPose();
-
-					if (mDeltaPose.m.t != mLastPose.m.t) {
-						mDeltaPose = NxInterpolate(mDeltaPose, mLastPose);
-						mLastPose = getGlobalPose();
-						mLastPoseCount = 0;
-					}
-					else {
-						mLastPoseCount--;
-						mDeltaPose = mLastPose;
-					}
-
-				}
-				
-				mRenderable->setPose(mDeltaPose);
-			}
-		break;
-	}
-
-}
-
-//////////////////////////////////////////////////////////
-
-#if 0
-void Body::renderTo(const Pose& pose) {
-	mNode->setPosition(pose);
-	mNode->setOrientation(pose);
-}
-#endif
-
-//////////////////////////////////////////////////////////
-
-
-/*
-void Body::render(float dT) {
-
-#if (NX_UNSTABLE_USE_SCENE_ACTIVE_TRANSFORM == 1)
-#if (NX_UNSTABLE_ACCUMULATOR == 1)
-   
-	#define alpha dT
-
-	assert ( alpha >= 0.0f && alpha <= 1.0f );
-
-	NxMat34 nm = mActor->getGlobalPose();
-	NxVec3 destPos = nm.t;
-	NxQuat destOri = nm.M;
-
-	NxVec3 renderPos = mPreviousPosition * ( 1.0f - alpha ) + destPos * alpha;
-	NxQuat renderOri;
-	renderOri.slerp( alpha , mPreviousOrientation, destOri );
-	
-	mNode->setPosition( NxConvert<Ogre::Vector3, NxVec3>(renderPos) );
-	mNode->setOrientation( NxConvert<Ogre::Quaternion, NxQuat>(renderOri) );
-
-	mPreviousPosition = destPos;
-	mPreviousOrientation = destOri;
-
-	shapeRender(0.0f); 
-
-#else
-	
-	NxMat34 nm = mActor->getGlobalPose();
-	NxVec3 nv(nm.t);
-	NxQuat nq(nm.M);
-	mNode->setPosition(nv.x, nv.y, nv.z);
-	mNode->setOrientation(nq.w,nq.x,nq.y,nq.z);
-	shapeRender(0);
-
-#endif
-
-#else
-	if (mActor && mNode) {
-		mNode->setPosition(getGlobalPosition());
-		mNode->setOrientation(getGlobalOrientation());
-		shapeRender(dT);
-	}	
-#endif
-
-}
-*/
-#if 0
-//////////////////////////////////////////////////////////
-
-void Body::setNode(Ogre::SceneNode* node) {
-	mNode = node;
-}
-
-//////////////////////////////////////////////////////////
-
-void Body::setEntity(Ogre::Entity* entity) {
-	mEntity = entity;
-}
-
-//////////////////////////////////////////////////////////
-//
-// Based of the work from http://www.ogre3d.org/wiki/index.php/DumpingNodeTree
-//
-
-void DumpNodes(StringPairList &l, Ogre::Node *n, int level,int nid) {
-
-	Ogre::SceneNode::ObjectIterator object_it = ((Ogre::SceneNode *)n)->getAttachedObjectIterator();
-	Ogre::Node::ChildNodeIterator node_it = n->getChildIterator();
-	
-	Ogre::MovableObject *m;
-	Ogre::Entity *e;
-
-	if (level != 0) {
-		l.insert(
-			"Node" + 
-			Ogre::StringConverter::toString(nid) + 
-			"-Position", 
-			Ogre::StringConverter::toString(n->getPosition()));
-	}
-	
-	int i=0;
-	while(object_it.hasMoreElements()) {
-		
-		m = object_it.getNext();
-		
-		if (m->getMovableType() == "Entity") {
-			e = static_cast<Ogre::Entity*>(m);
-			NxString entitySuffix = "";
-			
-			
-			if (i > 0)
-				entitySuffix = Ogre::StringConverter::toString(i);
-				
-			if (level == 0) {
-				l.insert("Entity" + entitySuffix, e->getMesh()->getName());
-			}
-			
-			else {
-				l.insert(
-						"Node" + 
-						Ogre::StringConverter::toString(nid) +
-						"-Entity" +
-						entitySuffix,
-						e->getMesh()->getName()
-					);
-			}
-		}
-		i++;
-	}
-
-	while(node_it.hasMoreElements()) {
-		DumpNodes(l, node_it.getNext(), level + 1, nid++);
-	}
-
-}
-
-//////////////////////////////////////////////////////////
-
-StringPairList Body::saveCustom() {
-	
-	StringPairList l;
-	l.insert("ActorType", "Body");
-
-	if (mNode == 0)
-		return l;
-
-	if (mNode->numChildren() > 0) {
-		DumpNodes(l, mNode, 0, 1);
-	}
-	else {
-		Ogre::Entity* entity = static_cast<Ogre::Entity*>(mNode->getAttachedObject(0));
-		l.insert("Entity", entity->getMesh()->getName());
-	}
-	
-	return l;
-}
-
-//////////////////////////////////////////////////////////
-
-void	Body::restoreCustom(StringPairList spl) {
-
-	mNode = mOwner->getSceneManager()->getRootSceneNode()->createChildSceneNode();
-
-	for (StringPairList::StringPair sp = spl.begin();spl.hasNext();) {
-		sp = spl.next();
-/*
-		std::stringstream ss;
-		ss << sp.first;
-		ss << " => ";
-		ss << sp.second;
-		ss << std::endl;
-
-		NxDebug(ss.str());
-*/
-		NxString key = sp.first;
-		Ogre::StringUtil::toLowerCase(key);
-
-		if (key == "entity" || key == "node") {
-
-			Ogre::Entity* entity = mOwner->getSceneManager()->createEntity(
-				mName + "-" + sp.second + "-" + Ogre::StringConverter::toString(mNode->numAttachedObjects()), 
-				sp.second
-			);
-
-			mNode->attachObject(entity);
-
-		}
-
-		if (key == "node-scale") {
-			mNode->setScale(Ogre::StringConverter::parseVector3(sp.second));
-		}
-
-	}
-
-	// Assign first Attached Object that is an entity to mEntity
-
-	Ogre::SceneNode::ObjectIterator object_it = mNode->getAttachedObjectIterator();
-	Ogre::MovableObject *m;
-	while(object_it.hasMoreElements()) {
-		m = object_it.getNext();
-		if (m->getMovableType() == "Entity") {
-			mEntity = (Ogre::Entity*) m;
-			break;
-		}
-	}
-
-	mNode->setPosition(getGlobalPosition());
-	mNode->setOrientation(getGlobalOrientation());
-
-}
-
-//////////////////////////////////////////////////////////
-
-void Body::disableVisualisation() {
-
-	if (mNode->getParent() != NULL) {
-		mNode->getParent()->removeChild(mNode);
-	}
-
-}
-
-//////////////////////////////////////////////////////////
-
-#endif 
-
-
-
-StringPairList Body::saveCustom() {
-	
-	// Temp
-	StringPairList l;
-	return l;
-}
-
-//////////////////////////////////////////////////////////
-
-void	Body::restoreCustom(StringPairList spl) {
-
-	// TEMP
+Pose Body::getSourcePose(const TimeStep&) const {
+	return getGlobalPose();
 }
 
 //////////////////////////////////////////////////////////
