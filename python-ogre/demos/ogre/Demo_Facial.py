@@ -63,7 +63,7 @@ class TutorialApplication(SampleFramework.Application):
         self.animationStates.append( anim)
 
         # Create Camera
-        self.camnode = sceneManager.RootSceneNode.createChildSceneNode("CamNode1", ogre.Vector3(0, 25, 90))
+        self.camnode = sceneManager.getRootSceneNode().createChildSceneNode("CamNode1", ogre.Vector3(0, 25, 90))
         node = self.camnode.createChildSceneNode("PitchNode1")
         node.attachObject(self.camera)
 

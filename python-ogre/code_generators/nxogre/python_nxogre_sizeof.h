@@ -27,7 +27,7 @@ sizeof ( NxUserAllocator );
 sizeof ( NxHeightField  );
 sizeof ( NxUserContactReport );
 //sizeof ( NxOgre::FluidDrain );
-sizeof ( NxImplicitScreenMesh  );
+// sizeof ( NxImplicitScreenMesh  );
 sizeof ( NxMemoryType );
 sizeof ( NxJointState );
 sizeof ( NxBounds3 );

@@ -86,9 +86,14 @@ class ExampleLoadingBar (ogre.ResourceGroupListener):
             self.mLoadingDescriptionElement.setCaption(ogre.UTFString("Parsing scripts.."))
             self.mWindow.update()
     
-    def scriptParseStarted(self, scriptName):
-        self.mLoadingCommentElement.setCaption(ogre.UTFString(scriptName))
-        self.mWindow.update()
+    if ogre.OgreVersionString[:2] == "12":
+        def scriptParseStarted(self, scriptName):
+            self.mLoadingCommentElement.setCaption(ogre.UTFString(scriptName))
+            self.mWindow.update()
+    else:            
+        def scriptParseStarted(self, scriptName, skipThisScript):
+            self.mLoadingCommentElement.setCaption(ogre.UTFString(scriptName))
+            self.mWindow.update()
 
     if ogre.OgreVersionString[:2] == "12":
         def scriptParseEnded(self):
@@ -96,7 +101,7 @@ class ExampleLoadingBar (ogre.ResourceGroupListener):
                 self.mLoadingBarElement.getWidth() + self.mProgressBarInc)
             self.mWindow.update()
     else:
-        def scriptParseEnded(self, scriptName):
+        def scriptParseEnded(self, scriptName, skipped):
             self.mLoadingBarElement.setWidth(
                 self.mLoadingBarElement.getWidth() + self.mProgressBarInc)
             self.mWindow.update()

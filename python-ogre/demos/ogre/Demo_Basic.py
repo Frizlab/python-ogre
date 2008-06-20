@@ -19,7 +19,7 @@ import ogre.renderer.OGRE as ogre
 import ogre.io.OIS as OIS 
 
 class OGREMain(ogre.Root):
-    def __init__(self, plugins_path='src/plugins.cfg',resource_path='resources.cfg'):
+    def __init__(self, plugins_path='plugins.cfg',resource_path='resources.cfg'):
        ogre.Root.__init__(self, plugins_path)
        self.plugins_path = plugins_path
        self.resource_path = resource_path
@@ -55,22 +55,23 @@ class OGREMain(ogre.Root):
         for ren in rend_list:
             print ren.getName()
             cap = ren.getCapabilities()
-            print "MaxPointSize:", cap.getMaxPointSize()
-            print "Stencil stuff:", cap.getStencilBufferBitDepth()
-            opts = ren.getConfigOptions()
-            print "Opts:", opts
-            print "Opts keys:",opts.keys()
-            for i in opts:
-                print "Key:",i.key
-                print i.value.currentValue
-                print i.value.name
-                print i.value.immutable
-                for v in i.value.possibleValues:
-                    print "Posible Value", v
-                
-            print dir(opts)
-            print "Opts", opts['Video Mode']
-            print"Viewo Mode:",  ren.getConfigOptions()['Video Mode']
+            if cap:
+                print "MaxPointSize:", cap.getMaxPointSize()
+                print "Stencil stuff:", cap.getStencilBufferBitDepth()
+                opts = ren.getConfigOptions()
+                print "Opts:", opts
+                print "Opts keys:",opts.keys()
+                for i in opts:
+                    print "Key:",i.key
+                    print i.value.currentValue
+                    print i.value.name
+                    print i.value.immutable
+                    for v in i.value.possibleValues:
+                        print "Posible Value", v
+                    
+                print dir(opts)
+                print "Opts", opts['Video Mode']
+                print"Viewo Mode:",  ren.getConfigOptions()['Video Mode']
         self.setRenderSystem(rend_list[-1])
 
     def _build_scene(self):

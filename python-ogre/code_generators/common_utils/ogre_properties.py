@@ -64,8 +64,11 @@ class ogre_property_recognizer_t( decl_wrappers.name_based_recognizer_t ):
             
     def create_read_only_property( self, fget ):
         found = self.find_out_ro_prefixes( fget.name )
+#         print "Prop Check", fget.name, ' ',
         if found in ( None, '' ):
+#             print "NO"
             return None
+#         print "YES"            
         ## Now we need to look for overlapping function declarations
         pure_names = []
         pure_names.append( fget.name[len( found ):].lower())

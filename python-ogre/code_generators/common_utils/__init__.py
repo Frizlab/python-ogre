@@ -156,7 +156,7 @@ def remove_DuplicateProperties ( cls ):
     if duplicate:
         for k in unique.keys():  
             if len ( unique[k] ) > 1  :
-#                 print "DUPLICATE FOUND: ", cls, len ( unique[k] )
+                print "DUPLICATE FOUND: ", cls, len ( unique[k] )
                 for p in unique[k]:
 #                     print "   Checking", p.name, p.fget, p.fset
                     prefered = p

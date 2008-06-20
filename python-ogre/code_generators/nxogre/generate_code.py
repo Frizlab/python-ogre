@@ -52,13 +52,13 @@ def docit ( general, i, o ):
 def ManualExclude ( mb ):
     global_ns = mb.global_ns
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
-    return
-    
+   
     
     for c in main_ns.classes():
         if c.decl_string.startswith('::NxOgre::Container<') and '*' not in c.decl_string:
             print "EXCLUDING: ", c
             c.exclude()
+        
         
         ### Now some of the functions need to be excluded.. This is too much and could be cut back
         ### ie only some of the containers lists fail at compile time
@@ -70,10 +70,21 @@ def ManualExclude ( mb ):
                     print "EXCLUDING: ", c, f
                 except:
                     pass
+                    
+        funlist = ['begin','get','getFirst','next','copyTo','_begin','_next']
+        if c.decl_string.startswith('::NxOgre::Container<'):
+            for f in funlist:
+                try:
+                    c.member_functions(f).exclude()
+                    print "EXCLUDING: ", c, f
+                except:
+                    pass
+                    
         for v in c.variables(allow_empty=True):
             if v.access_type !=  'public' :
                 v.exclude()
                 print "excluded", v, v.access_type
+               
     for t in main_ns.typedefs():
         if t.decl_string.startswith('::NxOgre::Container<') and '*' not in t.decl_string:
             t.exclude()
@@ -85,28 +96,19 @@ def ManualExclude ( mb ):
         for m in c.member_functions(allow_empty=True):
             for e in excludes:
                 if e in m.decl_string:
+                    print "EXCLUDING: ", m
                     m.exclude()
         
     # problem with a constructor on Cloth   
-    main_ns.class_('::NxOgre::Cloth').constructor(arg_types=[None,'::NxClothDesc','::NxMeshData',None,None]).exclude()
+#     main_ns.class_('::NxOgre::Cloth').constructor(arg_types=[None,'::NxClothDesc','::NxMeshData',None,None]).exclude()
     
     # functions specified in the headers but not implemented
-    main_ns.class_('::NxOgre::Blueprints::ActorBlueprint').member_function('unserialise',arg_types=[None]).exclude()
+#     main_ns.class_('::NxOgre::Blueprints::ActorBlueprint').member_function('unserialise',arg_types=[None]).exclude()
     
     
 # # #         
 # # #     ### Member Functions
-    excludes=[
-            '::NxOgre::Container<std::string, NxOgre::FluidDrain*>::begin'
-            ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::get'
-            ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::getFirst'
-            ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::next'
-            ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::_begin'
-            ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::_next'
-            ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::_begin'
-            ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::_next'
-            ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::getFirst'
-            ,'::NxOgre::List<NxOgre::RemoteDebuggerConnection::Camera>::destroyAndEraseAll'
+    excludes=['::NxOgre::List<NxOgre::RemoteDebuggerConnection::Camera>::destroyAndEraseAll'
             ,'::NxOgre::List<NxOgre::RemoteDebuggerConnection::Camera>::dumpToConsole'
             ,'::NxOgre::UserAllocator::realloc'
             ,'::NxOgre::Cloth::duplicate'
@@ -157,11 +159,31 @@ def ManualExclude ( mb ):
             ,'::NxOgre::OgreNodeRenderable::addSceneNode'
 #             ,'::NxOgre::ResourceStreamPtr::ResourceStreamPtr'
             ,'::NxOgre::MaterialAlias::generateConversionList'
+#             ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::begin'
+#             ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::get'
+#             ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::getFirst'
+#             ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::next'
+#             ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::_begin'
+#             ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::_next'
+#             ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::_begin'
+#             ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::_next'
+#             ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::getFirst'
+            
+            ,'::NxOgre::Actor::getCompartment'
+            ,'::NxOgre::Shape::getSkeleton'
+#             ,'::NxOgre::Container< std::string, NxOgre::Cloth* >::begin'
+#             ,'::NxOgre::Container< std::string, NxOgre::Cloth* >::get'
+#             ,'::NxOgre::Container< std::string, NxOgre::Cloth* >::getFirst'
+#             ,'::NxOgre::Container< std::string, NxOgre::Cloth* >::next'
+#             ,'::NxOgre::Container< std::string, NxOgre::Cloth* >::CopyTo'
             
             ]
     for e in excludes:
         print "excluding ", e
-# # #         main_ns.member_functions(e).exclude()
+        try:
+            main_ns.member_functions(e).exclude()
+        except:
+            print "FAIL TO EXCLUDE"            
  
     ## this is probably excessive :)
     names = ['_begin','_end', '_atEnd', '_next']
@@ -185,15 +207,20 @@ def ManualExclude ( mb ):
                ,'Character'         ## defined in header but not very much implementation
 #                ,'RenderableSource'
                ,'ResourceManager'
+               ,'::NxOgre::Container< std::string, NxConvexMesh* >' # issue with deleting protected classes
 #                ,'ResourceStreamPtr'
-               ,'::NxOgre::Blueprints::ActorFactory'
-               ,'State'
-               ,'MeshResource'
-               ,'::NxOgre::Serialiser::SerialiserBase'
+#                ,'::NxOgre::Blueprints::ActorFactory'
+#                ,'State'
+#                ,'MeshResource'
+#                ,'::NxOgre::Serialiser::SerialiserBase'
+#                ,'BlueprintUserData'
                 ]
     for e in excludes:
         print "Excluding", e
-# #         main_ns.class_(e).exclude()
+        try:
+            main_ns.class_(e).exclude()
+        except:
+            print "FAILED"
 # # #     
 # # #         
     ## I have a challenge that Py++ doesn't recognise these classes by full name (perhaps because they are structs?)
@@ -210,7 +237,10 @@ def ManualExclude ( mb ):
         print ("Checking:",c.name)
         if c.name in excludeName:
             print ("SPECIAL excluding ", c.name)
-# #             c.exclude()
+            try:
+                c.exclude()
+            except:
+                print "FAILED"                
         # a temporary fix for container based classes -- still an issue with them though...
         # AND this is an overkill -- not all classes need these removed...
 # #         if c.decl_string.startswith ('::NxOgre::Container<'):
@@ -230,11 +260,23 @@ def ManualExclude ( mb ):
     for e in excludes:
         main_ns.typedefs(e).exclude()
         
-    ### Operators        
+    ### Operators   
+    for o in main_ns.operators():
+        if o.decl_string.startswith('::NxOgre::Container<'):
+            if o.decl_string.endswith('[]'):
+                print "Excluding Operator: ", o
+                o.exclude()     
     excludes=['::NxOgre::Container<std::string, NxOgre::FluidDrain*>::operator[]'
-            ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::operator[]']
-#     for e in excludes:
-#         main_ns.operators(e).exclude()
+            ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::operator[]'
+            ,'::NxOgre::Container< std::string, NxOgre::Cloth* >::operator[]'
+            ,'::NxOgre::Container< std::string, NxOgre::Fluid* >::operator[]'
+            ]
+    for e in excludes:
+        print "Excluding operator:", e
+        try:
+            main_ns.operators(e).exclude()
+        except:
+            print "FAILED"            
 #         
     ### Constructors
 # #     for c in main_ns.class_('::NxOgre::Pose').constructors():  ## these hide the working constructors
