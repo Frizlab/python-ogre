@@ -955,7 +955,7 @@ class quickgui:
 class navi:
     active = True
     pythonModule = True
-    version="1.5"
+    version="1.6"
     parent="ogre/gui"
     name ='navi'
     CCFLAGS = '-D"WIN32" -D"NDEBUG", -D"WINDOWS"' 
@@ -964,15 +964,15 @@ class navi:
     include_dirs = [ Config.PATH_Boost
                     ,Config.PATH_INCLUDE_Ogre
                     ,Config.PATH_INCLUDE_navi
-                    ,os.path.join(Config.PATH_navi,'..','Dependencies','win32','llmozlib','include')
+                    ,os.path.join(Config.PATH_navi,'..','Dependencies','win32','astral','include')
                     ]
     lib_dirs = [Config.PATH_LIB_Boost,
                 Config.PATH_LIB_Ogre_OgreMain
                 ,Config.PATH_LIB_navi
-                ,os.path.join(Config.PATH_navi,'..','Dependencies','win32','llmozlib','lib')
+                ,os.path.join(Config.PATH_navi,'..','Dependencies','win32','astral','lib')
                 ]
     CheckIncludes=[]
-    libs=[  Config.LIB_Boost, 'Navi', 'OgreMain','llmozlib', 'user32',
+    libs=[  Config.LIB_Boost, 'Navi', 'OgreMain','Astral', 'user32',
             'kernel32.lib', 'gdi32.lib', 'winspool.lib', 'comdlg32.lib', 'advapi32.lib',
             'shell32.lib','ole32.lib','oleaut32.lib','uuid.lib' ]
     ModuleName="navi"   

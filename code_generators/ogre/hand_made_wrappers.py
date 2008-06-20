@@ -365,6 +365,22 @@ GetPythonOgreVersion () {
                                                 "\"" + environment.PythonOgrePatchVersion + "\""
                                                 ) );
 }
+## Duplicating to get lower case 'get'
+boost::python::tuple 
+getOgreVersion () {
+            return ( boost::python::make_tuple( Ogre::StringConverter::toString(OGRE_VERSION_MAJOR),
+                                                Ogre::StringConverter::toString(OGRE_VERSION_MINOR),
+                                                Ogre::StringConverter::toString(OGRE_VERSION_PATCH),
+                                                OGRE_VERSION_NAME 
+                                                ) );
+}
+boost::python::tuple 
+getPythonOgreVersion () {
+            return ( boost::python::make_tuple( "\"" + environment.PythonOgreMajorVersion + "\"",
+                                                "\"" + environment.PythonOgreMinorVersion + "\"",
+                                                "\"" + environment.PythonOgrePatchVersion + "\""
+                                                ) );
+}
 
 
 Ogre::VertexData *

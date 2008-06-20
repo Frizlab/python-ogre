@@ -1,6 +1,12 @@
 typedef std::vector<NxOgre::Joint::LimitPlane,std::allocator<NxOgre::Joint::LimitPlane> > VectorJointLimitPlane;
 typedef std::vector<NxOgre::SimplePlane*,std::allocator<NxOgre::SimplePlane*> > VectorSimplePlane;
 
+typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::CharacterSystem::Character*>::Containee, std::less<std::string>, std::allocator<std::pair<std::string const, NxOgre::Container<std::string, NxOgre::CharacterSystem::Character*>::Containee> > >\
+    MapContainerCharacterSystemCharacter;
+typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::CharacterSystem::CharacterMovementModel*>::Containee, std::less<std::string>, std::allocator<std::pair<std::string const, NxOgre::Container<std::string, NxOgre::CharacterSystem::CharacterMovementModel*>::Containee> > >\
+    MapContainerCharacterSystemMovementModel;
+
+
 typedef std::vector<float, std::allocator<float> > VectorFloat;
 typedef std::vector<std::string, std::allocator<std::string> > VectorString;
 typedef std::list<std::string> stdString;

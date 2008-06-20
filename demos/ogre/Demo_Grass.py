@@ -101,14 +101,13 @@ class GrassListener ( sf.FrameListener ):
             ## a little randomness
             self.xpos += reg.getCentre().x * 0.001 
             self.zpos += reg.getCentre().z * 0.001 
-            offset.x = math.sin(self.xpos) * 0.05 
-            offset.z = math.sin(self.zpos) * 0.05 
+            offset.x = math.sin(self.xpos) * 5 
+            offset.z = math.sin(self.zpos) * 5 
             for lod in reg.getLODIterator(): 
                 for mat in lod.getMaterialIterator():  
                     for geom in mat.getGeometryIterator():
                         geom.setCustomParameter(OFFSET_PARAM, offset) 
 
-        
     def frameStarted( self, evt) :
         global mAnimState
         if sf.FrameListener.frameStarted(self, evt) == False:
@@ -396,11 +395,18 @@ class Grass_Application(sf.Application):
         ## Put an Ogre head in the middle
         m = ogre.MeshManager.getSingleton().load("ogrehead.mesh", 
            ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME) 
-           
-        ### Note the python version of suggestTangentVectorBuildParams!!
-        ret, src, dest = m.suggestTangentVectorBuildParams(ogre.VES_TANGENT)
-        if ( not ret):
-            m.buildTangentVectors(ogre.VES_TANGENT, src, dest) 
+        
+          
+        if ogre.GetPythonOgreVersion()[1] == '1' and int(ogre.GetPythonOgreVersion()[1]) < 2:   ## Python Ogre after 1.2 has API changes        
+            ### Note the python version of suggestTangentVectorBuildParams!!
+            ret, src, dest = m.suggestTangentVectorBuildParams(ogre.VES_TANGENT)
+            if ( not ret):
+                m.buildTangentVectors(ogre.VES_TANGENT, src, dest) 
+        else:   ## note the change for more recent version of Python-Ogre...                
+            ### Note the python version of suggestTangentVectorBuildParams!!
+            ret, src, dest = m.suggestTangentVectorBuildParams(ogre.VES_TANGENT,1,1)
+            if ( not ret):
+                m.buildTangentVectors(ogre.VES_TANGENT, src, dest) 
 
         e = self.sceneManager.createEntity("head", "ogrehead.mesh") 
         e.setMaterialName("Examples/OffsetMapping/Specular") 
@@ -408,10 +414,9 @@ class Grass_Application(sf.Application):
         headNode.attachObject(e) 
         headNode.setScale(7,7,7) 
         headNode.setPosition(0,200,0) 
-        e.setNormaliseNormals(True) 
+        headNode.yaw(ogre.Degree(15))
         self.camera.move(ogre.Vector3(0,350,0))
-        print "2" 
-
+	
     def _createFrameListener(self):
         self.frameListener = GrassListener(self.renderWindow, self.camera, self.sceneManager)
         self.root.addFrameListener(self.frameListener)

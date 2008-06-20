@@ -240,12 +240,12 @@ class FresnelApplication(sf.Application):
         self.planeEnt.setMaterialName("Examples/FresnelReflectionRefraction")
         
         
-        sceneManager.rootSceneNode.createChildSceneNode().attachObject(self.planeEnt)
+        sceneManager.getRootSceneNode().createChildSceneNode().attachObject(self.planeEnt)
         
         sceneManager.setSkyBox(True, "Examples/CloudyNoonSkyBox")
         
         #My node to which all objects will be attached
-        self.rootNode = sceneManager.rootSceneNode.createChildSceneNode()  
+        self.rootNode = sceneManager.getRootSceneNode().createChildSceneNode()  
                      
         # create above Water Entities
 # #         for entity_name in "head1 Pillar1 Pillar2 Pillar3 Pillar4 UpperSurround".split():
