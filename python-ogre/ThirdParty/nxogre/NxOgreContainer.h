@@ -337,7 +337,7 @@ namespace NxOgre {
 					return;
 
 				for (TT tt = begin(); tt = next();) {
-					NxDelete(tt);
+//					NxDelete(tt);  ## can't delete as new physx sdk has this protected..
 				}
 
 				/*
@@ -373,7 +373,7 @@ namespace NxOgre {
 
 
 				for(Iterator tt = mItems.begin();tt != mItems.end();) {
-					delete (*tt++).second.t;
+					//delete (*tt++).second.t;
 				}
 
 				empty();
