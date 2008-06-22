@@ -157,25 +157,34 @@ def ManualExclude ( mb ):
             ,'::NxOgre::WheelSet::turn'
             ,'::NxOgre::Material::setDirOfAnisotropy'
             ,'::NxOgre::OgreNodeRenderable::addSceneNode'
-#             ,'::NxOgre::ResourceStreamPtr::ResourceStreamPtr'
             ,'::NxOgre::MaterialAlias::generateConversionList'
-#             ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::begin'
-#             ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::get'
-#             ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::getFirst'
-#             ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::next'
-#             ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::_begin'
-#             ,'::NxOgre::Container<std::string, NxOgre::FluidDrain*>::_next'
-#             ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::_begin'
-#             ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::_next'
-#             ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::getFirst'
             
             ,'::NxOgre::Actor::getCompartment'
             ,'::NxOgre::Shape::getSkeleton'
-#             ,'::NxOgre::Container< std::string, NxOgre::Cloth* >::begin'
-#             ,'::NxOgre::Container< std::string, NxOgre::Cloth* >::get'
-#             ,'::NxOgre::Container< std::string, NxOgre::Cloth* >::getFirst'
-#             ,'::NxOgre::Container< std::string, NxOgre::Cloth* >::next'
-#             ,'::NxOgre::Container< std::string, NxOgre::Cloth* >::CopyTo'
+            ,'::NxOgre::Resources::ResourceSystem::getCookingInterface'
+            ,'::NxOgre::ContactCallbackController::registerSimpleCallback'
+            ,'::NxOgre::ContactCallbackController::registerGroupCallback'
+            ,'::NxOgre::ForceFieldFunction::Tornado'
+            ,'::NxOgre::ForceFieldFunction::Explosion'
+            ,'::NxOgre::Resources::Heightfield::getReferenceCount'
+            ,'::NxOgre::Resources::ManualHeightfield::isValid'
+            ,'::NxOgre::Resources::ManualHeightfield::isNotValidReasons'
+            ,'::NxOgre::Resources::ManualMesh::material'
+            ,'::NxOgre::Resources::ManualMesh::getMaterialAlias'
+            ,'::NxOgre::Resources::ManualMesh::addMaterialAlias'
+            ,'::NxOgre::Resources::ManualMesh::isNotValidReasons'
+            ,'::NxOgre::Resources::MaterialAlias::save'
+            ,'::NxOgre::Resources::MaterialAlias::load'
+            ,'::NxOgre::Resources::Mesh::getType'
+            ,'::NxOgre::Resources::Mesh::getReferenceCount'
+            ,'::NxOgre::Resources::ResourceSystem::getMaterialAlias'
+            ,'::NxOgre::Resources::ResourceSystem::destroyMesh'
+            ,'::NxOgre::Resources::ResourceSystem::clearMesh'
+            ,'::NxOgre::Resources::ResourceSystem::clearMaterialAlais'
+            ,'::NxOgre::Resources::ResourceSystem::addMaterialAlias'
+            ,'::NxOgre::WheelSet::setBrakingTorque'
+            
+          
             
             ]
     for e in excludes:
@@ -205,15 +214,14 @@ def ManualExclude ( mb ):
                'DistanceJoint'      ## constructor issue TOFIX
                ,'JointCallback'     ## also no suitable/defaul constructor TOFIX
                ,'Character'         ## defined in header but not very much implementation
-#                ,'RenderableSource'
                ,'ResourceManager'
                ,'::NxOgre::Container< std::string, NxConvexMesh* >' # issue with deleting protected classes
-#                ,'ResourceStreamPtr'
-#                ,'::NxOgre::Blueprints::ActorFactory'
-#                ,'State'
-#                ,'MeshResource'
-#                ,'::NxOgre::Serialiser::SerialiserBase'
-#                ,'BlueprintUserData'
+               ,'::NxOgre::Functions::Triggers::AddedGravity'
+               ,'::NxOgre::Resources::ManualMeshUtil'
+               ,'::NxOgre::Terrain::Terrain'
+               ,'::NxOgre::Functions::Triggers::NoGravity'
+               ,'::NxOgre::Functions::Triggers::ReplacementGravity'
+               ,'::NxOgre::Functions::Triggers::MoveToPosition'
                 ]
     for e in excludes:
         print "Excluding", e
@@ -249,10 +257,13 @@ def ManualExclude ( mb ):
 # #                     f.exclude()    
       
     ### Variables        
-    excludes = ['::NxOgre::WheelSet::mEngine'   # desctuctor in WheelSet is protected so can't wrap this..
+    excludes = [   ## '::NxOgre::WheelSet::mEngine'   # desctuctor in WheelSet is protected so can't wrap this..
+                '::NxOgre::Shape::mSkeleton'
+                ,'::NxOgre::ShapeParams::mCCDSkeleton'
+                ,'::NxOgre::WheelParams::mWheelContactCallback'
                 ]
-#     for e in excludes:
-#         main_ns.variable(e).exclude()
+    for e in excludes:
+        main_ns.variable(e).exclude()
         
     ### Typedefs    
     excludes = [
@@ -266,10 +277,13 @@ def ManualExclude ( mb ):
             if o.decl_string.endswith('[]'):
                 print "Excluding Operator: ", o
                 o.exclude()     
+            else:
+                print "Operator OK:",o                
     excludes=['::NxOgre::Container<std::string, NxOgre::FluidDrain*>::operator[]'
             ,'::NxOgre::Container<std::string, NxOgre::FluidEmitter*>::operator[]'
             ,'::NxOgre::Container< std::string, NxOgre::Cloth* >::operator[]'
             ,'::NxOgre::Container< std::string, NxOgre::Fluid* >::operator[]'
+            ,'::NxOgre::Container< std::string, NxOgre::SoftBody* >::operator[]'
             ]
     for e in excludes:
         print "Excluding operator:", e

@@ -218,6 +218,9 @@ def clear_str(_str):
     _str = clean(_str, "\\include", "Include: ")     ## nxPhysics
     _str = clean(_str, "\\image", "Image: ")     ## nxPhysics
     
+    _str = clean(_str, "\\examples", "Examples: ")     ## nxOgre
+    _str = clean(_str, "\\default", "Default: ")     ## nxOgre
+    
     
     ## now clean up the rest
     _str = reduce(clean, [_str, '/', '*', '!', "\\brief", '\\fn',

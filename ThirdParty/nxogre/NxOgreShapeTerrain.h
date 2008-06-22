@@ -154,31 +154,30 @@ namespace NxOgre {
 
 			/** \brief Terrain Constructor; loading a resource to use as a terrain.
 			*/
-			Terrain(const Resources::ResourceIdentifier&, float3 size, const ShapeParams& = ShapeParams(), const TerrainParams& = TerrainParams());
-
-			/** \brief Terrain Constructor; loading a resource to use as a terrain.
-			*/
-			Terrain(const Resources::ResourceIdentifier&, NxVec3 size, const ShapeParams& = ShapeParams(), const TerrainParams& = TerrainParams());
-
-#if (NX_USE_OGRE == 1)
-			/** \brief Terrain Constructor; loading a resource to use as a terrain.
-			*/
-			Terrain(const Resources::ResourceIdentifier&, Ogre::Vector3 size, const ShapeParams& = ShapeParams(), const TerrainParams& = TerrainParams());
-#endif
-
+// 			Terrain(const Resources::ResourceIdentifier&, float3 size, const ShapeParams& = ShapeParams(), const TerrainParams& = TerrainParams());
+// // 			/** \brief Terrain Constructor; loading a resource to use as a terrain.
+// // 			*/
+// // 			Terrain(const Resources::ResourceIdentifier&, NxVec3 size, const ShapeParams& = ShapeParams(), const TerrainParams& = TerrainParams());
+// // 
+// // #if (NX_USE_OGRE == 1)
+// // 			/** \brief Terrain Constructor; loading a resource to use as a terrain.
+// // 			*/
+// // 			Terrain(const Resources::ResourceIdentifier&, Ogre::Vector3 size, const ShapeParams& = ShapeParams(), const TerrainParams& = TerrainParams());
+// // #endif
+// // 
 			/** \brief Terrain Constructor; using a direct terrain
 			*/
 			Terrain(Resources::Heightfield*, float3 size, const ShapeParams& = ShapeParams(), const TerrainParams& = TerrainParams());
-
-			/** \brief Terrain Constructor; using a direct terrain
-			*/
-			Terrain(Resources::Heightfield*, NxVec3 size, const ShapeParams& = ShapeParams(), const TerrainParams& = TerrainParams());
-
-#if (NX_USE_OGRE == 1)
-			/** \brief Terrain Constructor; using a direct terrain
-			*/
-			Terrain(Resources::Heightfield*, Ogre::Vector3 size, const ShapeParams& = ShapeParams(), const TerrainParams& = TerrainParams());
-#endif
+// // 
+// // 			/** \brief Terrain Constructor; using a direct terrain
+// // 			*/
+// // 			Terrain(Resources::Heightfield*, NxVec3 size, const ShapeParams& = ShapeParams(), const TerrainParams& = TerrainParams());
+// // 
+// // #if (NX_USE_OGRE == 1)
+// // 			/** \brief Terrain Constructor; using a direct terrain
+// // 			*/
+// // 			Terrain(Resources::Heightfield*, Ogre::Vector3 size, const ShapeParams& = ShapeParams(), const TerrainParams& = TerrainParams());
+// // #endif
 
 			/** \brief Terrain destructor
 			*/
