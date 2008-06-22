@@ -972,7 +972,7 @@ class navi:
                 ,os.path.join(Config.PATH_navi,'..','Dependencies','win32','astral','lib')
                 ]
     CheckIncludes=[]
-    libs=[  Config.LIB_Boost, 'Navi', 'OgreMain','Astral', 'user32',
+    libs=[  Config.LIB_Boost, 'Navi_DLL', 'OgreMain','Astral', 'user32',
             'kernel32.lib', 'gdi32.lib', 'winspool.lib', 'comdlg32.lib', 'advapi32.lib',
             'shell32.lib','ole32.lib','oleaut32.lib','uuid.lib' ]
     ModuleName="navi"   
@@ -1071,7 +1071,7 @@ class nxogre:
     CheckIncludes=[]
 #     libs=[  Config.LIB_Boost, 'NxOgre','NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' ]
     if os.name =='nt':
-        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking',  'PhysXLoader','OgreMain' , 'NxOgreStatic'] #'NxExtensions',
+        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking',  'PhysXLoader','OgreMain' ] #, 'NxOgreStatic'] #'NxExtensions',
     else:
         libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'PhysXCore','PhysXLoader','OgreMain' ]
     ModuleName="NxOgre"   

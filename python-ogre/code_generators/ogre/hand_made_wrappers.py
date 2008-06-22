@@ -365,7 +365,7 @@ GetPythonOgreVersion () {
                                                 "\"" + environment.PythonOgrePatchVersion + "\""
                                                 ) );
 }
-## Duplicating to get lower case 'get'
+// Duplicating to get lower case 'get'
 boost::python::tuple 
 getOgreVersion () {
             return ( boost::python::make_tuple( Ogre::StringConverter::toString(OGRE_VERSION_MAJOR),
