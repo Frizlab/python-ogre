@@ -29,7 +29,7 @@ class TutorialApplication(SampleFramework.Application):
             
         sm.ambientLight = (1,1,1) 
         ent1 = sm.createEntity("Robot","robot.mesh") 
-        node1 = sm.rootSceneNode.createChildSceneNode("RobotNode") 
+        node1 = sm.getRootSceneNode().createChildSceneNode("RobotNode") 
         node1.lookAt ( ogre.Vector3(0,0,0), ogre.Node.TransformSpace.TS_LOCAL )
         node1.lookAt ( (0,0,0), ogre.Node.TransformSpace.TS_WORLD )
         

@@ -141,7 +141,7 @@ class FacialAnimationApplication(SampleFramework.Application):
         self.system.setDefaultFont("BlueHighway-12")
 
         # Load Layout 
-        sheet = cegui.WindowManager.getSingleton().loadWindowLayout("facial.layout")
+        sheet = cegui.WindowManager.getSingleton().loadWindowLayout("facial.layout", False)
         self.system.setGUISheet (sheet)
         sheet.enabled=True
 	
@@ -180,7 +180,7 @@ class FacialAnimationApplication(SampleFramework.Application):
         self.manualAnimState = head.getAnimationState("manual")
         self.manualAnimState.timePosition=0
 
-        headNode = sceneManager.rootSceneNode.createChildSceneNode()
+        headNode = sceneManager.getRootSceneNode().createChildSceneNode()
         headNode.attachObject(head)
 
         self.camera.setPosition( ogre.Vector3(-20, 50, 150) )
