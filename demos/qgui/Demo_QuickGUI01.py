@@ -185,9 +185,15 @@ class QuickGUIDemoApp (sf.Application):
         self.camera.setPosition(0,125,500)
         self.camera.pitch(Ogre.Radian(Ogre.Degree(-15)))
 # 
+
+
         ## Setup Render To Texture for preview window
-        self.rttTex = self.root.getRenderSystem().createRenderTexture( "self.rttTex",\
-                        512, 512, Ogre.TextureType.TEX_TYPE_2D, Ogre.PixelFormat.PF_R8G8B8 )
+        texture = Ogre.TextureManager.getSingleton().createManual( "RttTex", 
+                        Ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME, Ogre.TEX_TYPE_2D, 
+                        512, 512, 0, Ogre.PixelFormat.PF_R8G8B8, Ogre.TU_RENDERTARGET )
+        self.rttTex = texture.getBuffer().getRenderTarget()
+
+        
         ## From CEGUI example.  The camera position doesn't fit the robot setup, so I changed it some.
         rttCam = self.sceneManager.createCamera("RttCam")
         camNode = self.sceneManager.getRootSceneNode().createChildSceneNode("rttCamNode")
