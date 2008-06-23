@@ -159,6 +159,8 @@ PATH_INCLUDE_Bullet=        os.path.join(PATH_Bullet, 'src')
 PATH_INCLUDE_freetype=      os.path.join(PATH_INCLUDE_quickgui,'FreeType2.3.5')    
 PATH_INCLUDE_betagui =      PATH_betagui
 PATH_INCLUDE_Theora =       os.path.join (PATH_Theora,'include')
+PATH_INCLUDE_TheoraDemo =       os.path.join (PATH_Theora,'..', 'CEGUI_TheoraDemo','include')
+
 PATH_INCLUDE_ogrevideoffmpeg =  PATH_ogrevideoffmpeg
 PATH_INCLUDE_ffmpeg =       os.path.join (PATH_ffmpeg,'include')
 PATH_INCLUDE_ogredshow =    PATH_ogredshow

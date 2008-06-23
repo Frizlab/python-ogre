@@ -158,6 +158,8 @@ PATH_INCLUDE_NxOgre_09=        PATH_NxOgre_09
 PATH_INCLUDE_Bullet = 		os.path.join( PATH_Bullet, 'src')
 PATH_INCLUDE_betagui =       PATH_betagui
 PATH_INCLUDE_Theora =       os.path.join (PATH_Theora,'include')
+PATH_INCLUDE_TheoraDemo =       os.path.join (PATH_Theora,'..', 'CEGUI_TheoraDemo','include')
+
 PATH_INCLUDE_ogrevideoffmpeg =  PATH_ogrevideoffmpeg
 PATH_INCLUDE_ffmpeg =       os.path.join (PATH_ffmpeg,'include')
 PATH_INCLUDE_plib =         PATH_plib
