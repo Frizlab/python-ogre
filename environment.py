@@ -958,7 +958,7 @@ class navi:
     version="1.6"
     parent="ogre/gui"
     name ='navi'
-    CCFLAGS = '-D"WIN32" -D"NDEBUG", -D"WINDOWS"' 
+    CCFLAGS = '-D"WIN32" -D"NDEBUG", -D"WINDOWS", -D"_WIN32", -D"NAVI_DYNAMIC_LIB" ' 
     cflags=""
     base = 'navi'
     include_dirs = [ Config.PATH_Boost
@@ -1088,6 +1088,8 @@ class theora:
     include_dirs = [ Config.PATH_Boost,
                     Config.PATH_INCLUDE_Ogre,
                     Config.PATH_INCLUDE_Theora,
+                    Config.PATH_INCLUDE_TheoraDemo
+                    
                     ]
     for d in Config.PATH_INCLUDE_OggVorbisTheora:
         include_dirs.append( d )

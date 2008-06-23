@@ -52,6 +52,15 @@ def docit ( general, i, o ):
 def ManualExclude ( mb ):
     global_ns = mb.global_ns
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    
+    for c in main_ns.classes():
+        print "C:", c
+    for c in main_ns.member_functions():
+        print "F:", c
+    for c in main_ns.variables():
+        print "V:", c
+        
+#     sys.exit(-1)    
      
     # things not yet implemented in the C source..
     excludes=[]
@@ -62,13 +71,17 @@ def ManualExclude ( mb ):
                     m.exclude()
     
     ### Member Functions
-    excludes=[] ## '::NaviLibrary::Navi::bind' ]  ## has a default parameter of InlineVector which we can't create :(
-#     ['::NaviLibrary::NaviDataValue::isEmpty'
-#                ,'::NaviLibrary::NaviDataValue::isNumber' ## inline functions
-#          ]
+    excludes=[ '::NaviLibrary::Navi::navigateRefresh'
+               ,'::NaviLibrary::Singleton<class NaviLibrary::NaviManager>::instance'
+               ,'::NaviLibrary::Navi::bind' #needs inline vector class
+               ,'::NaviLibrary::Navi::evaluateJS'
+            ]
     for e in excludes:
         print "excluding ", e
-        main_ns.member_functions(e).exclude()
+        try:
+            main_ns.member_functions(e).exclude()
+        except:
+            print "FAILED.."            
     
         
     for c in main_ns.classes():
@@ -76,7 +89,7 @@ def ManualExclude ( mb ):
         if c.name.startswith ( "Inline" ):
             print "setting noncopyable on ", c
             c.noncopyable = True
-#             c.exclude() 
+            c.exclude() 
            
                 
     ### Free Functions
@@ -85,9 +98,14 @@ def ManualExclude ( mb ):
         main_ns.free_functions(e).exclude()
         
     ## Classes
-    excludes = [] ## '::NaviLibrary::NaviUtilities::InlineVector<std::string>'  ]
+    excludes = ['::NaviLibrary::Singleton<class NaviLibrary::NaviManager>'
+                ] ## '::NaviLibrary::NaviUtilities::InlineVector<std::string>'  ]
     for e in excludes:
-        main_ns.class_(e).exclude()
+        print "Excluding class:", e
+        try:
+            main_ns.class_(e).exclude()
+        except:
+            print "FAILED"            
     
         
     ## I have a challenge that Py++ doesn't recognise these classes by full name (perhaps because they are structs?)
@@ -103,7 +121,9 @@ def ManualExclude ( mb ):
 #     cls.variable("StaticFunction").exclude()
 #     
     
-    excludes = []# 'FastDelegate1::m_Closure']
+    excludes = ['::NaviLibrary::Singleton<NaviLibrary::NaviMouse>::instance'
+                ,'::NaviLibrary::Singleton<NaviLibrary::NaviManager>::instance'
+                ]
     for e in excludes:
         print "Excluding Var", e
         main_ns.variable(e).exclude()
@@ -448,8 +468,9 @@ def generate_code():
                         os.path.join( environment.navi.root_dir, "python_navi.h" )
                         , environment.navi.cache_file )
 
-    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', 'NAVI_NONCLIENT_BUILD', '__VECTOR_C']
-#     undefined_symbols = ['FASTDLGT_HASINHERITANCE_KEYWORDS']
+    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', 
+                    'NAVI_DYNAMIC_LIB', 
+                    '__VECTOR_C','_WIN32']
     
     if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')

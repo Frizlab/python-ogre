@@ -1,0 +1,91 @@
+
+--- ogre/configure.in	2007-05-15 22:43:31.000000000 +0800
++++ ogre/configure.in	2007-05-15 22:43:18.000000000 +0800
+@@ -59,6 +58,7 @@
+         ;;
+     esac
+     ])
++CFLAGS_VISIBILITY=""
+ AC_SUBST(CFLAGS_VISIBILITY)
+ AC_LANG_POP
+
+--- ogre/OgreMain/include/OgreDataStream.h	23 Aug 2006 08:18:33 -0000	1.12
++++ ogre/OgreMain/include/OgreDataStream.h	24 Nov 2007 00:35:47 -0000
+@@ -33,6 +33,7 @@
+ #include "OgreString.h"
+ #include "OgreSharedPtr.h"
+ #include <istream>
++#include <stdexcept>
+ 
+ namespace Ogre {
+ 
+@@ -79,7 +80,7 @@
+ 		@param count Number of bytes to read
+ 		@returns The number of bytes read
+ 		*/
+-		virtual size_t read(void* buf, size_t count) = 0;
++		virtual size_t read(void* buf, size_t count) { throw std::runtime_error ( std::string ("Virtual function DataStream::read called!") ); }
+ 		/** Get a single line from the stream.
+ 		@remarks
+ 			The delimiter character is not included in the data
+@@ -146,7 +147,7 @@
+ 		/** Returns the total size of the data to be read from the stream, 
+ 			or 0 if this is indeterminate for this stream. 
+ 		*/
+-        size_t size(void) const { return mSize; }
++        virtual size_t size(void) const { return mSize; }
+ 
+         /** Close the stream; this makes further operations invalid. */
+         virtual void close(void) = 0;
+         
+--- ogre/OgreMain/include/OgreHardwareBuffer.h	23 Aug 2006 08:18:33 -0000	1.17
++++ ogre/OgreMain/include/OgreHardwareBuffer.h	24 Nov 2007 00:37:00 -0000
+@@ -31,6 +31,8 @@
+ 
+ // Precompiler options
+ #include "OgrePrerequisites.h"
++#include <stdexcept>
++
+ 
+ namespace Ogre {
+ 
+@@ -244,7 +246,7 @@
+             @param pDest The area of memory in which to place the data, must be large enough to 
+                 accommodate the data!
+             */
+-            virtual void readData(size_t offset, size_t length, void* pDest) = 0;
++            virtual void readData(size_t offset, size_t length, void* pDest) { throw std::runtime_error ( std::string ("Virtual function HardwareBuffer::readData called!") ); }
+             /** Writes data to the buffer from an area of system memory; note that you must
+                 ensure that your buffer is big enough.
+ 		    @param offset The byte offset from the start of the buffer to start writing
+
+--- ogre/OgreMain/include/OgreRenderQueueListener.h	23 Aug 2006 08:18:35 -0000	1.10
++++ ogre/OgreMain/include/OgreRenderQueueListener.h	24 Nov 2007 00:34:52 -0000
+@@ -31,6 +31,8 @@
+ 
+ #include "OgrePrerequisites.h"
+ #include "OgreRenderQueue.h"
++#include <stdexcept>
++
+ 
+ namespace Ogre {
+ 
+@@ -65,7 +67,7 @@
+ 			for this queue group.
+         */
+         virtual void renderQueueStarted(uint8 queueGroupId, const String& invocation, 
+-			bool& skipThisInvocation) = 0;
++			bool& skipThisInvocation) { throw std::runtime_error ( std::string ("Virtual function RenderQueueListener::renderQueueStarted called!") ); }
+ 
+         /** Event raised after a queue group is rendered. 
+         @remarks
+@@ -80,7 +82,7 @@
+ 			events will also be fired for it again.
+         */
+         virtual void renderQueueEnded(uint8 queueGroupId, const String& invocation, 
+-			bool& repeatThisInvocation) = 0;
++			bool& repeatThisInvocation) { throw std::runtime_error ( std::string ("Virtual function RenderQueueListener::renderQueueEnded called!") ); }
+     };
+ 
+ }
+ 
