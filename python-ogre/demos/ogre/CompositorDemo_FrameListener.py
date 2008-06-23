@@ -398,7 +398,7 @@ class CompositorDemo_FrameListener(Ogre.FrameListener, OIS.KeyListener,  OIS.Mou
         self.mKeyboard = self.mInputManager.createInputObjectKeyboard( OIS.OISKeyboard, True )
         self.mMouse = self.mInputManager.createInputObjectMouse( OIS.OISMouse, True )
 
-        width, height, depth, left, top = self.mMain.getRenderWindow().getMetrics()
+        width, height, depth, left, top = self.mMain.getRenderWindow().getMetrics(1,1,1,1,1)
 
         ##Set Mouse Region.. if window resizes, we should alter this to reflect as well
         ms = self.mMouse.getMouseState() 
@@ -554,26 +554,26 @@ class CompositorDemo_FrameListener(Ogre.FrameListener, OIS.KeyListener,  OIS.Mou
 
 ##--------------------------------------------------------------------------
     def updateStats(self):
-        currFps = "current FPS: " 
+        currFps = "Last FPS: " 
         avgFps = "Average FPS: " 
         bestFps = "Best FPS: " 
         worstFps = "Worst FPS: " 
         tris = "Triangle Count: " 
 
-
-        stats = self.mMain.getRenderWindow().getStatisticsList() 
+#         print dir( self.mMain.getRenderWindow() )
+        stats = self.mMain.getRenderWindow().getStatistics() 
 #         print stats
 #         print dir(stats)
-        self.mGuiAvg.setText(avgFps + str(stats[1])) 
-        self.mGuiCurr.setText(currFps + str(stats[0])) 
-#         self.mGuiBest.setText(bestFps + str(stats[2])
+        self.mGuiAvg.setText(avgFps + str(stats.avgFPS)) 
+        self.mGuiCurr.setText(currFps + str(stats.lastFPS)) 
+#         self.mGuiBest.setText(bestFps + str(stats.bestFPS)
 #             + " " + str(stats.bestFrameTime)+" ms") 
-#         self.mGuiWorst.setText(worstFps + str(stats[3])
+#         self.mGuiWorst.setText(worstFps + str(stats.worstFPS)
 #             + " " + str(stats.worstFrameTime)+" ms") 
 
 #         self.mGuiTris.setText(tris + str(stats.triangleCount)) 
         self.mGuiDbg.setText(self.mDebugText) 
-        self.mAvgFrameTime = 1.0/(stats[1] + 1.0) 
+        self.mAvgFrameTime = 1.0/(stats.avgFPS + 1.0) 
         if (self.mAvgFrameTime > 0.1): self.mAvgFrameTime = 0.1
 
 

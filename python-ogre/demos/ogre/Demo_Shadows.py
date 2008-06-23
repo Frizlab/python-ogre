@@ -722,7 +722,7 @@ class ShadowsApplication ( SampleFramework.Application ):
         self.mGUISystem.setDefaultMouseCursor("TaharezLook", "MouseArrow") 
         self.mGUISystem.setDefaultFont("BlueHighway-12") 
 
-        sheet = CEGUI.WindowManager.getSingleton().loadWindowLayout( "shadows.layout")  
+        sheet = CEGUI.WindowManager.getSingleton().loadWindowLayout( "shadows.layout", False)  
         self.mGUISystem.setGUISheet(sheet) 
 
         ## Tooltips aren't big enough, do our own

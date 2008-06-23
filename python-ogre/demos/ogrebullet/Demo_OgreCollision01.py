@@ -148,7 +148,6 @@ class OgreCollideListener(sf.FrameListener):
             mesh)
       
         entity.setQueryFlags ( 1<<2 ) ##GEOMETRY_QUERY_MASK)
-        entity.setNormaliseNormals(True)
         entity.setCastShadows(True)
     
         entity.setMaterialName(material)
@@ -213,7 +212,6 @@ class OgreCollideListener(sf.FrameListener):
             entity = self.sceneManager.createEntity(name, entityname + ".mesh")
             
 #             entity.setQueryFlags ( 1<<2 ) ##GEOMETRY_QUERY_MASK)
-            entity.setNormaliseNormals(True)
             entity.setCastShadows(True)
     
 # # # #             entity.setMaterialName(material)

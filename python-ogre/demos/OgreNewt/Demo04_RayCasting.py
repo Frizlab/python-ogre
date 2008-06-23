@@ -154,8 +154,7 @@ class OgreNewtonApplication (sf.Application):
         box1node = self.sceneManager.getRootSceneNode().createChildSceneNode()
         box1node.attachObject( box1 )
         box1node.setScale( size )
-        box1.setNormaliseNormals(True)
-    
+        
         col = OgreNewt.Box( self.World, size )
         bod = OgreNewt.Body( self.World, col )
         del col

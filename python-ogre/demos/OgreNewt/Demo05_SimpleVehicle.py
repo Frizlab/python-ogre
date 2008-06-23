@@ -91,8 +91,7 @@ class OgreNewtonApplication (sf.Application):
         box1node = self.sceneManager.getRootSceneNode().createChildSceneNode()
         box1node.attachObject( box1 )
         box1node.setScale( size )
-        box1.setNormaliseNormals(True)
-    
+        
         col = OgreNewt.Box( self.World, size )
         bod = OgreNewt.Body( self.World, col )
         del col
@@ -195,7 +194,6 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 node.setPosition(0.0, 0.0, 0.0)
                 
                 ent.setMaterialName( "Examples/RustySteel" )
-                #ent.setNormaliseNormals(True)
                   
                 ## again, make the collision shape.
                 col = OgreNewt.Ellipsoid(self.World, Ogre.Vector3(1,1,1))
