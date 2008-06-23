@@ -104,7 +104,14 @@ class GuiApplication ( SampleFramework.Application ):
 
 
         ## Setup Render To Texture for preview window
-        rttTex = self.root.getRenderSystem().createRenderTexture( "RttTex", 512, 512, ogre.TextureType.TEX_TYPE_2D, ogre.PixelFormat.PF_R8G8B8 ) 
+        texture = ogre.TextureManager.getSingleton().createManual( "RttTex", 
+                        ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME, ogre.TEX_TYPE_2D, 
+                        512, 512, 0, ogre.PixelFormat.PF_R8G8B8, ogre.TU_RENDERTARGET )
+        rttTex = texture.getBuffer().getRenderTarget()
+
+
+        
+# #         rttTex = self.root.getRenderSystem().createRenderTexture( "RttTex", 512, 512, ogre.TextureType.TEX_TYPE_2D, ogre.PixelFormat.PF_R8G8B8 ) 
         rttCam = self.sceneManager.createCamera("RttCam") 
         camNode = self.sceneManager.getRootSceneNode().createChildSceneNode("rttCamNode") 
         camNode.attachObject(rttCam) 
@@ -131,7 +138,7 @@ class GuiApplication ( SampleFramework.Application ):
         self.GUIsystem.setDefaultMouseCursor("TaharezLook",  "MouseArrow") 
         self.GUIsystem.setDefaultFont( "BlueHighway-12") 
         
-        sheet = CEGUI.WindowManager.getSingleton().loadWindowLayout("ogregui.layout")  
+        sheet = CEGUI.WindowManager.getSingleton().loadWindowLayout("ogregui.layout", False)  
         self.GUIsystem.setGUISheet(sheet) 
 
 #     
@@ -271,7 +278,7 @@ class GuiApplication ( SampleFramework.Application ):
         if(self.EditorGuiSheet):
             CEGUI.WindowManager.getSingleton().destroyWindow(self.EditorGuiSheet) 
     
-        self.EditorGuiSheet = CEGUI.WindowManager.getSingleton().loadWindowLayout("cegui8.layout")  
+        self.EditorGuiSheet = CEGUI.WindowManager.getSingleton().loadWindowLayout("cegui8.layout", False)  
         self.setupLoadedLayoutHandlers() 
     
         editorWindow = CEGUI.WindowManager.getSingleton().getWindow( "OgreGuiDemo2/MainWindow") 

@@ -67,8 +67,18 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
         self.camera.NearClipDistance = 5
         
     def __del__ ( self ):
-        del self.soundManager
-        sf.Application.__del__(self)
+        print "1"
+        del self.camera
+        print "1"
+        del self.sceneManager
+        print "1"
+        del self.frameListener
+        print "1"
+        del self.root
+        print "1"
+        del self.renderWindow        
+        print "1"
+
         
     def _createScene(self):
         "Override sf create scene"
@@ -140,12 +150,16 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
         
         ## Either of these techniques works...
         # create RenderTexture
-        rttTex = self.root.getRenderSystem().createRenderTexture( "RttTex", 512, 512, 
-                                                                 ogre.TEX_TYPE_2D,ogre.PixelFormat.PF_R8G8B8 )
-#         texture = ogre.TextureManager.getSingleton().createManual( "RttTex", 
-#                     ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME, ogre.TEX_TYPE_2D, 
-#                     512, 512, 0, ogre.PixelFormat.PF_R8G8B8, ogre.TU_RENDERTARGET )
-        
+        if ogre.GetPythonOgreVersion()[1] == '1' and int(ogre.GetPythonOgreVersion()[1]) < 2:   ## Python Ogre after 1.2 has API changes        
+            
+            rttTex = self.root.getRenderSystem().createRenderTexture( "RttTex", 512, 512, 
+                                                                     ogre.TEX_TYPE_2D,ogre.PixelFormat.PF_R8G8B8 )
+        else:
+            texture = ogre.TextureManager.getSingleton().createManual( "RttTex", 
+                        ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME, ogre.TEX_TYPE_2D, 
+                        512, 512, 0, ogre.PixelFormat.PF_R8G8B8, ogre.TU_RENDERTARGET )
+            rttTex = texture.getBuffer().getRenderTarget()
+
         self.mReflectCam = sceneManager.createCamera("ReflectCam")
         self.mReflectCam.setNearClipDistance(camera.getNearClipDistance())
         self.mReflectCam.setFarClipDistance(camera.getFarClipDistance())

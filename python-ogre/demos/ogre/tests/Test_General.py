@@ -1,7 +1,9 @@
 # This code is in the Public Domain
-import  Ogre as ogre
-import SampleFramework as sf
-import ctypes, math,sys, os, os.path
+import os,sys, ctypes, math, os.path
+if sys.platform == 'win32': 
+    os.environ['PATH'] += ';' + __file__[0] 
+import ogre.renderer.OGRE as ogre
+import SampleFramework 
 
 pluginfile = "plugins.cfg"
 root = ogre.Root( pluginfile )

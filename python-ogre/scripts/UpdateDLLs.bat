@@ -5,19 +5,20 @@ echo
 setlocal
 set root=c:\development
 set package=..\packages_2.5\ogre
-set ogre=%root%\ogrenew\samples\common\bin\release
-set cegui=%root%\cegui-0.5.0\bin
+set ogre=%root%\ogre\samples\common\bin\release
+set cegui=%root%\cegui-0.6.0\bin
 set quick=%root%\quickgui\bin
 set opcode=%root%\OpCode\Release
 set nxogre=%root%\NxOgre\NxOgre\lib
 set newton=%root%\NewtonSDK\sdk\dll
 set ogreode=%root%\ogreaddons\ogreode
-set physx="c:\program files\AGEIA Technologies\SDK\v2.7.3\bin\win32"
+set physx="c:\program files\NVIDIA Corporation\NVIDIA PhysX SDK\v2.8.1\bin\win32"
 set theora=%root%\ogreaddons\videoplugin\TheoraVideo\bin\Release
 set ffmpeg=%root%\ffmpeg
-set navi=%root%\navi\Dependencies\win32\llmozlib\runtime\Release
-set boost=%root%\boost\bin.v2\libs\python2.5\build\msvc-8.0\release\threading-multi
-set particleuniverse=%root%\ogrenew\plugins\particleuniverse\bin\release
+set naviextra=%root%\navi\Dependencies\win32\astral\runtime\Release
+set navi=%root%\navi\lib
+set boost=%root%\boost-trunk\bin.v2\libs\python\build\msvc-9.0express\release\threading-multi
+set particleuniverse=%root%\ogre\plugins\particleuniverse\bin\release
 
 set ogreal=%root%\OgreAL\lib\Release
 set freealut=%root%\FreeAlut\lib
@@ -29,7 +30,7 @@ rem Ogre
 copy /y %ogre%\ogremain.dll %package%\renderer\OGRE
 copy /y %ogre%\cg.dll %package%\renderer\OGRE
 
-copy /y %boost%\boost_python-vc80-mt-1_35.dll %package%\renderer\OGRE
+copy /y %boost%\boost_python-vc90-mt-1_35.dll %package%\renderer\OGRE
 copy /y %ogre%\render*.dll ..\plugins
 copy /y %ogre%\plug*.dll ..\plugins
 
@@ -40,10 +41,10 @@ copy /y %particleuniverse%\ParticleUniverse.dll %package%\addons\particleunivers
 
 rem Physics
 copy /y %ogre%\ReferenceAppLayer.dll %package%\physics\OgreRefApp
-copy /y %opcode%\opcode.dll %package%\physics\OpCode
+REM copy /y %opcode%\opcode.dll %package%\physics\OpCode
 copy /y %nxogre%\nxogre.dll %package%\physics\NxOgre
 copy /y %newton%\newton.dll %package%\physics\OgreNewt
-copy /y %boost%\boost_python-vc80-mt-1_35.dll %package%\physics\ode
+copy /y %boost%\boost_python-vc90-mt-1_35.dll %package%\physics\ode
 
 rem OgreODE
 copy /y %ogreode%\lib\Release\OgreOde_Core.dll %package%\physics\OgreOde
@@ -68,7 +69,7 @@ copy /y %cegui%\CEGUITinyXMLParser.dll %package%\gui\CEGUI
 copy /y %ogre%\OgreGUIRenderer.dll %package%\gui\CEGUI
 
 rem QuickGUI
-copy /y %quick%\QuickGUI.dll %package%\gui\QuickGui
+REM copy /y %quick%\QuickGUI.dll %package%\gui\QuickGui
 
 rem OgreAL
 copy /y %ogreal%\OgreAL.dll %package%\sound\OgreAL
@@ -76,7 +77,7 @@ copy /y %vorbis%\VorbisEnc_Dynamic_Release\vorbisenc.dll %package%\sound\OgreAL
 copy /y %vorbis%\VorbisFile_Dynamic_Release\vorbisfile.dll %package%\sound\OgreAL
 copy /y %vorbis%\Vorbis_Dynamic_Release\vorbis.dll %package%\sound\OgreAL
 copy /y %ogg%\ogg.dll %package%\sound\OgreAL
-copy /y %freealut%\alut.dll %package%\sound\OgreAL
+REM copy /y %freealut%\alut.dll %package%\sound\OgreAL
 copy /y %openal%\OpenAL32.dll %package%\sound\OgreAL
 copy /y %openal%\wrap_oal.dll %package%\sound\OgreAL
 
@@ -84,4 +85,4 @@ rem navi
 copy /y %navi%\*.dll %package%\gui\navi
 
 rem plib
-copy /y %boost%\boost_python-vc80-mt-1_35.dll %package%\addons\plib
+copy /y %boost%\boost_python-vc90-mt-1_35.dll %package%\addons\plib

@@ -1,137 +1,225 @@
-07:17:21: Creating resource group General
-07:17:21: Creating resource group Internal
-07:17:21: Creating resource group Autodetect
-07:17:21: SceneManagerFactory for type 'DefaultSceneManager' registered.
-07:17:21: Registering ResourceManager for type Material
-07:17:21: Registering ResourceManager for type Mesh
-07:17:21: Registering ResourceManager for type Skeleton
-07:17:21: MovableObjectFactory for type 'ParticleSystem' registered.
-07:17:21: OverlayElementFactory for type Panel registered.
-07:17:21: OverlayElementFactory for type BorderPanel registered.
-07:17:21: OverlayElementFactory for type TextArea registered.
-07:17:21: Registering ResourceManager for type Font
-07:17:21: ArchiveFactory for archive type FileSystem registered.
-07:17:21: ArchiveFactory for archive type Zip registered.
-07:17:21: FreeImage version: 3.9.2
-07:17:21: This program uses FreeImage, a free, open source image library supporting all common bitmap formats. See http://freeimage.sourceforge.net for details
-07:17:21: Supported formats: bmp,ico,jpg,jif,jpeg,jpe,jng,koa,iff,lbm,mng,pbm,pbm,pcd,pcx,pgm,pgm,png,ppm,ppm,ras,tga,targa,tif,tiff,wap,wbmp,wbm,psd,cut,xbm,xpm,gif,hdr,g3,sgi
-07:17:21: DDS codec registering
-07:17:21: Registering ResourceManager for type HighLevelGpuProgram
-07:17:21: Registering ResourceManager for type Compositor
-07:17:21: MovableObjectFactory for type 'Entity' registered.
-07:17:21: MovableObjectFactory for type 'Light' registered.
-07:17:21: MovableObjectFactory for type 'BillboardSet' registered.
-07:17:21: MovableObjectFactory for type 'ManualObject' registered.
-07:17:21: MovableObjectFactory for type 'BillboardChain' registered.
-07:17:21: MovableObjectFactory for type 'RibbonTrail' registered.
-07:17:21: Loading library ../../../plugins\RenderSystem_GL.dll
-07:17:21: Installing plugin: GL RenderSystem
-07:17:21: OpenGL Rendering Subsystem created.
-07:17:22: Plugin successfully installed
-07:17:22: Loading library ../../../plugins\RenderSystem_Direct3D9.dll
-07:17:22: Installing plugin: D3D9 RenderSystem
-07:17:22: D3D9 : Direct3D9 Rendering Subsystem created.
-07:17:22: D3D9: Driver Detection Starts
-07:17:22: D3D9: Driver Detection Ends
-07:17:22: Plugin successfully installed
-07:17:22: Loading library ../../../plugins\Plugin_ParticleFX.dll
-07:17:22: Installing plugin: ParticleFX
-07:17:22: Particle Emitter Type 'Point' registered
-07:17:22: Particle Emitter Type 'Box' registered
-07:17:22: Particle Emitter Type 'Ellipsoid' registered
-07:17:22: Particle Emitter Type 'Cylinder' registered
-07:17:22: Particle Emitter Type 'Ring' registered
-07:17:22: Particle Emitter Type 'HollowEllipsoid' registered
-07:17:22: Particle Affector Type 'LinearForce' registered
-07:17:22: Particle Affector Type 'ColourFader' registered
-07:17:22: Particle Affector Type 'ColourFader2' registered
-07:17:22: Particle Affector Type 'ColourImage' registered
-07:17:22: Particle Affector Type 'ColourInterpolator' registered
-07:17:22: Particle Affector Type 'Scaler' registered
-07:17:22: Particle Affector Type 'Rotator' registered
-07:17:22: Particle Affector Type 'DirectionRandomiser' registered
-07:17:22: Particle Affector Type 'DeflectorPlane' registered
-07:17:22: Plugin successfully installed
-07:17:22: Loading library ../../../plugins\Plugin_BSPSceneManager.dll
-07:17:22: Installing plugin: BSP Scene Manager
-07:17:22: Plugin successfully installed
-07:17:22: Loading library ../../../plugins\Plugin_CgProgramManager.dll
-07:17:22: Installing plugin: Cg Program Manager
-07:17:22: Plugin successfully installed
-07:17:22: *-*-* OGRE Initialising
-07:17:22: *-*-* Version 1.4.2 (Eihort)
-07:17:22: D3D9 : RenderSystem Option: Allow NVPerfHUD = No
-07:17:22: D3D9 : RenderSystem Option: Anti aliasing = None
-07:17:22: D3D9 : RenderSystem Option: Floating-point mode = Fastest
-07:17:22: D3D9 : RenderSystem Option: Full Screen = No
-07:17:22: D3D9 : RenderSystem Option: Rendering Device = ATI MOBILITY RADEON
-07:17:22: D3D9 : RenderSystem Option: VSync = Yes
-07:17:22: D3D9 : RenderSystem Option: Video Mode = 800 x 600 @ 32-bit colour
-07:17:29: D3D9 : Shutting down cleanly.
-07:17:29: CPU Identifier & Features
-07:17:29: -------------------------
-07:17:29:  *   CPU ID: GenuineIntel: Intel(R) Pentium(R) M processor 1700MHz
-07:17:29:  *      SSE: yes
-07:17:29:  *     SSE2: yes
-07:17:29:  *     SSE3: no
-07:17:29:  *      MMX: yes
-07:17:29:  *   MMXEXT: yes
-07:17:29:  *    3DNOW: no
-07:17:29:  * 3DNOWEXT: no
-07:17:29:  *     CMOV: yes
-07:17:29:  *      TSC: yes
-07:17:29:  *      FPU: yes
-07:17:29:  *      PRO: no
-07:17:29:  *       HT: no
-07:17:29: -------------------------
-07:17:29: *** Starting Win32GL Subsystem ***
-07:17:29: GLRenderSystem::createRenderWindow "OGRE Render Window", 640x480 windowed  miscParams: FSAA=0 colourDepth=16 displayFrequency=0 vsync=false 
-07:17:29: Created Win32Window 'OGRE Render Window' : 640x480, 16bpp
-07:17:29: GL_VERSION = 1.3.1006 WinXP Release
-07:17:29: GL_VENDOR = ATI Technologies Inc.
-07:17:29: GL_RENDERER = RADEON 7000 SW TCL x86/SSE2
-07:17:29: GL_EXTENSIONS = GL_ARB_multitexture GL_EXT_texture_env_add GL_EXT_compiled_vertex_array GL_S3_s3tc GL_ARB_occlusion_query GL_ARB_texture_border_clamp GL_ARB_texture_compression GL_ARB_texture_cube_map GL_ARB_texture_env_add GL_ARB_texture_env_combine GL_ARB_texture_env_crossbar GL_ARB_texture_env_dot3 GL_ARB_texture_mirrored_repeat GL_ARB_transpose_matrix GL_ARB_vertex_blend GL_ARB_window_pos GL_ATI_envmap_bumpmap GL_ATI_texture_env_combine3 GL_ATI_texture_mirror_once GL_ATI_vertex_streams GL_ATIX_texture_env_combine3 GL_ATIX_texture_env_route GL_EXT_abgr GL_EXT_bgra GL_EXT_clip_volume_hint GL_EXT_draw_range_elements GL_EXT_fog_coord GL_EXT_multi_draw_arrays GL_EXT_packed_pixels GL_EXT_point_parameters GL_EXT_rescale_normal GL_EXT_secondary_color GL_EXT_separate_specular_color GL_EXT_stencil_wrap GL_EXT_texgen_reflection GL_EXT_texture3D GL_EXT_texture_compression_s3tc GL_EXT_texture_cube_map GL_EXT_texture_edge_clamp GL_EXT_texture_env_combine GL_EXT_texture_env_dot3 GL_EXT_texture_filter_anisotropic GL_EXT_texture_lod_bias GL_EXT_texture_mirror_clamp GL_EXT_texture_object GL_EXT_texture_rectangle GL_EXT_vertex_array GL_HP_occlusion_test GL_NV_blend_square GL_NV_occlusion_query GL_NV_texgen_reflection GL_SGI_color_matrix GL_SGIS_generate_mipmap GL_SGIS_multitexture GL_SGIS_texture_border_clamp GL_SGIS_texture_edge_clamp GL_SGIS_texture_lod GL_SUN_multi_draw_arrays GL_WIN_swap_hint WGL_EXT_extensions_string WGL_EXT_swap_control 
-07:17:29: Supported WGL extensions: WGL_ARB_extensions_string WGL_ARB_make_current_read WGL_ARB_pbuffer WGL_ARB_pixel_format WGL_ARB_render_texture WGL_EXT_extensions_string WGL_EXT_swap_control 
-07:17:29: ***************************
-07:17:29: *** GL Renderer Started ***
-07:17:30: ***************************
-07:17:30: Registering ResourceManager for type GpuProgram
-07:17:30: GL: Using PBuffers for rendering to textures
-07:17:30: RenderSystem capabilities
-07:17:30: -------------------------
-07:17:30:  * Hardware generation of mipmaps: yes
-07:17:30:  * Texture blending: yes
-07:17:30:  * Anisotropic texture filtering: yes
-07:17:30:  * Dot product texture operation: yes
-07:17:30:  * Cube mapping: yes
-07:17:30:  * Hardware stencil buffer: yes
-07:17:30:    - Stencil depth: 8
-07:17:30:    - Two sided stencil support: no
-07:17:30:    - Wrap stencil values: yes
-07:17:30:  * Hardware vertex / index buffers: no
-07:17:30:  * Vertex programs: no
-07:17:30:  * Fragment programs: no
-07:17:30:  * Texture Compression: yes
-07:17:30:    - DXT: yes
-07:17:30:    - VTC: no
-07:17:30:  * Scissor Rectangle: yes
-07:17:30:  * Hardware Occlusion Query: yes
-07:17:30:  * User clip planes: yes
-07:17:30:  * VET_UBYTE4 vertex element type: yes
-07:17:30:  * Infinite far plane projection: yes
-07:17:30:  * Hardware render-to-texture: yes
-07:17:30:  * Floating point textures: no
-07:17:30:  * Non-power-of-two textures: no
-07:17:30:  * Volume textures: yes
-07:17:30:  * Multiple Render Targets: 1
-07:17:30:  * Point Sprites: no
-07:17:30:  * Extended point parameters: yes
-07:17:30:  * Max Point Size: 5.14206e-038
-07:17:30:  * Vertex texture fetch: yes
-07:17:30:    - Max vertex textures: 20263
-07:17:30:    - Vertex textures shared: yes
-07:17:30: Registering ResourceManager for type Texture
-07:17:30: ResourceBackgroundQueue - threading disabled
-07:17:30: Particle Renderer Type 'billboard' registered
-07:17:30: SceneManagerFactory for type 'BspSceneManager' registered.
-07:17:30: Registering ResourceManager for type BspLevel
+15:32:01: Creating resource group General
+15:32:01: Creating resource group Internal
+15:32:01: Creating resource group Autodetect
+15:32:01: SceneManagerFactory for type 'DefaultSceneManager' registered.
+15:32:01: Registering ResourceManager for type Material
+15:32:01: Registering ResourceManager for type Mesh
+15:32:01: Registering ResourceManager for type Skeleton
+15:32:01: MovableObjectFactory for type 'ParticleSystem' registered.
+15:32:01: OverlayElementFactory for type Panel registered.
+15:32:01: OverlayElementFactory for type BorderPanel registered.
+15:32:01: OverlayElementFactory for type TextArea registered.
+15:32:01: Registering ResourceManager for type Font
+15:32:01: ArchiveFactory for archive type FileSystem registered.
+15:32:01: ArchiveFactory for archive type Zip registered.
+15:32:01: FreeImage version: 3.10.0
+15:32:01: This program uses FreeImage, a free, open source image library supporting all common bitmap formats. See http://freeimage.sourceforge.net for details
+15:32:01: Supported formats: bmp,ico,jpg,jif,jpeg,jpe,jng,koa,iff,lbm,mng,pbm,pbm,pcd,pcx,pgm,pgm,png,ppm,ppm,ras,tga,targa,tif,tiff,wap,wbmp,wbm,psd,cut,xbm,xpm,gif,hdr,g3,sgi,exr,j2k,j2c,jp2
+15:32:01: DDS codec registering
+15:32:01: Registering ResourceManager for type HighLevelGpuProgram
+15:32:01: Registering ResourceManager for type Compositor
+15:32:01: MovableObjectFactory for type 'Entity' registered.
+15:32:01: MovableObjectFactory for type 'Light' registered.
+15:32:01: MovableObjectFactory for type 'BillboardSet' registered.
+15:32:01: MovableObjectFactory for type 'ManualObject' registered.
+15:32:01: MovableObjectFactory for type 'BillboardChain' registered.
+15:32:01: MovableObjectFactory for type 'RibbonTrail' registered.
+15:32:01: Loading library ../../../plugins\RenderSystem_GL.dll
+15:32:01: Installing plugin: GL RenderSystem
+15:32:01: OpenGL Rendering Subsystem created.
+15:32:01: Plugin successfully installed
+15:32:01: Loading library ../../../plugins\RenderSystem_Direct3D9.dll
+15:32:01: Installing plugin: D3D9 RenderSystem
+15:32:01: D3D9 : Direct3D9 Rendering Subsystem created.
+15:32:01: D3D9: Driver Detection Starts
+15:32:01: D3D9: Driver Detection Ends
+15:32:01: Plugin successfully installed
+15:32:01: Loading library ../../../plugins\Plugin_ParticleFX.dll
+15:32:01: Installing plugin: ParticleFX
+15:32:01: Particle Emitter Type 'Point' registered
+15:32:01: Particle Emitter Type 'Box' registered
+15:32:01: Particle Emitter Type 'Ellipsoid' registered
+15:32:01: Particle Emitter Type 'Cylinder' registered
+15:32:01: Particle Emitter Type 'Ring' registered
+15:32:01: Particle Emitter Type 'HollowEllipsoid' registered
+15:32:01: Particle Affector Type 'LinearForce' registered
+15:32:01: Particle Affector Type 'ColourFader' registered
+15:32:01: Particle Affector Type 'ColourFader2' registered
+15:32:01: Particle Affector Type 'ColourImage' registered
+15:32:01: Particle Affector Type 'ColourInterpolator' registered
+15:32:01: Particle Affector Type 'Scaler' registered
+15:32:01: Particle Affector Type 'Rotator' registered
+15:32:01: Particle Affector Type 'DirectionRandomiser' registered
+15:32:01: Particle Affector Type 'DeflectorPlane' registered
+15:32:01: Plugin successfully installed
+15:32:01: Loading library ../../../plugins\Plugin_BSPSceneManager.dll
+15:32:01: Installing plugin: BSP Scene Manager
+15:32:01: Plugin successfully installed
+15:32:01: Loading library ../../../plugins\Plugin_OctreeSceneManager.dll
+15:32:01: Installing plugin: Octree & Terrain Scene Manager
+15:32:01: Plugin successfully installed
+15:32:01: Loading library ../../../plugins\Plugin_CgProgramManager.dll
+15:32:01: Installing plugin: Cg Program Manager
+15:32:02: Plugin successfully installed
+15:32:02: *-*-* OGRE Initialising
+15:32:02: *-*-* Version 1.7.0RC1 (Cthugha)
+15:32:02: D3D9 : RenderSystem Option: Allow NVPerfHUD = No
+15:32:02: D3D9 : RenderSystem Option: Anti aliasing = None
+15:32:02: D3D9 : RenderSystem Option: Floating-point mode = Fastest
+15:32:02: D3D9 : RenderSystem Option: Full Screen = No
+15:32:02: D3D9 : RenderSystem Option: Rendering Device = Mobile Intel(R) 965 Express Chipset Family
+15:32:02: D3D9 : RenderSystem Option: VSync = No
+15:32:02: D3D9 : RenderSystem Option: Video Mode = 800 x 600 @ 32-bit colour
+15:32:02: D3D9 : RenderSystem Option: sRGB Gamma Conversion = No
+15:32:02: CPU Identifier & Features
+15:32:02: -------------------------
+15:32:02:  *   CPU ID: GenuineIntel: Intel(R) Core(TM)2 Duo CPU     T7500  @ 2.20GHz
+15:32:02:  *      SSE: yes
+15:32:02:  *     SSE2: yes
+15:32:02:  *     SSE3: yes
+15:32:02:  *      MMX: yes
+15:32:02:  *   MMXEXT: yes
+15:32:02:  *    3DNOW: no
+15:32:02:  * 3DNOWEXT: no
+15:32:02:  *     CMOV: yes
+15:32:02:  *      TSC: yes
+15:32:02:  *      FPU: yes
+15:32:02:  *      PRO: yes
+15:32:02:  *       HT: no
+15:32:02: -------------------------
+15:32:02: D3D9 : Subsystem Initialising
+15:32:02: D3D9RenderSystem::_createRenderWindow "OGRE Render Window", 800x600 windowed  miscParams: FSAA=0 FSAAQuality=0 colourDepth=32 gamma=false useNVPerfHUD=false vsync=false 
+15:32:02: D3D9 : Created D3D9 Rendering Window 'OGRE Render Window' : 800x600, 32bpp
+15:32:02: D3D9 : WARNING - disabling VSync in windowed mode can cause timing issues at lower frame rates, turn VSync on if you observe this problem.
+15:32:02: Registering ResourceManager for type Texture
+15:32:02: Registering ResourceManager for type GpuProgram
+15:32:02: D3D9: Vertex texture format supported - PF_L8
+15:32:02: D3D9: Vertex texture format supported - PF_L16
+15:32:02: D3D9: Vertex texture format supported - PF_A8
+15:32:02: D3D9: Vertex texture format supported - PF_A4L4
+15:32:02: D3D9: Vertex texture format supported - PF_BYTE_LA
+15:32:02: D3D9: Vertex texture format supported - PF_R5G6B5
+15:32:02: D3D9: Vertex texture format supported - PF_B5G6R5
+15:32:02: D3D9: Vertex texture format supported - PF_A4R4G4B4
+15:32:02: D3D9: Vertex texture format supported - PF_A1R5G5B5
+15:32:02: D3D9: Vertex texture format supported - PF_A8R8G8B8
+15:32:02: D3D9: Vertex texture format supported - PF_B8G8R8A8
+15:32:02: D3D9: Vertex texture format supported - PF_A2R10G10B10
+15:32:02: D3D9: Vertex texture format supported - PF_DXT1
+15:32:02: D3D9: Vertex texture format supported - PF_DXT2
+15:32:02: D3D9: Vertex texture format supported - PF_DXT3
+15:32:02: D3D9: Vertex texture format supported - PF_DXT4
+15:32:02: D3D9: Vertex texture format supported - PF_DXT5
+15:32:02: D3D9: Vertex texture format supported - PF_FLOAT16_RGB
+15:32:02: D3D9: Vertex texture format supported - PF_FLOAT16_RGBA
+15:32:02: D3D9: Vertex texture format supported - PF_FLOAT32_RGB
+15:32:02: D3D9: Vertex texture format supported - PF_FLOAT32_RGBA
+15:32:02: D3D9: Vertex texture format supported - PF_X8R8G8B8
+15:32:02: D3D9: Vertex texture format supported - PF_R8G8B8A8
+15:32:02: D3D9: Vertex texture format supported - PF_DEPTH
+15:32:02: D3D9: Vertex texture format supported - PF_SHORT_RGBA
+15:32:02: D3D9: Vertex texture format supported - PF_FLOAT16_R
+15:32:02: D3D9: Vertex texture format supported - PF_FLOAT32_R
+15:32:02: D3D9: Vertex texture format supported - PF_SHORT_GR
+15:32:02: D3D9: Vertex texture format supported - PF_FLOAT16_GR
+15:32:02: D3D9: Vertex texture format supported - PF_FLOAT32_GR
+15:32:02: D3D9: Vertex texture format supported - PF_SHORT_RGB
+15:32:02: RenderSystem capabilities
+15:32:02: -------------------------
+15:32:02: RenderSystem Name: Direct3D9 Rendering Subsystem
+15:32:02: GPU Vendor: intel
+15:32:02: Device Name: Mobile Intel(R) 965 Express Chipset Family
+15:32:02: Driver Version: 6.14.10.4926
+15:32:02:  * Fixed function pipeline: yes
+15:32:02:  * Hardware generation of mipmaps: no
+15:32:02:  * Texture blending: yes
+15:32:02:  * Anisotropic texture filtering: yes
+15:32:02:  * Dot product texture operation: yes
+15:32:02:  * Cube mapping: yes
+15:32:02:  * Hardware stencil buffer: yes
+15:32:02:    - Stencil depth: 8
+15:32:02:    - Two sided stencil support: yes
+15:32:02:    - Wrap stencil values: yes
+15:32:02:  * Hardware vertex / index buffers: yes
+15:32:02:  * Vertex programs: yes
+15:32:02:  * Fragment programs: yes
+15:32:02:  * Supported Shader Profiles: hlsl ps_1_1 ps_1_2 ps_1_3 ps_1_4 ps_2_0 ps_2_a ps_2_b ps_2_x ps_3_0 vs_1_1 vs_2_0 vs_2_a vs_2_x vs_3_0
+15:32:02:  * Texture Compression: yes
+15:32:02:    - DXT: yes
+15:32:02:    - VTC: no
+15:32:02:  * Scissor Rectangle: yes
+15:32:02:  * Hardware Occlusion Query: yes
+15:32:02:  * User clip planes: yes
+15:32:02:  * VET_UBYTE4 vertex element type: yes
+15:32:02:  * Infinite far plane projection: yes
+15:32:02:  * Hardware render-to-texture: yes
+15:32:02:  * Floating point textures: yes
+15:32:02:  * Non-power-of-two textures: yes (limited)
+15:32:02:  * Volume textures: yes
+15:32:02:  * Multiple Render Targets: 4
+15:32:02:    - With different bit depths: yes
+15:32:02:  * Point Sprites: yes
+15:32:02:  * Extended point parameters: yes
+15:32:02:  * Max Point Size: 256
+15:32:02:  * Vertex texture fetch: yes
+15:32:02:    - Max vertex textures: 4
+15:32:02:    - Vertex textures shared: no
+15:32:02:  * DirectX per stage constants: yes
+15:32:02: ***************************************
+15:32:02: *** D3D9 : Subsystem Initialised OK ***
+15:32:02: ***************************************
+15:32:02: ResourceBackgroundQueue - threading disabled
+15:32:02: Particle Renderer Type 'billboard' registered
+15:32:02: SceneManagerFactory for type 'BspSceneManager' registered.
+15:32:02: Registering ResourceManager for type BspLevel
+15:32:02: SceneManagerFactory for type 'OctreeSceneManager' registered.
+15:32:02: SceneManagerFactory for type 'TerrainSceneManager' registered.
+15:32:55: !!! Direct3D Device Lost!
+15:32:55: !!! Direct3D Device Lost!
+15:32:55: !!! Direct3D Device Lost!
+15:32:55: !!! Direct3D Device Lost!
+15:32:55: !!! Direct3D Device Lost!
+15:32:55: !!! Direct3D Device Lost!
+15:32:55: !!! Direct3D Device Lost!
+15:32:55: !!! Direct3D Device Lost!
+15:32:55: !!! Direct3D Device Lost!
+15:32:55: !!! Direct3D Device Lost!
+15:32:55: !!! Direct3D Device Lost!
+15:32:55: !!! Direct3D Device Lost!
+15:32:55: !!! Direct3D Device Lost!
+15:32:55: !!! Direct3D Device Lost!
+15:32:55: !!! Direct3D Device Lost!
+15:32:55: !!! Direct3D Device Lost!
+15:32:55: !!! Direct3D Device Lost!
+15:32:55: !!! Direct3D Device Lost!
+15:32:56: !!! Direct3D Device Lost!
+15:32:56: !!! Direct3D Device Lost!
+15:32:56: !!! Direct3D Device Lost!
+15:32:56: !!! Direct3D Device Lost!
+15:32:56: !!! Direct3D Device Lost!
+15:32:56: !!! Direct3D Device Lost!
+15:32:56: !!! Direct3D Device Lost!
+15:32:56: !!! Direct3D Device Lost!
+15:32:56: !!! Direct3D Device Lost!
+15:32:56: !!! Direct3D Device Lost!
+15:32:56: !!! Direct3D Device Lost!
+15:32:56: !!! Direct3D Device Lost!
+15:32:56: !!! Direct3D Device Lost!
+15:32:56: !!! Direct3D Device Lost!
+15:32:56: !!! Direct3D Device Lost!
+15:32:56: !!! Direct3D Device Lost!
+15:32:56: !!! Direct3D Device Lost!
+15:32:56: !!! Direct3D Device Lost!
+15:32:56: !!! Direct3D Device Lost!
+15:32:56: D3D9TextureManager released:
+15:32:56: 0 unmanaged textures
+15:32:56: D3D9HardwareBufferManager released:
+15:32:56: 0 unmanaged vertex buffers
+15:32:56: 0 unmanaged index buffers
+15:32:57: Reset device ok w:800 h:600
+15:32:57: D3D9TextureManager recreated:
+15:32:57: 0 unmanaged textures
+15:32:57: D3D9HardwareBufferManager recreated:
+15:32:57: 0 unmanaged vertex buffers
+15:32:57: 0 unmanaged index buffers
+15:32:57: !!! Direct3D Device successfully restored.

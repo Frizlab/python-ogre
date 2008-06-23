@@ -16,7 +16,7 @@ echo Now it's likely that this fails, however it's created the Python-Ogre.hpp c
 echo run the microsfot htmlhtml studio and compile the chm
 rem
 rem https://frogpie.svn.sourceforge.net/svnroot/frogpie/trunk/sandbox/chm (chm generator)
-rem http://msdn.microsoft.com/library/en-us/htmlhelp/html/hwMicrosoftHTMLHelpDownloads.asp 
+rem http://www.microsoft.com/downloads/details.aspx?FamilyID=00535334-c8a6-452f-9aa0-d597d16580cc&DisplayLang=en
 rem https://svn.sourceforge.net/svnroot/epydoc/trunk/epydoc
 rem Checkout a new gen_epydoc.py in the patch directory if you have issues
 
