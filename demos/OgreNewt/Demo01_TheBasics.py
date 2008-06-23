@@ -41,7 +41,6 @@ class OgreNewtonApplication (sf.Application):
         ## the "primitives" directory to make this simple... all of them have a basic size of "1" so that they
         ## can easily be scaled to fit any size primitive.
         floor = self.sceneManager.createEntity("Floor", "cylinder.mesh" )
-        floor.setNormaliseNormals(True)
         floornode = self.sceneManager.getRootSceneNode().createChildSceneNode( "FloorNode" )
         floornode.attachObject( floor )
         floor.setMaterialName( "Examples/DarkMaterial" )
@@ -147,13 +146,13 @@ class OgreNewtonFrameListener(sf.FrameListener):
             if (self.timer <= 0.0):
 
                 ## we get the position and direction from the camera...
-                camorient = self.msnCam.getWorldOrientation()
+                camorient = self.msnCam.getOrientation()
                 vec = Ogre.Vector3(0,0,-1)
                 direct = camorient * vec
     
                 ## then make the visual object (again a cylinder)
                 #pos = Ogre.Vector3(self.msnCam.getWorldPosition())
-                pos = self.msnCam.getWorldPosition()
+                pos = self.msnCam.getPosition()
     
                 name = "Body"+str( self.count )
                 self.count += 1
@@ -165,7 +164,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 node.setPosition(0.0, 0.0, 0.0)
                 
                 ent.setMaterialName( "Examples/RustySteel" )
-                ent.setNormaliseNormals(True)
+                
     
                 ## again, make the collision shape.
                 ##col = OgreNewt.CollisionPrimitives.Cylinder(self.World, 1, 1)

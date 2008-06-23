@@ -254,7 +254,7 @@ class RagDoll:
         ##############################################################################/
     
         ## position the bone.
-        boneorient = self.Node.getWorldOrientation() * ogrebone._getDerivedOrientation() 
+        boneorient = self.Node.getOrientation() * ogrebone._getDerivedOrientation() 
         if (shape != RagDoll.RagBone.BS_CONVEXHULL):
             bonepos = self.Node._getFullTransform() * ogrebone._getDerivedPosition() + (boneorient * (dire * (length*0.5))) 
         else:
@@ -263,8 +263,8 @@ class RagDoll:
     
         ## set offsets
         if (not parent):
-            offsetorient = (boneorient.Inverse()) * self.Node.getWorldOrientation() 
-            offsetpos = boneorient.Inverse() * (self.Node.getWorldPosition() - bonepos) 
+            offsetorient = (boneorient.Inverse()) * self.Node.getOrientation() 
+            offsetpos = boneorient.Inverse() * (self.Node.getPosition() - bonepos) 
             me.setOffset( offsetorient, offsetpos ) 
     
         ## get the joint to connect self bone with it's parent.
@@ -291,7 +291,7 @@ class RagDoll:
             limit2 = float( joint.getAttribute("limit2") ) 
     
             jpos = self.Node._getFullTransform() * ogrebone._getDerivedPosition() 
-            jpin = (self.Node.getWorldOrientation() * parent.getOgreBone()._getDerivedOrientation()) * jointpin 
+            jpin = (self.Node.getOrientation() * parent.getOgreBone()._getDerivedOrientation()) * jointpin 
     
             self._joinBones( jointtype, parent, me, jpos, jpin, limit1, limit2) 
     

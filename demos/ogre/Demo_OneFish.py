@@ -87,14 +87,14 @@ class TutorialApplication(SampleFramework.Application):
 
 
         entity = sceneManager.createEntity("Ninja", "ninja.mesh")
-        ninjaNode = sceneManager.rootSceneNode.createChildSceneNode("NinjaNode",ogre.Vector3(0,0,0))
+        ninjaNode = sceneManager.getRootSceneNode().createChildSceneNode("NinjaNode",ogre.Vector3(0,0,0))
         ninjaNode.yaw( ogre.Degree(-180)) 
         ninjaNode.attachObject(entity)
         entity.castShadows = True
 
         
         entity = sceneManager.createEntity("Wanda", "fish.mesh")
-        fishNode = sceneManager.rootSceneNode.createChildSceneNode("fishNode",ogre.Vector3(0,0,0))
+        fishNode = sceneManager.getRootSceneNode().createChildSceneNode("fishNode",ogre.Vector3(0,0,0))
         fishNode.setScale (5,5,5)
         fishNode.attachObject(entity)
         entity.castShadows = True
@@ -204,7 +204,7 @@ class TutorialApplication(SampleFramework.Application):
                        True,True )
 
         ent = sceneManager.createEntity("GroundEntity", "ground")
-        sceneManager.rootSceneNode.createChildSceneNode().attachObject(ent)        
+        sceneManager.getRootSceneNode().createChildSceneNode().attachObject(ent)        
         ent.setMaterialName("Examples/Rockwall")
         ent.castShadows = False
 
@@ -215,13 +215,13 @@ class TutorialApplication(SampleFramework.Application):
         light.setSpecularColour (1, 1, 1)
 
         # create the first camera node/pitch node
-        node = sceneManager.rootSceneNode.createChildSceneNode("CamNode1", ogre.Vector3(0, 100, 300))
+        node = sceneManager.getRootSceneNode().createChildSceneNode("CamNode1", ogre.Vector3(0, 100, 300))
         node.yaw(ogre.Degree(0))  # look at the ninja
         node = node.createChildSceneNode("PitchNode1")
         node.attachObject(self.camera)
 
         # create the second camera node/pitch node
-        node = sceneManager.rootSceneNode.createChildSceneNode("CamNode2", ogre.Vector3(-100, 100, 400))
+        node = sceneManager.getRootSceneNode().createChildSceneNode("CamNode2", ogre.Vector3(-100, 100, 400))
         node.createChildSceneNode("PitchNode2")
 
     def _createCamera(self):

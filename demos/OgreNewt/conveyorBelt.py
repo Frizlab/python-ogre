@@ -21,7 +21,6 @@ class conveyorBelt:
     
         ent = self.sceneManager.createEntity(name, "box.mesh")
         ent.setMaterialName(name)
-        ent.setNormaliseNormals(True)
         self.Node.attachObject(ent)
         self.Node.setScale( size )
     
@@ -43,7 +42,7 @@ class conveyorBelt:
     
     
     def getGlobalDir(self):
-        ret = self.Node.getWorldOrientation() * self.mDir
+        ret = self.Node.getOrientation() * self.mDir
         return ret
     
     def killme(self):

@@ -43,8 +43,7 @@ class OgreNewtonApplication (sf.Application):
         box1node = self.sceneManager.getRootSceneNode().createChildSceneNode()
         box1node.attachObject( box1 )
         box1node.setScale( size )
-        box1.setNormaliseNormals(True)
-    
+        
         col = OgreNewt.Box( self.World, size )
         bod = OgreNewt.Body( self.World, col )
         del col
@@ -181,12 +180,12 @@ class OgreNewtonFrameListener(sf.FrameListener):
         if (self.Keyboard.isKeyDown(OIS.KC_SPACE)):
             if (self.timer <= 0.0):
                 ## we get the position and direction from the camera...
-                camorient = self.msnCam.getWorldOrientation()
+                camorient = self.msnCam.getOrientation()
                 vec = Ogre.Vector3(0,0,-1)
                 direct = camorient * vec
     
                 ## then make the visual object (again a cylinder)
-                pos = self.msnCam.getWorldPosition()
+                pos = self.msnCam.getPosition()
                 name = "Body"+str( self.count )
                 self.count += 1
     
@@ -197,8 +196,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 node.setPosition(0.0, 0.0, 0.0)
                 
                 ent.setMaterialName( "Examples/RustySteel" )
-                ent.setNormaliseNormals(True)
-    
+                
                 ## again, make the collision shape.
                 col = OgreNewt.Ellipsoid(self.World, Ogre.Vector3(1, 1,1))
                 ## then make the rigid body.    ## need to keep it arround

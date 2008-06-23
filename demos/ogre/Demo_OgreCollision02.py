@@ -20,7 +20,7 @@ NUMBOXES=300
 TypeOgre=0
 TypeODE=1
 
-AppType =  TypeODE
+AppType =  TypeOgre
           
 class OgreCollideApplication(sf.Application):
     #
@@ -173,7 +173,6 @@ class OgreCollideListener(sf.FrameListener):
             entity = self.sceneManager.createEntity(name, names[i % len(names)] + ".mesh")
             node = self.sceneManager.getRootSceneNode().createChildSceneNode(name)
             node.attachObject(entity)
-            entity.setNormaliseNormals(True)
             entity.setCastShadows(True)
             ## Pick a size
             scale= 100

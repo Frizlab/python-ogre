@@ -172,7 +172,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
 
                 size = Ogre.Vector3 ( 0.2 + random.random() % 2, 0.2 + random.random() % 2, 0.2 + random.random() % 2 )
                 mass = size.length()
-                pos = self.msnCam.getWorldPosition()
+                pos = self.msnCam.getPosition()
                 
                 name = "Body "+str( self.count )
                 self.count += 1
@@ -184,7 +184,6 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 node.setScale( size )
                 
                 ent.setMaterialName( "Examples/RustySteel" )
-                ent.setNormaliseNormals(True)
                 
                 col =OgreNewt.Box( self.World, size )
                 body = OgreNewt.Body( self.World, col )
