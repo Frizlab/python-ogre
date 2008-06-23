@@ -86,13 +86,6 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
         self.mPlane.d = 0
         self.mPlane.normal =ogre.Vector3.UNIT_Y
           
-#         ogre.MeshManager.getSingleton().createPlane("ReflectionPlane", 
-#             ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME, 
-#             self.mPlane._getDerivedPlane(), 2000.0, 2000.0, 
-#             1, 1, True, 1, 1.0, 1.0, ogre.Vector3.UNIT_Z,
-#             ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
-#             True,True
-#             )
         ogre.MeshManager.getSingleton().createPlane("ReflectionPlane", 
             ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME, 
             self.mPlane, 2000.0, 2000.0, 
@@ -126,21 +119,21 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
         #
         #
 #         
-        self.soundManager  = OgreAL.SoundManager("Generic Software")
+        self.soundManager  = OgreAL.SoundManager() ## "Generic Software")
         
         dl = self.soundManager.getDeviceList()
         for dev in dl:
             print "Device available:", dev
         node = rootNode.createChildSceneNode( "Head" )
         node.attachObject( ogreHead )
-        sound = self.soundManager.createSound("Roar", "6 chan.ogg", True) ## "roar.wav", True)
+        sound = self.soundManager.createSound("Roar", "roar.wav", True) ## "6chan.ogg", True) ## "roar.wav", True)
         node.attachObject(sound)
         sound.play()
 
-#         bgSound = self.soundManager.createSoundStream("stereo", "stereo.ogg", True)
-#         bgSound.setGain(0.5)
-#         bgSound.setRelativeToListener(True)
-#         bgSound.play()
+        bgSound = self.soundManager.createSound("stereo", "6chan.ogg", True, True)
+        bgSound.setGain(0.5)
+        bgSound.setRelativeToListener(True)
+        bgSound.play()
         
     	node = sceneManager.getRootSceneNode().createChildSceneNode("CameraNode")
      	node.setPosition(0, 100, 100)
@@ -149,17 +142,25 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
      	node.attachObject(self.soundManager.getListener())
      	node.pitch(ogre.Degree(-30))
         self.pitchnode = node
-      
+        OgreAL.SoundManager.getSingleton().getSound("Roar").play()
         
         
         ## Either of these techniques works...
-        # create RenderTexture
-        rttTex = self.root.getRenderSystem().createRenderTexture( "RttTex", 512, 512, 
-                                                                 ogre.TEX_TYPE_2D,ogre.PixelFormat.PF_R8G8B8 )
+#         # create RenderTexture
+#         rttTex = self.root.getRenderSystem().createRenderTexture( "RttTex", 512, 512, 
+#                                                                  ogre.TEX_TYPE_2D,ogre.PixelFormat.PF_R8G8B8 )
 #         texture = ogre.TextureManager.getSingleton().createManual( "RttTex", 
 #                     ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME, ogre.TEX_TYPE_2D, 
 #                     512, 512, 0, ogre.PixelFormat.PF_R8G8B8, ogre.TU_RENDERTARGET )
-        
+  
+        ## Setup Render To Texture for preview window
+        texture = ogre.TextureManager.getSingleton().createManual( "RttTex", 
+                        ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME, ogre.TEX_TYPE_2D, 
+                        512, 512, 0, ogre.PixelFormat.PF_R8G8B8, ogre.TU_RENDERTARGET )
+        rttTex = texture.getBuffer().getRenderTarget()
+
+
+      
         self.mReflectCam = sceneManager.createCamera("ReflectCam")
         self.mReflectCam.setNearClipDistance(camera.getNearClipDistance())
         self.mReflectCam.setFarClipDistance(camera.getFarClipDistance())
