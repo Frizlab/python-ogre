@@ -23,6 +23,7 @@ class VideoApplication(sf.Application):
         camera = self.camera
         
         sceneManager.ambientLight = ogre.ColourValue(0.5, 0.5, 0.5)
+        sceneManager.setSkyDome (True, 'Examples/CloudySky',4.0,8.0)
 
         light = sceneManager.createLight('MainLight')
         light.setPosition (20, 80, 150)
@@ -31,17 +32,8 @@ class VideoApplication(sf.Application):
         movieName = "../media_extra/fish.avi"
         
         self.dshowMovieTextureSystem.loadMovie(movieName)
-        self.dshowMovieTextureSystem.playMovie()
-        
-        skyMaterial = ogre.MaterialManager.getSingleton()   #get the material manager pointer
-        skyMaterial =  skyMaterial.create('SkyMat', ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME )
-        skyMaterial.lightingEnabled = False
-        
-        textureUnitState = skyMaterial.getTechnique(0).getPass(0).createTextureUnitState('clouds.jpg', 0)
-        textureUnitState.setScrollAnimation(0.15, 0)
-
-        sceneManager.setSkyDome(True, 'SkyMat', -5.0, 2.0)
-         
+#         self.dshowMovieTextureSystem.playMovie()
+                 
         c = sceneManager.createEntity("cubo", "cube.mesh")
         n = sceneManager.getRootSceneNode().createChildSceneNode()
         n.attachObject(c)
@@ -51,6 +43,8 @@ class VideoApplication(sf.Application):
         c.setMaterialName('Examples/Rockwall')
         
         mat=ogre.MaterialManager.getSingleton().getByName('Examples/Rockwall')
+        mat.getTechnique(0).getPass(0).createTextureUnitState()
+
         tex=mat.getTechnique(0).getPass(0).getTextureUnitState(0)
         tex.setTextureName(
             self.dshowMovieTextureSystem.getMovieTexture().getName())

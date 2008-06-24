@@ -38,22 +38,15 @@ class VideoApplication(sf.Application):
         
         
         self.Control =  theora.TheoraVideoController() ##InitVideoController()  getVideoController() ## 
-        print "\n\n", dir(self.Control)
-		
 
         if not self.Control:
             print "\n\nClip not found\n"
             sys.exit()
         self.Control.setInputName( '../media_extra/fish.ogg' )
-        print dir (theora)
-        self.Control.setPlayMode(theora.TextureEffectPause );
+        self.Control.setPlayMode(theora.TextureEffectPause )
 
         self.Control.setTextureTecPassStateLevel( 0, 0, 0 )
         self.Control.setSeekEnabled( False )
-        ##This is mainly for OpenAL - but applies to other audio libs which
-        ##use pooling instead of callbacks for updating...
-        ##Let TheoraMovieClip update the audioclip.
-        ##self.Control.setAutoAudioUpdate( False )        
         
         mat  = ogre.MaterialManager.getSingleton().getByName("Example/TheoraVideoPlayer/Play")
         #Create the material the first time through this method
@@ -62,7 +55,6 @@ class VideoApplication(sf.Application):
     
         mat.getTechnique(0).getPass(0).createTextureUnitState()
         self.Control.createDefinedTexture( "Example/TheoraVideoPlayer/Play", "General" )
-        print "****************\n", dir (self.Control)
         
 # #         dmanager = ogre.DynLibManager.getSingletonPtr()
 # #         oalsound = dmanager.load ("OAL_MOD")
@@ -71,31 +63,18 @@ class VideoApplication(sf.Application):
 # #         print "SYM:", OALManager 
 # #         OALManager.start()
         
-        slib = ctypes.cdll.LoadLibrary("OAL_MOD")
-        print slib
-        print dir(slib)
-        f = slib.getSoundSystem()
-        print f
-        print dir(f)
-        f.start()
-     
-            
-        
+#         slib = ctypes.cdll.LoadLibrary("OAL_MOD")
+#         print slib
+#         print dir(slib)
+#         f = slib.getSoundSystem()
+#         print f
+#         print dir(f)
+#         f.start()
         
         self.Clip =  self.Control.getMaterialNameClip("Example/TheoraVideoPlayer/Play")
         
-#         self.ad = theora.TheoraAudioDriver()
-#         self.Clip.setAudioDriver( self.ad )
         self.playmode = theora.TextureEffectPlay_ASAP
         self.Clip.changePlayMode ( self.playmode )
-                    
-
-        skyMaterial = ogre.MaterialManager.getSingleton()   #get the material manager pointer
-        skyMaterial =  skyMaterial.create('SkyMat', ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME )
-        skyMaterial.lightingEnabled = False
-        textureUnitState = skyMaterial.getTechnique(0).getPass(0).createTextureUnitState('clouds.jpg', 0)
-        textureUnitState.setScrollAnimation(0.15, 0)
-        sceneManager.setSkyDome(True, 'SkyMat', -5.0, 2.0)
          
         c = sceneManager.createEntity("cubo", "cube.mesh")
         n = sceneManager.getRootSceneNode().createChildSceneNode()

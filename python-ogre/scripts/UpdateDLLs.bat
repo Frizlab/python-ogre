@@ -55,8 +55,8 @@ copy /y %physx%\Nx*.dll %package%\physics\PhysX
 copy /y %physx%\Ph*.dll %package%\physics\PhysX
 copy /y %physx%\Nx*.dll %package%\physics\NxOgre_09
 rem Theora
-copy /y %theora%\Plugin_TheoraVideoSystem.dll ..\plugin
-copy /y %theora%\Plugin_TheoraVideoSystem.dll %package%\addons\theora
+copy /y %theora%\Plugin_TheoraVideoSystem.dll ..\plugins
+REM copy /y %theora%\Plugin_TheoraVideoSystem.dll %package%\addons\theora
 
 rem FFMpeg
 copy /y %ffmpeg%\lib\*.dll %package%\addons\ogrevideoffmpeg
