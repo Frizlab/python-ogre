@@ -24,6 +24,8 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 namespace caelum
 {
     const LongReal Astronomy::PI = 3.1415926535897932384626433832795029L;
+    
+    const LongReal Astronomy::J2000 = 2451545.0;
 
     LongReal Astronomy::radToDeg (LongReal value)
     {

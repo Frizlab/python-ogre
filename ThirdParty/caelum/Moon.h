@@ -2,7 +2,7 @@
 This file is part of Caelum.
 See http://www.ogre3d.org/wiki/index.php/Caelum 
 
-Copyright (c) 2006-2007 Caelum team. See Contributors.txt for details.
+Copyright (c) 2008 Caelum team. See Contributors.txt for details.
 
 Caelum is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published
@@ -27,27 +27,35 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 namespace caelum {
 
 /** Class representing the moon.
- *	The moon is always full.
+ *  Drawn as two billboards; one after the stars and one after the skydome.
+ *  Drawing it before the skydome will make it invisible in daylight; and that's bad.
  */
 class CAELUM_EXPORT Moon : public BaseSkyLight {
-// Attributes -----------------------------------------------------------------
 	public:
 		/// Name of the moon material.
 		static const Ogre::String MOON_MATERIAL_NAME;
 
+        /// Name of the moon background material.
+		static const Ogre::String MOON_BACKROUND_MATERIAL_NAME;
+
 	private:
 		/// The moon sprite.
-		Ogre::BillboardSet* mMoonBillboardSet;
-		
-		/// Reference to the moon material.
-		Ogre::MaterialPtr mMaterial;
+		Ogre::BillboardSet* mMoonBB;
 
+        /// Material for MoonBB
+		Ogre::MaterialPtr mMoonMaterial;
+
+        /// The moon's background; used to block the stars.
+		Ogre::BillboardSet* mBackBB;
+
+        /// Material for mBackBB
+		Ogre::MaterialPtr mBackMaterial;
+		
 		/// The moon sprite visible angle
-		Ogre::Degree mMoonTextureAngularSize;
+		Ogre::Degree mAngularSize;
 
 		Ogre::GpuProgramParametersSharedPtr getFpParams();
 
-// Methods --------------------------------------------------------------------
 	public:
 		/** Constructor.
 		 */
@@ -55,7 +63,7 @@ class CAELUM_EXPORT Moon : public BaseSkyLight {
 				Ogre::SceneManager *sceneMgr,
 				Ogre::SceneNode *caelumRootNode,
 				const Ogre::String& moonTextureName = "moon_disc.dds", 
-				const Ogre::Degree& moonTextureAngularSize = Ogre::Degree(3.77f)); // 0.53f is real angular size of Moon and Moon, 3.77f is compatible with SphereMoon
+				Ogre::Degree angularSize = Ogre::Degree(3.77f));
 
 		virtual ~Moon ();
 
@@ -82,6 +90,6 @@ class CAELUM_EXPORT Moon : public BaseSkyLight {
 		virtual void notifyCameraChanged (Ogre::Camera *cam);
 };
 
-} // namespace caelum
+}
 
 #endif //MOON_H

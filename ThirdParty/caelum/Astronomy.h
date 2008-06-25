@@ -64,6 +64,9 @@ namespace caelum
         static LongReal atan2Deg (LongReal y, LongReal x);
 
     public:
+        /// January 1, 2000, noon
+        static const LongReal J2000;
+
         /** Convert from ecliptic to ecuatorial spherical coordinates, in radians.
          *  @param lon Ecliptic longitude
          *  @param lat Ecliptic latitude

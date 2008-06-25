@@ -100,6 +100,7 @@ class CAELUM_EXPORT UniversalClock
         /** Set the current time as a julian day.
          *  Set the current time as a julian day, which you build using one
          *  of the static getJulianDayFromXXX functions.
+         *  Defaults to J2000 (noon january 1st)
          */
         void setJulianDay(LongReal value);
 

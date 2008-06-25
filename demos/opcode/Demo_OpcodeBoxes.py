@@ -121,7 +121,6 @@ class OpcodeBoxesListener(sf.FrameListener):
             
             node = self.sceneManager.getRootSceneNode().createChildSceneNode(name)
             node.attachObject(entity)
-            entity.setNormaliseNormals(True)
             entity.setCastShadows(True)
             
             ## Pick a size

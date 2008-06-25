@@ -21,6 +21,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "CaelumPrecompiled.h"
 #include "CaelumSystem.h"
 #include "Moon.h"
+#include "PointStarfield.h"
 
 namespace caelum {
 
@@ -86,11 +87,11 @@ CaelumSystem::CaelumSystem
     if (componentsToCreate & CAELUM_COMPONENT_SKY_COLOUR_MODEL) {
         this->setSkyColourModel (new SkyColourModel ());
     }
-    if (componentsToCreate & CAELUM_COMPONENT_SKY_DOME) {
-		this->setSkyDome (new SkyDome (mSceneMgr, mCaelumRootNode));
-    }
     if (componentsToCreate & CAELUM_COMPONENT_SOLAR_SYSTEM_MODEL) {
         this->setSolarSystemModel (new SolarSystemModel ());
+    }
+    if (componentsToCreate & CAELUM_COMPONENT_SKY_DOME) {
+	    this->setSkyDome (new SkyDome (mSceneMgr, mCaelumRootNode));
     }
     if (componentsToCreate & CAELUM_COMPONENT_SUN) {
 		this->setSun (new SpriteSun (mSceneMgr, mCaelumRootNode));
@@ -98,8 +99,11 @@ CaelumSystem::CaelumSystem
     if (componentsToCreate & CAELUM_COMPONENT_MOON) {
 		this->setMoon (new Moon (mSceneMgr, mCaelumRootNode));
     }
-	if (componentsToCreate & CAELUM_COMPONENT_STARFIELD) {
-		this->setStarfield (new Starfield (mSceneMgr, mCaelumRootNode));
+	if (componentsToCreate & CAELUM_COMPONENT_IMAGE_STARFIELD) {
+		this->setImageStarfield (new ImageStarfield (mSceneMgr, mCaelumRootNode));
+    }
+	if (componentsToCreate & CAELUM_COMPONENT_POINT_STARFIELD) {
+		this->setPointStarfield (new PointStarfield (mSceneMgr, mCaelumRootNode));
     }
     if (componentsToCreate & CAELUM_COMPONENT_CLOUDS) {
 		this->setClouds (new LayeredClouds (mSceneMgr, mCaelumRootNode));
@@ -120,7 +124,8 @@ void CaelumSystem::destroySubcomponents () {
 	// Destroy the elements
 	setSkyDome (0);
 	setSun (0);
-	setStarfield (0);
+	setImageStarfield (0);
+	setPointStarfield (0);
 	setClouds (0);
     setGroundFog (0);
     setSkyColourModel (0);
@@ -166,6 +171,7 @@ void CaelumSystem::preViewportUpdate (const Ogre::RenderTargetViewportEvent &e) 
 	
 	// Move root node.
 	mCaelumRootNode->setPosition(cam->getDerivedPosition());
+	mCaelumRootNode->_update(true, false);
 
 	if (getSkyDome ()) {
 		getSkyDome ()->notifyCameraChanged (cam);
@@ -179,8 +185,12 @@ void CaelumSystem::preViewportUpdate (const Ogre::RenderTargetViewportEvent &e) 
 		getMoon ()->notifyCameraChanged (cam);
 	}
 
-	if (getStarfield ()) {
-		getStarfield ()->notifyCameraChanged (cam);
+	if (getImageStarfield ()) {
+		getImageStarfield ()->notifyCameraChanged (cam);
+	}
+
+	if (getPointStarfield ()) {
+		getPointStarfield ()->notifyCameraChanged (cam);
 	}
 
 	if (getClouds ()) {
@@ -255,9 +265,14 @@ void CaelumSystem::updateSubcomponents (double timeSinceLastFrame) {
         moonBodyColour = Ogre::ColourValue::White;
     }
 
-    // Update starfield
-    if (getStarfield ()) {
-        getStarfield ()->update (relDayTime);
+    // Update image starfield
+    if (getImageStarfield ()) {
+        getImageStarfield ()->update (relDayTime);
+    }
+
+    // Update point starfield
+    if (getPointStarfield ()) {
+        getPointStarfield ()->_update (relDayTime);
     }
 
     // Update skydome.
@@ -347,7 +362,7 @@ void CaelumSystem::setSceneFogDensityMultiplier (double value) {
     mSceneFogDensityMultiplier = value;
 }
 
-double  CaelumSystem::getSceneFogDensityMultiplier () const {
+double CaelumSystem::getSceneFogDensityMultiplier () const {
     return mSceneFogDensityMultiplier;
 }
 
@@ -355,7 +370,7 @@ void CaelumSystem::setGroundFogDensityMultiplier (double value) {
     mGroundFogDensityMultiplier = value;
 }
 
-double  CaelumSystem::getGroundFogDensityMultiplier () const {
+double CaelumSystem::getGroundFogDensityMultiplier () const {
     return mGroundFogDensityMultiplier;
 }
 
@@ -363,7 +378,7 @@ void CaelumSystem::setGlobalFogDensityMultiplier (double value) {
     mGlobalFogDensityMultiplier = value;
 }
 
-double  CaelumSystem::getGlobalFogDensityMultiplier () const {
+double CaelumSystem::getGlobalFogDensityMultiplier () const {
     return mGlobalFogDensityMultiplier;
 }
 } // namespace caelum

@@ -2,7 +2,7 @@
 This file is part of Caelum.
 See http://www.ogre3d.org/wiki/index.php/Caelum 
 
-Copyright (c) 2006-2007 Caelum team. See Contributors.txt for details.
+Copyright (c) 2006-2008 Caelum team. See Contributors.txt for details.
 
 Caelum is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published
@@ -26,7 +26,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "UniversalClock.h"
 #include "SkyColourModel.h"
 #include "SkyDome.h"
-#include "Starfield.h"
+#include "ImageStarfield.h"
 #include "LayeredClouds.h"
 #include "SolarSystemModel.h"
 #include "GroundFog.h"
@@ -115,28 +115,15 @@ class CAELUM_EXPORT CaelumSystem : public Ogre::FrameListener, public Ogre::Rend
         /// Ensure only one of the light sources casts shadows.
         bool mEnsureSingleShadowSource;
 		
-		/// Reference to the sky colour model, if enabled.
+		// References to sub-components
         std::auto_ptr<SkyColourModel> mSkyColourModel;
-        
-		/// Reference to the sky dome, if enabled.
         std::auto_ptr<SkyDome> mSkyDome;
-
-		/// Reference to the solar system model, if enabled.
         std::auto_ptr<SolarSystemModel> mSolarSystemModel;
-        
-		/// Reference to the sun, if enabled.
         std::auto_ptr<BaseSkyLight> mSun;
-
-		/// Reference to the moon, if enabled.
         std::auto_ptr<Moon> mMoon;
-
-		/// Reference to the starfield, if enabled.
-        std::auto_ptr<Starfield> mStarfield;
-
-		/// Reference to the clouds, if enabled.
+        std::auto_ptr<ImageStarfield> mImageStarfield;
+        std::auto_ptr<PointStarfield> mPointStarfield;
         std::auto_ptr<LayeredClouds> mClouds;
-
-		/// Reference to ground fog, if enabled.
         std::auto_ptr<GroundFog> mGroundFog;
 
 // Methods --------------------------------------------------------------------
@@ -161,16 +148,25 @@ class CAELUM_EXPORT CaelumSystem : public Ogre::FrameListener, public Ogre::Rend
             CAELUM_COMPONENT_SOLAR_SYSTEM_MODEL = 1 << 2,
             CAELUM_COMPONENT_MOON				= 1 << 3,
             CAELUM_COMPONENT_SUN                = 1 << 4,
-            CAELUM_COMPONENT_STARFIELD          = 1 << 5,
-            CAELUM_COMPONENT_CLOUDS             = 1 << 6,
+            CAELUM_COMPONENT_IMAGE_STARFIELD    = 1 << 5,
+            CAELUM_COMPONENT_POINT_STARFIELD    = 1 << 6,
+            CAELUM_COMPONENT_CLOUDS             = 1 << 7,
 
             // These have nasty dependencies on materials.
             CAELUM_COMPONENT_GROUND_FOG         = 1 << (16 + 0),
-            // TODO: CAELUM_COMPONENT_HAZE      = 1 << (16 + 1),
 
-            CAELUM_COMPONENTS_NONE              = 0x00000000,
-            CAELUM_COMPONENTS_DEFAULT           = 0x0000007F,
-            CAELUM_COMPONENTS_ALL               = 0x0002007F,
+            // Groups
+            CAELUM_COMPONENTS_NONE              = 0,
+            CAELUM_COMPONENTS_DEFAULT           = 0
+                    | CAELUM_COMPONENT_SKY_COLOUR_MODEL
+                    | CAELUM_COMPONENT_SKY_DOME
+                    | CAELUM_COMPONENT_SOLAR_SYSTEM_MODEL
+                    | CAELUM_COMPONENT_MOON
+                    | CAELUM_COMPONENT_SUN
+                    | CAELUM_COMPONENT_POINT_STARFIELD
+                    | CAELUM_COMPONENT_CLOUDS,
+            CAELUM_COMPONENTS_ALL               =
+                    CAELUM_COMPONENTS_DEFAULT | CAELUM_COMPONENT_GROUND_FOG,
         };
     
 		/** Constructor.
@@ -223,60 +219,35 @@ class CAELUM_EXPORT CaelumSystem : public Ogre::FrameListener, public Ogre::Rend
          */
         void updateSubcomponents (double timeSinceLastFrame);
 
-		/** Set the skydome.
-         *  @param dome A new dome or null to disable.
-		 */
-        inline void setSkyDome (SkyDome *dome) {
-            mSkyDome.reset(dome);
-        }
+		/// Get the current sky dome, or null if disabled.
+        inline SkyDome* getSkyDome () const { return mSkyDome.get (); }
+		/// Set the skydome, or null to disable.
+        inline void setSkyDome (SkyDome *obj) { mSkyDome.reset (obj); }
 
-		/** Returns the current sky dome.
-		 */
-        SkyDome *getSkyDome () const {
-            return mSkyDome.get();
-        }
+		/// Gets the current sun, or null if disabled.
+        inline BaseSkyLight* getSun () const { return mSun.get (); }
+		/// Set the sun, or null to disable.
+		inline void setSun (BaseSkyLight* obj) { mSun.reset (obj); }
 
-		/// Set the sun.
-        /// @param sun A new sun or null to disable.
-		inline void setSun (BaseSkyLight* sun) { mSun.reset(sun); }
+		/// Gets the current moon, or null if disabled.
+        BaseSkyLight* getMoon () const { return mMoon.get (); }
+		/// Set the moon, or null to disable.
+		inline void setMoon (Moon* obj) { mMoon.reset (obj); }
 
-		/// Gets the current sun.
-		///	@return The sun in use.
-        BaseSkyLight* getSun () const { return mSun.get(); }
+		/// Gets the current image starfield, or null if disabled.
+        inline ImageStarfield* getImageStarfield () const { return mImageStarfield.get (); }
+		/// Set image starfield, or null to disable.
+        inline void setImageStarfield (ImageStarfield* obj) { mImageStarfield.reset (obj); }
 
-		/// Set the moon.
-        /// @param sun A new moon or null to disable.
-		inline void setMoon (Moon* moon) { mMoon.reset(moon); }
+		/// Gets the current point starfield, or null if disabled.
+        inline PointStarfield* getPointStarfield () const { return mPointStarfield.get (); }
+		/// Set image starfield, or null to disable.
+        inline void setPointStarfield (PointStarfield* obj) { mPointStarfield.reset (obj); }
 
-		/// Gets the current moon.
-		///	@return The moon in use.
-        BaseSkyLight* getMoon () const { return mMoon.get(); }
-
-		/** Set the starfield.
-         *  @param starfield A new starfield or null to disable.
-         */
-        inline void setStarfield (Starfield* starfield) {
-            mStarfield.reset(starfield);
-        }
-
-		/** Gets the current starfield.
-         */
-        inline Starfield* getStarfield () const {
-            return mStarfield.get();
-        }
-
-		/** Set the cloud system
-         *  @param clouds A new cloud system or null to disable.
-         */
-        inline void setClouds (LayeredClouds* clouds) {
-            mClouds.reset(clouds);
-        }
-
-		/** Get the current cloud system.
-         */
-        inline LayeredClouds* getClouds () const {
-            return mClouds.get();
-        }
+		/// Get LayeredClouds, or null if disabled.
+        inline LayeredClouds* getClouds () const { return mClouds.get (); }
+		/// Set LayeredClouds, or null to disable.
+		inline void setClouds (LayeredClouds* obj) { mClouds.reset (obj); }
 
 		/** Sets the sky colour model to be used.
 		 *	@param model The sky colour model, or null to disable
