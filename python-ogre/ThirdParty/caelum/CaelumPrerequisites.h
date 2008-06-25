@@ -29,21 +29,21 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 // Define the dll export qualifier if compiling for Windows
-// #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 // 	#ifdef CAELUM_LIB
 // 		#define CAELUM_EXPORT __declspec (dllexport)
 // 	#else
 // 		#ifdef __MINGW32__
-// 			#define CAELUM_EXPORT
+			#define CAELUM_EXPORT
 // 		#else
 // 			#define CAELUM_EXPORT __declspec (dllimport)
 // 		#endif
 // 	#endif
-// #elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-// 	#define CAELUM_EXPORT __attribute__ ((visibility("default")))
-// #else
+#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+	#define CAELUM_EXPORT __attribute__ ((visibility("default")))
+#else
 	#define CAELUM_EXPORT
-// #endif
+#endif
 
 // Define the version code
 #define CAELUM_VERSION_MAIN 0
@@ -59,17 +59,22 @@ namespace caelum {
     // It's best to have them all together
     enum CaelumRenderQueueGroupId
     {
-        CAELUM_RENDER_QUEUE_STARFIELD =     Ogre::RENDER_QUEUE_SKIES_EARLY + 0,
-        CAELUM_RENDER_QUEUE_SKYDOME =       Ogre::RENDER_QUEUE_SKIES_EARLY + 1,
-		CAELUM_RENDER_QUEUE_MOON =          Ogre::RENDER_QUEUE_SKIES_EARLY + 2,
-        CAELUM_RENDER_QUEUE_SUN =           Ogre::RENDER_QUEUE_SKIES_EARLY + 3,
-        CAELUM_RENDER_QUEUE_CLOUDS =        Ogre::RENDER_QUEUE_SKIES_EARLY + 4,
-        CAELUM_RENDER_QUEUE_GROUND_FOG =    Ogre::RENDER_QUEUE_SKIES_EARLY + 5,
+        CAELUM_RENDER_QUEUE_STARFIELD       = Ogre::RENDER_QUEUE_SKIES_EARLY + 0,
+		CAELUM_RENDER_QUEUE_MOON_BACKGROUND = Ogre::RENDER_QUEUE_SKIES_EARLY + 1,
+        CAELUM_RENDER_QUEUE_SKYDOME         = Ogre::RENDER_QUEUE_SKIES_EARLY + 2,
+		CAELUM_RENDER_QUEUE_MOON            = Ogre::RENDER_QUEUE_SKIES_EARLY + 3,
+        CAELUM_RENDER_QUEUE_SUN             = Ogre::RENDER_QUEUE_SKIES_EARLY + 4,
+        CAELUM_RENDER_QUEUE_CLOUDS          = Ogre::RENDER_QUEUE_SKIES_EARLY + 5,
+        CAELUM_RENDER_QUEUE_GROUND_FOG      = Ogre::RENDER_QUEUE_SKIES_EARLY + 6,
     };
 
     // Caelum needs a lot of precission for astronomical calculations.
     // Very few calculations use it, and the precission IS required.
     typedef double LongReal;
+
+    using Ogre::uint;
+
+    class PointStarfield;
 }
 
 #endif //CAELUMPREREQUISITES_H

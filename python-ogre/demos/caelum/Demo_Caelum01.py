@@ -223,33 +223,37 @@ class TerrainApplication(sf.Application):
             ogre.CompositorManager.getSingleton().addCompositor(self.renderWindow.getViewport(0),"Bloom")
         camera.setNearClipDistance(0.01)
         componentMask = caelum.CaelumSystem.CaelumComponent(
-                    caelum.CaelumSystem.CAELUM_COMPONENT_SKY_COLOUR_MODEL |
-                    caelum.CaelumSystem.CAELUM_COMPONENT_SUN |
+                    caelum.CaelumSystem.CAELUM_COMPONENT_SKY_COLOUR_MODEL | 
+#                     caelum.CaelumSystem.CAELUM_COMPONENT_SUN |
                     caelum.CaelumSystem.CAELUM_COMPONENT_SOLAR_SYSTEM_MODEL |
                     ## these cause run time errors on my crap laptop
-                    caelum.CaelumSystem.CAELUM_COMPONENT_SKY_DOME | 
-                    caelum.CaelumSystem.CAELUM_COMPONENT_STARFIELD |
-                    caelum.CaelumSystem.CAELUM_COMPONENT_CLOUDS |
-                    caelum.CaelumSystem.CAELUM_COMPONENT_GROUND_FOG |
-                    0)
+#                     caelum.CaelumSystem.CAELUM_COMPONENT_SKY_DOME | 
+#                     caelum.CaelumSystem.CAELUM_COMPONENT_STARFIELD |
+#                     caelum.CaelumSystem.CAELUM_COMPONENT_CLOUDS |
+#                     caelum.CaelumSystem.CAELUM_COMPONENT_GROUND_FOG |
+                    0 )
         print componentMask
         ## Initialise Caelum
-        self.caelumSystem = caelum.CaelumSystem(self.root, self.sceneManager,componentMask )
+        self.caelumSystem = caelum.CaelumSystem(self.root.getSingletonPtr(), self.sceneManager,componentMask )
                 
-        ## KNOWN BUG: The horizon is pure white if setManageFog is False.
-        ## I blame it on the transparent skydome.
         self.caelumSystem.setManageSceneFog(True)
         self.caelumSystem.setSceneFogDensityMultiplier(0.0015)
+        self.caelumSystem.setManageAmbientLight (true)
         
+        
+        ## This is how you switch the sun implementation.
+        ## This here is a no-op; but it's useful to test caelum doesn't crash when the second sun is created.
+        self.spheresun = caelum.SphereSun(self.sceneManager, self.caelumSystem.getRootNode ())
+        self.caelumSystem.setSun (self.spheresun)
+
         ## Setup sun options
         if self.caelumSystem.getSun ():
-           self.caelumSystem.getSun ().setAmbientMultiplier (ogre.ColourValue(0.5, 0.5, 0.5))
-           self.caelumSystem.getSun ().setDiffuseMultiplier (ogre.ColourValue(3, 3, 2.7))
-            ## For green terrain:
-            ##mCaelumSystem.getSun ().setDiffuseMultiplier (ogre.ColourValue(0.1, 3, 0.1))
-           self.caelumSystem.getSun ().setSpecularMultiplier (ogre.ColourValue(5, 5, 5))
-           self.caelumSystem.getSun ().setManageAmbientLight (True)
-        
+            self.caelumSystem.getSun ().setAmbientMultiplier (ogre.ColourValue(0.5, 0.5, 0.5))
+            self.caelumSystem.getSun ().setDiffuseMultiplier (ogre.ColourValue(3, 3, 2.7))
+            self.caelumSystem.getSun ().setSpecularMultiplier (ogre.ColourValue (5, 5, 5))
+            self.caelumSystem.getSun ().setAutoDisable (True)
+            self.caelumSystem.getSun ().setAutoDisableThreshold (0.1)
+            
         ## Setup fog options.
         if self.caelumSystem.getGroundFog():
            self.caelumSystem.getGroundFog().findFogPassesByName()
@@ -270,10 +274,10 @@ class TerrainApplication(sf.Application):
         
         ## Winter dawn in the southern hemisphere, looking north
         self.caelumSystem.getUniversalClock ().setGregorianDateTime (2008, 7, 4, 20, 33, 0)
-        self.caelumSystem.getSolarSystemModel ().setObserverLongitude (ogre.Degree(151 + 12.0 / 60))
+        self.caelumSystem.getSolarSystemModel ().setObserverLongitude (ogre.Degree(103 + 48 / 60))
         
-        ## Sidney
-        self.caelumSystem.getSolarSystemModel ().setObserverLatitude (ogre.Degree(-33 + 52.0 / 60))
+        ## Singapore
+        self.caelumSystem.getSolarSystemModel ().setObserverLatitude (ogre.Degree(1 + 22 / 60))
         ## Beyond the southern polar circle, no sunrise
         ##mCaelumSystem.getSolarSystemModel ().setObserverLatitude (ogre.Degree(-70))
         ## Beyond the northern polar circle, no sunset

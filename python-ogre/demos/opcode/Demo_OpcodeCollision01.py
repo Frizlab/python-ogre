@@ -179,7 +179,6 @@ class GameEntity :
         self.entity = self.sceneManager.createEntity(self.name, type_ + ".mesh")
         self.node = self.sceneManager.getRootSceneNode().createChildSceneNode(self.name)
         self.node.attachObject(self.entity)
-        self.entity.setNormaliseNormals(True)
         self.entity.setCastShadows(True)
         self.collisionEntity = None
         self.userData=None
