@@ -1,0 +1,157 @@
+/*
+This file is part of Caelum.
+See http://www.ogre3d.org/wiki/index.php/Caelum 
+
+Copyright (c) 2006-2007 Caelum team. See Contributors.txt for details.
+
+Caelum is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Caelum is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with Caelum. If not, see <http://www.gnu.org/licenses/>.
+*/
+
+half bias (half b, half x) {
+	return pow (x, log (b) / log (0.5));
+}
+
+half4 sunlightInscatter (half4 sunColour, half absorption, half incidenceAngleCos, half sunlightScatteringFactor) {
+	half scatteredSunlight = bias (sunlightScatteringFactor * 0.5, incidenceAngleCos);
+
+	sunColour = sunColour * (1 - absorption) * half4 (0.9, 0.5, 0.09, 1);
+	
+    return sunColour * scatteredSunlight;
+}
+
+half fogExp (half z, half density) {
+	return 1 - clamp (pow (2.71828, -z * density), 0, 1);
+}
+
+void SkyDome_vp (half4 position : POSITION,
+							half4 normal : NORMAL,
+							half2 uv : TEXCOORD0,
+							out half4 oPosition : POSITION,
+							out half4 oCol : COLOR, 
+							out half2 oUv : TEXCOORD0,
+							out half incidenceAngleCos : TEXCOORD1,
+							out half y : TEXCOORD2, 
+							out half3 oNormal : TEXCOORD3, 
+							uniform half lightAbsorption,
+							uniform half4x4 worldViewProj,
+							uniform half3 sunDirection)
+{
+	sunDirection = normalize (sunDirection);
+	normal = normalize (normal);
+	half cosine = dot (-sunDirection, normal);
+	incidenceAngleCos = -cosine;
+
+	y = -sunDirection.y;
+
+	oPosition = mul(worldViewProj, position);
+	oCol = half4 (1, 1, 1, 1);
+	oUv = uv;
+	oNormal = -normal.xyz;
+}
+
+void SkyDome_fp (half4 col : COLOR, 
+							half2 uv : TEXCOORD0,
+							half incidenceAngleCos : TEXCOORD1,
+							half y : TEXCOORD2, 
+							half3 normal : TEXCOORD3, 
+							out half4 oCol : COLOR,
+							uniform sampler gradientsMap : register(s0), 
+							uniform sampler1D atmRelativeDepth : register(s1), 
+							uniform half4 hazeColour, 
+							uniform half offset)
+{
+	half4 sunColour = half4 (3, 3, 3, 1);
+
+#ifdef HAZE
+	half fogDensity = 15;
+	// Haze amount calculation
+	half invHazeHeight = 100;
+	half haze = fogExp (pow (clamp (1 - normal.y, 0, 1), invHazeHeight), fogDensity);
+#endif // HAZE
+
+	// Pass the colour
+	oCol = tex2D (gradientsMap, uv + half2 (offset, 0)) * col;
+
+	// Sunlight inscatter
+	if (incidenceAngleCos > 0) {
+		half sunlightScatteringFactor = 0.05;
+		half sunlightScatteringLossFactor = 0.1;
+		half atmLightAbsorptionFactor = 0.1;
+		
+		oCol.rgb += sunlightInscatter (sunColour, 
+									clamp (atmLightAbsorptionFactor * (1 - tex1D (atmRelativeDepth, y).r), 0, 1), 
+									clamp (incidenceAngleCos, 0, 1), 
+									sunlightScatteringFactor).rgb * (1 - sunlightScatteringLossFactor);
+	}
+
+#ifdef HAZE
+	// Haze pass
+	hazeColour.a = 1;
+	oCol = oCol * (1 - haze) + hazeColour * haze;
+#endif // HAZE
+}
+
+void Haze_vp (half4 position : POSITION,
+							half4 normal : NORMAL,
+							out half4 oPosition : POSITION,
+							out half haze : TEXCOORD0, 
+							out half2 sunlight : TEXCOORD1, 
+							uniform half4x4 worldViewProj,
+							uniform half4 camPos, 
+							uniform half3 sunDirection)
+{
+	sunDirection = normalize (sunDirection);
+	oPosition = mul(worldViewProj, position);
+	haze = length (camPos - position);
+	sunlight.x = dot (-sunDirection, normalize (position - camPos));
+	sunlight.y = -sunDirection.y;
+}
+
+void Haze_fp (half haze : TEXCOORD0, 
+							half2 sunlight : TEXCOORD1, 
+							out half4 oCol : COLOR, 
+							uniform sampler1D atmRelativeDepth : register(s0), 
+							uniform sampler2D gradientsMap : register (s1), 
+							uniform half4 fogColour)
+{
+	half incidenceAngleCos = sunlight.x;
+	half y = sunlight.y;
+
+	half4 sunColour = half4 (3, 2.5, 1, 1);
+
+	half atmLightAbsorptionFactor = 0.1; // Factor determining the amount of light lost due to absorption
+	half fogDensity = 15;
+
+	haze = fogExp (haze * 0.005, atmLightAbsorptionFactor);
+
+	// Haze amount calculation
+	half invHazeHeight = 100;
+	half hazeAbsorption = fogExp (pow (1 - y, invHazeHeight), fogDensity);
+
+	half4 hazeColour;
+	hazeColour = fogColour;
+	if (incidenceAngleCos > 0) {
+		half sunlightScatteringFactor = 0.1; // Factor determining the amount of scattering for the sun light
+		half sunlightScatteringLossFactor = 0.3;	// Factor determining the amount of sun light intensity lost due to scattering
+
+		half4 sunlightInscatterColour = sunlightInscatter (sunColour, 
+												clamp ((1 - tex1D (atmRelativeDepth, y).r) * hazeAbsorption, 0, 1), 
+												clamp (incidenceAngleCos, 0, 1), 
+												sunlightScatteringFactor) * (1 - sunlightScatteringLossFactor);
+		hazeColour.rgb = hazeColour.rgb * (1 - sunlightInscatterColour.a) + sunlightInscatterColour.rgb * sunlightInscatterColour.a * haze;
+	}
+
+	oCol = hazeColour;
+	oCol.a = haze;
+}
