@@ -270,7 +270,7 @@ class pygccxml:
                  ]
     else:                 
         source = [
-                    [svn, " co http://pygccxml.svn.sourceforge.net/svnroot/pygccxml "+base, os.getcwd()]
+                    [svn, " co -r1356 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml "+base, os.getcwd()]
                  ]             
     if isLinux() or isMac() :
         buildCmds =  [
@@ -289,17 +289,17 @@ class cg:
     pythonModule = False
     active = True
     if isLinux():
-        base = 'Cg-2.0_Dec2007_x86'
+        base = 'Cg-2.0_May2008_x86'
         source = [
-                    [wget, " http://developer.download.nvidia.com/cg/Cg_2.0/2.0.0010/"+base+".tar.gz",downloadPath]
+                    [wget, " http://developer.download.nvidia.com/cg/Cg_2.0/2.0.0015/"+base+".tgz",downloadPath]
                  ]
                  
         buildCmds =  [
-                    [0,tar + " xvzf "+ os.path.join(downloadPath,base) + ".tar.gz --overwrite", ROOT],   # unpack it directly into 'our' root
+                    [0,tar + " xvzf "+ os.path.join(downloadPath,base) + ".tgz --overwrite", ROOT],   # unpack it directly into 'our' root
                     ]    
     if isMac():
         source = [
-                    [wget, "http://developer.download.nvidia.com/cg/Cg_2.0/2.0.0010/Cg-2.0_Dec2007.dmg", downloadPath ]
+                    [wget, "http://developer.download.nvidia.com/cg/Cg_2.0/2.0.0015/Cg-2.0_May2008.dmg", downloadPath ]
                     
                  ]                
         buildCmds = [
@@ -366,7 +366,7 @@ class cmake:
     pythonModule = False
     active = True
     if isLinux() or isMac():
-        base = 'cmake-2.4.6-Linux-i386'
+        base = 'cmake-2.4.8-Linux-i386'
         
         if isMac():
             base = 'cmake-2.4.7-Darwin-universal'
@@ -390,7 +390,7 @@ class cmake:
 class scons:
     pythonModule = False
     active = True
-    base = 'scons-0.98.0'
+    base = 'scons-0.98.5'
     source = [
                 [wget, "http://downloads.sourceforge.net/scons/"+base+".tar.gz",downloadPath],
              ]
@@ -447,6 +447,7 @@ class boost:    ## also included bjam
                 [0,cp + ' -R '+os.path.join('python-ogre','boost','*')  +' ' + base , ''],  # need to overwrite the boost with our files
                 [0, sed_ + " 's/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/' "+base+"/configure", '' ],
                 [0, sed_ + " s/'BOOST_PYTHON_MAX_ARITY 15'/'BOOST_PYTHON_MAX_ARITY 19'/ "+base+"/boost/python/detail/preprocessor.hpp", ''],
+                [0, sed_ + ' s/"# include <boost\/preprocessor\/cat.hpp>"/"\\n#define BOOST_PYTHON_NO_PY_SIGNATURES\\n# include <boost\/preprocessor\/cat.hpp>"/ '+base+'/boost/python/detail/preprocessor.hpp', '' ],
                 [0,"./configure --with-libraries=python --prefix=%s --without-icu"  % PREFIX, os.path.join(os.getcwd(), base )],
                 [0,'make', os.path.join(os.getcwd(), base )],
                 [0,'make install', os.path.join(os.getcwd(), base )],
@@ -482,7 +483,10 @@ class boost:    ## also included bjam
 class ogre:
     active = True
     pythonModule = True
-    version = "1.7"
+    if _STABLE:
+	    version="1.4"
+    else:
+	    version = "1.7"
     name='ogre'
     ModuleName='OGRE'
     cflags = ""
@@ -526,22 +530,23 @@ class ogre:
         LINKFLAGS = ''
         externalFiles=['OgreMain.dll', 'OgreGuiRender.dll', Config.LIB_Boost+'.dll']
     elif isLinux():
+        version = "1.4"  #### UGLY OVERRIDE AT MOMENT...
         libs=[Config.LIB_Boost, 'OgreMain' ] #,  'OgreGUIRenderer', 'CEGUIBase']
-        base = "ogre-linux_osx-v1-4-6"
+        base = "ogre-v1-4-9"
         source = [
-            [wget, "http://prdownloads.sourceforge.net/ogre/"+base+".tar.bz2",downloadPath],
+            [wget, "http://downloads.sourceforge.net/ogre/"+base+".tar.bz2",downloadPath],
         ]
         buildCmds  = [
-                [0, "env >1", ''],
+ #               [0, "env >1", ''],
                 [0, tar + " jxf " + os.path.join(downloadPath,base)+".tar.bz2 --overwrite",os.getcwd() ],
                 [0, "patch -s -N -i ./python-ogre/patch/ogre.patch -p0 ", os.getcwd()],
-                [0, "aclocal", os.path.join(os.getcwd(), 'ogrenew')],
-                [0, "./bootstrap", os.path.join(os.getcwd(), 'ogrenew')],
+                [0, "aclocal", os.path.join(os.getcwd(), 'ogre')],
+                [0, "./bootstrap", os.path.join(os.getcwd(), 'ogre')],
                 #[1, "import os\nos.environ['ZZIPLIB_LIBS']='-lzzip'", ''],
-                [0, "./configure --prefix=%s --with-gui=Xt --disable-devil" % PREFIX, os.path.join(os.getcwd(), 'ogrenew')],
+                [0, "./configure --prefix=%s --with-gui=Xt --disable-devil" % PREFIX, os.path.join(os.getcwd(), 'ogre')],
                 #export ZZIPLIB_LIBS="-lzzip"
-                [0, "make", os.path.join(os.getcwd(), 'ogrenew')],
-                [0, "make install", os.path.join(os.getcwd(), 'ogrenew')],
+                [0, "make", os.path.join(os.getcwd(), 'ogre')],
+                [0, "make install", os.path.join(os.getcwd(), 'ogre')],
                 ]
         
         libs=[Config.LIB_Boost, 'OgreMain' ] #,  'OgreGUIRenderer', 'CEGUIBase']
@@ -553,7 +558,7 @@ class ogre:
         CCFLAGS =  '' ## -DBOOST_PYTHON_MAX_ARITY=19'
         LINKFLAGS = ''
     elif isMac():
-        base = "ogre-linux_osx-v1-4-6"
+        base = "ogre-linux_osx-v1-4-9"
         basedep = "OgreDependenciesOSX_20070929"
         source = [
             [wget, "http://prdownloads.sourceforge.net/ogre/"+base+".tar.bz2",downloadPath],
@@ -561,18 +566,18 @@ class ogre:
         ]
         buildCmds  = [
                 [0, tar + " jxf " + os.path.join(downloadPath,base)+".tar.bz2 --overwrite",os.getcwd() ],
-                [0, unzip + os.path.join(downloadPath,basedep)+".zip ",os.path.join(os.getcwd(), 'ogrenew') ],
+                [0, unzip + os.path.join(downloadPath,basedep)+".zip ",os.path.join(os.getcwd(), 'ogre') ],
                 [0, "mkdir ~/Library/Frameworks", ''], ## Note that this will fail if the directory exists !!!
-                [0,cp + " -R "+os.path.join(os.getcwd(), 'ogrenew', '__MACOSX','Dependencies')+'/*.framework ' + Config.FRAMEWORK_DIR,''],
+                [0,cp + " -R "+os.path.join(os.getcwd(), 'ogre', '__MACOSX','Dependencies')+'/*.framework ' + Config.FRAMEWORK_DIR,''],
                 [0, "patch -s -N -i ./python-ogre/patch/ogre.patch -p0 ", os.getcwd()],
-                [0, "mkdir Ogre",os.path.join(os.getcwd() ,'ogrenew','OgreMain', 'include') ],
+                [0, "mkdir Ogre",os.path.join(os.getcwd() ,'ogre','OgreMain', 'include') ],
                 # need copies of these in an 'Ogre/..' directory due to includes in the OSX directory -- or get the framework right
-                [0, "cp OgreRoot.h Ogre",os.path.join(os.getcwd() ,'ogrenew','OgreMain', 'include') ],
-                [0, "cp OgreRenderSystem.h Ogre",os.path.join(os.getcwd() ,'ogrenew','OgreMain', 'include') ],
-                [0, "cp OgrePrerequisites.h Ogre",os.path.join(os.getcwd() ,'ogrenew','OgreMain', 'include') ],
-                [0, "xcodebuild -project ogrenew/Mac/Ogre/Ogre.xcodeproj -configuration Release", ''],
-                [0, "xcodebuild -project ogrenew/Mac/Samples/Samples.xcodeproj -configuration Release", ''],
-                [0, "cp -R *.framework " + Config.FRAMEWORK_DIR, os.path.join(os.getcwd() ,'ogrenew',"Mac", "build", "Release") ]
+                [0, "cp OgreRoot.h Ogre",os.path.join(os.getcwd() ,'ogre','OgreMain', 'include') ],
+                [0, "cp OgreRenderSystem.h Ogre",os.path.join(os.getcwd() ,'ogre','OgreMain', 'include') ],
+                [0, "cp OgrePrerequisites.h Ogre",os.path.join(os.getcwd() ,'ogre','OgreMain', 'include') ],
+                [0, "xcodebuild -project ogre/Mac/Ogre/Ogre.xcodeproj -configuration Release", ''],
+                [0, "xcodebuild -project ogre/Mac/Samples/Samples.xcodeproj -configuration Release", ''],
+                [0, "cp -R *.framework " + Config.FRAMEWORK_DIR, os.path.join(os.getcwd() ,'ogre',"Mac", "build", "Release") ]
                 ]
                 
         libs=[Config.LIB_Boost]
@@ -599,23 +604,23 @@ class ois:
     if isMac():
         source=[]
     if isLinux():
-        base = "ois-1.2"
+        base = "ois"
         source=[
-            [wget, "http://prdownloads.sourceforge.net/wgois/ois-1.2.tar.gz", downloadPath]
+            [wget, "http://downloads.sourceforge.net/wgois/ois_1.2.0.tar.gz", downloadPath]
             ]
-        buildCmds  = [
-               [0, tar + " zxf " + os.path.join(downloadPath,base)+".tar.gz --overwrite",os.getcwd() ],
-               [0, "rm -rf autom4te.cache", os.path.join(os.getcwd(), base )],
-               [0, "libtoolize --force && aclocal $ACLOCAL_FLAGS && autoheader &&\
-                             automake --include-deps --add-missing --foreign && autoconf",
-                             os.path.join(os.getcwd(), base )],
-               [0,"./configure --prefix=%s --includedir=%s/include" % (PREFIX,PREFIX) ,os.path.join(os.getcwd(), base )],
-               [0,'make', os.path.join(os.getcwd(), base )],
-               [0,'make install', os.path.join(os.getcwd(), base )]
-               ]
+#        buildCmds  = [
+#               [0, tar + " zxf " + os.path.join(downloadPath,'ois_1.2.0')+".tar.gz --overwrite",os.getcwd() ],
+#               [0, "rm -rf autom4te.cache", os.path.join(os.getcwd(), base )],
+#               [0, "libtoolize --force && aclocal $ACLOCAL_FLAGS && autoheader &&\
+#                             automake --include-deps --add-missing --foreign && autoconf",
+#                             os.path.join(os.getcwd(), base )],
+#               [0,"./configure --prefix=%s --includedir=%s/include" % (PREFIX,PREFIX) ,os.path.join(os.getcwd(), base )],
+#               [0,'make', os.path.join(os.getcwd(), base )],
+#               [0,'make install', os.path.join(os.getcwd(), base )]
+#               ]
             
         buildCmds  = [
-                [0, tar + " zxf " + os.path.join(downloadPath,base)+".tar.gz --overwrite",os.getcwd() ],
+                [0, tar + " zxf " + os.path.join(downloadPath,'ois_1.2.0')+".tar.gz --overwrite",os.getcwd() ],
                 [0, "./bootstrap" ,os.path.join(os.getcwd(), base )],
                 [0,"./configure --prefix=%s --includedir=%s/include" %(PREFIX,PREFIX) ,os.path.join(os.getcwd(), base )],
                 [0,'make', os.path.join(os.getcwd(), base )],
@@ -757,16 +762,16 @@ class cegui:
         if _STABLE:
             base = "CEGUI-0.5.0"
             source=[
-                [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.5.0b.tar.gz", downloadPath]
+                [wget, "http://downloads.sourceforge.net/crayzedsgui/CEGUI-0.5.0b.tar.gz", downloadPath]
                 ]
         else:
             base = "CEGUI-0.6.0"
             source=[
-                [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.6.0.tar.gz", downloadPath]
+                [wget, "http://downloads.sourceforge.net/crayzedsgui/CEGUI-0.6.0.tar.gz", downloadPath]
                 ]
                         
         buildCmds  = [
-                [0, tar + " zxf " + os.path.join(downloadPath,base)+"b.tar.gz --overwrite",os.getcwd() ],
+                [0, tar + " zxf " + os.path.join(downloadPath,base)+".tar.gz --overwrite",os.getcwd() ],
                 [0, "patch -s -N -i ../python-ogre/patch/cegui.patch -p0", os.path.join(os.getcwd(),base)],
                 [0, "echo 'EMPTY' >>./INSTALL", os.path.join(os.getcwd(),base)],
                 [0, "echo 'EMPTY' >>./NEWS", os.path.join(os.getcwd(),base)],
