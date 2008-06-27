@@ -187,7 +187,7 @@ class gccxml:
              ]
     else:
        source = [
-                [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co "+base, os.getcwd()]
+                [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co -D 27June2008 "+base, os.getcwd()]
              ]
     if isLinux() or isMac():
         buildCmds =  [
