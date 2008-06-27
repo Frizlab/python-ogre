@@ -501,10 +501,10 @@ class ogre:
         
         source = [
             [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_VC8SP1_Eihort_20071227.zip", downloadPath],
-            [ wget, "http://downloads.sourceforge.net/ogre/ogre-win32-v1-4-7.zip", downloadPath],
+            [ wget, "http://downloads.sourceforge.net/ogre/ogre-win32-v1-4-9.zip", downloadPath],
             ]
         buildCmds  = [
-                [0, unzip + os.path.join(downloadPath,"ogre-win32-v1-4-7.zip"),os.getcwd() ],
+                [0, unzip + os.path.join(downloadPath,"ogre-win32-v1-4-9.zip"),os.getcwd() ],
                 [0, unzip + os.path.join(downloadPath,"OgreDependencies_VC8SP1_Eihort_20071227.zip"),
                                             os.path.join(os.getcwd(), 'ogrenew') ],
                 [0, "patch -s -N -i ./python-ogre/patch/ogre.patch -p0 ", os.getcwd()]
