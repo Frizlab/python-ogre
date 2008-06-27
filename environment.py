@@ -270,7 +270,7 @@ class pygccxml:
                  ]
     else:                 
         source = [
-                    [svn, " co -r1356 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml "+base, os.getcwd()]
+                    [svn, " co -r 1362 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml "+base, os.getcwd()]
                  ]             
     if isLinux() or isMac() :
         buildCmds =  [

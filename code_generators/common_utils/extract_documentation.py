@@ -187,6 +187,7 @@ def clear_str(_str):
     _str = clean(_str, "\\ingroup", "@group")
 #     _str = clean(_str, "@return", "It return")
     _str = clean(_str, "\\return", "@return")
+    _str = clean(_str, "\\Return", "@return")
 #     _str = clean(_str, "@note", "Note: ")
     _str = clean(_str, "@remarks", "@see")
 #     _str = clean(_str, "@see", "See: ")
@@ -214,7 +215,7 @@ def clear_str(_str):
     _str = clean(_str, "\\exception", "@exception") 
     _str = clean(_str, "\\a", "")     ## cegui
     
-    _str = clean(_str, "\\warning", "Warning: ")     ## nxPhysics
+    _str = clean(_str, "\\warning", "@Warning: ")     ## nxPhysics
     _str = clean(_str, "\\include", "Include: ")     ## nxPhysics
     _str = clean(_str, "\\image", "Image: ")     ## nxPhysics
     
