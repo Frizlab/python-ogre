@@ -16,11 +16,11 @@ LOCAL_LIB = os.path.join(ROOT_DIR,'usr/lib')
 LOCAL_INCLUDE = os.path.join(ROOT_DIR, 'usr/include')
 
 ## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
-PATH_Boost = os.path.join(LOCAL_INCLUDE, 'boost-1_34_1')
+PATH_Boost = os.path.join(LOCAL_INCLUDE, 'boost-1_35')
 ## Path to your boost_pythonxxxx lib file
 PATH_LIB_Boost = LOCAL_LIB
 ## and the name of the boost python library
-LIB_Boost = 'libboost_python-gcc41-1_34_1'
+LIB_Boost = 'libboost_python-gcc42-mt-1_35'
 
 # in Linux we need to code in the Relative path for the library
 RPATH=os.path.join('\\$$ORIGIN',os.pardir,os.pardir, 'lib') #+ '\'' 
@@ -37,14 +37,14 @@ if os.sys.platform == 'darwin':  # we use the pre built sdk for OSX
 
 # # ## Parent directories of the libraries
 PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
-PATH_Ogre =         os.path.join(BASE_DIR,'ogrenew')
+PATH_Ogre =         os.path.join(BASE_DIR,'ogre')
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'ogreaddons')
-PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.5.0')
+PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.6.0' )
 PATH_OIS =          os.path.join(BASE_DIR, 'ois-1.0RC1')
 
 if SDK:
-    PATH_CEGUI =        os.path.join(BASE_DIR, 'ogrenew','Dependencies')
-    PATH_OIS =          os.path.join(BASE_DIR, 'ogrenew','Dependencies')
+    PATH_CEGUI =        os.path.join(BASE_DIR, 'ogre','Dependencies')
+    PATH_OIS =          os.path.join(BASE_DIR, 'ogre','Dependencies')
     
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonSDK','sdk')
 PATH_ODE =          os.path.join(BASE_DIR, 'ode-0.9')
@@ -107,7 +107,7 @@ PATH_LIB_OgreOdeLoader =        os.path.join( LOCAL_LIB ) #PATH_OgreOde, 'loader
 PATH_LIB_OgreAL =               os.path.join( LOCAL_LIB ) #PATH_OGREAL, 'lib/Release' )
 PATH_LIB_betagui =              PATH_betagui
 PATH_LIB_quickgui =             PATH_quickgui
-# PATH_LIB_NxOgre=                os.path.join(LOCAL_LIB )
+PATH_LIB_NxOgre=                os.path.join(LOCAL_LIB )
 PATH_LIB_PhysX =                os.path.join(LOCAL_LIB, 'PhysX','v2.7.3')
 PATH_LIB_Bullet = 		        os.path.join( LOCAL_LIB )
 PATH_LIB_Theora=                os.path.join(PATH_Theora, 'bin', 'Release')
