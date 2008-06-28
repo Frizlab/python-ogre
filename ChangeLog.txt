@@ -1,3 +1,10 @@
+???? ?? 2008 : SVN Updates..
+============================
+Added CEGUI::Tree to handmadewrapper (Thanks Dermont)
+Change to CEGUI_framework.py to force loading of CEGUIBase lib in the correct mode under Linux - means we don't need to 
+patch the CEGUI source...
+
+
 June 20 2008: Release 1.2 RC2
 ============================='
 OK, so it's been a while -- what can I say, I have to live in the real world as well as the opensource one :)
