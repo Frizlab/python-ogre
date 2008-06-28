@@ -777,7 +777,7 @@ class cegui:
                 [0, "echo 'EMPTY' >>./NEWS", os.path.join(os.getcwd(),base)],
                 [0, "aclocal", os.path.join(os.getcwd(),base)],
                 [0, "automake" ,os.path.join(os.getcwd(), base )],
-                [0,"./configure --prefix=%s --enable-freeimage=yes --disable-samples --without-ogre-renderer --includedir=%s/include" %(PREFIX,PREFIX) ,os.path.join(os.getcwd(), base )],
+                [0,"./configure --prefix=%s --enable-freeimage=yes --with-default-xml-parser=TinyXMLParser --disable-samples --without-ogre-renderer --includedir=%s/include" %(PREFIX,PREFIX) ,os.path.join(os.getcwd(), base )],
                 [0,'make', os.path.join(os.getcwd(), base )],
                 [0,'make install', os.path.join(os.getcwd(), base )]
                 ]
