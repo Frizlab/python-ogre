@@ -169,14 +169,6 @@ public:
                 boost::python::call<void>(mSubscriber, 
                                         static_cast<const CEGUI::MouseEventArgs&>(args) );
                                         
-        else if (dynamic_cast<CEGUI::WindowEventArgs *>((CEGUI::EventArgs *)&args))
-            if (mMethod.length() > 0 )
-                boost::python::call_method<void>(mSubscriber, mMethod.c_str(), 
-                                        static_cast<const CEGUI::WindowEventArgs&>(args) );
-            else
-                boost::python::call<void>(mSubscriber,  
-                                        static_cast<const CEGUI::WindowEventArgs&>(args) );
-
          else if (dynamic_cast<CEGUI::TreeEventArgs *>((CEGUI::EventArgs *)&args))
            if (mMethod.length() > 0 )
                boost::python::call_method<void>(mSubscriber, mMethod.c_str(),
@@ -184,6 +176,14 @@ public:
            else
                boost::python::call<void>(mSubscriber, 
                                         static_cast<const CEGUI::TreeEventArgs&>(args) );
+
+        else if (dynamic_cast<CEGUI::WindowEventArgs *>((CEGUI::EventArgs *)&args))
+            if (mMethod.length() > 0 )
+                boost::python::call_method<void>(mSubscriber, mMethod.c_str(), 
+                                        static_cast<const CEGUI::WindowEventArgs&>(args) );
+            else
+                boost::python::call<void>(mSubscriber,  
+                                        static_cast<const CEGUI::WindowEventArgs&>(args) );
 
         else 
             boost::python::call_method<void>(mSubscriber, mMethod.c_str(), args );
