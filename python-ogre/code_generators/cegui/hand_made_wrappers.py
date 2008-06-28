@@ -62,6 +62,8 @@ EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeRenderer,
             bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
 EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventSet, 
             bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeTree, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
                         
 { //EventConnection
         typedef bp::class_< EventConnection > EventConnection_exposer_t;
@@ -174,6 +176,15 @@ public:
             else
                 boost::python::call<void>(mSubscriber,  
                                         static_cast<const CEGUI::WindowEventArgs&>(args) );
+
+         else if (dynamic_cast<CEGUI::TreeEventArgs *>((CEGUI::EventArgs *)&args))
+           if (mMethod.length() > 0 )
+               boost::python::call_method<void>(mSubscriber, mMethod.c_str(),
+                                        static_cast<const CEGUI::TreeEventArgs&>(args) );
+           else
+               boost::python::call<void>(mSubscriber, 
+                                        static_cast<const CEGUI::TreeEventArgs&>(args) );
+
         else 
             boost::python::call_method<void>(mSubscriber, mMethod.c_str(), args );
      return true;
@@ -338,6 +349,10 @@ EventConnection * EventSet_subscribeRenderer(CEGUI::Renderer *self , CEGUI::Stri
     EventConnection *connect = new EventConnection(self->subscribeEvent(name, EventCallback(subscriber, method))); 
     return connect; 
 }
+
+EventConnection * EventSet_subscribeTree(CEGUI::Tree *self , CEGUI::String const & name, 
+                                                PyObject* subscriber, CEGUI::String const & method="")
+{    EventConnection *connect = new EventConnection(self->subscribeEvent(name, EventCallback(subscriber, method)));     return connect; }
 """
 
 WRAPPER_DEFINITION_General = \
