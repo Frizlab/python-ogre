@@ -1,0 +1,5 @@
+pyplusplus (0.9.0+%%SHORTDATE%%-0) unstable; urgency=low
+
+  * First testing version.
+
+ -- Tim 'Mithro' Ansell <mithro@mithis.com>  %%LONGDATE%%

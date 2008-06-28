@@ -1,0 +1,9 @@
+Build from upstream CVS snapshot
+
+	sh debian/makeSource.sh
+
+Build
+
+	cd ../gccxml-0.7.0+cvs20060311
+	debuild
+

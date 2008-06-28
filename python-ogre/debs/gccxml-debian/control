@@ -1,0 +1,17 @@
+Source: gccxml
+Section: devel
+Priority: optional
+Maintainer: Steve M. Robbins <smr@debian.org>
+Build-Depends: debhelper (>= 5), cmake, chrpath
+Standards-Version: 3.7.2.2
+
+Package: gccxml
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, g++
+Description: XML output extension to GCC
+ There is one open-source C++ parser, the C++ front-end to GCC, which
+ is currently able to deal with the language in its entirety. The
+ purpose of the GCC-XML extension is to generate an XML description of
+ a C++ program from GCC's internal representation. Since XML is easy to
+ parse, other development tools will be able to work with C++ programs
+ without the burden of a complicated C++ parser.

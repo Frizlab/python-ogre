@@ -1,0 +1,24 @@
+Source: boost-python1.34.1-index
+Priority: extra
+Maintainer: Tim Ansell <tim@unknown>
+Build-Depends: debhelper (>= 5)
+Standards-Version: 3.7.2
+Section: libs
+
+Package: libboost-python1.34.1-index-dev
+Section: libdevel
+Architecture: any
+Depends: libboost-python1.34.1-index (= ${Source-Version})
+Description: Extra index stuff for boost-python
+ This package is the extra index stuff needed by python-ogre (and possibly
+ others). It does not refer to a real upstream object, we expect this to go way
+ once boot-python is updated.
+
+Package: libboost-python1.34.1-index
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Extra index stuff for boost-python
+ This package is the extra index stuff needed by python-ogre (and possibly
+ others). It does not refer to a real upstream object, we expect this to go way
+ once boot-python is updated.
