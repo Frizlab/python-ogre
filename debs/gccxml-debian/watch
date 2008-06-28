@@ -1,0 +1,2 @@
+version=2
+http://www.gccxml.org/HTML/Download.html (?:.*/)?gccxml-([\d\.]*)\.tar\.gz debian uupdate
