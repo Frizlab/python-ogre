@@ -190,6 +190,8 @@ def clear_str(_str):
     _str = clean(_str, "\\Return", "@return")
 #     _str = clean(_str, "@note", "Note: ")
     _str = clean(_str, "@remarks", "@see")
+    _str = clean(_str, "\\remarks", "@see")
+    _str = clean(_str, "\\Remarks", "@see")
 #     _str = clean(_str, "@see", "See: ")
     _str = clean(_str, "\\see", "@see")
     _str = clean(_str, "@ref", "@see")
@@ -221,6 +223,12 @@ def clear_str(_str):
     
     _str = clean(_str, "\\examples", "Examples: ")     ## nxOgre
     _str = clean(_str, "\\default", "Default: ")     ## nxOgre
+
+    _str = clean(_str, "\\version", "@version ")     ## cegui
+    _str = clean(_str, "\\date", "@date ")     #
+    _str = clean(_str, "\\todo", "@todo ")     ## 
+    _str = clean(_str, "\\bug", "@Bug ")     ## 
+    _str = clean(_str, "\\author", "@Author ")     ## 
     
     
     ## now clean up the rest

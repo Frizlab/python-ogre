@@ -769,10 +769,10 @@ class cegui:
             source=[
                 [wget, "http://downloads.sourceforge.net/crayzedsgui/CEGUI-0.6.0.tar.gz", downloadPath]
                 ]
-                        
+                   
         buildCmds  = [
                 [0, tar + " zxf " + os.path.join(downloadPath,base)+".tar.gz --overwrite",os.getcwd() ],
-                [0, "patch -s -N -i ../python-ogre/patch/cegui.patch -p0", os.path.join(os.getcwd(),base)],
+#                [0, "patch -s -N -i ../python-ogre/patch/cegui.patch -p0", os.path.join(os.getcwd(),base)],
                 [0, "echo 'EMPTY' >>./INSTALL", os.path.join(os.getcwd(),base)],
                 [0, "echo 'EMPTY' >>./NEWS", os.path.join(os.getcwd(),base)],
                 [0, "aclocal", os.path.join(os.getcwd(),base)],
