@@ -20,7 +20,6 @@ sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, Ogre::MovableObject*, st
 
 #else
     sizeof ( Ogre::ResourceBackgroundQueue );
-    sizeof ( Ogre::AllocatedObject );
     sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > );
     sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)1> > );
     sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)2> > );
