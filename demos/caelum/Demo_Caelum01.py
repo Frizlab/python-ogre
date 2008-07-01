@@ -234,13 +234,13 @@ class TerrainApplication(sf.Application):
                     0 )
         print componentMask
         ## Initialise Caelum
-        self.caelumSystem = caelum.CaelumSystem(self.root.getSingletonPtr(), self.sceneManager,componentMask )
+        self.caelumSystem = caelum.CaelumSystem(self.root.getSingletonPtr(), self.sceneManager ) ##,componentMask )
                 
         self.caelumSystem.setManageSceneFog(True)
         self.caelumSystem.setSceneFogDensityMultiplier(0.0015)
-        self.caelumSystem.setManageAmbientLight (true)
-        
-        
+        self.caelumSystem.setManageAmbientLight (True)
+        self.caelumSystem.setMinimumAmbientLight (ogre.ColourValue (0, 0, 0.5))
+         
         ## This is how you switch the sun implementation.
         ## This here is a no-op; but it's useful to test caelum doesn't crash when the second sun is created.
         self.spheresun = caelum.SphereSun(self.sceneManager, self.caelumSystem.getRootNode ())
@@ -253,38 +253,22 @@ class TerrainApplication(sf.Application):
             self.caelumSystem.getSun ().setSpecularMultiplier (ogre.ColourValue (5, 5, 5))
             self.caelumSystem.getSun ().setAutoDisable (True)
             self.caelumSystem.getSun ().setAutoDisableThreshold (0.1)
-            
-        ## Setup fog options.
-        if self.caelumSystem.getGroundFog():
-           self.caelumSystem.getGroundFog().findFogPassesByName()
-        
 
-        ## Setup cloud options.
-        ## Tweak these settings to make the demo look pretty.
+        if (self.caelumSystem.getMoon ()):
+            self.caelumSystem.getMoon ().setAutoDisable (True)
+            self.caelumSystem.getMoon ().setAutoDisableThreshold (0.1)
+
+#         ## Setup cloud options.
+#         ## Tweak these settings to make the demo look pretty.
         if self.caelumSystem.getClouds ():
            self.caelumSystem.getClouds ().setCloudSpeed(ogre.Vector2(0.000005, -0.000009))
            self.caelumSystem.getClouds ().setCloudBlendTime(3600 * 24)
            self.caelumSystem.getClouds ().setCloudCover(0.3)
-        ## Setup starfield options
-        if self.caelumSystem.getStarfield ():
-           self.caelumSystem.getStarfield ().setInclination (ogre.Degree (13))
-
-        ## Set time acceleration.
-        self.caelumSystem.getUniversalClock ().setTimeScale (512)
-        
-        ## Winter dawn in the southern hemisphere, looking north
-        self.caelumSystem.getUniversalClock ().setGregorianDateTime (2008, 7, 4, 20, 33, 0)
-        self.caelumSystem.getSolarSystemModel ().setObserverLongitude (ogre.Degree(103 + 48 / 60))
-        
-        ## Singapore
-        self.caelumSystem.getSolarSystemModel ().setObserverLatitude (ogre.Degree(1 + 22 / 60))
-        ## Beyond the southern polar circle, no sunrise
-        ##mCaelumSystem.getSolarSystemModel ().setObserverLatitude (ogre.Degree(-70))
-        ## Beyond the northern polar circle, no sunset
-        ##mCaelumSystem.getSolarSystemModel ().setObserverLatitude (ogre.Degree(70))
-        
+           
+  
         ## Register caelum to the render target
         self.renderWindow.addListener (self.caelumSystem)
+        ogre.Root.getSingletonPtr().addFrameListener( self.caelumSystem )
         
         ## Put some terrain in the scene
         self.sceneManager.setWorldGeometry ("CaelumDemoTerrain.cfg")

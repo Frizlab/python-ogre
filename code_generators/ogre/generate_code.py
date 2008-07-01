@@ -115,7 +115,10 @@ def ManualExclude ( mb ):
     
     # functions that take pointers to pointers 
     main_ns.class_( 'VertexElement').member_functions('baseVertexPointerToElement').exclude() ## now as a transformed funct
-    mb.global_ns.mem_fun('::Ogre::InstancedGeometry::BatchInstance::getObjectsAsArray').exclude()
+    
+    if environment.ogre.version =="1.4":
+        mb.global_ns.mem_fun('::Ogre::InstancedGeometry::BatchInstance::getObjectsAsArray').exclude()
+        
     #all constructors in this class are private, also some of them are public.
 
     main_ns.free_functions ('any_cast').exclude () #not relevant for Python
