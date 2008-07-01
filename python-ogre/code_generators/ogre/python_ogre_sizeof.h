@@ -3,6 +3,8 @@
 // sizeof ( Ogre::ConstVectorIterator );
 // sizeof ( Ogre::ConstMapIterator );
 
+
+
 sizeof ( Ogre::MapIterator< std::multimap<Ogre::String, Ogre::String> > );
 sizeof ( Ogre::MapIterator< std::map<Ogre::String, std::multimap<Ogre::String, Ogre::String>*> > );
 sizeof ( Ogre::MaterialPtr );
@@ -18,6 +20,19 @@ sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, Ogre::MovableObject*, st
 
 #else
     sizeof ( Ogre::ResourceBackgroundQueue );
+    sizeof ( Ogre::AllocatedObject );
+    sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > );
+    sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)1> > );
+    sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)2> > );
+    sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)3> > );
+    sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)4> > );
+    sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)5> > );
+    sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)6> > );
+    sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)7> > );
+    sizeof ( Ogre::ConstVectorIterator<std::vector<Ogre::Technique::GPUVendorRule, std::allocator<Ogre::Technique::GPUVendorRule> > > );
+    sizeof ( Ogre::MapIterator<std::map<int, Ogre::InstancedGeometry::InstancedObject*, std::less<int>, std::allocator<std::pair<const int, Ogre::InstancedGeometry::InstancedObject*> > > > );
+    sizeof ( Ogre::ConstVectorIterator<std::vector<Ogre::Technique::GPUDeviceNameRule, std::allocator<Ogre::Technique::GPUDeviceNameRule> > > );
+    
 #endif
 
 
