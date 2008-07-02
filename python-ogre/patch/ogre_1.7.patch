@@ -100,7 +100,15 @@ Index: ogre/OgreMain/include/OgreResourceGroupManager.h
 ===================================================================
 --- ogre/OgreMain/include/OgreResourceGroupManager.h	(revision 7701)
 +++ ogre/OgreMain/include/OgreResourceGroupManager.h	(working copy)
-@@ -91,7 +91,7 @@
+@@ -36,6 +36,7 @@
+ #include "OgreResource.h"
+ #include "OgreArchive.h"
+ #include "OgreIteratorWrappers.h"
++#include <stdexcept>
+ 
+ namespace Ogre {
+ 
+@@ -91,7 +92,7 @@
  			parsed. Note that in this case the scriptParseEnded event will not be raised
  			for this script.
  		*/
