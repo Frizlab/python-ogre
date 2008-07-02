@@ -1,6 +1,6 @@
 
---- ogrenew/configure.in	2007-05-15 22:43:31.000000000 +0800
-+++ ogrenew/configure.in	2007-05-15 22:43:18.000000000 +0800
+--- ogre/configure.in	2007-05-15 22:43:31.000000000 +0800
++++ ogre/configure.in	2007-05-15 22:43:18.000000000 +0800
 @@ -59,6 +58,7 @@
          ;;
      esac
@@ -9,8 +9,8 @@
  AC_SUBST(CFLAGS_VISIBILITY)
  AC_LANG_POP
 
---- ogrenew/OgreMain/include/OgreDataStream.h	23 Aug 2006 08:18:33 -0000	1.12
-+++ ogrenew/OgreMain/include/OgreDataStream.h	24 Nov 2007 00:35:47 -0000
+--- ogre/OgreMain/include/OgreDataStream.h	23 Aug 2006 08:18:33 -0000	1.12
++++ ogre/OgreMain/include/OgreDataStream.h	24 Nov 2007 00:35:47 -0000
 @@ -33,6 +33,7 @@
  #include "OgreString.h"
  #include "OgreSharedPtr.h"
@@ -38,8 +38,8 @@
          /** Close the stream; this makes further operations invalid. */
          virtual void close(void) = 0;
          
---- ogrenew/OgreMain/include/OgreHardwareBuffer.h	23 Aug 2006 08:18:33 -0000	1.17
-+++ ogrenew/OgreMain/include/OgreHardwareBuffer.h	24 Nov 2007 00:37:00 -0000
+--- ogre/OgreMain/include/OgreHardwareBuffer.h	23 Aug 2006 08:18:33 -0000	1.17
++++ ogre/OgreMain/include/OgreHardwareBuffer.h	24 Nov 2007 00:37:00 -0000
 @@ -31,6 +31,8 @@
  
  // Precompiler options
@@ -59,8 +59,8 @@
                  ensure that your buffer is big enough.
  		    @param offset The byte offset from the start of the buffer to start writing
 
---- ogrenew/OgreMain/include/OgreRenderQueueListener.h	23 Aug 2006 08:18:35 -0000	1.10
-+++ ogrenew/OgreMain/include/OgreRenderQueueListener.h	24 Nov 2007 00:34:52 -0000
+--- ogre/OgreMain/include/OgreRenderQueueListener.h	23 Aug 2006 08:18:35 -0000	1.10
++++ ogre/OgreMain/include/OgreRenderQueueListener.h	24 Nov 2007 00:34:52 -0000
 @@ -31,6 +31,8 @@
  
  #include "OgrePrerequisites.h"
