@@ -27,7 +27,7 @@ RPATH=os.path.join('\\$$ORIGIN',os.pardir,os.pardir, 'lib') #+ '\''
 
 # We need to know where to find gccxml......
 gccxml_bin = os.path.join(BASE_DIR,'gccxml-build/bin')
-gccxml_bin = os.path.join(ROOT_DIR,'bin')
+gccxml_bin = os.path.join(ROOT_DIR,'usr/bin')
 # and the Py++ directory as sometimes we need access to the code repository there
 pyplusplus_install_dir = os.path.join(BASE_DIR,'pygccxml')
 
