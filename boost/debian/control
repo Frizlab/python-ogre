@@ -12,7 +12,7 @@ Depends: libboost-python1.34.1-index (= ${Source-Version})
 Description: Extra index stuff for boost-python
  This package is the extra index stuff needed by python-ogre (and possibly
  others). It does not refer to a real upstream object, we expect this to go way
- once boot-python is updated.
+ once boost-python is updated.
 
 Package: libboost-python1.34.1-index
 Section: libs
@@ -21,4 +21,4 @@ Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Extra index stuff for boost-python
  This package is the extra index stuff needed by python-ogre (and possibly
  others). It does not refer to a real upstream object, we expect this to go way
- once boot-python is updated.
+ once boost-python is updated.

@@ -62,8 +62,10 @@ EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeRenderer,
             bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
 EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventSet, 
             bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+#if CEGUI_VERSION_MINOR > 5 && CEGUI_VERSION_PATCH > 0
 EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeTree, 
             bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+#endif
                         
 { //EventConnection
         typedef bp::class_< EventConnection > EventConnection_exposer_t;
@@ -169,6 +171,7 @@ public:
                 boost::python::call<void>(mSubscriber, 
                                         static_cast<const CEGUI::MouseEventArgs&>(args) );
                                         
+#if CEGUI_VERSION_MINOR > 5 && CEGUI_VERSION_PATCH > 0
          else if (dynamic_cast<CEGUI::TreeEventArgs *>((CEGUI::EventArgs *)&args))
            if (mMethod.length() > 0 )
                boost::python::call_method<void>(mSubscriber, mMethod.c_str(),
@@ -176,7 +179,7 @@ public:
            else
                boost::python::call<void>(mSubscriber, 
                                         static_cast<const CEGUI::TreeEventArgs&>(args) );
-
+#endif
         else if (dynamic_cast<CEGUI::WindowEventArgs *>((CEGUI::EventArgs *)&args))
             if (mMethod.length() > 0 )
                 boost::python::call_method<void>(mSubscriber, mMethod.c_str(), 
@@ -350,9 +353,14 @@ EventConnection * EventSet_subscribeRenderer(CEGUI::Renderer *self , CEGUI::Stri
     return connect; 
 }
 
+#if CEGUI_VERSION_MINOR > 5 && CEGUI_VERSION_PATCH > 0
 EventConnection * EventSet_subscribeTree(CEGUI::Tree *self , CEGUI::String const & name, 
                                                 PyObject* subscriber, CEGUI::String const & method="")
-{    EventConnection *connect = new EventConnection(self->subscribeEvent(name, EventCallback(subscriber, method)));     return connect; }
+{
+    EventConnection *connect = new EventConnection(self->subscribeEvent(name, EventCallback(subscriber, method))); 
+    return connect; 
+}
+#endif
 """
 
 WRAPPER_DEFINITION_General = \

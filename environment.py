@@ -17,7 +17,7 @@ import datetime
 
 _LOGGING_ON = False
 _PreCompiled = True
-_STABLE = False # set to true if using specific versions of CVS and SVN checkouts..
+_STABLE = True # set to true if using specific versions of CVS and SVN checkouts..
 
 
 ##
@@ -39,6 +39,9 @@ def isLinux():
         return True
     return False 
        
+def isDebian():
+    return os.path.exists("/etc/debian_version")
+
 def isMac():
     if os.sys.platform == 'darwin':
         return True
@@ -89,6 +92,10 @@ _ConfigSet = False
 _SystemType = os.name ## nt or posix or mac
 _PlatformType = sys.platform ## win32, ??
 
+UseSystem = "--usesystem" in sys.argv or (os.environ.has_key('USESYSTEM') and eval(os.environ['USESYSTEM'].title()))
+if "--usesystem" in sys.argv:
+    sys.argv.remove("--usesystem")
+
 ##
 ## Now we load the user specific stuff
 ##
@@ -101,8 +108,11 @@ try:
     log ( "Loaded Config (based on username) from %s" % (s ))
 except ImportError:
     try:
-        s= 'PythonOgreConfig_' + _SystemType ## + '.py'
-        
+        if UseSystem:
+            s= 'PythonOgreConfig_system'
+        else:
+            s= 'PythonOgreConfig_' + _SystemType ## + '.py'
+       
         Config = __import__(  s  )
         _ConfigSet = True
         log ( "Loaded Config (based on systemtype) from %s" % (s))
@@ -152,8 +162,12 @@ if isMac():
     Config.RPATH=""
     
 ## BIG assumption about where you want things put    
-ROOT = os.path.join(os.getcwd(),'root' )
-PREFIX = os.path.join(os.getcwd(),'root', 'usr' )
+if UseSystem:
+    ROOT = '/'
+    PREFIX = '/usr'
+else:
+    ROOT = os.path.join(os.getcwd(),'root' )
+    PREFIX = os.path.join(os.getcwd(),'root', 'usr' )
 
 
 def unTarGz ( base, source ):
@@ -182,10 +196,12 @@ class gccxml:
     active = True
     base = 'gccxml'
     if _STABLE:
+       source_version = "20080522"
        source = [
-                [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co -D 22052008 "+base, os.getcwd()]
+                [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co -D 22May2008 "+base, os.getcwd()]
              ]
     else:
+       source_version = "20080627"
        source = [
                 [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co -D 27June2008 "+base, os.getcwd()]
              ]
@@ -265,21 +281,43 @@ class pygccxml:
     active = True
     base = 'pygccxml'
     if _STABLE:
+        source_version = "1300"
         source = [
-                    [svn, " co -r 1300 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml "+base, os.getcwd()]
+                    [svn, " co -r 1300 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
                  ]
     else:                 
+        source_version = "1362"
         source = [
-                    [svn, " co -r 1362 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml "+base, os.getcwd()]
+                    [svn, " co -r 1362 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
                  ]             
     if isLinux() or isMac() :
         buildCmds =  [
                 [0,"python setup.py install  --prefix="+ PREFIX , os.path.join (os.getcwd(), base, "pygccxml_dev") ],
-                [0,"python setup.py install  --prefix=" + PREFIX , os.path.join (os.getcwd(), base, "pyplusplus_dev") ]
                     ]                       
     if isWindows():
         buildCmds =  [
                 [0,"python setup.py install  " , os.path.join (os.getcwd(), base, "pygccxml_dev") ],
+                    ]                       
+                    
+
+class pyplusplus:
+    pythonModule = False
+    active = True
+    base = 'pyplusplus'
+    if _STABLE:
+        source = [
+                    [svn, " co -r 1300 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
+                 ]
+    else:                 
+        source = [
+                    [svn, " co -r 1362 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
+                 ]             
+    if isLinux() or isMac() :
+        buildCmds =  [
+                [0,"python setup.py install  --prefix=" + PREFIX , os.path.join (os.getcwd(), base, "pyplusplus_dev") ]
+                    ]                       
+    if isWindows():
+        buildCmds =  [
                 [0,"python setup.py install  " , os.path.join (os.getcwd(), base, "pyplusplus_dev") ]
                     ]                       
                     
@@ -472,6 +510,19 @@ class boost:    ## also included bjam
                 ]
                              
      
+
+class boost_python_index:
+    active = True
+    version = "1.34.1"
+    pythonModule = False
+    ModuleName = ""
+    base = "boost-python-index"
+    if isLinux() or isMac():
+        source = [
+             ["cp",'-rf %s %s' % (os.path.join('python-ogre','boost'), base), os.getcwd()],
+             ]   
+        buildCmds  = []
+                
     
     
 ####################################################
@@ -555,8 +606,8 @@ class ogre:
         include_dirs = [ Config.PATH_Boost 
                     , Config.PATH_INCLUDE_Ogre 
                     ]
-        CCFLAGS =  '' ## -DBOOST_PYTHON_MAX_ARITY=19'
-        LINKFLAGS = ''
+        CCFLAGS =  ' -DBOOST_PYTHON_MAX_ARITY=19'
+        LINKFLAGS = '-lboost_python_index-gcc42-1_34_1'
     elif isMac():
         base = "ogre-linux_osx-v1-4-9"
         basedep = "OgreDependenciesOSX_20070929"
@@ -657,6 +708,8 @@ class ois:
     #externalFiles = ['OIS.dll']
     if os.sys.platform == 'darwin':
         LINKFLAGS = '-framework Python -framework Carbon'
+    else:
+        LINKFLAGS = '-lboost_python_index-gcc42-1_34_1'
     
 class ogrerefapp:
     active = True
@@ -803,6 +856,7 @@ class cegui:
     CCFLAGS =  ' -DBOOST_PYTHON_MAX_ARITY=19'
     ModuleName = 'CEGUI'
     CheckIncludes = ['boost/python.hpp', 'Ogre.h', 'CEGUI.h', 'OgreCEGUIRenderer.h'] 
+    LINKFLAGS = '-lboost_python_index-gcc42-1_34_1'
 
 
 class ode:
