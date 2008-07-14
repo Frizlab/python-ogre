@@ -10,13 +10,24 @@ PYTHON	:= /usr/bin/python
 #PYVER   := $(shell $(PYTHON) -c 'import sys; print sys.version[:3]')
 PYVERS	= 2.5 #$(shell pyversions -vr)
 
-build:
-#	touch $@
-#	python BuildModule.py -g -c ois
-#	python BuildModule.py -g -c cegui
-#	python BuildModule.py -g -c noise
-#	python BuildModule.py -g -c ogre
-#	python BuildModule.py -g -c ogreode
+build: build-stamp
+build-stamp:
+	# Core Modules
+	python BuildModule.py --usesystem -g -c ois
+	python BuildModule.py --usesystem -g -c cegui
+	python BuildModule.py --usesystem -g -c ogre
+	# Extra modules
+	python BuildModule.py --usesystem -g -c noise
+#	python BuildModule.py --usesystem -g -c ogreode
+	python BuildModule.py --usesystem -g -c betagui
+	python BuildModule.py --usesystem -g -c cadunetree
+	python BuildModule.py --usesystem -g -c caelum
+	python BuildModule.py --usesystem -g -c et
+	python BuildModule.py --usesystem -g -c plib
+	python BuildModule.py --usesystem -g -c ogreforests
+	python BuildModule.py --usesystem -g -c ogreal
+	python BuildModule.py --usesystem -g -c watermesh
+	touch $@-stamp
 
 build-python%:
 	dh_testdir
@@ -41,6 +52,10 @@ install-python%:
 
 # Build architecture-independent files here.
 binary-indep: build install
+# We have nothing to do here.
+
+# Build architecture-dependent files here.
+binary-arch: build install
 	dh_testdir
 	dh_testroot
 	dh_installchangelogs
@@ -49,22 +64,19 @@ binary-indep: build install
 	dh_compress -X.py
 	dh_fixperms
 	dh_installdeb
+	dh_shlibdeps
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb
 
-# Build architecture-dependent files here.
-binary-arch: build install
-# We have nothing to do by default.
-
-prep:
-	# Build and install the lastest gccxml
-	cd ..; python python-ogre/BuildModule.py -r -b gccxml
-	# Build and install the lastest pygccxml
-	cd ..; python python-ogre/BuildModule.py -r -b pygccxml
-	# Build and install the extra boost stuff we need
-	cd boost; fakeroot ./debian/rules binary-arch
-	sudo dpkg --install libboost-python1.34.1-index*.deb
+#prep:
+#	# Build and install the lastest gccxml
+#	cd ..; python python-ogre/BuildModule.py -r -b gccxml
+#	# Build and install the lastest pygccxml
+#	cd ..; python python-ogre/BuildModule.py -r -b pygccxml
+#	# Build and install the extra boost stuff we need
+#	cd boost; fakeroot ./debian/rules binary-arch
+#	sudo dpkg --install libboost-python1.34.1-index*.deb
 
 binary: binary-indep binary-arch
 .PHONY: build clean binary-indep binary-arch binary install configure prep build-python2.5

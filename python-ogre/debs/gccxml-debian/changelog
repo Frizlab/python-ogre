@@ -1,4 +1,4 @@
-gccxml (0.7.0+%%SHORTDATE%%-0) unstable; urgency=low
+gccxml (0.7.0+cvs%%SHORTDATE%%-0) unstable; urgency=low
 
   * New cvs snapshot.
 
