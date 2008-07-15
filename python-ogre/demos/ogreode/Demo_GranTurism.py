@@ -10,14 +10,14 @@ import sys
 
 #------------------------------------------------------------------------------------------------
 carNames = [
+    "Subaru",
     "Jeep",
-    "JeepSway",
-    "Subaru"
+    "JeepSway"
 ]
 carFileNames= [
+    "subaru.ogreode",
     "jeep.ogreode",
-    "jeep.ogreode",
-    "subaru.ogreode"
+    "jeep.ogreode"
 ]
 sSelectedCar = 1
 maxNumCar = 3
@@ -25,6 +25,7 @@ maxNumCar = 3
 #------------------------------------------------------------------------------------------------
 class GranTurismOgreFrameListener ( sf.FrameListener ):
     def __init__(self, win, cam,time_step,root,world) :
+        print "frame init"
         sf.FrameListener.__init__(self, win,cam)
         self.camera = cam
         self.vehicle = None
@@ -85,6 +86,7 @@ class GranTurismOgreFrameListener ( sf.FrameListener ):
         ogre.OverlayManager.getSingleton().getOverlayElement("OgreOdeDemos/Keys").setCaption("Keys: " + "I/K - Accelerate/Brake, J/L - Turn, X - Change drive mode, N - Change Car")
         ogre.OverlayManager.getSingleton().getOverlayElement("OgreOdeDemos/OtherKeys").setCaption("Extra: " + "E - Debug Object")
         pOver.show()
+        print "Done"
 
     #------------------------------------------------------------------------------------------------
     def __del__(self ):
@@ -92,6 +94,7 @@ class GranTurismOgreFrameListener ( sf.FrameListener ):
 
     #------------------------------------------------------------------------------------------------
     def changeCar( self ):
+        print "ChangeCar"
         self.sSelectedCar = (self.sSelectedCar + 1) % self.maxNumCar
         
         del self.vehicle
@@ -106,8 +109,10 @@ class GranTurismOgreFrameListener ( sf.FrameListener ):
         self.vehicle.setPosition(v_pos)
 
         self.updateInfo()
+        print "Done Change Car"
     #------------------------------------------------------------------------------------------------
     def updateInfo( self ):
+        print "** Updating Info"
         pOver = ogre.OverlayManager.getSingleton().getByName("OgreOdeDemos/Overlay")
         newInfo = "Info: " + carNames[self.sSelectedCar]
         if self.drive =='R':
@@ -120,9 +125,11 @@ class GranTurismOgreFrameListener ( sf.FrameListener ):
         elif self.drive == '4':
             newInfo = newInfo + " & Rear wheel drive"
         ogre.OverlayManager.getSingleton().getOverlayElement("OgreOdeDemos/Info").setCaption(newInfo)
+        print "** Done"
 
     #------------------------------------------------------------------------------------------------
     def frameStarted( self, evt):
+        print "*** frameStarted"
         time = evt.timeSinceLastFrame
 
         ret = sf.FrameListener.frameStarted(self,evt)
@@ -179,11 +186,12 @@ class GranTurismOgreFrameListener ( sf.FrameListener ):
                 self.TimeUntilNextToggle = 0.5
 
         if( not self._stepper.isPaused()):
-            self.vehicle.setInputs(self.Keyboard.isKeyDown(OIS.KC_J),
-                                self.Keyboard.isKeyDown(OIS.KC_L),
-                                self.Keyboard.isKeyDown(OIS.KC_I),
-                                self.Keyboard.isKeyDown(OIS.KC_K))
-            self.vehicle.update(time)
+            print "**** Stepping"
+#             self.vehicle.setInputs(self.Keyboard.isKeyDown(OIS.KC_J),
+#                                 self.Keyboard.isKeyDown(OIS.KC_L),
+#                                 self.Keyboard.isKeyDown(OIS.KC_I),
+#                                 self.Keyboard.isKeyDown(OIS.KC_K))
+#             self.vehicle.update(time)
 
             # Thanks to Ahmed!
             followFactor = 0.2
@@ -200,6 +208,7 @@ class GranTurismOgreFrameListener ( sf.FrameListener ):
 
             self.camera.move( (toCam - self.camera.getPosition()) * followFactor )
             self.camera.lookAt(self.vehicle.getSceneNode().getPosition() + ((self.vehicle.getSceneNode().getOrientation() * ogre.Vector3.UNIT_Z) * camLookAhead))
+        print "*** FrameStarted End" , ret           
         return ret
 
 #------------------------------------------------------------------------------------------------
@@ -242,6 +251,7 @@ class GranTurismOgreApplication (sf.Application, OgreOde.CollisionListener ):
     #------------------------------------------------------------------------------------------------
     # Just override the mandatory create scene method
     def _createScene(self):
+        print "** _CreateScene"
         # Set ambient light
         self.sceneManager.setAmbientLight(ogre.ColourValue(0.5, 0.5, 0.5))
         self.sceneManager.setSkyBox(True,"GranTurismOgre/Skybox")
@@ -273,9 +283,11 @@ class GranTurismOgreApplication (sf.Application, OgreOde.CollisionListener ):
         track_node.attachObject(track_mesh)
 
         ei = OgreOde.EntityInformer(track_mesh)
+        print "** Done 1"
         print ei
         print self._world.getDefaultSpace()
         self._track = ei.createStaticTriangleMesh(self._world, self._world.getDefaultSpace())
+        print "****"
 
     #------------------------------------------------------------------------------------------------
     # Create new frame listener
@@ -284,6 +296,7 @@ class GranTurismOgreApplication (sf.Application, OgreOde.CollisionListener ):
         self.root.addFrameListener(self.FrameListener)
     #------------------------------------------------------------------------------------------------
     def collision(self, contact):
+        print "** Collision "
         if not OgreOde.Vehicle.handleTyreCollision(contact):
             contact.setBouncyness(0.0)
             contact.setCoulombFriction(18.0)

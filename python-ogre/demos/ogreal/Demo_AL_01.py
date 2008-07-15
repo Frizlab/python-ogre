@@ -65,6 +65,9 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
         
     def _createScene(self):
         "Override sf create scene"
+        self.soundManager  = OgreAL.SoundManager() ## "Generic Software")
+        
+        
         sceneManager = self.sceneManager
         camera = self.camera
 
@@ -119,29 +122,30 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
         #
         #
 #         
-        self.soundManager  = OgreAL.SoundManager() ## "Generic Software")
         
         dl = self.soundManager.getDeviceList()
 #        for dev in dl:
 #            print "Device available:", dev
+            
         node = rootNode.createChildSceneNode( "Head" )
         node.attachObject( ogreHead )
         sound = self.soundManager.createSound("Roar", "roar.wav", True) ## "6chan.ogg", True) ## "roar.wav", True)
         node.attachObject(sound)
         sound.play()
-
-        bgSound = self.soundManager.createSound("stereo", "6chan.ogg", True, True)
-        bgSound.setGain(0.5)
-        bgSound.setRelativeToListener(True)
-        bgSound.play()
+        OgreAL.SoundManager.getSingleton().getSound("Roar").play()
+        
+        
+        bgSound = self.soundManager.createSound("ZeroFactor", "Zero Factor - Untitled.ogg", True, True)
+       
         
     	node = sceneManager.getRootSceneNode().createChildSceneNode("CameraNode")
      	node.setPosition(0, 100, 100)
+     	
      	node = node.createChildSceneNode("PitchNode")
-#      	node.attachObject(self.camera)
+#       	node.attachObject(self.camera)
      	node.attachObject(self.soundManager.getListener())
      	node.pitch(ogre.Degree(-30))
-        self.pitchnode = node
+     	self.pitchnode = node
         OgreAL.SoundManager.getSingleton().getSound("Roar").play()
         
         

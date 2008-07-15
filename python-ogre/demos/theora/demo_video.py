@@ -47,6 +47,7 @@ class VideoApplication(sf.Application):
 
         self.Control.setTextureTecPassStateLevel( 0, 0, 0 )
         self.Control.setSeekEnabled( False )
+        self.Control.setAutoAudioUpdate ( True )
         
         mat  = ogre.MaterialManager.getSingleton().getByName("Example/TheoraVideoPlayer/Play")
         #Create the material the first time through this method
@@ -56,22 +57,19 @@ class VideoApplication(sf.Application):
         mat.getTechnique(0).getPass(0).createTextureUnitState()
         self.Control.createDefinedTexture( "Example/TheoraVideoPlayer/Play", "General" )
         
-# #         dmanager = ogre.DynLibManager.getSingletonPtr()
-# #         oalsound = dmanager.load ("OAL_MOD")
-# #         print dir (oalsound) 
-# #         OALManager = oalsound.getSymbol("getSoundSystem")
-# #         print "SYM:", OALManager 
-# #         OALManager.start()
         
-#         slib = ctypes.cdll.LoadLibrary("OAL_MOD")
-#         print slib
-#         print dir(slib)
-#         f = slib.getSoundSystem()
-#         print f
-#         print dir(f)
-#         f.start()
+        sm = theora.SoundManager()
+        self.SoundSystem=None
+        mods=sm.loadSoundModules()
+        if len(mods) > 0:
+            self.SoundSystem = sm.startUpSoundManager( 'FMOD_MOD' ) #OAL
         
         self.Clip =  self.Control.getMaterialNameClip("Example/TheoraVideoPlayer/Play")
+        
+        if self.SoundSystem:
+            self.Audio = self.SoundSystem.createAudio()
+            self.Clip.setAudioDriver( self.Audio )
+
         
         self.playmode = theora.TextureEffectPlay_ASAP
         self.Clip.changePlayMode ( self.playmode )
@@ -89,8 +87,6 @@ class VideoApplication(sf.Application):
         self.frameListener = VideoListener(self.renderWindow, self.camera, self.Clip)
         self.root.addFrameListener(self.frameListener)
 
-#     def __del__(self):
-#         sf.Application.__del__(self)    
         
 class VideoListener(sf.FrameListener):
     def __init__(self, renderWindow, camera, video):
