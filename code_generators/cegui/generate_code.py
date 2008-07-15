@@ -148,6 +148,7 @@ def filter_declarations( mb ):
     for f in excludes:
         CEGUI_ns.member_function(f).exclude()
     CEGUI_ns.class_('RawDataContainer').exclude() # has pointers that need to be handled -- hopefully not needed    
+    
     CEGUI_ns.member_function("::CEGUI::WindowManager::loadWindowLayout", arg_types=[None,None,None,None,None]).exclude()   
     
     
