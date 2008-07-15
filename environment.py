@@ -128,7 +128,6 @@ if not _ConfigSet:
     print "\n\n You DO need to create a PythonOgreConfig_%s.py file with config details" % ( _SystemType)
     sys.exit(-1)
     
-        
 ######################
 downloadPath = os.path.abspath("downloads") 
 wget = "wget -c -nc "
@@ -508,23 +507,30 @@ class boost:    ## also included bjam
                 [0,'sed -i s/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/ '+base+'/boost/python/detail/preprocessor.hpp', '' ],
                 [0,os.path.join(os.getcwd(), bjambase, "bjam.exe") + ' release --with-python --toolset=msvc-8',os.path.join(os.getcwd(),base)]
                 ]
-                             
-     
+    # Figure out the gcc version we are running - this is needed by Boost
+    # FIXME: This assumes that the gcc we are building with now was what we built boost with
+    import subprocess
+    gccp = subprocess.Popen (["gcc", "--version"], stdout=subprocess.PIPE)
+    gcc_version = gccp.communicate()[0].split('\n')[0].split()[2].split('.')
+   
+    # FIXME: Should this be the multithreaded version!? 
+    lib = "boost_python-gcc%s%s-%s" % (gcc_version[0], gcc_version[1], base[6:])
 
 class boost_python_index:
     active = True
     version = "1.34.1"
     pythonModule = False
     ModuleName = ""
-    base = "boost-python-index"
+    base = "libboost-python%s-index" % boost.base[6:].replace("_",".")
     if isLinux() or isMac():
         source = [
              ["cp",'-rf %s %s' % (os.path.join('python-ogre','boost'), base), os.getcwd()],
-             ]   
+             ]
+        # FIXME: This should have build commands!
         buildCmds  = []
-                
-    
-    
+   
+    lib = boost.lib.replace("python", "python_index")
+
 ####################################################
 ##
 ## Now for the actual Python-Ogre Modules
@@ -567,7 +573,7 @@ class ogre:
             pchbuild = 'buildpch.cpp'
             pchincludes = ['python_ogre_precompiled.h']
 #         
-        libs=[Config.LIB_Boost, 'OgreMain' ] #,  'OgreGUIRenderer', 'CEGUIBase']
+        libs=[boost.lib, 'OgreMain' ] #,  'OgreGUIRenderer', 'CEGUIBase']
         lib_dirs = [ Config.PATH_LIB_Boost
                     ,  Config.PATH_LIB_Ogre_CEGUIRenderer
                     , Config.PATH_LIB_Ogre_OgreMain
@@ -582,7 +588,7 @@ class ogre:
         externalFiles=['OgreMain.dll', 'OgreGuiRender.dll', Config.LIB_Boost+'.dll']
     elif isLinux():
         version = "1.4"  #### UGLY OVERRIDE AT MOMENT...
-        libs=[Config.LIB_Boost, 'OgreMain' ] #,  'OgreGUIRenderer', 'CEGUIBase']
+        libs=[boost.lib, 'OgreMain' ] #,  'OgreGUIRenderer', 'CEGUIBase']
         base = "ogre-v1-4-9"
         source = [
             [wget, "http://downloads.sourceforge.net/ogre/"+base+".tar.bz2",downloadPath],
@@ -600,14 +606,13 @@ class ogre:
                 [0, "make install", os.path.join(os.getcwd(), 'ogre')],
                 ]
         
-        libs=[Config.LIB_Boost, 'OgreMain' ] #,  'OgreGUIRenderer', 'CEGUIBase']
+        libs=[boost.lib, boost_python_index.lib, 'OgreMain' ] #,  'OgreGUIRenderer', 'CEGUIBase']
         lib_dirs = [ Config.LOCAL_LIB
                     ]
         include_dirs = [ Config.PATH_Boost 
                     , Config.PATH_INCLUDE_Ogre 
                     ]
         CCFLAGS =  ' -DBOOST_PYTHON_MAX_ARITY=19'
-        LINKFLAGS = '-lboost_python_index-gcc42-1_34_1'
     elif isMac():
         base = "ogre-linux_osx-v1-4-9"
         basedep = "OgreDependenciesOSX_20070929"
@@ -631,7 +636,7 @@ class ogre:
                 [0, "cp -R *.framework " + Config.FRAMEWORK_DIR, os.path.join(os.getcwd() ,'ogre',"Mac", "build", "Release") ]
                 ]
                 
-        libs=[Config.LIB_Boost]
+        libs=[boost.lib]
         lib_dirs = [ Config.PATH_LIB_Boost ]
         include_dirs = [ Config.PATH_Boost 
                         , Config.PATH_INCLUDE_Ogre
@@ -692,9 +697,9 @@ class ois:
             pchbuild = 'buildpch.cpp'
             pchincludes = ['boost/python.hpp', 'OIS.h']
         
-        libs=['OIS_Static',Config.LIB_Boost]
+        libs=['OIS_Static',boost.lib]
     else:
-        libs=['OIS',Config.LIB_Boost]
+        libs=['OIS',boost.lib]
     if os.name=="nt":
         libs.append ( "User32" ) # needed for static linking
     include_dirs = [ Config.PATH_Boost 
@@ -709,7 +714,7 @@ class ois:
     if os.sys.platform == 'darwin':
         LINKFLAGS = '-framework Python -framework Carbon'
     else:
-        LINKFLAGS = '-lboost_python_index-gcc42-1_34_1'
+        LINKFLAGS = "-l%s" % boost_python_index.lib
     
 class ogrerefapp:
     active = True
@@ -727,9 +732,9 @@ class ogrerefapp:
                 [0, "make install", baseDir],
                 ]
     if isWindows():
-        libs=[Config.LIB_Boost, 'OgreMain', 'ode', 'ReferenceAppLayer']
+        libs=[boost.lib, 'OgreMain', 'ode', 'ReferenceAppLayer']
     else:
-        libs=[Config.LIB_Boost, 'OgreMain', 'ode', 'ReferenceAppLayer']
+        libs=[boost.lib, 'OgreMain', 'ode', 'ReferenceAppLayer']
     lib_dirs = [ Config.PATH_LIB_Boost
                 , Config.PATH_LIB_Ogre_OgreMain
                 , Config.PATH_LIB_ODE
@@ -752,9 +757,9 @@ class ogrenewt:
     parent = "ogre/physics"
     base = 'ogreaddons/ogrenewt'
     if isWindows():
-        libs = ['Newton', Config.LIB_Boost, 'OgreNewt_Main', 'OgreMain']
+        libs = ['Newton', boost.lib, 'OgreNewt_Main', 'OgreMain']
     else:
-        libs = ['Newton', Config.LIB_Boost, 'OgreNewt', 'OgreMain']
+        libs = ['Newton', boost.lib, 'OgreNewt', 'OgreMain']
     if _STABLE:
         source = [
                  [cvs, " -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -D 01052008 -P "+base, os.getcwd()]
@@ -807,9 +812,9 @@ class cegui:
             pchstop = 'cegui.h'
             pchbuild = 'buildpch.cpp'
             pchincludes = ['boost/python.hpp', 'cegui.h']
-        libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain', 'OgreGUIRenderer' ]
+        libs=[boost.lib, 'CEGUIBase', 'OgreMain', 'OgreGUIRenderer' ]
     else:
-        libs=[Config.LIB_Boost, 'CEGUIBase', 'OgreMain', 'CEGUIOgreRenderer' ]
+        libs=[boost.lib, 'CEGUIBase', 'OgreMain', 'CEGUIOgreRenderer' ]
 
     if isLinux():
         if _STABLE:
@@ -856,7 +861,7 @@ class cegui:
     CCFLAGS =  ' -DBOOST_PYTHON_MAX_ARITY=19'
     ModuleName = 'CEGUI'
     CheckIncludes = ['boost/python.hpp', 'Ogre.h', 'CEGUI.h', 'OgreCEGUIRenderer.h'] 
-    LINKFLAGS = '-lboost_python_index-gcc42-1_34_1'
+    LINKFLAGS = "-l%s" % boost_python_index.lib
 
 
 class ode:
@@ -865,7 +870,7 @@ class ode:
     version= "0.9"
     name ='ode'
     parent = "ogre/physics"
-    libs=[Config.LIB_Boost,  'ode']
+    libs=[boost.lib,  'ode']
     if os.name=="nt":
         libs.append ( "User32" ) # needed for MessageBox function
     lib_dirs = [ Config.PATH_LIB_Boost
@@ -904,7 +909,7 @@ class opcode:
     version= "1.3"
     name = 'opcode'
     parent = "ogre/physics"
-    libs=[Config.LIB_Boost]
+    libs=[boost.lib]
     lib_dirs = [ Config.PATH_LIB_Boost
                 ]
     include_dirs = [ Config.PATH_Boost 
@@ -931,7 +936,7 @@ class caelum:
                 Config.PATH_LIB_Ogre_OgreMain
                 ]
     CheckIncludes=[]
-    libs=[  Config.LIB_Boost, 'OgreMain' ]
+    libs=[  boost.lib, 'OgreMain' ]
     ModuleName="caelum"  
      
 class ogreode:
@@ -974,7 +979,7 @@ class ogreode:
             [0, "make install", baseDir],
             ]
 
-    libs=[Config.LIB_Boost, 'OgreMain', 'ode', 'OgreOde_Core', 'OgreOde_Prefab', 'OgreOde_Loader' ]
+    libs=[boost.lib, 'OgreMain', 'ode', 'OgreOde_Core', 'OgreOde_Prefab', 'OgreOde_Loader' ]
     CCFLAGS =  ' -DBOOST_PYTHON_MAX_ARITY=19'
     CheckIncludes = ['boost/python.hpp', 'Ogre.h', 'ode/ode.h', 'ode/odecpp.h', 'OgreOde_Core.h', 'OgreOde_Loader.h', 
                     'Ogreode_Prefab.h'] 
@@ -1008,7 +1013,7 @@ class quickgui:
                 ##,Config.PATH_LIB_quickgui
                 ]
     CheckIncludes=[]
-    libs=[  Config.LIB_Boost, 'OgreMain' ]
+    libs=[  boost.lib, 'OgreMain' ]
     ModuleName="QuickGUI"   
 
 class navi:
@@ -1031,7 +1036,7 @@ class navi:
                 ,os.path.join(Config.PATH_navi,'..','Dependencies','win32','astral','lib')
                 ]
     CheckIncludes=[]
-    libs=[  Config.LIB_Boost, 'Navi_DLL', 'OgreMain','Astral', 'user32',
+    libs=[  boost.lib, 'Navi_DLL', 'OgreMain','Astral', 'user32',
             'kernel32.lib', 'gdi32.lib', 'winspool.lib', 'comdlg32.lib', 'advapi32.lib',
             'shell32.lib','ole32.lib','oleaut32.lib','uuid.lib' ]
     ModuleName="navi"   
@@ -1057,7 +1062,7 @@ class betagui:
                 Config.PATH_LIB_betagui
                 ]
     CheckIncludes=[]
-    libs=[  Config.LIB_Boost, 'OgreMain' ]
+    libs=[  boost.lib, 'OgreMain' ]
     ModuleName="betagui"   
 
 class ogreforests:
@@ -1076,7 +1081,7 @@ class ogreforests:
                 Config.PATH_LIB_Ogre_OgreMain
                 ]
     CheckIncludes=[]
-    libs=[  Config.LIB_Boost, 'OgreMain' ]
+    libs=[  boost.lib, 'OgreMain' ]
     ModuleName="ogreforests"   
 
     
@@ -1097,7 +1102,7 @@ class particleuniverse:
                 Config.PATH_LIB_particleuniverse
                 ]
     CheckIncludes=[]
-    libs=[  Config.LIB_Boost, 'OgreMain', 'ParticleUniverse' ]
+    libs=[  boost.lib, 'OgreMain', 'ParticleUniverse' ]
     ModuleName="particleuniverse"   
             
 class nxogre:
@@ -1128,11 +1133,11 @@ class nxogre:
                 Config.PATH_LIB_PhysX
                 ]
     CheckIncludes=[]
-#     libs=[  Config.LIB_Boost, 'NxOgre','NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' ]
+#     libs=[  boost.lib, 'NxOgre','NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' ]
     if os.name =='nt':
-        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking',  'PhysXLoader','OgreMain' ] #, 'NxOgreStatic'] #'NxExtensions',
+        libs=[  boost.lib, 'NxCharacter', 'NxCooking',  'PhysXLoader','OgreMain' ] #, 'NxOgreStatic'] #'NxExtensions',
     else:
-        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'PhysXCore','PhysXLoader','OgreMain' ]
+        libs=[  boost.lib, 'NxCharacter', 'NxCooking', 'PhysXCore','PhysXLoader','OgreMain' ]
     ModuleName="NxOgre"   
     
     
@@ -1161,7 +1166,7 @@ class theora:
                 Config.PATH_LIB_Theora,
                 ]
     CheckIncludes=[]
-    libs=[  Config.LIB_Boost, 'Plugin_TheoraVideoSystem','OgreMain' ]
+    libs=[  boost.lib, 'Plugin_TheoraVideoSystem','OgreMain' ]
     ModuleName="theora"   
  
 class plib:
@@ -1180,9 +1185,9 @@ class plib:
     ModuleName = "plib"
     CheckIncludes=[]
     if os.name == "nt":
-        libs = [ Config.LIB_Boost, 'winmm', 'User32','wsock32', 'opengl32.lib','glu32.lib' ]
+        libs = [ boost.lib, 'winmm', 'User32','wsock32', 'opengl32.lib','glu32.lib' ]
     else:
-        libs = [ Config.LIB_Boost ] # Note sure what linux libraries are needed
+        libs = [ boost.lib ] # Note sure what linux libraries are needed
     
 class physx:
     active = True
@@ -1207,9 +1212,9 @@ class physx:
                 ]
     CheckIncludes=[]
     if os.name == 'nt':
-        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'PhysXLoader' ]
+        libs=[  boost.lib, 'NxCharacter', 'NxCooking', 'PhysXLoader' ]
     else:
-        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking',  'PhysXCore', 'PhysXLoader' ]
+        libs=[  boost.lib, 'NxCharacter', 'NxCooking',  'PhysXCore', 'PhysXLoader' ]
     ModuleName="PhysX"   
 
 class nxogre_09:
@@ -1236,9 +1241,9 @@ class nxogre_09:
                 ]
     CheckIncludes=[]
     if os.name =='nt':
-        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' ]
+        libs=[  boost.lib, 'NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' ]
     else:
-        libs=[  Config.LIB_Boost, 'NxCharacter', 'NxCooking', 'PhysXCore','PhysXLoader','OgreMain' ]
+        libs=[  boost.lib, 'NxCharacter', 'NxCooking', 'PhysXCore','PhysXLoader','OgreMain' ]
     ModuleName="NxOgre_09"   
 
 class ogreal:
@@ -1266,7 +1271,7 @@ class ogreal:
                 ,os.path.join(Config.PATH_OPENAL, 'libs','Win32')
                   ] 
         CCFLAGS = ' -DOgreAL_Export="" -DWIN32 -DNDEBUG -D_LIB -D_WIN32 -D_WINDOWS -DVORBIS_IEEE_FLOAT32 -D_USE_NON_INTEL_COMPILER '              
-        libs=[Config.LIB_Boost, 'OgreMain', 
+        libs=[boost.lib, 'OgreMain', 
                     'ogg_static', 
                     'vorbis_static','vorbisfile_static','vorbisenc_static',
                     'OpenAL32', 'EFX-Util']  ##  'OgreAL' -- going to compile OgreAL ourselves
@@ -1302,7 +1307,7 @@ class ogreal:
             [0, "aclocal\n./autogen.sh", os.path.join(os.getcwd(),"openal-0.0.8")],
             [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "openal-0.0.8")]
             ]
-        libs=[Config.LIB_Boost, 'OgreMain', 
+        libs=[boost.lib, 'OgreMain', 
                     'ogg', 
                     'vorbis','vorbisfile','vorbisenc',
                     'openal']  ##  'OgreAL' -- going to compile OgreAL ourselves
@@ -1330,12 +1335,12 @@ class ogrevideoffmpeg:
                 ]
     CheckIncludes=[]
     if os.name == 'nt':
-        libs=[  Config.LIB_Boost, 'OgreMain', 'libavformat', 'libavcodec', 'libavutil',
+        libs=[  boost.lib, 'OgreMain', 'libavformat', 'libavcodec', 'libavutil',
             'libavdevice','libswscale','liba52','libmingwex','libfaac','libfaad',
             'libz','libxvidcore','libx264','libpthreadGC2','libwsock32','libvorbis','libmp3lame','libogg',
             'libvorbisenc','libvorbisfile','libtheora','libgsm','libvfw32','libgcc' ]
     else:
-        libs=[  Config.LIB_Boost, 'OgreMain', 'avformat', 'avcodec', 'avutil', 'z', 'GL', 'GLU', 'Xxf86vm', 'Xext', 'X11' ]
+        libs=[  boost.lib, 'OgreMain', 'avformat', 'avcodec', 'avutil', 'z', 'GL', 'GLU', 'Xxf86vm', 'Xext', 'X11' ]
     ModuleName="ogrevideoffmpeg"   
 
 class ogredshow:
@@ -1359,7 +1364,7 @@ class ogredshow:
                 
                 ]
     CheckIncludes=[]
-    libs=[  Config.LIB_Boost, 'OgreMain','Strmiids' , 'ole32']
+    libs=[  boost.lib, 'OgreMain','Strmiids' , 'ole32']
     ModuleName="ogredshow"   
     
 class et:  ## editable terrain
@@ -1368,7 +1373,7 @@ class et:  ## editable terrain
     version= "2.2"
     name='et'
     parent = "ogre/addons"
-    libs=[ Config.LIB_Boost, 'OgreMain' ]
+    libs=[ boost.lib, 'OgreMain' ]
     lib_dirs = [ Config.PATH_LIB_Boost,
                 Config.PATH_LIB_Ogre_OgreMain
                 ]
@@ -1388,7 +1393,7 @@ class bullet:
     base = "bullet-" + version
     baseDir = os.path.join(os.getcwd(), base)
     parent = "ogre/physics"
-    libs=[Config.LIB_Boost,  'LibBulletCollision', 'LibBulletDynamics']
+    libs=[boost.lib,  'LibBulletCollision', 'LibBulletDynamics']
     if os.name == 'nt':
         libs.append('libbulletmath')
     lib_dirs = [ Config.PATH_LIB_Boost
@@ -1426,7 +1431,7 @@ class ogrebulletc:  #
     version = "1.0"
     cflags = ""
     parent = "ogre/physics"
-    libs = [Config.LIB_Boost,  'OgreMain', 
+    libs = [boost.lib,  'OgreMain', 
         'LibBulletCollision', 'LibBulletDynamics'
         ]
     if os.name == 'nt':
@@ -1455,7 +1460,7 @@ class ogrebulletd:  #
     name='ogrebulletd'
     cflags = ""
     parent = "ogre/physics"
-    libs = [Config.LIB_Boost,  'OgreMain', 
+    libs = [boost.lib,  'OgreMain', 
         'LibBulletCollision', 'LibBulletDynamics'
         ]
     if os.name == 'nt':
@@ -1493,7 +1498,7 @@ class noise:
     lib_dirs = [Config.PATH_LIB_Boost
                 ]
     CheckIncludes=[]
-    libs=[  Config.LIB_Boost]
+    libs=[  boost.lib]
     ModuleName="noise"   
     
 class watermesh:
@@ -1511,7 +1516,7 @@ class watermesh:
                 Config.PATH_LIB_Ogre_OgreMain
                 ]
     CheckIncludes=[]
-    libs=[  Config.LIB_Boost, 'OgreMain' ]
+    libs=[  boost.lib, 'OgreMain' ]
     ModuleName="watermesh"   
     
 class ofusion:
@@ -1529,7 +1534,7 @@ class ofusion:
                 Config.PATH_LIB_Ogre_OgreMain
                 ]
     CheckIncludes=[]
-    libs=[  Config.LIB_Boost, 'OgreMain' ]
+    libs=[  boost.lib, 'OgreMain' ]
     ModuleName="ofusion"   
  
 class cadunetree:
@@ -1547,7 +1552,7 @@ class cadunetree:
                 Config.PATH_LIB_Ogre_OgreMain
                 ]
     CheckIncludes=[]
-    libs=[  Config.LIB_Boost, 'OgreMain' ]
+    libs=[  boost.lib, 'OgreMain' ]
     ModuleName="cadunetree"          
 
 class opensteer:
@@ -1565,7 +1570,7 @@ class opensteer:
                 Config.PATH_LIB_opensteer
                 ]
     CheckIncludes=[]
-    libs=[  Config.LIB_Boost, 'opensteer' ]
+    libs=[  boost.lib, 'opensteer' ]
     ModuleName="opensteer"          
 
 class hydrax:
@@ -1587,7 +1592,7 @@ class hydrax:
     except:
         pass                    
     CheckIncludes=[]
-    libs=[  Config.LIB_Boost, 'OgreMain', 'hydrax' ]
+    libs=[  boost.lib, 'OgreMain', 'hydrax' ]
     ModuleName="hydrax"     
     
 ############################################################################################
