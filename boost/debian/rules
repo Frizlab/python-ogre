@@ -8,9 +8,7 @@
 
 # Uncomment this to turn on verbose mode.
 export DH_VERBOSE=1
-
-
-
+export GCC_VERSION=`gcc --version | head -1 | sed -e's/.*) \([0-9]\)\.\([0-9]\).*/\1\2/'`
 
 # shared library versions, option 1
 #version=2.0.5
@@ -33,13 +31,14 @@ build: build-stamp
 build-stamp: configure-stamp 
 	dh_testdir
 
+
 	# Add here commands to compile the package.
 	g++ \
 		./libs/python/src/indexing/indexing_slice.cpp  \
 		./libs/python/src/indexing/python_iterator.cpp \
 		 -I . \
 		 -I /usr/include/python2.5 \
-		 -shared -Wl,-soname,libboost_python_index-gcc42-1_34_1.so -o libboost_python_index-gcc42-1_34_1.so -fPIC \
+		 -shared -Wl,-soname,libboost_python_index-gcc${GCC_VERSION}-1_34_1.so -o libboost_python_index-gcc${GCC_VERSION}-1_34_1.so -fPIC \
 		 -lboost_python \
 		 -lpython2.5
 
@@ -63,8 +62,8 @@ install: build
 
 	# Add here commands to install the package into debian/tmp
 	mkdir -p $(CURDIR)/debian/tmp/usr/lib
-	cp libboost_python_index-gcc42-1_34_1.so $(CURDIR)/debian/tmp/usr/lib
-	ln -sf /usr/lib/libboost_python_index-gcc42-1_34_1.so $(CURDIR)/debian/tmp/usr/lib/libboost_python_index.so
+	cp libboost_python_index-gcc${GCC_VERSION}-1_34_1.so $(CURDIR)/debian/tmp/usr/lib
+	ln -sf /usr/lib/libboost_python_index-gcc${GCC_VERSION}-1_34_1.so $(CURDIR)/debian/tmp/usr/lib/libboost_python_index.so
 
 	mkdir -p $(CURDIR)/debian/tmp/usr/include
 	cp -rvf boost $(CURDIR)/debian/tmp/usr/include
