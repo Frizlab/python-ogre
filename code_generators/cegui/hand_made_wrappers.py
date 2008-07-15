@@ -391,10 +391,23 @@ Window_getUserData ( ::CEGUI::Window & me) {
     }
 """
 
-
 WRAPPER_REGISTRATION_Window =[
     'def ("setUserData", &::Window_setUserData );',
     'def ("getUserData", &::Window_getUserData);'
+    ]
+
+WRAPPER_DEFINITION_WindowManager=\
+"""
+CEGUI::Window*
+WindowManager_loadWindowLayout(::CEGUI::WindowManager & me,
+    const CEGUI::String& filename, const CEGUI::String& name_prefix, const
+    CEGUI::String& resourceGroup) {
+      return me.loadWindowLayout( filename, name_prefix , resourceGroup);
+    }
+"""
+
+WRAPPER_REGISTRATION_WindowManager=[
+    'def ("loadWindowLayout", &::WindowManager_loadWindowLayout);'
     ]
     
 def apply_reg ( class_, code ):
@@ -416,3 +429,8 @@ def apply( mb ):
     rt = mb.class_( 'Window' )
     rt.add_declaration_code( WRAPPER_DEFINITION_Window )
     apply_reg( rt,  WRAPPER_REGISTRATION_Window )
+
+    rt = mb.class_( 'WindowManager' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_WindowManager )
+    apply_reg( rt,  WRAPPER_REGISTRATION_WindowManager )
+
