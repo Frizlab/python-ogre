@@ -17,7 +17,7 @@ import datetime
 
 _LOGGING_ON = False
 _PreCompiled = True
-_STABLE = True # set to true if using specific versions of CVS and SVN checkouts..
+_STABLE = False # set to true if using specific versions of CVS and SVN checkouts..
 
 
 ##
@@ -447,16 +447,16 @@ class scons:
              
 class boost:    ## also included bjam
     active = True
-    version = "3.4"
+    version = "3.5"
     pythonModule = False
     ModuleName = ""
-    if _STABLE:
-        base = 'boost_1_34_1'
-    else:        
-        # this doesn't work yet AJM 17/04/08 (in an automated fashion)
-        # as boost/python/detail/preprocessor.hpp and possibly boost/python/docstring_options.hpp
-        # need to have "#define BOOST_PYTHON_NO_PY_SIGNATURES" added to them
-        base = 'boost_1_35_0'  
+    # AJM Changed so stable is 1.35 as this seems fine....
+#     if _STABLE:
+#         base = 'boost_1_34_1'
+#         lib= 'boost_python-vc90-mt-1_34_1'
+#     else:        
+    base = 'boost_1_35_0'  
+    lib = 'boost_python-vc90-mt-1_35'
         
     if isLinux() or isMac():
         bjambase = 'boost-jam-3.1.16'
@@ -507,14 +507,15 @@ class boost:    ## also included bjam
                 [0,'sed -i s/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/ '+base+'/boost/python/detail/preprocessor.hpp', '' ],
                 [0,os.path.join(os.getcwd(), bjambase, "bjam.exe") + ' release --with-python --toolset=msvc-8',os.path.join(os.getcwd(),base)]
                 ]
-    # Figure out the gcc version we are running - this is needed by Boost
-    # FIXME: This assumes that the gcc we are building with now was what we built boost with
-    import subprocess
-    gccp = subprocess.Popen (["gcc", "--version"], stdout=subprocess.PIPE)
-    gcc_version = gccp.communicate()[0].split('\n')[0].split()[2].split('.')
-   
-    # FIXME: Should this be the multithreaded version!? 
-    lib = "boost_python-gcc%s%s-%s" % (gcc_version[0], gcc_version[1], base[6:])
+    if not isWindows():
+        # Figure out the gcc version we are running - this is needed by Boost
+        # FIXME: This assumes that the gcc we are building with now was what we built boost with
+        import subprocess
+        gccp = subprocess.Popen (["gcc", "--version"], stdout=subprocess.PIPE)
+        gcc_version = gccp.communicate()[0].split('\n')[0].split()[2].split('.')
+       
+        # FIXME: Should this be the multithreaded version!? 
+        lib = "boost_python-gcc%s%s-%s" % (gcc_version[0], gcc_version[1], base[6:])
 
 class boost_python_index:
     active = True
@@ -943,6 +944,7 @@ class ogreode:
     active = True
     pythonModule = True
     version= "1.0"
+    cflags = ""
     name='ogreode'
     parent = "ogre/physics"
     base = 'ogreaddons/ogreode'
@@ -1251,6 +1253,8 @@ class ogreal:
     pythonModule = True
     version="0.3"
     name='ogreal'
+    cflags = ''
+    
     parent = "ogre/sound"
     
     include_dirs = [ Config.PATH_Boost
@@ -1269,12 +1273,13 @@ class ogreal:
                 ,os.path.join(Config.PATH_VORBIS, 'win32','VorbisEnc_Static_Release')
                 ,os.path.join(Config.PATH_VORBIS, 'win32','VorbisFile_Static_Release')
                 ,os.path.join(Config.PATH_OPENAL, 'libs','Win32')
+                ,Config.PATH_LIB_OgreAL
                   ] 
-        CCFLAGS = ' -DOgreAL_Export="" -DWIN32 -DNDEBUG -D_LIB -D_WIN32 -D_WINDOWS -DVORBIS_IEEE_FLOAT32 -D_USE_NON_INTEL_COMPILER '              
+        CCFLAGS = ' -DWIN32 -DNDEBUG -D_LIB -D_WIN32 -D_WINDOWS -DVORBIS_IEEE_FLOAT32 -D_USE_NON_INTEL_COMPILER '              
         libs=[boost.lib, 'OgreMain', 
                     'ogg_static', 
                     'vorbis_static','vorbisfile_static','vorbisenc_static',
-                    'OpenAL32', 'EFX-Util']  ##  'OgreAL' -- going to compile OgreAL ourselves
+                    'OpenAL32', 'EFX-Util',  'OgreAL'] # -- going to compile OgreAL ourselves
         source = [
             ["wget", "http://connect.creativelabs.com/openal/Downloads/OpenAL11CoreSDK.zip",downloadPath],
             ["wget", "http://downloads.xiph.org/releases/ogg/libogg-1.1.3.zip",downloadPath],

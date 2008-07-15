@@ -1,4 +1,14 @@
 #!/usr/bin/env python
+# -----------------------------------------------------------------------------
+# This source file is part of Python-Ogre and is covered by the LGPL
+# For the latest info, see http://python-ogre.org/
+#
+# -----------------------------------------------------------------------------
+
+## STARTER TEMPLATE..
+## replace ogreal with lowercase project name
+## set MAIN_NAMESPACE
+## rename and configure .h files
 
 
 import os, sys, time, shutil
@@ -14,6 +24,7 @@ import common_utils
 import customization_data
 import hand_made_wrappers
 
+
 from pygccxml import parser
 from pygccxml import declarations
 from pyplusplus import messages
@@ -22,139 +33,180 @@ from pyplusplus import decl_wrappers
 
 from pyplusplus import function_transformers as ft
 from pyplusplus.module_builder import call_policies
+from pyplusplus.module_creator import sort_algorithms
 
 import common_utils.extract_documentation as exdoc
+import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
+from common_utils import docit
 
+MAIN_NAMESPACE = 'OgreAL'
 
-def filter_declarations( mb ):
+############################################################
+##
+##  Here is where we manually exclude stuff
+##
+############################################################
 
+def ManualExclude ( mb ):
     global_ns = mb.global_ns
-    global_ns.exclude()
-    
-    ogreal_ns = global_ns.namespace( 'OgreAL' )
-    ogreal_ns.include()
-    ##ogreal_ns.mem_funs( return_type='::OgreAL::Real const *', allow_empty=True).exclude()
-    
-#     #Virtual functions that return reference could not be overriden from Python
-#     query = declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.VIRTUAL ) \
-#             & declarations.custom_matcher_t( lambda decl: declarations.is_reference( decl.return_type ) )
-#     ogreal_ns.calldefs( query ).virtuality = declarations.VIRTUALITY_TYPES.NOT_VIRTUAL
-
-    ## Exclude protected and private that are not pure virtual
-    query = ~declarations.access_type_matcher_t( 'public' ) \
-            & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
-    non_public_non_pure_virtual = ogreal_ns.calldefs( query )
-    non_public_non_pure_virtual.exclude()
-
-         
+    if MAIN_NAMESPACE:
+        main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    else:
+        main_ns = global_ns    
+    excludes=['::OgreAL::SoundManager::errorToString']
+    for e in excludes:
+        main_ns.mem_fun(e).exclude()
+                
     # a couple of defined functions without source
-    ogreal_ns.class_('Sound').mem_fun('setGainValues').exclude()
-    ogreal_ns.class_('Sound').mem_fun('setDistanceValues').exclude()
+    main_ns.class_('Sound').mem_fun('setGainValues').exclude()
+    main_ns.class_('Sound').mem_fun('setDistanceValues').exclude()
     
-    # need to force these to be included so they get exposed..
-    global_ns.namespace( 'Ogre' ).class_('Singleton<OgreAL::Listener>').include()
-    global_ns.namespace( 'Ogre' ).class_('Singleton<OgreAL::SoundManager>').include()
+    main_ns.class_('SoundManager').variable('WAV').exclude()
+    main_ns.class_('SoundManager').variable('OGG').exclude()
+    main_ns.class_('SoundManager').variable('FILE_TYPE').exclude()
+    main_ns.class_('SoundManager').variable('AUDIO_FORMAT').exclude()
     
-    # and classes the we need to be exposed but don't want code generated as they already exist in
-    # other modules ('Ogre' in this case) that will be "imported" before the OgreAL module
-    global_ns.namespace( 'Ogre' ).class_('AxisAlignedBox').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('MovableObject').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('MovableObjectFactory').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Vector3').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Node').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('RenderQueue').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('FrameEvent').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('FrameListener').include(already_exposed=True)
-#     global_ns.namespace( 'Ogre' ).class_('Quaternion').include(already_exposed=True)
-#     global_ns.namespace( 'Ogre' ).class_('SceneManager').include(already_exposed=True)
-#     global_ns.namespace( 'Ogre' ).class_('SceneNode').include(already_exposed=True)
-#     global_ns.namespace( 'Ogre' ).class_('NameValuePairList').include(already_exposed=True)
-#     global_ns.namespace( 'Ogre' ).class_('String').include(already_exposed=True)
-#     global_ns.namespace( 'Ogre' ).class_('ResourceGroupManager').include(already_exposed=True)
-#     
-#     global_ns.namespace( 'Ogre' ).class_('MapIterator<OgreAL::FormatMap>').include(already_exposed=True)
-
-    ogreal_ns.class_('SoundManager').variable('WAV').exclude()
-    ogreal_ns.class_('SoundManager').variable('OGG').exclude()
-    ogreal_ns.class_('SoundManager').variable('FILE_TYPE').exclude()
-    ogreal_ns.class_('SoundManager').variable('AUDIO_FORMAT').exclude()
+    excludes= ['::OgreAL::alcCreateContext',
+                '::OgreAL::alcCaptureOpenDevice',
+                '::OgreAL::alcCreateContext',
+                '::OgreAL::alcGetContextsDevice',
+                '::OgreAL::alcGetCurrentContext',
+                '::OgreAL::alcOpenDevice'
+                ]
+    for e in excludes:
+        main_ns.free_function(e).exclude()                
+############################################################
+##
+##  And there are things that manually need to be INCLUDED 
+##
+############################################################
     
-
-  
-def set_call_policies( mb ):
-#
-    # Set the default policy to deal with pointer/reference return types to reference_existing object
-    # as this is the Ogre Default.
-    mem_funs = mb.calldefs ()
-    mem_funs.create_with_signature = True #Generated code will not compile on
-    #MSVC 7.1 if function has throw modifier.
-    for mem_fun in mem_funs:
-        if mem_fun.call_policies:
-            continue
-        if declarations.is_pointer (mem_fun.return_type) or declarations.is_reference (mem_fun.return_type):
-            mem_fun.call_policies = call_policies.return_value_policy(
-                call_policies.reference_existing_object )
-
+def ManualInclude ( mb ):
+    global_ns = mb.global_ns
+    if MAIN_NAMESPACE:
+        main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    else:
+        main_ns = global_ns    
+        
+############################################################
+##
+##  And things that need manual fixes, but not necessarly hand wrapped
+##
+############################################################
+def ManualFixes ( mb ):    
+    global_ns = mb.global_ns
+    if MAIN_NAMESPACE:
+        main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    else:
+        main_ns = global_ns
+              
+############################################################
+##
+##  And things that need to have their argument and call values fixed.
+##  ie functions that pass pointers in the argument list and of course we need
+##  to read the updated values - so instead we pass them back 
+##  as new values in a tuple (ETC ETC)
+##
+############################################################
+        
+def ManualTransformations ( mb ):
+    global_ns = mb.global_ns
+    if MAIN_NAMESPACE:
+        main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    else:
+        main_ns = global_ns
                 
-def set_smart_pointers( mb ):
-    for v in mb.variables():
-       if not declarations.is_class( v.type ):
-           continue
-       cls = declarations.class_traits.get_declaration( v.type )
-       if cls.name.startswith( 'SharedPtr<' ):
-           v.apply_smart_ptr_wa = True    
-           print "Applying Smart Pointer: ",  v.name, " of class: ",  cls.name
-       elif cls.name.endswith( 'SharedPtr' ):
-           v.apply_smart_ptr_wa = True    
-           print "Applying Smart Pointer: ",  v.name, " of class: ",  cls.name
-                
-def configure_exception(mb):
-    #We don't exclude  Exception, because it contains functionality, that could
-    #be useful to user. But, we will provide automatic exception translator
-    return
-    Exception = mb.namespace( 'OgreAL' ).class_( 'Exception' )
-    Exception.include()
-    Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getFullDescription().c_str()' )
-    
-
-def add_transformations ( mb ):
-    ns = mb.global_ns.namespace ('Ogre')
-    
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
-    
         
-def query_containers_with_ptrs(decl):
-    if not isinstance( decl, declarations.class_types ):
-       return False
-    if not decl.indexing_suite:
-       return False
-    return declarations.is_pointer( decl.indexing_suite.element_type )
+    
+###############################################################################
+##
+##  Now for the AUTOMATIC stuff that should just work
+##
+###############################################################################
+    
+def AutoFixes ( mb, MAIN_NAMESPACE ): 
+    """ now we fix a range of things automatically - typically by going through 
+    the entire name space trying to guess stuff and fix it:)
+    """    
+    global_ns = mb.global_ns
+    if MAIN_NAMESPACE:
+        main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    else:
+        main_ns = global_ns
+        
+    # Functions that have void pointers in their argument list need to change to unsigned int's  
+    pointee_types=[]
+    ignore_names=[]
+    common_utils.Fix_Void_Ptr_Args  ( main_ns ) # , pointee_types, ignore_names )
 
+    # and change functions that return a variety of pointers to instead return unsigned int's
+    pointee_types=[]
+    ignore_names=[]  # these are function names we know it's cool to exclude
+    common_utils.Fix_Pointer_Returns ( main_ns ) # , pointee_types, ignore_names )   
+
+    # functions that need to have implicit conversions turned off
+    ImplicitClasses=[] 
+    common_utils.Fix_Implicit_Conversions ( main_ns, ImplicitClasses )
+    
+    if os.name =='nt':
+        Fix_NT( mb )
+    elif os.name =='posix':
+        Fix_Posix( mb )
+        
+    common_utils.Auto_Document( mb, MAIN_NAMESPACE )
+        
+ 
+###############################################################################
+##
+## here are the helper functions that do much of the work
+##
+###############################################################################     
+def Fix_Posix ( mb ):
+    """ fixup for posix specific stuff -- note only expect to be called on a posix machine
+    """
+    ## we could do more here if need be...
+    if sys.platform == 'darwin':
+        pass
+    elif sys.platform.startswith ('linux'):
+        pass
+
+
+def Fix_NT ( mb ):
+    """ fixup for NT systems
+    """
+        
 
 #
 # the 'main'function
 #            
 def generate_code():  
-#     messages.disable( 
-#           #Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-#           messages.W1020
-#         , messages.W1021
-#         , messages.W1022
-#         , messages.W1023
-#         , messages.W1024
-#         , messages.W1025
-#         , messages.W1026
-#         , messages.W1027
-#         , messages.W1028
-#         , messages.W1029
-#         , messages.W1030
-#         , messages.W1031
-#         #, messages.W1040 
-#         # Inaccessible property warning
-#         , messages.W1041 )
-    
+    messages.disable( 
+#           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+          messages.W1020
+        , messages.W1021
+        , messages.W1022
+        , messages.W1023
+        , messages.W1024
+        , messages.W1025
+        , messages.W1026
+        , messages.W1027
+        , messages.W1028
+        , messages.W1029
+        , messages.W1030
+        , messages.W1031
+        , messages.W1035
+        , messages.W1040 
+        , messages.W1038        
+        , messages.W1041
+        , messages.W1036 # pointer to Python immutable member
+        , messages.W1033 # unnamed variables
+        , messages.W1018 # expose unnamed classes
+        , messages.W1049 # returns reference to local variable
+        , messages.W1014 # unsupported '=' operator
+         )
     #
     # Use GCCXML to create the controlling XML file.
     # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded
@@ -164,10 +216,8 @@ def generate_code():
                         os.path.join( environment.ogreal.root_dir, "python_ogreal.h" )
                         , environment.ogreal.cache_file )
 
-    defined_symbols = [ 'OGREAL_NONCLIENT_BUILD', 'OGRE_NONCLIENT_BUILD' ]
-    if os.name=='nt':
-        defined_symbols= defined_symbols + [ 'WIN32', '_LIB', '_MBCS', 'NDEBUG' ]
-    defined_symbols.append( 'OGREAL_VERSION_' + environment.ogreal.version )  
+    defined_symbols = [ 'OGRE_NONCLIENT_BUILD' ]
+    defined_symbols.append( 'VERSION_' + environment.ogreal.version )  
     
     #
     # build the core Py++ system from the GCCXML created source
@@ -178,58 +228,63 @@ def generate_code():
                                           , include_paths=environment.ogreal.include_dirs
                                           , define_symbols=defined_symbols
                                           , indexing_suite_version=2
+                                          , cflags=environment.ogreal.cflags
                                            )
-    #
+                                           
+    # if this module depends on another set it here                                           
     mb.register_module_dependency ( environment.ogre.generated_dir )
-
-    # We filter (both include and exclude) specific classes and functions that we want to wrap
-    # 
-    filter_declarations (mb)
     
-    #
-    # fix shared Ptr's that are defined as references but NOT const...
-    #
-#     find_nonconst ( mb.namespace( 'OgreAL' ) )
-      
-        
+    # normally implicit conversions work OK, however they can cause strange things to happen so safer to leave off
+    mb.constructors().allow_implicit_conversion = False                                           
+    
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
-
-    ogreal_ns = mb.namespace( 'OgreAL' )
-    
-    configure_exception( mb )
+            
+    #
+    # We filter (both include and exclude) specific classes and functions that we want to wrap
+    # 
+    global_ns = mb.global_ns
+    global_ns.exclude()
+    main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    main_ns.include()
+       
+    common_utils.AutoExclude ( mb, MAIN_NAMESPACE )
+    ManualExclude ( mb )
+    common_utils.AutoInclude ( mb, MAIN_NAMESPACE )
+    ManualInclude ( mb )
+    # here we fixup functions that expect to modifiy their 'passed' variables    
+    ManualTransformations ( mb )
+    AutoFixes ( mb, MAIN_NAMESPACE )
+    ManualFixes ( mb )
+    #
+    # We need to tell boost how to handle calling (and returning from) certain functions
+    #
+    common_utils.Set_DefaultCall_Policies ( mb.global_ns.namespace ( MAIN_NAMESPACE ) )
     
     #
     # the manual stuff all done here !!!
     #
     hand_made_wrappers.apply( mb )
-    
-    #
-    # We need to tell boost how to handle calling (and returning from) certain functions
-    #
-    set_call_policies ( mb.global_ns.namespace ('OgreAL') )
-    set_call_policies ( mb.global_ns.namespace ('Ogre') )  # need this to set singletons to return_existing_object
-    
-    # now we fix up the smart pointers ...
-#     set_smart_pointers ( mb.global_ns.namespace ('OgreAL') )  
-    
-    # here we fixup functions that expect to modifiy their 'passed' variables    
-    add_transformations ( mb )
-    
 
-    for cls in ogreal_ns.classes():
-        cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
-
+    NoPropClasses = [""]
+    for cls in main_ns.classes():
+        if cls.name not in NoPropClasses:
+            cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
+            
     common_utils.add_constants( mb, { 'ogreal_version' :  '"%s"' % environment.ogreal.version.replace("\n", "\\\n") 
                                       , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
-
+                                      
+    ## need to create a welcome doc string for this...                                  
+    common_utils.add_constants( mb, { '__doc__' :  '"ogreal DESCRIPTION"' } ) 
+    
+    
     ##########################################################################################
     #
     # Creating the code. After this step you should not modify/customize declarations.
     #
     ##########################################################################################
-    extractor = exdoc.doc_extractor("")
-    mb.build_code_creator (module_name='_ogreal_' , doc_extractor= extractor)
+    extractor = exdoc.doc_extractor() # I'm excluding the UTFstring docs as lots about nothing 
+    mb.build_code_creator (module_name='_ogreal_' , doc_extractor= extractor )
     
     for inc in environment.ogreal.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )
@@ -238,30 +293,16 @@ def generate_code():
 
     huge_classes = map( mb.class_, customization_data.huge_classes( environment.ogreal.version ) )
 
-    mb.split_module(environment.ogreal.generated_dir, huge_classes)
+    mb.split_module(environment.ogreal.generated_dir, huge_classes, use_files_sum_repository=False)
 
-#     if not os.path.exists( os.path.join(environment.ogreal.generated_dir, 'py_shared_ptr.h' ) ):
-#         shutil.copy( os.path.join( environment.shared_ptr_dir, 'py_shared_ptr.h' )
-#                      , environment.ogreal.generated_dir )
     ## now we need to ensure a series of headers and additional source files are
-    ## copied to the generated directory.. Also cope with sub directories
-    additional_dirs=[
-                    [environment.Config.PATH_OGREAL,''],
-#                     [os.path.join(environment.Config.root_dir, 'ThirdParty', 'ogreal', 'extra'),''],
-#                     [os.path.join(environment.Config.root_dir, 'ThirdParty', 'ogreal', 'extra','ogg'),'ogg'],
-# #                     [os.path.join(environment.Config.root_dir, 'ThirdParty', 'ogreal', 'extra','vorbis'),'vorbis'],
-                    ]
-    for d,d1 in additional_dirs:
-        for f in os.listdir(d):
-            if f.endswith('cpp') or f.endswith('.h') or f.endswith('.c'):
-                sourcefile = os.path.join(d, f)
-                destfile = os.path.join(environment.ogreal.generated_dir, d1,  f ) 
-                if not os.path.exists ( os.path.join(environment.ogreal.generated_dir, d1 ) ):
-                    os.mkdir ( os.path.join(environment.ogreal.generated_dir, d1 ) )
-                if not common_utils.samefile( sourcefile ,destfile ):
-                    shutil.copy( sourcefile, environment.ogreal.generated_dir )
-                    print "Updated ", f, "as it was missing or out of date"
+    ## copied to the generated directory..
+    
+#     common_utils.copyTree ( sourcePath = environment.Config.PATH_Config.PATH_OGREAL, 
+#                             destPath = environment.ogreal.generated_dir, 
+#                             recursive=False )
+        
 if __name__ == '__main__':
     start_time = time.clock()
     generate_code()
-    print 'Python-OgreAL source code was updated( %f minutes ).' % (  ( time.clock() - start_time )/60 )
+    print 'Source code was updated( %f minutes ).' % (  ( time.clock() - start_time )/60 )

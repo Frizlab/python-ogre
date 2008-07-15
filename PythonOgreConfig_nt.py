@@ -20,9 +20,9 @@ PATH_Boost =        os.path.join(BASE_DIR, 'boost-trunk')
 ## Path to your boost_pythonxxxx lib file
 # PATH_LIB_Boost =    os.path.join(BASE_DIR, PATH_Boost,'bin.v2/libs/python/build/msvc-8.0/release/threading-multi')
 # # # # # # # PATH_LIB_Boost =    os.path.join(PATH_Boost, 'bin.v2/libs/python/build/msvc/release/threading-multi')
-PATH_LIB_Boost =    os.path.join(PATH_Boost, 'bin.v2/libs/python/build/msvc-9.0express/release/threading-multi')
+PATH_LIB_Boost =    os.path.join(PATH_Boost, 'bin.v2/libs/python/build/msvc-9.0/release/threading-multi')
 ## and the name of the boost python library
-LIB_Boost =         r'boost_python-vc90-mt-1_35'
+LIB_Boost =         r'boost_python-vc90-mt-1_36'
 # # LIB_Boost =         r'boost_python-vc80-mt-1_34_1'
 # LIB_Boost =         r'boost_python-vc-mt-1_35'
 
@@ -55,6 +55,9 @@ PATH_OgreOde=       os.path.join(BASE_DIR, PATH_OgreAddons,'ogreode')
 PATH_OgreBullet=    os.path.join(PATH_THIRDPARTY,'ogrebullet')
 PATH_ogreforests=   os.path.join(PATH_THIRDPARTY,'forests')
 PATH_OGREAL=        os.path.join(PATH_THIRDPARTY,'ogreal')
+
+PATH_OGREAL=        os.path.join(BASE_DIR,'ogreal')
+
 PATH_OPCODE=        os.path.join(PATH_THIRDPARTY,'opcode')
 PATH_quickgui=      os.path.join(PATH_THIRDPARTY,'quickgui')
 PATH_betagui=       os.path.join(PATH_THIRDPARTY,'betagui')
@@ -103,7 +106,8 @@ PATH_LIB_OgreOde =              os.path.join( PATH_OgreOde, 'lib/Release')
 # # PATH_LIB_OgreBullet =              os.path.join( PATH_OgreBullet, 'lib/Release') 
 PATH_LIB_OgreOdePrefab =        os.path.join( PATH_OgreOde, 'prefab/lib/Release' )
 PATH_LIB_OgreOdeLoader =        os.path.join( PATH_OgreOde, 'loader/lib/Release' )
-PATH_LIB_OgreAL =               os.path.join( PATH_OGREAL)#, 'lib/Release' )
+
+PATH_LIB_OgreAL =               os.path.join( PATH_OGREAL, 'lib/Release' )
 PATH_LIB_betagui =              PATH_betagui
 PATH_LIB_quickgui =             PATH_quickgui
 PATH_LIB_NxOgre=                os.path.join(PATH_NxOgre, 'lib')
@@ -135,7 +139,8 @@ PATH_INCLUDE_CEGUI =        os.path.join(PATH_CEGUI, 'include')
 PATH_INCLUDE_ODE =          os.path.join( PATH_ODE, 'include')
 PATH_INCLUDE_OPCODE =       PATH_OPCODE
 PATH_INCLUDE_ODESOURCE =    os.path.join( PATH_ODE, 'ode/src')
-PATH_INCLUDE_OgreAL =       os.path.join( PATH_OGREAL)#, 'include' )
+
+PATH_INCLUDE_OgreAL =       os.path.join( PATH_OGREAL, 'include' )
 PATH_INCLUDE_OPENAL =       os.path.join( PATH_OPENAL, 'include')
 PATH_INCLUDE_OGG=           os.path.join( PATH_OGG, 'include' )
 PATH_INCLUDE_VORBIS=        os.path.join( PATH_VORBIS, 'include' )

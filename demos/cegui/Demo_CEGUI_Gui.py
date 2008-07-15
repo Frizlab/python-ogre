@@ -138,7 +138,7 @@ class GuiApplication ( SampleFramework.Application ):
         self.GUIsystem.setDefaultMouseCursor("TaharezLook",  "MouseArrow") 
         self.GUIsystem.setDefaultFont( "BlueHighway-12") 
         
-        sheet = CEGUI.WindowManager.getSingleton().loadWindowLayout("ogregui.layout", False)  
+        sheet = CEGUI.WindowManager.getSingleton().loadWindowLayout("ogregui.layout" ) ##, False)  
         self.GUIsystem.setGUISheet(sheet) 
 
 #     
