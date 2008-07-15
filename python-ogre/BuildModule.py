@@ -111,6 +111,8 @@ def spawnTask ( task, cwdin = '', getoutput=None ):
         logger.debug ( out )
         logger.debug ( err )
             
+    if returncode != 0 and FAILHARD:
+        exit(" The following command failed %s" % task)
     return returncode     
      
 def retrieveSource ( module ):
@@ -193,7 +195,7 @@ def buildDeb ( module, install = False ):
 
     ret = spawnTask("fakeroot ./debian/rules binary", srcdir, c)
     if ret != 0:
-        exit("Was not able to build package")
+        warn("Was not able to build package")
     logger.info("Package successfully built!")
 
 def buildInstall ( module ):
@@ -203,7 +205,7 @@ def buildInstall ( module ):
     srcdir = os.path.join(os.getcwd(), module.base)
     ret = spawnTask("sudo dpkg --install %s*.deb" % module.base, os.path.split(srcdir)[0])
     if ret != 0:
-        exit("Was not able to the install package!")
+        warn("Was not able to the install package!")
     logger.info("Package installed.")
  
 def generateCode ( module ):
@@ -212,7 +214,7 @@ def generateCode ( module ):
     logger.info ( "Building Source code for " + module.name )
     ### AJM -- note the assumption that environment.py is sitting in the 'python-ogre' directory...
     ret = spawnTask ( 'python generate_code.py'+('', ' --usesystem')[environment.UseSystem], os.path.join(environment.root_dir, 'code_generators', module.name) ) 
-  
+
 def compileCode ( module ):
     """ Compile the wrapper code and make the modules
     """
@@ -221,9 +223,8 @@ def compileCode ( module ):
     ret = spawnTask ( 'scons PROJECTS='+module.name, os.path.join(environment.root_dir) )     
     if ret != 0 :
         time.sleep(5)  ## not sure why scons doesn't work after first failure       
-    
 
-                         
+FAILHARD=False
 def parseInput():
     """Handle command line input """
     usage = "usage: %prog [options] moduleName"
@@ -237,7 +238,8 @@ def parseInput():
     parser.add_option("-l", "--logfilename",  default="log.out" ,dest="logfilename", help="Override the default log file name")
     parser.add_option("-G", "--genall", action="store_true", default=False ,dest="gencodeall", help="Generate Source Code for all possible modules")
     parser.add_option("-C", "--compileall", action="store_true", default=False ,dest="compilecodeall", help="Compile Source Code for all posssible modules")
-   
+    parser.add_option("-e", "--failhard", action="store_true", default=False, dest="failhard", help="Exit with failure code on first error.")  
+ 
     (options, args) = parser.parse_args()
     return (options,args)
     
@@ -257,6 +259,8 @@ if __name__ == '__main__':
         exit ( "You need to specific at least one option. Use -h for help")
     if options.builddeb and options.build:
         exit ( "You can only specify build or builddeb, not both!" )
+
+    FAILHARD=options.failhard
 
     if not os.path.exists( environment.downloadPath ):
         os.mkdir ( environment.downloadPath )    
