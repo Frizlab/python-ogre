@@ -17,7 +17,7 @@ set theora=%root%\ogreaddons\videoplugin\TheoraVideo\bin\Release
 set ffmpeg=%root%\ffmpeg
 set naviextra=%root%\navi\Dependencies\win32\astral\runtime\Release
 set navi=%root%\navi\lib
-set boost=%root%\boost-trunk\bin.v2\libs\python\build\msvc-9.0express\release\threading-multi
+set boost=%root%\boost-trunk\bin.v2\libs\python\build\msvc-9.0\release\threading-multi
 set particleuniverse=%root%\ogre\plugins\particleuniverse\bin\release
 
 set ogreal=%root%\OgreAL\lib\Release
@@ -30,7 +30,7 @@ rem Ogre
 copy /y %ogre%\ogremain.dll %package%\renderer\OGRE
 copy /y %ogre%\cg.dll %package%\renderer\OGRE
 
-copy /y %boost%\boost_python-vc90-mt-1_35.dll %package%\renderer\OGRE
+copy /y %boost%\boost_python-vc90-mt-1_36.dll %package%\renderer\OGRE
 copy /y %ogre%\render*.dll ..\plugins
 copy /y %ogre%\plug*.dll ..\plugins
 
@@ -44,7 +44,7 @@ copy /y %ogre%\ReferenceAppLayer.dll %package%\physics\OgreRefApp
 REM copy /y %opcode%\opcode.dll %package%\physics\OpCode
 copy /y %nxogre%\nxogre.dll %package%\physics\NxOgre
 copy /y %newton%\newton.dll %package%\physics\OgreNewt
-copy /y %boost%\boost_python-vc90-mt-1_35.dll %package%\physics\ode
+copy /y %boost%\boost_python-vc90-mt-1_36.dll %package%\physics\ode
 
 rem OgreODE
 copy /y %ogreode%\lib\Release\OgreOde_Core.dll %package%\physics\OgreOde
@@ -85,4 +85,4 @@ rem navi
 copy /y %navi%\*.dll %package%\gui\navi
 
 rem plib
-copy /y %boost%\boost_python-vc90-mt-1_35.dll %package%\addons\plib
+copy /y %boost%\boost_python-vc90-mt-1_36.dll %package%\addons\plib
