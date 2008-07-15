@@ -292,11 +292,11 @@ class pygccxml:
                  ]             
     if isLinux() or isMac() :
         buildCmds =  [
-                [0,"python setup.py install  --prefix="+ PREFIX , os.path.join (os.getcwd(), base, "pygccxml_dev") ],
+                [0,"python setup.py install  --prefix="+ PREFIX , os.path.join (os.getcwd(), base) ],
                     ]                       
     if isWindows():
         buildCmds =  [
-                [0,"python setup.py install  " , os.path.join (os.getcwd(), base, "pygccxml_dev") ],
+                [0,"python setup.py install  " , os.path.join (os.getcwd(), base) ],
                     ]                       
                     
 
@@ -314,11 +314,11 @@ class pyplusplus:
                  ]             
     if isLinux() or isMac() :
         buildCmds =  [
-                [0,"python setup.py install  --prefix=" + PREFIX , os.path.join (os.getcwd(), base, "pyplusplus_dev") ]
+                [0,"python setup.py install  --prefix=" + PREFIX , os.path.join (os.getcwd(), base) ]
                     ]                       
     if isWindows():
         buildCmds =  [
-                [0,"python setup.py install  " , os.path.join (os.getcwd(), base, "pyplusplus_dev") ]
+                [0,"python setup.py install  " , os.path.join (os.getcwd(), base) ]
                     ]                       
                     
 class cg:
