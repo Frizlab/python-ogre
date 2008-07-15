@@ -400,16 +400,17 @@ WRAPPER_DEFINITION_WindowManager=\
 """
 CEGUI::Window*
 WindowManager_loadWindowLayout(::CEGUI::WindowManager & me,
-    const CEGUI::String& filename, const CEGUI::String& name_prefix, const
-    CEGUI::String& resourceGroup) {
+    const CEGUI::String& filename, const CEGUI::String& name_prefix, const CEGUI::String& resourceGroup) {
       return me.loadWindowLayout( filename, name_prefix , resourceGroup);
     }
 """
 
-WRAPPER_REGISTRATION_WindowManager=[
-    'def ("loadWindowLayout", &::WindowManager_loadWindowLayout);'
-    ]
-    
+WRAPPER_REGISTRATION_WindowManager =[
+    'def ("loadWindowLayout", &::WindowManager_loadWindowLayout,\
+        bp::return_value_policy< bp::reference_existing_object,bp::default_call_policies >());'
+   ]
+   
+   
 def apply_reg ( class_, code ):
     for c in code:
         class_.add_registration_code ( c )
