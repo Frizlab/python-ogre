@@ -195,7 +195,7 @@ def buildDeb ( module, install = False ):
 
     ret = spawnTask("fakeroot ./debian/rules binary", srcdir, c)
     if ret != 0:
-        warn("Was not able to build package")
+        logger.warning("Was not able to build package")
     logger.info("Package successfully built!")
 
 def buildInstall ( module ):
@@ -205,7 +205,7 @@ def buildInstall ( module ):
     srcdir = os.path.join(os.getcwd(), module.base)
     ret = spawnTask("sudo dpkg --install %s*.deb" % module.base, os.path.split(srcdir)[0])
     if ret != 0:
-        warn("Was not able to the install package!")
+        logger.warning("Was not able to the install package!")
     logger.info("Package installed.")
  
 def generateCode ( module ):
