@@ -21,7 +21,7 @@ Build-Depends: debhelper (>= 5.0.38),
 Standards-Version: 3.7.2
 
 Package: python-ogre
-Architecture: i386
+Architecture: all
 Depends: ${python:Depends}, ${shlibs:Depends}, ${misc:Depends},
 XB-Python-Version: ${python:Versions}
 Description: Python Ogre.
