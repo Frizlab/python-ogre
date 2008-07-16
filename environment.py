@@ -126,7 +126,7 @@ if not _ConfigSet:
     print "\n\n You DO need to create a PythonOgreConfig_%s.py file with config details" % ( _SystemType)
     sys.exit(-1)
 
-_STABLE = os.path.exists("STABLE") # set to true if using specific versions of CVS and SVN checkouts..
+_STABLE = os.path.exists(os.path.join(os.path.split(__file__)[0], "STABLE")) # set to true if using specific versions of CVS and SVN checkouts..
 
 ######################
 downloadPath = os.path.abspath("downloads") 
