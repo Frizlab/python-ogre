@@ -29,7 +29,9 @@ sudo apt-get install -y \
 	libfreeimage-dev \
 	libois-dev \
 	libogre-dev \
-	libopenal-dev
+	libopenal-dev \
+	libogg-dev \
+	libvorbis-dev
 
 DISTRO_CODENAME=`lsb_release -c | sed -e's/.*:\t*//'`
 if [ "x$DISTRO_CODENAME" = "xhardy" ]; then

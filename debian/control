@@ -15,7 +15,7 @@ Build-Depends: debhelper (>= 5.0.38),
 	libogre-dev (>= 1.4),
 	libceguiogre-dev (>= 1.4) | libogre-dev (<< 1.4.5), 
 	libogre-dev (< 1.5), 
-	libopenal-dev,
+	libopenal-dev, libogg-dev, libvorbis-dev,
 	gccxml (>=0.7.0),
 	pygccxml, pyplusplus
 Standards-Version: 3.7.2
