@@ -28,7 +28,7 @@ build-stamp:
 	LD_PRELOAD='' python BuildModule.py --usesystem --failhard -g -c ogreforests
 #	LD_PRELOAD='' python BuildModule.py --usesystem --failhard -g -c ogreal
 	LD_PRELOAD='' python BuildModule.py --usesystem --failhard -g -c watermesh
-	touch $@-stamp
+	touch $@
 
 build-python%:
 	dh_testdir
