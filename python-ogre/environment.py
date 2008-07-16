@@ -17,8 +17,6 @@ import datetime
 
 _LOGGING_ON = False
 _PreCompiled = True
-_STABLE = False # set to true if using specific versions of CVS and SVN checkouts..
-
 
 ##
 ## set this to True if you compiled Ogre with Threads enabled
@@ -127,7 +125,9 @@ if not _ConfigSet:
     ## 
     print "\n\n You DO need to create a PythonOgreConfig_%s.py file with config details" % ( _SystemType)
     sys.exit(-1)
-    
+
+_STABLE = os.path.exists("STABLE") # set to true if using specific versions of CVS and SVN checkouts..
+
 ######################
 downloadPath = os.path.abspath("downloads") 
 wget = "wget -c -nc "
@@ -451,12 +451,12 @@ class boost:    ## also included bjam
     pythonModule = False
     ModuleName = ""
     # AJM Changed so stable is 1.35 as this seems fine....
-#     if _STABLE:
-#         base = 'boost_1_34_1'
-#         lib= 'boost_python-vc90-mt-1_34_1'
-#     else:        
-    base = 'boost_1_35_0'  
-    lib = 'boost_python-vc90-mt-1_35'
+    if _STABLE:
+        base = 'boost_1_34_1'
+        lib= 'boost_python-vc90-mt-1_34_1'
+    else:        
+        base = 'boost_1_35_0'  
+        lib = 'boost_python-vc90-mt-1_35'
         
     if isLinux() or isMac():
         bjambase = 'boost-jam-3.1.16'

@@ -14,8 +14,6 @@ LOCAL_INCLUDE = '/usr/include'
 PATH_Boost = os.path.join(LOCAL_INCLUDE, 'boost')
 ## Path to your boost_pythonxxxx lib file
 PATH_LIB_Boost = LOCAL_LIB
-## and the name of the boost python library
-LIB_Boost = 'libboost_python-gcc42-mt-1_34_1'
 
 # in Linux we need to code in the Relative path for the library
 RPATH=os.path.join('\\$$ORIGIN',os.pardir,os.pardir, 'lib') #+ '\'' 

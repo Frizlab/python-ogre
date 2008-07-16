@@ -36,6 +36,11 @@ if [ "x$DISTRO_CODENAME" = "xhardy" ]; then
 	sudo apt-get install libceguiogre-dev
 fi
 
+# Make sure we are building the stable version
+cd python-ogre
+touch STABLE
+cd ..
+
 # Things we need to build ourself
 
 # The extra boost support module
