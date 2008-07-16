@@ -400,7 +400,7 @@ WRAPPER_DEFINITION_WindowManager=\
 """
 CEGUI::Window*
 WindowManager_loadWindowLayout(::CEGUI::WindowManager & me,
-    const CEGUI::String& filename, const CEGUI::String& name_prefix, const CEGUI::String& resourceGroup) {
+    const CEGUI::String& filename, const CEGUI::String& name_prefix = "", const CEGUI::String& resourceGroup = "") {
       return me.loadWindowLayout( filename, name_prefix , resourceGroup);
     }
 """
