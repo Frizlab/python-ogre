@@ -250,7 +250,7 @@ class SimpleScenes (OgreOde.CollisionListener, OgreOde.StepListener):
             mass.setDensity(5.0,size.x)
             print mass
             geom = OgreOde.SphereGeometry(size.x,self._world,self._space)
-            print gemo
+            print geom
             node.setScale(size.x * 0.2,size.x * 0.2,size.x * 0.2)
             body.setMass(mass)
             print body

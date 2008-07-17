@@ -40,7 +40,7 @@ class SimpleScenes_Buggy ( SimpleScenes ):
 
         ## Create a box to jump over, the visual version
         entity = self._mgr.createEntity("Jump", "crate.mesh")
-        entity.setNormaliseNormals(True)
+#         entity.setNormaliseNormals(True)
         entity.setCastShadows(True)
 
         node = self._mgr.getRootSceneNode().createChildSceneNode(entity.getName())

@@ -20,7 +20,7 @@ class SimpleScenes_Joints( SimpleScenes ):
 
         ## Create the player's ball
         entity = self._mgr.createEntity("Ball","ball.mesh")
-        entity.setNormaliseNormals(True)
+#         entity.setNormaliseNormals(True)
         entity.setCastShadows(True)
 
         node = self._mgr.getRootSceneNode().createChildSceneNode(entity.getName())
@@ -42,7 +42,7 @@ class SimpleScenes_Joints( SimpleScenes ):
 
         ## Create the free standing door
         entity = self._mgr.createEntity("Free_Door","door.mesh")
-        entity.setNormaliseNormals(True)
+#         entity.setNormaliseNormals(True)
         entity.setCastShadows(True)
 
         node = self._mgr.getRootSceneNode().createChildSceneNode(entity.getName())
@@ -59,7 +59,7 @@ class SimpleScenes_Joints( SimpleScenes ):
 
         ## Create a door hinged at the self.left hand side
         entity = self._mgr.createEntity("Left_Door","door.mesh")
-        entity.setNormaliseNormals(True)
+#         entity.setNormaliseNormals(True)
         entity.setCastShadows(True)
 
         node = self._mgr.getRootSceneNode().createChildSceneNode(entity.getName())
@@ -84,7 +84,7 @@ class SimpleScenes_Joints( SimpleScenes ):
 
         ## Create a door hinged at the self.right hand side
         entity = self._mgr.createEntity("Right_Door","door.mesh")
-        entity.setNormaliseNormals(True)
+#         entity.setNormaliseNormals(True)
         entity.setCastShadows(True)
 
         node = self._mgr.getRootSceneNode().createChildSceneNode(entity.getName())
@@ -109,7 +109,7 @@ class SimpleScenes_Joints( SimpleScenes ):
 
         ## Create a door hinged at the top
         entity = self._mgr.createEntity("Top_Door","door.mesh")
-        entity.setNormaliseNormals(True)
+#         entity.setNormaliseNormals(True)
         entity.setCastShadows(True)
 
         node = self._mgr.getRootSceneNode().createChildSceneNode(entity.getName())

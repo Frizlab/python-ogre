@@ -456,7 +456,7 @@ class boost:    ## also included bjam
         lib= 'boost_python-vc90-mt-1_34_1'
     else:        
         base = 'boost_1_35_0'  
-        lib = 'boost_python-vc90-mt-1_35'
+        lib = 'boost_python-vc90-mt-1_36'
         
     if isLinux() or isMac():
         bjambase = 'boost-jam-3.1.16'
@@ -807,7 +807,7 @@ class cegui:
     if _STABLE:
         version = "0.5.0b" 
     else:
-        version = "0.6.0"        
+        version = "0.6.1"        
     if isWindows():
         if _PreCompiled:
             pchstop = 'cegui.h'
@@ -824,9 +824,9 @@ class cegui:
                 [wget, "http://downloads.sourceforge.net/crayzedsgui/CEGUI-0.5.0b.tar.gz", downloadPath]
                 ]
         else:
-            base = "CEGUI-0.6.0"
+            base = "CEGUI-0.6.1"
             source=[
-                [wget, "http://downloads.sourceforge.net/crayzedsgui/CEGUI-0.6.0.tar.gz", downloadPath]
+                [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.6.1.tar.gz?download", downloadPath]
                 ]
                    
         buildCmds  = [
@@ -841,10 +841,16 @@ class cegui:
                 [0,'make install', os.path.join(os.getcwd(), base )]
                 ]
     if isWindows():                
+        base = "CEGUI-0.6.1"
         source=[
-            [wget, "http://sourceforge.net/project/downloading.php?groupname=crayzedsgui&filename=CEGUI-0.6.0.zip", downloadPath]
+            [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.6.1.zip?download", downloadPath]
             ]
-            
+        buildCmds  = [
+            [0, unzip + " " +  os.path.join(downloadPath,base)+".zip", os.getcwd()],
+            [0, 'echo Please use MSVC to build the CEGUI Release project',''],
+            [0, 'echo WARNING - Check that RTTI is enabled in the compiler options',''],
+            [0, 'echo Then ensure that OgreGUIRender is compiled with this version of CEGUI','']
+            ]         
     include_dirs = [Config.PATH_Boost
                     ,Config.PATH_INCLUDE_CEGUI
                     ,Config.PATH_CEGUI

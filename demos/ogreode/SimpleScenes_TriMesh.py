@@ -24,7 +24,7 @@ class SimpleScenes_TriMesh ( SimpleScenes_BoxStack ):
         node.setPosition(ogre.Vector3(0,3,0))
         node.setOrientation(ogre.Quaternion(ogre.Degree(30),ogre.Vector3.UNIT_Y))
 
-        entity.setNormaliseNormals(True)
+#         entity.setNormaliseNormals(True)
         ##entity.setCastShadows(False)
         
         ## Turn it into a triangle mesh static geometry

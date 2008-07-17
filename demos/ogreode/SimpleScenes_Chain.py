@@ -40,7 +40,7 @@ class SimpleScenes_Chain (SimpleScenes):
 
             ## Visuals
             entity = self._mgr.createEntity(name,"ball.mesh")
-            entity.setNormaliseNormals(True)
+#             entity.setNormaliseNormals(True)
             entity.setCastShadows(True)
 
             node = self._mgr.getRootSceneNode().createChildSceneNode(entity.getName())
@@ -131,7 +131,7 @@ class SimpleScenes_Chain (SimpleScenes):
         name = "Crate_" + str(id)
 
         entity = self._mgr.createEntity(name,"crate.mesh")
-        entity.setNormaliseNormals(True)
+#         entity.setNormaliseNormals(True)
         entity.setCastShadows(True)
 
         node = self._mgr.getRootSceneNode().createChildSceneNode(entity.getName())
