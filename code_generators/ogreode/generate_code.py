@@ -50,10 +50,53 @@ MAIN_NAMESPACE = ['OgreOde','OgreOde_Prefab', 'OgreOde_Loader']
 
 def ManualExclude ( mb ):
     global_ns = mb.global_ns
-#     if MAIN_NAMESPACE:
-#         main_ns = global_ns.namespace( MAIN_NAMESPACE )
-#     else:
-#         main_ns = global_ns    
+    
+    #
+    # Exclude problem functions
+    #
+    excludes=[  '::OgreOde_Loader::DotLoader::loadFile', 
+                '::OgreOde::EntityInformer::getIndices',   # returns const * to TriangleIndex
+                '::OgreOde_Prefab::Vehicle::load',
+                '::OgreOde::Geometry::setUserObject',   #hand wrapped
+                '::OgreOde::Geometry::getUserObject',   #hand wrapped
+                '::OgreOde::PlaneBoundedRegionGeometry::_planeCallback',
+                '::OgreOde::TerrainGeometry::_heightCallback',
+                '::OgreOde::EntityInformer::getIndices', ## unsigned int const *
+#                 '::OgreOde::RagdollFactory::requestTypeFlags', # causes issues with moveableobjectfactory
+               
+                ]
+    for e in excludes:
+        print "Excluding:", e
+        global_ns.member_functions(e).exclude() 
+        
+    global_ns.namespace( 'OgreOde' ).class_("CircularBuffer<OgreOde::BodyState*>").exclude() 
+    #
+    # Exclude problem variables
+    #
+    excludes = ['::OgreOde::Body::MovableType',
+                '::OgreOde::Utility::Infinity'
+                ]
+    for e in excludes:
+        print "Excluding:", e
+        global_ns.variable(e).exclude() 
+    
+    #
+    # Exclude problem classes
+    #
+    # Unfortunately the classes here being used with Maintainedlist don't implement ALL of
+    # maintaintlist's functions - hence Py++ has tried to expose them all and it fails at
+    # compile time.  Probably need to patch the source to implement null functions.
+    excludes =['MaintainedList<OgreOde::Body>',
+                'MaintainedList<OgreOde::Geometry>',
+                'MaintainedList<OgreOde::Joint>',
+                'MaintainedList<OgreOde::JointGroup>', 
+                'MaintainedList<OgreOde::Space>'
+                ]
+    for e in excludes:
+        print "Excluding:", e
+        global_ns.namespace( 'OgreOde' ).class_(e).exclude()
+        
+    global_ns.namespace("std").class_('list<Ogre::Plane, std::allocator<Ogre::Plane> >').include(already_exposed=True)  
 
 ############################################################
 ##
@@ -61,7 +104,7 @@ def ManualExclude ( mb ):
 ##
 ############################################################
     
-def ManualInclude ( mb ):
+def ManualInclude ( mb, ns ):
     global_ns = mb.global_ns
 #     if MAIN_NAMESPACE:
 #         main_ns = global_ns.namespace( MAIN_NAMESPACE )
@@ -73,20 +116,21 @@ def ManualInclude ( mb ):
 ##  And things that need manual fixes, but not necessarly hand wrapped
 ##
 ############################################################
-def ManualFixes ( mb ):    
+def ManualFixes ( mb, ns ):    
     global_ns = mb.global_ns
 #     if MAIN_NAMESPACE:
 #         main_ns = global_ns.namespace( MAIN_NAMESPACE )
 #     else:
 #         main_ns = global_ns
-    ## here we adjust for functions that return poiners to ODE "ID's", which are really C structs
-    ## I may have been over agressive in identifing these functions but hopefully not...
-    for func in mb.namespace( 'OgreOde' ).member_functions():  
-        if func.return_type.decl_string.endswith('ID'):
-            print "Setting ", func.name, "to Opaque"
-            func.opaque = True
-            func.call_policies = call_policies.return_value_policy(
-                call_policies.return_opaque_pointer )
+    if ns == 'OgreOde': # we only need to do this once
+        ## here we adjust for functions that return poiners to ODE "ID's", which are really C structs
+        ## I may have been over agressive in identifing these functions but hopefully not...
+        for func in mb.namespace( 'OgreOde' ).member_functions():  
+            if func.return_type.decl_string.endswith('ID'):
+                print "Setting ", func.name, "to Opaque"
+                func.opaque = True
+                func.call_policies = call_policies.return_value_policy(
+                    call_policies.return_opaque_pointer )
               
 ############################################################
 ##
@@ -97,7 +141,7 @@ def ManualFixes ( mb ):
 ##
 ############################################################
         
-def ManualTransformations ( mb ):
+def ManualTransformations ( mb, ns ):
     global_ns = mb.global_ns
 #     if MAIN_NAMESPACE:
 #         main_ns = global_ns.namespace( MAIN_NAMESPACE )
@@ -234,17 +278,17 @@ def generate_code():
         main_ns.include()
            
         common_utils.AutoExclude ( mb, ns )
-        ManualExclude ( mb )
         common_utils.AutoInclude ( mb, ns )
-        ManualInclude ( mb )
+        ManualInclude ( mb, ns )
         # here we fixup functions that expect to modifiy their 'passed' variables    
-        ManualTransformations ( mb )
+        ManualTransformations ( mb, ns )
         AutoFixes ( mb, ns )
-        ManualFixes ( mb )
+        ManualFixes ( mb, ns )
         #
         # We need to tell boost how to handle calling (and returning from) certain functions
         #
         common_utils.Set_DefaultCall_Policies ( mb.global_ns.namespace ( ns ) )
+    ManualExclude ( mb )
     
     #
     # the manual stuff all done here !!!
