@@ -525,7 +525,7 @@ class boost_python_index:
     base = "libboost-python%s-index" % boost.base[6:].replace("_",".")
     if isLinux() or isMac():
         source = [
-             ["cp",'-rf %s %s' % (os.path.join('python-ogre','boost'), base), os.getcwd()],
+             ["cp",'-rf %s/ %s' % (os.path.join('python-ogre','boost'), base), os.getcwd()],
              ]
         # FIXME: This should have build commands!
         buildCmds  = []
