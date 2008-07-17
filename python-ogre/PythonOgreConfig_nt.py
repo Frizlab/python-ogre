@@ -38,8 +38,7 @@ pyplusplus_install_dir = os.path.join(BASE_DIR, 'pygccxml')
 PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
 PATH_Ogre =         os.path.join(BASE_DIR, 'ogre')
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
-PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.5.0')
-PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.6.0')
+PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.6.1')
 
 PATH_OIS =          os.path.join(BASE_DIR, 'ois' ) ##'ois-1.0RC1')
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonsdk','sdk')
@@ -56,7 +55,7 @@ PATH_OgreBullet=    os.path.join(PATH_THIRDPARTY,'ogrebullet')
 PATH_ogreforests=   os.path.join(PATH_THIRDPARTY,'forests')
 PATH_OGREAL=        os.path.join(PATH_THIRDPARTY,'ogreal')
 
-PATH_OGREAL=        os.path.join(BASE_DIR,'ogreal')
+# PATH_OGREAL=        os.path.join(BASE_DIR,'ogreal')
 
 PATH_OPCODE=        os.path.join(PATH_THIRDPARTY,'opcode')
 PATH_quickgui=      os.path.join(PATH_THIRDPARTY,'quickgui')
@@ -107,7 +106,7 @@ PATH_LIB_OgreOde =              os.path.join( PATH_OgreOde, 'lib/Release')
 PATH_LIB_OgreOdePrefab =        os.path.join( PATH_OgreOde, 'prefab/lib/Release' )
 PATH_LIB_OgreOdeLoader =        os.path.join( PATH_OgreOde, 'loader/lib/Release' )
 
-PATH_LIB_OgreAL =               os.path.join( PATH_OGREAL, 'lib/Release' )
+PATH_LIB_OgreAL =               os.path.join( PATH_OGREAL ) # , 'lib/Release' )
 PATH_LIB_betagui =              PATH_betagui
 PATH_LIB_quickgui =             PATH_quickgui
 PATH_LIB_NxOgre=                os.path.join(PATH_NxOgre, 'lib')
@@ -140,7 +139,7 @@ PATH_INCLUDE_ODE =          os.path.join( PATH_ODE, 'include')
 PATH_INCLUDE_OPCODE =       PATH_OPCODE
 PATH_INCLUDE_ODESOURCE =    os.path.join( PATH_ODE, 'ode/src')
 
-PATH_INCLUDE_OgreAL =       os.path.join( PATH_OGREAL, 'include' )
+PATH_INCLUDE_OgreAL =       os.path.join( PATH_OGREAL ) #, 'include' )
 PATH_INCLUDE_OPENAL =       os.path.join( PATH_OPENAL, 'include')
 PATH_INCLUDE_OGG=           os.path.join( PATH_OGG, 'include' )
 PATH_INCLUDE_VORBIS=        os.path.join( PATH_VORBIS, 'include' )

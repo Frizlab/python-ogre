@@ -5,7 +5,7 @@ import ctypes
 # the _cegui_.so module without RTLD_GLOBAL set - then when CEGUI opened it's dynamic modules it
 # couldn't find all the symbols.
 
-print ctypes.CDLL("../../../root/usr/lib/libCEGUIBase.so", ctypes.RTLD_GLOBAL )
+#print ctypes.CDLL("../../../root/usr/lib/libCEGUIBase.so", ctypes.RTLD_GLOBAL )
 
 import ogre.gui.CEGUI as CEGUI
 
