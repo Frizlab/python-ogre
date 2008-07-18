@@ -328,7 +328,7 @@ Index: CEGUI_TheoraDemo/scripts/VC8_GuiTesting.vcproj
 +			<Tool
 +				Name="VCCLCompilerTool"
 +				InlineFunctionExpansion="1"
-+				AdditionalIncludeDirectories="..\..\TheoraVideo\include;..\include;..\..\..\..\ogrenew\OgreMain\include;..\..\theora\include;&quot;..\..\ptypes-1.8.3\include&quot;;..\..\..\..\ogrenew\OgreMain\include;..\..\theora\include;&quot;..\..\ptypes-1.8.3\include&quot;;..\..\..\..\ogrenew\Samples\Common\CEGUIRenderer\include;..\..\..\..\ogrenew\Dependencies\include"
++				AdditionalIncludeDirectories="..\..\..\..\vorbis\include;..\..\..\..\ogg\include;..\..\TheoraVideo\include;..\include;..\..\..\..\ogre\OgreMain\include;..\..\theora\include;&quot;..\..\ptypes-1.8.3\include&quot;;..\..\..\..\ogre\Samples\Common\CEGUIRenderer\include;..\..\..\..\ogre\Dependencies\include"
 +				PreprocessorDefinitions="WIN32,NDEBUG,_WINDOWS"
 +				StringPooling="true"
 +				RuntimeLibrary="2"
@@ -871,7 +871,7 @@ Index: CEGUI_TheoraDemo/scripts/VC8_FMOD_MOD.vcproj
 +				Optimization="2"
 +				InlineFunctionExpansion="1"
 +				OmitFramePointers="true"
-+				AdditionalIncludeDirectories="c:\development\vorbis\include;c:\development\ogg\include;&quot;c:\development\FMOD SoundSystem\FMOD Programmers API Win32\api\inc&quot;;..\..\..\..\theora\include;..\..\TheoraVideo\include;..\include;..\..\..\..\ogre\OgreMain\include;&quot;..\..\ptypes-1.8.3\include&quot;;..\..\..\..\ogre\Samples\Common\CEGUIRenderer\include;..\..\..\..\ogre\Dependencies\include"
++				AdditionalIncludeDirectories="c:\development\vorbis\include;c:\development\ogg\include;c:\development\fmodapi375win\api\inc\;..\..\..\..\theora\include;..\..\TheoraVideo\include;..\include;..\..\..\..\ogre\OgreMain\include;&quot;..\..\ptypes-1.8.3\include&quot;;..\..\..\..\ogre\Samples\Common\CEGUIRenderer\include;..\..\..\..\ogre\Dependencies\include"
 +				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;FMOD_MOD_EXPORTS"
 +				StringPooling="true"
 +				RuntimeLibrary="2"
@@ -1397,6 +1397,39 @@ Index: CEGUI_TheoraDemo/src/SoundModules/OpenALSoundIO.cpp
  	delete [] mAudioBuffer;
  }
  
+Index: CEGUI_TheoraDemo/src/SoundModules/FmodSoundModule.cpp
+===================================================================
+--- CEGUI_TheoraDemo/src/SoundModules/FmodSoundModule.cpp	(revision 2450)
++++ CEGUI_TheoraDemo/src/SoundModules/FmodSoundModule.cpp	(working copy)
+@@ -1,10 +1,11 @@
+ #include "OgrePrerequisites.h"
+ #include "FmodSoundModule.h"
++#include "fmoddyn.h"
+ 
+ #include "OgreTimer.h"
+ #include "OgreLogManager.h"
+ #include "OgreStringConverter.h"
+-#include "OgrePlatformManager.h"
++//#include "OgrePlatformManager.h"
+ #include "OgreException.h"
+ 
+ #include <sstream>
+@@ -25,13 +26,13 @@
+ 		pauseTimeAdjustmentStop = 0;
+ 		pauseTimeAdjustmentTotal = 0;
+ 
+-		mTimer = mTimer = PlatformManager::getSingleton().createTimer();
++		mTimer = new Ogre::Timer();
+ 	}
+ 
+ 	//---------------------------------------------------------------//
+ 	AudioClip::~AudioClip()
+ 	{
+-		PlatformManager::getSingleton().destroyTimer( mTimer );
++		delete ( mTimer );
+ 	}
+ 
+ 	//---------------------------------------------------------------//
 Index: CEGUI_TheoraDemo/src/SoundModules/FmodSoundModule.h
 ===================================================================
 --- CEGUI_TheoraDemo/src/SoundModules/FmodSoundModule.h	(revision 2450)
@@ -1414,7 +1447,7 @@ Index: TheoraVideo/scripts/VC8_TheoraVideo.sln
 ===================================================================
 --- TheoraVideo/scripts/VC8_TheoraVideo.sln	(revision 2450)
 +++ TheoraVideo/scripts/VC8_TheoraVideo.sln	(working copy)
-@@ -1,56 +1,48 @@
+@@ -1,56 +1,47 @@
 -Microsoft Visual Studio Solution File, Format Version 9.00
 -# Visual C++ Express 2005
 -Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTypes_Lib", "..\..\ptypes-1.8.3\win32\VC8_PTypes_Lib.vcproj", "{8D0E0535-B27C-42D9-83AA-9A0FDBB53C1E}"
@@ -1513,7 +1546,6 @@ Index: TheoraVideo/scripts/VC8_TheoraVideo.sln
 +		{74DDB799-AD94-42F2-A99C-B89EA8A01AD9}.Debug|Win32.ActiveCfg = Debug|Win32
 +		{74DDB799-AD94-42F2-A99C-B89EA8A01AD9}.Debug|Win32.Build.0 = Debug|Win32
 +		{74DDB799-AD94-42F2-A99C-B89EA8A01AD9}.Release|Win32.ActiveCfg = Release|Win32
-+		{74DDB799-AD94-42F2-A99C-B89EA8A01AD9}.Release|Win32.Build.0 = Release|Win32
 +	EndGlobalSection
 +	GlobalSection(SolutionProperties) = preSolution
 +		HideSolutionNode = FALSE
