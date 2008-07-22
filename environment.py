@@ -528,8 +528,10 @@ class boost_python_index:
              ["rm","-rf %s" % (base,), os.getcwd()],
              ["cp",'-rvf %s/ %s' % (os.path.join('python-ogre','boost'), base), os.getcwd()],
              ]
-        # FIXME: This should have build commands!
-        buildCmds  = []
+        buildCmds  = [
+            [0,'make all', os.path.join(os.getcwd(), base)],
+            [0,'PREFIX=%s make install' % PREFIX, os.path.join(os.getcwd(), base)],
+        ]
    
     lib = boost.lib.replace("python", "python_index")
 
