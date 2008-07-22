@@ -273,6 +273,10 @@ def generate_code():
     # 
     global_ns = mb.global_ns
     global_ns.exclude()
+
+    query = lambda decl: isinstance( decl, ( declarations.class_t, declarations.class_declaration_t ) ) \
+                         and decl.name.startswith( 'dx' )
+    mb.global_ns.decls( query ).opaque = True  
     for ns in MAIN_NAMESPACE:
         main_ns = global_ns.namespace( ns )
         main_ns.include()
