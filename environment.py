@@ -455,7 +455,7 @@ class boost:    ## also included bjam
         base = 'boost_1_34_1'
         lib= 'boost_python-vc90-mt-1_34_1'
     else:        
-        base = 'boost_1_35_0'  
+        base = 'boost_1_35'
         lib = 'boost_python-vc90-mt-1_36'
         
     if isLinux() or isMac():
@@ -525,7 +525,8 @@ class boost_python_index:
     base = "libboost-python%s-index" % boost.base[6:].replace("_",".")
     if isLinux() or isMac():
         source = [
-             ["cp",'-rf %s/ %s' % (os.path.join('python-ogre','boost'), base), os.getcwd()],
+             ["rm","-rf %s" % (base,), os.getcwd()],
+             ["cp",'-rvf %s/ %s' % (os.path.join('python-ogre','boost'), base), os.getcwd()],
              ]
         # FIXME: This should have build commands!
         buildCmds  = []
