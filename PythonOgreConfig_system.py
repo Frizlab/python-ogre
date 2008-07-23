@@ -57,7 +57,7 @@ PATH_NxOgre_09=        os.path.join(PATH_THIRDPARTY, 'nxogre_0.9')
 PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.66') 
 ###PATH_PhysX=         os.path.join(BASE_DIR, 'Physx/v2.7.3/SDKs')
 PATH_Theora=        os.path.join(PATH_OgreAddons,'videoplugin','TheoraVideo')
-PATH_ffmpeg=        os.path.join(BASE_DIR, 'ffmpeg')
+PATH_ffmpeg=        os.path.join(BASE_DIR) #, 'ffmpeg')
 PATH_navi =         os.path.join(BASE_DIR, 'navi','Navi')
 PATH_particleuniverse = os.path.join(PATH_Ogre, 'PlugIns', 'ParticleUniverse' )
 PATH_cadunetree=        os.path.join(PATH_THIRDPARTY, 'cadunetree')
@@ -136,7 +136,7 @@ PATH_INCLUDE_Theora =       os.path.join (PATH_Theora,'include')
 PATH_INCLUDE_TheoraDemo =       os.path.join (PATH_Theora,'..', 'CEGUI_TheoraDemo','include')
 
 PATH_INCLUDE_ogrevideoffmpeg =  PATH_ogrevideoffmpeg
-PATH_INCLUDE_ffmpeg =       os.path.join (PATH_ffmpeg,'include')
+PATH_INCLUDE_ffmpeg =       os.path.join (PATH_ffmpeg,'include', 'ffmpeg')
 PATH_INCLUDE_plib =         PATH_plib
 PATH_INCLUDE_navi =     os.path.join (PATH_navi,'include')
 PATH_INCLUDE_noise = PATH_noise 

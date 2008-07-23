@@ -5,13 +5,13 @@
 #include "Ogre.h"
 
 // // ffmpeg includes
-// #include <ffmpeg/avcodec.h>
-// #include <ffmpeg/avformat.h>
 extern "C" {
 #define __STDC_CONSTANT_MACROS
 #define __STDC_LIMIT_MACROS
-#include <libavformat/avformat.h>
-#include <libavcodec/avcodec.h>
+#include <ffmpeg/avcodec.h>
+#include <ffmpeg/avformat.h>
+//#include <libavformat/avformat.h>
+//#include <libavcodec/avcodec.h>
 }
 
 using namespace Ogre;
