@@ -135,7 +135,7 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
         OgreAL.SoundManager.getSingleton().getSound("Roar").play()
         
         
-        bgSound = self.soundManager.createSound("ZeroFactor", "Zero Factor - Untitled.ogg", True, True)
+        bgSound = self.soundManager.createSound("ZeroFactor", "6chan.ogg", True, True)
        
         
     	node = sceneManager.getRootSceneNode().createChildSceneNode("CameraNode")
