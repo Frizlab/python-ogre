@@ -945,7 +945,7 @@ class caelum:
                 Config.PATH_LIB_Ogre_OgreMain
                 ]
     CheckIncludes=[]
-    libs=[  boost.lib, 'OgreMain' ]
+    libs=[  boost.lib, boost_python_index.lib, 'OgreMain' ]
     ModuleName="caelum"  
      
 class ogreode:
@@ -1197,7 +1197,7 @@ class plib:
     if os.name == "nt":
         libs = [ boost.lib, 'winmm', 'User32','wsock32', 'opengl32.lib','glu32.lib' ]
     else:
-        libs = [ boost.lib ] # Note sure what linux libraries are needed
+        libs = [ boost.lib, "GL" ] # Note sure what linux libraries are needed
     
 class physx:
     active = True
@@ -1320,9 +1320,9 @@ class ogreal:
             [0, "aclocal\n./autogen.sh", os.path.join(os.getcwd(),"openal-0.0.8")],
             [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "openal-0.0.8")]
             ]
-        libs=[boost.lib, boost_python_index.lib, 'OgreMain', 
-                    'ogg', 
-                    'vorbis','vorbisfile','vorbisenc',
+        libs=[boost.lib, boost_python_index.lib, 'OgreMain', 'vorbisfile',
+                    #'ogg', 
+                    #'vorbis','vorbisfile','vorbisenc',
                     'openal']  ##  'OgreAL' -- going to compile OgreAL ourselves
                   
     ModuleName = 'OgreAL'
@@ -1386,7 +1386,7 @@ class et:  ## editable terrain
     version= "2.2"
     name='et'
     parent = "ogre/addons"
-    libs=[ boost.lib, 'OgreMain' ]
+    libs=[ boost.lib, boost_python_index.lib, 'OgreMain' ]
     lib_dirs = [ Config.PATH_LIB_Boost,
                 Config.PATH_LIB_Ogre_OgreMain
                 ]
