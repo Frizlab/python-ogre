@@ -1320,7 +1320,7 @@ class ogreal:
             [0, "aclocal\n./autogen.sh", os.path.join(os.getcwd(),"openal-0.0.8")],
             [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "openal-0.0.8")]
             ]
-        libs=[boost.lib, 'OgreMain', 
+        libs=[boost.lib, boost_python_index.lib, 'OgreMain', 
                     'ogg', 
                     'vorbis','vorbisfile','vorbisenc',
                     'openal']  ##  'OgreAL' -- going to compile OgreAL ourselves
