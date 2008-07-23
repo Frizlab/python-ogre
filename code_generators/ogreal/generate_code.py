@@ -107,7 +107,14 @@ def ManualFixes ( mb ):
     
     context = main_ns.decl("ALCcontext_struct")
     context.opaque = True    
-       
+
+    # These symbols are missing from the lib even though they are defined in
+    # the header file! 
+    main_ns.decl("alSource3i").exclude()
+    main_ns.decl("alSourceiv").exclude()
+    main_ns.decl("alGetSource3i").exclude()
+    main_ns.decl("alGetSourceiv").exclude()
+      
 ############################################################
 ##
 ##  And things that need to have their argument and call values fixed.
@@ -304,9 +311,9 @@ def generate_code():
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory..
     
-#     common_utils.copyTree ( sourcePath = environment.Config.PATH_Config.PATH_OGREAL, 
-#                             destPath = environment.ogreal.generated_dir, 
-#                             recursive=False )
+    common_utils.copyTree ( sourcePath = environment.Config.PATH_OGREAL, 
+                             destPath = environment.ogreal.generated_dir, 
+                             recursive=False )
         
 if __name__ == '__main__':
     start_time = time.clock()
