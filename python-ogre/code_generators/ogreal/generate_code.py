@@ -101,6 +101,13 @@ def ManualFixes ( mb ):
     else:
         main_ns = global_ns
               
+    # Mark both these types are opaque
+    device = main_ns.decl("ALCdevice_struct")
+    device.opaque = True    
+    
+    context = main_ns.decl("ALCcontext_struct")
+    context.opaque = True    
+       
 ############################################################
 ##
 ##  And things that need to have their argument and call values fixed.
@@ -247,7 +254,7 @@ def generate_code():
     global_ns.exclude()
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
     main_ns.include()
-       
+
     common_utils.AutoExclude ( mb, MAIN_NAMESPACE )
     ManualExclude ( mb )
     common_utils.AutoInclude ( mb, MAIN_NAMESPACE )
@@ -276,8 +283,7 @@ def generate_code():
                                       
     ## need to create a welcome doc string for this...                                  
     common_utils.add_constants( mb, { '__doc__' :  '"ogreal DESCRIPTION"' } ) 
-    
-    
+
     ##########################################################################################
     #
     # Creating the code. After this step you should not modify/customize declarations.
