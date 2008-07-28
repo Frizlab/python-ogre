@@ -849,7 +849,8 @@ class cegui:
             ]
         buildCmds  = [
             [0, unzip + " " +  os.path.join(downloadPath,base)+".zip", os.getcwd()],
-            [0, 'echo Please use MSVC to build the CEGUI Release project',''],
+            [0, 'echo Now run build_vs2008.bat from the CEGUI makefiles\premake directory',''], 
+            [0, 'echo then use MSVC to build the CEGUI Release project',''],
             [0, 'echo WARNING - Check that RTTI is enabled in the compiler options',''],
             [0, 'echo Then ensure that OgreGUIRender is compiled with this version of CEGUI','']
             ]         
