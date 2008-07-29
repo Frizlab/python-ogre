@@ -71,7 +71,8 @@ PACKAGEDATA = {
                         'ogre.addons.plib','ogre.gui.navi',
                         'ogre.addons.ogreforests', 'ogre.addons.et', 'ogre.addons.caelum',
                         'ogre.addons.noise', 'ogre.addons.watermesh', 'ogre.addons.ofusion',
-                        'ogre.addons.particleuniverse', 'ogre.addons.cadunetree'  ],
+                        'ogre.addons.particleuniverse', 'ogre.addons.cadunetree',
+                        'ogre.renderer.ogrepcz'  ],
        "package_dir": {'': 'packages_'+ PythonVersionString },
        "package_data": {'': ['*.pyd', '*.dll', '*.so']}
 
