@@ -42,12 +42,12 @@ class VideoApplication(sf.Application):
         if not self.Control:
             print "\n\nClip not found\n"
             sys.exit()
-        self.Control.setInputName( '../media_extra/fish.ogg' )
+        self.Control.setInputName( '../media_extra/konqi_ad1_nl.avi.ogg') ##fish.ogg' )
         self.Control.setPlayMode(theora.TextureEffectPause )
 
         self.Control.setTextureTecPassStateLevel( 0, 0, 0 )
         self.Control.setSeekEnabled( False )
-#         self.Control.setAutoAudioUpdate ( True )
+        self.Control.setAutoAudioUpdate ( True )
         
         mat  = ogre.MaterialManager.getSingleton().getByName("Example/TheoraVideoPlayer/Play")
         #Create the material the first time through this method
@@ -97,7 +97,6 @@ class VideoListener(sf.FrameListener):
        ret = sf.FrameListener.frameStarted(self, frameEvent)
        if self.video and ret:
             self.video.blitFrameCheck()
-            self.video.getAudioDriver().autoUpdate()
        return ret
         
         

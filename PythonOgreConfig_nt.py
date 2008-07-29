@@ -81,6 +81,7 @@ PATH_ffmpeg=        os.path.join(PATH_THIRDPARTY,'extra')
 PATH_navi =         os.path.join(BASE_DIR, 'navi', 'navi')
 
 PATH_particleuniverse = os.path.join(PATH_Ogre, 'PlugIns', 'ParticleUniverse' )
+PATH_ogrepcz = os.path.join(PATH_Ogre, 'PlugIns', 'PCZSceneManager' )
 
 # it's time for the SDK version
 if SDK:
@@ -174,6 +175,7 @@ PATH_INCLUDE_noise = PATH_noise
 ##PATH_INCLUDE_ogreforests =         os.path.join (PATH_ogreforests,'include')
 PATH_INCLUDE_ogreforests =         PATH_ogreforests
 PATH_INCLUDE_particleuniverse = os.path.join(PATH_particleuniverse, 'include' )
+PATH_INCLUDE_ogrepcz = os.path.join(PATH_ogrepcz,'include')
 
 PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ,os.path.join(BASE_DIR, 'vorbis', 'include')

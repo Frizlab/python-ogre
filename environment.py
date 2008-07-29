@@ -1569,6 +1569,24 @@ class cadunetree:
     libs=[  boost.lib, 'OgreMain' ]
     ModuleName="cadunetree"          
 
+class ogrepcz:
+    active = False
+    pythonModule = True
+    version="1.0"
+    name='ogrepcz'
+    parent="ogre/renderer"
+    cflags = ""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_Ogre,
+                    Config.PATH_INCLUDE_ogrepcz
+                    ]
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain
+                ]
+    CheckIncludes=[]
+    libs=[  boost.lib, 'Plugin_PCZSceneManager', 'OgreMain' ]
+    ModuleName="ogrepcz"      
+        
 class opensteer:
     active = False
     pythonModule = True
@@ -1647,6 +1665,7 @@ projects = {
     , 'particleuniverse' : particleuniverse
     , 'cadunetree' : cadunetree
     ,'opensteer' : opensteer
+    ,'ogrepcz' : ogrepcz
 }        
 
 #
