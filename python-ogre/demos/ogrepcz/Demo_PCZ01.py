@@ -154,7 +154,7 @@ class PCZTestApplication (sf.Application):
         self.pczSM.setZoneGeometry( zoneName, pcz.castAsPCZSceneNode(self.sceneManager.getRootSceneNode()), terrain_cfg )
 
         # create aab portal(s) around the terrain
-        corners =[]
+        corners =[None]*2
         aabb = ogre.AxisAlignedBox()
 
         # make portal from terrain to default
