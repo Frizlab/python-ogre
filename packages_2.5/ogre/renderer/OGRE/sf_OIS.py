@@ -9,6 +9,11 @@
 # You may use this sample code for anything you like, it is not covered by the
 # LGPL.
 # -----------------------------------------------------------------------------
+
+#
+# 29 July 2008: Ensured that resources.cfg and plugins.cfg can exist in the parent directory
+#
+
 import ogre.renderer.OGRE as ogre
 import ogre.io.OIS as OIS
 ###import OgreRefApp
@@ -20,7 +25,7 @@ def getPluginPath():
     import os.path
     
     paths = [os.path.join(os.getcwd(), 'plugins.cfg'),
-             os.path.join(os.getcwd(), '../plugins.cfg'),
+             os.path.join(os.getcwd(), '..','plugins.cfg'),
              '/etc/OGRE/plugins.cfg',
              os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               'plugins.cfg')]
@@ -107,7 +112,16 @@ class Application(object):
         """This sets up Ogre's resources, which are required to be in
         resources.cfg."""
         config = ogre.ConfigFile()
-        config.load('resources.cfg' ) 
+        try:
+            config.load('resources.cfg') 
+        except ogre.OgreFileNotFoundException:
+            try:
+                config.load('../resources.cfg')
+            except:
+                raise                
+        except:
+            raise               
+                    
         seci = config.getSectionIterator()
         while seci.hasMoreElements():
             SectionName = seci.peekNextKey()
@@ -276,7 +290,9 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
                 self.InputManager.destroyInputObjectJoyStick( self.Joy )
             OIS.InputManager.destroyInputSystem(self.InputManager)
             self.InputManager=None
-            
+
+    ## NOTE the in Ogre 1.6 (1.7) this is changed to frameRenderingQueued !!!
+                            
     def frameStarted(self, frameEvent):
         if(self.renderWindow.isClosed()):
             return False

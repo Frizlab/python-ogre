@@ -86,7 +86,14 @@ def ManualInclude ( mb ):
     if MAIN_NAMESPACE:
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
-        main_ns = global_ns    
+        main_ns = global_ns  
+    
+    includes = ['::Ogre::Portal::PORTAL_TYPE',
+                '::Ogre::Portal::PortalIntersectResult',
+#                 '::Ogre::PCZone::NODE_LIST_TYPE'
+            ]                 
+    for i in includes:
+        main_ns.enum(i).include()            
         
 ############################################################
 ##
@@ -277,9 +284,17 @@ def generate_code():
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
 #     main_ns.include()
     for c in main_ns.classes():
-        if c.name.startswith ('PCZ'):
-            print "Including ", c
+        if c.name.startswith ('PCZ') or c.name.startswith ('PCPlane') or  c.name.startswith ('Portal'):
             c.include()
+            print "Including ", c
+            
+    for c in ['Portal','PCPlane']:
+        main_ns.class_(c).include()
+        print "Including ", c            
+#             for e in c.enums(allow_empty=True):
+#                 e.include()
+#             for v in c.variables(allow_empty=True):
+#                 v.include()                
     
     common_utils.AutoExclude ( mb, MAIN_NAMESPACE )
     ManualExclude ( mb )
