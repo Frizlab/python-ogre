@@ -135,7 +135,15 @@ def ManualInclude ( mb ):
 def ManualFixes ( mb ):    
 
     global_ns = mb.global_ns
-
+    known = ['points', 'triangles']
+    for c in global_ns.classes():
+        if c.name.startswith ('Nx'):
+            print "Checking", c
+            for v in c.variables(allow_empty = True ):
+                if v.name in known:
+                   v.expose_address = True
+                   print "Exposing Address: ",  v.name, " of class: ",  c.name
+    sys.exit()                   
               
 ############################################################
 ##
