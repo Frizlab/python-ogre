@@ -23,7 +23,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 #include "CaelumPrerequisites.h"
 
-namespace caelum
+namespace Caelum
 {
 	/** Gets the interpolated colour between two pixels from an image.
         Interpolate a texture pixel by hand. (fx, fy) are in texture coordinates,

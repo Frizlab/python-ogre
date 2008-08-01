@@ -23,7 +23,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 #include "CaelumPrerequisites.h"
 
-namespace caelum {
+namespace Caelum {
 
 /** The system's time model.
  *  This class is responsible of keeping track of current astronomical time
@@ -130,6 +130,6 @@ class CAELUM_EXPORT UniversalClock
         LongReal getJulianSecondDifference() const;
 };
 
-} // namespace caelum
+} // namespace Caelum
 
 #endif //UNIVERSALCLOCK_H

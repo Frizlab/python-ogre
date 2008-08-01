@@ -24,10 +24,9 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "CaelumPrerequisites.h"
 #include "CameraBoundElement.h"
 
-namespace caelum {
+namespace Caelum {
 
 /** A sky dome element.
-	@author Jes˙s Alonso Abad
  */
 class CAELUM_EXPORT SkyDome : public CameraBoundElement {
 // Attributes -----------------------------------------------------------------
@@ -111,6 +110,6 @@ class CAELUM_EXPORT SkyDome : public CameraBoundElement {
 	    virtual void setFarRadius (Ogre::Real radius);
 };
 
-} // namespace caelum
+} // namespace Caelum
 
 #endif //SKYDOME_H

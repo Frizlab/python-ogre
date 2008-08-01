@@ -6,6 +6,7 @@ def header_files( version ):
             ,"TreeLoader2D.h"
             ,"BatchPage.h"
             ,"ImpostorPage.h"
+            ,"WindBatchPage.h"
             ]
   
 def huge_classes( version ):

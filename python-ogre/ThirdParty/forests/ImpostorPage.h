@@ -28,7 +28,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 #define IMPOSTOR_PITCH_ANGLES 4
 //If set to 1, imposter textures will be read and saved to disc; if set to 0 they will stay in memory and need to be regenerated each time the application is run.
 #define IMPOSTOR_FILE_SAVE 1
-namespace PagedGeometry {
+namespace Forests {
 
 class ImpostorBatch;
 class ImpostorTexture;
@@ -70,7 +70,7 @@ class ImpostorPage: public GeometryPage
 	friend class ImpostorTexture;
 
 public:
-	void init(PagedGeometry *geom);
+	void init(PagedGeometry *geom, const Ogre::Any &data);
 	~ImpostorPage();
 	
 	void setRegion(Ogre::Real left, Ogre::Real top, Ogre::Real right, Ogre::Real bottom);
@@ -178,9 +178,9 @@ protected:
 	static Ogre::ColourValue impostorBackgroundColor;
 	static Ogre::BillboardOrigin impostorPivot;
 	
-	static unsigned int selfInstances;
-	static unsigned int updateInstanceID;
-	unsigned int instanceID;
+	static Ogre::uint32 selfInstances;
+	static Ogre::uint32 updateInstanceID;
+	Ogre::uint32 instanceID;
 
 	Ogre::Timer updateTimer;
 

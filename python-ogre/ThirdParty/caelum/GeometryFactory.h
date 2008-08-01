@@ -23,11 +23,9 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 #include "CaelumPrerequisites.h"
 
-namespace caelum {
+namespace Caelum {
 
 /** A constructor for a number of caelum geometric objects.
-	@author Jesús Alonso Abad.
-	@version 0.1
  */
 class CAELUM_EXPORT GeometryFactory {
 // Types and enums ------------------------------------------------------------
@@ -62,6 +60,6 @@ class CAELUM_EXPORT GeometryFactory {
 		static void fillStarfieldDomeBuffers (float *pVertex, unsigned short *pIndices, int segments);
 };
 
-} // namespace caelum
+} // namespace Caelum
 
 #endif //GEOMETRYFACTORY_H

@@ -24,7 +24,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "CaelumPrerequisites.h"
 #include "CameraBoundElement.h"
 
-namespace caelum {
+namespace Caelum {
 
 /** Exponential ground fog system implementation.
  *

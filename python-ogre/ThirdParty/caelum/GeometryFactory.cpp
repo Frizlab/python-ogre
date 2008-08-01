@@ -21,7 +21,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "CaelumPrecompiled.h"
 #include "GeometryFactory.h"
 
-namespace caelum {
+namespace Caelum {
 
 void GeometryFactory::generateSphericDome (const Ogre::String &name, int segments, DomeType type) {
 	// Return now if already exists
@@ -222,4 +222,4 @@ void GeometryFactory::fillStarfieldDomeBuffers (float *pVertex, unsigned short *
 	}
 }
 
-} // namespace caelum
+} // namespace Caelum

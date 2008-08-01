@@ -22,7 +22,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "Sun.h"
 #include "SkyLight.h"
 
-namespace caelum {
+namespace Caelum {
 
 //========================================================================================================================
 // Sphere Sun - deprecated, use Sprite Sun instead
@@ -146,4 +146,4 @@ void SpriteSun::notifyCameraChanged (Ogre::Camera *cam) {
     mNode->setScale (Ogre::Vector3::UNIT_SCALE * scale);
 }
 
-} // namespace caelum
+} // namespace Caelum

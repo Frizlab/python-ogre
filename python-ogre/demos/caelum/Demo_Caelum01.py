@@ -92,7 +92,8 @@ class CaelumSpeedFrameListener(TerrainFrameListener):
 
         # clamp to terrain
         ret =  TerrainFrameListener.frameStarted(self, frameEvent)
-
+        print "from framestarted", ret
+        return ret
         ## keyboard input
         self.timeTillNextUpdate -= frameEvent.timeSinceLastFrame
         if (self.timeTillNextUpdate<= 0):
@@ -129,7 +130,7 @@ class CaelumSpeedFrameListener(TerrainFrameListener):
             mat = ogre.MaterialManager.getSingleton ().getByName ("CaelumDemoTerrain")
             if mat.getTechnique (0).getPass ("CaelumHaze"):
                 mat.getTechnique (0).getPass ("CaelumHaze").getVertexProgramParameters ().setNamedConstant ("sunDirection", 
-                                                                                        self.caelumSystem.getSun ().getSunDirection ())
+                                                                                        self.caelumSystem.getSun ().getLightDirection ())
         return ret
 
 class TerrainApplication(sf.Application):
@@ -276,8 +277,9 @@ class TerrainApplication(sf.Application):
     def _createFrameListener(self):
     #    pass
     #    return
+        return
         self.frameListener = CaelumSpeedFrameListener(self.renderWindow, self.camera,self.sceneManager, self.caelumSystem)
-        self.root.addFrameListener(self.frameListener)
+#         self.root.addFrameListener(self.frameListener)
 
 if __name__ == '__main__':
     try:

@@ -21,7 +21,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "CaelumPrecompiled.h"
 #include "Astronomy.h"
 
-namespace caelum
+namespace Caelum
 {
     const LongReal Astronomy::PI = 3.1415926535897932384626433832795029L;
     

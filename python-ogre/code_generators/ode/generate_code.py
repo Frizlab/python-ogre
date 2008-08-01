@@ -170,7 +170,8 @@ def filter_declarations( mb ):
         "dWorldGetAutoDisableAngularAverageThreshold",
         "dWorldGetAutoDisableLinearAverageThreshold", 
         "dWorldSetAutoDisableAngularAverageThreshold",
-        "dWorldSetAutoDisableLinearAverageThreshold"     )
+        "dWorldSetAutoDisableLinearAverageThreshold" ,
+        "dJointAddPUTorque"    )
     for cls in ignore:
         try:
             ode_ns.free_function(cls).exclude()
@@ -185,8 +186,7 @@ def filter_declarations( mb ):
     ode_ns.class_( "dBody" ).member_functions( "getData").exclude()
     
     ode_ns.class_( "dSpace" ).member_functions( "collide").exclude()
-    
-         
+    ode_ns.class_( "dFixedJoint" ).member_functions( "create").exclude()
 
     ## Exclude protected and private that are not pure virtual
     ### need to be careful here as it removes free functions

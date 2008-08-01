@@ -22,9 +22,9 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "UniversalClock.h"
 #include "Astronomy.h"
 
-namespace caelum {
+namespace Caelum {
 
-const caelum::LongReal UniversalClock::SECONDS_PER_DAY = 86400.0;
+const Caelum::LongReal UniversalClock::SECONDS_PER_DAY = 86400.0;
 
 UniversalClock::UniversalClock () {
     setJulianDay (Astronomy::J2000);        
@@ -34,7 +34,7 @@ UniversalClock::UniversalClock () {
     forceUpdate ();
 }
 
-void UniversalClock::setJulianDay (caelum::LongReal value) {
+void UniversalClock::setJulianDay (Caelum::LongReal value) {
     mJulianDayBase = value;
     mCurrentTime = 0;
     mLastUpdateTime = 0;
@@ -49,26 +49,26 @@ void UniversalClock::setGregorianDateTime(
     Astronomy::restoreFloatingPointMode(fpmode);
 }
 
-caelum::LongReal UniversalClock::getJulianDay () const
+LongReal UniversalClock::getJulianDay () const
 {
     int fpmode = Astronomy::enterHighPrecissionFloatingPointMode ();
-    caelum::LongReal res = mJulianDayBase + mCurrentTime / SECONDS_PER_DAY;
+    Caelum::LongReal res = mJulianDayBase + mCurrentTime / SECONDS_PER_DAY;
     Astronomy::restoreFloatingPointMode(fpmode);
     return res;
 }
 
-caelum::LongReal UniversalClock::getJulianDayDifference () const {
+LongReal UniversalClock::getJulianDayDifference () const {
     return (mCurrentTime - mLastUpdateTime) / SECONDS_PER_DAY;
 }
 
-caelum::LongReal UniversalClock::getJulianSecond () const {
+LongReal UniversalClock::getJulianSecond () const {
     int fpmode = Astronomy::enterHighPrecissionFloatingPointMode ();
-    caelum::LongReal res = mJulianDayBase * SECONDS_PER_DAY + mCurrentTime;
+    LongReal res = mJulianDayBase * SECONDS_PER_DAY + mCurrentTime;
     Astronomy::restoreFloatingPointMode(fpmode);
     return res;
 }
 
-caelum::LongReal UniversalClock::getJulianSecondDifference () const {
+LongReal UniversalClock::getJulianSecondDifference () const {
     return mCurrentTime - mLastUpdateTime;
 }
 
@@ -111,4 +111,4 @@ void UniversalClock::forceUpdate () {
     mTimeSinceLastUpdate = mUpdateRate;
 }
 
-} // namespace caelum
+} // namespace Caelum
