@@ -30,7 +30,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include <OgreSceneNode.h>
 #include <OgreStringConverter.h>
 
-namespace PagedGeometry {
+namespace Forests {
 
 class SBMaterialRef;
 typedef std::map<Ogre::Material*, SBMaterialRef*> SBMaterialRefList;
@@ -267,7 +267,7 @@ private:
 	bool fadeEnabled;
 	Ogre::Real fadeVisibleDist, fadeInvisibleDist;
 
-	static unsigned int selfInstances;
+	static Ogre::uint32 selfInstances;
 
 	static unsigned long GUID;
 	static inline Ogre::String getUniqueID(const Ogre::String &prefix)
@@ -300,7 +300,7 @@ private:
 
 	static SBMaterialRefList selfList;
 
-	unsigned int refCount;
+	Ogre::uint32 refCount;
 	Ogre::Material *material;
 	Ogre::BillboardOrigin origin;
 };

@@ -22,7 +22,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "CaelumExceptions.h"
 #include "Moon.h"
 
-namespace caelum
+namespace Caelum
 {
     const Ogre::String Moon::MOON_MATERIAL_NAME = "Caelum/PhaseMoon";
 

@@ -23,10 +23,9 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 #include "CaelumPrerequisites.h"
 
-namespace caelum {
+namespace Caelum {
 
     /** Exception class for unsupported features.
-     * @author Jesús Alonso Abad.
      */
     class CAELUM_EXPORT UnsupportedException : public Ogre::Exception {
 	    public:
@@ -38,6 +37,6 @@ namespace caelum {
 #define CAELUM_THROW_UNSUPPORED_EXCEPTION(desc, src) \
         throw UnsupportedException(-1, (desc), (src), __FILE__, __LINE__);
 
-} // namespace caelum
+} // namespace Caelum
 
 #endif // CAELUMEXCEPTIONS_H

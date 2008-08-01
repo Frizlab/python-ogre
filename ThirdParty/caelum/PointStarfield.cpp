@@ -26,7 +26,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 using namespace Ogre;
 
-namespace caelum
+namespace Caelum
 {
 	const Ogre::String PointStarfield::BILLBOARD_MATERIAL_NAME = "Caelum/StarPoint";
 
@@ -68,7 +68,8 @@ namespace caelum
 		}
 	}
 
-	PointStarfield::~PointStarfield () {
+	PointStarfield::~PointStarfield ()
+    {
 		if (mNode) {
 			mNode->getCreator()->destroySceneNode(mNode->getName());
 			mNode = 0;

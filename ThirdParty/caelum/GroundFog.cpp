@@ -22,7 +22,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "GroundFog.h"
 #include "CaelumExceptions.h"
 
-namespace caelum {
+namespace Caelum {
 	const Ogre::String GroundFog::DEFAULT_PASS_NAME = "CaelumGroundFog";
 
 	GroundFog::GroundFog(
@@ -47,7 +47,7 @@ namespace caelum {
 		// Create dome entity, using a prefab sphere.
         // The prefab sphere has a radius of 50 units.
         // If this changes in future version of ogre this might break.
-        mDomeEntity = mScene->createEntity(domeEntityName, Ogre::SceneManager::PT_SPHERE);
+        mDomeEntity = mScene->createEntity(domeEntityName, Ogre::SceneManager::PT_PLANE);
         mDomeEntity->setMaterialName(mDomeMaterial->getName());
         mDomeEntity->setCastShadows(false);
         mDomeEntity->setRenderQueueGroup (CAELUM_RENDER_QUEUE_GROUND_FOG);
@@ -59,7 +59,7 @@ namespace caelum {
 		mDensity = 0.1;
 		mVerticalDecay = 0.2;
 		mGroundLevel = 5;
-        mFogColour = Ogre::ColourValue::Black;
+		mFogColour = Ogre::ColourValue::Black;
 
         forceUpdate();
 	}

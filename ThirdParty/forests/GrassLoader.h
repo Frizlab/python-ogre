@@ -1,6 +1,5 @@
 /*-------------------------------------------------------------------------------------
 Copyright (c) 2006 John Judnich
-Modified 2008 by Erik Hjortsberg (erik.hjortsberg@iteam.se)
 
 This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.
 Permission is granted to anyone to use this software for any purpose, including commercial applications, and to alter it and redistribute it freely, subject to the following restrictions:
@@ -15,56 +14,23 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include "PagedGeometry.h"
 #include "PropertyMaps.h"
 
-#include <OgrePrerequisites.h>
-#include <OgreMaterial.h>
-#include <OgrePixelFormat.h>
-#include <OgreStringConverter.h>
-#include <OgreMeshManager.h>
+#include "OgrePrerequisites.h"
+#include "OgreMaterial.h"
+#include "OgrePixelFormat.h"
+#include "OgreStringConverter.h"
 
 
-#include <OgreRoot.h>
-#include <OgreTimer.h>
-#include <OgreCamera.h>
-#include <OgreVector3.h>
-#include <OgreQuaternion.h>
-#include <OgreEntity.h>
-#include <OgreString.h>
-#include <OgreStringConverter.h>
-#include <OgreMaterialManager.h>
-#include <OgreMaterial.h>
-#include <OgreHardwareBufferManager.h>
-#include <OgreHardwareBuffer.h>
-#include <OgreMeshManager.h>
-#include <OgreMesh.h>
-#include <OgreSubMesh.h>
-#include <OgreLogManager.h>
-#include <OgreTextureManager.h>
-#include <OgreHardwarePixelBuffer.h>
-#include <OgreRenderSystem.h>
-#include <OgreRenderSystemCapabilities.h>
-#include <OgreHighLevelGpuProgram.h>
-#include <OgreHighLevelGpuProgramManager.h>
-
-namespace PagedGeometry {
+namespace Forests {
 
 class GrassLayer;
-class GrassLayerBase;
 
 /** \brief A PageLoader-derived object you can use with PagedGeometry to produce realistic grass. 
 
 Using a GrassLoader is simple - simply create an instance, attach it to your PagedGeometry object
 with PagedGeometry::setPageLoader(), and add your grass. Important: For best performance, it is
 recommended that you use GrassPage (included in GrassLoader.h) to display geometry loaded by GrassLoader.
-
 This page type is designed for best performance with this grass system. BatchPage
 will work, although performance will be reduced slightly, and ImpostorPage will run extremely slow.
-
-When creating a GrassLoader you must specify the class which will be used for creating layers. By default a GrassLayer class is provided, which can be used as this:
-\code
-	::PagedGeometry::GrassLoader<GrassLayer> loader = new ::PagedGeometry::GrassLoader<GrassLayer>(grass);
-\endcode
-It's also possible for you to provide your own GrassLayer implementation by overriding the class GrassLayerBase. This will allow you to have much more control over how the grass is placed.
-
 
 To add grass, just call addLayer(). addLayer() returns a GrassLayer object pointer, which you should
 use to further configure your newly added grass. Properties like size, density, color, animation, etc.
@@ -79,7 +45,6 @@ the TreeLoader2D::setHeightFunction() documentation for more information.
 keep in mind that calculating the height of Ogre's built-in terrain this way can
 be VERY slow if not done properly, and may cause stuttering due to long paging delays.
 */
-template <typename TGrassLayer>
 class GrassLoader: public PageLoader
 {
 public:
@@ -101,23 +66,23 @@ public:
 	functions to vary grass size and density levels as desired.
 
 	\see GrassLayer class for more information. */
-	TGrassLayer *addLayer(const Ogre::String &material);
+	GrassLayer *addLayer(const Ogre::String &material);
 
 	/** \brief Removes and deletes a grass layer from the scene
 
 	This function simply deletes a GrassLayer previously created with addLayer(). */
-	void deleteLayer(TGrassLayer *layer);
+	void deleteLayer(GrassLayer *layer);
 
 	/** \brief Returns a list of added grass layers.
 	
 	This function returns a std::list<GrassLayer*> reference, which contains all grass
 	layers which have been added to this GrassLoader. */
-	inline std::list<TGrassLayer*> &getLayerList() { return layerList; }
+	inline std::list<GrassLayer*> &getLayerList() { return layerList; }
 
 	/** \brief Sets the global wind direction for this GrassLoader.
 
 	GrassLayer animation properties are used to configure the most of the animation
-	behavour (sway length, speed, etc.), but wind direction is not included in GrassLayer
+	behavior (sway length, speed, etc.), but wind direction is not included in GrassLayer
 	since this is really a global property. Using this function, you can set the "global"
 	wind direction which affects all animated grass associated with this PageLoader.
 
@@ -216,12 +181,12 @@ private:
 	friend class GrassLayer;
 
 	//Helper functions
-	Ogre::Mesh *generateGrass_QUAD(PageInfo &page, TGrassLayer *layer, float *grassPositions, unsigned int grassCount);
-	Ogre::Mesh *generateGrass_CROSSQUADS(PageInfo &page, TGrassLayer *layer, float *grassPositions, unsigned int grassCount);
-	Ogre::Mesh *generateGrass_SPRITE(PageInfo &page, TGrassLayer *layer, float *grassPositions, unsigned int grassCount);
+	Ogre::Mesh *generateGrass_QUAD(PageInfo &page, GrassLayer *layer, float *grassPositions, unsigned int grassCount);
+	Ogre::Mesh *generateGrass_CROSSQUADS(PageInfo &page, GrassLayer *layer, float *grassPositions, unsigned int grassCount);
+	Ogre::Mesh *generateGrass_SPRITE(PageInfo &page, GrassLayer *layer, float *grassPositions, unsigned int grassCount);
 
 	//List of grass types
-	std::list<TGrassLayer*> layerList;
+	std::list<GrassLayer*> layerList;
 
 	//Height data
 	Ogre::Real (*heightFunction)(Ogre::Real x, Ogre::Real z, void *userData);	//Pointer to height function
@@ -243,9 +208,6 @@ private:
 		return "GrassLDR" + Ogre::StringConverter::toString(++GUID);
 	}
 };
-
-
-
 
 
 /** \brief A technique used to render grass. Passed to GrassLayer::setRenderTechnique(). */
@@ -270,7 +232,19 @@ enum FadeTechnique
 	FADETECH_ALPHAGROW
 };
 
-class GrassLayerBase
+
+
+/** \brief A data structure giving you full control over grass properties.
+
+Grass is added to the scene through GrassLoader::addLayer(). Through this class you
+can configure your grass layer any way you like - size, density, render technique,
+animation, etc. Simply call the appropriate "set" member function to set the desired property.
+
+Remember that you cannot create or delete layers directly. Layers can only be created
+with GrassLoader::addLayer(), and may not be deleted manually (they will be deleted when
+the associated GrassLoader is deleted).
+*/
+class GrassLayer
 {
 public:
 	/** \brief Sets the material that is applied to all grass billboards/quads */
@@ -281,7 +255,150 @@ public:
 
 	/** \brief Sets the maximum size that grass quads/billboards will be */
 	void setMaximumSize(float width, float height);
+
+	/** \brief Sets the maximum density (measured in grass quads/billboards per square unit) of grass */
+	void setDensity(float density) { this->density = density; }
+
+	/** \brief Sets a minimum / maximum height where grass may appear
+	\param minHeight Sets the minimum height grass may have. 0 = no minimum
+	\param maxHeight Sets the maximum height grass may have. 0 = no maximum
+
+	By default grass appears at all altitudes. You can use this function to restrict grass to a
+	certain height range. For example, if sea level is at 100 units Y, you might restrict this
+	layer to display only above 100 units (so your grass doesn't grow under water).
+
+	It's possible to use density maps (see setDensityMap()) to achieve similar results, but if
+	your density map is extremely low resolution, this function may be the only practical option
+	to prevent grass from growing under water (when used in combination with your density map).
+
+	Setting minHeight to 0 means grass has no minimum height - it can grow as low as necessary.
+	Similarly, setting maxHeight to 0 means grass has no maximum height - it can grow as high
+	as necessary. */
+	void setHeightRange(float minHeight, float maxHeight = 0) { minY = minHeight; maxY = maxHeight; }
+
+	/** \brief Sets the density map used for this grass layer
+	\param mapFile The density map image
+	\param channel The color channel(s) to from the image to interpret as density
 	
+	A density map is simply a greyscale image, similar to a heightmap, that specifies the grass
+	density on your map. Full pixel intensity indicates that grass should be fully dense at that
+	point (the maximum density is specified by GrassLayer::setDensity()), while no pixel intensity
+	indicates that no grass should appear at that location.
+
+	The channel parameter allows you to extract the density information from the image's
+	red, green, blue, alpha, or color values. For example, you may store density values in the
+	alpha channel, in which case you would use CHANNEL_ALPHA. By default, CHANNEL_COLOR is used,
+	which means the image color is converted to greyscale internally and used as a density map.
+	
+	Note that GrassLayer by default has no idea of your terrain/world boundaries, so you
+	must specify a rectangular/square area of your world that is affected by density/color maps.
+	To do this, use the setMapBounds() function. Normally this is set to your terrain's bounds
+	so the density/color map is aligned to your heightmap, but you could apply it anywhere you
+	want. */
+	void setDensityMap(const Ogre::String &mapFile, MapChannel channel = CHANNEL_COLOR);
+
+	/** \brief Sets the density map used for this grass layer
+
+	Overloaded to accept a Texture object. See the original setDensityMap() documentation above
+	for more detailed information on density maps.
+	
+	\note The texture data you provide is copied into the GrassLayer's own memory space, so you
+	can delete the texture after calling this function without risk of crashing. */
+	void setDensityMap(Ogre::TexturePtr map, MapChannel channel = CHANNEL_COLOR);
+
+	/** \brief Sets the filtering mode used for density maps
+
+	This function can be used to set the filtering mode used for your density map when generating
+	grass. By default, bilinear filtering is used (MAPFILTER_BILINEAR). If you disable filtering
+	by using MAPFILTER_NONE, the resulting layout of your grass may look square and blocky,
+	depending on the resolution of your density map.
+
+	MAPFILTER_NONE is slightly faster than MAPFILTER_BILINEAR, so use it if you don't notice any
+	considerable blockiness.
+	*/
+	void setDensityMapFilter(MapFilter filter);
+
+	/** \brief Sets the color map used for this grass layer
+	\param mapFile The color map image
+	\param channel The color channel(s) to from the image to use
+	
+	A color map is simply a texture that allows you to vary the color and shading of grass
+	across your world for a more realistic look. For example, adding a dark spot to the center
+	of your color map will make grass near the center of your terrain look darker, as long as
+	you have the color map aligned to your terrain (see setMapBounds()).
+
+	The channel parameter allows you to extract the color information from the image's
+	red, green, blue, alpha, or color values. For example, you may store the desired shade of your
+	grass in the red channel of an image, in which case you would use CHANNEL_RED (when you choose
+	a single channel, it is converted to a greyscale color). By default, CHANNEL_COLOR is used,
+	which uses the full color information available in the image.
+	
+	Remember that GrassLayer by default has no idea of your terrain/world boundaries, so you
+	must specify a rectangular/square area of your world that is affected by density/color maps.
+	To do this, use the setMapBounds() function. Normally this is set to your terrain's bounds
+	so the density/color map is aligned to your heightmap, but you could apply it anywhere you
+	want. */
+	void setColorMap(const Ogre::String &mapFile, MapChannel channel = CHANNEL_COLOR);
+
+	/** \brief Sets the color map used for this grass layer
+
+	Overloaded to accept a Texture object. See the original setColorMap() documentation above
+	for more detailed information on color maps.
+	
+	\note The texture data you provide is copied into RAM, so you can delete the texture after
+	calling this function without risk of crashing. */
+	void setColorMap(Ogre::TexturePtr map, MapChannel channel = CHANNEL_COLOR);
+
+	/** \brief Sets the filtering mode used for color maps
+
+	This function can be used to set the filtering mode used for your color map when generating
+	grass. By default, bilinear filtering is used (MAPFILTER_BILINEAR). If you disable filtering
+	by using MAPFILTER_NONE, the resulting grass coloration may appear slightly pixelated,
+	depending on the resolution of your color map.
+	
+	MAPFILTER_NONE is slightly faster than MAPFILTER_BILINEAR, so use it if you don't notice any
+	considerable pixelation.
+	*/
+	void setColorMapFilter(MapFilter filter);
+
+	/** \brief Sets the boundaries of the density/color maps
+	\param bounds The map boundary
+
+	By default, the GrassLayer has no knowledge of your terrain/world boundaries, so you must
+	use this function to specify a rectangular/square area of your world, otherwise density/color maps
+	won't work properly. The boundary given to this function defines the area where density/color
+	maps take effect. Normally this is set to your terrain's bounds so the density/color map is aligned
+	to your heightmap, but you could apply it anywhere you want.
+	
+	\note The grass system is infinite, so there's no need to worry about using too expansive
+	boundaries. This setting simply configures the behavior of density and color maps. */
+	void setMapBounds(const TBounds &bounds)
+	{
+		mapBounds = bounds;
+	}
+
+	/** \brief Gets a pointer to the density map being used
+
+	You can use this function to access the internal density map object used by the GrassLoader.
+	Through this object you can directly manipulate the pixels of the density map, among other
+	things.
+
+	Note that although you can edit the density map in real-time through this class, the changes
+	won't be uploaded to your video card until you call PagedGeometry::reloadGeometry(). If you
+	don't, the grass you see will remain unchanged. */
+	DensityMap *getDensityMap() { return densityMap; }
+
+	/** \brief Gets a pointer to the color map being used
+
+	You can use this function to access the internal color map object used by the GrassLoader.
+	Through this object you can directly manipulate the pixels of the color map, among other
+	things.
+
+	Note that although you can edit the color map in real-time through this class, the changes
+	won't be uploaded to your video card until you call PagedGeometry::reloadGeometry(). If you
+	don't, the grass you see will remain unchanged. */
+	ColorMap *getColorMap() { return colorMap; }
+
 	/** \brief Sets the technique used to render this grass layer
 	\param style The GrassTechnique style used to display grass.
 	\param blendBase Whether or not grass base blending is enabled.
@@ -335,261 +452,18 @@ public:
 	a smoother breeze appearance, but values too high can look unrealistic.
 	*/
 	void setSwayDistribution(float freq) { animFreq = freq; }
-	
-	/** \brief Sets the boundaries of the density/color maps
-	\param bounds The map boundary
-
-	By default, the GrassLayer has no knowledge of your terrain/world boundaries, so you must
-	use this function to specify a rectangular/square area of your world, otherwise density/color maps
-	won't work properly. The boundary given to this function defines the area where density/color
-	maps take effect. Normally this is set to your terrain's bounds so the density/color map is aligned
-	to your heightmap, but you could apply it anywhere you want.
-	
-	\note The grass system is infinite, so there's no need to worry about using too expansive
-	boundaries. This setting simply configures the behavior of density and color maps. */
-	virtual void setMapBounds(const Ogre::TRect<Ogre::Real> &bounds)
-	{
-		mapBounds = bounds;
-	}
-	
-	
-	/**
-	 *    Calculates the max number of grass instances for this layer.
-	 * @param densityFactor The density factor set on the grass loader
-	 * @param volume The volume, in world units, to fill
-	 * @return The max number of grass instances to create.
-	 */
-	virtual unsigned int calculateMaxGrassCount(float densityFactor, float volume) = 0;
-	
-protected: 
-
-	//Used by GrassLoader::loadPage() - populates an array with grass.
-	//Returns the final number of grasses, which will always be <= grassCount
-	virtual unsigned int _populateGrassList(PageInfo page, float *posBuff, unsigned int grassCount) = 0;
-
-	//Updates the vertex shader used by this layer based on the animate enable status
-	void _updateShaders();
-	
-	//Grass material/shape properties
-	Ogre::MaterialPtr material;
-	float minWidth, maxWidth;
-	float minHeight, maxHeight;
-	
-	FadeTechnique fadeTechnique;
-	GrassTechnique renderTechnique;
-
-	//Property maps
-	Ogre::TRect<Ogre::Real> mapBounds;
-	
-	//Grass shader properties
-	bool animate, blend, shaderNeedsUpdate;
-	float animMag, animSpeed, animFreq;
-
-	//Current frame of animation for this layer
-	float waveCount;
-
-	PagedGeometry *geom;
-	
-};
-
-
-/** \brief A data structure giving you full control over grass properties.
-
-Grass is added to the scene through GrassLoader::addLayer(). Through this class you
-can configure your grass layer any way you like - size, density, render technique,
-animation, etc. Simply call the appropriate "set" member function to set the desired property.
-
-Remember that you cannot create or delete layers directly. Layers can only be created
-with GrassLoader::addLayer(), and may not be deleted manually (they will be deleted when
-the associated GrassLoader is deleted).
-*/
-class GrassLayer : public GrassLayerBase
-{
-public:
-
-	/** \brief Sets the maximum density (measured in grass quads/billboards per square unit) of grass */
-	void setDensity(float density) { this->density = density; }
-
-	/** \brief Sets a minimum / maximum height where grass may appear
-	\param minHeight Sets the minimum height grass may have. 0 = no minimum
-	\param maxHeight Sets the maximum height grass may have. 0 = no maximum
-
-	By default grass appears at all altitudes. You can use this function to restrict grass to a
-	certain height range. For example, if sea level is at 100 units Y, you might restrict this
-	layer to display only above 100 units (so your grass doesn't grow under water).
-
-	It's possible to use density maps (see setDensityMap()) to achieve similar results, but if
-	your density map is extremely low resolution, this function may be the only practical option
-	to prevent grass from growing under water (when used in combination with your density map).
-
-	Setting minHeight to 0 means grass has no minimum height - it can grow as low as necessary.
-	Similarly, setting maxHeight to 0 means grass has no maximum height - it can grow as high
-	as necessary. */
-	void setHeightRange(float minHeight, float maxHeight = 0) { minY = minHeight; maxY = maxHeight; }
-
-	/** \brief Sets the density map used for this grass layer
-	\param mapFile The density map image
-	\param channel The color channel(s) to from the image to interpret as density
-	
-	A density map is simply a greyscale image, similar to a heightmap, that specifies the grass
-	density on your map. Full pixel intensity indicates that grass should be fully dense at that
-	point (the maximum density is specified by GrassLayer::setDensity()), while no pixel intensity
-	indicates that no grass should appear at that location.
-
-	The channel parameter allows you to extract the density information from the image's
-	red, green, blue, alpha, or color values. For example, you may store density values in the
-	alpha channel, in which case you would use CHANNEL_ALPHA. By default, CHANNEL_COLOR is used,
-	which means the image color is converted to greyscale internally and used as a density map.
-	
-	Note that GrassLayer by default has no idea of your terrain/world boundaries, so you
-	must specify a rectangular/square area of your world that is affected by density/color maps.
-	To do this, use the setMapBounds() function. Normally this is set to your terrain's bounds
-	so the density/color map is aligned to your heightmap, but you could apply it anywhere you
-	want. */
-	void setDensityMap(const Ogre::String &mapFile, MapChannel channel = CHANNEL_COLOR);
-
-	/** \brief Sets the density map used for this grass layer
-
-	Overloaded to accept a Texture object. See the original setDensityMap() documentation above
-	for more detailed information on density maps.
-	
-	\note The texture data you provide is copied into the GrassLayer's own memory space, so you
-	can delete the texture after calling this function without risk of crashing. */
-	void setDensityMap(Ogre::Texture *map, MapChannel channel = CHANNEL_COLOR);
-
-	/** \brief Sets the filtering mode used for density maps
-
-	This function can be used to set the filtering mode used for your density map when generating
-	grass. By default, bilinear filtering is used (MAPFILTER_BILINEAR). If you disable filtering
-	by using MAPFILTER_NONE, the resulting layout of your grass may look square and blocky,
-	depending on the resolution of your density map.
-
-	MAPFILTER_NONE is slightly faster than MAPFILTER_BILINEAR, so use it if you don't notice any
-	considerable blockyness.
-	*/
-	void setDensityMapFilter(MapFilter filter);
-
-	/** \brief Sets the color map used for this grass layer
-	\param mapFile The color map image
-	\param channel The color channel(s) to from the image to use
-	
-	A color map is simply a texture that allows you to vary the color and shading of grass
-	across your world for a more realistic look. For example, adding a dark spot to the center
-	of your color map will make grass near the center of your terrain look darker, as long as
-	you have the color map aligned to your terrain (see setMapBounds()).
-
-	The channel parameter allows you to extract the color information from the image's
-	red, green, blue, alpha, or color values. For example, you may store the desired shade of your
-	grass in the red channel of an image, in which case you would use CHANNEL_RED (when you choose
-	a single channel, it is converted to a greyscale color). By default, CHANNEL_COLOR is used,
-	which uses the full color information available in the image.
-	
-	Remember that GrassLayer by default has no idea of your terrain/world boundaries, so you
-	must specify a rectangular/square area of your world that is affected by density/color maps.
-	To do this, use the setMapBounds() function. Normally this is set to your terrain's bounds
-	so the density/color map is aligned to your heightmap, but you could apply it anywhere you
-	want. */
-	void setColorMap(const Ogre::String &mapFile, MapChannel channel = CHANNEL_COLOR);
-
-	/** \brief Sets the color map used for this grass layer
-
-	Overloaded to accept a Texture object. See the original setColorMap() documentation above
-	for more detailed information on color maps.
-	
-	\note The texture data you provide is copied into RAM, so you can delete the texture after
-	calling this function without risk of crashing. */
-	void setColorMap(Ogre::Texture *map, MapChannel channel = CHANNEL_COLOR);
-
-	/** \brief Sets the filtering mode used for color maps
-
-	This function can be used to set the filtering mode used for your color map when generating
-	grass. By default, bilinear filtering is used (MAPFILTER_BILINEAR). If you disable filtering
-	by using MAPFILTER_NONE, the resulting grass coloration may appear slightly pixelated,
-	depending on the resolution of your color map.
-	
-	MAPFILTER_NONE is slightly faster than MAPFILTER_BILINEAR, so use it if you don't notice any
-	considerable pixelation.
-	*/
-	void setColorMapFilter(MapFilter filter);
-
-	/** \brief Gets a pointer to the density map being used
-
-	You can use this function to access the internal density map object used by the GrassLoader.
-	Through this object you can directly manipulate the pixels of the density map, among other
-	things.
-
-	Note that although you can edit the density map in real-time through this class, the changes
-	won't be uploaded to your video card until you call PagedGeometry::reloadGeometry(). If you
-	don't, the grass you see will remain unchanged. */
-	DensityMap *getDensityMap() { return densityMap; }
-
-	/** \brief Gets a pointer to the color map being used
-
-	You can use this function to access the internal color map object used by the GrassLoader.
-	Through this object you can directly manipulate the pixels of the color map, among other
-	things.
-
-	Note that although you can edit the color map in real-time through this class, the changes
-	won't be uploaded to your video card until you call PagedGeometry::reloadGeometry(). If you
-	don't, the grass you see will remain unchanged. */
-	ColorMap *getColorMap() { return colorMap; }
-
-
-	/** \brief Sets the boundaries of the density/color maps
-	\param bounds The map boundary
-	
-	By default, the GrassLayer has no knowledge of your terrain/world boundaries, so you must
-	use this function to specify a rectangular/square area of your world, otherwise density/color maps
-	won't work properly. The boundary given to this function defines the area where density/color
-	maps take effect. Normally this is set to your terrain's bounds so the density/color map is aligned
-	to your heightmap, but you could apply it anywhere you want.
-
-	\note The grass system is infinite, so there's no need to worry about using too expansive
-	boundaries. This setting simply configures the behavior of density and color maps. */
-	virtual void setMapBounds(const Ogre::TRect<Ogre::Real> &bounds)
-	{
-		GrassLayerBase::setMapBounds(bounds);
-		if (densityMap)
-			densityMap->setMapBounds(mapBounds);
-		if (colorMap)
-			colorMap->setMapBounds(mapBounds);
-	}
-	
-	/**
-	 *    Calculates the max number of grass instances for this layer.
-	 * @param densityFactor The density factor set on the grass loader
-	 * @param volume The volume, in world units, to fill
-	 * @return The max number of grass instances to create.
-	*/
-	virtual unsigned int calculateMaxGrassCount(float densityFactor, float volume);
-
-
-	/**
-	 *    If there's a colormap registered use that for lookup, else return fullbright.
-	 * @param x 
-	 * @param z 
-	 * @return 
-	*/
-	inline Ogre::uint32 getColorAt(float x, float z)
-	{
-		if (colorMap)
-			return colorMap->getColorAt(x, z);
-		else
-			return 0xFFFFFFFF;
-	}
 
 private:
-	friend class GrassLoader<GrassLayer>;
+	friend class GrassLoader;
 
 	/** \brief Do not create a GrassLayer directly - use GrassLoader->addLayer() */
-	GrassLayer(PagedGeometry *geom, GrassLoader<GrassLayer> *ldr);
+	GrassLayer(PagedGeometry *geom, GrassLoader *ldr);
 
 	/** \brief Do not delete a GrassLayer yourself - the GrassLoader will do this automatically when it's deleted */
 	~GrassLayer();
 
-	//Used by GrassLoader::loadPage() - populates an array with grass.
-	//Returns the final number of grasses, which will always be <= grassCount
-	virtual unsigned int _populateGrassList(PageInfo page, float *posBuff, unsigned int grassCount);
+	//Updates the vertex shader used by this layer based on the animate enable status
+	void _updateShaders();
 
 	//Used by GrassLoader::loadPage() - populates an array with a uniform distribution of grass
 	//Returns the final number of grasses, which will always be <= grassCount
@@ -604,13 +478,21 @@ private:
 	unsigned int _populateGrassList_BilinearDM(PageInfo page, float *posBuff, unsigned int grassCount);
 
 
-	GrassLoader<GrassLayer> *parent;
+	GrassLoader *parent;
 
 	//Grass material/shape properties
+	Ogre::MaterialPtr material;
 	float density;
+	float minWidth, maxWidth;
+	float minHeight, maxHeight;
 
 	float minY, maxY;
 
+	FadeTechnique fadeTechnique;
+	GrassTechnique renderTechnique;
+
+	//Property maps
+	TBounds mapBounds;
 
 	DensityMap *densityMap;
 	MapFilter densityMapFilter;
@@ -618,6 +500,14 @@ private:
 	ColorMap *colorMap;
 	MapFilter colorMapFilter;
 
+	//Grass shader properties
+	bool animate, blend, shaderNeedsUpdate;
+	float animMag, animSpeed, animFreq;
+
+	//Current frame of animation for this layer
+	float waveCount;
+
+	PagedGeometry *geom;
 };
 
 
@@ -631,7 +521,7 @@ but it also means potentially poor performance if you don't know what you're doi
 class GrassPage: public GeometryPage
 {
 public:
-	void init(PagedGeometry *geom);
+	void init(PagedGeometry *geom, const Ogre::Any &data);
 	~GrassPage();
 
 	void addEntity(Ogre::Entity *ent, const Ogre::Vector3 &position, const Ogre::Quaternion &rotation, const Ogre::Vector3 &scale, const Ogre::ColourValue &color);
@@ -652,605 +542,7 @@ private:
 	}
 };
 
-template <class TGrassLayer>
-GrassLoader<TGrassLayer>::GrassLoader(PagedGeometry *geom)
-{
-	GrassLoader<TGrassLayer>::geom = geom;
-	
-	heightFunction = NULL;
-	heightFunctionUserData = NULL;
 
-	windDir = Ogre::Vector3::UNIT_X;
-	densityFactor = 1.0f;
-	renderQueue = Ogre::RENDER_QUEUE_6;
-
-	windTimer.reset();
-	lastTime = 0;
 }
 
-template <class TGrassLayer>
-GrassLoader<TGrassLayer>::~GrassLoader()
-{
-	typename std::list<TGrassLayer*>::iterator it;
-	for (it = layerList.begin(); it != layerList.end(); ++it){
-		delete *it;
-	}
-	layerList.clear();
-}
-
-template <class TGrassLayer>
-TGrassLayer *GrassLoader<TGrassLayer>::addLayer(const Ogre::String &material)
-{
-	TGrassLayer *layer = new TGrassLayer(geom, this);
-	layer->setMaterialName(material);
-	layerList.push_back(layer);
-
-	return layer;
-}
-
-template <class TGrassLayer>
-void GrassLoader<TGrassLayer>::deleteLayer(TGrassLayer *layer)
-{
-	layerList.remove(layer);
-	delete layer;
-}
-
-template <class TGrassLayer>
-void GrassLoader<TGrassLayer>::frameUpdate()
-{
-	unsigned long currentTime = windTimer.getMilliseconds();
-	unsigned long ellapsedTime = currentTime - lastTime;
-	lastTime = currentTime;
-
-	float ellapsed = ellapsedTime / 1000.0f;
-	
-	//Update the vertex shader parameters
-	typename std::list<TGrassLayer*>::iterator it;
-	for (it = layerList.begin(); it != layerList.end(); ++it){
-		TGrassLayer *layer = *it;
-
-		layer->_updateShaders();
-
-		Ogre::GpuProgramParametersSharedPtr params = layer->material->getTechnique(0)->getPass(0)->getVertexProgramParameters();
-		if (layer->animate){
-			//Increment animation frame
-			layer->waveCount += ellapsed * (layer->animSpeed * Ogre::Math::PI);
-			if (layer->waveCount > Ogre::Math::PI*2) layer->waveCount -= Ogre::Math::PI*2;
-
-			//Set vertex shader parameters
-			params->setNamedConstant("time", layer->waveCount);
-			params->setNamedConstant("frequency", layer->animFreq);
-
-			Ogre::Vector3 direction = windDir * layer->animMag;
-			params->setNamedConstant("direction", Ogre::Vector4(direction.x, direction.y, direction.z, 0));
-
-		}
-	}
-}
-
-template <class TGrassLayer>
-void GrassLoader<TGrassLayer>::loadPage(PageInfo &page)
-{
-	//Seed random number generator based on page indexes
-	Ogre::uint16 xSeed = static_cast<Ogre::uint16>(page.xIndex % 0xFFFF);
-	Ogre::uint16 zSeed = static_cast<Ogre::uint16>(page.zIndex % 0xFFFF);
-	Ogre::uint32 seed = (xSeed << 16) | zSeed;
-	srand(seed);
-
-	typename std::list<TGrassLayer*>::iterator it;
-	for (it = layerList.begin(); it != layerList.end(); ++it){
-		TGrassLayer *layer = *it;
-
-		//Calculate how much grass needs to be added
-		float volume = page.bounds.width() * page.bounds.height();
-		unsigned int grassCount = layer->calculateMaxGrassCount(densityFactor, volume);
-
-		//The vertex buffer can't be allocated until the exact number of polygons is known,
-		//so the locations of all grasses in this page must be precalculated.
-
-		//Precompute grass locations into an array of floats. A plain array is used for speed;
-		//there's no need to use a dynamic sized array since a maximum size is known.
-		float *position = new float[grassCount*2];
-		grassCount = layer->_populateGrassList(page, position, grassCount);
-
-		//Don't build a mesh unless it contains something
-		if (grassCount != 0){
-			Ogre::Mesh *mesh = NULL;
-			switch (layer->renderTechnique){
-				case GRASSTECH_QUAD:
-					mesh = generateGrass_QUAD(page, layer, position, grassCount);
-					break;
-				case GRASSTECH_CROSSQUADS:
-					mesh = generateGrass_CROSSQUADS(page, layer, position, grassCount);
-					break;
-				case GRASSTECH_SPRITE:
-					mesh = generateGrass_SPRITE(page, layer, position, grassCount);
-					break;
-			}
-			assert(mesh);
-
-			//Add the mesh to PagedGeometry
-			Ogre::Entity *entity = geom->getCamera()->getSceneManager()->createEntity(getUniqueID(), mesh->getName());
-			entity->setRenderQueueGroup(renderQueue);
-			entity->setCastShadows(false);
-			addEntity(entity, page.centerPoint, Ogre::Quaternion::IDENTITY, Ogre::Vector3::UNIT_SCALE);
-			geom->getSceneManager()->destroyEntity(entity);
-
-			//Store the mesh pointer
-			page.userData = mesh;
-		} else {
-			//No mesh
-			page.userData = NULL;
-		}
-
-		//Delete the position list
-		delete[] position;
-	}
-}
-
-template <class TGrassLayer>
-void GrassLoader<TGrassLayer>::unloadPage(const PageInfo &page)
-{
-	//Unload mesh
-	Ogre::Mesh *mesh = (Ogre::Mesh*)page.userData;
-	if (mesh)
-		Ogre::MeshManager::getSingleton().remove(mesh->getName());
-}
-template <class TGrassLayer>
-Ogre::Mesh *GrassLoader<TGrassLayer>::generateGrass_QUAD(PageInfo &page, TGrassLayer *layer, float *grassPositions, unsigned int grassCount)
-{
-	//Calculate the number of quads to be added
-	unsigned int quadCount;
-	quadCount = grassCount;
-
-	//Create manual mesh to store grass quads
-	Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createManual(getUniqueID(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	Ogre::SubMesh *subMesh = mesh->createSubMesh();
-	subMesh->useSharedVertices = false;
-
-	//Setup vertex format information
-	subMesh->vertexData = new Ogre::VertexData;
-	subMesh->vertexData->vertexStart = 0;
-	subMesh->vertexData->vertexCount = 4 * quadCount;
-
-	Ogre::VertexDeclaration* dcl = subMesh->vertexData->vertexDeclaration;
-	size_t offset = 0;
-	dcl->addElement(0, offset, Ogre::VET_FLOAT3, Ogre::VES_POSITION);
-	offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT3);
-	dcl->addElement(0, offset, Ogre::VET_COLOUR, Ogre::VES_DIFFUSE);
-	offset += Ogre::VertexElement::getTypeSize(Ogre::VET_COLOUR);
-	dcl->addElement(0, offset, Ogre::VET_FLOAT2, Ogre::VES_TEXTURE_COORDINATES);
-	offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT2);
-
-	//Populate a new vertex buffer with grass
-	Ogre::HardwareVertexBufferSharedPtr vbuf = Ogre::HardwareBufferManager::getSingleton()
-		.createVertexBuffer(offset, subMesh->vertexData->vertexCount, Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY, false);
-	float* pReal = static_cast<float*>(vbuf->lock(Ogre::HardwareBuffer::HBL_DISCARD));
-
-	//Calculate size variance
-	float rndWidth = layer->maxWidth - layer->minWidth;
-	float rndHeight = layer->maxHeight - layer->minHeight;
-
-	float minY = Ogre::Math::POS_INFINITY, maxY = Ogre::Math::NEG_INFINITY;
-	float *posPtr = grassPositions;	//Position array "iterator"
-	for (Ogre::uint16 i = 0; i < grassCount; ++i)
-	{
-		//Get the x and z positions from the position array
-		float x = *posPtr++;
-		float z = *posPtr++;
-
-		//Get the color at the grass position
-		Ogre::uint32 color(layer->getColorAt(x, z));
-
-		//Calculate size
-		float rnd = Ogre::Math::UnitRandom();	//The same rnd value is used for width and height to maintain aspect ratio
-		float halfScaleX = (layer->minWidth + rndWidth * rnd) * 0.5f;
-		float scaleY = (layer->minHeight + rndHeight * rnd);
-
-		//Calculate rotation
-		float angle = Ogre::Math::RangeRandom(0, Ogre::Math::TWO_PI);
-		float xTrans = Ogre::Math::Cos(angle) * halfScaleX;
-		float zTrans = Ogre::Math::Sin(angle) * halfScaleX;
-
-		//Calculate heights and edge positions
-		float x1 = x - xTrans, z1 = z - zTrans;
-		float x2 = x + xTrans, z2 = z + zTrans;
-
-		float y1, y2;
-		if (heightFunction){
-			y1 = heightFunction(x1, z1, heightFunctionUserData);
-			y2 = heightFunction(x2, z2, heightFunctionUserData);
-		} else {
-			y1 = 0;
-			y2 = 0;
-		}
-
-		//Add vertices
-		*pReal++ = (x1 - page.centerPoint.x); *pReal++ = (y1 + scaleY); *pReal++ = (z1 - page.centerPoint.z);	//pos
-		*((Ogre::uint32*)pReal++) = color;							//color
-		*pReal++ = 0; *pReal++ = 0;								//uv
-
-		*pReal++ = (x2 - page.centerPoint.x); *pReal++ = (y2 + scaleY); *pReal++ = (z2 - page.centerPoint.z);	//pos
-		*((Ogre::uint32*)pReal++) = color;							//color
-		*pReal++ = 1; *pReal++ = 0;								//uv
-
-		*pReal++ = (x1 - page.centerPoint.x); *pReal++ = (y1); *pReal++ = (z1 - page.centerPoint.z);			//pos
-		*((Ogre::uint32*)pReal++) = color;							//color
-		*pReal++ = 0; *pReal++ = 1;								//uv
-
-		*pReal++ = (x2 - page.centerPoint.x); *pReal++ = (y2); *pReal++ = (z2 - page.centerPoint.z);			//pos
-		*((Ogre::uint32*)pReal++) = color;							//color
-		*pReal++ = 1; *pReal++ = 1;								//uv
-
-		//Update bounds
-		if (y1 < minY) minY = y1;
-		if (y2 < minY) minY = y2;
-		if (y1 + scaleY > maxY) maxY = y1 + scaleY;
-		if (y2 + scaleY > maxY) maxY = y2 + scaleY;
-	}
-
-	vbuf->unlock();
-	subMesh->vertexData->vertexBufferBinding->setBinding(0, vbuf);
-
-	//Populate index buffer
-	subMesh->indexData->indexStart = 0;
-	subMesh->indexData->indexCount = 6 * quadCount;
-	subMesh->indexData->indexBuffer = Ogre::HardwareBufferManager::getSingleton()
-		.createIndexBuffer(Ogre::HardwareIndexBuffer::IT_16BIT, subMesh->indexData->indexCount, Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY);
-	Ogre::uint16* pI = static_cast<Ogre::uint16*>(subMesh->indexData->indexBuffer->lock(Ogre::HardwareBuffer::HBL_DISCARD));
-	for (Ogre::uint16 i = 0; i < quadCount; ++i)
-	{
-		Ogre::uint16 offset = i * 4;
-
-		*pI++ = 0 + offset;
-		*pI++ = 2 + offset;
-		*pI++ = 1 + offset;
-
-		*pI++ = 1 + offset;
-		*pI++ = 2 + offset;
-		*pI++ = 3 + offset;
-	}
-
-	subMesh->indexData->indexBuffer->unlock();
-
-	//Finish up mesh
-	Ogre::AxisAlignedBox bounds(page.bounds.left - page.centerPoint.x, minY, page.bounds.top - page.centerPoint.z,
-		page.bounds.right - page.centerPoint.x, maxY, page.bounds.bottom - page.centerPoint.z);
-	mesh->_setBounds(bounds);
-	Ogre::Vector3 temp = bounds.getMaximum() - bounds.getMinimum();
-	mesh->_setBoundingSphereRadius(temp.length() * 0.5f);
-
-	Ogre::LogManager::getSingleton().setLogDetail(static_cast<Ogre::LoggingLevel>(0));
-	mesh->load();
-	Ogre::LogManager::getSingleton().setLogDetail(Ogre::LL_NORMAL);
-
-	//Apply grass material to mesh
-	subMesh->setMaterialName(layer->material->getName());
-
-	//Return the mesh
-	return mesh.getPointer();
-}
-
-template <class TGrassLayer>
-Ogre::Mesh *GrassLoader<TGrassLayer>::generateGrass_CROSSQUADS(PageInfo &page, TGrassLayer *layer, float *grassPositions, unsigned int grassCount)
-{
-	//Calculate the number of quads to be added
-	unsigned int quadCount;
-	quadCount = grassCount * 2;
-
-	//Create manual mesh to store grass quads
-	Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createManual(getUniqueID(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	Ogre::SubMesh *subMesh = mesh->createSubMesh();
-	subMesh->useSharedVertices = false;
-
-	//Setup vertex format information
-	subMesh->vertexData = new Ogre::VertexData;
-	subMesh->vertexData->vertexStart = 0;
-	subMesh->vertexData->vertexCount = 4 * quadCount;
-
-	Ogre::VertexDeclaration* dcl = subMesh->vertexData->vertexDeclaration;
-	size_t offset = 0;
-	dcl->addElement(0, offset, Ogre::VET_FLOAT3, Ogre::VES_POSITION);
-	offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT3);
-	dcl->addElement(0, offset, Ogre::VET_COLOUR, Ogre::VES_DIFFUSE);
-	offset += Ogre::VertexElement::getTypeSize(Ogre::VET_COLOUR);
-	dcl->addElement(0, offset, Ogre::VET_FLOAT2, Ogre::VES_TEXTURE_COORDINATES);
-	offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT2);
-
-	//Populate a new vertex buffer with grass
-	Ogre::HardwareVertexBufferSharedPtr vbuf = Ogre::HardwareBufferManager::getSingleton()
-		.createVertexBuffer(offset, subMesh->vertexData->vertexCount, Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY, false);
-	float* pReal = static_cast<float*>(vbuf->lock(Ogre::HardwareBuffer::HBL_DISCARD));
-
-	//Calculate size variance
-	float rndWidth = layer->maxWidth - layer->minWidth;
-	float rndHeight = layer->maxHeight - layer->minHeight;
-
-	float minY = Ogre::Math::POS_INFINITY, maxY = Ogre::Math::NEG_INFINITY;
-	float *posPtr = grassPositions;	//Position array "iterator"
-	for (Ogre::uint16 i = 0; i < grassCount; ++i)
-	{
-		//Get the x and z positions from the position array
-		float x = *posPtr++;
-		float z = *posPtr++;
-
-		//Get the color at the grass position
-		Ogre::uint32 color(layer->getColorAt(x, z));
-		
-// 		if (layer->colorMap)
-// 			color = layer->colorMap->getColorAt(x, z);
-// 		else
-// 			color = 0xFFFFFFFF;
-
-		//Calculate size
-		float rnd = Ogre::Math::UnitRandom();	//The same rnd value is used for width and height to maintain aspect ratio
-		float halfScaleX = (layer->minWidth + rndWidth * rnd) * 0.5f;
-		float scaleY = (layer->minHeight + rndHeight * rnd);
-
-		//Calculate rotation
-		float angle = Ogre::Math::RangeRandom(0, Ogre::Math::TWO_PI);
-		float xTrans = Ogre::Math::Cos(angle) * halfScaleX;
-		float zTrans = Ogre::Math::Sin(angle) * halfScaleX;
-
-		//Calculate heights and edge positions
-		float x1 = x - xTrans, z1 = z - zTrans;
-		float x2 = x + xTrans, z2 = z + zTrans;
-
-		float y1, y2;
-		if (heightFunction){
-			y1 = heightFunction(x1, z1, heightFunctionUserData);
-			y2 = heightFunction(x2, z2, heightFunctionUserData);
-		} else {
-			y1 = 0;
-			y2 = 0;
-		}
-
-		//Add vertices
-		*pReal++ = (x1 - page.centerPoint.x); *pReal++ = (y1 + scaleY); *pReal++ = (z1 - page.centerPoint.z);	//pos
-		*((Ogre::uint32*)pReal++) = color;							//color
-		*pReal++ = 0; *pReal++ = 0;								//uv
-
-		*pReal++ = (x2 - page.centerPoint.x); *pReal++ = (y2 + scaleY); *pReal++ = (z2 - page.centerPoint.z);	//pos
-		*((Ogre::uint32*)pReal++) = color;							//color
-		*pReal++ = 1; *pReal++ = 0;								//uv
-
-		*pReal++ = (x1 - page.centerPoint.x); *pReal++ = (y1); *pReal++ = (z1 - page.centerPoint.z);			//pos
-		*((Ogre::uint32*)pReal++) = color;							//color
-		*pReal++ = 0; *pReal++ = 1;								//uv
-
-		*pReal++ = (x2 - page.centerPoint.x); *pReal++ = (y2); *pReal++ = (z2 - page.centerPoint.z);			//pos
-		*((Ogre::uint32*)pReal++) = color;							//color
-		*pReal++ = 1; *pReal++ = 1;								//uv
-
-		//Update bounds
-		if (y1 < minY) minY = y1;
-		if (y2 < minY) minY = y2;
-		if (y1 + scaleY > maxY) maxY = y1 + scaleY;
-		if (y2 + scaleY > maxY) maxY = y2 + scaleY;
-
-		//Calculate heights and edge positions
-		float x3 = x + zTrans, z3 = z - xTrans;
-		float x4 = x - zTrans, z4 = z + xTrans;
-
-		float y3, y4;
-		if (heightFunction){
-			y3 = heightFunction(x3, z3, heightFunctionUserData);
-			y4 = heightFunction(x4, z4, heightFunctionUserData);
-		} else {
-			y3 = 0;
-			y4 = 0;
-		}
-
-		//Add vertices
-		*pReal++ = (x3 - page.centerPoint.x); *pReal++ = (y3 + scaleY); *pReal++ = (z3 - page.centerPoint.z);	//pos
-		*((Ogre::uint32*)pReal++) = color;							//color
-		*pReal++ = 0; *pReal++ = 0;								//uv
-
-		*pReal++ = (x4 - page.centerPoint.x); *pReal++ = (y4 + scaleY); *pReal++ = (z4 - page.centerPoint.z);	//pos
-		*((Ogre::uint32*)pReal++) = color;							//color
-		*pReal++ = 1; *pReal++ = 0;								//uv
-
-		*pReal++ = (x3 - page.centerPoint.x); *pReal++ = (y3); *pReal++ = (z3 - page.centerPoint.z);			//pos
-		*((Ogre::uint32*)pReal++) = color;							//color
-		*pReal++ = 0; *pReal++ = 1;								//uv
-
-		*pReal++ = (x4 - page.centerPoint.x); *pReal++ = (y4); *pReal++ = (z4 - page.centerPoint.z);			//pos
-		*((Ogre::uint32*)pReal++) = color;							//color
-		*pReal++ = 1; *pReal++ = 1;								//uv
-
-		//Update bounds
-		if (y3 < minY) minY = y1;
-		if (y4 < minY) minY = y2;
-		if (y3 + scaleY > maxY) maxY = y3 + scaleY;
-		if (y4 + scaleY > maxY) maxY = y4 + scaleY;
-	}
-
-	vbuf->unlock();
-	subMesh->vertexData->vertexBufferBinding->setBinding(0, vbuf);
-
-	//Populate index buffer
-	subMesh->indexData->indexStart = 0;
-	subMesh->indexData->indexCount = 6 * quadCount;
-	subMesh->indexData->indexBuffer = Ogre::HardwareBufferManager::getSingleton()
-		.createIndexBuffer(Ogre::HardwareIndexBuffer::IT_16BIT, subMesh->indexData->indexCount, Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY);
-	Ogre::uint16* pI = static_cast<Ogre::uint16*>(subMesh->indexData->indexBuffer->lock(Ogre::HardwareBuffer::HBL_DISCARD));
-	for (Ogre::uint16 i = 0; i < quadCount; ++i)
-	{
-		Ogre::uint16 offset = i * 4;
-
-		*pI++ = 0 + offset;
-		*pI++ = 2 + offset;
-		*pI++ = 1 + offset;
-
-		*pI++ = 1 + offset;
-		*pI++ = 2 + offset;
-		*pI++ = 3 + offset;
-	}
-
-	subMesh->indexData->indexBuffer->unlock();
-
-	//Finish up mesh
-	Ogre::AxisAlignedBox bounds(page.bounds.left - page.centerPoint.x, minY, page.bounds.top - page.centerPoint.z,
-		page.bounds.right - page.centerPoint.x, maxY, page.bounds.bottom - page.centerPoint.z);
-	mesh->_setBounds(bounds);
-	Ogre::Vector3 temp = bounds.getMaximum() - bounds.getMinimum();
-	mesh->_setBoundingSphereRadius(temp.length() * 0.5f);
-
-	Ogre::LogManager::getSingleton().setLogDetail(static_cast<Ogre::LoggingLevel>(0));
-	mesh->load();
-	Ogre::LogManager::getSingleton().setLogDetail(Ogre::LL_NORMAL);
-
-	//Apply grass material to mesh
-	subMesh->setMaterialName(layer->material->getName());
-
-	//Return the mesh
-	return mesh.getPointer();
-}
-
-template <class TGrassLayer>
-Ogre::Mesh *GrassLoader<TGrassLayer>::generateGrass_SPRITE(PageInfo &page, TGrassLayer *layer, float *grassPositions, unsigned int grassCount)
-{
-	//Calculate the number of quads to be added
-	unsigned int quadCount;
-	quadCount = grassCount;
-
-	//Create manual mesh to store grass quads
-	Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createManual(getUniqueID(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-	Ogre::SubMesh *subMesh = mesh->createSubMesh();
-	subMesh->useSharedVertices = false;
-
-	//Setup vertex format information
-	subMesh->vertexData = new Ogre::VertexData;
-	subMesh->vertexData->vertexStart = 0;
-	subMesh->vertexData->vertexCount = 4 * quadCount;
-
-	Ogre::VertexDeclaration* dcl = subMesh->vertexData->vertexDeclaration;
-	size_t offset = 0;
-	dcl->addElement(0, offset, Ogre::VET_FLOAT3, Ogre::VES_POSITION);
-	offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT3);
-	dcl->addElement(0, offset, Ogre::VET_FLOAT4, Ogre::VES_NORMAL);
-	offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT4);
-	dcl->addElement(0, offset, Ogre::VET_COLOUR, Ogre::VES_DIFFUSE);
-	offset += Ogre::VertexElement::getTypeSize(Ogre::VET_COLOUR);
-	dcl->addElement(0, offset, Ogre::VET_FLOAT2, Ogre::VES_TEXTURE_COORDINATES);
-	offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT2);
-
-	//Populate a new vertex buffer with grass
-	Ogre::HardwareVertexBufferSharedPtr vbuf = Ogre::HardwareBufferManager::getSingleton()
-		.createVertexBuffer(offset, subMesh->vertexData->vertexCount, Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY, false);
-	float* pReal = static_cast<float*>(vbuf->lock(Ogre::HardwareBuffer::HBL_DISCARD));
-
-	//Calculate size variance
-	float rndWidth = layer->maxWidth - layer->minWidth;
-	float rndHeight = layer->maxHeight - layer->minHeight;
-
-	float minY = Ogre::Math::POS_INFINITY, maxY = Ogre::Math::NEG_INFINITY;
-	float *posPtr = grassPositions;	//Position array "iterator"
-	for (Ogre::uint16 i = 0; i < grassCount; ++i)
-	{
-		//Get the x and z positions from the position array
-		float x = *posPtr++;
-		float z = *posPtr++;
-
-		//Calculate height
-		float y;
-		if (heightFunction){
-			y = heightFunction(x, z, heightFunctionUserData);
-		} else {
-			y = 0;
-		}
-
-		float x1 = (x - page.centerPoint.x);
-		float z1 = (z - page.centerPoint.z);
-
-		//Get the color at the grass position
-		Ogre::uint32 color(layer->getColorAt(x, z));
-
-		//Calculate size
-		float rnd = Ogre::Math::UnitRandom();	//The same rnd value is used for width and height to maintain aspect ratio
-		float halfXScale = (layer->minWidth + rndWidth * rnd) * 0.5f;
-		float scaleY = (layer->minHeight + rndHeight * rnd);
-
-		//Randomly mirror grass textures
-		float uvLeft, uvRight;
-		if (Ogre::Math::UnitRandom() > 0.5f){
-			uvLeft = 0;
-			uvRight = 1;
-		} else {
-			uvLeft = 1;
-			uvRight = 0;
-		}
-
-		//Add vertices
-		*pReal++ = x1; *pReal++ = y; *pReal++ = z1;					//center position
-		*pReal++ = -halfXScale; *pReal++ = scaleY; *pReal++ = 0; *pReal++ = 0;	//normal (used to store relative corner positions)
-		*((Ogre::uint32*)pReal++) = color;								//color
-		*pReal++ = uvLeft; *pReal++ = 0;							//uv
-
-		*pReal++ = x1; *pReal++ = y; *pReal++ = z1;					//center position
-		*pReal++ = +halfXScale; *pReal++ = scaleY; *pReal++ = 0; *pReal++ = 0;	//normal (used to store relative corner positions)
-		*((Ogre::uint32*)pReal++) = color;								//color
-		*pReal++ = uvRight; *pReal++ = 0;							//uv
-
-		*pReal++ = x1; *pReal++ = y; *pReal++ = z1;					//center position
-		*pReal++ = -halfXScale; *pReal++ = 0.0f; *pReal++ = 0; *pReal++ = 0;		//normal (used to store relative corner positions)
-		*((Ogre::uint32*)pReal++) = color;								//color
-		*pReal++ = uvLeft; *pReal++ = 1;							//uv
-
-		*pReal++ = x1; *pReal++ = y; *pReal++ = z1;					//center position
-		*pReal++ = +halfXScale; *pReal++ = 0.0f; *pReal++ = 0; *pReal++ = 0;		//normal (used to store relative corner positions)
-		*((Ogre::uint32*)pReal++) = color;								//color
-		*pReal++ = uvRight; *pReal++ = 1;							//uv
-
-		//Update bounds
-		if (y < minY) minY = y;
-		if (y + scaleY > maxY) maxY = y + scaleY;
-	}
-
-	vbuf->unlock();
-	subMesh->vertexData->vertexBufferBinding->setBinding(0, vbuf);
-
-	//Populate index buffer
-	subMesh->indexData->indexStart = 0;
-	subMesh->indexData->indexCount = 6 * quadCount;
-	subMesh->indexData->indexBuffer = Ogre::HardwareBufferManager::getSingleton()
-		.createIndexBuffer(Ogre::HardwareIndexBuffer::IT_16BIT, subMesh->indexData->indexCount, Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY);
-	Ogre::uint16* pI = static_cast<Ogre::uint16*>(subMesh->indexData->indexBuffer->lock(Ogre::HardwareBuffer::HBL_DISCARD));
-	for (Ogre::uint16 i = 0; i < quadCount; ++i)
-	{
-		Ogre::uint16 offset = i * 4;
-
-		*pI++ = 0 + offset;
-		*pI++ = 2 + offset;
-		*pI++ = 1 + offset;
-
-		*pI++ = 1 + offset;
-		*pI++ = 2 + offset;
-		*pI++ = 3 + offset;
-	}
-
-	subMesh->indexData->indexBuffer->unlock();
-
-	//Finish up mesh
-	Ogre::AxisAlignedBox bounds(page.bounds.left - page.centerPoint.x, minY, page.bounds.top - page.centerPoint.z,
-		page.bounds.right - page.centerPoint.x, maxY, page.bounds.bottom - page.centerPoint.z);
-	mesh->_setBounds(bounds);
-	Ogre::Vector3 temp = bounds.getMaximum() - bounds.getMinimum();
-	mesh->_setBoundingSphereRadius(temp.length() * 0.5f);
-
-	Ogre::LogManager::getSingleton().setLogDetail(static_cast<Ogre::LoggingLevel>(0));
-	mesh->load();
-	Ogre::LogManager::getSingleton().setLogDetail(Ogre::LL_NORMAL);
-
-	//Apply grass material to mesh
-	subMesh->setMaterialName(layer->material->getName());
-
-	//Return the mesh
-	return mesh.getPointer();
-}
-
-template <class TGrassLayer>
-unsigned long GrassLoader<TGrassLayer>::GUID = 0;
-
-}
 #endif

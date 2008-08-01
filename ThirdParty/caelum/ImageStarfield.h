@@ -24,10 +24,9 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "CaelumPrerequisites.h"
 #include "CameraBoundElement.h"
 
-namespace caelum {
+namespace Caelum {
 
 /** ImageStarfield dome class.
-	@author Jesús Alonso Abad
  */
 class CAELUM_EXPORT ImageStarfield : public CameraBoundElement {
 // Attributes -----------------------------------------------------------------
@@ -90,6 +89,6 @@ class CAELUM_EXPORT ImageStarfield : public CameraBoundElement {
 	    virtual void setFarRadius (Ogre::Real radius);
 };
 
-} // namespace caelum;
+} // namespace Caelum;
 
 #endif //STARFIELD_H

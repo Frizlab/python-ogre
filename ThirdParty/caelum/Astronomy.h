@@ -23,7 +23,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 #include "CaelumPrerequisites.h"
 
-namespace caelum
+namespace Caelum
 {
     /** Static class with astronomy routines.
      *  This class contains various astronomical routines useful in Caelum.
@@ -36,7 +36,7 @@ namespace caelum
      *  The formulas are isolated here in pure procedural code for easier
      *  testing (Tests are done as assertions in the demo).
      *
-     *  Precision is vital here, so this class uses caelum::LongReal(double)
+     *  Precision is vital here, so this class uses Caelum::LongReal(double)
      *  instead of Ogre::Real(float) for precission. All angles are in degrees
      *  unless otherwise mentioned. Ogre::Degree and Ogre::Radian use
      *  Ogre::Real and should be avoided here.

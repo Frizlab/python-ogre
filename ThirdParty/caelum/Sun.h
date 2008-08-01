@@ -25,7 +25,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "CameraBoundElement.h"
 #include "SkyLight.h"
 
-namespace caelum {
+namespace Caelum {
 
 class BaseSkyLight;		// abstract
 class SphereSun;	// deprecated
@@ -35,7 +35,6 @@ typedef SpriteSun Sun;
 //========================================================================================================================
 
 /** Class representing the sun as sphere with emissive color on it.
-	@author Jes˙s Alonso Abad
  */
 class CAELUM_EXPORT SphereSun : public BaseSkyLight {
 // Attributes -----------------------------------------------------------------
@@ -77,7 +76,6 @@ class CAELUM_EXPORT SphereSun : public BaseSkyLight {
 //========================================================================================================================
 
 /** Class representing the sun as billboard with texture on it.
-	@author Eugene Golushkov
  */
 class CAELUM_EXPORT SpriteSun : public BaseSkyLight {
 // Attributes -----------------------------------------------------------------

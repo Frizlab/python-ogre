@@ -11,7 +11,7 @@ namespace pyplusplus { namespace aliases {
 //
 namespace python_Caelum{ namespace details{
 inline void instantiate(){
- using namespace caelum;
+ using namespace Caelum;
  #include "python_caelum_sizeof.h"
  
 } } }

@@ -1,7 +1,29 @@
-#ifndef SKYLIGHT_H
-#define SKYLIGHT_H
+/*
+This file is part of Caelum.
+See http://www.ogre3d.org/wiki/index.php/Caelum 
 
-namespace caelum
+Copyright (c) 2008 Caelum team. See Contributors.txt for details.
+
+Caelum is free software: you can redistribute it and/or modify
+it under the terms of the GNU Lesser General Public License as published
+by the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Caelum is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with Caelum. If not, see <http://www.gnu.org/licenses/>.
+*/
+
+#ifndef CAELUM__SKYLIGHT_H
+#define CAELUM__SKYLIGHT_H
+
+#include "CameraBoundElement.h"
+
+namespace Caelum
 {
     /** Base class for sky lights (sun and moon).
      *  Contains a directional light which can be automatically disabled when too dim.
@@ -142,7 +164,7 @@ namespace caelum
         /// If the light should be enabled for a certain value.
         /// This functions takes AutoDisable and such into account.
         bool shouldEnableLight(const Ogre::ColourValue &colour);
-};
+    };
 }
 
-#endif // SKYLIGHT_H
+#endif // CAELUM__SKYLIGHT_H

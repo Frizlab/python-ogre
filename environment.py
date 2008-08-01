@@ -877,12 +877,14 @@ class cegui:
 class ode:
     active = True
     pythonModule = True
-    version= "0.9"
+    version= "0.10"
     name ='ode'
     parent = "ogre/physics"
     libs=[boost.lib,  'ode']
-    if os.name=="nt":
-        libs.append ( "User32" ) # needed for MessageBox function
+    
+    if isWindows():
+        libs= [boost.lib, 'ode_single', 'User32'] # needed for MessageBox function
+        
     lib_dirs = [ Config.PATH_LIB_Boost
                 ,  Config.PATH_LIB_ODE
                 ]
@@ -893,13 +895,13 @@ class ode:
 
     ModuleName = 'ODE'
     CheckIncludes = ['boost/python.hpp',  'ode/ode.h'] 
-    source = [
-        ["wget", "http://prdownloads.sourceforge.net/opende/ode-src-0.9.zip",downloadPath]
-    ]
-    baseDir = os.path.join(os.getcwd(),"ode-0.9")
+    baseDir = os.path.join(os.getcwd(),"ode-0.10.1")
     if not isWindows():
+        source = [
+        ["wget", "http://downloads.sourceforge.net/opende/ode-0.10.1.tar.gz",downloadPath]
+        ]
         buildCmds = [
-            [0, unzip + os.path.join(downloadPath,"ode-src-0.9.zip"), ''],
+            [0, untar + os.path.join(downloadPath,"ode-0.10.1.tar.gz"), ''],
             [0, "chmod +x autogen.sh", baseDir],
             [0, "./autogen.sh", baseDir],
             [0, "./configure --prefix=%s --includedir=%s/include" %(PREFIX, PREFIX), baseDir],
@@ -908,8 +910,11 @@ class ode:
     
             ]
     else:
+        source = [
+            ["wget", "http://downloads.sourceforge.net/opende/ode-0.10.1.zip",downloadPath]
+        ]
         buildCmds = [
-            [0, unzip + os.path.join(downloadPath,"ode-src-0.9.zip"), ''],
+            [0, unzip + os.path.join(downloadPath,"ode-src-0.10.1.zip"), ''],
             ]   
             
                      
@@ -946,7 +951,11 @@ class caelum:
                 Config.PATH_LIB_Ogre_OgreMain
                 ]
     CheckIncludes=[]
-    libs=[  boost.lib, boost_python_index.lib, 'OgreMain' ]
+    if isLinux():
+        libs=[  boost.lib, boost_python_index.lib, 'OgreMain' ]
+    else:        
+        libs=[  boost.lib, 'OgreMain' ]
+        
     ModuleName="caelum"  
      
 class ogreode:
@@ -1387,7 +1396,11 @@ class et:  ## editable terrain
     version= "2.2"
     name='et'
     parent = "ogre/addons"
-    libs=[ boost.lib, boost_python_index.lib, 'OgreMain' ]
+    if isLinux():
+        libs=[ boost.lib, boost_python_index.lib, 'OgreMain' ]
+    else:
+        libs=[ boost.lib, 'OgreMain' ]
+        
     lib_dirs = [ Config.PATH_LIB_Boost,
                 Config.PATH_LIB_Ogre_OgreMain
                 ]

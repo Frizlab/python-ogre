@@ -53,14 +53,14 @@ WRAPPER_REGISTRATION_GrassLoader =[
     
 WRAPPER_DEFINITION_PagedGeometry = \
 """
-void PagedGeometry_addDetailLevel_ImpostorPage( PagedGeometry::PagedGeometry & me, Ogre::Real maxRange, Ogre::Real transitionLength = 0) {
-    me.addDetailLevel<PagedGeometry::ImpostorPage>(maxRange, transitionLength);
+void PagedGeometry_addDetailLevel_ImpostorPage( Forests::PagedGeometry & me, Ogre::Real maxRange, Ogre::Real transitionLength = 0) {
+    me.addDetailLevel<Forests::ImpostorPage>(maxRange, transitionLength);
     }
-void PagedGeometry_addDetailLevel_BatchPage( PagedGeometry::PagedGeometry & me, Ogre::Real maxRange, Ogre::Real transitionLength = 0) {
-    me.addDetailLevel<PagedGeometry::BatchPage>(maxRange, transitionLength);
+void PagedGeometry_addDetailLevel_BatchPage( Forests::PagedGeometry & me, Ogre::Real maxRange, Ogre::Real transitionLength = 0) {
+    me.addDetailLevel<Forests::BatchPage>(maxRange, transitionLength);
     }
-void PagedGeometry_addDetailLevel_GrassPage( PagedGeometry::PagedGeometry & me, Ogre::Real maxRange, Ogre::Real transitionLength = 0) {
-    me.addDetailLevel<PagedGeometry::GrassPage>(maxRange, transitionLength);
+void PagedGeometry_addDetailLevel_GrassPage( Forests::PagedGeometry & me, Ogre::Real maxRange, Ogre::Real transitionLength = 0) {
+    me.addDetailLevel<Forests::GrassPage>(maxRange, transitionLength);
     } 
 """
 WRAPPER_REGISTRATION_PagedGeometry =[

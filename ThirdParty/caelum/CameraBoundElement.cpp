@@ -21,12 +21,20 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "CaelumPrecompiled.h"
 #include "CameraBoundElement.h"
 
-namespace caelum {
+namespace Caelum
+{
     const Ogre::Real CameraBoundElement::CAMERA_FAR_DISTANCE_MULTIPLIER = 0.99;
-    
     const Ogre::Real CameraBoundElement::CAMERA_NEAR_DISTANCE_MULTIPLIER = 50;
 
-    CameraBoundElement::CameraBoundElement(): mAutoRadius(true) {
+    CameraBoundElement::CameraBoundElement():
+            mAutoRadius(true)
+    {
+    }
+
+    CameraBoundElement::~CameraBoundElement()
+    {
+        // Don't do this; mMovable should be destroyed by now.
+        //_notifyMovable(0);
     }
 
     void CameraBoundElement::notifyCameraChanged (Ogre::Camera *cam) {
@@ -36,7 +44,7 @@ namespace caelum {
             } else {
                 setFarRadius(cam->getNearClipDistance () * CAMERA_NEAR_DISTANCE_MULTIPLIER);
             }
-	    }
+	    }	
     }
 
     void CameraBoundElement::forceFarRadius (Ogre::Real radius) {
@@ -52,8 +60,10 @@ namespace caelum {
         return mAutoRadius;
     }
 
-    void CameraBoundElement::setFarRadius(Ogre::Real radius) {
-        // Pass
+    void CameraBoundElement::setAutoRadius () {
+        forceFarRadius (-1);
     }
 
-} // namespace caelum
+    void CameraBoundElement::setFarRadius(Ogre::Real radius) {
+    }
+}

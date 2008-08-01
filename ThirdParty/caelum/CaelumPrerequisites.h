@@ -18,8 +18,8 @@ You should have received a copy of the GNU Lesser General Public License
 along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef CAELUMPREREQUISITES_H
-#define CAELUMPREREQUISITES_H
+#ifndef CAELUM__CAELUM_PREREQUISITES_H
+#define CAELUM__CAELUM_PREREQUISITES_H
 
 // Include external headers
 #ifdef __APPLE__
@@ -28,32 +28,44 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "Ogre.h"
 #endif
 
+#include <memory>
+
 // Define the dll export qualifier if compiling for Windows
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+// #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 // 	#ifdef CAELUM_LIB
 // 		#define CAELUM_EXPORT __declspec (dllexport)
 // 	#else
 // 		#ifdef __MINGW32__
-			#define CAELUM_EXPORT
+// 			#define CAELUM_EXPORT
 // 		#else
 // 			#define CAELUM_EXPORT __declspec (dllimport)
 // 		#endif
 // 	#endif
-#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-	#define CAELUM_EXPORT __attribute__ ((visibility("default")))
-#else
+// #elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+// 	#define CAELUM_EXPORT __attribute__ ((visibility("default")))
+// #else
 	#define CAELUM_EXPORT
-#endif
+// #endif
 
 // Define the version code
 #define CAELUM_VERSION_MAIN 0
-#define CAELUM_VERSION_SEC 2
-#define CAELUM_VERSION_TER 1
+#define CAELUM_VERSION_SEC 4
+#define CAELUM_VERSION_TER 0
 #define CAELUM_VERSION = (CAELUM_VERSION_MAIN << 16) | (CAELUM_VERSION_SEC << 8) | CAELUM_VERSION_TER
 
-namespace caelum {
+namespace Caelum
+{
+    // Caelum needs a lot of precission for astronomical calculations.
+    // Very few calculations use it, and the precission IS required.
+    typedef double LongReal;
+
+    // Use some ogre types.
+    using Ogre::uint;
+    using Ogre::Real;
+    using Ogre::String;
+
     /// Resource group name for caelum resources.
-    extern CAELUM_EXPORT Ogre::String RESOURCE_GROUP_NAME;
+    static const String RESOURCE_GROUP_NAME = "Caelum";
 
     // Render group for caelum stuff
     // It's best to have them all together
@@ -68,13 +80,19 @@ namespace caelum {
         CAELUM_RENDER_QUEUE_GROUND_FOG      = Ogre::RENDER_QUEUE_SKIES_EARLY + 6,
     };
 
-    // Caelum needs a lot of precission for astronomical calculations.
-    // Very few calculations use it, and the precission IS required.
-    typedef double LongReal;
-
-    using Ogre::uint;
-
+    // Forward declarations
+    class UniversalClock;
+    class SkyDome;
+    class BaseSkyLight;
+    class Moon;
+    class SphereSun;
+    class SpriteSun;
+    class ImageStarfield;
     class PointStarfield;
+    class CloudSystem;
+	class FlatCloudLayer;
+    class PrecipitationController;
+    class GroundFog;
 }
 
-#endif //CAELUMPREREQUISITES_H
+#endif // CAELUM__CAELUM_PREREQUISITES_H

@@ -22,7 +22,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "ImageStarfield.h"
 #include "GeometryFactory.h"
 
-namespace caelum {
+namespace Caelum {
 
 const Ogre::String ImageStarfield::STARFIELD_DOME_NAME = "CaelumStarfieldDome";
 
@@ -88,4 +88,4 @@ void ImageStarfield::setTexture (const Ogre::String &mapName) {
 	mStarfieldMaterial->getBestTechnique ()->getPass (0)->getTextureUnitState (0)->setTextureName (mapName);
 }
 
-} // namespace caelum
+} // namespace Caelum

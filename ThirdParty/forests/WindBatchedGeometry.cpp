@@ -8,12 +8,13 @@ Permission is granted to anyone to use this software for any purpose, including 
 3. This notice may not be removed or altered from any source distribution.
 -------------------------------------------------------------------------------------*/
 
-//BatchedGeometry.h
+//WindBatchedGeometry.h
 //A "lightweight" version of Ogre::StaticGeometry, which gives you a little more control
 //over the batch materials, etc.
 //-------------------------------------------------------------------------------------
 
-#include "BatchedGeometry.h"
+#include "WindBatchedGeometry.h"
+#include "PagedGeometry.h"
 
 #include <OgreRoot.h>
 #include <OgreRenderSystem.h>
@@ -38,24 +39,12 @@ namespace Forests {
 
 //-------------------------------------------------------------------------------------
 
-BatchedGeometry::BatchedGeometry(SceneManager *mgr, SceneNode *rootSceneNode)
- :	withinFarDistance(0),
-	minDistanceSquared(0),
-	sceneNode(NULL),
-	sceneMgr(mgr),
-	built(false),
-	boundsUndefined(true),
-	parentSceneNode(rootSceneNode)
+WindBatchedGeometry::WindBatchedGeometry(SceneManager *mgr, SceneNode *rootSceneNode):BatchedGeometry(mgr, rootSceneNode)
 {
-	clear();
+	mGeom = NULL;
 }
 
-BatchedGeometry::~BatchedGeometry()
-{
-	clear();
-}
-
-void BatchedGeometry::addEntity(Entity *ent, const Vector3 &position, const Quaternion &orientation, const Vector3 &scale, const Ogre::ColourValue &color)
+void WindBatchedGeometry::addEntity(Entity *ent, const Vector3 &position, const Quaternion &orientation, const Vector3 &scale, const Ogre::ColourValue &color)
 {
 	MeshPtr mesh = ent->getMesh();
 	if (mesh->sharedVertexData != NULL)
@@ -70,22 +59,23 @@ void BatchedGeometry::addEntity(Entity *ent, const Vector3 &position, const Quat
 		//Generate a format string that uniquely identifies this material & vertex/index format
 		if (subMesh->vertexData == NULL)
 			OGRE_EXCEPT(Exception::ERR_INTERNAL_ERROR, "SubMesh vertex data not found!", "BatchedGeometry::addEntity()");
+
 		String formatStr = getFormatString(subEntity);
 		
 		//If a batch using an identical format exists...
-		SubBatch *batch;
+		WindSubBatch *batch;
 		SubBatchMap::iterator batchIter = subBatchMap.find(formatStr);
 		if (batchIter != subBatchMap.end()){
 			//Use the batch
-			batch = batchIter->second;
+			batch = dynamic_cast<WindBatchedGeometry::WindSubBatch*>(batchIter->second);
 		} else {
 			//Otherwise create a new batch
-			batch = new SubBatch(this, subEntity);
-			subBatchMap.insert(std::pair<String, SubBatch*>(formatStr, batch));
+			batch = new WindSubBatch(this, subEntity);
+			subBatchMap.insert(std::pair<String, WindSubBatch*>(formatStr, batch));
 		}
 
 		//Now add the submesh to the compatible batch
-		batch->addSubEntity(subEntity, position, orientation, scale, color);
+		batch->addSubEntity(subEntity, position, orientation, scale, color, ent);
 	}
 
 	//Update bounding box
@@ -93,7 +83,7 @@ void BatchedGeometry::addEntity(Entity *ent, const Vector3 &position, const Quat
 	mat.setScale(scale);
 	AxisAlignedBox entBounds = ent->getBoundingBox();
 	entBounds.transform(mat);
-	
+
 	if (boundsUndefined){
 		bounds.setMinimum(entBounds.getMinimum() + position);
 		bounds.setMaximum(entBounds.getMaximum() + position);
@@ -106,241 +96,18 @@ void BatchedGeometry::addEntity(Entity *ent, const Vector3 &position, const Quat
 		bounds.setMinimum(min);
 		bounds.setMaximum(max);
 	}
-}
-
-BatchedGeometry::SubBatchIterator BatchedGeometry::getSubBatchIterator() const
-{
-	return BatchedGeometry::SubBatchIterator((SubBatchMap&)subBatchMap);
-}
-
-String BatchedGeometry::getFormatString(SubEntity *ent)
-{
-	StringUtil::StrStreamType str;
-
-	str << ent->getMaterialName() << "|";
-	str << ent->getSubMesh()->indexData->indexBuffer->getType() << "|";
-
-	const VertexDeclaration::VertexElementList &elemList = ent->getSubMesh()->vertexData->vertexDeclaration->getElements();
-	VertexDeclaration::VertexElementList::const_iterator i;
-	for (i = elemList.begin(); i != elemList.end(); ++i)
-	{
-		const VertexElement &element = *i;
-		str << element.getSource() << "|";
-		str << element.getSemantic() << "|";
-		str << element.getType() << "|";
-	}
-
-	return str.str();
-}
-
-void BatchedGeometry::build()
-{
-	///Make sure the batch hasn't already been built
-	if (built)
-		OGRE_EXCEPT(Exception::ERR_DUPLICATE_ITEM, "Invalid call to build() - geometry is already batched (call clear() first)", "BatchedGeometry::GeomBatch::build()");
-
-	if (subBatchMap.size() != 0) {
-		//Finish bounds information
-		center = bounds.getCenter();			//Calculate bounds center
-		bounds.setMinimum(bounds.getMinimum() - center);	//Center the bounding box
-		bounds.setMaximum(bounds.getMaximum() - center);	//Center the bounding box
-		radius = bounds.getMaximum().length();	//Calculate BB radius
-		
-		//Create scene node
-		sceneNode = parentSceneNode->createChildSceneNode(center);
-
-		//Build each batch
-		for (SubBatchMap::iterator i = subBatchMap.begin(); i != subBatchMap.end(); ++i){
-			i->second->build();
-		}
-
-		//Attach the batch to the scene node
-		sceneNode->attachObject(this);
-
-		//Debug
-		//sceneNode->showBoundingBox(true);
-
-		built = true;
-	}
 	
 }
 
-void BatchedGeometry::clear()
-{
-	//Remove the batch from the scene
-	if (sceneNode){
-		sceneNode->removeAllChildren();
-		sceneMgr->destroySceneNode(sceneNode->getName());
-		sceneNode = NULL;
-	}
+WindBatchedGeometry::WindSubBatch::WindSubBatch(WindBatchedGeometry *parent, SubEntity *ent):BatchedGeometry::SubBatch(parent, ent)
+{}
 
-	//Reset bounds information
-	boundsUndefined = true;
-	center = Vector3::ZERO;
-	radius = 0;
-
-	//Delete each batch
-	for (SubBatchMap::iterator i = subBatchMap.begin(); i != subBatchMap.end(); ++i){
-		delete i->second;
-	}
-	subBatchMap.clear();
-
-	built = false;
-}
-
-void BatchedGeometry::_updateRenderQueue(RenderQueue *queue)
-{
-	//If visible...
-	if (isVisible()){
-		//Ask each batch to add itself to the render queue if appropriate
-		for (SubBatchMap::iterator i = subBatchMap.begin(); i != subBatchMap.end(); ++i){
-			i->second->addSelfToRenderQueue(queue, getRenderQueueGroup());
-		}
-	}
-}
-
-bool BatchedGeometry::isVisible()
-{
-	return mVisible && withinFarDistance;
-}
-
-void BatchedGeometry::_notifyCurrentCamera(Camera *cam)
-{
-	if (getRenderingDistance() == 0) {
-		withinFarDistance = true;
-	} else {
-		//Calculate camera distance
-		Vector3 camVec = _convertToLocal(cam->getDerivedPosition()) - center;
-		Real centerDistanceSquared = camVec.squaredLength();
-		minDistanceSquared = std::max(0.0f, centerDistanceSquared - (radius * radius));
-		//Note: centerDistanceSquared measures the distance between the camera and the center of the GeomBatch,
-		//while minDistanceSquared measures the closest distance between the camera and the closest edge of the
-		//geometry's bounding sphere.
-
-		//Determine whether the BatchedGeometry is within the far rendering distance
-		withinFarDistance = minDistanceSquared <= Math::Sqr(getRenderingDistance());
-	}
-}
-
-Ogre::Vector3 BatchedGeometry::_convertToLocal(const Vector3 &globalVec) const
-{
-	assert(parentSceneNode);
-	//Convert from the given global position to the local coordinate system of the parent scene node.
-	return (parentSceneNode->getOrientation().Inverse() * globalVec);
-}
-
-
-
-
-BatchedGeometry::SubBatch::SubBatch(BatchedGeometry *parent, SubEntity *ent)
-{
-	meshType = ent->getSubMesh();
-	this->parent = parent;
-	built = false;
-	requireVertexColors = false;
-
-	// Material must always exist
-	Material *origMat = ((MaterialPtr)MaterialManager::getSingleton().getByName(ent->getMaterialName())).getPointer();
-	if (origMat) {
-	material = MaterialManager::getSingleton().getByName(getMaterialClone(*origMat)->getName());
-	} else {
-		MaterialManager::ResourceCreateOrRetrieveResult result = MaterialManager::getSingleton().createOrRetrieve("PagedGeometry_Batched_Material", "General");
-		if (result.first.isNull()) {
-			OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "BatchedGeometry failed to create a material for entity with invalid material.", "BatchedGeometry::SubBatch::SubBatch(BatchedGeometry *parent, SubEntity *ent)");
-		}
-		material = result.first;
-	}
-
-	//Setup vertex/index data structure
-	vertexData = meshType->vertexData->clone(false);
-	indexData = meshType->indexData->clone(false);
-
-	//Remove blend weights from vertex format
-	const VertexElement* blendIndices = vertexData->vertexDeclaration->findElementBySemantic(VES_BLEND_INDICES);
-	const VertexElement* blendWeights = vertexData->vertexDeclaration->findElementBySemantic(VES_BLEND_WEIGHTS);
-	if (blendIndices && blendWeights)
-	{
-		//Check for format errors
-		assert(blendIndices->getSource() == blendWeights->getSource()
-			&& "Blend indices and weights should be in the same buffer");
-		assert(blendIndices->getSize() + blendWeights->getSize() == vertexData->vertexBufferBinding->getBuffer(blendIndices->getSource())->getVertexSize()
-			&& "Blend indices and blend buffers should have buffer to themselves!");
-
-		//Remove the blend weights
-		vertexData->vertexBufferBinding->unsetBinding(blendIndices->getSource());
-		vertexData->vertexDeclaration->removeElement(VES_BLEND_INDICES);
-		vertexData->vertexDeclaration->removeElement(VES_BLEND_WEIGHTS);
-		#if OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR > 2
-		vertexData->closeGapsInBindings();
-		#endif
-	}
-
-	//Reset vertex/index count
-	vertexData->vertexStart = 0;
-	vertexData->vertexCount = 0;
-	indexData->indexStart = 0;
-	indexData->indexCount = 0;
-}
-
-BatchedGeometry::SubBatch::~SubBatch()
-{
-	clear();
-
-	delete vertexData;
-	delete indexData;
-}
-
-Material *BatchedGeometry::SubBatch::getMaterialClone(Material &mat)
-{
-	String clonedName = mat.getName() + "_Batched";
-	MaterialPtr clonedMat = MaterialManager::getSingleton().getByName(clonedName);
-	if (clonedMat.isNull())
-		clonedMat = mat.clone(clonedName);
-	
-	return clonedMat.getPointer();
-}
-
-void BatchedGeometry::SubBatch::addSubEntity(SubEntity *ent, const Vector3 &position, const Quaternion &orientation, const Vector3 &scale, const Ogre::ColourValue &color, void* userData)
-{
-	assert(!built);
-
-	//Add this submesh to the queue
-	QueuedMesh newMesh;
-	newMesh.mesh = ent->getSubMesh();
-	newMesh.position = position;
-	newMesh.orientation = orientation;
-	newMesh.scale = scale;
-	newMesh.userData = userData;
-
-	newMesh.color = color;
-	if (newMesh.color != ColourValue::White) {
-		requireVertexColors = true;
-		VertexElementType format = Root::getSingleton().getRenderSystem()->getColourVertexElementType();
-		switch (format){
-				case VET_COLOUR_ARGB:
-					std::swap(newMesh.color.r, newMesh.color.b);
-					break;
-				case VET_COLOUR_ABGR:
-					break;
-				default:
-					OGRE_EXCEPT(0, "Unknown RenderSystem color format", "BatchedGeometry::SubBatch::addSubMesh()");
-					break;
-		}
-	}
-
-	meshQueue.push_back(newMesh);
-
-	//Increment the vertex/index count so the buffers will have room for this mesh
-	vertexData->vertexCount += ent->getSubMesh()->vertexData->vertexCount;
-	indexData->indexCount += ent->getSubMesh()->indexData->indexCount;
-}
-
-void BatchedGeometry::SubBatch::build()
+void WindBatchedGeometry::WindSubBatch::build()
 {
 	assert(!built);
 
 	//Misc. setup
-	Vector3 batchCenter = parent->center;
+	Vector3 batchCenter = dynamic_cast<WindBatchedGeometry*>(parent)->center;
 
 	HardwareIndexBuffer::IndexType srcIndexType = meshType->indexData->indexBuffer->getType();
 	HardwareIndexBuffer::IndexType destIndexType;
@@ -367,6 +134,20 @@ void BatchedGeometry::SubBatch::build()
 
 	VertexBufferBinding *vertBinding = vertexData->vertexBufferBinding;
 	VertexDeclaration *vertDecl = vertexData->vertexDeclaration;
+
+	unsigned short texCoordCount = 0;
+		for (unsigned short j = 0; j < vertexData->vertexDeclaration->getElementCount(); ++j) 
+		{
+			const VertexElement *el = vertexData->vertexDeclaration->getElement(j);
+			if (el->getSemantic() == VES_TEXTURE_COORDINATES) 
+			{
+				++ texCoordCount;
+			}
+		}
+		Ogre::ushort k = (Ogre::ushort)vertBinding->getBufferCount();
+
+		vertDecl->addElement(k-1, vertDecl->getVertexSize(0), VET_FLOAT4 , VES_TEXTURE_COORDINATES, texCoordCount);
+		vertDecl->addElement(k-1, vertDecl->getVertexSize(0), VET_FLOAT4 , VES_TEXTURE_COORDINATES, texCoordCount+1);
 
 	for (Ogre::ushort i = 0; i < vertBinding->getBufferCount(); ++i)
 	{
@@ -395,20 +176,36 @@ void BatchedGeometry::SubBatch::build()
 		}
 
 		Pass *p = material->getTechnique(0)->getPass(0);
+
 		p->setVertexColourTracking(TVC_AMBIENT);
 	}
+
+	std::string entityName;
+	Ogre::AxisAlignedBox entityBounds;
 
 	//For each queued mesh...
 	MeshQueueIterator it;
 	size_t indexOffset = 0;
 	for (it = meshQueue.begin(); it != meshQueue.end(); ++it) {
-		const QueuedMesh queuedMesh = (*it);
+		const QueuedMesh queuedMesh =  (*it);
+		//const QueuedMesh queuedMesh =  dynamic_cast<WindBatchedGeometry::WindSubBatch::QueuedMesh>((*it));
 		const IndexData *sourceIndexData = queuedMesh.mesh->indexData;
 		const VertexData *sourceVertexData = queuedMesh.mesh->vertexData;
+
+		Entity * ent = static_cast<Ogre::Entity*>(queuedMesh.userData);
+		entityName = ent->getName();
+		entityBounds = ent->getBoundingBox();
+
+		// vector to stock the original y value of every vertex because batchCenter doesn't take consider the height of the ground
+		Vector3 vertexPos;
+		float maxHeight = entityBounds.getMaximum().y;
+		float factorX = dynamic_cast<WindBatchedGeometry*>(parent)->mGeom->getCustomParam(entityName, "windFactorX", 0);	// amplitude in X
+		float factorY = dynamic_cast<WindBatchedGeometry*>(parent)->mGeom->getCustomParam(entityName, "windFactorY", 0);	// amplitude in Y
 
 		//Copy mesh vertex data into the vertex buffer
 		VertexBufferBinding *sourceBinds = sourceVertexData->vertexBufferBinding;
 		VertexBufferBinding *destBinds = vertexData->vertexBufferBinding;
+
 		for (Ogre::ushort i = 0; i < destBinds->getBufferCount(); ++i)
 		{
 			if (i < sourceBinds->getBufferCount()){
@@ -445,6 +242,9 @@ void BatchedGeometry::SubBatch::build()
 							
 							//Transform
 							tmp = (queuedMesh.orientation * (tmp * queuedMesh.scale)) + queuedMesh.position;
+							
+							vertexPos = tmp - queuedMesh.position;
+
 							tmp -= batchCenter;		//Adjust for batch center
 
 							*destPtr++ = tmp.x;
@@ -489,7 +289,32 @@ void BatchedGeometry::SubBatch::build()
 							*destPtr++ = tmp.y;
 							*destPtr++ = tmp.z;
 							break;
-
+						
+						case VES_TEXTURE_COORDINATES:
+							if (elem.getIndex() == texCoordCount)
+							{
+								// parameters to be passed to the shader
+								*destPtr++ = vertexPos.x;	// radius coefficient
+								*destPtr++ = vertexPos.y / maxHeight;  // height coefficient
+								*destPtr++ = factorX;
+								*destPtr++ = factorY;
+							}
+							else
+							{
+								if (elem.getIndex() == texCoordCount + 1 )
+								{
+									// original position for each vertex
+									*destPtr++ = queuedMesh.position.x;
+									*destPtr++ = queuedMesh.position.y;
+									*destPtr++ = queuedMesh.position.z;
+									*destPtr++ = 0;
+								}
+								else
+								{
+									memcpy(destPtr, sourcePtr, VertexElement::getTypeSize(elem.getType()));
+								}
+							}
+							break;	
 						default:
 							//Raw copy
 							memcpy(destPtr, sourcePtr, VertexElement::getTypeSize(elem.getType()));
@@ -498,7 +323,7 @@ void BatchedGeometry::SubBatch::build()
 					}
 
 					// Increment both pointers
-					destBase += sourceBuffer->getVertexSize();
+					destBase += vertDecl->getVertexSize(i);
 					sourceBase += sourceBuffer->getVertexSize();
 				}
 
@@ -598,67 +423,4 @@ void BatchedGeometry::SubBatch::build()
 	built = true;
 }
 
-void BatchedGeometry::SubBatch::clear()
-{
-	//If built, delete the batch
-	if (built){
-		//Delete buffers
-		indexData->indexBuffer.setNull();
-		vertexData->vertexBufferBinding->unsetAllBindings();
-
-		//Reset vertex/index count
-		vertexData->vertexStart = 0;
-		vertexData->vertexCount = 0;
-		indexData->indexStart = 0;
-		indexData->indexCount = 0;
-	}
-
-	//Clear mesh queue
-	meshQueue.clear();
-
-	built = false;
 }
-
-void BatchedGeometry::SubBatch::addSelfToRenderQueue(RenderQueue *queue, uint8 group)
-{
-	if (built){
-		//Update material technique based on camera distance
-		assert(!material.isNull());
-		bestTechnique = material->getBestTechnique(material->getLodIndexSquaredDepth(parent->minDistanceSquared));
-			
-		//Add to render queue
-		queue->addRenderable(this, group);
-	}
-}
-
-void BatchedGeometry::SubBatch::getRenderOperation(RenderOperation& op)
-{
-	op.operationType = RenderOperation::OT_TRIANGLE_LIST;
-	op.srcRenderable = this;
-	op.useIndexes = true;
-	op.vertexData = vertexData;
-	op.indexData = indexData;
-}
-
-Real BatchedGeometry::SubBatch::getSquaredViewDepth(const Camera* cam) const
-{
-	Vector3 camVec = parent->_convertToLocal(cam->getDerivedPosition()) - parent->center;
-	return camVec.squaredLength();
-}
-
-#if OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR <= 2
-//Dagon-compatible getLights()
-const Ogre::LightList& BatchedGeometry::SubBatch::getLights(void) const
-{
-	return parent->sceneNode->findLights(parent->radius);
-}
-#else
-//Eihort-compatible getLights()
-const Ogre::LightList& BatchedGeometry::SubBatch::getLights(void) const
-{
-	return parent->queryLights();
-}
-
-}
-
-#endif

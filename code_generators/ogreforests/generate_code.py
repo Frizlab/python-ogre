@@ -39,7 +39,7 @@ import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
 from common_utils import docit
 
-MAIN_NAMESPACE = 'PagedGeometry'
+MAIN_NAMESPACE = 'Forests'
 
 ############################################################
 ##
@@ -54,8 +54,8 @@ def ManualExclude ( mb ):
     else:
         main_ns = global_ns    
 
-    Exclude= ['::PagedGeometry::PagedGeometry::_addDetailLevel'
-            ,'::PagedGeometry::TreeRef::getScale'    
+    Exclude= ['::Forests::PagedGeometry::_addDetailLevel'
+            ,'::Forests::TreeRef::getScale'    
             ]
     for c in Exclude:
         print "Excluding:",c
@@ -131,7 +131,7 @@ def ManualFixes ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns
-    main_ns.class_("::PagedGeometry::ImpostorTexture").noncopyable = True
+    main_ns.class_("::Forests::ImpostorTexture").noncopyable = True
                  
 ############################################################
 ##

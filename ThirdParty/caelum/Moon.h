@@ -18,13 +18,13 @@ You should have received a copy of the GNU Lesser General Public License
 along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef MOON_H
-#define MOON_H
+#ifndef CAELUM__MOON_H
+#define CAELUM__MOON_H
 
 #include "CaelumPrerequisites.h"
-#include "Sun.h"
+#include "SkyLight.h"
 
-namespace caelum {
+namespace Caelum {
 
 /** Class representing the moon.
  *  Drawn as two billboards; one after the stars and one after the skydome.
@@ -92,4 +92,4 @@ class CAELUM_EXPORT Moon : public BaseSkyLight {
 
 }
 
-#endif //MOON_H
+#endif // CAELUM__MOON_H

@@ -25,7 +25,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "CameraBoundElement.h"
 #include <vector>
 
-namespace caelum
+namespace Caelum
 {
     /** POD for bright star catalogue entries.
      *  Only J2000 position and magnitude included.

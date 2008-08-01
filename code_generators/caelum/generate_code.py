@@ -39,7 +39,7 @@ import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
 from common_utils import docit
 
-MAIN_NAMESPACE = 'caelum'
+MAIN_NAMESPACE = 'Caelum'
 
 ############################################################
 ##
@@ -53,8 +53,8 @@ def ManualExclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns 
-    excludes=['::caelum::Astronomy::normalizeAngle']
-    excludes=[]
+    excludes=['::Caelum::FlatCloudLayer::disableCloudCoverLookup',
+                '::Caelum::FlatCloudLayer::getCloudSpeed']
     for m in excludes:
         global_ns.member_functions(m).exclude()
         
@@ -88,7 +88,7 @@ def ManualFixes ( mb ):
         main_ns = global_ns
     # Py++ doesn't know that this should be noncopyable so we set it here        
     main_ns.class_('CaelumSystem').noncopyable = True
-    main_ns.class_('LayeredClouds').noncopyable = True
+#     main_ns.class_('LayeredClouds').noncopyable = True
               
 ############################################################
 ##
@@ -109,14 +109,42 @@ def ManualTransformations ( mb ):
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
 
-#     for x in main_ns.mem_funs('::caelum::UniversalClock::getGregorianDateFromJulianDay'):
-#         x.add_transformation( ft.output('year'), ft.output('month'), ft.output('day'), alias = 'getGregorianDateFromJulianDay' )
-#         x.documentation = docit ("","JulianDay", "tuple - year,month,day")
-#         
-#     x=main_ns.mem_fun('::caelum::UniversalClock::getGregorianDateTimeFromJulianDay')
-#     x.add_transformation( ft.output('year'), ft.output('month'), ft.output('day'),ft.output('hour'), ft.output('minute'), ft.output('second') )
-#     x.documentation = docit ("","JulianDay", "tuple - year,month,day,hour, minute, second")
+    x= main_ns.mem_funs('::Caelum::Astronomy::getGregorianDateFromJulianDay')
+    x.add_transformation( ft.output('year'), ft.output('month'), ft.output('day'), alias = 'getGregorianDateFromJulianDay' )
+    x.documentation = docit ("","JulianDay", "tuple - year,month,day")
+        
+    x=main_ns.mem_fun('::Caelum::Astronomy::getGregorianDateTimeFromJulianDay')
+    x.add_transformation( ft.output('year'), ft.output('month'), ft.output('day'),ft.output('hour'), ft.output('minute'), ft.output('second'), alias='getGregorianDateTimeFromJulianDay' )
+    x.documentation = docit ("","JulianDay", "tuple - year,month,day,hour, minute, second")
+
+    x=main_ns.mem_fun('::Caelum::Astronomy::convertEclipticToEquatorialRad')
+    x.add_transformation( ft.inout ('rasc'), ft.inout('decl'), alias='convertEclipticToEquatorialRad')
+    x.documentation = docit("","","tuple - rasc, decl")
     
+    x=main_ns.mem_fun('::Caelum::Astronomy::convertRectangularToSpherical')
+    x.add_transformation( ft.inout ('rasc'), ft.inout('decl'), ft.inout('dist'), alias='convertRectangularToSpherical')
+    x.documentation = docit("","","tuple - rasc, decl, dist")
+    
+    x=main_ns.mem_fun('::Caelum::Astronomy::convertSphericalToRectangular')
+    x.add_transformation( ft.inout ('x'), ft.inout('y'), ft.inout('z'), alias='convertSphericalToRectangular')
+    x.documentation = docit("","","tuple - x,y,z")
+    
+    x=main_ns.mem_fun('::Caelum::Astronomy::convertEquatorialToHorizontal')
+    x.add_transformation( ft.inout ('azimuth'), ft.inout('altitude'), alias='convertEquatorialToHorizontal')
+    x.documentation = docit("","","tuple - azimuth,altitude")
+    
+#     x=main_ns.mem_fun('::Caelum::Astronomy::getHorizontalSunPosition')
+#     x.add_transformation( ft.inout ('azimuth'), ft.inout('altitude'), alias='getHorizontalSunPosition')
+#     x.documentation = docit("","","tuple - azimuth,altitude")
+
+#     x=main_ns.mem_fun('::Caelum::Astronomy::getHorizontalMoonPosition')
+#     x.add_transformation( ft.inout ('azimuth'), ft.inout('altitude'), alias='getHorizontalMoonPosition')
+#     x.documentation = docit("","","tuple - azimuth,altitude")
+    
+    x=main_ns.mem_fun('::Caelum::Astronomy::getEclipticMoonPositionRad')
+    x.add_transformation( ft.inout ('lon'), ft.inout('lat'), alias='getEclipticMoonPositionRad')
+    x.documentation = docit("","","tuple - lon,lat")
+
 ###############################################################################
 ##
 ##  Now for the AUTOMATIC stuff that should just work

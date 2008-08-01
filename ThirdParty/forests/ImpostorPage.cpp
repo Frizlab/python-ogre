@@ -26,7 +26,7 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include <OgreHardwarePixelBuffer.h>
 using namespace Ogre;
 
-namespace PagedGeometry {
+namespace Forests {
 
 //-------------------------------------------------------------------------------------
 
@@ -37,7 +37,7 @@ ColourValue ImpostorPage::impostorBackgroundColor = ColourValue(0.0f, 0.3f, 0.0f
 BillboardOrigin ImpostorPage::impostorPivot = BBO_CENTER;
 
 
-void ImpostorPage::init(PagedGeometry *geom)
+void ImpostorPage::init(PagedGeometry *geom, const Ogre::Any &data)
 {
 	//Save pointers to PagedGeometry object
 	sceneMgr = geom->getSceneManager();
@@ -351,7 +351,7 @@ ImpostorTexture::ImpostorTexture(ImpostorPage *group, Entity *entity)
 		material[i][o] = MaterialManager::getSingleton().create(getUniqueID("ImpostorMaterial"), "Impostors");
 
 		Material *m = material[i][o].getPointer();
-		Pass *p = m->getTechnique(0)->getPass(0);        
+		Pass *p = m->getTechnique(0)->getPass(0);
 		
 		TextureUnitState *t = p->createTextureUnitState(texture->getName());
 		
@@ -377,7 +377,7 @@ void ImpostorTexture::updateMaterials()
 	for (int o = 0; o < IMPOSTOR_YAW_ANGLES; ++o){
 		for (int i = 0; i < IMPOSTOR_PITCH_ANGLES; ++i){
 			Material *m = material[i][o].getPointer();
-			Pass *p = m->getTechnique(0)->getPass(0);       
+			Pass *p = m->getTechnique(0)->getPass(0);
 
 // 			int x = p->getNumTextureUnitStates();
 			TextureUnitState *t = p->getTextureUnitState(0);
@@ -463,7 +463,7 @@ void ImpostorTexture::renderTextures(bool force)
 	renderCamera->setLodBias(1000.0f);
 	renderViewport = renderTarget->addViewport(renderCamera);
 	renderViewport->setOverlaysEnabled(false);
-    renderViewport->setClearEveryFrame(true);
+	renderViewport->setClearEveryFrame(true);
 	renderViewport->setShadowsEnabled(false);
 	renderViewport->setBackgroundColour(ImpostorPage::impostorBackgroundColor);
 	
@@ -530,16 +530,22 @@ void ImpostorTexture::renderTextures(bool force)
 		key[i] = (key[i] % 26) + 'A';
 
 	ResourceGroupManager::getSingleton().addResourceLocation(".", "FileSystem", "BinFolder");
-	String fileName = "Impostor." + String(key, sizeof(key)) + '.' + StringConverter::toString(textureSize) + ".png";
+	String fileNamePNG = "Impostor." + String(key, sizeof(key)) + '.' + StringConverter::toString(textureSize) + ".png";
+	String fileNameDDS = "Impostor." + String(key, sizeof(key)) + '.' + StringConverter::toString(textureSize) + ".dds";
 
 	//Attempt to load the pre-render file if allowed
 	needsRegen = force;
 	if (!needsRegen){
 		try{
-			texture = TextureManager::getSingleton().load(fileName, "BinFolder", TEX_TYPE_2D, MIP_UNLIMITED);
+			texture = TextureManager::getSingleton().load(fileNameDDS, "BinFolder", TEX_TYPE_2D, MIP_UNLIMITED);
 		}
 		catch (...){
-			needsRegen = true;
+			try{
+				texture = TextureManager::getSingleton().load(fileNamePNG, "BinFolder", TEX_TYPE_2D, MIP_UNLIMITED);
+			}
+			catch (...){
+				needsRegen = true;
+			}
 		}
 	}
 #endif
@@ -569,10 +575,10 @@ void ImpostorTexture::renderTextures(bool force)
 		
 #if IMPOSTOR_FILE_SAVE
 		//Save RTT to file
-		renderTarget->writeContentsToFile(fileName);
+		renderTarget->writeContentsToFile(fileNamePNG);
 
 		//Load the render into the appropriate texture view
-		texture = TextureManager::getSingleton().load(fileName, "BinFolder", TEX_TYPE_2D, MIP_UNLIMITED);
+		texture = TextureManager::getSingleton().load(fileNamePNG, "BinFolder", TEX_TYPE_2D, MIP_UNLIMITED);
 #else
 		texture = renderTexture;
 #endif

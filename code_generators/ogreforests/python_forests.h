@@ -6,7 +6,7 @@
 #include "TreeLoader2D.h"
 #include "BatchPage.h"
 #include "ImpostorPage.h"
-
+#include "WindBatchPage.h"
 
 // First we create a magic namespace to hold all our aliases
 namespace pyplusplus { namespace aliases {
@@ -18,7 +18,7 @@ namespace pyplusplus { namespace aliases {
 //
 namespace python_forests{ namespace details{
 inline void instantiate(){
- using namespace PagedGeometry;
+ using namespace Forests;
  #include "python_forests_sizeof.h"
  
 } } }

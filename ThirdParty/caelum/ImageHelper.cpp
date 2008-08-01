@@ -21,7 +21,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "CaelumPrecompiled.h"
 #include "ImageHelper.h"
 
-namespace caelum
+namespace Caelum
 {
     Ogre::ColourValue getInterpolatedColour (
             float fx, float fy, Ogre::Image *img, bool wrapX)

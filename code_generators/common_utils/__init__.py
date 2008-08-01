@@ -363,7 +363,15 @@ def Fix_Pointer_Returns ( mb, pointee_types=['unsigned int','int', 'float','char
                     if not fun.name in known_names:
                         print "WARNING: Excluding (free function):", fun, "as it returns (pointer)", i
                         fun.exclude()
-
+                        
+    # Update 30 July 2008 -- support for void * variables to be exposed with ctypes handling                        
+    for v in mb.variables( allow_empty=True ):
+        if v.type.decl_string == 'void const *' or v.type.decl_string =='void *':
+            if v.access_type == 'public' and not v.documentation:
+#                 if not v.parent.noncopyable:    ## this test as we don't support classes with protected destructors
+                print "CTYPE Implementation on ", v, v.access_type
+                v.expose_address = True
+                    
 def AutoExclude( mb, MAIN_NAMESPACE=None ):
     """ Automaticaly exclude a range of things that don't convert well from C++ to Python
     """
