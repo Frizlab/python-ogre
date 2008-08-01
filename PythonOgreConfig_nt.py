@@ -107,7 +107,7 @@ PATH_LIB_OgreOde =              os.path.join( PATH_OgreOde, 'lib/Release')
 PATH_LIB_OgreOdePrefab =        os.path.join( PATH_OgreOde, 'prefab/lib/Release' )
 PATH_LIB_OgreOdeLoader =        os.path.join( PATH_OgreOde, 'loader/lib/Release' )
 
-PATH_LIB_OgreAL =               os.path.join( PATH_OGREAL ) # , 'lib/Release' )
+PATH_LIB_OgreAL =               os.path.join( PATH_OGREAL ) ##, 'lib/Release' )
 PATH_LIB_betagui =              PATH_betagui
 PATH_LIB_quickgui =             PATH_quickgui
 PATH_LIB_NxOgre=                os.path.join(PATH_NxOgre, 'lib')
