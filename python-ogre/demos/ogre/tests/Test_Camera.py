@@ -105,7 +105,12 @@ class TutorialApplication(SampleFramework.Application):
             
         print v    
         
-        
+        for r in self.root.getAvailableRenderers():
+            print "Renderer: ",r.getName() 
+            cap = r.getCapabilities()
+            if cap: ## Note the OpenGL doesn't seem to have any capabilities??
+                print "Device Name: ", cap.DeviceName
+                print "Driver Version/release: ", cap.DriverVersion.build, cap.DriverVersion.release
         
         sys.exit()
         

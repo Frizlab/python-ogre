@@ -871,7 +871,8 @@ class cegui:
     CCFLAGS =  ' -DBOOST_PYTHON_MAX_ARITY=19'
     ModuleName = 'CEGUI'
     CheckIncludes = ['boost/python.hpp', 'Ogre.h', 'CEGUI.h', 'OgreCEGUIRenderer.h'] 
-    LINKFLAGS = "-l%s" % boost_python_index.lib
+    if isLinux():
+        LINKFLAGS = "-l%s" % boost_python_index.lib
 
 
 class ode:
@@ -1297,7 +1298,7 @@ class ogreal:
         libs=[boost.lib, 'OgreMain', 
                     'ogg_static', 
                     'vorbis_static','vorbisfile_static','vorbisenc_static',
-                    'OpenAL32', 'EFX-Util',  'OgreAL'] # -- going to compile OgreAL ourselves
+                    'OpenAL32', 'EFX-Util'] # -- going to compile OgreAL ourselves
         source = [
             ["wget", "http://connect.creativelabs.com/openal/Downloads/OpenAL11CoreSDK.zip",downloadPath],
             ["wget", "http://downloads.xiph.org/releases/ogg/libogg-1.1.3.zip",downloadPath],
