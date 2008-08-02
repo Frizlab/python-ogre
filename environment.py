@@ -735,7 +735,7 @@ class ogrerefapp:
                 [0, "make install", baseDir],
                 ]
     if isWindows():
-        libs=[boost.lib, 'OgreMain', 'ode', 'ReferenceAppLayer']
+        libs=[boost.lib, 'OgreMain', 'ode_single', 'ReferenceAppLayer']
     else:
         libs=[boost.lib, 'OgreMain', 'ode', 'ReferenceAppLayer']
     lib_dirs = [ Config.PATH_LIB_Boost
@@ -881,10 +881,12 @@ class ode:
     version= "0.10"
     name ='ode'
     parent = "ogre/physics"
-    libs=[boost.lib,  'ode']
+    odeLibraryName = 'ode'
+    libs=[boost.lib,  odeLibraryName]
     
     if isWindows():
-        libs= [boost.lib, 'ode_single', 'User32'] # needed for MessageBox function
+        odeLibraryName = 'ode_single'
+        libs= [boost.lib, odeLibraryName, 'User32'] # needed for MessageBox function
         
     lib_dirs = [ Config.PATH_LIB_Boost
                 ,  Config.PATH_LIB_ODE
@@ -1000,7 +1002,11 @@ class ogreode:
             [0, "make install", baseDir],
             ]
 
-    libs=[boost.lib, 'OgreMain', 'ode', 'OgreOde_Core', 'OgreOde_Prefab', 'OgreOde_Loader' ]
+    libs=[boost.lib, 'OgreMain',  'OgreOde_Core', 'OgreOde_Prefab', 'OgreOde_Loader' ]
+    if isLinux():
+        libs.append('ode')
+    else:
+        libs.append('ode_single')        
     CCFLAGS =  ' -DBOOST_PYTHON_MAX_ARITY=19'
     CheckIncludes = ['boost/python.hpp', 'Ogre.h', 'ode/ode.h', 'ode/odecpp.h', 'OgreOde_Core.h', 'OgreOde_Loader.h', 
                     'Ogreode_Prefab.h'] 
