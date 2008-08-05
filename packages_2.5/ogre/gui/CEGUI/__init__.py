@@ -4,7 +4,7 @@ warnings.simplefilter('ignore', RuntimeWarning)
 
 ## we need the path for additional CEGUI dll's 
 if sys.platform == 'win32': 
-    os.environ['PATH'] += ';' + __path__[0]
+    os.environ['PATH'] =  __path__[0] +';' + os.environ['PATH']
 
 elif sys.platform == "linux2":
     ## We need to import the library 

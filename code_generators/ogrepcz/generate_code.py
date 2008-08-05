@@ -63,18 +63,27 @@ def ManualExclude ( mb ):
                 
     excludes=['::Ogre::PCZSceneManagerFactory::initMetaData',
               '::Ogre::PCZSceneManagerFactory::createInstance',
-              '::Ogre::PCZSceneManagerFactory::destroyInstance'
+              '::Ogre::PCZSceneManagerFactory::destroyInstance',
+              '::Ogre::Portal::setCorners'  # hand wrapped..
               ]
     for e in excludes:
         main_ns.member_functions(e).exclude()
-        print "Excluded Member Function:", e
+        print "Excluded Member Function(s):", e
         
     excludes=['::Ogre::PCZSceneManagerFactory::FACTORY_TYPE_NAME'
                ]
     for e in excludes:
         main_ns.variable(e).exclude()
         print "Excluded Variable:", e
-               
+
+#     std_ns = global_ns.namespace('std')
+#     for c in std_ns.classes():
+#         if 'map' in c.decl_string or 'Ogre' in c.decl_string:
+#             print c.name, c.decl_string
+#     std_ns.class_('::std::vector<Ogre::Plane, std::allocator<Ogre::Plane> >')    
+# #     std_ns.class_('::std::map<std::string, std::allocator<std::string> >')
+        
+                       
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 
@@ -93,8 +102,29 @@ def ManualInclude ( mb ):
 #                 '::Ogre::PCZone::NODE_LIST_TYPE'
             ]                 
     for i in includes:
-        main_ns.enum(i).include()            
-        
+        main_ns.enum(i).include()  
+    for c in main_ns.classes():
+        if "Singleton" in c.decl_string:
+            print c, c.name, c.decl_string                  
+    includes = ['::Ogre::Singleton<Ogre::PCZoneFactoryManager>',
+                'Ogre::Singleton<Ogre::PCZoneFactoryManager>',
+                '::Ogre::Singleton<::Ogre::PCZoneFactoryManager>',
+                'Singleton<PCZoneFactoryManager>'
+                ]  
+    for i in includes:
+        try:
+            main_ns.class_(i).include()
+            print "Forced Include:", i
+        except:
+            pass
+                        
+    main_ns.class_('RaySceneQuery').include(already_exposed=True)            
+    main_ns.class_('DefaultRaySceneQuery').include(already_exposed=True)  
+    main_ns.class_('SceneQuery').include(already_exposed=True)  
+    main_ns.class_('RaySceneQueryListener').include(already_exposed=True)  
+
+    
+    
 ############################################################
 ##
 ##  And things that need manual fixes, but not necessarly hand wrapped
@@ -106,25 +136,23 @@ def ManualFixes ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns
+        
+    includes_already = ['::std::vector<Ogre::PlaneBoundedVolume, std::allocator<Ogre::PlaneBoundedVolume> >',
+                '::std::vector<Ogre::Plane, std::allocator<Ogre::Plane> >',
+                '::std::map<std:string'                
+                ]
+    includes = ['::Ogre::Singleton<Ogre::PCZoneFactoryManager>'
+            ]             
     for c in global_ns.classes():
-        if c.decl_string.startswith("::std::vector<Ogre::PlaneBoundedVolume, std::allocator<Ogre::PlaneBoundedVolume> >"):
-            print "Excluding:", c
-            c.include(already_exposed=True)
-    try:
-        global_ns.namespace("std").class_('vector<Ogre::PlaneBoundedVolume>, std::allocator<Ogre::BoundedVolume> >').exclude()
-        print "OK1"
-    except:
-        print "FAIL1"
-    try:                
-        main_ns.class_("std::vector<Ogre::PlaneBoundedVolume, std::allocator<Ogre::PlaneBoundedVolume> >").exclude()
-        print "OK2"
-    except:
-        print "FAIL2"
-    try:                
-        main_ns.class_("::std::vector<Ogre::PlaneBoundedVolume, std::allocator<Ogre::PlaneBoundedVolume> >").exclude()
-        print "OK3"
-    except:
-        print "FAIL3"
+        for i in includes_already:
+            if c.decl_string.startswith(i):
+                print "Including Special(already Exposed):", c
+                c.include(already_exposed=True)
+        for i in includes:
+            if c.decl_string.startswith(i):
+                print "Including Special:", c
+                c.include()                
+                
                 
 ############################################################
 ##
@@ -216,30 +244,30 @@ def Fix_NT ( mb ):
 # the 'main'function
 #            
 def generate_code():  
-    messages.disable( 
-#           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-          messages.W1020
-        , messages.W1021
-        , messages.W1022
-        , messages.W1023
-        , messages.W1024
-        , messages.W1025
-        , messages.W1026
-        , messages.W1027
-        , messages.W1028
-        , messages.W1029
-        , messages.W1030
-        , messages.W1031
-        , messages.W1035
-        , messages.W1040 
-        , messages.W1038        
-        , messages.W1041
-        , messages.W1036 # pointer to Python immutable member
-        , messages.W1033 # unnamed variables
-        , messages.W1018 # expose unnamed classes
-        , messages.W1049 # returns reference to local variable
-        , messages.W1014 # unsupported '=' operator
-         )
+#     messages.disable( 
+# #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+#           messages.W1020
+#         , messages.W1021
+#         , messages.W1022
+#         , messages.W1023
+#         , messages.W1024
+#         , messages.W1025
+#         , messages.W1026
+#         , messages.W1027
+#         , messages.W1028
+#         , messages.W1029
+#         , messages.W1030
+#         , messages.W1031
+#         , messages.W1035
+#         , messages.W1040 
+#         , messages.W1038        
+#         , messages.W1041
+#         , messages.W1036 # pointer to Python immutable member
+#         , messages.W1033 # unnamed variables
+#         , messages.W1018 # expose unnamed classes
+#         , messages.W1049 # returns reference to local variable
+#         , messages.W1014 # unsupported '=' operator
+#          )
     #
     # Use GCCXML to create the controlling XML file.
     # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded
@@ -279,22 +307,25 @@ def generate_code():
     global_ns = mb.global_ns
     global_ns.exclude()
     
+#     #
+#     # I'm assuming that any 'std' classes etc we need will have already been exposed by the Ogre library
+#     #
+#     std_ns = global_ns.namespace('std')
+#     std_ns.include(already_exposed=True) 
+    
     # We don't include all of MAIN_NAMESPACE otherwise we get the same full wrapper
     # so instead we include classes with names that start with PCZ
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
-#     main_ns.include()
+# #     main_ns.include( already_exposed = True )  ## force the ogre class to be exposed as well...
+    
     for c in main_ns.classes():
         if c.name.startswith ('PCZ') or c.name.startswith ('PCPlane') or  c.name.startswith ('Portal'):
             c.include()
-            print "Including ", c
+            print "Including ", c, c.already_exposed
             
     for c in ['Portal','PCPlane']:
         main_ns.class_(c).include()
         print "Including ", c            
-#             for e in c.enums(allow_empty=True):
-#                 e.include()
-#             for v in c.variables(allow_empty=True):
-#                 v.include()                
     
     common_utils.AutoExclude ( mb, MAIN_NAMESPACE )
     ManualExclude ( mb )
