@@ -29,25 +29,22 @@ import ogre.renderer.ogrepcz as pcz
 
 import RoomObject
 
-Global_buildingNode = None #pcz.PCZSceneNode()
 
 
 class PCZTestFrameListener ( sf.FrameListener):
-    def __init__(self, renderWindow, sceneManager,camera ):
+    def __init__(self, renderWindow, sceneManager,camera,app ):
         sf.FrameListener.__init__(self, renderWindow, camera)
         self.moveSpeed = 15.0
         self.targetMO =0
+        self.app=app
         self.buildingTranslate = ogre.Vector3()
 
-        print "\n\n** :", sceneManager
-        self.raySceneQuery= sceneManager.createRayQuery(ogre.Ray(camera.getPosition(),
-                                                                    ogre.Vector3.NEGATIVE_UNIT_Y))
+        self.raySceneQuery= app.raySceneQuery
 
-        print "\n\n** :", sceneManager, "\n", self.raySceneQuery
         self.camera = camera
-        self.pczCameraParentNode = pcz.castAsPCZSceneNode(self.camera.getParentSceneNode())
+#         self.pczCameraParentNode = pcz.castAsPCZSceneNode(self.camera.getParentSceneNode())
 
-    def moveCamera( self ):
+    def _moveCamera( self ):
         # Make all the spatial changes to the camera's scene node
         # Note that YAW direction is around a fixed axis (freelook style) rather than a natural YAW
         #(e.g. airplane)
@@ -55,17 +52,17 @@ class PCZTestFrameListener ( sf.FrameListener):
         self.camera.getParentSceneNode().pitch(self.rotationY)
         self.camera.getParentSceneNode().yaw(self.rotationX, ogre.Node.TS_WORLD)
         
-        Global_buildingNode.translate(self.buildingTranslate, ogre.Node.TS_LOCAL)
+        self.app.buildingNode.translate(self.buildingTranslate, ogre.Node.TS_LOCAL)
     
 
     def frameRenderingQueued( self, evt ):
         if sf.FrameListener.frameRenderingQueued( self, evt ) == False:
             return False
         self.buildingTranslate = ogre.Vector3(0,0,0)
-        if self.Keyboard.isKeyDown( ois.KC_LBRACKET ):
-            self.buildingTranslate = ogre.Vector3(0,-10,0)
-        if self.Keyboard.isKeyDown( ois.KC_RBRACKET ):
-            self.buildingTranslate = ogre.Vector3(0,10,0)
+#         if self.Keyboard.isKeyDown( ois.KC_LBRACKET ):
+#             self.buildingTranslate = ogre.Vector3(0,-10,0)
+#         if self.Keyboard.isKeyDown( ois.KC_RBRACKET ):
+#             self.buildingTranslate = ogre.Vector3(0,10,0)
         if self.Keyboard.isKeyDown( ois.KC_LSHIFT ) or self.Keyboard.isKeyDown( ois.KC_RSHIFT ):
             self.moveSpeed = 150
         else:
@@ -77,11 +74,9 @@ class PCZTestFrameListener ( sf.FrameListener):
         updateRay.setOrigin(self.camera.getParentSceneNode().getPosition())
         updateRay.setDirection(self.camera.getParentSceneNode().getOrientation()*ogre.Vector3.NEGATIVE_UNIT_Z)
         self.raySceneQuery.setRay(updateRay)
-        zone = self.pczCameraParentNode.getHomeZone()
-        pcz.castAsPCZRaySceneQuery(self.raySceneQuery).setStartZone(zone)
-        pcz.castAsPCZRaySceneQuery(self.raySceneQuery).setExcludeNode(self.camera.getParentSceneNode())
-        rq = self.raySceneQuery.castAsRaySceneQuery()
-#         print "RAYQUERY", rq
+        zone = self.camera.getParentNode().getHomeZone()
+        self.raySceneQuery.setStartZone(zone)
+        self.raySceneQuery.setExcludeNode(self.camera.getParentSceneNode())
         for queryResult in self.raySceneQuery.execute():  #
             mo = queryResult.movable
             if self.targetMO != mo:
@@ -91,32 +86,6 @@ class PCZTestFrameListener ( sf.FrameListener):
                 self.targetMO.getParentSceneNode().showBoundingBox(True)
         return True
     
-# class TerrainListener(sf.FrameListener):
-#     def __init__(self, renderWindow, camera, sceneManager):
-#         sf.FrameListener.__init__(self, renderWindow, camera)
-#         self.sceneManager = sceneManager
-#         self.moveSpeed = 50.0
-#         
-#         self.raySceneQuery = sceneManager.createRayQuery(ogre.Ray(camera.getPosition(),
-#                                                                     ogre.Vector3.NEGATIVE_UNIT_Y))
-#         self.camera = camera
-#         #self.camera.setPosition (self.camera.getPosition() + ogre.Vector3(0.0, 10.0, 0.0))
-# 
-#     def frameStarted(self, frameEvent):
-#         # clamp to terrain
-#         updateRay = ogre.Ray()
-#         updateRay.setOrigin (self.camera.getPosition() + ogre.Vector3(0.0, 10.0, 0.0))
-#         updateRay.setDirection (ogre.Vector3.NEGATIVE_UNIT_Y)
-#         self.raySceneQuery.Ray = updateRay
-#         for queryResult in self.raySceneQuery.execute():
-#             if queryResult.worldFragment is not None:
-#                 pos = self.camera.getPosition()
-#                 self.camera.setPosition (pos.x, pos.y - queryResult.distance + 15.0, pos.z)
-#                 break
-# 
-#         return sf.FrameListener.frameStarted(self, frameEvent)
-
-
 class PCZTestApplication (sf.Application):
     def __del__(self):    
         del self.raySceneQuery
@@ -126,7 +95,6 @@ class PCZTestApplication (sf.Application):
     
         # Create the SceneManager, in this case a generic one
         self.sceneManager = self.root.createSceneManager("PCZSceneManager", "PCZSceneManager")
-        print "\n****:", self.sceneManager
         # initialize the scene manager using terrain as default zone
         zoneTypeName = "ZoneType_Default"
         self.pczSM = pcz.castAsPCZSceneManager( self.sceneManager ) # store this for future reference
@@ -134,7 +102,7 @@ class PCZTestApplication (sf.Application):
         #self.sceneManager.showBoundingBoxes(True)
     
     def _createFrameListener( self ):
-        self.frameListener= PCZTestFrameListener(self.renderWindow, self.sceneManager,self.camera)
+        self.frameListener= PCZTestFrameListener(self.renderWindow, self.sceneManager,self.camera, self)
         self.root.addFrameListener(self.frameListener)
     
     def _createCamera(self):
@@ -163,7 +131,7 @@ class PCZTestApplication (sf.Application):
         self.pczSM.setZoneGeometry( zoneName, pcz.castAsPCZSceneNode(self.sceneManager.getRootSceneNode()), terrain_cfg )
 
         # create aab portal(s) around the terrain
-        corners =[None]*2
+        corners =[0]*2
         aabb = ogre.AxisAlignedBox()
 
         # make portal from terrain to default
@@ -237,7 +205,7 @@ class PCZTestApplication (sf.Application):
         # create a terrain zone
         terrain_cfg = "terrain.cfg"
         zoneName ="Terrain1_Zone"
-        terrainZone = self.createTerrainZone(zoneName, terrain_cfg)
+        self.terrainZone = self.createTerrainZone(zoneName, terrain_cfg)
 
 # # /*      # Create another terrain zone
 # #         terrain_cfg = "terrain.cfg"
@@ -300,29 +268,29 @@ class PCZTestApplication (sf.Application):
 
         # create test buildinig
         roomObj = RoomObject.RoomObject()
-        Global_buildingNode = roomObj.createTestBuilding(self.sceneManager, "1")
-        Global_buildingNode.setPosition(500, 165, 570)
+        self.buildingNode = roomObj.createTestBuilding(self.sceneManager, "1")
+        self.buildingNode.setPosition(500, 165, 570)
         #ogre.Radian r = Radian(3.1416/7.0)
-        #Global_buildingNode.rotate(ogre.Vector3.UNIT_Y, r)
+        #self.buildingNode.rotate(ogre.Vector3.UNIT_Y, r)
 
-#         # create another test buildinig
-#         roomObj2 = RoomObject.RoomObject()
-#         Global_buildingNode = roomObj2.createTestBuilding(self.sceneManager, String("2"))
-#         Global_buildingNode.setPosition(400, 165, 570)
+        # create another test buildinig
+        roomObj2 = RoomObject.RoomObject()
+        self.buildingNode = roomObj2.createTestBuilding(self.sceneManager, "2")
+        self.buildingNode.setPosition(400, 165, 570)
         #ogre.Radian r = Radian(3.1416/7.0)
-        #Global_buildingNode.rotate(ogre.Vector3.UNIT_Y, r)
+        #self.buildingNode.rotate(ogre.Vector3.UNIT_Y, r)
 
         # Position camera in the center of the building
-        self.cameraNode.setPosition(Global_buildingNode.getPosition())
+        self.cameraNode.setPosition(self.buildingNode.getPosition())
         # Look back along -Z
         self.camera.lookAt(self.cameraNode._getDerivedPosition() + ogre.Vector3(0,0,-300))
         # Update bounds for camera
         self.cameraNode._updateBounds()
 
-#         # create the ray scene query
-#         self.raySceneQuery = self.sceneManager.createRayQuery(
-#             Ray(self.camera.getParentNode().getPosition(), ogre.Vector3.NEGATIVE_UNIT_Z))
-#         self.raySceneQuery.setSortByDistance(True, 5)
+        # create the ray scene query
+        self.raySceneQuery = self.sceneManager.createRayQuery(
+            ogre.Ray(self.camera.getParentNode().getPosition(), ogre.Vector3.NEGATIVE_UNIT_Z))
+        self.raySceneQuery.setSortByDistance(True, 5)
 
     
 

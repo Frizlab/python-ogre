@@ -33,24 +33,22 @@ class RoomObject:
 
     def createTestBuilding(self, scene,name):
         self.count+=1 
-        pczSM = pcz.castAsPCZSceneManager(scene )
-    
         ## set points to building exterior size
         self.createPoints(ogre.Vector3(60.0, 40.0, 60.0), ogre.Vector3(4.0, 10.0, 4.0)) 
     
         ## create the building exterior
-        exterior = pczSM.createEntity( name + "_building_exterior", "building_exterior.mesh" ) 
+        exterior = scene.createEntity( name + "_building_exterior", "building_exterior.mesh" ) 
     
         ## make the enclosure a child node of the root scene node
-        exteriorNode = pcz.castAsPCZSceneNode(scene.getRootSceneNode()).createChildSceneNode(name +"_building_exterior_node",  ogre.Vector3( 0, 0, 0 ) )
+        exteriorNode = scene.getRootSceneNode().createChildSceneNode(name +"_building_exterior_node",  ogre.Vector3( 0, 0, 0 ) )
         exteriorNode.attachObject(exterior) 
-        pczSM.addPCZSceneNode(exteriorNode, pczSM.getDefaultZone()) 
+        scene.addPCZSceneNode(exteriorNode, scene.getDefaultZone()) 
     
         ## create portals for the building exterior
         self.createPortals(scene, 
                       exterior, 
                       exteriorNode, 
-                      pczSM.getDefaultZone(),
+                      scene.getDefaultZone(),
                       DOOR_FRONT|DOOR_BACK|DOOR_LEFT|DOOR_RIGHT, 
                       True) 
     
@@ -58,18 +56,18 @@ class RoomObject:
         self.createPoints(ogre.Vector3(20.0, 10.0, 20.0), ogre.Vector3(4.0, 10.0, 4.0)) 
     
         ## create an interior room
-        room = pczSM.createEntity( name +"_room1", "room_nzpz.mesh" ) 
+        room = scene.createEntity( name +"_room1", "room_nzpz.mesh" ) 
     
         ## add the room as a child node to the enclosure node
-        roomNode = pcz.castAsPCZSceneNode(exteriorNode).createChildSceneNode( name +"_room1_node", ogre.Vector3( 0.0, 0.0, 20.0 ) )
+        roomNode = exteriorNode.createChildSceneNode( name +"_room1_node", ogre.Vector3( 0.0, 0.0, 20.0 ) )
         roomNode.attachObject(room) 
     
         ## room needs it's own zone
         zoneType = "ZoneType_Default" 
         zoneName = name +"_room1_zone" 
-        newZone = pczSM.createZone(zoneType, zoneName) 
+        newZone = scene.createZone(zoneType, zoneName) 
         newZone.setEnclosureNode(roomNode) 
-        pczSM.addPCZSceneNode(roomNode, newZone) 
+        scene.addPCZSceneNode(roomNode, newZone) 
     
         ## create portals for the room
         self.createPortals(scene, 
@@ -80,17 +78,17 @@ class RoomObject:
                       False) 
     
         ## create another interior room
-        room = pczSM.createEntity( name +"_room2", "room_nxpxnypynzpz.mesh" ) 
+        room = scene.createEntity( name +"_room2", "room_nxpxnypynzpz.mesh" ) 
     
         ## add the room as a child node to the enclosure node
-        roomNode = pcz.castAsPCZSceneNode(exteriorNode).createChildSceneNode( name +"_room2_node", ogre.Vector3( 0.0, 0.0, 0.0 ) )
+        roomNode = exteriorNode.createChildSceneNode( name +"_room2_node", ogre.Vector3( 0.0, 0.0, 0.0 ) )
         roomNode.attachObject(room) 
     
         ## room needs it's own zone
         zoneName = name +"_room2_zone" 
-        newZone = pczSM.createZone(zoneType, zoneName) 
+        newZone = scene.createZone(zoneType, zoneName) 
         newZone.setEnclosureNode(roomNode) 
-        pczSM.addPCZSceneNode(roomNode, newZone) 
+        scene.addPCZSceneNode(roomNode, newZone) 
     
         ## create portals for the room
         self.createPortals(scene, 
@@ -101,17 +99,17 @@ class RoomObject:
                       False) 
     
         ## create another interior room
-        room = pczSM.createEntity( name +"_room3", "room_nzpz.mesh" ) 
+        room = scene.createEntity( name +"_room3", "room_nzpz.mesh" ) 
     
         ## add the room as a child node to the enclosure node
-        roomNode = pcz.castAsPCZSceneNode(exteriorNode).createChildSceneNode( name +"_room3_node", ogre.Vector3( 0.0, 0.0, -20.0 ) )
+        roomNode = exteriorNode.createChildSceneNode( name +"_room3_node", ogre.Vector3( 0.0, 0.0, -20.0 ) )
         roomNode.attachObject(room) 
     
         ## room needs it's own zone
         zoneName = name +"_room3_zone" 
-        newZone = pczSM.createZone(zoneType, zoneName) 
+        newZone = scene.createZone(zoneType, zoneName) 
         newZone.setEnclosureNode(roomNode) 
-        pczSM.addPCZSceneNode(roomNode, newZone) 
+        scene.addPCZSceneNode(roomNode, newZone) 
     
         ## create portals for the room
         self.createPortals(scene, 
@@ -122,17 +120,17 @@ class RoomObject:
                       False) 
     
         ## create another interior room
-        room = pczSM.createEntity( name +"_room4", "room_nxpx.mesh" ) 
+        room = scene.createEntity( name +"_room4", "room_nxpx.mesh" ) 
     
         ## add the room as a child node to the enclosure node
-        roomNode = pcz.castAsPCZSceneNode(exteriorNode).createChildSceneNode( name +"_room4_node", ogre.Vector3( -20.0, 0.0, 0.0 ) )
+        roomNode = exteriorNode.createChildSceneNode( name +"_room4_node", ogre.Vector3( -20.0, 0.0, 0.0 ) )
         roomNode.attachObject(room) 
     
         ## room needs it's own zone
         zoneName = name +"_room4_zone" 
-        newZone = pczSM.createZone(zoneType, zoneName) 
+        newZone = scene.createZone(zoneType, zoneName) 
         newZone.setEnclosureNode(roomNode) 
-        pczSM.addPCZSceneNode(roomNode, newZone) 
+        scene.addPCZSceneNode(roomNode, newZone) 
     
         ## create portals for the room
         self.createPortals(scene, 
@@ -143,17 +141,17 @@ class RoomObject:
                       False) 
     
         ## create another interior room
-        room = pczSM.createEntity( name +"_room5", "room_nxpx.mesh" ) 
+        room = scene.createEntity( name +"_room5", "room_nxpx.mesh" ) 
     
         ## add the room as a child node to the enclosure node
-        roomNode = pcz.castAsPCZSceneNode(exteriorNode).createChildSceneNode( name +"_room5_node", ogre.Vector3( 20.0, 0.0, 0.0 ) )
+        roomNode = exteriorNode.createChildSceneNode( name +"_room5_node", ogre.Vector3( 20.0, 0.0, 0.0 ) )
         roomNode.attachObject(room) 
     
         ## room needs it's own zone
         zoneName = name +"_room5_zone" 
-        newZone = pczSM.createZone(zoneType, zoneName) 
+        newZone = scene.createZone(zoneType, zoneName) 
         newZone.setEnclosureNode(roomNode) 
-        pczSM.addPCZSceneNode(roomNode, newZone) 
+        scene.addPCZSceneNode(roomNode, newZone) 
     
         ## create portals for the room
         self.createPortals(scene, 
@@ -164,17 +162,17 @@ class RoomObject:
                       False) 
     
         ## create another interior room
-        room = pczSM.createEntity( name +"_room6", "room_ny.mesh" ) 
+        room = scene.createEntity( name +"_room6", "room_ny.mesh" ) 
     
         ## add the room as a child node to the enclosure node
-        roomNode = pcz.castAsPCZSceneNode(exteriorNode).createChildSceneNode( name +"_room6_node", ogre.Vector3( 0.0, 10.0, 0.0 ) )
+        roomNode = exteriorNode.createChildSceneNode( name +"_room6_node", ogre.Vector3( 0.0, 10.0, 0.0 ) )
         roomNode.attachObject(room) 
     
         ## room needs it's own zone
         zoneName = name +"_room6_zone" 
-        newZone = pczSM.createZone(zoneType, zoneName) 
+        newZone = scene.createZone(zoneType, zoneName) 
         newZone.setEnclosureNode(roomNode) 
-        pczSM.addPCZSceneNode(roomNode, newZone) 
+        scene.addPCZSceneNode(roomNode, newZone) 
     
         ## create portals for the room
         self.createPortals(scene, 
@@ -185,17 +183,17 @@ class RoomObject:
                       False) 
     
         ## create another interior room
-        room = pczSM.createEntity( name +"_room7", "room_py.mesh" ) 
+        room = scene.createEntity( name +"_room7", "room_py.mesh" ) 
     
         ## add the room as a child node to the enclosure node
-        roomNode = pcz.castAsPCZSceneNode(exteriorNode).createChildSceneNode( name +"_room7_node", ogre.Vector3( 0.0, -50.0, 0.0 ) )
+        roomNode = exteriorNode.createChildSceneNode( name +"_room7_node", ogre.Vector3( 0.0, -50.0, 0.0 ) )
         roomNode.attachObject(room) 
     
         ## room needs it's own zone
         zoneName = name +"_room7_zone" 
-        newZone = pczSM.createZone(zoneType, zoneName) 
+        newZone = scene.createZone(zoneType, zoneName) 
         newZone.setEnclosureNode(roomNode) 
-        pczSM.addPCZSceneNode(roomNode, newZone) 
+        scene.addPCZSceneNode(roomNode, newZone) 
     
         ## create portals for the room
         self.createPortals(scene, 
@@ -209,17 +207,17 @@ class RoomObject:
         self.createPoints(ogre.Vector3(20.0, 40.0, 20.0), ogre.Vector3(4.0, 10.0, 4.0)) 
     
         ## create another interior room
-        room = pczSM.createEntity( name +"_room8", "room_nypy_4y.mesh" ) 
+        room = scene.createEntity( name +"_room8", "room_nypy_4y.mesh" ) 
     
         ## add the room as a child node to the enclosure node
-        roomNode = pcz.castAsPCZSceneNode(exteriorNode).createChildSceneNode( name +"_room8_node", ogre.Vector3( 0.0, -25.0, 0.0 ) )
+        roomNode = exteriorNode.createChildSceneNode( name +"_room8_node", ogre.Vector3( 0.0, -25.0, 0.0 ) )
         roomNode.attachObject(room) 
     
         ## room needs it's own zone
         zoneName = name +"_room8_zone" 
-        newZone = pczSM.createZone(zoneType, zoneName) 
+        newZone = scene.createZone(zoneType, zoneName) 
         newZone.setEnclosureNode(roomNode) 
-        pczSM.addPCZSceneNode(roomNode, newZone) 
+        scene.addPCZSceneNode(roomNode, newZone) 
     
         ## create portals for the room
         self.createPortals(scene, 
@@ -231,7 +229,7 @@ class RoomObject:
     
     
         ## resolve portal zone pointers
-        pczSM.connectPortalsToTargetZonesByLocation() 
+        scene.connectPortalsToTargetZonesByLocation() 
     
         return exteriorNode 
 
@@ -264,7 +262,6 @@ class RoomObject:
             return 
         else:
             self.initMaterial=True 
-    
         matptr = ogre.MaterialManager.getSingleton().create(mat, "General")  
         matptr.setReceiveShadows(False)  
         matptr.getTechnique(0).setLightingEnabled(True) 
@@ -474,9 +471,7 @@ class RoomObject:
 
 ## Create portals for every door
     def createPortals(self, scene, room, roomNode, zone, doorFlags, isEnclosure):
-
         corners=[ogre.Vector3] * 4
-    
         if (isEnclosure):
             if(doorFlags & DOOR_FRONT):
                 ## set the corners to the front door corners
@@ -486,7 +481,7 @@ class RoomObject:
                 corners[3] = self.points[11] 
                 ## create the portal
                 portalName = room.getName() + "_FrontDoorPortal"
-                p = pcz.castAsPCZSceneManager(scene).createPortal(portalName) 
+                p = scene.createPortal(portalName) 
                 p.setCorners(corners) 
                 ## associate the portal with the roomnode
                 p.setNode(roomNode) 
@@ -503,7 +498,7 @@ class RoomObject:
                 corners[3] = self.points[12] 
                 ## create the portal
                 portalName = room.getName() + "_BackDoorPortal" 
-                p = pcz.castAsPCZSceneManager(scene).createPortal(portalName) 
+                p = scene.createPortal(portalName) 
                 p.setCorners(corners) 
                 ## associate the portal with the roomnode
                 p.setNode(roomNode) 
@@ -520,7 +515,7 @@ class RoomObject:
                 corners[3] = self.points[19] 
                 ## create the portal
                 portalName = room.getName() + "_TopDoorPortal" 
-                p = pcz.castAsPCZSceneManager(scene).createPortal(portalName) 
+                p = scene.createPortal(portalName) 
                 p.setCorners(corners) 
                 ## associate the portal with the roomnode
                 p.setNode(roomNode) 
@@ -537,7 +532,7 @@ class RoomObject:
                 corners[3] = self.points[20] 
                 ## create the portal
                 portalName = room.getName() + "_BottomDoorPortal" 
-                p = pcz.castAsPCZSceneManager(scene).createPortal(portalName) 
+                p = scene.createPortal(portalName) 
                 p.setCorners(corners) 
                 ## associate the portal with the roomnode
                 p.setNode(roomNode) 
@@ -554,7 +549,7 @@ class RoomObject:
                 corners[3] = self.points[24] 
                 ## create the portal
                 portalName = room.getName() + "_LeftDoorPortal"
-                p = pcz.castAsPCZSceneManager(scene).createPortal(portalName) 
+                p = scene.createPortal(portalName) 
                 p.setCorners(corners) 
                 ## associate the portal with the roomnode
                 p.setNode(roomNode) 
@@ -571,7 +566,7 @@ class RoomObject:
                 corners[3] = self.points[31] 
                 ## create the portal
                 portalName = room.getName() + "_RightDoorPortal"
-                p = pcz.castAsPCZSceneManager(scene).createPortal(portalName) 
+                p = scene.createPortal(portalName) 
                 p.setCorners(corners) 
                 ## associate the portal with the roomnode
                 p.setNode(roomNode) 
@@ -588,7 +583,7 @@ class RoomObject:
                 corners[3] = self.points[8] 
                 ## create the portal
                 portalName = room.getName() + "_FrontDoorPortal" 
-                p = pcz.castAsPCZSceneManager(scene).createPortal(portalName) 
+                p = scene.createPortal(portalName) 
                 p.setCorners(corners) 
                 ## associate the portal with the roomnode
                 p.setNode(roomNode) 
@@ -605,7 +600,7 @@ class RoomObject:
                 corners[3] = self.points[15] 
                 ## create the portal
                 portalName = room.getName() + "_BackDoorPortal" 
-                p = pcz.castAsPCZSceneManager(scene).createPortal(portalName) 
+                p = scene.createPortal(portalName) 
                 p.setCorners(corners) 
                 ## associate the portal with the roomnode
                 p.setNode(roomNode) 
@@ -622,7 +617,7 @@ class RoomObject:
                 corners[3] = self.points[16] 
                 ## create the portal
                 portalName = room.getName() + "_TopDoorPortal" 
-                p = pcz.castAsPCZSceneManager(scene).createPortal(portalName) 
+                p = scene.createPortal(portalName) 
                 p.setCorners(corners) 
                 ## associate the portal with the roomnode
                 p.setNode(roomNode) 
@@ -639,7 +634,7 @@ class RoomObject:
                 corners[3] = self.points[23] 
                 ## create the portal
                 portalName = room.getName() + "_BottomDoorPortal"
-                p = pcz.castAsPCZSceneManager(scene).createPortal(portalName) 
+                p = scene.createPortal(portalName) 
                 p.setCorners(corners) 
                 ## associate the portal with the roomnode
                 p.setNode(roomNode) 
@@ -656,7 +651,7 @@ class RoomObject:
                 corners[3] = self.points[27] 
                 ## create the portal
                 portalName = room.getName() + "_LeftDoorPortal" 
-                p = pcz.castAsPCZSceneManager(scene).createPortal(portalName) 
+                p = scene.createPortal(portalName) 
                 p.setCorners(corners) 
                 ## associate the portal with the roomnode
                 p.setNode(roomNode) 
@@ -673,7 +668,7 @@ class RoomObject:
                 corners[3] = self.points[28] 
                 ## create the portal
                 portalName = room.getName() + "_RightDoorPortal" 
-                p = pcz.castAsPCZSceneManager(scene).createPortal(portalName) 
+                p = scene.createPortal(portalName) 
                 p.setCorners(corners) 
                 ## associate the portal with the roomnode
                 p.setNode(roomNode) 
