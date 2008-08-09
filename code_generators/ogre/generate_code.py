@@ -500,10 +500,28 @@ def ManualTransformations ( mb ):
 # # #     x.documentation = docit ("", "format", "rgba" )
 # # # 
 # # #     
+
+
+
+
+
 # # #     ## these need updates to Py++ to handle pointers 
-# # # # #     x = ns.mem_fun('::Ogre::PixelUtil::unpackColour', arg_types=['float *','float *','float *','float *',None,None])
-# # # # #     x.add_transformation(ft.output('r'), ft.output('g'), ft.output('b'), ft.output('a') )
-# # # # #     x.documentation = docit ("", "Pixelformat, src", "r,g,b,a" )
+#     x = ns.mem_fun('::Ogre::PixelUtil::packColour', arg_types=['Ogre::uint8','Ogre::uint8','Ogre::uint8','Ogre::uint8',None,None])
+#     x.add_transformation(ft.modify_type(5,_ReturnUnsignedInt ), alias= "packColourUint" )
+#     x.documentation = docit ("", "r,g,b,a,Pixelformat, src", "" )
+#     
+#     x = ns.mem_fun('::Ogre::PixelUtil::packColour', arg_types=['float','float','float','float',None,None])
+#     x.add_transformation(ft.modify_type(5,_ReturnUnsignedInt ), alias= "packColourFloat" )
+#     x.documentation = docit ("", "r,g,b,a,Pixelformat, src", "" )
+# 
+#     x = ns.mem_fun('::Ogre::PixelUtil::unpackColour', arg_types=['float *','float *','float *','float *',None,None])
+#     x.add_transformation(ft.output('r'), ft.output('g'), ft.output('b'), ft.output('a'), alias="unpackColourFloat )
+#     x.documentation = docit ("", "Pixelformat, src", "r,g,b,a" )
+#     
+#     x = ns.mem_fun('::Ogre::PixelUtil::unpackColour', arg_types=['float *','float *','float *','float *',None,None])
+#     x.add_transformation(ft.output('r'), ft.output('g'), ft.output('b'), ft.output('a'), alias="unpackColourFloat )
+#     x.documentation = docit ("", "Pixelformat, src", "r,g,b,a" )
+
 # # # 
 # # # # #     x = ns.mem_fun('::Ogre::Frustum::projectSphere')
 # # # # #     x.add_transformation(ft.output('left'), ft.output('top'), ft.output('right'), ft.output('bottom') )
@@ -1038,6 +1056,24 @@ def generate_code():
     ## need to create a welcome doc string for this...                                  
     common_utils.add_constants( mb, { '__doc__' :  '"Python-Ogre Main Module for OGRE 3D"' } ) 
     
+    count = 0
+    for v in main_ns.variables():
+        if not v.ignore:
+            count +=1
+#             v.exclude()
+    print "\n\nSPECIAL -- variables:", count
+    count = 0
+    for v in main_ns.member_functions():
+        if not v.ignore:
+            count +=1
+#             v.exclude()
+    print "\n\nSPECIAL -- member functions:", count
+    count=0
+    for v in main_ns.classes():
+        if not v.ignore:
+            count +=1
+#            v.exclude()
+    print "\n\nSPECIAL -- Number classes:", count
     ##########################################################################################
     #
     # Creating the code. After this step you should not modify/customize declarations.

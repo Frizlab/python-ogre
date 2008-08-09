@@ -116,8 +116,7 @@ def filter_declarations( mb ):
     global_ns.namespace( 'Ogre' ).class_('Node').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('Serializer').include(already_exposed=True)
     
-    
-    
+ 
 def set_call_policies_pointee( mb ):
     # Set the default policy to deal with pointer/reference return types to reference_existing object
     # as this is the ogrenewt Default.
