@@ -1,4 +1,5 @@
 import os, shutil
+import sys
 import shared_ptr
 ##import hashlib ## makes this 2.5 dependent
 import md5
@@ -216,6 +217,7 @@ def Auto_Document ( mb, namespace=None ):
 
 def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[]): 
     toprocess = []   
+    aliases={}
     for fun in mb.member_functions(allow_empty=True):
         toprocess.append( fun )
     for fun in mb.free_functions(allow_empty=True):
@@ -229,6 +231,7 @@ def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[]):
                 arg_position = 0
                 trans=[]
                 desc=""
+                ctypes_conversion = False
                 for arg in fun.arguments:
                     rawarg =  declarations.remove_declarated(
                         declarations.remove_const( 
@@ -245,6 +248,8 @@ def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[]):
                             trans.append( ft.modify_type(arg_position,_ReturnUnsignedInt ) )
                             desc = desc +"Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
                                 arg.type.decl_string + " ) takes a CTypes.addressof(xx). \\n"
+                            ctypes_conversion = True                                
+                            ctypes_arg = arg.type.decl_string.split()[0]
                         elif declarations.is_reference(arg.type):  
                             trans.append( ft.inout(arg_position ) )
                             desc = desc + "Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
@@ -256,17 +261,35 @@ def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[]):
                     arg_position += 1
                 if trans:
                     if fun.documentation:   # it's already be tweaked:
-                        print "AUTOFT ERROR: Duplicate Tranforms.", fun
+                        print "AUTOFT ERROR: Duplicate Tranforms.", fun, fun.documentation
                     elif fun.virtuality == "pure virtual":
                         print "AUTOFT WARNING: PURE VIRTUAL function requires tranform.", fun
                     else:
-                        print "AUTOFT OK: Tranformed ", fun
-                        fun.add_transformation ( * trans , **{"alias":fun.name}  )
+                        new_alias = fun.name
+                        if ctypes_conversion:   # only manage name changes if ctypes changing
+                            # now lets look for a duplicate function name with the same number arguments
+                            f= [None]*len(fun.arguments)
+                            s = mb.member_functions("::" + fullname, arg_types=f, allow_empty=True)
+                            if len (s) > 1: 
+                                # there are duplicate names so need to create something unique
+                                ctypes_arg = ctypes_arg.replace("::", "_") # to clean up function names...
+                                new_alias = fun.name + ctypes_arg[0].upper() + ctypes_arg[1:]
+                                # now for REAL ugly code -- we have faked a new alias and it may not be unique
+                                # so we track previous alias + class name to ensure unique names are generated
+                                keyname = fullname + new_alias # we use the full class + function name + alias as the key
+                                if keyname in aliases: # already exists, need to fake another version..
+                                    new_alias = new_alias + "_" + str( aliases[keyname] )
+                                    aliases[keyname] = aliases[keyname] + 1
+                                else:
+                                    aliases[keyname] = 1   
+                                print "INFO: Adjusting Alias as multiple overlapping functions:", new_alias
+                            
+                        print "AUTOFT OK: Tranformed ", fun, "(",new_alias,")"
+                        fun.add_transformation ( * trans ,  **{"alias":new_alias}  )
                         fun.documentation = docit ("Auto Modified Arguments:",
                                                         desc, "...")
         except:
-            pass    
-                      
+            print "Unexpected error:", sys.exc_info()[0]
 
 def Fix_Void_Ptr_Args ( mb, pointee_types=['unsigned int','int', 'float', 'unsigned char', 'char', 'bool'],  ignore_names=[] ):
     """ we modify functions that take void *'s in their argument list to instead take
