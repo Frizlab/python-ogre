@@ -22,93 +22,62 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "UniversalClock.h"
 #include "Astronomy.h"
 
-namespace Caelum {
-
-const Caelum::LongReal UniversalClock::SECONDS_PER_DAY = 86400.0;
-
-UniversalClock::UniversalClock () {
-    setJulianDay (Astronomy::J2000);        
-	setTimeScale (1.0);
-	setUpdateRate (0);
-    // The above call does forceUpdate but let's be explicit for clarity.
-    forceUpdate ();
-}
-
-void UniversalClock::setJulianDay (Caelum::LongReal value) {
-    mJulianDayBase = value;
-    mCurrentTime = 0;
-    mLastUpdateTime = 0;
-}
-
-void UniversalClock::setGregorianDateTime(
-        int year, int month, int day,
-        int hour, int minute, double second)
+namespace Caelum
 {
-    int fpmode = Astronomy::enterHighPrecissionFloatingPointMode ();
-    setJulianDay(Astronomy::getJulianDayFromGregorianDateTime(year, month, day, hour, minute, second));
-    Astronomy::restoreFloatingPointMode(fpmode);
-}
+    const Caelum::LongReal UniversalClock::SECONDS_PER_DAY = 86400.0;
 
-LongReal UniversalClock::getJulianDay () const
-{
-    int fpmode = Astronomy::enterHighPrecissionFloatingPointMode ();
-    Caelum::LongReal res = mJulianDayBase + mCurrentTime / SECONDS_PER_DAY;
-    Astronomy::restoreFloatingPointMode(fpmode);
-    return res;
-}
-
-LongReal UniversalClock::getJulianDayDifference () const {
-    return (mCurrentTime - mLastUpdateTime) / SECONDS_PER_DAY;
-}
-
-LongReal UniversalClock::getJulianSecond () const {
-    int fpmode = Astronomy::enterHighPrecissionFloatingPointMode ();
-    LongReal res = mJulianDayBase * SECONDS_PER_DAY + mCurrentTime;
-    Astronomy::restoreFloatingPointMode(fpmode);
-    return res;
-}
-
-LongReal UniversalClock::getJulianSecondDifference () const {
-    return mCurrentTime - mLastUpdateTime;
-}
-
-void UniversalClock::setTimeScale (const Ogre::Real scale) {
-	mTimeScale = scale;
-}
-
-Ogre::Real UniversalClock::getTimeScale () const {
-	return mTimeScale;
-}
-
-void UniversalClock::setUpdateRate (const Ogre::Real rate) {
-	mUpdateRate = rate;
-
-    if (mUpdateRate < 0) {
-		mUpdateRate = 0;
+    UniversalClock::UniversalClock () {
+        setJulianDay (Astronomy::J2000);        
+	    setTimeScale (1.0);
     }
 
-    forceUpdate();
-}
+    void UniversalClock::setJulianDay (Caelum::LongReal value) {
+        mJulianDayBase = value;
+        mCurrentTime = 0;
+        mLastUpdateTime = 0;
+    }
 
-Ogre::Real UniversalClock::getUpdateRate () const {
-	return mUpdateRate;
-}
+    void UniversalClock::setGregorianDateTime(
+            int year, int month, int day,
+            int hour, int minute, double second)
+    {
+        ScopedHighPrecissionFloatSwitch lock;
+        setJulianDay(Astronomy::getJulianDayFromGregorianDateTime(year, month, day, hour, minute, second));
+    }
 
-bool UniversalClock::update (const Ogre::Real time) {
-	mTimeSinceLastUpdate += time;
+    LongReal UniversalClock::getJulianDay () const
+    {
+        ScopedHighPrecissionFloatSwitch lock;
+        Caelum::LongReal res = mJulianDayBase + mCurrentTime / SECONDS_PER_DAY;
+        return res;
+    }
 
-	if (mTimeSinceLastUpdate > mUpdateRate) {
+    LongReal UniversalClock::getJulianDayDifference () const {
+        ScopedHighPrecissionFloatSwitch lock;
+        return (mCurrentTime - mLastUpdateTime) / SECONDS_PER_DAY;
+    }
+
+    LongReal UniversalClock::getJulianSecond () const {
+        ScopedHighPrecissionFloatSwitch lock;
+        LongReal res = mJulianDayBase * SECONDS_PER_DAY + mCurrentTime;
+        return res;
+    }
+
+    LongReal UniversalClock::getJulianSecondDifference () const {
+        ScopedHighPrecissionFloatSwitch lock;
+        return mCurrentTime - mLastUpdateTime;
+    }
+
+    void UniversalClock::setTimeScale (const Ogre::Real scale) {
+	    mTimeScale = scale;
+    }
+
+    Ogre::Real UniversalClock::getTimeScale () const {
+	    return mTimeScale;
+    }
+
+    void UniversalClock::update (const Ogre::Real time) {
         mLastUpdateTime = mCurrentTime;
-        mCurrentTime += mTimeSinceLastUpdate * mTimeScale;
-        mTimeSinceLastUpdate = 0;
-		return true;
-	} else {
-		return false;
-	}
+        mCurrentTime += time * mTimeScale;
+    }
 }
-
-void UniversalClock::forceUpdate () {
-    mTimeSinceLastUpdate = mUpdateRate;
-}
-
-} // namespace Caelum

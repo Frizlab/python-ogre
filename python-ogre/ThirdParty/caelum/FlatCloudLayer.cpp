@@ -39,7 +39,9 @@ namespace Caelum
 		mMaterial = mMaterial->clone(materialName);
 		mMaterial->load ();
 		if (mMaterial->getBestTechnique () == 0) {
-			CAELUM_THROW_UNSUPPORED_EXCEPTION ("Can't load flat cloud layer material", "FlatCloudLayer");
+            CAELUM_THROW_UNSUPPORTED_EXCEPTION (
+                    "Can't load flat cloud layer material: " + mMaterial->getUnsupportedTechniquesExplanation(),
+                    "FlatCloudLayer");
 		}
 
 		// Plane

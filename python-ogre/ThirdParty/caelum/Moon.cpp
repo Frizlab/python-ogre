@@ -40,23 +40,23 @@ namespace Caelum
         // Clone moon face material.
         mMoonMaterial = Ogre::MaterialManager::getSingletonPtr()->getByName(MOON_MATERIAL_NAME);
         if (mMoonMaterial.isNull()) {
-            CAELUM_THROW_UNSUPPORED_EXCEPTION("Can't find moon material", "Moon");
+            CAELUM_THROW_UNSUPPORTED_EXCEPTION("Can't find moon material", "Moon");
         }
 	    mMoonMaterial = mMoonMaterial->clone(mMoonMaterial->getName() + Ogre::StringConverter::toString((size_t)this));
         mMoonMaterial->load();
         if (mMoonMaterial->getBestTechnique() == NULL) {
-            CAELUM_THROW_UNSUPPORED_EXCEPTION("Moon material not supported", "Moon");
+            CAELUM_THROW_UNSUPPORTED_EXCEPTION("Moon material not supported: " + mMoonMaterial->getUnsupportedTechniquesExplanation(), "Moon");
         }
 
         // Clone moon back material.
         mBackMaterial = Ogre::MaterialManager::getSingletonPtr()->getByName(MOON_BACKROUND_MATERIAL_NAME);
         if (mBackMaterial.isNull()) {
-            CAELUM_THROW_UNSUPPORED_EXCEPTION("Can't find moon background material", "Moon");
+            CAELUM_THROW_UNSUPPORTED_EXCEPTION("Can't find moon background material", "Moon");
         }
 	    mBackMaterial = mBackMaterial->clone(mBackMaterial->getName() + Ogre::StringConverter::toString((size_t)this));
         mBackMaterial->load();
         if (mBackMaterial->getBestTechnique() == NULL) {
-            CAELUM_THROW_UNSUPPORED_EXCEPTION("Moon background material not supported", "Moon");
+            CAELUM_THROW_UNSUPPORTED_EXCEPTION("Moon background material not supported: " + mBackMaterial->getUnsupportedTechniquesExplanation(), "Moon");
         }
 
 	    getFpParams()->setIgnoreMissingParams(true);

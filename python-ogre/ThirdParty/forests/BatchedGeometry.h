@@ -84,8 +84,7 @@ public:
 
 		Ogre::Technique *bestTechnique;	//This is recalculated every frame
 
-
-	protected :
+	protected:
 		bool built;
 		bool requireVertexColors;
 		Ogre::SubMesh *meshType;
@@ -120,6 +119,8 @@ private:
 
 
 protected:
+	static void extractVertexDataFromShared(Ogre::MeshPtr mesh);
+
 	Ogre::String getFormatString(Ogre::SubEntity *ent);
 	typedef std::map<Ogre::String, SubBatch*> SubBatchMap;	//Stores a list of GeomBatch'es, using a format string (generated with getGeometryFormatString()) as the key value
 	SubBatchMap subBatchMap;
