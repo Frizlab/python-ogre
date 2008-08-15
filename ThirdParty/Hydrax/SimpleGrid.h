@@ -25,11 +25,11 @@ http://www.gnu.org/copyleft/lesser.txt.
 #ifndef _Hydrax_Modules_SimpleGrid_H_
 #define _Hydrax_Modules_SimpleGrid_H_
 
-#include "../../Prerequisites.h"
+#include "Prerequisites.h"
 
-#include "../../Hydrax.h"
-#include "../../Mesh.h"
-#include "../Module.h"
+#include "Hydrax.h"
+#include "Mesh.h"
+#include "Module.h"
 
 namespace Hydrax{ namespace Module
 {

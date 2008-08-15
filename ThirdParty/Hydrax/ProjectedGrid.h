@@ -31,11 +31,11 @@ http://www.cnblogs.com/ArenAK/archive/2007/11/07/951713.html
 #ifndef _Hydrax_Modules_ProjectedGrid_H_
 #define _Hydrax_Modules_projectedGrid_H_
 
-#include "../../Prerequisites.h"
+#include "Prerequisites.h"
 
-#include "../../Hydrax.h"
-#include "../../Mesh.h"
-#include "../Module.h"
+#include "Hydrax.h"
+#include "Mesh.h"
+#include "Module.h"
 
 namespace Hydrax{ namespace Module
 {
