@@ -29,15 +29,15 @@ http://www.gnu.org/copyleft/lesser.txt.
 #include <Ogre.h>
 
 /// Define the dll export qualifier if compiling for Windows
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-   #ifdef HYDRAX_LIB
-     #define DllExport __declspec (dllexport)
-   #else
-     #define DllExport __declspec (dllimport)
-   #endif
-#else
+// #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+//    #ifdef HYDRAX_LIB
+//      #define DllExport __declspec (dllexport)
+//    #else
+//      #define DllExport __declspec (dllimport)
+//    #endif
+// #else
    #define DllExport
-#endif
+// #endif
 
 /// Log macro
 #define HydraxLOG(msg) Ogre::LogManager::getSingleton().logMessage("[Hydrax] " + Ogre::String(msg));

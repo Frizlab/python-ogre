@@ -1632,19 +1632,15 @@ class hydrax:
     name='hydrax'
     parent="ogre/addons"
     cflags = ""
-    try:
-        include_dirs = [ Config.PATH_Boost,
-                        Config.PATH_hydrax
-                        , Config.PATH_INCLUDE_Ogre
-                        ]
-        lib_dirs = [Config.PATH_LIB_Boost,
-                    Config.PATH_LIB_hydrax,
-                    Config.PATH_LIB_Ogre_OgreMain
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_hydrax
+                    , Config.PATH_INCLUDE_Ogre
                     ]
-    except:
-        pass                    
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain
+                ]
     CheckIncludes=[]
-    libs=[  boost.lib, 'OgreMain', 'hydrax' ]
+    libs=[  boost.lib, 'OgreMain' ]
     ModuleName="hydrax"     
     
 ############################################################################################
@@ -1686,6 +1682,7 @@ projects = {
     , 'cadunetree' : cadunetree
     ,'opensteer' : opensteer
     ,'ogrepcz' : ogrepcz
+    , 'hydrax' : hydrax
 }        
 
 #

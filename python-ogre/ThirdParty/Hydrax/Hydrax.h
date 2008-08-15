@@ -35,7 +35,7 @@ http://www.gnu.org/copyleft/lesser.txt.
 #include "MaterialManager.h"
 #include "TextureManager.h"
 #include "DecalsManager.h"
-#include "Modules/Module.h"
+#include "Module.h"
 
 namespace Hydrax
 {

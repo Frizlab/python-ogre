@@ -25,7 +25,7 @@ http://www.gnu.org/copyleft/lesser.txt.
 #ifndef _Hydrax_Noise_H_
 #define _Hydrax_Noise_H_
 
-#include "../Prerequisites.h"
+#include "Prerequisites.h"
 
 namespace Hydrax{ namespace Noise
 {

@@ -6,7 +6,7 @@
 # -----------------------------------------------------------------------------
 
 ## STARTER TEMPLATE..
-## replace PROJECT with lowercase project name
+## replace hydrax with lowercase project name
 ## set MAIN_NAMESPACE
 ## rename and configure .h files
 
@@ -40,7 +40,7 @@ import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
 from common_utils import docit
 
-MAIN_NAMESPACE = ''
+MAIN_NAMESPACE = 'Hydrax'
 
 ############################################################
 ##
@@ -192,11 +192,11 @@ def generate_code():
     # NOTE: If you update the source library code you need to manually delete the cache .XML file   
     #
     xml_cached_fc = parser.create_cached_source_fc(
-                        os.path.join( environment.PROJECT.root_dir, "python_PROJECT.h" )
-                        , environment.PROJECT.cache_file )
+                        os.path.join( environment.hydrax.root_dir, "python_hydrax.h" )
+                        , environment.hydrax.cache_file )
 
-    defined_symbols = [ ]
-    defined_symbols.append( 'VERSION_' + environment.PROJECT.version )  
+    defined_symbols = ['OGRE_NONCLIENT_BUILD' ]
+    defined_symbols.append( 'VERSION_' + environment.hydrax.version )  
     
     #
     # build the core Py++ system from the GCCXML created source
@@ -204,10 +204,10 @@ def generate_code():
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
-                                          , include_paths=environment.PROJECT.include_dirs
+                                          , include_paths=environment.hydrax.include_dirs
                                           , define_symbols=defined_symbols
                                           , indexing_suite_version=2
-                                          , cflags=environment.PROJECT.cflags
+                                          , cflags=environment.hydrax.cflags
                                            )
                                            
     # if this module depends on another set it here                                           
@@ -250,11 +250,11 @@ def generate_code():
         if cls.name not in NoPropClasses:
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
             
-    common_utils.add_constants( mb, { 'PROJECT_version' :  '"%s"' % environment.PROJECT.version.replace("\n", "\\\n") 
+    common_utils.add_constants( mb, { 'hydrax_version' :  '"%s"' % environment.hydrax.version.replace("\n", "\\\n") 
                                       , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
                                       
     ## need to create a welcome doc string for this...                                  
-    common_utils.add_constants( mb, { '__doc__' :  '"PROJECT DESCRIPTION"' } ) 
+    common_utils.add_constants( mb, { '__doc__' :  '"hydrax DESCRIPTION"' } ) 
     
     
     ##########################################################################################
@@ -263,23 +263,23 @@ def generate_code():
     #
     ##########################################################################################
     extractor = exdoc.doc_extractor() # I'm excluding the UTFstring docs as lots about nothing 
-    mb.build_code_creator (module_name='_PROJECT_' , doc_extractor= extractor )
+    mb.build_code_creator (module_name='_hydrax_' , doc_extractor= extractor )
     
-    for inc in environment.PROJECT.include_dirs:
+    for inc in environment.hydrax.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )
-    mb.code_creator.user_defined_directories.append( environment.PROJECT.generated_dir )
-    mb.code_creator.replace_included_headers( customization_data.header_files( environment.PROJECT.version ) )
+    mb.code_creator.user_defined_directories.append( environment.hydrax.generated_dir )
+    mb.code_creator.replace_included_headers( customization_data.header_files( environment.hydrax.version ) )
 
-    huge_classes = map( mb.class_, customization_data.huge_classes( environment.PROJECT.version ) )
+    huge_classes = map( mb.class_, customization_data.huge_classes( environment.hydrax.version ) )
 
-    mb.split_module(environment.PROJECT.generated_dir, huge_classes, use_files_sum_repository=False)
+    mb.split_module(environment.hydrax.generated_dir, huge_classes, use_files_sum_repository=False)
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory..
     
-#     common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_PROJECT, 
-#                             destPath = environment.PROJECT.generated_dir, 
-#                             recursive=False )
+    common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_hydrax, 
+                            destPath = environment.hydrax.generated_dir, 
+                            recursive= False )
         
 if __name__ == '__main__':
     start_time = time.clock()
