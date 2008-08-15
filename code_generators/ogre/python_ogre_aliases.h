@@ -61,6 +61,17 @@ typedef std::pair<unsigned, unsigned> StdPairUnsignedUnsigned;
 #if OGRE_VERSION_MINOR == 4
     typedef Ogre::AlignedAllocator<Ogre::Vector4, 0> AlignedAllocatorVector40;
     typedef Ogre::AlignedAllocator<Ogre::Vector4, 0>::rebind<Ogre::Vector4> AlignedAllocatorVector40Rebind;
+#else
+    typedef Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > AllocatedObjectMemCategory_0;
+    typedef Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)1> > AllocatedObjectMemCategory_1;
+    typedef Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)2> > AllocatedObjectMemCategory_2;
+    typedef Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)3> > AllocatedObjectMemCategory_3;
+    typedef Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)4> > AllocatedObjectMemCategory_4;
+    typedef Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)5> > AllocatedObjectMemCategory_5;
+    typedef Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)6> > AllocatedObjectMemCategory_6;
+    typedef Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)7> > AllocatedObjectMemCategory_7;
+
+    
 #endif
 
 typedef std::vector<Ogre::Vector4> VectorVector4;

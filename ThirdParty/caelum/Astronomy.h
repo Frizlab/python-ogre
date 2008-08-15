@@ -18,8 +18,8 @@ You should have received a copy of the GNU Lesser General Public License
 along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef ASTRONOMY_H
-#define ASTRONOMY_H
+#ifndef CAELUM__ASTRONOMY_H
+#define CAELUM__ASTRONOMY_H
 
 #include "CaelumPrerequisites.h"
 
@@ -199,6 +199,30 @@ namespace Caelum
          */
         static void restoreFloatingPointMode (int oldMode);
     };
+
+    /** Dummy class to increase floting point precission in a block
+     *  This class will raise precission in the ctor and restore it
+     *  in the destructor. During it's lifetime floating-point
+     *  precission will be increased.
+     *
+     *  To use this class just create a instance on the stack at the start of a block.
+     *
+     *  @see Astronomy::enterHighPrecissionFloatingPointMode
+     */ 
+    class CAELUM_EXPORT ScopedHighPrecissionFloatSwitch
+    {
+    private:
+        int mOldFpMode;
+
+    public:
+        inline ScopedHighPrecissionFloatSwitch() {
+            mOldFpMode = Astronomy::enterHighPrecissionFloatingPointMode ();
+        }
+
+        inline ~ScopedHighPrecissionFloatSwitch() {
+            Astronomy::restoreFloatingPointMode (mOldFpMode);
+        }
+    };
 }
 
-#endif // SOLARSYSTEMMODEL_H
+#endif // CAELUM__ASTRONOMY_H

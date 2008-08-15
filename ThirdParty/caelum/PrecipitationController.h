@@ -25,6 +25,13 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 namespace Caelum
 {
+	struct PrecipitationParams
+	{
+		Ogre::ColourValue mColor;
+		float mSpeed;
+		Ogre::String mName;
+	};
+
 	enum PrecipitationType
 	{
 		PRECIPITATION_DRIZZLE		= 0,
@@ -50,10 +57,20 @@ namespace Caelum
 	private:
 		Ogre::SceneManager *mSceneMgr;
 		Ogre::Vector3 mWindSpeed;
-		Real mCoverage;
+		Real mIntensity;
 		Real mSpeed;
-		Real mTime;
+		Ogre::ColourValue mColor;
 		PrecipitationType mType;
+		Ogre::String mTextureName;
+
+		Ogre::ColourValue mSceneColor;
+		Real mInternalTime;
+
+        // Only meant for the instance ctl in auto-camera-speed mode.
+        Real mSecondsSinceLastFrame;
+        inline Real getSecondsSinceLastFrame() { return mSecondsSinceLastFrame; }
+
+        friend class PrecipitationInstance;
 
 	public:
         /// Called to enforce parameters on a composing material
@@ -73,17 +90,25 @@ namespace Caelum
 		void setWindSpeed(const Ogre::Vector3 &value);
 		const Ogre::Vector3 getWindSpeed();
 
-		// Precipitation coverage
-		void setCoverage(Real value);
-		Real getCoverage();
+		// Texture name
+		void setTextureName(Ogre::String textureName);
+		Ogre::String getTextureName();
 
-		 // Precipitation type
+		// Precipitation intensity
+		void setIntensity(Real value);
+		Real getIntensity();
+
+		// Precipitation type
 		void setType(PrecipitationType value);
 		PrecipitationType getType();
 
 		// Precipitation speed (affects direction)
 		void setSpeed(Real value);
 		Real getSpeed();
+
+		// Precipitation color
+		void setColor(Ogre::ColourValue color);
+		Ogre::ColourValue getColor();
 
 		/// Set manual camera speed for all viewports.
 		void setManualCameraSpeed(const Ogre::Vector3 &value);
@@ -94,7 +119,7 @@ namespace Caelum
         /** Update the the precipitation controller.
          *  @param secondsSinceLastFrame Number of secods since the last frame.
          */
-		void update(Real secondsSinceLastFrame);
+		void update(Real secondsSinceLastFrame, Ogre::ColourValue colour);
 
 		PrecipitationController(
 				Ogre::SceneManager *sceneMgr);
@@ -130,7 +155,7 @@ namespace Caelum
         Ogre::Camera* mLastCamera;
         Ogre::Vector3 mLastCameraPosition;
         Ogre::Vector3 mCameraSpeed;
-        bool mAutoCameraSpeed;
+		bool mAutoCameraSpeed;
 
         virtual void notifyMaterialSetup(uint pass_id, Ogre::MaterialPtr &mat);
         virtual void notifyMaterialRender(uint pass_id, Ogre::MaterialPtr &mat);
@@ -143,7 +168,11 @@ namespace Caelum
         /// Check if camera speed is automatically calculated (default true).
         bool getAutoCameraSpeed();
 
-        /// Set camera speed to automatic calculation.
+        /** Set camera speed to automatic calculation.
+         *
+         *  @warning: This runs into difficult precission issues. It is
+         *  better to use setManualCameraSpeed.
+         */
         void setAutoCameraSpeed();
 
         /// Set manual camera speed; disables automatic calculation.

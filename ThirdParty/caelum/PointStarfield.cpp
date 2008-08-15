@@ -42,19 +42,21 @@ namespace Caelum
 		mObserverLatitude = 45;
 		mObserverLongitude = 0;
 
+        String uniqueId = StringConverter::toString ((size_t)this);
 		mMaterial = Ogre::MaterialManager::getSingleton ().getByName (BILLBOARD_MATERIAL_NAME);
 		if (mMaterial.isNull ()) {
-			CAELUM_THROW_UNSUPPORED_EXCEPTION ("Can't load point starfield material", "PointStarfield");
+			CAELUM_THROW_UNSUPPORTED_EXCEPTION ("Can't find point starfield material", "PointStarfield");
 		}
+        mMaterial = mMaterial->clone (BILLBOARD_MATERIAL_NAME + uniqueId);
 		mMaterial->load ();
 		if (mMaterial->getBestTechnique () == 0) {
-			CAELUM_THROW_UNSUPPORED_EXCEPTION ("Can't load point starfield material", "PointStarfield");
+            CAELUM_THROW_UNSUPPORTED_EXCEPTION ("Can't load point starfield material: " + mMaterial->getUnsupportedTechniquesExplanation(), "PointStarfield");
 		}
 
 		sceneMgr->getRenderQueue()->getQueueGroup(CAELUM_RENDER_QUEUE_STARFIELD)->setShadowsEnabled (false);
 
 		// We use a separate data source.
-		Ogre::String objName = "Caelum/PointStarfield/" + Ogre::StringConverter::toString ((size_t)this);
+		Ogre::String objName = "Caelum/PointStarfield/" + uniqueId;
         mManualObj = sceneMgr->createManualObject (objName);
         mManualObj->setDynamic(false);
 		mManualObj->setRenderQueueGroup (CAELUM_RENDER_QUEUE_STARFIELD);

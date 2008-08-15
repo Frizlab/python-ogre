@@ -28,19 +28,33 @@ namespace Caelum
 	const String PrecipitationController::COMPOSITOR_NAME = "Caelum/PrecipitationCompositor";
 	const String PrecipitationController::MATERIAL_NAME =   "Caelum/PrecipitationMaterial";
 
+	PrecipitationParams PrecipitationPresets[]={
+        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.95, "precipitation_drizzle.png" }, //Drizzle
+        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.85, "precipitation_rain.png" }, //Rain
+        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.12, "precipitation_snow.png" }, //Snow
+        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.33, "precipitation_snowgrains.png" }, //Snow grains
+        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.70, "precipitation_icecrystals.png" }, //Ice crystals
+        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.78, "precipitation_icepellets.png" }, //Ice pellets
+        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.74, "precipitation_hail.png" }, //Hail
+        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.70, "precipitation_smallhail.png" } //Small hail		
+	};
+
 	PrecipitationController::PrecipitationController(
             Ogre::SceneManager *sceneMgr)
     {
 		Ogre::String uniqueId = Ogre::StringConverter::toString((size_t)this);
 		mSceneMgr = sceneMgr;
 
-		setWindSpeed(Ogre::Vector3(0, -0.1, 0.1));
-		setCoverage(0.25);
-		setType(PRECIPITATION_SNOW);
+		setWindSpeed(Ogre::Vector3(0, -0.1, 0.0));
+		setIntensity(0.25);
 		setSpeed(0.1);
-		mTime = 0.0;
-
-		update(0.0f);
+		setColor(Ogre::ColourValue(0.8, 0.8, 0.8, 1));
+		mInternalTime = 0.0;
+		mSecondsSinceLastFrame = 0.0;
+		
+		setType(PRECIPITATION_SNOW);
+		
+		update(0.0f,Ogre::ColourValue(0,0,0,0));
 	}
 
 	PrecipitationController::~PrecipitationController() {
@@ -55,16 +69,27 @@ namespace Caelum
 		return mWindSpeed;
 	}
 
-	void PrecipitationController::setCoverage(Real coverage) {
-		mCoverage = coverage;
+	void PrecipitationController::setTextureName(Ogre::String textureName) {
+		mTextureName=textureName;
+	}
+	
+	Ogre::String PrecipitationController::getTextureName() {
+		return mTextureName;
+	}
+	
+	void PrecipitationController::setIntensity(Real intensity) {
+		mIntensity = intensity;
 	}
 
-	Real PrecipitationController::getCoverage() {
-		return mCoverage;
+	Real PrecipitationController::getIntensity() {
+		return mIntensity;
 	}
 
 	void PrecipitationController::setType(PrecipitationType type) {
 		mType = type;
+		setColor(PrecipitationPresets[type].mColor);
+		setSpeed(PrecipitationPresets[type].mSpeed);
+		setTextureName(PrecipitationPresets[type].mName);
 	}
 
 	PrecipitationType PrecipitationController::getType() {
@@ -79,8 +104,18 @@ namespace Caelum
 		return mSpeed;
 	}
 
-	void PrecipitationController::update(Real secondsSinceLastFrame) {
-		mTime += secondsSinceLastFrame;
+	void PrecipitationController::setColor(Ogre::ColourValue color) {
+		mColor = color;
+	}
+	
+	Ogre::ColourValue PrecipitationController::getColor() {
+		return mColor;
+	}
+
+	void PrecipitationController::update(Real secondsSinceLastFrame, Ogre::ColourValue colour) {
+        mSecondsSinceLastFrame = secondsSinceLastFrame;
+        mInternalTime += mSecondsSinceLastFrame;
+        mSceneColor = colour;
 	}
 
 	void PrecipitationController::setManualCameraSpeed(const Ogre::Vector3& value) {
@@ -105,29 +140,55 @@ namespace Caelum
             const Ogre::MaterialPtr& mat,
             const Ogre::Camera* cam,
             const Ogre::Vector3& camSpeed) 
-	{
-		Ogre::Vector3 camDir = cam->getDerivedDirection();
-		Ogre::Vector3 camUp = cam->getDerivedUp();
-		Ogre::Vector3 camRight = cam->getDerivedRight();
-		camDir.normalise();
-		camUp.normalise();
-		camRight.normalise();
+	{		
 		// 4523.893416f is divisible with all the sine periods in the shader
-        Real appTime = static_cast<Real>(fmod(mTime, 4523.893416f));
+        Real appTime = static_cast<Real>(fmod(mInternalTime, 4523.893416f));
 
 		Ogre::GpuProgramParametersSharedPtr fpParams =
 				mat->getBestTechnique ()->getPass (0)->getFragmentProgramParameters ();
 
         fpParams->setIgnoreMissingParams(true);
-		fpParams->setNamedConstant("coverage", mCoverage);	
-		fpParams->setNamedConstant("camera_vector", camSpeed);
-		fpParams->setNamedConstant("wind_vector", mWindSpeed);
-		fpParams->setNamedConstant("camera_direction", camDir);
-		fpParams->setNamedConstant("camera_up", camUp);
-		fpParams->setNamedConstant("camera_right", camRight);
-		fpParams->setNamedConstant("dropSpeed", mSpeed);
-		fpParams->setNamedConstant("appTime", appTime);
-		mat->getTechnique(0)->getPass(0)->getTextureUnitState(1)->setCurrentFrame(mType);
+		Real sceneLum = (mSceneColor.r + mSceneColor.g + mSceneColor.b) / 3;
+		mSceneColor.r = mSceneColor.g = mSceneColor.b = sceneLum;			
+		fpParams->setNamedConstant("precColor", mSceneColor * mColor);
+		fpParams->setNamedConstant("intensity", mIntensity);
+		fpParams->setNamedConstant("dropSpeed", 0);		
+
+		Ogre::Vector3 camDir = cam->getDerivedDirection();
+		Ogre::Vector3 camUp = - cam->getDerivedUp();
+		Ogre::Vector3 camRight = cam->getDerivedRight();
+
+		Ogre::Vector3 corner1, corner2, corner3, corner4;
+		
+		corner1 = camDir - camRight - camUp;
+		corner2 = camDir + camRight - camUp;
+		corner3 = camDir - camRight + camUp;
+		corner4 = camDir + camRight + camUp;
+
+		Ogre::Vector3 precDir = Ogre::Vector3(0, -mSpeed, 0) + mWindSpeed - camSpeed;
+		Ogre::Quaternion quat = precDir.getRotationTo(Ogre::Vector3(0, -1, 0));
+
+		corner1 = quat * corner1;
+		corner2 = quat * corner2;
+		corner3 = quat * corner3;
+		corner4 = quat * corner4;
+
+		fpParams->setNamedConstant("corner1", corner1);
+		fpParams->setNamedConstant("corner2", corner2);
+		fpParams->setNamedConstant("corner3", corner3);
+		fpParams->setNamedConstant("corner4", corner4);		
+		
+		float fallSpeed = precDir.length();
+
+		fpParams->setNamedConstant("deltaX",
+			Ogre::Vector3(sin(appTime) + 4.33, cos(appTime * 1.5) + 5.26,
+				cos(appTime * 2.5)) * fallSpeed / 10 + 88.001);
+		fpParams->setNamedConstant("deltaY",
+			Ogre::Vector3(0.6, 1.0, 1.4) * fallSpeed * appTime);
+
+        if (mat->getTechnique(0)->getPass(0)->getTextureUnitState(1)->getTextureName() != mTextureName) {
+			mat->getTechnique(0)->getPass(0)->getTextureUnitState(1)->setTextureName(mTextureName);
+        }
 	}
 
     PrecipitationInstance::PrecipitationInstance
@@ -144,7 +205,7 @@ namespace Caelum
         mAutoCameraSpeed(true)
     {
         Ogre::CompositorManager* compMgr = Ogre::CompositorManager::getSingletonPtr();
-
+		
         // Create the precipitation compositor.
         mCompInst = compMgr->addCompositor(mViewport, PrecipitationController::COMPOSITOR_NAME);
         assert(mCompInst);
@@ -169,12 +230,22 @@ namespace Caelum
 	void PrecipitationInstance::notifyMaterialRender(uint pass_id, Ogre::MaterialPtr &mat)
 	{
         if (mAutoCameraSpeed) {
-            Ogre::Camera* cam = mViewport->getCamera();
-            Ogre::Vector3 camPos = cam->getDerivedPosition();
+			Ogre::Camera* cam = mViewport->getCamera();
+			Ogre::Vector3 camPos = cam->getDerivedPosition();
             if (cam != mLastCamera) {
                 mCameraSpeed = Ogre::Vector3::ZERO;
             } else {
-                mCameraSpeed = camPos - mLastCameraPosition;
+                Real timeDiff = mParent->getSecondsSinceLastFrame ();
+                Ogre::Vector3 posDiff = camPos - mLastCameraPosition;
+                mCameraSpeed = posDiff / timeDiff;
+
+                /*
+                LogManager::getSingletonPtr ()->logMessage (
+                        "Caelum::PrecipitationInstance:"
+                        " posDiff = " + StringConverter::toString(posDiff) +
+                        " timeDiff = " + StringConverter::toString(mParent->getSecondsSinceLastFrame (), 10) +
+                        " speed = " + StringConverter::toString(mCameraSpeed));
+                */
             }
             mLastCamera = cam;
             mLastCameraPosition = camPos;

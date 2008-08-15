@@ -20,6 +20,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 #include "CaelumPrecompiled.h"
 #include "CaelumSystem.h"
+#include "CaelumExceptions.h"
 #include "CloudSystem.h"
 #include "Moon.h"
 #include "PointStarfield.h"
@@ -32,6 +33,8 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "ImageHelper.h"
 #include "FlatCloudLayer.h"
 #include "Astronomy.h"
+
+using namespace Ogre;
 
 namespace Caelum
 {
@@ -48,12 +51,22 @@ namespace Caelum
         mSceneMgr (sceneMgr),
         mCleanup (false)
     {
-        Ogre::LogManager::getSingleton().logMessage ("Caelum: Initialising Caelum system...");
+        LogManager::getSingleton().logMessage ("Caelum: Initialising Caelum system...");
 
         Ogre::String uniqueId = Ogre::StringConverter::toString ((size_t)this);
         mCaelumCameraNode = mSceneMgr->getRootSceneNode ()->createChildSceneNode ("Caelum/CameraNode/" + uniqueId);
         mCaelumGroundNode = mSceneMgr->getRootSceneNode ()->createChildSceneNode ("Caelum/GroundNode/" + uniqueId);
         mUniversalClock.reset(new UniversalClock ());
+
+        // If the "Caelum" resource group does not exist; create it.
+        // This resource group is never released; which may be bad.
+        // What does ogre do for it's own runtime resources?
+        Ogre::StringVector groups = ResourceGroupManager::getSingleton ().getResourceGroups ();
+        if (std::find (groups.begin(), groups.end(), Caelum::RESOURCE_GROUP_NAME) == groups.end()) {
+            LogManager::getSingleton ().logMessage (
+                    "Caelum: Creating required internal resource group \'" + RESOURCE_GROUP_NAME + "\'");
+            ResourceGroupManager::getSingleton ().createResourceGroup (Caelum::RESOURCE_GROUP_NAME);
+        }
 
         autoConfigure (componentsToCreate);
     }
@@ -92,7 +105,7 @@ namespace Caelum
 
     CaelumSystem::~CaelumSystem () {
         destroySubcomponents (true);
-        Ogre::LogManager::getSingleton ().logMessage ("Caelum: CaelumSystem destroyed.");
+        LogManager::getSingleton ().logMessage ("Caelum: CaelumSystem destroyed.");
     }
 
     void CaelumSystem::clear() {
@@ -129,57 +142,104 @@ namespace Caelum
         // Clear everything
         clear();
 
-        Ogre::LogManager::getSingleton ().logMessage ("Caelum: Creating caelum sub-components.");
+        LogManager::getSingleton ().logMessage ("Caelum: Creating caelum sub-components.");
 
         // Default lookups.
         setSkyGradientsImage(DEFAULT_SKY_GRADIENTS_IMAGE);
         setSunColoursImage(DEFAULT_SUN_COLOURS_IMAGE);
 
-        // Create default components; as requested.
+        // Init skydome
         if (componentsToCreate & CAELUM_COMPONENT_SKY_DOME) {
-            this->setSkyDome (new SkyDome (mSceneMgr, getCaelumCameraNode ()));
+            try {
+                this->setSkyDome (new SkyDome (mSceneMgr, getCaelumCameraNode ()));
+            } catch (Caelum::UnsupportedException& ex) {
+                LogManager::getSingleton ().logMessage (
+                        "Caelum: Failed to initialize skydome: " + ex.getFullDescription());
+            }
         }
+        
+        // Init sun
         if (componentsToCreate & CAELUM_COMPONENT_SUN) {
-            this->setSun (new SpriteSun (mSceneMgr, getCaelumCameraNode ()));
-            this->getSun ()->setAmbientMultiplier (Ogre::ColourValue (0.5, 0.5, 0.5));
-            this->getSun ()->setDiffuseMultiplier (Ogre::ColourValue (3, 3, 2.7));
-            this->getSun ()->setSpecularMultiplier (Ogre::ColourValue (5, 5, 5));
+            try {
+                this->setSun (new SpriteSun (mSceneMgr, getCaelumCameraNode ()));
+                this->getSun ()->setAmbientMultiplier (Ogre::ColourValue (0.5, 0.5, 0.5));
+                this->getSun ()->setDiffuseMultiplier (Ogre::ColourValue (3, 3, 2.7));
+                this->getSun ()->setSpecularMultiplier (Ogre::ColourValue (5, 5, 5));
 
-            this->getSun ()->setAutoDisable (true);
-            this->getSun ()->setAutoDisableThreshold (0.05);
+                this->getSun ()->setAutoDisable (true);
+                this->getSun ()->setAutoDisableThreshold (0.05);
+            } catch (Caelum::UnsupportedException& ex) {
+                LogManager::getSingleton ().logMessage (
+                        "Caelum: Failed to initialize sun: " + ex.getFullDescription());
+            }
         }
+
+        // Init moon
         if (componentsToCreate & CAELUM_COMPONENT_MOON) {
-            this->setMoon (new Moon (mSceneMgr, getCaelumCameraNode ()));
-            this->getMoon ()->setAutoDisable (true);
-            this->getMoon ()->setAutoDisableThreshold (0.05);
+            try {
+                this->setMoon (new Moon (mSceneMgr, getCaelumCameraNode ()));
+                this->getMoon ()->setAutoDisable (true);
+                this->getMoon ()->setAutoDisableThreshold (0.05);
+            } catch (Caelum::UnsupportedException& ex) {
+                LogManager::getSingleton ().logMessage (
+                        "Caelum: Failed to initialize moon: " + ex.getFullDescription());
+            }
         }
+
+        // Init image starfield
         if (componentsToCreate & CAELUM_COMPONENT_IMAGE_STARFIELD) {
-            this->setImageStarfield (new ImageStarfield (mSceneMgr, getCaelumCameraNode ()));
+            try {
+                this->setImageStarfield (new ImageStarfield (mSceneMgr, getCaelumCameraNode ()));
+            } catch (Caelum::UnsupportedException& ex) {
+                LogManager::getSingleton ().logMessage (
+                        "Caelum: Failed to initialize the old image starfield: " + ex.getFullDescription());
+            }
         }
+        // Init image starfield
         if (componentsToCreate & CAELUM_COMPONENT_POINT_STARFIELD) {
-            this->setPointStarfield (new PointStarfield (mSceneMgr, getCaelumCameraNode ()));
+            try {
+                this->setPointStarfield (new PointStarfield (mSceneMgr, getCaelumCameraNode ()));
+            } catch (Caelum::UnsupportedException& ex) {
+                LogManager::getSingleton ().logMessage (
+                        "Caelum: Failed to initialize starfield: " + ex.getFullDescription());
+            }
         }
         if (componentsToCreate & CAELUM_COMPONENT_GROUND_FOG) {
-            this->setGroundFog (new GroundFog (mSceneMgr, getCaelumCameraNode ()));
+            try {
+               this->setGroundFog (new GroundFog (mSceneMgr, getCaelumCameraNode ()));
+            } catch (Caelum::UnsupportedException& ex) {
+                LogManager::getSingleton ().logMessage (
+                        "Caelum: Failed to initialize ground fog: " + ex.getFullDescription());
+            }
         }
         if (componentsToCreate & CAELUM_COMPONENT_CLOUDS) {
-            this->setCloudSystem (new CloudSystem (mSceneMgr, getCaelumGroundNode ()));
-            getCloudSystem ()->createLayerAtHeight (3000);		
-            getCloudSystem ()->getLayer (0)->setCloudCover (0.3);
+            try {
+                this->setCloudSystem (new CloudSystem (mSceneMgr, getCaelumGroundNode ()));
+                getCloudSystem ()->createLayerAtHeight (3000);		
+                getCloudSystem ()->getLayer (0)->setCloudCover (0.3);
+            } catch (Caelum::UnsupportedException& ex) {
+                LogManager::getSingleton ().logMessage (
+                        "Caelum: Failed to initialize clouds: " + ex.getFullDescription());
+            }
         }
         if (componentsToCreate & CAELUM_COMPONENT_PRECIPITATION) {
-            this->setPrecipitationController (new PrecipitationController (mSceneMgr));
+            try {
+                this->setPrecipitationController (new PrecipitationController (mSceneMgr));
+            } catch (Caelum::UnsupportedException& ex) {
+                LogManager::getSingleton ().logMessage (
+                        "Caelum: Failed to initialize precipitation: " + ex.getFullDescription());
+            }
         }
 
         setManageSceneFog (true);
         setManageAmbientLight (true);
         setMinimumAmbientLight (Ogre::ColourValue (0.1, 0.1, 0.3));
 
-        Ogre::LogManager::getSingleton ().logMessage ("Caelum: DONE initializing");
+        LogManager::getSingleton ().logMessage ("Caelum: DONE initializing");
     }
 
     void CaelumSystem::shutdown (const bool cleanup) {
-        Ogre::LogManager::getSingleton ().logMessage ("Caelum: Shutting down Caelum system...");
+        LogManager::getSingleton ().logMessage ("Caelum: Shutting down Caelum system...");
 
         destroySubcomponents (true);
 
@@ -301,14 +361,20 @@ namespace Caelum
         return true;
     }
 
-    void CaelumSystem::updateSubcomponents (double timeSinceLastFrame) {
-        if (!mUniversalClock->update (timeSinceLastFrame)) {
-            return;
-        }
+    void CaelumSystem::updateSubcomponents (Real timeSinceLastFrame)
+    {
+        /*
+        LogManager::getSingleton().getDefaultLog()->logMessage(
+                "CaelumSystem::updateSubcomponents: " +
+                StringConverter::toString (timeSinceLastFrame, 10));
+        */
 
-        // Get current julian day.
+        mUniversalClock->update (timeSinceLastFrame);
+
+        // Timing variables
         LongReal julDay = mUniversalClock->getJulianDay ();
         LongReal relDayTime = fmod(julDay, 1);
+        Real secondDiff = timeSinceLastFrame * mUniversalClock->getTimeScale ();
 
         // Get astronomical parameters.
         Ogre::Vector3 sunDir = getSunDirection(julDay);    
@@ -374,12 +440,13 @@ namespace Caelum
         // Update clouds
         if (getCloudSystem ()) {
             getCloudSystem ()->update (
-                    mUniversalClock->getJulianSecondDifference(),
-                    sunDir, sunLightColour, fogColour, sunSphereColour);
+                    secondDiff, sunDir, sunLightColour, fogColour, sunSphereColour);
         }
 
         if (getPrecipitationController ()) {
-            getPrecipitationController ()->update(mUniversalClock->getJulianSecondDifference());
+            getPrecipitationController ()->update(
+                    secondDiff, fogColour);
+
         }
 
         // Update ambient lighting.
@@ -426,27 +493,27 @@ namespace Caelum
         return mManageSceneFog;
     }
 
-    void CaelumSystem::setSceneFogDensityMultiplier (double value) {
+    void CaelumSystem::setSceneFogDensityMultiplier (Real value) {
         mSceneFogDensityMultiplier = value;
     }
 
-    double CaelumSystem::getSceneFogDensityMultiplier () const {
+    Real CaelumSystem::getSceneFogDensityMultiplier () const {
         return mSceneFogDensityMultiplier;
     }
 
-    void CaelumSystem::setGroundFogDensityMultiplier (double value) {
+    void CaelumSystem::setGroundFogDensityMultiplier (Real value) {
         mGroundFogDensityMultiplier = value;
     }
 
-    double CaelumSystem::getGroundFogDensityMultiplier () const {
+    Real CaelumSystem::getGroundFogDensityMultiplier () const {
         return mGroundFogDensityMultiplier;
     }
 
-    void CaelumSystem::setGlobalFogDensityMultiplier (double value) {
+    void CaelumSystem::setGlobalFogDensityMultiplier (Real value) {
         mGlobalFogDensityMultiplier = value;
     }
 
-    double CaelumSystem::getGlobalFogDensityMultiplier () const {
+    Real CaelumSystem::getGlobalFogDensityMultiplier () const {
         return mGlobalFogDensityMultiplier;
     }
 
@@ -460,49 +527,49 @@ namespace Caelum
         mSunColoursImage->load (filename, RESOURCE_GROUP_NAME);
     }
 
-    Ogre::ColourValue CaelumSystem::getFogColour (float time, const Ogre::Vector3 &sunDir) {
+    Ogre::ColourValue CaelumSystem::getFogColour (Real time, const Ogre::Vector3 &sunDir) {
         if (!mSkyGradientsImage.get()) {
             return Ogre::ColourValue::Black;
         }
 
-        float elevation = sunDir.dotProduct (Ogre::Vector3::UNIT_Y) * 0.5 + 0.5;
+        Real elevation = sunDir.dotProduct (Ogre::Vector3::UNIT_Y) * 0.5 + 0.5;
         Ogre::ColourValue col = getInterpolatedColour (elevation, 1, mSkyGradientsImage.get(), false);
         return col;
     }
 
-    float CaelumSystem::getFogDensity (float time, const Ogre::Vector3 &sunDir)
+    Real CaelumSystem::getFogDensity (Real time, const Ogre::Vector3 &sunDir)
     {
         if (!mSkyGradientsImage.get()) {
             return 0;
         }
 
-        float elevation = sunDir.dotProduct (Ogre::Vector3::UNIT_Y) * 0.5 + 0.5;
+        Real elevation = sunDir.dotProduct (Ogre::Vector3::UNIT_Y) * 0.5 + 0.5;
         Ogre::ColourValue col = getInterpolatedColour (elevation, 1, mSkyGradientsImage.get(), false);
         return col.a;
     }
 
-    Ogre::ColourValue CaelumSystem::getSunSphereColour (float time, const Ogre::Vector3 &sunDir)
+    Ogre::ColourValue CaelumSystem::getSunSphereColour (Real time, const Ogre::Vector3 &sunDir)
     {
         if (!mSunColoursImage.get()) {
             return Ogre::ColourValue::White;
         }
 
-        float elevation = sunDir.dotProduct (Ogre::Vector3::UNIT_Y);
+        Real elevation = sunDir.dotProduct (Ogre::Vector3::UNIT_Y);
         elevation = elevation * 2 + 0.4;
         return getInterpolatedColour (elevation, 1, mSunColoursImage.get(), false);
     }
 
-    Ogre::ColourValue CaelumSystem::getSunLightColour (float time, const Ogre::Vector3 &sunDir)
+    Ogre::ColourValue CaelumSystem::getSunLightColour (Real time, const Ogre::Vector3 &sunDir)
     {
         if (!mSkyGradientsImage.get()) {
             return Ogre::ColourValue::White;
         }
-        float elevation = sunDir.dotProduct (Ogre::Vector3::UNIT_Y) * 0.5 + 0.5;
+        Real elevation = sunDir.dotProduct (Ogre::Vector3::UNIT_Y) * 0.5 + 0.5;
 
         // Hack: return averaged sky colours.
         // Don't use an alpha value for lights, this can cause nasty problems.
         Ogre::ColourValue col = getInterpolatedColour (elevation, elevation, mSkyGradientsImage.get(), false);
-        double val = (col.r + col.g + col.b) / 3;
+        Real val = (col.r + col.g + col.b) / 3;
         col = Ogre::ColourValue(val, val, val, 1.0);
         assert(Ogre::Math::RealEqual(col.a, 1));
         return col;
@@ -518,9 +585,9 @@ namespace Caelum
             return Ogre::ColourValue::Blue;
         }
         // Scaled version of getSunLightColor
-        float elevation = moonDir.dotProduct (Ogre::Vector3::UNIT_Y) * 0.5 + 0.5;
+        Real elevation = moonDir.dotProduct (Ogre::Vector3::UNIT_Y) * 0.5 + 0.5;
         Ogre::ColourValue col = getInterpolatedColour (elevation, elevation, mSkyGradientsImage.get(), false);
-        double val = (col.r + col.g + col.b) / 3;
+        Real val = (col.r + col.g + col.b) / 3;
         col = Ogre::ColourValue(val / 2.5f, val / 2.5f, val / 2.5f, 1.0);
         assert(Ogre::Math::RealEqual(col.a, 1));
         return col;

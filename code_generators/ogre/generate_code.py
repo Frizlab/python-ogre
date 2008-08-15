@@ -278,7 +278,17 @@ def ManualInclude ( mb ):
     std_ns.class_("pair<bool, float>").include()
     std_ns.class_("pair<Ogre::SharedPtr<Ogre::Resource>, bool>").include()
     
-    
+    if not environment.ogre.version =="1.4":
+        main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> >").include()
+        main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)1> >").include()
+        main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)2> >").include()
+        main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)3> >").include()
+        main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)4> >").include()
+        main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)5> >").include()
+        main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)6> >").include()
+        main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)7> >").include()
+#         main_ns.class_("MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::Archive*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::Archive*> > > >").include()
+        
     #RenderOperation class is marked as private, but I think this is a mistake
     main_ns.class_('RenderOperation').include()
     
@@ -912,7 +922,13 @@ def FindProtectedVars ( mb ):
         for v in c.variables(allow_empty=True):
             if v.access_type == 'protected':
                 print "Protected Variable:", v, v.why_not_exportable(), v.exportable
-                                                                                
+    v =main_ns.class_('SceneManager').variable('mSceneNodes')
+    v.set_exportable(True)
+    v._exportable_reason = None
+    print v,v.why_not_exportable(), v.exportable
+#     v.access_type = 'public'
+#     sys.exit()
+    
 #
 # the 'main'function
 #            

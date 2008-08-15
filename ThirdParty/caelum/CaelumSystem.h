@@ -75,16 +75,16 @@ namespace Caelum
 		bool mManageSceneFog;
 
         /// Global fog density multiplier.
-        double mGlobalFogDensityMultiplier;
+        Real mGlobalFogDensityMultiplier;
 
         /// Scene fog density multiplier.
-        double mSceneFogDensityMultiplier;
+        Real mSceneFogDensityMultiplier;
 
         /// Multiply the colour of the scene fog.
         Ogre::ColourValue mSceneFogColourMultiplier;
 
         /// Ground fog density multiplier.
-        double mGroundFogDensityMultiplier;
+        Real mGroundFogDensityMultiplier;
 
         /// Multiply the colour of the ground fog.
         Ogre::ColourValue mGroundFogColourMultiplier;
@@ -215,7 +215,7 @@ namespace Caelum
          *
          *  @param timeSinceLastFrame: Time passed since last frame.
          */
-        void updateSubcomponents (double timeSinceLastFrame);
+        void updateSubcomponents (Real timeSinceLastFrame);
 
         /** Notify subcomponents of camera changes.
          *  This function must be called after camera changes but before
@@ -365,11 +365,11 @@ namespace Caelum
             Final scene fog density is:
             SceneMultiplier * GlobalMultiplier * SkyColourModel.GetFogDensity
          */
-        void setSceneFogDensityMultiplier (double value);
+        void setSceneFogDensityMultiplier (Real value);
 
         /** Get the value set by setSceneFogDensityMultiplier.
          */
-        double getSceneFogDensityMultiplier () const;
+        Real getSceneFogDensityMultiplier () const;
 
         /** Set an additional multiplier for fog colour as it comes from SkyColourModel.
          *  This is 0.7 by default; to be compatible with previous versions.
@@ -386,11 +386,11 @@ namespace Caelum
             Final ground fog density is:
             GroundFogMultipler * GlobalMultiplier * SkyColourModel.GetFogDensity
          */
-        void setGroundFogDensityMultiplier (double value);
+        void setGroundFogDensityMultiplier (Real value);
 
         /** Get the value set by setGroundFogDensityMultiplier.
          */
-        double getGroundFogDensityMultiplier () const;
+        Real getGroundFogDensityMultiplier () const;
 
         /** Set an additional multiplier for ground fog colour as it comes from SkyColourModel.
          *  This is OgreColour::White by default; which has no effect.
@@ -406,11 +406,11 @@ namespace Caelum
             individual kinds of fog; but this is what you should change from
             whatever "game logic" you might have.
          */
-        void setGlobalFogDensityMultiplier (double value);
+        void setGlobalFogDensityMultiplier (Real value);
 
         /** Get the value set by setSceneFogDensityMultiplier.
          */
-        double getGlobalFogDensityMultiplier () const;
+        Real getGlobalFogDensityMultiplier () const;
 
         /** Set this to true to have CaelumSystem manage the scene's ambient light.
          *  The colour and AmbientMultiplier of the sun and moon are used.
