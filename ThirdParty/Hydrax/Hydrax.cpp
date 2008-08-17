@@ -178,8 +178,6 @@ namespace Hydrax
 				Ogre::String MaterialNameTmp = mHydrax->mMesh->getMaterialName();
 				Mesh::Options MeshOptionsTmp = mHydrax->mMesh->getOptions();
 
-				HydraxLOG("Updating water mesh.");
-
 				HydraxLOG("Deleting water mesh.");
 				delete mHydrax->mMesh;
 				HydraxLOG("Water mesh deleted.");
@@ -200,6 +198,7 @@ namespace Hydrax
     void Hydrax::_createRttListeners()
     {
         if (!mCreated)
+        
         {
             mRefractionPlane = new Ogre::MovablePlane("RefractionPlane");
             mReflectionPlane = new Ogre::MovablePlane("ReflectionPlane");
@@ -554,6 +553,7 @@ namespace Hydrax
 
     void Hydrax::update(const Ogre::Real &timeSinceLastFrame)
     {
+
 		if (mCreated && mModule)
 		{
             mModule->update(timeSinceLastFrame);

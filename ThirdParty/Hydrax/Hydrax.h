@@ -537,7 +537,7 @@ namespace Hydrax
 			public:
 				/** Called at the start of the queue
 				 */
-				void renderQueueStarted(Ogre::uint8 queueGroupId, const Ogre::String &invocation, bool &skipThisInvocation) 
+				bool renderQueueStarted(Ogre::uint8 queueGroupId, const Ogre::String &invocation, bool skipThisInvocation) 
 				{
 					if ((queueGroupId == Ogre::RENDER_QUEUE_SKIES_EARLY || queueGroupId == Ogre::RENDER_QUEUE_SKIES_LATE) 
 						&& mActive)
@@ -545,11 +545,12 @@ namespace Hydrax
 						mHydrax->getCamera()->disableCustomNearClipPlane();
 						Ogre::Root::getSingleton().getRenderSystem()->_setProjectionMatrix(mHydrax->getCamera()->getProjectionMatrixRS()); 
 					}
+					return skipThisInvocation;
 				}
 
 				/** Called on the end of the queue
 				 */
-				void renderQueueEnded(Ogre::uint8 queueGroupId, const Ogre::String &invocation, bool &skipThisInvocation) 
+				bool renderQueueEnded(Ogre::uint8 queueGroupId, const Ogre::String &invocation, bool skipThisInvocation) 
 				{
 					if ((queueGroupId == Ogre::RENDER_QUEUE_SKIES_EARLY || queueGroupId == Ogre::RENDER_QUEUE_SKIES_LATE) 
 						&& mActive)
@@ -557,6 +558,7 @@ namespace Hydrax
 						mHydrax->getCamera()->enableCustomNearClipPlane(mHydrax->mReflectionPlane);
 						Ogre::Root::getSingleton().getRenderSystem()->_setProjectionMatrix(mHydrax->getCamera()->getProjectionMatrixRS()); 
 					}
+					return skipThisInvocation;
 				}
 
 				/// Hydrax pointer
@@ -731,6 +733,6 @@ namespace Hydrax
         /// Pointer to Ogre::Camera
         Ogre::Camera *mCamera;
     };
-}
+};
 
 #endif

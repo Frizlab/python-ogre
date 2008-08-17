@@ -1,5 +1,8 @@
 
 #include "Hydrax.h"
+#include "ProjectedGrid.h"
+#include "SimpleGrid.h"
+#include "Perlin.h"
 
 // First we create a magic namespace to hold all our aliases
 namespace pyplusplus { namespace aliases {

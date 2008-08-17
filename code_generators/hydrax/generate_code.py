@@ -226,7 +226,8 @@ def generate_code():
     global_ns.exclude()
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
     main_ns.include()
-       
+    
+           
     common_utils.AutoExclude ( mb, MAIN_NAMESPACE )
     ManualExclude ( mb )
     common_utils.AutoInclude ( mb, MAIN_NAMESPACE )

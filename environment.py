@@ -1628,7 +1628,7 @@ class opensteer:
 class hydrax:
     active = True
     pythonModule = True
-    version="0.1"
+    version="0.3"
     name='hydrax'
     parent="ogre/addons"
     cflags = ""
