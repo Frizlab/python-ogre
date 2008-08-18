@@ -523,7 +523,7 @@ class boost_python_index:
     ModuleName = ""
     base = "libboost-python%s-index" % version.replace("_",".")
     if isLinux() or isMac():
-        FLAGS = "PREFIX=%s BOOST_VERSION=%s" % (PREFIX, version)
+        FLAGS = "PREFIX=%s BOOST_VERSION=%s MT=True" % (PREFIX, version)
         source = [
              ["rm","-rf %s" % (base,), os.getcwd()],
              ["cp",'-rvf %s/ %s' % (os.path.join('python-ogre','boost'), base), os.getcwd()],
