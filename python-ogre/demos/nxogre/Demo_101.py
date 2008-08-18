@@ -7,7 +7,7 @@ import PythonOgreConfig
 
 import ogre.renderer.OGRE as ogre
 import ogre.physics.PhysX as physx
-import ogre.physics.NxOgre_09 as nxogre
+import ogre.physics.NxOgre as nxogre
 import CakeFramework as cf
     
 class NxTutorial ( cf.Cake ):
@@ -17,9 +17,10 @@ class NxTutorial ( cf.Cake ):
    ##////////////////////////////////////////////////////////////////////////////////////////////////
 
    def start(self ):
-      self.World = nxogre.World("Log: html") 
+      self.World = nxogre.World(nxogre.PhysXParams("Log: html"))
       
-      self.Scene = self.World.createScene("Main", self.SceneMgr,"gravity: yes, floor: yes") 
+      self.Scene = self.World.createScene("Main", nxogre.SceneParams("renderer: ogre, controller: accumulator, gravity: yes, floor: yes"))
+      ###  self.SceneMgr,"gravity: yes, floor: yes") 
       
       self.Scene.createBody('sphere.50cm.mesh',nxogre.SphereShape(0.5),
                     ogre.Vector3(3,1.5,0), "mass: 10" )
@@ -71,4 +72,3 @@ if __name__ == '__main__':
 
     except ogre.OgreException, e:
         print e
-

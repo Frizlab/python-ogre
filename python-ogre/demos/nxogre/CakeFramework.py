@@ -21,7 +21,7 @@ import ogre.renderer.OGRE as ogre
 import ogre.gui.betagui as BetaGUI
 import ogre.io.OIS as OIS
 import ogre.physics.PhysX as PhysX
-import ogre.physics.NxOgre_09 as nxogre
+import ogre.physics.NxOgre as nxogre
 
 from Enums import *
 
@@ -489,11 +489,11 @@ class Frosting ( Decoration, BetaGUI.BetaGUIListener ):
         ##/ Grid
         ##self.SceneMgr.getRootSceneNode().attachObject(self.SceneMgr.createEntity("nx.floor","nx.floor.mesh")) 
     
-        self.StaticGeom= self.SceneMgr.createStaticGeometry("Grid") 
-        self.StaticGeom.addEntity(self.SceneMgr.createEntity("nx.floor", "nx.floor.mesh"), ogre.Vector3(0,-0.05,0)) 
-        self.StaticGeom.addEntity(self.SceneMgr.createEntity("nx.axis", "nx.body.axis.mesh"), ogre.Vector3(0,0.01,0)) 
-        self.StaticGeom.build() 
-        self.StaticGeom.setCastShadows(False) 
+#         self.StaticGeom= self.SceneMgr.createStaticGeometry("Grid") 
+#         self.StaticGeom.addEntity(self.SceneMgr.createEntity("nx.floor", "nx.floor.mesh"), ogre.Vector3(0,-0.05,0)) 
+#         self.StaticGeom.addEntity(self.SceneMgr.createEntity("nx.axis", "nx.body.axis.mesh"), ogre.Vector3(0,0.01,0)) 
+#         self.StaticGeom.build() 
+#         self.StaticGeom.setCastShadows(False) 
 
         ## Light
         mSunLight = self.SceneMgr.createLight("SunLight") 
