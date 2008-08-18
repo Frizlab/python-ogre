@@ -95,7 +95,7 @@ def get_linkflags():
         #LINKFLAGS = " /NOLOGO /INCREMENTAL:NO /DLL /subsystem:console " ### LONG Link , 80 minutes - 15.7 meg
     if environment.isLinux():
         if os.sys.platform <> 'darwin':
-            LINKFLAGS = ' `pkg-config --libs OGRE` --strip-all -lstdc++ '
+            LINKFLAGS = ' `pkg-config --libs OGRE` -lstdc++ '
     if environment.isMac():
             LINKFLAGS = ' -Wl,-x -framework Python -framework Ogre -framework Carbon -F' + environment.Config.FRAMEWORK_DIR + ' '
     return LINKFLAGS
@@ -175,6 +175,9 @@ for name, cls in environment.projects.items():
         if hasattr( cls, 'CCFLAGS'):
             ccflags += cls.CCFLAGS
         _env.Append ( CCFLAGS=ccflags )
+        ## Use any extra stuff passed in th environment
+        if 'CCFLAGS' in os.environ:
+            _env.Append( CCFLAGS=os.environ['CCFLAGS'] )
         
         if hasattr( cls, 'pchbuild' ) and hasattr( cls, 'pchstop' ):
             usepch = True
@@ -207,7 +210,7 @@ for name, cls in environment.projects.items():
             ## and lets have it install the output into the 'package_dir_name/ModuleName' dir and rename to the PydName
             _env.AddPostAction(package,\
                  'mt.exe -nologo -manifest %(name)s.manifest -outputresource:%(name)s;2' % { 'name':package[index] } )
-        if environment.isLinux():                
+        if environment.isLinux() and "-g" not in _env["CCFLAGS"]:
             _env.AddPostAction(package,\
                  '-strip -g -S -d --strip-debug -s %(name)s' % { 'name':package[index] } )
         if environment.isMac():                
