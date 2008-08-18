@@ -511,8 +511,8 @@ class boost:    ## also included bjam
         # FIXME: This assumes that the gcc we are building with now was what we built boost with
         import subprocess
         gccp = subprocess.Popen (["gcc", "--version"], stdout=subprocess.PIPE)
-        gcc_version = gccp.communicate()[0].split('\n')[0].split()[2].split('.')
-       
+        import re
+        gcc_version = re.search(r'([0-9]+?\.[0-9]+?\.[0-9]+?)', gccp.communicate()[0]).groups()[0]
         # FIXME: Should this be the multithreaded version!? 
         lib = "boost_python-gcc%s%s-%s" % (gcc_version[0], gcc_version[1], base[6:])
 
