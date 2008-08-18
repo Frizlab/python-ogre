@@ -455,7 +455,7 @@ class boost:    ## also included bjam
         base = 'boost_1_34_1'
         lib= 'boost_python-vc90-mt-1_34_1'
     else:        
-        base = 'boost_1_35'
+        base = 'boost_1_35_0'
         lib = 'boost_python-vc90-mt-1_36'
         
     if isLinux() or isMac():
@@ -475,8 +475,8 @@ class boost:    ## also included bjam
                 ## first handle bjam
                 [0, tar + ' zxf ' + os.path.join(downloadPath, bjambase) + '.tgz --overwrite', ''],
                 [0,"./build.sh " + bjambuildset, os.path.join(os.getcwd(), bjambase )],
-                
-                [0,cp + " bjam %s/bin" % PREFIX, os.path.join(os.getcwd(), bjambase, bjambuilddir )], ## may need to change on 64 bit systems
+                [0,"mkdir -p %s/bin/" % PREFIX, os.path.join(os.getcwd(), bjambase )],
+                [0,cp + " bjam %s/bin/" % PREFIX, os.path.join(os.getcwd(), bjambase, bjambuilddir )], ## may need to change on 64 bit systems
                 
                 ## and now boost
                 [0, tar + ' zxf ' + os.path.join(downloadPath, base) + '.tar.gz', ''],
