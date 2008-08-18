@@ -4,7 +4,7 @@ XS-Python-Version: >=2.4
 Priority: optional
 Maintainer: Tim 'Mithro' Ansell <mithro@mithis.com>
 Build-Depends-Indep: python-central (>= 0.5.6), python-setuptools (>= 0.6b3-1), python-all
-Build-Depends: debhelper (>= 5.0.38), gccxml (= 0.7.0+cvs%%SHORTDATE%%-0)
+Build-Depends: debhelper (>= 5.0.38), gccxml (= 0.7.0+cvs%%SHORTDATE%%-0), python-central (>= 0.5.6), python-setuptools (>= 0.6b3-1), python-all
 Standards-Version: 3.7.2
 
 Package: pygccxml
