@@ -518,18 +518,19 @@ class boost:    ## also included bjam
 
 class boost_python_index:
     active = True
-    version = "1.34.1"
+    version = boost.base[6:]
     pythonModule = False
     ModuleName = ""
-    base = "libboost-python%s-index" % boost.base[6:].replace("_",".")
+    base = "libboost-python%s-index" % version.replace("_",".")
     if isLinux() or isMac():
+        FLAGS = "PREFIX=%s BOOST_VERSION=%s" % (PREFIX, version)
         source = [
              ["rm","-rf %s" % (base,), os.getcwd()],
              ["cp",'-rvf %s/ %s' % (os.path.join('python-ogre','boost'), base), os.getcwd()],
              ]
         buildCmds  = [
-            [0,'make all', os.path.join(os.getcwd(), base)],
-            [0,'PREFIX=%s make install' % PREFIX, os.path.join(os.getcwd(), base)],
+            [0,'make all %s' % FLAGS, os.path.join(os.getcwd(), base)],
+            [0,'make install %s' % FLAGS, os.path.join(os.getcwd(), base)],
         ]
    
     lib = boost.lib.replace("python", "python_index")

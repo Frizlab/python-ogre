@@ -1,7 +1,7 @@
 Source: boost-python1.34.1-index
 Priority: extra
 Maintainer: Tim Ansell <tim@unknown>
-Build-Depends: debhelper (>= 5)
+Build-Depends: debhelper (>= 5), libboost-python-dev (>= 1.34), libstdc++6-4.1-dev | libstdc++6-4.2-dev, python-dev
 Standards-Version: 3.7.2
 Section: libs
 

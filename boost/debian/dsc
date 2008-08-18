@@ -1,0 +1,10 @@
+Format: 1.0
+Source: boost-python1.34.1-index
+Binary: libboost-python1.34.1-index-dev, libboost-python1.34.1-index
+Architecture: any
+Version: 0.0.0-1
+Maintainer: Tim 'Mithro' Ansell <mithro@mithis.com>
+Standards-Version: 3.7.2
+%%BUILDDEPS%%
+Files: 
+ %%MD5SUM%% %%SIZE%%
