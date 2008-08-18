@@ -80,9 +80,13 @@ def spawnTask ( task, cwdin = '', getoutput=None ):
             ##env["LDFLAGS"]="-Wl,-rpath='\$\$ORIGIN/../../lib' -Wl,-rpath='\$\$ORIGIN' -Wl,-z,origin"  ### Mac GCC 4.0.1 doesn't support rpath
             env["PYTHONPATH"]=PREFIX+"/lib/python"+environment.PythonVersionString+"/site-packages"
         else:
-            env["CFLAGS"]="-I"+os.path.join(PREFIX,"include")+ " -L"+os.path.join(PREFIX,"lib")  
-            env["CXXFLAGS"]=env["CFLAGS"]
-            env["LDFLAGS"]="-Wl,-rpath='$$ORIGIN/../../lib' -Wl,-rpath='$$ORIGIN' -Wl,-z,origin"
+            for FLAGS in "CFLAGS", "CXXFLAGS", "CCFLAGS", "LDFLAGS":
+                if not FLAGS in env:
+                    env[FLAGS] = ""
+            env["CFLAGS"]+=" "+"-I"+os.path.join(PREFIX,"include")+ " -L"+os.path.join(PREFIX,"lib")
+            env["CXXFLAGS"]+=" "+env["CFLAGS"]
+            env["CCFLAGS"]+=" "+env["CFLAGS"]
+            env["LDFLAGS"]+="-Wl,-rpath='$$ORIGIN/../../lib' -Wl,-rpath='$$ORIGIN' -Wl,-z,origin"
             env["PYTHONPATH"]=PREFIX+"/lib/python"+environment.PythonVersionString+"/site-packages"
             env["ZZIPLIB_LIBS"]="-lzzip"
     
