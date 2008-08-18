@@ -904,7 +904,8 @@ class ode:
         ["wget", "http://downloads.sourceforge.net/opende/ode-0.10.1.tar.gz",downloadPath]
         ]
         buildCmds = [
-            [0, untar + os.path.join(downloadPath,"ode-0.10.1.tar.gz"), ''],
+            # FIXME: Should this untar not use the unTarGz method mentioned above?
+            [0, 'untar' + os.path.join(downloadPath,"ode-0.10.1.tar.gz"), ''],
             [0, "chmod +x autogen.sh", baseDir],
             [0, "./autogen.sh", baseDir],
             [0, "./configure --prefix=%s --includedir=%s/include" %(PREFIX, PREFIX), baseDir],
