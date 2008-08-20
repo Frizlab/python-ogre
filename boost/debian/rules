@@ -8,7 +8,7 @@
 
 # Uncomment this to turn on verbose mode.
 export DH_VERBOSE=1
-export DH_COMPAT=2
+export DH_COMPAT=5
 export GCC_VERSION=`gcc --version | head -1 | sed -e's/.*) \([0-9]\)\.\([0-9]\).*/\1\2/'`
 export PYTHON_VERSION=`python -V 2>&1 | sed -e's/Python \(2\.[45]\).*/\1/'`
 export BOOST_VERSION=`echo %%VERSION%% | sed -e's/\./_/g'`
@@ -85,7 +85,7 @@ binary-arch: build install
 #	dh_installinfo
 	dh_installman
 	dh_link
-	dh_strip
+	dh_strip --dbg-package=libboost-python%%VERSION%%-index-dbg
 	dh_compress
 	dh_fixperms
 #	dh_perl
