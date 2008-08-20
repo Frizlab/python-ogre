@@ -239,9 +239,19 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
       self.windowClosed(self.renderWindow)
       
     def _setupInput(self):
-        # ignore buffered input
+         # ignore buffered input
         
-         windowHnd = self.renderWindow.getCustomAttributeInt("WINDOW")
+         # FIXME: This should be fixed in C++ propbably
+         import platform
+         int64 = False
+         for bit in platform.architecture():
+             if '64' in bit:
+                 int64 = True
+         if int64:
+             windowHnd = self.renderWindow.getCustomAttributeUnsignedLong("WINDOW")
+         else:
+             windowHnd = self.renderWindow.getCustomAttributeInt("WINDOW")
+
          self.InputManager = \
              OIS.createPythonInputSystem([("WINDOW",str(windowHnd))])
          
