@@ -179,12 +179,12 @@ def buildDeb ( module, install = False ):
                 exit("Was not able to copy the debian directory over")
    
     # Rewrite any place holders
-    ret = spawnTask( "sed --in-place "+debiandir+"/changelog -e \"s|%%SHORTDATE%%|`date +%Y%m%d`|\" -e \"s|%%LONGDATE%%|`date +'%a, %d %b %Y %H:%m:%S %z'`|\"", srcdir)
-    if ret != 0:
-        exit("Was not able to update the debian change log.")
-    ret = spawnTask( "sed --in-place "+debiandir+"/control -e \"s|%%SHORTDATE%%|`date +%Y%m%d`|\" -e \"s|%%LONGDATE%%|`date +'%a, %d %b %Y %H:%m:%S %z'`|\"", srcdir)
-    if ret != 0:
-        exit("Was not able to update the debian control file.")
+    for file in os.listdir(debiandir):
+      if not os.path.isfile(os.path.join(debiandir, file)):
+        continue
+      ret = spawnTask( "sed --in-place "+os.path.join(debiandir,file)+" -e\"s|%%SHORTDATE%%|`date +%Y%m%d`|\" -e\"s|%%LONGDATE%%|`date +'%a, %d %b %Y %H:%m:%S %z'`|\" -e\"s|%%VERSION%%|"+module.source_version+"|\"", srcdir)
+      if ret != 0:
+          exit("Was not able to update the debian change log.")
  
     # Check that all the dependencies for this package are avaliable
     c = StringIO()
@@ -304,5 +304,3 @@ if __name__ == '__main__':
                     compileCode ( classList[ moduleName ] )
                 else:
                     print ( "Module specificed does not need compiling (%s is a supporting module)" % moduleName )
-            
-                

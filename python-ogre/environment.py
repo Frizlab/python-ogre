@@ -304,10 +304,12 @@ class pyplusplus:
     active = True
     base = 'pyplusplus'
     if _STABLE:
+        source_version = "1300"
         source = [
                     [svn, " co -r 1300 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
                  ]
     else:                 
+        source_version = "1362"
         source = [
                     [svn, " co -r 1362 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
                  ]             
@@ -518,12 +520,12 @@ class boost:    ## also included bjam
 
 class boost_python_index:
     active = True
-    version = boost.base[6:]
+    source_version = boost.base[6:].replace("_",".")
     pythonModule = False
     ModuleName = ""
-    base = "libboost-python%s-index" % version.replace("_",".")
+    base = "libboost-python%s-index" % source_version #.replace(".", "_")
     if isLinux() or isMac():
-        FLAGS = "PREFIX=%s BOOST_VERSION=%s MT=True" % (PREFIX, version)
+        FLAGS = "PREFIX=%s BOOST_VERSION=%s MT=True" % (PREFIX, source_version)
         source = [
              ["rm","-rf %s" % (base,), os.getcwd()],
              ["cp",'-rvf %s/ %s' % (os.path.join('python-ogre','boost'), base), os.getcwd()],
@@ -1766,4 +1768,3 @@ for name, cls in projects.items():
             cls.PydName = cls.PydName + '.so'
         elif os.name =='mac':
             print "WARNING - check the last line of environment.py!!"
-
