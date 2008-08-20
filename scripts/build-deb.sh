@@ -31,7 +31,14 @@ sudo apt-get install -y \
 	libogre-dev \
 	libopenal-dev \
 	libogg-dev \
-	libvorbis-dev
+	libvorbis-dev \
+	libavformat-dev \
+	libcegui-mk2-dev \
+	libogre-dev \
+	\
+	debhelper \
+	build-essential \
+	libboost-python-dev
 
 DISTRO_CODENAME=`lsb_release -c | sed -e's/.*:\t*//'`
 if [ "x$DISTRO_CODENAME" = "xhardy" ]; then
