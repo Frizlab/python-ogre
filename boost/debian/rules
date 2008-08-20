@@ -11,6 +11,7 @@ export DH_VERBOSE=1
 export DH_COMPAT=2
 export GCC_VERSION=`gcc --version | head -1 | sed -e's/.*) \([0-9]\)\.\([0-9]\).*/\1\2/'`
 export PYTHON_VERSION=`python -V 2>&1 | sed -e's/Python \(2\.[45]\).*/\1/'`
+export BOOST_VERSION=`echo %%VERSION%% | sed -e's/\./_/g'`
 
 # shared library versions, option 1
 #version=2.0.5
@@ -33,6 +34,7 @@ build-stamp: configure-stamp
 	dh_testdir
 	
 	make all
+	make all MT=True
 	
 	touch $@
 
@@ -53,7 +55,8 @@ install: build
 	dh_installdirs
 	
 	# Add here commands to install the package into debian/tmp
-	PREFIX=$(CURDIR)/debian/tmp make install
+	make install PREFIX=$(CURDIR)/debian/tmp
+	make install PREFIX=$(CURDIR)/debian/tmp MT=True
 
 # Build architecture-independent files here.
 binary-indep: build install
@@ -67,8 +70,8 @@ binary-arch: build install
 	dh_installdocs
 	dh_installexamples
 	
-	dh_movefiles -plibboost-python1.34.1-index-dev /usr/include/boost
-	dh_movefiles -plibboost-python1.34.1-index     /usr/lib	
+	dh_movefiles -plibboost-python%%VERSION%%-index-dev /usr/include/boost
+	dh_movefiles -plibboost-python%%VERSION%%-index     /usr/lib	
 	
 #	dh_install
 #	dh_installmenu
