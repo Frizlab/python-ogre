@@ -5,7 +5,8 @@ PYTHON_VERSION=`python -V 2>&1 | sed -e's/Python \(2\.[45]\).*/\1/'`
 MT_VERSION=`if [ x${MT} = xTrue ]; then echo "mt-"; fi`
 MT_FLAGS=`if [ x${MT} = xTrue ]; then echo "-D_MT"; fi`
 
-CXXFLAGS=-I.  \
+CXXFLAGS=-g \
+       -I.  \
        -I/usr/include/python${PYTHON_VERSION} \
        -shared \
 		-Wl,-soname,libboost_python_index-gcc${GCC_VERSION}-${BOOST_VERSION}.so \
