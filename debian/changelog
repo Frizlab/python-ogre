@@ -1,3 +1,10 @@
+python-ogre (0.0.0-6) unstable; urgency=low
+
+  * Fixed the build for AMD64 machines.
+  * Try to create proper dbg packages.
+  * Lots of other small bugfixes.
+
+ -- Tim 'Mithro' Ansell <mithro@mithis.com>  Thu, 21 Aug 2008 12:05:51 +1000
 python-ogre (0.0.0-5) unstable; urgency=low
 
   * Fixed the ffmpeg package.

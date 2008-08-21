@@ -26,3 +26,10 @@ Depends: ${python:Depends}, ${shlibs:Depends}, ${misc:Depends},
 XB-Python-Version: ${python:Versions}
 Description: Python Ogre.
  Python Ogre.
+
+Package: python-ogre-dbg
+Architecture: any
+Depends: ${python:Depends}, ${shlibs:Depends}, ${misc:Depends}, python-ogre (= ${Source-Version})
+XB-Python-Version: ${python:Versions}
+Description: Python Ogre.
+ Python Ogre.
