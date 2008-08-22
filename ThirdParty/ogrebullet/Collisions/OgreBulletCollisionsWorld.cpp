@@ -213,13 +213,12 @@ namespace OgreBulletCollisions
     }
 
     // -------------------------------------------------------------------------
-    void CollisionsWorld::launchRay(CollisionRayResultCallback &rayresult, short int collisionFilterMask)
+    void CollisionsWorld::launchRay(CollisionRayResultCallback &rayresult)
     {
         mWorld->rayTest(
             OgreBtConverter::to(rayresult.getRayStartPoint()), 
             OgreBtConverter::to(rayresult.getRayEndPoint()), 
-            *rayresult.getBulletRay (),
-			collisionFilterMask);
+            *rayresult.getBulletRay ());
     }
 }
 
