@@ -1472,7 +1472,7 @@ class ogrebulletc:  #
     libs = [boost.lib,  'OgreMain', 
         'LibBulletCollision', 'LibBulletDynamics'
         ]
-    if os.name == 'nt':
+    if isWindows():
         libs.append('LibBulletMath')        
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_INCLUDE_Bullet
@@ -1484,7 +1484,7 @@ class ogrebulletc:  #
                 ,Config.PATH_LIB_Bullet
                 , Config.PATH_LIB_Ogre_OgreMain
                 ]
-    if os.name=="nt":
+    if isWindows():
         CCFLAGS =  ' -DWIN32 -DNDEBUG -D_WINDOWS -D_PRECOMP '
     else:
         CCFLAGS = ' -D_PRECOMP '
@@ -1501,7 +1501,7 @@ class ogrebulletd:  #
     libs = [boost.lib,  'OgreMain', 
         'LibBulletCollision', 'LibBulletDynamics'
         ]
-    if os.name == 'nt':
+    if isWindows():
         libs.append('LibBulletMath')        
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_INCLUDE_Bullet
@@ -1514,7 +1514,7 @@ class ogrebulletd:  #
                 ,Config.PATH_LIB_Bullet
                 , Config.PATH_LIB_Ogre_OgreMain
                 ]
-    if os.name=="nt":
+    if isWindows():
         CCFLAGS =  ' -DWIN32 -DNDEBUG -D_WINDOWS -D_PRECOMP '
     else:
         CCFLAGS = ' -D_PRECOMP '

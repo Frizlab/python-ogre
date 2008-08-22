@@ -83,7 +83,11 @@ def spawnTask ( task, cwdin = '', getoutput=None ):
             for FLAGS in "CFLAGS", "CXXFLAGS", "CCFLAGS", "LDFLAGS":
                 if not FLAGS in env:
                     env[FLAGS] = ""
-            env["CFLAGS"]+=" "+"-I"+os.path.join(PREFIX,"include")+ " -L"+os.path.join(PREFIX,"lib")
+            if environment.isWindows():                    
+                env["CFLAGS"]+=" "+"-I"+os.path.join(PREFIX,"include")
+            else:
+                env["CFLAGS"]+=" "+"-I"+os.path.join(PREFIX,"include")+ " -L"+os.path.join(PREFIX,"lib")
+                            
             env["CXXFLAGS"]+=" "+env["CFLAGS"]
             env["CCFLAGS"]+=" "+env["CFLAGS"]
             env["LDFLAGS"]+="-Wl,-rpath='$$ORIGIN/../../lib' -Wl,-rpath='$$ORIGIN' -Wl,-z,origin"
