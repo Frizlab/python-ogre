@@ -94,6 +94,7 @@ def ManualExclude ( mb ):
             ,'::btAxisSweep3Internal<unsigned short>::processAllOverlappingPairs'
             ,'::btMultiSapBroadphase::createProxy'
             ,'::btMultiSapBroadphase::quicksort'
+            ,'::btBvhTriangleMeshShape::setOptimizedBvh' # new in 2.70
             
             
             ]
@@ -114,7 +115,7 @@ def ManualExclude ( mb ):
             ,'btAlignedAllocator<btRaycastVehicle*, 16u>'
             ,'btAlignedAllocator<btBroadphaseInterface*, 16u>'
             
-            ,'btAlignedAllocator<btDbvt::Node const*, 16u>'
+            ,'btAlignedAllocator<btDbvtNode const*, 16u>'
 #             ,'btAlignedObjectArray<short>'
 #             ,'btAlignedAllocator<btDbvt::sStkNN, 16u>'
 #             ,'btAlignedAllocator<btDbvt::sStkNP, 16u>'
@@ -126,7 +127,8 @@ def ManualExclude ( mb ):
 #             ,'btAlignedAllocator<btOdeSolverBody, 16u>'
             ,'btAlignedAllocator<btOdeSolverBody*, 16u>'
 #             ,'btAlignedAllocator<btOdeTypedJoint, 16u>'
-            ,'btAlignedAllocator<short, 16u>'
+            ,'btAlignedAllocator<unsigned int, 16u>'
+            ,'btAlignedAllocator<unsigned short, 16u>'
 #             ,'btAlignedObjectArray<btDbvt::Node const*>'
 #             ,'btAlignedObjectArray<btDbvt::sStkNN>'
 #             ,'btAlignedObjectArray<btDbvt::sStkNP>'
@@ -197,6 +199,12 @@ def ManualFixes ( mb ):
             for a in c.arguments:
                 if a.default_value and "&0.0" in a.default_value:
                     a.default_value = "::btVector3( (0.0), (0.0), (0.0) )"
+                    
+    ## Bug ingccxml where it doesn't get the namespace for default values
+    ## btCollisionWorld::addCollisionObject
+    f=main_ns.class_('btCollisionWorld').mem_fun('addCollisionObject')
+    f.arguments[1].default_value = 'btBroadphaseProxy::DefaultFilter'  # (short int)(btBroadphaseProxy::DefaultFilter)
+    f.arguments[2].default_value = 'btBroadphaseProxy::AllFilter'  # (short int)(btBroadphaseProxy::AllFilter)
               
 ############################################################
 ##

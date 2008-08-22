@@ -22,13 +22,18 @@ broadphase = bullet.btAxisSweep3(worldAabbMin, worldAabbMax, maxProxies)
 
 solver = bullet.btSequentialImpulseConstraintSolver()
 
-world = bullet.btDiscreteDynamicsWorld(dispatcher, broadphase , solver)
+world = bullet.btDiscreteDynamicsWorld(dispatcher, broadphase , solver, collisionConfiguration)
 world.getDispatchInfo().m_enableSPU = True
 world.setGravity(bullet.btVector3(0,-10,0))
 
 print world
+print dir(world)
 print solver
 print broadphase
 print dispatcher
 print collisionConfiguration 
-        
+for x in range (30):        
+    world.stepSimulation( x * 1/30)
+    
+world.stepSimulation(0)
+world.stepSimulation(-0.333)

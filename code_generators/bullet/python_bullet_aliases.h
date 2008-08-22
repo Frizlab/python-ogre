@@ -25,7 +25,7 @@ typedef btAlignedAllocator<btOptimizedBvhNode, 16> OptimizedBvhNode16;
 typedef btAlignedAllocator<btBroadphaseInterface*, 16> BroadphaseInterfacePtr16;
 
 // new changes
-typedef btAlignedAllocator<btDbvt::Node const*, 16u> AlignedAllocatorDbvtNode;
+typedef btAlignedAllocator<btDbvtNode const*, 16u> AlignedAllocatorDbvtNode;
 typedef btAlignedObjectArray<short> AlignedObjectArrayShort;
 typedef btAlignedAllocator<btDbvt::sStkNN, 16u> AlignedAllocatorsStkNN;
 typedef btAlignedAllocator<btDbvt::sStkNP, 16u> AlignedAllocatorsStkNP;
@@ -38,7 +38,7 @@ typedef btAlignedAllocator<btOdeSolverBody, 16u> AlignedAllocatorOdeSolverBody;
 typedef btAlignedAllocator<btOdeSolverBody*, 16u> AlignedAllocatorOdeSolverBodyPtr;
 typedef btAlignedAllocator<btOdeTypedJoint, 16u> AlignedAllocatorOdeTypedJoint;
 typedef btAlignedAllocator<short, 16u> AlignedAllocatorShort16;
-typedef btAlignedObjectArray<btDbvt::Node const*> AlignedObjectArrayDbvtNode;
+typedef btAlignedObjectArray<btDbvtNode const*> AlignedObjectArrayDbvtNode;
 typedef btAlignedObjectArray<btDbvt::sStkNN> AlignedObjectArrayDbvtsStkNN;
 typedef btAlignedObjectArray<btDbvt::sStkNP> AlignedObjectArrayDbvtsStkNP;
 typedef btAlignedObjectArray<btDbvt::sStkNPS> AlignedObjectArrayDbvtsStkNPS;
