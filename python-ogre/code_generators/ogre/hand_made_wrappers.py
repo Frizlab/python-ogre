@@ -887,7 +887,19 @@ WRAPPER_REGISTRATION_ParticleSystem = [
             Input: None\\n\\
             Ouput: List containing particles" );"""
     ]
-    
+
+# #################################################################################################
+# WRAPPER_DEFINITION_Vector3 =\
+# """
+# int Vector3_len( Ogre::Vector3 & me ) {
+#     return 3;
+#     }
+# """
+# WRAPPER_REGISTRATION_Vector3 = [
+#     """def( "__len__", &Vector3_len,
+#                 "Python-Ogre Helper Function: return length of Vector3");""",
+#     ]
+#         
 #################################################################################################
 
 def iter_as_generator_vector( cls ):
@@ -927,6 +939,10 @@ def apply( mb ):
     rt = mb.class_( 'RenderTarget' )
     rt.add_declaration_code( WRAPPER_DEFINITION_RenderTarget )
     apply_reg (rt,  WRAPPER_REGISTRATION_RenderTarget )
+    
+#     rt = mb.class_( 'Vector3' )
+#     rt.add_declaration_code( WRAPPER_DEFINITION_Vector3 )
+#     apply_reg (rt,  WRAPPER_REGISTRATION_Vector3 )
     
     rt = mb.class_( 'ResourceManager' )
     rt.add_declaration_code( WRAPPER_DEFINITION_ResourceManager )

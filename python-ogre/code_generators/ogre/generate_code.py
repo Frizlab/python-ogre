@@ -764,7 +764,11 @@ def Fix_Posix ( mb ):
 def Fix_NT ( mb ):
     """ fixup for NT systems
     """
-    mb.global_ns.class_( 'vector<Ogre::Vector4, std::allocator<Ogre::Vector4> >' ).exclude( )
+    try:
+        # change in py++ so this doesn't get found?
+        mb.global_ns.class_( 'vector<Ogre::Vector4, std::allocator<Ogre::Vector4> >' ).exclude( )
+    except:
+        pass        
     Skeleton = mb.namespace( MAIN_NAMESPACE ).class_( 'Skeleton' ).constructors().exclude()
     
     ## handle the hashmaps -- TODO FIX under LINUX ???

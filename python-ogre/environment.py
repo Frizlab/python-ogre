@@ -1426,7 +1426,7 @@ class et:  ## editable terrain
 class bullet:
     active = True
     pythonModule = True
-    version= "2.69"
+    version= "2.70"
     name='bullet'
     base = "bullet-" + version
     baseDir = os.path.join(os.getcwd(), base)
