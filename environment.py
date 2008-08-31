@@ -452,13 +452,13 @@ class boost:    ## also included bjam
     version = "3.5"
     pythonModule = False
     ModuleName = ""
-    # AJM Changed so stable is 1.35 as this seems fine....
+
     if _STABLE:
-        base = 'boost_1_34_1'
-        lib= 'boost_python-vc90-mt-1_34_1'
+        base = 'boost_1_36_0'
+        lib= 'boost_python-vc90-mt-1_36'
     else:        
-        base = 'boost_1_35_0'
-        lib = 'boost_python-vc90-mt-1_36'
+        base = 'boost_1_37'
+        lib = 'boost_python-vc90-mt-1_37'
         
     if isLinux() or isMac():
         bjambase = 'boost-jam-3.1.16'
@@ -506,7 +506,7 @@ class boost:    ## also included bjam
                 [0,'sed -i s/"BOOST_PYTHON_MAX_ARITY 15"/"BOOST_PYTHON_MAX_ARITY 19"/ '+base+'/boost/python/detail/preprocessor.hpp', ''],
                 [0,'sed -i s/"# include <boost\/preprocessor\/cat.hpp>"/"\\n#define BOOST_PYTHON_NO_PY_SIGNATURES\\n# include <boost\/preprocessor\/cat.hpp>"/ '+base+'/boost/python/detail/preprocessor.hpp', '' ],
                 [0,'sed -i s/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/ '+base+'/boost/python/detail/preprocessor.hpp', '' ],
-                [0,os.path.join(os.getcwd(), bjambase, "bjam.exe") + ' release --with-python --toolset=msvc-8',os.path.join(os.getcwd(),base)]
+                [0,os.path.join(os.getcwd(), bjambase, "bjam.exe") + ' release --with-python ',os.path.join(os.getcwd(),base)] # --toolset=msvc-8
                 ]
     if not isWindows():
         # Figure out the gcc version we are running - this is needed by Boost
@@ -547,7 +547,7 @@ class ogre:
     active = True
     pythonModule = True
     if _STABLE:
-	    version="1.4"
+	    version="1.6"
     else:
 	    version = "1.7"
     name='ogre'
@@ -562,16 +562,29 @@ class ogre:
     
     if isWindows(): 
         
-        source = [
-            [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_VC8SP1_Eihort_20071227.zip", downloadPath],
-            [ wget, "http://downloads.sourceforge.net/ogre/ogre-win32-v1-4-9.zip", downloadPath],
-            ]
-        buildCmds  = [
-                [0, unzip + os.path.join(downloadPath,"ogre-win32-v1-4-9.zip"),os.getcwd() ],
-                [0, unzip + os.path.join(downloadPath,"OgreDependencies_VC8SP1_Eihort_20071227.zip"),
-                                            os.path.join(os.getcwd(), 'ogrenew') ],
-                [0, "patch -s -N -i ./python-ogre/patch/ogre.patch -p0 ", os.getcwd()]
-                ]                                             
+        if _STABLE:
+            source = [
+                [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_VC9_Eihort_20080203.zip", downloadPath],
+                [ wget, "http://downloads.sourceforge.net/ogre/ogre-v1-6-0RC1.zip", downloadPath],
+                ]
+            buildCmds  = [
+                [0, unzip + os.path.join(downloadPath,"ogre-v1-6-0RC1.zip"),os.getcwd() ],
+                [0, unzip + os.path.join(downloadPath,"OgreDependencies_VC9_Eihort_20080203.zip"),
+                                            os.path.join(os.getcwd(), 'ogre') ],
+                [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.patch -p0 ", os.getcwd()],
+                [0,'echo Please use MSVC Express Edition to build Ogre Release.','']
+                ]                      
+        else:                
+            source = [
+                [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_VC9_Eihort_20080203.zip", downloadPath],
+                [ svn, "https://svn.ogre3d.org/svnroot/ogre/branches/v1-6", os.path.join(os.getcwd(), 'ogre')]
+                ]
+            buildCmds  = [
+                    [0, unzip + os.path.join(downloadPath,"OgreDependencies_VC9_Eihort_20080203.zip"),
+                                                os.path.join(os.getcwd(), 'ogre') ],
+                    [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.patch -p0 ", os.getcwd()],
+                    [0,'echo Please use MSVC Express Edition to build Ogre Release.','']
+                    ]                                             
             
         # requirements to build a precompiled header on the fly
         if _PreCompiled:
@@ -591,7 +604,7 @@ class ogre:
                     ]
         CCFLAGS =  '  -DBOOST_PYTHON_MAX_ARITY=19 '
         LINKFLAGS = ''
-        externalFiles=['OgreMain.dll', 'OgreGuiRender.dll', Config.LIB_Boost+'.dll']
+        externalFiles=['OgreMain.dll', 'OgreGuiRender.dll', boost.lib+'.dll']
     elif isLinux():
         version = "1.4"  #### UGLY OVERRIDE AT MOMENT...
         libs=[boost.lib, 'OgreMain' ] #,  'OgreGUIRenderer', 'CEGUIBase']
@@ -1351,7 +1364,7 @@ class ogreal:
 
       
 class ogrevideoffmpeg:
-    active = True
+    active = False
     pythonModule = True
     version="0.2.1"
     name='ogrevideoffmpeg'
@@ -1378,7 +1391,7 @@ class ogrevideoffmpeg:
     ModuleName="ogrevideoffmpeg"   
 
 class ogredshow:
-    active = True
+    active = False
     pythonModule = True
     version="0.1"
     name='ogredshow'
@@ -1646,7 +1659,26 @@ class hydrax:
     CheckIncludes=[]
     libs=[  boost.lib, 'OgreMain' ]
     ModuleName="hydrax"     
-    
+
+class hikari:
+    active = True
+    pythonModule = True
+    version="0.22"
+    name='hikari'
+    parent="ogre/gui"
+    cflags = ""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_hikari
+                    , Config.PATH_INCLUDE_Ogre
+                    ]
+    lib_dirs = [Config.PATH_LIB_Boost,
+                Config.PATH_LIB_Ogre_OgreMain,
+                Config.PATH_LIB_hikari
+                ]
+    CheckIncludes=[]
+    libs=[  boost.lib, 'OgreMain', 'hikari' ]
+    ModuleName="hikari"  
+            
 ############################################################################################
 
 ## Here is the master list....
@@ -1684,9 +1716,10 @@ projects = {
     , 'ofusion' : ofusion
     , 'particleuniverse' : particleuniverse
     , 'cadunetree' : cadunetree
-    ,'opensteer' : opensteer
-    ,'ogrepcz' : ogrepcz
+    , 'opensteer' : opensteer
+    , 'ogrepcz' : ogrepcz
     , 'hydrax' : hydrax
+    , 'hikari' : hikari
 }        
 
 #

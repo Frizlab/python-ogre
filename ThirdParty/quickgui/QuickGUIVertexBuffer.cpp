@@ -122,7 +122,7 @@ namespace QuickGUI
 		mRenderSystem->_setTextureUnitFiltering(0, Ogre::FO_LINEAR, Ogre::FO_LINEAR, Ogre::FO_POINT);
 		mRenderSystem->_setTextureAddressingMode(0, mTextureAddressMode);
 		mRenderSystem->_setTextureMatrix(0, Ogre::Matrix4::IDENTITY);
-		mRenderSystem->_setAlphaRejectSettings(Ogre::CMPF_ALWAYS_PASS, 0);
+		mRenderSystem->_setAlphaRejectSettings(Ogre::CMPF_ALWAYS_PASS, 0, false);
 		mRenderSystem->_setTextureBlendMode(0, mColorBlendMode);
 		mRenderSystem->_setTextureBlendMode(0, mAlphaBlendMode);
 		mRenderSystem->_disableTextureUnitsFrom(1);

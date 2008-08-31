@@ -67,12 +67,13 @@ PACKAGEDATA = {
                         'ogre.physics.bullet','ogre.physics.PhysX','ogre.physics.NxOgre',
                         'ogre.physics.OgreBulletC', 'ogre.physics.OgreBulletD',
                         'ogre.addons','ogre.addons.theora',
-                        'ogre.addons.ogrevideoffmpeg', 'ogre.addons.ogredshow',
-                        'ogre.addons.plib','ogre.gui.navi',
+                        # 'ogre.addons.ogrevideoffmpeg', 'ogre.addons.ogredshow',
+                        'ogre.addons.plib', # 'ogre.gui.navi',
                         'ogre.addons.ogreforests', 'ogre.addons.et', 'ogre.addons.caelum',
-                        'ogre.addons.noise', 'ogre.addons.watermesh', 'ogre.addons.ofusion',
+                        'ogre.addons.noise', 'ogre.addons.watermesh', # 'ogre.addons.ofusion',
                         'ogre.addons.particleuniverse', 'ogre.addons.cadunetree',
-                        'ogre.renderer.ogrepcz', 'ogre.addons.hydrax' ],
+                        'ogre.renderer.ogrepcz', 'ogre.addons.hydrax',
+                        'ogre.gui.hikari' ],
        "package_dir": {'': 'packages_'+ PythonVersionString },
        "package_data": {'': ['*.pyd', '*.dll', '*.so']}
 

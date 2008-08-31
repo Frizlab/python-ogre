@@ -25,7 +25,7 @@ Index: OgreMain/include/OgreRenderQueueListener.h
  namespace Ogre {
  
      /** Abstract interface which classes must implement if they wish to receive
-@@ -64,8 +66,8 @@
+@@ -66,8 +68,8 @@
  			rendered. Note that in this case the renderQueueEnded event will not be raised
  			for this queue group.
          */
