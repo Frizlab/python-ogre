@@ -45,13 +45,34 @@ class OgreMotionState(bullet.btMotionState):
         self.Pos=initalPosition 
         self.Position=ogre.Vector3() 
         self.Quaternion=ogre.Quaternion() 
+        
     def getWorldTransform(self, WorldTrans): 
-        worldTrans=self.Pos 
-    def setWorldTransform(WorldTrans): 
+        print WorldTrans
+        print WorldTrans.Rotation.x(),WorldTrans.Rotation.y(),WorldTrans.Rotation.z()
+        print self.Pos.getOrigin()
+        WorldTrans.setOrigin(self.Pos.getOrigin())
+        WorldTrans.setBasis(self.Pos.getBasis())
+        
+        print WorldTrans.Rotation.x(),WorldTrans.Rotation.y(),WorldTrans.Rotation.z()
+        print WorldTrans
+        print "Pos", self.Pos
+        t=self.Pos
+        print "T", t
+        t.setOrigin(WorldTrans.getOrigin())
+        print "T1", t
+        
+        
+        
+         
+    def setWorldTransform(WorldTrans):
+        print "setWorldTrans", WorldTrans 
         self.Position=ogre.Vector3(WorldTrans.getOrigin().x(),WorldTrans.getOrigin().y(),WorldTrans.getOrigin().z()) 
         self.Quaternion=ogre.Quaternion(WorldTrans.getRoation().w(),WorldTrans.getRoation().x(),WorldTrans.getRoation().y(),WorldTrans.getRoation().z()) 
+        print "setWorldTrans", WorldTrans 
 
 shape=bullet.btCapsuleShape(10, 20) 
-motionState=OgreMotionState(bullet.btTransform()) 
+print "Creating motionState"
+motionState=OgreMotionState(bullet.btTransform(bullet.btMatrix3x3(1.0,1.0,1.0,-1.0,-1.0,-1.0,2,-2,-1))) 
 Object=bullet.btRigidBody(10.0, motionState, shape) # ...this should work in my eyes 
+
 #Object=bullet.btRigidBody(bullet.btRigidBodyConstructionInfo())   ...well obviously not in bullet 2.6.9

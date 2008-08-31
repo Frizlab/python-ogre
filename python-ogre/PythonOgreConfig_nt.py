@@ -13,16 +13,14 @@ LOCAL_INCLUDE = os.path.join(ROOT_DIR, 'usr/include')
 
 
 ## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
-# # # # # # PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_34_1')
-# PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_35_0')
-PATH_Boost =        os.path.join(BASE_DIR, 'boost-trunk')
+PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_36_0' ) #-trunk')
 
 ## Path to your boost_pythonxxxx lib file
-# PATH_LIB_Boost =    os.path.join(BASE_DIR, PATH_Boost,'bin.v2/libs/python/build/msvc-8.0/release/threading-multi')
-# # # # # # # PATH_LIB_Boost =    os.path.join(PATH_Boost, 'bin.v2/libs/python/build/msvc/release/threading-multi')
 PATH_LIB_Boost =    os.path.join(PATH_Boost, 'bin.v2/libs/python/build/msvc-9.0/release/threading-multi')
+
 ## and the name of the boost python library
-LIB_Boost =         r'boost_python-vc90-mt-1_36'
+## now part of class boos tin environtment.py
+# LIB_Boost =         r'boost_python-vc90-mt-1_37'
 # # LIB_Boost =         r'boost_python-vc80-mt-1_34_1'
 # LIB_Boost =         r'boost_python-vc-mt-1_35'
 
@@ -84,6 +82,7 @@ PATH_particleuniverse = os.path.join(PATH_Ogre, 'PlugIns', 'ParticleUniverse' )
 PATH_ogrepcz = os.path.join(PATH_Ogre, 'PlugIns', 'PCZSceneManager' )
 
 PATH_hydrax = os.path.join(PATH_THIRDPARTY, 'hydrax')
+PATH_hikari = os.path.join(BASE_DIR, 'hikari', 'hikari')
 
 # it's time for the SDK version
 if SDK:
@@ -130,6 +129,7 @@ if SDK:
     PATH_LIB_CEGUI =                os.path.join( PATH_Ogre, 'lib' )
     
 PATH_LIB_opensteer = os.path.join(PATH_opensteer, 'win32','release')
+PATH_LIB_hikari = os.path.join(PATH_hikari, 'lib')
 
 
 PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include') 
@@ -179,6 +179,7 @@ PATH_INCLUDE_ogreforests =         PATH_ogreforests
 PATH_INCLUDE_particleuniverse = os.path.join(PATH_particleuniverse, 'include' )
 PATH_INCLUDE_ogrepcz = os.path.join(PATH_ogrepcz,'include')
 PATH_INCLUDE_hydrax=        PATH_hydrax
+PATH_INCLUDE_hikari = os.path.join(PATH_hikari, 'include')
 
 PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ,os.path.join(BASE_DIR, 'vorbis', 'include')
