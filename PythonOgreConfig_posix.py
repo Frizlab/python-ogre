@@ -39,7 +39,7 @@ if os.sys.platform == 'darwin':  # we use the pre built sdk for OSX
 PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
 PATH_Ogre =         os.path.join(BASE_DIR,'ogre')
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'ogreaddons')
-PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.6.0' )
+PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.6.1' )
 PATH_OIS =          os.path.join(BASE_DIR, 'ois-1.0RC1')
 
 if SDK:
