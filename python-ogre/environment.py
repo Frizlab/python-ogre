@@ -546,10 +546,6 @@ class boost_python_index:
 class ogre:
     active = True
     pythonModule = True
-    if _STABLE:
-	    version="1.6"
-    else:
-	    version = "1.7"
     name='ogre'
     ModuleName='OGRE'
     cflags = ""
@@ -563,6 +559,7 @@ class ogre:
     if isWindows(): 
         
         if _STABLE:
+            version="1.6"
             source = [
                 [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_VC9_Eihort_20080203.zip", downloadPath],
                 [ wget, "http://downloads.sourceforge.net/ogre/ogre-v1-6-0RC1.zip", downloadPath],
@@ -574,7 +571,9 @@ class ogre:
                 [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.patch -p0 ", os.getcwd()],
                 [0,'echo Please use MSVC Express Edition to build Ogre Release.','']
                 ]                      
-        else:                
+        else:
+            
+            version="1.7"
             source = [
                 [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_VC9_Eihort_20080203.zip", downloadPath],
                 [ svn, "https://svn.ogre3d.org/svnroot/ogre/branches/v1-6", os.path.join(os.getcwd(), 'ogre')]
@@ -591,8 +590,8 @@ class ogre:
             pchstop = 'python_ogre_precompiled.h'
             pchbuild = 'buildpch.cpp'
             pchincludes = ['python_ogre_precompiled.h']
-#         
-        libs=[boost.lib, 'OgreMain' ] #,  'OgreGUIRenderer', 'CEGUIBase']
+
+        libs=[boost.lib, 'OgreMain']
         lib_dirs = [ Config.PATH_LIB_Boost
                     ,  Config.PATH_LIB_Ogre_CEGUIRenderer
                     , Config.PATH_LIB_Ogre_OgreMain
@@ -606,33 +605,33 @@ class ogre:
         LINKFLAGS = ''
         externalFiles=['OgreMain.dll', 'OgreGuiRender.dll', boost.lib+'.dll']
     elif isLinux():
-        version = "1.4"  #### UGLY OVERRIDE AT MOMENT...
-        libs=[boost.lib, 'OgreMain' ] #,  'OgreGUIRenderer', 'CEGUIBase']
-        base = "ogre-v1-4-9"
+        if _STABLE:
+            version = "1.4"
+            base = "ogre-v1-4-9"
+        else:
+            version = "1.6"
+            base = "ogre-v1-6-0RC1"
+
+        libs=[boost.lib, boost_python_index.lib, 'OgreMain']
+        lib_dirs=[Config.LOCAL_LIB]
+        include_dirs=[Config.PATH_Boost, Config.PATH_INCLUDE_Ogre]
+        CCFLAGS = ' -DBOOST_PYTHON_MAX_ARITY=19'
+
         source = [
             [wget, "http://downloads.sourceforge.net/ogre/"+base+".tar.bz2",downloadPath],
         ]
         buildCmds  = [
- #               [0, "env >1", ''],
-                [0, tar + " jxf " + os.path.join(downloadPath,base)+".tar.bz2 --overwrite",os.getcwd() ],
-                [0, "patch -s -N -i ./python-ogre/patch/ogre.patch -p0 ", os.getcwd()],
-                [0, "aclocal", os.path.join(os.getcwd(), 'ogre')],
-                [0, "./bootstrap", os.path.join(os.getcwd(), 'ogre')],
-                #[1, "import os\nos.environ['ZZIPLIB_LIBS']='-lzzip'", ''],
-                [0, "./configure --prefix=%s --with-gui=Xt --disable-devil" % PREFIX, os.path.join(os.getcwd(), 'ogre')],
-                #export ZZIPLIB_LIBS="-lzzip"
-                [0, "make", os.path.join(os.getcwd(), 'ogre')],
-                [0, "make install", os.path.join(os.getcwd(), 'ogre')],
-                ]
-        
-        libs=[boost.lib, boost_python_index.lib, 'OgreMain' ] #,  'OgreGUIRenderer', 'CEGUIBase']
-        lib_dirs = [ Config.LOCAL_LIB
-                    ]
-        include_dirs = [ Config.PATH_Boost 
-                    , Config.PATH_INCLUDE_Ogre 
-                    ]
-        CCFLAGS =  ' -DBOOST_PYTHON_MAX_ARITY=19'
+            [0, tar + " jxf " + os.path.join(downloadPath,base)+".tar.bz2 --overwrite",os.getcwd() ],
+            [0, "patch -s -N -i ./python-ogre/patch/ogre.patch -p0 ", os.getcwd()],
+            [0, "aclocal", os.path.join(os.getcwd(), 'ogre')],
+            [0, "./bootstrap", os.path.join(os.getcwd(), 'ogre')],
+            [0, "./configure --prefix=%s --with-gui=Xt --disable-devil" % PREFIX, os.path.join(os.getcwd(), 'ogre')],
+            [0, "make", os.path.join(os.getcwd(), 'ogre')],
+            [0, "make install", os.path.join(os.getcwd(), 'ogre')],
+        ]
+
     elif isMac():
+        version = "1.4"
         base = "ogre-linux_osx-v1-4-9"
         basedep = "OgreDependenciesOSX_20070929"
         source = [
