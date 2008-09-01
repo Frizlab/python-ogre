@@ -1,6 +1,6 @@
 
 def header_files( version ):
-    return [ 'Hikair.h']
+    return [ 'Hikari.h']
   
 def huge_classes( version ):
     return []

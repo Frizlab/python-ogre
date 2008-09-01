@@ -3,6 +3,7 @@ echo
 echo ====== Python-Ogre Windows Release Build ======
 echo =
 rmdir /s /q ..\..\PythonOgreRelease
+mkdir ..\..\PythonOgreRelease
 rem mkdir ..\..\PythonOgreRelease\packages_2.4
 mkdir ..\..\PythonOgreRelease\packages_2.5
 mkdir ..\..\PythonOgreRelease\plugins

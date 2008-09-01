@@ -5,7 +5,7 @@ echo edit "epydoc_config" if you want to change anything
 echo NOTE: import ogre.renderer.OGRE must be added to \python25\scripts\epydoc for this to work
 echo =========================================
 del \temp\html\*
-\python25\python \python25\scripts\epydoc --config epydoc_config
+\python25\python \python25\scripts\epydoc --config epydoc_config --dotpath "c:\\program files\\Graphvis2.21\\bin"
 echo .
 echo =========================================
 echo now to build the compiled help

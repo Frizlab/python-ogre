@@ -6,7 +6,8 @@ setlocal
 set root=c:\development
 set package=..\packages_2.5\ogre
 set ogre=%root%\ogre\samples\common\bin\release
-set cegui=%root%\cegui-0.6.0\bin
+set ogretools=%root%\ogre\tools\common\bin\release
+set cegui=%root%\cegui-0.6.1\bin
 set quick=%root%\quickgui\bin
 set opcode=%root%\OpCode\Release
 set nxogre=%root%\NxOgre\NxOgre\lib
@@ -17,8 +18,9 @@ set theora=%root%\ogreaddons\videoplugin\TheoraVideo\bin\Release
 set ffmpeg=%root%\ffmpeg
 set naviextra=%root%\navi\Dependencies\win32\astral\runtime\Release
 set navi=%root%\navi\lib
-set boost=%root%\boost-trunk\bin.v2\libs\python\build\msvc-9.0\release\threading-multi
-set particleuniverse=%root%\ogre\plugins\particleuniverse\bin\release
+set boost=%root%\boost_1_36_0\bin.v2\libs\python\build\msvc-9.0\release\threading-multi
+set boostlib=%boost%\boost_python-vc90-mt-1_36.dll
+set particleuniverse=%root%\ogre\lib
 
 set ogreal=%root%\OgreAL\lib\Release
 set freealut=%root%\FreeAlut\lib
@@ -30,21 +32,24 @@ rem Ogre
 copy /y %ogre%\ogremain.dll %package%\renderer\OGRE
 copy /y %ogre%\cg.dll %package%\renderer\OGRE
 
-copy /y %boost%\boost_python-vc90-mt-1_36.dll %package%\renderer\OGRE
+copy /y %ogretools%\* ..\tools
+
+copy /y %boostlib% %package%\renderer\OGRE
 copy /y %ogre%\render*.dll ..\plugins
 copy /y %ogre%\plug*.dll ..\plugins
 
 rem ParticleUniverse
 copy /y %particleuniverse%\ParticleUniverse.dll ..\plugins
-copy /y %particleuniverse%\ParticleUniverse.dll %package%\addons\particleuniverse
-
 
 rem Physics
 copy /y %ogre%\ReferenceAppLayer.dll %package%\physics\OgreRefApp
 REM copy /y %opcode%\opcode.dll %package%\physics\OpCode
 copy /y %nxogre%\nxogre.dll %package%\physics\NxOgre
 copy /y %newton%\newton.dll %package%\physics\OgreNewt
-copy /y %boost%\boost_python-vc90-mt-1_36.dll %package%\physics\ode
+copy /y %boostlib% %package%\physics\ode
+copy /y %boostlib% %package%\physics\bullet
+copy /y %boostlib% %package%\physics\physx
+
 
 rem OgreODE
 copy /y %ogreode%\lib\Release\OgreOde_Core.dll %package%\physics\OgreOde
@@ -85,4 +90,4 @@ rem navi
 copy /y %navi%\*.dll %package%\gui\navi
 
 rem plib
-copy /y %boost%\boost_python-vc90-mt-1_36.dll %package%\addons\plib
+copy /y %boostlib% %package%\addons\plib

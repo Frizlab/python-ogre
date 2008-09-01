@@ -13,7 +13,7 @@ cd %_ROOT%\\ogreaddons\\ogreode\\scripts\\vc8
 %_VCBUILD% /useenv OgreOde_Source.sln "Release|Win32"
 
 cd %_ROOT%\\ogreaddons\\ogrenewt
-%_VCBUILD% /useenv OgreNewt.sln "Release|Win32"
+%_VCBUILD% /useenv OgreNewt_vc71.sln "Release|Win32"
 
 cd %_ROOT%\\navi
 %_VCBUILD% /useenv navi.sln "Release|Win32"

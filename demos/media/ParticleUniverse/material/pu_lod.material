@@ -1,0 +1,15 @@
+material ParticleUniverse/RustyBarrel
+{
+	technique
+	{
+		pass
+		{
+			depth_write off
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture pu_barrel.png
+			}
+		}
+	}
+}

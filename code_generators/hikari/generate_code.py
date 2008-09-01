@@ -54,7 +54,15 @@ def ManualExclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns    
-
+    excludes = ['::Hikari::Position::left',
+                '::Hikari::Position::top',
+                '::Hikari::Position::position',
+                '::Hikari::Position::x',
+                '::Hikari::Position::y'
+                ]
+    for x in excludes:
+        main_ns.variable(x).exclude()                
+                
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 
@@ -195,7 +203,8 @@ def generate_code():
                         os.path.join( environment.hikari.root_dir, "python_hikari.h" )
                         , environment.hikari.cache_file )
 
-    defined_symbols = ['OGRE_NONCLIENT_BUILD', 'HIKARI_NONCLIENT_BUILD', '__VECTOR_C' ]
+    # Vector_c define to allow GCC to process delegates.h
+    defined_symbols = ['OGRE_NONCLIENT_BUILD', 'HIKARI_NONCLIENT_BUILD', '__VECTOR_C' ] 
     defined_symbols.append( 'VERSION_' + environment.hikari.version )  
     
     #

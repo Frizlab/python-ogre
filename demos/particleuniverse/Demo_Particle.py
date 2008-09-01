@@ -41,7 +41,9 @@ class SmokeApplication(sf.Application):
         camera.lookAt(ogre.Vector3(0,0,-300))
         
         
-        
+        print PU
+        print dir(PU)
+        print dir(PU.ParticleSystemManager)
         mParticleSystemManager = PU.ParticleSystemManager.getSingletonPtr()
         print "*****", mParticleSystemManager
     	names = ogre.StringVector()
