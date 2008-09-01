@@ -1,4 +1,5 @@
 import ctypes
+import os
 
 # The follow patch from Tim (Mithro) fixes a loder issue with CEGUI - previously we'd patched CEGUI to
 # ensure the CEGUIBase was linked to every module to solve the issue with Python dynamically loading
@@ -10,7 +11,10 @@ import ctypes
 import ogre.gui.CEGUI as CEGUI
 
 # Another fix for CEGUI to ensure we get a working parser..
-CEGUI.System.setDefaultXMLParserName("TinyXMLParser")
+if os.name == 'nt':
+    CEGUI.System.setDefaultXMLParserName("ExpatParser")
+else:
+    CEGUI.System.setDefaultXMLParserName("TinyXMLParser")
 
 import ogre.io.OIS as OIS
 import SampleFramework

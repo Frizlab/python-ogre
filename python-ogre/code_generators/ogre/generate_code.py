@@ -408,7 +408,8 @@ def ManualAlias ( mb ):
     for fix in AliasFixList:
         c=mb.member_function(fix[0] ,arg_types=fix[1])
         c.add_transformation( fix[2], alias=fix[3])
-             
+    mb.member_function('::Ogre::Math::Abs', arg_types['::Ogre::Real']).alias="AbsReal"
+            
 ############################################################
 ##
 ##  And things that need to have their argument and call values fixed.

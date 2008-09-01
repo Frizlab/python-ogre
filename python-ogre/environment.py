@@ -47,8 +47,8 @@ def isMac():
     
                     
 PythonOgreMajorVersion = "1"
-PythonOgreMinorVersion = "2" 
-PythonOgrePatchVersion = "rc2"
+PythonOgreMinorVersion = "6" 
+PythonOgrePatchVersion = "RC1"
 
 
 ##
@@ -857,7 +857,8 @@ class cegui:
                 [0,'make', os.path.join(os.getcwd(), base )],
                 [0,'make install', os.path.join(os.getcwd(), base )]
                 ]
-    if isWindows():                
+    if isWindows():      
+        version = "0.6.1"                  
         base = "CEGUI-0.6.1"
         source=[
             [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.6.1.zip?download", downloadPath]

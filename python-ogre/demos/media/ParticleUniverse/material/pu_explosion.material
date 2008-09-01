@@ -1,0 +1,91 @@
+material ParticleUniverse/ExplosionFire
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			depth_write off
+			scene_blend add
+			fog_override true
+
+			texture_unit
+			{
+				texture pu_smoke_02_128x128.png
+				tex_address_mode clamp
+			}
+		}
+	}
+}
+material ParticleUniverse/Nucleus
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			scene_blend add
+			depth_write off
+
+			texture_unit
+			{
+				texture pu_nucleus.png
+				tex_address_mode clamp
+			}
+		}
+	}
+}
+material ParticleUniverse/Debris
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			scene_blend add
+			depth_write off
+
+			texture_unit
+			{
+				texture pu_fire_01_64x64.png
+				tex_address_mode clamp
+			}
+		}
+	}
+}
+//-----------------------------------------------------------------------------------------------------------------------------------------------
+material ParticleUniverse/Dirt
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			depth_write off
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture pu_dirt_256x512.png
+				tex_address_mode clamp
+			}
+		}
+	}
+}
+//-----------------------------------------------------------------------------
+material PUMediaPack/Smoke
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			depth_write off
+			scene_blend alpha_blend
+			texture_unit
+			{
+				texture pu_smoke_02_128x128.png
+				tex_address_mode clamp
+			}
+		}
+	}
+}
