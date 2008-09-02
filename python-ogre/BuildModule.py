@@ -16,6 +16,7 @@ import time
 logger = None
 FULL_LOGGING = False    # Set to true to log everything, even if successful
 ENV_SET = False         # global to ensure we don't set the environment too many times and break the shell.
+VERBOSE = False
 
 def setupLogging (logfilename):
     # set up logging to file
@@ -98,12 +99,18 @@ def spawnTask ( task, cwdin = '', getoutput=None ):
         ENV_SET=True        
      
     logger.debug ( "Spawning '%s' in '%s'" % (task,cwdin) )
-    process = subprocess.Popen (task, shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd = cwdin, env=env)
-    try:
-        out,err = process.communicate()
-        returncode = process.returncode
-    except:
-        returncode = -1
+
+    if VERBOSE:
+        out, err = "", ""
+        process = subprocess.Popen (task, shell=True, cwd = cwdin, env=env)
+        returncode = process.wait()
+    else:
+        process = subprocess.Popen (task, shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd = cwdin, env=env)
+        try:
+            out,err = process.communicate()
+            returncode = process.returncode
+        except:
+            returncode = -1
     
     if getoutput is not None:
         if returncode != -1:
@@ -237,6 +244,7 @@ def parseInput():
     """Handle command line input """
     usage = "usage: %prog [options] moduleName"
     parser = OptionParser(usage=usage, version="%prog 1.0")
+    parser.add_option("-v", "--verbose", action="store_true", default=False,dest="verbose", help="Output all output to stdout rather then saving to the log file")
     parser.add_option("-r", "--retrieve", action="store_true", default=False,dest="retrieve", help="Retrieve the appropiate source before building")
     parser.add_option("-b", "--build", action="store_true", default=False ,dest="build", help="Build the appropiate module")
     parser.add_option("-g", "--gen", action="store_true", default=False ,dest="gencode", help="Generate Source Code for the module")
@@ -269,6 +277,7 @@ if __name__ == '__main__':
         exit ( "You can only specify build or builddeb, not both!" )
 
     FAILHARD=options.failhard
+    VERBOSE=options.verbose
 
     if not os.path.exists( environment.downloadPath ):
         os.mkdir ( environment.downloadPath )    
