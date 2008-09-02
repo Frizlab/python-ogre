@@ -64,6 +64,7 @@ PATH_cadunetree=        os.path.join(PATH_THIRDPARTY, 'cadunetree')
 PATH_opensteer =        os.path.join(BASE_DIR, 'opensteer', 'trunk')
 PATH_ogrepcz = os.path.join(PATH_Ogre, 'PlugIns', 'PCZSceneManager' )
 PATH_hydrax = os.path.join(PATH_THIRDPARTY, 'hydrax')
+PATH_hikari = os.path.join(BASE_DIR, 'hikari', 'hikari')
 
 ###
 ### these paths assume you've left all the directory structure as standard
@@ -98,8 +99,7 @@ PATH_LIB_plib =                 PATH_plib
 PATH_LIB_navi=                  os.path.join(PATH_navi, 'lib')
 PATH_LIB_particleuniverse =     os.path.join(PATH_particleuniverse, 'bin', 'release')
 PATH_LIB_opensteer = os.path.join(LOCAL_LIB)
-PATH_INCLUDE_ogrepcz = os.path.join(PATH_ogrepcz,'include')
-PATH_INCLUDE_hydrax=        PATH_hydrax
+PATH_LIB_hikari = os.path.join(PATH_hikari, 'lib')
 
 PATH_INCLUDE_Ogre=          os.path.join(LOCAL_INCLUDE,'OGRE')  # os.path.join(PATH_Ogre,'OgreMain/include') 
 PATH_INCLUDE_Ogre_Dependencies =    PATH_INCLUDE_Ogre #      os.path.join( PATH_Ogre, 'Dependencies/include')
@@ -163,3 +163,6 @@ PATH_INCLUDE_PhysX= [ physxbase
                     ]
 PATH_INCLUDE_opensteer = os.path.join(LOCAL_INCLUDE, 'OpenSteer')
 PATH_INCLUDE_opensteer_opensteer = os.path.join(LOCAL_INCLUDE, 'OpenSteer')
+PATH_INCLUDE_ogrepcz = os.path.join(PATH_ogrepcz,'include')
+PATH_INCLUDE_hydrax=        PATH_hydrax
+PATH_INCLUDE_hikari = os.path.join(PATH_hikari, 'include')
