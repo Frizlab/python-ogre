@@ -184,11 +184,11 @@ def buildDeb ( module, install = False ):
    
     # Rewrite any place holders
     for file in os.listdir(debiandir):
-      if not os.path.isfile(os.path.join(debiandir, file)):
-        continue
-      ret = spawnTask( "sed --in-place "+os.path.join(debiandir,file)+" -e\"s|%%SHORTDATE%%|`date +%Y%m%d`|\" -e\"s|%%LONGDATE%%|`date +'%a, %d %b %Y %H:%m:%S %z'`|\" -e\"s|%%VERSION%%|"+module.source_version+"|\"", srcdir)
-      if ret != 0:
-          exit("Was not able to update the debian change log.")
+        if not os.path.isfile(os.path.join(debiandir, file)):
+            continue
+        ret = spawnTask( "sed --in-place "+os.path.join(debiandir,file)+" -e\"s|%%SHORTDATE%%|`date +%Y%m%d`|\" -e\"s|%%LONGDATE%%|`date +'%a, %d %b %Y %H:%m:%S %z'`|\" -e\"s|%%VERSION%%|"+module.source_version+"|\"", srcdir)
+        if ret != 0:
+            exit("Was not able to update the debian %s." % file)
  
     # Check that all the dependencies for this package are avaliable
     c = StringIO()
