@@ -1,3 +1,9 @@
+python-ogre (0.0.0-7) unstable; urgency=low
+
+  * Lots of small updates.
+  * Add verbose output.
+
+ -- Tim 'Mithro' Ansell <mithro@mithis.com>  Tue, 02 Sep 2008 17:53:00 +1000
 python-ogre (0.0.0-6) unstable; urgency=low
 
   * Fixed the build for AMD64 machines.
