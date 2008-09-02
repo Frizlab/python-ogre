@@ -453,13 +453,19 @@ class boost:    ## also included bjam
     pythonModule = False
     ModuleName = ""
 
-    if _STABLE:
-        base = 'boost_1_36_0'
-        lib= 'boost_python-vc90-mt-1_36'
-    else:        
-        base = 'boost_1_37'
-        lib = 'boost_python-vc90-mt-1_37'
-        
+    if isWindows():
+        if _STABLE:
+            base = 'boost_1_36_0'
+            lib= 'boost_python-vc90-mt-1_36'
+        else:        
+            base = 'boost_1_37'
+            lib = 'boost_python-vc90-mt-1_37'
+    else:
+        if _STABLE:
+            base = 'boost_1_34_0'
+        else:
+            base = 'boost_1_37'
+
     if isLinux() or isMac():
         bjambase = 'boost-jam-3.1.16'
         if isMac():
