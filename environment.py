@@ -462,7 +462,7 @@ class boost:    ## also included bjam
             lib = 'boost_python-vc90-mt-1_37'
     else:
         if _STABLE:
-            base = 'boost_1_34_0'
+            base = 'boost_1_34_1'
         else:
             base = 'boost_1_37'
 
