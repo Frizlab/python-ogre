@@ -1,0 +1,10 @@
+Format: 1.0
+Source: python-ogre-demos
+Binary: python-ogre-demos
+Architecture: any
+Version: 0.0.0-1
+Maintainer: Tim 'mithro' Ansell <mithro@mithis.com>
+Standards-Version: 3.7.2.2
+%%BUILDDEPS%%
+Files: 
+ %%MD5SUM%% %%SIZE%%
