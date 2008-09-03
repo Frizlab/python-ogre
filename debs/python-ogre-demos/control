@@ -8,7 +8,7 @@ Build-Depends: debhelper (>= 5.0.38)
 Standards-Version: 3.7.2
 
 Package: python-ogre-demos
-Architecture: any
+Architecture: all
 Depends: ${python:Depends}, ${misc:Depends}, python-ogre
 XB-Python-Version: ${python:Versions}
 Description: Example programs using the python-ogre package.
