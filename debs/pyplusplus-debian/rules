@@ -26,7 +26,7 @@ clean:
 	-find . -name '*.py[co]' | xargs rm -f
 	dh_clean
 
-install: build $(PYVERS:%=install-python%)
+install: build $(PYVERS:%=install-python%) install-shared
 
 install-python%:
 	dh_testdir
@@ -34,6 +34,12 @@ install-python%:
 	dh_clean -k 
 	dh_installdirs
 	python$* setup.py install --root=$(CURDIR)/debian/pyplusplus
+
+install-shared:
+	mkdir -p $(CURDIR)/debian/pyplusplus/usr/share/doc/pyplusplus
+	cp -rf examples $(CURDIR)/debian/pyplusplus/usr/share/doc/pyplusplus
+	mkdir -p $(CURDIR)/debian/pyplusplus/usr/include/pyplusplus
+	cp -rf pyplusplus/code_repository/* $(CURDIR)/debian/pyplusplus/usr/include/pyplusplus
 
 # Build architecture-independent files here.
 binary-indep: build install
