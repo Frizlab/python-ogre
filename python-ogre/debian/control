@@ -24,12 +24,35 @@ Package: python-ogre
 Architecture: any
 Depends: ${python:Depends}, ${shlibs:Depends}, ${misc:Depends},
 XB-Python-Version: ${python:Versions}
-Description: Python Ogre.
- Python Ogre.
+Description: Python bindings for Ogre 3d engine and a number of other graphic
+ and game libraries.
+ .
+ Python-Ogre is a free open source Python interface to a wide range of C++
+ libraries. Focused primarly on supporting the Ogre 3D graphics library and
+ other Graphics and Gaming libraries. Python-Ogre allows developers to focus
+ on their 'application', taking advantage of the simplicity of Python with 
+ the performance and functionality of the underlying libraries.
 
 Package: python-ogre-dbg
 Architecture: any
 Depends: ${python:Depends}, ${shlibs:Depends}, ${misc:Depends}, python-ogre (= ${Source-Version})
 XB-Python-Version: ${python:Versions}
-Description: Python Ogre.
- Python Ogre.
+Description: Debug symbols for the python-ogre package.
+ .
+ Python-Ogre is a free open source Python interface to a wide range of C++
+ libraries. Focused primarly on supporting the Ogre 3D graphics library and
+ other Graphics and Gaming libraries. Python-Ogre allows developers to focus
+ on their 'application', taking advantage of the simplicity of Python with 
+ the performance and functionality of the underlying libraries.
+
+Package: python-ogre-demos
+Architecture: any
+Depends: ${python:Depends}, ${shlibs:Depends}, ${misc:Depends}, python-ogre (= ${Source-Version})
+XB-Python-Version: ${python:Versions}
+Description: Example programs using the python-ogre package.
+ .
+ Python-Ogre is a free open source Python interface to a wide range of C++
+ libraries. Focused primarly on supporting the Ogre 3D graphics library and
+ other Graphics and Gaming libraries. Python-Ogre allows developers to focus
+ on their 'application', taking advantage of the simplicity of Python with 
+ the performance and functionality of the underlying libraries.
