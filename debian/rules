@@ -49,7 +49,7 @@ clean:
 	-find . -name '*.py[co]' | xargs rm -f
 	dh_clean
 
-install: build $(PYVERS:%=install-python%)
+install: build $(PYVERS:%=build-python%) $(PYVERS:%=install-python%)
 
 install-python%:
 	dh_testdir
@@ -59,12 +59,26 @@ install-python%:
 	python$* setup.py install --root=$(CURDIR)/debian/python-ogre
 	python$* setup.py install --root=$(CURDIR)/debian/tmp
 
+demos:
+	mkdir -p $(CURDIR)/debian/python-ogre-demos/usr/share/python-ogre-demos/
+	cp -rvf demos/* $(CURDIR)/debian/python-ogre-demos/usr/share/python-ogre-demos/
+	# Clean up any svn directories
+	find $(CURDIR)/debian/python-ogre-demos -name .svn | xargs rm -rf || true
+	# Remove any plugins.cfg files
+	find $(CURDIR)/debian/python-ogre-demos -name plugins.cfg | xargs rm || true
+	# Remove any yet to work demos
+	find $(CURDIR)/debian/python-ogre-demos -name tofix | xargs rm -rf || true 
+	# Remove windows only demos
+	find $(CURDIR)/debian/python-ogre-demos -name dshow | xargs rm -rf || true
+	# Remove any log files
+	find $(CURDIR)/debian/python-ogre-demos -name \*.log | xargs rm || true
+
 # Build architecture-independent files here.
 binary-indep: build install
 # We have nothing to do here.
 
 # Build architecture-dependent files here.
-binary-arch: build install
+binary-arch: demos build install
 	dh_strip --dbg-package=python-ogre-dbg
 	dh_testdir
 	dh_testroot
@@ -89,4 +103,4 @@ binary-arch: build install
 #	sudo dpkg --install libboost-python1.34.1-index*.deb
 
 binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install configure prep build $(PYVERS:%=build-python%) $(PYVERS:%=install-python%)
+.PHONY: build clean demos binary-indep binary-arch binary install configure prep build $(PYVERS:%=build-python%) $(PYVERS:%=install-python%)
