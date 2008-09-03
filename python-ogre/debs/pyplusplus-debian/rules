@@ -34,12 +34,12 @@ install-python%:
 	dh_clean -k 
 	dh_installdirs
 	python$* setup.py install --root=$(CURDIR)/debian/pyplusplus
+	cp -rf pyplusplus/code_repository $(CURDIR)/debian/pyplusplus/usr/lib/python$*/site-packages/pyplusplus/
 
 install-shared:
 	mkdir -p $(CURDIR)/debian/pyplusplus/usr/share/doc/pyplusplus
 	cp -rf examples $(CURDIR)/debian/pyplusplus/usr/share/doc/pyplusplus
-	mkdir -p $(CURDIR)/debian/pyplusplus/usr/include/pyplusplus
-	cp -rf pyplusplus/code_repository/* $(CURDIR)/debian/pyplusplus/usr/include/pyplusplus
+	find $(CURDIR)/debian/pyplusplus -name .svn | xargs rm -rf
 
 # Build architecture-independent files here.
 binary-indep: build install

@@ -327,6 +327,12 @@ def generate_code():
                         , 'pyplusplus'
                         , 'code_repository'
                         , 'return_pointee_value.hpp' )
+    if not os.path.exists(return_pointee_value_source_path):
+        return_pointee_value_source_path \
+            = os.path.join ( os.path.dirname(code_repository.__file__),
+                            'return_pointee_value.hpp')
+
+    print return_pointee_value_source_path
 
     return_pointee_value_target_path \
         = os.path.join( environment.ode.generated_dir, 'return_pointee_value.hpp' )
