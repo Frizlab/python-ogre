@@ -9,31 +9,31 @@ export DH_COMPAT=5
 
 export CFLAGS=-g
 PYTHON	:= /usr/bin/python
-#PYVER   := $(shell $(PYTHON) -c 'import sys; print sys.version[:3]')
-PYVERS	= 2.5 #$(shell pyversions -vr)
+PYVERS  := $(shell $(PYTHON) -c 'import sys; print sys.version[:3]')
+#PYVERS	= 2.5 #$(shell pyversions -vr)
 
 export BUILDFLAGS=--usesystem --verbose --failhard -g -c
 
-build: build-stamp
-build-stamp:
+build: $(PYVERS:%=build-stamp%)
+build-stamp%:
 	touch STABLE
 	# We set LD_PRELOAD='' to stop fakeroot from killing the code generation
 	# Core Modules
-	LD_PRELOAD='' python BuildModule.py ${BUILDFLAGS} ois
-	LD_PRELOAD='' python BuildModule.py ${BUILDFLAGS} cegui
-	LD_PRELOAD='' python BuildModule.py ${BUILDFLAGS} ogre
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} ois
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} cegui
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} ogre
 	# Extra modules
-	LD_PRELOAD='' python BuildModule.py ${BUILDFLAGS} noise
-#	LD_PRELOAD='' python BuildModule.py ${BUILDFLAGS} ogreode
-	LD_PRELOAD='' python BuildModule.py ${BUILDFLAGS} betagui
-	LD_PRELOAD='' python BuildModule.py ${BUILDFLAGS} cadunetree
-	LD_PRELOAD='' python BuildModule.py ${BUILDFLAGS} caelum
-	LD_PRELOAD='' python BuildModule.py ${BUILDFLAGS} et
-	LD_PRELOAD='' python BuildModule.py ${BUILDFLAGS} plib
-	LD_PRELOAD='' python BuildModule.py ${BUILDFLAGS} ogreforests
-	LD_PRELOAD='' python BuildModule.py ${BUILDFLAGS} ogreal
-	LD_PRELOAD='' python BuildModule.py ${BUILDFLAGS} ogrevideoffmpeg
-	LD_PRELOAD='' python BuildModule.py ${BUILDFLAGS} watermesh
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} noise
+#	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} ogreode
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} betagui
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} cadunetree
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} caelum
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} et
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} plib
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} ogreforests
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} ogreal
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} ogrevideoffmpeg
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} watermesh
 	touch $@
 
 build-python%:
@@ -45,6 +45,7 @@ clean:
 	dh_testroot
 	rm -f build-python*
 	rm -rf build
+	rm *-stamp*
 	-find . -name '*.py[co]' | xargs rm -f
 	dh_clean
 
@@ -88,4 +89,4 @@ binary-arch: build install
 #	sudo dpkg --install libboost-python1.34.1-index*.deb
 
 binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install configure prep build-python2.5
+.PHONY: build clean binary-indep binary-arch binary install configure prep build $(PYVERS:%=build-python%) $(PYVERS:%=install-python%)
