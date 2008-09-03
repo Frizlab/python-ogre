@@ -1,0 +1,5 @@
+python-ogre-demos (0.0.0-1) unstable; urgency=low
+
+  * First attempt at packaging the demos.
+
+ -- Tim 'Mithro' Ansell <mithro@mithis.com>  Wed, 03 Sep 2008 22:02:00 +1000
