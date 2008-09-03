@@ -43,9 +43,9 @@ build-python%:
 clean:
 	dh_testdir
 	dh_testroot
-	rm -f build-python*
-	rm -rf build
-	rm *-stamp*
+	rm -f build-python* || true
+	rm -rf build || true
+	rm *-stamp* || true
 	-find . -name '*.py[co]' | xargs rm -f
 	dh_clean
 
