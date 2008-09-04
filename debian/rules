@@ -50,6 +50,7 @@ clean:
 	dh_clean
 
 install: build $(PYVERS:%=build-python%) $(PYVERS:%=install-python%)
+	echo $(PYVERS:%=build-python%) $(PYVERS:%=install-python%)
 
 install-python%:
 	dh_testdir
@@ -89,4 +90,4 @@ binary-arch: build install
 #	sudo dpkg --install libboost-python1.34.1-index*.deb
 
 binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install configure prep build $(PYVERS:%=build-python%) $(PYVERS:%=install-python%)
+.PHONY: build clean binary-indep binary-arch binary install configure prep build 
