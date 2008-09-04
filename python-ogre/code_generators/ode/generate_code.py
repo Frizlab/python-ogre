@@ -301,9 +301,8 @@ def generate_code():
     ode_ns = mb.global_ns  ## .namespace ('ode')
     common_utils.add_properties( ode_ns.classes() )
 
-    common_utils.add_constants( mb, { 'ode_version' :  '"%s"' % environment.ode.version
-                                      , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n") } )
-
+    ## add additional version information to the module to help identify it correctly 
+    common_utils.addDetailVersion ( mb, environment, environment.ode )
  
     #Creating code creator. After this step you should not modify/customize declarations.
     extractor = exdoc.doc_extractor("")

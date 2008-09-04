@@ -34,7 +34,7 @@ def setupLogging (logfilename):
     console.setFormatter(formatter)
     # add the handler to the root logger
     logging.getLogger('').addHandler(console)
-  
+ 
     
 def getClassList ():
     """ create a dictionary of classes from the environment modules

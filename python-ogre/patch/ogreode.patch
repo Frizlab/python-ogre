@@ -1,5 +1,101 @@
---- loader/include/OgreOdeDotLoader.h	15 Nov 2006 14:40:33 -0000	1.1
-+++ loader/include/OgreOdeDotLoader.h	11 May 2007 08:15:56 -0000
+Index: include/OgreOdePreReqs.h
+===================================================================
+--- include/OgreOdePreReqs.h	(revision 2492)
++++ include/OgreOdePreReqs.h	(working copy)
+@@ -2,9 +2,9 @@
+ #define _OGREODEPREREQS_H_
+ 
+ #include "Ogre.h"
+-#include "OgreNoMemoryMacros.h"
++//#include "OgreNoMemoryMacros.h"
+ #include "ode/ode.h"
+-#include "OgreMemoryMacros.h"
++//#include "OgreMemoryMacros.h"
+ 
+ 
+ namespace OgreOde 
+Index: src/OgreOdeGeometry.cpp
+===================================================================
+--- src/OgreOdeGeometry.cpp	(revision 2492)
++++ src/OgreOdeGeometry.cpp	(working copy)
+@@ -900,7 +900,7 @@
+ 
+ 	_data = dGeomTriMeshDataCreate(); 
+ 
+-	dGeomTriMeshDataBuildSimple(_data,(const dReal*)_vertices, (int)vertex_count, _indices, (int) index_count); 
++	dGeomTriMeshDataBuildSimple(_data,(const dReal*)_vertices, (int)vertex_count, /*(const int *)*/_indices, (int) index_count); 
+ 
+ 	_geom = dCreateTriMesh(getSpaceID(space),_data,0,0,0);
+ 	registerGeometry();
+Index: src/OgreOdeEntityInformer.cpp
+===================================================================
+--- src/OgreOdeEntityInformer.cpp	(revision 2492)
++++ src/OgreOdeEntityInformer.cpp	(working copy)
+@@ -361,8 +361,8 @@
+ 	SphereGeometry* geom = new SphereGeometry(rad, world, space);
+ 	geom->setBody(body);
+ 
+-	body->setPosition(_node->getWorldPosition());
+-	body->setOrientation(_node->getWorldOrientation());
++	body->setPosition(_node->_getDerivedPosition());
++	body->setOrientation(_node->_getDerivedOrientation());
+ 
+ 	_node->attachObject(body);
+ 
+@@ -382,8 +382,8 @@
+ 	BoxGeometry* geom = new BoxGeometry(sz, world, space);
+ 	geom->setBody(body);
+ 
+-	body->setPosition(_node->getWorldPosition());
+-	body->setOrientation(_node->getWorldOrientation());
++	body->setPosition(_node->_getDerivedPosition());
++	body->setOrientation(_node->_getDerivedOrientation());
+ 
+ 	_node->attachObject(body);
+ 
+@@ -402,8 +402,8 @@
+ {
+ 	BoxGeometry* geom = new BoxGeometry(getSize(), world, space);
+ 
+-	geom->setPosition(_node->getWorldPosition());
+-	geom->setOrientation(_node->getWorldOrientation());
++	geom->setPosition(_node->_getDerivedPosition());
++	geom->setOrientation(_node->_getDerivedOrientation());
+ 
+ 	return geom;
+ }
+Index: src/OgreOdeWorld.cpp
+===================================================================
+--- src/OgreOdeWorld.cpp	(revision 2492)
++++ src/OgreOdeWorld.cpp	(working copy)
+@@ -28,6 +28,7 @@
+     _show_debug_contact (false),
+     _manager (manager)
+ {
++	dInitODE();
+ 	_world = dWorldCreate();
+ 	_contacts = dJointGroupCreate(0);
+ 
+Index: loader/include/OgreOde_LoaderPreReqs.h
+===================================================================
+--- loader/include/OgreOde_LoaderPreReqs.h	(revision 2492)
++++ loader/include/OgreOde_LoaderPreReqs.h	(working copy)
+@@ -3,9 +3,9 @@
+ 
+ 
+ #include "Ogre.h"
+-#include "OgreNoMemoryMacros.h"
++//#include "OgreNoMemoryMacros.h"
+ #include "ode/ode.h"
+-#include "OgreMemoryMacros.h"
++//#include "OgreMemoryMacros.h"
+ #include "OgreOde_Core.h"
+ #include "OgreOde_Prefab.h"
+ 
+Index: loader/include/OgreOdeDotLoader.h
+===================================================================
+--- loader/include/OgreOdeDotLoader.h	(revision 2492)
++++ loader/include/OgreOdeDotLoader.h	(working copy)
 @@ -15,8 +15,8 @@
          DotLoader(OgreOde::World * world = 0, OgreOde::Space * space = 0);
  		~DotLoader(){};
@@ -11,9 +107,10 @@
  
          ObjectList  *load(const Ogre::String &filename, const Ogre::StringVector &objects_names, const Ogre::StringVector &instance_names);
          void         save(const Ogre::String &filename, const Ogre::StringVector &objects_names, ObjectList  *objects);
-
---- loader/src/OgreOdeDotLoader.cpp	28 Feb 2007 17:53:36 -0000	1.4
-+++ loader/src/OgreOdeDotLoader.cpp	11 May 2007 08:16:31 -0000
+Index: loader/src/OgreOdeDotLoader.cpp
+===================================================================
+--- loader/src/OgreOdeDotLoader.cpp	(revision 2492)
++++ loader/src/OgreOdeDotLoader.cpp	(working copy)
 @@ -62,6 +62,12 @@
  {
  

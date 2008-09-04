@@ -215,7 +215,7 @@ def generate_code():
                                            )
                                            
     # if this module depends on another set it here                                           
-    ## mb.register_module_dependency ( environment.ogre.generated_dir )
+    mb.register_module_dependency ( environment.ogre.generated_dir )
     
     # normally implicit conversions work OK, however they can cause strange things to happen so safer to leave off
     mb.constructors().allow_implicit_conversion = False                                           
@@ -254,12 +254,8 @@ def generate_code():
         if cls.name not in NoPropClasses:
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
             
-    common_utils.add_constants( mb, { 'ois_version' :  '"%s"' % environment.ois.version.replace("\n", "\\\n") 
-                                      , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
-                                      
-    ## need to create a welcome doc string for this...                                  
-    common_utils.add_constants( mb, { '__doc__' :  '"ois DESCRIPTION"' } ) 
-    
+    ## add additional version information to the module to help identify it correctly 
+    common_utils.addDetailVersion ( mb, environment, environment.ois )
     
     ##########################################################################################
     #

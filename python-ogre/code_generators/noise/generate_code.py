@@ -318,14 +318,11 @@ def generate_code():
     for ns in namespaces:
         for cls in mb.global_ns.namespace(ns).classes():
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
+                                          
+    ## add additional version information to the module to help identify it correctly 
+    common_utils.addDetailVersion ( mb, environment, environment.noise )
 
-    common_utils.add_constants( mb, { 'noise_version' :  '"%s"' % environment.noise.version.replace("\n", "\\\n") 
-                                      , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
-                                      
-    ## need to create a welcome doc string for this...                                  
-    common_utils.add_constants( mb, { '__doc__' :  '"noise DESCRIPTION"' } ) 
-    
-    
+   
     ##########################################################################################
     #
     # Creating the code. After this step you should not modify/customize declarations.

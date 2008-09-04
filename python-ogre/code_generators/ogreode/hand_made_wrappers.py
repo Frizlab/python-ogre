@@ -54,15 +54,40 @@ OgreOde_Prefab::Object *  OgreOde_Loader_loadRagdoll(OgreOde_Loader::DotLoader& 
 
 """     
 WRAPPER_REGISTRATION_OgreOdeLoader = [
-    'def( "loadVehicle", &::OgreOde_Loader_loadVehicle,\
-    ( bp::arg("filename"), bp::arg("object_name"), bp::arg("instance_name")=Ogre::StringUtil::BLANK ),\
-    "Python-Ogre Hand Wrapped\\nReturns a vehicle or ragdoll as appropiate" );'    
-    'def( "loadRagdoll", &::OgreOde_Loader_loadRagdoll,\
-    ( bp::arg("filename"), bp::arg("object_name"), bp::arg("instance_name")=Ogre::StringUtil::BLANK ),\
-    "Python-Ogre Hand Wrapped\\nReturns a vehicle or ragdoll as appropiate",\
-     bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());'
+    """def( "loadVehicle", &::OgreOde_Loader_loadVehicle,
+    ( bp::arg("filename"), bp::arg("object_name"), bp::arg("instance_name")=Ogre::StringUtil::BLANK ),
+    "Python-Ogre Hand Wrapped\\nReturns a vehicle or ragdoll as appropiate" );""",    
+    """def( "loadRagdoll", &::OgreOde_Loader_loadRagdoll,
+    ( bp::arg("filename"), bp::arg("object_name"), bp::arg("instance_name")=Ogre::StringUtil::BLANK ),
+    "Python-Ogre Hand Wrapped\\nReturns a vehicle or ragdoll as appropiate",
+     bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());"""
     ]
+ 
+WRAPPER_DEFINITION_EntityInformer=\
+"""
+boost::python::list
+OgreOdeEntityInformer_getBoneVertices( OgreOde::EntityInformer & me, unsigned char bone, unsigned int &vertex_count) {
     
+    boost::python::list outlist;
+    Ogre::Vector3 * vertices;
+    
+    if  ( ! me.getBoneVertices(bone,vertex_count,vertices ) )
+        return outlist;
+    
+    while ( count-- > 0 ) {
+        outlist.append ( *vertices++ );
+        }
+    delete[] vertices;        
+    return outlist;
+}
+"""
+WRAPPER_REGISTRATION_EntityInformer = [
+    """def( "getBoneVertices", &::OgreOdeEntityInformer_getBoneVertices,
+    "Python-Ogre Hand Wrapped\\nReturns a list of vertices\\n\\
+    Input: Bone number, vertex count\\n\\
+    Output: List of vertices (can be empty)" );"""   
+    ]
+       
 def apply_reg ( class_, code ):
     for c in code:
         class_.add_registration_code ( c )
@@ -71,4 +96,7 @@ def apply( mb ):
     rt = mb.class_( 'DotLoader' )
     rt.add_declaration_code( WRAPPER_DEFINITION_OgreOdeLoader )
     apply_reg (rt,  WRAPPER_REGISTRATION_OgreOdeLoader )
+#     rt = mb.class_( 'EntityInformer' )
+#     rt.add_declaration_code( WRAPPER_DEFINITION_EntityInformer )
+#     apply_reg (rt,  WRAPPER_REGISTRATION_EntityInformer )
        

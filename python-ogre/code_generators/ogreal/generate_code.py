@@ -284,12 +284,9 @@ def generate_code():
     for cls in main_ns.classes():
         if cls.name not in NoPropClasses:
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
-            
-    common_utils.add_constants( mb, { 'ogreal_version' :  '"%s"' % environment.ogreal.version.replace("\n", "\\\n") 
-                                      , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
-                                      
-    ## need to create a welcome doc string for this...                                  
-    common_utils.add_constants( mb, { '__doc__' :  '"ogreal DESCRIPTION"' } ) 
+                                          
+    ## add additional version information to the module to help identify it correctly 
+    common_utils.addDetailVersion ( mb, environment, environment.ogreal )
 
     ##########################################################################################
     #

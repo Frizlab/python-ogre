@@ -249,9 +249,9 @@ def generate_ogrenewt():
         cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t()  )
         common_utils.add_LeadingLowerProperties ( cls )
     
-    common_utils.add_constants( mb, { 'ogrenewt_version' :  '"%s"' % environment.ogrenewt.version
-                                      , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n") } )
-    
+    ## add additional version information to the module to help identify it correctly 
+    common_utils.addDetailVersion ( mb, environment, environment.ogrenewt )
+
     # create the doc extractor we'll be using
     extractor = exdoc.doc_extractor("")
     #

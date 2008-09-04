@@ -1613,7 +1613,7 @@ class cadunetree:
     ModuleName="cadunetree"          
 
 class ogrepcz:
-    active = False
+    active = True
     pythonModule = True
     version="1.0"
     name='ogrepcz'

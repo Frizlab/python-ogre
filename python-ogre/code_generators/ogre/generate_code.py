@@ -1066,16 +1066,8 @@ def generate_code():
             ## because we want backwards pyogre compatibility lets add leading lowercase properties
             common_utils.add_LeadingLowerProperties ( cls )
             
-    common_utils.add_constants( mb, { 'ogre_version' :  '"%s"' % environment.ogre.version.replace("\n", "\\\n") 
-                                      , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" )
-                                      , 'pythonogre_version' : '"%s"' %\
-                                      '.'.join( [environment.PythonOgreMajorVersion,
-                                                environment.PythonOgreMinorVersion,
-                                                environment.PythonOgrePatchVersion] ) }
-                                       )
-
-    ## need to create a welcome doc string for this...                                  
-    common_utils.add_constants( mb, { '__doc__' :  '"Python-Ogre Main Module for OGRE 3D"' } ) 
+    ## add additional version information to the module to help identify it correctly 
+    common_utils.addDetailVersion ( mb, environment, environment.ogre )
     
     count = 0
     for v in main_ns.variables():

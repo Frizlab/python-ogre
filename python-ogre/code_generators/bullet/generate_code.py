@@ -408,13 +408,9 @@ def generate_code():
         if cls.name not in NoPropClasses:
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
             
-    common_utils.add_constants( mb, { 'bullet_version' :  '"%s"' % environment.bullet.version.replace("\n", "\\\n") 
-                                      , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
+    ## add additional version information to the module to help identify it correctly 
+    common_utils.addDetailVersion ( mb, environment, environment.bullet )
                                       
-    ## need to create a welcome doc string for this...                                  
-    common_utils.add_constants( mb, { '__doc__' :  '"bullet DESCRIPTION"' } ) 
-    
-    
     ##########################################################################################
     #
     # Creating the code. After this step you should not modify/customize declarations.

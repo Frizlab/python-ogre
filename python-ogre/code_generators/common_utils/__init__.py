@@ -1,6 +1,8 @@
 import os, shutil
 import sys
 import shared_ptr
+import datetime
+import subprocess
 ##import hashlib ## makes this 2.5 dependent
 import md5
 from pygccxml import declarations
@@ -31,7 +33,59 @@ def docInfo ( mb, module ):
     t = i % {'timestamp':timestamp, 'version':version}
     add_constants( mb, { '__info__' :  t } ) 
   
+ 
+def addDetailVersion ( mb, env, envClass ):
+    """Add detailed version and build information to the module to assist with debugging etc
+    """
+#     decCode = """
+#         boost::python::tuple getCompileTime () { return ( boost::python::make_tuple( __TIME__ , __DATE__) ); }
+#         """   
+#     regCode = """ 
+#         bp::def( "getCompileTime", &getCompileTime,
+#                 "Python-Ogre Helper Function: Return the Time and Date the module was compiled.\\n\\
+#                 Input: None\\n\\
+#                 Ouput: Tuple [time, date]");
+#         """                  
+    def getSVNVersion ( environment ):
+        """ return a string with the current SVN version number
+        """
+        if hasattr( environment.Config, "SVNVersionCommmand"):
+            cmd = environment.Config.SVNVersionCommand
+        else:
+            cmd = "svnversion"        
+        process = subprocess.Popen (cmd, shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE )
+        try:
+            out,err = process.communicate()
+            returncode = process.returncode
+            svnversion = out
+        except:
+            returncode = -1
+            svnversion = "0000"
+        return svnversion.strip()
+          
+    po = ".".join( (env.PythonOgreMajorVersion,env.PythonOgreMinorVersion, env.PythonOgrePatchVersion) )
+    t = datetime.datetime.now().isoformat(' ').strip()
+    v = envClass.version
+    s = getSVNVersion( env )
+    detail = "_".join( (po,s,envClass.name, v, t) )
     
+    if hasattr( envClass, 'docstring' ):
+        docstring = envClass.docstring
+    else:
+        docstring = "PythonOgre %s Module - Version %s" % (envClass.name, v)
+        
+    add_constants ( mb, { 'PythonOgreDetail__' : '"%s"' % detail.replace("\n", "\\\n" ) 
+                        , 'CompileTime__' : '__TIME__' 
+                        , 'CompileDate__' : '__DATE__' 
+                        , 'PythonVersion__' : '"%s"' % sys.version.replace("\n", "\\\n" )
+                        , 'Version__' : '"%s"' % v.replace("\n", "\\\n" )
+                        , 'PythonOgreVersion__' : '"%s"' % po.replace("\n", "\\\n" )
+                        , '__doc__' : '"%s"' % docstring.replace("\n", "\\\n" )
+                        } )
+    
+#     mb.add_declaration_code( decCode )
+#     mb.add_registration_code ( regCode )
+           
 def _ReturnUnsignedInt( type_ ):
     """helper to return an UnsignedInt call for tranformation functions
     """
@@ -390,10 +444,14 @@ def Fix_Pointer_Returns ( mb, pointee_types=['unsigned int','int', 'float','char
     # Update 30 July 2008 -- support for void * variables to be exposed with ctypes handling                        
     for v in mb.variables( allow_empty=True ):
         if v.type.decl_string == 'void const *' or v.type.decl_string =='void *':
-            if v.access_type == 'public' and not v.documentation:
-#                 if not v.parent.noncopyable:    ## this test as we don't support classes with protected destructors
-                print "CTYPE Implementation on ", v, v.access_type
-                v.expose_address = True
+            try:  # this only works on memeber vars not global ones so need to check
+                if v.access_type == 'public' and not v.documentation:
+    #                 if not v.parent.noncopyable:    ## this test as we don't support classes with protected destructors
+                    print "CTYPE Implementation on ", v, v.access_type
+                    v.expose_address = True
+            except : #RunTimeError:
+                pass
+                                
                     
 def AutoExclude( mb, MAIN_NAMESPACE=None ):
     """ Automaticaly exclude a range of things that don't convert well from C++ to Python

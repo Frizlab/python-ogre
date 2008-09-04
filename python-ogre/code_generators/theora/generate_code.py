@@ -136,7 +136,7 @@ def ManualInclude ( mb ):
 # #         print "Base: ", i
 # #     print dir (i)    
     
-    main_ns.enum('::Ogre::eTexturePlayMode').include()
+#     main_ns.enum('::Ogre::eTexturePlayMode').include()
     main_ns.enum('::Ogre::eAudioSampleFormat').include()
     main_ns.class_('::Ogre::RingBuffer').include(already_exposed=True)
     main_ns.class_('::Ogre::TexturePtr').include(already_exposed=True)
@@ -481,6 +481,9 @@ def generate_code():
                                           , indexing_suite_version=2
                                           , cflags=environment.ogre.cflags
                                            )
+    # if this module depends on another set it here                                           
+    mb.register_module_dependency ( environment.ogre.generated_dir )
+
     # NOTE THE CHANGE HERE                                           
     mb.constructors().allow_implicit_conversion = False                                           
     
@@ -523,12 +526,8 @@ def generate_code():
         if cls.name not in NoPropClasses:
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
             
-    common_utils.add_constants( mb, { 'Theora_version' :  '"%s"' % environment.theora.version.replace("\n", "\\\n") 
-                                      , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
-                                      
-    ## need to create a welcome doc string for this...                                  
-    common_utils.add_constants( mb, { '__doc__' :  '"Theora DESCRIPTION"' } ) 
-    
+    ## add additional version information to the module to help identify it correctly 
+    common_utils.addDetailVersion ( mb, environment, environment.theora )
     
     ##########################################################################################
     #
