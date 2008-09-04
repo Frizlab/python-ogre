@@ -301,10 +301,10 @@ def generate_code():
     print "INCLUDE:", v
     v.include()   
     print "DONE" 
-        
-    common_utils.add_constants( mb, { 'CEGUI_version' :  '"%s"' % environment.cegui.version
-                                       , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n") } )
                                       
+    ## add additional version information to the module to help identify it correctly 
+    common_utils.addDetailVersion ( mb, environment, environment.cegui )
+    
     #Creating code creator. After this step you should not modify/customize declarations.
     extractor = exdoc.doc_extractor("")
     

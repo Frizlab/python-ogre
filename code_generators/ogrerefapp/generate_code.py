@@ -111,8 +111,8 @@ def generate_code():
         common_utils.add_LeadingLowerProperties ( cls )
 
     
-    common_utils.add_constants( mb, { 'ogrerefapp_version' :  '"%s"' % environment.ogrerefapp.version
-                                      , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n") } )
+    ## add additional version information to the module to help identify it correctly 
+    common_utils.addDetailVersion ( mb, environment, environment.ogrerefapp )
 
     #Creating code creator. After this step you should not modify/customize declarations.
         

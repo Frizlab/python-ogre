@@ -294,14 +294,11 @@ def generate_code():
     for cls in main_ns.classes():
         if cls.name not in NoPropClasses:
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
-            
-    common_utils.add_constants( mb, { 'caelum_version' :  '"%s"' % environment.caelum.version.replace("\n", "\\\n") 
-                                      , 'python_version' : '"%s"' % sys.version.replace("\n", "\\\n" ) } )
                                       
-    ## need to create a welcome doc string for this...                                  
-    common_utils.add_constants( mb, { '__doc__' :  '"caelum DESCRIPTION"' } ) 
-    
-    
+    ## add additional version information to the module to help identify it correctly 
+    common_utils.addDetailVersion ( mb, environment, environment.caelum )
+                                      
+   
     ##########################################################################################
     #
     # Creating the code. After this step you should not modify/customize declarations.

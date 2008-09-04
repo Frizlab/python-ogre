@@ -186,12 +186,12 @@ class GranTurismOgreFrameListener ( sf.FrameListener ):
                 self.TimeUntilNextToggle = 0.5
 
         if( not self._stepper.isPaused()):
-            print "**** Stepping"
-#             self.vehicle.setInputs(self.Keyboard.isKeyDown(OIS.KC_J),
-#                                 self.Keyboard.isKeyDown(OIS.KC_L),
-#                                 self.Keyboard.isKeyDown(OIS.KC_I),
-#                                 self.Keyboard.isKeyDown(OIS.KC_K))
-#             self.vehicle.update(time)
+#             print "**** Stepping"
+            self.vehicle.setInputs(self.Keyboard.isKeyDown(OIS.KC_J),
+                                self.Keyboard.isKeyDown(OIS.KC_L),
+                                self.Keyboard.isKeyDown(OIS.KC_I),
+                                self.Keyboard.isKeyDown(OIS.KC_K))
+            self.vehicle.update(time)
 
             # Thanks to Ahmed!
             followFactor = 0.2
