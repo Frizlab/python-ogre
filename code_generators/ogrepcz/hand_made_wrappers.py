@@ -100,7 +100,7 @@ WRAPPER_REGISTRATION_PCZRaySceneQuery = [
                 "Python-Ogre Helper Function: Executes a query.\\n\\
                 Input: None\\n\\
                 Ouput: RaySceneQueryResult",\
-                bp::return_value_policy< bp::default_call_policies >());"""
+                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());"""
     ]
     
     
