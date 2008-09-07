@@ -22,6 +22,7 @@ typedef Ogre::SharedPtr<Ogre::StringVector> StringVectorPtr;
 typedef std::list<Ogre::Particle*> ParticleList;
 typedef std::list<Ogre::ParticleEmitter*> ParticleEmitterList;
 typedef std::vector<Ogre::Particle*> ParticlePool;
+typedef std::vector<float> stdVectorFloat;
 
 typedef Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::GpuConstantDefinition, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::GpuConstantDefinition> > > >\
 	MapIteratorGpuConstantDefinition;

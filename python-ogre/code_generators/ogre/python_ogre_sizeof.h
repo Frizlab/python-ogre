@@ -39,6 +39,7 @@ sizeof( std::pair<Ogre::SharedPtr<Ogre::Resource>, bool> );
 
 std::vector< int > v;
 std::set< std::string > s;
+sizeof ( std::vector< float > );
 std::multimap< std::string, std::string > ms;
 sizeof ( v );
 sizeof ( s );

@@ -694,11 +694,11 @@ namespace QuickGUI
 		mTimeListeners.push_back(w);
 	}
 
-	void GUIManager::renderQueueStarted(Ogre::uint8 id, const std::string& invocation, bool& skipThisQueue)
+	bool GUIManager::renderQueueStarted(Ogre::uint8 id, const std::string& invocation, bool skipThisQueue)
 	{
 		// Look for widgets queued for deletion.
 		if(mFreeList.empty())
-			return;
+			return skipThisQueue;
 
 		bool activeWidgetDestroyed = false;
 		if( std::find(mFreeList.begin(),mFreeList.end(),mActiveWidget) != mFreeList.end() )
@@ -715,9 +715,10 @@ namespace QuickGUI
 
 		if(activeWidgetDestroyed)
 			injectMouseMove(0,0);
+        return skipThisQueue;			
 	}
 
-	void GUIManager::renderQueueEnded(Ogre::uint8 id, const std::string& invocation, bool& repeatThisQueue)
+	bool GUIManager::renderQueueEnded(Ogre::uint8 id, const std::string& invocation, bool repeatThisQueue)
 	{
 		// Perform rendering of GUI
 		if(mQueueID == id)
@@ -725,6 +726,7 @@ namespace QuickGUI
 			mActiveSheet->render();
 			mMouseCursor->render();
 		}
+		return repeatThisQueue;
 	}
 
 	void GUIManager::removeFromRenderQueue()

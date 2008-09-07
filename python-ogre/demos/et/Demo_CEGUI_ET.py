@@ -656,7 +656,8 @@ class GuiApplication ( SampleFramework.Application ):
         self.terrainMgr.setUseLODMorphing(True, 0.2, "morphFactor")
 
         ## create a fresh, mid-high terrain for editing
-        heightMapValues = ET.stdVectorFloat()
+        # Note 
+        heightMapValues = ogre.LodDistanceList() ## ET.stdVectorFloat()
         for i in xrange(129):
             for j in xrange(129):
                 heightMapValues.append(float(0.50))
