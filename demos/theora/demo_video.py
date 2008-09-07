@@ -42,8 +42,8 @@ class VideoApplication(sf.Application):
         if not self.Control:
             print "\n\nClip not found\n"
             sys.exit()
-        self.Control.setInputName( '../media_extra/konqi_ad1_nl.avi.ogg') ##fish.ogg' )
-        self.Control.setPlayMode(theora.TextureEffectPause )
+        self.Control.setInputName( '../media_extra/fish1.ogg') #konqi_ad1_nl.avi.ogg') ##fish.ogg' )
+        self.Control.setPlayMode(ogre.TextureEffectPause )
 
         self.Control.setTextureTecPassStateLevel( 0, 0, 0 )
         self.Control.setSeekEnabled( False )
@@ -71,7 +71,7 @@ class VideoApplication(sf.Application):
             self.Clip.setAudioDriver( self.Audio )
 
         
-        self.playmode = theora.TextureEffectPlay_ASAP
+        self.playmode = ogre.TextureEffectPlay_ASAP
         self.Clip.changePlayMode ( self.playmode )
          
         c = sceneManager.createEntity("cubo", "cube.mesh")

@@ -1,18 +1,22 @@
 August 29 2008 : Release 1.6 RC1
 ================================
-Version numbering change to match the Ogre release versions.  
-Ogre 1.6 RC1
-OIS 1.2
-CEGUI 0.6.1 
-Particle Universe 0.8
-Hydrax 0.3 
-Bullet 2.70
-OgreBullet - patched to match API change in Bullet 2.7
-PhysX (NVIDA) 2.8.1
-ODE 0.10.1
-QuickGui R350
-OgreAL R115
+<< incomplete >>
+Version numbering change to match the Ogre release versions.
+Modules Updated to   
+ Ogre 1.6 RC1
+ OIS 1.2
+ CEGUI 0.6.1 
+ Particle Universe 0.8
+ Hydrax 0.3 
+ Bullet 2.70
+ OgreBullet - patched to match API change in Bullet 2.7
+ PhysX (NVIDA) 2.8.1
+ ODE 0.10.1
+ QuickGui R350
+ OgreAL R115
 
+OgreOde and OgreRefApp tweaked to work with ODE 0.10 
+ 
 Added CEGUI::Tree to handmadewrapper (Thanks Dermont)
 Change to CEGUI_framework.py to force loading of CEGUIBase lib in the correct mode under Linux - means we don't need to 
 patch the CEGUI source...

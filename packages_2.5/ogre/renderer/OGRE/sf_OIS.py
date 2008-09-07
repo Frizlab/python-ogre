@@ -302,7 +302,9 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
             self.InputManager=None
 
     ## NOTE the in Ogre 1.6 (1.7) this is changed to frameRenderingQueued !!!
-                            
+    def frameRenderingQueued ( self, evt ):
+        return True
+                                    
     def frameStarted(self, frameEvent):
         if(self.renderWindow.isClosed()):
             return False

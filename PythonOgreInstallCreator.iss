@@ -3,19 +3,19 @@
 ;
 [Setup]
 AppName=Python-Ogre
-AppVerName=Python-Ogre 1.2 RC2
+AppVerName=Python-Ogre 1.6RC1
 DefaultDirName=C:\PythonOgre
 DefaultGroupName=Python-Ogre
 OutputBaseFilename=PythonOgreInstaller
 OutputDir=C:\temp
 SourceDir=C:\Development\PythonOgreRelease
-VersionInfoDescription=Release 1.2 RC2 of Python-Ogre
+VersionInfoDescription=Release 1.6RC1 of Python-Ogre
 AllowNoIcons=true
 AppPublisher=OpenSource (Andy and Team)
 AppPublisherURL=http://www.python-ogre.org
 AppSupportURL=http://www.python-ogre.org
 AppUpdatesURL=http://www.python-ogre.org
-AppVersion=1.2.1
+AppVersion=1.6.0
 LicenseFile=LICENSE.GPL
 Compression=lzma
 InfoBeforeFile=InstallWarning.rtf
@@ -23,13 +23,13 @@ InfoAfterFile=postinstall.rtf
 SolidCompression=true
 AppCopyright=LPGL
 VersionInfoCompany=OpenSource (Andy and Team)
-VersionInfoTextVersion=1.2.1
+VersionInfoTextVersion=1.6.0
 VersionInfoCopyright=PythonOgre Development Team
 RestartIfNeededByRun=false
 UninstallDisplayName=PythonOgre
 WizardImageFile=compiler:WizModernImage-IS.bmp
 WizardSmallImageFile=compiler:WizModernSmallImage-IS.bmp
-VersionInfoVersion=1.2.1
+VersionInfoVersion=1.6.0
 [Files]
 ; base files, demos and tools
 Source: *; DestDir: {app}
@@ -219,15 +219,15 @@ Name: {group}\OgreNewt Demos\Simple Buoyancy; Filename: {code:GetPythonExe}; Par
 Name: {group}\OgreNewt Demos\Custom Joints; Filename: {code:GetPythonExe}; Parameters: Demo07_CustomJoints.py; WorkingDir: {app}\Demos\OgreNewt
 Name: {group}\OgreNewt Demos\Ragdoll; Filename: {code:GetPythonExe}; Parameters: Demo08_ragdoll.py; WorkingDir: {app}\Demos\OgreNewt
 
-Name: {group}\Video Demos\ffmpeg Video; Filename: {code:GetPythonExe}; Parameters: Demo_Video.py; WorkingDir: {app}\Demos\ffmpeg
+;Name: {group}\Video Demos\ffmpeg Video; Filename: {code:GetPythonExe}; Parameters: Demo_Video.py; WorkingDir: {app}\Demos\ffmpeg
 ;Name: {group}\Video Demos\DirectShow Video; Filename: {code:GetPythonExe}; Parameters: Demo_Video.py; WorkingDir: {app}\Demos\dshow
 Name: {group}\Video Demos\Theora Video; Filename: {code:GetPythonExe}; Parameters: Demo_Video.py; WorkingDir: {app}\Demos\theora
 
-Name: {group}\NxOgre\Download AGEIA drivers first; Filename: http://www.ageia.com/drivers/drivers.html
-Name: {group}\NxOgre\Cakewalk; Filename: {code:GetPythonExe}; Parameters: Cakeframework.py; WorkingDir: {app}\Demos\nxogre
-Name: {group}\NxOgre\Demo101; Filename: {code:GetPythonExe}; Parameters: Demo_101.py; WorkingDir: {app}\Demos\nxogre
-Name: {group}\NxOgre\Demo102; Filename: {code:GetPythonExe}; Parameters: Demo_102.py; WorkingDir: {app}\Demos\nxogre
-Name: {group}\NxOgre\Demo103; Filename: {code:GetPythonExe}; Parameters: Demo_103.py; WorkingDir: {app}\Demos\nxogre
+;Name: {group}\NxOgre\Download AGEIA drivers first; Filename: http://www.ageia.com/drivers/drivers.html
+;Name: {group}\NxOgre\Cakewalk; Filename: {code:GetPythonExe}; Parameters: Cakeframework.py; WorkingDir: {app}\Demos\nxogre
+;Name: {group}\NxOgre\Demo101; Filename: {code:GetPythonExe}; Parameters: Demo_101.py; WorkingDir: {app}\Demos\nxogre
+;Name: {group}\NxOgre\Demo102; Filename: {code:GetPythonExe}; Parameters: Demo_102.py; WorkingDir: {app}\Demos\nxogre
+;Name: {group}\NxOgre\Demo103; Filename: {code:GetPythonExe}; Parameters: Demo_103.py; WorkingDir: {app}\Demos\nxogre
 
 Name: {group}\Plib Demos\Networking - Server; Filename: {code:GetPythonExe}; Parameters: Demo_Server.py; WorkingDir: {app}\Demos\plib
 Name: {group}\Plib Demos\Networking - Client; Filename: {code:GetPythonExe}; Parameters: Demo_Client.py; WorkingDir: {app}\Demos\plib
@@ -306,12 +306,16 @@ function IsSupportedVersion ( Param: String ) : Boolean;
 var
 	I: Integer;
 begin
-	Result := True;
-//	msgbox ('Checking Supported Versions ' + Param + IntToStr(GetArrayLength(SupportedVersions) ), mbInformation, MB_OK);
+	Result := False;
+	msgbox ('Checking Supported Versions ' + Param + ' ' + IntToStr(GetArrayLength(SupportedVersions) ), mbInformation, MB_OK);
 
 	for I:=0 to GetArrayLength(SupportedVersions)-1 do begin
-		if Param = SupportedVersions[i] then Result := True;
-//		msgbox ( 'Checked ' + SupportedVersions[i], mbInformation, MB_OK);
+		if Param = SupportedVersions[i] then begin
+		    Result := True;
+    		msgbox ( 'Is a supported version ' + Param + ' (' + SupportedVersions[i] + ')  ' + Param , mbInformation, MB_OK);
+	  end else begin
+	      msgbox ( 'Not a supported version ' + Param +  ' (' +SupportedVersions[i] + ')  ', mbInformation, MB_OK);
+        end;	        
 	end;
 end;
 
@@ -334,6 +338,7 @@ begin
 	templ := ['',''];
 	count := 0;
 	RegGetSubkeyNames(HKEY_LOCAL_MACHINE, 'SOFTWARE\Python\PythonCore', Result1);
+	msgbox ( 'LOCAL MACHINE  ' + InttoStr(GetArrayLength(Result1)) , mbInformation, MB_OK);
 	// if we have versions here process them
 	for i:=0 to GetArrayLength(Result1)-1 do
 		if IsSupportedVersion ( Result1[i] ) then begin // make sure we support it..
@@ -349,7 +354,9 @@ begin
 
 	if count < 2 then begin // we've only found zero, or one version so far..
 		// OK so we should now have all the valid versions listed in LOCAL_MACHINE
+		Result1 = ['']
 		RegGetSubkeyNames(HKEY_CURRENT_USER, 'SOFTWARE\Python\PythonCore', Result1);
+		msgbox ( 'LOCAL MACHINE  ' + InttoStr(GetArrayLength(Result1)) , mbInformation, MB_OK);
 		for i:=0 to GetArrayLength(Result1)-1 do
 			if not FoundPythonIn ( Result1[i], tempv ) then  // check we don't already know about this version
 				if IsSupportedVersion (Result1[i]) then begin
@@ -458,7 +465,7 @@ begin
 	PythonVersion := '';
 	SupportedVersions := [ '2.5'];
 
-	Debug := False;
+	Debug := True;
 
 	NumPythonVersions := GetInstalledPythonVersions();
 	if Debug then

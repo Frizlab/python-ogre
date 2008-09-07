@@ -23,6 +23,7 @@ if sys.platform == 'win32':
     os.environ['PATH'] =  newpath +';' + os.environ['PATH']
 
 import ogre.renderer.OGRE as ogre
+# import sf_OIS as sf
 import SampleFramework as sf
 import ogre.io.OIS as ois
 import ogre.renderer.ogrepcz as pcz
@@ -37,7 +38,7 @@ class PCZTestFrameListener ( sf.FrameListener):
         self.moveSpeed = 15.0
         self.targetMO =0
         self.app=app
-        self.buildingTranslate = ogre.Vector3()
+        self.buildingTranslate = ogre.Vector3(0,0,0)  ## need to specify 0,0,0 otherwise random
 
         self.raySceneQuery= app.raySceneQuery
 
@@ -272,14 +273,14 @@ class PCZTestApplication (sf.Application):
         self.buildingNode.setPosition(500, 165, 570)
         #ogre.Radian r = Radian(3.1416/7.0)
         #self.buildingNode.rotate(ogre.Vector3.UNIT_Y, r)
-
-        # create another test buildinig
-        roomObj2 = RoomObject.RoomObject()
-        self.buildingNode = roomObj2.createTestBuilding(self.sceneManager, "2")
-        self.buildingNode.setPosition(400, 165, 570)
-        #ogre.Radian r = Radian(3.1416/7.0)
-        #self.buildingNode.rotate(ogre.Vector3.UNIT_Y, r)
-
+# 
+#         # create another test buildinig
+#         roomObj2 = RoomObject.RoomObject()
+#         self.buildingNode = roomObj2.createTestBuilding(self.sceneManager, "2")
+#         self.buildingNode.setPosition(400, 165, 570)
+#         #ogre.Radian r = Radian(3.1416/7.0)
+#         #self.buildingNode.rotate(ogre.Vector3.UNIT_Y, r)
+# 
         # Position camera in the center of the building
         self.cameraNode.setPosition(self.buildingNode.getPosition())
         # Look back along -Z
