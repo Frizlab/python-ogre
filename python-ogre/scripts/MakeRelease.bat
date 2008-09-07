@@ -19,6 +19,8 @@ xcopy ..\docs ..\..\PythonOgreRelease\docs
 xcopy ..\tools ..\..\PythonOgreRelease\tools
 copy ..\ThirdParty ..\..\PythonOgreRelease\ThirdParty
 copy ..\*.rtf ..\..\PythonOgreRelease
+copy ..\ReportVersion.py ..\..\PythonOgreRelease
+copy ..\Setup.py ..\..\PythonOgreRelease
 copy ..\COPYING ..\..\PythonOgreRelease
 copy ..\*.gpl ..\..\PythonOgreRelease
 copy ..\changelog.txt ..\..\PythonOgreRelease

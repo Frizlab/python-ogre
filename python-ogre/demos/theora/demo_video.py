@@ -42,7 +42,7 @@ class VideoApplication(sf.Application):
         if not self.Control:
             print "\n\nClip not found\n"
             sys.exit()
-        self.Control.setInputName( '../media_extra/fish1.ogg') #konqi_ad1_nl.avi.ogg') ##fish.ogg' )
+        self.Control.setInputName( 'konqi_ad1_nl.avi.ogg' ) #../media_extra/fish1.ogg') 
         self.Control.setPlayMode(ogre.TextureEffectPause )
 
         self.Control.setTextureTecPassStateLevel( 0, 0, 0 )

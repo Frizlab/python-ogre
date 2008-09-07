@@ -20,7 +20,7 @@ LicenseFile=LICENSE.GPL
 Compression=lzma
 InfoBeforeFile=InstallWarning.rtf
 InfoAfterFile=postinstall.rtf
-SolidCompression=true
+SolidCompression=yes
 AppCopyright=LPGL
 VersionInfoCompany=OpenSource (Andy and Team)
 VersionInfoTextVersion=1.6.0
@@ -44,11 +44,12 @@ Source: packages_2.5\*; DestDir: {code:GetPythonSiteDir}; Flags: recursesubdirs;
 
 ; I'm going to install here anyway to make updates easier...
 Source: packages_2.5\*; DestDir: {app}\packages_2.5; Flags: recursesubdirs
+
+Source: ThirdParty\dxwebsetup.exe; DestDir: {app}\ThirdParty
+Source: ThirdParty\vcredist_x86.exe; DestDir: {app}\ThirdParty
 ;
 ; we need to remove the .pyc files when we uninstall
 ;
-Source: ThirdParty\dxwebsetup.exe; DestDir: {app}\ThirdParty
-Source: ThirdParty\vcredist_x86.exe; DestDir: {app}\ThirdParty
 
 [UninstallDelete]
 Type: filesandordirs; Name: {code:GetPythonSiteDir}\ogre\*.pyc
@@ -307,14 +308,14 @@ var
 	I: Integer;
 begin
 	Result := False;
-	msgbox ('Checking Supported Versions ' + Param + ' ' + IntToStr(GetArrayLength(SupportedVersions) ), mbInformation, MB_OK);
+	;msgbox ('Checking Supported Versions ' + Param + ' ' + IntToStr(GetArrayLength(SupportedVersions) ), mbInformation, MB_OK);
 
 	for I:=0 to GetArrayLength(SupportedVersions)-1 do begin
 		if Param = SupportedVersions[i] then begin
 		    Result := True;
-    		msgbox ( 'Is a supported version ' + Param + ' (' + SupportedVersions[i] + ')  ' + Param , mbInformation, MB_OK);
+    		;msgbox ( 'Is a supported version ' + Param + ' (' + SupportedVersions[i] + ')  ' + Param , mbInformation, MB_OK);
 	  end else begin
-	      msgbox ( 'Not a supported version ' + Param +  ' (' +SupportedVersions[i] + ')  ', mbInformation, MB_OK);
+	      ;msgbox ( 'Not a supported version ' + Param +  ' (' +SupportedVersions[i] + ')  ', mbInformation, MB_OK);
         end;	        
 	end;
 end;
@@ -331,14 +332,14 @@ function GetInstalledPythonVersions() : Integer;
 var
 	i, count: Integer;
 	p: string;
-	Result1 : array of String;
+	Result1, Result2 : array of String;
 	tempv, templ :  array of String;
 begin
 	tempv := ['',''];
 	templ := ['',''];
 	count := 0;
 	RegGetSubkeyNames(HKEY_LOCAL_MACHINE, 'SOFTWARE\Python\PythonCore', Result1);
-	msgbox ( 'LOCAL MACHINE  ' + InttoStr(GetArrayLength(Result1)) , mbInformation, MB_OK);
+	;msgbox ( 'LOCAL MACHINE  ' + InttoStr(GetArrayLength(Result1)) , mbInformation, MB_OK);
 	// if we have versions here process them
 	for i:=0 to GetArrayLength(Result1)-1 do
 		if IsSupportedVersion ( Result1[i] ) then begin // make sure we support it..
@@ -354,15 +355,14 @@ begin
 
 	if count < 2 then begin // we've only found zero, or one version so far..
 		// OK so we should now have all the valid versions listed in LOCAL_MACHINE
-		Result1 = ['']
-		RegGetSubkeyNames(HKEY_CURRENT_USER, 'SOFTWARE\Python\PythonCore', Result1);
-		msgbox ( 'LOCAL MACHINE  ' + InttoStr(GetArrayLength(Result1)) , mbInformation, MB_OK);
-		for i:=0 to GetArrayLength(Result1)-1 do
-			if not FoundPythonIn ( Result1[i], tempv ) then  // check we don't already know about this version
-				if IsSupportedVersion (Result1[i]) then begin
-					if RegQueryStringValue(HKEY_CURRENT_USER, 'SOFTWARE\Python\PythonCore\' + Result1[i] + '\InstallPath', '', p) then begin
+		RegGetSubkeyNames(HKEY_CURRENT_USER, 'SOFTWARE\Python\PythonCore', Result2);
+		;msgbox ( 'CURRENT_USER  ' + InttoStr(GetArrayLength(Result2)) , mbInformation, MB_OK);
+		for i:=0 to GetArrayLength(Result2)-1 do
+			if not FoundPythonIn ( Result2[i], tempv ) then  // check we don't already know about this version
+				if IsSupportedVersion (Result2[i]) then begin
+					if RegQueryStringValue(HKEY_CURRENT_USER, 'SOFTWARE\Python\PythonCore\' + Result2[i] + '\InstallPath', '', p) then begin
 						if FileExists ( p + '\python.exe' ) then begin
-							tempv[count] := Result1[i];
+							tempv[count] := Result2[i];
 							templ[count] := p;
 							count := count + 1;
 						end;
@@ -465,7 +465,7 @@ begin
 	PythonVersion := '';
 	SupportedVersions := [ '2.5'];
 
-	Debug := True;
+	Debug := False;
 
 	NumPythonVersions := GetInstalledPythonVersions();
 	if Debug then
