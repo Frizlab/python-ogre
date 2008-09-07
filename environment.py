@@ -1323,11 +1323,15 @@ class ogreal:
                 ,os.path.join(Config.PATH_OPENAL, 'libs','Win32')
                 ,Config.PATH_LIB_OgreAL
                   ] 
-        CCFLAGS = ' -DWIN32 -DNDEBUG -D_LIB -D_WIN32 -D_WINDOWS -DVORBIS_IEEE_FLOAT32 -D_USE_NON_INTEL_COMPILER '              
+        CCFLAGS = ' -DWIN32 -DNDEBUG -D_LIB -D_WIN32 -D_WINDOWS ' #-DVORBIS_IEEE_FLOAT32 -D_USE_NON_INTEL_COMPILER '              
         libs=[boost.lib, 'OgreMain', 
                     'ogg_static', 
-                    'vorbis_static','vorbisfile_static','vorbisenc_static',
-                    'OpenAL32', 'EFX-Util'] # -- going to compile OgreAL ourselves
+                    'vorbis_static','vorbisfile_static',
+                    #'vorbisenc_static',
+                    'OpenAL32', 
+                    #'EFX-Util'
+
+                    ] # -- going to compile OgreAL ourselves
         source = [
             ["wget", "http://connect.creativelabs.com/openal/Downloads/OpenAL11CoreSDK.zip",downloadPath],
             ["wget", "http://downloads.xiph.org/releases/ogg/libogg-1.1.3.zip",downloadPath],
