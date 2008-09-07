@@ -1,6 +1,22 @@
+import ctypes
+import os
+
+# The follow patch from Tim (Mithro) fixes a loder issue with CEGUI - previously we'd patched CEGUI to
+# ensure the CEGUIBase was linked to every module to solve the issue with Python dynamically loading
+# the _cegui_.so module without RTLD_GLOBAL set - then when CEGUI opened it's dynamic modules it
+# couldn't find all the symbols.
+
+#print ctypes.CDLL("../../../root/usr/lib/libCEGUIBase.so", ctypes.RTLD_GLOBAL )
+
 import ogre.gui.CEGUI as CEGUI
+
+# Another fix for CEGUI to ensure we get a working parser..
+if os.name == 'nt':
+    CEGUI.System.setDefaultXMLParserName("ExpatParser")
+else:
+    CEGUI.System.setDefaultXMLParserName("TinyXMLParser")
+
 import ogre.io.OIS as OIS
-import ogre.renderer.OGRE as Ogre 
 import SampleFramework
 
 ##----------------------------------------------------------------##
@@ -43,7 +59,7 @@ class MouseListener ( OIS.MouseListener ):
         return True
 
         
-class GuiFrameListener(SampleFramework.FrameListener, OIS.KeyListener, OIS.MouseListener):
+class GuiFrameListener(SampleFramework.FrameListener , OIS.KeyListener, OIS.MouseListener):
 
     def __init__(self, renderWindow, camera,  CEGUIRenderer):
 
@@ -63,7 +79,7 @@ class GuiFrameListener(SampleFramework.FrameListener, OIS.KeyListener, OIS.Mouse
     ## Tell the frame listener to exit at the end of the next frame
     def requestShutdown( self ):
         self.ShutdownRequested = True
-
+  
     def frameEnded(self, evt):
         if self.ShutdownRequested:
             return False
