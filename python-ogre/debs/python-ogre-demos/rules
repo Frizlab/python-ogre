@@ -12,6 +12,9 @@ PYTHON	:= /usr/bin/python
 PYVERS  := $(shell $(PYTHON) -c 'import sys; print sys.version[:3]')
 #PYVERS	= 2.5 #$(shell pyversions -vr)
 
+build:
+	true
+
 clean:
 	dh_testdir
 	dh_testroot
@@ -57,4 +60,4 @@ binary-arch: install
 
 
 binary: binary-indep binary-arch
-.PHONY: clean demos binary-indep binary-arch binary install configure prep
+.PHONY: clean demos binary-indep binary-arch binary build install configure prep
