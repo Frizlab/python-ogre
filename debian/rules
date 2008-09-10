@@ -12,7 +12,7 @@ PYTHON	:= /usr/bin/python
 PYVERS  := $(shell $(PYTHON) -c 'import sys; print sys.version[:3]')
 #PYVERS	= 2.5 #$(shell pyversions -vr)
 
-export BUILDFLAGS=--usesystem --verbose --failhard -g -c
+export BUILDFLAGS=--usesystem --verbose --failhard -g
 
 build: $(PYVERS:%=build-stamp%)
 build-stamp%:
