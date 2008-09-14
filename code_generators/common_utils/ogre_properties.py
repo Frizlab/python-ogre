@@ -25,6 +25,25 @@ class ogre_property_recognizer_t( decl_wrappers.name_based_recognizer_t ):
     def __init__( self ):
         decl_wrappers.name_based_recognizer_t.__init__( self )
         
+    def __get_accessors( self, mem_funs ):
+        getters = []
+        setters = []
+        for mem_fun in mem_funs:
+            print "Checking", mem_fun
+            if not self.is_accessor( mem_fun ):
+                print "NOT ACCESSOR"
+                continue 
+            elif self.is_getter( mem_fun ):
+                print "IS GETTER"
+                getters.append( mem_fun )
+            elif self.is_setter( mem_fun ):
+                print "IS SETTER"
+                setters.append( mem_fun )
+            else:
+                print "CONTINUE"
+                continue
+        return ( getters, setters ) 
+               
     def check_type_compatibility( self, fget, fset ):
         extendedtypes=['Vector','ColourValue', 'Quaternion', 'Matrix']
         if decl_wrappers.name_based_recognizer_t.check_type_compatibility( self, fget, fset ):
@@ -64,11 +83,11 @@ class ogre_property_recognizer_t( decl_wrappers.name_based_recognizer_t ):
             
     def create_read_only_property( self, fget ):
         found = self.find_out_ro_prefixes( fget.name )
-#         print "Prop Check", fget.name, ' ',
+        print "Prop Check", fget.name, ' ',
         if found in ( None, '' ):
-#             print "NO"
+            print "NO"
             return None
-#         print "YES"            
+        print "YES"            
         ## Now we need to look for overlapping function declarations
         pure_names = []
         pure_names.append( fget.name[len( found ):].lower())

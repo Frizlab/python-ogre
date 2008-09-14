@@ -30,13 +30,39 @@ UninstallDisplayName=PythonOgre
 WizardImageFile=compiler:WizModernImage-IS.bmp
 WizardSmallImageFile=compiler:WizModernSmallImage-IS.bmp
 VersionInfoVersion=1.6.0
+
 [Files]
 ; base files, demos and tools
 Source: *; DestDir: {app}
 Source: plugins\*; DestDir: {app}\plugins
 Source: tools\*; DestDir: {app}\tools
-Source: demos\*; DestDir: {app}\demos; Flags: recursesubdirs
-Source: docs\*; DestDir: {app}\docs; Flags: recursesubdirs
+Source: docs\*; DestDir: {app}\docs
+Source: ThirdParty\dxwebsetup.exe; DestDir: {app}\ThirdParty
+Source: ThirdParty\vcredist_x86.exe; DestDir: {app}\ThirdParty
+
+Source: demos\*; DestDir: {app}\demos; 
+Source: demos\bullet\*; DestDir: {app}\demos\bullet; Flags: recursesubdirs
+Source: demos\caelum\*; DestDir: {app}\demos\caelum; Flags: recursesubdirs
+Source: demos\cegui\*; DestDir: {app}\demos\cegui; Flags: recursesubdirs
+Source: demos\et\*; DestDir: {app}\demos\et; Flags: recursesubdirs
+Source: demos\hydrax\*; DestDir: {app}\demos\hydrax; Flags: recursesubdirs
+Source: demos\media\*; DestDir: {app}\demos\media; Flags: recursesubdirs
+Source: demos\media_extra\*; DestDir: {app}\demos\media_extra; Flags: recursesubdirs
+Source: demos\noise\*; DestDir: {app}\demos\noise; Flags: recursesubdirs
+Source: demos\nxogre\*; DestDir: {app}\demos\nxogre; Flags: recursesubdirs
+Source: demos\ode\*; DestDir: {app}\demos\ode; Flags: recursesubdirs
+Source: demos\ogre\*; DestDir: {app}\demos\ogre; Flags: recursesubdirs
+Source: demos\ogreal\*; DestDir: {app}\demos\ogreal; Flags: recursesubdirs
+Source: demos\ogrebullet\*; DestDir: {app}\demos\ogrebullet; Flags: recursesubdirs
+Source: demos\ogreforests\*; DestDir: {app}\demos\ogreforests; Flags: recursesubdirs
+Source: demos\OgreNewt\*; DestDir: {app}\demos\OgreNewt; Flags: recursesubdirs
+Source: demos\ogreode\*; DestDir: {app}\demos\ogreode; Flags: recursesubdirs
+Source: demos\ogrepcz\*; DestDir: {app}\demos\ogrepcz; Flags: recursesubdirs
+Source: demos\particleuniverse\*; DestDir: {app}\demos\particleuniverse; Flags: recursesubdirs
+Source: demos\plib\*; DestDir: {app}\demos\plib; Flags: recursesubdirs
+Source: demos\qgui\*; DestDir: {app}\demos\qgui; Flags: recursesubdirs
+Source: demos\theora\*; DestDir: {app}\demos\theora; Flags: recursesubdirs
+
 ; the python modules - in the event we find python
 Source: packages_2.5\*; DestDir: {code:GetPythonSiteDir}; Flags: recursesubdirs; Check: SelectedPython('2.5')
 ; the python modules again - if we don't find python we install both versions in the app directory
@@ -45,8 +71,6 @@ Source: packages_2.5\*; DestDir: {code:GetPythonSiteDir}; Flags: recursesubdirs;
 ; I'm going to install here anyway to make updates easier...
 Source: packages_2.5\*; DestDir: {app}\packages_2.5; Flags: recursesubdirs
 
-Source: ThirdParty\dxwebsetup.exe; DestDir: {app}\ThirdParty
-Source: ThirdParty\vcredist_x86.exe; DestDir: {app}\ThirdParty
 ;
 ; we need to remove the .pyc files when we uninstall
 ;
@@ -198,18 +222,18 @@ Name: {group}\Ogre Demos\Smoke; Filename: {code:GetPythonExe}; Parameters: Demo_
 Name: {group}\Ogre Demos\Terrain; Filename: {code:GetPythonExe}; Parameters: Demo_Terrain.py; WorkingDir: {app}\Demos\Ogre
 Name: {group}\Ogre Demos\Textures; Filename: {code:GetPythonExe}; Parameters: Demo_TextureFX.py; WorkingDir: {app}\Demos\Ogre
 Name: {group}\Ogre Demos\Transparency; Filename: {code:GetPythonExe}; Parameters: Demo_Transparency.py; WorkingDir: {app}\Demos\Ogre
-Name: {group}\Ogre Demos\WX Gui; Filename: {code:GetPythonExe}; Parameters: Demo_WX.py; WorkingDir: {app}\Demos\Ogre
+;Name: {group}\Ogre Demos\WX Gui; Filename: {code:GetPythonExe}; Parameters: Demo_WX.py; WorkingDir: {app}\Demos\Ogre
 
 Name: {group}\GUI\CEGUI - Basic; Filename: {code:GetPythonExe}; Parameters: Demo_CEGUI_Gui.py; WorkingDir: {app}\Demos\cegui
 Name: {group}\GUI\CEGUI Drag and Drop; Filename: {code:GetPythonExe}; Parameters: Demo_CEGUI_DragnDrop.py; WorkingDir: {app}\Demos\cegui
 Name: {group}\GUI\CEGUI - Nice; Filename: {code:GetPythonExe}; Parameters: Demo_CEGUI_NewGui.py; WorkingDir: {app}\Demos\cegui
 Name: {group}\GUI\QuickGUI-01; Filename: {code:GetPythonExe}; Parameters: Demo_QuickGUI01.py; WorkingDir: {app}\Demos\qgui
-Name: {group}\GUI\Navi; Filename: {code:GetPythonExe}; Parameters: Demo_Navi.py; WorkingDir: {app}\Demos\navi
+;Name: {group}\GUI\Navi; Filename: {code:GetPythonExe}; Parameters: Demo_Navi.py; WorkingDir: {app}\Demos\navi
 
 Name: {group}\ODE Demos\Multiple Scenes; Filename: {code:GetPythonExe}; Parameters: Demo_Scenes.py; WorkingDir: {app}\Demos\OgreOde
-Name: {group}\ODE Demos\Gran Turism; Filename: {code:GetPythonExe}; Parameters: GranTurismOgre.py; WorkingDir: {app}\Demos\OgreOde
+Name: {group}\ODE Demos\Gran Turism; Filename: {code:GetPythonExe}; Parameters: Demo_GranTurism.py; WorkingDir: {app}\Demos\OgreOde
 
-Name: {group}\OgreAL Demos\Basic Sound; Filename: {code:GetPythonExe}; Parameters: Demo_RenderToTexture.py; WorkingDir: {app}\Demos\OgreAL
+Name: {group}\OgreAL Demos\Basic Sound; Filename: {code:GetPythonExe}; Parameters: Demo_AL_01.py; WorkingDir: {app}\Demos\OgreAL
 
 Name: {group}\OgreNewt Demos\Basics; Filename: {code:GetPythonExe}; Parameters: Demo01_TheBasics.py; WorkingDir: {app}\Demos\OgreNewt
 Name: {group}\OgreNewt Demos\Joints; Filename: {code:GetPythonExe}; Parameters: Demo02_Joints.py; WorkingDir: {app}\Demos\OgreNewt
@@ -218,7 +242,7 @@ Name: {group}\OgreNewt Demos\Ray Casting; Filename: {code:GetPythonExe}; Paramet
 Name: {group}\OgreNewt Demos\Simple Vehicle; Filename: {code:GetPythonExe}; Parameters: Demo05_SimpleVehicle.py; WorkingDir: {app}\Demos\OgreNewt
 Name: {group}\OgreNewt Demos\Simple Buoyancy; Filename: {code:GetPythonExe}; Parameters: Demo06_SimpleBuoyancy.py; WorkingDir: {app}\Demos\OgreNewt
 Name: {group}\OgreNewt Demos\Custom Joints; Filename: {code:GetPythonExe}; Parameters: Demo07_CustomJoints.py; WorkingDir: {app}\Demos\OgreNewt
-Name: {group}\OgreNewt Demos\Ragdoll; Filename: {code:GetPythonExe}; Parameters: Demo08_ragdoll.py; WorkingDir: {app}\Demos\OgreNewt
+;Name: {group}\OgreNewt Demos\Ragdoll; Filename: {code:GetPythonExe}; Parameters: Demo08_ragdoll.py; WorkingDir: {app}\Demos\OgreNewt
 
 ;Name: {group}\Video Demos\ffmpeg Video; Filename: {code:GetPythonExe}; Parameters: Demo_Video.py; WorkingDir: {app}\Demos\ffmpeg
 ;Name: {group}\Video Demos\DirectShow Video; Filename: {code:GetPythonExe}; Parameters: Demo_Video.py; WorkingDir: {app}\Demos\dshow
@@ -239,13 +263,14 @@ Name: {group}\Special Effects\Editable Terrain; Filename: {code:GetPythonExe}; P
 Name: {group}\Special Effects\Caelum Sky; Filename: {code:GetPythonExe}; Parameters: Demo_Caelum01.py; WorkingDir: {app}\Demos\caelum
 Name: {group}\Special Effects\Noise Generation; Filename: {code:GetPythonExe}; Parameters: Demo_Noise_01.py; WorkingDir: {app}\Demos\noise
 Name: {group}\Special Effects\Particle Universe; Filename: {code:GetPythonExe}; Parameters: Demo_Particle.py; WorkingDir: {app}\Demos\particleuniverse
+Name: {group}\Special Effects\Hydrax (Ocean Effects); Filename: {code:GetPythonExe}; Parameters: Demo_Hydrax01.py; WorkingDir: {app}\Demos\hydrax
 
 Name: {group}\Uninstall Python-Ogre; Filename: {uninstallexe}
 Name: {group}\Python-Ogre API Documenatation; Filename: {app}\docs\Python-Ogre.chm
 ;Name: {group}\Python-Ogre API (Html); Filename: {app}\docs\html\index.html
 
 [Run]
-Filename: {app}\ThirdParty\vcredist_x86.exe
+Filename: {app}\ThirdParty\vcredist_x86.exe; Parameters: "/q"
 Filename: {app}\ThirdParty\dxwebsetup.exe; Description: DirectX Installer; StatusMsg: You probably NEED to update your Directx Drivers; Flags: postinstall
 
 [Code]
@@ -308,14 +333,14 @@ var
 	I: Integer;
 begin
 	Result := False;
-	;msgbox ('Checking Supported Versions ' + Param + ' ' + IntToStr(GetArrayLength(SupportedVersions) ), mbInformation, MB_OK);
+	//msgbox ('Checking Supported Versions ' + Param + ' ' + IntToStr(GetArrayLength(SupportedVersions) ), mbInformation, MB_OK);
 
 	for I:=0 to GetArrayLength(SupportedVersions)-1 do begin
 		if Param = SupportedVersions[i] then begin
 		    Result := True;
-    		;msgbox ( 'Is a supported version ' + Param + ' (' + SupportedVersions[i] + ')  ' + Param , mbInformation, MB_OK);
+    		//msgbox ( 'Is a supported version ' + Param + ' (' + SupportedVersions[i] + ')  ' + Param , mbInformation, MB_OK);
 	  end else begin
-	      ;msgbox ( 'Not a supported version ' + Param +  ' (' +SupportedVersions[i] + ')  ', mbInformation, MB_OK);
+	      //msgbox ( 'Not a supported version ' + Param +  ' (' +SupportedVersions[i] + ')  ', mbInformation, MB_OK);
         end;	        
 	end;
 end;
@@ -339,7 +364,7 @@ begin
 	templ := ['',''];
 	count := 0;
 	RegGetSubkeyNames(HKEY_LOCAL_MACHINE, 'SOFTWARE\Python\PythonCore', Result1);
-	;msgbox ( 'LOCAL MACHINE  ' + InttoStr(GetArrayLength(Result1)) , mbInformation, MB_OK);
+	//msgbox ( 'LOCAL MACHINE  ' + InttoStr(GetArrayLength(Result1)) , mbInformation, MB_OK);
 	// if we have versions here process them
 	for i:=0 to GetArrayLength(Result1)-1 do
 		if IsSupportedVersion ( Result1[i] ) then begin // make sure we support it..
@@ -356,7 +381,7 @@ begin
 	if count < 2 then begin // we've only found zero, or one version so far..
 		// OK so we should now have all the valid versions listed in LOCAL_MACHINE
 		RegGetSubkeyNames(HKEY_CURRENT_USER, 'SOFTWARE\Python\PythonCore', Result2);
-		;msgbox ( 'CURRENT_USER  ' + InttoStr(GetArrayLength(Result2)) , mbInformation, MB_OK);
+		//msgbox ( 'CURRENT_USER  ' + InttoStr(GetArrayLength(Result2)) , mbInformation, MB_OK);
 		for i:=0 to GetArrayLength(Result2)-1 do
 			if not FoundPythonIn ( Result2[i], tempv ) then  // check we don't already know about this version
 				if IsSupportedVersion (Result2[i]) then begin

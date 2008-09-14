@@ -33,7 +33,7 @@ This version is built against the Ogre CVS"""
 
 METADATA = {
     "name":             "Python-Ogre",
-    "version":          "1.1.a",
+    "version":          "1.6.0RC1",
     "license":          "LGPL",
     "url":              "http://python-ogre.python-hosting.com/",
     "author":           "Lakin Wecker, Roman Yakovenko, Andy",
@@ -67,7 +67,6 @@ PACKAGEDATA = {
                         'ogre.physics.bullet','ogre.physics.PhysX','ogre.physics.NxOgre',
                         'ogre.physics.OgreBulletC', 'ogre.physics.OgreBulletD',
                         'ogre.addons','ogre.addons.theora',
-                        # 'ogre.addons.ogrevideoffmpeg', 'ogre.addons.ogredshow',
                         'ogre.addons.plib', # 'ogre.gui.navi',
                         'ogre.addons.ogreforests', 'ogre.addons.et', 'ogre.addons.caelum',
                         'ogre.addons.noise', 'ogre.addons.watermesh', # 'ogre.addons.ofusion',
