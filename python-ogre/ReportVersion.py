@@ -3,7 +3,7 @@
 #
 import os, sys, time, shutil
 import logging
-import BuildModule as bm
+#import BuildModule as bm
 
 #add environment to the path
 sys.path.append(  '.' )
@@ -30,8 +30,8 @@ if __name__ == '__main__':
                         'ogre.renderer.ogrepcz', 'ogre.addons.hydrax' )
 #                         'ogre.gui.hikari' )
                         
-    bm.setupLogging("version.info") # options.logfilename)
-    logger = logging.getLogger('PythonOgre.ReportVersionInfo')
+#    bm.setupLogging("version.info") # options.logfilename)
+#    logger = logging.getLogger('PythonOgre.ReportVersionInfo')
     for name in moduleList:
 #         logger.info ("Attemping to import " + name )
         try:
@@ -49,4 +49,5 @@ if __name__ == '__main__':
             print "   Raw Detail    : %s" % (getattr(mod, 'PythonOgreDetail__') )
 #             logger.info ( "Import Successful: " + basename )
         except ImportError:
-            logger.error ( "Import failed:" + basename )
+            print "Import failed:", basename
+ #           logger.error ( "Import failed:" + basename )
