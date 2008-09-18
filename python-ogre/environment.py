@@ -280,14 +280,14 @@ class pygccxml:
     active = True
     base = 'pygccxml'
     if _STABLE:
-        source_version = "1300"
+        source_version = "1383"
         source = [
-                    [svn, " co -r 1300 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
+                    [svn, " co -r 1383 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
                  ]
     else:                 
-        source_version = "1362"
+        source_version = "1383"
         source = [
-                    [svn, " co -r 1362 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
+                    [svn, " co -r 1383 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
                  ]             
     if isLinux() or isMac() :
         buildCmds =  [
@@ -304,14 +304,14 @@ class pyplusplus:
     active = True
     base = 'pyplusplus'
     if _STABLE:
-        source_version = "1300"
+        source_version = "1383"
         source = [
-                    [svn, " co -r 1300 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
+                    [svn, " co -r 1383 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
                  ]
     else:                 
-        source_version = "1362"
+        source_version = "1383"
         source = [
-                    [svn, " co -r 1362 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
+                    [svn, " co -r 1383 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
                  ]             
     if isLinux() or isMac() :
         buildCmds =  [
@@ -405,13 +405,13 @@ class cmake:
     pythonModule = False
     active = True
     if isLinux() or isMac():
-        base = 'cmake-2.4.8-Linux-i386'
+        base = 'cmake-2.6.1-Linux-i386'
         
         if isMac():
-            base = 'cmake-2.4.7-Darwin-universal'
+            base = 'cmake-2.6.1-Darwin-universal'
             
         source = [
-                    [wget, "http://www.cmake.org/files/v2.4/"+base+".tar.gz",downloadPath],
+                    [wget, "http://www.cmake.org/files/v2.6/"+base+".tar.gz",downloadPath],
                  ]
     
                  
@@ -420,9 +420,9 @@ class cmake:
                     [0,cp + "-R  * " + PREFIX, os.path.join (os.getcwd(), base) ]   # copy to our bin area
                     ]
     if isWindows():
-        source = [ [wget, "http://www.cmake.org/files/v2.4/cmake-2.4.8-win32-x86.exe", downloadPath ]]
+        source = [ [wget, "http://www.cmake.org/files/v2.6/cmake-2.6.1-win32-x86.exe", downloadPath ]]
         buildCmds = [
-                [0, os.path.join(downloadPath, "cmake-2.4.8-win32-x86.exe"), '' ]
+                [0, os.path.join(downloadPath, "cmake-2.6.1-win32-x86.exe"), '' ]
                 ]
                 
                                 
@@ -458,8 +458,8 @@ class boost:    ## also included bjam
             base = 'boost_1_36_0'
             lib= 'boost_python-vc90-mt-1_36'
         else:        
-            base = 'boost_1_37'
-            lib = 'boost_python-vc90-mt-1_37'
+            base = 'boost_1_36'
+            lib = 'boost_python-vc90-mt-1_36'
     else:
         if _STABLE:
             base = 'boost_1_34_1'
@@ -525,6 +525,8 @@ class boost:    ## also included bjam
         lib = "boost_python-gcc%s%s-mt-%s" % (gcc_version[0], gcc_version[1], base[6:])
 
 class boost_python_index:
+    """ only used for Linx
+    """
     active = True
     source_version = boost.base[6:].replace("_",".")
     pythonModule = False
@@ -565,7 +567,7 @@ class ogre:
     if isWindows(): 
         
         if _STABLE:
-            version="1.6"
+            version="1.6.0RC1"
             source = [
                 [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_VC9_Eihort_20080203.zip", downloadPath],
                 [ wget, "http://downloads.sourceforge.net/ogre/ogre-v1-6-0RC1.zip", downloadPath],
@@ -637,7 +639,7 @@ class ogre:
         ]
 
     elif isMac():
-        version = "1.4"
+        version = "1.6.0RC1"
         base = "ogre-linux_osx-v1-4-9"
         basedep = "OgreDependenciesOSX_20070929"
         source = [
@@ -743,7 +745,7 @@ class ois:
 class ogrerefapp:
     active = True
     pythonModule = True
-    version = "1.4"
+    version = ogre.version # same as the Ogre version
     name = 'ogrerefapp'
     parent = "ogre/physics"
     baseDir = os.path.join(os.getcwd(),'ogrenew', 'ReferenceApplication')
@@ -776,7 +778,7 @@ class ogrerefapp:
 class ogrenewt:
     active = True
     pythonModule = True
-    version = "1.0"
+    version = "r2490"
     name = 'ogrenewt'
     parent = "ogre/physics"
     base = 'ogreaddons/ogrenewt'
@@ -900,7 +902,7 @@ class cegui:
 class ode:
     active = True
     pythonModule = True
-    version= "0.10"
+    version= "0.10.1"
     name ='ode'
     parent = "ogre/physics"
     odeLibraryName = 'ode'
@@ -966,7 +968,7 @@ class caelum:
     active = True
     pythonModule = True
     name = 'caelum'
-    version="0.2.1"
+    version="r321"
     parent="ogre/addons"
     cflags = ""
     include_dirs = [ Config.PATH_Boost,
@@ -987,7 +989,7 @@ class caelum:
 class ogreode:
     active = True
     pythonModule = True
-    version= "1.0"
+    version= "r2492"
     cflags = ""
     name='ogreode'
     parent = "ogre/physics"
@@ -1013,7 +1015,7 @@ class ogreode:
              ]
     else:
         source = [
-             [cvs, " -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -P "+base, os.getcwd()]
+             [svn, "https://ogreaddons.svn.sourceforge.net/svnroot/ogreaddons/trunk/ogreode", os.getcwd()]
              ]
     baseDir = os.path.join(os.getcwd(), base )
     buildCmds = [
@@ -1039,7 +1041,7 @@ class ogreode:
 class quickgui:
     active = True
     pythonModule = True
-    version="0.9.7"
+    version="8.09"
     name ='quickgui'
     parent="ogre/gui"
     ## note the defined for _QuickGUIExport forces non dll usage
@@ -1118,7 +1120,7 @@ class betagui:
 class ogreforests:
     active = True
     pythonModule = True
-    version="0.1"
+    version="r2490"
     name='ogreforests'
     parent="ogre/addons"
     CCFLAGS = ' ' # -D"FT2_BUILD_LIBRARY"
@@ -1158,7 +1160,7 @@ class particleuniverse:
 class nxogre:
     active = True
     pythonModule = True
-    version="1.0-21"
+    version="r21"
     name='nxogre'
     parent="ogre/physics"
     cflags=""
@@ -1195,7 +1197,7 @@ class nxogre:
 class theora:
     active = True
     pythonModule = True
-    version="0.5.0"
+    version="r2455"
     parent="ogre/addons"
     cflags=""
     name='theora'
@@ -1299,7 +1301,7 @@ class nxogre_09:
 class ogreal:
     active = True
     pythonModule = True
-    version="0.3"
+    version="r115"
     name='ogreal'
     cflags = ''
     
@@ -1517,7 +1519,7 @@ class ogrebulletc:  #
 class ogrebulletd:  # 
     active = True
     pythonModule = True
-    version = "1.0"
+    version = "r2486"
     name='ogrebulletd'
     cflags = ""
     parent = "ogre/physics"
@@ -1547,7 +1549,7 @@ class ogrebulletd:  #
 class noise:
     active = True
     pythonModule = True
-    version="1.0"
+    version="r2486"
     parent="ogre/addons"
     name='noise'
     cflags = ""
@@ -1619,7 +1621,7 @@ class cadunetree:
 class ogrepcz:
     active = True
     pythonModule = True
-    version="1.0"
+    version=ogre.version
     name='ogrepcz'
     parent="ogre/renderer"
     cflags = ""
@@ -1673,7 +1675,7 @@ class hydrax:
 class hikari:
     active = True
     pythonModule = True
-    version="0.22"
+    version="r22"
     name='hikari'
     parent="ogre/gui"
     cflags = ""

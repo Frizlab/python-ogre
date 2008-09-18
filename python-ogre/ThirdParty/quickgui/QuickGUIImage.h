@@ -1,60 +1,119 @@
 #ifndef QUICKGUIIMAGE_H
 #define QUICKGUIIMAGE_H
 
-#include "OgreResource.h"
-
-#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIWidget.h"
+#include "QuickGUITimerManager.h"
 
 namespace QuickGUI
 {
-	/** Represents a simple Imagel.
-		@remarks
-		Pretty much a Label, but without text.
-		@note
-		Images also support Render To Texture.
-	*/
+	class _QuickGUIExport ImageDesc :
+			public WidgetDesc
+	{
+	public:
+		ImageDesc();
+
+		/// Name of the image file to display
+		Ogre::String imageName;
+		bool tileImage;
+		/// Useful for applying render to texture (RTT) to Image
+		bool updateEveryFrame;
+
+		/**
+		* Returns the class of Desc object this is.
+		*/
+		virtual Ogre::String getClass() { return "ImageDesc"; }
+		/**
+		* Returns the class of Widget this desc object is meant for.
+		*/
+		virtual Ogre::String getWidgetClass() { return "Image"; }
+
+		// Factory method
+		static WidgetDesc* factory() { return new ImageDesc(); }
+
+		/**
+		* Outlines how the desc class is written to XML and read from XML.
+		*/
+		virtual void serialize(SerialBase* b);
+	};
+
 	class _QuickGUIExport Image :
 		public Widget
 	{
 	public:
-		/** Constructor
-            @param
-                name The name to be given to the widget (must be unique).
-            @param
-                dimensions The x Position, y Position, width and height of the widget.
-			@param
-				positionMode The GuiMetricsMode for the values given for the position. (absolute/relative/pixel)
-			@param
-				sizeMode The GuiMetricsMode for the values given for the size. (absolute/relative/pixel)
-			@param
-				material Ogre material defining the widget image.
-			@param
-				group QuadContainer containing this widget.
-			@param
-				ParentWidget parent widget which created this widget.
-        */
-		Image(const std::string& name, GUIManager* gm);
-
-		std::string getMaterialName();
-
-		virtual bool overTransparentPixel(const Point& mousePixelPosition) const;
+		// Skin Constants
+		static const Ogre::String BACKGROUND;
+		// Define Skin Structure
+		static void registerSkinDefinition();
+	public:
+		// Factory method
+		static Widget* factory(const Ogre::String& widgetName);
+	public:
 
 		/**
-		* Applies the texture to the Quad if exists in some form, and updates the Image used for
-		* transparency picking.
+		* Internal function, do not use.
 		*/
-		virtual void setMaterial(const std::string& materialName);
+		virtual void _initialize(WidgetDesc* d);
 
-		virtual void setSkin(const std::string& skinName, bool recursive = false);
+		/**
+		* Returns the class name of this Widget.
+		*/
+		virtual Ogre::String getClass();
+		/**
+		* Returns the name of the image file used for display.
+		*/
+		Ogre::String getImage();
+		/**
+		* Returns true if image is tiled within client dimensions, false otherwise.
+		*/
+		bool getTileImage();
+		/**
+		* Gets whether or not the Image will be redrawn every frame.
+		*/
+		bool getUpdateEveryFrame();
 
-        void setTexture(const std::string& textureName);
+		/**
+		* Sets the name of the image file to be displayed.  For example, name could could be
+		* qgui.image.png.
+		* NOTE: Image must be listed within an Ogre resource directory.
+		* NOTE: Setting the name to "" will result in only the background showing.
+		*/
+		void setImage(const Ogre::String& name);
+		/**
+		* Sets whether or not Image will tile within client dimensions.
+		*/
+		void setTileImage(bool tile);
+		/**
+		* Sets whether or not the Image will be redrawn every frame.
+		* NOTE: This also causes the Images parent window to be re-drawn, which can be costly.
+		* The main use for this is for RTT. (Render to Texture)
+		*/
+		void setUpdateEveryFrame(bool update);
 
 	protected:
-		virtual ~Image();
+		Image(const Ogre::String& name);
+		~Image();
 
-		std::string mMaterialName;
-		Ogre::ResourcePtr mWrapper;
+		ImageDesc* mDesc;
+
+		/**
+		* Outlines how the widget is drawn to the current render target
+		*/
+		virtual void onDraw();
+
+		/// Timer that toggles cursor on and off.
+		Timer* mUpdateTimer;
+		/**
+		* Forces an update of the Image.
+		*/
+		void updateTimerCallback();
+
+		/**
+		* Sets whether the widget will receive mouse over events simply by having the mouse over
+		* its texture dimensions, or only when the cursor is over non transparent parts.
+		*/
+		void setTransparencyPicking(bool transparencyPicking);
+
+	private:
 	};
 }
 

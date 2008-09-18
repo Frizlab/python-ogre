@@ -3,7 +3,6 @@
 
 #include "OgrePrerequisites.h"
 
-#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIExportDLL.h"
 
 namespace QuickGUI
@@ -31,6 +30,12 @@ namespace QuickGUI
         {
             return ( width != s.width ||
                 height != s.height );
+        }
+
+		inline bool operator == ( const Size& s ) const
+        {
+            return ( width == s.width &&
+                height == s.height );
         }
 
 		inline Size operator * ( const float& r ) const

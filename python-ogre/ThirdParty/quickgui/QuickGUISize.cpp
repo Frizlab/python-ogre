@@ -1,5 +1,3 @@
-#include "QuickGUIPrecompiledHeaders.h"
-
 #include "QuickGUISize.h"
 
 namespace QuickGUI

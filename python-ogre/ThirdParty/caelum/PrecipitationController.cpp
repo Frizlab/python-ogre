@@ -28,15 +28,15 @@ namespace Caelum
 	const String PrecipitationController::COMPOSITOR_NAME = "Caelum/PrecipitationCompositor";
 	const String PrecipitationController::MATERIAL_NAME =   "Caelum/PrecipitationMaterial";
 
-	PrecipitationParams PrecipitationPresets[]={
-        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.95, "precipitation_drizzle.png" }, //Drizzle
-        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.85, "precipitation_rain.png" }, //Rain
-        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.12, "precipitation_snow.png" }, //Snow
-        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.33, "precipitation_snowgrains.png" }, //Snow grains
-        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.70, "precipitation_icecrystals.png" }, //Ice crystals
-        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.78, "precipitation_icepellets.png" }, //Ice pellets
-        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.74, "precipitation_hail.png" }, //Hail
-        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.70, "precipitation_smallhail.png" } //Small hail		
+	const PrecipitationPresetParams PrecipitationPresets[] = {
+        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.95, "precipitation_drizzle.png" },
+        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.85, "precipitation_rain.png" },
+        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.12, "precipitation_snow.png" },
+        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.33, "precipitation_snowgrains.png" },
+        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.70, "precipitation_icecrystals.png" },
+        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.78, "precipitation_icepellets.png" },
+        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.74, "precipitation_hail.png" },
+        { Ogre::ColourValue(0.8, 0.8, 0.8, 1), 0.70, "precipitation_smallhail.png" }
 	};
 
 	PrecipitationController::PrecipitationController(
@@ -45,80 +45,103 @@ namespace Caelum
 		Ogre::String uniqueId = Ogre::StringConverter::toString((size_t)this);
 		mSceneMgr = sceneMgr;
 
-		setWindSpeed(Ogre::Vector3(0, -0.1, 0.0));
-		setIntensity(0.25);
-		setSpeed(0.1);
-		setColor(Ogre::ColourValue(0.8, 0.8, 0.8, 1));
-		mInternalTime = 0.0;
-		mSecondsSinceLastFrame = 0.0;
+        setAutoDisableThreshold (0.001);
+
+        setIntensity (0);
+		setWindSpeed (Ogre::Vector3(0, 0, 0));
+		mInternalTime = 0;
+		mSecondsSinceLastFrame = 0;
 		
-		setType(PRECIPITATION_SNOW);
+		setPresetType (PRECTYPE_RAIN);
 		
-		update(0.0f,Ogre::ColourValue(0,0,0,0));
+		update (0, Ogre::ColourValue(0, 0, 0, 0));
 	}
 
-	PrecipitationController::~PrecipitationController() {
-        destroyAllViewportInstances();
+	PrecipitationController::~PrecipitationController () {
+        destroyAllViewportInstances ();
 	}
 
-	void PrecipitationController::setWindSpeed(const Ogre::Vector3& value) {
-		mWindSpeed = value;
-	}
-
-	const Ogre::Vector3 PrecipitationController::getWindSpeed() {
-		return mWindSpeed;
-	}
-
-	void PrecipitationController::setTextureName(Ogre::String textureName) {
-		mTextureName=textureName;
+	void PrecipitationController::setTextureName (Ogre::String textureName) {
+        mPresetType = PRECTYPE_CUSTOM;
+		mTextureName = textureName;
 	}
 	
-	Ogre::String PrecipitationController::getTextureName() {
+	Ogre::String PrecipitationController::getTextureName () {
 		return mTextureName;
 	}
-	
-	void PrecipitationController::setIntensity(Real intensity) {
-		mIntensity = intensity;
-	}
 
-	Real PrecipitationController::getIntensity() {
-		return mIntensity;
-	}
-
-	void PrecipitationController::setType(PrecipitationType type) {
-		mType = type;
-		setColor(PrecipitationPresets[type].mColor);
-		setSpeed(PrecipitationPresets[type].mSpeed);
-		setTextureName(PrecipitationPresets[type].mName);
-	}
-
-	PrecipitationType PrecipitationController::getType() {
-		return mType;
-	}
-
-	void PrecipitationController::setSpeed(Real speed) {
+	void PrecipitationController::setSpeed (Real speed) {
+        mPresetType = PRECTYPE_CUSTOM;
 		mSpeed = speed;
 	}
 
-	Real PrecipitationController::getSpeed() {
+	Real PrecipitationController::getSpeed () {
 		return mSpeed;
 	}
 
-	void PrecipitationController::setColor(Ogre::ColourValue color) {
+	void PrecipitationController::setColor (Ogre::ColourValue color) {
+        mPresetType = PRECTYPE_CUSTOM;
 		mColor = color;
 	}
 	
-	Ogre::ColourValue PrecipitationController::getColor() {
+	Ogre::ColourValue PrecipitationController::getColor () {
 		return mColor;
 	}
 
-	void PrecipitationController::update(Real secondsSinceLastFrame, Ogre::ColourValue colour) {
+	bool PrecipitationController::isPresetType (PrecipitationType type) {
+        return PRECTYPE_DRIZZLE <= type && type <= PRECTYPE_SMALLHAIL;
+    }
+
+	const PrecipitationPresetParams& PrecipitationController::getPresetParams (PrecipitationType type) {
+        assert(isPresetType(type));
+        return PrecipitationPresets[type];
+    }
+
+	void PrecipitationController::setParams (const PrecipitationPresetParams& params) {
+		setColor (params.Color);
+		setSpeed (params.Speed);
+		setTextureName (params.Name);
+    }
+
+	void PrecipitationController::setPresetType (PrecipitationType type) {
+        setParams (getPresetParams (type));
+		mPresetType = type;
+	}
+
+	PrecipitationType PrecipitationController::getPresetType () const {
+        return mPresetType;
+	}
+
+	void PrecipitationController::setWindSpeed (const Ogre::Vector3& value) {
+		mWindSpeed = value;
+	}
+
+	const Ogre::Vector3 PrecipitationController::getWindSpeed () {
+		return mWindSpeed;
+	}
+
+	void PrecipitationController::setIntensity (Real intensity) {
+		mIntensity = intensity;
+	}
+
+	Real PrecipitationController::getIntensity () {
+		return mIntensity;
+	}
+
+	void PrecipitationController::update (Real secondsSinceLastFrame, Ogre::ColourValue colour) {
         mSecondsSinceLastFrame = secondsSinceLastFrame;
         mInternalTime += mSecondsSinceLastFrame;
         mSceneColor = colour;
+
+        ViewportInstanceMap::const_iterator it;
+        ViewportInstanceMap::const_iterator begin = mViewportInstanceMap.begin ();
+        ViewportInstanceMap::const_iterator end = mViewportInstanceMap.end ();
+        for (it = begin; it != end; ++it) {
+            it->second->_update ();
+        }
 	}
 
-	void PrecipitationController::setManualCameraSpeed(const Ogre::Vector3& value) {
+	void PrecipitationController::setManualCameraSpeed (const Ogre::Vector3& value) {
         ViewportInstanceMap::const_iterator it;
         ViewportInstanceMap::const_iterator begin = mViewportInstanceMap.begin();
         ViewportInstanceMap::const_iterator end = mViewportInstanceMap.end();
@@ -154,16 +177,12 @@ namespace Caelum
 		fpParams->setNamedConstant("intensity", mIntensity);
 		fpParams->setNamedConstant("dropSpeed", 0);		
 
-		Ogre::Vector3 camDir = cam->getDerivedDirection();
-		Ogre::Vector3 camUp = - cam->getDerivedUp();
-		Ogre::Vector3 camRight = cam->getDerivedRight();
-
 		Ogre::Vector3 corner1, corner2, corner3, corner4;
-		
-		corner1 = camDir - camRight - camUp;
-		corner2 = camDir + camRight - camUp;
-		corner3 = camDir - camRight + camUp;
-		corner4 = camDir + camRight + camUp;
+
+		corner1 = cam->getCameraToViewportRay(0, 0).getDirection();
+		corner2 = cam->getCameraToViewportRay(1, 0).getDirection();
+		corner3 = cam->getCameraToViewportRay(0, 1).getDirection();
+		corner4 = cam->getCameraToViewportRay(1, 1).getDirection();
 
 		Ogre::Vector3 precDir = Ogre::Vector3(0, -mSpeed, 0) + mWindSpeed - camSpeed;
 		Ogre::Quaternion quat = precDir.getRotationTo(Ogre::Vector3(0, -1, 0));
@@ -204,22 +223,43 @@ namespace Caelum
         mCameraSpeed(Vector3::ZERO),
         mAutoCameraSpeed(true)
     {
+        createCompositor ();
+    }
+
+    PrecipitationInstance::~PrecipitationInstance ()
+    {
+        destroyCompositor();
+    }
+
+    void PrecipitationInstance::createCompositor ()
+    {
+        // Check if nothing to do.
+        if (mCompInst) {
+            return;
+        }
+
         Ogre::CompositorManager* compMgr = Ogre::CompositorManager::getSingletonPtr();
 		
         // Create the precipitation compositor.
         mCompInst = compMgr->addCompositor(mViewport, PrecipitationController::COMPOSITOR_NAME);
         assert(mCompInst);
-		mCompInst->setEnabled (true);
+		mCompInst->setEnabled (false);
 		mCompInst->addListener (this);
     }
 
-    PrecipitationInstance::~PrecipitationInstance()
+    void PrecipitationInstance::destroyCompositor ()
     {
+        // Check if nothing to do.
+        if (mCompInst == 0) {
+            return;
+        }
+
         Ogre::CompositorManager* compMgr = Ogre::CompositorManager::getSingletonPtr();
 
         // Remove the precipitation compositor.
 		mCompInst->removeListener (this);
         compMgr->removeCompositor(mViewport, PrecipitationController::COMPOSITOR_NAME);
+        mCompInst = 0;
     }
 
 	void PrecipitationInstance::notifyMaterialSetup(uint pass_id, Ogre::MaterialPtr &mat)
@@ -250,67 +290,77 @@ namespace Caelum
             mLastCamera = cam;
             mLastCameraPosition = camPos;
         }
-		mParent->_updateMaterialParams(mat, mViewport->getCamera(), mCameraSpeed);
+		mParent->_updateMaterialParams (mat, mViewport->getCamera(), mCameraSpeed);
 	}
 
-    bool PrecipitationInstance::getAutoCameraSpeed() {
+    bool PrecipitationInstance::getAutoCameraSpeed () {
         return mAutoCameraSpeed;
     }
 
-    void PrecipitationInstance::setAutoCameraSpeed() {
+    void PrecipitationInstance::setAutoCameraSpeed () {
         mAutoCameraSpeed = true;
         mLastCamera = 0;
     }
 
-    void PrecipitationInstance::setManualCameraSpeed(const Ogre::Vector3& value) {
+    void PrecipitationInstance::setManualCameraSpeed (const Ogre::Vector3& value) {
         mAutoCameraSpeed = false;
         mCameraSpeed = value;
     }
 
-    const Ogre::Vector3 PrecipitationInstance::getCameraSpeed() {
+    const Ogre::Vector3 PrecipitationInstance::getCameraSpeed () {
         return mCameraSpeed;
     }
 
-    PrecipitationInstance* PrecipitationController::createViewportInstance(Ogre::Viewport* vp)
-    {
-        ViewportInstanceMap::const_iterator it = mViewportInstanceMap.find(vp);
-        // Throwing here would be justified.
-        assert(it == mViewportInstanceMap.end());
+    bool PrecipitationInstance::shouldBeEnabled () const {
+        return mParent->getAutoDisableThreshold () < 0 ||
+               mParent->getIntensity () > mParent->getAutoDisableThreshold ();
+    }
 
-        std::auto_ptr<PrecipitationInstance> inst(new PrecipitationInstance(this, vp));
-        mViewportInstanceMap.insert(std::make_pair(vp, inst.get()));
-        // hold instance until successfully added to map.
-        return inst.release();
+    void PrecipitationInstance::_update ()
+    {
+        mCompInst->setEnabled (shouldBeEnabled ());
+    }
+
+    PrecipitationInstance* PrecipitationController::createViewportInstance (Ogre::Viewport* vp)
+    {
+        ViewportInstanceMap::const_iterator it = mViewportInstanceMap.find (vp);
+        if (it == mViewportInstanceMap.end()) {
+            std::auto_ptr<PrecipitationInstance> inst (new PrecipitationInstance(this, vp));
+            mViewportInstanceMap.insert (std::make_pair (vp, inst.get()));
+            // hold instance until successfully added to map.
+            return inst.release();
+        } else {
+            return it->second;
+        }
     }
     
     PrecipitationInstance* PrecipitationController::getViewportInstance(Ogre::Viewport* vp) {
-        ViewportInstanceMap::iterator it = mViewportInstanceMap.find(vp);
-        if (it != mViewportInstanceMap.end()) {
+        ViewportInstanceMap::iterator it = mViewportInstanceMap.find (vp);
+        if (it != mViewportInstanceMap.end ()) {
             return it->second;
         } else {
             return 0;
         }
     }
 
-    void PrecipitationController::destroyViewportInstance(Viewport* vp)
+    void PrecipitationController::destroyViewportInstance (Viewport* vp)
     {
-        ViewportInstanceMap::iterator it = mViewportInstanceMap.find(vp);
-        // Throwing here would be justified.
-        assert(it != mViewportInstanceMap.end());
-
-        PrecipitationInstance* inst = it->second;
-        delete inst;
-        mViewportInstanceMap.erase(it);
+        ViewportInstanceMap::iterator it = mViewportInstanceMap.find (vp);
+        if (it != mViewportInstanceMap.end ()) {
+            PrecipitationInstance* inst = it->second;
+            delete inst;
+            mViewportInstanceMap.erase (it);
+        }
     }
 
-    void PrecipitationController::destroyAllViewportInstances() {
+    void PrecipitationController::destroyAllViewportInstances () {
         ViewportInstanceMap::const_iterator it;
         ViewportInstanceMap::const_iterator begin = mViewportInstanceMap.begin();
         ViewportInstanceMap::const_iterator end = mViewportInstanceMap.end();
         for (it = begin; it != end; ++it) {
-            assert(it->first == it->second->getViewport());
+            assert(it->first == it->second->getViewport ());
             delete it->second;
         }
-        mViewportInstanceMap.clear();
+        mViewportInstanceMap.clear ();
     }
 }

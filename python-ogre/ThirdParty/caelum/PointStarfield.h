@@ -23,7 +23,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 #include "CaelumPrerequisites.h"
 #include "CameraBoundElement.h"
-#include <vector>
+#include "OwnedPtr.h"
 
 namespace Caelum
 {
@@ -47,9 +47,7 @@ namespace Caelum
     extern const BrightStarCatalogueEntry BrightStarCatalogue[BrightStarCatalogueSize];
 
     /** Point starfield class.
-     *  An Ogre::BillboardSet is used internally; but it doesn't do much.
-     *  The data is not kept inside the billboardset; but externally. Custom
-     *  hardware buffers would probably work better.
+     *  An Ogre::ManualObject is used for drawing because billboards are too slow.
      *
      *  Stars are sized in pixels; this seems to work a lot better than relative sizes.
      *  Stars could be made even smaller but it would require hinting (nudging pixel
@@ -60,113 +58,120 @@ namespace Caelum
      */
     class CAELUM_EXPORT PointStarfield : public CameraBoundElement
     {
-	    public:
-		    /** Constructor.
-             *  By default this loads some reasonable defaults and the
-             *  bright star catalogue.
-             */
-		    PointStarfield (
-                    Ogre::SceneManager *sceneMgr,
-				    Ogre::SceneNode *caelumRootNode,
-                    bool initWithCatalogue = true);
+    public:
+	    /** Constructor.
+         *  By default this loads some reasonable defaults and the
+         *  bright star catalogue.
+         */
+	    PointStarfield (
+                Ogre::SceneManager *sceneMgr,
+			    Ogre::SceneNode *caelumRootNode,
+                bool initWithCatalogue = true);
 
-		    /// Destructor.
-		    virtual ~PointStarfield ();
+	    /// Destructor.
+	    virtual ~PointStarfield ();
 
-            /// Struct representing one star.
-            struct Star {
-                Ogre::Degree RightAscension;
-                Ogre::Degree Declination;
-                Ogre::Real Magnitude;
-            };
+        /// Struct representing one star.
+        struct Star {
+            Ogre::Degree RightAscension;
+            Ogre::Degree Declination;
+            Ogre::Real Magnitude;
+        };
 
-            typedef std::vector<Star> StarVector;
+        typedef std::vector<Star> StarVector;
 
-            /** Get a reference to the vector of stars.
-             *  You can freely modify this; but you need to updateStars when you're done.
-             */
-            inline StarVector& getStarVector () { return mStars; }
+        /** Get a reference to the vector of stars.
+         *  You can freely modify this; but you need to updateStars when you're done.
+         */
+        inline StarVector& getStarVector () { return mStars; }
 
-            /** You must call this if you change the star vector by hand.
-             */
-            void notifyStarVectorChanged ();
+        /** You must call this if you change the star vector by hand.
+         */
+        void notifyStarVectorChanged ();
 
-            /// Clear any and all stars.
-            void clearAllStars ();
+        /// Clear any and all stars.
+        void clearAllStars ();
 
-            /** Add a bunch of random stars.
-             */
-            void addRandomStars (int count);
+        /** Add a bunch of random stars.
+         */
+        void addRandomStars (int count);
 
-            /** Add one star from the bright star catalogue.
-             */
-            void addStar (const BrightStarCatalogueEntry &entry);
+        /** Add one star from the bright star catalogue.
+         */
+        void addStar (const BrightStarCatalogueEntry &entry);
 
-            /** Add stars from the bright star catalogue.
-             *  @param count Number of stars to add (in order of brightness).
-             */
-            void addBrightStarCatalogue (int count = BrightStarCatalogueSize);
+        /** Add stars from the bright star catalogue.
+         *  @param count Number of stars to add (in order of brightness).
+         */
+        void addBrightStarCatalogue (int count = BrightStarCatalogueSize);
 
 
-	    private:
-		    /// Node for the starfield
-		    Ogre::SceneNode *mNode;
+    private:
+        /// Cloned material
+        OwnedMaterialPtr mMaterial;
 
-            Ogre::ManualObject *mManualObj;
+	    /// Node for the starfield
+	    SceneNodePtr mNode;
+        
+        /// Manual object for drawing.
+        ManualObjectPtr mManualObj;
 
-            /// Billboard material
-            Ogre::MaterialPtr mMaterial;
+        /// Star data.
+        std::vector<Star> mStars;
 
-            /// Star data.
-            std::vector<Star> mStars;
+        Ogre::Real mMinPixelSize, mMaxPixelSize, mMag0PixelSize;
+        Ogre::Real mMagnitudeScale;
 
-            Ogre::Real mMinPixelSize, mMaxPixelSize, mMag0PixelSize;
-            Ogre::Real mMagnitudeScale;
+        Ogre::Degree mObserverLatitude, mObserverLongitude;
 
-            Ogre::Degree mObserverLatitude, mObserverLongitude;
+        bool mValidGeometry;
+		void invalidateGeometry();
+		void ensureGeometry();
 
-            bool mValidGeometry;
-			void invalidateGeometry();
-			void ensureGeometry();
+    public:
+	    /** Update function; called from CaelumSystem::updateSubcomponents
+            @param time Time of the day.
+	     */
+	    void _update (float time);
 
-	    public:
-		    /** Update function; called from CaelumSystem::updateSubcomponents
-                @param time Time of the day.
-		     */
-		    void _update (float time);
+        /** Magnitude power scale.
+         *  Star magnitudes are logarithming; one magnitude difference
+         *  means a star is 2.512 times brighter.
+         *  This property allows tweaking that value.
+         */
+        inline void setMagnitudeScale (Ogre::Real value) { mMagnitudeScale = value; }
+        inline Ogre::Real getMagnitudeScale () { return mMagnitudeScale; }
 
-            /** Magnitude power scale.
-             *  Star magnitudes are logarithming; one magnitude difference
-             *  means a star is 2.512 times brighter.
-             *  This property allows tweaking that value.
-             */
-            inline void setMagnitudeScale (Ogre::Real value) { mMagnitudeScale = value; }
-            inline Ogre::Real getMagnitudeScale () { return mMagnitudeScale; }
+        inline void setMag0PixelSize (Ogre::Real value) { mMag0PixelSize = value; }
+        inline Ogre::Real getMag0PixelSize () { return mMag0PixelSize; }
 
-            inline void setMag0PixelSize (Ogre::Real value) { mMag0PixelSize = value; }
-            inline Ogre::Real getMag0PixelSize () { return mMag0PixelSize; }
+        inline void setMinPixelSize (Ogre::Real value) { mMinPixelSize = value; }
+        inline Ogre::Real getMinPixelSize () { return mMinPixelSize; }
 
-            inline void setMinPixelSize (Ogre::Real value) { mMinPixelSize = value; }
-            inline Ogre::Real getMinPixelSize () { return mMinPixelSize; }
+        inline void setMaxPixelSize (Ogre::Real value) { mMaxPixelSize = value; }
+        inline Ogre::Real getMaxPixelSize () { return mMaxPixelSize; }
 
-            inline void setMaxPixelSize (Ogre::Real value) { mMaxPixelSize = value; }
-            inline Ogre::Real getMaxPixelSize () { return mMaxPixelSize; }
+        void setObserverLatitude (Ogre::Degree value);
+        inline Ogre::Degree getObserverLatitude () { return mObserverLatitude; }
 
-            void setObserverLatitude (Ogre::Degree value);
-            inline Ogre::Degree getObserverLatitude () { return mObserverLatitude; }
+        void setObserverLongitude (Ogre::Degree value);
+        inline Ogre::Degree getObserverLongitude () { return mObserverLongitude; }
 
-            void setObserverLongitude (Ogre::Degree value);
-            inline Ogre::Degree getObserverLongitude () { return mObserverLongitude; }
+        /// Material used on billboards
+	    static const Ogre::String BILLBOARD_MATERIAL_NAME;
 
-	        /// Material used on billboards
-		    static const Ogre::String BILLBOARD_MATERIAL_NAME;
+	    /// Handle camera change.
+	    virtual void notifyCameraChanged (Ogre::Camera *cam);
 
-		    /// Handle camera change.
-		    virtual void notifyCameraChanged (Ogre::Camera *cam);
+    protected:
+        /// Handle far radius.
+        virtual void setFarRadius (Ogre::Real radius);
 
-        protected:
-            /// Handle far radius.
-	        virtual void setFarRadius (Ogre::Real radius);
+    public:
+        void setQueryFlags (uint flags) { mManualObj->setQueryFlags (flags); }
+        uint getQueryFlags () const { return mManualObj->getQueryFlags (); }
+        void setVisibilityFlags (uint flags) { mManualObj->setVisibilityFlags (flags); }
+        uint getVisibilityFlags () const { return mManualObj->getVisibilityFlags (); }
     };
 }
 

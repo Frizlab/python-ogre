@@ -1,166 +1,151 @@
 #ifndef QUICKGUIMOUSECURSOR_H
 #define QUICKGUIMOUSECURSOR_H
 
-#include "OgreException.h"
+#include "QuickGUIBrush.h"
+#include "QuickGUIEventArgs.h"
+#include "QuickGUIEventTypes.h"
+#include "QuickGUIExportDLL.h"
+#include "QuickGUIEventHandlerPointer.h"
+#include "QuickGUIRect.h"
+#include "QuickGUISkinType.h"
+#include "QuickGUISkinTypeManager.h"
+
 #include "OgreImage.h"
 #include "OgrePrerequisites.h"
 
-#include "QuickGUIForwardDeclarations.h"
-#include "QuickGUIExportDLL.h"
-#include "QuickGUIQuad.h"
-#include "QuickGUIVertexBuffer.h"
-#include "QuickGUIWidget.h"
-
-#include <list>
-
 namespace QuickGUI
 {
-	// Forward declarations
+	// forward declaration
 	class GUIManager;
 
-	/** Mouse representation inside the primary render window
-		@remarks
-		Through GUIManager and its input handling, the
-		mouse cursor gets updated and repositioned, simulating a mouse.
-		@note
-		MouseCursor is a Singleton.
-	*/
+	class _QuickGUIExport MouseCursorDesc
+	{
+	public:
+		MouseCursorDesc();
+
+		/// whether or not to hide the mouse when it touches viewport edges
+		bool clipOnEdges;
+		bool enabled;
+		Ogre::String skin;
+		// This will be set by the GUIManager creating the MouseCursor.
+		GUIManager* guiManager;
+		bool visible;
+	};
+
 	class _QuickGUIExport MouseCursor
 	{
 	public:
-		enum CursorState
-		{
-			CURSOR_STATE_HOVER				=  0,
-			CURSOR_STATE_NORMAL					,
-			CURSOR_STATE_TEXTSELECT				,
-			CURSOR_STATE_RESIZE_HORIZONTAL		,
-			CURSOR_STATE_RESIZE_VERTICAL		,
-			CURSOR_STATE_RESIZE_DIAGONAL_1		,
-			CURSOR_STATE_RESIZE_DIAGONAL_2		,
-			CURSOR_STATE_SPECIAL_1				,
-			CURSOR_STATE_SPECIAL_2
-		};
+		friend class GUIManager;
 	public:
-		/** Constructor
+		// Skin Constants
+		static const Ogre::String TEXTURE;
+		// Define Skin Structure
+		static void registerSkinDefinition();
+	public:
+
+		/** Adds an event handler
 			@param
-                size The width, and height of the window in Relative Dimensions.
-			@param
-				sizeMode The metrics mode used to interpret the size give. (relative/absolute/pixel)
-			@param
-				textureName Ogre material defining the cursor image.
+				EVENT Defined events, for example: MOUSE_CUSSOR_EVENT_ENABLED_CHANGED, MOUSE_CURSOR_EVENT_BORDER_LEAVE, etc.
+            @param
+                function member function assigned to handle the event.  Given in the form of myClass::myFunction.
+				Function must return bool, and take QuickGUI::EventArgs as its parameters.
+            @param
+                obj particular class instance that defines the handler for this event.  Here is an example:
+				addWidgetEventHandler(QuickGUI::MOUSE_CUSSOR_EVENT_ENABLED_CHANGED,myClass::myFunction,this);
+			@note
+				Multiple user defined event handlers can be defined for an event.  All added event handlers will be called
+				whenever the event is fired.
+			@note
+				You may see Visual Studio give an error warning such as "error C2660: 'QuickGUI::Widget::addWidgetEventHandler' : function does not take 3 arguments".
+				This is an incorrect error message.  Make sure your function pointer points to a function which returns void, and takes parameter "const EventArgs&".
         */
-        MouseCursor(const Size& size, const std::string& skinName, GUIManager* gm);
-		/** Standard Destructor. */
-		~MouseCursor();
+		template<typename T> void addCursorEventHandler(MouseCursorEvent EVENT, void (T::*function)(const EventArgs&), T* obj)
+		{
+			mEventHandlers[EVENT].push_back(new EventHandlerPointer<T>(function,obj));
+		}
+		void addCursorEventHandler(MouseCursorEvent EVENT, EventHandlerSlot* function);
 
-		CursorState getCursorState();
+		void draw();
+
 		/**
-		* Returns true if cursor is set to go invisible when mouse is off the screen, false otherwise.
+		* Returns true if the cursor will be hidden when touching the viewport edges, false otherwise.
 		*/
-		bool getHideWhenOffScreen();
+		bool getClipOnEdges();
+		/**
+		* Returns true if the cursor is able to inject mouse events into the GUIManager,
+		* false otherwise.
+		*/
+		bool getEnabled();
+		/**
+		* Returns the pixel location of the cursor as it appears on the screen.
+		*/
 		Point getPosition();
-		Size getSize();
 		/**
-		* Hides the cursor.
+		* Returns true if the cursor is drawn on the screen, false otherwise.
 		*/
-		void hide();
-		/**
-		* Hides the cursor, but does not record the mouse is hidden.  Used for automatic hiding,
-		* when mouse goes outside of screen.  When it comes back into window, we need to use mVisible
-		* variable to tell us if user intends the mouse to be shown in window or not.
-		*/
-		void _hide();
+		bool getVisible();
 
-		std::string getTexture();
-
-		void hideSkin();
-		
-		bool isVisible();
-		
 		/**
-		* Returns true if the mouse if on the bottom border of the screen, false otherwise.
+		* Sets whether the cursor will be hidden or shown when touching the viewport edges.
 		*/
-		bool mouseOnBotBorder();
+		void setClipOnEdges(bool clip);
 		/**
-		* Returns true if the mouse if on the left border of the screen, false otherwise.
+		* Sets whether the cursor is able to inject mouse events into the GUIManager.
 		*/
-		bool mouseOnLeftBorder();
+		void setEnabled(bool enable);
 		/**
-		* Returns true if the mouse if on the right border of the screen, false otherwise.
+		* Updates the cursor so that it is drawn at the position given.
 		*/
-		bool mouseOnRightBorder();
+		void setPosition(float xPosition, float yPosition);
 		/**
-		* Returns true if the mouse if on the top border of the screen, false otherwise.
+		* Updates the cursor so that it is drawn at the position given.
 		*/
-		bool mouseOnTopBorder();
+		void setPosition(const Point& p);
 		/**
-		* Applies the pixel offset to the current cursor position.
+		* Sets the "type" of mouse cursor.  For example you
+		* can change between several types: "default", "hresize", "diag1resize", etc.
+		* NOTE: The type property determines what is drawn to the screen.
 		*/
-		void offsetPosition(const int& xPixelOffset, const int& yPixelOffset);
+		void setSkinType(const Ogre::String type);
 		/**
-		* Render the mouse to screen.
+		* Sets whether the cursor will be drawn on the screen.
 		*/
-		void render();
-		void setCursorState(CursorState s);
-		/**
-		* if toggled, the cursor will become invisible when the mouse moves away from the primary render window.
-		* only useful if you have the mouse created with the DISCL_NONEXCLUSIVE option. (Refer to OIS creation of the mouse)
-		*/
-		void setHideCursorWhenOSCursorOffscreen(bool hide);
-		/**
-		* Sets the position of the mouse cursor on the screen, in pixel coordinates.
-		*/
-		void setPosition(float pixelX, float pixelY);
-		/**
-		* Sets the Size of the mouse cursor on the screen, in pixel dimensions.
-		*/
-		void setSize(float pixelWidth, float pixelHeight);
-		/**
-		* Sets the Ogre material defining the mouse
-		*/
-		void setSkin(const std::string& skinName);
-		/**
-		* Shows the cursor.
-		*/
-		void show();
-		void showSkin();
+		void setVisible(bool visible);
 
 	protected:
-		GUIManager*		mGUIManager;
+		MouseCursor(const MouseCursorDesc& d);
+		~MouseCursor();
 
-		CursorState		mCursorState;
+		MouseCursorDesc mMouseCursorDesc;
 
-		std::string	mSkinName;
-		std::string	mSkinComponent;
+		Rect mDimensions;
 
-		// Default texture.
-		std::string	mTextureName;
+		// Current Skin type of the cursor (for example changing the cursor directly, ie resizing)
+		Ogre::String mSkinType;
+		// Last Skin type as set by a user (for example restoring the cursor)
+		Ogre::String mDefaultSkinType;
 
-		bool			mHideSkin;
-
-		// Width and Height in pixels
-		Size			mPixelSize;
-		Point			mPixelPosition;
-		
-		// Specifies the area (in screen pixels) that the mouse can move around in.
-		Point			mConstraints;				
-		bool			mOnTopBorder;
-		bool			mOnBotBorder;
-		bool			mOnLeftBorder;
-		bool			mOnRightBorder;
-		
-		bool			mHideWhenOffScreen;
-		bool			mVisible;
-
-		Quad*			mQuad;
-		QuadList mRenderObjectList;
-		VertexBuffer*	mVertexBuffer;
+		SkinTypeManager* mSkinTypeManager;
 
 		/**
-		* Prevents the mouse cursor from going out of bounds.
-		* The position can't exceed the primary render window dimensions (pixels)
+		* Internal function used to set the size of the cursor, as it is drawn on the screen.
 		*/
-		void constrainPosition();
+		void setSize(float pixelWidth, float pixelHeight);
+
+		// Left/Top/Right/Bottom
+		bool mEnteredBorders[4];
+		// Event handlers! One List per event
+		std::vector<EventHandlerSlot*> mEventHandlers[MOUSE_CURSOR_EVENT_COUNT];
+
+		/**
+		* Sets the "type" of mouse cursor.  For example you
+		* can change between several types: "default", "hresize", "diag1resize", etc.
+		* NOTE: The type property determines what is drawn to the screen.
+		* NOTE: This does not update the default skin type of the cursor, and is for internal use only.
+		*/
+		void _setSkinType(const Ogre::String type);
+
+	private:
 	};
 }
 

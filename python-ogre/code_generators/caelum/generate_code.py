@@ -53,11 +53,19 @@ def ManualExclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns 
-    excludes=['::Caelum::FlatCloudLayer::disableCloudCoverLookup',
-                '::Caelum::FlatCloudLayer::getCloudSpeed']
+    excludes=['::Caelum::FlatCloudLayer::disableCloudCoverLookup'
+                ,'::Caelum::FlatCloudLayer::getCloudSpeed'
+                ,'::Caelum::OwnedPtr< Ogre::ManualObject, Caelum::MovableObjectOwnedPtrTraits< Ogre::ManualObject > >::reset'
+                ,'::Caelum::OwnedPtr< Ogre::Material, Caelum::OwnedResourcePtrTraits< Ogre::Material, Ogre::MaterialPtr, Ogre::MaterialManager > >::reset'
+                ,'::Caelum::OwnedPtr< Ogre::SceneNode, Caelum::SceneNodeOwnedPtrTraits >::reset'
+                ]
     for m in excludes:
         global_ns.member_functions(m).exclude()
-        
+    
+    excludes=['::Caelum::CameraBoundElement::CAMERA_FAR_DISTANCE_MULTIPLIER']
+    for e in excludes:
+        global_ns.variable(e).exclude()    
+   
         
 ############################################################
 ##
@@ -133,13 +141,13 @@ def ManualTransformations ( mb ):
     x.add_transformation( ft.inout ('azimuth'), ft.inout('altitude'), alias='convertEquatorialToHorizontal')
     x.documentation = docit("","","tuple - azimuth,altitude")
     
-#     x=main_ns.mem_fun('::Caelum::Astronomy::getHorizontalSunPosition')
-#     x.add_transformation( ft.inout ('azimuth'), ft.inout('altitude'), alias='getHorizontalSunPosition')
-#     x.documentation = docit("","","tuple - azimuth,altitude")
+    x=main_ns.mem_fun('::Caelum::Astronomy::getHorizontalSunPosition', arg_types=['::Caelum::LongReal','::Caelum::LongReal','::Caelum::LongReal','::Caelum::LongReal &','::Caelum::LongReal &'])
+    x.add_transformation( ft.inout ('azimuth'), ft.inout('altitude'), alias='getHorizontalSunPositionDouble')
+    x.documentation = docit("","","tuple - azimuth,altitude")
 
-#     x=main_ns.mem_fun('::Caelum::Astronomy::getHorizontalMoonPosition')
-#     x.add_transformation( ft.inout ('azimuth'), ft.inout('altitude'), alias='getHorizontalMoonPosition')
-#     x.documentation = docit("","","tuple - azimuth,altitude")
+    x=main_ns.mem_fun('::Caelum::Astronomy::getHorizontalMoonPosition',arg_types=['::Caelum::LongReal','::Caelum::LongReal','::Caelum::LongReal','::Caelum::LongReal &','::Caelum::LongReal &'])
+    x.add_transformation( ft.inout ('azimuth'), ft.inout('altitude'), alias='getHorizontalMoonPositionDouble')
+    x.documentation = docit("","","tuple - azimuth,altitude")
     
     x=main_ns.mem_fun('::Caelum::Astronomy::getEclipticMoonPositionRad')
     x.add_transformation( ft.inout ('lon'), ft.inout('lat'), alias='getEclipticMoonPositionRad')

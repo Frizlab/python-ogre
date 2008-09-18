@@ -328,8 +328,8 @@ def generate_code():
     # Creating the code. After this step you should not modify/customize declarations.
     #
     ##########################################################################################
-    #extractor = exdoc.doc_extractor("::Ogre") # I'm excluding the UTFstring docs as lots about nothing 
-    mb.build_code_creator (module_name='_noise_' ) #, doc_extractor= extractor )
+    extractor = exdoc.doc_extractor() # I'm excluding the UTFstring docs as lots about nothing 
+    mb.build_code_creator (module_name='_noise_' , doc_extractor= extractor )
     
     for inc in environment.noise.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )

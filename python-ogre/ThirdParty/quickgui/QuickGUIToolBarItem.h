@@ -1,0 +1,75 @@
+#ifndef QUICKGUITOOLBARITEM_H
+#define QUICKGUITOOLBARITEM_H
+
+#include "QuickGUIContainerWidget.h"
+
+namespace QuickGUI
+{
+	// forward declaration
+	class ToolBar;
+
+	class _QuickGUIExport ToolBarItemDesc :
+			public ContainerWidgetDesc
+	{
+	public:
+		friend class ToolBar;
+	public:
+		ToolBarItemDesc();
+
+		/// For Horizontally oriented ToolBars, this is the width of the Widget.
+		/// For Vertically oriented ToolBars, this is the height of the widget.
+		float length;
+
+		/// ToolBar that this Widget belongs to
+		ToolBar* toolBar;
+	};
+
+	class _QuickGUIExport ToolBarItem :
+		public ContainerWidget
+	{
+	public:
+		friend class ToolBar;
+	public:
+
+		/**
+		* Internal function, do not use.
+		*/
+		virtual void _initialize(WidgetDesc* d);
+
+		/**
+		* Returns true if this widget is a ToolBarItem, false otherwise.
+		*/
+		virtual bool isToolBarItem();
+
+	protected:
+		ToolBarItem(const Ogre::String& name);
+		~ToolBarItem();
+
+		/**
+		* Updates the ToolBar Link.
+		*/
+		virtual void notifyToolBarParent(ToolBar* b);
+
+		/// Derivative ToolBar Items will implement the following functions to define their default behavior.
+		virtual void onMouseButtonDown(const EventArgs& args);
+		virtual void onMouseButtonUp(const EventArgs& args);
+		virtual void onMouseEnter(const EventArgs& args);
+		virtual void onMouseLeave(const EventArgs& args);
+
+		/**
+		* Sets the size and position (position relative to parent) of this Widget, respectively.
+		*/
+		void setDimensions(const Rect& r);
+		/**
+		* Sets the x and y position of this widget, relative to this widget's parent.
+		*/
+		void setPosition(const Point& position);
+		/**
+		* Sets the width and height of this widget.
+		*/
+		void setSize(const Size& size);
+	private:
+	};
+}
+
+#endif

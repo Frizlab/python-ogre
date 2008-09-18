@@ -1,90 +1,157 @@
-#ifndef QUICKGUITITLELBAR_H
-#define QUICKGUITITLELBAR_H
+#ifndef QUICKGUITITLEBAR_H
+#define QUICKGUITITLEBAR_H
 
-#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIButton.h"
-#include "QuickGUILabel.h"
+#include "QuickGUIComponentWidget.h"
 
 namespace QuickGUI
 {
-	/** Window TitleBar.
-		@remarks
-		Titlebars are the anchor for windows, and allow
-		them to be moves around via the mouse.  The
-		TitleBar widget contains a Button Widget by default,
-		and is implemented to hide the window when clicked.
-		TitleBar widget requires 4 materials: Default,
-		Close Button, Close Button Mouse Over, Close Button
-		Mouse Button Down.
-		ex: Original Material - "sample.window.titlebar"
-		Required:
-			"sample.window.titlebar.button"
-			"sample.window.titlebar.button.over"
-			"sample.window.titlebar.button.down"
-		@note
-		The TitleBar widget should never be created manually.
-		It is created as a part of the default Window widget.
-		(as opposed to an empty Window, which has no TitleBar)
-	*/
-	class _QuickGUIExport TitleBar :
-		public Label
+	class _QuickGUIExport TitleBarDesc :
+		public ComponentWidgetDesc
 	{
 	public:
-		friend class Sheet;
-	public:
-		/** Constructor
-            @param
-                name The name to be given to the widget (must be unique).
-			@param
-                dimensions The x Position, y Position, width, and height of the widget.
-			@param
-				positionMode The GuiMetricsMode for the values given for the position. (absolute/relative/pixel)
-			@param
-				sizeMode The GuiMetricsMode for the values given for the size. (absolute/relative/pixel)
-			@param
-				material Ogre material defining the widget image.
-			@param
-				group QuadContainer containing this widget.
-			@param
-				ParentWidget parent widget which created this widget.
-			@note
-				no dimensions needed, the titlebar is always the width of the parent widget (window), and starts at 0,0.
-			@note
-				height it default at 0.05 absolute coordinates.	Height can be modified.
-        */
-		TitleBar(const std::string& name, GUIManager* gm);
+		TitleBarDesc();
+
+		bool closeButton;
+		float closeButtonPadding;
+		Ogre::String closeButtonSkinType;
+
+		float padding[PADDING_COUNT];
+
+		/// Describes the Text used in this Label
+		TextDesc textDesc;
 
 		/**
-		* Gets a handle to the Button widget used for this Widget.
+		* Returns the class of Desc object this is.
 		*/
-		Button* getCloseButton();
+		virtual Ogre::String getClass() { return "TitleBarDesc"; }
 		/**
-		* Hides Only the CloseButton, removing default ability to close the window
+		* Returns the class of Widget this desc object is meant for.
 		*/
-		void hideCloseButton();
+		virtual Ogre::String getWidgetClass() { return "TitleBar"; }
+
+		// Factory method
+		static WidgetDesc* factory() { return new TitleBarDesc(); }
+	};
+
+	class TitleBar :
+		public ComponentWidget
+	{
+	public:
+		// Skin Constants
+		static const Ogre::String BACKGROUND;
+		static const Ogre::String CLOSE_BUTTON;
+		// Define Skin Structure
+		static void registerSkinDefinition();
+	public:
+		friend class GUIManager;
+		friend class Window;
+
+		// Factory method
+		static Widget* factory(const Ogre::String& widgetName);
+	public:
+
 		/**
-		* Set true if the label's size should match it's font height and text width.
-		* NOTE: AutoSize is set to true by default.  If you set this to false, you may
-		*  end up with empty label's, as text that doesn't fit in the label won't be rendered.
+		* Internal function, do not use.
 		*/
-		virtual void setAutoSize(bool autoSize);
+		virtual void _initialize(WidgetDesc* d);
+
 		/**
-		* Convenience method to set the text of the titlebar.
+		* Drags the window by a specified offset.
 		*/
-		void setCaption(const Ogre::UTFString& caption);
-		virtual void setFont(const std::string& fontScriptName, bool recursive = false);
-		virtual void setText(const Ogre::UTFString& text);
-		virtual void setWidth(float pixelWidth);
+		virtual void drag(int xOffset, int yOffset);
+
 		/**
-		* Shows the Close Button.
+		* Returns the class name of this Widget.
 		*/
-		void showCloseButton();
+		virtual Ogre::String getClass();
+		/**
+		* Gets the distance between a Label border and the text.
+		*/
+		float getPadding(Padding p);
+		/**
+		* Gets the text in UTFString form.
+		*/
+		Ogre::UTFString getText();
+
+		/**
+		* Sets all characters of the text to the specified color.
+		*/
+		void setColor(const Ogre::ColourValue& cv);
+		/**
+		* Sets the character at the index given to the specified color.
+		*/
+		void setColor(const Ogre::ColourValue& cv, unsigned int index);
+		/**
+		* Sets all characters within the defined range to the specified color.
+		*/
+		void setColor(const Ogre::ColourValue& cv, unsigned int startIndex, unsigned int endIndex);
+		/**
+		* Searches text for c.  If allOccurrences is true, all characters of text matching c
+		* will be colored, otherwise only the first occurrence is colored.
+		*/
+		void setColor(const Ogre::ColourValue& cv, Ogre::UTFString::code_point c, bool allOccurrences);
+		/**
+		* Searches text for s.  If allOccurrences is true, all sub strings of text matching s
+		* will be colored, otherwise only the first occurrence is colored.
+		*/
+		void setColor(const Ogre::ColourValue& cv, Ogre::UTFString s, bool allOccurrences);
+		/**
+		* Sets all characters of the text to the specified font.
+		*/
+		void setFont(const Ogre::String& fontName);
+		/**
+		* Sets the character at the index given to the specified font.
+		*/
+		void setFont(const Ogre::String& fontName, unsigned int index);
+		/**
+		* Sets all characters within the defined range to the specified font.
+		*/
+		void setFont(const Ogre::String& fontName, unsigned int startIndex, unsigned int endIndex);
+		/**
+		* Searches text for c.  If allOccurrences is true, all characters of text matching c
+		* will be changed to the font specified, otherwise only the first occurrence is changed.
+		*/
+		void setFont(const Ogre::String& fontName, Ogre::UTFString::code_point c, bool allOccurrences);
+		/**
+		* Searches text for s.  If allOccurrences is true, all sub strings of text matching s
+		* will be changed to the font specified, otherwise only the first occurrence is changed.
+		*/
+		void setFont(const Ogre::String& fontName, Ogre::UTFString s, bool allOccurrences);
+		/**
+		* Sets the distance between a Label border and the text.
+		*/
+		void setPadding(Padding p, float distance);
+		/**
+		* Sets the text for this object.
+		*/
+		void setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv);
 
 	protected:
-		virtual ~TitleBar();
+		TitleBar(const Ogre::String& name);
+		~TitleBar();
+
+		Text* mText;
 
 		Button* mCloseButton;
-		float mRelativeButtonWidth;
+
+		TitleBarDesc* mDesc;
+
+		/**
+		* Hides the window.  Only relevant if this TitleBar has a close button.
+		*/
+		void onCloseButtonUp(const EventArgs& args);
+		/**
+		* Outlines how the widget is drawn to the current render target
+		*/
+		virtual void onDraw();
+
+		/**
+		* Sets whether the widget can be resized using the mouse.
+		*/
+		virtual void setResizable(bool resizable);
+
+	private:
 	};
 }
 

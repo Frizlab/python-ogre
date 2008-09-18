@@ -63,6 +63,7 @@ typedef std::pair<unsigned, unsigned> StdPairUnsignedUnsigned;
     typedef Ogre::AlignedAllocator<Ogre::Vector4, 0> AlignedAllocatorVector40;
     typedef Ogre::AlignedAllocator<Ogre::Vector4, 0>::rebind<Ogre::Vector4> AlignedAllocatorVector40Rebind;
 #else
+    typedef Ogre::AtomicScalar< Ogre::Resource::LoadingState > AtomicScalarLoadingState;
     typedef Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > AllocatedObjectMemCategory_0;
     typedef Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)1> > AllocatedObjectMemCategory_1;
     typedef Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)2> > AllocatedObjectMemCategory_2;

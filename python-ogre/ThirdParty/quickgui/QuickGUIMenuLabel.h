@@ -1,52 +1,163 @@
 #ifndef QUICKGUIMENULABEL_H
 #define QUICKGUIMENULABEL_H
 
-#include "QuickGUIForwardDeclarations.h"
-#include "QuickGUIButton.h"
-#include "QuickGUIImage.h"
-#include "QuickGUILabel.h"
-#include "QuickGUIExportDLL.h"
+#include "QuickGUIButtonStates.h"
+#include "QuickGUIPadding.h"
+#include "QuickGUIMenuItem.h"
+#include "QuickGUIText.h"
 
 namespace QuickGUI
 {
-	class _QuickGUIExport MenuLabel :
-		public Label
+	class _QuickGUIExport MenuLabelDesc :
+			public MenuItemDesc
 	{
 	public:
-		enum Layout
-		{
-			LAYOUT_LEFT_TO_RIGHT	=  0,
-			LAYOUT_RIGHT_TO_LEFT
-		};
+		MenuLabelDesc();
+
+		float padding[PADDING_COUNT];
+
+		/// Describes the Text used in this Label
+		TextDesc textDesc;
+
+		/**
+		* Returns the class of Desc object this is.
+		*/
+		virtual Ogre::String getClass() { return "MenuLabelDesc"; }
+		/**
+		* Returns the class of Widget this desc object is meant for.
+		*/
+		virtual Ogre::String getWidgetClass() { return "MenuLabel"; }
+
+		// Factory method
+		static WidgetDesc* factory() { return new MenuLabelDesc(); }
+
+		/**
+		* Outlines how the desc class is written to XML and read from XML.
+		*/
+		virtual void serialize(SerialBase* b);
+	};
+
+	class _QuickGUIExport MenuLabel :
+		public MenuItem
+	{
 	public:
-		MenuLabel(const std::string& name, GUIManager* gm);
+		// Skin Constants
+		static const Ogre::String DEFAULT;
+		static const Ogre::String DOWN;
+		static const Ogre::String OVER;
+		// Define Skin Structure
+		static void registerSkinDefinition();
+	public:
+		// Factory method
+		static Widget* factory(const Ogre::String& widgetName);
+	public:
 
-		std::string getButtonSkin();
-		std::string getIconMaterial();
+		/**
+		* Internal function, do not use.  This is not a recursive function!
+		*/
+		virtual void _initialize(WidgetDesc* d);
 
-		void setButtonSkin(const std::string& skinName);
-		void setIconMaterial(const std::string& materialName);
-		template<typename T> void setMouseButtonUpOnButtonHandler(void (T::*function)(const EventArgs&), T* obj)
-		{
-			if(mButton == NULL)
-				return;
+		/**
+		* Returns the class name of this Widget.
+		*/
+		virtual Ogre::String getClass();
+		/**
+		* Gets the distance between a Label border and the text.
+		*/
+		float getPadding(Padding p);
+		/**
+		* Returns the number of pixels placed between each line of text, if there
+		* are multiple lines of text.
+		*/
+		float getVerticalLineSpacing();
 
-			mButton->addEventHandler(EVENT_MOUSE_BUTTON_UP,new MemberFunctionPointer<T>(function,obj),obj);
-		}
-		void setMouseButtonUpOnButtonHandler(MemberFunctionSlot* function);
+		/**
+		* Sets all characters of the text to the specified color.
+		*/
+		void setColor(const Ogre::ColourValue& cv);
+		/**
+		* Sets the character at the index given to the specified color.
+		*/
+		void setColor(const Ogre::ColourValue& cv, unsigned int index);
+		/**
+		* Sets all characters within the defined range to the specified color.
+		*/
+		void setColor(const Ogre::ColourValue& cv, unsigned int startIndex, unsigned int endIndex);
+		/**
+		* Searches text for c.  If allOccurrences is true, all characters of text matching c
+		* will be colored, otherwise only the first occurrence is colored.
+		*/
+		void setColor(const Ogre::ColourValue& cv, Ogre::UTFString::code_point c, bool allOccurrences);
+		/**
+		* Searches text for s.  If allOccurrences is true, all sub strings of text matching s
+		* will be colored, otherwise only the first occurrence is colored.
+		*/
+		void setColor(const Ogre::ColourValue& cv, Ogre::UTFString s, bool allOccurrences);
+		/**
+		* Sets all characters of the text to the specified font.
+		*/
+		void setFont(const Ogre::String& fontName);
+		/**
+		* Sets the character at the index given to the specified font.
+		*/
+		void setFont(const Ogre::String& fontName, unsigned int index);
+		/**
+		* Sets all characters within the defined range to the specified font.
+		*/
+		void setFont(const Ogre::String& fontName, unsigned int startIndex, unsigned int endIndex);
+		/**
+		* Searches text for c.  If allOccurrences is true, all characters of text matching c
+		* will be changed to the font specified, otherwise only the first occurrence is changed.
+		*/
+		void setFont(const Ogre::String& fontName, Ogre::UTFString::code_point c, bool allOccurrences);
+		/**
+		* Searches text for s.  If allOccurrences is true, all sub strings of text matching s
+		* will be changed to the font specified, otherwise only the first occurrence is changed.
+		*/
+		void setFont(const Ogre::String& fontName, Ogre::UTFString s, bool allOccurrences);
+		/**
+		* Sets the distance between a Label border and the text.
+		*/
+		void setPadding(Padding p, float distance);
+		/**
+		* Sets the text for this object.
+		*/
+		void setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv);
+		/**
+		* Sets the number of pixels placed between each line of text, if there
+		* are multiple lines of text.
+		*/
+		void setVerticalLineSpacing(float distance);
 
 	protected:
-		virtual ~MenuLabel();
+		MenuLabel(const Ogre::String& name);
+		~MenuLabel();
 
-		Layout mLayout;
+		Text* mText;
 
-		Image* mIcon;
-		std::string mIconMaterialName;
+		MenuLabelDesc* mDesc;
 
-		Button* mButton;
-		std::string mButtonTextureName;
+		/// Keep track of the button state
+		ButtonState mCurrentButtonState;
 
-		void onSizeChanged(const EventArgs& args);
+		/**
+		* Outlines how the widget is drawn to the current render target
+		*/
+		virtual void onDraw();
+		/**
+		* Closes all Menus belonging to parent ToolBar.
+		*/
+		virtual void onMouseButtonUp(const EventArgs& args);
+		/**
+		* Applies menu label "over" image
+		*/
+		virtual void onMouseEnter(const EventArgs& args);
+		/**
+		* Applies menu label "default" image
+		*/
+		void onMouseLeave(const EventArgs& args);
+
+	private:
 	};
 }
 

@@ -239,7 +239,7 @@ def ManualExclude ( mb ):
 
 
     # changes for Ogre 1.6 and on
-    if environment.ogre.version =="1.7" or environment.ogre.version =="1.6":
+    if environment.ogre.version.startswith("1.7") or environment.ogre.version.startswith("1.6"):
 #         main_ns.class_("ResourceBackgroundQueue").exclude() # Ogre::ResourceBackgroundQueue::_fireBackgroundLoadingComplete isn't implemented
         main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageEnded").exclude()
         main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageStarted").exclude()

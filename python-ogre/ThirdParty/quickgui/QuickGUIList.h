@@ -1,111 +1,188 @@
 #ifndef QUICKGUILIST_H
 #define QUICKGUILIST_H
 
-#include "QuickGUIForwardDeclarations.h"
-#include "QuickGUIWidget.h"
-#include "QuickGUIMenuLabel.h"
-#include "QuickGUIScrollPane.h"
-#include "QuickGUITextBox.h"
-#include "QuickGUITextHelper.h"
-
-#include <vector>
+#include "QuickGUIContainerWidget.h"
+#include "QuickGUIListItem.h"
+#include "QuickGUIListTextItem.h"
 
 namespace QuickGUI
 {
-	/** Represents a List.
-		@remarks
-		Lists are designed to hold a dynamic number of ListItem Widgets.
-		The most command use of Lists are in the Menu and ComboBox Widget.
-		@note
-		List Height depends on the height of its combined ListItems.
-		@note
-		Lists are generally created from the Menu, ComboBox, and even List Widget.
-	*/
-	class _QuickGUIExport List :
-		public Widget
+	class _QuickGUIExport ListDesc :
+		public ContainerWidgetDesc
 	{
 	public:
-		friend class ComboBox;
-		friend class LabelArea;
+		ListDesc();
+
+		float listItemHeight;
+		bool supportMultiSelect;
+
+		/**
+		* Returns the class of Desc object this is.
+		*/
+		virtual Ogre::String getClass() { return "ListDesc"; }
+		/**
+		* Returns the class of Widget this desc object is meant for.
+		*/
+		virtual Ogre::String getWidgetClass() { return "List"; }
+
+		// Factory method
+		static WidgetDesc* factory() { return new ListDesc(); }
+
+		/**
+		* Outlines how the desc class is written to XML and read from XML.
+		*/
+		virtual void serialize(SerialBase* b);
+	};
+
+	class _QuickGUIExport List :
+		public ContainerWidget
+	{
 	public:
-		/** Constructor
+		friend class ListItem;
+	public:
+		// Skin Constants
+		static const Ogre::String BACKGROUND;
+		// Define Skin Structure
+		static void registerSkinDefinition();
+	public:
+		// Factory method
+		static Widget* factory(const Ogre::String& widgetName);
+	public:
+
+		/**
+		* Internal function, do not use.
+		*/
+		virtual void _initialize(WidgetDesc* d);
+
+		/** Adds an event handler to this widget
+			@param
+				EVENT Defined widget events, for example: BUTTON_EVENT_STATE_CHANGED, etc.
             @param
-                name The name to be given to the widget (must be unique).
+                function member function assigned to handle the event.  Given in the form of myClass::myFunction.
+				Function must return bool, and take QuickGUI::EventArgs as its parameters.
             @param
-                dimensions The x Position, y Position, and width of the widget.
-			@param
-				positionMode The GuiMetricsMode for the values given for the position. (absolute/relative/pixel)
-			@param
-				sizeMode The GuiMetricsMode for the values given for the size. (absolute/relative/pixel)
-			@param
-				material Ogre material defining the widget image.
-			@param
-				group QuadContainer containing this widget.
-			@param
-				ParentWidget parent widget which created this widget.
+                obj particular class instance that defines the handler for this event.  Here is an example:
+				addWidgetEventHandler(QuickGUI::BUTTON_EVENT_STATE_CHANGED,myClass::myFunction,this);
+			@note
+				Multiple user defined event handlers can be defined for an event.  All added event handlers will be called
+				whenever the event is fired.
+			@note
+				You may see Visual Studio give an error warning such as "error C2660: 'QuickGUI::Widget::addWidgetEventHandler' : function does not take 3 arguments".
+				This is an incorrect error message.  Make sure your function pointer points to a function which returns void, and takes parameter "const EventArgs&".
         */
-		List(const std::string& name, GUIManager* gm);
+		template<typename T> void addListEventHandler(ListEvent EVENT, void (T::*function)(const EventArgs&), T* obj)
+		{
+			mListEventHandlers[EVENT].push_back(new EventHandlerPointer<T>(function,obj));
+		}
+		void addListEventHandler(ListEvent EVENT, EventHandlerSlot* function);
 
-		MenuLabel* addMenuLabel();
-		TextBox* addTextBox();
-		void allowScrolling(bool allow);
+		/**
+		* Adds a ListItem to the end of the List.
+		*/
+		ListItem* addItem(ListItemDesc& d);
+		/**
+		* Adds a ListItem to a position in the List.
+		* NOTE: if the index is not valid, the ListItem is added to the end of the list.
+		*/
+		ListItem* addItem(int index, ListItemDesc& d);
 
-		void clear();
+		/**
+		* De-selects any selected ListItems in the list.
+		*/
+		void clearSelection();
 
-		bool getAutoSizeListItems();
-		Widget* getItem(unsigned int index);
-		int getItemIndex(Widget* w);
+		/**
+		* De-selects the item at the index given.  If index is invalid, nothing happens.
+		*/
+		void deselectItem(unsigned int index);
+
+		/**
+		* Event Handler that executes the appropriate User defined Event Handlers for a given event.
+		* Returns true if the event was handled, false otherwise.
+		*/
+		bool fireListEvent(ListEvent e, EventArgs& args);
+
+		/**
+		* Returns the class name of this Widget.
+		*/
+		virtual Ogre::String getClass();
+		/**
+		* Returns the ListItem at the index given.  If the index is invalid,
+		* NULL is returned.
+		*/
+		ListItem* getItem(unsigned int index);
+		/**
+		* Gets the height of each ListItem within this List.
+		*/
+		float getListItemHeight();
+		/**
+		* Returns true if multiple items can be selected simultaneously, false otherwise.
+		*/
+		bool getMultiSelect();
+		/**
+		* Gets the number of ListItems within this List.
+		*/
 		int getNumberOfItems();
-		ScrollPane* getScrollPane();
-		int getVerticalPixelPadHeight();
+		/**
+		* Returns a pointer to a list of selected items.
+		*/
+		std::list<ListItem*> getSelection();
 
-		void removeItem(unsigned int index);
-
-		bool scrollingAllowed();
-		
 		/**
-		* If set to true, List Items' height will be derived from the height of the
-		* font used by this widget.
+		* Selects the item at index given.  If index is not valid,
+		* all items will be de-selected.
 		*/
-		void setAutoSizeListItems(bool autoSize);
-		virtual void setFont(const std::string& fontScriptName, bool recursive = false);
+		void selectItem(unsigned int index);
 		/**
-		* Sets the pixel height of each ListItem.
+		* If set true, multiple items can be selected simultaneously, otherwise only
+		* single selections can be made.
 		*/
-		void setItemPixelHeight(const float& heightInPixels);
-		void setVerticalPixelPadHeight(unsigned int height);
+		void setMultiSelect(bool MultiSelect);
 		/**
-		* Shows the widget, including any child widgets.
+		* Sets the height of each ListItem within the List.
 		*/
-		void show();
+		void setListItemHeight(float height);
 
 	protected:
-		virtual ~List();
+		List(const Ogre::String& name);
+		~List();
 
-		TextHelper* mTextHelper;
-		bool mAutoSizeListItems;
+		ListDesc* mDesc;
 
-		ScrollPane* mScrollPane;
-		bool mScrollingAllowed;
+		std::list<ListItem*> mListItems;
+		std::list<ListItem*> mSelectedItems;
 
-		VerticalScrollBar* mRightScrollBar;
-		HorizontalScrollBar* mBottomScrollBar;
+		// Event handlers! One List per event per widget
+		std::vector<EventHandlerSlot*> mListEventHandlers[LIST_EVENT_COUNT];
 
-		float mItemHeight;
+		unsigned int mPrevSelectedIndex;
 
-		int mVPixelPadHeight;
-
-		//WidgetArray mItems;
-		/*
-		* Iterates through item list and looks for the next 
-		* available integer used for naming convention.
+		/**
+		* Outlines how the widget is drawn to the current render target
 		*/
-		int _getNextInstanceCounter();
-		std::map<int,Widget*> mItems;
+		virtual void onDraw();
 
-		void onChildAdded(const EventArgs& args);
-		void onChildRemoved(const EventArgs& args);
-		void onSizeChanged(const EventArgs& args);
+		/**
+		* Forcing all ListItems to be the width of client dimensions.
+		*/
+		void onClientSizeChanged(const EventArgs& args);
+
+		/**
+		* Function allowing ListItems to notify List when user left clicks on them.
+		*/
+		void selectItem(const MouseEventArgs& mea);
+
+		/**
+		* Clears selection list by de-selecting all selected units and clearing list.
+		*/
+		void _clearSelection();
+
+		/**
+		* Returns the count of the list item within the list.
+		*/
+		unsigned int _getItemIndex(ListItem* li);
+
+	private:
 	};
 }
 

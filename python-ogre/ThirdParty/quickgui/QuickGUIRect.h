@@ -3,7 +3,6 @@
 
 #include "OgrePrerequisites.h"
 
-#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIExportDLL.h"
 #include "QuickGUIPoint.h"
 #include "QuickGUISize.h"
@@ -18,34 +17,28 @@ namespace QuickGUI
 		Rect(Point p, Size s);
 
 		inline Rect( const Rect& r )
-            : x( r.x ), y( r.y ), width( r.width ), height( r.height )
+			: position( r.position ), size( r.size )
         {
         }
 
 		inline Rect& operator = ( const Rect& r )
         {
-            x = r.x;
-            y = r.y;
-            width = r.width;
-            height = r.height;
+			position = r.position;
+			size = r.size;
 
             return *this;
         }
 
 		inline bool operator != ( const Rect& r ) const
         {
-            return ( x != r.x ||
-                y != r.y ||
-                width != r.width ||
-                height != r.height );
+			return ( position != r.position ||
+				size != r.size );
         }
 
 		bool operator == ( const Rect& r ) const
         {
-			return ( x == r.x &&
-				y == r.y &&
-				width == r.width &&
-				height == r.height );
+			return ( position == r.position &&
+				size == r.size );
         }
 
 		Rect getIntersection( const Rect& r ) const;
@@ -54,10 +47,10 @@ namespace QuickGUI
 		bool intersectsRect(const Rect& r) const;
 		bool isPointWithinBounds(const Point& pixelPosition) const;
 
-		float x;
-		float y;
-		float width;
-		float height;
+		void translate(const Point& p);
+
+		Point position;
+		Size size;
 
 		static const Rect ZERO;
 	};

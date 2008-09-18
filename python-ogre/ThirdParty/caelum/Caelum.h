@@ -37,5 +37,6 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "ImageStarfield.h"
 #include "PointStarfield.h"
 #include "GroundFog.h"
+#include "DepthComposer.h"
 
 #endif // CAELUM_H

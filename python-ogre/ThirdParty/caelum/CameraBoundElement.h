@@ -2,7 +2,7 @@
 This file is part of Caelum.
 See http://www.ogre3d.org/wiki/index.php/Caelum 
 
-Copyright (c) 2006-2007 Caelum team. See Contributors.txt for details.
+Copyright (c) 2006-2008 Caelum team. See Contributors.txt for details.
 
 Caelum is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as published
@@ -28,12 +28,20 @@ namespace Caelum
     /** A camera-bound element.
      *
      *	This should be used as a base class for domes which follow the camera.
+     *  It is only meant to be used inside Caelum.
      *
      *  By default this class work in autoradius mode; where it automatically
      *  resizes itself for camera near/far clipping radius. It will correctly
      *  handle infinite far clip planes.
+     *
+     *  This is meant to be used with depth_check and depth_write off.
+     *  Trying to place an object "as far as possible" causes precision
+     *  troubles; and was removed in version 0.4.
+     *
+     *  If far clip distance is finite the radius will be (near + far) / 2.
+     *  If far clip distance is infinite (0) the radius will be 10 * near/
      */
-    class CAELUM_EXPORT CameraBoundElement: private Ogre::MovableObject::Listener
+    class CAELUM_EXPORT CameraBoundElement
     {
 	private:
 		/// Defines if the element has an automatic "far" radius or not.

@@ -1,5 +1,3 @@
-#include "QuickGUIPrecompiledHeaders.h"
-
 #include "QuickGUIPoint.h"
 
 namespace QuickGUI
@@ -14,6 +12,12 @@ namespace QuickGUI
 		x(X),
 		y(Y)
 	{
+	}
+
+	void Point::translate(const Point& p)
+	{
+		x += p.x;
+		y += p.y;
 	}
 
 	const Point Point::ZERO( 0, 0 );

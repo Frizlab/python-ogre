@@ -1,26 +1,62 @@
 August 29 2008 : Release 1.6 RC1
 ================================
-<< incomplete >>
-Version numbering change to match the Ogre release versions.
-Modules Updated to   
- Ogre 1.6 RC1
- OIS 1.2
- CEGUI 0.6.1 
- Particle Universe 0.8
- Hydrax 0.3 
- Bullet 2.70
- OgreBullet - patched to match API change in Bullet 2.7
- PhysX (NVIDA) 2.8.1
- ODE 0.10.1
- QuickGui R350
- OgreAL R115
+The Python-Ogre version numbering has changed to match the Ogre release versions along with the SVN release numbering
+    'Python-Ogre-<ogre version>-<SVN Version>-<Python Version>'
+    Built using MSVC 9, DirectX August 2008, Boost 1.36.0, Py++ r1383
+    
+** Modules Included and thier versions **
+  OGRE 1.6.0RC1
+  OIS 1.2
+  CEGUI 0.6.1
+  QuickGUI 0.9.7
+  betagui 1.7
+  OgreAL 0.3
+  ODE 0.10.1
+  OgreRefApp 1.6.1RC1
+  OgreOde 1.0
+  OgreNewt 1.0
+  Opcode 1.3
+  bullet 2.70
+  PhysX 2.8.1
+  NxOgre 1.0-21
+  OgreBulletC 1.0
+  OgreBulletD 1.0
+  theora 0.5.0
+  plib 1.8.4
+  ogreforests 0.1
+  et 2.2
+  caelum 0.2.1
+  noise 1.0
+  watermesh 1.0
+  particleuniverse 0.8
+  cadunetree 0.6
+  ogrepcz 1.0
+  hydrax 0.3
 
-OgreOde and OgreRefApp tweaked to work with ODE 0.10 
- 
-Added CEGUI::Tree to handmadewrapper (Thanks Dermont)
-Change to CEGUI_framework.py to force loading of CEGUIBase lib in the correct mode under Linux - means we don't need to 
-patch the CEGUI source...
-
+** Various Fixes/Changes ** 
+Change: OgreOde and OgreRefApp tweaked to work with ODE 0.10  (change to initalisation)
+Change: Ogre renderQueueStarted (etc) modules to return bool instead of passing as a reference
+Change: Theora is now the only support Video module -- fixed demo to use a different source file as sound corrupted on 'fish'
+Change: Updated all media to match Ogre 1.6.0RC1
+Change: CEGUIFramework now forces parser to use ExpatParser under Windows as TinyXML isn't built by default
+Change: QuickGui needed adjustment to support QueueStarted (etc) API changes
+Change: Hydrax also changed due to QueueStarted (etc) API changes
+Change: Improvements to Ogre Portal SceneManager wrapper
+Change: to CEGUI_framework.py to force loading of CEGUIBase lib in the correct mode under Linux - means we don't need to patch the CEGUI source...
+Change: Cleaned up code generation by moving standard 'properties' to common code - means all modules have a standard set of variables
+Change: Removed 'warning' changes from __init__ code as no longer needed as fixed in Py++
+Change: Particle Universe media
+Change: Navi has been depreciated until someone (please help) builds the support libraries with MSVC 9.
+Add: FMOD and OAL sound modules to Theora to get sound working
+Add: CEGUI::Tree to handmadewrapper (Thanks Dermont)
+Add: ReportVersion.py to system to report on modules and their versions etc
+Add: hiraki to the modules - not yet completed as changes will be needed as demo is written
+Add: Hydrax Demo V1.0 
+Fix: OgreAL Demo fixed as it wasn't setting up sound source correctly
+Fix: PCZ demo bug where I wasn't init'ing a Vector3 correctly
+Fix: ET demo to use std::Vector<float> from Ogre library
+Fix: bug in installer script with mutliple installed versions of Python
+Fix: OgreODE demo working again
 
 June 20 2008: Release 1.2 RC2
 ============================='

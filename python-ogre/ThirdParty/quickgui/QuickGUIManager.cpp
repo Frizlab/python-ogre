@@ -1,226 +1,224 @@
-#include "QuickGUIPrecompiledHeaders.h"
-
 #include "QuickGUIManager.h"
-#include "QuickGUIEffect.h"
-#include "QuickGUIConfigScriptParser.h"
+#include "QuickGUISerialReader.h"
+#include "QuickGUIRoot.h"
 
 namespace QuickGUI
 {
-	GUIManager::GUIManager(const std::string& name, Ogre::Viewport* vp, const std::string& defaultSkin) :
-		mName(name),
-		mViewport(vp),
-		mDefaultSkin(defaultSkin),
-		mActiveSheet(0),
-		mWidgetContainingMouse(0),
-		mActiveWidget(0),
-		mQueueID(Ogre::RENDER_QUEUE_OVERLAY),
-		mMouseCursor(0),
-		mSceneManager(0),
-		mDraggingWidget(false),
-		mDebugString(""),
-		mDetermineClickEvents(true),
-		mClickTime(100),
-		mDoubleClickTime(400),
-		mTripleClickTime(400)
+	GUIManagerDesc::GUIManagerDesc()
 	{
-		mSkinSetManager = SkinSetManager::getSingletonPtr();
-
-		for(int i = 0; i < NUM_MOUSE_BUTTONS; ++i)
-		{
-			mMouseButtonDown[i] = NULL;
-			mTimeOfButtonDown[i] = 0;
-			mTimeOfClick[i] = 0;
-			mTimeOfDoubleClick[i] = 0;
-		}	
+		name = "";
+		viewport = NULL;
+		sceneManager = NULL;
+		scrollLastClicked = false;
+		queueID = Ogre::RENDER_QUEUE_OVERLAY;
+		determineClickEvents = true;
+		clickTime = 90;
+		doubleClickTime = 400;
+		tripleClickTime = 400;
 
 		// by default, we support codepoints 9, and 32-166.
-		mSupportedCodePoints.insert(9);
+		supportedCodePoints.insert(9);
 		for(Ogre::UTFString::code_point i = 32; i < 167; ++i)
-			mSupportedCodePoints.insert(i);
+			supportedCodePoints.insert(i);
+	}
+
+	GUIManager::GUIManager(GUIManagerDesc& d) :
+		mDraggingWidget(false),
+		mActiveSheet(0),
+		mButtonMask(0),
+		mWidgetUnderMouseCursor(0),
+		mLastClickedWidget(0),
+		mDownOnBorder(false),
+		mKeyModifiers(0),
+		mOverResizableBorder(false),
+		mPreviousBorder(BORDER_NONE),
+		mResizableBorder(BORDER_NONE),
+		mSheetCounter(0),
+		mWidgetCounter(0)
+	{
+		mGUIManagerDesc.name = d.name;
+
+		mBrush = Brush::getSingletonPtr();
+
+		// If the scenemanager argument is NULL, try to use the first available scene manager
+		if(d.sceneManager == NULL)
+		{
+			Ogre::SceneManagerEnumerator::SceneManagerIterator it = Ogre::Root::getSingleton().getSceneManagerIterator();
+			if(it.hasMoreElements())
+				setSceneManager(it.getNext());
+		}
+		else
+			setSceneManager(d.sceneManager);
+
+		// If the viewport argument is NULL, use the first available viewport, from the scene manager chosen above.
+		if(d.viewport == NULL)
+		{
+			if(mGUIManagerDesc.sceneManager != NULL)
+			{
+				Ogre::SceneManager::CameraIterator it = mGUIManagerDesc.sceneManager->getCameraIterator();
+				if(it.hasMoreElements())
+					setViewport(it.getNext()->getViewport());
+			}
+		}
+		else
+			setViewport(d.viewport);
+
+		setSupportedCodePoints(d.supportedCodePoints);
+
+		// Create Default Sheet
+		{
+			SheetDesc d;
+			d.name = "DefaultSheet";
+			d.guiManager = this;
+			d.dimensions.size = Size(mGUIManagerDesc.viewport->getActualWidth(),mGUIManagerDesc.viewport->getActualHeight());
+			
+			createSheet(d);
+		}
+
+		d.mouseCursorDesc.guiManager = this;
+		mMouseCursor = new MouseCursor(d.mouseCursorDesc);
+		_clearMouseTrackingData();
 
 		mTimer = new Ogre::Timer();
-
-		mMouseCursor = new MouseCursor(Size(24,32),mDefaultSkin,this);
-		mMouseCursor->setPosition(getViewportWidth()/2.0,getViewportHeight()/2.0);
-
-		mDefaultSheet = createSheet();
-		// Initialize all widget tracking pointers.
-		mActiveWidget = mWidgetContainingMouse = mActiveSheet = mDefaultSheet;
+		
+		TimerDesc td;
+		td.repeat = false;
+		td.timePeriod = 3;
+		mHoverTimer = TimerManager::getSingleton().createTimer(td);
 	}
 
 	GUIManager::~GUIManager()
 	{
 		delete mTimer;
+		TimerManager::getSingleton().destroyTimer(mHoverTimer);
 
-		mViewport = NULL;
-
-		removeFromRenderQueue();
-		clearAll();
-
-		delete mMouseCursor;
-		mMouseCursor = NULL;
-	}
-
-	void GUIManager::_destroyWidget(Widget* w)
-	{
-		if( w == NULL )
-			return;
-
-		// If widget already queued for destruction, return.
-		if(std::find(mFreeList.begin(),mFreeList.end(),w) != mFreeList.end())
-			return;
-
-		mFreeList.push_back(w);
-	}
-
-	void GUIManager::_menuOpened(Widget* w)
-	{
-		if(w == NULL)
-			return;
-
-		// check if widget already in list.
-		if(mOpenMenus.find(w) != mOpenMenus.end())
-			return;
-
-		mOpenMenus.insert(w);
-	}
-
-	void GUIManager::_menuClosed(Widget* w)
-	{
-		if(w == NULL)
-			return;
-
-		mOpenMenus.erase(mOpenMenus.find(w));
-	}
-
-	void GUIManager::_notifyViewportDimensionsChanged()
-	{
-		if(mViewport == NULL)
-			return;
-
-		for(std::list<Sheet*>::iterator it = mSheets.begin(); it != mSheets.end(); ++it )
-			(*it)->setSize(mViewport->getActualWidth(),mViewport->getActualHeight());
-	}
-
-	void GUIManager::clearAll()
-	{
-
-		mMouseButtonDown[0] = NULL;
-		mMouseButtonDown[1] = NULL;
-		mMouseButtonDown[2] = NULL;
-		mMouseButtonDown[3] = NULL;
-		mMouseButtonDown[4] = NULL;
-		mMouseButtonDown[5] = NULL;
-		mMouseButtonDown[6] = NULL;
-		mMouseButtonDown[7] = NULL;
-		mWidgetContainingMouse = NULL;
-		mActiveWidget = NULL;
-
-		mTimeListeners.clear();
-		mOpenMenus.clear();
-
-		std::list<Effect*>::iterator itEffect = mActiveEffects.begin();
-		while (itEffect != mActiveEffects.end())        
-		{
-			delete *itEffect;
-			++itEffect;            
-		} 
-
-		std::list<Sheet*>::iterator it;
-		for( it = mSheets.begin(); it != mSheets.end(); ++it )
+		for(std::vector<Sheet*>::iterator it = mSheets.begin(); it != mSheets.end(); ++it)
 			delete (*it);
-		mSheets.clear();
+	}
 
-		// This function is called by the destructor, and we don't want to create a sheet at this time.
-		if(mViewport != NULL)
+	void GUIManager::_clearMouseTrackingData()
+	{
+		for(int i = 0; i < NUM_MOUSE_BUTTONS; ++i)
 		{
-			// create default sheet
-			mDefaultSheet = createSheet();
-			mActiveSheet = mDefaultSheet;
-
-			mActiveWidget = mActiveSheet;
-			mWidgetContainingMouse = mActiveSheet;
+			mMouseButtonDown[i] = NULL;
 		}
 	}
 
-	Sheet* GUIManager::createSheet()
+	Sheet* GUIManager::createSheet(SheetDesc& d)
 	{
-		return createSheet(generateSheetName(),Size(mViewport->getActualWidth(),mViewport->getActualHeight()));
-	}
-
-	Sheet* GUIManager::createSheet(Size initialSize)
-	{
-		return createSheet(generateSheetName(),initialSize);
-	}
-
-	Sheet* GUIManager::createSheet(const std::string& name)
-	{
-		return createSheet(name,Size(mViewport->getActualWidth(),mViewport->getActualHeight()));
-	}
-
-	Sheet* GUIManager::createSheet(const std::string& name, Size initialSize)
-	{
-		std::list<Sheet*>::const_iterator it;
-                for (it = mSheets.begin(); it != mSheets.end(); ++it)
+		if(d.name == "")
 		{
-			if (name == (*it)->getInstanceName()) // if there is a sheet with the same name
-				throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"Name \"" + name + "\" is already used!","GUIManager::createSheet");
+			d.name = "Sheet" + Ogre::StringConverter::toString(mSheetCounter);
+			++mSheetCounter;
 		}
-
-		Sheet* newSheet = new Sheet(name,initialSize,mDefaultSkin,this);
-		mSheets.push_back(newSheet);
-
-		return newSheet;
-	}
-
-	void GUIManager::destroySheet(const std::string& name)
-	{
-		// Cannot destroy active sheet!
-		if( (name.empty()) || (mActiveSheet->getInstanceName() == name) ) 
-			return;
-
-		std::list<Sheet*>::iterator it;
-		for( it = mSheets.begin(); it != mSheets.end(); ++it )
+		else
 		{
-			if( (*it)->getInstanceName() == name )
+			for(std::vector<Sheet*>::iterator it = mSheets.begin(); it != mSheets.end(); ++it)
 			{
-				Sheet* s = (*it);
-				it = mSheets.erase(it);
-				delete s;
+				if((*it)->getName() == d.name)
+					throw Exception(Exception::ERR_DUPLICATE_ITEM,"A sheet with name \"" + d.name + "\" already exists!","GUIManager::createSheet");
+			}
+		}
+
+		Root::getSingleton()._setActiveGUIManager(this);
+
+		Ogre::String cName = d.getWidgetClass();
+
+		if("Sheet" != d.getWidgetClass())
+			throw Exception(Exception::ERR_INVALID_DESC,"Desc object for Widget of class \"" + d.getWidgetClass() + "\" does not match Widget of class \"Sheet\"!","GUIManager::createSheet");
+
+		Sheet* s = dynamic_cast<Sheet*>(WidgetFactoryManager::getSingleton().createWidget("Sheet",d.name));
+		s->_initialize(&d);
+
+		mSheets.push_back(s);
+
+		if(static_cast<int>(mSheets.size()) == 1)
+			setActiveSheet(s);
+
+		return s;
+	}
+
+	Widget* GUIManager::createWidget(const Ogre::String& className, WidgetDesc& d)
+	{
+		Ogre::String temp = d.name;
+
+		if(d.name == "")
+		{
+			d.name = className + Ogre::StringConverter::toString(mWidgetCounter);
+			++mWidgetCounter;
+		}
+		else if(mActiveSheet->findWidget(d.name) != NULL)
+			throw Exception(Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + d.name + "\" already exists in Sheet \"" + mActiveSheet->getName() + "\"!","GUIManager::createWidget");
+
+		Root::getSingleton()._setActiveGUIManager(this);
+
+		Ogre::String cName = d.getWidgetClass();
+
+		if(className != d.getWidgetClass())
+			throw Exception(Exception::ERR_INVALID_DESC,"Desc object for Widget of class \"" + d.getWidgetClass() + "\" does not match Widget of class \"" + className + "\"!","GUIManager::createWidget");
+
+		Widget* newWidget = WidgetFactoryManager::getSingleton().createWidget(className,d.name);
+		newWidget->_initialize(&d);
+
+		// Restore the name, in case it was changed.  This Desc could be used multiple times, so this is important!
+		d.name = temp;
+
+		return newWidget;
+	}
+
+	void GUIManager::destroySheet(Sheet* s)
+	{
+		if(s == mActiveSheet)
+		{
+			mActiveSheet->setKeyboardListener(NULL);
+			mWidgetUnderMouseCursor = NULL;
+			mLastClickedWidget = NULL;
+			_clearMouseTrackingData();
+			mActiveSheet = NULL;
+		}
+
+		for(std::vector<Sheet*>::iterator it = mSheets.begin(); it != mSheets.end(); ++it)
+		{
+			if((*it) == s)
+			{
+				mSheets.erase(it);
 				break;
 			}
 		}
-	}
 
-	void GUIManager::destroySheet(Sheet* sheet)
-	{
-		destroySheet(sheet->getInstanceName());
+		delete s;
 	}
 
 	void GUIManager::destroyWidget(Widget* w)
 	{
-		if( w == NULL )
-			return;
-
-		if(w->getWidgetType() == Widget::TYPE_SHEET)
+		if(w->getClass() == "Sheet")
 		{
 			destroySheet(dynamic_cast<Sheet*>(w));
 			return;
 		}
 
-		// If widget already queued for destruction, return.
 		if(std::find(mFreeList.begin(),mFreeList.end(),w) != mFreeList.end())
 			return;
 
-		if(w->getParentWidget() != NULL)
-			w->getParentWidget()->removeAndDestroyChild(w);
-		else
-			mFreeList.push_back(w);
+		if((mActiveSheet->getKeyboardListener() != NULL) && (w->findWidget(mActiveSheet->getKeyboardListener()->getName()) != NULL))
+			mActiveSheet->setKeyboardListener(NULL);
+
+		mFreeList.push_back(w);
 	}
 
-	void GUIManager::destroyWidget(const std::string& widgetName)
+	void GUIManager::draw()
 	{
-		destroyWidget(mActiveSheet->getChildWidget(widgetName));
+		mBrush->prepareToDraw();
+
+		mBrush->updateSceneManager(mGUIManagerDesc.sceneManager);
+		mBrush->updateViewport(mGUIManagerDesc.viewport);
+		mBrush->setRenderTarget(mGUIManagerDesc.viewport);
+
+		mActiveSheet->draw();
+
+		mMouseCursor->draw();
+
+		mBrush->restore();
 	}
 
 	Sheet* GUIManager::getActiveSheet()
@@ -228,24 +226,9 @@ namespace QuickGUI
 		return mActiveSheet;
 	}
 
-	Widget* GUIManager::getActiveWidget()
+	Widget* GUIManager::getLastClickedWidget()
 	{
-		return mActiveWidget;
-	}
-
-	std::string GUIManager::getDebugString()
-	{
-		return mDebugString;
-	}
-
-	Sheet* GUIManager::getDefaultSheet()
-	{
-		return mDefaultSheet;
-	}
-
-	bool GUIManager::getDetermineClickEvents()
-	{
-		return mDetermineClickEvents;
+		return mLastClickedWidget;
 	}
 
 	MouseCursor* GUIManager::getMouseCursor()
@@ -253,85 +236,64 @@ namespace QuickGUI
 		return mMouseCursor;
 	}
 
-	Widget* GUIManager::getMouseOverWidget()
+	Ogre::String GUIManager::getName()
 	{
-		return mWidgetContainingMouse;
+		return mGUIManagerDesc.name;
 	}
 
-	std::string GUIManager::getName()
+	bool GUIManager::getScrollLastClicked()
 	{
-		return mName;
+		return mGUIManagerDesc.scrollLastClicked;
+	}
+
+	Sheet* GUIManager::getSheet(const Ogre::String& name)
+	{
+		for(std::vector<Sheet*>::iterator it = mSheets.begin(); it != mSheets.end(); ++it)
+		{
+			if((*it)->getName() == name)
+				return (*it);
+		}
+
+		throw Exception(Exception::ERR_ITEM_NOT_FOUND,"Sheet \"" + name + "\" does not exist!","GUIManager::getSheet");
+	}
+
+	Widget* GUIManager::getWidgetUnderMouseCursor()
+	{
+		return mWidgetUnderMouseCursor;
 	}
 
 	Ogre::Viewport* GUIManager::getViewport()
 	{
-		return mViewport;
+		return mGUIManagerDesc.viewport;
 	}
 
-	float GUIManager::getViewportWidth()
+	bool GUIManager::hasSheet(const Ogre::String& name)
 	{
-		return static_cast<float>(mViewport->getActualWidth());
-	}
-
-	float GUIManager::getViewportHeight()
-	{
-		return static_cast<float>(mViewport->getActualHeight());
-	}
-
-	Sheet* GUIManager::getSheet(const std::string& name)
-	{
-		if( name.empty() ) return NULL;
-
-		std::list<Sheet*>::iterator it;
-		for( it = mSheets.begin(); it != mSheets.end(); ++it )
+		for(std::vector<Sheet*>::iterator it = mSheets.begin(); it != mSheets.end(); ++it)
 		{
-			if( (*it)->getInstanceName() == name ) 
-				return (*it);
+			if((*it)->getName() == name)
+				return true;
 		}
 
-		return NULL;
-	}
-
-	void GUIManager::addEffect(Effect* e)
-	{
-		mActiveEffects.push_back(e);
-	}
-
-	std::string GUIManager::generateSheetName()
-	{
-		std::string name = "Sheet";
-
-		int counter = 1;
-		int beginCounter = 0;
-
-		std::list<Sheet*>::const_iterator it;
-		while (beginCounter != counter) 
-		{
-			beginCounter = counter;
-			for (it = mSheets.begin(); it != mSheets.end(); ++it)
-			{
-				if (name == (*it)->getInstanceName()) // if there is a sheet with the same name
-				{
-					name = name + Ogre::StringConverter::toString(counter);
-					counter++;
-					break;
-				}
-			}
-		}
-
-
-		return name;
+		return false;
 	}
 
 	bool GUIManager::injectChar(Ogre::UTFString::unicode_char c)
 	{
-		if( mSupportedCodePoints.find(c) == mSupportedCodePoints.end() )
+		if(!isSupportedCodePoint(c))
 			return false;
 
-		KeyEventArgs args(mActiveWidget);
+		Widget* w = mActiveSheet->getKeyboardListener();
+
+		if((w == NULL) || !(w->getEnabled()))
+			return false;
+
+		KeyEventArgs args(w);
+		args.keyModifiers = mKeyModifiers;
+		args.keyMask = mButtonMask;
 		args.codepoint = c;
 
-		return mActiveWidget->fireEvent(Widget::EVENT_CHARACTER_KEY,args);
+		return w->fireWidgetEvent(WIDGET_EVENT_CHARACTER_KEY,args);
 	}
 
 	bool GUIManager::injectKeyDown(const KeyCode& kc)
@@ -344,11 +306,17 @@ namespace QuickGUI
 		else if( (kc == KC_LMENU) || (kc == KC_RMENU) )
 			mKeyModifiers |= ALT;
 
-		KeyEventArgs args(mActiveWidget);
+		Widget* w = mActiveSheet->getKeyboardListener();
+
+		if((w == NULL) || !(w->getEnabled()))
+			return false;
+
+		KeyEventArgs args(w);
 		args.scancode = kc;
+		args.keyMask = mButtonMask;
 		args.keyModifiers = mKeyModifiers;
 
-		return mActiveWidget->fireEvent(Widget::EVENT_KEY_DOWN,args);
+		return w->fireWidgetEvent(WIDGET_EVENT_KEY_DOWN,args);
 	}
 
 	bool GUIManager::injectKeyUp(const KeyCode& kc)
@@ -361,473 +329,605 @@ namespace QuickGUI
 		else if( (kc == KC_LMENU) || (kc == KC_RMENU) )
 			mKeyModifiers &= ~ALT;
 
-		KeyEventArgs args(mActiveWidget);
+		Widget* w = mActiveSheet->getKeyboardListener();
+
+		if((w == NULL) || !(w->getEnabled()))
+			return false;
+
+		KeyEventArgs args(w);
 		args.scancode = kc;
 		args.keyModifiers = mKeyModifiers;
 
-		return mActiveWidget->fireEvent(Widget::EVENT_KEY_UP,args);
+		return w->fireWidgetEvent(WIDGET_EVENT_KEY_UP,args);
 	}
 
+	// TODO: mDownOnBorder integration
 	bool GUIManager::injectMouseButtonDown(const MouseButtonID& button)
 	{
-		if( !mMouseCursor->isVisible() ) 
+		// If the mouse is disabled, we do not accept this injection of input
+		if( !mMouseCursor->getEnabled() ) 
 			return false;
 
-		mTimeOfButtonDown[button] = mTimer->getMilliseconds();
-		if(mDetermineClickEvents)
+		// Users can manually inject single/double/triple click input, or have it detected
+		// from mouse button up/down injections.
+		if(mGUIManagerDesc.determineClickEvents)
 		{
-			if((mTimeOfButtonDown[button] - mTimeOfDoubleClick[button]) <= mTripleClickTime)
+			// Record time of MouseDown, for single/double/triple click determination
+			mTimeOfButtonDown[button] = mTimer->getMilliseconds();
+
+			// Check if time since last double click is within triple click time
+			if((mTimeOfButtonDown[button] - mTimeOfDoubleClick[button]) <= mGUIManagerDesc.tripleClickTime)
 			{
-				if(mMouseButtonDown[button] == mWidgetContainingMouse)
+				// We have passed the criteria for a triple click injection, but we have to 
+				// make sure the mouse button is going down on the same widget for all clicks.
+				if(mMouseButtonDown[button] == mWidgetUnderMouseCursor)
 					return injectMouseTripleClick(button);
 			}
-			if((mTimeOfButtonDown[button] - mTimeOfClick[button]) <= mDoubleClickTime)
+			// Check if time since last click is within double click time
+			if((mTimeOfButtonDown[button] - mTimeOfClick[button]) <= mGUIManagerDesc.doubleClickTime)
 			{
-				if(mMouseButtonDown[button] == mWidgetContainingMouse)
+				// We have passed the criteria for a double click injection, but we have to 
+				// make sure the mouse button is going down on the same widget for both clicks.
+				if(mMouseButtonDown[button] == mWidgetUnderMouseCursor)
 					return injectMouseDoubleClick(button);
 			}
 		}
 
 		// If we make it here, a simple mouse button down has occurred.
 
-		// Setup event args.
-		MouseEventArgs args(mWidgetContainingMouse);
+		// Modify the button mask
+		mButtonMask |= (1 << button);
+
+		// Determine if we need to handle closing of Menu's via clicking non menu related widgets.
+		if((mLastClickedWidget != NULL) && mLastClickedWidget->isMenuItem())
+		{
+			if(mWidgetUnderMouseCursor != NULL)
+			{
+				if(!mWidgetUnderMouseCursor->isMenuItem() || (dynamic_cast<MenuItem*>(mWidgetUnderMouseCursor)->getToolBar()->findWidget(mLastClickedWidget->getName()) == NULL))
+				{
+					dynamic_cast<MenuItem*>(mLastClickedWidget)->getToolBar()->closeMenus();
+				}
+			}
+		}
+
+		// Record that the mouse button went down on this widget
+		mMouseButtonDown[button] = mWidgetUnderMouseCursor;
+		mLastClickedWidget = mWidgetUnderMouseCursor;
+
+		// Check if Sheet's keyboard listener (widget receiving keyboard events) needs to be updated.
+		if((mLastClickedWidget != NULL) && (mLastClickedWidget->getConsumeKeyboardEvents()))
+			mActiveSheet->setKeyboardListener(mLastClickedWidget);
+
+		// Create MouseEventArgs, for use with any fired events
+		MouseEventArgs args(mWidgetUnderMouseCursor);
 		args.position = mMouseCursor->getPosition();
 		args.button = button;
+		args.buttonMask = mButtonMask;
 		args.keyModifiers = mKeyModifiers;
 
-		// Feature, allowing widgets to be clicked, without transferring focus.  Widget will receive
-		// Mouse Button Down Event.  No widgets will gain or lose focus.
-		if(!mWidgetContainingMouse->getGainFocusOnClick())
-			return mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_BUTTON_DOWN,args);
-		
-		bool eventHandlerFired = false;
+		// Create a boolean to track whether or not this injection caused any significant changes.
+		bool changesMade = false;
 
-		// See if focus has changed from one widget to another.
-		// mActiveWidget is the last widget the user clicked on, ie TextBox, ComboBox, etc.
-		if( mActiveWidget != mWidgetContainingMouse )
+		// Get the Window under the mouse cursor.  If it is not the Sheet, but a child Window,
+		// make sure it has focus. (bring to front)
+		Window* win = mActiveSheet->findWindowAtPoint(args.position);
+		if(win != mActiveSheet)
+			// FOCUS_GAINED and FOCUS_LOST events will be fired if appropriate.
+			changesMade |= mActiveSheet->focusWindow(win);
+
+		if(mWidgetUnderMouseCursor != NULL)
 		{
-			if(mActiveWidget->fireEvent(Widget::EVENT_LOSE_FOCUS,args))
-				eventHandlerFired = true;
+			mWidgetUnderMouseCursor->setGrabbed(true);
+			// Fire EVENT_MOUSE_BUTTON_DOWN event to the widget in focus
+			changesMade |= mWidgetUnderMouseCursor->fireWidgetEvent(WIDGET_EVENT_MOUSE_BUTTON_DOWN,args);
 
-			// Update active widget reference.
-			mActiveWidget = mWidgetContainingMouse;
+			if((win != NULL) && (mWidgetUnderMouseCursor->getBorderSide(mMouseCursor->getPosition() - win->getPosition()) != BORDER_NONE))
+				mDownOnBorder = true;
+			else
+				mDownOnBorder = false;
+
+			// If Widget is grabable, change cursor
+			if(mWidgetUnderMouseCursor->getDragable())
+				mMouseCursor->_setSkinType("grabbed");
 		}
 
-		// Fire Gain Focus event.
-		if(mActiveWidget->fireEvent(Widget::EVENT_GAIN_FOCUS,args))
-			eventHandlerFired = true;
-		mActiveWidget->setGrabbed(true);
-
-		if(mActiveWidget->fireEvent(Widget::EVENT_MOUSE_BUTTON_DOWN,args))
-			eventHandlerFired = true;		
-
-		// If the user clicked on a widget that is a part of a window, make sure the window is brought to front.
-		Window* w = mActiveWidget->getParentWindow();
-		if( w != NULL )
-		{
-			w->bringToFront();
-			eventHandlerFired = true;
-		}
-
-		// Record that the mouse button went down on this widget (non-window)
-		mMouseButtonDown[button] = mActiveWidget;
-
-		return eventHandlerFired;
+		return changesMade;
 	}
 
 	bool GUIManager::injectMouseButtonUp(const MouseButtonID& button)
 	{
-		if( !mMouseCursor->isVisible() ) 
+		// If the mouse is disabled, we do not accept this injection of input
+		if( !mMouseCursor->getEnabled() ) 
 			return false;
 
-		MouseEventArgs args(mActiveWidget);
+		// Modify the button mask
+		mButtonMask &= !(1 << button);
+
+		// If the mouse button goes up and is not over the same widget
+		// the mouse button went down on, disregard this injection.
+		if( mMouseButtonDown[button] != mWidgetUnderMouseCursor )
+			return false;
+
+		// after this point, we know that the user had mouse button down on this widget, and is now doing mouse button up on the same widget.
+
+		// Create MouseEventArgs, for use with any fired events
+		MouseEventArgs args(mWidgetUnderMouseCursor);
 		args.position = mMouseCursor->getPosition();
 		args.button = button;
+		args.buttonMask = mButtonMask;
 		args.keyModifiers = mKeyModifiers;
 
-		// If dragging a widget, fire EVENT_DROPPED event
-		if(mDraggingWidget)
-		{
-			mDraggingWidget = false;
-			mActiveWidget->setGrabbed(false);
-			return mActiveWidget->fireEvent(Widget::EVENT_DROPPED,args);
-		}
+		// Create a boolean to track whether or not this injection caused any significant changes.
+		bool changesMade = false;
 
-		bool eventHandled = false;
-
-		// Feature, allowing widgets to be clicked, without transfering focus.  Widget will receive
-		// Mouse Button Up and Click Events, if appropriate.
-		if(!mWidgetContainingMouse->getGainFocusOnClick())
+		if(args.widget != NULL)
 		{
-			if( mMouseButtonDown[args.button] == mWidgetContainingMouse )
+			// Check if a widget is currently being dragged.
+			if(args.widget->getGrabbed())
 			{
-				if(mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_BUTTON_UP,args))
-					eventHandled = true;
-				if(mDetermineClickEvents)
+				args.widget->setGrabbed(false);
+
+				if(args.widget->getDragable())
 				{
-					if((mTimer->getMilliseconds() - mTimeOfButtonDown[button]) <= mClickTime)
-					{
-						if(injectMouseClick(button))
-							eventHandled = true;
-					}
+					// Set cursor to grabable
+					mMouseCursor->_setSkinType("grabable");
+				}
+				else
+				{
+					// Restore cursor to default
+					mMouseCursor->_setSkinType(mMouseCursor->mDefaultSkinType);
+				}
+
+				// We do not want the widget to receive an EVENT_MOUSE_BUTTON_UP event if we are dropping
+				// the widget.  Think of Diablo II, dragging a potion to your belt.  If we sent the mouse
+				// button up event the potion would be drank as soon as you dropped it into the belt.
+				if(args.widget->getBeingDragged())
+				{
+					return args.widget->fireWidgetEvent(WIDGET_EVENT_DROPPED,args);
 				}
 			}
-			return eventHandled;
-		}
 
-		// If the MouseButton was not pressed on this widget, do not register the button being released on the widget
-		if( mWidgetContainingMouse != mActiveWidget )
-		{
-			// If it is a textbox, don't lose focus, just fire a mouse button up event
-			if( mActiveWidget->getWidgetType() == Widget::TYPE_TEXTBOX )
-				return mActiveWidget->fireEvent(Widget::EVENT_MOUSE_BUTTON_UP,args);
-			else
-				return mActiveWidget->fireEvent(Widget::EVENT_LOSE_FOCUS,args);
-		}
+			// Fire EVENT_MOUSE_BUTTON_UP event
+			changesMade |= args.widget->fireWidgetEvent(WIDGET_EVENT_MOUSE_BUTTON_UP,args);
 
-		// after this point, we know that the user had mouse button down on this widget, and is now doing mouse button up
-
-		if(mActiveWidget->fireEvent(Widget::EVENT_MOUSE_BUTTON_UP,args))
-			eventHandled = true;
-		mActiveWidget->setGrabbed(false);
-
-		if(mDetermineClickEvents)
-		{
-			if((mTimer->getMilliseconds() - mTimeOfButtonDown[button]) <= mClickTime)
+			// Users can manually inject single/double/triple click input, or have it detected
+			// from mouse button up/down injections.
+			if(mGUIManagerDesc.determineClickEvents)
 			{
-				if(injectMouseClick(button))
-					eventHandled = true;
+				if((mTimer->getMilliseconds() - mTimeOfButtonDown[button]) <= mGUIManagerDesc.clickTime)
+				{
+					changesMade |= injectMouseClick(button);
+				}
 			}
 		}
 
-		return eventHandled;
+		return changesMade;
 	}
 
 	bool GUIManager::injectMouseClick(const MouseButtonID& button)
 	{
+		// If the mouse is disabled, we do not accept this injection of input
+		if( !mMouseCursor->getEnabled() ) 
+			return false;
+
+		// Modify the button mask
+		mButtonMask |= (1 << button);
+
+		// Record the time the click occurred. Useful for generating double clicks.
 		mTimeOfClick[button] = mTimer->getMilliseconds();
 
-		MouseEventArgs args(mActiveWidget);
-		args.position = mMouseCursor->getPosition();
+		// If the mouse button goes up and is not over the same widget
+		// the mouse button went down on, disregard this injection.
+		if( mMouseButtonDown[button] != mWidgetUnderMouseCursor )
+			return false;
+
+		mLastClickedWidget = mWidgetUnderMouseCursor;
+
+		// Create MouseEventArgs, for use with any fired events
+		MouseEventArgs args(mWidgetUnderMouseCursor);
 		args.button = button;
+		args.position = mMouseCursor->getPosition();
+		args.buttonMask = mButtonMask;
 		args.keyModifiers = mKeyModifiers;
 
-		return mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_CLICK,args);
+		if(args.widget != NULL)
+			return args.widget->fireWidgetEvent(WIDGET_EVENT_MOUSE_CLICK,args);
+
+		return false;
 	}
 
 	bool GUIManager::injectMouseDoubleClick(const MouseButtonID& button)
 	{
+		// If the mouse is disabled, we do not accept this injection of input
+		if( !mMouseCursor->getEnabled() ) 
+			return false;
+
+		// Modify the button mask
+		mButtonMask |= (1 << button);
+
+		// Record the time the click occurred. Useful for generating triple clicks.
 		mTimeOfDoubleClick[button] = mTimer->getMilliseconds();
 
-		MouseEventArgs args(mActiveWidget);
-		args.position = mMouseCursor->getPosition();
+		// If the mouse button goes up and is not over the same widget
+		// the mouse button went down on, disregard this injection.
+		if( mMouseButtonDown[button] != mWidgetUnderMouseCursor )
+			return false;
+
+		mLastClickedWidget = mWidgetUnderMouseCursor;
+
+		// Create MouseEventArgs, for use with any fired events
+		MouseEventArgs args(mWidgetUnderMouseCursor);
 		args.button = button;
+		args.position = mMouseCursor->getPosition();
+		args.buttonMask = mButtonMask;
 		args.keyModifiers = mKeyModifiers;
 
-		return mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_CLICK_DOUBLE,args);
+		if(args.widget != NULL)
+			return args.widget->fireWidgetEvent(WIDGET_EVENT_MOUSE_CLICK_DOUBLE,args);
+
+		return false;
 	}
 
 	bool GUIManager::injectMouseTripleClick(const MouseButtonID& button)
 	{
-		MouseEventArgs args(mActiveWidget);
-		args.position = mMouseCursor->getPosition();
-		args.button = button;
-		args.keyModifiers = mKeyModifiers;
-
-		return mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_CLICK_TRIPLE,args);
-	}
-
-	bool GUIManager::injectMouseLeaves(void)
-	{
-		if( !mMouseCursor->isVisible() ) 
+		// If the mouse is disabled, we do not accept this injection of input
+		if( !mMouseCursor->getEnabled() ) 
 			return false;
 
-		if(mMouseCursor->getHideWhenOffScreen()) 
-			mMouseCursor->_hide();
+		// Modify the button mask
+		mButtonMask |= (1 << button);
 
-		return true;
+		// If the mouse button goes up and is not over the same widget
+		// the mouse button went down on, disregard this injection.
+		if( mMouseButtonDown[button] != mWidgetUnderMouseCursor )
+			return false;
+
+		mLastClickedWidget = mWidgetUnderMouseCursor;
+
+		// Create MouseEventArgs, for use with any fired events
+		MouseEventArgs args(mWidgetUnderMouseCursor);
+		args.button = button;
+		args.position = mMouseCursor->getPosition();
+		args.buttonMask = mButtonMask;
+		args.keyModifiers = mKeyModifiers;
+
+		if(args.widget != NULL)
+			return args.widget->fireWidgetEvent(WIDGET_EVENT_MOUSE_CLICK_TRIPLE,args);
+
+		return false;
 	}
 
 	bool GUIManager::injectMouseMove(const int& xPixelOffset, const int& yPixelOffset)
 	{
-		MouseEventArgs args(0);
+		// If the mouse is disabled, we do not accept this injection of input
+		if( !mMouseCursor->getEnabled() ) 
+			return false;
+
+		// Restart the Hover Timer whenever the mouse moves.
+		mHoverTimer->start();
+
+		// Get the widget the cursor is over.
+		Window* win = mActiveSheet->findWindowAtPoint(mMouseCursor->getPosition());
+		Widget* w = win->findWidgetAtPoint(mMouseCursor->getPosition() - win->getPosition());
+
+		// See if we should be dragging or resizing a widget.
+		if((mWidgetUnderMouseCursor != NULL) && (mWidgetUnderMouseCursor->getGrabbed()))
+		{
+			// Check resizing first
+			if(mOverResizableBorder && mDownOnBorder)
+			{
+				// Dragging, which uses move function, works with pixel values (uninfluenced by parent dimensions!)
+				mWidgetUnderMouseCursor->resize(mResizableBorder,xPixelOffset,yPixelOffset);
+
+				return true;
+			}
+			// Check dragging
+			else if(mWidgetUnderMouseCursor->getDragable())
+			{
+				// Dragging, which uses move function, works with pixel values (uninfluenced by parent dimensions!)
+				mWidgetUnderMouseCursor->drag(xPixelOffset,yPixelOffset);
+
+				return true;
+			}
+		}
+
+		// Ignore disabled widgets
+		if((w != NULL) && !(w->getEnabled()))
+			return false;
+
+		// Create MouseEventArgs, for use with any fired events
+		MouseEventArgs args(w);
 		args.position = mMouseCursor->getPosition();
 		args.moveDelta.x = xPixelOffset;
 		args.moveDelta.y = yPixelOffset;
+		args.buttonMask = mButtonMask;
 		args.keyModifiers = mKeyModifiers;
 
-		if( mMouseCursor->mouseOnTopBorder() && yPixelOffset < 0 ) 
-			args.moveDelta.y = 0;
-		if( mMouseCursor->mouseOnBotBorder() && yPixelOffset > 0 ) 
-			args.moveDelta.y = 0;
-		if( mMouseCursor->mouseOnLeftBorder() && xPixelOffset < 0 ) 
-			args.moveDelta.x = 0;
-		if( mMouseCursor->mouseOnRightBorder() && xPixelOffset > 0 ) 
-			args.moveDelta.x = 0;
+		// Create a boolean to track whether or not this injection caused any significant changes.
+		bool changesMade = false;
 
-		// Update Mouse Cursor Position
-		mMouseCursor->offsetPosition(xPixelOffset,yPixelOffset);
-
-		if(!mMouseCursor->isVisible()) 
-			return false;
-
-		// See if we should be dragging a widget.
-		if( (mActiveWidget->getGrabbed()) && (mActiveWidget->draggingEnabled()) )
+		// The Widget underneath the mouse cursor has changed.
+		if( mWidgetUnderMouseCursor != w )
 		{
-			mDraggingWidget = true;
+			if(mWidgetUnderMouseCursor != NULL)
+			{
+				changesMade |= mWidgetUnderMouseCursor->fireWidgetEvent(WIDGET_EVENT_MOUSE_LEAVE,args);
+				// Restore cursor to default
+				mMouseCursor->_setSkinType(mMouseCursor->mDefaultSkinType);
+			}
 
-			// Dragging, which uses move function, works with pixel values (uninfluenced by parent dimensions!)
-			mActiveWidget->drag(xPixelOffset,yPixelOffset);
+			// Update pointer
+			mWidgetUnderMouseCursor = w;
 
-			return true;
+			if(mWidgetUnderMouseCursor != NULL)
+			{
+				changesMade |= mWidgetUnderMouseCursor->fireWidgetEvent(WIDGET_EVENT_MOUSE_ENTER,args);
+
+				// Set the Timer to match this widgets hover time.
+				mHoverTimer->setTimePeriod(mWidgetUnderMouseCursor->getHoverTime());
+			}
 		}
 
-		// Now get the widget the cursor is over.
-		
-		// Check Open Menus first, since they are not within their parent bounds.
-		Widget* hitWidget = NULL;
-		for(std::set<Widget*>::iterator it = mOpenMenus.begin(); it != mOpenMenus.end(); ++it)
+		// Notify the widget the cursor has moved.
+		if(mWidgetUnderMouseCursor != NULL)
 		{
-			if( (hitWidget = (*it)->getTargetWidget(args.position)) != NULL )
-				break;
+			changesMade |= mWidgetUnderMouseCursor->fireWidgetEvent(WIDGET_EVENT_MOUSE_MOVE,args);
+
+			// If Widget is grabable, change cursor
+			if(mWidgetUnderMouseCursor->getDragable())
+				mMouseCursor->_setSkinType("grabable");
+			else
+				mMouseCursor->_setSkinType(mMouseCursor->mDefaultSkinType);
 		}
 
-		// If no menu's are open, or cursor not over a menu, query the Sheet for the widget the cursor is over.
-		if(hitWidget == NULL)
-			hitWidget = mActiveSheet->getTargetWidget(args.position);
-		
-		// NOTE: Widget is only detected if it is enabled.
-		args.widget = hitWidget;
-
-		bool eventHandled = false;
-
-		if( mWidgetContainingMouse != hitWidget )
+		// Change cursor if we're over a resizable widget's border, or restore cursor if we have left resizable widget's border
+		if((mWidgetUnderMouseCursor != NULL) && (mWidgetUnderMouseCursor->getResizable()))
 		{
-			if(mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_LEAVE,args))
-				eventHandled = true;
+			mPreviousBorder = mResizableBorder;
+			mResizableBorder = mWidgetUnderMouseCursor->getBorderSide(mMouseCursor->getPosition() - win->getPosition());
+			mOverResizableBorder = true;
 
-			mWidgetContainingMouse = hitWidget;
-			if(mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_ENTER,args))
-				eventHandled = true;
+			switch(mResizableBorder)
+			{
+				case BORDER_LEFT:
+				case BORDER_RIGHT:
+					mMouseCursor->_setSkinType("hresize"); break;
+				case BORDER_TOP:
+				case BORDER_BOTTOM:
+					mMouseCursor->_setSkinType("vresize"); break;
+				case BORDER_TOP_LEFT:
+				case BORDER_BOTTOM_RIGHT:
+					mMouseCursor->_setSkinType("diag1resize"); break;
+				case BORDER_TOP_RIGHT:
+				case BORDER_BOTTOM_LEFT:
+					mMouseCursor->_setSkinType("diag2resize"); break;
+				case BORDER_NONE:
+					// Revert cursor if we have just moved off a resizable border
+					if(mPreviousBorder != BORDER_NONE)
+					{
+						mMouseCursor->_setSkinType(mMouseCursor->mDefaultSkinType);
+					}
+					mOverResizableBorder = false;
+					break;
+			}
 		}
-		else // widget containing mouse has not changed.
-			eventHandled = mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_MOVE,args);
+		else
+			mOverResizableBorder = false;
 
-		return eventHandled;
+		return changesMade;
 	}
 
 	bool GUIManager::injectMousePosition(const int& xPixelPosition, const int& yPixelPosition)
 	{
-		Point pos = mMouseCursor->getPosition();
+		// If the mouse is disabled, we do not accept this injection of input
+		if( !mMouseCursor->getEnabled() ) 
+			return false;
 
-		return injectMouseMove(xPixelPosition - pos.x,yPixelPosition - pos.y);
+		Point oldPos = mMouseCursor->getPosition();
+		// Update cursor's position as seen on the screen.
+		mMouseCursor->setPosition(xPixelPosition,yPixelPosition);
+
+		// Determine the offset and inject a mouse movement input.
+		return injectMouseMove(xPixelPosition - oldPos.x,yPixelPosition - oldPos.y);
 	}
 
 	bool GUIManager::injectMouseWheelChange(float delta)
 	{
-		MouseEventArgs args(mWidgetContainingMouse);
+		// If the mouse is disabled, we do not accept this injection of input
+		if( !mMouseCursor->getEnabled() ) 
+			return false;
+
+		MouseEventArgs args(mWidgetUnderMouseCursor);
+		args.position = mMouseCursor->getPosition();
 		args.wheelChange = delta;
+		args.buttonMask = mButtonMask;
 		args.keyModifiers = mKeyModifiers;
 
-		return mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_WHEEL,args);
+		if(mGUIManagerDesc.scrollLastClicked)
+		{
+			Widget* w = mLastClickedWidget->getScrollableContainerWidget();
+			if(w != NULL)
+				return w->fireWidgetEvent(WIDGET_EVENT_MOUSE_WHEEL,args);
+		}
+		else
+		{
+			Widget* w = mWidgetUnderMouseCursor->getScrollableContainerWidget();
+			if(w != NULL)
+				return w->fireWidgetEvent(WIDGET_EVENT_MOUSE_WHEEL,args);
+		}
+
+		return false;
 	}
 
-	void GUIManager::injectTime(const float time)
+	bool GUIManager::isSupportedCodePoint(Ogre::UTFString::unicode_char c)
 	{
+		return (mGUIManagerDesc.supportedCodePoints.find(c) != mGUIManagerDesc.supportedCodePoints.end());
+	}
+
+	Sheet* GUIManager::loadSheetFromFile(const std::string& fileName)
+	{
+		// Perform an isolated parsing of the one file
+		ScriptReader* sc = ScriptReader::getSingletonPtr();
+		sc->begin();
+		sc->parseFile(fileName);
+
+		if(sc->getDefinitions().empty())
+			throw Exception(Exception::ERR_SERIALIZATION,"No definitions found in file \"" + fileName + "\"!","GUIManager::loadSheetFromFile");
+
+		Ogre::String sheetName = sc->getDefinitions().front()->getID();
+		for(std::vector<Sheet*>::iterator it = mSheets.begin(); it != mSheets.end(); ++it)
 		{
-			WidgetArray::iterator it;
-			for( it = mTimeListeners.begin(); it != mTimeListeners.end(); ++it )
-				if ((*it)->isUnderTiming())
-					(*it)->timeElapsed(time);
+			if((*it)->getName() == sheetName)
+				throw Exception(Exception::ERR_DUPLICATE_ITEM,"A sheet with name \"" + sheetName + "\" already exists!","GUIManager::loadSheetFromFile");
 		}
 
-		// Effects.
+		Root::getSingleton()._setActiveGUIManager(this);
+
+		Sheet* newSheet = dynamic_cast<Sheet*>(WidgetFactoryManager::getSingleton().createWidget("Sheet",sheetName));
+		mSheets.push_back(newSheet);
+		
+		// Set the newly created sheet to the active sheet, since GUIManager::createWidget sets the
+		// desc::sheet property to the active sheet.
+		Sheet* temp = mActiveSheet;
+		mActiveSheet = newSheet;
+
+		newSheet->serialize(SerialReader::getSingletonPtr());
+
+		// remove all temporary definitions found from parsing the file
+		sc->end();
+
+		// Restore Active Sheet to what it was
+		mActiveSheet = temp;
+
+		return newSheet;
+	}
+
+	Sheet* GUIManager::reloadSheetFromFile(const Ogre::String& fileName)
+	{
+		// Perform an isolated parsing of the one file
+		ScriptReader* sc = ScriptReader::getSingletonPtr();
+		sc->begin();
+		sc->parseFile(fileName);
+
+		if(sc->getDefinitions().empty())
+			throw Exception(Exception::ERR_SERIALIZATION,"No definitions found in file \"" + fileName + "\"!","GUIManager::reloadSheetFromFile");
+
+		// If sheet already exists, delete it
+		Ogre::String sheetName = sc->getDefinitions().front()->getID();
+		for(std::vector<Sheet*>::iterator it = mSheets.begin(); it != mSheets.end(); ++it)
 		{
-			/*
-			WidgetArray::iterator it;   
-			while (itWindow != mWidgets.end())        
+			if((*it)->getName() == sheetName)
 			{
-				(*itWindow)->setUnderEffect(false);
-				++itWindow;
-			} 
-			*/
-		}
-		if(!mActiveEffects.empty())
-		{
-			std::list<Effect*>::iterator itEffect = mActiveEffects.begin();       
-			while (itEffect != mActiveEffects.end())        
-			{
-				if ((*itEffect)->update(time))
-				{
-					delete *itEffect;
-					itEffect = mActiveEffects.erase(itEffect);
-				}
-				else
-				{
-					++itEffect;
-				}
+				// Delete sheet.
+				destroySheet((*it));
+				break;
 			}
-
-			injectMouseMove(0,0);
 		}
+
+		Root::getSingleton()._setActiveGUIManager(this);
+
+		Sheet* newSheet = dynamic_cast<Sheet*>(WidgetFactoryManager::getSingleton().createWidget("Sheet",sheetName));
+		mSheets.push_back(newSheet);
+		
+		// Set the newly created sheet to the active sheet, since GUIManager::createWidget sets the
+		// desc::sheet property to the active sheet.
+		Sheet* temp = mActiveSheet;
+		mActiveSheet = newSheet;
+
+		newSheet->serialize(SerialReader::getSingletonPtr());
+
+		// remove all temporary definitions found from parsing the file
+		sc->end();
+
+		// Restore Active Sheet to what it was
+		mActiveSheet = temp;
+
+		// If we deleted the active sheet, make this sheet the active sheet.
+		if(mActiveSheet == NULL)
+			mActiveSheet = newSheet;
+
+		Ogre::Viewport* v = mGUIManagerDesc.viewport;
+		if(v != NULL)
+			mActiveSheet->setSize(Size(v->getActualWidth(),v->getActualHeight()));
+
+		return newSheet;
 	}
 
-	bool GUIManager::isKeyModifierDown(KeyModifier k)
+	void GUIManager::hoverTimerCallback()
 	{
-		return ((mKeyModifiers & k) > 0);
-	}
-
-	void GUIManager::registerTimeListener(Widget* w)
-	{
-		if(w == NULL)
-			return;
-
-		// check if widget already in list.
-		WidgetArray::iterator it;
-		for( it = mTimeListeners.begin(); it != mTimeListeners.end(); ++it )
+		if(mWidgetUnderMouseCursor != NULL)
 		{
-			if(w == (*it))
-				return;
+			WidgetEventArgs args(mWidgetUnderMouseCursor);
+			mWidgetUnderMouseCursor->fireWidgetEvent(WIDGET_EVENT_ON_HOVER, args);
 		}
-
-		mTimeListeners.push_back(w);
 	}
 
 	bool GUIManager::renderQueueStarted(Ogre::uint8 id, const std::string& invocation, bool skipThisQueue)
 	{
-		// Look for widgets queued for deletion.
-		if(mFreeList.empty())
-			return skipThisQueue;
-
-		bool activeWidgetDestroyed = false;
-		if( std::find(mFreeList.begin(),mFreeList.end(),mActiveWidget) != mFreeList.end() )
-		{
-			activeWidgetDestroyed = true;
-			mActiveWidget = mActiveSheet;
-			mWidgetContainingMouse = mActiveSheet;
-		}
-
-		WidgetArray::iterator it;
-		for( it = mFreeList.begin(); it != mFreeList.end(); ++it )
+		for(std::vector<Widget*>::iterator it = mFreeList.begin(); it != mFreeList.end(); ++it)
 			delete (*it);
 		mFreeList.clear();
-
-		if(activeWidgetDestroyed)
-			injectMouseMove(0,0);
-        return skipThisQueue;			
+		return skipThisQueue;
 	}
 
 	bool GUIManager::renderQueueEnded(Ogre::uint8 id, const std::string& invocation, bool repeatThisQueue)
 	{
 		// Perform rendering of GUI
-		if(mQueueID == id)
+		if(mGUIManagerDesc.queueID == id)
 		{
-			mActiveSheet->render();
-			mMouseCursor->render();
+			draw();
 		}
 		return repeatThisQueue;
 	}
 
-	void GUIManager::removeFromRenderQueue()
-	{
-		if(mSceneManager != NULL)
-			mSceneManager->removeRenderQueueListener(this);
-	}
-
 	void GUIManager::setActiveSheet(Sheet* s)
 	{
-		if( (s == NULL) || (s == mActiveSheet) ) 
-			return;
+		if(s == NULL)
+			throw Exception(Exception::ERR_INVALIDPARAMS,"Sheet is NULL!","GUIManager::setActiveSheet");
+
+		if(std::find(mSheets.begin(),mSheets.end(),s) == mSheets.end())
+			throw Exception(Exception::ERR_INVALID_CHILD,"Sheet \"" + s->getName() + "\" does not belong to this Manager!","GUIManager::setActiveSheet");
 
 		mActiveSheet = s;
-		mActiveSheet->setSize(mViewport->getActualWidth(),mViewport->getActualHeight());
+		mWidgetUnderMouseCursor = mActiveSheet;
+		mLastClickedWidget = NULL;
 
-		MouseEventArgs args(mWidgetContainingMouse);
-		args.position = mMouseCursor->getPosition();
-
-		// Make sure active widget loses focus.
-		mActiveWidget->fireEvent(Widget::EVENT_LOSE_FOCUS,args);
-		
-		// Make sure mouse over widget has mouse leave event.
-		mWidgetContainingMouse->fireEvent(Widget::EVENT_MOUSE_LEAVE,args);
-
-		// Update the active widget
-		mActiveWidget = mActiveSheet;
-		mWidgetContainingMouse = mActiveSheet;
-		injectMouseMove(0,0);
-	}
-
-	void GUIManager::setActiveWidget(Widget* w)
-	{
-		if ( w == NULL )
-			return;
-
-		if (!w->enabled())
-			return;
-
-		if( w != mActiveWidget ) 
-		{
-			WidgetEventArgs args(mActiveWidget);
-			mActiveWidget->fireEvent(Widget::EVENT_LOSE_FOCUS,args);
-		}
-
-		mActiveWidget = w;
-
-		WidgetEventArgs args(mActiveWidget);
-		mActiveWidget->fireEvent(Widget::EVENT_GAIN_FOCUS,args);
-	}
-
-	void GUIManager::setDebugString(const std::string s)
-	{
-		mDebugString = s;
-	}
-
-	void GUIManager::setDetermineClickEvents(bool determine)
-	{
-		mDetermineClickEvents = determine;
+		Ogre::Viewport* v = mGUIManagerDesc.viewport;
+		if(v != NULL)
+			mActiveSheet->setSize(Size(v->getActualWidth(),v->getActualHeight()));
 	}
 
 	void GUIManager::setRenderQueueID(Ogre::uint8 id)
 	{
-		mQueueID = id;
+		mGUIManagerDesc.queueID = id;
 	}
 
 	void GUIManager::setSceneManager(Ogre::SceneManager* sm)
 	{
 		// remove listener from previous scene manager
-		if(mSceneManager != NULL)
-			mSceneManager->removeRenderQueueListener(this);
+		if(mGUIManagerDesc.sceneManager != NULL)
+			mGUIManagerDesc.sceneManager->removeRenderQueueListener(this);
+		
 		// update
-		mSceneManager = sm;
+		mGUIManagerDesc.sceneManager = sm;
+
 		// add listener to new scene manager
-		if(mSceneManager != NULL)
-			mSceneManager->addRenderQueueListener(this);
+		if(mGUIManagerDesc.sceneManager != NULL)
+			mGUIManagerDesc.sceneManager->addRenderQueueListener(this);
+	}
+
+	void GUIManager::setScrollLastClicked(bool scroll)
+	{
+		mGUIManagerDesc.scrollLastClicked = scroll;
 	}
 
 	void GUIManager::setSupportedCodePoints(const std::set<Ogre::UTFString::code_point>& list)
 	{
-		mSupportedCodePoints = list;
+		mGUIManagerDesc.supportedCodePoints = list;
 	}
 
 	void GUIManager::setViewport(Ogre::Viewport* vp)
 	{
-		mViewport = vp;
-	}
-
-	void GUIManager::unregisterTimeListener(Widget* w)
-	{
-		if(w == NULL)
-			return;
-
-		WidgetArray::iterator it;
-		for( it = mTimeListeners.begin(); it != mTimeListeners.end(); ++it )
-		{
-			if(w == (*it))
-			{
-				mTimeListeners.erase(it);
-				return;
-			}
-		}
+		mGUIManagerDesc.viewport = vp;
 	}
 }

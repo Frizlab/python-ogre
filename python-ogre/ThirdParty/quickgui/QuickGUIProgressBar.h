@@ -1,142 +1,253 @@
 #ifndef QUICKGUIPROGRESSBAR_H
 #define QUICKGUIPROGRESSBAR_H
 
-#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIWidget.h"
+#include "QuickGUIText.h"
 
-#include "OgreHardwarePixelBuffer.h"
-#include "OgreMaterialManager.h"
+#include "OgreImage.h"
+
+#include <vector>
 
 namespace QuickGUI
 {
-	/** Represents a vertical or horizontal bar displaying
-		visual status showing a current position relative to
-		the beginning and end of the bar.
-		@remarks
-		Useful for Life Bars, or anything similar.
-		@note
-		ProgressBars must be created by the Window class.
-	*/
+	class _QuickGUIExport ProgressBarDesc :
+			public WidgetDesc
+	{
+	public:
+		ProgressBarDesc();
+
+		ProgressBarFillDirection fillDirection;
+		ProgressBarLayout layout;
+		ProgressBarClippingEdge clippingEdge;
+
+		/// Percentage of progress of the bar. (0-100)
+		float progress;
+
+		float padding[PADDING_COUNT];
+
+		/// Describes the Text used in this Label
+		TextDesc textDesc;
+
+		/**
+		* Returns the class of Desc object this is.
+		*/
+		virtual Ogre::String getClass() { return "ProgressBarDesc"; }
+		/**
+		* Returns the class of Widget this desc object is meant for.
+		*/
+		virtual Ogre::String getWidgetClass() { return "ProgressBar"; }
+
+		// Factory method
+		static WidgetDesc* factory() { return new ProgressBarDesc(); }
+
+		/**
+		* Outlines how the desc class is written to XML and read from XML.
+		*/
+		virtual void serialize(SerialBase* b);
+	};
+
 	class _QuickGUIExport ProgressBar :
 		public Widget
 	{
 	public:
-		/**
-		* Allows setting the direction the progressbar fills.
-		* FILLS_NEGATIVE_TO_POSITIVE: 
-		*	For Vertical Layouts, bar moves bottom to top. For Horizontal, bar moves left to right.
-		* FILLS_POSITIVE_TO_NEGATIVE: 
-		*	For Vertical Layouts, bar moves top to bottom. For Horizontal, bar moves right to left.
-		*/
-		enum FillDirection
-		{
-			FILLS_NEGATIVE_TO_POSITIVE	=  0,
-			FILLS_POSITIVE_TO_NEGATIVE
-		};
-		enum Layout
-		{
-			LAYOUT_HORIZONTAL	=  0,
-			LAYOUT_VERTICAL
-		};
-		/**
-		* Dictates what side of the texture to *chop*.
-		* CHOP_NEGATIVE: 
-		*	For Vertical Layouts, texture chopped at the bottom. For Horizontal, texture chopped at the left.
-		* CHOP_POSITIVE: 
-		*	For Vertical Layouts, texture chopped at the top. For Horizontal, texture chopped at the right.
-		*/
-		enum ClippingEdge
-		{
-			CLIP_LEFT_BOTTOM		=  0,
-			CLIP_RIGHT_TOP
-		};
+		// Skin Constants
+		static const Ogre::String BACKGROUND;
+		static const Ogre::String BAR;
+		static const Ogre::String CLIPMAP;
+		// Define Skin Structure
+		static void registerSkinDefinition();
 	public:
-		/** Constructor
-            @param
-                name The name to be given to the widget (must be unique).
-            @param
-                dimensions The x Position, y Position, width and height of the widget.
-			@param
-				positionMode The GuiMetricsMode for the values given for the position. (absolute/relative/pixel)
-			@param
-				sizeMode The GuiMetricsMode for the values given for the size. (absolute/relative/pixel)
-			@param
-				fillDirection The direction that the bar fills as progress increases
-			@param
-				material Ogre material defining the widget image.
-			@param
-				group QuadContainer containing this widget.
-			@param
-				ParentWidget parent widget which created this widget.
-        */
-		ProgressBar(const std::string& name, GUIManager* gm);
+		// Factory method
+		static Widget* factory(const Ogre::String& widgetName);
+	public:
 
 		/**
-		* Add user defined event that will be called when amount of progress has changed.
+		* Internal function, do not use.
 		*/
-		template<typename T> void addOnProgressChangedEventHandler(void (T::*function)(const EventArgs&), T* obj)
+		virtual void _initialize(WidgetDesc* d);
+
+		/** Adds an event handler to this widget
+			@param
+				EVENT Defined widget events, for example: WINDOW_EVENT_FOCUS_LOST, WINDOW_EVENT_FOCUS_GAINED, etc.
+            @param
+                function member function assigned to handle the event.  Given in the form of myClass::myFunction.
+				Function must return bool, and take QuickGUI::EventArgs as its parameters.
+            @param
+                obj particular class instance that defines the handler for this event.  Here is an example:
+				addWidgetEventHandler(QuickGUI::WINDOW_EVENT_FOCUS_LOST,myClass::myFunction,this);
+			@note
+				Multiple user defined event handlers can be defined for an event.  All added event handlers will be called
+				whenever the event is fired.
+			@note
+				You may see Visual Studio give an error warning such as "error C2660: 'QuickGUI::Widget::addWidgetEventHandler' : function does not take 3 arguments".
+				This is an incorrect error message.  Make sure your function pointer points to a function which returns void, and takes parameter "const EventArgs&".
+        */
+		template<typename T> void addProgressBarEventHandler(ProgressBarEvent EVENT, void (T::*function)(const EventArgs&), T* obj)
 		{
-			mOnProgressChangedHandlers.push_back(new MemberFunctionPointer<T>(function,obj));
+			mProgressBarEventHandlers[EVENT].push_back(new EventHandlerPointer<T>(function,obj));
 		}
-		void addOnProgressChangedEventHandler(MemberFunctionSlot* function);
+		void addProgressBarEventHandler(ProgressBarEvent EVENT, EventHandlerSlot* function);
+
+		/**
+		* Event Handler that executes the appropriate User defined Event Handlers for a given event.
+		* Returns true if the event was handled, false otherwise.
+		*/
+		bool fireProgressBarEvent(ProgressBarEvent e, EventArgs& args);
+
+		/**
+		* Returns the class name of this Widget.
+		*/
+		virtual Ogre::String getClass();
+		/**
+		* Gets the side of the bar texture that is clipped to simulate progress.
+		*/
+		ProgressBarClippingEdge getClippingEdge();
+		/**
+		* Gets the direction the progress bar fills, as it gains progress.
+		*/
+		ProgressBarFillDirection getFillDirection();
+		/**
+		* Gets the axis of progress growth, either horizontal or vertical.
+		*/
+		ProgressBarLayout setLayout();
+		/**
+		* Gets the distance between a Label border and the text.
+		*/
+		float getPadding(Padding p);
+		/**
+		* Gets the progress of the ProgressBar, that is a visual indicator of percent complete.
+		*/
 		float getProgress();
 		/**
-		* Default Handler for handling progress changes.
-		* Note that this event is not passed to its parents, the event is specific to this widget.
+		* Gets the text in UTFString form.
 		*/
-		void onProgressChanged(const WidgetEventArgs& e);
-		void onPositionChanged(const EventArgs& args);
-		void onSizeChanged(const EventArgs& args);
+		Ogre::UTFString getText();
 		/**
-		* Force updating of the Widget's Quad position on screen.
+		* Returns the number of pixels placed between each line of text, if there
+		* are multiple lines of text.
 		*/
-		void redraw();
-		void setClippingEdge(ClippingEdge e);
-		void setFillDirection(FillDirection d);
+		float getVerticalLineSpacing();
+		
 		/**
-		* Set the initial pixel padding added so that the progressbar will begin to show progress
-		* immediately, instead of ignoring small progress levels. 
+		* Sets the side of the bar texture that is clipped to simulate progress.
 		*/
-		void setInitialPixelOffset(unsigned int width);
-		void setLayout(Layout l);
+		void setClippingEdge(ProgressBarClippingEdge e);
 		/**
-		* Sets progress.  Value should be between 0.0 and 1.0
+		* Sets all characters of the text to the specified color.
 		*/
-		void setProgress(float progress);
-		virtual void setSkin(const std::string& skinName, bool recursive = false);
+		void setColor(const Ogre::ColourValue& cv);
+		/**
+		* Sets the character at the index given to the specified color.
+		*/
+		void setColor(const Ogre::ColourValue& cv, unsigned int index);
+		/**
+		* Sets all characters within the defined range to the specified color.
+		*/
+		void setColor(const Ogre::ColourValue& cv, unsigned int startIndex, unsigned int endIndex);
+		/**
+		* Searches text for c.  If allOccurrences is true, all characters of text matching c
+		* will be colored, otherwise only the first occurrence is colored.
+		*/
+		void setColor(const Ogre::ColourValue& cv, Ogre::UTFString::code_point c, bool allOccurrences);
+		/**
+		* Searches text for s.  If allOccurrences is true, all sub strings of text matching s
+		* will be colored, otherwise only the first occurrence is colored.
+		*/
+		void setColor(const Ogre::ColourValue& cv, Ogre::UTFString s, bool allOccurrences);
+		/**
+		* Sets the direction the progress bar fills, as it gains progress.
+		*/
+		void setFillDirection(ProgressBarFillDirection d);
+		/**
+		* Sets all characters of the text to the specified font.
+		*/
+		void setFont(const Ogre::String& fontName);
+		/**
+		* Sets the character at the index given to the specified font.
+		*/
+		void setFont(const Ogre::String& fontName, unsigned int index);
+		/**
+		* Sets all characters within the defined range to the specified font.
+		*/
+		void setFont(const Ogre::String& fontName, unsigned int startIndex, unsigned int endIndex);
+		/**
+		* Searches text for c.  If allOccurrences is true, all characters of text matching c
+		* will be changed to the font specified, otherwise only the first occurrence is changed.
+		*/
+		void setFont(const Ogre::String& fontName, Ogre::UTFString::code_point c, bool allOccurrences);
+		/**
+		* Searches text for s.  If allOccurrences is true, all sub strings of text matching s
+		* will be changed to the font specified, otherwise only the first occurrence is changed.
+		*/
+		void setFont(const Ogre::String& fontName, Ogre::UTFString s, bool allOccurrences);
+		/**
+		* Sets the axis of progress growth, either horizontal or vertical.
+		*/
+		void setLayout(ProgressBarLayout l);
+		/**
+		* Sets the distance between a Label border and the text.
+		*/
+		void setPadding(Padding p, float distance);
+		/**
+		* Sets the progress of the ProgressBar, that is a visual indicator of percent complete.
+		* NOTE: values above and below 0 will be capped to 0/100%.
+		*/
+		void setProgress(float percent);
+		/**
+		* Sets the "type" of this widget.  For example you
+		* can create several types of Button widgets: "close", "add", "fire.skill.1", etc.
+		* NOTE: The type property determines what is drawn to the screen.
+		*/
+		virtual void setSkinType(const Ogre::String type);
+		/**
+		* Sets the text for this object.
+		*/
+		void setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv);
+		/**
+		* Sets the text for this object.
+		*/
+		void setText(Ogre::UTFString s, const Ogre::String& fontName, const Ogre::ColourValue& cv);
+		/**
+		* Sets the text for this object.
+		*/
+		void setText(Ogre::UTFString s);
+		/**
+		* Sets the number of pixels placed between each line of text, if there
+		* are multiple lines of text.
+		*/
+		void setVerticalLineSpacing(float distance);
 
 	protected:
-		virtual ~ProgressBar();
+		ProgressBar(const Ogre::String& name);
+		~ProgressBar();
 
-		void _getBarExtents();
-		void _modifyBarTexture(float progress);
+		// Current settings applied to newly added text.
+		Ogre::String mCurrentFontName;
+		Ogre::ColourValue mCurrentColourValue;
+
+		Text* mText;
+
+		/// Pointer pointing to mWidgetDesc object, but casted for quick use.
+		ProgressBarDesc* mDesc;
+
+		void _processClipMap();
+		/// Array of bools tracking transparent and non-transparent pixels of the clipmap.
+		std::vector<bool> mClipMap;
+
+		/// Modified texture to draw on top of background
+		Ogre::TexturePtr mOutputBarTexture;
+
+		Ogre::Image mBarImage;
+
+		// Event handlers! One List per event per widget
+		std::vector<EventHandlerSlot*> mProgressBarEventHandlers[PROGRESSBAR_EVENT_COUNT];
+
+		/**
+		* Outlines how the widget is drawn to the current render target
+		*/
+		virtual void onDraw();
 
 	private:
-		Quad* mBarPanel;
-		Layout mLayout;
-
-		float mProgress;
-
-		std::string mSkinExtension;
-		Ogre::TexturePtr mBarTexture;
-		std::string mBarTextureName;
-		Ogre::Image* mBarImage;
-		Ogre::MaterialPtr mBarMaterial;
-		int mBarMinWidth;
-		int mBarMaxWidth;
-		int mBarMinHeight;
-		int mBarMaxHeight;
-
-		EventHandlerArray mOnProgressChangedHandlers;
-
-		// How many pixels to add to the initial edge
-		int mInitialPixelOffset;
-
-		// Stores how this bar should fill as progress increases
-		ProgressBar::FillDirection mFillDirection;
-
-		// Stores how the bar texture is truncated.
-		ProgressBar::ClippingEdge mClippingEdge;
 	};
 }
 
