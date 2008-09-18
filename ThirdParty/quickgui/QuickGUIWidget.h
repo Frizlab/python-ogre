@@ -1,632 +1,513 @@
 #ifndef QUICKGUIWIDGET_H
 #define QUICKGUIWIDGET_H
 
-#include "OgreException.h"
-#include "OgrePrerequisites.h"
-
-#include "QuickGUIForwardDeclarations.h"
+#include "QuickGUIAnchors.h"
+#include "QuickGUIBaseDesc.h"
+#include "QuickGUIBorderEnums.h"
+#include "QuickGUIBrush.h"
 #include "QuickGUIEventArgs.h"
-#include "QuickGUIMemberFunctionPointer.h"
-#include "QuickGUIRect.h"
-#include "QuickGUIQuad.h"
-#include "QuickGUIQuadContainer.h"
-#include "QuickGUISkinSetManager.h"
 #include "QuickGUIExportDLL.h"
+#include "QuickGUIEventHandlerPointer.h"
+#include "QuickGUIRect.h"
+#include "QuickGUISerializable.h"
+#include "QuickGUISkinTypeManager.h"
+#include "QuickGUIStringConverter.h"
+#include "QuickGUIEventTypes.h"
 
-#include <vector>
-#include <ctype.h>
+#include "OgrePrerequisites.h"
 
 namespace QuickGUI
 {
-	// Forward declarations
-	class Border;
+	// forward declarations
+	class GUIManager;
 	class Window;
 	class Sheet;
-	class Panel;
-	class GUIManager;
 
-	/** Main QuickGUI components for creating GUI.
-		@remarks
-		This class outlines the interface for
-		widgets, providing default functionality.
-	*/
-	class _QuickGUIExport Widget
+	class _QuickGUIExport WidgetDesc :
+		public BaseDesc
 	{
 	public:
-		// GUIManager is the only manager that can destroy widgets.
-		friend class GUIManager;
-		friend class List;
-		friend class Panel;
-		friend class QuadContainer;
-		friend class RadioButtonGroup;
-		friend class ScrollPane;
+		WidgetDesc();
 
-		/**
-		* Outlining Types of widgets in the library.
-		*/
-		enum Type
-		{
-			TYPE_BORDER				=  0,
-			TYPE_BUTTON					,
-			TYPE_CHECKBOX				,
-			TYPE_COMBOBOX				,
-			TYPE_CONSOLE				,
-			TYPE_IMAGE					,
-			TYPE_LABEL					,
-			TYPE_LIST					,
-			TYPE_MENULABEL				,
-			TYPE_LABELAREA				,
-			TYPE_TEXTAREA				,
-			TYPE_NSTATEBUTTON			,
-			TYPE_PANEL					,
-			TYPE_PROGRESSBAR			,
-			TYPE_RADIOBUTTON			,
-			TYPE_SCROLL_PANE			,
-			TYPE_SCROLLBAR_HORIZONTAL	,
-			TYPE_SCROLLBAR_VERTICAL		,
-			TYPE_SHEET					,
-			TYPE_TEXTBOX				,
-			TYPE_TITLEBAR				,
-			TYPE_TRACKBAR_HORIZONTAL	,
-			TYPE_TRACKBAR_VERTICAL		,
-			TYPE_TREE					,
-			TYPE_WINDOW
-		};
-		/**
-		* All widgets must support these events
-		*/
-		enum Event
-		{
-			EVENT_CHARACTER_KEY		=  0,
-			EVENT_CHILD_ADDED			,
-			EVENT_CHILD_CREATED			,
-			EVENT_CHILD_DESTROYED		,
-			EVENT_CHILD_REMOVED			,
-			EVENT_DISABLED				,
-			EVENT_DRAGGED				,
-			EVENT_DROPPED				,
-			EVENT_ENABLED				,
-			EVENT_GAIN_FOCUS			,
-			EVENT_HIDDEN				,
-			EVENT_KEY_DOWN				,
-			EVENT_KEY_UP				,
-			EVENT_LOSE_FOCUS			,
-			EVENT_MOUSE_BUTTON_DOWN		,
-			EVENT_MOUSE_BUTTON_UP		,
-			EVENT_MOUSE_CLICK			,
-			EVENT_MOUSE_CLICK_DOUBLE	,
-			EVENT_MOUSE_CLICK_TRIPLE	,
-			EVENT_MOUSE_ENTER			,
-			EVENT_MOUSE_LEAVE			,
-			EVENT_MOUSE_MOVE			,
-			EVENT_MOUSE_WHEEL			,
-			EVENT_PARENT_CHANGED		,
-			EVENT_POSITION_CHANGED		,
-			EVENT_SHOWN					,
-			EVENT_SIZE_CHANGED			,
-			EVENT_END_OF_LIST
-		};
-		/**
-		* Specifies horizontal position/size relative to parent resizing.
-		*/
-		enum HorizontalAnchor
-		{
-			ANCHOR_HORIZONTAL_LEFT				=  0,
-			ANCHOR_HORIZONTAL_RIGHT					,
-			ANCHOR_HORIZONTAL_LEFT_RIGHT			,
-			ANCHOR_HORIZONTAL_NONE
-		};
-		/**
-		* Specifies vertical position/size relative to parent resizing.
-		*/
-		enum VerticalAnchor
-		{
-			ANCHOR_VERTICAL_TOP				=  0,
-			ANCHOR_VERTICAL_BOTTOM				,
-			ANCHOR_VERTICAL_TOP_BOTTOM			,
-			ANCHOR_VERTICAL_NONE
-		};
+		BrushFilterMode brushFilterMode;
+		bool consumeKeyboardEvents;
+		bool enabled;
+		Rect dimensions;
+		Ogre::String disabledSkinType;
+		bool dragable;
+		HorizontalAnchor horizontalAnchor;
+		float hoverTime;
+		Size maxSize;
+		Size minSize;
+		Ogre::String name;
+		bool propagateEvents[WIDGET_EVENT_COUNT];
+		bool resizable;
+		bool scrollable;
+		bool transparencyPicking;
+		VerticalAnchor verticalAnchor;
+		bool visible;
+		Ogre::String skinTypeName;
 
-		enum BorderType
-		{
-			BORDER_TYPE_TOP_LEFT		=  0,
-			BORDER_TYPE_TOP_RIGHT			,
-			BORDER_TYPE_BOTTOM_LEFT			,
-			BORDER_TYPE_BOTTOM_RIGHT		,
-			BORDER_TYPE_LEFT				,
-			BORDER_TYPE_TOP					,
-			BORDER_TYPE_RIGHT				,
-			BORDER_TYPE_BOTTOM
-		};
+		GUIManager* guiManager;
+		Sheet* sheet;
+		
+		/**
+		* Returns the class of Desc object this is.
+		*/
+		virtual Ogre::String getClass() { return "WidgetDesc"; }
+		/**
+		* Returns the class of Widget this desc object is meant for.
+		*/
+		virtual Ogre::String getWidgetClass() { return "Widget"; }
+		
+		/**
+		* Outlines how the desc class is written to script and read from script.
+		*/
+		virtual void serialize(SerialBase* b);
+	};
+
+	class _QuickGUIExport Widget :
+		public Serializable
+	{
 	public:
-		/** Constructor
-            @param
-                name The name to be given to the widget (must be unique).
-            @param
-                dimensions The x Position, y Position, width, and height of the widget.
-			@param
-				positionMode The GuiMetricsMode for the values given for the position. (absolute/relative/pixel)
-			@param
-				sizeMode The GuiMetricsMode for the values given for the size. (absolute/relative/pixel)
-			@param
-				textureName The name of the texture used to visually represent the widget. (ie "qgui.window.png")
-			@param
-				group The QuadContainer containing the Quad used by this Widget.
-			@param
-				ParentWidget parent widget which created this widget.
-        */
-		Widget(const std::string& name, GUIManager* gm);
+		friend class GUIManager;
+		friend class ComponentWidget;
+		friend class ContainerWidget;
+		friend class Sheet;
+		friend class Menu;
+		friend class MenuPanel;
+		friend class Window;
+	public:
 
-		virtual void addChild(Widget* w);
+		/**
+		* Internal use only. (Called in factory method)
+		*/
+		void _createDescObject(const Ogre::String& className);
+		/**
+		* Internal function, do not use.
+		*/
+		virtual void _initialize(WidgetDesc* d);
+
 		/** Adds an event handler to this widget
 			@param
-				EVENT Defined widget events, for example: EVENT_GAIN_FOCUS, EVENT_CHARACTER_KEY, EVENT_MOUSE_BUTTON_DOWN, etc
+				EVENT Defined widget events, for example: WIDGET_EVENT_SIZE_CHANGED, WIDGET_EVENT_MOUSE_WHEEL, etc.
             @param
                 function member function assigned to handle the event.  Given in the form of myClass::myFunction.
 				Function must return bool, and take QuickGUI::EventArgs as its parameters.
             @param
                 obj particular class instance that defines the handler for this event.  Here is an example:
-				addEventHandler(QuickGUI::EVENT_MOUSE_BUTTON_DOWN,myClass::myFunction,this);
+				addWidgetEventHandler(QuickGUI::WIDGET_EVENT_MOUSE_BUTTON_DOWN,myClass::myFunction,this);
 			@note
 				Multiple user defined event handlers can be defined for an event.  All added event handlers will be called
 				whenever the event is fired.
 			@note
-				You may see Visual Studio give an error warning such as "error C2660: 'QuickGUI::Widget::addEventHandler' : function does not take 3 arguments".
+				You may see Visual Studio give an error warning such as "error C2660: 'QuickGUI::Widget::addWidgetEventHandler' : function does not take 3 arguments".
 				This is an incorrect error message.  Make sure your function pointer points to a function which returns void, and takes parameter "const EventArgs&".
         */
-		template<typename T> void addEventHandler(Event EVENT, void (T::*function)(const EventArgs&), T* obj)
+		template<typename T> void addWidgetEventHandler(WidgetEvent EVENT, void (T::*function)(const EventArgs&), T* obj)
 		{
-			mUserEventHandlers[EVENT].push_back(new MemberFunctionPointer<T>(function,obj));
+			mWidgetEventHandlers[EVENT].push_back(new EventHandlerPointer<T>(function,obj));
 		}
-		void addEventHandler(Event EVENT, MemberFunctionSlot* function);
+		void addWidgetEventHandler(WidgetEvent EVENT, EventHandlerSlot* function);
 
-		template<typename T> void addEventListener(void (T::*function)(const EventArgs&), T* obj)
-		{
-			mEventListeners.push_back(new MemberFunctionPointer<T>(function,obj));
-		}
-		void addEventListener(MemberFunctionSlot* function);
+		/**
+		* Offsets the widget.
+		*/
+		virtual void drag(int xOffset, int yOffset);
 
-		void allowResizing(bool allow);
 		/**
-		* Alters the widgets offset to be higher than widget w.  Widget w must be in the
-		* same QuadContainer and Layer.
+		* Recursively searches through children and returns the first widget found of the class given.
 		*/
-		virtual void appearOverWidget(Widget* w);
-		void constrainDragging(bool DragXOnly, bool DragYOnly);
+		virtual Widget* findFirstWidgetOfClass(const Ogre::String& className);
 		/**
-		* Disable Widget, making it unresponsive to events.
-		* NOTE: Sheets cannot be disabled.
+		* Recursively searches through children and returns first widget found with name given.
+		* NULL is returned if the widget is not found.
 		*/
-		virtual void disable();
+		virtual Widget* findWidget(const Ogre::String& name);
 		/**
-		* Moves draggingWidget.  By default, dragging widget is this widget, but this can be changed.
-		* Allows dragging the titlebar or it's text to drag the window, for example.
+		* Checks if point p is within this widget's dimensions.
+		* NULL is returned if the point is outside dimensions.
+		* If ignoreDisabled is true, disabled widgets are not considered in the search.
 		*/
-		void drag(const float& pixelX, const float& pixelY);
-		/**
-		* Returns true if the widget is able to be dragged, false otherwise.
-		*/
-		bool draggingEnabled() const;
-		/**
-		* Enable Widget, allowing it to accept and handle events.
-		* NOTE: Sheets cannot be enabled/disabled
-		*/
-		virtual void enable();
-		/**
-		* Returns true is widget is enabled, false otherwise.
-		*/
-		bool enabled() const;
-		/**
-		* Enable or Disable dragging.
-		*/
-		void enableDragging(bool enable);
+		virtual Widget* findWidgetAtPoint(const Point& p, bool ignoreDisabled = true);
 		/**
 		* Event Handler that executes the appropriate User defined Event Handlers for a given event.
 		* Returns true if the event was handled, false otherwise.
 		*/
-		bool fireEvent(Event e, EventArgs& args);
-		/**
-		* Sets focus to the widget by firing an activation event.
-		*/
-		virtual void focus();
-		Rect getActualDimensions() const;
-		float getActualOpacity() const;
-		/**
-		* Returns the position of the widget as it would be drawn on the screen.
-		* NOTE: This is a convenience method. Actual Position is the same as
-		*  getScreenPosition() + getScrollOffset().
-		*/
-		Point getActualPosition() const;
-		Size getActualSize() const;
-		Border* getBorder(BorderType t);
-		const Border* getBorder(BorderType t) const;
-		WidgetArray* getChildWidgetList();
-		const WidgetArray* getChildWidgetList() const;
-		Widget* getChildWidget(const std::string& name);
-		const Widget* getChildWidget(const std::string& name) const;
-		/**
-		* Find child by name
-		*/
-		Widget* getChildWidget(Type t, unsigned int index);
-		/**
-		* Find child by name
-		*/
-		const Widget* getChildWidget(Type t, unsigned int index) const;
-		/**
-		* Find child recursively by name
-		*/
-		Widget* findChildWidget(const std::string& name);
-		/**
-		* Find child recursively by name
-		*/
-		const Widget* findChildWidget(const std::string& name) const;
-		Rect getClippedDimensions();
-		Rect getDimensions() const;
-		GUIManager* getGUIManager();
-		const GUIManager* getGUIManager() const;
-		int getNumberOfHandlers(Event e) const;
-		bool getInheritOpacity() const;
-		float getOpacity() const;
-		Point getPosition() const;
-		Point getScrollOffset() const;
-		Size getSize() const;
-		bool isNameUnique(const std::string& name) const;
+		bool fireWidgetEvent(WidgetEvent EVENT, EventArgs& args);
 
-		std::string getFontName() const;
 		/**
-		* Returns true if the widget will gain focus when clicked, false otherwise.
+		* Returns true if this widget is being dragged, false otherwise.
 		*/
-		bool getGainFocusOnClick() const;
-		bool getGrabbed() const;
-		float getHeight() const;
+		bool getBeingDragged();
 		/**
-		* Returns true if this widget is hidden when its parent is hidden.
+		* Returns the Border underneath the point p.
+		* NOTE: Point is assumed to be relative to the Window.
+		* NOTE: Exception is thrown if point is not over a border.
 		*/
-		bool getHideWithParent() const;
+		BorderSide getBorderSide(Point p);
 		/**
-		* Iterates through all child widgets and retrieves the highest offset.
+		* Returns the class name of the widget, ie "Button", "Window", etc.
 		*/
-		int getHighestOffset() const;
-		HorizontalAnchor getHorizontalAnchor() const;
-		bool getInheritQuadLayer() const;
-		std::string getInstanceName() const;
+		virtual Ogre::String getClass() = 0;
 		/**
-		* Returns true if window is able to be repositions, false otherwise.
+		* Returns the rectangle inside the borders of the widget, if borders exist.
 		*/
-		bool getMovingEnabled() const;
+		Rect getClientDimensions();
 		/**
-		* Returns the number of parent iterations required to get to Sheet widget.
+		* Returns true if this widget accepts notification of keyboard events,
+		* false otherwise.
 		*/
-		int getOffset() const;
-		/**
-		* Get Panel this widget belongs to.
-		* NOTE: This value may be NULL.
+		bool getConsumeKeyboardEvents();
+		/*
+		* Gets the position and size of this widget.
+		* NOTE: Position is relative to its parent.
 		*/
-		Panel* getParentPanel();
-		const Panel* getParentPanel() const;
+		Rect getDimensions();
 		/**
-		* Get Sheet this widget belongs to.
-		* NOTE: This value may be NULL.
+		* Returns the name of the SkinType applied when the widget is disabled.
+		* NOTE: "" is returned if the widget's appearance does not change when disabled.
 		*/
-		Sheet* getParentSheet();
-		const Sheet* getParentSheet() const;
+		Ogre::String getDisabledSkinType();
 		/**
-		* Get Widget this widget belongs to.
-		* NOTE: This value may be NULL.
+		* Returns true if this widget can be dragged, false otherwise.
+		*/
+		bool getDragable();
+		/**
+		* Returns true if this widget is able to receive injected input events,
+		* false otherwise.
+		* NOTE: Disabled widgets can still have events fired manually.
+		*/
+		bool getEnabled();
+		/**
+		* Returns true if this widget is grabbed, false otherwise.
+		*/
+		bool getGrabbed();
+		/**
+		* Returns a reference to the GUIManager this widget belongs to.
+		*/
+		GUIManager* getGUIManager();
+		/**
+		* Returns the height in pixels of this widget.
+		*/
+		float getHeight();
+		/**
+		* Returns the horizontal anchor set for this widget.
+		*/
+		HorizontalAnchor getHorizontalAnchor();
+		/**
+		* Get the number of seconds the cursor has to idle over a widget
+		* before the ON_HOVER event is fired.
+		*/
+		float getHoverTime();
+		/**
+		* Returns the maximum size this widget can be.
+		*/
+		Size getMaxSize();
+		/**
+		* Returns the minimum size this widget can be.
+		*/
+		Size getMinSize();
+		/**
+		* Returns the name of the Widget.
+		*/
+		Ogre::String getName();
+		/**
+		* Returns the parent of this widget, or NULL if this widget has no parent.
 		*/
 		Widget* getParentWidget();
-		const Widget* getParentWidget() const;
 		/**
-		* Get Window this widget belongs to.
-		* NOTE: This value may be NULL.
+		* Get the position of this widget relative to its parent.
+		* NOTE: This does not take scrolling into account.
 		*/
-		Window* getParentWindow();
-		const Window* getParentWindow() const;
-		bool getPropogateEventFiring(Event e) const;
-		/*
-		* Get Render Object that visually represents the widget.
-		*/
-		Quad* getQuad();
-		const Quad* getQuad() const;
-		/*
-		* Get Render Object Group this widget's Quad belongs in.
-		*/
-		virtual QuadContainer* getQuadContainer();
-		const QuadContainer* getQuadContainer() const;
-		Quad::Layer getQuadLayer();
-		const Quad::Layer getQuadLayer() const;
-		/*
-		* Get the screen pixel coordinates this widget is drawn at.
-		* NOTE: This is not the same as getPosition, which returns a value relative to parent.
-		* NOTE: This may not be the actual screen coordinates, since QuickGUI supports scrolling.
-		*/
-		Point getScreenPosition() const;
-		bool getScrollPaneAccessible() const;
-		std::string getSkinComponent() const;
+		Point getPosition();
 		/**
-		* Get whether or not this widget is shown when its parent is shown.
+		* Returns true if the parent widget receives notification of an event when
+		* this widget receives notification of an event.
 		*/
-		bool getShowWithParent() const;
-		std::string getSkin() const;
+		bool getPropagateEventFiring(WidgetEvent EVENT);
 		/**
-		* Iterates through visible Children widgets to find and return the widget that is *hit* by the point.
-		* Returns NULL is nothing is *hit*.
+		* Returns true if the widget can be resized using the mouse, false otherwise.
 		*/
-		virtual Widget* getTargetWidget(const Point& pixelPosition);
-		virtual const Widget* getTargetWidget(const Point& pixelPosition) const;
-		bool getUseTransparencyPicking() const;
+		bool getResizable();
 		/**
-		* Returns the type of the widget, as enumerated above. ex. TYPE_BUTTON.
+		* Gets the position of the widget as seen on the screen.
 		*/
-		Type getWidgetType() const;
-		VerticalAnchor getVerticalAnchor() const;
-		float getWidth() const;
-		float getXPosition() const;
-		float getYPosition() const;
-		bool hasMouseButtonHandlers() const;
+		Point getScreenPosition();
 		/**
-		* Sets mVisible to false.  Widgets should override this to implement how they handle
-		* hiding.
+		* Gets the amount of pixels this widget is scrolled horizontally and vertically.
 		*/
-		virtual void hide();
-		void hideSkin();
+		Point getScroll();
 		/**
-		* Returns true if pixel point p is inside the pixel dimensions of this widget.
+		* Returns true if this widget can be scrolled by its parent, false otherwise.
 		*/
-		virtual bool isPointWithinBounds(const Point& pixelPosition) const;
-		bool isVisible() const;
+		bool getScrollable();
 		/**
-		* Returns true if Widget w is a child of this widget, false otherwise.
+		* Gets the Scrollable ContainerWidget this widget belongs to, or NULL if this widget
+		* is not or does not belong to a Scrollable container.
 		*/
-		bool isChild(const Widget* w) const;
+		Widget* getScrollableContainerWidget();
+		/**
+		* Returns the sheet this widget belongs to.
+		*/
+		Sheet* getSheet();
+		/**
+		* Returns the size of the widget;
+		*/
+		Size getSize();
+		/**
+		* Gets the position of the Widget as seen on the texture its drawn on.
+		*/
+		Point getTexturePosition();
+		/**
+		* Returns true if this widget uses transparency picking, false otherwise.  For
+		* Widgets that do not use transparency picking, they will receive mouse over events
+		* simply by having the mouse over their texture dimensions.
+		*/
+		bool getTransparencyPicking();
+		/**
+		* Returns the vertical anchor set for this widget.
+		*/
+		VerticalAnchor getVerticalAnchor();
+		/**
+		* Returns true if the widget is configured as visible, false otherwise.
+		* NOTE: Due to scrolling, a widget may be marked as visible, but not seen on the screen.
+		*/
+		bool getVisible();
+		/**
+		* Retrieves the "type" of this widget.  For example you
+		* can create several types of Button widgets: "close", "add", "fire.skill.1", etc.
+		* NOTE: The type property determines what is drawn to the screen.
+		*/
+		Ogre::String getSkinTypeName();
+		/**
+		* Returns the width in pixels of this widget.
+		*/
+		float getWidth();
 
 		/**
-		* Offset the widget position.  Useful for dragging/moving widgets.
+		* Returns true if there exists a Widget Event handler was registered by the object given,
+		* false otherwise.
 		*/
-		void move(const float& pixelX, const float& pixelY);
-		void move(const Point& pixelOffset);
-		void moveX(float pixelX);
-		void moveY(float pixelY);
-		/*
-		* Function disabling ability to change widget's texture.
-		*/
-		void lockTexture();
+		bool hasEventHandler(WidgetEvent EVENT, void* obj);
+
 		/**
-		* Determins if the mouse if over a transparent part of the image defining the widget.
-		* Used to determine if the mouse is *over* a widget. (non transparent parts)
+		* Returns true if this widget is made up of more than 1 widget.
 		*/
-		virtual bool overTransparentPixel(const Point& mousePixelPosition) const;
+		virtual bool isComponentWidget();
 		/**
-		* Force updating of the Widget's Quad position on screen.
+		* Returns true if this widget is able to have child widgets.
+		*/
+		virtual bool isContainerWidget();
+		/**
+		* Returns true if this widget is a menu item, false otherwise.
+		*/
+		virtual bool isMenuItem();
+		/**
+		* Returns true if this widget is a ToolBarItem, false otherwise.
+		*/
+		virtual bool isToolBarItem();
+		
+		/**
+		* Returns true if the point is over a border, false otherwise.
+		* NOTE: Point is assumed to be relative to the Window.
+		*/
+		bool overBorderSide(Point p);
+
+		/**
+		* Flags the parent window as dirty causing its texture to be updated (redrawn).
 		*/
 		virtual void redraw();
-		void removeChild(Widget* w);
-		void removeChild(const std::string& widgetName);
 		/**
-		* Properly cleans up all child widgets.
+		* Removes the Event Handler registered by the obj.
 		*/
-		virtual void removeAndDestroyAllChildWidgets();
-		void removeAndDestroyChild(Widget* w);
-		void removeAndDestroyChild(const std::string& widgetName);
-		bool resizingAllowed();
+		void removeEventHandler(WidgetEvent EVENT, void* obj);
 		/**
-		* Manually set the Dimensions of the widget.
+		* Resizes the widget so that its dimensions hit the point given.
+		* NOTE: The point p is assumed to be relative to the Window the widget is a part of.
 		*/
-		void setDimensions(const Rect& pixelDimensions);
+		void resize(BorderSide s, float xOffset, float yOffset);
+		
 		/**
-		* This function specifies the widget that will be moved when the widget is *dragged*.
-		* By default, the Dragging Widget is the widget itself, but this allows for the possibility
-		* of moving a window by *dragging* the titlebar, or even the titlbar's text widget.
+		* Builds the Widget from a ScriptDefinition or Writes the widget to a ScriptDefinition.
 		*/
-		void setDraggingWidget(Widget* w);
-
-		virtual void setFont(const std::string& fontScriptName, bool recursive = false);
+		virtual void serialize(SerialBase* b);
 		/**
-		* Allows clicking on a widget to not change the active widget.
+		* Set true if this widget accepts notification of keyboard events,
+		* false otherwise.
 		*/
-		void setGainFocusOnClick(bool gainFocus);
+		void setConsumeKeyboardEvents(bool consume);
 		/**
-		* Manually set mGrabbed to true.
+		* Sets the size and position (position relative to parent) of this Widget, respectively.
+		*/
+		void setDimensions(const Rect& r);
+		/**
+		* Sets the name of the SkinType applied when the widget is disabled.
+		* NOTE: Use "" to prevent the widget's apperance from changing when disabled.
+		*/
+		void setDisabledSkinType(const Ogre::String& SkinTypeName);
+		/**
+		* Set whether or not this widget can be dragged by the mouse cursor.
+		*/
+		void setDragable(bool dragable);
+		/**
+		* Enabled Widgets receive mouse and keyboard events via injections to the GUIManager.
+		* Disabled Widgets can only receive these events if they are manually fired.
+		*/
+		void setEnabled(bool enabled);
+		/**
+		* Notify the widget it is grabbed or not grabbed.
 		*/
 		void setGrabbed(bool grabbed);
+		/**
+		* Sets the height of the widget.
+		*/
 		virtual void setHeight(float pixelHeight);
 		/**
-		* If set to true, this widget will be hidden when its parent's widget is hidden.
-		* NOTE: All widgets have this set to true by default.
+		* Sets Horizontal Anchor of this widget. A Left anchor will enforce the widget to maintain
+		* its distance from the left side of its parent. A right anchor will enforce the widget to maintain
+		* its distance from the right side of its parent. Left and Right Anchor will grow and shrink the
+		* widget to maintain distance from both sides.
 		*/
-		void setHideWithParent(bool hide);
-		void setHorizontalAnchor(HorizontalAnchor a);
-		void setInheritOpacity(bool inherit);
-		void setInheritQuadLayer(bool inherit);
+		virtual void setHorizontalAnchor(HorizontalAnchor a);
 		/**
-		* If set to false, widget cannot be moved.
+		* Set the number of seconds the cursor has to idle over a widget
+		* before the ON_HOVER event is fired. (Commonly used for tool tips)
 		*/
-		void setMovingEnabled(bool enable);
+		void setHoverTime(float seconds);
 		/**
-		* Manipulates the offset used to determine this widgets zOrder in rendering.
+		* Sets the maximum size this widget can be.
 		*/
-		virtual void setOffset(int offset);
-		void setOpacity(float opacity);
+		void setMaxSize(const Size& s);
 		/**
-		* Manually set position of widget.
-		* NOTE: the values given are relative to the parent's top left corner, and not the screen!  For screen positioning,
-		*  user the setScreenPosition function.
+		* Sets the minimum size this widget can be.
 		*/
-		virtual void setPosition(const float& pixelX, const float& pixelY);
-		virtual void setPosition(const Point& pixelPoint);
-		void setPropagateEventFiring(Event e, bool propogate);
-		virtual void setQuadLayer(Quad::Layer l);
+		void setMinSize(const Size& s);
+		void setName(const Ogre::String& name);
 		/**
-		* Manually set position of widget.
-		* NOTE: the values given are relative to the render windows's top left corner, and not the parent widget!
+		* Sets the x and y position of this widget, relative to this widget's parent.
 		*/
-		void setScreenPosition(const float& pixelX, const float& pixelY);
-		void setScreenXPosition(const float& pixelX);
-		void setScreenYPosition(const float& pixelY);
-		void setScrollPaneAccessible(bool accessible);
-		virtual void setSkin(const std::string& skinName, bool recursive = false);
-		virtual void setSkinComponent(const std::string& skinComponent);
+		void setPosition(const Point& position);
 		/**
-		* Manually set size of widget.
+		* When set to true for a given event, the parent widget gets notification of the widget events
+		* received by this widget.
 		*/
-		virtual void setSize(const float& pixelWidth, const float& pixelHeight);
-		virtual void setSize(const Size& pixelSize);
+		void setPropagateEventFiring(WidgetEvent EVENT, bool propogate);
 		/**
-		* If set to true, this widget will be shown when its parent's widget is shown.
-		* NOTE: most widgets have this set to true by default. (Menu's are false by default)
+		* Sets whether the widget can be resized using the mouse.
 		*/
-		void setShowWithParent(bool show);
+		virtual void setResizable(bool resizable);
 		/**
-		* If set to true, borders will be created, provided the matching *.border.*.png textures exist.
-		* If set to false, any borders that have been created will be destroyed.
+		* Scroll the widget horizontally and vertically.
 		*/
-		void setUseBorders(bool use);
-		/*
-		* Sets the thickness of the borders on this widget
+		void setScroll(unsigned int scrollX, unsigned int scrollY);
+		/**
+		* Scroll the widget horizontally.
 		*/
-		void setBorderThickness(float thickness);
-		/*
-		* Sets the overlap of the borders on this widget
+		void setScrollX(unsigned int scrollX);
+		/**
+		* Scroll the widget vertically.
 		*/
-		void setBorderOverlap(float overlap);
-		/*
-		* If set to true, mouse LEAVE and ENTER events will take into account the exact pixel
-		* the cursor is over.
+		void setScrollY(unsigned int scrollY);
+		/**
+		* Sets whether the widget can be scrolled by its parent widget.
 		*/
-		void setUseTransparencyPicking(bool use, bool recursive = true);
-		void setVerticalAnchor(VerticalAnchor a);
+		void setScrollable(bool scrollable);
+		/**
+		* Sets the width and height of this widget.
+		*/
+		virtual void setSize(Size size);
+		/**
+		* Sets the "type" of this widget.  For example you
+		* can create several types of Button widgets: "close", "add", "fire.skill.1", etc.
+		* NOTE: The type property determines what is drawn to the screen.
+		*/
+		virtual void setSkinType(const Ogre::String type);
+		/**
+		* Sets whether the widget will receive mouse over events simply by having the mouse over
+		* its texture dimensions, or only when the cursor is over non transparent parts.
+		*/
+		void setTransparencyPicking(bool transparencyPicking);
+		/**
+		* Sets Vertical Anchor of this widget. A Top anchor will enforce the widget to maintain
+		* its distance from the top side of its parent. A bottom anchor will enforce the widget to maintain
+		* its distance from the bottom side of its parent. Top and Bottom Anchor will grow and shrink the
+		* widget to maintain distance from both sides.
+		*/
+		virtual void setVerticalAnchor(VerticalAnchor a);
+		/**
+		* Sets whether or not the widget gets drawn.
+		*/
+		void setVisible(bool visible);
+		/**
+		* Sets the widget of the widget.
+		*/
 		virtual void setWidth(float pixelWidth);
-		void setXPosition(float pixelX);
-		virtual void setYPosition(float pixelY);
-		/**
-		* Sets mVisible to true.  Widgets should override this to implement how they handle
-		* showing.
-		*/
-		virtual void show();
-		void showSkin();
-		/**
-		* Function required for certain widgets/functions to function properly, ie TextBox and fade.
-		*/
-		virtual void timeElapsed(const float time);
-		inline bool isUnderTiming() const {return mEnabled;};
 
-		/*
-		* Allows texture of widget to change. (behavior by default)
+		/**
+		* Recalculate Client dimensions, relative to Widget's actual dimensions.
 		*/
-		void unlockTexture();
-		/** Checks if this widget property are subject
-		*   to modification upon time
+		virtual void updateClientDimensions();
+		/**
+		* Recalculate Screen and client dimensions and force a redrawing of the widget.
 		*/
-		inline bool getUnderEffect() const { return mUnderEffect; }
-		/** set widget flag underEffect to that if user takes control
-		*   he knows that he has to disable effect before.
-		*/
-		void setUnderEffect(bool val) { mUnderEffect = val; }
+		virtual void updateTexturePosition();
 
 	protected:
-		std::string generateName(Widget::Type t);
-
-		virtual void setGUIManager(GUIManager* gm);
-		virtual void setParent(Widget* parent);
-		virtual void setQuadContainer(QuadContainer* container);
-
-		// Positions/sizes the widget according to parent's size.
-		virtual void _applyAnchors();
-		void _deriveAnchorValues();
-	protected:
+		Widget(const Ogre::String& name);
 		virtual ~Widget();
 
-		GUIManager*					mGUIManager;
-		std::string					mInstanceName;
-		Type						mWidgetType;
+		// Used mainly for serialization
+		Ogre::String mName;
 
-		// PROPERTIES
-		bool						mCanResize;
-		bool						mDragXOnly;
-		bool						mDragYOnly;
-		std::string					mFontName;
-		std::string					mSkinName;
-		bool						mHideSkin;
-		bool						mVisible;
-		bool						mEnabled;
-		bool						mGainFocusOnClick;
-		bool						mGrabbed;
-		bool						mTextureLocked;
-		Quad::Layer					mQuadLayer;
-		bool						mInheritQuadLayer;
-		bool						mMovingEnabled;
-		bool						mDraggingEnabled;
-		std::string					mSkinComponent;
-		bool						mScrollPaneAccessible;
-		bool						mInheritOpacity;
-		float						mOpacity;
-		// number of parents iterated to get to sheet.
-		int							mOffset;
-		bool						mHideWithParent;
-		bool						mShowWithParent;
-		bool						mUseTransparencyPicking;
+		WidgetDesc* mWidgetDesc;
 
-		Widget*						mParentWidget;
-		Widget*						mWidgetToDrag;
+		bool mGrabbed;
+		bool mBeingDragged;
 
-		// Used for overTransparentPixel function
-		SkinSet*					mSkinSet;
-
-		// ANCHORS
-		HorizontalAnchor			mHorizontalAnchor;
-		VerticalAnchor				mVerticalAnchor;
-		float						mPixelsFromParentRight;
-		float						mPixelsFromParentBottom;
-
-		// Implement the Enter/Leave functionality.
-		bool						mEntered;
-
-		// state that this widget property are subject
-		// to modification upon time
-		bool						mUnderEffect;
-
-		Quad*						mQuad;
-		// All widgets have at least 1 quad, but can use more.
-		QuadArray					mQuads;
-		Quad* _createQuad();
-
-		// Keeping track of the QuadContainer this Quad belongs to.
-		QuadContainer*				mQuadContainer;
-
-		Widget*						_createChild(const std::string& name, Type t);
-		// List of any child widgets this widget may have.
-		WidgetArray					mChildWidgets;
-
-		virtual Widget*				_createComponent(const std::string& name, Type t);
-		bool						_hasComponent(const std::string& name);
-		WidgetArray					mComponents;
-
-		// Pixel position relative to parent.  (0,0) is the Parent Widgets top Left corner.
-		Point						mPosition;
-		// Used for scrolling widgets.
-		Point						mScrollOffset;
-		// Size in pixels.
-		Size						mSize;
-
-		bool						mUseBorders;
-		void						_createBorders();
-		void						_destroyBorders();
-		float						mBorderThickness;
-		float						mBorderOverlap;
+		Widget* mParentWidget;
+		Window* mWindow;
 
 		// Event handlers! One List per event per widget
-		EventHandlerArray mUserEventHandlers[EVENT_END_OF_LIST];
-		bool mPropogateEventFiring[EVENT_END_OF_LIST];
+		std::vector<EventHandlerSlot*> mWidgetEventHandlers[WIDGET_EVENT_COUNT];
 
-		EventHandlerArray mEventListeners;
+		// Area for child widgets, inside borders if they exist.
+		Rect mClientDimensions;
+		// Absolute position of the widget relative to it's Window's texture
+		// For Windows (Sheet), this is always 0,0
+		Point mTexturePosition;
 
-		void _initEventHandlers();
+		// The skin currently used to draw the widget
+		SkinType* mSkinType;
+		// The name of the SkinElement to use for border detection and client area calculations
+		Ogre::String mSkinElementName;
 
-		virtual void _setScrollXOffset(float pixelXOffset);
-		virtual void _setScrollYOffset(float pixelYOffset);
-	protected:
-		virtual void onPositionChanged(const EventArgs& args);
-		virtual void onSizeChanged(const EventArgs& args);
+		// Prevents initializing the widget twice.
+		bool mInitialized;
+
+		// True if this widget is used as a component, false otherwise.
+		// Components do not have to be drawn inside client dimensions.
+		bool mComponent;
+
+		Point mScrollOffset;
+
+		/**
+		* Internal function to set a widget's parent, updating its window reference and position.
+		*/
+		virtual void setParent(Widget* parent);
+
+		/**
+		* Prepares the widget for drawing.
+		*/
+		virtual void draw();
+
+		/**
+		* Outlines how the widget is drawn to the current render target
+		*/
+		virtual void onDraw() = 0;
+
+	private:
+
 	};
 }
 

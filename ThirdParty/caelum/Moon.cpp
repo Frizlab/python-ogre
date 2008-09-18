@@ -141,4 +141,24 @@ namespace Caelum
     void Moon::setPhase (Ogre::Real phase) {
 	    getFpParams ()->setNamedConstant ("phase", phase);	
     }
+
+    void Moon::setQueryFlags (uint flags) {
+        mMoonBB->setQueryFlags (flags);
+        mBackBB->setQueryFlags (flags);
+    }
+
+    uint Moon::getQueryFlags () const {
+        assert (mMoonBB->getQueryFlags () == mBackBB->getQueryFlags ());
+        return mMoonBB->getQueryFlags ();
+    }
+
+    void Moon::setVisibilityFlags (uint flags) {
+        mMoonBB->setVisibilityFlags (flags);
+        mBackBB->setVisibilityFlags (flags);
+    }
+
+    uint Moon::getVisibilityFlags () const {
+        assert (mMoonBB->getVisibilityFlags () == mBackBB->getVisibilityFlags ());
+        return mMoonBB->getVisibilityFlags ();
+    }
 }

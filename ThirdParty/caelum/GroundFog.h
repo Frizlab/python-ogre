@@ -24,22 +24,23 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "CaelumPrerequisites.h"
 #include "CameraBoundElement.h"
 
-namespace Caelum {
-
-/** Exponential ground fog system implementation.
- *
- *  This class controls CaelumGroundFog passes in a potentially large number
- *  of materials, changing shader program parameters. This class keeps a list
- *  of passes to control; which can be build based on pass name.
- *
- *  This simulates a field of fog where "absorption" at a certain point is
- *	exp(-verticalDecay * (h - fogLevel)). This absorption is multiplicative,
- *	the total fog alpha is e^(-density * absorption_on_view_path).
- *
- *	You can set verticalDecay to 0 and get standard GL_EXP fog. Don't actually
- *	do that though because you'll get a division by 0.
- */
-class CAELUM_EXPORT GroundFog: public CameraBoundElement {
+namespace Caelum
+{
+    /** Exponential ground fog system implementation.
+     *
+     *  This class controls CaelumGroundFog passes in a potentially large number
+     *  of materials, changing shader program parameters. This class keeps a list
+     *  of passes to control; which can be build based on pass name.
+     *
+     *  This simulates a field of fog where "absorption" at a certain point is
+     *	exp(-verticalDecay * (h - fogLevel)). This absorption is multiplicative,
+     *	the total fog alpha is e^(-density * absorption_on_view_path).
+     *
+     *	You can set verticalDecay to 0 and get standard GL_EXP fog. Don't actually
+     *	do that though because you'll get a division by 0.
+     */
+    class CAELUM_EXPORT GroundFog: public CameraBoundElement
+    {
 	public:
 		static const Ogre::String DEFAULT_PASS_NAME;
 
@@ -139,15 +140,19 @@ class CAELUM_EXPORT GroundFog: public CameraBoundElement {
 		// Called whenever something changes to update the sky dome.
 		void updateSkyFogging();
 
+    protected:
+        /// Handle far radius.
+	    virtual void setFarRadius (Ogre::Real radius);
+
     public:
 		/// Handle camera change.
 		virtual void notifyCameraChanged (Ogre::Camera *cam);
 
-    protected:
-        /// Handle far radius.
-	    virtual void setFarRadius (Ogre::Real radius);
-};
-
+        void setQueryFlags (uint flags) { mDomeEntity->setQueryFlags (flags); }
+        uint getQueryFlags () const { return mDomeEntity->getQueryFlags (); }
+        void setVisibilityFlags (uint flags) { mDomeEntity->setVisibilityFlags (flags); }
+        uint getVisibilityFlags () const { return mDomeEntity->getVisibilityFlags (); }
+    };
 }
 
 #endif //GROUNDFOG_H

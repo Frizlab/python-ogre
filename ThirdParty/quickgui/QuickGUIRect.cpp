@@ -1,30 +1,20 @@
-#include "QuickGUIPrecompiledHeaders.h"
-
 #include "QuickGUIRect.h"
 
 namespace QuickGUI
 {
-	Rect::Rect() :
-		x(0),
-		y(0),
-		width(0),
-		height(0)
+	Rect::Rect()
 	{
 	}
 
 	Rect::Rect(float X, float Y, float Width, float Height) :
-		x(X),
-		y(Y),
-		width(Width),
-		height(Height)
+		position(X,Y),
+		size(Width,Height)
 	{
 	}
 
 	Rect::Rect(Point p, Size s) :
-		x(p.x),
-		y(p.y),
-		width(s.width),
-		height(s.height)
+		position(p),
+		size(s)
 	{
 	}
 
@@ -34,10 +24,10 @@ namespace QuickGUI
 
 		if(intersectsRect(r))
 		{
-			retVal.x = std::max(x,r.x);
-			retVal.y = std::max(y,r.y);
-			retVal.width = std::min(x + width, r.x + r.width) - retVal.x;
-			retVal.height = std::min(y + height, r.y + r.height) - retVal.y;
+			retVal.position.x = std::max(position.x,r.position.x);
+			retVal.position.y = std::max(position.y,r.position.y);
+			retVal.size.width = std::min(position.x + size.width, r.position.x + r.size.width) - retVal.position.x;
+			retVal.size.height = std::min(position.y + size.height, r.position.y + r.size.height) - retVal.position.y;
 		}
 
 		return retVal;
@@ -45,10 +35,10 @@ namespace QuickGUI
 
 	bool Rect::inside(const Rect& r) const
 	{
-		if( (x >= r.x) &&
-			(y >= r.y) &&
-			((x + width) <= (r.x + r.width)) &&
-			((y + height) <= (r.y + r.height)) )
+		if( (position.x >= r.position.x) &&
+			(position.y >= r.position.y) &&
+			((position.x + size.width) <= (r.position.x + r.size.width)) &&
+			((position.y + size.height) <= (r.position.y + r.size.height)) )
 			return true;
 
 		return false;
@@ -57,11 +47,11 @@ namespace QuickGUI
 	bool Rect::intersectsRect(const Rect& r) const
 	{
 		// if our left side is greater than r's right side, or our right side is less than r's left side, intersection is not possible.
-		if( (x >= (r.x + r.width)) || ((x + width) <= r.x) )
+		if( (position.x > (r.position.x + r.size.width)) || ((position.x + size.width) < r.position.x) )
 			return false;
 
 		// if our top is greater than r's bottom, or our bottom is less than r's top, intersection is not possible.
-		if( (y >= (r.y + r.height)) || ((y + height) <= r.y) )
+		if( (position.y > (r.position.y + r.size.height)) || ((position.y + size.height) < r.position.y) )
 			return false;
 
 		// If the above conditions are not met, than there must be overlap between our dimensions and r's dimensions.
@@ -73,13 +63,19 @@ namespace QuickGUI
 		float xPos = pixelPosition.x;
 		float yPos = pixelPosition.y;
 
-		if( (xPos < x) || (xPos > (x + width)) )
+		if( (xPos < position.x) || (xPos > (position.x + size.width)) )
 			return false;
 
-		if( (yPos < y) || (yPos > (y + height)) )
+		if( (yPos < position.y) || (yPos > (position.y + size.height)) )
 			return false;
 
 		return true;
+	}
+
+	void Rect::translate(const Point& p)
+	{
+		position.x += p.x;
+		position.y += p.y;
 	}
 
 	const Rect Rect::ZERO( 0, 0, 0, 0 );

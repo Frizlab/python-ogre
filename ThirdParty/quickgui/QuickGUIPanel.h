@@ -1,141 +1,125 @@
 #ifndef QUICKGUIPANEL_H
 #define QUICKGUIPANEL_H
 
-#include "OgreStringConverter.h"
+#include "QuickGUIContainerWidget.h"
 
-#include "QuickGUIForwardDeclarations.h"
-#include "QuickGUIBorder.h"
 #include "QuickGUIButton.h"
-#include "QuickGUICheckBox.h"
-#include "QuickGUIComboBox.h"
-#include "QuickGUIConsole.h"
+#include "QuickGUIHScrollBar.h"
 #include "QuickGUIImage.h"
-#include "QuickGUILabelArea.h"
-#include "QuickGUINStateButton.h"
+#include "QuickGUILabel.h"
+#include "QuickGUIList.h"
 #include "QuickGUIProgressBar.h"
-#include "QuickGUIRadioButtonGroup.h"
-#include "QuickGUIScrollPane.h"
-#include "QuickGUIText.h"
+#include "QuickGUITextArea.h"
 #include "QuickGUITextBox.h"
-#include "QuickGUITree.h"
-#include "QuickGUIHorizontalTrackBar.h"
-#include "QuickGUIVerticalTrackBar.h"
-#include "QuickGUIWidget.h"
-#include "QuickGUIQuadContainer.h"
+#include "QuickGUIVScrollBar.h"
 
 namespace QuickGUI
 {
-	/** Represents a Widget Container.
-	@remarks
-	The Panel class has the ability to create the majority of defined Widgets.
-	The Sheet and Window Widgets derive from this widget (Panel), giving them the
-	same abilities.
-	@note
-	Panels cannot create the TitleBar, Window, or Sheet widget.
-	@note
-	Panels are meant to be created via the Window and Sheet widget.
-	*/
-	class _QuickGUIExport Panel :
-		public Widget,
-		public QuadContainer,
-		public RadioButtonGroup
+	class _QuickGUIExport PanelDesc :
+			public ContainerWidgetDesc
 	{
 	public:
-		/** Constructor
-            @param
-                name The name to be given to the widget (must be unique).
-            @param
-                dimensions The x Position, y Position, width, and height of the widget.
-			@param
-				positionMode The GuiMetricsMode for the values given for the position. (absolute/relative/pixel)
-			@param
-				sizeMode The GuiMetricsMode for the values given for the size. (absolute/relative/pixel)
-			@param
-				material Ogre material defining the widget image.
-			@param
-				group QuadContainer containing this widget.
-			@param
-				parentWidget parent widget which created this widget.
-        */
-		Panel(const std::string& name, GUIManager* gm);
+		PanelDesc();
 
-		virtual void addChild(Widget* w);
+		virtual Ogre::String getClass() { return "PanelDesc"; }
+		/**
+		* Returns the class of Widget this desc object is meant for.
+		*/
+		virtual Ogre::String getWidgetClass() { return "Panel"; }
 
-		Button* createButton();
-		Button* createButton(const std::string& name);
+		// Factory method
+		static WidgetDesc* factory() { return new PanelDesc(); }
 
-		CheckBox* createCheckBox();
-		CheckBox* createCheckBox(const std::string& name);
+		/**
+		* Outlines how the desc class is written to XML and read from XML.
+		*/
+		//virtual void serialize(SerialBase* b);
+	};
 
-		ComboBox* createComboBox();
-		ComboBox* createComboBox(const std::string& name);
+	class _QuickGUIExport Panel :
+		public ContainerWidget
+	{
+	public:
+		// Skin Constants
+		static const Ogre::String BACKGROUND;
+		// Define Skin Structure
+		static void registerSkinDefinition();
+	public:
+		friend class GUIManager;
 
-		Console* createConsole();
-		Console* createConsole(const std::string& name);
+		// Factory method
+		static Widget* factory(const Ogre::String& widgetName);
+	public:
 
-		HorizontalScrollBar* createHorizontalScrollBar();
-		HorizontalScrollBar* createHorizontalScrollBar(const std::string& name);
+		/**
+		* Internal function, do not use.
+		*/
+		virtual void _initialize(WidgetDesc* d);
 
-		Image* createImage();
-		Image* createImage(const std::string& name);
+		/**
+		* Creates a user defined custom widget.
+		*/
+		Widget* createCustomWidget(const Ogre::String& className, WidgetDesc& d);
 
-		Label* createLabel();
-		Label* createLabel(const std::string& name);
+		/**
+		* Creates a child Button.
+		*/
+		Button* createButton(ButtonDesc& d);
+		/**
+		* Creates a child HScrollBar.
+		*/
+		HScrollBar* createHScrollBar(HScrollBarDesc& d);
+		/**
+		* Creates a child Image.
+		*/
+		Image* createImage(ImageDesc& d);
+		/**
+		* Creates a child Label.
+		*/
+		Label* createLabel(LabelDesc& d);
+		/**
+		* Creates a child List.
+		*/
+		List* createList(ListDesc& d);
+		/**
+		* Creates a child Panel.
+		*/
+		Panel* createPanel(PanelDesc& d);
+		/**
+		* Creates a child ProgressBar.
+		*/
+		ProgressBar* createProgressBar(ProgressBarDesc& d);
+		/**
+		* Creates a child TextArea.
+		*/
+		TextArea* createTextArea(TextAreaDesc& d);
+		/**
+		* Creates a child TextBox.
+		*/
+		TextBox* createTextBox(TextBoxDesc& d);
+		/**
+		* Creates a child VScrollBar.
+		*/
+		VScrollBar* createVScrollBar(VScrollBarDesc& d);
 
-		List* createList();
-		List* createList(const std::string& name);
-
-		LabelArea* createLabelArea();
-		LabelArea* createLabelArea(const std::string& name);
-
-		NStateButton* createNStateButton();
-		NStateButton* createNStateButton(const std::string& name);
-
-		Panel* createPanel();
-		Panel* createPanel(const std::string& name);
-
-		ProgressBar* createProgressBar();
-		ProgressBar* createProgressBar(const std::string& name);
-
-		TextBox* createTextBox();
-		TextBox* createTextBox(const std::string& name);
-
-//		Tree* createTree();
-//		Tree* createTree(const std::string& name);
-
-		HorizontalTrackBar* createHorizontalTrackBar();
-		HorizontalTrackBar* createHorizontalTrackBar(const std::string& name);
-
-		VerticalScrollBar* createVerticalScrollBar();
-		VerticalScrollBar* createVerticalScrollBar(const std::string& name);
-
-		VerticalTrackBar* createVerticalTrackBar();
-		VerticalTrackBar* createVerticalTrackBar(const std::string& name);
-
-		void enableScrollPane();
-
-		void disableScrollPane();
-
-		virtual QuadContainer* getQuadContainer();
-		ScrollPane* getScrollPane();
-		virtual Widget* getTargetWidget(const Point& pixelPosition);
-		virtual const Widget* getTargetWidget(const Point& pixelPosition) const;
-
-		virtual void show();
+		/**
+		* Returns the class name of this Widget.
+		*/
+		virtual Ogre::String getClass();
 
 	protected:
+		Panel(const Ogre::String& name);
 		virtual ~Panel();
-		virtual void setQuadContainer(QuadContainer* container);
-		virtual Widget*	_createComponent(const std::string& name, Type t);
-	protected:
-		ScrollPane* mScrollPane;
 
-		VerticalScrollBar* mRightScrollBar;
-		HorizontalScrollBar* mBottomScrollBar;
+		// Pointer pointing to mWidgetDesc object, but casted for quick use.
+		PanelDesc* mPanelDesc;
 
-		void onChildAdded(const EventArgs& args);
-		void onChildRemoved(const EventArgs& args);
-		void onSizeChanged(const EventArgs& args);
+		/**
+		* Outlines how the widget is drawn to the current render target
+		*/
+		virtual void onDraw();
+
+	private:
 	};
 }
 

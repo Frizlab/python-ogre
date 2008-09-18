@@ -18,18 +18,18 @@ You should have received a copy of the GNU Lesser General Public License
 along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef SKYDOME_H
-#define SKYDOME_H
+#ifndef CAELUM__SKYDOME_H
+#define CAELUM__SKYDOME_H
 
 #include "CaelumPrerequisites.h"
 #include "CameraBoundElement.h"
 
-namespace Caelum {
-
-/** A sky dome element.
- */
-class CAELUM_EXPORT SkyDome : public CameraBoundElement {
-// Attributes -----------------------------------------------------------------
+namespace Caelum
+{
+    /** A sky dome element.
+     */
+    class CAELUM_EXPORT SkyDome : public CameraBoundElement
+    {
 	private:
 		/** Control scene node.
 		 */
@@ -46,13 +46,15 @@ class CAELUM_EXPORT SkyDome : public CameraBoundElement {
 		/// Reference to the sky dome material.
 		Ogre::MaterialPtr mMaterial;
 
+        /// Reference to the sky dome entity.
+        Ogre::Entity* mEntity;
+
 		/// True if selected technique has shaders.
 		bool mShadersEnabled;
 
         /// If haze is enabled.
         bool mHazeEnabled;
 
-// Methods --------------------------------------------------------------------
 	public:
 		/** Constructor
          *  This will setup some nice defaults.
@@ -101,6 +103,11 @@ class CAELUM_EXPORT SkyDome : public CameraBoundElement {
          */
         void setHazeEnabled (bool value);
 
+        void setQueryFlags (uint flags) { mEntity->setQueryFlags (flags); }
+        uint getQueryFlags () const { return mEntity->getQueryFlags (); }
+        void setVisibilityFlags (uint flags) { mEntity->setVisibilityFlags (flags); }
+        uint getVisibilityFlags () const { return mEntity->getVisibilityFlags (); }
+
     public:
 		/// Handle camera change.
 		virtual void notifyCameraChanged (Ogre::Camera *cam);
@@ -108,8 +115,7 @@ class CAELUM_EXPORT SkyDome : public CameraBoundElement {
     protected:
         /// Handle far radius.
 	    virtual void setFarRadius (Ogre::Real radius);
-};
+    };
+}
 
-} // namespace Caelum
-
-#endif //SKYDOME_H
+#endif //CAELUM__SKYDOME_H

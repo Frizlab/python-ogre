@@ -88,8 +88,12 @@ class CAELUM_EXPORT Moon : public BaseSkyLight {
     public:
 		/// Handle camera change.
 		virtual void notifyCameraChanged (Ogre::Camera *cam);
-};
 
+        virtual void setQueryFlags (uint flags);
+        virtual uint getQueryFlags () const;
+        virtual void setVisibilityFlags (uint flags);
+        virtual uint getVisibilityFlags () const;
+    };
 }
 
 #endif // CAELUM__MOON_H

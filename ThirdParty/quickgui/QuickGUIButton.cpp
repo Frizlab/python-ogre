@@ -1,117 +1,170 @@
-#include "QuickGUIPrecompiledHeaders.h"
-
-#include "QuickGUISkinSetManager.h"
-
 #include "QuickGUIButton.h"
-#include "QuickGUIManager.h"
-#include "OgreFontManager.h"
-#include "OgreFont.h"
+#include "QuickGUISkinDefinitionManager.h"
 
 namespace QuickGUI
 {
-	Button::Button(const std::string& name, GUIManager* gm) :
-		Label(name,gm),
-		mButtonDown(false),
-		mDefaultSkinComponent("")
-	{
-		mWidgetType = TYPE_BUTTON;
-		mSkinComponent = ".button";
-		mSize = Size(75,25);
+	const Ogre::String Button::DEFAULT = "default";
+	const Ogre::String Button::OVER = "over";
+	const Ogre::String Button::DOWN = "down";
 
-		addEventHandler(EVENT_MOUSE_ENTER,&Button::onMouseEnters,this);
-		addEventHandler(EVENT_MOUSE_LEAVE,&Button::onMouseLeaves,this);
-		addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&Button::onMouseButtonDown,this);
-		addEventHandler(EVENT_MOUSE_BUTTON_UP,&Button::onMouseButtonUp,this);
+	void Button::registerSkinDefinition()
+	{
+		SkinDefinition* d = new SkinDefinition("Button");
+		d->defineSkinElement(DEFAULT);
+		d->defineSkinElement(OVER);
+		d->defineSkinElement(DOWN);
+		d->definitionComplete();
+
+		SkinDefinitionManager::getSingleton().registerSkinDefinition("Button",d);
+	}
+
+	ButtonDesc::ButtonDesc() :
+		LabelDesc()
+	{
+	}
+
+	void ButtonDesc::serialize(SerialBase* b)
+	{
+		LabelDesc::serialize(b);
+	}
+
+	Button::Button(const Ogre::String& name) :
+		Label(name),
+		mCurrentButtonState(BUTTON_STATE_DEFAULT)
+	{
+		mSkinElementName = DEFAULT;
 	}
 
 	Button::~Button()
 	{
 	}
 
-	void Button::applyButtonDownTexture()
+	void Button::_initialize(WidgetDesc* d)
 	{
-		// apply button ".down" texture
-		mQuad->setTextureCoordinates(mSkinSet->getTextureCoordinates(mSkinName + mSkinComponent + ".down" + mSkinSet->getImageExtension()));
+		Label::_initialize(d);
 
-		for(std::vector<Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
-		{
-			if((*it)->getWidgetType() == TYPE_BORDER)
-			{
-				dynamic_cast<Border*>(*it)->_notifyParentSkinComponent(mSkinComponent + ".down");
-			}
-		}
+		mDesc = dynamic_cast<LabelDesc*>(mWidgetDesc);
+
+		setSkinType(d->skinTypeName);
+
+		Widget::addWidgetEventHandler(WIDGET_EVENT_MOUSE_ENTER,&Button::onMouseEnter,this);
+		Widget::addWidgetEventHandler(WIDGET_EVENT_MOUSE_LEAVE,&Button::onMouseLeave,this);
+		Widget::addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&Button::onMouseLeftButtonDown,this);
+		Widget::addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_UP,&Button::onMouseLeftButtonUp,this);
 	}
 
-	void Button::applyButtonOverTexture()
+	Widget* Button::factory(const Ogre::String& widgetName)
 	{
-		// apply button ".over" texture
-		mQuad->setTextureCoordinates(mSkinSet->getTextureCoordinates(mSkinName + mSkinComponent + ".over" + mSkinSet->getImageExtension()));
+		Widget* newWidget = new Button(widgetName);
+		
+		newWidget->_createDescObject("ButtonDesc");
 
-		for(std::vector<Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
-		{
-			if((*it)->getWidgetType() == TYPE_BORDER)
-			{
-				dynamic_cast<Border*>(*it)->_notifyParentSkinComponent(mSkinComponent + ".over");
-			}
-		}
+		return newWidget;
 	}
 
-	void Button::applyDefaultTexture()
+	void Button::addButtonEventHandler(ButtonEvent EVENT, EventHandlerSlot* function)
 	{
-		mQuad->setTextureCoordinates(mSkinSet->getTextureCoordinates(mSkinName + mSkinComponent + mSkinSet->getImageExtension()));
-
-		for(std::vector<Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
-		{
-			if((*it)->getWidgetType() == TYPE_BORDER)
-			{
-				dynamic_cast<Border*>(*it)->_notifyParentSkinComponent(mSkinComponent);
-			}
-		}
+		mButtonEventHandlers[EVENT].push_back(function);
 	}
 
-	bool Button::isDown()
+	Ogre::String Button::getClass()
 	{
-		return mButtonDown;
+		return "Button";
 	}
 
-	void Button::onMouseButtonDown(const EventArgs& args) 
+	bool Button::fireButtonEvent(ButtonEvent e, EventArgs& args)
 	{
-		if(dynamic_cast<const MouseEventArgs&>(args).button == MB_Left)
-		{
-			applyButtonDownTexture();
-			mButtonDown = true;
-		}
+		if(mButtonEventHandlers[e].empty())
+			return false;
+
+		// Execute registered handlers
+		std::vector<EventHandlerSlot*>* userEventHandlers = &(mButtonEventHandlers[e]);
+		for(std::vector<EventHandlerSlot*>::iterator it = userEventHandlers->begin(); it != userEventHandlers->end(); ++it )
+			(*it)->execute(args);
+
+		return true;
 	}
 
-	void Button::onMouseButtonUp(const EventArgs& args) 
-	{ 
-		if(dynamic_cast<const MouseEventArgs&>(args).button == MB_Left)
-		{
-			applyButtonOverTexture();
-			mButtonDown = false;
-		}
-	}
-
-	void Button::onMouseEnters(const EventArgs& args) 
-	{ 
-		if(mGrabbed) 
-		{
-			applyButtonDownTexture();
-			mButtonDown = true;
-		}
-		else 
-			applyButtonOverTexture();
-	}
-
-	void Button::onMouseLeaves(const EventArgs& args) 
-	{ 
-		applyDefaultTexture();
-		mButtonDown = false;
-	}
-
-	void Button::setSkinComponent(const std::string& skinComponent)
+	ButtonState Button::getState()
 	{
-		Widget::setSkinComponent(skinComponent);
-		mDefaultSkinComponent = skinComponent;
+		return mCurrentButtonState;
+	}
+
+	void Button::onDraw()
+	{
+		Brush* brush = Brush::getSingletonPtr();
+
+		brush->setFilterMode(mDesc->brushFilterMode);
+
+		SkinType* st = mSkinType;
+		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+
+		switch(mCurrentButtonState)
+		{
+		case BUTTON_STATE_DEFAULT:		mSkinElementName = DEFAULT;		break;
+		case BUTTON_STATE_DOWN:			mSkinElementName = DOWN;		break;
+		case BUTTON_STATE_OVER:			mSkinElementName = OVER;		break;
+		}
+
+		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
+
+		Ogre::ColourValue prevColor = brush->getColour();
+		Rect prevClipRegion = brush->getClipRegion();
+
+		Rect clipRegion;
+		clipRegion.size = 
+			Size(
+				mDesc->dimensions.size.width - mDesc->padding[PADDING_RIGHT],
+				mDesc->dimensions.size.height - mDesc->padding[PADDING_BOTTOM]);
+		clipRegion.position = mTexturePosition;
+		clipRegion.translate(Point(mDesc->padding[PADDING_LEFT],mDesc->padding[PADDING_TOP]));
+
+		brush->setClipRegion(prevClipRegion.getIntersection(clipRegion));
+
+		mText->draw(clipRegion.position);
+
+		brush->setClipRegion(prevClipRegion);
+
+		Brush::getSingleton().setColor(prevColor);
+	}
+
+	void Button::onMouseEnter(const EventArgs& args)
+	{
+		setState(BUTTON_STATE_OVER);
+	}
+
+	void Button::onMouseLeave(const EventArgs& args)
+	{
+		setState(BUTTON_STATE_DEFAULT);
+	}
+
+	void Button::onMouseLeftButtonDown(const EventArgs& args)
+	{
+		const MouseEventArgs& mea = dynamic_cast<const MouseEventArgs&>(args);
+
+		if(mea.button == MB_Left)
+			setState(BUTTON_STATE_DOWN);
+	}
+
+	void Button::onMouseLeftButtonUp(const EventArgs& args)
+	{
+		const MouseEventArgs& mea = dynamic_cast<const MouseEventArgs&>(args);
+
+		if(mea.button == MB_Left)
+			setState(BUTTON_STATE_OVER);
+	}
+
+	void Button::setState(ButtonState s)
+	{
+		if(mCurrentButtonState == s)
+			return;
+
+		mCurrentButtonState = s;
+		
+		redraw();
+
+		WidgetEventArgs args(this);
+		fireButtonEvent(BUTTON_EVENT_STATE_CHANGED, args);
 	}
 }

@@ -21,11 +21,13 @@ def configure_shared_ptr( mb ):
     exposer.expose()
 
 def docit ( general, i, o ): 
+    """ helper function to generate a semi nice documentation string
+    """
     docs = "Python-Ogre Modified Function Call\\n" + general +"\\n"
     docs = docs + "Input: " + i + "\\n"
     docs = docs + "Output: " + o + "\\n\\\n"
     return docs
-    
+        
 def docInfo ( mb, module ):
     i = '"This module is part of the Python-Ogre project (www.python-ogre.org)\nIt was built on %(timestamp)s and is a member of the %(version)s release. "'
     timestamp = time.ctime()
@@ -236,13 +238,6 @@ def extract_func_name ( name ):
     ## so now return the function call
     return name[start:end]
         
-def docit ( general, i, o ): 
-    """ helper function to generate a semi nice documentation string
-    """
-    docs = "Python-Ogre Modified Function Call\\n" + general +"\\n"
-    docs = docs + "Input: " + i + "\\n"
-    docs = docs + "Output: " + o + "\\n\\\n"
-    return docs
         
 def Auto_Document ( mb, namespace=None ):
     """Indicate that the functions being exposed are declated protected or private in the C++ code

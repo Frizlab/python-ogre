@@ -1,93 +1,183 @@
-#include "QuickGUIPrecompiledHeaders.h"
-
-#include "OgreMaterial.h"
-#include "OgreTechnique.h"
-#include "OgrePass.h"
-
 #include "QuickGUIImage.h"
-#include "QuickGUIManager.h"
-#include "QuickGUIVector4.h"
+#include "QuickGUISkinDefinitionManager.h"
+#include "OgreTextureManager.h"
 
 namespace QuickGUI
 {
-	Image::Image(const std::string& name, GUIManager* gm) :
-		Widget(name,gm),
-		mMaterialName("")
+	const Ogre::String Image::BACKGROUND = "background";
+
+	void Image::registerSkinDefinition()
 	{
-		mWidgetType = TYPE_IMAGE;
-		mSkinComponent = ".image";
-		mSize = Size(50,50);
+		SkinDefinition* d = new SkinDefinition("Image");
+		d->defineSkinElement(BACKGROUND);
+		d->definitionComplete();
+
+		SkinDefinitionManager::getSingleton().registerSkinDefinition("Image",d);
+	}
+
+	ImageDesc::ImageDesc() :
+		WidgetDesc()
+	{
+		transparencyPicking = false;
+
+		imageName = "";
+		tileImage = false;
+		updateEveryFrame = false;
+	}
+
+	void ImageDesc::serialize(SerialBase* b)
+	{
+		WidgetDesc::serialize(b);
+
+		b->IO("ImageName",&imageName);
+		b->IO("TileImage",&tileImage);
+		b->IO("UpdateEveryFrame",&updateEveryFrame);
+	}
+
+	Image::Image(const Ogre::String& name) :
+		Widget(name),
+		mUpdateTimer(NULL)
+	{
+		mSkinElementName = BACKGROUND;
 	}
 
 	Image::~Image()
 	{
-
 	}
 
-	std::string Image::getMaterialName()
+	void Image::_initialize(WidgetDesc* d)
 	{
-		return mMaterialName;
+		d->transparencyPicking = false;
+
+		Widget::_initialize(d);
+
+		mDesc = dynamic_cast<ImageDesc*>(mWidgetDesc);
+
+		ImageDesc* id = dynamic_cast<ImageDesc*>(d);
+
+		setSkinType(id->skinTypeName);
+		setImage(id->imageName);
+		setTileImage(id->tileImage);
+		setUpdateEveryFrame(id->updateEveryFrame);
 	}
 
-	bool Image::overTransparentPixel(const Point& mousePixelPosition) const
+	Widget* Image::factory(const Ogre::String& widgetName)
 	{
-		if(mMaterialName == "")
-			return Widget::overTransparentPixel(mousePixelPosition);
-		return false;
+		Widget* newWidget = new Image(widgetName);
+
+		newWidget->_createDescObject("ImageDesc");
+
+		return newWidget;
 	}
 
-	void Image::setMaterial(const std::string& materialName)
+	Ogre::String Image::getClass()
 	{
-		if(mTextureLocked)
+		return "Image";
+	}
+
+	Ogre::String Image::getImage()
+	{
+		return mDesc->imageName;
+	}
+
+	bool Image::getTileImage()
+	{
+		return mDesc->tileImage;
+	}
+
+	bool Image::getUpdateEveryFrame()
+	{
+		return mDesc->updateEveryFrame;
+	}
+
+	void Image::onDraw()
+	{
+		Brush* brush = Brush::getSingletonPtr();
+
+		brush->setFilterMode(mDesc->brushFilterMode);
+
+		SkinType* st = mSkinType;
+		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+
+		mSkinElementName = BACKGROUND;
+		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
+
+		if(mDesc->imageName != "")
+		{
+			Ogre::ColourValue prevColor = brush->getColour();
+			Rect prevClipRegion = brush->getClipRegion();
+
+			Rect clipRegion = mClientDimensions;
+			clipRegion.translate(mTexturePosition);
+
+			brush->setClipRegion(prevClipRegion.getIntersection(clipRegion));
+
+			brush->setTexture(mDesc->imageName);
+			if(mDesc->tileImage)
+				brush->drawTiledRectangle(prevClipRegion.getIntersection(clipRegion),UVRect(0,0,1,1));
+			else
+				brush->drawRectangle(prevClipRegion.getIntersection(clipRegion),UVRect(0,0,1,1));
+
+			brush->setClipRegion(prevClipRegion);
+			Brush::getSingleton().setColor(prevColor);
+		}
+	}
+
+	void Image::setImage(const Ogre::String& name)
+	{
+		mDesc->imageName = name;
+
+		if(mDesc->imageName != "")
+		{
+			// If texture not loaded, load it!
+			if(!Ogre::TextureManager::getSingleton().resourceExists(mDesc->imageName))
+			{
+				Ogre::Image i;
+				i.load(mDesc->imageName,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+			}
+		}
+
+		redraw();
+	}
+
+	void Image::setTileImage(bool tile)
+	{
+		mDesc->tileImage = tile;
+
+		redraw();
+	}
+
+	void Image::setTransparencyPicking(bool transparencyPicking)
+	{
+		Widget::setTransparencyPicking(transparencyPicking);
+	}
+
+	void Image::setUpdateEveryFrame(bool update)
+	{
+		if(mDesc->updateEveryFrame == update)
 			return;
 
-        // Remove old wrapper
-        if (!mWrapper.isNull())
-        {
-            Ogre::MaterialManager::getSingleton().remove (mWrapper);
-            mWrapper.setNull();
-        }
-
-		mMaterialName = materialName;
-		mQuad->setMaterial(mMaterialName);
-		mQuad->setTextureCoordinates(Vector4(0,0,1,1));
+		mDesc->updateEveryFrame = update;
+		if(mDesc->updateEveryFrame)
+		{
+			TimerDesc d;
+			d.repeat = true;
+			d.timePeriod = -1;
+			mUpdateTimer = TimerManager::getSingleton().createTimer(d);
+			mUpdateTimer->setCallback(&Image::updateTimerCallback,this);
+			mUpdateTimer->start();
+		}
+		else
+		{
+			mUpdateTimer->stop();
+			TimerManager::getSingleton().destroyTimer(mUpdateTimer);
+			mUpdateTimer = NULL;
+		}
 	}
 
-	void Image::setSkin(const std::string& skinName, bool recursive)
+	void Image::updateTimerCallback()
 	{
-		mMaterialName = "";
-		Widget::setSkin(skinName,recursive);
+		redraw();
 	}
-
-    void Image::setTexture(const std::string& textureName)
-    {
-		if(mTextureLocked)
-			return;
-
-        // Find material name
-        std::string materialName = "QuickGUI" + getInstanceName();
-
-        while (Ogre::MaterialManager::getSingleton().resourceExists (materialName))
-            materialName += '2';
-
-        // Remove old wrapper
-        if (!mWrapper.isNull())
-        {
-            Ogre::MaterialManager::getSingleton().remove (mWrapper);
-            mWrapper.setNull();
-        }
-
-        // Create new wrapper
-        mWrapper = Ogre::MaterialManager::getSingleton().create (materialName,
-            Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-        Ogre::MaterialPtr material = static_cast<Ogre::MaterialPtr> (mWrapper);
-        Ogre::Pass *pass = material->getTechnique (0)->getPass (0);
-        pass->createTextureUnitState (textureName);
-        pass->setSceneBlending (Ogre::SBT_TRANSPARENT_ALPHA);
-
-        // Use wrapping material
-		mMaterialName = materialName;
-		mQuad->setMaterial(mMaterialName);
-		mQuad->setTextureCoordinates(Vector4(0,0,1,1));
-    }
 }

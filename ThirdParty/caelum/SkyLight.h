@@ -154,6 +154,11 @@ namespace Caelum
         inline void setForceDisable(bool value) { mForceDisableLight = value; } 
         inline bool getForceDisable() const { return mForceDisableLight; }
 
+        virtual void setQueryFlags (uint flags) = 0;
+        virtual uint getQueryFlags () const = 0;
+        virtual void setVisibilityFlags (uint flags) = 0;
+        virtual uint getVisibilityFlags () const = 0;
+
     protected:
         /// Handle far radius.
 	    virtual void setFarRadius (Ogre::Real radius);

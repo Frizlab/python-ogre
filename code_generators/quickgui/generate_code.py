@@ -67,6 +67,13 @@ def ManualExclude ( mb ):
     NotExported=[]
     for c in NotExported:
         main_ns.class_( c ).exclude()
+    
+    specials=['::QuickGUI::ScriptReader',
+                '::QuickGUI::Character'
+                ]
+#     for s in specials:
+#         print dir (main_ns.class_(s))        
+
         
 #     excludeName = ['vector<Ogre::Image>'
 #                 ]
@@ -83,12 +90,13 @@ def ManualExclude ( mb ):
             main_ns.class_(cls[0]).member_function(cls[1]).exclude()
         except  declarations.matcher.declaration_not_found_t, e:
             pass 
+            
     excludes=[\
-            '::QuickGUI::QuadContainer::_populateRenderObjectList'
-            ,'::QuickGUI::QuadContainer::_updateRenderQueue'
-            ,'::QuickGUI::HorizontalTrackBar::_getButtonSize'
+#             '::QuickGUI::QuadContainer::_populateRenderObjectList'
+#             ,'::QuickGUI::QuadContainer::_updateRenderQueue'
+#             '::QuickGUI::HorizontalTrackBar::_getButtonSize'
 #             ,'::QuickGUI::List::getNumberOfListItems'
-            ,'::QuickGUI::Panel::getScrollPane'
+            '::QuickGUI::Panel::getScrollPane'
             ,'::QuickGUI::ScrollPane::_showVScrollBars'
             ,'::QuickGUI::ScrollPane::_showHScrollBars'
             ,'::QuickGUI::ScrollPane::getVerticalButtonLayout'
@@ -99,10 +107,15 @@ def ManualExclude ( mb ):
             ,'::QuickGUI::Console::setReadOnly'
             ,'::QuickGUI::Widget::getChildWidget'
             ,'::QuickGUI::Quad::_update'
+            ,'::QuickGUI::Window::getTitleBarText'
+            
                 ]
     for e in excludes:
         print "excluding function", e
-        global_ns.member_functions(e).exclude()
+        try:
+            global_ns.member_functions(e).exclude()
+        except:
+            print "FAILED to exclude", e            
                       
 # 				
 
@@ -466,8 +479,8 @@ def generate_code():
     # Creating the code. After this step you should not modify/customize declarations.
     #
     ##########################################################################################
-    #extractor = exdoc.doc_extractor("::Ogre") # I'm excluding the UTFstring docs as lots about nothing 
-    mb.build_code_creator (module_name='_quickgui_' ) #, doc_extractor= extractor )
+    extractor = exdoc.doc_extractor()
+    mb.build_code_creator (module_name='_quickgui_', doc_extractor= extractor )
     
     for inc in environment.quickgui.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )

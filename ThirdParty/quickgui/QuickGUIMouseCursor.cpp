@@ -1,251 +1,254 @@
-#include "QuickGUIPrecompiledHeaders.h"
-
 #include "QuickGUIMouseCursor.h"
 #include "QuickGUIManager.h"
-#include "QuickGUISkinSetManager.h"
+#include "QuickGUISkinDefinitionManager.h"
+
 
 namespace QuickGUI
 {
-	MouseCursor::MouseCursor(const Size& size, const std::string& skinName, GUIManager* gm) :
-		mGUIManager(gm),
-		mVisible(true),
-		mHideWhenOffScreen(true),
-		mHideSkin(false),
-		mOnTopBorder(0),
-		mOnBotBorder(0),
-		mOnLeftBorder(0),
-		mOnRightBorder(0),
-		mCursorState(CURSOR_STATE_NORMAL),
-		mSkinComponent(".cursor")
-	{
-		mQuad = new Quad(mGUIManager);
-		mQuad->setClipMode(Quad::CLIPMODE_NONE);
-		setSize(size.width,size.height);
-		setSkin(skinName);
-		mRenderObjectList.push_back(mQuad);
+	const Ogre::String MouseCursor::TEXTURE = "texture";
 
-		mVertexBuffer = new VertexBuffer(VERTICES_PER_QUAD, mGUIManager);
-		mVertexBuffer->setData(&mRenderObjectList);
-		mVertexBuffer->setUpdateBeforeRender(true);
+	MouseCursorDesc::MouseCursorDesc()
+	{
+		clipOnEdges = false;
+		enabled = true;
+		skin = "qgui";
+		visible = true;
+		guiManager = NULL;
 	}
-	
+
+	void MouseCursor::registerSkinDefinition()
+	{
+		SkinDefinition* d = new SkinDefinition("MouseCursor");
+		d->defineSkinElement(TEXTURE);
+		d->definitionComplete();
+
+		SkinDefinitionManager::getSingleton().registerSkinDefinition("MouseCursor",d);
+	}
+
+	MouseCursor::MouseCursor(const MouseCursorDesc& d) :
+		mSkinType("default"),
+		mDefaultSkinType("default")
+	{
+		mMouseCursorDesc.guiManager = d.guiManager;
+		mSkinTypeManager = SkinTypeManager::getSingletonPtr();
+
+		for(int i = 0; i < 4; ++i)
+			mEnteredBorders[i] = false;
+
+		// HARDCODED FOR NOW
+		setSize(27,36);
+		setPosition(400,300);
+	}
+
 	MouseCursor::~MouseCursor()
 	{
-		mRenderObjectList.clear();
-		delete mQuad;
-		delete mVertexBuffer;
+		// Clean up all user defined event handlers.
+		for(int index = 0; index < MOUSE_CURSOR_EVENT_COUNT; ++index)
+		{
+			for(std::vector<EventHandlerSlot*>::iterator it = mEventHandlers[index].begin(); it != mEventHandlers[index].end(); ++it)
+				delete (*it);
+		}
 	}
 
-	void MouseCursor::constrainPosition()
+	void MouseCursor::_setSkinType(const Ogre::String type)
 	{
-		bool offScreen = false;
-		mOnRightBorder = false;
-		mOnBotBorder = false;
-		mOnTopBorder = false;
-		mOnLeftBorder = false;
+		if(mSkinType == type)
+			return;
 
-		if (mPixelPosition.x >= (mGUIManager->getViewportWidth() - 1 - (mPixelSize.width / 2)))
-		{
-			mPixelPosition.x = mGUIManager->getViewportWidth() - 1 - (mPixelSize.width / 2);
-			mOnRightBorder = true;
-			offScreen = true;
-		}
-
-		if (mPixelPosition.y >= (mGUIManager->getViewportHeight() - 1 - (mPixelSize.height / 2)))
-		{
-			mPixelPosition.y = mGUIManager->getViewportHeight() - 1 - (mPixelSize.height / 2);
-			mOnBotBorder = true;
-			offScreen = true;
-		}
-
-		if (mPixelPosition.y <= (-mPixelSize.height / 2))
-		{
-			mPixelPosition.y = (-mPixelSize.height / 2);
-			mOnTopBorder = true;
-			offScreen = true;
-		}
-
-		if (mPixelPosition.x <= (-mPixelSize.width / 2))
-		{
-			mPixelPosition.x = (-mPixelSize.width / 2);
-			mOnLeftBorder = true;
-			offScreen = true;
-		}
-
-		if(offScreen) 
-			mGUIManager->injectMouseLeaves();
-		// For example, if the user wants the mouse hidden, we shouldn't show it
-		// even if its within bounds.
-		else 
-		{
-			if(mVisible) 
-				show();
-			else 
-				hide();
-		}
-
-		// Perform the actual moving of the mouse quad
-		Point p = mPixelPosition;
-		mQuad->setPosition(p);
+		mSkinType = type;
+		
+		Ogre::Image i;
+		i.load(mSkinTypeManager->getSkinType("MouseCursor",mSkinType)->getSkinElement(TEXTURE)->getTextureName(),Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		// update cursor size to match texture used
+		setSize(i.getWidth(),i.getHeight());
 	}
 
-	MouseCursor::CursorState MouseCursor::getCursorState()
+	void MouseCursor::addCursorEventHandler(MouseCursorEvent EVENT, EventHandlerSlot* function)
 	{
-		return mCursorState;
+		mEventHandlers[EVENT].push_back(function);
 	}
 
-	bool MouseCursor::getHideWhenOffScreen()
+	void MouseCursor::draw()
 	{
-		return mHideWhenOffScreen;
+		// If cursor is not visible, return
+		if(!mMouseCursorDesc.visible)
+			return;
+		
+		// If cursor is on a border and clipOnEdges is true, return
+		if(mMouseCursorDesc.clipOnEdges)
+		{
+			for(int i = 0; i < 4; ++i)
+			{
+				if(mEnteredBorders[i])
+				{
+					return;
+				}
+			}
+		}
+
+		Brush::getSingletonPtr()->setRenderTarget(NULL);
+		Brush::getSingletonPtr()->drawSkinElement(mDimensions,mSkinTypeManager->getSkinType("MouseCursor",mSkinType)->getSkinElement(TEXTURE));
 	}
 
-	std::string MouseCursor::getTexture()
+	bool MouseCursor::getClipOnEdges()
 	{
-		return mTextureName;
+		return mMouseCursorDesc.clipOnEdges;
+	}
+
+	bool MouseCursor::getEnabled()
+	{
+		return mMouseCursorDesc.enabled;
 	}
 
 	Point MouseCursor::getPosition()
 	{
-		return Point(mPixelPosition.x + (mPixelSize.width/2.0),mPixelPosition.y + (mPixelSize.height/2.0));
+		return Point(mDimensions.position.x + (mDimensions.size.width/2.0),mDimensions.position.y + (mDimensions.size.height/2.0));
 	}
 
-	Size MouseCursor::getSize()
+	bool MouseCursor::getVisible()
 	{
-		return mPixelSize;
+		return mMouseCursorDesc.visible;
 	}
 
-	void MouseCursor::hide()
+	void MouseCursor::setClipOnEdges(bool clip)
 	{
-		mQuad->setVisible(false);
-		mVisible = false;
+		mMouseCursorDesc.clipOnEdges = clip;
 	}
 
-	void MouseCursor::hideSkin()
+	void MouseCursor::setEnabled(bool enable)
 	{
-		mHideSkin = true;
-		mQuad->setMaterial("");
+		if(enable == mMouseCursorDesc.enabled)
+			return;
+
+		mMouseCursorDesc.enabled = enable;
+
+		// Fire enabled changed event.
+		MouseEventArgs args(NULL);
+		args.position = getPosition();
+
+		for(std::vector<EventHandlerSlot*>::iterator it = mEventHandlers[MOUSE_CUSSOR_EVENT_ENABLED_CHANGED].begin(); it != mEventHandlers[MOUSE_CUSSOR_EVENT_ENABLED_CHANGED].end(); ++it)
+			(*it)->execute(args);
 	}
 
-	void MouseCursor::_hide()
+	void MouseCursor::setPosition(float xPosition, float yPosition)
 	{
-		mQuad->setVisible(false);
-	}
+		mDimensions.position.x = xPosition - (mDimensions.size.width/2.0);
+		mDimensions.position.y = yPosition - (mDimensions.size.height/2.0);
 
-	bool MouseCursor::isVisible()
-	{
-		return mVisible;
-	}
+		bool fireBorderEnterEvent = false;
+		bool fireBorderLeaveEvent = false;
 
-	bool MouseCursor::mouseOnBotBorder()
-	{
-		return mOnBotBorder;
-	}
-
-	bool MouseCursor::mouseOnLeftBorder()
-	{
-		return mOnLeftBorder;
-	}
-
-	bool MouseCursor::mouseOnRightBorder()
-	{
-		return mOnRightBorder;
-	}
-
-	bool MouseCursor::mouseOnTopBorder()
-	{
-		return mOnTopBorder;
-	}
-
-	void MouseCursor::offsetPosition(const int& xPixelOffset, const int& yPixelOffset)
-	{
-		mPixelPosition.x += xPixelOffset;
-		mPixelPosition.y += yPixelOffset;
-		
-		constrainPosition();
-	}
-
-	void MouseCursor::render()
-	{
-		mVertexBuffer->render();
-	}
-
-	void MouseCursor::setCursorState(CursorState s)
-	{
-		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(mSkinName);
-		mCursorState = s;
-
-		switch(s)
+		// If cursor horizontal position is on left edge of viewport
+		if(xPosition <= 0)
 		{
-		case CURSOR_STATE_NORMAL:					mSkinComponent = ".cursor";							break;
-		case CURSOR_STATE_TEXTSELECT:				mSkinComponent = ".cursor.textselect";				break;
-		case CURSOR_STATE_RESIZE_DIAGONAL_1:		mSkinComponent = ".cursor.resize.diagonal1";		break;
-		case CURSOR_STATE_RESIZE_DIAGONAL_2:		mSkinComponent = ".cursor.resize.diagonal2";		break;
-		case CURSOR_STATE_RESIZE_HORIZONTAL:		mSkinComponent = ".cursor.resize.leftright";		break;
-		case CURSOR_STATE_RESIZE_VERTICAL:			mSkinComponent = ".cursor.resize.updown";			break;
+			// If we haven't entered the border already, fire event
+			if(!mEnteredBorders[0])
+			{
+				mEnteredBorders[0] = true;
+				fireBorderEnterEvent = true;
+			}
+		}
+		// Else if cursor horizontal position is on right edge of viewport
+		else if(xPosition >= mMouseCursorDesc.guiManager->getViewport()->getActualWidth())
+		{
+			// If we haven't entered the border already, fire event
+			if(!mEnteredBorders[2])
+			{
+				mEnteredBorders[2] = true;
+				fireBorderEnterEvent = true;
+			}
+		}
+		// Else cursor horizontal position lies in between left and right edge of viewport
+		else
+		{
+			if(mEnteredBorders[0] || mEnteredBorders[2])
+			{
+				mEnteredBorders[0] = false;
+				mEnteredBorders[2] = false;
+				fireBorderLeaveEvent = true;
+			}
 		}
 
-		std::string textureName = ss->getSkinName() + mSkinComponent + ss->getImageExtension();
-		mQuad->setMaterial(ss->getMaterialName());
-		mQuad->setTextureCoordinates(ss->getTextureCoordinates(textureName));
+		// If cursor vertical position is on top edge of viewport
+		if(yPosition <= 0)
+		{
+			// If we haven't entered the border already, fire event
+			if(!mEnteredBorders[1])
+			{
+				mEnteredBorders[1] = true;
+				fireBorderEnterEvent = true;
+			}
+		}
+		// Else if cursor vertical position is on bottom edge of viewport
+		else if(yPosition >= mMouseCursorDesc.guiManager->getViewport()->getActualHeight())
+		{
+			// If we haven't entered the border already, fire event
+			if(!mEnteredBorders[3])
+			{
+				mEnteredBorders[3] = true;
+				fireBorderEnterEvent = true;
+			}
+		}
+		// Else cursor vertical position lies in between top and bottom edge of viewport
+		else
+		{
+			if(mEnteredBorders[1] || mEnteredBorders[3])
+			{
+				mEnteredBorders[1] = false;
+				mEnteredBorders[3] = false;
+				fireBorderLeaveEvent = true;
+			}
+		}
 
-		setSize(ss->getImageWidth(textureName),ss->getImageHeight(textureName));
+		// Fire events
+		if(fireBorderEnterEvent)
+		{
+			MouseEventArgs args(NULL);
+			args.position = getPosition();
+
+			for(std::vector<EventHandlerSlot*>::iterator it = mEventHandlers[MOUSE_CURSOR_EVENT_BORDER_ENTER].begin(); it != mEventHandlers[MOUSE_CURSOR_EVENT_BORDER_ENTER].end(); ++it)
+				(*it)->execute(args);
+		}
+
+		if(fireBorderLeaveEvent)
+		{
+			MouseEventArgs args(NULL);
+			args.position = getPosition();
+
+			for(std::vector<EventHandlerSlot*>::iterator it = mEventHandlers[MOUSE_CURSOR_EVENT_BORDER_LEAVE].begin(); it != mEventHandlers[MOUSE_CURSOR_EVENT_BORDER_LEAVE].end(); ++it)
+				(*it)->execute(args);
+		}
 	}
 
-	void MouseCursor::setHideCursorWhenOSCursorOffscreen(bool hide)
+	void MouseCursor::setPosition(const Point& p)
 	{
-		mHideWhenOffScreen = hide;
-	}
-
-	void MouseCursor::setPosition(float pixelX, float pixelY)
-	{
-		mPixelPosition.x = pixelX - (mPixelSize.width/2.0);
-		mPixelPosition.y = pixelY - (mPixelSize.height/2.0);
-
-		constrainPosition();
+		setPosition(p.x,p.y);
 	}
 
 	void MouseCursor::setSize(float pixelWidth, float pixelHeight)
 	{
 		Point currentPosition = getPosition();
 
-		mPixelSize.width = pixelWidth;
-		mPixelSize.height = pixelHeight;
+		mDimensions.size.width = pixelWidth;
+		mDimensions.size.height = pixelHeight;
 
-		mQuad->setSize(mPixelSize);
-
-		mPixelPosition.x = currentPosition.x - (mPixelSize.width/2.0);
-		mPixelPosition.y = currentPosition.y - (mPixelSize.height/2.0);
-
-		mQuad->setPosition(mPixelPosition);
+		mDimensions.position.x = currentPosition.x - (mDimensions.size.width/2.0);
+		mDimensions.position.y = currentPosition.y - (mDimensions.size.height/2.0);
 	}
 
-	void MouseCursor::setSkin(const std::string& skinName)
+	void MouseCursor::setSkinType(const Ogre::String type)
 	{
-		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(skinName);
-		if(ss == NULL)
-			throw Ogre::Exception(Ogre::Exception::ERR_ITEM_NOT_FOUND,"Skin \"" + skinName + "\" was not found!","MouseCursor::setSkin");
+		mSkinType = type;
+		mDefaultSkinType = type;
 
-		mSkinName = skinName;
-
-		std::string textureName = mSkinName + mSkinComponent + ss->getImageExtension();
-		mQuad->setMaterial(ss->getMaterialName());
-		mQuad->setTextureCoordinates(ss->getTextureCoordinates(textureName));
-
-		setSize(ss->getImageWidth(textureName),ss->getImageHeight(textureName));
-
-		if(mHideSkin)
-			hideSkin();
+		Ogre::Image i;
+		i.load(mSkinTypeManager->getSkinType("MouseCursor",mSkinType)->getSkinElement(TEXTURE)->getTextureName(),Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		// update cursor size to match texture used
+		setSize(i.getWidth(),i.getHeight());
 	}
 
-	void MouseCursor::show()
+	void MouseCursor::setVisible(bool visible)
 	{
-		mQuad->setVisible(true);
-		mVisible = true;
-	}
-
-	void MouseCursor::showSkin()
-	{
-		mHideSkin = false;
-		setSkin(mSkinName);
+		mMouseCursorDesc.visible = visible;
 	}
 }

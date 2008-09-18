@@ -29,6 +29,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "GroundFog.h"
 #include "SkyDome.h"
 #include "PrecipitationController.h"
+#include "DepthComposer.h"
 #include "Sun.h"
 #include "ImageHelper.h"
 #include "FlatCloudLayer.h"
@@ -54,9 +55,12 @@ namespace Caelum
         LogManager::getSingleton().logMessage ("Caelum: Initialising Caelum system...");
 
         Ogre::String uniqueId = Ogre::StringConverter::toString ((size_t)this);
-        mCaelumCameraNode = mSceneMgr->getRootSceneNode ()->createChildSceneNode ("Caelum/CameraNode/" + uniqueId);
-        mCaelumGroundNode = mSceneMgr->getRootSceneNode ()->createChildSceneNode ("Caelum/GroundNode/" + uniqueId);
+        mCaelumCameraNode.reset(mSceneMgr->getRootSceneNode ()->createChildSceneNode ("Caelum/CameraNode/" + uniqueId));
+        mCaelumGroundNode.reset(mSceneMgr->getRootSceneNode ()->createChildSceneNode ("Caelum/GroundNode/" + uniqueId));
         mUniversalClock.reset(new UniversalClock ());
+
+        // Clear sets default value for most fields.
+        clear();
 
         // If the "Caelum" resource group does not exist; create it.
         // This resource group is never released; which may be bad.
@@ -80,25 +84,17 @@ namespace Caelum
         setPointStarfield (0);
         setCloudSystem (0);
         setPrecipitationController (0);
+        setDepthComposer (0);
         setGroundFog (0);
         setMoon (0);   
         mSkyGradientsImage.reset ();
         mSunColoursImage.reset ();
 
         // These things can't be rebuilt.
-        if (destroyEverything)
-        {
+        if (destroyEverything) {
             mUniversalClock.reset ();
-            if (mCaelumCameraNode) {
-                static_cast<Ogre::SceneNode*>(mCaelumCameraNode->getParent())->
-                        removeAndDestroyChild(mCaelumCameraNode->getName());
-                mCaelumCameraNode = 0;
-            }
-            if (mCaelumGroundNode) {
-                static_cast<Ogre::SceneNode*>(mCaelumGroundNode->getParent())->
-                        removeAndDestroyChild(mCaelumGroundNode->getName());
-                mCaelumGroundNode = 0;
-            }
+            mCaelumCameraNode.reset ();
+            mCaelumGroundNode.reset ();
         }
     }
  
@@ -113,7 +109,7 @@ namespace Caelum
 
         mAutoMoveCameraNode = true;
         mAutoNotifyCameraChanged = true;
-        mAutoAttachViewports = true;
+        mAutoAttachViewportsToComponents = true;
         mAutoViewportBackground = true;
 
         mManageSceneFog = false;
@@ -139,7 +135,7 @@ namespace Caelum
         CaelumComponent componentsToCreate/* = CAELUM_COMPONENTS_DEFAULT*/
     )
     {
-        // Clear everything
+        // Clear everything; revert to default.
         clear();
 
         LogManager::getSingleton ().logMessage ("Caelum: Creating caelum sub-components.");
@@ -230,6 +226,14 @@ namespace Caelum
                         "Caelum: Failed to initialize precipitation: " + ex.getFullDescription());
             }
         }
+        if (componentsToCreate & CAELUM_COMPONENT_SCREEN_SPACE_FOG) {
+            try {
+                this->setDepthComposer (new DepthComposer (mSceneMgr));
+            } catch (Caelum::UnsupportedException& ex) {
+                LogManager::getSingleton ().logMessage (
+                        "Caelum: Failed to initialize precipitation: " + ex.getFullDescription());
+            }
+        }
 
         setManageSceneFog (true);
         setManageAmbientLight (true);
@@ -253,53 +257,76 @@ namespace Caelum
         }
     }
 
-    void CaelumSystem::attachRenderTarget (Ogre::RenderTarget* rt)
-    {
-        rt->addListener(this);
-        if (getAutoAttachViewports ()) {
-            int numViewports = rt->getNumViewports();
-            for (int i = 0; i < numViewports; i++) {
-                attachViewport(rt->getViewport(i));
-            }
-        }
-    }
-
-    void CaelumSystem::detachRenderTarget (Ogre::RenderTarget* rt)
-    {
-        rt->removeListener(this);
-        if (getAutoAttachViewports ()) {
-            int numViewports = rt->getNumViewports();
-            for (int i = 0; i < numViewports; i++) {
-                detachViewport(rt->getViewport(i));
-            }
-        }
-    }
-
-    void CaelumSystem::viewportAdded (const Ogre::RenderTargetViewportEvent &e)
-    {
-        if (getAutoAttachViewports ()) {
-            attachViewport(e.source);
-        }
-    }
-
-    void CaelumSystem::viewportRemoved (const Ogre::RenderTargetViewportEvent &e)
-    {
-        if (getAutoAttachViewports ()) {
-            detachViewport(e.source);
-        }
-    }
-
     void CaelumSystem::attachViewport (Ogre::Viewport* vp)
     {
-        if (getPrecipitationController ()) {
-            getPrecipitationController ()->createViewportInstance(vp);
+        bool found = mAttachedViewports.insert (vp).second;
+        if (!found) {
+            LogManager::getSingleton().getDefaultLog ()->logMessage (
+                    "CaelumSystem: Attached to"
+                    " viewport " + StringConverter::toString ((long)vp) +
+                    " render target " + vp->getTarget ()->getName ());
+            if (getAutoAttachViewportsToComponents ()) {
+                if (getPrecipitationController ()) {
+                    getPrecipitationController ()->createViewportInstance (vp);
+                }
+                if (getDepthComposer ()) {
+                    getDepthComposer ()->createViewportInstance (vp);
+                }
+            }
         }
     }
 
     void CaelumSystem::detachViewport (Ogre::Viewport* vp)
     {
-        if (getPrecipitationController ()) {
-            getPrecipitationController ()->destroyViewportInstance(vp);
+        std::set<Viewport*>::size_type erase_result = mAttachedViewports.erase(vp);
+        assert(erase_result == 0 || erase_result == 1);
+        bool found = erase_result == 1;
+        if (found) {
+            LogManager::getSingleton().getDefaultLog ()->logMessage (
+                    "CaelumSystem: Detached from "
+                    " viewport " + StringConverter::toString ((long)vp) +
+                    " render target " + vp->getTarget ()->getName ());
+            if (getAutoAttachViewportsToComponents ()) {
+                if (getPrecipitationController ()) {
+                    getPrecipitationController ()->destroyViewportInstance (vp);
+                }
+                if (getDepthComposer ()) {
+                    getDepthComposer ()->destroyViewportInstance (vp);
+                }
+            }
+        }
+    }
+
+    bool CaelumSystem::isViewportAttached (Ogre::Viewport* vp) const {
+        return mAttachedViewports.find (vp) != mAttachedViewports.end();
+    }
+
+    void CaelumSystem::setPrecipitationController (PrecipitationController* newptr) {
+        PrecipitationController* oldptr = getPrecipitationController ();
+        if (oldptr == newptr) {
+            return;
+        }
+        // Detach old
+        if (getAutoAttachViewportsToComponents() && oldptr) {
+            std::for_each (mAttachedViewports.begin(), mAttachedViewports.end(),
+                    std::bind1st (std::mem_fun (&PrecipitationController::destroyViewportInstance), oldptr));
+        }
+        // Attach new.
+        if (getAutoAttachViewportsToComponents() && newptr) {
+            std::for_each (mAttachedViewports.begin(), mAttachedViewports.end(),
+                    std::bind1st (std::mem_fun (&PrecipitationController::createViewportInstance), newptr));
+        }
+        mPrecipitationController.reset(newptr);
+    }
+
+    void CaelumSystem::setDepthComposer (DepthComposer* ptr) {
+        mDepthComposer.reset(ptr);
+        if (getAutoAttachViewportsToComponents() && getDepthComposer ()) {
+            std::for_each (
+                    mAttachedViewports.begin(), mAttachedViewports.end(),
+                    std::bind1st (
+                            std::mem_fun (&DepthComposer::createViewportInstance),
+                            getDepthComposer ()));
         }
     }
 
@@ -443,10 +470,18 @@ namespace Caelum
                     secondDiff, sunDir, sunLightColour, fogColour, sunSphereColour);
         }
 
+        // Update precipitation
         if (getPrecipitationController ()) {
-            getPrecipitationController ()->update(
-                    secondDiff, fogColour);
+            getPrecipitationController ()->update (secondDiff, fogColour);
+        }
 
+        // Update screen space fog
+        if (getDepthComposer ()) {
+            getDepthComposer ()->update ();
+            getDepthComposer ()->setSunDirection (sunDir);
+            getDepthComposer ()->setHazeColour (fogColour);
+            getDepthComposer ()->setGroundFogColour (fogColour * mGroundFogColourMultiplier);
+            getDepthComposer ()->setGroundFogDensity (fogDensity * mGroundFogDensityMultiplier);
         }
 
         // Update ambient lighting.
@@ -640,5 +675,27 @@ namespace Caelum
 
         T = fabs(fmod(T, 1));
         return -fabs(-4 * T + 2) + 2;
+    }
+
+    void CaelumSystem::forceSubcomponentQueryFlags (uint flags)
+    {
+        if (getSkyDome ()) getSkyDome ()->setQueryFlags (flags);
+        if (getSun ()) getSun ()->setQueryFlags (flags);
+        if (getMoon ()) getMoon ()->setQueryFlags (flags);
+        if (getImageStarfield ()) getImageStarfield ()->setQueryFlags (flags);
+        if (getPointStarfield ()) getPointStarfield ()->setQueryFlags (flags);        
+        if (getGroundFog ()) getGroundFog ()->setQueryFlags (flags);
+        if (getCloudSystem ()) getCloudSystem ()->forceLayerQueryFlags (flags);
+    }
+
+    void CaelumSystem::forceSubcomponentVisibilityFlags (uint flags)
+    {
+        if (getSkyDome ()) getSkyDome ()->setVisibilityFlags (flags);
+        if (getSun ()) getSun ()->setVisibilityFlags (flags);
+        if (getMoon ()) getMoon ()->setVisibilityFlags (flags);
+        if (getImageStarfield ()) getImageStarfield ()->setVisibilityFlags (flags);
+        if (getPointStarfield ()) getPointStarfield ()->setVisibilityFlags (flags);        
+        if (getGroundFog ()) getGroundFog ()->setVisibilityFlags (flags);
+        if (getCloudSystem ()) getCloudSystem ()->forceLayerVisibilityFlags (flags);
     }
 }

@@ -1,341 +1,545 @@
-#include "QuickGUIPrecompiledHeaders.h"
-
 #include "QuickGUIProgressBar.h"
-#include "QuickGUIWindow.h"
+#include "QuickGUISkinDefinitionManager.h"
 
 namespace QuickGUI
 {
-	ProgressBar::ProgressBar(const std::string& name, GUIManager* gm) :
-		Widget(name,gm),
-		mInitialPixelOffset(0),
-		mProgress(1.0),
-		mFillDirection(FILLS_NEGATIVE_TO_POSITIVE),
-		mClippingEdge(CLIP_LEFT_BOTTOM)
+	const Ogre::String ProgressBar::BACKGROUND = "background";
+	const Ogre::String ProgressBar::BAR = "bar";
+	const Ogre::String ProgressBar::CLIPMAP = "clipmap";
+
+	void ProgressBar::registerSkinDefinition()
 	{
-		mWidgetType = TYPE_PROGRESSBAR;
-		mSkinComponent = ".progressbar";
-		mSize = Size(100,25);
+		SkinDefinition* d = new SkinDefinition("ProgressBar");
+		d->defineSkinElement(BACKGROUND);
+		d->defineSkinElement(BAR);
+		d->defineSkinElement(CLIPMAP);
+		d->definitionComplete();
 
-		if( mSize.width > mSize.height )
-			mLayout = LAYOUT_HORIZONTAL;
-		else
-			mLayout = LAYOUT_VERTICAL;
+		SkinDefinitionManager::getSingleton().registerSkinDefinition("ProgressBar",d);
+	}
 
-		mBarPanel = _createQuad();
-		mBarPanel->setPosition(getScreenPosition());
-		mBarPanel->setSize(mSize);
-		mBarPanel->setOffset(mOffset+1);
-		mBarPanel->_notifyQuadContainer(mQuadContainer);
+	ProgressBarDesc::ProgressBarDesc() :
+		WidgetDesc()
+	{
+		fillDirection = PROGRESSBAR_FILLS_NEGATIVE_TO_POSITIVE;
+		layout = PROGRESSBAR_LAYOUT_HORIZONTAL;
+		clippingEdge = PROGRESSBAR_CLIP_LEFT_BOTTOM;
+		progress = 100;
 
-		mBarMaterial = Ogre::MaterialManager::getSingleton().create(mInstanceName + ".barMaterial",Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-		Ogre::Pass* p = mBarMaterial->getTechnique(0)->getPass(0);
-		p->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-		p->setLightingEnabled(false);
-		p->setCullingMode(Ogre::CULL_CLOCKWISE);
-		Ogre::TextureUnitState* tus = p->createTextureUnitState();
-		mBarMaterial->load();
+		for(int i = 0; i < PADDING_COUNT; ++i)
+		{
+			padding[i] = 5.0;
+		}
+	}
+
+	void ProgressBarDesc::serialize(SerialBase* b)
+	{
+		WidgetDesc::serialize(b);
+
+		for(int i = 0; i < PADDING_COUNT; ++i)
+		{
+			b->IO(StringConverter::toString(static_cast<Padding>(i)),&padding[i]);
+		}
+
+		textDesc.serialize(b);
+
+		b->IO("Progress",&progress);
+		b->IO("FillDirection",&fillDirection);
+		b->IO("Layout",&layout);
+		b->IO("ClippingEdge",&clippingEdge);
+	}
+
+	ProgressBar::ProgressBar(const Ogre::String& name) :
+		Widget(name)
+	{
+		mSkinElementName = BACKGROUND;
 	}
 
 	ProgressBar::~ProgressBar()
 	{
-		EventHandlerArray::iterator it;
-		for( it = mOnProgressChangedHandlers.begin(); it != mOnProgressChangedHandlers.end(); ++it )
-			delete (*it);
-		mOnProgressChangedHandlers.clear();
-
-		Ogre::MaterialManager::getSingletonPtr()->remove(mInstanceName + ".barMaterial");
-		mBarMaterial.setNull();
+		mOutputBarTexture.setNull();
 	}
 
-	void ProgressBar::_getBarExtents()
+	void ProgressBar::_initialize(WidgetDesc* d)
 	{
-		mBarMinWidth = static_cast<int>(mBarImage->getWidth());
-		mBarMaxWidth = 0;
-		mBarMinHeight = static_cast<int>(mBarImage->getHeight());
-		mBarMaxHeight = 0;
+		Widget::_initialize(d);
 
-		const Ogre::PixelBox& pb = mBarImage->getPixelBox();
+		mDesc = dynamic_cast<ProgressBarDesc*>(mWidgetDesc);
 
-		// Pointers to the pixel data of the bar, and the destination image
-		Ogre::uint8* ptr = static_cast<Ogre::uint8*>(pb.data);
+		ProgressBarDesc* pd = dynamic_cast<ProgressBarDesc*>(d);
 
-		// iterate through pixel by pixel, to determine the min/max bar bounds.
-		for( int i = 0; i < static_cast<int>(mBarImage->getHeight()); i++ )
-		{
-			for( int j = 0; j < static_cast<int>(mBarImage->getWidth()); j++ )
-			{
-				// skip R,B,G channels
-				ptr += 3;
-				// check for non zero alpha value
-				if(*ptr++ > 0)
-				{
-					if( i < mBarMinHeight )
-						mBarMinHeight = i;
-					if( i > mBarMaxHeight )
-						mBarMaxHeight = i;
-					if( j < mBarMinWidth )
-						mBarMinWidth = j;
-					if( j > mBarMaxWidth )
-						mBarMaxWidth = j;
-				}
-			}
-		}
-	}
+		setSkinType(d->skinTypeName);
 
-	void ProgressBar::_modifyBarTexture(float progress)
-	{
-		Ogre::Image* barContainer = mSkinSet->getImage(mSkinName + mSkinComponent + mSkinExtension);
+		// Make a copy of the Text Desc.  The Text object will
+		// modify it directly, which is used for serialization.
+		mDesc->textDesc = pd->textDesc;
 
-		// Hardware Pixel Buffer for moving pixels around, and correctly creating the barTexture.
-		Ogre::HardwarePixelBufferSharedPtr buf = mBarTexture->getBuffer();
+		mDesc->textDesc.allottedWidth = pd->dimensions.size.width - (pd->padding[PADDING_LEFT] + pd->padding[PADDING_RIGHT]);
+		mText = new Text(mDesc->textDesc);
 
-		// if 100 percent, just copy over the entire bar image.
-		if(progress >= 0.99)
-		{
-			buf->blitFromMemory(mBarImage->getPixelBox(),Ogre::Image::Box(0, 0, mBarImage->getWidth(), mBarImage->getHeight()));
-			return;
-		}
+		setPadding(PADDING_BOTTOM,pd->padding[PADDING_BOTTOM]);
+		setPadding(PADDING_LEFT,pd->padding[PADDING_LEFT]);
+		setPadding(PADDING_RIGHT,pd->padding[PADDING_RIGHT]);
+		setPadding(PADDING_TOP,pd->padding[PADDING_TOP]);
 
-		// At this point we are less than 100% progress, so we will have to manipulate the bar texture.
+		mCurrentFontName = Text::getFirstAvailableFont()->getName();
+		mCurrentColourValue = Ogre::ColourValue::White;
 
-		// First, we want to make the barTexture appear like the barContainer-> (looks like 0 progress)
-		buf->blitFromMemory(barContainer->getPixelBox(),Ogre::Image::Box(0, 0, barContainer->getWidth(), barContainer->getHeight()));
-
-		// if progress is too small, there is no bar texture to create.
-		if(progress <= 0.01)
-			return;
-
-		int barTextureWidth = (mBarMaxWidth - mBarMinWidth);
-		int barTextureHeight = (mBarMaxHeight - mBarMinHeight);
-
-		Ogre::PixelBox srcBox;
-		Ogre::Image::Box dstBox;
-
-		// Fill the progressbar according to specified fill direction
-		if(mLayout == LAYOUT_HORIZONTAL)
-		{
-			// Calculated pixel width of the progress bar.
-			int barWidth = (barTextureWidth * progress);
-			// Calculated pixel width of the space not occupied by the progress bar.
-			int spaceWidth = (barTextureWidth - (progress * barTextureWidth));
-
-			// FILLS_LEFT_TO_RIGHT
-			if(mFillDirection == FILLS_NEGATIVE_TO_POSITIVE)
-			{
-				if(mClippingEdge == CLIP_LEFT_BOTTOM)
-				{
-					srcBox = mBarImage->getPixelBox().getSubVolume(Ogre::Box((mBarMinWidth + spaceWidth), 0, mBarMaxWidth, barContainer->getHeight()));
-					dstBox = Ogre::Image::Box(mBarMinWidth, 0, (mBarMinWidth + barWidth), barContainer->getHeight());
-				}
-				// CLIP_RIGHT_TOP
-				else
-				{
-					srcBox = mBarImage->getPixelBox().getSubVolume(Ogre::Box(mBarMinWidth, 0, (mBarMinWidth + barWidth), barContainer->getHeight()));
-					dstBox = Ogre::Image::Box(mBarMinWidth, 0, (mBarMinWidth + barWidth), barContainer->getHeight());
-				}
-			}
-			// FILLS_RIGHT_TO_LEFT
-			else
-			{
-				if(mClippingEdge == CLIP_LEFT_BOTTOM)
-				{
-					srcBox = mBarImage->getPixelBox().getSubVolume(Ogre::Box(mBarMinWidth, 0, (mBarMinWidth + barWidth), barContainer->getHeight()));
-					dstBox = Ogre::Image::Box((mBarMinWidth + spaceWidth), 0, mBarMaxWidth, barContainer->getHeight());
-				}
-				// CLIP_RIGHT_TOP
-				else
-				{
-					srcBox = mBarImage->getPixelBox().getSubVolume(Ogre::Box((mBarMaxWidth - barWidth), 0, mBarMaxWidth, barContainer->getHeight()));
-					dstBox = Ogre::Image::Box((mBarMinWidth + spaceWidth), 0, mBarMaxWidth, barContainer->getHeight());
-				}
-			}
-		}
-		else // mLayout == LAYOUT_VERTICAL
-		{
-			// Calculated pixel height of the progress bar.
-			int barHeight = (barTextureHeight * progress);
-			// Calculated pixel height of the space not occupied by the progress bar.
-			int spaceHeight = (barTextureHeight - (progress * barTextureHeight));
-
-			// FILLS_BOTTOM_TO_TOP
-			if(mFillDirection == FILLS_NEGATIVE_TO_POSITIVE)
-			{
-				if(mClippingEdge == CLIP_LEFT_BOTTOM)
-				{
-					srcBox = mBarImage->getPixelBox().getSubVolume(Ogre::Box(0, mBarMinHeight, barContainer->getWidth(), (mBarMinHeight + barHeight)));
-					dstBox = Ogre::Image::Box(0, mBarMinHeight + spaceHeight, barContainer->getWidth(), mBarMaxHeight);
-				}
-				// CLIP_RIGHT_TOP
-				else
-				{
-					srcBox = mBarImage->getPixelBox().getSubVolume(Ogre::Box(0, (mBarMaxHeight - barHeight), barContainer->getWidth(), mBarMaxHeight));
-					dstBox = Ogre::Image::Box(0, mBarMinHeight + spaceHeight, barContainer->getWidth(), mBarMaxHeight);
-				}
-			}
-			// FILLS_TOP_TO_BOTTOM
-			else
-			{
-				if(mClippingEdge == CLIP_LEFT_BOTTOM)
-				{
-					srcBox = mBarImage->getPixelBox().getSubVolume(Ogre::Box(0, mBarMaxHeight - barHeight, barContainer->getWidth(), mBarMaxHeight));
-					dstBox = Ogre::Image::Box(0, mBarMinHeight, barContainer->getWidth(), (mBarMinHeight + barHeight));
-				}
-				// CLIP_RIGHT_TOP
-				else
-				{
-					srcBox = mBarImage->getPixelBox().getSubVolume(Ogre::Box(0, mBarMinHeight, barContainer->getWidth(), (mBarMinHeight + barHeight)));
-					dstBox = Ogre::Image::Box(0, mBarMinHeight, barContainer->getWidth(), (mBarMinHeight + barHeight));
-				}
-			}
-		}
-
-		buf->blitFromMemory(srcBox,dstBox);
-
-		// Pointer to the pixel buffer of the bar texture, at full progress.
-		Ogre::uint8* refPtr = static_cast<Ogre::uint8*>((mBarImage->getPixelBox()).data);
-		// Pointer to the pixel buffer of the currently created bar progress texture.
-		buf->lock(Ogre::HardwareBuffer::HBL_NORMAL);
-		Ogre::uint8* bufPtr = static_cast<Ogre::uint8*>((buf->getCurrentLock()).data);
-
-		// iterate through pixel by pixel, to Make sure the newly created bar texture does not exceed original bar bounds.
-		for( int i = 0; i < static_cast<int>(mBarImage->getHeight()); ++i )
-		{
-			for( int j = 0; j < static_cast<int>(mBarImage->getWidth()); ++j )
-			{
-				// skip R,B,G channels
-				refPtr += 3;
-				bufPtr += 3;
-
-				// If the original bar texture was transparent at this pixel, make the new texture's pixel transparent.
-				// Even thought I'm using TAM_CLAMP for my textures, I am finding wrap around in the progress bar.. so the edges
-				// of the bar are made transparent.  A Hack, but the only way I can get past this issue currently.
-				if( (*refPtr == 0) ||
-					// 2 pixel border
-					(i == dstBox.top) || (i == dstBox.top + 1) ||
-					(i == dstBox.bottom) || (i == dstBox.bottom - 1) ||
-					(j == dstBox.left) || (j == dstBox.left + 1) ||
-					(j == dstBox.right) || (j == dstBox.right - 1) )
-					*bufPtr = 0;
-
-				++refPtr;
-				++bufPtr;
-			}
-		}
-
-		buf->unlock();
-	}
-
-	void ProgressBar::addOnProgressChangedEventHandler(MemberFunctionSlot* function)
-	{
-		mOnProgressChangedHandlers.push_back(function);
-	}
-
-	float ProgressBar::getProgress()
-	{
-		return mProgress;
-	}
-
-	void ProgressBar::onProgressChanged(const WidgetEventArgs& e)
-	{
-		EventHandlerArray::iterator it;
-		for( it = mOnProgressChangedHandlers.begin(); it != mOnProgressChangedHandlers.end(); ++it )
-			(*it)->execute(e);
-	}
-
-	void ProgressBar::onPositionChanged(const EventArgs& args)
-	{
-		Widget::onPositionChanged(args);
-		mBarPanel->setPosition(getScreenPosition());
-	}
-
-	void ProgressBar::onSizeChanged(const EventArgs& args)
-	{
-		mBarPanel->setSize(mSize);
-	}
-
-	void ProgressBar::redraw()
-	{
-		Widget::redraw();
-		mBarPanel->setPosition(mQuad->getPosition());
-	}
-
-	void ProgressBar::setClippingEdge(ClippingEdge e)
-	{
-		mClippingEdge = e;
-		setProgress(mProgress);
-	}
-
-	void ProgressBar::setFillDirection(FillDirection d)
-	{
-		mFillDirection = d;
-		setProgress(mProgress);
-	}
-
-	void ProgressBar::setInitialPixelOffset(unsigned int width)
-	{
-		mInitialPixelOffset = width;
-	}
-
-	void ProgressBar::setLayout(Layout l)
-	{
-		mLayout = l;
-		setProgress(mProgress);
-	}
-
-	void ProgressBar::setProgress(float progress)
-	{
-		// Check to make sure we get acceptable values
-		if(progress >= 0.99) 
-			mProgress = 1.0;
-		else if(progress < 0.01) 
-			mProgress = 0.0;
-		else 
-			mProgress = progress;
-
-		// update the bar's texture to match the progress.
-		_modifyBarTexture(progress);
-
-		// fire event and call any user defined handlers
-		WidgetEventArgs e(this);
-		e.handled = false;
-		onProgressChanged(e);
-	}
-
-	void ProgressBar::setSkin(const std::string& skinName, bool recursive)
-	{
-		Widget::setSkin(skinName,recursive);
-
-		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(skinName);
-		if(ss == NULL)
-			return;
-
-		mSkinExtension = ss->getImageExtension();
-		mBarTextureName = mSkinName + mSkinComponent + ".bar" + mSkinExtension;
-		mBarImage = mSkinSet->getImage(mBarTextureName);
-
-		_getBarExtents();
-
-		Ogre::TextureManager* tm = Ogre::TextureManager::getSingletonPtr();
-		// resource may already exist, for example, creating the texture, clearing all gui, then creating gui again.
-		if( tm->resourceExists(mInstanceName + ".bar.temp") )
-		{
-			tm->remove(mInstanceName + ".bar.temp");
-		}
-		
-		mBarTexture = Ogre::TextureManager::getSingletonPtr()->createManual(mInstanceName + ".bar.temp", 
+		// Create Output Bar texture
+		mOutputBarTexture = Ogre::TextureManager::getSingletonPtr()->createManual(getName() + ".bar.output", 
 			Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
 			Ogre::TEX_TYPE_2D,
-			(Ogre::uint)ss->getImageWidth(mBarTextureName),
-			(Ogre::uint)ss->getImageHeight(mBarTextureName),
+			static_cast<Ogre::uint>(mBarImage.getWidth()),
+			static_cast<Ogre::uint>(mBarImage.getHeight()),
 			0, 
 			Ogre::PF_B8G8R8A8,
 			Ogre::TU_STATIC);
 
-		Ogre::TextureUnitState* tus = mBarMaterial->getBestTechnique(0)->getPass(0)->getTextureUnitState(0);
-		tus->setTextureName(mBarTexture->getName());
+		mDesc->clippingEdge = pd->clippingEdge;
+		mDesc->fillDirection = pd->fillDirection;
+		mDesc->layout = pd->layout;
+		setProgress(pd->progress);
+	}
 
-		setProgress(1.0);
+	void ProgressBar::_processClipMap()
+	{
+		if(mSkinType != NULL)
+		{
+			SkinElement* se = mSkinType->getSkinElement(CLIPMAP);
+			Ogre::Image i = se->getTextureImage();
 
-		mBarPanel->setMaterial(mBarMaterial->getName());
+			int width = static_cast<int>(i.getWidth());
+			int height = static_cast<int>(i.getHeight());
+
+			mClipMap.assign(width * height,true);
+
+			for(int row = 0; row < height; ++row)
+			{
+				for(int col = 0; col < width; ++col)
+				{
+					if(i.getColourAt(col,row,0).a < 0.01)
+						mClipMap[(row * width) + col] = false;
+				}
+			}
+		}
+	}
+
+	void ProgressBar::addProgressBarEventHandler(ProgressBarEvent EVENT, EventHandlerSlot* function)
+	{
+		mProgressBarEventHandlers[EVENT].push_back(function);
+	}
+
+	Widget* ProgressBar::factory(const Ogre::String& widgetName)
+	{
+		Widget* newWidget = new ProgressBar(widgetName);
+
+		newWidget->_createDescObject("ProgressBarDesc");
+
+		return newWidget;
+	}
+
+	bool ProgressBar::fireProgressBarEvent(ProgressBarEvent e, EventArgs& args)
+	{
+		if(mProgressBarEventHandlers[e].empty())
+			return false;
+
+		// Execute registered handlers
+		std::vector<EventHandlerSlot*>* userEventHandlers = &(mProgressBarEventHandlers[e]);
+		for(std::vector<EventHandlerSlot*>::iterator it = userEventHandlers->begin(); it != userEventHandlers->end(); ++it )
+			(*it)->execute(args);
+
+		return true;
+	}
+
+	Ogre::String ProgressBar::getClass()
+	{
+		return "ProgressBar";
+	}
+
+	ProgressBarClippingEdge ProgressBar::getClippingEdge()
+	{
+		return mDesc->clippingEdge;
+	}
+
+	ProgressBarFillDirection ProgressBar::getFillDirection()
+	{
+		return mDesc->fillDirection;
+	}
+
+	ProgressBarLayout ProgressBar::setLayout()
+	{
+		return mDesc->layout;
+	}
+
+	float ProgressBar::getPadding(Padding p)
+	{
+		if(p == PADDING_COUNT)
+			throw Exception(Exception::ERR_INVALIDPARAMS,"PADDING_COUNT is not a valid parameter!","ProgressBar::getPadding");
+
+		return mDesc->padding[p];
+	}
+
+	float ProgressBar::getProgress()
+	{
+		return mDesc->progress;
+	}
+
+	Ogre::UTFString ProgressBar::getText()
+	{
+		return mText->getText();
+	}
+
+	float ProgressBar::getVerticalLineSpacing()
+	{
+		return mText->getVerticalLineSpacing();
+	}
+
+	void ProgressBar::onDraw()
+	{
+		Brush* brush = Brush::getSingletonPtr();
+
+		brush->setFilterMode(mDesc->brushFilterMode);
+
+		SkinType* st = mSkinType;
+		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
+		{
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+		}
+
+		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
+
+		brush->setTexture(mOutputBarTexture);
+		Rect barRect = mClientDimensions;
+		barRect.translate(mTexturePosition);
+		brush->drawRectangle(barRect,UVRect(0,0,1,1));
+
+		/*
+		Ogre::ColourValue prevColor = brush->getColour();
+		Rect prevClipRegion = brush->getClipRegion();
+
+		Rect clipRegion;
+		clipRegion.size = 
+			Size(
+				mDesc->dimensions.size.width - mDesc->padding[PADDING_RIGHT],
+				mDesc->dimensions.size.height - mDesc->padding[PADDING_BOTTOM]);
+		clipRegion.position = mTexturePosition;
+		clipRegion.translate(Point(mDesc->padding[PADDING_LEFT],mDesc->padding[PADDING_TOP]));
+
+		brush->setClipRegion(prevClipRegion.getIntersection(clipRegion));
+
+		mText->draw(clipRegion.position);
+
+		brush->setClipRegion(prevClipRegion);
+
+		Brush::getSingleton().setColor(prevColor);
+		*/
+	}
+
+	void ProgressBar::setClippingEdge(ProgressBarClippingEdge e)
+	{
+		mDesc->clippingEdge = e;
+
+		setProgress(mDesc->progress);
+	}
+
+	void ProgressBar::setColor(const Ogre::ColourValue& cv)
+	{
+		mCurrentColourValue = cv;
+
+		mText->setColor(cv);
+
+		redraw();
+	}
+
+	void ProgressBar::setColor(const Ogre::ColourValue& cv, unsigned int index)
+	{
+		mText->setColor(cv,index);
+
+		redraw();
+	}
+
+	void ProgressBar::setColor(const Ogre::ColourValue& cv, unsigned int startIndex, unsigned int endIndex)
+	{
+		mText->setColor(cv,startIndex,endIndex);
+
+		redraw();
+	}
+
+	void ProgressBar::setColor(const Ogre::ColourValue& cv, Ogre::UTFString::code_point c, bool allOccurrences)
+	{
+		mText->setColor(cv,c,allOccurrences);
+
+		redraw();
+	}
+
+	void ProgressBar::setColor(const Ogre::ColourValue& cv, Ogre::UTFString s, bool allOccurrences)
+	{
+		mText->setColor(cv,s,allOccurrences);
+
+		redraw();
+	}
+
+	void ProgressBar::setFillDirection(ProgressBarFillDirection d)
+	{
+		mDesc->fillDirection = d;
+
+		setProgress(mDesc->progress);
+	}
+
+	void ProgressBar::setFont(const Ogre::String& fontName)
+	{
+		mCurrentFontName = fontName;
+
+		mText->setFont(fontName);
+
+		redraw();
+	}
+
+	void ProgressBar::setFont(const Ogre::String& fontName, unsigned int index)
+	{
+		mText->setFont(fontName,index);
+
+		redraw();
+	}
+
+	void ProgressBar::setFont(const Ogre::String& fontName, unsigned int startIndex, unsigned int endIndex)
+	{
+		mText->setFont(fontName,startIndex,endIndex);
+
+		redraw();
+	}
+
+	void ProgressBar::setFont(const Ogre::String& fontName, Ogre::UTFString::code_point c, bool allOccurrences)
+	{
+		mText->setFont(fontName,c,allOccurrences);
+
+		redraw();
+	}
+
+	void ProgressBar::setFont(const Ogre::String& fontName, Ogre::UTFString s, bool allOccurrences)
+	{
+		mText->setFont(fontName,s,allOccurrences);
+
+		redraw();
+	}
+
+	void ProgressBar::setLayout(ProgressBarLayout l)
+	{
+		mDesc->layout = l;
+
+		setProgress(mDesc->progress);
+	}
+
+	void ProgressBar::setPadding(Padding p, float distance)
+	{
+		if(p == PADDING_COUNT)
+			throw Exception(Exception::ERR_INVALIDPARAMS,"PADDING_COUNT is not a valid parameter!","ProgressBar::setPadding");
+
+		mDesc->padding[p] = distance;
+		mText->setAllottedWidth(mWidgetDesc->dimensions.size.width - (mDesc->padding[PADDING_LEFT] + mDesc->padding[PADDING_RIGHT]));
+
+		redraw();
+	}
+
+	void ProgressBar::setProgress(float percent)
+	{
+		if(percent > 100)
+			percent = 100;
+		else if(percent < 0)
+			percent = 0;
+
+		mDesc->progress = percent;
+
+		// Update Bar Output Texture to match percentage
+		{
+			// Determine the Rect to blit from the bar texture. All values are percentages
+			Rect sourceArea;
+			Rect destArea;
+
+			if(mDesc->layout == PROGRESSBAR_LAYOUT_HORIZONTAL)
+			{
+				// Left to right
+				if(mDesc->fillDirection == PROGRESSBAR_FILLS_NEGATIVE_TO_POSITIVE)
+				{
+					if(mDesc->clippingEdge == PROGRESSBAR_CLIP_LEFT_BOTTOM)
+					{
+						sourceArea.position.x = (100 - mDesc->progress) / 100.0;
+						sourceArea.position.y = 0;
+						sourceArea.size.width = mDesc->progress / 100.0;
+						sourceArea.size.height = 1.0;
+					}
+					else
+					{
+						sourceArea.position.x = 0;
+						sourceArea.position.y = 0;
+						sourceArea.size.width = mDesc->progress / 100.0;
+						sourceArea.size.height = 1.0;
+					}
+
+					destArea.position.x = 0;
+					destArea.position.y = 0;
+					destArea.size.width = mDesc->progress / 100.0;
+					destArea.size.height = 1.0;
+				}
+				// Right to left
+				else
+				{
+					if(mDesc->clippingEdge == PROGRESSBAR_CLIP_LEFT_BOTTOM)
+					{
+						sourceArea.position.x = (100 - mDesc->progress) / 100.0;
+						sourceArea.position.y = 0;
+						sourceArea.size.width = mDesc->progress / 100.0;
+						sourceArea.size.height = 1.0;
+					}
+					else
+					{
+						sourceArea.position.x = 0;
+						sourceArea.position.y = 0;
+						sourceArea.size.width = mDesc->progress / 100.0;
+						sourceArea.size.height = 1.0;
+					}
+
+					destArea.position.x = (100 - mDesc->progress) / 100.0;
+					destArea.position.y = 0;
+					destArea.size.width = mDesc->progress / 100.0;
+					destArea.size.height = 1.0;
+				}
+			}
+			else
+			{
+				// Bottom to top
+				if(mDesc->fillDirection == PROGRESSBAR_FILLS_NEGATIVE_TO_POSITIVE)
+				{
+					if(mDesc->clippingEdge == PROGRESSBAR_CLIP_LEFT_BOTTOM)
+					{
+						sourceArea.position.x = 0;
+						sourceArea.position.y = (100 - mDesc->progress) / 100.0;
+						sourceArea.size.width = 1.0;
+						sourceArea.size.height = mDesc->progress / 100.0;
+					}
+					else
+					{
+						sourceArea.position.x = 0;
+						sourceArea.position.y = 0;
+						sourceArea.size.width = 1.0;
+						sourceArea.size.height = mDesc->progress / 100.0;
+					}
+
+					destArea.position.x = 0;
+					destArea.position.y = (100 - mDesc->progress) / 100.0;
+					destArea.size.width = 1.0;
+					destArea.size.height = mDesc->progress / 100.0;
+				}
+				// Top to Bottom
+				else
+				{
+					if(mDesc->clippingEdge == PROGRESSBAR_CLIP_LEFT_BOTTOM)
+					{
+						sourceArea.position.x = 0;
+						sourceArea.position.y = (100 - mDesc->progress) / 100.0;
+						sourceArea.size.width = 1.0;
+						sourceArea.size.height = mDesc->progress / 100.0;
+					}
+					else
+					{
+						sourceArea.position.x = 0;
+						sourceArea.position.y = 0;
+						sourceArea.size.width = 1.0;
+						sourceArea.size.height = mDesc->progress / 100.0;
+					}
+					
+					destArea.position.x = 0;
+					destArea.position.y = 0;
+					destArea.size.width = 1.0;
+					destArea.size.height = mDesc->progress / 100.0;
+				}
+			}
+
+			// Clear our output bar texture and blit to it - src rect from Bar texture, dst rect is location in output texture
+			
+			int barWidth = static_cast<int>(mBarImage.getWidth());
+			int barHeight = static_cast<int>(mBarImage.getHeight());
+
+			// Hardware Pixel Buffer for moving pixels around, and correctly creating the barTexture.
+			Ogre::HardwarePixelBufferSharedPtr buf = mOutputBarTexture->getBuffer();
+			buf->lock(Ogre::HardwareBuffer::HBL_DISCARD);
+			Ogre::uint8* bufPtr = static_cast<Ogre::uint8*>((buf->getCurrentLock()).data);
+			for( int i = 0; i < barHeight; ++i )
+			{
+				for( int j = 0; j < barWidth; ++j )
+				{
+					*bufPtr++ = 0;	// R
+					*bufPtr++ = 0;	// B
+					*bufPtr++ = 0;	// G
+					*bufPtr++ = 0;	// A
+				}
+			}
+			buf->unlock();
+
+			if(mDesc->progress <= 0.0)
+				return;
+
+			// Blit the area of the Bar texture to the output texture. (Grab pixels from Src in Bar texture, and add to Dest in Output Texture)
+
+			Ogre::PixelBox srcBox = mBarImage.getPixelBox().getSubVolume(Ogre::Box(sourceArea.position.x * barWidth,sourceArea.position.y * barHeight,(sourceArea.position.x * barWidth) + (sourceArea.size.width * barWidth),(sourceArea.position.y * barHeight) + (sourceArea.size.height * barHeight)));
+			Ogre::Image::Box dstBox = Ogre::Image::Box(destArea.position.x * barWidth,destArea.position.y * barHeight,(destArea.position.x * barWidth) + (destArea.size.width * barWidth),(destArea.position.y * barHeight) + (destArea.size.height * barHeight));
+
+			buf->blitFromMemory(srcBox,dstBox);
+
+			// Use clipmap to clip pixels
+
+			buf->lock(Ogre::HardwareBuffer::HBL_NORMAL);
+			bufPtr = static_cast<Ogre::uint8*>((buf->getCurrentLock()).data);
+			for( int i = 0; i < barHeight; ++i )
+			{
+				for( int j = 0; j < barWidth; ++j )
+				{
+					bufPtr += 3; // Not concerned with RBG at this point
+
+					if(!mClipMap[(i * barWidth) + j])
+						*bufPtr = 0;	// Set transparent
+
+					bufPtr++;
+				}
+			}
+			buf->unlock();
+		}
+
+		redraw();
+	}
+
+	void ProgressBar::setSkinType(const Ogre::String type)
+	{
+		Widget::setSkinType(type);
+
+		mBarImage = mSkinType->getSkinElement(BAR)->getTextureImage();
+		_processClipMap();
+	}
+
+	void ProgressBar::setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv)
+	{
+		mText->setText(s,fp,cv);
+
+		redraw();
+	}
+
+	void ProgressBar::setText(Ogre::UTFString s, const Ogre::String& fontName, const Ogre::ColourValue& cv)
+	{
+		setText(s,Text::getFont(fontName),cv);
+	}
+
+	void ProgressBar::setText(Ogre::UTFString s)
+	{
+		setText(s,mCurrentFontName,mCurrentColourValue);
+	}
+
+	void ProgressBar::setVerticalLineSpacing(float distance)
+	{
+		if(distance == mText->getVerticalLineSpacing())
+			return;
+
+		mText->setVerticalLineSpacing(distance);
+
+		redraw();
 	}
 }

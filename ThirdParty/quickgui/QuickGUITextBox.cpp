@@ -1,881 +1,641 @@
-#include "QuickGUIPrecompiledHeaders.h"
-
 #include "QuickGUITextBox.h"
+#include "QuickGUIWindow.h"
 #include "QuickGUIManager.h"
+#include "QuickGUIRoot.h"
+#include "QuickGUISkinDefinitionManager.h"
 
 namespace QuickGUI
 {
-	TextBox::TextBox(const std::string& name, GUIManager* gm) :
-		Label(name,gm),
-		mMaskUserInput(0),
-		mBackSpaceDown(0),
-		mBackSpaceTimer(0.0),
-		mDeleteDown(0),
-		mDeleteTimer(0.0),
-		mLeftArrowDown(0),
-		mRightArrowDown(0),
-		mMoveCursorTimer(0.0),
-		mCursorVisibilityTimer(0.0),
-		mReadOnly(0),
-		mCursorPixelWidth(4),
-		mCursorIndex(0),
-		mCaption(""),
-		mVisibleStart(0),
-		mVisibleEnd(0),
-		mHasFocus(false),
-		mMouseLeftDown(false),
-		mLShiftDown(false),
-		mRShiftDown(false),
-		mLCtrlDown(false),
-		mRCtrlDown(false),
-		mUseTextSelectCursor(true),
-		mTextCursorSkinComponent(".textbox.textcursor")
+	const Ogre::String TextBox::BACKGROUND = "background";
+
+	void TextBox::registerSkinDefinition()
 	{
-		mWidgetType = TYPE_TEXTBOX;
-		mSkinComponent = ".textbox";
-		mSize = Size(100,0);
+		SkinDefinition* d = new SkinDefinition("TextBox");
+		d->defineSkinElement(BACKGROUND);
+		d->definitionComplete();
 
-		mHorizontalAlignment = HA_LEFT;
-		mMouseCursor = mGUIManager->getMouseCursor();
-		mGUIManager->registerTimeListener(this);
+		SkinDefinitionManager::getSingleton().registerSkinDefinition("TextBox",d);
+	}
 
-		addEventHandler(EVENT_LOSE_FOCUS,&TextBox::onLoseFocus,this);
-		addEventHandler(EVENT_CHARACTER_KEY,&TextBox::onCharacter,this);
-		addEventHandler(EVENT_MOUSE_BUTTON_DOWN,&TextBox::onMouseButtonDown,this);
-		addEventHandler(EVENT_MOUSE_BUTTON_UP,&TextBox::onMouseButtonUp,this);
-		addEventHandler(EVENT_MOUSE_CLICK,&TextBox::onMouseClicked,this);
-		addEventHandler(EVENT_MOUSE_ENTER,&TextBox::onMouseEnter,this);
-		addEventHandler(EVENT_MOUSE_LEAVE,&TextBox::onMouseLeave,this);
-		addEventHandler(EVENT_KEY_DOWN,&TextBox::onKeyDown,this);
-		addEventHandler(EVENT_KEY_UP,&TextBox::onKeyUp,this);
+	TextBoxDesc::TextBoxDesc() :
+		WidgetDesc()
+	{
+		cursorBlinkTime = 0.5;
+		defaultColor = Ogre::ColourValue::White;
+		defaultFontName = Root::getSingleton().getDefaultFontName();
+		keyDownTime = 0.6;
+		keyRepeatTime = 0.04;
+		maxCharacters = 255;
 
-		mTextCursor = _createQuad();
-		mTextCursor->setLayer(Quad::LAYER_CHILD);
-		mTextCursor->setShowWithOwner(false);
-		mTextCursor->setOffset(mOffset+1);
-		mTextCursor->setVisible(false);
-		mTextCursor->_notifyQuadContainer(mQuadContainer);
+		for(int i = 0; i < PADDING_COUNT; ++i)
+		{
+			padding[i] = 5.0;
+		}
+
+		textAlignment = TEXT_ALIGNMENT_LEFT;
+	}
+
+	void TextBoxDesc::serialize(SerialBase* b)
+	{
+		WidgetDesc::serialize(b);
+
+		for(int i = 0; i < PADDING_COUNT; ++i)
+		{
+			b->IO(StringConverter::toString(static_cast<Padding>(i)),&padding[i]);
+		}
+
+		b->IO("CursorBlinkTime",&cursorBlinkTime);
+		b->IO("DefaultColor",&defaultColor);
+		b->IO("DefaultFontName",&defaultFontName);
+		b->IO("KeyDownTime",&keyDownTime);
+		b->IO("KeyRepeatTime",&keyRepeatTime);
+		b->IO("MaxCharacters",&maxCharacters);
+		b->IO("TextAlignment",&textAlignment);
+		b->IO("TextPosition",&textPosition);
+
+		textDesc.serialize(b);
+	}
+
+	TextBox::TextBox(const Ogre::String& name) :
+		Widget(name),
+		mText(NULL),
+		mDesc(NULL),
+		mTextCursor(NULL)
+	{
+		mSkinElementName = BACKGROUND;
 	}
 
 	TextBox::~TextBox()
 	{
-		mGUIManager->unregisterTimeListener(this);
+		TimerManager::getSingleton().destroyTimer(mBlinkTimer);
+		TimerManager::getSingleton().destroyTimer(mKeyRepeatTimer);
+		TimerManager::getSingleton().destroyTimer(mKeyDownTimer);
 
-		EventHandlerArray::iterator it;
-		for( it = mOnEnterPressedUserEventHandlers.begin(); it != mOnEnterPressedUserEventHandlers.end(); ++it )
-			delete (*it);
-		mOnEnterPressedUserEventHandlers.clear();
-	}
+		delete mTextCursor;
 
-	void TextBox::_determineTextSelectionBounds(int cursorIndex, bool clearSelection)
-	{
-		// clear selection, or grow/shrink selection.
-		if(clearSelection)
-			mSelectStart = mSelectEnd = mSelectPrevious = cursorIndex;
-		else
+		/*********** RYAN COMMENT
+		if(mWindow != NULL)
 		{
-			if( cursorIndex < mSelectPrevious )
-			{
-				if(mSelectPrevious > mSelectStart)
-					mSelectEnd = mSelectStart;
-				
-				// Text Selection: determine whether we are growing left, or shrinking right.
-				if(cursorIndex < mSelectStart)
-					mSelectStart = cursorIndex;
-				// shrink selection from the right.
-				else if(cursorIndex >= mSelectStart)
-					mSelectEnd = cursorIndex;
-			}
-			else if( cursorIndex > mSelectPrevious )
-			{
-				if(mSelectPrevious < mSelectEnd)
-					mSelectStart = mSelectEnd;
-
-				// Text Selection: determine whether we are growing right, or shrinking left.
-				if(cursorIndex > mSelectEnd)
-					mSelectEnd = cursorIndex;
-				// shrink selection from the left.
-				else if(cursorIndex <= mSelectEnd)
-					mSelectStart = cursorIndex;
-			}
-			else // cursorIndex == mSelectPrevious
-			{
-				if((mCursorIndex != static_cast<int>(mCaption.length())) && (mCursorIndex != 0))
-					mSelectStart = mSelectEnd = cursorIndex;
-			}
-
-			mSelectPrevious = cursorIndex;
+			if(mWindow->hasEventHandler(WINDOW_EVENT_DRAWN,this))
+				mWindow->removeEventHandler(WINDOW_EVENT_DRAWN,this);
 		}
+		*/
+
+		delete mText;
 	}
 
-	void TextBox::_determineVisibleTextBounds(int cursorIndex)
+	void TextBox::_initialize(WidgetDesc* d)
 	{
-		float maxTextWidth = getTextBounds().width;
+		Widget::_initialize(d);
 
-		float width = 0;
-		// Shift text left to show portion of caption starting at cursorIndex.
-		if( cursorIndex < mVisibleStart )
-		{
-			mVisibleStart = cursorIndex;
-			mVisibleEnd = mVisibleStart + 1;
+		mDesc = dynamic_cast<TextBoxDesc*>(mWidgetDesc);
 
-			if( mVisibleEnd < static_cast<int>(mCaption.length()) )
-			{
-				width = mText->getGlyphWidth(mCaption[mVisibleEnd]);
+		mTextCursor = new TextCursor();
+
+		mDesc->consumeKeyboardEvents = true;
+		mCursorIndex = -1;
+
+		mFunctionKeyDownLast = false;
+
+		addWidgetEventHandler(WIDGET_EVENT_CHARACTER_KEY,&TextBox::onCharEntered,this);
+		addWidgetEventHandler(WIDGET_EVENT_KEY_DOWN,&TextBox::onKeyDown,this);
+		addWidgetEventHandler(WIDGET_EVENT_KEY_UP,&TextBox::onKeyUp,this);
+		addWidgetEventHandler(WIDGET_EVENT_KEYBOARD_INPUT_GAIN,&TextBox::onKeyboardInputGain,this);
+		addWidgetEventHandler(WIDGET_EVENT_KEYBOARD_INPUT_LOSE,&TextBox::onKeyboardInputLose,this);
+		addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&TextBox::onMouseButtonDown,this);
+		addWidgetEventHandler(WIDGET_EVENT_MOUSE_CLICK_TRIPLE,&TextBox::onTripleClick,this);
+
+		TextBoxDesc* td = dynamic_cast<TextBoxDesc*>(d);
+
+		// Make a copy of the Text Desc.  The Text object will
+		// modify it directly, which is used for serialization.
+		mDesc->textDesc = td->textDesc;
+
+		setDefaultFont(td->defaultFontName);
+		setDefaultColor(td->defaultColor);
+		mDesc->maxCharacters = td->maxCharacters;
+
+		// Set a really high width, we want everything on 1 line.
+		mDesc->textDesc.allottedWidth = mDesc->maxCharacters * Text::getGlyphWidth(mDesc->defaultFontName,'0');
+		if(mText != NULL)
+			delete mText;
 			
-				while( mVisibleEnd < static_cast<int>(mCaption.length()) - 1 )
-				{
-					width += mText->getGlyphWidth(mCaption[mVisibleEnd+1]);
-					
-					if( width < maxTextWidth )
-						++mVisibleEnd;
-					else
-						break;
-				}
-			}
-		}
-		// Shift text right to show portion of caption ending at cursorIndex.
-		else if( cursorIndex > mVisibleEnd )
-		{
-			mVisibleEnd = cursorIndex;
-			mVisibleStart = mVisibleEnd - 1;
+		mText = new Text(mDesc->textDesc);
 
-			if( mVisibleStart >= 0 )
-			{
-				width = mText->getGlyphWidth(mCaption[mVisibleStart]);
-			
-				while( mVisibleStart > 0 )
-				{
-					width += mText->getGlyphWidth(mCaption[mVisibleStart-1]);
+		setPadding(PADDING_BOTTOM,td->padding[PADDING_BOTTOM]);
+		setPadding(PADDING_LEFT,td->padding[PADDING_LEFT]);
+		setPadding(PADDING_RIGHT,td->padding[PADDING_RIGHT]);
+		setPadding(PADDING_TOP,td->padding[PADDING_TOP]);
 
-					if( width < maxTextWidth )
-						--mVisibleStart;
-					else
-						break;
-				}
-			}
-		}
-		// start from visible start and display the maximum number of characters until text bounds reached.
-		else
-		{
-			mVisibleEnd = mVisibleStart + 1;
+		mDesc->cursorBlinkTime = td->cursorBlinkTime;
+		mDesc->keyDownTime = td->keyDownTime;
+		mDesc->keyRepeatTime = td->keyRepeatTime;
 
-			width = mText->getTextWidth(mCaption.substr(mVisibleStart,mVisibleEnd - mVisibleStart));
-			while( (mVisibleEnd < static_cast<int>(mCaption.length())) && (width <= maxTextWidth) )
-			{
-				width += mText->getGlyphWidth(mCaption[mVisibleEnd]);
-				++mVisibleEnd;
-			}
+		TimerDesc timerDesc;
+		timerDesc.repeat = true;
+		timerDesc.timePeriod = mDesc->cursorBlinkTime;
+		mBlinkTimer = TimerManager::getSingleton().createTimer(timerDesc);
+		mBlinkTimer->setCallback(&TextBox::blinkTimerCallback,this);
 
-			// When we exit the while loop, we are either at visibleStart == mCaption.length(), or we have exceeded the width limitation.
-			if( mVisibleEnd != static_cast<int>(mCaption.length()) )
-				--mVisibleEnd;
-		}
+		timerDesc.timePeriod = mDesc->keyRepeatTime;
+		mKeyRepeatTimer = TimerManager::getSingleton().createTimer(timerDesc);
+		mKeyRepeatTimer->setCallback(&TextBox::keyRepeatTimerCallback,this);
+
+		timerDesc.repeat = false;
+		timerDesc.timePeriod = mDesc->keyDownTime;
+		mKeyDownTimer = TimerManager::getSingleton().createTimer(timerDesc);
+		mKeyDownTimer->setCallback(&TextBox::keyDownTimerCallback,this);
+
+		setSkinType(d->skinTypeName);
 	}
 
-	void TextBox::_positionCursor()
+	Widget* TextBox::factory(const Ogre::String& widgetName)
 	{
-		Rect textBounds = getTextBounds();
-		Point cursorPos;
+		Widget* newWidget = new TextBox(widgetName);
 
-		// If the Text was not rendered, as is the case when the glyph (font) height is bigger than the area provided,
-		// place the cursor according to horizontal/vertical alignment.
-		if( mText->getNumberOfCharacters() == 0 )
-		{
-			switch(mHorizontalAlignment)
-			{
-			case HA_LEFT:
-				cursorPos.x = textBounds.x;
-				break;
-			case HA_MID:
-				cursorPos.x = (textBounds.x + (textBounds.width / 2));
-				break;
-			case HA_RIGHT:
-				cursorPos.x = (textBounds.x + textBounds.width);
-				break;
-			}
+		newWidget->_createDescObject("TextBoxDesc");
 
-			switch(mVerticalAlignment)
-			{
-			case VA_TOP:
-				cursorPos.y = textBounds.y;
-				break;
-			case VA_MID:
-				cursorPos.y = (textBounds.y + (textBounds.height / 2));
-				break;
-			case VA_BOTTOM:
-				cursorPos.y = (textBounds.y + textBounds.height);
-				break;
-			}
-		}
-		else
-		{
-			// Now that the correct text will be displayed, we can correctly position the text cursor.
-			if( (mCursorIndex - mVisibleStart) == 0 )
-			{
-				if( mCaption.empty() )
-				{
-					switch(mHorizontalAlignment)
-					{
-					case HA_LEFT:
-						cursorPos.x = textBounds.x;
-						break;
-					case HA_MID:
-						cursorPos.x = (textBounds.x + (textBounds.width / 2));
-						break;
-					case HA_RIGHT:
-						cursorPos.x = (textBounds.x + textBounds.width);
-						break;
-					}
-
-					switch(mVerticalAlignment)
-					{
-					case VA_TOP:
-						cursorPos.y = textBounds.y;
-						break;
-					case VA_MID:
-						cursorPos.y = (textBounds.y + (textBounds.height / 2));
-						break;
-					case VA_BOTTOM:
-						cursorPos.y = (textBounds.y + textBounds.height);
-						break;
-					}
-				}
-				else
-				{
-					Quad* character = mText->getCharacter(mCursorIndex - mVisibleStart);
-					Point pos = character->getPosition();
-					Size size = character->getSize();
-					cursorPos.x = pos.x;
-					cursorPos.y = pos.y + (size.height / 2);
-				}
-			}
-			else
-			{
-				Quad* character = mText->getCharacter((mCursorIndex - mVisibleStart) - 1);
-				Point pos = character->getPosition();
-				Size size = character->getSize();
-				cursorPos.x = pos.x + size.width;
-				cursorPos.y = pos.y + (size.height / 2);
-			}
-		}
-		
-		// horizontally center the text cursor image at the desired position.
-		Size s = mTextCursor->getSize();
-		cursorPos.x -= (s.width / 2);
-		cursorPos.y -= (s.height / 2);
-		mTextCursor->setPosition(cursorPos);
+		return newWidget;
 	}
 
-	void TextBox::_updateText()
+	Ogre::String TextBox::getClass()
 	{
-		_updateVisibleText();
-		_updateHighlightedText();
-	}
-
-	void TextBox::_updateVisibleText()
-	{
-		// Handle masking of characters.
-		mOutput.clear();
-		if(mMaskUserInput)
-			mOutput.append(mCaption.length(),mMaskSymbol);
-		else 
-			mOutput = mCaption;
-
-		mText->setCaption(mOutput.substr(mVisibleStart,mVisibleEnd - mVisibleStart));
-	}
-
-	void TextBox::_updateHighlightedText()
-	{
-		if(mSelectStart == mSelectEnd)
-			mText->clearSelection();
-		else
-		{
-			if((mSelectStart < mVisibleEnd) && (mSelectEnd > mVisibleStart))
-			{
-				int visibleSelectStart = mSelectStart;
-				if( mSelectStart < mVisibleStart )
-					visibleSelectStart = mVisibleStart;
-
-				int visibleSelectEnd = mSelectEnd;
-				if( mSelectEnd > mVisibleEnd )
-					visibleSelectEnd = mVisibleEnd;
-				
-				mText->selectCharacters(visibleSelectStart - mVisibleStart,(visibleSelectEnd - 1) - mVisibleStart);
-			}
-		}
+		return "TextBox";
 	}
 
 	void TextBox::addCharacter(Ogre::UTFString::code_point cp)
 	{
-		if(mReadOnly)
-			return;
-
-		mMouseLeftDown = false;
-		mHasFocus = true;
-
-		// Remove selection if a selection has been made.
-		if(mSelectStart != mSelectEnd)
-		{
-			mCaption = mCaption.erase(mSelectStart,mSelectEnd-mSelectStart);
-			mCursorIndex = mSelectStart;
-		}
-
-		// Insert a character right before the text cursor.
-		mCaption.insert(mCursorIndex,1,cp);
-		
-		setCursorIndex(mCursorIndex + 1);
+		mText->addCharacter(new Character(cp,mCurrentFont,mDesc->defaultColor));
+		setCursorIndex(-1);
 	}
 
-	void TextBox::addOnEnterPressedEventHandler(MemberFunctionSlot* function)
+	void TextBox::addCharacter(Ogre::UTFString::code_point cp, int index)
 	{
-		mOnEnterPressedUserEventHandlers.push_back(function);
+		if((index < 0) || (index > mText->getLength()))
+			throw Exception(Exception::ERR_TEXT,"Index out of bounds! index=" + Ogre::StringConverter::toString(index) + " length=" + Ogre::StringConverter::toString(mText->getLength()),"TextBox::addCharacter");
+
+		mText->addCharacter(new Character(cp,mCurrentFont,mDesc->defaultColor), index);
+		setCursorIndex(mCursorIndex+1);
 	}
 
-	void TextBox::backSpace()
+	void TextBox::blinkTimerCallback()
 	{
-		if(mReadOnly || (mCaption.empty()))
-			return;
-
-		mMouseLeftDown = false;
-		mHasFocus = true;
-
-		// Remove selection if a selection has been made.
-		if(mSelectStart != mSelectEnd)
-		{
-			mCaption = mCaption.erase(mSelectStart,mSelectEnd-mSelectStart);
-			setCursorIndex(mSelectStart);
-			return;
-		}
-
-		// If there is no selection, but we're at the beginning of the string, return.
-		if(mCursorIndex == 0)
-			return;
-
-		// Decrement visible start.
-		--mVisibleStart;
-		if(mVisibleStart < 0)
-			mVisibleStart = 0;
-
-		mCaption.erase(mCursorIndex - 1,1);
-
-		setCursorIndex(mCursorIndex - 1);
+		mTextCursor->setVisible(!mTextCursor->getVisible());
 	}
 
-	void TextBox::clearText()
+	Ogre::ColourValue TextBox::getDefaultColor()
 	{
-		setText("");
+		return mDesc->defaultColor;
 	}
 
-	void TextBox::deleteCharacter()
+	Ogre::String TextBox::getDefaultFont()
 	{
-		if(mReadOnly || (mCaption.empty()))
-			return;
-
-		mMouseLeftDown = false;
-		mHasFocus = true;
-
-		// Remove selection if a selection has been made.
-		if(mSelectStart != mSelectEnd)
-		{
-			mCaption = mCaption.erase(mSelectStart,mSelectEnd-mSelectStart);
-			setCursorIndex(mSelectStart);
-			return;
-		}
-
-		// Unlike Backspace, we do not need to modify (decrement) visible end.
-
-		mCaption.erase(mCursorIndex,1);
-
-		setCursorIndex(mCursorIndex);
+		return mDesc->defaultFontName;
 	}
 
-	void TextBox::focus()
+	int TextBox::getMaxCharacters()
 	{
-		if(!mEnabled) 
-			return;
-
-		mTextCursor->setVisible(true);
-
-		Rect cursorOrigin;
-		cursorOrigin.x = mTextCursor->getPosition().x;
-		cursorOrigin.y = mTextCursor->getPosition().y + (mTextCursor->getSize().height / 2);
-		cursorOrigin.width = mTextCursor->getSize().width;
-		cursorOrigin.height = mTextCursor->getSize().height;
-
-		mSelectStart = mSelectEnd = mSelectPrevious = mVisibleStart + mText->getTextCursorIndex(cursorOrigin);
-		setCursorIndex(mSelectStart);
-		mHasFocus = true;
-
-		mGUIManager->setActiveWidget(this);
+		return mDesc->maxCharacters;
 	}
 
-	int TextBox::getNextWordIndex()
+	float TextBox::getPadding(Padding p)
 	{
-		// cover bounds.
-		if(mCaption.empty())
-			return 0;
-		else if(mCursorIndex == (static_cast<int>(mCaption.length())))
-			return mCursorIndex;
+		if(p == PADDING_COUNT)
+			throw Exception(Exception::ERR_INVALIDPARAMS,"PADDING_COUNT is not a valid parameter!","Label::getPadding");
 
-		int whiteSpaceStart = mCursorIndex;
-		// iterate through string until whitespace found.
-		while((whiteSpaceStart < (static_cast<int>(mCaption.length()) - 1)) && !((mCaption[whiteSpaceStart] == ' ') || (mCaption[whiteSpaceStart] == '\t')))
-			++whiteSpaceStart;
-
-		int whiteSpaceEnd = whiteSpaceStart;
-		// iterate through string until non whitespace found.
-		while((whiteSpaceEnd < (static_cast<int>(mCaption.length()) - 1)) && ((mCaption[whiteSpaceEnd] == ' ') || (mCaption[whiteSpaceEnd] == '\t')))
-			++whiteSpaceEnd;
-
-		if(whiteSpaceEnd == (static_cast<int>(mCaption.length()) - 1))
-			return (whiteSpaceEnd + 1);
-		else
-			return whiteSpaceEnd;
-	}
-
-	int TextBox::getPreviousWordIndex()
-	{
-		// cover bounds.
-		if(mCaption.empty())
-			return 0;
-		else if(mCursorIndex == 0)
-			return mCursorIndex;
-
-		int whiteSpaceEnd = mCursorIndex - 1;
-		// iterate through string until non whitespace found.  Use the string "   abc def[cursor]" as an example.
-		while((whiteSpaceEnd > -1) && ((mCaption[whiteSpaceEnd] == ' ') || (mCaption[whiteSpaceEnd] == '\t')))
-			--whiteSpaceEnd;
-
-		// "   abc de[cursor]f".
-
-		int whiteSpaceStart = whiteSpaceEnd;
-		// iterate through string until whitespace found.
-		while((whiteSpaceStart > -1) && !((mCaption[whiteSpaceStart] == ' ') || (mCaption[whiteSpaceStart] == '\t')))
-			--whiteSpaceStart;
-
-		// "   abc [cursor]def".
-
-		return (whiteSpaceStart + 1);
-	}
-
-	bool TextBox::getReadOnly()
-	{
-		return mReadOnly;
+		return mDesc->padding[p];
 	}
 
 	Ogre::UTFString TextBox::getText()
 	{
-		return mCaption;
+		return mText->getText();
 	}
 
-	void TextBox::hide()
+	void TextBox::keyDownTimerCallback()
 	{
-		Label::hide();
-
-		mBackSpaceDown = false;
-		mLeftArrowDown = false;
-		mRightArrowDown = false;
-		mHasFocus = false;
-		mMouseLeftDown = false;
+		mKeyRepeatTimer->start();
 	}
 
-	void TextBox::maskUserInput(const Ogre::UTFString::unicode_char& symbol)
+	void TextBox::keyRepeatTimerCallback()
 	{
-		mMaskSymbol = symbol;
-
-		// if there was previously text, we now need to mask it.
-		if( (mCaption != "") && !mMaskUserInput ) 
-			setText(mCaption);
-
-		mMaskUserInput = true;
-	}
-
-	void TextBox::moveCursorLeft()
-	{
-		// if previous selection exists, place cursor at start of selection, and remove selection.
-		if((mSelectStart != mSelectEnd) && !(mLShiftDown || mRShiftDown))
-			setCursorIndex(mSelectStart);
-		else if(mLCtrlDown || mRCtrlDown)
-			setCursorIndex(getPreviousWordIndex(),!(mLShiftDown || mRShiftDown));
+		if(mFunctionKeyDownLast)
+			onKeyDown(mLastKnownInput);
 		else
-			setCursorIndex(mCursorIndex - 1,!(mLShiftDown || mRShiftDown));
+			onCharEntered(mLastKnownInput);
 	}
 
-	void TextBox::moveCursorRight()
+	void TextBox::onCharEntered(const EventArgs& args)
 	{
-		// if previous selection exists, place cursor at end of selection, and remove selection.
-		if((mSelectStart != mSelectEnd) && !(mLShiftDown || mRShiftDown))
-			setCursorIndex(mSelectEnd);
-		else if(mLCtrlDown || mRCtrlDown)
-			setCursorIndex(getNextWordIndex(),!(mLShiftDown || mRShiftDown));
+		const KeyEventArgs kea = dynamic_cast<const KeyEventArgs&>(args);
+		mLastKnownInput.codepoint = kea.codepoint;
+		mLastKnownInput.keyMask = kea.keyMask;
+		mLastKnownInput.keyModifiers = kea.keyModifiers;
+
+		if(mCursorIndex == -1)
+			addCharacter(mLastKnownInput.codepoint);
 		else
-			setCursorIndex(mCursorIndex + 1,!(mLShiftDown || mRShiftDown));
+			addCharacter(mLastKnownInput.codepoint,mCursorIndex);
 	}
 
-	void TextBox::onLoseFocus(const EventArgs& args)
+	void TextBox::onDraw()
 	{
-		mText->clearSelection();
-		mTextCursor->setVisible(false);
-		mBackSpaceDown = false;
-		mLeftArrowDown = false;
-		mRightArrowDown = false;
-		mHasFocus = false;
-		mMouseLeftDown = false;
+		Brush* brush = Brush::getSingletonPtr();
+
+		brush->setFilterMode(mDesc->brushFilterMode);
+
+		SkinType* st = mSkinType;
+		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+
+		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
+
+		Ogre::ColourValue prevColor = brush->getColour();
+		Rect prevClipRegion = brush->getClipRegion();
+
+		Rect clipRegion;
+		clipRegion.size = 
+			Size(
+				mDesc->dimensions.size.width - mDesc->padding[PADDING_RIGHT] - mDesc->padding[PADDING_LEFT],
+				mDesc->dimensions.size.height - mDesc->padding[PADDING_BOTTOM] - mDesc->padding[PADDING_TOP]);
+		clipRegion.position = mTexturePosition;
+		clipRegion.translate(Point(mDesc->padding[PADDING_LEFT],mDesc->padding[PADDING_TOP]));
+
+		brush->setClipRegion(prevClipRegion.getIntersection(clipRegion));
+
+		Point textPosition = mTexturePosition;
+		textPosition.translate(Point(0,mDesc->padding[PADDING_TOP]));
+		textPosition.translate(mDesc->textPosition);
+		mText->draw(textPosition);
+
+		brush->setClipRegion(prevClipRegion);
+
+		Brush::getSingleton().setColor(prevColor);
 	}
 
-	void TextBox::onEnterPressed(const KeyEventArgs& args)
+	void TextBox::onKeyDown(const EventArgs& args)
 	{
-		EventHandlerArray::iterator it;
-		for( it = mOnEnterPressedUserEventHandlers.begin(); it != mOnEnterPressedUserEventHandlers.end(); ++it )
-			(*it)->execute(args);
-	}
+		const KeyEventArgs kea = dynamic_cast<const KeyEventArgs&>(args);
+		mLastKnownInput.keyMask = kea.keyMask;
+		mLastKnownInput.keyModifiers = kea.keyModifiers;
+		mLastKnownInput.scancode = kea.scancode;
 
-	void TextBox::onCharacter(const EventArgs& args) 
-	{ 
-		if(!mReadOnly) 
+		mFunctionKeyDownLast = true;
+		mKeyDownTimer->start();
+
+		switch(kea.scancode)
 		{
-			mBackSpaceDown = false;
-			mLeftArrowDown = false;
-			mRightArrowDown = false;
-
-			addCharacter(dynamic_cast<const KeyEventArgs&>(args).codepoint);
-		}
-	}
-
-	void TextBox::onKeyDown(const EventArgs& args) 
-	{ 
-		switch(dynamic_cast<const KeyEventArgs&>(args).scancode)
-		{
-		case KC_BACK:
-			if(!mReadOnly)
-			{
-				mBackSpaceDown = true;
-				mLeftArrowDown = false;
-				mRightArrowDown = false;
-				mBackSpaceTimer = 0.0;
-				backSpace();
-			}
-			break;
 		case KC_LEFT:
-			// Make sure tapping the left key moves the cursor left.
-			moveCursorLeft();
-
-			mMoveCursorTimer = 0.0;
-			mLeftArrowDown = true;
-			mRightArrowDown = false;
+			if(mText->getLength() > 0)
+			{
+				if(mCursorIndex == -1)
+				{
+					if(kea.keyModifiers & CTRL)
+						setCursorIndex(mText->getIndexOfPreviousWord(mText->getLength() - 1));
+					else
+						setCursorIndex(mText->getLength() - 1);
+				}
+				else if(mCursorIndex > 0)
+				{
+					if(kea.keyModifiers & CTRL)
+						setCursorIndex(mText->getIndexOfPreviousWord(mCursorIndex));
+					else
+						setCursorIndex(mCursorIndex - 1);
+				}
+			}
 			break;
 		case KC_RIGHT:
-			// Make sure tapping the right key moves the cursor right.
-			moveCursorRight();
-
-			mMoveCursorTimer = 0.0;
-			mRightArrowDown = true;
-			mLeftArrowDown = false;
-			break;
-		case KC_DELETE:
-			if(!mReadOnly)
+			if((mText->getLength() > 0) && (mCursorIndex != -1))
 			{
-				mDeleteTimer = 0.0;
-				mDeleteDown = true;
-				mBackSpaceDown = false;
-				mLeftArrowDown = false;
-				mRightArrowDown = false;
-				deleteCharacter();
+				if(mCursorIndex == (mText->getLength() - 1))
+				{
+					if(kea.keyModifiers & CTRL)
+						setCursorIndex(mText->getIndexOfNextWord(mCursorIndex));
+					else
+						setCursorIndex(-1);
+				}
+				else
+				{
+					if(kea.keyModifiers & CTRL)
+						setCursorIndex(mText->getIndexOfNextWord(mCursorIndex));
+					else
+						setCursorIndex(mCursorIndex + 1);
+				}
 			}
 			break;
-		case KC_LSHIFT:
-			mLShiftDown = true;
+		case KC_DELETE:
+			if(mText->getLength() > 0)
+			{
+				if(mCursorIndex != -1)
+					removeCharacter(mCursorIndex);
+			}
 			break;
-		case KC_RSHIFT:
-			mRShiftDown = true;
-			break;
-		case KC_LCONTROL:
-			mLCtrlDown = true;
-			break;
-		case KC_RCONTROL:
-			mRCtrlDown = true;
-			break;
-		case KC_HOME:
-			setCursorIndex(0,!(mLShiftDown || mRShiftDown));
+		case KC_BACK:
+			if(mText->getLength() > 0)
+			{
+				if(mCursorIndex == -1)
+					removeCharacter(mText->getLength() - 1);
+				else if(mCursorIndex > 0)
+					removeCharacter(mCursorIndex - 1);
+			}
 			break;
 		case KC_END:
-			setCursorIndex(static_cast<int>(mCaption.length()),!(mLShiftDown || mRShiftDown));
+			if(!mText->empty())
+				setCursorIndex(-1);
+			break;
+		case KC_HOME:
+			if(!mText->empty())
+				setCursorIndex(0);
+			break;
+		default:
+			mFunctionKeyDownLast = false;
 			break;
 		}
 	}
 
 	void TextBox::onKeyUp(const EventArgs& args)
 	{
-		switch(dynamic_cast<const KeyEventArgs&>(args).scancode)
-		{
-		case KC_BACK:
-			if(!mReadOnly)
-				mBackSpaceDown = false;
-			break;
-		case KC_LEFT:
-			mLeftArrowDown = false;
-			break;
-		case KC_RIGHT:
-			mRightArrowDown = false;
-			break;
-		case KC_DELETE:
-			mDeleteDown = false;
-			break;
-		case KC_NUMPADENTER:
-			{
-				KeyEventArgs args(this);
-				args.scancode = KC_NUMPADENTER;
-				onEnterPressed(args);
-			}
-			break;
-		case KC_RETURN:
-			{
-				KeyEventArgs args(this);
-				args.scancode = KC_RETURN;
-				onEnterPressed(args);
-			}
-			break;
-		case KC_LSHIFT:
-			mLShiftDown = false;
-			break;
-		case KC_RSHIFT:
-			mRShiftDown = false;
-			break;
-		case KC_LCONTROL:
-			mLCtrlDown = false;
-			break;
-		case KC_RCONTROL:
-			mRCtrlDown = false;
-			break;
-		}
+		mKeyDownTimer->stop();
+		mKeyRepeatTimer->stop();
+	}
+
+	void TextBox::onKeyboardInputGain(const EventArgs& args)
+	{
+		mTextCursor->setVisible(true);
+		mBlinkTimer->start();
+	}
+
+	void TextBox::onKeyboardInputLose(const EventArgs& args)
+	{
+		mBlinkTimer->stop();
+		mTextCursor->setVisible(false);
 	}
 
 	void TextBox::onMouseButtonDown(const EventArgs& args)
 	{
-		if(mReadOnly)
-			return;
-
-		mHasFocus = true;
-
 		const MouseEventArgs mea = dynamic_cast<const MouseEventArgs&>(args);
 		if(mea.button == MB_Left)
 		{
-			mMouseLeftDown = true;
+			// If the text is empty, set cursor index to -1
+			if(mText->empty())
+				setCursorIndex(-1);
+			else
+			{
+				// Convert position to coordinates relative to TextBox position
+				Point relativePosition;
+				relativePosition.x = mea.position.x - mTexturePosition.x;
+				relativePosition.y = mea.position.y - mTexturePosition.y;
 
-			setCursorIndex(mVisibleStart + mText->getTextCursorIndex(mea.position));
+				// Convert relative TextBox position to coordinates relative to Text position
+				Point relativeTextPosition;
+				relativeTextPosition.x = relativePosition.x - mDesc->textPosition.x;
+				relativeTextPosition.y = relativePosition.y - mDesc->textPosition.y;
+
+				Character* lastCharacter = mText->getCharacter(mText->getLength()-1);
+				// If we click to the right of the text, set cursor index to -1
+				if((relativeTextPosition.x > (lastCharacter->dimensions.position.x + (lastCharacter->dimensions.size.width / 2.0))) && (relativeTextPosition.y >= lastCharacter->dimensions.position.y))
+					setCursorIndex(-1);
+				else
+					setCursorIndex(mText->getCharacterIndexAtPosition(relativeTextPosition));
+			}
 		}
 	}
 
-	void TextBox::onMouseButtonUp(const EventArgs& args)
+	void TextBox::onTripleClick(const EventArgs& args)
 	{
-		if(dynamic_cast<const MouseEventArgs&>(args).button == MB_Left)
-			mMouseLeftDown = false;
-	}
-
-	void TextBox::onMouseClicked(const EventArgs& args)
-	{
-		if(!mGainFocusOnClick)
-			return;
-
-		mHasFocus = true;
-
 		const MouseEventArgs mea = dynamic_cast<const MouseEventArgs&>(args);
 		if(mea.button == MB_Left)
 		{
-			mMouseLeftDown = false;
-
-			setCursorIndex(mVisibleStart + mText->getTextCursorIndex(mea.position));
+			mText->highlight();
+			redraw();
 		}
 	}
 
-	void TextBox::onMouseEnter(const EventArgs& args)
+	void TextBox::onWindowDrawn(const EventArgs& args)
 	{
-		if(mUseTextSelectCursor && !mReadOnly)
-			mMouseCursor->setCursorState(MouseCursor::CURSOR_STATE_TEXTSELECT);
+		mTextCursor->onDraw();
 	}
 
-	void TextBox::onMouseLeave(const EventArgs& args)
+	void TextBox::removeCharacter(int index)
 	{
-		if(mMouseCursor->getCursorState() == MouseCursor::CURSOR_STATE_TEXTSELECT)
-			mMouseCursor->setCursorState(MouseCursor::CURSOR_STATE_NORMAL);
+		if((index < 0) || (index > mText->getLength()))
+			throw Exception(Exception::ERR_TEXT,"Index out of bounds! index=" + Ogre::StringConverter::toString(index) + " length=" + Ogre::StringConverter::toString(mText->getLength()),"TextBox::removeCharacter");
+
+		mText->removeCharacter(index);
+
+		if(index == mText->getLength())
+			setCursorIndex(-1);
+		else
+			setCursorIndex(index);
 	}
 
-	void TextBox::setAutoSize(bool autoSize)
+	void TextBox::setColor(const Ogre::ColourValue& cv)
 	{
-		mAutoSize = autoSize;
+		mText->setColor(cv);
 
-		if(mAutoSize)
-			setHeight(mText->getNewlineHeight() + mVPixelPadHeight);
+		redraw();
 	}
 
-	void TextBox::setCursorIndex(int cursorIndex, bool clearSelection)
+	void TextBox::setColor(const Ogre::ColourValue& cv, unsigned int index)
 	{
-		if( cursorIndex < 0 )
-			cursorIndex = 0;
-		else if( cursorIndex > static_cast<int>(mCaption.length()) )
-			cursorIndex = static_cast<int>(mCaption.length());
+		mText->setColor(cv,index);
 
-		// Shifts the text if needbe, and displays the maximum portion of the caption, given the text bounds and cursor index.
-		_determineVisibleTextBounds(cursorIndex);
-		// Grows, shrinks, or clears the text selection. (determines mSelectStart and mSelectEnd)
-		_determineTextSelectionBounds(cursorIndex,clearSelection);
+		redraw();
+	}
 
-		// render the proper section of text, and update selection accordingly.
-		_updateText();
+	void TextBox::setColor(const Ogre::ColourValue& cv, unsigned int startIndex, unsigned int endIndex)
+	{
+		mText->setColor(cv,startIndex,endIndex);
 
-		mCursorIndex = cursorIndex;
+		redraw();
+	}
 
-		_positionCursor();
+	void TextBox::setColor(const Ogre::ColourValue& cv, Ogre::UTFString::code_point c, bool allOccurrences)
+	{
+		mText->setColor(cv,c,allOccurrences);
 
-		// make sure cursor is visible.
+		redraw();
+	}
+
+	void TextBox::setColor(const Ogre::ColourValue& cv, Ogre::UTFString s, bool allOccurrences)
+	{
+		mText->setColor(cv,s,allOccurrences);
+
+		redraw();
+	}
+
+	void TextBox::setCursorIndex(int index)
+	{
+		if((index < -1) || (index > (mText->getLength() - 1)))
+			throw Exception(Exception::ERR_TEXT,"Index out of bounds! index=" + Ogre::StringConverter::toString(index) + " length=" + Ogre::StringConverter::toString(mText->getLength()),"TextBox::setCursorIndex");
+
+		mCursorIndex = index;
+
+		mBlinkTimer->reset();
 		mTextCursor->setVisible(true);
-		mCursorVisibilityTimer = 0.0;
-	}
 
-	void TextBox::setCursorIndex(Point position, bool clearSelection)
-	{
-		setCursorIndex(mVisibleStart + mText->getTextCursorIndex(position),clearSelection);
-	}
-
-	void TextBox::setFont(const std::string& fontScriptName, bool recursive)
-	{
-		if(fontScriptName == "")
-			return;
-
-		Widget::setFont(fontScriptName,recursive);
-		mText->setFont(mFontName);
-
-		if(mAutoSize)
+		if(mText->getLength() == 0)
 		{
-			setHeight(mText->getNewlineHeight() + mVPixelPadHeight);
-			mTextCursor->setSize(Size(mCursorPixelWidth,mSize.height));
-			// setHeight sets mAutoSize to false..
-			mAutoSize = true;
+			mDesc->textPosition.x = mDesc->padding[PADDING_LEFT];
+			mCursorPosition.x = mDesc->textPosition.x;
+
+			Point p = getScreenPosition();
+			p.translate(mCursorPosition);
+			mTextCursor->setPosition(p);
+			redraw();
+
+			return;
+		}
+
+		float relativeCursorPosition;
+		if(mCursorIndex == -1)
+		{
+			Character* c = mText->getCharacter(mText->getLength() - 1);
+			relativeCursorPosition = c->dimensions.position.x + c->dimensions.size.width;
 		}
 		else
-			alignText();
+			relativeCursorPosition = mText->getCharacter(mCursorIndex)->dimensions.position.x;
 
-		// re-initialize index variables
-		mVisibleStart = 0;
-		mVisibleEnd = 0;
-		mSelectStart = 0;
-		mSelectEnd = 0;
+		float textBoxWidth = (mDesc->dimensions.size.width - mDesc->padding[PADDING_LEFT] - mDesc->padding[PADDING_RIGHT]);
 
-		setCursorIndex(static_cast<int>(mCaption.length()));
-		mTextCursor->setVisible(false);
-	}
-
-	void TextBox::setReadOnly(bool readOnly)
-	{
-		mReadOnly = readOnly;
-	}
-
-	void TextBox::setSize(const float& pixelWidth, const float& pixelHeight)
-	{
-		Label::setSize(pixelWidth,pixelHeight);
-
-		if(pixelHeight == 0)
-			mAutoSize = true;
-	}
-
-	void TextBox::setSize(const Size& pixelSize)
-	{
-		TextBox::setSize(pixelSize.width,pixelSize.height);
-	}
-
-	void TextBox::setSkin(const std::string& skinName, bool recursive)
-	{
-		Label::setSkin(skinName,recursive);
-
-		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(mSkinName);
-		if(ss != NULL)
+		// If text fits within TextBox, align text
+		if(mText->getTextWidth() < textBoxWidth)
 		{
-			mTextCursor->setMaterial(ss->getMaterialName());
-			mTextCursor->setTextureCoordinates(ss->getTextureCoordinates(skinName + mTextCursorSkinComponent + ss->getImageExtension()));
+			switch(mDesc->textAlignment)
+			{
+			case TEXT_ALIGNMENT_CENTER:
+				mDesc->textPosition.x = (textBoxWidth - mText->getTextWidth()) / 2.0;
+				break;
+			case TEXT_ALIGNMENT_LEFT:
+				mDesc->textPosition.x = mDesc->padding[PADDING_LEFT];
+				break;
+			case TEXT_ALIGNMENT_RIGHT:
+				mDesc->textPosition.x = (mDesc->dimensions.size.width - mDesc->padding[PADDING_RIGHT]) - mText->getTextWidth();
+				break;
+			}
 		}
+		// Else text is larger than TextBox bounds.  Ignore Text alignment property.
+		else
+		{
+			// Case 1: if the distance between the cursor and beggining of text is less than 
+			// half the text box size, left align the text.
+			if(relativeCursorPosition < (textBoxWidth / 2.0))
+			{
+				mDesc->textPosition.x = mDesc->padding[PADDING_LEFT];
+			}
+			// Case 2: if the distance between the cursor and end of text is less than
+			// half the text box size, right align the text.
+			else if((mText->getTextWidth() - relativeCursorPosition) < (textBoxWidth / 2.0))
+			{
+				mDesc->textPosition.x = (mDesc->dimensions.size.width - mDesc->padding[PADDING_RIGHT]) - mText->getTextWidth();
+			}
+			// Case 3: Center the cursor with the TextBox and position the Text accordingly
+			else
+			{
+				mDesc->textPosition.x = (textBoxWidth / 2.0) - relativeCursorPosition;
+			}
+		}
+
+		mCursorPosition.x = mDesc->textPosition.x + relativeCursorPosition;
+
+		Point p = getScreenPosition();
+		p.translate(mCursorPosition);
+		mTextCursor->setPosition(p);
+		redraw();
 	}
 
-	void TextBox::setText(const Ogre::UTFString& text)
+	void TextBox::setDefaultColor(const Ogre::ColourValue& cv)
 	{
-		if(text == mCaption)
+		mDesc->defaultColor = cv;
+	}
+
+	void TextBox::setDefaultFont(const Ogre::String& fontName)
+	{
+		mDesc->defaultFontName = fontName;
+		mCurrentFont = Text::getFont(fontName);
+	}
+
+	void TextBox::setFont(const Ogre::String& fontName)
+	{
+		mText->setFont(fontName);
+
+		redraw();
+	}
+
+	void TextBox::setFont(const Ogre::String& fontName, unsigned int index)
+	{
+		mText->setFont(fontName,index);
+
+		redraw();
+	}
+
+	void TextBox::setFont(const Ogre::String& fontName, unsigned int startIndex, unsigned int endIndex)
+	{
+		mText->setFont(fontName,startIndex,endIndex);
+
+		redraw();
+	}
+
+	void TextBox::setFont(const Ogre::String& fontName, Ogre::UTFString::code_point c, bool allOccurrences)
+	{
+		mText->setFont(fontName,c,allOccurrences);
+
+		redraw();
+	}
+
+	void TextBox::setFont(const Ogre::String& fontName, Ogre::UTFString s, bool allOccurrences)
+	{
+		mText->setFont(fontName,s,allOccurrences);
+
+		redraw();
+	}
+
+	void TextBox::setMaxCharacters(unsigned int max)
+	{
+		if(max == mDesc->maxCharacters)
 			return;
-
-		mCaption = text;
-
-		mVisibleStart = 0;
-		mVisibleEnd = 0;
-		mSelectStart = 0;
-		mSelectEnd = 0;
-
-		// This function determines the visibleStart and visibleEnd, and
-		// updates the text before setting the cursor position.
-		setCursorIndex(static_cast<int>(mCaption.length()));
-		mTextCursor->setVisible(false);
-	}
-
-	void TextBox::setUseTextSelectCursor(bool use)
-	{
-		mUseTextSelectCursor = use;
-	}
-
-	void TextBox::setWidth(float pixelWidth)
-	{
-		bool temp = mAutoSize;
-		Label::setWidth(pixelWidth);
-		mAutoSize = temp;
-
-		mText->redraw();
-		alignText();
-	}
-
-	void TextBox::timeElapsed(const float time)
-	{
-		if(mHasFocus && mMouseLeftDown)
+		
+		if(max < mDesc->maxCharacters)
 		{
-			int index = mVisibleStart + mText->getTextCursorIndex(mMouseCursor->getPosition());
-			if(index != mCursorIndex)
-				setCursorIndex(index,false);
+			throw Exception(Exception::ERR_TEXT,"Cannot set max Characters when text exceeds max! (Data loss)","TextBox::setMaxCharacters");
 		}
 
-		if(!mReadOnly)
+		mDesc->maxCharacters = max;
+	}
+
+	void TextBox::setPadding(Padding p, float distance)
+	{
+		if(p == PADDING_COUNT)
+			throw Exception(Exception::ERR_INVALIDPARAMS,"PADDING_COUNT is not a valid parameter!","Label::setPadding");
+
+		mDesc->padding[p] = distance;
+
+		redraw();
+	}
+
+	void TextBox::setParent(Widget* parent)
+	{
+		Widget::setParent(parent);
+
+		mWindow->addWindowEventHandler(WINDOW_EVENT_DRAWN,&TextBox::onWindowDrawn,this);
+	}
+
+	void TextBox::setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv)
+	{
+		mText->setText(s,fp,cv);
+
+		redraw();
+	}
+
+	void TextBox::updateTexturePosition()
+	{
+		Widget::updateTexturePosition();
+
+		if(mDesc != NULL)
 		{
-			mBackSpaceTimer += time;
-			mCursorVisibilityTimer += time;
-			mMoveCursorTimer += time;
-			mDeleteTimer += time;
-
-			// Hard coding the time to allow repetitive operations to be every .5 seconds
-			if( mBackSpaceTimer > 0.125 )
-			{
-				if(mBackSpaceDown && !mReadOnly) backSpace();
-				mBackSpaceTimer = 0.0;
-			}
-
-			if( mCursorVisibilityTimer > 0.5 )
-			{
-				if(mHasFocus && !mReadOnly) 
-					mTextCursor->setVisible(!mTextCursor->visible());
-				mCursorVisibilityTimer = 0.0;
-			}
-
-			if( mMoveCursorTimer > 0.125 )
-			{
-				if(mLeftArrowDown)
-					moveCursorLeft();
-				else if(mRightArrowDown && (mCursorIndex < static_cast<int>(mCaption.length())))
-					moveCursorRight();
-					
-				mMoveCursorTimer = 0.0;
-			}
-
-			if( mDeleteTimer > 0.125 )
-			{
-				if(mDeleteDown && !mReadOnly) deleteCharacter();
-				mDeleteTimer = 0.0;
-			}
+			Point p = getScreenPosition();
+			p.translate(Point(mDesc->padding[PADDING_LEFT],0));
+			p.translate(mCursorPosition);
+			mTextCursor->setPosition(p);
 		}
-
-		Widget::timeElapsed(time);
 	}
 }

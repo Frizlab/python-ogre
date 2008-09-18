@@ -1,7 +1,6 @@
 #ifndef QUICKGUIKEYCODE_H
 #define QUICKGUIKEYCODE_H
 
-#include "QuickGUIForwardDeclarations.h"
 namespace QuickGUI
 {
 	/* Copied from OISKeyboard.h */

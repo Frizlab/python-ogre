@@ -1,5 +1,5 @@
 #include "Ogre.h"  // need to include this
-#include "QuickGUI.h"
+#include "QuickGUIRoot.h"
 
 // First we create a magic namespace to hold all our aliases
 namespace pyplusplus { namespace aliases {

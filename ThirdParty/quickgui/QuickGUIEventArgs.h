@@ -16,7 +16,6 @@
 #include "OgrePrerequisites.h"
 #include "OgreUTFString.h"
 
-#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIKeyCode.h"
 #include "QuickGUIMouseButtonID.h"
 #include "QuickGUIPoint.h"
@@ -39,19 +38,21 @@ namespace QuickGUI
 			TYPE_MOUSE				,
 			TYPE_KEY				,
 			TYPE_SCROLL				,
-			TYPE_TEXT
+			TYPE_TEXT				
 		};
 	public:
 		EventArgs() : handled(false)
-		{}
+		{
+			type = TYPE_DEFAULT;
+		}
 
 		~EventArgs() {}
 
-		virtual void dummy() {} // needed to make the class polymorphic so Boost::Python can tell the arg type.
+		// A virtual function is required to make the WidgetDesc class polymorphic
+		virtual void virtualFunction() {}
 
 		// handlers should set this to true if they handled the event.
 		bool	handled;
-		int		eventType;
 
 		Type	type;
 	};
@@ -78,16 +79,19 @@ namespace QuickGUI
 		MouseEventArgs(Widget* w) : WidgetEventArgs(w) 
 		{
 			type = TYPE_MOUSE;
+			button = MB_None;
 		}
 
 		// holds current mouse position. (pixels)
 		Point			position;
 		// holds variation of mouse position from last mouse input
-		Point			moveDelta;		
-		// holds the mouse button that was down for the given event
+		Point			moveDelta;
+		// stores the button being pressed/released
 		MouseButtonID	button;
+		// holds the bit mask storing buttons that are currently pressed.
+		unsigned int	buttonMask;
 		// holds the amount the scroll wheel has changed.
-		float		wheelChange;	
+		float			wheelChange;	
 		//! Bit field that holds status of Alt, Ctrl, Shift
 		unsigned int	keyModifiers;
 	};
@@ -100,12 +104,23 @@ namespace QuickGUI
 		KeyEventArgs(Widget* w) : WidgetEventArgs(w) 
 		{
 			type = TYPE_KEY;
+			scancode = KC_UNASSIGNED;
+			codepoint = 0;
+		}
+
+		KeyEventArgs() : WidgetEventArgs(NULL)
+		{
+			type = TYPE_KEY;
+			scancode = KC_UNASSIGNED;
+			codepoint = 0;
 		}
 
 		// codepoint for the key (only used for Character inputs).
 		Ogre::UTFString::unicode_char	codepoint;		
 		// Scan code of key that caused event (only used for key up & down inputs.
 		KeyCode							scancode;
+		// holds the bit mask storing buttons that are currently pressed.
+		unsigned int					keyMask;
 		//! Bit field that holds status of Alt, Ctrl, Shift
 		unsigned int					keyModifiers;
 	};

@@ -1,28 +1,45 @@
-#include "QuickGUIPrecompiledHeaders.h"
-
 #include "QuickGUILabel.h"
-#include "QuickGUIManager.h"
+#include "QuickGUISkinDefinitionManager.h"
 
 namespace QuickGUI
 {
-	Label::Label(const std::string& name, GUIManager* gm) :
-		Widget(name,gm),
-		mVerticalAlignment(VA_MID),
-		mHorizontalAlignment(HA_MID),
-		mTextBoundsPixelOffset(Point::ZERO),
-		mTextBoundsRelativeSize(Size(1,1)),
-		mTextColor(Ogre::ColourValue::White),
-		mDisabledTextColor(Ogre::ColourValue(0.75,0.75,0.75,1)),
-		mAutoSize(true),
-		mHPixelPadWidth(6),
-		mVPixelPadHeight(6)
-	{
-		mWidgetType = TYPE_LABEL;
-		mSkinComponent = ".label";
-		mSize = Size::ZERO;
+	const Ogre::String Label::BACKGROUND = "background";
 
-		mText = new Text(mInstanceName+".Text",mQuadContainer,this);
-		mText->setQuadLayer(mQuadLayer);	
+	void Label::registerSkinDefinition()
+	{
+		SkinDefinition* d = new SkinDefinition("Label");
+		d->defineSkinElement(BACKGROUND);
+		d->definitionComplete();
+
+		SkinDefinitionManager::getSingleton().registerSkinDefinition("Label",d);
+	}
+
+	LabelDesc::LabelDesc() :
+		WidgetDesc()
+	{
+		for(int i = 0; i < PADDING_COUNT; ++i)
+		{
+			padding[i] = 5.0;
+		}
+	}
+
+	void LabelDesc::serialize(SerialBase* b)
+	{
+		WidgetDesc::serialize(b);
+
+		for(int i = 0; i < PADDING_COUNT; ++i)
+		{
+			b->IO(StringConverter::toString(static_cast<Padding>(i)),&padding[i]);
+		}
+
+		textDesc.serialize(b);
+	}
+
+	Label::Label(const Ogre::String& name) :
+		Widget(name),
+		mText(NULL)
+	{
+		mSkinElementName = BACKGROUND;
 	}
 
 	Label::~Label()
@@ -30,268 +47,208 @@ namespace QuickGUI
 		delete mText;
 	}
 
-	void Label::alignText()
+	void Label::_initialize(WidgetDesc* d)
 	{
-		Rect textDimensions = mText->getDimensions();
-		// 1 pixel buffer used
-		float horizontalBuffer = 1.0 / mGUIManager->getViewportWidth();
-		float verticalBuffer = 1.0 / mGUIManager->getViewportHeight();
+		Widget::_initialize(d);
 
-		Rect textBounds = getTextBounds();
+		mDesc = dynamic_cast<LabelDesc*>(mWidgetDesc);
 
-		// Horizontal alignment
-		if( mHorizontalAlignment == HA_LEFT )
-			mText->setPosition(Point(textBounds.x + horizontalBuffer,textDimensions.y));
-		else if( mHorizontalAlignment == HA_MID )
-			mText->setPosition(Point(textBounds.x + ((textBounds.width / 2.0) - (textDimensions.width / 2.0)),textDimensions.y));
-		else if( mHorizontalAlignment == HA_RIGHT )
-			mText->setPosition(Point(textBounds.x + textBounds.width - (horizontalBuffer + textDimensions.width),textDimensions.y));
+		LabelDesc* ld = dynamic_cast<LabelDesc*>(d);
 
-		textDimensions = mText->getDimensions();
+		setSkinType(d->skinTypeName);
 
-		// Vertical alignment
-		if( mVerticalAlignment == VA_TOP )
-			mText->setPosition(Point(textDimensions.x,textBounds.y + verticalBuffer));
-		else if( mVerticalAlignment == VA_MID )
-			mText->setPosition(Point(textDimensions.x,textBounds.y + ((textBounds.height / 2.0) - (textDimensions.height / 2.0))));
-		else if( mVerticalAlignment == VA_BOTTOM )
-			mText->setPosition(Point(textDimensions.x,textBounds.y + textBounds.height - (verticalBuffer + textDimensions.height)));
+		// Make a copy of the Text Desc.  The Text object will
+		// modify it directly, which is used for serialization.
+		mDesc->textDesc = ld->textDesc;
+
+		mDesc->textDesc.allottedWidth = ld->dimensions.size.width - (ld->padding[PADDING_LEFT] + ld->padding[PADDING_RIGHT]);
+		mText = new Text(mDesc->textDesc);
+
+		setPadding(PADDING_BOTTOM,ld->padding[PADDING_BOTTOM]);
+		setPadding(PADDING_LEFT,ld->padding[PADDING_LEFT]);
+		setPadding(PADDING_RIGHT,ld->padding[PADDING_RIGHT]);
+		setPadding(PADDING_TOP,ld->padding[PADDING_TOP]);
+
+		mCurrentFontName = Text::getFirstAvailableFont()->getName();
+		mCurrentColourValue = Ogre::ColourValue::White;
 	}
 
-	void Label::clearText()
+	Widget* Label::factory(const Ogre::String& widgetName)
 	{
-		mText->clearCaption();
+		Widget* newWidget = new Label(widgetName);
+
+		newWidget->_createDescObject("LabelDesc");
+
+		return newWidget;
 	}
 
-	void Label::disable()
+	Ogre::String Label::getClass()
 	{
-		mTextColor = mText->getColor();
-		mText->setColor(mDisabledTextColor);
-
-		Widget::disable();
+		return "Label";
 	}
 
-	void Label::enable()
+	float Label::getPadding(Padding p)
 	{
-		mText->setColor(mTextColor);
+		if(p == PADDING_COUNT)
+			throw Exception(Exception::ERR_INVALIDPARAMS,"PADDING_COUNT is not a valid parameter!","Label::getPadding");
 
-		Widget::enable();
-	}
-
-	bool Label::getAutoSize()
-	{
-		return mAutoSize;
-	}
-
-	int Label::getHorizontalPixelPadWidth()
-	{
-		return mHPixelPadWidth;
+		return mDesc->padding[p];
 	}
 
 	Ogre::UTFString Label::getText()
 	{
-		return mText->getCaption();
+		return mText->getText();
 	}
 
-	Quad* Label::getTextCharacter(unsigned int index)
+	float Label::getVerticalLineSpacing()
 	{
-		return mText->getCharacter(index);
+		return mText->getVerticalLineSpacing();
 	}
 
-	Rect Label::getTextBounds()
+	void Label::onDraw()
 	{
-		return Rect(getScreenPosition() + getScrollOffset() + mTextBoundsPixelOffset,mTextBoundsRelativeSize * mSize);
-	}
+		Brush* brush = Brush::getSingletonPtr();
 
-	int Label::getVerticalPixelPadHeight()
-	{
-		return mVPixelPadHeight;
-	}
+		brush->setFilterMode(mDesc->brushFilterMode);
 
-	void Label::hide()
-	{
-		Widget::hide();
-		mText->hide();
-	}
-
-	void Label::onPositionChanged(const EventArgs& args)
-	{
-		Widget::onPositionChanged(args);
-
-		mText->redraw();
-	}
-
-	void Label::onSizeChanged(const EventArgs& args)
-	{
-		Widget::onSizeChanged(args);
-
-		mText->redraw();
-	}
-
-	void Label::setAutoSize(bool autoSize)
-	{
-		mAutoSize = autoSize;
-
-		if(mAutoSize)
+		SkinType* st = mSkinType;
+		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
 		{
-			setHeight(mText->getNewlineHeight() + mVPixelPadHeight);
-			setWidth(mText->getTextWidth(mText->getCaption()) + mHPixelPadWidth);
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
 		}
+
+		mSkinElementName = BACKGROUND;
+		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
+
+		Ogre::ColourValue prevColor = brush->getColour();
+		Rect prevClipRegion = brush->getClipRegion();
+
+		Rect clipRegion;
+		clipRegion.size = 
+			Size(
+				mDesc->dimensions.size.width - mDesc->padding[PADDING_RIGHT],
+				mDesc->dimensions.size.height - mDesc->padding[PADDING_BOTTOM]);
+		clipRegion.position = mTexturePosition;
+		clipRegion.translate(Point(mDesc->padding[PADDING_LEFT],mDesc->padding[PADDING_TOP]));
+
+		brush->setClipRegion(prevClipRegion.getIntersection(clipRegion));
+
+		mText->draw(clipRegion.position);
+
+		brush->setClipRegion(prevClipRegion);
+
+		Brush::getSingleton().setColor(prevColor);
 	}
 
-	void Label::setQuadContainer(QuadContainer* container)
+	void Label::setColor(const Ogre::ColourValue& cv)
 	{
-		Widget::setQuadContainer(container);
-		mText->_notifyQuadContainer(container);
+		mCurrentColourValue = cv;
+
+		mText->setColor(cv);
+
+		redraw();
 	}
 
-	void Label::setVerticalAlignment(VerticalAlignment va)
+	void Label::setColor(const Ogre::ColourValue& cv, unsigned int index)
 	{
-		mVerticalAlignment = va;
+		mText->setColor(cv,index);
 
-		if(mText->getDimensions() != Rect::ZERO)
-			alignText();
+		redraw();
 	}
 
-	void Label::setHorizontalAlignment(HorizontalAlignment ha)
+	void Label::setColor(const Ogre::ColourValue& cv, unsigned int startIndex, unsigned int endIndex)
 	{
-		mHorizontalAlignment = ha;
+		mText->setColor(cv,startIndex,endIndex);
 
-		if(mText->getDimensions() != Rect::ZERO)
-			alignText();
+		redraw();
 	}
 
-	void Label::setHorizontalPixelPadWidth(unsigned int width)
+	void Label::setColor(const Ogre::ColourValue& cv, Ogre::UTFString::code_point c, bool allOccurrences)
 	{
-		mHPixelPadWidth = width;
+		mText->setColor(cv,c,allOccurrences);
+
+		redraw();
 	}
 
-	void Label::setGUIManager(GUIManager* gm)
+	void Label::setColor(const Ogre::ColourValue& cv, Ogre::UTFString s, bool allOccurrences)
 	{
-		Widget::setGUIManager(gm);
-		mText->setGUIManager(mGUIManager);
+		mText->setColor(cv,s,allOccurrences);
+
+		redraw();
 	}
 
-	void Label::setOffset(int offset)
+	void Label::setFont(const Ogre::String& fontName)
 	{
-		Widget::setOffset(offset);
-		mText->setOffset(mOffset+1);
+		mCurrentFontName = fontName;
+
+		mText->setFont(fontName);
+
+		redraw();
 	}
 
-	void Label::setSize(const float& pixelWidth, const float& pixelHeight)
+	void Label::setFont(const Ogre::String& fontName, unsigned int index)
 	{
-		if((pixelWidth == 0) && (pixelHeight == 0))
+		mText->setFont(fontName,index);
+
+		redraw();
+	}
+
+	void Label::setFont(const Ogre::String& fontName, unsigned int startIndex, unsigned int endIndex)
+	{
+		mText->setFont(fontName,startIndex,endIndex);
+
+		redraw();
+	}
+
+	void Label::setFont(const Ogre::String& fontName, Ogre::UTFString::code_point c, bool allOccurrences)
+	{
+		mText->setFont(fontName,c,allOccurrences);
+
+		redraw();
+	}
+
+	void Label::setFont(const Ogre::String& fontName, Ogre::UTFString s, bool allOccurrences)
+	{
+		mText->setFont(fontName,s,allOccurrences);
+
+		redraw();
+	}
+
+	void Label::setPadding(Padding p, float distance)
+	{
+		if(p == PADDING_COUNT)
+			throw Exception(Exception::ERR_INVALIDPARAMS,"PADDING_COUNT is not a valid parameter!","Label::setPadding");
+
+		mDesc->padding[p] = distance;
+		mText->setAllottedWidth(mWidgetDesc->dimensions.size.width - (mDesc->padding[PADDING_LEFT] + mDesc->padding[PADDING_RIGHT]));
+
+		redraw();
+	}
+
+	void Label::setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv)
+	{
+		mText->setText(s,fp,cv);
+
+		redraw();
+	}
+
+	void Label::setText(Ogre::UTFString s, const Ogre::String& fontName, const Ogre::ColourValue& cv)
+	{
+		setText(s,Text::getFont(fontName),cv);
+	}
+
+	void Label::setText(Ogre::UTFString s)
+	{
+		setText(s,mCurrentFontName,mCurrentColourValue);
+	}
+
+	void Label::setVerticalLineSpacing(float distance)
+	{
+		if(distance == mText->getVerticalLineSpacing())
 			return;
 
-		mAutoSize = false;
-		Widget::setSize(pixelWidth,pixelHeight);
+		mText->setVerticalLineSpacing(distance);
 
-		mText->redraw();
-		alignText();
-	}
-
-	void Label::setSize(const Size& pixelSize)
-	{
-		Label::setSize(pixelSize.width,pixelSize.height);
-	}
-
-	void Label::redraw()
-	{
-		Widget::redraw();
-		// Redraws all quads and aligns text to label bounds.
-		mText->redraw();
-	}
-
-	void Label::setDisabledTextColor(const Ogre::ColourValue& c)
-	{
-		mDisabledTextColor = c;
-
-		if(!mEnabled)
-			mText->setColor(c);
-	}
-
-	void Label::setFont(const std::string& fontScriptName, bool recursive)
-	{
-		if(fontScriptName == "")
-			return;
-
-		Widget::setFont(fontScriptName,recursive);
-		mText->setFont(mFontName);
-
-		if(mAutoSize)
-		{
-			setHeight(mText->getNewlineHeight() + mVPixelPadHeight);
-			setWidth(mText->getTextWidth(mText->getCaption()) + mHPixelPadWidth);
-			// setHeight sets mAutoSize to false..
-			mAutoSize = true;
-		}
-	}
-
-	void Label::setHeight(float pixelHeight)
-	{
-		mAutoSize = false;
-		Widget::setHeight(pixelHeight);
-
-		mText->redraw();
-	}
-
-	void Label::setQuadLayer(Quad::Layer l)
-	{
-		Widget::setQuadLayer(l);
-		mText->setQuadLayer(l);
-	}
-
-	void Label::setSkin(const std::string& skinName, bool recursive)
-	{
-		Widget::setSkin(skinName,recursive);
-		mText->setSkin(skinName);
-	}
-
-	void Label::setText(const Ogre::UTFString& text)
-	{
-		if(mAutoSize)
-		{
-			mText->setCaption(text);
-			setWidth(mText->getTextWidth(text) + mHPixelPadWidth);
-			// setWidth sets mAutoSize to false..
-			mAutoSize = true;
-		}
-		else
-		{
-			mText->setCaption(text);
-		}
-	}
-
-	void Label::setTextBounds(const Point& pixelOffset, const Size& pixelSize)
-	{
-		mTextBoundsPixelOffset = pixelOffset;
-		mTextBoundsRelativeSize = pixelSize / mSize;
-
-		alignText();
-	}
-
-	void Label::setTextColor(Ogre::ColourValue color)
-	{
-		mTextColor = color;
-		mText->setColor(mTextColor);
-	}
-
-	void Label::setVerticalPixelPadHeight(unsigned int height)
-	{
-		mVPixelPadHeight = height;
-	}
-
-	void Label::setWidth(float pixelWidth)
-	{
-		mAutoSize = false;
-		Widget::setWidth(pixelWidth);
-
-		mText->redraw();
-	}
-
-	void Label::show()
-	{
-		Widget::show();
-		mText->show();
+		redraw();
 	}
 }

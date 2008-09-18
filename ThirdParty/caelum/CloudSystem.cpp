@@ -23,50 +23,64 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "FlatCloudLayer.h"
 
 using namespace Ogre;
-using namespace Caelum;
 
-CloudSystem::CloudSystem(
-		Ogre::SceneManager *sceneMgr,
-		Ogre::SceneNode *cloudRoot)
+namespace Caelum
 {
-    mSceneMgr = sceneMgr;
-    mCloudRoot = cloudRoot;
-}
-
-void CloudSystem::createLayerAtHeight(Ogre::Real height)
-{
-    mLayers.push_back(new FlatCloudLayer(mSceneMgr,mCloudRoot,height));
-}
-
-void CloudSystem::addLayer(FlatCloudLayer* layer)
-{
-    assert(layer != NULL);
-    mLayers.push_back(layer);
-}
-
-void CloudSystem::clearLayers()
-{
-	for (unsigned i = 0; i < mLayers.size(); i++)
+    CloudSystem::CloudSystem(
+		    Ogre::SceneManager *sceneMgr,
+		    Ogre::SceneNode *cloudRoot)
     {
-		delete mLayers[i];
-		mLayers[i] = 0;
-	}
-}
+        mSceneMgr = sceneMgr;
+        mCloudRoot = cloudRoot;
+    }
 
-CloudSystem::~CloudSystem()
-{
-	clearLayers ();
-}
+    void CloudSystem::createLayerAtHeight(Ogre::Real height)
+    {
+        mLayers.push_back(new FlatCloudLayer(mSceneMgr,mCloudRoot,height));
+    }
 
-void CloudSystem::update(
-		Ogre::Real timePassed,
-		const Ogre::Vector3 &sunDirection,
-		const Ogre::ColourValue &sunLightColour,
-		const Ogre::ColourValue &fogColour,
-		const Ogre::ColourValue &sunSphereColour)
-{
-	for (uint i = 0; i < mLayers.size(); i++) {
-        assert(mLayers[i] != NULL);
-		mLayers[i]->update(timePassed, sunDirection, sunLightColour, fogColour, sunSphereColour);
-	}
+    void CloudSystem::addLayer(FlatCloudLayer* layer)
+    {
+        assert(layer != NULL);
+        mLayers.push_back(layer);
+    }
+
+    void CloudSystem::clearLayers()
+    {
+	    for (unsigned i = 0; i < mLayers.size(); i++)
+        {
+		    delete mLayers[i];
+		    mLayers[i] = 0;
+	    }
+    }
+
+    CloudSystem::~CloudSystem()
+    {
+	    clearLayers ();
+    }
+
+    void CloudSystem::update(
+		    Ogre::Real timePassed,
+		    const Ogre::Vector3 &sunDirection,
+		    const Ogre::ColourValue &sunLightColour,
+		    const Ogre::ColourValue &fogColour,
+		    const Ogre::ColourValue &sunSphereColour)
+    {
+	    for (uint i = 0; i < mLayers.size(); i++) {
+            assert(mLayers[i] != NULL);
+		    mLayers[i]->update(timePassed, sunDirection, sunLightColour, fogColour, sunSphereColour);
+	    }
+    }
+
+    void CloudSystem::forceLayerQueryFlags (uint flags) {
+	    for (uint i = 0; i < mLayers.size(); i++) {
+		    mLayers[i]->setQueryFlags (flags);
+	    }
+    }
+
+    void CloudSystem::forceLayerVisibilityFlags (uint flags) {
+	    for (uint i = 0; i < mLayers.size(); i++) {
+		    mLayers[i]->setVisibilityFlags (flags);
+	    }
+    }
 }

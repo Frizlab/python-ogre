@@ -1,127 +1,109 @@
 #ifndef QUICKGUIMANAGER_H
 #define QUICKGUIMANAGER_H
 
-#include "OgrePrerequisites.h"
-#include "OgrePlatform.h"
+#include "QuickGUIBorderEnums.h"
+#include "QuickGUIExportDLL.h"
+#include "QuickGUIMouseCursor.h"
+#include "QuickGUISheet.h"
+#include "QuickGUITimerManager.h"
+#include "QuickGUIWidgetFactoryManager.h"
+
 #include "OgreRenderQueueListener.h"
-#include "OgreRoot.h"
 #include "OgreSceneManager.h"
 #include "OgreViewport.h"
 
-#include "QuickGUIForwardDeclarations.h"
-#include "QuickGUISkinSetManager.h"
-#include "QuickGUIKeyCode.h"
-#include "QuickGUIMouseButtonID.h"
-#include "QuickGUIMouseCursor.h"
-#include "QuickGUISheet.h"
-
-#include <algorithm>
-#include <list>
-#include <map>
-#include <set>
-#include <time.h>
-#include <utility>
-#include <ctype.h>
 #include <vector>
 
 namespace QuickGUI
 {
-	class Effect;
+	class _QuickGUIExport GUIManagerDesc
+	{
+	public:
+		GUIManagerDesc();
 
-	/** Manages Windows, Mouse Cursor, and Input
-		@remarks
-		The most important class of QuickGUI, responsible for creating and
-		destroying Windows, updating the Mouse Cursor, and handling input.
-		GUIManager has a simple clearAll method, which cleans up all created
-		widgets.  This supports multiple game states that have differing GUI
-		Layouts.
-		@note
-		GUIManager is a Singleton, and frequently accessed by widgets, for
-		information on the rendering window, default font, text color, character
-		height, or setting focus to itself. (Window Widget does this)
-		@note
-		GUIManager allows 5 zOrder per window, and manages Window zOrdering so
-		that windows and widgets are rendered properly on top of each other.
-	*/
+		// If name is "", name will automatically be generated.
+		Ogre::String name;
+		// If NULL, first found viewport is used for rendering.
+		Ogre::Viewport* viewport;
+		// required to hook into the RenderQueue. If NULL, first found scene manager is used.
+		Ogre::SceneManager*	sceneManager;
+		// ID of the queue that we are hooked into
+		Ogre::uint8 queueID;
+		// Description used to create mouseCursor
+		MouseCursorDesc mouseCursorDesc;
+		// range of supported codepoints used for injectChar function.
+		std::set<Ogre::UTFString::code_point> supportedCodePoints;
+		// manager will detect single, double, and triple clicks by default
+		bool determineClickEvents;
+		// Maximum number of milliseconds a click can be performed in. (mouse down to mouse up)
+		unsigned long clickTime;
+		// Maximum number of milliseconds a double click can be performed in. (mouse click to mouse down)
+		unsigned long doubleClickTime;
+		// Maximum number of milliseconds a triple click can be performed in. (double click to mouse down)
+		unsigned long tripleClickTime;
+		// Manager will send mouse wheel events to the widget last clicked, or the widget under cursor as an alternative.
+		bool scrollLastClicked;
+	};
+
 	class _QuickGUIExport GUIManager :
 		public Ogre::RenderQueueListener
 	{
 	public:
-		friend class ComboBox;
-		friend class Widget;
-		friend class Sheet;
 		friend class Root;
 	public:
-		void _notifyViewportDimensionsChanged();
-
-		// Keep track of effect so that manager can update them.
-		void addEffect(Effect* e);
+		Sheet* createSheet(SheetDesc& d);
+		Widget* createWidget(const Ogre::String& className, WidgetDesc& d);
 
 		/**
-		* Iterates through Window List and destroys it, which properly destroys all child widgets.
+		* Destroys a sheet;
 		*/
-		void clearAll();
-
-		Sheet* createSheet();
-		Sheet* createSheet(Size initialSize);
-		Sheet* createSheet(const std::string& name);
-		Sheet* createSheet(const std::string& name, Size initialSize);
-
-		/** Destroys a Window and all child widgets that exist
-		    @param
-				name Name of the window to destroy.
-			@note
-				name can also be reference name given to the window.
-			@note 
-				no exception is thrown if window does not exist
-		*/
-		void destroySheet(const std::string& name);
-		/** Destroys a Window and all child widgets that exist
-		    @param
-				window Window to destroy.
-		*/
-		void destroySheet(Sheet* sheet);
-
+		void destroySheet(Sheet* s);
 		/**
-		* Stores a reference to the widget in the free list, which will be destroyed
-		* next frame.
+		* Destroys a widget.
 		*/
 		void destroyWidget(Widget* w);
-		void destroyWidget(const std::string& widgetName);
+		/**
+		* Draws the GUI.
+		* NOTE: This is done automatically in the renderQueueEnded.
+		*/
+		void draw();
 
 		/**
-		* Returns the sheet currently being used, whether shown or hidden.
+		* Returns the current sheet this GUIManager is managing.
 		*/
 		Sheet* getActiveSheet();
-		Widget* getActiveWidget();
-		std::string getDebugString();
 		/**
-		* Returns the default sheet, automatically created with the GUI manager.
+		* Returns the last widget that was clicked via mouse button down,
+		* single, double, or triple click.
 		*/
-		Sheet* getDefaultSheet();
-		bool getDetermineClickEvents();
-
-		MouseCursor* getMouseCursor();
-		Widget* getMouseOverWidget();
-		std::string getName();
+		Widget* getLastClickedWidget();
 		/**
-		* Get viewport all widgets of this manager are rendering to.
+		* Returns the mouse cursor object associated with this gui manager.
+		*/
+		MouseCursor* getMouseCursor();
+		Ogre::String getName();
+		/**
+		* Returns true if the last clicked widget receives mouse wheel events,
+		* false otherwise.
+		*/
+		bool getScrollLastClicked();
+		/**
+		* Returns the sheet with the name given.  If no sheet exists, an exception is thrown.
+		*/
+		Sheet* getSheet(const Ogre::String& name);
+		/**
+		* Returns the widget that is directly underneath the mouse cursor.
+		*/
+		Widget* getWidgetUnderMouseCursor();
+		/**
+		* Gets the main viewport that is rendered to.
 		*/
 		Ogre::Viewport* getViewport();
-		/**
-		* Get primary render window width in pixels
-		*/
-		float getViewportWidth();
-		/**
-		* Get primary render window height in pixels
-		*/
-		float getViewportHeight();
 
 		/**
-		* Iterates through sheet list and returns the Sheet with the
-		* matching name.  Null if no match found.
+		* Returns true if a sheet with the name given exists, false otherwise.
 		*/
-		Sheet* getSheet(const std::string& name);
+		bool hasSheet(const Ogre::String& name);
 
 		/**
 		* Useful for Text Input Widgets, like the TextBox
@@ -135,132 +117,121 @@ namespace QuickGUI
 		bool injectMouseClick(const MouseButtonID& button);
 		bool injectMouseDoubleClick(const MouseButtonID& button);
 		bool injectMouseTripleClick(const MouseButtonID& button);
-		/**
-		* Injection when the mouse leaves the primary render window
-		*/
-		bool injectMouseLeaves(void);
-		bool injectMouseMove(const int& xPixelOffset, const int& yPixelOffset);
 		bool injectMousePosition(const int& xPixelPosition, const int& yPixelPosition);
 		bool injectMouseWheelChange(float delta);
-		void injectTime(float time);
 
-		bool isKeyModifierDown(KeyModifier k);
+		bool isSupportedCodePoint(Ogre::UTFString::unicode_char c);
 
-		void registerTimeListener(Widget* w);
+		/**
+		* Parses a Sheet definition within a .sheet file and creates a Sheet and all its Child widgets.
+		*/
+		Sheet* loadSheetFromFile(const std::string& fileName);
+		/**
+		* Parses a Sheet definition within a .sheet file and creates a Sheet and all its Child widgets. If a
+		* Sheet with the name given already exists, it is deleted prior to creation of the new Sheet.
+		*/
+		Sheet* reloadSheetFromFile(const Ogre::String& fileName);
 
+		// Inheritted functions from Ogre::RenderQueueListener
 		virtual bool renderQueueStarted(Ogre::uint8 id, const std::string& invocation, bool skipThisQueue);
 		virtual bool renderQueueEnded(Ogre::uint8 id, const std::string& invocation, bool repeatThisQueue);
 
-		void removeFromRenderQueue();
-
 		/**
-		* Sets the active sheet, displaying it on screen.
-		* NOTE: You do not and should not hide previously used sheets before making this call.
-		*  Hiding the previous sheet will hide all widgets and store it as hidden.  This call
-		*  switches sheets used for rendering, thus, it does not affect widgets mVisible variable.
-		*  The benefit is that you preserve Sheet state.
+		* Sets the current Sheet to be drawn and interacted with.
 		*/
 		void setActiveSheet(Sheet* s);
 		/**
-		* Activates the widget w, and deactivates the previously active widget. (if exists)
-		*/
-		void setActiveWidget(Widget* w);
-		void setDebugString(const std::string s);
-		void setDetermineClickEvents(bool determine);
-		/*
 		* Sets the Render Queue Group to render on.  By default, this is RENDER_QUEUE_OVERLAY.
 		*/
 		void setRenderQueueID(Ogre::uint8 id);
-		/*
+		/**
 		* Hook into this SceneManager's render queue to render its quads to the screen.  By default,
 		* the first Scene Manager instance is used.
 		*/
 		void setSceneManager(Ogre::SceneManager* sm);
-		/*
+		/**
+		* If true, mouse wheel events are sent to the last clicked widget.  Otherwise,
+		* the widget under the cursor receives the events.
+		*/
+		void setScrollLastClicked(bool scroll);
+
+		/**
 		* Set the list of code points that will be accepted by the injectChar function.  English code points 9,32-166
 		* are supported by default.
 		*/
 		void setSupportedCodePoints(const std::set<Ogre::UTFString::code_point>& list);
+
 		/*
-		* Sets the viewport all widgets of this manager will render to.
+		* Defines the main viewport to render to.
 		*/
 		void setViewport(Ogre::Viewport* vp);
-
-		void unregisterTimeListener(Widget* w);
-
 	protected:
-		std::string generateSheetName();
+		/** Constructor */
+		GUIManager(GUIManagerDesc& d);
+		/** Standard Destructor. */
+		~GUIManager();
 
-		std::string			mName;
-		// Viewport which renders all widgets belonging to this manager.
-		Ogre::Viewport*			mViewport;
+		GUIManagerDesc mGUIManagerDesc;
 
-		std::string			mDefaultSkin;
+		int mSheetCounter;
+		int mWidgetCounter;
 
-		// required to hook into the RenderQueue
-		Ogre::SceneManager*		mSceneManager;
-		// ID of the queue that we are hooked into
-		Ogre::uint8				mQueueID;
+		MouseCursor* mMouseCursor;
+		Brush* mBrush;
 
-		MouseCursor*			mMouseCursor;
+		Sheet* mActiveSheet;
+		Widget*	mWidgetUnderMouseCursor;
+		// Used to send mouse wheel events to
+		Widget* mLastClickedWidget;
 
-		// range of supported codepoints used for injectChar function.
-		std::set<Ogre::UTFString::code_point> mSupportedCodePoints;
-
-		QuickGUI::Sheet*		mDefaultSheet;
-		// Sheet currently being shown.
-		QuickGUI::Sheet*		mActiveSheet;
-		// Includes the Default Sheet.
-		std::list<Sheet*>		mSheets;
-
-		std::string			mDebugString;
-
-		void					_destroyWidget(Widget* w);
-		// list of widgets to delete on next frame.
-		WidgetArray	mFreeList;
-
-		bool					mDetermineClickEvents;
 		// timer used to get time readings.
-		Ogre::Timer*			mTimer;
-		// Maximum number of milliseconds a click can be performed in.
-		unsigned long			mClickTime;				// time from mouse down to mouse up
-		unsigned long			mDoubleClickTime;		// time from mouse click to mouse down
-		unsigned long			mTripleClickTime;		// time from mouse double click to mouse down
+		Ogre::Timer* mTimer;
+		/// Timer used to fire Hover events
+		Timer* mHoverTimer;
+		/**
+		* Fires ON_HOVER event.
+		*/
+		void hoverTimerCallback();
+
+		/**
+		* Clears mMouseButtonDown structure.
+		*/
+		void _clearMouseTrackingData();
+
 		// Store the last time a click was performed.
-		unsigned long			mTimeOfButtonDown[NUM_MOUSE_BUTTONS];
-		unsigned long			mTimeOfClick[NUM_MOUSE_BUTTONS];
-		unsigned long			mTimeOfDoubleClick[NUM_MOUSE_BUTTONS];
+		unsigned long mTimeOfButtonDown[NUM_MOUSE_BUTTONS];
+		unsigned long mTimeOfClick[NUM_MOUSE_BUTTONS];
+		unsigned long mTimeOfDoubleClick[NUM_MOUSE_BUTTONS];
 
 		// Keep track of mouse button down/up and on what widget.  This prevents left mouse button down on button A,
 		// moving the mouse to button B, and releasing the left mouse button, causing button B to be pressed. (example)
-		Widget*					mMouseButtonDown[NUM_MOUSE_BUTTONS];
+		Widget*	mMouseButtonDown[NUM_MOUSE_BUTTONS];
 
-		Widget*					mWidgetContainingMouse;
-		// Stores reference to last clicked Widget.
-		Widget*					mActiveWidget;
-
-		bool					mDraggingWidget;
-
-		// Keep track of open menu's, for mouse detection.
-		std::set<Widget*>	mOpenMenus;
-		void _menuOpened(Widget* w);
-		void _menuClosed(Widget* w);
-
-		// Keep track of effect, to update.
-		std::list<Effect*>		mActiveEffects;
-
-		WidgetArray	mTimeListeners;
-
-		SkinSetManager*			mSkinSetManager;
+		//! Bit field that holds status of buttons currently pressed down
+		unsigned int mButtonMask;
 
 		//! Bit field that holds status of Alt, Ctrl, Shift
-		unsigned int			mKeyModifiers;
-	protected:
-		/** Constructor */
-		GUIManager(const std::string& name, Ogre::Viewport* vp, const std::string& defaultSkin);
-		/** Standard Destructor. */
-		~GUIManager();
-    };
+		unsigned int mKeyModifiers;
+
+		// Used to fire dragged/dropped events.
+		bool mDraggingWidget;
+
+		// Used to resize widgets
+		bool mOverResizableBorder;
+		// Record if left mouse button went down on border.
+		bool mDownOnBorder;
+		BorderSide mResizableBorder;
+		// Store the previous border the widget was over.
+		BorderSide mPreviousBorder;
+
+		// List of Widgets to be deleted in the next frame.
+		std::vector<Widget*> mFreeList;
+
+		std::vector<Sheet*> mSheets;
+
+		bool injectMouseMove(const int& xPixelOffset, const int& yPixelOffset);
+	private:
+	};
 }
 
 #endif

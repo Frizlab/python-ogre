@@ -1,159 +1,162 @@
 #ifndef QUICKGUILABEL_H
 #define QUICKGUILABEL_H
 
-#include "QuickGUIForwardDeclarations.h"
-#include "QuickGUIText.h"
+#include "QuickGUIPadding.h"
 #include "QuickGUIWidget.h"
+#include "QuickGUIText.h"
 
 namespace QuickGUI
 {
-	/** Represents a traditional Label.
-		@remarks
-		Labels are QuickGUI's method to showing text.
-		@note
-		Labels must be created by the Window class.
-	*/
+	class _QuickGUIExport LabelDesc :
+			public WidgetDesc
+	{
+	public:
+		LabelDesc();
+
+		float padding[PADDING_COUNT];
+
+		/// Describes the Text used in this Label
+		TextDesc textDesc;
+
+		/**
+		* Returns the class of Desc object this is.
+		*/
+		virtual Ogre::String getClass() { return "LabelDesc"; }
+		/**
+		* Returns the class of Widget this desc object is meant for.
+		*/
+		virtual Ogre::String getWidgetClass() { return "Label"; }
+
+		// Factory method
+		static WidgetDesc* factory() { return new LabelDesc(); }
+
+		/**
+		* Outlines how the desc class is written to XML and read from XML.
+		*/
+		virtual void serialize(SerialBase* b);
+	};
+
 	class _QuickGUIExport Label :
 		public Widget
 	{
 	public:
-		/**
-		* Specifies the horizontal alignment of text
-		*/
-		enum HorizontalAlignment
-		{
-			HA_LEFT			=  0,
-			HA_MID				,
-			HA_RIGHT
-		};
-		/**
-		* Specifies the vertical alignment of text
-		*/
-		enum VerticalAlignment
-		{
-			VA_TOP				=  0,
-			VA_MID					,
-			VA_BOTTOM
-		};
+		// Skin Constants
+		static const Ogre::String BACKGROUND;
+		// Define Skin Structure
+		static void registerSkinDefinition();
 	public:
-		/** Constructor
-            @param
-                name The name to be given to the widget (must be unique).
-            @param
-                dimensions The x Position, y Position, width and height of the widget.
-			@param
-				positionMode The GuiMetricsMode for the values given for the position. (absolute/relative/pixel)
-			@param
-				sizeMode The GuiMetricsMode for the values given for the size. (absolute/relative/pixel)
-			@param
-				textureName The name of the texture used to visually represent the widget. (ie "qgui.window.png")
-			@param
-				group QuadContainer containing this widget.
-			@param
-				ParentWidget parent widget which created this widget.
-        */
-		Label(const std::string& name, GUIManager* gm);
-		
+		// Factory method
+		static Widget* factory(const Ogre::String& widgetName);
+	public:
+
 		/**
-		* Aligns the child Label widget horizontally and vertically
+		* Internal function, do not use.
 		*/
-		virtual void alignText();
-		virtual void clearText();
+		virtual void _initialize(WidgetDesc* d);
+
 		/**
-		* Disable Widget, making it unresponsive to events.
+		* Returns the class name of this Widget.
 		*/
-		virtual void disable();
+		virtual Ogre::String getClass();
 		/**
-		* Enable Widget, allowing it to accept and handle events.
+		* Gets the distance between a Label border and the text.
 		*/
-		virtual void enable();
-		bool getAutoSize();
-		int getHorizontalPixelPadWidth();
+		float getPadding(Padding p);
 		/**
-		* Convenience method to return the Text object's caption.
+		* Gets the text in UTFString form.
 		*/
-		virtual Ogre::UTFString getText();
-		Quad* getTextCharacter(unsigned int index);
-		/*
-		* Returns the dimensions of the area used for text aligning and displaying.
-		*/
-		Rect getTextBounds();
-		int getVerticalPixelPadHeight();
-		/*
-		* Hides the widget, including text.
-		*/
-		void hide();
+		Ogre::UTFString getText();
 		/**
-		* Force updating of the Widget's Quad position on screen.
+		* Returns the number of pixels placed between each line of text, if there
+		* are multiple lines of text.
 		*/
-		void redraw();
+		float getVerticalLineSpacing();
+
 		/**
-		* Set true if the label's size should match it's font height and text width.
-		* NOTE: AutoSize is set to true by default.  If you set this to false, you may
-		*  end up with empty label's, as text that doesn't fit in the label won't be rendered.
+		* Sets all characters of the text to the specified color.
 		*/
-		virtual void setAutoSize(bool autoSize);
+		void setColor(const Ogre::ColourValue& cv);
 		/**
-		* Sets the color of the text when the widget is disabled.
+		* Sets the character at the index given to the specified color.
 		*/
-		virtual void setDisabledTextColor(const Ogre::ColourValue& c);
-		virtual void setFont(const std::string& fontScriptName, bool recursive = false);
-		virtual void setHeight(float pixelHeight);
-		virtual void setQuadLayer(Quad::Layer l);
-		virtual void setSkin(const std::string& skinName, bool recursive = false);
-		virtual void setText(const Ogre::UTFString& text);
+		void setColor(const Ogre::ColourValue& cv, unsigned int index);
 		/**
-		* Sets text vertical alignment.
+		* Sets all characters within the defined range to the specified color.
 		*/
-		virtual void setVerticalAlignment(VerticalAlignment va);
+		void setColor(const Ogre::ColourValue& cv, unsigned int startIndex, unsigned int endIndex);
 		/**
-		* Sets text horizontal alignment.
+		* Searches text for c.  If allOccurrences is true, all characters of text matching c
+		* will be colored, otherwise only the first occurrence is colored.
 		*/
-		virtual void setHorizontalAlignment(HorizontalAlignment ha);
-		void setHorizontalPixelPadWidth(unsigned int width);
+		void setColor(const Ogre::ColourValue& cv, Ogre::UTFString::code_point c, bool allOccurrences);
 		/**
-		* Manipulates the offset used to determine this widgets zOrder in rendering.
+		* Searches text for s.  If allOccurrences is true, all sub strings of text matching s
+		* will be colored, otherwise only the first occurrence is colored.
 		*/
-		void setOffset(int offset);
+		void setColor(const Ogre::ColourValue& cv, Ogre::UTFString s, bool allOccurrences);
 		/**
-		* Manually set size of widget.
+		* Sets all characters of the text to the specified font.
 		*/
-		virtual void setSize(const float& pixelWidth, const float& pixelHeight);
-		virtual void setSize(const Size& pixelSize);
+		void setFont(const Ogre::String& fontName);
 		/**
-		* Sets the dimensions of the area used for text aligning and displaying.
+		* Sets the character at the index given to the specified font.
 		*/
-		void setTextBounds(const Point& relativePixelOffset, const Size& relativePixelSize);
-		virtual void setTextColor(Ogre::ColourValue color);
-		void setVerticalPixelPadHeight(unsigned int height);
-		virtual void setWidth(float pixelWidth);
-		/*
-		* Shows the widget, including text.
+		void setFont(const Ogre::String& fontName, unsigned int index);
+		/**
+		* Sets all characters within the defined range to the specified font.
 		*/
-		void show();
+		void setFont(const Ogre::String& fontName, unsigned int startIndex, unsigned int endIndex);
+		/**
+		* Searches text for c.  If allOccurrences is true, all characters of text matching c
+		* will be changed to the font specified, otherwise only the first occurrence is changed.
+		*/
+		void setFont(const Ogre::String& fontName, Ogre::UTFString::code_point c, bool allOccurrences);
+		/**
+		* Searches text for s.  If allOccurrences is true, all sub strings of text matching s
+		* will be changed to the font specified, otherwise only the first occurrence is changed.
+		*/
+		void setFont(const Ogre::String& fontName, Ogre::UTFString s, bool allOccurrences);
+		/**
+		* Sets the distance between a Label border and the text.
+		*/
+		void setPadding(Padding p, float distance);
+		/**
+		* Sets the text for this object.
+		*/
+		void setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv);
+		/**
+		* Sets the text for this object.
+		*/
+		void setText(Ogre::UTFString s, const Ogre::String& fontName, const Ogre::ColourValue& cv);
+		/**
+		* Sets the text for this object.
+		*/
+		void setText(Ogre::UTFString s);
+		/**
+		* Sets the number of pixels placed between each line of text, if there
+		* are multiple lines of text.
+		*/
+		void setVerticalLineSpacing(float distance);
 
 	protected:
-		virtual ~Label();
-		virtual void onPositionChanged(const EventArgs& args);
-		virtual void onSizeChanged(const EventArgs& args);
-		virtual void setGUIManager(GUIManager* gm);
-		virtual void setQuadContainer(QuadContainer* container);
-	protected:
+		Label(const Ogre::String& name);
+		~Label();
+
+		// Current settings applied to newly added text.
+		Ogre::String mCurrentFontName;
+		Ogre::ColourValue mCurrentColourValue;
 
 		Text* mText;
-		VerticalAlignment mVerticalAlignment;
-		HorizontalAlignment	mHorizontalAlignment;
 
-		int mHPixelPadWidth;
-		int mVPixelPadHeight;
+		// Pointer pointing to mWidgetDesc object, but casted for quick use.
+		LabelDesc* mDesc;
 
-		Point mTextBoundsPixelOffset;
-		Size mTextBoundsRelativeSize;
+		/**
+		* Outlines how the widget is drawn to the current render target
+		*/
+		virtual void onDraw();
 
-		Ogre::ColourValue mTextColor;
-		Ogre::ColourValue mDisabledTextColor;
-
-		bool mAutoSize;
+	private:
 	};
 }
 

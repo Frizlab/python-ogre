@@ -1,703 +1,1235 @@
-#include "QuickGUIPrecompiledHeaders.h"
-
 #include "QuickGUIText.h"
-#include "QuickGUILabel.h"
-#include "QuickGUIManager.h"
-
-#include "OgreFont.h"
-#include "OgreMaterialManager.h"
+#include "QuickGUISerialReader.h"
+#include "QuickGUISerialWriter.h"
+#include "QuickGUIScriptWriter.h"
 
 namespace QuickGUI
 {
-	Text::Text(const std::string& name, QuadContainer* container, Label* owner) :
-		mOwner(owner),
-		mLayer(Quad::LAYER_CHILD),
-		mName(name),
-		mQuadContainer(container),
-		mCaption(""),
-		mPixelDimensions(Rect::ZERO),
-		mLayout(LAYOUT_HORIZONTAL),
-		mVisible(true),
-		mSelectStart(-1),
-		mSelectEnd(-1),
-		mLineSpacing(1.0)
+	TextDesc::TextDesc() :
+		BaseDesc()
 	{
-		mTextHelper = new TextHelper();
-		mOffset = mOwner->getOffset() + 1;
-		mGUIManager = owner->getGUIManager();
-		Rect ownerDimensions = mOwner->getDimensions();
-		mPixelDimensions = Rect(ownerDimensions.x,ownerDimensions.y,0,0);
+		allottedWidth = 100;
+		textAlignment = TEXT_ALIGNMENT_LEFT;
+		verticalLineSpacing = 2;
+	}
 
-		// Order dependent, this code must go before call to setFont, since that removes selection, which
-		// affects the character background.
-		mCharacterBackground = new Quad(mOwner);
-		mCharacterBackground->setColor(mBackgroundSelectColor);
-		mCharacterBackground->setOffset(mOffset-1);
-		mCharacterBackground->setVisible(false);
+	float TextDesc::getTextHeight()
+	{
+		float maxHeight = 0;
+		float height;
+		for(int index = 0; index < static_cast<int>(segments.size()); ++index)
+		{
+			height = Text::getFontHeight(segments[index].fontName);
+			if(height > maxHeight)
+				maxHeight = height;
+		}
 
-		mSelectColor = getInverseColor(mColor);
-		mBackgroundSelectColor = mColor;
+		return maxHeight;
+	}
+
+	float TextDesc::getTextWidth()
+	{
+		float width = 0;
+		for(int index = 0; index < static_cast<int>(segments.size()); ++index)
+		{
+			width += Text::getTextWidth(segments[index].fontName,segments[index].text);
+		}
+
+		return width;
+	}
+
+	void TextDesc::serialize(SerialBase* b)
+	{
+//		b->IO("AllottedWidth",&allottedWidth);
+		b->IO("VerticalLineSpacing",&verticalLineSpacing);
+
+		b->begin("Text","segments");
+		// Read in Text Segments or Write out Text Segments
+		if(b->isSerialReader())
+		{
+			std::list<DefinitionProperty*> propList = b->getCurrentDefinition()->getProperties();
+			for(std::list<DefinitionProperty*>::iterator it = propList.begin(); it != propList.end(); ++it)
+			{
+				Ogre::StringVector sv = (*it)->getValues();
+
+				TextSegment s;
+				s.fontName = sv[0];
+				s.color.a = Ogre::StringConverter::parseReal(sv[1]);
+				s.color.b = Ogre::StringConverter::parseReal(sv[2]);
+				s.color.g = Ogre::StringConverter::parseReal(sv[3]);
+				s.color.r = Ogre::StringConverter::parseReal(sv[4]);
+
+				// Its possible the Text is just " ", in which case the parsing won't catch it.
+				if(static_cast<int>(sv.size()) < 6)
+					s.text = " ";
+				else
+				{
+					int index = 5;
+					while(index < static_cast<int>(sv.size()))
+					{
+						s.text.append(sv[index]);
+						++index;
+					}
+				}
+
+				Text::convertTextToWhiteSpace(s.text);
+
+				segments.push_back(s);
+			}
+		}
+		else
+		{
+			for(int index = 0; index < static_cast<int>(segments.size()); ++index)
+			{
+				Ogre::String propName = "Segment" + Ogre::StringConverter::toString(index);
+				DefinitionProperty* prop = new DefinitionProperty(propName);
+
+				TextSegment& s = segments[index];
+
+				prop->mValues.push_back(s.fontName);
+
+				prop->mValues.push_back(Ogre::StringConverter::toString(s.color.a));
+				prop->mValues.push_back(Ogre::StringConverter::toString(s.color.b));
+				prop->mValues.push_back(Ogre::StringConverter::toString(s.color.g));
+				prop->mValues.push_back(Ogre::StringConverter::toString(s.color.r));
+
+				prop->mValues.push_back(s.text);
+
+				b->getCurrentDefinition()->mProperties[propName] = prop;
+			}
+		}
+		b->end();
+	}
+
+	Text::Text(TextDesc& d) :
+		mTextLinesDirty(true)
+	{
+		// Create Texture used for Highlighting if it doesn't exist.
+		if(!Ogre::TextureManager::getSingleton().resourceExists("TextSelection"))
+		{
+			Ogre::TexturePtr tp = 
+				static_cast<Ogre::TexturePtr>(Ogre::TextureManager::getSingleton().createManual("TextSelection",Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,Ogre::TEX_TYPE_2D,1,1,0,Ogre::PF_B8G8R8A8)); 
+
+			Ogre::HardwarePixelBufferSharedPtr buf = tp->getBuffer(); 
+			buf->lock(Ogre::HardwareBuffer::HBL_NORMAL); 
+			const Ogre::PixelBox& pb = buf->getCurrentLock(); 
+			Ogre::uint8* pixelData = static_cast<Ogre::uint8*>(pb.data); 
+
+			*pixelData++ = 255; // Blue 
+			*pixelData++ = 255; // Green 
+			*pixelData++ = 255; // Red 
+			*pixelData++ = 127; // Alpha 
+
+			buf->unlock(); 
+		}
+
+		mTextDesc = &d;
+
+		// Populate Characters based on Desc object
+		for(int index = 0; index < static_cast<int>(mTextDesc->segments.size()); ++index)
+		{
+			TextSegment s = mTextDesc->segments[index];
+			mText.append(s.text);
+
+			for(Ogre::UTFString::iterator it2 = s.text.begin(); it2 != s.text.end(); ++it2)
+			{
+				mCharacters.push_back(new Character((*it2),static_cast<Ogre::FontPtr>(Ogre::FontManager::getSingleton().getByName(s.fontName)),s.color));
+			}
+		}
 	}
 
 	Text::~Text()
 	{
-		delete mTextHelper;
-		_clearCharacters();
-		delete mCharacterBackground;
+		for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
+			delete (*it);
+	}
+// STATIC FUNCTIONS
+	void Text::convertWhitespaceToText(Ogre::UTFString& s)
+	{
+		Ogre::String::size_type index = s.find('\t');
+		while(index != Ogre::UTFString::npos)
+		{
+			s.replace(index,1,"\\t");
+			index = s.find('\t');
+		}
+		
+		index = s.find('\n');
+		while(index != Ogre::UTFString::npos)
+		{
+			s.replace(index,1,"\\n");
+			index = s.find('\n');
+		}
+
+		index = s.find('\r');
+		while(index != Ogre::UTFString::npos)
+		{
+			s.replace(index,1,"\\n");
+			index = s.find('\r');
+		}
 	}
 
-	void Text::_calculateDimensions()
+	void Text::convertTextToWhiteSpace(Ogre::UTFString& s)
+	{
+		Ogre::String::size_type index = s.find("\\t");
+		while(index != Ogre::UTFString::npos)
+		{
+			s.replace(index,2,"\t");
+			index = s.find("\\t");
+		}
+		
+		index = s.find("\\n");
+		while(index != Ogre::UTFString::npos)
+		{
+			s.replace(index,2,"\n");
+			index = s.find("\\n");
+		}
+
+		index = s.find("\\r");
+		while(index != Ogre::UTFString::npos)
+		{
+			s.replace(index,2,"\n");
+			index = s.find("\\r");
+		}
+	}
+
+	Ogre::FontPtr Text::getFirstAvailableFont()
+	{
+		Ogre::ResourceManager::ResourceMapIterator rmi = Ogre::FontManager::getSingleton().getResourceIterator();
+		return static_cast<Ogre::FontPtr>(rmi.getNext());
+	}
+
+	Ogre::FontPtr Text::getFont(const Ogre::String& fontName)
+	{
+		Ogre::FontPtr fp = static_cast<Ogre::FontPtr>(Ogre::FontManager::getSingleton().getByName(fontName));
+		// Make sure the font is loaded
+		fp->load();
+
+		return fp;
+	}
+
+	float Text::getFontHeight(const Ogre::String& fontName)
+	{
+		return getFontHeight(getFont(fontName));
+	}
+
+	float Text::getFontHeight(Ogre::FontPtr fp)
+	{
+		Ogre::TexturePtr tp = getFontTexture(fp);
+
+		Ogre::Font::UVRect uvRect = fp->getGlyphTexCoords('0');
+		float height = ((uvRect.bottom - uvRect.top) * tp->getHeight());
+
+		return height;
+	}
+
+	Ogre::TexturePtr Text::getFontTexture(const Ogre::String& fontName)
+	{
+		return getFontTexture(getFont(fontName));
+	}
+
+	Ogre::TexturePtr Text::getFontTexture(Ogre::FontPtr fp)
+	{
+		// Make sure the font is loaded
+		fp->load();
+
+		return 
+			static_cast<Ogre::TexturePtr>
+			(
+				Ogre::TextureManager::getSingleton().getByName(fp->getMaterial()->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getTextureName())
+			);
+	}
+
+	Ogre::String Text::getFontTextureName(const Ogre::String& fontName)
+	{
+		return getFontTextureName(getFont(fontName));
+	}
+
+	Ogre::String Text::getFontTextureName(Ogre::FontPtr fp)
+	{
+		// Make sure the font is loaded
+		fp->load();
+
+		return fp->getMaterial()->getTechnique(0)->getPass(0)->getTextureUnitState(0)->getTextureName();
+	}
+
+	float Text::getGlyphHeight(const Ogre::String& fontName, Ogre::UTFString::code_point cp)
+	{
+		return getGlyphHeight(getFont(fontName),cp);
+	}
+
+	float Text::getGlyphHeight(Ogre::FontPtr fp, Ogre::UTFString::code_point cp)
+	{
+		Ogre::TexturePtr tp = getFontTexture(fp);
+
+		Ogre::Font::UVRect uvRect = fp->getGlyphTexCoords(cp);
+
+		return ((uvRect.bottom - uvRect.top) * tp->getHeight());
+	}
+
+	UVRect Text::getGlyphUVCoords(const Ogre::String& fontName, Ogre::UTFString::code_point cp)
+	{
+		return getGlyphUVCoords(getFont(fontName),cp);
+	}
+
+	UVRect Text::getGlyphUVCoords(Ogre::FontPtr fp, Ogre::UTFString::code_point cp)
+	{
+		// Make sure the font is loaded
+		fp->load();
+
+		Ogre::Font::UVRect uvRect = fp->getGlyphTexCoords(cp);
+
+		UVRect retVal;
+		retVal.left = uvRect.left;
+		retVal.top = uvRect.top;
+		retVal.right = uvRect.right;
+		retVal.bottom = uvRect.bottom;
+
+		return retVal;
+	}
+
+	Size Text::getGlyphSize(const Ogre::String& fontName, Ogre::UTFString::code_point cp)
+	{
+		return getGlyphSize(getFont(fontName),cp);
+	}
+
+	Size Text::getGlyphSize(Ogre::FontPtr fp, Ogre::UTFString::code_point cp)
+	{
+		Ogre::TexturePtr tp = getFontTexture(fp);
+
+		Ogre::Font::UVRect uvRect = fp->getGlyphTexCoords(cp);
+		float width = ((uvRect.right - uvRect.left) * tp->getWidth());
+		float height = ((uvRect.bottom - uvRect.top) * tp->getHeight());
+
+		return Size(width,height);
+	}
+
+	float Text::getGlyphWidth(const Ogre::String& fontName, Ogre::UTFString::code_point cp)
+	{
+		return getGlyphWidth(getFont(fontName),cp);
+	}
+
+	float Text::getGlyphWidth(Ogre::FontPtr fp, Ogre::UTFString::code_point cp)
+	{
+		Ogre::TexturePtr tp = getFontTexture(fp);
+
+		Ogre::Font::UVRect uvRect = fp->getGlyphTexCoords(cp);
+		float width = ((uvRect.right - uvRect.left) * tp->getWidth());
+
+		return width;
+	}
+
+	float Text::getTextWidth(const Ogre::String& fontName, Ogre::UTFString s)
+	{
+		return getTextWidth(getFont(fontName),s);
+	}
+
+	float Text::getTextWidth(Ogre::FontPtr fp, Ogre::UTFString s)
+	{
+		float width = 0;
+		float charWidth = 0;
+		Ogre::TexturePtr tp = getFontTexture(fp);
+
+		for(Ogre::UTFString::iterator it = s.begin(); it != s.end(); ++it)
+		{
+			if(isSpace((*it)))
+			{
+				charWidth = getGlyphSize(fp,'0').width;
+			}
+			else if(isTab((*it)))
+			{
+				charWidth = (getGlyphSize(fp,'0').width * 4);
+			}
+			else
+			{
+				Ogre::Font::UVRect uvRect = fp->getGlyphTexCoords((*it));
+				charWidth = ((uvRect.right - uvRect.left) * tp->getWidth());
+			}
+
+			width += charWidth;
+		}
+
+		return width;
+	}
+
+// END STATIC FUNCTIONS
+
+	void Text::_checkTextLines()
+	{
+		if(mTextLinesDirty)
+		{
+			_destroyTextLines();
+			_createTextLines();
+
+			mTextLinesDirty = false;
+			mTextDesc->segments = getTextSegments();
+		}
+	}
+
+	void Text::_createTextLines()
 	{
 		if(mCharacters.empty())
-		{
-			mPixelDimensions.width = 0;
-			mPixelDimensions.height = 0;
 			return;
-		}
 
-		float minX = 9999;
-		float minY = 9999;
-		float maxX = -9999;
-		float maxY = -9999;
+		std::list<Character*>::iterator cItr = mCharacters.begin();
 
-		QuadArray::iterator it;
-		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		TextLine* currentTextLine = new TextLine(mTextDesc->allottedWidth);
+		mTextLines.push_back(currentTextLine);
+
+		while(cItr != mCharacters.end())
 		{
-			Point charPos = (*it)->getPosition();
-			Size charSize = (*it)->getSize();
-			if( charPos.x < minX )
-				minX = charPos.x;
-			if( (charPos.x + charSize.width) > maxX )
-				maxX = charPos.x + charSize.width;
-			if( charPos.y < minY )
-				minY = charPos.y;
-			if( (charPos.y + charSize.height) > maxY )
-				maxY = charPos.y + charSize.height;
-		}
-
-		mPixelDimensions = Rect(minX,minY,maxX - minX,maxY - minY);
-	}
-
-	void Text::_clearCharacters()
-	{
-		QuadArray::iterator it;
-		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
-		{
-			delete (*it);
-		}
-		mCharacters.clear();
-	}
-
-	void Text::_notifyQuadContainer(QuadContainer* container)
-	{
-		mQuadContainer = container;
-
-		mCharacterBackground->_notifyQuadContainer(mQuadContainer);
-
-		QuadArray::iterator it;
-		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
-		{
-			(*it)->_notifyQuadContainer(mQuadContainer);
-		}
-	}
-
-	void Text::_setCaptionHorizontal(const Ogre::UTFString& text)
-	{
-        // Parsing the text
-		int charCounter = 0;
-		Rect textArea = mOwner->getTextBounds();
-		Point pos(textArea.x,textArea.y);
-		Ogre::UTFString::const_iterator it;
-		for( it = text.begin(); it != text.end(); ++it )
-		{
-			Ogre::UTFString::code_point cp = it.getCharacter();
-
-			if(mTextHelper->isNewLine(cp))
+			if(isWhiteSpace((*cItr)->codePoint))
 			{
-				pos.x = textArea.x;
-				pos.y += getNewlineHeight();
-				continue;
-			}
-
-			// Wrap only at a space
-			if(mTextHelper->isSpace(cp))
-			{
-			    bool ignore = false;
-				float tempx = pos.x;
-				Ogre::UTFString::code_point tempcp;
-				// Find next space, or go to new line if there is no space
-				// before we run out of room.
-                for(size_t i = 0; (it+i) != text.end(); i++)
+				// If its a newline we can add it to the TextLine, since they have a width of 0.
+				// We also want to create a New TextLine object.
+				if(isNewLine((*cItr)->codePoint))
 				{
-					tempcp = (it+i).getCharacter();
-					tempx += mTextHelper->getGlyphWidth(tempcp);
-					if( tempx > (textArea.x + textArea.width) )
+					currentTextLine->addCharacter((*cItr));
+					currentTextLine = new TextLine(mTextDesc->allottedWidth);
+					mTextLines.push_back(currentTextLine);
+					++cItr;
+				}
+				else
+				{
+					float availableSpace = currentTextLine->getAvailableSpace();
+
+					// If the character doesn't fit on this TextLine, create a new TextLine and repeat the process
+					if( (*cItr)->dimensions.size.width > availableSpace )
 					{
-						pos.x = textArea.x;
-						pos.y += getNewlineHeight();
-						// Ignore this space, because it is used for wrapping
-						ignore = true;
-						break;
+						currentTextLine = new TextLine(mTextDesc->allottedWidth);
+						mTextLines.push_back(currentTextLine);
 					}
-					if( i != 0 && mTextHelper->isSpace(tempcp) )
-						break;	// There is another space before we need a new line
+					else
+					{
+						currentTextLine->addCharacter((*cItr));
+						++cItr;
+					}
 				}
-
-				if (ignore)
-                    continue;
 			}
-			// check dimensions to see if wrap around should occur.
-			Size size = mTextHelper->getGlyphSize(cp);
-
-			// if parent is a label (is could be a derived widget, like textbox) and has auto sizing enabled,
-			// we do not confine text to any bounds.
-			if(!mOwner->getAutoSize() || (mOwner->getWidgetType() != Widget::TYPE_LABEL))
-			{
-				if( (pos.x + size.width) > (textArea.x + textArea.width) )
-				{
-					pos.x = textArea.x;
-					pos.y += getNewlineHeight();
-				}
-				// Break if there isn't enough room for another line of text
-				if( (pos.y + size.height) > (textArea.y + textArea.height) )
-					break;
-			}
-
-			Quad* q = new Quad(mOwner);
-			q->setClipMode(Quad::CLIPMODE_PARENT);
-			q->setOffset(mOffset);
-			q->setLayer(mLayer);
-
-			// set dimensions
-			q->setDimensions(Rect(pos,size));
-			// update pen position
-			pos.x += size.width;
-
-			// We need to have quads that represent spaces for text indexing.  We don't need
-			// to render them, however.
-			if(!mTextHelper->isWhiteSpace(cp))
-			{
-				// set texture
-				q->setMaterial(mTextHelper->getFontMaterialName());
-
-				// set texture coords
-				Ogre::Font::UVRect r = mTextHelper->getGlyphTexCoords(cp);
-				q->setTextureCoordinates(Vector4(r.left,r.top,r.right,r.bottom));
-
-				// set default color
-				q->setColor(mColor);
-
-				// notify render object group
-				q->_notifyQuadContainer(mQuadContainer);
-			}
-
-			mCharacters.push_back(q);
-			++charCounter;
-		}
-	}
-
-	void Text::_setCaptionVertical(const Ogre::UTFString& text)
-	{
-		int charCounter = 0;
-		Point widgetPos = mOwner->getPosition();
-		Point pos = widgetPos;
-		Ogre::UTFString::const_iterator it;
-		for( it = text.begin(); it != text.end(); ++it )
-		{
-			Ogre::UTFString::code_point cp = it.getCharacter();
-
-			if(mTextHelper->isWhiteSpace(cp))
-			{
-				if(mTextHelper->isSpace(cp))
-					pos.y += getNewlineHeight();
-				else if(mTextHelper->isTab(cp))
-					pos.y += (getNewlineHeight() * SPACES_PER_TAB);
-				else if(mTextHelper->isNewLine(cp))
-				{
-					pos.x = (widgetPos.x - mTextHelper->getSpaceWidth());
-					pos.y = widgetPos.y;
-				}
-				continue;
-			}
-
-			Quad* q = new Quad(mOwner);
-			q->setClipMode(Quad::CLIPMODE_PARENT);
-			q->setOffset(mOffset);
-			q->setLayer(mLayer);
-
-			// derive dimensions
-			Size size = mTextHelper->getGlyphSize(cp);
-			q->setDimensions(Rect(pos,size));
-			// update pen position
-			pos.y += size.height;
-
-			// set texture
-			q->setMaterial(mTextHelper->getFontMaterialName());
-
-			// set texture coords
-			Ogre::Font::UVRect r = mTextHelper->getGlyphTexCoords(cp);
-			q->setTextureCoordinates(Vector4(r.left,r.top,r.right,r.bottom));
-
-			// notify render object group
-			q->_notifyQuadContainer(mQuadContainer);
-
-			mCharacters.push_back(q);
-			++charCounter;
-		}
-	}
-
-	void Text::addOnTextChangedEventHandler(MemberFunctionSlot* function)
-	{
-		mOnTextChangedUserEventHandlers.push_back(function);
-	}
-
-	void Text::redraw()
-	{
-		_clearCharacters();
-		clearSelection();
-
-		// Either way we want to calculate the new dimensions, but if the caption is empty,
-		// we don't want to try to align it.
-		if( mCaption != "" )
-		{
-			if( mLayout == LAYOUT_HORIZONTAL )
-				_setCaptionHorizontal(mCaption);
 			else
-				_setCaptionVertical(mCaption);
+			{
+				float wordLength = 0;
+				float availableSpace = currentTextLine->getAvailableSpace();
+				std::list<Character*>::iterator endOfWord = cItr;
 
-			// Make sure the caption matches the visibly displayed text!
-			//mCaption.erase(static_cast<Ogre::UTFString::size_type>(mCharacters.size()));
+				// If we get one word that is longer than the allotted width, split it up into pieces that fit onto each line.
+				if(currentTextLine->empty())
+				{
+					while( (endOfWord != mCharacters.end()) && !isWhiteSpace((*endOfWord)->codePoint) && (wordLength < availableSpace) )
+					{
+						wordLength += (*endOfWord)->dimensions.size.width;
+						++endOfWord;
+					}
 
-			_calculateDimensions();
+					// add Characters from pointer to endOfWord - 1
+					while(cItr != endOfWord)
+					{
+						currentTextLine->addCharacter((*cItr));
+						++cItr;
+					}
+				}
+				else
+				{
+					while( (endOfWord != mCharacters.end()) && !isWhiteSpace((*endOfWord)->codePoint) )
+					{
+						wordLength += (*endOfWord)->dimensions.size.width;
+						++endOfWord;
+					}
 
-			dynamic_cast<Label*>(mOwner)->alignText();
+					// If the word doesn't fit on this TextLine, create a new TextLine and repeat the process
+					if( wordLength > availableSpace )
+					{
+						currentTextLine = new TextLine(mTextDesc->allottedWidth);
+						mTextLines.push_back(currentTextLine);
+					}
+					else
+					{
+						// add Characters from pointer to endOfWord - 1
+						while(cItr != endOfWord)
+						{
+							currentTextLine->addCharacter((*cItr));
+							++cItr;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	void Text::_destroyTextLines()
+	{
+		for(std::vector<TextLine*>::iterator it = mTextLines.begin(); it != mTextLines.end(); ++it)
+			delete (*it);
+		mTextLines.clear();
+
+		// TextLines manipulate character positions, so we need to make sure to reset them.
+		for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
+			(*it)->dimensions.position = Point::ZERO;
+	}
+
+	void Text::_drawTextLines(Point& position)
+	{
+		_checkTextLines();
+
+		Point p = position;
+
+		for(std::vector<TextLine*>::iterator it = mTextLines.begin(); it != mTextLines.end(); ++it)
+		{
+			switch(mTextDesc->textAlignment)
+			{
+			case TEXT_ALIGNMENT_LEFT:
+				break;
+			case TEXT_ALIGNMENT_RIGHT:
+				p.x += mTextDesc->allottedWidth - (*it)->getWidth();
+				break;
+			case TEXT_ALIGNMENT_CENTER:
+				p.x += ((mTextDesc->allottedWidth - (*it)->getWidth()) / 2.0);
+				break;
+			}
+
+			(*it)->draw(p);
+
+			p.y += (*it)->getHeight();
+		}
+
+		// Draw any remaining queued rects
+		Brush::getSingleton().emptyQueue();
+	}
+
+	void Text::addCharacter(Character* c, unsigned int index)
+	{
+		if((index < 0) || (index > static_cast<unsigned int>(getLength())))
+			throw Exception(Exception::ERR_TEXT,"Index out of bounds! index=" + Ogre::StringConverter::toString(index) + " length=" + Ogre::StringConverter::toString(getLength()),"Text::addCharacter");
+
+		// Inserts into mText
+		mText.insert(index,1,c->codePoint);
+
+		// Inserts into mCharacters
+		if(index == 0)
+		{
+			mCharacters.push_back(c);
 		}
 		else
-			_calculateDimensions();
-
-		// Maintain visibility. Must be called before setting clip rect!
-		if(!mVisible)
-			hide();
-	}
-
-	void Text::removeSelection()
-	{
-		if((mSelectStart == -1) || (mSelectEnd == -1))
-			return;
-
-		mCaption.erase(mSelectStart,(mSelectEnd-mSelectStart) + 1);
-		clearSelection();
-		setCaption(mCaption);
-	}
-
-	Rect Text::getDimensions()
-	{
-		return mPixelDimensions;
-	}
-
-	Ogre::UTFString Text::getCaption()
-	{
-		return mCaption;
-	}
-
-	Quad* Text::getCharacter(unsigned int index)
-	{
-		if( mCharacters.empty() )
-			return NULL;
-		else if(index >= mCharacters.size())
-			return mCharacters[static_cast<int>(mCharacters.size())-1];
-
-		return mCharacters[index];
-	}
-
-	Ogre::ColourValue Text::getColor()
-	{
-		return mColor;
-	}
-
-	std::string Text::getFont()
-	{
-		return mTextHelper->getFont();
-	}
-
-	float Text::getGlyphHeight()
-	{
-		return mTextHelper->getGlyphHeight();
-	}
-
-	Size Text::getGlyphSize(Ogre::UTFString::code_point c)
-	{
-		return mTextHelper->getGlyphSize(c);
-	}
-
-	float Text::getGlyphWidth(Ogre::UTFString::code_point c)
-	{
-		return mTextHelper->getGlyphWidth(c);
-	}
-
-	Ogre::ColourValue Text::getInverseColor(const Ogre::ColourValue& c)
-	{
-		return Ogre::ColourValue(
-			1.0 - c.r,
-			1.0 - c.g,
-			1.0 - c.b,
-			c.a);
-	}
-
-	float Text::getLineSpacing()
-	{
-		return mLineSpacing;
-	}
-
-	float Text::getNewlineHeight()
-	{
-		return mTextHelper->getGlyphHeight();
-	}
-
-	int Text::getNumberOfCharacters()
-	{
-		return static_cast<int>(mCharacters.size());
-	}
-
-	Point Text::getPosition()
-	{
-		return Point(mPixelDimensions.x,mPixelDimensions.y);
-	}
-
-	Ogre::UTFString Text::getSelection()
-	{
-		if((mSelectStart < 0) || (mSelectEnd < 0))
-			return "";
-
-		return mCaption.substr(mSelectStart,mSelectEnd);
-	}
-
-	int Text::getSelectionEnd()
-	{
-		return mSelectStart;
-	}
-
-	int Text::getSelectionStart()
-	{
-		return mSelectEnd;
-	}
-
-	int Text::getTextIndex(const Point& pixelDimensions)
-	{
-		if(mCaption.length() <= 0)
-			return -1;
-
-		// check bounds
-		if( pixelDimensions.x < mPixelDimensions.x )
-			return 0;
-		else if( pixelDimensions.x > (mPixelDimensions.x + mPixelDimensions.width) )
-			return (static_cast<int>(mCaption.length()) - 1);
-
-		int textIndex = 0;
-		QuadArray::iterator it;
-		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
 		{
-			if( (*it)->isPointWithinBounds(pixelDimensions) )
-				return textIndex;
+			int counter = 0;
+			for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
+			{
+				if(counter == index)
+				{
+					mCharacters.insert(it,c);
+					break;
+				}
 
-			++textIndex;
+				++counter;
+			}
 		}
 
-		// should never make it here
+		mTextLinesDirty = true;
+	}
+
+	void Text::addCharacter(Character* c)
+	{
+		// Add to end
+		mText.append(1,c->codePoint);
+
+		// Add into mCharacters
+		mCharacters.push_back(c);
+
+		mTextLinesDirty = true;
+	}
+
+	void Text::clearHighlights()
+	{
+		for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
+		{
+			(*it)->setHighlighted(false);
+		}
+	}
+
+	void Text::draw(Point& position)
+	{
+		_drawTextLines(position);
+	}
+
+	bool Text::empty()
+	{
+		return mText.empty();
+	}
+
+	float Text::getAllottedWidth()
+	{
+		return mTextDesc->allottedWidth;
+	}
+
+	Character* Text::getCharacter(unsigned int index)
+	{
+		_checkTextLines();
+
+		if(index >= static_cast<int>(mText.length()))
+			throw Exception(Exception::ERR_TEXT,"Index out of bounds!","Text::getCharacter");
+
+		unsigned int count = 0;
+		for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
+		{
+			if(count == index)
+				return (*it);
+
+			++count;
+		}
+
+		return NULL;
+	}
+
+	int Text::getCharacterIndexAtPosition(Point& p)
+	{
+		if(empty())
+			throw Exception(Exception::ERR_TEXT,"Text is empty, cannot get index!","Text::getCharacterIndexAtPosition");
+
+		_checkTextLines();
+
+		int index = 0;
+		int counter = 0;
+		int height = 0;
+		while((counter < (static_cast<int>(mTextLines.size()) - 1)) && (height < p.y))
+		{
+			// Increment height
+			height += mTextLines[counter]->getHeight();
+			// Increment index by number of characters in current line of text
+			index += mTextLines[counter]->getLength();
+			// Increment counter to iterate through text lines
+			++counter;
+		}
+
+		return index + mTextLines[counter]->getCharacterIndexAtPosition(Point(p.x,0));
+	}
+
+	float Text::getCharacterYPosition(unsigned int index)
+	{
+		if(index >= static_cast<int>(mText.length()))
+			throw Exception(Exception::ERR_TEXT,"Index out of bounds!","Text::getCharacterYPosition");
+
+		_checkTextLines();
+
+		int counter = 0;
+		int indexCount = 0;
+		float height = 0;
+		while((counter < static_cast<int>(mTextLines.size())) && ((indexCount + mTextLines[counter]->getLength()) <= static_cast<int>(index)))
+		{
+			// Increment height
+			height += mTextLines[counter]->getHeight();
+			// Increment index count
+			indexCount += mTextLines[counter]->getLength();
+			// Increment counter to iterate through text lines
+			++counter;
+		}
+
+		return height;
+	}
+
+	int Text::getIndexOfNextWord(unsigned int index)
+	{
+		if(index >= static_cast<int>(mText.length()))
+			throw Exception(Exception::ERR_TEXT,"Index out of bounds!","Text::getCharacter");
+
+		if(index == static_cast<unsigned int>(getLength() - 1))
+			return (getLength() - 1);
+
+		unsigned int count = 0;
+		for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
+		{
+			if(count == index)
+			{
+				// Skip remaining non whitespace
+				while((it != mCharacters.end()) && !(*it)->isWhiteSpace())
+				{
+					++it;
+					++count;
+				}
+
+				// Skip remaining whitespace
+				while((it != mCharacters.end()) && (*it)->isWhiteSpace())
+				{
+					++it;
+					++count;
+				}
+
+				if(it == mCharacters.end())
+					return -1;
+				else
+					return static_cast<int>(count);
+			}
+
+			++count;
+		}
+
+		// Should never make it here.
 		return -1;
 	}
 
-	int Text::getTextCursorIndex(Point pixelDimensions)
+	int Text::getIndexOfPreviousWord(unsigned int index)
 	{
-		if(mCaption.length() <= 0)
+		if(index >= static_cast<int>(mText.length()))
+			throw Exception(Exception::ERR_TEXT,"Index out of bounds!","Text::getCharacter");
+
+		if(index == 0)
 			return 0;
 
-		// check bounds
-		if( pixelDimensions.x < mPixelDimensions.x )
-			return -1;
-		else if( pixelDimensions.x > (mPixelDimensions.x + mPixelDimensions.width) )
-			return (static_cast<int>(mCharacters.size()) + 1);
-
-		// If mouse cursor is above text, select from top line
-		if( pixelDimensions.y < mPixelDimensions.y )
-			pixelDimensions.y = mPixelDimensions.y + mCharacters[0]->getSize().height / 2;
-		// If mouse cursor is below text, select from bottom line
-		else if( pixelDimensions.y > mPixelDimensions.y + mPixelDimensions.height )
-			pixelDimensions.y = mPixelDimensions.y + mPixelDimensions.height - mCharacters[0]->getSize().height / 2;
-
-		int textIndex = 0;
-		QuadArray::iterator it;
-		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		unsigned int count = 0;
+		for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
 		{
-			if( (*it)->isPointWithinBounds(pixelDimensions) )
+			if(count == index)
 			{
-				float midX = (*it)->getPosition().x + ((*it)->getSize().width / 2);
-				if( mPixelDimensions.x < midX )
-					return textIndex;
-				else 
-					return textIndex + 1;
+				--it;
+				--count;
+
+				// Skip whitespace
+				while((it != mCharacters.begin()) && (*it)->isWhiteSpace())
+				{
+					--it;
+					--count;
+				}
+
+				// Skip non whitespace
+				while((it != mCharacters.begin()) && !(*it)->isWhiteSpace())
+				{
+					--it;
+					--count;
+				}
+
+				// At this point we ran past the beginning of the word.  If we aren't at the beginning of the text,
+				// increment counter by 1.
+				if(it != mCharacters.begin())
+				{
+					++it;
+					++count;
+				}
+
+				return static_cast<int>(count);
 			}
 
-			++textIndex;
+			++count;
 		}
 
-		// should never make it here
-		return textIndex;
+		// Should never make it here.
+		return -1;
 	}
 
-	int Text::getTextCursorIndex(const Rect& pixelDimensions)
+	int Text::getLength()
 	{
-		if(mCaption.length() <= 0)
-				return 0;
+		return static_cast<int>(mText.length());
+	}
 
-		// check bounds
-		if( pixelDimensions.x < mPixelDimensions.x )
-			return -1;
-		else if( pixelDimensions.x > (mPixelDimensions.x + mPixelDimensions.width) )
-			return (static_cast<int>(mCharacters.size()) + 1);
+	Size Text::getSize()
+	{
+		_checkTextLines();
 
-		int textIndex = 0;
-		QuadArray::iterator it;
-		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		float height = 0;
+		for(std::vector<TextLine*>::iterator it = mTextLines.begin(); it != mTextLines.end(); ++it)
 		{
-			if( (*it)->getDimensions().intersectsRect(pixelDimensions) )
+			height = height + (*it)->getHeight() + mTextDesc->verticalLineSpacing;
+		}
+
+		height = height - mTextDesc->verticalLineSpacing;
+
+		return Size(mTextDesc->allottedWidth,height);
+	}
+
+	Ogre::UTFString Text::getText()
+	{
+		return mText;
+	}
+
+	float Text::getTextWidth()
+	{
+		_checkTextLines();
+
+		float width = 0;
+		for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
+		{
+			width += (*it)->dimensions.size.width;
+		}
+
+		return width;
+	}
+
+	std::vector<TextSegment> Text::getTextSegments()
+	{
+		std::vector<TextSegment> segments;
+
+		if(!mCharacters.empty())
+		{
+			Ogre::String currentFont;
+			Ogre::ColourValue currentColor;
+			Ogre::UTFString text;
+
+			// initialize segment properties
+			currentFont = mCharacters.front()->fontPtr->getName();
+			currentColor = mCharacters.front()->colorValue;
+			text = "";
+			for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
 			{
-				float midX = (*it)->getPosition().x + ((*it)->getSize().width / 2);
-				if( pixelDimensions.x < midX )
-					return textIndex;
-				else return textIndex + 1;
+				// If this character has a different color or font, write out the previous text segment.
+				if(((*it)->fontPtr->getName() != currentFont) || ((*it)->colorValue != currentColor))
+				{
+					Text::convertWhitespaceToText(text);
+
+					TextSegment s;
+					s.color = currentColor;
+					s.fontName = currentFont;
+					s.text = text;
+					segments.push_back(s);
+
+					currentFont = (*it)->fontPtr->getName();
+					currentColor = (*it)->colorValue;
+					text.clear();
+				}
+
+				text.append(1,(*it)->codePoint);
 			}
 
-			++textIndex;
+			// Write out the last segment
+			TextSegment s;
+			s.color = currentColor;
+			s.fontName = currentFont;
+			s.text = text;
+			segments.push_back(s);
 		}
 
-		// should never make it here
-		return textIndex;
+		return segments;
 	}
 
-	float Text::getTextWidth(const std::string& text)
+	float Text::getVerticalLineSpacing()
 	{
-		return mTextHelper->getTextWidth(text);
+		return mTextDesc->verticalLineSpacing;
 	}
 
-	bool Text::getVisible()
+	void Text::highlight()
 	{
-		return mVisible;
-	}
-
-	void Text::hide()
-	{
-		QuadArray::iterator it;
-		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
 		{
-			(*it)->setVisible(false);
+			(*it)->setHighlighted(true);
 		}
-
-		mVisible = false;
 	}
 
-	void Text::move(const Point& pixelDimensions)
+	void Text::highlight(unsigned int index)
 	{
-		QuadArray::iterator it;
-		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		if(mText.empty() || (index < 0) || (static_cast<int>(index) >= getLength()))
+			throw Exception(Exception::ERR_TEXT,
+					"Index out of bounds! index=" + Ogre::StringConverter::toString(index) + " Text Length=" + Ogre::StringConverter::toString(getLength()),
+					"Text::highlight");
+
+		int count = 0;
+		for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
 		{
-			Point curPos = (*it)->getPosition();
-			(*it)->setPosition(Point(curPos.x + pixelDimensions.x,curPos.y + pixelDimensions.y));
+			if(count == index)
+			{
+				(*it)->setHighlighted(true);
+				return;
+			}
 		}
-
-		mPixelDimensions.x += pixelDimensions.x;
-		mPixelDimensions.y += pixelDimensions.y;
 	}
 
-	void Text::onTextChanged(const TextEventArgs& e)
+	void Text::highlight(unsigned int startIndex, unsigned int endIndex)
 	{
-		EventHandlerArray::iterator it;
-		for( it = mOnTextChangedUserEventHandlers.begin(); it != mOnTextChangedUserEventHandlers.end(); ++it )
-			(*it)->execute(e);
-	}
+		if(mText.empty())
+			throw Exception(Exception::ERR_TEXT,"Indexes are out of bounds, text is empty!","Text::highlight");
 
-	void Text::clearSelection()
-	{
-		mCharacterBackground->setVisible(false);
-		for(unsigned int index = 0; index < static_cast<int>(mCharacters.size()); ++index )
-			mCharacters[index]->setColor(mColor);
+		if((startIndex < 0) || (endIndex < 0) || (static_cast<int>(startIndex) >= getLength()) || (static_cast<int>(endIndex) >= getLength()) || (startIndex > endIndex))
+			throw Exception(Exception::ERR_TEXT,
+					"Invalid Indices! Start=" + Ogre::StringConverter::toString(startIndex) + " End=" + Ogre::StringConverter::toString(startIndex) + " Text Length=" + Ogre::StringConverter::toString(getLength()),
+					"Text::highlight");
 
-		mSelectStart = -1;
-		mSelectEnd = -1;
-	}
-
-	void Text::clearCaption()
-	{
-		mCaption = "";
-		redraw();
-	}
-
-	void Text::selectCharacters()
-	{
-		selectCharacters(0,static_cast<unsigned int>(mCaption.length() - 1));
-	}
-
-	void Text::selectCharacters(unsigned int startIndex, unsigned int endIndex)
-	{
-		if( (mCaption.length() == 0) || (startIndex >= static_cast<unsigned int>(mCharacters.size())) )
-			return;
-
-		mSelectStart = startIndex;
-		mSelectEnd = endIndex;
-
-		if( endIndex >= mCaption.length() )
-			mSelectEnd = static_cast<unsigned int>(mCaption.length() - 1);
-
-		// Invert colors of selected characters, and make sure non selected characters are
-		// appropriately colored.
-		unsigned int index;
-		for( index = 0; index < static_cast<unsigned int>(mCharacters.size()); ++index )
+		unsigned int count = 0;
+		for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
 		{
-			if( (static_cast<int>(index) >= mSelectStart) && (static_cast<int>(index) <= mSelectEnd) )
-				mCharacters[index]->setColor(mSelectColor);
-			else
-				mCharacters[index]->setColor(mColor);
+			if(count > endIndex)
+				return;
+
+			if(count >= startIndex)
+				(*it)->setHighlighted(true);
+
+			++count;
 		}
+	}
 
-		// set dimensions of background selection quad.
-		Rect dimensions;
-
-		Quad* q;
-
-		// Get the dimensions of the starting position of the selection quad.
-		q = mCharacters[mSelectStart];
-		dimensions.x = q->getPosition().x;
-		dimensions.y = q->getPosition().y;
-
-		// Get the dimensions of the ending position of the selection quad.
-		if(mSelectEnd >= static_cast<int>(mCharacters.size()))
-			q = mCharacters[index - 1];
+	void Text::highlight(Ogre::UTFString::code_point c, bool allOccurrences)
+	{
+		Ogre::UTFString::size_type index = mText.find(c);
+		if(!allOccurrences)
+		{
+			if(index != Ogre::UTFString::npos)
+				highlight(static_cast<int>(index));
+		}
 		else
-			q = mCharacters[mSelectEnd];
-		dimensions.width = (q->getPosition().x + q->getSize().width) - dimensions.x;
-		dimensions.height = (q->getPosition().y + q->getSize().height) - dimensions.y;
+		{
+			int count = 0;
+			std::list<Character*>::iterator it = mCharacters.begin();
+			while((index != Ogre::UTFString::npos) && (it != mCharacters.end()))
+			{
+				if(count == index)
+				{
+					(*it)->setHighlighted(true);
+					index = mText.find(c,count + 1);
+				}
 
-		mCharacterBackground->setDimensions(dimensions);
-		mCharacterBackground->setVisible(true);
+				++it;
+				++count;
+			}
+		}
 	}
 
-	void Text::setCaption(const Ogre::UTFString& text, Layout l, Alignment a)
+	void Text::highlight(Ogre::UTFString s, bool allOccurrences)
 	{
-		if(text == mCaption)
+		Ogre::UTFString::size_type index = mText.find(s);
+		if(!allOccurrences)
+		{
+			if(index != Ogre::UTFString::npos)
+				highlight(static_cast<unsigned int>(index),static_cast<unsigned int>(index) + static_cast<unsigned int>(s.length()));
+		}
+		else
+		{
+			int count = 0;
+			int wordLength = static_cast<int>(s.length());
+			// Used to color only wordLength amount of characters
+			int temp = 0;
+			std::list<Character*>::iterator it = mCharacters.begin();
+
+			while((index != Ogre::UTFString::npos) && (it != mCharacters.end()))
+			{
+				// If we have passed start of instance s and have not colored wordLength characters,
+				// color character.
+				if((count >= static_cast<int>(index)) && (temp < wordLength))
+				{
+					(*it)->setHighlighted(true);
+					++temp;
+				}
+
+				// If we passed the first instance of s within mText, search for next instance
+				if(count > static_cast<int>(index + wordLength))
+				{
+					temp = 0;
+					index = mText.find(s,count + 1);
+				}
+
+				++it;
+				++count;
+			}
+		}
+	}
+
+	void Text::removeCharacter(unsigned int index)
+	{
+		if((index < 0) || (index > static_cast<unsigned int>(getLength())))
+			throw Exception(Exception::ERR_TEXT,"Index out of bounds! index=" + Ogre::StringConverter::toString(index) + " length=" + Ogre::StringConverter::toString(getLength()),"Text::removeCharacter");
+
+		// Remove from mText
+		mText.erase(index,1);
+
+		// Remove from mTextCharacters
+		int counter = 0;
+		for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
+		{
+			if(counter == index)
+			{
+				delete (*it);
+				mCharacters.erase(it);
+				break;
+			}
+
+			++counter;
+		}
+
+		mTextLinesDirty = true;
+	}
+
+	void Text::setAllottedWidth(float pixelWidth)
+	{
+		if(mTextDesc->allottedWidth == pixelWidth)
 			return;
 
-		// update Text properties
-		mLayout = l;
-		mCaption = text;
-		mAlignment = a;
+		mTextDesc->allottedWidth = pixelWidth;
 
-		// apply text properties
-		redraw();
-
-		TextEventArgs e(this);
-		e.captionChanged = true;
-		onTextChanged(e);
+		mTextLinesDirty = true;
 	}
 
-	void Text::setFont(const std::string& fontName)
+	void Text::setColor(const Ogre::ColourValue& cv)
 	{
-		mTextHelper->setFont(fontName);
-
-		// update visual displaying of text
-		redraw();
-
-		TextEventArgs e(this);
-		e.fontChanged = true;
-		onTextChanged(e);
+		for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
+			(*it)->colorValue = cv;
 	}
 
-	void Text::setQuadLayer(Quad::Layer layer)
+	void Text::setColor(const Ogre::ColourValue& cv, unsigned int index)
 	{
-		mLayer = layer;
+		if(mText.empty() || (index < 0) || (static_cast<int>(index) >= getLength()))
+			throw Exception(Exception::ERR_TEXT,
+					"Index out of bounds! index=" + Ogre::StringConverter::toString(index) + " Text Length=" + Ogre::StringConverter::toString(getLength()),
+					"Text::setColor");
 
-		mCharacterBackground->setLayer(mLayer);
-
-		QuadArray::iterator it;
-		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		int count = 0;
+		for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
 		{
-			(*it)->setLayer(mLayer);
+			if(count == index)
+			{
+				(*it)->colorValue = cv;
+				return;
+			}
+
+			++count;
 		}
 	}
 
-	void Text::setLineSpacing(float spacing)
+	void Text::setColor(const Ogre::ColourValue& cv, unsigned int startIndex, unsigned int endIndex)
 	{
-		mLineSpacing = spacing;
-		redraw();
-	}
+		if(mText.empty())
+			throw Exception(Exception::ERR_TEXT,"Indexes are out of bounds, text is empty!","Text::setColor");
 
-	void Text::setOffset(int offset)
-	{
-		mOffset = offset;
+		if((startIndex < 0) || (endIndex < 0) || (static_cast<int>(startIndex) >= getLength()) || (static_cast<int>(endIndex) >= getLength()) || (startIndex > endIndex))
+			throw Exception(Exception::ERR_TEXT,
+					"Invalid Indices! Start=" + Ogre::StringConverter::toString(startIndex) + " End=" + Ogre::StringConverter::toString(startIndex) + " Text Length=" + Ogre::StringConverter::toString(getLength()),
+					"Text::setColor");
 
-		mCharacterBackground->setOffset(mOffset-1);
-
-		QuadArray::iterator it;
-		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		unsigned int count = 0;
+		for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
 		{
-			(*it)->setOffset(mOffset);
+			if(count > endIndex)
+				return;
+
+			if(count >= startIndex)
+				(*it)->colorValue = cv;
+
+			++count;
 		}
 	}
 
-	void Text::setPosition(const Point& pixelDimensions)
+	void Text::setColor(const Ogre::ColourValue& cv, Ogre::UTFString::code_point c, bool allOccurrences)
 	{
-		Point origin(mPixelDimensions.x,mPixelDimensions.y);
-		QuadArray::iterator it;
-		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		Ogre::UTFString::size_type index = mText.find(c);
+		if(!allOccurrences)
 		{
-			Point curPos = (*it)->getPosition();
-			(*it)->setPosition(Point(pixelDimensions.x + (curPos.x - origin.x),pixelDimensions.y + (curPos.y - origin.y)));
+			if(index != Ogre::UTFString::npos)
+				setColor(cv,static_cast<int>(index));
+		}
+		else
+		{
+			int count = 0;
+			std::list<Character*>::iterator it = mCharacters.begin();
+			while((index != Ogre::UTFString::npos) && (it != mCharacters.end()))
+			{
+				if(count == index)
+				{
+					(*it)->colorValue = cv;
+					index = mText.find(c,count + 1);
+				}
+
+				++it;
+				++count;
+			}
+		}
+	}
+
+	void Text::setColor(const Ogre::ColourValue& cv, Ogre::UTFString s, bool allOccurrences)
+	{
+		Ogre::UTFString::size_type index = mText.find(s);
+		if(!allOccurrences)
+		{
+			if(index != Ogre::UTFString::npos)
+				setColor(cv,static_cast<unsigned int>(index),static_cast<unsigned int>(index) + static_cast<int>(s.length()));
+		}
+		else
+		{
+			int count = 0;
+			int wordLength = static_cast<int>(s.length());
+			// Used to color only wordLength amount of characters
+			int temp = 0;
+			std::list<Character*>::iterator it = mCharacters.begin();
+
+			while((index != Ogre::UTFString::npos) && (it != mCharacters.end()))
+			{
+				// If we have passed start of instance s and have not colored wordLength characters,
+				// color character.
+				if((count >= static_cast<int>(index)) && (temp < wordLength))
+				{
+					(*it)->colorValue = cv;
+					++temp;
+				}
+
+				// If we passed the first instance of s within mText, search for next instance
+				if(count > static_cast<int>(index + wordLength))
+				{
+					temp = 0;
+					index = mText.find(s,count + 1);
+				}
+
+				++it;
+				++count;
+			}
+		}
+	}
+
+	void Text::setFont(const Ogre::String& fontName)
+	{
+		Ogre::FontPtr fp = static_cast<Ogre::FontPtr>(Ogre::FontManager::getSingleton().getByName(fontName));
+
+		for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
+			(*it)->setFont(fp);
+
+		mTextLinesDirty = true;
+	}
+
+	void Text::setFont(const Ogre::String& fontName, unsigned int index)
+	{
+		if(mText.empty() || (index < 0) || (static_cast<int>(index) >= getLength()))
+			throw Exception(Exception::ERR_TEXT,
+					"Index out of bounds! index=" + Ogre::StringConverter::toString(index) + " Text Length=" + Ogre::StringConverter::toString(getLength()),
+					"Text::setFont");
+
+		Ogre::FontPtr fp = static_cast<Ogre::FontPtr>(Ogre::FontManager::getSingleton().getByName(fontName));
+
+		int count = 0;
+		for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
+		{
+			if(count == index)
+			{
+				(*it)->setFont(fp);
+				break;
+			}
+
+			++count;
 		}
 
-		mPixelDimensions.x = pixelDimensions.x;
-		mPixelDimensions.y = pixelDimensions.y;
+		mTextLinesDirty = true;
 	}
 
-	void Text::setColor(Ogre::ColourValue color)
+	void Text::setFont(const Ogre::String& fontName, unsigned int startIndex, unsigned int endIndex)
 	{
-		mColor = color;
+		if(mText.empty())
+			throw Exception(Exception::ERR_TEXT,"Indexes are out of bounds, text is empty!","Text::setFont");
 
-		QuadArray::iterator it;
-		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		if((startIndex < 0) || (endIndex < 0) || (static_cast<int>(startIndex) >= getLength()) || (static_cast<int>(endIndex) >= getLength()) || (startIndex > endIndex))
+			throw Exception(Exception::ERR_TEXT,
+					"Invalid Indices! Start=" + Ogre::StringConverter::toString(startIndex) + " End=" + Ogre::StringConverter::toString(startIndex) + " Text Length=" + Ogre::StringConverter::toString(getLength()),
+					"Text::setFont");
+
+		Ogre::FontPtr fp = static_cast<Ogre::FontPtr>(Ogre::FontManager::getSingleton().getByName(fontName));
+
+		unsigned int count = 0;
+		for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
 		{
-			(*it)->setColor(color,color);
+			if(count > endIndex)
+				break;
+
+			if(count >= startIndex)
+				(*it)->setFont(fp);
+
+			++count;
 		}
 
-		TextEventArgs e(this);
-		e.colorChanged = true;
-		onTextChanged(e);
+		mTextLinesDirty = true;
 	}
 
-	void Text::setGUIManager(GUIManager* gm)
+	void Text::setFont(const Ogre::String& fontName, Ogre::UTFString::code_point c, bool allOccurrences)
 	{
-		mGUIManager = gm;
-
-		mCharacterBackground->setGUIManager(mGUIManager);
-
-		QuadArray::iterator it;
-		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
-			(*it)->setGUIManager(mGUIManager);
-	}
-
-	void Text::setSkin(const std::string& skin)
-	{
-		SkinSet* ss = SkinSetManager::getSingleton().getSkinSet(skin);
-		mCharacterBackground->setMaterial(ss->getMaterialName());
-		mCharacterBackground->setTextureCoordinates(ss->getTextureCoordinates(skin + ".textselection" + ss->getImageExtension()));
-	}
-
-	void Text::show()
-	{
-		QuadArray::iterator it;
-		for( it = mCharacters.begin(); it != mCharacters.end(); ++it )
+		Ogre::UTFString::size_type index = mText.find(c);
+		if(!allOccurrences)
 		{
-			(*it)->setVisible(true);
+			if(index != Ogre::UTFString::npos)
+				setFont(fontName,static_cast<int>(index));
+		}
+		else
+		{
+			Ogre::FontPtr fp = static_cast<Ogre::FontPtr>(Ogre::FontManager::getSingleton().getByName(fontName));
+
+			int count = 0;
+			std::list<Character*>::iterator it = mCharacters.begin();
+			while((index != Ogre::UTFString::npos) && (it != mCharacters.end()))
+			{
+				if(count == index)
+				{
+					(*it)->setFont(fp);
+					index = mText.find(c,count + 1);
+				}
+
+				++it;
+				++count;
+			}
+
+			mTextLinesDirty = true;
+		}
+	}
+
+	void Text::setFont(const Ogre::String& fontName, Ogre::UTFString s, bool allOccurrences)
+	{
+		Ogre::UTFString::size_type index = mText.find(s);
+		if(!allOccurrences)
+		{
+			if(index != Ogre::UTFString::npos)
+				setFont(fontName,static_cast<unsigned int>(index),static_cast<unsigned int>(index) + static_cast<unsigned int>(s.length()));
+		}
+		else
+		{
+			Ogre::FontPtr fp = static_cast<Ogre::FontPtr>(Ogre::FontManager::getSingleton().getByName(fontName));
+
+			int count = 0;
+			int wordLength = static_cast<int>(s.length());
+			// Used to color only wordLength amount of characters
+			int temp = 0;
+			std::list<Character*>::iterator it = mCharacters.begin();
+
+			while((index != Ogre::UTFString::npos) && (it != mCharacters.end()))
+			{
+				// If we have passed start of instance s and have not colored wordLength characters,
+				// color character.
+				if((count >= static_cast<int>(index)) && (temp < wordLength))
+				{
+					(*it)->setFont(fp);
+					++temp;
+				}
+
+				// If we passed the first instance of s within mText, search for next instance
+				if(count > static_cast<int>(index + wordLength))
+				{
+					temp = 0;
+					index = mText.find(s,count + 1);
+				}
+
+				++it;
+				++count;
+			}
+
+			mTextLinesDirty = true;
+		}
+	}
+
+	void Text::setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv)
+	{
+		// set mText to s
+		mText = s;
+
+		// cleanup mTextCharacters, re-populate
+		for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
+			delete (*it);
+		mCharacters.clear();
+
+		int index = 0;
+		int length = static_cast<int>(mText.length());
+		while(index < length)
+		{
+			mCharacters.push_back(new Character(mText[index],fp,cv));
+
+			++index;
 		}
 
-		mVisible = true;
+		mTextLinesDirty = true;
+	}
+
+	void Text::setVerticalLineSpacing(float distance)
+	{
+		mTextDesc->verticalLineSpacing = distance;
+
+		mTextLinesDirty = true;
+	}
+
+	void Text::update()
+	{
+		_checkTextLines();
 	}
 }

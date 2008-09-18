@@ -47,20 +47,20 @@ namespace Caelum
 
         // Generate dome entity.
         GeometryFactory::generateSphericDome (SPHERIC_DOME_NAME, 32);
-        Ogre::Entity *ent = sceneMgr->createEntity ("Dome", SPHERIC_DOME_NAME);
-        ent->setMaterialName (mMaterial->getName());
-        ent->setRenderQueueGroup (CAELUM_RENDER_QUEUE_SKYDOME);
-        ent->setCastShadows (false);
+        mEntity = sceneMgr->createEntity ("Dome", SPHERIC_DOME_NAME);
+        mEntity->setMaterialName (mMaterial->getName());
+        mEntity->setRenderQueueGroup (CAELUM_RENDER_QUEUE_SKYDOME);
+        mEntity->setCastShadows (false);
 
         mNode = caelumRootNode->createChildSceneNode ();
-        mNode->attachObject (ent);
+        mNode->attachObject (mEntity);
     }
 
     SkyDome::~SkyDome () {
         if (mNode) {
             // Detach and destroy attached entity.
-            Ogre::Entity *ent = static_cast<Ogre::Entity *>(mNode->detachObject ("Dome"));
-            ent->_getManager ()->destroyEntity (ent);
+            mNode->detachObject (mEntity);
+            mEntity->_getManager ()->destroyEntity (mEntity);
 
             // Destroy the node
             static_cast<Ogre::SceneNode *>(mNode->getParent ())->removeAndDestroyChild (mNode->getName ());

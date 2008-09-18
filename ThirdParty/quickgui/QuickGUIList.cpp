@@ -1,314 +1,462 @@
-#include "QuickGUIPrecompiledHeaders.h"
-
 #include "QuickGUIList.h"
 #include "QuickGUIManager.h"
-#include "QuickGUIMouseCursor.h"
+#include "QuickGUISkinDefinitionManager.h"
+#include "QuickGUIWidgetFactoryManager.h"
 
 namespace QuickGUI
 {
-	List::List(const std::string& name, GUIManager* gm) :
-		Widget(name,gm),
-		mScrollPane(0),
-		mScrollingAllowed(false),
-		mItemHeight(20),
-		mAutoSizeListItems(true),
-		mVPixelPadHeight(6)
+	const Ogre::String List::BACKGROUND = "background";
+
+	void List::registerSkinDefinition()
 	{
-		mWidgetType = TYPE_LIST;
-		mSkinComponent = ".list";
-		mSize = Size(100,100);
+		SkinDefinition* d = new SkinDefinition("List");
+		d->defineSkinElement(BACKGROUND);
+		d->defineComponent(HSCROLLBAR);
+		d->defineComponent(VSCROLLBAR);
+		d->definitionComplete();
 
-		mTextHelper = new TextHelper();
+		SkinDefinitionManager::getSingleton().registerSkinDefinition("List",d);
+	}
 
-		addEventHandler(EVENT_CHILD_ADDED,&List::onChildAdded,this);
-		addEventHandler(EVENT_CHILD_REMOVED,&List::onChildRemoved,this);
+	ListDesc::ListDesc() :
+		ContainerWidgetDesc()
+	{
+		listItemHeight = 25;
+		supportMultiSelect = false;
+	}
 
-		mItems.clear();
+	void ListDesc::serialize(SerialBase* b)
+	{
+		ContainerWidgetDesc::serialize(b);
+
+		b->IO("ListItemHeight",&listItemHeight);
+		b->IO("MultiSelect",&supportMultiSelect);
+	}
+
+	List::List(const Ogre::String& name) :
+		ContainerWidget(name),
+		mPrevSelectedIndex(0)
+	{
+		mSkinElementName = BACKGROUND;
+
+		addWidgetEventHandler(WIDGET_EVENT_CLIENTSIZE_CHANGED,&List::onClientSizeChanged,this);
 	}
 
 	List::~List()
 	{
-		mScrollPane = NULL;
-		delete mTextHelper;
-
-		mItems.clear();
 	}
 
-	int List::_getNextInstanceCounter()
+	void List::_clearSelection()
 	{
+		for(std::list<ListItem*>::iterator it = mSelectedItems.begin(); it != mSelectedItems.end(); ++it)
+		{
+			(*it)->setSelected(false);
+		}
+		mSelectedItems.clear();
+	}
+
+	unsigned int List::_getItemIndex(ListItem* li)
+	{
+		int count = 0;
+		for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
+		{
+			if(li == (*it))
+				return count;
+
+			++count;
+		}
+
+		return 0;
+	}
+
+	void List::_initialize(WidgetDesc* d)
+	{
+		ListDesc* ld = dynamic_cast<ListDesc*>(d);
+
+		ContainerWidget::_initialize(d);
+
+		mDesc = dynamic_cast<ListDesc*>(mWidgetDesc);
+
+		setListItemHeight(ld->listItemHeight);
+		setMultiSelect(ld->supportMultiSelect);
+
+		setSkinType(ld->skinTypeName);
+	}
+
+	Widget* List::factory(const Ogre::String& widgetName)
+	{
+		Widget* newWidget = new List(widgetName);
+		
+		newWidget->_createDescObject("ListDesc");
+
+		return newWidget;
+	}
+
+	void List::addListEventHandler(ListEvent EVENT, EventHandlerSlot* function)
+	{
+		mListEventHandlers[EVENT].push_back(function);
+	}
+
+	ListItem* List::addItem(ListItemDesc& d)
+	{
+		return addItem(-1,d);
+	}
+
+	ListItem* List::addItem(int index, ListItemDesc& d)
+	{
+		d.horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
+
+		ListItem* newListItem = dynamic_cast<ListItem*>(mDesc->guiManager->createWidget(d.getWidgetClass(),d));
+
+		newListItem->setHeight(mDesc->listItemHeight);
+		newListItem->setWidth(mClientDimensions.size.width);
+
+		addChild(newListItem);
+
 		int counter = 0;
-		while(mItems.find(counter) != mItems.end())
-			++counter;
-
-		return counter;
-	}
-
-	MenuLabel* List::addMenuLabel()
-	{
-		int counter = _getNextInstanceCounter();
-		// Add items to the end of the list
-		Point p(0,(static_cast<int>(mItems.size()) * mItemHeight));
-		Size s(mSize.width,mItemHeight);
-
-		std::string name = mInstanceName + ".Item" + Ogre::StringConverter::toString(counter);
-
-		MenuLabel* newMenuLabel = dynamic_cast<MenuLabel*>(_createChild(mInstanceName+".ChildMenuLabel" + Ogre::StringConverter::toString(mItems.size()),TYPE_MENULABEL));
-		newMenuLabel->setSize(s);
-		newMenuLabel->setPosition(p);
-		newMenuLabel->setAutoSize(false);
-		newMenuLabel->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
-		newMenuLabel->setUseTransparencyPicking(false);
-
-		mItems[counter] = newMenuLabel;
-
-		return newMenuLabel;
-	}
-
-	TextBox* List::addTextBox()
-	{
-		int counter = _getNextInstanceCounter();
-		// Add items to the end of the list
-		Point p(0,(static_cast<int>(mItems.size()) * mItemHeight));
-		Size s(mSize.width,mItemHeight);
-
-		std::string name = mInstanceName+".Item"+Ogre::StringConverter::toString(counter);
-
-		TextBox* newTextBox = dynamic_cast<TextBox*>(_createChild(mInstanceName+".ChildTextBox" + Ogre::StringConverter::toString(mItems.size()),TYPE_TEXTBOX));
-		newTextBox->setSize(s);
-		newTextBox->setUseBorders(false);
-		newTextBox->hideSkin();
-		newTextBox->setPosition(p);
-		newTextBox->setAutoSize(false);
-		newTextBox->setHorizontalAnchor(ANCHOR_HORIZONTAL_LEFT_RIGHT);
-		newTextBox->setUseTransparencyPicking(false);
-
-		mItems[counter] = newTextBox;
-
-		return newTextBox;
-	}
-
-	void List::allowScrolling(bool allow)
-	{
-		mScrollingAllowed = allow;
-
-		if(mScrollingAllowed)
+		bool added = false;
+		for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
 		{
-			if(mScrollPane == NULL)
+			if(counter == index)
 			{
-				mScrollPane = dynamic_cast<ScrollPane*>(_createComponent(mInstanceName+".ScrollPane",TYPE_SCROLL_PANE));
-				mScrollPane->setSize(mSize);
-
-				mScrollPane->removeChild(mScrollPane->mRightBar);
-				// store reference to the scroll bar
-				mRightScrollBar = mScrollPane->mRightBar;
-				addChild(mRightScrollBar);
-				mRightScrollBar->setPosition(mSize.width - 20,0);
-				
-				mScrollPane->removeChild(mScrollPane->mBottomBar);
-				// store reference to the scroll bar
-				mBottomScrollBar = mScrollPane->mBottomBar;
-				addChild(mBottomScrollBar);
-				mBottomScrollBar->setPosition(0,mSize.height - 20);
-
-				mScrollPane->manageWidgets();
+				mListItems.insert(it,newListItem);
+				added = true;
 			}
 		}
-		else
+		// If index was invalid, add to end of list.
+		if(!added)
+			mListItems.push_back(newListItem);
+
+		// Set all positions of ListItems.
+		float y = 0;
+		for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
 		{
-			if(mScrollPane != NULL)
+			(*it)->setPosition(Point(0,y));
+
+			y += mDesc->listItemHeight;
+		}
+
+		return newListItem;
+	}
+
+	void List::clearSelection()
+	{
+		_clearSelection();
+
+		WidgetEventArgs args(this);
+		fireListEvent(LIST_EVENT_SELECTION_CHANGED,args);
+	}
+
+	void List::deselectItem(unsigned int index)
+	{
+		if(index >= mListItems.size())
+			return;
+
+		ListItem* deselected = NULL;
+
+		unsigned int count = 0;
+		for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
+		{
+			if(count == index)
 			{
-				delete mScrollPane;
-				mScrollPane = NULL;
+				deselected = (*it);
+				(*it)->setSelected(false);
+				break;
+			}
 
-				removeAndDestroyChild(mRightScrollBar);
-				mRightScrollBar = NULL;
+			++count;
+		}
 
-				removeAndDestroyChild(mBottomScrollBar);
-				mBottomScrollBar = NULL;
+		if(deselected == NULL)
+			return;
+
+		for(std::list<ListItem*>::iterator it = mSelectedItems.begin(); it != mSelectedItems.end(); ++it)
+		{
+			if((*it) == deselected)
+			{
+				mSelectedItems.erase(it);
+				break;
 			}
 		}
+
+		WidgetEventArgs args(this);
+		fireListEvent(LIST_EVENT_SELECTION_CHANGED,args);
 	}
 
-	void List::clear()
+	bool List::fireListEvent(ListEvent e, EventArgs& args)
 	{
-		std::map<int,Widget*>::iterator it;
-		for( it = mItems.begin(); it != mItems.end(); ++it )
-			mGUIManager->destroyWidget((*it).second);
-		mItems.clear();
+		if(mListEventHandlers[e].empty())
+			return false;
+
+		// Execute registered handlers
+		std::vector<EventHandlerSlot*>* userEventHandlers = &(mListEventHandlers[e]);
+		for(std::vector<EventHandlerSlot*>::iterator it = userEventHandlers->begin(); it != userEventHandlers->end(); ++it )
+			(*it)->execute(args);
+
+		return true;
 	}
 
-	bool List::getAutoSizeListItems()
+	Ogre::String List::getClass()
 	{
-		return mAutoSizeListItems;
+		return "List";
 	}
 
-	Widget* List::getItem(unsigned int index)
+	ListItem* List::getItem(unsigned int index)
 	{
-		if( index >= mItems.size() )
+		if(index >= mListItems.size())
 			return NULL;
 
-		return mItems[index];
-	}
-
-	int List::getItemIndex(Widget* w)
-	{
-		std::string name = w->getInstanceName();
-
-		int counter = 0;
-		std::map<int,Widget*>::iterator it;
-		for( it = mItems.begin(); it != mItems.end(); ++it )
+		unsigned int count = 0;
+		for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
 		{
-			if( name == (*it).second->getInstanceName() )
-				return counter;
+			if(count == index)
+				return (*it);
 
-			++counter;
+			++count;
 		}
 
-		return -1;
+		return NULL;
+	}
+
+	float List::getListItemHeight()
+	{
+		return mDesc->listItemHeight;
+	}
+
+	bool List::getMultiSelect()
+	{
+		return mDesc->supportMultiSelect;
 	}
 
 	int List::getNumberOfItems()
 	{
-		return static_cast<int>(mItems.size());
+		return static_cast<int>(mListItems.size());
 	}
 
-	ScrollPane* List::getScrollPane()
+	std::list<ListItem*> List::getSelection()
 	{
-		return mScrollPane;
+		return mSelectedItems;
 	}
 
-	int List::getVerticalPixelPadHeight()
+	void List::onClientSizeChanged(const EventArgs& args)
 	{
-		return mVPixelPadHeight;
+		for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
+		{
+			(*it)->setWidth(mClientDimensions.size.width);
+		}
 	}
 
-	void List::onChildAdded(const EventArgs& args)
+	void List::onDraw()
 	{
-		if(mScrollPane != NULL)
-			mScrollPane->onChildAddedToParent(args);
+		Brush* brush = Brush::getSingletonPtr();
+
+		brush->setFilterMode(mDesc->brushFilterMode);
+
+		SkinType* st = mSkinType;
+		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+
+		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
 	}
 
-	void List::onChildRemoved(const EventArgs& args)
+	void List::selectItem(const MouseEventArgs& mea)
 	{
-		if(mScrollPane != NULL)
-			mScrollPane->onChildRemovedFromParent(args);
+		ListItem* li = dynamic_cast<ListItem*>(mea.widget);
+
+		// Single Selection
+		if(!mDesc->supportMultiSelect)
+		{
+			bool selected = li->getSelected();
+
+			_clearSelection();
+
+			li->setSelected(!selected);
+
+			if(li->getSelected())
+				mSelectedItems.push_back(li);
+			else
+				li->mSkinElementName = ListItem::OVER;
+		}
+		// Multi Selection
+		else
+		{
+			bool ctrlDown = (mea.keyModifiers & CTRL) > 0;
+			bool shiftDown = (mea.keyModifiers & SHIFT) > 0;
+
+			if(ctrlDown)
+			{
+				if(shiftDown)
+				{
+					// Select everything in the range that is unselected
+					unsigned int currentIndex = _getItemIndex(li);
+					if(currentIndex < mPrevSelectedIndex)
+					{
+						unsigned int count = 0;
+						for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
+						{
+							if(count > mPrevSelectedIndex)
+								break;
+
+							if(count >= currentIndex)
+							{
+								mSelectedItems.push_back(*it);
+								(*it)->setSelected(true);
+							}
+
+							++count;
+						}
+					}
+					else
+					{
+						unsigned int count = 0;
+						for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
+						{
+							if(count > currentIndex)
+								break;
+
+							if(count >= mPrevSelectedIndex)
+							{
+								mSelectedItems.push_back(*it);
+								(*it)->setSelected(true);
+							}
+
+							++count;
+						}
+					}
+				}
+				else
+				{
+					// toggle selection
+					li->setSelected(!li->getSelected());
+
+					// if selected, add to list
+					if(li->getSelected())
+						mSelectedItems.push_back(li);
+					// otherwise remove from selected list
+					else
+					{
+						for(std::list<ListItem*>::iterator it = mSelectedItems.begin(); it != mSelectedItems.end(); ++it)
+						{
+							if(li == (*it))
+							{
+								mSelectedItems.erase(it);
+								break;
+							}
+						}
+
+						li->mSkinElementName = ListItem::OVER;
+					}
+				}
+			}
+			else
+			{
+				if(shiftDown)
+				{
+					_clearSelection();
+
+					// Select everything in the range that is unselected
+					unsigned int currentIndex = _getItemIndex(li);
+					if(currentIndex < mPrevSelectedIndex)
+					{
+						unsigned int count = 0;
+						for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
+						{
+							if(count > mPrevSelectedIndex)
+								break;
+
+							if(count >= currentIndex)
+							{
+								mSelectedItems.push_back(*it);
+								(*it)->setSelected(true);
+							}
+
+							++count;
+						}
+					}
+					else
+					{
+						unsigned int count = 0;
+						for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
+						{
+							if(count > currentIndex)
+								break;
+
+							if(count >= mPrevSelectedIndex)
+							{
+								mSelectedItems.push_back(*it);
+								(*it)->setSelected(true);
+							}
+
+							++count;
+						}
+					}
+				}
+				else
+				{
+					bool selected = li->getSelected();
+
+					_clearSelection();
+
+					// toggle selection
+					li->setSelected(!selected);
+
+					// if selected, add to list
+					if(li->getSelected())
+						mSelectedItems.push_back(li);
+					else
+						li->mSkinElementName = ListItem::OVER;
+				}
+			}
+		}
+
+		mPrevSelectedIndex = _getItemIndex(li);
+
+		redraw();
+
+		WidgetEventArgs args(this);
+		fireListEvent(LIST_EVENT_SELECTION_CHANGED,args);
 	}
 
-	void List::onSizeChanged(const EventArgs& args)
+	void List::selectItem(unsigned int index)
 	{
-		Widget::onSizeChanged(args);
+		_clearSelection();
 
-		if(mScrollPane != NULL)
-			mScrollPane->onParentSizeChanged(args);
-	}
-
-	void List::removeItem(unsigned int index)
-	{
-		if( index >= mItems.size() )
+		if(index >= mListItems.size())
 			return;
 
-		Widget* w = NULL;
-
-		unsigned int counter = 0;
-		std::map<int,Widget*>::iterator it;
-		for( it = mItems.begin(); it != mItems.end(); ++it )
+		unsigned int count = 0;
+		for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
 		{
-			if( counter == index )
+			if(count == index)
 			{
-				w = (*it).second;
-				mItems.erase(it);
-				break;
+				(*it)->setSelected(true);
+
+				WidgetEventArgs args(this);
+				fireListEvent(LIST_EVENT_SELECTION_CHANGED,args);
+
+				return;
 			}
 
-			++counter;
+			++count;
 		}
+	}
 
-		if(w != NULL)
+	void List::setMultiSelect(bool MultiSelect)
+	{
+		mDesc->supportMultiSelect = MultiSelect;
+	}
+
+	void List::setListItemHeight(float height)
+	{
+		mDesc->listItemHeight = height;
+
+		float y = 0;
+		for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
 		{
-			for( ; counter < mItems.size(); ++counter )
-			{
-				(*it).second->setYPosition(counter * mItemHeight);
-			}
+			(*it)->setPosition(Point(0,y));
+			(*it)->setHeight(mDesc->listItemHeight);
 
-			// Remove child so that ScrollPane, if exists, will be notified.
-			// Make sure this is done after all remaining items are correctly positioned,
-			// since ScrollPane will adjust dimensions and scrollbars according to managed widgets.
-			removeChild(w);
-			mGUIManager->destroyWidget(w);
+			y += mDesc->listItemHeight;
 		}
-	}
-
-	bool List::scrollingAllowed()
-	{
-		return mScrollingAllowed;
-	}
-
-	void List::setAutoSizeListItems(bool autoSize)
-	{
-		mAutoSizeListItems = autoSize;
-
-		if(mAutoSizeListItems)
-		{
-			setItemPixelHeight(mTextHelper->getGlyphHeight());
-			mAutoSizeListItems = true;
-
-			if(mScrollPane != NULL)
-				mScrollPane->_determinePaneBounds();
-		}
-	}
-
-	void List::setFont(const std::string& fontScriptName, bool recursive)
-	{
-		if(fontScriptName == "")
-			return;
-
-		Widget::setFont(fontScriptName,recursive);
-		mTextHelper->setFont(fontScriptName);
-
-		if(mAutoSizeListItems)
-		{
-			setItemPixelHeight(mTextHelper->getGlyphHeight() + mVPixelPadHeight);
-			mAutoSizeListItems = true;
-
-			if(mScrollPane != NULL)
-				mScrollPane->_determinePaneBounds();
-		}
-	}
-
-	void List::setItemPixelHeight(const float& heightInPixels)
-	{
-		mItemHeight = heightInPixels;
-		mAutoSizeListItems = false;
-
-		float counter = 0;
-		std::map<int,Widget*>::iterator it;
-		for( it = mItems.begin(); it != mItems.end(); ++it )
-		{
-			(*it).second->setYPosition(mItemHeight * counter);
-			(*it).second->setHeight(mItemHeight);
-			++counter;
-		}
-	}
-
-	void List::setVerticalPixelPadHeight(unsigned int height)
-	{
-		mVPixelPadHeight = height;
-
-		if(mAutoSizeListItems)
-		{
-			setItemPixelHeight(mItemHeight + mVPixelPadHeight);
-			mAutoSizeListItems = true;
-
-			if(mScrollPane != NULL)
-				mScrollPane->_determinePaneBounds();
-		}
-	}
-
-	void List::show()
-	{
-		Widget::show();
-
-		if(mScrollPane != NULL)
-			mScrollPane->_syncBarWithParentDimensions();
 	}
 }

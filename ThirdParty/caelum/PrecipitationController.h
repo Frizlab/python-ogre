@@ -25,26 +25,31 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 namespace Caelum
 {
-	struct PrecipitationParams
+    /** Preset parameters for a certain type of precipitation.
+     */
+	struct PrecipitationPresetParams
 	{
-		Ogre::ColourValue mColor;
-		float mSpeed;
-		Ogre::String mName;
+		Ogre::ColourValue Color;
+        Ogre::Real Speed;
+		Ogre::String Name;
 	};
 
+    /** An enumeration of the available precipitation presets.
+     *  @see PrecipitationController::getPrecipitationPreset
+     */
 	enum PrecipitationType
 	{
-		PRECIPITATION_DRIZZLE		= 0,
-		PRECIPITATION_RAIN			= 1,
-		PRECIPITATION_SNOW			= 2,
-		PRECIPITATION_SNOWGRAINS	= 3,
-		PRECIPITATION_ICECRYSTALS	= 4,
-		PRECIPITATION_ICEPELLETS	= 5,
-		PRECIPITATION_HAIL			= 6,
-		PRECIPITATION_SMALLHAIL		= 7,
-	};
+		PRECTYPE_DRIZZLE		= 0,
+		PRECTYPE_RAIN			= 1,
+		PRECTYPE_SNOW			= 2,
+		PRECTYPE_SNOWGRAINS	    = 3,
+		PRECTYPE_ICECRYSTALS	= 4,
+		PRECTYPE_ICEPELLETS	    = 5,
+		PRECTYPE_HAIL			= 6,
+		PRECTYPE_SMALLHAIL		= 7,
 
-    class PrecipitationInstance;
+		PRECTYPE_CUSTOM		    = 8,
+	};
 
     /** Compositor-based precipitation controller.
      *  This class will add and control precipitation controllers to viewports.
@@ -55,13 +60,18 @@ namespace Caelum
 	class CAELUM_EXPORT PrecipitationController
 	{
 	private:
+        friend class PrecipitationInstance;
+
 		Ogre::SceneManager *mSceneMgr;
 		Ogre::Vector3 mWindSpeed;
-		Real mIntensity;
-		Real mSpeed;
+		Ogre::Real mIntensity;
+		Ogre::Real mSpeed;
 		Ogre::ColourValue mColor;
-		PrecipitationType mType;
+		PrecipitationType mPresetType;
 		Ogre::String mTextureName;
+
+        Ogre::Real mAutoDisableThreshold;
+        bool mHardDisableCompositor;
 
 		Ogre::ColourValue mSceneColor;
 		Real mInternalTime;
@@ -70,9 +80,6 @@ namespace Caelum
         Real mSecondsSinceLastFrame;
         inline Real getSecondsSinceLastFrame() { return mSecondsSinceLastFrame; }
 
-        friend class PrecipitationInstance;
-
-	public:
         /// Called to enforce parameters on a composing material
     	void _updateMaterialParams(
                 const Ogre::MaterialPtr& mat,
@@ -86,36 +93,58 @@ namespace Caelum
         /// Name of the compositor material.
         static const String MATERIAL_NAME;
 
-		// Wind speed and direction
-		void setWindSpeed(const Ogre::Vector3 &value);
-		const Ogre::Vector3 getWindSpeed();
+        /// Check if a preset type is valid.
+		static bool isPresetType (PrecipitationType value);
 
-		// Texture name
+        /// Get preset parameters for a certain type of precipitation.
+		static const PrecipitationPresetParams& getPresetParams (PrecipitationType value);
+
+        /// Set all parameters at once.
+		void setParams (const PrecipitationPresetParams& params);
+
+		/// Quickly set a certain preset type of precipitation.
+        void setPresetType (PrecipitationType value);
+
+        /** Get the preset type.
+         *  Will return PRECIPITATION_CUSTOM if you modify parameters manually
+         *  after setPresetType.
+         */
+        PrecipitationType getPresetType () const;
+
+		// Texture name, part of a preset
 		void setTextureName(Ogre::String textureName);
 		Ogre::String getTextureName();
 
-		// Precipitation intensity
-		void setIntensity(Real value);
-		Real getIntensity();
+		// Precipitation color. Part of a preset
+		void setColor(Ogre::ColourValue color);
+		Ogre::ColourValue getColor();
 
-		// Precipitation type
-		void setType(PrecipitationType value);
-		PrecipitationType getType();
-
-		// Precipitation speed (affects direction)
+		// Precipitation speed (affects direction). Part of a preset
 		void setSpeed(Real value);
 		Real getSpeed();
 
-		// Precipitation color
-		void setColor(Ogre::ColourValue color);
-		Ogre::ColourValue getColor();
+		// Precipitation intensity.
+		void setIntensity(Real value);
+		Real getIntensity();
+
+		// Wind speed and direction
+		void setWindSpeed(const Ogre::Vector3 &value);
+		const Ogre::Vector3 getWindSpeed();
 
 		/// Set manual camera speed for all viewports.
 		void setManualCameraSpeed(const Ogre::Vector3 &value);
 
         /// Set auto camera speed everywhere.
 		void setAutoCameraSpeed();
-		
+
+        /** Automatically disable compositors when intensity is low.
+         *  A negative value always enable the compositor.
+         *  @note: Ogre::CompositorInstance allocates/frees resources when
+         *         enabling or disabling. That is expensive.
+         */
+        inline void setAutoDisableThreshold (Real value) { mAutoDisableThreshold = value; }
+        inline Real getAutoDisableThreshold () const { return mAutoDisableThreshold; }
+
         /** Update the the precipitation controller.
          *  @param secondsSinceLastFrame Number of secods since the last frame.
          */
@@ -149,6 +178,8 @@ namespace Caelum
     class PrecipitationInstance: private Ogre::CompositorInstance::Listener
     {
     private:
+        friend class PrecipitationController;
+
         PrecipitationController* mParent;
         Ogre::Viewport* mViewport;
         Ogre::CompositorInstance* mCompInst;
@@ -159,6 +190,16 @@ namespace Caelum
 
         virtual void notifyMaterialSetup(uint pass_id, Ogre::MaterialPtr &mat);
         virtual void notifyMaterialRender(uint pass_id, Ogre::MaterialPtr &mat);
+
+        // Add remove the compositors. Do nothing if already added/removed
+        void createCompositor ();
+        void destroyCompositor ();
+
+        // Check if the compositor should be enabled
+        bool shouldBeEnabled () const;
+
+        /// Called from the parent's update.
+        void _update();
 
     public:
         inline Ogre::Viewport* getViewport() const { return mViewport; }

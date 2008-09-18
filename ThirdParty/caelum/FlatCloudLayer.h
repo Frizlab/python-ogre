@@ -156,6 +156,12 @@ namespace Caelum
 
         /// @see setCloudBlendPos
         Ogre::Real getCloudBlendPos () const;
+
+    public:
+        void setQueryFlags (uint flags) { mEntity->setQueryFlags (flags); }
+        uint getQueryFlags () const { return mEntity->getQueryFlags (); }
+        void setVisibilityFlags (uint flags) { mEntity->setVisibilityFlags (flags); }
+        uint getVisibilityFlags () const { return mEntity->getVisibilityFlags (); }
 	};
 }
 

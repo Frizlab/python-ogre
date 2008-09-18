@@ -31,21 +31,21 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include <memory>
 
 // Define the dll export qualifier if compiling for Windows
-// #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 // 	#ifdef CAELUM_LIB
 // 		#define CAELUM_EXPORT __declspec (dllexport)
 // 	#else
 // 		#ifdef __MINGW32__
-// 			#define CAELUM_EXPORT
+			#define CAELUM_EXPORT
 // 		#else
 // 			#define CAELUM_EXPORT __declspec (dllimport)
 // 		#endif
 // 	#endif
-// #elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-// 	#define CAELUM_EXPORT __attribute__ ((visibility("default")))
-// #else
+#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+	#define CAELUM_EXPORT __attribute__ ((visibility("default")))
+#else
 	#define CAELUM_EXPORT
-// #endif
+#endif
 
 // Define the version code
 #define CAELUM_VERSION_MAIN 0
@@ -53,6 +53,25 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #define CAELUM_VERSION_TER 0
 #define CAELUM_VERSION = (CAELUM_VERSION_MAIN << 16) | (CAELUM_VERSION_SEC << 8) | CAELUM_VERSION_TER
 
+/// @file
+
+/** @mainpage
+ *
+ *  %Caelum is an Ogre add-on for atmospheric rendering. It is composed of a
+ *  number of small mostly self-contained components and a big
+ *  Caelum::CaelumSystem class which ties them all together in an easy-to-use
+ *  way.
+ *
+ *  For more information see the great %Caelum thread in the ogre forum:
+ *  http://www.ogre3d.org/phpBB2/viewtopic.php?t=24961&postorder=desc
+ */
+
+/** Caelum namespace
+ *
+ *  All of %Caelum is inside this namespace (except for macros).
+ *
+ *  @note: This was caelum with a lowercase 'c' in version 0.3
+ */
 namespace Caelum
 {
     // Caelum needs a lot of precission for astronomical calculations.
@@ -60,7 +79,12 @@ namespace Caelum
     typedef double LongReal;
 
     // Use some ogre types.
+    using Ogre::uint8;
+    using Ogre::uint16;
+    using Ogre::ushort;
+    using Ogre::uint32;
     using Ogre::uint;
+
     using Ogre::Real;
     using Ogre::String;
 
@@ -92,7 +116,11 @@ namespace Caelum
     class CloudSystem;
 	class FlatCloudLayer;
     class PrecipitationController;
+    class PrecipitationInstance;
     class GroundFog;
+    class DepthComposer;
+    class DepthComposerInstance;
+    class DepthRenderer;
 }
 
 #endif // CAELUM__CAELUM_PREREQUISITES_H

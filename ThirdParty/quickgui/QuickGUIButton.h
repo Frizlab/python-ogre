@@ -1,86 +1,132 @@
 #ifndef QUICKGUIBUTTON_H
 #define QUICKGUIBUTTON_H
 
-#include "QuickGUIForwardDeclarations.h"
+#include "QuickGUIButtonStates.h"
 #include "QuickGUILabel.h"
 
 namespace QuickGUI
 {
-	/** Represents a traditional button.
-	@remarks
-	The Button class requires at least 3 materials to define it's image:
-	Normal State, Mouse Over, and Mouse Down.  For example, if you pass
-	the constructor "sample.button" as its arguement for the material,
-	the class will expect "sample.button.over" and "sample.button.down"
-	to exist.  By default, buttons will handle mouse over and mouse down
-	events, and change the image appropriately.
-	@note
-	In order to get the most use out of buttons, you will need to add
-	an event handler.
-	@note
-	Buttons are meant to be created via the Window widget.
-	*/
+	class _QuickGUIExport ButtonDesc :
+			public LabelDesc
+	{
+	public:
+		ButtonDesc();
+
+		/**
+		* Returns the class of Desc object this is.
+		*/
+		virtual Ogre::String getClass() { return "ButtonDesc"; }
+		/**
+		* Returns the class of Widget this desc object is meant for.
+		*/
+		virtual Ogre::String getWidgetClass() { return "Button"; }
+
+		// Factory method
+		static WidgetDesc* factory() { return new ButtonDesc(); }
+
+		/**
+		* Outlines how the desc class is written to XML and read from XML.
+		*/
+		virtual void serialize(SerialBase* b);
+	};
+
 	class _QuickGUIExport Button :
 		public Label
 	{
 	public:
-		/** Constructor
+		// Skin Constants
+		static const Ogre::String DEFAULT;
+		static const Ogre::String OVER;
+		static const Ogre::String DOWN;
+		// Define Skin Structure
+		static void registerSkinDefinition();
+	public:
+		// Factory method
+		static Widget* factory(const Ogre::String& widgetName);
+	public:
+
+		/**
+		* Internal function, do not use.
+		*/
+		virtual void _initialize(WidgetDesc* d);
+
+		/** Adds an event handler to this widget
+			@param
+				EVENT Defined widget events, for example: BUTTON_EVENT_STATE_CHANGED, etc.
             @param
-                name The name to be given to the widget (must be unique).
+                function member function assigned to handle the event.  Given in the form of myClass::myFunction.
+				Function must return bool, and take QuickGUI::EventArgs as its parameters.
             @param
-                dimensions The x Position, y Position, width, and height of the widget.
-			@param
-				positionMode The GuiMetricsMode for the values given for the position. (absolute/relative/pixel)
-			@param
-				sizeMode The GuiMetricsMode for the values given for the size. (absolute/relative/pixel)
-			@param
-				material Ogre material defining the widget image.
-			@param
-				group QuadContainer containing this widget.
-			@param
-				ParentWidget parent widget which created this widget.
+                obj particular class instance that defines the handler for this event.  Here is an example:
+				addWidgetEventHandler(QuickGUI::BUTTON_EVENT_STATE_CHANGED,myClass::myFunction,this);
+			@note
+				Multiple user defined event handlers can be defined for an event.  All added event handlers will be called
+				whenever the event is fired.
+			@note
+				You may see Visual Studio give an error warning such as "error C2660: 'QuickGUI::Widget::addWidgetEventHandler' : function does not take 3 arguments".
+				This is an incorrect error message.  Make sure your function pointer points to a function which returns void, and takes parameter "const EventArgs&".
         */
-		Button(const std::string& name, GUIManager* gm);
+		template<typename T> void addButtonEventHandler(ButtonEvent EVENT, void (T::*function)(const EventArgs&), T* obj)
+		{
+			mButtonEventHandlers[EVENT].push_back(new EventHandlerPointer<T>(function,obj));
+		}
+		void addButtonEventHandler(ButtonEvent EVENT, EventHandlerSlot* function);
 
 		/**
-		* Useful when you want to simulate the button being pressed down by the mouse.
-		* If you actually want to click the mouse, use the mouse, or call onMouseButtonDown.
+		* Event Handler that executes the appropriate User defined Event Handlers for a given event.
+		* Returns true if the event was handled, false otherwise.
 		*/
-		virtual void applyButtonDownTexture();
-		virtual void applyButtonOverTexture();
+		bool fireButtonEvent(ButtonEvent e, EventArgs& args);
+
 		/**
-		* If supplying a method to simulate the button being pressed down, we need a method
-		* to restore the button to the normal looking state.
+		* Returns the class name of this Widget.
 		*/
-		virtual void applyDefaultTexture();
+		virtual Ogre::String getClass();
 
-		bool isDown();
+		/**
+		* Gets the current state of the button.
+		*/
+		ButtonState getState();
 
-		virtual void setSkinComponent(const std::string& skinComponent);
+		/**
+		* Sets the current state of the button, and fires the BUTTON_EVENT_STATE_CHANGED event.
+		* NOTE: No event is fired if the state is already applied.
+		*/
+		void setState(ButtonState s);
 
 	protected:
-		virtual ~Button();
+		Button(const Ogre::String& name);
+		~Button();
 
-		bool mButtonDown;
+		/// Keep track of the button state
+		ButtonState mCurrentButtonState;
 
-		std::string mDefaultSkinComponent;
-	protected:
+		// Event handlers! One List per event per widget
+		std::vector<EventHandlerSlot*> mButtonEventHandlers[BUTTON_EVENT_COUNT];
+
 		/**
-		* Event Handler for the EVENT_MOUSE_ENTER event.
+		* Outlines how the widget is drawn to the current render target
 		*/
-		void onMouseEnters(const EventArgs& args);
+		virtual void onDraw();
+
 		/**
-		* Event Handler for the EVENT_MOUSE_LEAVE event.
+		* Handler defined to implement the button's default natural behavior. (BUTTON_STATE_OVER)
 		*/
-		void onMouseLeaves(const EventArgs& args);
+		void onMouseEnter(const EventArgs& args);
 		/**
-		* Event Handler for the EVENT_MOUSE_BUTTON_UP event.
+		* Handler defined to implement the button's default natural behavior. (BUTTON_STATE_DEFAULT)
 		*/
-		void onMouseButtonUp(const EventArgs& args);
+		void onMouseLeave(const EventArgs& args);
 		/**
-		* Event Handler for the EVENT_MOUSE_BUTTON_DOWN event.
+		* Handler defined to implement the button's default natural behavior. (BUTTON_STATE_DOWN)
 		*/
-		virtual void onMouseButtonDown(const EventArgs& args);
+		void onMouseLeftButtonDown(const EventArgs& args);
+		/**
+		* Handler defined to implement the button's default natural behavior. (BUTTON_STATE_OVER)
+		*/
+		void onMouseLeftButtonUp(const EventArgs& args);
+
+	private:
 	};
 }
 

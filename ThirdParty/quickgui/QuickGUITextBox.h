@@ -1,244 +1,251 @@
 #ifndef QUICKGUITEXTBOX_H
 #define QUICKGUITEXTBOX_H
 
-#include "QuickGUIForwardDeclarations.h"
-#include "QuickGUILabel.h"
-#include "QuickGUIMouseCursor.h"
+#include "QuickGUIPadding.h"
+#include "QuickGUIText.h"
+#include "QuickGUITextCursor.h"
+#include "QuickGUITimerManager.h"
+#include "QuickGUIWidget.h"
 
 namespace QuickGUI
 {
-	/** Represents a TextBox.
-		@remarks
-		TextBoxes allow the user to input data on the screen,
-		which can be used for other purposes.  The TextBox class 
-		requires at least 2 materials to define it's image:
-		Background Image, Border.  For example, if you pass
-		the constructor "sample.textbox" as its arguement for the 
-		material, the class will expect "sample.textbox.border"
-		to exist.
-		@note
-		TextBoxes must be created by the Window widget.
-	*/
-	class _QuickGUIExport TextBox :
-		public Label
+	class _QuickGUIExport TextBoxDesc :
+			public WidgetDesc
 	{
 	public:
-		friend class LabelArea;
-	public:
-		/** Constructor
-            @param
-                name The name to be given to the widget (must be unique).
-            @param
-                dimensions The x Position, y Position, width, and height of the widget.
-			@param
-				positionMode The GuiMetricsMode for the values given for the position. (absolute/relative/pixel)
-			@param
-				sizeMode The GuiMetricsMode for the values given for the size. (absolute/relative/pixel)
-			@param
-				material Ogre material defining the widget image.
-			@param
-				group QuadContainer containing this widget.
-			@param
-				ParentWidget parent widget which created this widget.
-        */
-		TextBox(const std::string& name, GUIManager* gm);
+		TextBoxDesc();
+
+		/// Amount of time until a cursor changes from visible to not visible, or vice versa.
+		float cursorBlinkTime;
+		Ogre::ColourValue defaultColor;
+		Ogre::String defaultFontName;
+		/// Amount of time a key must be held down before it starts repeating.
+		float keyDownTime;
+		/// Amount of time a key must be held down to repeat its input.
+		float keyRepeatTime;
+		unsigned int maxCharacters;
+		float padding[PADDING_COUNT];
+		TextAlignment textAlignment;
+		Point textPosition;
+
+		/// Describes the Text used in this TextBox
+		TextDesc textDesc;
 
 		/**
-		* Adds a character to the textBox right before text cursor.
+		* Returns the class of Desc object this is.
+		*/
+		virtual Ogre::String getClass() { return "TextBoxDesc"; }
+		/**
+		* Returns the class of Widget this desc object is meant for.
+		*/
+		virtual Ogre::String getWidgetClass() { return "TextBox"; }
+
+		// Factory method
+		static WidgetDesc* factory() { return new TextBoxDesc(); }
+
+		/**
+		* Outlines how the desc class is written to XML and read from XML.
+		*/
+		virtual void serialize(SerialBase* b);
+	};
+
+	class _QuickGUIExport TextBox :
+		public Widget
+	{
+	public:
+		// Skin Constants
+		static const Ogre::String BACKGROUND;
+		// Define Skin Structure
+		static void registerSkinDefinition();
+	public:
+		// Factory method
+		static Widget* factory(const Ogre::String& widgetName);
+	public:
+		
+		/**
+		* Internal function, do not use.
+		*/
+		virtual void _initialize(WidgetDesc* d);
+
+		/**
+		* Adds a character to the end of the current text, and
+		* positions the text cursor at the end of the text. (-1)
 		*/
 		void addCharacter(Ogre::UTFString::code_point cp);
 		/**
-		* Add user defined event that will be called when user presses Enter key with Textbox Activated.
+		* Inserts a character into the text at the index given, and
+		* positions the text cursor after that character.
 		*/
-		template<typename T> void addOnEnterPressedEventHandler(void (T::*function)(const EventArgs&), T* obj)
-		{
-			mOnEnterPressedUserEventHandlers.push_back(new MemberFunctionPointer<T>(function,obj));
-		}
-		void addOnEnterPressedEventHandler(MemberFunctionSlot* function);
-		/**
-		* Method to erase the character right before the text cursor.
-		*/
-		void backSpace();
-		void clearText();
-		/**
-		* Method to erase the character right after the text cursor.
-		*/
-		void deleteCharacter();
-		/**
-		* Sets focus to the widget, displaying the text cursor.
-		*/
-		void focus();
-		/**
-		* Returns the index of the beginning of the next word.  If next word
-		* does not exist, the last index of the previous word is returned.
-		* NOTE: This function is relative to the Text Cursor.
-		*/
-		int getNextWordIndex();
-		/**
-		* Returns the index of the beginning of the previous word.  If previous word
-		* does not exist, the first index of the previous word is returned.
-		* NOTE: This function is relative to the Text Cursor.
-		*/
-		int getPreviousWordIndex();
-		bool getReadOnly();
-		Ogre::UTFString getText();
-		/**
-		* Sets mVisible to false.  Widgets should override this to implement how they handle
-		* hiding.
-		*/
-		void hide();
-		/**
-		* Hides the actual user input and writes the designated character
-		* in its place.  Great for visible password protection.
-		*/
-		void maskUserInput(const Ogre::UTFString::unicode_char& symbol=' ');
-		void moveCursorLeft();
-		void moveCursorRight();
+		void addCharacter(Ogre::UTFString::code_point cp, int index);
 
-		// Overridden Event Handling functions
 		/**
-		* Handler for the EVENT_LOSE_FOCUS event, and deactivates all child widgets (if exist)
+		* Returns the class name of this Widget.
 		*/
-		void onLoseFocus(const EventArgs& args);
+		virtual Ogre::String getClass();
 		/**
-		* User defined event handler called when user presses Enter.
-		* Note that this event is not passed to its parents, the event is specific to this widget.
+		* Returns the color used for all newly added characters.
 		*/
-		void onEnterPressed(const KeyEventArgs& args);
+		Ogre::ColourValue getDefaultColor();
 		/**
-		* Handler for the EVENT_KEY_DOWN event.  If not handled, it will be passed
-		* to the parent widget (if exists)
+		* Returns the font used for all newly added characters.
 		*/
-		void onKeyDown(const EventArgs& args);
+		Ogre::String getDefaultFont();
 		/**
-		* Handler for the EVENT_KEY_UP event.  If not handled, it will be passed
-		* to the parent widget (if exists)
+		* Returns the max number of characters this TextBox supports.
 		*/
-		void onKeyUp(const EventArgs& args);
+		int getMaxCharacters();
 		/**
-		* Handler for the EVENT_CHARACTER_KEY event.  Appends character to the end of the Label's text.
+		* Gets the distance between a Label border and the text.
 		*/
-		void onCharacter(const EventArgs& args);
+		float getPadding(Padding p);
 		/**
-		* Handler for the EVENT_MOUSE_BUTTON_DOWN event.  Used to implement text highlighting.
+		* Gets the text in UTFString form.
 		*/
-		void onMouseButtonDown(const EventArgs& args);
+		Ogre::UTFString getText();
+
+		void onWindowDrawn(const EventArgs& args);
+
 		/**
-		* Handler for the EVENT_MOUSE_BUTTON_UP event.  Used to implement text highlighting.
+		* Removes a character from the text at the index given, and
+		* positions the text cursor before that character.
+		* NOTE: If the cursor index is -1 it will stay -1.
 		*/
-		void onMouseButtonUp(const EventArgs& args);
+		void removeCharacter(int index);
+
 		/**
-		* Handler for the EVENT_MOUSE_CLICK event.  Sets the Cursor position.
+		* Sets all characters of the text to the specified color.
 		*/
-		void onMouseClicked(const EventArgs& args);
+		void setColor(const Ogre::ColourValue& cv);
 		/**
-		* Set true if the label's size should match it's font height and text width.
-		* NOTE: AutoSize is set to true by default.  If you set this to false, you may
-		*  end up with empty label's, as text that doesn't fit in the label won't be rendered.
+		* Sets the character at the index given to the specified color.
 		*/
-		virtual void setAutoSize(bool autoSize);
+		void setColor(const Ogre::ColourValue& cv, unsigned int index);
 		/**
-		* Text Cursor Indices start at 0, and are to the left of Text Indices.  
-		* Let () represent Text Cursor Indices and [] represent Text Indices: 
-		*	(0)[0](1)[1](2)[2](3)
+		* Sets all characters within the defined range to the specified color.
 		*/
-		void setCursorIndex(int cursorIndex, bool clearSelection = true);
-		void setCursorIndex(Point position, bool clearSelection = true);
-		virtual void setFont(const std::string& fontScriptName, bool recursive = false);
+		void setColor(const Ogre::ColourValue& cv, unsigned int startIndex, unsigned int endIndex);
 		/**
-		* If set to true, cannot input text to textbox
+		* Searches text for c.  If allOccurrences is true, all characters of text matching c
+		* will be colored, otherwise only the first occurrence is colored.
 		*/
-		void setReadOnly(bool readOnly);
+		void setColor(const Ogre::ColourValue& cv, Ogre::UTFString::code_point c, bool allOccurrences);
 		/**
-		* Manually set size of widget.
+		* Searches text for s.  If allOccurrences is true, all sub strings of text matching s
+		* will be colored, otherwise only the first occurrence is colored.
 		*/
-		virtual void setSize(const float& pixelWidth, const float& pixelHeight);
-		virtual void setSize(const Size& pixelSize);
-		virtual void setSkin(const std::string& skinName, bool recursive = false);
-		void setText(const Ogre::UTFString& text);
-		// Set whether to change mouse cursor to text select cursor when over textbox
-		void setUseTextSelectCursor(bool use);
-		virtual void setWidth(float pixelWidth);
+		void setColor(const Ogre::ColourValue& cv, Ogre::UTFString s, bool allOccurrences);
 		/**
-		* Default Handler for injecting Time.
+		* Sets the index of the text cursor. A cursor index represents the position
+		* to the left of the character with the same index. -1 represents the right most
+		* position.
 		*/
-		void timeElapsed(const float time);
+		void setCursorIndex(int index);
+		/**
+		* Sets the color used when adding characters to the TextBox.
+		*/
+		void setDefaultColor(const Ogre::ColourValue& cv);
+		/**
+		* Sets the font used when adding character to the TextBox.
+		*/
+		void setDefaultFont(const Ogre::String& fontName);
+		/**
+		* Sets all characters of the text to the specified font.
+		*/
+		void setFont(const Ogre::String& fontName);
+		/**
+		* Sets the character at the index given to the specified font.
+		*/
+		void setFont(const Ogre::String& fontName, unsigned int index);
+		/**
+		* Sets all characters within the defined range to the specified font.
+		*/
+		void setFont(const Ogre::String& fontName, unsigned int startIndex, unsigned int endIndex);
+		/**
+		* Searches text for c.  If allOccurrences is true, all characters of text matching c
+		* will be changed to the font specified, otherwise only the first occurrence is changed.
+		*/
+		void setFont(const Ogre::String& fontName, Ogre::UTFString::code_point c, bool allOccurrences);
+		/**
+		* Searches text for s.  If allOccurrences is true, all sub strings of text matching s
+		* will be changed to the font specified, otherwise only the first occurrence is changed.
+		*/
+		void setFont(const Ogre::String& fontName, Ogre::UTFString s, bool allOccurrences);
+		/**
+		* Sets the maximum number of characters that this TextBox will support.
+		*/
+		void setMaxCharacters(unsigned int max);
+		/**
+		* Sets the distance between a Label border and the text.
+		*/
+		void setPadding(Padding p, float distance);
+		/**
+		* Internal function to set a widget's parent, updating its window reference and position.
+		*/
+		virtual void setParent(Widget* parent);
+		/**
+		* Sets the text for this object.
+		*/
+		void setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv);
+
+		/**
+		* Recalculate Screen and client dimensions and force a redrawing of the widget.
+		*/
+		virtual void updateTexturePosition();
 
 	protected:
-		virtual ~TextBox();
+		TextBox(const Ogre::String& name);
+		~TextBox();
 
-		MouseCursor* mMouseCursor;
+		Text* mText;
 
-		// For changing the mouse cursor to text select cursor
-		void onMouseEnter(const EventArgs& args);
-		void onMouseLeave(const EventArgs& args);
-
-		// Text Cursor Properties
-		Quad* mTextCursor;
-		size_t mCursorPixelWidth;
-		std::string mTextCursorSkinComponent;
-
-		// The full unmodified String stored by this textbox. Text boundaries and character
-		// masking will affect what the user sees on screen.
-		Ogre::UTFString mCaption;
-		// String used for visual display.
-		Ogre::UTFString mOutput;
-
-		// Text Cursor Indices start at 0, and are to the left of Text Indices.
-		// Let () represent Text Cursor Indices and [] represent Text Indices: (0)[0](1)[1](2)
+		TextCursor* mTextCursor;
 		int mCursorIndex;
-		// Text Cursor Indices that represent the portion of text visible, given the textBounds.
-		int mVisibleStart;
-		int mVisibleEnd;
-		// Text Cursor Indices that represent the portion of text that is selected.  If within
-		// visible indices, will appear highlighted.
-		int mSelectStart;
-		int mSelectEnd;
-		// previous index recorded to keep track of direction.
-		int mSelectPrevious;
+		Point mCursorPosition;
 
-		// Masking, used for password textboxes.
-		bool mMaskUserInput;
-		Ogre::UTFString::unicode_char mMaskSymbol;
+		/// Record is last key down was a function button or character input.
+		bool mFunctionKeyDownLast;
+		/// Store the last key that went down
+		KeyEventArgs mLastKnownInput;
+		/// Timer that repeats keys
+		Timer* mKeyRepeatTimer;
+		/**
+		* Callback that repetitively inputs the last held down key.
+		*/
+		void keyRepeatTimerCallback();
+		/// Timer that starts repeat timer
+		Timer* mKeyDownTimer;
+		/**
+		* Callback that starts the key repeat timer.
+		*/
+		void keyDownTimerCallback();
 
-		float mBackSpaceTimer;
-		bool mBackSpaceDown;
+		/// Storing reference to font for quick use.
+		Ogre::FontPtr mCurrentFont;
 
-		float mDeleteTimer;
-		bool mDeleteDown;
+		/// Timer that toggles cursor on and off.
+		Timer* mBlinkTimer;
+		/**
+		* Toggles blinker on and off.
+		*/
+		void blinkTimerCallback();
 
-		float mMoveCursorTimer;
-		bool mLeftArrowDown;
-		bool mRightArrowDown;
+		// Pointer pointing to mWidgetDesc object, but casted for quick use.
+		TextBoxDesc* mDesc;
 
-		// Special keys used for text manipulation.
-		bool mLShiftDown;
-		bool mRShiftDown;
-		bool mLCtrlDown;
-		bool mRCtrlDown;
+		/**
+		* Outlines how the widget is drawn to the current render target
+		*/
+		virtual void onDraw();
 
-		float mCursorVisibilityTimer;
+		void onCharEntered(const EventArgs& args);
+		void onKeyDown(const EventArgs& args);
+		void onKeyUp(const EventArgs& args);
+		void onKeyboardInputGain(const EventArgs& args);
+		void onKeyboardInputLose(const EventArgs& args);
+		void onMouseButtonDown(const EventArgs& args);
+		void onTripleClick(const EventArgs& args);
 
-		bool mMouseLeftDown;
-		// Used to determine if cursor should blink.
-		bool mHasFocus;
-
-		bool mReadOnly;
-
-		bool mUseTextSelectCursor;
-
-		EventHandlerArray mOnEnterPressedUserEventHandlers;
-
-		// setCursorIndex functionality broken into parts.  Not to be called outside this function,
-		// and is order dependent.
-		void _determineTextSelectionBounds(int cursorIndex, bool clearSelection);
-		void _determineVisibleTextBounds(int cursorIndex);
-		void _positionCursor();
-
-		// Updates the visible portion of the text, and the selection within the text.
-		void _updateText();
-		void _updateVisibleText();
-		void _updateHighlightedText();
+	private:
 	};
 }
 

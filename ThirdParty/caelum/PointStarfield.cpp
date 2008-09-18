@@ -43,11 +43,12 @@ namespace Caelum
 		mObserverLongitude = 0;
 
         String uniqueId = StringConverter::toString ((size_t)this);
-		mMaterial = Ogre::MaterialManager::getSingleton ().getByName (BILLBOARD_MATERIAL_NAME);
-		if (mMaterial.isNull ()) {
+
+        MaterialPtr scriptMaterial = MaterialManager::getSingleton ().getByName (BILLBOARD_MATERIAL_NAME);
+		if (scriptMaterial.isNull ()) {
 			CAELUM_THROW_UNSUPPORTED_EXCEPTION ("Can't find point starfield material", "PointStarfield");
 		}
-        mMaterial = mMaterial->clone (BILLBOARD_MATERIAL_NAME + uniqueId);
+        mMaterial.reset (scriptMaterial->clone (BILLBOARD_MATERIAL_NAME + uniqueId));
 		mMaterial->load ();
 		if (mMaterial->getBestTechnique () == 0) {
             CAELUM_THROW_UNSUPPORTED_EXCEPTION ("Can't load point starfield material: " + mMaterial->getUnsupportedTechniquesExplanation(), "PointStarfield");
@@ -57,13 +58,13 @@ namespace Caelum
 
 		// We use a separate data source.
 		Ogre::String objName = "Caelum/PointStarfield/" + uniqueId;
-        mManualObj = sceneMgr->createManualObject (objName);
+        mManualObj.reset (sceneMgr->createManualObject (objName));
         mManualObj->setDynamic(false);
 		mManualObj->setRenderQueueGroup (CAELUM_RENDER_QUEUE_STARFIELD);
         mManualObj->setCastShadows(false);
 
-		mNode = caelumRootNode->createChildSceneNode ();
-		mNode->attachObject (mManualObj);
+		mNode.reset (caelumRootNode->createChildSceneNode ());
+		mNode->attachObject (mManualObj.getPointer ());
 
 		if (initWithCatalogue) {
 			addBrightStarCatalogue ();
@@ -72,17 +73,6 @@ namespace Caelum
 
 	PointStarfield::~PointStarfield ()
     {
-		if (mNode) {
-			mNode->getCreator()->destroySceneNode(mNode->getName());
-			mNode = 0;
-		}
-
-		if (mManualObj) {
-			mManualObj->_getManager()->destroyMovableObject(mManualObj);
-			mManualObj = 0;
-		}
-			
-		Ogre::MaterialManager::getSingletonPtr()->remove(mMaterial->getHandle());
 	}
 
     void PointStarfield::notifyStarVectorChanged () {

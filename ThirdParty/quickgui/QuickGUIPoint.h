@@ -3,7 +3,6 @@
 
 #include "OgrePrerequisites.h"
 
-#include "QuickGUIForwardDeclarations.h"
 #include "QuickGUIExportDLL.h"
 #include "QuickGUISize.h"
 
@@ -34,6 +33,12 @@ namespace QuickGUI
                 y != p.y );
         }
 
+		inline bool operator == ( const Point& p ) const
+        {
+            return ( x == p.x &&
+                y == p.y );
+        }
+
 		inline Point operator * ( const float r ) const
         {
             return Point(x * r,y * r);
@@ -59,15 +64,36 @@ namespace QuickGUI
             return Point(x + s.width,y + s.height);
         }
 
-		inline Point operator += ( const Size& s ) const
+		inline Point operator += ( const Size& s )
         {
-            return Point(x + s.width,y + s.height);
+			x += s.width;
+			y += s.height;
+
+            return *this;
         }
+
+		inline Point operator += ( const Point& p )
+		{
+			x += p.x;
+			y += p.y;
+
+			return *this;
+		}
 
 		inline Point operator - ( const Point& p ) const
         {
             return Point(x - p.x,y - p.y);
         }
+
+		inline Point operator -= ( const Point& p )
+        {
+			x -= p.x;
+			y -= p.y;
+
+			return *this;
+        }
+
+		void translate(const Point& p);
 
 		float x;
 		float y;
