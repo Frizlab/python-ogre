@@ -576,7 +576,7 @@ class ogre:
                 [0, unzip + os.path.join(downloadPath,"ogre-v1-6-0RC1.zip"),os.getcwd() ],
                 [0, unzip + os.path.join(downloadPath,"OgreDependencies_VC9_Eihort_20080203.zip"),
                                             os.path.join(os.getcwd(), 'ogre') ],
-                [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.patch -p0 ", os.getcwd()],
+                [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.0RC1.patch -p0 ", os.getcwd()],
                 [0,'echo Please use MSVC Express Edition to build Ogre Release.','']
                 ]                      
         else:
