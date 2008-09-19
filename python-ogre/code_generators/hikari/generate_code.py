@@ -68,9 +68,6 @@ def ManualExclude ( mb ):
     excludes = ['::Hikari::FlashControl::bind' # implemented in hand_made_wrappers
                 ,'::Hikari::FlashControl::unbind'
                 
-#                 ,'::Hikari::FlashControl::callFunction' # uses Args which we don't have a to python converter for
-# remove default creator on args...
-                
                 ]
     for x in excludes:
         main_ns.mem_fun(x).exclude()                
@@ -98,6 +95,10 @@ def ManualFixes ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns
+                
+    # remove default creator on args...
+    c = main_ns.mem_fun( '::Hikari::FlashControl::callFunction' )
+    c.arguments[1].default_value = "" 
               
 ############################################################
 ##

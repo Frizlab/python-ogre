@@ -5,6 +5,8 @@ Updates to QuickGUI and Caelum C++ library source
 Implemented Hikari demo (implemented callbacks in the wrapper generation)
 Fixed code generation for QuickGui, bullet and noise to correctly generate PyDoc documentation strings
 Implemented description text and description links in environment.py to help automate module summary
+Changes to SampleFramework - additional function (_inputSystemParameters ) to pass parameters to OIS setup - see Hikari demo
+Changes to SampleFramework - Move code from frameStarted to frameRenderingQueue 
 
 
 
