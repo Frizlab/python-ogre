@@ -219,12 +219,16 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
         self.translateVector = ogre.Vector3(0.0,0.0,0.0)
         self.filtering = ogre.TFO_BILINEAR
         self.showDebugOverlay(True)
+        self.rotateSpeed =  ogre.Degree(36)
         self.moveSpeed = 100.0
         self.rotationSpeed = 8.0
         self.displayCameraDetails = False
         self.bufferedKeys = bufferedKeys
         self.bufferedMouse = bufferedMouse
+        self.rotationX = ogre.Degree(0.0)
+        self.rotationY = ogre.Degree(0.0)
         self.bufferedJoy = bufferedJoy
+        self.shouldQuit = False # set to True to exit..
         self.MenuMode = False   # lets understand a simple menu function
         ## we can tell if we are using OgreRefapp based upon the camera class
         
@@ -237,7 +241,12 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
     def __del__ (self ):
       ogre.WindowEventUtilities.removeWindowEventListener(self.renderWindow, self)
       self.windowClosed(self.renderWindow)
-      
+    
+    def _inputSystemParameters (self ):
+        """ ovreride to extend any OIS system parameters
+        """
+        return []
+                
     def _setupInput(self):
          # ignore buffered input
         
@@ -252,8 +261,10 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
          else:
              windowHnd = self.renderWindow.getCustomAttributeInt("WINDOW")
 
-         self.InputManager = \
-             OIS.createPythonInputSystem([("WINDOW",str(windowHnd))])
+         t= self._inputSystemParameters()
+         params = [("WINDOW",str(windowHnd))]
+         params.extend(t)   
+         self.InputManager = OIS.createPythonInputSystem( params )
          
          #pl = OIS.ParamList()
          #windowHndStr = str ( windowHnd)
@@ -301,21 +312,51 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
             OIS.InputManager.destroyInputSystem(self.InputManager)
             self.InputManager=None
 
+            
+            
     ## NOTE the in Ogre 1.6 (1.7) this is changed to frameRenderingQueued !!!
     def frameRenderingQueued ( self, evt ):
-        return True
-                                    
-    def frameStarted(self, frameEvent):
-        if(self.renderWindow.isClosed()):
+        if(self.renderWindow.isClosed() or self.shouldQuit ):
             return False
-        
         ##Need to capture/update each device - this will also trigger any listeners
         self.Keyboard.capture()    
         self.Mouse.capture()
+        buffJ = True
         if( self.Joy ):
             self.Joy.capture()
-    
-        ##bool buffJ = (mJoy) ? mJoy->buffered() : true;
+            buffJ = self.Joy.buffered()
+
+        ##Check if one of the devices is not buffered
+        if self.Mouse.buffered() or self.Keyboard.buffered() or not buffJ :
+            ## one of the input modes is immediate, so setup what is needed for immediate movement
+            if self.timeUntilNextToggle >= 0:
+                self.timeUntilNextToggle -= evt.timeSinceLastFrame
+
+            ## Move about 100 units per second
+            self.moveScale = self.moveSpeed * evt.timeSinceLastFrame
+            ## Take about 10 seconds for full rotation
+            self.rotScale = self.rotateSpeed * evt.timeSinceLastFrame
+
+        self.rotationX = ogre.Degree(0.0)
+        self.rotationY = ogre.Degree(0.0)
+        self.translateVector = ogre.Vector3.ZERO
+
+        ##Check to see which device is not buffered, and handle it
+        if not self.Keyboard.buffered():
+            if  self._processUnbufferedKeyInput(evt) == False:
+                return False
+        if not self.Mouse.buffered():
+            if self._processUnbufferedMouseInput(evt) == False:
+                return False
+
+        if not self.Mouse.buffered() or not self.Keyboard.buffered() or not buffJ:
+            self._moveCamera()
+
+        return True
+
+                                        
+    def frameStarted(self, frameEvent):
+        return True
     
         if self.timeUntilNextToggle >= 0:
             self.timeUntilNextToggle -= frameEvent.timeSinceLastFrame

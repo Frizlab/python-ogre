@@ -53,7 +53,9 @@ def ManualExclude ( mb ):
     if MAIN_NAMESPACE:
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
-        main_ns = global_ns    
+        main_ns = global_ns  
+          
+    ## Need to review these as they will be needed...        
     excludes = ['::Hikari::Position::left',
                 '::Hikari::Position::top',
                 '::Hikari::Position::position',
@@ -63,6 +65,15 @@ def ManualExclude ( mb ):
     for x in excludes:
         main_ns.variable(x).exclude()                
                 
+    excludes = ['::Hikari::FlashControl::bind' # implemented in hand_made_wrappers
+                ,'::Hikari::FlashControl::unbind'
+                
+#                 ,'::Hikari::FlashControl::callFunction' # uses Args which we don't have a to python converter for
+# remove default creator on args...
+                
+                ]
+    for x in excludes:
+        main_ns.mem_fun(x).exclude()                
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 
@@ -106,7 +117,19 @@ def ManualTransformations ( mb ):
                 
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
-        
+
+#     x =global_ns.mem_fun('::Hikari::FlashControl::getExtents')
+#     x.add_transformation(ft.inout('width'),ft.inout('height'))
+#     x.documentation = docit ("","width,height", "tuple - width,height")
+# 
+#     x =global_ns.mem_fun('::Hikari::FlashControl::getUVScale')
+#     x.add_transformation(ft.inout('uScale'),ft.inout('vScale'))
+#     x.documentation = docit ("","uScale,vScale", "tuple - uScale,vScale")
+               
+# # # #     x= main_ns.mem_funs('::Caelum::Astronomy::getGregorianDateFromJulianDay')
+# # # #     x.add_transformation( ft.output('year'), ft.output('month'), ft.output('day'), alias = 'getGregorianDateFromJulianDay' )
+# # # #     x.documentation = docit ("","JulianDay", "tuple - year,month,day")
+
     
 ###############################################################################
 ##
