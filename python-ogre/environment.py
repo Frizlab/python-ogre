@@ -1545,6 +1545,7 @@ class ogrebulletd:  #
         CCFLAGS = ' -D_PRECOMP '
     ModuleName = 'OgreBulletD'
     CheckIncludes=['boost/python.hpp', 'Ogre.h']        
+    descText = "Ogre Bullet Dynamics (physics) implementation"
     
 class noise:
     active = True
@@ -1563,6 +1564,7 @@ class noise:
     CheckIncludes=[]
     libs=[  boost.lib]
     ModuleName="noise"   
+    descText = "Generate 'noise'"
     
 class watermesh:
     active = True
@@ -1581,6 +1583,7 @@ class watermesh:
     CheckIncludes=[]
     libs=[  boost.lib, 'OgreMain' ]
     ModuleName="watermesh"   
+    descText = "C++ code from Ogre Water demo -- use Hydrax instead"
     
 class ofusion:
     active = True
@@ -1599,6 +1602,7 @@ class ofusion:
     CheckIncludes=[]
     libs=[  boost.lib, 'OgreMain' ]
     ModuleName="ofusion"   
+    descText = "Import Ogre 'Scenes' from 3dMax using the ofusion exporter"
  
 class cadunetree:
     active = True
@@ -1616,7 +1620,8 @@ class cadunetree:
                 ]
     CheckIncludes=[]
     libs=[  boost.lib, 'OgreMain' ]
-    ModuleName="cadunetree"          
+    ModuleName="cadunetree"   
+    descText = "Generate realistic trees"       
 
 class ogrepcz:
     active = True
@@ -1634,7 +1639,8 @@ class ogrepcz:
                 ]
     CheckIncludes=[]
     libs=[  boost.lib, 'Plugin_PCZSceneManager', 'OgreMain' ]
-    ModuleName="ogrepcz"      
+    ModuleName="ogrepcz" 
+    descText = "Portal SceneManager - seamlessly move from interior to exterior scene management"     
         
 class opensteer:
     active = False
@@ -1670,7 +1676,8 @@ class hydrax:
                 ]
     CheckIncludes=[]
     libs=[  boost.lib, 'OgreMain' ]
-    ModuleName="hydrax"     
+    ModuleName="hydrax"  
+    descText = "Fantastic water/ocean effects"   
 
 class hikari:
     active = True
@@ -1690,6 +1697,8 @@ class hikari:
     CheckIncludes=[]
     libs=[  boost.lib, 'OgreMain', 'hikari' ]
     ModuleName="hikari"  
+    descText = "Use Flash controls within Ogre"
+    descLink = "http://hikari-library.googlecode.com/"
             
 ############################################################################################
 

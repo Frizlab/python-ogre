@@ -1,10 +1,20 @@
-August 29 2008 : Release 1.6 RC1
-================================
+xxxx xx 2008 : Release 1.6.0 xxxx
+==================================
+
+Updates to QuickGUI and Caelum C++ library source
+Implemented Hikari demo (implemented callbacks in the wrapper generation)
+Fixed code generation for QuickGui, bullet and noise to correctly generate PyDoc documentation strings
+Implemented description text and description links in environment.py to help automate module summary
+
+
+
+August 29 2008 : Release 1.6.0 RC1
+==================================
 The Python-Ogre version numbering has changed to match the Ogre release versions along with the SVN release numbering
     'Python-Ogre-<ogre version>-<SVN Version>-<Python Version>'
     Built using MSVC 9, DirectX August 2008, Boost 1.36.0, Py++ r1383
     
-** Modules Included and thier versions **
+** Modules Included and their versions **
   OGRE 1.6.0RC1
   OIS 1.2
   CEGUI 0.6.1
