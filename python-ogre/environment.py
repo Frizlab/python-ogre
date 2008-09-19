@@ -202,7 +202,7 @@ class gccxml:
     else:
        source_version = "20080627"
        source = [
-                [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co -D 27June2008 "+base, os.getcwd()]
+                [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co  "+base, os.getcwd()]
              ]
     if isLinux() or isMac():
         buildCmds =  [
@@ -285,9 +285,9 @@ class pygccxml:
                     [svn, " co -r 1383 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
                  ]
     else:                 
-        source_version = "1383"
+        source_version = "9999"
         source = [
-                    [svn, " co -r 1383 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
+                    [svn, " co http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
                  ]             
     if isLinux() or isMac() :
         buildCmds =  [
@@ -309,9 +309,9 @@ class pyplusplus:
                     [svn, " co -r 1383 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
                  ]
     else:                 
-        source_version = "1383"
+        source_version = "9999"
         source = [
-                    [svn, " co -r 1383 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
+                    [svn, " co http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
                  ]             
     if isLinux() or isMac() :
         buildCmds =  [
@@ -429,9 +429,9 @@ class cmake:
 class scons:
     pythonModule = False
     active = True
-    base = 'scons-0.98.5'
+    base = 'scons-1.0.1'
     source = [
-                [wget, "http://downloads.sourceforge.net/scons/"+base+".tar.gz",downloadPath],
+                [wget, "http://prdownloads.sourceforge.net/scons/"+base+".tar.gz",downloadPath],
              ]
              
     # the utils in Windows don't handle paths or tar spawing gzip hence the work arounds             
@@ -456,9 +456,9 @@ class boost:    ## also included bjam
     if isWindows():
         if _STABLE:
             base = 'boost_1_36_0'
-            lib= 'boost_python-vc90-mt-1_36'
+            lib = 'boost_python-vc90-mt-1_36'
         else:        
-            base = 'boost_1_36'
+            base = 'boost_1_36_0'
             lib = 'boost_python-vc90-mt-1_36'
     else:
         if _STABLE:
@@ -566,7 +566,7 @@ class ogre:
     
     if isWindows(): 
         
-        if _STABLE:
+        if _STABLE or not _STABLE:   ## temp force to this version...
             version="1.6.0RC1"
             source = [
                 [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_VC9_Eihort_20080203.zip", downloadPath],
