@@ -1,6 +1,8 @@
 
 #undef _MSC_VER
 #include "btBulletDynamicsCommon.h"
+#include "btBulletCollisionCommon.h"
+
 
 #include "LinearMath/btStackAlloc.h"
 #include "LinearMath/btPoolAllocator.h"

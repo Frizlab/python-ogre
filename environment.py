@@ -464,7 +464,8 @@ class boost:    ## also included bjam
         if _STABLE:
             base = 'boost_1_34_1'
         else:
-            base = 'boost_1_37'
+            base = 'boost_1_36_0'
+            versionBase = '1_36' ## the version used on the library name
 
     if isLinux() or isMac():
         bjambase = 'boost-jam-3.1.16'
@@ -514,6 +515,7 @@ class boost:    ## also included bjam
                 [0,'sed -i s/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/ '+base+'/boost/python/detail/preprocessor.hpp', '' ],
                 [0,os.path.join(os.getcwd(), bjambase, "bjam.exe") + ' release --with-python ',os.path.join(os.getcwd(),base)] # --toolset=msvc-8
                 ]
+    
     if not isWindows():
         # Figure out the gcc version we are running - this is needed by Boost
         # FIXME: This assumes that the gcc we are building with now was what we built boost with
@@ -522,18 +524,18 @@ class boost:    ## also included bjam
         import re
         gcc_version = re.search(r'([0-9]+?\.[0-9]+?\.[0-9]+?)', gccp.communicate()[0]).groups()[0].split('.')
         # FIXME: Should this be the multithreaded version!? 
-        lib = "boost_python-gcc%s%s-mt-%s" % (gcc_version[0], gcc_version[1], base[6:])
+        lib = "boost_python-gcc%s%s-mt-%s" % (gcc_version[0], gcc_version[1], versionBase)
 
 class boost_python_index:
     """ only used for Linx
     """
     active = True
-    source_version = boost.base[6:].replace("_",".")
+    source_version = boost.versionBase.replace("_",".")
     pythonModule = False
     ModuleName = ""
     base = "libboost-python%s-index" % source_version #.replace(".", "_")
     if isLinux() or isMac():
-        FLAGS = "PREFIX=%s BOOST_VERSION=%s MT=True" % (PREFIX, source_version)
+        FLAGS = "PREFIX=%s BOOST_VERSION=%s BOOST_VERSION_PATH=%s MT=True" % (PREFIX, boost.versionBase,boost.versionBase)
         source = [
              ["rm","-rf %s" % (base,), os.getcwd()],
              ["cp",'-rvf %s/ %s' % (os.path.join('python-ogre','boost'), base), os.getcwd()],
@@ -616,11 +618,29 @@ class ogre:
         if _STABLE:
             version = "1.4"
             base = "ogre-v1-4-9"
+            buildCmds  = [
+                [0, tar + " jxf " + os.path.join(downloadPath,base)+".tar.bz2 --overwrite",os.getcwd() ],
+                [0, "patch -s -N -i ./python-ogre/patch/ogre.patch -p0 ", os.getcwd()],
+                [0, "aclocal", os.path.join(os.getcwd(), 'ogre')],
+                [0, "./bootstrap", os.path.join(os.getcwd(), 'ogre')],
+                [0, "./configure --prefix=%s --with-gui=Xt --disable-devil" % PREFIX, os.path.join(os.getcwd(), 'ogre')],
+                [0, "make", os.path.join(os.getcwd(), 'ogre')],
+                [0, "make install", os.path.join(os.getcwd(), 'ogre')],
+                ]
         else:
-            version = "1.6"
+            version = "1.6.0RC1"
             base = "ogre-v1-6-0RC1"
-
-        libs=[boost.lib, boost_python_index.lib, 'OgreMain']
+            buildCmds  = [
+                [0, tar + " jxf " + os.path.join(downloadPath,base)+".tar.bz2 --overwrite",os.getcwd() ],
+                [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.0RC1.patch -p0 ", os.getcwd()],
+                [0, "aclocal", os.path.join(os.getcwd(), 'ogre')],
+                [0, "./bootstrap", os.path.join(os.getcwd(), 'ogre')],
+                [0, "./configure --prefix=%s --with-gui=Xt --disable-devil" % PREFIX, os.path.join(os.getcwd(), 'ogre')],
+                [0, "make", os.path.join(os.getcwd(), 'ogre')],
+                [0, "make install", os.path.join(os.getcwd(), 'ogre')],
+                ]
+        libs=[boost.lib,  'OgreMain']
+        libs.append ( boost_python_index.lib )
         lib_dirs=[Config.LOCAL_LIB]
         include_dirs=[Config.PATH_Boost, Config.PATH_INCLUDE_Ogre]
         CCFLAGS = ' -DBOOST_PYTHON_MAX_ARITY=19'
@@ -628,15 +648,7 @@ class ogre:
         source = [
             [wget, "http://downloads.sourceforge.net/ogre/"+base+".tar.bz2",downloadPath],
         ]
-        buildCmds  = [
-            [0, tar + " jxf " + os.path.join(downloadPath,base)+".tar.bz2 --overwrite",os.getcwd() ],
-            [0, "patch -s -N -i ./python-ogre/patch/ogre.patch -p0 ", os.getcwd()],
-            [0, "aclocal", os.path.join(os.getcwd(), 'ogre')],
-            [0, "./bootstrap", os.path.join(os.getcwd(), 'ogre')],
-            [0, "./configure --prefix=%s --with-gui=Xt --disable-devil" % PREFIX, os.path.join(os.getcwd(), 'ogre')],
-            [0, "make", os.path.join(os.getcwd(), 'ogre')],
-            [0, "make install", os.path.join(os.getcwd(), 'ogre')],
-        ]
+        
 
     elif isMac():
         version = "1.6.0RC1"
@@ -1457,8 +1469,14 @@ class bullet:
     baseDir = os.path.join(os.getcwd(), base)
     parent = "ogre/physics"
     libs=[boost.lib,  'LibBulletCollision', 'LibBulletDynamics']
-    if os.name == 'nt':
+    if isWindows():
         libs.append('libbulletmath')
+    else:
+        libs.append('LibLinearMath')
+        libs.append('LibBulletSoftBody')
+        libs.append('LibBulletColladaConverter')
+        libs.append('LibBulletMultiThreaded')
+
     lib_dirs = [ Config.PATH_LIB_Boost
                 ,  Config.PATH_LIB_Bullet
                 ]
@@ -1498,7 +1516,9 @@ class ogrebulletc:  #
         'LibBulletCollision', 'LibBulletDynamics'
         ]
     if isWindows():
-        libs.append('LibBulletMath')        
+        libs.append('libbulletmath')
+    else:
+        libs.append('LibLinearMath')
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_INCLUDE_Bullet
                     , os.path.join(Config.PATH_OgreBullet, 'Collisions' )
@@ -1527,7 +1547,9 @@ class ogrebulletd:  #
         'LibBulletCollision', 'LibBulletDynamics'
         ]
     if isWindows():
-        libs.append('LibBulletMath')        
+        libs.append('libbulletmath')
+    else:
+        libs.append('LibLinearMath')
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_INCLUDE_Bullet
                     , os.path.join(Config.PATH_OgreBullet, 'Collisions' )
