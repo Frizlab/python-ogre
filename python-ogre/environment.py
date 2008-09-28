@@ -200,9 +200,9 @@ class gccxml:
                 [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co -D 22May2008 "+base, os.getcwd()]
              ]
     else:
-       source_version = "20080627"
+       source_version = "20080901"
        source = [
-                [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co  "+base, os.getcwd()]
+                [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co  -D 01Sep2008 "+base, os.getcwd()]
              ]
     if isLinux() or isMac():
         buildCmds =  [
@@ -285,9 +285,9 @@ class pygccxml:
                     [svn, " co -r 1383 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
                  ]
     else:                 
-        source_version = "9999"
+        source_version = "1415"
         source = [
-                    [svn, " co http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
+                    [svn, " co -r 1415 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
                  ]             
     if isLinux() or isMac() :
         buildCmds =  [
@@ -309,9 +309,9 @@ class pyplusplus:
                     [svn, " co -r 1383 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
                  ]
     else:                 
-        source_version = "9999"
+        source_version = "1415"
         source = [
-                    [svn, " co http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
+                    [svn, " co -r 1415 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
                  ]             
     if isLinux() or isMac() :
         buildCmds =  [
@@ -578,7 +578,7 @@ class ogre:
                 [0, unzip + os.path.join(downloadPath,"ogre-v1-6-0RC1.zip"),os.getcwd() ],
                 [0, unzip + os.path.join(downloadPath,"OgreDependencies_VC9_Eihort_20080203.zip"),
                                             os.path.join(os.getcwd(), 'ogre') ],
-                [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.0RC1.patch -p0 ", os.getcwd()],
+                [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.0RC2.patch -p0 ", os.getcwd()],
                 [0,'echo Please use MSVC Express Edition to build Ogre Release.','']
                 ]                      
         else:
