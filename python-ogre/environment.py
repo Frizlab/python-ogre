@@ -457,12 +457,15 @@ class boost:    ## also included bjam
         if _STABLE:
             base = 'boost_1_36_0'
             lib = 'boost_python-vc90-mt-1_36'
+            versionBase = '1_36' ## the version used on the library name
         else:        
             base = 'boost_1_36_0'
             lib = 'boost_python-vc90-mt-1_36'
+            versionBase = '1_36' ## the version used on the library name
     else:
         if _STABLE:
             base = 'boost_1_34_1'
+            versionBase = '1_34' ## the version used on the library name
         else:
             base = 'boost_1_36_0'
             versionBase = '1_36' ## the version used on the library name
