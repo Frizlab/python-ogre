@@ -213,6 +213,77 @@ def buildDeb ( module, install = False ):
         logger.warning("Was not able to build package")
     logger.info("Package successfully built!")
 
+def buildService ( module, install = False ):
+    """ Create a debian package for the module
+    """
+    logger.info("Trying to prepare a package for module %s to upload to build service" % module.base)
+    srcdir = os.path.join(os.getcwd(), module.base)
+    if not os.path.exists(srcdir):
+        exit("You need to get the src first, use -r")
+
+    buildbase = os.path.join(os.getcwd(), 'build', module.base)
+    builddir  = os.path.join(buildbase, module.base)
+
+    # Make the builddir
+    spawnTask("mkdir -p %s" % buildbase, os.getcwd())
+
+    # Create the source we are making
+    spawnTask("cp -rvf %s/ %s" % (srcdir, builddir), os.getcwd())
+
+    # Clean up the directories
+    spawnTask("find -name .svn | xargs rm -rf", builddir)
+    spawnTask("find -name .cvs | xargs rm -rf", builddir)
+
+    # Remove the debian directory
+    spawnTask("rm -rf debian", builddir)
+
+    # Tar up the source dir
+    spawnTask("tar -zcvf %s.tar.gz %s" % (module.base, module.base), buildbase)
+
+    # md5sum the package
+    spawnTask("md5sum %s.tar.gz | sed -e's/ .*//' > %s.md5sum" % (module.base, module.base), buildbase)
+
+    debiandir = os.path.join(srcdir, "debian")
+    if not os.path.exists(debiandir):
+        debiandir = os.path.join("python-ogre", "debs", "%s-debian" % module.base)
+
+    if not os.path.exists(debiandir):
+        exit(" Was not able to find a debian directory! ")
+
+    for file in ["changelog", "control", "rules"]:
+        filepath = os.path.join(buildbase, "debian."+file)
+        logger.debug ( file )
+        logger.debug ( filepath )
+        ret = spawnTask("cp -f %s %s" % (os.path.join(debiandir, file), filepath), os.getcwd())
+        if ret != 0:
+            exit("Was not able to copy the debian %s." % file)
+
+        ret = spawnTask( "sed --in-place "+filepath+'                       ' + \
+				' -e"s|%%SHORTDATE%%|`date +%Y%m%d`|"                       ' + \
+				' -e"s|%%LONGDATE%%|`date +\'%a, %d %b %Y %H:%m:%S %z\'`|"  ' + \
+				' -e"s|%%VERSION%%|'+module.source_version+'|"'
+			, srcdir)
+        if ret != 0:
+            exit("Was not able to update the debian %s." % file)
+
+    # Create the dsc file
+    dsc = os.path.join(buildbase, "%s.dsc" % module.base)
+    spawnTask("cp -f %s %s" % (os.path.join(debiandir, "dsc"), dsc), os.getcwd())
+    spawnTask( "sed --in-place "+dsc+ \
+        ' -e "s|%%MD5SUM%%|`cat '+module.base+'.md5sum`|"                         ' + \
+        ' -e "s|%%SIZE%%|`du -b '+module.base+'.tar.gz | sed -e\'s/[\t ]/ /g\'`|" ' + \
+        ' -e "s|%%SHORTDATE%%|`date +%Y%m%d`|"                                    ' + \
+        ' -e "s|%%LONGDATE%%|`date +\'%a, %d %b %Y %H:%m:%S %z\'`|"               ' + \
+        ' -e "s^%%BUILDDEPS%%^`cat '+os.path.join(debiandir, "control")+' | grep Build-Depends:`^"' + \
+		' -e "s|%%VERSION%%|'+module.source_version+'|g"'
+        , buildbase)
+    
+    # Do some cleanup
+    spawnTask("rm -rf %s" % builddir, buildbase)
+    spawnTask("rm %s.md5sum" % module.base, buildbase)
+    return
+
+
 def buildInstall ( module ):
     """ Create a debian package for the module
     """
@@ -250,6 +321,7 @@ def parseInput():
     parser.add_option("-g", "--gen", action="store_true", default=False ,dest="gencode", help="Generate Source Code for the module")
     parser.add_option("-d", "--build-deb", action="store_true", default=False ,dest="builddeb", help="Build a debian package for the module")
     parser.add_option("",   "--install-deb", action="store_true", default=False ,dest="installdeb", help="Install the debian packages after building")
+    parser.add_option("-s", "--build-service", action="store_true", default=False ,dest="buildservice", help="Prepare a package for the opensuse build service")
     parser.add_option("-c", "--compile", action="store_true", default=False ,dest="compilecode", help="Compile Source Code for the module")
     parser.add_option("-l", "--logfilename",  default="log.out" ,dest="logfilename", help="Override the default log file name")
     parser.add_option("-G", "--genall", action="store_true", default=False ,dest="gencodeall", help="Generate Source Code for all possible modules")
@@ -271,10 +343,10 @@ if __name__ == '__main__':
         
     if options.retrieve==False and options.build==False and options.gencode==False and options.compilecode==False\
             and options.compilecodeall==False and options.gencodeall==False and options.builddeb==False\
-            and options.installdeb==False:
+            and options.installdeb==False and options.buildservice==False:
         exit ( "You need to specific at least one option. Use -h for help")
-    if options.builddeb and options.build:
-        exit ( "You can only specify build or builddeb, not both!" )
+    if options.builddeb and options.build and options.buildservice:
+        exit ( "You can only specify build or builddeb or buildservice!" )
 
     FAILHARD=options.failhard
     VERBOSE=options.verbose
@@ -300,7 +372,9 @@ if __name__ == '__main__':
                 exit("Module specificed was not found (%s is not in environment.py) " % moduleName )
             if options.retrieve:    
                 retrieveSource ( classList[ moduleName ] )
-            if options.builddeb:
+            if options.buildservice:
+                buildService( classList[ moduleName ] )
+            elif options.builddeb:
                 buildDeb( classList[ moduleName ] )
             if options.installdeb:
                 buildInstall( classList[ moduleName ] )
