@@ -16,21 +16,22 @@ typedef Ogre::SharedPtr<Ogre::DefaultShadowCameraSetup> DefaultShadowCameraSetup
 typedef Ogre::SharedPtr<Ogre::FocusedShadowCameraSetup> FocusedShadowCameraSetupPtr;
 typedef Ogre::SharedPtr<Ogre::LiSPSMShadowCameraSetup> LiSPSMShadowCameraSetupPtr;
 typedef Ogre::SharedPtr<Ogre::PlaneOptimalShadowCameraSetup> PlaneOptimalShadowCameraSetupPtr;
+typedef Ogre::SharedPtr<Ogre::PSSMShadowCameraSetup> PSSMShadowCameraSetupPtr;
 
 typedef Ogre::SharedPtr<Ogre::StringVector> StringVectorPtr;
 
-typedef std::list<Ogre::Particle*> ParticleList;
-typedef std::list<Ogre::ParticleEmitter*> ParticleEmitterList;
-typedef std::vector<Ogre::Particle*> ParticlePool;
+// typedef std::list<Ogre::Particle*> ParticleList;
+typedef std::list<Ogre::ParticleEmitter*> stdListParticleEmitterPtr;
+typedef std::vector<Ogre::Particle*> stdVectorParticlePtr;
 typedef std::vector<float> stdVectorFloat;
 
 typedef Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::GpuConstantDefinition, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::GpuConstantDefinition> > > >\
 	MapIteratorGpuConstantDefinition;
 typedef std::vector<std::pair<unsigned, unsigned>, std::allocator<std::pair<unsigned, unsigned> > >\
-	VectorUnsignedUnsigned;
+	stdVectorUnsignedUnsigned;
 		
 typedef std::vector<Ogre::GpuProgramParameters::AutoConstantEntry, std::allocator<Ogre::GpuProgramParameters::AutoConstantEntry> >\
-	VectorAutoConstantEntry;
+	stdVectorAutoConstantEntry;
 	
 typedef Ogre::ResourceManager::ResourceCreateOrRetrieveResult ResourceCreateOrRetrieveResult;
 
@@ -51,13 +52,13 @@ typedef Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char
 typedef Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > >\
     MapIteratorString;
     
-typedef std::map<unsigned short, unsigned short> MapShortShort;
-typedef std::set<Ogre::SceneQuery::WorldFragmentType> SupportedWorldFragments;
-typedef std::vector<std::pair<Ogre::String, Ogre::String> > customParameters;
-typedef std::list<Ogre::Plane> StdListPlane;
-typedef std::list<Ogre::Particle*> StdListParticlePtr;
-typedef std::pair<bool, float> StdPairBoolFloat;
-typedef std::pair<unsigned, unsigned> StdPairUnsignedUnsigned;
+typedef std::map<unsigned short, unsigned short> stdMapShortShort;
+typedef std::set<Ogre::SceneQuery::WorldFragmentType> stdSetWorldFragmentType;
+typedef std::vector<std::pair<Ogre::String, Ogre::String> > stdVectorStringString;
+typedef std::list<Ogre::Plane> stdListPlane;
+typedef std::list<Ogre::Particle*> stdListParticlePtr;
+typedef std::pair<bool, float> stdPairBoolFloat;
+typedef std::pair<unsigned, unsigned> stdPairUnsignedUnsigned;
 
 #if OGRE_VERSION_MINOR == 4
     typedef Ogre::AlignedAllocator<Ogre::Vector4, 0> AlignedAllocatorVector40;
@@ -76,12 +77,12 @@ typedef std::pair<unsigned, unsigned> StdPairUnsignedUnsigned;
     
 #endif
 
-typedef std::vector<Ogre::Vector4> VectorVector4;
+typedef std::vector<Ogre::Vector4> strVectorVector4;
 typedef Ogre::MapIterator<Ogre::VertexAnimationTrack*> MapIVertexAnimationTrackPtr;
 typedef Ogre::MapIterator<Ogre::NumericAnimationTrack*> MapINumericAnimationTrackPtr;
 typedef Ogre::MapIterator<Ogre::NodeAnimationTrack*> MapINodeAnimationTrackPtr;
 typedef Ogre::MapIterator<Ogre::MovableObject*> MapIMovableObjectPtr;
-typedef std::map<Ogre::String, Ogre::MovableObjectFactory*> MovableObjectFactoryMap;
+typedef std::map<Ogre::String, Ogre::MovableObjectFactory*> stdMapStringMovableObjectFactory;
 
 // these could be simpler except parts of the 'simple' version are protected in the contex
 typedef Ogre::RadixSort<std::vector<Ogre::RenderablePass>,Ogre::RenderablePass,unsigned int> RadixSortRenerablePassUnsigned;
@@ -208,7 +209,7 @@ typedef Ogre::PoseList PoseList;
 typedef Ogre::VertexPoseKeyFrame::PoseRefList PoseRefList;
 typedef Ogre::VertexPoseKeyFrame::PoseRefIterator PoseRefIterator;
 typedef Ogre::VertexPoseKeyFrame::ConstPoseRefIterator ConstPoseRefIterator;
-typedef Ogre::PlaneList PlaneList;
+// typedef Ogre::PlaneList PlaneList;
 typedef Ogre::AnimableValuePtr AnimableValuePtr;
 typedef Ogre::StringVectorPtr StringVectorPtr;
 typedef Ogre::StringVector StringVector;
@@ -257,7 +258,7 @@ typedef Ogre::StaticGeometry::MaterialBucket::GeometryBucketList GeometryBucketL
 typedef Ogre::StaticGeometry::MaterialBucket::GeometryIterator GeometryIterator;
 typedef Ogre::StaticGeometry::Region::LODBucketList LODBucketList;
 typedef Ogre::StaticGeometry::Region::LODIterator LODIterator;
-typedef std::map<Ogre::uint32, Ogre::StaticGeometry::Region * > RegionMap;
+typedef std::map<Ogre::uint32, Ogre::StaticGeometry::Region * > stdMapUint32RegionPtr;
 //typedef Ogre::StaticGeometry::RegionMap RegionMap;
 typedef Ogre::StaticGeometry::RegionIterator RegionIterator;
 
@@ -315,7 +316,7 @@ typedef Ogre::ProgressiveMesh::LODFaceList LODFaceList;
 typedef Ogre::Pose::VertexOffsetMap VertexOffsetMap;
 typedef Ogre::Pose::VertexOffsetIterator VertexOffsetIterator;
 typedef Ogre::Pose::ConstVertexOffsetIterator ConstVertexOffsetIterator;
-typedef Ogre::PlaneBoundedVolume::PlaneList PlaneListBoundedVolume;
+// typedef Ogre::PlaneBoundedVolume::PlaneList PlaneListBoundedVolume;
 typedef Ogre::Pass::PassSet PassSet;
 typedef Ogre::Pass::TextureUnitStateIterator TextureUnitStateIterator;
 typedef Ogre::Pass::ConstTextureUnitStateIterator ConstTextureUnitStateIterator;
@@ -343,7 +344,7 @@ typedef Ogre::Overlay::Overlay2DElementsIterator Overlay2DElementsIterator;
 typedef Ogre::Node::ChildNodeMap ChildNodeMap;
 typedef Ogre::Node::ChildNodeIterator ChildNodeIterator;
 typedef Ogre::Node::ConstChildNodeIterator ConstChildNodeIterator;
-typedef Ogre::Mesh::LodDistanceList LodDistanceList;
+//typedef Ogre::Mesh::LodDistanceList LodDistanceList; // using stdvector
 typedef Ogre::Mesh::VertexBoneAssignmentList VertexBoneAssignmentList;
 typedef Ogre::Mesh::BoneAssignmentIterator BoneAssignmentIterator;
 typedef Ogre::Mesh::SubMeshList SubMeshList;

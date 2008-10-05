@@ -78,25 +78,60 @@ WRAPPER_REGISTRATION_MemoryDataStream = [
     ]
 
     
-WRAPPER_WRAPPER_RenderQueueListener =\
+WRAPPER_DEFINITION_RenderQueueListener =\
 """
-    virtual void renderQueueEnded( ::Ogre::uint8 queueGroupId, ::Ogre::String const & invocation, bool & repeatThisInvocation ){
+struct RenderQueueListener_wrapper : Ogre::RenderQueueListener, bp::wrapper< Ogre::RenderQueueListener > {
+
+ void RenderQueueListener_renderQueueEnded( ::Ogre::uint8 queueGroupId, ::Ogre::String const & invocation, bool & repeatThisInvocation ){
         bool holder;
-        bp::override func_renderQueueEnded = this->get_override( "renderQueueEnded" ); 
-        holder = func_renderQueueEnded( queueGroupId, invocation, repeatThisInvocation );
-        repeatThisInvocation = holder;
+        if ( bp::override func_renderQueueEnded = this->get_override( "renderQueueEnded" ) ) {
+            holder = func_renderQueueEnded( queueGroupId, invocation, repeatThisInvocation );
+            repeatThisInvocation = holder;
+            }
+        else { 
+            Ogre::RenderQueueListener::renderQueueEnded ( queueGroupId, invocation, repeatThisInvocation );
+        }           
     }
 
 
-    virtual void renderQueueStarted( ::Ogre::uint8 queueGroupId, ::Ogre::String const & invocation, bool & skipThisInvocation ){
+   void RenderQueueListener_renderQueueStarted( ::Ogre::uint8 queueGroupId, ::Ogre::String const & invocation, bool & skipThisInvocation ){
         bool holder;
-        bp::override func_renderQueueStarted = this->get_override( "renderQueueStarted" );
-        holder = func_renderQueueStarted( queueGroupId, invocation, skipThisInvocation );
-        skipThisInvocation = holder;
+        if ( bp::override func_renderQueueStarted = this->get_override( "renderQueueStarted" ) ) {
+            holder = func_renderQueueStarted( queueGroupId, invocation, skipThisInvocation );
+            skipThisInvocation = holder;
+            }
+        else { 
+            Ogre::RenderQueueListener::renderQueueStarted ( queueGroupId, invocation, skipThisInvocation );
+        }           
+            
     }
+};
 """
 
-
+WRAPPER_REGISTRATION_RenderQueueListener = [
+    """def( "renderQueueStarted", &::RenderQueueListener_renderQueueStarted,\\
+                "Python-Ogre Helper Function: This method is called by the SceneManager\\n\\
+                 before each queue group is rendered. 
+        @param queueGroupId The id of the queue group which has just been rendered
+		@param invocation Name of the invocation which is causing this to be 
+			called (@see RenderQueueInvocation)
+		@param .\\n\\
+                Input: queueGroupId The id of the queue group which has just been rendered\\n\\
+                Input: invocation Name of the invocation which is causing this to be called\\n\\
+                Input: skipThisInvocation A boolean which is by default set to false.\\n\\
+                Output: "skipThisInvocation" If the event sets this to true, the queue will be skipped\\n\\
+                   and not rendered. Note that in this case the renderQueueEnded event will not be raised\\n\\
+			       for this queue group");""",
+    """def( "renderQueueEnded", &::RenderQueueListener_renderQueueEnded,\\
+                "Python-Ogre Helper Function: This method is called by the SceneManager\\n\\
+                 after each queue group is rendered.\\n\\ 
+                Input: queueGroupId The id of the queue group which has just been rendered\\n\\
+                Input: invocation Name of the invocation which is causing this to be called\\n\\
+                Input: repeatThisInvocation A boolean which is by default set to false.\\n\\
+                Output: "repeatThisInvocation" If return true, the queue which has just been\\n\\
+			        rendered will be repeated, and the renderQueueStarted and renderQueueEnded\\n\\
+			        events will also be fired for it again");"""
+        ]
 
 WRAPPER_DEFINITION_OverlayElement = \
 """
@@ -235,6 +270,7 @@ Ogre::Node * Node_removeChild2(Ogre::Node& me, const Ogre::String& name){
 Ogre::Node * Node_removeChild3(Ogre::Node& me, Ogre::Node * child){
     return Node_castAutomatic( me.removeChild( child ) );
 }
+
 """
 
 WRAPPER_REGISTRATION_Node = [
@@ -258,10 +294,11 @@ WRAPPER_REGISTRATION_Node = [
     bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
     'def( "castAsSceneNode", &::Node_castAsSceneNode,\
     "Python-Ogre Helper Function\\nCast a Node as a Scene Node",\
-    bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());'
+    bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
     'def( "castAutomatic", &::Node_castAutomatic,\
     "Python-Ogre Helper Function\\nCast a Node as a Scene Node or Bone Node (automatic)",\
-    bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());'
+    bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
+      
     ]
 
 WRAPPER_DEFINITION_ResourceManager = \
@@ -350,6 +387,13 @@ Ogre::OverlayContainer * General_castBorderPanelAsOverlayContainer( Ogre::Border
         return (Ogre::OverlayContainer*) e;
     }
     
+Ogre::Node * General_castBoneAsNode( Ogre::Bone * e ){  
+        return (Ogre::Node*) e;
+    }    
+Ogre::Node * General_castSceneNodeAsNode( Ogre::SceneNode * e ){  
+        return (Ogre::Node*) e;
+    }    
+
 boost::python::tuple 
 GetOgreVersion () {
             return ( boost::python::make_tuple( Ogre::StringConverter::toString(OGRE_VERSION_MAJOR),
@@ -619,7 +663,18 @@ WRAPPER_REGISTRATION_General = [
                 Input: Resource Object\\n\\
                 Output: \'Native\' Object (Texture, Font, Mesh, etc)\\n\\
                 This function should not be needed, however just in case you get a resource object from Ogre\\n\\
-                and you need to use it as it\'s native type");"""
+                and you need to use it as it\'s native type");""",
+    """bp::def( "castBoneToNode", &General_castBoneAsNode,
+                "Python-Ogre Helper Function: Casts a bone to a node.\\n\\
+                Input: Bone\\n\\
+                Ouput: Node",\
+                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());""",
+    """bp::def( "castSceneNodeToNode", &General_castSceneNodeAsNode,
+                "Python-Ogre Helper Function: Casts a SceneNode to a node.\\n\\
+                Input: SceneNode\\n\\
+                Ouput: Node",\
+                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());""",
+                
      ]
 
 ##################################################################
@@ -1012,6 +1067,8 @@ def apply( mb ):
         iter_as_generator_map( cls ) 
         
     rt = mb.class_( 'RenderQueueListener' )   
+# # # # #     rt.add_declaration_code( WRAPPER_DEFINITION_RenderQueueListener )
+# # # # #     apply_reg (rt,  WRAPPER_REGISTRATION_RenderQueueListener )
 #     print "WRAPPER CODE\n\n"
 #     print rt.wrapper_code
 #     print rt

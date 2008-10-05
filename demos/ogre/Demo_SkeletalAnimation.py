@@ -167,7 +167,7 @@ class SkeletalApplication(sf.Application):
         self.TexCam = sceneManager.createCamera("ReflectCam")
         self.TexCam.setCustomViewMatrix(False)
 
-#         self.CurrentShadowCameraSetup.getShadowCamera (self.sceneManager, self.camera, self.viewport, light, self.TexCam) 
+        self.CurrentShadowCameraSetup.getShadowCamera (self.sceneManager, self.camera, self.viewport, light, self.TexCam,0) 
 
 #         self.CurrentShadowCameraSetup = ogre.FocusedShadowCameraSetup() 
 #         self.CurrentShadowCameraSetup = ogre.DefaultShadowCameraSetup() 

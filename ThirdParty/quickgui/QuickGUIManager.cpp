@@ -862,22 +862,20 @@ namespace QuickGUI
 		}
 	}
 
-	bool GUIManager::renderQueueStarted(Ogre::uint8 id, const std::string& invocation, bool skipThisQueue)
+	void GUIManager::renderQueueStarted(Ogre::uint8 id, const std::string& invocation, bool &skipThisQueue)
 	{
 		for(std::vector<Widget*>::iterator it = mFreeList.begin(); it != mFreeList.end(); ++it)
 			delete (*it);
 		mFreeList.clear();
-		return skipThisQueue;
 	}
 
-	bool GUIManager::renderQueueEnded(Ogre::uint8 id, const std::string& invocation, bool repeatThisQueue)
+	void GUIManager::renderQueueEnded(Ogre::uint8 id, const std::string& invocation, bool &repeatThisQueue)
 	{
 		// Perform rendering of GUI
 		if(mGUIManagerDesc.queueID == id)
 		{
 			draw();
 		}
-		return repeatThisQueue;
 	}
 
 	void GUIManager::setActiveSheet(Sheet* s)

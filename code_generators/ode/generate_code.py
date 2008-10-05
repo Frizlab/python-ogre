@@ -25,6 +25,11 @@
 
 
 import os, sys, time, shutil
+try:
+   import psyco
+   psyco.full()
+except ImportError:
+   pass
 
 #add environment to the path
 sys.path.append( os.path.join( '..', '..' ) )
@@ -251,10 +256,10 @@ def generate_code():
         , messages.W1029
         , messages.W1030
         , messages.W1031
-        , messages.W1035
-        , messages.W1040 
-        , messages.W1038        
-        , messages.W1041
+#         , messages.W1035
+#         , messages.W1040 
+#         , messages.W1038        
+#         , messages.W1041
         , messages.W1036 # pointer to Python immutable member
         , messages.W1033 # unnamed variables
         , messages.W1018 # expose unnamed classes
@@ -322,7 +327,7 @@ def generate_code():
 
     return_pointee_value_source_path \
         = os.path.join( environment.pyplusplus_install_dir
-                        , 'pyplusplus_dev'
+#                         , 'pyplusplus_dev'
                         , 'pyplusplus'
                         , 'code_repository'
                         , 'return_pointee_value.hpp' )

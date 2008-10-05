@@ -63,6 +63,49 @@ WRAPPER_REGISTRATION_OgreOdeLoader = [
      bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());"""
     ]
  
+    
+WRAPPER_DEFINITION_Helper = \
+"""
+OgreOde::TriangleMeshGeometry *
+OgreOdeGeometry_makeTriangleMeshGeometry (boost::python::list vertices, unsigned int vertex_count, 
+                             boost::python::list indices, unsigned int index_count,
+                             OgreOde::World *world,  OgreOde::Space* space = 0) {
+                             
+    Ogre::Vector3 * Vectors, vStart;
+    OgreOde::TriangleIndex * Triangles, tStart;
+    int index;
+        
+    // first lets make sure the counts aren't 'too' big
+    if ( len (vertices) < vertex_count ) vertex_count = len(vertices);
+    // allocate memory
+    Vectors = new Ogre::Vector3 [ len( vertex_count ) ];
+    // do the copy    
+    vStart = Vector;
+    for (index =0 ; index <len(vertex_count); index ++) {
+        *Vectors++ = boost::python::extract<Ogre::Vector3> (vertices[index]);
+        }  
+                                   
+    // now the same for the indices                             
+    if ( len (indices) < index_count ) index_count = len(indices);
+    Triangles = new OgreOde::TriangleIndex [ len ( index_count ) ];
+    tStart = Triangles;
+    for (index =0 ; index <len(index_count); index ++) {
+        *Triangles++ = boost::python::extract<OgreOde::TriangleIndex> (indices[index]);
+        }                             
+    
+    return ( OgreOde::TriangleMeshGeometry ( vStart, vertex_count, tStart, index_count, world, space ) );
+    }        
+"""    
+     
+WRAPPER_REGISTRATION_Helper = [
+    """def( "makeTriangleMeshGeometry", &::OgreOdeGeometry_makeTriangleMeshGeometry,
+    ( bp::arg("vertices"), bp::arg("vertex_count"), bp::arg("indices"), bp::arg("index_count"),
+    bp::arg("world", bp::arg("space")=0 ),
+    "Python-Ogre Hand Wrapped\\nReturns a TriangleMeshGeometry object",
+     bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());"""
+    ]
+
+        
 WRAPPER_DEFINITION_EntityInformer=\
 """
 boost::python::list
@@ -96,7 +139,7 @@ def apply( mb ):
     rt = mb.class_( 'DotLoader' )
     rt.add_declaration_code( WRAPPER_DEFINITION_OgreOdeLoader )
     apply_reg (rt,  WRAPPER_REGISTRATION_OgreOdeLoader )
-#     rt = mb.class_( 'EntityInformer' )
-#     rt.add_declaration_code( WRAPPER_DEFINITION_EntityInformer )
-#     apply_reg (rt,  WRAPPER_REGISTRATION_EntityInformer )
+    rt = mb.class_( 'EntityInformer' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_EntityInformer )
+    apply_reg (rt,  WRAPPER_REGISTRATION_EntityInformer )
        

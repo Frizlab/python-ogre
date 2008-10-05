@@ -30,7 +30,7 @@ RPATH=""
 # We need to know where to find gccxml......
 gccxml_bin =        os.path.join(BASE_DIR, 'gccxml/bin/release/gccxml.exe')
 # and the Py++ directory as sometimes we need access to the code repository there
-pyplusplus_install_dir = os.path.join(BASE_DIR, 'pygccxml')
+pyplusplus_install_dir = os.path.join(BASE_DIR, 'pyplusplus')
 
 ## Parent directories of the libraries
 PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )

@@ -351,7 +351,7 @@ class ShadowsListener ( SampleFramework.FrameListener, OIS.MouseListener, OIS.Ke
             ## rotate camera
             self.mRotX += -e.moveDelta.d_x * self.mAvgFrameTime * 10.0 
             self.mRotY += -e.moveDelta.d_y * self.mAvgFrameTime * 10.0 
-            MouseCursor.getSingleton().setPosition( self.mLastMousePosition ) 
+            CEGUI.MouseCursor.getSingleton().setPosition( self.mLastMousePosition ) 
             self.mUpdateMovement = True 
         else:
             if( self.mRMBDown and not self.mLMBDown):

@@ -12,6 +12,11 @@
 
 
 import os, sys, time, shutil
+try:
+   import psyco
+   psyco.full()
+except ImportError:
+   pass
 
 #add environment to the path
 sys.path.append( os.path.join( '..', '..' ) )
@@ -117,10 +122,10 @@ def AutoFixes ( mb, MAIN_NAMESPACE ):
     else:
         main_ns = global_ns
         
-    # Functions that have void pointers in their argument list need to change to unsigned int's  
-    pointee_types=[]
-    ignore_names=[]
-    common_utils.Fix_Void_Ptr_Args  ( main_ns ) # , pointee_types, ignore_names )
+#     # Functions that have void pointers in their argument list need to change to unsigned int's  
+#     pointee_types=[]
+#     ignore_names=[]
+#     common_utils.Fix_Void_Ptr_Args  ( main_ns ) # , pointee_types, ignore_names )
 
     # and change functions that return a variety of pointers to instead return unsigned int's
     pointee_types=[]
@@ -239,6 +244,8 @@ def generate_code():
     ManualTransformations ( mb )
     AutoFixes ( mb, MAIN_NAMESPACE )
     ManualFixes ( mb )
+    common_utils.Auto_Functional_Transformation ( main_ns )
+
     #
     # We need to tell boost how to handle calling (and returning from) certain functions
     #

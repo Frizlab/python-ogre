@@ -133,8 +133,8 @@ namespace QuickGUI
 		Sheet* reloadSheetFromFile(const Ogre::String& fileName);
 
 		// Inheritted functions from Ogre::RenderQueueListener
-		virtual bool renderQueueStarted(Ogre::uint8 id, const std::string& invocation, bool skipThisQueue);
-		virtual bool renderQueueEnded(Ogre::uint8 id, const std::string& invocation, bool repeatThisQueue);
+		virtual void renderQueueStarted(Ogre::uint8 id, const std::string& invocation, bool &skipThisQueue);
+		virtual void renderQueueEnded(Ogre::uint8 id, const std::string& invocation, bool &repeatThisQueue);
 
 		/**
 		* Sets the current Sheet to be drawn and interacted with.

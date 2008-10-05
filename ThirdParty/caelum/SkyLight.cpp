@@ -42,8 +42,6 @@ BaseSkyLight::BaseSkyLight (Ogre::SceneManager *sceneMgr, Ogre::SceneNode *caelu
 
 	mMainLight = sceneMgr->createLight (lightName);
 	mMainLight->setType (Ogre::Light::LT_DIRECTIONAL);
-	// HDR power scale, REALLY bright:
-	mMainLight->setPowerScale (10);
 
 	sceneMgr->getRenderQueue()->getQueueGroup(CAELUM_RENDER_QUEUE_SUN)->setShadowsEnabled(false);
 

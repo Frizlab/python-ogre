@@ -7,6 +7,11 @@
 
 
 import os, sys, time, shutil
+try:
+   import psyco
+   psyco.full()
+except ImportError:
+   pass
 
 #add environment to the path
 sys.path.append( os.path.join( '..', '..' ) )
@@ -558,95 +563,7 @@ def Set_Exception(mb):
     #~ Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getFullDescription().c_str()' )
             
     
-def _ReturnUnsignedInt( type_ ):
-    """helper to return an UnsignedInt call for tranformation functions
-    """
-    return declarations.cpptypes.unsigned_int_t()
-    
-def Fix_Void_Ptr_Args ( mb ):
-    """ we modify functions that take void *'s in their argument list to instead take
-    unsigned ints, which allows us to use CTypes buffers
-    """
-    for fun in mb.member_functions():
-        arg_position = 0
-        for arg in fun.arguments:
-            if declarations.type_traits.is_void_pointer(arg.type):
-                fun.add_transformation( ft.modify_type(arg_position,_ReturnUnsignedInt ) )
-                fun.documentation = docit ("Modified Input Argument to work with CTypes",
-                                            "Argument "+arg.name+ "(pos:" + str(arg_position)\
-                                            +") takes a CTypes.adddressof(xx)", "...")
-                #print "Fixed Void Ptr", fun, arg_position
-                break
-            arg_position +=1
-            
-   ## lets go and look for stuff that might be a problem        
-    pointee_types=['unsigned int',' int ', ' float ', ' Real ', 'uchar', 'uint8',
-             'unsigned char']
-                          
-    function_names=[]
-    for fun in mb.member_functions():
-        if fun.documentation or fun.ignore: continue ## means it's been tweaked somewhere else
-        for n in function_names:
-            if n in fun.name:
-                print "CHECK :", fun
-                break
-        arg_position = 0
-        for arg in fun.arguments:
-            if declarations.is_pointer(arg.type): ## and "const" not in arg.type.decl_string:
-                for i in pointee_types:
-                    if i in arg.type.decl_string:
-                        print '"',arg.type.decl_string, '"'
-                        print "CHECK ", fun, str(arg_position)
-                        fun.documentation=docit("SUSPECT - MAYBE BROKEN", "....", "...")
-                        break
-            arg_position +=1
-
-## NEED To do the same for constructors
-    for fun in mb.constructors():
-        arg_position = 0
-        for arg in fun.arguments:
-            if declarations.is_pointer(arg.type): ## and "const" not in arg.type.decl_string:
-                for i in pointee_types:
-                    if i in arg.type.decl_string:
-                        print '"',arg.type.decl_string, '"'
-                        print "Excluding: ", fun
-                        fun.exclude()
-                        break
-            arg_position +=1         
-                    
-def Fix_Pointer_Returns ( mb ):
-    """ Change out functions that return a variety of pointer to base types and instead
-    have them return the address the pointer is pointing to (the pointer value)
-    This allow us to use CTypes to handle in memory buffers from Python
-    
-    Also - if documentation has been set then ignore the class/function as it means it's been tweaked else where
-    """
-    pointee_types=['unsigned int','int', 'float', 'unsigned char']
-    known_names=[]  # these are function names we know it's cool to exclude
-    for fun in mb.member_functions():
-        if declarations.is_pointer (fun.return_type) and not fun.documentation:
-            for i in pointee_types:
-                if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
-                    if not fun.name in known_names:
-                        print "Excluding (function):", fun, "as it returns (pointer)", i
-                    fun.exclude()
-    for fun in mb.member_operators():
-        if declarations.is_pointer (fun.return_type) and not fun.documentation:
-            for i in pointee_types:
-                if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
-                    print "Excluding (operator):", fun
-                    fun.exclude()
-
-
-
-def query_containers_with_ptrs(decl):
-    if not isinstance( decl, declarations.class_types ):
-       return False
-    if not decl.indexing_suite:
-       return False
-    return declarations.is_pointer( decl.indexing_suite.element_type )
-
-    
+   
 def Remove_Static_Consts ( mb ):
     """ linux users have compile problems with vars that are static consts AND have values set in the .h files
     we can simply leave these out """
@@ -675,11 +592,11 @@ def generate_code():
         , messages.W1029
         , messages.W1030
         , messages.W1031
-        , messages.W1035
-        , messages.W1040 
-        , messages.W1038 
-        , messages.W1039       
-        , messages.W1041
+#         , messages.W1035
+#         , messages.W1040 
+#         , messages.W1038 
+#         , messages.W1039       
+#         , messages.W1041
         , messages.W1036 # pointer to Python immutable member
         , messages.W1033 # unnamed variables
         , messages.W1018 # expose unnamed classes
