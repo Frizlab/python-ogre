@@ -793,7 +793,7 @@ class ogrerefapp:
 class ogrenewt:
     active = True
     pythonModule = True
-    version = "r2490"
+    version = "r2429"
     name = 'ogrenewt'
     parent = "ogre/physics"
     base = 'ogreaddons/ogrenewt'
@@ -983,7 +983,7 @@ class caelum:
     active = True
     pythonModule = True
     name = 'caelum'
-    version="r321"
+    version="r331"
     parent="ogre/addons"
     cflags = ""
     include_dirs = [ Config.PATH_Boost,
@@ -1004,7 +1004,7 @@ class caelum:
 class ogreode:
     active = True
     pythonModule = True
-    version= "r2492"
+    version= "r2497"
     cflags = ""
     name='ogreode'
     parent = "ogre/physics"
@@ -1084,7 +1084,7 @@ class quickgui:
     ModuleName="QuickGUI"   
 
 class navi:
-    active = True
+    active = False
     pythonModule = True
     version="1.6"
     parent="ogre/gui"
@@ -1135,7 +1135,7 @@ class betagui:
 class ogreforests:
     active = True
     pythonModule = True
-    version="r2490"
+    version="r2491"
     name='ogreforests'
     parent="ogre/addons"
     CCFLAGS = ' ' # -D"FT2_BUILD_LIBRARY"
@@ -1155,7 +1155,7 @@ class ogreforests:
 class particleuniverse:
     active = True
     pythonModule = True
-    version="0.8"
+    version="0.81"
     name='particleuniverse'
     parent="ogre/addons"
     CCFLAGS = ' ' 
@@ -1512,7 +1512,7 @@ class ogrebulletc:  #
     active = True
     pythonModule = True
     name='ogrebulletc'
-    version = "1.0"
+    version = "r2493"
     cflags = ""
     parent = "ogre/physics"
     libs = [boost.lib,  'OgreMain', 
@@ -1542,7 +1542,7 @@ class ogrebulletc:  #
 class ogrebulletd:  # 
     active = True
     pythonModule = True
-    version = "r2486"
+    version = "r2493"
     name='ogrebulletd'
     cflags = ""
     parent = "ogre/physics"

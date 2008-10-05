@@ -271,9 +271,10 @@ def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[]):
         toprocess.append( fun )
     for fun in mb.free_functions(allow_empty=True):
         toprocess.append( fun )
-        
     for fun in toprocess:
-        try:   # ugly wrapping in a try :(    
+        fun_demangled = fun.demangled  # need to check as extern functions don't have demangled name...
+        if fun_demangled: 
+#         try:   # ugly wrapping in a try :(    
             fullname = fun.demangled.split('(')[0]
             if fullname not in ignore_funs and not fun.ignore:
                 outputonly = False
@@ -299,19 +300,21 @@ def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[]):
                                 arg.type.decl_string + " ) takes a CTypes.addressof(xx). \\n"
                             ctypes_conversion = True                                
                             ctypes_arg = arg.type.decl_string.split()[0]
-                        elif declarations.is_reference(arg.type):  
+                        elif declarations.is_reference(arg.type)and not declarations.is_const(declarations.remove_reference( arg.type)):  # seen functions passing const ref's 
                             trans.append( ft.inout(arg_position ) )
                             desc = desc + "Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
                                 arg.type.decl_string + " ) converted to an input/output (change to return types).\\n"
+                        elif declarations.is_reference(arg.type):
+                            print "Warning: - possible code change.", fun,arg," not wrapped as const reference to base type invalid"
                         else:
-                            pass
+                            pass # it isn't a pointer or reference so doesn't need wrapping
                     else:
-                        pass
+                        pass # it's not a var we need to handle
                     arg_position += 1
                 if trans:
-                    if fun.documentation:   # it's already be tweaked:
+                    if fun.documentation or fun.transformations:   # it's already be tweaked:
                         print "AUTOFT ERROR: Duplicate Tranforms.", fun, fun.documentation
-                    elif fun.virtuality == "pure virtual":
+                    elif hasattr(fun, "virtuality") and fun.virtuality == "pure virtual": # free functions don't have virtuality arrtibute
                         print "AUTOFT WARNING: PURE VIRTUAL function requires tranform.", fun
                     else:
                         new_alias = fun.name
@@ -337,13 +340,16 @@ def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[]):
                         fun.add_transformation ( * trans ,  **{"alias":new_alias}  )
                         fun.documentation = docit ("Auto Modified Arguments:",
                                                         desc, "...")
-        except:
-            print "Unexpected error:", sys.exc_info()[0]
+#         except:
+#             print "Unexpected error:", sys.exc_info()[0]
+#             sys.exit()
 
 def Fix_Void_Ptr_Args ( mb, pointee_types=['unsigned int','int', 'float', 'unsigned char', 'char', 'bool'],  ignore_names=[] ):
     """ we modify functions that take void *'s in their argument list to instead take
     unsigned ints, which allows us to use CTypes buffers
     """
+    raise RuntimeError( "Fix_Void_Ptr_Args is depreciated,  use Auto_Functional_Transformation instead")
+    
     def fixVoids ( fun ):
         arg_position = 0
         trans=[]
@@ -499,6 +505,18 @@ def Set_DefaultCall_Policies( mb ):
             mem_fun.call_policies = call_policies.return_value_policy(
                 call_policies.reference_existing_object )
 
+def Find_Problem_Transformations ( mb ):
+    """ There are some cases where function transformations don't get applied as Py++ doesn't
+    support all cases -- the only current one is pure virtual functions don't get managed correctly
+    """
+    ACCESS_TYPES = declarations.ACCESS_TYPES
+    VIRTUALITY_TYPES = declarations.VIRTUALITY_TYPES
+    for f in mb.member_functions():
+        if len (f.transformations) > 0:
+            if f.parent.find_out_member_access_type( f ) == ACCESS_TYPES.PUBLIC:
+                if f.virtuality == VIRTUALITY_TYPES.PURE_VIRTUAL:
+                    print "WARNING: Pure Virtual function with Transformations - they will not be applied:", f
+                    
 def Remove_Static_Consts ( mb ):
     """ linux users have compile problems with vars that are static consts AND have values set in the .h files
     we can simply leave these out 

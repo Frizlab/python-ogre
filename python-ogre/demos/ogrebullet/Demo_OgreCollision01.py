@@ -163,7 +163,8 @@ class OgreCollideListener(sf.FrameListener):
         defaultBody = bulletC.Object(
             "BulletCube" + str(self.entitiesInstanced), 
             self.parent.world, True)
-        defaultBody.setShape ( sceneCubeShape, pos, q);
+        print "Setting default body", sceneCubeShape, pos, q
+        defaultBody.setShape ( sceneCubeShape, pos, q)
         
 # #         node = self.parent.sceneManager.getRootSceneNode ().createChildSceneNode ()
         node = defaultBody.getRootNode()
@@ -226,6 +227,8 @@ class OgreCollideListener(sf.FrameListener):
 
                 shape = bulletC.BoxCollisionShape(size)                    
                 bBody = bulletC.Object( "BulletObject" + str(i), self.parent.world, True)
+                print "Setting bbody shape", bBody,shape, position, q
+                print dir ( bBody )
                 bBody.setShape ( shape, position, q)
                 node = bBody.getRootNode() ##self.sceneManager.getRootSceneNode().createChildSceneNode()
                 node.attachObject(entity)

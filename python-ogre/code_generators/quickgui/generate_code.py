@@ -16,7 +16,11 @@
 # 		
 		
 import os, sys, time, shutil
-
+try:
+   import psyco
+   psyco.full()
+except ImportError:
+   pass
 #add environment to the path
 sys.path.append( os.path.join( '..', '..' ) )
 #add common utils to the pass
@@ -226,8 +230,8 @@ def AutoFixes ( mb ):
     # arguments passed as refs but not const are not liked by boost
     #Fix_Ref_Not_Const ( main_ns )
     
-    # Functions that have void pointers in their argument list need to change to unsigned int's  
-    Fix_Void_Ptr_Args  ( main_ns )
+#     # Functions that have void pointers in their argument list need to change to unsigned int's  
+#     Fix_Void_Ptr_Args  ( main_ns )
     
     # and change functions that return a variety of pointers to instead return unsigned int's
     Fix_Pointer_Returns ( main_ns )   
@@ -451,7 +455,8 @@ def generate_code():
     
     AutoFixes ( mb )
     ManualFixes ( mb )
-    
+    common_utils.Auto_Functional_Transformation ( main_ns  )
+
     mb.global_ns.namespace ('Ogre').vars( 'ms_Singleton' ).disable_warnings( messages.W1035 ) #singleton pointers coming up we need to ignore
                 
     #

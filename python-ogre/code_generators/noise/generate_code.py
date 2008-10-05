@@ -12,6 +12,11 @@
 
 
 import os, sys, time, shutil
+try:
+   import psyco
+   psyco.full()
+except ImportError:
+   pass
 
 #add environment to the path
 sys.path.append( os.path.join( '..', '..' ) )
@@ -122,10 +127,10 @@ def AutoFixes ( mb, MAIN_NAMESPACE ):
     else:
         main_ns = global_ns
         
-    # Functions that have void pointers in their argument list need to change to unsigned int's  
-    pointee_types=[]
-    ignore_names=[]
-    common_utils.Fix_Void_Ptr_Args  ( main_ns ) # , pointee_types, ignore_names )
+#     # Functions that have void pointers in their argument list need to change to unsigned int's  
+#     pointee_types=[]
+#     ignore_names=[]
+#     common_utils.Fix_Void_Ptr_Args  ( main_ns ) # , pointee_types, ignore_names )
 
     # and change functions that return a variety of pointers to instead return unsigned int's
     pointee_types=[]
@@ -151,36 +156,36 @@ def AutoFixes ( mb, MAIN_NAMESPACE ):
 ##
 ###############################################################################
      
-def AutoFixes ( mb, MAIN_NAMESPACE ): 
-    """ now we fix a range of things automatically - typically by going through 
-    the entire name space trying to guess stuff and fix it:)
-    """    
-    global_ns = mb.global_ns
-    if MAIN_NAMESPACE:
-        main_ns = global_ns.namespace( MAIN_NAMESPACE )
-    else:
-        main_ns = global_ns
-        
-    # Functions that have void pointers in their argument list need to change to unsigned int's  
-    pointee_types=[]
-    ignore_names=[]
-    common_utils.Fix_Void_Ptr_Args  ( main_ns ) # , pointee_types, ignore_names )
-
-    # and change functions that return a variety of pointers to instead return unsigned int's
-    pointee_types=[]
-    ignore_names=[]  # these are function names we know it's cool to exclude
-    common_utils.Fix_Pointer_Returns ( main_ns ) # , pointee_types, ignore_names )   
-
-    # functions that need to have implicit conversions turned off
-    ImplicitClasses=[] 
-    common_utils.Fix_Implicit_Conversions ( main_ns, ImplicitClasses )
-    
-    if os.name =='nt':
-        Fix_NT( mb )
-    elif os.name =='posix':
-        Fix_Posix( mb )
-        
-    common_utils.Auto_Document( mb, MAIN_NAMESPACE )
+# def AutoFixes ( mb, MAIN_NAMESPACE ): 
+#     """ now we fix a range of things automatically - typically by going through 
+#     the entire name space trying to guess stuff and fix it:)
+#     """    
+#     global_ns = mb.global_ns
+#     if MAIN_NAMESPACE:
+#         main_ns = global_ns.namespace( MAIN_NAMESPACE )
+#     else:
+#         main_ns = global_ns
+#         
+#     # Functions that have void pointers in their argument list need to change to unsigned int's  
+#     pointee_types=[]
+#     ignore_names=[]
+#     common_utils.Fix_Void_Ptr_Args  ( main_ns ) # , pointee_types, ignore_names )
+# 
+#     # and change functions that return a variety of pointers to instead return unsigned int's
+#     pointee_types=[]
+#     ignore_names=[]  # these are function names we know it's cool to exclude
+#     common_utils.Fix_Pointer_Returns ( main_ns ) # , pointee_types, ignore_names )   
+# 
+#     # functions that need to have implicit conversions turned off
+#     ImplicitClasses=[] 
+#     common_utils.Fix_Implicit_Conversions ( main_ns, ImplicitClasses )
+#     
+#     if os.name =='nt':
+#         Fix_NT( mb )
+#     elif os.name =='posix':
+#         Fix_Posix( mb )
+#         
+#     common_utils.Auto_Document( mb, MAIN_NAMESPACE )
         
  
 ###############################################################################
@@ -297,6 +302,7 @@ def generate_code():
     
     for n in namespaces:
         AutoFixes ( mb, n )
+
     ManualFixes ( mb )
     
     ## namespaces 
@@ -307,6 +313,8 @@ def generate_code():
     #
     for ns in namespaces:
         common_utils.Set_DefaultCall_Policies (mb.global_ns.namespace(ns))
+        common_utils.Auto_Functional_Transformation ( mb.global_ns.namespace(ns) )
+
     
     
     #

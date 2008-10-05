@@ -107,7 +107,7 @@ namespace Caelum
 		/** Gets cloud movement speed.
 		 *  @param cloudSpeed Cloud movement speed.
 		 */
-		Ogre::Vector2 getCloudSpeed () const;
+        Ogre::Vector2 getCloudSpeed () const { return mCloudSpeed; }
 
 		/** Sets cloud cover, between 0 (completely clear) and 1 (completely covered)
 		 *  @param cloudCover Cloud cover between 0 and 1

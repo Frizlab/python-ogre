@@ -119,7 +119,6 @@ uint32 CountUsedVertices(IndexData *id, std::map<uint32, uint32> &ibmap)
 				uint16 *data = (uint16*)id->indexBuffer->lock(id->indexStart * sizeof(uint16), 
 					id->indexCount * sizeof(uint16), HardwareBuffer::HBL_READ_ONLY);
 
-				std::map<uint16, uint32> histogram;
 				for (i = 0; i < id->indexCount; i++) {
 					uint16 index = data[i];
 					if (ibmap.find(index) == ibmap.end()) ibmap[index] = ibmap.size();
@@ -134,7 +133,6 @@ uint32 CountUsedVertices(IndexData *id, std::map<uint32, uint32> &ibmap)
 				uint32 *data = (uint32*)id->indexBuffer->lock(id->indexStart * sizeof(uint32), 
 					id->indexCount * sizeof(uint32), HardwareBuffer::HBL_READ_ONLY);
 
-				std::map<uint32, uint32> histogram;
 				for (i = 0; i < id->indexCount; i++) {
 					uint32 index = data[i];
 					if (ibmap.find(index) == ibmap.end()) ibmap[index] = ibmap.size();

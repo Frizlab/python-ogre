@@ -28,6 +28,17 @@ class TestApplication(sf.Application):
         for i in range( skel.numBones): 
             bone = skel.getBone(i)
             print "BONE", bone 
+            print dir ( bone )
+            node = bone.asNode()
+            print "NODE", node
+            print dir ( node )
+            c = bone.createChild ( 90 )
+            print "CHILD:", c
+            print bone.numChildren()
+            print c.numChildren()
+            n = ogre.Node.createChild ( c.asNode(), "test" )
+            print "Child Node:", n
+            sys.exit()
             for j in range(bone.numChildren()): 
                 # Child bones, one per part than can be damaged 
                 child = bone.getChild(j) 

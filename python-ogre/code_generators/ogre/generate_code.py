@@ -15,6 +15,11 @@ Review all the functions with 'Check' beside them in the output as they probably
 """
 
 import os, sys, time, shutil
+try:
+   import psyco
+   psyco.full()
+except ImportError:
+   pass
 
 #add environment to the path
 sys.path.append( os.path.join( '..', '..' ) )
@@ -173,6 +178,10 @@ def ManualExclude ( mb ):
     global_ns.class_('::Ogre::SceneManager').mem_fun('setOption').exclude()
     global_ns.class_('::Ogre::SceneManager').mem_fun('getOption').exclude()
     global_ns.class_('::Ogre::ParticleSystem').mem_fun('_getIterator').exclude()
+    
+    ## AJM 26/09/08 Working to get renderqueue listener to wrap without changing Ogre API
+#     global_ns.class_('::Ogre::RenderQueueListener').mem_fun('renderQueueStarted').exclude()
+#     global_ns.class_('::Ogre::RenderQueueListener').mem_fun('renderQueueEnded').exclude()
    
     ## as we now include all protected functions there are a couple of problem areas that popped up
     main_ns.constructor("IndexData",arg_types=['::Ogre::IndexData const &']).exclude()
@@ -320,6 +329,10 @@ def ManualInclude ( mb ):
 ##  And things that need manual fixes, but not necessarly hand wrapped
 ##
 ############################################################
+def ManualFixesPreAuto ( mb ):  
+    """ fixes that need to be applied before the automatic fixes """
+    pass  
+
 def ManualFixes ( mb ):    
 
     global_ns = mb.global_ns
@@ -362,11 +375,18 @@ def ManualFixes ( mb ):
 
     ## Special due to bug in gccxml
     f=main_ns.class_('PatchMesh').mem_fun('define')
-    f.arguments[4].default_value = '::Ogre::PatchSurface::AUTO_LEVEL'
-    f.arguments[5].default_value = '::Ogre::PatchSurface::AUTO_LEVEL'
+    f.arguments[4]._set_default_value ('::Ogre::PatchSurface::AUTO_LEVEL')
+    f.arguments[5]._set_default_value ('::Ogre::PatchSurface::AUTO_LEVEL')
+    
     f=main_ns.class_('MeshManager').mem_fun('createBezierPatch')
-    f.arguments[6].default_value = '::Ogre::PatchSurface::AUTO_LEVEL'
-    f.arguments[7].default_value = '::Ogre::PatchSurface::AUTO_LEVEL'
+    f.arguments[6]._set_default_value ( '::Ogre::PatchSurface::AUTO_LEVEL')
+    f.arguments[7]._set_default_value ( '::Ogre::PatchSurface::AUTO_LEVEL')
+    print f
+    print f.arguments
+    print f.arguments[6]
+    print f.arguments[6].default_value
+    print dir(f.arguments[6])
+    
     
     
     ## Functions that return objects we need to manage
@@ -438,13 +458,18 @@ def ManualTransformations ( mb ):
 # # #     
 # # #     # This doesn't work at the moment as Py++ ignores it ??
 # # # #     
-# # # #     x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueEnded')
-# # # #     x.add_transformation(ft.inout('repeatThisInvocation'))
-# # # #     x.documentation = docit ("","queueGroupId, invocation", "tuple - repeatThisInvocation")
-# # # #     
-# # # #     x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueStarted') 
-# # # #     x.add_transformation(ft.inout('skipThisInvocation'))
-# # # #     x.documentation = docit ("","queueGroupId, invocation", "tuple - skipThisInvocation")
+#     x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueEnded')
+#     x.add_transformation(ft.inout('repeatThisInvocation'))
+#     x.documentation = docit ("","queueGroupId, invocation", "tuple - repeatThisInvocation")
+#     
+#     x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueStarted') 
+#     x.add_transformation(ft.inout('skipThisInvocation'))
+#     x.documentation = docit ("","queueGroupId, invocation", "tuple - skipThisInvocation")
+#     
+#     x = ns.mem_fun('::Ogre::ResourceGroupManager::fireScriptStarted') 
+#     x.add_transformation(ft.inout('skipScript'))
+#     x.documentation = docit ("","scriptName, skipScript", "tuple - skipThisInvocation")
+#     
 # # #     
 # # #     x=ns.mem_fun('::Ogre::RenderWindow::getMetrics')
 # # #     x.add_transformation( *create_output(5) )
@@ -482,13 +507,13 @@ def ManualTransformations ( mb ):
 # # #     x.add_transformation( ft.output('x'), ft.output('y'), ft.output('z') )
 # # #     x.documentation = docit ("","Vector", "tuple - x,y,z")
 # # #     
-# # #     x=ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueStarted')
-# # #     x.add_transformation(ft.inout("skipThisQueue"))
-# # #     x.documentation = docit ("", "id, invocation", "skipThisQueue" )
-# # #     
-# # #     x=ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueEnded') 
-# # #     x.add_transformation(ft.inout("repeatThisQueue"))
-# # #     x.documentation = docit ("", "id, invocation", "repeatThisQueue" )
+#     x=ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueStarted')
+#     x.add_transformation(ft.inout("skipThisQueue"))
+#     x.documentation = docit ("", "id, invocation", "skipThisQueue" )
+#     
+#     x=ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueEnded') 
+#     x.add_transformation(ft.inout("repeatThisQueue"))
+#     x.documentation = docit ("", "id, invocation", "repeatThisQueue" )
 # # #     
 # # #     x=ns.mem_fun('::Ogre::PanelOverlayElement::getUV') 
 # # #     x.add_transformation(ft.output('u1'), ft.output('v1'), ft.output('u2'), ft.output('v2') )
@@ -683,8 +708,6 @@ def AutoFixes ( mb, MAIN_NAMESPACE ):
     else:
         main_ns = global_ns
     
-    # arguments passed as refs but not const are not liked by boost
-    Fix_Ref_Not_Const ( main_ns )
     
     # Allow conversion between Vectors/Colourvalue etc and Python lists      
     Add_Auto_Conversions( mb )
@@ -717,6 +740,14 @@ def AutoFixes ( mb, MAIN_NAMESPACE ):
     knownNonMutable=['unsigned int','int', 'float','::Ogre::Real', '::Ogre::uchar',
                       '::Ogre::uint8', 'unsigned char', 'char']
     common_utils.Fix_ReadOnly_Vars ( mb, ToFixClasses, knownNonMutable )
+    
+   
+#     ## note change to clear prefix_output as this will force all transforms to be inout (and not 'output') to ensure the arguments are matched
+#     ## problem with overload virtual fuctions from parent class such as getMetrics in RenderWindow and RenderTarget
+#     common_utils.Auto_Functional_Transformation ( main_ns, special_vars=['::Ogre::Real &','::Ogre::ushort &','size_t &']  )
+
+    # arguments passed as refs but not const are not liked by boost
+    Fix_Ref_Not_Const ( main_ns )
     
     if os.name =='nt':
         Fix_NT( mb )
@@ -793,15 +824,22 @@ def Fix_Ref_Not_Const ( mb ):
     In reality the Ogre code probably needs to be patched as all of these should (??) be const.  However we'll fix it 
     with a function transformation wrapper
     """
+    return ### AJM    
     for fun in mb.member_functions( ):
         arg_position = 0
         for arg in fun.arguments:
             if 'Ptr' in arg.type.decl_string:
-                 if not 'const' in arg.type.decl_string and '&' in arg.type.decl_string:
-                    print "Fixing Const", fun.parent.name,"::", fun.name, "::", arg_position
-                    fun.add_transformation( ft.modify_type(arg_position,declarations.remove_reference ), alias=fun.name )
+                if not 'const' in arg.type.decl_string and '&' in arg.type.decl_string:
+                    print "Fixing Const:", arg.type.base, fun.parent.name+"::"+fun.name+"::"+arg.name+" ("+arg.type.decl_string+")"
+                    if len (fun.transformations) == 0:
+                        fun.add_transformation( ft.modify_type(arg_position,declarations.remove_reference ), alias=fun.name )
+                        fun.documentation = docit ("Fixed Constant Var " + arg.name + " (pos:"+str(arg_position) +")",
+                                                        "...", "...")
+                    else:
+                        print "*** Problem adding transform as will cause duplicates", fun   
+#                 else:
+#                     print "arg OK ", fun, arg.name, arg.type.decl_string                          
             arg_position +=1
- 
                                
 def Add_Auto_Conversions( mb ):
     """
@@ -899,7 +937,7 @@ def autoCasting ( main_ns, ignores = ['ParamCommand','MovableObjectFactory']  ):
     return ( (%(returnType)s * ) me );
     }   
     """
-    
+    masterlist = {}
     for c in main_ns.classes():
         if len(c.bases) > 0:
             for b in c.bases:
@@ -907,18 +945,29 @@ def autoCasting ( main_ns, ignores = ['ParamCommand','MovableObjectFactory']  ):
                 if not '<' in r.decl_string : ##and c.name != 'BillboardSet':  # don't worry about templates or factories..
                     if not r.name in ignores: # there are some bases that we don't care about overlaps on
                         for f in c.member_functions(allow_empty=True):
-                            if r.member_functions(f.name, allow_empty=True ):
-                                values = {  'returnType':r.decl_string, 'functionName': "as"+r.name, 
-                                            'className':c.name, 'classDecl': c.decl_string,
-                                            'castName':r.name }
-                                
-                                regcode = CastReg % values
-                                deccode = CastDec % values
-                                c.add_declaration_code( deccode )
-                                c.add_registration_code( regcode )
-                                print "Hand wrapper (as"+r.name+") created to cast from", c.name, "to", r.name ## b.access
-                                break
-
+                            if r.member_functions(f.name, allow_empty=True ): # look for each function in upper classes\
+                                key=r.name+'::'+f.name
+                                if masterlist.has_key(key):
+                                    masterlist[key]+=1
+                                else:
+                                    masterlist[key]=1                                    
+#                                 print "WARNING Overlaping functions:", c.name+"::"+f.name+ " in "+r.name
+#                                 values = {  'returnType':r.decl_string, 'functionName': "as"+r.name, 
+#                                             'className':c.name, 'classDecl': c.decl_string,
+#                                             'castName':r.name }
+#                                 
+# #                                 regcode = CastReg % values
+# #                                 deccode = CastDec % values
+# #                                 c.add_declaration_code( deccode )
+# #                                 c.add_registration_code( regcode )
+#                                 print "Hand wrapper (as"+r.name+") created to cast from", c.name, "to", r.name, f.name ## b.access
+# #                                 break
+    print "WARNING: Functions that may not be accessable"
+    i= masterlist.keys()
+    i.sort()
+    for k in i:
+        print k, masterlist[k] 
+#     sys.exit()
 def FindProtectedVars ( mb ):
     global_ns = mb.global_ns
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
@@ -938,30 +987,31 @@ def FindProtectedVars ( mb ):
 # the 'main'function
 #            
 def generate_code():  
-#     messages.disable( 
-# #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-#           messages.W1020
-#         , messages.W1021
-#         , messages.W1022
-#         , messages.W1023
-#         , messages.W1024
-#         , messages.W1025
-#         , messages.W1026
-#         , messages.W1027
-#         , messages.W1028
-#         , messages.W1029
-#         , messages.W1030
-#         , messages.W1031
-#         , messages.W1035
-#         , messages.W1040 
-# #         , messages.W1041 # overlapping names when creating a property
-# #         , messages.W1038        
-# #         , messages.W1036 # pointer to Python immutable member
-# #         , messages.W1033 # unnamed variables
-# #         , messages.W1018 # expose unnamed classes
-# #         , messages.W1049 # returns reference to local variable
-# #         , messages.W1014 # unsupported '=' operator
-#          )
+    messages.disable( 
+        messages.W1005 # using a non public variable type for argucments or returns
+#           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+        , messages.W1020
+        , messages.W1021
+        , messages.W1022
+        , messages.W1023
+        , messages.W1024
+        , messages.W1025
+        , messages.W1026
+        , messages.W1027
+        , messages.W1028
+        , messages.W1029
+        , messages.W1030
+        , messages.W1031
+        , messages.W1035
+        , messages.W1040 
+        , messages.W1041 # overlapping names when creating a property
+#         , messages.W1038        
+        , messages.W1036 # pointer to Python immutable member
+#         , messages.W1033 # unnamed variables
+#         , messages.W1018 # expose unnamed classes
+        , messages.W1049 # returns reference to local variable
+        , messages.W1014 # unsupported '=' operator
+         )
 #     sort_algorithms.USE_CALLDEF_ORGANIZER = True   ## tried this to remove a couple of order issues, without success :)
     #
     # Use GCCXML to create the controlling XML file.
@@ -1018,14 +1068,13 @@ def generate_code():
     ManualAlias ( mb )
     AutoFixes ( mb, MAIN_NAMESPACE )
     ManualFixes ( mb )
-    
-    FindProtectedVars ( mb )
-#     # indicated where underlying libraries are protected etc in the doc strings
-    common_utils.Auto_Document( mb, MAIN_NAMESPACE )
-
     ## note change to clear prefix_output as this will force all transforms to be inout (and not 'output') to ensure the arguments are matched
     ## problem with overload virtual fuctions from parent class such as getMetrics in RenderWindow and RenderTarget
     common_utils.Auto_Functional_Transformation ( main_ns, special_vars=['::Ogre::Real &','::Ogre::ushort &','size_t &']  )
+    
+    FindProtectedVars ( mb )
+
+
     
     for cls in main_ns.classes():
         if not cls.ignore:
@@ -1060,11 +1109,15 @@ def generate_code():
     
     for cls in main_ns.classes():
         if cls.name not in NoPropClasses:
-            print "ADDING PROPS", cls
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
             common_utils.remove_DuplicateProperties ( cls )
             ## because we want backwards pyogre compatibility lets add leading lowercase properties
             common_utils.add_LeadingLowerProperties ( cls )
+            
+            
+    #     # indicated where underlying libraries are protected etc in the doc strings
+    # THIS MUST BE AFTER Auto_Functional_Transformation
+    common_utils.Auto_Document( mb, MAIN_NAMESPACE )
             
     ## add additional version information to the module to help identify it correctly 
     common_utils.addDetailVersion ( mb, environment, environment.ogre )
@@ -1073,20 +1126,21 @@ def generate_code():
     for v in main_ns.variables():
         if not v.ignore:
             count +=1
-#             v.exclude()
-    print "\n\nSPECIAL -- variables:", count
+    print "SPECIAL -- variables:", count
     count = 0
     for v in main_ns.member_functions():
         if not v.ignore:
             count +=1
-#             v.exclude()
-    print "\n\nSPECIAL -- member functions:", count
+    print "SPECIAL -- member functions:", count
     count=0
     for v in main_ns.classes():
         if not v.ignore:
             count +=1
-#            v.exclude()
-    print "\n\nSPECIAL -- Number classes:", count
+    print "SPECIAL -- Number classes:", count
+    
+    
+    common_utils.Find_Problem_Transformations ( main_ns )
+    
     ##########################################################################################
     #
     # Creating the code. After this step you should not modify/customize declarations.

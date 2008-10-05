@@ -118,6 +118,7 @@ sizeof ( Ogre::SharedPtr<DefaultShadowCameraSetup> );
 sizeof ( Ogre::SharedPtr<FocusedShadowCameraSetup> );
 sizeof ( Ogre::SharedPtr<LiSPSMShadowCameraSetup> );
 sizeof ( Ogre::SharedPtr<PlaneOptimalShadowCameraSetup> );
+sizeof ( Ogre::SharedPtr<Ogre::PSSMShadowCameraSetup> );
 
 sizeof ( Ogre::ResourceManager::ResourceCreateOrRetrieveResult);
 

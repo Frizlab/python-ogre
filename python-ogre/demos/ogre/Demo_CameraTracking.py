@@ -90,8 +90,21 @@ class CameraTrackApplication(sf.Application):
         self.TexCam = sceneManager.createCamera("ReflectCam")
         self.TexCam.setCustomViewMatrix(False)
 #         self.TexCam.position = (1,0.5,1)
-        shadSetup.getShadowCamera (self.sceneManager, self.camera, self.viewport, light, self.TexCam) 
+        shadSetup.getShadowCamera (self.sceneManager, self.camera, self.viewport, light, self.TexCam, 0) 
         self.sceneManager.setShadowCameraSetup( shadSetup )
+        
+        
+        pssm = ogre.PSSMShadowCameraSetup() 
+        #pssm.calculateSplitPoints(3, 5, shadowFarDistance) 
+        #pssm.setSplitPadding(5) 
+        #pssm.setOptimalAdjustFactor(0, 2) 
+        #pssm.setOptimalAdjustFactor(1, 1) 
+        #pssm.setOptimalAdjustFactor(2, 0.5) 
+        pssm.getShadowCamera (self.sceneManager, self.camera, self.viewport, light, self.TexCam, 0) 
+        
+        # next line throws Boost.Python.ArgumentError as of 1.6RC1 
+        self.sceneManager.setShadowCameraSetup(pssm) 
+
         
         mouseRay = self.camera.getCameraToViewportRay( 10,10 )
         raySceneQuery = self.sceneManager.createRayQuery(ogre.Ray())

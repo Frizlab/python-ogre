@@ -180,13 +180,13 @@ namespace Caelum
     void FlatCloudLayer::setCloudBlendPos (const Ogre::Real value)
     {
         mCloudBlendPos = value;
-        uint textureCount = mNoiseTextureNames.size();
+        int textureCount = static_cast<int>(mNoiseTextureNames.size());
 
         // Convert to int and bring to [0, textureCount)
         int currentTextureIndex = static_cast<int>(floor(mCloudBlendPos));
         currentTextureIndex = ((currentTextureIndex % textureCount) + textureCount) % textureCount;
         assert(0 <= currentTextureIndex);
-        assert(currentTextureIndex < static_cast<int>(textureCount));
+        assert(currentTextureIndex < textureCount);
 
         // Check if we have to change textures.
         if (currentTextureIndex != mCurrentTextureIndex) {
