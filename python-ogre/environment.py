@@ -287,7 +287,7 @@ class pygccxml:
     else:                 
         source_version = "1415"
         source = [
-                    [svn, " co -r 1415 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
+                    [svn, " co  http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
                  ]             
     if isLinux() or isMac() :
         buildCmds =  [
@@ -311,7 +311,7 @@ class pyplusplus:
     else:                 
         source_version = "1415"
         source = [
-                    [svn, " co -r 1415 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
+                    [svn, " co http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
                  ]             
     if isLinux() or isMac() :
         buildCmds =  [
@@ -371,12 +371,12 @@ class freeimage:
     if isLinux() or isMac():
         base = 'FreeImage'
         source = [
-                    [wget, " http://prdownloads.sourceforge.net/freeimage/FreeImage3100.zip",downloadPath],
+                    [wget, " http://prdownloads.sourceforge.net/freeimage/FreeImage3110.zip",downloadPath],
                  ]
                  
         if isLinux():
             buildCmds =  [
-                    [0, unzip + " -q -o " + os.path.join(downloadPath,base) + "3100.zip", ''],
+                    [0, unzip + " -q -o " + os.path.join(downloadPath,base) + "3110.zip", ''],
                     ##
                     # Note the use of a single command that does multiple sed's 
                     ##
@@ -389,7 +389,7 @@ class freeimage:
                     ]    
         if isMac(): ## mac has a crap sed command implementation and a different shell interaction, plus make file is a little different (or course)
             buildCmds =  [
-                    [0, unzip + " -q -o " + os.path.join(downloadPath,base) + "3100.zip", ''],
+                    [0, unzip + " -q -o " + os.path.join(downloadPath,base) + "3110.zip", ''],
                     ##
                     # Note the use of a single command that does multiple sed's 
                     ##
@@ -405,10 +405,10 @@ class cmake:
     pythonModule = False
     active = True
     if isLinux() or isMac():
-        base = 'cmake-2.6.1-Linux-i386'
+        base = 'cmake-2.6.2-Linux-i386'
         
         if isMac():
-            base = 'cmake-2.6.1-Darwin-universal'
+            base = 'cmake-2.6.2-Darwin-universal'
             
         source = [
                     [wget, "http://www.cmake.org/files/v2.6/"+base+".tar.gz",downloadPath],
@@ -420,9 +420,9 @@ class cmake:
                     [0,cp + "-R  * " + PREFIX, os.path.join (os.getcwd(), base) ]   # copy to our bin area
                     ]
     if isWindows():
-        source = [ [wget, "http://www.cmake.org/files/v2.6/cmake-2.6.1-win32-x86.exe", downloadPath ]]
+        source = [ [wget, "http://www.cmake.org/files/v2.6/cmake-2.6.2-win32-x86.exe", downloadPath ]]
         buildCmds = [
-                [0, os.path.join(downloadPath, "cmake-2.6.1-win32-x86.exe"), '' ]
+                [0, os.path.join(downloadPath, "cmake-2.6.2-win32-x86.exe"), '' ]
                 ]
                 
                                 
