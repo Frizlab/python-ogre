@@ -205,7 +205,7 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
     """A default frame listener, which takes care of basic mouse and keyboard
     input."""
       
-    def __init__(self, renderWindow, camera, bufferedKeys = False, bufferedMouse = True, bufferedJoy = False):
+    def __init__(self, renderWindow, camera, bufferedKeys = False, bufferedMouse = False, bufferedJoy = False):
         ogre.FrameListener.__init__(self)
         ogre.WindowEventListener.__init__(self)
         self.camera = camera
@@ -287,6 +287,8 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
          #Register as a Window listener
          ogre.WindowEventUtilities.addWindowEventListener(self.renderWindow, self);
          
+         
+         
     def setMenuMode(self, mode):
         self.MenuMode = mode
         
@@ -327,7 +329,7 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
             buffJ = self.Joy.buffered()
 
         ##Check if one of the devices is not buffered
-        if self.Mouse.buffered() or self.Keyboard.buffered() or not buffJ :
+        if not self.Mouse.buffered() or not self.Keyboard.buffered() or not buffJ :
             ## one of the input modes is immediate, so setup what is needed for immediate movement
             if self.timeUntilNextToggle >= 0:
                 self.timeUntilNextToggle -= evt.timeSinceLastFrame
@@ -339,14 +341,14 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
 
         self.rotationX = ogre.Degree(0.0)
         self.rotationY = ogre.Degree(0.0)
-        self.translateVector = ogre.Vector3.ZERO
+        self.translateVector = ogre.Vector3(0,0,0)
 
         ##Check to see which device is not buffered, and handle it
         if not self.Keyboard.buffered():
-            if  self._processUnbufferedKeyInput(evt) == False:
+            if  not self._processUnbufferedKeyInput(evt):
                 return False
         if not self.Mouse.buffered():
-            if self._processUnbufferedMouseInput(evt) == False:
+            if not self._processUnbufferedMouseInput(evt):
                 return False
 
         if not self.Mouse.buffered() or not self.Keyboard.buffered() or not buffJ:
@@ -355,34 +357,34 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
         return True
 
                                         
-    def frameStarted(self, frameEvent):
-        return True
-    
-        if self.timeUntilNextToggle >= 0:
-            self.timeUntilNextToggle -= frameEvent.timeSinceLastFrame
-    
-        if frameEvent.timeSinceLastFrame == 0:
-            self.moveScale = 1
-            self.rotationScale = 0.1
-        else:
-            self.moveScale = self.moveSpeed * frameEvent.timeSinceLastFrame
-            self.rotationScale = self.rotationSpeed * frameEvent.timeSinceLastFrame
-    
-        self.rotationX = ogre.Degree(0.0)
-        self.rotationY = ogre.Degree(0.0)
-        self.translateVector = ogre.Vector3(0.0, 0.0, 0.0)
-        if not self._processUnbufferedKeyInput(frameEvent):
-            return False
-        
-        if not self.MenuMode:   # if we are in Menu mode we don't move the camera..
-            self._processUnbufferedMouseInput(frameEvent)
-        self._moveCamera()
-        # Perform simulation step only if using OgreRefApp.  For simplicity create a function that simply does
-        ###  "OgreRefApp.World.getSingleton().simulationStep(frameEvent.timeSinceLastFrame)"
-        
-        if  self.RefAppEnable:
-            self._UpdateSimulation( frameEvent )
-        return True
+#     def frameStarted(self, frameEvent):
+#         return True
+#     
+#         if self.timeUntilNextToggle >= 0:
+#             self.timeUntilNextToggle -= frameEvent.timeSinceLastFrame
+#     
+#         if frameEvent.timeSinceLastFrame == 0:
+#             self.moveScale = 1
+#             self.rotationScale = 0.1
+#         else:
+#             self.moveScale = self.moveSpeed * frameEvent.timeSinceLastFrame
+#             self.rotationScale = self.rotationSpeed * frameEvent.timeSinceLastFrame
+#     
+#         self.rotationX = ogre.Degree(0.0)
+#         self.rotationY = ogre.Degree(0.0)
+#         self.translateVector = ogre.Vector3(0.0, 0.0, 0.0)
+#         if not self._processUnbufferedKeyInput(frameEvent):
+#             return False
+#         
+#         if not self.MenuMode:   # if we are in Menu mode we don't move the camera..
+#             self._processUnbufferedMouseInput(frameEvent)
+#         self._moveCamera()
+#         # Perform simulation step only if using OgreRefApp.  For simplicity create a function that simply does
+#         ###  "OgreRefApp.World.getSingleton().simulationStep(frameEvent.timeSinceLastFrame)"
+#         
+#         if  self.RefAppEnable:
+#             self._UpdateSimulation( frameEvent )
+#         return True
 
     def frameEnded(self, frameEvent):
         self._updateStatistics()
@@ -501,14 +503,15 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
         else:
             self.rotationX = ogre.Degree(- ms.X.rel * 0.13)
             self.rotationY = ogre.Degree(- ms.Y.rel * 0.13)
-
+        return True
+        
     def _moveCamera(self):
         self.camera.yaw(self.rotationX)
         self.camera.pitch(self.rotationY)
-        try:
-            self.camera.translate(self.translateVector) # for using OgreRefApp
-        except AttributeError:
-            self.camera.moveRelative(self.translateVector)
+#         try:
+#             self.camera.translate(self.translateVector) # for using OgreRefApp
+#         except AttributeError:
+        self.camera.moveRelative(self.translateVector)
 
     def _updateStatistics(self):
         statistics = self.renderWindow
