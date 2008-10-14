@@ -67,6 +67,7 @@ def addDetailVersion ( mb, env, envClass ):
           
     po = ".".join( (env.PythonOgreMajorVersion,env.PythonOgreMinorVersion, env.PythonOgrePatchVersion) )
     t = datetime.datetime.now().isoformat(' ').strip()
+    t = datetime.date.today().isoformat() # making this less granular so it doesn't change 'every' time I do a regenerate
     v = envClass.version
     s = getSVNVersion( env )
     detail = "_".join( (po,s,envClass.name, v, t) )
@@ -162,7 +163,7 @@ def fix_unnamed_classes( classes, namespace ):
                 continue
             except:
                 print "**** Error in unnamed_classes", mvar
-                                        
+            print "Fixing Unnamed Class:", unnamed_cls, mvar, names_parent.name                            
             named_parent.add_code( template % dict( ns=namespace, mvar=mvar.name, parent=named_parent.name ) )
 
 def set_declaration_aliases(global_ns, aliases):
@@ -553,7 +554,7 @@ def Fix_ReadOnly_Vars ( main_ns, ToFixClasses, knownNonMutable ):
     GetterReg = \
     """
     add_property( // special :)
-                "%(variable_name)s_Copy"
+                "%(variable_name)s" // _Copy
                 , fget_Special_%(variable_name)s ( &%(getter_name)s )
                 , "special get property, built to access const variable" )
     """
@@ -579,7 +580,8 @@ def Fix_ReadOnly_Vars ( main_ns, ToFixClasses, knownNonMutable ):
                                 known = True
                         if not known:
                             ## OK so it must be mutable so lets fix it..
-# # # #                             v.exclude() ## remove it as a variable
+                            v.exclude() ## remove it as a variable
+                            print "Excluding Problem Const", cls.name, v
                             return_type, ignore = v.type.decl_string.split(' ',1) # remove cont etc from decl
                             return_type = return_type[2:] # remove leading ::
                             variable_name = v.name

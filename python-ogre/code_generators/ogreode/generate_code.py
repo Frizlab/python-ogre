@@ -68,7 +68,8 @@ def ManualExclude ( mb ):
                 '::OgreOde::TerrainGeometry::_heightCallback',
                 '::OgreOde::EntityInformer::getIndices', ## unsigned int const *
 #                 '::OgreOde::RagdollFactory::requestTypeFlags', # causes issues with moveableobjectfactory
-                '::OgreOde::EntityInformer::getBoneVertices'  # hand wrapped
+                '::OgreOde::EntityInformer::getBoneVertices',  # hand wrapped
+                '::OgreOde::TriangleMeshData::getIndices' ## needs to be hand wrapped
                 
                
                 ]
@@ -112,10 +113,9 @@ def ManualExclude ( mb ):
     excludes =['::OgreOde::TriangleMeshGeometry'  
                ,'::OgreOde::ComplexGeometry'
                ]
-    for c in excludes:
-        print dir ( global_ns.class_( c ) )
-        sys.exit()
-          
+#     for c in excludes:
+#         print dir ( global_ns.class_( c ) )
+#           
                 
     
     

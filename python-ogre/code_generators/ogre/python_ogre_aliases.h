@@ -10,6 +10,7 @@ typedef Ogre::SharedPtr<Ogre::GpuProgramParameters> GpuProgramParametersSharedPt
 // typedef std::multimap<Ogre::HardwareVertexBuffer*, Ogre::VertexBufferBinding::HardwareVertexBufferSharedPtr> FreeTemporaryVertexBufferMap;
 //typedef std::map<unsigned short, Ogre::VertexBufferBinding::HardwareVertexBufferSharedPtr> VertexBufferBindingMap;
 typedef Ogre::SharedPtr<Ogre::Resource> ResourcePtr;
+typedef Ogre::SharedPtr<Ogre::Material> MaterialPtr;
 
 typedef Ogre::SharedPtr<Ogre::ShadowCameraSetup> ShadowCameraSetupPtr;
 typedef Ogre::SharedPtr<Ogre::DefaultShadowCameraSetup> DefaultShadowCameraSetupPtr;

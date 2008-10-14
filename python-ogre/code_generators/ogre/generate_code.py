@@ -33,6 +33,7 @@ import customization_data
 import hand_made_wrappers
 import register_exceptions
 
+import pygccxml
 from pygccxml import parser
 from pygccxml import declarations
 from pyplusplus import messages
@@ -48,6 +49,46 @@ import common_utils.extract_documentation as exdoc
 import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
 from common_utils import docit
+
+
+
+
+predefined_is_smart_ptr = declarations.smart_pointer_traits
+class my_smart_ptr:
+   @staticmethod
+   def is_smart_pointer( v ):
+        t = v              
+        if predefined_is_smart_ptr.is_smart_pointer( v ):
+            return True
+        v=t            
+        v = declarations.type_traits.remove_alias( v )
+        v = declarations.type_traits.remove_cv( v )
+        v = declarations.type_traits.remove_declarated( v )
+        if not isinstance( v, ( declarations.class_declaration_t , declarations.class_t ) ):
+            return False
+        if not declarations.is_class( v ):
+            return False
+  
+        cls = declarations.class_traits.get_declaration( v )
+        if len(cls.bases) > 0:
+            for b in cls.bases:
+                r = b.related_class
+                if r.decl_string.startswith ( '::Ogre::SharedPtr<' ) : 
+#                     print "ANDY Smart Class:", v, cls, r.decl_string  
+                    return True 
+        else:
+            if cls.name.startswith ( 'SharedPtr<' ) or cls.name.endswith( 'SharedPtr' ):
+#                 print "Andy Smart 2", v, cls, cls.name
+                return True           
+        return False
+         
+   @staticmethod
+   def value_type( type ):
+#        print "ANDY VALUE_TYPE", type
+       if my_smart_ptr.is_smart_pointer( type ):
+           return predefined_is_smart_ptr.value_type( type, False )
+pygccxml.declarations.smart_pointer_traits = my_smart_ptr
+
 
 HACK = True
     
@@ -229,7 +270,7 @@ def ManualExclude ( mb ):
     ## Remove private classes , and those that are internal to Ogre...
     private_decls = common_utils.private_decls_t(environment.ogre.include_dirs)
     for cls in main_ns.classes():
-        print "MC:", cls
+#         print "MC:", cls
         if private_decls.is_private( cls ):
             cls.exclude()
             print '{*} class "%s" is marked as private' % cls.decl_string
@@ -322,6 +363,7 @@ def ManualInclude ( mb ):
         if type_or_decl.ignore == False and Expose:
             print "OPERATOR<<:", oper
             oper.include()
+    main_ns.class_('MaterialPtr').include()
 
         
 ############################################################
@@ -381,13 +423,7 @@ def ManualFixes ( mb ):
     f=main_ns.class_('MeshManager').mem_fun('createBezierPatch')
     f.arguments[6]._set_default_value ( '::Ogre::PatchSurface::AUTO_LEVEL')
     f.arguments[7]._set_default_value ( '::Ogre::PatchSurface::AUTO_LEVEL')
-    print f
-    print f.arguments
-    print f.arguments[6]
-    print f.arguments[6].default_value
-    print dir(f.arguments[6])
-    
-    
+       
     
     ## Functions that return objects we need to manage
     FunctionsToMemoryManage=[\
@@ -873,25 +909,34 @@ def Add_Auto_Conversions( mb ):
 def Set_Smart_Pointers( mb ):
     """ we need to identify 'smart pointers' which are any of the SharedPtr classes
     """
+    knownSmartClasses= ['MaterialPtr',
+        'CompositorPtr',
+        'FontPtr',
+        'GpuProgramPtr',
+        'HardwareIndexBufferSharedPtr',
+        'HardwarePixelBufferSharedPtr',
+        'HardwareVertexBufferSharedPtr',
+        'HighLevelGpuProgramPtr',
+        'MeshPtr',
+        'PatchMeshPtr',
+        'SkeletonPtr',
+        'TexturePtr',
+        ]
     for v in mb.variables():
         if not declarations.is_class( v.type ):
             continue
         cls = declarations.class_traits.get_declaration( v.type )
+        
         if cls.name.startswith( 'SharedPtr<' ):
            v.apply_smart_ptr_wa = True    
            print "Applying Smart Pointer: ",  v.name, " of class: ",  cls.name
         elif cls.name.endswith( 'SharedPtr' ):
            v.apply_smart_ptr_wa = True    
            print "Applying Smart Pointer: ",  v.name, " of class: ",  cls.name
-    
-    # now I want to get some specials, the are not classes so haven't been found so far
-    # this is potentially too broad brushed in it's approach but seems OK so far -- however if
-    # need bewe could check for specific classes - the current list being:
-    #
-    # InstancedGeometry,SubMeshLodGeometryLink,OptimisedSubMeshGeometry,SubMesh
-    # StaticGeometry,SubMeshLodGeometryLink,OptimisedSubMeshGeometry,
-    # RenderOperation,IndexData,EdgeListBuilder,Geometry,EdgeData,EdgeGroup
-                  
+        elif cls.name in knownSmartClasses:
+           v.apply_smart_ptr_wa = True    
+           print "Applying Smart Pointer: ",  v.name, " of class: ",  cls.name
+    # now for some specials by variable name..            
     known = ['indexBuffer', 'vertexData', 'indexData']
     for c in mb.classes():
         for v in c.variables(allow_empty = True ):
@@ -899,7 +944,7 @@ def Set_Smart_Pointers( mb ):
                v.apply_smart_ptr_wa = True    
                print "Applying Smart Pointer (know): ",  v.name, " of class: ",  c.name
            
-                           
+                   
 #~ def Set_Exception(mb):
     #~ """We don't exclude  Exception, because it contains functionality, that could
     #~ be useful to user. But, we will provide automatic exception translator
@@ -1074,7 +1119,6 @@ def generate_code():
     
     FindProtectedVars ( mb )
 
-
     
     for cls in main_ns.classes():
         if not cls.ignore:
@@ -1104,7 +1148,7 @@ def generate_code():
     #
     hand_made_wrappers.apply( mb )
     
-
+    
     NoPropClasses = ["UTFString"]
     
     for cls in main_ns.classes():
@@ -1140,7 +1184,8 @@ def generate_code():
     
     
     common_utils.Find_Problem_Transformations ( main_ns )
-    
+        
+        
     ##########################################################################################
     #
     # Creating the code. After this step you should not modify/customize declarations.
