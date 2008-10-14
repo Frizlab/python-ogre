@@ -1,11 +1,17 @@
 xxxx xx 2008 : Release 1.6.0 xxxx
 ==================================
+Fixed QuickGui with static consts not having default value and causing a boost load error
+Removed constant 'vars' and replaced them with properties that return a copy of the object. Specifically ZERO, UNIT_X, 
+     UNIT_Y, UNIT_Z, Black, White, Red, Green, Blue in Classes ColourValue, MatrixX, Quaternion and VectorX.
+     this is due to the fact they were actually passing a pointer to a non constant (mutable) variable which 
+     caused very annoying bugs.  So now Ogre.Vector3.ZERO has to be replaced with Ogre.Vector3().ZERO etc...
+
 Changed all code generation modules to use the common_code Auto_Functional_Transformation function
 Fix auto transform funtion to not wrap reference arguments that are const (bug)
 Fix auto transform funtion to handle extern free functions
 Removed 'asClassType' functions as they didn't actually do anything (and are not needed)
 Added PSSM camera functionality - it was missing from the sizeof.h file
-Added helper functions to OgreODE as constructors needed hand wrapping 
+Added helper functions to OgreODE as constructors needed hand wrapping (makeTriangleMeshGeometry, makeConvexGeometry)
 Fix to Py++ to handle bool/int references correctly (renderQueueListener functions)
 Simplified Ogre patch file requirements due to fix in Py++ for bool refs
 Fixed a couple of incorrect versions in environment.py

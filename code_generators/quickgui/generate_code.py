@@ -8,13 +8,13 @@
 #  TO EXCLUDE
 # Menu:
 #   bool evtHndlr_listItemCreated(const EventArgs& e);
-# 	bool evtHndlr_listItemMouseEnters(const EventArgs& e);
-# 	bool evtHndlr_listItemMouseLeaves(const EventArgs& e);
+#   bool evtHndlr_listItemMouseEnters(const EventArgs& e);
+#   bool evtHndlr_listItemMouseLeaves(const EventArgs& e);
 # Widget:
 #     Ogre::Vector2 convertPixelToRelativePoint(const Ogre::Vector2& point);
-# 				
-# 		
-		
+#               
+#       
+        
 import os, sys, time, shutil
 try:
    import psyco
@@ -86,8 +86,16 @@ def ManualExclude ( mb ):
 #         if c.name in excludeName:
 #             print "Excluding:",c
 #             c.exclude()
-                                    
-    
+
+    # static consts that don't have a value set -- causes a boost cant set variable error
+    excludes=['::QuickGUI::Menu::DEFAULT',
+            '::QuickGUI::Menu::DOWN',
+            '::QuickGUI::Menu::OVER'
+            ]
+    for e in excludes:
+        global_ns.variable(e).exclude()
+        print "Excluding variable", e
+        
     NonExistant = []
     for cls in NonExistant:
         try:
@@ -119,9 +127,10 @@ def ManualExclude ( mb ):
         try:
             global_ns.member_functions(e).exclude()
         except:
-            print "FAILED to exclude", e            
+            pass
+            #print "FAILED to exclude", e            
                       
-# 				
+#               
 
 ############################################################
 ##
@@ -161,7 +170,11 @@ def ManualFixes ( mb ):
 
     global_ns = mb.global_ns
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
-
+    for v in main_ns.variables():
+        if '::Ogre::String const' in v.type.decl_string:
+            v.exclude()
+            print "Excluding Const String var:",v, v.decl_string
+        
               
 ############################################################
 ##

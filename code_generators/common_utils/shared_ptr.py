@@ -65,6 +65,8 @@ class exposer_t:
 
     def expose_single( self, sp_instantiation ):
         sp_instantiation.exclude() # we don't want to export SharedPtr< X >
+        print "SharedPointer Excluded", sp_instantiation, sp_instantiation.decl_string
+#         print dir (sp_instantiation)
         sp_instantiation.disable_warnings( messages.W1040 )
         
         pointee = self.get_pointee( sp_instantiation )
@@ -74,6 +76,7 @@ class exposer_t:
             assert 1 == len( sp_instantiation.derived )
             sp_derived = sp_instantiation.derived[0].related_class
             sp_derived.exclude()
+            print "SharedPointer Excluded Derived", sp_derived, pointee
             sp_derived.disable_warnings( messages.W1040 )
             
             if Version1:

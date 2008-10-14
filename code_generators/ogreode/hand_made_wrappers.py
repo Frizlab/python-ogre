@@ -71,38 +71,82 @@ OgreOdeGeometry_makeTriangleMeshGeometry (boost::python::list vertices, unsigned
                              boost::python::list indices, unsigned int index_count,
                              OgreOde::World *world,  OgreOde::Space* space = 0) {
                              
-    Ogre::Vector3 * Vectors, vStart;
-    OgreOde::TriangleIndex * Triangles, tStart;
-    int index;
+    Ogre::Vector3 * Vectors;
+    OgreOde::TriangleIndex * Triangles;
+    unsigned int index;
+    OgreOde::TriangleMeshGeometry * ret;
+    
         
     // first lets make sure the counts aren't 'too' big
-    if ( len (vertices) < vertex_count ) vertex_count = len(vertices);
+    if ( (unsigned int) bp::len (vertices) < vertex_count ) vertex_count = (unsigned int)bp::len(vertices);
     // allocate memory
-    Vectors = new Ogre::Vector3 [ len( vertex_count ) ];
+    Vectors = new Ogre::Vector3 [ vertex_count ];
     // do the copy    
-    vStart = Vector;
-    for (index =0 ; index <len(vertex_count); index ++) {
-        *Vectors++ = boost::python::extract<Ogre::Vector3> (vertices[index]);
+    for (index =0 ; index < vertex_count ; index ++) {
+        Vectors[index] = bp::extract<Ogre::Vector3> (vertices[index]);
         }  
                                    
     // now the same for the indices                             
-    if ( len (indices) < index_count ) index_count = len(indices);
-    Triangles = new OgreOde::TriangleIndex [ len ( index_count ) ];
-    tStart = Triangles;
-    for (index =0 ; index <len(index_count); index ++) {
-        *Triangles++ = boost::python::extract<OgreOde::TriangleIndex> (indices[index]);
+    if ( (unsigned int)bp::len (indices) < index_count ) index_count = (unsigned int)bp::len(indices);
+    Triangles = new OgreOde::TriangleIndex [ index_count ];
+    for (index =0 ; index < index_count; index ++) {
+        Triangles[index] = bp::extract<OgreOde::TriangleIndex> (indices[index]);
         }                             
     
-    return ( OgreOde::TriangleMeshGeometry ( vStart, vertex_count, tStart, index_count, world, space ) );
-    }        
+    ret = &OgreOde::TriangleMeshGeometry ( Vectors, vertex_count, Triangles, index_count, world, space );
+    delete []  Vectors;
+    delete [] Triangles;
+    return ret;
+    
+    }      
+    
+OgreOde::ConvexGeometry *
+OgreOdeGeometry_makeConvexGeometry (boost::python::list vertices, unsigned int vertex_count, 
+                             boost::python::list indices, unsigned int index_count,
+                             OgreOde::World *world,  OgreOde::Space* space = 0) {
+                             
+    Ogre::Vector3 * Vectors;
+    unsigned int* Triangles;
+    unsigned int index;
+    OgreOde::ConvexGeometry * ret;
+    
+        
+    // first lets make sure the counts aren't 'too' big
+    if ( (unsigned int)bp::len (vertices) < vertex_count ) vertex_count = (unsigned int)bp::len(vertices);
+    // allocate memory
+    Vectors = new Ogre::Vector3 [ vertex_count ];
+    // do the copy    
+    for (index =0 ; index < vertex_count; index ++) {
+        Vectors[index] = boost::python::extract<Ogre::Vector3> (vertices[index]);
+        }  
+                                   
+    // now the same for the indices                             
+    if ( (unsigned int)bp::len (indices) < index_count ) index_count = (unsigned int)bp::len(indices);
+    Triangles = new unsigned int [ index_count ];
+    for (index =0 ; index < index_count; index ++) {
+        Triangles[index] = boost::python::extract<unsigned int> (indices[index]);
+        }                             
+   
+    ret = &OgreOde::ConvexGeometry ( Vectors, vertex_count, Triangles, index_count, world, space );
+    delete [] Vectors;
+    delete [] Triangles;
+    return ret;
+    }
+
 """    
      
 WRAPPER_REGISTRATION_Helper = [
     """def( "makeTriangleMeshGeometry", &::OgreOdeGeometry_makeTriangleMeshGeometry,
     ( bp::arg("vertices"), bp::arg("vertex_count"), bp::arg("indices"), bp::arg("index_count"),
-    bp::arg("world", bp::arg("space")=0 ),
+    bp::arg("world"), bp::arg("space")=0 ),
     "Python-Ogre Hand Wrapped\\nReturns a TriangleMeshGeometry object",
+     bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());""",
+    """def( "makeConvexGeometry", &::OgreOdeGeometry_makeConvexGeometry,
+    ( bp::arg("vertices"), bp::arg("vertex_count"), bp::arg("indices"), bp::arg("index_count"),
+    bp::arg("world"), bp::arg("space")=0 ),
+    "Python-Ogre Hand Wrapped\\nReturns a ConvexGeometry object",
      bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());"""
+
     ]
 
         
@@ -117,7 +161,7 @@ OgreOdeEntityInformer_getBoneVertices( OgreOde::EntityInformer & me, unsigned ch
     if  ( ! me.getBoneVertices(bone,vertex_count,vertices ) )
         return outlist;
     
-    while ( count-- > 0 ) {
+    while ( vertex_count-- > 0 ) {
         outlist.append ( *vertices++ );
         }
     delete[] vertices;        
@@ -142,4 +186,6 @@ def apply( mb ):
     rt = mb.class_( 'EntityInformer' )
     rt.add_declaration_code( WRAPPER_DEFINITION_EntityInformer )
     apply_reg (rt,  WRAPPER_REGISTRATION_EntityInformer )
+    mb.add_declaration_code( WRAPPER_DEFINITION_Helper )
+    apply_reg (mb,  WRAPPER_REGISTRATION_Helper )
        

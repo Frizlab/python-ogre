@@ -341,7 +341,7 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
 
         self.rotationX = ogre.Degree(0.0)
         self.rotationY = ogre.Degree(0.0)
-        self.translateVector = ogre.Vector3(0,0,0)
+        self.translateVector = ogre.Vector3().ZERO
 
         ##Check to see which device is not buffered, and handle it
         if not self.Keyboard.buffered():

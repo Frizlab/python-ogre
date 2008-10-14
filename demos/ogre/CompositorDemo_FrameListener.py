@@ -106,6 +106,7 @@ class HDRListener(Ogre.CompositorInstance.Listener):
         self.mVpHeight = height 
     ##---------------------------------------------------------------------------
     def notifyCompositor(self, instance):
+        print "NOTIFYCOMPOSITOR"
         ## Get some RTT dimensions for later calculations
         defIter = instance.getTechnique().getTextureDefinitionIterator() 
         while (defIter.hasMoreElements()) :
@@ -147,9 +148,11 @@ class HDRListener(Ogre.CompositorInstance.Listener):
                     self.mBloomTexOffsetsHorz[i*self.x+1] = 0.0 
                     self.mBloomTexOffsetsVert[i*self.x+0] = 0.0 
                     self.mBloomTexOffsetsVert[i*self.x+1] = -self.mBloomTexOffsetsVert[(i - 7)*self.x+1] 
+        print "OK"                    
 
     ##---------------------------------------------------------------------------
     def notifyMaterialSetup(self, pass_id, mat):
+        print "NOTIFYMATERIALSETUP", mat
         ## Prepare the fragment params offsets
 #       switch(pass_id)
 #       ##case 994: ## rt_lum4
@@ -175,8 +178,10 @@ class HDRListener(Ogre.CompositorInstance.Listener):
                 progName = mat.getBestTechnique().getPass(0).getFragmentProgramName() 
                 fparams.setNamedConstantFloat("sampleOffsets",ctypes.addressof(self.mBloomTexOffsetsVert), self.x) 
                 fparams.setNamedConstantFloat("sampleWeights",ctypes.addressof(self.mBloomTexWeights), self.x) 
+        print "OK"                
     ##---------------------------------------------------------------------------
     def notifyMaterialRender(self, pass_id, mat):
+        print "NOTIFYMATERIALRENDER", mat
         pass
     ##---------------------------------------------------------------------------
 
@@ -349,7 +354,7 @@ class CompositorDemo_FrameListener(Ogre.FrameListener, OIS.KeyListener,  OIS.Mou
         OIS.MouseListener.__init__(self)
         ItemSelectorInterface.__init__(self)
         self.mMain = main
-        self.mTranslateVector = Ogre.Vector3.ZERO
+        self.mTranslateVector = Ogre.Vector3().ZERO
         self.mStatsOn = True
         self.mNumScreenShots = 0
         self.mWriteToFile = False
@@ -488,7 +493,7 @@ class CompositorDemo_FrameListener(Ogre.FrameListener, OIS.KeyListener,  OIS.Mou
                 self.mUpdateMovement = False 
                 self.mRotX = 0 
                 self.mRotY = 0 
-                self.mTranslateVector = Ogre.Vector3.ZERO 
+                self.mTranslateVector = Ogre.Vector3().ZERO 
 
             if(self.mWriteToFile):
                 self.mNumScreenShots +=1
@@ -679,14 +684,17 @@ class CompositorDemo_FrameListener(Ogre.FrameListener, OIS.KeyListener,  OIS.Mou
     def itemStateChanged( self, index,  state):
         ## get the item text and tell compositor manager to set enable state
         compositor = str(self.mCompositorSelectorViewManager.getItemSelectorText(index))
+        print "Compositor", compositor
         Ogre.CompositorManager.getSingleton().\
             setCompositorEnabled(self.mMain.getRenderWindow().getViewport(0),compositor, state)
+        print "CHANGED"            
         self.updateDebugRTTWindow() 
 ##-----------------------------------------------------------------------------------
     def registerCompositors(self):
         vp = self.mMain.getRenderWindow().getViewport(0) 
         self.hvListener = HeatVisionListener() 
         self.hdrListener = HDRListener() 
+        print "HDR OK !!!!"
         self.gaussianListener = gaussianListener() 
 
         self.mCompositorSelectorViewManager = ItemSelectorViewManager("CompositorSelectorWin") 
@@ -714,9 +722,11 @@ class CompositorDemo_FrameListener(Ogre.FrameListener, OIS.KeyListener,  OIS.Mou
             if instance and (compositorName == "Heat Vision"):
                 instance.addListener(self.hvListener) 
             elif instance and (compositorName == "HDR"):
+                print "ADDING LISTENER"
                 instance.addListener(self.hdrListener) 
                 self.hdrListener.notifyViewportSize(vp.getActualWidth(), vp.getActualHeight()) 
                 self.hdrListener.notifyCompositor(instance) 
+                print "DONE"
 
             elif instance and (compositorName == "Gaussian Blur"):
                 instance.addListener(self.gaussianListener) 

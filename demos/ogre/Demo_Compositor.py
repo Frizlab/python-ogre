@@ -9,7 +9,7 @@
 # You may use this sample code for anything you like, it is not covered by the
 # LGPL.
 # -----------------------------------------------------------------------------
-import sys
+import sys, os
 sys.path.insert(0,'..')
 import PythonOgreConfig
 
@@ -18,6 +18,31 @@ import ogre.gui.CEGUI as CEGUI
 from CompositorDemo_FrameListener import *
 from ogre.renderer.OGRE import PixelFormat
 
+if os.name == 'nt':
+    CEGUI.System.setDefaultXMLParserName("ExpatParser")
+else:
+    CEGUI.System.setDefaultXMLParserName("TinyXMLParser")
+    
+def getPluginPath():
+    """Return the absolute path to a valid plugins.cfg file.""" 
+    import sys
+    import os
+    import os.path
+    
+    paths = [os.path.join(os.getcwd(), 'plugins.cfg'),
+             os.path.join(os.getcwd(), '..','plugins.cfg'),
+             '/etc/OGRE/plugins.cfg',
+             os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                              'plugins.cfg')]
+    for path in paths:
+        if os.path.exists(path):
+            return path
+
+    sys.stderr.write("\n"
+        "** Warning: Unable to locate a suitable plugins.cfg file.\n"
+        "** Warning: Please check your ogre installation and copy a\n"
+        "** Warning: working plugins.cfg file to the current directory.\n\n")
+    raise ogre.Exception(0, "can't locate the 'plugins.cfg' file", "")
 # # /*************************************************************************
 #                       CompositorDemo Methods
 # # *************************************************************************/
@@ -33,11 +58,12 @@ class CompositorDemo():
     def go(self):
         if (not self.setup()):
             return False
+        print "SETUP DONE"            
         self.mRoot.startRendering() 
 
 ##--------------------------------------------------------------------------
     def setup(self):
-        self.mRoot = Ogre.Root() 
+        self.mRoot = Ogre.Root( getPluginPath() ) 
 
         self.setupResources() 
         carryOn = self.configure() 
@@ -107,7 +133,10 @@ class CompositorDemo():
         ## Load resource paths from config file
         
         config = Ogre.ConfigFile()
-        config.load('resources.cfg' ) 
+        try:
+            config.load('../resources.cfg' )
+        except:             
+            config.load('resources.cfg' ) 
         seci = config.getSectionIterator()
         while seci.hasMoreElements():
             SectionName = seci.peekNextKey()
@@ -131,6 +160,7 @@ class CompositorDemo():
         self.mSceneMgr.setShadowFarDistance(1000) 
         ## setup GUI system
         print "**6"
+        
         self.mGUIRenderer = CEGUI.OgreCEGUIRenderer(self.mWindow, Ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.mSceneMgr) 
         ## load scheme and set up defaults
         print "***7"
@@ -170,11 +200,11 @@ class CompositorDemo():
 
 
         plane=Ogre.Plane()
-        plane.normal = Ogre.Vector3.UNIT_Y 
+        plane.normal = Ogre.Vector3().UNIT_Y 
         plane.d = 100 
         Ogre.MeshManager.getSingleton().createPlane("Myplane",
             Ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME, plane,
-            1500, 1500, 10, 10, True, 1, 5, 5, Ogre.Vector3.UNIT_Z) 
+            1500, 1500, 10, 10, True, 1, 5, 5, Ogre.Vector3().UNIT_Z) 
         pPlaneEnt = self.mSceneMgr.createEntity( "plane", "Myplane" ) 
         pPlaneEnt.setMaterialName("Examples/Rockwall") 
         pPlaneEnt.setCastShadows(False) 
@@ -266,6 +296,8 @@ class CompositorDemo():
         comp3 = Ogre.CompositorManager.getSingleton().create(
                 "Motion Blur", Ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME
             ) 
+        print comp3
+        print dir(comp3)            
         t = comp3.createTechnique() 
         def_ = t.createTextureDefinition("scene") 
         def_.width = 0 
