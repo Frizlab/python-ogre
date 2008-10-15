@@ -1,5 +1,6 @@
 xxxx xx 2008 : Release 1.6.0 xxxx
 ==================================
+Fixed to smart pointer handling in Ogre -- getting clever about detecting them as arguments as well as return types
 Fixed QuickGui with static consts not having default value and causing a boost load error
 Removed constant 'vars' and replaced them with properties that return a copy of the object. Specifically ZERO, UNIT_X, 
      UNIT_Y, UNIT_Z, Black, White, Red, Green, Blue in Classes ColourValue, MatrixX, Quaternion and VectorX.

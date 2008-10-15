@@ -93,10 +93,10 @@ OgreOdeGeometry_makeTriangleMeshGeometry (boost::python::list vertices, unsigned
         Triangles[index] = bp::extract<OgreOde::TriangleIndex> (indices[index]);
         }                             
     
-    ret = &OgreOde::TriangleMeshGeometry ( Vectors, vertex_count, Triangles, index_count, world, space );
+    ret = new OgreOde::TriangleMeshGeometry ( Vectors, vertex_count, Triangles, index_count, world, space );
     delete []  Vectors;
     delete [] Triangles;
-    return ret;
+    return (  ret );
     
     }      
     
@@ -127,7 +127,7 @@ OgreOdeGeometry_makeConvexGeometry (boost::python::list vertices, unsigned int v
         Triangles[index] = boost::python::extract<unsigned int> (indices[index]);
         }                             
    
-    ret = &OgreOde::ConvexGeometry ( Vectors, vertex_count, Triangles, index_count, world, space );
+    ret =  new OgreOde::ConvexGeometry ( Vectors, vertex_count, Triangles, index_count, world, space );
     delete [] Vectors;
     delete [] Triangles;
     return ret;
