@@ -1,0 +1,32 @@
+void ambient_vs(
+	float4 position		: POSITION,
+	float2 diffuseUV	: TEXCOORD0,
+	float2 aoUV			: TEXCOORD1,
+
+	out float4 oPosition	: POSITION,
+	out float2 oDiffuseUV	: TEXCOORD0,
+	out float2 oAoUV		: TEXCOORD1,
+
+	uniform float4x4 worldViewProj)
+{
+	oPosition = mul(worldViewProj, position);
+	oDiffuseUV = diffuseUV;
+	oAoUV = aoUV;
+}
+
+void ambient_ps(
+	float2 diffuseUV 	: TEXCOORD0,
+	float2 aoUV			: TEXCOORD1,
+
+	out float4 colour	: COLOR,
+
+	uniform float3 ambient,
+
+	uniform sampler2D diffuseMap,
+	uniform sampler2D AOMap
+	)
+{
+	colour = tex2D(diffuseMap, diffuseUV);
+	colour *= tex2D(AOMap, aoUV);
+	colour *= float4(ambient, 1);
+}

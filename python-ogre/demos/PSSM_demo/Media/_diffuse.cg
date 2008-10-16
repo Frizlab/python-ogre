@@ -1,0 +1,149 @@
+void diffuse_vs(
+	float4 position				: POSITION,
+	float3 normal				: NORMAL,
+	float2 uv					: TEXCOORD0,
+	float4 tangentPar			: TANGENT0,
+
+	out float4 oPosition		: POSITION,
+	out float3 oUv				: TEXCOORD0,
+	out float3 oTSLightDir		: TEXCOORD1,
+	out float3 oTSHalfAngle		: TEXCOORD2,
+	out float4 oLightPosition0	: TEXCOORD3,
+	out float4 oLightPosition1	: TEXCOORD4,
+	out float4 oLightPosition2	: TEXCOORD5,
+
+	uniform float4 lightPosition,				// object space
+	uniform float3 eyePosition,					// object space
+	uniform float4x4 worldViewProjMatrix,
+	uniform float4x4 texWorldViewProjMatrix0,
+	uniform float4x4 texWorldViewProjMatrix1,
+	uniform float4x4 texWorldViewProjMatrix2)
+{
+	// calculate output position
+	oPosition = mul(worldViewProjMatrix, position);
+
+	// pass the main uvs straight through unchanged
+	oUv.xy = uv;
+	oUv.z = oPosition.z;
+
+	// calculate tangent space light vector
+	// Get object space light direction
+	float3 lightDir = normalize(lightPosition.xyz - (position * lightPosition.w).xyz);
+
+	// Get the tangent component.
+	float3 tangent = tangentPar.xyz;
+
+	// Calculate the binormal (NB we assume both normal and tangent are
+	// already normalised)
+	// NB looks like nvidia cross params are BACKWARDS to what you'd expect
+	// this equates to NxT, not TxN
+	float3 binormal = cross(tangent, normal) * tangentPar.w;
+
+	// Form a rotation matrix out of the vectors
+	float3x3 rotation = float3x3(tangent, binormal, normal);
+
+	// Transform the light vector according to this matrix
+	oTSLightDir = mul(rotation, lightDir);
+
+	// Calculate half-angle in tangent space
+	float3 eyeDir = normalize(eyePosition - position.xyz);
+	oTSHalfAngle = mul(rotation, normalize(eyeDir + lightDir));
+
+	// Calculate the position of vertex in light space
+	oLightPosition0 = mul(texWorldViewProjMatrix0, position);
+	oLightPosition1 = mul(texWorldViewProjMatrix1, position);
+	oLightPosition2 = mul(texWorldViewProjMatrix2, position);
+}
+
+float shadowPCF(sampler2D shadowMap, float4 shadowMapPos, float2 offset)
+{
+	shadowMapPos = shadowMapPos / shadowMapPos.w;
+	float2 uv = shadowMapPos.xy;
+	float3 o = float3(offset, -offset.x) * 0.3f;
+
+	// Note: We using 2x2 PCF. Good enough and is alot faster.
+	float c =	(shadowMapPos.z <= tex2D(shadowMap, uv.xy - o.xy).r) ? 1 : 0; // top left
+	c +=		(shadowMapPos.z <= tex2D(shadowMap, uv.xy + o.xy).r) ? 1 : 0; // bottom right
+	c +=		(shadowMapPos.z <= tex2D(shadowMap, uv.xy + o.zy).r) ? 1 : 0; // bottom left
+	c +=		(shadowMapPos.z <= tex2D(shadowMap, uv.xy - o.zy).r) ? 1 : 0; // top right
+	//float c =	(shadowMapPos.z <= tex2Dlod(shadowMap, uv.xyyy - o.xyyy).r) ? 1 : 0; // top left
+	//c +=		(shadowMapPos.z <= tex2Dlod(shadowMap, uv.xyyy + o.xyyy).r) ? 1 : 0; // bottom right
+	//c +=		(shadowMapPos.z <= tex2Dlod(shadowMap, uv.xyyy + o.zyyy).r) ? 1 : 0; // bottom left
+	//c +=		(shadowMapPos.z <= tex2Dlod(shadowMap, uv.xyyy - o.zyyy).r) ? 1 : 0; // top right
+	return c / 4;
+}
+
+// to put it simply, this does 100% per pixel diffuse lighting
+void diffuse_ps(
+	float3 uv				: TEXCOORD0,
+	float3 TSlightDir		: TEXCOORD1,
+	float3 TShalfAngle		: TEXCOORD2,
+	float4 LightPosition0	: TEXCOORD3,
+	float4 LightPosition1	: TEXCOORD4,
+	float4 LightPosition2	: TEXCOORD5,
+
+	out float4 oColour		: COLOR,
+
+	uniform float4 invShadowMapSize0,
+	uniform float4 invShadowMapSize1,
+	uniform float4 invShadowMapSize2,
+	uniform float4 pssmSplitPoints,
+	uniform sampler2D diffuse,
+	uniform sampler2D specular,
+	uniform sampler2D normalMap,
+	uniform sampler2D shadowMap0,
+	uniform sampler2D shadowMap1,
+	uniform sampler2D shadowMap2,
+	uniform float4 lightDiffuse,
+	uniform float4 lightSpecular
+	)
+{
+	// calculate shadow
+	float shadowing = 1.0f;
+	float4 splitColour;
+	if (uv.z <= pssmSplitPoints.y)
+	{
+		splitColour = float4(0.1, 0, 0, 1);
+		shadowing = shadowPCF(shadowMap0, LightPosition0, invShadowMapSize0.xy);
+	}
+	else if (uv.z <= pssmSplitPoints.z)
+	{
+		splitColour = float4(0, 0.1, 0, 1);
+		shadowing = shadowPCF(shadowMap1, LightPosition1, invShadowMapSize1.xy);
+	}
+	else
+	{
+		splitColour = float4(0.1, 0.1, 0, 1);
+		shadowing = shadowPCF(shadowMap2, LightPosition2, invShadowMapSize2.xy);
+	}
+
+	// retrieve normalised light vector, expand from range-compressed
+	float3 lightVec = normalize(TSlightDir);
+
+	// retrieve half angle and normalise through cube map
+	float3 halfAngle = normalize(TShalfAngle);
+
+	// get diffuse colour
+	float4 diffuseColour = tex2D(diffuse, uv.xy);
+
+	// specular
+	float4 specularColour = tex2D(specular, uv.xy);
+	float shininess = specularColour.w;
+	specularColour.w = 1;
+
+	// get bump map vector, again expand from range-compressed
+	float3 bumpVec = (tex2D(normalMap, uv.xy).wyz - 0.5) * 2;
+	bumpVec.z = sqrt(1 - bumpVec.x * bumpVec.x - bumpVec.y * bumpVec.y);
+	bumpVec = normalize(bumpVec);
+
+	// calculate lit value.
+	float4 lighting = lit(dot(bumpVec, lightVec), dot(bumpVec, halfAngle), shininess * 128);
+
+	// final lighting with diffuse and spec
+	oColour = (diffuseColour * lightDiffuse * lighting.y) + (lightSpecular * specularColour * lighting.z);
+	oColour.w = diffuseColour.w;
+
+	// Apply shadowing
+	oColour *= float4(shadowing, shadowing, shadowing, 1);
+	//oColour += splitColour;
+}
