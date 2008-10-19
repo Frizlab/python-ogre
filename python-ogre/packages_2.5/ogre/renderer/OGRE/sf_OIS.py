@@ -13,6 +13,9 @@
 #
 # 29 July 2008: Ensured that resources.cfg and plugins.cfg can exist in the parent directory
 #
+import sys
+import os
+import os.path
 
 import ogre.renderer.OGRE as ogre
 import ogre.io.OIS as OIS
@@ -20,9 +23,6 @@ import ogre.io.OIS as OIS
 
 def getPluginPath():
     """Return the absolute path to a valid plugins.cfg file.""" 
-    import sys
-    import os
-    import os.path
     
     paths = [os.path.join(os.getcwd(), 'plugins.cfg'),
              os.path.join(os.getcwd(), '..','plugins.cfg'),
@@ -38,7 +38,16 @@ def getPluginPath():
         "** Warning: Please check your ogre installation and copy a\n"
         "** Warning: working plugins.cfg file to the current directory.\n\n")
     raise ogre.Exception(0, "can't locate the 'plugins.cfg' file", "")
-    
+
+def isUnitTest():
+    """Looks for a magic file to determine if we want to do a unittest"""
+    paths = [os.path.join(os.getcwd(), 'unittest.now'),
+            os.path.join(os.getcwd(), '..','unittest.now')]
+    for path in paths:
+        if os.path.exists(path):
+            return True
+    return False
+            
 class Application(object):
     "This class is the base for an Ogre application."
     debugText=""
@@ -50,6 +59,7 @@ class Application(object):
         self.renderWindow = None
         self.sceneManager = None
         self.world = None
+        self.unittest = isUnitTest()
 
     def __del__(self):
         "Clear variables, this should not actually be needed."
@@ -147,7 +157,10 @@ class Application(object):
 
     def _configure(self):
         """This shows the config dialog and creates the renderWindow."""
-        carryOn = self.root.showConfigDialog()
+        if not self.unittest:   # we show this if not doing a unittest
+            carryOn = self.root.showConfigDialog() 
+        else:
+            carryOn = self.root.restoreConfig()            
         if carryOn:
             self.renderWindow = self.root.initialise(True, "OGRE Render Window")
         return carryOn
@@ -185,6 +198,7 @@ class Application(object):
         """Creates the FrameListener."""
         #,self.frameListener, self.frameListener.Mouse 
         self.frameListener = FrameListener(self.renderWindow, self.camera)
+        self.frameListener.unittest = self.unittest
         self.frameListener.showDebugOverlay(True)
         self.root.addFrameListener(self.frameListener)
 
@@ -230,6 +244,10 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
         self.bufferedJoy = bufferedJoy
         self.shouldQuit = False # set to True to exit..
         self.MenuMode = False   # lets understand a simple menu function
+        self.unittest = isUnitTest()
+        self.unittest_duration = 5.0  # seconds before screen shot a exit
+        self.unittest_screenshot = sys.modules['__main__'].__file__.split('.')[0]     # file name for unittest screenshot
+        
         ## we can tell if we are using OgreRefapp based upon the camera class
         
         if self.camera.__class__ == ogre.Camera:
@@ -320,6 +338,11 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
     def frameRenderingQueued ( self, evt ):
         if(self.renderWindow.isClosed() or self.shouldQuit ):
             return False
+        if self.unittest:
+            self.unittest_duration -= evt.timeSinceLastFrame 
+            if self.unittest_duration < 0:
+                self.renderWindow.writeContentsToTimestampedFile(self.unittest_screenshot, '.jpg')
+                return False                     
         ##Need to capture/update each device - this will also trigger any listeners
         self.Keyboard.capture()    
         self.Mouse.capture()

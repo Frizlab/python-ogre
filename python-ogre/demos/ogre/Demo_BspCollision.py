@@ -69,14 +69,19 @@ class BspCollisionListener (sf.FrameListener):
             gBall.setPosition(self.camera.getPosition() + 
                 self.camera.getDirection() * self.camera.getNearClipDistance() * 2)
             gBall.setLinearVelocity(self.camera.getDirection() * 200)
-            gBall.setAngularVelocity(ogre.Vector3.ZERO)
+            gBall.setAngularVelocity(ogre.Vector3().ZERO)
 
         ## Move the targeter
         gRsq.setRay(self.camera.getRealCamera().getCameraToViewportRay(0.5, 0.5))
         for queryResult in gRsq.execute():
              gTargetNode.setPosition(gRsq.getRay().getPoint(queryResult.distance))
         return ret
- 
+        
+    def _moveCamera(self):
+        self.camera.yaw(self.rotationX)
+        self.camera.pitch(self.rotationY)
+        self.camera.translate(self.translateVector) # for using OgreRefApp
+
 class BspCollisionApplication (sf.Application):
     def __init__(self):
         "Init Render Application"
@@ -133,7 +138,7 @@ class BspCollisionApplication (sf.Application):
         self.camera.pitch(ogre.Degree(d=90)) ## Quake uses X/Y horizon, Z up
         self.camera.rotate(vp.orientation)
         ## Don't yaw along variable axis, causes leaning
-        self.camera.setFixedYawAxis(True, ogre.Vector3.UNIT_Z)
+        self.camera.setFixedYawAxis(True, ogre.Vector3().UNIT_Z)
         ## Look at the boxes
         self.camera.lookAt(-150,40,30)
 
@@ -168,7 +173,7 @@ class BspCollisionApplication (sf.Application):
         Pass = mat.getTechnique(0).getPass(0)
         tex = Pass.createTextureUnitState()
         tex.setColourOperationEx(ogre.LBX_SOURCE1, ogre.LBS_MANUAL, ogre.LBS_CURRENT, 
-            ogre.ColourValue.Red)
+            ogre.ColourValue().Red)
         Pass.setLightingEnabled(False)
         Pass.setSceneBlending(ogre.SBT_ADD)
         Pass.setDepthWriteEnabled(False)

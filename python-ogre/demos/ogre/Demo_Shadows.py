@@ -16,10 +16,16 @@ import PythonOgreConfig
 import ogre.renderer.OGRE as Ogre
 import ogre.gui.CEGUI as CEGUI
 import ogre.io.OIS as OIS
-import ctypes
+import ctypes,os
 import SampleFramework
 
 import exceptions, random
+
+# Another fix for CEGUI to ensure we get a working parser..
+if os.name == 'nt':
+    CEGUI.System.setDefaultXMLParserName("ExpatParser")
+else:
+    CEGUI.System.setDefaultXMLParserName("TinyXMLParser")
 
 def convertOISButtonToCegui( buttonID):
     if buttonID ==0:
@@ -192,7 +198,7 @@ class ShadowsListener ( SampleFramework.FrameListener, OIS.MouseListener, OIS.Ke
         self.mLastMousePositionSet=False
         self.mAvgFrameTime =0.1
         self.mWriteToFile = False
-        self.mTranslateVector = Ogre.Vector3.ZERO 
+        self.mTranslateVector = Ogre.Vector3().ZERO 
         self.mQuit = False
         self.mSkipCount = 0
         self.mUpdateFreq=10
@@ -284,7 +290,7 @@ class ShadowsListener ( SampleFramework.FrameListener, OIS.MouseListener, OIS.Ke
                 self.mUpdateMovement = False 
                 self.mRotX = 0 
                 self.mRotY = 0 
-                self.mTranslateVector = Ogre.Vector3.ZERO 
+                self.mTranslateVector = Ogre.Vector3().ZERO 
 
             if(self.mWriteToFile):
                 self.mNumScreenShots +=1
@@ -359,12 +365,12 @@ class ShadowsListener ( SampleFramework.FrameListener, OIS.MouseListener, OIS.Ke
                 self.mTranslateVector.x += e.moveDelta.d_x * self.mAvgFrameTime * MOVESPEED 
                 self.mTranslateVector.y += -e.moveDelta.d_y * self.mAvgFrameTime * MOVESPEED 
                 ##self.mTranslateVector.z = 0 
-                MouseCursor.getSingleton().setPosition( self.mLastMousePosition ) 
+                CEGUI.MouseCursor.getSingleton().setPosition( self.mLastMousePosition ) 
                 self.mUpdateMovement = True 
             else:
                 if( self.mRMBDown and self.mLMBDown):
                     self.mTranslateVector.z += (e.moveDelta.d_x + e.moveDelta.d_y) * self.mAvgFrameTime * MOVESPEED 
-                    MouseCursor.getSingleton().setPosition( self.mLastMousePosition ) 
+                    CEGUI.MouseCursor.getSingleton().setPosition( self.mLastMousePosition ) 
                     self.mUpdateMovement = True 
 
         return True 
@@ -383,7 +389,7 @@ class ShadowsListener ( SampleFramework.FrameListener, OIS.MouseListener, OIS.Ke
             if self.mLastMousePositionSet:
                 CEGUI.MouseCursor.getSingleton().setPosition( self.mLastMousePosition ) 
                 self.mLastMousePositionSet = False 
-            self.root.releaseInput() 
+            self.rootGuiPanel.releaseInput() 
 
         return True 
 
@@ -402,7 +408,7 @@ class ShadowsListener ( SampleFramework.FrameListener, OIS.MouseListener, OIS.Ke
             if (not self.mLastMousePositionSet):
                 self.mLastMousePosition = CEGUI.MouseCursor.getSingleton().getPosition() 
                 self.mLastMousePositionSet = True 
-            self.root.captureInput() 
+            self.rootGuiPanel.captureInput() 
 
         return True 
 
@@ -433,7 +439,8 @@ class ShadowsListener ( SampleFramework.FrameListener, OIS.MouseListener, OIS.Ke
 
 ##--------------------------------------------------------------------------
     def handleKeyDownEvent( self,  e):
-        CheckMovementKeys( e.scancode , True) 
+        print "Key Down", e
+        self.CheckMovementKeys( e.scancode , True) 
 
         return True 
 
@@ -614,11 +621,11 @@ class ShadowsApplication ( SampleFramework.Application ):
 
         ## Floor plane (use POSM plane def)
         self.mPlane = Ogre.MovablePlane("mPlane") 
-        self.mPlane.normal = Ogre.Vector3.UNIT_Y 
+        self.mPlane.normal = Ogre.Vector3().UNIT_Y 
         self.mPlane.d = 107 
         Ogre.MeshManager.getSingleton().createPlane("Myplane",
             Ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME, self.mPlane,
-            1500,1500,50,50,True,1,5,5,Ogre.Vector3.UNIT_Z) 
+            1500,1500,50,50,True,1,5,5,Ogre.Vector3().UNIT_Z) 
         self.pPlaneEnt = self.sceneManager.createEntity( "plane", "Myplane" ) 
         self.pPlaneEnt.setMaterialName(BASIC_ROCKWALL_MATERIAL) 
         self.pPlaneEnt.setCastShadows=False 
@@ -654,6 +661,9 @@ class ShadowsApplication ( SampleFramework.Application ):
 
     ##/ Change basic shadow technique 
     def changeShadowTechnique(self, newTech):
+        newTech = Ogre.ShadowTechnique( newTech )
+        print "CHANGE SHADOW TECH", newTech
+        
 
         self.sceneManager.setShadowTechnique(newTech) 
 
@@ -674,11 +684,11 @@ class ShadowsApplication ( SampleFramework.Application ):
 
         if newTech == Ogre.SHADOWTYPE_STENCIL_ADDITIVE:
             ## Fixed light, dim
-            self.mSunLight.setCastShadows(True) 
+            self.mSunLight.setCastShadows =True
 
             ## Point light, movable, reddish
             self.mLight.setType(Ogre.Light.LT_POINT) 
-            self.mLight.setCastShadows(True) 
+            self.mLight.setCastShadows=True
             self.mLight.setDiffuseColour(self.mMinLightColour) 
             self.mLight.setSpecularColour(1, 1, 1) 
             self.mLight.setAttenuation(8000,1,0.0005,0) 
@@ -689,24 +699,24 @@ class ShadowsApplication ( SampleFramework.Application ):
             self.mSunLight.setCastShadows=False 
 
             ## Point light, movable, reddish
-            self.mLight.setType(Light.LT_POINT) 
-            self.mLight.setCastShadows(True) 
+            self.mLight.setType(Ogre.Light.LT_POINT) 
+            self.mLight.setCastShadows=True
             self.mLight.setDiffuseColour(self.mMinLightColour) 
             self.mLight.setSpecularColour(1, 1, 1) 
             self.mLight.setAttenuation(8000,1,0.0005,0) 
         elif newTech == Ogre.SHADOWTYPE_TEXTURE_MODULATIVE or newTech == Ogre.SHADOWTYPE_TEXTURE_ADDITIVE:
             ## Fixed light, dim
-            self.mSunLight.setCastShadows(True) 
+            self.mSunLight.setCastShadows=True
 
             ## Change moving light to spotlight
             ## Point light, movable, reddish
-            self.mLight.setType(Light.LT_SPOTLIGHT) 
-            self.mLight.setDirection(Ogre.Vector3.NEGATIVE_UNIT_Z) 
-            self.mLight.setCastShadows(True) 
+            self.mLight.setType(Ogre.Light.LT_SPOTLIGHT) 
+            self.mLight.setDirection(Ogre.Vector3().NEGATIVE_UNIT_Z) 
+            self.mLight.setCastShadows=True
             self.mLight.setDiffuseColour(self.mMinLightColour) 
             self.mLight.setSpecularColour(1, 1, 1) 
             self.mLight.setAttenuation(8000,1,0.0005,0) 
-            self.mLight.setSpotlightRange(Degree(80),Degree(90)) 
+            self.mLight.setSpotlightRange(Ogre.Degree(80),Ogre.Degree(90)) 
 
     def setupGUI( self ):
         ## setup GUI system
@@ -896,7 +906,8 @@ class ShadowsApplication ( SampleFramework.Application ):
         self.mGradientClampText = wmgr.getWindow("Shadows/DepthShadowTweakGroup/SlopeClampText") 
  
         self.updateGUI(self.mCurrentShadowTechnique) 
-
+        self.resetMaterials()
+        
     def updateGUI(self, newTech):
         isTextureBased=True
         if newTech & Ogre.SHADOWDETAILTYPE_TEXTURE:
@@ -945,17 +956,17 @@ class ShadowsApplication ( SampleFramework.Application ):
         radio = we.window 
         if (radio.isSelected()):
             newTech = self.mCurrentShadowTechnique 
-            if radio.getID == 1:
+            if radio.getID() == 1:
                 ## stencil 
                 newTech = ((newTech & ~Ogre.SHADOWDETAILTYPE_TEXTURE) | Ogre.SHADOWDETAILTYPE_STENCIL) 
                 self.resetMaterials() 
-            elif radio.getID == 2:
+            elif radio.getID() == 2:
                 ## texture
                 newTech = ((newTech & ~Ogre.SHADOWDETAILTYPE_STENCIL) | Ogre.SHADOWDETAILTYPE_TEXTURE) 
-            elif radio.getID == 3:
+            elif radio.getID() == 3:
                 ## additive
                 newTech = ((newTech & ~Ogre.SHADOWDETAILTYPE_MODULATIVE) | Ogre.SHADOWDETAILTYPE_ADDITIVE) 
-            elif radio.getID == 4:
+            elif radio.getID() == 4:
                 ## modulative
                 newTech = ((newTech & ~Ogre.SHADOWDETAILTYPE_ADDITIVE) | Ogre.SHADOWDETAILTYPE_MODULATIVE) 
 
@@ -963,35 +974,29 @@ class ShadowsApplication ( SampleFramework.Application ):
         return True 
 
     def handleProjectionChanged( self, e):
-
         winargs = e
         cbo = winargs.window 
-
         if (cbo.getSelectedItem()):
             proj = cbo.getSelectedItem().getID() 
             if (proj != self.mCurrentProjection):
                 ## AJM WARNING
                 if proj == self.UNIFORM:
-                    self.mCurrentShadowCameraSetup = Ogre.ShadowCameraSetupPtr(Ogre.DefaultShadowCameraSetup()) 
+                    self.mCurrentShadowCameraSetup = Ogre.DefaultShadowCameraSetup() #Ogre.ShadowCameraSetupPtr(Ogre.DefaultShadowCameraSetup()) 
                 elif proj == self.UNIFORM_FOCUSED:
-                    self.focused = Ogre.FocusedShadowCameraSetup()
-                    self.mCurrentShadowCameraSetup =\
-                        Ogre.ShadowCameraSetup(self.focused) 
+                    self.mCurrentShadowCameraSetup =Ogre.FocusedShadowCameraSetup() 
                 elif proj == self.LISPSM:
                         self.mLiSPSMSetup = Ogre.LiSPSMShadowCameraSetup() 
                         ##self.mLiSPSMSetup.setUseAggressiveFocusRegion=False 
-                        self.mCurrentShadowCameraSetup = Ogre.ShadowCameraSetupPtr(self.mLiSPSMSetup) 
+                        self.mCurrentShadowCameraSetup = self.mLiSPSMSetup
                 elif proj == self.PLANE_OPTIMAL:
-                    self.mCurrentShadowCameraSetup =\
-                        Ogre.ShadowCameraSetupPtr(Ogre.PlaneOptimalShadowCameraSetup(self.mPlane)) 
-
+                    self.mCurrentShadowCameraSetup = Ogre.PlaneOptimalShadowCameraSetup(self.mPlane)
                 self.mCurrentProjection = proj 
                 self.sceneManager.setShadowCameraSetup(self.mCurrentShadowCameraSetup) 
                 self.updateTipForCombo(cbo) 
-                if (not self.mCustomRockwallVparams.isNull() and not self.mCustomRockwallFparams.isNull()):
+#                 if (not self.mCustomRockwallVparams.isNull() and not self.mCustomRockwallFparams.isNull()):
+                if (self.mCustomRockwallVparams and self.mCustomRockwallFparams): 
                     ## set
                     self.setDefaultDepthShadowParams() 
-
         return True 
 
 
@@ -1004,11 +1009,11 @@ class ShadowsApplication ( SampleFramework.Application ):
         self.mCustomRockwallFparams.setNamedConstant("gradientClamp",
             self.mGradientClamp.getScrollPosition()) 
 
-        self.mCustoself.mAtheneFparams.setNamedConstant("fixedDepthBias", 
+        self.mCustomAtheneFparams.setNamedConstant("fixedDepthBias", 
             self.mFixedBias.getScrollPosition()) 
-        self.mCustoself.mAtheneFparams.setNamedConstant("gradientScaleBias",
+        self.mCustomAtheneFparams.setNamedConstant("gradientScaleBias",
             self.mGradientBias.getScrollPosition()) 
-        self.mCustoself.mAtheneFparams.setNamedConstant("gradientClamp",
+        self.mCustomAtheneFparams.setNamedConstant("gradientClamp",
             self.mGradientClamp.getScrollPosition()) 
 
 
@@ -1031,7 +1036,7 @@ class ShadowsApplication ( SampleFramework.Application ):
         self.updateDepthShadowParams() 
 
     def handleParamsChanged( self,e):
-        if ( notself.mCustomRockwallVparams.isNull() and not self.mCustomRockwallFparams.isNull()):
+        if  self.mCustomRockwallVparams and self.mCustomRockwallFparams :
             self.updateDepthShadowParams() 
         return True 
 
@@ -1051,10 +1056,10 @@ class ShadowsApplication ( SampleFramework.Application ):
         self.mAthene.setMaterialName(BASIC_ATHENE_MATERIAL) 
         for i in self.pColumns: 
             i.setMaterialName(BASIC_ROCKWALL_MATERIAL) 
-        self.mCustomRockwallVparams.setNull() 
-        self.mCustomRockwallFparams.setNull() 
-        self.mCustoself.mAtheneVparams.setNull() 
-        self.mCustoself.mAtheneFparams.setNull() 
+        self.mCustomRockwallVparams = None 
+        self.mCustomRockwallFparams = None 
+        self.mCustomAtheneVparams = None 
+        self.mCustomAtheneFparams = None 
 
 
     def handleMaterialChanged( self, e):
@@ -1065,7 +1070,7 @@ class ShadowsApplication ( SampleFramework.Application ):
             mat = cbo.getSelectedItem().getID() 
             if (mat != self.mCurrentMaterial):
                 if mat ==  self.MAT_STANDARD:
-                    self.sceneManager.setShadowTexturePixelFormat(Ogre.PF_L8) 
+                    self.sceneManager.setShadowTexturePixelFormat(Ogre.PixelFormat.PF_L8) 
                     self.sceneManager.setShadowTextureCasterMaterial(Ogre.StringUtil.BLANK) 
                     self.sceneManager.setShadowTextureReceiverMaterial(Ogre.StringUtil.BLANK) 
                     self.sceneManager.setShadowTextureSelfShadow=False    
@@ -1093,9 +1098,9 @@ class ShadowsApplication ( SampleFramework.Application ):
                     self.mCustomRockwallVparams = themat.getTechnique(0).getPass(1).getShadowReceiverVertexProgramParameters() 
                     self.mCustomRockwallFparams = themat.getTechnique(0).getPass(1).getShadowReceiverFragmentProgramParameters() 
                     themat = Ogre.MaterialManager.getSingleton().getByName(CUSTOM_ATHENE_MATERIAL) 
-                    self.mCustoself.mAtheneVparams = themat.getTechnique(0).getPass(1).getShadowReceiverVertexProgramParameters() 
-                    self.mCustoself.mAtheneFparams = themat.getTechnique(0).getPass(1).getShadowReceiverFragmentProgramParameters() 
-                    self.mDepthShadowTweak.setVisible(True) 
+                    self.mCustomAtheneVparams = themat.getTechnique(0).getPass(1).getShadowReceiverVertexProgramParameters() 
+                    self.mCustomAtheneFparams = themat.getTechnique(0).getPass(1).getShadowReceiverFragmentProgramParameters() 
+                    self.mDepthShadowTweak.setVisible = True
                     ## set the current params
                     self.setDefaultDepthShadowParams() 
                 elif mat == self.MAT_DEPTH_FLOAT_PCF:
@@ -1120,9 +1125,9 @@ class ShadowsApplication ( SampleFramework.Application ):
                     self.mCustomRockwallVparams = themat.getTechnique(0).getPass(1).getShadowReceiverVertexProgramParameters() 
                     self.mCustomRockwallFparams = themat.getTechnique(0).getPass(1).getShadowReceiverFragmentProgramParameters() 
                     themat = Ogre.MaterialManager.getSingleton().getByName(CUSTOM_ATHENE_MATERIAL + "/PCF") 
-                    self.mCustoself.mAtheneVparams = themat.getTechnique(0).getPass(1).getShadowReceiverVertexProgramParameters() 
-                    self.mCustoself.mAtheneFparams = themat.getTechnique(0).getPass(1).getShadowReceiverFragmentProgramParameters() 
-                    self.mDepthShadowTweak.setVisible(True) 
+                    self.mCustomAtheneVparams = themat.getTechnique(0).getPass(1).getShadowReceiverVertexProgramParameters() 
+                    self.mCustomAtheneFparams = themat.getTechnique(0).getPass(1).getShadowReceiverFragmentProgramParameters() 
+                    self.mDepthShadowTweak.setVisible =True
 
                     ## set the current params
                     self.setDefaultDepthShadowParams() 
