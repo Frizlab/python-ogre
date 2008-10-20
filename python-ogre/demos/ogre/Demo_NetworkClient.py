@@ -1,3 +1,4 @@
+# NO_UNITTEST
 """ 
 VERY simple and crude client code.
 Assumes there is a server that will echo the sent data and when it's time to close

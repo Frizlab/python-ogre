@@ -38,11 +38,11 @@ class OgreCollideApplication(sf.Application):
 
         # create the floor
         plane = ogre.Plane()
-        plane.normal = ogre.Vector3.UNIT_Y
+        plane.normal = ogre.Vector3().UNIT_Y
         plane.d = 200
         mm = ogre.MeshManager.getSingleton()
         mm.createPlane('FloorPlane', 'General', plane, 200000.0, 200000.0,
-               20, 20, True, 1, 50, 50, ogre.Vector3.UNIT_Z)
+               20, 20, True, 1, 50, 50, ogre.Vector3().UNIT_Z)
         entity = sceneManager.createEntity('floor', 'FloorPlane')
         entity.setMaterialName('Examples/RustySteel')
         sceneManager.getRootSceneNode().createChildSceneNode().attachObject(entity)

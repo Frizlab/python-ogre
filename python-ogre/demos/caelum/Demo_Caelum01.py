@@ -27,7 +27,7 @@ class TerrainFrameListener(sf.FrameListener):
         self.updateRay = ogre.Ray() 
         ## basic terrain ray query
         pos = camera.getPosition()
-        d = ogre.Vector3.NEGATIVE_UNIT_Y
+        d = ogre.Vector3().NEGATIVE_UNIT_Y
         self.raySceneQuery = sceneManager.createRayQuery(ogre.Ray( pos, d ))
 
     ## -------------------------------------------------------------- 
@@ -38,7 +38,7 @@ class TerrainFrameListener(sf.FrameListener):
 
         ## clamp camera to terrain
         self.updateRay.setOrigin (self.camera.getPosition())
-        self.updateRay.setDirection (ogre.Vector3.NEGATIVE_UNIT_Y)
+        self.updateRay.setDirection (ogre.Vector3().NEGATIVE_UNIT_Y)
         self.raySceneQuery.Ray = self.updateRay
         for queryResult in self.raySceneQuery.execute():
             if queryResult.worldFragment is not None:
@@ -154,8 +154,8 @@ class TerrainApplication(sf.Application):
         print "deleted Listeners" 
 #         t = self.caelumSystem.getSun().setSunPositionModel(None)
 #         print "Sun is None", t
-        t = self.caelumSystem.getSun().getSunPositionModel()
-        print "Sun is None", t
+#         t = self.caelumSystem.getSun().getSunPositionModel()
+#         print "Sun is None", t
 
 
  
@@ -205,7 +205,7 @@ class TerrainApplication(sf.Application):
         self.camera.setFarClipDistance(0);
         self.camera.setNearClipDistance(5);
         
-        self.raySceneQuery = self.sceneManager.createRayQuery(ogre.Ray(self.camera.getPosition(), ogre.Vector3.NEGATIVE_UNIT_Y))
+        self.raySceneQuery = self.sceneManager.createRayQuery(ogre.Ray(self.camera.getPosition(), ogre.Vector3().NEGATIVE_UNIT_Y))
         
 
     def _createScene(self):
@@ -224,18 +224,25 @@ class TerrainApplication(sf.Application):
             ogre.CompositorManager.getSingleton().addCompositor(self.renderWindow.getViewport(0),"Bloom")
         camera.setNearClipDistance(0.01)
         componentMask = caelum.CaelumSystem.CaelumComponent(
-                    caelum.CaelumSystem.CAELUM_COMPONENT_SKY_COLOUR_MODEL | 
-#                     caelum.CaelumSystem.CAELUM_COMPONENT_SUN |
-                    caelum.CaelumSystem.CAELUM_COMPONENT_SOLAR_SYSTEM_MODEL |
-                    ## these cause run time errors on my crap laptop
 #                     caelum.CaelumSystem.CAELUM_COMPONENT_SKY_DOME | 
-#                     caelum.CaelumSystem.CAELUM_COMPONENT_STARFIELD |
+#                     caelum.CaelumSystem.CAELUM_COMPONENT_SUN |
+#                     caelum.CaelumSystem.CAELUM_COMPONENT_MOON |
+#                     caelum.CaelumSystem.CAELUM_COMPONENT_IMAGE_STARFIELD | 
+#                     caelum.CaelumSystem.CAELUM_COMPONENT_POINT_STARFIELD |
 #                     caelum.CaelumSystem.CAELUM_COMPONENT_CLOUDS |
+#                     caelum.CaelumSystem.CAELUM_COMPONENT_PRECIPITATION |
+#                     caelum.CaelumSystem.CAELUM_COMPONENT_SCREEN_SPACE_FOG |
 #                     caelum.CaelumSystem.CAELUM_COMPONENT_GROUND_FOG |
+
+#                     caelum.CaelumSystem.CAELUM_COMPONENTS_NONE |
+                    caelum.CaelumSystem.CAELUM_COMPONENTS_DEFAULT |
+#                     caelum.CaelumSystem.CAELUM_COMPONENTS_ALL |
+
+ 
                     0 )
         print componentMask
         ## Initialise Caelum
-        self.caelumSystem = caelum.CaelumSystem(self.root.getSingletonPtr(), self.sceneManager ) ##,componentMask )
+        self.caelumSystem = caelum.CaelumSystem(self.root.getSingletonPtr(), self.sceneManager ,componentMask )
                 
         self.caelumSystem.setManageSceneFog(True)
         self.caelumSystem.setSceneFogDensityMultiplier(0.0015)
@@ -244,7 +251,7 @@ class TerrainApplication(sf.Application):
          
         ## This is how you switch the sun implementation.
         ## This here is a no-op; but it's useful to test caelum doesn't crash when the second sun is created.
-        self.spheresun = caelum.SphereSun(self.sceneManager, self.caelumSystem.getRootNode ())
+        self.spheresun = caelum.SphereSun(self.sceneManager, self.caelumSystem.getCaelumCameraNode ())
         self.caelumSystem.setSun (self.spheresun)
 
         ## Setup sun options
@@ -261,10 +268,13 @@ class TerrainApplication(sf.Application):
 
 #         ## Setup cloud options.
 #         ## Tweak these settings to make the demo look pretty.
-        if self.caelumSystem.getClouds ():
-           self.caelumSystem.getClouds ().setCloudSpeed(ogre.Vector2(0.000005, -0.000009))
-           self.caelumSystem.getClouds ().setCloudBlendTime(3600 * 24)
-           self.caelumSystem.getClouds ().setCloudCover(0.3)
+        if self.caelumSystem.getCloudSystem ():
+         
+           self.caelumSystem.getCloudSystem ().createLayerAtHeight(2000)
+           self.caelumSystem.getCloudSystem ().createLayerAtHeight(5000)
+           
+           self.caelumSystem.getCloudSystem ().getLayer(0).setCloudSpeed(ogre.Vector2(0.000005, -0.000009))
+           self.caelumSystem.getCloudSystem ().getLayer(1).setCloudSpeed(ogre.Vector2(0.0000045, -0.0000085))
            
   
         ## Register caelum to the render target

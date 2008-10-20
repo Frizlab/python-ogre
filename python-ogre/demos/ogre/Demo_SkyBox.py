@@ -53,16 +53,16 @@ class SkyBoxApplication(sf.Application):
         pEmit1.setTimeToLive( 0.2 )
         pEmit1.setEmissionRate( 70 )
         pEmit1.setParticleVelocity( 50 )
-        pEmit1.setDirection(- ogre.Vector3.UNIT_Z)
-        pEmit1.setColour( ogre.ColourValue.White, ogre.ColourValue.Red)        
+        pEmit1.setDirection(- ogre.Vector3().UNIT_Z)
+        pEmit1.setColour( ogre.ColourValue().White, ogre.ColourValue().Red)        
 
         # Thruster 2
         pEmit2.setAngle( ogre.Degree(d=3) )
         pEmit2.setTimeToLive( 0.2 )
         pEmit2.setEmissionRate( 70 )
         pEmit2.setParticleVelocity( 50 )
-        pEmit2.setDirection( -ogre.Vector3.UNIT_Z )
-        pEmit2.setColour( ogre.ColourValue.White, ogre.ColourValue.Red )
+        pEmit2.setDirection( -ogre.Vector3().UNIT_Z )
+        pEmit2.setColour( ogre.ColourValue().White, ogre.ColourValue().Red )
 
         # Set the position of the thrusters and attach to the craft
         pEmit1.setPosition( ogre.Vector3( 5.7, 6.5, -70 ) )

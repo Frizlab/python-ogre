@@ -1,3 +1,4 @@
+# NO_UNITTEST
 """
 VERY simple and crude Python server
 
@@ -8,6 +9,7 @@ and after 10 loops sends a 'Done' to the client and tells the server to stop
 
 import socket as s
 import SocketServer as ss
+import sys
 
 class Handler ( ss.BaseRequestHandler ):
     def handle ( self ):
@@ -36,6 +38,10 @@ if __name__ == "__main__":
     (family, socktype, proto, canonname, sockaddr) = s.getaddrinfo ( "127.0.0.1", 4444 )[0]
     myServer = Server ( sockaddr, Handler )
     myServer.closenow = False
-    
-    while not myServer.closenow:
-        myServer.handle_request()
+    try:
+        while not myServer.closenow:
+            myServer.handle_request()
+    except KeyboardInterrupt:
+        sys.exit()
+    except:
+        sys.exit()        

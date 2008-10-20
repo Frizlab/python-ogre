@@ -105,15 +105,15 @@ class FresnelFrameListener(sf.FrameListener):
             direction = self.fishLastPosition[fish] - newPos
             direction.normalise
             #Test for opposite vectors
-            d = 1.0 + ogre.Vector3.UNIT_X.dotProduct(direction)
+            d = 1.0 + ogre.Vector3().UNIT_X.dotProduct(direction)
             if (math.fabs(d) < 0.00001):
                 #Diametrically opposed vectors
-                orientation = ogre.Quaternion.IDENTITY
-                orientation.FromAxes(ogre.Vector3.NEGATIVE_UNIT_X, 
-                    ogre.Vector3.UNIT_Y, ogre.Vector3.NEGATIVE_UNIT_Z)
+                orientation = ogre.Quaternion().IDENTITY
+                orientation.FromAxes(ogre.Vector3().NEGATIVE_UNIT_X, 
+                    ogre.Vector3().UNIT_Y, ogre.Vector3().NEGATIVE_UNIT_Z)
                 self.fishNodes[fish].setOrientation (orientation)  ## .orientation to SetOr..
             else:
-                self.fishNodes[fish].setOrientation (ogre.Vector3.UNIT_X.getRotationTo(direction))
+                self.fishNodes[fish].setOrientation (ogre.Vector3().UNIT_X.getRotationTo(direction))
             self.fishLastPosition[fish] = newPos
         return sf.FrameListener.frameStarted(self,frameEvent)
 
@@ -121,6 +121,7 @@ class FresnelApplication(sf.Application):
 
     def __init__(self):
         "Init Fresnel Application"
+        sf.Application.__init__(self)
         self.frameListener = None
         self.root = None
         self.camera = None
@@ -188,7 +189,7 @@ class FresnelApplication(sf.Application):
         #Create a point light
         l = sceneManager.createLight("MainLight")
         l.type = ogre.Light.LT_DIRECTIONAL
-        l.setDirection (-ogre.Vector3.UNIT_Y)
+        l.setDirection (-ogre.Vector3().UNIT_Y)
 
         # debug graphics card capabilities                        
         # self.debugSupportedFormats()    
@@ -227,7 +228,7 @@ class FresnelApplication(sf.Application):
         
         #Define a floor plane mesh
         self.reflectionPlane = ogre.Plane()
-        self.reflectionPlane.normal = ogre.Vector3.UNIT_Y
+        self.reflectionPlane.normal = ogre.Vector3().UNIT_Y
         self.reflectionPlane.d = 0
 
         ogre.MeshManager.getSingleton().createPlane('ReflectPlane', "General",
@@ -259,7 +260,7 @@ class FresnelApplication(sf.Application):
         pEnt.setMaterialName ("RomanBath/OgreStone")
         headNode.attachObject(pEnt)
         headNode.setPosition(-350,55,130)
-        headNode.rotate(ogre.Vector3.UNIT_Y, ogre.Degree (90))
+        headNode.rotate(ogre.Vector3().UNIT_Y, ogre.Degree (90))
         self.aboveWaterEnts.append(pEnt)
         
         # create below Water Entities

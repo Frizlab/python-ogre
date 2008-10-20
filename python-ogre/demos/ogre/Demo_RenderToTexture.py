@@ -89,19 +89,19 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
         # Create a prefab plane
         self.mPlane = ogre.MovablePlane("ReflectPlane")
         self.mPlane.d = 0
-        self.mPlane.normal =ogre.Vector3.UNIT_Y
+        self.mPlane.normal =ogre.Vector3().UNIT_Y
           
 #         ogre.MeshManager.getSingleton().createPlane("ReflectionPlane", 
 #             ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME, 
 #             self.mPlane._getDerivedPlane(), 2000.0, 2000.0, 
-#             1, 1, True, 1, 1.0, 1.0, ogre.Vector3.UNIT_Z,
+#             1, 1, True, 1, 1.0, 1.0, ogre.Vector3().UNIT_Z,
 #             ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
 #             True,True
 #             )
         ogre.MeshManager.getSingleton().createPlane("ReflectionPlane", 
             ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME, 
             self.mPlane, 2000.0, 2000.0, 
-            1, 1, True, 1, 1.0, 1.0, ogre.Vector3.UNIT_Z,
+            1, 1, True, 1, 1.0, 1.0, ogre.Vector3().UNIT_Z,
             ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
             True,True
             )
@@ -157,15 +157,15 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
         # create ViewPort        
         v = rttTex.addViewport( self.mReflectCam )
         v.setClearEveryFrame ( True  )
-        v.setBackgroundColour (ogre.ColourValue.White)
+        v.setBackgroundColour (ogre.ColourValue().White)
        
         mat = ogre.MaterialManager.getSingleton().create("RttMat",ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME)
         t = mat.getTechnique(0).getPass(0).createTextureUnitState('RustedMetal.jpg')
         t = mat.getTechnique(0).getPass(0).createTextureUnitState('RttTex') # creates the reflection...
         # Blend with base texture
         t.setColourOperationEx( ogre.LBX_BLEND_MANUAL, ogre.LBS_TEXTURE, 
-                                ogre.LBS_CURRENT, ogre.ColourValue.White,
-                                ogre.ColourValue.White, 0.25)
+                                ogre.LBS_CURRENT, ogre.ColourValue().White,
+                                ogre.ColourValue().White, 0.25)
                                 
         t.setTextureAddressingMode (ogre.TextureUnitState.TAM_CLAMP)
         t.setProjectiveTexturing(True, self.mReflectCam)

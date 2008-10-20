@@ -173,7 +173,7 @@ class Grass_Application(sf.Application):
         baseVec = ogre.Vector3(GRASS_WIDTH/2, 0, 0) 
         vec = baseVec 
         rot = ogre.Quaternion () 
-        rot.FromAngleAxis(ogre.Degree(d=60), ogre.Vector3.UNIT_Y) 
+        rot.FromAngleAxis(ogre.Degree(d=60), ogre.Vector3().UNIT_Y) 
         
         # change from the C++ demo - we build a buffer and then write it in one go
         buffer=[]
@@ -357,11 +357,11 @@ class Grass_Application(sf.Application):
         self.setupLighting() 
 
         plane = ogre.Plane() 
-        plane.normal = ogre.Vector3.UNIT_Y 
+        plane.normal = ogre.Vector3().UNIT_Y 
         plane.d = 0 
         ogre.MeshManager.getSingleton().createPlane("Myplane",
             ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME, plane,
-            14500,14500,10,10,True,1,50,50,ogre.Vector3.UNIT_Z) 
+            14500,14500,10,10,True,1,50,50,ogre.Vector3().UNIT_Z) 
         pPlaneEnt = self.sceneManager.createEntity( "plane", "Myplane" ) 
         pPlaneEnt.setMaterialName("Examples/GrassFloor") 
         pPlaneEnt.setCastShadows(False) 
@@ -386,7 +386,7 @@ class Grass_Application(sf.Application):
                 orientation = ogre.Quaternion()
                 orientation.FromAngleAxis(
                     ogre.Degree(random.randrange(0, 359)),
-                    ogre.Vector3.UNIT_Y) 
+                    ogre.Vector3().UNIT_Y) 
                 scale = ogre.Vector3( 1, random.random()*(1.15-0.85)+0.85, 1)
                 s.addEntity(e, pos, orientation, scale) 
         s.build() 
