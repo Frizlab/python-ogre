@@ -191,7 +191,7 @@ class SimpleScenesApplication(sf.Application):
         s = sceneManager.createStaticGeometry("StaticFloor")
         s.setRegionDimensions((160.0, 100.0, 160.0))
         ## Set the region origin so the center is at 0 world
-        s.setOrigin(ogre.Vector3.ZERO)
+        s.setOrigin(ogre.Vector3().ZERO)
     
         ## Use a load of meshes to represent the floor
         i = 0

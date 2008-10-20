@@ -21,7 +21,7 @@ class SimpleScenes_Chain (SimpleScenes):
         self._first_body = None
         self._box_body = None
         self._force = 0
-        self._force_to_apply = ogre.Vector3.ZERO
+        self._force_to_apply = ogre.Vector3().ZERO
 
         ## Set up the sizes of stuff
         link_size = 0.4
@@ -76,13 +76,13 @@ class SimpleScenes_Chain (SimpleScenes):
 
     def frameEnded(self, time, input,  mouse):
         SimpleScenes.frameEnded(self, time, input, mouse)
-        self._force_to_apply = ogre.Vector3.ZERO
+        self._force_to_apply = ogre.Vector3().ZERO
 
         right = self._mgr.getCamera("PlayerCam").getRight()
-        forward = right.crossProduct(ogre.Vector3.UNIT_Y)
+        forward = right.crossProduct(ogre.Vector3().UNIT_Y)
     
         ## Up
-        if (input.isKeyDown(OIS.KC_X)): self._force_to_apply += ogre.Vector3.UNIT_Y * self._force
+        if (input.isKeyDown(OIS.KC_X)): self._force_to_apply += ogre.Vector3().UNIT_Y * self._force
 
         ## Left/right
         elif (input.isKeyDown(OIS.KC_J)): self._force_to_apply -= right * self._force
@@ -91,7 +91,7 @@ class SimpleScenes_Chain (SimpleScenes):
         ## Forward/back
         elif (input.isKeyDown(OIS.KC_K)): self._force_to_apply += forward * self._force
         elif (input.isKeyDown(OIS.KC_I)): self._force_to_apply -= forward * self._force
-        else: self._force_to_apply = ogre.Vector3.ZERO
+        else: self._force_to_apply = ogre.Vector3().ZERO
 
         self._mgr.getCamera("PlayerCam")
 

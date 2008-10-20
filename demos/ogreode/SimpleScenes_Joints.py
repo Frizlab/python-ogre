@@ -75,7 +75,7 @@ class SimpleScenes_Joints( SimpleScenes ):
 
         joint = OgreOde.HingeJoint(self._world)
         joint.attach(body)
-        joint.setAxis(ogre.Vector3.UNIT_Y)
+        joint.setAxis(ogre.Vector3().UNIT_Y)
         joint.setAnchor(ogre.Vector3(-10,4.01,3.5))
 
         self._bodies.append(body)
@@ -100,7 +100,7 @@ class SimpleScenes_Joints( SimpleScenes ):
 
         joint = OgreOde.HingeJoint(self._world)
         joint.attach(body)
-        joint.setAxis(ogre.Vector3.UNIT_Y)
+        joint.setAxis(ogre.Vector3().UNIT_Y)
         joint.setAnchor(ogre.Vector3(-15,4.01,-3.5))
 
         self._bodies.append(body)
@@ -125,7 +125,7 @@ class SimpleScenes_Joints( SimpleScenes ):
 
         joint = OgreOde.HingeJoint(self._world)
         joint.attach(body)
-        joint.setAxis(ogre.Vector3.UNIT_Z)
+        joint.setAxis(ogre.Vector3().UNIT_Z)
         joint.setAnchor(ogre.Vector3(10,8.1,0))
 
         self._bodies.append(body)
