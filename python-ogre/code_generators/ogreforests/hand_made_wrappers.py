@@ -14,7 +14,7 @@ Ogre::Real HelperHeightFunction_Tree2D ( Ogre::Real x, Ogre::Real z, void *userD
     return y;
     } 
 
-void TreeLoader2D_setHeightFunction( TreeLoader2D & me, PyObject*  function, std::string name=""  ) {
+void TreeLoader2D_setHeightFunction( Forests::TreeLoader2D & me, PyObject*  function, std::string name=""  ) {
     mSubscriber_tree = function;
     mName_tree = name;
     me.setHeightFunction ( &HelperHeightFunction_Tree2D );
@@ -34,7 +34,7 @@ Ogre::Real HelperHeightFunction_Grass ( Ogre::Real x, Ogre::Real z, void * userD
     return y;
     } 
 
-void GrassLoader_setHeightFunction( GrassLoader & me, PyObject*  function, std::string name=""  ) {
+void GrassLoader_setHeightFunction( Forests::GrassLoader & me, PyObject*  function, std::string name=""  ) {
     mSubscriber_grass = function;
     mName_grass = name;
     me.setHeightFunction ( &HelperHeightFunction_Grass );
@@ -86,9 +86,9 @@ def apply( mb ):
 #     rt.add_declaration_code( WRAPPER_DEFINITION_GrassLoader )
 #     apply_reg (rt, WRAPPER_REGISTRATION_GrassLoader )
 
-#     rt = mb.class_( 'TreeLoader2D' )
-#     rt.add_declaration_code( WRAPPER_DEFINITION_TreeLoader2D )
-#     apply_reg (rt, WRAPPER_REGISTRATION_TreeLoader2D )
+    rt = mb.class_( 'TreeLoader2D' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_TreeLoader2D )
+    apply_reg (rt, WRAPPER_REGISTRATION_TreeLoader2D )
     
     rt = mb.class_( 'PagedGeometry' )
     rt.add_declaration_code( WRAPPER_DEFINITION_PagedGeometry )
