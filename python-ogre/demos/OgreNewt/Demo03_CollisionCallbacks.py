@@ -54,13 +54,13 @@ class OgreNewtonApplication (sf.Application):
         belt = conveyorBelt()
         belt.init( "ConveyorBelt1", self.sceneManager, 
                 self.World, Ogre.Vector3(15,0.3,3), Ogre.Vector3(1,0,0), 2.0, 
-                Ogre.Vector3(0,2,0), Ogre.Quaternion.IDENTITY, self.MatConveyor, BT_CONVEYOR )
+                Ogre.Vector3(0,2,0), Ogre.Quaternion().IDENTITY, self.MatConveyor, BT_CONVEYOR )
         self.Belts.append( belt )
     
         belt = conveyorBelt()
         belt.init( "ConveyorBelt2", self.sceneManager, self.World, Ogre.Vector3(23,0.3,4),
             Ogre.Vector3(-1,0,0), 6.0, Ogre.Vector3(3,-1,0),
-            Ogre.Quaternion.IDENTITY, self.MatConveyor, BT_CONVEYOR )
+            Ogre.Quaternion().IDENTITY, self.MatConveyor, BT_CONVEYOR )
         self.Belts.append( belt )
     
         ## floor object!
@@ -77,7 +77,7 @@ class OgreNewtonApplication (sf.Application):
         
         ##floornode.setScale( siz )
         bod.attachToNode( floornode )
-        bod.setPositionOrientation( Ogre.Vector3(0.0,-10.0,0.0), Ogre.Quaternion.IDENTITY )
+        bod.setPositionOrientation( Ogre.Vector3(0.0,-10.0,0.0), Ogre.Quaternion().IDENTITY )
         
         self.bodies.append ( bod )
     
@@ -192,7 +192,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 body.setMassMatrix( mass, inertia )
                 body.attachToNode( node )
                 body.setStandardForceCallback()
-                body.setPositionOrientation( Ogre.Vector3(-5,8,0), Ogre.Quaternion.IDENTITY )
+                body.setPositionOrientation( Ogre.Vector3(-5,8,0), Ogre.Quaternion().IDENTITY )
                 self.bodies.append ( body )    
                  
                 self.timer = 1.5

@@ -146,7 +146,7 @@ class CEGUIFrameListener(SampleFramework.FrameListener , OIS.KeyListener, OIS.Mo
         self.mMoveSpeed = 320.0
         #self.mRotateSpeed = ogre.Degree(36)*0.008
         self.mRotateSpeed = 8.0
-        self.mDirection = ogre.Vector3.ZERO
+        self.mDirection = ogre.Vector3().ZERO
 
         ## Create RaySceneQuery
         self.mRaySceneQuery = self.mSceneMgr.createRayQuery( ogre.Ray() )
@@ -685,7 +685,7 @@ class GuiApplication ( SampleFramework.Application ):
         lightmap = ogre.Image()
         ET.createTerrainLightmap(terrainInfo, lightmap, 128, 128,\
                                  ogre.Vector3(1, -1, 1),\
-                                 ogre.ColourValue.White,\
+                                 ogre.ColourValue().White,\
                                  ogre.ColourValue(0.3, 0.3, 0.3,1.0))
         lightmapTex.getBuffer(0, 0).blitFromMemory(lightmap.getPixelBox(0, 0))
 
