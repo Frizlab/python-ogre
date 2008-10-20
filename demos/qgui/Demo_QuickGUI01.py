@@ -30,10 +30,10 @@ import ogre.io.OIS as ois
 import ogre.gui.QuickGUI as gui
 import SampleFramework as sf
 
-class CallBack ( gui.MemberFunctionSlot ):
+class CallBack ( gui.EventHandlerSlot ):
     """ Callback class for user events in QuickGUI"""
     def __init__(self, function=""):
-        gui.MemberFunctionSlot.__init__(self)
+        gui.EventHandlerSlot.__init__(self)
         self.function=function
     def execute(self, args):
         if self.function:
@@ -173,10 +173,10 @@ class QuickGUIDemoApp (sf.Application):
         #3 However we do the same thing by setting MenuMode to True in the frameListerner further down
 # # #         self.camera.setAutoTracking(True, robotNode)
 
-        plane = Ogre.Plane( Ogre.Vector3.UNIT_Y, 0 )
+        plane = Ogre.Plane( Ogre.Vector3().UNIT_Y, 0 )
         Ogre.MeshManager.getSingleton().createPlane("ground",
            Ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME, plane,
-           1500,1500,20,20,True,1,5,5,Ogre.Vector3.UNIT_Z)
+           1500,1500,20,20,True,1,5,5,Ogre.Vector3().UNIT_Z)
         ground = self.sceneManager.createEntity( "GroundEntity", "ground" )
         self.sceneManager.getRootSceneNode().createChildSceneNode().attachObject(ground)
         ground.setMaterialName("Examples/Rockwall")
@@ -206,7 +206,7 @@ class QuickGUIDemoApp (sf.Application):
         ##Viewport *v = self.rttTex.addViewport( self.camera )
         v.setOverlaysEnabled( False )
         v.setClearEveryFrame( True )
-        v.setBackgroundColour( Ogre.ColourValue.Black )
+        v.setBackgroundColour( Ogre.ColourValue().Black )
         
         self.guiroot = gui.Root()
         gui.SkinSetManager.getSingleton().loadSkin("qgui",gui.SkinSet.IMAGE_TYPE_PNG,self.ResourceGroup);
@@ -547,7 +547,7 @@ class QuickGUIDemoApp (sf.Application):
         return True
 
     def evtHndlr_setTextWhite(self, args):
-        self.stWindow.getTitleBar().getText().setColor(Ogre.ColourValue.White)
+        self.stWindow.getTitleBar().getText().setColor(Ogre.ColourValue().White)
         return True
 
     def evtHndlr_showSetTextDialog(self, args):
@@ -570,11 +570,11 @@ class QuickGUIDemoApp (sf.Application):
     def evtHndlr_setTextColor(self, args):
         s = self.stWindow.getComboBox(0).getText().getCaption()
         
-        if( s == "Red" ): c = Ogre.ColourValue.Red
-        elif( s == "Green" ): c = Ogre.ColourValue.Green
-        elif( s == "Blue" ): c = Ogre.ColourValue.Blue
-        elif( s == "Black" ): c = Ogre.ColourValue.Black
-        elif( s == "White" ): c = Ogre.ColourValue.White
+        if( s == "Red" ): c = Ogre.ColourValue().Red
+        elif( s == "Green" ): c = Ogre.ColourValue().Green
+        elif( s == "Blue" ): c = Ogre.ColourValue().Blue
+        elif( s == "Black" ): c = Ogre.ColourValue().Black
+        elif( s == "White" ): c = Ogre.ColourValue().White
 
         self.stWindow.getTitleBar().getText().setColor(c)
         return True

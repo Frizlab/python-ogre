@@ -34,8 +34,8 @@ class HeightFunction:
             self.initialized = True
 #             self.MyRaySceneQueryListener = self.MyRaySceneQueryListener() 
             self.raySceneQuery = ogre.RaySceneQuery( sceneMgr )
-            self.updateRay.setOrigin(ogre.Vector3.ZERO)
-            self.updateRay.setDirection(ogre.Vector3.NEGATIVE_UNIT_Y)
+            self.updateRay.setOrigin(ogre.Vector3().ZERO)
+            self.updateRay.setDirection(ogre.Vector3().NEGATIVE_UNIT_Y)
             self.raySceneQuery = sceneMgr.createRayQuery(self.updateRay)
             self.raySceneQuery.setQueryTypeMask(ogre.SceneManager.WORLD_GEOMETRY_TYPE_MASK)   
             self.raySceneQuery.setWorldFragmentType(ogre.SceneQuery.WFT_SINGLE_INTERSECTION) 
@@ -46,7 +46,7 @@ class HeightFunction:
     ##there's no need for extra data other than the x/z coordinates.
     def getTerrainHeight(self, x, z, userData = None):
         self.updateRay.setOrigin(ogre.Vector3(x, 0.0, z))
-        self.updateRay.setDirection(ogre.Vector3.UNIT_Y)
+        self.updateRay.setDirection(ogre.Vector3().UNIT_Y)
         self.raySceneQuery.setRay(self.updateRay)
         self.raySceneQuery.execute(self.raySceneQueryListener)
 
@@ -61,7 +61,7 @@ class ForestApplication(sf.Application):
     def getTerrainHeight( self, x, z, UserData=None ):
         if ( x < 0 or z < 0 or x > 1500 or z > 1500 ):  return 0
         self.updateRay.setOrigin( ogre.Vector3(x, 0.0, z) )
-        self.updateRay.setDirection( ogre.Vector3.UNIT_Y )
+        self.updateRay.setDirection( ogre.Vector3().UNIT_Y )
         self.raySceneQuery.setRay( self.updateRay )
         self.raySceneQuery.execute( self.raySceneQueryListener )
         return self.raySceneQueryListener.resultDistance
@@ -101,7 +101,7 @@ class ForestApplication(sf.Application):
 #     
 #         ##RaySceneQuery for terrain height check
 #         self.updateRay.setOrigin(camera.getPosition())
-#         self.updateRay.setDirection(ogre.Vector3.NEGATIVE_UNIT_Y)
+#         self.updateRay.setDirection(ogre.Vector3().NEGATIVE_UNIT_Y)
 #         self.raySceneQuery = self.sceneManager.createRayQuery(self.updateRay)
 #         self.raySceneQuery.setQueryTypeMask(ogre.SceneManager.WORLD_GEOMETRY_TYPE_MASK )   
 #         self.raySceneQuery.setWorldFragmentType(ogre.SceneQuery.WFT_SINGLE_INTERSECTION) 
@@ -130,11 +130,12 @@ class ForestApplication(sf.Application):
         
         self.HeightFunction = HeightFunction()
         self.HeightFunction.initialize( self.sceneManager )
+        print dir(self.treeLoader)
         self.treeLoader.setHeightFunction ( self.HeightFunction, "getTerrainHeight" )
         
         ##And add 20,000 trees to the scene through the "easy-to-use" TreeLoader class
         myTree = self.sceneManager.createEntity("Tree", "tree2.mesh")
-        position = ogre.Vector3(ogre.Vector3.ZERO)
+        position = ogre.Vector3().ZERO
         
         for i in range (20000):
             yaw = ogre.Degree(random.randrange(0, 360))
@@ -196,7 +197,7 @@ class GrassFrameListener(sf.FrameListener):
         self.app = app
         # use this to tweak the persons position
         self.raySceneQuery = app.sceneManager.createRayQuery(ogre.Ray(app.camera.getPosition(),
-                                                                    ogre.Vector3.NEGATIVE_UNIT_Y))
+                                                                    ogre.Vector3().NEGATIVE_UNIT_Y))
 
         
     def frameStarted(self, frameEvent):
@@ -206,7 +207,7 @@ class GrassFrameListener(sf.FrameListener):
 #         
 #         updateRay = ogre.Ray()
 #         updateRay.setOrigin (self.camera.getPosition() + ogre.Vector3(0.0, 10.0, 0.0))
-#         updateRay.setDirection (ogre.Vector3.NEGATIVE_UNIT_Y)
+#         updateRay.setDirection (ogre.Vector3().NEGATIVE_UNIT_Y)
 #         self.raySceneQuery.Ray = updateRay
 #         for queryResult in self.raySceneQuery.execute():
 #             if queryResult.worldFragment is not None:
