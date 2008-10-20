@@ -67,7 +67,7 @@ class OgreNewtonApplication (sf.Application):
         ## that's all we'll need to do for this object.  dynamic objects have a few more steps, so look
         ## at the code in the FrameListener for more.
         body.attachToNode( floornode )
-        body.setPositionOrientation( Ogre.Vector3(0.0,-10.0,0.0), Ogre.Quaternion.IDENTITY )
+        body.setPositionOrientation( Ogre.Vector3(0.0,-10.0,0.0), Ogre.Quaternion().IDENTITY )
         
         self.bodies.append(body)
         ## position camera

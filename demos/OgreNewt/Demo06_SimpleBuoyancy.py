@@ -99,13 +99,13 @@ class OgreNewtonApplication (sf.Application):
         
         ##floornode.setScale( siz )
         bod.attachToNode( floornode )
-        bod.setPositionOrientation( Ogre.Vector3(0.0,-10.0,0.0), Ogre.Quaternion.IDENTITY )
+        bod.setPositionOrientation( Ogre.Vector3(0.0,-10.0,0.0), Ogre.Quaternion().IDENTITY )
         self.bodies.append(bod)
         
         ## make a simple rope.
         size=Ogre.Vector3 (3,1.0,1.0)
         pos=Ogre.Vector3 (0,1,0)
-        orient = Ogre.Quaternion.IDENTITY
+        orient = Ogre.Quaternion().IDENTITY
     
         ## loop through, making bodies and connecting them.
         parent = None
@@ -336,7 +336,7 @@ class OgreNewtonFrameListener(GuiFrameListener ):
                 self.dragBody.setAutoFreeze(1)
     
                 self.dragBody = None
-                self.dragPoint = Ogre.Vector3.ZERO
+                self.dragPoint = Ogre.Vector3().ZERO
                 self.dragDist = 0.0
     
                 self.dragging = False

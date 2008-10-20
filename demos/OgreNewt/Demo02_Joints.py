@@ -88,7 +88,7 @@ class OgreNewtonApplication (sf.Application):
         floor3.setMaterialName( "Examples/DarkMaterial" )
         floor3.setCastShadows( False )
         floornode3.setPosition( Ogre.Vector3(-80.0, 0.0, 0.0) )
-        floornode3.setOrientation( Ogre.Quaternion( Ogre.Degree(d=0.0), Ogre.Vector3.UNIT_Z ) )
+        floornode3.setOrientation( Ogre.Quaternion( Ogre.Degree(d=0.0), Ogre.Vector3().UNIT_Z ) )
         ##-------------------------------------------------------------
     
         ## using the new "SceneParser" TreeCollision primitive.  this will automatically parse an entire tree of
@@ -99,13 +99,13 @@ class OgreNewtonApplication (sf.Application):
         del stat_col
         
         bod.attachToNode( floornode )
-        bod.setPositionOrientation( Ogre.Vector3(0.0,-20.0,0.0), Ogre.Quaternion.IDENTITY )
+        bod.setPositionOrientation( Ogre.Vector3(0.0,-20.0,0.0), Ogre.Quaternion().IDENTITY )
         self.bodies.append( bod )
         
         ## make a simple rope.
         size = Ogre.Vector3(3,1.5,1.5)
         pos = Ogre.Vector3(0,3,0)
-        orient = Ogre.Quaternion.IDENTITY
+        orient = Ogre.Quaternion().IDENTITY
     
         ## loop through, making bodies and connecting them.
         parent = None

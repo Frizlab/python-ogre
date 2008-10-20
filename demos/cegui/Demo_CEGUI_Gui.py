@@ -120,7 +120,7 @@ class GuiApplication ( SampleFramework.Application ):
         v = rttTex.addViewport( rttCam ) 
         v.setOverlaysEnabled(False) 
         v.setClearEveryFrame( True ) 
-        v.setBackgroundColour( ogre.ColourValue.Black ) 
+        v.setBackgroundColour( ogre.ColourValue().Black ) 
 
             
         ## Retrieve CEGUI texture for the RTT

@@ -58,14 +58,14 @@ class OgreNewtonApplication (sf.Application):
         del col
         
         bod.attachToNode( floornode )
-        bod.setPositionOrientation( Ogre.Vector3(0.0,-2.0,0.0), Ogre.Quaternion.IDENTITY )
+        bod.setPositionOrientation( Ogre.Vector3(0.0,-2.0,0.0), Ogre.Quaternion().IDENTITY )
         
         self.bodies.append(bod)
     
     
         ## here's where we make the simple vehicle.  everything is taken care of in the constuctor.
         self.Car = SimpleVehicle.SimpleVehicle( self.sceneManager, self.World, 
-                                Ogre.Vector3(0,-0.5,0), Ogre.Quaternion.IDENTITY )
+                                Ogre.Vector3(0,-0.5,0), Ogre.Quaternion().IDENTITY )
 
         ## position camera
         self.msnCam = self.sceneManager.getRootSceneNode().createChildSceneNode()
@@ -251,7 +251,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 del self.Car
                 self.Car = SimpleVehicle.SimpleVehicle( self.sceneManager, self.World, 
                                                 Ogre.Vector3(0,Ogre.Math.UnitRandom() * 10.0,0), 
-                                                Ogre.Quaternion.IDENTITY )
+                                                Ogre.Quaternion().IDENTITY )
         if ( not self.Keyboard.isKeyDown( OIS.KC_R )):
             self.R = False
         

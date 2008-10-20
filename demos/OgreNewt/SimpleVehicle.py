@@ -71,7 +71,7 @@ class SimpleVehicle (OgreNewt.Vehicle):
             for z in range (-1, 2, 2):
                  ## okay, let's create the tire itself.  we'll use the OgreNewt.Vehicle.Tire class for this.  most of the
                 ## parameters are self-explanatory... try changing some of them to see what happens.
-                tireorient = Ogre.Quaternion(Ogre.Degree(0), Ogre.Vector3.UNIT_Y)
+                tireorient = Ogre.Quaternion(Ogre.Degree(0), Ogre.Vector3().UNIT_Y)
                 tirepos = offset * Ogre.Vector3(x,0.5,z)
                 pin= Ogre.Vector3(0,0,x)
                 mass = 15.0
