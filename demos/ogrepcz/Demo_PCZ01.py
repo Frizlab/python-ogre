@@ -73,7 +73,7 @@ class PCZTestFrameListener ( sf.FrameListener):
         # (takes furthest hit)
         updateRay = ogre.Ray()
         updateRay.setOrigin(self.camera.getParentSceneNode().getPosition())
-        updateRay.setDirection(self.camera.getParentSceneNode().getOrientation()*ogre.Vector3.NEGATIVE_UNIT_Z)
+        updateRay.setDirection(self.camera.getParentSceneNode().getOrientation()*ogre.Vector3().NEGATIVE_UNIT_Z)
         self.raySceneQuery.setRay(updateRay)
         zone = self.camera.getParentNode().getHomeZone()
         self.raySceneQuery.setStartZone(zone)
@@ -143,7 +143,7 @@ class PCZTestApplication (sf.Application):
         corners[1] = aabb.getMaximum()
         p.setCorner(0, corners[0])
         p.setCorner(1, corners[1])
-        p.setDirection(ogre.Vector3.NEGATIVE_UNIT_Z) # this indicates an "inward" pointing normal
+        p.setDirection(ogre.Vector3().NEGATIVE_UNIT_Z) # this indicates an "inward" pointing normal
         # associate the portal with the terrain's main node
         p.setNode(terrainZone.getEnclosureNode())
         # IMPORTANT: Update the derived values of the portal
@@ -158,7 +158,7 @@ class PCZTestApplication (sf.Application):
         corners[1] = aabb.getMaximum()
         p2.setCorner(0, corners[0])
         p2.setCorner(1, corners[1])
-        p2.setDirection(ogre.Vector3.UNIT_Z) # this indicates an "outward" pointing normal
+        p2.setDirection(ogre.Vector3().UNIT_Z) # this indicates an "outward" pointing normal
         # associate the portal with the terrain's main node
         p2.setNode(terrainZone.getEnclosureNode())
         # IMPORTANT: Update the derived values of the portal
@@ -272,14 +272,14 @@ class PCZTestApplication (sf.Application):
         self.buildingNode = roomObj.createTestBuilding(self.sceneManager, "1")
         self.buildingNode.setPosition(500, 165, 570)
         #ogre.Radian r = Radian(3.1416/7.0)
-        #self.buildingNode.rotate(ogre.Vector3.UNIT_Y, r)
+        #self.buildingNode.rotate(ogre.Vector3().UNIT_Y, r)
 # 
 #         # create another test buildinig
 #         roomObj2 = RoomObject.RoomObject()
 #         self.buildingNode = roomObj2.createTestBuilding(self.sceneManager, "2")
 #         self.buildingNode.setPosition(400, 165, 570)
 #         #ogre.Radian r = Radian(3.1416/7.0)
-#         #self.buildingNode.rotate(ogre.Vector3.UNIT_Y, r)
+#         #self.buildingNode.rotate(ogre.Vector3().UNIT_Y, r)
 # 
         # Position camera in the center of the building
         self.cameraNode.setPosition(self.buildingNode.getPosition())
@@ -290,7 +290,7 @@ class PCZTestApplication (sf.Application):
 
         # create the ray scene query
         self.raySceneQuery = self.sceneManager.createRayQuery(
-            ogre.Ray(self.camera.getParentNode().getPosition(), ogre.Vector3.NEGATIVE_UNIT_Z))
+            ogre.Ray(self.camera.getParentNode().getPosition(), ogre.Vector3().NEGATIVE_UNIT_Z))
         self.raySceneQuery.setSortByDistance(True, 5)
 
     
