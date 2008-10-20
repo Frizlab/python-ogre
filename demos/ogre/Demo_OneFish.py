@@ -41,7 +41,7 @@ class TutorialFrameListener(SampleFramework.FrameListener):
         
         #Then, takes care of the direction that the fish has to face to 
         directionToGo = self.mAnimEntity[2].position - self.mAnimEntity[1].position
-        src =  self.mAnimEntity[0].Orientation *  (-ogre.Vector3.UNIT_X)         
+        src =  self.mAnimEntity[0].Orientation *  (-ogre.Vector3().UNIT_X)         
         quat = src.getRotationTo(directionToGo) #Calculates the quaternion of the appropriate rotation 
         self.mAnimEntity[0].rotate(quat)        #Rotates, the fish. Here, we know that no rotation of 180 
                                                 #degrees will occur so we do not have to care about it 

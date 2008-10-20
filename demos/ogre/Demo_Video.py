@@ -1,3 +1,6 @@
+# NO_UNITTEST
+# 
+# NO LONGER SUPPORTED AS OgreDSHOW depreciated
 # This code is in the Public Domain
 # -----------------------------------------------------------------------------
 # This source file is part of Python-Ogre
@@ -9,7 +12,9 @@
 # You may use this sample code for anything you like, it is not covered by the
 # LGPL.
 # -----------------------------------------------------------------------------
+
 import sys
+sys.exit()
 sys.path.insert(0,'..')
 import PythonOgreConfig
 

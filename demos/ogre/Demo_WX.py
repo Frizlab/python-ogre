@@ -1,3 +1,4 @@
+# NO_UNITTEST
 # This code is in the Public Domain
 # -----------------------------------------------------------------------------
 # This source file is part of Python-Ogre
@@ -137,7 +138,7 @@ if __name__=="__main__":
                 
                 #Then, takes care of the direction that the fish has to face to 
                 directionToGo = self.sceneEntities.fishLookAtNode.Position - self.sceneEntities.fishAnimationNode.Position 
-                src = self.sceneEntities.fishNode.Orientation * (-ogre.Vector3.UNIT_X) #the fish is originally 
+                src = self.sceneEntities.fishNode.Orientation * (-ogre.Vector3().UNIT_X) #the fish is originally 
                                                                                        #facing the negative X direction 
                 
                 

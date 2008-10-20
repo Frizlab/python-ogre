@@ -1,3 +1,4 @@
+# NO_UNITTEST
 # This code is in the Public Domain
 # -----------------------------------------------------------------------------
 # This source file is part of Python-Ogre
@@ -20,8 +21,8 @@ import ogre.io.OIS as OIS
 
 class MyApp(object):
 
-   def __init__(self, plugins_path='plugins.cfg',
-                resource_path='resources.cfg'):
+   def __init__(self, plugins_path='../plugins.cfg',
+                resource_path='../resources.cfg'):
 
        # keep track of the paths that are used
 
@@ -172,7 +173,7 @@ class UberSpinningNinja(object):
        self.node = node.createChildSceneNode("ninja_node", start_coords)
        self.node.attachObject(self.entity)
        
-       src = self.node.Orientation * (ogre.Vector3.UNIT_Z) 
+       src = self.node.Orientation * (ogre.Vector3().UNIT_Z) 
        directionToGo = ogre.Vector3(0,0,-1) 
        quat = src.getRotationTo(directionToGo)
        self.node.Orientation=quat 

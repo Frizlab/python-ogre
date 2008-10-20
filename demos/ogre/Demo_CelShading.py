@@ -31,7 +31,7 @@ class CelShadingApplication(sf.Application):
         
         # Accept default settings: point light, white diffuse, just set position
         light = sceneManager.createLight('MainLight')
-        self.rotationNode = sceneManager.rootSceneNode.createChildSceneNode()
+        self.rotationNode = sceneManager.getRootSceneNode().createChildSceneNode()
         self.rotationNode.createChildSceneNode((20,40,50)).attachObject(light)
 
         # create head entity
@@ -67,7 +67,7 @@ class CelShadingApplication(sf.Application):
         sub.setCustomParameter(CUSTOM_DIFFUSE, (1.0, 1.0, 0.7, 1.0))
         sub.setCustomParameter(CUSTOM_SPECULAR, (1.0, 1.0, 1.0, 1.0))
 
-        sceneManager.rootSceneNode.createChildSceneNode().attachObject(entity)
+        sceneManager.getRootSceneNode().createChildSceneNode().attachObject(entity)
         self.renderWindow.getViewport(0).backgroundColour = (1, 1, 1)
 
     def _createFrameListener(self):

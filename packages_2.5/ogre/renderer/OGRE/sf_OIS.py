@@ -39,15 +39,35 @@ def getPluginPath():
         "** Warning: working plugins.cfg file to the current directory.\n\n")
     raise ogre.Exception(0, "can't locate the 'plugins.cfg' file", "")
 
+# def isUnitTest():
+#     """Looks for a magic file to determine if we want to do a unittest"""
+#     paths = [os.path.join(os.getcwd(), 'unittest.now'),
+#             os.path.join(os.getcwd(), '..','unittest.now')]
+#     for path in paths:
+#         if os.path.exists(path):
+#             return True
+#     return False
+ 
 def isUnitTest():
-    """Looks for a magic file to determine if we want to do a unittest"""
-    paths = [os.path.join(os.getcwd(), 'unittest.now'),
-            os.path.join(os.getcwd(), '..','unittest.now')]
-    for path in paths:
-        if os.path.exists(path):
-            return True
+    """ use an environment variable to define that we need to do unittesting"""
+    env = os.environ
+    if env.has_key ("PythonOgreUnitTestPath"):
+        return True
     return False
-            
+    
+def UnitTest_Duration():
+    return 5
+
+def UnitTest_Screenshot():
+    if isUnitTest():
+        env = os.environ
+        path = env["PythonOgreUnitTestPath"]
+        path = os.path.join ( path, sys.modules['__main__'].__file__.split('.')[0] )
+        print "\n\n**** ", path
+        return path
+    else:
+        return "test"
+               
 class Application(object):
     "This class is the base for an Ogre application."
     debugText=""
@@ -244,10 +264,11 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
         self.bufferedJoy = bufferedJoy
         self.shouldQuit = False # set to True to exit..
         self.MenuMode = False   # lets understand a simple menu function
-        self.unittest = isUnitTest()
-        self.unittest_duration = 5.0  # seconds before screen shot a exit
-        self.unittest_screenshot = sys.modules['__main__'].__file__.split('.')[0]     # file name for unittest screenshot
         
+        self.unittest = isUnitTest()
+        self.unittest_duration = UnitTest_Duration()  # seconds before screen shot a exit
+#         self.unittest_screenshot = sys.modules['__main__'].__file__.split('.')[0]     # file name for unittest screenshot
+        self.unittest_screenshot = UnitTest_Screenshot()
         ## we can tell if we are using OgreRefapp based upon the camera class
         
         if self.camera.__class__ == ogre.Camera:
@@ -341,7 +362,7 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
         if self.unittest:
             self.unittest_duration -= evt.timeSinceLastFrame 
             if self.unittest_duration < 0:
-                self.renderWindow.writeContentsToTimestampedFile(self.unittest_screenshot, '.jpg')
+                self.renderWindow.writeContentsToFile(self.unittest_screenshot + '.jpg')
                 return False                     
         ##Need to capture/update each device - this will also trigger any listeners
         self.Keyboard.capture()    

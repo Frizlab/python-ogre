@@ -32,7 +32,7 @@ class SkyDomeApplication(sf.Application):
         light.setPosition (ogre.Vector3(20, 80, 50))
 
         plane = ogre.Plane()
-        plane.normal = ogre.Vector3.UNIT_Y
+        plane.normal = ogre.Vector3().UNIT_Y
         plane.d = 200
 
         mm = ogre.MeshManager.getSingleton()

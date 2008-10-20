@@ -1,3 +1,4 @@
+# NO_UNITTEST
 # This code is in the Public Domain
 # -----------------------------------------------------------------------------
 # This source file is part of Python-Ogre
@@ -27,7 +28,7 @@ class ApplicationFramework(object):
         self.client = None  
         self.root = ogre.Root( sf.getPluginPath() )
         config = ogre.ConfigFile()
-        config.load('resources.cfg' ) 
+        config.load('../resources.cfg' ) 
         
         ## this is still ugly as we need to create a real python iterator...
         

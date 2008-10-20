@@ -53,7 +53,7 @@ class TerrainApplication(sf.Application):
         # 5000 world units from the camera
         plane.d = 5000
         # Above the camera, facing down
-        plane.normal = -ogre.Vector3.UNIT_Y
+        plane.normal = -ogre.Vector3().UNIT_Y
 
         ## Setup a nice starting position for the camera
         camera.setPosition(707,2500,528)
@@ -71,7 +71,7 @@ class TerrainListener(sf.FrameListener):
         self.sceneManager = sceneManager
         self.moveSpeed = 50.0
         self.raySceneQuery = sceneManager.createRayQuery(ogre.Ray(camera.getPosition(),
-                                                                    ogre.Vector3.NEGATIVE_UNIT_Y))
+                                                                    ogre.Vector3().NEGATIVE_UNIT_Y))
         self.camera = camera
         #self.camera.setPosition (self.camera.getPosition() + ogre.Vector3(0.0, 10.0, 0.0))
 
@@ -79,7 +79,7 @@ class TerrainListener(sf.FrameListener):
         # clamp to terrain
         updateRay = ogre.Ray()
         updateRay.setOrigin (self.camera.getPosition() + ogre.Vector3(0.0, 10.0, 0.0))
-        updateRay.setDirection (ogre.Vector3.NEGATIVE_UNIT_Y)
+        updateRay.setDirection (ogre.Vector3().NEGATIVE_UNIT_Y)
         self.raySceneQuery.Ray = updateRay
         for queryResult in self.raySceneQuery.execute():
             if queryResult.worldFragment is not None:

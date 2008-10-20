@@ -1,3 +1,4 @@
+# NO_UNITTEST
 # This code is in the Public Domain
 # -----------------------------------------------------------------------------
 # This source file is part of Python-Ogre
@@ -331,7 +332,7 @@ class WaterListener(sf.FrameListener):
         self.app.headNode.setScale((3,3,3)) 
         newPos = Ogre.Vector3(step*tx, self.headDepth, step*ty) 
         diffPos = newPos - self.oldPos  
-        headRotation = Ogre.Vector3.UNIT_Z.getRotationTo(diffPos) 
+        headRotation = Ogre.Vector3().UNIT_Z.getRotationTo(diffPos) 
         self.oldPos = newPos  
         self.app.headNode.translate(newPos) 
         self.app.headNode.rotate(headRotation) 
@@ -419,7 +420,7 @@ class WaterListener(sf.FrameListener):
         RAIN_HEIGHT_CONSTANT = 5
         self.sines = [0,100,200,300] 
         self.adds=[0.3,-1.6,1.1,0.5] 
-        self.oldPos = Ogre.Vector3.UNIT_Z 
+        self.oldPos = Ogre.Vector3().UNIT_Z 
         self.pindex = 0  
         self.headDepth  =0.0
         self.circles = []

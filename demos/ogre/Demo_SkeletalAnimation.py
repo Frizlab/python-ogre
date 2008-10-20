@@ -132,7 +132,7 @@ class SkeletalApplication(sf.Application):
         rot = 0.0 
         for i in range( NUM_JAIQUAS) :
             q = ogre.Quaternion()
-            q.FromAngleAxis(ogre.Radian(r=rot), ogre.Vector3.UNIT_Y) 
+            q.FromAngleAxis(ogre.Radian(r=rot), ogre.Vector3().UNIT_Y) 
             mOrientations[i] = q 
             mBasePositions[i] = q * ogre.Vector3(0,0,-20) 
             ent = sceneManager.createEntity("jaiqua" + str(i), "jaiqua.mesh") 
@@ -181,11 +181,11 @@ class SkeletalApplication(sf.Application):
 
            
         plane = ogre.Plane()
-        plane.normal = ogre.Vector3.UNIT_Y
+        plane.normal = ogre.Vector3().UNIT_Y
         plane.d = 100
         ogre.MeshManager.getSingleton().createPlane("Myplane",
             ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME, plane,
-            1500,1500,20,20,True,1,60,60,ogre.Vector3.UNIT_Z)
+            1500,1500,20,20,True,1,60,60,ogre.Vector3().UNIT_Z)
         self.pPlaneEnt = sceneManager.createEntity( "plane", "Myplane" )
         self.pPlaneEnt.setMaterialName("Examples/Rockwall")
         self.pPlaneEnt.setCastShadows(False)
@@ -221,7 +221,7 @@ class SkeletalAnimationFrameListener(sf.FrameListener):
                 # Need to reposition the scene node origin since animation includes translation
                 # Calculate as an offset to the end position, rotated by the
                 # amount the animation turns the character
-                rot = ogre.Quaternion(mAnimationRotation, ogre.Vector3.UNIT_Y) 
+                rot = ogre.Quaternion(mAnimationRotation, ogre.Vector3().UNIT_Y) 
                 startoffset = mSceneNode[i].getOrientation() * -mSneakStartOffset 
                 endoffset = mSneakEndOffset 
                 offset = rot * startoffset 
