@@ -207,8 +207,7 @@ class GranTurismOgreFrameListener ( sf.FrameListener ):
             toCam.x -= camDistance * q.zAxis().x
 
             self.camera.move( (toCam - self.camera.getPosition()) * followFactor )
-            self.camera.lookAt(self.vehicle.getSceneNode().getPosition() + ((self.vehicle.getSceneNode().getOrientation() * ogre.Vector3.UNIT_Z) * camLookAhead))
-        print "*** FrameStarted End" , ret           
+            self.camera.lookAt(self.vehicle.getSceneNode().getPosition() + ((self.vehicle.getSceneNode().getOrientation() * ogre.Vector3().UNIT_Z) * camLookAhead))
         return ret
 
 #------------------------------------------------------------------------------------------------
@@ -251,7 +250,6 @@ class GranTurismOgreApplication (sf.Application, OgreOde.CollisionListener ):
     #------------------------------------------------------------------------------------------------
     # Just override the mandatory create scene method
     def _createScene(self):
-        print "** _CreateScene"
         # Set ambient light
         self.sceneManager.setAmbientLight(ogre.ColourValue(0.5, 0.5, 0.5))
         self.sceneManager.setSkyBox(True,"GranTurismOgre/Skybox")
@@ -283,11 +281,7 @@ class GranTurismOgreApplication (sf.Application, OgreOde.CollisionListener ):
         track_node.attachObject(track_mesh)
 
         ei = OgreOde.EntityInformer(track_mesh)
-        print "** Done 1"
-        print ei
-        print self._world.getDefaultSpace()
         self._track = ei.createStaticTriangleMesh(self._world, self._world.getDefaultSpace())
-        print "****"
 
     #------------------------------------------------------------------------------------------------
     # Create new frame listener
@@ -296,7 +290,6 @@ class GranTurismOgreApplication (sf.Application, OgreOde.CollisionListener ):
         self.root.addFrameListener(self.FrameListener)
     #------------------------------------------------------------------------------------------------
     def collision(self, contact):
-        print "** Collision "
         if not OgreOde.Vehicle.handleTyreCollision(contact):
             contact.setBouncyness(0.0)
             contact.setCoulombFriction(18.0)

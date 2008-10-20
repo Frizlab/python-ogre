@@ -22,7 +22,7 @@ class SimpleScenes_TriMesh ( SimpleScenes_BoxStack ):
         node.attachObject(entity)
         node.setScale(ogre.Vector3(0.4,0.3,0.4))
         node.setPosition(ogre.Vector3(0,3,0))
-        node.setOrientation(ogre.Quaternion(ogre.Degree(30),ogre.Vector3.UNIT_Y))
+        node.setOrientation(ogre.Quaternion(ogre.Degree(30),ogre.Vector3().UNIT_Y))
 
 #         entity.setNormaliseNormals(True)
         ##entity.setCastShadows(False)

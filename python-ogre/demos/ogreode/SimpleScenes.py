@@ -13,11 +13,8 @@ class SimpleScenes (OgreOde.CollisionListener, OgreOde.StepListener):
     STEP_RATE = 0.01
     def __init__ ( self, world ):
         global KEY_DELAY
-        print "** SimpleScenes Init"
         OgreOde.CollisionListener.__init__(self)
-        print "1"
         OgreOde.StepListener.__init__(self)
-        print "Ode Created"
         self._world = world
         self._mgr = self._world.getSceneManager()
         self._world.setCollisionListener(self)
@@ -25,29 +22,17 @@ class SimpleScenes (OgreOde.CollisionListener, OgreOde.StepListener):
         self._key_delay = 1.0 # KEY_DELAY
         self._last_node = 0
         self.RagdollList=[]
-        print "3"
         self.dotOgreOdeLoader = OgreOde.DotLoader( world )
-        print "3.1"
         self._bodies=[]  # an array to keep objects around in (like c++ "new" )
         self._geoms=[]
         self._joints=[]
-        print "3.2"
         self._ragdollFactory = OgreOde.RagdollFactory()
-        print dir (OgreOde)
-        print dir ( self._ragdollFactory)
 #         print self._ragdollFactory.Type
         
-        print "Type is:", self._ragdollFactory.getType()
-        print "Flags:", self._ragdollFactory.requestTypeFlags()
-        print "3.3"
-        print self._ragdollFactory
-        print ogre.Root.getSingletonPtr()
         
         ogre.Root.getSingletonPtr().addMovableObjectFactory(self._ragdollFactory) 
         
-        print "3.4"
         self.setInfoText("")
-        print "4"
         self.xmlNames = [
             "zombie",
             "zombie",
@@ -82,14 +67,13 @@ class SimpleScenes (OgreOde.CollisionListener, OgreOde.StepListener):
             ]
         self.sSelectedMesh = 0
         self._ragdoll_count = 0        
-        print "SimpleScenes Init Done"
     
     # 
     # Called by OgreOde whenever a collision occurs, so 
     # that we can modify the contact parameters
     # 
     def collision( self, contact) :
-#         print "Simple Scenes Collision"
+#          "Simple Scenes Collision"
         ## Check for collisions between things that are connected and ignore them
         g1 = contact.getFirstGeometry()
         g2 = contact.getSecondGeometry()
@@ -210,7 +194,6 @@ class SimpleScenes (OgreOde.CollisionListener, OgreOde.StepListener):
             typeName = "gun" 
         else:
             typeName = "unknown" 
-        print "2", typeName           
         ## Create the visual representation (the Ogre entity and scene node)
         name = typeName + str(len(self._bodies))
         entity = self._mgr.createEntity(name, typeName + ".mesh")
@@ -218,19 +201,13 @@ class SimpleScenes (OgreOde.CollisionListener, OgreOde.StepListener):
         node.attachObject(entity)
 #         entity.setNormaliseNormals(True)
         entity.setCastShadows(True)
-        print "3"
         ## Pick a size
         size = ogre.Vector3((OgreOde.Utility.randomReal() * 0.5 + 0.1) * 2.0,
                     (OgreOde.Utility.randomReal() * 0.5 + 0.1) * 2.0,
                     (OgreOde.Utility.randomReal() * 0.5 + 0.1) * 2.0)
-        print size
         ## Create a body associated with the node we created
         body = OgreOde.Body(self._world)  ##AJM
-        print body
-        print "About to attach"
-        print node
         node.attachObject(body)
-        print "node:", node
         
     
         ## Set the mass and geometry to match the visual representation
@@ -245,21 +222,17 @@ class SimpleScenes (OgreOde.CollisionListener, OgreOde.StepListener):
             body.setMass(mass)
     
         elif objectClass == OgreOde.Geometry.Class_Sphere:
-            print "setting spehere"
             mass= OgreOde.SphereMass(1.0,size.x)
             mass.setDensity(5.0,size.x)
-            print mass
             geom = OgreOde.SphereGeometry(size.x,self._world,self._space)
-            print geom
             node.setScale(size.x * 0.2,size.x * 0.2,size.x * 0.2)
             body.setMass(mass)
-            print body
     
         elif objectClass == OgreOde.Geometry.Class_Cylinder:
                 size.x *= 0.5
     
-                mass = OgreOde.CapsuleMass(1.0,size.x,ogre.Vector3.UNIT_Z,size.y)
-                mass.setDensity(5.0,size.x,ogre.Vector3.UNIT_Z,size.y)
+                mass = OgreOde.CapsuleMass(1.0,size.x,ogre.Vector3().UNIT_Z,size.y)
+                mass.setDensity(5.0,size.x,ogre.Vector3().UNIT_Z,size.y)
                 
                 geom = OgreOde.CapsuleGeometry(size.x,size.y,self._world, self._space)
                 node.setScale(size.x,size.x,(size.y + (size.x * 2.0)) * 0.25)
@@ -276,7 +249,6 @@ class SimpleScenes (OgreOde.CollisionListener, OgreOde.StepListener):
                 body.setMass(mass)
     
         ## Tie the collision geometry to the physical body
-        print "5"
         geom.setBody(body)
     
         ## Keep track of the body
@@ -284,7 +256,6 @@ class SimpleScenes (OgreOde.CollisionListener, OgreOde.StepListener):
         self._geoms.append(geom)
         
         self._key_delay = 0.0
-        print "body is: ", body    
         ## If we created something position and orient it randomly
         if (body) :
             body.setOrientation(ogre.Quaternion(ogre.Radian(OgreOde.Utility.randomReal() * 10.0 - 5.0),
