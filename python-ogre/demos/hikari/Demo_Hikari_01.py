@@ -27,9 +27,7 @@ class HikariApplication(sf.Application):
         sceneManager = self.sceneManager
         camera = self.camera
         
-        sceneManager.ambientLight = ogre.ColourValue(0.5, 0.5, 0.5)
-#         sceneManager.ambientLight = ogre.ColourValue(ogre.ColourValue.White)
-        print ogre.ColourValue.White
+        sceneManager.ambientLight = ogre.ColourValue().White
         sceneManager.setShadowTechnique(ogre.SHADOWTYPE_TEXTURE_ADDITIVE)
         self.setupHikari()
         
@@ -72,7 +70,8 @@ class HikariApplication(sf.Application):
       
 class HikariListener(sf.FrameListener, ois.MouseListener, ois.KeyListener):
     def __init__(self, app):
-        sf.FrameListener.__init__(self, app.renderWindow, app.camera, bufferedKeys = False)
+        print "INIT!!!"
+        sf.FrameListener.__init__(self, app.renderWindow, app.camera, bufferedMouse=True, bufferedKeys = True)
         ois.KeyListener.__init__(self)
         ois.MouseListener.__init__(self)
         self.app = app
@@ -114,14 +113,14 @@ class HikariListener(sf.FrameListener, ois.MouseListener, ois.KeyListener):
             return [("x11_mouse_grab","false"), ("x11_mouse_hide", "false")]  ## untested
         
         
-    def frameStarted(self, frameEvent):              
+    def frameRenderingQueued(self, frameEvent):              
         self.app.hikariMgr.update()
 #         root.renderOneFrame()
 #         Ogre::WindowEventUtilities::messagePump()
         
         stats = self.renderWindow.getStatistics()
         self.app.fps.callFunction("setFPS", hikari.Args(hikari.FlashValue(stats.lastFPS) ))
-        return sf.FrameListener.frameStarted(self, frameEvent)
+        return sf.FrameListener.frameRenderingQueued(self, frameEvent)
 
         
                               
