@@ -232,11 +232,28 @@ def clear_str(_str):
     
     
     ## now clean up the rest
-    _str = reduce(clean, [_str, '/', '*', '!', "\\brief", '\\fn',
+    _str = reduce(clean, [_str, '/', "\\brief", '\\fn',
          "@brief", "@fn", '"', "@{", "\\c", "\\a"]) ## somtimes there are '"' in the doc strings and other "\\"...
 #     return _str.lstrip()
 #     return "  " + _str.lstrip()
-    return _str  ## no removale of white space so Epytext can handle sections etc
+
+    # another fix to remove stray escape sequences - only new lines allowed
+    # last character should never be a backslash, however lets fix it just in case...
+    # and we need to make a new copy because strings are immutable...
+    newStr=""
+    for x in range ( len ( _str) -1  ): # handle upto 2nd to last character
+        if _str[x] == '\\' and _str[x+1] != 'n':
+            print "fixing stray escape sequence", x, _str
+            newStr += ' ' 
+        else:
+            newStr += _str[x]                   
+    x = len (_str) -1 # need to handle last character
+    if _str[x] == '\\' :
+        print "fixing stray escape sequence EOL", _str
+        newStr += ' ' 
+    else:
+        newStr += _str[x]                   
+    return newStr  ## no removale of white space so Epytext can handle sections etc
 
     
 def make_epytext ( str ):

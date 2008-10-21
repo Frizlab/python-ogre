@@ -67,7 +67,7 @@ def addDetailVersion ( mb, env, envClass ):
           
     po = ".".join( (env.PythonOgreMajorVersion,env.PythonOgreMinorVersion, env.PythonOgrePatchVersion) )
     t = datetime.datetime.now().isoformat(' ').strip()
-    t = datetime.date.today().isoformat() # making this less granular so it doesn't change 'every' time I do a regenerate
+    t = str (datetime.date.today().month) # making this less granular so it doesn't change 'every' time I do a regenerate
     v = envClass.version
     s = getSVNVersion( env )
     detail = "_".join( (po,s,envClass.name, v, t) )
