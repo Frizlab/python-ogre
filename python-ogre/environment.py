@@ -1280,10 +1280,22 @@ class physx:
                 Config.PATH_LIB_PhysX
                 ]
     CheckIncludes=[]
-    if os.name == 'nt':
+    if isWindows():
         libs=[  boost.lib, 'NxCharacter', 'NxCooking', 'PhysXLoader' ]
-    else:
+    elif isLinux():
         libs=[  boost.lib, 'NxCharacter', 'NxCooking',  'PhysXCore', 'PhysXLoader' ]
+        source = [
+                    [wget, "http://developer.download.nvidia.com/PhysX/2.8.1/PhysX_2.8.1_SDK_CoreLinux_deb.tar.gz", downloadPath]
+                 ]
+                 
+        buildCmds =  [
+            [0, "tar zxf " + os.path.join(downloadPath, "PhysX_2.8.1_SDK_CoreLinux_deb.tar.gz"), ''],
+            [0, "sudo dpkg -i  libphysx-common_2.8.1-4_i386.deb", ''],
+            [0, "sudo dpkg -i  libphysx-2.8.1_4_i386.deb", ''],
+            [0, "sudo dpkg -i  libphysx-dev-2.8.1_4_i386.deb", ''],
+            [0, "sudo dpkg -i  libphysx-extras-2.8.1_4_i386.deb", '']
+            ]
+
     ModuleName="PhysX"   
 
 class nxogre_09:

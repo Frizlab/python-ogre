@@ -110,7 +110,7 @@ PATH_LIB_OgreAL =               os.path.join( LOCAL_LIB ) #PATH_OGREAL, 'lib/Rel
 PATH_LIB_betagui =              PATH_betagui
 PATH_LIB_quickgui =             PATH_quickgui
 PATH_LIB_NxOgre=                os.path.join(LOCAL_LIB )
-PATH_LIB_PhysX =                os.path.join(LOCAL_LIB, 'PhysX','v2.7.3')
+PATH_LIB_PhysX =                os.path.join('/usr/lib', 'PhysX','v2.8.1')
 PATH_LIB_Bullet = 		        os.path.join( LOCAL_LIB )
 PATH_LIB_Theora=                os.path.join(PATH_Theora, 'bin', 'Release')
 PATH_LIB_ogrevideoffmpeg =      PATH_ogrevideoffmpeg
@@ -177,13 +177,13 @@ PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ##,os.path.join(PATH_OgreAddons,'videoplugin','ptypes-1.8.3','include')
                         ,os.path.join(PATH_THIRDPARTY,'ptypes','include')
                         ]
-physxbase = os.path.join(LOCAL_INCLUDE, 'PhysX','v2.7.3', 'SDKs')
+physxbase = os.path.join('/usr/include/', 'PhysX','v2.8.1', 'SDKs')
 PATH_INCLUDE_PhysX= [ physxbase
-                    ,os.path.join(physxbase, 'Cooking','Include')
+                    ,os.path.join(physxbase, 'Cooking','include')
                     ,os.path.join(physxbase, 'Foundation','include')
                     ,os.path.join(physxbase, 'PhysXLoader','include')
                     ,os.path.join(physxbase, 'NxCharacter','include')
-                    ,os.path.join(physxbase, 'NxExtensions','include')
+                    ##,os.path.join(physxbase, 'NxExtensions','include')
                     ,os.path.join(physxbase, 'Physics','include')
                     ]
 PATH_INCLUDE_opensteer = os.path.join(LOCAL_INCLUDE, 'OpenSteer')
