@@ -108,7 +108,11 @@ def runTest ( base, shortName, fullPath ):
 FAILHARD=False
 def parseInput():
     """Handle command line input """
-    usage = "usage: %prog [options] [demo_program to test] "
+    usage = "Usage: %prog [options] [demo_program to test] \n\
+      \n  Example: - run all tests in a number of demo directories\
+      \n      %prog -d ogre -d cegui -d ogreode\n\
+      \n  Example: - run a specific demo (base defaults to ogre)\
+      \n      %prog demo_smoke\n"
     parser = OptionParser(usage=usage, version="%prog 1.0")
     parser.add_option("-v", "--verbose", action="store_true", default=False,dest="verbose", help="Output all output to stdout rather then saving to the log file")
     parser.add_option("-s", "--ScreenShotPath", default=os.path.join(os.getcwd(), "..", "screenshots"), action="store_true", dest="ScreenShotPath", help="Specify the directory for the snapshots")
@@ -142,6 +146,9 @@ if __name__ == '__main__':
             for d in  getDemoFiles ( options.DemoParentPath, b ):
                 shortName = os.path.splitext( os.path.split(d)[1])[0]
                 runTest ( b, shortName, d )
-                
     else:
-        pass
+        shortName = args[0]
+        b = options.DemoBases[0]
+        d = os.path.abspath( os.path.join ( options.DemoParentPath, b, shortName ) )
+        runTest ( b, shortName, d )
+        
