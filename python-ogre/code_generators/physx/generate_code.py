@@ -85,6 +85,7 @@ def ManualExclude ( mb ):
         
     excludes = ['NxCreatePMap'  # refrences TriangleMEsh, however they don't expose the destructor
                     ,'NxGetValue'    # unresolved external
+                    ,'NxCreatePhysicsSDK','NxCreatePhysicsSDKWithID'    # hand wrapped to return sdk + errorcode
                     ]
     for e in excludes:
         print "Excluding:", e
@@ -117,6 +118,7 @@ def ManualExclude ( mb ):
         if not "const" in o.decl_string:
             o.exclude()
             print "Excluding Operator:", o
+
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 
@@ -160,7 +162,13 @@ def ManualTransformations ( mb ):
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
         
-  
+#     f=main_ns.free_function( "NxCreatePhysicsSDK")
+#     f.add_transformation(ft.output('errorCode'))
+#     f.documentation = docit ("","", "tuple - SDK, ErrorCode")
+#     f=main_ns.free_function( "NxCreatePhysicsSDKWithID")
+#     f.add_transformation(ft.output('errorCode'))
+#     f.documentation = docit ("","", "tuple - SDK, ErrorCode")
+
 ###############################################################################
 ##
 ##  Now for the AUTOMATIC stuff that should just work
