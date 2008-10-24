@@ -1381,12 +1381,14 @@ class ogreal:
                 ,Config.PATH_LIB_Ogre_OgreMain    
                   ] 
         source = [
-            ["wget", "http://www.openal.org/openal_webstf/downloads/openal-0.0.8.tar.gz",downloadPath],
+#             ["wget", "http://www.openal.org/openal_webstf/downloads/openal-0.0.8.tar.gz",downloadPath],
+            ["wget", "http://connect.creativelabs.com/openal/Downloads/openal-soft-1.5.304.tar.bz2",downloadPath],
             ["wget", "http://downloads.xiph.org/releases/ogg/libogg-1.1.3.tar.gz",downloadPath],
             ["wget", "http://downloads.xiph.org/releases/vorbis/libvorbis-1.2.0.tar.gz",downloadPath],
             ]
         buildCmds = [
-            [0, "tar zxf " + os.path.join(downloadPath, "openal-0.0.8.tar.gz"), ''],
+#             [0, "tar zxf " + os.path.join(downloadPath, "openal-0.0.8.tar.gz"), ''],
+            [0, "tar jxf " + os.path.join(downloadPath, "openal-soft-1.5.304.tar.bz2"), ''],
             [0, "tar zxf " + os.path.join(downloadPath, "libogg-1.1.3.tar.gz"), ''],
             [0, "tar zxf " + os.path.join(downloadPath, "libvorbis-1.2.0.tar.gz"), ''],
             [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "libogg-1.1.3")],

@@ -9,6 +9,60 @@ virtual ::NxShape * const * getShapes(  ) const {
     }
 """
 
+WRAPPER_DEFINITION_Utility = \
+"""
+unsigned int NxUtility_NX_PHYSICS_SDK_VERSION( void ) {
+    return NX_PHYSICS_SDK_VERSION; 
+    }
+    
+boost::python::tuple 
+NxUtility_NX_PHYSICS_SDK_VERSION_TUPLE ( void ) {
+            return ( boost::python::make_tuple( NX_PHYSICS_SDK_VERSION,
+                                                NX_SDK_VERSION_MAJOR,
+                                                NX_SDK_VERSION_MINOR,
+                                                NX_SDK_VERSION_BUGFIX
+                                                ) );
+}   
+
+boost::python::tuple NxUtility_NxCreatePhysicsSDK( ::NxU32 sdkVersion, ::NxUserAllocator * allocator=0, ::NxUserOutputStream * outputStream=0, ::NxPhysicsSDKDesc const & desc=::NxPhysicsSDKDesc( ) ){
+    NxSDKCreateError errorCode2;
+    ::NxPhysicsSDK * result = ::NxCreatePhysicsSDK(sdkVersion, allocator, outputStream, desc, &errorCode2);
+    typedef bp::return_value_policy< bp::reference_existing_object > call_policies_t;
+    return bp::make_tuple( pyplusplus::call_policies::make_object< call_policies_t, ::NxPhysicsSDK * >( result )
+                            , errorCode2 );
+}
+
+boost::python::tuple NxUtility_NxCreatePhysicsSDKWithID( ::NxU32 sdkVersion, char * companyNameStr, char * appNameStr, char * appVersionStr, char * appUserDefinedStr, ::NxUserAllocator * allocator=0, ::NxUserOutputStream * outputStream=0, ::NxPhysicsSDKDesc const & desc=::NxPhysicsSDKDesc( ) ){
+    NxSDKCreateError errorCode2;
+    ::NxPhysicsSDK * result = ::NxCreatePhysicsSDKWithID(sdkVersion, companyNameStr, appNameStr, appVersionStr, appUserDefinedStr, allocator, outputStream, desc, &errorCode2);
+    typedef bp::return_value_policy< bp::reference_existing_object > call_policies_t;
+    return bp::make_tuple( pyplusplus::call_policies::make_object< call_policies_t, ::NxPhysicsSDK * >( result )
+                            , errorCode2 );
+}
+
+ 
+"""
+WRAPPER_REGISTRATION_Utility = [
+    'bp::def( "NX_PHYSICS_SDK_VERSION", &::NxUtility_NX_PHYSICS_SDK_VERSION,\
+    "Python-Ogre Hand Wrapped\\nReturns the SDK Version");',
+    
+    'bp::def( "NX_PHYSICS_SDK_VERSION_TUPLE", &::NxUtility_NX_PHYSICS_SDK_VERSION_TUPLE,\
+    "Python-Ogre Hand Wrapped\\nReturns the SDK Version, A tuple of version,major,minor,bugfix");',
+    
+    """bp::def( "NxCreatePhysicsSDK", &::NxUtility_NxCreatePhysicsSDK,
+    ( bp::arg("sdkVersion"), bp::arg("allocator")=bp::object(), bp::arg("outputStream")=bp::object(), bp::arg("desc")=::NxPhysicsSDKDesc( ) ),
+    "Python-Ogre Hand Wrapped (PhysX) Modified Function Call\\n\\
+    Input: \\n\\
+    Output: tuple - SDK, ErrorCode\\n"); """,
+    
+    """bp::def( "NxCreatePhysicsSDKWithID", &::NxUtility_NxCreatePhysicsSDKWithID,
+    ( bp::arg("sdkVersion"), bp::arg("companyNameStr"), bp::arg("appNameStr"), bp::arg("appVersionStr"), bp::arg("appUserDefinedStr"), bp::arg("allocator")=bp::object(), bp::arg("outputStream")=bp::object(), bp::arg("desc")=::NxPhysicsSDKDesc( ) ),
+    "Python-Ogre Hand Wrapped (PhysX) Modified Function Call\\n\\
+    Input: \\n\\
+    Output: tuple - SDK, ErrorCode\\n"); """
+
+    ] 
+    
 WRAPPER_DEFINITION_NxActor = \
 """
 bp::object NxActor_getShapes(  ) {
@@ -110,6 +164,9 @@ def apply_reg ( class_, code ):
 def apply( mb ):
 
     global_ns = mb.global_ns
+    
+    mb.add_declaration_code( WRAPPER_DEFINITION_Utility )
+    apply_reg (mb,  WRAPPER_REGISTRATION_Utility )
 
     # I'm going to do some automated hand wrapping here 
     getSizeFunctions={'getEmitters':'getNbEmitters',  'getScreenSurfaceMeshes':'getNbScreenSurfaceMeshes',

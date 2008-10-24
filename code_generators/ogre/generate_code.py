@@ -90,6 +90,22 @@ class my_smart_ptr:
 pygccxml.declarations.smart_pointer_traits = my_smart_ptr
 
 
+
+# # # I defined new class - internal_type_traits, which provides access to
+# # # internal types.
+# # # 
+# # #    @staticmethod
+# # #    def value_type( type ):
+# # #        if my_smart_ptr.is_smart_pointer( type ):
+# # #            return declarations.internal_type_traits.get_by_name(
+# # # type, "value_type" )
+# # # 
+# # # The new class allows you to handle cases, where "value_type" has
+# # # different name. In case of auto_ptr it is "element_type".
+# # # 
+# # # The new code is committed to SVN
+# # # 
+
 HACK = True
     
 MAIN_NAMESPACE = 'Ogre'
