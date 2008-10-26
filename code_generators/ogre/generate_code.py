@@ -74,37 +74,19 @@ class my_smart_ptr:
             for b in cls.bases:
                 r = b.related_class
                 if r.decl_string.startswith ( '::Ogre::SharedPtr<' ) : 
-#                     print "ANDY Smart Class:", v, cls, r.decl_string  
                     return True 
         else:
             if cls.name.startswith ( 'SharedPtr<' ) or cls.name.endswith( 'SharedPtr' ):
-#                 print "Andy Smart 2", v, cls, cls.name
                 return True           
         return False
          
    @staticmethod
    def value_type( type ):
-#        print "ANDY VALUE_TYPE", type
-       if my_smart_ptr.is_smart_pointer( type ):
-           return predefined_is_smart_ptr.value_type( type, False )
+      if my_smart_ptr.is_smart_pointer( type ):
+          return declarations.internal_type_traits.get_by_name( type, "element_type" )
 pygccxml.declarations.smart_pointer_traits = my_smart_ptr
 
 
-
-# # # I defined new class - internal_type_traits, which provides access to
-# # # internal types.
-# # # 
-# # #    @staticmethod
-# # #    def value_type( type ):
-# # #        if my_smart_ptr.is_smart_pointer( type ):
-# # #            return declarations.internal_type_traits.get_by_name(
-# # # type, "value_type" )
-# # # 
-# # # The new class allows you to handle cases, where "value_type" has
-# # # different name. In case of auto_ptr it is "element_type".
-# # # 
-# # # The new code is committed to SVN
-# # # 
 
 HACK = True
     
