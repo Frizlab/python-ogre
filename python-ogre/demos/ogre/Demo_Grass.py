@@ -99,10 +99,10 @@ class GrassListener ( sf.FrameListener ):
         offset = ogre.Vector4(0,0,0,0) 
         for reg in mStaticGeom.getRegionIterator():
             ## a little randomness
-            self.xpos += reg.getCentre().x * 0.001 
-            self.zpos += reg.getCentre().z * 0.001 
-            offset.x = math.sin(self.xpos) * 5 
-            offset.z = math.sin(self.zpos) * 5 
+            self.xpos += reg.getCentre().x * 0.01 
+            self.zpos += reg.getCentre().z * 0.01 
+            offset.x = math.sin(self.xpos) * 1.5 
+            offset.z = math.sin(self.zpos) * 1.5 
             for lod in reg.getLODIterator(): 
                 for mat in lod.getMaterialIterator():  
                     for geom in mat.getGeometryIterator():

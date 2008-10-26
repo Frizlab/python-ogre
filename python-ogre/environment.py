@@ -285,18 +285,18 @@ class pygccxml:
                     [svn, " co -r 1383 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
                  ]
     else:                 
-        source_version = "1441"
+        source_version = "1446"
         source = [
-                    [svn, " co -r 1441 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
+                    [svn, " co -r 1446 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
                     ]             
     if isLinux() or isMac() :
         buildCmds =  [
-                    [0, "patch -s -N -i ../python-ogre/patch/pygccxml.patch -p0 ", os.path.join(os.getcwd(), base) ],
+# #                     [0, "patch -s -N -i ../python-ogre/patch/pygccxml.patch -p0 ", os.path.join(os.getcwd(), base) ],
                     [0,"python setup.py install  --prefix="+ PREFIX , os.path.join (os.getcwd(), base) ],
                     ]                       
     if isWindows():
         buildCmds =  [
-                    [0, "patch -s -N -i ../python-ogre/patch/pygccxml.patch -p0 ", os.path.join(os.getcwd(), base) ],
+# #                     [0, "patch -s -N -i ../python-ogre/patch/pygccxml.patch -p0 ", os.path.join(os.getcwd(), base) ],
                     [0,"python setup.py install  " , os.path.join (os.getcwd(), base) ],
                     ]                       
                     
@@ -311,9 +311,9 @@ class pyplusplus:
                     [svn, " co -r 1383 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
                  ]
     else:                 
-        source_version = "1441"
+        source_version = "1446"
         source = [
-                    [svn, " co -r 1441 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
+                    [svn, " co -r 1446 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
                  ]             
     if isLinux() or isMac() :
         buildCmds =  [
