@@ -76,7 +76,8 @@ namespace QuickGUI
 				delete (*it);
 		}
 
-		Ogre::TextureManager::getSingleton().remove(mTexture->getName());
+		if(!mTexture.isNull())
+			Ogre::TextureManager::getSingleton().remove(mTexture->getName());
 	}
 
 	void Window::_initialize(WidgetDesc* d)
@@ -110,7 +111,7 @@ namespace QuickGUI
 			}
 			tbd.textDesc = mDesc->titleBarTextDesc;
 
-			mTitleBar = dynamic_cast<TitleBar*>(mWidgetDesc->guiManager->createWidget("TitleBar",tbd));
+			mTitleBar = dynamic_cast<TitleBar*>(Widget::create("TitleBar",tbd));
 			addComponent(TITLEBAR,mTitleBar);
 
 			// Since components are not restricted to Client dimensions, offset the TitleBar to appear inside client dimensions.
@@ -145,6 +146,11 @@ namespace QuickGUI
 
 		Ogre::String texName = getName() + ".RenderTarget";
 
+		// Its possible to have multiple GUIManagers with multiple Windows of the same name.
+		// Lets make sure our texture name is unique
+		if(Ogre::TextureManager::getSingleton().resourceExists(texName))
+			texName += "_";
+
 		mTexture = Ogre::TextureManager::getSingleton().createManual(
 			texName, 
 			Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
@@ -164,7 +170,7 @@ namespace QuickGUI
 
 	ToolBar* Window::createToolBar(ToolBarDesc& d)
 	{
-		ToolBar* newToolBar = dynamic_cast<ToolBar*>(mPanelDesc->guiManager->createWidget("ToolBar",d));
+		ToolBar* newToolBar = dynamic_cast<ToolBar*>(Widget::create("ToolBar",d));
 
 		addChild(newToolBar);
 

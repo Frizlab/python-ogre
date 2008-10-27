@@ -58,6 +58,14 @@ namespace QuickGUI
 		*/
 		virtual void _initialize(WidgetDesc* d);
 		/**
+		* Notifies the Widget of its GUIManager. (for component/container widgets this function is recursive)
+		*/
+		virtual void _setGUIManager(GUIManager* gm);
+		/**
+		* Notifies the Widget of its Sheet. (for component/container widgets this function is recursvie)
+		*/
+		virtual void _setSheet(Sheet* sheet);
+		/**
 		* Function to update ScrollBars in terms of Slider length and visibility.
 		*/
 		virtual void _updateScrollBars();
@@ -82,6 +90,11 @@ namespace QuickGUI
 		* Returns true if this widget is able to have child widgets.
 		*/
 		virtual bool isContainerWidget();
+
+		/**
+		* Removes a child widget from this container widget.
+		*/
+		virtual void removeChild(Widget* w);
 
 		/**
 		* Builds the Widget from a ScriptDefinition or Writes the widget to a ScriptDefinition.
@@ -164,11 +177,6 @@ namespace QuickGUI
 		* Adds a child widget to this container widget.
 		*/
 		virtual void addChild(Widget* w);
-
-		/**
-		* Removes a child widget from this container widget.
-		*/
-		void removeChild(Widget* w);
 
 		/**
 		* Internal function to set a widget's parent, updating its window reference and position.

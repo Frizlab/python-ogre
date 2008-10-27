@@ -1,11 +1,26 @@
 #include "QuickGUITextCursor.h"
+#include "QuickGUISkinDefinitionManager.h"
 
 namespace QuickGUI
 {
-	TextCursor::TextCursor()
+	const Ogre::String TextCursor::BACKGROUND = "background";
+
+	void TextCursor::registerSkinDefinition()
+	{
+		SkinDefinition* d = new SkinDefinition("TextCursor");
+		d->defineSkinElement(BACKGROUND);
+		d->definitionComplete();
+
+		SkinDefinitionManager::getSingleton().registerSkinDefinition("TextCursor",d);
+	}
+
+	TextCursor::TextCursor() :
+		mSkinElement(NULL),
+		mSkinType(NULL)
 	{
 		mVisible = false;
-		mSize = Size(15,26);
+
+		setSkinType("default");
 	}
 
 	TextCursor::~TextCursor()
@@ -14,12 +29,12 @@ namespace QuickGUI
 
 	Point TextCursor::getPosition()
 	{
-		return mPosition;
+		return mDimensions.position;
 	}
 
 	Size TextCursor::getSize()
 	{
-		return mSize;
+		return mDimensions.size;
 	}
 
 	bool TextCursor::getVisible()
@@ -34,20 +49,37 @@ namespace QuickGUI
 
 		QuickGUI::Brush* brush = QuickGUI::Brush::getSingletonPtr();
 
+		// Store Render Target
 		Ogre::Viewport* currentRenderTarget = brush->getRenderTarget();
 
+		// Set Render Target to Viewport
 		brush->setRenderTarget(NULL);
+		// Draw SkinElement
+		brush->drawSkinElement(mDimensions,mSkinElement);
 
-		brush->setTexture("qgui.cursor.textselect.png");
-		brush->drawRectangle(Rect(mPosition,Size(15,26)),UVRect(0,0,1,1));
-
+		// Restore Render Target
 		brush->setRenderTarget(currentRenderTarget);
+	}
+
+	void TextCursor::setHeight(float heightInPixels)
+	{
+		float percentage = heightInPixels / mDimensions.size.height;
+		mDimensions.size *= percentage;
 	}
 
 	void TextCursor::setPosition(Point& p)
 	{
-		mPosition.x = p.x - (mSize.width / 2.0);
-		mPosition.y = p.y;
+		mDimensions.position.x = p.x - (mDimensions.size.width / 2.0);
+		mDimensions.position.y = p.y;
+	}
+
+	void TextCursor::setSkinType(const Ogre::String type)
+	{
+		mSkinType = SkinTypeManager::getSingleton().getSkinType("TextCursor",type);
+		mSkinElement = mSkinType->getSkinElement(BACKGROUND);
+
+		mDimensions.size.width = mSkinElement->getWidth();
+		mDimensions.size.height = mSkinElement->getHeight();
 	}
 
 	void TextCursor::setVisible(bool visible)

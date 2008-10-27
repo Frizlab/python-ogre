@@ -63,10 +63,23 @@ namespace QuickGUI
 	public:
 		friend class GUIManager;
 		friend class SerialReader;
-
-		// Factory method
-		static Widget* factory(const Ogre::String& widgetName);
+		friend class Menu;
 	public:
+		/**
+		* Standard Constructor
+		*/
+		Sheet(SheetDesc& d);
+
+		/**
+		* Advanced Constructor - parses a file and builds a Sheet and any widgets owned by the Sheet.
+		*/
+		Sheet(const Ogre::String& fileName);
+
+		/**
+		* Destructor.
+		*/
+		virtual ~Sheet();
+
 		/**
 		* Internal function, do not use.
 		*/
@@ -74,14 +87,20 @@ namespace QuickGUI
 
 		void bringToFront(Window* w);
 
+		/**
+		* Iterates through free list and destroys all widgets queued for deletion.
+		*/
+		void cleanupWidgets();
 		ModalWindow* createModalWindow(ModalWindowDesc& d);
-		MenuPanel* createMenuPanel(MenuPanelDesc& d);
 		Window* createWindow(WindowDesc& d);
 
-		void destroyMenuPanel(const Ogre::String& name);
-		void destroyMenuPanel(MenuPanel* p);
 		void destroyModalWindow(const Ogre::String& name);
 		void destroyModalWindow(ModalWindow* w);
+		/**
+		* Queues a widget for destruction.
+		* NOTE: Widget must not be attached to another widget.
+		*/
+		void destroyWidget(Widget* w);
 		void destroyWindow(const Ogre::String& name);
 		void destroyWindow(Window* w);
 
@@ -110,16 +129,10 @@ namespace QuickGUI
 		* Returns the widget that should receive keyboard events;
 		*/
 		Widget* getKeyboardListener();
-		MenuPanel* getMenuPanel(const Ogre::String& name);
 		ModalWindow* getModalWindow(const Ogre::String& name);
 		Window* getWindow(const Ogre::String& name);
 		Window* getWindowInFocus();
 
-		/**
-		* Returns true if this sheet has a child menu panel with the name give, false
-		* otherwise.
-		*/
-		bool hasMenuPanel(const Ogre::String& name);
 		/**
 		* Returns true if this sheet has a child modal window with the name given, false
 		* otherwise.
@@ -145,11 +158,11 @@ namespace QuickGUI
 		void setKeyboardListener(Widget* w);
 
 	protected:
-		Sheet(const Ogre::String& name);
-		~Sheet();
 
 		std::list<ModalWindow*> mModalWindows;
 		std::list<Window*> mWindows;
+
+		std::list<Widget*> mFreeList;
 
 		Window* mWindowInFocus;
 		Widget* mKeyboardListener;
@@ -173,6 +186,11 @@ namespace QuickGUI
 		* Prepares the widget for drawing.
 		*/
 		virtual void draw();
+
+		/**
+		* Internal function to remove a window.
+		*/
+		void removeWindow(Window* w);
 
 	private:
 		

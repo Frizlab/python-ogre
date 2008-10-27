@@ -14,7 +14,7 @@ namespace QuickGUI
 	class _QuickGUIExport TextLine
 	{
 	public:
-		TextLine(float allottedWidth);
+		TextLine();
 		~TextLine();
 
 		/**
@@ -33,15 +33,11 @@ namespace QuickGUI
 		bool empty();
 
 		/**
-		* Returns the remaining width available in the TextLine.
-		*/
-		float getAvailableSpace();
-		/**
 		* Returns the index of the character closest to point p. If p is to the left
 		* of the TextLine, index 0 is returned.  If p is to the right of the TextLine,
 		* index (length - 1) is returned.
 		*/
-		int getCharacterIndexAtPosition(Point p);
+		int getCursorIndexAtPosition(Point p);
 		/**
 		* Returns the height of the TextLine, which varies depending on the Font size of
 		* all characters in the text line.
@@ -52,15 +48,25 @@ namespace QuickGUI
 		*/
 		int getLength();
 		/**
+		* Returns the position of the character at the index specified.
+		*/
+		Point getPositionAtCharacterIndex(unsigned int index);
+		/**
 		* Returns the width of the TextLine, which varies depending on the Font size of
 		* all characters in the text line.
 		*/
 		float getWidth();
 
+		/**
+		* Sets whether or not the Text will be masked. (password box)
+		*/
+		void setMaskText(bool mask, Ogre::UTFString::code_point maskSymbol);
+
 	protected:
 		Point mPosition;
-		float mAllottedWidth;
-		float mAvailableSpace;
+
+		bool mMaskText;
+		Ogre::UTFString::code_point mMaskSymbol;
 
 		std::vector<Character*> mCharacters;
 

@@ -43,7 +43,7 @@ namespace QuickGUI
 
 	protected:
 		ToolBarItem(const Ogre::String& name);
-		~ToolBarItem();
+		virtual ~ToolBarItem();
 
 		/**
 		* Updates the ToolBar Link.

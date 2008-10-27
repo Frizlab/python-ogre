@@ -4,6 +4,7 @@
 #include "QuickGUIBaseDesc.h"
 #include "QuickGUIBrush.h"
 #include "QuickGUIExportDLL.h"
+#include "QuickGUISkinTypeManager.h"
 
 #include "OgreFrameListener.h"
 
@@ -11,6 +12,11 @@ namespace QuickGUI
 {
 	class _QuickGUIExport TextCursor
 	{
+	public:
+		// Skin Constants
+		static const Ogre::String BACKGROUND;
+		// Define Skin Structure
+		static void registerSkinDefinition();
 	public:
 		TextCursor();
 		~TextCursor();
@@ -34,21 +40,34 @@ namespace QuickGUI
 		void onDraw();
 
 		/**
+		* Scales the TextCursor to match the height given.
+		*/
+		void setHeight(float heightInPixels);
+		/**
 		* Sets the position of the TextCursor.
-		* NOTE: The position is in texture coordinates.
+		* NOTE: The position is relative to the viewport the TextCursor will be drawn in. (global position)
 		* NOTE: The position of the TextCursor is offset horizontally to 
 		* center the cursor around the x coordinate.
 		*/
 		void setPosition(Point& p);
+		/**
+		* Sets the "type" of this Text Cursor.  For example you
+		* can create several types of Text Cursors: "default", "italic", "plain", etc.
+		* NOTE: The type property determines what is drawn to the screen.
+		*/
+		void setSkinType(const Ogre::String type);
 		/**
 		* Sets the cursor visible or not.
 		*/
 		void setVisible(bool visible);
 
 	protected:
-		Point mPosition;
-		Size mSize;
+		Rect mDimensions;
 		bool mVisible;
+
+		SkinType* mSkinType;
+		// storing pointer to save lookup time for drawing operation.
+		SkinElement* mSkinElement;
 
 	private:
 	};

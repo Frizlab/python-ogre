@@ -9,9 +9,6 @@ namespace QuickGUI
 	{
 		new ScriptReader();
 	}
-	
-	ScriptReader::ScriptReader(ScriptReader const&) {};	// copy ctor is hidden
-	//ScriptReader::ScriptReader& operator=(ScriptReader const&) {};	// assign op is hidden
 
 	ScriptReader::ScriptReader() :
 		mBegin(false)

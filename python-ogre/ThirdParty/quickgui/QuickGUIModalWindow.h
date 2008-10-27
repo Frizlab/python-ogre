@@ -61,7 +61,7 @@ namespace QuickGUI
 
 	protected:
 		ModalWindow(const Ogre::String& name);
-		~ModalWindow();
+		virtual ~ModalWindow();
 
 	private:
 	};

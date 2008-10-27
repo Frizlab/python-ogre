@@ -1,6 +1,8 @@
 #include "QuickGUISheet.h"
 #include "QuickGUIManager.h"
+#include "QuickGUIScriptReader.h"
 #include "QuickGUIScriptWriter.h"
+#include "QuickGUISerialReader.h"
 #include "QuickGUIWidgetDescFactoryManager.h"
 #include "QuickGUISkinDefinitionManager.h"
 
@@ -36,12 +38,37 @@ namespace QuickGUI
 		PanelDesc::serialize(b);
 	}
 
-	Sheet::Sheet(const Ogre::String& name) :
-		Window(name),
+	Sheet::Sheet(SheetDesc& d) :
+		Window(d.name),
 		mWindowInFocus(0),
 		mKeyboardListener(0)
 	{
 		mSkinElementName = BACKGROUND;
+		_createDescObject("SheetDesc");
+		_initialize(&d);
+	}
+
+	Sheet::Sheet(const Ogre::String& fileName) :
+		Window(""),
+		mWindowInFocus(0),
+		mKeyboardListener(0)
+	{
+		mSkinElementName = BACKGROUND;
+		_createDescObject("SheetDesc");
+
+		// Perform an isolated parsing of the one file
+		ScriptReader* sc = ScriptReader::getSingletonPtr();
+		sc->begin();
+		sc->parseFile(fileName);
+
+		if(sc->getDefinitions().empty())
+			throw Exception(Exception::ERR_SERIALIZATION,"No definitions found in file \"" + fileName + "\"!","GUIManager::reloadSheetFromFile");
+
+		mWidgetDesc->name = sc->getDefinitions().front()->getID();
+		serialize(SerialReader::getSingletonPtr());
+
+		// remove all temporary definitions found from parsing the file
+		sc->end();
 	}
 
 	Sheet::~Sheet()
@@ -55,15 +82,6 @@ namespace QuickGUI
 		setSkinType(d->skinTypeName);
 
 		mWidgetDesc->sheet = this;
-	}
-
-	Widget* Sheet::factory(const Ogre::String& widgetName)
-	{
-		Widget* newWidget = new Sheet(widgetName);
-
-		newWidget->_createDescObject("SheetDesc");
-
-		return newWidget;
 	}
 
 	void Sheet::addWindow(Window* w)
@@ -91,45 +109,28 @@ namespace QuickGUI
 		mWindows.push_back(w);
 	}
 
-	MenuPanel* Sheet::createMenuPanel(MenuPanelDesc& d)
+	void Sheet::cleanupWidgets()
 	{
-		MenuPanel* p = dynamic_cast<MenuPanel*>(mWidgetDesc->guiManager->createWidget("MenuPanel",d));
-		// Treat Menu Panel like an ordinary window, main difference is that it doesn't get serialized.
-		addWindow(p);
-		return p;
+		for(std::list<Widget*>::iterator it = mFreeList.begin(); it != mFreeList.end(); ++it)
+		{
+			delete (*it);
+		}
+
+		mFreeList.clear();
 	}
 
 	ModalWindow* Sheet::createModalWindow(ModalWindowDesc& d)
 	{
-		ModalWindow* w = dynamic_cast<ModalWindow*>(mWidgetDesc->guiManager->createWidget("ModalWindow",d));
+		ModalWindow* w = dynamic_cast<ModalWindow*>(Widget::create("ModalWindow",d));
 		addModalWindow(w);
 		return w;
 	}
 
 	Window* Sheet::createWindow(WindowDesc& d)
 	{
-		Window* w = dynamic_cast<Window*>(mWidgetDesc->guiManager->createWidget("Window",d));
+		Window* w = dynamic_cast<Window*>(Widget::create("Window",d));
 		addWindow(w);
 		return w;
-	}
-
-	void Sheet::destroyMenuPanel(const Ogre::String& name)
-	{
-		destroyMenuPanel(getMenuPanel(name));
-	}
-
-	void Sheet::destroyMenuPanel(MenuPanel* p)
-	{
-		if(p == NULL)
-			throw Exception(Exception::ERR_INVALID_CHILD,"MenuPanel is NULL!","Sheet::destroyMenuPanel");
-
-		std::list<Window*>::iterator it = std::find(mWindows.begin(),mWindows.end(),p);
-		if(it == mWindows.end())
-			throw Exception(Exception::ERR_INVALID_CHILD,"MenuPanel \"" + p->getName() + "\" is not a child of Sheet \"" + getName() + "\"","Sheet::destroyMenuPanel");
-		mWindows.erase(it);
-
-		assert(mWidgetDesc->guiManager);
-		mWidgetDesc->guiManager->destroyWidget(p);
 	}
 
 	void Sheet::destroyModalWindow(const Ogre::String& name)
@@ -140,15 +141,39 @@ namespace QuickGUI
 	void Sheet::destroyModalWindow(ModalWindow* w)
 	{
 		if(w == NULL)
-			throw Exception(Exception::ERR_INVALID_CHILD,"Window is NULL!","Sheet::destroyWindow");
+			throw Exception(Exception::ERR_INVALID_CHILD,"Window is NULL!","Sheet::destroyModalWindow");
 
 		std::list<ModalWindow*>::iterator it = std::find(mModalWindows.begin(),mModalWindows.end(),w);
 		if(it == mModalWindows.end())
 			throw Exception(Exception::ERR_INVALID_CHILD,"ModalWindow \"" + w->getName() + "\" is not a child of Sheet \"" + getName() + "\"","Sheet::destroyModalWindow");
 		mModalWindows.erase(it);
 
-		assert(mWidgetDesc->guiManager);
-		mWidgetDesc->guiManager->destroyWidget(w);
+		if(std::find(mFreeList.begin(),mFreeList.end(),w) != mFreeList.end())
+			return;
+
+		if((getKeyboardListener() != NULL) && (w->findWidget(getKeyboardListener()->getName()) != NULL))
+			setKeyboardListener(NULL);
+
+		mFreeList.push_back(w);
+	}
+
+	void Sheet::destroyWidget(Widget* w)
+	{
+		Ogre::String className = w->getClass();
+		if(className == "ModalWindow")
+			destroyModalWindow(dynamic_cast<ModalWindow*>(w));
+		else if(className == "Window")
+			destroyWindow(dynamic_cast<Window*>(w));
+		else if(w->getParentWidget() != NULL)
+			throw Exception(Exception::ERR_INVALID_STATE,"Widget it attached to another widget!","Sheet::destroyWidget");
+
+		if(std::find(mFreeList.begin(),mFreeList.end(),w) != mFreeList.end())
+			return;
+
+		if((getKeyboardListener() != NULL) && (w->findWidget(getKeyboardListener()->getName()) != NULL))
+			setKeyboardListener(NULL);
+
+		mFreeList.push_back(w);
 	}
 
 	void Sheet::destroyWindow(const Ogre::String& name)
@@ -166,8 +191,13 @@ namespace QuickGUI
 			throw Exception(Exception::ERR_INVALID_CHILD,"Window \"" + w->getName() + "\" is not a child of Sheet \"" + getName() + "\"","Sheet::destroyWindow");
 		mWindows.erase(it);
 
-		assert(mWidgetDesc->guiManager);
-		mWidgetDesc->guiManager->destroyWidget(w);
+		if(std::find(mFreeList.begin(),mFreeList.end(),w) != mFreeList.end())
+			return;
+
+		if((getKeyboardListener() != NULL) && (w->findWidget(getKeyboardListener()->getName()) != NULL))
+			setKeyboardListener(NULL);
+
+		mFreeList.push_back(w);
 	}
 
 	void Sheet::drag(unsigned int xOffset, unsigned int yOffset)
@@ -274,20 +304,6 @@ namespace QuickGUI
 		return mKeyboardListener;
 	}
 
-	MenuPanel* Sheet::getMenuPanel(const Ogre::String& name)
-	{
-		if(!hasMenuPanel(name))
-			throw Exception(Exception::ERR_INVALID_CHILD,"Sheet \"" + getName() + "\" does not have a menu panel with name \"" + name + "\".","Sheet::getMenuPanel");
-
-		for(std::list<Window*>::iterator it = mWindows.begin(); it != mWindows.end(); ++it)
-		{
-			if(((*it)->getName() == name) && ((*it)->getClass() == "MenuPanel"))
-				return dynamic_cast<MenuPanel*>((*it));
-		}
-
-		return NULL;
-	}
-
 	ModalWindow* Sheet::getModalWindow(const Ogre::String& name)
 	{
 		if(!hasModalWindow(name))
@@ -321,17 +337,6 @@ namespace QuickGUI
 		return mWindowInFocus;
 	}
 
-	bool Sheet::hasMenuPanel(const Ogre::String& name)
-	{
-		for(std::list<Window*>::iterator it = mWindows.begin(); it != mWindows.end(); ++it)
-		{
-			if(((*it)->getName() == name) && ((*it)->getClass() == "MenuPanel"))
-				return true;
-		}
-
-		return false;
-	}
-
 	bool Sheet::hasModalWindow(const Ogre::String& name)
 	{
 		for(std::list<ModalWindow*>::iterator it = mModalWindows.begin(); it != mModalWindows.end(); ++it)
@@ -352,6 +357,18 @@ namespace QuickGUI
 		}
 
 		return false;
+	}
+
+	void Sheet::removeWindow(Window* w)
+	{
+		for(std::list<Window*>::iterator it = mWindows.begin(); it != mWindows.end(); ++it)
+		{
+			if((*it) == w)
+			{
+				mWindows.erase(it);
+				return;
+			}
+		}
 	}
 
 	void Sheet::saveToDisk(const Ogre::String fileName)

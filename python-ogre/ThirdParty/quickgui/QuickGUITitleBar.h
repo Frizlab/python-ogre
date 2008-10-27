@@ -129,7 +129,7 @@ namespace QuickGUI
 
 	protected:
 		TitleBar(const Ogre::String& name);
-		~TitleBar();
+		virtual ~TitleBar();
 
 		Text* mText;
 

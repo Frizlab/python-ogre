@@ -11,6 +11,7 @@ namespace QuickGUI
 	public:
 		ListItemDesc();
 
+		int index;
 		bool selected;
 
 		/**
@@ -35,12 +36,12 @@ namespace QuickGUI
 		public ContainerWidget
 	{
 	public:
-		friend class List;
-	public:
 		// Skin Constants
 		static const Ogre::String DEFAULT;
 		static const Ogre::String OVER;
 		static const Ogre::String SELECTED;
+	public:
+		friend class List;
 	public:
 
 		/**
@@ -49,10 +50,18 @@ namespace QuickGUI
 		virtual void _initialize(WidgetDesc* d);
 
 		/**
+		* Returns the index of the ListItem in its owner List.
+		*/
+		int getIndex();
+		/**
 		* Returns true if the ListItem is selected, false otherwise.
 		*/
 		bool getSelected();
 
+		/**
+		* Sets the index of the ListItem
+		*/
+		void setIndex(unsigned int index);
 		/**
 		* Sets whether the ListItem is selected or not.
 		*/
@@ -60,7 +69,7 @@ namespace QuickGUI
 
 	protected:
 		ListItem(const Ogre::String& name);
-		~ListItem();
+		virtual ~ListItem();
 
 		ListItemDesc* mDesc;
 

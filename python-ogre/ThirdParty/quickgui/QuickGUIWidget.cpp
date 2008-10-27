@@ -7,6 +7,8 @@
 
 namespace QuickGUI
 {
+	int Widget::mWidgetCounter = 0;
+
 	WidgetDesc::WidgetDesc()
 	{
 		brushFilterMode = BRUSHFILTER_LINEAR;
@@ -19,12 +21,8 @@ namespace QuickGUI
 		horizontalAnchor = ANCHOR_HORIZONTAL_LEFT;
 		hoverTime = Root::getSingleton().getDefaultHoverTime();
 		maxSize = Size::ZERO;
-		minSize = Size(10,10);
+		minSize = Size(0,0);
 		name = "";
-
-		for(int index = 0; index < WIDGET_EVENT_COUNT; ++index)
-			propagateEvents[index] = false;
-
 		resizable = false;
 		scrollable = true;
 		sheet = NULL;
@@ -46,12 +44,6 @@ namespace QuickGUI
 		b->IO("HoverTime",&hoverTime);
 		b->IO("MaxSize",&maxSize);
 		b->IO("MinSize",&minSize);
-/*
-		for(int index = 0; index < WIDGET_EVENT_COUNT; ++index)
-		{
-			b->IO("Propogate_" + StringConverter::toString(static_cast<WidgetEvent>(index)),&propagateEvents[index]);
-		}
-*/
 		b->IO("Resizable",&resizable);
 		b->IO("Scrollable",&scrollable);
 		b->IO("TransparencyPicking",&transparencyPicking);
@@ -90,7 +82,7 @@ namespace QuickGUI
 	void Widget::_createDescObject(const Ogre::String& className)
 	{
 		if(mInitialized)
-			throw Exception(Exception::ERR_INTERNAL_ERROR,"Widget is already initialized!","Widget::_initialize");
+			throw Exception(Exception::ERR_INTERNAL_ERROR,"Widget is already initialized!","Widget::_createDescObject");
 
 		mWidgetDesc = WidgetDescFactoryManager::getSingleton().createWidgetDesc(className);
 		// Assign name, stored from widget creation
@@ -110,9 +102,6 @@ namespace QuickGUI
 
 		mInitialized = true;
 
-		mWidgetDesc->guiManager = Root::getSingleton()._getActiveGUIManager();
-		mWidgetDesc->sheet = mWidgetDesc->guiManager->getActiveSheet();
-
 		setConsumeKeyboardEvents(d->consumeKeyboardEvents);
 		setEnabled(d->enabled);
 		setDimensions(d->dimensions);
@@ -122,8 +111,6 @@ namespace QuickGUI
 		setMaxSize(d->maxSize);
 		setMinSize(d->minSize);
 		setName(d->name);
-		for(int index = 0; index < WIDGET_EVENT_COUNT; ++index)
-			setPropagateEventFiring(static_cast<WidgetEvent>(index),d->propagateEvents[index]);
 		setResizable(d->resizable);
 		setScrollable(d->scrollable);
 		setTransparencyPicking(d->transparencyPicking);
@@ -131,9 +118,46 @@ namespace QuickGUI
 		setVisible(d->visible);
 	}
 
+	void Widget::_setGUIManager(GUIManager* gm)
+	{
+		mWidgetDesc->guiManager = gm;
+	}
+
+	void Widget::_setSheet(Sheet* sheet)
+	{
+		if((sheet != NULL) && (sheet->findWidget(mWidgetDesc->name) != NULL) && (sheet->findWidget(mWidgetDesc->name) != this))
+			throw Exception(Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + mWidgetDesc->name + "\" already exists in Sheet \"" + sheet->getName() + "\"!","Widget::_setSheet");
+
+		mWidgetDesc->sheet = sheet;
+	}
+
 	void Widget::addWidgetEventHandler(WidgetEvent EVENT, EventHandlerSlot* function)
 	{
 		mWidgetEventHandlers[EVENT].push_back(function);
+	}
+
+	Widget* Widget::create(const Ogre::String& className, WidgetDesc& d)
+	{
+		Ogre::String temp = d.name;
+
+		if(d.name == "")
+		{
+			d.name = className + Ogre::StringConverter::toString(mWidgetCounter);
+			++mWidgetCounter;
+		}
+
+		Ogre::String cName = d.getWidgetClass();
+
+		if(className != d.getWidgetClass())
+			throw Exception(Exception::ERR_INVALID_DESC,"Desc object for Widget of class \"" + d.getWidgetClass() + "\" does not match Widget of class \"" + className + "\"!","GUIManager::createWidget");
+
+		Widget* newWidget = WidgetFactoryManager::getSingleton().createWidget(className,d.name);
+		newWidget->_initialize(&d);
+
+		// Restore the name, in case it was changed.  This Desc could be used multiple times, so this is important!
+		d.name = temp;
+
+		return newWidget;
 	}
 
 	void Widget::drag(int xOffset, int yOffset)
@@ -216,17 +240,14 @@ namespace QuickGUI
 
 	bool Widget::fireWidgetEvent(WidgetEvent EVENT, EventArgs& args)
 	{
-		// If there are no User defined event handlers, and we do not propagate the event to the parent, we are done.
-		if(mWidgetEventHandlers[EVENT].empty() && !(mWidgetDesc->propagateEvents[EVENT]))
+		// If there are no User defined event handlers we are done.
+		if(mWidgetEventHandlers[EVENT].empty())
 			return false;
 
 		// Execute registered handlers
 		std::vector<EventHandlerSlot*>* userEventHandlers = &(mWidgetEventHandlers[EVENT]);
 		for(std::vector<EventHandlerSlot*>::iterator it = userEventHandlers->begin(); it != userEventHandlers->end(); ++it )
 			(*it)->execute(args);
-
-		if((mParentWidget != NULL) && mWidgetDesc->propagateEvents[EVENT])
-			mParentWidget->fireWidgetEvent(EVENT,args);
 
 		return true;
 	}
@@ -349,11 +370,6 @@ namespace QuickGUI
 		return mWidgetDesc->dimensions.position;
 	}
 
-	bool Widget::getPropagateEventFiring(WidgetEvent EVENT)
-	{
-		return mWidgetDesc->propagateEvents[EVENT];
-	}
-
 	bool Widget::getResizable()
 	{
 		return mWidgetDesc->resizable;
@@ -364,7 +380,7 @@ namespace QuickGUI
 		if(mParentWidget == NULL)
 			return mWidgetDesc->dimensions.position + mScrollOffset;
 
-		return mParentWidget->getScreenPosition() + (mWidgetDesc->dimensions.position + mScrollOffset);
+		return mParentWidget->getScreenPosition() + mParentWidget->getClientDimensions().position + (mWidgetDesc->dimensions.position + mScrollOffset);
 	}
 
 	Point Widget::getScroll()
@@ -736,11 +752,6 @@ namespace QuickGUI
 
 		WidgetEventArgs args(this);
 		fireWidgetEvent(WIDGET_EVENT_POSITION_CHANGED,args);
-	}
-
-	void Widget::setPropagateEventFiring(WidgetEvent EVENT, bool propogate)
-	{
-		mWidgetDesc->propagateEvents[EVENT] = propogate;
 	}
 
 	void Widget::setResizable(bool resizable)

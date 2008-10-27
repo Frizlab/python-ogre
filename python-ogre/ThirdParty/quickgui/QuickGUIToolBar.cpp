@@ -101,7 +101,7 @@ namespace QuickGUI
 			d.dimensions.size = Size(mDesc->dimensions.size.width,d.textDesc.getTextHeight() + (d.padding[PADDING_TOP] + d.padding[PADDING_BOTTOM]));
 		}
 
-		Menu* newMenu = dynamic_cast<Menu*>(mWidgetDesc->guiManager->createWidget("Menu",d));
+		Menu* newMenu = dynamic_cast<Menu*>(Widget::create("Menu",d));
 
 		newMenu->setPosition(getNextAvailableItemPosition(newMenu));
 
@@ -124,7 +124,7 @@ namespace QuickGUI
 		else
 			d.horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
 
-		ToolBarItem* newItem = dynamic_cast<ToolBarItem*>(mWidgetDesc->guiManager->createWidget(className,d));
+		ToolBarItem* newItem = dynamic_cast<ToolBarItem*>(Widget::create(className,d));
 
 		newItem->setPosition(getNextAvailableItemPosition(newItem));
 

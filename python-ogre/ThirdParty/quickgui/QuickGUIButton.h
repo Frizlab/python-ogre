@@ -1,7 +1,6 @@
 #ifndef QUICKGUIBUTTON_H
 #define QUICKGUIBUTTON_H
 
-#include "QuickGUIButtonStates.h"
 #include "QuickGUILabel.h"
 
 namespace QuickGUI
@@ -50,59 +49,14 @@ namespace QuickGUI
 		*/
 		virtual void _initialize(WidgetDesc* d);
 
-		/** Adds an event handler to this widget
-			@param
-				EVENT Defined widget events, for example: BUTTON_EVENT_STATE_CHANGED, etc.
-            @param
-                function member function assigned to handle the event.  Given in the form of myClass::myFunction.
-				Function must return bool, and take QuickGUI::EventArgs as its parameters.
-            @param
-                obj particular class instance that defines the handler for this event.  Here is an example:
-				addWidgetEventHandler(QuickGUI::BUTTON_EVENT_STATE_CHANGED,myClass::myFunction,this);
-			@note
-				Multiple user defined event handlers can be defined for an event.  All added event handlers will be called
-				whenever the event is fired.
-			@note
-				You may see Visual Studio give an error warning such as "error C2660: 'QuickGUI::Widget::addWidgetEventHandler' : function does not take 3 arguments".
-				This is an incorrect error message.  Make sure your function pointer points to a function which returns void, and takes parameter "const EventArgs&".
-        */
-		template<typename T> void addButtonEventHandler(ButtonEvent EVENT, void (T::*function)(const EventArgs&), T* obj)
-		{
-			mButtonEventHandlers[EVENT].push_back(new EventHandlerPointer<T>(function,obj));
-		}
-		void addButtonEventHandler(ButtonEvent EVENT, EventHandlerSlot* function);
-
-		/**
-		* Event Handler that executes the appropriate User defined Event Handlers for a given event.
-		* Returns true if the event was handled, false otherwise.
-		*/
-		bool fireButtonEvent(ButtonEvent e, EventArgs& args);
-
 		/**
 		* Returns the class name of this Widget.
 		*/
 		virtual Ogre::String getClass();
 
-		/**
-		* Gets the current state of the button.
-		*/
-		ButtonState getState();
-
-		/**
-		* Sets the current state of the button, and fires the BUTTON_EVENT_STATE_CHANGED event.
-		* NOTE: No event is fired if the state is already applied.
-		*/
-		void setState(ButtonState s);
-
 	protected:
 		Button(const Ogre::String& name);
-		~Button();
-
-		/// Keep track of the button state
-		ButtonState mCurrentButtonState;
-
-		// Event handlers! One List per event per widget
-		std::vector<EventHandlerSlot*> mButtonEventHandlers[BUTTON_EVENT_COUNT];
+		virtual ~Button();
 
 		/**
 		* Outlines how the widget is drawn to the current render target

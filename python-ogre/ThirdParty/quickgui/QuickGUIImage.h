@@ -91,7 +91,7 @@ namespace QuickGUI
 
 	protected:
 		Image(const Ogre::String& name);
-		~Image();
+		virtual ~Image();
 
 		ImageDesc* mDesc;
 

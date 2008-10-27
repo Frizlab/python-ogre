@@ -94,7 +94,7 @@ namespace QuickGUI
 
 	protected:
 		ToolBar(const Ogre::String& name);
-		~ToolBar();
+		virtual ~ToolBar();
 
 		ToolBarOrientation mOrientation;
 		ToolBarState mCurrentState;

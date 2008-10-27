@@ -61,6 +61,10 @@ namespace QuickGUI
 		*/
 		float getTextHeight();
 		/**
+		* Returns the number of characters.
+		*/
+		int getTextLength();
+		/**
 		* Returns the width of the Text if it were treated as one line of text.
 		*/
 		float getTextWidth();
@@ -99,6 +103,10 @@ namespace QuickGUI
 		* Returns true if the given unicode character is a NewLine ('\n' or '\r'), false otherwise.
 		*/
 		static inline bool	isNewLine		(Ogre::UTFString::unicode_char c) { return c == UNICODE_CR || c == UNICODE_LF || c == UNICODE_NEL; }
+		/**
+		* Returns true if the given unicode character is a Null character, false otherwise.
+		*/
+		static inline bool  isNullCharacter (Ogre::UTFString::unicode_char c) { return c == UNICODE_NEL; }
 		/**
 		* Returns true if the given unicode character is a Space, Tab, or NewLine, false otherwise.
 		*/
@@ -226,15 +234,15 @@ namespace QuickGUI
 		*/
 		Character* getCharacter(unsigned int index);
 		/**
-		* Iterates through all TextLines and returns the index of the character
-		* closest to the position given.
-		*/
-		int getCharacterIndexAtPosition(Point& p);
-		/**
 		* Returns the y position of the character given relative to the Text.
 		* NOTE: The y position of the Character class is relative to its TextLine.
 		*/
 		float getCharacterYPosition(unsigned int index);
+		/**
+		* Iterates through all TextLines and returns the index of the character
+		* closest to the position given.
+		*/
+		int getCursorIndexAtPosition(Point& p);
 		/**
 		* Returns the index of the next word after the index given, or -1 if
 		* no more words remain.
@@ -250,6 +258,10 @@ namespace QuickGUI
 		*/
 		int getLength();
 		/**
+		* Returns the position of the character at the index specified.
+		*/
+		Point getPositionAtCharacterIndex(unsigned int index);
+		/**
 		* Returns the Width and Height of this text.
 		*/
 		Size getSize();
@@ -257,6 +269,10 @@ namespace QuickGUI
 		* Returns a string of characters representing the text.
 		*/
 		Ogre::UTFString getText();
+		/**
+		* Returns the desc object representing this Text instance.
+		*/
+		TextDesc* getTextDesc();
 		/**
 		* Returns the width of text as if it were all on one line.
 		*/
@@ -349,6 +365,10 @@ namespace QuickGUI
 		*/
 		void setFont(const Ogre::String& fontName, Ogre::UTFString s, bool allOccurrences);
 		/**
+		* Sets whether or not the Text will be masked. (password box)
+		*/
+		void setMaskText(bool mask, Ogre::UTFString::code_point maskSymbol);
+		/**
 		* Sets the text for this object.
 		*/
 		void setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv);
@@ -365,6 +385,9 @@ namespace QuickGUI
 
 	protected:
 		TextDesc* mTextDesc;
+
+		bool mMaskText;
+		Ogre::UTFString::code_point mMaskSymbol;
 
 		Ogre::UTFString mText;
 		// Store information of every character in this Text object

@@ -149,7 +149,7 @@ namespace QuickGUI
 			}
 		}
 		// Else if cursor horizontal position is on right edge of viewport
-		else if(xPosition >= mMouseCursorDesc.guiManager->getViewport()->getActualWidth())
+		else if(xPosition >= (mMouseCursorDesc.guiManager->getViewport()->getActualWidth() - 1))
 		{
 			// If we haven't entered the border already, fire event
 			if(!mEnteredBorders[2])
@@ -180,7 +180,7 @@ namespace QuickGUI
 			}
 		}
 		// Else if cursor vertical position is on bottom edge of viewport
-		else if(yPosition >= mMouseCursorDesc.guiManager->getViewport()->getActualHeight())
+		else if(yPosition >= (mMouseCursorDesc.guiManager->getViewport()->getActualHeight() - 1))
 		{
 			// If we haven't entered the border already, fire event
 			if(!mEnteredBorders[3])

@@ -43,6 +43,14 @@ namespace QuickGUI
             return Size(width * r,height * r);
         }
 
+		inline Size& operator *= ( const float& r )
+        {
+            width *= r;
+            height *= r;
+
+            return *this;
+        }
+
 		inline Size operator * ( const Size& s ) const
         {
 			return Size(width * s.width,height * s.height);

@@ -22,6 +22,22 @@ namespace QuickGUI
 			delete (*it).second;
 	}
 
+	void ComponentWidget::_setGUIManager(GUIManager* gm)
+	{
+		Widget::_setGUIManager(gm);
+
+		for(std::map<Ogre::String,Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
+			(*it).second->_setGUIManager(gm);
+	}
+
+	void ComponentWidget::_setSheet(Sheet* sheet)
+	{
+		Widget::_setSheet(sheet);
+
+		for(std::map<Ogre::String,Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
+			(*it).second->_setSheet(sheet);
+	}
+
 	void ComponentWidget::addComponent(const Ogre::String& alias, Widget* w)
 	{
 		if(mComponents.find(alias) != mComponents.end())
@@ -30,6 +46,8 @@ namespace QuickGUI
 		w->mComponent = true;
 		mComponents[alias] = w;
 		w->setParent(this);
+		w->_setGUIManager(mWidgetDesc->guiManager);
+		w->_setSheet(mWidgetDesc->sheet);
 	}
 
 	void ComponentWidget::draw()

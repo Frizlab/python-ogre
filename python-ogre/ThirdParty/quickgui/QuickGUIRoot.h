@@ -9,6 +9,9 @@
 #include "QuickGUITimerManager.h"
 #include "QuickGUIWidgetFactoryManager.h"
 #include "QuickGUIWidgetDescFactoryManager.h"
+// These widgets are not included by default due to forward declarations
+#include "QuickGUITabControl.h"
+#include "QuickGUITabPage.h"
 
 #include "OgreFontManager.h"
 #include "OgrePrerequisites.h"
@@ -26,15 +29,6 @@ namespace QuickGUI
 	public:
 		Root();
 		~Root();
-
-		/**
-		* Internal use only.
-		*/
-		GUIManager* _getActiveGUIManager();
-		/**
-		* Internal use only.
-		*/
-		void _setActiveGUIManager(GUIManager* m);
 
 		static Root& getSingleton(void); 
 		static Root* getSingletonPtr(void);
@@ -71,9 +65,6 @@ namespace QuickGUI
 		// The amount of time the cursor has to hover over a widget before
 		// the ON_HOVER event is fired. (3 seconds by default)
 		float mDefaultHoverTime;
-
-		// Allows widgets to get access to their owning GUIManager (serialization, loading from disk)
-		GUIManager* mActiveGUIManager;
 	};
 }
 

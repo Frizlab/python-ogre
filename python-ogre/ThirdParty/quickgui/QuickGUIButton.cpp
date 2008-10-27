@@ -29,8 +29,7 @@ namespace QuickGUI
 	}
 
 	Button::Button(const Ogre::String& name) :
-		Label(name),
-		mCurrentButtonState(BUTTON_STATE_DEFAULT)
+		Label(name)
 	{
 		mSkinElementName = DEFAULT;
 	}
@@ -62,32 +61,9 @@ namespace QuickGUI
 		return newWidget;
 	}
 
-	void Button::addButtonEventHandler(ButtonEvent EVENT, EventHandlerSlot* function)
-	{
-		mButtonEventHandlers[EVENT].push_back(function);
-	}
-
 	Ogre::String Button::getClass()
 	{
 		return "Button";
-	}
-
-	bool Button::fireButtonEvent(ButtonEvent e, EventArgs& args)
-	{
-		if(mButtonEventHandlers[e].empty())
-			return false;
-
-		// Execute registered handlers
-		std::vector<EventHandlerSlot*>* userEventHandlers = &(mButtonEventHandlers[e]);
-		for(std::vector<EventHandlerSlot*>::iterator it = userEventHandlers->begin(); it != userEventHandlers->end(); ++it )
-			(*it)->execute(args);
-
-		return true;
-	}
-
-	ButtonState Button::getState()
-	{
-		return mCurrentButtonState;
 	}
 
 	void Button::onDraw()
@@ -100,13 +76,6 @@ namespace QuickGUI
 		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
 			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
 
-		switch(mCurrentButtonState)
-		{
-		case BUTTON_STATE_DEFAULT:		mSkinElementName = DEFAULT;		break;
-		case BUTTON_STATE_DOWN:			mSkinElementName = DOWN;		break;
-		case BUTTON_STATE_OVER:			mSkinElementName = OVER;		break;
-		}
-
 		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
 
 		Ogre::ColourValue prevColor = brush->getColour();
@@ -115,8 +84,8 @@ namespace QuickGUI
 		Rect clipRegion;
 		clipRegion.size = 
 			Size(
-				mDesc->dimensions.size.width - mDesc->padding[PADDING_RIGHT],
-				mDesc->dimensions.size.height - mDesc->padding[PADDING_BOTTOM]);
+				mWidgetDesc->dimensions.size.width - mDesc->padding[PADDING_RIGHT] - mDesc->padding[PADDING_LEFT],
+				mWidgetDesc->dimensions.size.height - mDesc->padding[PADDING_BOTTOM] - mDesc->padding[PADDING_TOP]);
 		clipRegion.position = mTexturePosition;
 		clipRegion.translate(Point(mDesc->padding[PADDING_LEFT],mDesc->padding[PADDING_TOP]));
 
@@ -125,18 +94,21 @@ namespace QuickGUI
 		mText->draw(clipRegion.position);
 
 		brush->setClipRegion(prevClipRegion);
-
-		Brush::getSingleton().setColor(prevColor);
+		brush->setColor(prevColor);
 	}
 
 	void Button::onMouseEnter(const EventArgs& args)
 	{
-		setState(BUTTON_STATE_OVER);
+		mSkinElementName = OVER;
+
+		redraw();
 	}
 
 	void Button::onMouseLeave(const EventArgs& args)
 	{
-		setState(BUTTON_STATE_DEFAULT);
+		mSkinElementName = DEFAULT;
+
+		redraw();
 	}
 
 	void Button::onMouseLeftButtonDown(const EventArgs& args)
@@ -144,7 +116,10 @@ namespace QuickGUI
 		const MouseEventArgs& mea = dynamic_cast<const MouseEventArgs&>(args);
 
 		if(mea.button == MB_Left)
-			setState(BUTTON_STATE_DOWN);
+		{
+			mSkinElementName = DOWN;
+			redraw();
+		}
 	}
 
 	void Button::onMouseLeftButtonUp(const EventArgs& args)
@@ -152,19 +127,9 @@ namespace QuickGUI
 		const MouseEventArgs& mea = dynamic_cast<const MouseEventArgs&>(args);
 
 		if(mea.button == MB_Left)
-			setState(BUTTON_STATE_OVER);
-	}
-
-	void Button::setState(ButtonState s)
-	{
-		if(mCurrentButtonState == s)
-			return;
-
-		mCurrentButtonState = s;
-		
-		redraw();
-
-		WidgetEventArgs args(this);
-		fireButtonEvent(BUTTON_EVENT_STATE_CHANGED, args);
+		{
+			mSkinElementName = OVER;
+			redraw();
+		}
 	}
 }

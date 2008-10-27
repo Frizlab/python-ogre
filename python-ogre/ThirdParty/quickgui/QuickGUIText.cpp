@@ -1,4 +1,5 @@
 #include "QuickGUIText.h"
+#include "QuickGUIRoot.h"
 #include "QuickGUISerialReader.h"
 #include "QuickGUISerialWriter.h"
 #include "QuickGUIScriptWriter.h"
@@ -25,6 +26,16 @@ namespace QuickGUI
 		}
 
 		return maxHeight;
+	}
+
+	int TextDesc::getTextLength()
+	{
+		int length = 0;
+
+		for(int index = 0; index < static_cast<int>(segments.size()); ++index)
+			length += segments[index].text.length();
+
+		return length;
 	}
 
 	float TextDesc::getTextWidth()
@@ -102,7 +113,9 @@ namespace QuickGUI
 	}
 
 	Text::Text(TextDesc& d) :
-		mTextLinesDirty(true)
+		mTextLinesDirty(true),
+		mMaskText(false),
+		mMaskSymbol(42)
 	{
 		// Create Texture used for Highlighting if it doesn't exist.
 		if(!Ogre::TextureManager::getSingleton().resourceExists("TextSelection"))
@@ -136,6 +149,9 @@ namespace QuickGUI
 				mCharacters.push_back(new Character((*it2),static_cast<Ogre::FontPtr>(Ogre::FontManager::getSingleton().getByName(s.fontName)),s.color));
 			}
 		}
+
+		// Add Null Character to List
+		mCharacters.push_back(new Character(Text::UNICODE_NEL,Text::getFont(Root::getSingleton().getDefaultFontName()),Ogre::ColourValue::ZERO));
 	}
 
 	Text::~Text()
@@ -363,20 +379,23 @@ namespace QuickGUI
 			mTextLinesDirty = false;
 			mTextDesc->segments = getTextSegments();
 		}
+
+		for(std::vector<TextLine*>::iterator it = mTextLines.begin(); it != mTextLines.end(); ++it)
+			(*it)->setMaskText(mMaskText,mMaskSymbol);
 	}
 
 	void Text::_createTextLines()
 	{
-		if(mCharacters.empty())
-			return;
-
 		std::list<Character*>::iterator cItr = mCharacters.begin();
 
-		TextLine* currentTextLine = new TextLine(mTextDesc->allottedWidth);
+		TextLine* currentTextLine = new TextLine();
 		mTextLines.push_back(currentTextLine);
 
 		while(cItr != mCharacters.end())
 		{
+			if(Text::isNullCharacter((*cItr)->codePoint))
+				break;
+
 			if(isWhiteSpace((*cItr)->codePoint))
 			{
 				// If its a newline we can add it to the TextLine, since they have a width of 0.
@@ -384,18 +403,18 @@ namespace QuickGUI
 				if(isNewLine((*cItr)->codePoint))
 				{
 					currentTextLine->addCharacter((*cItr));
-					currentTextLine = new TextLine(mTextDesc->allottedWidth);
+					currentTextLine = new TextLine();
 					mTextLines.push_back(currentTextLine);
 					++cItr;
 				}
 				else
 				{
-					float availableSpace = currentTextLine->getAvailableSpace();
+					float availableSpace = mTextDesc->allottedWidth - currentTextLine->getWidth();
 
 					// If the character doesn't fit on this TextLine, create a new TextLine and repeat the process
 					if( (*cItr)->dimensions.size.width > availableSpace )
 					{
-						currentTextLine = new TextLine(mTextDesc->allottedWidth);
+						currentTextLine = new TextLine();
 						mTextLines.push_back(currentTextLine);
 					}
 					else
@@ -408,7 +427,7 @@ namespace QuickGUI
 			else
 			{
 				float wordLength = 0;
-				float availableSpace = currentTextLine->getAvailableSpace();
+				float availableSpace = mTextDesc->allottedWidth - currentTextLine->getWidth();
 				std::list<Character*>::iterator endOfWord = cItr;
 
 				// If we get one word that is longer than the allotted width, split it up into pieces that fit onto each line.
@@ -438,7 +457,7 @@ namespace QuickGUI
 					// If the word doesn't fit on this TextLine, create a new TextLine and repeat the process
 					if( wordLength > availableSpace )
 					{
-						currentTextLine = new TextLine(mTextDesc->allottedWidth);
+						currentTextLine = new TextLine();
 						mTextLines.push_back(currentTextLine);
 					}
 					else
@@ -453,6 +472,8 @@ namespace QuickGUI
 				}
 			}
 		}
+
+		currentTextLine->addCharacter(mCharacters.back());
 	}
 
 	void Text::_destroyTextLines()
@@ -497,30 +518,23 @@ namespace QuickGUI
 
 	void Text::addCharacter(Character* c, unsigned int index)
 	{
-		if((index < 0) || (index > static_cast<unsigned int>(getLength())))
+		if(index > static_cast<unsigned int>(getLength()))
 			throw Exception(Exception::ERR_TEXT,"Index out of bounds! index=" + Ogre::StringConverter::toString(index) + " length=" + Ogre::StringConverter::toString(getLength()),"Text::addCharacter");
 
 		// Inserts into mText
 		mText.insert(index,1,c->codePoint);
 
 		// Inserts into mCharacters
-		if(index == 0)
+		int counter = 0;
+		for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
 		{
-			mCharacters.push_back(c);
-		}
-		else
-		{
-			int counter = 0;
-			for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
+			if(counter == index)
 			{
-				if(counter == index)
-				{
-					mCharacters.insert(it,c);
-					break;
-				}
-
-				++counter;
+				mCharacters.insert(it,c);
+				break;
 			}
+
+			++counter;
 		}
 
 		mTextLinesDirty = true;
@@ -528,13 +542,7 @@ namespace QuickGUI
 
 	void Text::addCharacter(Character* c)
 	{
-		// Add to end
-		mText.append(1,c->codePoint);
-
-		// Add into mCharacters
-		mCharacters.push_back(c);
-
-		mTextLinesDirty = true;
+		addCharacter(c,getLength());
 	}
 
 	void Text::clearHighlights()
@@ -564,7 +572,7 @@ namespace QuickGUI
 	{
 		_checkTextLines();
 
-		if(index >= static_cast<int>(mText.length()))
+		if(index >= static_cast<int>(mCharacters.size()))
 			throw Exception(Exception::ERR_TEXT,"Index out of bounds!","Text::getCharacter");
 
 		unsigned int count = 0;
@@ -577,29 +585,6 @@ namespace QuickGUI
 		}
 
 		return NULL;
-	}
-
-	int Text::getCharacterIndexAtPosition(Point& p)
-	{
-		if(empty())
-			throw Exception(Exception::ERR_TEXT,"Text is empty, cannot get index!","Text::getCharacterIndexAtPosition");
-
-		_checkTextLines();
-
-		int index = 0;
-		int counter = 0;
-		int height = 0;
-		while((counter < (static_cast<int>(mTextLines.size()) - 1)) && (height < p.y))
-		{
-			// Increment height
-			height += mTextLines[counter]->getHeight();
-			// Increment index by number of characters in current line of text
-			index += mTextLines[counter]->getLength();
-			// Increment counter to iterate through text lines
-			++counter;
-		}
-
-		return index + mTextLines[counter]->getCharacterIndexAtPosition(Point(p.x,0));
 	}
 
 	float Text::getCharacterYPosition(unsigned int index)
@@ -625,13 +610,33 @@ namespace QuickGUI
 		return height;
 	}
 
+	int Text::getCursorIndexAtPosition(Point& p)
+	{
+		_checkTextLines();
+
+		int index = 0;
+		int counter = 0;
+		int height = 0;
+		while((counter < (static_cast<int>(mTextLines.size()) - 1)) && (height < p.y))
+		{
+			// Increment height
+			height += mTextLines[counter]->getHeight();
+			// Increment index by number of characters in current line of text
+			index += mTextLines[counter]->getLength();
+			// Increment counter to iterate through text lines
+			++counter;
+		}
+
+		return index + mTextLines[counter]->getCursorIndexAtPosition(Point(p.x,0));
+	}
+
 	int Text::getIndexOfNextWord(unsigned int index)
 	{
-		if(index >= static_cast<int>(mText.length()))
-			throw Exception(Exception::ERR_TEXT,"Index out of bounds!","Text::getCharacter");
+		if(static_cast<int>(index) >= getLength())
+			return getLength();
 
-		if(index == static_cast<unsigned int>(getLength() - 1))
-			return (getLength() - 1);
+		if(mMaskText)
+			return getLength();
 
 		unsigned int count = 0;
 		for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
@@ -653,7 +658,7 @@ namespace QuickGUI
 				}
 
 				if(it == mCharacters.end())
-					return -1;
+					return getLength();
 				else
 					return static_cast<int>(count);
 			}
@@ -667,11 +672,14 @@ namespace QuickGUI
 
 	int Text::getIndexOfPreviousWord(unsigned int index)
 	{
-		if(index >= static_cast<int>(mText.length()))
-			throw Exception(Exception::ERR_TEXT,"Index out of bounds!","Text::getCharacter");
-
 		if(index == 0)
 			return 0;
+
+		if(mMaskText)
+			return 0;
+
+		if(index >= static_cast<int>(mText.length()))
+			index = static_cast<int>(mText.length());
 
 		unsigned int count = 0;
 		for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
@@ -689,15 +697,19 @@ namespace QuickGUI
 				}
 
 				// Skip non whitespace
+				bool skippedNonWhiteSpace = false;
 				while((it != mCharacters.begin()) && !(*it)->isWhiteSpace())
 				{
+					skippedNonWhiteSpace = true;
+
 					--it;
 					--count;
 				}
 
-				// At this point we ran past the beginning of the word.  If we aren't at the beginning of the text,
-				// increment counter by 1.
-				if(it != mCharacters.begin())
+				// At this point we have either skipped white space all the way to the beginning of the text, we have
+				// skipped characters to the beginning of the text, or we have ran past the beginning of a word.  
+				// If we've skipped past a word and are not at the beginning, increment counter by 1.
+				if(skippedNonWhiteSpace && (count != 0))
 				{
 					++it;
 					++count;
@@ -716,6 +728,46 @@ namespace QuickGUI
 	int Text::getLength()
 	{
 		return static_cast<int>(mText.length());
+	}
+
+	Point Text::getPositionAtCharacterIndex(unsigned int index)
+	{
+		// gaurd against empty text
+		if(mText.empty())
+			return Point::ZERO;
+
+		// Force index to be valid for all values given
+		if(index >= static_cast<unsigned int>(mCharacters.size()))
+			index = static_cast<unsigned int>(mCharacters.size()) - 1;
+
+		_checkTextLines();
+
+		int idx = static_cast<int>(index);
+		int counter = 0;
+		float height = 0;
+		int numChars = 0;
+		while(counter < static_cast<int>(mTextLines.size()))
+		{
+			if((numChars + mTextLines[counter]->getLength()) > idx)
+				break;
+
+			numChars += mTextLines[counter]->getLength();
+
+			// Increment height
+			height += mTextLines[counter]->getHeight();
+			// Increment numChars by number of characters in current line of text
+			numChars += mTextLines[counter]->getLength();
+
+			// Increment counter to iterate through text lines
+			++counter;
+		}
+
+		// convert index into an index relative to the TextLine
+		int relIndex = idx - numChars;
+		Point relTextLinePos = mTextLines[counter]->getPositionAtCharacterIndex(relIndex);
+		relTextLinePos.y = mTextLines[counter]->getHeight();
+
+		return relTextLinePos;
 	}
 
 	Size Text::getSize()
@@ -738,15 +790,19 @@ namespace QuickGUI
 		return mText;
 	}
 
+	TextDesc* Text::getTextDesc()
+	{
+		return mTextDesc;
+	}
+
 	float Text::getTextWidth()
 	{
 		_checkTextLines();
 
 		float width = 0;
-		for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
-		{
-			width += (*it)->dimensions.size.width;
-		}
+
+		for(std::vector<TextLine*>::iterator it = mTextLines.begin(); it != mTextLines.end(); ++it)
+			width += (*it)->getWidth();
 
 		return width;
 	}
@@ -755,44 +811,43 @@ namespace QuickGUI
 	{
 		std::vector<TextSegment> segments;
 
-		if(!mCharacters.empty())
+		Ogre::String currentFont;
+		Ogre::ColourValue currentColor;
+		Ogre::UTFString text;
+
+		// initialize segment properties
+		currentFont = mCharacters.front()->fontPtr->getName();
+		currentColor = mCharacters.front()->colorValue;
+		text = "";
+
+		// Since the last character is always a null character, we don't need to store is as a segment.
+		for(std::list<Character*>::iterator it = mCharacters.begin(); it != --(mCharacters.end()); ++it)
 		{
-			Ogre::String currentFont;
-			Ogre::ColourValue currentColor;
-			Ogre::UTFString text;
-
-			// initialize segment properties
-			currentFont = mCharacters.front()->fontPtr->getName();
-			currentColor = mCharacters.front()->colorValue;
-			text = "";
-			for(std::list<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
+			// If this character has a different color or font, write out the previous text segment.
+			if(((*it)->fontPtr->getName() != currentFont) || ((*it)->colorValue != currentColor))
 			{
-				// If this character has a different color or font, write out the previous text segment.
-				if(((*it)->fontPtr->getName() != currentFont) || ((*it)->colorValue != currentColor))
-				{
-					Text::convertWhitespaceToText(text);
+				Text::convertWhitespaceToText(text);
 
-					TextSegment s;
-					s.color = currentColor;
-					s.fontName = currentFont;
-					s.text = text;
-					segments.push_back(s);
+				TextSegment s;
+				s.color = currentColor;
+				s.fontName = currentFont;
+				s.text = text;
+				segments.push_back(s);
 
-					currentFont = (*it)->fontPtr->getName();
-					currentColor = (*it)->colorValue;
-					text.clear();
-				}
-
-				text.append(1,(*it)->codePoint);
+				currentFont = (*it)->fontPtr->getName();
+				currentColor = (*it)->colorValue;
+				text.clear();
 			}
 
-			// Write out the last segment
-			TextSegment s;
-			s.color = currentColor;
-			s.fontName = currentFont;
-			s.text = text;
-			segments.push_back(s);
+			text.append(1,(*it)->codePoint);
 		}
+
+		// Write out the last segment
+		TextSegment s;
+		s.color = currentColor;
+		s.fontName = currentFont;
+		s.text = text;
+		segments.push_back(s);
 
 		return segments;
 	}
@@ -918,7 +973,7 @@ namespace QuickGUI
 
 	void Text::removeCharacter(unsigned int index)
 	{
-		if((index < 0) || (index > static_cast<unsigned int>(getLength())))
+		if(index > static_cast<unsigned int>(getLength()))
 			throw Exception(Exception::ERR_TEXT,"Index out of bounds! index=" + Ogre::StringConverter::toString(index) + " length=" + Ogre::StringConverter::toString(getLength()),"Text::removeCharacter");
 
 		// Remove from mText
@@ -1199,6 +1254,14 @@ namespace QuickGUI
 		}
 	}
 
+	void Text::setMaskText(bool mask, Ogre::UTFString::code_point maskSymbol)
+	{
+		mMaskText = mask;
+		mMaskSymbol = maskSymbol;
+
+		_checkTextLines();
+	}
+
 	void Text::setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv)
 	{
 		// set mText to s
@@ -1217,6 +1280,9 @@ namespace QuickGUI
 
 			++index;
 		}
+
+		// Add Null Character to List
+		mCharacters.push_back(new Character(Text::UNICODE_NEL,fp,cv));
 
 		mTextLinesDirty = true;
 	}

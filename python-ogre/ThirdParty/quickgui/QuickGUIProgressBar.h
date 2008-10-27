@@ -219,7 +219,7 @@ namespace QuickGUI
 
 	protected:
 		ProgressBar(const Ogre::String& name);
-		~ProgressBar();
+		virtual ~ProgressBar();
 
 		// Current settings applied to newly added text.
 		Ogre::String mCurrentFontName;

@@ -68,7 +68,7 @@ def ManualExclude ( mb ):
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
     
  
-    NotExported=[]
+    NotExported=['::QuickGUI::ScriptReader']
     for c in NotExported:
         main_ns.class_( c ).exclude()
     
@@ -120,7 +120,7 @@ def ManualExclude ( mb ):
             ,'::QuickGUI::Widget::getChildWidget'
             ,'::QuickGUI::Quad::_update'
             ,'::QuickGUI::Window::getTitleBarText'
-            
+            ,'::QuickGUI::Tab::getPadding'            
                 ]
     for e in excludes:
         print "excluding function", e

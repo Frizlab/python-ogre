@@ -43,6 +43,20 @@ namespace QuickGUI
 		mCurrentDefinition = mCurrentDefinition->mParentDefinition;
 	}
 
+	void SerialReader::IO(const Ogre::String& propertyName, unsigned short* member)
+	{
+		if(mCurrentDefinition == NULL)
+			throw Exception(Exception::ERR_SERIALIZATION,"SerialReader has not been correctly setup to retrieve properties. (Missing call to SerialReader::begin?)","SerialReader::IO");
+
+		DefinitionProperty* prop = mCurrentDefinition->getProperty(propertyName);
+		Ogre::StringVector sv = prop->getValues();
+
+		if(sv.empty())
+			(*member) = 0;
+		else
+			(*member) = Ogre::StringConverter::parseUnsignedInt(sv[0]);
+	}
+
 	void SerialReader::IO(const Ogre::String& propertyName, BrushFilterMode* member)
 	{
 		if(mCurrentDefinition == NULL)

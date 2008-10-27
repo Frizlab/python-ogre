@@ -18,6 +18,8 @@ namespace QuickGUI
 	{
 		switch(a)
 		{
+		case ANCHOR_HORIZONTAL_CENTER:								return "ANCHOR_HORIZONTAL_CENTER";
+		case ANCHOR_HORIZONTAL_CENTER_DYNAMIC:						return "ANCHOR_HORIZONTAL_CENTER_DYNAMIC";
 		case ANCHOR_HORIZONTAL_LEFT:								return "ANCHOR_HORIZONTAL_LEFT";
 		case ANCHOR_HORIZONTAL_RIGHT:								return "ANCHOR_HORIZONTAL_RIGHT";
 		case ANCHOR_HORIZONTAL_LEFT_RIGHT:							return "ANCHOR_HORIZONTAL_LEFT_RIGHT";
@@ -133,6 +135,8 @@ namespace QuickGUI
 		switch(a)
 		{
 		case ANCHOR_VERTICAL_BOTTOM:								return "ANCHOR_VERTICAL_BOTTOM";
+		case ANCHOR_VERTICAL_CENTER:								return "ANCHOR_VERTICAL_CENTER";
+		case ANCHOR_VERTICAL_CENTER_DYNAMIC:						return "ANCHOR_VERTICAL_CENTER_DYNAMIC";
 		case ANCHOR_VERTICAL_NONE:									return "ANCHOR_VERTICAL_NONE";
 		case ANCHOR_VERTICAL_TOP:									return "ANCHOR_VERTICAL_TOP";
 		case ANCHOR_VERTICAL_TOP_BOTTOM:							return "ANCHOR_VERTICAL_TOP_BOTTOM";
@@ -195,7 +199,9 @@ namespace QuickGUI
 
 	HorizontalAnchor StringConverter::parseHorizontalAnchor(const Ogre::String& s)
 	{
-		if(s == "ANCHOR_HORIZONTAL_LEFT")							return ANCHOR_HORIZONTAL_LEFT;
+		if(s == "ANCHOR_HORIZONTAL_CENTER")							return ANCHOR_HORIZONTAL_CENTER;
+		else if(s == "ANCHOR_HORIZONTAL_CENTER_DYNAMIC")			return ANCHOR_HORIZONTAL_CENTER_DYNAMIC;
+		else if(s == "ANCHOR_HORIZONTAL_LEFT")						return ANCHOR_HORIZONTAL_LEFT;
 		else if(s == "ANCHOR_HORIZONTAL_RIGHT")						return ANCHOR_HORIZONTAL_RIGHT;
 		else if(s == "ANCHOR_HORIZONTAL_LEFT_RIGHT")				return ANCHOR_HORIZONTAL_LEFT_RIGHT;
 		else if(s == "ANCHOR_HORIZONTAL_NONE")						return ANCHOR_HORIZONTAL_NONE;
@@ -283,6 +289,8 @@ namespace QuickGUI
 	VerticalAnchor StringConverter::parseVerticalAnchor(const Ogre::String& s)
 	{
 		if(s == "ANCHOR_VERTICAL_BOTTOM")							return ANCHOR_VERTICAL_BOTTOM;
+		else if(s == "ANCHOR_VERTICAL_CENTER")						return ANCHOR_VERTICAL_CENTER;
+		else if(s == "ANCHOR_VERTICAL_CENTER_DYNAMIC")				return ANCHOR_VERTICAL_CENTER_DYNAMIC;
 		else if(s == "ANCHOR_VERTICAL_NONE")						return ANCHOR_VERTICAL_NONE;
 		else if(s == "ANCHOR_VERTICAL_TOP")							return ANCHOR_VERTICAL_TOP;
 		else if(s == "ANCHOR_VERTICAL_TOP_BOTTOM")					return ANCHOR_VERTICAL_TOP_BOTTOM;

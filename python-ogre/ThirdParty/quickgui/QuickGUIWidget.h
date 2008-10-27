@@ -23,6 +23,8 @@ namespace QuickGUI
 	class Window;
 	class Sheet;
 
+	// Global function to create Widgets
+
 	class _QuickGUIExport WidgetDesc :
 		public BaseDesc
 	{
@@ -40,7 +42,6 @@ namespace QuickGUI
 		Size maxSize;
 		Size minSize;
 		Ogre::String name;
-		bool propagateEvents[WIDGET_EVENT_COUNT];
 		bool resizable;
 		bool scrollable;
 		bool transparencyPicking;
@@ -71,12 +72,21 @@ namespace QuickGUI
 	{
 	public:
 		friend class GUIManager;
+		// calls protected draw function
 		friend class ComponentWidget;
+		// calls protected draw function
 		friend class ContainerWidget;
 		friend class Sheet;
+		// calls protected draw function
+		friend class TabPage;
 		friend class Menu;
 		friend class MenuPanel;
 		friend class Window;
+	public:
+		/**
+		* Static function used to create widgets.  Note that the widgets returned have NOT been initialized yet. (_initialize())
+		*/
+		static Widget* create(const Ogre::String& className, WidgetDesc& d);
 	public:
 
 		/**
@@ -87,6 +97,14 @@ namespace QuickGUI
 		* Internal function, do not use.
 		*/
 		virtual void _initialize(WidgetDesc* d);
+		/**
+		* Notifies the Widget of its GUIManager. (for component/container widgets this function is recursive)
+		*/
+		virtual void _setGUIManager(GUIManager* gm);
+		/**
+		* Notifies the Widget of its Sheet. (for component/container widgets this function is recursvie)
+		*/
+		virtual void _setSheet(Sheet* sheet);
 
 		/** Adds an event handler to this widget
 			@param
@@ -145,7 +163,7 @@ namespace QuickGUI
 		* NOTE: Point is assumed to be relative to the Window.
 		* NOTE: Exception is thrown if point is not over a border.
 		*/
-		BorderSide getBorderSide(Point p);
+		virtual BorderSide getBorderSide(Point p);
 		/**
 		* Returns the class name of the widget, ie "Button", "Window", etc.
 		*/
@@ -194,7 +212,7 @@ namespace QuickGUI
 		/**
 		* Returns the horizontal anchor set for this widget.
 		*/
-		HorizontalAnchor getHorizontalAnchor();
+		virtual HorizontalAnchor getHorizontalAnchor();
 		/**
 		* Get the number of seconds the cursor has to idle over a widget
 		* before the ON_HOVER event is fired.
@@ -221,11 +239,6 @@ namespace QuickGUI
 		* NOTE: This does not take scrolling into account.
 		*/
 		Point getPosition();
-		/**
-		* Returns true if the parent widget receives notification of an event when
-		* this widget receives notification of an event.
-		*/
-		bool getPropagateEventFiring(WidgetEvent EVENT);
 		/**
 		* Returns true if the widget can be resized using the mouse, false otherwise.
 		*/
@@ -312,7 +325,7 @@ namespace QuickGUI
 		* Returns true if the point is over a border, false otherwise.
 		* NOTE: Point is assumed to be relative to the Window.
 		*/
-		bool overBorderSide(Point p);
+		virtual bool overBorderSide(Point p);
 
 		/**
 		* Flags the parent window as dirty causing its texture to be updated (redrawn).
@@ -349,12 +362,12 @@ namespace QuickGUI
 		/**
 		* Set whether or not this widget can be dragged by the mouse cursor.
 		*/
-		void setDragable(bool dragable);
+		virtual void setDragable(bool dragable);
 		/**
 		* Enabled Widgets receive mouse and keyboard events via injections to the GUIManager.
 		* Disabled Widgets can only receive these events if they are manually fired.
 		*/
-		void setEnabled(bool enabled);
+		virtual void setEnabled(bool enabled);
 		/**
 		* Notify the widget it is grabbed or not grabbed.
 		*/
@@ -387,12 +400,7 @@ namespace QuickGUI
 		/**
 		* Sets the x and y position of this widget, relative to this widget's parent.
 		*/
-		void setPosition(const Point& position);
-		/**
-		* When set to true for a given event, the parent widget gets notification of the widget events
-		* received by this widget.
-		*/
-		void setPropagateEventFiring(WidgetEvent EVENT, bool propogate);
+		virtual void setPosition(const Point& position);
 		/**
 		* Sets whether the widget can be resized using the mouse.
 		*/
@@ -427,7 +435,7 @@ namespace QuickGUI
 		* Sets whether the widget will receive mouse over events simply by having the mouse over
 		* its texture dimensions, or only when the cursor is over non transparent parts.
 		*/
-		void setTransparencyPicking(bool transparencyPicking);
+		virtual void setTransparencyPicking(bool transparencyPicking);
 		/**
 		* Sets Vertical Anchor of this widget. A Top anchor will enforce the widget to maintain
 		* its distance from the top side of its parent. A bottom anchor will enforce the widget to maintain
@@ -467,6 +475,9 @@ namespace QuickGUI
 
 		Widget* mParentWidget;
 		Window* mWindow;
+
+		// Keeps track of number of Number of Widgets with auto generated names.
+		static int mWidgetCounter;
 
 		// Event handlers! One List per event per widget
 		std::vector<EventHandlerSlot*> mWidgetEventHandlers[WIDGET_EVENT_COUNT];

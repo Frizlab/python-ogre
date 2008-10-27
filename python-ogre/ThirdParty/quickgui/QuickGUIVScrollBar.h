@@ -182,7 +182,7 @@ namespace QuickGUI
 
 	protected:
 		VScrollBar(const Ogre::String& name);
-		~VScrollBar();
+		virtual ~VScrollBar();
 
 		VScrollBarDesc* mDesc;
 
