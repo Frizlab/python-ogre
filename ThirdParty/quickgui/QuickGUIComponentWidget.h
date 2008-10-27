@@ -27,6 +27,15 @@ namespace QuickGUI
 		friend class SerialReader;
 	public:
 		/**
+		* Notifies the Widget of its GUIManager. (for component/container widgets this function is recursive)
+		*/
+		virtual void _setGUIManager(GUIManager* gm);
+		/**
+		* Notifies the Widget of its Sheet. (for component/container widgets this function is recursvie)
+		*/
+		virtual void _setSheet(Sheet* sheet);
+
+		/**
 		* Recursively searches through children and returns first widget found with name given.
 		* NULL is returned if the widget is not found.
 		*/

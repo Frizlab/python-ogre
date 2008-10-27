@@ -10,6 +10,7 @@ namespace QuickGUI
 	ListItemDesc::ListItemDesc() :
 		ContainerWidgetDesc()
 	{
+		index = -1;
 		selected = false;
 		supportScrollBars = false;
 		transparencyPicking = false;
@@ -19,6 +20,7 @@ namespace QuickGUI
 	{
 		ContainerWidgetDesc::serialize(b);
 
+		b->IO("Index",&index);
 		b->IO("Selected",&selected);
 	}
 
@@ -41,7 +43,13 @@ namespace QuickGUI
 		ListItemDesc* lid = dynamic_cast<ListItemDesc*>(d);
 		mDesc = dynamic_cast<ListItemDesc*>(mWidgetDesc);
 
+		setIndex(lid->index);
 		setSelected(lid->selected);
+	}
+
+	int ListItem::getIndex()
+	{
+		return mDesc->index;
 	}
 
 	bool ListItem::getSelected()
@@ -90,6 +98,11 @@ namespace QuickGUI
 	void ListItem::setHorizontalAnchor(HorizontalAnchor a)
 	{
 		ContainerWidget::setHorizontalAnchor(a);
+	}
+
+	void ListItem::setIndex(unsigned int index)
+	{
+		mDesc->index = index;
 	}
 	
 	void ListItem::setPosition(const Point& position)

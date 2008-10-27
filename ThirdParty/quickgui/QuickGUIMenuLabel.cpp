@@ -43,7 +43,6 @@ namespace QuickGUI
 
 	MenuLabel::MenuLabel(const Ogre::String& name) :
 		MenuItem(name),
-		mCurrentButtonState(BUTTON_STATE_DEFAULT),
 		mText(NULL)
 	{
 		mSkinElementName = DEFAULT;
@@ -118,12 +117,6 @@ namespace QuickGUI
 		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
 			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
 
-		switch(mCurrentButtonState)
-		{
-		case BUTTON_STATE_DEFAULT:		mSkinElementName = DEFAULT;		break;
-		case BUTTON_STATE_OVER:			mSkinElementName = OVER;		break;
-		}
-
 		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
 
 		Ogre::ColourValue prevColor = brush->getColour();
@@ -132,8 +125,8 @@ namespace QuickGUI
 		Rect clipRegion;
 		clipRegion.size = 
 			Size(
-				mDesc->dimensions.size.width - mDesc->padding[PADDING_RIGHT],
-				mDesc->dimensions.size.height - mDesc->padding[PADDING_BOTTOM]);
+				mWidgetDesc->dimensions.size.width - mDesc->padding[PADDING_RIGHT] - mDesc->padding[PADDING_LEFT],
+				mWidgetDesc->dimensions.size.height - mDesc->padding[PADDING_BOTTOM] - mDesc->padding[PADDING_TOP]);
 		clipRegion.position = mTexturePosition;
 		clipRegion.translate(Point(mDesc->padding[PADDING_LEFT],mDesc->padding[PADDING_TOP]));
 
@@ -160,14 +153,14 @@ namespace QuickGUI
 	{
 		dynamic_cast<MenuItemDesc*>(mWidgetDesc)->menu->closeSubMenus();
 
-		mCurrentButtonState = BUTTON_STATE_OVER;
+		mSkinElementName = OVER;
 
 		redraw();
 	}
 
 	void MenuLabel::onMouseLeave(const EventArgs& args)
 	{
-		mCurrentButtonState = BUTTON_STATE_DEFAULT;
+		mSkinElementName = DEFAULT;
 
 		redraw();
 	}

@@ -4,6 +4,9 @@
 #include "QuickGUIContainerWidget.h"
 
 #include "QuickGUIButton.h"
+#include "QuickGUICheckBox.h"
+#include "QuickGUIConsole.h"
+#include "QuickGUIForwardDeclaredDesc.h"
 #include "QuickGUIHScrollBar.h"
 #include "QuickGUIImage.h"
 #include "QuickGUILabel.h"
@@ -15,26 +18,8 @@
 
 namespace QuickGUI
 {
-	class _QuickGUIExport PanelDesc :
-			public ContainerWidgetDesc
-	{
-	public:
-		PanelDesc();
-
-		virtual Ogre::String getClass() { return "PanelDesc"; }
-		/**
-		* Returns the class of Widget this desc object is meant for.
-		*/
-		virtual Ogre::String getWidgetClass() { return "Panel"; }
-
-		// Factory method
-		static WidgetDesc* factory() { return new PanelDesc(); }
-
-		/**
-		* Outlines how the desc class is written to XML and read from XML.
-		*/
-		//virtual void serialize(SerialBase* b);
-	};
+	// forward declarations
+	class TabControl;
 
 	class _QuickGUIExport Panel :
 		public ContainerWidget
@@ -46,6 +31,10 @@ namespace QuickGUI
 		static void registerSkinDefinition();
 	public:
 		friend class GUIManager;
+		// TabPage uses a Panel internally to represent the page.
+		// All child widgets are added to the component Panel, thus it
+		// needs access to the protected "addChild" function
+		friend class TabPage;
 
 		// Factory method
 		static Widget* factory(const Ogre::String& widgetName);
@@ -65,6 +54,14 @@ namespace QuickGUI
 		* Creates a child Button.
 		*/
 		Button* createButton(ButtonDesc& d);
+		/**
+		* Creates a child CheckBox.
+		*/
+		CheckBox* createCheckBox(CheckBoxDesc& d);
+		/**
+		* Creates a child Console.
+		*/
+		Console* createConsole(ConsoleDesc& d);
 		/**
 		* Creates a child HScrollBar.
 		*/
@@ -89,6 +86,10 @@ namespace QuickGUI
 		* Creates a child ProgressBar.
 		*/
 		ProgressBar* createProgressBar(ProgressBarDesc& d);
+		/**
+		* Creates a child TabControl.
+		*/
+		TabControl* createTabControl(TabControlDesc& d);
 		/**
 		* Creates a child TextArea.
 		*/

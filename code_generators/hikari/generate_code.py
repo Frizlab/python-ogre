@@ -315,9 +315,9 @@ def generate_code():
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory..
     
-#     common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_hikari, 
-#                             destPath = environment.hikari.generated_dir, 
-#                             recursive=False )
+    common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_hikari, 
+                            destPath = environment.hikari.generated_dir, 
+                            recursive=False )
         
 if __name__ == '__main__':
     start_time = time.clock()

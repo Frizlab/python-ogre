@@ -182,7 +182,7 @@ namespace QuickGUI
 
 	protected:
 		HScrollBar(const Ogre::String& name);
-		~HScrollBar();
+		virtual ~HScrollBar();
 
 		HScrollBarDesc* mDesc;
 

@@ -1058,7 +1058,7 @@ class ogreode:
 class quickgui:
     active = True
     pythonModule = True
-    version="8.09"
+    version="r79"
     name ='quickgui'
     parent="ogre/gui"
     ## note the defined for _QuickGUIExport forces non dll usage
@@ -1704,7 +1704,7 @@ class opensteer:
 class hydrax:
     active = True
     pythonModule = True
-    version="0.3"
+    version="0.4"
     name='hydrax'
     parent="ogre/addons"
     cflags = ""
@@ -1723,7 +1723,7 @@ class hydrax:
 class hikari:
     active = True
     pythonModule = True
-    version="r22"
+    version="r23"
     name='hikari'
     parent="ogre/gui"
     cflags = ""
@@ -1736,7 +1736,7 @@ class hikari:
                 Config.PATH_LIB_hikari
                 ]
     CheckIncludes=[]
-    libs=[  boost.lib, 'OgreMain', 'hikari' ]
+    libs=[  boost.lib, 'OgreMain', 'comsuppw', 'Gdi32' ] ##, 'hikari' ]
     ModuleName="hikari"  
     descText = "Use Flash controls within Ogre"
     descLink = "http://hikari-library.googlecode.com/"

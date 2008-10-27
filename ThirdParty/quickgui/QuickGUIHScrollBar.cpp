@@ -79,30 +79,30 @@ namespace QuickGUI
 		bd.dimensions.size.width = mWidgetDesc->dimensions.size.height;
 		bd.dimensions.size.height = mWidgetDesc->dimensions.size.height;
 
-		mButton_Left1 = dynamic_cast<Button*>(mWidgetDesc->guiManager->createWidget("Button",bd));
+		mButton_Left1 = dynamic_cast<Button*>(Widget::create("Button",bd));
 		mButton_Left1->addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&HScrollBar::onLeftClicked,this);
 		addComponent(LEFT1,mButton_Left1);
 
 		bd.dimensions.position.x = 15;
-		mButton_Right1 = dynamic_cast<Button*>(mWidgetDesc->guiManager->createWidget("Button",bd));
+		mButton_Right1 = dynamic_cast<Button*>(Widget::create("Button",bd));
 		mButton_Right1->addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&HScrollBar::onRightClicked,this);
 		addComponent(RIGHT1,mButton_Right1);
 
 		bd.horizontalAnchor = ANCHOR_HORIZONTAL_RIGHT;
 		bd.dimensions.position.x = mWidgetDesc->dimensions.size.width - (2 * bd.dimensions.size.width);
-		mButton_Left2 = dynamic_cast<Button*>(mWidgetDesc->guiManager->createWidget("Button",bd));
+		mButton_Left2 = dynamic_cast<Button*>(Widget::create("Button",bd));
 		mButton_Left2->addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&HScrollBar::onLeftClicked,this);
 		addComponent(LEFT2,mButton_Left2);
 
 		bd.dimensions.position.x = mWidgetDesc->dimensions.size.width - bd.dimensions.size.width;
-		mButton_Right2 = dynamic_cast<Button*>(mWidgetDesc->guiManager->createWidget("Button",bd));
+		mButton_Right2 = dynamic_cast<Button*>(Widget::create("Button",bd));
 		mButton_Right2->addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&HScrollBar::onRightClicked,this);
 		addComponent(RIGHT2,mButton_Right2);
 
 		bd.horizontalAnchor = ANCHOR_HORIZONTAL_LEFT;
 		bd.dimensions.position.x = 30;
 		bd.dragable = true;
-		mButton_Slider = dynamic_cast<Button*>(mWidgetDesc->guiManager->createWidget("Button",bd));
+		mButton_Slider = dynamic_cast<Button*>(Widget::create("Button",bd));
 		addComponent(SLIDER,mButton_Slider);
 
 		mButton_Slider->addWidgetEventHandler(WIDGET_EVENT_DRAGGED,&HScrollBar::onSliderDragged,this);
@@ -232,7 +232,8 @@ namespace QuickGUI
 		else
 			mButton_Slider->setVisible(true);
 
-		fireScrollBarEvent(SCROLLBAR_EVENT_ON_SCROLLED,WidgetEventArgs(this));
+		WidgetEventArgs args(this);
+		fireScrollBarEvent(SCROLLBAR_EVENT_ON_SCROLLED,args);
 	}
 
 	void HScrollBar::addScrollBarEventHandler(ScrollBarEvent EVENT, EventHandlerSlot* function)

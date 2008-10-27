@@ -55,7 +55,7 @@ namespace QuickGUI
 
 	protected:
 		MenuItem(const Ogre::String& name);
-		~MenuItem();
+		virtual ~MenuItem();
 
 		/**
 		* Updates the Menu Link;

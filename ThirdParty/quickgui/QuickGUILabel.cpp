@@ -28,9 +28,7 @@ namespace QuickGUI
 		WidgetDesc::serialize(b);
 
 		for(int i = 0; i < PADDING_COUNT; ++i)
-		{
 			b->IO(StringConverter::toString(static_cast<Padding>(i)),&padding[i]);
-		}
 
 		textDesc.serialize(b);
 	}
@@ -60,6 +58,21 @@ namespace QuickGUI
 		// Make a copy of the Text Desc.  The Text object will
 		// modify it directly, which is used for serialization.
 		mDesc->textDesc = ld->textDesc;
+
+		if(mDesc->dimensions.size.width == 0)
+		{
+			if(mDesc->textDesc.segments.empty())
+				mDesc->dimensions.size.width = 50;
+			else
+				mDesc->dimensions.size.width = ld->padding[PADDING_LEFT] + mDesc->textDesc.getTextWidth() + ld->padding[PADDING_RIGHT];
+		}
+		if(mDesc->dimensions.size.height == 0)
+		{
+			if(mDesc->textDesc.segments.empty())
+				mDesc->dimensions.size.height = 20;
+			else
+				mDesc->dimensions.size.height = ld->padding[PADDING_TOP] + mDesc->textDesc.getTextHeight() + ld->padding[PADDING_BOTTOM];
+		}
 
 		mDesc->textDesc.allottedWidth = ld->dimensions.size.width - (ld->padding[PADDING_LEFT] + ld->padding[PADDING_RIGHT]);
 		mText = new Text(mDesc->textDesc);
@@ -117,7 +130,6 @@ namespace QuickGUI
 			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
 		}
 
-		mSkinElementName = BACKGROUND;
 		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
 
 		Ogre::ColourValue prevColor = brush->getColour();
@@ -126,8 +138,8 @@ namespace QuickGUI
 		Rect clipRegion;
 		clipRegion.size = 
 			Size(
-				mDesc->dimensions.size.width - mDesc->padding[PADDING_RIGHT],
-				mDesc->dimensions.size.height - mDesc->padding[PADDING_BOTTOM]);
+				mWidgetDesc->dimensions.size.width - mDesc->padding[PADDING_RIGHT] - mDesc->padding[PADDING_LEFT],
+				mWidgetDesc->dimensions.size.height - mDesc->padding[PADDING_BOTTOM] - mDesc->padding[PADDING_TOP]);
 		clipRegion.position = mTexturePosition;
 		clipRegion.translate(Point(mDesc->padding[PADDING_LEFT],mDesc->padding[PADDING_TOP]));
 
@@ -136,8 +148,7 @@ namespace QuickGUI
 		mText->draw(clipRegion.position);
 
 		brush->setClipRegion(prevClipRegion);
-
-		Brush::getSingleton().setColor(prevColor);
+		brush->setColor(prevColor);
 	}
 
 	void Label::setColor(const Ogre::ColourValue& cv)

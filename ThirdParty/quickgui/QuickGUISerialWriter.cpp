@@ -45,6 +45,20 @@ namespace QuickGUI
 		mCurrentDefinition = mCurrentDefinition->mParentDefinition;
 	}
 
+	void SerialWriter::IO(const Ogre::String& propertyName, unsigned short* member)
+	{
+		if(mCurrentDefinition == NULL)
+			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
+
+		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		newProp->mValues.push_back(Ogre::StringConverter::toString(*member));
+		
+		if(mCurrentDefinition->mProperties.find(propertyName) != mCurrentDefinition->mProperties.end())
+			throw Exception(Exception::ERR_SERIALIZATION,"ScriptDefinition already contains the property \"" + propertyName + "\"!","SerialWriter::IO");
+		else
+			mCurrentDefinition->mProperties[propertyName] = newProp;
+	}
+
 	void SerialWriter::IO(const Ogre::String& propertyName, BrushFilterMode* member)
 	{
 		if(mCurrentDefinition == NULL)

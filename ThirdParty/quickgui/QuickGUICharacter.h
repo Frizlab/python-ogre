@@ -57,7 +57,7 @@ namespace QuickGUI
 		UVRect uvCoords;
 
 	protected:
-		Character();
+		Character(void);
 
 		bool mHighlighted;
 		bool mWhiteSpace;

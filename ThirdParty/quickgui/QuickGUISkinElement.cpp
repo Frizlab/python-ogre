@@ -24,7 +24,7 @@ namespace QuickGUI
 			return;
 
 		if(mTextureName == "")
-			throw Exception(Exception::ERR_SKINNING,"Texture has not been assigned to this SkinElement, cannot comptuer Border UV Coords!","SkinElement::_computeBorderUVs");
+			return;
 
 		Ogre::TextureManager* tm = Ogre::TextureManager::getSingletonPtr();
 		if(!tm->resourceExists(mTextureName))
@@ -153,6 +153,8 @@ namespace QuickGUI
 
 	int SkinElement::getHeight()
 	{
+		_updateUVsAndDimensions();
+
 		return static_cast<int>(mTexture.getHeight());
 	}
 
@@ -185,6 +187,8 @@ namespace QuickGUI
 
 	int SkinElement::getWidth()
 	{
+		_updateUVsAndDimensions();
+
 		return static_cast<int>(mTexture.getWidth());
 	}
 

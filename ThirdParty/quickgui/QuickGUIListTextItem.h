@@ -126,7 +126,7 @@ namespace QuickGUI
 
 	protected:
 		ListTextItem(const Ogre::String& name);
-		~ListTextItem();
+		virtual ~ListTextItem();
 
 		ListTextItemDesc* mDesc;
 

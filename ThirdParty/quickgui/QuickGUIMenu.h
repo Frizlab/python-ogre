@@ -65,6 +65,14 @@ namespace QuickGUI
 		* Internal function, do not use.
 		*/
 		virtual void _initialize(WidgetDesc* d);
+		/**
+		* Notifies the Widget of its GUIManager. (for component/container widgets this function is recursive)
+		*/
+		virtual void _setGUIManager(GUIManager* gm);
+		/**
+		* Notifies the Widget of its Sheet. (for component/container widgets this function is recursvie)
+		*/
+		virtual void _setSheet(Sheet* sheet);
 
 		/**
 		* Hides Menu and any submenus.
@@ -130,7 +138,7 @@ namespace QuickGUI
 
 	protected:
 		Menu(const Ogre::String& name);
-		~Menu();
+		virtual ~Menu();
 
 		MenuDesc* mDesc;
 

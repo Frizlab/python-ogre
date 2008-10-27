@@ -129,7 +129,7 @@ namespace QuickGUI
 
 	protected:
 		TextArea(const Ogre::String& name);
-		~TextArea();
+		virtual ~TextArea();
 
 		Text* mText;
 

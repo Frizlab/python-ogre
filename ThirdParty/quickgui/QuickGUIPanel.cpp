@@ -1,6 +1,7 @@
 #include "QuickGUIPanel.h"
 #include "QuickGUIManager.h"
 #include "QuickGUISkinDefinitionManager.h"
+#include "QuickGUITabControl.h"
 
 namespace QuickGUI
 {
@@ -15,11 +16,6 @@ namespace QuickGUI
 		d->definitionComplete();
 
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("Panel",d);
-	}
-
-	PanelDesc::PanelDesc() :
-		ContainerWidgetDesc()
-	{
 	}
 
 	Panel::Panel(const Ogre::String& name) :
@@ -47,7 +43,7 @@ namespace QuickGUI
 		if((className == "TitleBar") || (className == "Window") || (className == "Sheet"))
 			throw Exception(Exception::ERR_UNSUPPORTED_WIDGET,"This widget does not support creation of widget's of class \"" + className + "\".","Panel::createCustomWidget");
 
-		Widget* newCustomWidget = mPanelDesc->guiManager->createWidget(className,d);
+		Widget* newCustomWidget = Widget::create(className,d);
 
 		addChild(newCustomWidget);
 
@@ -56,16 +52,34 @@ namespace QuickGUI
 
 	Button* Panel::createButton(ButtonDesc& d)
 	{
-		Button* newButton = dynamic_cast<Button*>(mPanelDesc->guiManager->createWidget("Button",d));
+		Button* newButton = dynamic_cast<Button*>(Widget::create("Button",d));
 
 		addChild(newButton);
 
 		return newButton;
 	}
 
+	CheckBox* Panel::createCheckBox(CheckBoxDesc& d)
+	{
+		CheckBox* newCheckBox = dynamic_cast<CheckBox*>(Widget::create("CheckBox",d));
+
+		addChild(newCheckBox);
+
+		return newCheckBox;
+	}
+
+	Console* Panel::createConsole(ConsoleDesc& d)
+	{
+		Console* newConsole = dynamic_cast<Console*>(Widget::create("Console",d));
+
+		addChild(newConsole);
+
+		return newConsole;
+	}
+
 	HScrollBar* Panel::createHScrollBar(HScrollBarDesc& d)
 	{
-		HScrollBar* newHScrollBar = dynamic_cast<HScrollBar*>(mPanelDesc->guiManager->createWidget("HScrollBar",d));
+		HScrollBar* newHScrollBar = dynamic_cast<HScrollBar*>(Widget::create("HScrollBar",d));
 
 		addChild(newHScrollBar);
 
@@ -74,7 +88,7 @@ namespace QuickGUI
 
 	Image* Panel::createImage(ImageDesc& d)
 	{
-		Image* newImage = dynamic_cast<Image*>(mPanelDesc->guiManager->createWidget("Image",d));
+		Image* newImage = dynamic_cast<Image*>(Widget::create("Image",d));
 
 		addChild(newImage);
 
@@ -83,7 +97,7 @@ namespace QuickGUI
 
 	Label* Panel::createLabel(LabelDesc& d)
 	{
-		Label* newLabel = dynamic_cast<Label*>(mPanelDesc->guiManager->createWidget("Label",d));
+		Label* newLabel = dynamic_cast<Label*>(Widget::create("Label",d));
 
 		addChild(newLabel);
 
@@ -92,7 +106,7 @@ namespace QuickGUI
 
 	List* Panel::createList(ListDesc& d)
 	{
-		List* newList = dynamic_cast<List*>(mPanelDesc->guiManager->createWidget("List",d));
+		List* newList = dynamic_cast<List*>(Widget::create("List",d));
 
 		addChild(newList);
 
@@ -101,7 +115,7 @@ namespace QuickGUI
 
 	Panel* Panel::createPanel(PanelDesc& d)
 	{
-		Panel* newPanel = dynamic_cast<Panel*>(mPanelDesc->guiManager->createWidget("Panel",d));
+		Panel* newPanel = dynamic_cast<Panel*>(Widget::create("Panel",d));
 		
 		addChild(newPanel);
 
@@ -110,16 +124,25 @@ namespace QuickGUI
 
 	ProgressBar* Panel::createProgressBar(ProgressBarDesc& d)
 	{
-		ProgressBar* newProgressBar = dynamic_cast<ProgressBar*>(mPanelDesc->guiManager->createWidget("ProgressBar",d));
+		ProgressBar* newProgressBar = dynamic_cast<ProgressBar*>(Widget::create("ProgressBar",d));
 
 		addChild(newProgressBar);
 
 		return newProgressBar;
 	}
 
+	TabControl* Panel::createTabControl(TabControlDesc& d)
+	{
+		TabControl* newTabControl = dynamic_cast<TabControl*>(Widget::create("TabControl",d));
+
+		addChild(newTabControl);
+
+		return newTabControl;
+	}
+
 	TextArea* Panel::createTextArea(TextAreaDesc& d)
 	{
-		TextArea* newTextArea = dynamic_cast<TextArea*>(mPanelDesc->guiManager->createWidget("TextArea",d));
+		TextArea* newTextArea = dynamic_cast<TextArea*>(Widget::create("TextArea",d));
 
 		addChild(newTextArea);
 
@@ -128,7 +151,7 @@ namespace QuickGUI
 
 	TextBox* Panel::createTextBox(TextBoxDesc& d)
 	{
-		TextBox* newTextBox = dynamic_cast<TextBox*>(mPanelDesc->guiManager->createWidget("TextBox",d));
+		TextBox* newTextBox = dynamic_cast<TextBox*>(Widget::create("TextBox",d));
 
 		addChild(newTextBox);
 
@@ -137,7 +160,7 @@ namespace QuickGUI
 
 	VScrollBar* Panel::createVScrollBar(VScrollBarDesc& d)
 	{
-		VScrollBar* newVScrollBar = dynamic_cast<VScrollBar*>(mPanelDesc->guiManager->createWidget("VScrollBar",d));
+		VScrollBar* newVScrollBar = dynamic_cast<VScrollBar*>(Widget::create("VScrollBar",d));
 
 		addChild(newVScrollBar);
 

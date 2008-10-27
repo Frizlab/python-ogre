@@ -73,7 +73,7 @@ namespace QuickGUI
 			bd.skinTypeName = td->closeButtonSkinType;
 			bd.horizontalAnchor = ANCHOR_HORIZONTAL_RIGHT;
 
-			mCloseButton = dynamic_cast<Button*>(mWidgetDesc->guiManager->createWidget("Button",bd));
+			mCloseButton = dynamic_cast<Button*>(Widget::create("Button",bd));
 			addComponent(CLOSE_BUTTON,mCloseButton);
 			
 			mCloseButton->addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_UP,&TitleBar::onCloseButtonUp,this);

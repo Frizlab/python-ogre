@@ -81,8 +81,8 @@ PATH_navi =         os.path.join(BASE_DIR, 'navi', 'navi')
 PATH_particleuniverse = os.path.join(PATH_Ogre, 'PlugIns', 'ParticleUniverse' )
 PATH_ogrepcz = os.path.join(PATH_Ogre, 'PlugIns', 'PCZSceneManager' )
 
-PATH_hydrax = os.path.join(PATH_THIRDPARTY, 'hydrax')
-PATH_hikari = os.path.join(BASE_DIR, 'hikari', 'hikari')
+PATH_hydrax = os.path.join(PATH_THIRDPARTY, 'Hydrax')
+PATH_hikari = os.path.join(PATH_THIRDPARTY, 'Hikari' ) #BASE_DIR, 'hikari', 'hikari')
 
 # it's time for the SDK version
 if SDK:
@@ -129,7 +129,7 @@ if SDK:
     PATH_LIB_CEGUI =                os.path.join( PATH_Ogre, 'lib' )
     
 PATH_LIB_opensteer = os.path.join(PATH_opensteer, 'win32','release')
-PATH_LIB_hikari = os.path.join(PATH_hikari, 'lib')
+PATH_LIB_hikari = os.path.join(PATH_hikari ) # , 'lib')
 
 
 PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include') 
@@ -179,7 +179,7 @@ PATH_INCLUDE_ogreforests =         PATH_ogreforests
 PATH_INCLUDE_particleuniverse = os.path.join(PATH_particleuniverse, 'include' )
 PATH_INCLUDE_ogrepcz = os.path.join(PATH_ogrepcz,'include')
 PATH_INCLUDE_hydrax=        PATH_hydrax
-PATH_INCLUDE_hikari = os.path.join(PATH_hikari, 'include')
+PATH_INCLUDE_hikari = os.path.join(PATH_hikari ) #, 'include')
 
 PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ,os.path.join(BASE_DIR, 'vorbis', 'include')

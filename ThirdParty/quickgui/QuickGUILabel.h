@@ -140,7 +140,7 @@ namespace QuickGUI
 
 	protected:
 		Label(const Ogre::String& name);
-		~Label();
+		virtual ~Label();
 
 		// Current settings applied to newly added text.
 		Ogre::String mCurrentFontName;

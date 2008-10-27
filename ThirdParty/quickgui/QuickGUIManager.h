@@ -51,17 +51,7 @@ namespace QuickGUI
 	public:
 		friend class Root;
 	public:
-		Sheet* createSheet(SheetDesc& d);
-		Widget* createWidget(const Ogre::String& className, WidgetDesc& d);
 
-		/**
-		* Destroys a sheet;
-		*/
-		void destroySheet(Sheet* s);
-		/**
-		* Destroys a widget.
-		*/
-		void destroyWidget(Widget* w);
 		/**
 		* Draws the GUI.
 		* NOTE: This is done automatically in the renderQueueEnded.
@@ -72,6 +62,10 @@ namespace QuickGUI
 		* Returns the current sheet this GUIManager is managing.
 		*/
 		Sheet* getActiveSheet();
+		/**
+		* Returns the Default Sheet created in GUIManager's constructor and initially used as default.
+		*/
+		Sheet* getDefaultSheet();
 		/**
 		* Returns the last widget that was clicked via mouse button down,
 		* single, double, or triple click.
@@ -88,10 +82,6 @@ namespace QuickGUI
 		*/
 		bool getScrollLastClicked();
 		/**
-		* Returns the sheet with the name given.  If no sheet exists, an exception is thrown.
-		*/
-		Sheet* getSheet(const Ogre::String& name);
-		/**
 		* Returns the widget that is directly underneath the mouse cursor.
 		*/
 		Widget* getWidgetUnderMouseCursor();
@@ -99,11 +89,6 @@ namespace QuickGUI
 		* Gets the main viewport that is rendered to.
 		*/
 		Ogre::Viewport* getViewport();
-
-		/**
-		* Returns true if a sheet with the name given exists, false otherwise.
-		*/
-		bool hasSheet(const Ogre::String& name);
 
 		/**
 		* Useful for Text Input Widgets, like the TextBox
@@ -122,19 +107,9 @@ namespace QuickGUI
 
 		bool isSupportedCodePoint(Ogre::UTFString::unicode_char c);
 
-		/**
-		* Parses a Sheet definition within a .sheet file and creates a Sheet and all its Child widgets.
-		*/
-		Sheet* loadSheetFromFile(const std::string& fileName);
-		/**
-		* Parses a Sheet definition within a .sheet file and creates a Sheet and all its Child widgets. If a
-		* Sheet with the name given already exists, it is deleted prior to creation of the new Sheet.
-		*/
-		Sheet* reloadSheetFromFile(const Ogre::String& fileName);
-
 		// Inheritted functions from Ogre::RenderQueueListener
-		virtual void renderQueueStarted(Ogre::uint8 id, const std::string& invocation, bool &skipThisQueue);
-		virtual void renderQueueEnded(Ogre::uint8 id, const std::string& invocation, bool &repeatThisQueue);
+		virtual void renderQueueStarted(Ogre::uint8 id, const std::string& invocation, bool& skipThisQueue);
+		virtual void renderQueueEnded(Ogre::uint8 id, const std::string& invocation, bool& repeatThisQueue);
 
 		/**
 		* Sets the current Sheet to be drawn and interacted with.
@@ -179,6 +154,8 @@ namespace QuickGUI
 		MouseCursor* mMouseCursor;
 		Brush* mBrush;
 
+		// Default Sheet created and used on GUIManager construction
+		Sheet* mDefaultSheet;
 		Sheet* mActiveSheet;
 		Widget*	mWidgetUnderMouseCursor;
 		// Used to send mouse wheel events to
@@ -223,11 +200,6 @@ namespace QuickGUI
 		BorderSide mResizableBorder;
 		// Store the previous border the widget was over.
 		BorderSide mPreviousBorder;
-
-		// List of Widgets to be deleted in the next frame.
-		std::vector<Widget*> mFreeList;
-
-		std::vector<Sheet*> mSheets;
 
 		bool injectMouseMove(const int& xPixelOffset, const int& yPixelOffset);
 	private:

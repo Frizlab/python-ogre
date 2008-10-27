@@ -3,15 +3,18 @@
 
 namespace QuickGUI
 {
-	enum ButtonEvent
+	enum CheckBoxEvent
 	{
 		// Property type events
 		// Input type events
 		// Other type events
-		BUTTON_EVENT_STATE_CHANGED		=  0,
-		BUTTON_EVENT_COUNT
+		CHECKBOX_EVENT_CHECK_CHANGED	=  0,
+		CHECKBOX_EVENT_COUNT
 	};
 
+	/**
+	* List Events
+	*/
 	enum ListEvent
 	{
 		// Property type events
@@ -30,6 +33,18 @@ namespace QuickGUI
 		MOUSE_CURSOR_EVENT_BORDER_ENTER			,
 		MOUSE_CURSOR_EVENT_BORDER_LEAVE			,
 		MOUSE_CURSOR_EVENT_COUNT
+	};
+
+	/**
+	* TabControl Events
+	*/
+	enum TabControlEvent
+	{
+		// Property type events
+		// Input type events
+		// Other type events
+		TABCONTROL_EVENT_SELECTION_CHANGED	=  0,
+		TABCONTROL_EVENT_COUNT
 	};
 
 	/**

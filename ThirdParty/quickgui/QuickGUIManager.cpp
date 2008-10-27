@@ -69,10 +69,9 @@ namespace QuickGUI
 		{
 			SheetDesc d;
 			d.name = "DefaultSheet";
-			d.guiManager = this;
 			d.dimensions.size = Size(mGUIManagerDesc.viewport->getActualWidth(),mGUIManagerDesc.viewport->getActualHeight());
-			
-			createSheet(d);
+			mDefaultSheet = new Sheet(d);
+			setActiveSheet(mDefaultSheet);
 		}
 
 		d.mouseCursorDesc.guiManager = this;
@@ -89,11 +88,10 @@ namespace QuickGUI
 
 	GUIManager::~GUIManager()
 	{
+		delete mDefaultSheet;
+
 		delete mTimer;
 		TimerManager::getSingleton().destroyTimer(mHoverTimer);
-
-		for(std::vector<Sheet*>::iterator it = mSheets.begin(); it != mSheets.end(); ++it)
-			delete (*it);
 	}
 
 	void GUIManager::_clearMouseTrackingData()
@@ -104,108 +102,6 @@ namespace QuickGUI
 		}
 	}
 
-	Sheet* GUIManager::createSheet(SheetDesc& d)
-	{
-		if(d.name == "")
-		{
-			d.name = "Sheet" + Ogre::StringConverter::toString(mSheetCounter);
-			++mSheetCounter;
-		}
-		else
-		{
-			for(std::vector<Sheet*>::iterator it = mSheets.begin(); it != mSheets.end(); ++it)
-			{
-				if((*it)->getName() == d.name)
-					throw Exception(Exception::ERR_DUPLICATE_ITEM,"A sheet with name \"" + d.name + "\" already exists!","GUIManager::createSheet");
-			}
-		}
-
-		Root::getSingleton()._setActiveGUIManager(this);
-
-		Ogre::String cName = d.getWidgetClass();
-
-		if("Sheet" != d.getWidgetClass())
-			throw Exception(Exception::ERR_INVALID_DESC,"Desc object for Widget of class \"" + d.getWidgetClass() + "\" does not match Widget of class \"Sheet\"!","GUIManager::createSheet");
-
-		Sheet* s = dynamic_cast<Sheet*>(WidgetFactoryManager::getSingleton().createWidget("Sheet",d.name));
-		s->_initialize(&d);
-
-		mSheets.push_back(s);
-
-		if(static_cast<int>(mSheets.size()) == 1)
-			setActiveSheet(s);
-
-		return s;
-	}
-
-	Widget* GUIManager::createWidget(const Ogre::String& className, WidgetDesc& d)
-	{
-		Ogre::String temp = d.name;
-
-		if(d.name == "")
-		{
-			d.name = className + Ogre::StringConverter::toString(mWidgetCounter);
-			++mWidgetCounter;
-		}
-		else if(mActiveSheet->findWidget(d.name) != NULL)
-			throw Exception(Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + d.name + "\" already exists in Sheet \"" + mActiveSheet->getName() + "\"!","GUIManager::createWidget");
-
-		Root::getSingleton()._setActiveGUIManager(this);
-
-		Ogre::String cName = d.getWidgetClass();
-
-		if(className != d.getWidgetClass())
-			throw Exception(Exception::ERR_INVALID_DESC,"Desc object for Widget of class \"" + d.getWidgetClass() + "\" does not match Widget of class \"" + className + "\"!","GUIManager::createWidget");
-
-		Widget* newWidget = WidgetFactoryManager::getSingleton().createWidget(className,d.name);
-		newWidget->_initialize(&d);
-
-		// Restore the name, in case it was changed.  This Desc could be used multiple times, so this is important!
-		d.name = temp;
-
-		return newWidget;
-	}
-
-	void GUIManager::destroySheet(Sheet* s)
-	{
-		if(s == mActiveSheet)
-		{
-			mActiveSheet->setKeyboardListener(NULL);
-			mWidgetUnderMouseCursor = NULL;
-			mLastClickedWidget = NULL;
-			_clearMouseTrackingData();
-			mActiveSheet = NULL;
-		}
-
-		for(std::vector<Sheet*>::iterator it = mSheets.begin(); it != mSheets.end(); ++it)
-		{
-			if((*it) == s)
-			{
-				mSheets.erase(it);
-				break;
-			}
-		}
-
-		delete s;
-	}
-
-	void GUIManager::destroyWidget(Widget* w)
-	{
-		if(w->getClass() == "Sheet")
-		{
-			destroySheet(dynamic_cast<Sheet*>(w));
-			return;
-		}
-
-		if(std::find(mFreeList.begin(),mFreeList.end(),w) != mFreeList.end())
-			return;
-
-		if((mActiveSheet->getKeyboardListener() != NULL) && (w->findWidget(mActiveSheet->getKeyboardListener()->getName()) != NULL))
-			mActiveSheet->setKeyboardListener(NULL);
-
-		mFreeList.push_back(w);
-	}
-
 	void GUIManager::draw()
 	{
 		mBrush->prepareToDraw();
@@ -214,7 +110,11 @@ namespace QuickGUI
 		mBrush->updateViewport(mGUIManagerDesc.viewport);
 		mBrush->setRenderTarget(mGUIManagerDesc.viewport);
 
-		mActiveSheet->draw();
+		if(mActiveSheet != NULL)
+		{
+			mActiveSheet->cleanupWidgets();
+			mActiveSheet->draw();
+		}
 
 		mMouseCursor->draw();
 
@@ -224,6 +124,11 @@ namespace QuickGUI
 	Sheet* GUIManager::getActiveSheet()
 	{
 		return mActiveSheet;
+	}
+
+	Sheet* GUIManager::getDefaultSheet()
+	{
+		return mDefaultSheet;
 	}
 
 	Widget* GUIManager::getLastClickedWidget()
@@ -246,17 +151,6 @@ namespace QuickGUI
 		return mGUIManagerDesc.scrollLastClicked;
 	}
 
-	Sheet* GUIManager::getSheet(const Ogre::String& name)
-	{
-		for(std::vector<Sheet*>::iterator it = mSheets.begin(); it != mSheets.end(); ++it)
-		{
-			if((*it)->getName() == name)
-				return (*it);
-		}
-
-		throw Exception(Exception::ERR_ITEM_NOT_FOUND,"Sheet \"" + name + "\" does not exist!","GUIManager::getSheet");
-	}
-
 	Widget* GUIManager::getWidgetUnderMouseCursor()
 	{
 		return mWidgetUnderMouseCursor;
@@ -265,17 +159,6 @@ namespace QuickGUI
 	Ogre::Viewport* GUIManager::getViewport()
 	{
 		return mGUIManagerDesc.viewport;
-	}
-
-	bool GUIManager::hasSheet(const Ogre::String& name)
-	{
-		for(std::vector<Sheet*>::iterator it = mSheets.begin(); it != mSheets.end(); ++it)
-		{
-			if((*it)->getName() == name)
-				return true;
-		}
-
-		return false;
 	}
 
 	bool GUIManager::injectChar(Ogre::UTFString::unicode_char c)
@@ -511,7 +394,7 @@ namespace QuickGUI
 			return false;
 
 		// Modify the button mask
-		mButtonMask |= (1 << button);
+		mButtonMask &= !(1 << button);
 
 		// Record the time the click occurred. Useful for generating double clicks.
 		mTimeOfClick[button] = mTimer->getMilliseconds();
@@ -543,7 +426,7 @@ namespace QuickGUI
 			return false;
 
 		// Modify the button mask
-		mButtonMask |= (1 << button);
+		mButtonMask &= !(1 << button);
 
 		// Record the time the click occurred. Useful for generating triple clicks.
 		mTimeOfDoubleClick[button] = mTimer->getMilliseconds();
@@ -575,7 +458,7 @@ namespace QuickGUI
 			return false;
 
 		// Modify the button mask
-		mButtonMask |= (1 << button);
+		mButtonMask &= !(1 << button);
 
 		// If the mouse button goes up and is not over the same widget
 		// the mouse button went down on, disregard this injection.
@@ -764,95 +647,6 @@ namespace QuickGUI
 		return (mGUIManagerDesc.supportedCodePoints.find(c) != mGUIManagerDesc.supportedCodePoints.end());
 	}
 
-	Sheet* GUIManager::loadSheetFromFile(const std::string& fileName)
-	{
-		// Perform an isolated parsing of the one file
-		ScriptReader* sc = ScriptReader::getSingletonPtr();
-		sc->begin();
-		sc->parseFile(fileName);
-
-		if(sc->getDefinitions().empty())
-			throw Exception(Exception::ERR_SERIALIZATION,"No definitions found in file \"" + fileName + "\"!","GUIManager::loadSheetFromFile");
-
-		Ogre::String sheetName = sc->getDefinitions().front()->getID();
-		for(std::vector<Sheet*>::iterator it = mSheets.begin(); it != mSheets.end(); ++it)
-		{
-			if((*it)->getName() == sheetName)
-				throw Exception(Exception::ERR_DUPLICATE_ITEM,"A sheet with name \"" + sheetName + "\" already exists!","GUIManager::loadSheetFromFile");
-		}
-
-		Root::getSingleton()._setActiveGUIManager(this);
-
-		Sheet* newSheet = dynamic_cast<Sheet*>(WidgetFactoryManager::getSingleton().createWidget("Sheet",sheetName));
-		mSheets.push_back(newSheet);
-		
-		// Set the newly created sheet to the active sheet, since GUIManager::createWidget sets the
-		// desc::sheet property to the active sheet.
-		Sheet* temp = mActiveSheet;
-		mActiveSheet = newSheet;
-
-		newSheet->serialize(SerialReader::getSingletonPtr());
-
-		// remove all temporary definitions found from parsing the file
-		sc->end();
-
-		// Restore Active Sheet to what it was
-		mActiveSheet = temp;
-
-		return newSheet;
-	}
-
-	Sheet* GUIManager::reloadSheetFromFile(const Ogre::String& fileName)
-	{
-		// Perform an isolated parsing of the one file
-		ScriptReader* sc = ScriptReader::getSingletonPtr();
-		sc->begin();
-		sc->parseFile(fileName);
-
-		if(sc->getDefinitions().empty())
-			throw Exception(Exception::ERR_SERIALIZATION,"No definitions found in file \"" + fileName + "\"!","GUIManager::reloadSheetFromFile");
-
-		// If sheet already exists, delete it
-		Ogre::String sheetName = sc->getDefinitions().front()->getID();
-		for(std::vector<Sheet*>::iterator it = mSheets.begin(); it != mSheets.end(); ++it)
-		{
-			if((*it)->getName() == sheetName)
-			{
-				// Delete sheet.
-				destroySheet((*it));
-				break;
-			}
-		}
-
-		Root::getSingleton()._setActiveGUIManager(this);
-
-		Sheet* newSheet = dynamic_cast<Sheet*>(WidgetFactoryManager::getSingleton().createWidget("Sheet",sheetName));
-		mSheets.push_back(newSheet);
-		
-		// Set the newly created sheet to the active sheet, since GUIManager::createWidget sets the
-		// desc::sheet property to the active sheet.
-		Sheet* temp = mActiveSheet;
-		mActiveSheet = newSheet;
-
-		newSheet->serialize(SerialReader::getSingletonPtr());
-
-		// remove all temporary definitions found from parsing the file
-		sc->end();
-
-		// Restore Active Sheet to what it was
-		mActiveSheet = temp;
-
-		// If we deleted the active sheet, make this sheet the active sheet.
-		if(mActiveSheet == NULL)
-			mActiveSheet = newSheet;
-
-		Ogre::Viewport* v = mGUIManagerDesc.viewport;
-		if(v != NULL)
-			mActiveSheet->setSize(Size(v->getActualWidth(),v->getActualHeight()));
-
-		return newSheet;
-	}
-
 	void GUIManager::hoverTimerCallback()
 	{
 		if(mWidgetUnderMouseCursor != NULL)
@@ -862,14 +656,11 @@ namespace QuickGUI
 		}
 	}
 
-	void GUIManager::renderQueueStarted(Ogre::uint8 id, const std::string& invocation, bool &skipThisQueue)
+	void GUIManager::renderQueueStarted(Ogre::uint8 id, const std::string& invocation, bool& skipThisQueue)
 	{
-		for(std::vector<Widget*>::iterator it = mFreeList.begin(); it != mFreeList.end(); ++it)
-			delete (*it);
-		mFreeList.clear();
 	}
 
-	void GUIManager::renderQueueEnded(Ogre::uint8 id, const std::string& invocation, bool &repeatThisQueue)
+	void GUIManager::renderQueueEnded(Ogre::uint8 id, const std::string& invocation, bool& repeatThisQueue)
 	{
 		// Perform rendering of GUI
 		if(mGUIManagerDesc.queueID == id)
@@ -880,19 +671,15 @@ namespace QuickGUI
 
 	void GUIManager::setActiveSheet(Sheet* s)
 	{
-		if(s == NULL)
-			throw Exception(Exception::ERR_INVALIDPARAMS,"Sheet is NULL!","GUIManager::setActiveSheet");
-
-		if(std::find(mSheets.begin(),mSheets.end(),s) == mSheets.end())
-			throw Exception(Exception::ERR_INVALID_CHILD,"Sheet \"" + s->getName() + "\" does not belong to this Manager!","GUIManager::setActiveSheet");
-
 		mActiveSheet = s;
 		mWidgetUnderMouseCursor = mActiveSheet;
 		mLastClickedWidget = NULL;
 
 		Ogre::Viewport* v = mGUIManagerDesc.viewport;
-		if(v != NULL)
+		if((v != NULL) && (mActiveSheet != NULL))
 			mActiveSheet->setSize(Size(v->getActualWidth(),v->getActualHeight()));
+
+		mActiveSheet->_setGUIManager(this);
 	}
 
 	void GUIManager::setRenderQueueID(Ogre::uint8 id)

@@ -1,7 +1,6 @@
 #ifndef QUICKGUIMENULABEL_H
 #define QUICKGUIMENULABEL_H
 
-#include "QuickGUIButtonStates.h"
 #include "QuickGUIPadding.h"
 #include "QuickGUIMenuItem.h"
 #include "QuickGUIText.h"
@@ -131,14 +130,11 @@ namespace QuickGUI
 
 	protected:
 		MenuLabel(const Ogre::String& name);
-		~MenuLabel();
+		virtual ~MenuLabel();
 
 		Text* mText;
 
 		MenuLabelDesc* mDesc;
-
-		/// Keep track of the button state
-		ButtonState mCurrentButtonState;
 
 		/**
 		* Outlines how the widget is drawn to the current render target

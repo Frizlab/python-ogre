@@ -36,6 +36,9 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
+		// Menu class creates and destroys MenuPanel
+		friend class Menu;
+	public:
 		// Factory method
 		static Widget* factory(const Ogre::String& widgetName);
 	public:

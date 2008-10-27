@@ -33,6 +33,7 @@ namespace QuickGUI
 		*/
 		virtual void end();
 
+		virtual void IO(const Ogre::String& propertyName, unsigned short* member);
 		virtual void IO(const Ogre::String& propertyName, BrushFilterMode* member);
 		virtual void IO(const Ogre::String& propertyName, int* member);
 		virtual void IO(const Ogre::String& propertyName, unsigned int* member);

@@ -50,6 +50,7 @@ namespace QuickGUI
 
 	Menu::~Menu()
 	{
+		delete mMenuPanel;
 	}
 
 	void Menu::_initialize(WidgetDesc* d)
@@ -70,16 +71,35 @@ namespace QuickGUI
 
 		mDesc->menuWidth = md->menuWidth;
 
-		if(mMenuPanel != NULL)
-			mWidgetDesc->sheet->destroyMenuPanel(mMenuPanel);
-
 		// Create our Menu List Window
 		MenuPanelDesc pd;
 		pd.name = mWidgetDesc->name + ".MenuPanel";
 		pd.dimensions = Rect(0,0,mDesc->menuWidth,1);
 		pd.visible = false;
 		pd.skinTypeName = md->menuPanelSkinType;
-		mMenuPanel = mWidgetDesc->sheet->createMenuPanel(pd);
+		mMenuPanel = dynamic_cast<MenuPanel*>(Widget::create("MenuPanel",pd));
+	}
+
+	void Menu::_setGUIManager(GUIManager* gm)
+	{
+		MenuLabel::_setGUIManager(gm);
+
+		for(std::vector<MenuItem*>::iterator it = mMenuItems.begin(); it != mMenuItems.end(); ++it)
+			(*it)->_setGUIManager(gm);
+	}
+
+	void Menu::_setSheet(Sheet* sheet)
+	{
+		if(mWidgetDesc->sheet != NULL)
+			mWidgetDesc->sheet->removeWindow(mMenuPanel);
+
+		MenuLabel::_setSheet(sheet);
+
+		if(sheet != NULL)
+			sheet->addWindow(mMenuPanel);
+
+		for(std::vector<MenuItem*>::iterator it = mMenuItems.begin(); it != mMenuItems.end(); ++it)
+			(*it)->_setSheet(sheet);
 	}
 
 	Widget* Menu::factory(const Ogre::String& widgetName)
@@ -106,6 +126,8 @@ namespace QuickGUI
 		i->notifyMenuParent(this);
 		// Set link to parent ToolBar
 		i->notifyToolBarParent(mDesc->toolBar);
+		i->_setGUIManager(mWidgetDesc->guiManager);
+		i->_setSheet(mWidgetDesc->sheet);
 
 		// We cannot add the widget as a child, the texture position and drawing will be incorrect.
 		mMenuItems.push_back(i);
@@ -149,7 +171,7 @@ namespace QuickGUI
 		d.dimensions.position.y = mMenuPanel->getNextAvailableYPosition();
 		d.dimensions.size.width = mMenuPanel->getSize().width;
 		
-		MenuItem* newMenuItem = dynamic_cast<MenuItem*>(mWidgetDesc->guiManager->createWidget(className,d));
+		MenuItem* newMenuItem = dynamic_cast<MenuItem*>(Widget::create(className,d));
 		addChild(newMenuItem);
 
 		return newMenuItem;
@@ -168,7 +190,7 @@ namespace QuickGUI
 		d.dimensions.size.width = mMenuPanel->getClientDimensions().size.width;
 		d.dimensions.size.height = d.textDesc.getTextHeight() + (d.padding[PADDING_TOP] + d.padding[PADDING_BOTTOM]);
 
-		MenuLabel* newMenuLabel = dynamic_cast<MenuLabel*>(mWidgetDesc->guiManager->createWidget("MenuLabel",d));
+		MenuLabel* newMenuLabel = dynamic_cast<MenuLabel*>(Widget::create("MenuLabel",d));
 		addChild(newMenuLabel);
 
 		return newMenuLabel;
@@ -187,7 +209,7 @@ namespace QuickGUI
 		d.dimensions.size.width = mMenuPanel->getClientDimensions().size.width;
 		d.dimensions.size.height = d.textDesc.getTextHeight() + (d.padding[PADDING_TOP] + d.padding[PADDING_BOTTOM]);
 
-		Menu* newMenu = dynamic_cast<Menu*>(mWidgetDesc->guiManager->createWidget("Menu",d));
+		Menu* newMenu = dynamic_cast<Menu*>(Widget::create("Menu",d));
 
 		addChild(newMenu);
 

@@ -7,11 +7,13 @@
 namespace QuickGUI
 {
 	const Ogre::String TextBox::BACKGROUND = "background";
+	const Ogre::String TextBox::TEXTOVERLAY = "textoverlay";
 
 	void TextBox::registerSkinDefinition()
 	{
 		SkinDefinition* d = new SkinDefinition("TextBox");
 		d->defineSkinElement(BACKGROUND);
+		d->defineSkinElement(TEXTOVERLAY);
 		d->definitionComplete();
 
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("TextBox",d);
@@ -26,31 +28,28 @@ namespace QuickGUI
 		keyDownTime = 0.6;
 		keyRepeatTime = 0.04;
 		maxCharacters = 255;
-
-		for(int i = 0; i < PADDING_COUNT; ++i)
-		{
-			padding[i] = 5.0;
-		}
+		// 42 happens to be the code point for * on regular english true type fonts
+		maskSymbol = 42;
+		maskText = false;
 
 		textAlignment = TEXT_ALIGNMENT_LEFT;
+		textCursorSkinTypeName = "default";
 	}
 
 	void TextBoxDesc::serialize(SerialBase* b)
 	{
 		WidgetDesc::serialize(b);
 
-		for(int i = 0; i < PADDING_COUNT; ++i)
-		{
-			b->IO(StringConverter::toString(static_cast<Padding>(i)),&padding[i]);
-		}
-
 		b->IO("CursorBlinkTime",&cursorBlinkTime);
 		b->IO("DefaultColor",&defaultColor);
 		b->IO("DefaultFontName",&defaultFontName);
 		b->IO("KeyDownTime",&keyDownTime);
 		b->IO("KeyRepeatTime",&keyRepeatTime);
+		b->IO("MaskSymbol",static_cast<unsigned short*>(&maskSymbol));
+		b->IO("MaskText",&maskText);
 		b->IO("MaxCharacters",&maxCharacters);
 		b->IO("TextAlignment",&textAlignment);
+		b->IO("TextCursorSkinTypeName",&textCursorSkinTypeName);
 		b->IO("TextPosition",&textPosition);
 
 		textDesc.serialize(b);
@@ -60,7 +59,9 @@ namespace QuickGUI
 		Widget(name),
 		mText(NULL),
 		mDesc(NULL),
-		mTextCursor(NULL)
+		mTextCursor(NULL),
+		mTextInputValidatorSlot(NULL),
+		mCursorIndex(0)
 	{
 		mSkinElementName = BACKGROUND;
 	}
@@ -73,15 +74,9 @@ namespace QuickGUI
 
 		delete mTextCursor;
 
-		/*********** RYAN COMMENT
-		if(mWindow != NULL)
-		{
-			if(mWindow->hasEventHandler(WINDOW_EVENT_DRAWN,this))
-				mWindow->removeEventHandler(WINDOW_EVENT_DRAWN,this);
-		}
-		*/
-
 		delete mText;
+
+		delete mTextInputValidatorSlot;
 	}
 
 	void TextBox::_initialize(WidgetDesc* d)
@@ -90,10 +85,12 @@ namespace QuickGUI
 
 		mDesc = dynamic_cast<TextBoxDesc*>(mWidgetDesc);
 
+		TextBoxDesc* td = dynamic_cast<TextBoxDesc*>(d);
+
 		mTextCursor = new TextCursor();
+		mTextCursor->setSkinType(td->textCursorSkinTypeName);
 
 		mDesc->consumeKeyboardEvents = true;
-		mCursorIndex = -1;
 
 		mFunctionKeyDownLast = false;
 
@@ -104,8 +101,7 @@ namespace QuickGUI
 		addWidgetEventHandler(WIDGET_EVENT_KEYBOARD_INPUT_LOSE,&TextBox::onKeyboardInputLose,this);
 		addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&TextBox::onMouseButtonDown,this);
 		addWidgetEventHandler(WIDGET_EVENT_MOUSE_CLICK_TRIPLE,&TextBox::onTripleClick,this);
-
-		TextBoxDesc* td = dynamic_cast<TextBoxDesc*>(d);
+		addWidgetEventHandler(WIDGET_EVENT_VISIBLE_CHANGED,&TextBox::onVisibleChanged,this);
 
 		// Make a copy of the Text Desc.  The Text object will
 		// modify it directly, which is used for serialization.
@@ -117,15 +113,8 @@ namespace QuickGUI
 
 		// Set a really high width, we want everything on 1 line.
 		mDesc->textDesc.allottedWidth = mDesc->maxCharacters * Text::getGlyphWidth(mDesc->defaultFontName,'0');
-		if(mText != NULL)
-			delete mText;
 			
 		mText = new Text(mDesc->textDesc);
-
-		setPadding(PADDING_BOTTOM,td->padding[PADDING_BOTTOM]);
-		setPadding(PADDING_LEFT,td->padding[PADDING_LEFT]);
-		setPadding(PADDING_RIGHT,td->padding[PADDING_RIGHT]);
-		setPadding(PADDING_TOP,td->padding[PADDING_TOP]);
 
 		mDesc->cursorBlinkTime = td->cursorBlinkTime;
 		mDesc->keyDownTime = td->keyDownTime;
@@ -146,6 +135,8 @@ namespace QuickGUI
 		mKeyDownTimer = TimerManager::getSingleton().createTimer(timerDesc);
 		mKeyDownTimer->setCallback(&TextBox::keyDownTimerCallback,this);
 
+		setMaskText(td->maskText,td->maskSymbol);
+		setMaxCharacters(td->maxCharacters);
 		setSkinType(d->skinTypeName);
 	}
 
@@ -165,16 +156,14 @@ namespace QuickGUI
 
 	void TextBox::addCharacter(Ogre::UTFString::code_point cp)
 	{
-		mText->addCharacter(new Character(cp,mCurrentFont,mDesc->defaultColor));
-		setCursorIndex(-1);
-	}
+		if(mText->getLength() >= static_cast<int>(mDesc->maxCharacters))
+			return;
 
-	void TextBox::addCharacter(Ogre::UTFString::code_point cp, int index)
-	{
-		if((index < 0) || (index > mText->getLength()))
-			throw Exception(Exception::ERR_TEXT,"Index out of bounds! index=" + Ogre::StringConverter::toString(index) + " length=" + Ogre::StringConverter::toString(mText->getLength()),"TextBox::addCharacter");
+		if(mTextInputValidatorSlot != NULL)
+			if(!mTextInputValidatorSlot->isInputValid(cp,mText->getLength() - 1,mText->getText()))
+				return;
 
-		mText->addCharacter(new Character(cp,mCurrentFont,mDesc->defaultColor), index);
+		mText->addCharacter(new Character(cp,mCurrentFont,mDesc->defaultColor),mCursorIndex);
 		setCursorIndex(mCursorIndex+1);
 	}
 
@@ -193,22 +182,29 @@ namespace QuickGUI
 		return mDesc->defaultFontName;
 	}
 
+	Ogre::UTFString::code_point TextBox::getMaskSymbol()
+	{
+		return mDesc->maskSymbol;
+	}
+
+	bool TextBox::getMaskText()
+	{
+		return mDesc->maskText;
+	}
+
 	int TextBox::getMaxCharacters()
 	{
 		return mDesc->maxCharacters;
 	}
 
-	float TextBox::getPadding(Padding p)
-	{
-		if(p == PADDING_COUNT)
-			throw Exception(Exception::ERR_INVALIDPARAMS,"PADDING_COUNT is not a valid parameter!","Label::getPadding");
-
-		return mDesc->padding[p];
-	}
-
 	Ogre::UTFString TextBox::getText()
 	{
 		return mText->getText();
+	}
+
+	Ogre::String TextBox::getTextCursorSkinType()
+	{
+		return mDesc->textCursorSkinTypeName;
 	}
 
 	void TextBox::keyDownTimerCallback()
@@ -231,10 +227,7 @@ namespace QuickGUI
 		mLastKnownInput.keyMask = kea.keyMask;
 		mLastKnownInput.keyModifiers = kea.keyModifiers;
 
-		if(mCursorIndex == -1)
-			addCharacter(mLastKnownInput.codepoint);
-		else
-			addCharacter(mLastKnownInput.codepoint,mCursorIndex);
+		addCharacter(mLastKnownInput.codepoint);
 	}
 
 	void TextBox::onDraw()
@@ -247,25 +240,30 @@ namespace QuickGUI
 		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
 			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
 
+		// Draw Background
+
 		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
 
 		Ogre::ColourValue prevColor = brush->getColour();
 		Rect prevClipRegion = brush->getClipRegion();
 
-		Rect clipRegion;
-		clipRegion.size = 
-			Size(
-				mDesc->dimensions.size.width - mDesc->padding[PADDING_RIGHT] - mDesc->padding[PADDING_LEFT],
-				mDesc->dimensions.size.height - mDesc->padding[PADDING_BOTTOM] - mDesc->padding[PADDING_TOP]);
-		clipRegion.position = mTexturePosition;
-		clipRegion.translate(Point(mDesc->padding[PADDING_LEFT],mDesc->padding[PADDING_TOP]));
+		Rect clipRegion = Rect(mTexturePosition,mClientDimensions.size);
+		clipRegion.translate(mClientDimensions.position);
 
-		brush->setClipRegion(prevClipRegion.getIntersection(clipRegion));
+		Rect newClipRegion = prevClipRegion.getIntersection(clipRegion);
+		brush->setClipRegion(newClipRegion);
 
-		Point textPosition = mTexturePosition;
-		textPosition.translate(Point(0,mDesc->padding[PADDING_TOP]));
+		// Draw Text
+
+		Point textPosition = clipRegion.position;
 		textPosition.translate(mDesc->textPosition);
 		mText->draw(textPosition);
+
+		// Draw Text Overlay SkinElement
+
+		brush->drawSkinElement(newClipRegion,st->getSkinElement(TEXTOVERLAY));
+
+		// Restore clipping
 
 		brush->setClipRegion(prevClipRegion);
 
@@ -285,66 +283,28 @@ namespace QuickGUI
 		switch(kea.scancode)
 		{
 		case KC_LEFT:
-			if(mText->getLength() > 0)
-			{
-				if(mCursorIndex == -1)
-				{
-					if(kea.keyModifiers & CTRL)
-						setCursorIndex(mText->getIndexOfPreviousWord(mText->getLength() - 1));
-					else
-						setCursorIndex(mText->getLength() - 1);
-				}
-				else if(mCursorIndex > 0)
-				{
-					if(kea.keyModifiers & CTRL)
-						setCursorIndex(mText->getIndexOfPreviousWord(mCursorIndex));
-					else
-						setCursorIndex(mCursorIndex - 1);
-				}
-			}
+			if(kea.keyModifiers & CTRL)
+				setCursorIndex(mText->getIndexOfPreviousWord(mCursorIndex));
+			else
+				setCursorIndex(mCursorIndex - 1);
 			break;
 		case KC_RIGHT:
-			if((mText->getLength() > 0) && (mCursorIndex != -1))
-			{
-				if(mCursorIndex == (mText->getLength() - 1))
-				{
-					if(kea.keyModifiers & CTRL)
-						setCursorIndex(mText->getIndexOfNextWord(mCursorIndex));
-					else
-						setCursorIndex(-1);
-				}
-				else
-				{
-					if(kea.keyModifiers & CTRL)
-						setCursorIndex(mText->getIndexOfNextWord(mCursorIndex));
-					else
-						setCursorIndex(mCursorIndex + 1);
-				}
-			}
+			if(kea.keyModifiers & CTRL)
+				setCursorIndex(mText->getIndexOfNextWord(mCursorIndex));
+			else
+				setCursorIndex(mCursorIndex + 1);
 			break;
 		case KC_DELETE:
-			if(mText->getLength() > 0)
-			{
-				if(mCursorIndex != -1)
-					removeCharacter(mCursorIndex);
-			}
+			removeCharacter(mCursorIndex);
 			break;
 		case KC_BACK:
-			if(mText->getLength() > 0)
-			{
-				if(mCursorIndex == -1)
-					removeCharacter(mText->getLength() - 1);
-				else if(mCursorIndex > 0)
-					removeCharacter(mCursorIndex - 1);
-			}
+			removeCharacter(mCursorIndex - 1);
 			break;
 		case KC_END:
-			if(!mText->empty())
-				setCursorIndex(-1);
+			setCursorIndex(mText->getLength());
 			break;
 		case KC_HOME:
-			if(!mText->empty())
-				setCursorIndex(0);
+			setCursorIndex(0);
 			break;
 		default:
 			mFunctionKeyDownLast = false;
@@ -375,28 +335,17 @@ namespace QuickGUI
 		const MouseEventArgs mea = dynamic_cast<const MouseEventArgs&>(args);
 		if(mea.button == MB_Left)
 		{
-			// If the text is empty, set cursor index to -1
-			if(mText->empty())
-				setCursorIndex(-1);
-			else
-			{
-				// Convert position to coordinates relative to TextBox position
-				Point relativePosition;
-				relativePosition.x = mea.position.x - mTexturePosition.x;
-				relativePosition.y = mea.position.y - mTexturePosition.y;
+			// Convert position to coordinates relative to TextBox position
+			Point relativePosition;
+			relativePosition.x = mea.position.x - mTexturePosition.x;
+			relativePosition.y = mea.position.y - mTexturePosition.y;
 
-				// Convert relative TextBox position to coordinates relative to Text position
-				Point relativeTextPosition;
-				relativeTextPosition.x = relativePosition.x - mDesc->textPosition.x;
-				relativeTextPosition.y = relativePosition.y - mDesc->textPosition.y;
+			// Convert relative TextBox position to coordinates relative to Text position
+			Point relativeTextPosition;
+			relativeTextPosition.x = relativePosition.x - mDesc->textPosition.x;
+			relativeTextPosition.y = relativePosition.y - mDesc->textPosition.y;
 
-				Character* lastCharacter = mText->getCharacter(mText->getLength()-1);
-				// If we click to the right of the text, set cursor index to -1
-				if((relativeTextPosition.x > (lastCharacter->dimensions.position.x + (lastCharacter->dimensions.size.width / 2.0))) && (relativeTextPosition.y >= lastCharacter->dimensions.position.y))
-					setCursorIndex(-1);
-				else
-					setCursorIndex(mText->getCharacterIndexAtPosition(relativeTextPosition));
-			}
+			setCursorIndex(mText->getCursorIndexAtPosition(relativeTextPosition));
 		}
 	}
 
@@ -410,6 +359,15 @@ namespace QuickGUI
 		}
 	}
 
+	void TextBox::onVisibleChanged(const EventArgs& args)
+	{
+		if(!mWidgetDesc->visible)
+		{
+			mBlinkTimer->stop();
+			mTextCursor->setVisible(false);
+		}
+	}
+
 	void TextBox::onWindowDrawn(const EventArgs& args)
 	{
 		mTextCursor->onDraw();
@@ -417,15 +375,16 @@ namespace QuickGUI
 
 	void TextBox::removeCharacter(int index)
 	{
-		if((index < 0) || (index > mText->getLength()))
-			throw Exception(Exception::ERR_TEXT,"Index out of bounds! index=" + Ogre::StringConverter::toString(index) + " length=" + Ogre::StringConverter::toString(mText->getLength()),"TextBox::removeCharacter");
+		if(index < 0)
+			return;
+
+		if(index >= mText->getLength())
+			return;
 
 		mText->removeCharacter(index);
 
-		if(index == mText->getLength())
-			setCursorIndex(-1);
-		else
-			setCursorIndex(index);
+		// Update index
+		setCursorIndex(index);
 	}
 
 	void TextBox::setColor(const Ogre::ColourValue& cv)
@@ -465,79 +424,59 @@ namespace QuickGUI
 
 	void TextBox::setCursorIndex(int index)
 	{
-		if((index < -1) || (index > (mText->getLength() - 1)))
-			throw Exception(Exception::ERR_TEXT,"Index out of bounds! index=" + Ogre::StringConverter::toString(index) + " length=" + Ogre::StringConverter::toString(mText->getLength()),"TextBox::setCursorIndex");
+		if(static_cast<int>(index) > mText->getLength())
+			index = mText->getLength();
+		else if(index < 0)
+			index = 0;
 
-		mCursorIndex = index;
-
+		// Reset cursor blinking every time we move the cursor
 		mBlinkTimer->reset();
 		mTextCursor->setVisible(true);
 
-		if(mText->getLength() == 0)
-		{
-			mDesc->textPosition.x = mDesc->padding[PADDING_LEFT];
-			mCursorPosition.x = mDesc->textPosition.x;
-
-			Point p = getScreenPosition();
-			p.translate(mCursorPosition);
-			mTextCursor->setPosition(p);
-			redraw();
-
-			return;
-		}
-
-		float relativeCursorPosition;
-		if(mCursorIndex == -1)
-		{
-			Character* c = mText->getCharacter(mText->getLength() - 1);
-			relativeCursorPosition = c->dimensions.position.x + c->dimensions.size.width;
-		}
-		else
-			relativeCursorPosition = mText->getCharacter(mCursorIndex)->dimensions.position.x;
-
-		float textBoxWidth = (mDesc->dimensions.size.width - mDesc->padding[PADDING_LEFT] - mDesc->padding[PADDING_RIGHT]);
+		// Update CursorIndex
+		mCursorIndex = index;
 
 		// If text fits within TextBox, align text
-		if(mText->getTextWidth() < textBoxWidth)
+		if(mText->getTextWidth() < mClientDimensions.size.width)
 		{
 			switch(mDesc->textAlignment)
 			{
 			case TEXT_ALIGNMENT_CENTER:
-				mDesc->textPosition.x = (textBoxWidth - mText->getTextWidth()) / 2.0;
+				mDesc->textPosition.x = (mClientDimensions.size.width - mText->getTextWidth()) / 2.0;
 				break;
 			case TEXT_ALIGNMENT_LEFT:
-				mDesc->textPosition.x = mDesc->padding[PADDING_LEFT];
+				mDesc->textPosition.x = 0;
 				break;
 			case TEXT_ALIGNMENT_RIGHT:
-				mDesc->textPosition.x = (mDesc->dimensions.size.width - mDesc->padding[PADDING_RIGHT]) - mText->getTextWidth();
+				mDesc->textPosition.x = mClientDimensions.size.width - mText->getTextWidth();
 				break;
 			}
 		}
 		// Else text is larger than TextBox bounds.  Ignore Text alignment property.
 		else
 		{
-			// Case 1: if the distance between the cursor and beggining of text is less than 
-			// half the text box size, left align the text.
-			if(relativeCursorPosition < (textBoxWidth / 2.0))
+			// calculate the position of the desired index in relation to the textbox dimensions
+
+			// X Position of cursor index relative to start of text
+			Point relativeCursorPosition = mText->getPositionAtCharacterIndex(mCursorIndex);
+			// X Position of cursor index relative to TextBox's top left client corner
+			float indexPosition = (relativeCursorPosition.x + mDesc->textPosition.x);
+
+			if(indexPosition < 0)
 			{
-				mDesc->textPosition.x = mDesc->padding[PADDING_LEFT];
+				mDesc->textPosition.x -= indexPosition;
 			}
-			// Case 2: if the distance between the cursor and end of text is less than
-			// half the text box size, right align the text.
-			else if((mText->getTextWidth() - relativeCursorPosition) < (textBoxWidth / 2.0))
+			else if(indexPosition > mClientDimensions.size.width)
 			{
-				mDesc->textPosition.x = (mDesc->dimensions.size.width - mDesc->padding[PADDING_RIGHT]) - mText->getTextWidth();
-			}
-			// Case 3: Center the cursor with the TextBox and position the Text accordingly
-			else
-			{
-				mDesc->textPosition.x = (textBoxWidth / 2.0) - relativeCursorPosition;
+				mDesc->textPosition.x -= (indexPosition - mClientDimensions.size.width);
 			}
 		}
 
-		mCursorPosition.x = mDesc->textPosition.x + relativeCursorPosition;
+		mCursorPosition.x = mDesc->textPosition.x + mText->getPositionAtCharacterIndex(mCursorIndex).x;
 
+		// Position Cursor
 		Point p = getScreenPosition();
+		p.translate(mClientDimensions.position);
 		p.translate(mCursorPosition);
 		mTextCursor->setPosition(p);
 		redraw();
@@ -552,6 +491,22 @@ namespace QuickGUI
 	{
 		mDesc->defaultFontName = fontName;
 		mCurrentFont = Text::getFont(fontName);
+	}
+
+	void TextBox::setEnabled(bool enabled)
+	{
+		Widget::setEnabled(enabled);
+
+		if(!mWidgetDesc->enabled)
+		{
+			if(mBlinkTimer != NULL)
+				mBlinkTimer->stop();
+			if(mTextCursor != NULL)
+				mTextCursor->setVisible(false);
+
+			if((mWidgetDesc->sheet != NULL) && (mWidgetDesc->sheet->getKeyboardListener() == this))
+				mWidgetDesc->sheet->setKeyboardListener(NULL);
+		}
 	}
 
 	void TextBox::setFont(const Ogre::String& fontName)
@@ -589,12 +544,17 @@ namespace QuickGUI
 		redraw();
 	}
 
-	void TextBox::setMaxCharacters(unsigned int max)
+	void TextBox::setMaskText(bool mask, Ogre::UTFString::code_point maskSymbol)
 	{
-		if(max == mDesc->maxCharacters)
-			return;
-		
-		if(max < mDesc->maxCharacters)
+		mDesc->maskText = mask;
+		mDesc->maskSymbol = maskSymbol;
+
+		mText->setMaskText(mask,maskSymbol);
+	}
+
+	void TextBox::setMaxCharacters(unsigned int max)
+	{		
+		if(static_cast<int>(max) < mDesc->textDesc.getTextLength())
 		{
 			throw Exception(Exception::ERR_TEXT,"Cannot set max Characters when text exceeds max! (Data loss)","TextBox::setMaxCharacters");
 		}
@@ -602,21 +562,14 @@ namespace QuickGUI
 		mDesc->maxCharacters = max;
 	}
 
-	void TextBox::setPadding(Padding p, float distance)
-	{
-		if(p == PADDING_COUNT)
-			throw Exception(Exception::ERR_INVALIDPARAMS,"PADDING_COUNT is not a valid parameter!","Label::setPadding");
-
-		mDesc->padding[p] = distance;
-
-		redraw();
-	}
-
 	void TextBox::setParent(Widget* parent)
 	{
 		Widget::setParent(parent);
 
-		mWindow->addWindowEventHandler(WINDOW_EVENT_DRAWN,&TextBox::onWindowDrawn,this);
+		if(parent !=  NULL)
+			mWindow->addWindowEventHandler(WINDOW_EVENT_DRAWN,&TextBox::onWindowDrawn,this);
+		else
+			mWindow->removeWindowEventHandler(WINDOW_EVENT_DRAWN,this);
 	}
 
 	void TextBox::setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv)
@@ -626,6 +579,21 @@ namespace QuickGUI
 		redraw();
 	}
 
+	void TextBox::setTextCursorSkinType(const Ogre::String type)
+	{
+		mDesc->textCursorSkinTypeName = type;
+
+		mTextCursor->setSkinType(type);
+	}
+
+	void TextBox::updateClientDimensions()
+	{
+		Widget::updateClientDimensions();
+
+		if(mTextCursor != NULL)
+			mTextCursor->setHeight(mClientDimensions.size.height);
+	}
+
 	void TextBox::updateTexturePosition()
 	{
 		Widget::updateTexturePosition();
@@ -633,7 +601,7 @@ namespace QuickGUI
 		if(mDesc != NULL)
 		{
 			Point p = getScreenPosition();
-			p.translate(Point(mDesc->padding[PADDING_LEFT],0));
+			p.translate(mClientDimensions.position);
 			p.translate(mCursorPosition);
 			mTextCursor->setPosition(p);
 		}

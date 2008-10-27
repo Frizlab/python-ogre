@@ -1,6 +1,8 @@
 #include "QuickGUIRoot.h"
 
 #include "QuickGUIButton.h"
+#include "QuickGUICheckBox.h"
+#include "QuickGUIConsole.h"
 #include "QuickGUIHScrollBar.h"
 #include "QuickGUIImage.h"
 #include "QuickGUILabel.h"
@@ -11,6 +13,9 @@
 #include "QuickGUIMenuPanel.h"
 #include "QuickGUIProgressBar.h"
 #include "QuickGUISheet.h"
+#include "QuickGUITab.h"
+#include "QuickGUITabControl.h"
+#include "QuickGUITabPage.h"
 #include "QuickGUITextArea.h"
 #include "QuickGUITextBox.h"
 #include "QuickGUIToolBar.h"
@@ -24,6 +29,13 @@ namespace QuickGUI
 		mGUIManagerCounter(-1),
 		mDefaultHoverTime(3)
 	{
+		// Get the default font
+		Ogre::ResourceManager::ResourceMapIterator it = Ogre::FontManager::getSingleton().getResourceIterator();
+		if(it.hasMoreElements())
+			mDefaultFont = static_cast<Ogre::FontPtr>(it.getNext());
+		else
+			throw Exception(Exception::ERR_INVALID_STATE,"No fonts have been found! At least one font must exist for QuickGUI use!","Root::Root");
+
 		// Initialize all Singleton Manager classes
 		new Brush();
 		new SkinDefinitionManager();
@@ -34,6 +46,8 @@ namespace QuickGUI
 		// Register default supported Widget types via FactoryManager
 		WidgetFactoryManager* wfm = WidgetFactoryManager::getSingletonPtr();
 		wfm->registerWidgetFactory("Button",Button::factory);
+		wfm->registerWidgetFactory("CheckBox",CheckBox::factory);
+		wfm->registerWidgetFactory("Console",Console::factory);
 		wfm->registerWidgetFactory("HScrollBar",HScrollBar::factory);
 		wfm->registerWidgetFactory("Image",Image::factory);
 		wfm->registerWidgetFactory("Label",Label::factory);
@@ -45,7 +59,9 @@ namespace QuickGUI
 		wfm->registerWidgetFactory("ModalWindow",ModalWindow::factory);
 		wfm->registerWidgetFactory("Panel",Panel::factory);
 		wfm->registerWidgetFactory("ProgressBar",ProgressBar::factory);
-		wfm->registerWidgetFactory("Sheet",Sheet::factory);
+		wfm->registerWidgetFactory("TabControl",TabControl::factory);
+		wfm->registerWidgetFactory("Tab",Tab::factory);
+		wfm->registerWidgetFactory("TabPage",TabPage::factory);
 		wfm->registerWidgetFactory("TextArea",TextArea::factory);
 		wfm->registerWidgetFactory("TextBox",TextBox::factory);
 		wfm->registerWidgetFactory("TitleBar",TitleBar::factory);
@@ -56,6 +72,8 @@ namespace QuickGUI
 		// Register default supported Widget desc types via FactoryManager
 		WidgetDescFactoryManager* wdfm = WidgetDescFactoryManager::getSingletonPtr();
 		wdfm->registerWidgetDescFactory("ButtonDesc",ButtonDesc::factory);
+		wdfm->registerWidgetDescFactory("CheckBoxDesc",CheckBoxDesc::factory);
+		wdfm->registerWidgetDescFactory("ConsoleDesc",ConsoleDesc::factory);
 		wdfm->registerWidgetDescFactory("HScrollBarDesc",HScrollBarDesc::factory);
 		wdfm->registerWidgetDescFactory("ImageDesc",ImageDesc::factory);
 		wdfm->registerWidgetDescFactory("LabelDesc",LabelDesc::factory);
@@ -68,6 +86,9 @@ namespace QuickGUI
 		wdfm->registerWidgetDescFactory("PanelDesc",PanelDesc::factory);
 		wdfm->registerWidgetDescFactory("ProgressBarDesc",ProgressBarDesc::factory);
 		wdfm->registerWidgetDescFactory("SheetDesc",SheetDesc::factory);
+		wdfm->registerWidgetDescFactory("TabDesc",TabDesc::factory);
+		wdfm->registerWidgetDescFactory("TabControlDesc",TabControlDesc::factory);
+		wdfm->registerWidgetDescFactory("TabPageDesc",TabPageDesc::factory);
 		wdfm->registerWidgetDescFactory("TextAreaDesc",TextAreaDesc::factory);
 		wdfm->registerWidgetDescFactory("TextBoxDesc",TextBoxDesc::factory);
 		wdfm->registerWidgetDescFactory("TitleBarDesc",TitleBarDesc::factory);
@@ -78,6 +99,8 @@ namespace QuickGUI
 		// Register Skin definitions
 		MouseCursor::registerSkinDefinition();
 		Button::registerSkinDefinition();
+		CheckBox::registerSkinDefinition();
+		Console::registerSkinDefinition();
 		HScrollBar::registerSkinDefinition();
 		Image::registerSkinDefinition();
 		Label::registerSkinDefinition();
@@ -90,8 +113,12 @@ namespace QuickGUI
 		Panel::registerSkinDefinition();
 		ProgressBar::registerSkinDefinition();
 		Sheet::registerSkinDefinition();
+		Tab::registerSkinDefinition();
+		TabControl::registerSkinDefinition();
+		TabPage::registerSkinDefinition();
 		TextArea::registerSkinDefinition();
 		TextBox::registerSkinDefinition();
+		TextCursor::registerSkinDefinition();
 		TitleBar::registerSkinDefinition();
 		ToolBar::registerSkinDefinition();
 		VScrollBar::registerSkinDefinition();
@@ -131,28 +158,8 @@ namespace QuickGUI
 		return ( *ms_Singleton ); 
 	}
 
-	GUIManager* Root::_getActiveGUIManager()
-	{
-		return mActiveGUIManager;
-	}
-
-	void Root::_setActiveGUIManager(GUIManager* m)
-	{
-		mActiveGUIManager = m;
-	}
-
 	GUIManager* Root::createGUIManager(GUIManagerDesc& d)
 	{
-		if(mGUIManagerCounter == -1)
-		{
-			// Get the default font
-			Ogre::ResourceManager::ResourceMapIterator it = Ogre::FontManager::getSingleton().getResourceIterator();
-			if(it.hasMoreElements())
-				mDefaultFont = static_cast<Ogre::FontPtr>(it.getNext());
-			else
-				throw Exception(Exception::ERR_INVALID_STATE,"No fonts have been found! At least one font must exist for QuickGUI use!","Root::Root");
-		}
-
 		++mGUIManagerCounter;
 
 		// If name string is empty, generate a name for the GUIManager.

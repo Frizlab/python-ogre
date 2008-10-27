@@ -95,7 +95,7 @@ namespace QuickGUI
 			hd.buttonScrollPercent = mDesc->horzButtonScrollPercent;
 			hd.visible = false;
 
-			mHScrollBar = dynamic_cast<HScrollBar*>(mWidgetDesc->guiManager->createWidget("HScrollBar",hd));
+			mHScrollBar = dynamic_cast<HScrollBar*>(Widget::create("HScrollBar",hd));
 			mHScrollBar->enableLiveSlider(&(mClientDimensions.size.width),&(mVirtualSize.width));
 			mHScrollBar->addScrollBarEventHandler(QuickGUI::SCROLLBAR_EVENT_ON_SCROLLED,&ContainerWidget::onHorizontalScroll,this);
 			addComponent(HSCROLLBAR,mHScrollBar);
@@ -109,13 +109,29 @@ namespace QuickGUI
 			vd.buttonScrollPercent = mDesc->vertButtonScrollPercent;
 			vd.visible = false;
 
-			mVScrollBar = dynamic_cast<VScrollBar*>(mWidgetDesc->guiManager->createWidget("VScrollBar",vd));
+			mVScrollBar = dynamic_cast<VScrollBar*>(Widget::create("VScrollBar",vd));
 			mVScrollBar->enableLiveSlider(&(mClientDimensions.size.height),&(mVirtualSize.height));
 			mVScrollBar->addScrollBarEventHandler(QuickGUI::SCROLLBAR_EVENT_ON_SCROLLED,&ContainerWidget::onVerticalScroll,this);
 			addComponent(VSCROLLBAR,mVScrollBar);
 
 			addWidgetEventHandler(WIDGET_EVENT_MOUSE_WHEEL,&ContainerWidget::onMouseWheel,this);
 		}
+	}
+
+	void ContainerWidget::_setGUIManager(GUIManager* gm)
+	{
+		ComponentWidget::_setGUIManager(gm);
+
+		for(std::vector<Widget*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it)
+			(*it)->_setGUIManager(gm);
+	}
+
+	void ContainerWidget::_setSheet(Sheet* sheet)
+	{
+		ComponentWidget::_setSheet(sheet);
+
+		for(std::vector<Widget*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it)
+			(*it)->_setSheet(sheet);
 	}
 
 	void ContainerWidget::_setScrollX(float x)
@@ -204,6 +220,8 @@ namespace QuickGUI
 	{
 		mChildren.push_back(w);
 		w->setParent(this);
+		w->_setGUIManager(mWidgetDesc->guiManager);
+		w->_setSheet(mWidgetDesc->sheet);
 
 		if(mDesc->supportScrollBars)
 		{
@@ -358,6 +376,10 @@ namespace QuickGUI
 			throw Exception(Exception::ERR_INVALID_CHILD,"Widget \"" + w->getName() + "\" is not a child of widget \"" + getName() + "\"","ContainerWidget::removeChild");
 
 		mChildren.erase(it);
+
+		w->_setSheet(NULL);
+		w->_setGUIManager(NULL);
+		w->setParent(NULL);
 
 		if(mDesc->supportScrollBars)
 		{

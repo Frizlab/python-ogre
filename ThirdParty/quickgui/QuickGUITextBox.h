@@ -4,6 +4,7 @@
 #include "QuickGUIPadding.h"
 #include "QuickGUIText.h"
 #include "QuickGUITextCursor.h"
+#include "QuickGUITextInputValidator.h"
 #include "QuickGUITimerManager.h"
 #include "QuickGUIWidget.h"
 
@@ -23,9 +24,11 @@ namespace QuickGUI
 		float keyDownTime;
 		/// Amount of time a key must be held down to repeat its input.
 		float keyRepeatTime;
+		bool maskText;
+		Ogre::UTFString::code_point maskSymbol;
 		unsigned int maxCharacters;
-		float padding[PADDING_COUNT];
 		TextAlignment textAlignment;
+		Ogre::String textCursorSkinTypeName;
 		Point textPosition;
 
 		/// Describes the Text used in this TextBox
@@ -55,6 +58,7 @@ namespace QuickGUI
 	public:
 		// Skin Constants
 		static const Ogre::String BACKGROUND;
+		static const Ogre::String TEXTOVERLAY;
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
@@ -68,15 +72,10 @@ namespace QuickGUI
 		virtual void _initialize(WidgetDesc* d);
 
 		/**
-		* Adds a character to the end of the current text, and
-		* positions the text cursor at the end of the text. (-1)
+		* Adds a character in front of the TextCursor, and increments the TextCursor
+		* position.
 		*/
 		void addCharacter(Ogre::UTFString::code_point cp);
-		/**
-		* Inserts a character into the text at the index given, and
-		* positions the text cursor after that character.
-		*/
-		void addCharacter(Ogre::UTFString::code_point cp, int index);
 
 		/**
 		* Returns the class name of this Widget.
@@ -91,17 +90,25 @@ namespace QuickGUI
 		*/
 		Ogre::String getDefaultFont();
 		/**
+		* Returns the symbol used to mask text, if it is to be masked.
+		*/
+		Ogre::UTFString::code_point getMaskSymbol();
+		/**
+		* Returns true if the text is masked, false otherwise.
+		*/
+		bool getMaskText();
+		/**
 		* Returns the max number of characters this TextBox supports.
 		*/
 		int getMaxCharacters();
 		/**
-		* Gets the distance between a Label border and the text.
-		*/
-		float getPadding(Padding p);
-		/**
 		* Gets the text in UTFString form.
 		*/
 		Ogre::UTFString getText();
+		/**
+		* Gets the "type" of the Text Cursor used.
+		*/
+		Ogre::String getTextCursorSkinType();
 
 		void onWindowDrawn(const EventArgs& args);
 
@@ -149,6 +156,11 @@ namespace QuickGUI
 		*/
 		void setDefaultFont(const Ogre::String& fontName);
 		/**
+		* Enabled Widgets receive mouse and keyboard events via injections to the GUIManager.
+		* Disabled Widgets can only receive these events if they are manually fired.
+		*/
+		virtual void setEnabled(bool enabled);
+		/**
 		* Sets all characters of the text to the specified font.
 		*/
 		void setFont(const Ogre::String& fontName);
@@ -171,13 +183,13 @@ namespace QuickGUI
 		*/
 		void setFont(const Ogre::String& fontName, Ogre::UTFString s, bool allOccurrences);
 		/**
+		* Sets whether or not the Text will be masked. (password box)
+		*/
+		void setMaskText(bool mask, Ogre::UTFString::code_point maskSymbol);
+		/**
 		* Sets the maximum number of characters that this TextBox will support.
 		*/
 		void setMaxCharacters(unsigned int max);
-		/**
-		* Sets the distance between a Label border and the text.
-		*/
-		void setPadding(Padding p, float distance);
 		/**
 		* Internal function to set a widget's parent, updating its window reference and position.
 		*/
@@ -186,7 +198,33 @@ namespace QuickGUI
 		* Sets the text for this object.
 		*/
 		void setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv);
+		/**
+		* Sets the "type" of the Text Cursor used.
+		*/
+		void setTextCursorSkinType(const Ogre::String type);
+		/** Sets the input validator used to determine whether input is accepted.
+            @param
+                function member function assigned to process input.  Given in the form of myClass::myFunction.
+				Function must return bool, and take a code point, index, and UTFString as its parameters.
+            @param
+                obj particular class instance that defines the handler for this event.  Here is an example:
+				setTextInputValidator(myClass::myFunction,this);
+			@note
+				You may see Visual Studio give an error warning such as "error C2660: 'QuickGUI::TextBox::setTextInputValidator' : function does not take x arguments".
+				This is an incorrect error message.  Make sure your function pointer points to a function which returns bool, and takes parameters "Ogre::UTFString::code_point cp, unsigned int index, const Ogre::UTFString& currentText".
+        */
+		template<typename T> void setTextInputValidator(bool (T::*TextInputValidator)(Ogre::UTFString::code_point cp, unsigned int index, const Ogre::UTFString& currentText), T* obj)
+		{
+			if(mTextInputValidatorSlot != NULL)
+				delete mTextInputValidatorSlot;
 
+			mTextInputValidatorSlot = new TextInputValidatorPointer<T>(TextInputValidator,obj);
+		}
+
+		/**
+		* Recalculate Client dimensions, relative to Widget's actual dimensions.
+		*/
+		virtual void updateClientDimensions();
 		/**
 		* Recalculate Screen and client dimensions and force a redrawing of the widget.
 		*/
@@ -194,13 +232,15 @@ namespace QuickGUI
 
 	protected:
 		TextBox(const Ogre::String& name);
-		~TextBox();
+		virtual ~TextBox();
 
 		Text* mText;
 
 		TextCursor* mTextCursor;
 		int mCursorIndex;
 		Point mCursorPosition;
+
+		TextInputValidatorSlot* mTextInputValidatorSlot;
 
 		/// Record is last key down was a function button or character input.
 		bool mFunctionKeyDownLast;
@@ -244,6 +284,7 @@ namespace QuickGUI
 		void onKeyboardInputLose(const EventArgs& args);
 		void onMouseButtonDown(const EventArgs& args);
 		void onTripleClick(const EventArgs& args);
+		void onVisibleChanged(const EventArgs& args);
 
 	private:
 	};

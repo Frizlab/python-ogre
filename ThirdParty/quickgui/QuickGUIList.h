@@ -78,14 +78,20 @@ namespace QuickGUI
 
 		/**
 		* Adds a ListItem to the end of the List.
+		* NOTE: Names are auto-generated in the form of <ListName>+<Index>.
 		*/
 		ListItem* addItem(ListItemDesc& d);
 		/**
 		* Adds a ListItem to a position in the List.
 		* NOTE: if the index is not valid, the ListItem is added to the end of the list.
+		* NOTE: Names are auto-generated in the form of <ListName>+<Index>.
 		*/
 		ListItem* addItem(int index, ListItemDesc& d);
 
+		/**
+		* Removes all ListItems from the list.
+		*/
+		void clearItems();
 		/**
 		* De-selects any selected ListItems in the list.
 		*/
@@ -129,6 +135,11 @@ namespace QuickGUI
 		std::list<ListItem*> getSelection();
 
 		/**
+		* Removes an Item from the List.
+		*/
+		void removeItem(unsigned int index);
+
+		/**
 		* Selects the item at index given.  If index is not valid,
 		* all items will be de-selected.
 		*/
@@ -145,7 +156,7 @@ namespace QuickGUI
 
 	protected:
 		List(const Ogre::String& name);
-		~List();
+		virtual ~List();
 
 		ListDesc* mDesc;
 
@@ -156,6 +167,11 @@ namespace QuickGUI
 		std::vector<EventHandlerSlot*> mListEventHandlers[LIST_EVENT_COUNT];
 
 		unsigned int mPrevSelectedIndex;
+
+		/**
+		* Adds a child widget to this container widget.
+		*/
+		virtual void addChild(Widget* w);
 
 		/**
 		* Outlines how the widget is drawn to the current render target
@@ -181,6 +197,11 @@ namespace QuickGUI
 		* Returns the count of the list item within the list.
 		*/
 		unsigned int _getItemIndex(ListItem* li);
+
+		/**
+		* ListItem names are in the format of <ListName>+<index>, and should always be accurate.
+		*/
+		void updateItemNamesAndIndices();
 
 	private:
 	};
