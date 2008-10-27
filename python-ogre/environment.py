@@ -1137,7 +1137,7 @@ class betagui:
 class ogreforests:
     active = True
     pythonModule = True
-    version="r2491"
+    version="r2504"
     name='ogreforests'
     parent="ogre/addons"
     CCFLAGS = ' ' # -D"FT2_BUILD_LIBRARY"
