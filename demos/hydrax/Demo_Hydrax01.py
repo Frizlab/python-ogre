@@ -16,42 +16,23 @@ import ogre.renderer.OGRE as ogre
 import SampleFramework as sf
 
 import ogre.addons.hydrax as Hydrax
+import ogre.io.OIS as OIS
 
-_def_SkyBoxNum = 5
+_def_SkyBoxNum = 3
 _def_PGComplexity = 256
 
 mSkyBoxes = [ "Sky/ClubTropicana",
-             "Sky/Stormy",
              "Sky/EarlyMorning",
-             "Sky/Evening",
              "Sky/Clouds"]
 
-mSunPosition = [ogre.Vector3(0,10000,-90000),
-                 ogre.Vector3(0,10000,-90000)/2.5,
-                 ogre.Vector3(13000,0,120000)/3,
-                 ogre.Vector3(-50000,-5000,50000),
-                 ogre.Vector3(0,0,0)]
+mSunPosition = [ ogre.Vector3(0,10000,0),
+                 ogre.Vector3(0,10000,90000),
+                 ogre.Vector3(0,10000,0)
+                 ]
                  
-mSunColor = [ogre.Vector3(1, 0.9, 0.6)/5,
-              ogre.Vector3(0.75, 0.65, 0.45)/2,
+mSunColor = [ogre.Vector3(1, 0.9, 0.6),
               ogre.Vector3(1,0.6,0.4),
-              ogre.Vector3(1,0.4,0.1),
-              ogre.Vector3(0,0,0)]
-
-# print dir (Hydrax)
-# print dir( Hydrax.Module)  
-# print dir ( Hydrax.Noise)            
-mPGOptions = [Hydrax.ProjectedGrid.Options(_def_PGComplexity),
-              Hydrax.ProjectedGrid.Options(_def_PGComplexity, 45.5, 7.0, False),
-              Hydrax.ProjectedGrid.Options(_def_PGComplexity, 32.5, 7.0, False),
-              Hydrax.ProjectedGrid.Options(_def_PGComplexity, 32.5, 7.0, False),
-              Hydrax.ProjectedGrid.Options(_def_PGComplexity, 20.0, 7.0, False)]
-
-mPerlinOptions = [ Hydrax.Perlin.Options(8, 0.085, 0.49, 1.4, 1.27),
-                  Hydrax.Perlin.Options(8, 0.085, 0.49, 1.4, 1.27),
-                  Hydrax.Perlin.Options(8, 0.085, 0.49, 1.4, 1.27),
-                  Hydrax.Perlin.Options(8, 0.075, 0.49, 1.4, 1.27),
-                  Hydrax.Perlin.Options(8, 0.085, 0.49, 1.4, 1.27)]
+              ogre.Vector3(0.45,0.45,0.45)]
 
 mCurrentSkyBox = 0
 
@@ -66,84 +47,123 @@ class HydraxListener(sf.FrameListener):
         self.mKeyBuffer=-1
 
     def frameStarted(self, e):
+        global mCurrentSkyBox
         if sf.FrameListener.frameStarted(self, e) == False:
             return False
-        self.app.hydrax.update(e.timeSinceLastFrame)
-# 
-#         mKeyboard->capture()
-# 
-#         if (mKeyboard->isKeyDown(OIS::KC_M) && mKeyBuffer < 0)
+#       # Check camera height
+#       ogre.RaySceneQuery *raySceneQuery = 
+#           mSceneMgr.
+#                createRayQuery(ogre.Ray(mCamera.getPosition() + ogre.Vector3(0,1000000,0), 
+#                               Vector3.NEGATIVE_UNIT_Y));
+#       ogre.RaySceneQueryResult& qryResult = raySceneQuery.execute();
+#         ogre.RaySceneQueryResult.iterator i = qryResult.begin();
+#         if (i != qryResult.end() && i.worldFragment)
 #         {
-#           mCurrentSkyBox++
-# 
-#           if(mCurrentSkyBox > (_def_SkyBoxNum-1))
+#           if (mCamera.getPosition().y < i.worldFragment.singleIntersection.y + 30)
 #           {
-#               mCurrentSkyBox = 0
+#                 mCamera.
+#                    setPosition(mCamera.getPosition().x, 
+#                                  i.worldFragment.singleIntersection.y + 30, 
+#                                  mCamera.getPosition().z);
 #           }
+#         }
 # 
-#           changeSkyBox()
-# 
-#           mKeyBuffer = 0.5f
-#       }
-# 
-#       mKeyBuffer -= e.timeSinceLastFrame
-# 
+#       delete raySceneQuery;
+            
+        self.app.hydrax.update(e.timeSinceLastFrame)
+        if self._isToggleKeyDown(OIS.KC_M, 0.5):
+            mCurrentSkyBox+=1
+
+            if mCurrentSkyBox > (_def_SkyBoxNum-1):
+                mCurrentSkyBox = 0
+
+            self.changeSkyBox()
+          
         return True
 
     def changeSkyBox( self ):
         # Change skybox
-        self.sceneManager.setSkyBox(true, mSkyBoxes[mCurrentSkyBox], 99999*3, true)
+        self.sceneManager.setSkyBox(True, mSkyBoxes[mCurrentSkyBox], 99999*3, True)
 
         # Update Hydrax sun position and colour
-        app.hydrax.setSunPosition(mSunPosition[mCurrentSkyBox])
-        app.hydrax.setSunColor(mSunColor[mCurrentSkyBox])
+        self.app.hydrax.setSunPosition(mSunPosition[mCurrentSkyBox])
+        self.app.hydrax.setSunColor(mSunColor[mCurrentSkyBox])
 
         # Update light 0 light position and colour
         self.sceneManager.getLight("Light0").setPosition(mSunPosition[mCurrentSkyBox])
         self.sceneManager.getLight("Light0").setSpecularColour(mSunColor[mCurrentSkyBox].x,mSunColor[mCurrentSkyBox].y,mSunColor[mCurrentSkyBox].z)
 
-        # Update perlin noise options
-        app.hydrax.getModule().getNoise().setOptions(mPerlinOptions[mCurrentSkyBox])
 
-        # Update projected grid options
-        app.hydrax.getModule().setOptions(mPGOptions[mCurrentSkyBox])
+        
+### Just to locate palmiers with a pseudo-random algoritm
 
-#         ogre.LogManager.getSingleton().logMessage("Skybox " + mSkyBoxes[mCurrentSkyBox] + " selected. ("+Ogre::StringConverter::toString(mCurrentSkyBox+1)+"/"+Ogre::StringConverter::toString(_def_SkyBoxNum)+")")
-                
+seed_ = 801;
+def rnd_(min,  max):
+    global seed_
+    seed_ += ogre.Math.PI*2.8574 + seed_*(0.3424 - 0.12434 + 0.452345)
+    if (seed_ > 10000000000): seed_ -= 10000000000
+    i= float(ogre.Math.Sin(ogre.Radian(seed_)))
+    k = ((max-min)*abs(i) + min)    # this is a float !!!
+    return (k)
 
+def createPalms(mSceneMgr):
+    NumberOfPalms = 14;
 
-class HydraxApplication(sf.Application):
+    mPalmsSceneNode = mSceneMgr.getRootSceneNode().createChildSceneNode();
+    for k in range (NumberOfPalms):
+        RandomPos = ogre.Vector3(rnd_(500,2500),0, rnd_(500,2500))
+        raySceneQuery = mSceneMgr.createRayQuery(ogre.Ray(RandomPos + ogre.Vector3(0,1000000,0), ogre.Vector3().NEGATIVE_UNIT_Y));
+        qryResult = raySceneQuery.execute()
+        for i in qryResult:
+            if (i.worldFragment):
+                if (i.worldFragment.singleIntersection.y>105 or i.worldFragment.singleIntersection.y<20):
+                    k-=1
+                    continue
+                RandomPos.y = i.worldFragment.singleIntersection.y
+            else:
+                k-=1
+                continue
+
+            mPalmEnt = mSceneMgr.createEntity("Palm"+str(k), "Palm.mesh")
+            mPalmSN = mPalmsSceneNode.createChildSceneNode()
     
+            mPalmSN.rotate(ogre.Vector3(-1,0,rnd_(-0.3,0.3)), ogre.Degree(90));
+            mPalmSN.attachObject(mPalmEnt)
+            Scale = rnd_(50,75)
+            mPalmSN.scale(Scale,Scale,Scale)
+            mPalmSN.setPosition(RandomPos)
+        
+        
+class HydraxApplication(sf.Application):
+    def _chooseSceneManager(self):
+        # Create the SceneManager
+        self.sceneManager = self.root.createSceneManager("TerrainSceneManager")
+        
     def _createScene(self):
         sceneManager = self.sceneManager
         camera = self.camera
 
+        sceneManager.setAmbientLight ( ogre.ColourValue(1.0,1.0,1.0 ))
+        
         # Create the SkyBox
         sceneManager.setSkyBox(True, mSkyBoxes[mCurrentSkyBox], 99999*3, True)
 
         # Set some camera params
         camera.setFarClipDistance(99999*6)
-        camera.setPosition(4897.61,76.8614,4709.9)
-        camera.setOrientation(ogre.Quaternion(0.487431, -0.0391184, 0.869485, 0.0697797))
+        camera.setPosition(312.902,206.419,1524.02)
+        camera.setOrientation(ogre.Quaternion(0.998, -0.0121, -0.0608, -0.00074))
 
+        # Light
+        mLight = sceneManager.createLight("Light0")
+        mLight.setPosition(mSunPosition[mCurrentSkyBox])
+        mLight.setDiffuseColour(1, 1, 1)
+        mLight.setSpecularColour(mSunColor[mCurrentSkyBox].x,
+                                  mSunColor[mCurrentSkyBox].y,
+                                  mSunColor[mCurrentSkyBox].z)
+        
+        
         # Create Hydrax object
-        self.hydrax = Hydrax.Hydrax(sceneManager, camera)
-
-        # Set RTT textures quality
-        self.hydrax.setRttOptions(
-                   Hydrax.RttOptions(# Reflection tex quality
-                                      Hydrax.TEX_QUA_1024,
-                                      # Refraction tex quality
-                                      Hydrax.TEX_QUA_1024,
-                                      # Depth tex quality
-                                      Hydrax.TEX_QUA_1024))
-
-        # Set components
-        self.hydrax.setComponents(  Hydrax.HydraxComponent( Hydrax.HYDRAX_COMPONENT_SUN    |
-                                     Hydrax.HYDRAX_COMPONENT_FOAM   |
-                                     Hydrax.HYDRAX_COMPONENT_DEPTH  |
-                                     Hydrax.HYDRAX_COMPONENT_SMOOTH |
-                                     Hydrax.HYDRAX_COMPONENT_CAUSTICS ))
+        self.hydrax = Hydrax.Hydrax(sceneManager, camera, self.renderWindow.getViewport(0))
 
         # Create our projected grid module  
         self.noise=  Hydrax.Perlin()  ## Default options (8, 0.085, 0.49, 1.4, 1.27f) 
@@ -153,46 +173,33 @@ class HydraxApplication(sf.Application):
                                                 self.noise,
                                                 # Base plane
                                                 ogre.Plane(ogre.Vector3(0,1,0), ogre.Vector3(0,0,0)),
+                                                Hydrax.MaterialManager.NM_VERTEX,
                                                 # Projected grid options (Can be updated each frame . setOptions(...))
-                                                Hydrax.ProjectedGrid.Options(_def_PGComplexity ))
+                                                Hydrax.ProjectedGrid.Options(264 ))
 
         # Set our module
         self.hydrax.setModule(self.Module)
 
-        # Set our shader mode
-        self.hydrax.setShaderMode(Hydrax.MaterialManager.SM_HLSL)
+        # Load all parameters from config file
+        # Remarks: The config file must be in Hydrax resource group.
+        # All parameters can be set/updated directly by code(Like previous versions),
+        # but due to the high number of customizable parameters, Hydrax 0.4 allows save/load config files.
+        self.hydrax.loadCfg("HydraxDemo.hdx");
 
         # Create water
         self.hydrax.create()
+        
+        # Load island
+        sceneManager.setWorldGeometry("Island.cfg")
+        
+        # Add our hydrax depth technique to island material
+        # (Because the terrain mesh is not an ogre.Entity)
+        self.hydrax.getMaterialManager().addDepthTechnique(
+            ogre.MaterialManager.getSingleton().getByName("Island").createTechnique())
 
-        # Adjust some options
-        self.hydrax.setPosition(ogre.Vector3(0,0,0))
-        self.hydrax.setPlanesError(37.5)
-        self.hydrax.setDepthLimit(110)
-        self.hydrax.setSunPosition(mSunPosition[mCurrentSkyBox])
-        self.hydrax.setSunColor(mSunColor[mCurrentSkyBox])
-        self.hydrax.setNormalDistortion(0.025)
-        self.hydrax.setDepthColor(ogre.Vector3(0.04,0.135,0.185))
-        self.hydrax.setSmoothPower(5)
-        self.hydrax.setCausticsScale(12)
-        self.hydrax.setGlobalTransparency(0.1)
-        self.hydrax.setFullReflectionDistance(99999997952.0)
-        self.hydrax.setGlobalTransparency(0)
-        self.hydrax.setPolygonMode(0)
+        # Create palmiers
+        createPalms(sceneManager );
 
-        # Lights
-        sceneManager.setAmbientLight(ogre.ColourValue(1, 1, 1))
-        Light = sceneManager.createLight("Light0")
-        Light.setPosition(mSunPosition[mCurrentSkyBox])
-        Light.setDiffuseColour(1, 1, 1)
-        Light.setSpecularColour(mSunColor[mCurrentSkyBox].x,mSunColor[mCurrentSkyBox].y,mSunColor[mCurrentSkyBox].z)
-
-        # Island
-        IslandEntity = sceneManager.createEntity("Island", "Island.mesh")
-        IslandEntity.setMaterialName("Examples/OffsetMapping/Specular")
-        IslandSceneNode = sceneManager.getRootSceneNode().createChildSceneNode(ogre.Vector3(5000, -175, 5000))
-        IslandSceneNode.setScale(23, 13.5, 23)
-        IslandSceneNode.attachObject(IslandEntity)
 
     def _createFrameListener(self):
         self.frameListener = HydraxListener(self.renderWindow, self.camera, self.sceneManager, self)
