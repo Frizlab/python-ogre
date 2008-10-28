@@ -14,6 +14,7 @@ sys.path.insert(0,'..')
 import PythonOgreConfig
 import ogre.renderer.OGRE as ogre
 import SampleFramework as sf
+import random as random
 
 import ogre.addons.hydrax as Hydrax
 import ogre.io.OIS as OIS
@@ -45,31 +46,38 @@ class HydraxListener(sf.FrameListener):
         self.camera=cam
         self.app = app
         self.mKeyBuffer=-1
+        self.raySceneQuery = self.sceneManager.createRayQuery(ogre.Ray(self.camera.getPosition(),
+                                                                    ogre.Vector3().NEGATIVE_UNIT_Y))
 
     def frameStarted(self, e):
         global mCurrentSkyBox
         if sf.FrameListener.frameStarted(self, e) == False:
             return False
-#       # Check camera height
-#       ogre.RaySceneQuery *raySceneQuery = 
-#           mSceneMgr.
-#                createRayQuery(ogre.Ray(mCamera.getPosition() + ogre.Vector3(0,1000000,0), 
-#                               Vector3.NEGATIVE_UNIT_Y));
-#       ogre.RaySceneQueryResult& qryResult = raySceneQuery.execute();
-#         ogre.RaySceneQueryResult.iterator i = qryResult.begin();
-#         if (i != qryResult.end() && i.worldFragment)
-#         {
-#           if (mCamera.getPosition().y < i.worldFragment.singleIntersection.y + 30)
-#           {
-#                 mCamera.
-#                    setPosition(mCamera.getPosition().x, 
-#                                  i.worldFragment.singleIntersection.y + 30, 
-#                                  mCamera.getPosition().z);
-#           }
-#         }
-# 
-#       delete raySceneQuery;
             
+        # Check camera height
+        # this is the code from the Hydrax demo -- stops you going too low...
+        raySceneQuery = self.sceneManager.createRayQuery(ogre.Ray(self.camera.getPosition() + ogre.Vector3(0,1000000,0),
+                              ogre.Vector3().NEGATIVE_UNIT_Y));
+        qryResult = raySceneQuery.execute()
+        for i in qryResult:
+            if (i.worldFragment):
+              if (self.camera.getPosition().y < i.worldFragment.singleIntersection.y + 30):
+                    self.camera.setPosition(self.camera.getPosition().x, 
+                                     i.worldFragment.singleIntersection.y + 30, 
+                                     self.camera.getPosition().z);
+
+        ## this code will clamp the camera at a fixed position above the ground
+#         updateRay = ogre.Ray()
+#         updateRay.setOrigin (self.camera.getPosition() + ogre.Vector3(0.0, 10.0, 0.0))
+#         updateRay.setDirection (ogre.Vector3().NEGATIVE_UNIT_Y)
+#         self.raySceneQuery.Ray = updateRay
+#         for queryResult in self.raySceneQuery.execute():
+#             if queryResult.worldFragment:
+#                 pos = self.camera.getPosition()
+#                 self.camera.setPosition (pos.x, pos.y - queryResult.distance + 30.0, pos.z)
+#                 break
+                                     
+                                                 
         self.app.hydrax.update(e.timeSinceLastFrame)
         if self._isToggleKeyDown(OIS.KC_M, 0.5):
             mCurrentSkyBox+=1
@@ -98,14 +106,17 @@ class HydraxListener(sf.FrameListener):
 ### Just to locate palmiers with a pseudo-random algoritm
 
 seed_ = 801;
-def rnd_(min,  max):
+def rnd_1(min,  max):
     global seed_
     seed_ += ogre.Math.PI*2.8574 + seed_*(0.3424 - 0.12434 + 0.452345)
     if (seed_ > 10000000000): seed_ -= 10000000000
     i= float(ogre.Math.Sin(ogre.Radian(seed_)))
     k = ((max-min)*abs(i) + min)    # this is a float !!!
     return (k)
-
+    
+def rnd_(min,  max):
+    return random.uniform (min, max )
+    
 def createPalms(mSceneMgr):
     NumberOfPalms = 14;
 
