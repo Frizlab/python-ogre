@@ -25,7 +25,7 @@
  *
  * @author Bjoern Knafla <bknafla@uni-kassel.de>
  */
-#include "OpenSteer/PolylineSegmentedPathwaySegmentRadii.h"
+#include "PolylineSegmentedPathwaySegmentRadii.h"
 
 
 // Include std::swap, std::copy, std::find_if
@@ -36,22 +36,22 @@
 
 
 // Include OpenSteer::mapPointToPathway, OpenSteer::mapDistanceToPointOnPathCenterLine
-#include "OpenSteer/QueryPathAlike.h"
+#include "QueryPathAlike.h"
 
 // Include OpenSteer::PointToPathMapping, OpenSteer::PathDistanceToPointMapping, OpenSteer::PointToPathDistanceMapping
-#include "OpenSteer/QueryPathAlikeMappings.h"
+#include "QueryPathAlikeMappings.h"
 
 // Include OpenSteer::HasSegmentRadii
-#include "OpenSteer/QueryPathAlikeUtilities.h"
+#include "QueryPathAlikeUtilities.h"
 
 // Include OpenSteer::shrinkToFit
-#include "OpenSteer/Utilities.h"
+#include "Utilities.h"
 
 // Include OpenSteer::size_t
-#include "OpenSteer/StandardTypes.h"
+#include "StandardTypes.h"
 
 // Include OPENSTEER_UNUSED_PARAMETER
-#include "OpenSteer/UnusedParameter.h"
+#include "UnusedParameter.h"
 
 
 namespace {

@@ -2,7 +2,7 @@
  * OpenSteer -- Steering Behaviors for Autonomous Characters
  *
  * Copyright (c) 2002-2005, Sony Computer Entertainment America
- * Original author: Craig Reynolds <craig_reynolds@playstation.sony.com>
+ * Original authors: Craig Reynolds <craig_reynolds@playstation.sony.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -23,18 +23,24 @@
  * DEALINGS IN THE SOFTWARE.
  *
  *
- * @author Bjoern Knafla <bknafla@uni-kassel.de>
+ * @file
+ *
+ * Primitive standard types.
  */
-#include "SegmentedPath.h"
+#ifndef OPENSTEER_STANDARDTYPES_H
+#define OPENSTEER_STANDARDTYPES_H
 
-OpenSteer::SegmentedPath::~SegmentedPath()
-{
-    // Nothing to do.
-}
+// Include std::size_t, std::ptrdiff_t
+#include <cstddef>
 
-/*
-OpenSteer::SegmentedPath& OpenSteer::SegmentedPath::operator=( SegmentedPath const& )
-{
-    return *this;
-}
-*/
+
+namespace OpenSteer {
+    
+    
+    typedef std::size_t size_t;
+    typedef std::ptrdiff_t ptrdiff_t;
+    
+} // namespace OpenSteer
+
+
+#endif // OPENSTEER_STANDARDTYPES_H

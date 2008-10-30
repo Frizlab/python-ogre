@@ -40,9 +40,9 @@
 
 namespace OgreAL{
 	#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	#	include "al.h"
-	#	include "alc.h"
-	#	include "xram.h"
+	#	include "AL/al.h"
+	#	include "AL/alc.h"
+//	#	include "xram.h"
 // 	#	if OGRE_COMPILER == OGRE_COMPILER_MSVC
 // 	#		ifdef OGREAL_EXPORT
 // 	#			define OgreAL_Export __declspec(dllexport)
@@ -55,20 +55,20 @@ namespace OgreAL{
 	#elif OGRE_COMPILER == OGRE_COMPILER_GNUC
 	#	include "AL/al.h"
 	#	include "AL/alc.h"
-	#	if defined(OGREAL_EXPORT) && OGRE_COMP_VER >= 400
-	#		define OgreAL_Export __attribute__ ((visibility("default")))
-	#	else
+// 	#	if defined(OGREAL_EXPORT) && OGRE_COMP_VER >= 400
+// 	#		define OgreAL_Export __attribute__ ((visibility("default")))
+// 	#	else
 	#		define OgreAL_Export
 	#	endif
 		// fake EAX/X-RAM
 		typedef ALenum (*EAXGetBufferMode)(ALuint buffer, ALint *pReserved);
 		typedef ALboolean (*EAXSetBufferMode)(ALsizei n, ALuint *buffers, ALint value);
-	#else // Other Compilers
-	#	include "al.h"
-	#	include "alc.h"
-	#	include "xram.h"
-	#	define OgreAL_Export
-	#endif
+// 	#else // Other Compilers
+// 	#	include "al.h"
+// 	#	include "alc.h"
+// 	#	include "xram.h"
+// 	#	define OgreAL_Export
+// 	#endif
 
 	#ifndef OGREAL_THREADED
 	#	define OGREAL_THREADED 0

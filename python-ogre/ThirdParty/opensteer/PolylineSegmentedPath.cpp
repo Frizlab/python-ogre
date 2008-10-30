@@ -25,7 +25,7 @@
  *
  * @author Bjoern Knafla <bknafla@uni-kassel.de>
  */
-#include "OpenSteer/PolylineSegmentedPath.h"
+#include "PolylineSegmentedPath.h"
 
 // Include std::accumulate
 #include <numeric>
@@ -39,19 +39,19 @@
 
 
 // Include OpenSteer::Vec3
-#include "OpenSteer/Vec3.h"
+#include "Vec3.h"
 
 // Include OpenSteer::mapPointToPathway, OpenSteer::mapDistanceToPointOnPathCenterLine
-#include "OpenSteer/QueryPathAlike.h"
+#include "QueryPathAlike.h"
 
 // Include OpenSteer::PointToPathMapping, OpenSteer::PathDistanceToPointMapping, OpenSteer::PointToPathDistanceMapping
-#include "OpenSteer/QueryPathAlikeMappings.h"
+#include "QueryPathAlikeMappings.h"
 
 // Include OpenSteer::HasNoRadius
-#include "OpenSteer/QueryPathAlikeUtilities.h"
+#include "QueryPathAlikeUtilities.h"
 
 // Include OpenSteer::clamp, OpenSteer::shrinkToFit
-#include "OpenSteer/Utilities.h"
+#include "Utilities.h"
 
 
 

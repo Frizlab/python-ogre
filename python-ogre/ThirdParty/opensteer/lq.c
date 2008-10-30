@@ -66,11 +66,11 @@
 #include <stdlib.h>
 #include <float.h>
 #include <limits.h> /* for INT_MAX */
-#include "OpenSteer/lq.h"
+#include "lq.h"
 
 /* for debugging and graphical annotation (normally unused) */
 #ifdef BOIDS_LQ_DEBUG
-#include "OpenSteer/debuglq.c"
+#include "debuglq.c"
 #endif
 
 #ifndef WIN32

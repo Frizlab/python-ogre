@@ -25,7 +25,7 @@
  *
  * @author Bjoern Knafla <bknafla@uni-kassel.de>
  */
-#include "OpenSteer/PolylineSegmentedPathwaySingleRadius.h"
+#include "PolylineSegmentedPathwaySingleRadius.h"
 
 
 // Include std::swap
@@ -33,16 +33,16 @@
 
 
 // Include OpenSteer::mapPointToPathway, OpenSteer::mapDistanceToPointOnPathCenterLine
-#include "OpenSteer/QueryPathAlike.h"
+#include "QueryPathAlike.h"
 
 // Include OpenSteer::PointToPathMapping, OpenSteer::PathDistanceToPointMapping, OpenSteer::PointToPathDistanceMapping
-#include "OpenSteer/QueryPathAlikeMappings.h"
+#include "QueryPathAlikeMappings.h"
 
 // Include OpenSteer::HasSingleRadius
-#include "OpenSteer/QueryPathAlikeUtilities.h"
+#include "QueryPathAlikeUtilities.h"
 
 // Include OPENSTEER_UNUSED_PARAMETER
-#include "OpenSteer/UnusedParameter.h"
+#include "UnusedParameter.h"
 
 
 OpenSteer::PolylineSegmentedPathwaySingleRadius::PolylineSegmentedPathwaySingleRadius()
