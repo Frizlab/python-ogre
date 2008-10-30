@@ -44,7 +44,7 @@ PATH_FMOD =         os.path.join(BASE_DIR, 'fmod')
 PATH_ODE =          os.path.join(BASE_DIR, 'ode-0.10.1')
 PATH_OGG =          os.path.join(BASE_DIR, 'ogg')
 PATH_VORBIS=        os.path.join(BASE_DIR, 'vorbis')
-PATH_OPENAL=        os.path.join(BASE_DIR, 'openal')
+PATH_OPENAL=        os.path.join(BASE_DIR, 'openal-soft-1.5.304') #'openal')
 PATH_OgreOde=       os.path.join(BASE_DIR, PATH_OgreAddons,'ogreode')
 # # PATH_OgreBullet=    os.path.join(PATH_OgreAddons,'ogrebullet')
 # # PATH_ogreforests=    os.path.join(PATH_OgreAddons,'forests')
@@ -133,6 +133,7 @@ PATH_LIB_hikari = os.path.join(PATH_hikari ) # , 'lib')
 
 
 PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include') 
+PATH_INCLUDE_NEDMALLOC=      os.path.join(PATH_Ogre,'OgreMain', 'src', 'nedmalloc')
 PATH_INCLUDE_Ogre_Dependencies =  os.path.join( PATH_Ogre, 'Dependencies/include')
 PATH_INCLUDE_OIS =          os.path.join(PATH_OIS,'includes')    ## Note the plural include's
 PATH_INCLUDE_OgreRefApp =   os.path.join(PATH_Ogre,'ReferenceApplication/ReferenceAppLayer/include') 
