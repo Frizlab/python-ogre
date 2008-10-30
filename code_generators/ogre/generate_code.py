@@ -1064,12 +1064,17 @@ def generate_code():
     xml_cached_fc = parser.create_cached_source_fc(
                         os.path.join( environment.ogre.root_dir, "python_ogre.h" )
                         , environment.ogre.cache_file )
-
     defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY']
+    undefine_symbols=[]
     if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')
         defined_symbols.append('BOOST_HAS_WINTHREADS')
     defined_symbols.append( 'OGRE_VERSION_' + environment.ogre.version )  
+    
+    print os.getcwd()
+    print environment.ogre.include_dirs
+    environment.ogre.include_dirs.insert ( 0,os.getcwd() )
+    print environment.ogre.include_dirs
     
     #
     # build the core Py++ system from the GCCXML created source
@@ -1079,6 +1084,7 @@ def generate_code():
                                           , working_directory=environment.root_dir
                                           , include_paths=environment.ogre.include_dirs
                                           , define_symbols=defined_symbols
+                                          , undefine_symbols=undefine_symbols
                                           , indexing_suite_version=2
                                           , cflags=environment.ogre.cflags
                                            )

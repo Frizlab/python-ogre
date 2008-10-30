@@ -353,8 +353,6 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
             OIS.InputManager.destroyInputSystem(self.InputManager)
             self.InputManager=None
 
-            
-            
     ## NOTE the in Ogre 1.6 (1.7) this is changed to frameRenderingQueued !!!
     def frameRenderingQueued ( self, evt ):
         if(self.renderWindow.isClosed() or self.shouldQuit ):
@@ -397,7 +395,6 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
 
         if not self.Mouse.buffered() or not self.Keyboard.buffered() or not buffJ:
             self._moveCamera()
-
         return True
 
                                         

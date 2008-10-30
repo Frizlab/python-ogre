@@ -21,7 +21,7 @@ _PreCompiled = True
 ##
 ## set this to True if you compiled Ogre with Threads enabled
 ##
-_USE_THREADS = False
+_USE_THREADS = True
 
 def log ( instring ):
     if _LOGGING_ON:
@@ -615,6 +615,7 @@ class ogre:
                      ]
         include_dirs = [ Config.PATH_Boost 
                     , Config.PATH_INCLUDE_Ogre 
+                    , Config.PATH_INCLUDE_NEDMALLOC
                     ]
         CCFLAGS =  '  -DBOOST_PYTHON_MAX_ARITY=19 '
         LINKFLAGS = ''
@@ -1351,7 +1352,7 @@ class ogreal:
                 ,os.path.join(Config.PATH_VORBIS, 'win32','Vorbis_Static_Release')
                 ,os.path.join(Config.PATH_VORBIS, 'win32','VorbisEnc_Static_Release')
                 ,os.path.join(Config.PATH_VORBIS, 'win32','VorbisFile_Static_Release')
-                ,os.path.join(Config.PATH_OPENAL, 'libs','Win32')
+                ,os.path.join(Config.PATH_OPENAL, 'Release' ) #'libs','Win32')
                 ,Config.PATH_LIB_OgreAL
                   ] 
         CCFLAGS = ' -DWIN32 -DNDEBUG -D_LIB -D_WIN32 -D_WINDOWS ' #-DVORBIS_IEEE_FLOAT32 -D_USE_NON_INTEL_COMPILER '              
@@ -1393,9 +1394,9 @@ class ogreal:
             [0, "tar zxf " + os.path.join(downloadPath, "libvorbis-1.2.0.tar.gz"), ''],
             [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "libogg-1.1.3")],
             [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "libvorbis-1.2.0")],
-            [0, "sed --in-place -s 's|( ALCvoid )|()|' alc.h",os.path.join(os.getcwd(),"openal-0.0.8","common", "include", "AL")],
-            [0, "aclocal\n./autogen.sh", os.path.join(os.getcwd(),"openal-0.0.8")],
-            [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "openal-0.0.8")]
+#             [0, "sed --in-place -s 's|( ALCvoid )|()|' alc.h",os.path.join(os.getcwd(),"openal-0.0.8","common", "include", "AL")],
+#             [0, "aclocal\n./autogen.sh", os.path.join(os.getcwd(),"openal-0.0.8")],
+#             [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "openal-0.0.8")]
             ]
         libs=[boost.lib, boost_python_index.lib, 'OgreMain', 'vorbisfile',
                     #'ogg', 

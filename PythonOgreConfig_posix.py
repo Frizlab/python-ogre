@@ -50,7 +50,7 @@ PATH_Newton =       os.path.join(BASE_DIR, 'newtonSDK','sdk')
 PATH_ODE =          os.path.join(BASE_DIR, 'ode-0.9')
 PATH_OGG =          os.path.join(BASE_DIR, 'libogg-1.1.3')
 PATH_VORBIS=        os.path.join(BASE_DIR, 'libvorbis-1.2.0')
-PATH_OPENAL=        os.path.join(BASE_DIR, 'openal-0.0.8')
+PATH_OPENAL=        os.path.join(BASE_DIR, 'openal-soft-1.5.304')
 PATH_OgreOde=       os.path.join(PATH_OgreAddons,'ogreode')
 
 PATH_OgreBullet=    os.path.join(PATH_THIRDPARTY,'ogrebullet')
