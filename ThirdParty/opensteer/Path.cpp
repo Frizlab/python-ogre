@@ -25,7 +25,7 @@
  *
  * @author Bjoern Knafla <bknafla@uni-kassel.de>
  */
-#include "OpenSteer/Path.h"
+#include "Path.h"
 
 OpenSteer::Path::~Path()
 {

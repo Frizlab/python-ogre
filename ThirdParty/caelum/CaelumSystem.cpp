@@ -378,6 +378,7 @@ namespace Caelum
     bool CaelumSystem::frameStarted (const Ogre::FrameEvent &e) {
         if (mCleanup) {
             // Delayed destruction.
+            Ogre::LogManager::getSingleton ().logMessage ("Caelum: Cleanup set, exiting framestarted.");
             mOgreRoot->removeFrameListener (this);
             delete this;
             return true;
@@ -443,18 +444,18 @@ namespace Caelum
                     fogColour * mSceneFogColourMultiplier,
                     fogDensity * mSceneFogDensityMultiplier);
         }
-
+        
         // Update ground fog.
         if (getGroundFog ()) {
             getGroundFog ()->setColour (fogColour * mGroundFogColourMultiplier);
             getGroundFog ()->setDensity (fogDensity * mGroundFogDensityMultiplier);
         }
-
+        
         // Update sun
         if (getSun ()) {
             mSun->update (sunDir, sunLightColour, sunSphereColour);
         }
-
+        
         // Update moon.
         if (getMoon ()) {
             mMoon->update (
@@ -474,7 +475,7 @@ namespace Caelum
         if (getPrecipitationController ()) {
             getPrecipitationController ()->update (secondDiff, fogColour);
         }
-
+        
         // Update screen space fog
         if (getDepthComposer ()) {
             getDepthComposer ()->update ();
@@ -483,7 +484,7 @@ namespace Caelum
             getDepthComposer ()->setGroundFogColour (fogColour * mGroundFogColourMultiplier);
             getDepthComposer ()->setGroundFogDensity (fogDensity * mGroundFogDensityMultiplier);
         }
-
+        
         // Update ambient lighting.
         if (getManageAmbientLight ()) {
             Ogre::ColourValue ambient = Ogre::ColourValue::Black;
@@ -499,7 +500,7 @@ namespace Caelum
             ambient.a = std::max(ambient.a, mMinimumAmbientLight.a);
             mSceneMgr->setAmbientLight (ambient);
         }
-
+        
         if (getSun() && getMoon ()) {
             Ogre::Real moonBrightness = moonLightColour.r + moonLightColour.g + moonLightColour.b + moonLightColour.a;
             Ogre::Real sunBrightness = sunLightColour.r + sunLightColour.g + sunLightColour.b + sunLightColour.a;

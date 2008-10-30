@@ -27,10 +27,10 @@
 //
 // ----------------------------------------------------------------------------
 
-#include "OpenSteer/Color.h"
+#include "Color.h"
 
 // Include OpenSteer::Vec3
-#include "OpenSteer/Vec3.h"
+#include "Vec3.h"
 
 // Include assert
 #include <cassert>

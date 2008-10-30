@@ -60,7 +60,7 @@
 // ----------------------------------------------------------------------------
 
 
-#include "OpenSteer/SimpleVehicle.h"
+#include "SimpleVehicle.h"
 #include <algorithm>
 
 
