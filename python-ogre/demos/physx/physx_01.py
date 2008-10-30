@@ -34,9 +34,19 @@ def InitNx ( ) :
     gCookingInitialized = False
     
     # Initialize PhysicsSDK
-    desc = physics.NxPhysicsSDKDesc()
-    
-    gPhysicsSDK, errorCode = physics.NxCreatePhysicsSDK(physics.NX_PHYSICS_SDK_VERSION(),desc=desc) 
+#    desc = physics.NxPhysicsSDKDesc()
+#    print "DESC", desc
+    gPhysicsSDK = physics.NxCreatePhysicsSDK(physics.NX_PHYSICS_SDK_VERSION()) 
+    print gPhysicsSDK
+    print "Getting master"
+    g = physics.getMasterPhysicsSDK()
+    print "Got Master"
+    print g
+    print dir(g)
+    print dir (gPhysicsSDK)
+    d = physics.NxPhysicsSDK (  )
+    print d
+    print dir(d)
     if gPhysicsSDK == None : 
         print "\nSDK create error (%d - %s).\nUnable to initialize the PhysX SDK, exiting the sample.\n\n" % (errorCode,"test")
         return False

@@ -1275,7 +1275,7 @@ class physx:
         CCFLAGS = ' -D"WIN32" '
         ## CCFLAGS = ' ' ## try to not define WIN 32 to remove inline assembly code that GCCxml doesn't like
     else:
-        CCFLAGS = ' -D"LINUX" '                
+        CCFLAGS = ' -D"LINUX" -D"NX_USE_SDK_DLLS" -D"_USRDLL" -D"NX_DISABLE_FLUIDS" '                
     lib_dirs = [Config.PATH_LIB_Boost,
                 Config.PATH_LIB_Ogre_OgreMain,
                 Config.PATH_LIB_PhysX
@@ -1389,14 +1389,22 @@ class ogreal:
             ]
         buildCmds = [
 #             [0, "tar zxf " + os.path.join(downloadPath, "openal-0.0.8.tar.gz"), ''],
+
             [0, "tar jxf " + os.path.join(downloadPath, "openal-soft-1.5.304.tar.bz2"), ''],
             [0, "tar zxf " + os.path.join(downloadPath, "libogg-1.1.3.tar.gz"), ''],
             [0, "tar zxf " + os.path.join(downloadPath, "libvorbis-1.2.0.tar.gz"), ''],
             [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "libogg-1.1.3")],
+
             [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "libvorbis-1.2.0")],
-#             [0, "sed --in-place -s 's|( ALCvoid )|()|' alc.h",os.path.join(os.getcwd(),"openal-0.0.8","common", "include", "AL")],
-#             [0, "aclocal\n./autogen.sh", os.path.join(os.getcwd(),"openal-0.0.8")],
-#             [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "openal-0.0.8")]
+
+            [0,"cmake -DCMAKE_INSTALL_PREFIX:PATH="+ PREFIX, os.path.join(os.getcwd(),'openal-soft-1.5.304')], 
+            [0,"make ", os.path.join(os.getcwd(),'openal-soft-1.5.304')], 
+            [0,"cp -p libopenal* %s/lib " % PREFIX, os.path.join(os.getcwd(),'openal-soft-1.5.304')],
+            [0,"cp -p * %s/include " % PREFIX, os.path.join(os.getcwd(),'openal-soft-1.5.304', 'include','AL')]
+            
+#            [0, "sed --in-place -s 's|( ALCvoid )|()|' alc.h",os.path.join(os.getcwd(),"openal-0.0.8","common", "include", "AL")],
+#            [0, "aclocal\n./autogen.sh", os.path.join(os.getcwd(),"openal-0.0.8")],
+#            [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "openal-0.0.8")]
             ]
         libs=[boost.lib, boost_python_index.lib, 'OgreMain', 'vorbisfile',
                     #'ogg', 

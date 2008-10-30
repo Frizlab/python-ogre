@@ -53,8 +53,8 @@ namespace OgreAL{
 	#		define OgreAL_Export
 // 	#	endif
 	#elif OGRE_COMPILER == OGRE_COMPILER_GNUC
-	#	include "AL/al.h"
-	#	include "AL/alc.h"
+	#	include "al.h"
+	#	include "alc.h"
 // 	#	if defined(OGREAL_EXPORT) && OGRE_COMP_VER >= 400
 // 	#		define OgreAL_Export __attribute__ ((visibility("default")))
 // 	#	else
