@@ -62,7 +62,6 @@ def ManualExclude ( mb ):
     excludes=[  '::NxArray<NxShapeDesc*, NxAllocatorDefault>::begin'
                 ,'::NxArray< NxForceFieldShapeDesc*, NxAllocatorDefault >::resize'
                 ,'::NxArray< NxForceFieldShapeGroup*, NxAllocatorDefault >::resize'
-                ,'::NxArray<NxFluidEmitterDesc, NxAllocatorDefault>::deleteEntry'
                 ,'::NxArray<NxShapeDesc*, NxAllocatorDefault>::end'
 #                 ,'::NxCloth::overlapAABBTriangles'  # ugly argument that boost doesn't like.. To Fix in hand wrappers
                 # these have const refs to classes with protected desctuctors - a bad combination for boost
@@ -79,6 +78,9 @@ def ManualExclude ( mb ):
                 ,'::NxVec3::isNotUsed'
 
                 ]
+    if os.name =='nt':
+        excludes.append('::NxArray<NxFluidEmitterDesc, NxAllocatorDefault>::deleteEntry')
+
     for e in excludes:
         print "excluding function", e
         global_ns.member_functions(e).exclude()
@@ -92,7 +94,6 @@ def ManualExclude ( mb ):
         global_ns.free_functions(e).exclude()
         
     excludes = ['NxArray<NxShapeDesc*, NxAllocatorDefault>', ## doesn't have a defult constructor for ElemType
-                'NxArray<NxFluidEmitterDesc, NxAllocatorDefault>', ## needs ElemType changed to NxFluidEmitterDesc
                 'NxArray<NxForceFieldShapeDesc*, NxAllocatorDefault>', ## Elemtype issue
                 'NxArray<NxForceFieldShapeGroup*, NxAllocatorDefault>', ## Elemtype issue
                 'NxForceFieldShapeGroup' ## seems to have access issues..
@@ -100,6 +101,10 @@ def ManualExclude ( mb ):
                 ]
 #     for c in global_ns.classes():
 #         print c                
+    if os.name =='nt':
+        excludes.append('NxArray<NxFluidEmitterDesc, NxAllocatorDefault>') ## needs ElemType changed to NxFluidEmitterDesc
+    else:
+        excludes.append ( '::NxFluidUserNotify')
     for e in excludes:
         print "Excluding Class:", e
         global_ns.class_(e).exclude()
@@ -137,6 +142,12 @@ def ManualInclude ( mb ):
 def ManualFixes ( mb ):    
 
     global_ns = mb.global_ns
+    # this change was for 1.7 but also needed for 1.4
+
+    noncopy=[] ###'NxPhysicsSDK']
+    for c in noncopy:
+        global_ns.class_(c).noncopyable = True
+
 #     known = ['points', 'triangles']
 #     for c in global_ns.classes():
 #         if c.name.startswith ('Nx'):
@@ -358,7 +369,7 @@ def generate_code():
     if os.name == 'nt':
         defined_symbols = ['NXPHYSICS_EXPORTS', 'WIN32', 'PHYSX_EXPORTS'] #'WIN32',
     else:
-        defined_symbols = ['LINUX']
+        defined_symbols = ['LINUX','NX_DISABLE_FLUIDS']
     defined_symbols.append( 'VERSION_' + environment.physx.version )  
     
     #
