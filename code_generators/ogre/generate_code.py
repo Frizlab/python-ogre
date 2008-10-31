@@ -281,7 +281,14 @@ def ManualExclude ( mb ):
             print '{*} function "%s" is marked as internal' % declarations.full_name( func )
 
     # this change was for 1.7 but also needed for 1.4
-    noncopy=['Camera','Frustum', 'Log']
+    noncopy=['Camera','Frustum', 'Log' ]
+    
+    # these showed up during threading -- possible needs to be done all the time (needs to be looked at)
+    if environment._USE_THREADS:
+        noncopy = noncopy + ['Compositor', 'DefaultHardwareBufferManager', 'DefaultSceneManager', 'Font', 'FontManager',
+                             'HighLevelGpuProgramManager','Material', 'Mesh', 'MeshManager',
+                             'ParticleSystemManager', 'Pass', 'PatchMesh', 'ResourceGroupManager',
+                             'Skeleton', 'SkeletonInstance', 'SkeletonManager', 'UnifiedHighLevelGpuProgram']
     for c in noncopy:
         main_ns.class_(c).noncopyable = True
 
@@ -1064,7 +1071,7 @@ def generate_code():
     xml_cached_fc = parser.create_cached_source_fc(
                         os.path.join( environment.ogre.root_dir, "python_ogre.h" )
                         , environment.ogre.cache_file )
-    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY']
+    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', '__PYTHONOGRE_BUILD_CODE']
     undefine_symbols=[]
     if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')

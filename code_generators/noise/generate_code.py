@@ -248,7 +248,10 @@ def generate_code():
                         , environment.noise.cache_file )
 
 
-    defined_symbols = [ 'OGRE_NONCLIENT_BUILD' ]
+    defined_symbols = [ 'OGRE_NONCLIENT_BUILD','__PYTHONOGRE_BUILD_CODE' ]
+    if environment._USE_THREADS:
+        defined_symbols.append('BOOST_HAS_THREADS')
+        defined_symbols.append('BOOST_HAS_WINTHREADS')
 
     defined_symbols.append( 'VERSION_' + environment.noise.version )  
     

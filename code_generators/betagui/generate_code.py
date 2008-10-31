@@ -371,7 +371,7 @@ def generate_code():
                         os.path.join( environment.betagui.root_dir, "python_betagui.h" )
                         , environment.betagui.cache_file )
                         
-    defined_symbols = [ 'OGRE_NONCLIENT_BUILD' ]
+    defined_symbols = [ 'OGRE_NONCLIENT_BUILD','__PYTHONOGRE_BUILD_CODE' ]
     
     if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')

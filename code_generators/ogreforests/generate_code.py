@@ -255,7 +255,12 @@ def generate_code():
                         os.path.join( environment.ogreforests.root_dir, "python_forests.h" )
                         , environment.ogreforests.cache_file )
 
-    defined_symbols = ['OGRE_NONCLIENT_BUILD', 'WIN32', "GCCXML_BUG" ]
+    defined_symbols = ['OGRE_NONCLIENT_BUILD', 'WIN32', "GCCXML_BUG", '__PYTHONOGRE_BUILD_CODE' ]
+    undefine_symbols=[]
+    if environment._USE_THREADS:
+        defined_symbols.append('BOOST_HAS_THREADS')
+        defined_symbols.append('BOOST_HAS_WINTHREADS')
+
     defined_symbols.append( 'VERSION_' + environment.ogreforests.version )  
     
     #

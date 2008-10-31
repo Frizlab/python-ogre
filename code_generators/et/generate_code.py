@@ -224,9 +224,12 @@ def generate_code():
                         os.path.join( environment.et.root_dir, "python_et.h" )
                         , environment.et.cache_file )
 
-    defined_symbols = ['OGRE_NONCLIENT_BUILD' ]
+    defined_symbols = ['OGRE_NONCLIENT_BUILD','__PYTHONOGRE_BUILD_CODE' ]
     defined_symbols.append( 'VERSION_' + environment.et.version )  
-    
+    if environment._USE_THREADS:
+        defined_symbols.append('BOOST_HAS_THREADS')
+        defined_symbols.append('BOOST_HAS_WINTHREADS')
+
     #
     # build the core Py++ system from the GCCXML created source
     #    

@@ -265,9 +265,13 @@ def generate_code():
                         os.path.join( environment.ogreode.root_dir, "python_ogreode.h" )
                         , environment.ogreode.cache_file )
 
-    defined_symbols = ['OGRE_NONCLIENT_BUILD', 'ODE_LIB' ]
-    defined_symbols.append( 'OGREODE_VERSION_' + environment.ogreode.version )  
-    
+    defined_symbols = ['OGRE_NONCLIENT_BUILD', 'ODE_LIB','__PYTHONOGRE_BUILD_CODE' ]
+    defined_symbols.append( 'OGREODE_VERSION_' + environment.ogreode.version )
+      
+    if environment._USE_THREADS:
+        defined_symbols.append('BOOST_HAS_THREADS')
+        defined_symbols.append('BOOST_HAS_WINTHREADS')
+        
     #
     # build the core Py++ system from the GCCXML created source
     #    

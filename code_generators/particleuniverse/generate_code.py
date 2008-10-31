@@ -227,8 +227,11 @@ def generate_code():
                         , environment.particleuniverse.cache_file )
 
     defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY' ,'PARTICLE_UNIVERSE_EXPORTS', '__PYTHONOGRE_BUILD_CODE' ]
-    defined_symbols.append( 'VERSION_' + environment.particleuniverse.version )  
-    
+    defined_symbols.append( 'VERSION_' + environment.particleuniverse.version )      
+    if environment._USE_THREADS:
+        defined_symbols.append('BOOST_HAS_THREADS')
+        defined_symbols.append('BOOST_HAS_WINTHREADS')
+
     #
     # build the core Py++ system from the GCCXML created source
     #    

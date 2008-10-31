@@ -460,7 +460,7 @@ def generate_code():
                         os.path.join( environment.theora.root_dir, "python_theora.h" )
                         , environment.theora.cache_file )
 
-    defined_symbols = [ 'THEORAVIDEO_PLUGIN_EXPORTS','OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY']
+    defined_symbols = [ 'THEORAVIDEO_PLUGIN_EXPORTS','OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY','__PYTHONOGRE_BUILD_CODE']
     if os.name == 'nt':
         defined_symbols.append ( 'WIN32' )
     if environment._USE_THREADS:

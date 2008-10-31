@@ -60,6 +60,9 @@ class SmokeApplication(sf.Application):
         
         # and don't forget to start it
         self.particleSystem2.start()
+        name= self.particleSystem2.name
+        self.ps = self.sceneManager.getMovableObject(name, PU.ParticleSystemFactory.PU_FACTORY_TYPE_NAME)
+        print "\n\n", self.ps
                 
 if __name__ == '__main__':
     try:

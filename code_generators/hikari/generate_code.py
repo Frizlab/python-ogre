@@ -233,8 +233,11 @@ def generate_code():
                         , environment.hikari.cache_file )
 
     # Vector_c define to allow GCC to process delegates.h
-    defined_symbols = ['OGRE_NONCLIENT_BUILD', 'HIKARI_NONCLIENT_BUILD', '__VECTOR_C' ] 
+    defined_symbols = ['OGRE_NONCLIENT_BUILD', 'HIKARI_NONCLIENT_BUILD', '__VECTOR_C', '__PYTHONOGRE_BUILD_CODE' ] 
     defined_symbols.append( 'VERSION_' + environment.hikari.version )  
+    if environment._USE_THREADS:
+        defined_symbols.append('BOOST_HAS_THREADS')
+        defined_symbols.append('BOOST_HAS_WINTHREADS')
     
     #
     # build the core Py++ system from the GCCXML created source

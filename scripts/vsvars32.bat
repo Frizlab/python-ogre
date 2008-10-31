@@ -22,9 +22,9 @@
 @rem
 @set DevEnvDir=C:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE
 
-@set PATH=C:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE;C:\Program Files\Microsoft Visual Studio 9.0\VC\BIN;C:\Program Files\Microsoft Visual Studio 9.0\Common7\Tools;C:\WINDOWS\Microsoft.NET\Framework\v3.5;C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727;C:\Program Files\Microsoft Visual Studio 9.0\VC\VCPackages;%PATH%
-@set INCLUDE=C:\Program Files\Microsoft Visual Studio 9.0\VC\INCLUDE;C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\include;c:\program files\Microsoft DirectX SDK (June 2008)\include;%INCLUDE%
-@set LIB=C:\Program Files\Microsoft Visual Studio 9.0\VC\LIB;C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\lib;c:\program files\Microsoft DirectX SDK (June 2008)\lib\x86;%LIB%
+@set PATH=%PATH%;C:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE;C:\Program Files\Microsoft Visual Studio 9.0\VC\BIN;C:\Program Files\Microsoft Visual Studio 9.0\Common7\Tools;C:\WINDOWS\Microsoft.NET\Framework\v3.5;C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727;C:\Program Files\Microsoft Visual Studio 9.0\VC\VCPackages
+@set INCLUDE=%INCLUDE%;C:\Program Files\Microsoft Visual Studio 9.0\VC\INCLUDE;C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\include;c:\program files\Microsoft DirectX SDK (August 2008)\include
+@set LIB=%LIB%;C:\Program Files\Microsoft Visual Studio 9.0\VC\LIB;C:\Program Files\Microsoft Platform SDK for Windows Server 2003 R2\lib;c:\program files\Microsoft DirectX SDK (August 2008)\lib\x86
 @set LIBPATH=C:\WINDOWS\Microsoft.NET\Framework\v3.5;C:\WINDOWS\Microsoft.NET\Framework\v2.0.50727;C:\Program Files\Microsoft Visual Studio 9.0\VC\LIB;%LIBPATH%
 
 @goto end
