@@ -207,13 +207,20 @@ def generate_ogrenewt():
     xml_cached_fc = parser.create_cached_source_fc(
                         os.path.join( environment.ogrenewt.root_dir, "python_ogrenewt.h" )
                         , environment.ogrenewt.cache_file )
-
+                        
+    defined_symbols = [ 'OGRE_NONCLIENT_BUILD','__PYTHONOGRE_BUILD_CODE',
+                        'ogrenewt_NONCLIENT_BUILD','OIS_NONCLIENT_BUILD', 'OIS_STATIC_BUILD' ]
+    defined_symbols.append( 'VERSION_' + environment.ogrenewt.version )
+      
+    if environment._USE_THREADS:
+        defined_symbols.append('BOOST_HAS_THREADS')
+        defined_symbols.append('BOOST_HAS_WINTHREADS')
+    
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
                                           , include_paths=environment.ogrenewt.include_dirs
-                                          , define_symbols=['ogrenewt_NONCLIENT_BUILD', 'OGRE_NONCLIENT_BUILD',
-                                                        'OIS_NONCLIENT_BUILD', 'OIS_STATIC_BUILD']
+                                          , define_symbols=defined_symbols
                                           , indexing_suite_version=2 )
 
     ## This module depends on Ogre

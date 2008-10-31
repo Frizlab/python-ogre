@@ -199,9 +199,13 @@ def generate_code():
                         os.path.join( environment.cadunetree.root_dir, "python_cadunetree.h" )
                         , environment.cadunetree.cache_file )
 
-    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY' ]
+    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY','__PYTHONOGRE_BUILD_CODE' ]
     defined_symbols.append( 'VERSION_' + environment.cadunetree.version )  
-    
+
+    if environment._USE_THREADS:
+        defined_symbols.append('BOOST_HAS_THREADS')
+        defined_symbols.append('BOOST_HAS_WINTHREADS')
+     
     #
     # build the core Py++ system from the GCCXML created source
     #    

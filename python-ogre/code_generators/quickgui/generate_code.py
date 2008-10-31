@@ -422,7 +422,7 @@ def generate_code():
                         os.path.join( environment.quickgui.root_dir, "python_quickgui.h" )
                         , environment.quickgui.cache_file )
 
-    defined_symbols = [ 'OGRE_NONCLIENT_BUILD',
+    defined_symbols = [ 'OGRE_NONCLIENT_BUILD','__PYTHONOGRE_BUILD_CODE',
                 'WIN32', 'NDEBUG', 'WINDOWS' , '_PRECOMP']  ## , 'QUICKGUI_EXPORTS'
     if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')

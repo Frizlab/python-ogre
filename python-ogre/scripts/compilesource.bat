@@ -4,13 +4,13 @@ set _VCBUILD="c:\\Program Files\\Microsoft Visual Studio 9.0\\vc\\vcpackages\\vc
 set _ROOT=c:\\development
 call vcvars32
 cd %_ROOT%\\ogre
-%_VCBUILD% /useenv Ogre_vc8.sln "Release|Win32"
+%_VCBUILD% /useenv Ogre_vc9.sln "Release|Win32"
 
 rem cd %_ROOT%\\NxOgre\\NxOgre
 rem %_VCBUILD% /useenv NxOgre.VC8.Windows.sln "Release|Win32"
 
 cd %_ROOT%\\ogreaddons\\ogreode\\scripts\\vc8
-%_VCBUILD% /useenv OgreOde_Source.sln "Release|Win32"
+%_VCBUILD% /useenv OgreOde_SDK.sln "Release|Win32"
 
 cd %_ROOT%\\ogreaddons\\ogrenewt
 %_VCBUILD% /useenv OgreNewt_vc71.sln "Release|Win32"

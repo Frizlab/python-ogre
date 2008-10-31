@@ -563,7 +563,8 @@ class ogre:
     pythonModule = True
     name='ogre'
     ModuleName='OGRE'
-    cflags = ""
+    CCFLAGS = ""
+    cflags=''
     moduleParentLocation = "renderer"
     parent = "ogre/renderer"
     dependsOn = ['boost']
@@ -1421,7 +1422,7 @@ class ogrevideoffmpeg:
     version="0.2.1"
     name='ogrevideoffmpeg'
     parent="ogre/addons"
-    cflags = ""
+    CCFLAGS = ""
     include_dirs = [ Config.PATH_Boost,
                     Config.PATH_INCLUDE_Ogre,
                     Config.PATH_INCLUDE_ogrevideoffmpeg,
@@ -1486,7 +1487,8 @@ class et:  ## editable terrain
                     ]
     ModuleName = 'et'
     CheckIncludes = ['boost/python.hpp'] 
-    cflags = ""
+    CCFLAGS = "  "
+    cflags=''
     
 class bullet:
     active = True

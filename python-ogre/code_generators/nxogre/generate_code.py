@@ -612,9 +612,9 @@ def generate_code():
                         os.path.join( environment.nxogre.root_dir, "python_nxogre.h" )
                         , environment.nxogre.cache_file )
     if os.name == 'nt':
-        defined_symbols = [ 'NxExport','OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', 'WIN32', 'GCC_XML']#NXOGRE_EXPORTS'
+        defined_symbols = [ '__PYTHONOGRE_BUILD_CODE','NxExport','OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', 'WIN32', 'GCC_XML']#NXOGRE_EXPORTS'
     else:
-        defined_symbols = [ 'LINUX','NX_LINUX', 'NX_DISABLE_FLUIDS', 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', 'GCC_XML']
+        defined_symbols = [ '__PYTHONOGRE_BUILD_CODE','LINUX','NX_LINUX', 'NX_DISABLE_FLUIDS', 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', 'GCC_XML']
 
     if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')

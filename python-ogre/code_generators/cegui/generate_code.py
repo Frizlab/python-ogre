@@ -258,12 +258,19 @@ def generate_code():
     xml_cached_fc = parser.create_cached_source_fc(
                         os.path.join( environment.cegui.root_dir, "python_CEGUI.h" )
                         , environment.cegui.cache_file )
+                        
+    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'CEGUI_NONCLIENT_BUILD','OGRE_GCC_VISIBILITY','__PYTHONOGRE_BUILD_CODE' ]
+    defined_symbols.append( 'VERSION_' + environment.cegui.version )  
+
+    if environment._USE_THREADS:
+        defined_symbols.append('BOOST_HAS_THREADS')
+        defined_symbols.append('BOOST_HAS_WINTHREADS')
 
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
                                           , include_paths=environment.cegui.include_dirs
-                                          , define_symbols=['CEGUI_NONCLIENT_BUILD', 'OGRE_NONCLIENT_BUILD']
+                                          , define_symbols=defined_symbols
                                           , indexing_suite_version=2 )
                                           
     filter_declarations (mb)
