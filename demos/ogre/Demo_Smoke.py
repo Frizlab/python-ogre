@@ -27,11 +27,13 @@ class SmokeApplication(sf.Application):
         self.fountainNode = sceneManager.getRootSceneNode().createChildSceneNode()
         
         psm = ogre.ParticleSystemManager.getSingleton()
-        particleSystem2 = sceneManager.createParticleSystem('fountain1', 'Examples/Smoke')
+        self.particleSystem2 = sceneManager.createParticleSystem('fountain1', 'Examples/Smoke')
         node = self.fountainNode.createChildSceneNode()
-        node.attachObject(particleSystem2)
+        node.attachObject(self.particleSystem2)
         
-       
+    def __del__(self):
+        del self.particleSystem2
+        sf.Application.__del__(self)     
                 
 if __name__ == '__main__':
     try:

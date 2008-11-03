@@ -77,8 +77,10 @@ namespace ET
      * @param tileSize       the tile size to use, must be (2^n+1)
      * @param maxLOD         the maximal level of detail to be used
      * @param vertexNormals  generate vertex normals? (necessary for dynamic lighting)
+     * @param vertexTangents generate vertex tangents? (necessary for adv. dynamic lighting)
      */
-    void createTerrain(const TerrainInfo& info, size_t tileSize = 33, unsigned int maxLOD = 255, bool vertexNormals = false);
+    void createTerrain(const TerrainInfo& info, size_t tileSize = 33, unsigned int maxLOD = 255, 
+      bool vertexNormals = false, bool vertexTangents = false);
 
     /** Destroys the currently loaded terrain (if any). */
     void destroyTerrain();

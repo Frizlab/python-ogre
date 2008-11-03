@@ -422,7 +422,11 @@ namespace ET
     if (colours.size() > mImpl->numTextures)
       OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Given more colours than texture channels available.", __FUNCTION__);
 
+#if OGRE_VERSION_MINOR > 4
+    uchar* data = OGRE_ALLOC_T(uchar, mImpl->width*mImpl->height*3, MEMCATEGORY_GENERAL);
+#else
     uchar* data = new uchar[mImpl->width*mImpl->height*3];
+#endif
 
     for (size_t y = 0; y < mImpl->height; ++y)
     {
@@ -461,7 +465,11 @@ namespace ET
       it->resize(scaleWidth, scaleHeight);
 
     // create the buffer to hold our generated base texture
+#if OGRE_VERSION_MINOR > 4
+    uchar* data = OGRE_ALLOC_T(uchar, width*height*3, MEMCATEGORY_GENERAL);
+#else
     uchar* data = new uchar[width*height*3];
+#endif
     size_t pos = 0;
     for (size_t y = 0; y < height; ++y)
     {
@@ -497,7 +505,11 @@ namespace ET
     if (colourMap.getWidth() != lightMap.getWidth() || colourMap.getHeight() != lightMap.getHeight())
       OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Images must have the same dimensions.", __FUNCTION__);
 
+#if OGRE_VERSION_MINOR > 4
+    uchar* data = OGRE_ALLOC_T(uchar, colourMap.getWidth()*colourMap.getHeight()*3, MEMCATEGORY_GENERAL);
+#else
     uchar* data = new uchar[colourMap.getWidth()*colourMap.getHeight()*3];
+#endif
 
     for (size_t y = 0; y < colourMap.getWidth(); ++y)
     {

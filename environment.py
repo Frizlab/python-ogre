@@ -1119,21 +1119,26 @@ class navi:
 class betagui:
     active = True
     pythonModule = True
-    version="1.7"
+    version="2"
     name='betagui'
     parent="ogre/gui"
     CCFLAGS = ' ' # -D"FT2_BUILD_LIBRARY"
     cflags=""
     include_dirs = [ Config.PATH_Boost,
                     Config.PATH_INCLUDE_Ogre,
+                    Config.PATH_INCLUDE_OIS,
                     Config.PATH_INCLUDE_betagui
                     ]
     lib_dirs = [Config.PATH_LIB_Boost,
                 Config.PATH_LIB_Ogre_OgreMain,
-                Config.PATH_LIB_betagui
+                Config.PATH_LIB_betagui,
+                Config.PATH_LIB_OIS
                 ]
     CheckIncludes=[]
-    libs=[  boost.lib, 'OgreMain' ]
+    libs=[  boost.lib, 'OgreMain', 'OIS_Static' ]
+    if os.name=="nt":
+        libs.append ( "User32" ) # needed for static linking
+    
     ModuleName="betagui"   
 
 class ogreforests:
@@ -1470,7 +1475,7 @@ class ogredshow:
 class et:  ## editable terrain
     active = True
     pythonModule = True
-    version= "2.2"
+    version= "2.3.1"
     name='et'
     parent = "ogre/addons"
     if isLinux():
