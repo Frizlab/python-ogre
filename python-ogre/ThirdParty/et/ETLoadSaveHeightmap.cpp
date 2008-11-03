@@ -105,7 +105,11 @@ namespace ET
 
     uint maxVal = (1 << (bpp*8)) - 1;
 
+#if OGRE_VERSION_MINOR > 4
+    uchar* data = OGRE_ALLOC_T(uchar, info.getWidth()*info.getHeight()*bpp, MEMCATEGORY_GENERAL);
+#else
     uchar* data = new uchar[info.getWidth()*info.getHeight()*bpp];
+#endif
     uchar* pos = data;
 
     // fill data array

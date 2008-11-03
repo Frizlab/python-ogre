@@ -285,7 +285,13 @@ namespace ET
     step.z /= height;
     Vector3 pos = startPos;
 
+#if OGRE_VERSION_MINOR > 4
+    // Ogre::Image uses the memory allocation macros internally in Shoggoth,
+    // so we must use them as well.
+    uchar* lightMap = OGRE_ALLOC_T(uchar, width*height*3, MEMCATEGORY_GENERAL);
+#else
     uchar* lightMap = new uchar[width*height * 3];
+#endif
     memset(lightMap, 255, width*height*3);
 
     for (size_t z = 0; z < height; ++z)
@@ -322,6 +328,6 @@ namespace ET
 
     // save lightmap to image
     image.loadDynamicImage(lightMap, width, height, 1, PF_BYTE_RGB, true);
-    // ownership of lightMap was transfered to image, don't need to delete
+    // ownership of lightMap was transfered to image, don't need to delete 
   }
 }

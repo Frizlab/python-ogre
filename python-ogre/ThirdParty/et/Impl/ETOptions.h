@@ -44,6 +44,7 @@ namespace ET
       float factorC;
 
       bool vertexNormals;
+      bool vertexTangents;
 
       bool useLODMorph;
       float lodMorphStart;

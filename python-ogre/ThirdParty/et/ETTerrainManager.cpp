@@ -84,7 +84,7 @@ namespace ET
     }
 
 
-    void TerrainImpl::createTerrain(const TerrainInfo& info, size_t tileSize, uint maxLOD, bool vertexNormals)
+    void TerrainImpl::createTerrain(const TerrainInfo& info, size_t tileSize, uint maxLOD, bool vertexNormals, bool vertexTangents)
     {
       // ensure we have a viewport height set
       if (mOpt.factorC <= 0)
@@ -99,8 +99,11 @@ namespace ET
       // load new terrain
       mInfo = info;
       mOpt.tileSize = tileSize;
+      if (maxLOD < 1)
+        maxLOD = 1;
       mOpt.maxMipMapLevel = min(maxLOD, maxPossibleLOD);
       mOpt.vertexNormals = vertexNormals;
+      mOpt.vertexTangents = vertexTangents;
       mIndexHandler = new IndexHandler(mOpt.tileSize, mOpt.maxMipMapLevel);
       createTiles();
 
@@ -332,9 +335,9 @@ namespace ET
     delete mImpl;
   }
 
-  void TerrainManager::createTerrain(const TerrainInfo& info, size_t tileSize, uint maxLOD, bool vertexNormals)
+  void TerrainManager::createTerrain(const TerrainInfo& info, size_t tileSize, uint maxLOD, bool vertexNormals, bool vertexTangents)
   {
-    mImpl->createTerrain(info, tileSize, maxLOD, vertexNormals);
+    mImpl->createTerrain(info, tileSize, maxLOD, vertexNormals, vertexTangents);
   }
 
   void TerrainManager::destroyTerrain()

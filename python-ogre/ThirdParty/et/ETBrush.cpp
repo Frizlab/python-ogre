@@ -120,7 +120,11 @@ namespace ET
   void saveBrushToImage(const Brush& brush, Image& image)
   {
     // save brush as a 16bit grayscale image
-    ushort* data = new ushort[brush.getWidth()*brush.getHeight()];
+#if OGRE_VERSION_MINOR > 4
+    ushort* data = (ushort*)OGRE_ALLOC_T(uchar, brush.getWidth()*brush.getHeight()*sizeof(ushort), MEMCATEGORY_GENERAL);
+#else
+    ushort* data = (ushort*)new uchar[brush.getWidth()*brush.getHeight()*sizeof(ushort)];
+#endif
     for (size_t x = 0; x < brush.getWidth(); ++x)
       for (size_t y = 0; y < brush.getHeight(); ++y)
         data[y*brush.getWidth() + x] = ushort(brush.at(x, y) * 0xffff);

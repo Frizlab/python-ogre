@@ -105,6 +105,12 @@ namespace ET
         */
       void updateTerrain(size_t startx, size_t startz, size_t endx, size_t endz);
 
+
+#if OGRE_VERSION_MINOR > 4
+      /** Shoggoth compatibility function */
+      void visitRenderables(Ogre::Renderable::Visitor* visitor, bool debugRenderables);
+#endif
+
     private:
       /** Initialises the vertices */
       void createVertexData(size_t startx, size_t startz);
@@ -115,6 +121,9 @@ namespace ET
 
       /** Calculates vertex normals */
       void calculateVertexNormals();
+
+      /** Calculates vertex tangents */
+      void calculateVertexTangents();
 
       /** Retrieves the position vector for the given vertex */
       Ogre::Vector3 getVector(size_t x, size_t z) const;

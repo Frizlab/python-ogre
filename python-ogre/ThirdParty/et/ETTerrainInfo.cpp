@@ -190,6 +190,25 @@ namespace ET
   }
 
 
+  /** Addition from SongOfTheWeave */
+  Vector3 TerrainInfo::getTangentAt(float x, float z) const
+  {
+    Ogre::Vector3 v3Return;
+    int flip = 1;
+    Vector3 here (x, getHeightAt(x, z), z);
+    Vector3 left (x - 1, getHeightAt(x - 1, z), z);
+    if (left.x < 0.0)
+    {
+      flip *= -1;
+      left = Vector3(x + 1, getHeightAt(x + 1, z), z);
+    }
+    left -= here;
+    v3Return = flip * left;
+    v3Return.normalise();
+    return v3Return;
+  }
+
+
   std::pair<bool, Vector3> TerrainInfo::rayIntersects(const Ray& ray) const
   {
     AxisAlignedBox box = getExtents();

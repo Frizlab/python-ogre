@@ -241,10 +241,10 @@ class BezierApplication(sf.Application):
         sf.Application.debugText  = "STARTED"
 
 
-    def _destroyScene(self):
-
-        ## free up the pointer before we shut down OGRE
-        patch.setNull() 
+# # #     def __del__(self):
+# # # 
+# # #         ## free up the pointer before we shut down OGRE
+# # #         patch.setNull() 
 
     def _createFrameListener(self):
         self.frameListener = BezierListener(self.renderWindow, self.camera)

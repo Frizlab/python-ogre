@@ -53,7 +53,7 @@ namespace ET
       TerrainImpl(Ogre::SceneManager* sceneMgr, const std::string& name);
       ~TerrainImpl();
 
-      void createTerrain(const TerrainInfo& info, size_t tileSize, unsigned int maxLOD, bool vertexNormals);
+      void createTerrain(const TerrainInfo& info, size_t tileSize, unsigned int maxLOD, bool vertexNormals, bool vertexTangents);
       void destroyTerrain();
 
       bool isTerrainLoaded() const { return mTerrainLoaded; }

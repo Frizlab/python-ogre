@@ -146,7 +146,12 @@ for name, cls in environment.projects.items():
         cls._source = cls.generated_dir
         cls._build_dir = os.path.join ( builddir, cls.dir_name)
         cls._name = name
-        _env = Environment(ENV=os.environ)
+        
+        ## Note the change -- bug in scons means you have to set env seperately
+        _env = Environment(ENV = os.environ)
+        
+        print os.environ['PATH']
+        print _env['ENV']
         
         if environment.rpath:
             _env.Append(RPATH=environment.rpath)
@@ -209,7 +214,7 @@ for name, cls in environment.projects.items():
         if environment.isWindows():
             ## and lets have it install the output into the 'package_dir_name/ModuleName' dir and rename to the PydName
             _env.AddPostAction(package,\
-                 'mt.exe -nologo -manifest %(name)s.manifest -outputresource:%(name)s;2' % { 'name':package[index] } )
+                 Action ('mt.exe -nologo -manifest %(name)s.manifest -outputresource:%(name)s;2' % { 'name':package[index] } ) )
         if environment.isLinux() and "-g" not in _env["CCFLAGS"]:
             _env.AddPostAction(package,\
                  '-strip -g -S -d --strip-debug -s %(name)s' % { 'name':package[index] } )

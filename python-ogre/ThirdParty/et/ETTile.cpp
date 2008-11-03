@@ -55,8 +55,10 @@ namespace ET
       mTerrain(0),
       mLastNextLevel(0)
     {
+      if (mOpt.maxMipMapLevel < 1)
+        mOpt.maxMipMapLevel = 1;
       // disable LOD morphing if max LOD is 1
-      if (mOpt.maxMipMapLevel <= 1)
+      if (mOpt.maxMipMapLevel == 1)
         mOpt.useLODMorph = false;
 
       mCastShadows = false;
@@ -70,6 +72,7 @@ namespace ET
 
     Tile::~Tile()
     {
+      delete mTerrain;
     }
 
     const String& Tile::getMovableType() const
@@ -160,6 +163,11 @@ namespace ET
         decl->addElement(MAIN_BINDING, offset, VET_FLOAT3, VES_NORMAL);
         offset += VertexElement::getTypeSize(VET_FLOAT3);
       }
+      if (mOpt.vertexTangents)
+      {
+        decl->addElement(MAIN_BINDING, offset, VET_FLOAT3, VES_TANGENT);
+        offset += VertexElement::getTypeSize(VET_FLOAT3);
+      }
       decl->addElement(MAIN_BINDING, offset, VET_FLOAT2, VES_TEXTURE_COORDINATES, 0);
       offset += VertexElement::getTypeSize(VET_FLOAT2);
 
@@ -239,6 +247,9 @@ namespace ET
       // calc vertex normals, if necessary
       if (mOpt.vertexNormals)
         calculateVertexNormals();
+      // calc vertex tangents, if necessary
+      if (mOpt.vertexTangents)
+        calculateVertexTangents();
     }
 
 
@@ -267,6 +278,38 @@ namespace ET
           *pNorm++ = normal.x;
           *pNorm++ = normal.y;
           *pNorm++ = normal.z;
+
+          pBase += mMainBuffer->getVertexSize();
+        }
+      }
+      mMainBuffer->unlock();
+    }
+
+
+    /** Addition by SongOfTheWeave */
+    void Tile::calculateVertexTangents()
+    {
+      // set the vertex tangents of the tile
+      size_t startx = mStartX;
+      size_t startz = mStartZ;
+      size_t endx = startx + mOpt.tileSize;
+      size_t endz = startz + mOpt.tileSize;
+      //Real minHeight = mInfo.getOffset().y + mInfo.getScaling().y, maxHeight = mInfo.getOffset().y;
+
+      const VertexElement* normElem = mTerrain->vertexDeclaration->findElementBySemantic(VES_TANGENT);
+      unsigned char* pBase = static_cast<unsigned char*>(mMainBuffer->lock(HardwareBuffer::HBL_NORMAL));
+
+      for (size_t j = startz; j < endz; ++j)
+      {
+        for (size_t i = startx; i < endx; ++i)
+        {
+          float* pTan;
+          normElem->baseVertexPointerToElement(pBase, &pTan);
+
+          Vector3 tangent = mInfo.getTangentAt(mInfo.vertexToPosX((int)i), mInfo.vertexToPosZ((int)j));
+          *pTan++ = tangent.x;
+          *pTan++ = tangent.y;
+          *pTan++ = tangent.z;
 
           pBase += mMainBuffer->getVertexSize();
         }
@@ -472,7 +515,7 @@ namespace ET
           Real range = mLODChangeMinDistSqr[nextLevel] - mLODChangeMinDistSqr[mLOD];
           Real percent = (L - mLODChangeMinDistSqr[mLOD]) / range;
           Real rescale = 1.0f / (1.0f - mOpt.lodMorphStart);
-          mLODMorphFactor = std::max((percent - mOpt.lodMorphStart), Real(0));
+          mLODMorphFactor = std::max((percent - mOpt.lodMorphStart) * rescale, Real(0));
         }
 
         if (mLastNextLevel != nextLevel)
@@ -557,6 +600,15 @@ namespace ET
       if (mOpt.vertexNormals)
         calculateVertexNormals();
     }
+
+
+#if OGRE_VERSION_MINOR > 4
+    /** Shoggoth compatibility function */
+    void Tile::visitRenderables(Renderable::Visitor* visitor, bool debugRenderables)
+    {
+      visitor->visit(this, 0, false, 0);
+    }
+#endif
 
 
   }

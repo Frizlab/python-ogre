@@ -107,6 +107,9 @@ namespace ET
     /** Calculates the terrain normal at the given coordinates. */
     Ogre::Vector3 getNormalAt(float x, float z) const;
 
+    /** Calculates the terrain tangent at the given coordinates. */
+    Ogre::Vector3 getTangentAt(float x, float z) const;
+
     /**
      * Checks if a ray intersects with the terrain.
      * @param ray  The ray to check for intersection with the terrain.

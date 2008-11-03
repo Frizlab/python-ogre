@@ -42,7 +42,7 @@ import common_utils.extract_documentation as exdoc
 import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
 
-MAIN_NAMESPACE = 'BetaGUI'
+MAIN_NAMESPACE = 'BetaGUI2'
 
 ## small helper function
 def docit ( general, i, o ): 
@@ -99,26 +99,26 @@ def ManualInclude ( mb ):
     global_ns = mb.global_ns
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
     
-    ## now expose but don't create class that exist in other modules
-    global_ns.namespace( 'Ogre' ).class_('OverlayContainer').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Vector2').include(already_exposed=True)
-#     global_ns.namespace( 'Ogre' ).class_('Vector3').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Vector4').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('RenderWindow').include(already_exposed=True)
-#     global_ns.namespace( 'Ogre' ).class_('RenderTexture').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('RenderOperation').include(already_exposed=True)
-#     global_ns.namespace( 'Ogre' ).class_('UTFString').include(already_exposed=True)
-#     global_ns.class_('::Ogre::FontPtr').include(already_exposed=True)
-#     global_ns.class_('::Ogre::RenderQueueListener').include(already_exposed=True)
-#     global_ns.class_('::Ogre::SceneManager').include(already_exposed=True)
+#     ## now expose but don't create class that exist in other modules
+#     global_ns.namespace( 'Ogre' ).class_('OverlayContainer').include(already_exposed=True)
+#     global_ns.namespace( 'Ogre' ).class_('Vector2').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('Vector3').include(already_exposed=True)
+#     global_ns.namespace( 'Ogre' ).class_('Vector4').include(already_exposed=True)
+#     global_ns.namespace( 'Ogre' ).class_('RenderWindow').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('RenderTexture').include(already_exposed=True)
+#     global_ns.namespace( 'Ogre' ).class_('RenderOperation').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('UTFString').include(already_exposed=True)
+# #     global_ns.class_('::Ogre::FontPtr').include(already_exposed=True)
+# #     global_ns.class_('::Ogre::RenderQueueListener').include(already_exposed=True)
+# #     global_ns.class_('::Ogre::SceneManager').include(already_exposed=True)
+# #     
+# #     
+# #     global_ns.namespace( 'Ogre' ).class_('Singleton<QuickGUI::GUIManager>').include() #already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('Singleton<QuickGUI::MouseCursor>').include() #already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('Singleton<QuickGUI::FontManager>').include() #already_exposed=True)
 #     
-#     
-#     global_ns.namespace( 'Ogre' ).class_('Singleton<QuickGUI::GUIManager>').include() #already_exposed=True)
-#     global_ns.namespace( 'Ogre' ).class_('Singleton<QuickGUI::MouseCursor>').include() #already_exposed=True)
-#     global_ns.namespace( 'Ogre' ).class_('Singleton<QuickGUI::FontManager>').include() #already_exposed=True)
-    
-#     global_ns.namespace( 'Ogre' ).class_('PanelOverlayElement').include(already_exposed=True)
-#     global_ns.namespace( 'Ogre' ).class_('TextAreaOverlayElement').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('PanelOverlayElement').include(already_exposed=True)
+# #     global_ns.namespace( 'Ogre' ).class_('TextAreaOverlayElement').include(already_exposed=True)
 
         
     
