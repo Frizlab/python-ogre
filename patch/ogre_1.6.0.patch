@@ -1,0 +1,188 @@
+Index: ogre/Samples/Common/include/ExampleFrameListener.h
+===================================================================
+--- ogre/Samples/Common/include/ExampleFrameListener.h	(revision 8145)
++++ ogre/Samples/Common/include/ExampleFrameListener.h	(working copy)
+@@ -41,7 +41,7 @@
+ 
+ //Use this define to signify OIS will be used as a DLL
+ //(so that dll import/export macros are in effect)
+-#define OIS_DYNAMIC_LIB
++//#define OIS_DYNAMIC_LIB
+ #include <OIS/OIS.h>
+ 
+ using namespace Ogre;
+Index: ogre/OgreMain/include/OgreMovableObject.h
+===================================================================
+--- ogre/OgreMain/include/OgreMovableObject.h	(revision 8145)
++++ ogre/OgreMain/include/OgreMovableObject.h	(working copy)
+@@ -482,7 +482,7 @@
+ 			included too.
+ 		*/
+ 		virtual void visitRenderables(Renderable::Visitor* visitor, 
+-			bool debugRenderables = false) = 0;
++			bool debugRenderables = false) { throw std::runtime_error ( std::string ("Virtual function MovableObject::visitRenderables called!") ); }
+ 
+ 		/** Sets whether or not the debug display of this object is enabled.
+ 		@remarks
+Index: ogre/OgreMain/include/OgreRenderQueueListener.h
+===================================================================
+--- ogre/OgreMain/include/OgreRenderQueueListener.h	(revision 8145)
++++ ogre/OgreMain/include/OgreRenderQueueListener.h	(working copy)
+@@ -31,7 +31,9 @@
+ 
+ #include "OgrePrerequisites.h"
+ #include "OgreRenderQueue.h"
++#include <stdexcept>
+ 
++
+ namespace Ogre {
+ 
+     /** Abstract interface which classes must implement if they wish to receive
+@@ -65,7 +67,7 @@
+ 			for this queue group.
+         */
+         virtual void renderQueueStarted(uint8 queueGroupId, const String& invocation, 
+-			bool& skipThisInvocation) = 0;
++			bool& skipThisInvocation) { throw std::runtime_error ( std::string ("Virtual function RenderQueueListener::renderQueueStarted called!") ); }
+ 
+         /** Event raised after a queue group is rendered. 
+         @remarks
+@@ -80,7 +82,7 @@
+ 			events will also be fired for it again.
+         */
+         virtual void renderQueueEnded(uint8 queueGroupId, const String& invocation, 
+-			bool& repeatThisInvocation) = 0;
++			bool& repeatThisInvocation) { throw std::runtime_error ( std::string ("Virtual function RenderQueueListener::renderQueueEnded called!") ); }
+     };
+ 
+ }
+Index: ogre/OgreMain/include/OgreResourceGroupManager.h
+===================================================================
+--- ogre/OgreMain/include/OgreResourceGroupManager.h	(revision 8145)
++++ ogre/OgreMain/include/OgreResourceGroupManager.h	(working copy)
+@@ -37,6 +37,7 @@
+ #include "OgreArchive.h"
+ #include "OgreIteratorWrappers.h"
+ #include <ctime>
++#include <stdexcept>
+ 
+ namespace Ogre {
+ 
+@@ -92,7 +93,7 @@
+ 			parsed. Note that in this case the scriptParseEnded event will not be raised
+ 			for this script.
+ 		*/
+-		virtual void scriptParseStarted(const String& scriptName, bool& skipThisScript) = 0;
++		virtual void scriptParseStarted(const String& scriptName, bool& skipThisScript)  { throw std::runtime_error ( std::string ("Virtual function ResourceGroupListener::scriptParseStarted called!") ); }
+ 
+ 		/** This event is fired when the script has been fully parsed.
+ 		*/
+Index: ogre/OgreMain/include/OgreDataStream.h
+===================================================================
+--- ogre/OgreMain/include/OgreDataStream.h	(revision 8145)
++++ ogre/OgreMain/include/OgreDataStream.h	(working copy)
+@@ -33,6 +33,7 @@
+ #include "OgreString.h"
+ #include "OgreSharedPtr.h"
+ #include <istream>
++#include <stdexcept>
+ 
+ namespace Ogre {
+ 
+@@ -79,7 +80,7 @@
+ 		@param count Number of bytes to read
+ 		@returns The number of bytes read
+ 		*/
+-		virtual size_t read(void* buf, size_t count) = 0;
++		virtual size_t read(void* buf, size_t count) { throw std::runtime_error ( std::string ("Virtual function DataStream::read called!") ); }
+ 		/** Get a single line from the stream.
+ 		@remarks
+ 			The delimiter character is not included in the data
+Index: ogre/OgreMain/include/OgreConfig.h
+===================================================================
+--- ogre/OgreMain/include/OgreConfig.h	(revision 8145)
++++ ogre/OgreMain/include/OgreConfig.h	(working copy)
+@@ -87,7 +87,7 @@
+ #define OGRE_MEMORY_ALLOCATOR_NED 2			 // you need to have nedmalloc on your path for this
+ #define OGRE_MEMORY_ALLOCATOR_USER 3
+ 
+-#define OGRE_MEMORY_ALLOCATOR OGRE_MEMORY_ALLOCATOR_STD
++#define OGRE_MEMORY_ALLOCATOR OGRE_MEMORY_ALLOCATOR_NED
+ 
+ // enable or disable the memory tracker, recording the memory allocations & tracking leaks
+ // default is to disable since it's expensive, but you can enable if needed per build target
+@@ -123,7 +123,7 @@
+ 	to be done in the background.
+ */
+ #ifndef OGRE_THREAD_SUPPORT
+-#define OGRE_THREAD_SUPPORT 0
++#define OGRE_THREAD_SUPPORT 1
+ #endif
+ #if OGRE_THREAD_SUPPORT != 0 && OGRE_THREAD_SUPPORT != 1 && OGRE_THREAD_SUPPORT != 2
+ #define OGRE_THREAD_SUPPORT 1
+Index: ogre/OgreMain/include/OgreHardwareBuffer.h
+===================================================================
+--- ogre/OgreMain/include/OgreHardwareBuffer.h	(revision 8145)
++++ ogre/OgreMain/include/OgreHardwareBuffer.h	(working copy)
+@@ -31,7 +31,9 @@
+ 
+ // Precompiler options
+ #include "OgrePrerequisites.h"
++#include <stdexcept>
+ 
++
+ namespace Ogre {
+ 
+     /** Abstract class defining common features of hardware buffers.
+@@ -244,7 +246,7 @@
+             @param pDest The area of memory in which to place the data, must be large enough to 
+                 accommodate the data!
+             */
+-            virtual void readData(size_t offset, size_t length, void* pDest) = 0;
++            virtual void readData(size_t offset, size_t length, void* pDest) { throw std::runtime_error ( std::string ("Virtual function HardwareBuffer::readData called!") ); }
+             /** Writes data to the buffer from an area of system memory; note that you must
+                 ensure that your buffer is big enough.
+ 		    @param offset The byte offset from the start of the buffer to start writing
+@@ -254,7 +256,7 @@
+ 				such that DMA stalls can be avoided; use if you can.
+             */
+             virtual void writeData(size_t offset, size_t length, const void* pSource,
+-					bool discardWholeBuffer = false) = 0;
++					bool discardWholeBuffer = false) { throw std::runtime_error ( std::string ("Virtual function HardwareBuffer::writeData called!") ); }
+ 
+ 			/** Copy data from another buffer into this one.
+ 			@remarks
+Index: ogre/OgreMain/include/OgreAtomicWrappers.h
+===================================================================
+--- ogre/OgreMain/include/OgreAtomicWrappers.h	(revision 8145)
++++ ogre/OgreMain/include/OgreAtomicWrappers.h	(working copy)
+@@ -170,7 +170,7 @@
+ 
+ }
+ 
+- #elif OGRE_COMPILER == OGRE_COMPILER_MSVC && OGRE_THREAD_SUPPORT
++ #elif OGRE_COMPILER == OGRE_COMPILER_MSVC && OGRE_THREAD_SUPPORT && ! defined(__PYTHONOGRE_BUILD_CODE)
+ 
+ #undef NOMINMAX
+ #define NOMINMAX
+Index: ogre/ReferenceApplication/ReferenceAppLayer/OgreRefAppWorld.cpp
+===================================================================
+--- ogre/ReferenceApplication/ReferenceAppLayer/OgreRefAppWorld.cpp (revision 8151)
++++ ogre/ReferenceApplication/ReferenceAppLayer/OgreRefAppWorld.cpp (working copy)
+@@ -54,6 +54,8 @@
+         mSimulationStepSize = 0.01f;
+
+         // Create the dynamics world
++               dInitODE2(0);
++
+         mOdeWorld = new dWorld();
+         mOdeContactGroup = new dJointGroup();
+
+@@ -79,6 +81,7 @@
+         // Destroy dynamix world
+                delete mOdeContactGroup;
+         delete mOdeWorld;
++        dCloseODE();
+
+     }
+     //-------------------------------------------------------------------------
