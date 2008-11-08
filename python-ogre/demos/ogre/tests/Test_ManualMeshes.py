@@ -21,8 +21,8 @@ class ManuallyDefinedMesh:
             assert len(Vertices_Pos)==len(Vertices_Colour) 
         
         meshMgr = ogre.MeshManager.getSingleton() 
-        self.mesh = mesh = meshMgr.createManual(Name, ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME) 
-        self.subMesh = subMesh = mesh.createSubMesh() 
+        self.mesh = meshMgr.createManual(Name, ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME) 
+        self.subMesh = mesh.createSubMesh() 
       
         POSITION_ELEMENT = 0 
         NORMAL_ELEMENT = 1 
@@ -40,7 +40,7 @@ class ManuallyDefinedMesh:
         #work-around to prevent destruction 
         self.sharedVertexData = mesh.sharedVertexData      
       
-        declaration = mesh.sharedVertexData.vertexDeclaration 
+        declaration = self.mesh.sharedVertexData.vertexDeclaration 
         offset = 0 
         offset += ogre.VertexElement.getTypeSize(ogre.VET_FLOAT3) 
         declaration.addElement(0, offset, ogre.VET_FLOAT3, ogre.VES_POSITION) 
@@ -56,15 +56,37 @@ class ManuallyDefinedMesh:
 
 # #         pVertex = vbuf.lock(declaration, ogre.HardwareBuffer.HBL_DISCARD) 
         pVertex = vbuf.lock(ogre.HardwareBuffer.HBL_DISCARD) 
-
+        print pVertex
+        
+        pVert= ( ctypes.c_float * (mesh.sharedVertexData.vertexCount)).from_address ( ogre.CastInt ( pVertex ) ) 
       
         #loop through the position array 
+        index = 0
         for i in range(len(Vertices_Pos)): 
             vx, vy, vz = Vertices_Pos[i] 
             nx, ny, nz = Vertices_Norm[i] 
-
+            pVert[i
             pVertex.setFloat(i, POSITION_ELEMENT, vx, vy, vz) 
             pVertex.setFloat(i, NORMAL_ELEMENT, nx, ny, nz) 
+            
+        index = 0
+        for i in range ( 3 ):
+            off = i*4
+            pVert[ index ] = 0 + off
+            index +=1
+            pVert[ index ] = 3 + off
+            index +=1
+            pVert[ index ] = 1 + off
+            index +=1
+            pVert[ index ] = 0 + off
+            index +=1
+            pVert[ index ] = 2 + off
+            index +=1
+            pVert[ index ] = 3 + off
+            index +=1
+
+            
+            
         bind = mesh.sharedVertexData.vertexBufferBinding 
         bind.setBinding(0,vbuf) #Set vertex buffer binding so buffer 0 is bound to positional data 
 
@@ -194,7 +216,11 @@ class TutorialApplication(SampleFramework.Application):
 #         colours.append(rs.convertColourValue(ogre.ColourValue(0.0,1.0,1.0))) #6 colour 
 #         colours.append(rs.convertColourValue(ogre.ColourValue(0.0,0.0,1.0))) #7 colour 
         
-        ManuallyDefinedMesh("cubeMesh",vert_pos,vert_norm,faces ) #,colours) 
+        mm = ManuallyDefinedMesh("cubeMesh",vert_pos,vert_norm,faces ) #,colours) 
+        print mm
+        mm.Print()
+        
+      
         
         self.cubeEntity = sceneManager.createEntity("myCubeEntity", "cubeMesh")        
         self.cubeEntity.setMaterialName("Test/SimpleVertexColor") 

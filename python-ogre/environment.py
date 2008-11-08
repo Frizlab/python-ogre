@@ -575,31 +575,31 @@ class ogre:
     if isWindows(): 
         
         if _STABLE or not _STABLE:   ## temp force to this version...
-            version="1.6.0RC1"
+            version="1.6.0"
             source = [
                 [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_VC9_Eihort_20080203.zip", downloadPath],
-                [ wget, "http://downloads.sourceforge.net/ogre/ogre-v1-6-0RC1.zip", downloadPath],
+                [ wget, "http://downloads.sourceforge.net/ogre/ogre-v1-6-0.zip", downloadPath],
                 ]
             buildCmds  = [
-                [0, unzip + os.path.join(downloadPath,"ogre-v1-6-0RC1.zip"),os.getcwd() ],
+                [0, unzip + os.path.join(downloadPath,"ogre-v1-6-0.zip"),os.getcwd() ],
                 [0, unzip + os.path.join(downloadPath,"OgreDependencies_VC9_Eihort_20080203.zip"),
                                             os.path.join(os.getcwd(), 'ogre') ],
-                [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.0RC2.patch -p0 ", os.getcwd()],
+                [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.0.patch -p0 ", os.getcwd()],
                 [0,'echo Please use MSVC Express Edition to build Ogre Release.','']
                 ]                      
-        else:
-            
-            version="1.7"
-            source = [
-                [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_VC9_Eihort_20080203.zip", downloadPath],
-                [ svn, "https://svn.ogre3d.org/svnroot/ogre/branches/v1-6", os.path.join(os.getcwd(), 'ogre')]
-                ]
-            buildCmds  = [
-                    [0, unzip + os.path.join(downloadPath,"OgreDependencies_VC9_Eihort_20080203.zip"),
-                                                os.path.join(os.getcwd(), 'ogre') ],
-                    [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.patch -p0 ", os.getcwd()],
-                    [0,'echo Please use MSVC Express Edition to build Ogre Release.','']
-                    ]                                             
+#         else:
+#             
+#             version="trunk"
+#             source = [
+#                 [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_VC9_Eihort_20080203.zip", downloadPath],
+#                 [ svn, "https://svn.ogre3d.org/svnroot/ogre/trunk", os.path.join(os.getcwd(), 'ogre')]
+#                 ]
+#             buildCmds  = [
+#                     [0, unzip + os.path.join(downloadPath,"OgreDependencies_VC9_Eihort_20080203.zip"),
+#                                                 os.path.join(os.getcwd(), 'ogre') ],
+#                     [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.patch -p0 ", os.getcwd()],
+#                     [0,'echo Please use MSVC Express Edition to build Ogre Release.','']
+#                     ]                                             
             
         # requirements to build a precompiled header on the fly
         if _PreCompiled:
@@ -635,11 +635,11 @@ class ogre:
                 [0, "make install", os.path.join(os.getcwd(), 'ogre')],
                 ]
         else:
-            version = "1.6.0RC1"
-            base = "ogre-v1-6-0RC1"
+            version = "1.6.0"
+            base = "ogre-v1-6-0"
             buildCmds  = [
                 [0, tar + " jxf " + os.path.join(downloadPath,base)+".tar.bz2 --overwrite",os.getcwd() ],
-                [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.0RC1.patch -p0 ", os.getcwd()],
+                [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.0.patch -p0 ", os.getcwd()],
                 [0, "aclocal", os.path.join(os.getcwd(), 'ogre')],
                 [0, "./bootstrap", os.path.join(os.getcwd(), 'ogre')],
                 [0, "./configure --prefix=%s --with-gui=Xt --disable-devil" % PREFIX, os.path.join(os.getcwd(), 'ogre')],

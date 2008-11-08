@@ -1,3 +1,4 @@
+# NO_UNITTEST
 # This code is in the Public Domain
 # -----------------------------------------------------------------------------
 # This source file is part of Python-Ogre
