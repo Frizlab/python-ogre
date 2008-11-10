@@ -78,7 +78,6 @@ class OgreNewtonApplication (sf.Application):
         light.setType( Ogre.Light.LT_POINT )
         light.setPosition( Ogre.Vector3(0.0, 100.0, 100.0) )
 
-
     def makeSimpleBox( self, size, pos,  orient ):
         ## base mass on the size of the object.
         mass = size.x * size.y * size.z * 2.5
