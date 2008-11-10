@@ -18,6 +18,6 @@ class MyCustomBallSocket ( OgreNewt.CustomJoint ):
       globalOrient1, globalPos1 = OgreNewt.CustomJoint.localToGlobal( self, self.LocalOrient1, self.LocalPos1,  1 )
 
       ## to make the joint, we simply apply a constraint to connect 2 points on the bodies along all 3 major axis
-      self.addLinearRow( globalPos0, globalPos1, globalOrient0 * Ogre.Vector3.UNIT_X )
-      self.addLinearRow( globalPos0, globalPos1, globalOrient0 * Ogre.Vector3.UNIT_Y )
-      self.addLinearRow( globalPos0, globalPos1, globalOrient0 * Ogre.Vector3.UNIT_Z )
+      self.addLinearRow( globalPos0, globalPos1, globalOrient0 * Ogre.Vector3().UNIT_X )
+      self.addLinearRow( globalPos0, globalPos1, globalOrient0 * Ogre.Vector3().UNIT_Y )
+      self.addLinearRow( globalPos0, globalPos1, globalOrient0 * Ogre.Vector3().UNIT_Z )

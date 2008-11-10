@@ -58,7 +58,7 @@ class OgreNewtonApplication (sf.Application):
         self.bodies.append( bod )   ## need to keep him so collision works
                    
         bod.attachToNode( floornode )
-        bod.setPositionOrientation( Ogre.Vector3(0.0,-4.0,0.0), Ogre.Quaternion.IDENTITY )
+        bod.setPositionOrientation( Ogre.Vector3(0.0,-4.0,0.0), Ogre.Quaternion().IDENTITY )
         self.bodies.append( bod )
         
         ## position camera
@@ -214,7 +214,7 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 self.Ragdoll = None
     
                 self.RagNode.setPosition( Ogre.Vector3(0.0, -4.0, 0.0) )
-                self.RagNode.setOrientation( Ogre.Quaternion.IDENTITY )
+                self.RagNode.setOrientation( Ogre.Quaternion().IDENTITY )
     
                 self.RagEntity.getAnimationState( "LOOP" ).setEnabled( True )
                 self.RagEntity.getAnimationState( "LOOP" ).setTimePosition( 0.0 )

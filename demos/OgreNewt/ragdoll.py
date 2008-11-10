@@ -25,15 +25,15 @@ class RagDoll:
             self.OgreBone = ogreBone 
         
             ## in the case of the cylindrical primitives, they need to be rotated to align the main axis with the direction vector.
-            orient = Ogre.Quaternion.IDENTITY 
-            pos = Ogre.Vector3.ZERO 
+            orient = Ogre.Quaternion().IDENTITY 
+            pos = Ogre.Vector3().ZERO 
             rot = Ogre.Matrix3()
         
-            if (dir1 == Ogre.Vector3.UNIT_Y):
+            if (dir1 == Ogre.Vector3().UNIT_Y):
                 rot.FromEulerAnglesXYZ(Ogre.Degree(0), Ogre.Degree(0), Ogre.Degree(90)) 
                 orient.FromRotationMatrix( rot ) 
         
-            if (dir1 == Ogre.Vector3.UNIT_Z):
+            if (dir1 == Ogre.Vector3().UNIT_Z):
                 rot.FromEulerAnglesXYZ(Ogre.Degree(0), Ogre.Degree(90), Ogre.Degree(0)) 
                 orient.FromRotationMatrix( rot ) 
 
@@ -77,7 +77,7 @@ class RagDoll:
             boneIndex = self.OgreBone.getHandle() 
             invMatrix  = Ogre.Matrix4 ()
             invMatrix.makeInverseTransform( -self.OgreBone._getBindingPoseInversePosition(), 
-                                Ogre.Vector3.UNIT_SCALE / self.OgreBone._getBindingPoseInverseScale(), 
+                                Ogre.Vector3().UNIT_SCALE / self.OgreBone._getBindingPoseInverseScale(), 
                                 self.OgreBone._getBindingPoseInverseOrientation().Inverse()) 
         
             num_sub = mesh.getNumSubMeshes() 
@@ -147,7 +147,7 @@ class RagDoll:
             ## To Check - might need to keep vertexVector around - ie as a self.vertexVector
             ## Note the helper function -- the Constructor on ConvexHull needs a pointer to a list of Vector3's
             col = OgreNewt.createConvexHull( world, vertexVector, len(vertexVector) )
-                            #.Ogre.Quaternion.IDENTITY, Ogre.Vector3.ZERO ) 
+                            #.Ogre.Quaternion().IDENTITY, Ogre.Vector3().ZERO ) 
             return col  
             
         ## newton body.

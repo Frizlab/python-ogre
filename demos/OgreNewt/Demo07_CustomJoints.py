@@ -81,13 +81,13 @@ class OgreNewtonApplication (sf.Application):
         del col
         
         body.attachToNode( floornode )
-        body.setPositionOrientation( Ogre.Vector3(0.0,-20.0,0.0), Ogre.Quaternion.IDENTITY )
+        body.setPositionOrientation( Ogre.Vector3(0.0,-20.0,0.0), Ogre.Quaternion().IDENTITY )
         self.bodies.append(body)
         
         ## make a simple rope.
         size = Ogre.Vector3(3,1.5,1.5)
         pos = Ogre.Vector3(0,3,0)
-        orient = Ogre.Quaternion.IDENTITY
+        orient = Ogre.Quaternion().IDENTITY
         
         parent=None
         
@@ -98,11 +98,11 @@ class OgreNewtonApplication (sf.Application):
             ## make the joint right between the bodies...
             if (parent):  # OgreNewt.BallAndSocket
                 joint = MyCustomBallSocket(child, parent, 
-                                    pos-Ogre.Vector3(size.x/2,0,0), Ogre.Vector3.UNIT_X )
+                                    pos-Ogre.Vector3(size.x/2,0,0), Ogre.Vector3().UNIT_X )
             else:
                 ## no parent, this is the first joint, so just pass None as the parent, to stick it to the "world"
                 joint = MyCustomBallSocket(child, None, 
-                                    pos-Ogre.Vector3(size.x/2,0,0), Ogre.Vector3.UNIT_X )
+                                    pos-Ogre.Vector3(size.x/2,0,0), Ogre.Vector3().UNIT_X )
             ## rememeber to make a copy
             self.bodies.append ( joint )
             

@@ -21,6 +21,7 @@ class SimpleVehicle (OgreNewt.Vehicle):
         ## function "setup" to finish building the vehicle.
         ## you pass this function the body to be used as the main chassis, and the up direction of the world (for suspension purposes).
         self.init( self.chassis, Ogre.Vector3(0,1,0) )
+        
         ## the above function calls our "setup" function, which takes care of the rest of the vehicle setup.
         
     
@@ -31,13 +32,13 @@ class SimpleVehicle (OgreNewt.Vehicle):
             
         ## calculate the inertia based on box formula and mass
         inertia = OgreNewt.CalcBoxSolid( mass, size )
-    
+        
         box1 = self.sceneManager.createEntity( "Entity"+str(EntityCount), "box.mesh" )
         EntityCount += 1
         box1node = self.sceneManager.getRootSceneNode().createChildSceneNode()
         box1node.attachObject( box1 )
         box1node.setScale( size )
-    
+           
         col = OgreNewt.Box( self.World, size )
         bod = OgreNewt.Body( self.World, col )
         del col
@@ -47,10 +48,9 @@ class SimpleVehicle (OgreNewt.Vehicle):
         bod.setStandardForceCallback()
     
         box1.setMaterialName( "Examples/BumpyMetal" )
-        box1.setNormaliseNormals(True)
-    
+        
         bod.setPositionOrientation( pos, orient )
-    
+        
         return bod
 
 
@@ -151,6 +151,7 @@ class SimpleVehicle (OgreNewt.Vehicle):
                 self.SteeringTire = steer;
 
             def __del__ ( self ):
+#                 print "IN DELETE of Tire"
                 ## destroy entity, and scene node.
                 m_node= self.getOgreNode()
                 print m_node
