@@ -62,7 +62,8 @@ class VideoApplication(sf.Application):
         self.SoundSystem=None
         mods=sm.loadSoundModules()
         if len(mods) > 0:
-            self.SoundSystem = sm.startUpSoundManager( 'FMOD_MOD' ) #OAL
+#             self.SoundSystem = sm.startUpSoundManager( 'FMOD_MOD' ) # use ffmpeg sound
+            self.SoundSystem = sm.startUpSoundManager( 'OAL_MOD' ) # use openal sound
         
         self.Clip =  self.Control.getMaterialNameClip("Example/TheoraVideoPlayer/Play")
         

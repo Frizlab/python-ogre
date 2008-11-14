@@ -44,9 +44,9 @@ namespace QuickGUI
 		if(mDesc->textDesc.segments.empty())
 			mDesc->dimensions.size.width = mDesc->frontWidth + 50;
 		else
-			mDesc->dimensions.size.width = mDesc->frontWidth + mDesc->textDesc.getTextWidth() + mDesc->padding[PADDING_RIGHT];
+			mDesc->dimensions.size.width = mDesc->frontWidth + mDesc->textDesc.getTextWidth() + mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_RIGHT);
 
-		mText->setAllottedWidth(mDesc->textDesc.getTextWidth() + mDesc->padding[PADDING_RIGHT]);
+		mText->setAllottedWidth(mDesc->textDesc.getTextWidth() + mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_RIGHT));
 	}
 
 	void Tab::_initialize(WidgetDesc* d)
@@ -64,11 +64,6 @@ namespace QuickGUI
 		else
 			mDesc->frontWidth = td->frontWidth;
 
-		mDesc->padding[PADDING_LEFT] = td->padding[PADDING_LEFT];
-		mDesc->padding[PADDING_RIGHT] = td->padding[PADDING_RIGHT];
-		mDesc->padding[PADDING_BOTTOM] = td->padding[PADDING_BOTTOM];
-		mDesc->padding[PADDING_TOP] = td->padding[PADDING_TOP];
-
 		// Make a copy of the Text Desc.  The Text object will
 		// modify it directly, which is used for serialization.
 		mDesc->textDesc = td->textDesc;
@@ -76,14 +71,15 @@ namespace QuickGUI
 		if(mDesc->textDesc.segments.empty())
 			mDesc->dimensions.size.width = mDesc->frontWidth + 50;
 		else
-			mDesc->dimensions.size.width = mDesc->frontWidth + mDesc->padding[PADDING_LEFT] + mDesc->textDesc.getTextWidth() + mDesc->padding[PADDING_RIGHT];
+			mDesc->dimensions.size.width = mDesc->frontWidth + mSkinType->getSkinElement(MAIN)->getBorderThickness(BORDER_LEFT) + mDesc->textDesc.getTextWidth() + mSkinType->getSkinElement(MAIN)->getBorderThickness(BORDER_RIGHT);
 
 		if(mDesc->textDesc.segments.empty())
 			mDesc->dimensions.size.height = 20;
 		else
-			mDesc->dimensions.size.height = mDesc->padding[PADDING_TOP] + mDesc->textDesc.getTextHeight() + mDesc->padding[PADDING_BOTTOM];
+			mDesc->dimensions.size.height = mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_TOP) + mDesc->textDesc.getTextHeight() + mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM);
 
-		mDesc->textDesc.allottedWidth = mDesc->textDesc.getTextWidth() + mDesc->padding[PADDING_RIGHT];
+		mDesc->verticalTextAlignment = td->verticalTextAlignment;
+		mDesc->textDesc.allottedWidth = mDesc->textDesc.getTextWidth() + mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_RIGHT);
 		mText = new Text(mDesc->textDesc);
 
 		mCurrentFontName = Text::getFirstAvailableFont()->getName();
@@ -135,16 +131,35 @@ namespace QuickGUI
 		Ogre::ColourValue prevColor = brush->getColour();
 		Rect prevClipRegion = brush->getClipRegion();
 
+		// Draw text
+
+		float textHeight = mText->getTextHeight();
+		float yPos = 0;
+
+		switch(mDesc->verticalTextAlignment)
+		{
+		case TEXT_ALIGNMENT_VERTICAL_BOTTOM:
+			yPos = mDesc->dimensions.size.height - st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM) - textHeight;
+			break;
+		case TEXT_ALIGNMENT_VERTICAL_CENTER:
+			yPos = (mDesc->dimensions.size.height / 2.0) - (textHeight / 2.0);
+			break;
+		case TEXT_ALIGNMENT_VERTICAL_TOP:
+			yPos = st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_TOP);
+			break;
+		}
+
 		Rect clipRegion;
 		clipRegion.size = 
 			Size(
-				tabRect.size.width - mDesc->padding[PADDING_RIGHT] - mDesc->padding[PADDING_LEFT],
-				tabRect.size.height - mDesc->padding[PADDING_BOTTOM] - mDesc->padding[PADDING_TOP]);
+				tabRect.size.width - st->getSkinElement(MAIN)->getBorderThickness(BORDER_RIGHT) - st->getSkinElement(MAIN)->getBorderThickness(BORDER_LEFT),
+				tabRect.size.height - st->getSkinElement(MAIN)->getBorderThickness(BORDER_BOTTOM) - st->getSkinElement(MAIN)->getBorderThickness(BORDER_TOP));
 		clipRegion.position = tabRect.position;
-		clipRegion.translate(Point(mDesc->padding[PADDING_LEFT],mDesc->padding[PADDING_TOP]));
+		clipRegion.translate(Point(st->getSkinElement(MAIN)->getBorderThickness(BORDER_LEFT),st->getSkinElement(MAIN)->getBorderThickness(BORDER_TOP)));
 
 		brush->setClipRegion(prevClipRegion.getIntersection(clipRegion));
 
+		clipRegion.position.y += yPos;
 		mText->draw(clipRegion.position);
 
 		brush->setClipRegion(prevClipRegion);
@@ -187,13 +202,6 @@ namespace QuickGUI
 	void Tab::setFont(const Ogre::String& fontName, Ogre::UTFString s, bool allOccurrences)
 	{
 		Label::setFont(fontName,s,allOccurrences);
-
-		_adjustTabWidth();
-	}
-
-	void Tab::setPadding(Padding p, float distance)
-	{
-		Label::setPadding(p,distance);
 
 		_adjustTabWidth();
 	}

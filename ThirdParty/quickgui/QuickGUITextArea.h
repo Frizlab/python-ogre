@@ -1,7 +1,6 @@
 #ifndef QUICKGUITEXTAREA_H
 #define QUICKGUITEXTAREA_H
 
-#include "QuickGUIPadding.h"
 #include "QuickGUIText.h"
 #include "QuickGUITextCursor.h"
 #include "QuickGUITimerManager.h"
@@ -24,8 +23,6 @@ namespace QuickGUI
 		/// Amount of time a key must be held down to repeat its input.
 		float keyRepeatTime;
 		unsigned int maxCharacters;
-		float padding[PADDING_COUNT];
-		TextAlignment textAlignment;
 
 		/// Describes the Text used in this TextBox
 		TextDesc textDesc;
@@ -113,10 +110,6 @@ namespace QuickGUI
 		* Sets the maximum number of characters that this TextBox will support.
 		*/
 		void setMaxCharacters(unsigned int max);
-		/**
-		* Sets the distance between a Label border and the text.
-		*/
-		void setPadding(Padding p, float distance);
 		/**
 		* Internal function to set a widget's parent, updating its window reference and position.
 		*/

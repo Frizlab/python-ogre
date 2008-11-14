@@ -16,7 +16,8 @@ namespace QuickGUI
 		float closeButtonPadding;
 		Ogre::String closeButtonSkinType;
 
-		float padding[PADDING_COUNT];
+		/// Vertical alignment of text within this widget's client area.
+		VerticalTextAlignment verticalTextAlignment;
 
 		/// Describes the Text used in this Label
 		TextDesc textDesc;
@@ -66,13 +67,17 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getClass();
 		/**
-		* Gets the distance between a Label border and the text.
+		* Returns the horizontal alignment of text within this widget's client area.
 		*/
-		float getPadding(Padding p);
+		HorizontalTextAlignment getHorizontalTextAlignment();
 		/**
 		* Gets the text in UTFString form.
 		*/
 		Ogre::UTFString getText();
+		/**
+		* Returns the vertical alignment of text within this widget's client area.
+		*/
+		VerticalTextAlignment getVerticalTextAlignment();
 
 		/**
 		* Sets all characters of the text to the specified color.
@@ -119,13 +124,22 @@ namespace QuickGUI
 		*/
 		void setFont(const Ogre::String& fontName, Ogre::UTFString s, bool allOccurrences);
 		/**
-		* Sets the distance between a Label border and the text.
-		*/
-		void setPadding(Padding p, float distance);
-		/**
 		* Sets the text for this object.
 		*/
 		void setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv);
+		/**
+		* Sets the Horizontal alignment of Text as displayed within the Label area.
+		*/
+		void setHorizontalTextAlignment(HorizontalTextAlignment a);
+		/**
+		* Sets the Vertical alignment of Text as displayed within the Label area.
+		*/
+		void setVerticalTextAlignment(VerticalTextAlignment a);
+
+		/**
+		* Recalculate Client dimensions, relative to Widget's actual dimensions.
+		*/
+		virtual void updateClientDimensions();
 
 	protected:
 		TitleBar(const Ogre::String& name);

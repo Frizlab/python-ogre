@@ -10,21 +10,17 @@ namespace QuickGUI
 	TabPageDesc::TabPageDesc() :
 		PanelDesc()
 	{
-		for(int i = 0; i < PADDING_COUNT; ++i)
-			padding[i] = 5.0;
-
 		supportScrollBars = false;
 		tabFrontWidth = -1;
+		verticalTextAlignment = TEXT_ALIGNMENT_VERTICAL_CENTER;
 	}
 
 	void TabPageDesc::serialize(SerialBase* b)
 	{
 		PanelDesc::serialize(b);
 
-		for(int i = 0; i < PADDING_COUNT; ++i)
-			b->IO(StringConverter::toString(static_cast<Padding>(i)),&padding[i]);
-
 		b->IO("TabFrontWidth",&tabFrontWidth);
+		b->IO("VerticalTextAlignment",&verticalTextAlignment);
 	}
 
 	TabControlDesc::TabControlDesc() :

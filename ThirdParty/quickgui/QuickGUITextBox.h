@@ -1,7 +1,6 @@
 #ifndef QUICKGUITEXTBOX_H
 #define QUICKGUITEXTBOX_H
 
-#include "QuickGUIPadding.h"
 #include "QuickGUIText.h"
 #include "QuickGUITextCursor.h"
 #include "QuickGUITextInputValidator.h"
@@ -20,6 +19,8 @@ namespace QuickGUI
 		float cursorBlinkTime;
 		Ogre::ColourValue defaultColor;
 		Ogre::String defaultFontName;
+		/// Horizontal alignment of text within this widget's client area.
+		HorizontalTextAlignment horizontalTextAlignment;
 		/// Amount of time a key must be held down before it starts repeating.
 		float keyDownTime;
 		/// Amount of time a key must be held down to repeat its input.
@@ -27,7 +28,8 @@ namespace QuickGUI
 		bool maskText;
 		Ogre::UTFString::code_point maskSymbol;
 		unsigned int maxCharacters;
-		TextAlignment textAlignment;
+		/// Vertical alignment of text within this widget's client area.
+		VerticalTextAlignment verticalTextAlignment;
 		Ogre::String textCursorSkinTypeName;
 		Point textPosition;
 
@@ -198,6 +200,14 @@ namespace QuickGUI
 		* Sets the text for this object.
 		*/
 		void setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv);
+		/**
+		* Sets the Horizontal alignment of Text as displayed within the TextBox area.
+		*/
+		void setHorizontalTextAlignment(HorizontalTextAlignment a);
+		/**
+		* Sets the Vertical alignment of Text as displayed within the TextBox area.
+		*/
+		void setVerticalTextAlignment(VerticalTextAlignment a);
 		/**
 		* Sets the "type" of the Text Cursor used.
 		*/

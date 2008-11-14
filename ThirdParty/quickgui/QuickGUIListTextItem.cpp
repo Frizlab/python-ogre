@@ -17,20 +17,14 @@ namespace QuickGUI
 	ListTextItemDesc::ListTextItemDesc() :
 		ListItemDesc()
 	{
-		for(int i = 0; i < PADDING_COUNT; ++i)
-		{
-			padding[i] = 5.0;
-		}
+		verticalTextAlignment = TEXT_ALIGNMENT_VERTICAL_CENTER;
 	}
 
 	void ListTextItemDesc::serialize(SerialBase* b)
 	{
 		ListItemDesc::serialize(b);
 
-		for(int i = 0; i < PADDING_COUNT; ++i)
-		{
-			b->IO(StringConverter::toString(static_cast<Padding>(i)),&padding[i]);
-		}
+		b->IO("VerticalTextAlignment",&verticalTextAlignment);
 
 		textDesc.serialize(b);
 	}
@@ -60,13 +54,8 @@ namespace QuickGUI
 		// Make a copy of the Text Desc.  The Text object will
 		// modify it directly, which is used for serialization.
 		mDesc->textDesc = ltid->textDesc;
-
+		mDesc->verticalTextAlignment = ltid->verticalTextAlignment;
 		mText = new Text(mDesc->textDesc);
-
-		setPadding(PADDING_BOTTOM,ltid->padding[PADDING_BOTTOM]);
-		setPadding(PADDING_LEFT,ltid->padding[PADDING_LEFT]);
-		setPadding(PADDING_RIGHT,ltid->padding[PADDING_RIGHT]);
-		setPadding(PADDING_TOP,ltid->padding[PADDING_TOP]);
 
 		mCurrentFontName = Text::getFirstAvailableFont()->getName();
 		mCurrentColourValue = Ogre::ColourValue::White;
@@ -91,14 +80,6 @@ namespace QuickGUI
 		return mText->getText();
 	}
 
-	float ListTextItem::getPadding(Padding p)
-	{
-		if(p == PADDING_COUNT)
-			throw Exception(Exception::ERR_INVALIDPARAMS,"PADDING_COUNT is not a valid parameter!","Label::getPadding");
-
-		return mDesc->padding[p];
-	}
-
 	void ListTextItem::onDraw()
 	{
 		Brush* brush = Brush::getSingletonPtr();
@@ -114,21 +95,39 @@ namespace QuickGUI
 		Ogre::ColourValue prevColor = brush->getColour();
 		Rect prevClipRegion = brush->getClipRegion();
 
-		Rect clipRegion;
-		clipRegion.size = 
-			Size(
-				mDesc->dimensions.size.width - mDesc->padding[PADDING_RIGHT],
-				mDesc->dimensions.size.height - mDesc->padding[PADDING_BOTTOM]);
-		clipRegion.position = mTexturePosition;
-		clipRegion.translate(Point(mDesc->padding[PADDING_LEFT],mDesc->padding[PADDING_TOP]));
+		// Center Text Vertically
+
+		float textHeight = mText->getTextHeight();
+		float yPos = 0;
+
+		switch(mDesc->verticalTextAlignment)
+		{
+		case TEXT_ALIGNMENT_VERTICAL_BOTTOM:
+			yPos = mDesc->dimensions.size.height - st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM) - textHeight;
+			break;
+		case TEXT_ALIGNMENT_VERTICAL_CENTER:
+			yPos = (mDesc->dimensions.size.height / 2.0) - (textHeight / 2.0);
+			break;
+		case TEXT_ALIGNMENT_VERTICAL_TOP:
+			yPos = st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_TOP);
+			break;
+		}
+
+		// Clip to client dimensions
+		Rect clipRegion(mClientDimensions);
+		clipRegion.translate(mTexturePosition);
 
 		brush->setClipRegion(prevClipRegion.getIntersection(clipRegion));
+
+		// Adjust Rect to Text drawing region
+		clipRegion = mClientDimensions;
+		clipRegion.position.y = yPos;
+		clipRegion.translate(mTexturePosition);		
 
 		mText->draw(clipRegion.position);
 
 		brush->setClipRegion(prevClipRegion);
-
-		Brush::getSingleton().setColor(prevColor);
+		brush->setColor(prevColor);
 	}
 
 	void ListTextItem::setColor(const Ogre::ColourValue& cv)
@@ -205,17 +204,6 @@ namespace QuickGUI
 		redraw();
 	}
 
-	void ListTextItem::setPadding(Padding p, float distance)
-	{
-		if(p == PADDING_COUNT)
-			throw Exception(Exception::ERR_INVALIDPARAMS,"PADDING_COUNT is not a valid parameter!","Label::setPadding");
-
-		mDesc->padding[p] = distance;
-		mText->setAllottedWidth(mWidgetDesc->dimensions.size.width - (mDesc->padding[PADDING_LEFT] + mDesc->padding[PADDING_RIGHT]));
-
-		redraw();
-	}
-
 	void ListTextItem::setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv)
 	{
 		mText->setText(s,fp,cv);
@@ -237,6 +225,6 @@ namespace QuickGUI
 	{
 		ListItem::setWidth(pixelWidth);
 
-		mText->setAllottedWidth(mDesc->dimensions.size.width - (mDesc->padding[PADDING_LEFT] + mDesc->padding[PADDING_RIGHT]));
+		mText->setAllottedWidth(mDesc->dimensions.size.width);
 	}
 }

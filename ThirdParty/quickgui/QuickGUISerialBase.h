@@ -54,9 +54,10 @@ namespace QuickGUI
 		virtual void IO(const Ogre::String& propertyName, VScrollBarButtonLayout* member) = 0;
 		virtual void IO(const Ogre::String& propertyName, HScrollBarButtonLayout* member) = 0;
 		virtual void IO(const Ogre::String& propertyName, Size* member) = 0;
-		virtual void IO(const Ogre::String& propertyName, TextAlignment* member) = 0;
+		virtual void IO(const Ogre::String& propertyName, HorizontalTextAlignment* member) = 0;
 		virtual void IO(const Ogre::String& propertyName, HorizontalAnchor* member) = 0;
 		virtual void IO(const Ogre::String& propertyName, VerticalAnchor* member) = 0;
+		virtual void IO(const Ogre::String& propertyName, VerticalTextAlignment* member) = 0;
 
 	protected:
 		ScriptDefinition* mCurrentDefinition;

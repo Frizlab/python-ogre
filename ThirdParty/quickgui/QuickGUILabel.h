@@ -1,7 +1,6 @@
 #ifndef QUICKGUILABEL_H
 #define QUICKGUILABEL_H
 
-#include "QuickGUIPadding.h"
 #include "QuickGUIWidget.h"
 #include "QuickGUIText.h"
 
@@ -13,7 +12,8 @@ namespace QuickGUI
 	public:
 		LabelDesc();
 
-		float padding[PADDING_COUNT];
+		/// Vertical alignment of text within this widget's client area.
+		VerticalTextAlignment verticalTextAlignment;
 
 		/// Describes the Text used in this Label
 		TextDesc textDesc;
@@ -59,9 +59,9 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getClass();
 		/**
-		* Gets the distance between a Label border and the text.
+		* Returns the horizontal alignment of text within this widget's client area.
 		*/
-		float getPadding(Padding p);
+		HorizontalTextAlignment getHorizontalTextAlignment();
 		/**
 		* Gets the text in UTFString form.
 		*/
@@ -71,6 +71,10 @@ namespace QuickGUI
 		* are multiple lines of text.
 		*/
 		float getVerticalLineSpacing();
+		/**
+		* Returns the vertical alignment of text within this widget's client area.
+		*/
+		VerticalTextAlignment getVerticalTextAlignment();
 
 		/**
 		* Sets all characters of the text to the specified color.
@@ -117,9 +121,9 @@ namespace QuickGUI
 		*/
 		void setFont(const Ogre::String& fontName, Ogre::UTFString s, bool allOccurrences);
 		/**
-		* Sets the distance between a Label border and the text.
+		* Sets the Horizontal alignment of Text as displayed within the Label area.
 		*/
-		void setPadding(Padding p, float distance);
+		void setHorizontalTextAlignment(HorizontalTextAlignment a);
 		/**
 		* Sets the text for this object.
 		*/
@@ -137,6 +141,10 @@ namespace QuickGUI
 		* are multiple lines of text.
 		*/
 		void setVerticalLineSpacing(float distance);
+		/**
+		* Sets the Vertical alignment of Text as displayed within the Label area.
+		*/
+		void setVerticalTextAlignment(VerticalTextAlignment a);
 
 	protected:
 		Label(const Ogre::String& name);

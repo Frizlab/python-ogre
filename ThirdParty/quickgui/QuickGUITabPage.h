@@ -59,11 +59,18 @@ namespace QuickGUI
 		* NOTE: Exception is thrown if point is not over a border.
 		*/
 		virtual BorderSide getBorderSide(Point p);
-
 		/**
 		* Returns the class name of this Widget.
 		*/
 		virtual Ogre::String getClass();
+		/**
+		* Returns the horizontal alignment of text within the Tab area.
+		*/
+		HorizontalTextAlignment getHorizontalTextAlignment();
+		/**
+		* Returns the vertical alignment of text within the Tab area.
+		*/
+		VerticalTextAlignment getVerticalTextAlignment();
 
 		/**
 		* Returns true if the tab page has been selected, false otherwise.
@@ -91,6 +98,10 @@ namespace QuickGUI
 		*/
 		virtual void setEnabled(bool enabled);
 		/**
+		* Sets the Horizontal alignment of Text as displayed within the Label area.
+		*/
+		void setHorizontalTextAlignment(HorizontalTextAlignment a);
+		/**
 		* Sets the "type" of this widget.  For example you
 		* can create several types of Button widgets: "close", "add", "fire.skill.1", etc.
 		* NOTE: The type property determines what is drawn to the screen.
@@ -100,6 +111,10 @@ namespace QuickGUI
 		* Sets the height of this tab.
 		*/
 		void setTabHeight(float height);
+		/**
+		* Sets the Vertical alignment of Text as displayed within the Label area.
+		*/
+		void setVerticalTextAlignment(VerticalTextAlignment a);
 
 		/**
 		* Recalculate Client dimensions, relative to Widget's actual dimensions.

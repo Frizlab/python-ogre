@@ -90,15 +90,17 @@ namespace QuickGUI
 	{
 		d.toolBar = this;
 
+		SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
+
 		if(mOrientation == TOOLBAR_ORIENTATION_HORIZONTAL)
 		{
 			d.verticalAnchor = ANCHOR_VERTICAL_TOP_BOTTOM;
-			d.dimensions.size = Size(d.textDesc.getTextWidth() + (d.padding[PADDING_LEFT] + d.padding[PADDING_RIGHT]),mDesc->dimensions.size.height);
+			d.dimensions.size = Size(d.textDesc.getTextWidth() + (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT)),mDesc->dimensions.size.height);
 		}
 		else
 		{
 			d.horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
-			d.dimensions.size = Size(mDesc->dimensions.size.width,d.textDesc.getTextHeight() + (d.padding[PADDING_TOP] + d.padding[PADDING_BOTTOM]));
+			d.dimensions.size = Size(mDesc->dimensions.size.width,d.textDesc.getTextHeight() + (se->getBorderThickness(BORDER_TOP) + se->getBorderThickness(BORDER_BOTTOM)));
 		}
 
 		Menu* newMenu = dynamic_cast<Menu*>(Widget::create("Menu",d));

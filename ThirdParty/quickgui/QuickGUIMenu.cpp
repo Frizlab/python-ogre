@@ -45,7 +45,7 @@ namespace QuickGUI
 		MenuLabel(name),
 		mMenuPanel(NULL)
 	{
-		mSkinElementName= DEFAULT;
+		mSkinElementName = DEFAULT;
 	}
 
 	Menu::~Menu()
@@ -62,12 +62,6 @@ namespace QuickGUI
 		setSkinType(d->skinTypeName);
 
 		MenuDesc* md = dynamic_cast<MenuDesc*>(d);
-		
-		mText->setAllottedWidth(md->dimensions.size.width - (md->padding[PADDING_LEFT] + md->padding[PADDING_RIGHT]));
-		setPadding(PADDING_BOTTOM,md->padding[PADDING_BOTTOM]);
-		setPadding(PADDING_LEFT,md->padding[PADDING_LEFT]);
-		setPadding(PADDING_RIGHT,md->padding[PADDING_RIGHT]);
-		setPadding(PADDING_TOP,md->padding[PADDING_TOP]);
 
 		mDesc->menuWidth = md->menuWidth;
 
@@ -188,7 +182,8 @@ namespace QuickGUI
 		// Determine position of MenuItem
 		d.dimensions.position.y = mMenuPanel->getNextAvailableYPosition();
 		d.dimensions.size.width = mMenuPanel->getClientDimensions().size.width;
-		d.dimensions.size.height = d.textDesc.getTextHeight() + (d.padding[PADDING_TOP] + d.padding[PADDING_BOTTOM]);
+		SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
+		d.dimensions.size.height = d.textDesc.getTextHeight() + se->getBorderThickness(BORDER_TOP) + se->getBorderThickness(BORDER_BOTTOM);
 
 		MenuLabel* newMenuLabel = dynamic_cast<MenuLabel*>(Widget::create("MenuLabel",d));
 		addChild(newMenuLabel);
@@ -207,7 +202,8 @@ namespace QuickGUI
 		// Determine position of Menu
 		d.dimensions.position.y = mMenuPanel->getNextAvailableYPosition();
 		d.dimensions.size.width = mMenuPanel->getClientDimensions().size.width;
-		d.dimensions.size.height = d.textDesc.getTextHeight() + (d.padding[PADDING_TOP] + d.padding[PADDING_BOTTOM]);
+		SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
+		d.dimensions.size.height = d.textDesc.getTextHeight() + se->getBorderThickness(BORDER_TOP) + se->getBorderThickness(BORDER_BOTTOM);
 
 		Menu* newMenu = dynamic_cast<Menu*>(Widget::create("Menu",d));
 
@@ -369,7 +365,7 @@ namespace QuickGUI
 			else
 				p.x = mParentWidget->getScreenPosition().x + mParentWidget->getSize().width - mDesc->subMenuOverlap;
 
-			p.y = getScreenPosition().y;
+			p.y = getScreenPosition().y - mMenuPanel->mSkinType->getSkinElement(mMenuPanel->mSkinElementName)->getBorderThickness(BORDER_TOP);
 		}
 
 		mMenuPanel->setPosition(p);

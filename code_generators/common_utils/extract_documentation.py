@@ -243,13 +243,13 @@ def clear_str(_str):
     newStr=""
     for x in range ( len ( _str) -1  ): # handle upto 2nd to last character
         if _str[x] == '\\' and _str[x+1] != 'n':
-            print "fixing stray escape sequence", x, _str
+# #             print "fixing stray escape sequence", x, _str
             newStr += ' ' 
         else:
             newStr += _str[x]                   
     x = len (_str) -1 # need to handle last character
     if _str[x] == '\\' :
-        print "fixing stray escape sequence EOL", _str
+# #         print "fixing stray escape sequence EOL", _str
         newStr += ' ' 
     else:
         newStr += _str[x]                   

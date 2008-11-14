@@ -48,7 +48,7 @@ def isMac():
                     
 PythonOgreMajorVersion = "1"
 PythonOgreMinorVersion = "6" 
-PythonOgrePatchVersion = "RC1"
+PythonOgrePatchVersion = "0"
 
 
 ##
@@ -1060,7 +1060,7 @@ class ogreode:
 class quickgui:
     active = True
     pythonModule = True
-    version="r79"
+    version="r80"
     name ='quickgui'
     parent="ogre/gui"
     ## note the defined for _QuickGUIExport forces non dll usage
@@ -1184,7 +1184,7 @@ class particleuniverse:
 class nxogre:
     active = True
     pythonModule = True
-    version="r21"
+    version="0.22T5"
     name='nxogre'
     parent="ogre/physics"
     cflags=""
@@ -1195,7 +1195,7 @@ class nxogre:
     for d in Config.PATH_INCLUDE_PhysX:
         include_dirs.append( d )
     if os.name == 'nt':
-        CCFLAGS = ' -DWIN32 -DNxExport="" '
+        CCFLAGS = ' -DWIN32 '
 #         if _PreCompiled:
 #             pchstop = 'nxogre.h'
 #             pchbuild = 'buildpch.cpp'
@@ -1211,9 +1211,9 @@ class nxogre:
     CheckIncludes=[]
 #     libs=[  boost.lib, 'NxOgre','NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' ]
     if os.name =='nt':
-        libs=[  boost.lib, 'NxCharacter', 'NxCooking',  'PhysXLoader','OgreMain' ] #, 'NxOgreStatic'] #'NxExtensions',
+        libs=[  boost.lib, 'NxCharacter', 'NxCooking',  'PhysXLoader','OgreMain','NxOgre' ] #, 'NxOgreStatic'] #'NxExtensions',
     else:
-        libs=[  boost.lib, 'NxCharacter', 'NxCooking', 'PhysXCore','PhysXLoader','OgreMain' ]
+        libs=[  boost.lib, 'NxCharacter', 'NxCooking', 'PhysXCore','PhysXLoader','OgreMain', 'NxOgre' ]
     ModuleName="NxOgre"   
     
     

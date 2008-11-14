@@ -302,7 +302,7 @@ namespace QuickGUI
 		}
 	}
 
-	void SerialReader::IO(const Ogre::String& propertyName, TextAlignment* member)
+	void SerialReader::IO(const Ogre::String& propertyName, HorizontalTextAlignment* member)
 	{
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialReader has not been correctly setup to retrieve properties. (Missing call to SerialReader::begin?)","SerialReader::IO");
@@ -310,7 +310,7 @@ namespace QuickGUI
 		DefinitionProperty* prop = mCurrentDefinition->getProperty(propertyName);
 		Ogre::StringVector sv = prop->getValues();
 
-		*member = StringConverter::parseTextAlignment(sv[0]);
+		*member = StringConverter::parseHorizontalTextAlignment(sv[0]);
 	}
 
 	void SerialReader::IO(const Ogre::String& propertyName, HorizontalAnchor* member)
@@ -333,6 +333,17 @@ namespace QuickGUI
 		Ogre::StringVector sv = prop->getValues();
 
 		*member = StringConverter::parseVerticalAnchor(sv[0]);
+	}
+
+	void SerialReader::IO(const Ogre::String& propertyName, VerticalTextAlignment* member)
+	{
+		if(mCurrentDefinition == NULL)
+			throw Exception(Exception::ERR_SERIALIZATION,"SerialReader has not been correctly setup to retrieve properties. (Missing call to SerialReader::begin?)","SerialReader::IO");
+
+		DefinitionProperty* prop = mCurrentDefinition->getProperty(propertyName);
+		Ogre::StringVector sv = prop->getValues();
+
+		*member = StringConverter::parseVerticalTextAlignment(sv[0]);
 	}
 
 	bool SerialReader::isSerialWriter()

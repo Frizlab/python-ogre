@@ -21,6 +21,7 @@ namespace QuickGUI
 	ButtonDesc::ButtonDesc() :
 		LabelDesc()
 	{
+		textDesc.horizontalTextAlignment = TEXT_ALIGNMENT_HORIZONTAL_CENTER;
 	}
 
 	void ButtonDesc::serialize(SerialBase* b)
@@ -41,6 +42,8 @@ namespace QuickGUI
 	void Button::_initialize(WidgetDesc* d)
 	{
 		Label::_initialize(d);
+
+		ButtonDesc* bd = dynamic_cast<ButtonDesc*>(d);
 
 		mDesc = dynamic_cast<LabelDesc*>(mWidgetDesc);
 
@@ -68,33 +71,7 @@ namespace QuickGUI
 
 	void Button::onDraw()
 	{
-		Brush* brush = Brush::getSingletonPtr();
-
-		brush->setFilterMode(mDesc->brushFilterMode);
-
-		SkinType* st = mSkinType;
-		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
-			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
-
-		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
-
-		Ogre::ColourValue prevColor = brush->getColour();
-		Rect prevClipRegion = brush->getClipRegion();
-
-		Rect clipRegion;
-		clipRegion.size = 
-			Size(
-				mWidgetDesc->dimensions.size.width - mDesc->padding[PADDING_RIGHT] - mDesc->padding[PADDING_LEFT],
-				mWidgetDesc->dimensions.size.height - mDesc->padding[PADDING_BOTTOM] - mDesc->padding[PADDING_TOP]);
-		clipRegion.position = mTexturePosition;
-		clipRegion.translate(Point(mDesc->padding[PADDING_LEFT],mDesc->padding[PADDING_TOP]));
-
-		brush->setClipRegion(prevClipRegion.getIntersection(clipRegion));
-
-		mText->draw(clipRegion.position);
-
-		brush->setClipRegion(prevClipRegion);
-		brush->setColor(prevColor);
+		Label::onDraw();
 	}
 
 	void Button::onMouseEnter(const EventArgs& args)

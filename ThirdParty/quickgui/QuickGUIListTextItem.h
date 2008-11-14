@@ -11,7 +11,8 @@ namespace QuickGUI
 	public:
 		ListTextItemDesc();
 
-		float padding[PADDING_COUNT];
+		/// Vertical alignment of text within this widget's client area.
+		VerticalTextAlignment verticalTextAlignment;
 
 		/// Describes the Text used in this Label
 		TextDesc textDesc;
@@ -54,10 +55,6 @@ namespace QuickGUI
 		* Returns the class name of this Widget.
 		*/
 		virtual Ogre::String getClass();
-		/**
-		* Gets the distance between a Label border and the text.
-		*/
-		float getPadding(Padding p);
 		/**
 		* Gets the text in UTFString form.
 		*/
@@ -107,10 +104,6 @@ namespace QuickGUI
 		* will be changed to the font specified, otherwise only the first occurrence is changed.
 		*/
 		void setFont(const Ogre::String& fontName, Ogre::UTFString s, bool allOccurrences);
-		/**
-		* Sets the distance between a Label border and the text.
-		*/
-		void setPadding(Padding p, float distance);
 		/**
 		* Sets the text for this object.
 		*/

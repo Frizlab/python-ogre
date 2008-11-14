@@ -23,20 +23,16 @@ namespace QuickGUI
 	MenuLabelDesc::MenuLabelDesc() :
 		MenuItemDesc()
 	{
-		for(int i = 0; i < PADDING_COUNT; ++i)
-		{
-			padding[i] = 5.0;
-		}
+		verticalTextAlignment = TEXT_ALIGNMENT_VERTICAL_CENTER;
+
+		textDesc.horizontalTextAlignment = TEXT_ALIGNMENT_HORIZONTAL_LEFT;
 	}
 
 	void MenuLabelDesc::serialize(SerialBase* b)
 	{
 		MenuItemDesc::serialize(b);
 
-		for(int i = 0; i < PADDING_COUNT; ++i)
-		{
-			b->IO(StringConverter::toString(static_cast<Padding>(i)),&padding[i]);
-		}
+		b->IO("VerticalTextAlignment",&verticalTextAlignment);
 
 		textDesc.serialize(b);
 	}
@@ -65,19 +61,16 @@ namespace QuickGUI
 		// modify it directly, which is used for serialization.
 		mDesc->textDesc = mld->textDesc;
 
-		mDesc->textDesc.allottedWidth = mld->dimensions.size.width - (mld->padding[PADDING_LEFT] + mld->padding[PADDING_RIGHT]);
+		setSkinType(d->skinTypeName);
+
+		SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
+		mDesc->textDesc.allottedWidth = mld->dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
 
 		if(mText != NULL)
 			delete mText;
 
+		mDesc->verticalTextAlignment = mld->verticalTextAlignment;
 		mText = new Text(mDesc->textDesc);
-
-		setPadding(PADDING_BOTTOM,mld->padding[PADDING_BOTTOM]);
-		setPadding(PADDING_LEFT,mld->padding[PADDING_LEFT]);
-		setPadding(PADDING_RIGHT,mld->padding[PADDING_RIGHT]);
-		setPadding(PADDING_TOP,mld->padding[PADDING_TOP]);
-
-		setSkinType(d->skinTypeName);
 	}
 
 	Widget* MenuLabel::factory(const Ogre::String& widgetName)
@@ -94,17 +87,14 @@ namespace QuickGUI
 		return "MenuLabel";
 	}
 
-	float MenuLabel::getPadding(Padding p)
-	{
-		if(p == PADDING_COUNT)
-			throw Exception(Exception::ERR_INVALIDPARAMS,"PADDING_COUNT is not a valid parameter!","MenuLabel::getPadding");
-
-		return mDesc->padding[p];
-	}
-
 	float MenuLabel::getVerticalLineSpacing()
 	{
 		return mText->getVerticalLineSpacing();
+	}
+
+	VerticalTextAlignment MenuLabel::getVerticalTextAlignment()
+	{
+		return mDesc->verticalTextAlignment;
 	}
 
 	void MenuLabel::onDraw()
@@ -122,21 +112,39 @@ namespace QuickGUI
 		Ogre::ColourValue prevColor = brush->getColour();
 		Rect prevClipRegion = brush->getClipRegion();
 
-		Rect clipRegion;
-		clipRegion.size = 
-			Size(
-				mWidgetDesc->dimensions.size.width - mDesc->padding[PADDING_RIGHT] - mDesc->padding[PADDING_LEFT],
-				mWidgetDesc->dimensions.size.height - mDesc->padding[PADDING_BOTTOM] - mDesc->padding[PADDING_TOP]);
-		clipRegion.position = mTexturePosition;
-		clipRegion.translate(Point(mDesc->padding[PADDING_LEFT],mDesc->padding[PADDING_TOP]));
+		// Center Text Vertically
+
+		float textHeight = mText->getTextHeight();
+		float yPos = 0;
+
+		switch(mDesc->verticalTextAlignment)
+		{
+		case TEXT_ALIGNMENT_VERTICAL_BOTTOM:
+			yPos = mDesc->dimensions.size.height - st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM) - textHeight;
+			break;
+		case TEXT_ALIGNMENT_VERTICAL_CENTER:
+			yPos = (mDesc->dimensions.size.height / 2.0) - (textHeight / 2.0);
+			break;
+		case TEXT_ALIGNMENT_VERTICAL_TOP:
+			yPos = st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_TOP);
+			break;
+		}
+
+		// Clip to client dimensions
+		Rect clipRegion(mClientDimensions);
+		clipRegion.translate(mTexturePosition);
 
 		brush->setClipRegion(prevClipRegion.getIntersection(clipRegion));
+
+		// Adjust Rect to Text drawing region
+		clipRegion = mClientDimensions;
+		clipRegion.position.y = yPos;
+		clipRegion.translate(mTexturePosition);		
 
 		mText->draw(clipRegion.position);
 
 		brush->setClipRegion(prevClipRegion);
-
-		Brush::getSingleton().setColor(prevColor);
+		brush->setColor(prevColor);
 	}
 
 	void MenuLabel::onMouseButtonUp(const EventArgs& args)
@@ -235,17 +243,6 @@ namespace QuickGUI
 		redraw();
 	}
 
-	void MenuLabel::setPadding(Padding p, float distance)
-	{
-		if(p == PADDING_COUNT)
-			throw Exception(Exception::ERR_INVALIDPARAMS,"PADDING_COUNT is not a valid parameter!","MenuLabel::setPadding");
-
-		mDesc->padding[p] = distance;
-		mText->setAllottedWidth(mWidgetDesc->dimensions.size.width - (mDesc->padding[PADDING_LEFT] + mDesc->padding[PADDING_RIGHT]));
-
-		redraw();
-	}
-
 	void MenuLabel::setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv)
 	{
 		mText->setText(s,fp,cv);
@@ -259,6 +256,13 @@ namespace QuickGUI
 			return;
 
 		mText->setVerticalLineSpacing(distance);
+
+		redraw();
+	}
+
+	void MenuLabel::setVerticalTextAlignment(VerticalTextAlignment a)
+	{
+		mDesc->verticalTextAlignment = a;
 
 		redraw();
 	}

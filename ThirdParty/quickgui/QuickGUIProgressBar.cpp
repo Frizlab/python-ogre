@@ -25,21 +25,14 @@ namespace QuickGUI
 		layout = PROGRESSBAR_LAYOUT_HORIZONTAL;
 		clippingEdge = PROGRESSBAR_CLIP_LEFT_BOTTOM;
 		progress = 100;
-
-		for(int i = 0; i < PADDING_COUNT; ++i)
-		{
-			padding[i] = 5.0;
-		}
+		verticalTextAlignment = TEXT_ALIGNMENT_VERTICAL_CENTER;
 	}
 
 	void ProgressBarDesc::serialize(SerialBase* b)
 	{
 		WidgetDesc::serialize(b);
 
-		for(int i = 0; i < PADDING_COUNT; ++i)
-		{
-			b->IO(StringConverter::toString(static_cast<Padding>(i)),&padding[i]);
-		}
+		b->IO("VerticalTextAlignment",&verticalTextAlignment);
 
 		textDesc.serialize(b);
 
@@ -74,13 +67,10 @@ namespace QuickGUI
 		// modify it directly, which is used for serialization.
 		mDesc->textDesc = pd->textDesc;
 
-		mDesc->textDesc.allottedWidth = pd->dimensions.size.width - (pd->padding[PADDING_LEFT] + pd->padding[PADDING_RIGHT]);
+		SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
+		mDesc->textDesc.allottedWidth = pd->dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
+		mDesc->verticalTextAlignment = pd->verticalTextAlignment;
 		mText = new Text(mDesc->textDesc);
-
-		setPadding(PADDING_BOTTOM,pd->padding[PADDING_BOTTOM]);
-		setPadding(PADDING_LEFT,pd->padding[PADDING_LEFT]);
-		setPadding(PADDING_RIGHT,pd->padding[PADDING_RIGHT]);
-		setPadding(PADDING_TOP,pd->padding[PADDING_TOP]);
 
 		mCurrentFontName = Text::getFirstAvailableFont()->getName();
 		mCurrentColourValue = Ogre::ColourValue::White;
@@ -166,17 +156,14 @@ namespace QuickGUI
 		return mDesc->fillDirection;
 	}
 
+	HorizontalTextAlignment ProgressBar::getHorizontalTextAlignment()
+	{
+		return mText->getHorizontalTextAlignment();
+	}
+
 	ProgressBarLayout ProgressBar::setLayout()
 	{
 		return mDesc->layout;
-	}
-
-	float ProgressBar::getPadding(Padding p)
-	{
-		if(p == PADDING_COUNT)
-			throw Exception(Exception::ERR_INVALIDPARAMS,"PADDING_COUNT is not a valid parameter!","ProgressBar::getPadding");
-
-		return mDesc->padding[p];
 	}
 
 	float ProgressBar::getProgress()
@@ -192,6 +179,11 @@ namespace QuickGUI
 	float ProgressBar::getVerticalLineSpacing()
 	{
 		return mText->getVerticalLineSpacing();
+	}
+
+	VerticalTextAlignment ProgressBar::getVerticalTextAlignment()
+	{
+		return mDesc->verticalTextAlignment;
 	}
 
 	void ProgressBar::onDraw()
@@ -213,26 +205,45 @@ namespace QuickGUI
 		barRect.translate(mTexturePosition);
 		brush->drawRectangle(barRect,UVRect(0,0,1,1));
 
-		/*
 		Ogre::ColourValue prevColor = brush->getColour();
 		Rect prevClipRegion = brush->getClipRegion();
 
-		Rect clipRegion;
-		clipRegion.size = 
-			Size(
-				mDesc->dimensions.size.width - mDesc->padding[PADDING_RIGHT],
-				mDesc->dimensions.size.height - mDesc->padding[PADDING_BOTTOM]);
-		clipRegion.position = mTexturePosition;
-		clipRegion.translate(Point(mDesc->padding[PADDING_LEFT],mDesc->padding[PADDING_TOP]));
+		if(mText->empty())
+			return;
+
+		// Center Text Vertically
+
+		float textHeight = mText->getTextHeight();
+		float yPos = 0;
+
+		switch(mDesc->verticalTextAlignment)
+		{
+		case TEXT_ALIGNMENT_VERTICAL_BOTTOM:
+			yPos = mDesc->dimensions.size.height - st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM) - textHeight;
+			break;
+		case TEXT_ALIGNMENT_VERTICAL_CENTER:
+			yPos = (mDesc->dimensions.size.height / 2.0) - (textHeight / 2.0);
+			break;
+		case TEXT_ALIGNMENT_VERTICAL_TOP:
+			yPos = st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_TOP);
+			break;
+		}
+
+		// Clip to client dimensions
+		Rect clipRegion(mClientDimensions);
+		clipRegion.translate(mTexturePosition);
 
 		brush->setClipRegion(prevClipRegion.getIntersection(clipRegion));
+
+		// Adjust Rect to Text drawing region
+		clipRegion = mClientDimensions;
+		clipRegion.position.y = yPos;
+		clipRegion.translate(mTexturePosition);		
 
 		mText->draw(clipRegion.position);
 
 		brush->setClipRegion(prevClipRegion);
-
-		Brush::getSingleton().setColor(prevColor);
-		*/
+		brush->setColor(prevColor);
 	}
 
 	void ProgressBar::setClippingEdge(ProgressBarClippingEdge e)
@@ -323,22 +334,18 @@ namespace QuickGUI
 		redraw();
 	}
 
+	void ProgressBar::setHorizontalTextAlignment(HorizontalTextAlignment a)
+	{
+		mText->setHorizontalTextAlignment(a);
+
+		redraw();
+	}
+
 	void ProgressBar::setLayout(ProgressBarLayout l)
 	{
 		mDesc->layout = l;
 
 		setProgress(mDesc->progress);
-	}
-
-	void ProgressBar::setPadding(Padding p, float distance)
-	{
-		if(p == PADDING_COUNT)
-			throw Exception(Exception::ERR_INVALIDPARAMS,"PADDING_COUNT is not a valid parameter!","ProgressBar::setPadding");
-
-		mDesc->padding[p] = distance;
-		mText->setAllottedWidth(mWidgetDesc->dimensions.size.width - (mDesc->padding[PADDING_LEFT] + mDesc->padding[PADDING_RIGHT]));
-
-		redraw();
 	}
 
 	void ProgressBar::setProgress(float percent)
@@ -539,6 +546,13 @@ namespace QuickGUI
 			return;
 
 		mText->setVerticalLineSpacing(distance);
+
+		redraw();
+	}
+
+	void ProgressBar::setVerticalTextAlignment(VerticalTextAlignment a)
+	{
+		mDesc->verticalTextAlignment = a;
 
 		redraw();
 	}
