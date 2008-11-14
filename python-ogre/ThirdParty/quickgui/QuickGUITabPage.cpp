@@ -49,10 +49,7 @@ namespace QuickGUI
 		TabDesc td;
 		td.name = getName() + ".Tab";
 		td.frontWidth = tpd->tabFrontWidth;
-		td.padding[PADDING_LEFT] = tpd->padding[PADDING_LEFT];
-		td.padding[PADDING_RIGHT] = tpd->padding[PADDING_RIGHT];
-		td.padding[PADDING_TOP] = tpd->padding[PADDING_TOP];
-		td.padding[PADDING_BOTTOM] = tpd->padding[PADDING_BOTTOM];
+		td.verticalTextAlignment = tpd->verticalTextAlignment;
 		td.textDesc = tpd->textDesc;
 		mTab = dynamic_cast<Tab*>(Widget::create("Tab",td));
 		mTab->addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_UP,&TabPage::onMouseButtonUpOnTab,this);
@@ -131,6 +128,16 @@ namespace QuickGUI
 	Ogre::String TabPage::getClass()
 	{
 		return "TabPage";
+	}
+
+	HorizontalTextAlignment TabPage::getHorizontalTextAlignment()
+	{
+		return mTab->getHorizontalTextAlignment();
+	}
+
+	VerticalTextAlignment TabPage::getVerticalTextAlignment()
+	{
+		return mDesc->verticalTextAlignment;
 	}
 
 	bool TabPage::isSelected()
@@ -289,6 +296,13 @@ namespace QuickGUI
 		Panel::setHorizontalAnchor(a);
 	}
 
+	void TabPage::setHorizontalTextAlignment(HorizontalTextAlignment a)
+	{
+		mTab->setHorizontalTextAlignment(a);
+
+		redraw();
+	}
+
 	void TabPage::setParent(Widget* parent)
 	{
 		Panel::setParent(parent);
@@ -337,6 +351,13 @@ namespace QuickGUI
 	void TabPage::setVerticalAnchor(VerticalAnchor a)
 	{
 		Panel::setVerticalAnchor(a);
+	}
+
+	void TabPage::setVerticalTextAlignment(VerticalTextAlignment a)
+	{
+		mTab->setVerticalTextAlignment(a);
+
+		redraw();
 	}
 
 	void TabPage::setWidth(float pixelWidth)

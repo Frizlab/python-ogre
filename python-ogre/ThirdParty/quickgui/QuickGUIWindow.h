@@ -28,8 +28,10 @@ namespace QuickGUI
 		/// number of pixels between from the top, bottom, and right of TitleBar right end
 		float titleBarCloseButtonPadding;
 		Ogre::String titleBarCloseButtonSkinType;
+		
+		/// Vertical alignment of text within this widget's client area.
+		VerticalTextAlignment titlebarVerticalTextAlignment;
 
-		float titleBarPadding[PADDING_COUNT];
 
 		/// Describes the Text used in this Window's TitleBar
 		TextDesc titleBarTextDesc;

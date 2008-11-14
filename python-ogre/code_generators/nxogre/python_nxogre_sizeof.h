@@ -12,6 +12,8 @@ sizeof ( NxUserRaycastReport );
 // sizeof ( NxControllerAction );
 sizeof ( NxWheelShape );
 sizeof ( NxHeightFieldShapeDesc );
+// // sizeof ( Cloth );
+sizeof ( Resources::ResourceManager );
 sizeof ( NxClothMesh );
 sizeof ( NxConvexShapeDesc );
 sizeof ( NxMeshData );

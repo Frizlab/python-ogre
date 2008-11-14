@@ -62,8 +62,9 @@ def UnitTest_Screenshot():
     if isUnitTest():
         env = os.environ
         path = env["PythonOgreUnitTestPath"]
-        path = os.path.join ( path, sys.modules['__main__'].__file__.split('.')[0] )
-        print "\n\n**** ", path
+        parentpath = os.getcwd().split(os.path.sep)[-1] # get the last part of the parent directory
+        filename = parentpath+'.'+ sys.modules['__main__'].__file__.split('.')[0] # file name is parent.demo.xx
+        path = os.path.join ( path, filename )
         return path
     else:
         return "test"
@@ -182,7 +183,10 @@ class Application(object):
         else:
             carryOn = self.root.restoreConfig()            
         if carryOn:
-            self.renderWindow = self.root.initialise(True, "OGRE Render Window")
+            windowTitle = os.path.join( os.getcwd(), sys.argv[0])
+            if not windowTitle:
+                windotTitle = "Ogre Render Window"
+            self.renderWindow = self.root.initialise(True,windowTitle)
         return carryOn
 
     def _chooseSceneManager(self):

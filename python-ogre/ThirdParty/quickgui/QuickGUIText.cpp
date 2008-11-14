@@ -10,7 +10,7 @@ namespace QuickGUI
 		BaseDesc()
 	{
 		allottedWidth = 100;
-		textAlignment = TEXT_ALIGNMENT_LEFT;
+		horizontalTextAlignment = TEXT_ALIGNMENT_HORIZONTAL_LEFT;
 		verticalLineSpacing = 2;
 	}
 
@@ -33,7 +33,7 @@ namespace QuickGUI
 		int length = 0;
 
 		for(int index = 0; index < static_cast<int>(segments.size()); ++index)
-			length += segments[index].text.length();
+			length += static_cast<int>(segments[index].text.length());
 
 		return length;
 	}
@@ -52,6 +52,7 @@ namespace QuickGUI
 	void TextDesc::serialize(SerialBase* b)
 	{
 //		b->IO("AllottedWidth",&allottedWidth);
+		b->IO("HorizontalTextAlignment",&horizontalTextAlignment);
 		b->IO("VerticalLineSpacing",&verticalLineSpacing);
 
 		b->begin("Text","segments");
@@ -495,17 +496,20 @@ namespace QuickGUI
 
 		for(std::vector<TextLine*>::iterator it = mTextLines.begin(); it != mTextLines.end(); ++it)
 		{
-			switch(mTextDesc->textAlignment)
+			switch(mTextDesc->horizontalTextAlignment)
 			{
-			case TEXT_ALIGNMENT_LEFT:
+			case TEXT_ALIGNMENT_HORIZONTAL_LEFT:
 				break;
-			case TEXT_ALIGNMENT_RIGHT:
+			case TEXT_ALIGNMENT_HORIZONTAL_RIGHT:
 				p.x += mTextDesc->allottedWidth - (*it)->getWidth();
 				break;
-			case TEXT_ALIGNMENT_CENTER:
+			case TEXT_ALIGNMENT_HORIZONTAL_CENTER:
 				p.x += ((mTextDesc->allottedWidth - (*it)->getWidth()) / 2.0);
 				break;
 			}
+
+			p.x = Ogre::Math::Ceil(p.x);
+			p.y = Ogre::Math::Ceil(p.y);
 
 			(*it)->draw(p);
 
@@ -628,6 +632,11 @@ namespace QuickGUI
 		}
 
 		return index + mTextLines[counter]->getCursorIndexAtPosition(Point(p.x,0));
+	}
+
+	HorizontalTextAlignment Text::getHorizontalTextAlignment()
+	{
+		return mTextDesc->horizontalTextAlignment;
 	}
 
 	int Text::getIndexOfNextWord(unsigned int index)
@@ -793,6 +802,18 @@ namespace QuickGUI
 	TextDesc* Text::getTextDesc()
 	{
 		return mTextDesc;
+	}
+
+	float Text::getTextHeight()
+	{
+		_checkTextLines();
+
+		float height = 0;
+
+		for(std::vector<TextLine*>::iterator it = mTextLines.begin(); it != mTextLines.end(); ++it)
+			height += (*it)->getHeight();
+
+		return height;
 	}
 
 	float Text::getTextWidth()
@@ -1285,6 +1306,11 @@ namespace QuickGUI
 		mCharacters.push_back(new Character(Text::UNICODE_NEL,fp,cv));
 
 		mTextLinesDirty = true;
+	}
+
+	void Text::setHorizontalTextAlignment(HorizontalTextAlignment a)
+	{
+		mTextDesc->horizontalTextAlignment = a;
 	}
 
 	void Text::setVerticalLineSpacing(float distance)

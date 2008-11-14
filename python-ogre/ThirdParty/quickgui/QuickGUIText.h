@@ -48,7 +48,7 @@ namespace QuickGUI
 		TextDesc();
 
 		float allottedWidth;
-		TextAlignment textAlignment;
+		HorizontalTextAlignment horizontalTextAlignment;
 		float verticalLineSpacing;
 		std::vector<TextSegment> segments;
 
@@ -244,6 +244,10 @@ namespace QuickGUI
 		*/
 		int getCursorIndexAtPosition(Point& p);
 		/**
+		* Returns the horizontal alignment of this text.
+		*/
+		HorizontalTextAlignment getHorizontalTextAlignment();
+		/**
 		* Returns the index of the next word after the index given, or -1 if
 		* no more words remain.
 		*/
@@ -273,6 +277,11 @@ namespace QuickGUI
 		* Returns the desc object representing this Text instance.
 		*/
 		TextDesc* getTextDesc();
+		/**
+		* Returns the height of text.
+		* NOTE: the allotted width affects the number of TextLines generated, which affects the height.
+		*/
+		float getTextHeight();
 		/**
 		* Returns the width of text as if it were all on one line.
 		*/
@@ -372,6 +381,10 @@ namespace QuickGUI
 		* Sets the text for this object.
 		*/
 		void setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv);
+		/**
+		* Sets the Horizontal alignment of Text when drawn.
+		*/
+		void setHorizontalTextAlignment(HorizontalTextAlignment a);
 		/**
 		* Sets the number of pixels placed between each line of text, if there
 		* are multiple lines of text.

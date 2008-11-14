@@ -23,7 +23,8 @@ namespace QuickGUI
 		/// Percentage of progress of the bar. (0-100)
 		float progress;
 
-		float padding[PADDING_COUNT];
+		/// Vertical alignment of text within this widget's client area.
+		VerticalTextAlignment verticalTextAlignment;
 
 		/// Describes the Text used in this Label
 		TextDesc textDesc;
@@ -107,13 +108,13 @@ namespace QuickGUI
 		*/
 		ProgressBarFillDirection getFillDirection();
 		/**
+		* Returns the horizontal alignment of text within this widget's client area.
+		*/
+		HorizontalTextAlignment getHorizontalTextAlignment();
+		/**
 		* Gets the axis of progress growth, either horizontal or vertical.
 		*/
 		ProgressBarLayout setLayout();
-		/**
-		* Gets the distance between a Label border and the text.
-		*/
-		float getPadding(Padding p);
 		/**
 		* Gets the progress of the ProgressBar, that is a visual indicator of percent complete.
 		*/
@@ -127,6 +128,10 @@ namespace QuickGUI
 		* are multiple lines of text.
 		*/
 		float getVerticalLineSpacing();
+		/**
+		* Returns the vertical alignment of text within this widget's client area.
+		*/
+		VerticalTextAlignment getVerticalTextAlignment();
 		
 		/**
 		* Sets the side of the bar texture that is clipped to simulate progress.
@@ -181,13 +186,13 @@ namespace QuickGUI
 		*/
 		void setFont(const Ogre::String& fontName, Ogre::UTFString s, bool allOccurrences);
 		/**
+		* Sets the Horizontal alignment of Text as displayed within the Label area.
+		*/
+		void setHorizontalTextAlignment(HorizontalTextAlignment a);
+		/**
 		* Sets the axis of progress growth, either horizontal or vertical.
 		*/
 		void setLayout(ProgressBarLayout l);
-		/**
-		* Sets the distance between a Label border and the text.
-		*/
-		void setPadding(Padding p, float distance);
 		/**
 		* Sets the progress of the ProgressBar, that is a visual indicator of percent complete.
 		* NOTE: values above and below 0 will be capped to 0/100%.
@@ -216,6 +221,10 @@ namespace QuickGUI
 		* are multiple lines of text.
 		*/
 		void setVerticalLineSpacing(float distance);
+		/**
+		* Sets the Vertical alignment of Text as displayed within the Label area.
+		*/
+		void setVerticalTextAlignment(VerticalTextAlignment a);
 
 	protected:
 		ProgressBar(const Ogre::String& name);

@@ -209,8 +209,10 @@ class QuickGUIDemoApp (sf.Application):
         v.setBackgroundColour( Ogre.ColourValue().Black )
         
         self.guiroot = gui.Root()
-        gui.SkinSetManager.getSingleton().loadSkin("qgui",gui.SkinSet.IMAGE_TYPE_PNG,self.ResourceGroup);
-        self.mGUIManager = gui.Root.getSingleton().createGUIManager(self.camera.getViewport(),"qgui")
+#         gui.SkinSetManager.getSingleton().loadSkin("qgui",gui.SkinSet.IMAGE_TYPE_PNG,self.ResourceGroup);
+        self.desc = gui.GUIManagerDesc()
+	
+        self.mGUIManager = gui.Root.getSingleton().createGUIManager(self.desc)
         self.mGUIManager.setSceneManager(self.sceneManager) 
 
         self.createGUI()

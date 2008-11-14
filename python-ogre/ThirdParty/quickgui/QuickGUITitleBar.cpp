@@ -27,13 +27,9 @@ namespace QuickGUI
 		dimensions.size.height = 25;
 		dragable = true;
 		horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
+		verticalTextAlignment = TEXT_ALIGNMENT_VERTICAL_CENTER;
 
-		for(int i = 0; i < PADDING_COUNT; ++i)
-		{
-			padding[i] = 5.0;
-		}
-
-		//resizable = false;
+		textDesc.horizontalTextAlignment = TEXT_ALIGNMENT_HORIZONTAL_LEFT;
 	}
 
 	TitleBar::TitleBar(const Ogre::String& name) :
@@ -68,7 +64,7 @@ namespace QuickGUI
 
 			bd.dimensions.size.width = mClientDimensions.size.height - (td->closeButtonPadding * 2.0);
 			bd.dimensions.size.height = bd.dimensions.size.width;
-			bd.dimensions.position.x = mClientDimensions.size.width - (td->closeButtonPadding + bd.dimensions.size.width);
+			bd.dimensions.position.x = mDesc->dimensions.size.width - mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_RIGHT) - td->closeButtonPadding - bd.dimensions.size.width;
 			bd.dimensions.position.y = td->closeButtonPadding;
 			bd.skinTypeName = td->closeButtonSkinType;
 			bd.horizontalAnchor = ANCHOR_HORIZONTAL_RIGHT;
@@ -77,21 +73,20 @@ namespace QuickGUI
 			addComponent(CLOSE_BUTTON,mCloseButton);
 			
 			mCloseButton->addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_UP,&TitleBar::onCloseButtonUp,this);
+
+			mClientDimensions.size.width = mCloseButton->getPosition().x - mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_LEFT);
 		}
 
 		// Text
+
+		mDesc->verticalTextAlignment = td->verticalTextAlignment;
 
 		// Make a copy of the Text Desc.  The Text object will
 		// modify it directly, which is used for serialization.
 		mDesc->textDesc = td->textDesc;
 
-		mDesc->textDesc.allottedWidth = td->dimensions.size.width - (td->padding[PADDING_LEFT] + td->padding[PADDING_RIGHT]);
+		mDesc->textDesc.allottedWidth = mClientDimensions.size.width;
 		mText = new Text(mDesc->textDesc);
-
-		setPadding(PADDING_BOTTOM,td->padding[PADDING_BOTTOM]);
-		setPadding(PADDING_LEFT,td->padding[PADDING_LEFT]);
-		setPadding(PADDING_RIGHT,td->padding[PADDING_RIGHT]);
-		setPadding(PADDING_TOP,td->padding[PADDING_TOP]);
 	}
 
 	Widget* TitleBar::factory(const Ogre::String& widgetName)
@@ -117,17 +112,19 @@ namespace QuickGUI
 		return "TitleBar";
 	}
 
-	float TitleBar::getPadding(Padding p)
+	HorizontalTextAlignment TitleBar::getHorizontalTextAlignment()
 	{
-		if(p == PADDING_COUNT)
-			throw Exception(Exception::ERR_INVALIDPARAMS,"PADDING_COUNT is not a valid parameter!","Label::getPadding");
-
-		return mDesc->padding[p];
+		return mText->getHorizontalTextAlignment();
 	}
 
 	Ogre::UTFString TitleBar::getText()
 	{
 		return mText->getText();
+	}
+
+	VerticalTextAlignment TitleBar::getVerticalTextAlignment()
+	{
+		return mDesc->verticalTextAlignment;
 	}
 
 	void TitleBar::onCloseButtonUp(const EventArgs& args)
@@ -140,34 +137,57 @@ namespace QuickGUI
 
 	void TitleBar::onDraw()
 	{
-		SkinType* st = mSkinType;
-		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
-			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
-
 		Brush* brush = Brush::getSingletonPtr();
 
 		brush->setFilterMode(mDesc->brushFilterMode);
 
+		SkinType* st = mSkinType;
+		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
+		{
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+		}
+
 		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
+
+		if(mText->empty())
+			return;
 
 		Ogre::ColourValue prevColor = brush->getColour();
 		Rect prevClipRegion = brush->getClipRegion();
 
-		Rect clipRegion;
-		clipRegion.size = 
-			Size(
-				mDesc->dimensions.size.width - mDesc->padding[PADDING_RIGHT],
-				mDesc->dimensions.size.height - mDesc->padding[PADDING_BOTTOM]);
-		clipRegion.position = mTexturePosition;
-		clipRegion.translate(Point(mDesc->padding[PADDING_LEFT],mDesc->padding[PADDING_TOP]));
+		// Center Text Vertically
+
+		float textHeight = mText->getTextHeight();
+		float yPos = 0;
+
+		switch(mDesc->verticalTextAlignment)
+		{
+		case TEXT_ALIGNMENT_VERTICAL_BOTTOM:
+			yPos = mDesc->dimensions.size.height - st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM) - textHeight;
+			break;
+		case TEXT_ALIGNMENT_VERTICAL_CENTER:
+			yPos = (mDesc->dimensions.size.height / 2.0) - (textHeight / 2.0);
+			break;
+		case TEXT_ALIGNMENT_VERTICAL_TOP:
+			yPos = st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_TOP);
+			break;
+		}
+
+		// Clip to client dimensions
+		Rect clipRegion(mClientDimensions);
+		clipRegion.translate(mTexturePosition);
 
 		brush->setClipRegion(prevClipRegion.getIntersection(clipRegion));
+
+		// Adjust Rect to Text drawing region
+		clipRegion = mClientDimensions;
+		clipRegion.position.y = yPos;
+		clipRegion.translate(mTexturePosition);		
 
 		mText->draw(clipRegion.position);
 
 		brush->setClipRegion(prevClipRegion);
-
-		Brush::getSingleton().setColor(prevColor);
+		brush->setColor(prevColor);
 	}
 
 	void TitleBar::setColor(const Ogre::ColourValue& cv)
@@ -240,17 +260,6 @@ namespace QuickGUI
 		redraw();
 	}
 
-	void TitleBar::setPadding(Padding p, float distance)
-	{
-		if(p == PADDING_COUNT)
-			throw Exception(Exception::ERR_INVALIDPARAMS,"PADDING_COUNT is not a valid parameter!","Label::setPadding");
-
-		mDesc->padding[p] = distance;
-		mText->setAllottedWidth(mWidgetDesc->dimensions.size.width - (mDesc->padding[PADDING_LEFT] + mDesc->padding[PADDING_RIGHT]));
-
-		redraw();
-	}
-
 	void TitleBar::setResizable(bool resizable)
 	{
 		Widget::setResizable(resizable);
@@ -261,5 +270,40 @@ namespace QuickGUI
 		mText->setText(s,fp,cv);
 
 		redraw();
+	}
+
+	void TitleBar::setHorizontalTextAlignment(HorizontalTextAlignment a)
+	{
+		mText->setHorizontalTextAlignment(a);
+
+		redraw();
+	}
+
+	void TitleBar::setVerticalTextAlignment(VerticalTextAlignment a)
+	{
+		mDesc->verticalTextAlignment = a;
+
+		redraw();
+	}
+
+	void TitleBar::updateClientDimensions()
+	{
+		mClientDimensions.position = Point::ZERO;
+		mClientDimensions.size = mWidgetDesc->dimensions.size;
+
+		if(mSkinType != NULL)
+		{
+			SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
+			mClientDimensions.position.x = se->getBorderThickness(BORDER_LEFT);
+			mClientDimensions.position.y = se->getBorderThickness(BORDER_TOP);
+			mClientDimensions.size.width = mWidgetDesc->dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
+			mClientDimensions.size.height = mWidgetDesc->dimensions.size.height - (se->getBorderThickness(BORDER_TOP) + se->getBorderThickness(BORDER_BOTTOM));
+
+			if(mCloseButton)
+				mClientDimensions.size.width = mCloseButton->getPosition().x - se->getBorderThickness(BORDER_LEFT);
+		}
+
+		WidgetEventArgs args(this);
+		fireWidgetEvent(WIDGET_EVENT_CLIENTSIZE_CHANGED,args);
 	}
 }

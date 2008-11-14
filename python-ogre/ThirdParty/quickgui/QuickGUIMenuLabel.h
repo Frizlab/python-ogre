@@ -1,7 +1,6 @@
 #ifndef QUICKGUIMENULABEL_H
 #define QUICKGUIMENULABEL_H
 
-#include "QuickGUIPadding.h"
 #include "QuickGUIMenuItem.h"
 #include "QuickGUIText.h"
 
@@ -13,7 +12,8 @@ namespace QuickGUI
 	public:
 		MenuLabelDesc();
 
-		float padding[PADDING_COUNT];
+		/// Vertical alignment of text within this widget's client area.
+		VerticalTextAlignment verticalTextAlignment;
 
 		/// Describes the Text used in this Label
 		TextDesc textDesc;
@@ -61,14 +61,14 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getClass();
 		/**
-		* Gets the distance between a Label border and the text.
-		*/
-		float getPadding(Padding p);
-		/**
 		* Returns the number of pixels placed between each line of text, if there
 		* are multiple lines of text.
 		*/
 		float getVerticalLineSpacing();
+		/**
+		* Returns the vertical alignment of text within this widget's client area.
+		*/
+		VerticalTextAlignment getVerticalTextAlignment();
 
 		/**
 		* Sets all characters of the text to the specified color.
@@ -115,10 +115,6 @@ namespace QuickGUI
 		*/
 		void setFont(const Ogre::String& fontName, Ogre::UTFString s, bool allOccurrences);
 		/**
-		* Sets the distance between a Label border and the text.
-		*/
-		void setPadding(Padding p, float distance);
-		/**
 		* Sets the text for this object.
 		*/
 		void setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv);
@@ -127,6 +123,10 @@ namespace QuickGUI
 		* are multiple lines of text.
 		*/
 		void setVerticalLineSpacing(float distance);
+		/**
+		* Sets the Vertical alignment of Text as displayed within the Label area.
+		*/
+		void setVerticalTextAlignment(VerticalTextAlignment a);
 
 	protected:
 		MenuLabel(const Ogre::String& name);

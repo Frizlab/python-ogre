@@ -17,18 +17,14 @@ namespace QuickGUI
 	LabelDesc::LabelDesc() :
 		WidgetDesc()
 	{
-		for(int i = 0; i < PADDING_COUNT; ++i)
-		{
-			padding[i] = 5.0;
-		}
+		verticalTextAlignment = TEXT_ALIGNMENT_VERTICAL_CENTER;
 	}
 
 	void LabelDesc::serialize(SerialBase* b)
 	{
 		WidgetDesc::serialize(b);
 
-		for(int i = 0; i < PADDING_COUNT; ++i)
-			b->IO(StringConverter::toString(static_cast<Padding>(i)),&padding[i]);
+		b->IO("VerticalTextAlignment",&verticalTextAlignment);
 
 		textDesc.serialize(b);
 	}
@@ -59,28 +55,33 @@ namespace QuickGUI
 		// modify it directly, which is used for serialization.
 		mDesc->textDesc = ld->textDesc;
 
+		// Store pointer to SkinType
+		SkinType* st = mSkinType;
+		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
+		{
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+		}
+
+		SkinElement* se = st->getSkinElement(mSkinElementName);
+
 		if(mDesc->dimensions.size.width == 0)
 		{
 			if(mDesc->textDesc.segments.empty())
 				mDesc->dimensions.size.width = 50;
 			else
-				mDesc->dimensions.size.width = ld->padding[PADDING_LEFT] + mDesc->textDesc.getTextWidth() + ld->padding[PADDING_RIGHT];
+				mDesc->dimensions.size.width = se->getBorderThickness(BORDER_LEFT) + mDesc->textDesc.getTextWidth() + se->getBorderThickness(BORDER_RIGHT);
 		}
 		if(mDesc->dimensions.size.height == 0)
 		{
 			if(mDesc->textDesc.segments.empty())
 				mDesc->dimensions.size.height = 20;
 			else
-				mDesc->dimensions.size.height = ld->padding[PADDING_TOP] + mDesc->textDesc.getTextHeight() + ld->padding[PADDING_BOTTOM];
+				mDesc->dimensions.size.height = se->getBorderThickness(BORDER_TOP) + mDesc->textDesc.getTextHeight() + se->getBorderThickness(BORDER_BOTTOM);
 		}
 
-		mDesc->textDesc.allottedWidth = ld->dimensions.size.width - (ld->padding[PADDING_LEFT] + ld->padding[PADDING_RIGHT]);
+		mDesc->verticalTextAlignment = ld->verticalTextAlignment;
+		mDesc->textDesc.allottedWidth = ld->dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
 		mText = new Text(mDesc->textDesc);
-
-		setPadding(PADDING_BOTTOM,ld->padding[PADDING_BOTTOM]);
-		setPadding(PADDING_LEFT,ld->padding[PADDING_LEFT]);
-		setPadding(PADDING_RIGHT,ld->padding[PADDING_RIGHT]);
-		setPadding(PADDING_TOP,ld->padding[PADDING_TOP]);
 
 		mCurrentFontName = Text::getFirstAvailableFont()->getName();
 		mCurrentColourValue = Ogre::ColourValue::White;
@@ -100,12 +101,9 @@ namespace QuickGUI
 		return "Label";
 	}
 
-	float Label::getPadding(Padding p)
+	HorizontalTextAlignment Label::getHorizontalTextAlignment()
 	{
-		if(p == PADDING_COUNT)
-			throw Exception(Exception::ERR_INVALIDPARAMS,"PADDING_COUNT is not a valid parameter!","Label::getPadding");
-
-		return mDesc->padding[p];
+		return mText->getHorizontalTextAlignment();
 	}
 
 	Ogre::UTFString Label::getText()
@@ -116,6 +114,11 @@ namespace QuickGUI
 	float Label::getVerticalLineSpacing()
 	{
 		return mText->getVerticalLineSpacing();
+	}
+
+	VerticalTextAlignment Label::getVerticalTextAlignment()
+	{
+		return mDesc->verticalTextAlignment;
 	}
 
 	void Label::onDraw()
@@ -135,15 +138,34 @@ namespace QuickGUI
 		Ogre::ColourValue prevColor = brush->getColour();
 		Rect prevClipRegion = brush->getClipRegion();
 
-		Rect clipRegion;
-		clipRegion.size = 
-			Size(
-				mWidgetDesc->dimensions.size.width - mDesc->padding[PADDING_RIGHT] - mDesc->padding[PADDING_LEFT],
-				mWidgetDesc->dimensions.size.height - mDesc->padding[PADDING_BOTTOM] - mDesc->padding[PADDING_TOP]);
-		clipRegion.position = mTexturePosition;
-		clipRegion.translate(Point(mDesc->padding[PADDING_LEFT],mDesc->padding[PADDING_TOP]));
+		// Center Text Vertically
+
+		float textHeight = mText->getTextHeight();
+		float yPos = 0;
+
+		switch(mDesc->verticalTextAlignment)
+		{
+		case TEXT_ALIGNMENT_VERTICAL_BOTTOM:
+			yPos = mDesc->dimensions.size.height - st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM) - textHeight;
+			break;
+		case TEXT_ALIGNMENT_VERTICAL_CENTER:
+			yPos = (mDesc->dimensions.size.height / 2.0) - (textHeight / 2.0);
+			break;
+		case TEXT_ALIGNMENT_VERTICAL_TOP:
+			yPos = st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_TOP);
+			break;
+		}
+
+		// Clip to client dimensions
+		Rect clipRegion(mClientDimensions);
+		clipRegion.translate(mTexturePosition);
 
 		brush->setClipRegion(prevClipRegion.getIntersection(clipRegion));
+
+		// Adjust Rect to Text drawing region
+		clipRegion = mClientDimensions;
+		clipRegion.position.y = yPos;
+		clipRegion.translate(mTexturePosition);		
 
 		mText->draw(clipRegion.position);
 
@@ -225,13 +247,16 @@ namespace QuickGUI
 		redraw();
 	}
 
-	void Label::setPadding(Padding p, float distance)
+	void Label::setHorizontalTextAlignment(HorizontalTextAlignment a)
 	{
-		if(p == PADDING_COUNT)
-			throw Exception(Exception::ERR_INVALIDPARAMS,"PADDING_COUNT is not a valid parameter!","Label::setPadding");
+		mText->setHorizontalTextAlignment(a);
 
-		mDesc->padding[p] = distance;
-		mText->setAllottedWidth(mWidgetDesc->dimensions.size.width - (mDesc->padding[PADDING_LEFT] + mDesc->padding[PADDING_RIGHT]));
+		redraw();
+	}
+
+	void Label::setVerticalTextAlignment(VerticalTextAlignment a)
+	{
+		mDesc->verticalTextAlignment = a;
 
 		redraw();
 	}

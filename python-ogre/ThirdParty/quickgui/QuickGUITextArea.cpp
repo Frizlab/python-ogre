@@ -26,23 +26,11 @@ namespace QuickGUI
 		keyDownTime = 0.6;
 		keyRepeatTime = 0.04;
 		maxCharacters = 255;
-
-		for(int i = 0; i < PADDING_COUNT; ++i)
-		{
-			padding[i] = 5.0;
-		}
-
-		textAlignment = TEXT_ALIGNMENT_LEFT;
 	}
 
 	void TextAreaDesc::serialize(SerialBase* b)
 	{
 		WidgetDesc::serialize(b);
-
-		for(int i = 0; i < PADDING_COUNT; ++i)
-		{
-			b->IO(StringConverter::toString(static_cast<Padding>(i)),&padding[i]);
-		}
 
 		b->IO("CursorBlinkTime",&cursorBlinkTime);
 		b->IO("DefaultColor",&defaultColor);
@@ -50,7 +38,6 @@ namespace QuickGUI
 		b->IO("KeyDownTime",&keyDownTime);
 		b->IO("KeyRepeatTime",&keyRepeatTime);
 		b->IO("MaxCharacters",&maxCharacters);
-		b->IO("TextAlignment",&textAlignment);
 
 		textDesc.serialize(b);
 	}
@@ -104,18 +91,11 @@ namespace QuickGUI
 		setDefaultColor(td->defaultColor);
 		mDesc->maxCharacters = td->maxCharacters;
 
-		// Set a really high width, we want everything on 1 line.
-		mDesc->textDesc.allottedWidth = mDesc->dimensions.size.width - mDesc->padding[PADDING_LEFT] - mDesc->padding[PADDING_RIGHT];
+		setSkinType(d->skinTypeName);
 
-		if(mText != NULL)
-			delete mText;
-
+		SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
+		mDesc->textDesc.allottedWidth = td->dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
 		mText = new Text(mDesc->textDesc);
-
-		setPadding(PADDING_BOTTOM,td->padding[PADDING_BOTTOM]);
-		setPadding(PADDING_LEFT,td->padding[PADDING_LEFT]);
-		setPadding(PADDING_RIGHT,td->padding[PADDING_RIGHT]);
-		setPadding(PADDING_TOP,td->padding[PADDING_TOP]);
 
 		mDesc->cursorBlinkTime = td->cursorBlinkTime;
 		mDesc->keyDownTime = td->keyDownTime;
@@ -135,8 +115,6 @@ namespace QuickGUI
 		timerDesc.timePeriod = mDesc->keyDownTime;
 		mKeyDownTimer = TimerManager::getSingleton().createTimer(timerDesc);
 		mKeyDownTimer->setCallback(&TextArea::keyDownTimerCallback,this);
-
-		setSkinType(d->skinTypeName);
 	}
 
 	Widget* TextArea::factory(const Ogre::String& widgetName)
@@ -216,16 +194,16 @@ namespace QuickGUI
 
 		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
 
+		if(mText->empty())
+			return;
+
 		Ogre::ColourValue prevColor = brush->getColour();
 		Rect prevClipRegion = brush->getClipRegion();
 
-		Rect clipRegion;
-		clipRegion.size = 
-			Size(
-				mDesc->dimensions.size.width - mDesc->padding[PADDING_RIGHT] - mDesc->padding[PADDING_LEFT],
-				mDesc->dimensions.size.height - mDesc->padding[PADDING_BOTTOM] - mDesc->padding[PADDING_TOP]);
-		clipRegion.position = mTexturePosition;
-		clipRegion.translate(Point(mDesc->padding[PADDING_LEFT],mDesc->padding[PADDING_TOP]));
+		SkinElement* se = st->getSkinElement(mSkinElementName);
+
+		Rect clipRegion = mClientDimensions;
+		clipRegion.translate(mTexturePosition);
 
 		brush->setClipRegion(prevClipRegion.getIntersection(clipRegion));
 
@@ -377,7 +355,7 @@ namespace QuickGUI
 
 		if(mText->getLength() == 0)
 		{
-			mCursorPosition.x = mDesc->padding[PADDING_LEFT];
+			mCursorPosition.x = 0;
 
 			Point p = getScreenPosition();
 			p.translate(mCursorPosition);
@@ -400,7 +378,7 @@ namespace QuickGUI
 			relativeCursorPosition.y = mText->getCharacterYPosition(mCursorIndex);
 		}
 
-		mCursorPosition.x = mDesc->padding[PADDING_LEFT] + relativeCursorPosition.x;
+		mCursorPosition.x = relativeCursorPosition.x;
 		mCursorPosition.y = relativeCursorPosition.y;
 
 		Point p = getScreenPosition();
@@ -433,16 +411,6 @@ namespace QuickGUI
 		mDesc->maxCharacters = max;
 	}
 
-	void TextArea::setPadding(Padding p, float distance)
-	{
-		if(p == PADDING_COUNT)
-			throw Exception(Exception::ERR_INVALIDPARAMS,"PADDING_COUNT is not a valid parameter!","Label::setPadding");
-
-		mDesc->padding[p] = distance;
-
-		redraw();
-	}
-
 	void TextArea::setParent(Widget* parent)
 	{
 		Widget::setParent(parent);
@@ -457,7 +425,7 @@ namespace QuickGUI
 		if(mDesc != NULL)
 		{
 			Point p = getScreenPosition();
-			p.translate(Point(mDesc->padding[PADDING_LEFT],0));
+			p.translate(Point(0,0));
 			p.translate(mCursorPosition);
 			mTextCursor->setPosition(p);
 		}

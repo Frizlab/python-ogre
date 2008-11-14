@@ -29,16 +29,15 @@ namespace QuickGUI
 		}
 	}
 
-	Ogre::String StringConverter::toString(Padding p)
+	Ogre::String StringConverter::toString(HorizontalTextAlignment a)
 	{
-		switch(p)
+		switch(a)
 		{
-		case PADDING_LEFT:											return "PADDING_LEFT";
-		case PADDING_RIGHT:											return "PADDING_RIGHT";
-		case PADDING_TOP:											return "PADDING_TOP";
-		case PADDING_BOTTOM:										return "PADDING_BOTTOM";
+		case TEXT_ALIGNMENT_HORIZONTAL_LEFT:						return "TEXT_ALIGNMENT_HORIZONTAL_LEFT";
+		case TEXT_ALIGNMENT_HORIZONTAL_RIGHT:						return "TEXT_ALIGNMENT_HORIZONTAL_RIGHT";
+		case TEXT_ALIGNMENT_HORIZONTAL_CENTER:						return "TEXT_ALIGNMENT_HORIZONTAL_CENTER";
 		default: 
-			throw Exception(Exception::ERR_SERIALIZATION,"Padding type does not have a string equivalent!  Check if update is needed!","StringConverter::toString");
+			throw Exception(Exception::ERR_SERIALIZATION,"HorizontalTextAlignment type does not have a string equivalent!  Check if update is needed!","StringConverter::toString");
 		}
 	}
 
@@ -107,18 +106,6 @@ namespace QuickGUI
 		}
 	}
 
-	Ogre::String StringConverter::toString(TextAlignment a)
-	{
-		switch(a)
-		{
-		case TEXT_ALIGNMENT_LEFT:									return "TEXT_ALIGNMENT_LEFT";
-		case TEXT_ALIGNMENT_RIGHT:									return "TEXT_ALIGNMENT_RIGHT";
-		case TEXT_ALIGNMENT_CENTER:									return "TEXT_ALIGNMENT_CENTER";
-		default: 
-			throw Exception(Exception::ERR_SERIALIZATION,"TextAlignment type does not have a string equivalent!  Check if update is needed!","StringConverter::toString");
-		}
-	}
-
 	Ogre::String StringConverter::toString(ToolBarItemLayout l)
 	{
 		switch(l)
@@ -142,6 +129,18 @@ namespace QuickGUI
 		case ANCHOR_VERTICAL_TOP_BOTTOM:							return "ANCHOR_VERTICAL_TOP_BOTTOM";
 		default:
 			throw Exception(Exception::ERR_SERIALIZATION,"VerticalAnchor type does not have a string equivalent! Chick if update is needed!","StringConverter::toString");
+		}
+	}
+
+	Ogre::String StringConverter::toString(VerticalTextAlignment a)
+	{
+		switch(a)
+		{
+		case TEXT_ALIGNMENT_VERTICAL_BOTTOM:						return "TEXT_ALIGNMENT_VERTICAL_BOTTOM";
+		case TEXT_ALIGNMENT_VERTICAL_CENTER:						return "TEXT_ALIGNMENT_VERTICAL_CENTER";
+		case TEXT_ALIGNMENT_VERTICAL_TOP:							return "TEXT_ALIGNMENT_VERTICAL_TOP";
+		default: 
+			throw Exception(Exception::ERR_SERIALIZATION,"VerticalTextAlignment type does not have a string equivalent!  Check if update is needed!","StringConverter::toString");
 		}
 	}
 
@@ -209,14 +208,13 @@ namespace QuickGUI
 			throw Exception(Exception::ERR_SERIALIZATION,"\"" + s + "\" is not a recognized HorizontalAnchor type! (Possible need to update?)","StringConverter::parseHorizontalAnchor");
 	}
 
-	Padding StringConverter::parsePadding(const Ogre::String& s)
+	HorizontalTextAlignment StringConverter::parseHorizontalTextAlignment(const Ogre::String& s)
 	{
-		if(s == "PADDING_LEFT")										return PADDING_LEFT;
-		else if(s == "PADDING_RIGHT")								return PADDING_RIGHT;
-		else if(s == "PADDING_TOP")									return PADDING_TOP;
-		else if(s == "PADDING_BOTTOM")								return PADDING_BOTTOM;
+		if(s == "TEXT_ALIGNMENT_HORIZONTAL_LEFT")					return TEXT_ALIGNMENT_HORIZONTAL_LEFT;
+		else if(s == "TEXT_ALIGNMENT_HORIZONTAL_RIGHT")				return TEXT_ALIGNMENT_HORIZONTAL_RIGHT;
+		else if(s == "TEXT_ALIGNMENT_HORIZONTAL_CENTER")			return TEXT_ALIGNMENT_HORIZONTAL_CENTER;
 		else
-			throw Exception(Exception::ERR_SERIALIZATION,"\"" + s + "\" is not a recognized Padding type! (Possible need to update?)","StringConverter::parsePadding");
+			throw Exception(Exception::ERR_SERIALIZATION,"\"" + s + "\" is not a recognized HorizontalTextAlignment type! (Possible need to update?)","StringConverter::parseHorizontalTextAlignment");
 	}
 
 	VScrollBarButtonLayout StringConverter::parseVScrollBarButtonLayout(const Ogre::String& s)
@@ -269,15 +267,6 @@ namespace QuickGUI
 			throw Exception(Exception::ERR_SERIALIZATION,"\"" + s + "\" is not a recognized ProgressBarClippingEdge type! (Possible need to update?)","StringConverter::parseProgressBarClippingEdge");
 	}
 
-	TextAlignment StringConverter::parseTextAlignment(const Ogre::String& s)
-	{
-		if(s == "TEXT_ALIGNMENT_LEFT")								return TEXT_ALIGNMENT_LEFT;
-		else if(s == "TEXT_ALIGNMENT_RIGHT")						return TEXT_ALIGNMENT_RIGHT;
-		else if(s == "TEXT_ALIGNMENT_CENTER")						return TEXT_ALIGNMENT_CENTER;
-		else
-			throw Exception(Exception::ERR_SERIALIZATION,"\"" + s + "\" is not a recognized TextAlignment type! (Possible need to update?)","StringConverter::parseTextAlignment");
-	}
-
 	ToolBarItemLayout StringConverter::parseToolBarItemLayout(const Ogre::String& s)
 	{
 		if(s == "TOOLBAR_ITEM_LAYOUT_NEGATIVE_TO_POSITIVE")			return TOOLBAR_ITEM_LAYOUT_NEGATIVE_TO_POSITIVE;
@@ -296,6 +285,15 @@ namespace QuickGUI
 		else if(s == "ANCHOR_VERTICAL_TOP_BOTTOM")					return ANCHOR_VERTICAL_TOP_BOTTOM;
 		else
 			throw Exception(Exception::ERR_SERIALIZATION,"\"" + s + "\" is not a recognized VerticalAnchor type! (Possible need to update?)","StringConverter::parseVerticalAnchor");
+	}
+
+	VerticalTextAlignment StringConverter::parseVerticalTextAlignment(const Ogre::String& s)
+	{
+		if(s == "TEXT_ALIGNMENT_VERTICAL_BOTTOM")					return TEXT_ALIGNMENT_VERTICAL_BOTTOM;
+		else if(s == "TEXT_ALIGNMENT_VERTICAL_CENTER")				return TEXT_ALIGNMENT_VERTICAL_CENTER;
+		else if(s == "TEXT_ALIGNMENT_VERTICAL_TOP")					return TEXT_ALIGNMENT_VERTICAL_TOP;
+		else
+			throw Exception(Exception::ERR_SERIALIZATION,"\"" + s + "\" is not a recognized VerticalTextAlignment type! (Possible need to update?)","StringConverter::parseVerticalTextAlignment");
 	}
 
 	WidgetEvent StringConverter::parseWidgetEvent(const Ogre::String& s)

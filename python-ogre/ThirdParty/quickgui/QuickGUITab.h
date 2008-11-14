@@ -59,15 +59,10 @@ namespace QuickGUI
 		* NOTE: Exception is thrown if point is not over a border.
 		*/
 		virtual BorderSide getBorderSide(Point p);
-
 		/**
 		* Returns the class name of this Widget.
 		*/
 		virtual Ogre::String getClass();
-		/**
-		* Gets the distance between a Label border and the text.
-		*/
-		float getPadding(Padding p);
 
 		/**
 		* Returns true if the point is over a border, false otherwise.
@@ -97,10 +92,6 @@ namespace QuickGUI
 		* will be changed to the font specified, otherwise only the first occurrence is changed.
 		*/
 		void setFont(const Ogre::String& fontName, Ogre::UTFString s, bool allOccurrences);
-		/**
-		* Sets the distance between a Label border and the text.
-		*/
-		void setPadding(Padding p, float distance);
 		/**
 		* Sets the text for this object.
 		*/

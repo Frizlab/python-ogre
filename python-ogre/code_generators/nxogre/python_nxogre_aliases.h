@@ -1,3 +1,12 @@
+typedef NxOgre::DualIdentifier< unsigned short, std::string > DualIdendifierShortString;
+typedef NxOgre::NxEither< NxOgre::Resources::Mesh*, std::string > NxEitherMeshString;
+typedef NxOgre::Container< std::string, NxOgre::Resources::Heightfield* > ContainerStringHeightFieldPtr;
+typedef NxOgre::Container< std::string, NxOgre::Resources::Mesh* > ContainerStringMeshPtr;
+typedef NxOgre::Container< std::string, NxOgre::Resources::ResourceManager* > ContainerStringResourceManagerPtr;
+typedef NxOgre::Container< unsigned int, NxOgre::RenderableActorFactory* > ContainerUnsignedIntRenderableActorFactoryPtr;
+typedef NxOgre::Container< unsigned int, NxOgre::RenderableSource* > ContainerUnsignedIntRenderableSourcePtr;
+
+
 typedef std::vector<NxOgre::Joint::LimitPlane,std::allocator<NxOgre::Joint::LimitPlane> > VectorJointLimitPlane;
 typedef std::vector<NxOgre::SimplePlane*,std::allocator<NxOgre::SimplePlane*> > VectorSimplePlane;
 
@@ -5,6 +14,10 @@ typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::CharacterSy
     MapContainerCharacterSystemCharacter;
 typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::CharacterSystem::CharacterMovementModel*>::Containee, std::less<std::string>, std::allocator<std::pair<std::string const, NxOgre::Container<std::string, NxOgre::CharacterSystem::CharacterMovementModel*>::Containee> > >\
     MapContainerCharacterSystemMovementModel;
+
+typedef std::map< unsigned int, NxOgre::Container<unsigned int, NxOgre::RenderableActorFactory*>::Containee > ContainerRenderableActorFactoryPtr;
+typedef std::map< std::string, NxOgre::Container<std::string, NxOgre::Resources::ResourceManager*>::Containee > ContainerResourceManagerPtr;
+typedef std::map< std::string, NxOgre::Container<std::string, NxOgre::Resources::Mesh*>::Containee > ContainerMeshPtr;
 
 
 typedef std::vector<float, std::allocator<float> > VectorFloat;
@@ -35,7 +48,7 @@ typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::DominanceGr
     
 typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::Scene*>::Containee, std::less<std::string> >\
      MapContainerScene;
-typedef std::list<NxOgre::CharacterHitReport*, std::allocator<NxOgre::CharacterHitReport*> > ListCharacterHitReportPtr;
+// // // // typedef std::list<NxOgre::CharacterHitReport*, std::allocator<NxOgre::CharacterHitReport*> > ListCharacterHitReportPtr;
 typedef std::list<NxOgre::Wheel*, std::allocator<NxOgre::Wheel*> > ListWheelPtr;
 typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::Actor*>::Containee, std::less<std::string> >\
      MapContainerActor;
@@ -58,8 +71,8 @@ typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::FluidEmitte
 typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::SoftBody*>::Containee, std::less<std::string> >\
      MapContainerSoftBody;
      
-typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::RayCastHit>::Containee, std::less<std::string> >\
-     MapContainerRayCastHit;
+// typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::RayCastHit>::Containee, std::less<std::string> >\
+//      MapContainerRayCastHit;
 typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::ShapeGroup*>::Containee, std::less<std::string> >\
      MapContainerShapeGroup;
 typedef std::map<std::string, NxOgre::Container<std::string, NxOgre::Trigger*>::Containee, std::less<std::string> >\
@@ -90,14 +103,14 @@ typedef NxOgre::List<NxOgre::RemoteDebuggerConnection::Camera> ListRemoteCamera;
 // typedef std::map<NxOgre::Scene::Renderables, NxOgre::Container<NxOgre::Scene::Renderables, float>::Containee, std::less<NxOgre::Scene::Renderables> >\
 //     MapContainerSceneRenderables;
                 
-typedef NxOgre::Container<NxOgre::NxString, NxOgre::RayCastHit>   RayCastReport;
+// typedef NxOgre::Container<NxOgre::NxString, NxOgre::RayCastHit>   RayCastReport;
 typedef NxOgre::Container<NxOgre::NxString, NxOgre::Scene*>    Scenes;
 typedef NxOgre::Container<NxOgre::NxString, NxOgre::ShapeGroup*>   ShapeGroups;
 // typedef NxOgre::Container<NxOgre::NxCollisionGroup, NxOgre::ShapeGroup*>  ShapeGroupsByIndex;
 typedef NxOgre::Container<NxOgre::NxString, NxOgre::Trigger*>   Triggers;
 typedef NxOgre::List<NxOgre::Wheel*>     Wheels;
 // typedef NxOgre::Container<NxOgre::NxString, NxOgre::Character*>   Characters;
-typedef NxOgre::List<NxOgre::CharacterHitReport*>    CharacterHitReports;
+// // // typedef NxOgre::List<NxOgre::CharacterHitReport*>    CharacterHitReports;
 typedef NxOgre::Container<NxOgre::NxString, NxOgre::Fluid*>    Fluids;
 typedef NxOgre::Container<NxOgre::NxString, NxOgre::FluidDrain*>   FluidDrains;
 typedef NxOgre::Container<NxOgre::NxString, NxOgre::FluidEmitter*>   FluidEmitters;

@@ -25,15 +25,15 @@ namespace QuickGUI
 		cursorBlinkTime = 0.5;
 		defaultColor = Ogre::ColourValue::White;
 		defaultFontName = Root::getSingleton().getDefaultFontName();
+		horizontalTextAlignment = TEXT_ALIGNMENT_HORIZONTAL_LEFT;
 		keyDownTime = 0.6;
 		keyRepeatTime = 0.04;
 		maxCharacters = 255;
 		// 42 happens to be the code point for * on regular english true type fonts
 		maskSymbol = 42;
 		maskText = false;
-
-		textAlignment = TEXT_ALIGNMENT_LEFT;
 		textCursorSkinTypeName = "default";
+		verticalTextAlignment = TEXT_ALIGNMENT_VERTICAL_CENTER;
 	}
 
 	void TextBoxDesc::serialize(SerialBase* b)
@@ -43,14 +43,15 @@ namespace QuickGUI
 		b->IO("CursorBlinkTime",&cursorBlinkTime);
 		b->IO("DefaultColor",&defaultColor);
 		b->IO("DefaultFontName",&defaultFontName);
+		b->IO("TBHorizontalTextAlignment",&horizontalTextAlignment);
 		b->IO("KeyDownTime",&keyDownTime);
 		b->IO("KeyRepeatTime",&keyRepeatTime);
 		b->IO("MaskSymbol",static_cast<unsigned short*>(&maskSymbol));
 		b->IO("MaskText",&maskText);
 		b->IO("MaxCharacters",&maxCharacters);
-		b->IO("TextAlignment",&textAlignment);
 		b->IO("TextCursorSkinTypeName",&textCursorSkinTypeName);
 		b->IO("TextPosition",&textPosition);
+		b->IO("VerticalTextAlignment",&verticalTextAlignment);
 
 		textDesc.serialize(b);
 	}
@@ -253,9 +254,26 @@ namespace QuickGUI
 		Rect newClipRegion = prevClipRegion.getIntersection(clipRegion);
 		brush->setClipRegion(newClipRegion);
 
-		// Draw Text
+		// Center Text Vertically
+
+		float textHeight = mText->getTextHeight();
+		float yPos = 0;
+
+		switch(mDesc->verticalTextAlignment)
+		{
+		case TEXT_ALIGNMENT_VERTICAL_BOTTOM:
+			yPos = mDesc->dimensions.size.height - st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM) - textHeight;
+			break;
+		case TEXT_ALIGNMENT_VERTICAL_CENTER:
+			yPos = (mDesc->dimensions.size.height / 2.0) - (textHeight / 2.0);
+			break;
+		case TEXT_ALIGNMENT_VERTICAL_TOP:
+			yPos = st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_TOP);
+			break;
+		}
 
 		Point textPosition = clipRegion.position;
+		textPosition.y = yPos;
 		textPosition.translate(mDesc->textPosition);
 		mText->draw(textPosition);
 
@@ -439,15 +457,15 @@ namespace QuickGUI
 		// If text fits within TextBox, align text
 		if(mText->getTextWidth() < mClientDimensions.size.width)
 		{
-			switch(mDesc->textAlignment)
+			switch(mDesc->horizontalTextAlignment)
 			{
-			case TEXT_ALIGNMENT_CENTER:
+			case TEXT_ALIGNMENT_HORIZONTAL_CENTER:
 				mDesc->textPosition.x = (mClientDimensions.size.width - mText->getTextWidth()) / 2.0;
 				break;
-			case TEXT_ALIGNMENT_LEFT:
+			case TEXT_ALIGNMENT_HORIZONTAL_LEFT:
 				mDesc->textPosition.x = 0;
 				break;
-			case TEXT_ALIGNMENT_RIGHT:
+			case TEXT_ALIGNMENT_HORIZONTAL_RIGHT:
 				mDesc->textPosition.x = mClientDimensions.size.width - mText->getTextWidth();
 				break;
 			}
@@ -575,6 +593,20 @@ namespace QuickGUI
 	void TextBox::setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv)
 	{
 		mText->setText(s,fp,cv);
+
+		redraw();
+	}
+
+	void TextBox::setHorizontalTextAlignment(HorizontalTextAlignment a)
+	{
+		mDesc->horizontalTextAlignment = a;
+
+		setCursorIndex(mCursorIndex);
+	}
+
+	void TextBox::setVerticalTextAlignment(VerticalTextAlignment a)
+	{
+		mDesc->verticalTextAlignment = a;
 
 		redraw();
 	}

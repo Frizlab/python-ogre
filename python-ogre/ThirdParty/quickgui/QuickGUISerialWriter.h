@@ -50,9 +50,10 @@ namespace QuickGUI
 		virtual void IO(const Ogre::String& propertyName, VScrollBarButtonLayout* member);
 		virtual void IO(const Ogre::String& propertyName, HScrollBarButtonLayout* member);
 		virtual void IO(const Ogre::String& propertyName, Size* member);
-		virtual void IO(const Ogre::String& propertyName, TextAlignment* member);
+		virtual void IO(const Ogre::String& propertyName, HorizontalTextAlignment* member);
 		virtual void IO(const Ogre::String& propertyName, HorizontalAnchor* member);
 		virtual void IO(const Ogre::String& propertyName, VerticalAnchor* member);
+		virtual void IO(const Ogre::String& propertyName, VerticalTextAlignment* member);
 		bool isSerialWriter();
 		bool isSerialReader();
 

@@ -189,7 +189,21 @@ def ManualExclude ( mb ):
             ,'::NxOgre::Resources::ResourceSystem::addMaterialAlias'
             ,'::NxOgre::WheelSet::setBrakingTorque'
             
-          
+            ## added for 0.22 T5
+            ,'::NxOgre::Error::getInstance'
+            ,'::NxOgre::Resources::MeshParams::MeshFlags::fromNxU32'
+            ,'::NxOgre::Resources::MeshParams::MeshFlags::toNxU32'
+            ,'::NxOgre::Resources::MeshParams::MeshFlags::parse'
+            ,'::NxOgre::Resources::MeshParams::MeshFlags::parse'
+            
+            ,'::NxOgre::Resources::Mesh::getMutableMesh'
+            ,'::NxOgre::Resources::Mesh::MutableMeshData::unlock'
+            ,'::NxOgre::Resources::Mesh::MutableMeshData::lock'
+            ,'::NxOgre::Resources::Mesh::MutableMeshData::isLocked'
+            ,'::NxOgre::PhysXParams::DebugVisualisation::setToNormal'
+            ,'::NxOgre::PhysXParams::DebugVisualisation::setToDefault'
+            ,'::NxOgre::PhysXParams::DebugVisualisation::applyToSDK'
+            
             
             ]
     for e in excludes:
@@ -223,10 +237,19 @@ def ManualExclude ( mb ):
                ,'::NxOgre::Container< std::string, NxConvexMesh* >' # issue with deleting protected classes
                ,'::NxOgre::Functions::Triggers::AddedGravity'
                ,'::NxOgre::Resources::ManualMeshUtil'
-               ,'::NxOgre::Terrain::Terrain'
+               ,'::NxOgre::Terrain' 
                ,'::NxOgre::Functions::Triggers::NoGravity'
                ,'::NxOgre::Functions::Triggers::ReplacementGravity'
                ,'::NxOgre::Functions::Triggers::MoveToPosition'
+               ,'::NxOgre::ActorContactCallback'
+               ,'::NxOgre::ActorParams::FreezeFlags'
+               ,'::NxOgre::WheelSet::ExtendedWheel'
+               ,'::NxOgre::Timer'
+               ,'::NxOgre::Resources::MeshParams::MeshFlags'  # this is really a struct.
+               
+               ## this is ugly but don't have time to fix properly...
+               ,'::NxOgre::Resources::ManualMesh'
+               ,'::NxOgre::Resources::MeshParams'
                 ]
     for e in excludes:
         print "Excluding", e
@@ -244,6 +267,7 @@ def ManualExclude ( mb ):
                 ,'List<NxOgre::RemoteDebuggerConnection::Camera>'
                 ,'List<NxOgre::Blueprints::ActorBlueprint*>'
                 ,'Container<std::string, NxOgre::Joint*>'
+                
                 ]
     for c in main_ns.classes():
 #         print c.decl_string   
@@ -264,7 +288,7 @@ def ManualExclude ( mb ):
     ### Variables        
     excludes = [   ## '::NxOgre::WheelSet::mEngine'   # desctuctor in WheelSet is protected so can't wrap this..
                 '::NxOgre::Shape::mSkeleton'
-                ,'::NxOgre::ShapeParams::mCCDSkeleton'
+#                 ,'::NxOgre::ShapeParams::mCCDSkeleton'
                 ,'::NxOgre::WheelParams::mWheelContactCallback'
                 ]
     for e in excludes:
@@ -289,6 +313,21 @@ def ManualExclude ( mb ):
             ,'::NxOgre::Container< std::string, NxOgre::Cloth* >::operator[]'
             ,'::NxOgre::Container< std::string, NxOgre::Fluid* >::operator[]'
             ,'::NxOgre::Container< std::string, NxOgre::SoftBody* >::operator[]'
+            
+            ,'::NxOgre::ActorParams::ActorFlags::operator+='
+            ,'::NxOgre::ActorParams::ActorFlags::operator-='
+            ,'::NxOgre::ActorParams::BodyFlags::operator+='
+            ,'::NxOgre::ActorParams::BodyFlags::operator-='
+            ,'::NxOgre::ActorParams::ContactFlags::operator+='
+            ,'::NxOgre::ActorParams::ContactFlags::operator-='
+            ,'::NxOgre::ShapeParams::ShapeClothFlags::operator+='
+            ,'::NxOgre::ShapeParams::ShapeClothFlags::operator-='
+            ,'::NxOgre::ShapeParams::ShapeFlags::operator+='
+            ,'::NxOgre::ShapeParams::ShapeFlags::operator-='
+            ,'::NxOgre::ShapeParams::ShapeFluidFlags::operator+='
+            ,'::NxOgre::ShapeParams::ShapeFluidFlags::operator-='
+            ,'::NxOgre::ShapeParams::ShapeSoftBodyFlags::operator+='
+            ,'::NxOgre::ShapeParams::ShapeSoftBodyFlags::operator-='
             ]
     for e in excludes:
         print "Excluding operator:", e
@@ -612,7 +651,7 @@ def generate_code():
                         os.path.join( environment.nxogre.root_dir, "python_nxogre.h" )
                         , environment.nxogre.cache_file )
     if os.name == 'nt':
-        defined_symbols = [ '__PYTHONOGRE_BUILD_CODE','NxExport','OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', 'WIN32', 'GCC_XML']#NXOGRE_EXPORTS'
+        defined_symbols = [ '__PYTHONOGRE_BUILD_CODE','OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', 'WIN32', 'GCC_XML','NXOGRE_EXPORTS']
     else:
         defined_symbols = [ '__PYTHONOGRE_BUILD_CODE','LINUX','NX_LINUX', 'NX_DISABLE_FLUIDS', 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', 'GCC_XML']
 

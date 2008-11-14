@@ -37,8 +37,8 @@ namespace QuickGUI
 	public:
 		TabPageDesc();
 
-		/// Describes the Padding around Tab's Text
-		float padding[PADDING_COUNT];
+		/// Vertical alignment of text within this widget's client area.
+		VerticalTextAlignment verticalTextAlignment;
 
 		/// Describes the Text used in this Label
 		TextDesc textDesc;

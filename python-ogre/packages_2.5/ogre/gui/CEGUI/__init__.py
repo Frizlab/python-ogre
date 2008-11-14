@@ -13,6 +13,9 @@ elif sys.platform == "linux2":
 
 from _cegui_ import *
 ## Make sure we are using a sane XML parser
-System.setDefaultXMLParserName("TinyXMLParser")
+if os.name == 'nt':
+    System.setDefaultXMLParserName("ExpatParser")
+else:
+    System.setDefaultXMLParserName("TinyXMLParser")
 
 warnings.resetwarnings( ) 

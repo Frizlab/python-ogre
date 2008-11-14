@@ -28,16 +28,11 @@ namespace QuickGUI
 		titleBarCloseButton(true),
 		titleBarCloseButtonPadding(2),
 		titleBarSkinType("default"),
-		titleBarCloseButtonSkinType("default.close")
+		titleBarCloseButtonSkinType("default.close"),
+		titlebarVerticalTextAlignment(TEXT_ALIGNMENT_VERTICAL_CENTER)
 	{
 		dimensions.size = Size(100,100);
 		dragable = false;
-
-		for(int i = 0; i < PADDING_COUNT; ++i)
-		{
-			titleBarPadding[i] = 5.0;
-		}
-
 		resizable = true;
 	}
 
@@ -49,11 +44,7 @@ namespace QuickGUI
 		b->IO("TitleBarCloseButton",&titleBarCloseButton);
 		b->IO("TitleBarCloseButtonPadding",&titleBarCloseButtonPadding);
 		b->IO("TitleBarSkinType",&titleBarSkinType);
-
-		for(int i = 0; i < PADDING_COUNT; ++i)
-		{
-			b->IO(StringConverter::toString(static_cast<Padding>(i)),&titleBarPadding[i]);
-		}
+		b->IO("TitlebarVerticalTextAlignment",&titlebarVerticalTextAlignment);
 
 		titleBarTextDesc.serialize(b);
 	}
@@ -92,8 +83,6 @@ namespace QuickGUI
 		mDesc->titleBarCloseButton = wd->titleBarCloseButton;
 		mDesc->titleBarCloseButtonPadding = wd->titleBarCloseButtonPadding;
 		mDesc->titleBarCloseButtonSkinType = wd->titleBarCloseButtonSkinType;
-		for(int i = 0; i < PADDING_COUNT; ++i)
-			mDesc->titleBarPadding[i] = wd->titleBarPadding[i];
 		mDesc->titleBarTextDesc = wd->titleBarTextDesc;		
 
 		// Create TitleBar if property is set.
@@ -105,17 +94,11 @@ namespace QuickGUI
 			tbd.closeButton = mDesc->titleBarCloseButton;
 			tbd.closeButtonPadding = mDesc->titleBarCloseButtonPadding;
 			tbd.skinTypeName = mDesc->titleBarSkinType;
-			for(int i = 0; i < PADDING_COUNT; ++i)
-			{
-				tbd.padding[i] = mDesc->titleBarPadding[i];
-			}
+			tbd.verticalTextAlignment = mDesc->titlebarVerticalTextAlignment;
 			tbd.textDesc = mDesc->titleBarTextDesc;
 
 			mTitleBar = dynamic_cast<TitleBar*>(Widget::create("TitleBar",tbd));
 			addComponent(TITLEBAR,mTitleBar);
-
-			// Since components are not restricted to Client dimensions, offset the TitleBar to appear inside client dimensions.
-			mTitleBar->setPosition(mClientDimensions.position);
 		}
 
 		if(d->getWidgetClass() == "Window")
@@ -369,6 +352,9 @@ namespace QuickGUI
 		mWidgetDesc->skinTypeName = type;
 
 		SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
+
+		if(mTitleBar)
+			mTitleBar->setPosition(Point(se->getBorderThickness(BORDER_LEFT),se->getBorderThickness(BORDER_TOP)));
 
 		if(mHScrollBar)
 			mHScrollBar->setPosition(Point(se->getBorderThickness(BORDER_LEFT),mWidgetDesc->dimensions.size.height - se->getBorderThickness(BORDER_BOTTOM) - mDesc->scrollBarThickness));

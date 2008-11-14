@@ -291,7 +291,7 @@ namespace QuickGUI
 			mCurrentDefinition->mProperties[propertyName] = newProp;
 	}
 
-	void SerialWriter::IO(const Ogre::String& propertyName, TextAlignment* member)
+	void SerialWriter::IO(const Ogre::String& propertyName, HorizontalTextAlignment* member)
 	{
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
@@ -320,6 +320,20 @@ namespace QuickGUI
 	}
 
 	void SerialWriter::IO(const Ogre::String& propertyName, VerticalAnchor* member)
+	{
+		if(mCurrentDefinition == NULL)
+			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
+
+		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		newProp->mValues.push_back(StringConverter::toString(*member));
+		
+		if(mCurrentDefinition->mProperties.find(propertyName) != mCurrentDefinition->mProperties.end())
+			throw Exception(Exception::ERR_SERIALIZATION,"ScriptDefinition already contains the property \"" + propertyName + "\"!","SerialWriter::IO");
+		else
+			mCurrentDefinition->mProperties[propertyName] = newProp;
+	}
+
+	void SerialWriter::IO(const Ogre::String& propertyName, VerticalTextAlignment* member)
 	{
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
