@@ -1305,34 +1305,34 @@ class physx:
 
     ModuleName="PhysX"   
 
-class nxogre_09:
-    active = False  # True
-    pythonModule = True
-    version="0.9"
-    name='nxogre_09'
-    parent="ogre/physics"
-    cflags=""
-    include_dirs = [ Config.PATH_Boost,
-                    Config.PATH_INCLUDE_Ogre,
-                    Config.PATH_INCLUDE_NxOgre_09,
-                    ]
-    for d in Config.PATH_INCLUDE_PhysX:
-        include_dirs.append( d )
-    if os.name == 'nt':
-        CCFLAGS = ' -DWIN32 -DNxExport="" '
-
-    else:
-        CCFLAGS = ' -DNX_LINUX -DLINUX -DNX_DISABLE_FLUIDS '                
-    lib_dirs = [Config.PATH_LIB_Boost,
-                Config.PATH_LIB_Ogre_OgreMain,
-                Config.PATH_LIB_PhysX
-                ]
-    CheckIncludes=[]
-    if os.name =='nt':
-        libs=[  boost.lib, 'NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' ]
-    else:
-        libs=[  boost.lib, 'NxCharacter', 'NxCooking', 'PhysXCore','PhysXLoader','OgreMain' ]
-    ModuleName="NxOgre_09"   
+# class nxogre_09:
+#     active = False  # True
+#     pythonModule = True
+#     version="0.9"
+#     name='nxogre_09'
+#     parent="ogre/physics"
+#     cflags=""
+#     include_dirs = [ Config.PATH_Boost,
+#                     Config.PATH_INCLUDE_Ogre,
+#                     Config.PATH_INCLUDE_NxOgre_09,
+#                     ]
+#     for d in Config.PATH_INCLUDE_PhysX:
+#         include_dirs.append( d )
+#     if os.name == 'nt':
+#         CCFLAGS = ' -DWIN32 -DNxExport="" '
+# 
+#     else:
+#         CCFLAGS = ' -DNX_LINUX -DLINUX -DNX_DISABLE_FLUIDS '                
+#     lib_dirs = [Config.PATH_LIB_Boost,
+#                 Config.PATH_LIB_Ogre_OgreMain,
+#                 Config.PATH_LIB_PhysX
+#                 ]
+#     CheckIncludes=[]
+#     if os.name =='nt':
+#         libs=[  boost.lib, 'NxCharacter', 'NxCooking', 'NxExtensions', 'PhysXLoader','OgreMain' ]
+#     else:
+#         libs=[  boost.lib, 'NxCharacter', 'NxCooking', 'PhysXCore','PhysXLoader','OgreMain' ]
+#     ModuleName="NxOgre_09"   
 
 class ogreal:
     active = True
@@ -1776,7 +1776,7 @@ projects = {
     , 'opcode' : opcode
     , 'nxogre' : nxogre
     , 'physx' : physx
-    , 'nxogre_09' : nxogre_09
+#     , 'nxogre_09' : nxogre_09
     , 'bullet' : bullet
     , 'betagui': betagui
     , 'theora' : theora
