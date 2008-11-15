@@ -3,13 +3,13 @@
 ;
 [Setup]
 AppName=Python-Ogre
-AppVerName=Python-Ogre 1.6RC1
+AppVerName=Python-Ogre 1.6.0
 DefaultDirName=C:\PythonOgre
 DefaultGroupName=Python-Ogre
 OutputBaseFilename=PythonOgreInstaller
 OutputDir=C:\temp
 SourceDir=C:\Development\PythonOgreRelease
-VersionInfoDescription=Release 1.6RC1 of Python-Ogre
+VersionInfoDescription=Release 1.6.0 of Python-Ogre
 AllowNoIcons=true
 AppPublisher=OpenSource (Andy and Team)
 AppPublisherURL=http://www.python-ogre.org
@@ -37,6 +37,8 @@ Source: *; DestDir: {app}
 Source: plugins\*; DestDir: {app}\plugins
 Source: tools\*; DestDir: {app}\tools
 Source: docs\*; DestDir: {app}\docs
+Source: SourceLibs\*; DestDir: {app}\SourceLibs; Flags: recursesubdirs
+
 Source: ThirdParty\dxwebsetup.exe; DestDir: {app}\ThirdParty
 Source: ThirdParty\vcredist_x86.exe; DestDir: {app}\ThirdParty
 
@@ -62,6 +64,10 @@ Source: demos\particleuniverse\*; DestDir: {app}\demos\particleuniverse; Flags: 
 Source: demos\plib\*; DestDir: {app}\demos\plib; Flags: recursesubdirs
 Source: demos\qgui\*; DestDir: {app}\demos\qgui; Flags: recursesubdirs
 Source: demos\theora\*; DestDir: {app}\demos\theora; Flags: recursesubdirs
+Source: demos\hikari\*; DestDir: {app}\demos\hikari; Flags: recursesubdirs
+Source: demos\PSSM\*; DestDir: {app}\demos\PSSM; Flags: recursesubdirs
+
+
 
 ; the python modules - in the event we find python
 Source: packages_2.5\*; DestDir: {code:GetPythonSiteDir}; Flags: recursesubdirs; Check: SelectedPython('2.5')

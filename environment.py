@@ -282,12 +282,12 @@ class pygccxml:
     if _STABLE:
         source_version = "1383"
         source = [
-                    [svn, " co -r 1383 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
+                    [svn, " co -r 1383 https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
                  ]
     else:                 
         source_version = "1446"
         source = [
-                    [svn, " co -r 1446 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
+                    [svn, " co -r 1446 https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
                     ]             
     if isLinux() or isMac() :
         buildCmds =  [
@@ -308,12 +308,12 @@ class pyplusplus:
     if _STABLE:
         source_version = "1383"
         source = [
-                    [svn, " co -r 1383 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
+                    [svn, " co -r 1383 https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
                  ]
     else:                 
         source_version = "1446"
         source = [
-                    [svn, " co -r 1446 http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
+                    [svn, " co -r 1446 https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
                  ]             
     if isLinux() or isMac() :
         buildCmds =  [

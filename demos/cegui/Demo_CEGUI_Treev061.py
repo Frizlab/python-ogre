@@ -252,7 +252,9 @@ class GuiApplication ( SampleFramework.Application ):
         def addListToTree(resourceList, parentItem, iconName):
             for r in resourceList:
                 meshCtrlItem = CEGUI.TreeItem(r)
-                meshCtrlItem.setIcon(drives.getImage(iconName))
+#                 meshCtrlItem.setIcon(drives.getImage(iconName))
+                image = iconArray[ iconImages.index(iconName) ]          
+                meshCtrlItem.setIcon( image ) 
                 meshCtrlItem.setSelectionBrushImage(IMAGES_FILE_NAME, BRUSH_NAME)
                 meshCtrlItem.AutoDeleted = False
                 meshCtrlItem.setFont("BlueHighway-12")
@@ -262,7 +264,9 @@ class GuiApplication ( SampleFramework.Application ):
         ## helper to create TreeCtrl item
         def createListItem(text, parentItem, iconName):
             meshCtrlItem = CEGUI.TreeItem(text)
-            meshCtrlItem.setIcon(drives.getImage(iconName))
+#             meshCtrlItem.setIcon(drives.getImage(iconName))
+            image = iconArray[ iconImages.index(iconName) ]          
+            meshCtrlItem.setIcon( image ) 
             meshCtrlItem.setSelectionBrushImage(IMAGES_FILE_NAME, BRUSH_NAME)
             meshCtrlItem.AutoDeleted = False
             meshCtrlItem.setFont("BlueHighway-12")
@@ -346,7 +350,7 @@ class GuiApplication ( SampleFramework.Application ):
     def handleEventBranchClosed(self, args):
         print "Branch Closed" 
         return True
-		                
+                        
     def handleQuit(self, e):
         self.frameListener.requestShutdown() 
         return True
