@@ -832,6 +832,12 @@ def Fix_Posix ( mb ):
     mb.member_function('::Ogre::Mesh::getSubMeshNameMap').exclude()
     stdex_ns = mb.global_ns.namespace("__gnu_cxx")
     stdex_ns.class_('hash_map<std::string, unsigned short, __gnu_cxx::hash<std::string>, std::equal_to<std::string>, std::allocator<unsigned short> >').exclude
+    for f in mb.member_functions():
+        if f.name == 'getChildIterator':
+            print "LINUX SPECIAL:", f
+            ###f.exclude()
+    #mb.member_function('::Ogre::Node::getChildIterator').exclude()
+   # mb.member_functions('::Ogre::Bone::getChildIterator').exclude()
 
 
 def Fix_NT ( mb ):
@@ -1075,7 +1081,9 @@ def generate_code():
     undefine_symbols=[]
     if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')
-        defined_symbols.append('BOOST_HAS_WINTHREADS')
+        if environment.isWindows():
+            defined_symbols.append('BOOST_HAS_WINTHREADS')
+
     defined_symbols.append( 'OGRE_VERSION_' + environment.ogre.version )  
     
     print os.getcwd()

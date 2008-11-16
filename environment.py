@@ -18,10 +18,6 @@ import datetime
 _LOGGING_ON = False
 _PreCompiled = True
 
-##
-## set this to True if you compiled Ogre with Threads enabled
-##
-_USE_THREADS = True
 
 def log ( instring ):
     if _LOGGING_ON:
@@ -44,6 +40,14 @@ def isMac():
     if os.sys.platform == 'darwin':
         return True
     return False
+    
+##
+## set this to True if you compiled Ogre with Threads enabled
+##
+if isWindows():
+    _USE_THREADS = True
+else:
+    _USE_THREADS = False
     
                     
 PythonOgreMajorVersion = "1"
@@ -202,7 +206,7 @@ class gccxml:
     else:
        source_version = "20080901"
        source = [
-                [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co  -D 01Sep2008 "+base, os.getcwd()]
+                [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co  "+base, os.getcwd()]
              ]
     if isLinux() or isMac():
         buildCmds =  [
@@ -373,7 +377,7 @@ class freeimage:
     if isLinux() or isMac():
         base = 'FreeImage'
         source = [
-                    [wget, " http://prdownloads.sourceforge.net/freeimage/FreeImage3110.zip",downloadPath],
+                    [wget, " http://downloads.sourceforge.net/freeimage/FreeImage3110.zip",downloadPath],
                  ]
                  
         if isLinux():
@@ -498,7 +502,7 @@ class boost:    ## also included bjam
                 [0, sed_ + " 's/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/' "+base+"/configure", '' ],
                 [0, sed_ + " s/'BOOST_PYTHON_MAX_ARITY 15'/'BOOST_PYTHON_MAX_ARITY 19'/ "+base+"/boost/python/detail/preprocessor.hpp", ''],
                 [0, sed_ + ' s/"# include <boost\/preprocessor\/cat.hpp>"/"\\n#define BOOST_PYTHON_NO_PY_SIGNATURES\\n# include <boost\/preprocessor\/cat.hpp>"/ '+base+'/boost/python/detail/preprocessor.hpp', '' ],
-                [0,"./configure --with-libraries=python --prefix=%s --without-icu --with-bjam=../root/usr/bin/bjam"  % PREFIX, os.path.join(os.getcwd(), base )],
+                [0,"./configure --with-libraries=python,thread,date_time --prefix=%s --without-icu --with-bjam=../root/usr/bin/bjam"  % PREFIX, os.path.join(os.getcwd(), base )],
                 [0,'make', os.path.join(os.getcwd(), base )],
                 [0,'make install', os.path.join(os.getcwd(), base )],
                 ]
@@ -563,7 +567,7 @@ class ogre:
     pythonModule = True
     name='ogre'
     ModuleName='OGRE'
-    CCFLAGS = ""
+    CCFLAGS = " "
     cflags=''
     moduleParentLocation = "renderer"
     parent = "ogre/renderer"
@@ -640,6 +644,7 @@ class ogre:
             buildCmds  = [
                 [0, tar + " jxf " + os.path.join(downloadPath,base)+".tar.bz2 --overwrite",os.getcwd() ],
                 [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.0.patch -p0 ", os.getcwd()],
+                [0, "sed --in-place -s 's|#define OGRE_THREAD_SUPPORT 1|#define OGRE_THREAD_SUPPORT 0|' OgreConfig.h",os.path.join(os.getcwd(),"ogre","OgreMain", "include")],
                 [0, "aclocal", os.path.join(os.getcwd(), 'ogre')],
                 [0, "./bootstrap", os.path.join(os.getcwd(), 'ogre')],
                 [0, "./configure --prefix=%s --with-gui=Xt --disable-devil" % PREFIX, os.path.join(os.getcwd(), 'ogre')],
@@ -650,8 +655,8 @@ class ogre:
         libs.append ( boost_python_index.lib )
         lib_dirs=[Config.LOCAL_LIB]
         include_dirs=[Config.PATH_Boost, Config.PATH_INCLUDE_Ogre]
-        CCFLAGS = ' -DBOOST_PYTHON_MAX_ARITY=19'
-
+        CCFLAGS = ' -DBOOST_PYTHON_MAX_ARITY=19 -D__PYTHONOGRE_BUILD_CODE '
+        
         source = [
             [wget, "http://downloads.sourceforge.net/ogre/"+base+".tar.bz2",downloadPath],
         ]
@@ -878,8 +883,9 @@ class cegui:
 #                [0, "patch -s -N -i ../python-ogre/patch/cegui.patch -p0", os.path.join(os.getcwd(),base)],
                 [0, "echo 'EMPTY' >>./INSTALL", os.path.join(os.getcwd(),base)],
                 [0, "echo 'EMPTY' >>./NEWS", os.path.join(os.getcwd(),base)],
-                [0, "aclocal", os.path.join(os.getcwd(),base)],
-                [0, "automake" ,os.path.join(os.getcwd(), base )],
+#                [0, "aclocal", os.path.join(os.getcwd(),base)],
+#cl                [0, "automake" ,os.path.join(os.getcwd(), base )],
+                [0, "./bootstrap" ,os.path.join(os.getcwd(), base )],
                 [0,"./configure --prefix=%s --enable-freeimage=yes --with-default-xml-parser=TinyXMLParser --disable-samples --without-ogre-renderer --includedir=%s/include" %(PREFIX,PREFIX) ,os.path.join(os.getcwd(), base )],
                 [0,'make', os.path.join(os.getcwd(), base )],
                 [0,'make install', os.path.join(os.getcwd(), base )]
