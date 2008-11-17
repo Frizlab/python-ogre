@@ -954,7 +954,7 @@ class ode:
         ]
         buildCmds = [
             # FIXME: Should this untar not use the unTarGz method mentioned above?
-            [0, 'untar' + os.path.join(downloadPath,"ode-0.10.1.tar.gz"), ''],
+            [0, 'tar  zxf ' + os.path.join(downloadPath,"ode-0.10.1.tar.gz"), ''],
             [0, "chmod +x autogen.sh", baseDir],
             [0, "./autogen.sh", baseDir],
             [0, "./configure --prefix=%s --includedir=%s/include" %(PREFIX, PREFIX), baseDir],
@@ -1019,6 +1019,7 @@ class ogreode:
     name='ogreode'
     parent = "ogre/physics"
     base = 'ogreaddons/ogreode'
+    baseDir = os.path.join(os.getcwd(), base )
 
     lib_dirs = [ Config.PATH_LIB_Boost
                 , Config.PATH_LIB_OgreOde
@@ -1040,9 +1041,8 @@ class ogreode:
              ]
     else:
         source = [
-             [svn, "https://ogreaddons.svn.sourceforge.net/svnroot/ogreaddons/trunk/ogreode", os.getcwd()]
+             [svn, " co https://ogreaddons.svn.sourceforge.net/svnroot/ogreaddons/trunk/ogreode " + baseDir, os.getcwd()]
              ]
-    baseDir = os.path.join(os.getcwd(), base )
     buildCmds = [
             [0, "patch -s -N -i ../../python-ogre/patch/ogreode.patch -p0", baseDir], 
             [0, "chmod +x autogen.sh", baseDir],
