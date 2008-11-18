@@ -22,5 +22,6 @@ sudo apt-get install 		\
 	python-dev 				\
 	python-celementtree 	\
 	libglew-dev 			\
+    jam                     \
 	
 

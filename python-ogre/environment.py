@@ -815,8 +815,8 @@ class ogrenewt:
                  [cvs, " -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -D 01052008 -P "+base, os.getcwd()]
                  ]
     else:
-        source = [ ##to fix
-                 [svn, " co :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -P "+base, os.getcwd()]
+        source = [
+                [svn, " co https://ogreaddons.svn.sourceforge.net/svnroot/ogreaddons/trunk/ogrenewt " + base, os.getcwd()]
                  ]
     baseDir = os.path.join(os.getcwd(), base )
     buildCmds = [
@@ -1509,14 +1509,14 @@ class bullet:
     base = "bullet-" + version
     baseDir = os.path.join(os.getcwd(), base)
     parent = "ogre/physics"
-    libs=[boost.lib,  'LibBulletCollision', 'LibBulletDynamics']
+    libs=[boost.lib,  'libbulletcollision', 'libbulletdynamics']
     if isWindows():
         libs.append('libbulletmath')
     else:
-        libs.append('LibLinearMath')
-        libs.append('LibBulletSoftBody')
-        libs.append('LibBulletColladaConverter')
-        libs.append('LibBulletMultiThreaded')
+        libs.append('libbulletmath')
+        libs.append('libbulletsoftbody')
+        #libs.append('libbulletcolladaconverter')
+        libs.append('libbulletmultithreaded')
 
     lib_dirs = [ Config.PATH_LIB_Boost
                 ,  Config.PATH_LIB_Bullet
@@ -1530,9 +1530,14 @@ class bullet:
             ]
         buildCmds = [
             [0, "tar zxf " +os.path.join(downloadPath, base)+".tgz", ''],
-            [0, "cmake . -DCMAKE_INSTALL_PREFIX:PATH=%s" % PREFIX, baseDir],
-            [0, "make", baseDir],
-            [0, "find . -name *.a -execdir cp {} %s/lib \;" % PREFIX, baseDir]
+            [0, "./autogen.sh", baseDir],
+            [0, "./configure --prefix=%s " %(PREFIX), baseDir],
+##            [0, "cmake . -DCMAKE_INSTALL_PREFIX:PATH=%s" % PREFIX, baseDir],
+##            [0, "make", baseDir],
+            [0, "jam", baseDir],
+            [0, "jam install", baseDir]
+
+##            [0, "find . -name *.a -execdir cp {} %s/lib \;" % PREFIX, baseDir]
             ]
     else:
         source=[
@@ -1554,12 +1559,12 @@ class ogrebulletc:  #
     cflags = ""
     parent = "ogre/physics"
     libs = [boost.lib,  'OgreMain', 
-        'LibBulletCollision', 'LibBulletDynamics'
+        'libbulletcollision', 'libbulletdynamics', 'libbulletmath'
         ]
-    if isWindows():
-        libs.append('libbulletmath')
-    else:
-        libs.append('LibLinearMath')
+#    if isWindows():
+#        libs.append('libbulletmath')
+#    else:
+#        libs.append('liblinearmath')
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_INCLUDE_Bullet
                     , os.path.join(Config.PATH_OgreBullet, 'Collisions' )
@@ -1577,6 +1582,7 @@ class ogrebulletc:  #
     ModuleName = 'OgreBulletC'
     CheckIncludes=['boost/python.hpp', 'Ogre.h']    
 
+
 class ogrebulletd:  # 
     active = True
     pythonModule = True
@@ -1585,12 +1591,12 @@ class ogrebulletd:  #
     cflags = ""
     parent = "ogre/physics"
     libs = [boost.lib,  'OgreMain', 
-        'LibBulletCollision', 'LibBulletDynamics'
+        'libbulletcollision', 'libbulletdynamics', 'libbulletmath'
         ]
-    if isWindows():
-        libs.append('libbulletmath')
-    else:
-        libs.append('LibLinearMath')
+#    if isWindows():
+#        libs.append('libbulletmath')
+#    else:
+#        libs.append('liblinearmath')
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_INCLUDE_Bullet
                     , os.path.join(Config.PATH_OgreBullet, 'Collisions' )

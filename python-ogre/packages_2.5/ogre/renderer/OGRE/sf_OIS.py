@@ -118,7 +118,13 @@ class Application(object):
     def _setUp(self):
         """This sets up the ogre application, and returns false if the user
         hits "cancel" in the dialog box."""
-        self.root = ogre.Root(getPluginPath())
+        if self.unittest:
+            if os.path.isfile('ogre.cfg'):
+                self.root = ogre.Root(getPluginPath())
+            else:
+                self.root = ogre.Root(getPluginPath(), '../ogre.cfg')
+        else:
+            self.root = ogre.Root(getPluginPath())
         self.root.setFrameSmoothingPeriod (5.0)
 
         self._setUpResources()

@@ -214,7 +214,7 @@ def generate_code():
     if os.name == 'nt':
         defined_symbols = ["WIN32","NDEBUG","_WINDOWS", "_PRECOMP", 'OGRE_NONCLIENT_BUILD','__PYTHONOGRE_BUILD_CODE' ]
     else:
-        defined_symbols = ["NDEBUG", "_PRECOMP", 'OGRE_NONCLIENT_BUILD' ]
+        defined_symbols = ["NDEBUG", "_PRECOMP", 'OGRE_NONCLIENT_BUILD','__PYTHONOGRE_BUILD_CODE' ]
     defined_symbols.append( 'VERSION_' + environment.ogrebulletc.version ) 
     if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')
