@@ -1047,7 +1047,7 @@ class ogreode:
             [0, "patch -s -N -i ../../python-ogre/patch/ogreode.patch -p0", baseDir], 
             [0, "chmod +x autogen.sh", baseDir],
             [0, "./autogen.sh", baseDir],
-            [0, "./configure --prefix=%s" % PREFIX, baseDir],
+            [0, "./configure --without-samples --prefix=%s" % PREFIX, baseDir],
             [0, "make", baseDir],
             [0, "make install", baseDir],
             ]

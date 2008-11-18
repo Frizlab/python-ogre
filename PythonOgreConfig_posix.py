@@ -47,7 +47,7 @@ if SDK:
     PATH_OIS =          os.path.join(BASE_DIR, 'ogre','Dependencies')
     
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonSDK','sdk')
-PATH_ODE =          os.path.join(BASE_DIR, 'ode-0.9')
+PATH_ODE =          os.path.join(BASE_DIR, 'ode-0.10.1')
 PATH_OGG =          os.path.join(BASE_DIR, 'libogg-1.1.3')
 PATH_VORBIS=        os.path.join(BASE_DIR, 'libvorbis-1.2.0')
 PATH_OPENAL=        os.path.join(BASE_DIR, 'openal-soft-1.5.304')
