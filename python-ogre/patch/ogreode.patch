@@ -16,224 +16,35 @@ Index: include/OgreOdeEntityInformer.h
  
  		Ogre::Entity*		_entity;
  		Ogre::SceneNode*	_node;
+Index: src/OgreOdeGeometry.cpp
+===================================================================
+--- src/OgreOdeGeometry.cpp	(revision 2510)
++++ src/OgreOdeGeometry.cpp	(working copy)
+@@ -924,7 +924,7 @@
+ 
+ 	_data = dGeomTriMeshDataCreate(); 
+ 
+-	dGeomTriMeshDataBuildSimple(_data,(const dReal*)_vertices, (int)vertex_count, _indices, (int) index_count); 
++	dGeomTriMeshDataBuildSimple(_data,(const dReal*)_vertices, (int)vertex_count, /*(const int *)*/_indices, (int) index_count); 
+ 
+ 	_geom = dCreateTriMesh(getSpaceID(space),_data,0,0,0);
+ 	registerGeometry();
 Index: src/OgreOdeTriangleMeshDataManager.cpp
 ===================================================================
 --- src/OgreOdeTriangleMeshDataManager.cpp	(revision 2510)
 +++ src/OgreOdeTriangleMeshDataManager.cpp	(working copy)
-@@ -1,106 +1,106 @@
--#include "OgreOdePrecompiledHeaders.h"
--
--#include "OgreOdeTriangleMeshDataManager.h"
--
-+#include "OgreOdePrecompiledHeaders.h"
- 
-+#include "OgreOdeTriangleMeshDataManager.h"
-+
-+
+@@ -6,7 +6,7 @@
  using namespace Ogre;
--using namespace OgreOde; 
--
+ using namespace OgreOde; 
+ 
 -template<> TriangleMeshDataManager *Ogre::Singleton<TriangleMeshDataManager>::ms_Singleton = 0;
--
--namespace OgreOde
--{
--	//-----------------------------------------------------------------------
--	TriangleMeshDataManager::TriangleMeshDataManager()
--	{
--	}
--
--	//-----------------------------------------------------------------------
--	TriangleMeshDataManager::~TriangleMeshDataManager()
--	{
--		//mTriangleMeshDataMap.clear();
--	}
--	
--	//-----------------------------------------------------------------------
--	TriangleMeshDataManager *TriangleMeshDataManager::getSingletonPtr () 
--	{
--		return ms_Singleton;
--	}
--
--	//-----------------------------------------------------------------------
--	TriangleMeshDataManager &TriangleMeshDataManager::getSingleton ()
--	{  
--		assert (ms_Singleton);  
--		return (*ms_Singleton);
--	}
--
--
--	//-----------------------------------------------------------------------
--	void TriangleMeshDataManager::addTriangleMeshData(const String& name, TriangleMeshDataPtr shape, Vector3 scale)
--	{
--
--		mTriangleMeshDataMap[name][scale] = shape;
--		
--		// reduce count so when Ode::Geometry changes its dataPtr or is deleted we arn't
--		// left with this one on a referance count of 1
--		unsigned int* count = shape.useCountPointer();
--		(*count)--;
--		
--	}
--
--
--	//-----------------------------------------------------------------------
--	void TriangleMeshDataManager::removeTriangleMeshData(const String& name, Vector3 scale)
--	{
--		
--		TriangleMeshDataPtrMap::iterator itr = mTriangleMeshDataMap.find(name);
--		if(itr != mTriangleMeshDataMap.end())
--		{
--		
--			 std::map<Ogre::Vector3, OgreOde::TriangleMeshDataPtr,OgreOde::TriangleMeshDataManager::vectorLess>::iterator itr2;
--			
--			itr2 = itr->second.find(scale);
--			
--			if ( itr2 != itr->second.end() )
--			{
--				//printf ("no TriangleMeshData for scale so erase it\n");
--				itr->second.erase(itr2);
--				itr2->second.setNull();
--			}
--			
--			if (itr->second.size() == 0) 
--			{
--				//printf ("have no TriangleMeshData for this mesh so erase it from map\n");
--				mTriangleMeshDataMap.erase(itr); 
--			}
--		}
--			
--	}
--	
--	
--	/** looks for mesh name then size or returns a NULL TriangleMeshDataPtr
--	*/
--	//-----------------------------------------------------------------------
--	TriangleMeshDataPtr TriangleMeshDataManager::getTriangleMeshData(const String& name, Vector3 scale)
--	{
--	
--		TriangleMeshDataPtrMap::iterator itr = mTriangleMeshDataMap.find(name);
--		if(itr != mTriangleMeshDataMap.end())
--		{
--			 std::map<Ogre::Vector3, OgreOde::TriangleMeshDataPtr,OgreOde::TriangleMeshDataManager::vectorLess>::iterator itr2;
--			
--			itr2 = itr->second.find(scale);
--			
--			if ( itr2 != itr->second.end() )
--			{
--				return itr2->second;
--			}
--		}
--		
--		//printf ("TriangleMeshDataManager::getTriangleMeshData not found\n");
--		
--		return NULL;
--	
--	}
--
--}
-+using namespace OgreOde; 
-+
 +template<> OgreOde::TriangleMeshDataManager * Ogre::Singleton<OgreOde::TriangleMeshDataManager>::ms_Singleton = 0;
-+
-+namespace OgreOde
-+{
-+	//-----------------------------------------------------------------------
-+	TriangleMeshDataManager::TriangleMeshDataManager()
-+	{
-+	}
-+
-+	//-----------------------------------------------------------------------
-+	TriangleMeshDataManager::~TriangleMeshDataManager()
-+	{
-+		//mTriangleMeshDataMap.clear();
-+	}
-+	
-+	//-----------------------------------------------------------------------
-+	TriangleMeshDataManager *TriangleMeshDataManager::getSingletonPtr () 
-+	{
-+		return ms_Singleton;
-+	}
-+
-+	//-----------------------------------------------------------------------
-+	TriangleMeshDataManager &TriangleMeshDataManager::getSingleton ()
-+	{  
-+		assert (ms_Singleton);  
-+		return (*ms_Singleton);
-+	}
-+
-+
-+	//-----------------------------------------------------------------------
-+	void TriangleMeshDataManager::addTriangleMeshData(const String& name, TriangleMeshDataPtr shape, Vector3 scale)
-+	{
-+
-+		mTriangleMeshDataMap[name][scale] = shape;
-+		
-+		// reduce count so when Ode::Geometry changes its dataPtr or is deleted we arn't
-+		// left with this one on a referance count of 1
-+		unsigned int* count = shape.useCountPointer();
-+		(*count)--;
-+		
-+	}
-+
-+
-+	//-----------------------------------------------------------------------
-+	void TriangleMeshDataManager::removeTriangleMeshData(const String& name, Vector3 scale)
-+	{
-+		
-+		TriangleMeshDataPtrMap::iterator itr = mTriangleMeshDataMap.find(name);
-+		if(itr != mTriangleMeshDataMap.end())
-+		{
-+		
-+			 std::map<Ogre::Vector3, OgreOde::TriangleMeshDataPtr,OgreOde::TriangleMeshDataManager::vectorLess>::iterator itr2;
-+			
-+			itr2 = itr->second.find(scale);
-+			
-+			if ( itr2 != itr->second.end() )
-+			{
-+				//printf ("no TriangleMeshData for scale so erase it\n");
-+				itr->second.erase(itr2);
-+				itr2->second.setNull();
-+			}
-+			
-+			if (itr->second.size() == 0) 
-+			{
-+				//printf ("have no TriangleMeshData for this mesh so erase it from map\n");
-+				mTriangleMeshDataMap.erase(itr); 
-+			}
-+		}
-+			
-+	}
-+	
-+	
-+	/** looks for mesh name then size or returns a NULL TriangleMeshDataPtr
-+	*/
-+	//-----------------------------------------------------------------------
-+	TriangleMeshDataPtr TriangleMeshDataManager::getTriangleMeshData(const String& name, Vector3 scale)
-+	{
-+	
-+		TriangleMeshDataPtrMap::iterator itr = mTriangleMeshDataMap.find(name);
-+		if(itr != mTriangleMeshDataMap.end())
-+		{
-+			 std::map<Ogre::Vector3, OgreOde::TriangleMeshDataPtr,OgreOde::TriangleMeshDataManager::vectorLess>::iterator itr2;
-+			
-+			itr2 = itr->second.find(scale);
-+			
-+			if ( itr2 != itr->second.end() )
-+			{
-+				return itr2->second;
-+			}
-+		}
-+		
-+		//printf ("TriangleMeshDataManager::getTriangleMeshData not found\n");
-+		
-+		return NULL;
-+	
-+	}
-+
-+}
+ 
+ namespace OgreOde
+ {
 Index: prefab/src/OgreOdeRagdoll.cpp
 ===================================================================
---- prefab/src/OgreOdeRagdoll.cpp	(revision 2510)
+--- prefab/src/OgreOdeRagdoll.cpp	(revision 2512)
 +++ prefab/src/OgreOdeRagdoll.cpp	(working copy)
 @@ -10,6 +10,7 @@
  
@@ -243,3 +54,42 @@ Index: prefab/src/OgreOdeRagdoll.cpp
  
  using namespace Ogre;
  using namespace OgreOde;
+@@ -734,4 +735,4 @@
+ void RagdollFactory::destroyInstance( MovableObject* obj)
+ {
+ 	delete obj;
+-} 
+\ No newline at end of file
++} 
+Index: loader/include/OgreOdeDotLoader.h
+===================================================================
+--- loader/include/OgreOdeDotLoader.h	(revision 2510)
++++ loader/include/OgreOdeDotLoader.h	(working copy)
+@@ -15,8 +15,8 @@
+         DotLoader(OgreOde::World * world = 0, OgreOde::Space * space = 0);
+ 		~DotLoader(){};
+ 
+-        void setWorld(OgreOde::World * world)  {_world = world;};
+-        void setSpace(OgreOde::Space * space)  {_space = space;};
++        void setWorld(OgreOde::World * world);//  {_world = world;};
++        void setSpace(OgreOde::Space * space);//  {_space = space;};
+ 
+         ObjectList  *load(const Ogre::String &filename, const Ogre::StringVector &objects_names, const Ogre::StringVector &instance_names);
+         void         save(const Ogre::String &filename, const Ogre::StringVector &objects_names, ObjectList  *objects);
+Index: loader/src/OgreOdeDotLoader.cpp
+===================================================================
+--- loader/src/OgreOdeDotLoader.cpp	(revision 2510)
++++ loader/src/OgreOdeDotLoader.cpp	(working copy)
+@@ -62,6 +62,12 @@
+ {
+ 
+ }
++
++void DotLoader::setWorld(OgreOde::World * world)  
++{_world = world;};
++void DotLoader::setSpace(OgreOde::Space * space)  
++{_space = space;};
++
+ //------------------------------------------------------------------------------------------------
+ ObjectList  *DotLoader::load(const String &filename, const StringVector &objects_names, const StringVector &instance_names)
+ {
