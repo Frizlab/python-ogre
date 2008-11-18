@@ -133,7 +133,7 @@ namespace Hydrax{namespace Noise
 
 		// Create our perlin textures
 
-		Ogre::TexturePtr& mPerlinTexture0 
+		Ogre::TexturePtr mPerlinTexture0 
 			= Ogre::TextureManager::getSingleton().
 			createManual("_Hydrax_Perlin_Noise0",
 			             HYDRAX_RESOURCE_GROUP,
@@ -142,7 +142,7 @@ namespace Hydrax{namespace Noise
 						 Ogre::PF_L16,
 						 Ogre::TU_DYNAMIC_WRITE_ONLY);
 
-		Ogre::TexturePtr& mPerlinTexture1 
+		Ogre::TexturePtr mPerlinTexture1 
 			= Ogre::TextureManager::getSingleton().
 			createManual("_Hydrax_Perlin_Noise1",
 			             HYDRAX_RESOURCE_GROUP,
