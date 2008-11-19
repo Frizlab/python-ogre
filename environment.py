@@ -1600,7 +1600,7 @@ class ogrebulletc:  #
     if isWindows():
         CCFLAGS =  ' -DWIN32 -DNDEBUG -D_WINDOWS -D_PRECOMP '
     else:
-        CCFLAGS = ' -D_PRECOMP '
+        CCFLAGS = ' -D_PRECOMP -fno-inline '
         libs.append ( boost_python_index.lib )
     ModuleName = 'OgreBulletC'
     CheckIncludes=['boost/python.hpp', 'Ogre.h']    

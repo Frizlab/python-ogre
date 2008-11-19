@@ -48,7 +48,7 @@ namespace OgreBulletCollisions
 		void setWorld(CollisionsWorld *world);
 		void setMaxDistance(Ogre::Real max_distance);
 
-        inline const Ogre::Ray &getRay() const;
+        const Ogre::Ray & getRay() const;
 		inline Ogre::Vector3 getRayStartPoint() const;
 		inline Ogre::Vector3 getRayEndPoint() const;
 
@@ -61,11 +61,7 @@ namespace OgreBulletCollisions
 
     };
     // -------------------------------------------------------------------------
-    // basic CollisionRay inline methods
-    inline const Ogre::Ray &CollisionRayResultCallback ::getRay() const 
-    {
-        return mRay;
-    }
+    
     // -------------------------------------------------------------------------
     //  CollisionClosestRay
     class CollisionClosestRayResultCallback : public CollisionRayResultCallback

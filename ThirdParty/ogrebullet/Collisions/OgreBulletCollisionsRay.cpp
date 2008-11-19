@@ -72,6 +72,11 @@ namespace OgreBulletCollisions
     {
       return mRay.getPoint(mMaxDistance);
     }
+    // basic CollisionRay inline methods
+    const Ogre::Ray & CollisionRayResultCallback ::getRay() const 
+    {
+        return mRay;
+    }
     // -------------------------------------------------------------------------
     bool  CollisionRayResultCallback::doesCollide() const
     {
