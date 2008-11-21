@@ -1525,19 +1525,20 @@ class et:  ## editable terrain
 class bullet:
     active = True
     pythonModule = True
-    version= "2.70"
+    version= "2.72"
     name='bullet'
     base = "bullet-" + version
     baseDir = os.path.join(os.getcwd(), base)
     parent = "ogre/physics"
-    libs=[boost.lib,  'libbulletcollision', 'libbulletdynamics']
+    libs=[boost.lib,  'LibBulletCollision', 'LibBulletDynamics','LibLinearMath']
     if isWindows():
-        libs.append('libbulletmath')
+        pass
+        #libs.append('libbulletMath')
     else:
-        libs.append('libbulletmath')
-        libs.append('libbulletsoftbody')
+        #libs.append('libbulletmath')
+        libs.append('LibBulletSoftBody')
         #libs.append('libbulletcolladaconverter')
-        libs.append('libbulletmultithreaded')
+        libs.append('LibBulletMultiThreaded')
         libs.append ( boost_python_index.lib )
 
     lib_dirs = [ Config.PATH_LIB_Boost
@@ -1552,14 +1553,15 @@ class bullet:
             ]
         buildCmds = [
             [0, "tar zxf " +os.path.join(downloadPath, base)+".tgz", ''],
-            [0, "./autogen.sh", baseDir],
-            [0, "./configure --prefix=%s " %(PREFIX), baseDir],
-##            [0, "cmake . -DCMAKE_INSTALL_PREFIX:PATH=%s" % PREFIX, baseDir],
-##            [0, "make", baseDir],
-            [0, "jam", baseDir],
-            [0, "jam install", baseDir]
+#            [0, "./autogen.sh", baseDir],
+#            [0, "./configure --prefix=%s " %(PREFIX), baseDir],
+            [0, "cmake . -DCMAKE_INSTALL_PREFIX:PATH=%s" % PREFIX, baseDir],
+            [0, "make", baseDir],
+#            [0, "make install", baseDir],
+#            [0, "jam", baseDir],
+#            [0, "jam install", baseDir]
 
-##            [0, "find . -name *.a -execdir cp {} %s/lib \;" % PREFIX, baseDir]
+            [0, "find . -name *.a -execdir cp {} %s/lib \;" % PREFIX, baseDir]
             ]
     else:
         source=[
@@ -1581,7 +1583,7 @@ class ogrebulletc:  #
     cflags = ""
     parent = "ogre/physics"
     libs = [boost.lib,  'OgreMain', 
-        'libbulletcollision', 'libbulletdynamics', 'libbulletmath'
+        'LibBulletCollision', 'LibBulletDynamics','LibBulletMultiThreaded','LibBulletSoftBody','LibLinearMath'
         ]
 #    if isWindows():
 #        libs.append('libbulletmath')
@@ -1614,7 +1616,7 @@ class ogrebulletd:  #
     cflags = ""
     parent = "ogre/physics"
     libs = [boost.lib,  'OgreMain', 
-        'libbulletcollision', 'libbulletdynamics', 'libbulletmath'
+        'LibBulletCollision', 'LibBulletDynamics','LibBulletMultiThreaded','LibBulletSoftBody','LibLinearMath'
         ]
 #    if isWindows():
 #        libs.append('libbulletmath')
@@ -1634,7 +1636,7 @@ class ogrebulletd:  #
     if isWindows():
         CCFLAGS =  ' -DWIN32 -DNDEBUG -D_WINDOWS -D_PRECOMP '
     else:
-        CCFLAGS = ' -D_PRECOMP '
+        CCFLAGS = ' -D_PRECOMP -fno-inline '
         libs.append ( boost_python_index.lib )
     ModuleName = 'OgreBulletD'
     CheckIncludes=['boost/python.hpp', 'Ogre.h']        

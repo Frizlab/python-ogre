@@ -58,6 +58,15 @@ def ManualExclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns    
+    excludes=['::btSimulationIslandManager'
+            ]
+    for e in excludes:
+        print "excluding class", e
+        global_ns.class_(e).exclude()
+    for c in global_ns.classes():
+        #if not c.ignore:
+        print c
+    sys.exit(-1)
 
 ############################################################
 ##
