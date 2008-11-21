@@ -40,12 +40,12 @@ THE SOFTWARE.
 
 /** \brief Export Class Macro, replace value with your export macro
 */
-#define BETAJAEN_SL_CLASS __declspec(dllexport)
+#define BETAJAEN_SL_CLASS // __declspec(dllexport)
 #define BETAJAEN_SL_CLASS_FUNCTION
 #define BETAJAEN_SL_TEMPLATE_CLASS 
-#define BETAJAEN_SL_TEMPLATE_CLASS_FUNCTION __forceinline
-#define BETAJAEN_SL_CLASS_EXPORT __declspec(dllexport)
-#define BETAJAEN_SL_TEMPLATE_CLASS_EXPORT __forceinline
+#define BETAJAEN_SL_TEMPLATE_CLASS_FUNCTION // __forceinline
+#define BETAJAEN_SL_CLASS_EXPORT // __declspec(dllexport)
+#define BETAJAEN_SL_TEMPLATE_CLASS_EXPORT // __forceinline
 // __declspec(dllexport)
 
 /** \brief Delete macro. Used if you have your own leak checker, etc.

@@ -25,7 +25,6 @@ maxNumCar = 3
 #------------------------------------------------------------------------------------------------
 class GranTurismOgreFrameListener ( sf.FrameListener ):
     def __init__(self, win, cam,time_step,root,world) :
-        print "frame init"
         sf.FrameListener.__init__(self, win,cam)
         self.camera = cam
         self.vehicle = None
@@ -129,7 +128,6 @@ class GranTurismOgreFrameListener ( sf.FrameListener ):
 
     #------------------------------------------------------------------------------------------------
     def frameStarted( self, evt):
-        print "*** frameStarted"
         time = evt.timeSinceLastFrame
 
         ret = sf.FrameListener.frameStarted(self,evt)
