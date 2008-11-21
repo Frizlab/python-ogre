@@ -1,6 +1,6 @@
 Index: include/OgreOdeEntityInformer.h
 ===================================================================
---- include/OgreOdeEntityInformer.h	(revision 2510)
+--- include/OgreOdeEntityInformer.h	(revision 2512)
 +++ include/OgreOdeEntityInformer.h	(working copy)
 @@ -36,12 +36,12 @@
  		const TriangleIndex* getIndices();
@@ -18,7 +18,7 @@ Index: include/OgreOdeEntityInformer.h
  		Ogre::SceneNode*	_node;
 Index: src/OgreOdeGeometry.cpp
 ===================================================================
---- src/OgreOdeGeometry.cpp	(revision 2510)
+--- src/OgreOdeGeometry.cpp	(revision 2512)
 +++ src/OgreOdeGeometry.cpp	(working copy)
 @@ -924,7 +924,7 @@
  
@@ -31,7 +31,7 @@ Index: src/OgreOdeGeometry.cpp
  	registerGeometry();
 Index: src/OgreOdeTriangleMeshDataManager.cpp
 ===================================================================
---- src/OgreOdeTriangleMeshDataManager.cpp	(revision 2510)
+--- src/OgreOdeTriangleMeshDataManager.cpp	(revision 2512)
 +++ src/OgreOdeTriangleMeshDataManager.cpp	(working copy)
 @@ -6,7 +6,7 @@
  using namespace Ogre;
@@ -42,6 +42,19 @@ Index: src/OgreOdeTriangleMeshDataManager.cpp
  
  namespace OgreOde
  {
+Index: src/Makefile.am
+===================================================================
+--- src/Makefile.am	(revision 2512)
++++ src/Makefile.am	(working copy)
+@@ -22,6 +22,8 @@
+ 	OgreOdeSpace.cpp \
+ 	OgreOdeStepper.cpp \
+ 	OgreOdeUtility.cpp \
++    OgreOdeTriangleMeshData.cpp \
++    OgreOdeTriangleMeshDataManager.cpp \
+ 	OgreOdeWorld.cpp
+ 
+ libOgreOde_Core_la_LIBADD = \
 Index: prefab/src/OgreOdeRagdoll.cpp
 ===================================================================
 --- prefab/src/OgreOdeRagdoll.cpp	(revision 2512)
@@ -63,7 +76,7 @@ Index: prefab/src/OgreOdeRagdoll.cpp
 +} 
 Index: loader/include/OgreOdeDotLoader.h
 ===================================================================
---- loader/include/OgreOdeDotLoader.h	(revision 2510)
+--- loader/include/OgreOdeDotLoader.h	(revision 2512)
 +++ loader/include/OgreOdeDotLoader.h	(working copy)
 @@ -15,8 +15,8 @@
          DotLoader(OgreOde::World * world = 0, OgreOde::Space * space = 0);
@@ -78,7 +91,7 @@ Index: loader/include/OgreOdeDotLoader.h
          void         save(const Ogre::String &filename, const Ogre::StringVector &objects_names, ObjectList  *objects);
 Index: loader/src/OgreOdeDotLoader.cpp
 ===================================================================
---- loader/src/OgreOdeDotLoader.cpp	(revision 2510)
+--- loader/src/OgreOdeDotLoader.cpp	(revision 2512)
 +++ loader/src/OgreOdeDotLoader.cpp	(working copy)
 @@ -62,6 +62,12 @@
  {
