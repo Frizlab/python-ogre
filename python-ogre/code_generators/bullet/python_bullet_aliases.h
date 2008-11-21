@@ -32,11 +32,11 @@ typedef btAlignedAllocator<btDbvt::sStkNP, 16u> AlignedAllocatorsStkNP;
 typedef btAlignedAllocator<btDbvt::sStkNPS, 16u> AlignedAllocatorsStkNPS;
 // typedef btAlignedAllocator<btMultiSapBroadphase::btBridgeProxy*, 16u> AlignedAllocatorMultiSapBradBridge;
 // typedef btAlignedAllocator<btMultiSapBroadphase::btMultiSapProxy*, 16u> AlignedAllocatorMultiSapBroadMulti;
-typedef btAlignedAllocator<btOdeContactJoint, 16u> AlignedAllocatorOdeContactJoint;
-typedef btAlignedAllocator<btOdeJoint*, 16u> AlignedAllocatorOdeJointPtr;
-typedef btAlignedAllocator<btOdeSolverBody, 16u> AlignedAllocatorOdeSolverBody;
-typedef btAlignedAllocator<btOdeSolverBody*, 16u> AlignedAllocatorOdeSolverBodyPtr;
-typedef btAlignedAllocator<btOdeTypedJoint, 16u> AlignedAllocatorOdeTypedJoint;
+//typedef btAlignedAllocator<btOdeContactJoint, 16u> AlignedAllocatorOdeContactJoint;
+//typedef btAlignedAllocator<btOdeJoint*, 16u> AlignedAllocatorOdeJointPtr;
+//typedef btAlignedAllocator<btOdeSolverBody, 16u> AlignedAllocatorOdeSolverBody;
+//typedef btAlignedAllocator<btOdeSolverBody*, 16u> AlignedAllocatorOdeSolverBodyPtr;
+//typedef btAlignedAllocator<btOdeTypedJoint, 16u> AlignedAllocatorOdeTypedJoint;
 typedef btAlignedAllocator<short, 16u> AlignedAllocatorShort16;
 typedef btAlignedObjectArray<btDbvtNode const*> AlignedObjectArrayDbvtNode;
 typedef btAlignedObjectArray<btDbvt::sStkNN> AlignedObjectArrayDbvtsStkNN;
@@ -44,11 +44,11 @@ typedef btAlignedObjectArray<btDbvt::sStkNP> AlignedObjectArrayDbvtsStkNP;
 typedef btAlignedObjectArray<btDbvt::sStkNPS> AlignedObjectArrayDbvtsStkNPS;
 // typedef btAlignedObjectArray<btMultiSapBroadphase::btBridgeProxy*> AlignedObjectArrayMultiSapBroadBridge;
 // typedef btAlignedObjectArray<btMultiSapBroadphase::btMultiSapProxy*> AlignedObjectArrayMultiSapBroadMulti;
-typedef btAlignedObjectArray<btOdeContactJoint> AlignedObjectArrayOdeContactJoint;
-typedef btAlignedObjectArray<btOdeJoint*> AlignedObjectArrayOdeJointPtr;
-typedef btAlignedObjectArray<btOdeSolverBody> AlignedObjectArrayOdeSolverBody;
-typedef btAlignedObjectArray<btOdeSolverBody*> AlignedObjectArrayOdeSolverBodyPtr;
-typedef btAlignedObjectArray<btOdeTypedJoint> AlignedObjectArrayOdeTypedJoint;
+//typedef btAlignedObjectArray<btOdeContactJoint> AlignedObjectArrayOdeContactJoint;
+//typedef btAlignedObjectArray<btOdeJoint*> AlignedObjectArrayOdeJointPtr;
+//typedef btAlignedObjectArray<btOdeSolverBody> AlignedObjectArrayOdeSolverBody;
+//typedef btAlignedObjectArray<btOdeSolverBody*> AlignedObjectArrayOdeSolverBodyPtr;
+//typedef btAlignedObjectArray<btOdeTypedJoint> AlignedObjectArrayOdeTypedJoint;
 
 
 

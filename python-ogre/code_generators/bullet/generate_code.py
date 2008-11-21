@@ -81,7 +81,7 @@ def ManualExclude ( mb ):
             ,'::btCompoundShape::createAabbTreeFromChildren'
             ,'::btCollisionAlgorithm::getDispatcherId'
             ,'::btCollisionAlgorithmConstructionInfo::getDispatcherId'
-            ,'::btOptimizedBvh::walkRecursiveQuantizedTreeAgainstQuantizedTree'
+            ,'::btQuantizedBvh::walkRecursiveQuantizedTreeAgainstQuantizedTree'
             
             ,'::btCapsuleShape::calculateLocalInertia'
             ,'::btCapsuleShape::localGetSupportingVertexWithoutMargin'
@@ -127,9 +127,9 @@ def ManualExclude ( mb ):
             ,'btAlignedAllocator<btMultiSapBroadphase::btBridgeProxy*, 16u>'
             ,'btAlignedAllocator<btMultiSapBroadphase::btMultiSapProxy*, 16u>'
 #             ,'btAlignedAllocator<btOdeContactJoint, 16u>'
-            ,'btAlignedAllocator<btOdeJoint*, 16u>'
+#            ,'btAlignedAllocator<btOdeJoint*, 16u>'
 #             ,'btAlignedAllocator<btOdeSolverBody, 16u>'
-            ,'btAlignedAllocator<btOdeSolverBody*, 16u>'
+#            ,'btAlignedAllocator<btOdeSolverBody*, 16u>'
 #             ,'btAlignedAllocator<btOdeTypedJoint, 16u>'
             ,'btAlignedAllocator<unsigned int, 16u>'
             ,'btAlignedAllocator<unsigned short, 16u>'
@@ -151,7 +151,8 @@ def ManualExclude ( mb ):
 #             ,'btAlignedObjectArray<btOptimizedBvhNode>'
 #             ,'btAlignedObjectArray<btCollisionObject*>'
             ,'btDbvtBroadphase'
-            ,'btSorLcpSolver'
+            ,'btContinuousDynamicsWorld'
+#            ,'btSorLcpSolver'
             ]
     for e in excludes:
         print "excluding class", e
