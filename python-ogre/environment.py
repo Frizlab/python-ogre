@@ -482,7 +482,7 @@ class boost:    ## also included bjam
             bjambuilddir = 'bin.macosxx86'
             bjambuildset = 'darwin'
         else:
-            bjambuilddir = 'bin.linuxx86'
+            bjambuilddir = 'bin.linuxx86_64'
             bjambuildset = 'gcc'
                     
         source = [
