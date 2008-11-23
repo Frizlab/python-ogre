@@ -88,6 +88,9 @@ def spawnTask ( task, cwdin = '', getoutput=None ):
                 env["CFLAGS"]+=" "+"-I"+os.path.join(PREFIX,"include")
             else:
                 env["CFLAGS"]+=" "+"-I"+os.path.join(PREFIX,"include")+ " -L"+os.path.join(PREFIX,"lib")
+                if environment.is64():
+                    env["CFLAGS"]+=" -L"+os.path.join(PREFIX,"lib64")
+
                             
             env["CXXFLAGS"]+=" "+env["CFLAGS"]
             env["CCFLAGS"]+=" "+env["CFLAGS"]
