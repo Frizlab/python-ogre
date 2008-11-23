@@ -40,6 +40,12 @@ def isMac():
     if os.sys.platform == 'darwin':
         return True
     return False
+
+def is64():
+    if os.uname()[4] == 'x86_64':
+        return True
+    return False  
+
     
 ##
 ## set this to True if you compiled Ogre with Threads enabled
@@ -53,8 +59,7 @@ else:
 PythonOgreMajorVersion = "1"
 PythonOgreMinorVersion = "6" 
 PythonOgrePatchVersion = "0"
-
-
+  
 ##
 ## these should be fine with auto create - however override them as necessary
 ##
@@ -334,7 +339,10 @@ class cg:
     pythonModule = False
     active = True
     if isLinux():
-        base = 'Cg-2.0_May2008_x86'
+        if is64():
+            base = 'Cg-2.0_May2008_x86_64'
+        else:
+            base = 'Cg-2.0_May2008_x86'
         source = [
                     [wget, " http://developer.download.nvidia.com/cg/Cg_2.0/2.0.0015/"+base+".tgz",downloadPath]
                  ]
@@ -482,7 +490,10 @@ class boost:    ## also included bjam
             bjambuilddir = 'bin.macosxx86'
             bjambuildset = 'darwin'
         else:
-            bjambuilddir = 'bin.linuxx86_64'
+            if is64():
+                bjambuilddir = 'bin.linuxx86_64'
+            else:
+                bjambuilddir = 'bin.linuxx86'
             bjambuildset = 'gcc'
                     
         source = [
