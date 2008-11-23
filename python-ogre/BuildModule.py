@@ -34,36 +34,36 @@ def setupLogging (logfilename):
     console.setFormatter(formatter)
     # add the handler to the root logger
     logging.getLogger('').addHandler(console)
- 
-    
+
+
 def getClassList ():
     """ create a dictionary of classes from the environment modules
     """
     dict = {}
     for c in dir(environment):
         var = environment.__dict__[c]
-        if isinstance ( var, types.ClassType ) :    ## OK so we know it's a class      
+        if isinstance ( var, types.ClassType ) :    ## OK so we know it's a class
 #             logger.debug ( "getClassList: Checking %s" % c )
             if hasattr(var, 'active') and hasattr(var, 'pythonModule'):   # and it looks like one we care about
 #                 logger.debug ( "getClassList: it's one of ours")
                 dict[c] = var
     return dict
-                
+
 def exit( ExitMessage ):
      logger.error( ExitMessage )
      sys.exit( -1 )
 
-  
-## This stuff has to be in my spawing sub process        
+
+## This stuff has to be in my spawing sub process
 # # export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$PREFIX/lib/pkgconfig
 # # export LD_LIBRARY_PATH=$PREFIX/lib
 # # export CFLAGS="-I$PREFIX/include -L$PREFIX/lib"
 # # export CXXFLAGS=$CFLAGS
 # # export LDFLAGS="-Wl,-rpath='\$\$ORIGIN/../../lib' -Wl,-rpath='\$\$ORIGIN' -Wl,-z,origin"
 # # export PATH=$PREFIX/bin:$PATH
-# # export PYTHONPATH=$PREFIX/lib/python$PYTHONVERSION/site-packages     
-     
-     
+# # export PYTHONPATH=$PREFIX/lib/python$PYTHONVERSION/site-packages
+
+
 def spawnTask ( task, cwdin = '', getoutput=None ):
     """Execute a command line task and manage the return code etc
     """
@@ -76,7 +76,7 @@ def spawnTask ( task, cwdin = '', getoutput=None ):
         env["PKG_CONFIG_PATH"]=os.path.join(PREFIX,"lib/pkgconfig")
         env["LD_LIBRARY_PATH"]=os.path.join(PREFIX,"lib")
         if environment.isMac():
-            env["CFLAGS"]="-I"+PREFIX+"/include -L"+PREFIX+"/lib"  
+            env["CFLAGS"]="-I"+PREFIX+"/include -L"+PREFIX+"/lib"
             env["CXXFLAGS"]="-I"+PREFIX+"/include -L"+PREFIX+"/lib"
             ##env["LDFLAGS"]="-Wl,-rpath='\$\$ORIGIN/../../lib' -Wl,-rpath='\$\$ORIGIN' -Wl,-z,origin"  ### Mac GCC 4.0.1 doesn't support rpath
             env["PYTHONPATH"]=PREFIX+"/lib/python"+environment.PythonVersionString+"/site-packages"
@@ -84,23 +84,23 @@ def spawnTask ( task, cwdin = '', getoutput=None ):
             for FLAGS in "CFLAGS", "CXXFLAGS", "CCFLAGS", "LDFLAGS":
                 if not FLAGS in env:
                     env[FLAGS] = ""
-            if environment.isWindows():                    
+            if environment.isWindows():
                 env["CFLAGS"]+=" "+"-I"+os.path.join(PREFIX,"include")
             else:
                 env["CFLAGS"]+=" "+"-I"+os.path.join(PREFIX,"include")+ " -L"+os.path.join(PREFIX,"lib")
                 if environment.is64():
                     env["CFLAGS"]+=" -L"+os.path.join(PREFIX,"lib64")
 
-                            
+
             env["CXXFLAGS"]+=" "+env["CFLAGS"]
             env["CCFLAGS"]+=" "+env["CFLAGS"]
             env["LDFLAGS"]+="-Wl,-rpath='$$ORIGIN/../../lib' -Wl,-rpath='$$ORIGIN' -Wl,-z,origin"
             env["PYTHONPATH"]=PREFIX+"/lib/python"+environment.PythonVersionString+"/site-packages"
             env["ZZIPLIB_LIBS"]="-lzzip"
-    
+
         env["PATH"]=PREFIX+"/bin:" + PATH
-        ENV_SET=True        
-     
+        ENV_SET=True
+
     logger.debug ( "Spawning '%s' in '%s'" % (task,cwdin) )
 
     if VERBOSE:
@@ -114,7 +114,7 @@ def spawnTask ( task, cwdin = '', getoutput=None ):
             returncode = process.returncode
         except:
             returncode = -1
-    
+
     if getoutput is not None:
         if returncode != -1:
             getoutput.write(out)
@@ -128,14 +128,14 @@ def spawnTask ( task, cwdin = '', getoutput=None ):
         logger.warning ( "Full Logging ON" )
         logger.debug ( out )
         logger.debug ( err )
-            
+
     if returncode != 0 and FAILHARD:
         exit(" The following command failed %s" % task)
-    return returncode     
-     
+    return returncode
+
 def retrieveSource ( module ):
     """ Here's we we retrieve the necessary source files
-    """    
+    """
     for cmd,args,cwd in module.source:
         logger.info ("Retrieving %s" % args )
         ret = spawnTask ( cmd+ " " + args, cwd  )
@@ -149,7 +149,7 @@ def retrieveSource ( module ):
             path = os.getcwd()
         ret = spawnTask ( cmd, path  )
 
-        
+
 def buildModule ( module ):
     """ Execute the build commands for the module
     """
@@ -163,7 +163,7 @@ def buildModule ( module ):
             logger.debug ("Compiling %s " % cmd )
             code = compile ( cmd, '<string>', 'exec' )
             logger.debug ("executing codeblock "  )
-            exec code 
+            exec code
             logger.debug ( "Exec done")
 
 from cStringIO import StringIO
@@ -191,7 +191,7 @@ def buildDeb ( module, install = False ):
             ret = spawnTask("cp -rvf %s %s" % (debianour, debiandir), os.getcwd())
             if ret != 0:
                 exit("Was not able to copy the debian directory over")
-   
+
     # Rewrite any place holders
     for file in os.listdir(debiandir):
         if not os.path.isfile(os.path.join(debiandir, file)):
@@ -199,7 +199,7 @@ def buildDeb ( module, install = False ):
         ret = spawnTask( "sed --in-place "+os.path.join(debiandir,file)+" -e\"s|%%SHORTDATE%%|`date +%Y%m%d`|\" -e\"s|%%LONGDATE%%|`date +'%a, %d %b %Y %H:%m:%S %z'`|\" -e\"s|%%VERSION%%|"+module.source_version+"|\"", srcdir)
         if ret != 0:
             exit("Was not able to update the debian %s." % file)
- 
+
     # Check that all the dependencies for this package are avaliable
     c = StringIO()
     ret = spawnTask("dpkg-checkbuilddeps", srcdir, c)
@@ -280,7 +280,7 @@ def buildService ( module, install = False ):
         ' -e "s^%%BUILDDEPS%%^`cat '+os.path.join(debiandir, "control")+' | grep Build-Depends:`^"' + \
 		' -e "s|%%VERSION%%|'+module.source_version+'|g"'
         , buildbase)
-    
+
     # Do some cleanup
     spawnTask("rm -rf %s" % builddir, buildbase)
     spawnTask("rm %s.md5sum" % module.base, buildbase)
@@ -296,22 +296,22 @@ def buildInstall ( module ):
     if ret != 0:
         logger.warning("Was not able to the install package!")
     logger.info("Package installed.")
- 
+
 def generateCode ( module ):
     """ Generate the C++ wrapper code
     """
     logger.info ( "Building Source code for " + module.name )
     ### AJM -- note the assumption that environment.py is sitting in the 'python-ogre' directory...
-    ret = spawnTask ( 'python generate_code.py'+('', ' --usesystem')[environment.UseSystem], os.path.join(environment.root_dir, 'code_generators', module.name) ) 
+    ret = spawnTask ( 'python generate_code.py'+('', ' --usesystem')[environment.UseSystem], os.path.join(environment.root_dir, 'code_generators', module.name) )
 
 def compileCode ( module ):
     """ Compile the wrapper code and make the modules
     """
     logger.info ( "Compiling Source code for " + module.name )
     ### AJM -- note the assumption that environment.py is sitting in the 'python-ogre' directory...
-    ret = spawnTask ( 'scons PROJECTS='+module.name, os.path.join(environment.root_dir) )     
+    ret = spawnTask ( 'scons PROJECTS='+module.name, os.path.join(environment.root_dir) )
     if ret != 0 :
-        time.sleep(5)  ## not sure why scons doesn't work after first failure       
+        time.sleep(5)  ## not sure why scons doesn't work after first failure
 
 FAILHARD=False
 def parseInput():
@@ -329,21 +329,21 @@ def parseInput():
     parser.add_option("-l", "--logfilename",  default="log.out" ,dest="logfilename", help="Override the default log file name")
     parser.add_option("-G", "--genall", action="store_true", default=False ,dest="gencodeall", help="Generate Source Code for all possible modules")
     parser.add_option("-C", "--compileall", action="store_true", default=False ,dest="compilecodeall", help="Compile Source Code for all posssible modules")
-    parser.add_option("-e", "--failhard", action="store_true", default=False, dest="failhard", help="Exit with failure code on first error.")  
- 
+    parser.add_option("-e", "--failhard", action="store_true", default=False, dest="failhard", help="Exit with failure code on first error.")
+
     (options, args) = parser.parse_args()
     return (options,args)
-    
+
 if __name__ == '__main__':
     classList = getClassList ()
-    
+
     (options, args) = parseInput()
     if len(args) == 0 and not (options.compilecodeall or options.gencodeall):
         exit("The module to build wasn't specified.  Use -h for help")
 
     setupLogging(options.logfilename)
     logger = logging.getLogger('PythonOgre.BuildModule')
-        
+
     if options.retrieve==False and options.build==False and options.gencode==False and options.compilecode==False\
             and options.compilecodeall==False and options.gencodeall==False and options.builddeb==False\
             and options.installdeb==False and options.buildservice==False:
@@ -355,25 +355,25 @@ if __name__ == '__main__':
     VERBOSE=options.verbose
 
     if not os.path.exists( environment.downloadPath ):
-        os.mkdir ( environment.downloadPath )    
+        os.mkdir ( environment.downloadPath )
 
     if not os.path.exists( environment.Config.ROOT_DIR ):
-        os.mkdir ( environment.Config.ROOT_DIR )    
+        os.mkdir ( environment.Config.ROOT_DIR )
     if not os.path.exists( os.path.join(environment.Config.ROOT_DIR, 'usr' ) ):
-        os.mkdir ( os.path.join(environment.Config.ROOT_DIR, 'usr' )  )    
+        os.mkdir ( os.path.join(environment.Config.ROOT_DIR, 'usr' )  )
     if options.gencodeall or options.compilecodeall:
         for name,cls in environment.projects.items():
             if cls.active and cls.pythonModule:
                 if options.gencodeall:
                     generateCode( cls )
                 if options.compilecodeall:
-                    compileCode( cls )                    
+                    compileCode( cls )
 
     else:
-        for moduleName  in args:        
+        for moduleName  in args:
             if not classList.has_key( moduleName ):
                 exit("Module specificed was not found (%s is not in environment.py) " % moduleName )
-            if options.retrieve:    
+            if options.retrieve:
                 retrieveSource ( classList[ moduleName ] )
             if options.buildservice:
                 buildService( classList[ moduleName ] )
@@ -382,7 +382,7 @@ if __name__ == '__main__':
             if options.installdeb:
                 buildInstall( classList[ moduleName ] )
 
-            if options.build :       
+            if options.build :
                 buildModule ( classList[ moduleName ] )
             if options.gencode :
                 if classList[ moduleName ].pythonModule == True:
