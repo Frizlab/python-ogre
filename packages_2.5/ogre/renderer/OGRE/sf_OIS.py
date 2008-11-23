@@ -443,9 +443,9 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
 
     def showDebugOverlay(self, show):
         """Turns the debug overlay (frame statistics) on or off."""
-        overlay = ogre.OverlayManager.getSingleton().getByName('Core/DebugOverlay')
+        overlay = ogre.OverlayManager.getSingleton().getByName('POCore/DebugOverlay')
         if overlay is None:
-            raise ogre.Exception(111, "Could not find overlay Core/DebugOverlay", "SampleFramework.py")
+            raise ogre.Exception(111, "Could not find overlay POCore/DebugOverlay", "SampleFramework.py")
         if show:
             overlay.show()
         else:
@@ -566,14 +566,16 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
 
     def _updateStatistics(self):
         statistics = self.renderWindow
-        self._setGuiCaption('Core/AverageFps', 'Average FPS: %f' % statistics.getAverageFPS())
-        self._setGuiCaption('Core/CurrFps', 'Current FPS: %f' % statistics.getLastFPS())
-        self._setGuiCaption('Core/BestFps',
-                             'Best FPS: %f %d ms' % (statistics.getBestFPS(), statistics.getBestFrameTime()))
-        self._setGuiCaption('Core/WorstFps',
-                             'Worst FPS: %f %d ms' % (statistics.getWorstFPS(), statistics.getWorstFrameTime()))
-        self._setGuiCaption('Core/NumTris', 'Triangle Count: %d' % statistics.getTriangleCount())
-        self._setGuiCaption('Core/DebugText', Application.debugText)
+        self._setGuiCaption('POCore/AverageFps', 'Avg FPS: %u' % statistics.getAverageFPS())
+        self._setGuiCaption('POCore/CurrFps', 'FPS: %u' % statistics.getLastFPS())
+#         self._setGuiCaption('POCore/BestFps',
+#                              'Best FPS: %f %d ms' % (statistics.getBestFPS(), statistics.getBestFrameTime()))
+#         self._setGuiCaption('POCore/WorstFps',
+#                              'Worst FPS: %f %d ms' % (statistics.getWorstFPS(), statistics.getWorstFrameTime()))
+        self._setGuiCaption('POCore/NumTris', 'Trianges: %u' % statistics.getTriangleCount())
+        self._setGuiCaption('POCore/NumBatches', 'Batches: %u' % statistics.batchCount)
+        
+        self._setGuiCaption('POCore/DebugText', Application.debugText)
 
     def _setGuiCaption(self, elementName, text):
         element = ogre.OverlayManager.getSingleton().getOverlayElement(elementName, False)

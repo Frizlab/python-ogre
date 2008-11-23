@@ -93,16 +93,18 @@ def ManualExclude ( mb ):
         print "Excluding:", e
         global_ns.free_functions(e).exclude()
         
-    excludes = ['NxArray<NxShapeDesc*, NxAllocatorDefault>', ## doesn't have a defult constructor for ElemType
-                'NxArray<NxForceFieldShapeDesc*, NxAllocatorDefault>', ## Elemtype issue
-                'NxArray<NxForceFieldShapeGroup*, NxAllocatorDefault>', ## Elemtype issue
+    excludes = [
+                #'NxArray<NxShapeDesc*, NxAllocatorDefault>', ## doesn't have a defult constructor for ElemType
+                #'NxArray<NxForceFieldShapeDesc*, NxAllocatorDefault>', ## Elemtype issue
+                #'NxArray<NxForceFieldShapeGroup*, NxAllocatorDefault>', ## Elemtype issue
                 'NxForceFieldShapeGroup' ## seems to have access issues..
 
                 ]
 #     for c in global_ns.classes():
 #         print c                
     if os.name =='nt':
-        excludes.append('NxArray<NxFluidEmitterDesc, NxAllocatorDefault>') ## needs ElemType changed to NxFluidEmitterDesc
+        pass
+#         excludes.append('NxArray<NxFluidEmitterDesc, NxAllocatorDefault>') ## needs ElemType changed to NxFluidEmitterDesc
     else:
         excludes.append ( '::NxFluidUserNotify')
     for e in excludes:
@@ -148,6 +150,17 @@ def ManualFixes ( mb ):
     for c in noncopy:
         global_ns.class_(c).noncopyable = True
 
+    for c in global_ns.constructors():
+        for x in range ( len ( c.arguments ) ):
+            if c.arguments[x].default_value:
+                if "ElemType" in c.arguments[x].default_value:
+                    c.arguments[x].default_value=''
+    for c in global_ns.mem_funs():
+        for x in range ( len ( c.arguments ) ):
+            if c.arguments[x].default_value:
+                if "ElemType" in c.arguments[x].default_value:
+                    c.arguments[x].default_value=''
+        
 #     known = ['points', 'triangles']
 #     for c in global_ns.classes():
 #         if c.name.startswith ('Nx'):
