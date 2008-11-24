@@ -96,6 +96,8 @@ def spawnTask ( task, cwdin = '', getoutput=None ):
             env["CCFLAGS"]+=" "+env["CFLAGS"]
             env["LDFLAGS"]+="-Wl,-rpath='$$ORIGIN/../../lib' -Wl,-rpath='$$ORIGIN' -Wl,-z,origin"
             env["PYTHONPATH"]=PREFIX+"/lib/python"+environment.PythonVersionString+"/site-packages"
+            if environment.is64():
+		    env["PYTHONPATH"]=PREFIX+"/lib64/python"+environment.PythonVersionString+"/site-packages"
             env["ZZIPLIB_LIBS"]="-lzzip"
 
         env["PATH"]=PREFIX+"/bin:" + PATH
