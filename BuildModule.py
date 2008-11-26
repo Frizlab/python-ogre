@@ -97,7 +97,7 @@ def spawnTask ( task, cwdin = '', getoutput=None ):
             env["LDFLAGS"]+="-Wl,-rpath='$$ORIGIN/../../lib' -Wl,-rpath='$$ORIGIN' -Wl,-z,origin"
             env["PYTHONPATH"]=PREFIX+"/lib/python"+environment.PythonVersionString+"/site-packages"
             if environment.is64():
-		    env["PYTHONPATH"]=PREFIX+"/lib64/python"+environment.PythonVersionString+"/site-packages"
+                env["PYTHONPATH"]=PREFIX+"/lib64/python"+environment.PythonVersionString+"/site-packages"
             env["ZZIPLIB_LIBS"]="-lzzip"
 
         env["PATH"]=PREFIX+"/bin:" + PATH
@@ -264,10 +264,10 @@ def buildService ( module, install = False ):
             exit("Was not able to copy the debian %s." % file)
 
         ret = spawnTask( "sed --in-place "+filepath+'                       ' + \
-				' -e"s|%%SHORTDATE%%|`date +%Y%m%d`|"                       ' + \
-				' -e"s|%%LONGDATE%%|`date +\'%a, %d %b %Y %H:%m:%S %z\'`|"  ' + \
-				' -e"s|%%VERSION%%|'+module.source_version+'|"'
-			, srcdir)
+                ' -e"s|%%SHORTDATE%%|`date +%Y%m%d`|"                       ' + \
+                ' -e"s|%%LONGDATE%%|`date +\'%a, %d %b %Y %H:%m:%S %z\'`|"  ' + \
+                ' -e"s|%%VERSION%%|'+module.source_version+'|"'
+            , srcdir)
         if ret != 0:
             exit("Was not able to update the debian %s." % file)
 
@@ -280,7 +280,7 @@ def buildService ( module, install = False ):
         ' -e "s|%%SHORTDATE%%|`date +%Y%m%d`|"                                    ' + \
         ' -e "s|%%LONGDATE%%|`date +\'%a, %d %b %Y %H:%m:%S %z\'`|"               ' + \
         ' -e "s^%%BUILDDEPS%%^`cat '+os.path.join(debiandir, "control")+' | grep Build-Depends:`^"' + \
-		' -e "s|%%VERSION%%|'+module.source_version+'|g"'
+        ' -e "s|%%VERSION%%|'+module.source_version+'|g"'
         , buildbase)
 
     # Do some cleanup

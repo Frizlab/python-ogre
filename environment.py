@@ -42,8 +42,9 @@ def isMac():
     return False
 
 def is64():
-    if os.uname()[4] == 'x86_64':
-        return True
+    if isLinux():
+        if os.uname()[4] == 'x86_64': # TOFIX - can we use sys.platform for this as uname is linux specific..
+            return True
     return False
 
 
