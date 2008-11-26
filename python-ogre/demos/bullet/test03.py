@@ -1,8 +1,3 @@
-# 
-# Updated to calculate a falling sphere:
-# http://www.bulletphysics.com/mediawiki-1.5.8/index.php?title=Hello_World
-#
-
 import sys
 sys.path.insert(0,'..')
 import PythonOgreConfig
@@ -66,31 +61,18 @@ class OgreMotionState(bullet.btMotionState):
         t.setOrigin(WorldTrans.getOrigin())
         print "T1", t
         
-    def setWorldTransform(self, WorldTrans):
-        #print "setWorldTrans", WorldTrans 
-        self.Position=ogre.Vector3(WorldTrans.getOrigin().x(),WorldTrans.getOrigin().y(),WorldTrans.getOrigin().z()) 
-        self.Quaternion=ogre.Quaternion(WorldTrans.getRotation().w(),WorldTrans.getRotation().x(),WorldTrans.getRotation().y(),WorldTrans.getRotation().z()) 
-        #print "setWorldTrans", WorldTrans 
         
+        
+         
+    def setWorldTransform(WorldTrans):
+        print "setWorldTrans", WorldTrans 
+        self.Position=ogre.Vector3(WorldTrans.getOrigin().x(),WorldTrans.getOrigin().y(),WorldTrans.getOrigin().z()) 
+        self.Quaternion=ogre.Quaternion(WorldTrans.getRoation().w(),WorldTrans.getRoation().x(),WorldTrans.getRoation().y(),WorldTrans.getRoation().z()) 
+        print "setWorldTrans", WorldTrans 
 
-mass = 10
-fallInertia = bullet.btVector3(0, 0, 0)
-shape=bullet.btSphereShape(1)
-shape.calculateLocalInertia(mass, fallInertia)
+shape=bullet.btCapsuleShape(10, 20) 
 print "Creating motionState"
-motionState=OgreMotionState(bullet.btTransform(bullet.btQuaternion(0, 0, 0, 1), bullet.btVector3(0, 50, 0))) 
-construct = bullet.btRigidBody.btRigidBodyConstructionInfo(mass, motionState, shape, fallInertia)
-Object=bullet.btRigidBody(construct) # ...this should work in my eyes 
-world.addRigidBody(Object)
+motionState=OgreMotionState(bullet.btTransform(bullet.btMatrix3x3(1.0,1.0,1.0,-1.0,-1.0,-1.0,2,-2,-1))) 
+Object=bullet.btRigidBody(10.0, motionState, shape) # ...this should work in my eyes 
 
-for x in range (90):        
-    world.stepSimulation( x * 1/30)
-
-    pos = Object.getMotionState().Position
-    print x, "height: " + str(pos.y)
-
-# note we need to delete the world before the Object as there are issues with the destructor on Objects causing
-# virtual functions being called errors
-del world
-
- 	  	 
+#Object=bullet.btRigidBody(bullet.btRigidBodyConstructionInfo())   ...well obviously not in bullet 2.6.9

@@ -179,14 +179,14 @@ class HydraxApplication(sf.Application):
         # Create our projected grid module  
         self.noise=  Hydrax.Perlin()  ## Default options (8, 0.085, 0.49, 1.4, 1.27f) 
         self.Module = Hydrax.ProjectedGrid(# Hydrax parent pointer
-                                                self.hydrax,
-                                                # Noise module
-                                                self.noise,
-                                                # Base plane
-                                                ogre.Plane(ogre.Vector3(0,1,0), ogre.Vector3(0,0,0)),
-                                                Hydrax.MaterialManager.NM_VERTEX,
-                                                # Projected grid options (Can be updated each frame . setOptions(...))
-                                                Hydrax.ProjectedGrid.Options(264 ))
+                        self.hydrax,
+                        # Noise module
+                        self.noise,
+                        # Base plane
+                        ogre.Plane(ogre.Vector3(0,1,0), ogre.Vector3(0,0,0)),
+                        Hydrax.MaterialManager.NM_VERTEX,
+                        # Projected grid options (Can be updated each frame . setOptions(...))
+                        Hydrax.ProjectedGrid.Options(264 ))
 
         # Set our module
         self.hydrax.setModule(self.Module)

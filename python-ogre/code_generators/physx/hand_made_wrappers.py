@@ -240,4 +240,28 @@ def apply( mb ):
 #     rt = mb.class_( 'NxImplicitScreenMesh' )
 #     rt.add_wrapper_code(WRAPPER_WRAPPER_DEF_NxImplicitScreenMesh)
 
-    
+# #       virtual ::NxActiveTransform * getActiveTransforms( ::NxU32 & nbTransformsOut ) {
+# #         namespace bpl = boost::python;
+# #         if( bpl::override func_getActiveTransforms = this->get_override( "getActiveTransforms" ) ){
+# #             bpl::object py_result = bpl::call<bpl::object>( func_getActiveTransforms.ptr(), nbTransformsOut );
+# #             nbTransformsOut = boost::python::extract< unsigned int >( pyplus_conv::get_out_argument( py_result, "nbTransformsOut" ) );
+# #             return bpl::extract< ::NxActiveTransform * >( pyplus_conv::get_out_argument( py_result, 0 ) );
+# #         }
+# #         else{
+# #             return NxScene::getActiveTransforms( nbTransformsOut );
+# #         }
+# #     }
+# #     
+# #     static boost::python::tuple default_getActiveTransforms( ::NxScene & inst, unsigned int nbTransformsOut ){
+# #         NxActiveTransform * result;
+# #         if( dynamic_cast< NxScene_wrapper * >( boost::addressof( inst ) ) ){
+# #             result = inst.::NxScene::getActiveTransforms(nbTransformsOut);
+# #         }
+# #         else{
+# #             result = inst.getActiveTransforms(nbTransformsOut);
+# #         }
+# #         typedef bp::return_value_policy< bp::reference_existing_object > call_policies_t;
+# #         return bp::make_tuple( pyplusplus::call_policies::make_object< call_policies_t, ::NxActiveTransform * >( result )
+# #                                 , nbTransformsOut );
+# #     }
+  

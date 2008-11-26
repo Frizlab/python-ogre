@@ -335,6 +335,7 @@ def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[]):
                                     aliases[keyname] = aliases[keyname] + 1
                                 else:
                                     aliases[keyname] = 1   
+                                desc = desc + "\\\nWARNING FUNCTION NAME CHANGE - from "+fun.name + " -- " + fun.decl_string +" to " + new_alias + " \\n"                                    
                                 print "INFO: Adjusting Alias as multiple overlapping functions:", new_alias
                             
                         print "AUTOFT OK: Tranformed ", fun, "(",new_alias,")"
