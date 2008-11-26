@@ -22,13 +22,16 @@ import ogre.io.OIS as OIS
 ###import OgreRefApp
 
 def getPluginPath():
-    """Return the absolute path to a valid plugins.cfg file.""" 
+    """ Return the absolute path to a valid plugins.cfg file.
+    look in the current directory for plugins.cfg followed by plugins.cfg.nt|linux
+    If not found look one directory up
+    """ 
     
     paths = [os.path.join(os.getcwd(), 'plugins.cfg'),
+             os.path.join(os.getcwd(), 'plugins.cfg.'+os.name),
              os.path.join(os.getcwd(), '..','plugins.cfg'),
-             '/etc/OGRE/plugins.cfg',
-             os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                              'plugins.cfg')]
+             os.path.join(os.getcwd(), '..','plugins.cfg.'+os.name),
+             ]
     for path in paths:
         if os.path.exists(path):
             return path
@@ -37,7 +40,7 @@ def getPluginPath():
         "** Warning: Unable to locate a suitable plugins.cfg file.\n"
         "** Warning: Please check your ogre installation and copy a\n"
         "** Warning: working plugins.cfg file to the current directory.\n\n")
-    raise ogre.Exception(0, "can't locate the 'plugins.cfg' file", "")
+    raise ogre.Exception(0, "can't locate a suitable 'plugins' file", "")
 
 # def isUnitTest():
 #     """Looks for a magic file to determine if we want to do a unittest"""
@@ -113,18 +116,18 @@ class Application(object):
           if not self.root.renderOneFrame():
               break
 
-
-
     def _setUp(self):
         """This sets up the ogre application, and returns false if the user
         hits "cancel" in the dialog box."""
+        
+        pluginFile = getPluginPath()  ## option here to switch to manually loading file if it doesn't exist
         if self.unittest:
             if os.path.isfile('ogre.cfg'):
-                self.root = ogre.Root(getPluginPath())
+                self.root = ogre.Root( pluginFile )
             else:
-                self.root = ogre.Root(getPluginPath(), '../ogre.cfg')
+                self.root = ogre.Root( pluginFile, '../ogre.cfg')
         else:
-            self.root = ogre.Root(getPluginPath())
+            self.root = ogre.Root( pluginFile )
         self.root.setFrameSmoothingPeriod (5.0)
 
         self._setUpResources()
@@ -438,14 +441,17 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
 #         return True
 
     def frameEnded(self, frameEvent):
-        self._updateStatistics()
+        if self.statisticsOn:
+            self._updateStatistics()
         return True
 
     def showDebugOverlay(self, show):
         """Turns the debug overlay (frame statistics) on or off."""
         overlay = ogre.OverlayManager.getSingleton().getByName('POCore/DebugOverlay')
         if overlay is None:
-            raise ogre.Exception(111, "Could not find overlay POCore/DebugOverlay", "SampleFramework.py")
+            self.statisticsOn = False
+            ogre.LogManager.getSingleton().logMessage( "ERROR in sf_OIS.py: Could not find overlay POCore/DebugOverlay" )
+            return
         if show:
             overlay.show()
         else:
