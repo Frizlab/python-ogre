@@ -72,7 +72,7 @@ PATH_cadunetree=        os.path.join(PATH_THIRDPARTY, 'cadunetree')
 PATH_opensteer =        os.path.join(BASE_DIR, 'opensteer', 'trunk')
 
 PATH_ogrevideoffmpeg = os.path.join(PATH_THIRDPARTY,'ffmpeg')
-PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.70') 
+PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.72') 
 PATH_PhysX=         "c:/program files/NVIDIA Corporation/NVIDIA Physx SDK/v2.8.1/SDKs"
 PATH_Theora=        os.path.join(PATH_OgreAddons,'videoplugin','TheoraVideo')
 PATH_ffmpeg=        os.path.join(PATH_THIRDPARTY,'extra')

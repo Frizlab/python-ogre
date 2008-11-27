@@ -6,7 +6,12 @@
 #
 #
 
-import os, sys, time
+import os, sys, time, shutil
+try:
+   import psyco
+   psyco.full()
+except ImportError:
+   pass
 
 #add environment to the path
 sys.path.append( os.path.join( '..', '..' ) )

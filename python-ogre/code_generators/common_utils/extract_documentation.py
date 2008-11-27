@@ -96,7 +96,9 @@ class doc_extractor:
                 return ""
         ret ="" 
         if doc_lines:
-            doc_lines = remove_leading_blanks ( doc_lines )
+            doc_lines = removeBlankLines ( doc_lines )
+            doc_lines = removeLeadingSpace ( doc_lines )
+            doc_lines = wrapLines ( doc_lines )
             #print "Extracted Doc String for:",  declaration, "[", len(doc_lines),"]"
             ## we need to cope with strings longer than 2048 for MSVC
             ret =  "\\\n".join(doc_lines) 
@@ -123,42 +125,89 @@ class doc_extractor:
 # #             self.outfile.write("***============================*****\n" + declaration.decl_string + "\n")
 # #             self.outfile.write( str(len(basedoc)) + "  " + str(len(newret)) + "\n" )
 # #             self.outfile.write( newret )      
+            
             return '"' + basedoc + newret.lstrip() + '"'            
         else: return ""
 
-def remove_leading_blanks ( docin ):
+#===============================================================
+def removeBlankLines ( docin ):
     """
-    remove any initial lines that are '\n\'
-    """  
-    returnlist=[]
-    
-    if docin[0].strip() != "\\n":
-# #         print "** ", docin[0]
-        return docin # nothing to fix so return the original list..
+    remove leading and trailing blank lines 
+    """ 
+    # first remove leading blank lines
+    x = 0 
+    while x <  len ( docin ) - 1 :
+        if docin[x].strip() == "\\n" or docin[x].strip() == '':
+            del docin[x]
+            x = x - 1
+        else:
+            break
+        x += 1
         
-    fixed = False
-    for line in docin:
-        if not fixed:
-            if line.strip() != "\\n":
-                fixed = True 
-        if fixed:
-            returnlist.append(line)
-    return returnlist
-                
-           
-def get_generic_doc(declaration):
+    # now from the bottom up    
+    x = len ( docin ) -1  
+    while x >= 0:
+        if docin[x].strip() == "\\n":
+            del docin[x]
+        else:
+            break
+        x = len ( docin )- 1
+                            
+    return docin
+                    
+#===============================================================
+def removeLeadingSpace ( docin ):
     """
-    generate call information about function or method
+    remove leading spaces/tabs to bring minimize space usage
     """
-    try:
-        return '"' + "Help on %s\n" % str(declaration) + '"'
-    except:
-        pass
+    import string as string
+    c = 0
+    for x in range ( len (docin) ):
+        docin[x] = docin[x].expandtabs(3) # replace tab characters with 3 spaces
     
-    return ''
-                
-
-
+    remove = -1  # use to track number of leading spaces to remove. -1 indicates first time through     
+    for x in range ( len (docin) ):
+        c = 0
+        for y in range ( len ( docin[x]) ): # now lets count any leading spaces
+            if docin[x][y] in string.whitespace:
+                c +=1
+            else:
+                break
+        if c > 0:   # Ok so we found leading space
+            if remove < 0: # must be first time through
+                remove = c
+            else:
+                if c < remove:  # ensure we get the lowest common value
+                    remove = c
+        else:   # Ok we found a line without any leading spaces so it's all off
+            remove = -1
+            break
+    if remove > 0: # lets do it again and remove a set of leading spaces
+        for x in range ( len (docin) ):
+            docin[x] = docin[x][remove:]
+    return docin            
+    
+#===============================================================
+def wrapLines ( docin, maxlen = 100 ):
+    """
+    Break line length to a max while retaining the leading spaces...
+    """
+    import textwrap as textwrap
+    import string
+    docout = []
+    for line in docin:
+        prefix=0
+        for c in line:
+            if c in string.whitespace:
+                prefix += 1
+            else:
+                break
+        for l in textwrap.wrap( line, maxlen ):
+            line = ' '*prefix + l.lstrip()
+            docout.append ( line )
+    return docout    
+   
+    
 def code(str):
     """
     detect str is code?

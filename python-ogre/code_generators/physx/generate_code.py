@@ -384,6 +384,7 @@ def generate_code():
     else:
         defined_symbols = ['LINUX','NX_DISABLE_FLUIDS']
     defined_symbols.append( 'VERSION_' + environment.physx.version )  
+    defined_symbols.append ( '__PYTHONOGRE_BUILD_CODE' )
     
     #
     # build the core Py++ system from the GCCXML created source

@@ -81,7 +81,6 @@ def ManualExclude ( mb ):
             ,'::btCompoundShape::createAabbTreeFromChildren'
             ,'::btCollisionAlgorithm::getDispatcherId'
             ,'::btCollisionAlgorithmConstructionInfo::getDispatcherId'
-            ,'::btQuantizedBvh::walkRecursiveQuantizedTreeAgainstQuantizedTree'
             
             ,'::btCapsuleShape::calculateLocalInertia'
             ,'::btCapsuleShape::localGetSupportingVertexWithoutMargin'
@@ -99,9 +98,9 @@ def ManualExclude ( mb ):
             ,'::btMultiSapBroadphase::createProxy'
             ,'::btMultiSapBroadphase::quicksort'
             ,'::btBvhTriangleMeshShape::setOptimizedBvh' # new in 2.70
-            
-            
+            ,'::btQuantizedBvh::walkRecursiveQuantizedTreeAgainstQuantizedTree' # 2.72
             ]
+            
     for e in excludes:
         print "excluding function", e
         global_ns.member_functions(e).exclude()
@@ -126,11 +125,6 @@ def ManualExclude ( mb ):
 #             ,'btAlignedAllocator<btDbvt::sStkNPS, 16u>'
             ,'btAlignedAllocator<btMultiSapBroadphase::btBridgeProxy*, 16u>'
             ,'btAlignedAllocator<btMultiSapBroadphase::btMultiSapProxy*, 16u>'
-#             ,'btAlignedAllocator<btOdeContactJoint, 16u>'
-#            ,'btAlignedAllocator<btOdeJoint*, 16u>'
-#             ,'btAlignedAllocator<btOdeSolverBody, 16u>'
-#            ,'btAlignedAllocator<btOdeSolverBody*, 16u>'
-#             ,'btAlignedAllocator<btOdeTypedJoint, 16u>'
             ,'btAlignedAllocator<unsigned int, 16u>'
             ,'btAlignedAllocator<unsigned short, 16u>'
 #             ,'btAlignedObjectArray<btDbvt::Node const*>'
@@ -154,6 +148,14 @@ def ManualExclude ( mb ):
             ,'btContinuousDynamicsWorld'
 #            ,'btSorLcpSolver'
             ]
+# #     if environment.isWindows():
+# #         excludes.extend(['btAlignedAllocator<btOdeContactJoint, 16u>'
+# #            ,'btAlignedAllocator<btOdeJoint*, 16u>'
+# #            ,'btAlignedAllocator<btOdeSolverBody, 16u>'
+# #            ,'btAlignedAllocator<btOdeSolverBody*, 16u>'
+# #            ,'btAlignedAllocator<btOdeTypedJoint, 16u>'
+# #            ] )
+
     for e in excludes:
         print "excluding class", e
         global_ns.class_(e).exclude()
