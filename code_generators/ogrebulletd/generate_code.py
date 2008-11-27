@@ -57,16 +57,16 @@ def ManualExclude ( mb ):
     if MAIN_NAMESPACE:
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
-        main_ns = global_ns    
-    excludes=['::btSimulationIslandManager'
-            ]
+        main_ns = global_ns  
+    excludes=[]          
+    if environment.isLinux():
+        excludes.append('::btSimulationIslandManager')
     for e in excludes:
         print "excluding class", e
         global_ns.class_(e).exclude()
-    for c in global_ns.classes():
-        #if not c.ignore:
-        print c
-    sys.exit(-1)
+#     for c in global_ns.classes():
+#         #if not c.ignore:
+#         print c
 
 ############################################################
 ##

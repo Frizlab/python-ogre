@@ -1327,6 +1327,14 @@ class physx:
     CheckIncludes=[]
     if isWindows():
         libs=[  boost.lib, 'NxCharacter', 'NxCooking', 'PhysXLoader' ]
+        source = [
+            [wget, "http://developer.download.nvidia.com/PhysX/2.8.1/PhysX_2.8.1_SDK_Core.msi", downloadPath]
+            ]
+        buildCmds = [
+            [0, os.path.join(downloadPath, "PhysX_2.8.1_SDK_Core.msi"),''  ],
+            [0, 'sed -i s/"#ifdef WIN32"/"#if (defined WIN32) \&\& !(defined __PYTHONOGRE_BUILD_CODE)"/ NxMath.h', 
+                            'c:\\program files\\NVIDIA Corporation\\NVIDIA PhysX SDK\\v2.8.1\\SDKs\\Foundation\\include']
+            ]        
     elif isLinux():
         libs=[  boost.lib, 'NxCharacter', 'NxCooking',  'PhysXCore', 'PhysXLoader' ]
         libs.append ( boost_python_index.lib )
@@ -1542,15 +1550,14 @@ class bullet:
     base = "bullet-" + version
     baseDir = os.path.join(os.getcwd(), base)
     parent = "ogre/physics"
-    libs=[boost.lib,  'LibBulletCollision', 'LibBulletDynamics','LibLinearMath']
+    libs=[boost.lib,  'LibBulletCollision', 'LibBulletDynamics','LibBulletSoftBody','LibBulletMultiThreaded']
     if isWindows():
-        pass
-        #libs.append('libbulletMath')
+        libs.append('libbulletMath')
     else:
-        #libs.append('libbulletmath')
-        libs.append('LibBulletSoftBody')
+        libs.append('LibLinearMath')
+#         libs.append('LibBulletSoftBody')
         #libs.append('libbulletcolladaconverter')
-        libs.append('LibBulletMultiThreaded')
+#         libs.append('LibBulletMultiThreaded')
         libs.append ( boost_python_index.lib )
 
     lib_dirs = [ Config.PATH_LIB_Boost
@@ -1595,12 +1602,12 @@ class ogrebulletc:  #
     cflags = ""
     parent = "ogre/physics"
     libs = [boost.lib,  'OgreMain',
-        'LibBulletCollision', 'LibBulletDynamics','LibBulletMultiThreaded','LibBulletSoftBody','LibLinearMath'
+        'LibBulletCollision', 'LibBulletDynamics','LibBulletMultiThreaded','LibBulletSoftBody'
         ]
-#    if isWindows():
-#        libs.append('libbulletmath')
-#    else:
-#        libs.append('liblinearmath')
+    if isLinux():
+       libs.append('LibLinearMath')
+    else:
+       libs.append('libbulletmath')
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_INCLUDE_Bullet
                     , os.path.join(Config.PATH_OgreBullet, 'Collisions' )
@@ -1627,9 +1634,13 @@ class ogrebulletd:  #
     name='ogrebulletd'
     cflags = ""
     parent = "ogre/physics"
-    libs = [boost.lib,  'OgreMain',
-        'LibBulletCollision', 'LibBulletDynamics','LibBulletMultiThreaded','LibBulletSoftBody','LibLinearMath'
-        ]
+        
+    libs=[boost.lib, 'OgreMain', 'LibBulletCollision', 'LibBulletDynamics','LibBulletSoftBody','LibBulletMultiThreaded']
+    if isWindows():
+        libs.append('libbulletMath')
+    else:
+        libs.append('LibLinearMath')
+        
 #    if isWindows():
 #        libs.append('libbulletmath')
 #    else:
