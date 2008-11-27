@@ -304,7 +304,17 @@ def ManualExclude ( mb ):
                 cls.decl_string.startswith("::Ogre::CategorisedAllocPolicy") :
                     print "Excluding Allocator class", cls
                     cls.exclude()
-                            
+
+    # turns out there are some variables we didn't catch that are actually classes of boost::recursive_mutex
+    # which isn't exposed... May be related only to threading ??
+    # could limit it to known classes however safer to handle everything
+#     ec = ['Pass', 'ResourceBackgroundQueue', 'SceneManager']
+    for c in main_ns.classes():
+        for v in c.variables( allow_empty=True):
+            if v.name.endswith('Mutex'):
+                print "Excluding possible Mutex Variable:", v
+                v.exclude()
+                                                    
 ####################b########################################
 ##
 ##  And there are things that manually need to be INCLUDED 

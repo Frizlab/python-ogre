@@ -231,6 +231,11 @@ class BezierApplication(sf.Application):
         pMat.getTechnique(0).getPass(0).createTextureUnitState( "BumpyMetal.jpg" ) 
         patchEntity.setMaterialName("TextMat") 
         patchPass = pMat.getTechnique(0).getPass(0)
+        
+        print patchPass
+        print dir(patchPass)
+        print patchPass.msDirtyHashListMutex
+        sys.exit()
 
 
         ## Attach the entity to the root of the scene
