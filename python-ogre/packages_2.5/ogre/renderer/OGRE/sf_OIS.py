@@ -313,15 +313,23 @@ class FrameListener(ogre.FrameListener, ogre.WindowEventListener):
          else:
              windowHnd = self.renderWindow.getCustomAttributeInt("WINDOW")
 
+         #
+         # Here is where we create the OIS input system using a helper function that takes python list of tuples
+         #            
          t= self._inputSystemParameters()
          params = [("WINDOW",str(windowHnd))]
          params.extend(t)   
          self.InputManager = OIS.createPythonInputSystem( params )
          
-         #pl = OIS.ParamList()
-         #windowHndStr = str ( windowHnd)
-         #pl.insert("WINDOW", windowHndStr)
-         #im = OIS.InputManager.createInputSystem( pl )
+         #
+         # an alternate way is to use a multimap which is exposed in ogre 
+         #
+#          pl = ogre.SettingsMultiMap()
+#          windowHndStr = str(windowHnd)
+#          pl.insert("WINDOW", windowHndStr)
+#          for  v in self._inputSystemParameters():
+#               pl.insert(v[0],v[1])
+#          im = OIS.InputManager.createInputSystem( pl )
          
          #Create all devices (We only catch joystick exceptions here, as, most people have Key/Mouse)
          self.Keyboard = self.InputManager.createInputObjectKeyboard( OIS.OISKeyboard, self.bufferedKeys )
