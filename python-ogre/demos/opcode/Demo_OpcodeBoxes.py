@@ -38,11 +38,11 @@ class OpcodeBoxesApplication(sf.Application):
         light.setPosition (20, 80, 50)
 
         plane = ogre.Plane()
-        plane.normal = ogre.Vector3.UNIT_Y
+        plane.normal = ogre.Vector3().UNIT_Y
         plane.d = 200
         mm = ogre.MeshManager.getSingleton()
         mm.createPlane('FloorPlane', 'General', plane, 200000.0, 200000.0,
-               20, 20, True, 1, 50, 50, ogre.Vector3.UNIT_Z)
+               20, 20, True, 1, 50, 50, ogre.Vector3().UNIT_Z)
                
         entity = sceneManager.createEntity('floor', 'FloorPlane')
         entity.setMaterialName('Examples/RustySteel')
@@ -62,7 +62,7 @@ class OpcodeBoxesApplication(sf.Application):
         
         # add some fog
         sceneManager.setFog(ogre.FOG_EXP, (1, 1, 1), 0.0002)  ## change .0002 to .002 for lots of fog
-        self.numBoxes  =1000
+        self.numBoxes  =300
     
             
 
@@ -83,6 +83,7 @@ class OpcodeBoxesQueryListener(ogre.IntersectionSceneQueryListener):
         
       
 class OpcodeBoxesListener(sf.FrameListener):
+
     def __init__(self, renderWindow, camera, sm, num):
         sf.FrameListener.__init__(self, renderWindow, camera)
         # Create an intersection query
@@ -98,6 +99,7 @@ class OpcodeBoxesListener(sf.FrameListener):
     def frameStarted(self, frameEvent):
         self.intersectSceneQuery.execute( self.querylistener )
         return sf.FrameListener.frameStarted(self, frameEvent)
+        
     def frameEnded ( self, ev ):
         self.UpdateBoxes()
         return sf.FrameListener.frameEnded(self, ev)
