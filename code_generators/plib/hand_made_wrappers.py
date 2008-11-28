@@ -317,6 +317,95 @@ WRAPPER_REGISTRATION_ssgTransform = [
                 bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());"""
                 ]
                 
+#################################################################    
+WRAPPER_DEFINITION_ssgLoaderOptions_wrapper = \
+"""
+virtual ::ssgBranch * createBranch ( char * text ) const {
+    namespace bpl = boost::python;
+    // a little sanity to ensure stuff doesn't get broken
+    size_t len = strlen ( text );
+    if ( len > 1024 ) len = 1024;
+    if ( len <= 0 ) return NULL;
+    
+    if( bpl::override func_createBranch = this->get_override( "createBranch" ) ){
+//             return func_createBranch( boost::python::str(text, len ) ) ; //text );
+         bpl::object py_result = bpl::call<bpl::object>( func_createBranch.ptr(), boost::python::str(text, len ) );
+         return bpl::extract< ::ssgBranch * >( pyplus_conv::get_out_argument( py_result, 0 ) );
+        } 
+    else {
+            return this->ssgLoaderOptions::createBranch( text );
+        }
+    }
+    
+    
+    ::ssgBranch * default_createBranch( char * text ) const  {
+        return ssgLoaderOptions::createBranch( text );
+    }
+ 
+       
+virtual ssgState *  createState( char * text ) const {
+    namespace bpl = boost::python;
+    // a little sanity to ensure stuff doesn't get broken
+    size_t len = strlen ( text );
+    if ( len > 1024 ) len = 1024;
+    if ( len <= 0 ) return NULL;
+    
+    if( bpl::override func_createState = this->get_override( "createState" ) ){
+        bpl::object py_result = bpl::call<bpl::object>( func_createState.ptr(), boost::python::str(text, len ) );
+        return bpl::extract< ::ssgState * >( pyplus_conv::get_out_argument( py_result, 0 ) );
+    } 
+    else {
+        return this->ssgLoaderOptions::createState( text );
+    }
+    }
+    
+    ::ssgState * default_createState( char * text ) const  {
+        return ssgLoaderOptions::createState( text );
+    }
+    
+"""
+
+WRAPPER_DEFINITION_ssgLoaderOptions_declaration = \
+"""
+{ //::ssgLoaderOptions::createBranch
+        
+            typedef ::ssgBranch * ( ::ssgLoaderOptions::*createBranch_function_type )( char * ) const;
+            typedef ::ssgBranch * ( ssgLoaderOptions_wrapper::*default_createBranch_function_type )( char * ) const;
+            
+            ssgLoaderOptions_exposer.def( 
+                "createBranch"
+                , createBranch_function_type(&::ssgLoaderOptions::createBranch)
+                , default_createBranch_function_type(&ssgLoaderOptions_wrapper::default_createBranch)
+                , ( bp::arg("text") )
+                , bp::return_value_policy< bp::reference_existing_object >() );
+        
+        }
+{ //::ssgLoaderOptions::createState
+        
+            typedef ::ssgState * ( ::ssgLoaderOptions::*createState_function_type )( char * ) const;
+            typedef ::ssgState * ( ssgLoaderOptions_wrapper::*default_createState_function_type )( char * ) const;
+            
+            ssgLoaderOptions_exposer.def( 
+                "createState"
+                , createState_function_type(&::ssgLoaderOptions::createState)
+                , default_createState_function_type(&ssgLoaderOptions_wrapper::default_createState)
+                , ( bp::arg("text") )
+                , bp::return_value_policy< bp::reference_existing_object >() );
+        
+        }
+        
+"""
+
+WRAPPER_REGISTRATION_ssgLoaderOptions = [
+    """def( "createBranch", &ssgLoaderOptions_wrapper::createBranch,
+                "Python-Ogre Helper Function: call back for ssgLoadXXX.",
+                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());"""
+    ,"""def( "createState", &ssgLoaderOptions_wrapper::createState,
+                "Python-Ogre Helper Function: call back for ssgLoadXXX.",
+                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());"""
+                ]
+                
+                
 #################################################################################################
 #################################################################################################
 
@@ -350,11 +439,16 @@ def apply( mb ):
     rt = mb.class_( 'ssgBaseTransform' )
     rt.add_wrapper_code( WRAPPER_DEFINITION_ssgBaseTransform_Wrapper )
     
-#     rt = mb.class_( 'ssgTransform' )
-#     rt = mb
-#     rt.add_declaration_code( WRAPPER_DEFINITION_ssgTransform )
-#     apply_reg (rt,  WRAPPER_REGISTRATION_ssgTransform )
+    rt = mb.class_( 'ssgTransform' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_ssgTransform )
+    apply_reg (rt,  WRAPPER_REGISTRATION_ssgTransform )
 
+    rt = mb.class_( 'ssgLoaderOptions' )
+    rt.add_wrapper_code( WRAPPER_DEFINITION_ssgLoaderOptions_wrapper )
+    rt.add_registration_code( WRAPPER_DEFINITION_ssgLoaderOptions_declaration, False )
+    
+#     apply_reg (rt,  WRAPPER_REGISTRATION_ssgLoaderOptions )
+    
 #     mb.add_declaration_code( WRAPPER_DEFINITION_Free )
 #     apply_reg (mb,  WRAPPER_REGISTRATION_Free )
     
