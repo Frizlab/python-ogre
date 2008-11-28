@@ -7,6 +7,11 @@
 
 
 import os, sys, time, shutil
+try:
+   import psyco
+   psyco.full()
+except ImportError:
+   pass
 
 #add environment to the path
 sys.path.append( os.path.join( '..', '..' ) )
@@ -33,15 +38,10 @@ from pyplusplus.module_creator import sort_algorithms
 import common_utils.extract_documentation as exdoc
 import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
+from common_utils import docit
 
 MAIN_NAMESPACE = ''
 
-## small helper function
-def docit ( general, i, o ): 
-    docs = "Python-Ogre Modified Function Call\\n" + general +"\\n"
-    docs = docs + "Input: " + i + "\\n"
-    docs = docs + "Output: " + o + "\\n\\\n"
-    return '"'+docs+'"'
 
 ############################################################
 ##
@@ -88,15 +88,17 @@ def ManualExclude ( mb ):
             
             ,'::ssgIndexArray::get'
             ,'::ssgSimpleList::raw_get'
-            ,'::ssgSimpleState::getTextureFilename'  # char pointers
-            ,'::ssgStateSelector::getTextureFilename'
-            ,'::ssgTexture::getFilename'
+#             ,'::ssgSimpleState::getTextureFilename'  # char pointers
+#             ,'::ssgStateSelector::getTextureFilename'
+#             ,'::ssgTexture::getFilename'
             ,'::ssgVtxArray::getIndex'  ## returns a short
             ,'::ssgLoaderOptions::make_path'
             ,'::ssgBase::copy_from'
             
             ,'::ulLinkedList::unlinkNode'
             
+            ,'::ssgLoaderOptions::createBranch' # call back functions taking a char * which we need to hand wrap
+            ,'::ssgLoaderOptions::createState'
             
            
            ## ,'::ssgBase::getName'
@@ -123,8 +125,10 @@ def ManualExclude ( mb ):
         main_ns.free_functions(e).exclude()
         
     ## Classes
-    excludes = ['ssgEntityBinding','ssgHit', 
-                    'ssgSimpleState','ssgSimpleStateArray'
+    excludes = [    'ssgEntityBinding'
+                    ,'ssgHit' 
+                    ,'ssgSimpleState'
+                    ,'ssgSimpleStateArray'
                     ,'ssgTextureArray'
                     ]
     for e in excludes:
@@ -184,7 +188,27 @@ def ManualInclude ( mb ):
 def ManualFixes ( mb ):    
 
     global_ns = mb.global_ns
-    
+    main_ns = global_ns
+    funcs = [
+           '::ssgBranch::getByName'
+           ,'::ssgBranch::getByPath'
+           ,'::ssgEntity::getByName'
+           ,'::ssgEntity::getByPath'
+        ]
+#     for f in funcs:  
+#         main_ns.member_functions(f).call_policies = call_policies.default_call_policies()
+
+    # bug in Py++  where is uses the wrong call policies on a transformed function
+    for fun in main_ns.member_functions(allow_empty=True):
+        if fun.transformations:
+            if declarations.is_pointer(fun.return_type ) :
+                rawarg =  declarations.remove_declarated(
+                        declarations.remove_const( 
+                            declarations.remove_reference( 
+                                declarations.remove_pointer ( fun.return_type ))))
+                if not declarations.is_arithmetic (rawarg) and not declarations.is_void(rawarg):
+                    fun.call_policies = call_policies.default_call_policies()
+                    print "Changed call policies on ", fun
                 
 ############################################################
 ##
@@ -243,36 +267,6 @@ def ManualTransformations ( mb ):
 ##  Now for the AUTOMATIC stuff that should just work
 ##
 ###############################################################################
-    
-    
-def AutoExclude( mb ):
-    """ Automaticaly exclude a range of things that don't convert well from C++ to Python
-    """
-    global_ns = mb.global_ns
-    main_ns = global_ns
-    
-    # vars that are static consts but have their values set in the header file are bad
-    Remove_Static_Consts ( main_ns )
-    
-    ## Exclude protected and private that are not pure virtual
-    query = declarations.access_type_matcher_t( 'private' ) \
-            & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
-    non_public_non_pure_virtual = main_ns.calldefs( query )
-    non_public_non_pure_virtual.exclude()
-    
-    #Virtual functions that return reference could not be overriden from Python
-    query = declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.VIRTUAL ) \
-            & declarations.custom_matcher_t( lambda decl: declarations.is_reference( decl.return_type ) )
-    try:            
-        main_ns.calldefs( query ).virtuality = declarations.VIRTUALITY_TYPES.NOT_VIRTUAL
-    except:
-        pass
-    
-    f=main_ns.free_function("ssgLoadAC")
-    print "\n\n",f,"\n\n"    
-#     f.include()
-    print f.exportable, f.ignore
-    print "\n\n"
                    
 def AutoInclude( mb ):
     main_ns = mb.global_ns  ##   doesn't have it's own namespace..
@@ -308,18 +302,17 @@ def AutoFixes ( mb ):
     global_ns = mb.global_ns
     main_ns = global_ns
     
-    # arguments passed as refs but not const are not liked by boost
-    #Fix_Ref_Not_Const ( main_ns )
-    
-    # Functions that have void pointers in their argument list need to change to unsigned int's  
-    Fix_Void_Ptr_Args  ( main_ns )
     
     # and change functions that return a variety of pointers to instead return unsigned int's
-    Fix_Pointer_Returns ( main_ns )   
+#     pointee_types=['unsigned int','int', 'float', '::Ogre::Real', '::Ogre::uchar', '::Ogre::uint8', 'unsigned char', 'char']
+#     ignore_names=[]## 'ptr', 'useCountPointer']  # these are function names we know it's cool to exclude
+    common_utils.Fix_Pointer_Returns ( main_ns ) ##, pointee_types, ignore_names )   
 
     # functions that need to have implicit conversions turned off
-    Fix_Implicit_Conversions ( main_ns)
+    ImplicitClasses=[] ##'Radian','Degree', 'TimeIndex', 'LiSPSMShadowCameraSetup' ] 
+    common_utils.Fix_Implicit_Conversions ( main_ns, ImplicitClasses )
     
+        
     if os.name =='nt':
         Fix_NT( mb )
     elif os.name =='posix':
@@ -346,131 +339,13 @@ def Fix_NT ( mb ):
     """
         
         
-def Fix_Implicit_Conversions ( mb ):
-    """By default we disable explicit conversion, however sometimes it makes sense
-    """
-    pass
                     
 def Add_Auto_Conversions( mb ):
     pass
     
       
-def Set_Call_Policies( mb ):
-    """ set the return call policies on classes that this hasn't already been done for.
-    Set the default policy to deal with pointer/reference return types to reference_existing object
-    """
-    mem_funs = mb.calldefs ()
-    mem_funs.create_with_signature = True #Generated code will not compile on
-    #MSVC 7.1 if function has throw modifier.
-    for mem_fun in mem_funs:
-        if mem_fun.call_policies:
-            continue
-        if not mem_fun.call_policies and \
-                    (declarations.is_reference (mem_fun.return_type) or declarations.is_pointer (mem_fun.return_type) ):
-            mem_fun.call_policies = call_policies.return_value_policy(
-                call_policies.reference_existing_object )
-
-                                
 def Set_Exception(mb):
     pass
-    #~ """We don't exclude  Exception, because it contains functionality, that could
-    #~ be useful to user. But, we will provide automatic exception translator
-    #~ """
-    #~ Exception = mb.namespace( 'Ogre' ).class_( 'Exception' )
-    #~ Exception.include()
-    #~ Exception.mem_fun('what').exclude() # declared with empty throw
-    #~ Exception.mem_fun('getNumber').exclude() # declared with empty throw
-    #~ Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getFullDescription().c_str()' )
-            
-    
-def _ReturnUnsignedInt( type_ ):
-    """helper to return an UnsignedInt call for tranformation functions
-    """
-    return declarations.cpptypes.unsigned_int_t()
-    
-def Fix_Void_Ptr_Args ( mb ):
-    """ we modify functions that take void *'s in their argument list to instead take
-    unsigned ints, which allows us to use CTypes buffers
-    """
-    for fun in mb.member_functions():
-        arg_position = 0
-        for arg in fun.arguments:
-            if declarations.type_traits.is_void_pointer(arg.type) or arg.type.decl_string == "void const *":
-                fun.add_transformation( ft.modify_type(arg_position,_ReturnUnsignedInt ), alias=fun.name )
-                fun.documentation = docit ("Modified Input Argument to work with CTypes",
-                                            "Argument "+arg.name+ "(pos:" + str(arg_position)\
-                                            +") takes a CTypes.adddressof(xx)", "...")
-                print "Fixed Void Ptr", fun, arg_position
-                break
-            arg_position +=1
-            
-   ## lets go and look for stuff that might be a problem        
-    pointee_types=['unsigned int',' int ', ' float ', ' Real ', 'uchar', 'uint8',
-             'unsigned char']
-                          
-    function_names=[]
-    for fun in mb.member_functions():
-        if fun.documentation or fun.ignore: continue ## means it's been tweaked somewhere else
-        for n in function_names:
-            if n in fun.name:
-                print "CHECK :", fun
-                break
-        arg_position = 0
-        for arg in fun.arguments:
-            if declarations.is_pointer(arg.type): ## and "const" not in arg.type.decl_string:
-                for i in pointee_types:
-                    if i in arg.type.decl_string:
-                        print '"',arg.type.decl_string, '"'
-                        print "CHECK ", fun, str(arg_position)
-                        fun.documentation=docit("SUSPECT - MAYBE BROKEN", "....", "...")
-                        break
-            arg_position +=1
-
-## NEED To do the same for constructors
-    for fun in mb.constructors():
-        arg_position = 0
-        for arg in fun.arguments:
-            if declarations.is_pointer(arg.type): ## and "const" not in arg.type.decl_string:
-                for i in pointee_types:
-                    if i in arg.type.decl_string:
-                        print '"',arg.type.decl_string, '"'
-                        print "Excluding: ", fun
-                        fun.exclude()
-                        break
-            arg_position +=1         
-                    
-def Fix_Pointer_Returns ( mb ):
-    """ Change out functions that return a variety of pointer to base types and instead
-    have them return the address the pointer is pointing to (the pointer value)
-    This allow us to use CTypes to handle in memory buffers from Python
-    
-    Also - if documentation has been set then ignore the class/function as it means it's been tweaked else where
-    """
-    pointee_types=['unsigned int','int', 'float', 'unsigned char']
-    known_names=[]  # these are function names we know it's cool to exclude
-    for fun in mb.member_functions():
-        if declarations.is_pointer (fun.return_type) and not fun.documentation:
-            for i in pointee_types:
-                if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
-                    if not fun.name in known_names:
-                        print "Excluding (function):", fun, "as it returns (pointer)", i
-                    fun.exclude()
-    for fun in mb.member_operators(allow_empty=True):
-        if declarations.is_pointer (fun.return_type) and not fun.documentation:
-            for i in pointee_types:
-                if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
-                    print "Excluding (operator):", fun
-                    fun.exclude()
-
-
-
-def query_containers_with_ptrs(decl):
-    if not isinstance( decl, declarations.class_types ):
-       return False
-    if not decl.indexing_suite:
-       return False
-    return declarations.is_pointer( decl.indexing_suite.element_type )
-
     
 def Remove_Static_Consts ( mb ):
     """ linux users have compile problems with vars that are static consts AND have values set in the .h files
@@ -554,43 +429,49 @@ def generate_code():
     
    
     AutoInclude ( mb )
-    AutoExclude ( mb )
+    common_utils.AutoExclude ( mb )
     ManualExclude ( mb )
     ManualInclude ( mb )
     # here we fixup functions that expect to modifiy their 'passed' variables    
     ManualTransformations ( mb )
     
     AutoFixes ( mb )
+    common_utils.Auto_Functional_Transformation ( main_ns ) ##, special_vars=['::Ogre::Real &','::Ogre::ushort &','size_t &']  )
     ManualFixes ( mb )
             
     #
     # We need to tell boost how to handle calling (and returning from) certain functions
     #
-    Set_Call_Policies ( mb.global_ns )
-    
+    common_utils.Set_DefaultCall_Policies ( mb.global_ns )
+ 
     #
     # the manual stuff all done here !!!
     #
     hand_made_wrappers.apply( mb )
+    f = global_ns.member_function('::ssgEntity::cull')
+    f.include()
 
     NoPropClasses = [""]
     for cls in main_ns.classes():
         if cls.name not in NoPropClasses:
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
             
+     
+    common_utils.Auto_Document( mb, MAIN_NAMESPACE )
+            
     ## add additional version information to the module to help identify it correctly 
-    common_utils.addDetailVersion ( mb, environment, environment.plib )
+    common_utils.addDetailVersion ( mb, environment, environment.ogre )
+  
+    common_utils.Find_Problem_Transformations ( main_ns )
 
-    f = global_ns.member_function('::ssgEntity::cull')
-    f.include()
     
     ##########################################################################################
     #
     # Creating the code. After this step you should not modify/customize declarations.
     #
     ##########################################################################################
-    extractor = exdoc.doc_extractor("") # I'm excluding the UTFstring docs as lots about nothing 
-    mb.build_code_creator (module_name='_plib_' ) ## no docs as issues here, doc_extractor= extractor )
+    extractor = exdoc.doc_extractor("")  
+    mb.build_code_creator (module_name='_plib_', doc_extractor= extractor ) ## no docs as issues here, doc_extractor= extractor )
     
     for inc in environment.plib.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )

@@ -11,6 +11,7 @@ Update: SampleFramework now uses a 'PythonOgre' overlay
 Update: SampleFramework will now look for plugins.cfg or plugins.cfg.<platform name> ('nt' or 'linux') in the current and
         parent directories -- this will allow a single demo tree to automatically work on any platform unstead of the 
         current suitation of having to manually edit the plugins file.. 
+Update: Plib ssgLoaderOptions (ssgLoad) can now be subclassed and createBranch/createState used as callback functions        
 
 
 November 14 2008 : Release 1.6.0 
