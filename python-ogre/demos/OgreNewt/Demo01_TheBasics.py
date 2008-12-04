@@ -81,6 +81,20 @@ class OgreNewtonApplication (sf.Application):
         light.setType( Ogre.Light.LT_POINT )
         light.setPosition( Ogre.Vector3(0.0, 100.0, 100.0) )
 
+
+        shapes = OgreNewt.VectorofCollision()
+        print "shape", shapes
+        col = OgreNewt.Pyramid(self.World, Ogre.Vector3(5,5,5), Ogre.Quaternion(0, 0, 0), Ogre.Vector3(0,0,-20) ) 
+        print "col", col
+        shapes.append(col) 
+        print shapes
+        col2 = OgreNewt.Box(self.World, Ogre.Vector3(5,5,5) )
+        print "col2", col2 
+        shapes.append(col2) 
+        compound = OgreNewt.CompoundCollision(self.World, shapes)
+        
+        print "*****", compound
+        
     def _createFrameListener(self):
  
         ## this is a basic frame listener included with OgreNewt that does nothing but update the

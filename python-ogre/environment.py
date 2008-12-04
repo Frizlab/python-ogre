@@ -1835,28 +1835,33 @@ class hikari:
     descText = "Use Flash controls within Ogre"
     descLink = "http://hikari-library.googlecode.com/"
 
-# class mygui:
-#     active = False
-#     pythonModule = True
-#     version="2.2.0RC1"
-#     name='mygui'
-#     parent="ogre/gui"
-#     cflags = ""
-#     include_dirs = [ Config.PATH_Boost,
-#                     Config.PATH_INCLUDE_mygui
-#                     , Config.PATH_INCLUDE_Ogre
-#                     ,Config.PATH_INCLUDE_Ogre_Dependencies
-#                     ]
-#     lib_dirs = [Config.PATH_LIB_Boost
-#                 ,Config.PATH_LIB_Ogre_OgreMain
-#                 ,Config.PATH_LIB_mygui
-#
-#                 ]
-#     CheckIncludes=[]
-#     libs=[  boost.lib, 'OgreMain', 'MyGUI' ] ##, 'hikari' ]
-#     ModuleName="mygui"
-#     descText = "MyGUI Interface System"
-#     descLink = "http://sourceforge.net/projects/my-gui/"
+class mygui:
+    active = False
+    pythonModule = True
+    version="2.2.0RC1"
+    name='mygui'
+    parent="ogre/gui"
+    cflags = ""
+    source =[
+            ["wget", "http://downloads.sourceforge.net/my-gui/MyGUI_2.2.0_RC1_source.zip",downloadPath],
+            ]
+    buildCmds = [
+            [0, unzip + os.path.join(downloadPath, "MyGUI_2.2.0_RC1_source.zip"), '']
+            ]
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_mygui
+                    , Config.PATH_INCLUDE_Ogre
+                    ,Config.PATH_INCLUDE_Ogre_Dependencies
+                    ]
+    lib_dirs = [Config.PATH_LIB_Boost
+                ,Config.PATH_LIB_Ogre_OgreMain
+                ,Config.PATH_LIB_mygui
+                 ]
+    CheckIncludes=[]
+    libs=[  boost.lib, 'OgreMain', 'MyGUI' ] ##, 'hikari' ]
+    ModuleName="mygui"
+    descText = "MyGUI Interface System"
+    descLink = "http://sourceforge.net/projects/my-gui/"
 
 ############################################################################################
 
@@ -1899,7 +1904,7 @@ projects = {
     , 'ogrepcz' : ogrepcz
     , 'hydrax' : hydrax
     , 'hikari' : hikari
-#     , 'mygui' : mygui
+    , 'mygui' : mygui
 }
 
 #

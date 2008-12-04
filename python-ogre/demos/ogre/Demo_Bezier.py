@@ -98,7 +98,7 @@ class BezierApplication(sf.Application):
 
         ## Set ambient light
         sceneManager.setAmbientLight( (0.2, 0.2, 0.2) ) 
-        print "\n1"
+        
         ## Create a point light
         l = sceneManager.createLight("MainLight") 
         l.setType(ogre.Light.LT_DIRECTIONAL) 
@@ -232,10 +232,10 @@ class BezierApplication(sf.Application):
         patchEntity.setMaterialName("TextMat") 
         patchPass = pMat.getTechnique(0).getPass(0)
         
-        print patchPass
-        print dir(patchPass)
-        print patchPass.msDirtyHashListMutex
-        sys.exit()
+#        print patchPass
+#        print dir(patchPass)
+#        print patchPass.msDirtyHashListMutex
+#        sys.exit()
 
 
         ## Attach the entity to the root of the scene

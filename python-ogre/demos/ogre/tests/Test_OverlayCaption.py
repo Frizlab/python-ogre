@@ -1,5 +1,5 @@
 # This code is in the Public Domain
-import  Ogre as ogre
+import ogre.renderer.OGRE as ogre
 import SampleFramework as sf
 import ctypes, math,sys
 
@@ -10,7 +10,7 @@ class TestApplication(sf.Application):
         overman = ogre.OverlayManager.getSingleton()
         statspanel = overman.getOverlayElement('Core/StatPanel', False)
         print statspanel
-        print dir(statspanel)
+        
         statspanel.caption=ogre.UTFString("This does work")
         statspanel.setCaption(ogre.UTFString("as does this") )
         
