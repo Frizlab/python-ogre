@@ -112,7 +112,7 @@ class SimpleScenesApplication(sf.Application):
             sceneManager.setShadowTextureSettings(512, 2)
     
         ## Add some default lighting to the scene
-        sceneManager.setAmbientLight( (.8, .8, .8) )
+        sceneManager.setAmbientLight( (.25, .25, .25) )
         light = sceneManager.createLight('MainLight')
         light.setPosition (0, 0, 1)
         light.CastShadows=True
@@ -205,7 +205,7 @@ class SimpleScenesApplication(sf.Application):
                 entity.setUserObject(self._plane)
                 entity.setCastShadows(False)
                 s.addEntity(entity, ogre.Vector3(x,0,z))
-            
+        s.build()    
         ## Load up our UI and display it
         pOver = ogre.OverlayManager.getSingleton().getByName("OgreOdeDemos/Overlay")    
         pOver.show()

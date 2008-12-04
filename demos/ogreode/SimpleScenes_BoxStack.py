@@ -28,17 +28,13 @@ class SimpleScenes_BoxStack ( SimpleScenes ):
         return "Z - Sphere, X - Box, C - Capsule, G - Ragdoll, T - Trimesh"
 
     def frameEnded(self, time, keyinput,  mouse):
-#         print "** Simpel Scenes BoxStack frameEnded"
         ## Do default processing
         SimpleScenes.frameEnded(self, time, keyinput, mouse)
         body = None
         
         ## Create random objects, that method will stop them being created too often
         if (keyinput.isKeyDown(OIS.KC_Z)): 
-            print "Creating a body"
             body = self.createRandomObject(OgreOde.Geometry.Class_Sphere)
-            print body
-            print "OK"
         elif (keyinput.isKeyDown(OIS.KC_X)): 
             body = self.createRandomObject(OgreOde.Geometry.Class_Box)
         elif (keyinput.isKeyDown(OIS.KC_C)): 
@@ -47,6 +43,5 @@ class SimpleScenes_BoxStack ( SimpleScenes ):
             body = self.createRandomObject(OgreOde.Geometry.Class_Convex) #TriangleMesh)
         elif (keyinput.isKeyDown(OIS.KC_G)): 
             self.createRagDoll()
-#         print "Returning from frameended"            
         
         
