@@ -1863,6 +1863,28 @@ class mygui:
     descText = "MyGUI Interface System"
     descLink = "http://sourceforge.net/projects/my-gui/"
 
+class canvas:
+    active = False
+    pythonModule = True
+    version="1.0"
+    name='canvas'
+    parent="ogre/gui"
+    cflags = ""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_canvas
+                    , Config.PATH_INCLUDE_Ogre
+                    ,Config.PATH_INCLUDE_Ogre_Dependencies
+                    ]
+    lib_dirs = [Config.PATH_LIB_Boost
+                ,Config.PATH_LIB_Ogre_OgreMain
+               , Config.PATH_LIB_Ogre_Dependencies 
+                ]
+    CheckIncludes=[]
+    libs=[  boost.lib, 'OgreMain', 'freetype235'] 
+    ModuleName="canvas"
+    descText = "Canvas GUI System"
+    descLink = "http://www.ogre3d.org/phpBB2/viewtopic.php?t=41365&postdays=0&postorder=asc&start=0&sid=6578000180a935734beb03d548b900a4"
+
 ############################################################################################
 
 ## Here is the master list....
@@ -1905,6 +1927,7 @@ projects = {
     , 'hydrax' : hydrax
     , 'hikari' : hikari
     , 'mygui' : mygui
+    , 'canvas' : canvas
 }
 
 #
