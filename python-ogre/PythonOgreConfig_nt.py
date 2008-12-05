@@ -84,6 +84,7 @@ PATH_ogrepcz = os.path.join(PATH_Ogre, 'PlugIns', 'PCZSceneManager' )
 PATH_hydrax = os.path.join(PATH_THIRDPARTY, 'Hydrax')
 PATH_hikari = os.path.join(PATH_THIRDPARTY, 'Hikari' ) #BASE_DIR, 'hikari', 'hikari')
 PATH_mygui = os.path.join(BASE_DIR, 'MyGUI_2.2.0_RC1_source' )
+PATH_canvas = os.path.join(PATH_THIRDPARTY, 'canvas')
 
 # it's time for the SDK version
 if SDK:
@@ -132,6 +133,7 @@ if SDK:
 PATH_LIB_opensteer = os.path.join(PATH_opensteer, 'win32','release')
 PATH_LIB_hikari = os.path.join(PATH_hikari ) # , 'lib')
 PATH_LIB_mygui = os.path.join(PATH_mygui, 'MyGUIEngine','lib','Release')
+PATH_LIB_canvas = os.path.join(PATH_canvas )
 
 PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include') 
 PATH_INCLUDE_NEDMALLOC=      os.path.join(PATH_Ogre,'OgreMain', 'src', 'nedmalloc')
@@ -183,6 +185,7 @@ PATH_INCLUDE_ogrepcz = os.path.join(PATH_ogrepcz,'include')
 PATH_INCLUDE_hydrax=        PATH_hydrax
 PATH_INCLUDE_hikari = os.path.join(PATH_hikari ) #, 'include')
 PATH_INCLUDE_mygui = os.path.join(PATH_mygui,'MyGUIEngine','include') 
+PATH_INCLUDE_canvas=        PATH_canvas
 
 PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ,os.path.join(BASE_DIR, 'vorbis', 'include')

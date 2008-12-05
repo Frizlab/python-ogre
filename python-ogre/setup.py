@@ -33,10 +33,10 @@ This version is built against the Ogre CVS"""
 
 METADATA = {
     "name":             "Python-Ogre",
-    "version":          "1.6.0RC1",
+    "version":          "1.6.0",
     "license":          "LGPL",
     "url":              "http://python-ogre.python-hosting.com/",
-    "author":           "Lakin Wecker, Roman Yakovenko, Andy",
+    "author":           "Lakin Wecker, Roman Yakovenko, Andy Miller",
     "author_email":     "python-ogre-developers@googlegroups.com",
     "description":      "Py++ Ogre Python Binding",
     "long_description": DESCRIPTION,
@@ -72,7 +72,7 @@ PACKAGEDATA = {
                         'ogre.addons.noise', 'ogre.addons.watermesh', # 'ogre.addons.ofusion',
                         'ogre.addons.particleuniverse', 'ogre.addons.cadunetree',
                         'ogre.renderer.ogrepcz', 'ogre.addons.hydrax',
-                        'ogre.gui.hikari' ],
+                        'ogre.gui.hikari','ogre.gui.mygui','ogre.gui.canvas' ],
        "package_dir": {'': 'packages_'+ PythonVersionString },
        "package_data": {'': ['*.pyd', '*.dll', '*.so']}
 

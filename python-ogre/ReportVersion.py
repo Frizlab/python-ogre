@@ -28,7 +28,7 @@ if __name__ == '__main__':
                         'ogre.addons.noise', 'ogre.addons.watermesh', 
                         'ogre.addons.particleuniverse', 'ogre.addons.cadunetree',
                         'ogre.renderer.ogrepcz', 'ogre.addons.hydrax',
-                        'ogre.gui.hikari' )
+                        'ogre.gui.hikari','ogre.gui.canvas','ogre.gui.mygui' )
                         
 #    bm.setupLogging("version.info") # options.logfilename)
 #    logger = logging.getLogger('PythonOgre.ReportVersionInfo')
