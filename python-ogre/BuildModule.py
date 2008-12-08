@@ -198,7 +198,7 @@ def buildDeb ( module, install = False ):
     for file in os.listdir(debiandir):
         if not os.path.isfile(os.path.join(debiandir, file)):
             continue
-        ret = spawnTask( "sed --in-place "+os.path.join(debiandir,file)+" -e\"s|%%SHORTDATE%%|`date +%Y%m%d`|\" -e\"s|%%LONGDATE%%|`date +'%a, %d %b %Y %H:%m:%S %z'`|\" -e\"s|%%VERSION%%|"+module.source_version+"|\"", srcdir)
+        ret = spawnTask( "sed --in-place "+os.path.join(debiandir,file)+" -e\"s|%%SHORTDATE%%|`date +%Y%m%d`|g\" -e\"s|%%LONGDATE%%|`date +'%a, %d %b %Y %H:%m:%S %z'`|g\" -e\"s|%%VERSION%%|"+module.source_version+"|g\"", srcdir)
         if ret != 0:
             exit("Was not able to update the debian %s." % file)
 
@@ -246,7 +246,7 @@ def buildService ( module, install = False ):
     spawnTask("tar -zcvf %s.tar.gz %s" % (module.base, module.base), buildbase)
 
     # md5sum the package
-    spawnTask("md5sum %s.tar.gz | sed -e's/ .*//' > %s.md5sum" % (module.base, module.base), buildbase)
+    spawnTask("md5sum %s.tar.gz | sed -e's/ .*//g' > %s.md5sum" % (module.base, module.base), buildbase)
 
     debiandir = os.path.join(srcdir, "debian")
     if not os.path.exists(debiandir):
@@ -263,10 +263,10 @@ def buildService ( module, install = False ):
         if ret != 0:
             exit("Was not able to copy the debian %s." % file)
 
-        ret = spawnTask( "sed --in-place "+filepath+'                       ' + \
-                ' -e"s|%%SHORTDATE%%|`date +%Y%m%d`|"                       ' + \
-                ' -e"s|%%LONGDATE%%|`date +\'%a, %d %b %Y %H:%m:%S %z\'`|"  ' + \
-                ' -e"s|%%VERSION%%|'+module.source_version+'|"'
+        ret = spawnTask( "sed --in-place "+filepath+'                        ' + \
+                ' -e"s|%%SHORTDATE%%|`date +%Y%m%d`|g"                       ' + \
+                ' -e"s|%%LONGDATE%%|`date +\'%a, %d %b %Y %H:%m:%S %z\'`|g"  ' + \
+                ' -e"s|%%VERSION%%|'+module.source_version+'|g"'
             , srcdir)
         if ret != 0:
             exit("Was not able to update the debian %s." % file)
@@ -275,11 +275,11 @@ def buildService ( module, install = False ):
     dsc = os.path.join(buildbase, "%s.dsc" % module.base)
     spawnTask("cp -f %s %s" % (os.path.join(debiandir, "dsc"), dsc), os.getcwd())
     spawnTask( "sed --in-place "+dsc+ \
-        ' -e "s|%%MD5SUM%%|`cat '+module.base+'.md5sum`|"                         ' + \
-        ' -e "s|%%SIZE%%|`du -b '+module.base+'.tar.gz | sed -e\'s/[\t ]/ /g\'`|" ' + \
-        ' -e "s|%%SHORTDATE%%|`date +%Y%m%d`|"                                    ' + \
-        ' -e "s|%%LONGDATE%%|`date +\'%a, %d %b %Y %H:%m:%S %z\'`|"               ' + \
-        ' -e "s^%%BUILDDEPS%%^`cat '+os.path.join(debiandir, "control")+' | grep Build-Depends:`^"' + \
+        ' -e "s|%%MD5SUM%%|`cat '+module.base+'.md5sum`|g"                         ' + \
+        ' -e "s|%%SIZE%%|`du -b '+module.base+'.tar.gz | sed -e\'s/[\t ]/ /g\'`|g" ' + \
+        ' -e "s|%%SHORTDATE%%|`date +%Y%m%d`|g"                                    ' + \
+        ' -e "s|%%LONGDATE%%|`date +\'%a, %d %b %Y %H:%m:%S %z\'`|g"               ' + \
+        ' -e "s^%%BUILDDEPS%%^`cat '+os.path.join(debiandir, "control")+' | grep Build-Depends:`^g"' + \
         ' -e "s|%%VERSION%%|'+module.source_version+'|g"'
         , buildbase)
 

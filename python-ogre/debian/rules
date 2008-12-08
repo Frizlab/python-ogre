@@ -23,17 +23,17 @@ build-stamp%:
 	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} cegui
 	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} ogre
 	# Extra modules
-	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} noise
+#	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} noise
 #	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} ogreode
-	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} betagui
-	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} cadunetree
+#	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} betagui
+#	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} cadunetree
 #	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} caelum
-	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} et
-	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} plib
-	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} ogreforests
-	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} ogreal
-	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} ogrevideoffmpeg
-	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} watermesh
+#	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} et
+#	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} plib
+#	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} ogreforests
+#	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} ogreal
+#	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} ogrevideoffmpeg
+#	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} watermesh
 	touch $@
 
 build-python%:
