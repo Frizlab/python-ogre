@@ -13,17 +13,18 @@ CXXFLAGS=-g \
        -shared \
 		-Wl,-soname,libboost_python_index-gcc${GCC_VERSION}-${BOOST_VERSION}.so \
 		-o libboost_python_index-gcc${GCC_VERSION}-${MT_VERSION}${BOOST_VERSION}.so -fPIC \
-       -lboost_python-gcc${GCC_VERSION}-${MT_VERSION}${BOOST_VERSION} \
        -L${PREFIX}/lib/ \
        -lpython${PYTHON_VERSION} \
 		$(MT_FLAGS)
 
+BOOST_PYTHON1= -lboost_python-gcc${GCC_VERSION}-${MT_VERSION}${BOOST_VERSION}
+BOOST_PYTHON2= -lboost_python-gcc${GCC_VERSION}-${MT_VERSION}${BOOST_VERSION}-py${PYTHON_VERSION}
 
 all: libs/python/src/indexing/indexing_slice.cpp libs/python/src/indexing/python_iterator.cpp
 	@make version
 	@echo "Current CXXFLAGS: ${CXXFLAGS}"
 	@echo "Running g++ ${CXXFLAGS} $?"
-	@g++ ${CXXFLAGS} $?
+	@g++ ${CXXFLAGS} ${BOOST_PYTHON} $? || g++ ${CXXFLAGS} ${BOOST_PYTHON2} $?
 
 version:
 	@if [ x${BOOST_VERSION} = x ]; then 								\
