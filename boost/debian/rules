@@ -55,8 +55,8 @@ install: build
 	dh_installdirs
 	
 	# Add here commands to install the package into debian/tmp
-	make install PREFIX=$(CURDIR)/debian/tmp
-	make install PREFIX=$(CURDIR)/debian/tmp MT=True
+	make install PREFIX=$(CURDIR)/debian/tmp/usr
+	make install PREFIX=$(CURDIR)/debian/tmp/usr MT=True
 
 # Build architecture-independent files here.
 binary-indep: build install
