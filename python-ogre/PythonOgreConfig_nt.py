@@ -13,17 +13,13 @@ LOCAL_INCLUDE = os.path.join(ROOT_DIR, 'usr/include')
 
 
 ## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
-PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_36_0' ) #-trunk')
+PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_37_0' ) #-trunk')
 
 ## Path to your boost_pythonxxxx lib file
 PATH_LIB_Boost =    os.path.join(PATH_Boost, 'bin.v2/libs/python/build/msvc-9.0/release/threading-multi')
-
-## and the name of the boost python library
-## now part of class boos tin environtment.py
-# LIB_Boost =         r'boost_python-vc90-mt-1_37'
-# # LIB_Boost =         r'boost_python-vc80-mt-1_34_1'
-# LIB_Boost =         r'boost_python-vc-mt-1_35'
-
+PATH_LIB_Boost_STATIC = os.path.join(PATH_Boost, 'bin.v2/libs/python/build/msvc-9.0/release/link-static/threading-multi')
+PATH_LIB_Thread_STATIC = os.path.join(PATH_Boost, 'bin.v2/libs/thread/build/msvc-9.0/release/link-static/threading-multi')
+PATH_LIB_date_time_STATIC = os.path.join(PATH_Boost, 'bin.v2/libs/date_time/build/msvc-9.0/release/link-static/threading-multi')
 # in Linux we need to code in the Relative path for the library
 RPATH=""
 
@@ -36,7 +32,7 @@ pyplusplus_install_dir = os.path.join(BASE_DIR, 'pyplusplus')
 PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
 PATH_Ogre =         os.path.join(BASE_DIR, 'ogre')
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
-PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.6.1')
+PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.6.2')
 
 PATH_OIS =          os.path.join(BASE_DIR, 'ois' ) ##'ois-1.0RC1')
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonsdk','sdk')

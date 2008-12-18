@@ -50,7 +50,7 @@ Return ('_%(name)s')\n
 def get_ccflags(cls):
     if os.name=='nt':
         CCFLAGS=''
-        #CCFLAGS += '-DBOOST_PYTHON_MAX_ARITY=19'
+        CCFLAGS += ' /DBOOST_PYTHON_MAX_ARITY=19 ' 
         CCFLAGS += '  /nologo -Zm200 '
         CCFLAGS += ' /W3 /wd4675' # warning level  -Zc:wchar_t 
         CCFLAGS += ' /TP /MD /Zc:forScope /EHs /c /Ox /Ob2 /Oi /Ot /Oy /GS- /GR '

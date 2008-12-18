@@ -4,6 +4,7 @@
 import os, sys, time, shutil
 import logging
 #import BuildModule as bm
+import ogre.renderer.OGRE as o
 
 #add environment to the path
 sys.path.append(  '.' )
@@ -17,7 +18,7 @@ if __name__ == '__main__':
 
     moduleList =      ( 'ogre.renderer.OGRE',
                         'ogre.io.OIS', 
-                        'ogre.gui.CEGUI','ogre.gui.QuickGUI', 'ogre.gui.betagui',
+                        'ogre.gui.betagui', # 'ogre.gui.CEGUI', 'ogre.gui.QuickGUI',
                         'ogre.sound.OgreAL', 
                         'ogre.physics.ODE', 'ogre.physics.OgreRefApp',
                         'ogre.physics.OgreOde', 'ogre.physics.OgreNewt', 'ogre.physics.Opcode',
@@ -51,3 +52,5 @@ if __name__ == '__main__':
         except ImportError:
             print "Import failed:", basename
  #           logger.error ( "Import failed:" + basename )
+        except TypeError:
+            print "Type Error:"

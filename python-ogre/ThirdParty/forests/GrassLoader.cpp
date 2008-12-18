@@ -260,6 +260,13 @@ Mesh *GrassLoader::generateGrass_QUAD(PageInfo &page, GrassLayer *layer, float *
 		if (heightFunction){
 			y1 = heightFunction(x1, z1, heightFunctionUserData);
 			y2 = heightFunction(x2, z2, heightFunctionUserData);
+			
+			if (layer->getMaxSlope() < (Math::Abs(y1 - y2) / (halfScaleX * 2))) {
+				//Degenerate the face
+				x2 = x1;
+				y2 = y1;
+				z2 = z1;
+			}
 		} else {
 			y1 = 0;
 			y2 = 0;
@@ -398,6 +405,13 @@ Mesh *GrassLoader::generateGrass_CROSSQUADS(PageInfo &page, GrassLayer *layer, f
 		if (heightFunction){
 			y1 = heightFunction(x1, z1, heightFunctionUserData);
 			y2 = heightFunction(x2, z2, heightFunctionUserData);
+
+			if (layer->getMaxSlope() < (Math::Abs(y1 - y2) / (halfScaleX * 2))) {
+				//Degenerate the face
+				x2 = x1;
+				y2 = y1;
+				z2 = z1;
+			}
 		} else {
 			y1 = 0;
 			y2 = 0;
@@ -432,6 +446,13 @@ Mesh *GrassLoader::generateGrass_CROSSQUADS(PageInfo &page, GrassLayer *layer, f
 
 		float y3, y4;
 		if (heightFunction){
+			if (layer->getMaxSlope() < (Math::Abs(y1 - y2) / (halfScaleX * 2))) {
+				//Degenerate the face
+				x2 = x1;
+				y2 = y1;
+				z2 = z1;
+			}
+
 			y3 = heightFunction(x3, z3, heightFunctionUserData);
 			y4 = heightFunction(x4, z4, heightFunctionUserData);
 		} else {
@@ -659,6 +680,7 @@ GrassLayer::GrassLayer(PagedGeometry *geom, GrassLoader *ldr)
 	minWidth = 1.0f; maxWidth = 1.0f;
 	minHeight = 1.0f; maxHeight = 1.0f;
 	minY = 0; maxY = 0;
+	maxSlope = 1000;
 	renderTechnique = GRASSTECH_QUAD;
 	fadeTechnique = FADETECH_ALPHA;
 	animMag = 1.0f;

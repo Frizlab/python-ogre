@@ -212,7 +212,14 @@ def ManualFixes ( mb ):
     f=main_ns.class_('btCollisionWorld').mem_fun('addCollisionObject')
     f.arguments[1].default_value = 'btBroadphaseProxy::DefaultFilter'  # (short int)(btBroadphaseProxy::DefaultFilter)
     f.arguments[2].default_value = 'btBroadphaseProxy::AllFilter'  # (short int)(btBroadphaseProxy::AllFilter)
-              
+      
+    f = ['::btBroadphaseInterface::createProxy',
+        '::btDispatcher::getNewManifold'
+        ]
+    for fun in f:
+        print "setting call policy", fun
+        main_ns.member_function(fun).call_policies = call_policies.default_call_policies()
+            
 ############################################################
 ##
 ##  And things that need to have their argument and call values fixed.

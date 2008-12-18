@@ -166,7 +166,7 @@ void PagedGeometry::setBounds(TBounds bounds)
 {
 	if (!managerList.empty())
 		OGRE_EXCEPT(0, "PagedGeometry::setBounds() cannot be called after detail levels have been added. Call removeDetailLevels() first.", "PagedGeometry::setBounds()");
-	if (bounds.width() != bounds.height())
+	if (!Math::RealEqual(bounds.width(), bounds.height(), 0.01f))
 		OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Bounds must be square", "PagedGeometry::setBounds()");
 	if (bounds.width() <= 0 || bounds.height() <=0)
 		OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Bounds must have positive width and height", "PagedGeometry::setBounds()");

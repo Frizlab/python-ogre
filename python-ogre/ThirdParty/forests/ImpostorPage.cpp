@@ -49,6 +49,7 @@ void ImpostorPage::init(PagedGeometry *geom, const Ogre::Any &data)
 	if (++selfInstances == 1){
 		//Set up a single instance of a scene node which will be used when rendering impostor textures
 		geom->getSceneNode()->createChildSceneNode("ImpostorPage::renderNode");
+		geom->getSceneNode()->createChildSceneNode("ImpostorPage::cameraNode");
 	}
 }
 
@@ -63,6 +64,7 @@ ImpostorPage::~ImpostorPage()
 
 	if (--selfInstances == 0){
 		sceneMgr->destroySceneNode("ImpostorPage::renderNode");
+		sceneMgr->destroySceneNode("ImpostorPage::cameraNode");
 	}
 }
 
@@ -445,6 +447,7 @@ void ImpostorTexture::renderTextures(bool force)
 	RenderTexture *renderTarget;
 	Camera *renderCamera;
 	Viewport *renderViewport;
+	SceneNode *camNode;
 
 	//Set up RTT texture
 	uint32 textureSize = ImpostorPage::impostorResolution;
@@ -459,7 +462,9 @@ void ImpostorTexture::renderTextures(bool force)
 	renderTarget->setAutoUpdated(false);
 	
 	//Set up camera
+	camNode = sceneMgr->getSceneNode("ImpostorPage::cameraNode");
 	renderCamera = sceneMgr->createCamera(getUniqueID("ImpostorCam"));
+	camNode->attachObject(renderCamera);
 	renderCamera->setLodBias(1000.0f);
 	renderViewport = renderTarget->addViewport(renderCamera);
 	renderViewport->setOverlaysEnabled(false);
