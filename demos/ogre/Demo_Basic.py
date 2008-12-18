@@ -17,10 +17,9 @@ import PythonOgreConfig
 import time
 
 import ogre.renderer.OGRE as ogre 
-import ogre.io.OIS as OIS 
 
 class OGREMain(ogre.Root):
-    def __init__(self, plugins_path='plugins.cfg',resource_path='../resources.cfg'):
+    def __init__(self, plugins_path='../plugins.cfg',resource_path='../resources.cfg'):
        ogre.Root.__init__(self, plugins_path)
        self.plugins_path = plugins_path
        self.resource_path = resource_path
@@ -97,7 +96,11 @@ class OGREMain(ogre.Root):
 
 
 def main():
-    root = OGREMain(plugins_path='../plugins.cfg')
+    import os
+    if os.name == 'nt':
+        root = OGREMain(plugins_path='../plugins.cfg.nt')
+    else:
+        root = OGREMain(plugins_path='../plugins.cfg.linux')
     weu = ogre.WindowEventUtilities()
     while not root.window.isClosed():
         weu.messagePump()

@@ -131,6 +131,10 @@ float DensityMap::_getDensityAt_Unfiltered(float x, float z, const TRect<Real> &
 	float boundsWidth = mapBounds.width();
 	float boundsHeight = mapBounds.height();
 
+	//Patch incorrect PixelBox::getWidth() in OpenGL mode
+	if (Root::getSingleton().getRenderSystem()->getName() == "OpenGL Rendering Subsystem")
+		--mapWidth;
+
 	uint32 xindex = mapWidth * (x - mapBounds.left) / boundsWidth;
 	uint32 zindex = mapHeight * (z - mapBounds.top) / boundsHeight;
 	if (xindex < 0 || zindex < 0 || xindex >= mapWidth || zindex >= mapHeight)
@@ -152,6 +156,10 @@ float DensityMap::_getDensityAt_Bilinear(float x, float z, const TRect<Real> &ma
 	uint32 mapHeight = (uint32)pixels->getHeight();
 	float boundsWidth = mapBounds.width();
 	float boundsHeight = mapBounds.height();
+
+	//Patch incorrect PixelBox::getWidth() in OpenGL mode
+	if (Root::getSingleton().getRenderSystem()->getName() == "OpenGL Rendering Subsystem")
+		--mapWidth;
 
 	float xIndexFloat = (mapWidth * (x - mapBounds.left) / boundsWidth) - 0.5f;
 	float zIndexFloat = (mapHeight * (z - mapBounds.top) / boundsHeight) - 0.5f;

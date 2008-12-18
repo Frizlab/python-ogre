@@ -169,7 +169,6 @@ public:
 		heightFunctionUserData = userData;
 	}
 
-
 	/** INTERNAL FUNCTION - DO NOT USE */
 	void loadPage(PageInfo &page);
 	/** INTERNAL FUNCTION - DO NOT USE */
@@ -275,6 +274,34 @@ public:
 	Similarly, setting maxHeight to 0 means grass has no maximum height - it can grow as high
 	as necessary. */
 	void setHeightRange(float minHeight, float maxHeight = 0) { minY = minHeight; maxY = maxHeight; }
+
+	/** \brief Set the maximum slope a grass of blade can be placed on.
+	\param maxSlopeRatio The maximum slope (h/w ratio) a grass blade is allowed to be placed on.
+
+	This function can be used to set the maximum slope you want your grass to be placed on
+	(although it doesn't work for sprite grass). By default grass is allowed on any slope.
+	
+	This version of setMaxSlope() accepts a slope ratio value, where ATan(maxSlopeRatio) =
+	maxSlopeAngle. If you wish to provide a maximum slope as an angle, either use the other
+	overload of this function, or convert your angle to a slope ratio first with Tan().*/
+	void setMaxSlope(const float maxSlopeRatio) { maxSlope = maxSlopeRatio; }
+
+	void setMaxSlope(Ogre::Radian maxSlopeAngle) {
+		if (maxSlopeAngle > Ogre::Degree(89.99f))
+			maxSlopeAngle = Ogre::Degree(89.99f);
+		if (maxSlopeAngle < Ogre::Degree(0))
+			maxSlopeAngle = Ogre::Degree(0);
+
+		maxSlope = Ogre::Math::Tan(maxSlopeAngle);
+	}
+
+	/** \brief Get the maximum slope a grass blade can be placed on (as set by setMaxSlope()).
+	\returns The currently set maximum slope ratio value (not an angle).
+
+	This returns the currently set maximum slope which is used to determine what ground is too steep
+	for grass to be placed on. Note that this returns the slope as a slope ratio, not an angle. If you
+	need an angle value, convert with ATan() (maxSlopeAngle = ATan(maxSlopeRatio)).*/
+	float getMaxSlope() const { return maxSlope; }
 
 	/** \brief Sets the density map used for this grass layer
 	\param mapFile The density map image
@@ -487,6 +514,7 @@ private:
 	float minHeight, maxHeight;
 
 	float minY, maxY;
+    float maxSlope;
 
 	FadeTechnique fadeTechnique;
 	GrassTechnique renderTechnique;

@@ -78,60 +78,6 @@ WRAPPER_REGISTRATION_MemoryDataStream = [
     ]
 
     
-WRAPPER_DEFINITION_RenderQueueListener =\
-"""
-struct RenderQueueListener_wrapper : Ogre::RenderQueueListener, bp::wrapper< Ogre::RenderQueueListener > {
-
- void RenderQueueListener_renderQueueEnded( ::Ogre::uint8 queueGroupId, ::Ogre::String const & invocation, bool & repeatThisInvocation ){
-        bool holder;
-        if ( bp::override func_renderQueueEnded = this->get_override( "renderQueueEnded" ) ) {
-            holder = func_renderQueueEnded( queueGroupId, invocation, repeatThisInvocation );
-            repeatThisInvocation = holder;
-            }
-        else { 
-            Ogre::RenderQueueListener::renderQueueEnded ( queueGroupId, invocation, repeatThisInvocation );
-        }           
-    }
-
-
-   void RenderQueueListener_renderQueueStarted( ::Ogre::uint8 queueGroupId, ::Ogre::String const & invocation, bool & skipThisInvocation ){
-        bool holder;
-        if ( bp::override func_renderQueueStarted = this->get_override( "renderQueueStarted" ) ) {
-            holder = func_renderQueueStarted( queueGroupId, invocation, skipThisInvocation );
-            skipThisInvocation = holder;
-            }
-        else { 
-            Ogre::RenderQueueListener::renderQueueStarted ( queueGroupId, invocation, skipThisInvocation );
-        }           
-            
-    }
-};
-"""
-
-WRAPPER_REGISTRATION_RenderQueueListener = [
-    """def( "renderQueueStarted", &::RenderQueueListener_renderQueueStarted,\\
-                "Python-Ogre Helper Function: This method is called by the SceneManager\\n\\
-                 before each queue group is rendered. 
-        @param queueGroupId The id of the queue group which has just been rendered
-		@param invocation Name of the invocation which is causing this to be 
-			called (@see RenderQueueInvocation)
-		@param .\\n\\
-                Input: queueGroupId The id of the queue group which has just been rendered\\n\\
-                Input: invocation Name of the invocation which is causing this to be called\\n\\
-                Input: skipThisInvocation A boolean which is by default set to false.\\n\\
-                Output: "skipThisInvocation" If the event sets this to true, the queue will be skipped\\n\\
-                   and not rendered. Note that in this case the renderQueueEnded event will not be raised\\n\\
-			       for this queue group");""",
-    """def( "renderQueueEnded", &::RenderQueueListener_renderQueueEnded,\\
-                "Python-Ogre Helper Function: This method is called by the SceneManager\\n\\
-                 after each queue group is rendered.\\n\\ 
-                Input: queueGroupId The id of the queue group which has just been rendered\\n\\
-                Input: invocation Name of the invocation which is causing this to be called\\n\\
-                Input: repeatThisInvocation A boolean which is by default set to false.\\n\\
-                Output: "repeatThisInvocation" If return true, the queue which has just been\\n\\
-			        rendered will be repeated, and the renderQueueStarted and renderQueueEnded\\n\\
-			        events will also be fired for it again");"""
-        ]
 
 WRAPPER_DEFINITION_OverlayElement = \
 """
@@ -185,26 +131,6 @@ WRAPPER_REGISTRATION_OverlayElement = [
     bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
 
     ]
-# WRAPPER_DEFINITION_OverlayManager = \
-# """
-# Ogre::OverlayElement* OverlayManager_createOverlayElement(Ogre::OverlayManager &me, const Ogre::String& typeName, 
-#                   const Ogre::String& instanceName, bool isTemplate = false){
-#    Ogre::OverlayElement* e = me.createOverlayElement(typeName, instanceName, isTemplate );
-#    if( dynamic_cast< Ogre::TextAreaOverlayElement * >( e ) ){
-#         return (Ogre::TextAreaOverlayElement*) e;
-#     }   
-#     if( dynamic_cast< Ogre::OverlayContainer * >( e ) ){
-#         return (Ogre::OverlayContainer*) e;
-#     }
-#     return  ( e );
-#     }
-# """  
-#                 
-# WRAPPER_REGISTRATION_OverlayManager = [
-#     'def( "createOverlayElement", &::OverlayManager_createOverlayElement,\
-#     "Python-Ogre Hand Wrapped\\nShould Return the correct Type (TextAreOverlayElement or OverlayContainer)",\
-#     bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());',
-# ]
 
 WRAPPER_DEFINITION_Bone = \
 """
@@ -566,12 +492,6 @@ Utility_CastResourceToNative(Ogre::ResourcePtr& r){
     return boost::python::object( r ); //unknown type
 }       
 
-// void
-// Utility_setFloat(void * ptrin, float datain)
-// {
-//     float * newptr = reinterpret_cast<float *>(ptrin);
-//     newptr[0]= datain;
-// }
 """            
 WRAPPER_REGISTRATION_General = [
 
@@ -943,18 +863,6 @@ WRAPPER_REGISTRATION_ParticleSystem = [
             Ouput: List containing particles" );"""
     ]
 
-# #################################################################################################
-# WRAPPER_DEFINITION_Vector3 =\
-# """
-# int Vector3_len( Ogre::Vector3 & me ) {
-#     return 3;
-#     }
-# """
-# WRAPPER_REGISTRATION_Vector3 = [
-#     """def( "__len__", &Vector3_len,
-#                 "Python-Ogre Helper Function: return length of Vector3");""",
-#     ]
-#         
 #################################################################################################
 
 def iter_as_generator_vector( cls ):
@@ -995,10 +903,6 @@ def apply( mb ):
     rt.add_declaration_code( WRAPPER_DEFINITION_RenderTarget )
     apply_reg (rt,  WRAPPER_REGISTRATION_RenderTarget )
     
-#     rt = mb.class_( 'Vector3' )
-#     rt.add_declaration_code( WRAPPER_DEFINITION_Vector3 )
-#     apply_reg (rt,  WRAPPER_REGISTRATION_Vector3 )
-    
     rt = mb.class_( 'ResourceManager' )
     rt.add_declaration_code( WRAPPER_DEFINITION_ResourceManager )
     apply_reg (rt,  WRAPPER_REGISTRATION_ResourceManager )
@@ -1019,17 +923,9 @@ def apply( mb ):
     rt.add_declaration_code( WRAPPER_DEFINITION_PixelBox )
     apply_reg (rt,  WRAPPER_REGISTRATION_PixelBox )
     
-#     rt = mb.class_( 'ShadowRenderable' )
-#     rt.add_declaration_code( WRAPPER_DEFINITION_ShadowRenderable )
-#     apply_reg (rt,  WRAPPER_REGISTRATION_ShadowRenderable )
-
     rt = mb.class_( 'OverlayElement' )
     rt.add_declaration_code( WRAPPER_DEFINITION_OverlayElement )
     apply_reg (rt,  WRAPPER_REGISTRATION_OverlayElement )
-
-#     rt = mb.class_( 'OverlayManager' )
-#     rt.add_declaration_code( WRAPPER_DEFINITION_OverlayManager )
-#     apply_reg (rt,  WRAPPER_REGISTRATION_OverlayManager )
 
     rt = mb.class_( 'Frustum' )
     rt.add_declaration_code( WRAPPER_DEFINITION_Frustum )
@@ -1066,30 +962,4 @@ def apply( mb ):
     for cls in map_iterators:
         iter_as_generator_map( cls ) 
         
-    rt = mb.class_( 'RenderQueueListener' )   
-# # # # #     rt.add_declaration_code( WRAPPER_DEFINITION_RenderQueueListener )
-# # # # #     apply_reg (rt,  WRAPPER_REGISTRATION_RenderQueueListener )
-#     print "WRAPPER CODE\n\n"
-#     print rt.wrapper_code
-#     print rt
-#     print dir(rt)
-# #     rt.add_wrapper_code ( WRAPPER_WRAPPER_RenderQueueListener )
-#     print "NOW\n\n"
-#     print rt.wrapper_code
-             
-#     cls = mb.class_('Animation').class_('NodeTrackIterator')
-#     iter_as_generator_map( cls )
-#     global_ns = mb.global_ns
-#     ogre_ns = global_ns.namespace( 'Ogre' )
-#     i = ogre_ns.typedef( name="NodeTrackIterator" )
-#     iter_as_generator_map( i )
-          
-#     typedef std::map<unsigned short, NodeAnimationTrack*> NodeTrackList;
-#         typedef ConstMapIterator<NodeTrackList> NodeTrackIterator;
-
-# 		typedef std::map<unsigned short, NumericAnimationTrack*> NumericTrackList;
-# 		typedef ConstMapIterator<NumericTrackList> NumericTrackIterator;
-
-# 		typedef std::map<unsigned short, VertexAnimationTrack*> VertexTrackList;
-# 		typedef ConstMapIterator<VertexTrackList> VertexTrackIterator;
 

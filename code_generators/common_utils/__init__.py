@@ -282,6 +282,7 @@ def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[]):
                 arg_position = 0
                 trans=[]
                 desc=""
+                ft_type = None
                 ctypes_conversion = False
                 for arg in fun.arguments:
                     rawarg =  declarations.remove_declarated(
@@ -301,10 +302,12 @@ def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[]):
                                 arg.type.decl_string + " ) takes a CTypes.addressof(xx). \\n"
                             ctypes_conversion = True                                
                             ctypes_arg = arg.type.decl_string.split()[0]
+                            ft_type = 'CTYPES'
                         elif declarations.is_reference(arg.type)and not declarations.is_const(declarations.remove_reference( arg.type)):  # seen functions passing const ref's 
                             trans.append( ft.inout(arg_position ) )
                             desc = desc + "Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
                                 arg.type.decl_string + " ) converted to an input/output (change to return types).\\n"
+                            ft_type = 'INOUT'                                
                         elif declarations.is_reference(arg.type):
                             print "Warning: - possible code change.", fun,arg," not wrapped as const reference to base type invalid"
                         else:
@@ -313,10 +316,23 @@ def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[]):
                         pass # it's not a var we need to handle
                     arg_position += 1
                 if trans:
+                    const_return = False #  declarations.is_const(fun)
+                    if fun.decl_string.endswith('const'):
+                        const_return=True
+                    simple_return = declarations.is_arithmetic(fun.return_type) or declarations.is_void(fun.return_type)
+                    nonpublic_destructor = declarations.is_class(fun.parent) and declarations.has_destructor(fun.parent) and\
+                            not declarations.has_public_destructor(fun.parent)
+                
                     if fun.documentation or fun.transformations:   # it's already be tweaked:
                         print "AUTOFT ERROR: Duplicate Tranforms.", fun, fun.documentation
-                    elif hasattr(fun, "virtuality") and fun.virtuality == "pure virtual": # free functions don't have virtuality arrtibute
-                        print "AUTOFT WARNING: PURE VIRTUAL function requires tranform.", fun
+                        
+                    # if the class has a protected destruction AND the return value is const or a non arithmatic value then exclude it.
+                    elif nonpublic_destructor and const_return:
+                        print "AUTOFT ERROR Const: Parent has non public destructor and const return.", fun.parent.name, fun.return_type.decl_string, fun
+                        fun.documentation="Python-Ogre Warning: function required transformation - not possible due to non public destructor and const return value.."
+                    elif nonpublic_destructor and not simple_return:
+                        print "AUTOFT ERROR Const: Parent has non public destructor and complex return value.", fun.parent.name, fun.return_type.decl_string, fun
+                        fun.documentation="Python-Ogre Warning: function required transformation - not possible due to non public destructor and complex return value.."
                     else:
                         new_alias = fun.name
                         if ctypes_conversion:   # only manage name changes if ctypes changing
@@ -338,7 +354,7 @@ def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[]):
                                 desc = desc + "\\\nWARNING FUNCTION NAME CHANGE - from "+fun.name + " -- " + fun.decl_string +" to " + new_alias + " \\n"                                    
                                 print "INFO: Adjusting Alias as multiple overlapping functions:", new_alias
                             
-                        print "AUTOFT OK: Tranformed ", fun, "(",new_alias,")"
+                        print "AUTOFT OK: Tranformed ", fun.return_type.decl_string, fun, "(",new_alias,")"
                         fun.add_transformation ( * trans ,  **{"alias":new_alias}  )
                         fun.documentation = docit ("Auto Modified Arguments:",
                                                         desc, "...")
@@ -362,13 +378,13 @@ def Fix_Void_Ptr_Args ( mb, pointee_types=['unsigned int','int', 'float', 'unsig
                 desc = desc +"Argument: "+arg.name+ "( pos:" + str(arg_position) +") takes a CTypes.addressof(xx). "
             arg_position +=1
         if trans:
-            if fun.virtuality == "pure virtual":
-                print "*** WARNING: Unable to apply transformation to PURE VIRTUAL function", fun, desc
-            else:
-                print "Tranformation applied to ", fun, desc, fun.virtuality
-                fun.add_transformation ( * trans , **{"alias":fun.name}  )
-                fun.documentation = docit ("Modified Input Argument to work with CTypes",
-                                                desc, "...")
+#             if fun.virtuality == "pure virtual":
+#                 print "*** WARNING: Unable to apply transformation to PURE VIRTUAL function", fun, desc
+#             else:
+            print "Tranformation applied to ", fun, desc, fun.virtuality
+            fun.add_transformation ( * trans , **{"alias":fun.name}  )
+            fun.documentation = docit ("Modified Input Argument to work with CTypes",
+                                            desc, "...")
                                             
     for fun in mb.member_functions():
         fixVoids ( fun )
@@ -511,6 +527,7 @@ def Find_Problem_Transformations ( mb ):
     """ There are some cases where function transformations don't get applied as Py++ doesn't
     support all cases -- the only current one is pure virtual functions don't get managed correctly
     """
+    return
     ACCESS_TYPES = declarations.ACCESS_TYPES
     VIRTUALITY_TYPES = declarations.VIRTUALITY_TYPES
     for f in mb.member_functions():

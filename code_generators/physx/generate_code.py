@@ -63,20 +63,34 @@ def ManualExclude ( mb ):
                 ,'::NxArray< NxForceFieldShapeDesc*, NxAllocatorDefault >::resize'
                 ,'::NxArray< NxForceFieldShapeGroup*, NxAllocatorDefault >::resize'
                 ,'::NxArray<NxShapeDesc*, NxAllocatorDefault>::end'
-#                 ,'::NxCloth::overlapAABBTriangles'  # ugly argument that boost doesn't like.. To Fix in hand wrappers
-                # these have const refs to classes with protected desctuctors - a bad combination for boost
+                
+                # These have const refs to classes with protected desctuctors - a bad combination for boost
                 ,'::NxCookingInterface::NxCreatePMap'
-# #                 ,'::NxForceField::releaseShape'
                 ,'::NxUtilLib::NxGetBoxEdgesAxes'
-#                 ,'::NxHeightFieldShape::overlapAABBTrianglesDeprecated'
-# #                 ,'::NxImplicitScreenMesh::getProjectionMatrix'  # returns a const int pointer
                 ,'::NxVec3::get'
-                # not in source
+                
+                # Not in source
                 ,'::NxBitField::rangeToDenseMask'
                 ,'::NxBitField::maskToShift'
                 ,'::NxVec3::setNotUsed'
                 ,'::NxVec3::isNotUsed'
-
+                
+                # These show up as now handling FT on pure virtual - however need a public class destructor
+                # so these are hand wrapped
+                ,'::NxCompartment::getTiming' # requires a functional transform however destructor is protected so compile fails
+                ,'::NxScene::getTiming' # requires a functional transform however destructor is protected so compile fails
+                ,'::NxConvexMesh::getMassInformation'
+                ,'::NxTriangleMesh::getMassInformation'
+                ,'::NxPhysicsSDK::getInternalVersion'
+                
+                ,'::NxHeightField::saveCells' # excluded
+                
+                ,'::NxForceFieldShapeGroup::releaseShape' # has a const forecfieldshape as arg and there isn't a public desctuctor
+                # 
+               
+                
+#                 ,'::NxStream::storeBuffer'
+                
                 ]
     if os.name =='nt':
         excludes.append('::NxArray<NxFluidEmitterDesc, NxAllocatorDefault>::deleteEntry')
@@ -94,17 +108,11 @@ def ManualExclude ( mb ):
         global_ns.free_functions(e).exclude()
         
     excludes = [
-                #'NxArray<NxShapeDesc*, NxAllocatorDefault>', ## doesn't have a defult constructor for ElemType
-                #'NxArray<NxForceFieldShapeDesc*, NxAllocatorDefault>', ## Elemtype issue
-                #'NxArray<NxForceFieldShapeGroup*, NxAllocatorDefault>', ## Elemtype issue
-                'NxForceFieldShapeGroup' ## seems to have access issues..
+#                 'NxForceFieldShapeGroup' ## seems to have access issues..
 
                 ]
-#     for c in global_ns.classes():
-#         print c                
     if os.name =='nt':
         pass
-#         excludes.append('NxArray<NxFluidEmitterDesc, NxAllocatorDefault>') ## needs ElemType changed to NxFluidEmitterDesc
     else:
         excludes.append ( '::NxFluidUserNotify')
     for e in excludes:
@@ -125,7 +133,15 @@ def ManualExclude ( mb ):
         if not "const" in o.decl_string:
             o.exclude()
             print "Excluding Operator:", o
-
+            
+    # this is really a fix however needs to happen for the automatic stuff as we set the doc string to 
+    # stop any further functional transformation happening            
+    s = ['::NxStream::storeBuffer'
+        ,'::NxUserAllocator::realloc'
+        ]
+    for f in s:
+        global_ns.mem_fun(f).documentation="broken function as auto wrapping fails"        
+    
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 
@@ -160,16 +176,14 @@ def ManualFixes ( mb ):
             if c.arguments[x].default_value:
                 if "ElemType" in c.arguments[x].default_value:
                     c.arguments[x].default_value=''
-        
-#     known = ['points', 'triangles']
-#     for c in global_ns.classes():
-#         if c.name.startswith ('Nx'):
-#             print "Checking", c
-#             for v in c.variables(allow_empty = True ):
-#                 if v.name in known:
-#                    v.expose_address = True
-#                    print "Exposing Address: ",  v.name, " of class: ",  c.name
-              
+                    
+    
+    for f in global_ns.member_functions():
+        for arg in f.arguments:  
+            if arg.default_value == '-1u':
+                arg.default_value = '0xffffffff'
+
+    
 ############################################################
 ##
 ##  And things that need to have their argument and call values fixed.
@@ -186,12 +200,6 @@ def ManualTransformations ( mb ):
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
         
-#     f=main_ns.free_function( "NxCreatePhysicsSDK")
-#     f.add_transformation(ft.output('errorCode'))
-#     f.documentation = docit ("","", "tuple - SDK, ErrorCode")
-#     f=main_ns.free_function( "NxCreatePhysicsSDKWithID")
-#     f.add_transformation(ft.output('errorCode'))
-#     f.documentation = docit ("","", "tuple - SDK, ErrorCode")
 
 ###############################################################################
 ##
@@ -206,17 +214,6 @@ def AutoExclude( mb ):
     global_ns = mb.global_ns
     main_ns = global_ns   # No namespaces in NxPhysics
 
-    # vars that are static consts but have their values set in the header file are bad
-# #     Remove_Static_Consts ( main_ns )
-    
-#     ## Exclude protected and private that are not pure virtual
-#     query = ~declarations.access_type_matcher_t( 'public' ) \
-#             & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
-#     try:
-#         non_public_non_pure_virtual = main_ns.calldefs( query )
-#         non_public_non_pure_virtual.exclude()
-#     except:
-#         pass
 
     #Virtual functions that return reference could not be overriden from Python
     query = declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.VIRTUAL ) \
@@ -264,15 +261,6 @@ def AutoFixes ( mb ):
     
     main_ns = global_ns # .namespace( ns )
 
-    # arguments passed as refs but not const are not liked by boost
-#     Fix_Ref_Not_Const ( main_ns )
-    
-#     # Functions that have void pointers in their argument list need to change to unsigned int's  
-#     3_Args  ( main_ns )
-#     
-#     # and change functions that return a variety of pointers to instead return unsigned int's
-#     Fix_Pointer_Returns ( main_ns )   
-#     
     # and change functions that return a variety of pointers to instead return unsigned int's
     pointee_types=['unsigned int','int', 'float', 'unsigned char', 'char','::NxI32']
     ignore_names=['getName']  # these are function names we know it's cool to exclude
