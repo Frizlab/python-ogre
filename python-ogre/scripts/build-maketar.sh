@@ -1,5 +1,10 @@
 #! /bin/sh
 
+if [ ! -e python-ogre-pristine ]; then
+  echo "I need a clean checkout of python-ogre in python-ogre-pristine"
+  exit 1
+fi
+
 rm -rvf python-ogre
 
 cd python-ogre-pristine
