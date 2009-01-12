@@ -218,6 +218,7 @@ def buildDeb ( module, install = False ):
         logger.warning("Was not able to build package")
     logger.info("Package successfully built!")
 
+BUILDSERVICE_MODULE = "home:mithro:python-ogre-build"
 def buildService ( module, install = False ):
     """ Create a debian package for the module
     """
@@ -226,11 +227,27 @@ def buildService ( module, install = False ):
     if not os.path.exists(srcdir):
         exit("You need to get the src first, use -r")
 
+    # Make sure that the build directory exists
+    buildloc = os.path.join(os.getcwd(), 'build')
+    if not os.path.exists(buildloc):
+        spawnTask("mkdir -p %s" % buildloc, os.getcwd())
+
     buildbase = os.path.join(os.getcwd(), 'build', module.base)
     builddir  = os.path.join(buildbase, module.base)
 
-    # Make the builddir
-    spawnTask("mkdir -p %s" % buildbase, os.getcwd())
+    if not os.path.exists(buildbase):
+        # Do the initial checkout
+        logger.info("Downloading %s:%s into %s" % (BUILDSERVICE_MODULE, module.base, buildloc))
+        spawnTask("osc checkout %s %s" % (BUILDSERVICE_MODULE, module.base), buildloc)
+        spawnTask("mv %s/%s %s" % (BUILDSERVICE_MODULE, module.base, module.base), buildloc)
+        spawnTask("rm -rf %s" % (BUILDSERVICE_MODULE,), buildloc)
+    else:
+        if not os.path.exists(os.path.join(buildbase, ".osc")):
+            raise TypeError("The buildservice directory is not a osc checkout! (Please remove and rerun this command.)")
+
+        # Do an update so we don't get conflicts
+        logger.info("Updating home:mithro:python-ogre:%s in %s" % (module.base, buildloc))
+        spawnTask("osc update", buildbase)
 
     # Create the source we are making
     spawnTask("cp -rvf %s/ %s" % (srcdir, builddir), os.getcwd())
@@ -279,13 +296,15 @@ def buildService ( module, install = False ):
         ' -e "s|%%SIZE%%|`du -b '+module.base+'.tar.gz | sed -e\'s/[\t ]/ /g\'`|g" ' + \
         ' -e "s|%%SHORTDATE%%|`date +%Y%m%d`|g"                                    ' + \
         ' -e "s|%%LONGDATE%%|`date +\'%a, %d %b %Y %H:%m:%S %z\'`|g"               ' + \
-        ' -e "s^%%BUILDDEPS%%^`cat '+os.path.join(debiandir, "control")+' | grep Build-Depends:`^g"' + \
+        ' -e "s^%%BUILDDEPS%%^`cat debian.control | grep Build-Depends:`^"         ' + \
         ' -e "s|%%VERSION%%|'+module.source_version+'|g"'
         , buildbase)
 
     # Do some cleanup
     spawnTask("rm -rf %s" % builddir, buildbase)
     spawnTask("rm %s.md5sum" % module.base, buildbase)
+
+    spawnTask("osc diff", buildbase)
     return
 
 
