@@ -13,25 +13,32 @@ cd ..
 cp -rvf python-ogre-pristine/ python-ogre/
 
 rm -rvf \
-	python-ogre/boost 		 						\
-	python-ogre/debs 		 						\
-	python-ogre/debian 		 						\
-	python-ogre/demos 								\
-	python-ogre/docs 								\
-	python-ogre/packages_2.6 						\
+	python-ogre/boost								\
+	python-ogre/debs								\
+	python-ogre/debian								\
+	python-ogre/demos								\
+	python-ogre/docs								\
+	python-ogre/packages_2.6						\
 	python-ogre/patch 								\
-	python-ogre/ogre_cvs.sh 						\
-	python-ogre/scripts 							\
-	python-ogre/SourceSnapShots 					\
-	python-ogre/ThirdParty/extra 					\
-	python-ogre/ThirdParty/dshow 					\
-	python-ogre/ThirdParty/History 					\
-	python-ogre/ThirdParty/vcredist_x86.exe 		\
+	python-ogre/ogre_cvs.sh							\
+	python-ogre/scripts								\
+	python-ogre/SourceSnapShots						\
+	python-ogre/ThirdParty/extra					\
+	python-ogre/ThirdParty/dshow					\
+	python-ogre/ThirdParty/History					\
+	python-ogre/ThirdParty/vcredist_x86.exe			\
+	python-ogre/convertonew.sed						\
+	python-ogre/convert.py							\
+	python-ogre/convert.sed							\
+	python-ogre/test.nsi							\
+	python-ogre/postinstall.rtf						\
+	python-ogre/installWarning.rtf					\
+	python-ogre/makehelp.bat						\
+	python-ogre/config.ini							\
+	python-ogre/PythonOgreInstallCreator.iss		\
 
 
 find python-ogre -name .svn | xargs rm -rf
-
-touch python-ogre/STABLE
 
 tar -czvf python-ogre.tar.gz python-ogre
 md5sum python-ogre.tar.gz
