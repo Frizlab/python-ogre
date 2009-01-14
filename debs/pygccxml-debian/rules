@@ -4,7 +4,8 @@
 # GNU copyright 1997 to 1999 by Joey Hess.
 
 # Uncomment this to turn on verbose mode.
-#export DH_VERBOSE=1
+export DH_VERBOSE=1
+export DH_COMPAT=5
 
 PYTHON	:= /usr/bin/python
 #PYVER   := $(shell $(PYTHON) -c 'import sys; print sys.version[:3]')
