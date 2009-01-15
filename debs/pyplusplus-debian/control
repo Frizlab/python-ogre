@@ -9,7 +9,7 @@ Standards-Version: 3.7.2
 
 Package: pyplusplus
 Architecture: all
-Depends: ${python:Depends}, pygccxml (= 0.9.0+svn%%SHORTDATE%%-0), libboost-python1.34.1-index
+Depends: ${python:Depends}, pygccxml (= 0.9.0+svn%%SHORTDATE%%-0), libboost-python1.36.1-index
 XB-Python-Version: ${python:Versions}
 Description: Py++ is a code generator for Boost.Python that simplifies writing
  Python bindings of a C/C++ library. The tool is implemented as a Python
