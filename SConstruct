@@ -66,6 +66,10 @@ def get_ccflags(cls):
             
         else:
             CCFLAGS  = ' -I -pipe -O3 -I./'
+            
+    ## change to ensure the source file is also in the include path due to indexing suite changes            
+    CCFLAGS += ' -I' +cls._source + ' '            
+    
     return CCFLAGS
 
 def get_source_files(cls, _dir, usepch = False):
