@@ -474,28 +474,13 @@ class boost:    ## also included bjam
     if isWindows():
         PATH_LIB_THREAD=Config.PATH_LIB_Thread_STATIC
         PATH_LIB_DATETIME=Config.PATH_LIB_date_time_STATIC
-        if _STABLE:
-            base = 'boost_1_36_0'
-            lib = 'boost_python-vc90-mt-1_36'
-            versionBase = '1_36' ## the version used on the library name
-        else:
-            base = 'boost_1_37_0'
-            lib = 'boost_python-vc90-mt-1_37'
-            PATH_LIB = Config.PATH_LIB_Boost
-            
-            # change to handle static boost linking...
-            if BOOST_STATIC:
-                lib = 'libboost_python-vc90-mt-1_37'
-                PATH_LIB = Config.PATH_LIB_Boost_STATIC
-            
-            versionBase = '1_37' ## the version used on the library name
+        base = 'boost_1_37_0'
+        lib = 'boost_python-vc90-mt-1_37'
+        PATH_LIB = Config.PATH_LIB_Boost
+        versionBase = '1_37' ## the version used on the library name
     else:
-        if _STABLE:
-            base = 'boost_1_34_1'
-            versionBase = '1_34' ## the version used on the library name
-        else:
-            base = 'boost_1_37_0'
-            versionBase = '1_37' ## the version used on the library name
+        base = 'boost_1_37_0'
+        versionBase = '1_37' ## the version used on the library name
 
     if isLinux() or isMac():
         bjambase = 'boost-jam-3.1.17'
@@ -523,9 +508,9 @@ class boost:    ## also included bjam
                 ## and now boost
                 [0, tar + ' zxf ' + os.path.join(downloadPath, base) + '.tar.gz', ''],
                 [0,'chmod -R +rw *', os.path.join(os.getcwd(), base ) ],
-                [0, sed_ + " 's/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/' "+base+"/configure", '' ],
-                [0, sed_ + " s/'BOOST_PYTHON_MAX_ARITY 15'/'BOOST_PYTHON_MAX_ARITY 19'/ "+base+"/boost/python/detail/preprocessor.hpp", ''],
-                [0, sed_ + ' s/"# include <boost\/preprocessor\/cat.hpp>"/"\\n#define BOOST_PYTHON_NO_PY_SIGNATURES\\n# include <boost\/preprocessor\/cat.hpp>"/ '+base+'/boost/python/detail/preprocessor.hpp', '' ],
+#                 [0, sed_ + " 's/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/' "+base+"/configure", '' ],
+#                 [0, sed_ + " s/'BOOST_PYTHON_MAX_ARITY 15'/'BOOST_PYTHON_MAX_ARITY 19'/ "+base+"/boost/python/detail/preprocessor.hpp", ''],
+#                 [0, sed_ + ' s/"# include <boost\/preprocessor\/cat.hpp>"/"\\n#define BOOST_PYTHON_NO_PY_SIGNATURES\\n# include <boost\/preprocessor\/cat.hpp>"/ '+base+'/boost/python/detail/preprocessor.hpp', '' ],
                 [0,"./configure --with-libraries=python,thread,date_time --prefix=%s --without-icu --with-bjam=../root/usr/bin/bjam"  % PREFIX, os.path.join(os.getcwd(), base )],
                 [0,'make', os.path.join(os.getcwd(), base )],
                 [0,'make install', os.path.join(os.getcwd(), base )],
@@ -546,7 +531,7 @@ class boost:    ## also included bjam
 #                 [0,'sed -i s/"BOOST_PYTHON_MAX_ARITY 15"/"BOOST_PYTHON_MAX_ARITY 19"/ '+base+'/boost/python/detail/preprocessor.hpp', ''],
 #                 [0,'sed -i s/"# include <boost\/preprocessor\/cat.hpp>"/"\\n#define BOOST_PYTHON_NO_PY_SIGNATURES\\n# include <boost\/preprocessor\/cat.hpp>"/ '+base+'/boost/python/detail/preprocessor.hpp', '' ],
 #                 [0,'sed -i s/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/ '+base+'/boost/python/detail/preprocessor.hpp', '' ],
-#                 [0,os.path.join(os.getcwd(), bjambase, "bjam.exe") + ' release --with-python ',os.path.join(os.getcwd(),base)] # --toolset=msvc-8
+                [0,os.path.join(os.getcwd(), bjambase, "bjam.exe") + ' release --with-python --with-thread --with-date_time ',os.path.join(os.getcwd(),base)] # --toolset=msvc-8
                 ]
 
     if not isWindows():
@@ -600,33 +585,18 @@ class ogre:
     libraries = myLibraries
 
     if isWindows():
-
-        if _STABLE or not _STABLE:   ## temp force to this version...
-            version="1.6.0"
-            source = [
-                [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_VC9_Eihort_20080203.zip", downloadPath],
-                [ wget, "http://downloads.sourceforge.net/ogre/ogre-v1-6-0.zip", downloadPath],
-                ]
-            buildCmds  = [
-                [0, unzip + os.path.join(downloadPath,"ogre-v1-6-0.zip"),os.getcwd() ],
-                [0, unzip + os.path.join(downloadPath,"OgreDependencies_VC9_Eihort_20080203.zip"),
-                                            os.path.join(os.getcwd(), 'ogre') ],
-                [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.0.patch -p0 ", os.getcwd()],
-                [0,'echo Please use MSVC Express Edition to build Ogre Release.','']
-                ]
-#         else:
-#
-#             version="trunk"
-#             source = [
-#                 [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_VC9_Eihort_20080203.zip", downloadPath],
-#                 [ svn, "https://svn.ogre3d.org/svnroot/ogre/trunk", os.path.join(os.getcwd(), 'ogre')]
-#                 ]
-#             buildCmds  = [
-#                     [0, unzip + os.path.join(downloadPath,"OgreDependencies_VC9_Eihort_20080203.zip"),
-#                                                 os.path.join(os.getcwd(), 'ogre') ],
-#                     [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.patch -p0 ", os.getcwd()],
-#                     [0,'echo Please use MSVC Express Edition to build Ogre Release.','']
-#                     ]
+        version="1.6.1"
+        source = [
+            [ wget, "http://downloads.sourceforge.net/ogre/OgreSDKSetup1.6.1_VC90.exe", downloadPath],
+            #[ wget, "http://downloads.sourceforge.net/ogre/ogre-v1-6-0.zip", downloadPath],
+            ]
+        buildCmds  = [
+            [0, os.path.join(downloadPath, "OgreSDKSetup1.6.1_VC90.exe"), '' ]
+             #[0, unzip + os.path.join(downloadPath,"OgreDependencies_VC9_Eihort_20080203.zip"),
+            #                            os.path.join(os.getcwd(), 'ogre') ],
+            #[0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.0.patch -p0 ", os.getcwd()],
+            #[0,'echo Please use MSVC Express Edition to build Ogre Release.','']
+            ]
 
         # requirements to build a precompiled header on the fly
         if _PreCompiled:
@@ -636,17 +606,17 @@ class ogre:
 
         libs=[boost.lib, 'OgreMain']
         lib_dirs = [ boost.PATH_LIB
-                    ,  Config.PATH_LIB_Ogre_CEGUIRenderer
+#                     ,  Config.PATH_LIB_Ogre_CEGUIRenderer
                     , Config.PATH_LIB_Ogre_OgreMain
-                    , Config.PATH_LIB_Ogre_Dependencies #needed for ceguibase.lib etc
-                    , Config.PATH_LIB_CEGUI
+#                     , Config.PATH_LIB_Ogre_Dependencies #needed for ceguibase.lib etc
+#                     , Config.PATH_LIB_CEGUI
                      ]
         include_dirs = [ Config.PATH_Boost
                     , Config.PATH_INCLUDE_Ogre
-                    , Config.PATH_INCLUDE_NEDMALLOC
+                    #, Config.PATH_INCLUDE_NEDMALLOC
                     ]
         LINKFLAGS = ''
-        externalFiles=['OgreMain.dll', 'OgreGuiRender.dll', boost.lib+'.dll']
+        
     elif isLinux():
         if _STABLE:
             version = "1.4"
@@ -718,13 +688,13 @@ class ogre:
         LINKFLAGS = ''
         cflags += ''
 
-    CheckIncludes=['boost/python.hpp', 'Ogre.h']
+    #CheckIncludes=['boost/python.hpp', 'Ogre.h']
 
 
 class ois:
     active = True
     pythonModule = True
-    version= "1.2"
+    version= "1.0"
     name = 'ois'
     cflags=''
     parent = "ogre/io"
@@ -768,7 +738,8 @@ class ois:
             pchbuild = 'buildpch.cpp'
             pchincludes = ['boost/python.hpp', 'OIS.h']
 
-        libs=['OIS_Static',boost.lib]
+        libs=['OIS',boost.lib]
+        
     else:
         libs=['OIS',boost.lib]
         libs.append ( boost_python_index.lib )
@@ -789,7 +760,7 @@ class ois:
         LINKFLAGS = "-l%s" % boost_python_index.lib
 
 class ogrerefapp:
-    active = True
+    active = False ## making this false as replaced by OgreODE etc..
     pythonModule = True
     version = ogre.version # same as the Ogre version
     name = 'ogrerefapp'
@@ -859,7 +830,7 @@ class ogrenewt:
                     , Config.PATH_Newton   # only one path for Newton
                     , Config.PATH_INCLUDE_Ogre
                     , Config.PATH_INCLUDE_OgreNewt
-                    , Config.PATH_INCLUDE_Ogre_Dependencies  #needed for OIS/OIS.h
+              #      , Config.PATH_INCLUDE_Ogre_Dependencies  #needed for OIS/OIS.h
                     ]
     lib_dirs = [ boost.PATH_LIB
                 ,Config.PATH_LIB_Newton
@@ -880,6 +851,7 @@ class cegui:
     else:
         version = "0.6.2b"
     if isWindows():
+        version = "0.5.0b"   ### I'm forceing this as using the Ogre SDK
         if _PreCompiled:
             pchstop = 'cegui.h'
             pchbuild = 'buildpch.cpp'
@@ -934,7 +906,7 @@ class cegui:
                     ,Config.PATH_CEGUI
                     , Config.PATH_INCLUDE_Ogre_CEGUIRenderer
                     , Config.PATH_INCLUDE_Ogre
-                    , Config.PATH_INCLUDE_Ogre_Dependencies ## needed as OgreCEGUI uses CEGUI/.. in #includes
+                    #, Config.PATH_INCLUDE_Ogre_Dependencies ## needed as OgreCEGUI uses CEGUI/.. in #includes
                     ]
 
     lib_dirs = [ boost.PATH_LIB
@@ -976,7 +948,7 @@ class ode:
     baseDir = os.path.join(os.getcwd(),"ode-0.10.1")
     if not isWindows():
         source = [
-        ["wget", "http://downloads.sourceforge.net/opende/ode-0.10.1.tar.gz",downloadPath]
+        [wget, "http://downloads.sourceforge.net/opende/ode-0.10.1.tar.gz",downloadPath]
         ]
         buildCmds = [
             # FIXME: Should this untar not use the unTarGz method mentioned above?
@@ -990,7 +962,7 @@ class ode:
             ]
     else:
         source = [
-            ["wget", "http://downloads.sourceforge.net/opende/ode-0.10.1.zip",downloadPath]
+            [wget, "http://downloads.sourceforge.net/opende/ode-0.10.1.zip",downloadPath]
         ]
         buildCmds = [
             [0, unzip + os.path.join(downloadPath,"ode-src-0.10.1.zip"), ''],
@@ -1170,7 +1142,7 @@ class betagui:
                 Config.PATH_LIB_OIS
                 ]
     CheckIncludes=[]
-    libs=[  boost.lib, 'OgreMain', 'OIS_Static' ]
+    libs=[  boost.lib, 'OgreMain', 'OIS' ]
     if os.name=="nt":
         libs.append ( "User32" ) # needed for static linking
     else:
@@ -1206,6 +1178,16 @@ class particleuniverse:
     name='particleuniverse'
     parent="ogre/addons"
     cflags=""
+    source = [
+             [wget, "http://www.fxpression.com/files/download/ParticleUniverseV0.81.zip", downloadPath]
+             ]
+
+    buildCmds = [
+#            [0, unzip + os.path.join(downloadPath, "ParticleUniverseV0.81.zip"), Config.PATH_Ogre],
+            [0, "patch -s -N -i " + os.path.join(os.getcwd(),"python-ogre","patch","ParticleUniverse_0.8.patch") + " -p0 ", os.path.join(Config.PATH_Ogre, 'Plugins','ParticleUniverse') ],
+            
+            [0, "echo *** NOW build ParticleUniverse with MSVC from " + Config.PATH_Ogre, '']
+            ]
     include_dirs = [ Config.PATH_Boost,
                     Config.PATH_INCLUDE_Ogre,
                     Config.PATH_INCLUDE_particleuniverse
@@ -1221,7 +1203,7 @@ class particleuniverse:
     ModuleName="particleuniverse"
 
 class nxogre:
-    active = True
+    active = False
     pythonModule = True
     version="0.22T5"
     name='nxogre'
@@ -1549,7 +1531,7 @@ class et:  ## editable terrain
 class bullet:
     active = True
     pythonModule = True
-    version= "2.72"
+    version= "2.73"
     name='bullet'
     base = "bullet-" + version
     baseDir = os.path.join(os.getcwd(), base)
@@ -1572,10 +1554,10 @@ class bullet:
                     ]
     if not isWindows():
         source=[
-            [wget, "http://bullet.googlecode.com/files/"+base+".tgz", downloadPath]
+            [wget, "http://bullet.googlecode.com/files/"+base+"-sp1.tgz", downloadPath]
             ]
         buildCmds = [
-            [0, "tar zxf " +os.path.join(downloadPath, base)+".tgz", ''],
+            [0, "tar zxf " +os.path.join(downloadPath, base)+"-sp1.tgz", ''],
 #            [0, "./autogen.sh", baseDir],
 #            [0, "./configure --prefix=%s " %(PREFIX), baseDir],
             [0, "cmake . -DCMAKE_INSTALL_PREFIX:PATH=%s" % PREFIX, baseDir],
@@ -1588,10 +1570,10 @@ class bullet:
             ]
     else:
         source=[
-        [wget, "http://bullet.googlecode.com/files/"+base+".zip", downloadPath]
+        [wget, "http://bullet.googlecode.com/files/"+base+"-sp1.zip", downloadPath]
         ]
         buildCmds = [
-            [0, unzip +os.path.join(downloadPath, base)+".zip", ''],
+            [0, unzip +os.path.join(downloadPath, base)+"-sp1.zip", ''],
             ]
 
     ModuleName = 'bullet'
@@ -1616,7 +1598,7 @@ class ogrebulletc:  #
                     , Config.PATH_INCLUDE_Bullet
                     , os.path.join(Config.PATH_OgreBullet, 'Collisions' )
                     , Config.PATH_INCLUDE_Ogre
-                    , Config.PATH_INCLUDE_Ogre_Dependencies
+#                     , Config.PATH_INCLUDE_Ogre_Dependencies
                     ]
     lib_dirs = [ boost.PATH_LIB
                 ,Config.PATH_LIB_Bullet
@@ -1654,7 +1636,7 @@ class ogrebulletd:  #
                     , os.path.join(Config.PATH_OgreBullet, 'Collisions' )
                     , os.path.join(Config.PATH_OgreBullet, 'Dynamics' )
                     , Config.PATH_INCLUDE_Ogre
-                    , Config.PATH_INCLUDE_Ogre_Dependencies
+#                     , Config.PATH_INCLUDE_Ogre_Dependencies
                     ]
     lib_dirs = [ boost.PATH_LIB
                 ,Config.PATH_LIB_Bullet
@@ -1766,7 +1748,7 @@ class ogrepcz:
                     ]
     lib_dirs = [boost.PATH_LIB,
                 Config.PATH_LIB_Ogre_OgreMain,
-                os.path.join(Config.PATH_LIB_Ogre_OgreMain, 'OGRE')
+                Config.PATH_LIB_pcz
                 ]
     CheckIncludes=[]
     libs=[  boost.lib, 'Plugin_PCZSceneManager', 'OgreMain' ]

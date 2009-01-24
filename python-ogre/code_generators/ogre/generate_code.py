@@ -271,14 +271,14 @@ def ManualExclude ( mb ):
 #         print "MC:", cls
         if private_decls.is_private( cls ):
             cls.exclude()
-            print '{*} class "%s" is marked as private' % cls.decl_string
+            print '{*} Excluding class "%s" as marked as private' % cls.decl_string
 
     for func in main_ns.calldefs():
         if private_decls.is_private( func ):
             if func.virtuality == declarations.VIRTUALITY_TYPES.PURE_VIRTUAL:
                 continue
             func.exclude()
-            print '{*} function "%s" is marked as internal' % declarations.full_name( func )
+            print '{*} Excluding function "%s" as marked as internal' % declarations.full_name( func )
 
     # this change was for 1.7 but also needed for 1.4
     noncopy=['Camera','Frustum', 'Log' ]

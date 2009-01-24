@@ -131,8 +131,11 @@ def filter_declarations( mb ):
         if 'iterator' in cls.name.lower() :
             cls.exclude()
             print "Excluding Iterator", cls.name
-    CEGUI_ns.class_('OgreCEGUIResourceProvider').exclude() # it's _ogrePrivate..
-    
+            
+    try:  # this is in the newer version of cegui so I'm OK if it fails     
+        CEGUI_ns.class_('OgreCEGUIResourceProvider').exclude() # it's _ogrePrivate..
+    except:
+        pass
     ## Replaced these with 'useful' functions in the handwrappers - take and return python objects
     CEGUI_ns.class_( "Window" ).member_functions("setUserData").exclude()
     CEGUI_ns.class_( "Window" ).member_functions("getUserData").exclude()

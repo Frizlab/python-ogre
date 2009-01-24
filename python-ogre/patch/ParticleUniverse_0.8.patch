@@ -9,10 +9,10 @@ diff -r -U 3 .\include\ParticleUniverseHook.h \development\Particle Universe V0.
  				if (list->empty())
  					return;
  
--				typename std::vector<T*>::iterator it;
--				typename std::vector<T*>::iterator itEnd = list->end();
-+				std::vector<T*>::iterator it;
-+				std::vector<T*>::iterator itEnd = list->end();
+-				std::vector<T*>::iterator it;
+-				std::vector<T*>::iterator itEnd = list->end();
++				typename std::vector<T*>::iterator it;
++				typename std::vector<T*>::iterator itEnd = list->end();
  				for (it = list->begin(); it != itEnd; ++it)
  				{
  					(*it)->_prepare(technique);
@@ -20,10 +20,10 @@ diff -r -U 3 .\include\ParticleUniverseHook.h \development\Particle Universe V0.
  				if (list->empty())
  					return;
  
--				typename std::vector<T*>::iterator it;
--				typename std::vector<T*>::iterator itEnd = list->end();
-+				std::vector<T*>::iterator it;
-+				std::vector<T*>::iterator itEnd = list->end();
+-				std::vector<T*>::iterator it;
+-				std::vector<T*>::iterator itEnd = list->end();
++				typename std::vector<T*>::iterator it;
++				typename std::vector<T*>::iterator itEnd = list->end();
  				for (it = list->begin(); it != itEnd; ++it)
  				{
  					(*it)->_notifyStart();
@@ -31,10 +31,10 @@ diff -r -U 3 .\include\ParticleUniverseHook.h \development\Particle Universe V0.
  				if (list->empty())
  					return;
  
--				typename std::vector<T*>::iterator it;
--				typename std::vector<T*>::iterator itEnd = list->end();
-+				std::vector<T*>::iterator it;
-+				std::vector<T*>::iterator itEnd = list->end();
+-				std::vector<T*>::iterator it;
+-				std::vector<T*>::iterator itEnd = list->end();
++				typename std::vector<T*>::iterator it;
++				typename std::vector<T*>::iterator itEnd = list->end();
  				for (it = list->begin(); it != itEnd; ++it)
  				{
  					(*it)->_notifyStop();
@@ -42,10 +42,10 @@ diff -r -U 3 .\include\ParticleUniverseHook.h \development\Particle Universe V0.
  				if (list->empty())
  					return;
  
--				typename std::vector<T*>::iterator it;
--				typename std::vector<T*>::iterator itEnd = list->end();
-+				std::vector<T*>::iterator it;
-+				std::vector<T*>::iterator itEnd = list->end();
+-				std::vector<T*>::iterator it;
+-				std::vector<T*>::iterator itEnd = list->end();
++				typename std::vector<T*>::iterator it;
++				typename std::vector<T*>::iterator itEnd = list->end();
  				for (it = list->begin(); it != itEnd; ++it)
  				{
  					(*it)->_preProcessParticles(technique, timeElapsed);
@@ -53,10 +53,10 @@ diff -r -U 3 .\include\ParticleUniverseHook.h \development\Particle Universe V0.
  				if (list->empty())
  					return;
  
--				typename std::vector<T*>::iterator it;
--				typename std::vector<T*>::iterator itEnd = list->end();
-+				std::vector<T*>::iterator it;
-+				std::vector<T*>::iterator itEnd = list->end();
+-				std::vector<T*>::iterator it;
+-				std::vector<T*>::iterator itEnd = list->end();
++				typename std::vector<T*>::iterator it;
++				typename std::vector<T*>::iterator itEnd = list->end();
  				for (it = list->begin(); it != itEnd; ++it)
  				{
  					(*it)->_processParticle(particleTechnique, particle, timeElapsed, firstParticle);
@@ -64,10 +64,10 @@ diff -r -U 3 .\include\ParticleUniverseHook.h \development\Particle Universe V0.
  				if (list->empty())
  					return;
  
--				typename std::vector<T*>::iterator it;
--				typename std::vector<T*>::iterator itEnd = list->end();
-+				std::vector<T*>::iterator it;
-+				std::vector<T*>::iterator itEnd = list->end();
+-				std::vector<T*>::iterator it;
+-				std::vector<T*>::iterator itEnd = list->end();
++				typename std::vector<T*>::iterator it;
++				typename std::vector<T*>::iterator itEnd = list->end();
  				for (it = list->begin(); it != itEnd; ++it)
  				{
  					(*it)->_postProcessParticles(technique, timeElapsed);
@@ -78,8 +78,8 @@ diff -r -U 3 .\include\ParticleUniverseSpatialHashTable.h \development\Particle 
  			SpatialHashTable(void) :
  				mTableSize(50),
  				mCellDimension(15),
--				mCellOverlap(5)
-+				mCellOverlap(5),
+-				mCellOverlap(5),
++				mCellOverlap(5)
  			{
  				_initialise();
  			};
@@ -93,8 +93,8 @@ diff -r -U 3 .\src\Externs\ParticleUniverseBoxColliderExtern.cpp \development\Pa
  		if (isAttached())
  		{
  			// Use the position of the parent node in this case.
--			position = getParentNode()->getPosition();
-+			position = getParentNode()->getWorldPosition();
+-			position = getParentNode()->getWorldPosition();
++			position = getParentNode()->getPosition();
  			mDerivedPosition = position;
  			populateAlignedBox(mBox, mDerivedPosition, mWidth, mHeight, mDepth);
  			_calculateBounds();
@@ -105,8 +105,8 @@ diff -r -U 3 .\src\Externs\ParticleUniverseGravityExtern.cpp \development\Partic
  		// Use the position of the parent node in this case.
  		if (isAttached())
  		{
--			position = getParentNode()->getPosition();
-+			position = getParentNode()->getWorldPosition();
+-			position = getParentNode()->getWorldPosition();
++			position = getParentNode()->getPosition();
  			mDerivedPosition = position;
  		}
  	}
@@ -117,8 +117,8 @@ diff -r -U 3 .\src\Externs\ParticleUniverseSphereColliderExtern.cpp \development
  		if (isAttached())
  		{
  			// Use the position of the parent node in this case.
--			position = getParentNode()->getPosition();
-+			position = getParentNode()->getWorldPosition();
+-			position = getParentNode()->getWorldPosition();
++			position = getParentNode()->getPosition();
  			mDerivedPosition = position;
  			mSphere.setCenter(mDerivedPosition);
  		}
@@ -129,8 +129,8 @@ diff -r -U 3 .\src\Externs\ParticleUniverseVortexExtern.cpp \development\Particl
  	{
  		if (isAttached())
  		{
--			position = getParentNode()->getPosition();
-+			position = getParentNode()->getWorldPosition();
+-			position = getParentNode()->getWorldPosition();
++			position = getParentNode()->getPosition();
  			mDerivedPosition = position;
  		}
  	}
@@ -141,8 +141,8 @@ diff -r -U 3 .\src\ParticleUniverseSystem.cpp \development\Particle Universe V0.
  			if (!mTimeController)
  			{
  				mTimeSinceLastVisible = 0;
--				mLastVisibleFrame = Ogre::Root::getSingleton().getNextFrameNumber();
-+				mLastVisibleFrame = Ogre::Root::getSingleton().getCurrentFrameNumber();
+-				mLastVisibleFrame = Ogre::Root::getSingleton().getCurrentFrameNumber();
++				mLastVisibleFrame = Ogre::Root::getSingleton().getNextFrameNumber();
  				Ogre::ControllerManager& controllerManager = Ogre::ControllerManager::getSingleton(); 
  				Ogre::ControllerValueRealPtr particleSystemUpdateValue(new ParticleSystemUpdateValue(this));
  				mTimeController = controllerManager.createFrameTimePassthroughController(particleSystemUpdateValue);
@@ -150,8 +150,8 @@ diff -r -U 3 .\src\ParticleUniverseSystem.cpp \development\Particle Universe V0.
  	void ParticleSystem::_notifyCurrentCamera(Ogre::Camera* cam)
  	{
  		Ogre::MovableObject::_notifyCurrentCamera(cam);
--		mLastVisibleFrame = Ogre::Root::getSingleton().getNextFrameNumber();
-+		mLastVisibleFrame = Ogre::Root::getSingleton().getCurrentFrameNumber();
+-		mLastVisibleFrame = Ogre::Root::getSingleton().getCurrentFrameNumber();
++		mLastVisibleFrame = Ogre::Root::getSingleton().getNextFrameNumber();
  		mTimeSinceLastVisible = 0.0f;
  
  		// Notify all techniques
@@ -159,8 +159,8 @@ diff -r -U 3 .\src\ParticleUniverseSystem.cpp \development\Particle Universe V0.
  		{
  			if (mNonvisibleUpdateTimeoutSet)
  			{
--				long frameDiff = Ogre::Root::getSingleton().getNextFrameNumber() - mLastVisibleFrame;
-+				long frameDiff = Ogre::Root::getSingleton().getCurrentFrameNumber() - mLastVisibleFrame;
+-				long frameDiff = Ogre::Root::getSingleton().getCurrentFrameNumber() - mLastVisibleFrame;
++				long frameDiff = Ogre::Root::getSingleton().getNextFrameNumber() - mLastVisibleFrame;
  				if (frameDiff > 1 || frameDiff < 0)
  				{
  					mTimeSinceLastVisible += timeElapsed;

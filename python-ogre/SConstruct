@@ -50,7 +50,7 @@ Return ('_%(name)s')\n
 def get_ccflags(cls):
     if os.name=='nt':
         CCFLAGS=''
-        CCFLAGS += ' /DBOOST_PYTHON_MAX_ARITY=19 ' 
+        CCFLAGS += ' /DBOOST_PYTHON_MAX_ARITY=19 /DBOOST_PYTHON_NO_PY_SIGNATURES ' 
         CCFLAGS += '  /nologo -Zm200 '
         CCFLAGS += ' /W3 /wd4675' # warning level  -Zc:wchar_t 
         CCFLAGS += ' /TP /MD /Zc:forScope /EHs /c /Ox /Ob2 /Oi /Ot /Oy /GS- /GR '
@@ -59,6 +59,7 @@ def get_ccflags(cls):
             CCFLAGS = ' `pkg-config --cflags OGRE` '        ## needs to change I think :)
             CCFLAGS += ' -I' 
             CCFLAGS += ' -O3 -I./ '
+            CCFLAGS += ' -DBOOST_PYTHON_MAX_ARITY=19 -DBOOST_PYTHON_NO_PY_SIGNATURES ' 
             if cls.ModuleName == 'OGRE':
                 ##### -fvisibility=hidden -finline-limit=20 '
                 #CCFLAGS += ' -fvisibility=hidden -fvisibility-inlines-hidden -DOGRE_GCC_VISIBILITY '

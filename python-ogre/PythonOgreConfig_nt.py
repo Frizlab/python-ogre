@@ -1,6 +1,6 @@
 import os
 
-SDK=False # True ## set to true if buiding from 1.4 release source...
+SDK=True # Changes Ogre include path settings
 
 ## The root directory is where this module is located
 module_dir = os.path.abspath(os.path.dirname(__file__) )
@@ -17,7 +17,7 @@ PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_37_0' ) #-trunk')
 
 ## Path to your boost_pythonxxxx lib file
 PATH_LIB_Boost =    os.path.join(PATH_Boost, 'bin.v2/libs/python/build/msvc-9.0/release/threading-multi')
-PATH_LIB_Boost_STATIC = os.path.join(PATH_Boost, 'bin.v2/libs/python/build/msvc-9.0/release/link-static/threading-multi')
+#PATH_LIB_Boost_STATIC = os.path.join(PATH_Boost, 'bin.v2/libs/python/build/msvc-9.0/release/link-static/threading-multi')
 PATH_LIB_Thread_STATIC = os.path.join(PATH_Boost, 'bin.v2/libs/thread/build/msvc-9.0/release/link-static/threading-multi')
 PATH_LIB_date_time_STATIC = os.path.join(PATH_Boost, 'bin.v2/libs/date_time/build/msvc-9.0/release/link-static/threading-multi')
 # in Linux we need to code in the Relative path for the library
@@ -31,6 +31,7 @@ pyplusplus_install_dir = os.path.join(BASE_DIR, 'pyplusplus')
 ## Parent directories of the libraries
 PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
 PATH_Ogre =         os.path.join(BASE_DIR, 'ogre')
+PATH_Ogre =         "C:\\OgreSDK"
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
 PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.6.2')
 
@@ -84,16 +85,18 @@ PATH_canvas = os.path.join(PATH_THIRDPARTY, 'canvas')
 
 # it's time for the SDK version
 if SDK:
-    PATH_CEGUI =        os.path.join(BASE_DIR, 'ogre')
-    PATH_OIS =          os.path.join(BASE_DIR, 'ogre')
+    PATH_CEGUI =        PATH_Ogre
+    PATH_OIS =          PATH_Ogre
+
     
+        
 ###
 ### these paths assume you've left all the directory structure as standard
 ### Override anything that is different
 ###        
 PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'Samples/Common/CEGUIRenderer/lib')
 PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'lib' )
-PATH_LIB_Ogre_Dependencies =    os.path.join( PATH_Ogre, 'Dependencies/lib/Release')
+PATH_LIB_Ogre_Dependencies =   ""# os.path.join( PATH_Ogre, 'Dependencies/lib/Release')
 PATH_LIB_OgreRefApp =           os.path.join( PATH_Ogre, 'lib')
 PATH_LIB_OgreNewt =             os.path.join( PATH_OgreAddons, 'ogrenewt/OgreNewt_Main/lib/Release') 
 PATH_LIB_Newton =               os.path.join( PATH_Newton ,'dll')  ##NOTE Posix platforms this lives in 'lib-mt'
@@ -114,26 +117,30 @@ PATH_LIB_PhysX =                os.path.join(PATH_PhysX,'lib/win32')
 PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'out/release8/libs' )
 PATH_LIB_Theora=                os.path.join(PATH_Theora, 'bin', 'Release')
 PATH_LIB_ogrevideoffmpeg =      PATH_ogrevideoffmpeg
-# PATH_LIB_ffmpeg=                os.path.join(BASE_DIR, 'ffmpeg', 'lib')
 PATH_LIB_ffmpeg=                os.path.join(PATH_ffmpeg, 'lib')
-
 PATH_LIB_plib =                 PATH_plib
 PATH_LIB_navi=                  os.path.join(PATH_navi, 'lib')
 PATH_LIB_ogredshow =            PATH_ogredshow
 PATH_LIB_particleuniverse =     os.path.join(PATH_particleuniverse, 'bin', 'release')
-if SDK:
-    PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'lib')
-    PATH_LIB_OIS =                  os.path.join( PATH_Ogre, 'Dependencies/lib/Release') ## NOTE Posix platforms this lives in'lib' not 'dll'
-    PATH_LIB_CEGUI =                os.path.join( PATH_Ogre, 'lib' )
-    
 PATH_LIB_opensteer = os.path.join(PATH_opensteer, 'win32','release')
 PATH_LIB_hikari = os.path.join(PATH_hikari ) # , 'lib')
 PATH_LIB_mygui = os.path.join(PATH_mygui, 'MyGUIEngine','lib','Release')
 PATH_LIB_canvas = os.path.join(PATH_canvas )
+PATH_LIB_pcz = os.path.join(PATH_LIB_Ogre_OgreMain, 'OGRE')
+                
+if SDK:
+    PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'lib')
+    PATH_LIB_OIS =                  os.path.join( PATH_Ogre, 'lib') 
+    PATH_LIB_CEGUI =                os.path.join( PATH_Ogre, 'lib' )
+    PATH_LIB_pcz =                os.path.join( PATH_Ogre, 'lib','opt' )
+    
 
+    
+    
+    
 PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include') 
-PATH_INCLUDE_NEDMALLOC=      os.path.join(PATH_Ogre,'OgreMain', 'src', 'nedmalloc')
-PATH_INCLUDE_Ogre_Dependencies =  os.path.join( PATH_Ogre, 'Dependencies/include')
+PATH_INCLUDE_NEDMALLOC=      "" #os.path.join(PATH_Ogre,'OgreMain', 'src', 'nedmalloc')
+PATH_INCLUDE_Ogre_Dependencies =  "" #os.path.join( PATH_Ogre, 'Dependencies/include')
 PATH_INCLUDE_OIS =          os.path.join(PATH_OIS,'includes')    ## Note the plural include's
 PATH_INCLUDE_OgreRefApp =   os.path.join(PATH_Ogre,'ReferenceApplication/ReferenceAppLayer/include') 
 PATH_INCLUDE_OgreNewt =     os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')
@@ -202,7 +209,10 @@ PATH_INCLUDE_opensteer = os.path.join(PATH_opensteer, 'include')
 PATH_INCLUDE_opensteer_opensteer = os.path.join(PATH_opensteer, 'include', 'OpenSteer')
 
 if SDK:
-    PATH_INCLUDE_OIS =          os.path.join(PATH_Ogre,'Dependencies/include/OIS')    ## Note the plural include's
-    PATH_INCLUDE_CEGUI =        os.path.join(PATH_Ogre, 'Dependencies/include/CEGUI')
+    PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'include') 
+    PATH_INCLUDE_OIS =          os.path.join(PATH_Ogre,'include/OIS')   
+    PATH_INCLUDE_CEGUI =        os.path.join(PATH_Ogre, 'include/CEGUI')
+    PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'samples','include')
+    PATH_INCLUDE_ogrepcz = os.path.join(PATH_Ogre,'include', 'opt')
 
     
