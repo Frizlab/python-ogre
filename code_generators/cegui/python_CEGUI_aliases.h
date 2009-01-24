@@ -6,14 +6,15 @@ typedef std::vector<CEGUI::PropertyInitialiser> PropertyInitialiserVector;
 // typedef std::vector<CEGUI::Scheme::UIElementFactory> UIElementFactoryVector;
 // typedef std::vector<CEGUI::Scheme::UIModule> UIModuleVector;
 
-
-
+#if ( CEGUI_VERSION_MINOR > 5 )
+ typedef std::list<CEGUI::OgreCEGUITexture*> OgreCEGUITextureList;
+#endif
 
 
 typedef ::CEGUI::Event::Connection Connection;
 typedef ::CEGUI::Event::Subscriber Subscriber;
 typedef ::CEGUI::EventSet::Iterator EventIterator;
-typedef std::list<CEGUI::OgreCEGUITexture*> OgreCEGUITextureList;
+
 
 typedef ::CEGUI::FontManager::FontIterator FontIterator ;
 typedef ::CEGUI::Imageset::ImageIterator ImageIterator;	

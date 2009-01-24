@@ -10,7 +10,10 @@
 #include "CEGUIXMLAttributes.h" // needed for FontManager
 #include "CEGUIXMLSerializer.h"
 #include "OgreCEGUIRenderer.h"
-#include "OgreCEGUIResourceProvider.h"
+
+#if ( CEGUI_VERSION_MINOR > 5 )
+    #include "OgreCEGUIResourceProvider.h"
+#endif
 
 #include "Ogre.h"   // we need this to fix unexposed stuff..
 
