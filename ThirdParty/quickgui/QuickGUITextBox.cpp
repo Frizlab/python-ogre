@@ -11,7 +11,7 @@ namespace QuickGUI
 
 	void TextBox::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("TextBox");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("TextBox");
 		d->defineSkinElement(BACKGROUND);
 		d->defineSkinElement(TEXTOVERLAY);
 		d->definitionComplete();
@@ -19,39 +19,48 @@ namespace QuickGUI
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("TextBox",d);
 	}
 
-	TextBoxDesc::TextBoxDesc() :
-		WidgetDesc()
+	TextBoxDesc::TextBoxDesc(const Ogre::String& id) :
+		WidgetDesc(id)
 	{
-		cursorBlinkTime = 0.5;
-		defaultColor = Ogre::ColourValue::White;
-		defaultFontName = Root::getSingleton().getDefaultFontName();
-		horizontalTextAlignment = TEXT_ALIGNMENT_HORIZONTAL_LEFT;
-		keyDownTime = 0.6;
-		keyRepeatTime = 0.04;
-		maxCharacters = 255;
+		resetToDefault();
+	}
+
+	void TextBoxDesc::resetToDefault()
+	{
+		WidgetDesc::resetToDefault();
+
+		textbox_cursorBlinkTime = 0.5;
+		textbox_defaultColor = Ogre::ColourValue::White;
+		textbox_defaultFontName = Root::getSingleton().getDefaultFontName();
+		textbox_horizontalTextAlignment = TEXT_ALIGNMENT_HORIZONTAL_LEFT;
+		textbox_keyDownTime = 0.6;
+		textbox_keyRepeatTime = 0.04;
+		textbox_maxCharacters = 255;
 		// 42 happens to be the code point for * on regular english true type fonts
-		maskSymbol = 42;
-		maskText = false;
-		textCursorSkinTypeName = "default";
-		verticalTextAlignment = TEXT_ALIGNMENT_VERTICAL_CENTER;
+		textbox_maskSymbol = 42;
+		textbox_maskText = false;
+		textbox_textCursorDefaultSkinTypeName = "default";
+		textbox_verticalTextAlignment = TEXT_ALIGNMENT_VERTICAL_CENTER;
+
+		textDesc.resetToDefault();
 	}
 
 	void TextBoxDesc::serialize(SerialBase* b)
 	{
 		WidgetDesc::serialize(b);
 
-		b->IO("CursorBlinkTime",&cursorBlinkTime);
-		b->IO("DefaultColor",&defaultColor);
-		b->IO("DefaultFontName",&defaultFontName);
-		b->IO("TBHorizontalTextAlignment",&horizontalTextAlignment);
-		b->IO("KeyDownTime",&keyDownTime);
-		b->IO("KeyRepeatTime",&keyRepeatTime);
-		b->IO("MaskSymbol",static_cast<unsigned short*>(&maskSymbol));
-		b->IO("MaskText",&maskText);
-		b->IO("MaxCharacters",&maxCharacters);
-		b->IO("TextCursorSkinTypeName",&textCursorSkinTypeName);
-		b->IO("TextPosition",&textPosition);
-		b->IO("VerticalTextAlignment",&verticalTextAlignment);
+		b->IO("CursorBlinkTime",&textbox_cursorBlinkTime);
+		b->IO("DefaultColor",&textbox_defaultColor);
+		b->IO("DefaultFontName",&textbox_defaultFontName);
+		b->IO("TBHorizontalTextAlignment",&textbox_horizontalTextAlignment);
+		b->IO("KeyDownTime",&textbox_keyDownTime);
+		b->IO("KeyRepeatTime",&textbox_keyRepeatTime);
+		b->IO("MaskSymbol",static_cast<unsigned short*>(&textbox_maskSymbol));
+		b->IO("MaskText",&textbox_maskText);
+		b->IO("MaxCharacters",&textbox_maxCharacters);
+		b->IO("TextCursorDefaultSkinTypeName",&textbox_textCursorDefaultSkinTypeName);
+		b->IO("TextPosition",&textbox_textPosition);
+		b->IO("VerticalTextAlignment",&textbox_verticalTextAlignment);
 
 		textDesc.serialize(b);
 	}
@@ -65,6 +74,15 @@ namespace QuickGUI
 		mCursorIndex(0)
 	{
 		mSkinElementName = BACKGROUND;
+
+		addWidgetEventHandler(WIDGET_EVENT_CHARACTER_KEY,&TextBox::onCharEntered,this);
+		addWidgetEventHandler(WIDGET_EVENT_KEY_DOWN,&TextBox::onKeyDown,this);
+		addWidgetEventHandler(WIDGET_EVENT_KEY_UP,&TextBox::onKeyUp,this);
+		addWidgetEventHandler(WIDGET_EVENT_KEYBOARD_INPUT_GAIN,&TextBox::onKeyboardInputGain,this);
+		addWidgetEventHandler(WIDGET_EVENT_KEYBOARD_INPUT_LOSE,&TextBox::onKeyboardInputLose,this);
+		addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&TextBox::onMouseButtonDown,this);
+		addWidgetEventHandler(WIDGET_EVENT_MOUSE_CLICK_TRIPLE,&TextBox::onTripleClick,this);
+		addWidgetEventHandler(WIDGET_EVENT_VISIBLE_CHANGED,&TextBox::onVisibleChanged,this);
 	}
 
 	TextBox::~TextBox()
@@ -73,11 +91,11 @@ namespace QuickGUI
 		TimerManager::getSingleton().destroyTimer(mKeyRepeatTimer);
 		TimerManager::getSingleton().destroyTimer(mKeyDownTimer);
 
-		delete mTextCursor;
+		OGRE_DELETE_T(mTextCursor,TextCursor,Ogre::MEMCATEGORY_GENERAL);
 
-		delete mText;
+		OGRE_DELETE_T(mText,Text,Ogre::MEMCATEGORY_GENERAL);
 
-		delete mTextInputValidatorSlot;
+		OGRE_DELETE_T(mTextInputValidatorSlot,TextInputValidatorSlot,Ogre::MEMCATEGORY_GENERAL);
 	}
 
 	void TextBox::_initialize(WidgetDesc* d)
@@ -88,66 +106,48 @@ namespace QuickGUI
 
 		TextBoxDesc* td = dynamic_cast<TextBoxDesc*>(d);
 
-		mTextCursor = new TextCursor();
-		mTextCursor->setSkinType(td->textCursorSkinTypeName);
+		mTextCursor = OGRE_NEW_T(TextCursor,Ogre::MEMCATEGORY_GENERAL)(this);
+		mTextCursor->setSkinType(td->textbox_textCursorDefaultSkinTypeName);
 
-		mDesc->consumeKeyboardEvents = true;
+		mDesc->widget_consumeKeyboardEvents = true;
 
 		mFunctionKeyDownLast = false;
-
-		addWidgetEventHandler(WIDGET_EVENT_CHARACTER_KEY,&TextBox::onCharEntered,this);
-		addWidgetEventHandler(WIDGET_EVENT_KEY_DOWN,&TextBox::onKeyDown,this);
-		addWidgetEventHandler(WIDGET_EVENT_KEY_UP,&TextBox::onKeyUp,this);
-		addWidgetEventHandler(WIDGET_EVENT_KEYBOARD_INPUT_GAIN,&TextBox::onKeyboardInputGain,this);
-		addWidgetEventHandler(WIDGET_EVENT_KEYBOARD_INPUT_LOSE,&TextBox::onKeyboardInputLose,this);
-		addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&TextBox::onMouseButtonDown,this);
-		addWidgetEventHandler(WIDGET_EVENT_MOUSE_CLICK_TRIPLE,&TextBox::onTripleClick,this);
-		addWidgetEventHandler(WIDGET_EVENT_VISIBLE_CHANGED,&TextBox::onVisibleChanged,this);
 
 		// Make a copy of the Text Desc.  The Text object will
 		// modify it directly, which is used for serialization.
 		mDesc->textDesc = td->textDesc;
 
-		setDefaultFont(td->defaultFontName);
-		setDefaultColor(td->defaultColor);
-		mDesc->maxCharacters = td->maxCharacters;
+		setDefaultFont(td->textbox_defaultFontName);
+		setDefaultColor(td->textbox_defaultColor);
+		mDesc->textbox_maxCharacters = td->textbox_maxCharacters;
 
 		// Set a really high width, we want everything on 1 line.
-		mDesc->textDesc.allottedWidth = mDesc->maxCharacters * Text::getGlyphWidth(mDesc->defaultFontName,'0');
+		mDesc->textDesc.allottedWidth = mDesc->textbox_maxCharacters * Text::getGlyphWidth(mDesc->textbox_defaultFontName,'0');
 			
-		mText = new Text(mDesc->textDesc);
+		mText = OGRE_NEW_T(Text,Ogre::MEMCATEGORY_GENERAL)(mDesc->textDesc);
 
-		mDesc->cursorBlinkTime = td->cursorBlinkTime;
-		mDesc->keyDownTime = td->keyDownTime;
-		mDesc->keyRepeatTime = td->keyRepeatTime;
+		mDesc->textbox_cursorBlinkTime = td->textbox_cursorBlinkTime;
+		mDesc->textbox_keyDownTime = td->textbox_keyDownTime;
+		mDesc->textbox_keyRepeatTime = td->textbox_keyRepeatTime;
 
 		TimerDesc timerDesc;
 		timerDesc.repeat = true;
-		timerDesc.timePeriod = mDesc->cursorBlinkTime;
+		timerDesc.timePeriod = mDesc->textbox_cursorBlinkTime;
 		mBlinkTimer = TimerManager::getSingleton().createTimer(timerDesc);
 		mBlinkTimer->setCallback(&TextBox::blinkTimerCallback,this);
 
-		timerDesc.timePeriod = mDesc->keyRepeatTime;
+		timerDesc.timePeriod = mDesc->textbox_keyRepeatTime;
 		mKeyRepeatTimer = TimerManager::getSingleton().createTimer(timerDesc);
 		mKeyRepeatTimer->setCallback(&TextBox::keyRepeatTimerCallback,this);
 
 		timerDesc.repeat = false;
-		timerDesc.timePeriod = mDesc->keyDownTime;
+		timerDesc.timePeriod = mDesc->textbox_keyDownTime;
 		mKeyDownTimer = TimerManager::getSingleton().createTimer(timerDesc);
 		mKeyDownTimer->setCallback(&TextBox::keyDownTimerCallback,this);
 
-		setMaskText(td->maskText,td->maskSymbol);
-		setMaxCharacters(td->maxCharacters);
-		setSkinType(d->skinTypeName);
-	}
-
-	Widget* TextBox::factory(const Ogre::String& widgetName)
-	{
-		Widget* newWidget = new TextBox(widgetName);
-
-		newWidget->_createDescObject("TextBoxDesc");
-
-		return newWidget;
+		setMaskText(td->textbox_maskText,td->textbox_maskSymbol);
+		setMaxCharacters(td->textbox_maxCharacters);
+		setSkinType(d->widget_skinTypeName);
 	}
 
 	Ogre::String TextBox::getClass()
@@ -157,15 +157,39 @@ namespace QuickGUI
 
 	void TextBox::addCharacter(Ogre::UTFString::code_point cp)
 	{
-		if(mText->getLength() >= static_cast<int>(mDesc->maxCharacters))
+		if(mText->getLength() >= static_cast<int>(mDesc->textbox_maxCharacters))
 			return;
 
 		if(mTextInputValidatorSlot != NULL)
-			if(!mTextInputValidatorSlot->isInputValid(cp,mText->getLength() - 1,mText->getText()))
+			if(!mTextInputValidatorSlot->isInputValid(cp,mCursorIndex,mText->getText()))
 				return;
 
-		mText->addCharacter(new Character(cp,mCurrentFont,mDesc->defaultColor),mCursorIndex);
+		mText->addCharacter(OGRE_NEW_T(Character,Ogre::MEMCATEGORY_GENERAL)(cp,mCurrentFont,mDesc->textbox_defaultColor),mCursorIndex);
 		setCursorIndex(mCursorIndex+1);
+	}
+
+	void TextBox::addText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv)
+	{
+		mText->addText(s,fp,cv);
+
+		redraw();
+	}
+
+	void TextBox::addText(Ogre::UTFString s, const Ogre::String& fontName, const Ogre::ColourValue& cv)
+	{
+		addText(s,Text::getFont(fontName),cv);
+	}
+
+	void TextBox::addText(Ogre::UTFString s)
+	{
+		addText(s,mDesc->textbox_defaultFontName,mDesc->textbox_defaultColor);
+	}
+
+	void TextBox::addText(std::vector<TextSegment> segments)
+	{
+		mText->addText(segments);
+
+		redraw();
 	}
 
 	void TextBox::blinkTimerCallback()
@@ -173,29 +197,46 @@ namespace QuickGUI
 		mTextCursor->setVisible(!mTextCursor->getVisible());
 	}
 
+	void TextBox::clearTextInputValidator()
+	{
+		delete mTextInputValidatorSlot;
+		mTextInputValidatorSlot = NULL;
+	}
+
+	void TextBox::clearText()
+	{
+		mText->clearText();
+		
+		setCursorIndex(0);
+
+		mTextCursor->setVisible(false);
+
+		redraw();
+	}
+
 	Ogre::ColourValue TextBox::getDefaultColor()
 	{
-		return mDesc->defaultColor;
+		return mDesc->textbox_defaultColor;
 	}
 
 	Ogre::String TextBox::getDefaultFont()
 	{
-		return mDesc->defaultFontName;
+		return mDesc->textbox_defaultFontName;
 	}
 
 	Ogre::UTFString::code_point TextBox::getMaskSymbol()
 	{
-		return mDesc->maskSymbol;
+		return mDesc->textbox_maskSymbol;
 	}
 
 	bool TextBox::getMaskText()
 	{
-		return mDesc->maskText;
+		return mDesc->textbox_maskText;
 	}
 
 	int TextBox::getMaxCharacters()
 	{
-		return mDesc->maxCharacters;
+		return mDesc->textbox_maxCharacters;
 	}
 
 	Ogre::UTFString TextBox::getText()
@@ -203,9 +244,14 @@ namespace QuickGUI
 		return mText->getText();
 	}
 
+	std::vector<TextSegment> TextBox::getTextSegments()
+	{
+		return mText->getTextSegments();
+	}
+
 	Ogre::String TextBox::getTextCursorSkinType()
 	{
-		return mDesc->textCursorSkinTypeName;
+		return mDesc->textbox_textCursorDefaultSkinTypeName;
 	}
 
 	void TextBox::keyDownTimerCallback()
@@ -235,15 +281,15 @@ namespace QuickGUI
 	{
 		Brush* brush = Brush::getSingletonPtr();
 
-		brush->setFilterMode(mDesc->brushFilterMode);
+		brush->setFilterMode(mDesc->widget_brushFilterMode);
 
 		SkinType* st = mSkinType;
-		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
-			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+		if(!mWidgetDesc->widget_enabled && mWidgetDesc->widget_disabledSkinType != "")
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->widget_disabledSkinType);
 
 		// Draw Background
 
-		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
+		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size),st->getSkinElement(mSkinElementName));
 
 		Ogre::ColourValue prevColor = brush->getColour();
 		Rect prevClipRegion = brush->getClipRegion();
@@ -259,23 +305,23 @@ namespace QuickGUI
 		float textHeight = mText->getTextHeight();
 		float yPos = 0;
 
-		switch(mDesc->verticalTextAlignment)
+		switch(mDesc->textbox_verticalTextAlignment)
 		{
 		case TEXT_ALIGNMENT_VERTICAL_BOTTOM:
-			yPos = mDesc->dimensions.size.height - st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM) - textHeight;
+			yPos = mDesc->widget_dimensions.size.height - st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM) - textHeight;
 			break;
 		case TEXT_ALIGNMENT_VERTICAL_CENTER:
-			yPos = (mDesc->dimensions.size.height / 2.0) - (textHeight / 2.0);
+			yPos = (mDesc->widget_dimensions.size.height / 2.0) - (textHeight / 2.0);
 			break;
 		case TEXT_ALIGNMENT_VERTICAL_TOP:
 			yPos = st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_TOP);
 			break;
 		}
 
-		Point textPosition = clipRegion.position;
-		textPosition.y = yPos;
-		textPosition.translate(mDesc->textPosition);
-		mText->draw(textPosition);
+		Point textbox_textPosition = mTexturePosition;
+		textbox_textPosition.translate(Point(mClientDimensions.position.x,yPos));
+		textbox_textPosition.translate(mDesc->textbox_textPosition);
+		mText->draw(textbox_textPosition);
 
 		// Draw Text Overlay SkinElement
 
@@ -285,7 +331,7 @@ namespace QuickGUI
 
 		brush->setClipRegion(prevClipRegion);
 
-		Brush::getSingleton().setColor(prevColor);
+		brush->setColor(prevColor);
 	}
 
 	void TextBox::onKeyDown(const EventArgs& args)
@@ -360,8 +406,8 @@ namespace QuickGUI
 
 			// Convert relative TextBox position to coordinates relative to Text position
 			Point relativeTextPosition;
-			relativeTextPosition.x = relativePosition.x - mDesc->textPosition.x;
-			relativeTextPosition.y = relativePosition.y - mDesc->textPosition.y;
+			relativeTextPosition.x = relativePosition.x - mDesc->textbox_textPosition.x;
+			relativeTextPosition.y = relativePosition.y - mDesc->textbox_textPosition.y;
 
 			setCursorIndex(mText->getCursorIndexAtPosition(relativeTextPosition));
 		}
@@ -379,7 +425,7 @@ namespace QuickGUI
 
 	void TextBox::onVisibleChanged(const EventArgs& args)
 	{
-		if(!mWidgetDesc->visible)
+		if(!mWidgetDesc->widget_visible)
 		{
 			mBlinkTimer->stop();
 			mTextCursor->setVisible(false);
@@ -457,16 +503,16 @@ namespace QuickGUI
 		// If text fits within TextBox, align text
 		if(mText->getTextWidth() < mClientDimensions.size.width)
 		{
-			switch(mDesc->horizontalTextAlignment)
+			switch(mDesc->textbox_horizontalTextAlignment)
 			{
 			case TEXT_ALIGNMENT_HORIZONTAL_CENTER:
-				mDesc->textPosition.x = (mClientDimensions.size.width - mText->getTextWidth()) / 2.0;
+				mDesc->textbox_textPosition.x = (mClientDimensions.size.width - mText->getTextWidth()) / 2.0;
 				break;
 			case TEXT_ALIGNMENT_HORIZONTAL_LEFT:
-				mDesc->textPosition.x = 0;
+				mDesc->textbox_textPosition.x = 0;
 				break;
 			case TEXT_ALIGNMENT_HORIZONTAL_RIGHT:
-				mDesc->textPosition.x = mClientDimensions.size.width - mText->getTextWidth();
+				mDesc->textbox_textPosition.x = mClientDimensions.size.width - mText->getTextWidth();
 				break;
 			}
 		}
@@ -478,19 +524,19 @@ namespace QuickGUI
 			// X Position of cursor index relative to start of text
 			Point relativeCursorPosition = mText->getPositionAtCharacterIndex(mCursorIndex);
 			// X Position of cursor index relative to TextBox's top left client corner
-			float indexPosition = (relativeCursorPosition.x + mDesc->textPosition.x);
+			float indexPosition = (relativeCursorPosition.x + mDesc->textbox_textPosition.x);
 
 			if(indexPosition < 0)
 			{
-				mDesc->textPosition.x -= indexPosition;
+				mDesc->textbox_textPosition.x -= indexPosition;
 			}
 			else if(indexPosition > mClientDimensions.size.width)
 			{
-				mDesc->textPosition.x -= (indexPosition - mClientDimensions.size.width);
+				mDesc->textbox_textPosition.x -= (indexPosition - mClientDimensions.size.width);
 			}
 		}
 
-		mCursorPosition.x = mDesc->textPosition.x + mText->getPositionAtCharacterIndex(mCursorIndex).x;
+		mCursorPosition.x = mDesc->textbox_textPosition.x + mText->getPositionAtCharacterIndex(mCursorIndex).x;
 
 		// Position Cursor
 		Point p = getScreenPosition();
@@ -502,12 +548,12 @@ namespace QuickGUI
 
 	void TextBox::setDefaultColor(const Ogre::ColourValue& cv)
 	{
-		mDesc->defaultColor = cv;
+		mDesc->textbox_defaultColor = cv;
 	}
 
 	void TextBox::setDefaultFont(const Ogre::String& fontName)
 	{
-		mDesc->defaultFontName = fontName;
+		mDesc->textbox_defaultFontName = fontName;
 		mCurrentFont = Text::getFont(fontName);
 	}
 
@@ -515,7 +561,7 @@ namespace QuickGUI
 	{
 		Widget::setEnabled(enabled);
 
-		if(!mWidgetDesc->enabled)
+		if(!mWidgetDesc->widget_enabled)
 		{
 			if(mBlinkTimer != NULL)
 				mBlinkTimer->stop();
@@ -562,12 +608,12 @@ namespace QuickGUI
 		redraw();
 	}
 
-	void TextBox::setMaskText(bool mask, Ogre::UTFString::code_point maskSymbol)
+	void TextBox::setMaskText(bool mask, Ogre::UTFString::code_point textbox_maskSymbol)
 	{
-		mDesc->maskText = mask;
-		mDesc->maskSymbol = maskSymbol;
+		mDesc->textbox_maskText = mask;
+		mDesc->textbox_maskSymbol = textbox_maskSymbol;
 
-		mText->setMaskText(mask,maskSymbol);
+		mText->setMaskText(mask,textbox_maskSymbol);
 	}
 
 	void TextBox::setMaxCharacters(unsigned int max)
@@ -577,43 +623,61 @@ namespace QuickGUI
 			throw Exception(Exception::ERR_TEXT,"Cannot set max Characters when text exceeds max! (Data loss)","TextBox::setMaxCharacters");
 		}
 
-		mDesc->maxCharacters = max;
+		mDesc->textbox_maxCharacters = max;
 	}
 
 	void TextBox::setParent(Widget* parent)
 	{
 		Widget::setParent(parent);
 
-		if(parent !=  NULL)
-			mWindow->addWindowEventHandler(WINDOW_EVENT_DRAWN,&TextBox::onWindowDrawn,this);
-		else
-			mWindow->removeWindowEventHandler(WINDOW_EVENT_DRAWN,this);
+		if(mWindow != NULL)
+		{
+			if(parent !=  NULL)
+				mWindow->addWindowEventHandler(WINDOW_EVENT_DRAWN,&TextBox::onWindowDrawn,this);
+			else
+				mWindow->removeWindowEventHandler(WINDOW_EVENT_DRAWN,this);
+		}
+	}
+
+	void TextBox::setText(Ogre::UTFString s)
+	{
+		setText(s,Text::getFont(mDesc->textbox_defaultFontName),mDesc->textbox_defaultColor);
 	}
 
 	void TextBox::setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv)
 	{
 		mText->setText(s,fp,cv);
 
+		if(mTextCursor->getVisible())
+			setCursorIndex(mCursorIndex);
+
+		redraw();
+	}
+
+	void TextBox::setText(std::vector<TextSegment> segments)
+	{
+		mText->setText(segments);
+
 		redraw();
 	}
 
 	void TextBox::setHorizontalTextAlignment(HorizontalTextAlignment a)
 	{
-		mDesc->horizontalTextAlignment = a;
+		mDesc->textbox_horizontalTextAlignment = a;
 
 		setCursorIndex(mCursorIndex);
 	}
 
 	void TextBox::setVerticalTextAlignment(VerticalTextAlignment a)
 	{
-		mDesc->verticalTextAlignment = a;
+		mDesc->textbox_verticalTextAlignment = a;
 
 		redraw();
 	}
 
 	void TextBox::setTextCursorSkinType(const Ogre::String type)
 	{
-		mDesc->textCursorSkinTypeName = type;
+		mDesc->textbox_textCursorDefaultSkinTypeName = type;
 
 		mTextCursor->setSkinType(type);
 	}

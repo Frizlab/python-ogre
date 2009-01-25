@@ -87,7 +87,7 @@ namespace QuickGUI
 		*/
 		template<typename T> void setCallback(void (T::*function)(), T* obj)
 		{
-			mCallback = new TimerCallbackPointer<T>(function,obj);
+			mCallback = OGRE_NEW_T(TimerCallbackPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj);
 		}
 		/**
 		* Sets the method to callback when timer has exceeded the set period of time.

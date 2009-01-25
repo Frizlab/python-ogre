@@ -12,7 +12,12 @@ namespace QuickGUI
 			public WindowDesc
 	{
 	public:
-		ModalWindowDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		ModalWindowDesc(const Ogre::String& id);
+		virtual ~ModalWindowDesc() {}
+	public:
 
 		/**
 		* Returns the class of Desc object this is.
@@ -22,9 +27,6 @@ namespace QuickGUI
 		* Returns the class of Widget this desc object is meant for.
 		*/
 		virtual Ogre::String getWidgetClass() { return "ModalWindow"; }
-
-		// Factory method
-		static WidgetDesc* factory() { return new ModalWindowDesc(); }
 
 		/**
 		* Outlines how the desc class is written to XML and read from XML.
@@ -45,8 +47,8 @@ namespace QuickGUI
 		friend class GUIManager;
 		friend class Sheet;
 
-		// Factory method
-		static Widget* factory(const Ogre::String& widgetName);
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**

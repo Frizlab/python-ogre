@@ -2,6 +2,7 @@
 
 #include "QuickGUIButton.h"
 #include "QuickGUICheckBox.h"
+#include "QuickGUIComboBox.h"
 #include "QuickGUIConsole.h"
 #include "QuickGUIHScrollBar.h"
 #include "QuickGUIImage.h"
@@ -19,6 +20,7 @@
 #include "QuickGUITextArea.h"
 #include "QuickGUITextBox.h"
 #include "QuickGUIToolBar.h"
+#include "QuickGUITreeView.h"
 #include "QuickGUIVScrollBar.h"
 
 template<> QuickGUI::Root* Ogre::Singleton<QuickGUI::Root>::ms_Singleton = 0;
@@ -37,69 +39,102 @@ namespace QuickGUI
 			throw Exception(Exception::ERR_INVALID_STATE,"No fonts have been found! At least one font must exist for QuickGUI use!","Root::Root");
 
 		// Initialize all Singleton Manager classes
-		new Brush();
-		new SkinDefinitionManager();
-		new TimerManager();
-		new WidgetFactoryManager();
-		new WidgetDescFactoryManager();
+		OGRE_NEW_T(Brush,Ogre::MEMCATEGORY_GENERAL)();
+		OGRE_NEW_T(FactoryManager,Ogre::MEMCATEGORY_GENERAL)();
+		OGRE_NEW_T(SkinDefinitionManager,Ogre::MEMCATEGORY_GENERAL)();
+		OGRE_NEW_T(TimerManager,Ogre::MEMCATEGORY_GENERAL)();
+		OGRE_NEW_T(SheetManager,Ogre::MEMCATEGORY_GENERAL) ();
 
 		// Register default supported Widget types via FactoryManager
-		WidgetFactoryManager* wfm = WidgetFactoryManager::getSingletonPtr();
-		wfm->registerWidgetFactory("Button",Button::factory);
-		wfm->registerWidgetFactory("CheckBox",CheckBox::factory);
-		wfm->registerWidgetFactory("Console",Console::factory);
-		wfm->registerWidgetFactory("HScrollBar",HScrollBar::factory);
-		wfm->registerWidgetFactory("Image",Image::factory);
-		wfm->registerWidgetFactory("Label",Label::factory);
-		wfm->registerWidgetFactory("List",List::factory);
-		wfm->registerWidgetFactory("ListTextItem",ListTextItem::factory);
-		wfm->registerWidgetFactory("Menu",Menu::factory);
-		wfm->registerWidgetFactory("MenuLabel",MenuLabel::factory);
-		wfm->registerWidgetFactory("MenuPanel",MenuPanel::factory);
-		wfm->registerWidgetFactory("ModalWindow",ModalWindow::factory);
-		wfm->registerWidgetFactory("Panel",Panel::factory);
-		wfm->registerWidgetFactory("ProgressBar",ProgressBar::factory);
-		wfm->registerWidgetFactory("TabControl",TabControl::factory);
-		wfm->registerWidgetFactory("Tab",Tab::factory);
-		wfm->registerWidgetFactory("TabPage",TabPage::factory);
-		wfm->registerWidgetFactory("TextArea",TextArea::factory);
-		wfm->registerWidgetFactory("TextBox",TextBox::factory);
-		wfm->registerWidgetFactory("TitleBar",TitleBar::factory);
-		wfm->registerWidgetFactory("ToolBar",ToolBar::factory);
-		wfm->registerWidgetFactory("VScrollBar",VScrollBar::factory);
-		wfm->registerWidgetFactory("Window",Window::factory);
+		WidgetFactory<Widget>* widgetFactory = FactoryManager::getSingletonPtr()->getWidgetFactory();
+		widgetFactory->registerClass<Button>("Button");
+		widgetFactory->registerClass<CheckBox>("CheckBox");
+		widgetFactory->registerClass<ComboBox>("ComboBox");
+		widgetFactory->registerClass<Console>("Console");
+		widgetFactory->registerClass<HScrollBar>("HScrollBar");
+		widgetFactory->registerClass<Image>("Image");
+		widgetFactory->registerClass<Label>("Label");
+		widgetFactory->registerClass<List>("List");
+		widgetFactory->registerClass<ListTextItem>("ListTextItem");
+		widgetFactory->registerClass<Menu>("Menu");
+		widgetFactory->registerClass<MenuLabel>("MenuLabel");
+		widgetFactory->registerClass<MenuPanel>("MenuPanel");
+		widgetFactory->registerClass<ModalWindow>("ModalWindow");
+		widgetFactory->registerClass<Panel>("Panel");
+		widgetFactory->registerClass<ProgressBar>("ProgressBar");
+		widgetFactory->registerClass<TabControl>("TabControl");
+		widgetFactory->registerClass<Tab>("Tab");
+		widgetFactory->registerClass<TabPage>("TabPage");
+		widgetFactory->registerClass<TextArea>("TextArea");
+		widgetFactory->registerClass<TextBox>("TextBox");
+		widgetFactory->registerClass<TitleBar>("TitleBar");
+		widgetFactory->registerClass<ToolBar>("ToolBar");
+		widgetFactory->registerClass<TreeView>("TreeView");
+		widgetFactory->registerClass<VScrollBar>("VScrollBar");
+		widgetFactory->registerClass<Window>("Window");
 
-		// Register default supported Widget desc types via FactoryManager
-		WidgetDescFactoryManager* wdfm = WidgetDescFactoryManager::getSingletonPtr();
-		wdfm->registerWidgetDescFactory("ButtonDesc",ButtonDesc::factory);
-		wdfm->registerWidgetDescFactory("CheckBoxDesc",CheckBoxDesc::factory);
-		wdfm->registerWidgetDescFactory("ConsoleDesc",ConsoleDesc::factory);
-		wdfm->registerWidgetDescFactory("HScrollBarDesc",HScrollBarDesc::factory);
-		wdfm->registerWidgetDescFactory("ImageDesc",ImageDesc::factory);
-		wdfm->registerWidgetDescFactory("LabelDesc",LabelDesc::factory);
-		wdfm->registerWidgetDescFactory("ListDesc",ListDesc::factory);
-		wdfm->registerWidgetDescFactory("ListTextItemDesc",ListTextItemDesc::factory);
-		wdfm->registerWidgetDescFactory("MenuDesc",MenuDesc::factory);
-		wdfm->registerWidgetDescFactory("MenuLabelDesc",MenuLabelDesc::factory);
-		wdfm->registerWidgetDescFactory("MenuPanelDesc",MenuPanelDesc::factory);
-		wdfm->registerWidgetDescFactory("ModalWindowDesc",ModalWindowDesc::factory);
-		wdfm->registerWidgetDescFactory("PanelDesc",PanelDesc::factory);
-		wdfm->registerWidgetDescFactory("ProgressBarDesc",ProgressBarDesc::factory);
-		wdfm->registerWidgetDescFactory("SheetDesc",SheetDesc::factory);
-		wdfm->registerWidgetDescFactory("TabDesc",TabDesc::factory);
-		wdfm->registerWidgetDescFactory("TabControlDesc",TabControlDesc::factory);
-		wdfm->registerWidgetDescFactory("TabPageDesc",TabPageDesc::factory);
-		wdfm->registerWidgetDescFactory("TextAreaDesc",TextAreaDesc::factory);
-		wdfm->registerWidgetDescFactory("TextBoxDesc",TextBoxDesc::factory);
-		wdfm->registerWidgetDescFactory("TitleBarDesc",TitleBarDesc::factory);
-		wdfm->registerWidgetDescFactory("ToolBarDesc",ToolBarDesc::factory);
-		wdfm->registerWidgetDescFactory("VScrollBarDesc",VScrollBarDesc::factory);
-		wdfm->registerWidgetDescFactory("WindowDesc",WindowDesc::factory);
+		// Register default supported Widget desc types
+		Factory<WidgetDesc>* widgetDescFactory = FactoryManager::getSingletonPtr()->getWidgetDescFactory();
+		widgetDescFactory->registerClass<ButtonDesc>("ButtonDesc");
+		widgetDescFactory->registerClass<CheckBoxDesc>("CheckBoxDesc");
+		widgetDescFactory->registerClass<ComboBoxDesc>("ComboBoxDesc");
+		widgetDescFactory->registerClass<ConsoleDesc>("ConsoleDesc");
+		widgetDescFactory->registerClass<HScrollBarDesc>("HScrollBarDesc");
+		widgetDescFactory->registerClass<ImageDesc>("ImageDesc");
+		widgetDescFactory->registerClass<LabelDesc>("LabelDesc");
+		widgetDescFactory->registerClass<ListDesc>("ListDesc");
+		widgetDescFactory->registerClass<ListTextItemDesc>("ListTextItemDesc");
+		widgetDescFactory->registerClass<MenuDesc>("MenuDesc");
+		widgetDescFactory->registerClass<MenuLabelDesc>("MenuLabelDesc");
+		widgetDescFactory->registerClass<MenuPanelDesc>("MenuPanelDesc");
+		widgetDescFactory->registerClass<ModalWindowDesc>("ModalWindowDesc");
+		widgetDescFactory->registerClass<PanelDesc>("PanelDesc");
+		widgetDescFactory->registerClass<ProgressBarDesc>("ProgressBarDesc");
+		widgetDescFactory->registerClass<SheetDesc>("SheetDesc");
+		widgetDescFactory->registerClass<TabControlDesc>("TabControlDesc");
+		widgetDescFactory->registerClass<TabDesc>("TabDesc");
+		widgetDescFactory->registerClass<TabPageDesc>("TabPageDesc");
+		widgetDescFactory->registerClass<TextAreaDesc>("TextAreaDesc");
+		widgetDescFactory->registerClass<TextBoxDesc>("TextBoxDesc");
+		widgetDescFactory->registerClass<TitleBarDesc>("TitleBarDesc");
+		widgetDescFactory->registerClass<ToolBarDesc>("ToolBarDesc");
+		widgetDescFactory->registerClass<TreeViewDesc>("TreeViewDesc");
+		widgetDescFactory->registerClass<VScrollBarDesc>("VScrollBarDesc");
+		widgetDescFactory->registerClass<WindowDesc>("WindowDesc");
+
+		// Create default Descs for use throughout apps using QuickGUI
+		widgetDescFactory->createInstance("ButtonDesc","DefaultButtonDesc");
+		widgetDescFactory->createInstance("CheckBoxDesc","DefaultCheckBoxDesc");
+		widgetDescFactory->createInstance("ComboBoxDesc","DefaultComboBoxDesc");
+		widgetDescFactory->createInstance("ConsoleDesc","DefaultConsoleDesc");
+		widgetDescFactory->createInstance("HScrollBarDesc","DefaultHScrollBarDesc");
+		widgetDescFactory->createInstance("ImageDesc","DefaultImageDesc");
+		widgetDescFactory->createInstance("LabelDesc","DefaultLabelDesc");
+		widgetDescFactory->createInstance("ListDesc","DefaultListDesc");
+		widgetDescFactory->createInstance("ListTextItemDesc","DefaultListTextItemDesc");
+		widgetDescFactory->createInstance("MenuDesc","DefaultMenuDesc");
+		widgetDescFactory->createInstance("MenuLabelDesc","DefaultMenuLabelDesc");
+		widgetDescFactory->createInstance("MenuPanelDesc","DefaultMenuPanelDesc");
+		widgetDescFactory->createInstance("ModalWindowDesc","DefaultModalWindowDesc");
+		widgetDescFactory->createInstance("PanelDesc","DefaultPanelDesc");
+		widgetDescFactory->createInstance("ProgressBarDesc","DefaultProgressBarDesc");
+		widgetDescFactory->createInstance("SheetDesc","DefaultSheetDesc");
+		widgetDescFactory->createInstance("TabControlDesc","DefaultTabControlDesc");
+		widgetDescFactory->createInstance("TabDesc","DefaultTabDesc");
+		widgetDescFactory->createInstance("TabPageDesc","DefaultTabPageDesc");
+		widgetDescFactory->createInstance("TextAreaDesc","DefaultTextAreaDesc");
+		widgetDescFactory->createInstance("TextBoxDesc","DefaultTextBoxDesc");
+		widgetDescFactory->createInstance("TitleBarDesc","DefaultTitleBarDesc");
+		widgetDescFactory->createInstance("ToolBarDesc","DefaultToolBarDesc");
+		widgetDescFactory->createInstance("TreeViewDesc","DefaultTreeViewDesc");
+		widgetDescFactory->createInstance("VScrollBarDesc","DefaultVScrollBarDesc");
+		widgetDescFactory->createInstance("WindowDesc","DefaultWindowDesc");
 
 		// Register Skin definitions
 		MouseCursor::registerSkinDefinition();
 		Button::registerSkinDefinition();
 		CheckBox::registerSkinDefinition();
+		ComboBox::registerSkinDefinition();
 		Console::registerSkinDefinition();
 		HScrollBar::registerSkinDefinition();
 		Image::registerSkinDefinition();
@@ -121,30 +156,32 @@ namespace QuickGUI
 		TextCursor::registerSkinDefinition();
 		TitleBar::registerSkinDefinition();
 		ToolBar::registerSkinDefinition();
+		TreeView::registerSkinDefinition();
 		VScrollBar::registerSkinDefinition();
 		Window::registerSkinDefinition();
 
 		// Initialize other Singleton classes
-		new ScriptWriter();
-		new SerialWriter();
-		new SerialReader();
+		OGRE_NEW_T(ScriptWriter,Ogre::MEMCATEGORY_GENERAL)();
+		OGRE_NEW_T(SerialWriter,Ogre::MEMCATEGORY_GENERAL)();
+		OGRE_NEW_T(SerialReader,Ogre::MEMCATEGORY_GENERAL)();
 	}
 
 	Root::~Root()
 	{
 		for(std::map<std::string,GUIManager*>::iterator it = mGUIManagers.begin(); it != mGUIManagers.end(); ++it)
-			delete (*it).second;
-		mGUIManagers.clear();		
+			OGRE_DELETE_T((*it).second,GUIManager,Ogre::MEMCATEGORY_GENERAL);
+		mGUIManagers.clear();
 
-		delete WidgetDescFactoryManager::getSingletonPtr();
-		delete WidgetFactoryManager::getSingletonPtr();
-		delete TimerManager::getSingletonPtr();
-		delete Brush::getSingletonPtr();
-		delete SkinDefinitionManager::getSingletonPtr();
-		delete ScriptReader::getSingletonPtr();
-		delete ScriptWriter::getSingletonPtr();
-		delete SerialWriter::getSingletonPtr();
-		delete SerialReader::getSingletonPtr();
+		OGRE_DELETE_T(ScriptReader::getSingletonPtr(),ScriptReader,Ogre::MEMCATEGORY_GENERAL);
+		OGRE_DELETE_T(ScriptWriter::getSingletonPtr(),ScriptWriter,Ogre::MEMCATEGORY_GENERAL);
+		OGRE_DELETE_T(SerialWriter::getSingletonPtr(),SerialWriter,Ogre::MEMCATEGORY_GENERAL);
+		OGRE_DELETE_T(SerialReader::getSingletonPtr(),SerialReader,Ogre::MEMCATEGORY_GENERAL);
+
+		OGRE_DELETE_T(SheetManager::getSingletonPtr(),SheetManager,Ogre::MEMCATEGORY_GENERAL);
+		OGRE_DELETE_T(TimerManager::getSingletonPtr(),TimerManager,Ogre::MEMCATEGORY_GENERAL);
+		OGRE_DELETE_T(FactoryManager::getSingletonPtr(),FactoryManager,Ogre::MEMCATEGORY_GENERAL);
+		OGRE_DELETE_T(Brush::getSingletonPtr(),Brush,Ogre::MEMCATEGORY_GENERAL);
+		OGRE_DELETE_T(SkinDefinitionManager::getSingletonPtr(),SkinDefinitionManager,Ogre::MEMCATEGORY_GENERAL);
 	}
 
 	Root* Root::getSingletonPtr(void) 
@@ -172,7 +209,7 @@ namespace QuickGUI
 				throw Ogre::Exception(Ogre::Exception::ERR_DUPLICATE_ITEM,"A GUIManager with name \"" + d.name + "\" already exists!","Root::createGUIManager");
 		}
 
-		GUIManager* newGUIManager = new GUIManager(d);
+		GUIManager* newGUIManager = OGRE_NEW_T(GUIManager,Ogre::MEMCATEGORY_GENERAL)(d);
 		mGUIManagers[d.name] = newGUIManager;
 
 		return newGUIManager;
@@ -190,7 +227,7 @@ namespace QuickGUI
 	{
 		GUIManager* gm = mGUIManagers[name];
 		mGUIManagers.erase(mGUIManagers.find(name));
-		delete gm;
+		OGRE_DELETE_T(gm,GUIManager,Ogre::MEMCATEGORY_GENERAL);
 	}
 
 	GUIManager* Root::getGUIManager(const std::string& name)
@@ -212,6 +249,11 @@ namespace QuickGUI
 	float Root::getDefaultHoverTime()
 	{
 		return mDefaultHoverTime;
+	}
+
+	void Root::setDefaultFontName(const Ogre::String& fontName)
+	{
+		mDefaultFont = Text::getFont(fontName);
 	}
 
 	void Root::setDefaultHoverTime(float seconds)

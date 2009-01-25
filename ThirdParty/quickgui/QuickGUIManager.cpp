@@ -2,6 +2,8 @@
 #include "QuickGUISerialReader.h"
 #include "QuickGUIRoot.h"
 
+#include "OgreRenderQueue.h"
+
 namespace QuickGUI
 {
 	GUIManagerDesc::GUIManagerDesc()
@@ -67,31 +69,39 @@ namespace QuickGUI
 
 		// Create Default Sheet
 		{
-			SheetDesc d;
-			d.name = "DefaultSheet";
-			d.dimensions.size = Size(mGUIManagerDesc.viewport->getActualWidth(),mGUIManagerDesc.viewport->getActualHeight());
-			mDefaultSheet = new Sheet(d);
+			SheetDesc* d = dynamic_cast<SheetDesc*>(FactoryManager::getSingleton().getWidgetDescFactory()->getInstance("DefaultSheetDesc"));
+			d->resetToDefault();
+			d->widget_name = "DefaultSheet";
+			d->widget_dimensions.size = Size(mGUIManagerDesc.viewport->getActualWidth(),mGUIManagerDesc.viewport->getActualHeight());
+			d->containerwidget_supportScrollBars = false;
+			mDefaultSheet = SheetManager::getSingletonPtr()->createSheet(d);
 			setActiveSheet(mDefaultSheet);
 		}
 
 		d.mouseCursorDesc.guiManager = this;
-		mMouseCursor = new MouseCursor(d.mouseCursorDesc);
+		mMouseCursor = OGRE_NEW_T(MouseCursor,Ogre::MEMCATEGORY_GENERAL)(d.mouseCursorDesc);
 		_clearMouseTrackingData();
 
-		mTimer = new Ogre::Timer();
+		mTimer = OGRE_NEW Ogre::Timer();
 		
 		TimerDesc td;
 		td.repeat = false;
 		td.timePeriod = 3;
 		mHoverTimer = TimerManager::getSingleton().createTimer(td);
+
+		setRenderQueueID(d.queueID);
 	}
 
 	GUIManager::~GUIManager()
 	{
-		delete mDefaultSheet;
+		if(SheetManager::getSingletonPtr()->exists("DefaultSheet"))
+			SheetManager::getSingletonPtr()->destroySheet("DefaultSheet");
 
-		delete mTimer;
 		TimerManager::getSingleton().destroyTimer(mHoverTimer);
+
+		OGRE_DELETE mTimer;
+
+		OGRE_DELETE_T(mMouseCursor,MouseCursor,Ogre::MEMCATEGORY_GENERAL);
 	}
 
 	void GUIManager::_clearMouseTrackingData()
@@ -261,18 +271,6 @@ namespace QuickGUI
 		// Modify the button mask
 		mButtonMask |= (1 << button);
 
-		// Determine if we need to handle closing of Menu's via clicking non menu related widgets.
-		if((mLastClickedWidget != NULL) && mLastClickedWidget->isMenuItem())
-		{
-			if(mWidgetUnderMouseCursor != NULL)
-			{
-				if(!mWidgetUnderMouseCursor->isMenuItem() || (dynamic_cast<MenuItem*>(mWidgetUnderMouseCursor)->getToolBar()->findWidget(mLastClickedWidget->getName()) == NULL))
-				{
-					dynamic_cast<MenuItem*>(mLastClickedWidget)->getToolBar()->closeMenus();
-				}
-			}
-		}
-
 		// Record that the mouse button went down on this widget
 		mMouseButtonDown[button] = mWidgetUnderMouseCursor;
 		mLastClickedWidget = mWidgetUnderMouseCursor;
@@ -294,7 +292,7 @@ namespace QuickGUI
 		// Get the Window under the mouse cursor.  If it is not the Sheet, but a child Window,
 		// make sure it has focus. (bring to front)
 		Window* win = mActiveSheet->findWindowAtPoint(args.position);
-		if(win != mActiveSheet)
+		if(win != mActiveSheet->getWindowInFocus())
 			// FOCUS_GAINED and FOCUS_LOST events will be fired if appropriate.
 			changesMade |= mActiveSheet->focusWindow(win);
 
@@ -675,11 +673,14 @@ namespace QuickGUI
 		mWidgetUnderMouseCursor = mActiveSheet;
 		mLastClickedWidget = NULL;
 
-		Ogre::Viewport* v = mGUIManagerDesc.viewport;
-		if((v != NULL) && (mActiveSheet != NULL))
-			mActiveSheet->setSize(Size(v->getActualWidth(),v->getActualHeight()));
+		if(mActiveSheet != NULL)
+		{
+			Ogre::Viewport* v = mGUIManagerDesc.viewport;
+			if(v != NULL)
+				mActiveSheet->setSize(Size(v->getActualWidth(),v->getActualHeight()));
 
-		mActiveSheet->_setGUIManager(this);
+			mActiveSheet->_setGUIManager(this);
+		}
 	}
 
 	void GUIManager::setRenderQueueID(Ogre::uint8 id)

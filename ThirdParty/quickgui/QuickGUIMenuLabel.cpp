@@ -1,6 +1,5 @@
 #include "QuickGUIMenuLabel.h"
 #include "QuickGUIToolBar.h"
-#include "QuickGUIWidgetDescFactoryManager.h"
 #include "QuickGUISkinDefinitionManager.h"
 
 namespace QuickGUI
@@ -11,7 +10,7 @@ namespace QuickGUI
 
 	void MenuLabel::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("MenuLabel");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("MenuLabel");
 		d->defineSkinElement(DEFAULT);
 		d->defineSkinElement(OVER);
 		d->defineSkinElement(DOWN);
@@ -20,11 +19,19 @@ namespace QuickGUI
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("MenuLabel",d);
 	}
 
-	MenuLabelDesc::MenuLabelDesc() :
-		MenuItemDesc()
+	MenuLabelDesc::MenuLabelDesc(const Ogre::String& id) :
+		MenuItemDesc(id)
 	{
-		verticalTextAlignment = TEXT_ALIGNMENT_VERTICAL_CENTER;
+		resetToDefault();
+	}
 
+	void MenuLabelDesc::resetToDefault()
+	{
+		MenuItemDesc::resetToDefault();
+
+		menulabel_verticalTextAlignment = TEXT_ALIGNMENT_VERTICAL_CENTER;
+
+		textDesc.resetToDefault();
 		textDesc.horizontalTextAlignment = TEXT_ALIGNMENT_HORIZONTAL_LEFT;
 	}
 
@@ -32,7 +39,7 @@ namespace QuickGUI
 	{
 		MenuItemDesc::serialize(b);
 
-		b->IO("VerticalTextAlignment",&verticalTextAlignment);
+		b->IO("VerticalTextAlignment",&menulabel_verticalTextAlignment);
 
 		textDesc.serialize(b);
 	}
@@ -46,7 +53,7 @@ namespace QuickGUI
 
 	MenuLabel::~MenuLabel()
 	{
-		delete mText;
+		OGRE_DELETE_T(mText,Text,Ogre::MEMCATEGORY_GENERAL);
 	}
 
 	void MenuLabel::_initialize(WidgetDesc* d)
@@ -61,25 +68,16 @@ namespace QuickGUI
 		// modify it directly, which is used for serialization.
 		mDesc->textDesc = mld->textDesc;
 
-		setSkinType(d->skinTypeName);
+		setSkinType(d->widget_skinTypeName);
 
 		SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
-		mDesc->textDesc.allottedWidth = mld->dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
+		mDesc->textDesc.allottedWidth = mld->widget_dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
 
 		if(mText != NULL)
-			delete mText;
+			OGRE_DELETE_T(mText,Text,Ogre::MEMCATEGORY_GENERAL);
 
-		mDesc->verticalTextAlignment = mld->verticalTextAlignment;
-		mText = new Text(mDesc->textDesc);
-	}
-
-	Widget* MenuLabel::factory(const Ogre::String& widgetName)
-	{
-		Widget* newWidget = new MenuLabel(widgetName);
-
-		newWidget->_createDescObject("MenuLabelDesc");
-
-		return newWidget;
+		mDesc->menulabel_verticalTextAlignment = mld->menulabel_verticalTextAlignment;
+		mText = OGRE_NEW_T(Text,Ogre::MEMCATEGORY_GENERAL)(mDesc->textDesc);
 	}
 
 	Ogre::String MenuLabel::getClass()
@@ -94,20 +92,20 @@ namespace QuickGUI
 
 	VerticalTextAlignment MenuLabel::getVerticalTextAlignment()
 	{
-		return mDesc->verticalTextAlignment;
+		return mDesc->menulabel_verticalTextAlignment;
 	}
 
 	void MenuLabel::onDraw()
 	{
 		Brush* brush = Brush::getSingletonPtr();
 
-		brush->setFilterMode(mDesc->brushFilterMode);
+		brush->setFilterMode(mDesc->widget_brushFilterMode);
 
 		SkinType* st = mSkinType;
-		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
-			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+		if(!mWidgetDesc->widget_enabled && mWidgetDesc->widget_disabledSkinType != "")
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->widget_disabledSkinType);
 
-		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
+		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size),st->getSkinElement(mSkinElementName));
 
 		Ogre::ColourValue prevColor = brush->getColour();
 		Rect prevClipRegion = brush->getClipRegion();
@@ -117,13 +115,13 @@ namespace QuickGUI
 		float textHeight = mText->getTextHeight();
 		float yPos = 0;
 
-		switch(mDesc->verticalTextAlignment)
+		switch(mDesc->menulabel_verticalTextAlignment)
 		{
 		case TEXT_ALIGNMENT_VERTICAL_BOTTOM:
-			yPos = mDesc->dimensions.size.height - st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM) - textHeight;
+			yPos = mDesc->widget_dimensions.size.height - st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM) - textHeight;
 			break;
 		case TEXT_ALIGNMENT_VERTICAL_CENTER:
-			yPos = (mDesc->dimensions.size.height / 2.0) - (textHeight / 2.0);
+			yPos = (mDesc->widget_dimensions.size.height / 2.0) - (textHeight / 2.0);
 			break;
 		case TEXT_ALIGNMENT_VERTICAL_TOP:
 			yPos = st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_TOP);
@@ -262,7 +260,7 @@ namespace QuickGUI
 
 	void MenuLabel::setVerticalTextAlignment(VerticalTextAlignment a)
 	{
-		mDesc->verticalTextAlignment = a;
+		mDesc->menulabel_verticalTextAlignment = a;
 
 		redraw();
 	}

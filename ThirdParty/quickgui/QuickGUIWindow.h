@@ -20,21 +20,26 @@ namespace QuickGUI
 			public PanelDesc
 	{
 	public:
-		WindowDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		WindowDesc(const Ogre::String& id);
+		virtual ~WindowDesc() {}
+	public:
 
-		bool titleBar;
-		Ogre::String titleBarSkinType;
-		bool titleBarCloseButton;
+		bool					window_titleBar;
+		bool					window_titleBarDragable;
+		Ogre::String			window_titleBarSkinType;
+		bool					window_titleBarCloseButton;
 		/// number of pixels between from the top, bottom, and right of TitleBar right end
-		float titleBarCloseButtonPadding;
-		Ogre::String titleBarCloseButtonSkinType;
+		float					window_titleBarCloseButtonPadding;
+		Ogre::String			window_titleBarCloseButtonSkinType;
 		
 		/// Vertical alignment of text within this widget's client area.
-		VerticalTextAlignment titlebarVerticalTextAlignment;
-
+		VerticalTextAlignment	window_titlebarVerticalTextAlignment;
 
 		/// Describes the Text used in this Window's TitleBar
-		TextDesc titleBarTextDesc;
+		TextDesc				textDesc;
 
 		virtual Ogre::String getClass() { return "WindowDesc"; }
 		/**
@@ -42,8 +47,10 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getWidgetClass() { return "Window"; }
 
-		// Factory method
-		static WidgetDesc* factory() { return new WindowDesc(); }
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
 
 		/**
 		* Outlines how the desc class is written to XML and read from XML.
@@ -68,8 +75,8 @@ namespace QuickGUI
 		friend class Menu;
 		friend class Widget;
 
-		// Factory method
-		static Widget* factory(const Ogre::String& widgetName);
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 		/**
 		* Internal function, do not use.
@@ -94,14 +101,14 @@ namespace QuickGUI
         */
 		template<typename T> void addWindowEventHandler(WindowEvent EVENT, void (T::*function)(const EventArgs&), T* obj)
 		{
-			mWindowEventHandlers[EVENT].push_back(new EventHandlerPointer<T>(function,obj));
+			mWindowEventHandlers[EVENT].push_back(OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
 		}
 		void addWindowEventHandler(WindowEvent EVENT, EventHandlerSlot* function);
 
 		/**
 		* Creates a child ToolBar.
 		*/
-		ToolBar* createToolBar(ToolBarDesc& d);
+		ToolBar* createToolBar(ToolBarDesc* d);
 
 		/**
 		* Event Handler that executes the appropriate User defined Event Handlers for a given event.
@@ -113,6 +120,10 @@ namespace QuickGUI
 		* Returns the class name of this Widget.
 		*/
 		virtual Ogre::String getClass();
+		/**
+		* Returns true if the TitleBar is dragable, false otherwise.
+		*/
+		bool getTitleBarDragable();
 		/**
 		* Gets the TitleBar's text in UTFString form.
 		*/
@@ -143,6 +154,22 @@ namespace QuickGUI
 		* NOTE: The type property determines what is drawn to the screen.
 		*/
 		virtual void setSkinType(const Ogre::String type);
+		/**
+		* Sets whether the titlebar can be dragged, in effect dragging the window.
+		*/
+		void setTitleBarDragable(bool dragable);
+		/**
+		* Sets the text for this object.
+		*/
+		void setTitleBarText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv);
+		/**
+		* Sets the text for this object.
+		*/
+		void setTitleBarText(Ogre::UTFString s, const Ogre::String& fontName, const Ogre::ColourValue& cv);
+		/**
+		* Sets the Text using Text Segments.
+		*/
+		void setTitleBarText(std::vector<TextSegment> segments);
 		/**
 		* Sets all characters of the text to the specified color.
 		*/

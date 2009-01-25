@@ -6,13 +6,21 @@
 namespace QuickGUI
 {
 	// forward declarations
-	class MenuItem;
+	class ListItem;
 
 	class _QuickGUIExport MenuPanelDesc :
 			public WindowDesc
 	{
 	public:
-		MenuPanelDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+//	protected:
+		MenuPanelDesc(const Ogre::String& id);
+		virtual ~MenuPanelDesc() {}
+	public:
+
+		Widget* menupanel_owner;
+		float	menupanel_maxHeight;
 
 		virtual Ogre::String getClass() { return "MenuPanelDesc"; }
 		/**
@@ -20,11 +28,13 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getWidgetClass() { return "MenuPanel"; }
 
-		// Factory method
-		static WidgetDesc* factory() { return new MenuPanelDesc(); }
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
 
 	protected:
-		bool titleBar;
+		bool window_titleBar;
 	};
 
 	class _QuickGUIExport MenuPanel :
@@ -38,9 +48,11 @@ namespace QuickGUI
 	public:
 		// Menu class creates and destroys MenuPanel
 		friend class Menu;
+		// ComboBox class creates and destroys MenuPanel
+		friend class ComboBox;
 	public:
-		// Factory method
-		static Widget* factory(const Ogre::String& widgetName);
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -49,53 +61,45 @@ namespace QuickGUI
 		virtual void _initialize(WidgetDesc* d);
 
 		/**
-		* Adds a MenuItem to this Widget.
+		* Adds a ListItem to this Widget.
 		*/
-		void addMenuItem(MenuItem* i);
+		void addWidget(Widget* w);
 
 		/**
-		* Recursively searches through children and returns first widget found with name given.
-		* NULL is returned if the widget is not found.
+		* Clears all ListItems.
 		*/
-		virtual Widget* findWidget(const Ogre::String& name);
-		/**
-		* Checks if point p is within this widget's dimensions.
-		* NULL is returned if the point is outside dimensions.
-		* If ignoreDisabled is true, disabled widgets are not considered in the search.
-		*/
-		virtual Widget* findWidgetAtPoint(const Point& p, bool ignoreDisabled = true);
+		void clearWidgets();
 
 		/**
 		* Returns the class name of this Widget.
 		*/
 		virtual Ogre::String getClass();
 		/**
-		* Iterates through menu items and returns the y position of where the next menu item would go.
+		* Returns the owner of the MenuPanel.
 		*/
-		float getNextAvailableYPosition();
+		Widget* getOwner();
+
+		/**
+		* Removes a ListItem from this widget;
+		*/
+		void removeWidget(Widget* w);
 
 		/**
 		* Builds the Widget from a ScriptDefinition or Writes the widget to a ScriptDefinition.
 		*/
 		virtual void serialize(SerialBase* b);
-
 		/**
-		* Recalculate Screen and client dimensions and force a redrawing of the widget.
+		* Sets the max height of the MenuPanel.
 		*/
-		virtual void updateTexturePosition();
+		void setMaxHeight(float height);
 
 	protected:
 		MenuPanel(const Ogre::String& name);
 		virtual ~MenuPanel();
 
-		// Windows can be used as a MenuList, but the MenuItems shouldn't be actual
-		// children of the window, so we track them by this list.
-		std::vector<MenuItem*> mMenuItems;
+		MenuPanelDesc* mDesc;
 
-		/**
-		* Prepares the widget for drawing.
-		*/
-		virtual void draw();
+		void _adjustHeight();
 
 		/**
 		* Forcing all ListItems to be the width of client dimensions.
@@ -106,11 +110,10 @@ namespace QuickGUI
 		*/
 		virtual void onDraw();
 
+		void onLoseFocus(const EventArgs& args);
+		void onVisibleChanged(const EventArgs& args);
+
 	private:
-		/**
-		* Similar to ContainerWidget::draw, except also considers MenuItem List.
-		*/
-		void _draw();
 	};
 }
 

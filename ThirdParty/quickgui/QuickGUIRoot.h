@@ -2,13 +2,13 @@
 #define QUICKGUIROOT_H
 
 #include "QuickGUIExportDLL.h"
+#include "QuickGUIFactoryManager.h"
 #include "QuickGUIManager.h"
 #include "QuickGUIScriptReader.h"
 #include "QuickGUIScriptWriter.h"
+#include "QuickGUISheetManager.h"
 #include "QuickGUISkinDefinitionManager.h"
 #include "QuickGUITimerManager.h"
-#include "QuickGUIWidgetFactoryManager.h"
-#include "QuickGUIWidgetDescFactoryManager.h"
 // These widgets are not included by default due to forward declarations
 #include "QuickGUITabControl.h"
 #include "QuickGUITabPage.h"
@@ -40,7 +40,8 @@ namespace QuickGUI
 
 		GUIManager* getGUIManager(const std::string& name);
 		/**
-		* Gets the name of the first font found on initialization of Root.
+		* By default, the name of the first font found on initialization of Root is returned.
+		* The default font name can be changed using "setDefaultFontName"
 		*/
 		Ogre::String getDefaultFontName();
 		/**
@@ -49,6 +50,10 @@ namespace QuickGUI
 		*/
 		float getDefaultHoverTime();
 
+		/**
+		* Sets the default font used by widgets on initialization.
+		*/
+		void setDefaultFontName(const Ogre::String& fontName);
 		/**
 		* Set the number of seconds the cursor has to idle over a widget
 		* before the ON_HOVER event is fired. (Commonly used for tool tips)

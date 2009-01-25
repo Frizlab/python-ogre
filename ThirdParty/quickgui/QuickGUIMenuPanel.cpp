@@ -1,7 +1,7 @@
 #include "QuickGUIMenuPanel.h"
-#include "QuickGUIMenuItem.h"
-#include "QuickGUIWidgetDescFactoryManager.h"
+#include "QuickGUIListItem.h"
 #include "QuickGUISkinDefinitionManager.h"
+#include "QuickGUIManager.h"
 
 namespace QuickGUI
 {
@@ -9,7 +9,7 @@ namespace QuickGUI
 
 	void MenuPanel::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("MenuPanel");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("MenuPanel");
 		d->defineSkinElement(BACKGROUND);
 		d->defineComponent(HSCROLLBAR);
 		d->defineComponent(VSCROLLBAR);
@@ -18,164 +18,97 @@ namespace QuickGUI
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("MenuPanel",d);
 	}
 
-	MenuPanelDesc::MenuPanelDesc() :
-		WindowDesc()
+	MenuPanelDesc::MenuPanelDesc(const Ogre::String& id) :
+		WindowDesc(id)
 	{
-		supportScrollBars = false;
-		titleBar = false;
-		WindowDesc::titleBar = false;
-		resizable = false;
+		resetToDefault();
+	}
+
+	void MenuPanelDesc::resetToDefault()
+	{
+		WindowDesc::resetToDefault();
+
+		menupanel_owner = NULL;
+		menupanel_maxHeight = 0;
+
+		containerwidget_supportScrollBars = true;
+
+		window_titleBar = false;
+
+		WindowDesc::window_titleBar = false;
+
+		widget_resizable = false;
 	}
 
 	MenuPanel::MenuPanel(const Ogre::String& name) :
-		Window(name)
+		Window(name),
+		mDesc(NULL)
 	{
 		mSkinElementName = BACKGROUND;
 
 		addWidgetEventHandler(WIDGET_EVENT_CLIENTSIZE_CHANGED,&MenuPanel::onClientSizeChanged,this);
+		addWindowEventHandler(WINDOW_EVENT_FOCUS_LOST,&MenuPanel::onLoseFocus,this);
+		addWidgetEventHandler(WIDGET_EVENT_VISIBLE_CHANGED,&MenuPanel::onVisibleChanged,this);
 	}
 
 	MenuPanel::~MenuPanel()
 	{
-		for(std::vector<MenuItem*>::iterator it = mMenuItems.begin(); it != mMenuItems.end(); ++it)
-			delete (*it);
+	}
+
+	void MenuPanel::_adjustHeight()
+	{
+		// Update MenuPanel height - for now, just expand to fit all items
+		float totalItemHeight = 0;
+		for(std::vector<Widget*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it)
+		{
+			float y = (*it)->getPosition().y + (*it)->getHeight();
+			if(y > totalItemHeight)
+				totalItemHeight = y;
+		}
+
+		// Adjust Height
+		SkinElement* background = mSkinType->getSkinElement(BACKGROUND);
+		float desiredHeight = totalItemHeight + (background->getBorderThickness(BORDER_TOP) + background->getBorderThickness(BORDER_BOTTOM));
+
+		if(mDesc->menupanel_maxHeight > 0)
+		{
+			if(desiredHeight < mDesc->menupanel_maxHeight)
+				setHeight(desiredHeight);
+			else
+				setHeight(mDesc->menupanel_maxHeight);
+		}
+		else
+			setHeight(desiredHeight);
 	}
 
 	void MenuPanel::_initialize(WidgetDesc* d)
 	{
+		mDesc = dynamic_cast<MenuPanelDesc*>(mWidgetDesc);
+
 		Window::_initialize(d);
 
-		setSkinType(d->skinTypeName);
+		MenuPanelDesc* lpd = dynamic_cast<MenuPanelDesc*>(d);
+
+		mDesc->menupanel_owner = lpd->menupanel_owner;
+		mDesc->menupanel_maxHeight = lpd->menupanel_maxHeight;
+
+		setSkinType(d->widget_skinTypeName);
 	}
 
-	Widget* MenuPanel::factory(const Ogre::String& widgetName)
+	void MenuPanel::addWidget(Widget* w)
 	{
-		Widget* newWidget = new MenuPanel(widgetName);
+		addChild(w);
 
-		newWidget->_createDescObject("MenuPanelDesc");
-
-		return newWidget;
+		_adjustHeight();
 	}
 
-	void MenuPanel::addMenuItem(MenuItem* i)
+	void MenuPanel::clearWidgets()
 	{
-		mMenuItems.push_back(i);
-		// Add the window as the parent, so that the texture position is calculated correctly. (Since its drawn via the MenuPanel)
-		i->setParent(this);
+		//mListItems.clear();
 
-		// Adjust height to fit all MenuItems
-		SkinElement* background = mSkinType->getSkinElement(BACKGROUND);
-		setHeight(getNextAvailableYPosition() + (background->getBorderThickness(BORDER_TOP) + background->getBorderThickness(BORDER_BOTTOM)));
-	}
+		mDesc->widget_dimensions.size.height = 1;
 
-	void MenuPanel::_draw()
-	{
-		// check visibility
-		if( !mWidgetDesc->visible )
-			return;
-
-		Brush* brush = Brush::getSingletonPtr();
-
-		// check and store clip region
-		Rect prevClipRegion = brush->getClipRegion();
-		if ( prevClipRegion.getIntersection(Rect(mTexturePosition,mWidgetDesc->dimensions.size)) == Rect::ZERO )
-			return;
-
-		// draw self
-		onDraw();
-
-		// set clip region to client dimensions
-		Rect clipRegion = mClientDimensions;
-		clipRegion.translate(mTexturePosition);
-		brush->setClipRegion(clipRegion);
-
-		// draw components
-		for(std::map<Ogre::String,Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
-			(*it).second->draw();
-
-		// draw children
-		for(std::vector<Widget*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it)
-			(*it)->draw();
-
-		// draw menu items
-		for(std::vector<MenuItem*>::iterator it = mMenuItems.begin(); it != mMenuItems.end(); ++it)
-			(*it)->draw();
-
-		// restore clip region
-		brush->setClipRegion(prevClipRegion);
-	}
-
-	void MenuPanel::draw()
-	{
-		if(!mWidgetDesc->visible)
-			return;
-
-		Brush* brush = Brush::getSingletonPtr();
-
-		if(mDirty)
-		{
-			// resizeRenderTarget
-			resizeRenderTarget();
-
-			// setRenderTarget
-			brush->setRenderTarget(mTexture);
-
-			// clearRenderTarget
-			brush->clear();
-
-			// update the texture!
-			_draw();
-
-			mDirty = false;
-		}
-		
-		brush->setRenderTarget(NULL);
-		brush->setTexture(mTexture);
-		brush->drawRectangle(mWidgetDesc->dimensions,UVRect(0,0,1,1));
-	}
-
-	Widget* MenuPanel::findWidget(const Ogre::String& name)
-	{
-		for(std::vector<Widget*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it)
-			if((*it)->getName() == name)
-				return (*it);
-
-		for(std::vector<MenuItem*>::iterator it = mMenuItems.begin(); it != mMenuItems.end(); ++it)
-			if((*it)->getName() == name)
-				return (*it);
-
-		return ComponentWidget::findWidget(name);
-	}
-
-	Widget* MenuPanel::findWidgetAtPoint(const Point& p, bool ignoreDisabled)
-	{
-		Widget* w = Widget::findWidgetAtPoint(p,ignoreDisabled);
-
-		if(w != NULL)
-		{
-			for(std::vector<Widget*>::reverse_iterator it = mChildren.rbegin(); it != mChildren.rend(); ++it)
-			{
-				Widget* w = (*it)->findWidgetAtPoint(p,ignoreDisabled);
-				if(w != NULL)
-					return w;
-			}
-
-			for(std::map<Ogre::String,Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
-			{
-				Widget* w = (*it).second->findWidgetAtPoint(p,ignoreDisabled);
-				if(w != NULL)
-					return w;
-			}
-
-			for(std::vector<MenuItem*>::reverse_iterator it = mMenuItems.rbegin(); it != mMenuItems.rend(); ++it)
-			{
-				Widget* w = (*it)->findWidgetAtPoint(p,ignoreDisabled);
-				if(w != NULL)
-					return w;
-			}
-		}
-		
-		return w;
+		redraw();
 	}
 
 	Ogre::String MenuPanel::getClass()
@@ -183,37 +116,68 @@ namespace QuickGUI
 		return "MenuPanel";
 	}
 
+	Widget* MenuPanel::getOwner()
+	{
+		return mDesc->menupanel_owner;
+	}
+
 	void MenuPanel::onDraw()
 	{
 		SkinType* st = mSkinType;
-		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
-			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+		if(!mWidgetDesc->widget_enabled && mWidgetDesc->widget_disabledSkinType != "")
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->widget_disabledSkinType);
 
 		Brush* brush = Brush::getSingletonPtr();
 
-		brush->setFilterMode(mDesc->brushFilterMode);
+		brush->setFilterMode(mDesc->widget_brushFilterMode);
 
-		brush->drawSkinElement(Rect(Point::ZERO,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
-	}
-
-	float MenuPanel::getNextAvailableYPosition()
-	{
-		float maxY = 0;
-		for(std::vector<MenuItem*>::iterator it = mMenuItems.begin(); it != mMenuItems.end(); ++it)
-		{
-			if(((*it)->getPosition().y + (*it)->getSize().height) > maxY)
-				maxY = ((*it)->getPosition().y + (*it)->getSize().height);
-		}
-
-		return maxY;
+		brush->drawSkinElement(Rect(Point::ZERO,mWidgetDesc->widget_dimensions.size),st->getSkinElement(mSkinElementName));
 	}
 
 	void MenuPanel::onClientSizeChanged(const EventArgs& args)
 	{
-		for(std::vector<MenuItem*>::iterator it = mMenuItems.begin(); it != mMenuItems.end(); ++it)
+		for(std::vector<Widget*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it)
 		{
 			(*it)->setWidth(mClientDimensions.size.width);
 		}
+	}
+
+	void MenuPanel::onLoseFocus(const EventArgs& args)
+	{
+		if(mDesc->menupanel_owner != NULL)
+		{
+			Ogre::String ownerClass = mDesc->menupanel_owner->getClass();
+			if(ownerClass == "Menu")
+			{
+				ToolBar* tb = dynamic_cast<Menu*>(mDesc->menupanel_owner)->getToolBar();
+				if(tb->findWidget(mDesc->guiManager->getLastClickedWidget()->getName()) == NULL)
+					tb->closeMenus();
+			}
+			else if(ownerClass == "ComboBox")
+			{
+				ComboBox* cb = dynamic_cast<ComboBox*>(mDesc->menupanel_owner);
+
+				// If we click a widget other than the combobox, hide the list.
+				// If we did click the combobox, the combobox will hide the list automatically.
+				if((mDesc->guiManager->getLastClickedWidget() != NULL) && (cb->findWidget(mDesc->guiManager->getLastClickedWidget()->getName()) == NULL))
+					cb->hideDropDownList();
+			}
+		}
+	}
+
+	void MenuPanel::onVisibleChanged(const EventArgs& args)
+	{
+		if(mDesc->widget_visible)
+		{
+			mDesc->sheet->focusWindow(this);
+		}
+	}
+
+	void MenuPanel::removeWidget(Widget* w)
+	{			
+		removeChild(w);
+
+		_adjustHeight();
 	}
 
 	void MenuPanel::serialize(SerialBase* b)
@@ -221,21 +185,10 @@ namespace QuickGUI
 		// Empty on purpose! MenuPanels don't serialize to disk.
 	}
 
-	void MenuPanel::updateTexturePosition()
+	void MenuPanel::setMaxHeight(float height)
 	{
-		// Remember that Windows are their own texture, thus their "screen" position is zero.
+		mDesc->menupanel_maxHeight = height;
 
-		mTexturePosition = Point::ZERO;
-
-		for(std::map<Ogre::String,Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
-			(*it).second->updateTexturePosition();
-
-		for(std::vector<Widget*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it)
-			(*it)->updateTexturePosition();
-
-		for(std::vector<MenuItem*>::iterator it = mMenuItems.begin(); it != mMenuItems.end(); ++it)
-			(*it)->updateTexturePosition();
-
-		redraw();
+		_adjustHeight();
 	}
 }

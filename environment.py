@@ -1157,7 +1157,7 @@ class betagui:
 class ogreforests:
     active = True
     pythonModule = True
-    version="r2530"
+    version="r2615"
     name='ogreforests'
     parent="ogre/addons"
     cflags=""
@@ -1592,7 +1592,7 @@ class ogrebulletc:  #
     cflags = ""
     parent = "ogre/physics"
     libs = [boost.lib,  'OgreMain',
-        'LibBulletCollision', 'LibBulletDynamics','LibBulletMultiThreaded','LibBulletSoftBody'
+        'LibBulletCollision', 'LibBulletDynamics','LibBulletMultiThreaded','LibBulletSoftBody','LibGIMPACT'
         ]
     if isLinux():
        libs.append('LibLinearMath')
@@ -1603,6 +1603,7 @@ class ogrebulletc:  #
                     , os.path.join(Config.PATH_OgreBullet, 'Collisions' )
                     , Config.PATH_INCLUDE_Ogre
                     , Config.PATH_INCLUDE_Ogre_Dependencies
+                    ,os.path.join(Config.PATH_Bullet, 'Extras','GIMPACT','include')
                     ]
     lib_dirs = [ boost.PATH_LIB
                 ,Config.PATH_LIB_Bullet
@@ -1625,7 +1626,8 @@ class ogrebulletd:  #
     cflags = ""
     parent = "ogre/physics"
         
-    libs=[boost.lib, 'OgreMain', 'LibBulletCollision', 'LibBulletDynamics','LibBulletSoftBody','LibBulletMultiThreaded']
+    libs=[boost.lib, 'OgreMain', 'LibBulletCollision', 'LibBulletDynamics','LibBulletSoftBody',
+                    'LibBulletMultiThreaded','LibGIMPACT']
     if isWindows():
         libs.append('libbulletMath')
     else:
@@ -1641,6 +1643,7 @@ class ogrebulletd:  #
                     , os.path.join(Config.PATH_OgreBullet, 'Dynamics' )
                     , Config.PATH_INCLUDE_Ogre
                     , Config.PATH_INCLUDE_Ogre_Dependencies
+                    ,os.path.join(Config.PATH_Bullet, 'Extras','GIMPACT','include')
                     ]
     lib_dirs = [ boost.PATH_LIB
                 ,Config.PATH_LIB_Bullet

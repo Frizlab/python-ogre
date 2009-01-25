@@ -33,6 +33,10 @@ namespace QuickGUI
 		bool empty();
 
 		/**
+		* Returns the character at the index given.
+		*/
+		Character* getCharacter(int index);
+		/**
 		* Returns the index of the character closest to point p. If p is to the left
 		* of the TextLine, index 0 is returned.  If p is to the right of the TextLine,
 		* index (length - 1) is returned.

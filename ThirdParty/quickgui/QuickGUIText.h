@@ -48,6 +48,7 @@ namespace QuickGUI
 		TextDesc();
 
 		float allottedWidth;
+		BrushFilterMode	brushFilterMode;
 		HorizontalTextAlignment horizontalTextAlignment;
 		float verticalLineSpacing;
 		std::vector<TextSegment> segments;
@@ -68,6 +69,11 @@ namespace QuickGUI
 		* Returns the width of the Text if it were treated as one line of text.
 		*/
 		float getTextWidth();
+
+		/**
+		* Restore properties to default values
+		*/
+		void resetToDefault();
 
 		/**
 		* Outlines how the desc class is written to XML and read from XML.
@@ -194,6 +200,14 @@ namespace QuickGUI
 		* Returns the pixel width of a particular string of text for a specified font.
 		*/
 		static float getTextWidth(Ogre::FontPtr fp, Ogre::UTFString s);
+		/**
+		* Saves a font texture to file.
+		*/
+		static void saveFontTextureToFile(const Ogre::String& fontName, const Ogre::String& fileName);
+		/**
+		* Saves a font texture to file.
+		*/
+		static void saveFontTextureToFile(Ogre::FontPtr fp, const Ogre::String& fileName);
 	public:
 		Text(TextDesc& d);
 		~Text();
@@ -208,11 +222,31 @@ namespace QuickGUI
 		* NOTE: The Text class will delete characters on destruction.
 		*/
 		void addCharacter(Character* c);
+		/**
+		* Adds text to this object.
+		*/
+		void addText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv);
+		/**
+		* Adds Text using Text Segments.
+		*/
+		void addText(std::vector<TextSegment> segments);
+		/**
+		* Adds new line of text to this object.
+		*/
+		void addTextLine(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv);
+		/**
+		* Adds new line of Text using Text Segments.
+		*/
+		void addTextLine(std::vector<TextSegment> segments);
 
 		/**
 		* Removes all highlighting from text.
 		*/
 		void clearHighlights();
+		/**
+		* Clears text.
+		*/
+		void clearText();
 
 		/**
 		* Draws the text to the current render target.
@@ -230,9 +264,18 @@ namespace QuickGUI
 		*/
 		float getAllottedWidth();
 		/**
+		* Returns the filtering used when drawing the skin of this widget.
+		*/
+		BrushFilterMode getBrushFilterMode();
+		/**
 		* Returns the Character at the given index.
 		*/
 		Character* getCharacter(unsigned int index);
+		/**
+		* Returns the position of the character given relative to the Text.
+		* NOTE: The position of the Character class is relative to its TextLine.
+		*/
+		Point getCharacterPosition(unsigned int index);
 		/**
 		* Returns the y position of the character given relative to the Text.
 		* NOTE: The y position of the Character class is relative to its TextLine.
@@ -258,6 +301,14 @@ namespace QuickGUI
 		*/
 		int getIndexOfPreviousWord(unsigned int index);
 		/**
+		* Returns the index of the last character in the TextLine with the index given.
+		*/
+		int getIndexOfTextLineBegin(unsigned int index);
+		/**
+		* Returns the index of the first character in the TextLine with the index given.
+		*/
+		int getIndexOfTextLineEnd(unsigned int index);
+		/**
 		* Returns the number of characters in this Text.
 		*/
 		int getLength();
@@ -282,6 +333,18 @@ namespace QuickGUI
 		* NOTE: the allotted width affects the number of TextLines generated, which affects the height.
 		*/
 		float getTextHeight();
+		/**
+		* Returns the TextLine from the Character index given.
+		*/
+		TextLine* getTextLineFromIndex(unsigned int index);
+		/**
+		* Returns the index of the first character in the TextLine given.
+		*/
+		int getTextLineBeginIndex(TextLine* textLine);
+		/**
+		* Returns the index of the last character in the TextLine given.
+		*/
+		int getTextLineEndIndex(TextLine* textLine);
 		/**
 		* Returns the width of text as if it were all on one line.
 		*/
@@ -329,6 +392,10 @@ namespace QuickGUI
 		* when the allotted width is smaller than the width of the text.
 		*/
 		void setAllottedWidth(float pixelWidth);
+		/**
+		* Sets the filtering used when drawing the text.
+		*/
+		void setBrushFilterMode(BrushFilterMode m);
 		/**
 		* Sets all characters of the text to the specified color.
 		*/
@@ -381,6 +448,10 @@ namespace QuickGUI
 		* Sets the text for this object.
 		*/
 		void setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv);
+		/**
+		* Sets the Text using Text Segments.
+		*/
+		void setText(std::vector<TextSegment> segments);
 		/**
 		* Sets the Horizontal alignment of Text when drawn.
 		*/

@@ -633,6 +633,23 @@ public:
 	*/
 	void resetPreloadedGeometry();
 
+	/**
+	\brief Hides or unhides all geometry managed by this PagedGeometry instance
+	\params visible Whether or not you want this PagedGeometry to be visible
+
+	By default everything is visible. This can be used to hide an entire PagedGeometry
+	"group" of geometry if desired.
+	*/
+	void setVisible(bool visible) { geometryAllowedVisible = visible; }
+
+	/**
+	\brief Returns whether or not geometry managed by this PagedGeometry instance is visible
+
+	By default, everything will be visible of course. This function simply returns the
+	visible/invisible state as set by the setVisible() command.
+	*/
+	bool getVisible() { return geometryAllowedVisible; }
+
 	/*
 	\brief Immediately loads visible geometry.
 	\param maxTime The maximum amount of time (in milliseconds) which cacheGeometry()
@@ -719,34 +736,36 @@ protected:
 	//Internal function - do not use
 	void _addDetailLevel(GeometryPageManager *mgr, Ogre::Real maxRange, Ogre::Real transitionLength);
 
-	Ogre::SceneManager*			sceneMgr;
-	Ogre::SceneNode*				rootNode;				//PagedGeometry's own "root" node
+	Ogre::SceneManager *sceneMgr;
+	Ogre::SceneNode *rootNode;				//PagedGeometry's own "root" node
+
+	bool geometryAllowedVisible;	//If set to false, all geometry managed by this PagedGeometry is hidden
 
 	#ifdef PAGEDGEOMETRY_ALTERNATE_COORDSYSTEM
-	Ogre::Quaternion				coordinateSystemQuat;	//The orientation of rootNode
+	Ogre::Quaternion coordinateSystemQuat;	//The orientation of rootNode
 	#endif
 
 	//Camera data
-	Ogre::Camera*					sceneCam;
-	Ogre::Vector3					oldCamPos;
+	Ogre::Camera *sceneCam;
+	Ogre::Vector3 oldCamPos;
 
-	Ogre::Camera*					lastSceneCam;
-	Ogre::Vector3					lastOldCamPos;
+	Ogre::Camera *lastSceneCam;
+	Ogre::Vector3 lastOldCamPos;
 
 	//This list keeps track of all the GeometryPageManager's added with addPageManager()
-	std::list<GeometryPageManager *> managerList;
+	std::list<GeometryPageManager*> managerList;
 
 	//The assigned PageLoader used to load entities
-	PageLoader*						pageLoader;
+	PageLoader *pageLoader;
 
 	//The bounds and page size
-	TBounds							m_bounds;
+	TBounds m_bounds;
 	//The page size
-	Ogre::Real						pageSize;
+	Ogre::Real pageSize;
 
 	//Time-related data
-	Ogre::Timer						timer;
-	unsigned long					lastTime;
+	Ogre::Timer timer;
+	unsigned long lastTime;
 
 private:
 	std::map<std::string, float> customParam;
@@ -897,7 +916,7 @@ public:
 	Do not leave any remains of the entities in memory after this function is called.
 	One of the advantages of using paged geometry is that you can have near-infinite
 	game worlds, which would normally exceed a computer's RAM capacity. This advantage
-	would completely dissappear if you did not clean up properly when the page manager
+	would completely disappear if you did not clean up properly when the page manager
 	calls this function.
 	*/
 	virtual void removeEntities() = 0;

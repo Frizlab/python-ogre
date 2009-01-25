@@ -5,7 +5,7 @@ namespace QuickGUI
 {
 	void ListTextItem::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("ListTextItem");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("ListTextItem");
 		d->defineSkinElement(DEFAULT);
 		d->defineSkinElement(OVER);
 		d->defineSkinElement(SELECTED);
@@ -14,17 +14,25 @@ namespace QuickGUI
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("ListTextItem",d);
 	}
 
-	ListTextItemDesc::ListTextItemDesc() :
-		ListItemDesc()
+	ListTextItemDesc::ListTextItemDesc(const Ogre::String& id) :
+		ListItemDesc(id)
 	{
-		verticalTextAlignment = TEXT_ALIGNMENT_VERTICAL_CENTER;
+		resetToDefault();
+	}
+
+	void ListTextItemDesc::resetToDefault()
+	{
+		ListItemDesc::resetToDefault();
+
+		listtextitem_verticalTextAlignment = TEXT_ALIGNMENT_VERTICAL_CENTER;
+		textDesc.resetToDefault();
 	}
 
 	void ListTextItemDesc::serialize(SerialBase* b)
 	{
 		ListItemDesc::serialize(b);
 
-		b->IO("VerticalTextAlignment",&verticalTextAlignment);
+		b->IO("VerticalTextAlignment",&listtextitem_verticalTextAlignment);
 
 		textDesc.serialize(b);
 	}
@@ -38,7 +46,7 @@ namespace QuickGUI
 
 	ListTextItem::~ListTextItem()
 	{
-		delete mText;
+		OGRE_DELETE_T(mText,Text,Ogre::MEMCATEGORY_GENERAL);
 	}
 
 	void ListTextItem::_initialize(WidgetDesc* d)
@@ -49,25 +57,16 @@ namespace QuickGUI
 
 		ListTextItemDesc* ltid = dynamic_cast<ListTextItemDesc*>(d);
 
-		setSkinType(d->skinTypeName);
+		setSkinType(d->widget_skinTypeName);
 
 		// Make a copy of the Text Desc.  The Text object will
 		// modify it directly, which is used for serialization.
 		mDesc->textDesc = ltid->textDesc;
-		mDesc->verticalTextAlignment = ltid->verticalTextAlignment;
-		mText = new Text(mDesc->textDesc);
+		mDesc->listtextitem_verticalTextAlignment = ltid->listtextitem_verticalTextAlignment;
+		mText = OGRE_NEW_T(Text,Ogre::MEMCATEGORY_GENERAL)(mDesc->textDesc);
 
 		mCurrentFontName = Text::getFirstAvailableFont()->getName();
 		mCurrentColourValue = Ogre::ColourValue::White;
-	}
-
-	Widget* ListTextItem::factory(const Ogre::String& widgetName)
-	{
-		Widget* newWidget = new ListTextItem(widgetName);
-		
-		newWidget->_createDescObject("ListTextItemDesc");
-
-		return newWidget;
 	}
 
 	Ogre::String ListTextItem::getClass()
@@ -84,13 +83,13 @@ namespace QuickGUI
 	{
 		Brush* brush = Brush::getSingletonPtr();
 
-		brush->setFilterMode(mDesc->brushFilterMode);
+		brush->setFilterMode(mDesc->widget_brushFilterMode);
 
 		SkinType* st = mSkinType;
-		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
-			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+		if(!mWidgetDesc->widget_enabled && mWidgetDesc->widget_disabledSkinType != "")
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->widget_disabledSkinType);
 
-		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
+		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size),st->getSkinElement(mSkinElementName));
 
 		Ogre::ColourValue prevColor = brush->getColour();
 		Rect prevClipRegion = brush->getClipRegion();
@@ -100,13 +99,13 @@ namespace QuickGUI
 		float textHeight = mText->getTextHeight();
 		float yPos = 0;
 
-		switch(mDesc->verticalTextAlignment)
+		switch(mDesc->listtextitem_verticalTextAlignment)
 		{
 		case TEXT_ALIGNMENT_VERTICAL_BOTTOM:
-			yPos = mDesc->dimensions.size.height - st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM) - textHeight;
+			yPos = mDesc->widget_dimensions.size.height - st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM) - textHeight;
 			break;
 		case TEXT_ALIGNMENT_VERTICAL_CENTER:
-			yPos = (mDesc->dimensions.size.height / 2.0) - (textHeight / 2.0);
+			yPos = (mDesc->widget_dimensions.size.height / 2.0) - (textHeight / 2.0);
 			break;
 		case TEXT_ALIGNMENT_VERTICAL_TOP:
 			yPos = st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_TOP);
@@ -221,10 +220,17 @@ namespace QuickGUI
 		setText(s,mCurrentFontName,mCurrentColourValue);
 	}
 
+	void ListTextItem::setText(std::vector<TextSegment> segments)
+	{
+		mText->setText(segments);
+
+		redraw();
+	}
+
 	void ListTextItem::setWidth(float pixelWidth)
 	{
 		ListItem::setWidth(pixelWidth);
 
-		mText->setAllottedWidth(mDesc->dimensions.size.width);
+		mText->setAllottedWidth(mDesc->widget_dimensions.size.width);
 	}
 }

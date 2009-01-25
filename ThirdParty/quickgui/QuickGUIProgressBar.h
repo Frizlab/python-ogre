@@ -14,17 +14,22 @@ namespace QuickGUI
 			public WidgetDesc
 	{
 	public:
-		ProgressBarDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		ProgressBarDesc(const Ogre::String& id);
+		virtual ~ProgressBarDesc() {}
+	public:
 
-		ProgressBarFillDirection fillDirection;
-		ProgressBarLayout layout;
-		ProgressBarClippingEdge clippingEdge;
+		ProgressBarFillDirection progressbar_fillDirection;
+		ProgressBarLayout progressbar_layout;
+		ProgressBarClippingEdge progressbar_clippingEdge;
 
-		/// Percentage of progress of the bar. (0-100)
-		float progress;
+		/// Percentage of progressbar_progress of the bar. (0-100)
+		float progressbar_progress;
 
 		/// Vertical alignment of text within this widget's client area.
-		VerticalTextAlignment verticalTextAlignment;
+		VerticalTextAlignment progressbar_verticalTextAlignment;
 
 		/// Describes the Text used in this Label
 		TextDesc textDesc;
@@ -38,8 +43,10 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getWidgetClass() { return "ProgressBar"; }
 
-		// Factory method
-		static WidgetDesc* factory() { return new ProgressBarDesc(); }
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
 
 		/**
 		* Outlines how the desc class is written to XML and read from XML.
@@ -58,8 +65,8 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
-		// Factory method
-		static Widget* factory(const Ogre::String& widgetName);
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -85,7 +92,7 @@ namespace QuickGUI
         */
 		template<typename T> void addProgressBarEventHandler(ProgressBarEvent EVENT, void (T::*function)(const EventArgs&), T* obj)
 		{
-			mProgressBarEventHandlers[EVENT].push_back(new EventHandlerPointer<T>(function,obj));
+			mProgressBarEventHandlers[EVENT].push_back(OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
 		}
 		void addProgressBarEventHandler(ProgressBarEvent EVENT, EventHandlerSlot* function);
 
@@ -100,11 +107,11 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getClass();
 		/**
-		* Gets the side of the bar texture that is clipped to simulate progress.
+		* Gets the side of the bar texture that is clipped to simulate progressbar_progress.
 		*/
 		ProgressBarClippingEdge getClippingEdge();
 		/**
-		* Gets the direction the progress bar fills, as it gains progress.
+		* Gets the direction the progressbar_progress bar fills, as it gains progressbar_progress.
 		*/
 		ProgressBarFillDirection getFillDirection();
 		/**
@@ -112,11 +119,11 @@ namespace QuickGUI
 		*/
 		HorizontalTextAlignment getHorizontalTextAlignment();
 		/**
-		* Gets the axis of progress growth, either horizontal or vertical.
+		* Gets the axis of progressbar_progress growth, either horizontal or vertical.
 		*/
 		ProgressBarLayout setLayout();
 		/**
-		* Gets the progress of the ProgressBar, that is a visual indicator of percent complete.
+		* Gets the progressbar_progress of the ProgressBar, that is a visual indicator of percent complete.
 		*/
 		float getProgress();
 		/**
@@ -134,7 +141,7 @@ namespace QuickGUI
 		VerticalTextAlignment getVerticalTextAlignment();
 		
 		/**
-		* Sets the side of the bar texture that is clipped to simulate progress.
+		* Sets the side of the bar texture that is clipped to simulate progressbar_progress.
 		*/
 		void setClippingEdge(ProgressBarClippingEdge e);
 		/**
@@ -160,7 +167,7 @@ namespace QuickGUI
 		*/
 		void setColor(const Ogre::ColourValue& cv, Ogre::UTFString s, bool allOccurrences);
 		/**
-		* Sets the direction the progress bar fills, as it gains progress.
+		* Sets the direction the progressbar_progress bar fills, as it gains progressbar_progress.
 		*/
 		void setFillDirection(ProgressBarFillDirection d);
 		/**
@@ -190,11 +197,11 @@ namespace QuickGUI
 		*/
 		void setHorizontalTextAlignment(HorizontalTextAlignment a);
 		/**
-		* Sets the axis of progress growth, either horizontal or vertical.
+		* Sets the axis of progressbar_progress growth, either horizontal or vertical.
 		*/
 		void setLayout(ProgressBarLayout l);
 		/**
-		* Sets the progress of the ProgressBar, that is a visual indicator of percent complete.
+		* Sets the progressbar_progress of the ProgressBar, that is a visual indicator of percent complete.
 		* NOTE: values above and below 0 will be capped to 0/100%.
 		*/
 		void setProgress(float percent);
@@ -217,6 +224,10 @@ namespace QuickGUI
 		*/
 		void setText(Ogre::UTFString s);
 		/**
+		* Sets the Text using Text Segments.
+		*/
+		void setText(std::vector<TextSegment> segments);
+		/**
 		* Sets the number of pixels placed between each line of text, if there
 		* are multiple lines of text.
 		*/
@@ -225,6 +236,11 @@ namespace QuickGUI
 		* Sets the Vertical alignment of Text as displayed within the Label area.
 		*/
 		void setVerticalTextAlignment(VerticalTextAlignment a);
+
+		/**
+		* Recalculate Client dimensions, relative to Widget's actual dimensions.
+		*/
+		virtual void updateClientDimensions();
 
 	protected:
 		ProgressBar(const Ogre::String& name);

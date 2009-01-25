@@ -9,7 +9,6 @@
 namespace QuickGUI
 {
 	// forward declarations
-	class Window;
 	class MenuPanel;
 
 	class _QuickGUIExport MenuDesc :
@@ -18,13 +17,18 @@ namespace QuickGUI
 	public:
 		friend class Menu;
 		friend class ToolBar;
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		MenuDesc(const Ogre::String& id);
+		virtual ~MenuDesc() {}
 	public:
-		MenuDesc();
 
-		float menuWidth;
-		Ogre::String menuPanelSkinType;
+		float			menu_itemHeight;
+		float			menu_maxMenuHeight;
+		float			menu_menuWidth;
 		/// Sets the amount of pixel overlap sub elements are drawn over this Menu.
-		float subMenuOverlap;
+		float			menu_subMenuOverlap;
 
 		/**
 		* Returns the class of Desc object this is.
@@ -35,8 +39,10 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getWidgetClass() { return "Menu"; }
 
-		// Factory method
-		static WidgetDesc* factory() { return new MenuDesc(); }
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
 
 		/**
 		* Outlines how the desc class is written to XML and read from XML.
@@ -52,13 +58,13 @@ namespace QuickGUI
 		static const Ogre::String DEFAULT;
 		static const Ogre::String DOWN;
 		static const Ogre::String OVER;
+		static const Ogre::String MENUPANEL;
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
 		friend class ToolBar;
-	public:
-		// Factory method
-		static Widget* factory(const Ogre::String& widgetName);
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -85,15 +91,15 @@ namespace QuickGUI
 		/**
 		* Creates a Child MenuItem.
 		*/
-		MenuItem* createMenuItem(const Ogre::String& className, MenuItemDesc& d);
+		MenuItem* createMenuItem(const Ogre::String& className, MenuItemDesc* d);
 		/**
 		* Creates a Child MenuLabel.
 		*/
-		MenuLabel* createMenuLabel(MenuLabelDesc& d);
+		MenuLabel* createMenuLabel(MenuLabelDesc* d);
 		/**
 		* Creates a Child Menu.
 		*/
-		Menu* createSubMenu(MenuDesc& d);
+		Menu* createSubMenu(MenuDesc* d);
 
 		/**
 		* Recursively searches through children and returns first widget found with name given.
@@ -105,6 +111,10 @@ namespace QuickGUI
 		* Returns the class name of this Widget.
 		*/
 		virtual Ogre::String getClass();
+		/**
+		* Gets the height of each ListItem within this List.
+		*/
+		float getItemHeight();
 		/**
 		* Returns the number of MenuItems this menu has.
 		*/
@@ -135,6 +145,16 @@ namespace QuickGUI
 		* Builds the Widget from a ScriptDefinition or Writes the widget to a ScriptDefinition.
 		*/
 		virtual void serialize(SerialBase* b);
+		/**
+		* Sets the height of each ListItem within the List.
+		*/
+		void setItemHeight(float height);
+		/**
+		* Sets the "type" of this widget.  For example you
+		* can create several types of Button widgets: "close", "add", "fire.skill.1", etc.
+		* NOTE: The type property determines what is drawn to the screen.
+		*/
+		virtual void setSkinType(const Ogre::String type);
 
 	protected:
 		Menu(const Ogre::String& name);
@@ -149,6 +169,7 @@ namespace QuickGUI
 		// Immediate SubMenus
 		std::vector<Menu*> mSubMenus;
 
+		float _getNextAvailableYPosition();
 		/**
 		* Adds a child widget to this container widget.
 		*/
@@ -173,6 +194,11 @@ namespace QuickGUI
 		* Closes all SubMenus belonging to the parent Menu, and opens this menu
 		*/
 		virtual void onMouseEnter(const EventArgs& args);
+
+		/**
+		* Iterates through items and updates their position.
+		*/
+		void _updateItemPositions();
 
 	private:
 	};

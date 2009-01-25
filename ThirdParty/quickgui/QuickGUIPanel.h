@@ -5,6 +5,7 @@
 
 #include "QuickGUIButton.h"
 #include "QuickGUICheckBox.h"
+#include "QuickGUIComboBox.h"
 #include "QuickGUIConsole.h"
 #include "QuickGUIForwardDeclaredDesc.h"
 #include "QuickGUIHScrollBar.h"
@@ -14,6 +15,7 @@
 #include "QuickGUIProgressBar.h"
 #include "QuickGUITextArea.h"
 #include "QuickGUITextBox.h"
+#include "QuickGUITreeView.h"
 #include "QuickGUIVScrollBar.h"
 
 namespace QuickGUI
@@ -36,8 +38,8 @@ namespace QuickGUI
 		// needs access to the protected "addChild" function
 		friend class TabPage;
 
-		// Factory method
-		static Widget* factory(const Ogre::String& widgetName);
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -48,60 +50,68 @@ namespace QuickGUI
 		/**
 		* Creates a user defined custom widget.
 		*/
-		Widget* createCustomWidget(const Ogre::String& className, WidgetDesc& d);
+		Widget* createCustomWidget(const Ogre::String& className, WidgetDesc* d);
 
 		/**
 		* Creates a child Button.
 		*/
-		Button* createButton(ButtonDesc& d);
+		Button* createButton(ButtonDesc* d);
 		/**
 		* Creates a child CheckBox.
 		*/
-		CheckBox* createCheckBox(CheckBoxDesc& d);
+		CheckBox* createCheckBox(CheckBoxDesc* d);
 		/**
 		* Creates a child Console.
 		*/
-		Console* createConsole(ConsoleDesc& d);
+		Console* createConsole(ConsoleDesc* d);
+		/**
+		* Creates a child ComboBox.
+		*/
+		ComboBox* createComboBox(ComboBoxDesc* d);
 		/**
 		* Creates a child HScrollBar.
 		*/
-		HScrollBar* createHScrollBar(HScrollBarDesc& d);
+		HScrollBar* createHScrollBar(HScrollBarDesc* d);
 		/**
 		* Creates a child Image.
 		*/
-		Image* createImage(ImageDesc& d);
+		Image* createImage(ImageDesc* d);
 		/**
 		* Creates a child Label.
 		*/
-		Label* createLabel(LabelDesc& d);
+		Label* createLabel(LabelDesc* d);
 		/**
 		* Creates a child List.
 		*/
-		List* createList(ListDesc& d);
+		List* createList(ListDesc* d);
 		/**
 		* Creates a child Panel.
 		*/
-		Panel* createPanel(PanelDesc& d);
+		Panel* createPanel(PanelDesc* d);
 		/**
 		* Creates a child ProgressBar.
 		*/
-		ProgressBar* createProgressBar(ProgressBarDesc& d);
+		ProgressBar* createProgressBar(ProgressBarDesc* d);
 		/**
 		* Creates a child TabControl.
 		*/
-		TabControl* createTabControl(TabControlDesc& d);
+		TabControl* createTabControl(TabControlDesc* d);
 		/**
 		* Creates a child TextArea.
 		*/
-		TextArea* createTextArea(TextAreaDesc& d);
+		TextArea* createTextArea(TextAreaDesc* d);
 		/**
 		* Creates a child TextBox.
 		*/
-		TextBox* createTextBox(TextBoxDesc& d);
+		TextBox* createTextBox(TextBoxDesc* d);
+		/**
+		* Creates a child TreeView.
+		*/
+		TreeView* createTreeView(TreeViewDesc* d);
 		/**
 		* Creates a child VScrollBar.
 		*/
-		VScrollBar* createVScrollBar(VScrollBarDesc& d);
+		VScrollBar* createVScrollBar(VScrollBarDesc* d);
 
 		/**
 		* Returns the class name of this Widget.

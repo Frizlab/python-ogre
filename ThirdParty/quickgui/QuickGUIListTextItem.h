@@ -9,10 +9,15 @@ namespace QuickGUI
 		public ListItemDesc
 	{
 	public:
-		ListTextItemDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		ListTextItemDesc(const Ogre::String& id);
+		virtual ~ListTextItemDesc() {}
+	public:
 
 		/// Vertical alignment of text within this widget's client area.
-		VerticalTextAlignment verticalTextAlignment;
+		VerticalTextAlignment listtextitem_verticalTextAlignment;
 
 		/// Describes the Text used in this Label
 		TextDesc textDesc;
@@ -26,8 +31,10 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getWidgetClass() { return "ListTextItem"; }
 
-		// Factory method
-		static WidgetDesc* factory() { return new ListTextItemDesc(); }
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
 
 		/**
 		* Outlines how the desc class is written to XML and read from XML.
@@ -42,8 +49,11 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
-		// Factory method
-		static Widget* factory(const Ogre::String& widgetName);
+		// ComboBox works with ListTextItems specifically and needs to be able to destroy them.
+		friend class ComboBox;
+
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -116,6 +126,10 @@ namespace QuickGUI
 		* Sets the text for this object.
 		*/
 		void setText(Ogre::UTFString s);
+		/**
+		* Sets the Text using Text Segments.
+		*/
+		void setText(std::vector<TextSegment> segments);
 
 	protected:
 		ListTextItem(const Ogre::String& name);

@@ -12,7 +12,12 @@ namespace QuickGUI
 		public Serializable
 	{
 	public:
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
 		BaseDesc() {}
+		virtual ~BaseDesc() {}
+	public:
 
 		/**
 		* Returns the class of Desc object this is.

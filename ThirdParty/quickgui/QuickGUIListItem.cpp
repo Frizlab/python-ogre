@@ -1,5 +1,7 @@
 #include "QuickGUIListItem.h"
 #include "QuickGUIList.h"
+#include "QuickGUIMenuPanel.h"
+#include "QuickGUIComboBox.h"
 
 namespace QuickGUI
 {
@@ -7,21 +9,28 @@ namespace QuickGUI
 	const Ogre::String ListItem::OVER = "over";
 	const Ogre::String ListItem::SELECTED = "selected";
 
-	ListItemDesc::ListItemDesc() :
-		ContainerWidgetDesc()
+	ListItemDesc::ListItemDesc(const Ogre::String& id) :
+		ContainerWidgetDesc(id)
 	{
-		index = -1;
-		selected = false;
-		supportScrollBars = false;
-		transparencyPicking = false;
+		resetToDefault();
+	}
+
+	void ListItemDesc::resetToDefault()
+	{
+		ContainerWidgetDesc::resetToDefault();
+
+		listitem_index = -1;
+		listitem_selected = false;
+		containerwidget_supportScrollBars = false;
+		widget_transparencyPicking = false;
 	}
 
 	void ListItemDesc::serialize(SerialBase* b)
 	{
 		ContainerWidgetDesc::serialize(b);
 
-		b->IO("Index",&index);
-		b->IO("Selected",&selected);
+		b->IO("Index",&listitem_index);
+		b->IO("Selected",&listitem_selected);
 	}
 
 	ListItem::ListItem(const Ogre::String& name) :
@@ -43,18 +52,18 @@ namespace QuickGUI
 		ListItemDesc* lid = dynamic_cast<ListItemDesc*>(d);
 		mDesc = dynamic_cast<ListItemDesc*>(mWidgetDesc);
 
-		setIndex(lid->index);
-		setSelected(lid->selected);
+		setIndex(lid->listitem_index);
+		setSelected(lid->listitem_selected);
 	}
 
 	int ListItem::getIndex()
 	{
-		return mDesc->index;
+		return mDesc->listitem_index;
 	}
 
 	bool ListItem::getSelected()
 	{
-		return mDesc->selected;
+		return mDesc->listitem_selected;
 	}
 
 	void ListItem::onMouseButtonDown(const EventArgs& args)
@@ -63,13 +72,24 @@ namespace QuickGUI
 
 		if(mea.button == MB_Left)
 		{
-			dynamic_cast<List*>(mParentWidget)->selectItem(mea);
+			// List Items can belong to Lists or ComboBox
+			if(mParentWidget->getClass() == "List")
+				dynamic_cast<List*>(mParentWidget)->selectItem(mea);
+			else if(mParentWidget->getClass() == "MenuPanel")
+			{
+				MenuPanel* lp = dynamic_cast<MenuPanel*>(mParentWidget);
+				if(lp->getOwner() != NULL)
+				{
+					if(lp->getOwner()->getClass() == "ComboBox")
+						dynamic_cast<ComboBox*>(lp->getOwner())->selectItem(mea);
+				}
+			}
 		}
 	}
 
 	void ListItem::onMouseEnter(const EventArgs& args)
 	{
-		if(!mDesc->selected)
+		if(!mDesc->listitem_selected)
 		{
 			mSkinElementName = OVER;
 			redraw();
@@ -78,7 +98,7 @@ namespace QuickGUI
 
 	void ListItem::onMouseLeave(const EventArgs& args)
 	{
-		if(!mDesc->selected)
+		if(!mDesc->listitem_selected)
 		{
 			mSkinElementName = DEFAULT;
 			redraw();
@@ -100,9 +120,9 @@ namespace QuickGUI
 		ContainerWidget::setHorizontalAnchor(a);
 	}
 
-	void ListItem::setIndex(unsigned int index)
+	void ListItem::setIndex(unsigned int listitem_index)
 	{
-		mDesc->index = index;
+		mDesc->listitem_index = listitem_index;
 	}
 	
 	void ListItem::setPosition(const Point& position)
@@ -110,11 +130,11 @@ namespace QuickGUI
 		ContainerWidget::setPosition(position);
 	}
 
-	void ListItem::setSelected(bool selected)
+	void ListItem::setSelected(bool listitem_selected)
 	{
-		mDesc->selected = selected;
+		mDesc->listitem_selected = listitem_selected;
 		
-		if(mDesc->selected)
+		if(mDesc->listitem_selected)
 			mSkinElementName = SELECTED;
 		else
 			mSkinElementName = DEFAULT;

@@ -18,9 +18,8 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
-
-		// Factory method
-		static Widget* factory(const Ogre::String& widgetName);
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -46,14 +45,14 @@ namespace QuickGUI
         */
 		template<typename T> void addTabControlEventHandler(TabControlEvent EVENT, void (T::*function)(const EventArgs&), T* obj)
 		{
-			mTabControlEventHandlers[EVENT].push_back(new EventHandlerPointer<T>(function,obj));
+			mTabControlEventHandlers[EVENT].push_back(OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
 		}
 		void addTabControlEventHandler(TabControlEvent EVENT, EventHandlerSlot* function);
 
 		/**
 		* Creates a child TabPage.
 		*/
-		TabPage* createTabPage(TabPageDesc& d);
+		TabPage* createTabPage(TabPageDesc* d);
 
 		/**
 		* Checks if point p is within this widget's dimensions.

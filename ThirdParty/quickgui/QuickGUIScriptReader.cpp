@@ -5,9 +5,9 @@ QuickGUI::ScriptReader* QuickGUI::ScriptReader::mSingletonPtr = NULL;
 
 namespace QuickGUI
 {
-	void registerScriptReader()
+	_QuickGUIExport void registerScriptReader()
 	{
-		new ScriptReader();
+		OGRE_NEW_T(ScriptReader,Ogre::MEMCATEGORY_GENERAL)();
 	}
 
 	ScriptReader::ScriptReader() :
@@ -34,7 +34,7 @@ namespace QuickGUI
 		{
 			for(std::map<Ogre::String,ScriptDefinition*>::iterator it2 = (*it1).second.begin(); it2 != (*it1).second.end(); ++it2)
 			{
-				delete (*it2).second;
+				OGRE_DELETE_T((*it2).second,ScriptDefinition,Ogre::MEMCATEGORY_GENERAL);
 			}
 		}
 	}
@@ -146,7 +146,7 @@ namespace QuickGUI
 					int index = static_cast<int>(currentToken->value.find_first_of(' '));
 					Ogre::String type = currentToken->value.substr(0,index);
 					Ogre::String id = currentToken->value.substr(index+1);
-					ScriptDefinition* newDefinition = new ScriptDefinition(type,id);
+					ScriptDefinition* newDefinition = OGRE_NEW_T(ScriptDefinition,Ogre::MEMCATEGORY_GENERAL)(type,id);
 
 					newDefinition->mParentDefinition = currentDefinition;
 
@@ -161,7 +161,7 @@ namespace QuickGUI
 			case QuickGUI::Token::TYPE_PROPERTY:
 				{
 					Ogre::String propertyName = currentToken->value;
-					DefinitionProperty* newProperty = new DefinitionProperty(propertyName);
+					DefinitionProperty* newProperty = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
 
 					// Advance to next Token
 					++tokenIndex;
@@ -265,7 +265,7 @@ namespace QuickGUI
 		{
 			for(std::map<Ogre::String,ScriptDefinition*>::iterator it2 = (*it1).second.begin(); it2 != (*it1).second.end(); ++it2)
 			{
-				delete (*it2).second;
+				OGRE_DELETE_T((*it2).second,ScriptDefinition,Ogre::MEMCATEGORY_GENERAL);
 			}
 		}
 		mTempDefinitions.clear();

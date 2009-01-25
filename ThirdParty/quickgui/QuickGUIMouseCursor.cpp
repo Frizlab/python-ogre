@@ -18,7 +18,7 @@ namespace QuickGUI
 
 	void MouseCursor::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("MouseCursor");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("MouseCursor");
 		d->defineSkinElement(TEXTURE);
 		d->definitionComplete();
 
@@ -46,7 +46,7 @@ namespace QuickGUI
 		for(int index = 0; index < MOUSE_CURSOR_EVENT_COUNT; ++index)
 		{
 			for(std::vector<EventHandlerSlot*>::iterator it = mEventHandlers[index].begin(); it != mEventHandlers[index].end(); ++it)
-				delete (*it);
+				OGRE_DELETE_T((*it),EventHandlerSlot,Ogre::MEMCATEGORY_GENERAL);
 		}
 	}
 

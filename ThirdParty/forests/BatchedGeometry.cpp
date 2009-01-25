@@ -32,7 +32,13 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include <OgreHardwareBuffer.h>
 #include <OgreMaterialManager.h>
 #include <OgreMaterial.h>
+#include <string>
 using namespace Ogre;
+
+#ifndef max
+#define max(a,b)            (((a) > (b)) ? (a) : (b))
+#endif
+
 
 namespace Forests {
 
@@ -350,7 +356,7 @@ void BatchedGeometry::_notifyCurrentCamera(Camera *cam)
 		//Calculate camera distance
 		Vector3 camVec = _convertToLocal(cam->getDerivedPosition()) - center;
 		Real centerDistanceSquared = camVec.squaredLength();
-		minDistanceSquared = std::max(0.0f, centerDistanceSquared - (radius * radius));
+		minDistanceSquared = max(0.0f, centerDistanceSquared - (radius * radius));
 		//Note: centerDistanceSquared measures the distance between the camera and the center of the GeomBatch,
 		//while minDistanceSquared measures the closest distance between the camera and the closest edge of the
 		//geometry's bounding sphere.
@@ -380,7 +386,7 @@ BatchedGeometry::SubBatch::SubBatch(BatchedGeometry *parent, SubEntity *ent)
 	// Material must always exist
 	Material *origMat = ((MaterialPtr)MaterialManager::getSingleton().getByName(ent->getMaterialName())).getPointer();
 	if (origMat) {
-	material = MaterialManager::getSingleton().getByName(getMaterialClone(*origMat)->getName());
+		material = MaterialManager::getSingleton().getByName(getMaterialClone(*origMat)->getName());
 	} else {
 		MaterialManager::ResourceCreateOrRetrieveResult result = MaterialManager::getSingleton().createOrRetrieve("PagedGeometry_Batched_Material", "General");
 		if (result.first.isNull()) {
@@ -762,7 +768,7 @@ void BatchedGeometry::SubBatch::addSelfToRenderQueue(RenderQueue *queue, uint8 g
 	if (built){
 		//Update material technique based on camera distance
 		assert(!material.isNull());
-		bestTechnique = material->getBestTechnique(material->getLodIndexSquaredDepth(parent->minDistanceSquared));
+		bestTechnique = material->getBestTechnique(material->getLodIndex(parent->minDistanceSquared * parent->minDistanceSquared));
 			
 		//Add to render queue
 		queue->addRenderable(this, group);

@@ -1,8 +1,6 @@
 #ifndef QUICKGUISIZE_H
 #define QUICKGUISIZE_H
 
-#include "OgrePrerequisites.h"
-
 #include "QuickGUIExportDLL.h"
 
 namespace QuickGUI
@@ -70,6 +68,10 @@ namespace QuickGUI
         {
             return Size(width - s.width,height - s.height);
         }
+
+		Size& roundUp();
+		Size& roundDown();
+		Size& round();
 
 		float width;
 		float height;

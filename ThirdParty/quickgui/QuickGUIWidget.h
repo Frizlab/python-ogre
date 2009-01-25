@@ -29,28 +29,35 @@ namespace QuickGUI
 		public BaseDesc
 	{
 	public:
-		WidgetDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		WidgetDesc(const Ogre::String& id);
+		virtual ~WidgetDesc() {}
+	public:
 
-		BrushFilterMode brushFilterMode;
-		bool consumeKeyboardEvents;
-		bool enabled;
-		Rect dimensions;
-		Ogre::String disabledSkinType;
-		bool dragable;
-		HorizontalAnchor horizontalAnchor;
-		float hoverTime;
-		Size maxSize;
-		Size minSize;
-		Ogre::String name;
-		bool resizable;
-		bool scrollable;
-		bool transparencyPicking;
-		VerticalAnchor verticalAnchor;
-		bool visible;
-		Ogre::String skinTypeName;
+		BrushFilterMode		widget_brushFilterMode;
+		bool				widget_consumeKeyboardEvents;
+		bool				widget_enabled;
+		Rect				widget_dimensions;
+		Ogre::String		widget_disabledSkinType;
+		bool				widget_dragable;
+		HorizontalAnchor	widget_horizontalAnchor;
+		float				widget_hoverTime;
+		Size				widget_maxSize;
+		Size				widget_minSize;
+		Ogre::String		widget_name;
+		bool				widget_resizable;
+		bool				widget_scrollable;
+		Ogre::String		widget_skinTypeName;
+		bool				widget_transparencyPicking;
+		VerticalAnchor		widget_verticalAnchor;
+		bool				widget_visible;
 
 		GUIManager* guiManager;
 		Sheet* sheet;
+
+		Ogre::String getID() { return mID; }
 		
 		/**
 		* Returns the class of Desc object this is.
@@ -60,11 +67,19 @@ namespace QuickGUI
 		* Returns the class of Widget this desc object is meant for.
 		*/
 		virtual Ogre::String getWidgetClass() { return "Widget"; }
+
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
 		
 		/**
 		* Outlines how the desc class is written to script and read from script.
 		*/
 		virtual void serialize(SerialBase* b);
+
+	protected:
+		Ogre::String		mID;
 	};
 
 	class _QuickGUIExport Widget :
@@ -80,13 +95,19 @@ namespace QuickGUI
 		// calls protected draw function
 		friend class TabPage;
 		friend class Menu;
+		// MenuPanel overrides draw order and needs access to draw method
 		friend class MenuPanel;
+		// ListPanel overrides draw order and needs access to draw method
+		friend class ListPanel;
 		friend class Window;
+		// Factory class creates and destroys Widgets
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 		/**
 		* Static function used to create widgets.  Note that the widgets returned have NOT been initialized yet. (_initialize())
 		*/
-		static Widget* create(const Ogre::String& className, WidgetDesc& d);
+		static Widget* create(const Ogre::String& className, WidgetDesc* d);
 	public:
 
 		/**
@@ -124,7 +145,7 @@ namespace QuickGUI
         */
 		template<typename T> void addWidgetEventHandler(WidgetEvent EVENT, void (T::*function)(const EventArgs&), T* obj)
 		{
-			mWidgetEventHandlers[EVENT].push_back(new EventHandlerPointer<T>(function,obj));
+			mWidgetEventHandlers[EVENT].push_back(OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
 		}
 		void addWidgetEventHandler(WidgetEvent EVENT, EventHandlerSlot* function);
 
@@ -138,13 +159,13 @@ namespace QuickGUI
 		*/
 		virtual Widget* findFirstWidgetOfClass(const Ogre::String& className);
 		/**
-		* Recursively searches through children and returns first widget found with name given.
+		* Recursively searches through children and returns first widget found with widget_name given.
 		* NULL is returned if the widget is not found.
 		*/
-		virtual Widget* findWidget(const Ogre::String& name);
+		virtual Widget* findWidget(const Ogre::String& widget_name);
 		/**
-		* Checks if point p is within this widget's dimensions.
-		* NULL is returned if the point is outside dimensions.
+		* Checks if point p is within this widget's widget_dimensions.
+		* NULL is returned if the point is outside widget_dimensions.
 		* If ignoreDisabled is true, disabled widgets are not considered in the search.
 		*/
 		virtual Widget* findWidgetAtPoint(const Point& p, bool ignoreDisabled = true);
@@ -165,7 +186,11 @@ namespace QuickGUI
 		*/
 		virtual BorderSide getBorderSide(Point p);
 		/**
-		* Returns the class name of the widget, ie "Button", "Window", etc.
+		* Returns the filtering used when drawing the skin of this widget.
+		*/
+		BrushFilterMode getBrushFilterMode();
+		/**
+		* Returns the class widget_name of the widget, ie "Button", "Window", etc.
 		*/
 		virtual Ogre::String getClass() = 0;
 		/**
@@ -183,7 +208,7 @@ namespace QuickGUI
 		*/
 		Rect getDimensions();
 		/**
-		* Returns the name of the SkinType applied when the widget is disabled.
+		* Returns the widget_name of the SkinType applied when the widget is disabled.
 		* NOTE: "" is returned if the widget's appearance does not change when disabled.
 		*/
 		Ogre::String getDisabledSkinType();
@@ -227,7 +252,7 @@ namespace QuickGUI
 		*/
 		Size getMinSize();
 		/**
-		* Returns the name of the Widget.
+		* Returns the widget_name of the Widget.
 		*/
 		Ogre::String getName();
 		/**
@@ -275,7 +300,7 @@ namespace QuickGUI
 		/**
 		* Returns true if this widget uses transparency picking, false otherwise.  For
 		* Widgets that do not use transparency picking, they will receive mouse over events
-		* simply by having the mouse over their texture dimensions.
+		* simply by having the mouse over their texture widget_dimensions.
 		*/
 		bool getTransparencyPicking();
 		/**
@@ -283,8 +308,8 @@ namespace QuickGUI
 		*/
 		VerticalAnchor getVerticalAnchor();
 		/**
-		* Returns true if the widget is configured as visible, false otherwise.
-		* NOTE: Due to scrolling, a widget may be marked as visible, but not seen on the screen.
+		* Returns true if the widget is configured as widget_visible, false otherwise.
+		* NOTE: Due to scrolling, a widget may be marked as widget_visible, but not seen on the screen.
 		*/
 		bool getVisible();
 		/**
@@ -308,6 +333,10 @@ namespace QuickGUI
 		* Returns true if this widget is made up of more than 1 widget.
 		*/
 		virtual bool isComponentWidget();
+		/**
+		* Returns true if this widget is a component of another widget. (ie button on a ScrollBar)
+		*/
+		bool isComponentOfAWidget();
 		/**
 		* Returns true if this widget is able to have child widgets.
 		*/
@@ -336,7 +365,7 @@ namespace QuickGUI
 		*/
 		void removeEventHandler(WidgetEvent EVENT, void* obj);
 		/**
-		* Resizes the widget so that its dimensions hit the point given.
+		* Resizes the widget so that its widget_dimensions hit the point given.
 		* NOTE: The point p is assumed to be relative to the Window the widget is a part of.
 		*/
 		void resize(BorderSide s, float xOffset, float yOffset);
@@ -345,6 +374,10 @@ namespace QuickGUI
 		* Builds the Widget from a ScriptDefinition or Writes the widget to a ScriptDefinition.
 		*/
 		virtual void serialize(SerialBase* b);
+		/**
+		* Sets the filtering used when drawing the skin of this widget.
+		*/
+		void setBrushFilterMode(BrushFilterMode m);
 		/**
 		* Set true if this widget accepts notification of keyboard events,
 		* false otherwise.
@@ -355,19 +388,19 @@ namespace QuickGUI
 		*/
 		void setDimensions(const Rect& r);
 		/**
-		* Sets the name of the SkinType applied when the widget is disabled.
+		* Sets the widget_name of the SkinType applied when the widget is disabled.
 		* NOTE: Use "" to prevent the widget's apperance from changing when disabled.
 		*/
 		void setDisabledSkinType(const Ogre::String& SkinTypeName);
 		/**
 		* Set whether or not this widget can be dragged by the mouse cursor.
 		*/
-		virtual void setDragable(bool dragable);
+		virtual void setDragable(bool widget_dragable);
 		/**
 		* Enabled Widgets receive mouse and keyboard events via injections to the GUIManager.
 		* Disabled Widgets can only receive these events if they are manually fired.
 		*/
-		virtual void setEnabled(bool enabled);
+		virtual void setEnabled(bool widget_enabled);
 		/**
 		* Notify the widget it is grabbed or not grabbed.
 		*/
@@ -396,7 +429,7 @@ namespace QuickGUI
 		* Sets the minimum size this widget can be.
 		*/
 		void setMinSize(const Size& s);
-		void setName(const Ogre::String& name);
+		void setName(const Ogre::String& widget_name);
 		/**
 		* Sets the x and y position of this widget, relative to this widget's parent.
 		*/
@@ -404,7 +437,7 @@ namespace QuickGUI
 		/**
 		* Sets whether the widget can be resized using the mouse.
 		*/
-		virtual void setResizable(bool resizable);
+		virtual void setResizable(bool widget_resizable);
 		/**
 		* Scroll the widget horizontally and vertically.
 		*/
@@ -420,7 +453,7 @@ namespace QuickGUI
 		/**
 		* Sets whether the widget can be scrolled by its parent widget.
 		*/
-		void setScrollable(bool scrollable);
+		void setScrollable(bool widget_scrollable);
 		/**
 		* Sets the width and height of this widget.
 		*/
@@ -433,9 +466,9 @@ namespace QuickGUI
 		virtual void setSkinType(const Ogre::String type);
 		/**
 		* Sets whether the widget will receive mouse over events simply by having the mouse over
-		* its texture dimensions, or only when the cursor is over non transparent parts.
+		* its texture widget_dimensions, or only when the cursor is over non transparent parts.
 		*/
-		virtual void setTransparencyPicking(bool transparencyPicking);
+		virtual void setTransparencyPicking(bool widget_transparencyPicking);
 		/**
 		* Sets Vertical Anchor of this widget. A Top anchor will enforce the widget to maintain
 		* its distance from the top side of its parent. A bottom anchor will enforce the widget to maintain
@@ -446,23 +479,23 @@ namespace QuickGUI
 		/**
 		* Sets whether or not the widget gets drawn.
 		*/
-		void setVisible(bool visible);
+		void setVisible(bool widget_visible);
 		/**
 		* Sets the widget of the widget.
 		*/
 		virtual void setWidth(float pixelWidth);
 
 		/**
-		* Recalculate Client dimensions, relative to Widget's actual dimensions.
+		* Recalculate Client widget_dimensions, relative to Widget's actual widget_dimensions.
 		*/
 		virtual void updateClientDimensions();
 		/**
-		* Recalculate Screen and client dimensions and force a redrawing of the widget.
+		* Recalculate Screen and client widget_dimensions and force a redrawing of the widget.
 		*/
 		virtual void updateTexturePosition();
 
 	protected:
-		Widget(const Ogre::String& name);
+		Widget(const Ogre::String& widget_name);
 		virtual ~Widget();
 
 		// Used mainly for serialization
@@ -476,7 +509,7 @@ namespace QuickGUI
 		Widget* mParentWidget;
 		Window* mWindow;
 
-		// Keeps track of number of Number of Widgets with auto generated names.
+		// Keeps track of number of Number of Widgets with auto generated widget_names.
 		static int mWidgetCounter;
 
 		// Event handlers! One List per event per widget
@@ -490,15 +523,15 @@ namespace QuickGUI
 
 		// The skin currently used to draw the widget
 		SkinType* mSkinType;
-		// The name of the SkinElement to use for border detection and client area calculations
+		// The widget_name of the SkinElement to use for border detection and client area calculations
 		Ogre::String mSkinElementName;
 
 		// Prevents initializing the widget twice.
 		bool mInitialized;
 
 		// True if this widget is used as a component, false otherwise.
-		// Components do not have to be drawn inside client dimensions.
-		bool mComponent;
+		// Components do not have to be drawn inside client widget_dimensions.
+		bool mComponentOfAWidget;
 
 		Point mScrollOffset;
 

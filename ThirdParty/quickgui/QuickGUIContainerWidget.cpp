@@ -4,39 +4,46 @@
 #include "QuickGUIWindow.h"
 #include "QuickGUISheet.h"
 #include "QuickGUIManager.h"
-#include "QuickGUIWidgetDescFactoryManager.h"
 #include "QuickGUIScriptDefinition.h"
+#include "QuickGUIFactoryManager.h"
 
 namespace QuickGUI
 {
 	const Ogre::String ContainerWidget::HSCROLLBAR = "hscrollbar";
 	const Ogre::String ContainerWidget::VSCROLLBAR = "vscrollbar";
 
-	ContainerWidgetDesc::ContainerWidgetDesc() :
-		ComponentWidgetDesc()
+	ContainerWidgetDesc::ContainerWidgetDesc(const Ogre::String& id) :
+		ComponentWidgetDesc(id)
 	{
-		horzBarScrollPercent = 0.2;
-		horzButtonScrollPercent = 0.1;
-		supportScrollBars = true;
-		scrollBarThickness = 15;
-		vertBarScrollPercent = 0.2;
-		vertButtonScrollPercent = 0.1;
-		xScrollOffset = 0;
-		yScrollOffset = 0;
+		resetToDefault();
+	}
+
+	void ContainerWidgetDesc::resetToDefault()
+	{
+		ComponentWidgetDesc::resetToDefault();
+
+		containerwidget_horzBarScrollPercent = 0.2;
+		containerwidget_horzButtonScrollPercent = 0.1;
+		containerwidget_supportScrollBars = true;
+		containerwidget_scrollBarThickness = 15;
+		containerwidget_vertBarScrollPercent = 0.2;
+		containerwidget_vertButtonScrollPercent = 0.1;
+		containerwidget_xScrollOffset = 0;
+		containerwidget_yScrollOffset = 0;
 	}
 
 	void ContainerWidgetDesc::serialize(SerialBase* b)
 	{
 		ComponentWidgetDesc::serialize(b);
 
-		b->IO("HorzBarScrollPercent",&horzBarScrollPercent);
-		b->IO("HorzButtonScrollPercent",&horzButtonScrollPercent);
-		b->IO("SupportScrolling",&supportScrollBars);
-		b->IO("ScrollBarThickness",&scrollBarThickness);
-		b->IO("VertBarScrollPercent",&vertBarScrollPercent);
-		b->IO("VertButtonScrollPercent",&vertButtonScrollPercent);
-		b->IO("XScrollOffset",&xScrollOffset);
-		b->IO("YScrollOffset",&yScrollOffset);
+		b->IO("HorzBarScrollPercent",&containerwidget_horzBarScrollPercent);
+		b->IO("HorzButtonScrollPercent",&containerwidget_horzButtonScrollPercent);
+		b->IO("SupportScrolling",&containerwidget_supportScrollBars);
+		b->IO("ScrollBarThickness",&containerwidget_scrollBarThickness);
+		b->IO("VertBarScrollPercent",&containerwidget_vertBarScrollPercent);
+		b->IO("VertButtonScrollPercent",&containerwidget_vertButtonScrollPercent);
+		b->IO("XScrollOffset",&containerwidget_xScrollOffset);
+		b->IO("YScrollOffset",&containerwidget_yScrollOffset);
 	}
 
 	ContainerWidget::ContainerWidget(const Ogre::String& name) :
@@ -48,8 +55,9 @@ namespace QuickGUI
 
 	ContainerWidget::~ContainerWidget()
 	{
+		WidgetFactory<Widget>* widgetFactory = FactoryManager::getSingleton().getWidgetFactory();
 		for(std::vector<Widget*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it)
-			delete (*it);
+			widgetFactory->destroyInstance((*it));
 	}
 
 	void ContainerWidget::_determineVirtualSize()
@@ -77,37 +85,39 @@ namespace QuickGUI
 		mDesc = dynamic_cast<ContainerWidgetDesc*>(mWidgetDesc);
 		ContainerWidgetDesc* cwd = dynamic_cast<ContainerWidgetDesc*>(d);
 
-		mDesc->supportScrollBars = cwd->supportScrollBars;
-		mDesc->scrollBarThickness = cwd->scrollBarThickness;
-		mDesc->horzBarScrollPercent = cwd->horzBarScrollPercent;
-		mDesc->horzButtonScrollPercent = cwd->horzButtonScrollPercent;
-		mDesc->vertBarScrollPercent = cwd->vertBarScrollPercent;
-		mDesc->vertButtonScrollPercent = cwd->vertButtonScrollPercent;
+		mDesc->containerwidget_supportScrollBars = cwd->containerwidget_supportScrollBars;
+		mDesc->containerwidget_scrollBarThickness = cwd->containerwidget_scrollBarThickness;
+		mDesc->containerwidget_horzBarScrollPercent = cwd->containerwidget_horzBarScrollPercent;
+		mDesc->containerwidget_horzButtonScrollPercent = cwd->containerwidget_horzButtonScrollPercent;
+		mDesc->containerwidget_vertBarScrollPercent = cwd->containerwidget_vertBarScrollPercent;
+		mDesc->containerwidget_vertButtonScrollPercent = cwd->containerwidget_vertButtonScrollPercent;
 
-		if(mDesc->supportScrollBars)
+		if(mDesc->containerwidget_supportScrollBars)
 		{
-			HScrollBarDesc hd;
-			hd.dimensions.size.height = mDesc->scrollBarThickness;
+			HScrollBarDesc* hd = dynamic_cast<HScrollBarDesc*>(FactoryManager::getSingleton().getWidgetDescFactory()->getInstance("DefaultHScrollBarDesc"));
+			hd->resetToDefault();
+			hd->widget_dimensions.size.height = mDesc->containerwidget_scrollBarThickness;
 			// Do not anchor, as it interferes with dynamically resizing and positioning the scrollbars
-			hd.horizontalAnchor = ANCHOR_HORIZONTAL_LEFT;
-			hd.verticalAnchor = ANCHOR_VERTICAL_BOTTOM;
-			hd.barScrollPercent = mDesc->horzBarScrollPercent;
-			hd.buttonScrollPercent = mDesc->horzButtonScrollPercent;
-			hd.visible = false;
+			hd->widget_horizontalAnchor = ANCHOR_HORIZONTAL_LEFT;
+			hd->widget_verticalAnchor = ANCHOR_VERTICAL_BOTTOM;
+			hd->hscrollbar_barScrollPercent = mDesc->containerwidget_horzBarScrollPercent;
+			hd->hscrollbar_buttonScrollPercent = mDesc->containerwidget_horzButtonScrollPercent;
+			hd->widget_visible = false;
 
 			mHScrollBar = dynamic_cast<HScrollBar*>(Widget::create("HScrollBar",hd));
 			mHScrollBar->enableLiveSlider(&(mClientDimensions.size.width),&(mVirtualSize.width));
 			mHScrollBar->addScrollBarEventHandler(QuickGUI::SCROLLBAR_EVENT_ON_SCROLLED,&ContainerWidget::onHorizontalScroll,this);
 			addComponent(HSCROLLBAR,mHScrollBar);
 
-			VScrollBarDesc vd;
-			vd.dimensions.size.width = mDesc->scrollBarThickness;
+			VScrollBarDesc* vd = dynamic_cast<VScrollBarDesc*>(FactoryManager::getSingleton().getWidgetDescFactory()->getInstance("DefaultVScrollBarDesc"));
+			vd->resetToDefault();
+			vd->widget_dimensions.size.width = mDesc->containerwidget_scrollBarThickness;
 			// Do not anchor, as it interferes with dynamically resizing and positioning the scrollbars
-			vd.horizontalAnchor = ANCHOR_HORIZONTAL_RIGHT;
-			vd.verticalAnchor = ANCHOR_VERTICAL_TOP;
-			vd.barScrollPercent = mDesc->vertBarScrollPercent;
-			vd.buttonScrollPercent = mDesc->vertButtonScrollPercent;
-			vd.visible = false;
+			vd->widget_horizontalAnchor = ANCHOR_HORIZONTAL_RIGHT;
+			vd->widget_verticalAnchor = ANCHOR_VERTICAL_TOP;
+			vd->vscrollbar_barScrollPercent = mDesc->containerwidget_vertBarScrollPercent;
+			vd->vscrollbar_buttonScrollPercent = mDesc->containerwidget_vertButtonScrollPercent;
+			vd->widget_visible = false;
 
 			mVScrollBar = dynamic_cast<VScrollBar*>(Widget::create("VScrollBar",vd));
 			mVScrollBar->enableLiveSlider(&(mClientDimensions.size.height),&(mVirtualSize.height));
@@ -136,27 +146,27 @@ namespace QuickGUI
 
 	void ContainerWidget::_setScrollX(float x)
 	{
-		if(!mDesc->supportScrollBars)
+		if(!mDesc->containerwidget_supportScrollBars)
 			return;
 
-		mDesc->xScrollOffset = (x * mVirtualSize.width);
+		mDesc->containerwidget_xScrollOffset = (x * mVirtualSize.width);
 
 		for(std::vector<Widget*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it)
 		{
-			(*it)->setScrollX(mDesc->xScrollOffset);
+			(*it)->setScrollX(mDesc->containerwidget_xScrollOffset);
 		}
 	}
 
 	void ContainerWidget::_setScrollY(float y)
 	{
-		if(!mDesc->supportScrollBars)
+		if(!mDesc->containerwidget_supportScrollBars)
 			return;
 
-		mDesc->yScrollOffset = (y * mVirtualSize.height);
+		mDesc->containerwidget_yScrollOffset = (y * mVirtualSize.height);
 
 		for(std::vector<Widget*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it)
 		{
-			(*it)->setScrollY(mDesc->yScrollOffset);
+			(*it)->setScrollY(mDesc->containerwidget_yScrollOffset);
 		}
 	}
 
@@ -223,7 +233,7 @@ namespace QuickGUI
 		w->_setGUIManager(mWidgetDesc->guiManager);
 		w->_setSheet(mWidgetDesc->sheet);
 
-		if(mDesc->supportScrollBars)
+		if(mDesc->containerwidget_supportScrollBars)
 		{
 			// Register Event Handler for when child is resized or moved
 			w->addWidgetEventHandler(WIDGET_EVENT_SIZE_CHANGED,&ContainerWidget::onChildDimensionsChanged,this);
@@ -245,18 +255,18 @@ namespace QuickGUI
 	void ContainerWidget::draw()
 	{
 		// check visibility
-		if( !mWidgetDesc->visible )
+		if( !mWidgetDesc->widget_visible )
 			return;
 
 		Brush* brush = Brush::getSingletonPtr();
 
 		// check and store clip region
 		Rect prevClipRegion = brush->getClipRegion();
-		if ( prevClipRegion.getIntersection(Rect(mTexturePosition,mWidgetDesc->dimensions.size)) == Rect::ZERO )
+		if ( prevClipRegion.getIntersection(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size)) == Rect::ZERO )
 			return;
 
 		// set clip region to dimensions
-		brush->setClipRegion(Rect(mTexturePosition,mWidgetDesc->dimensions.size).getIntersection(prevClipRegion));
+		brush->setClipRegion(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size).getIntersection(prevClipRegion));
 
 		// draw self
 		onDraw();
@@ -381,7 +391,7 @@ namespace QuickGUI
 		w->_setGUIManager(NULL);
 		w->setParent(NULL);
 
-		if(mDesc->supportScrollBars)
+		if(mDesc->containerwidget_supportScrollBars)
 		{
 			// Register Event Handler for when child is resized or moved
 			w->removeEventHandler(WIDGET_EVENT_SIZE_CHANGED,this);
@@ -409,7 +419,7 @@ namespace QuickGUI
 			for(std::list<ScriptDefinition*>::iterator it = defList.begin(); it != defList.end(); ++it)
 			{
 				// Create Empty Widget, supplying class name and widget name from script
-				Widget* newWidget = WidgetFactoryManager::getSingleton().createWidget((*it)->getType(),(*it)->getID());
+				Widget* newWidget = FactoryManager::getSingleton().getWidgetFactory()->createInstance((*it)->getType(),(*it)->getID());
 
 				// Populate Desc object from Script Text, and initialize widget
 				newWidget->serialize(b);
@@ -433,25 +443,27 @@ namespace QuickGUI
 
 	void ContainerWidget::setHeight(float pixelHeight)
 	{
-		float previousHeight = mWidgetDesc->dimensions.size.height;
+		pixelHeight = Ogre::Math::Ceil(pixelHeight);
+
+		float previousHeight = mWidgetDesc->widget_dimensions.size.height;
 
 		// Modified code from Widget::setHeight, to incorporate ScrollBars
 		{
 			// Enforce max height
-			if((mWidgetDesc->maxSize.height > 0) && (pixelHeight > mWidgetDesc->maxSize.height))
-				pixelHeight = mWidgetDesc->maxSize.height;
+			if((mWidgetDesc->widget_maxSize.height > 0) && (pixelHeight > mWidgetDesc->widget_maxSize.height))
+				pixelHeight = mWidgetDesc->widget_maxSize.height;
 			// Enforce min height
-			else if((mWidgetDesc->minSize.height > 0) && (pixelHeight < mWidgetDesc->minSize.height))
-				pixelHeight = mWidgetDesc->minSize.height;
+			else if((mWidgetDesc->widget_minSize.height > 0) && (pixelHeight < mWidgetDesc->widget_minSize.height))
+				pixelHeight = mWidgetDesc->widget_minSize.height;
 
-			mWidgetDesc->dimensions.size.height = pixelHeight;
+			mWidgetDesc->widget_dimensions.size.height = pixelHeight;
 
 			redraw();
 
 			updateClientDimensions();
 		}
 
-		float difference = mWidgetDesc->dimensions.size.height - previousHeight;
+		float difference = mWidgetDesc->widget_dimensions.size.height - previousHeight;
 
 		// Handle anchoring for Components
 		for(std::map<Ogre::String,Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
@@ -462,7 +474,7 @@ namespace QuickGUI
 				{
 					// Center vertically
 					Point p = (*it).second->getPosition();
-					p.y = (mWidgetDesc->dimensions.size.height / 2.0) - ((*it).second->getHeight() / 2.0);
+					p.y = (mWidgetDesc->widget_dimensions.size.height / 2.0) - ((*it).second->getHeight() / 2.0);
 					(*it).second->setPosition(p);
 				}
 				break;
@@ -472,7 +484,7 @@ namespace QuickGUI
 					(*it).second->setHeight((*it).second->getHeight() + difference);
 					// Center vertically
 					Point p = (*it).second->getPosition();
-					p.y = (mWidgetDesc->dimensions.size.height / 2.0) - ((*it).second->getHeight() / 2.0);
+					p.y = (mWidgetDesc->widget_dimensions.size.height / 2.0) - ((*it).second->getHeight() / 2.0);
 					(*it).second->setPosition(p);
 				}
 				break;
@@ -502,7 +514,7 @@ namespace QuickGUI
 				{
 					// Center vertically
 					Point p = (*it)->getPosition();
-					p.y = (mWidgetDesc->dimensions.size.height / 2.0) - ((*it)->getHeight() / 2.0);
+					p.y = (mWidgetDesc->widget_dimensions.size.height / 2.0) - ((*it)->getHeight() / 2.0);
 					(*it)->setPosition(p);
 				}
 				break;
@@ -512,7 +524,7 @@ namespace QuickGUI
 					(*it)->setHeight((*it)->getHeight() + difference);
 					// Center vertically
 					Point p = (*it)->getPosition();
-					p.y = (mWidgetDesc->dimensions.size.height / 2.0) - ((*it)->getHeight() / 2.0);
+					p.y = (mWidgetDesc->widget_dimensions.size.height / 2.0) - ((*it)->getHeight() / 2.0);
 					(*it)->setPosition(p);
 				}
 				break;
@@ -542,7 +554,9 @@ namespace QuickGUI
 
 	void ContainerWidget::setHorzBarScrollPercent(float percent)
 	{
-		mDesc->horzBarScrollPercent = percent;
+		percent = Ogre::Math::Floor(Ogre::Math::Ceil(percent * 1000.0)) / 1000.0;
+
+		mDesc->containerwidget_horzBarScrollPercent = percent;
 
 		if(mHScrollBar)
 			mHScrollBar->setBarScrollPercent(percent);
@@ -550,7 +564,9 @@ namespace QuickGUI
 
 	void ContainerWidget::setHorzButtonScrollPercent(float percent)
 	{
-		mDesc->horzButtonScrollPercent = percent;
+		percent = Ogre::Math::Floor(Ogre::Math::Ceil(percent * 1000.0)) / 1000.0;
+
+		mDesc->containerwidget_horzButtonScrollPercent = percent;
 
 		if(mHScrollBar)
 			mHScrollBar->setButtonScrollPercent(percent);
@@ -558,26 +574,28 @@ namespace QuickGUI
 
 	void ContainerWidget::setSize(Size size)
 	{
-		Size previousSize = mWidgetDesc->dimensions.size;
+		size.roundUp();
+
+		Size previousSize = mWidgetDesc->widget_dimensions.size;
 
 		// Modified code from Widget::setSize, to incorporate ScrollBars
 		{
 			// Enforce max width
-			if((mWidgetDesc->maxSize.width > 0) && (size.width > mWidgetDesc->maxSize.width))
-				size.width = mWidgetDesc->maxSize.width;
+			if((mWidgetDesc->widget_maxSize.width > 0) && (size.width > mWidgetDesc->widget_maxSize.width))
+				size.width = mWidgetDesc->widget_maxSize.width;
 			// Enforce min width
-			else if((mWidgetDesc->minSize.width > 0) && (size.width < mWidgetDesc->minSize.width))
-				size.width = mWidgetDesc->minSize.width;
+			else if((mWidgetDesc->widget_minSize.width > 0) && (size.width < mWidgetDesc->widget_minSize.width))
+				size.width = mWidgetDesc->widget_minSize.width;
 
 			// Enforce min height
-			if((mWidgetDesc->maxSize.height > 0) && (size.height > mWidgetDesc->maxSize.height))
-				size.height = mWidgetDesc->maxSize.height;
+			if((mWidgetDesc->widget_maxSize.height > 0) && (size.height > mWidgetDesc->widget_maxSize.height))
+				size.height = mWidgetDesc->widget_maxSize.height;
 			// Enforce min width
-			else if((mWidgetDesc->minSize.height > 0) && (size.height < mWidgetDesc->minSize.height))
-				size.height = mWidgetDesc->minSize.height;
+			else if((mWidgetDesc->widget_minSize.height > 0) && (size.height < mWidgetDesc->widget_minSize.height))
+				size.height = mWidgetDesc->widget_minSize.height;
 
 			// Update size
-			mWidgetDesc->dimensions.size = size;
+			mWidgetDesc->widget_dimensions.size = size;
 
 			redraw();
 
@@ -585,7 +603,7 @@ namespace QuickGUI
 		}
 
 		// Get difference.  A larger size indicates a positive difference
-		Size difference = mWidgetDesc->dimensions.size - previousSize;
+		Size difference = mWidgetDesc->widget_dimensions.size - previousSize;
 
 		// Handle anchoring for Components
 		for(std::map<Ogre::String,Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
@@ -596,7 +614,7 @@ namespace QuickGUI
 				{
 					// Center vertically
 					Point p = (*it).second->getPosition();
-					p.x = (mWidgetDesc->dimensions.size.width / 2.0) - ((*it).second->getWidth() / 2.0);
+					p.x = (mWidgetDesc->widget_dimensions.size.width / 2.0) - ((*it).second->getWidth() / 2.0);
 					(*it).second->setPosition(p);
 				}
 				break;
@@ -606,7 +624,7 @@ namespace QuickGUI
 					(*it).second->setWidth((*it).second->getWidth() + difference.width);
 					// Center vertically
 					Point p = (*it).second->getPosition();
-					p.x = (mWidgetDesc->dimensions.size.width / 2.0) - ((*it).second->getWidth() / 2.0);
+					p.x = (mWidgetDesc->widget_dimensions.size.width / 2.0) - ((*it).second->getWidth() / 2.0);
 					(*it).second->setPosition(p);
 				}
 				break;
@@ -632,7 +650,7 @@ namespace QuickGUI
 				{
 					// Center vertically
 					Point p = (*it).second->getPosition();
-					p.y = (mWidgetDesc->dimensions.size.height / 2.0) - ((*it).second->getHeight() / 2.0);
+					p.y = (mWidgetDesc->widget_dimensions.size.height / 2.0) - ((*it).second->getHeight() / 2.0);
 					(*it).second->setPosition(p);
 				}
 				break;
@@ -642,7 +660,7 @@ namespace QuickGUI
 					(*it).second->setHeight((*it).second->getHeight() + difference.height);
 					// Center vertically
 					Point p = (*it).second->getPosition();
-					p.y = (mWidgetDesc->dimensions.size.height / 2.0) - ((*it).second->getHeight() / 2.0);
+					p.y = (mWidgetDesc->widget_dimensions.size.height / 2.0) - ((*it).second->getHeight() / 2.0);
 					(*it).second->setPosition(p);
 				}
 				break;
@@ -672,7 +690,7 @@ namespace QuickGUI
 				{
 					// Center vertically
 					Point p = (*it)->getPosition();
-					p.x = (mWidgetDesc->dimensions.size.width / 2.0) - ((*it)->getWidth() / 2.0);
+					p.x = (mWidgetDesc->widget_dimensions.size.width / 2.0) - ((*it)->getWidth() / 2.0);
 					(*it)->setPosition(p);
 				}
 				break;
@@ -682,7 +700,7 @@ namespace QuickGUI
 					(*it)->setWidth((*it)->getWidth() + difference.width);
 					// Center vertically
 					Point p = (*it)->getPosition();
-					p.x = (mWidgetDesc->dimensions.size.width / 2.0) - ((*it)->getWidth() / 2.0);
+					p.x = (mWidgetDesc->widget_dimensions.size.width / 2.0) - ((*it)->getWidth() / 2.0);
 					(*it)->setPosition(p);
 				}
 				break;
@@ -708,7 +726,7 @@ namespace QuickGUI
 				{
 					// Center vertically
 					Point p = (*it)->getPosition();
-					p.y = (mWidgetDesc->dimensions.size.height / 2.0) - ((*it)->getHeight() / 2.0);
+					p.y = (mWidgetDesc->widget_dimensions.size.height / 2.0) - ((*it)->getHeight() / 2.0);
 					(*it)->setPosition(p);
 				}
 				break;
@@ -718,7 +736,7 @@ namespace QuickGUI
 					(*it)->setHeight((*it)->getHeight() + difference.height);
 					// Center vertically
 					Point p = (*it)->getPosition();
-					p.y = (mWidgetDesc->dimensions.size.height / 2.0) - ((*it)->getHeight() / 2.0);
+					p.y = (mWidgetDesc->widget_dimensions.size.height / 2.0) - ((*it)->getHeight() / 2.0);
 					(*it)->setPosition(p);
 				}
 				break;
@@ -753,15 +771,15 @@ namespace QuickGUI
 
 		mSkinType = SkinTypeManager::getSingleton().getSkinType(getClass(),type);
 
-		mWidgetDesc->skinTypeName = type;
+		mWidgetDesc->widget_skinTypeName = type;
 
 		SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
 
 		if(mHScrollBar)
-			mHScrollBar->setPosition(Point(se->getBorderThickness(BORDER_LEFT),mWidgetDesc->dimensions.size.height - se->getBorderThickness(BORDER_BOTTOM) - mDesc->scrollBarThickness));
+			mHScrollBar->setPosition(Point(se->getBorderThickness(BORDER_LEFT),mWidgetDesc->widget_dimensions.size.height - se->getBorderThickness(BORDER_BOTTOM) - mDesc->containerwidget_scrollBarThickness));
 
 		if(mVScrollBar)
-			mVScrollBar->setPosition(Point(mWidgetDesc->dimensions.size.width - se->getBorderThickness(BORDER_RIGHT) - mVScrollBar->getWidth(),se->getBorderThickness(BORDER_TOP)));
+			mVScrollBar->setPosition(Point(mWidgetDesc->widget_dimensions.size.width - se->getBorderThickness(BORDER_RIGHT) - mVScrollBar->getWidth(),se->getBorderThickness(BORDER_TOP)));
 
 		// Initially set dimensions of ScrollBars and update client dimensions
 		updateClientDimensions();
@@ -780,12 +798,14 @@ namespace QuickGUI
 
 	bool ContainerWidget::supportsScrolling()
 	{
-		return mDesc->supportScrollBars;
+		return mDesc->containerwidget_supportScrollBars;
 	}
 
 	void ContainerWidget::setVertBarScrollPercent(float percent)
 	{
-		mDesc->vertBarScrollPercent = percent;
+		percent = Ogre::Math::Floor(Ogre::Math::Ceil(percent * 1000.0)) / 1000.0;
+
+		mDesc->containerwidget_vertBarScrollPercent = percent;
 
 		if(mVScrollBar)
 			mVScrollBar->setBarScrollPercent(percent);
@@ -793,7 +813,9 @@ namespace QuickGUI
 
 	void ContainerWidget::setVertButtonScrollPercent(float percent)
 	{
-		mDesc->vertButtonScrollPercent = percent;
+		percent = Ogre::Math::Floor(Ogre::Math::Ceil(percent * 1000.0)) / 1000.0;
+
+		mDesc->containerwidget_vertButtonScrollPercent = percent;
 
 		if(mVScrollBar)
 			mVScrollBar->setButtonScrollPercent(percent);
@@ -801,25 +823,27 @@ namespace QuickGUI
 
 	void ContainerWidget::setWidth(float pixelWidth)
 	{
-		float previousWidth = mWidgetDesc->dimensions.size.width;
+		pixelWidth = Ogre::Math::Ceil(pixelWidth);
+
+		float previousWidth = mWidgetDesc->widget_dimensions.size.width;
 
 		// Modified code from Widget::setWidth, to incorporate ScrollBars
 		{
 			// Enforce max width
-			if((mWidgetDesc->maxSize.width > 0) && (pixelWidth > mWidgetDesc->maxSize.width))
-				pixelWidth = mWidgetDesc->maxSize.width;
+			if((mWidgetDesc->widget_maxSize.width > 0) && (pixelWidth > mWidgetDesc->widget_maxSize.width))
+				pixelWidth = mWidgetDesc->widget_maxSize.width;
 			// Enforce min width
-			else if((mWidgetDesc->minSize.width > 0) && (pixelWidth < mWidgetDesc->minSize.width))
-				pixelWidth = mWidgetDesc->minSize.width;
+			else if((mWidgetDesc->widget_minSize.width > 0) && (pixelWidth < mWidgetDesc->widget_minSize.width))
+				pixelWidth = mWidgetDesc->widget_minSize.width;
 
-			mWidgetDesc->dimensions.size.width = pixelWidth;
+			mWidgetDesc->widget_dimensions.size.width = pixelWidth;
 
 			redraw();
 
 			updateClientDimensions();
 		}
 
-		float difference = mWidgetDesc->dimensions.size.width - previousWidth;
+		float difference = mWidgetDesc->widget_dimensions.size.width - previousWidth;
 
 		// Handle anchoring for Components
 		for(std::map<Ogre::String,Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
@@ -830,7 +854,7 @@ namespace QuickGUI
 				{
 					// Center vertically
 					Point p = (*it).second->getPosition();
-					p.x = (mWidgetDesc->dimensions.size.width / 2.0) - ((*it).second->getWidth() / 2.0);
+					p.x = (mWidgetDesc->widget_dimensions.size.width / 2.0) - ((*it).second->getWidth() / 2.0);
 					(*it).second->setPosition(p);
 				}
 				break;
@@ -840,7 +864,7 @@ namespace QuickGUI
 					(*it).second->setWidth((*it).second->getWidth() + difference);
 					// Center vertically
 					Point p = (*it).second->getPosition();
-					p.x = (mWidgetDesc->dimensions.size.width / 2.0) - ((*it).second->getWidth() / 2.0);
+					p.x = (mWidgetDesc->widget_dimensions.size.width / 2.0) - ((*it).second->getWidth() / 2.0);
 					(*it).second->setPosition(p);
 				}
 				break;
@@ -870,7 +894,7 @@ namespace QuickGUI
 				{
 					// Center vertically
 					Point p = (*it)->getPosition();
-					p.x = (mWidgetDesc->dimensions.size.width / 2.0) - ((*it)->getWidth() / 2.0);
+					p.x = (mWidgetDesc->widget_dimensions.size.width / 2.0) - ((*it)->getWidth() / 2.0);
 					(*it)->setPosition(p);
 				}
 				break;
@@ -880,7 +904,7 @@ namespace QuickGUI
 					(*it)->setWidth((*it)->getWidth() + difference);
 					// Center vertically
 					Point p = (*it)->getPosition();
-					p.x = (mWidgetDesc->dimensions.size.width / 2.0) - ((*it)->getWidth() / 2.0);
+					p.x = (mWidgetDesc->widget_dimensions.size.width / 2.0) - ((*it)->getWidth() / 2.0);
 					(*it)->setPosition(p);
 				}
 				break;
@@ -922,7 +946,7 @@ namespace QuickGUI
 	void ContainerWidget::updateClientDimensions()
 	{
 		mClientDimensions.position = Point::ZERO;
-		mClientDimensions.size = mWidgetDesc->dimensions.size;
+		mClientDimensions.size = mWidgetDesc->widget_dimensions.size;
 
 		if(mSkinType != NULL)
 		{
@@ -930,8 +954,8 @@ namespace QuickGUI
 			SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
 			mClientDimensions.position.x = se->getBorderThickness(BORDER_LEFT);
 			mClientDimensions.position.y = se->getBorderThickness(BORDER_TOP);
-			mClientDimensions.size.width = mWidgetDesc->dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
-			mClientDimensions.size.height = mWidgetDesc->dimensions.size.height - (se->getBorderThickness(BORDER_TOP) + se->getBorderThickness(BORDER_BOTTOM));
+			mClientDimensions.size.width = mWidgetDesc->widget_dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
+			mClientDimensions.size.height = mWidgetDesc->widget_dimensions.size.height - (se->getBorderThickness(BORDER_TOP) + se->getBorderThickness(BORDER_BOTTOM));
 
 			// First we want to adjust the client dimensions, depending on whether the scrollbars are visible.
 

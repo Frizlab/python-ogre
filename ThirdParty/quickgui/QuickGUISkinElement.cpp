@@ -28,7 +28,7 @@ namespace QuickGUI
 
 		Ogre::TextureManager* tm = Ogre::TextureManager::getSingletonPtr();
 		if(!tm->resourceExists(mTextureName))
-			tm->load(mTextureName,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+			tm->load(mTextureName,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D, 0, 1.0f);
 
 		Ogre::TexturePtr tex = tm->getByName(mTextureName);
 		float texWidth = tex->getWidth();
@@ -96,7 +96,6 @@ namespace QuickGUI
 			size_t texHeight = tp->getHeight();
 			const size_t buffSize = texWidth * texHeight * 4;
 			unsigned char* data = OGRE_ALLOC_T(unsigned char, buffSize, Ogre::MEMCATEGORY_GENERAL);
-//			unsigned char *data = new unsigned char[buffSize];
 			
 			// Clear buffer
 			memset(data, 0, buffSize);

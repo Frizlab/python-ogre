@@ -15,12 +15,12 @@ namespace QuickGUI
 		{
 			for(std::map<Ogre::String,ScriptDefinition*>::iterator it2 = (*it1).second.begin(); it2 != (*it1).second.end(); ++it2)
 			{
-				delete (*it2).second;
+				OGRE_DELETE_T((*it2).second,ScriptDefinition,Ogre::MEMCATEGORY_GENERAL);
 			}
 		}
 
 		for(std::map<Ogre::String, DefinitionProperty*>::iterator it = mProperties.begin(); it != mProperties.end(); ++it)
-			delete (*it).second;
+			OGRE_DELETE_T((*it).second,DefinitionProperty,Ogre::MEMCATEGORY_GENERAL);
 	}
 
 	ScriptDefinition* ScriptDefinition::findDefinition(const Ogre::String& type, const Ogre::String& id)

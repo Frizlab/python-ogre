@@ -24,6 +24,7 @@ namespace QuickGUI
 			float baseLine = ((*it)->fontPtr->getTrueTypeMaxBearingY() >> 6);
 
 			(*it)->dimensions.position.y = maxBaseLine - baseLine;
+			(*it)->dimensions.position.roundUp();
 		}
 	}
 
@@ -56,11 +57,14 @@ namespace QuickGUI
 
 			c->dimensions.position.y = maxBaseLine - baseLine;
 		}
+
+		c->dimensions.position.roundUp();
 	}
 
 	void TextLine::draw(Point p)
 	{
 		mPosition = p;
+		mPosition.roundUp();
 		Brush* brush = Brush::getSingletonPtr();
 		Ogre::String currentTexture = "TextSelection";
 
@@ -100,6 +104,7 @@ namespace QuickGUI
 			Size s(((uvCoords.right - uvCoords.left) * texturePtr->getWidth()),((uvCoords.bottom - uvCoords.top) * texturePtr->getHeight()));
 
 			Point p = mCharacters.front()->dimensions.position;
+			p.roundUp();
 
 			for(std::vector<Character*>::iterator it = mCharacters.begin(); it != --(mCharacters.end()); ++it)
 			{
@@ -136,6 +141,19 @@ namespace QuickGUI
 		return mCharacters.empty();
 	}
 
+	Character* TextLine::getCharacter(int index)
+	{
+		if(mCharacters.empty())
+			return NULL;
+
+		if(index < 0)
+			index = 0;
+		else if(index >= static_cast<int>(mCharacters.size()))
+			index = static_cast<int>(mCharacters.size()) - 1;
+
+		return mCharacters[index];
+	}
+
 	int TextLine::getCursorIndexAtPosition(Point p)
 	{
 		int index = 0;
@@ -159,7 +177,7 @@ namespace QuickGUI
 				{
 					// If we make it here we know the position is to the left of this cursor.
 					// If there is previous character and the position is closer to the previous character, return its index.
-					if((index > 0) &&  (p.x < (charPos + (s.width / 2.0))))
+					if((index > 0) &&  (p.x < (charPos - (s.width / 2.0))))
 						return (index - 1);
 					else
 						return index;
@@ -178,7 +196,7 @@ namespace QuickGUI
 				{
 					// If we make it here we know the position is to the left of this cursor.
 					// If there is previous character and the position is closer to the previous character, return its index.
-					if((index > 0) &&  (p.x < ((*it)->dimensions.position.x + ((*it)->dimensions.size.width / 2.0))))
+					if((index > 0) &&  (p.x < ((*it)->dimensions.position.x - (mCharacters[index - 1]->dimensions.size.width / 2.0))))
 						return (index - 1);
 					else
 						return index;

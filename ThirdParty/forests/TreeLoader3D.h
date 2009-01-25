@@ -72,7 +72,7 @@ public:
 	#else
 		void
 	#endif
-	deleteTrees(const Ogre::Vector3 &position, float radius, Ogre::Entity *type = NULL);
+		deleteTrees(const Ogre::Vector3 &position, Ogre::Real radius, Ogre::Entity *type = NULL);
 
 #ifdef PAGEDGEOMETRY_USER_DATA
 	/** \brief Find trees within a certain radius of the given coordinates.
@@ -105,7 +105,8 @@ public:
 	to this TreeLoader3D fairly efficiently.
 
 	\see The TreeIterator class documentation for more info.
-	*/
+	\warning Be sure to test TreeIterator3D::hasMoreElements() before calling other members of the
+	TreeIterator3D class. */
 	TreeIterator3D getTrees();
 
 	/** \brief Sets the color map used to color trees

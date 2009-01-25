@@ -7,24 +7,34 @@ namespace QuickGUI
 
 	void Label::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("Label");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("Label");
 		d->defineSkinElement(BACKGROUND);
 		d->definitionComplete();
 
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("Label",d);
 	}
 
-	LabelDesc::LabelDesc() :
-		WidgetDesc()
+	LabelDesc::LabelDesc(const Ogre::String& id) :
+		WidgetDesc(id)
 	{
-		verticalTextAlignment = TEXT_ALIGNMENT_VERTICAL_CENTER;
+		resetToDefault();
+	}
+
+	void LabelDesc::resetToDefault()
+	{
+		WidgetDesc::resetToDefault();
+
+		label_defaultFontName = Text::getFirstAvailableFont()->getName();
+		label_defaultColor = Ogre::ColourValue::White;
+		label_verticalTextAlignment = TEXT_ALIGNMENT_VERTICAL_CENTER;
+		textDesc.resetToDefault();
 	}
 
 	void LabelDesc::serialize(SerialBase* b)
 	{
 		WidgetDesc::serialize(b);
 
-		b->IO("VerticalTextAlignment",&verticalTextAlignment);
+		b->IO("VerticalTextAlignment",&label_verticalTextAlignment);
 
 		textDesc.serialize(b);
 	}
@@ -38,7 +48,7 @@ namespace QuickGUI
 
 	Label::~Label()
 	{
-		delete mText;
+		OGRE_DELETE_T(mText,Text,Ogre::MEMCATEGORY_GENERAL);
 	}
 
 	void Label::_initialize(WidgetDesc* d)
@@ -49,7 +59,7 @@ namespace QuickGUI
 
 		LabelDesc* ld = dynamic_cast<LabelDesc*>(d);
 
-		setSkinType(d->skinTypeName);
+		setSkinType(d->widget_skinTypeName);
 
 		// Make a copy of the Text Desc.  The Text object will
 		// modify it directly, which is used for serialization.
@@ -57,43 +67,64 @@ namespace QuickGUI
 
 		// Store pointer to SkinType
 		SkinType* st = mSkinType;
-		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
+		if(!mWidgetDesc->widget_enabled && mWidgetDesc->widget_disabledSkinType != "")
 		{
-			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->widget_disabledSkinType);
 		}
 
 		SkinElement* se = st->getSkinElement(mSkinElementName);
 
-		if(mDesc->dimensions.size.width == 0)
+		if(mDesc->widget_dimensions.size.width == 0)
 		{
 			if(mDesc->textDesc.segments.empty())
-				mDesc->dimensions.size.width = 50;
+				mDesc->widget_dimensions.size.width = 50;
 			else
-				mDesc->dimensions.size.width = se->getBorderThickness(BORDER_LEFT) + mDesc->textDesc.getTextWidth() + se->getBorderThickness(BORDER_RIGHT);
+				mDesc->widget_dimensions.size.width = se->getBorderThickness(BORDER_LEFT) + mDesc->textDesc.getTextWidth() + se->getBorderThickness(BORDER_RIGHT);
 		}
-		if(mDesc->dimensions.size.height == 0)
+		if(mDesc->widget_dimensions.size.height == 0)
 		{
 			if(mDesc->textDesc.segments.empty())
-				mDesc->dimensions.size.height = 20;
+				mDesc->widget_dimensions.size.height = 20;
 			else
-				mDesc->dimensions.size.height = se->getBorderThickness(BORDER_TOP) + mDesc->textDesc.getTextHeight() + se->getBorderThickness(BORDER_BOTTOM);
+				mDesc->widget_dimensions.size.height = se->getBorderThickness(BORDER_TOP) + mDesc->textDesc.getTextHeight() + se->getBorderThickness(BORDER_BOTTOM);
 		}
+		// Now that dimensions may have changed, update client dimensions
+		updateClientDimensions();
 
-		mDesc->verticalTextAlignment = ld->verticalTextAlignment;
-		mDesc->textDesc.allottedWidth = ld->dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
-		mText = new Text(mDesc->textDesc);
-
-		mCurrentFontName = Text::getFirstAvailableFont()->getName();
-		mCurrentColourValue = Ogre::ColourValue::White;
+		mDesc->label_verticalTextAlignment = ld->label_verticalTextAlignment;
+		mDesc->textDesc.allottedWidth = mDesc->widget_dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
+		mText = OGRE_NEW_T(Text,Ogre::MEMCATEGORY_GENERAL)(mDesc->textDesc);
 	}
 
-	Widget* Label::factory(const Ogre::String& widgetName)
+	void Label::addText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv)
 	{
-		Widget* newWidget = new Label(widgetName);
+		mText->addText(s,fp,cv);
 
-		newWidget->_createDescObject("LabelDesc");
+		redraw();
+	}
 
-		return newWidget;
+	void Label::addText(Ogre::UTFString s, const Ogre::String& fontName, const Ogre::ColourValue& cv)
+	{
+		addText(s,Text::getFont(fontName),cv);
+	}
+
+	void Label::addText(Ogre::UTFString s)
+	{
+		addText(s,mDesc->label_defaultFontName,mDesc->label_defaultColor);
+	}
+
+	void Label::addText(std::vector<TextSegment> segments)
+	{
+		mText->addText(segments);
+
+		redraw();
+	}
+
+	void Label::clearText()
+	{
+		mText->clearText();
+
+		redraw();
 	}
 
 	Ogre::String Label::getClass()
@@ -118,22 +149,22 @@ namespace QuickGUI
 
 	VerticalTextAlignment Label::getVerticalTextAlignment()
 	{
-		return mDesc->verticalTextAlignment;
+		return mDesc->label_verticalTextAlignment;
 	}
 
 	void Label::onDraw()
 	{
 		Brush* brush = Brush::getSingletonPtr();
 
-		brush->setFilterMode(mDesc->brushFilterMode);
+		brush->setFilterMode(mDesc->widget_brushFilterMode);
 
 		SkinType* st = mSkinType;
-		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
+		if(!mWidgetDesc->widget_enabled && mWidgetDesc->widget_disabledSkinType != "")
 		{
-			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->widget_disabledSkinType);
 		}
 
-		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
+		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size),st->getSkinElement(mSkinElementName));
 
 		Ogre::ColourValue prevColor = brush->getColour();
 		Rect prevClipRegion = brush->getClipRegion();
@@ -143,13 +174,13 @@ namespace QuickGUI
 		float textHeight = mText->getTextHeight();
 		float yPos = 0;
 
-		switch(mDesc->verticalTextAlignment)
+		switch(mDesc->label_verticalTextAlignment)
 		{
 		case TEXT_ALIGNMENT_VERTICAL_BOTTOM:
-			yPos = mDesc->dimensions.size.height - st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM) - textHeight;
+			yPos = mDesc->widget_dimensions.size.height - st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM) - textHeight;
 			break;
 		case TEXT_ALIGNMENT_VERTICAL_CENTER:
-			yPos = (mDesc->dimensions.size.height / 2.0) - (textHeight / 2.0);
+			yPos = (mDesc->widget_dimensions.size.height / 2.0) - (textHeight / 2.0);
 			break;
 		case TEXT_ALIGNMENT_VERTICAL_TOP:
 			yPos = st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_TOP);
@@ -175,7 +206,7 @@ namespace QuickGUI
 
 	void Label::setColor(const Ogre::ColourValue& cv)
 	{
-		mCurrentColourValue = cv;
+		mDesc->label_defaultColor = cv;
 
 		mText->setColor(cv);
 
@@ -210,9 +241,21 @@ namespace QuickGUI
 		redraw();
 	}
 
+	void Label::setDefaultColor(const Ogre::ColourValue& cv)
+	{
+		mDesc->label_defaultColor = cv;
+	}
+
+	void Label::setDefaultFont(const Ogre::String& fontName)
+	{
+		mDesc->label_defaultFontName = fontName;
+		mCurrentFont = Text::getFont(fontName);
+	}
+
 	void Label::setFont(const Ogre::String& fontName)
 	{
-		mCurrentFontName = fontName;
+		mDesc->label_defaultFontName = fontName;
+		mCurrentFont = Text::getFont(fontName);
 
 		mText->setFont(fontName);
 
@@ -256,7 +299,7 @@ namespace QuickGUI
 
 	void Label::setVerticalTextAlignment(VerticalTextAlignment a)
 	{
-		mDesc->verticalTextAlignment = a;
+		mDesc->label_verticalTextAlignment = a;
 
 		redraw();
 	}
@@ -275,7 +318,14 @@ namespace QuickGUI
 
 	void Label::setText(Ogre::UTFString s)
 	{
-		setText(s,mCurrentFontName,mCurrentColourValue);
+		setText(s,mDesc->label_defaultFontName,mDesc->label_defaultColor);
+	}
+
+	void Label::setText(std::vector<TextSegment> segments)
+	{
+		mText->setText(segments);
+
+		redraw();
 	}
 
 	void Label::setVerticalLineSpacing(float distance)
@@ -284,6 +334,15 @@ namespace QuickGUI
 			return;
 
 		mText->setVerticalLineSpacing(distance);
+
+		redraw();
+	}
+
+	void Label::updateClientDimensions()
+	{
+		Widget::updateClientDimensions();
+		if(mText != NULL)
+			mText->setAllottedWidth(mClientDimensions.size.width);
 
 		redraw();
 	}

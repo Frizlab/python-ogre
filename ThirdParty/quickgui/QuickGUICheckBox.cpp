@@ -12,7 +12,7 @@ namespace QuickGUI
 
 	void CheckBox::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("CheckBox");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("CheckBox");
 		d->defineSkinElement(CHECKED);
 		d->defineSkinElement(CHECKED_DOWN);
 		d->defineSkinElement(CHECKED_OVER);
@@ -24,17 +24,24 @@ namespace QuickGUI
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("CheckBox",d);
 	}
 
-	CheckBoxDesc::CheckBoxDesc() :
-		WidgetDesc()
+	CheckBoxDesc::CheckBoxDesc(const Ogre::String& id) :
+		WidgetDesc(id)
 	{
-		checked = false;
+		resetToDefault();
+	}
+
+	void CheckBoxDesc::resetToDefault()
+	{
+		WidgetDesc::resetToDefault();
+
+		checkbox_checked = false;
 	}
 
 	void CheckBoxDesc::serialize(SerialBase* b)
 	{
 		WidgetDesc::serialize(b);
 
-		b->IO("Checked",&checked);
+		b->IO("Checked",&checkbox_checked);
 	}
 
 	CheckBox::CheckBox(const Ogre::String& name) :
@@ -45,6 +52,12 @@ namespace QuickGUI
 
 	CheckBox::~CheckBox()
 	{
+		// Clean up all user defined event handlers.
+		for(int index = 0; index < CHECKBOX_EVENT_COUNT; ++index)
+		{
+			for(std::vector<EventHandlerSlot*>::iterator it = mCheckBoxEventHandlers[index].begin(); it != mCheckBoxEventHandlers[index].end(); ++it)
+				OGRE_DELETE_T((*it),EventHandlerSlot,Ogre::MEMCATEGORY_GENERAL);
+		}
 	}
 
 	void CheckBox::_initialize(WidgetDesc* d)
@@ -55,22 +68,13 @@ namespace QuickGUI
 
 		CheckBoxDesc* cbd = dynamic_cast<CheckBoxDesc*>(d);
 
-		setSkinType(d->skinTypeName);
-		setChecked(cbd->checked);
+		setSkinType(d->widget_skinTypeName);
+		setChecked(cbd->checkbox_checked);
 
 		Widget::addWidgetEventHandler(WIDGET_EVENT_MOUSE_ENTER,&CheckBox::onMouseEnter,this);
 		Widget::addWidgetEventHandler(WIDGET_EVENT_MOUSE_LEAVE,&CheckBox::onMouseLeave,this);
 		Widget::addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&CheckBox::onMouseLeftButtonDown,this);
 		Widget::addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_UP,&CheckBox::onMouseLeftButtonUp,this);
-	}
-
-	Widget* CheckBox::factory(const Ogre::String& widgetName)
-	{
-		Widget* newWidget = new CheckBox(widgetName);
-		
-		newWidget->_createDescObject("CheckBoxDesc");
-
-		return newWidget;
 	}
 
 	void CheckBox::addCheckBoxEventHandler(CheckBoxEvent EVENT, EventHandlerSlot* function)
@@ -98,25 +102,25 @@ namespace QuickGUI
 
 	bool CheckBox::getChecked()
 	{
-		return mDesc->checked;
+		return mDesc->checkbox_checked;
 	}
 
 	void CheckBox::onDraw()
 	{
 		Brush* brush = Brush::getSingletonPtr();
 
-		brush->setFilterMode(mDesc->brushFilterMode);
+		brush->setFilterMode(mDesc->widget_brushFilterMode);
 
 		SkinType* st = mSkinType;
-		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
-			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+		if(!mWidgetDesc->widget_enabled && mWidgetDesc->widget_disabledSkinType != "")
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->widget_disabledSkinType);
 
-		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
+		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size),st->getSkinElement(mSkinElementName));
 	}
 
 	void CheckBox::onMouseEnter(const EventArgs& args)
 	{
-		if(mDesc->checked)
+		if(mDesc->checkbox_checked)
 			mSkinElementName = CHECKED_OVER;
 		else
 			mSkinElementName = UNCHECKED_OVER;
@@ -126,7 +130,7 @@ namespace QuickGUI
 
 	void CheckBox::onMouseLeave(const EventArgs& args)
 	{
-		if(mDesc->checked)
+		if(mDesc->checkbox_checked)
 			mSkinElementName = CHECKED;
 		else
 			mSkinElementName = UNCHECKED;
@@ -140,7 +144,7 @@ namespace QuickGUI
 
 		if(mea.button == MB_Left)
 		{
-			if(mDesc->checked)
+			if(mDesc->checkbox_checked)
 				mSkinElementName = CHECKED_DOWN;
 			else
 				mSkinElementName = UNCHECKED_DOWN;
@@ -155,9 +159,9 @@ namespace QuickGUI
 
 		if(mea.button == MB_Left)
 		{
-			mDesc->checked = !mDesc->checked;
+			mDesc->checkbox_checked = !mDesc->checkbox_checked;
 
-			if(mDesc->checked)
+			if(mDesc->checkbox_checked)
 				mSkinElementName = CHECKED_OVER;
 			else
 				mSkinElementName = UNCHECKED_OVER;
@@ -169,14 +173,14 @@ namespace QuickGUI
 		}
 	}
 
-	void CheckBox::setChecked(bool checked)
+	void CheckBox::setChecked(bool checkbox_checked)
 	{
-		if(mDesc->checked == checked)
+		if(mDesc->checkbox_checked == checkbox_checked)
 			return;
 
-		mDesc->checked = checked;
+		mDesc->checkbox_checked = checkbox_checked;
 
-		if(mDesc->checked)
+		if(mDesc->checkbox_checked)
 			mSkinElementName = CHECKED;
 		else
 			mSkinElementName = UNCHECKED;

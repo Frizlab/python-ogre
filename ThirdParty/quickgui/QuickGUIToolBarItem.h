@@ -13,15 +13,29 @@ namespace QuickGUI
 	{
 	public:
 		friend class ToolBar;
+		template<typename BaseClassType>
+		friend class Factory;
+//	protected:
+		ToolBarItemDesc(const Ogre::String& id);
+		virtual ~ToolBarItemDesc() {}
 	public:
-		ToolBarItemDesc();
 
 		/// For Horizontally oriented ToolBars, this is the width of the Widget.
 		/// For Vertically oriented ToolBars, this is the height of the widget.
-		float length;
+		float toolbaritem_length;
 
 		/// ToolBar that this Widget belongs to
 		ToolBar* toolBar;
+
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
+
+		/**
+		* Outlines how the desc class is written to XML and read from XML.
+		*/
+		virtual void serialize(SerialBase* b);
 	};
 
 	class _QuickGUIExport ToolBarItem :

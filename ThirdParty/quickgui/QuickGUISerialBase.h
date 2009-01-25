@@ -3,6 +3,7 @@
 
 #include "QuickGUIAnchors.h"
 #include "QuickGUIBrushEnums.h"
+#include "QuickGUIConsoleEnums.h"
 #include "QuickGUIException.h"
 #include "QuickGUIExportDLL.h"
 #include "QuickGUIProgressBarEnums.h"
@@ -37,8 +38,9 @@ namespace QuickGUI
 		virtual bool isSerialWriter() = 0;
 		virtual bool isSerialReader() = 0;
 		// Serialization of properties
-		virtual void IO(const std::string& propertyName, unsigned short* member) = 0;
+		virtual void IO(const Ogre::String& propertyName, unsigned short* member) = 0;
 		virtual void IO(const Ogre::String& propertyName, BrushFilterMode* member) = 0;
+		virtual void IO(const Ogre::String& propertyName, ConsoleLayout* member) = 0;
 		virtual void IO(const Ogre::String& propertyName, int* member) = 0;
 		virtual void IO(const Ogre::String& propertyName, unsigned int* member) = 0;
 		virtual void IO(const Ogre::String& propertyName, Ogre::ColourValue* member) = 0;

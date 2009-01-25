@@ -18,7 +18,7 @@ namespace QuickGUI
 	{
 	public:
 		TimerManager();
-		~TimerManager();
+		virtual ~TimerManager();
 
 		static TimerManager& getSingleton(void);
 		static TimerManager* getSingletonPtr(void);

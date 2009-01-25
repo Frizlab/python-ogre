@@ -10,6 +10,9 @@
 
 namespace QuickGUI
 {
+	// forward declarations
+	class Widget;
+
 	class _QuickGUIExport TextCursor
 	{
 	public:
@@ -18,11 +21,12 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
-		TextCursor();
+		TextCursor(Widget* owner);
 		~TextCursor();
 
 		/**
 		* Returns the position of the TextCursor.
+		* NOTE: The position is relative to the viewport the TextCursor will be drawn in. (global position)
 		*/
 		Point getPosition();
 		/**
@@ -64,6 +68,8 @@ namespace QuickGUI
 	protected:
 		Rect mDimensions;
 		bool mVisible;
+
+		Widget* mOwner;
 
 		SkinType* mSkinType;
 		// storing pointer to save lookup time for drawing operation.

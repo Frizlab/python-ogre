@@ -19,7 +19,12 @@ namespace QuickGUI
 			public WindowDesc
 	{
 	public:
-		SheetDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		SheetDesc(const Ogre::String& id);
+		virtual ~SheetDesc() {}
+	public:
 
 		/**
 		* Returns the class of Desc object this is.
@@ -30,8 +35,10 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getWidgetClass() { return "Sheet"; }
 
-		// Factory method
-		static WidgetDesc* factory() { return new SheetDesc(); }
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
 
 		/**
 		* Outlines how the desc class is written to XML and read from XML.
@@ -61,24 +68,16 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
+		// SheetManager creates/destroys Sheet instances
+		friend class SheetManager;
+		// GUIManager calls protected 'draw' function
 		friend class GUIManager;
 		friend class SerialReader;
+		// Menu class creates a MenuPanel which is a Window, and needs to be able to add/remove them.
 		friend class Menu;
+		// ComboBox class creates a ListPanel which is a Window, and needs to be able to add/remove them.
+		friend class ComboBox;
 	public:
-		/**
-		* Standard Constructor
-		*/
-		Sheet(SheetDesc& d);
-
-		/**
-		* Advanced Constructor - parses a file and builds a Sheet and any widgets owned by the Sheet.
-		*/
-		Sheet(const Ogre::String& fileName);
-
-		/**
-		* Destructor.
-		*/
-		virtual ~Sheet();
 
 		/**
 		* Internal function, do not use.
@@ -91,8 +90,8 @@ namespace QuickGUI
 		* Iterates through free list and destroys all widgets queued for deletion.
 		*/
 		void cleanupWidgets();
-		ModalWindow* createModalWindow(ModalWindowDesc& d);
-		Window* createWindow(WindowDesc& d);
+		ModalWindow* createModalWindow(ModalWindowDesc* d);
+		Window* createWindow(WindowDesc* d);
 
 		void destroyModalWindow(const Ogre::String& name);
 		void destroyModalWindow(ModalWindow* w);
@@ -158,6 +157,20 @@ namespace QuickGUI
 		void setKeyboardListener(Widget* w);
 
 	protected:
+		/**
+		* Standard Constructor
+		*/
+		Sheet(SheetDesc* d);
+
+		/**
+		* Advanced Constructor - parses a file and builds a Sheet and any widgets owned by the Sheet.
+		*/
+		Sheet(const Ogre::String& fileName);
+
+		/**
+		* Destructor.
+		*/
+		virtual ~Sheet();
 
 		std::list<ModalWindow*> mModalWindows;
 		std::list<Window*> mWindows;
@@ -166,6 +179,8 @@ namespace QuickGUI
 
 		Window* mWindowInFocus;
 		Widget* mKeyboardListener;
+
+		bool mDeleting;
 
 		/**
 		* Internal function to add a window. (also used by SerialReader class)

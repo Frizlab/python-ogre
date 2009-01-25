@@ -3,8 +3,8 @@
 #include "QuickGUIScriptReader.h"
 #include "QuickGUIScriptWriter.h"
 #include "QuickGUISerialReader.h"
-#include "QuickGUIWidgetDescFactoryManager.h"
 #include "QuickGUISkinDefinitionManager.h"
+#include "QuickGUIFactoryManager.h"
 
 namespace QuickGUI
 {
@@ -12,7 +12,7 @@ namespace QuickGUI
 
 	void Sheet::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("Sheet");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("Sheet");
 		d->defineSkinElement(BACKGROUND);
 		d->defineComponent(HSCROLLBAR);
 		d->defineComponent(VSCROLLBAR);
@@ -21,13 +21,20 @@ namespace QuickGUI
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("Sheet",d);
 	}
 
-	SheetDesc::SheetDesc() :
-		WindowDesc()
+	SheetDesc::SheetDesc(const Ogre::String& id) :
+		WindowDesc(id)
 	{
-		WindowDesc::titleBar = false;
-		resizable = false;
-		horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
-		verticalAnchor = ANCHOR_VERTICAL_TOP_BOTTOM;
+		resetToDefault();
+	}
+
+	void SheetDesc::resetToDefault()
+	{
+		WindowDesc::resetToDefault();
+
+		WindowDesc::window_titleBar = false;
+		widget_resizable = false;
+		widget_horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
+		widget_verticalAnchor = ANCHOR_VERTICAL_TOP_BOTTOM;
 	}
 
 	void SheetDesc::serialize(SerialBase* b)
@@ -38,14 +45,16 @@ namespace QuickGUI
 		PanelDesc::serialize(b);
 	}
 
-	Sheet::Sheet(SheetDesc& d) :
-		Window(d.name),
-		mWindowInFocus(0),
-		mKeyboardListener(0)
+	Sheet::Sheet(SheetDesc* d) :
+		Window(d->widget_name),
+		mKeyboardListener(0),
+		mDeleting(false)
 	{
 		mSkinElementName = BACKGROUND;
 		_createDescObject("SheetDesc");
-		_initialize(&d);
+		_initialize(d);
+
+		mWindowInFocus = this;
 	}
 
 	Sheet::Sheet(const Ogre::String& fileName) :
@@ -64,7 +73,7 @@ namespace QuickGUI
 		if(sc->getDefinitions().empty())
 			throw Exception(Exception::ERR_SERIALIZATION,"No definitions found in file \"" + fileName + "\"!","GUIManager::reloadSheetFromFile");
 
-		mWidgetDesc->name = sc->getDefinitions().front()->getID();
+		mWidgetDesc->widget_name = sc->getDefinitions().front()->getID();
 		serialize(SerialReader::getSingletonPtr());
 
 		// remove all temporary definitions found from parsing the file
@@ -73,13 +82,21 @@ namespace QuickGUI
 
 	Sheet::~Sheet()
 	{
+		mDeleting = true;
+
+		WidgetFactory<Widget>* widgetFactory = FactoryManager::getSingleton().getWidgetFactory();
+		for(std::list<ModalWindow*>::iterator it = mModalWindows.begin(); it != mModalWindows.end(); ++it)
+			widgetFactory->destroyInstance((*it)->getName());
+
+		for(std::list<Window*>::iterator it = mWindows.begin(); it != mWindows.end(); ++it)
+			widgetFactory->destroyInstance((*it)->getName());
 	}
 
 	void Sheet::_initialize(WidgetDesc* d)
 	{
 		Window::_initialize(d);
 
-		setSkinType(d->skinTypeName);
+		setSkinType(d->widget_skinTypeName);
 
 		mWidgetDesc->sheet = this;
 	}
@@ -113,20 +130,20 @@ namespace QuickGUI
 	{
 		for(std::list<Widget*>::iterator it = mFreeList.begin(); it != mFreeList.end(); ++it)
 		{
-			delete (*it);
+			OGRE_DELETE_T((*it),Widget,Ogre::MEMCATEGORY_GENERAL);
 		}
 
 		mFreeList.clear();
 	}
 
-	ModalWindow* Sheet::createModalWindow(ModalWindowDesc& d)
+	ModalWindow* Sheet::createModalWindow(ModalWindowDesc* d)
 	{
 		ModalWindow* w = dynamic_cast<ModalWindow*>(Widget::create("ModalWindow",d));
 		addModalWindow(w);
 		return w;
 	}
 
-	Window* Sheet::createWindow(WindowDesc& d)
+	Window* Sheet::createWindow(WindowDesc* d)
 	{
 		Window* w = dynamic_cast<Window*>(Widget::create("Window",d));
 		addWindow(w);
@@ -233,18 +250,28 @@ namespace QuickGUI
 
 	Window* Sheet::findWindowAtPoint(const Point& p, bool ignoreDisabled)
 	{
+		ModalWindow* mw = NULL;
+
 		for(std::list<ModalWindow*>::reverse_iterator it = mModalWindows.rbegin(); it != mModalWindows.rend(); ++it)
 		{
 			// Visible Modal Window found at point p
-			if((*it)->getVisible() && (*it)->getDimensions().isPointWithinBounds(p))
+			if((*it)->getVisible())
 			{
-				// If we are ignoring disabled windows and the window is disabled, do not return it.
-				if(ignoreDisabled && !((*it)->getEnabled()))
-					continue;
+				mw = (*it);
 
-				return (*it);
+				if((*it)->getDimensions().isPointWithinBounds(p))
+				{
+					// If we are ignoring disabled windows and the window is disabled, do not return it.
+					if(ignoreDisabled && !((*it)->getEnabled()))
+						continue;
+
+					return (*it);
+				}
 			}
 		}
+
+		if(mw != NULL)
+			return mw;
 
 		for(std::list<Window*>::reverse_iterator it = mWindows.rbegin(); it != mWindows.rend(); ++it)
 		{
@@ -264,13 +291,13 @@ namespace QuickGUI
 
 	bool Sheet::focusWindow(Window* w)
 	{
-		// Cannot bring the Sheet in front of child Windows
-		if(w == this)
-			return false;
-
-		std::list<Window*>::iterator it = std::find(mWindows.begin(),mWindows.end(),w);
-		if(it == mWindows.end())
-			throw Exception(Exception::ERR_INVALID_CHILD,"Window \"" + w->getName() + "\" does not belong to Sheet \"" + getName() + "\".", "Sheet::focusWindow");
+		if(w != this)
+		{
+			std::list<Window*>::iterator it1 = std::find(mWindows.begin(),mWindows.end(),w);
+			std::list<ModalWindow*>::iterator it2 = std::find(mModalWindows.begin(),mModalWindows.end(),w);
+			if((it1 == mWindows.end()) && (it2 == mModalWindows.end()))
+				throw Exception(Exception::ERR_INVALID_CHILD,"Window \"" + w->getName() + "\" does not belong to Sheet \"" + getName() + "\".", "Sheet::focusWindow");
+		}
 
 		if(mWindowInFocus != w)
 		{
@@ -281,6 +308,35 @@ namespace QuickGUI
 			}
 
 			mWindowInFocus = w;
+
+			// Move window to end of list
+			if(mWindowInFocus != this)
+			{
+				if(mWindowInFocus->getClass() == "ModalWindow")
+				{
+					for(std::list<ModalWindow*>::iterator it = mModalWindows.begin(); it != mModalWindows.end(); ++it)
+					{
+						if((*it) == mWindowInFocus)
+						{
+							mModalWindows.erase(it);
+							mModalWindows.push_back(dynamic_cast<ModalWindow*>(mWindowInFocus));
+							break;
+						}
+					}
+				}
+				else
+				{
+					for(std::list<Window*>::iterator it = mWindows.begin(); it != mWindows.end(); ++it)
+					{
+						if((*it) == mWindowInFocus)
+						{
+							mWindows.erase(it);
+							mWindows.push_back(mWindowInFocus);
+							break;
+						}
+					}
+				}
+			}
 
 			if(mWindowInFocus)
 			{
@@ -396,7 +452,7 @@ namespace QuickGUI
 			for(std::list<ScriptDefinition*>::iterator it = defList.begin(); it != defList.end(); ++it)
 			{
 				// Create Empty Widget, supplying class name and widget name from script
-				Widget* newWidget = WidgetFactoryManager::getSingleton().createWidget((*it)->getType(),(*it)->getID());
+				Widget* newWidget = FactoryManager::getSingleton().getWidgetFactory()->createInstance((*it)->getType(),(*it)->getID());
 
 				// Populate Desc object from Script Text, and initialize widget
 				newWidget->serialize(b);
@@ -423,7 +479,7 @@ namespace QuickGUI
 			for(std::list<ScriptDefinition*>::iterator it = defList.begin(); it != defList.end(); ++it)
 			{
 				// Create Empty Widget, supplying class name and widget name from script
-				Widget* newWidget = WidgetFactoryManager::getSingleton().createWidget((*it)->getType(),(*it)->getID());
+				Widget* newWidget = FactoryManager::getSingleton().getWidgetFactory()->createInstance((*it)->getType(),(*it)->getID());
 
 				// Populate Desc object from Script Text, and initialize widget
 				newWidget->serialize(b);

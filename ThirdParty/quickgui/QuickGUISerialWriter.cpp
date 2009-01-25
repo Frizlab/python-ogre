@@ -23,7 +23,7 @@ namespace QuickGUI
 
 	void SerialWriter::begin(const Ogre::String& definitionType, const Ogre::String& definitionID)
 	{
-		ScriptDefinition* newDef = new ScriptDefinition(definitionType,definitionID);
+		ScriptDefinition* newDef = OGRE_NEW_T(ScriptDefinition,Ogre::MEMCATEGORY_GENERAL)(definitionType,definitionID);
 		newDef->mParentDefinition = mCurrentDefinition;
 
 		if(mCurrentDefinition != NULL)
@@ -50,7 +50,7 @@ namespace QuickGUI
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
 
-		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		DefinitionProperty* newProp = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
 		newProp->mValues.push_back(Ogre::StringConverter::toString(*member));
 		
 		if(mCurrentDefinition->mProperties.find(propertyName) != mCurrentDefinition->mProperties.end())
@@ -64,7 +64,21 @@ namespace QuickGUI
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
 
-		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		DefinitionProperty* newProp = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
+		newProp->mValues.push_back(StringConverter::toString(*member));
+
+		if(mCurrentDefinition->mProperties.find(propertyName) != mCurrentDefinition->mProperties.end())
+			throw Exception(Exception::ERR_SERIALIZATION,"ScriptDefinition already contains the property \"" + propertyName + "\"!","SerialWriter::IO");
+		else
+			mCurrentDefinition->mProperties[propertyName] = newProp;
+	}
+
+	void SerialWriter::IO(const Ogre::String& propertyName, ConsoleLayout* member)
+	{
+		if(mCurrentDefinition == NULL)
+			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
+
+		DefinitionProperty* newProp = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
 		newProp->mValues.push_back(StringConverter::toString(*member));
 
 		if(mCurrentDefinition->mProperties.find(propertyName) != mCurrentDefinition->mProperties.end())
@@ -78,7 +92,7 @@ namespace QuickGUI
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
 
-		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		DefinitionProperty* newProp = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
 		newProp->mValues.push_back(Ogre::StringConverter::toString(*member));
 
 		if(mCurrentDefinition->mProperties.find(propertyName) != mCurrentDefinition->mProperties.end())
@@ -92,7 +106,7 @@ namespace QuickGUI
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
 
-		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		DefinitionProperty* newProp = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
 		newProp->mValues.push_back(Ogre::StringConverter::toString(*member));
 		
 		if(mCurrentDefinition->mProperties.find(propertyName) != mCurrentDefinition->mProperties.end())
@@ -106,7 +120,7 @@ namespace QuickGUI
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
 
-		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		DefinitionProperty* newProp = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
 		newProp->mValues.push_back(Ogre::StringConverter::toString(member->a));
 		newProp->mValues.push_back(Ogre::StringConverter::toString(member->b));
 		newProp->mValues.push_back(Ogre::StringConverter::toString(member->g));
@@ -123,7 +137,7 @@ namespace QuickGUI
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
 
-		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		DefinitionProperty* newProp = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GEOMETRY)(propertyName);
 		newProp->mValues.push_back(StringConverter::toString(*member));
 		
 		if(mCurrentDefinition->mProperties.find(propertyName) != mCurrentDefinition->mProperties.end())
@@ -137,7 +151,7 @@ namespace QuickGUI
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
 
-		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		DefinitionProperty* newProp = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
 		newProp->mValues.push_back(StringConverter::toString(*member));
 		
 		if(mCurrentDefinition->mProperties.find(propertyName) != mCurrentDefinition->mProperties.end())
@@ -151,7 +165,7 @@ namespace QuickGUI
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
 
-		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		DefinitionProperty* newProp = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
 		newProp->mValues.push_back(StringConverter::toString(*member));
 		
 		if(mCurrentDefinition->mProperties.find(propertyName) != mCurrentDefinition->mProperties.end())
@@ -165,7 +179,7 @@ namespace QuickGUI
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
 
-		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		DefinitionProperty* newProp = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
 		newProp->mValues.push_back(*member);
 		
 		if(mCurrentDefinition->mProperties.find(propertyName) != mCurrentDefinition->mProperties.end())
@@ -179,7 +193,7 @@ namespace QuickGUI
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
 
-		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		DefinitionProperty* newProp = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
 		newProp->mValues.push_back(Ogre::StringConverter::toString(*member));
 		
 		if(mCurrentDefinition->mProperties.find(propertyName) != mCurrentDefinition->mProperties.end())
@@ -193,7 +207,7 @@ namespace QuickGUI
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
 
-		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		DefinitionProperty* newProp = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
 		newProp->mValues.push_back(Ogre::StringConverter::toString(*member));
 		
 		if(mCurrentDefinition->mProperties.find(propertyName) != mCurrentDefinition->mProperties.end())
@@ -207,7 +221,7 @@ namespace QuickGUI
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
 
-		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		DefinitionProperty* newProp = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
 		newProp->mValues.push_back(Ogre::StringConverter::toString(member->x));
 		newProp->mValues.push_back(Ogre::StringConverter::toString(member->y));
 		
@@ -222,7 +236,7 @@ namespace QuickGUI
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
 
-		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		DefinitionProperty* newProp = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
 		newProp->mValues.push_back(StringConverter::toString(*member));
 		
 		if(mCurrentDefinition->mProperties.find(propertyName) != mCurrentDefinition->mProperties.end())
@@ -236,7 +250,7 @@ namespace QuickGUI
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
 
-		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		DefinitionProperty* newProp = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
 		newProp->mValues.push_back(StringConverter::toString(*member));
 		
 		if(mCurrentDefinition->mProperties.find(propertyName) != mCurrentDefinition->mProperties.end())
@@ -250,7 +264,7 @@ namespace QuickGUI
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
 
-		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		DefinitionProperty* newProp = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
 		newProp->mValues.push_back(StringConverter::toString(*member));
 		
 		if(mCurrentDefinition->mProperties.find(propertyName) != mCurrentDefinition->mProperties.end())
@@ -264,7 +278,7 @@ namespace QuickGUI
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
 
-		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		DefinitionProperty* newProp = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
 		newProp->mValues.push_back(Ogre::StringConverter::toString(member->position.x));
 		newProp->mValues.push_back(Ogre::StringConverter::toString(member->position.y));
 		newProp->mValues.push_back(Ogre::StringConverter::toString(member->size.width));
@@ -281,7 +295,7 @@ namespace QuickGUI
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
 
-		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		DefinitionProperty* newProp = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
 		newProp->mValues.push_back(Ogre::StringConverter::toString(member->width));
 		newProp->mValues.push_back(Ogre::StringConverter::toString(member->height));
 		
@@ -296,7 +310,7 @@ namespace QuickGUI
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
 
-		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		DefinitionProperty* newProp = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
 		newProp->mValues.push_back(StringConverter::toString(*member));
 		
 		if(mCurrentDefinition->mProperties.find(propertyName) != mCurrentDefinition->mProperties.end())
@@ -310,7 +324,7 @@ namespace QuickGUI
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
 
-		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		DefinitionProperty* newProp = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
 		newProp->mValues.push_back(StringConverter::toString(*member));
 		
 		if(mCurrentDefinition->mProperties.find(propertyName) != mCurrentDefinition->mProperties.end())
@@ -324,7 +338,7 @@ namespace QuickGUI
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
 
-		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		DefinitionProperty* newProp = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
 		newProp->mValues.push_back(StringConverter::toString(*member));
 		
 		if(mCurrentDefinition->mProperties.find(propertyName) != mCurrentDefinition->mProperties.end())
@@ -338,7 +352,7 @@ namespace QuickGUI
 		if(mCurrentDefinition == NULL)
 			throw Exception(Exception::ERR_SERIALIZATION,"SerialWriter not setup to write!  Did you miss a call to SerialWriter::begin()?","SerialWriter::IO");
 
-		DefinitionProperty* newProp = new DefinitionProperty(propertyName);
+		DefinitionProperty* newProp = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
 		newProp->mValues.push_back(StringConverter::toString(*member));
 		
 		if(mCurrentDefinition->mProperties.find(propertyName) != mCurrentDefinition->mProperties.end())

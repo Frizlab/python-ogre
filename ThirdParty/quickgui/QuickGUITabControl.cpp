@@ -8,7 +8,7 @@ namespace QuickGUI
 
 	void TabControl::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("TabControl");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("TabControl");
 		d->defineSkinElement(BACKGROUND);
 		d->definitionComplete();
 
@@ -24,22 +24,28 @@ namespace QuickGUI
 
 	TabControl::~TabControl()
 	{
+		// Clean up all user defined event handlers.
+		for(int index = 0; index < TABCONTROL_EVENT_COUNT; ++index)
+		{
+			for(std::vector<EventHandlerSlot*>::iterator it = mTabControlEventHandlers[index].begin(); it != mTabControlEventHandlers[index].end(); ++it)
+				OGRE_DELETE_T((*it),EventHandlerSlot,Ogre::MEMCATEGORY_GENERAL);
+		}
 	}
 
 	void TabControl::_initialize(WidgetDesc* d)
 	{
 		TabControlDesc* tcd = dynamic_cast<TabControlDesc*>(d);
-		tcd->supportScrollBars = false;
+		tcd->containerwidget_supportScrollBars = false;
 
 		ContainerWidget::_initialize(d);
 
 		mDesc = dynamic_cast<TabControlDesc*>(mWidgetDesc);
 
-		setTabHeight(tcd->tabHeight);
-		setTabOverlap(tcd->tabOverlap);
-		setTabReordering(tcd->tabReordering);
+		setTabHeight(tcd->tabcontrol_tabHeight);
+		setTabOverlap(tcd->tabcontrol_tabOverlap);
+		setTabReordering(tcd->tabcontrol_tabReordering);
 
-		setSkinType(d->skinTypeName);
+		setSkinType(d->widget_skinTypeName);
 	}
 
 	void TabControl::addChild(Widget* w)
@@ -48,7 +54,7 @@ namespace QuickGUI
 
 		TabPage* p = dynamic_cast<TabPage*>(w);
 		p->setSize(mClientDimensions.size);
-		p->setTabHeight(mDesc->tabHeight);
+		p->setTabHeight(mDesc->tabcontrol_tabHeight);
 		
 		updateTabPages();
 
@@ -60,12 +66,12 @@ namespace QuickGUI
 		mTabControlEventHandlers[EVENT].push_back(function);
 	}
 
-	TabPage* TabControl::createTabPage(TabPageDesc& d)
+	TabPage* TabControl::createTabPage(TabPageDesc* d)
 	{
-		d.dimensions.position = Point::ZERO;
-		d.dimensions.size = mClientDimensions.size;
-		d.horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
-		d.verticalAnchor = ANCHOR_VERTICAL_TOP_BOTTOM;
+		d->widget_dimensions.position = Point::ZERO;
+		d->widget_dimensions.size = mClientDimensions.size;
+		d->widget_horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
+		d->widget_verticalAnchor = ANCHOR_VERTICAL_TOP_BOTTOM;
 		TabPage* newTabPage = dynamic_cast<TabPage*>(Widget::create("TabPage",d));
 
 		addChild(newTabPage);
@@ -76,18 +82,18 @@ namespace QuickGUI
 	void TabControl::draw()
 	{
 		// check visibility
-		if( !mWidgetDesc->visible )
+		if( !mWidgetDesc->widget_visible )
 			return;
 
 		Brush* brush = Brush::getSingletonPtr();
 
 		// check and store clip region
 		Rect prevClipRegion = brush->getClipRegion();
-		if ( prevClipRegion.getIntersection(Rect(mTexturePosition,mWidgetDesc->dimensions.size)) == Rect::ZERO )
+		if ( prevClipRegion.getIntersection(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size)) == Rect::ZERO )
 			return;
 
 		// set clip region to dimensions
-		brush->setClipRegion(Rect(mTexturePosition,mWidgetDesc->dimensions.size).getIntersection(prevClipRegion));
+		brush->setClipRegion(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size).getIntersection(prevClipRegion));
 
 		// draw self
 		onDraw();
@@ -115,15 +121,6 @@ namespace QuickGUI
 
 		// restore clip region
 		brush->setClipRegion(prevClipRegion);
-	}
-
-	Widget* TabControl::factory(const Ogre::String& widgetName)
-	{
-		Widget* newWidget = new TabControl(widgetName);
-		
-		newWidget->_createDescObject("TabControlDesc");
-
-		return newWidget;
 	}
 
 	Widget* TabControl::findWidgetAtPoint(const Point& p, bool ignoreDisabled)
@@ -190,7 +187,7 @@ namespace QuickGUI
 
 	float TabControl::getTabHeight()
 	{
-		return mDesc->tabHeight;
+		return mDesc->tabcontrol_tabHeight;
 	}
 
 	int TabControl::getTabIndex(TabPage* p)
@@ -209,7 +206,7 @@ namespace QuickGUI
 
 	float TabControl::getTabOverlap()
 	{
-		return mDesc->tabOverlap;
+		return mDesc->tabcontrol_tabOverlap;
 	}
 
 	TabPage* TabControl::getTabPage(unsigned int index)
@@ -227,20 +224,20 @@ namespace QuickGUI
 
 	bool TabControl::getTabReordering()
 	{
-		return mDesc->tabReordering;
+		return mDesc->tabcontrol_tabReordering;
 	}
 
 	void TabControl::onDraw()
 	{
 		SkinType* st = mSkinType;
-		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
-			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+		if(!mWidgetDesc->widget_enabled && mWidgetDesc->widget_disabledSkinType != "")
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->widget_disabledSkinType);
 
 		Brush* brush = Brush::getSingletonPtr();
 
-		brush->setFilterMode(mWidgetDesc->brushFilterMode);
+		brush->setFilterMode(mWidgetDesc->widget_brushFilterMode);
 			
-		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
+		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size),st->getSkinElement(mSkinElementName));
 	}
 
 	void TabControl::reorderTabPage(TabPage* p, unsigned int index)
@@ -302,26 +299,26 @@ namespace QuickGUI
 
 	void TabControl::setTabHeight(float height)
 	{
-		mDesc->tabHeight = height;
+		mDesc->tabcontrol_tabHeight = height;
 
 		for(std::vector<Widget*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it)
 		{
 			TabPage* tp = dynamic_cast<TabPage*>(*it);
 
-			tp->setTabHeight(mDesc->tabHeight);
+			tp->setTabHeight(mDesc->tabcontrol_tabHeight);
 		}
 	}
 
 	void TabControl::setTabOverlap(float overlap)
 	{
-		mDesc->tabOverlap = overlap;
+		mDesc->tabcontrol_tabOverlap = overlap;
 
 		updateTabPages();
 	}
 
 	void TabControl::setTabReordering(bool reordering)
 	{
-		mDesc->tabReordering = reordering;
+		mDesc->tabcontrol_tabReordering = reordering;
 	}
 
 	void TabControl::updateTabPages()
@@ -336,7 +333,7 @@ namespace QuickGUI
 
 			tp->setName(TabControlName + Ogre::StringConverter::toString(counter));
 			tp->mTab->setPosition(Point(x,0));
-			x += tp->mTab->getSize().width - mDesc->tabOverlap;
+			x += tp->mTab->getSize().width - mDesc->tabcontrol_tabOverlap;
 			++counter;
 		}
 	}

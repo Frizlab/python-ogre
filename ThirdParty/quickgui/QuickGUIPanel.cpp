@@ -9,7 +9,7 @@ namespace QuickGUI
 
 	void Panel::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("Panel");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("Panel");
 		d->defineSkinElement(BACKGROUND);
 		d->defineComponent(HSCROLLBAR);
 		d->defineComponent(VSCROLLBAR);
@@ -35,10 +35,10 @@ namespace QuickGUI
 		mPanelDesc = dynamic_cast<PanelDesc*>(mWidgetDesc);
 
 		if(d->getWidgetClass() == "Panel")
-			setSkinType(d->skinTypeName);
+			setSkinType(d->widget_skinTypeName);
 	}
 
-	Widget* Panel::createCustomWidget(const Ogre::String& className, WidgetDesc& d)
+	Widget* Panel::createCustomWidget(const Ogre::String& className, WidgetDesc* d)
 	{
 		if((className == "TitleBar") || (className == "Window") || (className == "Sheet"))
 			throw Exception(Exception::ERR_UNSUPPORTED_WIDGET,"This widget does not support creation of widget's of class \"" + className + "\".","Panel::createCustomWidget");
@@ -50,7 +50,7 @@ namespace QuickGUI
 		return newCustomWidget;
 	}
 
-	Button* Panel::createButton(ButtonDesc& d)
+	Button* Panel::createButton(ButtonDesc* d)
 	{
 		Button* newButton = dynamic_cast<Button*>(Widget::create("Button",d));
 
@@ -59,7 +59,7 @@ namespace QuickGUI
 		return newButton;
 	}
 
-	CheckBox* Panel::createCheckBox(CheckBoxDesc& d)
+	CheckBox* Panel::createCheckBox(CheckBoxDesc* d)
 	{
 		CheckBox* newCheckBox = dynamic_cast<CheckBox*>(Widget::create("CheckBox",d));
 
@@ -68,7 +68,16 @@ namespace QuickGUI
 		return newCheckBox;
 	}
 
-	Console* Panel::createConsole(ConsoleDesc& d)
+	ComboBox* Panel::createComboBox(ComboBoxDesc* d)
+	{
+		ComboBox* newComboBox = dynamic_cast<ComboBox*>(Widget::create("ComboBox",d));
+
+		addChild(newComboBox);
+
+		return newComboBox;
+	}
+
+	Console* Panel::createConsole(ConsoleDesc* d)
 	{
 		Console* newConsole = dynamic_cast<Console*>(Widget::create("Console",d));
 
@@ -77,7 +86,7 @@ namespace QuickGUI
 		return newConsole;
 	}
 
-	HScrollBar* Panel::createHScrollBar(HScrollBarDesc& d)
+	HScrollBar* Panel::createHScrollBar(HScrollBarDesc* d)
 	{
 		HScrollBar* newHScrollBar = dynamic_cast<HScrollBar*>(Widget::create("HScrollBar",d));
 
@@ -86,7 +95,7 @@ namespace QuickGUI
 		return newHScrollBar;
 	}
 
-	Image* Panel::createImage(ImageDesc& d)
+	Image* Panel::createImage(ImageDesc* d)
 	{
 		Image* newImage = dynamic_cast<Image*>(Widget::create("Image",d));
 
@@ -95,7 +104,7 @@ namespace QuickGUI
 		return newImage;
 	}
 
-	Label* Panel::createLabel(LabelDesc& d)
+	Label* Panel::createLabel(LabelDesc* d)
 	{
 		Label* newLabel = dynamic_cast<Label*>(Widget::create("Label",d));
 
@@ -104,7 +113,7 @@ namespace QuickGUI
 		return newLabel;
 	}
 
-	List* Panel::createList(ListDesc& d)
+	List* Panel::createList(ListDesc* d)
 	{
 		List* newList = dynamic_cast<List*>(Widget::create("List",d));
 
@@ -113,7 +122,7 @@ namespace QuickGUI
 		return newList;
 	}
 
-	Panel* Panel::createPanel(PanelDesc& d)
+	Panel* Panel::createPanel(PanelDesc* d)
 	{
 		Panel* newPanel = dynamic_cast<Panel*>(Widget::create("Panel",d));
 		
@@ -122,7 +131,7 @@ namespace QuickGUI
 		return newPanel;
 	}
 
-	ProgressBar* Panel::createProgressBar(ProgressBarDesc& d)
+	ProgressBar* Panel::createProgressBar(ProgressBarDesc* d)
 	{
 		ProgressBar* newProgressBar = dynamic_cast<ProgressBar*>(Widget::create("ProgressBar",d));
 
@@ -131,7 +140,7 @@ namespace QuickGUI
 		return newProgressBar;
 	}
 
-	TabControl* Panel::createTabControl(TabControlDesc& d)
+	TabControl* Panel::createTabControl(TabControlDesc* d)
 	{
 		TabControl* newTabControl = dynamic_cast<TabControl*>(Widget::create("TabControl",d));
 
@@ -140,7 +149,7 @@ namespace QuickGUI
 		return newTabControl;
 	}
 
-	TextArea* Panel::createTextArea(TextAreaDesc& d)
+	TextArea* Panel::createTextArea(TextAreaDesc* d)
 	{
 		TextArea* newTextArea = dynamic_cast<TextArea*>(Widget::create("TextArea",d));
 
@@ -149,7 +158,7 @@ namespace QuickGUI
 		return newTextArea;
 	}
 
-	TextBox* Panel::createTextBox(TextBoxDesc& d)
+	TextBox* Panel::createTextBox(TextBoxDesc* d)
 	{
 		TextBox* newTextBox = dynamic_cast<TextBox*>(Widget::create("TextBox",d));
 
@@ -158,22 +167,22 @@ namespace QuickGUI
 		return newTextBox;
 	}
 
-	VScrollBar* Panel::createVScrollBar(VScrollBarDesc& d)
+	TreeView* Panel::createTreeView(TreeViewDesc* d)
+	{
+		TreeView* newTreeView = dynamic_cast<TreeView*>(Widget::create("TreeView",d));
+
+		addChild(newTreeView);
+
+		return newTreeView;
+	}
+
+	VScrollBar* Panel::createVScrollBar(VScrollBarDesc* d)
 	{
 		VScrollBar* newVScrollBar = dynamic_cast<VScrollBar*>(Widget::create("VScrollBar",d));
 
 		addChild(newVScrollBar);
 
 		return newVScrollBar;
-	}
-
-	Widget* Panel::factory(const Ogre::String& widgetName)
-	{
-		Widget* newWidget = new Panel(widgetName);
-
-		newWidget->_createDescObject("PanelDesc");
-
-		return newWidget;
 	}
 
 	Ogre::String Panel::getClass()
@@ -184,13 +193,13 @@ namespace QuickGUI
 	void Panel::onDraw()
 	{
 		SkinType* st = mSkinType;
-		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
-			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+		if(!mWidgetDesc->widget_enabled && mWidgetDesc->widget_disabledSkinType != "")
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->widget_disabledSkinType);
 
 		Brush* brush = Brush::getSingletonPtr();
 
-		brush->setFilterMode(mWidgetDesc->brushFilterMode);
+		brush->setFilterMode(mWidgetDesc->widget_brushFilterMode);
 			
-		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
+		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size),st->getSkinElement(mSkinElementName));
 	}
 }

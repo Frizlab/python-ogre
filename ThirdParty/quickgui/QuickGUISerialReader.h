@@ -15,8 +15,8 @@ namespace QuickGUI
 	{
 	public:
 		friend class TextDesc;
+		friend class Root;
 	public:
-		SerialReader();
 
 		static SerialReader& getSingleton(void); 
 		static SerialReader* getSingletonPtr(void);
@@ -27,6 +27,7 @@ namespace QuickGUI
 
 		virtual void IO(const Ogre::String& propertyName, unsigned short* member);
 		virtual void IO(const Ogre::String& propertyName, BrushFilterMode* member);
+		virtual void IO(const Ogre::String& propertyName, ConsoleLayout* member);
 		virtual void IO(const Ogre::String& propertyName, int* member);
 		virtual void IO(const Ogre::String& propertyName, unsigned int* member);
 		virtual void IO(const Ogre::String& propertyName, Ogre::ColourValue* member);
@@ -50,6 +51,8 @@ namespace QuickGUI
 		bool isSerialReader();
 
 	protected:
+		SerialReader();
+		virtual ~SerialReader() {}
 	private:
 	};
 }

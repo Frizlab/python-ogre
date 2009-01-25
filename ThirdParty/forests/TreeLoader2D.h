@@ -92,7 +92,7 @@ public:
 	#else
 		void
 	#endif
-	deleteTrees(const Ogre::Vector3 &position, float radius = 0.001f, Ogre::Entity *type = NULL);
+	deleteTrees(const Ogre::Vector3 &position, Ogre::Real radius = 0.001f, Ogre::Entity *type = NULL);
 
 	/** \brief Deletes trees within a certain rectangular area.
 	\param area The area where trees are to be deleted
@@ -162,6 +162,8 @@ public:
 	to this TreeLoader fairly efficiently.
 
 	\see The TreeIterator class documentation for more info.
+	\warning Be sure to test TreeIterator3D::hasMoreElements() before calling other members of the
+	TreeIterator3D class.
 	*/
 	TreeIterator2D getTrees();
 

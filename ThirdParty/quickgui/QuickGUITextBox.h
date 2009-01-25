@@ -13,25 +13,32 @@ namespace QuickGUI
 			public WidgetDesc
 	{
 	public:
-		TextBoxDesc();
+		// Console has a TextBox Desc as a member
+		friend class ConsoleDesc;
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		TextBoxDesc(const Ogre::String& id);
+		virtual ~TextBoxDesc() {}
+	public:
 
 		/// Amount of time until a cursor changes from visible to not visible, or vice versa.
-		float cursorBlinkTime;
-		Ogre::ColourValue defaultColor;
-		Ogre::String defaultFontName;
+		float textbox_cursorBlinkTime;
+		Ogre::ColourValue textbox_defaultColor;
+		Ogre::String textbox_defaultFontName;
 		/// Horizontal alignment of text within this widget's client area.
-		HorizontalTextAlignment horizontalTextAlignment;
+		HorizontalTextAlignment textbox_horizontalTextAlignment;
 		/// Amount of time a key must be held down before it starts repeating.
-		float keyDownTime;
+		float textbox_keyDownTime;
 		/// Amount of time a key must be held down to repeat its input.
-		float keyRepeatTime;
-		bool maskText;
-		Ogre::UTFString::code_point maskSymbol;
-		unsigned int maxCharacters;
+		float textbox_keyRepeatTime;
+		bool textbox_maskText;
+		Ogre::UTFString::code_point textbox_maskSymbol;
+		unsigned int textbox_maxCharacters;
 		/// Vertical alignment of text within this widget's client area.
-		VerticalTextAlignment verticalTextAlignment;
-		Ogre::String textCursorSkinTypeName;
-		Point textPosition;
+		VerticalTextAlignment textbox_verticalTextAlignment;
+		Ogre::String textbox_textCursorDefaultSkinTypeName;
+		Point textbox_textPosition;
 
 		/// Describes the Text used in this TextBox
 		TextDesc textDesc;
@@ -45,8 +52,10 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getWidgetClass() { return "TextBox"; }
 
-		// Factory method
-		static WidgetDesc* factory() { return new TextBoxDesc(); }
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
 
 		/**
 		* Outlines how the desc class is written to XML and read from XML.
@@ -64,8 +73,8 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
-		// Factory method
-		static Widget* factory(const Ogre::String& widgetName);
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 		
 		/**
@@ -78,6 +87,31 @@ namespace QuickGUI
 		* position.
 		*/
 		void addCharacter(Ogre::UTFString::code_point cp);
+		/**
+		* Adds text to this object.
+		*/
+		void addText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv);
+		/**
+		* Adds text to this object.
+		*/
+		void addText(Ogre::UTFString s, const Ogre::String& fontName, const Ogre::ColourValue& cv);
+		/**
+		* Adds text to this object.
+		*/
+		void addText(Ogre::UTFString s);
+		/**
+		* Adds Text using Text Segments.
+		*/
+		void addText(std::vector<TextSegment> segments);
+
+		/**
+		* Removes any TextInputValidator this TextBox might have been using.
+		*/
+		void clearTextInputValidator();
+		/**
+		* Clears the Text of this widget.
+		*/
+		void clearText();
 
 		/**
 		* Returns the class name of this Widget.
@@ -107,6 +141,10 @@ namespace QuickGUI
 		* Gets the text in UTFString form.
 		*/
 		Ogre::UTFString getText();
+		/**
+		* Returns a list of Text Segments.  Each Text Segment has the same color and font.
+		*/
+		std::vector<TextSegment> getTextSegments();
 		/**
 		* Gets the "type" of the Text Cursor used.
 		*/
@@ -187,7 +225,7 @@ namespace QuickGUI
 		/**
 		* Sets whether or not the Text will be masked. (password box)
 		*/
-		void setMaskText(bool mask, Ogre::UTFString::code_point maskSymbol);
+		void setMaskText(bool mask, Ogre::UTFString::code_point textbox_maskSymbol);
 		/**
 		* Sets the maximum number of characters that this TextBox will support.
 		*/
@@ -199,7 +237,15 @@ namespace QuickGUI
 		/**
 		* Sets the text for this object.
 		*/
+		void setText(Ogre::UTFString s);
+		/**
+		* Sets the text for this object.
+		*/
 		void setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv);
+		/**
+		* Sets the Text using Text Segments.
+		*/
+		void setText(std::vector<TextSegment> segments);
 		/**
 		* Sets the Horizontal alignment of Text as displayed within the TextBox area.
 		*/
@@ -226,9 +272,9 @@ namespace QuickGUI
 		template<typename T> void setTextInputValidator(bool (T::*TextInputValidator)(Ogre::UTFString::code_point cp, unsigned int index, const Ogre::UTFString& currentText), T* obj)
 		{
 			if(mTextInputValidatorSlot != NULL)
-				delete mTextInputValidatorSlot;
+				OGRE_DELETE_T(mTextInputValidatorSlot,TextInputValidatorSlot,Ogre::MEMCATEGORY_GENERAL);
 
-			mTextInputValidatorSlot = new TextInputValidatorPointer<T>(TextInputValidator,obj);
+			mTextInputValidatorSlot = OGRE_NEW_T(TextInputValidatorPointer<T>,Ogre::MEMCATEGORY_GENERAL)(TextInputValidator,obj);
 		}
 
 		/**

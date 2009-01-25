@@ -9,7 +9,7 @@ namespace QuickGUI
 
 	void Button::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("Button");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("Button");
 		d->defineSkinElement(DEFAULT);
 		d->defineSkinElement(OVER);
 		d->defineSkinElement(DOWN);
@@ -18,8 +18,8 @@ namespace QuickGUI
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("Button",d);
 	}
 
-	ButtonDesc::ButtonDesc() :
-		LabelDesc()
+	ButtonDesc::ButtonDesc(const Ogre::String& id) :
+		LabelDesc(id)
 	{
 		textDesc.horizontalTextAlignment = TEXT_ALIGNMENT_HORIZONTAL_CENTER;
 	}
@@ -47,21 +47,12 @@ namespace QuickGUI
 
 		mDesc = dynamic_cast<LabelDesc*>(mWidgetDesc);
 
-		setSkinType(d->skinTypeName);
+		setSkinType(d->widget_skinTypeName);
 
 		Widget::addWidgetEventHandler(WIDGET_EVENT_MOUSE_ENTER,&Button::onMouseEnter,this);
 		Widget::addWidgetEventHandler(WIDGET_EVENT_MOUSE_LEAVE,&Button::onMouseLeave,this);
 		Widget::addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&Button::onMouseLeftButtonDown,this);
 		Widget::addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_UP,&Button::onMouseLeftButtonUp,this);
-	}
-
-	Widget* Button::factory(const Ogre::String& widgetName)
-	{
-		Widget* newWidget = new Button(widgetName);
-		
-		newWidget->_createDescObject("ButtonDesc");
-
-		return newWidget;
 	}
 
 	Ogre::String Button::getClass()

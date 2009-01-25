@@ -1,5 +1,7 @@
 #include "QuickGUITimer.h"
 
+#include "OgreMemoryAllocatorConfig.h"
+
 namespace QuickGUI
 {
 	TimerDesc::TimerDesc()
@@ -19,12 +21,12 @@ namespace QuickGUI
 
 	Timer::~Timer()
 	{
-		delete mCallback;
+		OGRE_DELETE_T(mCallback,TimerCallbackSlot,Ogre::MEMCATEGORY_GENERAL);
 	}
 
 	void Timer::clearCallback()
 	{
-		delete mCallback;
+		OGRE_DELETE_T(mCallback,TimerCallbackSlot,Ogre::MEMCATEGORY_GENERAL);
 		mCallback = NULL;
 	}
 

@@ -15,25 +15,35 @@ namespace QuickGUI
 			public ComponentWidgetDesc
 	{
 	public:
-		ContainerWidgetDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		ContainerWidgetDesc(const Ogre::String& id);
+		virtual ~ContainerWidgetDesc() {}
+	public:
 
 		/// Amount of Scroll occuring when the horizontal bar is pressed.
-		float horzBarScrollPercent;
+		float	containerwidget_horzBarScrollPercent;
 		/// Amount of Scroll occuring when the left/right buttons are pressed.
-		float horzButtonScrollPercent;
+		float	containerwidget_horzButtonScrollPercent;
 		/// If true, scrollbars will be created.  Some ContainerWidgets,
 		/// especially menu and toolbar widgets, don't need scrollbars.
-		bool supportScrollBars;
+		bool	containerwidget_supportScrollBars;
 		/// How thick the vertical and horizontal scrollbars are
-		float scrollBarThickness;
+		float	containerwidget_scrollBarThickness;
 		/// Amount of Scroll occuring when the vertical bar is pressed.
-		float vertBarScrollPercent;
+		float	containerwidget_vertBarScrollPercent;
 		/// Amount of Scroll occuring when the up/down buttons are pressed.
-		float vertButtonScrollPercent;
+		float	containerwidget_vertButtonScrollPercent;
 		/// The horizontal scroll applied to all children
-		float xScrollOffset;
+		float	containerwidget_xScrollOffset;
 		/// The vertical scroll applied to all children
-		float yScrollOffset;
+		float	containerwidget_yScrollOffset;
+
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
 
 		/**
 		* Outlines how the desc class is written to XML and read from XML.
@@ -162,14 +172,14 @@ namespace QuickGUI
 		// Used to implement scrolling functionality
 		Size mVirtualSize;
 		// Iterates through children to determine VirtualSpace
-		void _determineVirtualSize();
+		virtual void _determineVirtualSize();
 		void _setScrollX(float x);
-		void _setScrollY(float y);
+		virtual void _setScrollY(float y);
 
 		void onHorizontalScroll(const EventArgs& args);
 		void onVerticalScroll(const EventArgs& args);
 
-		void onChildDimensionsChanged(const EventArgs& args);
+		virtual void onChildDimensionsChanged(const EventArgs& args);
 
 		void onMouseWheel(const EventArgs& args);
 

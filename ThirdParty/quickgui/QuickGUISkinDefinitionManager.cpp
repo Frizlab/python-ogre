@@ -6,12 +6,15 @@ namespace QuickGUI
 {
 	SkinDefinitionManager::SkinDefinitionManager()
 	{
-		new SkinTypeManager();
+		OGRE_NEW_T(SkinTypeManager,Ogre::MEMCATEGORY_GENERAL)();
 	}
 
 	SkinDefinitionManager::~SkinDefinitionManager()
 	{
-		delete SkinTypeManager::getSingletonPtr();
+		for(std::map<Ogre::String,SkinDefinition*>::iterator it = mWidgetSkinDefs.begin(); it != mWidgetSkinDefs.end(); ++it)
+			OGRE_DELETE_T((*it).second,SkinDefinition,Ogre::MEMCATEGORY_GENERAL);
+
+		OGRE_DELETE_T(SkinTypeManager::getSingletonPtr(),SkinTypeManager,Ogre::MEMCATEGORY_GENERAL);
 	}
 
 	SkinDefinitionManager* SkinDefinitionManager::getSingletonPtr(void) 

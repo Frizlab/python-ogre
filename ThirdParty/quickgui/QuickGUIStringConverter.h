@@ -3,6 +3,7 @@
 
 #include "QuickGUIAnchors.h"
 #include "QuickGUIBrushEnums.h"
+#include "QuickGUIConsoleEnums.h"
 #include "QuickGUIException.h"
 #include "QuickGUIExportDLL.h"
 #include "QuickGUIProgressBarEnums.h"
@@ -20,6 +21,7 @@ namespace QuickGUI
 	{
 	public:
 		static Ogre::String toString(BrushFilterMode m);
+		static Ogre::String toString(ConsoleLayout l);
 		static Ogre::String toString(HorizontalAnchor a);
 		static Ogre::String toString(HorizontalTextAlignment a);
 		static Ogre::String toString(HScrollBarButtonLayout l);
@@ -34,6 +36,7 @@ namespace QuickGUI
 		static Ogre::String toString(WindowEvent e);
 
 		static BrushFilterMode parseBrushFilterMode(const Ogre::String& s);
+		static ConsoleLayout parseConsoleLayout(const Ogre::String& s);
 		static HorizontalAnchor parseHorizontalAnchor(const Ogre::String& s);
 		static HorizontalTextAlignment parseHorizontalTextAlignment(const Ogre::String& s);
 		static HScrollBarButtonLayout parseHScrollBarButtonLayout(const Ogre::String& s);

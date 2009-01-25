@@ -3,8 +3,6 @@
 
 namespace QuickGUI
 {
-    Character::Character( void ) {} ;
-    
 	Character::Character(Ogre::UTFString::code_point cp, Ogre::FontPtr fp, Ogre::ColourValue cv) :
 		codePoint(cp), 
 		fontPtr(fp),
@@ -41,6 +39,8 @@ namespace QuickGUI
 			// Use UV Coords to Determine character dimensions
 			dimensions.size = Size(((uvCoords.right - uvCoords.left) * texturePtr->getWidth()),((uvCoords.bottom - uvCoords.top) * texturePtr->getHeight()));
 		}
+
+		dimensions.size.roundUp();
 	}
 
 	bool Character::getHighlighted()

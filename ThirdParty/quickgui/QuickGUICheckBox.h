@@ -9,9 +9,14 @@ namespace QuickGUI
 			public WidgetDesc
 	{
 	public:
-		CheckBoxDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		CheckBoxDesc(const Ogre::String& id);
+		virtual ~CheckBoxDesc() {}
+	public:
 
-		bool checked;
+		bool checkbox_checked;
 
 		/**
 		* Returns the class of Desc object this is.
@@ -22,8 +27,10 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getWidgetClass() { return "CheckBox"; }
 
-		// Factory method
-		static WidgetDesc* factory() { return new CheckBoxDesc(); }
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
 
 		/**
 		* Outlines how the desc class is written to XML and read from XML.
@@ -45,8 +52,8 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
-		// Factory method
-		static Widget* factory(const Ogre::String& widgetName);
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -72,7 +79,7 @@ namespace QuickGUI
         */
 		template<typename T> void addCheckBoxEventHandler(CheckBoxEvent EVENT, void (T::*function)(const EventArgs&), T* obj)
 		{
-			mCheckBoxEventHandlers[EVENT].push_back(new EventHandlerPointer<T>(function,obj));
+			mCheckBoxEventHandlers[EVENT].push_back(OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
 		}
 		void addCheckBoxEventHandler(CheckBoxEvent EVENT, EventHandlerSlot* function);
 
@@ -83,7 +90,7 @@ namespace QuickGUI
 		bool fireCheckBoxEvent(CheckBoxEvent e, EventArgs& args);
 
 		/**
-		* Returns true if checked, false otherwise.
+		* Returns true if checkbox_checked, false otherwise.
 		*/
 		bool getChecked();
 		/**
@@ -92,9 +99,9 @@ namespace QuickGUI
 		virtual Ogre::String getClass();
 
 		/**
-		* Sets whether this checkbox is checked or not.
+		* Sets whether this checkbox is checkbox_checked or not.
 		*/
-		void setChecked(bool checked);
+		void setChecked(bool checkbox_checked);
 
 	protected:
 		CheckBox(const Ogre::String& name);

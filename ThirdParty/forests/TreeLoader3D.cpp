@@ -135,7 +135,7 @@ std::vector<void*>
 #else
 void
 #endif
-TreeLoader3D::deleteTrees(const Ogre::Vector3 &position, Real radius, Entity *type)
+TreeLoader3D::deleteTrees(const Vector3 &position, Real radius, Entity *type)
 {
 	//First convert the coordinate to PagedGeometry's local system
 	#ifdef PAGEDGEOMETRY_ALTERNATE_COORDSYSTEM
@@ -487,6 +487,13 @@ TreeIterator3D TreeLoader3D::getTrees()
 TreeIterator3D::TreeIterator3D(TreeLoader3D *trees)
 {
 	TreeIterator3D::trees = trees;
+
+	//Test if the GridList has anything in it
+	if (trees->pageGridList.empty()) {
+		// If not, set hasMore to false and return.
+		hasMore = false;
+		return;
+	}
 
 	//Setup iterators
 	currentGrid = trees->pageGridList.begin();

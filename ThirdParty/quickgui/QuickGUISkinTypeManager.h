@@ -15,8 +15,8 @@ namespace QuickGUI
 		public Ogre::Singleton<SkinTypeManager>
 	{
 	public:
-		SkinTypeManager();
-		~SkinTypeManager();
+		friend class SkinDefinitionManager;
+	public:
 
 		static SkinTypeManager& getSingleton(void);
 		static SkinTypeManager* getSingletonPtr(void);
@@ -32,6 +32,9 @@ namespace QuickGUI
 		void saveTypesToFile(const Ogre::String& fileName);
 
 	protected:
+		SkinTypeManager();
+		virtual ~SkinTypeManager();
+
 		std::map<Ogre::String, std::map<Ogre::String,SkinType*> > mSkinTypes;
 
 	private:

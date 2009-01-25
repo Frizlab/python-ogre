@@ -13,8 +13,8 @@ namespace QuickGUI
 		public Ogre::Singleton<SkinDefinitionManager>
 	{
 	public:
-		SkinDefinitionManager();
-		~SkinDefinitionManager();
+		friend class Root;
+	public:
 
 		static SkinDefinitionManager& getSingleton(void);
 		static SkinDefinitionManager* getSingletonPtr(void);
@@ -26,6 +26,9 @@ namespace QuickGUI
 		void registerSkinDefinition(const Ogre::String& className, SkinDefinition* d);
 
 	protected:
+		SkinDefinitionManager();
+		virtual ~SkinDefinitionManager();
+
 		std::map<Ogre::String,SkinDefinition*> mWidgetSkinDefs;
 	};
 }

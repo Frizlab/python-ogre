@@ -50,7 +50,7 @@ namespace QuickGUI
 
 	protected:
 		ScriptWriter();
-		~ScriptWriter();
+		virtual ~ScriptWriter();
 
 		/// keep track of whether we are writing to file or not.
 		bool mWritingToFile;

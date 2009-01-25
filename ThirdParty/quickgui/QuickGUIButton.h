@@ -9,7 +9,12 @@ namespace QuickGUI
 			public LabelDesc
 	{
 	public:
-		ButtonDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		ButtonDesc(const Ogre::String& id);
+		virtual ~ButtonDesc() {}
+	public:
 
 		/**
 		* Returns the class of Desc object this is.
@@ -19,9 +24,6 @@ namespace QuickGUI
 		* Returns the class of Widget this desc object is meant for.
 		*/
 		virtual Ogre::String getWidgetClass() { return "Button"; }
-
-		// Factory method
-		static WidgetDesc* factory() { return new ButtonDesc(); }
 
 		/**
 		* Outlines how the desc class is written to XML and read from XML.
@@ -39,9 +41,12 @@ namespace QuickGUI
 		static const Ogre::String DOWN;
 		// Define Skin Structure
 		static void registerSkinDefinition();
-	public:
-		// Factory method
-		static Widget* factory(const Ogre::String& widgetName);
+	public:		
+		// ComboBox changes its buttons state.
+		friend class ComboBox;
+
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**

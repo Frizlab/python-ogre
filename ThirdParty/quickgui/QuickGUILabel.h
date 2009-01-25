@@ -10,10 +10,17 @@ namespace QuickGUI
 			public WidgetDesc
 	{
 	public:
-		LabelDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		LabelDesc(const Ogre::String& id);
+		virtual ~LabelDesc() {}
+	public:
 
 		/// Vertical alignment of text within this widget's client area.
-		VerticalTextAlignment verticalTextAlignment;
+		VerticalTextAlignment label_verticalTextAlignment;
+		Ogre::ColourValue label_defaultColor;
+		Ogre::String label_defaultFontName;
 
 		/// Describes the Text used in this Label
 		TextDesc textDesc;
@@ -27,8 +34,10 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getWidgetClass() { return "Label"; }
 
-		// Factory method
-		static WidgetDesc* factory() { return new LabelDesc(); }
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
 
 		/**
 		* Outlines how the desc class is written to XML and read from XML.
@@ -45,14 +54,36 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
-		// Factory method
-		static Widget* factory(const Ogre::String& widgetName);
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
 		* Internal function, do not use.
 		*/
 		virtual void _initialize(WidgetDesc* d);
+
+		/**
+		* Adds text to this object.
+		*/
+		void addText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv);
+		/**
+		* Adds text to this object.
+		*/
+		void addText(Ogre::UTFString s, const Ogre::String& fontName, const Ogre::ColourValue& cv);
+		/**
+		* Adds text to this object.
+		*/
+		void addText(Ogre::UTFString s);
+		/**
+		* Adds Text using Text Segments.
+		*/
+		void addText(std::vector<TextSegment> segments);
+
+		/**
+		* Clears the Text of this widget.
+		*/
+		void clearText();
 
 		/**
 		* Returns the class name of this Widget.
@@ -99,6 +130,14 @@ namespace QuickGUI
 		*/
 		void setColor(const Ogre::ColourValue& cv, Ogre::UTFString s, bool allOccurrences);
 		/**
+		* Sets the color used when adding characters to the TextBox.
+		*/
+		void setDefaultColor(const Ogre::ColourValue& cv);
+		/**
+		* Sets the font used when adding character to the TextBox.
+		*/
+		void setDefaultFont(const Ogre::String& fontName);
+		/**
 		* Sets all characters of the text to the specified font.
 		*/
 		void setFont(const Ogre::String& fontName);
@@ -137,6 +176,10 @@ namespace QuickGUI
 		*/
 		void setText(Ogre::UTFString s);
 		/**
+		* Sets the Text using Text Segments.
+		*/
+		void setText(std::vector<TextSegment> segments);
+		/**
 		* Sets the number of pixels placed between each line of text, if there
 		* are multiple lines of text.
 		*/
@@ -146,13 +189,17 @@ namespace QuickGUI
 		*/
 		void setVerticalTextAlignment(VerticalTextAlignment a);
 
+		/**
+		* Recalculate Client dimensions, relative to Widget's actual dimensions.
+		*/
+		virtual void updateClientDimensions();
+
 	protected:
 		Label(const Ogre::String& name);
 		virtual ~Label();
 
-		// Current settings applied to newly added text.
-		Ogre::String mCurrentFontName;
-		Ogre::ColourValue mCurrentColourValue;
+		/// Storing reference to font for quick use.
+		Ogre::FontPtr mCurrentFont;
 
 		Text* mText;
 

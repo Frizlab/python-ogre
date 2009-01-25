@@ -17,6 +17,8 @@ namespace QuickGUI
 	{
 	public:
 		friend class ScriptReader;
+		// ScriptWriter Cleans up remaining ScriptDefinitions
+		friend class ScriptWriter;
 		friend class SerialReader;
 		friend class SerialWriter;
 		friend class TextDesc;

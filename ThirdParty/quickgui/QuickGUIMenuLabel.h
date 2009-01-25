@@ -10,10 +10,15 @@ namespace QuickGUI
 			public MenuItemDesc
 	{
 	public:
-		MenuLabelDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		MenuLabelDesc(const Ogre::String& id);
+		virtual ~MenuLabelDesc() {}
+	public:
 
 		/// Vertical alignment of text within this widget's client area.
-		VerticalTextAlignment verticalTextAlignment;
+		VerticalTextAlignment menulabel_verticalTextAlignment;
 
 		/// Describes the Text used in this Label
 		TextDesc textDesc;
@@ -27,8 +32,10 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getWidgetClass() { return "MenuLabel"; }
 
-		// Factory method
-		static WidgetDesc* factory() { return new MenuLabelDesc(); }
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
 
 		/**
 		* Outlines how the desc class is written to XML and read from XML.
@@ -47,8 +54,8 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
-		// Factory method
-		static Widget* factory(const Ogre::String& widgetName);
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
