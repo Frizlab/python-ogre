@@ -1,0 +1,23 @@
+SkinClass Sheet
+{ 
+    SkinType default 
+    { 
+        ComponentType hscrollbar
+        {
+            ClassName HScrollBar
+            SkinType default
+        }
+
+        ComponentType vscrollbar
+        {
+            ClassName VScrollBar
+            SkinType default
+        }
+
+        SkinElement background
+        { 
+        } 
+
+    } 
+
+}

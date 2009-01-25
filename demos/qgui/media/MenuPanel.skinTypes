@@ -1,0 +1,57 @@
+SkinClass MenuPanel
+{ 
+    SkinType default 
+    { 
+        ComponentType hscrollbar
+        {
+            ClassName HScrollBar
+            SkinType default
+        }
+
+        ComponentType vscrollbar
+        {
+            ClassName VScrollBar
+            SkinType default
+        }
+
+        SkinElement background
+        { 
+            Border_Bottom 10 
+            Border_Left 10 
+            Border_Right 10 
+            Border_Top 10 
+            Texture qgui.window.png 
+            TileBackground true 
+            TileBorders true 
+        } 
+
+    } 
+
+    SkinType default.dropdownlist
+    { 
+        ComponentType hscrollbar
+        {
+            ClassName HScrollBar
+            SkinType default
+        }
+
+        ComponentType vscrollbar
+        {
+            ClassName VScrollBar
+            SkinType default
+        }
+
+        SkinElement background
+        { 
+            Border_Bottom 2
+            Border_Left 2
+            Border_Right 2
+            Border_Top 2
+            Texture qgui.combobox.list.png 
+            TileBackground true 
+            TileBorders true 
+        } 
+
+    } 
+
+}

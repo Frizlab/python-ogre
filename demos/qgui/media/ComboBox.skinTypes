@@ -1,0 +1,52 @@
+SkinClass ComboBox
+{ 
+    SkinType default 
+    { 
+        ComponentType dropdownbutton
+        {
+            ClassName Button
+            SkinType default.comboboxdropdown
+        }
+
+        ComponentType dropdownmenupanel
+        {
+            ClassName MenuPanel
+            SkinType default.dropdownlist
+        }
+
+        SkinElement default 
+        { 
+            Border_Bottom 1
+            Border_Left 1
+            Border_Right 1
+            Border_Top 1
+            Texture qgui.combobox.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement down 
+        { 
+            Border_Bottom 1
+            Border_Left 1
+            Border_Right 1
+            Border_Top 1
+            Texture qgui.combobox.down.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement over 
+        { 
+            Border_Bottom 1
+            Border_Left 1
+            Border_Right 1
+            Border_Top 1
+            Texture qgui.combobox.over.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+    } 
+
+}

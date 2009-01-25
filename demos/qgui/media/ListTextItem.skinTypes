@@ -1,0 +1,33 @@
+SkinClass ListTextItem
+{ 
+    SkinType default 
+    { 
+        SkinElement default
+        { 
+        } 
+
+        SkinElement over
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.toolbar.highlight.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement selected
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.toolbar.background.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+    } 
+
+}
