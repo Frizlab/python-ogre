@@ -22,6 +22,17 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #define CAELUM__CAELUM_SYSTEM_H
 
 #include "CaelumPrerequisites.h"
+#include "UniversalClock.h"
+#include "ImageStarfield.h"
+#include "PointStarfield.h"
+#include "SkyLight.h"
+#include "Sun.h"
+#include "Moon.h"
+#include "CloudSystem.h"
+#include "SkyDome.h"
+#include "DepthComposer.h"
+#include "PrecipitationController.h"
+#include "GroundFog.h"
 #include "OwnedPtr.h"
 
 namespace Caelum
@@ -53,50 +64,55 @@ namespace Caelum
      *  @par Updating
      *
      *  This class is responsible for updating subcomponents. There are two
-     *  master update functions which must be get called to keep CaelumSystem
-     *  functioning properly.
+     *  update functions which must be get called to keep CaelumSystem
+     *  functioning properly. One is per-frame and the other is per-camera.
      *
      *  CaelumSystem::updateSubcomponents must be called once per frame to
      *  advance world time and tie components together. That function will
-     *  set properties on the subcomponents making up CaelumSystem. If you
-     *  want to force some properties beyond what CaelumSystem does by
-     *  default you can do that AFTER the call to updateSubcompoments.
-     *
-     *  You can register CaelumSystem as an Ogre::FrameListener and
-     *  updateSubcomponents will be automatically called inside Ogre's
-     *  rendering loop. Or if you want more control you can just call this
-     *  yourself in your own main loop. This is sometimes useful because
-     *  it avoids potential issues with the ordering of FrameListener calls.
+     *  set certain properties on the subcomponents making up CaelumSystem
+     *  If you want to force some properties beyond what CaelumSystem does by
+     *  default you can do that AFTER the call to updateSubcompoments. For
+     *  example you can override the moon's phase by calling Moon::setPhase.
      *
      *  CaelumSystem::notifyCameraChanged must be called for each camera
      *  before rendering with that camera. All viewport tweaks and camera
-     *  movement must be done BEFORE calling this function. Caelum's domes
-     *  must be recentered on the camera before rendering and some
-     *  subcomponents actually depend on field-of-view and viewport
-     *  resolution (like PointStarfield).
+     *  movement must be done BEFORE calling this function. This method will
+     *  recenter Caelum's domes on the camera. Also, some subcomponents
+     *  can actually depend on field-of-view and viewport resolution (like
+     *  PointStarfield).
      *
-     *  If this function is not called correctly the most likely result is
-     *  "flickering" when moving the camera. If you move the camera AFTER
+     *  You can register CaelumSystem as an Ogre::FrameListener and
+     *  updateSubcomponents will be automatically called inside Ogre's
+     *  rendering loop (inside frameStarted). If you want more control you
+     *  should call updateSubcomponents in your own main loop. That way you
+     *  can avoid potential issues with the ordering of multiple FrameListeners.
+     *
+     *  You can register CaelumSystem as an Ogre::RenderTargetListener and
+     *  notifyCameraChanged will be automatically called inside
+     *  preViewportUpdate. That behaviour can be disabled with
+     *  setAutoNotifyCameraChanged(false). It is recommended that you 
+     *  call notifyCameraChanged manually before updating viewports.
+     *
+     *  RenderTargetListener::preViewportUpdate does not work as expected
+     *  when compositors are involved (those inside Caelum or external).
+     *  Compositors plug into preRenderTargetUpdate and render the scene to a
+     *  texture BEFORE preViewportUpdate; this means that notifyCameraChanged
+     *  will execute before the final compositor pass but after actual scene
+     *  rendering.
+     *
+     *  If notifyCameraChanged is not called correctly the most likely result
+     *  is "flickering" when moving the camera. If you move the camera AFTER
      *  notifyCameraChanged then the domes will not be positioned correctly
-     *  and will appear to lag slightly after the camera.
+     *  and will appear to lag slightly after the camera. Since updates are
+     *  always done every frame keeping the camera still will make problems
+     *  disappear.
      *
-     *  RenderTargetListener::preViewportUpdate is not enough to do this
-     *  because of compositors. Compositors plug into preRenderTargetUpdate
-     *  and render the scene to a texture BEFORE preViewportUpdate.
-     *  preViewportUpdate and notifyCameraChanged will execute before the
-     *  final compositor pass but after scene rendering.
-     *
-     *  What all this means is that if you want to use compositors then you
-     *  can't register CaelumSystem as a RenderTargetListener. Instead you
-     *  need to update render targets manually and call notifyCameraChanged
-     *  by hand. If you have multiple viewports this might imply not using
-     *  Ogre::Root::renderOneFrame.
-     *
-     *  The above also applies to the compositors inside Caelum; like
-     *  PrecipitationController. If you want to use them you need to manually
-     *  call notifyCameraChanged at the appropritate time.
+     *  If you notice z-buffer issues while the camera is still update order
+     *  is probably not the cause.
      */
-    class CAELUM_EXPORT CaelumSystem: public Ogre::FrameListener, public Ogre::RenderTargetListener
+    class CAELUM_EXPORT CaelumSystem:
+            public Ogre::FrameListener,
+            public Ogre::RenderTargetListener
     {
 	private:
 		/// Root of the Ogre engine.
@@ -129,19 +145,13 @@ namespace Caelum
         /// Flag to indicate if Caelum manages standard Ogre::Scene fog.
 		bool mManageSceneFog;
 
-        /// Global fog density multiplier.
         Real mGlobalFogDensityMultiplier;
+        Ogre::ColourValue mGlobalFogColourMultiplier;
 
-        /// Scene fog density multiplier.
         Real mSceneFogDensityMultiplier;
-
-        /// Multiply the colour of the scene fog.
         Ogre::ColourValue mSceneFogColourMultiplier;
 
-        /// Ground fog density multiplier.
         Real mGroundFogDensityMultiplier;
-
-        /// Multiply the colour of the ground fog.
         Ogre::ColourValue mGroundFogColourMultiplier;
 
         /// Flag for managing scene ambient light.
@@ -182,7 +192,11 @@ namespace Caelum
 		std::auto_ptr<PrecipitationController> mPrecipitationController;
 		std::auto_ptr<DepthComposer> mDepthComposer;
 
-        std::set<Ogre::Viewport*> mAttachedViewports;
+    public:
+        typedef std::set<Ogre::Viewport*> AttachedViewportSet;
+
+    private:
+        AttachedViewportSet mAttachedViewports;
 
 	public:
         /** Flags enumeration for caelum components.
@@ -243,13 +257,16 @@ namespace Caelum
                 CaelumComponent componentsToCreate);
 
         /** Revert everything to defaults.
+         *
          *  This function will delete all subcomponents and revert everything
-         *  to defaults values.
+         *  to default values (the values which are also set on construction).
          */
         void clear ();
 
         /** Create some default component with resonable default settings.
          *  This results in a slightly cloudy morning sky.
+         *  This will always call clear() before creating components.
+         *  autoConfigure (0); is equivalent to clear();
          */
         void autoConfigure (
                 CaelumComponent componentsToCreate);
@@ -287,6 +304,11 @@ namespace Caelum
          *  It will also call CameraBoundElement::notifyCameraChanged
          */
         void notifyCameraChanged(Ogre::Camera* cam);
+
+        /** Get the scene manager for this caelum system.
+         *  This is set in the constructor. CaelumSystem can't exist without a valid scene manager.
+         */
+        inline Ogre::SceneManager* getSceneMgr() const { return mSceneMgr; }
 
 		/// Gets root scene node for camera-bound elements
         inline Ogre::SceneNode* getCaelumCameraNode(void) const { return mCaelumCameraNode.get(); }
@@ -349,6 +371,12 @@ namespace Caelum
         /// Set the observer's latitude. North is positive, south is negative.
         inline void setObserverLatitude (Ogre::Degree value) { mObserverLatitude = value; }
 
+        inline LongReal getJulianDay () const { return mUniversalClock->getJulianDay (); }
+        inline void setJulianDay (LongReal value) { mUniversalClock->setJulianDay (value); }
+        inline Real getTimeScale () const { return mUniversalClock->getTimeScale (); }
+        inline void setTimeScale (Real value) { mUniversalClock->setTimeScale (value); }
+
+    public:
         /** Attach CaelumSystem to a viewport.
          *  You should call this for every new viewport looking at the scene
          *  where CaelumSystem is created.
@@ -369,6 +397,18 @@ namespace Caelum
         /** Check if one particular viewport is attached.
          */
         bool isViewportAttached (Ogre::Viewport* vp) const;
+
+        /** Detach from all viewports.
+         */
+        void detachAllViewports ();
+
+        /// Get a reference to the set of attached viewports.
+        const AttachedViewportSet& _getAttachedViewportSet () { return mAttachedViewports; }
+
+    protected:
+        // Do the work behind attach/detach viewport.
+		void attachViewportImpl (Ogre::Viewport* rt);
+		void detachViewportImpl (Ogre::Viewport* rt);
         
     public:
 		/// Gets the universal clock.
@@ -377,52 +417,48 @@ namespace Caelum
 		/// Get the current sky dome, or null if disabled.
         inline SkyDome* getSkyDome () const { return mSkyDome.get (); }
 		/// Set the skydome, or null to disable.
-        inline void setSkyDome (SkyDome *obj) { mSkyDome.reset (obj); }
+        void setSkyDome (SkyDome *obj);
 
 		/// Gets the current sun, or null if disabled.
         inline BaseSkyLight* getSun () const { return mSun.get (); }
 		/// Set the sun, or null to disable.
-		inline void setSun (BaseSkyLight* obj) { mSun.reset (obj); }
+		void setSun (BaseSkyLight* obj);
 
 		/// Gets the current moon, or null if disabled.
-        Moon* getMoon () const { return mMoon.get (); }
+        inline Moon* getMoon () const { return mMoon.get (); }
 		/// Set the moon, or null to disable.
-		inline void setMoon (Moon* obj) { mMoon.reset (obj); }
+		void setMoon (Moon* obj);
 
 		/// Gets the current image starfield, or null if disabled.
         inline ImageStarfield* getImageStarfield () const { return mImageStarfield.get (); }
 		/// Set image starfield, or null to disable.
-        inline void setImageStarfield (ImageStarfield* obj) { mImageStarfield.reset (obj); }
+        void setImageStarfield (ImageStarfield* obj);
 
 		/// Gets the current point starfield, or null if disabled.
         inline PointStarfield* getPointStarfield () const { return mPointStarfield.get (); }
 		/// Set image starfield, or null to disable.
-        inline void setPointStarfield (PointStarfield* obj) { mPointStarfield.reset (obj); }
-
-		/// Sets ground fog system, or null to disable.
-        inline void setGroundFog (GroundFog *model) { mGroundFog.reset(model); }
+        void setPointStarfield (PointStarfield* obj);
 
 		/// Get ground fog; if enabled.
-        inline GroundFog* getGroundFog () const { return mGroundFog.get(); }
-
-        /// Set cloud system; or null to disable.
-        inline void setCloudSystem (CloudSystem *value) { mCloudSystem.reset(value); }
+        inline GroundFog* getGroundFog () { return mGroundFog.get (); }
+		/// Sets ground fog system, or null to disable.
+        void setGroundFog (GroundFog *obj);
 
         /// Get cloud system; or null if disabled.
-        inline CloudSystem* getCloudSystem () const { return mCloudSystem.get(); }
-
-        /// Set precipitation controller; or null to disable.
-		void setPrecipitationController (PrecipitationController *value);
+        inline CloudSystem* getCloudSystem () { return mCloudSystem.get (); }
+        /// Set cloud system; or null to disable.
+        void setCloudSystem (CloudSystem *obj);
 
         /// Get precipitation controller; or null if disabled.
-		inline PrecipitationController* getPrecipitationController () const { return mPrecipitationController.get(); }
-
-        /// Set depth composer; or null to disable.
-		void setDepthComposer (DepthComposer *value);
-
+		inline PrecipitationController* getPrecipitationController () { return mPrecipitationController.get (); }
+        /// Set precipitation controller; or null to disable.
+		void setPrecipitationController (PrecipitationController *obj);
+ 
         /// Get depth composer; or null if disabled.
-		inline DepthComposer* getDepthComposer () const { return mDepthComposer.get(); }
-
+		inline DepthComposer* getDepthComposer () { return mDepthComposer.get (); }
+        /// Set depth composer; or null to disable.
+		void setDepthComposer (DepthComposer *obj);
+ 
 		/** Enables/disables Caelum managing standard Ogre::Scene fog.
             This makes CaelumSystem control standard Ogre::Scene fogging. It
             will use EXP2 fog with density from SkyColourModel.
@@ -444,7 +480,7 @@ namespace Caelum
 
         /** Multiplier for scene fog density (default 1).
             This is an additional multiplier for Ogre::Scene fog density.
-            This has no effect if getManagerSceneFog is false.
+            This has no effect if getManageSceneFog is false.
 
             Final scene fog density is:
             SceneMultiplier * GlobalMultiplier * SkyColourModel.GetFogDensity
@@ -461,14 +497,13 @@ namespace Caelum
         inline void setSceneFogColourMultiplier (const Ogre::ColourValue& value) { mSceneFogColourMultiplier = value; }
 
         /// See setSceneFogColourMultiplier.
-        inline Ogre::ColourValue getSceneFogColourMultiplier () const { return mSceneFogColourMultiplier; }
+        inline const Ogre::ColourValue getSceneFogColourMultiplier () const { return mSceneFogColourMultiplier; }
 
         /** Multiplier for ground fog density (default 1).
-            This is an additional multiplier for Caelum::GroundFog density.
-            This has no effect if GroundFog is not used.
-
-            Final ground fog density is:
-            GroundFogMultipler * GlobalMultiplier * SkyColourModel.GetFogDensity
+         *  This is an additional multiplier for Caelum::GroundFog DepthComposer ground fog density.
+         *
+         *  Final ground fog density is:
+         *  GroundFogMultipler * GlobalMultiplier * SkyColourModel.GetFogDensity
          */
         void setGroundFogDensityMultiplier (Real value);
 
@@ -482,19 +517,28 @@ namespace Caelum
         inline void setGroundFogColourMultiplier (const Ogre::ColourValue& value) { mGroundFogColourMultiplier = value; }
 
         /// See setGroundFogColourMultiplier.
-        inline Ogre::ColourValue getGroundFogColourMultiplier () const { return mGroundFogColourMultiplier; }
+        inline const Ogre::ColourValue getGroundFogColourMultiplier () const { return mGroundFogColourMultiplier; }
 
         /** Multiplier for global fog density (default 1).
-            This is an additional multiplier for fog density as received from
-            SkyColourModel. There are other multipliers you can tweak for
-            individual kinds of fog; but this is what you should change from
-            whatever "game logic" you might have.
+         *  This is an additional multiplier for fog density as received from
+         *  SkyColourModel. There are other multipliers you can tweak for
+         *  individual kinds of fog; but this is what you should change from
+         *  whatever "game logic" you might have.
          */
         void setGlobalFogDensityMultiplier (Real value);
 
         /** Get the value set by setSceneFogDensityMultiplier.
          */
         Real getGlobalFogDensityMultiplier () const;
+
+        /** Set an additional multiplier for fog colour.
+         *  This will also affect stuff like clouds or precipitation. Careful!
+         *  This is OgreColour::White by default; which has no effect.
+         */
+        inline void setGlobalFogColourMultiplier (const Ogre::ColourValue& value) { mGlobalFogColourMultiplier = value; }
+
+        /// See setGlobalFogColourMultiplier.
+        inline const Ogre::ColourValue getGlobalFogColourMultiplier () const { return mGlobalFogColourMultiplier; }
 
         /** Set this to true to have CaelumSystem manage the scene's ambient light.
          *  The colour and AmbientMultiplier of the sun and moon are used.
@@ -538,26 +582,26 @@ namespace Caelum
 			@param sunDir The sun direction.
 			@return The fog colour.
 		 */
-		Ogre::ColourValue getFogColour (float time, const Ogre::Vector3 &sunDir);
+		Ogre::ColourValue getFogColour (Real time, const Ogre::Vector3 &sunDir);
 
 		/** Gets the fog density for a certain daytime.
 			@param time The current time.
 			@param sunDir The sun direction.
 			@return The fog density.
 		 */
-		float getFogDensity (float time, const Ogre::Vector3 &sunDir);
+		Real getFogDensity (Real time, const Ogre::Vector3 &sunDir);
 
 		/** Get the colour of the sun sphere.
          *  This colour is used to draw the sun sphere in the sky.
 		 *  @return The colour of the sun.
 		 */
-		Ogre::ColourValue getSunSphereColour (float time, const Ogre::Vector3 &sunDir);
+		Ogre::ColourValue getSunSphereColour (Real time, const Ogre::Vector3 &sunDir);
 
 		/** Gets the colour of sun light.
          *  This color is used to illuminate the scene.
          *  @return The colour of the sun's light
 		 */
-		Ogre::ColourValue getSunLightColour (float time, const Ogre::Vector3 &sunDir);
+		Ogre::ColourValue getSunLightColour (Real time, const Ogre::Vector3 &sunDir);
 
 		/// Gets the colour of moon's body.
 		Ogre::ColourValue getMoonBodyColour (const Ogre::Vector3 &moonDir);

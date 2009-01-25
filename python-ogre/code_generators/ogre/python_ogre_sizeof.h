@@ -98,6 +98,8 @@ sizeof ( Ogre::RenderTarget::FrameStats );
 sizeof ( Ogre::SharedPtr<Ogre::AnimableValue> );
 sizeof ( Ogre::SharedPtr<Ogre::FileInfoList> );
 sizeof ( Ogre::SharedPtr<Ogre::Texture> );
+sizeof ( Ogre::SharedPtr<Ogre::Material> );
+sizeof ( Ogre::SharedPtr<Ogre::Mesh> );
 
 sizeof ( Ogre::TexturePtr );
 

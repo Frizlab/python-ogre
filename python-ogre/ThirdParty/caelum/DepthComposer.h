@@ -82,10 +82,10 @@ namespace Caelum
 		bool getSkyDomeHazeEnabled () const { return mSkyDomeHazeEnabled; }
 
         void setSunDirection (const Ogre::Vector3& value) { mSunDirection = value; }
-        Ogre::Vector3 getSunDirection () const { return mSunDirection; }
+        const Ogre::Vector3 getSunDirection () const { return mSunDirection; }
 
         void setHazeColour (const Ogre::ColourValue& value) { mHazeColour = value; }
-        Ogre::ColourValue getHazeColour () const { return mHazeColour; }
+        const Ogre::ColourValue getHazeColour () const { return mHazeColour; }
 
     private:
         bool mGroundFogEnabled;
@@ -97,7 +97,7 @@ namespace Caelum
     public:
 		/// Enables exponential ground fog.
 		void setGroundFogEnabled (bool value);
-		bool getGroundFogEnabled () { return mGroundFogEnabled; }
+		bool getGroundFogEnabled () const { return mGroundFogEnabled; }
 
 		/// Sets ground fog density
 		void setGroundFogDensity (Real value) { mGroundFogDensity = value; }
@@ -169,8 +169,9 @@ namespace Caelum
     };
     
     /** Render the depth buffer to a texture.
+     *
      *  This class tries to be as generic and flexible as possible; but it 
-     *  is currently tightly bound to DepthComposer.
+     *  is currently only used by the depth composer.
      */
     class CAELUM_EXPORT DepthRenderer: private Ogre::RenderQueue::RenderableListener
     {
@@ -237,6 +238,30 @@ namespace Caelum
         void setViewportVisibilityMask (uint value) { mViewportVisibilityMask = value; }
         uint getViewportVisibilityMask () { return mViewportVisibilityMask; }
         void disableViewportVisibilityMask () { mViewportVisibilityMask = ~0; }
+
+    public:
+        /** If true then use a user-supplied material scheme which outputs depth.
+         *
+         *  The depth output of most materials is obvious and can be guessed most of the time.
+         *  When that fails you can provide a custom material scheme for certain materials which
+         *  renders the depth buffer.
+         *
+         *  This is enabled by default for a scheme called CaelumDepth.
+         */
+        inline void setUseCustomDepthScheme (bool value) { mUseCustomDepthScheme = value; }
+        inline bool getUseCustomDepthScheme () { return mUseCustomDepthScheme; }
+
+        /** Set the name of the custom depth scheme (default is CaelumDepth).
+         */
+        inline void setCustomDepthSchemeName (const Ogre::String& value) { mCustomDepthSchemeName = value; }
+        inline const Ogre::String& getCustomDepthSchemeName () { return mCustomDepthSchemeName; }
+
+        /// Default name of the custom scheme.
+        static const String DEFAULT_CUSTOM_DEPTH_SCHEME_NAME;
+
+    private:
+        bool mUseCustomDepthScheme;
+        Ogre::String mCustomDepthSchemeName;
     };
 }
 

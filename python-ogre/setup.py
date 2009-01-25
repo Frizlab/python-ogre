@@ -33,7 +33,7 @@ This version is built against the Ogre CVS"""
 
 METADATA = {
     "name":             "Python-Ogre",
-    "version":          "1.6.0",
+    "version":          "1.6.1",
     "license":          "LGPL",
     "url":              "http://python-ogre.python-hosting.com/",
     "author":           "Lakin Wecker, Roman Yakovenko, Andy Miller",
@@ -69,7 +69,7 @@ PACKAGEDATA = {
                         'ogre.addons','ogre.addons.theora',
                         'ogre.addons.plib', # 'ogre.gui.navi',
                         'ogre.addons.ogreforests', 'ogre.addons.et', 'ogre.addons.caelum',
-                        'ogre.addons.noise', 'ogre.addons.watermesh', # 'ogre.addons.ofusion',
+                        'ogre.addons.noise', #'ogre.addons.watermesh', # 'ogre.addons.ofusion',
                         'ogre.addons.particleuniverse', 'ogre.addons.cadunetree',
                         'ogre.renderer.ogrepcz', 'ogre.addons.hydrax',
                         'ogre.gui.hikari','ogre.gui.mygui','ogre.gui.canvas' ],

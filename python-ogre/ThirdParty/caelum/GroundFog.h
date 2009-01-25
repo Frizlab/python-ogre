@@ -38,6 +38,9 @@ namespace Caelum
      *
      *	You can set verticalDecay to 0 and get standard GL_EXP fog. Don't actually
      *	do that though because you'll get a division by 0.
+     *
+     *  @note: This is deprecated starting from Caelum 0.4. The DepthComposer class
+     *  provides similar functionality with less intrusion on your materials.
      */
     class CAELUM_EXPORT GroundFog: public CameraBoundElement
     {
@@ -81,19 +84,19 @@ namespace Caelum
 		void setDensity (Ogre::Real density);
 
 		/// Get the fog density multiplier
-		Ogre::Real getDensity ();
+		Ogre::Real getDensity () const;
 
 		/// Sets fog colour
 		void setColour (const Ogre::ColourValue &colour);
 
 		/// Gets fog colour
-		Ogre::ColourValue getColour ();
+		const Ogre::ColourValue getColour () const;
 
 		/// Sets the vertical fog decay constant.
 		void setVerticalDecay (Ogre::Real verticalDecay);
 
 		/// Get the vertical fog decay constant.
-		Ogre::Real getVerticalDecay ();
+		Ogre::Real getVerticalDecay () const;
 
 		/** Sets the ground level.
 		 *	At ground level 'fogginess' is equal to 1.
@@ -102,7 +105,7 @@ namespace Caelum
 
 		/** Get the ground level.
 		 */
-		Ogre::Real getGroundLevel ();
+		Ogre::Real getGroundLevel () const;
 
 		/** Forces an update of all the passes. You have to use this if you modify
 		 *	the set of passes by hand, otherwise avoid it.

@@ -92,19 +92,19 @@ namespace Caelum
                 const Ogre::ColourValue &bodyColour);
 
 		/// Retrieves the latest light direction.
-		const Ogre::Vector3& getLightDirection () const;
+		const Ogre::Vector3 getLightDirection () const;
 
 		/// Set the sun direction.
 		virtual void setLightDirection (const Ogre::Vector3 &dir);
 
 		/// Get current body colour, as set in setBodyColour.
-		Ogre::ColourValue getBodyColour () const;
+		const Ogre::ColourValue getBodyColour () const;
 
 		/// Sets the colour to draw the light's body with.
 		virtual void setBodyColour (const Ogre::ColourValue &colour);
 
 		/// Get current light colour, as set in setLightColour.
-		Ogre::ColourValue getLightColour () const;
+		const Ogre::ColourValue getLightColour () const;
 
 		/// Sets the skylight colour.
 		virtual void setLightColour (const Ogre::ColourValue &colour);
@@ -113,13 +113,13 @@ namespace Caelum
 		void setDiffuseMultiplier (const Ogre::ColourValue &diffuse);
 
 		/// Set diffuse multiplier for light colour
-		Ogre::ColourValue getDiffuseMultiplier () const;
+		const Ogre::ColourValue getDiffuseMultiplier () const;
 
 		/// Set specular multiplier for light colour
 		void setSpecularMultiplier (const Ogre::ColourValue &specular);
 
 		/// Set specular multiplier for light colour
-		Ogre::ColourValue getSpecularMultiplier () const;
+		const Ogre::ColourValue getSpecularMultiplier () const;
 
 		/// Set ambient multiplier for light colour
 		/// This value is only stored here; the SceneManager is not touched
@@ -127,7 +127,7 @@ namespace Caelum
 		void setAmbientMultiplier (const Ogre::ColourValue &ambient);
 
 		/// Set ambient multiplier for light colour
-		Ogre::ColourValue getAmbientMultiplier () const;
+		const Ogre::ColourValue getAmbientMultiplier () const;
 
 		/// Direct access to the Ogre::Light.
 		Ogre::Light* getMainLight() const;

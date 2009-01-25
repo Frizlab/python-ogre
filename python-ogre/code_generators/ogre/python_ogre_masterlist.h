@@ -50,6 +50,7 @@ Nov 21 2007:  Major change to use Ogre.h and OgreStableHeaders.h, and then add m
     #include "OgreMemoryManager.h"
     #include "OgreNoMemoryMacros.h"
 #endif    
+
 #include "OgreMeshFileFormat.h"
 #include "OgreMeshSerializerImpl.h"
 #include "OgreMovablePlane.h"
@@ -100,3 +101,14 @@ Nov 21 2007:  Major change to use Ogre.h and OgreStableHeaders.h, and then add m
 #include "OgreUnifiedHighLevelGpuProgram.h"
 #include "OgreVertexBoneAssignment.h"
 #include "OgreVertexIndexData.h"
+
+// for 1.6.1 -- going crasy on the includes
+#include "OgreCompositorScriptCompiler.h"
+//#include "OgreCompositorScriptCompiler2.h"
+//#include "OgreParticleScriptCompiler.h"
+#include "OgreScriptCompiler.h"
+#include "OgreScriptLexer.h"
+#include "OgreScriptLoader.h"
+#include "OgreScriptParser.h"
+#include "OgreScriptTranslator.h"
+#include "OgreMaterial.h"

@@ -23,6 +23,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 #include "CaelumPrerequisites.h"
 #include "ImageHelper.h"
+#include "OwnedPtr.h"
 
 namespace Caelum
 {
@@ -35,8 +36,7 @@ namespace Caelum
 	public:
 		FlatCloudLayer(
 				Ogre::SceneManager *sceneMgr,
-                Ogre::SceneNode *cloudRoot,
-                Ogre::Real height);
+                Ogre::SceneNode *cloudRoot);
 
 		~FlatCloudLayer();
 
@@ -48,6 +48,10 @@ namespace Caelum
 		        const Ogre::ColourValue &sunLightColour,
 		        const Ogre::ColourValue &fogColour,
 				const Ogre::ColourValue &sunSphereColour);
+
+        /** Reset most tweak settings to their default values
+         */
+        void reset ();
 
 	private:
         Ogre::Real mHeight;
@@ -71,12 +75,6 @@ namespace Caelum
         /// Lookup used for cloud coverage, @see setCloudCoverLookup.
         std::auto_ptr<Ogre::Image> mCloudCoverLookup;
 
-	    Ogre::MaterialPtr mMaterial;		
-        Ogre::MeshPtr mMesh;
-	    Ogre::Entity *mEntity;
-	    Ogre::SceneNode *mNode;
-	    Ogre::SceneManager *mSceneMgr;
-
 	    Ogre::GpuProgramParametersSharedPtr getVpParams();
 	    Ogre::GpuProgramParametersSharedPtr getFpParams();
 
@@ -87,6 +85,48 @@ namespace Caelum
 	    void setSunLightColour(const Ogre::ColourValue &sunLightColour);
 		void setSunSphereColour(const Ogre::ColourValue &sunSphereColour);
 	    void setFogColour(const Ogre::ColourValue &fogColour);
+
+    private:
+	    Ogre::SceneManager *mSceneMgr;
+
+        // Note: objects are destroyed in reverse order of declaration.
+        // This means that objects must be ordered by dependency.
+	    OwnedMaterialPtr mMaterial;		
+        OwnedMeshPtr mMesh;
+	    SceneNodePtr mNode;
+	    EntityPtr mEntity;
+
+        // Mesh parameters.
+        bool mMeshDirty;
+        Real mMeshWidth, mMeshHeight;
+        int mMeshWidthSegments, mMeshHeightSegments;
+
+    public:
+        /** Regenerate the plane mesh and recreate entity.
+         *  This automatically happens in update.
+         */
+        void _ensureGeometry();
+
+        /** Regenerate the plane mesh and recreate entity.
+         *  This automatically happens when mesh parameters are changed.
+         */
+        void _invalidateGeometry();
+
+        /** Reset all mesh parameters.
+         */
+        void setMeshParameters (
+                Real meshWidth, Real meshHeight,
+                int meshWidthSegments, int meshHeightSegments);
+
+        /// @see setMeshParameters
+        inline void setMeshWidth (Real value) { mMeshWidth = value; _invalidateGeometry (); }
+        inline void setMeshHeight (Real value) { mMeshHeight = value; _invalidateGeometry (); }
+        inline void setMeshWidthSegments (int value) { mMeshWidthSegments = value; _invalidateGeometry (); }
+        inline void setMeshHeightSegments (int value) { mMeshHeightSegments = value; _invalidateGeometry (); }
+        inline Real getMeshWidth () const { return mMeshWidth; }
+        inline Real getMeshHeight () const { return mMeshHeight; }
+        inline int getMeshWidthSegments () const { return mMeshWidthSegments; }
+        inline int getMeshHeightSegments () const { return mMeshHeightSegments; }
 
     public:
         /** Set the height of the cloud layer.
@@ -107,7 +147,7 @@ namespace Caelum
 		/** Gets cloud movement speed.
 		 *  @param cloudSpeed Cloud movement speed.
 		 */
-        Ogre::Vector2 getCloudSpeed () const { return mCloudSpeed; }
+        const Ogre::Vector2 getCloudSpeed () const { return mCloudSpeed; }
 
 		/** Sets cloud cover, between 0 (completely clear) and 1 (completely covered)
 		 *  @param cloudCover Cloud cover between 0 and 1
@@ -150,12 +190,57 @@ namespace Caelum
 		Ogre::Real getCloudBlendTime () const;
 
         /** Set the current blending position; between noise textures.
+         *  Integer values are used for single textures. Float values blend between two textures.
+         *  Values outside [0, textureCount) are wrapped around.
          *  @param value New cloud blending position
          */
 	    void setCloudBlendPos (const Ogre::Real value);
 
         /// @see setCloudBlendPos
         Ogre::Real getCloudBlendPos () const;
+
+    private:
+        Ogre::Real mCloudUVFactor;
+        Ogre::Real mHeightRedFactor;
+
+    public:
+        /** Cloud texture coordinates are multiplied with this.
+         *  Higher values result in more spread-out clouds.
+         *  Very low value result in ugly texture repeats.
+         */
+	    void setCloudUVFactor (const Ogre::Real value);
+        /// @see setCloudUVFactor
+        inline Ogre::Real getCloudUVFactor () const { return mCloudUVFactor; }
+
+        /** High-altitude clouds are tinted red in the evening.
+         *  Higher values attenuate the effect.
+         */
+	    void setHeightRedFactor (const Ogre::Real value);
+        /// @see setCloudUVFactor
+        Ogre::Real getHeightRedFactor () const { return mHeightRedFactor; }
+
+    private:
+        Ogre::Real mNearFadeDist;
+        Ogre::Real mFarFadeDist;
+
+    public:
+        /** Cloud fade distances.
+         *
+         *  These are measured horizontally in meters (height is not used).
+         *
+         *  The effect is a fade based on alpha blending which occurs between
+         *  nearValue and farValue. After farValue nothing is visibile from
+         *  this layer.
+         *
+         *  Default values are 10000 and 140000
+         */
+        void setFadeDistances (Ogre::Real nearValue, Ogre::Real farValue);
+
+	    void setNearFadeDist (const Ogre::Real value);
+        Ogre::Real getNearFadeDist () const { return mNearFadeDist; }
+
+	    void setFarFadeDist (const Ogre::Real value);
+        Ogre::Real getFarFadeDist () const { return mFarFadeDist; }
 
     public:
         void setQueryFlags (uint flags) { mEntity->setQueryFlags (flags); }

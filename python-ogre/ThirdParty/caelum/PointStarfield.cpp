@@ -29,6 +29,7 @@ using namespace Ogre;
 namespace Caelum
 {
 	const Ogre::String PointStarfield::BILLBOARD_MATERIAL_NAME = "Caelum/StarPoint";
+    const Ogre::Degree PointStarfield::DEFAULT_OBSERVER_POSITION_REBUILD_DELTA = Ogre::Degree(0.1);
 
 	PointStarfield::PointStarfield (
 			Ogre::SceneManager *sceneMgr,
@@ -41,6 +42,7 @@ namespace Caelum
 		mMagnitudeScale = Math::Pow(100, 0.2);
 		mObserverLatitude = 45;
 		mObserverLongitude = 0;
+        mObserverPositionRebuildDelta = DEFAULT_OBSERVER_POSITION_REBUILD_DELTA;
 
         String uniqueId = StringConverter::toString ((size_t)this);
 
@@ -169,19 +171,24 @@ namespace Caelum
 			return;
 		}
 
-		Ogre::LogManager::getSingleton ().logMessage ("Caelum: Recomputing starfield geometry.");
+		//Ogre::LogManager::getSingleton ().logMessage ("Caelum: Recomputing starfield geometry.");
+
+        size_t starCount = mStars.size();
 
         mManualObj->clear();
-        mManualObj->estimateVertexCount(6 * mStars.size());
+        mManualObj->estimateVertexCount(6 * starCount);
         mManualObj->begin(mMaterial->getName (), Ogre::RenderOperation::OT_TRIANGLE_LIST);
-        for (uint i = 0; i < mStars.size(); ++i) {
+        for (uint i = 0; i < starCount; ++i)
+        {
+            const Star& star = mStars[i];
+
 			// Determine position at J2000
 			LongReal azm, alt;
 			Astronomy::convertEquatorialToHorizontal(
 					Astronomy::J2000,
 					mObserverLatitude.valueDegrees(),
 					mObserverLongitude.valueDegrees(),
-					mStars[i].RightAscension.valueDegrees(), mStars[i].Declination.valueDegrees(),
+					star.RightAscension.valueDegrees(), star.Declination.valueDegrees(),
 					azm, alt);
 
     		Ogre::Vector3 pos;
@@ -189,20 +196,20 @@ namespace Caelum
 		    pos.x =  Math::Sin (Ogre::Degree(azm)) * Math::Cos (Ogre::Degree(alt));
 		    pos.y = -Math::Sin (Ogre::Degree(alt));
 
-            mManualObj->colour (Ogre::ColourValue::White);
+            //mManualObj->colour (Ogre::ColourValue::White);
             mManualObj->position (pos);
-            mManualObj->textureCoord (+1, -1, mStars[i].Magnitude);
+            mManualObj->textureCoord (+1, -1, star.Magnitude);
             mManualObj->position (pos);
-            mManualObj->textureCoord (+1, +1, mStars[i].Magnitude);
+            mManualObj->textureCoord (+1, +1, star.Magnitude);
             mManualObj->position (pos);
-            mManualObj->textureCoord (-1, -1, mStars[i].Magnitude);
+            mManualObj->textureCoord (-1, -1, star.Magnitude);
 
             mManualObj->position (pos);
-            mManualObj->textureCoord (-1, -1, mStars[i].Magnitude);
+            mManualObj->textureCoord (-1, -1, star.Magnitude);
             mManualObj->position (pos);
-            mManualObj->textureCoord (+1, +1, mStars[i].Magnitude);
+            mManualObj->textureCoord (+1, +1, star.Magnitude);
             mManualObj->position (pos);
-            mManualObj->textureCoord (-1, +1, mStars[i].Magnitude);
+            mManualObj->textureCoord (-1, +1, star.Magnitude);
         }
         mManualObj->end();
 
@@ -254,15 +261,25 @@ namespace Caelum
         ensureGeometry ();
 	}
 
-	void PointStarfield::setObserverLatitude (Ogre::Degree value) {
-		if (!Math::RealEqual (mObserverLatitude.valueDegrees (), value.valueDegrees (), 0.001)) {
+	void PointStarfield::setObserverLatitude (Ogre::Degree value)
+    {
+		if (!Math::RealEqual (
+                mObserverLatitude.valueDegrees (),
+                value.valueDegrees (),
+                this->getObserverPositionRebuildDelta ().valueDegrees ()))
+        {
 			mObserverLatitude = value;
 			invalidateGeometry ();
 		}
 	}
 
-	void PointStarfield::setObserverLongitude (Ogre::Degree value) {
-		if (!Math::RealEqual (mObserverLongitude.valueDegrees (), value.valueDegrees (), 0.001)) {
+	void PointStarfield::setObserverLongitude (Ogre::Degree value)
+    {
+		if (!Math::RealEqual (
+                mObserverLongitude.valueDegrees (), 
+                value.valueDegrees (),
+                this->getObserverPositionRebuildDelta ().valueDegrees ()))
+        {
 			mObserverLongitude = value;
 			invalidateGeometry ();
 		}

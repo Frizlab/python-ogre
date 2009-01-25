@@ -5,9 +5,15 @@ echo
 setlocal
 set root=c:\development
 set package=..\packages_2.5\ogre
+
 set ogre=%root%\ogre\samples\common\bin\release
+rem set ogre=c:\ogreSDK\bin\release
+
 set ogretools=%root%\ogre\tools\common\bin\release
+
 set cegui=%root%\cegui-0.6.2\bin
+rem set cegui=%ogre%
+
 set quick=%root%\quickgui\bin
 set opcode=%root%\OpCode\Release
 set nxogre=%root%\NxOgre\NxOgre\lib
@@ -26,7 +32,8 @@ set ogreal=%root%\OgreAL\lib\Release
 set freealut=%root%\FreeAlut\lib
 set vorbis=%root%\vorbis\win32
 set ogg=%root%\ogg\win32\Dynamic_Release
-set openal=%root%\openal\samples\bin\win32
+
+set openal=%root%\openal\redist
 
 rem Ogre
 copy /y %ogre%\ogremain.dll %package%\renderer\OGRE
@@ -37,6 +44,9 @@ copy /y %ogretools%\* ..\tools
 copy /y %boostlib% %package%\renderer\OGRE
 copy /y %ogre%\render*.dll ..\plugins
 copy /y %ogre%\plug*.dll ..\plugins
+
+rem OIS
+rem copy /y %ogre%\ois.dll %package%\io\OIS
 
 rem ParticleUniverse
 copy /y %particleuniverse%\ParticleUniverse.dll ..\plugins
@@ -82,6 +92,7 @@ copy /y %vorbis%\VorbisEnc_Dynamic_Release\vorbisenc.dll %package%\sound\OgreAL
 copy /y %vorbis%\VorbisFile_Dynamic_Release\vorbisfile.dll %package%\sound\OgreAL
 copy /y %vorbis%\Vorbis_Dynamic_Release\vorbis.dll %package%\sound\OgreAL
 copy /y %ogg%\ogg.dll %package%\sound\OgreAL
+
 REM copy /y %freealut%\alut.dll %package%\sound\OgreAL
 copy /y %openal%\OpenAL32.dll %package%\sound\OgreAL
 copy /y %openal%\wrap_oal.dll %package%\sound\OgreAL

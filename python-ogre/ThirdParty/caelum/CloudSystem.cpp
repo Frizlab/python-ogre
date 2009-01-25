@@ -34,9 +34,18 @@ namespace Caelum
         mCloudRoot = cloudRoot;
     }
 
-    void CloudSystem::createLayerAtHeight(Ogre::Real height)
+    FlatCloudLayer* CloudSystem::createLayerAtHeight(Ogre::Real height)
     {
-        mLayers.push_back(new FlatCloudLayer(mSceneMgr,mCloudRoot,height));
+        FlatCloudLayer* layer = this->createLayer ();
+        layer->setHeight(height);
+        return layer;
+    }
+
+    FlatCloudLayer* CloudSystem::createLayer()
+    {
+        std::auto_ptr<FlatCloudLayer> layer(new FlatCloudLayer(mSceneMgr, mCloudRoot));
+        mLayers.push_back(layer.get());
+        return layer.release();
     }
 
     void CloudSystem::addLayer(FlatCloudLayer* layer)

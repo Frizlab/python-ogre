@@ -23,43 +23,44 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 #include "CaelumPrerequisites.h"
 
-namespace Caelum {
-
-/** A constructor for a number of caelum geometric objects.
- */
-class CAELUM_EXPORT GeometryFactory {
-// Types and enums ------------------------------------------------------------
+namespace Caelum
+{
+    /** A static class which creates some dome geometry.
+     */
+    class CAELUM_EXPORT GeometryFactory
+    {
 	public:
 		/** Enumeration of types of sky domes.
 		 */
-		enum DomeType {DT_GRADIENTS, DT_STARFIELD};
+		enum DomeType {
+            DT_GRADIENTS,
+            DT_STARFIELD
+        };
 
-// Methods --------------------------------------------------------------------
 	public:
 		/** Creates a longitude-latitude sky dome.
-			@note Does nothing if the sphere already exists.
-			@param name The name of the mesh to be created.
-			@param segments The number of sphere segments.
-			@param type The type of sky dome to create.
+		 *  @note Does nothing if the sphere already exists.
+		 *  @param name The name of the mesh to be created.
+		 *  @param segments The number of sphere segments.
+		 *  @param type The type of sky dome to create.
 		 */
 		static void generateSphericDome (const Ogre::String &name, int segments, DomeType type = DT_GRADIENTS);
 
 	private:
 		/** Fills the vertex and index buffers for a sky gradients type dome.
-			@param pVertex Pointer to the vertex buffer.
-			@param pIndices Pointer to the index buffer.
-			@param segments Subdivision detail.
+		 *  @param pVertex Pointer to the vertex buffer.
+		 *  @param pIndices Pointer to the index buffer.
+		 *  @param segments Subdivision detail.
 		 */
 		static void fillGradientsDomeBuffers (float *pVertex, unsigned short *pIndices, int segments);
 
 		/** Fills the vertex and index buffers for a stardield type dome.
-			@param pVertex Pointer to the vertex buffer.
-			@param pIndices Pointer to the index buffer.
-			@param segments Subdivision detail.
+		 *  @param pVertex Pointer to the vertex buffer.
+		 *  @param pIndices Pointer to the index buffer.
+		 *  @param segments Subdivision detail.
 		 */
 		static void fillStarfieldDomeBuffers (float *pVertex, unsigned short *pIndices, int segments);
-};
-
-} // namespace Caelum
+    };
+}
 
 #endif //GEOMETRYFACTORY_H

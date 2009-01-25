@@ -31,9 +31,11 @@ namespace Caelum
     SkyDome::SkyDome (Ogre::SceneManager *sceneMgr, Ogre::SceneNode *caelumRootNode):
         mNode(NULL)
     {
+	    String uniquePrefix = "Caelum/SkyDome/" + Ogre::StringConverter::toString((size_t)this) + "/";
+
         // First clone material
         mMaterial = Ogre::MaterialManager::getSingleton().getByName(SKY_DOME_MATERIAL_NAME);
-        mMaterial = mMaterial->clone(SKY_DOME_MATERIAL_NAME + Ogre::StringConverter::toString((size_t)this));
+        mMaterial = mMaterial->clone(uniquePrefix + SKY_DOME_MATERIAL_NAME);
         mMaterial->load ();
 
         // Determine if the shader technique works.
@@ -47,12 +49,12 @@ namespace Caelum
 
         // Generate dome entity.
         GeometryFactory::generateSphericDome (SPHERIC_DOME_NAME, 32);
-        mEntity = sceneMgr->createEntity ("Dome", SPHERIC_DOME_NAME);
+        mEntity = sceneMgr->createEntity (uniquePrefix + "Dome", SPHERIC_DOME_NAME);
         mEntity->setMaterialName (mMaterial->getName());
         mEntity->setRenderQueueGroup (CAELUM_RENDER_QUEUE_SKYDOME);
         mEntity->setCastShadows (false);
 
-        mNode = caelumRootNode->createChildSceneNode ();
+        mNode = caelumRootNode->createChildSceneNode (uniquePrefix + "DomeNode");
         mNode->attachObject (mEntity);
     }
 
@@ -79,7 +81,7 @@ namespace Caelum
         mNode->setScale (Ogre::Vector3::UNIT_SCALE * radius);
     }
 
-    void SkyDome::setSunDirection (Ogre::Vector3 sunDir) {
+    void SkyDome::setSunDirection (const Ogre::Vector3& sunDir) {
         float elevation = sunDir.dotProduct (Ogre::Vector3::UNIT_Y);
         elevation = elevation * 0.5 + 0.5;
         Ogre::Pass* pass = mMaterial->getBestTechnique()->getPass(0);
@@ -94,67 +96,21 @@ namespace Caelum
         }
     }
 
-    void SkyDome::setHazeColour (Ogre::ColourValue hazeColour) {
+    void SkyDome::setHazeColour (const Ogre::ColourValue& hazeColour) {
         if (mShadersEnabled && mHazeEnabled) {
             Ogre::GpuProgramParametersSharedPtr fpParams =  mMaterial->getBestTechnique()->getPass(0)->getFragmentProgramParameters();
             fpParams->setNamedConstant ("hazeColour", hazeColour);
         }    
     }
 
-    void SkyDome::setLightAbsorption (float absorption) const
+    void SkyDome::setSkyGradientsImage (const Ogre::String& gradients)
     {
-        if (!mShadersEnabled) {
-            return;
-        }
-
-        if (absorption > 1) {
-            absorption = 1;
-        } else if (absorption < 0) {
-            absorption = 0;
-        }
-
-        Ogre::GpuProgramParametersSharedPtr vpParams =
-                mMaterial->getBestTechnique()->getPass(0)->getVertexProgramParameters();
-        vpParams->setNamedConstant ("lightAbsorption", absorption);
-    }
-
-    void SkyDome::setLightScattering (float scattering) const
-    {
-        if (!mShadersEnabled) {
-            return;
-        }
-
-        if (scattering <= 0) {
-            scattering = 0.00001;
-        }
-
-        Ogre::GpuProgramParametersSharedPtr fpParams = 
-                mMaterial->getBestTechnique()->getPass(0)->getFragmentProgramParameters();
-        fpParams->setNamedConstant ("lightInvScattering", 1.0f / scattering);
-    }
-
-    void SkyDome::setAtmosphereHeight (float height) const {
-        if(!mShadersEnabled)
-            return;
-
-        if (height <= 0) {
-            height = 0.00001;
-        } else if (height > 1) {
-            height = 1;
-        }
-
-        Ogre::GpuProgramParametersSharedPtr fpParams = 
-                mMaterial->getBestTechnique()->getPass(0)->getFragmentProgramParameters();
-        fpParams->setNamedConstant ("atmosphereInvHeight", 1.0f / height);
-    }
-
-    void SkyDome::setSkyGradientsImage (const Ogre::String& gradients) {
         Ogre::TextureUnitState* gradientsTus =
                 mMaterial->getTechnique (0)->getPass (0)->getTextureUnitState(0);
 
         gradientsTus->setTextureAddressingMode (Ogre::TextureUnitState::TAM_CLAMP);
 
-        // Dagon and Eihort compatibility
+        // Per 1.4 compatibility. Not tested with recent svn.
         #if OGRE_VERSION < ((1 << 16) | (3 << 8))
             gradientsTus->setTextureName (gradients, Ogre::TEX_TYPE_2D, -1, true);
         #else
@@ -163,9 +119,11 @@ namespace Caelum
         #endif
     }
 
-    void SkyDome::setAtmosphereDepthImage (const Ogre::String& atmosphereDepth) {
-        if(!mShadersEnabled)
+    void SkyDome::setAtmosphereDepthImage (const Ogre::String& atmosphereDepth)
+    {
+        if (!mShadersEnabled) {
             return;
+        }
 
         Ogre::TextureUnitState* atmosphereTus =
                 mMaterial->getTechnique (0)->getPass (0)->getTextureUnitState(1);
@@ -178,13 +136,14 @@ namespace Caelum
         return mHazeEnabled;
     }
 
-    void SkyDome::setHazeEnabled (bool value) {
+    void SkyDome::setHazeEnabled (bool value)
+    {
         if (mHazeEnabled == value) {
             return;
         }
         mHazeEnabled = value;
 
-        if(!mShadersEnabled) {
+        if (!mShadersEnabled) {
             return;
         }
 
@@ -197,4 +156,4 @@ namespace Caelum
         Ogre::GpuProgramParametersSharedPtr params = pass->getFragmentProgramParameters();
         params->setIgnoreMissingParams(true);
     }
-} // namespace Caelum
+}

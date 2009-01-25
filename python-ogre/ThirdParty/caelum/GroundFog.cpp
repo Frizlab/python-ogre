@@ -115,7 +115,7 @@ namespace Caelum {
 		updateSkyFogging();
 	}
 
-	Ogre::Real GroundFog::getDensity () {
+	Ogre::Real GroundFog::getDensity () const {
 		return mDensity;
 	}
 
@@ -128,7 +128,7 @@ namespace Caelum {
 		updateSkyFogging();
 	}
 
-	Ogre::ColourValue GroundFog::getColour () {
+	const Ogre::ColourValue GroundFog::getColour () const {
         return mFogColour;
 	}
 
@@ -143,7 +143,7 @@ namespace Caelum {
 		updateSkyFogging();
 	}
 
-	Ogre::Real GroundFog::getVerticalDecay () {
+	Ogre::Real GroundFog::getVerticalDecay () const {
 		return mVerticalDecay;
 	}
 
@@ -158,7 +158,7 @@ namespace Caelum {
 		updateSkyFogging();
 	}
 
-	Ogre::Real GroundFog::getGroundLevel () {
+	Ogre::Real GroundFog::getGroundLevel () const {
 		return mGroundLevel;
 	}
 

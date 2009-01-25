@@ -56,7 +56,8 @@ namespace Caelum
      *  Loading a bright-star catalogue is supported but star positions are
      *  likely only correct relative to each other. External rotation is probably wrong.
      */
-    class CAELUM_EXPORT PointStarfield : public CameraBoundElement
+    class CAELUM_EXPORT PointStarfield:
+            public CameraBoundElement
     {
     public:
 	    /** Constructor.
@@ -71,13 +72,14 @@ namespace Caelum
 	    /// Destructor.
 	    virtual ~PointStarfield ();
 
-        /// Struct representing one star.
+        /// Struct representing one star inside PointStarfield.
         struct Star {
             Ogre::Degree RightAscension;
             Ogre::Degree Declination;
             Ogre::Real Magnitude;
         };
 
+        /// A vector of Star
         typedef std::vector<Star> StarVector;
 
         /** Get a reference to the vector of stars.
@@ -140,22 +142,42 @@ namespace Caelum
          *  This property allows tweaking that value.
          */
         inline void setMagnitudeScale (Ogre::Real value) { mMagnitudeScale = value; }
-        inline Ogre::Real getMagnitudeScale () { return mMagnitudeScale; }
+        inline Ogre::Real getMagnitudeScale () const { return mMagnitudeScale; }
 
         inline void setMag0PixelSize (Ogre::Real value) { mMag0PixelSize = value; }
-        inline Ogre::Real getMag0PixelSize () { return mMag0PixelSize; }
+        inline Ogre::Real getMag0PixelSize () const { return mMag0PixelSize; }
 
         inline void setMinPixelSize (Ogre::Real value) { mMinPixelSize = value; }
-        inline Ogre::Real getMinPixelSize () { return mMinPixelSize; }
+        inline Ogre::Real getMinPixelSize () const { return mMinPixelSize; }
 
         inline void setMaxPixelSize (Ogre::Real value) { mMaxPixelSize = value; }
-        inline Ogre::Real getMaxPixelSize () { return mMaxPixelSize; }
+        inline Ogre::Real getMaxPixelSize () const { return mMaxPixelSize; }
 
         void setObserverLatitude (Ogre::Degree value);
-        inline Ogre::Degree getObserverLatitude () { return mObserverLatitude; }
+        inline Ogre::Degree getObserverLatitude () const { return mObserverLatitude; }
 
         void setObserverLongitude (Ogre::Degree value);
-        inline Ogre::Degree getObserverLongitude () { return mObserverLongitude; }
+        inline Ogre::Degree getObserverLongitude () const { return mObserverLongitude; }
+
+    private:
+        Ogre::Degree mObserverPositionRebuildDelta;
+
+    public:
+        /** Moving the observer position around causes a starfield rebuild.
+         *  Default value (DEFAULT_OBSERVER_POSITION_REBUILD_DELTA) is 0.1
+         *  degrees which is equivalent to around 170 meters on the earth.
+         *
+         *  This only matters if you compute the observer position every
+         *  frame. Caelum doesn't contain code for that.
+         */
+        inline Ogre::Degree getObserverPositionRebuildDelta () const {
+            return mObserverPositionRebuildDelta;
+        }
+        inline void setObserverPositionRebuildDelta (Ogre::Degree value) {
+            mObserverPositionRebuildDelta = value;
+        }
+
+	    static const Ogre::Degree DEFAULT_OBSERVER_POSITION_REBUILD_DELTA;
 
         /// Material used on billboards
 	    static const Ogre::String BILLBOARD_MATERIAL_NAME;
@@ -176,4 +198,3 @@ namespace Caelum
 }
 
 #endif // CAELUM__POINT_STARFIELD_H
-

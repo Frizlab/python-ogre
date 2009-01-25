@@ -136,7 +136,7 @@ namespace Caelum
         mCompInst(0)
     {
         LogManager::getSingleton().logMessage (
-                "Caelum: Attaching screen-space fog instance"
+                "Caelum::DepthComposer: Attaching screen-space fog instance"
                 " to viewport \'" + StringConverter::toString ((long)getViewport ()) + "\'"
                 " of render target \'" + getViewport()->getTarget ()->getName () + "\'");
 
@@ -150,7 +150,7 @@ namespace Caelum
         mDepthRenderer.reset ();
 
         LogManager::getSingleton().logMessage (
-                "Caelum: Detached screen-space fog instance"
+                "Caelum::DepthComposer: Detached screen-space fog instance"
                 " from viewport \'" + StringConverter::toString ((long)getViewport ()) + "\'"
                 " of render target \'" + getViewport()->getTarget ()->getName () + "\'");
     }
@@ -164,7 +164,7 @@ namespace Caelum
         if (!mCompInst) {
             CAELUM_THROW_UNSUPPORTED_EXCEPTION (
                     "Can't add \'" + compositorName + "\' compositor.",
-                    "SceneSpaceFog");
+                    "DepthComposer");
         }
         assert(mCompInst);
 		mCompInst->setEnabled (true);
@@ -269,6 +269,8 @@ namespace Caelum
         mViewportInstanceMap.clear();
     }
 
+	const String DepthRenderer::DEFAULT_CUSTOM_DEPTH_SCHEME_NAME = "CaelumDepth";
+
     DepthRenderer::DepthRenderer
     (
         Viewport* masterViewport
@@ -276,7 +278,9 @@ namespace Caelum
         mMasterViewport (masterViewport),
         mDepthRenderViewport (0),
         mDepthRenderingNow (false),
-        mViewportVisibilityMask (~0)
+        mViewportVisibilityMask (~0),
+        mUseCustomDepthScheme (true),
+        mCustomDepthSchemeName (DEFAULT_CUSTOM_DEPTH_SCHEME_NAME)
     {
         disableRenderGroupRangeFilter ();
 
@@ -357,9 +361,13 @@ namespace Caelum
 
         // Viewport for the depth rtt. Don't set camera here; it can mess Camera::getViewport();
         mDepthRenderViewport = getDepthRenderTarget()->addViewport(0);
-        getDepthRenderViewport ()->setClearEveryFrame (true);
         getDepthRenderViewport ()->setShadowsEnabled (false);
         getDepthRenderViewport ()->setOverlaysEnabled (false);
+        getDepthRenderViewport ()->setClearEveryFrame (true);
+
+        // Depth buffer values range from 0 to 1 in both OpenGL and Directx; unless depth ranges are used.
+        // Clear to the maximum value.
+        getDepthRenderViewport ()->setBackgroundColour (Ogre::ColourValue (1, 1, 1, 1));
     }
 
     DepthRenderer::~DepthRenderer()
@@ -385,6 +393,9 @@ namespace Caelum
 
         getDepthRenderViewport ()->setVisibilityMask (mViewportVisibilityMask);
         getDepthRenderViewport ()->setCamera (camera);
+        if (this->getUseCustomDepthScheme ()) {
+            getDepthRenderViewport ()->setMaterialScheme (this->getCustomDepthSchemeName ());
+        }
 
         // Restore old listener after we're done.
         // Hopefully this will not break horribly.
@@ -433,6 +444,17 @@ namespace Caelum
         */
         if (groupId < mMinRenderGroupId || groupId > mMaxRenderGroupId) {
             return false;
+        }
+
+        if (this->getUseCustomDepthScheme () && (*ppTech)->getSchemeName () == this->getCustomDepthSchemeName ()) {
+            /*
+            LogManager::getSingleton().getDefaultLog()->logMessage (
+                    "Custom scheme with tech " + (*ppTech)->getName () + 
+                    " passCount " + StringConverter::toString ((*ppTech)->getNumPasses ()) +
+                    " vp " + (*ppTech)->getPass (0)->getVertexProgramName () + 
+                    " fp " + (*ppTech)->getPass (0)->getFragmentProgramName ());
+             */
+            return true;
         }
 
         // Get depth material

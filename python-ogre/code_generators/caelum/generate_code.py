@@ -63,13 +63,21 @@ def ManualExclude ( mb ):
                 ,'::Caelum::OwnedPtr< Ogre::ManualObject, Caelum::MovableObjectOwnedPtrTraits< Ogre::ManualObject > >::reset'
                 ,'::Caelum::OwnedPtr< Ogre::Material, Caelum::OwnedResourcePtrTraits< Ogre::Material, Ogre::MaterialPtr, Ogre::MaterialManager > >::reset'
                 ,'::Caelum::OwnedPtr< Ogre::SceneNode, Caelum::SceneNodeOwnedPtrTraits >::reset'
+                ,'::Caelum::OwnedPtr< Ogre::Entity, Caelum::MovableObjectOwnedPtrTraits< Ogre::Entity > >::reset'
+                ,'::Caelum::OwnedPtr< Ogre::Mesh, Caelum::OwnedResourcePtrTraits< Ogre::Mesh, Ogre::MeshPtr, Ogre::MeshManager > >::reset'
                 ]
     for m in excludes:
         global_ns.member_functions(m).exclude()
     
     excludes=['::Caelum::CameraBoundElement::CAMERA_FAR_DISTANCE_MULTIPLIER']
     for e in excludes:
-        global_ns.variable(e).exclude()    
+        global_ns.variable(e).exclude()  
+        
+    excludes = ['::Caelum::ValuePropertyDescriptor'  # problem with OgreAny on getvalue -- needs wrapping
+                ]
+    for e in excludes:
+        global_ns.class_(e).exclude()  
+              
    
         
 ############################################################

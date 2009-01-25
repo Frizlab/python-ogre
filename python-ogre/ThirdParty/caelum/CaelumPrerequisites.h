@@ -31,27 +31,56 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include <memory>
 
 // Define the dll export qualifier if compiling for Windows
-// #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-// 	#ifdef CAELUM_LIB
-// 		#define CAELUM_EXPORT __declspec (dllexport)
-// 	#else
-// 		#ifdef __MINGW32__
-// 			#define CAELUM_EXPORT
-// 		#else
-// 			#define CAELUM_EXPORT __declspec (dllimport)
-// 		#endif
-// 	#endif
-// #elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-// 	#define CAELUM_EXPORT __attribute__ ((visibility("default")))
-// #else
+/*#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	#ifdef CAELUM_LIB
+		#define CAELUM_EXPORT __declspec (dllexport)
+	#else
+		#ifdef __MINGW32__
+			#define CAELUM_EXPORT
+		#else
+			#define CAELUM_EXPORT __declspec (dllimport)
+		#endif
+	#endif
+#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+	#define CAELUM_EXPORT __attribute__ ((visibility("default")))
+#else */
 	#define CAELUM_EXPORT
-// #endif
+//#endif
 
 // Define the version code
 #define CAELUM_VERSION_MAIN 0
 #define CAELUM_VERSION_SEC 4
 #define CAELUM_VERSION_TER 0
 #define CAELUM_VERSION = (CAELUM_VERSION_MAIN << 16) | (CAELUM_VERSION_SEC << 8) | CAELUM_VERSION_TER
+
+// By default only compile type descriptors for scripting.
+#ifndef CAELUM_TYPE_DESCRIPTORS
+    #if (OGRE_VERSION >= 0x00010600) && OGRE_USE_NEW_COMPILERS
+        #define CAELUM_TYPE_DESCRIPTORS 1
+    #else
+        #define CAELUM_TYPE_DESCRIPTORS 0
+    #endif
+#endif
+
+// Scripting support requires Ogre 1.6
+// Can be also configured on compiler command line
+#ifndef CAELUM_SCRIPT_SUPPORT
+    #if (OGRE_VERSION >= 0x00010600) && OGRE_USE_NEW_COMPILERS
+        #define CAELUM_SCRIPT_SUPPORT 1
+    #else
+        #define CAELUM_SCRIPT_SUPPORT 0
+    #endif
+#else
+    #if !(OGRE_VERSION > 0x00010600)
+        #error "Caelum script support requires Ogre 1.6."
+    #endif
+    #if !(OGRE_USE_NEW_COMPILERS)
+        #error "Caelum script support requires Ogre 1.6 with OGRE_USE_NEW_COMPILERS."
+    #endif
+    #if !(CAELUM_TYPE_DESCRIPTORS)
+        #error "Caelum script support also requires type descriptors."
+    #endif
+#endif
 
 /// @file
 
@@ -62,8 +91,11 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
  *  Caelum::CaelumSystem class which ties them all together in an easy-to-use
  *  way.
  *
- *  For more information see the great %Caelum thread in the ogre forum:
- *  http://www.ogre3d.org/phpBB2/viewtopic.php?t=24961&postorder=desc
+ *  More information is available on the wiki page:
+ *  http://www.ogre3d.org/wiki/index.php/Caelum
+ *
+ *  You can discuss and report issues in the forum:
+ *  http://www.ogre3d.org/addonforums/viewforum.php?f=21
  */
 
 /** Caelum namespace
@@ -114,6 +146,7 @@ namespace Caelum
     class ImageStarfield;
     class PointStarfield;
     class CloudSystem;
+    class CaelumSystem;
 	class FlatCloudLayer;
     class PrecipitationController;
     class PrecipitationInstance;
@@ -121,6 +154,19 @@ namespace Caelum
     class DepthComposer;
     class DepthComposerInstance;
     class DepthRenderer;
+}
+
+namespace Ogre {
+    // Write an Ogre::Degree to a stream.
+    //
+    // Ogre::Any requires that the wrapped type can be written to a stream;
+    // otherwise it will fail on instantation. This function was placed here
+    // so it's available everywhere.
+    //
+    // This can't be placed in namespace Caelum.
+    inline std::ostream& operator << (std::ostream& out, Ogre::Degree deg) {
+        return out << deg.valueDegrees();
+    }
 }
 
 #endif // CAELUM__CAELUM_PREREQUISITES_H

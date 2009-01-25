@@ -46,12 +46,14 @@ namespace Caelum
 		mSceneMgr = sceneMgr;
 
         setAutoDisableThreshold (0.001);
+        mCameraSpeedScale = Ogre::Vector3::UNIT_SCALE;
 
         setIntensity (0);
 		setWindSpeed (Ogre::Vector3(0, 0, 0));
 		mInternalTime = 0;
 		mSecondsSinceLastFrame = 0;
-		
+        mFallingDirection = Ogre::Vector3::NEGATIVE_UNIT_Y;
+
 		setPresetType (PRECTYPE_RAIN);
 		
 		update (0, Ogre::ColourValue(0, 0, 0, 0));
@@ -61,12 +63,12 @@ namespace Caelum
         destroyAllViewportInstances ();
 	}
 
-	void PrecipitationController::setTextureName (Ogre::String textureName) {
+	void PrecipitationController::setTextureName (const Ogre::String& textureName) {
         mPresetType = PRECTYPE_CUSTOM;
 		mTextureName = textureName;
 	}
 	
-	Ogre::String PrecipitationController::getTextureName () {
+	const Ogre::String PrecipitationController::getTextureName () const {
 		return mTextureName;
 	}
 
@@ -75,17 +77,17 @@ namespace Caelum
 		mSpeed = speed;
 	}
 
-	Real PrecipitationController::getSpeed () {
+	Real PrecipitationController::getSpeed () const {
 		return mSpeed;
 	}
 
-	void PrecipitationController::setColor (Ogre::ColourValue color) {
+	void PrecipitationController::setColour (const Ogre::ColourValue& color) {
         mPresetType = PRECTYPE_CUSTOM;
-		mColor = color;
+		mColour = color;
 	}
 	
-	Ogre::ColourValue PrecipitationController::getColor () {
-		return mColor;
+	const Ogre::ColourValue PrecipitationController::getColour () const {
+		return mColour;
 	}
 
 	bool PrecipitationController::isPresetType (PrecipitationType type) {
@@ -98,7 +100,7 @@ namespace Caelum
     }
 
 	void PrecipitationController::setParams (const PrecipitationPresetParams& params) {
-		setColor (params.Color);
+		setColour (params.Colour);
 		setSpeed (params.Speed);
 		setTextureName (params.Name);
     }
@@ -116,7 +118,7 @@ namespace Caelum
 		mWindSpeed = value;
 	}
 
-	const Ogre::Vector3 PrecipitationController::getWindSpeed () {
+	const Ogre::Vector3 PrecipitationController::getWindSpeed () const {
 		return mWindSpeed;
 	}
 
@@ -124,14 +126,14 @@ namespace Caelum
 		mIntensity = intensity;
 	}
 
-	Real PrecipitationController::getIntensity () {
+	Real PrecipitationController::getIntensity () const {
 		return mIntensity;
 	}
 
 	void PrecipitationController::update (Real secondsSinceLastFrame, Ogre::ColourValue colour) {
         mSecondsSinceLastFrame = secondsSinceLastFrame;
         mInternalTime += mSecondsSinceLastFrame;
-        mSceneColor = colour;
+        mSceneColour = colour;
 
         ViewportInstanceMap::const_iterator it;
         ViewportInstanceMap::const_iterator begin = mViewportInstanceMap.begin ();
@@ -165,15 +167,15 @@ namespace Caelum
             const Ogre::Vector3& camSpeed) 
 	{		
 		// 4523.893416f is divisible with all the sine periods in the shader
-        Real appTime = static_cast<Real>(fmod(mInternalTime, 4523.893416f));
+        Real appTime = static_cast<Real>(fmod(mInternalTime, static_cast<Real>(4523.893416f)));
 
 		Ogre::GpuProgramParametersSharedPtr fpParams =
 				mat->getBestTechnique ()->getPass (0)->getFragmentProgramParameters ();
 
         fpParams->setIgnoreMissingParams(true);
-		Real sceneLum = (mSceneColor.r + mSceneColor.g + mSceneColor.b) / 3;
-		mSceneColor.r = mSceneColor.g = mSceneColor.b = sceneLum;			
-		fpParams->setNamedConstant("precColor", mSceneColor * mColor);
+		Real sceneLum = (mSceneColour.r + mSceneColour.g + mSceneColour.b) / 3;
+		mSceneColour.r = mSceneColour.g = mSceneColour.b = sceneLum;			
+		fpParams->setNamedConstant("precColor", mSceneColour * mColour);
 		fpParams->setNamedConstant("intensity", mIntensity);
 		fpParams->setNamedConstant("dropSpeed", 0);		
 
@@ -184,7 +186,10 @@ namespace Caelum
 		corner3 = cam->getCameraToViewportRay(0, 1).getDirection();
 		corner4 = cam->getCameraToViewportRay(1, 1).getDirection();
 
-		Ogre::Vector3 precDir = Ogre::Vector3(0, -mSpeed, 0) + mWindSpeed - camSpeed;
+		Ogre::Vector3 precDir =
+                mSpeed * mFallingDirection +
+                mWindSpeed -
+                camSpeed * mCameraSpeedScale;
 		Ogre::Quaternion quat = precDir.getRotationTo(Ogre::Vector3(0, -1, 0));
 
 		corner1 = quat * corner1;
@@ -277,7 +282,13 @@ namespace Caelum
             } else {
                 Real timeDiff = mParent->getSecondsSinceLastFrame ();
                 Ogre::Vector3 posDiff = camPos - mLastCameraPosition;
-                mCameraSpeed = posDiff / timeDiff;
+
+                // Avoid division by 0 and keep old camera speed.
+                if (timeDiff > 1e-10) {
+                    mCameraSpeed = posDiff / timeDiff;
+                } else {
+                    // Keep old camera speed.
+                }
 
                 /*
                 LogManager::getSingletonPtr ()->logMessage (
@@ -299,6 +310,7 @@ namespace Caelum
 
     void PrecipitationInstance::setAutoCameraSpeed () {
         mAutoCameraSpeed = true;
+        mCameraSpeed = Ogre::Vector3::ZERO;
         mLastCamera = 0;
     }
 

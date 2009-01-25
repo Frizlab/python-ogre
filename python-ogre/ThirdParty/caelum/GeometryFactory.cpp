@@ -221,5 +221,4 @@ void GeometryFactory::fillStarfieldDomeBuffers (float *pVertex, unsigned short *
 		}
 	}
 }
-
-} // namespace Caelum
+}
