@@ -22,8 +22,8 @@ set ogreode=%root%\ogreaddons\ogreode
 set physx="c:\program files\NVIDIA Corporation\NVIDIA PhysX SDK\v2.8.1\bin\win32"
 set theora=%root%\ogreaddons\videoplugin\TheoraVideo\bin\Release
 set ffmpeg=%root%\ffmpeg
-set naviextra=%root%\navi\Dependencies\win32\astral\runtime\Release
-set navi=%root%\navi\lib
+set naviextra=%root%\navi\Dependencies\win32\awesomium\bin\release
+set navi=%root%\navi\navi\lib
 set boost=%root%\boost_1_37_0\bin.v2\libs\python\build\msvc-9.0\release\threading-multi
 set boostlib=%boost%\boost_python-vc90-mt-1_37.dll
 set particleuniverse=%root%\ogre\lib
@@ -99,6 +99,8 @@ copy /y %openal%\wrap_oal.dll %package%\sound\OgreAL
 
 rem navi
 copy /y %navi%\*.dll %package%\gui\navi
+copy /y %naviextra%\*.dll %package%\gui\navi
+
 
 rem plib
 copy /y %boostlib% %package%\addons\plib

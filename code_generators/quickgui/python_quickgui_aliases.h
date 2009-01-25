@@ -6,11 +6,10 @@ typedef std::vector<unsigned short, std::allocator<unsigned short> > VectorShort
 typedef QuickGUI::Factory<QuickGUI::WidgetDesc> FactoryWidgetDesc;
 typedef QuickGUI::WidgetFactory<QuickGUI::Widget> WidgetFactoryWidget;
 
-// typedef std::list<QuickGUI::DefinitionProperty*> ListDefinitionProperty;
-// typedef std::list<QuickGUI::ListItem*> ListListItem;
-// typedef std::list<QuickGUI::ScriptDefinition*> ListScriptDefinition;
-// typedef std::vector<QuickGUI::TextSegment> VectorTextSegment;
-
+typedef std::list<QuickGUI::DefinitionProperty*> ListDefinitionProperty;
+typedef std::list<QuickGUI::ListItem*> ListListItem;
+typedef std::list<QuickGUI::ScriptDefinition*> ListScriptDefinition;
+typedef std::vector<QuickGUI::TextSegment> VectorTextSegment;
 
 
 //typedef std::vector<Ogre::Image> VectorImage;

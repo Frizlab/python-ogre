@@ -7,5 +7,5 @@ typedef std::vector<std::string, std::allocator<std::string> > VectorString;
 // typedef NaviLibrary::NaviUtilities::InlineVector<std::string> InlineVectorStrings;
 typedef NaviLibrary::NaviUtilities::InlineVector<NaviLibrary::NaviUtilities::MultiValue> InlineVectorArgs;
 typedef NaviLibrary::Singleton< NaviLibrary::NaviManager > SingletonManager;
-typedef NaviLibrary::Singleton< NaviLibrary::NaviMouse > SingletonMouse;
-typedef NaviLibrary::FastDelegate1< NaviLibrary::NaviData const&, void > FastDelegateNaviData;
+// typedef NaviLibrary::Singleton< NaviLibrary::NaviMouse > SingletonMouse;
+// typedef NaviLibrary::FastDelegate1< NaviLibrary::NaviData const&, void > FastDelegateNaviData;

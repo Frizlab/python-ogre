@@ -1111,15 +1111,15 @@ class navi:
     include_dirs = [ Config.PATH_Boost
                     ,Config.PATH_INCLUDE_Ogre
                     ,Config.PATH_INCLUDE_navi
-                    ,os.path.join(Config.PATH_navi,'..','Dependencies','win32','astral','include')
+                    ,os.path.join(Config.PATH_navi,'..','Dependencies','win32','awesomium','include')
                     ]
     lib_dirs = [boost.PATH_LIB,
                 Config.PATH_LIB_Ogre_OgreMain
                 ,Config.PATH_LIB_navi
-                ,os.path.join(Config.PATH_navi,'..','Dependencies','win32','astral','lib')
+                ,os.path.join(Config.PATH_navi,'..','Dependencies','win32','awesomium','lib')
                 ]
     CheckIncludes=[]
-    libs=[  boost.lib, 'Navi_DLL', 'OgreMain','Astral', 'user32',
+    libs=[  boost.lib, 'Navi_DLL', 'OgreMain','Awesomium', 'user32',
             'kernel32.lib', 'gdi32.lib', 'winspool.lib', 'comdlg32.lib', 'advapi32.lib',
             'shell32.lib','ole32.lib','oleaut32.lib','uuid.lib' ]
     ModuleName="navi"
