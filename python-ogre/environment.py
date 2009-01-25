@@ -1116,7 +1116,7 @@ class navi:
     lib_dirs = [boost.PATH_LIB,
                 Config.PATH_LIB_Ogre_OgreMain
                 ,Config.PATH_LIB_navi
-                ,os.path.join(Config.PATH_navi,'..','Dependencies','win32','awesomium','lib')
+                ,os.path.join(Config.PATH_navi,'..','Dependencies','win32','awesomium','lib', 'release')
                 ]
     CheckIncludes=[]
     libs=[  boost.lib, 'Navi_DLL', 'OgreMain','Awesomium', 'user32',
