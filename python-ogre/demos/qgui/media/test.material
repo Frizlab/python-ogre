@@ -1,0 +1,13 @@
+material a_ba1
+{
+	technique
+	{
+		pass
+		{
+			ambient 1.0 1.0 1.0 1
+			texture_unit
+			{
+			}
+		}
+	}
+}

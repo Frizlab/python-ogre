@@ -1,0 +1,47 @@
+SkinClass VScrollBar
+{ 
+    SkinType default 
+    { 
+        ComponentType up1
+        {
+            ClassName Button
+            SkinType default.vscrollup
+        }
+
+        ComponentType up2
+        {
+            ClassName Button
+            SkinType default.vscrollup
+        }
+
+        ComponentType down1
+        {
+            ClassName Button
+            SkinType default.vscrolldown
+        }
+
+        ComponentType down2
+        {
+            ClassName Button
+            SkinType default.vscrolldown
+        }
+
+        ComponentType slider
+        {
+            ClassName Button
+            SkinType default.vslider
+        }
+
+        SkinElement bar
+        { 
+            Border_Bottom 1 
+            Border_Left 1 
+            Border_Right 1 
+            Border_Top 1 
+            Texture qgui.scrollbar.vertical.png
+            TileBackground false 
+            TileBorders true 
+        } 
+    } 
+
+}

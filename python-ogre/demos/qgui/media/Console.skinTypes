@@ -1,0 +1,30 @@
+SkinClass Console
+{ 
+    SkinType default 
+    { 
+        SkinElement background
+        { 
+            Border_Bottom 5 
+            Border_Left 5 
+            Border_Right 5 
+            Border_Top 5 
+            Texture qgui.panel.png
+            TileBackground true 
+            TileBorders false 
+        } 
+
+        ComponentType textbox
+        {
+            ClassName TextBox
+            SkinType default
+        }
+
+        ComponentType textarea
+        {
+            ClassName TextArea
+            SkinType default
+        }
+
+    } 
+
+}

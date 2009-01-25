@@ -1,0 +1,40 @@
+SkinClass ProgressBar
+{ 
+    SkinType default 
+    { 
+        SkinElement background
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.progressbar1.background.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement bar
+        { 
+            Border_Bottom 0
+            Border_Left 0
+            Border_Right 0
+            Border_Top 0
+            Texture qgui.progressbar1.bar.png
+            TileBackground false 
+            TileBorders false
+        } 
+
+        SkinElement clipmap
+        { 
+            Border_Bottom 0
+            Border_Left 0
+            Border_Right 0
+            Border_Top 0
+            Texture qgui.progressbar1.clipbox.png
+            TileBackground false 
+            TileBorders false
+        } 
+
+    } 
+
+}

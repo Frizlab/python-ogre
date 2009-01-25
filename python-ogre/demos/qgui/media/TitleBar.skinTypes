@@ -1,0 +1,24 @@
+SkinClass TitleBar
+{ 
+    SkinType default 
+    { 
+        ComponentType close_button
+        {
+            ClassName Button
+            SkinType default.close
+        }
+        
+        SkinElement background
+        { 
+            Border_Bottom 1
+            Border_Left 1
+            Border_Right 1
+            Border_Top 1
+            Texture qgui.window.titlebar.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+    } 
+
+}

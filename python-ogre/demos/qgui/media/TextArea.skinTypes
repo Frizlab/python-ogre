@@ -1,0 +1,35 @@
+SkinClass TextArea
+{ 
+    SkinType default 
+    { 
+        ComponentType hscrollbar
+        {
+            ClassName HScrollBar
+            SkinType default
+        }
+
+        ComponentType vscrollbar
+        {
+            ClassName VScrollBar
+            SkinType default
+        }
+
+
+        SkinElement background
+        { 
+            Border_Bottom 12 
+            Border_Left 12 
+            Border_Right 12 
+            Border_Top 12 
+            Texture qgui.panel.png 
+            TileBackground true 
+            TileBorders false 
+        } 
+
+	SkinElement textoverlay
+        {
+        } 
+
+    } 
+
+}

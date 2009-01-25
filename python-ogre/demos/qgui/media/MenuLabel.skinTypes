@@ -1,0 +1,40 @@
+SkinClass MenuLabel
+{ 
+    SkinType default 
+    { 
+        SkinElement default 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.toolbar.background.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement down 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.toolbar.background.png 
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement over 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.toolbar.highlight.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+    } 
+
+}

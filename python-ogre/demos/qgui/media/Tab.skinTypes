@@ -1,0 +1,28 @@
+SkinClass Tab
+{ 
+    SkinType default 
+    { 
+        SkinElement front
+        { 
+            Border_Bottom 0
+            Border_Left 0
+            Border_Right 0
+            Border_Top 0
+            Texture qgui.tab.front.png 
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement main
+        { 
+            Border_Bottom 0
+            Border_Left 0
+            Border_Right 0
+            Border_Top 0
+            Texture qgui.tab.main.png 
+            TileBackground false 
+            TileBorders true 
+        } 
+    } 
+
+}

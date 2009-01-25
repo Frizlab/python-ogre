@@ -1,0 +1,17 @@
+SkinClass Label
+{ 
+    SkinType default 
+    { 
+        SkinElement background
+        { 
+            Border_Bottom 1 
+            Border_Left 1 
+            Border_Right 1 
+            Border_Top 1 
+            Texture qgui.label.png 
+            TileBackground false 
+            TileBorders true 
+        } 
+    } 
+
+}

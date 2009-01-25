@@ -1,0 +1,47 @@
+SkinClass HScrollBar
+{ 
+    SkinType default 
+    { 
+        ComponentType left1
+        {
+            ClassName Button
+            SkinType default.hscrollleft
+        }
+
+        ComponentType left2
+        {
+            ClassName Button
+            SkinType default.hscrollleft
+        }
+
+        ComponentType right1
+        {
+            ClassName Button
+            SkinType default.hscrollright
+        }
+
+        ComponentType right2
+        {
+            ClassName Button
+            SkinType default.hscrollright
+        }
+
+        ComponentType slider
+        {
+            ClassName Button
+            SkinType default.hslider
+        }
+
+        SkinElement bar
+        { 
+            Border_Bottom 1 
+            Border_Left 1 
+            Border_Right 1 
+            Border_Top 1 
+            Texture qgui.scrollbar.horizontal.png
+            TileBackground false 
+            TileBorders true 
+        } 
+    } 
+
+}

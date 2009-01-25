@@ -1,0 +1,18 @@
+SkinClass ToolBar
+{ 
+    SkinType default 
+    { 
+        SkinElement background
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.toolbar.background.png 
+            TileBackground true 
+            TileBorders true 
+        } 
+
+    } 
+
+}
