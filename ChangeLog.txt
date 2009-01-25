@@ -1,18 +1,25 @@
-xxx : Release SVN
-=================
+Janurary 25 2009 : Release 1.6.1
+================================
+Latest build using Ogre 1.6.1 -- Note that the underlying Ogre C++ is NOT Patched!! 
+
 Fix: Improved extract_document functions to improve pydoc stings - remove excess leading whitespace and wraps at 100 chars
 Fix: PhysX library exposes various NxArray objects that previously were excluded due to compile issues
 Fix: Ogre library excludes xxxMutex variables from a few classes (Pass etc) as these are not correctly exposed 
 
 Update: PhysX can now be 'retrieved' and 'built' from windows (BuildModule.py -r -b physx)
 Update: Extend the PhysX demo a little
-Update: Update Bullet libraries to bullet 2.72
+Update: Update Bullet libraries to bullet 2.73
 Update: SampleFramework now uses a 'PythonOgre' overlay
 Update: SampleFramework will now look for plugins.cfg or plugins.cfg.<platform name> ('nt' or 'linux') in the current and
         parent directories -- this will allow a single demo tree to automatically work on any platform unstead of the 
         current suitation of having to manually edit the plugins file.. 
-Update: Plib ssgLoaderOptions (ssgLoad) can now be subclassed and createBranch/createState used as callback functions        
+Update: Plib ssgLoaderOptions (ssgLoad) can now be subclassed and createBranch/createState used as callback functions 
+Update: Latest QuickGUI, OgreForest (Paging), OgreBullet 
+Update/Fix: Using OIS CVS version as it fixes issues with joystick/slider 'drivers'...      
 
+Change: Using latest Py++ which has boost indexing implemented as header files (BOOST is NOT Patched!)
+Change: Added Canvas module
+Change: Removed OgreRefApp and Watermesh modules 
 
 November 14 2008 : Release 1.6.0 
 ==================================

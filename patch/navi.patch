@@ -1,45 +1,72 @@
---- Navi/Include/Navi.h	(revision 25)
-+++ Navi/Include/Navi.h	(working copy)
-@@ -34,7 +34,7 @@
- {
- 	class _NaviExport Navi : public LLEmbeddedBrowserWindowObserver, public Ogre::WindowEventListener, public Ogre::ManualResourceLoader
- 	{
--		friend NaviManager;
-+		friend class NaviManager;
+Index: NaviDemo/Source/InputManager.cpp
+===================================================================
+--- NaviDemo/Source/InputManager.cpp	(revision 43)
++++ NaviDemo/Source/InputManager.cpp	(working copy)
+@@ -64,13 +64,13 @@
+         mInputSystem = OIS::InputManager::createInputSystem( paramList );
  
- 		std::string naviName;
- 		unsigned short naviWidth;
-@@ -69,8 +69,8 @@
- 		std::multimap<std::string, NaviDelegate> delegateMap;
- 		std::multimap<std::string, NaviDelegate>::iterator delegateIter;
- 		std::pair<std::multimap<std::string, NaviDelegate>::iterator, std::multimap<std::string, NaviDelegate>::iterator> dmBounds;
--		std::map<std::string, std::vector<std::string>> ensureKeysMap;
--		std::map<std::string, std::vector<std::string>>::iterator ensureKeysMapIter;
-+		std::map<std::string, std::vector<std::string> > ensureKeysMap;
-+		std::map<std::string, std::vector<std::string> >::iterator ensureKeysMapIter;
- 		bool okayToDelete;
- 		bool isVisible;
- 		bool fadingOut;
-
---- Navi/Include/NaviMouse.h	(revision 25)
-+++ Navi/Include/NaviMouse.h	(working copy)
-@@ -41,7 +41,7 @@
- 	class _NaviExport NaviMouse : public Singleton<NaviMouse>, public Ogre::ManualResourceLoader
- 	{
- 		friend class NaviManager;
--		friend NaviCursor;
-+		friend class NaviCursor;
- 		int mouseX, mouseY;
- 		unsigned short width, height;
- 		unsigned short texWidth, texHeight;
-
---- Navi/Include/NaviManager.h	(revision 25)
+         // If possible create a buffered keyboard
+-        if( mInputSystem->numKeyboards() > 0 ) {
++//       if( mInputSystem->numKeyboards() > 0 ) {
+             mKeyboard = static_cast<OIS::Keyboard*>( mInputSystem->createInputObject( OIS::OISKeyboard, true ) );
+             mKeyboard->setEventCallback( this );
+-        }
++//        }
+ 
+         // If possible create a buffered mouse
+-        if( mInputSystem->numMice() > 0 ) {
++//        if( mInputSystem->numMice() > 0 ) {
+             mMouse = static_cast<OIS::Mouse*>( mInputSystem->createInputObject( OIS::OISMouse, true ) );
+             mMouse->setEventCallback( this );
+ 
+@@ -81,10 +81,10 @@
+ 
+             // Set mouse region
+             this->setWindowExtents( width, height );
+-        }
++//        }
+ 
+         // If possible create all joysticks in buffered mode
+-        if( mInputSystem->numJoySticks() > 0 ) {
++/*		if( 0 ) { //mInputSystem->numJoySticks() > 0 ) {
+             mJoysticks.resize( mInputSystem->numJoySticks() );
+ 
+             itJoystick    = mJoysticks.begin();
+@@ -93,7 +93,7 @@
+                 (*itJoystick) = static_cast<OIS::JoyStick*>( mInputSystem->createInputObject( OIS::OISJoyStick, true ) );
+                 (*itJoystick)->setEventCallback( this );
+             }
+-        }
++        } */
+     }
+ }
+ 
+Index: Navi/Include/NaviManager.h
+===================================================================
+--- Navi/Include/NaviManager.h	(revision 43)
 +++ Navi/Include/NaviManager.h	(working copy)
-@@ -37,6 +37,7 @@
- 
+@@ -30,6 +30,16 @@
+ #include "NaviUtilities.h"
+ #include "NaviSingleton.h"
+ #include "WebCore.h"
++
++#ifdef min
++#undef min
++#endif
++
++#ifdef max
++#undef max
++#endif
++
++
+ #include "Ogre.h"
+ #include "OgrePanelOverlayElement.h"
+ #include "KeyboardHook.h"
+@@ -39,6 +49,7 @@
+ */
  namespace NaviLibrary
  {
-+    class Navi; // needed for Python-Ogre gccxml processing
++    class Navi;  // need to delcare to make gccxml happy
  	/**
  	* Enumerates relative positions. Used by NaviManager::NaviPosition
  	*/
