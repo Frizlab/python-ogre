@@ -60,7 +60,7 @@ else:
 
 PythonOgreMajorVersion = "1"
 PythonOgreMinorVersion = "6"
-PythonOgrePatchVersion = "0"
+PythonOgrePatchVersion = "1"
 
 ##
 ## these should be fine with auto create - however override them as necessary
@@ -211,9 +211,9 @@ class gccxml:
                 [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co -D 22May2008 "+base, os.getcwd()]
              ]
     else:
-       source_version = "20080901"
+       source_version = "20090123"
        source = [
-                [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co -D 01Aug2008 "+base, os.getcwd()]
+                [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co -D 23Jan2009 "+base, os.getcwd()]
              ]
     if isLinux() or isMac():
         buildCmds =  [
@@ -296,9 +296,9 @@ class pygccxml:
                     [svn, " co -r 1383 https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
                  ]
     else:
-        source_version = "1446"
+        source_version = "1607"
         source = [
-                    [svn, " co -r 1446 https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
+                    [svn, " co -r 1607 https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
                     ]
     if isLinux() or isMac() :
         buildCmds =  [
@@ -322,9 +322,9 @@ class pyplusplus:
                     [svn, " co -r 1383 https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
                  ]
     else:
-        source_version = "1446"
+        source_version = "1607"
         source = [
-                    [svn, " co -r 1446 https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
+                    [svn, " co -r 1607 https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
                  ]
     if isLinux() or isMac() :
         buildCmds =  [
@@ -587,15 +587,15 @@ class ogre:
     if isWindows():
         version="1.6.1"
         source = [
-            [ wget, "http://downloads.sourceforge.net/ogre/OgreSDKSetup1.6.1_VC90.exe", downloadPath],
-            #[ wget, "http://downloads.sourceforge.net/ogre/ogre-v1-6-0.zip", downloadPath],
+            #[ wget, "http://downloads.sourceforge.net/ogre/OgreSDKSetup1.6.1_VC90.exe", downloadPath], # sdk
+            [ wget, "http://downloads.sourceforge.net/ogre/ogre-v1-6-1.zip", downloadPath],
+            [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_VC9_Eihort_20080203.zip", downloadPath],
             ]
         buildCmds  = [
-            [0, os.path.join(downloadPath, "OgreSDKSetup1.6.1_VC90.exe"), '' ]
-             #[0, unzip + os.path.join(downloadPath,"OgreDependencies_VC9_Eihort_20080203.zip"),
-            #                            os.path.join(os.getcwd(), 'ogre') ],
-            #[0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.0.patch -p0 ", os.getcwd()],
-            #[0,'echo Please use MSVC Express Edition to build Ogre Release.','']
+            #[0, os.path.join(downloadPath, "OgreSDKSetup1.6.1_VC90.exe"), '' ],  # sdk
+            [0, unzip + os.path.join(downloadPath,"ogre-v1-6-1.zip"),os.getcwd()  ],
+            [0, unzip + os.path.join(downloadPath,"OgreDependencies_VC9_Eihort_20080203.zip"),Config.PATH_Ogre  ],
+            [0,'echo Please use MSVC Express Edition to build Ogre Release.','']
             ]
 
         # requirements to build a precompiled header on the fly
@@ -631,15 +631,15 @@ class ogre:
                 [0, "make install", os.path.join(os.getcwd(), 'ogre')],
                 ]
         else:
-            version = "1.6.0"
-            base = "ogre-v1-6-0"
+            version = "1.6.1"
+            base = "ogre-v1-6-1"
             buildCmds  = [
                 [0, tar + " jxf " + os.path.join(downloadPath,base)+".tar.bz2 --overwrite",os.getcwd() ],
-                [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.0.patch -p0 ", os.getcwd()],
-                [0, "sed --in-place -s 's|#define OGRE_THREAD_SUPPORT 1|#define OGRE_THREAD_SUPPORT 0|' OgreConfig.h",os.path.join(os.getcwd(),"ogre","OgreMain", "include")],
+                #[0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.0.patch -p0 ", os.getcwd()],
+                #[0, "sed --in-place -s 's|#define OGRE_THREAD_SUPPORT 1|#define OGRE_THREAD_SUPPORT 0|' OgreConfig.h",os.path.join(os.getcwd(),"ogre","OgreMain", "include")],
                 [0, "aclocal", os.path.join(os.getcwd(), 'ogre')],
                 [0, "./bootstrap", os.path.join(os.getcwd(), 'ogre')],
-                [0, "./configure --prefix=%s --with-gui=Xt --disable-devil" % PREFIX, os.path.join(os.getcwd(), 'ogre')],
+                [0, "./configure --prefix=%s --disable-devil" % PREFIX, os.path.join(os.getcwd(), 'ogre')], #--with-gui=Xt 
                 [0, "make", os.path.join(os.getcwd(), 'ogre')],
                 [0, "make install", os.path.join(os.getcwd(), 'ogre')],
                 ]
@@ -655,11 +655,11 @@ class ogre:
 
 
     elif isMac():
-        version = "1.6.0RC1"
-        base = "ogre-linux_osx-v1-4-9"
-        basedep = "OgreDependenciesOSX_20070929"
+        version = "1.6.1"
+        base = "ogre-v1-6-1"
+        basedep = "OgreDependencies_OSX_Eihort_20080115"
         source = [
-            [wget, "http://prdownloads.sourceforge.net/ogre/"+base+".tar.bz2",downloadPath],
+            [wget, "http://downloads.sourceforge.net/ogre/"+base+".tar.bz2",downloadPath],
             [wget, "http://downloads.sourceforge.net/ogre/" +basedep +".zip",downloadPath],
         ]
         buildCmds  = [
@@ -667,7 +667,7 @@ class ogre:
                 [0, unzip + os.path.join(downloadPath,basedep)+".zip ",os.path.join(os.getcwd(), 'ogre') ],
                 [0, "mkdir ~/Library/Frameworks", ''], ## Note that this will fail if the directory exists !!!
                 [0,cp + " -R "+os.path.join(os.getcwd(), 'ogre', '__MACOSX','Dependencies')+'/*.framework ' + Config.FRAMEWORK_DIR,''],
-                [0, "patch -s -N -i ./python-ogre/patch/ogre.patch -p0 ", os.getcwd()],
+                #[0, "patch -s -N -i ./python-ogre/patch/ogre.patch -p0 ", os.getcwd()],
                 [0, "mkdir Ogre",os.path.join(os.getcwd() ,'ogre','OgreMain', 'include') ],
                 # need copies of these in an 'Ogre/..' directory due to includes in the OSX directory -- or get the framework right
                 [0, "cp OgreRoot.h Ogre",os.path.join(os.getcwd() ,'ogre','OgreMain', 'include') ],
@@ -703,7 +703,8 @@ class ois:
     if isLinux():
         base = "ois"
         source=[
-            [wget, "http://downloads.sourceforge.net/wgois/ois_1.2.0.tar.gz", downloadPath]
+#            [wget, "http://downloads.sourceforge.net/wgois/ois_1.2.0.tar.gz", downloadPath]
+            [cvs, "-z3 -d:pserver:anonymous@wgois.cvs.sourceforge.net:/cvsroot/wgois co -D 01Jan2009 -P ois", os.getcwd()]
             ]
 #        buildCmds  = [
 #               [0, tar + " zxf " + os.path.join(downloadPath,'ois_1.2.0')+".tar.gz --overwrite",os.getcwd() ],
@@ -725,11 +726,15 @@ class ois:
                 ]
     if isWindows():
         base = "ois"
-        source = [ [wget,"http://downloads.sourceforge.net/wgois/ois_1.2.0.zip", downloadPath] ]
+        source =[ 
+                    [cvs, "-z3 -d:pserver:anonymous@wgois.cvs.sourceforge.net:/cvsroot/wgois co -D 01Jan2009 -P ois", os.getcwd()]
+                ]  
+                #[wget,"http://downloads.sourceforge.net/wgois/ois_1.2.0.zip", downloadPath] ]
         buildCmds = [
-            [0, unzip + downloadPath + "/" + "ois_1.2.0.zip"  ,os.getcwd() ]
+#            [0, unzip + downloadPath + "/" + "ois_1.2.0.zip"  ,os.getcwd() ]
 #             [0, '"c:/Program Files/Microsoft Visual Studio 8/vc/vcpackages/vcbuild.exe" /useenv ois_VC8.sln ', os.path.join(os.getcwd(), base, 'Win32' )],
 #             [0, VCBUILD + " ois_vc8.sln " + "\"Release|Win32\"", os.path.join(os.getcwd(), base, 'Win32' )]
+            [0, 'echo Use MSVC to build OIS','']
             ]
 
     if os.name=='nt':
@@ -738,10 +743,10 @@ class ois:
             pchbuild = 'buildpch.cpp'
             pchincludes = ['boost/python.hpp', 'OIS.h']
 
-        libs=['OIS',boost.lib]
+        libs=['OIS_static',boost.lib]
         
     else:
-        libs=['OIS',boost.lib]
+        libs=['OIS_static',boost.lib]
         libs.append ( boost_python_index.lib )
     if os.name=="nt":
         libs.append ( "User32" ) # needed for static linking
@@ -830,7 +835,7 @@ class ogrenewt:
                     , Config.PATH_Newton   # only one path for Newton
                     , Config.PATH_INCLUDE_Ogre
                     , Config.PATH_INCLUDE_OgreNewt
-              #      , Config.PATH_INCLUDE_Ogre_Dependencies  #needed for OIS/OIS.h
+                    , Config.PATH_INCLUDE_Ogre_Dependencies  #needed for OIS/OIS.h
                     ]
     lib_dirs = [ boost.PATH_LIB
                 ,Config.PATH_LIB_Newton
@@ -851,7 +856,6 @@ class cegui:
     else:
         version = "0.6.2b"
     if isWindows():
-        version = "0.5.0b"   ### I'm forceing this as using the Ogre SDK
         if _PreCompiled:
             pchstop = 'cegui.h'
             pchbuild = 'buildpch.cpp'
@@ -906,7 +910,7 @@ class cegui:
                     ,Config.PATH_CEGUI
                     , Config.PATH_INCLUDE_Ogre_CEGUIRenderer
                     , Config.PATH_INCLUDE_Ogre
-                    #, Config.PATH_INCLUDE_Ogre_Dependencies ## needed as OgreCEGUI uses CEGUI/.. in #includes
+                    , Config.PATH_INCLUDE_Ogre_Dependencies ## needed as OgreCEGUI uses CEGUI/.. in #includes
                     ]
 
     lib_dirs = [ boost.PATH_LIB
@@ -993,7 +997,7 @@ class caelum:
     active = True
     pythonModule = True
     name = 'caelum'
-    version="r331"
+    version="0.4"
     parent="ogre/addons"
     cflags = ""
     include_dirs = [ Config.PATH_Boost,
@@ -1066,7 +1070,7 @@ class ogreode:
 class quickgui:
     active = True
     pythonModule = True
-    version="r80"
+    version="8_12"
     name ='quickgui'
     parent="ogre/gui"
     ## note the defined for _QuickGUIExport forces non dll usage
@@ -1142,7 +1146,7 @@ class betagui:
                 Config.PATH_LIB_OIS
                 ]
     CheckIncludes=[]
-    libs=[  boost.lib, 'OgreMain', 'OIS' ]
+    libs=[  boost.lib, 'OgreMain', 'OIS_static' ]
     if os.name=="nt":
         libs.append ( "User32" ) # needed for static linking
     else:
@@ -1183,7 +1187,7 @@ class particleuniverse:
              ]
 
     buildCmds = [
-#            [0, unzip + os.path.join(downloadPath, "ParticleUniverseV0.81.zip"), Config.PATH_Ogre],
+            [0, unzip + os.path.join(downloadPath, "ParticleUniverseV0.81.zip"), Config.PATH_Ogre],
             [0, "patch -s -N -i " + os.path.join(os.getcwd(),"python-ogre","patch","ParticleUniverse_0.8.patch") + " -p0 ", os.path.join(Config.PATH_Ogre, 'Plugins','ParticleUniverse') ],
             
             [0, "echo *** NOW build ParticleUniverse with MSVC from " + Config.PATH_Ogre, '']
@@ -1598,7 +1602,7 @@ class ogrebulletc:  #
                     , Config.PATH_INCLUDE_Bullet
                     , os.path.join(Config.PATH_OgreBullet, 'Collisions' )
                     , Config.PATH_INCLUDE_Ogre
-#                     , Config.PATH_INCLUDE_Ogre_Dependencies
+                    , Config.PATH_INCLUDE_Ogre_Dependencies
                     ]
     lib_dirs = [ boost.PATH_LIB
                 ,Config.PATH_LIB_Bullet
@@ -1636,7 +1640,7 @@ class ogrebulletd:  #
                     , os.path.join(Config.PATH_OgreBullet, 'Collisions' )
                     , os.path.join(Config.PATH_OgreBullet, 'Dynamics' )
                     , Config.PATH_INCLUDE_Ogre
-#                     , Config.PATH_INCLUDE_Ogre_Dependencies
+                    , Config.PATH_INCLUDE_Ogre_Dependencies
                     ]
     lib_dirs = [ boost.PATH_LIB
                 ,Config.PATH_LIB_Bullet
@@ -1850,7 +1854,7 @@ class mygui:
     descLink = "http://sourceforge.net/projects/my-gui/"
 
 class canvas:
-    active = False
+    active = True
     pythonModule = True
     version="1.0"
     name='canvas'
@@ -1863,7 +1867,7 @@ class canvas:
                     ]
     lib_dirs = [boost.PATH_LIB
                 ,Config.PATH_LIB_Ogre_OgreMain
-               , Config.PATH_LIB_Ogre_Dependencies 
+                , Config.PATH_LIB_Ogre_Dependencies 
                 ]
     CheckIncludes=[]
     libs=[  boost.lib, 'OgreMain', 'freetype235'] 
@@ -1984,15 +1988,23 @@ for name, cls in projects.items():
         
     if not hasattr(cls, 'cflags'):
         cls.cflags=''
+    if not hasattr(cls, 'LINKFLAGS'):
+        cls.LINKFLAGS=''
+                
     if isMac():  # On the mac the Ogre library is lined in with the -framework command in scons
         try:
             cls.libs.remove('OgreMain')
         except:
             pass
         ## and we have a commond set of flags that I will set here...
-        cls.include_dirs.append(Config.MAC_SDK_INCLUDE)
+        if Config.MAC_SDK_INCLUDE:
+            cls.include_dirs.append(Config.MAC_SDK_INCLUDE)
         cls.CCFLAGS += Config.MAC_CCFLAGS
         cls.cflags += Config.MAC_cflags
+        for f in Config.MAC_AdditionalFrameWorks:
+            cls.cflags += ' -F' + f + ' '
+            cls.CCFLAGS += ' -F' + f + ' '
+            cls.LINKFLAGS += ' -F' + f + ' '
 
     if not hasattr (cls, 'ModuleName'):
         cls.ModuleName = name[0].upper() + name[1:]

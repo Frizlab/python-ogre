@@ -53,7 +53,7 @@ namespace Caelum
 		bool mShadersEnabled;
 
         /// If haze is enabled.
-        bool mHazeEnabled;
+		bool mHazeEnabled;
 
 	public:
 		/** Constructor
@@ -69,25 +69,10 @@ namespace Caelum
 		/** Sets the sun direction.
 			@param dir The sun light direction.
 		 */
-		void setSunDirection (Ogre::Vector3 dir);
+		void setSunDirection (const Ogre::Vector3& dir);
 
         /// Explicit haze colour.
-        void setHazeColour (Ogre::ColourValue hazeColour);
-
-		/** Sets the new light absorption factor.
-			@param absorption The light absorption factor; a number in the range [0, 1], the lower, the less light the atmosphere will absorb.
-		 */
-		void setLightAbsorption (float absorption) const;
-
-		/** Sets the light scattering factor. 
-			@param scattering The light scattering factor; a number major than zero.
-		 */
-		void setLightScattering (float scattering) const;
-
-		/** Sets the atmosphere height factor. 
-			@param height The atmosphere height factor; a number in the range (0, 1].
-		 */
-		void setAtmosphereHeight (float height) const;
+        void setHazeColour (const Ogre::ColourValue& hazeColour);
 
         /// Set the sky color gradients image.
         void setSkyGradientsImage (const Ogre::String& gradients);
@@ -95,13 +80,13 @@ namespace Caelum
         /// Set the atmosphere depthh gradient image.
         void setAtmosphereDepthImage (const Ogre::String& gradients);
 
-        /// If skydome haze is enabled.
-        bool getHazeEnabled () const;
-
         /** Enable or disable skydome haze. This makes the sky darker.
          *  By default haze is disabled.
          */
         void setHazeEnabled (bool value);
+
+        /// If skydome haze is enabled.
+        bool getHazeEnabled () const;
 
         void setQueryFlags (uint flags) { mEntity->setQueryFlags (flags); }
         uint getQueryFlags () const { return mEntity->getQueryFlags (); }

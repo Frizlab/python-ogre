@@ -293,11 +293,15 @@ def ManualExclude ( mb ):
         main_ns.class_(c).noncopyable = True
 
 
-    # changes for Ogre 1.6 and on
-    if environment.ogre.version.startswith("1.7") or environment.ogre.version.startswith("1.6"):
-#         main_ns.class_("ResourceBackgroundQueue").exclude() # Ogre::ResourceBackgroundQueue::_fireBackgroundLoadingComplete isn't implemented
+    # changes for Ogre after 1.4
+    if not environment.ogre.version.startswith("1.4"):
         main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageEnded").exclude()
         main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageStarted").exclude()
+        
+        # these don't exist
+        main_ns.class_("ScriptCompiler").mem_fun("removeNameExclusion").exclude()
+        main_ns.class_("ScriptCompiler").mem_fun("addNameExclusion").exclude()
+        
         for cls in main_ns.classes():
             if cls.decl_string.startswith ("::Ogre::AllocatedObject") or\
                 cls.decl_string.startswith("::Ogre::STLAllocator") or\

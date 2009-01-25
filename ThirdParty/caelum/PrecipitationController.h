@@ -29,7 +29,7 @@ namespace Caelum
      */
 	struct PrecipitationPresetParams
 	{
-		Ogre::ColourValue Color;
+		Ogre::ColourValue Colour;
         Ogre::Real Speed;
 		Ogre::String Name;
 	};
@@ -66,14 +66,16 @@ namespace Caelum
 		Ogre::Vector3 mWindSpeed;
 		Ogre::Real mIntensity;
 		Ogre::Real mSpeed;
-		Ogre::ColourValue mColor;
+		Ogre::ColourValue mColour;
 		PrecipitationType mPresetType;
 		Ogre::String mTextureName;
+        Ogre::Vector3 mCameraSpeedScale;
+        Ogre::Vector3 mFallingDirection;
 
         Ogre::Real mAutoDisableThreshold;
         bool mHardDisableCompositor;
 
-		Ogre::ColourValue mSceneColor;
+		Ogre::ColourValue mSceneColour;
 		Real mInternalTime;
 
         // Only meant for the instance ctl in auto-camera-speed mode.
@@ -112,29 +114,38 @@ namespace Caelum
         PrecipitationType getPresetType () const;
 
 		// Texture name, part of a preset
-		void setTextureName(Ogre::String textureName);
-		Ogre::String getTextureName();
+		void setTextureName(const Ogre::String& textureName);
+		const Ogre::String getTextureName() const;
 
-		// Precipitation color. Part of a preset
-		void setColor(Ogre::ColourValue color);
-		Ogre::ColourValue getColor();
+		/// Precipitation color. Part of a preset
+		void setColour(const Ogre::ColourValue& color);
+		const Ogre::ColourValue getColour() const;
 
-		// Precipitation speed (affects direction). Part of a preset
+		/// Precipitation speed (affects direction). Part of a preset
 		void setSpeed(Real value);
-		Real getSpeed();
+		Real getSpeed() const;
 
-		// Precipitation intensity.
+		/// Precipitation intensity.
 		void setIntensity(Real value);
-		Real getIntensity();
+		Real getIntensity() const;
 
-		// Wind speed and direction
+		/// Wind speed and direction
 		void setWindSpeed(const Ogre::Vector3 &value);
-		const Ogre::Vector3 getWindSpeed();
+		const Ogre::Vector3 getWindSpeed() const;
+
+        /** The basic direction for falling precipitation.
+         *
+         *  This property define the notion of a "falling down" direction.
+         *  By default this is Vector3::NEGATIVE_UNIT_Y. You need to change
+         *  this for a Z-up system.
+         */
+        void setFallingDirection(const Ogre::Vector3 &value) { mFallingDirection = value; }
+		const Ogre::Vector3 getFallingDirection() const { return mFallingDirection; }
 
 		/// Set manual camera speed for all viewports.
 		void setManualCameraSpeed(const Ogre::Vector3 &value);
 
-        /// Set auto camera speed everywhere.
+        /// Set auto camera speed everywhere.o
 		void setAutoCameraSpeed();
 
         /** Automatically disable compositors when intensity is low.
@@ -144,6 +155,29 @@ namespace Caelum
          */
         inline void setAutoDisableThreshold (Real value) { mAutoDisableThreshold = value; }
         inline Real getAutoDisableThreshold () const { return mAutoDisableThreshold; }
+
+        /** Automatically scale camera speed.
+         *
+         *  This is multiplied per-component with camera speed; manual or
+         *  automatic. It's most useful for automatic camera speed to control 
+         *  how much of an effect moving the camera has on rain drop directions.
+         *
+         *  The components should probably be equal.
+         *
+         *  Default in Ogre::Vector3::UNIT_SCALE
+         */
+        inline void setCameraSpeedScale (const Ogre::Vector3& value) {
+            mCameraSpeedScale = value;
+        }
+        inline const Ogre::Vector3 getCameraSpeedScale () const {
+            return mCameraSpeedScale;
+        }
+
+        /** Set an equal camera speed scale in all dimensions.
+         */
+        inline void setCameraSpeedScale (Ogre::Real value) {
+            setCameraSpeedScale(Ogre::Vector3::UNIT_SCALE * value);
+        }
 
         /** Update the the precipitation controller.
          *  @param secondsSinceLastFrame Number of secods since the last frame.
@@ -219,7 +253,7 @@ namespace Caelum
         /// Set manual camera speed; disables automatic calculation.
         void setManualCameraSpeed(const Ogre::Vector3& value);
 
-        /// Get current camera speed.
+        /// Get current camera speed. Doesn't include CameraSpeedScale.
         const Ogre::Vector3 getCameraSpeed();
 
         PrecipitationInstance(PrecipitationController* parent, Ogre::Viewport* view);

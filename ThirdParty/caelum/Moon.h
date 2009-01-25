@@ -26,11 +26,13 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 namespace Caelum {
 
-/** Class representing the moon.
- *  Drawn as two billboards; one after the stars and one after the skydome.
- *  Drawing it before the skydome will make it invisible in daylight; and that's bad.
- */
-class CAELUM_EXPORT Moon : public BaseSkyLight {
+    /** Class representing the moon.
+     *  Drawn as two billboards; one after the stars and one after the skydome.
+     *  Drawing it before the skydome will make it invisible in daylight; and that's bad.
+     */
+    class CAELUM_EXPORT Moon:
+            public BaseSkyLight
+    {
 	public:
 		/// Name of the moon material.
 		static const Ogre::String MOON_MATERIAL_NAME;

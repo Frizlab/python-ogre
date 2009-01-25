@@ -6,3 +6,6 @@ typedef ::Caelum::DefaultOwnedPtrTraits< Ogre::SceneNode > DefaultOwnedPtrTraits
 typedef ::Caelum::OwnedResourcePtrTraits< Ogre::Material, Ogre::MaterialPtr, Ogre::MaterialManager > OwnedResourcePtrTraitsMaterial;
 typedef ::Caelum::MovableObjectOwnedPtrTraits< Ogre::ManualObject > MovableObjectOwnedPtrTraitsManualObject;
 typedef ::Caelum::DefaultOwnedPtrTraits< Ogre::ManualObject > DefaultOwnedPtrTraitsManualObject;
+typedef ::Caelum::DefaultOwnedPtrTraits< Ogre::Entity > DefaultOwnedPtrTraitsEntity;
+typedef ::Caelum::MovableObjectOwnedPtrTraits< Ogre::Entity > MovableObjectOwnedPtrTraitsEntity;
+typedef ::Caelum::OwnedResourcePtrTraits< Ogre::Mesh, Ogre::MeshPtr, Ogre::MeshManager > OwnedResourcePtrTraitsMesh;

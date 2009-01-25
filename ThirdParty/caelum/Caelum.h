@@ -22,6 +22,9 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #define CAELUM_H
 
 #include "CaelumPrerequisites.h"
+#include "CaelumScriptTranslator.h"
+#include "TypeDescriptor.h"
+#include "CaelumPlugin.h"
 #include "CaelumExceptions.h"
 #include "CaelumSystem.h"
 #include "CameraBoundElement.h"

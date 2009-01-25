@@ -36,16 +36,20 @@ namespace Caelum
     template<class PointedT>
     struct DefaultOwnedPtrTraits
     {
+        /// The type of the inner member to hold in OwnedPtr
         typedef PointedT* InnerPointerType;
 
+        /// Return an InnerPointerType repressenting a null value.
         static inline const InnerPointerType getNullValue() {
             return 0;
         }
 
+        /// Convert InnerPointerType to a naked PointedT.
         static inline PointedT* getPointer (const InnerPointerType& inner) {
             return inner;
         }
 
+        /// Destroy the inner value (and set null).
         static void destroy (InnerPointerType& inner)
         {
             delete inner;
@@ -77,12 +81,16 @@ namespace Caelum
     class OwnedPtr
     {
     private:
-        // Bring InnerPointerType as a type in this scope.
+        /// Brings InnerPointerType as a type in this scope.
         typedef typename TraitsT::InnerPointerType InnerPointerType;
 
+        /// Inner data member.
         InnerPointerType mInner;
 
 	public:
+        /** Change the inner value.
+         *  This will destroy the old value and gain ownership of the new value.
+         */
         void reset (const InnerPointerType& newInner = TraitsT::getNullValue()) {
             if (mInner == newInner) {
                 return;
@@ -120,7 +128,10 @@ namespace Caelum
             return *this;
         }
 
+        /// Check if this is null.
         bool isNull () const { return mInner != TraitsT::getNullValue (); }
+
+        /// Set to null and destroy contents (if any).
         void setNull () { TraitsT::destroy (mInner); }
 
         PointedT* getPointer () const { return TraitsT::getPointer (mInner); }
@@ -131,7 +142,6 @@ namespace Caelum
 
     /** Owned ptr traits for a movable object.
      *  This kind of pointer will remove the movable from the scene and destroy it.
-     *  @MovableObjectPtr
      */
     template<class MovableT>
     struct MovableObjectOwnedPtrTraits: public DefaultOwnedPtrTraits<MovableT>
@@ -223,8 +233,16 @@ namespace Caelum
             Ogre::MaterialPtr,
             Ogre::MaterialManager
         >
-    >
-    OwnedMaterialPtr;
+    > OwnedMaterialPtr;
+
+    typedef OwnedPtr <
+        Ogre::Mesh,
+        OwnedResourcePtrTraits <
+            Ogre::Mesh,
+            Ogre::MeshPtr,
+            Ogre::MeshManager
+        >
+    > OwnedMeshPtr;
 }
 
 #endif // CAELUM__OWNED_PTR_H

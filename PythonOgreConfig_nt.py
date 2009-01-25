@@ -1,6 +1,6 @@
 import os
 
-SDK=True # Changes Ogre include path settings
+SDK=False # Changes Ogre include path settings
 
 ## The root directory is where this module is located
 module_dir = os.path.abspath(os.path.dirname(__file__) )
@@ -31,7 +31,8 @@ pyplusplus_install_dir = os.path.join(BASE_DIR, 'pyplusplus')
 ## Parent directories of the libraries
 PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
 PATH_Ogre =         os.path.join(BASE_DIR, 'ogre')
-PATH_Ogre =         "C:\\OgreSDK"
+if SDK:
+    PATH_Ogre =         "C:\\OgreSDK"
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
 PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.6.2')
 
@@ -96,7 +97,7 @@ if SDK:
 ###        
 PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'Samples/Common/CEGUIRenderer/lib')
 PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'lib' )
-PATH_LIB_Ogre_Dependencies =   ""# os.path.join( PATH_Ogre, 'Dependencies/lib/Release')
+PATH_LIB_Ogre_Dependencies =    os.path.join( PATH_Ogre, 'Dependencies/lib/Release')
 PATH_LIB_OgreRefApp =           os.path.join( PATH_Ogre, 'lib')
 PATH_LIB_OgreNewt =             os.path.join( PATH_OgreAddons, 'ogrenewt/OgreNewt_Main/lib/Release') 
 PATH_LIB_Newton =               os.path.join( PATH_Newton ,'dll')  ##NOTE Posix platforms this lives in 'lib-mt'
@@ -140,7 +141,7 @@ if SDK:
     
 PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include') 
 PATH_INCLUDE_NEDMALLOC=      "" #os.path.join(PATH_Ogre,'OgreMain', 'src', 'nedmalloc')
-PATH_INCLUDE_Ogre_Dependencies =  "" #os.path.join( PATH_Ogre, 'Dependencies/include')
+PATH_INCLUDE_Ogre_Dependencies = os.path.join( PATH_Ogre, 'Dependencies/include')
 PATH_INCLUDE_OIS =          os.path.join(PATH_OIS,'includes')    ## Note the plural include's
 PATH_INCLUDE_OgreRefApp =   os.path.join(PATH_Ogre,'ReferenceApplication/ReferenceAppLayer/include') 
 PATH_INCLUDE_OgreNewt =     os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')

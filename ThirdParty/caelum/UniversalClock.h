@@ -50,6 +50,8 @@ namespace Caelum {
         Ogre::Real mTimeScale;
 
 	public:
+        /** Number of seconds per day; exactly 60*60*24.
+         */
         static const LongReal SECONDS_PER_DAY;
 
 		/** Constructor.
@@ -78,8 +80,9 @@ namespace Caelum {
          */
         void setJulianDay(LongReal value);
 
-        // Set the current time as a gregorian date.
-        // This is here as an easy to use function.
+        /** Set the current time as a gregorian date.
+         *  This is here as an easy to use function.
+         */
         void setGregorianDateTime(
                 int year, int month, int day,
                 int hour, int minute, double second);

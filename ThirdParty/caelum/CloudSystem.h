@@ -52,8 +52,13 @@ namespace Caelum
         /// Clears all cloud layers.
 		void clearLayers();
 
+        /// Create a new cloud layer with default settings at height 0.
+        /// @return pointer to the new layer.
+        FlatCloudLayer* createLayer();
+
         /// Create a new cloud layer with default settings at a certain height.
-        void createLayerAtHeight(Ogre::Real height);
+        /// @return pointer to the new layer.
+        FlatCloudLayer* createLayerAtHeight(Ogre::Real height);
 
         /// Add new layer. Takes ownership of the layer.
         void addLayer(FlatCloudLayer* layer);

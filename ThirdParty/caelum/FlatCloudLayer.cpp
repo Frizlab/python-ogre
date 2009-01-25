@@ -26,17 +26,19 @@ namespace Caelum
 {
 	FlatCloudLayer::FlatCloudLayer(
             Ogre::SceneManager *sceneMgr,
-			Ogre::SceneNode *cloudRoot,
-			float height)
+			Ogre::SceneNode *cloudRoot)
 	{
         Ogre::String uniqueId = Ogre::StringConverter::toString((size_t)this);
         Ogre::String materialName = "Caelum/FlatCloudLayer/Material/" + uniqueId;
-        Ogre::String planeMeshName = "Caelum/FlatCloudLayer/Plane/" + uniqueId;
-        Ogre::String entityName = "Caelum/FlatCloudLayer/Entity/" + uniqueId;
 
-		// Material
-		mMaterial = Ogre::MaterialManager::getSingleton().getByName("CaelumLayeredClouds");
-		mMaterial = mMaterial->clone(materialName);
+		// Clone material
+        Ogre::MaterialPtr originalMaterial = Ogre::MaterialManager::getSingleton ().getByName ("CaelumLayeredClouds");
+		if (originalMaterial.isNull ()) {
+			CAELUM_THROW_UNSUPPORTED_EXCEPTION (
+                    "Can't find material resource \"CaelumLayeredClouds\"",
+                    "FlatCloudLayer");
+		}
+		mMaterial.reset(originalMaterial->clone (materialName));
 		mMaterial->load ();
 		if (mMaterial->getBestTechnique () == 0) {
             CAELUM_THROW_UNSUPPORTED_EXCEPTION (
@@ -44,22 +46,14 @@ namespace Caelum
                     "FlatCloudLayer");
 		}
 
-		// Plane
-		mMesh = Ogre::MeshManager::getSingleton().createPlane(
-                planeMeshName, Caelum::RESOURCE_GROUP_NAME,
-			    Ogre::Plane(Ogre::Vector3(1, 1, 0), Ogre::Vector3(1, 1, 1), Ogre::Vector3(0, 1, 1)),
-			    10000000, 10000000,
-                100, 100,
-                false, 1,
-                1.0f, 1.0f,
-			    Ogre::Vector3::UNIT_X);
+ 		// Ignore missing shader parameters in clones material.
+		getFpParams()->setIgnoreMissingParams(true);
+		getVpParams()->setIgnoreMissingParams(true);
 
-		mEntity = sceneMgr->createEntity(entityName, mMesh->getName());
-		mEntity->setMaterialName(mMaterial->getName());
-		mNode = cloudRoot->createChildSceneNode();
-		mNode->setPosition(Ogre::Vector3(0, height, 0));
-		mNode->attachObject(mEntity);
+        // Create the scene node.
 		mSceneMgr = sceneMgr;
+		mNode.reset(cloudRoot->createChildSceneNode());
+		mNode->setPosition(Ogre::Vector3(0, 0, 0));
 
         // Noise texture names are fixed.
         mNoiseTextureNames.clear();
@@ -71,47 +65,112 @@ namespace Caelum
         // Invalid; will reset on first opportunity.
         mCurrentTextureIndex = -1;
 
-		setHeight(height);		
+        // By default height is 0; the user is expected to change this.
+		setHeight(0);		
 
-		// Shader Parameters
-		getFpParams()->setIgnoreMissingParams(true);
-		getVpParams()->setIgnoreMissingParams(true);
+        // Reset parameters. This is relied upon to initialize most fields.
+        this->reset();
 
-        assert(mCloudCoverLookup.get() == 0);
-        setCloudCoverLookup("CloudCoverLookup.png");
-		setCloudCover(0.3);
-
-		setCloudMassOffset(Ogre::Vector2(0, 0));
-		setCloudDetailOffset(Ogre::Vector2(0, 0));
-		setCloudBlendTime(3600 * 24);
-		setCloudBlendPos(0.5);
-
-		setCloudSpeed(Ogre::Vector2(0.000005, -0.000009));
+        // Ensure geometry; don't wait for first update.
+        this->_ensureGeometry();
 	}
 	
 	FlatCloudLayer::~FlatCloudLayer()
     {
-        // Destroy entity
-		mNode->detachObject(mEntity);
-		mSceneMgr->destroyEntity(mEntity);
-		mEntity = 0;
-
-        // Destroy node
-        if (mNode->getParent()) {
-			static_cast<Ogre::SceneNode*>(mNode->getParent())->
-				    removeAndDestroyChild(mNode->getName());
-        }
-		mNode = 0;
 		mSceneMgr = 0;
 
-        // Destroy plane
-        Ogre::MeshManager::getSingletonPtr()->remove(mMesh->getHandle());
-        assert(mMesh.unique());
-
-        // Destroy material.
-		Ogre::MaterialManager::getSingletonPtr()->remove(mMaterial->getHandle());
-        assert(mMaterial.unique());
+        // Rely on OwnedPtr for everything interesting.
 	}	
+
+    void FlatCloudLayer::_invalidateGeometry () {
+        mMeshDirty = true;
+    }
+
+    void FlatCloudLayer::_ensureGeometry ()
+    {
+        if (!mMeshDirty) {
+            return;
+        }
+
+        // Generate unique names based on pointer.
+        Ogre::String uniqueId = Ogre::StringConverter::toString((size_t)this);
+        Ogre::String planeMeshName = "Caelum/FlatCloudLayer/Plane/" + uniqueId;
+        Ogre::String entityName = "Caelum/FlatCloudLayer/Entity/" + uniqueId;
+
+        // Cleanup first. Entity references mesh so it must be destroyed first.
+        mEntity.reset();
+        mMesh.reset();
+
+        /*
+        Ogre::LogManager::getSingleton().logMessage(
+                "Creating cloud layer mesh " +
+                Ogre::StringConverter::toString(mMeshWidthSegments) + "x" +
+                Ogre::StringConverter::toString(mMeshHeightSegments) + " segments");
+         */
+
+        // Recreate mesh.
+        Ogre::Plane meshPlane(
+                Ogre::Vector3(1, 1, 0),
+                Ogre::Vector3(1, 1, 1),
+                Ogre::Vector3(0, 1, 1));
+		mMesh.reset(Ogre::MeshManager::getSingleton().createPlane(
+                planeMeshName, Caelum::RESOURCE_GROUP_NAME, meshPlane,
+                mMeshWidth, mMeshHeight,
+			    mMeshWidthSegments, mMeshHeightSegments,
+                false, 1,
+                1.0f, 1.0f,
+			    Ogre::Vector3::UNIT_X));
+
+        // Recreate entity.
+		mEntity.reset(mSceneMgr->createEntity(entityName, mMesh->getName()));
+		mEntity->setMaterialName(mMaterial->getName());
+
+        // Reattach entity.
+		mNode->attachObject(mEntity.get());
+
+        // Mark done.
+        mMeshDirty = false;
+    }
+
+    void FlatCloudLayer::setMeshParameters (
+            Real meshWidth, Real meshHeight,
+            int meshWidthSegments, int meshHeightSegments)
+    {
+        bool invalidate =
+                (mMeshWidthSegments != meshWidthSegments) ||
+                (mMeshHeightSegments != meshHeightSegments) ||
+                (abs(mMeshWidth - meshWidth) > 0.001) ||
+                (abs(mMeshHeight - meshHeight) > 0.001);
+        mMeshWidth = meshWidth;
+        mMeshHeight = meshHeight;
+        mMeshWidthSegments = meshWidthSegments;
+        mMeshHeightSegments = meshHeightSegments;
+        if (invalidate) {
+            _invalidateGeometry();
+        }
+    }
+
+	void FlatCloudLayer::reset()
+    {
+        _invalidateGeometry ();
+        setMeshParameters(10000000, 10000000, 10, 10);
+
+        assert (mCloudCoverLookup.get() == 0);
+        setCloudCoverLookup ("CloudCoverLookup.png");
+		setCloudCover (0.3);
+
+		setCloudMassOffset (Ogre::Vector2(0, 0));
+		setCloudDetailOffset (Ogre::Vector2(0, 0));
+		setCloudBlendTime (3600 * 24);
+		setCloudBlendPos (0.5);
+
+		setCloudSpeed (Ogre::Vector2(0.000005, -0.000009));
+
+		setCloudUVFactor (150);
+		setHeightRedFactor (100000);
+
+        setFadeDistances (10000, 140000);
+    }
 
 	void FlatCloudLayer::update (
             Ogre::Real timePassed,
@@ -132,6 +191,8 @@ namespace Caelum
 
 		// Animate cloud blending.
         setCloudBlendPos (getCloudBlendPos () + timePassed / mCloudBlendTime);
+
+        this->_ensureGeometry();
 	}	
 
 	Ogre::GpuProgramParametersSharedPtr FlatCloudLayer::getVpParams() {
@@ -156,7 +217,7 @@ namespace Caelum
         } else {
             cloudCoverageThreshold = 1 - cloudCover;   
         }
-		getFpParams()->setNamedConstant("cloudCoverageThreshold", cloudCoverageThreshold);		
+		getFpParams()->setNamedConstant("cloudCoverageThreshold", cloudCoverageThreshold);
 	}
 
 	void FlatCloudLayer::setCloudMassOffset(const Ogre::Vector2 &cloudMassOffset) {
@@ -238,4 +299,25 @@ namespace Caelum
     Ogre::Real FlatCloudLayer::getHeight() const {
 		return mHeight;
 	}
+
+    void FlatCloudLayer::setCloudUVFactor (const Ogre::Real value) {
+		getFpParams()->setNamedConstant("cloudUVFactor", mCloudUVFactor = value);
+    }
+
+    void FlatCloudLayer::setHeightRedFactor (const Ogre::Real value) {
+		getFpParams()->setNamedConstant("heightRedFactor", mHeightRedFactor = value);
+    }
+
+    void FlatCloudLayer::setFadeDistances (const Ogre::Real nearValue, const Ogre::Real farValue) {
+        setNearFadeDist (nearValue);
+        setFarFadeDist (farValue);
+    }
+
+    void FlatCloudLayer::setNearFadeDist (const Ogre::Real value) {
+		getFpParams()->setNamedConstant("nearFadeDist", mNearFadeDist = value);
+    }
+
+    void FlatCloudLayer::setFarFadeDist (const Ogre::Real value) {
+		getFpParams()->setNamedConstant("farFadeDist", mFarFadeDist = value);
+    }
 }

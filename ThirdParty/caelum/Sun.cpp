@@ -86,13 +86,14 @@ SpriteSun::SpriteSun (	Ogre::SceneManager *sceneMgr,
 	: BaseSkyLight(sceneMgr, caelumRootNode)
 	, mSunTextureAngularSize(sunTextureAngularSize)
 {
+    Ogre::String uniqueSuffix = Ogre::StringConverter::toString((size_t)this);
     mSunMaterial = Ogre::MaterialManager::getSingletonPtr()->getByName(SUN_MATERIAL_NAME);
-	mSunMaterial = mSunMaterial->clone(SUN_MATERIAL_NAME + Ogre::StringConverter::toString((size_t)this));
+	mSunMaterial = mSunMaterial->clone(SUN_MATERIAL_NAME + uniqueSuffix);
     mSunMaterial->load();
     assert(!mSunMaterial.isNull());
     setSunTexture(sunTextureName);
 
-	mSunBillboardSet = sceneMgr->createBillboardSet("CaelumSpriteSun", 2);
+	mSunBillboardSet = sceneMgr->createBillboardSet("CaelumSpriteSun" + uniqueSuffix, 2);
 	mSunBillboardSet->setMaterialName (mSunMaterial->getName());
 	mSunBillboardSet->setCastShadows (false);
 	mSunBillboardSet->setRenderQueueGroup (CAELUM_RENDER_QUEUE_SUN);
@@ -145,5 +146,4 @@ void SpriteSun::notifyCameraChanged (Ogre::Camera *cam) {
     float scale = factor * sunDistance * Ogre::Math::Tan(mSunTextureAngularSize);
     mNode->setScale (Ogre::Vector3::UNIT_SCALE * scale);
 }
-
-} // namespace Caelum
+}

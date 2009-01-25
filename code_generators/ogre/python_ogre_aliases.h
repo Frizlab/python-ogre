@@ -74,7 +74,10 @@ typedef std::pair<unsigned, unsigned> stdPairUnsignedUnsigned;
     typedef Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)5> > AllocatedObjectMemCategory_5;
     typedef Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)6> > AllocatedObjectMemCategory_6;
     typedef Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)7> > AllocatedObjectMemCategory_7;
-
+    typedef  Ogre::Singleton<Ogre::ScriptCompilerManager> SingletonScriptCompilerManager;
+    typedef std::vector<Ogre::Plane> VectorPlane;
+    typedef std::vector<Ogre::Any> VectorAny;
+    
     
 #endif
 
