@@ -2,7 +2,9 @@
 #include "QuickGUIText.h"
 
 namespace QuickGUI
-{
+{	
+    Character::Character( )  {} ;
+
 	Character::Character(Ogre::UTFString::code_point cp, Ogre::FontPtr fp, Ogre::ColourValue cv) :
 		codePoint(cp), 
 		fontPtr(fp),

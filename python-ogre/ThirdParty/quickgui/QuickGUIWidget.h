@@ -31,7 +31,7 @@ namespace QuickGUI
 	public:
 		template<typename BaseClassType>
 		friend class Factory;
-	protected:
+//	protected:
 		WidgetDesc(const Ogre::String& id);
 		virtual ~WidgetDesc() {}
 	public:
@@ -494,7 +494,7 @@ namespace QuickGUI
 		*/
 		virtual void updateTexturePosition();
 
-	protected:
+//	protected:
 		Widget(const Ogre::String& widget_name);
 		virtual ~Widget();
 

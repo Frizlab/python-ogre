@@ -120,7 +120,9 @@ def ManualExclude ( mb ):
             ,'::QuickGUI::Widget::getChildWidget'
             ,'::QuickGUI::Quad::_update'
             ,'::QuickGUI::Window::getTitleBarText'
-            ,'::QuickGUI::Tab::getPadding'            
+            ,'::QuickGUI::Tab::getPadding' 
+            ,'::QuickGUI::ComboBox::_clearSelection'  ## not implemented
+            ,'::QuickGUI::ComboBox::addComboBoxEventHandler' ## TODO: needs to be wrapped           
                 ]
     for e in excludes:
         print "excluding function", e

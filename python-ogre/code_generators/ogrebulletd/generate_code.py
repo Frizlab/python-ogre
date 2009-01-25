@@ -64,6 +64,20 @@ def ManualExclude ( mb ):
     for e in excludes:
         print "excluding class", e
         global_ns.class_(e).exclude()
+    
+    ## these are not yet implemented...   
+    excludes = ['::OgreBulletDynamics::RagDoll::rigidityEnable',
+                '::OgreBulletDynamics::RagDoll::ragdollEnable',
+                '::OgreBulletDynamics::RagDoll::isRigidityEnable',
+                '::OgreBulletDynamics::RagDoll::isRagdollEnabled',
+                '::OgreBulletDynamics::RagDoll::isConstraintEnabled',
+                '::OgreBulletDynamics::RagDoll::isCollisionEnabled',
+                '::OgreBulletDynamics::RagDoll::constraintEnable',
+                '::OgreBulletDynamics::RagDoll::collisionEnable'
+                ]
+    for e in excludes:
+        global_ns.member_functions(e).exclude()
+                        
 #     for c in global_ns.classes():
 #         #if not c.ignore:
 #         print c

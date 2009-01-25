@@ -121,8 +121,8 @@ def ManualExclude ( mb ):
 #     cls.variable("StaticFunction").exclude()
 #     
     
-    excludes = ['::NaviLibrary::Singleton<NaviLibrary::NaviMouse>::instance'
-                ,'::NaviLibrary::Singleton<NaviLibrary::NaviManager>::instance'
+    excludes = [ # '::NaviLibrary::Singleton<NaviLibrary::NaviMouse>::instance',
+                '::NaviLibrary::Singleton<NaviLibrary::NaviManager>::instance'
                 ]
     for e in excludes:
         print "Excluding Var", e

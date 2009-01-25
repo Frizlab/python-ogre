@@ -5,10 +5,10 @@ module_dir = os.path.abspath(os.path.dirname(__file__) )## The root directory is
 ## lets assume that the base development directory is one level higher
 BASE_DIR,ignore = os.path.split(module_dir) ##  r'/home/andy/development'
 
-FRAMEWORK_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', 'Library','Frameworks'))   ## need this for the Mac
-MAC_SDK_INCLUDE= '/Developer/SDKs/MacOSX10.4u.sdk/Developer/Headers/CFMCarbon' 
-MAC_CCFLAGS = ' -DBOOST_PYTHON_MAX_ARITY=19 -D_POSIX_C_SOURCE -DCF_OPEN_SOURCE'
-MAC_cflags = ' --gccxml-cxxflags "-DCF_OPEN_SOURCE -D_POSIX_C_SOURCE -isysroot /Developer/SDKs/MacOSX10.4u.sdk"'
+
+
+SDK = False
+
 
 # the base of the /usr/... dircetory structure that we are using
 ROOT_DIR = os.path.join(BASE_DIR,'root')
@@ -16,11 +16,11 @@ LOCAL_LIB = os.path.join(ROOT_DIR,'usr/lib')
 LOCAL_INCLUDE = os.path.join(ROOT_DIR, 'usr/include')
 
 ## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
-PATH_Boost = os.path.join(LOCAL_INCLUDE, 'boost-1_36')
+PATH_Boost = os.path.join(LOCAL_INCLUDE, 'boost-1_37')
 ## Path to your boost_pythonxxxx lib file
 PATH_LIB_Boost = LOCAL_LIB
 ## and the name of the boost python library
-LIB_Boost = 'libboost_python-gcc42-mt-1_36'
+LIB_Boost = 'libboost_python-gcc42-mt-1_37'
 
 # in Linux we need to code in the Relative path for the library
 RPATH=os.path.join('\\$$ORIGIN',os.pardir,os.pardir, 'lib') #+ '\'' 
@@ -31,16 +31,22 @@ gccxml_bin = os.path.join(ROOT_DIR,'usr/bin')
 # and the Py++ directory as sometimes we need access to the code repository there
 pyplusplus_install_dir = os.path.join(BASE_DIR,'pygccxml')
 
-SDK = False
-if os.sys.platform == 'darwin':  # we use the pre built sdk for OSX
-   SDK = True
 
+if os.sys.platform == 'darwin':  # we use the pre built sdk for OSX
+    SDK = True
+    FRAMEWORK_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', 'Library','Frameworks'))   ## need this for the Mac
+    MAC_SDK_INCLUDE= '/Developer/SDKs/MacOSX10.4u.sdk/Developer/Headers/CFMCarbon' 
+    MAC_CCFLAGS = ' -DBOOST_PYTHON_MAX_ARITY=19 -D_POSIX_C_SOURCE -DCF_OPEN_SOURCE'
+    MAC_cflags = ' --gccxml-cxxflags "-DCF_OPEN_SOURCE -D_POSIX_C_SOURCE -isysroot /Developer/SDKs/MacOSX10.4u.sdk"'
+
+    
+    
 # # ## Parent directories of the libraries
 PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
 PATH_Ogre =         os.path.join(BASE_DIR,'ogre')
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'ogreaddons')
-PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.6.1' )
-PATH_OIS =          os.path.join(BASE_DIR, 'ois-1.0RC1')
+PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.6.2' )
+PATH_OIS =          os.path.join(BASE_DIR, 'ois')
 
 if SDK:
     PATH_CEGUI =        os.path.join(BASE_DIR, 'ogre','Dependencies')
