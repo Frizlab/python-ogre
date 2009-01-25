@@ -11,10 +11,15 @@ namespace QuickGUI
 		public ContainerWidgetDesc
 	{
 	public:
-		ListDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		ListDesc(const Ogre::String& id);
+		virtual ~ListDesc() {}
+	public:
 
-		float listItemHeight;
-		bool supportMultiSelect;
+		float	list_listItemHeight;
+		bool	list_supportMultiSelect;
 
 		/**
 		* Returns the class of Desc object this is.
@@ -25,8 +30,10 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getWidgetClass() { return "List"; }
 
-		// Factory method
-		static WidgetDesc* factory() { return new ListDesc(); }
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
 
 		/**
 		* Outlines how the desc class is written to XML and read from XML.
@@ -45,8 +52,8 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
-		// Factory method
-		static Widget* factory(const Ogre::String& widgetName);
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -72,21 +79,9 @@ namespace QuickGUI
         */
 		template<typename T> void addListEventHandler(ListEvent EVENT, void (T::*function)(const EventArgs&), T* obj)
 		{
-			mListEventHandlers[EVENT].push_back(new EventHandlerPointer<T>(function,obj));
+			mListEventHandlers[EVENT].push_back(OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
 		}
 		void addListEventHandler(ListEvent EVENT, EventHandlerSlot* function);
-
-		/**
-		* Adds a ListItem to the end of the List.
-		* NOTE: Names are auto-generated in the form of <ListName>+<Index>.
-		*/
-		ListItem* addItem(ListItemDesc& d);
-		/**
-		* Adds a ListItem to a position in the List.
-		* NOTE: if the index is not valid, the ListItem is added to the end of the list.
-		* NOTE: Names are auto-generated in the form of <ListName>+<Index>.
-		*/
-		ListItem* addItem(int index, ListItemDesc& d);
 
 		/**
 		* Removes all ListItems from the list.
@@ -96,11 +91,26 @@ namespace QuickGUI
 		* De-selects any selected ListItems in the list.
 		*/
 		void clearSelection();
+		/**
+		* Adds a ListItem to the end of the List.
+		* NOTE: Names are auto-generated in the form of <ListName>+<Index>.
+		*/
+		ListItem* createItem(ListItemDesc* d);
+		/**
+		* Adds a ListItem to a position in the List.
+		* NOTE: if the index is not valid, the ListItem is added to the end of the list.
+		* NOTE: Names are auto-generated in the form of <ListName>+<Index>.
+		*/
+		ListItem* createItem(int index, ListItemDesc* d);
 
 		/**
 		* De-selects the item at the index given.  If index is invalid, nothing happens.
 		*/
 		void deselectItem(unsigned int index);
+		/**
+		* Removes an Item from the List and destroys it.
+		*/
+		void destroyItem(unsigned int index);
 
 		/**
 		* Event Handler that executes the appropriate User defined Event Handlers for a given event.
@@ -133,11 +143,6 @@ namespace QuickGUI
 		* Returns a pointer to a list of selected items.
 		*/
 		std::list<ListItem*> getSelection();
-
-		/**
-		* Removes an Item from the List.
-		*/
-		void removeItem(unsigned int index);
 
 		/**
 		* Selects the item at index given.  If index is not valid,

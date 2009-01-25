@@ -3,10 +3,10 @@
 
 namespace QuickGUI
 {
-	MenuItemDesc::MenuItemDesc() :
-		ToolBarItemDesc()
+	MenuItemDesc::MenuItemDesc(const Ogre::String& id) :
+		ToolBarItemDesc(id)
 	{
-		resizable = false;
+		widget_resizable = false;
 	}
 
 	MenuItem::MenuItem(const Ogre::String& name) :

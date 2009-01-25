@@ -1,7 +1,6 @@
 #include "QuickGUIList.h"
 #include "QuickGUIManager.h"
 #include "QuickGUISkinDefinitionManager.h"
-#include "QuickGUIWidgetFactoryManager.h"
 
 #include "OgreStringConverter.h"
 
@@ -11,7 +10,7 @@ namespace QuickGUI
 
 	void List::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("List");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("List");
 		d->defineSkinElement(BACKGROUND);
 		d->defineComponent(HSCROLLBAR);
 		d->defineComponent(VSCROLLBAR);
@@ -20,19 +19,26 @@ namespace QuickGUI
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("List",d);
 	}
 
-	ListDesc::ListDesc() :
-		ContainerWidgetDesc()
+	ListDesc::ListDesc(const Ogre::String& id) :
+		ContainerWidgetDesc(id)
 	{
-		listItemHeight = 25;
-		supportMultiSelect = false;
+		resetToDefault();
+	}
+
+	void ListDesc::resetToDefault()
+	{
+		ContainerWidgetDesc::resetToDefault();
+
+		list_listItemHeight = 25;
+		list_supportMultiSelect = false;
 	}
 
 	void ListDesc::serialize(SerialBase* b)
 	{
 		ContainerWidgetDesc::serialize(b);
 
-		b->IO("ListItemHeight",&listItemHeight);
-		b->IO("MultiSelect",&supportMultiSelect);
+		b->IO("ListItemHeight",&list_listItemHeight);
+		b->IO("MultiSelect",&list_supportMultiSelect);
 	}
 
 	List::List(const Ogre::String& name) :
@@ -46,6 +52,12 @@ namespace QuickGUI
 
 	List::~List()
 	{
+		// Clean up all user defined event handlers.
+		for(int index = 0; index < LIST_EVENT_COUNT; ++index)
+		{
+			for(std::vector<EventHandlerSlot*>::iterator it = mListEventHandlers[index].begin(); it != mListEventHandlers[index].end(); ++it)
+				OGRE_DELETE_T((*it),EventHandlerSlot,Ogre::MEMCATEGORY_GENERAL);
+		}
 	}
 
 	void List::_clearSelection()
@@ -79,19 +91,10 @@ namespace QuickGUI
 
 		mDesc = dynamic_cast<ListDesc*>(mWidgetDesc);
 
-		setListItemHeight(ld->listItemHeight);
-		setMultiSelect(ld->supportMultiSelect);
+		setListItemHeight(ld->list_listItemHeight);
+		setMultiSelect(ld->list_supportMultiSelect);
 
-		setSkinType(ld->skinTypeName);
-	}
-
-	Widget* List::factory(const Ogre::String& widgetName)
-	{
-		Widget* newWidget = new List(widgetName);
-		
-		newWidget->_createDescObject("ListDesc");
-
-		return newWidget;
+		setSkinType(ld->widget_skinTypeName);
 	}
 
 	void List::addChild(Widget* w)
@@ -109,54 +112,12 @@ namespace QuickGUI
 		mListEventHandlers[EVENT].push_back(function);
 	}
 
-	ListItem* List::addItem(ListItemDesc& d)
-	{
-		return addItem(-1,d);
-	}
-
-	ListItem* List::addItem(int index, ListItemDesc& d)
-	{
-		d.horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
-
-		ListItem* newListItem = dynamic_cast<ListItem*>(Widget::create(d.getWidgetClass(),d));
-
-		newListItem->setHeight(mDesc->listItemHeight);
-		newListItem->setWidth(mClientDimensions.size.width);
-
-		ContainerWidget::addChild(newListItem);
-
-		int counter = 0;
-		bool added = false;
-		for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
-		{
-			if(counter == index)
-			{
-				mListItems.insert(it,newListItem);
-				added = true;
-			}
-		}
-		// If index was invalid, add to end of list.
-		if(!added)
-			mListItems.push_back(newListItem);
-
-		// Set all positions of ListItems.
-		float y = 0;
-		for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
-		{
-			(*it)->setPosition(Point(0,y));
-
-			y += mDesc->listItemHeight;
-		}
-
-		updateItemNamesAndIndices();
-
-		return newListItem;
-	}
-
 	void List::clearItems()
 	{
+		mSelectedItems.clear();
+
 		for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
-			delete (*it);
+			OGRE_DELETE_T((*it),ListItem,Ogre::MEMCATEGORY_GENERAL);
 		mListItems.clear();
 
 		mChildren.clear();
@@ -170,6 +131,52 @@ namespace QuickGUI
 
 		WidgetEventArgs args(this);
 		fireListEvent(LIST_EVENT_SELECTION_CHANGED,args);
+	}
+
+	ListItem* List::createItem(ListItemDesc* d)
+	{
+		return createItem(-1,d);
+	}
+
+	ListItem* List::createItem(int index, ListItemDesc* d)
+	{
+		d->widget_horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
+
+		ListItem* newListItem = dynamic_cast<ListItem*>(Widget::create(d->getWidgetClass(),d));
+
+		newListItem->setHeight(mDesc->list_listItemHeight);
+		newListItem->setWidth(mClientDimensions.size.width);
+
+		ContainerWidget::addChild(newListItem);
+
+		int counter = 0;
+		bool added = false;
+		for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
+		{
+			if(counter == index)
+			{
+				mListItems.insert(it,newListItem);
+				added = true;
+			}
+
+			++counter;
+		}
+		// If index was invalid, add to end of list.
+		if(!added)
+			mListItems.push_back(newListItem);
+
+		// Set all positions of ListItems.
+		float y = 0;
+		for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
+		{
+			(*it)->setPosition(Point(0,y));
+
+			y += mDesc->list_listItemHeight;
+		}
+
+		updateItemNamesAndIndices();
+
+		return newListItem;
 	}
 
 	void List::deselectItem(unsigned int index)
@@ -206,6 +213,22 @@ namespace QuickGUI
 
 		WidgetEventArgs args(this);
 		fireListEvent(LIST_EVENT_SELECTION_CHANGED,args);
+	}
+
+	void List::destroyItem(unsigned int index)
+	{
+		int count = 0;
+		for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
+		{
+			if(count == index)
+			{
+				OGRE_DELETE_T((*it),ListItem,Ogre::MEMCATEGORY_GENERAL);
+				mListItems.erase(it);
+			}
+		}
+
+		// Update names and Indices
+		updateItemNamesAndIndices();
 	}
 
 	bool List::fireListEvent(ListEvent e, EventArgs& args)
@@ -245,12 +268,12 @@ namespace QuickGUI
 
 	float List::getListItemHeight()
 	{
-		return mDesc->listItemHeight;
+		return mDesc->list_listItemHeight;
 	}
 
 	bool List::getMultiSelect()
 	{
-		return mDesc->supportMultiSelect;
+		return mDesc->list_supportMultiSelect;
 	}
 
 	int List::getNumberOfItems()
@@ -275,29 +298,13 @@ namespace QuickGUI
 	{
 		Brush* brush = Brush::getSingletonPtr();
 
-		brush->setFilterMode(mDesc->brushFilterMode);
+		brush->setFilterMode(mDesc->widget_brushFilterMode);
 
 		SkinType* st = mSkinType;
-		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
-			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+		if(!mWidgetDesc->widget_enabled && mWidgetDesc->widget_disabledSkinType != "")
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->widget_disabledSkinType);
 
-		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
-	}
-
-	void List::removeItem(unsigned int index)
-	{
-		int count = 0;
-		for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
-		{
-			if(count == index)
-			{
-				delete (*it);
-				mListItems.erase(it);
-			}
-		}
-
-		// Update names and Indices
-		updateItemNamesAndIndices();
+		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size),st->getSkinElement(mSkinElementName));
 	}
 
 	void List::selectItem(const MouseEventArgs& mea)
@@ -305,7 +312,7 @@ namespace QuickGUI
 		ListItem* li = dynamic_cast<ListItem*>(mea.widget);
 
 		// Single Selection
-		if(!mDesc->supportMultiSelect)
+		if(!mDesc->list_supportMultiSelect)
 		{
 			bool selected = li->getSelected();
 
@@ -484,20 +491,20 @@ namespace QuickGUI
 
 	void List::setMultiSelect(bool MultiSelect)
 	{
-		mDesc->supportMultiSelect = MultiSelect;
+		mDesc->list_supportMultiSelect = MultiSelect;
 	}
 
 	void List::setListItemHeight(float height)
 	{
-		mDesc->listItemHeight = height;
+		mDesc->list_listItemHeight = height;
 
 		float y = 0;
 		for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
 		{
 			(*it)->setPosition(Point(0,y));
-			(*it)->setHeight(mDesc->listItemHeight);
+			(*it)->setHeight(mDesc->list_listItemHeight);
 
-			y += mDesc->listItemHeight;
+			y += mDesc->list_listItemHeight;
 		}
 	}
 
@@ -509,7 +516,7 @@ namespace QuickGUI
 		for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
 		{
 			(*it)->setIndex(counter);
-			(*it)->mWidgetDesc->name = ListName + Ogre::StringConverter::toString(counter);
+			(*it)->mWidgetDesc->widget_name = ListName + Ogre::StringConverter::toString(counter);
 
 			++counter;
 		}

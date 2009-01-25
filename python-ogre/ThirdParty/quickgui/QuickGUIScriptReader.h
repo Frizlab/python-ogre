@@ -26,9 +26,8 @@ namespace QuickGUI
 	{
 	public:
 		friend class Root;
+		friend void _QuickGUIExport registerScriptReader();
 	public:
-		ScriptReader();
-		~ScriptReader();
 
 		static ScriptReader& getSingleton(void); 
 		static ScriptReader* getSingletonPtr(void);
@@ -63,6 +62,8 @@ namespace QuickGUI
 //		void parseScript(std::ifstream& stream, const Ogre::String& groupName);
 
 	protected:
+		ScriptReader();
+		virtual ~ScriptReader();
 		ScriptReader(ScriptReader const&);	// copy ctor is hidden
 		ScriptReader& operator=(ScriptReader const&);	// assign op is hidden
 

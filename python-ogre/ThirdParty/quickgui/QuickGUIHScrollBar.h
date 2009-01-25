@@ -12,18 +12,23 @@ namespace QuickGUI
 			public ComponentWidgetDesc
 	{
 	public:
-		HScrollBarDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		HScrollBarDesc(const Ogre::String& id);
+		virtual ~HScrollBarDesc() {}
+	public:
 
 		/// The amount the slider slides when an up/down button is clicked.
-		float buttonScrollPercent;
+		float hscrollbar_buttonScrollPercent;
 		/// The amount the slider slides when the bar is clicked.
-		float barScrollPercent;
+		float hscrollbar_barScrollPercent;
 
-		HScrollBarButtonLayout scrollBarButtonLayout;
+		HScrollBarButtonLayout hscrollbar_scrollBarButtonLayout;
 		/// Width of the slider in pixels.
-		float sliderWidth;
+		float hscrollbar_sliderWidth;
 		/// Position of the slider as a percentage. 0 is at the top, 100 is at the bottom. (as far down as it can go)
-		float sliderPercentage;
+		float hscrollbar_sliderPercentage;
 
 		/**
 		* Returns the class of Desc object this is.
@@ -34,8 +39,10 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getWidgetClass() { return "HScrollBar"; }
 
-		// Factory method
-		static WidgetDesc* factory() { return new HScrollBarDesc(); }
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
 
 		/**
 		* Outlines how the desc class is written to XML and read from XML.
@@ -57,8 +64,8 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
-		// Factory method
-		static Widget* factory(const Ogre::String& widgetName);
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -93,7 +100,7 @@ namespace QuickGUI
         */
 		template<typename T> void addScrollBarEventHandler(ScrollBarEvent EVENT, void (T::*function)(const EventArgs&), T* obj)
 		{
-			mScrollBarEventHandlers[EVENT].push_back(new EventHandlerPointer<T>(function,obj));
+			mScrollBarEventHandlers[EVENT].push_back(OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
 		}
 		void addScrollBarEventHandler(ScrollBarEvent EVENT, EventHandlerSlot* function);
 

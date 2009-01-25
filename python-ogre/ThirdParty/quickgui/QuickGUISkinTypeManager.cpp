@@ -5,6 +5,8 @@
 #include "QuickGUISerialReader.h"
 #include "QuickGUISerialWriter.h"
 
+#include "OgreLogManager.h"
+
 #include <list>
 
 template<> QuickGUI::SkinTypeManager* Ogre::Singleton<QuickGUI::SkinTypeManager>::ms_Singleton = 0;
@@ -22,7 +24,7 @@ namespace QuickGUI
 		for(std::map<Ogre::String, std::map<Ogre::String,SkinType*> >::iterator it1 = mSkinTypes.begin(); it1 != mSkinTypes.end(); ++it1)
 		{
 			for(std::map<Ogre::String,SkinType*>::iterator it2 = (*it1).second.begin(); it2 != (*it1).second.end(); ++it2)
-				delete (*it2).second;
+				OGRE_DELETE_T((*it2).second,SkinType,Ogre::MEMCATEGORY_GENERAL);
 		}
 	}
 
@@ -43,7 +45,7 @@ namespace QuickGUI
 			throw Exception(Exception::ERR_SKINNING,"SkinType already exists for class \"" + className + "\" and type \"" + typeName + "\"!","SkinTypeManager::addSkinType");
 
 		if(!SkinDefinitionManager::getSingleton().hasSkinDefinition(className))
-			throw Exception(Exception::ERR_SKINNING,"A SkinDefinition for class \"" + className + "\" does not exist.  It must be added before any SkinTypes can be added!","SkinTypeManager::addSkinType");
+			throw Exception(Exception::ERR_SKINNING,"A SkinClass definition for class \"" + className + "\" does not exist.  It must be added before any SkinTypes can be added!","SkinTypeManager::addSkinType");
 
 		if(!SkinDefinitionManager::getSingleton().getSkinDefinition(className)->validateSkinType(t))
 			throw Exception(Exception::ERR_SKINNING,"SkinType of class \"" + className + "\" and type \"" + typeName + "\" does not follow the SkinDefinition for class \"" + className + "\".","SkinTypeManager::addSkinType");
@@ -72,6 +74,10 @@ namespace QuickGUI
 
 	void SkinTypeManager::loadTypes()
 	{
+		Ogre::Log* defaultLog = Ogre::LogManager::getSingletonPtr()->getDefaultLog();
+		if(defaultLog != NULL)
+			defaultLog->logMessage("[QGUI] Loading SkinClass and SkinType definitions...");
+
 		SerialReader* sr = SerialReader::getSingletonPtr();
 		std::list<ScriptDefinition*> defList = ScriptReader::getSingleton().getDefinitions("SkinClass");
 
@@ -79,13 +85,20 @@ namespace QuickGUI
 		{
 			Ogre::String className = (*it)->getID();
 
+			if(defaultLog != NULL)
+				defaultLog->logMessage("[QGUI] SkinClass definition for class \"" + className + "\" Found.  Looking for SkinTypes...");
+
 			sr->begin("SkinClass",className);
 			
 			std::list<ScriptDefinition*> types = (*it)->getDefinitions();
 			for(std::list<ScriptDefinition*>::iterator typeItr = types.begin(); typeItr != types.end(); ++typeItr)
 			{
-				SkinType* newType = new SkinType(className,(*typeItr)->getID());
+				SkinType* newType = OGRE_NEW_T(SkinType,Ogre::MEMCATEGORY_GENERAL)(className,(*typeItr)->getID());
 				newType->serialize(SerialReader::getSingletonPtr());
+
+				if(defaultLog != NULL)
+					defaultLog->logMessage("[QGUI] Adding SkinType definition \"" + newType->getName() + "\"...");
+
 				addSkinType(className,(*typeItr)->getID(),newType);
 			}
 

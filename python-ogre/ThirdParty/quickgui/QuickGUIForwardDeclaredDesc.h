@@ -14,7 +14,12 @@ namespace QuickGUI
 			public ContainerWidgetDesc
 	{
 	public:
-		PanelDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		PanelDesc(const Ogre::String& id);
+		virtual ~PanelDesc() {}
+	public:
 
 		virtual Ogre::String getClass() { return "PanelDesc"; }
 		/**
@@ -22,8 +27,10 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getWidgetClass() { return "Panel"; }
 
-		// Factory method
-		static WidgetDesc* factory() { return new PanelDesc(); }
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
 
 		/**
 		* Outlines how the desc class is written to XML and read from XML.
@@ -35,16 +42,21 @@ namespace QuickGUI
 			public PanelDesc
 	{
 	public:
-		TabPageDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		TabPageDesc(const Ogre::String& id);
+		virtual ~TabPageDesc() {}
+	public:
 
 		/// Vertical alignment of text within this widget's client area.
-		VerticalTextAlignment verticalTextAlignment;
+		VerticalTextAlignment	tabpage_verticalTextAlignment;
 
 		/// Describes the Text used in this Label
 		TextDesc textDesc;
 
 		/// width in pixels of the front edge of the tab.
-		float tabFrontWidth;
+		float					tabpage_tabFrontWidth;
 
 		/**
 		* Returns the class of Desc object this is.
@@ -55,8 +67,10 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getWidgetClass() { return "TabPage"; }
 
-		// Factory method
-		static WidgetDesc* factory() { return new TabPageDesc(); }
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
 
 		/**
 		* Outlines how the desc class is written to XML and read from XML.
@@ -68,15 +82,20 @@ namespace QuickGUI
 			public ContainerWidgetDesc
 	{
 	public:
-		TabControlDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		TabControlDesc(const Ogre::String& id);
+		virtual ~TabControlDesc() {}
+	public:
 
-		int selectedTab;
+		int		tabcontrol_selectedTab;
 		/// Amount of overlap between Tabs
-		float tabOverlap;
+		float	tabcontrol_tabOverlap;
 		/// Pixel height of Tabs
-		float tabHeight;
+		float	tabcontrol_tabHeight;
 		/// Determines whether tabs can be reordered using click and drag
-		bool tabReordering;
+		bool	tabcontrol_tabReordering;
 
 		/**
 		* Returns the class of Desc object this is.
@@ -87,8 +106,10 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getWidgetClass() { return "TabControl"; }
 
-		// Factory method
-		static WidgetDesc* factory() { return new TabControlDesc(); }
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
 
 		/**
 		* Outlines how the desc class is written to XML and read from XML.

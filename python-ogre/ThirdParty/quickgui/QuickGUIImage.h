@@ -10,13 +10,18 @@ namespace QuickGUI
 			public WidgetDesc
 	{
 	public:
-		ImageDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		ImageDesc(const Ogre::String& id);
+		virtual ~ImageDesc() {}
+	public:
 
 		/// Name of the image file to display
-		Ogre::String imageName;
-		bool tileImage;
+		Ogre::String	image_imageName;
+		bool			image_tileImage;
 		/// Useful for applying render to texture (RTT) to Image
-		bool updateEveryFrame;
+		bool			image_updateEveryFrame;
 
 		/**
 		* Returns the class of Desc object this is.
@@ -27,8 +32,10 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getWidgetClass() { return "Image"; }
 
-		// Factory method
-		static WidgetDesc* factory() { return new ImageDesc(); }
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
 
 		/**
 		* Outlines how the desc class is written to XML and read from XML.
@@ -45,8 +52,8 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
-		// Factory method
-		static Widget* factory(const Ogre::String& widgetName);
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**

@@ -12,10 +12,10 @@ namespace QuickGUI
 	SkinType::~SkinType()
 	{
 		for(std::map<Ogre::String,SkinElement*>::iterator it = mSkinElements.begin(); it != mSkinElements.end(); ++it)
-			delete (*it).second;
+			OGRE_DELETE_T((*it).second,SkinElement,Ogre::MEMCATEGORY_GENERAL);
 
 		for(std::map<Ogre::String,ComponentType*>::iterator it = mComponentTypes.begin(); it != mComponentTypes.end(); ++it)
-			delete (*it).second;
+			OGRE_DELETE_T((*it).second,ComponentType,Ogre::MEMCATEGORY_GENERAL);
 	}
 
 	void SkinType::addComponentType(const Ogre::String& componentAlias, ComponentType* t)
@@ -79,7 +79,7 @@ namespace QuickGUI
 			std::list<ScriptDefinition*> defList = b->getCurrentDefinition()->getDefinitions("ComponentType");
 			for(std::list<ScriptDefinition*>::iterator it = defList.begin(); it != defList.end(); ++it)
 			{
-				ComponentType* newComponentType = new ComponentType((*it)->getID());
+				ComponentType* newComponentType = OGRE_NEW_T(ComponentType,Ogre::MEMCATEGORY_GENERAL)((*it)->getID());
 				newComponentType->serialize(b);
 				addComponentType((*it)->getID(),newComponentType);
 			}
@@ -87,7 +87,7 @@ namespace QuickGUI
 			defList = b->getCurrentDefinition()->getDefinitions("SkinElement");
 			for(std::list<ScriptDefinition*>::iterator it = defList.begin(); it != defList.end(); ++it)
 			{
-				SkinElement* newSkinElement = new SkinElement((*it)->getID());
+				SkinElement* newSkinElement = OGRE_NEW_T(SkinElement,Ogre::MEMCATEGORY_GENERAL)((*it)->getID());
 				newSkinElement->serialize(b);
 				addSkinElement((*it)->getID(),newSkinElement);
 			}			

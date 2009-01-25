@@ -86,6 +86,10 @@ namespace QuickGUI
 		*/
 		Ogre::ColourValue getColour();
 		/**
+		* Gets filtering mode used for drawing.
+		*/
+		BrushFilterMode getFilterMode();
+		/**
 		* Gets the target currently being drawn to.
 		*/
 		Ogre::Viewport* getRenderTarget();
@@ -160,6 +164,9 @@ namespace QuickGUI
 		Ogre::SceneManager* mSceneManager;
 		Ogre::Viewport* mDefaultViewport;
 
+		// Used to set the pass before rendering.
+		Ogre::Pass* mEmptyPass;
+
 		Ogre::Viewport* mRenderTarget;
 		float mTargetWidth;
 		float mTargetHeight;
@@ -191,6 +198,8 @@ namespace QuickGUI
 	private:
 		Brush();
 		~Brush();
+
+		BrushFilterMode mFilterMode;
 
 		void _createVertexBuffer();
 		/*

@@ -6,7 +6,6 @@
 #include "QuickGUIMouseCursor.h"
 #include "QuickGUISheet.h"
 #include "QuickGUITimerManager.h"
-#include "QuickGUIWidgetFactoryManager.h"
 
 #include "OgreRenderQueueListener.h"
 #include "OgreSceneManager.h"
@@ -157,6 +156,7 @@ namespace QuickGUI
 		// Default Sheet created and used on GUIManager construction
 		Sheet* mDefaultSheet;
 		Sheet* mActiveSheet;
+
 		Widget*	mWidgetUnderMouseCursor;
 		// Used to send mouse wheel events to
 		Widget* mLastClickedWidget;

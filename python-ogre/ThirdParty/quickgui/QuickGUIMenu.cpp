@@ -3,42 +3,53 @@
 #include "QuickGUIManager.h"
 #include "QuickGUIMenuPanel.h"
 #include "QuickGUIScriptReader.h"
-#include "QuickGUIWidgetDescFactoryManager.h"
 #include "QuickGUISkinDefinitionManager.h"
+#include "QuickGUIFactoryManager.h"
 
 namespace QuickGUI
 {
 	const Ogre::String Menu::DEFAULT = "default";
 	const Ogre::String Menu::DOWN = "down";
 	const Ogre::String Menu::OVER = "over";
+	const Ogre::String Menu::MENUPANEL = "menupanel";
 
 	void Menu::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("Menu");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("Menu");
 		d->defineSkinElement(DEFAULT);
 		d->defineSkinElement(OVER);
 		d->defineSkinElement(DOWN);
+		d->defineComponent(MENUPANEL);
 		d->definitionComplete();
 
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("Menu",d);
 	}
 
-	MenuDesc::MenuDesc() :
-		MenuLabelDesc()
+	MenuDesc::MenuDesc(const Ogre::String& id) :
+		MenuLabelDesc(id)
 	{
+		resetToDefault();
+	}
+
+	void MenuDesc::resetToDefault()
+	{
+		MenuLabelDesc::resetToDefault();
+
 		menu = NULL;
-		menuWidth = 100;
-		subMenuOverlap = 2;
-		menuPanelSkinType = "default";
+		menu_itemHeight = 25;
+		menu_maxMenuHeight = 0;
+		menu_menuWidth = 100;
+		menu_subMenuOverlap = 2;
 	}
 
 	void MenuDesc::serialize(SerialBase* b)
 	{
 		MenuLabelDesc::serialize(b);
 
-		b->IO("MenuWidth",&menuWidth);
-		b->IO("MenuPanelSkinType",&menuPanelSkinType);
-		b->IO("SubMenuOverlap",&subMenuOverlap);
+		b->IO("ItemHeight",&menu_itemHeight);
+		b->IO("MaxMenuHeight",&menu_maxMenuHeight);
+		b->IO("MenuWidth",&menu_menuWidth);
+		b->IO("SubMenuOverlap",&menu_subMenuOverlap);
 	}
 
 	Menu::Menu(const Ogre::String& name) :
@@ -50,7 +61,25 @@ namespace QuickGUI
 
 	Menu::~Menu()
 	{
-		delete mMenuPanel;
+		if(!mWidgetDesc->sheet->mDeleting)
+		{
+			if(mWidgetDesc->sheet != NULL)
+				mWidgetDesc->sheet->removeWindow(mMenuPanel);
+
+			OGRE_DELETE_T(mMenuPanel,MenuPanel,Ogre::MEMCATEGORY_GENERAL);
+		}
+	}
+
+	float Menu::_getNextAvailableYPosition()
+	{
+		float maxY = 0;
+		for(std::vector<MenuItem*>::iterator it = mMenuItems.begin(); it != mMenuItems.end(); ++it)
+		{
+			if(((*it)->getPosition().y + (*it)->getSize().height) > maxY)
+				maxY = ((*it)->getPosition().y + (*it)->getSize().height);
+		}
+
+		return maxY;
 	}
 
 	void Menu::_initialize(WidgetDesc* d)
@@ -59,24 +88,32 @@ namespace QuickGUI
 
 		mDesc = dynamic_cast<MenuDesc*>(mWidgetDesc);
 
-		setSkinType(d->skinTypeName);
-
 		MenuDesc* md = dynamic_cast<MenuDesc*>(d);
 
-		mDesc->menuWidth = md->menuWidth;
+		// Copy over all properties from desc param
+		mDesc->menu_maxMenuHeight = md->menu_maxMenuHeight;
+		mDesc->menu_menuWidth = md->menu_menuWidth;
+		mDesc->menu_subMenuOverlap = md->menu_subMenuOverlap;
 
 		// Create our Menu List Window
-		MenuPanelDesc pd;
-		pd.name = mWidgetDesc->name + ".MenuPanel";
-		pd.dimensions = Rect(0,0,mDesc->menuWidth,1);
-		pd.visible = false;
-		pd.skinTypeName = md->menuPanelSkinType;
-		mMenuPanel = dynamic_cast<MenuPanel*>(Widget::create("MenuPanel",pd));
+		MenuPanelDesc* lpd = dynamic_cast<MenuPanelDesc*>(FactoryManager::getSingleton().getWidgetDescFactory()->getInstance("DefaultMenuPanelDesc"));
+		lpd->resetToDefault();
+		lpd->widget_name = mWidgetDesc->widget_name + ".MenuPanel";
+		lpd->widget_dimensions = Rect(0,0,mDesc->menu_menuWidth,1);
+		lpd->widget_visible = false;
+		lpd->menupanel_owner = this;
+		lpd->menupanel_maxHeight = mDesc->menu_maxMenuHeight;
+		mMenuPanel = dynamic_cast<MenuPanel*>(Widget::create("MenuPanel",lpd));
+
+		setSkinType(d->widget_skinTypeName);
 	}
 
 	void Menu::_setGUIManager(GUIManager* gm)
 	{
 		MenuLabel::_setGUIManager(gm);
+
+		if(mMenuPanel != NULL)
+			mMenuPanel->_setGUIManager(gm);
 
 		for(std::vector<MenuItem*>::iterator it = mMenuItems.begin(); it != mMenuItems.end(); ++it)
 			(*it)->_setGUIManager(gm);
@@ -96,13 +133,14 @@ namespace QuickGUI
 			(*it)->_setSheet(sheet);
 	}
 
-	Widget* Menu::factory(const Ogre::String& widgetName)
+	void Menu::_updateItemPositions()
 	{
-		Widget* newWidget = new Menu(widgetName);
-
-		newWidget->_createDescObject("MenuDesc");
-
-		return newWidget;
+		int y = 0;
+		for(std::vector<MenuItem*>::iterator it = mMenuItems.begin(); it != mMenuItems.end(); ++it)
+		{
+			(*it)->setPosition(Point(0,y));
+			y += mDesc->menu_itemHeight;
+		}
 	}
 
 	Ogre::String Menu::getClass()
@@ -127,7 +165,7 @@ namespace QuickGUI
 		mMenuItems.push_back(i);
 		
 		// Add to the windows list of MenuItems
-		mMenuPanel->addMenuItem(i);
+		mMenuPanel->addWidget(i);
 
 		if(w->getClass() == "Menu")
 			mSubMenus.push_back(dynamic_cast<Menu*>(w));
@@ -150,20 +188,21 @@ namespace QuickGUI
 		}
 	}
 
-	MenuItem* Menu::createMenuItem(const Ogre::String& className, MenuItemDesc& d)
+	MenuItem* Menu::createMenuItem(const Ogre::String& className, MenuItemDesc* d)
 	{
 		if(className == "Menu")
-			return createSubMenu(dynamic_cast<MenuDesc&>(d));
+			return createSubMenu(dynamic_cast<MenuDesc*>(d));
 
 		// Make sure new Menu will maintain link to owner ToolBar
-		d.toolBar = mDesc->toolBar;
+		d->toolBar = mDesc->toolBar;
 
 		// Make sure new Menu will maintain link to owner Menu
-		d.menu = this;
+		d->menu = this;
 
 		// Determine position of MenuItem
-		d.dimensions.position.y = mMenuPanel->getNextAvailableYPosition();
-		d.dimensions.size.width = mMenuPanel->getSize().width;
+		d->widget_dimensions.position.y = _getNextAvailableYPosition();
+		d->widget_dimensions.size.width = mMenuPanel->getClientDimensions().size.width;
+		d->widget_dimensions.size.height = mDesc->menu_itemHeight;
 		
 		MenuItem* newMenuItem = dynamic_cast<MenuItem*>(Widget::create(className,d));
 		addChild(newMenuItem);
@@ -171,19 +210,18 @@ namespace QuickGUI
 		return newMenuItem;
 	}
 
-	MenuLabel* Menu::createMenuLabel(MenuLabelDesc& d)
+	MenuLabel* Menu::createMenuLabel(MenuLabelDesc* d)
 	{
 		// Make sure new Menu will maintain link to owner ToolBar
-		d.toolBar = mDesc->toolBar;
+		d->toolBar = mDesc->toolBar;
 
 		// Make sure new Menu will maintain link to owner Menu
-		d.menu = this;
+		d->menu = this;
 
 		// Determine position of MenuItem
-		d.dimensions.position.y = mMenuPanel->getNextAvailableYPosition();
-		d.dimensions.size.width = mMenuPanel->getClientDimensions().size.width;
-		SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
-		d.dimensions.size.height = d.textDesc.getTextHeight() + se->getBorderThickness(BORDER_TOP) + se->getBorderThickness(BORDER_BOTTOM);
+		d->widget_dimensions.position.y = _getNextAvailableYPosition();
+		d->widget_dimensions.size.width = mMenuPanel->getClientDimensions().size.width;
+		d->widget_dimensions.size.height = mDesc->menu_itemHeight;
 
 		MenuLabel* newMenuLabel = dynamic_cast<MenuLabel*>(Widget::create("MenuLabel",d));
 		addChild(newMenuLabel);
@@ -191,19 +229,20 @@ namespace QuickGUI
 		return newMenuLabel;
 	}
 
-	Menu* Menu::createSubMenu(MenuDesc& d)
+	Menu* Menu::createSubMenu(MenuDesc* d)
 	{
 		// Make sure new Menu will maintain link to owner ToolBar
-		d.toolBar = mDesc->toolBar;
+		d->toolBar = mDesc->toolBar;
 
 		// Make sure new Menu will maintain link to owner Menu
-		d.menu = this;
+		d->menu = this;
+
+		d->widget_verticalAnchor = ANCHOR_VERTICAL_TOP;
 
 		// Determine position of Menu
-		d.dimensions.position.y = mMenuPanel->getNextAvailableYPosition();
-		d.dimensions.size.width = mMenuPanel->getClientDimensions().size.width;
-		SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
-		d.dimensions.size.height = d.textDesc.getTextHeight() + se->getBorderThickness(BORDER_TOP) + se->getBorderThickness(BORDER_BOTTOM);
+		d->widget_dimensions.position.y = _getNextAvailableYPosition();
+		d->widget_dimensions.size.width = mMenuPanel->getClientDimensions().size.width;
+		d->widget_dimensions.size.height = mDesc->menu_itemHeight;
 
 		Menu* newMenu = dynamic_cast<Menu*>(Widget::create("Menu",d));
 
@@ -227,7 +266,12 @@ namespace QuickGUI
 				return w;
 		}
 
-		return NULL;
+		return mMenuPanel->findWidget(name);
+	}
+
+	float Menu::getItemHeight()
+	{
+		return mDesc->menu_itemHeight;
 	}
 
 	int Menu::getNumberOfItems()
@@ -328,7 +372,7 @@ namespace QuickGUI
 		for(std::vector<Menu*>::iterator it = mSubMenus.begin(); it != mSubMenus.end(); ++it)
 			(*it)->closeMenu();
 
-		Point p = mDesc->dimensions.position;
+		Point p = mDesc->widget_dimensions.position;
 
 		if(mParentWidget->getClass() == "ToolBar")
 		{
@@ -339,7 +383,7 @@ namespace QuickGUI
 			if(tb->getOrientation() == TOOLBAR_ORIENTATION_HORIZONTAL)
 			{
 				// Position the MenuList above or below the MenuLabel - below is desired
-				if((getScreenPosition().y + mDesc->dimensions.size.height + mMenuPanel->getSize().height) > mMenuPanel->getSheet()->getSize().height)
+				if((getScreenPosition().y + mDesc->widget_dimensions.size.height + mMenuPanel->getSize().height) > mMenuPanel->getSheet()->getSize().height)
 					p.y = mParentWidget->getScreenPosition().y - mMenuPanel->getSize().height;
 				else
 					p.y = mParentWidget->getScreenPosition().y + mParentWidget->getSize().height;
@@ -347,7 +391,7 @@ namespace QuickGUI
 			else // orientation is TOOLBAR_ORIENTATION_VERTICAL
 			{
 				// Position the MenuList to the left or right of the MenuLabel - right is desired
-				if((getScreenPosition().x + mDesc->dimensions.size.width + mMenuPanel->getSize().width) > mMenuPanel->getSheet()->getSize().width)
+				if((getScreenPosition().x + mDesc->widget_dimensions.size.width + mMenuPanel->getSize().width) > mMenuPanel->getSheet()->getSize().width)
 					p.x = mParentWidget->getScreenPosition().x - mMenuPanel->getSize().width;
 				else
 					p.x = mParentWidget->getScreenPosition().x + mParentWidget->getSize().width;
@@ -361,9 +405,9 @@ namespace QuickGUI
 
 			// Position the MenuList to the left or right of the MenuLabel - right is desired
 			if((getScreenPosition().x + getSize().width + mMenuPanel->getSize().width) > mMenuPanel->getSheet()->getSize().width)
-				p.x = mParentWidget->getScreenPosition().x - mMenuPanel->getSize().width + mDesc->subMenuOverlap;
+				p.x = mParentWidget->getScreenPosition().x - mMenuPanel->getSize().width + mDesc->menu_subMenuOverlap;
 			else
-				p.x = mParentWidget->getScreenPosition().x + mParentWidget->getSize().width - mDesc->subMenuOverlap;
+				p.x = mParentWidget->getScreenPosition().x + mParentWidget->getSize().width - mDesc->menu_subMenuOverlap;
 
 			p.y = getScreenPosition().y - mMenuPanel->mSkinType->getSkinElement(mMenuPanel->mSkinElementName)->getBorderThickness(BORDER_TOP);
 		}
@@ -409,7 +453,7 @@ namespace QuickGUI
 			for(std::list<ScriptDefinition*>::iterator it = defList.begin(); it != defList.end(); ++it)
 			{
 				// Create Empty Widget, supplying class name and widget name from script
-				Widget* newWidget = WidgetFactoryManager::getSingleton().createWidget((*it)->getType(),(*it)->getID());
+				Widget* newWidget = FactoryManager::getSingleton().getWidgetFactory()->createInstance((*it)->getType(),(*it)->getID());
 
 				// Populate Desc object from Script Text, and initialize widget
 				newWidget->serialize(b);
@@ -429,5 +473,23 @@ namespace QuickGUI
 		b->end();
 
 		b->end();
+	}
+
+	void Menu::setItemHeight(float height)
+	{
+		mDesc->menu_itemHeight = height;
+
+		_updateItemPositions();
+	}
+
+	void Menu::setSkinType(const Ogre::String type)
+	{
+		Widget::setSkinType(type);
+
+		for(std::map<Ogre::String,Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
+			(*it).second->setSkinType(mSkinType->getComponentType((*it).first)->typeName);
+
+		if(mMenuPanel != NULL)
+			mMenuPanel->setSkinType(mSkinType->getComponentType(MENUPANEL)->typeName);
 	}
 }

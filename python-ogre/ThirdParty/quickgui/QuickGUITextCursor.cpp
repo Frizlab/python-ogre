@@ -1,5 +1,6 @@
 #include "QuickGUITextCursor.h"
 #include "QuickGUISkinDefinitionManager.h"
+#include "QuickGUIWidget.h"
 
 namespace QuickGUI
 {
@@ -7,14 +8,15 @@ namespace QuickGUI
 
 	void TextCursor::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("TextCursor");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("TextCursor");
 		d->defineSkinElement(BACKGROUND);
 		d->definitionComplete();
 
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("TextCursor",d);
 	}
 
-	TextCursor::TextCursor() :
+	TextCursor::TextCursor(Widget* owner) :
+		mOwner(owner),
 		mSkinElement(NULL),
 		mSkinType(NULL)
 	{
@@ -54,11 +56,22 @@ namespace QuickGUI
 
 		// Set Render Target to Viewport
 		brush->setRenderTarget(NULL);
+
+		// Save current clipping region
+		Rect clipRegion = brush->getClipRegion();
+
+		// Set clip region
+		Rect newClipRegion = Rect(mOwner->getScreenPosition(),mOwner->getDimensions().size);
+		brush->setClipRegion(newClipRegion);
+
 		// Draw SkinElement
 		brush->drawSkinElement(mDimensions,mSkinElement);
 
 		// Restore Render Target
 		brush->setRenderTarget(currentRenderTarget);
+
+		// Restore Clip Region
+		brush->setClipRegion(clipRegion);
 	}
 
 	void TextCursor::setHeight(float heightInPixels)

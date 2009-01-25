@@ -14,7 +14,7 @@ namespace QuickGUI
 		Ogre::Root::getSingleton().removeFrameListener(this);
 
 		for(std::vector<Timer*>::iterator it = mTimers.begin(); it != mTimers.end(); ++it)
-			delete (*it);
+			OGRE_DELETE_T((*it),Timer,Ogre::MEMCATEGORY_GENERAL);
 	}
 
 	TimerManager* TimerManager::getSingletonPtr(void) 
@@ -38,7 +38,7 @@ namespace QuickGUI
 
 	Timer* TimerManager::createTimer(TimerDesc& d)
 	{
-		Timer* newTimer = new Timer(d);
+		Timer* newTimer = OGRE_NEW_T(Timer,Ogre::MEMCATEGORY_GENERAL)(d);
 		mTimers.push_back(newTimer);
 		return newTimer;
 	}
@@ -51,7 +51,7 @@ namespace QuickGUI
 			{
 				Timer* t = (*it);
 				mTimers.erase(it);
-				delete t;
+				OGRE_DELETE_T(t,Timer,Ogre::MEMCATEGORY_GENERAL);
 				return;
 			}
 		}

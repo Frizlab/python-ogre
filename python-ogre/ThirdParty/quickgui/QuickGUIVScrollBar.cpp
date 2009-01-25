@@ -1,6 +1,7 @@
 #include "QuickGUIVScrollBar.h"
 #include "QuickGUISkinDefinitionManager.h"
 #include "QuickGUIManager.h"
+#include "QuickGUIFactoryManager.h"
 
 namespace QuickGUI
 {
@@ -13,7 +14,7 @@ namespace QuickGUI
 
 	void VScrollBar::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("VScrollBar");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("VScrollBar");
 		d->defineSkinElement(BAR);
 		d->defineComponent(UP1);
 		d->defineComponent(UP2);
@@ -25,25 +26,32 @@ namespace QuickGUI
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("VScrollBar",d);
 	}
 
-	VScrollBarDesc::VScrollBarDesc() :
-		ComponentWidgetDesc()
+	VScrollBarDesc::VScrollBarDesc(const Ogre::String& id) :
+		ComponentWidgetDesc(id)
 	{
-		buttonScrollPercent = 0.1;
-		barScrollPercent = 0.2;
-		scrollBarButtonLayout = VSCROLL_BAR_BUTTON_LAYOUT_OPPOSITE;
-		sliderHeight = 15;
-		sliderPercentage = 0;
+		resetToDefault();
+	}
+
+	void VScrollBarDesc::resetToDefault()
+	{
+		ComponentWidgetDesc::resetToDefault();
+
+		vscrollbar_buttonScrollPercent = 0.1;
+		vscrollbar_barScrollPercent = 0.2;
+		vscrollbar_scrollBarButtonLayout = VSCROLL_BAR_BUTTON_LAYOUT_OPPOSITE;
+		vscrollbar_sliderHeight = 15;
+		vscrollbar_sliderPercentage = 0;
 	}
 
 	void VScrollBarDesc::serialize(SerialBase* b)
 	{
 		ComponentWidgetDesc::serialize(b);
 
-		b->IO("ButtonScrollPercent",&buttonScrollPercent);
-		b->IO("BarScrollPercent",&barScrollPercent);
-		b->IO("ScrollBarButtonLayout",&scrollBarButtonLayout);
-		b->IO("SliderHeight",&sliderHeight);
-		b->IO("SliderPercentage",&sliderPercentage);
+		b->IO("ButtonScrollPercent",&vscrollbar_buttonScrollPercent);
+		b->IO("BarScrollPercent",&vscrollbar_barScrollPercent);
+		b->IO("ScrollBarButtonLayout",&vscrollbar_scrollBarButtonLayout);
+		b->IO("SliderHeight",&vscrollbar_sliderHeight);
+		b->IO("SliderPercentage",&vscrollbar_sliderPercentage);
 	}
 
 	VScrollBar::VScrollBar(const Ogre::String& name) :
@@ -60,6 +68,12 @@ namespace QuickGUI
 
 	VScrollBar::~VScrollBar()
 	{
+		// Clean up all user defined event handlers.
+		for(int index = 0; index < SCROLLBAR_EVENT_COUNT; ++index)
+		{
+			for(std::vector<EventHandlerSlot*>::iterator it = mScrollBarEventHandlers[index].begin(); it != mScrollBarEventHandlers[index].end(); ++it)
+				OGRE_DELETE_T((*it),EventHandlerSlot,Ogre::MEMCATEGORY_GENERAL);
+		}
 	}
 
 	void VScrollBar::_initialize(WidgetDesc* d)
@@ -70,37 +84,38 @@ namespace QuickGUI
 
 		VScrollBarDesc* vsd = dynamic_cast<VScrollBarDesc*>(d);
 
-		mDesc->barScrollPercent = vsd->barScrollPercent;
-		mDesc->buttonScrollPercent = vsd->buttonScrollPercent;
+		mDesc->vscrollbar_barScrollPercent = vsd->vscrollbar_barScrollPercent;
+		mDesc->vscrollbar_buttonScrollPercent = vsd->vscrollbar_buttonScrollPercent;
 
-		ButtonDesc bd;
-		bd.resizable = false;
-		bd.horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
-		bd.dimensions.size.width = mWidgetDesc->dimensions.size.width;
-		bd.dimensions.size.height = mWidgetDesc->dimensions.size.width;
+		ButtonDesc* bd = dynamic_cast<ButtonDesc*>(FactoryManager::getSingleton().getWidgetDescFactory()->getInstance("DefaultButtonDesc"));
+		bd->resetToDefault();
+		bd->widget_resizable = false;
+		bd->widget_horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
+		bd->widget_dimensions.size.width = mWidgetDesc->widget_dimensions.size.width;
+		bd->widget_dimensions.size.height = mWidgetDesc->widget_dimensions.size.width;
 
 		mButton_Up1 = dynamic_cast<Button*>(Widget::create("Button",bd));
 		mButton_Up1->addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&VScrollBar::onUpClicked,this);
 		addComponent(UP1,mButton_Up1);
 
-		bd.dimensions.position.y = 15;
+		bd->widget_dimensions.position.y = 15;
 		mButton_Down1 = dynamic_cast<Button*>(Widget::create("Button",bd));
 		mButton_Down1->addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&VScrollBar::onDownClicked,this);
 		addComponent(DOWN1,mButton_Down1);
 
-		bd.verticalAnchor = ANCHOR_VERTICAL_BOTTOM;
-		bd.dimensions.position.y = mWidgetDesc->dimensions.size.height - (2 * bd.dimensions.size.height);
+		bd->widget_verticalAnchor = ANCHOR_VERTICAL_BOTTOM;
+		bd->widget_dimensions.position.y = mWidgetDesc->widget_dimensions.size.height - (2 * bd->widget_dimensions.size.height);
 		mButton_Up2 = dynamic_cast<Button*>(Widget::create("Button",bd));
 		mButton_Up2->addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&VScrollBar::onUpClicked,this);
 		addComponent(UP2,mButton_Up2);
 
-		bd.dimensions.position.y = mWidgetDesc->dimensions.size.height - bd.dimensions.size.height;
+		bd->widget_dimensions.position.y = mWidgetDesc->widget_dimensions.size.height - bd->widget_dimensions.size.height;
 		mButton_Down2 = dynamic_cast<Button*>(Widget::create("Button",bd));
 		mButton_Down2->addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&VScrollBar::onDownClicked,this);
 		addComponent(DOWN2,mButton_Down2);
 
-		bd.dimensions.position.y = 30;
-		bd.dragable = true;
+		bd->widget_dimensions.position.y = 30;
+		bd->widget_dragable = true;
 		mButton_Slider = dynamic_cast<Button*>(Widget::create("Button",bd));
 		addComponent(SLIDER,mButton_Slider);
 
@@ -108,21 +123,32 @@ namespace QuickGUI
 		addWidgetEventHandler(WIDGET_EVENT_SIZE_CHANGED,&VScrollBar::onSizeChanged,this);
 		addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&VScrollBar::onBarClicked,this);
 
-		setButtonLayout(vsd->scrollBarButtonLayout);
-		setSkinType(vsd->skinTypeName);
-		setPercentage(vsd->sliderPercentage);
+		setButtonLayout(vsd->vscrollbar_scrollBarButtonLayout);
+		setSkinType(vsd->widget_skinTypeName);
+		setPercentage(vsd->vscrollbar_sliderPercentage);
 	}
 
 	void VScrollBar::_setPercentage(float percentage)
 	{
-		float pixelAmount = percentage * (mSliderBounds.y - mSliderBounds.x);
+		percentage = Ogre::Math::Floor(Ogre::Math::Ceil(percentage * 1000.0)) / 1000.0;
+
+		// if ScrollBar is live, update size before calculating max percentage
+		if(mLive)
+			mButton_Slider->setHeight( ((*mLiveValue1) / (*mLiveValue2)) * (mSliderBounds.y - mSliderBounds.x) );
+
+		// calculate the max percentage the slider can be set to.
+		float sliderHeight = mButton_Slider->getHeight();
+		float maxPercentage = (mSliderBounds.y - sliderHeight - mSliderBounds.x) / (mSliderBounds.y - mSliderBounds.x);
+		maxPercentage = Ogre::Math::Floor(Ogre::Math::Ceil(maxPercentage * 1000.0)) / 1000.0;
 
 		if(percentage <= 0)
-			mDesc->sliderPercentage = 0;
-		else if(percentage > ((mSliderBounds.y - mButton_Slider->getHeight() - mSliderBounds.x) / (mSliderBounds.y - mSliderBounds.x)))
-			mDesc->sliderPercentage = (mSliderBounds.y - mButton_Slider->getHeight() - mSliderBounds.x) / (mSliderBounds.y - mSliderBounds.x);
+			mDesc->vscrollbar_sliderPercentage = 0;
+		else if(percentage >= maxPercentage)
+			mDesc->vscrollbar_sliderPercentage = maxPercentage;
 		else
-			mDesc->sliderPercentage = percentage;
+			mDesc->vscrollbar_sliderPercentage = percentage;
+
+		mDesc->vscrollbar_sliderPercentage = Ogre::Math::Floor(Ogre::Math::Ceil(mDesc->vscrollbar_sliderPercentage * 1000.0)) / 1000.0;
 
 		_updateSlider();
 	}
@@ -132,7 +158,7 @@ namespace QuickGUI
 		if(mSkinType == NULL)
 		{
 			mSliderBounds.x = 0;
-			mSliderBounds.y = mWidgetDesc->dimensions.size.height;
+			mSliderBounds.y = mWidgetDesc->widget_dimensions.size.height;
 
 			mButton_Up1->setVisible(false);
 			mButton_Down1->setVisible(false);
@@ -143,7 +169,7 @@ namespace QuickGUI
 
 		SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
 
-		switch(mDesc->scrollBarButtonLayout)
+		switch(mDesc->vscrollbar_scrollBarButtonLayout)
 		{
 		case VSCROLL_BAR_BUTTON_LAYOUT_ADJACENT_DOWN:
 			mSliderBounds.x = se->getBorderThickness(BORDER_TOP);
@@ -156,7 +182,7 @@ namespace QuickGUI
 			break;
 		case VSCROLL_BAR_BUTTON_LAYOUT_ADJACENT_UP:
 			mSliderBounds.x = (mButton_Down1->getPosition().y + mButton_Down1->getHeight());
-			mSliderBounds.y = mWidgetDesc->dimensions.size.height - se->getBorderThickness(BORDER_BOTTOM);
+			mSliderBounds.y = mWidgetDesc->widget_dimensions.size.height - se->getBorderThickness(BORDER_BOTTOM);
 			
 			mButton_Up1->setVisible(true);
 			mButton_Down1->setVisible(true);
@@ -192,7 +218,7 @@ namespace QuickGUI
 			break;
 		case VSCROLL_BAR_BUTTON_LAYOUT_NONE:
 			mSliderBounds.x = se->getBorderThickness(BORDER_TOP);
-			mSliderBounds.y = mWidgetDesc->dimensions.size.height - se->getBorderThickness(BORDER_BOTTOM);
+			mSliderBounds.y = mWidgetDesc->widget_dimensions.size.height - se->getBorderThickness(BORDER_BOTTOM);
 
 			mButton_Up1->setVisible(false);
 			mButton_Down1->setVisible(false);
@@ -217,13 +243,13 @@ namespace QuickGUI
 		float xPos = 0;
 		if(mSkinType != NULL)
 			xPos = mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_LEFT);
-		mButton_Slider->setPosition(Point(xPos,mSliderBounds.x + ((mSliderBounds.y - mSliderBounds.x) * mDesc->sliderPercentage)));
+		mButton_Slider->setPosition(Point(xPos,mSliderBounds.x + ((mSliderBounds.y - mSliderBounds.x) * mDesc->vscrollbar_sliderPercentage)));
 
 		// if live, updates size
 		if(mLive)
 			mButton_Slider->setHeight( ((*mLiveValue1) / (*mLiveValue2)) * (mSliderBounds.y - mSliderBounds.x) );
 
-		mDesc->sliderHeight = mButton_Slider->getHeight();
+		mDesc->vscrollbar_sliderHeight = mButton_Slider->getHeight();
 
 		// determine if Slider is visible (if it can fit in bounds)
 		if((mSliderBounds.y - mSliderBounds.x) < mButton_Slider->getHeight())
@@ -254,15 +280,6 @@ namespace QuickGUI
 		_updateSlider();
 	}
 
-	Widget* VScrollBar::factory(const Ogre::String& widgetName)
-	{
-		Widget* newWidget = new VScrollBar(widgetName);
-
-		newWidget->_createDescObject("VScrollBarDesc");
-
-		return newWidget;
-	}
-
 	bool VScrollBar::fireScrollBarEvent(ScrollBarEvent e, EventArgs& args)
 	{
 		if(mScrollBarEventHandlers[e].empty())
@@ -278,17 +295,17 @@ namespace QuickGUI
 
 	float VScrollBar::getBarScrollPercent()
 	{
-		return mDesc->barScrollPercent;
+		return mDesc->vscrollbar_barScrollPercent;
 	}
 
 	VScrollBarButtonLayout VScrollBar::getButtonLayout()
 	{
-		return mDesc->scrollBarButtonLayout;
+		return mDesc->vscrollbar_scrollBarButtonLayout;
 	}
 
 	float VScrollBar::getButtonScrollPercent()
 	{
-		return mDesc->buttonScrollPercent;
+		return mDesc->vscrollbar_buttonScrollPercent;
 	}
 
 	Ogre::String VScrollBar::getClass()
@@ -298,7 +315,7 @@ namespace QuickGUI
 
 	float VScrollBar::getPercentage()
 	{
-		return mDesc->sliderPercentage;
+		return mDesc->vscrollbar_sliderPercentage;
 	}
 
 	float VScrollBar::getSliderHeightPercentage()
@@ -310,13 +327,13 @@ namespace QuickGUI
 	{
 		Brush* brush = Brush::getSingletonPtr();
 
-		brush->setFilterMode(mDesc->brushFilterMode);
+		brush->setFilterMode(mDesc->widget_brushFilterMode);
 
 		SkinType* st = mSkinType;
-		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
-			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+		if(!mWidgetDesc->widget_enabled && mWidgetDesc->widget_disabledSkinType != "")
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->widget_disabledSkinType);
 		
-		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
+		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size),st->getSkinElement(mSkinElementName));
 	}
 
 	void VScrollBar::onUpClicked(const EventArgs& args)
@@ -324,9 +341,9 @@ namespace QuickGUI
 		const MouseEventArgs& mea = dynamic_cast<const MouseEventArgs&>(args);
 
 		if(mea.button == MB_Left)
-			_setPercentage(mDesc->sliderPercentage - mDesc->buttonScrollPercent);
+			_setPercentage(mDesc->vscrollbar_sliderPercentage - mDesc->vscrollbar_buttonScrollPercent);
 		else
-			_setPercentage(mDesc->sliderPercentage + mDesc->buttonScrollPercent);
+			_setPercentage(mDesc->vscrollbar_sliderPercentage + mDesc->vscrollbar_buttonScrollPercent);
 	}
 
 	void VScrollBar::onDownClicked(const EventArgs& args)
@@ -334,9 +351,9 @@ namespace QuickGUI
 		const MouseEventArgs& mea = dynamic_cast<const MouseEventArgs&>(args);
 
 		if(mea.button == MB_Left)
-			_setPercentage(mDesc->sliderPercentage + mDesc->buttonScrollPercent);
+			_setPercentage(mDesc->vscrollbar_sliderPercentage + mDesc->vscrollbar_buttonScrollPercent);
 		else
-			_setPercentage(mDesc->sliderPercentage - mDesc->buttonScrollPercent);
+			_setPercentage(mDesc->vscrollbar_sliderPercentage - mDesc->vscrollbar_buttonScrollPercent);
 	}
 
 	void VScrollBar::onBarClicked(const EventArgs& args)
@@ -352,16 +369,16 @@ namespace QuickGUI
 		if(mea.button == MB_Left)
 		{
 			if(above)
-				_setPercentage(mDesc->sliderPercentage - mDesc->barScrollPercent);
+				_setPercentage(mDesc->vscrollbar_sliderPercentage - mDesc->vscrollbar_barScrollPercent);
 			else
-				_setPercentage(mDesc->sliderPercentage + mDesc->barScrollPercent);
+				_setPercentage(mDesc->vscrollbar_sliderPercentage + mDesc->vscrollbar_barScrollPercent);
 		}
 		else if(mea.button == MB_Right)
 		{
 			if(above)
-				_setPercentage(mDesc->sliderPercentage + mDesc->barScrollPercent);
+				_setPercentage(mDesc->vscrollbar_sliderPercentage + mDesc->vscrollbar_barScrollPercent);
 			else
-				_setPercentage(mDesc->sliderPercentage - mDesc->barScrollPercent);
+				_setPercentage(mDesc->vscrollbar_sliderPercentage - mDesc->vscrollbar_barScrollPercent);
 		}
 	}
 
@@ -378,7 +395,7 @@ namespace QuickGUI
 
 	void VScrollBar::scrollDown()
 	{
-		_setPercentage(mDesc->sliderPercentage + mDesc->buttonScrollPercent);
+		_setPercentage(mDesc->vscrollbar_sliderPercentage + mDesc->vscrollbar_buttonScrollPercent);
 	}
 
 	void VScrollBar::scrollToEnd()
@@ -388,17 +405,17 @@ namespace QuickGUI
 
 	void VScrollBar::scrollUp()
 	{
-		_setPercentage(mDesc->sliderPercentage - mDesc->buttonScrollPercent);
+		_setPercentage(mDesc->vscrollbar_sliderPercentage - mDesc->vscrollbar_buttonScrollPercent);
 	}
 
 	void VScrollBar::setBarScrollPercent(float percent)
 	{
-		mDesc->barScrollPercent = percent;
+		mDesc->vscrollbar_barScrollPercent = percent;
 	}
 
 	void VScrollBar::setButtonLayout(VScrollBarButtonLayout l)
 	{
-		mDesc->scrollBarButtonLayout = l;
+		mDesc->vscrollbar_scrollBarButtonLayout = l;
 
 		_updateButtons();
 		_updateSlider();
@@ -406,7 +423,7 @@ namespace QuickGUI
 
 	void VScrollBar::setButtonScrollPercent(float percent)
 	{
-		mDesc->buttonScrollPercent = percent;
+		mDesc->vscrollbar_buttonScrollPercent = percent;
 	}
 
 	void VScrollBar::setPercentage(float percentage)
@@ -421,19 +438,19 @@ namespace QuickGUI
 
 		mSkinType = SkinTypeManager::getSingleton().getSkinType(getClass(),type);
 
-		mWidgetDesc->skinTypeName = type;
+		mWidgetDesc->widget_skinTypeName = type;
 
 		SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
 
 		mClientDimensions.position.x = se->getBorderThickness(BORDER_LEFT);
 		mClientDimensions.position.y = se->getBorderThickness(BORDER_TOP);
-		mClientDimensions.size.width = mWidgetDesc->dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
-		mClientDimensions.size.height = mWidgetDesc->dimensions.size.height - (se->getBorderThickness(BORDER_TOP) + se->getBorderThickness(BORDER_BOTTOM));
+		mClientDimensions.size.width = mWidgetDesc->widget_dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
+		mClientDimensions.size.height = mWidgetDesc->widget_dimensions.size.height - (se->getBorderThickness(BORDER_TOP) + se->getBorderThickness(BORDER_BOTTOM));
 
 		redraw();
 
 		// Update button Sizes - same width and height for each, except slider, where only width is modified
-		float buttonThickness = mWidgetDesc->dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
+		float buttonThickness = mWidgetDesc->widget_dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
 		Size s(buttonThickness,buttonThickness);
 
 		mButton_Up1->setSize(s);
@@ -452,7 +469,7 @@ namespace QuickGUI
 		p.y += buttonThickness;
 		mButton_Down1->setPosition(p);
 
-		p.y = mWidgetDesc->dimensions.size.height - se->getBorderThickness(BORDER_BOTTOM) - buttonThickness - buttonThickness;
+		p.y = mWidgetDesc->widget_dimensions.size.height - se->getBorderThickness(BORDER_BOTTOM) - buttonThickness - buttonThickness;
 		mButton_Up2->setPosition(p);
 
 		p.y += buttonThickness;

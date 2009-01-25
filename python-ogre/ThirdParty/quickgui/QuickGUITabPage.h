@@ -37,8 +37,8 @@ namespace QuickGUI
 	public:
 		// TabControl sets the size of the TabPage, and position of the Tab
 		friend class TabControl;
-		// Factory method
-		static Widget* factory(const Ogre::String& widgetName);
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**

@@ -3,11 +3,12 @@
 #include "QuickGUISerialWriter.h"
 #include "QuickGUIWindow.h"
 #include "QuickGUISheet.h"
+#include "QuickGUIFactoryManager.h"
 
 namespace QuickGUI
 {
-	ComponentWidgetDesc::ComponentWidgetDesc() :
-		WidgetDesc()
+	ComponentWidgetDesc::ComponentWidgetDesc(const Ogre::String& id) :
+		WidgetDesc(id)
 	{
 	}
 
@@ -18,8 +19,9 @@ namespace QuickGUI
 
 	ComponentWidget::~ComponentWidget()
 	{
+		WidgetFactory<Widget>* widgetFactory = FactoryManager::getSingleton().getWidgetFactory();
 		for(std::map<Ogre::String,Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
-			delete (*it).second;
+			widgetFactory->destroyInstance((*it).second);
 	}
 
 	void ComponentWidget::_setGUIManager(GUIManager* gm)
@@ -41,9 +43,9 @@ namespace QuickGUI
 	void ComponentWidget::addComponent(const Ogre::String& alias, Widget* w)
 	{
 		if(mComponents.find(alias) != mComponents.end())
-			throw Exception(Exception::ERR_WIDGET_ALREADY_ADDED,"The widget \"" + mWidgetDesc->name + "\" already contains a Component using alias \"" + alias + "\"!","addComponent");
+			throw Exception(Exception::ERR_WIDGET_ALREADY_ADDED,"The widget \"" + mWidgetDesc->widget_name + "\" already contains a Component using alias \"" + alias + "\"!","addComponent");
 
-		w->mComponent = true;
+		w->mComponentOfAWidget = true;
 		mComponents[alias] = w;
 		w->setParent(this);
 		w->_setGUIManager(mWidgetDesc->guiManager);
@@ -53,18 +55,18 @@ namespace QuickGUI
 	void ComponentWidget::draw()
 	{
 		// check visibility
-		if( !mWidgetDesc->visible )
+		if( !mWidgetDesc->widget_visible )
 			return;
 
 		Brush* brush = Brush::getSingletonPtr();
 
 		// check and store clip region
 		Rect prevClipRegion = brush->getClipRegion();
-		if ( prevClipRegion.getIntersection(Rect(mTexturePosition,mWidgetDesc->dimensions.size)) == Rect::ZERO )
+		if ( prevClipRegion.getIntersection(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size)) == Rect::ZERO )
 			return;
 
 		// set clip region to dimensions
-		brush->setClipRegion(Rect(mTexturePosition,mWidgetDesc->dimensions.size).getIntersection(prevClipRegion));
+		brush->setClipRegion(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size).getIntersection(prevClipRegion));
 
 		// draw self
 		onDraw();
@@ -114,26 +116,26 @@ namespace QuickGUI
 
 	void ComponentWidget::setHeight(float pixelHeight)
 	{
-		float previousHeight = mWidgetDesc->dimensions.size.height;
+		float previousHeight = mWidgetDesc->widget_dimensions.size.height;
 
 		// Almost the same as Widget::setHeight, only we took out the firing of the event, and fired the event at the
 		// end of the function.
 		{
 			// Enforce max height
-			if((mWidgetDesc->maxSize.height > 0) && (pixelHeight > mWidgetDesc->maxSize.height))
-				pixelHeight = mWidgetDesc->maxSize.height;
+			if((mWidgetDesc->widget_maxSize.height > 0) && (pixelHeight > mWidgetDesc->widget_maxSize.height))
+				pixelHeight = mWidgetDesc->widget_maxSize.height;
 			// Enforce min height
-			else if((mWidgetDesc->minSize.height > 0) && (pixelHeight < mWidgetDesc->minSize.height))
-				pixelHeight = mWidgetDesc->minSize.height;
+			else if((mWidgetDesc->widget_minSize.height > 0) && (pixelHeight < mWidgetDesc->widget_minSize.height))
+				pixelHeight = mWidgetDesc->widget_minSize.height;
 
-			mWidgetDesc->dimensions.size.height = pixelHeight;
+			mWidgetDesc->widget_dimensions.size.height = pixelHeight;
 
 			redraw();
 
 			updateClientDimensions();
 		}
 
-		float difference = mWidgetDesc->dimensions.size.height - previousHeight;
+		float difference = mWidgetDesc->widget_dimensions.size.height - previousHeight;
 
 		for(std::map<Ogre::String,Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
 		{
@@ -143,7 +145,7 @@ namespace QuickGUI
 				{
 					// Center vertically
 					Point p = (*it).second->getPosition();
-					p.y = (mWidgetDesc->dimensions.size.height / 2.0) - ((*it).second->getHeight() / 2.0);
+					p.y = (mWidgetDesc->widget_dimensions.size.height / 2.0) - ((*it).second->getHeight() / 2.0);
 					(*it).second->setPosition(p);
 				}
 				break;
@@ -153,7 +155,7 @@ namespace QuickGUI
 					(*it).second->setHeight((*it).second->getHeight() + difference);
 					// Center vertically
 					Point p = (*it).second->getPosition();
-					p.y = (mWidgetDesc->dimensions.size.height / 2.0) - ((*it).second->getHeight() / 2.0);
+					p.y = (mWidgetDesc->widget_dimensions.size.height / 2.0) - ((*it).second->getHeight() / 2.0);
 					(*it).second->setPosition(p);
 				}
 				break;
@@ -191,27 +193,27 @@ namespace QuickGUI
 
 	void ComponentWidget::setSize(Size size)
 	{
-		Size previousSize = mWidgetDesc->dimensions.size;
+		Size previousSize = mWidgetDesc->widget_dimensions.size;
 
 		// Almost the same as Widget::setSize, only we took out the firing of the event, and fired the event at the
 		// end of the function.
 		{
 			// Enforce max width
-			if((mWidgetDesc->maxSize.width > 0) && (size.width > mWidgetDesc->maxSize.width))
-				size.width = mWidgetDesc->maxSize.width;
+			if((mWidgetDesc->widget_maxSize.width > 0) && (size.width > mWidgetDesc->widget_maxSize.width))
+				size.width = mWidgetDesc->widget_maxSize.width;
 			// Enforce min width
-			else if((mWidgetDesc->minSize.width > 0) && (size.width < mWidgetDesc->minSize.width))
-				size.width = mWidgetDesc->minSize.width;
+			else if((mWidgetDesc->widget_minSize.width > 0) && (size.width < mWidgetDesc->widget_minSize.width))
+				size.width = mWidgetDesc->widget_minSize.width;
 
 			// Enforce min height
-			if((mWidgetDesc->maxSize.height > 0) && (size.height > mWidgetDesc->maxSize.height))
-				size.height = mWidgetDesc->maxSize.height;
+			if((mWidgetDesc->widget_maxSize.height > 0) && (size.height > mWidgetDesc->widget_maxSize.height))
+				size.height = mWidgetDesc->widget_maxSize.height;
 			// Enforce min width
-			else if((mWidgetDesc->minSize.height > 0) && (size.height < mWidgetDesc->minSize.height))
-				size.height = mWidgetDesc->minSize.height;
+			else if((mWidgetDesc->widget_minSize.height > 0) && (size.height < mWidgetDesc->widget_minSize.height))
+				size.height = mWidgetDesc->widget_minSize.height;
 
 			// Update size
-			mWidgetDesc->dimensions.size = size;
+			mWidgetDesc->widget_dimensions.size = size;
 
 			updateClientDimensions();
 
@@ -219,7 +221,7 @@ namespace QuickGUI
 		}
 
 		// Get difference.  A larger size indicates a positive difference
-		Size difference = mWidgetDesc->dimensions.size - previousSize;
+		Size difference = mWidgetDesc->widget_dimensions.size - previousSize;
 
 		for(std::map<Ogre::String,Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
 		{
@@ -229,7 +231,7 @@ namespace QuickGUI
 				{
 					// Center vertically
 					Point p = (*it).second->getPosition();
-					p.x = (mWidgetDesc->dimensions.size.width / 2.0) - ((*it).second->getWidth() / 2.0);
+					p.x = (mWidgetDesc->widget_dimensions.size.width / 2.0) - ((*it).second->getWidth() / 2.0);
 					(*it).second->setPosition(p);
 				}
 				break;
@@ -239,7 +241,7 @@ namespace QuickGUI
 					(*it).second->setWidth((*it).second->getWidth() + difference.width);
 					// Center vertically
 					Point p = (*it).second->getPosition();
-					p.x = (mWidgetDesc->dimensions.size.width / 2.0) - ((*it).second->getWidth() / 2.0);
+					p.x = (mWidgetDesc->widget_dimensions.size.width / 2.0) - ((*it).second->getWidth() / 2.0);
 					(*it).second->setPosition(p);
 				}
 				break;
@@ -265,7 +267,7 @@ namespace QuickGUI
 				{
 					// Center vertically
 					Point p = (*it).second->getPosition();
-					p.y = (mWidgetDesc->dimensions.size.height / 2.0) - ((*it).second->getHeight() / 2.0);
+					p.y = (mWidgetDesc->widget_dimensions.size.height / 2.0) - ((*it).second->getHeight() / 2.0);
 					(*it).second->setPosition(p);
 				}
 				break;
@@ -275,7 +277,7 @@ namespace QuickGUI
 					(*it).second->setHeight((*it).second->getHeight() + difference.height);
 					// Center vertically
 					Point p = (*it).second->getPosition();
-					p.y = (mWidgetDesc->dimensions.size.height / 2.0) - ((*it).second->getHeight() / 2.0);
+					p.y = (mWidgetDesc->widget_dimensions.size.height / 2.0) - ((*it).second->getHeight() / 2.0);
 					(*it).second->setPosition(p);
 				}
 				break;
@@ -310,26 +312,26 @@ namespace QuickGUI
 
 	void ComponentWidget::setWidth(float pixelWidth)
 	{
-		float previousWidth = mWidgetDesc->dimensions.size.width;
+		float previousWidth = mWidgetDesc->widget_dimensions.size.width;
 
 		// Almost the same as Widget::setWidth, only we took out the firing of the event, and fired the event at the
 		// end of the function.
 		{
 			// Enforce max width
-			if((mWidgetDesc->maxSize.width > 0) && (pixelWidth > mWidgetDesc->maxSize.width))
-				pixelWidth = mWidgetDesc->maxSize.width;
+			if((mWidgetDesc->widget_maxSize.width > 0) && (pixelWidth > mWidgetDesc->widget_maxSize.width))
+				pixelWidth = mWidgetDesc->widget_maxSize.width;
 			// Enforce min width
-			else if((mWidgetDesc->minSize.width > 0) && (pixelWidth < mWidgetDesc->minSize.width))
-				pixelWidth = mWidgetDesc->minSize.width;
+			else if((mWidgetDesc->widget_minSize.width > 0) && (pixelWidth < mWidgetDesc->widget_minSize.width))
+				pixelWidth = mWidgetDesc->widget_minSize.width;
 
-			mWidgetDesc->dimensions.size.width = pixelWidth;
+			mWidgetDesc->widget_dimensions.size.width = pixelWidth;
 
 			redraw();
 
 			updateClientDimensions();
 		}
 
-		float difference = mWidgetDesc->dimensions.size.width - previousWidth;
+		float difference = mWidgetDesc->widget_dimensions.size.width - previousWidth;
 
 		for(std::map<Ogre::String,Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
 		{
@@ -339,7 +341,7 @@ namespace QuickGUI
 				{
 					// Center vertically
 					Point p = (*it).second->getPosition();
-					p.x = (mWidgetDesc->dimensions.size.width / 2.0) - ((*it).second->getWidth() / 2.0);
+					p.x = (mWidgetDesc->widget_dimensions.size.width / 2.0) - ((*it).second->getWidth() / 2.0);
 					(*it).second->setPosition(p);
 				}
 				break;
@@ -349,7 +351,7 @@ namespace QuickGUI
 					(*it).second->setWidth((*it).second->getWidth() + difference);
 					// Center vertically
 					Point p = (*it).second->getPosition();
-					p.x = (mWidgetDesc->dimensions.size.width / 2.0) - ((*it).second->getWidth() / 2.0);
+					p.x = (mWidgetDesc->widget_dimensions.size.width / 2.0) - ((*it).second->getWidth() / 2.0);
 					(*it).second->setPosition(p);
 				}
 				break;

@@ -61,7 +61,7 @@ namespace QuickGUI
         */
 		template<typename T> void addCursorEventHandler(MouseCursorEvent EVENT, void (T::*function)(const EventArgs&), T* obj)
 		{
-			mEventHandlers[EVENT].push_back(new EventHandlerPointer<T>(function,obj));
+			mEventHandlers[EVENT].push_back(OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
 		}
 		void addCursorEventHandler(MouseCursorEvent EVENT, EventHandlerSlot* function);
 

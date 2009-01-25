@@ -12,7 +12,12 @@ namespace QuickGUI
 			public ToolBarItemDesc
 	{
 	public:
-		MenuItemDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+//	protected:
+		MenuItemDesc(const Ogre::String& id);
+		virtual ~MenuItemDesc() {}
+	public:
 
 		Menu* menu;
 

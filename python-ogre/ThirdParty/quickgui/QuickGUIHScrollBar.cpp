@@ -1,6 +1,7 @@
 #include "QuickGUIHScrollBar.h"
 #include "QuickGUISkinDefinitionManager.h"
 #include "QuickGUIManager.h"
+#include "QuickGUIFactoryManager.h"
 
 namespace QuickGUI
 {
@@ -13,7 +14,7 @@ namespace QuickGUI
 
 	void HScrollBar::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("HScrollBar");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("HScrollBar");
 		d->defineSkinElement(BAR);
 		d->defineComponent(LEFT1);
 		d->defineComponent(LEFT2);
@@ -25,25 +26,32 @@ namespace QuickGUI
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("HScrollBar",d);
 	}
 
-	HScrollBarDesc::HScrollBarDesc() :
-		ComponentWidgetDesc()
+	HScrollBarDesc::HScrollBarDesc(const Ogre::String& id) :
+		ComponentWidgetDesc(id)
 	{
-		buttonScrollPercent = 0.1;
-		barScrollPercent = 0.2;
-		scrollBarButtonLayout = HSCROLL_BAR_BUTTON_LAYOUT_OPPOSITE;
-		sliderWidth = 15;
-		sliderPercentage = 0;
+		resetToDefault();
+	}
+
+	void HScrollBarDesc::resetToDefault()
+	{
+		ComponentWidgetDesc::resetToDefault();
+
+		hscrollbar_buttonScrollPercent = 0.1;
+		hscrollbar_barScrollPercent = 0.2;
+		hscrollbar_scrollBarButtonLayout = HSCROLL_BAR_BUTTON_LAYOUT_OPPOSITE;
+		hscrollbar_sliderWidth = 15;
+		hscrollbar_sliderPercentage = 0;
 	}
 
 	void HScrollBarDesc::serialize(SerialBase* b)
 	{
 		ComponentWidgetDesc::serialize(b);
 
-		b->IO("ButtonScrollPercent",&buttonScrollPercent);
-		b->IO("BarScrollPercent",&barScrollPercent);
-		b->IO("ScrollBarButtonLayout",&scrollBarButtonLayout);
-		b->IO("SliderWidth",&sliderWidth);
-		b->IO("SliderPercentage",&sliderPercentage);
+		b->IO("ButtonScrollPercent",&hscrollbar_buttonScrollPercent);
+		b->IO("BarScrollPercent",&hscrollbar_barScrollPercent);
+		b->IO("ScrollBarButtonLayout",&hscrollbar_scrollBarButtonLayout);
+		b->IO("SliderWidth",&hscrollbar_sliderWidth);
+		b->IO("SliderPercentage",&hscrollbar_sliderPercentage);
 	}
 
 	HScrollBar::HScrollBar(const Ogre::String& name) :
@@ -60,6 +68,12 @@ namespace QuickGUI
 
 	HScrollBar::~HScrollBar()
 	{
+		// Clean up all user defined event handlers.
+		for(int index = 0; index < SCROLLBAR_EVENT_COUNT; ++index)
+		{
+			for(std::vector<EventHandlerSlot*>::iterator it = mScrollBarEventHandlers[index].begin(); it != mScrollBarEventHandlers[index].end(); ++it)
+				OGRE_DELETE_T((*it),EventHandlerSlot,Ogre::MEMCATEGORY_GENERAL);
+		}
 	}
 
 	void HScrollBar::_initialize(WidgetDesc* d)
@@ -70,38 +84,39 @@ namespace QuickGUI
 
 		HScrollBarDesc* hsd = dynamic_cast<HScrollBarDesc*>(d);
 
-		mDesc->barScrollPercent = hsd->barScrollPercent;
-		mDesc->buttonScrollPercent = hsd->buttonScrollPercent;
+		mDesc->hscrollbar_barScrollPercent = hsd->hscrollbar_barScrollPercent;
+		mDesc->hscrollbar_buttonScrollPercent = hsd->hscrollbar_buttonScrollPercent;
 
-		ButtonDesc bd;
-		bd.resizable = false;
-		bd.verticalAnchor = ANCHOR_VERTICAL_TOP_BOTTOM;
-		bd.dimensions.size.width = mWidgetDesc->dimensions.size.height;
-		bd.dimensions.size.height = mWidgetDesc->dimensions.size.height;
+		ButtonDesc* bd = dynamic_cast<ButtonDesc*>(FactoryManager::getSingleton().getWidgetDescFactory()->getInstance("DefaultButtonDesc"));
+		bd->resetToDefault();
+		bd->widget_resizable = false;
+		bd->widget_verticalAnchor = ANCHOR_VERTICAL_TOP_BOTTOM;
+		bd->widget_dimensions.size.width = mWidgetDesc->widget_dimensions.size.height;
+		bd->widget_dimensions.size.height = mWidgetDesc->widget_dimensions.size.height;
 
 		mButton_Left1 = dynamic_cast<Button*>(Widget::create("Button",bd));
 		mButton_Left1->addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&HScrollBar::onLeftClicked,this);
 		addComponent(LEFT1,mButton_Left1);
 
-		bd.dimensions.position.x = 15;
+		bd->widget_dimensions.position.x = 15;
 		mButton_Right1 = dynamic_cast<Button*>(Widget::create("Button",bd));
 		mButton_Right1->addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&HScrollBar::onRightClicked,this);
 		addComponent(RIGHT1,mButton_Right1);
 
-		bd.horizontalAnchor = ANCHOR_HORIZONTAL_RIGHT;
-		bd.dimensions.position.x = mWidgetDesc->dimensions.size.width - (2 * bd.dimensions.size.width);
+		bd->widget_horizontalAnchor = ANCHOR_HORIZONTAL_RIGHT;
+		bd->widget_dimensions.position.x = mWidgetDesc->widget_dimensions.size.width - (2 * bd->widget_dimensions.size.width);
 		mButton_Left2 = dynamic_cast<Button*>(Widget::create("Button",bd));
 		mButton_Left2->addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&HScrollBar::onLeftClicked,this);
 		addComponent(LEFT2,mButton_Left2);
 
-		bd.dimensions.position.x = mWidgetDesc->dimensions.size.width - bd.dimensions.size.width;
+		bd->widget_dimensions.position.x = mWidgetDesc->widget_dimensions.size.width - bd->widget_dimensions.size.width;
 		mButton_Right2 = dynamic_cast<Button*>(Widget::create("Button",bd));
 		mButton_Right2->addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&HScrollBar::onRightClicked,this);
 		addComponent(RIGHT2,mButton_Right2);
 
-		bd.horizontalAnchor = ANCHOR_HORIZONTAL_LEFT;
-		bd.dimensions.position.x = 30;
-		bd.dragable = true;
+		bd->widget_horizontalAnchor = ANCHOR_HORIZONTAL_LEFT;
+		bd->widget_dimensions.position.x = 30;
+		bd->widget_dragable = true;
 		mButton_Slider = dynamic_cast<Button*>(Widget::create("Button",bd));
 		addComponent(SLIDER,mButton_Slider);
 
@@ -109,21 +124,32 @@ namespace QuickGUI
 		addWidgetEventHandler(WIDGET_EVENT_SIZE_CHANGED,&HScrollBar::onSizeChanged,this);
 		addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&HScrollBar::onBarClicked,this);
 
-		setButtonLayout(hsd->scrollBarButtonLayout);
-		setSkinType(hsd->skinTypeName);
-		setPercentage(hsd->sliderPercentage);
+		setButtonLayout(hsd->hscrollbar_scrollBarButtonLayout);
+		setSkinType(hsd->widget_skinTypeName);
+		setPercentage(hsd->hscrollbar_sliderPercentage);
 	}
 
 	void HScrollBar::_setPercentage(float percentage)
 	{
-		float pixelAmount = percentage * (mSliderBounds.y - mSliderBounds.x);
+		percentage = Ogre::Math::Floor(Ogre::Math::Ceil(percentage * 1000.0)) / 1000.0;
+
+		// if ScrollBar is live, update size before calculating max percentage
+		if(mLive)
+			mButton_Slider->setWidth( ((*mLiveValue1) / (*mLiveValue2)) * (mSliderBounds.y - mSliderBounds.x) );
+
+		// calculate the max percentage the slider can be set to.
+		float sliderWidth = mButton_Slider->getWidth();
+		float maxPercentage = (mSliderBounds.y - sliderWidth - mSliderBounds.x) / (mSliderBounds.y - mSliderBounds.x);
+		maxPercentage = Ogre::Math::Floor(Ogre::Math::Ceil(maxPercentage * 1000.0)) / 1000.0;
 
 		if(percentage <= 0)
-			mDesc->sliderPercentage = 0;
-		else if(percentage > ((mSliderBounds.y - mButton_Slider->getWidth() - mSliderBounds.x) / (mSliderBounds.y - mSliderBounds.x)))
-			mDesc->sliderPercentage = (mSliderBounds.y - mButton_Slider->getWidth() - mSliderBounds.x) / (mSliderBounds.y - mSliderBounds.x);
+			mDesc->hscrollbar_sliderPercentage = 0;
+		else if(percentage > maxPercentage)
+			mDesc->hscrollbar_sliderPercentage = maxPercentage;
 		else
-			mDesc->sliderPercentage = percentage;
+			mDesc->hscrollbar_sliderPercentage = percentage;
+
+		mDesc->hscrollbar_sliderPercentage = Ogre::Math::Floor(Ogre::Math::Ceil(mDesc->hscrollbar_sliderPercentage * 1000.0)) / 1000.0;
 
 		_updateSlider();
 	}
@@ -133,7 +159,7 @@ namespace QuickGUI
 		if(mSkinType == NULL)
 		{
 			mSliderBounds.x = 0;
-			mSliderBounds.y = mWidgetDesc->dimensions.size.width;
+			mSliderBounds.y = mWidgetDesc->widget_dimensions.size.width;
 
 			mButton_Left1->setVisible(false);
 			mButton_Right1->setVisible(false);
@@ -144,7 +170,7 @@ namespace QuickGUI
 
 		SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
 
-		switch(mDesc->scrollBarButtonLayout)
+		switch(mDesc->hscrollbar_scrollBarButtonLayout)
 		{
 		case HSCROLL_BAR_BUTTON_LAYOUT_ADJACENT_RIGHT:
 			mSliderBounds.x = se->getBorderThickness(BORDER_LEFT);
@@ -157,7 +183,7 @@ namespace QuickGUI
 			break;
 		case HSCROLL_BAR_BUTTON_LAYOUT_ADJACENT_LEFT:
 			mSliderBounds.x = (mButton_Right1->getPosition().x + mButton_Right1->getWidth());
-			mSliderBounds.y = mWidgetDesc->dimensions.size.width - se->getBorderThickness(BORDER_RIGHT);
+			mSliderBounds.y = mWidgetDesc->widget_dimensions.size.width - se->getBorderThickness(BORDER_RIGHT);
 			
 			mButton_Left1->setVisible(true);
 			mButton_Right1->setVisible(true);
@@ -193,7 +219,7 @@ namespace QuickGUI
 			break;
 		case VSCROLL_BAR_BUTTON_LAYOUT_NONE:
 			mSliderBounds.x = se->getBorderThickness(BORDER_LEFT);
-			mSliderBounds.y = mWidgetDesc->dimensions.size.width - se->getBorderThickness(BORDER_RIGHT);
+			mSliderBounds.y = mWidgetDesc->widget_dimensions.size.width - se->getBorderThickness(BORDER_RIGHT);
 
 			mButton_Left1->setVisible(false);
 			mButton_Right1->setVisible(false);
@@ -218,13 +244,13 @@ namespace QuickGUI
 		float yPos = 0;
 		if(mSkinType != NULL)
 			yPos = mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_TOP);
-		mButton_Slider->setPosition(Point(mSliderBounds.x + ((mSliderBounds.y - mSliderBounds.x) * mDesc->sliderPercentage),yPos));
+		mButton_Slider->setPosition(Point(mSliderBounds.x + ((mSliderBounds.y - mSliderBounds.x) * mDesc->hscrollbar_sliderPercentage),yPos));
 
 		// if live, updates size
 		if(mLive)
 			mButton_Slider->setWidth( ((*mLiveValue1) / (*mLiveValue2)) * (mSliderBounds.y - mSliderBounds.x) );
 
-		mDesc->sliderWidth = mButton_Slider->getWidth();
+		mDesc->hscrollbar_sliderWidth = mButton_Slider->getWidth();
 
 		// determine if Slider is visible (if it can fit in bounds)
 		if((mSliderBounds.y - mSliderBounds.x) < mButton_Slider->getWidth())
@@ -255,15 +281,6 @@ namespace QuickGUI
 		_updateSlider();
 	}
 
-	Widget* HScrollBar::factory(const Ogre::String& widgetName)
-	{
-		Widget* newWidget = new HScrollBar(widgetName);
-
-		newWidget->_createDescObject("HScrollBarDesc");
-
-		return newWidget;
-	}
-
 	bool HScrollBar::fireScrollBarEvent(ScrollBarEvent e, EventArgs& args)
 	{
 		if(mScrollBarEventHandlers[e].empty())
@@ -279,17 +296,17 @@ namespace QuickGUI
 
 	float HScrollBar::getBarScrollPercent()
 	{
-		return mDesc->barScrollPercent;
+		return mDesc->hscrollbar_barScrollPercent;
 	}
 
 	HScrollBarButtonLayout HScrollBar::getButtonLayout()
 	{
-		return mDesc->scrollBarButtonLayout;
+		return mDesc->hscrollbar_scrollBarButtonLayout;
 	}
 
 	float HScrollBar::getButtonScrollPercent()
 	{
-		return mDesc->buttonScrollPercent;
+		return mDesc->hscrollbar_buttonScrollPercent;
 	}
 
 	Ogre::String HScrollBar::getClass()
@@ -299,7 +316,7 @@ namespace QuickGUI
 
 	float HScrollBar::getPercentage()
 	{
-		return mDesc->sliderPercentage;
+		return mDesc->hscrollbar_sliderPercentage;
 	}
 
 	float HScrollBar::getSliderWidthPercentage()
@@ -311,14 +328,14 @@ namespace QuickGUI
 	{
 		Brush* brush = Brush::getSingletonPtr();
 
-		brush->setFilterMode(mDesc->brushFilterMode);
+		brush->setFilterMode(mDesc->widget_brushFilterMode);
 
 		SkinType* st = mSkinType;
-		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
-			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+		if(!mWidgetDesc->widget_enabled && mWidgetDesc->widget_disabledSkinType != "")
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->widget_disabledSkinType);
 		
 		mSkinElementName = BAR;
-		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
+		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size),st->getSkinElement(mSkinElementName));
 	}
 
 	void HScrollBar::onLeftClicked(const EventArgs& args)
@@ -326,9 +343,9 @@ namespace QuickGUI
 		const MouseEventArgs& mea = dynamic_cast<const MouseEventArgs&>(args);
 
 		if(mea.button == MB_Left)
-			_setPercentage(mDesc->sliderPercentage - mDesc->buttonScrollPercent);
+			_setPercentage(mDesc->hscrollbar_sliderPercentage - mDesc->hscrollbar_buttonScrollPercent);
 		else
-			_setPercentage(mDesc->sliderPercentage + mDesc->buttonScrollPercent);
+			_setPercentage(mDesc->hscrollbar_sliderPercentage + mDesc->hscrollbar_buttonScrollPercent);
 	}
 
 	void HScrollBar::onRightClicked(const EventArgs& args)
@@ -336,9 +353,9 @@ namespace QuickGUI
 		const MouseEventArgs& mea = dynamic_cast<const MouseEventArgs&>(args);
 
 		if(mea.button == MB_Left)
-			_setPercentage(mDesc->sliderPercentage + mDesc->buttonScrollPercent);
+			_setPercentage(mDesc->hscrollbar_sliderPercentage + mDesc->hscrollbar_buttonScrollPercent);
 		else
-			_setPercentage(mDesc->sliderPercentage - mDesc->buttonScrollPercent);
+			_setPercentage(mDesc->hscrollbar_sliderPercentage - mDesc->hscrollbar_buttonScrollPercent);
 	}
 
 	void HScrollBar::onBarClicked(const EventArgs& args)
@@ -354,16 +371,16 @@ namespace QuickGUI
 		if(mea.button == MB_Left)
 		{
 			if(left)
-				_setPercentage(mDesc->sliderPercentage - mDesc->barScrollPercent);
+				_setPercentage(mDesc->hscrollbar_sliderPercentage - mDesc->hscrollbar_barScrollPercent);
 			else
-				_setPercentage(mDesc->sliderPercentage + mDesc->barScrollPercent);
+				_setPercentage(mDesc->hscrollbar_sliderPercentage + mDesc->hscrollbar_barScrollPercent);
 		}
 		else if(mea.button == MB_Right)
 		{
 			if(left)
-				_setPercentage(mDesc->sliderPercentage + mDesc->barScrollPercent);
+				_setPercentage(mDesc->hscrollbar_sliderPercentage + mDesc->hscrollbar_barScrollPercent);
 			else
-				_setPercentage(mDesc->sliderPercentage - mDesc->barScrollPercent);
+				_setPercentage(mDesc->hscrollbar_sliderPercentage - mDesc->hscrollbar_barScrollPercent);
 		}
 	}
 
@@ -380,12 +397,12 @@ namespace QuickGUI
 
 	void HScrollBar::setBarScrollPercent(float percent)
 	{
-		mDesc->barScrollPercent = percent;
+		mDesc->hscrollbar_barScrollPercent = percent;
 	}
 
 	void HScrollBar::setButtonLayout(HScrollBarButtonLayout l)
 	{
-		mDesc->scrollBarButtonLayout = l;
+		mDesc->hscrollbar_scrollBarButtonLayout = l;
 
 		_updateButtons();
 		_updateSlider();
@@ -393,7 +410,7 @@ namespace QuickGUI
 
 	void HScrollBar::setButtonScrollPercent(float percent)
 	{
-		mDesc->buttonScrollPercent = percent;
+		mDesc->hscrollbar_buttonScrollPercent = percent;
 	}
 
 	void HScrollBar::setPercentage(float percentage)
@@ -408,19 +425,19 @@ namespace QuickGUI
 
 		mSkinType = SkinTypeManager::getSingleton().getSkinType(getClass(),type);
 
-		mWidgetDesc->skinTypeName = type;
+		mWidgetDesc->widget_skinTypeName = type;
 
 		SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
 
 		mClientDimensions.position.x = se->getBorderThickness(BORDER_LEFT);
 		mClientDimensions.position.y = se->getBorderThickness(BORDER_TOP);
-		mClientDimensions.size.width = mWidgetDesc->dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
-		mClientDimensions.size.height = mWidgetDesc->dimensions.size.height - (se->getBorderThickness(BORDER_TOP) + se->getBorderThickness(BORDER_BOTTOM));
+		mClientDimensions.size.width = mWidgetDesc->widget_dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
+		mClientDimensions.size.height = mWidgetDesc->widget_dimensions.size.height - (se->getBorderThickness(BORDER_TOP) + se->getBorderThickness(BORDER_BOTTOM));
 
 		redraw();
 
 		// Update button Sizes - same width and height for each, except slider, where only height is modified
-		float buttonThickness = mWidgetDesc->dimensions.size.height - (se->getBorderThickness(BORDER_TOP) + se->getBorderThickness(BORDER_BOTTOM));
+		float buttonThickness = mWidgetDesc->widget_dimensions.size.height - (se->getBorderThickness(BORDER_TOP) + se->getBorderThickness(BORDER_BOTTOM));
 		Size s(buttonThickness,buttonThickness);
 
 		mButton_Left1->setSize(s);
@@ -439,7 +456,7 @@ namespace QuickGUI
 		p.x += buttonThickness;
 		mButton_Right1->setPosition(p);
 
-		p.x = mWidgetDesc->dimensions.size.width - se->getBorderThickness(BORDER_RIGHT) - buttonThickness - buttonThickness;
+		p.x = mWidgetDesc->widget_dimensions.size.width - se->getBorderThickness(BORDER_RIGHT) - buttonThickness - buttonThickness;
 		mButton_Left2->setPosition(p);
 
 		p.x += buttonThickness;
@@ -456,7 +473,7 @@ namespace QuickGUI
 
 	void HScrollBar::scrollLeft()
 	{
-		_setPercentage(mDesc->sliderPercentage - mDesc->buttonScrollPercent);
+		_setPercentage(mDesc->hscrollbar_sliderPercentage - mDesc->hscrollbar_buttonScrollPercent);
 	}
 
 	void HScrollBar::scrollToEnd()
@@ -466,7 +483,7 @@ namespace QuickGUI
 
 	void HScrollBar::scrollRight()
 	{
-		_setPercentage(mDesc->sliderPercentage + mDesc->buttonScrollPercent);
+		_setPercentage(mDesc->hscrollbar_sliderPercentage + mDesc->hscrollbar_buttonScrollPercent);
 	}
 
 	void HScrollBar::setSliderWidth(float width)

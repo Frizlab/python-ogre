@@ -8,30 +8,37 @@ namespace QuickGUI
 
 	void Image::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("Image");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("Image");
 		d->defineSkinElement(BACKGROUND);
 		d->definitionComplete();
 
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("Image",d);
 	}
 
-	ImageDesc::ImageDesc() :
-		WidgetDesc()
+	ImageDesc::ImageDesc(const Ogre::String& id) :
+		WidgetDesc(id)
 	{
-		transparencyPicking = false;
+		resetToDefault();
+	}
 
-		imageName = "";
-		tileImage = false;
-		updateEveryFrame = false;
+	void ImageDesc::resetToDefault()
+	{
+		WidgetDesc::resetToDefault();
+
+		widget_transparencyPicking = false;
+
+		image_imageName = "";
+		image_tileImage = false;
+		image_updateEveryFrame = false;
 	}
 
 	void ImageDesc::serialize(SerialBase* b)
 	{
 		WidgetDesc::serialize(b);
 
-		b->IO("ImageName",&imageName);
-		b->IO("TileImage",&tileImage);
-		b->IO("UpdateEveryFrame",&updateEveryFrame);
+		b->IO("ImageName",&image_imageName);
+		b->IO("TileImage",&image_tileImage);
+		b->IO("UpdateEveryFrame",&image_updateEveryFrame);
 	}
 
 	Image::Image(const Ogre::String& name) :
@@ -43,11 +50,13 @@ namespace QuickGUI
 
 	Image::~Image()
 	{
+		if(mUpdateTimer != NULL)
+			TimerManager::getSingleton().destroyTimer(mUpdateTimer);
 	}
 
 	void Image::_initialize(WidgetDesc* d)
 	{
-		d->transparencyPicking = false;
+		d->widget_transparencyPicking = false;
 
 		Widget::_initialize(d);
 
@@ -55,19 +64,10 @@ namespace QuickGUI
 
 		ImageDesc* id = dynamic_cast<ImageDesc*>(d);
 
-		setSkinType(id->skinTypeName);
-		setImage(id->imageName);
-		setTileImage(id->tileImage);
-		setUpdateEveryFrame(id->updateEveryFrame);
-	}
-
-	Widget* Image::factory(const Ogre::String& widgetName)
-	{
-		Widget* newWidget = new Image(widgetName);
-
-		newWidget->_createDescObject("ImageDesc");
-
-		return newWidget;
+		setSkinType(id->widget_skinTypeName);
+		setImage(id->image_imageName);
+		setTileImage(id->image_tileImage);
+		setUpdateEveryFrame(id->image_updateEveryFrame);
 	}
 
 	Ogre::String Image::getClass()
@@ -77,33 +77,33 @@ namespace QuickGUI
 
 	Ogre::String Image::getImage()
 	{
-		return mDesc->imageName;
+		return mDesc->image_imageName;
 	}
 
 	bool Image::getTileImage()
 	{
-		return mDesc->tileImage;
+		return mDesc->image_tileImage;
 	}
 
 	bool Image::getUpdateEveryFrame()
 	{
-		return mDesc->updateEveryFrame;
+		return mDesc->image_updateEveryFrame;
 	}
 
 	void Image::onDraw()
 	{
 		Brush* brush = Brush::getSingletonPtr();
 
-		brush->setFilterMode(mDesc->brushFilterMode);
+		brush->setFilterMode(mDesc->widget_brushFilterMode);
 
 		SkinType* st = mSkinType;
-		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
-			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+		if(!mWidgetDesc->widget_enabled && mWidgetDesc->widget_disabledSkinType != "")
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->widget_disabledSkinType);
 
 		mSkinElementName = BACKGROUND;
-		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
+		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size),st->getSkinElement(mSkinElementName));
 
-		if(mDesc->imageName != "")
+		if(mDesc->image_imageName != "")
 		{
 			Ogre::ColourValue prevColor = brush->getColour();
 			Rect prevClipRegion = brush->getClipRegion();
@@ -113,8 +113,8 @@ namespace QuickGUI
 
 			brush->setClipRegion(prevClipRegion.getIntersection(clipRegion));
 
-			brush->setTexture(mDesc->imageName);
-			if(mDesc->tileImage)
+			brush->setTexture(mDesc->image_imageName);
+			if(mDesc->image_tileImage)
 				brush->drawTiledRectangle(prevClipRegion.getIntersection(clipRegion),UVRect(0,0,1,1));
 			else
 				brush->drawRectangle(prevClipRegion.getIntersection(clipRegion),UVRect(0,0,1,1));
@@ -126,15 +126,15 @@ namespace QuickGUI
 
 	void Image::setImage(const Ogre::String& name)
 	{
-		mDesc->imageName = name;
+		mDesc->image_imageName = name;
 
-		if(mDesc->imageName != "")
+		if(mDesc->image_imageName != "")
 		{
 			// If texture not loaded, load it!
-			if(!Ogre::TextureManager::getSingleton().resourceExists(mDesc->imageName))
+			if(!Ogre::TextureManager::getSingleton().resourceExists(mDesc->image_imageName))
 			{
 				Ogre::Image i;
-				i.load(mDesc->imageName,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+				i.load(mDesc->image_imageName,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
 			}
 		}
 
@@ -143,7 +143,7 @@ namespace QuickGUI
 
 	void Image::setTileImage(bool tile)
 	{
-		mDesc->tileImage = tile;
+		mDesc->image_tileImage = tile;
 
 		redraw();
 	}
@@ -155,11 +155,11 @@ namespace QuickGUI
 
 	void Image::setUpdateEveryFrame(bool update)
 	{
-		if(mDesc->updateEveryFrame == update)
+		if(mDesc->image_updateEveryFrame == update)
 			return;
 
-		mDesc->updateEveryFrame = update;
-		if(mDesc->updateEveryFrame)
+		mDesc->image_updateEveryFrame = update;
+		if(mDesc->image_updateEveryFrame)
 		{
 			TimerDesc d;
 			d.repeat = true;

@@ -3,10 +3,26 @@
 
 namespace QuickGUI
 {
-	ToolBarItemDesc::ToolBarItemDesc() :
-		ContainerWidgetDesc()
+	ToolBarItemDesc::ToolBarItemDesc(const Ogre::String& id) :
+		ContainerWidgetDesc(id)
 	{
-		supportScrollBars = false;
+		resetToDefault();
+	}
+
+	void ToolBarItemDesc::resetToDefault()
+	{
+		ContainerWidgetDesc::resetToDefault();
+
+		toolbaritem_length = 50;
+
+		containerwidget_supportScrollBars = false;
+	}
+
+	void ToolBarItemDesc::serialize(SerialBase* b)
+	{
+		ContainerWidgetDesc::serialize(b);
+
+		b->IO("Length",&toolbaritem_length);
 	}
 
 	ToolBarItem::ToolBarItem(const Ogre::String& name) :

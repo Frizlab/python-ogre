@@ -7,15 +7,15 @@ namespace QuickGUI
 
 	void ModalWindow::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("ModalWindow");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("ModalWindow");
 		d->defineSkinElement(BACKGROUND);
 		d->definitionComplete();
 
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("ModalWindow",d);
 	}
 
-	ModalWindowDesc::ModalWindowDesc() :
-		WindowDesc()
+	ModalWindowDesc::ModalWindowDesc(const Ogre::String& id) :
+		WindowDesc(id)
 	{
 	}
 
@@ -33,16 +33,7 @@ namespace QuickGUI
 	{
 		Window::_initialize(d);
 
-		setSkinType(d->skinTypeName);
-	}
-
-	Widget* ModalWindow::factory(const Ogre::String& widgetName)
-	{
-		Widget* newWidget = new ModalWindow(widgetName);
-
-		newWidget->_createDescObject("ModalWindowDesc");
-
-		return newWidget;
+		setSkinType(d->widget_skinTypeName);
 	}
 
 	Ogre::String ModalWindow::getClass()

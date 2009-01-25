@@ -4,7 +4,6 @@
 #include "QuickGUIWidget.h"
 #include "QuickGUIComponentWidget.h"
 #include "QuickGUIContainerWidget.h"
-#include "QuickGUIWidgetDescFactoryManager.h"
 #include "QuickGUISheet.h"
 
 template<> QuickGUI::SerialReader* Ogre::Singleton<QuickGUI::SerialReader>::ms_Singleton = 0;
@@ -69,6 +68,20 @@ namespace QuickGUI
 			(*member) = BRUSHFILTER_LINEAR;
 		else
 			(*member) = StringConverter::parseBrushFilterMode(sv[0]);
+	}
+
+	void SerialReader::IO(const Ogre::String& propertyName, ConsoleLayout* member)
+	{
+		if(mCurrentDefinition == NULL)
+			throw Exception(Exception::ERR_SERIALIZATION,"SerialReader has not been correctly setup to retrieve properties. (Missing call to SerialReader::begin?)","SerialReader::IO");
+
+		DefinitionProperty* prop = mCurrentDefinition->getProperty(propertyName);
+		Ogre::StringVector sv = prop->getValues();
+
+		if(sv.empty())
+			(*member) = CONSOLE_LAYOUT_TEXT_INPUT_BOTTOM;
+		else
+			(*member) = StringConverter::parseConsoleLayout(sv[0]);
 	}
 
 	void SerialReader::IO(const Ogre::String& propertyName, int* member)
@@ -173,7 +186,17 @@ namespace QuickGUI
 		if(sv.empty())
 			(*member) = "";
 		else
-			(*member) = sv[0];
+		{
+			Ogre::String s = sv[0];
+			int count = 1;
+			while(count < static_cast<int>(sv.size()))
+			{
+				s += " " + sv[count];
+				++count;
+			}
+			
+			(*member) = s;
+		}
 	}
 
 	void SerialReader::IO(const Ogre::String& propertyName, bool* member)

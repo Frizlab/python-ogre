@@ -9,7 +9,7 @@ namespace QuickGUI
 
 	void ProgressBar::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("ProgressBar");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("ProgressBar");
 		d->defineSkinElement(BACKGROUND);
 		d->defineSkinElement(BAR);
 		d->defineSkinElement(CLIPMAP);
@@ -18,38 +18,57 @@ namespace QuickGUI
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("ProgressBar",d);
 	}
 
-	ProgressBarDesc::ProgressBarDesc() :
-		WidgetDesc()
+	ProgressBarDesc::ProgressBarDesc(const Ogre::String& id) :
+		WidgetDesc(id)
 	{
-		fillDirection = PROGRESSBAR_FILLS_NEGATIVE_TO_POSITIVE;
-		layout = PROGRESSBAR_LAYOUT_HORIZONTAL;
-		clippingEdge = PROGRESSBAR_CLIP_LEFT_BOTTOM;
-		progress = 100;
-		verticalTextAlignment = TEXT_ALIGNMENT_VERTICAL_CENTER;
+		resetToDefault();
+	}
+
+	void ProgressBarDesc::resetToDefault()
+	{
+		WidgetDesc::resetToDefault();
+
+		progressbar_fillDirection = PROGRESSBAR_FILLS_NEGATIVE_TO_POSITIVE;
+		progressbar_layout = PROGRESSBAR_LAYOUT_HORIZONTAL;
+		progressbar_clippingEdge = PROGRESSBAR_CLIP_LEFT_BOTTOM;
+		progressbar_progress = 100;
+		progressbar_verticalTextAlignment = TEXT_ALIGNMENT_VERTICAL_CENTER;
+
+		textDesc.resetToDefault();
 	}
 
 	void ProgressBarDesc::serialize(SerialBase* b)
 	{
 		WidgetDesc::serialize(b);
 
-		b->IO("VerticalTextAlignment",&verticalTextAlignment);
+		b->IO("VerticalTextAlignment",&progressbar_verticalTextAlignment);
 
 		textDesc.serialize(b);
 
-		b->IO("Progress",&progress);
-		b->IO("FillDirection",&fillDirection);
-		b->IO("Layout",&layout);
-		b->IO("ClippingEdge",&clippingEdge);
+		b->IO("Progress",&progressbar_progress);
+		b->IO("FillDirection",&progressbar_fillDirection);
+		b->IO("Layout",&progressbar_layout);
+		b->IO("ClippingEdge",&progressbar_clippingEdge);
 	}
 
 	ProgressBar::ProgressBar(const Ogre::String& name) :
-		Widget(name)
+		Widget(name),
+		mText(NULL)
 	{
 		mSkinElementName = BACKGROUND;
 	}
 
 	ProgressBar::~ProgressBar()
 	{
+		OGRE_DELETE_T(mText,Text,Ogre::MEMCATEGORY_GENERAL);
+
+		// Clean up all user defined event handlers.
+		for(int index = 0; index < PROGRESSBAR_EVENT_COUNT; ++index)
+		{
+			for(std::vector<EventHandlerSlot*>::iterator it = mProgressBarEventHandlers[index].begin(); it != mProgressBarEventHandlers[index].end(); ++it)
+				OGRE_DELETE_T((*it),EventHandlerSlot,Ogre::MEMCATEGORY_GENERAL);
+		}
+
 		mOutputBarTexture.setNull();
 	}
 
@@ -61,16 +80,16 @@ namespace QuickGUI
 
 		ProgressBarDesc* pd = dynamic_cast<ProgressBarDesc*>(d);
 
-		setSkinType(d->skinTypeName);
+		setSkinType(d->widget_skinTypeName);
 
 		// Make a copy of the Text Desc.  The Text object will
 		// modify it directly, which is used for serialization.
 		mDesc->textDesc = pd->textDesc;
 
 		SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
-		mDesc->textDesc.allottedWidth = pd->dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
-		mDesc->verticalTextAlignment = pd->verticalTextAlignment;
-		mText = new Text(mDesc->textDesc);
+		mDesc->textDesc.allottedWidth = pd->widget_dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
+		mDesc->progressbar_verticalTextAlignment = pd->progressbar_verticalTextAlignment;
+		mText = OGRE_NEW_T(Text,Ogre::MEMCATEGORY_GENERAL)(mDesc->textDesc);
 
 		mCurrentFontName = Text::getFirstAvailableFont()->getName();
 		mCurrentColourValue = Ogre::ColourValue::White;
@@ -85,10 +104,10 @@ namespace QuickGUI
 			Ogre::PF_B8G8R8A8,
 			Ogre::TU_STATIC);
 
-		mDesc->clippingEdge = pd->clippingEdge;
-		mDesc->fillDirection = pd->fillDirection;
-		mDesc->layout = pd->layout;
-		setProgress(pd->progress);
+		mDesc->progressbar_clippingEdge = pd->progressbar_clippingEdge;
+		mDesc->progressbar_fillDirection = pd->progressbar_fillDirection;
+		mDesc->progressbar_layout = pd->progressbar_layout;
+		setProgress(pd->progressbar_progress);
 	}
 
 	void ProgressBar::_processClipMap()
@@ -119,15 +138,6 @@ namespace QuickGUI
 		mProgressBarEventHandlers[EVENT].push_back(function);
 	}
 
-	Widget* ProgressBar::factory(const Ogre::String& widgetName)
-	{
-		Widget* newWidget = new ProgressBar(widgetName);
-
-		newWidget->_createDescObject("ProgressBarDesc");
-
-		return newWidget;
-	}
-
 	bool ProgressBar::fireProgressBarEvent(ProgressBarEvent e, EventArgs& args)
 	{
 		if(mProgressBarEventHandlers[e].empty())
@@ -148,12 +158,12 @@ namespace QuickGUI
 
 	ProgressBarClippingEdge ProgressBar::getClippingEdge()
 	{
-		return mDesc->clippingEdge;
+		return mDesc->progressbar_clippingEdge;
 	}
 
 	ProgressBarFillDirection ProgressBar::getFillDirection()
 	{
-		return mDesc->fillDirection;
+		return mDesc->progressbar_fillDirection;
 	}
 
 	HorizontalTextAlignment ProgressBar::getHorizontalTextAlignment()
@@ -163,12 +173,12 @@ namespace QuickGUI
 
 	ProgressBarLayout ProgressBar::setLayout()
 	{
-		return mDesc->layout;
+		return mDesc->progressbar_layout;
 	}
 
 	float ProgressBar::getProgress()
 	{
-		return mDesc->progress;
+		return mDesc->progressbar_progress;
 	}
 
 	Ogre::UTFString ProgressBar::getText()
@@ -183,22 +193,22 @@ namespace QuickGUI
 
 	VerticalTextAlignment ProgressBar::getVerticalTextAlignment()
 	{
-		return mDesc->verticalTextAlignment;
+		return mDesc->progressbar_verticalTextAlignment;
 	}
 
 	void ProgressBar::onDraw()
 	{
 		Brush* brush = Brush::getSingletonPtr();
 
-		brush->setFilterMode(mDesc->brushFilterMode);
+		brush->setFilterMode(mDesc->widget_brushFilterMode);
 
 		SkinType* st = mSkinType;
-		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
+		if(!mWidgetDesc->widget_enabled && mWidgetDesc->widget_disabledSkinType != "")
 		{
-			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->widget_disabledSkinType);
 		}
 
-		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
+		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size),st->getSkinElement(mSkinElementName));
 
 		brush->setTexture(mOutputBarTexture);
 		Rect barRect = mClientDimensions;
@@ -216,13 +226,13 @@ namespace QuickGUI
 		float textHeight = mText->getTextHeight();
 		float yPos = 0;
 
-		switch(mDesc->verticalTextAlignment)
+		switch(mDesc->progressbar_verticalTextAlignment)
 		{
 		case TEXT_ALIGNMENT_VERTICAL_BOTTOM:
-			yPos = mDesc->dimensions.size.height - st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM) - textHeight;
+			yPos = mDesc->widget_dimensions.size.height - st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM) - textHeight;
 			break;
 		case TEXT_ALIGNMENT_VERTICAL_CENTER:
-			yPos = (mDesc->dimensions.size.height / 2.0) - (textHeight / 2.0);
+			yPos = (mDesc->widget_dimensions.size.height / 2.0) - (textHeight / 2.0);
 			break;
 		case TEXT_ALIGNMENT_VERTICAL_TOP:
 			yPos = st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_TOP);
@@ -248,9 +258,9 @@ namespace QuickGUI
 
 	void ProgressBar::setClippingEdge(ProgressBarClippingEdge e)
 	{
-		mDesc->clippingEdge = e;
+		mDesc->progressbar_clippingEdge = e;
 
-		setProgress(mDesc->progress);
+		setProgress(mDesc->progressbar_progress);
 	}
 
 	void ProgressBar::setColor(const Ogre::ColourValue& cv)
@@ -292,9 +302,9 @@ namespace QuickGUI
 
 	void ProgressBar::setFillDirection(ProgressBarFillDirection d)
 	{
-		mDesc->fillDirection = d;
+		mDesc->progressbar_fillDirection = d;
 
-		setProgress(mDesc->progress);
+		setProgress(mDesc->progressbar_progress);
 	}
 
 	void ProgressBar::setFont(const Ogre::String& fontName)
@@ -343,9 +353,9 @@ namespace QuickGUI
 
 	void ProgressBar::setLayout(ProgressBarLayout l)
 	{
-		mDesc->layout = l;
+		mDesc->progressbar_layout = l;
 
-		setProgress(mDesc->progress);
+		setProgress(mDesc->progressbar_progress);
 	}
 
 	void ProgressBar::setProgress(float percent)
@@ -355,7 +365,7 @@ namespace QuickGUI
 		else if(percent < 0)
 			percent = 0;
 
-		mDesc->progress = percent;
+		mDesc->progressbar_progress = percent;
 
 		// Update Bar Output Texture to match percentage
 		{
@@ -363,102 +373,102 @@ namespace QuickGUI
 			Rect sourceArea;
 			Rect destArea;
 
-			if(mDesc->layout == PROGRESSBAR_LAYOUT_HORIZONTAL)
+			if(mDesc->progressbar_layout == PROGRESSBAR_LAYOUT_HORIZONTAL)
 			{
 				// Left to right
-				if(mDesc->fillDirection == PROGRESSBAR_FILLS_NEGATIVE_TO_POSITIVE)
+				if(mDesc->progressbar_fillDirection == PROGRESSBAR_FILLS_NEGATIVE_TO_POSITIVE)
 				{
-					if(mDesc->clippingEdge == PROGRESSBAR_CLIP_LEFT_BOTTOM)
+					if(mDesc->progressbar_clippingEdge == PROGRESSBAR_CLIP_LEFT_BOTTOM)
 					{
-						sourceArea.position.x = (100 - mDesc->progress) / 100.0;
+						sourceArea.position.x = (100 - mDesc->progressbar_progress) / 100.0;
 						sourceArea.position.y = 0;
-						sourceArea.size.width = mDesc->progress / 100.0;
+						sourceArea.size.width = mDesc->progressbar_progress / 100.0;
 						sourceArea.size.height = 1.0;
 					}
 					else
 					{
 						sourceArea.position.x = 0;
 						sourceArea.position.y = 0;
-						sourceArea.size.width = mDesc->progress / 100.0;
+						sourceArea.size.width = mDesc->progressbar_progress / 100.0;
 						sourceArea.size.height = 1.0;
 					}
 
 					destArea.position.x = 0;
 					destArea.position.y = 0;
-					destArea.size.width = mDesc->progress / 100.0;
+					destArea.size.width = mDesc->progressbar_progress / 100.0;
 					destArea.size.height = 1.0;
 				}
 				// Right to left
 				else
 				{
-					if(mDesc->clippingEdge == PROGRESSBAR_CLIP_LEFT_BOTTOM)
+					if(mDesc->progressbar_clippingEdge == PROGRESSBAR_CLIP_LEFT_BOTTOM)
 					{
-						sourceArea.position.x = (100 - mDesc->progress) / 100.0;
+						sourceArea.position.x = (100 - mDesc->progressbar_progress) / 100.0;
 						sourceArea.position.y = 0;
-						sourceArea.size.width = mDesc->progress / 100.0;
+						sourceArea.size.width = mDesc->progressbar_progress / 100.0;
 						sourceArea.size.height = 1.0;
 					}
 					else
 					{
 						sourceArea.position.x = 0;
 						sourceArea.position.y = 0;
-						sourceArea.size.width = mDesc->progress / 100.0;
+						sourceArea.size.width = mDesc->progressbar_progress / 100.0;
 						sourceArea.size.height = 1.0;
 					}
 
-					destArea.position.x = (100 - mDesc->progress) / 100.0;
+					destArea.position.x = (100 - mDesc->progressbar_progress) / 100.0;
 					destArea.position.y = 0;
-					destArea.size.width = mDesc->progress / 100.0;
+					destArea.size.width = mDesc->progressbar_progress / 100.0;
 					destArea.size.height = 1.0;
 				}
 			}
 			else
 			{
 				// Bottom to top
-				if(mDesc->fillDirection == PROGRESSBAR_FILLS_NEGATIVE_TO_POSITIVE)
+				if(mDesc->progressbar_fillDirection == PROGRESSBAR_FILLS_NEGATIVE_TO_POSITIVE)
 				{
-					if(mDesc->clippingEdge == PROGRESSBAR_CLIP_LEFT_BOTTOM)
+					if(mDesc->progressbar_clippingEdge == PROGRESSBAR_CLIP_LEFT_BOTTOM)
 					{
 						sourceArea.position.x = 0;
-						sourceArea.position.y = (100 - mDesc->progress) / 100.0;
+						sourceArea.position.y = (100 - mDesc->progressbar_progress) / 100.0;
 						sourceArea.size.width = 1.0;
-						sourceArea.size.height = mDesc->progress / 100.0;
+						sourceArea.size.height = mDesc->progressbar_progress / 100.0;
 					}
 					else
 					{
 						sourceArea.position.x = 0;
 						sourceArea.position.y = 0;
 						sourceArea.size.width = 1.0;
-						sourceArea.size.height = mDesc->progress / 100.0;
+						sourceArea.size.height = mDesc->progressbar_progress / 100.0;
 					}
 
 					destArea.position.x = 0;
-					destArea.position.y = (100 - mDesc->progress) / 100.0;
+					destArea.position.y = (100 - mDesc->progressbar_progress) / 100.0;
 					destArea.size.width = 1.0;
-					destArea.size.height = mDesc->progress / 100.0;
+					destArea.size.height = mDesc->progressbar_progress / 100.0;
 				}
 				// Top to Bottom
 				else
 				{
-					if(mDesc->clippingEdge == PROGRESSBAR_CLIP_LEFT_BOTTOM)
+					if(mDesc->progressbar_clippingEdge == PROGRESSBAR_CLIP_LEFT_BOTTOM)
 					{
 						sourceArea.position.x = 0;
-						sourceArea.position.y = (100 - mDesc->progress) / 100.0;
+						sourceArea.position.y = (100 - mDesc->progressbar_progress) / 100.0;
 						sourceArea.size.width = 1.0;
-						sourceArea.size.height = mDesc->progress / 100.0;
+						sourceArea.size.height = mDesc->progressbar_progress / 100.0;
 					}
 					else
 					{
 						sourceArea.position.x = 0;
 						sourceArea.position.y = 0;
 						sourceArea.size.width = 1.0;
-						sourceArea.size.height = mDesc->progress / 100.0;
+						sourceArea.size.height = mDesc->progressbar_progress / 100.0;
 					}
 					
 					destArea.position.x = 0;
 					destArea.position.y = 0;
 					destArea.size.width = 1.0;
-					destArea.size.height = mDesc->progress / 100.0;
+					destArea.size.height = mDesc->progressbar_progress / 100.0;
 				}
 			}
 
@@ -483,7 +493,7 @@ namespace QuickGUI
 			}
 			buf->unlock();
 
-			if(mDesc->progress <= 0.0)
+			if(mDesc->progressbar_progress <= 0.0)
 				return;
 
 			// Blit the area of the Bar texture to the output texture. (Grab pixels from Src in Bar texture, and add to Dest in Output Texture)
@@ -540,6 +550,13 @@ namespace QuickGUI
 		setText(s,mCurrentFontName,mCurrentColourValue);
 	}
 
+	void ProgressBar::setText(std::vector<TextSegment> segments)
+	{
+		mText->setText(segments);
+
+		redraw();
+	}
+
 	void ProgressBar::setVerticalLineSpacing(float distance)
 	{
 		if(distance == mText->getVerticalLineSpacing())
@@ -552,7 +569,16 @@ namespace QuickGUI
 
 	void ProgressBar::setVerticalTextAlignment(VerticalTextAlignment a)
 	{
-		mDesc->verticalTextAlignment = a;
+		mDesc->progressbar_verticalTextAlignment = a;
+
+		redraw();
+	}
+
+	void ProgressBar::updateClientDimensions()
+	{
+		Widget::updateClientDimensions();
+		if(mText != NULL)
+			mText->setAllottedWidth(mClientDimensions.size.width);
 
 		redraw();
 	}

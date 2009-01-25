@@ -62,6 +62,7 @@ PagedGeometry::PagedGeometry(Camera* cam, const Real pageSize)
 
 	//Misc.
 	pageLoader = NULL;
+	geometryAllowedVisible = true;
 }
 
 PagedGeometry::~PagedGeometry()
@@ -349,27 +350,26 @@ void PagedGeometry::_addDetailLevel(GeometryPageManager *mgr, Real maxRange, Rea
 	managerList.push_back(mgr);
 }
 
-void  PagedGeometry::setCustomParam( string entity, string paramName, float paramValue )
+void  PagedGeometry::setCustomParam(string entity, string paramName, float paramValue)
 {
-	setCustomParam( entity + "." + paramName, paramValue );
+	setCustomParam(entity + "." + paramName, paramValue);
 }
 
-void  PagedGeometry::setCustomParam( string paramName, float paramValue )
+void  PagedGeometry::setCustomParam(string paramName, float paramValue)
 {
-	customParam[ paramName ] = paramValue;
+	customParam[paramName] = paramValue;
 }
 
-float PagedGeometry::getCustomParam( string entity, string paramName, float defaultParamValue ) const
+float PagedGeometry::getCustomParam(string entity, string paramName, float defaultParamValue) const
 {
-	return getCustomParam( entity + "." + paramName, defaultParamValue );;
+	return getCustomParam(entity + "." + paramName, defaultParamValue);
 }
 
-float PagedGeometry::getCustomParam( string paramName, float defaultParamValue ) const
+float PagedGeometry::getCustomParam(string paramName, float defaultParamValue) const
 {
 	map<string, float>::const_iterator it;
-	it = customParam.find( paramName );
-	if ( it != customParam.end() )
-	{
+	it = customParam.find(paramName);
+	if (it != customParam.end()) {
 		float x = it->second;
 		return x;
 	}
@@ -631,6 +631,9 @@ void GeometryPageManager::update(unsigned long deltaTime, Vector3 &camPos, Vecto
 			//Non-fade visibility
 			if (distSq >= nearDistSq && distSq < farDistSq)
 				visible = true;
+			//Hide all?
+			if (!mainGeom->getVisible())
+				visible = false;
 
 			//Update visibility
 			if (visible){

@@ -7,48 +7,74 @@
 namespace QuickGUI
 {
 	const Ogre::String TextArea::BACKGROUND = "background";
+	const Ogre::String TextArea::TEXTOVERLAY = "textoverlay";
 
 	void TextArea::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("TextArea");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("TextArea");
 		d->defineSkinElement(BACKGROUND);
+		d->defineSkinElement(TEXTOVERLAY);
+		d->defineComponent(HSCROLLBAR);
+		d->defineComponent(VSCROLLBAR);
 		d->definitionComplete();
 
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("TextArea",d);
 	}
 
-	TextAreaDesc::TextAreaDesc() :
-		WidgetDesc()
+	TextAreaDesc::TextAreaDesc(const Ogre::String& id) :
+		ContainerWidgetDesc(id)
 	{
-		cursorBlinkTime = 0.5;
-		defaultColor = Ogre::ColourValue::White;
-		defaultFontName = Root::getSingleton().getDefaultFontName();
-		keyDownTime = 0.6;
-		keyRepeatTime = 0.04;
-		maxCharacters = 255;
+		resetToDefault();
+	}
+
+	void TextAreaDesc::resetToDefault()
+	{
+		ContainerWidgetDesc::resetToDefault();
+
+		textarea_cursorBlinkTime = 0.5;
+		textarea_defaultColor = Ogre::ColourValue::White;
+		textarea_defaultFontName = Root::getSingleton().getDefaultFontName();
+		textarea_keyDownTime = 0.6;
+		textarea_keyRepeatTime = 0.04;
+		textarea_maxCharacters = 255;
+		textarea_readOnly = false;
+		textarea_textCursorDefaultSkinTypeName = "default";
+
+		textDesc.resetToDefault();
 	}
 
 	void TextAreaDesc::serialize(SerialBase* b)
 	{
 		WidgetDesc::serialize(b);
 
-		b->IO("CursorBlinkTime",&cursorBlinkTime);
-		b->IO("DefaultColor",&defaultColor);
-		b->IO("DefaultFontName",&defaultFontName);
-		b->IO("KeyDownTime",&keyDownTime);
-		b->IO("KeyRepeatTime",&keyRepeatTime);
-		b->IO("MaxCharacters",&maxCharacters);
+		b->IO("CursorBlinkTime",&textarea_cursorBlinkTime);
+		b->IO("DefaultColor",&textarea_defaultColor);
+		b->IO("DefaultFontName",&textarea_defaultFontName);
+		b->IO("KeyDownTime",&textarea_keyDownTime);
+		b->IO("KeyRepeatTime",&textarea_keyRepeatTime);
+		b->IO("MaxCharacters",&textarea_maxCharacters);
+		b->IO("TextCursorDefaultSkinTypeName",&textarea_textCursorDefaultSkinTypeName);
 
 		textDesc.serialize(b);
 	}
 
 	TextArea::TextArea(const Ogre::String& name) :
-		Widget(name),
+		ContainerWidget(name),
 		mText(NULL),
 		mDesc(NULL),
-		mTextCursor(NULL)
+		mTextCursor(NULL),
+		mCursorIndex(0)
 	{
 		mSkinElementName = BACKGROUND;
+
+		addWidgetEventHandler(WIDGET_EVENT_CHARACTER_KEY,&TextArea::onCharEntered,this);
+		addWidgetEventHandler(WIDGET_EVENT_KEY_DOWN,&TextArea::onKeyDown,this);
+		addWidgetEventHandler(WIDGET_EVENT_KEY_UP,&TextArea::onKeyUp,this);
+		addWidgetEventHandler(WIDGET_EVENT_KEYBOARD_INPUT_GAIN,&TextArea::onKeyboardInputGain,this);
+		addWidgetEventHandler(WIDGET_EVENT_KEYBOARD_INPUT_LOSE,&TextArea::onKeyboardInputLose,this);
+		addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&TextArea::onMouseButtonDown,this);
+		addWidgetEventHandler(WIDGET_EVENT_MOUSE_CLICK_TRIPLE,&TextArea::onTripleClick,this);
+		addWidgetEventHandler(WIDGET_EVENT_VISIBLE_CHANGED,&TextArea::onVisibleChanged,this);
 	}
 
 	TextArea::~TextArea()
@@ -57,73 +83,216 @@ namespace QuickGUI
 		TimerManager::getSingleton().destroyTimer(mKeyRepeatTimer);
 		TimerManager::getSingleton().destroyTimer(mKeyDownTimer);
 
-		delete mTextCursor;
-		delete mText;
+		OGRE_DELETE_T(mTextCursor,TextCursor,Ogre::MEMCATEGORY_GENERAL);
+		OGRE_DELETE_T(mText,Text,Ogre::MEMCATEGORY_GENERAL);
+	}
+
+	Point TextArea::_convertScreenToTextCoordinates(const Point& p)
+	{
+		// Convert position to coordinates relative to TextBox position
+		Point relativePosition;
+		relativePosition.x = p.x - mTexturePosition.x;
+		relativePosition.y = p.y - mTexturePosition.y;
+
+		// Convert relative TextBox position to coordinates relative to client area
+		relativePosition -= mClientDimensions.position;
+
+		// Convert relative client position to coordinates relative to Text position
+		Point relativeTextPosition;
+		relativeTextPosition.x = relativePosition.x - mTextPosition.x;
+		relativeTextPosition.y = relativePosition.y - mTextPosition.y;
+
+		return relativeTextPosition;
 	}
 
 	void TextArea::_initialize(WidgetDesc* d)
 	{
-		Widget::_initialize(d);
+		ContainerWidget::_initialize(d);
 
 		mDesc = dynamic_cast<TextAreaDesc*>(mWidgetDesc);
 
-		mTextCursor = new TextCursor();
+		TextAreaDesc* td = dynamic_cast<TextAreaDesc*>(d);
 
-		mDesc->consumeKeyboardEvents = true;
+		mTextCursor = OGRE_NEW_T(TextCursor,Ogre::MEMCATEGORY_GENERAL)(this);
+		mTextCursor->setHeight(Text::getFontHeight(td->textarea_defaultFontName));
+		mTextCursor->setSkinType(td->textarea_textCursorDefaultSkinTypeName);
+
+		mDesc->widget_consumeKeyboardEvents = true;
 		mCursorIndex = -1;
 
 		mFunctionKeyDownLast = false;
 
-		addWidgetEventHandler(WIDGET_EVENT_CHARACTER_KEY,&TextArea::onCharEntered,this);
-		addWidgetEventHandler(WIDGET_EVENT_KEY_DOWN,&TextArea::onKeyDown,this);
-		addWidgetEventHandler(WIDGET_EVENT_KEY_UP,&TextArea::onKeyUp,this);
-		addWidgetEventHandler(WIDGET_EVENT_KEYBOARD_INPUT_GAIN,&TextArea::onKeyboardInputGain,this);
-		addWidgetEventHandler(WIDGET_EVENT_KEYBOARD_INPUT_LOSE,&TextArea::onKeyboardInputLose,this);
-		addWidgetEventHandler(WIDGET_EVENT_MOUSE_CLICK_TRIPLE,&TextArea::onTripleClick,this);
-
-		TextAreaDesc* td = dynamic_cast<TextAreaDesc*>(d);
-
 		// Make a copy of the Text Desc.  The Text object will
 		// modify it directly, which is used for serialization.
 		mDesc->textDesc = td->textDesc;
+		mDesc->textDesc.allottedWidth = td->widget_dimensions.size.width;
 
-		setDefaultFont(td->defaultFontName);
-		setDefaultColor(td->defaultColor);
-		mDesc->maxCharacters = td->maxCharacters;
+		setDefaultFont(td->textarea_defaultFontName);
+		setDefaultColor(td->textarea_defaultColor);
+		mDesc->textarea_maxCharacters = td->textarea_maxCharacters;
 
-		setSkinType(d->skinTypeName);
+		setSkinType(d->widget_skinTypeName);
 
 		SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
-		mDesc->textDesc.allottedWidth = td->dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
-		mText = new Text(mDesc->textDesc);
+		mDesc->textDesc.allottedWidth = td->widget_dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
+		mText = OGRE_NEW_T(Text,Ogre::MEMCATEGORY_GENERAL)(mDesc->textDesc);
 
-		mDesc->cursorBlinkTime = td->cursorBlinkTime;
-		mDesc->keyDownTime = td->keyDownTime;
-		mDesc->keyRepeatTime = td->keyRepeatTime;
+		mDesc->textarea_cursorBlinkTime = td->textarea_cursorBlinkTime;
+		mDesc->textarea_keyDownTime = td->textarea_keyDownTime;
+		mDesc->textarea_keyRepeatTime = td->textarea_keyRepeatTime;
+		mDesc->textarea_readOnly = td->textarea_readOnly;
 
 		TimerDesc timerDesc;
 		timerDesc.repeat = true;
-		timerDesc.timePeriod = mDesc->cursorBlinkTime;
+		timerDesc.timePeriod = mDesc->textarea_cursorBlinkTime;
 		mBlinkTimer = TimerManager::getSingleton().createTimer(timerDesc);
 		mBlinkTimer->setCallback(&TextArea::blinkTimerCallback,this);
 
-		timerDesc.timePeriod = mDesc->keyRepeatTime;
+		timerDesc.timePeriod = mDesc->textarea_keyRepeatTime;
 		mKeyRepeatTimer = TimerManager::getSingleton().createTimer(timerDesc);
 		mKeyRepeatTimer->setCallback(&TextArea::keyRepeatTimerCallback,this);
 
 		timerDesc.repeat = false;
-		timerDesc.timePeriod = mDesc->keyDownTime;
+		timerDesc.timePeriod = mDesc->textarea_keyDownTime;
 		mKeyDownTimer = TimerManager::getSingleton().createTimer(timerDesc);
 		mKeyDownTimer->setCallback(&TextArea::keyDownTimerCallback,this);
 	}
 
-	Widget* TextArea::factory(const Ogre::String& widgetName)
+	void TextArea::_determineVirtualSize()
 	{
-		Widget* newWidget = new TextArea(widgetName);
+		mVirtualSize = mClientDimensions.size;
 
-		newWidget->_createDescObject("TextAreaDesc");
+		if(mText != NULL)
+		{
+			float textHeight = mText->getTextHeight();
 
-		return newWidget;
+			if(textHeight > mVirtualSize.height)
+				mVirtualSize.height = textHeight;
+		}
+	}
+
+	void TextArea::_setScrollY(float y)
+	{
+		if(!mDesc->containerwidget_supportScrollBars)
+			return;
+
+		mDesc->containerwidget_yScrollOffset = (y * mVirtualSize.height);
+		mTextPosition.y = -(y * mVirtualSize.height);
+		mTextPosition.roundUp();
+
+		// Make sure TextCursor scrolls with the text
+		if(mText != NULL)
+		{
+			// Position Cursor
+			mCursorPosition = mTextPosition + mText->getPositionAtCharacterIndex(mCursorIndex);
+
+			Point p = getScreenPosition();
+			p.translate(mClientDimensions.position);
+			p.translate(mCursorPosition);
+			mTextCursor->setPosition(p);
+		}
+
+		for(std::vector<Widget*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it)
+			(*it)->setScrollY(mDesc->containerwidget_yScrollOffset);
+	}
+
+	void TextArea::_updateScrollBars()
+	{
+		ContainerWidget::_updateScrollBars();
+
+		if(mText != NULL)
+			mText->setAllottedWidth(mClientDimensions.size.width);
+	}
+
+	void TextArea::addCharacter(Ogre::UTFString::code_point cp)
+	{
+		mText->addCharacter(OGRE_NEW_T(Character,Ogre::MEMCATEGORY_GENERAL)(cp,mCurrentFont,mDesc->textarea_defaultColor),mCursorIndex);
+
+		_determineVirtualSize();
+		_updateScrollBars();
+		
+		setCursorIndex(mCursorIndex+1);
+	}
+
+	void TextArea::addText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv)
+	{
+		mText->addText(s,fp,cv);
+
+		_determineVirtualSize();
+		_updateScrollBars();
+
+		scrollToBottom();
+
+		redraw();
+	}
+
+	void TextArea::addText(Ogre::UTFString s, const Ogre::String& fontName, const Ogre::ColourValue& cv)
+	{
+		addText(s,Text::getFont(fontName),cv);
+	}
+
+	void TextArea::addText(Ogre::UTFString s)
+	{
+		addText(s,mDesc->textarea_defaultFontName,mDesc->textarea_defaultColor);
+	}
+
+	void TextArea::addText(std::vector<TextSegment> segments)
+	{
+		mText->addText(segments);
+
+		_determineVirtualSize();
+		_updateScrollBars();
+
+		scrollToBottom();
+
+		redraw();
+	}
+
+	void TextArea::addTextLine(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv)
+	{
+		mText->addTextLine(s,fp,cv);
+
+		_determineVirtualSize();
+		_updateScrollBars();
+
+		scrollToBottom();
+
+		redraw();
+	}
+
+	void TextArea::addTextLine(Ogre::UTFString s, const Ogre::String& fontName, const Ogre::ColourValue& cv)
+	{
+		addTextLine(s,Text::getFont(fontName),cv);
+	}
+
+	void TextArea::addTextLine(Ogre::UTFString s)
+	{
+		addTextLine(s,mDesc->textarea_defaultFontName,mDesc->textarea_defaultColor);
+	}
+
+	void TextArea::addTextLine(std::vector<TextSegment> segments)
+	{
+		mText->addTextLine(segments);
+
+		_determineVirtualSize();
+		_updateScrollBars();
+
+		scrollToBottom();
+
+		redraw();
+	}
+
+	void TextArea::blinkTimerCallback()
+	{
+		mTextCursor->setVisible(!mTextCursor->getVisible());
+	}
+
+	void TextArea::clearText()
+	{
+		mText->clearText();
+
+		_determineVirtualSize();
+		_updateScrollBars();
 	}
 
 	Ogre::String TextArea::getClass()
@@ -131,29 +300,81 @@ namespace QuickGUI
 		return "TextArea";
 	}
 
+	Point TextArea::getCursorIndexPosition(int index)
+	{
+		Point charPos = mText->getCharacterPosition(index);
+		charPos += mTextPosition;
+
+		return charPos;
+	}
+
+	HorizontalTextAlignment TextArea::getHorizontalAlignment()
+	{
+		return mText->getHorizontalTextAlignment();
+	}
+
+	bool TextArea::getReadOnly()
+	{
+		return mDesc->textarea_readOnly;
+	}
+
 	Ogre::UTFString TextArea::getText()
 	{
 		return mText->getText();
 	}
 
-	void TextArea::addCharacter(Ogre::UTFString::code_point cp)
+	Ogre::String TextArea::getTextCursorSkinType()
 	{
-		mText->addCharacter(new Character(cp,mCurrentFont,mDesc->defaultColor));
-		setCursorIndex(-1);
+		return mDesc->textarea_textCursorDefaultSkinTypeName;
 	}
 
-	void TextArea::addCharacter(Ogre::UTFString::code_point cp, int index)
+	bool TextArea::isCursorIndexAboveViewableText(int index)
 	{
-		if((index < 0) || (index > mText->getLength()))
-			throw Exception(Exception::ERR_TEXT,"Index out of bounds! index=" + Ogre::StringConverter::toString(index) + " length=" + Ogre::StringConverter::toString(mText->getLength()),"TextBox::addCharacter");
+		if(static_cast<int>(index) > mText->getLength())
+			index = mText->getLength();
+		else if(index < 0)
+			index = 0;
 
-		mText->addCharacter(new Character(cp,mCurrentFont,mDesc->defaultColor), index);
-		setCursorIndex(mCursorIndex+1);
+		// Get characters position within text
+		float charYPos = mText->getCharacterYPosition(index);
+		charYPos += mTextPosition.y;
+
+		if(charYPos < 0)
+			return true;
+		else
+			return false;
 	}
 
-	void TextArea::blinkTimerCallback()
+	bool TextArea::isCursorIndexBelowViewableText(int index)
 	{
-		mTextCursor->setVisible(!mTextCursor->getVisible());
+		if(static_cast<int>(index) > mText->getLength())
+			index = mText->getLength();
+		else if(index < 0)
+			index = 0;
+
+		// Get characters position within text
+		float charYPos = mText->getCharacterYPosition(index);
+		charYPos += mTextPosition.y;
+		// Make sure to include bottom of character when querying if cursor is within view
+		Character* c = mText->getCharacter(index);
+		charYPos += c->dimensions.size.height;
+		// Add a 2 pixel buffer
+		charYPos += 2;
+
+		if(charYPos >= mClientDimensions.size.height)
+			return true;
+		else
+			return false;
+	}
+
+	bool TextArea::isCursorIndexVisible(int index)
+	{
+		if(isCursorIndexAboveViewableText(index))
+			return false;
+		else if(isCursorIndexBelowViewableText(index))
+			return false;
+		else
+			return true;
 	}
 
 	void TextArea::keyDownTimerCallback()
@@ -169,53 +390,93 @@ namespace QuickGUI
 			onCharEntered(mLastKnownInput);
 	}
 
+	void TextArea::moveCursorDown()
+	{
+		Point globalPos = mTextCursor->getPosition();
+		globalPos.x += (mTextCursor->getSize().width / 2.0);
+		// Position is at the top left of cursor, we want the position that is below the cursor.
+		// Increment y by cursor height, and then increment again by half cursor height. (1.5)
+		globalPos.y += (mTextCursor->getSize().height * 1.5);
+
+		setCursorIndex(mText->getCursorIndexAtPosition(_convertScreenToTextCoordinates(globalPos)));
+	}
+
+	void TextArea::moveCursorLeft()
+	{
+		setCursorIndex(mCursorIndex - 1);
+	}
+
+	void TextArea::moveCursorRight()
+	{
+		setCursorIndex(mCursorIndex + 1);
+	}
+
+	void TextArea::moveCursorUp()
+	{
+		Point globalPos = mTextCursor->getPosition();
+		globalPos.x += (mTextCursor->getSize().width / 2.0);
+		globalPos.y -= (mTextCursor->getSize().height / 2.0);
+
+		setCursorIndex(mText->getCursorIndexAtPosition(_convertScreenToTextCoordinates(globalPos)));
+	}
+
 	void TextArea::onCharEntered(const EventArgs& args)
 	{
+		if(mDesc->textarea_readOnly)
+			return;
+
 		const KeyEventArgs kea = dynamic_cast<const KeyEventArgs&>(args);
 		mLastKnownInput.codepoint = kea.codepoint;
 		mLastKnownInput.keyMask = kea.keyMask;
 		mLastKnownInput.keyModifiers = kea.keyModifiers;
 
-		if(mCursorIndex == -1)
-			addCharacter(mLastKnownInput.codepoint);
-		else
-			addCharacter(mLastKnownInput.codepoint,mCursorIndex);
+		addCharacter(mLastKnownInput.codepoint);
 	}
 
 	void TextArea::onDraw()
 	{
 		Brush* brush = Brush::getSingletonPtr();
 
-		brush->setFilterMode(mDesc->brushFilterMode);
+		brush->setFilterMode(mDesc->widget_brushFilterMode);
 
 		SkinType* st = mSkinType;
-		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
-			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+		if(!mWidgetDesc->widget_enabled && mWidgetDesc->widget_disabledSkinType != "")
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->widget_disabledSkinType);
 
-		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
+		// Draw Background
 
-		if(mText->empty())
-			return;
+		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size),st->getSkinElement(mSkinElementName));
 
 		Ogre::ColourValue prevColor = brush->getColour();
 		Rect prevClipRegion = brush->getClipRegion();
 
-		SkinElement* se = st->getSkinElement(mSkinElementName);
+		Rect textArea = Rect(mTexturePosition,mClientDimensions.size);
+		textArea.translate(mClientDimensions.position);
 
-		Rect clipRegion = mClientDimensions;
-		clipRegion.translate(mTexturePosition);
+		Rect newClipRegion = prevClipRegion.getIntersection(textArea);
+		brush->setClipRegion(newClipRegion);
 
-		brush->setClipRegion(prevClipRegion.getIntersection(clipRegion));
+		textArea.translate(mTextPosition);
 
-		mText->draw(clipRegion.position);
+		// Draw text
+		mText->draw(textArea.position);
+
+		// Draw Text Overlay SkinElement
+
+		brush->drawSkinElement(newClipRegion,st->getSkinElement(TEXTOVERLAY));
+
+		// Restore clipping
 
 		brush->setClipRegion(prevClipRegion);
 
-		Brush::getSingleton().setColor(prevColor);
+		brush->setColor(prevColor);
 	}
 
 	void TextArea::onKeyDown(const EventArgs& args)
 	{
+		if(mDesc->textarea_readOnly)
+			return;
+
 		const KeyEventArgs kea = dynamic_cast<const KeyEventArgs&>(args);
 		mLastKnownInput.keyMask = kea.keyMask;
 		mLastKnownInput.keyModifiers = kea.keyModifiers;
@@ -226,70 +487,49 @@ namespace QuickGUI
 
 		switch(kea.scancode)
 		{
-		case KC_LEFT:
-			if(mText->getLength() > 0)
-			{
-				if(mCursorIndex == -1)
-				{
-					if(kea.keyModifiers & CTRL)
-						setCursorIndex(mText->getIndexOfPreviousWord(mText->getLength() - 1));
-					else
-						setCursorIndex(mText->getLength() - 1);
-				}
-				else if(mCursorIndex > 0)
-				{
-					if(kea.keyModifiers & CTRL)
-						setCursorIndex(mText->getIndexOfPreviousWord(mCursorIndex));
-					else
-						setCursorIndex(mCursorIndex - 1);
-				}
-			}
-			break;
-		case KC_RIGHT:
-			if((mText->getLength() > 0) && (mCursorIndex != -1))
-			{
-				if(mCursorIndex == (mText->getLength() - 1))
-				{
-					if(kea.keyModifiers & CTRL)
-						setCursorIndex(mText->getIndexOfNextWord(mCursorIndex));
-					else
-						setCursorIndex(-1);
-				}
-				else
-				{
-					if(kea.keyModifiers & CTRL)
-						setCursorIndex(mText->getIndexOfNextWord(mCursorIndex));
-					else
-						setCursorIndex(mCursorIndex + 1);
-				}
-			}
+		case KC_BACK:
+			removeCharacter(mCursorIndex - 1);
 			break;
 		case KC_DELETE:
-			if(mText->getLength() > 0)
-			{
-				if(mCursorIndex != -1)
-					removeCharacter(mCursorIndex);
-			}
+			removeCharacter(mCursorIndex);
 			break;
-		case KC_BACK:
-			if(mText->getLength() > 0)
-			{
-				if(mCursorIndex == -1)
-					removeCharacter(mText->getLength() - 1);
-				else if(mCursorIndex > 0)
-					removeCharacter(mCursorIndex - 1);
-			}
+		case KC_DOWN:
+			moveCursorDown();
 			break;
 		case KC_END:
-			if(!mText->empty())
-				setCursorIndex(-1);
+			if(kea.keyModifiers & CTRL)
+				setCursorIndex(mText->getLength());
+			else
+				setCursorIndex(mText->getIndexOfTextLineEnd(mCursorIndex));
+			break;
+		case KC_LEFT:
+			if(kea.keyModifiers & CTRL)
+				setCursorIndex(mText->getIndexOfPreviousWord(mCursorIndex));
+			else
+				setCursorIndex(mCursorIndex - 1);
 			break;
 		case KC_HOME:
-			if(!mText->empty())
+			if(kea.keyModifiers & CTRL)
 				setCursorIndex(0);
+			else
+				setCursorIndex(mText->getIndexOfTextLineBegin(mCursorIndex));
 			break;
-		case KC_A:
-			mFunctionKeyDownLast = true;
+		case KC_RETURN:
+			addCharacter(Text::UNICODE_CR);
+			break;
+		case KC_RIGHT:
+			if(kea.keyModifiers & CTRL)
+				setCursorIndex(mText->getIndexOfNextWord(mCursorIndex));
+			else
+				setCursorIndex(mCursorIndex + 1);
+			break;
+		case KC_UP:
+			moveCursorUp();
+			break;
+		case KC_LSHIFT:
+		case KC_RSHIFT:
+		case KC_LCONTROL:
+		case KC_RCONTROL:
 			break;
 		default:
 			mFunctionKeyDownLast = false;
@@ -299,29 +539,63 @@ namespace QuickGUI
 
 	void TextArea::onKeyUp(const EventArgs& args)
 	{
+		if(mDesc->textarea_readOnly)
+			return;
+
 		mKeyDownTimer->stop();
 		mKeyRepeatTimer->stop();
 	}
 
 	void TextArea::onKeyboardInputGain(const EventArgs& args)
 	{
+		if(mDesc->textarea_readOnly)
+			return;
+
 		mTextCursor->setVisible(true);
 		mBlinkTimer->start();
 	}
 
 	void TextArea::onKeyboardInputLose(const EventArgs& args)
 	{
+		if(mDesc->textarea_readOnly)
+			return;
+
 		mBlinkTimer->stop();
 		mTextCursor->setVisible(false);
 	}
 
+	void TextArea::onMouseButtonDown(const EventArgs& args)
+	{
+		if(mDesc->textarea_readOnly)
+			return;
+
+		const MouseEventArgs mea = dynamic_cast<const MouseEventArgs&>(args);
+		if(mea.button == MB_Left)
+		{
+			mText->clearHighlights();
+			setCursorIndex(mText->getCursorIndexAtPosition(_convertScreenToTextCoordinates(mea.position)));
+		}
+	}
+
 	void TextArea::onTripleClick(const EventArgs& args)
 	{
+		if(mDesc->textarea_readOnly)
+			return;
+
 		const MouseEventArgs mea = dynamic_cast<const MouseEventArgs&>(args);
 		if(mea.button == MB_Left)
 		{
 			mText->highlight();
 			redraw();
+		}
+	}
+
+	void TextArea::onVisibleChanged(const EventArgs& args)
+	{
+		if(!mWidgetDesc->widget_visible)
+		{
+			mBlinkTimer->stop();
+			mTextCursor->setVisible(false);
 		}
 	}
 
@@ -332,56 +606,75 @@ namespace QuickGUI
 
 	void TextArea::removeCharacter(int index)
 	{
-		if((index < 0) || (index > mText->getLength()))
-			throw Exception(Exception::ERR_TEXT,"Index out of bounds! index=" + Ogre::StringConverter::toString(index) + " length=" + Ogre::StringConverter::toString(mText->getLength()),"TextBox::removeCharacter");
+		if(index < 0)
+			return;
+
+		if(index >= mText->getLength())
+			return;
 
 		mText->removeCharacter(index);
 
-		if(index == mText->getLength())
-			setCursorIndex(-1);
-		else
-			setCursorIndex(index);
+		_determineVirtualSize();
+		_updateScrollBars();
+
+		// Update index
+		setCursorIndex(index);
+	}
+
+	void TextArea::scrollToBottom()
+	{
+		setCursorIndex(mText->getLength());
+	}
+
+	void TextArea::scrollToTop()
+	{
+		setCursorIndex(0);
 	}
 
 	void TextArea::setCursorIndex(int index)
 	{
-		if((index < -1) || (index > (mText->getLength() - 1)))
-			throw Exception(Exception::ERR_TEXT,"Index out of bounds! index=" + Ogre::StringConverter::toString(index) + " length=" + Ogre::StringConverter::toString(mText->getLength()),"TextBox::setCursorIndex");
+		if(static_cast<int>(index) > mText->getLength())
+			index = mText->getLength();
+		else if(index < 0)
+			index = 0;
 
+		// Reset cursor blinking every time we move the cursor
+		if(!mDesc->textarea_readOnly && (mDesc->sheet->getKeyboardListener() == this))
+		{
+			mBlinkTimer->reset();
+			mTextCursor->setVisible(true);
+		}
+
+		// Update Cursor Height to match the font of the character to the left of cursor
+		if(index == 0)
+			mTextCursor->setHeight(Text::getFontHeight(mDesc->textarea_defaultFontName));
+		else
+			mTextCursor->setHeight(Text::getFontHeight(mText->getCharacter(static_cast<unsigned int>(index - 1))->fontPtr));
+
+		// Update CursorIndex
 		mCursorIndex = index;
 
-		mBlinkTimer->reset();
-		mTextCursor->setVisible(true);
-
-		if(mText->getLength() == 0)
+		// See if Scrolling of Text needs to occur
+		if(isCursorIndexAboveViewableText(mCursorIndex))
 		{
-			mCursorPosition.x = 0;
-
-			Point p = getScreenPosition();
-			p.translate(mCursorPosition);
-			mTextCursor->setPosition(p);
-			redraw();
-
-			return;
+			if(mVScrollBar != NULL)
+				mVScrollBar->setPercentage(mText->getCharacterYPosition(mCursorIndex) / mVirtualSize.height);
+		}
+		else if(isCursorIndexBelowViewableText(mCursorIndex))
+		{
+			if(mVScrollBar != NULL)
+			{
+				TextLine* tl = mText->getTextLineFromIndex(mCursorIndex);
+				// I throw in a buffer of 2 pixels, so floating point rounding won't be so bad
+				mVScrollBar->setPercentage((mText->getCharacterYPosition(mCursorIndex) + tl->getHeight() + 2 - mClientDimensions.size.height) / mVirtualSize.height);
+			}
 		}
 
-		Point relativeCursorPosition;
-		if(mCursorIndex == -1)
-		{
-			Character* c = mText->getCharacter(mText->getLength() - 1);
-			relativeCursorPosition.x = c->dimensions.position.x + c->dimensions.size.width;
-			relativeCursorPosition.y = mText->getCharacterYPosition(mText->getLength() - 1);
-		}
-		else
-		{
-			relativeCursorPosition.x = mText->getCharacter(mCursorIndex)->dimensions.position.x;
-			relativeCursorPosition.y = mText->getCharacterYPosition(mCursorIndex);
-		}
-
-		mCursorPosition.x = relativeCursorPosition.x;
-		mCursorPosition.y = relativeCursorPosition.y;
+		// Position Cursor
+		mCursorPosition = mTextPosition + mText->getPositionAtCharacterIndex(mCursorIndex);
 
 		Point p = getScreenPosition();
+		p.translate(mClientDimensions.position);
 		p.translate(mCursorPosition);
 		mTextCursor->setPosition(p);
 		redraw();
@@ -389,33 +682,108 @@ namespace QuickGUI
 
 	void TextArea::setDefaultColor(const Ogre::ColourValue& cv)
 	{
-		mDesc->defaultColor = cv;
+		mDesc->textarea_defaultColor = cv;
 	}
 
 	void TextArea::setDefaultFont(const Ogre::String& fontName)
 	{
-		mDesc->defaultFontName = fontName;
+		mDesc->textarea_defaultFontName = fontName;
 		mCurrentFont = Text::getFont(fontName);
+	}
+
+	void TextArea::setHorizontalAlignment(HorizontalTextAlignment a)
+	{
+		mText->setHorizontalTextAlignment(a);
+
+		redraw();
 	}
 
 	void TextArea::setMaxCharacters(unsigned int max)
 	{
-		if(max == mDesc->maxCharacters)
+		if(max == mDesc->textarea_maxCharacters)
 			return;
 		
-		if(max < mDesc->maxCharacters)
+		if(max < mDesc->textarea_maxCharacters)
 		{
 			throw Exception(Exception::ERR_TEXT,"Cannot set max Characters when text exceeds max! (Data loss)","TextBox::setMaxCharacters");
 		}
 
-		mDesc->maxCharacters = max;
+		mDesc->textarea_maxCharacters = max;
 	}
 
 	void TextArea::setParent(Widget* parent)
 	{
-		Widget::setParent(parent);
+		ContainerWidget::setParent(parent);
 
-		mWindow->addWindowEventHandler(WINDOW_EVENT_DRAWN,&TextArea::onWindowDrawn,this);
+		if(mWindow != NULL)
+		{
+			if(parent !=  NULL)
+				mWindow->addWindowEventHandler(WINDOW_EVENT_DRAWN,&TextArea::onWindowDrawn,this);
+			else
+				mWindow->removeWindowEventHandler(WINDOW_EVENT_DRAWN,this);
+		}
+	}
+
+	void TextArea::setReadOnly(bool readOnly)
+	{
+		mDesc->textarea_readOnly = readOnly;
+
+		if(mDesc->textarea_readOnly)
+		{
+			mTextCursor->setVisible(false);
+			mBlinkTimer->stop();
+		}
+	}
+
+	void TextArea::setTextCursorSkinType(const Ogre::String& skinTypeName)
+	{
+		mDesc->textarea_textCursorDefaultSkinTypeName = skinTypeName;
+
+		mTextCursor->setSkinType(skinTypeName);
+	}
+
+	void TextArea::setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv)
+	{
+		mText->setText(s,fp,cv);
+
+		_determineVirtualSize();
+		_updateScrollBars();
+
+		scrollToBottom();
+
+		redraw();
+	}
+
+	void TextArea::setText(Ogre::UTFString s, const Ogre::String& fontName, const Ogre::ColourValue& cv)
+	{
+		setText(s,Text::getFont(fontName),cv);
+	}
+
+	void TextArea::setText(Ogre::UTFString s)
+	{
+		setText(s,mDesc->textarea_defaultFontName,mDesc->textarea_defaultColor);
+	}
+
+	void TextArea::setText(std::vector<TextSegment> segments)
+	{
+		mText->setText(segments);
+
+		_determineVirtualSize();
+		_updateScrollBars();
+
+		scrollToBottom();
+
+		redraw();
+	}
+
+	void TextArea::updateClientDimensions()
+	{
+		ContainerWidget::updateClientDimensions();
+
+		if(mText != NULL)
+			mText->setAllottedWidth(mClientDimensions.size.width);
+
+		redraw();
 	}
 
 	void TextArea::updateTexturePosition()

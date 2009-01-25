@@ -14,6 +14,17 @@ namespace QuickGUI
 		}
 	}
 
+	Ogre::String StringConverter::toString(ConsoleLayout l)
+	{
+		switch(l)
+		{
+		case CONSOLE_LAYOUT_TEXT_INPUT_BOTTOM:						return "CONSOLE_LAYOUT_TEXT_INPUT_BOTTOM";
+		case CONSOLE_LAYOUT_TEXT_INPUT_TOP:							return "CONSOLE_LAYOUT_TEXT_INPUT_TOP";
+		default:
+			throw Exception(Exception::ERR_SERIALIZATION,"ConsoleLayout type does not have a string equivalent! Chick if update is needed!","StringConverter::toString");
+		}
+	}
+
 	Ogre::String StringConverter::toString(HorizontalAnchor a)
 	{
 		switch(a)
@@ -194,6 +205,14 @@ namespace QuickGUI
 		else if(s == "BRUSHFILTER_LINEAR")							return BRUSHFILTER_LINEAR;
 		else
 			throw Exception(Exception::ERR_SERIALIZATION,"\"" + s + "\" is not a recognized BrushFilterMode type! (Possible need to update?)","StringConverter::parseBrushFilterMode");
+	}
+
+	ConsoleLayout StringConverter::parseConsoleLayout(const Ogre::String& s)
+	{
+		if(s == "CONSOLE_LAYOUT_TEXT_INPUT_BOTTOM")					return CONSOLE_LAYOUT_TEXT_INPUT_BOTTOM;
+		else if(s == "CONSOLE_LAYOUT_TEXT_INPUT_TOP")				return CONSOLE_LAYOUT_TEXT_INPUT_TOP;
+		else
+			throw Exception(Exception::ERR_SERIALIZATION,"\"" + s + "\" is not a recognized ConsoleLayout type! (Possible need to update?)","StringConverter::parseConsoleLayout");
 	}
 
 	HorizontalAnchor StringConverter::parseHorizontalAnchor(const Ogre::String& s)

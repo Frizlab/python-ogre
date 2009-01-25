@@ -1,8 +1,6 @@
 #ifndef QUICKGUIPOINT_H
 #define QUICKGUIPOINT_H
 
-#include "OgrePrerequisites.h"
-
 #include "QuickGUIExportDLL.h"
 #include "QuickGUISize.h"
 
@@ -94,6 +92,10 @@ namespace QuickGUI
         }
 
 		void translate(const Point& p);
+
+		Point& roundUp();
+		Point& roundDown();
+		Point& round();
 
 		float x;
 		float y;

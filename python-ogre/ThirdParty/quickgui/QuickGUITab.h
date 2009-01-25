@@ -9,10 +9,15 @@ namespace QuickGUI
 			public LabelDesc
 	{
 	public:
-		TabDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		TabDesc(const Ogre::String& id);
+		virtual ~TabDesc() {}
+	public:
 
 		/// width in pixels of the front edge of the tab.
-		float frontWidth;
+		float tab_frontWidth;
 
 		/**
 		* Returns the class of Desc object this is.
@@ -23,8 +28,10 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getWidgetClass() { return "Tab"; }
 
-		// Factory method
-		static WidgetDesc* factory() { return new TabDesc(); }
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
 
 		/**
 		* Outlines how the desc class is written to XML and read from XML.
@@ -44,8 +51,8 @@ namespace QuickGUI
 	public:
 		// Needed for TabPage to serial write TextDesc to disk
 		friend class TabPage;
-		// Factory method
-		static Widget* factory(const Ogre::String& widgetName);
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**

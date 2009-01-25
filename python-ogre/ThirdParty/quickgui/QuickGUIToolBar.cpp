@@ -8,25 +8,32 @@ namespace QuickGUI
 
 	void ToolBar::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("ToolBar");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("ToolBar");
 		d->defineSkinElement(BACKGROUND);
 		d->definitionComplete();
 
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("ToolBar",d);
 	}
 
-	ToolBarDesc::ToolBarDesc() :
-		ContainerWidgetDesc()
+	ToolBarDesc::ToolBarDesc(const Ogre::String& id) :
+		ContainerWidgetDesc(id)
 	{
-		supportScrollBars = false;
-		itemLayout = TOOLBAR_ITEM_LAYOUT_NEGATIVE_TO_POSITIVE;
+		resetToDefault();
+	}
+
+	void ToolBarDesc::resetToDefault()
+	{
+		ContainerWidgetDesc::resetToDefault();
+
+		containerwidget_supportScrollBars = false;
+		toolbar_itemLayout = TOOLBAR_ITEM_LAYOUT_NEGATIVE_TO_POSITIVE;
 	}
 
 	void ToolBarDesc::serialize(SerialBase* b)
 	{
 		ContainerWidgetDesc::serialize(b);
 
-		b->IO("ItemLayout",&itemLayout);
+		b->IO("ItemLayout",&toolbar_itemLayout);
 	}
 
 	ToolBar::ToolBar(const Ogre::String& name) :
@@ -49,14 +56,14 @@ namespace QuickGUI
 
 		ToolBarDesc* tbd = dynamic_cast<ToolBarDesc*>(d);
 
-		mDesc->itemLayout = tbd->itemLayout;
+		mDesc->toolbar_itemLayout = tbd->toolbar_itemLayout;
 
-		if(mWidgetDesc->dimensions.size.width > mWidgetDesc->dimensions.size.height)
+		if(mWidgetDesc->widget_dimensions.size.width > mWidgetDesc->widget_dimensions.size.height)
 			mOrientation = TOOLBAR_ORIENTATION_HORIZONTAL;
 		else
 			mOrientation = TOOLBAR_ORIENTATION_VERTICAL;
 
-		setSkinType(d->skinTypeName);
+		setSkinType(d->widget_skinTypeName);
 	}
 
 	void ToolBar::addChild(Widget* w)
@@ -86,21 +93,21 @@ namespace QuickGUI
 		mMenuOpened = false;
 	}
 
-	Menu* ToolBar::createMenu(MenuDesc& d)
+	Menu* ToolBar::createMenu(MenuDesc* d)
 	{
-		d.toolBar = this;
+		d->toolBar = this;
 
 		SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
 
 		if(mOrientation == TOOLBAR_ORIENTATION_HORIZONTAL)
 		{
-			d.verticalAnchor = ANCHOR_VERTICAL_TOP_BOTTOM;
-			d.dimensions.size = Size(d.textDesc.getTextWidth() + (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT)),mDesc->dimensions.size.height);
+			d->widget_verticalAnchor = ANCHOR_VERTICAL_TOP_BOTTOM;
+			d->widget_dimensions.size = Size(d->textDesc.getTextWidth() + (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT)),mDesc->widget_dimensions.size.height);
 		}
 		else
 		{
-			d.horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
-			d.dimensions.size = Size(mDesc->dimensions.size.width,d.textDesc.getTextHeight() + (se->getBorderThickness(BORDER_TOP) + se->getBorderThickness(BORDER_BOTTOM)));
+			d->widget_horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
+			d->widget_dimensions.size = Size(mDesc->widget_dimensions.size.width,d->textDesc.getTextHeight() + (se->getBorderThickness(BORDER_TOP) + se->getBorderThickness(BORDER_BOTTOM)));
 		}
 
 		Menu* newMenu = dynamic_cast<Menu*>(Widget::create("Menu",d));
@@ -114,17 +121,17 @@ namespace QuickGUI
 		return newMenu;
 	}
 
-	ToolBarItem* ToolBar::createToolBarItem(const Ogre::String& className, ToolBarItemDesc& d)
+	ToolBarItem* ToolBar::createToolBarItem(const Ogre::String& className, ToolBarItemDesc* d)
 	{
 		if(className == "Menu")
-			return createMenu(dynamic_cast<MenuDesc&>(d));
+			return createMenu(dynamic_cast<MenuDesc*>(d));
 
-		d.toolBar = this;
+		d->toolBar = this;
 
 		if(mOrientation == TOOLBAR_ORIENTATION_HORIZONTAL)
-			d.verticalAnchor = ANCHOR_VERTICAL_TOP_BOTTOM;
+			d->widget_verticalAnchor = ANCHOR_VERTICAL_TOP_BOTTOM;
 		else
-			d.horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
+			d->widget_horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
 
 		ToolBarItem* newItem = dynamic_cast<ToolBarItem*>(Widget::create(className,d));
 
@@ -135,15 +142,6 @@ namespace QuickGUI
 		addChild(newItem);
 
 		return newItem;
-	}
-
-	Widget* ToolBar::factory(const Ogre::String& widgetName)
-	{
-		Widget* newWidget = new ToolBar(widgetName);
-
-		newWidget->_createDescObject("ToolBarDesc");
-
-		return newWidget;
 	}
 
 	Ogre::String ToolBar::getClass()
@@ -163,7 +161,7 @@ namespace QuickGUI
 
 	Point ToolBar::getNextAvailableItemPosition(ToolBarItem* newlyAddedItem)
 	{
-		if(mDesc->itemLayout == TOOLBAR_ITEM_LAYOUT_NEGATIVE_TO_POSITIVE)
+		if(mDesc->toolbar_itemLayout == TOOLBAR_ITEM_LAYOUT_NEGATIVE_TO_POSITIVE)
 		{
 			if(mOrientation == TOOLBAR_ORIENTATION_HORIZONTAL)
 			{
@@ -184,14 +182,14 @@ namespace QuickGUI
 		{
 			if(mOrientation == TOOLBAR_ORIENTATION_HORIZONTAL)
 			{
-				float xPos = mDesc->dimensions.size.width - newlyAddedItem->getSize().width;
+				float xPos = mDesc->widget_dimensions.size.width - newlyAddedItem->getSize().width;
 				if(!mChildren.empty())
 					xPos = mChildren.back()->getPosition().x - mChildren.back()->getSize().width;
 				return Point(xPos,0);
 			}
 			else
 			{
-				float yPos = mDesc->dimensions.size.height - newlyAddedItem->getSize().height;
+				float yPos = mDesc->widget_dimensions.size.height - newlyAddedItem->getSize().height;
 				if(!mChildren.empty())
 					yPos = mChildren.back()->getPosition().y - mChildren.back()->getSize().height;
 				return Point(0,yPos);
@@ -207,14 +205,14 @@ namespace QuickGUI
 	void ToolBar::onDraw()
 	{
 		SkinType* st = mSkinType;
-		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
-			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+		if(!mWidgetDesc->widget_enabled && mWidgetDesc->widget_disabledSkinType != "")
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->widget_disabledSkinType);
 
 		Brush* brush = Brush::getSingletonPtr();
 
-		brush->setFilterMode(mDesc->brushFilterMode);
+		brush->setFilterMode(mDesc->widget_brushFilterMode);
 			
-		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->dimensions.size),st->getSkinElement(mSkinElementName));
+		brush->drawSkinElement(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size),st->getSkinElement(mSkinElementName));
 	}
 
 	void ToolBar::openMenu(Menu* m)

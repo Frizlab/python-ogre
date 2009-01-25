@@ -14,6 +14,8 @@ namespace QuickGUI
 
 	ScriptWriter::~ScriptWriter()
 	{
+		for(std::list<ScriptDefinition*>::iterator it = mDefinitions.begin(); it != mDefinitions.end(); ++it)
+			OGRE_DELETE_T((*it),ScriptDefinition,Ogre::MEMCATEGORY_GENERAL);
 	}
 
 	ScriptWriter* ScriptWriter::getSingletonPtr(void) 
@@ -31,8 +33,10 @@ namespace QuickGUI
 	{
 		for(std::list<ScriptDefinition*>::iterator it = mDefinitions.begin(); it != mDefinitions.end(); ++it)
 		{
+			// Overwrite any ScriptDefinitions that have the same type and ID
 			if(((*it)->getType() == d->getType()) && ((*it)->getID() == d->getID()))
 			{
+				OGRE_DELETE_T((*it),ScriptDefinition,Ogre::MEMCATEGORY_GENERAL);
 				(*it) = d;
 				return;
 			}

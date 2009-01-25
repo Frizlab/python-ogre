@@ -1,5 +1,4 @@
 #include "QuickGUIWidget.h"
-#include "QuickGUIWidgetDescFactoryManager.h"
 #include "QuickGUIWindow.h"
 #include "QuickGUIRoot.h"
 #include "QuickGUISheet.h"
@@ -9,53 +8,60 @@ namespace QuickGUI
 {
 	int Widget::mWidgetCounter = 0;
 
-	WidgetDesc::WidgetDesc()
+	WidgetDesc::WidgetDesc(const Ogre::String& id)
 	{
-		brushFilterMode = BRUSHFILTER_LINEAR;
-		consumeKeyboardEvents = false;
-		enabled = true;
-		dimensions = Rect::ZERO;
-		disabledSkinType = "";
-		dragable = false;
+		mID = id;
+
+		resetToDefault();
+	}
+
+	void WidgetDesc::resetToDefault()
+	{
+		widget_brushFilterMode = BRUSHFILTER_LINEAR;
+		widget_consumeKeyboardEvents = false;
+		widget_enabled = true;
+		widget_dimensions = Rect::ZERO;
+		widget_disabledSkinType = "";
+		widget_dragable = false;
 		guiManager = NULL;
-		horizontalAnchor = ANCHOR_HORIZONTAL_LEFT;
-		hoverTime = Root::getSingleton().getDefaultHoverTime();
-		maxSize = Size::ZERO;
-		minSize = Size(0,0);
-		name = "";
-		resizable = false;
-		scrollable = true;
+		widget_horizontalAnchor = ANCHOR_HORIZONTAL_LEFT;
+		widget_hoverTime = Root::getSingleton().getDefaultHoverTime();
+		widget_maxSize = Size::ZERO;
+		widget_minSize = Size(0,0);
+		widget_name = "";
+		widget_resizable = false;
+		widget_scrollable = true;
 		sheet = NULL;
-		transparencyPicking = true;
-		verticalAnchor = ANCHOR_VERTICAL_TOP;
-		visible = true;
-		skinTypeName = "default";
+		widget_transparencyPicking = true;
+		widget_verticalAnchor = ANCHOR_VERTICAL_TOP;
+		widget_visible = true;
+		widget_skinTypeName = "default";
 	}
 
 	void WidgetDesc::serialize(SerialBase* b)
 	{
-		b->IO("BrushFilterMode",&brushFilterMode);
-		b->IO("ConsumeKeyboardEvents",&consumeKeyboardEvents);
-		b->IO("Enabled",&enabled);
-		b->IO("Dimensions",&dimensions);
-		b->IO("DisabledSkinType",&disabledSkinType);
-		b->IO("Dragable",&dragable);
-		b->IO("HorizontalAnchor",&horizontalAnchor);
-		b->IO("HoverTime",&hoverTime);
-		b->IO("MaxSize",&maxSize);
-		b->IO("MinSize",&minSize);
-		b->IO("Resizable",&resizable);
-		b->IO("Scrollable",&scrollable);
-		b->IO("TransparencyPicking",&transparencyPicking);
-		b->IO("VerticalAnchor",&verticalAnchor);
-		b->IO("Visible",&visible);
-		b->IO("SkinType",&skinTypeName);
+		b->IO("BrushFilterMode",&widget_brushFilterMode);
+		b->IO("ConsumeKeyboardEvents",&widget_consumeKeyboardEvents);
+		b->IO("Enabled",&widget_enabled);
+		b->IO("Dimensions",&widget_dimensions);
+		b->IO("DisabledSkinType",&widget_disabledSkinType);
+		b->IO("Dragable",&widget_dragable);
+		b->IO("HorizontalAnchor",&widget_horizontalAnchor);
+		b->IO("HoverTime",&widget_hoverTime);
+		b->IO("MaxSize",&widget_maxSize);
+		b->IO("MinSize",&widget_minSize);
+		b->IO("Resizable",&widget_resizable);
+		b->IO("Scrollable",&widget_scrollable);
+		b->IO("TransparencyPicking",&widget_transparencyPicking);
+		b->IO("VerticalAnchor",&widget_verticalAnchor);
+		b->IO("Visible",&widget_visible);
+		b->IO("SkinType",&widget_skinTypeName);
 	}
 
-	Widget::Widget(const Ogre::String& name) :
+	Widget::Widget(const Ogre::String& widget_name) :
 		Serializable(),
 		mBeingDragged(false),
-		mComponent(false),
+		mComponentOfAWidget(false),
 		mGrabbed(false),
 		mInitialized(false),
 		mParentWidget(0),
@@ -64,18 +70,18 @@ namespace QuickGUI
 		mWidgetDesc(NULL),
 		mWindow(0)
 	{
-		mName = name;
+		mName = widget_name;
 	}
 
 	Widget::~Widget()
 	{
-		delete mWidgetDesc;
+		FactoryManager::getSingleton().getWidgetDescFactory()->destroyInstance(mWidgetDesc->getID());
 
 		// Clean up all user defined event handlers.
 		for(int index = 0; index < WIDGET_EVENT_COUNT; ++index)
 		{
 			for(std::vector<EventHandlerSlot*>::iterator it = mWidgetEventHandlers[index].begin(); it != mWidgetEventHandlers[index].end(); ++it)
-				delete (*it);
+				OGRE_DELETE_T((*it),EventHandlerSlot,Ogre::MEMCATEGORY_GENERAL);
 		}
 	}
 
@@ -84,9 +90,9 @@ namespace QuickGUI
 		if(mInitialized)
 			throw Exception(Exception::ERR_INTERNAL_ERROR,"Widget is already initialized!","Widget::_createDescObject");
 
-		mWidgetDesc = WidgetDescFactoryManager::getSingleton().createWidgetDesc(className);
-		// Assign name, stored from widget creation
-		mWidgetDesc->name = mName;
+		mWidgetDesc = FactoryManager::getSingleton().getWidgetDescFactory()->createInstance(className);
+		// Assign widget_name, stored from widget creation
+		mWidgetDesc->widget_name = mName;
 
 		if(mWidgetDesc->getWidgetClass() != getClass())
 			throw Exception(Exception::ERR_INVALID_DESC,"Desc of class \"" + className + "\" is not meant for Widget of class \"" + getClass() + "\"!","Widget::_initialize");
@@ -102,20 +108,20 @@ namespace QuickGUI
 
 		mInitialized = true;
 
-		setConsumeKeyboardEvents(d->consumeKeyboardEvents);
-		setEnabled(d->enabled);
-		setDimensions(d->dimensions);
-		setDragable(d->dragable);
-		setHorizontalAnchor(d->horizontalAnchor);
-		setHoverTime(d->hoverTime);
-		setMaxSize(d->maxSize);
-		setMinSize(d->minSize);
-		setName(d->name);
-		setResizable(d->resizable);
-		setScrollable(d->scrollable);
-		setTransparencyPicking(d->transparencyPicking);
-		setVerticalAnchor(d->verticalAnchor);
-		setVisible(d->visible);
+		setConsumeKeyboardEvents(d->widget_consumeKeyboardEvents);
+		setEnabled(d->widget_enabled);
+		setDimensions(d->widget_dimensions);
+		setDragable(d->widget_dragable);
+		setHorizontalAnchor(d->widget_horizontalAnchor);
+		setHoverTime(d->widget_hoverTime);
+		setMaxSize(d->widget_maxSize);
+		setMinSize(d->widget_minSize);
+		setName(d->widget_name);
+		setResizable(d->widget_resizable);
+		setScrollable(d->widget_scrollable);
+		setTransparencyPicking(d->widget_transparencyPicking);
+		setVerticalAnchor(d->widget_verticalAnchor);
+		setVisible(d->widget_visible);
 	}
 
 	void Widget::_setGUIManager(GUIManager* gm)
@@ -125,8 +131,8 @@ namespace QuickGUI
 
 	void Widget::_setSheet(Sheet* sheet)
 	{
-		if((sheet != NULL) && (sheet->findWidget(mWidgetDesc->name) != NULL) && (sheet->findWidget(mWidgetDesc->name) != this))
-			throw Exception(Exception::ERR_DUPLICATE_ITEM,"A widget with name \"" + mWidgetDesc->name + "\" already exists in Sheet \"" + sheet->getName() + "\"!","Widget::_setSheet");
+		if((sheet != NULL) && (sheet->findWidget(mWidgetDesc->widget_name) != NULL) && (sheet->findWidget(mWidgetDesc->widget_name) != this))
+			throw Exception(Exception::ERR_DUPLICATE_ITEM,"A widget with widget_name \"" + mWidgetDesc->widget_name + "\" already exists in Sheet \"" + sheet->getName() + "\"!","Widget::_setSheet");
 
 		mWidgetDesc->sheet = sheet;
 	}
@@ -136,26 +142,26 @@ namespace QuickGUI
 		mWidgetEventHandlers[EVENT].push_back(function);
 	}
 
-	Widget* Widget::create(const Ogre::String& className, WidgetDesc& d)
+	Widget* Widget::create(const Ogre::String& className, WidgetDesc* d)
 	{
-		Ogre::String temp = d.name;
+		Ogre::String temp = d->widget_name;
 
-		if(d.name == "")
+		if(d->widget_name == "")
 		{
-			d.name = className + Ogre::StringConverter::toString(mWidgetCounter);
+			d->widget_name = className + Ogre::StringConverter::toString(mWidgetCounter);
 			++mWidgetCounter;
 		}
 
-		Ogre::String cName = d.getWidgetClass();
+		Ogre::String cName = d->getWidgetClass();
 
-		if(className != d.getWidgetClass())
-			throw Exception(Exception::ERR_INVALID_DESC,"Desc object for Widget of class \"" + d.getWidgetClass() + "\" does not match Widget of class \"" + className + "\"!","GUIManager::createWidget");
+		if(className != d->getWidgetClass())
+			throw Exception(Exception::ERR_INVALID_DESC,"Desc object for Widget of class \"" + d->getWidgetClass() + "\" does not match Widget of class \"" + className + "\"!","GUIManager::createWidget");
 
-		Widget* newWidget = WidgetFactoryManager::getSingleton().createWidget(className,d.name);
-		newWidget->_initialize(&d);
+		Widget* newWidget = FactoryManager::getSingleton().getWidgetFactory()->createInstance(className,d->widget_name);
+		newWidget->_initialize(d);
 
-		// Restore the name, in case it was changed.  This Desc could be used multiple times, so this is important!
-		d.name = temp;
+		// Restore the widget_name, in case it was changed.  This Desc could be used multiple times, so this is important!
+		d->widget_name = temp;
 
 		return newWidget;
 	}
@@ -163,7 +169,7 @@ namespace QuickGUI
 	void Widget::drag(int xOffset, int yOffset)
 	{
 		mBeingDragged = true;
-		mWidgetDesc->dimensions.position.translate(Point(xOffset,yOffset));
+		mWidgetDesc->widget_dimensions.position.translate(Point(xOffset,yOffset));
 
 		updateTexturePosition();
 
@@ -174,14 +180,14 @@ namespace QuickGUI
 	void Widget::draw()
 	{
 		// check visibility
-		if( !mWidgetDesc->visible )
+		if( !mWidgetDesc->widget_visible )
 			return;
 
 		Brush* brush = Brush::getSingletonPtr();
 
 		// check clip region
 		Rect clipRegion = brush->getClipRegion();
-		if ( clipRegion.getIntersection(Rect(mTexturePosition,mWidgetDesc->dimensions.size)) == Rect::ZERO )
+		if ( clipRegion.getIntersection(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size)) == Rect::ZERO )
 			return;
 
 		// onDraw
@@ -195,34 +201,34 @@ namespace QuickGUI
 		return NULL;
 	}
 
-	Widget* Widget::findWidget(const Ogre::String& name)
+	Widget* Widget::findWidget(const Ogre::String& widget_name)
 	{
-		if(mWidgetDesc->name == name)
+		if(mWidgetDesc->widget_name == widget_name)
 			return this;
 		return NULL;
 	}
 
 	Widget* Widget::findWidgetAtPoint(const Point& p, bool ignoreDisabled)
 	{
-		// If we are not visible, return NULL
-		if(!mWidgetDesc->visible)
+		// If we are not widget_visible, return NULL
+		if(!mWidgetDesc->widget_visible)
 			return NULL;
 
-		// If we ignore disabled and this widget is enabled, return NULL
-		if(ignoreDisabled && !mWidgetDesc->enabled)
+		// If we ignore disabled and this widget is widget_enabled, return NULL
+		if(ignoreDisabled && !mWidgetDesc->widget_enabled)
 			return NULL;
 
 		// See if point is within widget bounds
-		if(mWidgetDesc->visible && Rect(mTexturePosition,mWidgetDesc->dimensions.size).isPointWithinBounds(p))
+		if(mWidgetDesc->widget_visible && Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size).isPointWithinBounds(p))
 		{
 			// Take transparency picking into account
-			if(mWidgetDesc->transparencyPicking)
+			if(mWidgetDesc->widget_transparencyPicking && (mSkinType != NULL))
 			{
 				// Get relative position
 				Point relPos = p - mTexturePosition;
-				// Get percentage of position relative to widget dimensions
-				relPos.x = relPos.x / mWidgetDesc->dimensions.size.width;
-				relPos.y = relPos.y / mWidgetDesc->dimensions.size.height;
+				// Get percentage of position relative to widget widget_dimensions
+				relPos.x = relPos.x / mWidgetDesc->widget_dimensions.size.width;
+				relPos.y = relPos.y / mWidgetDesc->widget_dimensions.size.height;
 				// Get pixel position of texture
 				Point pixelPos;
 				SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
@@ -270,16 +276,16 @@ namespace QuickGUI
 		{
 			if(p.y < se->getBorderThickness(BORDER_TOP))
 				return BORDER_TOP_LEFT;
-			if(p.y > (mWidgetDesc->dimensions.size.height - se->getBorderThickness(BORDER_BOTTOM)))
+			if(p.y > (mWidgetDesc->widget_dimensions.size.height - se->getBorderThickness(BORDER_BOTTOM)))
 				return BORDER_BOTTOM_LEFT;
 			return BORDER_LEFT;
 		}
 
-		if(p.x > (mWidgetDesc->dimensions.size.width - se->getBorderThickness(BORDER_RIGHT)))
+		if(p.x > (mWidgetDesc->widget_dimensions.size.width - se->getBorderThickness(BORDER_RIGHT)))
 		{
 			if(p.y < se->getBorderThickness(BORDER_TOP))
 				return BORDER_TOP_RIGHT;
-			if(p.y > (mWidgetDesc->dimensions.size.height - se->getBorderThickness(BORDER_BOTTOM)))
+			if(p.y > (mWidgetDesc->widget_dimensions.size.height - se->getBorderThickness(BORDER_BOTTOM)))
 				return BORDER_BOTTOM_RIGHT;
 			return BORDER_RIGHT;
 		}
@@ -290,6 +296,11 @@ namespace QuickGUI
 		return BORDER_BOTTOM;
 	}
 
+	BrushFilterMode Widget::getBrushFilterMode()
+	{
+		return mWidgetDesc->widget_brushFilterMode;
+	}
+
 	Rect Widget::getClientDimensions()
 	{
 		return mClientDimensions;
@@ -297,27 +308,27 @@ namespace QuickGUI
 
 	bool Widget::getConsumeKeyboardEvents()
 	{
-		return mWidgetDesc->consumeKeyboardEvents;
+		return mWidgetDesc->widget_consumeKeyboardEvents;
 	}
 
 	Rect Widget::getDimensions()
 	{
-		return mWidgetDesc->dimensions;
+		return mWidgetDesc->widget_dimensions;
 	}
 
 	Ogre::String Widget::getDisabledSkinType()
 	{
-		return mWidgetDesc->disabledSkinType;
+		return mWidgetDesc->widget_disabledSkinType;
 	}
 
 	bool Widget::getDragable()
 	{
-		return mWidgetDesc->dragable;
+		return mWidgetDesc->widget_dragable;
 	}
 
 	bool Widget::getEnabled()
 	{
-		return mWidgetDesc->enabled;
+		return mWidgetDesc->widget_enabled;
 	}
 
 	bool Widget::getGrabbed()
@@ -332,32 +343,32 @@ namespace QuickGUI
 
 	float Widget::getHeight()
 	{
-		return mWidgetDesc->dimensions.size.height;
+		return mWidgetDesc->widget_dimensions.size.height;
 	}
 
 	HorizontalAnchor Widget::getHorizontalAnchor()
 	{
-		return mWidgetDesc->horizontalAnchor;
+		return mWidgetDesc->widget_horizontalAnchor;
 	}
 
 	float Widget::getHoverTime()
 	{
-		return mWidgetDesc->hoverTime;
+		return mWidgetDesc->widget_hoverTime;
 	}
 
 	Size Widget::getMaxSize()
 	{
-		return mWidgetDesc->maxSize;
+		return mWidgetDesc->widget_maxSize;
 	}
 
 	Size Widget::getMinSize()
 	{
-		return mWidgetDesc->minSize;
+		return mWidgetDesc->widget_minSize;
 	}
 
 	Ogre::String Widget::getName()
 	{
-		return mWidgetDesc->name;
+		return mWidgetDesc->widget_name;
 	}
 
 	Widget* Widget::getParentWidget()
@@ -367,20 +378,24 @@ namespace QuickGUI
 
 	Point Widget::getPosition()
 	{
-		return mWidgetDesc->dimensions.position;
+		return mWidgetDesc->widget_dimensions.position;
 	}
 
 	bool Widget::getResizable()
 	{
-		return mWidgetDesc->resizable;
+		return mWidgetDesc->widget_resizable;
 	}
 
 	Point Widget::getScreenPosition()
 	{
 		if(mParentWidget == NULL)
-			return mWidgetDesc->dimensions.position + mScrollOffset;
+			return mWidgetDesc->widget_dimensions.position + mScrollOffset;
 
-		return mParentWidget->getScreenPosition() + mParentWidget->getClientDimensions().position + (mWidgetDesc->dimensions.position + mScrollOffset);
+		// Component widget's positions are not relative to their parent's client dimensions.
+		if(isComponentOfAWidget())
+			return mParentWidget->getScreenPosition() + (mWidgetDesc->widget_dimensions.position + mScrollOffset);
+		else
+			return mParentWidget->getScreenPosition() + mParentWidget->getClientDimensions().position + (mWidgetDesc->widget_dimensions.position + mScrollOffset);
 	}
 
 	Point Widget::getScroll()
@@ -390,7 +405,7 @@ namespace QuickGUI
 
 	bool Widget::getScrollable()
 	{
-		return mWidgetDesc->scrollable;
+		return mWidgetDesc->widget_scrollable;
 	}
 
 	Widget* Widget::getScrollableContainerWidget()
@@ -418,7 +433,7 @@ namespace QuickGUI
 
 	Size Widget::getSize()
 	{
-		return mWidgetDesc->dimensions.size;
+		return mWidgetDesc->widget_dimensions.size;
 	}
 
 	Point Widget::getTexturePosition()
@@ -428,27 +443,27 @@ namespace QuickGUI
 
 	bool Widget::getTransparencyPicking()
 	{
-		return mWidgetDesc->transparencyPicking;
+		return mWidgetDesc->widget_transparencyPicking;
 	}
 
 	VerticalAnchor Widget::getVerticalAnchor()
 	{
-		return mWidgetDesc->verticalAnchor;
+		return mWidgetDesc->widget_verticalAnchor;
 	}
 
 	bool Widget::getVisible()
 	{
-		return mWidgetDesc->visible;
+		return mWidgetDesc->widget_visible;
 	}
 
 	Ogre::String Widget::getSkinTypeName()
 	{
-		return mWidgetDesc->skinTypeName;
+		return mWidgetDesc->widget_skinTypeName;
 	}
 
 	float Widget::getWidth()
 	{
-		return mWidgetDesc->dimensions.size.width;
+		return mWidgetDesc->widget_dimensions.size.width;
 	}
 
 	bool Widget::hasEventHandler(WidgetEvent EVENT, void* obj)
@@ -465,6 +480,11 @@ namespace QuickGUI
 	bool Widget::isComponentWidget()
 	{
 		return false;
+	}
+
+	bool Widget::isComponentOfAWidget()
+	{
+		return mComponentOfAWidget;
 	}
 
 	bool Widget::isContainerWidget()
@@ -487,20 +507,20 @@ namespace QuickGUI
 		// Convert point to relative (to widget) coordinates
 		p -= mTexturePosition;
 
-		if((p.x < 0) || (p.x > mWidgetDesc->dimensions.size.width))
+		if((p.x < 0) || (p.x > mWidgetDesc->widget_dimensions.size.width))
 			return false;
 
-		if((p.y < 0) || (p.y > mWidgetDesc->dimensions.size.height))
+		if((p.y < 0) || (p.y > mWidgetDesc->widget_dimensions.size.height))
 			return false;
 
 		if(mSkinType == NULL)
 			return false;
 
 		SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
-		if((p.x < se->getBorderThickness(BORDER_LEFT)) || (p.x > (mWidgetDesc->dimensions.size.width - se->getBorderThickness(BORDER_RIGHT))))
+		if((p.x < se->getBorderThickness(BORDER_LEFT)) || (p.x > (mWidgetDesc->widget_dimensions.size.width - se->getBorderThickness(BORDER_RIGHT))))
 			return true;
 
-		if((p.y < se->getBorderThickness(BORDER_TOP)) || (p.y > (mWidgetDesc->dimensions.size.height - se->getBorderThickness(BORDER_BOTTOM))))
+		if((p.y < se->getBorderThickness(BORDER_TOP)) || (p.y > (mWidgetDesc->widget_dimensions.size.height - se->getBorderThickness(BORDER_BOTTOM))))
 			return true;
 
 		return false;
@@ -520,7 +540,7 @@ namespace QuickGUI
 			{
 				EventHandlerSlot* ehs = (*it);
 				mWidgetEventHandlers[EVENT].erase(it);
-				delete ehs;
+				OGRE_DELETE_T(ehs,EventHandlerSlot,Ogre::MEMCATEGORY_GENERAL);
 				return;
 			}
 		}
@@ -531,53 +551,53 @@ namespace QuickGUI
 	void Widget::resize(BorderSide s, float xOffset, float yOffset)
 	{
 		bool changePosition = false;
-		Point newPosition = mWidgetDesc->dimensions.position;
+		Point newPosition = mWidgetDesc->widget_dimensions.position;
 		
 		// Record size before resize
-		Size previousSize = mWidgetDesc->dimensions.size;
+		Size previousSize = mWidgetDesc->widget_dimensions.size;
 
 		switch(s)
 		{
 		case BORDER_BOTTOM:
-			setHeight(mWidgetDesc->dimensions.size.height + yOffset);
+			setHeight(mWidgetDesc->widget_dimensions.size.height + yOffset);
 			break;
 		case BORDER_TOP_LEFT:
 			{
-				Size newSize(mWidgetDesc->dimensions.size);
+				Size newSize(mWidgetDesc->widget_dimensions.size);
 				newSize.width -= xOffset;
 				newSize.height -= yOffset;
 				setSize(newSize);
 
 				changePosition = true;
-				newPosition.x += previousSize.width - mWidgetDesc->dimensions.size.width;
-				newPosition.y += previousSize.height - mWidgetDesc->dimensions.size.height;
+				newPosition.x += previousSize.width - mWidgetDesc->widget_dimensions.size.width;
+				newPosition.y += previousSize.height - mWidgetDesc->widget_dimensions.size.height;
 			}
 			break;
 		case BORDER_BOTTOM_LEFT: 
 			{
-				Size newSize(mWidgetDesc->dimensions.size);
+				Size newSize(mWidgetDesc->widget_dimensions.size);
 				newSize.width -= xOffset;
 				newSize.height += yOffset;
 				setSize(newSize);
 
 				changePosition = true;
-				newPosition.x += previousSize.width - mWidgetDesc->dimensions.size.width;
+				newPosition.x += previousSize.width - mWidgetDesc->widget_dimensions.size.width;
 			}
 			break;
 		case BORDER_TOP_RIGHT:
 			{				
-				Size newSize(mWidgetDesc->dimensions.size);
+				Size newSize(mWidgetDesc->widget_dimensions.size);
 				newSize.width += xOffset;
 				newSize.height -= yOffset;
 				setSize(newSize);
 
 				changePosition = true;
-				newPosition.y += previousSize.height - mWidgetDesc->dimensions.size.height;
+				newPosition.y += previousSize.height - mWidgetDesc->widget_dimensions.size.height;
 			}
 			break;
 		case BORDER_BOTTOM_RIGHT:
 			{
-				Size newSize(mWidgetDesc->dimensions.size);
+				Size newSize(mWidgetDesc->widget_dimensions.size);
 				newSize.width += xOffset;
 				newSize.height += yOffset;
 				setSize(newSize);
@@ -585,21 +605,21 @@ namespace QuickGUI
 			break;
 		case BORDER_LEFT: 
 			{
-				setWidth(mWidgetDesc->dimensions.size.width - xOffset);
+				setWidth(mWidgetDesc->widget_dimensions.size.width - xOffset);
 
 				changePosition = true;
-				newPosition.x += previousSize.width - mWidgetDesc->dimensions.size.width;
+				newPosition.x += previousSize.width - mWidgetDesc->widget_dimensions.size.width;
 			}
 			break;
 		case BORDER_RIGHT:
-			setWidth(mWidgetDesc->dimensions.size.width + xOffset);
+			setWidth(mWidgetDesc->widget_dimensions.size.width + xOffset);
 			break;
 		case BORDER_TOP:
 			{
-				setHeight(mWidgetDesc->dimensions.size.height - yOffset);
+				setHeight(mWidgetDesc->widget_dimensions.size.height - yOffset);
 
 				changePosition = true;
-				newPosition.y += previousSize.height - mWidgetDesc->dimensions.size.height;
+				newPosition.y += previousSize.height - mWidgetDesc->widget_dimensions.size.height;
 			}
 			break;
 		}
@@ -624,9 +644,16 @@ namespace QuickGUI
 		b->end();
 	}
 
+	void Widget::setBrushFilterMode(BrushFilterMode m)
+	{
+		mWidgetDesc->widget_brushFilterMode = m;
+
+		redraw();
+	}
+
 	void Widget::setConsumeKeyboardEvents(bool consume)
 	{
-		mWidgetDesc->consumeKeyboardEvents = consume;
+		mWidgetDesc->widget_consumeKeyboardEvents = consume;
 	}
 
 	void Widget::setDimensions(const Rect& r)
@@ -640,28 +667,28 @@ namespace QuickGUI
 		if((SkinTypeName != "") && (!SkinTypeManager::getSingleton().hasSkinType(getClass(),SkinTypeName)))
 			throw Exception(Exception::ERR_ITEM_NOT_FOUND,"Skin Type \"" + SkinTypeName + "\" does not exist for class \"" + getClass() + "\"!","Widget::setDisabledSkinType");
 
-		mWidgetDesc->disabledSkinType = SkinTypeName;
+		mWidgetDesc->widget_disabledSkinType = SkinTypeName;
 
-		if(!mWidgetDesc->enabled)
+		if(!mWidgetDesc->widget_enabled)
 			redraw();
 	}
 
-	void Widget::setDragable(bool dragable)
+	void Widget::setDragable(bool widget_dragable)
 	{
-		mWidgetDesc->dragable = dragable;
+		mWidgetDesc->widget_dragable = widget_dragable;
 	}
 
-	void Widget::setEnabled(bool enabled)
+	void Widget::setEnabled(bool widget_enabled)
 	{
-		if(mWidgetDesc->enabled == enabled)
+		if(mWidgetDesc->widget_enabled == widget_enabled)
 			return;
 
-		mWidgetDesc->enabled = enabled;
+		mWidgetDesc->widget_enabled = widget_enabled;
 
 		WidgetEventArgs args(this);
 		fireWidgetEvent(WIDGET_EVENT_ENABLED_CHANGED,args);
 
-		if(!mWidgetDesc->enabled)
+		if(!mWidgetDesc->widget_enabled)
 			redraw();
 	}
 
@@ -672,14 +699,16 @@ namespace QuickGUI
 
 	void Widget::setHeight(float pixelHeight)
 	{
-		// Enforce max height
-		if((mWidgetDesc->maxSize.height > 0) && (pixelHeight > mWidgetDesc->maxSize.height))
-			pixelHeight = mWidgetDesc->maxSize.height;
-		// Enforce min height
-		else if((mWidgetDesc->minSize.height > 0) && (pixelHeight < mWidgetDesc->minSize.height))
-			pixelHeight = mWidgetDesc->minSize.height;
+		pixelHeight = Ogre::Math::Ceil(pixelHeight);
 
-		mWidgetDesc->dimensions.size.height = pixelHeight;
+		// Enforce max height
+		if((mWidgetDesc->widget_maxSize.height > 0) && (pixelHeight > mWidgetDesc->widget_maxSize.height))
+			pixelHeight = mWidgetDesc->widget_maxSize.height;
+		// Enforce min height
+		else if((mWidgetDesc->widget_minSize.height > 0) && (pixelHeight < mWidgetDesc->widget_minSize.height))
+			pixelHeight = mWidgetDesc->widget_minSize.height;
+
+		mWidgetDesc->widget_dimensions.size.height = pixelHeight;
 
 		updateClientDimensions();
 
@@ -691,31 +720,31 @@ namespace QuickGUI
 
 	void Widget::setHorizontalAnchor(HorizontalAnchor a)
 	{
-		mWidgetDesc->horizontalAnchor = a;
+		mWidgetDesc->widget_horizontalAnchor = a;
 	}
 
 	void Widget::setHoverTime(float seconds)
 	{
-		mWidgetDesc->hoverTime = seconds;
+		mWidgetDesc->widget_hoverTime = seconds;
 	}
 
 	void Widget::setMaxSize(const Size& s)
 	{
-		mWidgetDesc->maxSize = s;
+		mWidgetDesc->widget_maxSize = s;
 
-		setSize(mWidgetDesc->dimensions.size);
+		setSize(mWidgetDesc->widget_dimensions.size);
 	}
 
 	void Widget::setMinSize(const Size& s)
 	{
-		mWidgetDesc->minSize = s;
+		mWidgetDesc->widget_minSize = s;
 
-		setSize(mWidgetDesc->dimensions.size);
+		setSize(mWidgetDesc->widget_dimensions.size);
 	}
 
-	void Widget::setName(const Ogre::String& name)
+	void Widget::setName(const Ogre::String& widget_name)
 	{
-		mWidgetDesc->name = name;
+		mWidgetDesc->widget_name = widget_name;
 	}
 
 	void Widget::setParent(Widget* parent)
@@ -744,7 +773,8 @@ namespace QuickGUI
 
 	void Widget::setPosition(const Point& position)
 	{
-		mWidgetDesc->dimensions.position = position;		
+		mWidgetDesc->widget_dimensions.position = position;
+		mWidgetDesc->widget_dimensions.position.round();
 
 		// Update screen rectangle
 
@@ -754,9 +784,9 @@ namespace QuickGUI
 		fireWidgetEvent(WIDGET_EVENT_POSITION_CHANGED,args);
 	}
 
-	void Widget::setResizable(bool resizable)
+	void Widget::setResizable(bool widget_resizable)
 	{
-		mWidgetDesc->resizable = resizable;
+		mWidgetDesc->widget_resizable = widget_resizable;
 	}
 
 	void Widget::setScroll(unsigned int scrollX, unsigned int scrollY)
@@ -796,29 +826,31 @@ namespace QuickGUI
 		fireWidgetEvent(WIDGET_EVENT_SCROLL_CHANGED,args);
 	}
 
-	void Widget::setScrollable(bool scrollable)
+	void Widget::setScrollable(bool widget_scrollable)
 	{
-		mWidgetDesc->scrollable = scrollable;
+		mWidgetDesc->widget_scrollable = widget_scrollable;
 	}
 
 	void Widget::setSize(Size size)
 	{
+		size.roundUp();
+
 		// Enforce max width
-		if((mWidgetDesc->maxSize.width > 0) && (size.width > mWidgetDesc->maxSize.width))
-			size.width = mWidgetDesc->maxSize.width;
+		if((mWidgetDesc->widget_maxSize.width > 0) && (size.width > mWidgetDesc->widget_maxSize.width))
+			size.width = mWidgetDesc->widget_maxSize.width;
 		// Enforce min width
-		else if((mWidgetDesc->minSize.width > 0) && (size.width < mWidgetDesc->minSize.width))
-			size.width = mWidgetDesc->minSize.width;
+		else if((mWidgetDesc->widget_minSize.width > 0) && (size.width < mWidgetDesc->widget_minSize.width))
+			size.width = mWidgetDesc->widget_minSize.width;
 
 		// Enforce min height
-		if((mWidgetDesc->maxSize.height > 0) && (size.height > mWidgetDesc->maxSize.height))
-			size.height = mWidgetDesc->maxSize.height;
+		if((mWidgetDesc->widget_maxSize.height > 0) && (size.height > mWidgetDesc->widget_maxSize.height))
+			size.height = mWidgetDesc->widget_maxSize.height;
 		// Enforce min width
-		else if((mWidgetDesc->minSize.height > 0) && (size.height < mWidgetDesc->minSize.height))
-			size.height = mWidgetDesc->minSize.height;
+		else if((mWidgetDesc->widget_minSize.height > 0) && (size.height < mWidgetDesc->widget_minSize.height))
+			size.height = mWidgetDesc->widget_minSize.height;
 
 		// Update size
-		mWidgetDesc->dimensions.size = size;
+		mWidgetDesc->widget_dimensions.size = size;
 
 		updateClientDimensions();
 
@@ -835,7 +867,7 @@ namespace QuickGUI
 
 		mSkinType = SkinTypeManager::getSingleton().getSkinType(getClass(),type);
 
-		mWidgetDesc->skinTypeName = type;
+		mWidgetDesc->widget_skinTypeName = type;
 
 		updateClientDimensions();
 
@@ -845,22 +877,22 @@ namespace QuickGUI
 		fireWidgetEvent(WIDGET_EVENT_SKIN_CHANGED,wea);
 	}
 
-	void Widget::setTransparencyPicking(bool transparencyPicking)
+	void Widget::setTransparencyPicking(bool widget_transparencyPicking)
 	{
-		mWidgetDesc->transparencyPicking = transparencyPicking;
+		mWidgetDesc->widget_transparencyPicking = widget_transparencyPicking;
 	}
 
 	void Widget::setVerticalAnchor(VerticalAnchor a)
 	{
-		mWidgetDesc->verticalAnchor = a;
+		mWidgetDesc->widget_verticalAnchor = a;
 	}
 
-	void Widget::setVisible(bool visible)
+	void Widget::setVisible(bool widget_visible)
 	{
-		if(mWidgetDesc->visible == visible)
+		if(mWidgetDesc->widget_visible == widget_visible)
 			return;
 
-		mWidgetDesc->visible = visible;
+		mWidgetDesc->widget_visible = widget_visible;
 
 		WidgetEventArgs args(this);
 		fireWidgetEvent(WIDGET_EVENT_VISIBLE_CHANGED,args);
@@ -870,14 +902,16 @@ namespace QuickGUI
 
 	void Widget::setWidth(float pixelWidth)
 	{
-		// Enforce max width
-		if((mWidgetDesc->maxSize.width > 0) && (pixelWidth > mWidgetDesc->maxSize.width))
-			pixelWidth = mWidgetDesc->maxSize.width;
-		// Enforce min width
-		else if((mWidgetDesc->minSize.width > 0) && (pixelWidth < mWidgetDesc->minSize.width))
-			pixelWidth = mWidgetDesc->minSize.width;
+		pixelWidth = Ogre::Math::Ceil(pixelWidth);
 
-		mWidgetDesc->dimensions.size.width = pixelWidth;
+		// Enforce max width
+		if((mWidgetDesc->widget_maxSize.width > 0) && (pixelWidth > mWidgetDesc->widget_maxSize.width))
+			pixelWidth = mWidgetDesc->widget_maxSize.width;
+		// Enforce min width
+		else if((mWidgetDesc->widget_minSize.width > 0) && (pixelWidth < mWidgetDesc->widget_minSize.width))
+			pixelWidth = mWidgetDesc->widget_minSize.width;
+
+		mWidgetDesc->widget_dimensions.size.width = pixelWidth;
 
 		updateClientDimensions();
 
@@ -890,15 +924,15 @@ namespace QuickGUI
 	void Widget::updateClientDimensions()
 	{
 		mClientDimensions.position = Point::ZERO;
-		mClientDimensions.size = mWidgetDesc->dimensions.size;
+		mClientDimensions.size = mWidgetDesc->widget_dimensions.size;
 
 		if(mSkinType != NULL)
 		{
 			SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
 			mClientDimensions.position.x = se->getBorderThickness(BORDER_LEFT);
 			mClientDimensions.position.y = se->getBorderThickness(BORDER_TOP);
-			mClientDimensions.size.width = mWidgetDesc->dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
-			mClientDimensions.size.height = mWidgetDesc->dimensions.size.height - (se->getBorderThickness(BORDER_TOP) + se->getBorderThickness(BORDER_BOTTOM));
+			mClientDimensions.size.width = mWidgetDesc->widget_dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
+			mClientDimensions.size.height = mWidgetDesc->widget_dimensions.size.height - (se->getBorderThickness(BORDER_TOP) + se->getBorderThickness(BORDER_BOTTOM));
 		}
 
 		WidgetEventArgs args(this);
@@ -914,7 +948,7 @@ namespace QuickGUI
 		// Set Client position to zero, and size to widget size by default.
 
 		//mClientDimensions.position = Point::ZERO;
-		//mClientDimensions.size = mWidgetDesc->dimensions.size;
+		//mClientDimensions.size = mWidgetDesc->widget_dimensions.size;
 
 		// If there is a parent widget, translate by the parent's TexturePosition
 
@@ -922,15 +956,15 @@ namespace QuickGUI
 		{
 			mTexturePosition.translate(mParentWidget->getTexturePosition());
 			
-			// Components aren't restricted to Parent's Client dimensions
-			if(!mComponent)
+			// Components aren't restricted to Parent's Client widget_dimensions
+			if(!mComponentOfAWidget)
 				mTexturePosition.translate(mParentWidget->getClientDimensions().position);
 		}			
 
 		// Translate by the Widget's position 
-		mTexturePosition.translate(mWidgetDesc->dimensions.position);
+		mTexturePosition.translate(mWidgetDesc->widget_dimensions.position);
 
-		if (mWidgetDesc->scrollable)
+		if (mWidgetDesc->widget_scrollable)
 			mTexturePosition.translate((mScrollOffset) * -1.0);
 
 		// Force redraw

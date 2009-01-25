@@ -8,7 +8,7 @@ namespace QuickGUI
 
 	void Tab::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("Tab");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("Tab");
 		d->defineSkinElement(FRONT);
 		d->defineSkinElement(MAIN);
 		d->definitionComplete();
@@ -16,17 +16,24 @@ namespace QuickGUI
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("Tab",d);
 	}
 
-	TabDesc::TabDesc() :
-		LabelDesc()
+	TabDesc::TabDesc(const Ogre::String& id) :
+		LabelDesc(id)
 	{
-		frontWidth = -1;
+		resetToDefault();
+	}
+
+	void TabDesc::resetToDefault()
+	{
+		LabelDesc::resetToDefault();
+
+		tab_frontWidth = -1;
 	}
 
 	void TabDesc::serialize(SerialBase* b)
 	{
 		LabelDesc::serialize(b);
 
-		b->IO("FrontWidth",&frontWidth);
+		b->IO("FrontWidth",&tab_frontWidth);
 	}
 
 	Tab::Tab(const Ogre::String& name) :
@@ -42,9 +49,9 @@ namespace QuickGUI
 	void Tab::_adjustTabWidth()
 	{
 		if(mDesc->textDesc.segments.empty())
-			mDesc->dimensions.size.width = mDesc->frontWidth + 50;
+			mDesc->widget_dimensions.size.width = mDesc->tab_frontWidth + 50;
 		else
-			mDesc->dimensions.size.width = mDesc->frontWidth + mDesc->textDesc.getTextWidth() + mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_RIGHT);
+			mDesc->widget_dimensions.size.width = mDesc->tab_frontWidth + mDesc->textDesc.getTextWidth() + mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_RIGHT);
 
 		mText->setAllottedWidth(mDesc->textDesc.getTextWidth() + mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_RIGHT));
 	}
@@ -57,42 +64,30 @@ namespace QuickGUI
 
 		TabDesc* td = dynamic_cast<TabDesc*>(d);
 
-		setSkinType(td->skinTypeName);
+		setSkinType(td->widget_skinTypeName);
 
-		if(td->frontWidth < 0)
-			mDesc->frontWidth = mSkinType->getSkinElement(FRONT)->getWidth();
+		if(td->tab_frontWidth < 0)
+			mDesc->tab_frontWidth = mSkinType->getSkinElement(FRONT)->getWidth();
 		else
-			mDesc->frontWidth = td->frontWidth;
+			mDesc->tab_frontWidth = td->tab_frontWidth;
 
 		// Make a copy of the Text Desc.  The Text object will
 		// modify it directly, which is used for serialization.
 		mDesc->textDesc = td->textDesc;
 
 		if(mDesc->textDesc.segments.empty())
-			mDesc->dimensions.size.width = mDesc->frontWidth + 50;
+			mDesc->widget_dimensions.size.width = mDesc->tab_frontWidth + 50;
 		else
-			mDesc->dimensions.size.width = mDesc->frontWidth + mSkinType->getSkinElement(MAIN)->getBorderThickness(BORDER_LEFT) + mDesc->textDesc.getTextWidth() + mSkinType->getSkinElement(MAIN)->getBorderThickness(BORDER_RIGHT);
+			mDesc->widget_dimensions.size.width = mDesc->tab_frontWidth + mSkinType->getSkinElement(MAIN)->getBorderThickness(BORDER_LEFT) + mDesc->textDesc.getTextWidth() + mSkinType->getSkinElement(MAIN)->getBorderThickness(BORDER_RIGHT);
 
 		if(mDesc->textDesc.segments.empty())
-			mDesc->dimensions.size.height = 20;
+			mDesc->widget_dimensions.size.height = 20;
 		else
-			mDesc->dimensions.size.height = mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_TOP) + mDesc->textDesc.getTextHeight() + mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM);
+			mDesc->widget_dimensions.size.height = mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_TOP) + mDesc->textDesc.getTextHeight() + mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM);
 
-		mDesc->verticalTextAlignment = td->verticalTextAlignment;
+		mDesc->label_verticalTextAlignment = td->label_verticalTextAlignment;
 		mDesc->textDesc.allottedWidth = mDesc->textDesc.getTextWidth() + mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_RIGHT);
-		mText = new Text(mDesc->textDesc);
-
-		mCurrentFontName = Text::getFirstAvailableFont()->getName();
-		mCurrentColourValue = Ogre::ColourValue::White;
-	}
-
-	Widget* Tab::factory(const Ogre::String& widgetName)
-	{
-		Widget* newWidget = new Tab(widgetName);
-
-		newWidget->_createDescObject("TabDesc");
-
-		return newWidget;
+		mText = OGRE_NEW_T(Text,Ogre::MEMCATEGORY_GENERAL)(mDesc->textDesc);
 	}
 
 	BorderSide Tab::getBorderSide(Point p)
@@ -109,23 +104,23 @@ namespace QuickGUI
 	{
 		Brush* brush = Brush::getSingletonPtr();
 
-		brush->setFilterMode(mDesc->brushFilterMode);
+		brush->setFilterMode(mDesc->widget_brushFilterMode);
 
 		SkinType* st = mSkinType;
-		if(!mWidgetDesc->enabled && mWidgetDesc->disabledSkinType != "")
+		if(!mWidgetDesc->widget_enabled && mWidgetDesc->widget_disabledSkinType != "")
 		{
-			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->disabledSkinType);
+			st = SkinTypeManager::getSingleton().getSkinType(getClass(),mWidgetDesc->widget_disabledSkinType);
 		}
 
-		Rect tabRect(mTexturePosition,mWidgetDesc->dimensions.size);
+		Rect tabRect(mTexturePosition,mWidgetDesc->widget_dimensions.size);
 		
 		// Draw the front part of the tab
-		tabRect.size.width = mDesc->frontWidth;
+		tabRect.size.width = mDesc->tab_frontWidth;
 		brush->drawSkinElement(tabRect,st->getSkinElement(FRONT));
 
 		// Draw the main part of the tab
-		tabRect.position.x += mDesc->frontWidth;
-		tabRect.size.width = mWidgetDesc->dimensions.size.width - mDesc->frontWidth;
+		tabRect.position.x += mDesc->tab_frontWidth;
+		tabRect.size.width = mWidgetDesc->widget_dimensions.size.width - mDesc->tab_frontWidth;
 		brush->drawSkinElement(tabRect,st->getSkinElement(MAIN));
 
 		Ogre::ColourValue prevColor = brush->getColour();
@@ -136,13 +131,13 @@ namespace QuickGUI
 		float textHeight = mText->getTextHeight();
 		float yPos = 0;
 
-		switch(mDesc->verticalTextAlignment)
+		switch(mDesc->label_verticalTextAlignment)
 		{
 		case TEXT_ALIGNMENT_VERTICAL_BOTTOM:
-			yPos = mDesc->dimensions.size.height - st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM) - textHeight;
+			yPos = mDesc->widget_dimensions.size.height - st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM) - textHeight;
 			break;
 		case TEXT_ALIGNMENT_VERTICAL_CENTER:
-			yPos = (mDesc->dimensions.size.height / 2.0) - (textHeight / 2.0);
+			yPos = (mDesc->widget_dimensions.size.height / 2.0) - (textHeight / 2.0);
 			break;
 		case TEXT_ALIGNMENT_VERTICAL_TOP:
 			yPos = st->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_TOP);
@@ -230,7 +225,7 @@ namespace QuickGUI
 	void Tab::updateClientDimensions()
 	{
 		mClientDimensions.position = Point::ZERO;
-		mClientDimensions.size = mWidgetDesc->dimensions.size;
+		mClientDimensions.size = mWidgetDesc->widget_dimensions.size;
 
 		WidgetEventArgs args(this);
 		fireWidgetEvent(WIDGET_EVENT_CLIENTSIZE_CHANGED,args);

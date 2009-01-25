@@ -3,6 +3,7 @@
 #include "QuickGUITabControl.h"
 #include "QuickGUIManager.h"
 #include "QuickGUIScriptDefinition.h"
+#include "QuickGUIFactoryManager.h"
 
 namespace QuickGUI
 {
@@ -14,7 +15,7 @@ namespace QuickGUI
 
 	void TabPage::registerSkinDefinition()
 	{
-		SkinDefinition* d = new SkinDefinition("TabPage");
+		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("TabPage");
 		d->defineComponent(TAB);
 		d->defineComponent(TAB_OVER);
 		d->defineComponent(TAB_SELECTED);
@@ -39,18 +40,19 @@ namespace QuickGUI
 	void TabPage::_initialize(WidgetDesc* d)
 	{
 		TabPageDesc* tpd = dynamic_cast<TabPageDesc*>(d);
-		tpd->supportScrollBars = false;
+		tpd->containerwidget_supportScrollBars = false;
 
 		Panel::_initialize(d);
 
 		mDesc = dynamic_cast<TabPageDesc*>(mWidgetDesc);
 
-		// Create Button
-		TabDesc td;
-		td.name = getName() + ".Tab";
-		td.frontWidth = tpd->tabFrontWidth;
-		td.verticalTextAlignment = tpd->verticalTextAlignment;
-		td.textDesc = tpd->textDesc;
+		// Create Tab
+		TabDesc* td = dynamic_cast<TabDesc*>(FactoryManager::getSingleton().getWidgetDescFactory()->getInstance("DefaultTabDesc"));
+		td->resetToDefault();
+		td->widget_name = getName() + ".Tab";
+		td->tab_frontWidth = tpd->tabpage_tabFrontWidth;
+		td->label_verticalTextAlignment = tpd->tabpage_verticalTextAlignment;
+		td->textDesc = tpd->textDesc;
 		mTab = dynamic_cast<Tab*>(Widget::create("Tab",td));
 		mTab->addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_UP,&TabPage::onMouseButtonUpOnTab,this);
 		mTab->addWidgetEventHandler(WIDGET_EVENT_MOUSE_ENTER,&TabPage::onMouseEnterTab,this);
@@ -58,16 +60,17 @@ namespace QuickGUI
 		addComponent(TAB,mTab);
 
 		// Create Page
-		PanelDesc pd;
-		pd.name = getName() + ".Page";
-		pd.horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
-		pd.verticalAnchor = ANCHOR_VERTICAL_TOP_BOTTOM;
-		pd.dimensions.position = Point(0,mTab->getHeight());
-		pd.dimensions.size = Size(mDesc->dimensions.size.width,mDesc->dimensions.size.height - mTab->getHeight());
+		PanelDesc* pd = dynamic_cast<PanelDesc*>(FactoryManager::getSingleton().getWidgetDescFactory()->getInstance("DefaultPanelDesc"));
+		pd->resetToDefault();
+		pd->widget_name = getName() + ".Page";
+		pd->widget_horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
+		pd->widget_verticalAnchor = ANCHOR_VERTICAL_TOP_BOTTOM;
+		pd->widget_dimensions.position = Point(0,mTab->getHeight());
+		pd->widget_dimensions.size = Size(mDesc->widget_dimensions.size.width,mDesc->widget_dimensions.size.height - mTab->getHeight());
 		mPage = dynamic_cast<Panel*>(Widget::create("Panel",pd));
 		addComponent(PAGE,mPage);
 
-		setSkinType(d->skinTypeName);
+		setSkinType(d->widget_skinTypeName);
 	}
 
 	void TabPage::addChild(Widget* w)
@@ -86,23 +89,14 @@ namespace QuickGUI
 		}
 	}
 
-	Widget* TabPage::factory(const Ogre::String& widgetName)
-	{
-		Widget* newWidget = new TabPage(widgetName);
-		
-		newWidget->_createDescObject("TabPageDesc");
-
-		return newWidget;
-	}
-
 	Widget* TabPage::findWidgetAtPoint(const Point& p, bool ignoreDisabled)
 	{
 		// If we are not visible, return NULL
-		if(!mWidgetDesc->visible)
+		if(!mWidgetDesc->widget_visible)
 			return NULL;
 
 		// If we ignore disabled and this widget is enabled, return NULL
-		if(ignoreDisabled && !mWidgetDesc->enabled)
+		if(ignoreDisabled && !mWidgetDesc->widget_enabled)
 			return NULL;
 
 		Widget* w = NULL;
@@ -137,7 +131,7 @@ namespace QuickGUI
 
 	VerticalTextAlignment TabPage::getVerticalTextAlignment()
 	{
-		return mDesc->verticalTextAlignment;
+		return mDesc->tabpage_verticalTextAlignment;
 	}
 
 	bool TabPage::isSelected()
@@ -236,7 +230,7 @@ namespace QuickGUI
 			for(std::list<ScriptDefinition*>::iterator it = defList.begin(); it != defList.end(); ++it)
 			{
 				// Create Empty Widget, supplying class name and widget name from script
-				Widget* newWidget = WidgetFactoryManager::getSingleton().createWidget((*it)->getType(),(*it)->getID());
+				Widget* newWidget = FactoryManager::getSingleton().getWidgetFactory()->createInstance((*it)->getType(),(*it)->getID());
 
 				// Populate Desc object from Script Text, and initialize widget
 				newWidget->serialize(b);
@@ -340,7 +334,7 @@ namespace QuickGUI
 	{
 		mTab->setHeight(height);
 		mPage->setPosition(Point(0,mTab->getHeight()));
-		mPage->setHeight(mDesc->dimensions.size.height - mTab->getHeight());
+		mPage->setHeight(mDesc->widget_dimensions.size.height - mTab->getHeight());
 	}
 
 	void TabPage::setTransparencyPicking(bool transparencyPicking)
@@ -368,7 +362,7 @@ namespace QuickGUI
 	void TabPage::updateClientDimensions()
 	{
 		mClientDimensions.position = Point::ZERO;
-		mClientDimensions.size = mWidgetDesc->dimensions.size;
+		mClientDimensions.size = mWidgetDesc->widget_dimensions.size;
 
 		WidgetEventArgs args(this);
 		fireWidgetEvent(WIDGET_EVENT_CLIENTSIZE_CHANGED,args);

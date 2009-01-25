@@ -2,43 +2,64 @@
 
 namespace QuickGUI
 {
-	PanelDesc::PanelDesc() :
-		ContainerWidgetDesc()
+	PanelDesc::PanelDesc(const Ogre::String& id) :
+		ContainerWidgetDesc(id)
 	{
+		resetToDefault();
 	}
 
-	TabPageDesc::TabPageDesc() :
-		PanelDesc()
+	void PanelDesc::resetToDefault()
 	{
-		supportScrollBars = false;
-		tabFrontWidth = -1;
-		verticalTextAlignment = TEXT_ALIGNMENT_VERTICAL_CENTER;
+		ContainerWidgetDesc::resetToDefault();
+	}
+
+	TabPageDesc::TabPageDesc(const Ogre::String& id) :
+		PanelDesc(id)
+	{
+		resetToDefault();
+	}
+
+	void TabPageDesc::resetToDefault()
+	{
+		PanelDesc::resetToDefault();
+
+		containerwidget_supportScrollBars = false;
+		tabpage_tabFrontWidth = -1;
+		tabpage_verticalTextAlignment = TEXT_ALIGNMENT_VERTICAL_CENTER;
 	}
 
 	void TabPageDesc::serialize(SerialBase* b)
 	{
 		PanelDesc::serialize(b);
 
-		b->IO("TabFrontWidth",&tabFrontWidth);
-		b->IO("VerticalTextAlignment",&verticalTextAlignment);
+		b->IO("TabFrontWidth",&tabpage_tabFrontWidth);
+		b->IO("VerticalTextAlignment",&tabpage_verticalTextAlignment);
 	}
 
-	TabControlDesc::TabControlDesc() :
-		ContainerWidgetDesc()
+	TabControlDesc::TabControlDesc(const Ogre::String& id) :
+		ContainerWidgetDesc(id)
 	{
-		supportScrollBars = false;
-		tabHeight = 20;
-		tabOverlap = 10;
-		transparencyPicking = false;
-		tabReordering = false;
+		resetToDefault();
+	}
+
+	void TabControlDesc::resetToDefault()
+	{
+		ContainerWidgetDesc::resetToDefault();
+
+		containerwidget_supportScrollBars = false;
+		tabcontrol_selectedTab = 0;
+		tabcontrol_tabHeight = 20;
+		tabcontrol_tabOverlap = 10;
+		widget_transparencyPicking = false;
+		tabcontrol_tabReordering = false;
 	}
 
 	void TabControlDesc::serialize(SerialBase* b)
 	{
 		ContainerWidgetDesc::serialize(b);
 
-		b->IO("TabHeight",&tabHeight);
-		b->IO("TabOverlap",&tabOverlap);
-		b->IO("TabReordering",&tabReordering);
+		b->IO("tabcontrol_tabHeight",&tabcontrol_tabHeight);
+		b->IO("tabcontrol_tabOverlap",&tabcontrol_tabOverlap);
+		b->IO("tabcontrol_tabReordering",&tabcontrol_tabReordering);
 	}
 }

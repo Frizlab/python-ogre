@@ -3,6 +3,8 @@ typedef std::string String;
 typedef std::vector<QuickGUI::Widget*, std::allocator<QuickGUI::Widget*> > VectorWidget;
 typedef std::vector<unsigned short, std::allocator<unsigned short> > VectorShort;
 
+typedef QuickGUI::Factory<QuickGUI::WidgetDesc> FactoryWidgetDesc;
+typedef QuickGUI::WidgetFactory<QuickGUI::Widget> WidgetFactoryWidget;
 
 // typedef std::list<QuickGUI::DefinitionProperty*> ListDefinitionProperty;
 // typedef std::list<QuickGUI::ListItem*> ListListItem;

@@ -1,4 +1,5 @@
 #include "QuickGUIBrush.h"
+#include <OgreMaterialManager.h>
 
 template<> QuickGUI::Brush* Ogre::Singleton<QuickGUI::Brush>::ms_Singleton = 0;
 
@@ -9,7 +10,8 @@ namespace QuickGUI
 		mDefaultViewport(NULL),
 		mRenderTarget(NULL),
 		mQueuedItems(false),
-		mBufferPtr(NULL)
+		mBufferPtr(NULL),
+		mFilterMode(BRUSHFILTER_LINEAR)
 	{
 		mRenderSystem = Ogre::Root::getSingleton().getRenderSystem();
 
@@ -38,6 +40,17 @@ namespace QuickGUI
 		mDefaultTexture->getBuffer()->unlock();
 
 		mColourValue = Ogre::ColourValue::White;
+
+		Ogre::MaterialPtr mp = Ogre::MaterialManager::getSingleton().create("QuickGUI.EmptyPass",Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		mEmptyPass = mp->getTechnique(0)->getPass(0);
+		mEmptyPass->setAmbient(Ogre::ColourValue::White);
+		mEmptyPass->setDiffuse(Ogre::ColourValue::White);
+		mEmptyPass->setSelfIllumination(Ogre::ColourValue::White);
+		mEmptyPass->createTextureUnitState();
+		mEmptyPass->setLightingEnabled(false);
+		mEmptyPass->setDepthWriteEnabled(false);
+		mEmptyPass->setDepthCheckEnabled(false);
+		mEmptyPass->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
 	}
 
 	Brush::~Brush()
@@ -60,9 +73,8 @@ namespace QuickGUI
 	{
 		Rect r = dimensions;
 
-		// When drawing to a render target in OpenGL, we have to flip the y coordinates, which affect
-		// the y position and the height value, which are used to determine the sides of the rectangle.
-		if(mUsingOpenGL && (mRenderTarget != mDefaultViewport))
+		// Certain Render Targets in OpenGL require the coordinates to be flipped.
+		if(mRenderTarget->getTarget()->requiresTextureFlipping())
 		{
 			r.position.y = mTargetHeight - dimensions.position.y;
 			r.size.height = (mTargetHeight - (dimensions.position.y + dimensions.size.height)) - r.position.y;
@@ -100,7 +112,7 @@ namespace QuickGUI
 
 	void Brush::_createVertexBuffer()
 	{
-		mRenderOperation.vertexData = new Ogre::VertexData();
+		mRenderOperation.vertexData = OGRE_NEW Ogre::VertexData();
 		mRenderOperation.vertexData->vertexStart = 0;
 
 		_declareVertexStructure();
@@ -148,7 +160,7 @@ namespace QuickGUI
 
 	void Brush::_destroyVertexBuffer()
 	{
-		delete mRenderOperation.vertexData;
+		OGRE_DELETE mRenderOperation.vertexData;
 		mRenderOperation.vertexData = NULL;
 		mVertexBuffer.setNull();
 	}
@@ -412,6 +424,11 @@ namespace QuickGUI
 		return mColourValue;
 	}
 
+	BrushFilterMode Brush::getFilterMode()
+	{
+		return mFilterMode;
+	}
+
 	Ogre::Viewport* Brush::getRenderTarget()
 	{
 		return mRenderTarget;
@@ -435,7 +452,7 @@ namespace QuickGUI
 		mRenderSystem->setLightingEnabled(false);
 		mRenderSystem->_setDepthBufferParams(false, false);
 		mRenderSystem->_setDepthBias(0, 0);
-		mRenderSystem->_setCullingMode(Ogre::CULL_CLOCKWISE);
+		mRenderSystem->_setCullingMode(Ogre::CULL_NONE);
 		mRenderSystem->_setFog(Ogre::FOG_NONE);
 		mRenderSystem->_setColourBufferWriteEnabled(true, true, true, true);
 		mRenderSystem->unbindGpuProgram(Ogre::GPT_FRAGMENT_PROGRAM);
@@ -530,6 +547,8 @@ namespace QuickGUI
 
 	void Brush::setFilterMode(BrushFilterMode m)
 	{
+		mFilterMode = m;
+
 		switch (m)
 		{
 		case BRUSHFILTER_NONE:
@@ -605,10 +624,16 @@ namespace QuickGUI
 	void Brush::updateSceneManager(Ogre::SceneManager* sceneManager)
 	{
 		mSceneManager = sceneManager;
+
+		if(mSceneManager != NULL)
+			mSceneManager->_setPass(mEmptyPass,true,false);
 	}
 
 	void Brush::updateViewport(Ogre::Viewport* viewport)
 	{
+		if(viewport == NULL)
+			throw Exception(Exception::ERR_INVALIDPARAMS,"Brush class must have a valid default Viewport! (Cannot be NULL)","Brush::updateViewport");
+
 		mDefaultViewport = viewport;
 		mRenderTarget = viewport;
 	}

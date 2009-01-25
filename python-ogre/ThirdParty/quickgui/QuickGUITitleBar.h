@@ -10,14 +10,19 @@ namespace QuickGUI
 		public ComponentWidgetDesc
 	{
 	public:
-		TitleBarDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		TitleBarDesc(const Ogre::String& id);
+		virtual ~TitleBarDesc() {}
+	public:
 
-		bool closeButton;
-		float closeButtonPadding;
-		Ogre::String closeButtonSkinType;
+		bool titlebar_closeButton;
+		float titlebar_closeButtonPadding;
+		Ogre::String titlebar_closeButtonSkinType;
 
 		/// Vertical alignment of text within this widget's client area.
-		VerticalTextAlignment verticalTextAlignment;
+		VerticalTextAlignment titlebar_verticalTextAlignment;
 
 		/// Describes the Text used in this Label
 		TextDesc textDesc;
@@ -31,8 +36,10 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getWidgetClass() { return "TitleBar"; }
 
-		// Factory method
-		static WidgetDesc* factory() { return new TitleBarDesc(); }
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
 	};
 
 	class TitleBar :
@@ -47,9 +54,8 @@ namespace QuickGUI
 	public:
 		friend class GUIManager;
 		friend class Window;
-
-		// Factory method
-		static Widget* factory(const Ogre::String& widgetName);
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -128,6 +134,14 @@ namespace QuickGUI
 		*/
 		void setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv);
 		/**
+		* Sets the text for this object.
+		*/
+		void setText(Ogre::UTFString s, const Ogre::String& fontName, const Ogre::ColourValue& cv);
+		/**
+		* Sets the Text using Text Segments.
+		*/
+		void setText(std::vector<TextSegment> segments);
+		/**
 		* Sets the Horizontal alignment of Text as displayed within the Label area.
 		*/
 		void setHorizontalTextAlignment(HorizontalTextAlignment a);
@@ -150,6 +164,8 @@ namespace QuickGUI
 		Button* mCloseButton;
 
 		TitleBarDesc* mDesc;
+
+		int mHeightBuffer;
 
 		/**
 		* Hides the window.  Only relevant if this TitleBar has a close button.

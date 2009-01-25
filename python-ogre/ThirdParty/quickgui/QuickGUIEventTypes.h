@@ -15,6 +15,18 @@ namespace QuickGUI
 	/**
 	* List Events
 	*/
+	enum ComboBoxEvent
+	{
+		// Property type events
+		// Input type events
+		// Other type events
+		COMBOBOX_EVENT_SELECTION_CHANGED	=  0,
+		COMBOBOX_EVENT_COUNT
+	};
+
+	/**
+	* List Events
+	*/
 	enum ListEvent
 	{
 		// Property type events

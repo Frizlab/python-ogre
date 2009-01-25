@@ -14,9 +14,14 @@ namespace QuickGUI
 			public ContainerWidgetDesc
 	{
 	public:
-		ToolBarDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		ToolBarDesc(const Ogre::String& id);
+		virtual ~ToolBarDesc() {}
+	public:
 
-		ToolBarItemLayout itemLayout;
+		ToolBarItemLayout toolbar_itemLayout;
 
 		/**
 		* Returns the class of Desc object this is.
@@ -27,8 +32,10 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getWidgetClass() { return "ToolBar"; }
 
-		// Factory method
-		static WidgetDesc* factory() { return new ToolBarDesc(); }
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
 
 		/**
 		* Outlines how the desc class is written to XML and read from XML.
@@ -45,8 +52,8 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
-		// Factory method
-		static Widget* factory(const Ogre::String& widgetName);
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -60,14 +67,14 @@ namespace QuickGUI
 		void closeMenus();
 		/**
 		* Creates a Menu.  Position and orientation depends on
-		* itemLayout and ToolBar orientation.
+		* toolbar_itemLayout and ToolBar orientation.
 		*/
-		Menu* createMenu(MenuDesc& d);
+		Menu* createMenu(MenuDesc* d);
 		/**
 		* Creates a ToolBar item.  Position and orientation depends on
-		* itemLayout and ToolBar orientation.
+		* toolbar_itemLayout and ToolBar orientation.
 		*/
-		ToolBarItem* createToolBarItem(const Ogre::String& className, ToolBarItemDesc& d);
+		ToolBarItem* createToolBarItem(const Ogre::String& className, ToolBarItemDesc* d);
 
 		/**
 		* Returns the class name of this Widget.

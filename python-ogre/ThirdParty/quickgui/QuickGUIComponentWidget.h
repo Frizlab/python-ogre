@@ -16,7 +16,12 @@ namespace QuickGUI
 			public WidgetDesc
 	{
 	public:
-		ComponentWidgetDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		ComponentWidgetDesc(const Ogre::String& id);
+		virtual ~ComponentWidgetDesc() {}
+	public:
 	};
 
 	class _QuickGUIExport ComponentWidget :

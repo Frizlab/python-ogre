@@ -9,10 +9,16 @@ namespace QuickGUI
 		public ContainerWidgetDesc
 	{
 	public:
-		ListItemDesc();
+		template<typename BaseClassType>
+		friend class Factory;
+	protected:
+		ListItemDesc(const Ogre::String& id);
+		virtual ~ListItemDesc() {}
+	public:
 
-		int index;
-		bool selected;
+
+		int listitem_index;
+		bool listitem_selected;
 
 		/**
 		* Returns the class of Desc object this is.
@@ -23,8 +29,10 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getWidgetClass() { return "List"; }
 
-		// Factory method
-		static WidgetDesc* factory() { return new ListItemDesc(); }
+		/**
+		* Restore properties to default values
+		*/
+		virtual void resetToDefault();
 
 		/**
 		* Outlines how the desc class is written to XML and read from XML.
@@ -41,7 +49,12 @@ namespace QuickGUI
 		static const Ogre::String OVER;
 		static const Ogre::String SELECTED;
 	public:
+		// List has to set positions to manage ListItems
 		friend class List;
+		// ComboBox has to set positions to manage ListItems
+		friend class ComboBox;
+		// ListPanel's destructor cleans up any remaining ListItems, requiring access to destructor
+		friend class ListPanel;
 	public:
 
 		/**
@@ -50,22 +63,22 @@ namespace QuickGUI
 		virtual void _initialize(WidgetDesc* d);
 
 		/**
-		* Returns the index of the ListItem in its owner List.
+		* Returns the listitem_index of the ListItem in its owner List.
 		*/
 		int getIndex();
 		/**
-		* Returns true if the ListItem is selected, false otherwise.
+		* Returns true if the ListItem is listitem_selected, false otherwise.
 		*/
 		bool getSelected();
 
 		/**
-		* Sets the index of the ListItem
+		* Sets the listitem_index of the ListItem
 		*/
-		void setIndex(unsigned int index);
+		void setIndex(unsigned int listitem_index);
 		/**
-		* Sets whether the ListItem is selected or not.
+		* Sets whether the ListItem is listitem_selected or not.
 		*/
-		void setSelected(bool selected);
+		void setSelected(bool listitem_selected);
 
 	protected:
 		ListItem(const Ogre::String& name);
