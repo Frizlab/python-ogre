@@ -37,12 +37,12 @@ Source: *; DestDir: {app}
 Source: plugins\*; DestDir: {app}\plugins
 Source: tools\*; DestDir: {app}\tools
 Source: docs\*; DestDir: {app}\docs
-Source: SourceLibs\*; DestDir: {app}\SourceLibs; Flags: recursesubdirs
+;Source: SourceLibs\*; DestDir: {app}\SourceLibs; Flags: recursesubdirs
 
 Source: ThirdParty\dxwebsetup.exe; DestDir: {app}\ThirdParty
 Source: ThirdParty\vcredist_x86.exe; DestDir: {app}\ThirdParty
 
-Source: demos\*; DestDir: {app}\demos; 
+Source: demos\*; DestDir: {app}\demos
 Source: demos\bullet\*; DestDir: {app}\demos\bullet; Flags: recursesubdirs
 Source: demos\caelum\*; DestDir: {app}\demos\caelum; Flags: recursesubdirs
 Source: demos\cegui\*; DestDir: {app}\demos\cegui; Flags: recursesubdirs
@@ -51,7 +51,7 @@ Source: demos\hydrax\*; DestDir: {app}\demos\hydrax; Flags: recursesubdirs
 Source: demos\media\*; DestDir: {app}\demos\media; Flags: recursesubdirs
 Source: demos\media_extra\*; DestDir: {app}\demos\media_extra; Flags: recursesubdirs
 Source: demos\noise\*; DestDir: {app}\demos\noise; Flags: recursesubdirs
-Source: demos\nxogre\*; DestDir: {app}\demos\nxogre; Flags: recursesubdirs
+;Source: demos\nxogre\*; DestDir: {app}\demos\nxogre; Flags: recursesubdirs
 Source: demos\ode\*; DestDir: {app}\demos\ode; Flags: recursesubdirs
 Source: demos\ogre\*; DestDir: {app}\demos\ogre; Flags: recursesubdirs
 Source: demos\ogreal\*; DestDir: {app}\demos\ogreal; Flags: recursesubdirs
@@ -206,7 +206,7 @@ Type: dirifempty; Name: {code:GetPythonSiteDir}\ODE
 [Icons]
 Name: {group}\Ogre Demos\Bezier; Filename: {code:GetPythonExe}; Parameters: Demo_Bezier.py; WorkingDir: {app}\Demos\Ogre
 Name: {group}\Ogre Demos\BSP; Filename: {code:GetPythonExe}; Parameters: Demo_BSP.py; WorkingDir: {app}\Demos\Ogre
-Name: {group}\Ogre Demos\BSP_Collision; Filename: {code:GetPythonExe}; Parameters: Demo_BspCollision.py; WorkingDir: {app}\Demos\Ogre
+;Name: {group}\Ogre Demos\BSP_Collision; Filename: {code:GetPythonExe}; Parameters: Demo_BspCollision.py; WorkingDir: {app}\Demos\Ogre
 Name: {group}\Ogre Demos\Camera Tracking; Filename: {code:GetPythonExe}; Parameters: Demo_CameraTracking.py; WorkingDir: {app}\Demos\Ogre
 Name: {group}\Ogre Demos\CEL Shading; Filename: {code:GetPythonExe}; Parameters: Demo_CelShading.py; WorkingDir: {app}\Demos\Ogre
 Name: {group}\Ogre Demos\Compositor; Filename: {code:GetPythonExe}; Parameters: Demo_Compositor.py; WorkingDir: {app}\Demos\Ogre
@@ -233,7 +233,7 @@ Name: {group}\Ogre Demos\Transparency; Filename: {code:GetPythonExe}; Parameters
 Name: {group}\GUI\CEGUI - Basic; Filename: {code:GetPythonExe}; Parameters: Demo_CEGUI_Gui.py; WorkingDir: {app}\Demos\cegui
 Name: {group}\GUI\CEGUI Drag and Drop; Filename: {code:GetPythonExe}; Parameters: Demo_CEGUI_DragnDrop.py; WorkingDir: {app}\Demos\cegui
 Name: {group}\GUI\CEGUI - Nice; Filename: {code:GetPythonExe}; Parameters: Demo_CEGUI_NewGui.py; WorkingDir: {app}\Demos\cegui
-Name: {group}\GUI\QuickGUI-01; Filename: {code:GetPythonExe}; Parameters: Demo_QuickGUI01.py; WorkingDir: {app}\Demos\qgui
+;Name: {group}\GUI\QuickGUI-01; Filename: {code:GetPythonExe}; Parameters: Demo_QuickGUI01.py; WorkingDir: {app}\Demos\qgui
 ;Name: {group}\GUI\Navi; Filename: {code:GetPythonExe}; Parameters: Demo_Navi.py; WorkingDir: {app}\Demos\navi
 
 Name: {group}\ODE Demos\Multiple Scenes; Filename: {code:GetPythonExe}; Parameters: Demo_Scenes.py; WorkingDir: {app}\Demos\OgreOde
@@ -276,7 +276,7 @@ Name: {group}\Python-Ogre API Documenatation; Filename: {app}\docs\Python-Ogre.c
 ;Name: {group}\Python-Ogre API (Html); Filename: {app}\docs\html\index.html
 
 [Run]
-Filename: {app}\ThirdParty\vcredist_x86.exe; Parameters: "/q"
+Filename: {app}\ThirdParty\vcredist_x86.exe; Parameters: /q
 Filename: {app}\ThirdParty\dxwebsetup.exe; Description: DirectX Installer; StatusMsg: You probably NEED to update your Directx Drivers; Flags: postinstall
 
 [Code]
@@ -347,7 +347,7 @@ begin
     		//msgbox ( 'Is a supported version ' + Param + ' (' + SupportedVersions[i] + ')  ' + Param , mbInformation, MB_OK);
 	  end else begin
 	      //msgbox ( 'Not a supported version ' + Param +  ' (' +SupportedVersions[i] + ')  ', mbInformation, MB_OK);
-        end;	        
+        end;
 	end;
 end;
 
