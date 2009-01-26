@@ -28,7 +28,7 @@ from pyplusplus import decl_wrappers
 
 from pyplusplus import function_transformers as ft
 from pyplusplus.module_builder import call_policies
-from pyplusplus.module_creator import sort_algorithms
+from pyplusplus.creators_factory import sort_algorithms
 
 import common_utils.extract_documentation as exdoc
 import common_utils.var_checker as varchecker
