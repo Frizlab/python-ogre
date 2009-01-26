@@ -483,7 +483,7 @@ class boost:    ## also included bjam
         versionBase = '1_37' ## the version used on the library name
 
     if isLinux() or isMac():
-        bjambase = 'boost-jam-3.1.17'
+        bjambase = 'boost-jam-3.1.17-1-linuxx86'
         if isMac():
             bjambuilddir = 'bin.macosxx86'
             bjambuildset = 'darwin'
@@ -491,13 +491,14 @@ class boost:    ## also included bjam
             if is64():
                 bjambuilddir = 'bin.linuxx86_64'
             else:
-                bjambuilddir = 'bin.linuxx86'
+                bjambuilddir = ''
             bjambuildset = 'gcc'
 
-        source = [
-             [wget,'http://downloads.sourceforge.net/boost/boost-jam-3.1.17-1.tgz', downloadPath],
-             [wget,'http://downloads.sourceforge.net/boost/'+base+'.tar.gz',downloadPath]
-             ]
+        if isLinux():
+		source = [
+	             [wget,'http://downloads.sourceforge.net/boost/boost-jam-3.1.17-1-linuxx86.tgz', downloadPath],
+	             [wget,'http://downloads.sourceforge.net/boost/'+base+'.tar.gz',downloadPath]
+	             ]
         buildCmds  = [
                 ## first handle bjam
                 [0, tar + ' zxf ' + os.path.join(downloadPath, bjambase) + '.tgz --overwrite', ''],
@@ -635,7 +636,7 @@ class ogre:
             base = "ogre-v1-6-1"
             buildCmds  = [
                 [0, tar + " jxf " + os.path.join(downloadPath,base)+".tar.bz2 --overwrite",os.getcwd() ],
-                #[0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.0.patch -p0 ", os.getcwd()],
+                [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.1.patch -p0 ", os.getcwd()],
                 #[0, "sed --in-place -s 's|#define OGRE_THREAD_SUPPORT 1|#define OGRE_THREAD_SUPPORT 0|' OgreConfig.h",os.path.join(os.getcwd(),"ogre","OgreMain", "include")],
                 [0, "aclocal", os.path.join(os.getcwd(), 'ogre')],
                 [0, "./bootstrap", os.path.join(os.getcwd(), 'ogre')],
@@ -718,7 +719,7 @@ class ois:
 #               ]
 
         buildCmds  = [
-                [0, tar + " zxf " + os.path.join(downloadPath,'ois_1.2.0')+".tar.gz --overwrite",os.getcwd() ],
+#                [0, tar + " zxf " + os.path.join(downloadPath,'ois_1.2.0')+".tar.gz --overwrite",os.getcwd() ],
                 [0, "./bootstrap" ,os.path.join(os.getcwd(), base )],
                 [0,"./configure --prefix=%s --includedir=%s/include" %(PREFIX,PREFIX) ,os.path.join(os.getcwd(), base )],
                 [0,'make', os.path.join(os.getcwd(), base )],
@@ -872,13 +873,13 @@ class cegui:
                 [wget, "http://downloads.sourceforge.net/crayzedsgui/CEGUI-0.5.0b.tar.gz", downloadPath]
                 ]
         else:
-            base = "CEGUI-0.6.1"
+            base = "CEGUI-0.6.2"
             source=[
                 [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.6.2b.tar.gz?download", downloadPath]
                 ]
 
         buildCmds  = [
-                [0, tar + " zxf " + os.path.join(downloadPath,base)+".tar.gz --overwrite",os.getcwd() ],
+                [0, tar + " zxf " + os.path.join(downloadPath,base)+"b.tar.gz --overwrite",os.getcwd() ],
 #                [0, "patch -s -N -i ../python-ogre/patch/cegui.patch -p0", os.path.join(os.getcwd(),base)],
                 [0, "echo 'EMPTY' >>./INSTALL", os.path.join(os.getcwd(),base)],
                 [0, "echo 'EMPTY' >>./NEWS", os.path.join(os.getcwd(),base)],
