@@ -1,0 +1,94 @@
+Module OGRE ( ogre.renderer.OGRE )
+   PythonOgre Ver: 1.6.1
+   Module Version: 1.6.1
+   Python Version: 2.5.2 (r252:60911, Oct  5 2008, 19:24:49)     [GCC 4.3.2]
+   Code Generated: 1
+   Compiled      : 16:48:28 Jan 26 2009
+   Raw Detail    : 1.6.1_853M_ogre_1.6.1_1
+Module OIS ( ogre.io.OIS )
+   PythonOgre Ver: 1.6.1
+   Module Version: 1.0
+   Python Version: 2.5.2 (r252:60911, Oct  5 2008, 19:24:49)     [GCC 4.3.2]
+   Code Generated: 1
+   Compiled      : 19:50:58 Jan 26 2009
+   Raw Detail    : 1.6.1_853:854_ois_1.0_1
+Import failed: betagui
+Module OgreAL ( ogre.sound.OgreAL )
+   PythonOgre Ver: 1.6.1
+   Module Version: r115
+   Python Version: 2.5.2 (r252:60911, Oct  5 2008, 19:24:49)     [GCC 4.3.2]
+   Code Generated: 1
+   Compiled      : 17:48:43 Jan 26 2009
+   Raw Detail    : 1.6.1_853_ogreal_r115_1
+Import failed: ODE
+Import failed: OgreRefApp
+Module OgreOde ( ogre.physics.OgreOde )
+   PythonOgre Ver: 1.6.1
+   Module Version: r2497
+   Python Version: 2.5.2 (r252:60911, Oct  5 2008, 19:24:49)     [GCC 4.3.2]
+   Code Generated: 1
+   Compiled      : 19:37:20 Jan 26 2009
+   Raw Detail    : 1.6.1_853_ogreode_r2497_1
+Import failed: OgreNewt
+Import failed: Opcode
+Import failed: bullet
+Import failed: PhysX
+Import failed: NxOgre
+Import failed: OgreBulletC
+Import failed: OgreBulletD
+Import failed: theora
+Module plib ( ogre.addons.plib )
+   PythonOgre Ver: 1.6.1
+   Module Version: 1.6.1
+   Python Version: 2.5.2 (r252:60911, Oct  5 2008, 19:24:49)     [GCC 4.3.2]
+   Code Generated: 1
+   Compiled      : 18:53:22 Jan 26 2009
+   Raw Detail    : 1.6.1_853_ogre_1.6.1_1
+Module ogreforests ( ogre.addons.ogreforests )
+   PythonOgre Ver: 1.6.1
+   Module Version: r2615
+   Python Version: 2.5.2 (r252:60911, Oct  5 2008, 19:24:49)     [GCC 4.3.2]
+   Code Generated: 1
+   Compiled      : 18:39:01 Jan 26 2009
+   Raw Detail    : 1.6.1_853_ogreforests_r2615_1
+Module et ( ogre.addons.et )
+   PythonOgre Ver: 1.6.1
+   Module Version: 2.3.1
+   Python Version: 2.5.2 (r252:60911, Oct  5 2008, 19:24:49)     [GCC 4.3.2]
+   Code Generated: 1
+   Compiled      : 18:28:25 Jan 26 2009
+   Raw Detail    : 1.6.1_853_et_2.3.1_1
+Module caelum ( ogre.addons.caelum )
+   PythonOgre Ver: 1.6.1
+   Module Version: 0.4
+   Python Version: 2.5.2 (r252:60911, Oct  5 2008, 19:24:49)     [GCC 4.3.2]
+   Code Generated: 1
+   Compiled      : 17:44:38 Jan 26 2009
+   Raw Detail    : 1.6.1_853_caelum_0.4_1
+Module noise ( ogre.addons.noise )
+   PythonOgre Ver: 1.6.1
+   Module Version: r2486
+   Python Version: 2.5.2 (r252:60911, Oct  5 2008, 19:24:49)     [GCC 4.3.2]
+   Code Generated: 1
+   Compiled      : 19:41:07 Jan 26 2009
+   Raw Detail    : 1.6.1_853_noise_r2486_1
+Import failed: watermesh
+Import failed: particleuniverse
+Module cadunetree ( ogre.addons.cadunetree )
+   PythonOgre Ver: 1.6.1
+   Module Version: 0.6
+   Python Version: 2.5.2 (r252:60911, Oct  5 2008, 19:24:49)     [GCC 4.3.2]
+   Code Generated: 1
+   Compiled      : 19:48:28 Jan 26 2009
+   Raw Detail    : 1.6.1_853_cadunetree_0.6_1
+Import failed: ogrepcz
+Module hydrax ( ogre.addons.hydrax )
+   PythonOgre Ver: 1.6.1
+   Module Version: 0.4
+   Python Version: 2.5.2 (r252:60911, Oct  5 2008, 19:24:49)     [GCC 4.3.2]
+   Code Generated: 1
+   Compiled      : 19:57:00 Jan 26 2009
+   Raw Detail    : 1.6.1_853_hydrax_0.4_1
+Import failed: hikari
+Import failed: canvas
+Import failed: mygui

@@ -747,7 +747,7 @@ class ois:
         libs=['OIS_static',boost.lib]
         
     else:
-        libs=['OIS_static',boost.lib]
+        libs=['OIS',boost.lib]
         #libs.append ( boost_python_index.lib )
     if os.name=="nt":
         libs.append ( "User32" ) # needed for static linking
@@ -824,7 +824,9 @@ class ogrenewt:
             #[0, "cp SConscript OgreNewt_Main", baseDir],
             #[0, "rm SConscript", baseDir],
             [0, rm + " -rf ./OgreNewt_Main/inc/boost", baseDir],
-            [0, "scons prefix=%s boost=%s/include/boost-1_34_1 install" % (PREFIX, PREFIX), baseDir],  ##WARNING -- boost include dir name is different than  build name (dash not underscore)
+            [0, 'cp SConscript OgreNewt_Main', baseDir],
+            [0, "scons prefix=%s boost=%s/include/boost-1_37 build" % (PREFIX, PREFIX), baseDir],  ##WARNING -- boost include dir name is different than  build name (dash not underscore)
+            [0, "scons prefix=%s boost=%s/include/boost-1_37 install" % (PREFIX, PREFIX), baseDir],  
             ]
     if isWindows():
         buildCmds = [

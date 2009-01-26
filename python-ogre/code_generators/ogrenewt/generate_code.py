@@ -220,7 +220,9 @@ def generate_ogrenewt():
     if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')
         defined_symbols.append('BOOST_HAS_WINTHREADS')
-    
+    if environment.isLinux():
+        defined_symbols.append('BOOST_IS_ENUM')
+
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
