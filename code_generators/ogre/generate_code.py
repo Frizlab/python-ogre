@@ -849,9 +849,8 @@ def Fix_Posix ( mb ):
     for f in mb.member_functions():
         if f.name == 'getChildIterator':
             print "LINUX SPECIAL:", f
-            ###f.exclude()
-    #mb.member_function('::Ogre::Node::getChildIterator').exclude()
-   # mb.member_functions('::Ogre::Bone::getChildIterator').exclude()
+            #f.exclude()
+    #mb.member_functions('::Ogre::Node::getChildIterator').exclude()
 
 
 def Fix_NT ( mb ):
