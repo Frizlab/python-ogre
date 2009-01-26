@@ -645,7 +645,7 @@ class ogre:
                 [0, "make install", os.path.join(os.getcwd(), 'ogre')],
                 ]
         libs=[boost.lib,  'OgreMain']
-        libs.append ( boost_python_index.lib )
+        #libs.append ( boost_python_index.lib )
         lib_dirs=[Config.LOCAL_LIB]
         include_dirs=[Config.PATH_Boost, Config.PATH_INCLUDE_Ogre]
         CCFLAGS = ' -D__PYTHONOGRE_BUILD_CODE '
@@ -748,7 +748,7 @@ class ois:
         
     else:
         libs=['OIS_static',boost.lib]
-        libs.append ( boost_python_index.lib )
+        #libs.append ( boost_python_index.lib )
     if os.name=="nt":
         libs.append ( "User32" ) # needed for static linking
     include_dirs = [ Config.PATH_Boost
@@ -762,8 +762,8 @@ class ois:
     #externalFiles = ['OIS.dll']
     if os.sys.platform == 'darwin':
         LINKFLAGS = '-framework Python -framework Carbon'
-    else:
-        LINKFLAGS = "-l%s" % boost_python_index.lib
+#    else:
+#        LINKFLAGS = "-l%s" % boost_python_index.lib
 
 class ogrerefapp:
     active = False ## making this false as replaced by OgreODE etc..
@@ -784,7 +784,7 @@ class ogrerefapp:
         libs=[boost.lib, 'OgreMain', 'ode_single', 'ReferenceAppLayer']
     else:
         libs=[boost.lib, 'OgreMain', 'ode', 'ReferenceAppLayer']
-        libs.append ( boost_python_index.lib )
+#        libs.append ( boost_python_index.lib )
     lib_dirs = [ boost.PATH_LIB
                 , Config.PATH_LIB_Ogre_OgreMain
                 , Config.PATH_LIB_ODE
@@ -809,7 +809,7 @@ class ogrenewt:
         libs = ['Newton', boost.lib, 'OgreNewt_Main', 'OgreMain']
     else:
         libs = ['Newton', boost.lib, 'OgreNewt', 'OgreMain']
-        libs.append ( boost_python_index.lib )
+#        libs.append ( boost_python_index.lib )
     if _STABLE:
         source = [
                  [cvs, " -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -D 01052008 -P "+base, os.getcwd()]
@@ -864,7 +864,7 @@ class cegui:
         libs=[boost.lib, 'CEGUIBase', 'OgreMain', 'OgreGUIRenderer' ]
     else:
         libs=[boost.lib, 'CEGUIBase', 'OgreMain', 'CEGUIOgreRenderer' ]
-        libs.append ( boost_python_index.lib )
+#        libs.append ( boost_python_index.lib )
 
     if isLinux():
         if _STABLE:
@@ -922,8 +922,8 @@ class cegui:
                 ]
     ModuleName = 'CEGUI'
     CheckIncludes = ['boost/python.hpp', 'Ogre.h', 'CEGUI.h', 'OgreCEGUIRenderer.h']
-    if isLinux():
-        LINKFLAGS = "-l%s" % boost_python_index.lib
+#    if isLinux():
+#        LINKFLAGS = "-l%s" % boost_python_index.lib
 
 
 class ode:
@@ -938,8 +938,8 @@ class ode:
     if isWindows():
         odeLibraryName = 'ode_single'
         libs= [boost.lib, odeLibraryName, 'User32'] # needed for MessageBox function
-    else:
-        libs.append ( boost_python_index.lib )
+#    else:
+#        libs.append ( boost_python_index.lib )
     lib_dirs = [ boost.PATH_LIB
                 ,  Config.PATH_LIB_ODE
                 ]
@@ -981,8 +981,8 @@ class opcode:
     name = 'opcode'
     parent = "ogre/physics"
     libs=[boost.lib]
-    if isLinux():
-        libs.append ( boost_python_index.lib )
+ #   if isLinux():
+ #       libs.append ( boost_python_index.lib )
     lib_dirs = [ boost.PATH_LIB
                 ]
     include_dirs = [ Config.PATH_Boost
@@ -1010,7 +1010,7 @@ class caelum:
                 ]
     CheckIncludes=[]
     if isLinux():
-        libs=[  boost.lib, boost_python_index.lib, 'OgreMain' ]
+        libs=[  boost.lib, 'OgreMain' ]
     else:
         libs=[  boost.lib, 'OgreMain' ]
 
@@ -1060,7 +1060,7 @@ class ogreode:
     libs=[boost.lib, 'OgreMain',  'OgreOde_Core', 'OgreOde_Prefab', 'OgreOde_Loader' ]
     if isLinux():
         libs.append('ode')
-        libs.append ( boost_python_index.lib )
+#        libs.append ( boost_python_index.lib )
     else:
         libs.append('ode_single')
     CheckIncludes = ['boost/python.hpp', 'Ogre.h', 'ode/ode.h', 'ode/odecpp.h', 'OgreOde_Core.h', 'OgreOde_Loader.h',
@@ -1096,8 +1096,8 @@ class quickgui:
                 ]
     CheckIncludes=[]
     libs=[  boost.lib, 'OgreMain' ]
-    if isLinux():
-        libs.append ( boost_python_index.lib )
+#    if isLinux():
+#        libs.append ( boost_python_index.lib )
     ModuleName="QuickGUI"
 
 class navi:
@@ -1150,8 +1150,8 @@ class betagui:
     libs=[  boost.lib, 'OgreMain', 'OIS_static' ]
     if os.name=="nt":
         libs.append ( "User32" ) # needed for static linking
-    else:
-        libs.append ( boost_python_index.lib )
+ #   else:
+ #       libs.append ( boost_python_index.lib )
 
     ModuleName="betagui"
 
@@ -1171,8 +1171,8 @@ class ogreforests:
                 ]
     CheckIncludes=[]
     libs=[  boost.lib, 'OgreMain' ]
-    if isLinux():
-        libs.append ( boost_python_index.lib )
+#    if isLinux():
+#        libs.append ( boost_python_index.lib )
     ModuleName="ogreforests"
 
 
@@ -1203,8 +1203,8 @@ class particleuniverse:
                 ]
     CheckIncludes=[]
     libs=[  boost.lib, 'OgreMain', 'ParticleUniverse' ]
-    if isLinux():
-        libs.append ( boost_python_index.lib )
+#    if isLinux():
+#        libs.append ( boost_python_index.lib )
     ModuleName="particleuniverse"
 
 class nxogre:
@@ -1240,7 +1240,7 @@ class nxogre:
         libs=[  boost.lib, 'NxCharacter', 'NxCooking',  'PhysXLoader','OgreMain','NxOgre' ] #, 'NxOgreStatic'] #'NxExtensions',
     else:
         libs=[  boost.lib, 'NxCharacter', 'NxCooking', 'PhysXCore','PhysXLoader','OgreMain', 'NxOgre' ]
-        libs.append ( boost_python_index.lib )
+#        libs.append ( boost_python_index.lib )
     ModuleName="NxOgre"
 
 
@@ -1270,8 +1270,8 @@ class theora:
                 ]
     CheckIncludes=[]
     libs=[  boost.lib, 'Plugin_TheoraVideoSystem','OgreMain' ]
-    if isLinux():
-        libs.append ( boost_python_index.lib )
+#    if isLinux():
+#        libs.append ( boost_python_index.lib )
     ModuleName="theora"
 
 class plib:
@@ -1293,7 +1293,7 @@ class plib:
         libs = [ boost.lib, 'winmm', 'User32','wsock32', 'opengl32.lib','glu32.lib' ]
     else:
         libs = [ boost.lib, "GL" ] # Note sure what linux libraries are needed
-        libs.append ( boost_python_index.lib )
+#        libs.append ( boost_python_index.lib )
 
 class physx:
     active = True
@@ -1329,7 +1329,7 @@ class physx:
             ]        
     elif isLinux():
         libs=[  boost.lib, 'NxCharacter', 'NxCooking',  'PhysXCore', 'PhysXLoader' ]
-        libs.append ( boost_python_index.lib )
+#        libs.append ( boost_python_index.lib )
         source = [
                     [wget, "http://developer.download.nvidia.com/PhysX/2.8.1/PhysX_2.8.1_SDK_CoreLinux_deb.tar.gz", downloadPath]
                  ]
@@ -1451,11 +1451,11 @@ class ogreal:
 #            [0, "aclocal\n./autogen.sh", os.path.join(os.getcwd(),"openal-0.0.8")],
 #            [0, "./configure --prefix=%s\nmake\nmake install" % PREFIX, os.path.join(os.getcwd(), "openal-0.0.8")]
             ]
-        libs=[boost.lib, boost_python_index.lib, 'OgreMain', 'vorbisfile',
+        libs=[boost.lib, 'OgreMain', 'vorbisfile',
                     #'ogg',
                     #'vorbis','vorbisfile','vorbisenc',
                     'openal']  ##  'OgreAL' -- going to compile OgreAL ourselves
-        libs.append ( boost_python_index.lib )
+#        libs.append ( boost_python_index.lib )
     ModuleName = 'OgreAL'
     CheckIncludes = ['OgreAL.h']
 
@@ -1518,7 +1518,7 @@ class et:  ## editable terrain
     name='et'
     parent = "ogre/addons"
     if isLinux():
-        libs=[ boost.lib, boost_python_index.lib, 'OgreMain' ]
+        libs=[ boost.lib, 'OgreMain' ]
     else:
         libs=[ boost.lib, 'OgreMain' ]
 
@@ -1549,7 +1549,7 @@ class bullet:
 #         libs.append('LibBulletSoftBody')
         #libs.append('libbulletcolladaconverter')
 #         libs.append('LibBulletMultiThreaded')
-        libs.append ( boost_python_index.lib )
+#        libs.append ( boost_python_index.lib )
 
     lib_dirs = [ boost.PATH_LIB
                 ,  Config.PATH_LIB_Bullet
@@ -1593,7 +1593,7 @@ class ogrebulletc:  #
     cflags = ""
     parent = "ogre/physics"
     libs = [boost.lib,  'OgreMain',
-        'LibBulletCollision', 'LibBulletDynamics','LibBulletMultiThreaded','LibBulletSoftBody','LibGIMPACT'
+        'LibBulletCollision', 'LibBulletDynamics','LibBulletMultiThreaded','LibBulletSoftBody'
         ]
     if isLinux():
        libs.append('LibLinearMath')
@@ -1604,8 +1604,10 @@ class ogrebulletc:  #
                     , os.path.join(Config.PATH_OgreBullet, 'Collisions' )
                     , Config.PATH_INCLUDE_Ogre
                     , Config.PATH_INCLUDE_Ogre_Dependencies
-                    ,os.path.join(Config.PATH_Bullet, 'Extras','GIMPACT','include')
                     ]
+    if isWindows():
+        include_dirs.append(os.path.join(Config.PATH_Bullet, 'Extras','GIMPACT','include'))
+      
     lib_dirs = [ boost.PATH_LIB
                 ,Config.PATH_LIB_Bullet
                 , Config.PATH_LIB_Ogre_OgreMain
@@ -1614,7 +1616,7 @@ class ogrebulletc:  #
         CCFLAGS =  ' -DWIN32 -DNDEBUG -D_WINDOWS -D_PRECOMP '
     else:
         CCFLAGS = ' -D_PRECOMP -fno-inline '
-        libs.append ( boost_python_index.lib )
+#        libs.append ( boost_python_index.lib )
     ModuleName = 'OgreBulletC'
     CheckIncludes=['boost/python.hpp', 'Ogre.h']
 
@@ -1654,7 +1656,7 @@ class ogrebulletd:  #
         CCFLAGS =  ' -DWIN32 -DNDEBUG -D_WINDOWS -D_PRECOMP '
     else:
         CCFLAGS = ' -D_PRECOMP -fno-inline '
-        libs.append ( boost_python_index.lib )
+#        libs.append ( boost_python_index.lib )
     ModuleName = 'OgreBulletD'
     CheckIncludes=['boost/python.hpp', 'Ogre.h']
     descText = "Ogre Bullet Dynamics (physics) implementation"
@@ -1675,8 +1677,8 @@ class noise:
                 ]
     CheckIncludes=[]
     libs=[  boost.lib]
-    if isLinux():
-        libs.append ( boost_python_index.lib )
+#    if isLinux():
+#        libs.append ( boost_python_index.lib )
     ModuleName="noise"
     descText = "Generate 'noise'"
 
@@ -1696,8 +1698,8 @@ class watermesh:
                 ]
     CheckIncludes=[]
     libs=[  boost.lib, 'OgreMain' ]
-    if isLinux():
-        libs.append ( boost_python_index.lib )
+#    if isLinux():
+#        libs.append ( boost_python_index.lib )
     ModuleName="watermesh"
     descText = "C++ code from Ogre Water demo -- use Hydrax instead"
 
@@ -1717,8 +1719,8 @@ class ofusion:
                 ]
     CheckIncludes=[]
     libs=[  boost.lib, 'OgreMain' ]
-    if isLinux():
-        libs.append ( boost_python_index.lib )
+#    if isLinux():
+#        libs.append ( boost_python_index.lib )
     ModuleName="ofusion"
     descText = "Import Ogre 'Scenes' from 3dMax using the ofusion exporter"
 
@@ -1738,8 +1740,8 @@ class cadunetree:
                 ]
     CheckIncludes=[]
     libs=[  boost.lib, 'OgreMain' ]
-    if isLinux():
-        libs.append ( boost_python_index.lib )
+#    if isLinux():
+#        libs.append ( boost_python_index.lib )
     ModuleName="cadunetree"
     descText = "Generate realistic trees"
 
@@ -1760,8 +1762,8 @@ class ogrepcz:
                 ]
     CheckIncludes=[]
     libs=[  boost.lib, 'Plugin_PCZSceneManager', 'OgreMain' ]
-    if isLinux():
-        libs.append ( boost_python_index.lib )
+#    if isLinux():
+#        libs.append ( boost_python_index.lib )
     ModuleName="ogrepcz"
     descText = "Portal SceneManager - seamlessly move from interior to exterior scene management"
 
@@ -1781,8 +1783,8 @@ class opensteer:
                 ]
     CheckIncludes=[]
     libs=[  boost.lib, 'opensteer' ]
-    if isLinux():
-        libs.append ( boost_python_index.lib )
+#    if isLinux():
+#        libs.append ( boost_python_index.lib )
     ModuleName="opensteer"
 
 class hydrax:
@@ -1801,8 +1803,8 @@ class hydrax:
                 ]
     CheckIncludes=[]
     libs=[  boost.lib, 'OgreMain' ]
-    if isLinux():
-        libs.append ( boost_python_index.lib )
+#    if isLinux():
+#        libs.append ( boost_python_index.lib )
     ModuleName="hydrax"
     descText = "Fantastic water/ocean effects"
 
@@ -1823,8 +1825,8 @@ class hikari:
                 ]
     CheckIncludes=[]
     libs=[  boost.lib, 'OgreMain', 'comsuppw', 'Gdi32' ] ##, 'hikari' ]
-    if isLinux():
-        libs.append ( boost_python_index.lib )
+#    if isLinux():
+#        libs.append ( boost_python_index.lib )
     ModuleName="hikari"
     descText = "Use Flash controls within Ogre"
     descLink = "http://hikari-library.googlecode.com/"
