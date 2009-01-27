@@ -274,7 +274,9 @@ def generate_code():
                                           , working_directory=environment.root_dir
                                           , include_paths=environment.cegui.include_dirs
                                           , define_symbols=defined_symbols
-                                          , indexing_suite_version=2 )
+                                          , indexing_suite_version=2
+                                          , cflags=environment.ogre.cflags
+                                          )
                                           
     filter_declarations (mb)
                                           

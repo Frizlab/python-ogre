@@ -166,10 +166,10 @@ else:
     else:
         sed_ = "sed --in-place "
 
-if isMac():
-    Config.PATH_Boost = os.path.join(Config.LOCAL_INCLUDE, 'boost-1_34_1')
-    Config.LIB_Boost = 'libboost_python-1_34_1'
-    Config.RPATH=""
+#if isMac():
+#    Config.PATH_Boost = os.path.join(Config.LOCAL_INCLUDE, 'boost-1_34_1')
+#    Config.LIB_Boost = 'libboost_python-1_34_1'
+#    Config.RPATH=""
 
 ## BIG assumption about where you want things put
 if UseSystem:
@@ -454,6 +454,9 @@ class scons:
     if isLinux() or isMac():
         buildCmds =  [
                 [0, tar + " zxf " + os.path.join(downloadPath,base)+".tar.gz --overwrite",'' ],
+                # note fix here as scons defaults to adding bundle to command line which stops us building dynamiclibs!!
+                [0, 'sed -i "" s/-bundle// applelink.py',
+                     os.path.join (os.getcwd(), base, 'engine','SCons','Tool')   ],
                 [0,"python setup.py install  --prefix=%s" % PREFIX , os.path.join (os.getcwd(), base) ]
                 ]
 
@@ -482,23 +485,19 @@ class boost:    ## also included bjam
         base = 'boost_1_37_0'
         versionBase = '1_37' ## the version used on the library name
 
-    if isLinux() or isMac():
+    if isLinux():
         bjambase = 'boost-jam-3.1.17-1-linuxx86'
-        if isMac():
-            bjambuilddir = 'bin.macosxx86'
-            bjambuildset = 'darwin'
+        if is64():
+            bjambuilddir = 'bin.linuxx86_64'
         else:
-            if is64():
-                bjambuilddir = 'bin.linuxx86_64'
-            else:
-                bjambuilddir = ''
-            bjambuildset = 'gcc'
+            bjambuilddir = ''
+        bjambuildset = 'gcc'
 
-        if isLinux():
-		source = [
-	             [wget,'http://downloads.sourceforge.net/boost/boost-jam-3.1.17-1-linuxx86.tgz', downloadPath],
-	             [wget,'http://downloads.sourceforge.net/boost/'+base+'.tar.gz',downloadPath]
-	             ]
+        source = [
+            [wget,'http://downloads.sourceforge.net/boost/boost-jam-3.1.17-1-linuxx86.tgz', downloadPath],
+            [wget,'http://downloads.sourceforge.net/boost/'+base+'.tar.gz',downloadPath]
+            ]
+                
         buildCmds  = [
                 ## first handle bjam
                 [0, tar + ' zxf ' + os.path.join(downloadPath, bjambase) + '.tgz --overwrite', ''],
@@ -513,6 +512,33 @@ class boost:    ## also included bjam
 #                 [0, sed_ + " s/'BOOST_PYTHON_MAX_ARITY 15'/'BOOST_PYTHON_MAX_ARITY 19'/ "+base+"/boost/python/detail/preprocessor.hpp", ''],
 #                 [0, sed_ + ' s/"# include <boost\/preprocessor\/cat.hpp>"/"\\n#define BOOST_PYTHON_NO_PY_SIGNATURES\\n# include <boost\/preprocessor\/cat.hpp>"/ '+base+'/boost/python/detail/preprocessor.hpp', '' ],
                 [0,"./configure --with-libraries=python,thread,date_time --prefix=%s --without-icu --with-bjam=../root/usr/bin/bjam"  % PREFIX, os.path.join(os.getcwd(), base )],
+                [0,'make', os.path.join(os.getcwd(), base )],
+                [0,'make install', os.path.join(os.getcwd(), base )],
+                ]
+    if isMac():
+        bjambase = 'boost-jam-3.1.17-1-macosxx86'
+        bjambuilddir = 'bin.macosxx86'
+        bjambuildset = 'darwin'
+   
+        source = [
+            [wget,'http://downloads.sourceforge.net/boost/boost-jam-3.1.17-1-macosxx86.tgz', downloadPath],
+            [wget,'http://downloads.sourceforge.net/boost/'+base+'.tar.gz',downloadPath]
+            ]
+                
+        buildCmds  = [
+                ## first handle bjam
+                [0, tar + ' zxf ' + os.path.join(downloadPath, bjambase) + '.tgz --overwrite', ''],
+                #[0,"./build.sh " + bjambuildset, os.path.join(os.getcwd(), bjambase )],
+                #[0,"mkdir -p %s/bin/" % PREFIX, os.path.join(os.getcwd(), bjambase )],
+                [0,cp + " bjam %s/bin/" % PREFIX, os.path.join(os.getcwd(), bjambase )], ## may need to change on 64 bit systems
+
+                ## and now boost
+#                [0, tar + ' zxf ' + os.path.join(downloadPath, base) + '.tar.gz', ''],
+                [0,'chmod -R +rw *', os.path.join(os.getcwd(), base ) ],
+#                 [0, sed_ + " 's/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/' "+base+"/configure", '' ],
+#                 [0, sed_ + " s/'BOOST_PYTHON_MAX_ARITY 15'/'BOOST_PYTHON_MAX_ARITY 19'/ "+base+"/boost/python/detail/preprocessor.hpp", ''],
+#                 [0, sed_ + ' s/"# include <boost\/preprocessor\/cat.hpp>"/"\\n#define BOOST_PYTHON_NO_PY_SIGNATURES\\n# include <boost\/preprocessor\/cat.hpp>"/ '+base+'/boost/python/detail/preprocessor.hpp', '' ],
+                [0,"./configure --with-toolset=darwin --with-libraries=python,thread,date_time --prefix=%s --without-icu --with-bjam=../root/usr/bin/bjam"  % PREFIX, os.path.join(os.getcwd(), base )],
                 [0,'make', os.path.join(os.getcwd(), base )],
                 [0,'make install', os.path.join(os.getcwd(), base )],
                 ]
@@ -544,7 +570,9 @@ class boost:    ## also included bjam
         gcc_version = re.search(r'([0-9]+?\.[0-9]+?\.[0-9]+?)', gccp.communicate()[0]).groups()[0].split('.')
         # FIXME: Should this be the multithreaded version!?
         lib = "boost_python-gcc%s%s-mt-%s" % (gcc_version[0], gcc_version[1], versionBase)
-
+    if isMac():
+        lib=Config.LIB_Boost
+        
 class boost_python_index:
     """ only used for Linx
     """
@@ -667,8 +695,9 @@ class ogre:
                 [0, tar + " jxf " + os.path.join(downloadPath,base)+".tar.bz2 --overwrite",os.getcwd() ],
                 [0, unzip + os.path.join(downloadPath,basedep)+".zip ",os.path.join(os.getcwd(), 'ogre') ],
                 [0, "mkdir ~/Library/Frameworks", ''], ## Note that this will fail if the directory exists !!!
-                [0,cp + " -R "+os.path.join(os.getcwd(), 'ogre', '__MACOSX','Dependencies')+'/*.framework ' + Config.FRAMEWORK_DIR,''],
-                #[0, "patch -s -N -i ./python-ogre/patch/ogre.patch -p0 ", os.getcwd()],
+                [0, 'mv OgreDependencies_OSX_Eihort_20080115/Dependencies .',os.path.join(os.getcwd(), 'ogre')],
+                #[0,cp + " -R "+os.path.join(os.getcwd(), 'ogre', '__MACOSX','Dependencies')+'/*.framework ',''],
+                [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.1.patch -p0 ", os.getcwd()],
                 [0, "mkdir Ogre",os.path.join(os.getcwd() ,'ogre','OgreMain', 'include') ],
                 # need copies of these in an 'Ogre/..' directory due to includes in the OSX directory -- or get the framework right
                 [0, "cp OgreRoot.h Ogre",os.path.join(os.getcwd() ,'ogre','OgreMain', 'include') ],
@@ -676,7 +705,7 @@ class ogre:
                 [0, "cp OgrePrerequisites.h Ogre",os.path.join(os.getcwd() ,'ogre','OgreMain', 'include') ],
                 [0, "xcodebuild -project ogre/Mac/Ogre/Ogre.xcodeproj -configuration Release", ''],
                 [0, "xcodebuild -project ogre/Mac/Samples/Samples.xcodeproj -configuration Release", ''],
-                [0, "cp -R *.framework " + Config.FRAMEWORK_DIR, os.path.join(os.getcwd() ,'ogre',"Mac", "build", "Release") ]
+                [0, "cp -R *.framework ~/Library/Frameworks", os.path.join(os.getcwd() ,'ogre',"Mac", "build", "Release") ]
                 ]
 
         libs=[boost.lib]
@@ -700,7 +729,15 @@ class ois:
     cflags=''
     parent = "ogre/io"
     if isMac():
-        source=[]
+        base = "ois"
+        source=[
+#            [wget, "http://downloads.sourceforge.net/wgois/ois_1.2.0.tar.gz", downloadPath]
+            [cvs, "-z3 -d:pserver:anonymous@wgois.cvs.sourceforge.net:/cvsroot/wgois co -D 01Jan2009 -P ois", os.getcwd()]
+            ]
+        buildCmds = [
+            [0, "xcodebuild -project ois/Mac/XCode-2.2/OIS.xcodeproj -configuration Release", ''],
+            [0,'cp -R ois/Mac/XCode-2.2/build/Release/OIS.Framework ~/Library/Frameworks ', '']
+            ]
     if isLinux():
         base = "ois"
         source=[
@@ -761,7 +798,7 @@ class ois:
     CheckIncludes=['boost/python.hpp', 'OIS.h']
     #externalFiles = ['OIS.dll']
     if os.sys.platform == 'darwin':
-        LINKFLAGS = '-framework Python -framework Carbon'
+        LINKFLAGS = '-framework OIS '
 #    else:
 #        LINKFLAGS = "-l%s" % boost_python_index.lib
 
@@ -868,7 +905,7 @@ class cegui:
         libs=[boost.lib, 'CEGUIBase', 'OgreMain', 'CEGUIOgreRenderer' ]
 #        libs.append ( boost_python_index.lib )
 
-    if isLinux():
+    if isLinux() or isMac():
         if _STABLE:
             base = "CEGUI-0.5.0"
             source=[

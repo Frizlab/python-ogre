@@ -66,7 +66,11 @@ def get_ccflags(cls):
                 CCFLAGS += ' ' 
             
         else:
-            CCFLAGS  = ' -I -pipe -O3 -I./'
+            CCFLAGS = ' -I./ -O3 -dynamic -fPIC -DBOOST_PYTHON_NO_PY_SIGNATURES -DBOOST_PYTHON_MAX_ARITY=19   '
+            CCFLAGS += ' -ftemplate-depth-128 -finline-functions -Wno-inline -Wall -no-cpp-precomp -gdwarf-2 -DNDEBUG '
+            # -ftemplate-depth-128 -D_POSIX_C_SOURCE -no-cpp-precomp -gdwarf-2 -finline-functions -Wno-inline -Wall -DBOOST_ALL_NO_LIB=1 -DBOOST_PYTHON_SOURCE 
+            # -I/Developer/SDKs/MacOSX10.5.sdk/usr/include/
+            # -I/Developer/SDKs/MacOSX10.5.sdk/usr/include/             CCFLAGS  = ' -I -pipe -O3 -I./'
             
     ## change to ensure the source file is also in the include path due to indexing suite changes            
     CCFLAGS += ' -I' +cls._source + ' '            
@@ -102,7 +106,8 @@ def get_linkflags():
         if os.sys.platform <> 'darwin':
             LINKFLAGS = ' `pkg-config --libs OGRE` -lstdc++ '
     if environment.isMac():
-            LINKFLAGS = ' -Wl,-x -framework Python -framework Ogre -framework Carbon -F' + environment.Config.FRAMEWORK_DIR + ' '
+#            LINKFLAGS = ' -Wl,-x -framework Python -framework Ogre -framework Carbon -F' + environment.Config.FRAMEWORK_DIR + ' '
+            LINKFLAGS = ' -dynamiclib -dynamic -framework Ogre -framework Carbon -framework Python '
     return LINKFLAGS
 
 def build_pch( cls, pchfile ):
@@ -223,9 +228,10 @@ for name, cls in environment.projects.items():
         if environment.isLinux() and "-g" not in _env["CCFLAGS"]:
             _env.AddPostAction(package,\
                  '-strip -g -S -d --strip-debug -s %(name)s' % { 'name':package[index] } )
-        if environment.isMac():                
-            _env.AddPostAction(package,\
-                 '-strip -s %(name)s' % { 'name':package[index] } )
+        if environment.isMac():
+            pass
+            #_env.AddPostAction(package,\
+            #     '-strip -s %(name)s' % { 'name':package[index] } )
                          
         _env.InstallAs(os.path.join(environment.package_dir_name, cls.parent,
                                     cls.ModuleName, cls.PydName), 

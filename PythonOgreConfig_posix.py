@@ -5,10 +5,7 @@ module_dir = os.path.abspath(os.path.dirname(__file__) )## The root directory is
 ## lets assume that the base development directory is one level higher
 BASE_DIR,ignore = os.path.split(module_dir) ##  r'/home/andy/development'
 
-
-
 SDK = False
-
 
 # the base of the /usr/... dircetory structure that we are using
 ROOT_DIR = os.path.join(BASE_DIR,'root')
@@ -31,13 +28,26 @@ gccxml_bin = os.path.join(ROOT_DIR,'usr/bin')
 # and the Py++ directory as sometimes we need access to the code repository there
 pyplusplus_install_dir = os.path.join(BASE_DIR,'pygccxml')
 
-
-if os.sys.platform == 'darwin':  # we use the pre built sdk for OSX
-    SDK = True
-    FRAMEWORK_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', 'Library','Frameworks'))   ## need this for the Mac
-    MAC_SDK_INCLUDE= '/Developer/SDKs/MacOSX10.4u.sdk/Developer/Headers/CFMCarbon' 
-    MAC_CCFLAGS = ' -DBOOST_PYTHON_MAX_ARITY=19 -D_POSIX_C_SOURCE -DCF_OPEN_SOURCE'
-    MAC_cflags = ' --gccxml-cxxflags "-DCF_OPEN_SOURCE -D_POSIX_C_SOURCE -isysroot /Developer/SDKs/MacOSX10.4u.sdk"'
+isMAC = False
+if os.sys.platform == 'darwin':  # for the Mac
+   isMAC = True
+   MAC_SDK_INCLUDE= '' #/Developer/SDKs/MacOSX10.5.sdk/Developer/Headers/FlatCarbon'
+   MAC_CCFLAGS = ' -D__ASSERTMACROS__ '
+   MAC_cflags = '  -D__APPLE_CC__ -DCF_OPEN_SOURCE  \
+             -I. \
+             -F/Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks \
+             -DBOOST_PYTHON_NO_PY_SIGNATURES -DBOOST_PYTHON_MAX_ARITY=19  \
+             -I' + os.path.join(module_dir,'code_generators','ogre') + ' ' 
+   MAC_AdditionalFrameWorks=[ os.path.abspath(os.path.join(BASE_DIR,'ogre/Mac/build/Release')),  # this one can be removed as Ogr eis now copied to the user frameworks area
+                             os.path.abspath(os.path.join(os.path.expanduser('~'), 'Library','Frameworks'))]
+   LIB_Boost = 'libboost_python-xgcc42-mt'
+   
+   
+#    SDK = True
+#    FRAMEWORK_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', 'Library','Frameworks'))   ## need this for the Mac
+#    MAC_SDK_INCLUDE= '/Developer/SDKs/MacOSX10.4u.sdk/Developer/Headers/CFMCarbon' 
+#    MAC_CCFLAGS = ' -DBOOST_PYTHON_MAX_ARITY=19 -D_POSIX_C_SOURCE -DCF_OPEN_SOURCE'
+#    MAC_cflags = ' --gccxml-cxxflags "-DCF_OPEN_SOURCE -D_POSIX_C_SOURCE -isysroot /Developer/SDKs/MacOSX10.4u.sdk"'
 
     
     
@@ -51,6 +61,9 @@ PATH_OIS =          os.path.join(BASE_DIR, 'ois')
 if SDK:
     PATH_CEGUI =        os.path.join(BASE_DIR, 'ogre','Dependencies')
     PATH_OIS =          os.path.join(BASE_DIR, 'ogre','Dependencies')
+if isMAC:
+    PATH_CEGUI =        os.path.join(BASE_DIR, 'ogre','Dependencies')
+   
     
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonSDK','sdk')
 PATH_ODE =          os.path.join(BASE_DIR, 'ode-0.10.1')
@@ -108,6 +121,10 @@ if SDK:
     PATH_LIB_CEGUI =                os.path.join( PATH_CEGUI,'lib', 'Release' ) #PATH_Ogre, r'Dependencies/lib/Release' )
     PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'OgreMain/lib/Release' )
 
+if isMAC:
+    PATH_LIB_OIS =                  os.path.join( PATH_OIS,'Mac', 'XCode-2.2', 'build', 'Release' ) #PATH_OIS, 'dll') ## NOTE Posix platforms this lives in'lib' not 'dll'
+    PATH_LIB_CEGUI =                os.path.join( PATH_CEGUI,'lib', 'Release' ) #PATH_Ogre, r'Dependencies/lib/Release' )
+   
 PATH_LIB_ODE =                  os.path.join( LOCAL_LIB ) #PATH_ODE, 'lib/releasedll')## probable releaselib for posix
 PATH_LIB_OPCODE =               os.path.join( PATH_OPCODE ) 
 PATH_LIB_OgreOde =              os.path.join( LOCAL_LIB ) #PATH_OgreOde, 'lib/Release') 
@@ -138,11 +155,19 @@ PATH_INCLUDE_Ogre_Dependencies =    PATH_INCLUDE_Ogre #      os.path.join( PATH_
 
 PATH_INCLUDE_OIS =          os.path.join(LOCAL_INCLUDE,'OIS') #os.path.join(PATH_OIS,'includes')    ## Note the plural include's
 PATH_INCLUDE_CEGUI =        os.path.join(LOCAL_INCLUDE,'CEGUI') #os.path.join(PATH_CEGUI, r'include/CEGUI')
-if SDK:
+
+if SDK :
     PATH_INCLUDE_OIS =          os.path.join(PATH_OIS,'include','OIS') #os.path.join(PATH_OIS,'includes')    ## Note the plural include's
     PATH_INCLUDE_CEGUI =        os.path.join(PATH_CEGUI,'include','CEGUI') #os.path.join(PATH_CEGUI, r'include/CEGUI')
     PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include') 
     PATH_INCLUDE_Ogre_Dependencies =    os.path.join( PATH_Ogre, 'Dependencies/include')
+    
+if isMAC:
+    PATH_INCLUDE_OIS =          os.path.join(PATH_OIS,'includes') #os.path.join(PATH_OIS,'includes')    ## Note the plural include's
+    PATH_INCLUDE_CEGUI =        os.path.join(PATH_Ogre, 'Dependencies','include', 'CEGUI' ) #PATH_CEGUI,'include','CEGUI') #os.path.join(PATH_CEGUI, r'include/CEGUI')
+    PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain','include') 
+    PATH_INCLUDE_Ogre_Dependencies =    os.path.join( PATH_Ogre, 'Dependencies','include')
+
 
 PATH_INCLUDE_OgreRefApp =   os.path.join(PATH_Ogre,'ReferenceApplication/ReferenceAppLayer/include') 
 PATH_INCLUDE_OgreNewt =     os.path.join(LOCAL_INCLUDE,'OgreNewt') #os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')
@@ -206,3 +231,5 @@ PATH_INCLUDE_hikari = os.path.join(PATH_hikari ) #, 'include')
 PATH_INCLUDE_mygui = os.path.join(PATH_mygui,'MyGUIEngine','include') 
 PATH_INCLUDE_canvas=        PATH_canvas
 
+if os.sys.platform=='darwin':
+   pass

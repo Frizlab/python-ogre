@@ -1,3 +1,6 @@
+#if defined __APPLE_CC__
+    #include "Carbon/Carbon.h"
+#endif
 #include "python_ogre_precompiled.h"
 #include "boost/python/object.hpp"  //len function
 #include "boost/python/ssize_t.hpp" //ssize_t type definition

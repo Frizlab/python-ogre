@@ -1,14 +1,12 @@
-
+import os
 def header_files( version ):
     if not version.startswith("1.2"):
         ## 21Nov07; Change to precompiled header support
-        return [ 'python_ogre_precompiled.h'
-# #                  ,'boost/python.hpp'
-# #                  ,'python_ogre_masterlist.h'
-# #                  ,'boost/python/ssize_t.hpp' ## needed for python2.4 as it doesn't define ssize_t
-
-        ]
-
+        ret = [ 'python_ogre_precompiled.h'
+            ]
+        if os.sys.platform == 'darwin':
+            ret.insert(0,'Carbon/Carbon.h')
+        return ret
       
     else: #1.2
         return [ 'Ogre.h'
