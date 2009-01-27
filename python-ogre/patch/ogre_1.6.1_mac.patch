@@ -1,0 +1,627 @@
+--- /Users/andy/development/ogre/RenderSystems/GL/src/OSX/OgreOSXCocoaWindow.mm	2008-06-12 22:10:57.000000000 +0800
++++ ./src/OSX/OgreOSXCocoaWindow.mm	2009-01-10 10:02:43.000000000 +0800
+@@ -1,27 +1,27 @@
+ /*
+------------------------------------------------------------------------------
+-This source file is part of OGRE
+-    (Object-oriented Graphics Rendering Engine)
+-For the latest info, see http://www.ogre3d.org/
+-
+-Copyright (c) 2000-2005 The OGRE Team
+-Also see acknowledgements in Readme.html
+-
+-This program is free software; you can redistribute it and/or modify it under
+-the terms of the GNU Lesser General Public License as published by the Free Software
+-Foundation; either version 2 of the License, or (at your option) any later
+-version.
+-
+-This program is distributed in the hope that it will be useful, but WITHOUT
+-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+-FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+-
+-You should have received a copy of the GNU Lesser General Public License along with
+-this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+-Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+-http://www.gnu.org/copyleft/lesser.txt.
+------------------------------------------------------------------------------
+-*/
++ -----------------------------------------------------------------------------
++ This source file is part of OGRE
++ (Object-oriented Graphics Rendering Engine)
++ For the latest info, see http://www.ogre3d.org/
++ 
++ Copyright (c) 2000-2005 The OGRE Team
++ Also see acknowledgements in Readme.html
++ 
++ This program is free software; you can redistribute it and/or modify it under
++ the terms of the GNU Lesser General Public License as published by the Free Software
++ Foundation; either version 2 of the License, or (at your option) any later
++ version.
++ 
++ This program is distributed in the hope that it will be useful, but WITHOUT
++ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
++ FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
++ 
++ You should have received a copy of the GNU Lesser General Public License along with
++ this program; if not, write to the Free Software Foundation, Inc., 59 Temple
++ Place - Suite 330, Boston, MA 02111-1307, USA, or go to
++ http://www.gnu.org/copyleft/lesser.txt.
++ -----------------------------------------------------------------------------
++ */
+ 
+ #include "OgreOSXCocoaWindow.h"
+ #include "OgreRoot.h"
+@@ -39,16 +39,19 @@
+ #define GL_EXT_texture_env_combine 1
+ #include <OpenGL/glext.h>
+ #include <OpenGL/glu.h>
++#import <OpenGL/CGLMacro.h>
+ 
+ namespace Ogre {
+-
++    
+     OSXCocoaWindow::OSXCocoaWindow()
+     {
+ 		mActive = false;
+ 		mContext = 0;
+ 		mWindow = 0;
++        mIsExternalGLControl = false;
++        mIsExternalGLContext = false;
+     }
+-
++    
+     OSXCocoaWindow::~OSXCocoaWindow()
+     {
+ 		[glContext clearDrawable];
+@@ -58,32 +61,32 @@
+     }
+ 	
+ 	void OSXCocoaWindow::create(const String& name, unsigned int width, unsigned int height,
+-	            bool fullScreen, const NameValuePairList *miscParams)
++                                bool fullScreen, const NameValuePairList *miscParams)
+     {
+ 		NSAutoreleasePool *arp = [[NSAutoreleasePool alloc] init];
+ 		NSApplicationLoad();
+ 		//OgreWindowDelegate *delegate = [[OgreWindowDelegate alloc] initWithGLOSXCocoaWindow:this];
+ 		//[window setDelegate:delegate];
+ 		/*
+-***Key: "title" Description: The title of the window that will appear in the title bar Values: string Default: RenderTarget name
+-
+-Key: "colourDepth" Description: Colour depth of the resulting rendering window; only applies if fullScreen is set. Values: 16 or 32 Default: desktop depth Notes: [W32 specific]
+-
+-***Key: "left" Description: screen x coordinate from left Values: positive integers Default: 'center window on screen' Notes: Ignored in case of full screen
+-
+-***Key: "top" Description: screen y coordinate from top Values: positive integers Default: 'center window on screen' Notes: Ignored in case of full screen
+-
+-***Key: "depthBuffer" [DX9 specific] Description: Use depth buffer Values: false or true Default: true
+-
+-***Key: "externalWindowHandle" [API specific] Description: External window handle, for embedding the OGRE context Values: positive integer for W32 (HWND handle) poslong:posint:poslong (display*:screen:windowHandle) or poslong:posint:poslong:poslong (display*:screen:windowHandle:XVisualInfo*) for GLX Default: 0 (None)
+-
+-***Key: "FSAA" Description: Full screen antialiasing factor Values: 0,2,4,6,... Default: 0
+-
+-Key: "displayFrequency" Description: Display frequency rate, for fullscreen mode Values: 60...? Default: Desktop vsync rate
+-
+-Key: "vsync" Description: Synchronize buffer swaps to vsync Values: true, false Default: 0
+-*/
+-
++         ***Key: "title" Description: The title of the window that will appear in the title bar Values: string Default: RenderTarget name
++         
++         Key: "colourDepth" Description: Colour depth of the resulting rendering window; only applies if fullScreen is set. Values: 16 or 32 Default: desktop depth Notes: [W32 specific]
++         
++         ***Key: "left" Description: screen x coordinate from left Values: positive integers Default: 'center window on screen' Notes: Ignored in case of full screen
++         
++         ***Key: "top" Description: screen y coordinate from top Values: positive integers Default: 'center window on screen' Notes: Ignored in case of full screen
++         
++         ***Key: "depthBuffer" [DX9 specific] Description: Use depth buffer Values: false or true Default: true
++         
++         ***Key: "externalWindowHandle" [API specific] Description: External window handle, for embedding the OGRE context Values: positive integer for W32 (HWND handle) poslong:posint:poslong (display*:screen:windowHandle) or poslong:posint:poslong:poslong (display*:screen:windowHandle:XVisualInfo*) for GLX Default: 0 (None)
++         
++         ***Key: "FSAA" Description: Full screen antialiasing factor Values: 0,2,4,6,... Default: 0
++         
++         Key: "displayFrequency" Description: Display frequency rate, for fullscreen mode Values: 60...? Default: Desktop vsync rate
++         
++         Key: "vsync" Description: Synchronize buffer swaps to vsync Values: true, false Default: 0
++         */
++        
+ 		BOOL hasDepthBuffer = YES;
+ 		int fsaa_samples = 0;
+ 		NSString *windowTitle = [NSString stringWithCString:name.c_str()];
+@@ -97,20 +100,20 @@
+ 			opt = miscParams->find("title");
+ 			if(opt != miscParams->end())
+ 				windowTitle = [NSString stringWithCString:opt->second.c_str()];
+-				
++            
+ 			opt = miscParams->find("left");
+ 			if(opt != miscParams->end())
+ 				winx = StringConverter::parseUnsignedInt(opt->second);
+-				
++            
+ 			opt = miscParams->find("top");
+ 			if(opt != miscParams->end())
+ 				winy = NSHeight([[NSScreen mainScreen] frame]) - StringConverter::parseUnsignedInt(opt->second) - height;
+-				
+-				
++            
++            
+ 			opt = miscParams->find("depthBuffer");
+ 			if(opt != miscParams->end())
+ 				hasDepthBuffer = StringConverter::parseBool(opt->second);
+-				
++            
+ 			opt = miscParams->find("FSAA");
+ 			if(opt != miscParams->end())
+ 				fsaa_samples = StringConverter::parseUnsignedInt(opt->second);
+@@ -118,228 +121,284 @@
+ 			opt = miscParams->find( "colourDepth" );
+ 			if( opt != miscParams->end() )
+ 				depth = StringConverter::parseUnsignedInt( opt->second );
+-		}		
+-		
+-
+-		NSOpenGLPixelFormat* openglFormat;
+-		{
+-			NSOpenGLPixelFormatAttribute attribs[30];
+-			int i=0;
+-			
+-			if(fullScreen)
++            
++            /*if ((opt = miscParams->find("externalGLContext")) != end)
++             {
++             mContext = new OSXCocoaContext(glContext);
++             mGlrc = (HGLRC)StringConverter::parseUnsignedLong(opt->second);
++             if( mGlrc )
++             mIsExternalGLContext = true;
++             }*/
++            
++            opt = miscParams->find("currentGLContext");
++            if (opt != miscParams->end() &&	StringConverter::parseBool(opt->second))
+ 			{
+-				GLRenderSystem *rs = static_cast<GLRenderSystem*>(Root::getSingleton().getRenderSystem());
+-				OSXContext *mainContext = (OSXContext*)rs->_getMainContext();
+-		
+-				CGLContextObj share = NULL;
+-				if(mainContext == 0)
++                LogManager::getSingleton().logMessage(String("OSX: Using CurrentGL Context"));
++				if (! CGLGetCurrentContext())
+ 				{
+-					share = NULL;
++                    LogManager::getSingleton().logMessage(String("OSX: CurrentGL Context does not exist"));
++					OGRE_EXCEPT(Exception::ERR_RENDERINGAPI_ERROR, "currentGLContext was specified with no current GL context", "GLXWindow::create");
+ 				}
+-				else if(mainContext->getContextType() == "NSOpenGL")
+-				{
+-					OSXCocoaContext* cocoaContext = static_cast<OSXCocoaContext*>(mainContext);
+-					NSOpenGLContext* nsShare = cocoaContext->getContext();
+-					share = (CGLContextObj)[nsShare CGLContextObj];
+-				}
+-				else if(mainContext->getContextType() == "CGL")
+-				{
+-					OSXCGLContext* cglShare = static_cast<OSXCGLContext*>(mainContext);
+-					share = cglShare->getContext();
+-				}
+-		
+-				// create the context
+-				createCGLFullscreen(width, height, depth, fsaa_samples, share);	
+-			}
+-			else
+-			{
+-				// Specifying "NoRecovery" gives us a context that cannot fall back to the software renderer.  This makes the View-based context a compatible with the fullscreen context, enabling us to use the "shareContext" feature to share textures, display lists, and other OpenGL objects between the two.
+-				attribs[i++] = NSOpenGLPFANoRecovery;
+-			
+-				attribs[i++] = NSOpenGLPFAAccelerated;
+-				attribs[i++] = NSOpenGLPFADoubleBuffer;
+-				
+-				attribs[i++] = NSOpenGLPFAAlphaSize;
+-				attribs[i++] = (NSOpenGLPixelFormatAttribute) 0;
+-				
+-				attribs[i++] = NSOpenGLPFAStencilSize;
+-				attribs[i++] = (NSOpenGLPixelFormatAttribute) 1;
+-				
+-				attribs[i++] = NSOpenGLPFAAccumSize;
+-				attribs[i++] = (NSOpenGLPixelFormatAttribute) 0;
+-
+-				attribs[i++] = NSOpenGLPFADepthSize;
+-				attribs[i++] = (NSOpenGLPixelFormatAttribute) (hasDepthBuffer? 16 : 0);
+-				
+-				if(fsaa_samples > 0)
+-				{
+-					attribs[i++] = NSOpenGLPFASampleBuffers;
+-					attribs[i++] = (NSOpenGLPixelFormatAttribute) 1;
+-					
+-					attribs[i++] = NSOpenGLPFASamples;
+-					attribs[i++] = (NSOpenGLPixelFormatAttribute) fsaa_samples;
+-				}
+-				
+-				attribs[i++] = (NSOpenGLPixelFormatAttribute) 0;
+-
+-				openglFormat = [[[NSOpenGLPixelFormat alloc] initWithAttributes: attribs] autorelease];
+-			}
+-			
+-			NameValuePairList::const_iterator opt2 = 0;
+-			if(miscParams)
+-			{
+-				opt2 = miscParams->find("pixelFormat");
+-				if(opt2 != miscParams->end())
+-					openglFormat = [[[NSOpenGLPixelFormat alloc] initWithAttributes: (NSOpenGLPixelFormatAttribute*)StringConverter::parseUnsignedLong(opt2->second)] autorelease];
+-			}
+-			GLRenderSystem *rs = static_cast<GLRenderSystem*>(Root::getSingleton().getRenderSystem());
+-			OSXCocoaContext *mainContext = (OSXCocoaContext*)rs->_getMainContext();
+-			NSOpenGLContext *shareContext = mainContext == 0? nil : mainContext->getContext();
+-
+-			glContext = [[NSOpenGLContext alloc] initWithFormat: openglFormat shareContext:shareContext];
+-			
+-			NameValuePairList::const_iterator opt = 0;
+-			if(miscParams)
+-				opt = miscParams->find("externalWindowHandle");
+-			if(!miscParams || opt == miscParams->end())
+-			{
+-				//Not sure why this should be but it is required for the window to work at fullscreen.
+-				int styleMask = fullScreen? NSBorderlessWindowMask : NSResizableWindowMask;
+-			
+-				mWindow = [[OgreWindow alloc] initWithContentRect:NSMakeRect(winx, winy, width, height) styleMask:styleMask backing:NSBackingStoreBuffered defer:NO];
+-				[mWindow setTitle:windowTitle];
+-				
+-				if(winx == 0 && winy == 0) [mWindow center];
+-				
+-				mView = [[OgreView alloc] initWithGLOSXWindow:this];
+-				[mWindow setContentView:mView];
+-			}
+-			else
+-			{
+-				mView = (OgreView*)StringConverter::parseUnsignedLong(opt->second);
+-				[mView setOgreWindow:this];
+-				
+-				NSRect b = [mView bounds];
+-				width = b.size.width;
+-				height = b.size.height;
+-			}
+-			
+-			[glContext setView:mView];
+-
+-			mName = name;
+-			mWidth = width;
+-			mHeight = height;
+-			
+-			// Create register the context with the rendersystem and associate it with this window
+-			mContext = new OSXCocoaContext(glContext);
+-			/*rs->_registerContext(this, newContext);
+-			
+-			if (rs->_getMainContext() == 0)
+-				[glContext makeCurrentContext];
+-			*/
+-			//show window
+-			if(mWindow)
+-				[mWindow performSelectorOnMainThread:@selector(makeKeyAndOrderFront:) withObject:NULL waitUntilDone:NO];
++				mIsExternalGLContext = 1;
+ 				
+-			[arp release];
+-		}
+-		
+-		// make active
+-		mActive = true;
++            }
++            
++            
++        }		
++        
++        
++        if ( !mIsExternalGLContext )       
++        { 
++            NSOpenGLPixelFormat* openglFormat;
++            NSOpenGLPixelFormatAttribute attribs[30];
++            int i=0;
++            
++            if(fullScreen)
++            {
++                GLRenderSystem *rs = static_cast<GLRenderSystem*>(Root::getSingleton().getRenderSystem());
++                OSXContext *mainContext = (OSXContext*)rs->_getMainContext();
++                
++                CGLContextObj share = NULL;
++                if(mainContext == 0)
++                {
++                    share = NULL;
++                }
++                else if(mainContext->getContextType() == "NSOpenGL")
++                {
++                    OSXCocoaContext* cocoaContext = static_cast<OSXCocoaContext*>(mainContext);
++                    NSOpenGLContext* nsShare = cocoaContext->getContext();
++                    share = (CGLContextObj)[nsShare CGLContextObj];
++                }
++                else if(mainContext->getContextType() == "CGL")
++                {
++                    OSXCGLContext* cglShare = static_cast<OSXCGLContext*>(mainContext);
++                    share = cglShare->getContext();
++                }
++                
++                // create the context
++                createCGLFullscreen(width, height, depth, fsaa_samples, share);	
++            }
++            else
++            {
++                // Specifying "NoRecovery" gives us a context that cannot fall back to the software renderer.  This makes the View-based context a compatible with the fullscreen context, enabling us to use the "shareContext" feature to share textures, display lists, and other OpenGL objects between the two.
++                attribs[i++] = NSOpenGLPFANoRecovery;
++                
++                attribs[i++] = NSOpenGLPFAAccelerated;
++                attribs[i++] = NSOpenGLPFADoubleBuffer;
++                
++                attribs[i++] = NSOpenGLPFAAlphaSize;
++                attribs[i++] = (NSOpenGLPixelFormatAttribute) 0;
++                
++                attribs[i++] = NSOpenGLPFAStencilSize;
++                attribs[i++] = (NSOpenGLPixelFormatAttribute) 1;
++                
++                attribs[i++] = NSOpenGLPFAAccumSize;
++                attribs[i++] = (NSOpenGLPixelFormatAttribute) 0;
++                
++                attribs[i++] = NSOpenGLPFADepthSize;
++                attribs[i++] = (NSOpenGLPixelFormatAttribute) (hasDepthBuffer? 16 : 0);
++                
++                if(fsaa_samples > 0)
++                {
++                    attribs[i++] = NSOpenGLPFASampleBuffers;
++                    attribs[i++] = (NSOpenGLPixelFormatAttribute) 1;
++                    
++                    attribs[i++] = NSOpenGLPFASamples;
++                    attribs[i++] = (NSOpenGLPixelFormatAttribute) fsaa_samples;
++                }
++                
++                attribs[i++] = (NSOpenGLPixelFormatAttribute) 0;
++                
++                openglFormat = [[[NSOpenGLPixelFormat alloc] initWithAttributes: attribs] autorelease];
++            }
++            
++            // Either full screen has been setup or we're setup the attributes for a window        
++            
++            NameValuePairList::const_iterator opt2 = 0;
++            if(miscParams)
++            {
++                opt2 = miscParams->find("pixelFormat");
++                if(opt2 != miscParams->end())
++                    openglFormat = [[[NSOpenGLPixelFormat alloc] initWithAttributes: (NSOpenGLPixelFormatAttribute*)StringConverter::parseUnsignedLong(opt2->second)] autorelease];
++            }
++            LogManager::getSingleton().logMessage(String("OSX: Checking for Shared Context"));
++            
++            // check if there is an existing context and use it as a shared context        
++            GLRenderSystem *rs = static_cast<GLRenderSystem*>(Root::getSingleton().getRenderSystem());
++            OSXCocoaContext *mainContext = (OSXCocoaContext*)rs->_getMainContext();
++            
++            NSOpenGLContext *shareContext = mainContext == 0? nil : mainContext->getContext();
++            glContext = [[NSOpenGLContext alloc] initWithFormat: openglFormat shareContext:shareContext];
++            LogManager::getSingleton().logMessage(String("OSX: Created base Context"));
++            
++            NameValuePairList::const_iterator opt = 0;
++            if(miscParams)
++                opt = miscParams->find("externalWindowHandle");
++            if(!miscParams || opt == miscParams->end())
++            {
++                //Not sure why this should be but it is required for the window to work at fullscreen.
++                int styleMask = fullScreen? NSBorderlessWindowMask : NSResizableWindowMask;
++                
++                mWindow = [[OgreWindow alloc] initWithContentRect:NSMakeRect(winx, winy, width, height) styleMask:styleMask backing:NSBackingStoreBuffered defer:NO];
++                //[mWindow setTitle:windowTitle];
++                
++                //if(winx == 0 && winy == 0) [mWindow center];
++                
++                mView = [[OgreView alloc] initWithGLOSXWindow:this];
++                [mWindow setContentView:mView];
++            }
++            else
++            {
++                mView = (OgreView*)StringConverter::parseUnsignedLong(opt->second);
++                [mView setOgreWindow:this];
++                
++                NSRect b = [mView bounds];
++                width = b.size.width;
++                height = b.size.height;
++            }
++            
++            [glContext setView:mView];
++            mName = name;
++            mWidth = width;
++            mHeight = height;
++        }
++        else {  // it's an external context
++            // we've let everything setup normally to this point -- now change context to the current one if needed        
++            glContext = [NSOpenGLContext currentContext]; //[glContext currentContext];
++            LogManager::getSingleton().logMessage(String("OSX: Set to current Context"));
++            //[glContext setView:mView];
++            NSRect f = NSMakeRect(0,0,width,height );
++            mView = [[OgreView alloc] initWithFrame:f];
++            // could do everything from the context view
++            // mView = [glContext view];
++            //[mWindow setContentView:mView];
++            //[mView setOgreWindow:this];
++            mWindow=0;
++            //mWindow = [glContext view:window];
++        }
++        
++        // Create register the context with the rendersystem and associate it with this window
++        LogManager::getSingleton().logMessage(String("OSX: Creating OSXCocoaContext"));
++        
++        mContext = new OSXCocoaContext(glContext);
++        /*rs->_registerContext(this, newContext);
++         
++         if (rs->_getMainContext() == 0)
++         [glContext makeCurrentContext];
++         */
++        //show window
++        if(mWindow)
++            [mWindow performSelectorOnMainThread:@selector(makeKeyAndOrderFront:) withObject:NULL waitUntilDone:NO];
++        LogManager::getSingleton().logMessage(String("OSX: Done creating !"));
++        
++        [arp release];
++        
++        // make active
++        mActive = true;
+     }
+-
++    
+     void OSXCocoaWindow::destroy(void)
+     {
+-		if(mIsFullScreen)
+-			destroyCGLFullscreen();
+-		
+-		// Unregister and destroy OGRE GLContext
+-		delete mContext;
+-		
+-		if(mWindow) [mWindow close];
+-		
++        if(mIsFullScreen)
++            destroyCGLFullscreen();
++        
++        // Unregister and destroy OGRE GLContext
++        delete mContext;
++        
++        if(mWindow) [mWindow close];
++        
+         mActive = false;
+-
++        
+         Root::getSingleton().getRenderSystem()->detachRenderTarget( this->getName() );
+     }
+-
+-	/*OgreView* OSXCocoaWindow::ogreView() const
+-	{
+-		return [window contentView];
+-	}*/
+-
++    
++    /*OgreView* OSXCocoaWindow::ogreView() const
++     {
++     return [window contentView];
++     }*/
++    
+     bool OSXCocoaWindow::isActive() const
+     {
+         return mActive;
+     }
+-
++    
+     bool OSXCocoaWindow::isClosed() const
+     {
+         return false;
+     }
+-
++    
+     void OSXCocoaWindow::reposition(int left, int top)
+     {
+-		if(!mWindow) return;
+-		
+-		NSRect frame = [mWindow frame];
+-		frame.origin.x = left;
+-		frame.origin.y = top-frame.size.height;
+-		[mWindow setFrame:frame display:YES];
+-    }
++        LogManager::getSingleton().logMessage(String("OSX::: Reposition !"));
+ 
++        if(!mWindow) return;
++        
++        NSRect frame = [mWindow frame];
++        frame.origin.x = left;
++        frame.origin.y = top-frame.size.height;
++        [mWindow setFrame:frame display:YES];
++    }
++    
+     void OSXCocoaWindow::resize(unsigned int width, unsigned int height)
+     {
+-		if(!mWindow) return;
+-		
+-		NSRect frame = [mWindow frame];
+-		frame.size.width = width;
+-		frame.size.height = height;
+-		[mWindow setFrame:frame display:YES];
+-	/*SHOULD be called from delegate
+-        for (ViewportList::iterator it = mViewportList.begin(); it != mViewportList.end(); ++it)
+-        {
+-            (*it).second->_updateDimensions();
+-        }*/
++        LogManager::getSingleton().logMessage(String("OSX::: Resize !"));
++        if(!mWindow) return;
++        
++        NSRect frame = [mWindow frame];
++        frame.size.width = width;
++        frame.size.height = height;
++        [mWindow setFrame:frame display:YES];
++        /*SHOULD be called from delegate
++         for (ViewportList::iterator it = mViewportList.begin(); it != mViewportList.end(); ++it)
++         {
++         (*it).second->_updateDimensions();
++         }*/
+     }
+-
++    
+     void OSXCocoaWindow::windowMovedOrResized()
+     {
+-		[glContext update];
+-		NSRect frame = [mView frame];
+-		mWidth = (unsigned int)frame.size.width;
+-		mHeight = (unsigned int)frame.size.height;
++        LogManager::getSingleton().logMessage(String("OSX::: windowMovedOrResized !"));
++        [glContext update];
++        NSRect frame = [mView frame];
++        mWidth = (unsigned int)frame.size.width;
++        mHeight = (unsigned int)frame.size.height;
+         mLeft = (int)frame.origin.x;
+         mTop = (int)frame.origin.y+(unsigned int)frame.size.height;
+-		
++        
+         for (ViewportList::iterator it = mViewportList.begin(); it != mViewportList.end(); ++it)
+         {
+             (*it).second->_updateDimensions();
+         }
+     }
+-
++    
+     void OSXCocoaWindow::swapBuffers(bool waitForVSync)
+     {
+-		if(!mIsFullScreen)
+-			[glContext flushBuffer];
+-		else
+-			swapCGLBuffers();
+-			
+-		/*if(![[[NSRunLoop currentRunLoop] currentMode] isEqualTo:NSEventTrackingRunLoopMode])
+-		{
+-			NSEvent *e = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSDefaultRunLoopMode dequeue:YES];
+-			if(e)
+-				[NSApp sendEvent:e];
+-		}*/
++        LogManager::getSingleton().logMessage(String("OSX: swapBuffers 1"));
++       // return;
++        if ( mIsExternalGLContext ) {
++            //glFlush();
++            return;
++        }
++        if(!mIsFullScreen)
++            [glContext flushBuffer];
++        else
++            swapCGLBuffers();
++        
++        /*if(![[[NSRunLoop currentRunLoop] currentMode] isEqualTo:NSEventTrackingRunLoopMode])
++         {
++         NSEvent *e = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSDefaultRunLoopMode dequeue:YES];
++         if(e)
++         [NSApp sendEvent:e];
++         }*/
++    }
++    
++    //-------------------------------------------------------------------------------------------------//
++    void OSXCocoaWindow::getCustomAttribute( const String& name, void* pData )
++    {
++        if( name == "GLCONTEXT" ) 
++        {
++            *static_cast<OSXContext**>(pData) = mContext;
++            return;
++        } 
+     }
+-	
+-	//-------------------------------------------------------------------------------------------------//
+-	void OSXCocoaWindow::getCustomAttribute( const String& name, void* pData )
+-	{
+-		if( name == "GLCONTEXT" ) 
+-		{
+-			*static_cast<OSXContext**>(pData) = mContext;
+-			return;
+-		} 
+-	}
+ }

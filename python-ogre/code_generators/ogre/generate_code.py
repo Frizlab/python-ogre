@@ -822,7 +822,7 @@ def Fix_Posix ( mb ):
     """
     ## we could do more here if need be...
     if sys.platform == 'darwin':
-        pass
+      mb.global_ns.member_function('::Ogre::WindowEventUtilities::_CarbonWindowHandler').exclude()
     elif sys.platform.startswith ('linux'):
         pass
     mb.global_ns.class_('vector<int, std::allocator<int> >').alias='VectorInt'

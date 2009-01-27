@@ -3,7 +3,10 @@
 #include <string>
 #include <map>
 #include <iostream>
-
+#if defined __APPLE_CC__
+    #include "strings.h"
+    #include "Carbon/Carbon.h"
+#endif
 #include "CEGUI.h"
 #include "CEGUIXMLParser.h"     // needed for System
 #include "CEGUIXMLHandler.h"
