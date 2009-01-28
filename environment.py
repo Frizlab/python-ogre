@@ -1722,7 +1722,7 @@ class noise:
     descText = "Generate 'noise'"
 
 class watermesh:
-    active = True
+    active = False
     pythonModule = True
     version="1.0"
     parent="ogre/addons"
