@@ -1,4 +1,7 @@
-
+#if defined __APPLE_CC__
+    #include "strings.h"
+    #include "Carbon/Carbon.h"
+#endif
 #include "CTParameters.h"
 #include "CTSerializer.h"
 //#include "CTSection.h"

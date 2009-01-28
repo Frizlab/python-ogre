@@ -1,4 +1,7 @@
-
+#if defined __APPLE_CC__
+    #include "strings.h"
+    #include "Carbon/Carbon.h"
+#endif
 #include "Caelum.h"
 
 // First we create a magic namespace to hold all our aliases

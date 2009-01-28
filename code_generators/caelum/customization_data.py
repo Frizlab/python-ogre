@@ -1,7 +1,9 @@
-
+import os
 def header_files( version ):
-    return [ 'Caelum.h']
-  
+    ret = [ 'Caelum.h']
+    if os.sys.platform == 'darwin':
+        ret.insert(0,'Carbon/Carbon.h')
+    return ret  
 def huge_classes( version ):
     return []
    
