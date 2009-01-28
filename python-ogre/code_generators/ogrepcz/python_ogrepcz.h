@@ -1,3 +1,7 @@
+#if defined __APPLE_CC__
+    #include "strings.h"
+    #include "Carbon/Carbon.h"
+#endif
 #include "Ogre.h"
 #include "OgrePortal.h"
 #include "OgrePCZSceneNode.h"

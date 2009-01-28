@@ -1,4 +1,10 @@
 #include <string>
+
+#if defined __APPLE_CC__
+    #include "strings.h"
+    #include "Carbon/Carbon.h"
+#endif
+
 #include "PagedGeometry.h"
 #include "GrassLoader.h"
 

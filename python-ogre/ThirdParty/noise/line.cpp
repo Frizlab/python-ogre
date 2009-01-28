@@ -19,8 +19,9 @@
 
 #include "line.h"
 
-using namespace noise;
-using namespace noise::model;
+namespace noise {
+
+namespace model {
 
 Line::Line ():
 
@@ -63,3 +64,5 @@ double Line::GetValue (double p) const
     return value;
   }
 }
+
+} }  // namespaces
