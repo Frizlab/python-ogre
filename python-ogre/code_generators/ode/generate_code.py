@@ -50,8 +50,12 @@ from pyplusplus import decl_wrappers
 
 from pyplusplus import function_transformers as ft
 from pyplusplus.module_builder import call_policies
-from pyplusplus.creators_factory import call_policies_resolver
-from pyplusplus.creators_factory import sort_algorithms
+try:
+  from pyplusplus.creators_factory import sort_algorithms
+  from pyplusplus.creators_factory import call_policies_resolver
+except ImportError, e:
+  from pyplusplus.module_creator import sort_algorithms
+  from pyplusplus.module_creator import call_policies_resolver
 
 from pyplusplus import code_repository
 
