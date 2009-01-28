@@ -68,6 +68,7 @@ def get_ccflags(cls):
         else:
             CCFLAGS = ' -I./ -O3 -dynamic -fPIC -DBOOST_PYTHON_NO_PY_SIGNATURES -DBOOST_PYTHON_MAX_ARITY=19   '
             CCFLAGS += ' -ftemplate-depth-128 -finline-functions -Wno-inline -Wall -no-cpp-precomp -gdwarf-2 -DNDEBUG '
+            CCFLAGS += ' -include strings.h -include Carbon/Carbon.h '
             # -ftemplate-depth-128 -D_POSIX_C_SOURCE -no-cpp-precomp -gdwarf-2 -finline-functions -Wno-inline -Wall -DBOOST_ALL_NO_LIB=1 -DBOOST_PYTHON_SOURCE 
             # -I/Developer/SDKs/MacOSX10.5.sdk/usr/include/
             # -I/Developer/SDKs/MacOSX10.5.sdk/usr/include/             CCFLAGS  = ' -I -pipe -O3 -I./'
