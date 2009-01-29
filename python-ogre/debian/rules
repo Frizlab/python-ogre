@@ -16,24 +16,24 @@ export BUILDFLAGS=--usesystem --verbose --failhard -g
 
 build: $(PYVERS:%=build-stamp%)
 build-stamp%:
-	touch STABLE
 	# We set LD_PRELOAD='' to stop fakeroot from killing the code generation
 	# Core Modules
-	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} ois
-	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} cegui
 	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} ogre
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c ois
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c cegui
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c ogre
 	# Extra modules
-#	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} noise
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c noise
 #	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} ogreode
 #	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} betagui
-#	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} cadunetree
-#	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} caelum
-#	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} et
-#	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} plib
-#	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} ogreforests
-#	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} ogreal
-#	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} ogrevideoffmpeg
-#	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} watermesh
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c cadunetree || true
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c caelum || true
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c et || true
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c plib || true
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c ogreforests || true
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c ogreal || true
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c ogrevideoffmpeg || true
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c watermesh || true
 	touch $@
 
 build-python%:
