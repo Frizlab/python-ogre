@@ -218,7 +218,7 @@ def buildDeb ( module, install = False ):
         logger.warning("Was not able to build package")
     logger.info("Package successfully built!")
 
-BUILDSERVICE_MODULE = "home:mithro:python-ogre-build"
+BUILDSERVICE_MODULE = "home:mithro:python-ogre"
 def buildService ( module, install = False ):
     """ Create a debian package for the module
     """
