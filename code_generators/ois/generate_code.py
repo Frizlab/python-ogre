@@ -63,8 +63,8 @@ def ManualExclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns    
-#     main_ns.variable( "::OIS::JoyStickEvent::state" ).exclude()
-
+    
+        
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 
@@ -77,7 +77,19 @@ def ManualInclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns    
-        
+    # needed to extract values from a vector<bool>
+    global_ns.namespace ( 'std' ).class_("_Vb_reference<unsigned int, int, std::vector<bool, std::allocator<bool> > >").include()    
+
+    # changes relating to vector<bool> support            
+    global_ns.namespace ( 'std' ).class_("_Vb_reference<unsigned int, int, std::vector<bool, std::allocator<bool> > >").\
+        member_function("_Getptr").exclude() ## call_policies=call_policies.return_value_policy( call_policies.reference_existing_object )
+     
+    # exclude the '=' and then include the simple one -- not sure this is needed ??       
+    for o in global_ns.namespace ( 'std' ).class_("_Vb_reference<unsigned int, int, std::vector<bool, std::allocator<bool> > >").operators('='):
+        o.exclude()
+    o = global_ns.namespace ( 'std' ).class_("_Vb_reference<unsigned int, int, std::vector<bool, std::allocator<bool> > >").operator('=',arg_types=["bool"])
+    o.include()
+    
 ############################################################
 ##
 ##  And things that need manual fixes, but not necessarly hand wrapped
@@ -94,7 +106,7 @@ def ManualFixes ( mb ):
     mb.class_( "JoyStick" ).member_function( "getJoyStickState" ).call_policies =\
         call_policies.return_value_policy( call_policies.reference_existing_object )
         
-                 
+        
 ############################################################
 ##
 ##  And things that need to have their argument and call values fixed.
