@@ -705,7 +705,8 @@ class ogre:
                 [0, "cp OgrePrerequisites.h Ogre",os.path.join(os.getcwd() ,'ogre','OgreMain', 'include') ],
                 [0, "xcodebuild -project ogre/Mac/Ogre/Ogre.xcodeproj -configuration Release", ''],
                 [0, "xcodebuild -project ogre/Mac/Samples/Samples.xcodeproj -configuration Release", ''],
-                [0, "cp -R *.framework ~/Library/Frameworks", os.path.join(os.getcwd() ,'ogre',"Mac", "build", "Release") ]
+                [0, "cp -R *.framework ~/Library/Frameworks", os.path.join(os.getcwd() ,'ogre',"Mac", "build", "Release") ],
+                [0, "cp -R *.framework ~/Library/Frameworks", os.path.join(os.getcwd() ,'ogre',"Dependencies") ]
                 ]
 
         libs=[boost.lib]
@@ -844,9 +845,11 @@ class ogrenewt:
     base = 'ogreaddons/ogrenewt'
     if isWindows():
         libs = ['Newton', boost.lib, 'OgreNewt_Main', 'OgreMain']
-    else:
+    elif isLinux():
         libs = ['Newton', boost.lib, 'OgreNewt', 'OgreMain']
-#        libs.append ( boost_python_index.lib )
+    else:
+        libs = ['Newton32', boost.lib, 'OgreMain']
+        
     if _STABLE:
         source = [
                  [cvs, " -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -D 01052008 -P "+base, os.getcwd()]
@@ -883,6 +886,19 @@ class ogrenewt:
                 , Config.PATH_LIB_Ogre_OgreMain
 
                 ]
+    if isMac():
+        include_dirs = [Config.PATH_Boost
+                    , Config.PATH_Newton   # only one path for Newton
+                    , Config.PATH_INCLUDE_Ogre
+                    , Config.PATH_INCLUDE_Ogre_Dependencies  #needed for OIS/OIS.h
+                    ,os.path.join(Config.PATH_OgreAddons,'ogrenewt', 'OgreNewt_Main', 'inc')
+                    ]
+        lib_dirs = [ boost.PATH_LIB
+                ,Config.PATH_LIB_Newton
+                , Config.PATH_LIB_Ogre_OgreMain
+            ]
+    if isMac():
+        LINKFLAGS = ' -framework OIS '    
     ModuleName = 'OgreNewt'
     CheckIncludes=['boost/python.hpp', 'Ogre.h', 'OgreNewt.h', 'Newton.h']
 
@@ -901,8 +917,10 @@ class cegui:
             pchbuild = 'buildpch.cpp'
             pchincludes = ['boost/python.hpp', 'cegui.h']
         libs=[boost.lib, 'CEGUIBase', 'OgreMain', 'OgreGUIRenderer' ]
-    else:
+    elif isLinux():
         libs=[boost.lib, 'CEGUIBase', 'OgreMain', 'CEGUIOgreRenderer' ]
+    else:
+        libs=[boost.lib, 'CEGUI', 'OgreMain', 'CEGUIOgreRenderer' ]
 #        libs.append ( boost_python_index.lib )
 
     if isLinux() or isMac():
@@ -960,9 +978,10 @@ class cegui:
                 ,  Config.PATH_LIB_Ogre_Dependencies
                 ]
     ModuleName = 'CEGUI'
+    if isMac():
+        LINKFLAGS = ' -F CEGUI '
+        
     CheckIncludes = ['boost/python.hpp', 'Ogre.h', 'CEGUI.h', 'OgreCEGUIRenderer.h']
-#    if isLinux():
-#        LINKFLAGS = "-l%s" % boost_python_index.lib
 
 
 class ode:
