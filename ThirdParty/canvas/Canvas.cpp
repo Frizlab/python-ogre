@@ -82,7 +82,7 @@ Border::Border(const WidthRect& widths, const ColorRect& colors) : widths(widths
 ************************/
 
 Canvas::Canvas(Atlas* atlas, Ogre::Viewport* viewport) : atlas(atlas), viewport(viewport), vertexData(0), indexData(0),
-	bufferSize(100), renderQueueID(Ogre::RENDER_QUEUE_OVERLAY), isDirty(false), visibility(true)
+	bufferSize(100), renderQueueID(Ogre::RENDER_QUEUE_OVERLAY + 1), isDirty(false), visibility(true)
 {
 	viewport->getTarget()->addListener(this);
 	material = Ogre::MaterialManager::getSingleton().getByName(atlas->getMaterialName());

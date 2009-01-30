@@ -215,8 +215,9 @@ FontFace::FontFace(const FontFaceDefinition& definition, const Ogre::String& res
 			if(!bitmap.buffer || (!bitmap.rows && !bitmap.width))
 				continue;
 
-			unsigned char* buffer = new unsigned char[bitmap.rows * bitmap.pitch * 2];
-
+			//unsigned char* buffer = new unsigned char[bitmap.rows * bitmap.pitch * 2];
+            unsigned char* buffer = OGRE_ALLOC_T(unsigned char, bitmap.rows * bitmap.pitch * 2, Ogre::MEMCATEGORY_GENERAL);
+            
 			for(int idx = 0; idx < bitmap.rows * bitmap.pitch; idx++)
 			{
 				buffer[idx * 2] = 255;
@@ -251,7 +252,8 @@ Atlas::Atlas(const std::vector<Ogre::String>& textureFilenames, const std::vecto
 		rectangles.push_back(new ComputationRect(*i, resourceGroup));
 	}
 
-	unsigned char* vcolBuffer = new unsigned char[16];
+	//unsigned char* vcolBuffer = new unsigned char[16];
+    unsigned char* vcolBuffer = OGRE_ALLOC_T(unsigned char, 16, Ogre::MEMCATEGORY_GENERAL);
 	memset(vcolBuffer, 255, 16);
 
 	rectangles.push_back(new ComputationRect("VertexColor", vcolBuffer, 2, 2));

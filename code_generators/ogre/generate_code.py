@@ -789,7 +789,8 @@ def AutoFixes ( mb, MAIN_NAMESPACE ):
     common_utils.Fix_Pointer_Returns ( main_ns, pointee_types, ignore_names )   
 
     # functions that need to have implicit conversions turned off
-    ImplicitClasses=['Radian','Degree', 'TimeIndex', 'LiSPSMShadowCameraSetup' ] 
+    ## This is already turned off - don't want to turn it back on...
+    ImplicitClasses=[] ## 'Radian','Degree', 'TimeIndex', 'LiSPSMShadowCameraSetup' ] 
     common_utils.Fix_Implicit_Conversions ( main_ns, ImplicitClasses )
     
     # variables that are readonly and mutable need to be changed from 'vars' to properties so there

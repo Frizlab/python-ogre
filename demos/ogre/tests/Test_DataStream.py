@@ -54,6 +54,9 @@ class TutorialApplication(SampleFramework.Application):
         print p
         
         ## if you want you can confirm this 
+        print dataptr
+        print type(dataptr)
+        #sys.exit()
         ogre.MaterialManager.getSingleton().parseScript( dataptr, "General" )   
         print "MATERIAL OK using Ctypes" 
         
