@@ -214,7 +214,7 @@ def generate_ogrenewt():
                         , environment.ogrenewt.cache_file )
                         
     defined_symbols = [ 'OGRE_NONCLIENT_BUILD','__PYTHONOGRE_BUILD_CODE',
-                        'ogrenewt_NONCLIENT_BUILD','OIS_NONCLIENT_BUILD', 'OIS_STATIC_BUILD' ]
+                        'ogrenewt_NONCLIENT_BUILD','OIS_NONCLIENT_BUILD' ] #, 'OIS_STATIC_BUILD' ]
     defined_symbols.append( 'VERSION_' + environment.ogrenewt.version )
       
     if environment._USE_THREADS:
@@ -228,6 +228,7 @@ def generate_ogrenewt():
                                           , working_directory=environment.root_dir
                                           , include_paths=environment.ogrenewt.include_dirs
                                           , define_symbols=defined_symbols
+                                          , cflags=environment.ogrenewt.cflags
                                           , indexing_suite_version=2 )
 
     ## This module depends on Ogre
@@ -293,6 +294,19 @@ def generate_ogrenewt():
 #     if not os.path.exists( return_pointee_value_target_path ):
 #         shutil.copy( return_pointee_value_source_path, environment.ogrenewt.generated_dir )
 
+    if environment.isMac():
+       ## now we need to ensure a series of headers and additional source files are
+      ## copied to the generated directory..
+      basePath = os.path.join(environment.Config.PATH_OgreAddons,'ogrenewt', 'OgreNewt_Main')
+      common_utils.copyTree ( sourcePath = os.path.join(basePath, 'inc'),
+                              destPath = environment.ogrenewt.generated_dir, 
+                              recursive= False,
+                              extensions = ['h'] )
+      common_utils.copyTree ( sourcePath = os.path.join(basePath, 'src'),
+                              destPath = environment.ogrenewt.generated_dir, 
+                              recursive= False,
+                              collapse = True, # put all the source in a single directory
+                              extensions = ['cpp'] )
 
 if __name__ == '__main__':
     start_time = time.clock()
