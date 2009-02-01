@@ -77,9 +77,11 @@ class my_smart_ptr:
             for b in cls.bases:
                 r = b.related_class
                 if r.decl_string.startswith ( '::Ogre::SharedPtr<' ) : 
+#                     print "MYSMART: Returning True:", cls
                     return True 
         else:
             if cls.name.startswith ( 'SharedPtr<' ) or cls.name.endswith( 'SharedPtr' ):
+#                 print "MYSMART: Returning True:", cls
                 return True           
         return False
          
@@ -87,8 +89,8 @@ class my_smart_ptr:
    def value_type( type ):
       if my_smart_ptr.is_smart_pointer( type ):
           return declarations.internal_type_traits.get_by_name( type, "element_type" )
+          
 pygccxml.declarations.smart_pointer_traits = my_smart_ptr
-
 
 
 HACK = True
@@ -888,7 +890,6 @@ def Fix_Ref_Not_Const ( mb ):
     In reality the Ogre code probably needs to be patched as all of these should (??) be const.  However we'll fix it 
     with a function transformation wrapper
     """
-    return ### AJM    
     for fun in mb.member_functions( ):
         arg_position = 0
         for arg in fun.arguments:
@@ -1045,14 +1046,14 @@ def FindProtectedVars ( mb ):
     global_ns = mb.global_ns
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
 
-    for c in main_ns.classes():
-        for v in c.variables(allow_empty=True):
-            if v.access_type == 'protected':
-                print "Protected Variable:", v, v.why_not_exportable(), v.exportable
+#     for c in main_ns.classes():
+#         for v in c.variables(allow_empty=True):
+#             if v.access_type == 'protected':
+#                 print "Protected Variable:", v, v.why_not_exportable(), v.exportable
     v =main_ns.class_('SceneManager').variable('mSceneNodes')
     v.set_exportable(True)
     v._exportable_reason = None
-    print v,v.why_not_exportable(), v.exportable
+#     print v,v.why_not_exportable(), v.exportable
 #     v.access_type = 'public'
 #     sys.exit()
     

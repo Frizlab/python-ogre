@@ -298,6 +298,18 @@ WRAPPER_REGISTRATION_ResourceManager = [
 
 WRAPPER_DEFINITION_General = \
 """
+bool checkDataStreamPtr(Ogre::DataStreamPtr& stream) 
+{
+    std::cout << "CheckDataStreamPtr called\\n";
+    return true;
+}
+
+bool checkDataStreamPtrConst(const Ogre::DataStreamPtr& stream) 
+{
+    std::cout << "CheckDataStreamPtrConst called\\n";
+    return true;
+}
+
 Ogre::OverlayContainer * General_castElementAsOverlayContainer( Ogre::OverlayElement * e ){  
        return (Ogre::OverlayContainer*) e;
     }
@@ -494,6 +506,12 @@ Utility_CastResourceToNative(Ogre::ResourcePtr& r){
 
 """            
 WRAPPER_REGISTRATION_General = [
+    """bp::def( "checkDataStreamPtr", &checkDataStreamPtr,
+                "",
+                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());""",
+    """bp::def( "checkDataStreamPtrConst", &checkDataStreamPtrConst,
+                "",
+                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());""",
 
     """bp::def( "castAsOverlayContainer", &General_castElementAsOverlayContainer,
                 "Python-Ogre Helper Function: Casts as Overlay Container -- needed for add2D.\\n\\
