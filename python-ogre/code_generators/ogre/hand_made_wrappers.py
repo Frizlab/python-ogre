@@ -506,13 +506,9 @@ Utility_CastResourceToNative(Ogre::ResourcePtr& r){
 
 """            
 WRAPPER_REGISTRATION_General = [
-    """bp::def( "checkDataStreamPtr", &checkDataStreamPtr,
-                "",
-                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());""",
-    """bp::def( "checkDataStreamPtrConst", &checkDataStreamPtrConst,
-                "",
-                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());""",
-
+    """bp::def( "checkDataStreamPtr", &checkDataStreamPtr);""",
+    """bp::def( "checkDataStreamPtrConst", &checkDataStreamPtrConst ); """,
+ 
     """bp::def( "castAsOverlayContainer", &General_castElementAsOverlayContainer,
                 "Python-Ogre Helper Function: Casts as Overlay Container -- needed for add2D.\\n\\
                 Input: Element\\n\\
