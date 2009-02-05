@@ -251,9 +251,30 @@ bool cVideoPlayer::refresh(unsigned long time)
 // //                       pict.data, pict.linesize);
 
             
-            img_convert((AVPicture *)FrameRGB, PIX_FMT_RGB32, (AVPicture*)Frame,
-                        CodecCtx->pix_fmt, CodecCtx->width, CodecCtx->height);
+// //           use for older versions ffmpeg           
+// //             img_convert((AVPicture *)FrameRGB, PIX_FMT_RGB32, (AVPicture*)Frame,
+// //                         CodecCtx->pix_fmt, CodecCtx->width, CodecCtx->height);
 
+				img_convert_ctx = sws_getContext(
+							CodecCtx->width,
+							CodecCtx->height,
+							CodecCtx->pix_fmt,
+							CodecCtx->width,
+							CodecCtx->height,
+							PIX_FMT_RGBA32,
+							SWS_BICUBIC,
+							NULL, NULL, NULL);
+				         
+						 sws_scale(
+							img_convert_ctx,
+							Frame->data,
+							Frame->linesize,
+							0,
+							CodecCtx->height,
+							FrameRGB->data,
+							FrameRGB->linesize);
+                        
+                        
 // 			Ogre::LogManager::getSingletonPtr()->logMessage(
 // 				Ogre::String("Replay Num.: ")+ Ogre::StringConverter::toString(replayCont) +
 // 				Ogre::String("  ::  Dumping Frame: ") + Ogre::StringConverter::toString(actualFrame) +
