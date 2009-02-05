@@ -4,15 +4,23 @@
 
 #include "Ogre.h"
 
-// // ffmpeg includes
+// ffmpeg includes
 extern "C" {
 #define __STDC_CONSTANT_MACROS
 #define __STDC_LIMIT_MACROS
-#include <ffmpeg/avcodec.h>
-#include <ffmpeg/avformat.h>
-//#include <libavformat/avformat.h>
-//#include <libavcodec/avcodec.h>
+
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+	#include <libavformat/avformat.h>
+	#include <libavcodec/avcodec.h>
+	#include <libswscale/swscale.h> 
+#else
+	#include <ffmpeg/avcodec.h>
+	#include <ffmpeg/avformat.h>
+	#include <ffmpeg/swscale.h>
+#endif
+
 }
+
 
 using namespace Ogre;
 
@@ -38,6 +46,8 @@ private:
     int             NumBytes;
     uint8_t         *Buffer;
 
+	SwsContext *img_convert_ctx;
+                      
     bool GetNextFrame(AVFormatContext *pFormatCtx,
                       AVCodecContext *pCodecCtx,
                       int videoStream,
