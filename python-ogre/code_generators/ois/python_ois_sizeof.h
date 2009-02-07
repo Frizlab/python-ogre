@@ -10,7 +10,9 @@ sizeof ( JoyStick );
 //sizeof ( SupportedEffectList );
 sizeof ( ParamList );
 
-sizeof ( std::_Vb_reference<unsigned int, int, std::vector<bool, std::allocator<bool> > > ); // needed for return from vector<bool>
+#if defined( __WIN32__ ) || defined( _WIN32 )
+    sizeof ( std::_Vb_reference<unsigned int, int, std::vector<bool, std::allocator<bool> > > ); // needed for return from vector<bool>
+#endif
 
 sizeof ( std::multimap<OIS::Type,std::basic_string<char, std::char_traits<char>, std::allocator<char> >,std::less<OIS::Type>,std::allocator<std::pair<const OIS::Type, std::basic_string<char, std::char_traits<char>, std::allocator<char> > > > > );
 
