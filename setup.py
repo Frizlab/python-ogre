@@ -72,7 +72,9 @@ PACKAGEDATA = {
                         'ogre.addons.noise', #'ogre.addons.watermesh', # 'ogre.addons.ofusion',
                         'ogre.addons.particleuniverse', 'ogre.addons.cadunetree',
                         'ogre.renderer.ogrepcz', 'ogre.addons.hydrax',
-                        'ogre.gui.hikari','ogre.gui.mygui','ogre.gui.canvas' ],
+                        'ogre.gui.hikari','ogre.gui.mygui','ogre.gui.canvas',
+                        'ogre.addons.ogrevideoffmpeg',
+                        'ogre.addons.ogredshow' ],
        "package_dir": {'': 'packages_'+ PythonVersionString },
        "package_data": {'': ['*.pyd', '*.dll', '*.so']}
 

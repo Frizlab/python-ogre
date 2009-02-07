@@ -73,6 +73,9 @@ PATH_ogrevideoffmpeg = os.path.join(PATH_THIRDPARTY,'ffmpeg')
 PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.72') 
 PATH_PhysX=         "c:/program files/NVIDIA Corporation/NVIDIA Physx SDK/v2.8.1/SDKs"
 PATH_Theora=        os.path.join(PATH_OgreAddons,'videoplugin','TheoraVideo')
+
+PATH_Theora = os.path.join( BASE_DIR, 'ogrevideo', 'TheoraVideoPlugin' )
+
 PATH_ffmpeg=        os.path.join(PATH_THIRDPARTY,'extra')
 PATH_navi =         os.path.join(BASE_DIR, 'navi', 'navi')
 
@@ -175,6 +178,9 @@ PATH_INCLUDE_freetype=      os.path.join(PATH_INCLUDE_quickgui,'FreeType2.3.5')
 PATH_INCLUDE_betagui =      PATH_betagui
 PATH_INCLUDE_Theora =       os.path.join (PATH_Theora,'include')
 PATH_INCLUDE_TheoraDemo =       os.path.join (PATH_Theora,'..', 'CEGUI_TheoraDemo','include')
+
+PATH_INCLUDE_TheoraDemo =   PATH_Theora
+
 
 PATH_INCLUDE_ogrevideoffmpeg =  PATH_ogrevideoffmpeg
 PATH_INCLUDE_ffmpeg =       os.path.join (PATH_ffmpeg,'include')

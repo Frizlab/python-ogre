@@ -790,8 +790,9 @@ def AutoFixes ( mb, MAIN_NAMESPACE ):
     ignore_names=[]## 'ptr', 'useCountPointer']  # these are function names we know it's cool to exclude
     common_utils.Fix_Pointer_Returns ( main_ns, pointee_types, ignore_names )   
 
-    # functions that need to have implicit conversions turned off
-    ## This is already turned off - don't want to turn it back on...
+    ## By Default we turn off all implicit conversion (search for "allow_implicit_conversion" further down)
+    ## however there are certain functions that need to have it enabled and hence we add them here...
+    
     ImplicitClasses=['Radian','Degree', 'TimeIndex', 'LiSPSMShadowCameraSetup' ] 
     common_utils.Fix_Implicit_Conversions ( main_ns, ImplicitClasses )
     
@@ -1121,7 +1122,8 @@ def generate_code():
                                           , indexing_suite_version=2
                                           , cflags=environment.ogre.cflags
                                            )
-    # NOTE THE CHANGE HERE                                           
+                                           
+    # Disable all implicit conversions                                           
     mb.constructors().allow_implicit_conversion = False                                           
     
     mb.BOOST_PYTHON_MAX_ARITY = 25

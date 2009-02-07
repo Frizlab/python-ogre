@@ -72,7 +72,7 @@ class exposer_t:
         pointee = self.get_pointee( sp_instantiation )
         pointee.include_files.append( 'py_shared_ptr.h' )
         if sp_instantiation.derived:
-            print "SHARED Derived!"
+#             print "SHARED Derived!"
             #We have struct XPtr : public SharedPtr<X>
             assert 1 == len( sp_instantiation.derived )
             sp_derived = sp_instantiation.derived[0].related_class
@@ -103,7 +103,7 @@ class exposer_t:
                 , works_on_instance=False )
         
         if declarations.is_class( pointee ) and pointee.is_wrapper_needed():
-            print "SHARED is class and wrapper needed!"
+#             print "SHARED is class and wrapper needed!"
             pointee.held_type = '::Ogre::SharedPtr< %s >' % pointee.wrapper_alias
             pointee.add_registration_code(
                 REGISTER_SPTR_CONVERSION % { 'derived' : pointee.held_type
@@ -115,7 +115,7 @@ class exposer_t:
                 , works_on_instance=False )
 
         else:
-            print "SHARED - not class or wrapper"
+#             print "SHARED - not class or wrapper"
             pointee.held_type = sp_instantiation.decl_string
         #print pointee.name, pointee.bases   
         try: 

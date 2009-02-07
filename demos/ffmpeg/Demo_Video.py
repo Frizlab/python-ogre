@@ -49,13 +49,16 @@ class VideoApplication(sf.Application):
 
         for i in xrange(NUM_VIDEOS):
             c = sceneManager.createEntity("cubo" + str(i), "cube.mesh")
+            print "++Entity is:", c
             n = sceneManager.getRootSceneNode().createChildSceneNode()
+            print "++Node is:", n
             n.attachObject(c)
             n.setScale(2,2,2)
             n.setPosition(ogre.Vector3(i*250, 0, 0))
             #self.cubeEntities.append(c)
 
-            v = VIDEO.cVideoPlayer("videoMaterial" + str(i), "fish.avi")
+            v = VIDEO.cVideoPlayer("videoMaterial" + str(i),  "konqi_ad1_nl.avi" ) #.ogg")
+            print "++Video is:", v 
             #v = VIDEO.cVideoPlayer("videoMaterial" + str(i), "test.divx")
             v.setLoop(True)
             self.videoPlayer.append(v)

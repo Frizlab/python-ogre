@@ -21,7 +21,7 @@ set newton=%root%\NewtonSDK\sdk\dll
 set ogreode=%root%\ogreaddons\ogreode
 set physx="c:\program files\NVIDIA Corporation\NVIDIA PhysX SDK\v2.8.1\bin\win32"
 set theora=%root%\ogreaddons\videoplugin\TheoraVideo\bin\Release
-set ffmpeg=%root%\ffmpeg
+set ffmpeg=%root%\python-ogre\thirdparty\extra
 set naviextra=%root%\navi\Dependencies\win32\awesomium\bin\release
 set navi=%root%\navi\navi\lib
 set boost=%root%\boost_1_37_0\bin.v2\libs\python\build\msvc-9.0\release\threading-multi
@@ -74,7 +74,7 @@ copy /y %theora%\Plugin_TheoraVideoSystem.dll ..\plugins
 REM copy /y %theora%\Plugin_TheoraVideoSystem.dll %package%\addons\theora
 
 rem FFMpeg
-copy /y %ffmpeg%\lib\*.dll %package%\addons\ogrevideoffmpeg
+copy /y %ffmpeg%\bin\*.dll %package%\addons\ogrevideoffmpeg
 
 rem  CEGUI
 copy /y %cegui%\CEGUIBase.dll %package%\gui\CEGUI

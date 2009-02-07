@@ -177,26 +177,29 @@ bool cVideoPlayer::open(Ogre::String fileName)
 
     // Find the decoder for the video stream
     Codec=avcodec_find_decoder(CodecCtx->codec_id);
-    if (Codec==NULL)
+    if (Codec==NULL) {
+    	Ogre::LogManager::getSingletonPtr()->logMessage(Ogre::String("cVideoPlayer::open -- Codec==NULL"));
         return false; // Codec not found
-
+}
     // Inform the codec that we can handle truncated bitstreams -- i.e.,
     // bitstreams where frame boundaries can fall in the middle of packets
     if (Codec->capabilities & CODEC_CAP_TRUNCATED)
         CodecCtx->flags|=CODEC_FLAG_TRUNCATED;
 
     // Open codec
-    if (avcodec_open(CodecCtx, Codec)<0)
+    if (avcodec_open(CodecCtx, Codec)<0) {
+    	Ogre::LogManager::getSingletonPtr()->logMessage(Ogre::String("cVideoPlayer::open -- Unable to Open the Codec"));
         return false; // Could not open codec
-
+	}
     // Allocate video frame
     Frame=avcodec_alloc_frame();
 
     // Allocate an AVFrame structure
     FrameRGB=avcodec_alloc_frame();
-    if (FrameRGB==NULL)
+    if (FrameRGB==NULL) {
+    	Ogre::LogManager::getSingletonPtr()->logMessage(Ogre::String("cVideoPlayer::open -- FrameRGB == NULL"));
         return false;
-
+	}
     // Determine required buffer size and allocate buffer
     NumBytes=avpicture_get_size(PIX_FMT_RGB32,
                                 CodecCtx->width,
@@ -210,6 +213,8 @@ bool cVideoPlayer::open(Ogre::String fileName)
 
     // get the movie framerate
     framerate = FormatCtx->streams[VideoStream]->r_frame_rate.num;
+
+    Ogre::LogManager::getSingletonPtr()->logMessage(Ogre::String("cVideoPlayer::open -- Success"));
 
     return true;
 }
