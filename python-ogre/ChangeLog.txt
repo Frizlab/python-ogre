@@ -1,6 +1,7 @@
 xxxx 2009 : Release 1.6.1.xxx
 ================================
 Fix: Exposed std::vector<bool> for joystick buttons in OIS
+Fix: DatStream Ptr's were broken - fixed issues with non const shared pointers being exposed
 
 Janurary 25 2009 : Release 1.6.1
 ================================
