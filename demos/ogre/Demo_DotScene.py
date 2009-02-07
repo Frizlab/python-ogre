@@ -17,14 +17,14 @@ import SampleFramework as sf
 import dotscene as DotScene
 import os, sys
 
-class SmokeApplication(sf.Application):
+class DotSceneApplication(sf.Application):
     def _setUpResources ( self ):
         # first load the default resources
         sf.Application._setUpResources ( self )
         
-        # now load the ones we need
-        bases = ["c:/temp/qr/data/textures","../Media/quake",
-                 "c:/temp/qr/data/models", "c:/temp/qr/data/models/players"]
+        # Now load any extra resource locations that we might need..  
+        # in the example I'm adding the entire tree under the base directory
+        bases = ["../Media_extra/quake"]
         for base in bases: 
             for directory in os.listdir ( base ):
                 fullPath = os.path.join ( base, directory )
@@ -36,16 +36,15 @@ class SmokeApplication(sf.Application):
         camera = self.camera
 
         sceneManager.ambientLight = ogre.ColourValue(0.5, 0.5, 0.5)
-        sceneManager.setSkyDome(True, 'Examples/CloudySky', 5.0, 8.0)
-
-                    
-        self.rootNode = self.sceneManager.getRootSceneNode().createChildSceneNode("DotSceneRoot")
-#         self.dotscene = DotScene.DotScene("../Media/quake/city/city.scene", self.sceneManager, self.rootNode)
-#        self.dotscene = DotScene.DotScene("../Media/quake/dome/dome.scene", self.sceneManager, self.rootNode)
-        self.dotscene = DotScene.DotScene("../Media/quake/roadster/roadster.scene", self.sceneManager, self.rootNode)
-#         self.rootNode.rotate(ogre.Vector3().UNIT_X, ogre.Degree (-90))
         
-#         print "Loaded DotScene!!!!"
+        # to keep things clean I'm creating a parent node to add the car to..            
+        self.carNode = self.sceneManager.getRootSceneNode().createChildSceneNode("DotSceneRoot")
+        
+        # now load the 'scene', which in this case is a vechile made from multiple meshes..
+        self.dotscene = DotScene.DotScene("../Media_extra/quake/roadster/roadster.scene", self.sceneManager, self.carNode)
+        
+        camera.setPosition ( -80,40,100)
+        camera.lookAt ( 0,0,0)
                 
     def __del__(self):
         del self.particleSystem2
@@ -53,7 +52,7 @@ class SmokeApplication(sf.Application):
                 
 if __name__ == '__main__':
     try:
-        application = SmokeApplication()
+        application = DotSceneApplication()
         application.go()
     except ogre.OgreException, e:
         print e
