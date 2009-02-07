@@ -506,7 +506,7 @@ def generate_code():
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
             
     ## add additional version information to the module to help identify it correctly 
-    common_utils.addDetailVersion ( mb, environment, environment.dshow )
+    common_utils.addDetailVersion ( mb, environment, environment.ogredshow )
 
     ##########################################################################################
     #

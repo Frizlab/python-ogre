@@ -1525,6 +1525,7 @@ class ogrevideoffmpeg:
     name='ogrevideoffmpeg'
     parent="ogre/addons"
     CCFLAGS = ""
+    ## "http://ffmpeg.arrozcru.org/builds/shared/ffmpeg-r16537-gpl-lshared-win32.tar.bz2"
     include_dirs = [ Config.PATH_Boost,
                     Config.PATH_INCLUDE_Ogre,
                     Config.PATH_INCLUDE_ogrevideoffmpeg,
@@ -1541,6 +1542,7 @@ class ogrevideoffmpeg:
             'libavdevice','libswscale','liba52','libmingwex','libfaac','libfaad',
             'libz','libxvidcore','libx264','libpthreadGC2','libwsock32','libvorbis','libmp3lame','libogg',
             'libvorbisenc','libvorbisfile','libtheora','libgsm','libvfw32','libgcc' ]
+        libs=[ boost.lib, 'OgreMain','avcodec-52', 'avdevice-52', 'avformat-52', 'avutil-49', 'swscale-0' ]           
     else:
         libs=[  boost.lib, 'OgreMain', 'avformat', 'avcodec', 'avutil', 'z', 'GL', 'GLU', 'Xxf86vm', 'Xext', 'X11' ]
     ModuleName="ogrevideoffmpeg"

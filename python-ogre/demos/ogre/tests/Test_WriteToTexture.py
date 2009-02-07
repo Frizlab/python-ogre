@@ -41,12 +41,25 @@ def WriteToTexture(in_string, destTexture, destRectangle, font, color, justify =
     storageclass = ctypes.c_uint8 * (nBuffSize)    # allocate a buffer class
     buff=storageclass()
     
-    ## the PixelBox call needs a pointer to the buffer and here's how we do this in Python-Ogre
-    VoidPointer = ogre.CastVoidPtr(ctypes.addressof(buff))
+    ### TWO ways to do this
     
+# #     ## the PixelBox call needs a pointer to the buffer and here's how we do this in Python-Ogre
+# #     VoidPointer = ogre.CastVoidPtr(ctypes.addressof(buff))
+# #     
+# #     ## create pixel box using the copy of the buffer
+# #     fontPb = ogre.PixelBox(fontBuffer.getWidth(), fontBuffer.getHeight(),fontBuffer.getDepth(), 
+# #                                             fontBuffer.getFormat()VoidPointer)   
+                                            
+    ### OR
+                                            
     ## create pixel box using the copy of the buffer
     fontPb = ogre.PixelBox(fontBuffer.getWidth(), fontBuffer.getHeight(),fontBuffer.getDepth(), 
-                                            fontBuffer.getFormat(), VoidPointer)          
+                                            fontBuffer.getFormat() )   
+    # Use Ctypes expose_address functionality...                                                                                        
+    fontPb.data =  ctypes.addressof(buff)     
+    
+                                         
+                                                           
     fontBuffer.blitToMemory(fontPb)
 
 #   fontData = static_cast<uint8*>( fontPb.data )

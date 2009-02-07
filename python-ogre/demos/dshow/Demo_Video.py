@@ -29,7 +29,7 @@ class VideoApplication(sf.Application):
         light.setPosition (20, 80, 150)
         
         self.dshowMovieTextureSystem =  OgreDshow.DirectShowMovieTexture(160,120) ## get this right for scaling
-        movieName = "../media_extra/fish.avi"
+        movieName = "../media_extra/clock.ogg" #fish.avi"
         
         self.dshowMovieTextureSystem.loadMovie(movieName)
 #         self.dshowMovieTextureSystem.playMovie()

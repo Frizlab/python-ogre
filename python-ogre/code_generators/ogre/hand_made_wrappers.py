@@ -5,17 +5,26 @@ import environment
 WRAPPER_DEFINITION_PixelBox =\
 """
 // return the data buffer - can't be handled 'normally' by Py++
-void * PixelBox_data ( ::Ogre::PixelBox & me )
+void * PixelBox_getData ( ::Ogre::PixelBox & me )
 {
     return me.data;
 }
+// sets the data buffer - can't be handled 'normally' by Py++
+void PixelBox_setData ( ::Ogre::PixelBox & me, void * Ptr )
+{
+    me.data = Ptr;
+}
 """
 WRAPPER_REGISTRATION_PixelBox = [
-    """def( "getData", &::PixelBox_data,\\
+    """def( "getData", &::PixelBox_getData,\\
                 "Python-Ogre Helper Function: Returns the data buffer.\\n\\
                 Input: \\n\\
                 Output: A void pointer to the data buffer",\\
-                bp::return_value_policy< bp::return_opaque_pointer >());"""
+                bp::return_value_policy< bp::return_opaque_pointer >());""",
+    """def( "setData", &::PixelBox_setData,\\
+                "Python-Ogre Helper Function: Set the data buffer.\\n\\
+                Input: A void Pointer ie ogre.CastVoidPtr(ctypes.addressof(buff)) \\n\\
+                Output: nothing");"""
     ]
 
 WRAPPER_DEFINITION_MemoryDataStream =\
@@ -933,9 +942,9 @@ def apply( mb ):
     rt.add_declaration_code( WRAPPER_DEFINITION_SceneNode )
     apply_reg (rt,  WRAPPER_REGISTRATION_SceneNode )
 
-    rt = mb.class_( 'PixelBox' )
-    rt.add_declaration_code( WRAPPER_DEFINITION_PixelBox )
-    apply_reg (rt,  WRAPPER_REGISTRATION_PixelBox )
+# #     rt = mb.class_( 'PixelBox' )
+# #     rt.add_declaration_code( WRAPPER_DEFINITION_PixelBox )
+# #     apply_reg (rt,  WRAPPER_REGISTRATION_PixelBox )
     
     rt = mb.class_( 'OverlayElement' )
     rt.add_declaration_code( WRAPPER_DEFINITION_OverlayElement )
