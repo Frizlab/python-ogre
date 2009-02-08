@@ -23,15 +23,20 @@ import ogre.io.OIS as OIS
 
 def getPluginPath():
     """ Return the absolute path to a valid plugins.cfg file.
-    look in the current directory for plugins.cfg followed by plugins.cfg.nt|linux
+    look in the current directory for plugins.cfg followed by plugins.cfg.nt|linux|mac
     If not found look one directory up
     """ 
     
     paths = [os.path.join(os.getcwd(), 'plugins.cfg'),
-             os.path.join(os.getcwd(), 'plugins.cfg.'+os.name),
              os.path.join(os.getcwd(), '..','plugins.cfg'),
-             os.path.join(os.getcwd(), '..','plugins.cfg.'+os.name),
              ]
+    if os.sys.platform == 'darwin':
+        paths.insert(1, os.path.join(os.getcwd(), 'plugins.cfg.mac'))
+        paths.append(os.path.join(os.getcwd(), '..', 'plugins.cfg.mac'))
+    else:
+        paths.insert(1,os.path.join(os.getcwd(), 'plugins.cfg.'+os.name))
+        paths.append(os.path.join(os.getcwd(), '..', 'plugins.cfg.'+os.name))
+        
     for path in paths:
         if os.path.exists(path):
             return path

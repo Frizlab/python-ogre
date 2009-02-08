@@ -920,7 +920,7 @@ class cegui:
     elif isLinux():
         libs=[boost.lib, 'CEGUIBase', 'OgreMain', 'CEGUIOgreRenderer' ]
     else:
-        libs=[boost.lib, 'CEGUI', 'OgreMain', 'CEGUIOgreRenderer' ]
+        libs=[boost.lib, 'OgreMain' ]
 #        libs.append ( boost_python_index.lib )
 
     if isLinux() or isMac():
@@ -934,7 +934,7 @@ class cegui:
             source=[
                 [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.6.2b.tar.gz?download", downloadPath]
                 ]
-
+    if isLinux() :
         buildCmds  = [
                 [0, tar + " zxf " + os.path.join(downloadPath,base)+"b.tar.gz --overwrite",os.getcwd() ],
 #                [0, "patch -s -N -i ../python-ogre/patch/cegui.patch -p0", os.path.join(os.getcwd(),base)],
@@ -947,6 +947,13 @@ class cegui:
                 [0,'make', os.path.join(os.getcwd(), base )],
                 [0,'make install', os.path.join(os.getcwd(), base )]
                 ]
+    if isMac():    
+        buildCmds  = [
+                [0, tar + " zxf " + os.path.join(downloadPath,base)+"b.tar.gz --overwrite",os.getcwd() ],
+                #[0, 'echo USE XCODE to build CEGUI -- ./makefiles/mac/....', ''],
+                [0, 'echo YOU DO NOT NEED TO BUILD CEGUI - YOU CAN USE THE OGRE DEPENCIES ', '']                
+                ]
+        
     if isWindows():
         version = "0.6.2b"
         base = "CEGUI-0.6.2"
@@ -979,7 +986,7 @@ class cegui:
                 ]
     ModuleName = 'CEGUI'
     if isMac():
-        LINKFLAGS = ' -F CEGUI '
+        LINKFLAGS = ' -framework CEGUI -framework OgreCEGUIRenderer '
         
     CheckIncludes = ['boost/python.hpp', 'Ogre.h', 'CEGUI.h', 'OgreCEGUIRenderer.h']
 
