@@ -232,4 +232,5 @@ PATH_INCLUDE_mygui = os.path.join(PATH_mygui,'MyGUIEngine','include')
 PATH_INCLUDE_canvas=        PATH_canvas
 
 if os.sys.platform=='darwin':
+   PATH_INCLUDE_ODE =          LOCAL_INCLUDE
    pass
