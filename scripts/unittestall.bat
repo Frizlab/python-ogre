@@ -1,0 +1,1 @@
+python unittest.py -d ogre  -d caelum -d cegui -d et -d hikari -d hydrax -d noise -d nxogre -d ogreal -d ogrebullet -d ogreforests -d OgreNewt -d ogreode -d ogrepcz -d particleuniverse -d PSSM -d qgui -d theora
