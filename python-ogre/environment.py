@@ -1030,7 +1030,9 @@ class ode:
         buildCmds = [
             [0, unzip + os.path.join(downloadPath,"ode-src-0.10.1.zip"), ''],
             ]
-
+    CCFGLAGS= ' -DBAN_OPCODE_AUTOLINK -DICE_NO_DLL '
+    if isMac():
+        noFrameWorks = True;
 
 class opcode:
     active = True
@@ -2067,10 +2069,11 @@ for name, cls in projects.items():
             cls.include_dirs.append(Config.MAC_SDK_INCLUDE)
         cls.CCFLAGS += Config.MAC_CCFLAGS
         cls.cflags += Config.MAC_cflags
-        for f in Config.MAC_AdditionalFrameWorks:
-            cls.cflags += ' -F' + f + ' '
-            cls.CCFLAGS += ' -F' + f + ' '
-            cls.LINKFLAGS += ' -F' + f + ' '
+        if not hasattr(cls, 'noFrameWorks'):
+            for f in Config.MAC_AdditionalFrameWorks:
+                cls.cflags += ' -F' + f + ' '
+                cls.CCFLAGS += ' -F' + f + ' '
+                cls.LINKFLAGS += ' -F' + f + ' '
 
     if not hasattr (cls, 'ModuleName'):
         cls.ModuleName = name[0].upper() + name[1:]
