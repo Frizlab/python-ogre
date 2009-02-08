@@ -1,0 +1,13 @@
+# Defines plugins to load
+
+## Use this for Windows
+
+
+##
+## NOTE use this for MacOS or Linux
+#PluginFolder=/home/andy/development/root/usr/lib/OGRE
+Plugin=RenderSystem_GL
+Plugin=Plugin_ParticleFX
+Plugin=Plugin_BSPSceneManager
+Plugin=Plugin_OctreeSceneManager
+Plugin=Plugin_CgProgramManager
