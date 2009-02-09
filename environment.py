@@ -486,23 +486,29 @@ class boost:    ## also included bjam
         versionBase = '1_37' ## the version used on the library name
 
     if isLinux():
+        # this is now using a prebuilt bjam binary -- if this doesn't work uncomment necessary lines....
         bjambase = 'boost-jam-3.1.17-1-linuxx86'
+##        bjambase = 'boost-jam-3.1.17' # uncomment to build bjam from source
         if is64():
             bjambuilddir = 'bin.linuxx86_64'
         else:
             bjambuilddir = ''
+##            bjambuilddir = 'bin.linuxx86' # uncomment to build bjam from source
         bjambuildset = 'gcc'
 
         source = [
             [wget,'http://downloads.sourceforge.net/boost/boost-jam-3.1.17-1-linuxx86.tgz', downloadPath],
+            # this isn't used unless building from source -- however small download :)
+            [wget,'http://downloads.sourceforge.net/boost/boost-jam-3.1.17.tgz', downloadPath], 
             [wget,'http://downloads.sourceforge.net/boost/'+base+'.tar.gz',downloadPath]
             ]
                 
         buildCmds  = [
                 ## first handle bjam
                 [0, tar + ' zxf ' + os.path.join(downloadPath, bjambase) + '.tgz --overwrite', ''],
-                [0,"./build.sh " + bjambuildset, os.path.join(os.getcwd(), bjambase )],
-                [0,"mkdir -p %s/bin/" % PREFIX, os.path.join(os.getcwd(), bjambase )],
+## uncomment to build bjam from source                
+##                [0,"./build.sh " + bjambuildset, os.path.join(os.getcwd(), bjambase )],
+##                [0,"mkdir -p %s/bin/" % PREFIX, os.path.join(os.getcwd(), bjambase )],
                 [0,cp + " bjam %s/bin/" % PREFIX, os.path.join(os.getcwd(), bjambase, bjambuilddir )], ## may need to change on 64 bit systems
 
                 ## and now boost
@@ -938,7 +944,7 @@ class cegui:
 
         buildCmds  = [
                 [0, tar + " zxf " + os.path.join(downloadPath,base)+"b.tar.gz --overwrite",os.getcwd() ],
-#                [0, "patch -s -N -i ../python-ogre/patch/cegui.patch -p0", os.path.join(os.getcwd(),base)],
+                [0, "patch -s -N -i ../python-ogre/patch/cegui.patch -p0", os.path.join(os.getcwd(),base)],
                 [0, "echo 'EMPTY' >>./INSTALL", os.path.join(os.getcwd(),base)],
                 [0, "echo 'EMPTY' >>./NEWS", os.path.join(os.getcwd(),base)],
 #                [0, "aclocal", os.path.join(os.getcwd(),base)],
