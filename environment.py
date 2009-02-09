@@ -651,6 +651,7 @@ class ogre:
                     #, Config.PATH_INCLUDE_NEDMALLOC
                     ]
         LINKFLAGS = ''
+        cflags += ' -D"_HAS_TR1=0" ' # to solve an issue with <map> include on some machines
         
     elif isLinux():
         if _STABLE:
