@@ -73,3 +73,7 @@ typedef btAxisSweep3Internal<unsigned short> btAxisSweep3InternalUnsignedShort;
 typedef btAlignedObjectArray<btCompoundShapeChild> CompoundShapeChildObjectArray;
 typedef btAlignedAllocator<btCompoundShapeChild, 16> CompoundShapeChild16;
 
+typedef btAlignedObjectArray< unsigned int > AlignedObjectArrayUnsignedInt;
+typedef btAlignedObjectArray< unsigned short > AlignedObjectArrayUnsignedShort;
+typedef btAlignedAllocator< float, 16u > AlignedAllocatorArrayFloat16;
+typedef btAlignedObjectArray< btCharacterControllerInterface* > AlignedObjectArrayCharacterControllerInterfacePtr;

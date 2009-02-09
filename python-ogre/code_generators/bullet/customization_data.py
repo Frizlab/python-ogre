@@ -5,6 +5,9 @@ def header_files( version ):
             ,'LinearMath/btStackAlloc.h'
             ,'LinearMath/btPoolAllocator.h'
             ,'BulletCollision/CollisionDispatch/btSimulationIslandManager.h'
+            ,'BulletDynamics/Character/btCharacterControllerInterface.h'
+            ,'BulletCollision/BroadphaseCollision/btBroadphaseInterface.h'
+
         ]
   
 def huge_classes( version ):
