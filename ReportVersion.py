@@ -18,15 +18,15 @@ if __name__ == '__main__':
 
     moduleList =      ( 'ogre.renderer.OGRE',
                         'ogre.io.OIS', 
-                        'ogre.gui.betagui', # 'ogre.gui.CEGUI', 'ogre.gui.QuickGUI',
+                        'ogre.gui.betagui', 'ogre.gui.CEGUI', 'ogre.gui.QuickGUI',
                         'ogre.sound.OgreAL', 
-                        'ogre.physics.ODE', 'ogre.physics.OgreRefApp',
-                        'ogre.physics.OgreOde', 'ogre.physics.OgreNewt', 'ogre.physics.Opcode',
-                        'ogre.physics.bullet','ogre.physics.PhysX','ogre.physics.NxOgre',
-                        'ogre.physics.OgreBulletC', 'ogre.physics.OgreBulletD',
+                        'ogre.physics.ODE', 'ogre.physics.OgreOde', 
+                        'ogre.physics.OgreNewt', 'ogre.physics.Opcode',
+                        'ogre.physics.PhysX','ogre.physics.NxOgre',
+                        'ogre.physics.bullet','ogre.physics.OgreBulletC', 'ogre.physics.OgreBulletD',
                         'ogre.addons.theora', 'ogre.addons.plib',
                         'ogre.addons.ogreforests', 'ogre.addons.et', 'ogre.addons.caelum',
-                        'ogre.addons.noise', 'ogre.addons.watermesh', 
+                        'ogre.addons.noise', 
                         'ogre.addons.particleuniverse', 'ogre.addons.cadunetree',
                         'ogre.renderer.ogrepcz', 'ogre.addons.hydrax',
                         'ogre.gui.hikari','ogre.gui.canvas','ogre.gui.mygui' )
@@ -50,7 +50,9 @@ if __name__ == '__main__':
             print "   Raw Detail    : %s" % (getattr(mod, 'PythonOgreDetail__') )
 #             logger.info ( "Import Successful: " + basename )
         except ImportError:
-            print "Import failed:", basename
+            pass
+#             print "Import failed:", basename
  #           logger.error ( "Import failed:" + basename )
         except TypeError:
-            print "Type Error:"
+            pass
+#             print "Type Error:"

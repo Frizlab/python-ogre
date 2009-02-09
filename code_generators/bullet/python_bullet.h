@@ -7,6 +7,9 @@
 #include "LinearMath/btStackAlloc.h"
 #include "LinearMath/btPoolAllocator.h"
 #include "BulletCollision/CollisionDispatch/btSimulationIslandManager.h"
+#include "BulletDynamics/Character/btCharacterControllerInterface.h"
+#include "BulletCollision/BroadphaseCollision/btBroadphaseInterface.h"
+
 //#include "../../Extras/SATConvexCollision/Hull.h"
 
 // First we create a magic namespace to hold all our aliases

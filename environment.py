@@ -783,6 +783,7 @@ class ois:
             pchincludes = ['boost/python.hpp', 'OIS.h']
 
         libs=['OIS_static',boost.lib]
+        cflags = ' -D"_HAS_TR1=0" ' # to solve an issue with <map> include on some machines
         
     else:
         libs=['OIS',boost.lib]
@@ -1670,12 +1671,13 @@ class ogrebulletc:  #
        libs.append('libbulletmath')
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_INCLUDE_Bullet
+                    , os.path.join(Config.PATH_INCLUDE_Bullet, 'BulletCollision')                    
                     , os.path.join(Config.PATH_OgreBullet, 'Collisions' )
                     , Config.PATH_INCLUDE_Ogre
                     , Config.PATH_INCLUDE_Ogre_Dependencies
                     ]
-    if isWindows():
-        include_dirs.append(os.path.join(Config.PATH_Bullet, 'Extras','GIMPACT','include'))
+# #     if isWindows():
+# #         include_dirs.append(os.path.join(Config.PATH_Bullet, 'Extras','GIMPACT','include'))
       
     lib_dirs = [ boost.PATH_LIB
                 ,Config.PATH_LIB_Bullet
@@ -1713,9 +1715,9 @@ class ogrebulletd:  #
                     , Config.PATH_INCLUDE_Bullet
                     , os.path.join(Config.PATH_OgreBullet, 'Collisions' )
                     , os.path.join(Config.PATH_OgreBullet, 'Dynamics' )
+                    , os.path.join(Config.PATH_INCLUDE_Bullet, 'BulletCollision')                    
                     , Config.PATH_INCLUDE_Ogre
                     , Config.PATH_INCLUDE_Ogre_Dependencies
-                    ,os.path.join(Config.PATH_Bullet, 'Extras','GIMPACT','include')
                     ]
     lib_dirs = [ boost.PATH_LIB
                 ,Config.PATH_LIB_Bullet

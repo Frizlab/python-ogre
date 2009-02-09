@@ -55,11 +55,14 @@ MAIN_NAMESPACE = ''
 ############################################################
 
 def ManualExclude ( mb ):
+    
+    
     global_ns = mb.global_ns
     if MAIN_NAMESPACE:
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
-        main_ns = global_ns    
+        main_ns = global_ns  
+          
     # remove functions that fail during compile
     excludes=['remove', 'findBinarySearch','findLinearSearch']
     for c in global_ns.classes():
@@ -67,111 +70,101 @@ def ManualExclude ( mb ):
             for m in c.member_functions():
                 if m.name in excludes:
                     m.exclude()
-    excludes=['resize', 'expand'] #needs 'T' changed to native class
+                    
+                    
+    excludes=['resize', 'expand'] # needs 'T' (default value) changed to native class
     for c in global_ns.classes():
         if 'btAlignedObjectArray' in c.name:
             for m in c.member_functions():
                 if m.name in excludes:
                     m.exclude()
-    excludes=[ '::btCollisionDispatcher::getNewManifold'
+            
+    excludes=[ ##'::btBroadphaseInterface::rayTest'
+    
+            '::btAxisSweep3Internal< unsigned short >::createProxy'
+            ,'::btAxisSweep3Internal< unsigned int >::createProxy'
+            ,'::btBvhTriangleMeshShape::setOptimizedBvh'  # has a funky default argument that could be fixed at some point TOFIX
+            
+            # some (all?) of these should be hand wrapped 
+            # TOFIX
+            ,'::btCollisionDispatcher::getNewManifold'
             ,'::btCollisionDispatcher::defaultNearCallback'
             ,'::btCollisionDispatcher::getInternalManifoldPointer'
             ,'::btCollisionDispatcher::getNearCallback'
             ,'::btCollisionDispatcher::setNearCallback'
+            
+            ,'::btDbvtBroadphase::createProxy'
             ,'::btSimpleBroadphase::createProxy'
-            # now for functions defined in headers but not implemented
-            ,'::btRaycastVehicle::setRaycastWheelInfo'
-            ,'::btCompoundShape::createAabbTreeFromChildren'
-            ,'::btCollisionAlgorithm::getDispatcherId'
-            ,'::btCollisionAlgorithmConstructionInfo::getDispatcherId'
-            
-            ,'::btCapsuleShape::calculateLocalInertia'
-            ,'::btCapsuleShape::localGetSupportingVertexWithoutMargin'
-            ,'::btCapsuleShape::batchedUnitVectorGetSupportingVertexWithoutMargin'
-            
-            ,'::btAxisSweep3Internal<unsigned short>::createProxy'
-            ,'::btAxisSweep3Internal<unsigned int>::createProxy'
-            ,'::btBU_Simplex1to4::getName'
-            ,'::btBoxShape::getName'
-            ,'::btBvhTriangleMeshShape::getName'
-            ,'::btCollisionShape::getName'
             ,'::btDispatcher::getInternalManifoldPointer'
-            ,'::btAxisSweep3Internal<unsigned int>::processAllOverlappingPairs'
-            ,'::btAxisSweep3Internal<unsigned short>::processAllOverlappingPairs'
-            ,'::btMultiSapBroadphase::createProxy'
-            ,'::btMultiSapBroadphase::quicksort'
-            ,'::btBvhTriangleMeshShape::setOptimizedBvh' # new in 2.70
-            ,'::btQuantizedBvh::walkRecursiveQuantizedTreeAgainstQuantizedTree' # 2.72
-            ]
             
+            ## TOFIX Wheels seem broken ?? ## had to remove raycastcehicle all together
+            ,'::btRaycastVehicle::addWheel'
+            ,'::btRaycastVehicle::getWheelInfo'
+            ,'::btRaycastVehicle::updateWheelTransformsWS'
+            ,'::btRaycastVehicle::rayCast'
+    
+            ## stuff in headers but not in library
+            ,'::btCollisionAlgorithm::getDispatcherId'
+            ,'::btAxisSweep3Internal<unsigned int>::processAllOverlappingPairs' 
+            ,'::btAxisSweep3Internal<unsigned short>::processAllOverlappingPairs'
+            ,'::btCollisionAlgorithmConstructionInfo::getDispatcherId'
+            ,'::btCompoundShape::createAabbTreeFromChildren'
+            ,'::btMultiSapBroadphase::quicksort'
+            ,'::btQuantizedBvh::walkRecursiveQuantizedTreeAgainstQuantizedTree'
+            ,'::btSequentialImpulseConstraintSolver::resolveSplitPenetrationImpulseCacheFriendly'       
+            ]
     for e in excludes:
         print "excluding function", e
         global_ns.member_functions(e).exclude()
+        
+        
     excludes = []
     for e in excludes:
         print "Excluding:", e
         global_ns.free_functions(e).exclude()
     
-    excludes = ['btAlignedAllocator<btCollisionObject*, 16u>'
-#             ,'btAlignedAllocator<btCollisionShape*, 16>'
-            ,'btAlignedAllocator<int, 16u>'
-            ,'btAlignedAllocator<float, 16u>'
-            ,'btAlignedAllocator<btPersistentManifold*, 16u>'
-            ,'btAlignedAllocator<btTypedConstraint*, 16u>'
-            ,'btAlignedAllocator<btRaycastVehicle*, 16u>'
-            ,'btAlignedAllocator<btBroadphaseInterface*, 16u>'
-            
-            ,'btAlignedAllocator<btDbvtNode const*, 16u>'
-#             ,'btAlignedObjectArray<short>'
-#             ,'btAlignedAllocator<btDbvt::sStkNN, 16u>'
-#             ,'btAlignedAllocator<btDbvt::sStkNP, 16u>'
-#             ,'btAlignedAllocator<btDbvt::sStkNPS, 16u>'
-            ,'btAlignedAllocator<btMultiSapBroadphase::btBridgeProxy*, 16u>'
-            ,'btAlignedAllocator<btMultiSapBroadphase::btMultiSapProxy*, 16u>'
-            ,'btAlignedAllocator<unsigned int, 16u>'
-            ,'btAlignedAllocator<unsigned short, 16u>'
-#             ,'btAlignedObjectArray<btDbvt::Node const*>'
-#             ,'btAlignedObjectArray<btDbvt::sStkNN>'
-#             ,'btAlignedObjectArray<btDbvt::sStkNP>'
-#             ,'btAlignedObjectArray<btDbvt::sStkNPS>'
-            ,'btAlignedObjectArray<btMultiSapBroadphase::btBridgeProxy*>'
-            ,'btAlignedObjectArray<btMultiSapBroadphase::btMultiSapProxy*>'
-#             ,'btAlignedObjectArray<btOdeContactJoint>'
-#             ,'btAlignedObjectArray<btOdeJoint*>'
-#             ,'btAlignedObjectArray<btOdeSolverBody>'
-#             ,'btAlignedObjectArray<btOdeSolverBody*>'
-#             ,'btAlignedObjectArray<btOdeTypedJoint>'
-
-#             ,'btAlignedObjectArray<btIndexedMesh>'
-#             ,'btAlignedObjectArray<int>'
-#             ,'btAlignedObjectArray<btQuantizedBvhNode>'
-#             ,'btAlignedObjectArray<btOptimizedBvhNode>'
-#             ,'btAlignedObjectArray<btCollisionObject*>'
-            ,'btDbvtBroadphase'
-            ,'btContinuousDynamicsWorld'
-#            ,'btSorLcpSolver'
+    excludes = [  
+            'btAlignedAllocator<btDbvtNode const*, 16u>'
+            ,'::btAlignedObjectArray< btDbvt::sStkNP >'
+            ,'::btAlignedAllocator< btBroadphaseInterface*, 16u >'
+            ,'::btAlignedObjectArray< btWheelInfo >'   # TOFIX bullet issue with wheels ???
+            ,'::btAlignedAllocator< btCollisionObject*, 16u >'
+            ,'::btAlignedAllocator<btPersistentManifold*, 16u >'
+            ,'::btAlignedAllocator< btTypedConstraint*, 16u >'
+            ,'::btAlignedAllocator< btCharacterControllerInterface*, 16u >'
+            ,'::btAlignedAllocator< btMultiSapBroadphase::btBridgeProxy*, 16u >'
+            ,'::btAlignedAllocator< btMultiSapBroadphase::btMultiSapProxy*, 16u >'
+            ,'::btAlignedAllocator< unsigned short, 16u >'
+            ,'::btAlignedAllocator< unsigned int, 16u >'
+            ,'::btAlignedObjectArray< btMultiSapBroadphase::btBridgeProxy* >'
+            ,'::btAlignedObjectArray< btMultiSapBroadphase::btMultiSapProxy* >'
+            ,'::btRaycastVehicle'
+            ,'::btAlignedAllocator< btRaycastVehicle*, 16u >'
             ]
-# #     if environment.isWindows():
-# #         excludes.extend(['btAlignedAllocator<btOdeContactJoint, 16u>'
-# #            ,'btAlignedAllocator<btOdeJoint*, 16u>'
-# #            ,'btAlignedAllocator<btOdeSolverBody, 16u>'
-# #            ,'btAlignedAllocator<btOdeSolverBody*, 16u>'
-# #            ,'btAlignedAllocator<btOdeTypedJoint, 16u>'
-# #            ] )
+            
 
     for e in excludes:
         print "excluding class", e
         global_ns.class_(e).exclude()
         
     excludes = ['::btPolyhedralConvexShape::m_optionalHull'  ## needs Hull from Extras
+                ,'::btRaycastVehicle::m_wheelInfo' ## TOFIX -- might be a bullet issue with wheels
             ]
     for e in excludes:
         global_ns.variable(e).exclude()
     
+        
+    excludes = [ '::btAlignedObjectArray< btCharacterControllerInterface* >::operator[]']
+    for e in excludes:
+        print "excluding operator",e
+        global_ns.operators(e).exclude()
+        
     # an Operator that won't compile
-    for o in global_ns.class_('btQuadWord').operators():
-        if "const" in o.decl_string:
-            o.exclude()
+    for c in global_ns.classes():
+        for o in c.operators(allow_empty=True):
+            if type(o) == type (decl_wrappers.calldef_wrapper.casting_operator_t()):
+                print "EXCLUDING Casting Operator:", o
+                o.exclude()
     global_ns.class_('btQuaternion').operators("operator-", arg_types=[]).exclude()
     
     
@@ -209,7 +202,8 @@ def ManualFixes ( mb ):
             for a in c.arguments:
                 if a.default_value and "&0.0" in a.default_value:
                     a.default_value = "::btVector3( (0.0), (0.0), (0.0) )"
-                    
+     
+                                   
     ## Bug ingccxml where it doesn't get the namespace for default values
     ## btCollisionWorld::addCollisionObject
     f=main_ns.class_('btCollisionWorld').mem_fun('addCollisionObject')
@@ -217,11 +211,17 @@ def ManualFixes ( mb ):
     f.arguments[2].default_value = 'btBroadphaseProxy::AllFilter'  # (short int)(btBroadphaseProxy::AllFilter)
       
     f = ['::btBroadphaseInterface::createProxy',
+        '::btMultiSapBroadphase::createProxy',
         '::btDispatcher::getNewManifold'
         ]
     for fun in f:
         print "setting call policy", fun
         main_ns.member_function(fun).call_policies = call_policies.default_call_policies()
+    
+    for fun in main_ns.member_functions(name='rayTest'):
+        for a in fun.arguments:
+            if a.default_value and "&0.0" in a.default_value:
+                a.default_value = "::btVector3( (0.0), (0.0), (0.0) )"
             
 ############################################################
 ##
@@ -265,8 +265,13 @@ def AutoInclude( mb, dumy ):
     for var in main_ns.typedefs ():
         if len(var.name) > 2:
             if var.name[0:2]=='bt' and var.name[2].isupper():
+                var.include()     
+                           
+    print dir ( main_ns )
+    for var in main_ns.enums ():
+        if len(var.name) > 2:
+            if var.name[0:2]=='bt' and var.name[2].isupper():
                 var.include()                
-
 
         
             
@@ -408,14 +413,16 @@ def generate_code():
     # here we fixup functions that expect to modifiy their 'passed' variables    
     ManualTransformations ( mb )
     AutoFixes ( mb, MAIN_NAMESPACE )
+    
+    #
+    # We need to tell boost how to handle calling (and returning from) certain functions
+    # Do this earlier than normal as I need to override the default in ManualFixes
+    common_utils.Set_DefaultCall_Policies ( main_ns )
+    
     ManualFixes ( mb )
     ManualExclude ( mb )
     common_utils.Auto_Functional_Transformation ( main_ns  )
     
-    #
-    # We need to tell boost how to handle calling (and returning from) certain functions
-    #
-    common_utils.Set_DefaultCall_Policies ( main_ns )
     
     #
     # the manual stuff all done here !!!
