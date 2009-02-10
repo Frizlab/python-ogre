@@ -783,7 +783,6 @@ class ois:
             pchincludes = ['boost/python.hpp', 'OIS.h']
 
         libs=['OIS_static',boost.lib]
-        cflags = ' -D"_HAS_TR1=0" ' # to solve an issue with <map> include on some machines
         
     else:
         libs=['OIS',boost.lib]
@@ -1700,17 +1699,13 @@ class ogrebulletd:  #
     cflags = ""
     parent = "ogre/physics"
         
-    libs=[boost.lib, 'OgreMain', 'LibBulletCollision', 'LibBulletDynamics','LibBulletSoftBody',
-                    'LibBulletMultiThreaded','LibGIMPACT']
+    libs=[boost.lib, 'OgreMain', 
+        'LibBulletCollision', 'LibBulletDynamics','LibBulletSoftBody','LibBulletMultiThreaded']
     if isWindows():
         libs.append('libbulletMath')
     else:
         libs.append('LibLinearMath')
         
-#    if isWindows():
-#        libs.append('libbulletmath')
-#    else:
-#        libs.append('liblinearmath')
     include_dirs = [Config.PATH_Boost
                     , Config.PATH_INCLUDE_Bullet
                     , os.path.join(Config.PATH_OgreBullet, 'Collisions' )
@@ -2083,6 +2078,8 @@ for name, cls in projects.items():
                 cls.cflags += ' -F' + f + ' '
                 cls.CCFLAGS += ' -F' + f + ' '
                 cls.LINKFLAGS += ' -F' + f + ' '
+    elif isWindows():
+        cls.cflags += ' -D"_HAS_TR1=0" ' # to solve an issue with <map> include with MSVC 9 and advanced feature pack and gccxml ?????
 
     if not hasattr (cls, 'ModuleName'):
         cls.ModuleName = name[0].upper() + name[1:]

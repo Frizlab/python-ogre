@@ -69,6 +69,14 @@ def ManualExclude ( mb ):
     for e in excludes:
         print "Excluding:",e
         main_ns.member_functions(e).exclude()
+        
+    excludes = ['::OgreBulletCollisions::DebugTriangleDrawCallback'
+            ,'::OgreBulletCollisions::ObjectState'  # problem in motionstate
+            ]        
+    for e in excludes:
+        print "Excluding:",e
+        main_ns.class_(e).exclude()
+        
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 
@@ -81,10 +89,11 @@ def ManualInclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns    
-        
-    global_ns.namespace( 'Ogre' ).class_('MovableObject').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('UserDefinedObject').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('SimpleRenderable').include(already_exposed=True)
+
+    # these are actually shared pointers that get implicit conversion (in the Ogre library)
+    # and I do this to stop the warning messages..                
+    global_ns.namespace( 'Ogre' ).class_('MeshPtr').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('MaterialPtr').include(already_exposed=True)
         
         
 ############################################################
@@ -154,7 +163,6 @@ def AutoFixes ( mb, MAIN_NAMESPACE ):
     elif os.name =='posix':
         Fix_Posix( mb )
         
-    common_utils.Auto_Document( mb, MAIN_NAMESPACE )
         
  
 ###############################################################################
@@ -237,6 +245,7 @@ def generate_code():
                                            )
                                            
     # if this module depends on another set it here                                           
+    mb.register_module_dependency ( environment.bullet.generated_dir ) 
     mb.register_module_dependency ( environment.ogre.generated_dir ) # ,environment.ogrebulletc.generated_dir] )
     
     # normally implicit conversions work OK, however they can cause strange things to happen so safer to leave off
@@ -277,6 +286,11 @@ def generate_code():
     for cls in main_ns.classes():
         if cls.name not in NoPropClasses:
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
+            
+    #     # indicated where underlying libraries are protected etc in the doc strings
+    # THIS MUST BE AFTER Auto_Functional_Transformation
+            
+    common_utils.Auto_Document( mb, MAIN_NAMESPACE )
             
     ## add additional version information to the module to help identify it correctly 
     common_utils.addDetailVersion ( mb, environment, environment.ogrebulletc )
