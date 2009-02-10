@@ -442,8 +442,11 @@ def Fix_Pointer_Returns ( mb, pointee_types=['unsigned int','int', 'float','char
             for i in pointee_types:
                 if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
                     if not fun.name in known_names:
-                        print "WARNING: Excluding (function):", fun, "as it returns (pointer)", i
-                        fun.exclude()
+                        print "WARNING: Func (", fun.name, ") returns ", i, ".Using ctype return_addressof functionality"
+                        fun.call_policies = call_policies.return_value_policy( call_policies.return_addressof )
+                        fun.documentation=docit("CTYPE Integration - returns address of return value", "...", "Address of Return Value")
+#                         print "WARNING: Excluding (function):", fun, "as it returns (pointer)", i
+#                         fun.exclude()
     for fun in mb.member_operators( allow_empty = True ):
         if declarations.is_pointer (fun.return_type) and not fun.documentation:
             for i in pointee_types:

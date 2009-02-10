@@ -1,7 +1,13 @@
 xxxx 2009 : Release 1.6.1.xxx
 ================================
+Fix: Bullet modules created around Bullet 2.73 now working properly and wrappers improved
 Fix: Exposed std::vector<bool> for joystick buttons in OIS
 Fix: DatStream Ptr's were broken - fixed issues with non const shared pointers being exposed
+
+Change: Exposing functions that return standard pointers (int *, float * etc) with ctype return_addressof functionality
+        previously these had been excluded
+
+                
 
 Janurary 25 2009 : Release 1.6.1
 ================================
