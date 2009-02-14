@@ -5,22 +5,19 @@
 #
 # -----------------------------------------------------------------------------
 
-#  TO EXCLUDE
-# Menu:
-#   bool evtHndlr_listItemCreated(const EventArgs& e);
-#   bool evtHndlr_listItemMouseEnters(const EventArgs& e);
-#   bool evtHndlr_listItemMouseLeaves(const EventArgs& e);
-# Widget:
-#     Ogre::Vector2 convertPixelToRelativePoint(const Ogre::Vector2& point);
-#               
-#       
-        
+## STARTER TEMPLATE..
+## replace quickgui with lowercase project name
+## set MAIN_NAMESPACE
+## rename and configure .h files
+
+
 import os, sys, time, shutil
 try:
    import psyco
    psyco.full()
 except ImportError:
    pass
+
 #add environment to the path
 sys.path.append( os.path.join( '..', '..' ) )
 #add common utils to the pass
@@ -32,11 +29,14 @@ import common_utils
 import customization_data
 import hand_made_wrappers
 
+
+import pygccxml
 from pygccxml import parser
 from pygccxml import declarations
 from pyplusplus import messages
 from pyplusplus import module_builder
 from pyplusplus import decl_wrappers
+from pyplusplus.code_creators import include
 
 from pyplusplus import function_transformers as ft
 from pyplusplus.module_builder import call_policies
@@ -44,21 +44,18 @@ try:
   from pyplusplus.creators_factory import sort_algorithms
 except ImportError, e:
   from pyplusplus.module_creator import sort_algorithms
-from pyplusplus.code_creators import include
 
 import common_utils.extract_documentation as exdoc
 import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
+from common_utils import docit
+
+# override standard pretty name function
+from pyplusplus.decl_wrappers import algorithm
+algorithm.create_valid_name = common_utils.PO_create_valid_name 
+
 
 MAIN_NAMESPACE = 'QuickGUI'
-quickgui="xxx"  ##do a search and replace on quickgui
-
-## small helper function
-def docit ( general, i, o ): 
-    docs = "Python-Ogre Modified Function Call\\n" + general +"\\n"
-    docs = docs + "Input: " + i + "\\n"
-    docs = docs + "Output: " + o + "\\n\\\n"
-    return docs
 
 ############################################################
 ##
@@ -68,75 +65,36 @@ def docit ( general, i, o ):
 
 def ManualExclude ( mb ):
     global_ns = mb.global_ns
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
-    
- 
-    NotExported=['::QuickGUI::ScriptReader']
-    for c in NotExported:
-        main_ns.class_( c ).exclude()
-    
-    specials=['::QuickGUI::ScriptReader',
-                '::QuickGUI::Character'
+    if MAIN_NAMESPACE:
+        main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    else:
+        main_ns = global_ns    
+        
+    excludes=['::QuickGUI::ComboBox::_clearSelection'
+                ,'::QuickGUI::ComboBox::addComboBoxEventHandler'
+                ,'::QuickGUI::ContainerWidget::setDrawChildrenWhenNotVisible'
+                ,'::QuickGUI::ContainerWidget::getDrawChildrenWhenNotVisible'
+                ,'::QuickGUI::TreeViewNode::isSelected'
                 ]
-#     for s in specials:
-#         print dir (main_ns.class_(s))        
-
-        
-#     excludeName = ['vector<Ogre::Image>'
-#                 ]
-#     for c in global_ns.classes():
-#         print "class:", c
-#         if c.name in excludeName:
-#             print "Excluding:",c
-#             c.exclude()
-
-    # static consts that don't have a value set -- causes a boost cant set variable error
-    excludes=['::QuickGUI::Menu::DEFAULT',
-            '::QuickGUI::Menu::DOWN',
-            '::QuickGUI::Menu::OVER'
-            ]
-    for e in excludes:
-        global_ns.variable(e).exclude()
-        print "Excluding variable", e
-        
-    NonExistant = []
-    for cls in NonExistant:
-        try:
-            main_ns.class_(cls[0]).member_function(cls[1]).exclude()
-        except  declarations.matcher.declaration_not_found_t, e:
-            pass 
             
-    excludes=[\
-#             '::QuickGUI::QuadContainer::_populateRenderObjectList'
-#             ,'::QuickGUI::QuadContainer::_updateRenderQueue'
-#             '::QuickGUI::HorizontalTrackBar::_getButtonSize'
-#             ,'::QuickGUI::List::getNumberOfListItems'
-            '::QuickGUI::Panel::getScrollPane'
-            ,'::QuickGUI::ScrollPane::_showVScrollBars'
-            ,'::QuickGUI::ScrollPane::_showHScrollBars'
-            ,'::QuickGUI::ScrollPane::getVerticalButtonLayout'
-            ,'::QuickGUI::ScrollPane::getHorizontalButtonLayout'
-            ,'::QuickGUI::VerticalScrollBar::getScrollButtonSize'
-            ,'::QuickGUI::Effect::linearInterpolate'
-            ,'::QuickGUI::SkinSet::buildTextureCoordinates' ## has a vector that isn't being exposed correctly
-            ,'::QuickGUI::Console::setReadOnly'
-            ,'::QuickGUI::Widget::getChildWidget'
-            ,'::QuickGUI::Quad::_update'
-            ,'::QuickGUI::Window::getTitleBarText'
-            ,'::QuickGUI::Tab::getPadding' 
-            ,'::QuickGUI::ComboBox::_clearSelection'  ## not implemented
-            ,'::QuickGUI::ComboBox::addComboBoxEventHandler' ## TODO: needs to be wrapped           
-                ]
     for e in excludes:
-        print "excluding function", e
-        try:
-            global_ns.member_functions(e).exclude()
-        except:
-            pass
-            #print "FAILED to exclude", e            
-                      
-#               
-
+        print "Excluding Function", e
+        global_ns.member_functions(e).exclude()
+ 
+ 
+    NotExported=['::QuickGUI::ScriptReader'
+                ,'::QuickGUI::Character'
+                ]
+    for c in NotExported:
+        print "Excluding Class", c
+        main_ns.class_( c ).exclude()
+ 
+    # excluding static const strings that cause a boost cant set variable error    
+    for v in main_ns.variables():
+        if '::Ogre::String const' in v.type.decl_string:
+            v.exclude()
+            print "Excluding Const String var:",v, v.decl_string   
+        
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 
@@ -145,41 +103,22 @@ def ManualExclude ( mb ):
     
 def ManualInclude ( mb ):
     global_ns = mb.global_ns
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
-    
-    ## now expose but don't create class that exist in other modules
-    global_ns.namespace( 'Ogre' ).class_('OverlayContainer').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Vector2').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Vector3').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('Vector4').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('ColourValue').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('RenderTexture').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('RenderOperation').include(already_exposed=True)
-    global_ns.namespace( 'Ogre' ).class_('UTFString').include(already_exposed=True)
-    global_ns.class_('::Ogre::FontPtr').include(already_exposed=True)
-    global_ns.class_('::Ogre::RenderQueueListener').include(already_exposed=True)
-    global_ns.class_('::Ogre::SceneManager').include(already_exposed=True)
-    global_ns.class_('::Ogre::Viewport').include(already_exposed=True)
-#     global_ns.class_('::Ogre::Image').include(already_exposed=True)
-#     global_ns.class_('::Ogre::FloatRect').include(already_exposed=True)
-    
-    
-    
-    
+    if MAIN_NAMESPACE:
+        main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    else:
+        main_ns = global_ns    
+        
 ############################################################
 ##
 ##  And things that need manual fixes, but not necessarly hand wrapped
 ##
 ############################################################
 def ManualFixes ( mb ):    
-
     global_ns = mb.global_ns
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
-    for v in main_ns.variables():
-        if '::Ogre::String const' in v.type.decl_string:
-            v.exclude()
-            print "Excluding Const String var:",v, v.decl_string
-        
+    if MAIN_NAMESPACE:
+        main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    else:
+        main_ns = global_ns
               
 ############################################################
 ##
@@ -192,18 +131,14 @@ def ManualFixes ( mb ):
         
 def ManualTransformations ( mb ):
     global_ns = mb.global_ns
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
-        
+    if MAIN_NAMESPACE:
+        main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    else:
+        main_ns = global_ns
+                
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
         
-#     x =global_ns.mem_fun('::QuickGUI::GUIManager::renderQueueEnded')
-#     x.add_transformation(ft.inout('repeatThisQueue'))
-#     x.documentation = docit ("","queueGroupId, invocation", "tuple - repeatThisInvocation")
-#     
-#     x = global_ns.mem_fun('::QuickGUI::GUIManager::renderQueueStarted') 
-#     x.add_transformation(ft.inout('skipThisQueue'))
-#     x.documentation = docit ("","queueGroupId, invocation", "tuple - skipThisInvocation")        
     
 ###############################################################################
 ##
@@ -211,56 +146,34 @@ def ManualTransformations ( mb ):
 ##
 ###############################################################################
     
-    
-def AutoExclude( mb ):
-    """ Automaticaly exclude a range of things that don't convert well from C++ to Python
-    """
-    global_ns = mb.global_ns
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
-    
-    # vars that are static consts but have their values set in the header file are bad
-    Remove_Static_Consts ( main_ns )
-    
-    ## Exclude protected and private that are not pure virtual
-    query = declarations.access_type_matcher_t( 'private' ) \
-            & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
-    main_ns.calldefs( query ).exclude()
-    
-    #Virtual functions that return reference could not be overriden from Python
-    query = declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.VIRTUAL ) \
-            & declarations.custom_matcher_t( lambda decl: declarations.is_reference( decl.return_type ) )
-    try:
-        main_ns.calldefs( query ).virtuality = declarations.VIRTUALITY_TYPES.NOT_VIRTUAL
-    except:
-        pass
-               
-def AutoInclude( mb ):
-    pass
-
-    
-def AutoFixes ( mb ): 
+def AutoFixes ( mb, MAIN_NAMESPACE ): 
     """ now we fix a range of things automatically - typically by going through 
     the entire name space trying to guess stuff and fix it:)
-    """       
+    """    
     global_ns = mb.global_ns
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
-    
-    # arguments passed as refs but not const are not liked by boost
-    #Fix_Ref_Not_Const ( main_ns )
-    
-#     # Functions that have void pointers in their argument list need to change to unsigned int's  
-#     Fix_Void_Ptr_Args  ( main_ns )
-    
+    if MAIN_NAMESPACE:
+        main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    else:
+        main_ns = global_ns
+        
+    # Functions that have void pointers in their argument list need to change to unsigned int's  
+    pointee_types=[]
+    ignore_names=[]
+
     # and change functions that return a variety of pointers to instead return unsigned int's
-    Fix_Pointer_Returns ( main_ns )   
+    pointee_types=[]
+    ignore_names=[]  # these are function names we know it's cool to exclude
+    common_utils.Fix_Pointer_Returns ( main_ns ) # , pointee_types, ignore_names )   
 
     # functions that need to have implicit conversions turned off
-    Fix_Implicit_Conversions ( main_ns)
+    ImplicitClasses=[] 
+    common_utils.Fix_Implicit_Conversions ( main_ns, ImplicitClasses )
     
     if os.name =='nt':
         Fix_NT( mb )
     elif os.name =='posix':
         Fix_Posix( mb )
+        
         
  
 ###############################################################################
@@ -282,113 +195,6 @@ def Fix_NT ( mb ):
     """ fixup for NT systems
     """
         
-        
-def Fix_Implicit_Conversions ( mb ):
-    """By default we disable explicit conversion, however sometimes it makes sense
-    """
-    ImplicitClasses=[] 
-    for className in ImplicitClasses:
-        mb.class_(className).constructors().allow_implicit_conversion = True
-                    
-def Add_Auto_Conversions( mb ):
-    pass
-    
-      
-def Set_Call_Policies( mb ):
-    """ set the return call policies on classes that this hasn't already been done for.
-    Set the default policy to deal with pointer/reference return types to reference_existing object
-    """
-    mem_funs = mb.calldefs ()
-    mem_funs.create_with_signature = True #Generated code will not compile on
-    #MSVC 7.1 if function has throw modifier.
-    for mem_fun in mem_funs:
-        if mem_fun.call_policies:
-            continue
-        if not mem_fun.call_policies and \
-                    (declarations.is_reference (mem_fun.return_type) or declarations.is_pointer (mem_fun.return_type) ):
-            mem_fun.call_policies = call_policies.return_value_policy(
-                call_policies.reference_existing_object )
-
-                                
-def Set_Exception(mb):
-    pass
-    #~ """We don't exclude  Exception, because it contains functionality, that could
-    #~ be useful to user. But, we will provide automatic exception translator
-    #~ """
-    #~ Exception = mb.namespace( 'Ogre' ).class_( 'Exception' )
-    #~ Exception.include()
-    #~ Exception.mem_fun('what').exclude() # declared with empty throw
-    #~ Exception.mem_fun('getNumber').exclude() # declared with empty throw
-    #~ Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getFullDescription().c_str()' )
-            
-    
-def _ReturnUnsignedInt( type_ ):
-    """helper to return an UnsignedInt call for tranformation functions
-    """
-    return declarations.cpptypes.unsigned_int_t()
-    
-def Fix_Void_Ptr_Args ( mb ):
-    """ we modify functions that take void *'s in their argument list to instead take
-    unsigned ints, which allows us to use CTypes buffers
-    """
-    for fun in mb.member_functions():
-        arg_position = 0
-        for arg in fun.arguments:
-            if declarations.type_traits.is_void_pointer(arg.type):
-                fun.add_transformation( ft.modify_type(arg_position,_ReturnUnsignedInt ) )
-                fun.documentation = docit ("Modified Input Argument to work with CTypes",
-                                            "Argument "+arg.name+ "(pos:" + str(arg_position)\
-                                            +") takes a CTypes.adddressof(xx)", "...")
-                #print "Fixed Void Ptr", fun, arg_position
-                break
-            arg_position +=1
-            
-         
-                    
-def Fix_Pointer_Returns ( mb ):
-    """ Change out functions that return a variety of pointer to base types and instead
-    have them return the address the pointer is pointing to (the pointer value)
-    This allow us to use CTypes to handle in memory buffers from Python
-    
-    Also - if documentation has been set then ignore the class/function as it means it's been tweaked else where
-    """
-    pointee_types=['unsigned int','int', 'float', 'unsigned char']
-    known_names=[]  # these are function names we know it's cool to exclude
-    for fun in mb.member_functions():
-        if declarations.is_pointer (fun.return_type) and not fun.documentation:
-            for i in pointee_types:
-                if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
-                    if not fun.name in known_names:
-                        print "Excluding (function):", fun, "as it returns (pointer)", i
-                    fun.exclude()
-    try:
-        for fun in mb.member_operators():
-            if declarations.is_pointer (fun.return_type) and not fun.documentation:
-                for i in pointee_types:
-                    if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
-                        print "Excluding (operator):", fun
-                        fun.exclude()
-    except:
-        pass
-
-
-def query_containers_with_ptrs(decl):
-    if not isinstance( decl, declarations.class_types ):
-       return False
-    if not decl.indexing_suite:
-       return False
-    return declarations.is_pointer( decl.indexing_suite.element_type )
-
-    
-def Remove_Static_Consts ( mb ):
-    """ linux users have compile problems with vars that are static consts AND have values set in the .h files
-    we can simply leave these out """
-    checker = varchecker.var_checker()
-    for var in mb.vars():
-        if type(var.type) == declarations.cpptypes.const_t:
-            if checker( var ):
-                print "Excluding static const ", var
-                var.exclude()    
 
 #
 # the 'main'function
@@ -408,15 +214,15 @@ def generate_code():
         , messages.W1029
         , messages.W1030
         , messages.W1031
-# # #         , messages.W1035
-# # #         , messages.W1040 
-# # #         , messages.W1038        
-# # #         , messages.W1041
-# # #         , messages.W1036 # pointer to Python immutable member
-# # #         , messages.W1033 # unnamed variables
-# # #         , messages.W1018 # expose unnamed classes
-# # #         , messages.W1049 # returns reference to local variable
-# # #         , messages.W1014 # unsupported '=' operator
+        , messages.W1035
+        , messages.W1040 
+        , messages.W1038        
+        , messages.W1041
+        , messages.W1036 # pointer to Python immutable member
+        , messages.W1033 # unnamed variables
+        , messages.W1018 # expose unnamed classes
+        , messages.W1049 # returns reference to local variable
+        , messages.W1014 # unsupported '=' operator
          )
     #
     # Use GCCXML to create the controlling XML file.
@@ -428,10 +234,7 @@ def generate_code():
                         , environment.quickgui.cache_file )
 
     defined_symbols = [ 'OGRE_NONCLIENT_BUILD','__PYTHONOGRE_BUILD_CODE',
-                'WIN32', 'NDEBUG', 'WINDOWS' , '_PRECOMP']  ## , 'QUICKGUI_EXPORTS'
-    if environment._USE_THREADS:
-        defined_symbols.append('BOOST_HAS_THREADS')
-        defined_symbols.append('BOOST_HAS_WINTHREADS')
+                'WIN32', 'NDEBUG', 'WINDOWS' , '_PRECOMP']  
 
     defined_symbols.append( 'VERSION_' + environment.quickgui.version )  
     
@@ -446,15 +249,16 @@ def generate_code():
                                           , indexing_suite_version=2
                                           , cflags=environment.quickgui.cflags
                                            )
-    # NOTE THE CHANGE HERE                                           
-    mb.constructors().allow_implicit_conversion = False   
-                                            
+                                           
+    # if this module depends on another set it here                                           
     mb.register_module_dependency ( environment.ogre.generated_dir )
-
+    
+    # normally implicit conversions work OK, however they can cause strange things to happen so safer to leave off
+    mb.constructors().allow_implicit_conversion = False                                           
+    
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
-    
-        
+            
     #
     # We filter (both include and exclude) specific classes and functions that we want to wrap
     # 
@@ -462,27 +266,22 @@ def generate_code():
     global_ns.exclude()
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
     main_ns.include()
-    
-   
-    AutoExclude ( mb )
+       
+    common_utils.AutoExclude ( mb, MAIN_NAMESPACE )
     ManualExclude ( mb )
-    AutoInclude ( mb )
+    common_utils.AutoInclude ( mb, MAIN_NAMESPACE )
     ManualInclude ( mb )
     # here we fixup functions that expect to modifiy their 'passed' variables    
     ManualTransformations ( mb )
-    
-    AutoFixes ( mb )
+    AutoFixes ( mb, MAIN_NAMESPACE )
     ManualFixes ( mb )
-    common_utils.Auto_Functional_Transformation ( main_ns  )
-
-    mb.global_ns.namespace ('Ogre').vars( 'ms_Singleton' ).disable_warnings( messages.W1035 ) #singleton pointers coming up we need to ignore
-                
+    
+    common_utils.Auto_Functional_Transformation ( main_ns ) #, special_vars=[]  )
+   
     #
     # We need to tell boost how to handle calling (and returning from) certain functions
     #
-    Set_Call_Policies ( mb.global_ns.namespace (MAIN_NAMESPACE) )
-    Set_Call_Policies ( mb.global_ns.namespace ('Ogre') )  ## need this as we are forcing singleton classes 
-    
+    common_utils.Set_DefaultCall_Policies ( mb.global_ns.namespace ( MAIN_NAMESPACE ) )
     
     #
     # the manual stuff all done here !!!
@@ -494,6 +293,9 @@ def generate_code():
         if cls.name not in NoPropClasses:
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
             
+    # THIS MUST BE AFTER Auto_Functional_Transformation
+    common_utils.Auto_Document( mb, MAIN_NAMESPACE )
+    
     ## add additional version information to the module to help identify it correctly 
     common_utils.addDetailVersion ( mb, environment, environment.quickgui )
 
@@ -502,32 +304,25 @@ def generate_code():
     # Creating the code. After this step you should not modify/customize declarations.
     #
     ##########################################################################################
-    extractor = exdoc.doc_extractor()
-    mb.build_code_creator (module_name='_quickgui_', doc_extractor= extractor )
+    extractor = exdoc.doc_extractor() # I'm excluding the UTFstring docs as lots about nothing 
+    mb.build_code_creator (module_name='_quickgui_' , doc_extractor= extractor )
     
     for inc in environment.quickgui.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )
     mb.code_creator.user_defined_directories.append( environment.quickgui.generated_dir )
-#     mb.code_creator.replace_included_headers( customization_data.header_files( environment.quickgui.version ) )
-    ## we need to remove the previous one
-    lastc = mb.code_creator.creators[ mb.code_creator.last_include_index() ]
-    mb.code_creator.remove_creator( lastc )  
-    # and now add our precompiled ones..
-    for x in range (len (customization_data.header_files( environment.ogre.version ) ), 0 ,-1 ):
-        h = customization_data.header_files( environment.ogre.version )[x-1]        
-        mb.code_creator.adopt_creator ( include.include_t ( header= h ), 0)
-
+    mb.code_creator.replace_included_headers( customization_data.header_files( environment.quickgui.version ) )
 
     huge_classes = map( mb.class_, customization_data.huge_classes( environment.quickgui.version ) )
 
-    mb.split_module(environment.quickgui.generated_dir, huge_classes,use_files_sum_repository=False)
+    mb.split_module(environment.quickgui.generated_dir, huge_classes, use_files_sum_repository=False)
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory..
+    
     common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_quickgui, 
                             destPath = environment.quickgui.generated_dir, 
                             recursive=False )
-                            
+        
 if __name__ == '__main__':
     start_time = time.clock()
     generate_code()

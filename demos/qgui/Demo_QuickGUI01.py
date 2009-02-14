@@ -68,8 +68,8 @@ class GuiFrameListener ( sf.FrameListener, ois.MouseListener, ois.KeyListener ):
     def frameStarted(self, evt):
         if (self.robotAnimationState != None): self.robotAnimationState.addTime(evt.timeSinceLastFrame)
 
-        if( self.mGUIManager != None ) :
-            self.mGUIManager .injectTime(evt.timeSinceLastFrame)
+#         if( self.mGUIManager != None ) :
+#             self.mGUIManager.injectTime(evt.timeSinceLastFrame)
 
         if(self.mouseOverTB != None):
             self.mouseOverTB.setText(self.mGUIManager.getMouseOverWidget().getInstanceName())
@@ -89,7 +89,7 @@ class GuiFrameListener ( sf.FrameListener, ois.MouseListener, ois.KeyListener ):
     ##----------------------------------------------------------------##
     def mouseMoved( self, arg ):
         ms= arg.get_state()
-        self.mGUIManager.injectMouseMove( ms.X.rel, ms.Y.rel )
+        self.mGUIManager.injectMousePosition( ms.X.abs, ms.Y.abs )
         return True
 
     ##----------------------------------------------------------------##
@@ -107,7 +107,7 @@ class GuiFrameListener ( sf.FrameListener, ois.MouseListener, ois.KeyListener ):
     ##----------------------------------------------------------------##
     def  keyPressed( self, arg ):
         if( arg.key == ois.KC_ESCAPE ):
-            self.ShutdownRequested = True
+            self.mShutdownRequested = True
         elif ( arg.key == ois.KC_UP ):
             camPos = self.camera.getPostion()
             self.camera.setPosition(camPos.x, camPos.y, camPos.z-5)
@@ -130,19 +130,15 @@ class GuiFrameListener ( sf.FrameListener, ois.MouseListener, ois.KeyListener ):
 
 
 class QuickGUIDemoApp (sf.Application):
+    def __del__ (self ):
+        self.guiroot.destroyGUIManager(self.mGUIManager)
+        del self.guiroot
+        del self.mGUIManager
+        sf.Application.__del__(self)
 
-# #     def _setUpResources(self):
-# #         """This sets up Ogre's resources, which are different for QuickGUI
-# #         """
-# #         config = Ogre.ConfigFile()
-# #         config.load('resources.cfg.quickgui' ) 
-# #         seci = config.getSectionIterator()
-# #         while seci.hasMoreElements():
-# #             SectionName = seci.peekNextKey()
-# #             Section = seci.getNext()
-# #             for item in Section:
-# #                 Ogre.ResourceGroupManager.getSingleton().\
-# #                     addResourceLocation(item.value, item.key, SectionName)
+    def _setUpResources(self):
+        gui.registerScriptReader();
+        sf.Application._setUpResources ( self )
                     
     ## Just override the mandatory create scene method
     def _createScene(self):
@@ -171,7 +167,7 @@ class QuickGUIDemoApp (sf.Application):
         
         ##  This ensures the camera doesn't move when we move the cursor.
         #3 However we do the same thing by setting MenuMode to True in the frameListerner further down
-# # #         self.camera.setAutoTracking(True, robotNode)
+        self.camera.setAutoTracking(True, robotNode)
 
         plane = Ogre.Plane( Ogre.Vector3().UNIT_Y, 0 )
         Ogre.MeshManager.getSingleton().createPlane("ground",
@@ -207,13 +203,14 @@ class QuickGUIDemoApp (sf.Application):
         v.setOverlaysEnabled( False )
         v.setClearEveryFrame( True )
         v.setBackgroundColour( Ogre.ColourValue().Black )
-        
+
         self.guiroot = gui.Root()
-#         gui.SkinSetManager.getSingleton().loadSkin("qgui",gui.SkinSet.IMAGE_TYPE_PNG,self.ResourceGroup);
+        gui.SkinTypeManager.getSingleton().loadTypes()
         self.desc = gui.GUIManagerDesc()
-	
+    
         self.mGUIManager = gui.Root.getSingleton().createGUIManager(self.desc)
         self.mGUIManager.setSceneManager(self.sceneManager) 
+        self.mGUIManager.viewport = self.camera.getViewport()
 
         self.createGUI()
         
@@ -229,6 +226,20 @@ class QuickGUIDemoApp (sf.Application):
         Point = gui.Point
         Size = gui.Size
         self.mSheet = self.mGUIManager.getDefaultSheet()
+        descFactory = gui.FactoryManager.getSingleton().getDescFactory()
+        widgetFactory = gui.FactoryManager.getSingleton().getWidgetFactory()
+        print descFactory
+        print dir (descFactory)
+        print dir (gui.FactoryManager.getSingleton())
+        print dir (widgetFactory)
+        wd = descFactory.getInstance("DefaultWindowDesc")
+        pd = descFactory.getInstance<PanelDesc>("DefaultPanelDesc")
+        
+        print wd
+        print pd
+        return
+
+        
 #         self.mSheet.setDefaultFont ("acmesa.12")
                     
         ## Main Menu and it's MenuLists
@@ -280,50 +291,52 @@ class QuickGUIDemoApp (sf.Application):
 #         toggleRenderStats.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_toggleDebugDisplay))
 # 
         ## Logos
-        logoImage = self.mSheet.createImage()
+        imdesc = gui.ImageDesc("imageone")
+        logoImage = self.mSheet.createImage(imdesc)
 #         logoImage.setDimensions(Rect(16,42,240,180))
         logoImage.setDimensions(Rect(-240,-180,1,1))
 
-        screenLeftBottom =gui.Point (16, 42)
-        screenLeftOffBottom = gui.Point (-240, -180)
-        self.me1 = gui.MoveEffect(logoImage, 3, screenLeftOffBottom, screenLeftBottom, 1)
-        self.mGUIManager.addEffect(self.me1)
-        screenSize =gui.Size(240, 180)
-        noSize =gui.Size(1, 1)
-        self.se1 = gui.SizeEffect(logoImage, 3, noSize, screenSize, 1)
-        self.mGUIManager.addEffect(self.se1)
-        self.ae1 = gui.AlphaEffect(logoImage, 3, 0, 1, 3)
-        self.mGUIManager.addEffect( self.ae1)
+# #         screenLeftBottom =gui.Point (16, 42)
+# #         screenLeftOffBottom = gui.Point (-240, -180)
+# #         self.me1 = gui.MoveEffect(logoImage, 3, screenLeftOffBottom, screenLeftBottom, 1)
+# #         self.mGUIManager.addEffect(self.me1)
+# #         screenSize =gui.Size(240, 180)
+# #         noSize =gui.Size(1, 1)
+# #         self.se1 = gui.SizeEffect(logoImage, 3, noSize, screenSize, 1)
+# #         self.mGUIManager.addEffect(self.se1)
+# #         self.ae1 = gui.AlphaEffect(logoImage, 3, 0, 1, 3)
+# #         self.mGUIManager.addEffect( self.ae1)
              
-        
-        logoLabel = self.mSheet.createLabel()
+        l = gui.LabelDesc("label")
+        logoLabel = self.mSheet.createLabel(l)
 #         logoLabel.setDimensions(Rect(60,240,120,30))
         logoLabel.setPosition( gui.Point(62,240))
         logoLabel.setText("Click Me >")
-        self.imageToggleButton = self.mSheet.createNStateButton()
-        self.imageToggleButton.setDimensions(Rect(180,230,40,40))
-        self.imageToggleButton.addState("unchecked","qgui",".checkbox.unchecked")
-        self.imageToggleButton.addState("checkbox check","qgui",".checkbox.checked")
-        self.imageToggleButton.addState("check","qgui",".checked")
-        
+# #         self.imageToggleButton = self.mSheet.createNStateButton()
+# #         self.imageToggleButton.setDimensions(Rect(180,230,40,40))
+# #         self.imageToggleButton.addState("unchecked","qgui",".checkbox.unchecked")
+# #         self.imageToggleButton.addState("checkbox check","qgui",".checkbox.checked")
+# #         self.imageToggleButton.addState("check","qgui",".checked")
+# #         
         ## RTT Example Use
-        rttImage = self.mSheet.createImage()
+        i = gui.ImageDesc ( "secondone")
+        rttImage = self.mSheet.createImage(i)
         rttImage.setDimensions(Rect(600,42,160,90))
-        rttImage.setTexture("RttTex")
+# #         rttImage.setTexture("RttTex")
 #         rttImage.setBorderWidth(10)
 
-        ninjaWindow = self.mSheet.createWindow()
-        ninjaWindow.hideTitlebar()
-        ninjaWindow.setDimensions(Rect(600,150,160,120))
-
-        animToggleButton = ninjaWindow.createNStateButton()
-        animToggleButton.setDimensions(Rect(8,7.5,144,30))
-        ## populate NStateButton with States - robot animations
+# #         ninjaWindow = self.mSheet.createWindow()
+# #         ninjaWindow.hideTitlebar()
+# #         ninjaWindow.setDimensions(Rect(600,150,160,120))
+# # 
+# #         animToggleButton = ninjaWindow.createNStateButton()
+# #         animToggleButton.setDimensions(Rect(8,7.5,144,30))
+# #         ## populate NStateButton with States - robot animations
         casi = self.robot.getAllAnimationStates().getAnimationStateIterator()
         state = 0
         while( casi.hasMoreElements() ):
             animName = casi.getNext().getAnimationName()
-            animToggleButton.addState("State"+str(state),"qgui",".button",animName)
+# #             animToggleButton.addState("State"+str(state),"qgui",".button",animName)
             if state == 0:
                 self.robotAnimationState = self.robot.getAnimationState(animName)
                 self.robotAnimationState.setEnabled(True)
@@ -332,7 +345,7 @@ class QuickGUIDemoApp (sf.Application):
             state+=1
 #         animToggleButton.addOnStateChangedEventHandler(self.evtHndlr_changeAnimations)
 #         animToggleButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_changeAnimations) )
-        animToggleButton.addOnStateChangedEventHandler(self.MakeCallback(self.evtHndlr_changeAnimations) )
+# #         animToggleButton.addOnStateChangedEventHandler(self.MakeCallback(self.evtHndlr_changeAnimations) )
         
 #         hurtButton = ninjaWindow.createButton()
 #         hurtButton.setDimensions(Rect(8,45,144,30))
@@ -372,20 +385,21 @@ class QuickGUIDemoApp (sf.Application):
 #         self.lifeBarValueLabel.appearOverWidget(self.lifeBar)
 # 
         ## Mouse Over window
-        mouseOverWindow = self.mSheet.createWindow()
-        mouseOverWindow.setDimensions(Rect(480,420,320,60))
-        mouseOverWindow.hideTitlebar()
-        
-        mouseOverLabel = mouseOverWindow.createLabel()
-        mouseOverLabel.setDimensions(Rect(0,0,320,30))
-        mouseOverLabel.setText("Mouse Over Widget:")
-        s = mouseOverLabel.getSize() 
-        self.mouseOverTB = mouseOverWindow.createTextBox()
-        self.mouseOverTB.setDimensions(Rect(0,s.height,320,30))
-        self.mouseOverTB.setReadOnly(True)
-
-        tb = mouseOverWindow.createTextBox("DebugTextBox")
-        tb.setDimensions(Rect(0,60,320,30))
+# #         mouseOverWindow = self.mSheet.createWindow()
+# #         mouseOverWindow.setDimensions(Rect(480,420,320,60))
+# #         mouseOverWindow.hideTitlebar()
+# #         
+# #         mouseOverLabel = mouseOverWindow.createLabel()
+# #         mouseOverLabel.setDimensions(Rect(0,0,320,30))
+# #         mouseOverLabel.setText("Mouse Over Widget:")
+# #         s = mouseOverLabel.getSize() 
+        self.mouseOverTB=None    
+# #         self.mouseOverTB = mouseOverWindow.createTextBox()
+# #         self.mouseOverTB.setDimensions(Rect(0,s.height,320,30))
+# #         self.mouseOverTB.setReadOnly(True)
+# # 
+# #         tb = mouseOverWindow.createTextBox("DebugTextBox")
+# #         tb.setDimensions(Rect(0,60,320,30))
 
 #         ## Login Portion
 #         l=self.mSheet.createLabel()
