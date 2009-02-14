@@ -22,6 +22,7 @@ sys.path.append( os.path.join( '..', '..' ) )
 #add common utils to the pass
 sys.path.append( '..' )
 sys.path.append( '.' )
+import re
 
 import environment
 import common_utils
@@ -45,6 +46,11 @@ import common_utils.extract_documentation as exdoc
 import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
 from common_utils import docit
+
+# override standard pretty name function
+from pyplusplus.decl_wrappers import algorithm
+algorithm.create_valid_name = common_utils.PO_create_valid_name 
+
 
 MAIN_NAMESPACE = ''
 
@@ -112,6 +118,8 @@ def ManualExclude ( mb ):
             ,'::btMultiSapBroadphase::quicksort'
             ,'::btQuantizedBvh::walkRecursiveQuantizedTreeAgainstQuantizedTree'
             ,'::btSequentialImpulseConstraintSolver::resolveSplitPenetrationImpulseCacheFriendly'       
+            
+            ,'::btCollisionShape::getName'
             ]
     for e in excludes:
         print "excluding function", e
@@ -136,6 +144,8 @@ def ManualExclude ( mb ):
             ,'::btAlignedAllocator< btMultiSapBroadphase::btMultiSapProxy*, 16u >'
             ,'::btAlignedAllocator< unsigned short, 16u >'
             ,'::btAlignedAllocator< unsigned int, 16u >'
+            ,'::btAlignedAllocator< void*, 16u >'
+            ,'::btAlignedObjectArray< void* >'
             ,'::btAlignedObjectArray< btMultiSapBroadphase::btBridgeProxy* >'
             ,'::btAlignedObjectArray< btMultiSapBroadphase::btMultiSapProxy* >'
             ,'::btRaycastVehicle'
@@ -310,7 +320,6 @@ def AutoFixes ( mb, MAIN_NAMESPACE ):
     elif os.name =='posix':
         Fix_Posix( mb )
         
-    common_utils.Auto_Document( mb, MAIN_NAMESPACE )
         
  
 ###############################################################################
@@ -434,6 +443,8 @@ def generate_code():
         if cls.name not in NoPropClasses:
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
             
+    common_utils.Auto_Document( mb, MAIN_NAMESPACE )
+            
     ## add additional version information to the module to help identify it correctly 
     common_utils.addDetailVersion ( mb, environment, environment.bullet )
                                       
@@ -442,6 +453,9 @@ def generate_code():
     # Creating the code. After this step you should not modify/customize declarations.
     #
     ##########################################################################################
+# #     extractor = exdoc.doc_extractor( "Ogre" ) 
+# #     mb.build_code_creator (module_name='_ogre_' , doc_extractor= extractor )
+
     extractor = exdoc.doc_extractor() # I'm excluding the UTFstring docs as lots about nothing 
     mb.build_code_creator (module_name='_bullet_' , doc_extractor= extractor )
     

@@ -7,14 +7,25 @@ import subprocess
 import md5
 from pygccxml import declarations
 from pyplusplus.decl_wrappers import property_t
+
 from pyplusplus import function_transformers as ft
+from pyplusplus.function_transformers import transformers as transformers
+
 from pyplusplus.module_builder import call_policies
 
+
 import time
-
-
 import var_checker as varchecker
 import ogre_properties as ogre_properties
+
+import PO_FuncTransform
+
+def input_c_string( *args, **keywd ):
+    def creator( function ):
+        return PO_FuncTransform.input_c_string_t( function, *args, **keywd )
+    return creator
+    
+ft.input_c_string = input_c_string
 
 def configure_shared_ptr( mb ):
     exposer = shared_ptr.exposer_t( mb )
@@ -100,6 +111,43 @@ class decl_starts_with (object):
     def __call__ (self, decl):
         return self.prefix in decl.name
 
+# 
+# an alterate to the Py++ unique name generator that makes (imho) nicer names
+#
+## TO USE:
+# from pyplusplus.decl_wrappers import algorithm
+# algorithm.create_valid_name = common_utils.PO_create_valid_name   
+#
+    
+import re        
+def PO_create_valid_name(name):
+    """Create valid name\\Python identifier from a string
+    As input this functions takes valid C++ name\identifier and replaces all invalid
+    characters. 
+    Invalid characters are introduced by a template instantiation.
+    """
+    __RE_VALID_IDENTIFIER = re.compile( r"[_a-z]\w*", re.I | re.L | re.U )
+    match_found = __RE_VALID_IDENTIFIER.match(name)
+    if match_found and ( match_found.end() - match_found.start() == len(name) ):
+        return name
+    invalids='>,: \t&()[]=.$'  
+    upper=False
+    ret = []
+    for c in name:
+        if c not in invalids:
+            if upper:
+                c = c.upper()
+                upper = False
+            if c == '*':
+                c = 'Ptr' 
+            elif c == '<':
+                c = '_'                               
+            ret.append(c)
+        else:
+            upper = True               
+    retstr = ''.join(ret)                         
+    return retstr
+            
 
 ## Lets go looking for 'private' OGRE classes as defined by comments etc in the include files
 class private_decls_t:
@@ -297,12 +345,23 @@ def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[]):
                             or declarations.is_void(rawarg)\
                             or arg.type.decl_string in special_vars:
                         if declarations.is_pointer(arg.type):   #we convert any pointers to unsigned int's
-                            trans.append( ft.modify_type(arg_position,_ReturnUnsignedInt ) )
-                            desc = desc +"Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
-                                arg.type.decl_string + " ) takes a CTypes.addressof(xx). \\n"
-                            ctypes_conversion = True                                
-                            ctypes_arg = arg.type.decl_string.split()[0]
-                            ft_type = 'CTYPES'
+                            # now look to see if it's a char * and if so we treat it as a string..
+# #                             print "**" , declarations.remove_alias( rawarg ), declarations.type_traits.create_cv_types( declarations.cpptypes.char_t())
+                            if declarations.remove_alias( rawarg ) in declarations.type_traits.create_cv_types( declarations.cpptypes.char_t() ): 
+                                print "MATCHED"
+                                trans.append( ft.input_c_string(arg_position,256 ) )
+                                desc = desc +"Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
+                                    arg.type.decl_string + " ) takes a python string. \\n"
+                                ctypes_conversion = True                                
+                                ctypes_arg = arg.type.decl_string.split()[0]
+                                ft_type = 'CTYPES'
+                            else:
+                                trans.append( ft.modify_type(arg_position,_ReturnUnsignedInt ) )
+                                desc = desc +"Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
+                                    arg.type.decl_string + " ) takes a CTypes.addressof(xx). \\n"
+                                ctypes_conversion = True                                
+                                ctypes_arg = arg.type.decl_string.split()[0]
+                                ft_type = 'CTYPES'
                         elif declarations.is_reference(arg.type)and not declarations.is_const(declarations.remove_reference( arg.type)):  # seen functions passing const ref's 
                             trans.append( ft.inout(arg_position ) )
                             desc = desc + "Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\

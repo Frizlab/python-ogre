@@ -350,6 +350,10 @@ void Canvas::_updateRenderQueue(Ogre::RenderQueue* queue)
 	queue->addRenderable(this, renderQueueID);
 }
 
+void Canvas::visitRenderables(Renderable::Visitor* visitor, bool debugRenderables)
+{
+};
+
 void Canvas::setVisible(bool visible)
 {
     mVisible = visibility = visible;

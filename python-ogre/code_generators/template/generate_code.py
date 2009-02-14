@@ -12,6 +12,11 @@
 
 
 import os, sys, time, shutil
+try:
+   import psyco
+   psyco.full()
+except ImportError:
+   pass
 
 #add environment to the path
 sys.path.append( os.path.join( '..', '..' ) )
@@ -25,11 +30,13 @@ import customization_data
 import hand_made_wrappers
 
 
+import pygccxml
 from pygccxml import parser
 from pygccxml import declarations
 from pyplusplus import messages
 from pyplusplus import module_builder
 from pyplusplus import decl_wrappers
+from pyplusplus.code_creators import include
 
 from pyplusplus import function_transformers as ft
 from pyplusplus.module_builder import call_policies
@@ -42,6 +49,11 @@ import common_utils.extract_documentation as exdoc
 import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
 from common_utils import docit
+
+# override standard pretty name function
+from pyplusplus.decl_wrappers import algorithm
+algorithm.create_valid_name = common_utils.PO_create_valid_name 
+
 
 MAIN_NAMESPACE = ''
 
@@ -122,7 +134,6 @@ def AutoFixes ( mb, MAIN_NAMESPACE ):
     # Functions that have void pointers in their argument list need to change to unsigned int's  
     pointee_types=[]
     ignore_names=[]
-    common_utils.Fix_Void_Ptr_Args  ( main_ns ) # , pointee_types, ignore_names )
 
     # and change functions that return a variety of pointers to instead return unsigned int's
     pointee_types=[]
@@ -138,7 +149,6 @@ def AutoFixes ( mb, MAIN_NAMESPACE ):
     elif os.name =='posix':
         Fix_Posix( mb )
         
-    common_utils.Auto_Document( mb, MAIN_NAMESPACE )
         
  
 ###############################################################################
@@ -238,6 +248,9 @@ def generate_code():
     ManualTransformations ( mb )
     AutoFixes ( mb, MAIN_NAMESPACE )
     ManualFixes ( mb )
+    
+    common_utils.Auto_Functional_Transformation ( main_ns ) #, special_vars=[]  )
+   
     #
     # We need to tell boost how to handle calling (and returning from) certain functions
     #
@@ -253,6 +266,9 @@ def generate_code():
         if cls.name not in NoPropClasses:
             cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
             
+    # THIS MUST BE AFTER Auto_Functional_Transformation
+    common_utils.Auto_Document( mb, MAIN_NAMESPACE )
+    
     ## add additional version information to the module to help identify it correctly 
     common_utils.addDetailVersion ( mb, environment, environment.PROJECT )
 

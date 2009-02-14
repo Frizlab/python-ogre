@@ -43,8 +43,10 @@ except ImportError, e:
   from pyplusplus.module_creator import sort_algorithms
 from pyplusplus.code_creators import include
 
-import common_utils.extract_documentation as exdoc
-#import testExtract as exdoc
+#import common_utils.extract_documentation as exdoc
+import common_utils.sphinx_extract as exdoc
+
+
 import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
 from common_utils import docit

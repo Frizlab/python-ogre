@@ -1138,7 +1138,7 @@ class ogreode:
 class quickgui:
     active = True
     pythonModule = True
-    version="8_12"
+    version="9_02"
     name ='quickgui'
     parent="ogre/gui"
     ## note the defined for _QuickGUIExport forces non dll usage
@@ -1947,6 +1947,28 @@ class canvas:
     descText = "Canvas GUI System"
     descLink = "http://www.ogre3d.org/phpBB2/viewtopic.php?t=41365&postdays=0&postorder=asc&start=0&sid=6578000180a935734beb03d548b900a4"
 
+class raknet:
+    active = False
+    pythonModule = True
+    version="3.4"
+    name='raknet'
+    parent="ogre/addons"
+    cflags = ""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_raknet
+                    , Config.PATH_INCLUDE_Ogre
+                    ]
+    lib_dirs = [boost.PATH_LIB
+                ,Config.PATH_LIB_Ogre_OgreMain
+                , Config.PATH_LIB_Ogre_Dependencies 
+                , Config.PATH_LIB_raknet
+                ]
+    CheckIncludes=[]
+    libs=[  boost.lib, 'OgreMain', 'RakNetDLL'] 
+    ModuleName="raknet"
+    descText = "RakNet MultiPlayer Gaming System"
+    descLink = "http://www.jenkinssoftware.com/"
+    
 ############################################################################################
 
 ## Here is the master list....
@@ -1990,6 +2012,7 @@ projects = {
     , 'hikari' : hikari
     , 'mygui' : mygui
     , 'canvas' : canvas
+    , 'raknet' : raknet
 }
 
 #

@@ -248,6 +248,8 @@ public:
 	void _updateRenderQueue(Ogre::RenderQueue* queue);
 	void setVisible(bool visible);
 	bool isVisible() const;
+	void visitRenderables(Renderable::Visitor* visitor, bool debugRenderables = false);
+
 
 	// Inherited from Ogre::RenderTargetListener
 	void preRenderTargetUpdate(const Ogre::RenderTargetEvent& evt);

@@ -13,3 +13,8 @@ sizeof ( btDynamicsWorldType );
 sizeof (  btAlignedObjectArray<btWheelInfo> );
 sizeof ( btBroadphaseInterface );
 sizeof ( btCollisionObject );
+sizeof ( btRaycastVehicle );
+
+#ifdef WIN32 
+    sizeof ( Win32ThreadSupport::btSpuStatus );
+#endif    

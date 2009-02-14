@@ -87,6 +87,10 @@ PATH_hikari = os.path.join(PATH_THIRDPARTY, 'Hikari' ) #BASE_DIR, 'hikari', 'hik
 PATH_mygui = os.path.join(BASE_DIR, 'MyGUI_2.2.0_RC1_source' )
 PATH_canvas = os.path.join(PATH_THIRDPARTY, 'canvas')
 
+PATH_raknet = os.path.join(BASE_DIR, 'raknet')
+PATH_LIB_raknet = os.path.join ( PATH_raknet, 'Lib')
+PATH_INCLUDE_raknet = os.path.join ( PATH_raknet, 'Source')
+
 # it's time for the SDK version
 if SDK:
     PATH_CEGUI =        PATH_Ogre

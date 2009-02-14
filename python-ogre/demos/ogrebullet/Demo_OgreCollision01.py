@@ -9,8 +9,10 @@ sys.path.insert(0,'..')
 import PythonOgreConfig
 
 import ogre.renderer.OGRE as ogre
-import ogre.physics.OgreBulletC as bulletC
 import ogre.physics.bullet as bullet
+import ogre.physics.OgreBulletC as bulletC
+import ogre.physics.OgreBulletD as bulletD
+
 import SampleFramework as sf
 import random, sys
 from math import *
@@ -178,7 +180,8 @@ class OgreCollideListener(sf.FrameListener):
                         
         self.entitiesInstanced+=1
         return defaultBody;
-    
+        
+  
             
     def CreateBoxes (self, num):
         self.numBoxes=num
@@ -219,7 +222,7 @@ class OgreCollideListener(sf.FrameListener):
             
 
             if BULLET:
-                shape = bulletC.MeshToShapeConverter( entity )
+                shape = bulletC.StaticMeshToShapeConverter( entity )
                 if entityname == 'WoodPalletNONE':
                     shape = shape.createBox()
                 else:
@@ -229,10 +232,13 @@ class OgreCollideListener(sf.FrameListener):
                 bBody = bulletC.Object( "BulletObject" + str(i), self.parent.world, True)
                 print "Setting bbody shape", bBody,shape, position, q
                 print dir ( bBody )
-                bBody.setShape ( shape, position, q)
+                print "Calling setShape"
+# #                 bBody.setShape ( shape, position, q)
+                print "\n1111"
                 node = bBody.getRootNode() ##self.sceneManager.getRootSceneNode().createChildSceneNode()
                 node.attachObject(entity)
                 self.parent.world.addObject ( bBody )
+                print "ADDED SHAPE"
             node.setScale (size.x * 0.1,size.y * 0.1,size.z * 0.1) 
             node.setPosition (position)
             # we need access to the entity and nodes to reset the material           

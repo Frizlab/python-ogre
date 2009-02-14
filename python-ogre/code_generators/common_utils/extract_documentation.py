@@ -43,6 +43,8 @@ class doc_extractor:
                 basedoc = declaration.documentation + "\\\n"
         else:
             basedoc = ""
+#         print declaration            
+#         print "BASEDOC", basedoc            
         ## note the gccxml uses a 1 based line scheme whereas we are using python arrays - 0 based
         ## so we need to subtract 1 from the line number.
         
@@ -61,7 +63,8 @@ class doc_extractor:
                         retvalue = '"' + basedoc +  str_[:-2] + '"' # remove the \n from the single line comment
                     else:
                         retvalue = '"' + str_[:-2] + '"' # remove the \n from the single line comment
-                    #print "Extracted Doc String (short) ", retvalue
+#                     print "Extracted Doc String (short) ", retvalue
+                    
                     return retvalue
                     
             ## if that didn't work we'll look for a block of comments
@@ -99,7 +102,7 @@ class doc_extractor:
             doc_lines = removeBlankLines ( doc_lines )
             doc_lines = removeLeadingSpace ( doc_lines )
             doc_lines = wrapLines ( doc_lines )
-            #print "Extracted Doc String for:",  declaration, "[", len(doc_lines),"]"
+#             print "Extracted Doc String for:",  declaration, "[", len(doc_lines),"]"
             ## we need to cope with strings longer than 2048 for MSVC
             ret =  "\\\n".join(doc_lines) 
             if len ( ret ) > 1700:  ## just to be safe and adjust for line end chars etc..
@@ -125,9 +128,11 @@ class doc_extractor:
 # #             self.outfile.write("***============================*****\n" + declaration.decl_string + "\n")
 # #             self.outfile.write( str(len(basedoc)) + "  " + str(len(newret)) + "\n" )
 # #             self.outfile.write( newret )      
-            
-            return '"' + basedoc + newret.lstrip() + '"'            
-        else: return ""
+            retval ='"' + basedoc + newret.lstrip() + '"' 
+#             print "RETURNING:", retval
+            return retval             
+        else: 
+            return ""
 
 #===============================================================
 def removeBlankLines ( docin ):
