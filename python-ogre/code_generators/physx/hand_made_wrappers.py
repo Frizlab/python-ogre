@@ -298,7 +298,8 @@ PointerDec=\
     %(returnbase)s * Var_%(function_name)s = me.%(function_name)s();
     
     for (index=0;index<size;index++ ) {
-        outlist.append ( *Var_%(function_name)s++ );
+        outlist.append ( boost::python::object( boost::ref(*Var_%(function_name)s++)) );
+        //outlist.append ( *Var_%(function_name)s++ );
         }
     return outlist;   
     }

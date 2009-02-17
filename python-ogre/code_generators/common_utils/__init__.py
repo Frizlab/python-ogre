@@ -347,21 +347,21 @@ def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[]):
                         if declarations.is_pointer(arg.type):   #we convert any pointers to unsigned int's
                             # now look to see if it's a char * and if so we treat it as a string..
 # #                             print "**" , declarations.remove_alias( rawarg ), declarations.type_traits.create_cv_types( declarations.cpptypes.char_t())
-                            if declarations.remove_alias( rawarg ) in declarations.type_traits.create_cv_types( declarations.cpptypes.char_t() ): 
-                                print "MATCHED"
-                                trans.append( ft.input_c_string(arg_position,256 ) )
-                                desc = desc +"Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
-                                    arg.type.decl_string + " ) takes a python string. \\n"
-                                ctypes_conversion = True                                
-                                ctypes_arg = arg.type.decl_string.split()[0]
-                                ft_type = 'CTYPES'
-                            else:
-                                trans.append( ft.modify_type(arg_position,_ReturnUnsignedInt ) )
-                                desc = desc +"Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
-                                    arg.type.decl_string + " ) takes a CTypes.addressof(xx). \\n"
-                                ctypes_conversion = True                                
-                                ctypes_arg = arg.type.decl_string.split()[0]
-                                ft_type = 'CTYPES'
+#                             if declarations.remove_alias( rawarg ) in declarations.type_traits.create_cv_types( declarations.cpptypes.char_t() ): 
+#                                 print "MATCHED"
+#                                 trans.append( ft.input_c_string(arg_position,256 ) )
+#                                 desc = desc +"Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
+#                                     arg.type.decl_string + " ) takes a python string. \\n"
+#                                 ctypes_conversion = True                                
+#                                 ctypes_arg = arg.type.decl_string.split()[0]
+#                                 ft_type = 'CTYPES'
+#                             else:
+                             trans.append( ft.modify_type(arg_position,_ReturnUnsignedInt ) )
+                             desc = desc +"Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
+                                 arg.type.decl_string + " ) takes a CTypes.addressof(xx). \\n"
+                             ctypes_conversion = True                                
+                             ctypes_arg = arg.type.decl_string.split()[0]
+                             ft_type = 'CTYPES'
                         elif declarations.is_reference(arg.type)and not declarations.is_const(declarations.remove_reference( arg.type)):  # seen functions passing const ref's 
                             trans.append( ft.inout(arg_position ) )
                             desc = desc + "Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
