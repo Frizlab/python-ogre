@@ -1969,6 +1969,23 @@ class raknet:
     descText = "RakNet MultiPlayer Gaming System"
     descLink = "http://www.jenkinssoftware.com/"
     
+class doctester:
+    active = False
+    pythonModule = False
+    version="1"
+    name='doctester'
+    parent="ogre/addons"
+    cflags = ""
+    include_dirs = [ Config.PATH_Boost,
+                    Config.PATH_INCLUDE_Ogre
+                    ]
+    lib_dirs = [boost.PATH_LIB
+                ]
+    CheckIncludes=[]
+    libs=[  boost.lib, 'OgreMain'] 
+    ModuleName="doctester"
+    descText = "A test environment for documentation stringa"
+        
 ############################################################################################
 
 ## Here is the master list....
@@ -2013,6 +2030,7 @@ projects = {
     , 'mygui' : mygui
     , 'canvas' : canvas
     , 'raknet' : raknet
+    , 'doctester' : doctester
 }
 
 #

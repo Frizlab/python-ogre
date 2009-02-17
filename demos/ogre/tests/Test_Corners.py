@@ -58,6 +58,17 @@ class TutorialApplication(SampleFramework.Application):
         for vect in bb.allCorners:
             print vect.x, vect.y, vect.z  
         print "\n\n"
+        
+        meshManager = ogre.MeshManager.getSingleton()
+        me = meshManager.load("cube.mesh", "General") ## , ogre.HardwareBuffer.Usage.HBU_STATIC, ogre.HardwareBuffer.Usage.HBU_STATIC, True, True)
+        print "mesh", me
+        pSubMesh = me.getSubMesh(0)
+        print "submesh", pSubMesh
+        elem = pSubMesh.vertexData.vertexDeclaration.findElementBySemantic(ogre.VES_POSITION)      
+        vbuf = pSubMesh.vertexData.vertexBufferBinding.getBuffer(elem.getSource())
+        print elem, vbuf
+        print "vbuf.isSystemMemory()=", vbuf.isSystemMemory()
+        print "vbuf.hasShadowBuffer()=", vbuf.hasShadowBuffer()
         sys.exit()
 
 if __name__ == '__main__': 
