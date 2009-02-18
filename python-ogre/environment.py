@@ -1968,6 +1968,8 @@ class raknet:
     ModuleName="raknet"
     descText = "RakNet MultiPlayer Gaming System"
     descLink = "http://www.jenkinssoftware.com/"
+#     CCFLAGS = ' -D_RAKNET_DLL_ '
+
     
 class doctester:
     active = False

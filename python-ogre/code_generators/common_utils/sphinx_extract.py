@@ -1,5 +1,5 @@
 import pyplusplus.decl_wrappers  as dw
-
+TABSIZE=3
 
 def getSignature ( dec ):
     """ parse the arguments and return a nice string """
@@ -17,6 +17,21 @@ def getSignature ( dec ):
     else:
         return " ", param # in case there aren't any arguments        
     
+def cleanString ( docin, indent = 0 ):
+   s = docin.strip()
+   if s.startswith ('///') or s.startswith ('/**'):
+      s = s[3:].strip()
+   elif s.startswith ('/*') or s.startswith ('//'):
+      s = s[2:].strip()
+      
+   if len(s) < 1:  # it might have been a leading comment on a blank line
+      return ''         
+   if s.endswith ( '*/'):
+      if s.strip() == '*/':
+         return ''
+      s = s[:-2].rstrip()
+   s = s.rstrip()   ## remove the trailing new line...   
+   return s   
                     
 class doc_extractor:
    """
@@ -29,29 +44,57 @@ class doc_extractor:
       self.source = None
       self.startswith = startswith
       self.outfile = open ( outfile, 'w' ) # create the file for writing (truncates existing)
-   
+
+   def getDocString ( self ):
+      maxBackup = 5 # look up to 5 lines back for a comment/docstring
+      end = self.declaration.location.line - maxBackup
+      if end < 0: end = 0
+      start = self.declaration.location.line+1
+      if start < 0: start = 0
+      
+      ret = []
+#       print start, end, self.declaration, self.declaration.location.line
+      for lcount in xrange(start, end , -1):
+         line = self.source[lcount].strip()
+#          print "Checking:", line
+         if line[:2] == '//': # really should care about '///' but we'll use '//'
+            while self.source[lcount].strip()[:2] == '//' and lcount >0:
+               ret.insert ( 0, self.source[lcount] ) # add doc string to return attay
+               lcount -= 1
+            break  
+         elif line[-2:]=='*/':  
+#             print "line is end of comment"
+            if line[:2] == '/*':  # it's a one line comment
+#                print "one line comment"
+               ret.insert ( 0, self.source[lcount] )
+               break
+            else:               
+               while not self.source[lcount].strip()[:2] == '/*' and lcount >0:
+#                   print "Inserting", self.source[lcount]
+                  ret.insert ( 0, self.source[lcount] ) # add doc string to return attay
+                  lcount -= 1
+               ret.insert ( 0, self.source[lcount] ) # add doc string to return attay
+               break
+      if len(ret)>0:            
+         if ret[0].strip() == '//' or ret[0].strip()=='/*':
+            del ret[0]
+      if len(ret)>0:            
+         if ret[-1].strip() == '//' or ret[-1].strip()=='*/':
+            del ret[-1]
+      s='                     '
+      maxspace = 0
+      for x in range ( len (ret)):
+         ret[x] = ret[x].replace('\t', s[:TABSIZE]) 
+      return ret
+                                      
+            
+         
    def cleanEntireDoc ( self, docin ):
       """ 
       General cleaup routine - replace any 'bad' characters, manage line lengths
       set leading spaces for appropiate indent etc
       """
      
-   def cleanString ( self, docin, indent = 0 ):
-      s = docin.strip()
-      if s.startswith ('///') or s.startswith ('/**'):
-         s = s[3:].strip()
-      elif s.startswith ('/*') or s.startswith ('//'):
-         s = s[2:].strip()
-         
-      if len(s) < 1:  # it might have been a leading comment on a blank line
-         return ''         
-      if s.endswith ( '*/'):
-         if s.strip() == '*/':
-            return ''
-         s = s[:-2].rstrip()
-      s = s.rstrip()   ## remove the trailing new line...   
-      s = 
-      return s   
                
    def getHeaderDoc ( self, declaration ):
       """
@@ -70,11 +113,7 @@ class doc_extractor:
          # lets not worry about 'small' files as theres probalby an issue
          if len ( self.source ) < 5 :
             return {}
-         
-         # insert a few leading lines so we don't have to deal with range issues later
-         for x in range ( 4 ):  
-            self.source.insert(0, " ")
-            
+                  
       ## note the gccxml uses a 1 based line scheme whereas we are using python arrays - 0 based
       ## so we need to subtract 1 from the line number.
       ##
@@ -85,52 +124,14 @@ class doc_extractor:
       ##
       ## lets look for a single comment '///'  We'll try upto 2 lines above
       
-      retDoc = []  
-      for lcount in xrange(declaration.location.line-1, declaration.location.line-4 , -1):
-         line = self.source[lcount]
-         if line.lstrip()[:2] == '//':   # really should care about '///' but we'll use '//'
-            ## lets check if there are 2 lines of single comments and use then
-            line2 = self.source[lcount-1]
-            if line2.lstrip()[:2] == '//':   # really should care about '///' but we'll use '//'
-               retDoc.append ( self.cleanString(line2) )
-            retDoc.append ( self.cleanString(line) )
-            print retDoc
-            return retDoc
+      d = self.getDocString ()
+      print "DOC:", d  
                   
-      ## if that didn't work we'll look for a block of comments
-      # lets find a '*/' 
-      # declaration.location.line-1 is the acutal dec which is 'either' one line about OR the brace...
-      pos = declaration.location.line
-      comment = False
-      for r in range (pos, pos-3, -1 ):
-         s = self.source[r][:-1]
-         if s.endswith ('*/'):
-            comment = True
-            commentEnd = r
-
-      if comment:
-         Found = False
-         # now lets back up to look for the start of the cooment  
-         for r in range ( commentEnd, 0, -1 ):
-            if not Found :  # if there isn't a closing brace we are in trouble here :)
-               s = self.source[r].lstrip()
-               if s.startswith ('/*'):
-                  commentIndent = s.find ('/*')  
-                  commentStart = r
-                  Found = True
-         if Found:
-            print commentStart, commentEnd
-            for r in range ( commentStart, commentEnd+1 ):
-               s = self.cleanString(self.source[r], commentIndet)
-               if s:
-                  retDoc.append ( s )
-            print retDoc      
-#             print "Found Comment", commentEnd, commentStart      
-#       print "**", self.source [declaration.location.line]
       
       
       
    def __call__(self, declaration):
+      self.declaration = declaration
       self.getHeaderDoc ( declaration )       
       
 # # # #       for lcount in xrange(declaration.location.line-1, -1, -1):

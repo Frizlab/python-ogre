@@ -30,6 +30,8 @@ namespace DocTester
         int mLogManager;
 
 		/// Are we initialised yet?
+		
+		
 		bool mIsInitialised;
 
         /** Method reads a plugins configuration file and instantiates all

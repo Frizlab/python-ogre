@@ -23,29 +23,36 @@ def remove_ref_or_ptr( type_ ):
 
 _seq2arr = string.Template( os.linesep.join([
               'int size_$pylist = len ( $pylist );'
-              'pyplus_conv::ensure_uniform_sequence< $type >( $pylist, size_$array_size );'
-            , 'pyplus_conv::copy_sequence( $pylist, pyplus_conv::array_inserter( $native_array, size_$array_size ) );']))
+              ,'if (size_$pylist > $max_size - 1 ) size_$pylist = $max_size - 1; // check max buffer size'
+              ,'$native_pointer = new char [ size_$pylist ];'
+              ,'pyplus_conv::ensure_uniform_sequence< $type >( $pylist, size_$pylist );'
+              ,'pyplus_conv::copy_sequence( $pylist, pyplus_conv::array_inserter( $native_pointer, size_$pylist ) );']))
 
 _seq2vector = string.Template( os.linesep.join([
                  'pyplus_conv::ensure_uniform_sequence< $type >( $pylist );'
-               , 'pyplus_conv::copy_sequence( $pylist, std::back_inserter( $native_array), boost::type< $type >() );']))
+               , 'pyplus_conv::copy_sequence( $pylist, std::back_inserter( $native_pointer), boost::type< $type >() );']))
 
-_arr2seq = string.Template(
-            'pyplus_conv::copy_container( $native_array, $native_array + $array_size, pyplus_conv::list_inserter( $pylist ) );' )
-        
+_arr2seq = string.Template(os.linesep.join([
+            '// set a max inbound string length to ensure some level of saftey'
+            ,'int len_$pylist = strnlen ( $native_pointer, $max_size );'
+            ,'pyplus_conv::copy_container( $native_pointer, $native_pointer + len_$pylist, pyplus_conv::list_inserter( $pylist ) );']))
+    
+_cleanUp = string.Template(  
+            'delete $native_name;' )
+                         
 class input_c_string_t(transformer.transformer_t):
-    """Handles an input array with fixed size.
+    """Handles an input char * as a python list.
 
-    void do_something(double* v) ->  do_something(object v2)
+    void do_something(char * v) ->  do_something(object v2)
 
-    where v2 is a Python sequence
+    where v2 is a Python sequence/string
     """
 
     def __init__(self, function, arg_ref, size):
         """Constructor.
 
-        :param size: The fixed size of the input array
-        :type size: int
+        :param maxsize: The maximum string size we will allow...
+        :type maxsize: int
         """
         transformer.transformer_t.__init__( self, function )
 
@@ -56,35 +63,41 @@ class input_c_string_t(transformer.transformer_t):
             raise ValueError( '%s\nin order to use "input_array" transformation, argument %s type must be a array or a pointer (got %s).' ) \
                   % ( function, self.arg.name, self.arg.type)
 
-        self.array_size = size
+        self.max_size = size
         self.array_item_type = declarations.remove_const( declarations.array_item_type( self.arg.type ) )
-        self.array_item_rawtype = declarations.remove_const( self.arg.type )
+        self.array_item_rawtype = declarations.remove_cv( self.arg.type )
+        self.array_item_rawtype = declarations.pointer_t( self.array_item_type )
+        
 
     def __str__(self):
-        return "input_array(%s,%d)"%( self.arg.name, self.array_size)
+        return "input_array(%s,%d)"%( self.arg.name, self.max_size)
 
     def required_headers( self ):
         """Returns list of header files that transformer generated code depends on."""
         return [ code_repository.convenience.file_name ]
 
     def __configure_sealed(self, controller):
-        global _seq2arr
+        global _seq2arr, _cleanUp
         w_arg = controller.find_wrapper_arg( self.arg.name )
         w_arg.type = declarations.dummy_type_t( "boost::python::object" )
 
         # Declare a variable that will hold the C array...
-        native_array = controller.declare_variable( self.array_item_rawtype
+        native_pointer = controller.declare_variable( self.array_item_rawtype
                                                     , "native_" + self.arg.name
                                                     , '' )
 
         copy_pylist2arr = _seq2arr.substitute( type=self.array_item_type
                                                 , pylist=w_arg.name
-                                                , array_size=self.array_size
-                                                , native_array=native_array )
+                                                , max_size=self.max_size
+                                                , native_pointer=native_pointer )
+
+        cleanUp = _cleanUp.substitute ( native_name =   "native_" + self.arg.name )                                                                                               
 
         controller.add_pre_call_code( copy_pylist2arr )
+        
+        controller.add_post_call_code ( cleanUp )
 
-        controller.modify_arg_expression( self.arg_index, native_array )
+        controller.modify_arg_expression( self.arg_index, native_pointer )
 
     def __configure_v_mem_fun_default( self, controller ):
         self.__configure_sealed( controller )
@@ -94,8 +107,8 @@ class input_c_string_t(transformer.transformer_t):
         pylist = controller.declare_py_variable( declarations.dummy_type_t( 'boost::python::list' )
                                                  , 'py_' + self.arg.name )
 
-        copy_arr2pylist = _arr2seq.substitute( native_array=self.arg.name
-                                                , array_size=self.array_size
+        copy_arr2pylist = _arr2seq.substitute( native_pointer=self.arg.name
+                                                , max_size=self.max_size
                                                 , pylist=pylist )
 
         controller.add_py_pre_call_code( copy_arr2pylist )

@@ -40,7 +40,8 @@ class doc_extractor:
         doc_lines = []
         if declaration.documentation:
             if len(declaration.documentation) > 2:
-                basedoc = declaration.documentation + "\\\n"
+               # remove any exisiting quotes and and a new line
+               basedoc = declaration.documentation.strip('"') + "\\\n"
         else:
             basedoc = ""
 #         print declaration            

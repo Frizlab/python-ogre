@@ -73,11 +73,45 @@ def ManualExclude ( mb ):
         main_ns = global_ns    
     excludes = ['::HTTPConnection::Post'  ## TODO Needs to be handwrapped to be useful
                 #,'::RakPeerInterface::RegisterAsRemoteProcedureCall'
+                # these are missing from source
+                ,'::FileListTransfer::SetIncrementalReadInterface'
+                ,'::NatPunchthrough::ConnectionRequest::GetAddressList'
+                
                 ]
     for e in excludes:
         main_ns.member_functions(e).exclude()
         print "Excluded Function:", e
-                        
+    excludes = ['::ReplicaManager::ParticipantStruct'
+               ,'::RakNet::Connection_RM2'
+               ,'::RakNet::Replica2'
+               ,'::RakNet::ReplicaManager2'
+               ,'::RakNet::AutoRPC'
+               ,'::RakNet::RakString'
+               ]
+    for e in excludes:   
+      try:
+         main_ns.class_(e).exclude()
+         print "Excluded class:", e
+      except:
+         print "Failed to exclude", e   
+         
+         
+    excludes = ['::RakNet::_RakRealloc'
+               ,'::RakNet::_RakMalloc'
+               ,'::RakNet::_RakFree'
+               ]
+    for e in excludes:   
+      try:
+         main_ns.free_function(e).exclude()
+         print "Excluded freefunction:", e
+      except:
+         print "Failed to exclude", e         
+         sys.exit()
+       
+    excludes = ['::CommandParserInterface::VARIABLE_NUMBER_OF_PARAMETERS']
+    for e in excludes:
+      print "Excluding Variable", e
+      main_ns.variable(e).exclude()                    
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 
@@ -98,7 +132,7 @@ def ManualInclude ( mb ):
                 'CommandParserInterface',
 #                 'Connection_RM2',
 #                 'Connection_RM2Factory',
-                'ConnectionGraph',
+#                 'ConnectionGraph',
                 'ConsoleServer',
                 'CSHA1',
                 'DataCompressor',
@@ -114,8 +148,8 @@ def ManualInclude ( mb ):
                 'HTTPConnection',
                 'HuffmanEncodingTree',
                 'IncrementalReadInterface',
-                'LightweightDatabaseClient',
-                'LightweightDatabaseServer',
+#                 'LightweightDatabaseClient',
+#                 'LightweightDatabaseServer',
                 'LinkedList',
                 'List',
                 'LogCommandParser',
@@ -154,22 +188,48 @@ def ManualInclude ( mb ):
                 'SingleProducerConsumer',
                 'StringCompressor',
                 'StringTable',
+                'SystemAddress',
                 'Table',
                 'TableSerializer',
                 'TCPInterface',
                 'TelnetTransport',
                 'ThreadsafePacketLogger',
-                'TransportInterface',
+#                 'TransportInterface',  # only used by commandparser etc and has a send function that needs wrapping
                 'Tree',
                 'WeightedGraph'
+                
+#                 'SystemAddressList', # not in the dll
+                
+                ,'FileListTransferCBInterface'
+#                 ,'RemoteClient'   # send and recv not in dll
+                ,'InternalPacket'
+                ,'ReceiveDownloadCompleteInterface'
+                ,'SendDownloadCompleteInterface'
+                ,'FileListNodeContext'
+                ,'ReceiveConstructionInterface'
+                ,'Packet'
+                ,'SocketDescriptor'
+                ,'FilterSet'
+                ,'NetworkID'
+                ,'RegisteredCommand'
+                ,'RakNetGUID'
+                ,'RakNetStatistics'
+                
+                
+                ,'PacketPriority'
+                ,'ReplicaReturnResult'
+                ,'PacketReliability'
                 ]  
     for c in includes:
         try:
             main_ns.class_('::'+c).include()
             print "Included Class ", c
         except:
-            print "FAIL: Can't include class ", c
-#     main_ns.namespace ( 'RakNet').include()
+            try:
+               main_ns.enumeration('::'+c).include()
+            except:               
+               print "FAIL: Can't include class/enum ", c
+    main_ns.namespace ( 'RakNet').include()
 #     main_ns.namespace ( 'RakPeer').include()
 # #     main_ns.namespace ( 'DataStructures').include()
                                      
@@ -275,30 +335,30 @@ def Fix_NT ( mb ):
 # the 'main'function
 #            
 def generate_code():  
-    messages.disable( 
-#           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-          messages.W1020
-        , messages.W1021
-        , messages.W1022
-        , messages.W1023
-        , messages.W1024
-        , messages.W1025
-        , messages.W1026
-        , messages.W1027
-        , messages.W1028
-        , messages.W1029
-        , messages.W1030
-        , messages.W1031
-        , messages.W1035
-        , messages.W1040 
-        , messages.W1038        
-        , messages.W1041
-        , messages.W1036 # pointer to Python immutable member
-        , messages.W1033 # unnamed variables
-        , messages.W1018 # expose unnamed classes
-        , messages.W1049 # returns reference to local variable
-        , messages.W1014 # unsupported '=' operator
-         )
+# # #     messages.disable( 
+# # # #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+# # #           messages.W1020
+# # #         , messages.W1021
+# # #         , messages.W1022
+# # #         , messages.W1023
+# # #         , messages.W1024
+# # #         , messages.W1025
+# # #         , messages.W1026
+# # #         , messages.W1027
+# # #         , messages.W1028
+# # #         , messages.W1029
+# # #         , messages.W1030
+# # #         , messages.W1031
+# # #         , messages.W1035
+# # #         , messages.W1040 
+# # #         , messages.W1038        
+# # #         , messages.W1041
+# # #         , messages.W1036 # pointer to Python immutable member
+# # #         , messages.W1033 # unnamed variables
+# # #         , messages.W1018 # expose unnamed classes
+# # #         , messages.W1049 # returns reference to local variable
+# # #         , messages.W1014 # unsupported '=' operator
+# # #          )
     #
     # Use GCCXML to create the controlling XML file.
     # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded
