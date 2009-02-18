@@ -45,7 +45,7 @@ try:
 except ImportError, e:
   from pyplusplus.module_creator import sort_algorithms
 
-# import common_utils.extract_documentation as exdoc
+#import common_utils.extract_documentation as exdoc
 import common_utils.sphinx_extract as exdoc
 
 
