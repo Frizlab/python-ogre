@@ -46,9 +46,6 @@ def main():
    else:
       print"Bad connection attempt.  Terminating."
       sys.exit(1)
-   
-
-   
    print("My IP is ", ctypes.string_at(client.GetLocalIP(0)))
    print("My GUID is ", ctypes.string_at(client.GetGuidFromSystemAddress(raknet.UNASSIGNED_SYSTEM_ADDRESS).ToString()))
    print("'quit' to quit. 'stat' to show stats. 'ping' to ping. 'disconnect' to disconnect. Type to talk.")
