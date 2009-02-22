@@ -37,7 +37,7 @@ def main():
    portstring = "10000"
    
    print("Starting server.")
-   socketDescriptor = raknet.SocketDescriptor (20000,"127.0.0.1")
+   socketDescriptor = raknet.SocketDescriptor (int(portstring),"127.0.0.1")
    b = server.Startup(32, 30, socketDescriptor, 1 )
    server.SetMaximumIncomingConnections(2)
    if b:
@@ -49,8 +49,8 @@ def main():
    server.SetOccasionalPing(True)
 
    print("My IP is ", ctypes.string_at(server.GetLocalIP(0)))
-   print("My GUID is ", server.GetGuidFromSystemAddress(raknet.UNASSIGNED_SYSTEM_ADDRESS).ToString())
-   print("'quit' to quit. 'stat' to show stats. 'ping' to ping.\n'ban' to ban an IP from connecting.\n'kick to kick the first connected player.\nType to talk.")
+   print("My GUID is ", ctypes.string_at(server.GetGuidFromSystemAddress(raknet.UNASSIGNED_SYSTEM_ADDRESS).ToString()))
+   print("'quit' to quit. 'stat' to show stats. 'ping' to ping. 'disconnect' to disconnect. Type to talk.")
    
    ## Loop for input
    while (1):
@@ -58,7 +58,7 @@ def main():
       ## This sleep keeps RakNet responsive
       raknet.RakSleep(30)
 
-      if (msvcrt.kbhit() and False):
+      if (msvcrt.kbhit()):
          ## Notice what is not here: something to keep our network running.  It's
          ## fine to block on gets or anything we want
          ## Because the network engine was painstakingly written using threads.
@@ -72,7 +72,7 @@ def main():
             rss=server.GetStatistics(server.GetSystemAddressFromIndex(0))
 #           StatisticsToString(rss, message, 2)
 #           print("%s", message)
-#           print("Ping %i\n", server.GetAveragePing(server.GetSystemAddressFromIndex(0)))
+            print "Ping %i\n" % (server.GetAveragePing(server.GetSystemAddressFromIndex(0) ) )
             continue
 
          if message== "ping":
@@ -103,56 +103,46 @@ def main():
          ## UNASSIGNED_SYSTEM_ADDRESS means don't exclude anyone from the broadcast
          ## True means broadcast the message to everyone connected
          m = "Server: " + message
+         print len (m)
          server.Send(m, len (m)+1, raknet.HIGH_PRIORITY, raknet.RELIABLE_ORDERED, '', raknet.UNASSIGNED_SYSTEM_ADDRESS, True)
 
       ## Get a packet from either the server or the client
 
-      p = server.Receive()
+      p,data, time_ = server.ReceiveList()
       
       if not p:
          continue ## Didn't get any packets
+         
+      packetIdentifier = int(data[0]) # first byte is type of packet
+      
+      ## Check if this is a network message packet
+      if packetIdentifier == int(raknet.ID_DISCONNECTION_NOTIFICATION):
+          ## Connection lost normally
+          print("ID_DISCONNECTION_NOTIFICATION\n")
+    
+      elif packetIdentifier == int(raknet.ID_NEW_INCOMING_CONNECTION):
+           ## Somebody connected.  We have their IP now
+          print("ID_NEW_INCOMING_CONNECTION from %s with GUID %s\n", p.systemAddress.ToString(), p.guid.ToString())
+          clientID=p.systemAddress ## Record the player ID of the client
 
-      ## We got a packet, get the identifier with our handy function
-      pointer, packetIdentifier = GetPacketInformation(p)
-#     ## Check if this is a network message packet
-#     switch (packetIdentifier)
-#     {
-#        case ID_DISCONNECTION_NOTIFICATION:
-#             ## Connection lost normally
-#           print("ID_DISCONNECTION_NOTIFICATION\n")
-#           break
-# 
-#     
-#        case ID_NEW_INCOMING_CONNECTION:
-#            ## Somebody connected.  We have their IP now
-#           print("ID_NEW_INCOMING_CONNECTION from %s with GUID %s\n", p.systemAddress.ToString(), p.guid.ToString())
-#           clientID=p.systemAddress ## Record the player ID of the client
-#           break
-# 
-#        case ID_MODIFIED_PACKET:
-#           ## Cheater!
-#           print("ID_MODIFIED_PACKET\n")
-#           break
-# 
-#        case ID_CONNECTION_LOST:
-#           ## Couldn't deliver a reliable packet - i.e. the other system was abnormally
-#           ## terminated
-#           print("ID_CONNECTION_LOST\n")
-#           break
-# 
-#        default:
-#           ## The server knows the static data of all clients, so we can prefix the message
-#           ## With the name data
-#           print("%s\n", p.data)
-# 
-#           ## Relay the message.  We prefix the name for other clients.  This demonstrates
-#           ## That messages can be changed on the server before being broadcast
-#           ## Sending is the same as before
-#           sprint(message, "%s", p.data)
-#           server.Send(message, (const int) strlen(message)+1, HIGH_PRIORITY, RELIABLE_ORDERED, 0, p.systemAddress, True)
-#        
-#           break
-#     }
+      elif packetIdentifier == int(raknet.ID_MODIFIED_PACKET):
+          ## Cheater!
+          print("ID_MODIFIED_PACKET\n")
+
+      elif packetIdentifier == int(raknet.ID_CONNECTION_LOST):
+          print("ID_CONNECTION_LOST\n")
+          
+      else:
+          ## The server knows the static data of all clients, so we can prefix the message
+          ## With the name data
+          
+          s= "".join(map(chr,data))
+          print s
+
+          ## Relay the message.  We prefix the name for other clients.  This demonstrates
+          ## That messages can be changed on the server before being broadcast
+          ## Sending is the same as before
+          server.Send(s, len(s)+1, raknet.HIGH_PRIORITY, raknet.RELIABLE_ORDERED, '', p.systemAddress, True)
 
       ## We're done with the packet
       server.DeallocatePacket(p)
