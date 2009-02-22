@@ -22,15 +22,13 @@ def remove_ref_or_ptr( type_ ):
         raise TypeError( 'Type should be reference or pointer, got %s.' % type_ )
 
 _seq2arr = string.Template( os.linesep.join([
-              'int size_$pylist = len ( $pylist );'
+              'int size_$pylist = bp::len ( $pylist );'
               ,'if (size_$pylist > $max_size - 1 ) size_$pylist = $max_size - 1; // check max buffer size'
-              ,'$native_pointer = new char [ size_$pylist ];'
+              ,'$native_pointer = new char [ size_$pylist + 1 ]; // extra space for terminating zero'
               ,'pyplus_conv::ensure_uniform_sequence< $type >( $pylist, size_$pylist );'
-              ,'pyplus_conv::copy_sequence( $pylist, pyplus_conv::array_inserter( $native_pointer, size_$pylist ) );']))
-
-_seq2vector = string.Template( os.linesep.join([
-                 'pyplus_conv::ensure_uniform_sequence< $type >( $pylist );'
-               , 'pyplus_conv::copy_sequence( $pylist, std::back_inserter( $native_pointer), boost::type< $type >() );']))
+              ,'pyplus_conv::copy_sequence( $pylist, pyplus_conv::array_inserter( $native_pointer, size_$pylist ) );'
+              ,'$native_pointer[ size_$pylist ] = 0;'
+              ] ) )
 
 _arr2seq = string.Template(os.linesep.join([
             '// set a max inbound string length to ensure some level of saftey'

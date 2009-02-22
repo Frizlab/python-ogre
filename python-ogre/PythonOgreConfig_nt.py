@@ -61,6 +61,8 @@ PATH_plib =         os.path.join(PATH_THIRDPARTY, 'plib')
 PATH_et =           os.path.join(PATH_THIRDPARTY, 'et')
 PATH_caelum =       os.path.join(PATH_THIRDPARTY, 'caelum')
 PATH_NxOgre=        os.path.join(BASE_DIR, 'nxogre_0.22')
+PATH_plsm2 =        os.path.join(PATH_THIRDPARTY, 'plsm2' )
+
 # # # PATH_NxOgre=        os.path.join(PATH_THIRDPARTY, 'nxogre')
 PATH_NxOgre_09=        os.path.join(PATH_THIRDPARTY, 'nxogre_0.9')
 PATH_watermesh=        os.path.join(PATH_THIRDPARTY, 'watermesh')
@@ -74,7 +76,7 @@ PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.73')
 PATH_PhysX=         "c:/program files/NVIDIA Corporation/NVIDIA Physx SDK/v2.8.1/SDKs"
 PATH_Theora=        os.path.join(PATH_OgreAddons,'videoplugin','TheoraVideo')
 
-PATH_Theora = os.path.join( BASE_DIR, 'ogrevideo', 'TheoraVideoPlugin' )
+# # # # PATH_Theora = os.path.join( BASE_DIR, 'ogrevideo', 'TheoraVideoPlugin' )
 
 PATH_ffmpeg=        os.path.join(PATH_THIRDPARTY,'extra')
 PATH_navi =         os.path.join(BASE_DIR, 'navi', 'navi')
@@ -135,6 +137,7 @@ PATH_LIB_hikari = os.path.join(PATH_hikari ) # , 'lib')
 PATH_LIB_mygui = os.path.join(PATH_mygui, 'MyGUIEngine','lib','Release')
 PATH_LIB_canvas = os.path.join(PATH_canvas )
 PATH_LIB_pcz = os.path.join(PATH_LIB_Ogre_OgreMain, 'OGRE')
+PATH_LIB_plsm2 = PATH_plsm2
                 
 if SDK:
     PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'lib')
@@ -183,8 +186,8 @@ PATH_INCLUDE_betagui =      PATH_betagui
 PATH_INCLUDE_Theora =       os.path.join (PATH_Theora,'include')
 PATH_INCLUDE_TheoraDemo =       os.path.join (PATH_Theora,'..', 'CEGUI_TheoraDemo','include')
 
-PATH_INCLUDE_TheoraDemo =   PATH_Theora
-
+# # PATH_INCLUDE_TheoraDemo =   PATH_Theora
+PATH_INCLUDE_plsm2 = PATH_plsm2
 
 PATH_INCLUDE_ogrevideoffmpeg =  PATH_ogrevideoffmpeg
 PATH_INCLUDE_ffmpeg =       os.path.join (PATH_ffmpeg,'include')
@@ -208,12 +211,15 @@ PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
 #                         ,os.path.join(PATH_OgreAddons,'videoplugin','ptypes-2.1.1','include')
                         ,os.path.join(PATH_THIRDPARTY,'ptypes','include')
                         ]
+                        
+PATH_INCLUDE_PhysX_Samples = os.path.join(PATH_PhysX, '..', 'Samples','SampleCommonCode','src')
 
 PATH_INCLUDE_PhysX= [ os.path.join(PATH_PhysX, 'Physics','include')
                     ,os.path.join(PATH_PhysX, 'Cooking','include')
                     ,os.path.join(PATH_PhysX, 'Foundation','include')
                     ,os.path.join(PATH_PhysX, 'PhysXLoader','include')
                     ,os.path.join(PATH_PhysX, 'NxCharacter','include')
+                    ,PATH_INCLUDE_PhysX_Samples
 # #                     ,os.path.join(PATH_PhysX, 'NxExtensions','include')
                     ]
 PATH_INCLUDE_opensteer = os.path.join(PATH_opensteer, 'include')

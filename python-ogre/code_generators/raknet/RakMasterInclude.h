@@ -1,3 +1,26 @@
+#ifdef ANDYHERE
+#include "RakPeerInterface.h"
+#include "RakNetworkFactory.h"
+#include "RakNetTypes.h" 
+#include "PacketPriority.h"
+#include "MessageIdentifiers.h"
+#include "RakNetDefines.h"
+#include "Export.h"
+
+#include "RakAssert.h"
+#include "RakMemoryOverride.h"
+#include "RakNetCommandParser.h"
+#include "RakNetStatistics.h"
+#include "RakNetTime.h"
+#include "RakNetTransport.h"
+#include "RakNetVersion.h"
+#include "RakPeer.h"
+#include "RakSleep.h"
+#include "RakString.h"
+#include "RakThread.h"
+
+#else
+
 #include "RakPeer.h"  // this needs to be first so winsock2.h is included before windows.h 
 // #include "AsynchronousFileIO.h"
 #include "AutopatcherPatchContext.h"
@@ -121,3 +144,5 @@
 #include "TransportInterface.h"
 #include "WSAStartupSingleton.h"
 //#include "_FindFirst.h"
+
+#endif

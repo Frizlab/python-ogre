@@ -154,7 +154,34 @@ def ManualExclude ( mb ):
 def ManualInclude ( mb ):
     global_ns = mb.global_ns
     
-            
+    # these are from the sample code
+    includes = ['::UserStream',
+               '::MemoryWriteBuffer'
+               ,'::MemoryWriteBuffer'
+               ]
+    for i in includes:
+      global_ns.class_(i).include()
+      
+    includes = [ 
+               '::CreateFixedJoint'
+               ,'::CreateRevoluteJoint'
+               ,'::CreateSphericalJoint'
+               ,'::CreatePrismaticJoint'
+               ,'::CreateCylindricalJoint'
+               ,'::CreatePointOnLineJoint'
+               ,'::CreatePointInPlaneJoint'
+               ,'::CreateRopeSphericalJoint'
+               ,'::CreateClothSphericalJoint'
+               ,'::CreateBodySphericalJoint'
+               ,'::CreateWheelJoint'
+               ,'::CreateStepJoint'
+               ,'::CreateChassisJoint'
+               ,'::CreateCannonJoint'
+               ,'::CreateBladeLink'
+               ]
+    for i in includes:
+      global_ns.free_function(i).include()
+                             
 ############################################################
 ##
 ##  And things that need manual fixes, but not necessarly hand wrapped
@@ -462,20 +489,18 @@ def generate_code():
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generaated directory..
-#     additional_files=[
-#             os.path.join( environment.shared_ptr_dir, 'py_shared_ptr.h'),
-#             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'python_ogre_masterlist.h' ),
-#             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'generators.h' ),
-#             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'custom_rvalue.cpp' ),
-#             os.path.join( environment.include_dir, 'tuples.hpp' )
-#             ]            
-#     for sourcefile in additional_files:
-#         p,filename = os.path.split(sourcefile)
-#         destfile = os.path.join(environment.ogre.generated_dir, filename ) 
-#     
-#         if not common_utils.samefile( sourcefile ,destfile ):
-#             shutil.copy( sourcefile, environment.ogre.generated_dir )
-#             print "Updated ", filename, "as it was missing or out of date"
+
+    additional_files=['Stream.h', 'Stream.cpp', 'Joints.h', 'Joints.cpp']
+   
+    for sourcefile in additional_files:
+        sourcefile = os.path.join(environment.Config.PATH_INCLUDE_PhysX_Samples, sourcefile )
+        p,filename = os.path.split(sourcefile)
+        destfile = os.path.join(environment.physx.generated_dir, filename ) 
+    
+        if not common_utils.samefile( sourcefile ,destfile ):
+            shutil.copy( sourcefile, environment.physx.generated_dir )
+            print "Updated ", filename, "as it was missing or out of date"
+
         
 if __name__ == '__main__':
     start_time = time.clock()

@@ -288,10 +288,10 @@ WRAPPER_DEFINITION_ssgEntity_Wrapper=\
 
 WRAPPER_DEFINITION_ssgLeaf_Wrapper=\
 """
-  virtual float *getVertex   ( int i ) { return 0; } ;
-  virtual float *getNormal   ( int i ) {return 0;} ;
-  virtual float *getColour   ( int i ) {return 0;} ;
-  virtual float *getTexCoord ( int i ) {return 0;} ;
+//  virtual float *getVertex   ( int i ) { return 0; } ;
+//  virtual float *getNormal   ( int i ) {return 0;} ;
+//  virtual float *getColour   ( int i ) {return 0;} ;
+//  virtual float *getTexCoord ( int i ) {return 0;} ;
   virtual void transform ( const sgMat4 m ) {};
   virtual void isect_triangles ( sgSphere *s, sgMat4 m, int test_needed ) {};
   virtual void hot_triangles   ( sgVec3    s, sgMat4 m, int test_needed ) {};

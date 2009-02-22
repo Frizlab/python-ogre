@@ -4,7 +4,6 @@
 // sizeof ( Ogre::ConstMapIterator );
 
 
-
 sizeof ( Ogre::MapIterator< std::multimap<Ogre::String, Ogre::String> > );
 sizeof ( Ogre::MapIterator< std::map<Ogre::String, std::multimap<Ogre::String, Ogre::String>*> > );
 sizeof ( Ogre::MaterialPtr );
@@ -44,6 +43,9 @@ std::multimap< std::string, std::string > ms;
 sizeof ( v );
 sizeof ( s );
 sizeof ( ms );
+
+std::list<Ogre::SceneNode *> specialList; // adding this to stop duplicate exposing in scene managers
+sizeof ( specialList);
 
 Ogre::AnyNumeric AnyNumInt (1);
 Ogre::AnyNumeric AnyNumReal ((Ogre::Real)1.0);
@@ -100,6 +102,10 @@ sizeof ( Ogre::SharedPtr<Ogre::FileInfoList> );
 sizeof ( Ogre::SharedPtr<Ogre::Texture> );
 sizeof ( Ogre::SharedPtr<Ogre::Material> );
 sizeof ( Ogre::SharedPtr<Ogre::Mesh> );
+sizeof ( Ogre::SharedPtr<Ogre::RenderToVertexBuffer> );
+sizeof ( Ogre::SharedPtr<std::vector<Ogre::SharedPtr<Ogre::ScriptToken> > > );
+sizeof ( Ogre::SharedPtr<Ogre::RenderToVertexBuffer> );
+sizeof ( Ogre::SharedPtr<std::list<Ogre::SharedPtr<Ogre::ConcreteNode> > > );
 
 sizeof ( Ogre::TexturePtr );
 
