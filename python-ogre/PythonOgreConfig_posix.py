@@ -102,6 +102,12 @@ PATH_hydrax = os.path.join(PATH_THIRDPARTY, 'Hydrax')
 PATH_hikari = os.path.join(PATH_THIRDPARTY, 'Hikari' ) # BASE_DIR, 'hikari', 'hikari')
 PATH_mygui = os.path.join(BASE_DIR, 'MyGUI_2.2.0_RC1_source' )
 PATH_canvas = os.path.join(PATH_THIRDPARTY, 'canvas')
+PATH_plsm2 =        os.path.join(PATH_THIRDPARTY, 'plsm2' )
+
+PATH_raknet = os.path.join(BASE_DIR, 'raknet')
+PATH_LIB_raknet = os.path.join ( PATH_raknet, 'Lib')
+PATH_INCLUDE_raknet = os.path.join ( PATH_raknet, 'Source')
+
 
 ###
 ### these paths assume you've left all the directory structure as standard
@@ -148,6 +154,7 @@ PATH_LIB_hikari = os.path.join(PATH_hikari ) #, 'lib')
 PATH_LIB_mygui = os.path.join(PATH_mygui, 'MyGUIEngine','lib','Release')
 PATH_LIB_canvas = os.path.join(PATH_canvas )
 PATH_LIB_pcz = os.path.join(PATH_LIB_Ogre_OgreMain, 'OGRE')
+PATH_LIB_plsm2 = PATH_plsm2
 
 
 PATH_INCLUDE_Ogre=          os.path.join(LOCAL_INCLUDE,'OGRE')  # os.path.join(PATH_Ogre,'OgreMain/include') 
@@ -230,6 +237,7 @@ PATH_INCLUDE_hydrax=        PATH_hydrax
 PATH_INCLUDE_hikari = os.path.join(PATH_hikari ) #, 'include')
 PATH_INCLUDE_mygui = os.path.join(PATH_mygui,'MyGUIEngine','include') 
 PATH_INCLUDE_canvas=        PATH_canvas
+PATH_INCLUDE_plsm2 = PATH_plsm2
 
 if os.sys.platform=='darwin':
    PATH_INCLUDE_ODE =          LOCAL_INCLUDE
