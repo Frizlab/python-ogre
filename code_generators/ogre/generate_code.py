@@ -351,6 +351,8 @@ def ManualInclude ( mb ):
         
     std_ns.class_("pair<bool, float>").include()
     std_ns.class_("pair<Ogre::SharedPtr<Ogre::Resource>, bool>").include()
+    std_ns.class_("list<Ogre::SceneNode*>").include()
+#     std_ns.class_("list<Ogre::SceneNode*>").alias="stdListSceneNodePtr"
     
     if not environment.ogre.version =="1.4":
         main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> >").include()
@@ -361,7 +363,6 @@ def ManualInclude ( mb ):
         main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)5> >").include()
         main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)6> >").include()
         main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)7> >").include()
-#         main_ns.class_("MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::Archive*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::Archive*> > > >").include()
         
     #RenderOperation class is marked as private, but I think this is a mistake
     main_ns.class_('RenderOperation').include()
@@ -472,7 +473,9 @@ def ManualFixes ( mb ):
     f = global_ns.class_('::Ogre::GpuProgramParameters').\
         mem_fun('setNamedConstant', arg_types=['::Ogre::String const &','int'] )
     f.arguments[1].name="int"
-
+   
+    # need to stop the automatic char to array conversion for this function
+    global_ns.member_function ('::Ogre::NedAllocPolicy::allocateBytes').documentation = "This is to stop automatic conversion"
 ##
 # fix up any ugly name alias
 ##
@@ -1062,31 +1065,31 @@ def FindProtectedVars ( mb ):
 # the 'main'function
 #            
 def generate_code():  
-    messages.disable( 
-        messages.W1005 # using a non public variable type for argucments or returns
-#           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-        , messages.W1020
-        , messages.W1021
-        , messages.W1022
-        , messages.W1023
-        , messages.W1024
-        , messages.W1025
-        , messages.W1026
-        , messages.W1027
-        , messages.W1028
-        , messages.W1029
-        , messages.W1030
-        , messages.W1031
-        , messages.W1035
-        , messages.W1040 
-        , messages.W1041 # overlapping names when creating a property
-#         , messages.W1038        
-        , messages.W1036 # pointer to Python immutable member
-#         , messages.W1033 # unnamed variables
-#         , messages.W1018 # expose unnamed classes
-        , messages.W1049 # returns reference to local variable
-        , messages.W1014 # unsupported '=' operator
-         )
+# #     messages.disable( 
+# #         messages.W1005 # using a non public variable type for argucments or returns
+# # #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+# #         , messages.W1020
+# #         , messages.W1021
+# #         , messages.W1022
+# #         , messages.W1023
+# #         , messages.W1024
+# #         , messages.W1025
+# #         , messages.W1026
+# #         , messages.W1027
+# #         , messages.W1028
+# #         , messages.W1029
+# #         , messages.W1030
+# #         , messages.W1031
+# #         , messages.W1035
+# #         , messages.W1040 
+# #         , messages.W1041 # overlapping names when creating a property
+# # #         , messages.W1038        
+# #         , messages.W1036 # pointer to Python immutable member
+# # #         , messages.W1033 # unnamed variables
+# # #         , messages.W1018 # expose unnamed classes
+# #         , messages.W1049 # returns reference to local variable
+# #         , messages.W1014 # unsupported '=' operator
+# #          )
 #     sort_algorithms.USE_CALLDEF_ORGANIZER = True   ## tried this to remove a couple of order issues, without success :)
     #
     # Use GCCXML to create the controlling XML file.
@@ -1180,6 +1183,8 @@ def generate_code():
     #
     # We need to tell boost how to handle calling (and returning from) certain functions
     #
+    common_utils.Set_DefaultCall_Policies ( mb.global_ns.namespace ( "std" ) )
+    
     common_utils.Set_DefaultCall_Policies ( mb.global_ns.namespace ( MAIN_NAMESPACE ) )
     
     #
@@ -1204,25 +1209,25 @@ def generate_code():
             
     ## add additional version information to the module to help identify it correctly 
     common_utils.addDetailVersion ( mb, environment, environment.ogre )
-    
-    count = 0
-    for v in main_ns.variables():
-        if not v.ignore:
-            count +=1
-    print "SPECIAL -- variables:", count
-    count = 0
-    for v in main_ns.member_functions():
-        if not v.ignore:
-            count +=1
-    print "SPECIAL -- member functions:", count
-    count=0
-    for v in main_ns.classes():
-        if not v.ignore:
-            count +=1
-    print "SPECIAL -- Number classes:", count
-    
-    
     common_utils.Find_Problem_Transformations ( main_ns )
+    
+# #     count = 0
+# #     for v in main_ns.variables():
+# #         if not v.ignore:
+# #             count +=1
+# #     print "SPECIAL -- variables:", count
+# #     count = 0
+# #     for v in main_ns.member_functions():
+# #         if not v.ignore:
+# #             count +=1
+# #     print "SPECIAL -- member functions:", count
+# #     count=0
+# #     for v in global_ns.classes():
+# #         if not v.ignore:
+# #             print v
+# #             count +=1
+# #     print "SPECIAL -- Number classes:", count
+   
         
         
     ##########################################################################################

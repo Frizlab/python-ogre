@@ -1,3 +1,4 @@
+#include <stdio.h>
 
 #include "NxPhysics.h"
 #include "NxCooking.h"
@@ -6,6 +7,9 @@
 // #include "NxExtensions.h"
 #include "PhysXLoader.h"
 #include "NxStream.h" // not included by default
+
+#include "Stream.h"
+#include "Joints.h"
 
 // First we create a magic namespace to hold all our aliases
 namespace pyplusplus { namespace aliases {

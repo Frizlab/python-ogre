@@ -6,6 +6,8 @@ def header_files( version ):
         ,"NxCharacter.h"
         ,"PhysXLoader.h"
         ,"NxStream.h"
+        ,"Stream.h"
+        ,"Joints.h"
         ]
   
 def huge_classes( version ):

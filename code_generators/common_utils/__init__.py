@@ -524,7 +524,11 @@ def Fix_Pointer_Returns ( mb, pointee_types=['unsigned int','int', 'float','char
                         
     # Update 30 July 2008 -- support for void * variables to be exposed with ctypes handling                        
     for v in mb.variables( allow_empty=True ):
-        if v.type.decl_string == 'void const *' or v.type.decl_string =='void *':
+        supported = ['void const *','void *',
+                     'char const *','char *',
+                     'unsigned char const *','unsigned char *'
+                     ]
+        if v.type.decl_string in supported:
             try:  # this only works on memeber vars not global ones so need to check
                 if v.access_type == 'public' and not v.documentation:
     #                 if not v.parent.noncopyable:    ## this test as we don't support classes with protected destructors
@@ -544,7 +548,8 @@ def AutoExclude( mb, MAIN_NAMESPACE=None ):
         main_ns = global_ns
     
     # vars that are static consts but have their values set in the header file are bad
-    Remove_Static_Consts ( main_ns )
+    if os.name =='posix':
+       Remove_Static_Consts ( main_ns )
 
     ## Exclude protected and private that are not pure virtual
     try:

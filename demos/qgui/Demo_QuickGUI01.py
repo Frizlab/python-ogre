@@ -228,16 +228,16 @@ class QuickGUIDemoApp (sf.Application):
         self.mSheet = self.mGUIManager.getDefaultSheet()
         descFactory = gui.FactoryManager.getSingleton().getDescFactory()
         widgetFactory = gui.FactoryManager.getSingleton().getWidgetFactory()
-        print descFactory
-        print dir (descFactory)
-        print dir (gui.FactoryManager.getSingleton())
-        print dir (widgetFactory)
-        wd = descFactory.getInstance("DefaultWindowDesc")
-        pd = descFactory.getInstance<PanelDesc>("DefaultPanelDesc")
-        
-        print wd
-        print pd
-        return
+# #         print descFactory
+# #         print dir (descFactory)
+# #         print dir (gui.FactoryManager.getSingleton())
+# #         print dir (widgetFactory)
+# #         wd = descFactory.getInstance("DefaultWindowDesc")
+# #         pd = descFactory.getInstance<PanelDesc>("DefaultPanelDesc")
+# #         
+# #         print wd
+# #         print pd
+# #         return
 
         
 #         self.mSheet.setDefaultFont ("acmesa.12")

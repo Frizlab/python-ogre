@@ -275,7 +275,19 @@ WRAPPER_REGISTRATION_NxSimpleTriangleMesh = [
     ] 
 
 
-
+WRAPPER_DEFINITION_General = \
+"""
+NxScene* gScene;
+void setJointScene(NxScene * scene) 
+{
+    gScene = scene;
+}
+"""
+WRAPPER_REGISTRATION_General = [
+    """bp::def( "setJointScene", &setJointScene,
+    "Python-Ogre Helper Function: Sets a global scene variable used by the helper joint functions.\\n\\
+                Input: NxScene\\n");""",
+   ]
  
 ConstPointerReference=\
 """     
@@ -465,6 +477,10 @@ def apply( mb ):
     rt.add_declaration_code( WRAPPER_DEFINITION_NxPhysicsSDK )
     apply_reg (rt,  WRAPPER_REGISTRATION_NxPhysicsSDK )
     
+    mb.add_declaration_code( WRAPPER_DEFINITION_General )
+    apply_reg (mb,  WRAPPER_REGISTRATION_General )
+
+        
 #     rt = mb.class_( 'NxHeightFieldShape' )
 #     rt.add_wrapper_code(WRAPPER_WRAPPER_DEF_NxHeightFieldShape)
 #     rt = mb.class_( 'NxImplicitScreenMesh' )

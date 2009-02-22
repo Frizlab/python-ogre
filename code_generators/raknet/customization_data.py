@@ -125,6 +125,27 @@ def header_files( version ):
             'WSAStartupSingleton.h',
 #             '_FindFirst.h'
             ]
+            
+    ret1 = ['RakPeerInterface.h'
+         ,'RakNetworkFactory.h'
+         ,'RakNetTypes.h'
+         ,'PacketPriority.h'
+         ,'MessageIdentifiers.h'
+         ,'RakNetDefines.h'
+         ,'Export.h'
+         ,'RakAssert.h'
+         ,'RakMemoryOverride.h'
+         ,'RakNetCommandParser.h'
+         ,'RakNetStatistics.h'
+         ,'RakNetTime.h'
+         ,'RakNetTransport.h'
+         ,'RakNetVersion.h'
+         ,'RakPeer.h'
+         ,'RakSleep.h'
+         ,'RakString.h'
+         ,'RakThread.h'
+
+         ]            
     return ret
                 
 def huge_classes( version ):

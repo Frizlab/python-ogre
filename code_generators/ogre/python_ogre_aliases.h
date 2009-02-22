@@ -1,3 +1,6 @@
+typedef std::list<Ogre::SceneNode *>  stdListSceneNodePtr;
+
+
 typedef Ogre::SharedPtr<Ogre::AnimableValue> AnimableValuePtr;
 typedef Ogre::SharedPtr<Ogre::FileInfoList> FileInfoListPtr;
 //typedef Ogre::SharedPtr<Ogre::CodecData> CodecDataPtr;

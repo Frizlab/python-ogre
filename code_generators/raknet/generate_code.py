@@ -71,22 +71,44 @@ def ManualExclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns    
-    excludes = ['::HTTPConnection::Post'  ## TODO Needs to be handwrapped to be useful
+        
+    excludes = [
+               '::HTTPConnection::Post'  ## TODO Needs to be handwrapped to be useful
                 #,'::RakPeerInterface::RegisterAsRemoteProcedureCall'
                 # these are missing from source
                 ,'::FileListTransfer::SetIncrementalReadInterface'
                 ,'::NatPunchthrough::ConnectionRequest::GetAddressList'
+#                 '::RakNetworkFactory::GetConsoleServer'
+#                 ,'::RakNetworkFactory::GetTelnetTransport'
+#                 ,'::RakNetworkFactory::GetRouter'
+#                 ,'::RakNetworkFactory::GetReplicaManager'
+#                 ,'::RakNetworkFactory::GetPacketLogger'
+#                 ,'::RakNetworkFactory::GetRakNetTransport'
+#                 ,'::RakNetworkFactory::GetRakNetCommandParser'
+#                 '::RakPeerInterface::SetNetworkIDManager'
+#                 ,'::RakPeerInterface::GetNetworkIDManager'
                 
                 ]
+                   
+         
     for e in excludes:
         main_ns.member_functions(e).exclude()
         print "Excluded Function:", e
+#     i=['GetRakPeerInterface']
+#     for fun in main_ns.class_('::RakNetworkFactory').member_functions():
+#        if fun.name not in i:
+#          fun.exclude()
+#     main_ns.class_('::RakPeerInterface').exclude()   
+#     return
+            
     excludes = ['::ReplicaManager::ParticipantStruct'
                ,'::RakNet::Connection_RM2'
                ,'::RakNet::Replica2'
                ,'::RakNet::ReplicaManager2'
                ,'::RakNet::AutoRPC'
                ,'::RakNet::RakString'
+               ,'::ReliabilityLayer'
+
                ]
     for e in excludes:   
       try:
@@ -108,7 +130,9 @@ def ManualExclude ( mb ):
          print "Failed to exclude", e         
          sys.exit()
        
-    excludes = ['::CommandParserInterface::VARIABLE_NUMBER_OF_PARAMETERS']
+    excludes = ['::CommandParserInterface::VARIABLE_NUMBER_OF_PARAMETERS'
+               ,'::RakPeer::RemoteSystemStruct::reliabilityLayer'
+               ]
     for e in excludes:
       print "Excluding Variable", e
       main_ns.variable(e).exclude()                    
@@ -173,7 +197,7 @@ def ManualInclude ( mb ):
                 'RakNetTransport',
                 'RakNetTransportCommandParser',
                 'RakNetworkFactory',
-                'RakPeer : public RakPeerInterface',
+                'RakPeer',
                 'RakPeerInterface',
                 'RakString',
                 'RangeList',
@@ -214,12 +238,16 @@ def ManualInclude ( mb ):
                 ,'RegisteredCommand'
                 ,'RakNetGUID'
                 ,'RakNetStatistics'
-                
+                ,'RakSleep'
                 
                 ,'PacketPriority'
                 ,'ReplicaReturnResult'
                 ,'PacketReliability'
+                
+                ,'DefaultMessageIDTypes'
+                
                 ]  
+                    
     for c in includes:
         try:
             main_ns.class_('::'+c).include()
@@ -227,8 +255,26 @@ def ManualInclude ( mb ):
         except:
             try:
                main_ns.enumeration('::'+c).include()
-            except:               
-               print "FAIL: Can't include class/enum ", c
+               print "Included enum ", c
+            except:     
+               try:
+                  main_ns.free_function('::'+c).include()
+                  print "Included free function ", c
+               except:          
+                  print "FAIL: Can't include class/enum/function ", c
+               
+    includes = ['::UNASSIGNED_SYSTEM_ADDRESS',
+               '::UNASSIGNED_RAKNET_GUID'
+               ]
+    for c in includes:
+        main_ns.variable(c).include()
+        print "Included variable ", c
+        try:
+            main_ns.variable(c).include()
+            print "Included variable ", c
+        except:
+            print "Unable to include var:", c
+                                  
     main_ns.namespace ( 'RakNet').include()
 #     main_ns.namespace ( 'RakPeer').include()
 # #     main_ns.namespace ( 'DataStructures').include()
@@ -273,7 +319,7 @@ def ManualTransformations ( mb ):
     def create_output( size ):
         return [ ft.output( i ) for i in range( size ) ]
         
-    
+       
 ###############################################################################
 ##
 ##  Now for the AUTOMATIC stuff that should just work
@@ -368,7 +414,8 @@ def generate_code():
                         os.path.join( environment.raknet.root_dir, "python_raknet.h" )
                         , environment.raknet.cache_file )
 
-    defined_symbols = [ '__PYTHONOGRE_BUILD_CODE' ]
+    defined_symbols = [ '_WIN32', '__PYTHONOGRE_BUILD_CODE', '_RELEASE', '_RAKNET_DLL', '_CRT_NONSTDC_NO_DEPRECATE' ] # '_RAKNET_LIB' ]_RAKNET_DLL
+
     defined_symbols.append( 'VERSION_' + environment.raknet.version )  
     
     #
@@ -451,6 +498,21 @@ def generate_code():
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory..
+    # we could change raknet to be dll exported in raknet source but this would mean patching :(.
+    # so instead we simply include the missing class in our own wrapper..
+    additional_files=[ 'ReliabilityLayer.cpp','RakMemoryOverride.cpp','DataBlockEncryptor.cpp',
+                     'SocketLayer.cpp','rijndael.cpp', 'CheckSum.cpp','WSAStartupSingleton.cpp', 'RakPeer.cpp',
+                     'RakThread.cpp'
+                     ]
+    additional_files=[]                     
+    for sourcefile in additional_files:
+        sourcefile = os.path.join(environment.Config.PATH_INCLUDE_raknet, sourcefile )
+        p,filename = os.path.split(sourcefile)
+        destfile = os.path.join(environment.raknet.generated_dir, filename ) 
+    
+        if not common_utils.samefile( sourcefile ,destfile ):
+            shutil.copy( sourcefile, environment.raknet.generated_dir )
+            print "Updated ", filename, "as it was missing or out of date"
     
 #     common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_raknet, 
 #                             destPath = environment.raknet.generated_dir, 
