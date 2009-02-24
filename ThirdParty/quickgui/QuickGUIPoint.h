@@ -52,14 +52,6 @@ namespace QuickGUI
             return Point(x / s.width,y / s.height);
         }
 
-		inline Point& operator /= ( float f )
-        {
-            x /= f;
-            y /= f;
-
-            return *this;
-        }
-
 		inline Point operator + ( const Point& p ) const
         {
             return Point(x + p.x,y + p.y);
@@ -69,16 +61,6 @@ namespace QuickGUI
         {
             return Point(x + s.width,y + s.height);
         }
-
-		inline bool operator < ( const Point& p ) const
-		{
-			if(x < p.x)
-				return true;
-			if(y < p.y)
-				return true;
-
-			return false;
-		}
 
 		inline Point operator += ( const Size& s )
         {

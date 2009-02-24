@@ -9,7 +9,6 @@ namespace QuickGUI
 	{
 	public:
 		Size();
-		Size(float WidthHeight);
 		Size(float Width, float Height);
 
 		inline Size( const Size& s )
@@ -35,14 +34,6 @@ namespace QuickGUI
         {
             return ( width == s.width &&
                 height == s.height );
-        }
-
-		inline Size& operator /= ( float f )
-        {
-            width /= f;
-            height /= f;
-
-            return *this;
         }
 
 		inline Size operator * ( const float& r ) const

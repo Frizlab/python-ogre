@@ -71,8 +71,7 @@ namespace QuickGUI
 		mDesc(NULL),
 		mTextCursor(NULL),
 		mTextInputValidatorSlot(NULL),
-		mCursorIndex(0),
-		mBlinkTimer(NULL)
+		mCursorIndex(0)
 	{
 		mSkinElementName = BACKGROUND;
 
@@ -84,8 +83,6 @@ namespace QuickGUI
 		addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&TextBox::onMouseButtonDown,this);
 		addWidgetEventHandler(WIDGET_EVENT_MOUSE_CLICK_TRIPLE,&TextBox::onTripleClick,this);
 		addWidgetEventHandler(WIDGET_EVENT_VISIBLE_CHANGED,&TextBox::onVisibleChanged,this);
-
-		mTextCursor = OGRE_NEW_T(TextCursor,Ogre::MEMCATEGORY_GENERAL)(this);
 	}
 
 	TextBox::~TextBox()
@@ -103,28 +100,13 @@ namespace QuickGUI
 
 	void TextBox::_initialize(WidgetDesc* d)
 	{
-		TextBoxDesc* td = dynamic_cast<TextBoxDesc*>(d);
-
-		// Create Timers before calling Widget::_initialize.  Some functions like setEnabled affect timers.
-		TimerDesc timerDesc;
-		timerDesc.repeat = true;
-		timerDesc.timePeriod = td->textbox_cursorBlinkTime;
-		mBlinkTimer = TimerManager::getSingleton().createTimer(timerDesc);
-		mBlinkTimer->setCallback(&TextBox::blinkTimerCallback,this);
-
-		timerDesc.timePeriod = td->textbox_keyRepeatTime;
-		mKeyRepeatTimer = TimerManager::getSingleton().createTimer(timerDesc);
-		mKeyRepeatTimer->setCallback(&TextBox::keyRepeatTimerCallback,this);
-
-		timerDesc.repeat = false;
-		timerDesc.timePeriod = td->textbox_keyDownTime;
-		mKeyDownTimer = TimerManager::getSingleton().createTimer(timerDesc);
-		mKeyDownTimer->setCallback(&TextBox::keyDownTimerCallback,this);
-
 		Widget::_initialize(d);
 
 		mDesc = dynamic_cast<TextBoxDesc*>(mWidgetDesc);
 
+		TextBoxDesc* td = dynamic_cast<TextBoxDesc*>(d);
+
+		mTextCursor = OGRE_NEW_T(TextCursor,Ogre::MEMCATEGORY_GENERAL)(this);
 		mTextCursor->setSkinType(td->textbox_textCursorDefaultSkinTypeName);
 
 		mDesc->widget_consumeKeyboardEvents = true;
@@ -147,6 +129,21 @@ namespace QuickGUI
 		mDesc->textbox_cursorBlinkTime = td->textbox_cursorBlinkTime;
 		mDesc->textbox_keyDownTime = td->textbox_keyDownTime;
 		mDesc->textbox_keyRepeatTime = td->textbox_keyRepeatTime;
+
+		TimerDesc timerDesc;
+		timerDesc.repeat = true;
+		timerDesc.timePeriod = mDesc->textbox_cursorBlinkTime;
+		mBlinkTimer = TimerManager::getSingleton().createTimer(timerDesc);
+		mBlinkTimer->setCallback(&TextBox::blinkTimerCallback,this);
+
+		timerDesc.timePeriod = mDesc->textbox_keyRepeatTime;
+		mKeyRepeatTimer = TimerManager::getSingleton().createTimer(timerDesc);
+		mKeyRepeatTimer->setCallback(&TextBox::keyRepeatTimerCallback,this);
+
+		timerDesc.repeat = false;
+		timerDesc.timePeriod = mDesc->textbox_keyDownTime;
+		mKeyDownTimer = TimerManager::getSingleton().createTimer(timerDesc);
+		mKeyDownTimer->setCallback(&TextBox::keyDownTimerCallback,this);
 
 		setMaskText(td->textbox_maskText,td->textbox_maskSymbol);
 		setMaxCharacters(td->textbox_maxCharacters);
@@ -242,11 +239,6 @@ namespace QuickGUI
 		return mDesc->textbox_maxCharacters;
 	}
 
-	Rect TextBox::getScreenRect()
-	{
-		return mTextBoxClipRegion;
-	}
-
 	Ogre::UTFString TextBox::getText()
 	{
 		return mText->getText();
@@ -305,8 +297,8 @@ namespace QuickGUI
 		Rect clipRegion = Rect(mTexturePosition,mClientDimensions.size);
 		clipRegion.translate(mClientDimensions.position);
 
-		mTextBoxClipRegion = prevClipRegion.getIntersection(clipRegion);
-		brush->setClipRegion(mTextBoxClipRegion);
+		Rect newClipRegion = prevClipRegion.getIntersection(clipRegion);
+		brush->setClipRegion(newClipRegion);
 
 		// Center Text Vertically
 
@@ -333,7 +325,7 @@ namespace QuickGUI
 
 		// Draw Text Overlay SkinElement
 
-		brush->drawSkinElement(mTextBoxClipRegion,st->getSkinElement(TEXTOVERLAY));
+		brush->drawSkinElement(newClipRegion,st->getSkinElement(TEXTOVERLAY));
 
 		// Restore clipping
 

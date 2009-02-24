@@ -22,7 +22,6 @@ namespace QuickGUI
 	{
 		ComponentWidgetDesc::resetToDefault();
 
-		containerwidget_clipChildrenToDimensions = true;
 		containerwidget_horzBarScrollPercent = 0.2;
 		containerwidget_horzButtonScrollPercent = 0.1;
 		containerwidget_supportScrollBars = true;
@@ -37,7 +36,6 @@ namespace QuickGUI
 	{
 		ComponentWidgetDesc::serialize(b);
 
-		b->IO("ClipChildrenToDimensions",&containerwidget_clipChildrenToDimensions);
 		b->IO("HorzBarScrollPercent",&containerwidget_horzBarScrollPercent);
 		b->IO("HorzButtonScrollPercent",&containerwidget_horzButtonScrollPercent);
 		b->IO("SupportScrolling",&containerwidget_supportScrollBars);
@@ -50,15 +48,14 @@ namespace QuickGUI
 
 	ContainerWidget::ContainerWidget(const Ogre::String& name) :
 		ComponentWidget(name),
-		mDesc(NULL),
-		mHScrollBar(NULL),
-		mVScrollBar(NULL)
+		mHScrollBar(0),
+		mVScrollBar(0)
 	{
 	}
 
 	ContainerWidget::~ContainerWidget()
 	{
-		Factory<Widget>* widgetFactory = FactoryManager::getSingleton().getWidgetFactory();
+		WidgetFactory<Widget>* widgetFactory = FactoryManager::getSingleton().getWidgetFactory();
 		for(std::vector<Widget*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it)
 			widgetFactory->destroyInstance((*it));
 	}
@@ -71,16 +68,13 @@ namespace QuickGUI
 		Size tempSize;
 		for(std::vector<Widget*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it)
 		{
-			if((*it)->getVisible())
-			{
-				tempPoint = (*it)->getPosition();
-				tempSize = (*it)->getSize();
+			tempPoint = (*it)->getPosition();
+			tempSize = (*it)->getSize();
 
-				if((tempPoint.x + tempSize.width) > mVirtualSize.width)
-					mVirtualSize.width = (tempPoint.x + tempSize.width);
-				if((tempPoint.y + tempSize.height) > mVirtualSize.height)
-					mVirtualSize.height = (tempPoint.y + tempSize.height);
-			}
+			if((tempPoint.x + tempSize.width) > mVirtualSize.width)
+				mVirtualSize.width = (tempPoint.x + tempSize.width);
+			if((tempPoint.y + tempSize.height) > mVirtualSize.height)
+				mVirtualSize.height = (tempPoint.y + tempSize.height);
 		}
 	}
 
@@ -91,7 +85,6 @@ namespace QuickGUI
 		mDesc = dynamic_cast<ContainerWidgetDesc*>(mWidgetDesc);
 		ContainerWidgetDesc* cwd = dynamic_cast<ContainerWidgetDesc*>(d);
 
-		mDesc->containerwidget_clipChildrenToDimensions = cwd->containerwidget_clipChildrenToDimensions;
 		mDesc->containerwidget_supportScrollBars = cwd->containerwidget_supportScrollBars;
 		mDesc->containerwidget_scrollBarThickness = cwd->containerwidget_scrollBarThickness;
 		mDesc->containerwidget_horzBarScrollPercent = cwd->containerwidget_horzBarScrollPercent;
@@ -101,7 +94,7 @@ namespace QuickGUI
 
 		if(mDesc->containerwidget_supportScrollBars)
 		{
-			HScrollBarDesc* hd = FactoryManager::getSingleton().getDescFactory()->getInstance<HScrollBarDesc>("DefaultHScrollBarDesc");
+			HScrollBarDesc* hd = dynamic_cast<HScrollBarDesc*>(FactoryManager::getSingleton().getWidgetDescFactory()->getInstance("DefaultHScrollBarDesc"));
 			hd->resetToDefault();
 			hd->widget_dimensions.size.height = mDesc->containerwidget_scrollBarThickness;
 			// Do not anchor, as it interferes with dynamically resizing and positioning the scrollbars
@@ -116,7 +109,7 @@ namespace QuickGUI
 			mHScrollBar->addScrollBarEventHandler(QuickGUI::SCROLLBAR_EVENT_ON_SCROLLED,&ContainerWidget::onHorizontalScroll,this);
 			addComponent(HSCROLLBAR,mHScrollBar);
 
-			VScrollBarDesc* vd = FactoryManager::getSingleton().getDescFactory()->getInstance<VScrollBarDesc>("DefaultVScrollBarDesc");
+			VScrollBarDesc* vd = dynamic_cast<VScrollBarDesc*>(FactoryManager::getSingleton().getWidgetDescFactory()->getInstance("DefaultVScrollBarDesc"));
 			vd->resetToDefault();
 			vd->widget_dimensions.size.width = mDesc->containerwidget_scrollBarThickness;
 			// Do not anchor, as it interferes with dynamically resizing and positioning the scrollbars
@@ -242,8 +235,7 @@ namespace QuickGUI
 
 		if(mDesc->containerwidget_supportScrollBars)
 		{
-			// Register Event Handler for when child is resized, moved, or visibility changes
-			w->addWidgetEventHandler(WIDGET_EVENT_VISIBLE_CHANGED,&ContainerWidget::onChildVisibilityChanged,this);
+			// Register Event Handler for when child is resized or moved
 			w->addWidgetEventHandler(WIDGET_EVENT_SIZE_CHANGED,&ContainerWidget::onChildDimensionsChanged,this);
 			w->addWidgetEventHandler(WIDGET_EVENT_POSITION_CHANGED,&ContainerWidget::onChildDimensionsChanged,this);
 
@@ -268,38 +260,25 @@ namespace QuickGUI
 
 		Brush* brush = Brush::getSingletonPtr();
 
-		// store clip region
+		// check and store clip region
 		Rect prevClipRegion = brush->getClipRegion();
+		if ( prevClipRegion.getIntersection(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size)) == Rect::ZERO )
+			return;
 
 		// set clip region to dimensions
 		brush->setClipRegion(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size).getIntersection(prevClipRegion));
 
-		// Set opacity before drawing operations
-		brush->setOpacity(getAbsoluteOpacity());
-
-		// check and clip region - do not draw if we are outside clipping region
-		if ( prevClipRegion.getIntersection(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size)) != Rect::ZERO )
-		{
-			// draw self
-			onDraw();
-		}
-
-		if(!mDesc->containerwidget_clipChildrenToDimensions)
-			brush->setClipRegion(prevClipRegion);
+		// draw self
+		onDraw();
 
 		// draw components
 		for(std::map<Ogre::String,Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
 			(*it).second->draw();
 
-		if(mDesc->containerwidget_clipChildrenToDimensions)
-		{
-			// set clip region to client dimensions
-			Rect clipRegion = mClientDimensions;
-			clipRegion.translate(mTexturePosition);
-			brush->setClipRegion(clipRegion);
-		}
-		else
-			brush->setClipRegion(prevClipRegion);
+		// set clip region to client dimensions
+		Rect clipRegion = mClientDimensions;
+		clipRegion.translate(mTexturePosition);
+		brush->setClipRegion(clipRegion);
 
 		// draw children
 		for(std::vector<Widget*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it)
@@ -337,25 +316,17 @@ namespace QuickGUI
 
 	Widget* ContainerWidget::findWidgetAtPoint(const Point& p, bool ignoreDisabled)
 	{
-		// If we are not widget_visible, return NULL
-		if(!mWidgetDesc->widget_visible)
+		Widget* w = Widget::findWidgetAtPoint(p,ignoreDisabled);
+
+		if(w == NULL)
 			return NULL;
 
-		// If we ignore disabled and this widget is !widget_enabled, return NULL
-		if(ignoreDisabled && !mWidgetDesc->widget_enabled)
-			return NULL;
-
-		// Check components before verifying point is within bounds. (Components can lie outside widget dimensions)
 		for(std::map<Ogre::String,Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
 		{
 			Widget* w = (*it).second->findWidgetAtPoint(p,ignoreDisabled);
 			if(w != NULL)
 				return w;
 		}
-
-		// See if point is within widget bounds
-		if(!Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size).isPointWithinBounds(p))
-			return NULL;
 
 		// Get the client bounds as displayed on the texture
 		Rect clientBounds(mTexturePosition,mClientDimensions.size);
@@ -371,52 +342,12 @@ namespace QuickGUI
 			}
 		}
 				
-		// Take transparency picking into account
-		if(mWidgetDesc->widget_transparencyPicking && (mSkinType != NULL))
-		{
-			// If the background is transparent, return NULL
-			if(mSkinType->getSkinElement(mSkinElementName)->getTextureName() == "")
-				return NULL;
-
-			// Get relative position
-			Point relPos = p - mTexturePosition;
-			// Get percentage of position relative to widget widget_dimensions
-			relPos.x = relPos.x / mWidgetDesc->widget_dimensions.size.width;
-			relPos.y = relPos.y / mWidgetDesc->widget_dimensions.size.height;
-			// Get pixel position of texture
-			Point pixelPos;
-			SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
-			pixelPos.x = relPos.x * (se->getWidth() - 1);
-			pixelPos.y = relPos.y * (se->getHeight() - 1);
-			
-			if(mSkinType->getSkinElement(mSkinElementName)->transparentPixel(pixelPos))
-				return NULL;
-		}
-
 		return this;
-	}
-
-	std::vector<Widget*> ContainerWidget::getChildren()
-	{
-		std::vector<Widget*> list(mChildren);
-
-		return list;
-	}
-
-	bool ContainerWidget::getClipChildrenToDimensions()
-	{
-		return mDesc->containerwidget_clipChildrenToDimensions;
 	}
 
 	bool ContainerWidget::isContainerWidget()
 	{
 		return true;
-	}
-
-	void ContainerWidget::onChildVisibilityChanged(const EventArgs& args)
-	{
-		_determineVirtualSize();
-		_updateScrollBars();
 	}
 
 	void ContainerWidget::onChildDimensionsChanged(const EventArgs& args)
@@ -462,8 +393,7 @@ namespace QuickGUI
 
 		if(mDesc->containerwidget_supportScrollBars)
 		{
-			// Register Event Handler for when child is resized, moved, or visibility changed
-			w->removeEventHandler(WIDGET_EVENT_VISIBLE_CHANGED,this);
+			// Register Event Handler for when child is resized or moved
 			w->removeEventHandler(WIDGET_EVENT_SIZE_CHANGED,this);
 			w->removeEventHandler(WIDGET_EVENT_POSITION_CHANGED,this);
 
@@ -472,61 +402,8 @@ namespace QuickGUI
 		}
 	}
 
-	void ContainerWidget::scrollChildIntoView(Widget* child)
-	{
-		std::vector<Widget*>::iterator it = std::find(mChildren.begin(),mChildren.end(),child);
-		if(it == mChildren.end())
-			throw Exception(Exception::ERR_INVALID_CHILD,"Widget \"" + child->getName() + "\" is not a child of widget \"" + getName() + "\"","ContainerWidget::scrollChildIntoView");
-
-		Point scrollAmount = child->getScroll();
-		Point relativePosition = child->getPosition();
-
-		scrollPointIntoView(relativePosition + scrollAmount);
-	}
-
-	void ContainerWidget::scrollPointIntoView(const Point& p)
-	{
-		Point pointFromVirtualArea = p - Point(mDesc->containerwidget_xScrollOffset,mDesc->containerwidget_yScrollOffset);
-
-		// Check x for scrolling
-
-		// Check if we need to scroll left
-		if(pointFromVirtualArea.x < 0)
-		{
-			if(mHScrollBar != NULL)
-				mHScrollBar->setPercentage(p.x / mVirtualSize.width);
-		}
-		// Check if we need to scroll right
-		else if(pointFromVirtualArea.x > mClientDimensions.size.width)
-		{
-			if(mHScrollBar != NULL)
-				mHScrollBar->setPercentage((p.x - mClientDimensions.size.width) / mVirtualSize.width);
-		}
-
-		// Check y for scrolling
-		
-		// Check if we need to scroll up
-		if(pointFromVirtualArea.y < 0)
-		{
-			if(mVScrollBar != NULL)
-				mVScrollBar->setPercentage(p.y / mVirtualSize.height);
-		}
-		// Check if we need to scroll down
-		else if(pointFromVirtualArea.y > mClientDimensions.size.height)
-		{
-			if(mVScrollBar != NULL)
-				mVScrollBar->setPercentage((p.y - mClientDimensions.size.height) / mVirtualSize.height);
-		}
-	}
-
 	void ContainerWidget::serialize(SerialBase* b)
 	{
-		// Create internal Desc object if it doesn't exist
-		_createDescObject();
-
-		if(!mWidgetDesc->widget_serialize)
-			return;
-
 		b->begin(getClass(),getName());
 
 		mWidgetDesc->serialize(b);
@@ -542,7 +419,7 @@ namespace QuickGUI
 			for(std::list<ScriptDefinition*>::iterator it = defList.begin(); it != defList.end(); ++it)
 			{
 				// Create Empty Widget, supplying class name and widget name from script
-				Widget* newWidget = FactoryManager::getSingleton().getWidgetFactory()->createInstance<Widget>((*it)->getType(),(*it)->getID());
+				Widget* newWidget = FactoryManager::getSingleton().getWidgetFactory()->createInstance((*it)->getType(),(*it)->getID());
 
 				// Populate Desc object from Script Text, and initialize widget
 				newWidget->serialize(b);
@@ -562,13 +439,6 @@ namespace QuickGUI
 		b->end();
 
 		b->end();
-	}
-
-	void ContainerWidget::setClipChildrenToDimensions(bool clip)
-	{
-		mDesc->containerwidget_clipChildrenToDimensions = clip;
-
-		redraw();
 	}
 
 	void ContainerWidget::setHeight(float pixelHeight)
@@ -915,10 +785,7 @@ namespace QuickGUI
 		updateClientDimensions();
 
 		for(std::map<Ogre::String,Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
-		{
-			if(mSkinType->hasComponentType((*it).first))
-				(*it).second->setSkinType(mSkinType->getComponentType((*it).first)->typeName);
-		}
+			(*it).second->setSkinType(mSkinType->getComponentType((*it).first)->typeName);
 
 		WidgetEventArgs wea(this);
 		fireWidgetEvent(WIDGET_EVENT_SKIN_CHANGED,wea);

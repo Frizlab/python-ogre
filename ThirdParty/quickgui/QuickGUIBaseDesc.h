@@ -14,7 +14,7 @@ namespace QuickGUI
 	public:
 		template<typename BaseClassType>
 		friend class Factory;
-	protected:
+	//protected:
 		BaseDesc() {}
 		virtual ~BaseDesc() {}
 	public:

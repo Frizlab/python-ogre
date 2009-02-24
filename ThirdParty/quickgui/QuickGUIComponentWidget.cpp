@@ -10,21 +10,6 @@ namespace QuickGUI
 	ComponentWidgetDesc::ComponentWidgetDesc(const Ogre::String& id) :
 		WidgetDesc(id)
 	{
-		resetToDefault();
-	}
-
-	void ComponentWidgetDesc::resetToDefault()
-	{
-		WidgetDesc::resetToDefault();
-
-		componentwidget_clipComponentsToDimensions = true;
-	}
-
-	void ComponentWidgetDesc::serialize(SerialBase* b)
-	{
-		WidgetDesc::serialize(b);
-
-		b->IO("ClipComponentsToDimensions",&componentwidget_clipComponentsToDimensions);
 	}
 
 	ComponentWidget::ComponentWidget(const Ogre::String& name) :
@@ -34,17 +19,9 @@ namespace QuickGUI
 
 	ComponentWidget::~ComponentWidget()
 	{
-		Factory<Widget>* widgetFactory = FactoryManager::getSingleton().getWidgetFactory();
+		WidgetFactory<Widget>* widgetFactory = FactoryManager::getSingleton().getWidgetFactory();
 		for(std::map<Ogre::String,Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
 			widgetFactory->destroyInstance((*it).second);
-	}
-
-	void ComponentWidget::_initialize(WidgetDesc* d)
-	{
-		Widget::_initialize(d);
-
-		ComponentWidgetDesc* cwd = dynamic_cast<ComponentWidgetDesc*>(d);
-		setClipComponentsToDimensions(cwd->componentwidget_clipComponentsToDimensions);
 	}
 
 	void ComponentWidget::_setGUIManager(GUIManager* gm)
@@ -69,7 +46,6 @@ namespace QuickGUI
 			throw Exception(Exception::ERR_WIDGET_ALREADY_ADDED,"The widget \"" + mWidgetDesc->widget_name + "\" already contains a Component using alias \"" + alias + "\"!","addComponent");
 
 		w->mComponentOfAWidget = true;
-		w->setPositionRelativeToParentClientDimensions(false);
 		mComponents[alias] = w;
 		w->setParent(this);
 		w->_setGUIManager(mWidgetDesc->guiManager);
@@ -92,14 +68,8 @@ namespace QuickGUI
 		// set clip region to dimensions
 		brush->setClipRegion(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size).getIntersection(prevClipRegion));
 
-		// Set opacity before drawing operations
-		brush->setOpacity(getAbsoluteOpacity());
-
 		// draw self
 		onDraw();
-
-		if(!dynamic_cast<ComponentWidgetDesc*>(mWidgetDesc)->componentwidget_clipComponentsToDimensions)
-			brush->setClipRegion(prevClipRegion);
 
 		// draw components
 		for(std::map<Ogre::String,Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
@@ -124,66 +94,24 @@ namespace QuickGUI
 
 	Widget* ComponentWidget::findWidgetAtPoint(const Point& p, bool ignoreDisabled)
 	{
-		// If we are not widget_visible, return NULL
-		if(!mWidgetDesc->widget_visible)
+		Widget* w = Widget::findWidgetAtPoint(p,ignoreDisabled);
+
+		if(w == NULL)
 			return NULL;
 
-		// If we ignore disabled and this widget is !widget_enabled, return NULL
-		if(ignoreDisabled && !mWidgetDesc->widget_enabled)
-			return NULL;
-
-		// Check components before verifying point is within bounds. (Components can lie outside widget dimensions)
 		for(std::map<Ogre::String,Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
 		{
-			Widget* w = (*it).second->findWidgetAtPoint(p,ignoreDisabled);
+			w = (*it).second->findWidgetAtPoint(p,ignoreDisabled);
 			if(w != NULL)
 				return w;
 		}
-
-		// See if point is within widget bounds
-		if(!Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size).isPointWithinBounds(p))
-			return NULL;
-				
-		// Take transparency picking into account
-		if(mWidgetDesc->widget_transparencyPicking && (mSkinType != NULL))
-		{
-			// If the background is transparent, return NULL
-			if(mSkinType->getSkinElement(mSkinElementName)->getTextureName() == "")
-				return NULL;
-
-			// Get relative position
-			Point relPos = p - mTexturePosition;
-			// Get percentage of position relative to widget widget_dimensions
-			relPos.x = relPos.x / mWidgetDesc->widget_dimensions.size.width;
-			relPos.y = relPos.y / mWidgetDesc->widget_dimensions.size.height;
-			// Get pixel position of texture
-			Point pixelPos;
-			SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
-			pixelPos.x = relPos.x * (se->getWidth() - 1);
-			pixelPos.y = relPos.y * (se->getHeight() - 1);
-			
-			if(mSkinType->getSkinElement(mSkinElementName)->transparentPixel(pixelPos))
-				return NULL;
-		}
-
+		
 		return this;
-	}
-
-	bool ComponentWidget::getClipComponentsToDimensions()
-	{
-		return dynamic_cast<ComponentWidgetDesc*>(mWidgetDesc)->componentwidget_clipComponentsToDimensions;
 	}
 
 	bool ComponentWidget::isComponentWidget()
 	{
 		return true;
-	}
-
-	void ComponentWidget::setClipComponentsToDimensions(bool clip)
-	{
-		dynamic_cast<ComponentWidgetDesc*>(mWidgetDesc)->componentwidget_clipComponentsToDimensions = clip;
-
-		redraw();
 	}
 
 	void ComponentWidget::setHeight(float pixelHeight)
@@ -379,10 +307,7 @@ namespace QuickGUI
 		Widget::setSkinType(type);
 
 		for(std::map<Ogre::String,Widget*>::iterator it = mComponents.begin(); it != mComponents.end(); ++it)
-		{
-			if(mSkinType->hasComponentType((*it).first))
-				(*it).second->setSkinType(mSkinType->getComponentType((*it).first)->typeName);
-		}
+			(*it).second->setSkinType(mSkinType->getComponentType((*it).first)->typeName);
 	}
 
 	void ComponentWidget::setWidth(float pixelWidth)

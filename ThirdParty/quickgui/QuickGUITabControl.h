@@ -18,7 +18,8 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
-		friend class Factory<Widget>;
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -44,7 +45,7 @@ namespace QuickGUI
         */
 		template<typename T> void addTabControlEventHandler(TabControlEvent EVENT, void (T::*function)(const EventArgs&), T* obj)
 		{
-			addTabControlEventHandler(EVENT, OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
+			mTabControlEventHandlers[EVENT].push_back(OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
 		}
 		void addTabControlEventHandler(TabControlEvent EVENT, EventHandlerSlot* function);
 
@@ -122,7 +123,7 @@ namespace QuickGUI
 		*/
 		void updateTabPages();
 
-	protected:
+	//protected:
 		TabControl(const Ogre::String& name);
 		virtual ~TabControl();
 

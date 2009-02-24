@@ -8,7 +8,6 @@
 
 namespace QuickGUI
 {
-	const Ogre::String ComboBox::COMBOBOXITEM = "comboboxitem";
 	const Ogre::String ComboBox::DEFAULT = "default";
 	const Ogre::String ComboBox::DOWN = "down";
 	const Ogre::String ComboBox::OVER = "over";
@@ -23,7 +22,6 @@ namespace QuickGUI
 		d->defineSkinElement(OVER);
 		d->defineComponent(DROPDOWNBUTTON);
 		d->defineComponent(DROPDOWNMENUPANEL);
-		d->defineComponent(COMBOBOXITEM);
 		d->definitionComplete();
 
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("ComboBox",d);
@@ -65,8 +63,7 @@ namespace QuickGUI
 		ContainerWidget(name),
 		mMenuPanel(NULL),
 		mSelectedItem(NULL),
-		mDropDownButton(NULL),
-		mAutoNameCounter(0)
+		mDropDownButton(NULL)
 	{
 		mSkinElementName = DEFAULT;
 	}
@@ -121,7 +118,7 @@ namespace QuickGUI
 		mDesc->combobox_dropDownMaxHeight = cbd->combobox_dropDownMaxHeight;
 
 		// Create our Menu List Window
-		MenuPanelDesc* lpd = FactoryManager::getSingleton().getDescFactory()->getInstance<MenuPanelDesc>("DefaultMenuPanelDesc");
+		MenuPanelDesc* lpd = dynamic_cast<MenuPanelDesc*>(FactoryManager::getSingleton().getWidgetDescFactory()->getInstance("DefaultMenuPanelDesc"));
 		lpd->resetToDefault();
 		lpd->widget_name = mWidgetDesc->widget_name + ".MenuPanel";
 		lpd->widget_dimensions = Rect(0,0,mDesc->combobox_dropDownWidth,1);
@@ -145,7 +142,7 @@ namespace QuickGUI
 
 		if(mDesc->combobox_dropDownButton)
 		{
-			ButtonDesc* bd = FactoryManager::getSingleton().getDescFactory()->getInstance<ButtonDesc>("DefaultButtonDesc");
+			ButtonDesc* bd = dynamic_cast<ButtonDesc*>(FactoryManager::getSingleton().getWidgetDescFactory()->getInstance("DefaultButtonDesc"));
 			bd->resetToDefault();
 			bd->widget_name = mWidgetDesc->widget_name + ".Button";
 			bd->widget_dimensions.size.width = mClientDimensions.size.height;
@@ -241,22 +238,15 @@ namespace QuickGUI
 
 	ListTextItem* ComboBox::createItem(ListTextItemDesc* d)
 	{
-		if(d->widget_name == "")
-		{
-			d->widget_name = getName() + ".AutoName.Item." + Ogre::StringConverter::toString(mAutoNameCounter);
-			++mAutoNameCounter;
-		}
-
 		// Determine position of MenuItem
 		d->widget_dimensions.position.y = _getNextAvailableYPosition();
 		d->widget_dimensions.size.width = mMenuPanel->getClientDimensions().size.width;
 		d->widget_dimensions.size.height = mDesc->combobox_itemHeight;
-		d->widget_skinTypeName = mSkinType->getComponentType(COMBOBOXITEM)->typeName;
 		
 		ListTextItem* newItem = dynamic_cast<ListTextItem*>(Widget::create(d->getWidgetClass(),d));
 		addChild(newItem);
 
-		updateIndices();
+		updateItemNamesAndIndices();
 
 		return newItem;
 	}
@@ -276,7 +266,7 @@ namespace QuickGUI
 		}
 
 		// Update names and Indices
-		updateIndices();
+		updateItemNamesAndIndices();
 	}
 
 	Widget* ComboBox::findWidget(const Ogre::String& widget_name)
@@ -345,8 +335,7 @@ namespace QuickGUI
 
 	void ComboBox::hideDropDownList()
 	{
-		if(mMenuPanel != NULL)
-			mMenuPanel->setVisible(false);
+		mMenuPanel->setVisible(false);
 
 		mSkinElementName = DEFAULT;
 
@@ -490,12 +479,6 @@ namespace QuickGUI
 
 	void ComboBox::serialize(SerialBase* b)
 	{
-		// Create Desc object if its not already created.
-		_createDescObject();
-
-		if(!mWidgetDesc->widget_serialize)
-			return;
-
 		b->begin(getClass(),getName());
 
 		mWidgetDesc->serialize(b);
@@ -511,7 +494,7 @@ namespace QuickGUI
 			for(std::list<ScriptDefinition*>::iterator it = defList.begin(); it != defList.end(); ++it)
 			{
 				// Create Empty Widget, supplying class name and widget name from script
-				Widget* newWidget = FactoryManager::getSingleton().getWidgetFactory()->createInstance<Widget>((*it)->getType(),(*it)->getID());
+				Widget* newWidget = FactoryManager::getSingleton().getWidgetFactory()->createInstance((*it)->getType(),(*it)->getID());
 
 				// Populate Desc object from Script Text, and initialize widget
 				newWidget->serialize(b);
@@ -630,9 +613,6 @@ namespace QuickGUI
 
 		if(mMenuPanel != NULL)
 			mMenuPanel->setSkinType(mSkinType->getComponentType(DROPDOWNMENUPANEL)->typeName);
-
-		for(std::list<ListTextItem*>::iterator it = mItems.begin(); it != mItems.end(); ++it)
-			(*it)->setSkinType(mSkinType->getComponentType(COMBOBOXITEM)->typeName);
 	}
 
 	void ComboBox::setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv)
@@ -662,15 +642,13 @@ namespace QuickGUI
 	void ComboBox::showDropDownList()
 	{
 		// Determine if list should be shown above or below ComboBox
-		Point p = getScreenPosition();
-
-		if((p.y + mDesc->widget_dimensions.size.height + mMenuPanel->getHeight()) > mDesc->sheet->getHeight())
+		if((mDesc->widget_dimensions.position.y + mDesc->widget_dimensions.size.height + mMenuPanel->getHeight()) > mDesc->sheet->getHeight())
 		{
-			mMenuPanel->setPosition(Point(p.x,p.y - mMenuPanel->getHeight()));
+			mMenuPanel->setPosition(Point(mDesc->widget_dimensions.position.x,mDesc->widget_dimensions.position.y - mMenuPanel->getHeight()));
 		}
 		else
 		{
-			mMenuPanel->setPosition(Point(p.x,p.y + mDesc->widget_dimensions.size.height));
+			mMenuPanel->setPosition(Point(mDesc->widget_dimensions.position.x,mDesc->widget_dimensions.position.y + mDesc->widget_dimensions.size.height));
 		}
 
 		mMenuPanel->setVisible(true);
@@ -697,17 +675,17 @@ namespace QuickGUI
 
 		WidgetEventArgs args(this);
 		fireWidgetEvent(WIDGET_EVENT_CLIENTSIZE_CHANGED,args);
-
-		hideDropDownList();
 	}
 
-	void ComboBox::updateIndices()
+	void ComboBox::updateItemNamesAndIndices()
 	{
+		Ogre::String CBName = getName();
 		unsigned int counter = 0;
 
 		for(std::list<ListTextItem*>::iterator it = mItems.begin(); it != mItems.end(); ++it)
 		{
 			(*it)->setIndex(counter);
+			(*it)->mWidgetDesc->widget_name = CBName + Ogre::StringConverter::toString(counter);
 
 			++counter;
 		}

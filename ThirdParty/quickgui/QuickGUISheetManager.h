@@ -51,7 +51,7 @@ namespace QuickGUI
 		*/
 		Sheet* getSheet(const Ogre::String& sheetName);
 
-	protected:
+	//protected:
 		SheetManager();
 		virtual ~SheetManager();
 

@@ -78,21 +78,18 @@ namespace QuickGUI
 
 	void HScrollBar::_initialize(WidgetDesc* d)
 	{
-		Widget::_initialize(d);
-
 		mDesc = dynamic_cast<HScrollBarDesc*>(mWidgetDesc);
+
+		Widget::_initialize(d);
 
 		HScrollBarDesc* hsd = dynamic_cast<HScrollBarDesc*>(d);
 
 		mDesc->hscrollbar_barScrollPercent = hsd->hscrollbar_barScrollPercent;
 		mDesc->hscrollbar_buttonScrollPercent = hsd->hscrollbar_buttonScrollPercent;
 
-		ButtonDesc* bd = FactoryManager::getSingleton().getDescFactory()->getInstance<ButtonDesc>("DefaultButtonDesc");
+		ButtonDesc* bd = dynamic_cast<ButtonDesc*>(FactoryManager::getSingleton().getWidgetDescFactory()->getInstance("DefaultButtonDesc"));
 		bd->resetToDefault();
-		bd->widget_resizeFromBottom = false;
-		bd->widget_resizeFromLeft = false;
-		bd->widget_resizeFromRight = false;
-		bd->widget_resizeFromTop = false;
+		bd->widget_resizable = false;
 		bd->widget_verticalAnchor = ANCHOR_VERTICAL_TOP_BOTTOM;
 		bd->widget_dimensions.size.width = mWidgetDesc->widget_dimensions.size.height;
 		bd->widget_dimensions.size.height = mWidgetDesc->widget_dimensions.size.height;

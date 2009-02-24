@@ -45,7 +45,7 @@ namespace QuickGUI
 		*/
 		bool isEmpty();
 
-	protected:
+	//protected:
 		ScriptDefinition(const Ogre::String& type, const Ogre::String& id);
 		~ScriptDefinition();
 
@@ -55,7 +55,6 @@ namespace QuickGUI
 		ScriptDefinition* mParentDefinition;
 
 		std::map<Ogre::String, std::map<Ogre::String,ScriptDefinition*> > mSubDefinitions;
-		std::list<ScriptDefinition*> mSubDefinitionsInOrder;
 		std::map<Ogre::String, DefinitionProperty*> mProperties;
 
 	private:

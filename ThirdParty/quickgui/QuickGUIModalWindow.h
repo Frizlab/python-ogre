@@ -12,8 +12,9 @@ namespace QuickGUI
 			public WindowDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		ModalWindowDesc(const Ogre::String& id);
 		virtual ~ModalWindowDesc() {}
 	public:
@@ -46,7 +47,8 @@ namespace QuickGUI
 		friend class GUIManager;
 		friend class Sheet;
 
-		friend class Factory<Widget>;
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -59,7 +61,7 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getClass();
 
-	protected:
+	//protected:
 		ModalWindow(const Ogre::String& name);
 		virtual ~ModalWindow();
 

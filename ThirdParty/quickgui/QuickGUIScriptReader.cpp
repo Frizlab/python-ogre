@@ -37,14 +37,6 @@ namespace QuickGUI
 				OGRE_DELETE_T((*it2).second,ScriptDefinition,Ogre::MEMCATEGORY_GENERAL);
 			}
 		}
-
-		for(std::map<Ogre::String, std::map<Ogre::String,ScriptDefinition*> >::iterator it1 = mTempDefinitions.begin(); it1 != mTempDefinitions.end(); ++it1)
-		{
-			for(std::map<Ogre::String,ScriptDefinition*>::iterator it2 = (*it1).second.begin(); it2 != (*it1).second.end(); ++it2)
-			{
-				OGRE_DELETE_T((*it2).second,ScriptDefinition,Ogre::MEMCATEGORY_GENERAL);
-			}
-		}
 	}
 
 	ScriptReader* ScriptReader::getSingletonPtr(void) 
@@ -159,18 +151,9 @@ namespace QuickGUI
 					newDefinition->mParentDefinition = currentDefinition;
 
 					if(currentDefinition == NULL)
-					{
-						if(defList[type].find(id) != defList[type].end())
-							throw Exception(Exception::ERR_SCRIPT_PARSING,"Definition of type \"" + type + "\" and name \"" + id + "\" already exists, overwriting would result in loss of data!","ScriptReader::_createDefinitions");
 						defList[type][id] = newDefinition;
-					}
 					else
-					{
-						if(currentDefinition->mSubDefinitions[type].find(id) != currentDefinition->mSubDefinitions[type].end())
-							throw Exception(Exception::ERR_SCRIPT_PARSING,"Definition of type \"" + type + "\" and name \"" + id + "\" already exists, overwriting would result in loss of data!","ScriptReader::_createDefinitions");
 						currentDefinition->mSubDefinitions[type][id] = newDefinition;
-						currentDefinition->mSubDefinitionsInOrder.push_back(newDefinition);
-					}
 
 					currentDefinition = newDefinition;
 				}
@@ -178,8 +161,6 @@ namespace QuickGUI
 			case QuickGUI::Token::TYPE_PROPERTY:
 				{
 					Ogre::String propertyName = currentToken->value;
-					if(currentDefinition->mProperties.find(propertyName) != currentDefinition->mProperties.end())
-						throw Exception(Exception::ERR_SCRIPT_PARSING,"Property with name \"" + propertyName + "\" already exists, overwriting would result in loss of data!","ScriptReader::_createDefinitions");
 					DefinitionProperty* newProperty = OGRE_NEW_T(DefinitionProperty,Ogre::MEMCATEGORY_GENERAL)(propertyName);
 
 					// Advance to next Token

@@ -1,8 +1,8 @@
 #ifndef QUICKGUITEXT_H
 #define QUICKGUITEXT_H
 
+#include "QuickGUIBaseDesc.h"
 #include "QuickGUICharacter.h"
-#include "QuickGUIDesc.h"
 #include "QuickGUIException.h"
 #include "QuickGUIExportDLL.h"
 #include "QuickGUISize.h"
@@ -42,7 +42,7 @@ namespace QuickGUI
 	};
 
 	class _QuickGUIExport TextDesc :
-		public Desc
+		public BaseDesc
 	{
 	public:
 		TextDesc();
@@ -285,7 +285,7 @@ namespace QuickGUI
 		* Iterates through all TextLines and returns the index of the character
 		* closest to the position given.
 		*/
-		int getCursorIndexAtPosition(const Point& p);
+		int getCursorIndexAtPosition(Point& p);
 		/**
 		* Returns the horizontal alignment of this text.
 		*/
@@ -467,7 +467,7 @@ namespace QuickGUI
 		*/
 		void update();
 
-	protected:
+	//protected:
 		TextDesc* mTextDesc;
 
 		bool mMaskText;

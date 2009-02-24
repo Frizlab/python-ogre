@@ -1,6 +1,5 @@
 #include "QuickGUIMenuLabel.h"
 #include "QuickGUIToolBar.h"
-#include "QuickGUIContextMenu.h"
 #include "QuickGUISkinDefinitionManager.h"
 
 namespace QuickGUI
@@ -72,6 +71,7 @@ namespace QuickGUI
 		setSkinType(d->widget_skinTypeName);
 
 		SkinElement* se = mSkinType->getSkinElement(mSkinElementName);
+		mDesc->textDesc.allottedWidth = mld->widget_dimensions.size.width - (se->getBorderThickness(BORDER_LEFT) + se->getBorderThickness(BORDER_RIGHT));
 
 		if(mText != NULL)
 			OGRE_DELETE_T(mText,Text,Ogre::MEMCATEGORY_GENERAL);
@@ -151,12 +151,7 @@ namespace QuickGUI
 
 		if(mea.button == MB_Left)
 		{
-			MenuItemDesc* menuItemDesc = dynamic_cast<MenuItemDesc*>(mWidgetDesc);
-			
-			if(menuItemDesc->toolBar != NULL)
-				menuItemDesc->toolBar->closeMenus();
-			else if(menuItemDesc->contextMenu != NULL)
-				menuItemDesc->contextMenu->hide();
+			dynamic_cast<MenuItemDesc*>(mWidgetDesc)->toolBar->closeMenus();
 		}
 	}
 

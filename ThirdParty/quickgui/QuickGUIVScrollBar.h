@@ -12,8 +12,9 @@ namespace QuickGUI
 			public ComponentWidgetDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-// 	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		VScrollBarDesc(const Ogre::String& id);
 		virtual ~VScrollBarDesc() {}
 	public:
@@ -63,7 +64,8 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
-		friend class Factory<Widget>;
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -98,7 +100,7 @@ namespace QuickGUI
         */
 		template<typename T> void addScrollBarEventHandler(ScrollBarEvent EVENT, void (T::*function)(const EventArgs&), T* obj)
 		{
-			addScrollBarEventHandler(EVENT, OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
+			mScrollBarEventHandlers[EVENT].push_back(OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
 		}
 		void addScrollBarEventHandler(ScrollBarEvent EVENT, EventHandlerSlot* function);
 
@@ -185,7 +187,7 @@ namespace QuickGUI
 		*/
 		void setSliderHeight(float height);
 
-	protected:
+	//protected:
 		VScrollBar(const Ogre::String& name);
 		virtual ~VScrollBar();
 

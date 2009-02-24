@@ -29,13 +29,12 @@ namespace QuickGUI
 	{
 		ComponentWidgetDesc::resetToDefault();
 
-		widget_dimensions.size.height = 25;
-		widget_dragable = true;
-		// Do not set left/right anchoring, it will interfere with manual resizing/repositioning by the Window class.
-
 		titlebar_closeButton = false;
 		titlebar_closeButtonPadding = 2;
 		titlebar_closeButtonSkinType = "default.close";
+		widget_dimensions.size.height = 25;
+		widget_dragable = true;
+		widget_horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
 		titlebar_verticalTextAlignment = TEXT_ALIGNMENT_VERTICAL_CENTER;
 
 		textDesc.resetToDefault();
@@ -69,9 +68,9 @@ namespace QuickGUI
 		// Create CloseButton if property is set.
 		if(td->titlebar_closeButton)
 		{
-			ButtonDesc* bd = FactoryManager::getSingleton().getDescFactory()->getInstance<ButtonDesc>("DefaultButtonDesc");
+			ButtonDesc* bd = dynamic_cast<ButtonDesc*>(FactoryManager::getSingleton().getWidgetDescFactory()->getInstance("DefaultButtonDesc"));
 			bd->resetToDefault();
-			bd->widget_name = getName() + ".CloseButton";
+			bd->widget_name = ".CloseButton";
 
 			if((td->titlebar_closeButtonPadding * 2.0) >= mClientDimensions.size.height)
 				throw Exception(Exception::ERR_INVALIDPARAMS,"CloseButtonPadding exceeds height of TitleBar, cannot create Close Button!","TitleBar::_initialize");
@@ -99,6 +98,7 @@ namespace QuickGUI
 		// modify it directly, which is used for serialization.
 		mDesc->textDesc = td->textDesc;
 
+		mDesc->textDesc.allottedWidth = mClientDimensions.size.width;
 		mText = OGRE_NEW_T(Text,Ogre::MEMCATEGORY_GENERAL)(mDesc->textDesc);
 	}
 
@@ -269,29 +269,9 @@ namespace QuickGUI
 		redraw();
 	}
 
-	void TitleBar::setResizeFromAllSides(bool resizable)
+	void TitleBar::setResizable(bool resizable)
 	{
-		ComponentWidget::setResizeFromAllSides(resizable);
-	}
-
-	void TitleBar::setResizeFromBottom(bool resizable)
-	{
-		ComponentWidget::setResizeFromBottom(resizable);
-	}
-
-	void TitleBar::setResizeFromLeft(bool resizable)
-	{
-		ComponentWidget::setResizeFromLeft(resizable);
-	}
-
-	void TitleBar::setResizeFromRight(bool resizable)
-	{
-		ComponentWidget::setResizeFromRight(resizable);
-	}
-
-	void TitleBar::setResizeFromTop(bool resizable)
-	{
-		ComponentWidget::setResizeFromTop(resizable);
+		Widget::setResizable(resizable);
 	}
 
 	void TitleBar::setText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv)
@@ -333,6 +313,8 @@ namespace QuickGUI
 	{
 		mClientDimensions.position = Point::ZERO;
 		mClientDimensions.size = mWidgetDesc->widget_dimensions.size;
+		if(mText != NULL)
+			mText->setAllottedWidth(mClientDimensions.size.width);
 
 		if(mSkinType != NULL)
 		{

@@ -16,24 +16,12 @@ namespace QuickGUI
 			public WidgetDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		ComponentWidgetDesc(const Ogre::String& id);
 		virtual ~ComponentWidgetDesc() {}
 	public:
-
-		/// Sets whether clipping region will be set to client area prior to component drawing
-		bool componentwidget_clipComponentsToDimensions;
-
-		/**
-		* Restore properties to default values
-		*/
-		virtual void resetToDefault();
-
-		/**
-		* Outlines how the desc class is written to XML and read from XML.
-		*/
-		virtual void serialize(SerialBase* b);
 	};
 
 	class _QuickGUIExport ComponentWidget :
@@ -43,11 +31,6 @@ namespace QuickGUI
 		friend class GUIManager;
 		friend class SerialReader;
 	public:
-		/**
-		* Internal function, do not use.
-		*/
-		virtual void _initialize(WidgetDesc* d);
-
 		/**
 		* Notifies the Widget of its GUIManager. (for component/container widgets this function is recursive)
 		*/
@@ -70,19 +53,10 @@ namespace QuickGUI
 		virtual Widget* findWidgetAtPoint(const Point& p, bool ignoreDisabled = true);
 
 		/**
-		* Returns true if clipping region will be set to client area prior to component drawing, false otherwise.
-		*/
-		bool getClipComponentsToDimensions();
-
-		/**
 		* Returns true if this widget is made up of more than 1 widget.
 		*/
 		virtual bool isComponentWidget();
 
-		/**
-		* Returns true if clipping region will be set to client area prior to component drawing, false otherwise.
-		*/
-		void setClipComponentsToDimensions(bool clip);
 		/**
 		* Sets the height of the widget.
 		*/
@@ -107,7 +81,7 @@ namespace QuickGUI
 		*/
 		virtual void updateTexturePosition();
 
-	protected:
+	//protected:
 		ComponentWidget(const Ogre::String& name);
 		virtual ~ComponentWidget();
 

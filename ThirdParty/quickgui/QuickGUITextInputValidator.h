@@ -40,7 +40,7 @@ namespace QuickGUI
 			return true;
 		}
 
-	protected:
+	//protected:
 		TextInputValidator	d_function;
 		T*					d_object;
 		bool				d_undefined;

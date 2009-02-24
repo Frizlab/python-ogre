@@ -120,9 +120,9 @@ namespace QuickGUI
 		ContainerWidget::setHorizontalAnchor(a);
 	}
 
-	void ListItem::setIndex(unsigned int index)
+	void ListItem::setIndex(unsigned int listitem_index)
 	{
-		mDesc->listitem_index = index;
+		mDesc->listitem_index = listitem_index;
 	}
 	
 	void ListItem::setPosition(const Point& position)
@@ -130,9 +130,9 @@ namespace QuickGUI
 		ContainerWidget::setPosition(position);
 	}
 
-	void ListItem::setSelected(bool selected)
+	void ListItem::setSelected(bool listitem_selected)
 	{
-		mDesc->listitem_selected = selected;
+		mDesc->listitem_selected = listitem_selected;
 		
 		if(mDesc->listitem_selected)
 			mSkinElementName = SELECTED;
@@ -145,11 +145,6 @@ namespace QuickGUI
 	void ListItem::setSize(const Size& size)
 	{
 		ContainerWidget::setSize(size);
-	}
-
-	void ListItem::setSkinType(const Ogre::String type)
-	{
-		ContainerWidget::setSkinType(type);
 	}
 
 	void ListItem::setVerticalAnchor(VerticalAnchor a)

@@ -24,11 +24,8 @@ namespace QuickGUI
 		PanelDesc::resetToDefault();
 
 		containerwidget_supportScrollBars = false;
-		tabpage_tabFrontWidth = 0;
-		tabpage_tabWidthBuffer = 5;
+		tabpage_tabFrontWidth = -1;
 		tabpage_verticalTextAlignment = TEXT_ALIGNMENT_VERTICAL_CENTER;
-
-		textDesc.resetToDefault();
 	}
 
 	void TabPageDesc::serialize(SerialBase* b)
@@ -36,7 +33,6 @@ namespace QuickGUI
 		PanelDesc::serialize(b);
 
 		b->IO("TabFrontWidth",&tabpage_tabFrontWidth);
-		b->IO("TabWidthBuffer",&tabpage_tabWidthBuffer);
 		b->IO("VerticalTextAlignment",&tabpage_verticalTextAlignment);
 	}
 

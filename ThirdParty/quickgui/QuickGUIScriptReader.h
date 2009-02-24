@@ -61,11 +61,11 @@ namespace QuickGUI
 		void parseScript(Ogre::DataStreamPtr &stream, const Ogre::String &groupName);
 //		void parseScript(std::ifstream& stream, const Ogre::String& groupName);
 
-//	protected:
+	//protected:
 		ScriptReader();
 		virtual ~ScriptReader();
-		ScriptReader(ScriptReader const&);	// copy ctor is hidden
-		ScriptReader& operator=(ScriptReader const&);	// assign op is hidden
+//		ScriptReader(ScriptReader const&);	// copy ctor is hidden
+//		ScriptReader& operator=(ScriptReader const&);	// assign op is hidden
 
 		static ScriptReader* mSingletonPtr;
 

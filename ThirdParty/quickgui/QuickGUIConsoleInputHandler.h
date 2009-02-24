@@ -44,7 +44,7 @@ namespace QuickGUI
 				(d_object->*d_function)(console,clearInputBox,addToDisplayArea);
 		}
 
-	protected:
+	//protected:
 		ConsoleInputHandler	d_function;
 		T*					d_object;
 		bool				d_undefined;

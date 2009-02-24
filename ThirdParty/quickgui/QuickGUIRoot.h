@@ -1,7 +1,6 @@
 #ifndef QUICKGUIROOT_H
 #define QUICKGUIROOT_H
 
-#include "QuickGUIEventHandlerManager.h"
 #include "QuickGUIExportDLL.h"
 #include "QuickGUIFactoryManager.h"
 #include "QuickGUIManager.h"
@@ -61,7 +60,7 @@ namespace QuickGUI
 		*/
 		void setDefaultHoverTime(float seconds);
 
-	protected:
+	//protected:
 		Ogre::FontPtr mDefaultFont;
 
 		int mGUIManagerCounter;

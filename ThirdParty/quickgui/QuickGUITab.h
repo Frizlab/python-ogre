@@ -9,16 +9,15 @@ namespace QuickGUI
 			public LabelDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		TabDesc(const Ogre::String& id);
 		virtual ~TabDesc() {}
 	public:
 
 		/// width in pixels of the front edge of the tab.
 		float tab_frontWidth;
-		/// additional buffer width to add to width of buffer
-		float tab_widthBuffer;
 
 		/**
 		* Returns the class of Desc object this is.
@@ -47,13 +46,13 @@ namespace QuickGUI
 		// Skin Constants
 		static const Ogre::String FRONT;
 		static const Ogre::String MAIN;
-		static const Ogre::String ICON;
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
 		// Needed for TabPage to serial write TextDesc to disk
 		friend class TabPage;
-		friend class Factory<Widget>;
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -71,10 +70,6 @@ namespace QuickGUI
 		* Returns the class name of this Widget.
 		*/
 		virtual Ogre::String getClass();
-		/**
-		* Returns the amount of pixels padded to the end of the Tab.
-		*/
-		float getWidthBuffer();
 
 		/**
 		* Returns true if the point is over a border, false otherwise.
@@ -116,17 +111,13 @@ namespace QuickGUI
 		* Sets the text for this object.
 		*/
 		void setText(Ogre::UTFString s);
-		/**
-		* Sets the amount of pixels padded to the end of the Tab.
-		*/
-		void setWidthBuffer(float width);
 
 		/**
 		* Recalculate Client dimensions, relative to Widget's actual dimensions.
 		*/
 		virtual void updateClientDimensions();
 
-	protected:
+	//protected:
 		Tab(const Ogre::String& name);
 		virtual ~Tab();
 

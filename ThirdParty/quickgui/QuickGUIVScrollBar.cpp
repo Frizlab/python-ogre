@@ -78,21 +78,18 @@ namespace QuickGUI
 
 	void VScrollBar::_initialize(WidgetDesc* d)
 	{
-		Widget::_initialize(d);
-
 		mDesc = dynamic_cast<VScrollBarDesc*>(mWidgetDesc);
+
+		Widget::_initialize(d);
 
 		VScrollBarDesc* vsd = dynamic_cast<VScrollBarDesc*>(d);
 
 		mDesc->vscrollbar_barScrollPercent = vsd->vscrollbar_barScrollPercent;
 		mDesc->vscrollbar_buttonScrollPercent = vsd->vscrollbar_buttonScrollPercent;
 
-		ButtonDesc* bd = FactoryManager::getSingleton().getDescFactory()->getInstance<ButtonDesc>("DefaultButtonDesc");
+		ButtonDesc* bd = dynamic_cast<ButtonDesc*>(FactoryManager::getSingleton().getWidgetDescFactory()->getInstance("DefaultButtonDesc"));
 		bd->resetToDefault();
-		bd->widget_resizeFromBottom = false;
-		bd->widget_resizeFromLeft = false;
-		bd->widget_resizeFromRight = false;
-		bd->widget_resizeFromTop = false;
+		bd->widget_resizable = false;
 		bd->widget_horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
 		bd->widget_dimensions.size.width = mWidgetDesc->widget_dimensions.size.width;
 		bd->widget_dimensions.size.height = mWidgetDesc->widget_dimensions.size.width;

@@ -11,8 +11,9 @@ namespace QuickGUI
 		public ContainerWidgetDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		ListDesc(const Ogre::String& id);
 		virtual ~ListDesc() {}
 	public:
@@ -48,11 +49,11 @@ namespace QuickGUI
 	public:
 		// Skin Constants
 		static const Ogre::String BACKGROUND;
-		static const Ogre::String LISTITEM;
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
-		friend class Factory<Widget>;
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -78,7 +79,7 @@ namespace QuickGUI
         */
 		template<typename T> void addListEventHandler(ListEvent EVENT, void (T::*function)(const EventArgs&), T* obj)
 		{
-			addListEventHandler(EVENT, OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
+			mListEventHandlers[EVENT].push_back(OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
 		}
 		void addListEventHandler(ListEvent EVENT, EventHandlerSlot* function);
 
@@ -157,20 +158,12 @@ namespace QuickGUI
 		* Sets the height of each ListItem within the List.
 		*/
 		void setListItemHeight(float height);
-		/**
-		* Sets the "type" of this widget.  For example you
-		* can create several types of Button widgets: "close", "add", "fire.skill.1", etc.
-		* NOTE: The type property determines what is drawn to the screen.
-		*/
-		virtual void setSkinType(const Ogre::String type);
 
-	protected:
+	//protected:
 		List(const Ogre::String& name);
 		virtual ~List();
 
 		ListDesc* mDesc;
-
-		int mAutoNameCounter;
 
 		std::list<ListItem*> mListItems;
 		std::list<ListItem*> mSelectedItems;
@@ -213,7 +206,7 @@ namespace QuickGUI
 		/**
 		* ListItem names are in the format of <ListName>+<index>, and should always be accurate.
 		*/
-		void updateIndices();
+		void updateItemNamesAndIndices();
 
 	private:
 	};

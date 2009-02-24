@@ -48,7 +48,7 @@ namespace QuickGUI
 		*/
 		bool writingToFile();
 
-	protected:
+	//protected:
 		ScriptWriter();
 		virtual ~ScriptWriter();
 

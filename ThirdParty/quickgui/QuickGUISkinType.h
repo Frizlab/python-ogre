@@ -66,7 +66,7 @@ namespace QuickGUI
 		*/
 		virtual void serialize(SerialBase* b);
 
-	protected:
+	//protected:
 		Ogre::String mName;
 		Ogre::String mClassName;
 

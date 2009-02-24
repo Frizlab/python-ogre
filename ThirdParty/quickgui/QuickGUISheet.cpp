@@ -32,10 +32,7 @@ namespace QuickGUI
 		WindowDesc::resetToDefault();
 
 		WindowDesc::window_titleBar = false;
-		widget_resizeFromBottom = false;
-		widget_resizeFromLeft = false;
-		widget_resizeFromRight = false;
-		widget_resizeFromTop = false;
+		widget_resizable = false;
 		widget_horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
 		widget_verticalAnchor = ANCHOR_VERTICAL_TOP_BOTTOM;
 	}
@@ -54,6 +51,7 @@ namespace QuickGUI
 		mDeleting(false)
 	{
 		mSkinElementName = BACKGROUND;
+		_createDescObject("SheetDesc");
 		_initialize(d);
 
 		mWindowInFocus = this;
@@ -65,8 +63,7 @@ namespace QuickGUI
 		mKeyboardListener(0)
 	{
 		mSkinElementName = BACKGROUND;
-
-		mWidgetDesc = FactoryManager::getSingleton().getDescFactory()->createInstance<WidgetDesc>("SheetDesc");
+		_createDescObject("SheetDesc");
 
 		// Perform an isolated parsing of the one file
 		ScriptReader* sc = ScriptReader::getSingletonPtr();
@@ -87,7 +84,7 @@ namespace QuickGUI
 	{
 		mDeleting = true;
 
-		Factory<Widget>* widgetFactory = FactoryManager::getSingleton().getWidgetFactory();
+		WidgetFactory<Widget>* widgetFactory = FactoryManager::getSingleton().getWidgetFactory();
 		for(std::list<ModalWindow*>::iterator it = mModalWindows.begin(); it != mModalWindows.end(); ++it)
 			widgetFactory->destroyInstance((*it)->getName());
 
@@ -107,15 +104,15 @@ namespace QuickGUI
 	void Sheet::addWindow(Window* w)
 	{
 		mWindows.push_back(w);
-		w->_setGUIManager(mWidgetDesc->guiManager);
-		w->_setSheet(this);
+		w->mWidgetDesc->sheet = this;
+		w->mWidgetDesc->guiManager = mWidgetDesc->guiManager;
 	}
 
 	void Sheet::addModalWindow(ModalWindow* w)
 	{
 		mModalWindows.push_back(w);
-		w->_setGUIManager(mWidgetDesc->guiManager);
-		w->_setSheet(this);
+		w->mWidgetDesc->sheet = this;
+		w->mWidgetDesc->guiManager = mWidgetDesc->guiManager;
 	}
 
 	void Sheet::bringToFront(Window* w)
@@ -139,13 +136,6 @@ namespace QuickGUI
 		mFreeList.clear();
 	}
 
-	ContextMenu* Sheet::createContextMenu(ContextMenuDesc* d)
-	{
-		ContextMenu* m = dynamic_cast<ContextMenu*>(Widget::create("ContextMenu",d));
-		addWindow(dynamic_cast<Window*>(m));
-		return m;
-	}
-
 	ModalWindow* Sheet::createModalWindow(ModalWindowDesc* d)
 	{
 		ModalWindow* w = dynamic_cast<ModalWindow*>(Widget::create("ModalWindow",d));
@@ -158,32 +148,6 @@ namespace QuickGUI
 		Window* w = dynamic_cast<Window*>(Widget::create("Window",d));
 		addWindow(w);
 		return w;
-	}
-
-	void Sheet::destroyContextMenu(const Ogre::String& name)
-	{
-		destroyContextMenu(getContextMenu(name));
-	}
-
-	void Sheet::destroyContextMenu(ContextMenu* m)
-	{
-		Window* w = dynamic_cast<Window*>(m);
-
-		if(w == NULL)
-			throw Exception(Exception::ERR_INVALID_CHILD,"ContextMenu is NULL!","Sheet::destroyContextMenu");
-
-		std::list<Window*>::iterator it = std::find(mWindows.begin(),mWindows.end(),w);
-		if(it == mWindows.end())
-			throw Exception(Exception::ERR_INVALID_CHILD,"ContextMenu \"" + w->getName() + "\" is not a child of Sheet \"" + getName() + "\"","Sheet::destroyContextMenu");
-		mWindows.erase(it);
-
-		if(std::find(mFreeList.begin(),mFreeList.end(),w) != mFreeList.end())
-			return;
-
-		if((getKeyboardListener() != NULL) && (w->findWidget(getKeyboardListener()->getName()) != NULL))
-			setKeyboardListener(NULL);
-
-		mFreeList.push_back(w);
 	}
 
 	void Sheet::destroyModalWindow(const Ogre::String& name)
@@ -212,9 +176,6 @@ namespace QuickGUI
 
 	void Sheet::destroyWidget(Widget* w)
 	{
-		if(w == NULL)
-			throw Exception(Exception::ERR_INVALID_CHILD,"Widget is NULL!","Sheet::destroyWidget");
-
 		Ogre::String className = w->getClass();
 		if(className == "ModalWindow")
 			destroyModalWindow(dynamic_cast<ModalWindow*>(w));
@@ -340,17 +301,13 @@ namespace QuickGUI
 
 		if(mWindowInFocus != w)
 		{
-			Window* previousWindowInFocus = mWindowInFocus;
-
-			// Update window in focus
-			mWindowInFocus = w;
-
-			// Notify previous window it lost focus
-			if(previousWindowInFocus != NULL)
+			if(mWindowInFocus)
 			{
 				WidgetEventArgs args(mWindowInFocus);
-				previousWindowInFocus->fireWindowEvent(WINDOW_EVENT_FOCUS_LOST,args);
+				mWindowInFocus->fireWindowEvent(WINDOW_EVENT_FOCUS_LOST,args);
 			}
+
+			mWindowInFocus = w;
 
 			// Move window to end of list
 			if(mWindowInFocus != this)
@@ -381,7 +338,6 @@ namespace QuickGUI
 				}
 			}
 
-			// Notify current window its in focus
 			if(mWindowInFocus)
 			{
 				WidgetEventArgs args(mWindowInFocus);
@@ -397,20 +353,6 @@ namespace QuickGUI
 	Ogre::String Sheet::getClass()
 	{
 		return "Sheet";
-	}
-
-	ContextMenu* Sheet::getContextMenu(const Ogre::String& name)
-	{
-		if(!hasContextMenu(name))
-			throw Exception(Exception::ERR_INVALID_CHILD,"Sheet \"" + getName() + "\" does not have a child context menu with name \"" + name + "\".","Sheet::getContextMenu");
-
-		for(std::list<Window*>::iterator it = mWindows.begin(); it != mWindows.end(); ++it)
-		{
-			if(((*it)->getName() == name) && ((*it)->getClass() == "ContextMenu"))
-				return dynamic_cast<ContextMenu*>((*it));
-		}
-
-		return NULL;
 	}
 
 	Widget* Sheet::getKeyboardListener()
@@ -449,17 +391,6 @@ namespace QuickGUI
 	Window* Sheet::getWindowInFocus()
 	{
 		return mWindowInFocus;
-	}
-
-	bool Sheet::hasContextMenu(const Ogre::String& name)
-	{
-		for(std::list<Window*>::iterator it = mWindows.begin(); it != mWindows.end(); ++it)
-		{
-			if(((*it)->getName() == name) && ((*it)->getClass() == "ContextMenu"))
-				return true;
-		}
-
-		return false;
 	}
 
 	bool Sheet::hasModalWindow(const Ogre::String& name)
@@ -507,9 +438,6 @@ namespace QuickGUI
 
 	void Sheet::serialize(SerialBase* b)
 	{
-		if(!mWidgetDesc->widget_serialize)
-			return;
-
 		b->begin(getClass(),getName());
 
 		mWidgetDesc->serialize(b);
@@ -524,7 +452,7 @@ namespace QuickGUI
 			for(std::list<ScriptDefinition*>::iterator it = defList.begin(); it != defList.end(); ++it)
 			{
 				// Create Empty Widget, supplying class name and widget name from script
-				Widget* newWidget = FactoryManager::getSingleton().getWidgetFactory()->createInstance<Widget>((*it)->getType(),(*it)->getID());
+				Widget* newWidget = FactoryManager::getSingleton().getWidgetFactory()->createInstance((*it)->getType(),(*it)->getID());
 
 				// Populate Desc object from Script Text, and initialize widget
 				newWidget->serialize(b);
@@ -551,7 +479,7 @@ namespace QuickGUI
 			for(std::list<ScriptDefinition*>::iterator it = defList.begin(); it != defList.end(); ++it)
 			{
 				// Create Empty Widget, supplying class name and widget name from script
-				Widget* newWidget = FactoryManager::getSingleton().getWidgetFactory()->createInstance<Widget>((*it)->getType(),(*it)->getID());
+				Widget* newWidget = FactoryManager::getSingleton().getWidgetFactory()->createInstance((*it)->getType(),(*it)->getID());
 
 				// Populate Desc object from Script Text, and initialize widget
 				newWidget->serialize(b);

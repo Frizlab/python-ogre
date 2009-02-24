@@ -31,7 +31,7 @@ namespace QuickGUI
 
 		void saveTypesToFile(const Ogre::String& fileName);
 
-	protected:
+	//protected:
 		SkinTypeManager();
 		virtual ~SkinTypeManager();
 

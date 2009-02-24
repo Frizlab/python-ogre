@@ -50,7 +50,7 @@ namespace QuickGUI
 		static WidgetEvent parseWidgetEvent(const Ogre::String& s);
 		static WindowEvent parseWindowEvent(const Ogre::String& s);
 
-	protected:
+	//protected:
 	private:
 	};
 }

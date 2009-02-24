@@ -44,7 +44,14 @@ namespace QuickGUI
 
 	std::list<ScriptDefinition*> ScriptDefinition::getDefinitions()
 	{
-		std::list<ScriptDefinition*> defList(mSubDefinitionsInOrder);
+		std::list<ScriptDefinition*> defList;
+		for(std::map<Ogre::String, std::map<Ogre::String,ScriptDefinition*> >::iterator it1 = mSubDefinitions.begin(); it1 != mSubDefinitions.end(); ++it1)
+		{
+			for(std::map<Ogre::String,ScriptDefinition*>::iterator it2 = (*it1).second.begin(); it2 != (*it1).second.end(); ++it2)
+			{
+				defList.push_back((*it2).second);
+			}
+		}
 
 		return defList;
 	}

@@ -2,9 +2,7 @@
 
 namespace QuickGUI
 {
-	Rect::Rect() :
-		position(0,0),
-		size(0,0)
+	Rect::Rect()
 	{
 	}
 

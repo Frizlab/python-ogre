@@ -1,11 +1,9 @@
 #ifndef QUICKGUIUVRECT_H
 #define QUICKGUIUVRECT_H
 
-#include "QuickGUIExportDLL.h"
-
 namespace QuickGUI
 {
-	class _QuickGUIExport UVRect
+	class UVRect
 	{
 	public:
 		UVRect();

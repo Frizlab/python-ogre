@@ -73,7 +73,7 @@ namespace QuickGUI
 
 		ConsoleDesc* cd = dynamic_cast<ConsoleDesc*>(d);
 
-		TextBoxDesc* tbd = FactoryManager::getSingleton().getDescFactory()->getInstance<TextBoxDesc>("DefaultTextBoxDesc");
+		TextBoxDesc* tbd = dynamic_cast<TextBoxDesc*>(FactoryManager::getSingleton().getWidgetDescFactory()->getInstance("DefaultTextBoxDesc"));
 		tbd->resetToDefault();
 		mDesc->console_inputBoxHeight = cd->console_inputBoxHeight;
 		tbd->widget_dimensions = Rect(0,0,cd->widget_dimensions.size.width,cd->console_inputBoxHeight);
@@ -85,7 +85,7 @@ namespace QuickGUI
 		addComponent(TEXTBOX,mInputBox);
 		mInputBox->addWidgetEventHandler(WIDGET_EVENT_KEY_DOWN,&Console::onTextSubmitted,this);
 
-		TextAreaDesc* tad = FactoryManager::getSingleton().getDescFactory()->getInstance<TextAreaDesc>("DefaultTextAreaDesc");
+		TextAreaDesc* tad = dynamic_cast<TextAreaDesc*>(FactoryManager::getSingleton().getWidgetDescFactory()->getInstance("DefaultTextAreaDesc"));
 		tad->resetToDefault();
 		tad->widget_dimensions = Rect(0,cd->console_inputBoxHeight,cd->widget_dimensions.size.width,cd->widget_dimensions.size.height - cd->console_inputBoxHeight);
 		tad->textarea_readOnly = true;
@@ -157,12 +157,6 @@ namespace QuickGUI
 		mInputBox->clearText();
 	}
 
-	void Console::focusInputBox()
-	{
-		if(mDesc->sheet != NULL)
-			mDesc->sheet->setKeyboardListener(mInputBox);
-	}
-
 	Ogre::String Console::getClass()
 	{
 		return "Console";
@@ -193,19 +187,9 @@ namespace QuickGUI
 		return mDesc->console_inputBoxHorizontalAlignment;
 	}
 
-	Ogre::UTFString Console::getInputBoxText()
-	{
-		return mInputBox->getText();
-	}
-
 	Ogre::String Console::getInputBoxTextCursorSkinType()
 	{
 		return mDesc->console_inputBoxTextCursorDefaultSkinTypeName;
-	}
-
-	std::vector<TextSegment> Console::getInputBoxTextSegments()
-	{
-		return mInputBox->getTextSegments();
 	}
 
 	void Console::onDraw()

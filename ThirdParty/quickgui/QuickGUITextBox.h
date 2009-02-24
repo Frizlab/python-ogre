@@ -15,8 +15,9 @@ namespace QuickGUI
 	public:
 		// Console has a TextBox Desc as a member
 		friend class ConsoleDesc;
-		template<typename BaseClassType> friend class Factory;
-	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		TextBoxDesc(const Ogre::String& id);
 		virtual ~TextBoxDesc() {}
 	public:
@@ -72,7 +73,8 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
-		friend class Factory<Widget>;
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 		
 		/**
@@ -135,10 +137,6 @@ namespace QuickGUI
 		* Returns the max number of characters this TextBox supports.
 		*/
 		int getMaxCharacters();
-		/**
-		* Gets the area of the TextBox that is drawn on screen
-		*/
-		Rect getScreenRect();
 		/**
 		* Gets the text in UTFString form.
 		*/
@@ -288,7 +286,7 @@ namespace QuickGUI
 		*/
 		virtual void updateTexturePosition();
 
-	protected:
+	//protected:
 		TextBox(const Ogre::String& name);
 		virtual ~TextBox();
 
@@ -329,9 +327,6 @@ namespace QuickGUI
 
 		// Pointer pointing to mWidgetDesc object, but casted for quick use.
 		TextBoxDesc* mDesc;
-
-		// Store the clip region so the cursor can be clipped properly.
-		Rect mTextBoxClipRegion;
 
 		/**
 		* Outlines how the widget is drawn to the current render target

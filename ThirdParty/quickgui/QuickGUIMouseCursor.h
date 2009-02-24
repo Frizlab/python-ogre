@@ -61,7 +61,7 @@ namespace QuickGUI
         */
 		template<typename T> void addCursorEventHandler(MouseCursorEvent EVENT, void (T::*function)(const EventArgs&), T* obj)
 		{
-			addCursorEventHandler(EVENT, OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
+			mEventHandlers[EVENT].push_back(OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
 		}
 		void addCursorEventHandler(MouseCursorEvent EVENT, EventHandlerSlot* function);
 
@@ -80,10 +80,6 @@ namespace QuickGUI
 		* Returns the pixel location of the cursor as it appears on the screen.
 		*/
 		Point getPosition();
-		/**
-		* Returns the name of the skin type used by the cursor.
-		*/
-		Ogre::String getSkinTypeName();
 		/**
 		* Returns true if the cursor is drawn on the screen, false otherwise.
 		*/
@@ -116,7 +112,7 @@ namespace QuickGUI
 		*/
 		void setVisible(bool visible);
 
-	protected:
+	//protected:
 		MouseCursor(const MouseCursorDesc& d);
 		~MouseCursor();
 

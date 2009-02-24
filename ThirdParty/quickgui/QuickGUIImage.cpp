@@ -75,7 +75,7 @@ namespace QuickGUI
 		return "Image";
 	}
 
-	Ogre::String Image::getImageName()
+	Ogre::String Image::getImage()
 	{
 		return mDesc->image_imageName;
 	}

@@ -14,8 +14,9 @@ namespace QuickGUI
 			public ComponentWidgetDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		ConsoleDesc(const Ogre::String& id);
 		virtual ~ConsoleDesc() {}
 	public:
@@ -61,7 +62,8 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
-		friend class Factory<Widget>;
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 		
 		/**
@@ -104,11 +106,6 @@ namespace QuickGUI
 		void clearInputBox();
 
 		/**
-		* Sets the Sheet's keyboardListener to the InputBox.
-		*/
-		void focusInputBox();
-
-		/**
 		* Returns the class name of this Widget.
 		*/
 		virtual Ogre::String getClass();
@@ -133,17 +130,9 @@ namespace QuickGUI
 		*/
 		HorizontalTextAlignment getInputBoxHorizontalAlignment();
 		/**
-		* Gets the InputBox's Text.
-		*/
-		Ogre::UTFString getInputBoxText();
-		/**
 		* Gets the InputBox's TextCursor's skin type.
 		*/
 		Ogre::String getInputBoxTextCursorSkinType();
-		/**
-		* Gets the InputBox's TextSegments.
-		*/
-		std::vector<TextSegment> getInputBoxTextSegments();		
 
 		/** Sets the input validator used to determine whether input is accepted.
             @param
@@ -210,7 +199,7 @@ namespace QuickGUI
 		*/
 		virtual void setSkinType(const Ogre::String type);
 
-	protected:
+	//protected:
 		Console(const Ogre::String& name);
 		virtual ~Console();
 

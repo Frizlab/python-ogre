@@ -14,8 +14,9 @@ namespace QuickGUI
 		public ContainerWidgetDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		ComboBoxDesc(const Ogre::String& id);
 		virtual ~ComboBoxDesc() {}
 	public:
@@ -57,10 +58,10 @@ namespace QuickGUI
 	public:
 		friend class ListItem;
 
-		friend class Factory<Widget>;
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 		// Skin Constants
-		static const Ogre::String COMBOBOXITEM;
 		static const Ogre::String DEFAULT;
 		static const Ogre::String DOWN;
 		static const Ogre::String OVER;
@@ -70,7 +71,7 @@ namespace QuickGUI
 		static void registerSkinDefinition();
 	public:
 		template<typename BaseClassType>
-		friend class Factory;
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -104,7 +105,7 @@ namespace QuickGUI
         */
 		template<typename T> void addComboBoxEventHandler(ComboBoxEvent EVENT, void (T::*function)(const EventArgs&), T* obj)
 		{
-			addComboBoxEventHandler(EVENT, OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
+			mComboBoxEventHandlers[EVENT].push_back(OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
 		}
 		void addComboBoxEventHandler(ComboBoxEvent EVENT, EventHandlerSlot* function);
 
@@ -262,7 +263,7 @@ namespace QuickGUI
 		*/
 		virtual void updateClientDimensions();
 
-	protected:
+	//protected:
 		ComboBox(const Ogre::String& name);
 		virtual ~ComboBox();
 
@@ -272,8 +273,6 @@ namespace QuickGUI
 
 		// Window containing child ListItems
 		MenuPanel* mMenuPanel;
-
-		int mAutoNameCounter;
 
 		std::list<ListTextItem*> mItems;
 		ListTextItem* mSelectedItem;
@@ -328,7 +327,7 @@ namespace QuickGUI
 		/**
 		* ListItem names are in the format of <ListName>+<index>, and should always be accurate.
 		*/
-		void updateIndices();
+		void updateItemNamesAndIndices();
 	};
 }
 

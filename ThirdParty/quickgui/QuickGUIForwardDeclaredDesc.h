@@ -14,8 +14,9 @@ namespace QuickGUI
 			public ContainerWidgetDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		PanelDesc(const Ogre::String& id);
 		virtual ~PanelDesc() {}
 	public:
@@ -41,8 +42,9 @@ namespace QuickGUI
 			public PanelDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		TabPageDesc(const Ogre::String& id);
 		virtual ~TabPageDesc() {}
 	public:
@@ -55,8 +57,6 @@ namespace QuickGUI
 
 		/// width in pixels of the front edge of the tab.
 		float					tabpage_tabFrontWidth;
-		/// pixel width to add to Tab width.
-		float					tabpage_tabWidthBuffer;
 
 		/**
 		* Returns the class of Desc object this is.
@@ -82,8 +82,9 @@ namespace QuickGUI
 			public ContainerWidgetDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		TabControlDesc(const Ogre::String& id);
 		virtual ~TabControlDesc() {}
 	public:

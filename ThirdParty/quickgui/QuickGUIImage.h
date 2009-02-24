@@ -10,8 +10,9 @@ namespace QuickGUI
 			public WidgetDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		ImageDesc(const Ogre::String& id);
 		virtual ~ImageDesc() {}
 	public:
@@ -51,7 +52,8 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
-		friend class Factory<Widget>;
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -66,7 +68,7 @@ namespace QuickGUI
 		/**
 		* Returns the name of the image file used for display.
 		*/
-		Ogre::String getImageName();
+		Ogre::String getImage();
 		/**
 		* Returns true if image is tiled within client dimensions, false otherwise.
 		*/
@@ -94,7 +96,7 @@ namespace QuickGUI
 		*/
 		void setUpdateEveryFrame(bool update);
 
-	protected:
+	//protected:
 		Image(const Ogre::String& name);
 		virtual ~Image();
 

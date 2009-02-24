@@ -10,12 +10,6 @@ namespace QuickGUI
 	{
 	}
 
-	Size::Size(float WidthHeight) :
-		width(WidthHeight),
-		height(WidthHeight)
-	{
-	}
-
 	Size::Size(float Width, float Height) :
 		width(Width),
 		height(Height)

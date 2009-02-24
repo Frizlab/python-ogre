@@ -8,7 +8,7 @@
 namespace QuickGUI
 {
 	TextDesc::TextDesc() :
-		Desc()
+		BaseDesc()
 	{
 		resetToDefault();
 	}
@@ -50,7 +50,7 @@ namespace QuickGUI
 
 	void TextDesc::resetToDefault()
 	{
-		allottedWidth = 0;
+		allottedWidth = 100;
 		brushFilterMode = BRUSHFILTER_LINEAR;
 		horizontalTextAlignment = TEXT_ALIGNMENT_HORIZONTAL_LEFT;
 		verticalLineSpacing = 2;
@@ -59,7 +59,7 @@ namespace QuickGUI
 
 	void TextDesc::serialize(SerialBase* b)
 	{
-		b->IO("AllottedWidth",&allottedWidth);
+//		b->IO("AllottedWidth",&allottedWidth);
 		b->IO("TextBrushFilterMode",&brushFilterMode);
 		b->IO("HorizontalTextAlignment",&horizontalTextAlignment);
 		b->IO("VerticalLineSpacing",&verticalLineSpacing);
@@ -417,71 +417,85 @@ namespace QuickGUI
 
 	void Text::_createTextLines()
 	{
+		if(mTextDesc->allottedWidth < 0)
+			throw Exception(Exception::ERR_TEXT,"Negative Allotted width!","Text::_createTextLines");
+
 		std::list<Character*>::iterator cItr = mCharacters.begin();
 
-		// Create the first TextLine initially
 		TextLine* currentTextLine = OGRE_NEW_T(TextLine,Ogre::MEMCATEGORY_GENERAL)();
 		mTextLines.push_back(currentTextLine);
 
-		// If allotted width is 0 or negative, put all text onto one line
-		if(mTextDesc->allottedWidth <= 0.001)
+		while(cItr != mCharacters.end())
 		{
-			while(cItr != mCharacters.end())
-			{
-				currentTextLine->addCharacter((*cItr));
-				++cItr;
-			}
-		}
-		else
-		{
-			while(cItr != mCharacters.end())
-			{
-				if(Text::isNullCharacter((*cItr)->codePoint))
-					break;
+			if(Text::isNullCharacter((*cItr)->codePoint))
+				break;
 
-				if(isWhiteSpace((*cItr)->codePoint))
+			if(isWhiteSpace((*cItr)->codePoint))
+			{
+				// If its a newline we can add it to the TextLine, since they have a width of 0.
+				// We also want to create a New TextLine object.
+				if(isNewLine((*cItr)->codePoint))
 				{
-					// If its a newline we can add it to the TextLine, since they have a width of 0.
-					// We also want to create a New TextLine object.
-					if(isNewLine((*cItr)->codePoint))
+					currentTextLine->addCharacter((*cItr));
+					currentTextLine = OGRE_NEW_T(TextLine,Ogre::MEMCATEGORY_GENERAL)();
+					mTextLines.push_back(currentTextLine);
+					++cItr;
+				}
+				else
+				{
+					float availableSpace = mTextDesc->allottedWidth - currentTextLine->getWidth();
+
+					// If the character doesn't fit on this TextLine, create a new TextLine and repeat the process
+					if( (*cItr)->dimensions.size.width > availableSpace )
 					{
-						currentTextLine->addCharacter((*cItr));
 						currentTextLine = OGRE_NEW_T(TextLine,Ogre::MEMCATEGORY_GENERAL)();
 						mTextLines.push_back(currentTextLine);
-						++cItr;
 					}
 					else
 					{
-						float availableSpace = mTextDesc->allottedWidth - currentTextLine->getWidth();
+						currentTextLine->addCharacter((*cItr));
+						++cItr;
+					}
+				}
+			}
+			else
+			{
+				float wordLength = 0;
+				float availableSpace = mTextDesc->allottedWidth - currentTextLine->getWidth();
+				std::list<Character*>::iterator endOfWord = cItr;
 
-						// If the character doesn't fit on this TextLine, create a new TextLine and repeat the process
-						if( (*cItr)->dimensions.size.width > availableSpace )
-						{
-							currentTextLine = OGRE_NEW_T(TextLine,Ogre::MEMCATEGORY_GENERAL)();
-							mTextLines.push_back(currentTextLine);
-						}
-						else
-						{
-							currentTextLine->addCharacter((*cItr));
-							++cItr;
-						}
+				// If we get one word that is longer than the allotted width, split it up into pieces that fit onto each line.
+				if(currentTextLine->empty())
+				{
+					while( (endOfWord != mCharacters.end()) && !isWhiteSpace((*endOfWord)->codePoint) && (wordLength < availableSpace) )
+					{
+						wordLength += (*endOfWord)->dimensions.size.width;
+						++endOfWord;
+					}
+
+					// add Characters from pointer to endOfWord - 1
+					while(cItr != endOfWord)
+					{
+						currentTextLine->addCharacter((*cItr));
+						++cItr;
 					}
 				}
 				else
 				{
-					float wordLength = 0;
-					float availableSpace = mTextDesc->allottedWidth - currentTextLine->getWidth();
-					std::list<Character*>::iterator endOfWord = cItr;
-
-					// If we get one word that is longer than the allotted width, split it up into pieces that fit onto each line.
-					if(currentTextLine->empty())
+					while( (endOfWord != mCharacters.end()) && !isWhiteSpace((*endOfWord)->codePoint) )
 					{
-						while( (endOfWord != mCharacters.end()) && !isWhiteSpace((*endOfWord)->codePoint) && (wordLength < availableSpace) )
-						{
-							wordLength += (*endOfWord)->dimensions.size.width;
-							++endOfWord;
-						}
+						wordLength += (*endOfWord)->dimensions.size.width;
+						++endOfWord;
+					}
 
+					// If the word doesn't fit on this TextLine, create a new TextLine and repeat the process
+					if( wordLength > availableSpace )
+					{
+						currentTextLine = OGRE_NEW_T(TextLine,Ogre::MEMCATEGORY_GENERAL)();
+						mTextLines.push_back(currentTextLine);
+					}
+					else
+					{
 						// add Characters from pointer to endOfWord - 1
 						while(cItr != endOfWord)
 						{
@@ -489,36 +503,11 @@ namespace QuickGUI
 							++cItr;
 						}
 					}
-					else
-					{
-						while( (endOfWord != mCharacters.end()) && !isWhiteSpace((*endOfWord)->codePoint) )
-						{
-							wordLength += (*endOfWord)->dimensions.size.width;
-							++endOfWord;
-						}
-
-						// If the word doesn't fit on this TextLine, create a new TextLine and repeat the process
-						if( wordLength > availableSpace )
-						{
-							currentTextLine = OGRE_NEW_T(TextLine,Ogre::MEMCATEGORY_GENERAL)();
-							mTextLines.push_back(currentTextLine);
-						}
-						else
-						{
-							// add Characters from pointer to endOfWord - 1
-							while(cItr != endOfWord)
-							{
-								currentTextLine->addCharacter((*cItr));
-								++cItr;
-							}
-						}
-					}
 				}
 			}
-
-			// Add NULL Character
-			currentTextLine->addCharacter(mCharacters.back());
 		}
+
+		currentTextLine->addCharacter(mCharacters.back());
 	}
 
 	void Text::_destroyTextLines()
@@ -543,8 +532,6 @@ namespace QuickGUI
 
 		Point p = position;
 
-		Brush::getSingleton().beginRectQueue();
-
 		for(std::vector<TextLine*>::iterator it = mTextLines.begin(); it != mTextLines.end(); ++it)
 		{
 			switch(mTextDesc->horizontalTextAlignment)
@@ -552,12 +539,10 @@ namespace QuickGUI
 			case TEXT_ALIGNMENT_HORIZONTAL_LEFT:
 				break;
 			case TEXT_ALIGNMENT_HORIZONTAL_RIGHT:
-				if(mTextDesc->allottedWidth > 0.001)
-					p.x += mTextDesc->allottedWidth - (*it)->getWidth();
+				p.x += mTextDesc->allottedWidth - (*it)->getWidth();
 				break;
 			case TEXT_ALIGNMENT_HORIZONTAL_CENTER:
-				if(mTextDesc->allottedWidth > 0.001)
-					p.x += ((mTextDesc->allottedWidth - (*it)->getWidth()) / 2.0);
+				p.x += ((mTextDesc->allottedWidth - (*it)->getWidth()) / 2.0);
 				break;
 			}
 
@@ -570,7 +555,7 @@ namespace QuickGUI
 		}
 
 		// Draw any remaining queued rects
-		Brush::getSingleton().endRectQueue();
+		Brush::getSingleton().emptyQueue();
 
 		brush->setFilterMode(previousFilterMode);
 	}
@@ -805,7 +790,7 @@ namespace QuickGUI
 		return height;
 	}
 
-	int Text::getCursorIndexAtPosition(const Point& p)
+	int Text::getCursorIndexAtPosition(Point& p)
 	{
 		_checkTextLines();
 
@@ -997,21 +982,14 @@ namespace QuickGUI
 		_checkTextLines();
 
 		float height = 0;
-		float maxWidth = 0;
 		for(std::vector<TextLine*>::iterator it = mTextLines.begin(); it != mTextLines.end(); ++it)
 		{
 			height = height + (*it)->getHeight() + mTextDesc->verticalLineSpacing;
-
-			if((*it)->getWidth() > maxWidth)
-				maxWidth = (*it)->getWidth();
 		}
 
 		height = height - mTextDesc->verticalLineSpacing;
 
-		if(mTextDesc->allottedWidth > 0.001)
-			maxWidth = mTextDesc->allottedWidth;
-
-		return Size(maxWidth,height);
+		return Size(mTextDesc->allottedWidth,height);
 	}
 
 	Ogre::UTFString Text::getText()
@@ -1294,10 +1272,10 @@ namespace QuickGUI
 
 	void Text::setAllottedWidth(float pixelWidth)
 	{
-		if(pixelWidth < 0.001)
-			mTextDesc->allottedWidth  = 0;
-		else
-			mTextDesc->allottedWidth = pixelWidth;
+		if(mTextDesc->allottedWidth == pixelWidth)
+			return;
+
+		mTextDesc->allottedWidth = pixelWidth;
 
 		mTextLinesDirty = true;
 	}

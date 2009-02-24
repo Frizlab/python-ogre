@@ -14,8 +14,9 @@ namespace QuickGUI
 			public ContainerWidgetDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-//	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		ToolBarDesc(const Ogre::String& id);
 		virtual ~ToolBarDesc() {}
 	public:
@@ -51,7 +52,8 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
-		friend class Factory<Widget>;
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -97,7 +99,7 @@ namespace QuickGUI
 		*/
 		void openMenu(Menu* m);
 
-	protected:
+	//protected:
 		ToolBar(const Ogre::String& name);
 		virtual ~ToolBar();
 

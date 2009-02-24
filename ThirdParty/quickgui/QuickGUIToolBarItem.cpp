@@ -4,8 +4,7 @@
 namespace QuickGUI
 {
 	ToolBarItemDesc::ToolBarItemDesc(const Ogre::String& id) :
-		ContainerWidgetDesc(id),
-		toolBar(NULL)
+		ContainerWidgetDesc(id)
 	{
 		resetToDefault();
 	}
@@ -78,11 +77,6 @@ namespace QuickGUI
 		ContainerWidget::setDimensions(r);
 	}
 
-	void ToolBarItem::setHeight(float pixelHeight)
-	{
-		ContainerWidget::setHeight(pixelHeight);
-	}
-
 	void ToolBarItem::setPosition(const Point& position)
 	{
 		ContainerWidget::setPosition(position);
@@ -91,10 +85,5 @@ namespace QuickGUI
 	void ToolBarItem::setSize(const Size& size)
 	{
 		ContainerWidget::setSize(size);
-	}
-
-	void ToolBarItem::setWidth(float pixelWidth)
-	{
-		ContainerWidget::setWidth(pixelWidth);
 	}
 }

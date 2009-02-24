@@ -34,8 +34,6 @@ namespace QuickGUI
 		progressbar_progress = 100;
 		progressbar_verticalTextAlignment = TEXT_ALIGNMENT_VERTICAL_CENTER;
 
-		widget_transparencyPicking = false;
-
 		textDesc.resetToDefault();
 	}
 

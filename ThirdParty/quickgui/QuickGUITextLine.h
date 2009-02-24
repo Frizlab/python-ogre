@@ -66,7 +66,7 @@ namespace QuickGUI
 		*/
 		void setMaskText(bool mask, Ogre::UTFString::code_point maskSymbol);
 
-	protected:
+	//protected:
 		Point mPosition;
 
 		bool mMaskText;

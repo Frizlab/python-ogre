@@ -1,7 +1,6 @@
 #ifndef QUICKGUISHEET_H
 #define QUICKGUISHEET_H
 
-#include "QuickGUIContextMenu.h"
 #include "QuickGUIException.h"
 #include "QuickGUIMenuPanel.h"
 #include "QuickGUIModalWindow.h"
@@ -20,8 +19,9 @@ namespace QuickGUI
 			public WindowDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		SheetDesc(const Ogre::String& id);
 		virtual ~SheetDesc() {}
 	public:
@@ -45,7 +45,7 @@ namespace QuickGUI
 		*/
 		virtual void serialize(SerialBase* b);
 
-	protected:
+	//protected:
 		HorizontalAnchor horizontalAnchor;
 		VerticalAnchor verticalAnchor;
 		bool dragable;
@@ -90,12 +90,9 @@ namespace QuickGUI
 		* Iterates through free list and destroys all widgets queued for deletion.
 		*/
 		void cleanupWidgets();
-		ContextMenu* createContextMenu(ContextMenuDesc* d);
 		ModalWindow* createModalWindow(ModalWindowDesc* d);
 		Window* createWindow(WindowDesc* d);
 
-		void destroyContextMenu(const Ogre::String& name);
-		void destroyContextMenu(ContextMenu* m);
 		void destroyModalWindow(const Ogre::String& name);
 		void destroyModalWindow(ModalWindow* w);
 		/**
@@ -127,7 +124,6 @@ namespace QuickGUI
 		* Returns the class name of this Widget.
 		*/
 		virtual Ogre::String getClass();
-		ContextMenu* getContextMenu(const Ogre::String& name);
 		/**
 		* Returns the widget that should receive keyboard events;
 		*/
@@ -136,11 +132,6 @@ namespace QuickGUI
 		Window* getWindow(const Ogre::String& name);
 		Window* getWindowInFocus();
 
-		/**
-		* Returns true if this sheet has a child contextmenu with the name given, false
-		* otherwise.
-		*/
-		bool hasContextMenu(const Ogre::String& name);
 		/**
 		* Returns true if this sheet has a child modal window with the name given, false
 		* otherwise.
@@ -165,7 +156,7 @@ namespace QuickGUI
 		*/
 		void setKeyboardListener(Widget* w);
 
-	protected:
+	//protected:
 		/**
 		* Standard Constructor
 		*/

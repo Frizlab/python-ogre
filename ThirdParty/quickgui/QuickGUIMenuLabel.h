@@ -10,8 +10,9 @@ namespace QuickGUI
 			public MenuItemDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-//	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		MenuLabelDesc(const Ogre::String& id);
 		virtual ~MenuLabelDesc() {}
 	public:
@@ -53,7 +54,8 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
-		friend class Factory<Widget>;
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -133,7 +135,7 @@ namespace QuickGUI
 		*/
 		void setVerticalTextAlignment(VerticalTextAlignment a);
 
-	protected:
+	//protected:
 		MenuLabel(const Ogre::String& name);
 		virtual ~MenuLabel();
 

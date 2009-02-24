@@ -1,14 +1,12 @@
 #include "QuickGUIList.h"
 #include "QuickGUIManager.h"
 #include "QuickGUISkinDefinitionManager.h"
-#include "QuickGUIFactoryManager.h"
 
 #include "OgreStringConverter.h"
 
 namespace QuickGUI
 {
 	const Ogre::String List::BACKGROUND = "background";
-	const Ogre::String List::LISTITEM = "listitem";
 
 	void List::registerSkinDefinition()
 	{
@@ -16,7 +14,6 @@ namespace QuickGUI
 		d->defineSkinElement(BACKGROUND);
 		d->defineComponent(HSCROLLBAR);
 		d->defineComponent(VSCROLLBAR);
-		d->defineComponent(LISTITEM);
 		d->definitionComplete();
 
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("List",d);
@@ -46,8 +43,7 @@ namespace QuickGUI
 
 	List::List(const Ogre::String& name) :
 		ContainerWidget(name),
-		mPrevSelectedIndex(0),
-		mAutoNameCounter(0)
+		mPrevSelectedIndex(0)
 	{
 		mSkinElementName = BACKGROUND;
 
@@ -144,14 +140,7 @@ namespace QuickGUI
 
 	ListItem* List::createItem(int index, ListItemDesc* d)
 	{
-		if(d->widget_name == "")
-		{
-			d->widget_name = getName() + ".AutoName.Item." + Ogre::StringConverter::toString(mAutoNameCounter);
-			++mAutoNameCounter;
-		}
-
 		d->widget_horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
-		d->widget_skinTypeName = mSkinType->getComponentType(LISTITEM)->typeName;
 
 		ListItem* newListItem = dynamic_cast<ListItem*>(Widget::create(d->getWidgetClass(),d));
 
@@ -160,43 +149,32 @@ namespace QuickGUI
 
 		ContainerWidget::addChild(newListItem);
 
-		// If we're adding to the end, things are simple - don't have to update other item names, or positions.
-		if((index < 0) || (index >= static_cast<int>(mListItems.size())))
-		{
-			mListItems.push_back(newListItem);
-			int itemIndex = static_cast<int>(mListItems.size()) - 1;
-			newListItem->setPosition(Point(0,itemIndex * mDesc->list_listItemHeight));
-			newListItem->setIndex(itemIndex);
-
-			return newListItem;
-		}
-		
-		// If we've made it here, we have to insert the item into the list, and update all item indices and positions.
 		int counter = 0;
+		bool added = false;
 		for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
 		{
 			if(counter == index)
 			{
 				mListItems.insert(it,newListItem);
-				break;
+				added = true;
 			}
 
 			++counter;
 		}
+		// If index was invalid, add to end of list.
+		if(!added)
+			mListItems.push_back(newListItem);
 
 		// Set all positions of ListItems.
 		float y = 0;
-		Ogre::String ListName = getName();
 		for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
 		{
 			(*it)->setPosition(Point(0,y));
-			// Since we're already iterating through the loop, update index and names, 
-			// instead of calling updateIndices()
-			(*it)->setIndex(counter);
 
 			y += mDesc->list_listItemHeight;
-			++counter;
 		}
+
+		updateItemNamesAndIndices();
 
 		return newListItem;
 	}
@@ -244,29 +222,13 @@ namespace QuickGUI
 		{
 			if(count == index)
 			{
-				Widget* w = (*it);
-				removeChild(w);
+				OGRE_DELETE_T((*it),ListItem,Ogre::MEMCATEGORY_GENERAL);
 				mListItems.erase(it);
-				FactoryManager::getSingleton().getWidgetFactory()->destroyInstance(w);
-
-				// Update all item positions.
-				float y = 0;
-				for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
-				{
-					(*it)->setPosition(Point(0,y));
-
-					y += mDesc->list_listItemHeight;
-				}
-
-				break;
 			}
-
-			++count;
 		}
 
 		// Update names and Indices
-		updateIndices();
-		redraw();
+		updateItemNamesAndIndices();
 	}
 
 	bool List::fireListEvent(ListEvent e, EventArgs& args)
@@ -534,7 +496,6 @@ namespace QuickGUI
 
 	void List::setListItemHeight(float height)
 	{
-		height = Ogre::Math::Floor(height + 0.5);
 		mDesc->list_listItemHeight = height;
 
 		float y = 0;
@@ -547,21 +508,15 @@ namespace QuickGUI
 		}
 	}
 
-	void List::setSkinType(const Ogre::String type)
+	void List::updateItemNamesAndIndices()
 	{
-		ContainerWidget::setSkinType(type);
-
-		for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
-			(*it)->setSkinType(mSkinType->getComponentType(LISTITEM)->typeName);
-	}
-
-	void List::updateIndices()
-	{
+		Ogre::String ListName = getName();
 		unsigned int counter = 0;
 
 		for(std::list<ListItem*>::iterator it = mListItems.begin(); it != mListItems.end(); ++it)
 		{
 			(*it)->setIndex(counter);
+			(*it)->mWidgetDesc->widget_name = ListName + Ogre::StringConverter::toString(counter);
 
 			++counter;
 		}

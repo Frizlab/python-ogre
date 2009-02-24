@@ -35,10 +35,7 @@ namespace QuickGUI
 
 		widget_dimensions.size = Size(100,100);
 		widget_dragable = false;
-		widget_resizeFromBottom = true;
-		widget_resizeFromLeft = true;
-		widget_resizeFromRight = true;
-		widget_resizeFromTop = true;
+		widget_resizable = true;
 
 		window_titleBar = true;
 		window_titleBarDragable = true;
@@ -91,11 +88,11 @@ namespace QuickGUI
 
 	void Window::_initialize(WidgetDesc* d)
 	{
-		WindowDesc* wd = dynamic_cast<WindowDesc*>(d);
-
 		Panel::_initialize(d);
 
 		mDesc = dynamic_cast<WindowDesc*>(mWidgetDesc);
+
+		WindowDesc* wd = dynamic_cast<WindowDesc*>(d);
 
 		mDesc->window_titleBar = wd->window_titleBar;
 		mDesc->window_titleBarCloseButton = wd->window_titleBarCloseButton;
@@ -107,9 +104,9 @@ namespace QuickGUI
 		// Create TitleBar if property is set.
 		if(mDesc->window_titleBar)
 		{
-			TitleBarDesc* tbd = FactoryManager::getSingleton().getDescFactory()->getInstance<TitleBarDesc>("DefaultTitleBarDesc");
+			TitleBarDesc* tbd = dynamic_cast<TitleBarDesc*>(FactoryManager::getSingleton().getWidgetDescFactory()->getInstance("DefaultTitleBarDesc"));
 			tbd->resetToDefault();
-			tbd->widget_name = getName() + ".TitleBar";
+			tbd->widget_name = ".TitleBar";
 			tbd->widget_dimensions.size.width = mClientDimensions.size.width;
 			tbd->widget_dimensions.size.height = mDesc->textDesc.getTextHeight() + 6;
 			tbd->widget_dragable = mDesc->window_titleBarDragable;
@@ -254,7 +251,6 @@ namespace QuickGUI
 		
 		brush->setRenderTarget(NULL);
 		brush->setTexture(mTexture);
-		brush->setOpacity(getAbsoluteOpacity());
 		brush->drawRectangle(mWidgetDesc->widget_dimensions,UVRect(0,0,1,1));
 
 		WidgetEventArgs args(this);

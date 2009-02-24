@@ -68,15 +68,6 @@ namespace QuickGUI
 		return newCheckBox;
 	}
 
-	ColorPicker* Panel::createColorPicker(ColorPickerDesc* d)
-	{
-		ColorPicker* newColorPicker = dynamic_cast<ColorPicker*>(Widget::create("ColorPicker",d));
-
-		addChild(newColorPicker);
-
-		return newColorPicker;
-	}
-
 	ComboBox* Panel::createComboBox(ComboBoxDesc* d)
 	{
 		ComboBox* newComboBox = dynamic_cast<ComboBox*>(Widget::create("ComboBox",d));
@@ -147,24 +138,6 @@ namespace QuickGUI
 		addChild(newProgressBar);
 
 		return newProgressBar;
-	}
-
-	PropertyGrid* Panel::createPropertyGrid(PropertyGridDesc* d)
-	{
-		PropertyGrid* newPropertyGrid = dynamic_cast<PropertyGrid*>(Widget::create("PropertyGrid",d));
-
-		addChild(newPropertyGrid);
-
-		return newPropertyGrid;
-	}
-
-	RadioButton* Panel::createRadioButton(RadioButtonDesc* d)
-	{
-		RadioButton* newRadioButton = dynamic_cast<RadioButton*>(Widget::create("RadioButton",d));
-
-		addChild(newRadioButton);
-
-		return newRadioButton;
 	}
 
 	TabControl* Panel::createTabControl(TabControlDesc* d)

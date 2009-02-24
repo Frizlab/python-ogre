@@ -37,11 +37,7 @@ namespace QuickGUI
 
 		WindowDesc::window_titleBar = false;
 
-		widget_resizeFromBottom = false;
-		widget_resizeFromLeft = false;
-		widget_resizeFromRight = false;
-		widget_resizeFromTop = false;
-		widget_serialize = false;
+		widget_resizable = false;
 	}
 
 	MenuPanel::MenuPanel(const Ogre::String& name) :
@@ -87,15 +83,9 @@ namespace QuickGUI
 
 	void MenuPanel::_initialize(WidgetDesc* d)
 	{
-		d->widget_resizeFromBottom = false;
-		d->widget_resizeFromLeft = false;
-		d->widget_resizeFromRight = false;
-		d->widget_resizeFromTop = false;
-		d->widget_serialize = false;
+		mDesc = dynamic_cast<MenuPanelDesc*>(mWidgetDesc);
 
 		Window::_initialize(d);
-
-		mDesc = dynamic_cast<MenuPanelDesc*>(mWidgetDesc);
 
 		MenuPanelDesc* lpd = dynamic_cast<MenuPanelDesc*>(d);
 
@@ -119,14 +109,6 @@ namespace QuickGUI
 		mDesc->widget_dimensions.size.height = 1;
 
 		redraw();
-	}
-
-	float MenuPanel::getAbsoluteOpacity()
-	{
-		if(!mWidgetDesc->widget_inheritOpacity || (mDesc->menupanel_owner == NULL))
-			return mWidgetDesc->widget_relativeOpacity;
-
-		return mDesc->menupanel_owner->getAbsoluteOpacity() * mWidgetDesc->widget_relativeOpacity;
 	}
 
 	Ogre::String MenuPanel::getClass()
@@ -168,14 +150,8 @@ namespace QuickGUI
 			if(ownerClass == "Menu")
 			{
 				ToolBar* tb = dynamic_cast<Menu*>(mDesc->menupanel_owner)->getToolBar();
-				if((tb != NULL) && (tb->findWidget(mDesc->sheet->getWindowInFocus()->getName()) == NULL))
+				if(tb->findWidget(mDesc->guiManager->getLastClickedWidget()->getName()) == NULL)
 					tb->closeMenus();
-				else
-				{
-					ContextMenu* cm = dynamic_cast<Menu*>(mDesc->menupanel_owner)->getContextMenu();
-					if((cm != NULL) && (cm->findWidget(mDesc->sheet->getWindowInFocus()->getName()) == NULL))
-						cm->hide();
-				}
 			}
 			else if(ownerClass == "ComboBox")
 			{
@@ -183,9 +159,7 @@ namespace QuickGUI
 
 				// If we click a widget other than the combobox, hide the list.
 				// If we did click the combobox, the combobox will hide the list automatically.
-				if(mDesc->guiManager->getLastClickedWidget() == NULL)
-					cb->hideDropDownList();
-				else if(cb->findWidget(mDesc->guiManager->getLastClickedWidget()->getName()) == NULL)
+				if((mDesc->guiManager->getLastClickedWidget() != NULL) && (cb->findWidget(mDesc->guiManager->getLastClickedWidget()->getName()) == NULL))
 					cb->hideDropDownList();
 			}
 		}
@@ -193,9 +167,9 @@ namespace QuickGUI
 
 	void MenuPanel::onVisibleChanged(const EventArgs& args)
 	{
-		if(mWidgetDesc->widget_visible)
+		if(mDesc->widget_visible)
 		{
-			mWidgetDesc->sheet->focusWindow(this);
+			mDesc->sheet->focusWindow(this);
 		}
 	}
 
@@ -204,6 +178,11 @@ namespace QuickGUI
 		removeChild(w);
 
 		_adjustHeight();
+	}
+
+	void MenuPanel::serialize(SerialBase* b)
+	{
+		// Empty on purpose! MenuPanels don't serialize to disk.
 	}
 
 	void MenuPanel::setMaxHeight(float height)

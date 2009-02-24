@@ -29,13 +29,12 @@ namespace QuickGUI
 	class Root;
 
 	// 2730 = 65536 bytes / 24 bytes per vertex. (~64kb allocated for vertex buffer)
-	//const int DEFAULT_VERTEX_BUFFER_SIZE = 2730;
-	const int VERTEX_COUNT = 3072;
+	const int DEFAULT_VERTEX_BUFFER_SIZE = 2730;
 
 	/*
 	* The brush class represents the tool required to draw 2d textures to the screen.
 	*/
-	class _QuickGUIExport Brush :
+	class Brush :
 		public Ogre::Singleton<Brush>
 	{
 	public:
@@ -45,31 +44,10 @@ namespace QuickGUI
 		static Brush* getSingletonPtr(void);
 
 		/**
-		* Allows Lines to be Queued for drawing all at once.
-		*/
-		void beginLineQueue();
-		/**
-		* Allows Rects to be Queued for drawing all at once.
-		*/
-		void beginRectQueue();
-
-		/**
 		* Clears the current target using the current color
 		*/
 		void clear();
 
-		/**
-		* Draws a line
-		*/
-		void drawLine(const Point& p1, const Point& p2);
-		/**
-		* Draws a line
-		*/
-		void drawLine(const Point& p1, const Point& p2, const Ogre::ColourValue& cv);
-		/**
-		* Draws a rectangle made of lines
-		*/
-		void drawLineRectangle(const Rect& r);
 		/**
 		* Draws the currently set texture to the Render Target.  The uv coordinates define
 		* the portion of the currently set texture to draw to the rectangle area.  Texture
@@ -85,15 +63,19 @@ namespace QuickGUI
 		* Draws a tiled texture, defined by the uv coordinates, within the provided rectangle area.
 		*/
 		void drawTiledRectangle(Rect r, UVRect ur);
+		/**
+		* Draws a line
+		*/
+		void drawLine(const Point& p1, const Point& p2);
+		/**
+		* Draws a rectangle made of lines
+		*/
+		void drawLineRectangle(const Rect& r);
 
 		/**
-		* Renders all lines queued for drawing. (1 batch)
+		* Renders all objects queued for drawing. (1 batch)
 		*/
-		void endLineQueue();
-		/**
-		* Renders all rects queued for drawing. (1 batch)
-		*/
-		void endRectQueue();
+		void emptyQueue();
 
 		/** 
 		* Gets the current clip region rectangle, in pixels
@@ -107,10 +89,6 @@ namespace QuickGUI
 		* Gets filtering mode used for drawing.
 		*/
 		BrushFilterMode getFilterMode();
-		/**
-		* Gets the opacity used to draw future elements on the render target.
-		*/
-		float getOpacity();
 		/**
 		* Gets the target currently being drawn to.
 		*/
@@ -126,14 +104,6 @@ namespace QuickGUI
 		*/
 		void prepareToDraw();
 
-		/**
-		* Queues a line for drawing.
-		*/
-		void queueLine(Point p1, Point p2);
-		/**
-		* Queues a line for drawing.
-		*/
-		void queueLine(Point p1, Point p2, const Ogre::ColourValue& cv);
 		/**
 		* Queues a non-tiled rectangle for drawing.  All Queued rects
 		* will have the same texture.
@@ -163,10 +133,6 @@ namespace QuickGUI
 		*/
 		void setFilterMode(BrushFilterMode m);
 		/**
-		* Sets the opacity of future elements drawn on the render target.
-		*/
-		void setOpacity(float opacity);
-		/**
 		* This function specifies where to draw to.
 		*/
 		void setRenderTarget(Ogre::TexturePtr p);
@@ -193,15 +159,13 @@ namespace QuickGUI
 		*/
 		void updateViewport(Ogre::Viewport* viewport);
 
-	protected:
+	//protected:
 		Ogre::RenderSystem* mRenderSystem;
 		Ogre::SceneManager* mSceneManager;
 		Ogre::Viewport* mDefaultViewport;
 
 		// Used to set the pass before rendering.
-		Ogre::Pass* mGUIPass;
-
-		Ogre::MaterialPtr mGUIMaterial;
+		Ogre::Pass* mEmptyPass;
 
 		Ogre::Viewport* mRenderTarget;
 		float mTargetWidth;
@@ -231,7 +195,7 @@ namespace QuickGUI
 		bool mQueuedItems;
 		Vertex* mBufferPtr;
 
-	private:
+//	private:
 		Brush();
 		~Brush();
 
@@ -246,12 +210,6 @@ namespace QuickGUI
 		void _destroyVertexBuffer();
 
 		// Vertex functions
-
-		/**
-		* Populates and fills vertex information for rendering.
-		* NOTE: verts should be arrays of size 2.
-		*/
-		void _buildLineVertices(const Point& p1, const Point& p2, Ogre::Vector3* verts);
 		/*
 		* Populates and fills vertex and uv information for rendering.
 		* NOTE: verts and uv should be arrays of size 6.
