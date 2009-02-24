@@ -29,6 +29,7 @@ import ogre.renderer.OGRE as Ogre
 import ogre.io.OIS as ois
 import ogre.gui.QuickGUI as gui
 import SampleFramework as sf
+import os
 
 class CallBack ( gui.EventHandlerSlot ):
     """ Callback class for user events in QuickGUI"""
@@ -66,13 +67,13 @@ class GuiFrameListener ( sf.FrameListener, ois.MouseListener, ois.KeyListener ):
         self.mouseOverTB = tb
         
     def frameStarted(self, evt):
-        if (self.robotAnimationState != None): self.robotAnimationState.addTime(evt.timeSinceLastFrame)
-
-#         if( self.mGUIManager != None ) :
-#             self.mGUIManager.injectTime(evt.timeSinceLastFrame)
-
-        if(self.mouseOverTB != None):
-            self.mouseOverTB.setText(self.mGUIManager.getMouseOverWidget().getInstanceName())
+# # #         if (self.robotAnimationState != None): self.robotAnimationState.addTime(evt.timeSinceLastFrame)
+# # # 
+# # # #         if( self.mGUIManager != None ) :
+# # # #             self.mGUIManager.injectTime(evt.timeSinceLastFrame)
+# # # 
+# # #         if(self.mouseOverTB != None):
+# # #             self.mouseOverTB.setText(self.mGUIManager.getMouseOverWidget().getInstanceName())
         
 # #         if(self.debugTB == None):
 # #             self.debugTB = self.mGUIManager.getActiveSheet().getChildWidget("DebugTextBox") 
@@ -132,17 +133,24 @@ class GuiFrameListener ( sf.FrameListener, ois.MouseListener, ois.KeyListener ):
 class QuickGUIDemoApp (sf.Application):
     def __del__ (self ):
         self.guiroot.destroyGUIManager(self.mGUIManager)
-        del self.guiroot
-        del self.mGUIManager
+        if self.guiroot: del self.guiroot
+        if self.mGUIManager: del self.mGUIManager
         sf.Application.__del__(self)
 
     def _setUpResources(self):
-        gui.registerScriptReader();
+        
+        # register the quickgui script handler..
+        gui.registerScriptReader()
+
+        # load the default resources
         sf.Application._setUpResources ( self )
+        
+        # Now load any extra resource locations that we might need..  
+        Ogre.ResourceGroupManager.getSingleton().addResourceLocation("media","FileSystem", "General")
+        
                     
     ## Just override the mandatory create scene method
     def _createScene(self):
-        self.ResourceGroup = "quickgui"
 
         self.mDebugDisplayShown=True
         ## Set ambient light
@@ -207,11 +215,11 @@ class QuickGUIDemoApp (sf.Application):
         self.guiroot = gui.Root()
         gui.SkinTypeManager.getSingleton().loadTypes()
         self.desc = gui.GUIManagerDesc()
-    
+#     
         self.mGUIManager = gui.Root.getSingleton().createGUIManager(self.desc)
         self.mGUIManager.setSceneManager(self.sceneManager) 
         self.mGUIManager.viewport = self.camera.getViewport()
-
+# 
         self.createGUI()
         
     def MakeCallback ( self, function ):
@@ -226,8 +234,11 @@ class QuickGUIDemoApp (sf.Application):
         Point = gui.Point
         Size = gui.Size
         self.mSheet = self.mGUIManager.getDefaultSheet()
-        descFactory = gui.FactoryManager.getSingleton().getDescFactory()
+#         descFactory = gui.FactoryManager.getSingleton().getDescFactory()
         widgetFactory = gui.FactoryManager.getSingleton().getWidgetFactory()
+        
+        
+        
 # #         print descFactory
 # #         print dir (descFactory)
 # #         print dir (gui.FactoryManager.getSingleton())
