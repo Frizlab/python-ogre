@@ -139,7 +139,7 @@ namespace QuickGUI
 		* Defines the main viewport to render to.
 		*/
 		void setViewport(Ogre::Viewport* vp);
-	protected:
+	//protected:
 		/** Constructor */
 		GUIManager(GUIManagerDesc& d);
 		/** Standard Destructor. */
@@ -193,14 +193,13 @@ namespace QuickGUI
 		// Used to fire dragged/dropped events.
 		bool mDraggingWidget;
 
+		// Used to resize widgets
+		bool mOverResizableBorder;
 		// Record if left mouse button went down on border.
 		bool mDownOnBorder;
 		BorderSide mResizableBorder;
 		// Store the previous border the widget was over.
 		BorderSide mPreviousBorder;
-
-		/// Checks if cursor needs to be changed to resizing cursor, or reverted from resizing cursor
-		void checkIfCursorOverResizableBorder(Point position);
 
 		bool injectMouseMove(const int& xPixelOffset, const int& yPixelOffset);
 	private:

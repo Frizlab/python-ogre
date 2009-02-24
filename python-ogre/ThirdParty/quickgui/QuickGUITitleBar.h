@@ -10,8 +10,9 @@ namespace QuickGUI
 		public ComponentWidgetDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-//	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		TitleBarDesc(const Ogre::String& id);
 		virtual ~TitleBarDesc() {}
 	public:
@@ -53,7 +54,8 @@ namespace QuickGUI
 	public:
 		friend class GUIManager;
 		friend class Window;
-		friend class Factory<Widget>;
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -153,7 +155,7 @@ namespace QuickGUI
 		*/
 		virtual void updateClientDimensions();
 
-	protected:
+	//protected:
 		TitleBar(const Ogre::String& name);
 		virtual ~TitleBar();
 
@@ -175,25 +177,9 @@ namespace QuickGUI
 		virtual void onDraw();
 
 		/**
-		* Convenience methods allowing all sides to enable/disable resizing using the mouse cursor.
+		* Sets whether the widget can be resized using the mouse.
 		*/
-		void setResizeFromAllSides(bool resizable);
-		/**
-		* If set true, the bottom border of this widget can be used with the mouse cursor to resize the widget.
-		*/
-		void setResizeFromBottom(bool resizable);
-		/**
-		* If set true, the left border of this widget can be used with the mouse cursor to resize the widget.
-		*/
-		void setResizeFromLeft(bool resizable);
-		/**
-		* If set true, the right border of this widget can be used with the mouse cursor to resize the widget.
-		*/
-		void setResizeFromRight(bool resizable);
-		/**
-		* If set true, the top border of this widget can be used with the mouse cursor to resize the widget.
-		*/
-		void setResizeFromTop(bool resizable);
+		virtual void setResizable(bool resizable);
 
 	private:
 	};

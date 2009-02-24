@@ -48,39 +48,6 @@ namespace QuickGUI
 	};
 
 	/**
-	* ProgressBar Events
-	*/
-	enum ProgressBarEvent
-	{
-		// Property type events
-		PROGRESSBAR_EVENT_PROGRESS_CHANGED	 = 0,
-		// Input type events
-		// Other type events
-		PROGRESSBAR_EVENT_COUNT
-	};
-
-	enum RadioButtonEvent
-	{
-		// Property type events
-		// Input type events
-		// Other type events
-		RADIOBUTTON_EVENT_SELECTED	=  0,
-		RADIOBUTTON_EVENT_COUNT
-	};
-
-	/**
-	* ScrollBar Events
-	*/
-	enum ScrollBarEvent
-	{
-		// Property type events
-		// Input type events
-		// Other type events
-		SCROLLBAR_EVENT_ON_SCROLLED			,
-		SCROLLBAR_EVENT_COUNT
-	};
-
-	/**
 	* TabControl Events
 	*/
 	enum TabControlEvent
@@ -90,42 +57,6 @@ namespace QuickGUI
 		// Other type events
 		TABCONTROL_EVENT_SELECTION_CHANGED	=  0,
 		TABCONTROL_EVENT_COUNT
-	};
-
-	/**
-	* TreeView Events
-	*/
-	enum TreeViewEvent
-	{
-		// Property type events
-		// Input type events
-		// Other type events
-		TREEVIEW_EVENT_SELECTION_CHANGED	,
-		TREEVIEW_EVENT_COUNT
-	};
-
-	/**
-	* TreeViewCheckBoxNode Events
-	*/
-	enum TreeViewCheckBoxNodeEvent
-	{
-		// Property type events
-		// Input type events
-		// Other type events
-		TREEVIEWCHECKBOXNODE_EVENT_CHECK_CHANGED	,
-		TREEVIEWCHECKBOXNODE_EVENT_COUNT
-	};
-
-	/**
-	* TreeViewCheckBoxNode Events
-	*/
-	enum TreeViewRadioButtonNodeEvent
-	{
-		// Property type events
-		// Input type events
-		// Other type events
-		TREEVIEWRADIOBUTTONNODE_EVENT_RADIOBUTTON_SELECTED	,
-		TREEVIEWRADIOBUTTONNODE_EVENT_COUNT
 	};
 
 	/**
@@ -175,6 +106,30 @@ namespace QuickGUI
 		WINDOW_EVENT_FOCUS_LOST				,
 		WINDOW_EVENT_FOCUS_GAINED			,
 		WINDOW_EVENT_COUNT
+	};
+
+	/**
+	* ScrollBar Events
+	*/
+	enum ScrollBarEvent
+	{
+		// Property type events
+		// Input type events
+		// Other type events
+		SCROLLBAR_EVENT_ON_SCROLLED			,
+		SCROLLBAR_EVENT_COUNT
+	};
+
+	/**
+	* ProgressBar Events
+	*/
+	enum ProgressBarEvent
+	{
+		// Property type events
+		PROGRESSBAR_EVENT_PROGRESS_CHANGED	 = 0,
+		// Input type events
+		// Other type events
+		PROGRESSBAR_EVENT_COUNT
 	};
 }
 

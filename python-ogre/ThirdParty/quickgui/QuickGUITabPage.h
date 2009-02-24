@@ -37,15 +37,14 @@ namespace QuickGUI
 	public:
 		// TabControl sets the size of the TabPage, and position of the Tab
 		friend class TabControl;
-		friend class Factory<Widget>;
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
 		* Internal function, do not use.
 		*/
 		virtual void _initialize(WidgetDesc* d);
-
-		virtual void addWidgetEventHandler(WidgetEvent EVENT, EventHandlerSlot* function);
 
 		/**
 		* Checks if point p is within this widget's dimensions.
@@ -67,15 +66,11 @@ namespace QuickGUI
 		/**
 		* Returns the horizontal alignment of text within the Tab area.
 		*/
-		HorizontalTextAlignment getTabHorizontalTextAlignment();
+		HorizontalTextAlignment getHorizontalTextAlignment();
 		/**
 		* Returns the vertical alignment of text within the Tab area.
 		*/
-		VerticalTextAlignment getTabVerticalTextAlignment();
-		/**
-		* Gets the buffer width added to the end of Tab.
-		*/
-		float getTabWidthBuffer();
+		VerticalTextAlignment getVerticalTextAlignment();
 
 		/**
 		* Returns true if the tab page has been selected, false otherwise.
@@ -103,68 +98,30 @@ namespace QuickGUI
 		*/
 		virtual void setEnabled(bool enabled);
 		/**
+		* Sets the Horizontal alignment of Text as displayed within the Label area.
+		*/
+		void setHorizontalTextAlignment(HorizontalTextAlignment a);
+		/**
 		* Sets the "type" of this widget.  For example you
 		* can create several types of Button widgets: "close", "add", "fire.skill.1", etc.
 		* NOTE: The type property determines what is drawn to the screen.
 		*/
 		virtual void setSkinType(const Ogre::String type);
 		/**
-		* Sets all characters of the text to the specified font.
-		*/
-		void setTabFont(const Ogre::String& fontName);
-		/**
-		* Sets the character at the index given to the specified font.
-		*/
-		void setTabFont(const Ogre::String& fontName, unsigned int index);
-		/**
-		* Sets all characters within the defined range to the specified font.
-		*/
-		void setTabFont(const Ogre::String& fontName, unsigned int startIndex, unsigned int endIndex);
-		/**
-		* Searches text for c.  If allOccurrences is true, all characters of text matching c
-		* will be changed to the font specified, otherwise only the first occurrence is changed.
-		*/
-		void setTabFont(const Ogre::String& fontName, Ogre::UTFString::code_point c, bool allOccurrences);
-		/**
-		* Searches text for s.  If allOccurrences is true, all sub strings of text matching s
-		* will be changed to the font specified, otherwise only the first occurrence is changed.
-		*/
-		void setTabFont(const Ogre::String& fontName, Ogre::UTFString s, bool allOccurrences);
-		/**
 		* Sets the height of this tab.
 		*/
 		void setTabHeight(float height);
 		/**
-		* Sets the Horizontal alignment of Text as displayed within the Label area.
-		*/
-		void setTabHorizontalTextAlignment(HorizontalTextAlignment a);
-		/**
-		* Sets the text for this object.
-		*/
-		void setTabText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv);
-		/**
-		* Sets the text for this object.
-		*/
-		void setTabText(Ogre::UTFString s, const Ogre::String& fontName, const Ogre::ColourValue& cv);
-		/**
-		* Sets the text for this object.
-		*/
-		void setTabText(Ogre::UTFString s);
-		/**
 		* Sets the Vertical alignment of Text as displayed within the Label area.
 		*/
-		void setTabVerticalTextAlignment(VerticalTextAlignment a);
-		/**
-		* Sets the buffer used to set the width of the main area of the Tab.
-		*/
-		void setTabWidthBuffer(float pixelBuffer);
+		void setVerticalTextAlignment(VerticalTextAlignment a);
 
 		/**
 		* Recalculate Client dimensions, relative to Widget's actual dimensions.
 		*/
 		virtual void updateClientDimensions();
 
-	protected:
+	//protected:
 		TabPage(const Ogre::String& name);
 		virtual ~TabPage();
 
@@ -186,7 +143,7 @@ namespace QuickGUI
 		*/
 		virtual void onDraw();
 
-		void onMouseButtonDownOnTab(const EventArgs& args);
+		void onMouseButtonUpOnTab(const EventArgs& args);
 		void onMouseEnterTab(const EventArgs& args);
 		void onMouseLeaveTab(const EventArgs& args);
 
@@ -223,25 +180,9 @@ namespace QuickGUI
 		*/
 		virtual void setPosition(const Point& position);
 		/**
-		* Convenience methods allowing all sides to enable/disable resizing using the mouse cursor.
+		* Sets whether the widget can be resized using the mouse.
 		*/
-		void setResizeFromAllSides(bool resizable);
-		/**
-		* If set true, the bottom border of this widget can be used with the mouse cursor to resize the widget.
-		*/
-		void setResizeFromBottom(bool resizable);
-		/**
-		* If set true, the left border of this widget can be used with the mouse cursor to resize the widget.
-		*/
-		void setResizeFromLeft(bool resizable);
-		/**
-		* If set true, the right border of this widget can be used with the mouse cursor to resize the widget.
-		*/
-		void setResizeFromRight(bool resizable);
-		/**
-		* If set true, the top border of this widget can be used with the mouse cursor to resize the widget.
-		*/
-		void setResizeFromTop(bool resizable);
+		virtual void setResizable(bool resizable);
 		/**
 		* Sets the width and height of this widget.
 		*/

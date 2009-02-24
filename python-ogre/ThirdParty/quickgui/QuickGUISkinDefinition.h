@@ -53,7 +53,7 @@ namespace QuickGUI
 		*/
 		bool validateSkinType(SkinType* t);
 
-	protected:
+	//protected:
 		Ogre::String mClassName;
 
 		// If this is true, we cannot define any more SkinElements or ComponentTypes to this definition

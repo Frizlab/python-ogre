@@ -15,8 +15,11 @@ namespace QuickGUI
 			public MenuLabelDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-	protected:
+		friend class Menu;
+		friend class ToolBar;
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		MenuDesc(const Ogre::String& id);
 		virtual ~MenuDesc() {}
 	public:
@@ -60,7 +63,8 @@ namespace QuickGUI
 		static void registerSkinDefinition();
 	public:
 		friend class ToolBar;
-		friend class Factory<Widget>;
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -152,13 +156,11 @@ namespace QuickGUI
 		*/
 		virtual void setSkinType(const Ogre::String type);
 
-	protected:
+	//protected:
 		Menu(const Ogre::String& name);
 		virtual ~Menu();
 
 		MenuDesc* mDesc;
-
-		int mAutoNameCounter;
 
 		// Window containing child MenuItems
 		MenuPanel* mMenuPanel;
@@ -173,10 +175,6 @@ namespace QuickGUI
 		*/
 		virtual void addChild(Widget* w);
 		/**
-		* Updates the ContextMenu Link;
-		*/
-		virtual void notifyContextMenuParent(ContextMenu* m);
-		/**
 		* Updates the Menu Link;
 		*/
 		virtual void notifyMenuParent(Menu* m);
@@ -188,6 +186,9 @@ namespace QuickGUI
 		* Event handler for Left Mouse Button Down event. (Show/Hide Menu List)
 		*/
 		virtual void onMouseButtonDown(const EventArgs& args);
+		/**
+		* Event handler for Mouse Button Up event.
+		*/
 		virtual void onMouseButtonUp(const EventArgs& args);
 		/**
 		* Closes all SubMenus belonging to the parent Menu, and opens this menu

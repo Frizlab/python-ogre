@@ -4,6 +4,7 @@
 #include "QuickGUIException.h"
 #include "QuickGUIExportDLL.h"
 #include "QuickGUIFactory.h"
+#include "QuickGUIWidgetFactory.h"
 #include "QuickGUIWidget.h"
 
 #include "OgreSingleton.h"
@@ -12,10 +13,6 @@
 
 namespace QuickGUI
 {
-	// forward declarations
-	class Widget;
-	class Desc;
-
 	/*
 	* The Factory manager manages factories of QuickGUI, including Widget and Desc factories.
 	*/
@@ -31,18 +28,18 @@ namespace QuickGUI
 		/**
 		* Returns the Widget Factory.
 		*/
-		Factory<Widget>* getWidgetFactory();
+		WidgetFactory<Widget>* getWidgetFactory();
 		/**
 		* Returns the WidgetDesc Factory.
 		*/
-		Factory<Desc>* getDescFactory();
+		Factory<WidgetDesc>* getWidgetDescFactory();
 
-	protected:
+	//protected:
 		FactoryManager();
 		virtual ~FactoryManager();
 
-		Factory<Widget>* mWidgetFactory;
-		Factory<Desc>* mDescFactory;
+		WidgetFactory<Widget>* mWidgetFactory;
+		Factory<WidgetDesc>* mWidgetDescFactory;
 
 	private:
 	};

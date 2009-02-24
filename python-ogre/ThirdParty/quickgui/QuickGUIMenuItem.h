@@ -6,28 +6,22 @@
 namespace QuickGUI
 {
 	// forward declaration
-	class ContextMenu;
 	class Menu;
 
 	class _QuickGUIExport MenuItemDesc :
 			public ToolBarItemDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
+		template<typename BaseClassType>
+		friend class Factory;
 	//protected:
 		MenuItemDesc(const Ogre::String& id);
 		virtual ~MenuItemDesc() {}
 	public:
 
-		// Keep track of the menu this item belongs to. Due to qgui design,
-		// the menuItem's parent is the MenuPanel.
 		Menu* menu;
 
-		// MenuItems originate from ToolBars or ContextMenus.  Keep track of
-		// contextMenu, if applicable.
-		ContextMenu* contextMenu;
-
-	protected:
+	//protected:
 		/// For Horizontally oriented ToolBars, this is the width of the Widget.
 		/// For Vertically oriented ToolBars, this is the height of the widget.
 		float length;
@@ -37,8 +31,6 @@ namespace QuickGUI
 		public ToolBarItem
 	{
 	public:
-		// Gives ContextMenu access to reposition MenuItems
-		friend class ContextMenu;
 		friend class ToolBar;
 		friend class Menu;
 		friend class MenuPanel;
@@ -50,19 +42,14 @@ namespace QuickGUI
 		virtual void _initialize(WidgetDesc* d);
 
 		/**
-		* Returns the ContextMenu this MenuItem belongs to, or NULL if
-		* this MenuItem does not belong to a ContextMenu.
-		*/
-		ContextMenu* getContextMenu();
-		/**
 		* Returns the Menu this MenuItem belongs to.
 		* NOTE: This MenuItem could be a Menu, and if the Menu is directly connected to a ToolBar,
 		* its parent Menu will be itself.
 		*/
 		Menu* getMenu();
+
 		/**
-		* Returns the ToolBar this MenuItem belongs to, or NULL if
-		* this MenuItem does not belong to a ToolBar.
+		* Returns the ToolBar this MenuItem belongs to.
 		*/
 		ToolBar* getToolBar();
 		
@@ -71,14 +58,9 @@ namespace QuickGUI
 		*/
 		virtual bool isMenuItem();
 
-	protected:
+	//protected:
 		MenuItem(const Ogre::String& name);
 		virtual ~MenuItem();
-
-		/**
-		* Updates the ContextMenu Link;
-		*/
-		virtual void notifyContextMenuParent(ContextMenu* m);
 
 		/**
 		* Updates the Menu Link;

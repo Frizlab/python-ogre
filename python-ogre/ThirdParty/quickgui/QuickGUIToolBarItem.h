@@ -13,8 +13,9 @@ namespace QuickGUI
 	{
 	public:
 		friend class ToolBar;
-		template<typename BaseClassType> friend class Factory;
-//	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		ToolBarItemDesc(const Ogre::String& id);
 		virtual ~ToolBarItemDesc() {}
 	public:
@@ -54,7 +55,7 @@ namespace QuickGUI
 		*/
 		virtual bool isToolBarItem();
 
-	protected:
+	//protected:
 		ToolBarItem(const Ogre::String& name);
 		virtual ~ToolBarItem();
 
@@ -72,23 +73,15 @@ namespace QuickGUI
 		/**
 		* Sets the size and position (position relative to parent) of this Widget, respectively.
 		*/
-		virtual void setDimensions(const Rect& r);
-		/**
-		* Sets the height of the widget.
-		*/
-		virtual void setHeight(float pixelHeight);
+		void setDimensions(const Rect& r);
 		/**
 		* Sets the x and y position of this widget, relative to this widget's parent.
 		*/
-		virtual void setPosition(const Point& position);
+		void setPosition(const Point& position);
 		/**
 		* Sets the width and height of this widget.
 		*/
-		virtual void setSize(const Size& size);
-		/**
-		* Sets the widget of the widget.
-		*/
-		virtual void setWidth(float pixelWidth);
+		void setSize(const Size& size);
 	private:
 	};
 }

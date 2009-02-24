@@ -1,6 +1,4 @@
 #include "QuickGUIFactoryManager.h"
-#include "QuickGUIWidget.h"
-#include "QuickGUIDesc.h"
 
 #include "OgreMemoryAllocatorConfig.h"
 
@@ -10,14 +8,14 @@ namespace QuickGUI
 {
 	FactoryManager::FactoryManager()
 	{
-		mWidgetFactory = new Factory<Widget>();
-		mDescFactory = new Factory<Desc>();
+		mWidgetFactory = new WidgetFactory<Widget>();
+		mWidgetDescFactory = new Factory<WidgetDesc>();
 	}
 
 	FactoryManager::~FactoryManager()
 	{
 		delete mWidgetFactory;
-		delete mDescFactory;
+		delete mWidgetDescFactory;
 	}
 
 	FactoryManager* FactoryManager::getSingletonPtr(void) 
@@ -31,13 +29,13 @@ namespace QuickGUI
 		return ( *ms_Singleton ); 
 	}
 
-	Factory<Widget>* FactoryManager::getWidgetFactory()
+	WidgetFactory<Widget>* FactoryManager::getWidgetFactory()
 	{
 		return mWidgetFactory;
 	}
 
-	Factory<Desc>* FactoryManager::getDescFactory()
+	Factory<WidgetDesc>* FactoryManager::getWidgetDescFactory()
 	{
-		return mDescFactory;
+		return mWidgetDescFactory;
 	}
 }

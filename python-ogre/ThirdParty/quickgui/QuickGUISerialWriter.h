@@ -58,7 +58,7 @@ namespace QuickGUI
 		bool isSerialWriter();
 		bool isSerialReader();
 
-	protected:
+	//protected:
 		SerialWriter();
 		virtual ~SerialWriter() {}
 	private:

@@ -31,7 +31,6 @@ namespace QuickGUI
 			if(mCurrentDefinition->mSubDefinitions[definitionType].find(definitionID) != mCurrentDefinition->mSubDefinitions[definitionType].end())
 				throw Exception(Exception::ERR_SERIALIZATION,"Definition \"" + mCurrentDefinition->getType() + " " + mCurrentDefinition->getID() + "\" already contains a definition \"" + definitionType + " " + definitionID + "!","SerialWriter::begin");
 			mCurrentDefinition->mSubDefinitions[definitionType][definitionID] = newDef;
-			mCurrentDefinition->mSubDefinitionsInOrder.push_back(newDef);
 		}
 
 		mCurrentDefinition = newDef;

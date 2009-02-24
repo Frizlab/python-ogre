@@ -41,15 +41,6 @@ namespace QuickGUI
 				size == r.size );
         }
 
-		inline Rect& operator /= ( float f )
-        {
-			position /= f;
-			size /= f;
-
-			return *this;
-        }
-
-
 		Rect getIntersection( const Rect& r ) const;
 
 		bool inside(const Rect& r) const;

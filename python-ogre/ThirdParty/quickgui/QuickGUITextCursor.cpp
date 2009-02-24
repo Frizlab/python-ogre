@@ -1,8 +1,6 @@
 #include "QuickGUITextCursor.h"
 #include "QuickGUISkinDefinitionManager.h"
 #include "QuickGUIWidget.h"
-#include "QuickGUITextBox.h"
-#include "QuickGUITextArea.h"
 
 namespace QuickGUI
 {
@@ -63,12 +61,8 @@ namespace QuickGUI
 		Rect clipRegion = brush->getClipRegion();
 
 		// Set clip region
-		if(mOwner->getClass() == "TextBox")
-			brush->setClipRegion(dynamic_cast<TextBox*>(mOwner)->getScreenRect());
-		else if(mOwner->getClass() == "TextArea")
-			brush->setClipRegion(dynamic_cast<TextArea*>(mOwner)->getScreenRect());
-		else
-			brush->setClipRegion(Rect(mOwner->getScreenPosition(),mOwner->getSize()));
+		Rect newClipRegion = Rect(mOwner->getScreenPosition(),mOwner->getDimensions().size);
+		brush->setClipRegion(newClipRegion);
 
 		// Draw SkinElement
 		brush->drawSkinElement(mDimensions,mSkinElement);

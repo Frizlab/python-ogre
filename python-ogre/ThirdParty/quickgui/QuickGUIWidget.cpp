@@ -8,8 +8,7 @@ namespace QuickGUI
 {
 	int Widget::mWidgetCounter = 0;
 
-	WidgetDesc::WidgetDesc(const Ogre::String& id) :
-		Desc()
+	WidgetDesc::WidgetDesc(const Ogre::String& id)
 	{
 		mID = id;
 
@@ -20,7 +19,6 @@ namespace QuickGUI
 	{
 		widget_brushFilterMode = BRUSHFILTER_LINEAR;
 		widget_consumeKeyboardEvents = false;
-		widget_contextMenuName = "";
 		widget_enabled = true;
 		widget_dimensions = Rect::ZERO;
 		widget_disabledSkinType = "";
@@ -28,18 +26,11 @@ namespace QuickGUI
 		guiManager = NULL;
 		widget_horizontalAnchor = ANCHOR_HORIZONTAL_LEFT;
 		widget_hoverTime = Root::getSingleton().getDefaultHoverTime();
-		widget_inheritOpacity = true;
 		widget_maxSize = Size::ZERO;
-		widget_minSize = Size(5,5);
+		widget_minSize = Size(0,0);
 		widget_name = "";
-		widget_positionRelativeToParentClientDimensions = true;
-		widget_relativeOpacity = 1.0;
-		widget_resizeFromBottom = false;
-		widget_resizeFromLeft = false;
-		widget_resizeFromRight = false;
-		widget_resizeFromTop = false;
+		widget_resizable = false;
 		widget_scrollable = true;
-		widget_serialize = true;
 		sheet = NULL;
 		widget_transparencyPicking = true;
 		widget_verticalAnchor = ANCHOR_VERTICAL_TOP;
@@ -51,22 +42,15 @@ namespace QuickGUI
 	{
 		b->IO("BrushFilterMode",&widget_brushFilterMode);
 		b->IO("ConsumeKeyboardEvents",&widget_consumeKeyboardEvents);
-		b->IO("ContextMenuName",&widget_contextMenuName);
 		b->IO("Enabled",&widget_enabled);
 		b->IO("Dimensions",&widget_dimensions);
 		b->IO("DisabledSkinType",&widget_disabledSkinType);
 		b->IO("Dragable",&widget_dragable);
 		b->IO("HorizontalAnchor",&widget_horizontalAnchor);
 		b->IO("HoverTime",&widget_hoverTime);
-		b->IO("InheritOpacity",&widget_inheritOpacity);
 		b->IO("MaxSize",&widget_maxSize);
 		b->IO("MinSize",&widget_minSize);
-		b->IO("PositionRelativeToParentClientDimensions",&widget_positionRelativeToParentClientDimensions);
-		b->IO("RelativeOpacity",&widget_relativeOpacity);
-		b->IO("ResizeFromBottom",&widget_resizeFromBottom);
-		b->IO("ResizeFromLeft",&widget_resizeFromLeft);
-		b->IO("ResizeFromRight",&widget_resizeFromRight);
-		b->IO("ResizeFromTop",&widget_resizeFromTop);
+		b->IO("Resizable",&widget_resizable);
 		b->IO("Scrollable",&widget_scrollable);
 		b->IO("TransparencyPicking",&widget_transparencyPicking);
 		b->IO("VerticalAnchor",&widget_verticalAnchor);
@@ -91,7 +75,7 @@ namespace QuickGUI
 
 	Widget::~Widget()
 	{
-		FactoryManager::getSingleton().getDescFactory()->destroyInstance(mWidgetDesc->widget_name);
+		FactoryManager::getSingleton().getWidgetDescFactory()->destroyInstance(mWidgetDesc->getID());
 
 		// Clean up all user defined event handlers.
 		for(int index = 0; index < WIDGET_EVENT_COUNT; ++index)
@@ -101,47 +85,40 @@ namespace QuickGUI
 		}
 	}
 
-	void Widget::_createDescObject()
+	void Widget::_createDescObject(const Ogre::String& className)
 	{
-		if(mWidgetDesc != NULL)
-			return;
+		if(mInitialized)
+			throw Exception(Exception::ERR_INTERNAL_ERROR,"Widget is already initialized!","Widget::_createDescObject");
 
-		mWidgetDesc = FactoryManager::getSingleton().getDescFactory()->createInstance<WidgetDesc>(getClass() + "Desc", mName);
+		mWidgetDesc = FactoryManager::getSingleton().getWidgetDescFactory()->createInstance(className);
 		// Assign widget_name, stored from widget creation
 		mWidgetDesc->widget_name = mName;
 
 		if(mWidgetDesc->getWidgetClass() != getClass())
-			throw Exception(Exception::ERR_INVALID_DESC,"Desc of class \"" + mWidgetDesc->getClass() + "\" is not meant for Widget of class \"" + getClass() + "\"!","Widget::_initialize");
+			throw Exception(Exception::ERR_INVALID_DESC,"Desc of class \"" + className + "\" is not meant for Widget of class \"" + getClass() + "\"!","Widget::_initialize");
 	}
 
 	void Widget::_initialize(WidgetDesc* d)
 	{
-		_createDescObject();
-
 		if(mInitialized)
 			throw Exception(Exception::ERR_INTERNAL_ERROR,"Widget is already initialized!","Widget::_initialize");
+
+		if(mWidgetDesc == NULL)
+			throw Exception(Exception::ERR_INVALID_STATE,"Desc object has not been created!  Did you forget to call _createDescObject in the factory method?","Widget::_initialize");
 
 		mInitialized = true;
 
 		setConsumeKeyboardEvents(d->widget_consumeKeyboardEvents);
-		setContextMenuName(d->widget_contextMenuName);
 		setEnabled(d->widget_enabled);
 		setDimensions(d->widget_dimensions);
 		setDragable(d->widget_dragable);
 		setHorizontalAnchor(d->widget_horizontalAnchor);
 		setHoverTime(d->widget_hoverTime);
-		setInheritOpacity(d->widget_inheritOpacity);
 		setMaxSize(d->widget_maxSize);
 		setMinSize(d->widget_minSize);
 		setName(d->widget_name);
-		setPositionRelativeToParentClientDimensions(d->widget_positionRelativeToParentClientDimensions);
-		setRelativeOpacity(d->widget_relativeOpacity);
-		setResizeFromBottom(d->widget_resizeFromBottom);
-		setResizeFromLeft(d->widget_resizeFromLeft);
-		setResizeFromRight(d->widget_resizeFromRight);
-		setResizeFromTop(d->widget_resizeFromTop);
+		setResizable(d->widget_resizable);
 		setScrollable(d->widget_scrollable);
-		setSerialize(d->widget_serialize);
 		setTransparencyPicking(d->widget_transparencyPicking);
 		setVerticalAnchor(d->widget_verticalAnchor);
 		setVisible(d->widget_visible);
@@ -167,6 +144,8 @@ namespace QuickGUI
 
 	Widget* Widget::create(const Ogre::String& className, WidgetDesc* d)
 	{
+		Ogre::String temp = d->widget_name;
+
 		if(d->widget_name == "")
 		{
 			d->widget_name = className + Ogre::StringConverter::toString(mWidgetCounter);
@@ -178,11 +157,11 @@ namespace QuickGUI
 		if(className != d->getWidgetClass())
 			throw Exception(Exception::ERR_INVALID_DESC,"Desc object for Widget of class \"" + d->getWidgetClass() + "\" does not match Widget of class \"" + className + "\"!","GUIManager::createWidget");
 
-		Widget* newWidget = FactoryManager::getSingleton().getWidgetFactory()->createInstance<Widget>(className,d->widget_name);
+		Widget* newWidget = FactoryManager::getSingleton().getWidgetFactory()->createInstance(className,d->widget_name);
 		newWidget->_initialize(d);
 
-		// Reset the widget_name, in case it was changed.  This Desc could be used multiple times, so this is important!
-		d->widget_name = "";
+		// Restore the widget_name, in case it was changed.  This Desc could be used multiple times, so this is important!
+		d->widget_name = temp;
 
 		return newWidget;
 	}
@@ -211,9 +190,6 @@ namespace QuickGUI
 		if ( clipRegion.getIntersection(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size)) == Rect::ZERO )
 			return;
 
-		// Set opacity before drawing operations
-		brush->setOpacity(getAbsoluteOpacity());
-
 		// onDraw
 		onDraw();
 	}
@@ -238,20 +214,16 @@ namespace QuickGUI
 		if(!mWidgetDesc->widget_visible)
 			return NULL;
 
-		// If we ignore disabled and this widget is !widget_enabled, return NULL
+		// If we ignore disabled and this widget is widget_enabled, return NULL
 		if(ignoreDisabled && !mWidgetDesc->widget_enabled)
 			return NULL;
 
 		// See if point is within widget bounds
-		if(Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size).isPointWithinBounds(p))
+		if(mWidgetDesc->widget_visible && Rect(mTexturePosition,mWidgetDesc->widget_dimensions.size).isPointWithinBounds(p))
 		{
 			// Take transparency picking into account
 			if(mWidgetDesc->widget_transparencyPicking && (mSkinType != NULL))
 			{
-				// If the background is transparent, return NULL
-				if(mSkinType->getSkinElement(mSkinElementName)->getTextureName() == "")
-					return NULL;
-
 				// Get relative position
 				Point relPos = p - mTexturePosition;
 				// Get percentage of position relative to widget widget_dimensions
@@ -284,14 +256,6 @@ namespace QuickGUI
 			(*it)->execute(args);
 
 		return true;
-	}
-
-	float Widget::getAbsoluteOpacity()
-	{
-		if(!mWidgetDesc->widget_inheritOpacity || (mParentWidget == NULL))
-			return mWidgetDesc->widget_relativeOpacity;
-
-		return mParentWidget->getAbsoluteOpacity() * mWidgetDesc->widget_relativeOpacity;
 	}
 
 	bool Widget::getBeingDragged()
@@ -347,11 +311,6 @@ namespace QuickGUI
 		return mWidgetDesc->widget_consumeKeyboardEvents;
 	}
 
-	Ogre::String Widget::getContextMenuName()
-	{
-		return mWidgetDesc->widget_contextMenuName;
-	}
-
 	Rect Widget::getDimensions()
 	{
 		return mWidgetDesc->widget_dimensions;
@@ -397,11 +356,6 @@ namespace QuickGUI
 		return mWidgetDesc->widget_hoverTime;
 	}
 
-	bool Widget::getInheritOpacity()
-	{
-		return mWidgetDesc->widget_inheritOpacity;
-	}
-
 	Size Widget::getMaxSize()
 	{
 		return mWidgetDesc->widget_maxSize;
@@ -414,9 +368,6 @@ namespace QuickGUI
 
 	Ogre::String Widget::getName()
 	{
-		if(isComponentOfAWidget())
-			return mParentWidget->getName() + mWidgetDesc->widget_name;
-
 		return mWidgetDesc->widget_name;
 	}
 
@@ -430,34 +381,9 @@ namespace QuickGUI
 		return mWidgetDesc->widget_dimensions.position;
 	}
 
-	bool Widget::getPositionRelativeToParentClientDimensions()
+	bool Widget::getResizable()
 	{
-		return mWidgetDesc->widget_positionRelativeToParentClientDimensions;
-	}
-
-	float Widget::getRelativeOpacity()
-	{
-		return mWidgetDesc->widget_relativeOpacity;
-	}
-
-	bool Widget::getResizeFromBottom()
-	{
-		return mWidgetDesc->widget_resizeFromBottom;
-	}
-
-	bool Widget::getResizeFromLeft()
-	{
-		return mWidgetDesc->widget_resizeFromLeft;
-	}
-
-	bool Widget::getResizeFromRight()
-	{
-		return mWidgetDesc->widget_resizeFromRight;
-	}
-
-	bool Widget::getResizeFromTop()
-	{
-		return mWidgetDesc->widget_resizeFromTop;
+		return mWidgetDesc->widget_resizable;
 	}
 
 	Point Widget::getScreenPosition()
@@ -465,12 +391,11 @@ namespace QuickGUI
 		if(mParentWidget == NULL)
 			return mWidgetDesc->widget_dimensions.position + mScrollOffset;
 
-		// Component widget's positions are not typically relative to their parent's client dimensions.
-		// Other widgets can share this functionality also
-		if(!mWidgetDesc->widget_positionRelativeToParentClientDimensions)
-			return mParentWidget->getScreenPosition() + (mWidgetDesc->widget_dimensions.position - mScrollOffset);
+		// Component widget's positions are not relative to their parent's client dimensions.
+		if(isComponentOfAWidget())
+			return mParentWidget->getScreenPosition() + (mWidgetDesc->widget_dimensions.position + mScrollOffset);
 		else
-			return mParentWidget->getScreenPosition() + mParentWidget->getClientDimensions().position + (mWidgetDesc->widget_dimensions.position - mScrollOffset);
+			return mParentWidget->getScreenPosition() + mParentWidget->getClientDimensions().position + (mWidgetDesc->widget_dimensions.position + mScrollOffset);
 	}
 
 	Point Widget::getScroll()
@@ -499,11 +424,6 @@ namespace QuickGUI
 
 		// NULL
 		return w;
-	}
-
-	bool Widget::getSerialize()
-	{
-		return mWidgetDesc->widget_serialize;
 	}
 
 	Sheet* Widget::getSheet()
@@ -711,12 +631,6 @@ namespace QuickGUI
 
 	void Widget::serialize(SerialBase* b)
 	{
-		// Create Desc object if its not already created.
-		_createDescObject();
-
-		if(!mWidgetDesc->widget_serialize)
-			return;
-
 		b->begin(getClass(),getName());
 
 		mWidgetDesc->serialize(b);
@@ -742,11 +656,6 @@ namespace QuickGUI
 		mWidgetDesc->widget_consumeKeyboardEvents = consume;
 	}
 
-	void Widget::setContextMenuName(const Ogre::String& contextMenuName)
-	{
-		mWidgetDesc->widget_contextMenuName = contextMenuName;
-	}
-
 	void Widget::setDimensions(const Rect& r)
 	{
 		setSize(r.size);
@@ -764,17 +673,17 @@ namespace QuickGUI
 			redraw();
 	}
 
-	void Widget::setDragable(bool dragable)
+	void Widget::setDragable(bool widget_dragable)
 	{
-		mWidgetDesc->widget_dragable = dragable;
+		mWidgetDesc->widget_dragable = widget_dragable;
 	}
 
-	void Widget::setEnabled(bool enabled)
+	void Widget::setEnabled(bool widget_enabled)
 	{
-		if(mWidgetDesc->widget_enabled == enabled)
+		if(mWidgetDesc->widget_enabled == widget_enabled)
 			return;
 
-		mWidgetDesc->widget_enabled = enabled;
+		mWidgetDesc->widget_enabled = widget_enabled;
 
 		WidgetEventArgs args(this);
 		fireWidgetEvent(WIDGET_EVENT_ENABLED_CHANGED,args);
@@ -796,7 +705,7 @@ namespace QuickGUI
 		if((mWidgetDesc->widget_maxSize.height > 0) && (pixelHeight > mWidgetDesc->widget_maxSize.height))
 			pixelHeight = mWidgetDesc->widget_maxSize.height;
 		// Enforce min height
-		else if(pixelHeight < mWidgetDesc->widget_minSize.height)
+		else if((mWidgetDesc->widget_minSize.height > 0) && (pixelHeight < mWidgetDesc->widget_minSize.height))
 			pixelHeight = mWidgetDesc->widget_minSize.height;
 
 		mWidgetDesc->widget_dimensions.size.height = pixelHeight;
@@ -819,13 +728,6 @@ namespace QuickGUI
 		mWidgetDesc->widget_hoverTime = seconds;
 	}
 
-	void Widget::setInheritOpacity(bool inherit)
-	{
-		mWidgetDesc->widget_inheritOpacity = inherit;
-
-		redraw();
-	}
-
 	void Widget::setMaxSize(const Size& s)
 	{
 		mWidgetDesc->widget_maxSize = s;
@@ -840,9 +742,9 @@ namespace QuickGUI
 		setSize(mWidgetDesc->widget_dimensions.size);
 	}
 
-	void Widget::setName(const Ogre::String& name)
+	void Widget::setName(const Ogre::String& widget_name)
 	{
-		mWidgetDesc->widget_name = FactoryManager::getSingleton().getDescFactory()->updateName(mWidgetDesc,name);
+		mWidgetDesc->widget_name = widget_name;
 	}
 
 	void Widget::setParent(Widget* parent)
@@ -882,51 +784,9 @@ namespace QuickGUI
 		fireWidgetEvent(WIDGET_EVENT_POSITION_CHANGED,args);
 	}
 
-	void Widget::setPositionRelativeToParentClientDimensions(bool relativeToClientOrigin)
+	void Widget::setResizable(bool widget_resizable)
 	{
-		mWidgetDesc->widget_positionRelativeToParentClientDimensions = relativeToClientOrigin;
-
-		updateTexturePosition();
-	}
-
-	void Widget::setRelativeOpacity(float opacity)
-	{
-		if(opacity > 1)
-			opacity = 1;
-		else if(opacity < 0)
-			opacity = 0;
-
-		mWidgetDesc->widget_relativeOpacity = opacity;
-
-		redraw();
-	}
-
-	void Widget::setResizeFromAllSides(bool resizable)
-	{
-		setResizeFromBottom(resizable);
-		setResizeFromLeft(resizable);
-		setResizeFromRight(resizable);
-		setResizeFromTop(resizable);
-	}
-
-	void Widget::setResizeFromBottom(bool resizable)
-	{
-		mWidgetDesc->widget_resizeFromBottom = resizable;
-	}
-
-	void Widget::setResizeFromLeft(bool resizable)
-	{
-		mWidgetDesc->widget_resizeFromLeft = resizable;
-	}
-
-	void Widget::setResizeFromRight(bool resizable)
-	{
-		mWidgetDesc->widget_resizeFromRight = resizable;
-	}
-
-	void Widget::setResizeFromTop(bool resizable)
-	{
-		mWidgetDesc->widget_resizeFromTop = resizable;
+		mWidgetDesc->widget_resizable = widget_resizable;
 	}
 
 	void Widget::setScroll(unsigned int scrollX, unsigned int scrollY)
@@ -966,14 +826,9 @@ namespace QuickGUI
 		fireWidgetEvent(WIDGET_EVENT_SCROLL_CHANGED,args);
 	}
 
-	void Widget::setScrollable(bool scrollable)
+	void Widget::setScrollable(bool widget_scrollable)
 	{
-		mWidgetDesc->widget_scrollable = scrollable;
-	}
-
-	void Widget::setSerialize(bool serialize)
-	{
-		mWidgetDesc->widget_serialize = serialize;
+		mWidgetDesc->widget_scrollable = widget_scrollable;
 	}
 
 	void Widget::setSize(Size size)
@@ -1022,9 +877,9 @@ namespace QuickGUI
 		fireWidgetEvent(WIDGET_EVENT_SKIN_CHANGED,wea);
 	}
 
-	void Widget::setTransparencyPicking(bool transparencyPicking)
+	void Widget::setTransparencyPicking(bool widget_transparencyPicking)
 	{
-		mWidgetDesc->widget_transparencyPicking = transparencyPicking;
+		mWidgetDesc->widget_transparencyPicking = widget_transparencyPicking;
 	}
 
 	void Widget::setVerticalAnchor(VerticalAnchor a)
@@ -1032,12 +887,12 @@ namespace QuickGUI
 		mWidgetDesc->widget_verticalAnchor = a;
 	}
 
-	void Widget::setVisible(bool visible)
+	void Widget::setVisible(bool widget_visible)
 	{
-		if(mWidgetDesc->widget_visible == visible)
+		if(mWidgetDesc->widget_visible == widget_visible)
 			return;
 
-		mWidgetDesc->widget_visible = visible;
+		mWidgetDesc->widget_visible = widget_visible;
 
 		WidgetEventArgs args(this);
 		fireWidgetEvent(WIDGET_EVENT_VISIBLE_CHANGED,args);
@@ -1053,7 +908,7 @@ namespace QuickGUI
 		if((mWidgetDesc->widget_maxSize.width > 0) && (pixelWidth > mWidgetDesc->widget_maxSize.width))
 			pixelWidth = mWidgetDesc->widget_maxSize.width;
 		// Enforce min width
-		else if(pixelWidth < mWidgetDesc->widget_minSize.width)
+		else if((mWidgetDesc->widget_minSize.width > 0) && (pixelWidth < mWidgetDesc->widget_minSize.width))
 			pixelWidth = mWidgetDesc->widget_minSize.width;
 
 		mWidgetDesc->widget_dimensions.size.width = pixelWidth;
@@ -1101,9 +956,8 @@ namespace QuickGUI
 		{
 			mTexturePosition.translate(mParentWidget->getTexturePosition());
 			
-			// Components in general aren't restricted to Parent's Client widget_dimensions.
-			// Other widgets can share this functionality as well.
-			if(mWidgetDesc->widget_positionRelativeToParentClientDimensions)
+			// Components aren't restricted to Parent's Client widget_dimensions
+			if(!mComponentOfAWidget)
 				mTexturePosition.translate(mParentWidget->getClientDimensions().position);
 		}			
 

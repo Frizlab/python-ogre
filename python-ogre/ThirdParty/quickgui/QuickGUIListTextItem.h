@@ -9,8 +9,9 @@ namespace QuickGUI
 		public ListItemDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		ListTextItemDesc(const Ogre::String& id);
 		virtual ~ListTextItemDesc() {}
 	public:
@@ -51,7 +52,8 @@ namespace QuickGUI
 		// ComboBox works with ListTextItems specifically and needs to be able to destroy them.
 		friend class ComboBox;
 
-		friend class Factory<Widget>;
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -129,7 +131,7 @@ namespace QuickGUI
 		*/
 		void setText(std::vector<TextSegment> segments);
 
-	protected:
+	//protected:
 		ListTextItem(const Ogre::String& name);
 		virtual ~ListTextItem();
 

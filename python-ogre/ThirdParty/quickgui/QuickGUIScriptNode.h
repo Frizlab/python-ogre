@@ -30,7 +30,7 @@ namespace QuickGUI
 		void setName(const Ogre::String& name);
 		void setParent(ScriptNode* newParent);
 
-	protected:
+	//protected:
 	private:
 		std::string name;
 		Ogre::StringVector values;

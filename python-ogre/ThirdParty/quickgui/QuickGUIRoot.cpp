@@ -2,26 +2,17 @@
 
 #include "QuickGUIButton.h"
 #include "QuickGUICheckBox.h"
-#include "QuickGUIColorPicker.h"
 #include "QuickGUIComboBox.h"
 #include "QuickGUIConsole.h"
-#include "QuickGUIContextMenu.h"
 #include "QuickGUIHScrollBar.h"
 #include "QuickGUIImage.h"
 #include "QuickGUILabel.h"
 #include "QuickGUIList.h"
 #include "QuickGUIListTextItem.h"
-#include "QuickGUIListImageItem.h"
 #include "QuickGUIMenu.h"
 #include "QuickGUIMenuLabel.h"
 #include "QuickGUIMenuPanel.h"
 #include "QuickGUIProgressBar.h"
-#include "QuickGUIPropertyGrid.h"
-#include "QuickGUIPropertyGridSection.h"
-#include "QuickGUIPropertyGridTextProperty.h"
-#include "QuickGUIPropertyGridBoolProperty.h"
-#include "QuickGUIPropertyGridComboBoxProperty.h"
-#include "QuickGUIRadioButton.h"
 #include "QuickGUISheet.h"
 #include "QuickGUITab.h"
 #include "QuickGUITabControl.h"
@@ -49,25 +40,21 @@ namespace QuickGUI
 
 		// Initialize all Singleton Manager classes
 		OGRE_NEW_T(Brush,Ogre::MEMCATEGORY_GENERAL)();
-		OGRE_NEW_T(EventHandlerManager,Ogre::MEMCATEGORY_GENERAL)();
 		OGRE_NEW_T(FactoryManager,Ogre::MEMCATEGORY_GENERAL)();
 		OGRE_NEW_T(SkinDefinitionManager,Ogre::MEMCATEGORY_GENERAL)();
 		OGRE_NEW_T(TimerManager,Ogre::MEMCATEGORY_GENERAL)();
 		OGRE_NEW_T(SheetManager,Ogre::MEMCATEGORY_GENERAL) ();
 
 		// Register default supported Widget types via FactoryManager
-		Factory<Widget>* widgetFactory = FactoryManager::getSingletonPtr()->getWidgetFactory();
+		WidgetFactory<Widget>* widgetFactory = FactoryManager::getSingletonPtr()->getWidgetFactory();
 		widgetFactory->registerClass<Button>("Button");
 		widgetFactory->registerClass<CheckBox>("CheckBox");
-		widgetFactory->registerClass<ColorPicker>("ColorPicker");
 		widgetFactory->registerClass<ComboBox>("ComboBox");
 		widgetFactory->registerClass<Console>("Console");
-		widgetFactory->registerClass<ContextMenu>("ContextMenu");
 		widgetFactory->registerClass<HScrollBar>("HScrollBar");
 		widgetFactory->registerClass<Image>("Image");
 		widgetFactory->registerClass<Label>("Label");
 		widgetFactory->registerClass<List>("List");
-		widgetFactory->registerClass<ListImageItem>("ListImageItem");
 		widgetFactory->registerClass<ListTextItem>("ListTextItem");
 		widgetFactory->registerClass<Menu>("Menu");
 		widgetFactory->registerClass<MenuLabel>("MenuLabel");
@@ -75,12 +62,6 @@ namespace QuickGUI
 		widgetFactory->registerClass<ModalWindow>("ModalWindow");
 		widgetFactory->registerClass<Panel>("Panel");
 		widgetFactory->registerClass<ProgressBar>("ProgressBar");
-		widgetFactory->registerClass<PropertyGrid>("PropertyGrid");
-		widgetFactory->registerClass<PropertyGridSection>("PropertyGridSection");
-		widgetFactory->registerClass<PropertyGridTextProperty>("PropertyGridTextProperty");
-		widgetFactory->registerClass<PropertyGridBoolProperty>("PropertyGridBoolProperty");
-		widgetFactory->registerClass<PropertyGridComboBoxProperty>("PropertyGridComboBoxProperty");
-		widgetFactory->registerClass<RadioButton>("RadioButton");
 		widgetFactory->registerClass<TabControl>("TabControl");
 		widgetFactory->registerClass<Tab>("Tab");
 		widgetFactory->registerClass<TabPage>("TabPage");
@@ -89,106 +70,76 @@ namespace QuickGUI
 		widgetFactory->registerClass<TitleBar>("TitleBar");
 		widgetFactory->registerClass<ToolBar>("ToolBar");
 		widgetFactory->registerClass<TreeView>("TreeView");
-		widgetFactory->registerClass<TreeViewNode>("TreeViewNode");
-		widgetFactory->registerClass<TreeViewCheckBoxNode>("TreeViewCheckBoxNode");
-		widgetFactory->registerClass<TreeViewRadioButtonNode>("TreeViewRadioButtonNode");
 		widgetFactory->registerClass<VScrollBar>("VScrollBar");
 		widgetFactory->registerClass<Window>("Window");
 
 		// Register default supported Widget desc types
-		Factory<Desc>* descFactory = FactoryManager::getSingletonPtr()->getDescFactory();
-		descFactory->registerClass<ButtonDesc>("ButtonDesc");
-		descFactory->registerClass<CheckBoxDesc>("CheckBoxDesc");
-		descFactory->registerClass<ColorPickerDesc>("ColorPickerDesc");
-		descFactory->registerClass<ComboBoxDesc>("ComboBoxDesc");
-		descFactory->registerClass<ConsoleDesc>("ConsoleDesc");
-		descFactory->registerClass<ContextMenuDesc>("ContextMenuDesc");
-		descFactory->registerClass<HScrollBarDesc>("HScrollBarDesc");
-		descFactory->registerClass<ImageDesc>("ImageDesc");
-		descFactory->registerClass<LabelDesc>("LabelDesc");
-		descFactory->registerClass<ListDesc>("ListDesc");
-		descFactory->registerClass<ListImageItemDesc>("ListImageItemDesc");
-		descFactory->registerClass<ListTextItemDesc>("ListTextItemDesc");
-		descFactory->registerClass<MenuDesc>("MenuDesc");
-		descFactory->registerClass<MenuLabelDesc>("MenuLabelDesc");
-		descFactory->registerClass<MenuPanelDesc>("MenuPanelDesc");
-		descFactory->registerClass<ModalWindowDesc>("ModalWindowDesc");
-		descFactory->registerClass<PanelDesc>("PanelDesc");
-		descFactory->registerClass<ProgressBarDesc>("ProgressBarDesc");
-		descFactory->registerClass<PropertyGridDesc>("PropertyGridDesc");
-		descFactory->registerClass<PropertyGridSectionDesc>("PropertyGridSectionDesc");
-		descFactory->registerClass<PropertyGridTextPropertyDesc>("PropertyGridTextPropertyDesc");
-		descFactory->registerClass<PropertyGridBoolPropertyDesc>("PropertyGridBoolPropertyDesc");
-		descFactory->registerClass<PropertyGridComboBoxPropertyDesc>("PropertyGridComboBoxPropertyDesc");
-		descFactory->registerClass<RadioButtonDesc>("RadioButtonDesc");
-		descFactory->registerClass<SheetDesc>("SheetDesc");
-		descFactory->registerClass<TabControlDesc>("TabControlDesc");
-		descFactory->registerClass<TabDesc>("TabDesc");
-		descFactory->registerClass<TabPageDesc>("TabPageDesc");
-		descFactory->registerClass<TextAreaDesc>("TextAreaDesc");
-		descFactory->registerClass<TextBoxDesc>("TextBoxDesc");
-		descFactory->registerClass<TitleBarDesc>("TitleBarDesc");
-		descFactory->registerClass<ToolBarDesc>("ToolBarDesc");
-		descFactory->registerClass<TreeViewDesc>("TreeViewDesc");
-		descFactory->registerClass<TreeViewNodeDesc>("TreeViewNodeDesc");
-		descFactory->registerClass<TreeViewCheckBoxNodeDesc>("TreeViewCheckBoxNodeDesc");
-		descFactory->registerClass<TreeViewRadioButtonNodeDesc>("TreeViewRadioButtonNodeDesc");
-		descFactory->registerClass<VScrollBarDesc>("VScrollBarDesc");
-		descFactory->registerClass<WindowDesc>("WindowDesc");
+		Factory<WidgetDesc>* widgetDescFactory = FactoryManager::getSingletonPtr()->getWidgetDescFactory();
+		widgetDescFactory->registerClass<ButtonDesc>("ButtonDesc");
+		widgetDescFactory->registerClass<CheckBoxDesc>("CheckBoxDesc");
+		widgetDescFactory->registerClass<ComboBoxDesc>("ComboBoxDesc");
+		widgetDescFactory->registerClass<ConsoleDesc>("ConsoleDesc");
+		widgetDescFactory->registerClass<HScrollBarDesc>("HScrollBarDesc");
+		widgetDescFactory->registerClass<ImageDesc>("ImageDesc");
+		widgetDescFactory->registerClass<LabelDesc>("LabelDesc");
+		widgetDescFactory->registerClass<ListDesc>("ListDesc");
+		widgetDescFactory->registerClass<ListTextItemDesc>("ListTextItemDesc");
+		widgetDescFactory->registerClass<MenuDesc>("MenuDesc");
+		widgetDescFactory->registerClass<MenuLabelDesc>("MenuLabelDesc");
+		widgetDescFactory->registerClass<MenuPanelDesc>("MenuPanelDesc");
+		widgetDescFactory->registerClass<ModalWindowDesc>("ModalWindowDesc");
+		widgetDescFactory->registerClass<PanelDesc>("PanelDesc");
+		widgetDescFactory->registerClass<ProgressBarDesc>("ProgressBarDesc");
+		widgetDescFactory->registerClass<SheetDesc>("SheetDesc");
+		widgetDescFactory->registerClass<TabControlDesc>("TabControlDesc");
+		widgetDescFactory->registerClass<TabDesc>("TabDesc");
+		widgetDescFactory->registerClass<TabPageDesc>("TabPageDesc");
+		widgetDescFactory->registerClass<TextAreaDesc>("TextAreaDesc");
+		widgetDescFactory->registerClass<TextBoxDesc>("TextBoxDesc");
+		widgetDescFactory->registerClass<TitleBarDesc>("TitleBarDesc");
+		widgetDescFactory->registerClass<ToolBarDesc>("ToolBarDesc");
+		widgetDescFactory->registerClass<TreeViewDesc>("TreeViewDesc");
+		widgetDescFactory->registerClass<VScrollBarDesc>("VScrollBarDesc");
+		widgetDescFactory->registerClass<WindowDesc>("WindowDesc");
 
 		// Create default Descs for use throughout apps using QuickGUI
-		descFactory->createInstance<ButtonDesc>("ButtonDesc","DefaultButtonDesc");
-		descFactory->createInstance<CheckBoxDesc>("CheckBoxDesc","DefaultCheckBoxDesc");
-		descFactory->createInstance<ColorPickerDesc>("ColorPickerDesc","DefaultColorPickerDesc");
-		descFactory->createInstance<ComboBoxDesc>("ComboBoxDesc","DefaultComboBoxDesc");
-		descFactory->createInstance<ConsoleDesc>("ConsoleDesc","DefaultConsoleDesc");
-		descFactory->createInstance<ContextMenuDesc>("ContextMenuDesc","DefaultContextMenuDesc");
-		descFactory->createInstance<HScrollBarDesc>("HScrollBarDesc","DefaultHScrollBarDesc");
-		descFactory->createInstance<ImageDesc>("ImageDesc","DefaultImageDesc");
-		descFactory->createInstance<LabelDesc>("LabelDesc","DefaultLabelDesc");
-		descFactory->createInstance<ListDesc>("ListDesc","DefaultListDesc");
-		descFactory->createInstance<ListImageItemDesc>("ListImageItemDesc","DefaultListImageItemDesc");
-		descFactory->createInstance<ListTextItemDesc>("ListTextItemDesc","DefaultListTextItemDesc");
-		descFactory->createInstance<MenuDesc>("MenuDesc","DefaultMenuDesc");
-		descFactory->createInstance<MenuLabelDesc>("MenuLabelDesc","DefaultMenuLabelDesc");
-		descFactory->createInstance<MenuPanelDesc>("MenuPanelDesc","DefaultMenuPanelDesc");
-		descFactory->createInstance<ModalWindowDesc>("ModalWindowDesc","DefaultModalWindowDesc");
-		descFactory->createInstance<PanelDesc>("PanelDesc","DefaultPanelDesc");
-		descFactory->createInstance<ProgressBarDesc>("ProgressBarDesc","DefaultProgressBarDesc");
-		descFactory->createInstance<PropertyGridDesc>("PropertyGridDesc","DefaultPropertyGridDesc");
-		descFactory->createInstance<PropertyGridSectionDesc>("PropertyGridSectionDesc","DefaultPropertyGridSectionDesc");
-		descFactory->createInstance<PropertyGridTextPropertyDesc>("PropertyGridTextPropertyDesc","DefaultPropertyGridTextPropertyDesc");
-		descFactory->createInstance<PropertyGridBoolPropertyDesc>("PropertyGridBoolPropertyDesc","DefaultPropertyGridBoolPropertyDesc");
-		descFactory->createInstance<PropertyGridComboBoxPropertyDesc>("PropertyGridComboBoxPropertyDesc","DefaultPropertyGridComboBoxPropertyDesc");
-		descFactory->createInstance<RadioButtonDesc>("RadioButtonDesc","DefaultRadioButtonDesc");
-		descFactory->createInstance<SheetDesc>("SheetDesc","DefaultSheetDesc");
-		descFactory->createInstance<TabControlDesc>("TabControlDesc","DefaultTabControlDesc");
-		descFactory->createInstance<TabDesc>("TabDesc","DefaultTabDesc");
-		descFactory->createInstance<TabPageDesc>("TabPageDesc","DefaultTabPageDesc");
-		descFactory->createInstance<TextAreaDesc>("TextAreaDesc","DefaultTextAreaDesc");
-		descFactory->createInstance<TextBoxDesc>("TextBoxDesc","DefaultTextBoxDesc");
-		descFactory->createInstance<TitleBarDesc>("TitleBarDesc","DefaultTitleBarDesc");
-		descFactory->createInstance<ToolBarDesc>("ToolBarDesc","DefaultToolBarDesc");
-		descFactory->createInstance<TreeViewDesc>("TreeViewDesc","DefaultTreeViewDesc");
-		descFactory->createInstance<TreeViewNodeDesc>("TreeViewNodeDesc","DefaultTreeViewNodeDesc");
-		descFactory->createInstance<TreeViewCheckBoxNodeDesc>("TreeViewCheckBoxNodeDesc","DefaultTreeViewCheckBoxNodeDesc");
-		descFactory->createInstance<TreeViewRadioButtonNodeDesc>("TreeViewRadioButtonNodeDesc","DefaultTreeViewRadioButtonNodeDesc");
-		descFactory->createInstance<VScrollBarDesc>("VScrollBarDesc","DefaultVScrollBarDesc");
-		descFactory->createInstance<WindowDesc>("WindowDesc","DefaultWindowDesc");
+		widgetDescFactory->createInstance("ButtonDesc","DefaultButtonDesc");
+		widgetDescFactory->createInstance("CheckBoxDesc","DefaultCheckBoxDesc");
+		widgetDescFactory->createInstance("ComboBoxDesc","DefaultComboBoxDesc");
+		widgetDescFactory->createInstance("ConsoleDesc","DefaultConsoleDesc");
+		widgetDescFactory->createInstance("HScrollBarDesc","DefaultHScrollBarDesc");
+		widgetDescFactory->createInstance("ImageDesc","DefaultImageDesc");
+		widgetDescFactory->createInstance("LabelDesc","DefaultLabelDesc");
+		widgetDescFactory->createInstance("ListDesc","DefaultListDesc");
+		widgetDescFactory->createInstance("ListTextItemDesc","DefaultListTextItemDesc");
+		widgetDescFactory->createInstance("MenuDesc","DefaultMenuDesc");
+		widgetDescFactory->createInstance("MenuLabelDesc","DefaultMenuLabelDesc");
+		widgetDescFactory->createInstance("MenuPanelDesc","DefaultMenuPanelDesc");
+		widgetDescFactory->createInstance("ModalWindowDesc","DefaultModalWindowDesc");
+		widgetDescFactory->createInstance("PanelDesc","DefaultPanelDesc");
+		widgetDescFactory->createInstance("ProgressBarDesc","DefaultProgressBarDesc");
+		widgetDescFactory->createInstance("SheetDesc","DefaultSheetDesc");
+		widgetDescFactory->createInstance("TabControlDesc","DefaultTabControlDesc");
+		widgetDescFactory->createInstance("TabDesc","DefaultTabDesc");
+		widgetDescFactory->createInstance("TabPageDesc","DefaultTabPageDesc");
+		widgetDescFactory->createInstance("TextAreaDesc","DefaultTextAreaDesc");
+		widgetDescFactory->createInstance("TextBoxDesc","DefaultTextBoxDesc");
+		widgetDescFactory->createInstance("TitleBarDesc","DefaultTitleBarDesc");
+		widgetDescFactory->createInstance("ToolBarDesc","DefaultToolBarDesc");
+		widgetDescFactory->createInstance("TreeViewDesc","DefaultTreeViewDesc");
+		widgetDescFactory->createInstance("VScrollBarDesc","DefaultVScrollBarDesc");
+		widgetDescFactory->createInstance("WindowDesc","DefaultWindowDesc");
 
 		// Register Skin definitions
 		MouseCursor::registerSkinDefinition();
 		Button::registerSkinDefinition();
 		CheckBox::registerSkinDefinition();
-		ColorPicker::registerSkinDefinition();
 		ComboBox::registerSkinDefinition();
 		Console::registerSkinDefinition();
-		ContextMenu::registerSkinDefinition();
 		HScrollBar::registerSkinDefinition();
 		Image::registerSkinDefinition();
 		Label::registerSkinDefinition();
 		List::registerSkinDefinition();
-		ListImageItem::registerSkinDefinition();
 		ListTextItem::registerSkinDefinition();
 		Menu::registerSkinDefinition();
 		MenuLabel::registerSkinDefinition();
@@ -196,12 +147,6 @@ namespace QuickGUI
 		ModalWindow::registerSkinDefinition();
 		Panel::registerSkinDefinition();
 		ProgressBar::registerSkinDefinition();
-		PropertyGrid::registerSkinDefinition();
-		PropertyGridSection::registerSkinDefinition();
-		PropertyGridTextProperty::registerSkinDefinition();
-		PropertyGridBoolProperty::registerSkinDefinition();
-		PropertyGridComboBoxProperty::registerSkinDefinition();
-		RadioButton::registerSkinDefinition();
 		Sheet::registerSkinDefinition();
 		Tab::registerSkinDefinition();
 		TabControl::registerSkinDefinition();
@@ -212,9 +157,6 @@ namespace QuickGUI
 		TitleBar::registerSkinDefinition();
 		ToolBar::registerSkinDefinition();
 		TreeView::registerSkinDefinition();
-		TreeViewNode::registerSkinDefinition();
-		TreeViewCheckBoxNode::registerSkinDefinition();
-		TreeViewRadioButtonNode::registerSkinDefinition();
 		VScrollBar::registerSkinDefinition();
 		Window::registerSkinDefinition();
 
@@ -238,7 +180,6 @@ namespace QuickGUI
 		OGRE_DELETE_T(SheetManager::getSingletonPtr(),SheetManager,Ogre::MEMCATEGORY_GENERAL);
 		OGRE_DELETE_T(TimerManager::getSingletonPtr(),TimerManager,Ogre::MEMCATEGORY_GENERAL);
 		OGRE_DELETE_T(FactoryManager::getSingletonPtr(),FactoryManager,Ogre::MEMCATEGORY_GENERAL);
-		OGRE_DELETE_T(EventHandlerManager::getSingletonPtr(),EventHandlerManager,Ogre::MEMCATEGORY_GENERAL);
 		OGRE_DELETE_T(Brush::getSingletonPtr(),Brush,Ogre::MEMCATEGORY_GENERAL);
 		OGRE_DELETE_T(SkinDefinitionManager::getSingletonPtr(),SkinDefinitionManager,Ogre::MEMCATEGORY_GENERAL);
 	}
@@ -258,8 +199,6 @@ namespace QuickGUI
 	{
 		++mGUIManagerCounter;
 
-		Ogre::String previousName = d.name;
-
 		// If name string is empty, generate a name for the GUIManager.
 		if(d.name == "")
 			d.name = "GUIManager." + Ogre::StringConverter::toString(mGUIManagerCounter);
@@ -272,9 +211,6 @@ namespace QuickGUI
 
 		GUIManager* newGUIManager = OGRE_NEW_T(GUIManager,Ogre::MEMCATEGORY_GENERAL)(d);
 		mGUIManagers[d.name] = newGUIManager;
-
-		// restore name
-		d.name = previousName;
 
 		return newGUIManager;
 	}

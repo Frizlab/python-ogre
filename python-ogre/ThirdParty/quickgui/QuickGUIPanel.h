@@ -5,7 +5,6 @@
 
 #include "QuickGUIButton.h"
 #include "QuickGUICheckBox.h"
-#include "QuickGUIColorPicker.h"
 #include "QuickGUIComboBox.h"
 #include "QuickGUIConsole.h"
 #include "QuickGUIForwardDeclaredDesc.h"
@@ -14,8 +13,6 @@
 #include "QuickGUILabel.h"
 #include "QuickGUIList.h"
 #include "QuickGUIProgressBar.h"
-#include "QuickGUIPropertyGrid.h"
-#include "QuickGUIRadioButton.h"
 #include "QuickGUITextArea.h"
 #include "QuickGUITextBox.h"
 #include "QuickGUITreeView.h"
@@ -41,7 +38,8 @@ namespace QuickGUI
 		// needs access to the protected "addChild" function
 		friend class TabPage;
 
-		friend class Factory<Widget>;
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -62,10 +60,6 @@ namespace QuickGUI
 		* Creates a child CheckBox.
 		*/
 		CheckBox* createCheckBox(CheckBoxDesc* d);
-		/**
-		* Creates a child ColorPicker.
-		*/
-		ColorPicker* createColorPicker(ColorPickerDesc* d);
 		/**
 		* Creates a child Console.
 		*/
@@ -99,14 +93,6 @@ namespace QuickGUI
 		*/
 		ProgressBar* createProgressBar(ProgressBarDesc* d);
 		/**
-		* Creates a child PropertyGrid.
-		*/
-		PropertyGrid* createPropertyGrid(PropertyGridDesc* d);
-		/**
-		* Creates a child RadioButton.
-		*/
-		RadioButton* createRadioButton(RadioButtonDesc* d);
-		/**
 		* Creates a child TabControl.
 		*/
 		TabControl* createTabControl(TabControlDesc* d);
@@ -132,7 +118,7 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getClass();
 
-	protected:
+	//protected:
 		Panel(const Ogre::String& name);
 		virtual ~Panel();
 

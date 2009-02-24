@@ -9,8 +9,9 @@ namespace QuickGUI
 		public ContainerWidgetDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		ListItemDesc(const Ogre::String& id);
 		virtual ~ListItemDesc() {}
 	public:
@@ -70,7 +71,16 @@ namespace QuickGUI
 		*/
 		bool getSelected();
 
-	protected:
+		/**
+		* Sets the listitem_index of the ListItem
+		*/
+		void setIndex(unsigned int listitem_index);
+		/**
+		* Sets whether the ListItem is listitem_selected or not.
+		*/
+		void setSelected(bool listitem_selected);
+
+	//protected:
 		ListItem(const Ogre::String& name);
 		virtual ~ListItem();
 
@@ -96,27 +106,13 @@ namespace QuickGUI
 		*/
 		virtual void setHorizontalAnchor(HorizontalAnchor a);
 		/**
-		* Sets the listitem_index of the ListItem
-		*/
-		void setIndex(unsigned int index);
-		/**
 		* Sets the x and y position of this widget, relative to this widget's parent.
 		*/
 		void setPosition(const Point& position);
 		/**
-		* Sets whether the ListItem is listitem_selected or not.
-		*/
-		void setSelected(bool selected);
-		/**
 		* Sets the width and height of this widget.
 		*/
 		void setSize(const Size& size);
-		/**
-		* Sets the "type" of this widget.  For example you
-		* can create several types of Button widgets: "close", "add", "fire.skill.1", etc.
-		* NOTE: The type property determines what is drawn to the screen.
-		*/
-		virtual void setSkinType(const Ogre::String type);
 		/**
 		* Sets Vertical Anchor of this widget. A Top anchor will enforce the widget to maintain
 		* its distance from the top side of its parent. A bottom anchor will enforce the widget to maintain

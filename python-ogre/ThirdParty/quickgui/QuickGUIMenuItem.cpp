@@ -1,18 +1,12 @@
 #include "QuickGUIMenuItem.h"
 #include "QuickGUIMenu.h"
-#include "QuickGUIContextMenu.h"
 
 namespace QuickGUI
 {
 	MenuItemDesc::MenuItemDesc(const Ogre::String& id) :
-		ToolBarItemDesc(id),
-		menu(NULL),
-		contextMenu(NULL)
+		ToolBarItemDesc(id)
 	{
-		widget_resizeFromBottom = false;
-		widget_resizeFromLeft = false;
-		widget_resizeFromRight = false;
-		widget_resizeFromTop = false;
+		widget_resizable = false;
 	}
 
 	MenuItem::MenuItem(const Ogre::String& name) :
@@ -39,11 +33,6 @@ namespace QuickGUI
 			mDesc->menu = mid->menu;
 	}
 
-	ContextMenu* MenuItem::getContextMenu()
-	{
-		return dynamic_cast<MenuItemDesc*>(mWidgetDesc)->contextMenu;
-	}
-
 	Menu* MenuItem::getMenu()
 	{
 		return dynamic_cast<MenuItemDesc*>(mWidgetDesc)->menu;
@@ -57,11 +46,6 @@ namespace QuickGUI
 	bool MenuItem::isMenuItem()
 	{
 		return true;
-	}
-
-	void MenuItem::notifyContextMenuParent(ContextMenu* m)
-	{
-		dynamic_cast<MenuItemDesc*>(mWidgetDesc)->contextMenu = m;
 	}
 
 	void MenuItem::notifyMenuParent(Menu* m)

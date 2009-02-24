@@ -9,8 +9,9 @@ namespace QuickGUI
 			public LabelDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+//	//protected:
 		ButtonDesc(const Ogre::String& id);
 		virtual ~ButtonDesc() {}
 	public:
@@ -44,7 +45,8 @@ namespace QuickGUI
 		// ComboBox changes its buttons state.
 		friend class ComboBox;
 
-		friend class Factory<Widget>;
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -57,7 +59,7 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getClass();
 
-	protected:
+//	//protected:
 		Button(const Ogre::String& name);
 		virtual ~Button();
 

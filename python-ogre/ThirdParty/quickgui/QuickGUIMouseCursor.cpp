@@ -105,11 +105,6 @@ namespace QuickGUI
 		return Point(mDimensions.position.x + (mDimensions.size.width/2.0),mDimensions.position.y + (mDimensions.size.height/2.0));
 	}
 
-	Ogre::String MouseCursor::getSkinTypeName()
-	{
-		return mDefaultSkinType;
-	}
-
 	bool MouseCursor::getVisible()
 	{
 		return mMouseCursorDesc.visible;

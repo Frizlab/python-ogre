@@ -15,14 +15,13 @@ namespace QuickGUI
 			public ComponentWidgetDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		ContainerWidgetDesc(const Ogre::String& id);
 		virtual ~ContainerWidgetDesc() {}
 	public:
 
-		/// Sets whether clipping region will be set to client area prior to children drawing
-		bool	containerwidget_clipChildrenToDimensions;
 		/// Amount of Scroll occuring when the horizontal bar is pressed.
 		float	containerwidget_horzBarScrollPercent;
 		/// Amount of Scroll occuring when the left/right buttons are pressed.
@@ -98,19 +97,6 @@ namespace QuickGUI
 		virtual Widget* findWidgetAtPoint(const Point& p, bool ignoreDisabled = true);
 
 		/**
-		* Returns a list of all child widgets.
-		*/
-		std::vector<Widget*> getChildren();
-		/**
-		* Returns true if clipping region will be set to client area prior to children drawing, false otherwise.
-		*/
-		bool getClipChildrenToDimensions();
-		/**
-		* Returns true if children are drawn even when this widget is not visible, false otherwise.
-		*/
-		bool getDrawChildrenWhenNotVisible();
-
-		/**
 		* Returns true if this widget is able to have child widgets.
 		*/
 		virtual bool isContainerWidget();
@@ -121,27 +107,9 @@ namespace QuickGUI
 		virtual void removeChild(Widget* w);
 
 		/**
-		* Adjusts ScrollBars so that Widget is in view.
-		*/
-		void scrollChildIntoView(Widget* child);
-		/**
-		* Adjusts ScrollBars so that Point is in view.
-		* NOTE: It is assumed the point given is relative to this widget.
-		*/
-		void scrollPointIntoView(const Point& p);
-		/**
 		* Builds the Widget from a ScriptDefinition or Writes the widget to a ScriptDefinition.
 		*/
 		virtual void serialize(SerialBase* b);
-		/**
-		* Returns true if clipping region will be set to client area prior to children drawing, false otherwise.
-		*/
-		void setClipChildrenToDimensions(bool clip);
-		/**
-		* Normally Children are not drawn when this widget is not visible, but if set true,
-		* children are still drawn.
-		*/
-		void setDrawChildrenWhenNotVisible(bool draw);
 		/**
 		* Sets the height of the widget.
 		*/
@@ -190,7 +158,7 @@ namespace QuickGUI
 		*/
 		virtual void updateTexturePosition();
 
-	protected:
+	//protected:
 		ContainerWidget(const Ogre::String& name);
 		virtual ~ContainerWidget();
 
@@ -210,8 +178,6 @@ namespace QuickGUI
 
 		void onHorizontalScroll(const EventArgs& args);
 		void onVerticalScroll(const EventArgs& args);
-
-		void onChildVisibilityChanged(const EventArgs& args);
 
 		virtual void onChildDimensionsChanged(const EventArgs& args);
 

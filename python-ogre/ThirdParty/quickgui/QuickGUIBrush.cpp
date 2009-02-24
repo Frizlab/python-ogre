@@ -25,8 +25,6 @@ namespace QuickGUI
 		// Search for "GL" somewhere in name, to see if we using OpenGL
 		Ogre::String rSysName = mRenderSystem->getName();
 		mUsingOpenGL = (rSysName.find("GL") != Ogre::String::npos);
-
-		// Store Texel offset for quick use
 		mHorizontalTexelOffset = mRenderSystem->getHorizontalTexelOffset();
 		mVerticalTexelOffset = mRenderSystem->getVerticalTexelOffset();
 
@@ -42,21 +40,17 @@ namespace QuickGUI
 		mDefaultTexture->getBuffer()->unlock();
 
 		mColourValue = Ogre::ColourValue::White;
-/*
-		mGUIMaterial = Ogre::MaterialManager::getSingleton().create("QuickGUI.EmptyPass",Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-		mGUIPass = mGUIMaterial->getTechnique(0)->getPass(0);
-		mGUIPass->setAmbient(Ogre::ColourValue::White);
-		mGUIPass->setDiffuse(Ogre::ColourValue::White);
-		mGUIPass->setSelfIllumination(Ogre::ColourValue::White);
-		mGUIPass->createTextureUnitState();
-		mGUIPass->setLightingEnabled(false);
-		mGUIPass->setDepthWriteEnabled(false);
-		mGUIPass->setDepthCheckEnabled(false);
-		mGUIPass->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
-*/
-		mGUIMaterial = Ogre::MaterialManager::getSingleton( ).load("GuiMaterial", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-		mGUIPass = mGUIMaterial->getTechnique(0)->getPass(0);
-		mGUIPass->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
+
+		Ogre::MaterialPtr mp = Ogre::MaterialManager::getSingleton().create("QuickGUI.EmptyPass",Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		mEmptyPass = mp->getTechnique(0)->getPass(0);
+		mEmptyPass->setAmbient(Ogre::ColourValue::White);
+		mEmptyPass->setDiffuse(Ogre::ColourValue::White);
+		mEmptyPass->setSelfIllumination(Ogre::ColourValue::White);
+		mEmptyPass->createTextureUnitState();
+		mEmptyPass->setLightingEnabled(false);
+		mEmptyPass->setDepthWriteEnabled(false);
+		mEmptyPass->setDepthCheckEnabled(false);
+		mEmptyPass->setSceneBlending(Ogre::SBT_TRANSPARENT_ALPHA);
 	}
 
 	Brush::~Brush()
@@ -73,37 +67,6 @@ namespace QuickGUI
 	{ 
 		assert( ms_Singleton );  
 		return ( *ms_Singleton ); 
-	}
-
-	void Brush::_buildLineVertices(const Point& p1, const Point& p2, Ogre::Vector3* verts)
-	{
-		Point firstPoint(p1);
-		Point secondPoint(p2);
-
-		// Certain Render Targets in OpenGL require the coordinates to be flipped.
-		if(mRenderTarget->getTarget()->requiresTextureFlipping())
-		{
-			firstPoint.y = mTargetHeight - firstPoint.y;
-			secondPoint.y = mTargetHeight - secondPoint.y;
-		}
-
-		firstPoint.x += mHorizontalTexelOffset;
-		firstPoint.y += mVerticalTexelOffset;
-		secondPoint.x += mHorizontalTexelOffset;
-		secondPoint.y += mVerticalTexelOffset;
-
-		firstPoint.x /= mTargetWidth;
-		firstPoint.y /= mTargetHeight;
-		secondPoint.x /= mTargetWidth;
-		secondPoint.y /= mTargetHeight;
-
-		float left = (firstPoint.x * 2) - 1;
-		float top = -((firstPoint.y * 2) - 1);
-		verts[0] = Ogre::Vector3( left, top, 0.0f );
-
-		left = (secondPoint.x * 2) - 1;
-		top = -((secondPoint.y * 2) - 1);
-		verts[1] = Ogre::Vector3( left, top, 0.0f );
 	}
 
 	void Brush::_buildQuadVertices(const Rect& dimensions, const UVRect& uvCoords, Ogre::Vector3* verts, Ogre::Vector2* uv)
@@ -157,7 +120,7 @@ namespace QuickGUI
 		// Create the Vertex Buffer, using the Vertex Structure we previously declared in _declareVertexStructure.
 		mVertexBuffer = Ogre::HardwareBufferManager::getSingleton( ).createVertexBuffer(
 			mRenderOperation.vertexData->vertexDeclaration->getVertexSize(0), // declared Vertex used
-			VERTEX_COUNT,
+			DEFAULT_VERTEX_BUFFER_SIZE,
 			Ogre::HardwareBuffer::HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE,
 			false );
 
@@ -177,19 +140,19 @@ namespace QuickGUI
 
 		// Add color - Ogre::RGBA : 8 bits per channel (1 byte) * 4 channels = 4 bytes
 
-		vd->addElement( 0, Ogre::VertexElement::getTypeSize( Ogre::VET_FLOAT3 ), Ogre::VET_FLOAT4, Ogre::VES_DIFFUSE );
+		vd->addElement( 0, Ogre::VertexElement::getTypeSize( Ogre::VET_FLOAT3 ), Ogre::VET_COLOUR, Ogre::VES_DIFFUSE );
 
 		// Add texture coordinates - Ogre::Vector2 : 4 bytes per float * 2 floats = 8 bytes
 
 		vd->addElement( 0, Ogre::VertexElement::getTypeSize( Ogre::VET_FLOAT3 ) +
-						   Ogre::VertexElement::getTypeSize( Ogre::VET_FLOAT4 ),
+						   Ogre::VertexElement::getTypeSize( Ogre::VET_COLOUR ),
 						   Ogre::VET_FLOAT2, Ogre::VES_TEXTURE_COORDINATES );
 
 		/* Our structure representing the Vertices used in the buffer (24 bytes):
 			struct Vertex
 			{
 				Ogre::Vector3 pos;
-				Ogre::ColoureValue color;
+				Ogre::RGBA color;
 				Ogre::Vector2 uv;
 			};
 		*/
@@ -202,101 +165,13 @@ namespace QuickGUI
 		mVertexBuffer.setNull();
 	}
 
-	void Brush::beginLineQueue()
-	{
-		if(mQueuedItems)
-			throw Exception(Exception::ERR_RENDERINGAPI_ERROR,"beginRectQueue or beginLineQueue has already been called, cannot Start a Queue within a Queue!","Brush::beginRectQueue");
-
-		// if we don't have a pointer into the buffer, lock it
-		if(mBufferPtr == NULL)
-		{
-			mRenderOperation.vertexData->vertexStart = 0;
-			mRenderOperation.vertexData->vertexCount = 0;
-			mBufferPtr = (Vertex*)mVertexBuffer->lock( Ogre::HardwareBuffer::HBL_DISCARD );
-		}
-
-		mRenderOperation.operationType = Ogre::RenderOperation::OT_LINE_LIST;
-
-		mQueuedItems = true;
-	}
-
-	void Brush::beginRectQueue()
-	{
-		if(mQueuedItems)
-			throw Exception(Exception::ERR_RENDERINGAPI_ERROR,"beginRectQueue or beginLineQueue has already been called, cannot Start a Queue within a Queue!","Brush::beginRectQueue");
-
-		// if we don't have a pointer into the buffer, lock it
-		if(mBufferPtr == NULL)
-		{
-			mRenderOperation.vertexData->vertexStart = 0;
-			mRenderOperation.vertexData->vertexCount = 0;
-			mBufferPtr = (Vertex*)mVertexBuffer->lock( Ogre::HardwareBuffer::HBL_DISCARD );
-		}
-
-		mQueuedItems = true;
-	}
-
 	void Brush::clear()
 	{
 		mRenderSystem->clearFrameBuffer(Ogre::FBT_COLOUR, mColourValue);
 	}
 
-	void Brush::drawLine(const Point& p1, const Point& p2)
-	{
-		drawLine(p1,p2,mColourValue);
-	}
-
-	void Brush::drawLine(const Point& p1, const Point& p2, const Ogre::ColourValue& cv)
-	{
-		if(mQueuedItems)
-			throw Exception(Exception::ERR_RENDERINGAPI_ERROR,"Canot draw Line, LineQueue or RectQueue has been started!","Brush::drawLine");
-
-		// Build Vertex Data
-
-		Ogre::Vector3 verts[2];
-		_buildLineVertices(p1,p2,verts);
-
-		// Lock buffer
-
-		Vertex* data = (Vertex*)mVertexBuffer->lock(Ogre::HardwareBuffer::HBL_DISCARD);
-
-		// Write vertices to vertex buffer
-
-		for ( size_t x = 0; x < 2; x++ )
-		{
-			data[x].pos = verts[x];
-			data[x].color = cv;
-			data[x].uv = Ogre::Vector2::ZERO;
-		}
-
-		// Unlock buffer
-
-		mVertexBuffer->unlock();
-
-		// Perform Rendering operation
-
-		mRenderOperation.operationType = Ogre::RenderOperation::OT_LINE_LIST;
-		mRenderOperation.vertexData->vertexStart = 0;
-		mRenderOperation.vertexData->vertexCount = 2;
-		mRenderSystem->_render(mRenderOperation);
-
-		// Restore render operation to default used type
-		mRenderOperation.operationType = Ogre::RenderOperation::OT_TRIANGLE_LIST;
-	}
-
-	void Brush::drawLineRectangle(const Rect& r)
-	{
-	}
-
 	void Brush::drawRectangle(Rect r, UVRect ur)
 	{
-		if(mQueuedItems)
-			throw Exception(Exception::ERR_RENDERINGAPI_ERROR,"Canot draw Rectangle, LineQueue or RectQueue has been started!","Brush::drawRectangle");
-
-		// If width or height is less than a pixel in dimension, don't draw anything
-		if(r.size.width < 1.0 || r.size.height < 1.0)
-			return;
-
 		// Build Vertex Data
 
 		Ogre::Vector3 verts[6];
@@ -312,7 +187,7 @@ namespace QuickGUI
 		for ( size_t x = 0; x < 6; x++ )
 		{
 			data[x].pos = verts[x];
-			data[x].color = mColourValue;
+			mRenderSystem->convertColourValue(mColourValue,&( data[x].color ));
 			data[x].uv = uv[x];
 		}
 
@@ -322,7 +197,6 @@ namespace QuickGUI
 
 		// Perform Rendering operation
 
-		mRenderOperation.vertexData->vertexStart = 0;
 		mRenderOperation.vertexData->vertexCount = 6;
 		mRenderSystem->_render(mRenderOperation);
 	}
@@ -467,10 +341,6 @@ namespace QuickGUI
 
 	void Brush::drawTiledRectangle(Rect r, UVRect ur)
 	{
-		// If width or height is less than a pixel in dimension, don't draw anything
-		if(r.size.width < 1.0 || r.size.height < 1.0)
-			return;
-
 		float texWidth = mTexture->getWidth();
 		float texHeight = mTexture->getHeight();
 
@@ -509,7 +379,6 @@ namespace QuickGUI
 			else
 				tempRect.size.height = pixelHeight;
 
-			tempRect.size.round();
 			drawRectangle(tempRect,tempUVRect);
 
 			x += pixelWidth;
@@ -521,26 +390,15 @@ namespace QuickGUI
 		}
 	}
 
-	void Brush::endLineQueue()
+	void Brush::drawLine(const Point& p1, const Point& p2)
 	{
-		if(mQueuedItems)
-		{
-			mBufferPtr = NULL;
-
-			mVertexBuffer->unlock();
-
-			// Perform Rendering operation
-
-			mRenderSystem->_render(mRenderOperation);
-
-			mQueuedItems = false;
-		}
-
-		// Restore render operation to default used type
-		mRenderOperation.operationType = Ogre::RenderOperation::OT_TRIANGLE_LIST;
 	}
 
-	void Brush::endRectQueue()
+	void Brush::drawLineRectangle(const Rect& r)
+	{
+	}
+
+	void Brush::emptyQueue()
 	{
 		if(mQueuedItems)
 		{
@@ -571,11 +429,6 @@ namespace QuickGUI
 		return mFilterMode;
 	}
 
-	float Brush::getOpacity()
-	{
-		return mColourValue.a;
-	}
-
 	Ogre::Viewport* Brush::getRenderTarget()
 	{
 		return mRenderTarget;
@@ -594,7 +447,7 @@ namespace QuickGUI
 		mRenderSystem->_setWorldMatrix( Ogre::Matrix4::IDENTITY );
 		mRenderSystem->_setProjectionMatrix( Ogre::Matrix4::IDENTITY );
 		mRenderSystem->_setViewMatrix( Ogre::Matrix4::IDENTITY );
-/*
+
 		// initialise render settings
 		mRenderSystem->setLightingEnabled(false);
 		mRenderSystem->_setDepthBufferParams(false, false);
@@ -614,12 +467,6 @@ namespace QuickGUI
 		mRenderSystem->_setTextureMatrix(0, Ogre::Matrix4::IDENTITY);
 		mRenderSystem->_setAlphaRejectSettings(Ogre::CMPF_ALWAYS_PASS, 0, false);
 		mRenderSystem->_disableTextureUnitsFrom(1);
-*/
-		// Set material pass. This will bind the vertex and fragment program,
-		// and setup some basic state settings for rendering 2D elements.
-
-		if(mSceneManager != NULL)
-			mSceneManager->_setPass(mGUIPass,true,false);
 
 		// Set default settings
 
@@ -629,56 +476,14 @@ namespace QuickGUI
 		setFilterMode(BRUSHFILTER_NEAREST);
 	}
 
-	void Brush::queueLine(Point p1, Point p2)
-	{
-		queueLine(p1,p2,mColourValue);
-	}
-
-	void Brush::queueLine(Point p1, Point p2, const Ogre::ColourValue& cv)
-	{
-		if(!mQueuedItems)
-			throw Exception(Exception::ERR_RENDERINGAPI_ERROR,"beginLineQueue has not been called, cannot Queue Lines!","Brush::queueLine");
-
-		if(mRenderOperation.operationType != Ogre::RenderOperation::OT_LINE_STRIP)
-			throw Exception(Exception::ERR_RENDERINGAPI_ERROR,"Cannot Queue Rects when RectQueue has started!","Brush::queueLine");
-
-		// If the vertex buffer is full, draw it (empty buffer).
-		if((mRenderOperation.vertexData->vertexCount + 2) > VERTEX_COUNT)
-		{
-			endLineQueue();
-			beginLineQueue();
-		}
-
-		Ogre::Vector3 verts[2];
-		_buildLineVertices(p1,p2,verts);
-
-		// Write vertices to vertex buffer
-
-		for ( size_t x = 0; x < 2; x++ )
-		{
-			mBufferPtr[x].pos = verts[x];
-			mBufferPtr[x].color = mColourValue;
-			mBufferPtr[x].uv = Ogre::Vector2::ZERO;
-		}
-
-		mBufferPtr += 2;
-
-		mRenderOperation.vertexData->vertexCount += 2;
-	}
-
 	void Brush::queueRect(Rect r, UVRect ur)
 	{
-		if(!mQueuedItems)
-			throw Exception(Exception::ERR_RENDERINGAPI_ERROR,"beginRectQueue has not been called, cannot Queue Rects!","Brush::queueRect");
-
-		if(mRenderOperation.operationType != Ogre::RenderOperation::OT_TRIANGLE_LIST)
-			throw Exception(Exception::ERR_RENDERINGAPI_ERROR,"Cannot Queue Rects when LineQueue has started!","Brush::queueRect");
-
-		// If the vertex buffer is full, draw it (empty buffer).
-		if((mRenderOperation.vertexData->vertexCount + 6) > VERTEX_COUNT)
+		if(mBufferPtr == NULL)
 		{
-			endRectQueue();
-			beginRectQueue();
+			mRenderOperation.vertexData->vertexStart = 0;
+			mRenderOperation.vertexData->vertexCount = 0;
+			mBufferPtr = (Vertex*)mVertexBuffer->lock(Ogre::HardwareBuffer::HBL_DISCARD);
+			mQueuedItems = true;
 		}
 
 		Ogre::Vector3 verts[6];
@@ -690,7 +495,7 @@ namespace QuickGUI
 		for ( size_t x = 0; x < 6; x++ )
 		{
 			mBufferPtr[x].pos = verts[x];
-			mBufferPtr[x].color = mColourValue;
+			mRenderSystem->convertColourValue(mColourValue,&( mBufferPtr[x].color ));
 			mBufferPtr[x].uv = uv[x];
 		}
 
@@ -752,20 +557,11 @@ namespace QuickGUI
 		case BRUSHFILTER_NEAREST:
 			mRenderSystem->_setTextureUnitFiltering( 0, Ogre::FO_POINT, Ogre::FO_POINT, Ogre::FO_POINT );
 			break;
+
 		case BRUSHFILTER_LINEAR:
 			mRenderSystem->_setTextureUnitFiltering( 0, Ogre::FO_LINEAR, Ogre::FO_LINEAR, Ogre::FO_POINT );
 			break;
 		}
-	}
-
-	void Brush::setOpacity(float opacity)
-	{
-		if(opacity > 1)
-			opacity = 1;
-		else if(opacity < 0)
-			opacity = 0;
-
-		mColourValue.a = opacity;
 	}
 
 	void Brush::setRenderTarget(Ogre::TexturePtr p)
@@ -796,7 +592,7 @@ namespace QuickGUI
 	void Brush::setTexture(const Ogre::String& textureName)
 	{
 		if(mQueuedItems)
-			throw Exception(Exception::ERR_RENDERINGAPI_ERROR,"Cannot Change Texture with Items Queued for Drawing! Call endRectQueue to draw all queued items before hand.","Brush::setTexture");
+			throw Exception(Exception::ERR_RENDERINGAPI_ERROR,"Cannot Change Texture with Items Queued for Drawing! Call emptyQueue to draw all queued items before hand.","Brush::setTexture");
 
 		if(textureName == "")
 		{
@@ -817,9 +613,6 @@ namespace QuickGUI
 
 	void Brush::setTexture(Ogre::TexturePtr p)
 	{
-		if(mQueuedItems)
-			throw Exception(Exception::ERR_RENDERINGAPI_ERROR,"Cannot Change Texture with Items Queued for Drawing! Call endRectQueue to draw all queued items before hand.","Brush::setTexture");
-
 		if(p.isNull())
 			mTexture = mDefaultTexture;
 		else
@@ -831,6 +624,9 @@ namespace QuickGUI
 	void Brush::updateSceneManager(Ogre::SceneManager* sceneManager)
 	{
 		mSceneManager = sceneManager;
+
+		if(mSceneManager != NULL)
+			mSceneManager->_setPass(mEmptyPass,true,false);
 	}
 
 	void Brush::updateViewport(Ogre::Viewport* viewport)

@@ -22,7 +22,7 @@ namespace QuickGUI
 		Ogre::String getPropertyName();
 		Ogre::StringVector getValues();
 
-	protected:
+	//protected:
 		DefinitionProperty(const Ogre::String& propertyName);
 
 		Ogre::String mPropertyName;

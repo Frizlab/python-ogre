@@ -3,8 +3,6 @@
 
 #include "QuickGUIExportDLL.h"
 
-#include "OgrePrerequisites.h"
-
 #include <stdio.h>
 
 namespace QuickGUI
@@ -38,7 +36,7 @@ namespace QuickGUI
 			if(!d_undefined) 
 				(d_object->*d_function)();
 		}
-	protected:
+	//protected:
 		TimerCallback	d_function;
 		T*				d_object;
 		bool			d_undefined;
@@ -112,7 +110,7 @@ namespace QuickGUI
 		*/
 		void stop();
 
-	protected:
+	//protected:
 		Timer(TimerDesc& d);
 		~Timer();
 

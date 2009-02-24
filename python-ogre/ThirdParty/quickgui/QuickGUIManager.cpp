@@ -32,6 +32,7 @@ namespace QuickGUI
 		mLastClickedWidget(0),
 		mDownOnBorder(false),
 		mKeyModifiers(0),
+		mOverResizableBorder(false),
 		mPreviousBorder(BORDER_NONE),
 		mResizableBorder(BORDER_NONE),
 		mSheetCounter(0),
@@ -68,9 +69,9 @@ namespace QuickGUI
 
 		// Create Default Sheet
 		{
-			SheetDesc* d = FactoryManager::getSingleton().getDescFactory()->getInstance<SheetDesc>("DefaultSheetDesc");
+			SheetDesc* d = dynamic_cast<SheetDesc*>(FactoryManager::getSingleton().getWidgetDescFactory()->getInstance("DefaultSheetDesc"));
 			d->resetToDefault();
-			d->widget_name = getName() + ".DefaultSheet";
+			d->widget_name = "DefaultSheet";
 			d->widget_dimensions.size = Size(mGUIManagerDesc.viewport->getActualWidth(),mGUIManagerDesc.viewport->getActualHeight());
 			d->containerwidget_supportScrollBars = false;
 			mDefaultSheet = SheetManager::getSingletonPtr()->createSheet(d);
@@ -111,72 +112,13 @@ namespace QuickGUI
 		}
 	}
 
-	void GUIManager::checkIfCursorOverResizableBorder(Point position)
-	{
-		// Change cursor if we're over a resizable widget's border, or restore cursor if we have left resizable widget's border
-		if(mWidgetUnderMouseCursor != NULL)
-		{
-			mPreviousBorder = mResizableBorder;
-			mResizableBorder = mWidgetUnderMouseCursor->getBorderSide(position);
-
-			switch(mResizableBorder)
-			{
-				case BORDER_LEFT:
-					if(mWidgetUnderMouseCursor->getResizeFromLeft())
-						mMouseCursor->_setSkinType("hresize");
-					else mResizableBorder = BORDER_NONE;
-					break;
-				case BORDER_RIGHT:
-					if(mWidgetUnderMouseCursor->getResizeFromRight())
-						mMouseCursor->_setSkinType("hresize");
-					else mResizableBorder = BORDER_NONE;
-					break;
-				case BORDER_TOP:
-					if(mWidgetUnderMouseCursor->getResizeFromTop())
-						mMouseCursor->_setSkinType("vresize");
-					else mResizableBorder = BORDER_NONE;
-					break;
-				case BORDER_BOTTOM:
-					if(mWidgetUnderMouseCursor->getResizeFromBottom())
-						mMouseCursor->_setSkinType("vresize");
-					else mResizableBorder = BORDER_NONE;
-					break;
-				case BORDER_TOP_LEFT:
-					if(mWidgetUnderMouseCursor->getResizeFromLeft() && mWidgetUnderMouseCursor->getResizeFromTop())
-						mMouseCursor->_setSkinType("diag1resize");
-					else mResizableBorder = BORDER_NONE;
-					break;
-				case BORDER_BOTTOM_RIGHT:
-					if(mWidgetUnderMouseCursor->getResizeFromRight() && mWidgetUnderMouseCursor->getResizeFromBottom())
-						mMouseCursor->_setSkinType("diag1resize");
-					else mResizableBorder = BORDER_NONE;
-					break;
-				case BORDER_TOP_RIGHT:
-					if(mWidgetUnderMouseCursor->getResizeFromRight() && mWidgetUnderMouseCursor->getResizeFromTop())
-						mMouseCursor->_setSkinType("diag2resize");
-					else mResizableBorder = BORDER_NONE;
-					break;
-				case BORDER_BOTTOM_LEFT:
-					if(mWidgetUnderMouseCursor->getResizeFromLeft() && mWidgetUnderMouseCursor->getResizeFromBottom())
-						mMouseCursor->_setSkinType("diag2resize");
-					else mResizableBorder = BORDER_NONE;
-					break;
-				case BORDER_NONE:
-					// Revert cursor if we have just moved off a resizable border
-					if(mPreviousBorder != BORDER_NONE)
-						mMouseCursor->_setSkinType(mMouseCursor->mDefaultSkinType);
-					break;
-			}
-		}
-	}
-
 	void GUIManager::draw()
 	{
+		mBrush->prepareToDraw();
+
 		mBrush->updateSceneManager(mGUIManagerDesc.sceneManager);
 		mBrush->updateViewport(mGUIManagerDesc.viewport);
 		mBrush->setRenderTarget(mGUIManagerDesc.viewport);
-
-		mBrush->prepareToDraw();
 
 		if(mActiveSheet != NULL)
 		{
@@ -292,6 +234,7 @@ namespace QuickGUI
 		return w->fireWidgetEvent(WIDGET_EVENT_KEY_UP,args);
 	}
 
+	// TODO: mDownOnBorder integration
 	bool GUIManager::injectMouseButtonDown(const MouseButtonID& button)
 	{
 		// If the mouse is disabled, we do not accept this injection of input
@@ -343,70 +286,33 @@ namespace QuickGUI
 		args.buttonMask = mButtonMask;
 		args.keyModifiers = mKeyModifiers;
 
+		// Create a boolean to track whether or not this injection caused any significant changes.
+		bool changesMade = false;
+
 		// Get the Window under the mouse cursor.  If it is not the Sheet, but a child Window,
 		// make sure it has focus. (bring to front)
 		Window* win = mActiveSheet->findWindowAtPoint(args.position);
 		if(win != mActiveSheet->getWindowInFocus())
 			// FOCUS_GAINED and FOCUS_LOST events will be fired if appropriate.
-			mActiveSheet->focusWindow(win);
+			changesMade |= mActiveSheet->focusWindow(win);
 
 		if(mWidgetUnderMouseCursor != NULL)
 		{
-			if(button == MB_Left)
-			{
-				mWidgetUnderMouseCursor->setGrabbed(true);
-
-				// If Widget is grabable, change cursor
-				if(mWidgetUnderMouseCursor->getDragable())
-					mMouseCursor->_setSkinType("grabbed");
-			}
-
+			mWidgetUnderMouseCursor->setGrabbed(true);
 			// Fire EVENT_MOUSE_BUTTON_DOWN event to the widget in focus
-			mWidgetUnderMouseCursor->fireWidgetEvent(WIDGET_EVENT_MOUSE_BUTTON_DOWN,args);
+			changesMade |= mWidgetUnderMouseCursor->fireWidgetEvent(WIDGET_EVENT_MOUSE_BUTTON_DOWN,args);
 
-			// Record mouse down on border only if the widget supports resizing for that border, and LMB is down
-			mDownOnBorder = false;
-			if((win != NULL) && (button == MB_Left))
-			{
-				switch(mWidgetUnderMouseCursor->getBorderSide(mMouseCursor->getPosition() - win->getPosition()))
-				{
-				case BORDER_LEFT:
-					if(mWidgetUnderMouseCursor->getResizeFromLeft())
-						mDownOnBorder = true;
-					break;
-				case BORDER_RIGHT:
-					if(mWidgetUnderMouseCursor->getResizeFromRight())
-						mDownOnBorder = true;
-					break;
-				case BORDER_TOP:
-					if(mWidgetUnderMouseCursor->getResizeFromTop())
-						mDownOnBorder = true;
-					break;
-				case BORDER_BOTTOM:
-					if(mWidgetUnderMouseCursor->getResizeFromBottom())
-						mDownOnBorder = true;
-					break;
-				case BORDER_TOP_LEFT:
-					if(mWidgetUnderMouseCursor->getResizeFromLeft() && mWidgetUnderMouseCursor->getResizeFromTop())
-						mDownOnBorder = true;
-					break;
-				case BORDER_BOTTOM_RIGHT:
-					if(mWidgetUnderMouseCursor->getResizeFromRight() && mWidgetUnderMouseCursor->getResizeFromBottom())
-						mDownOnBorder = true;
-					break;
-				case BORDER_TOP_RIGHT:
-					if(mWidgetUnderMouseCursor->getResizeFromRight() && mWidgetUnderMouseCursor->getResizeFromTop())
-						mDownOnBorder = true;
-					break;
-				case BORDER_BOTTOM_LEFT:
-					if(mWidgetUnderMouseCursor->getResizeFromLeft() && mWidgetUnderMouseCursor->getResizeFromBottom())
-						mDownOnBorder = true;
-					break;
-				}
-			}
+			if((win != NULL) && (mWidgetUnderMouseCursor->getBorderSide(mMouseCursor->getPosition() - win->getPosition()) != BORDER_NONE))
+				mDownOnBorder = true;
+			else
+				mDownOnBorder = false;
+
+			// If Widget is grabable, change cursor
+			if(mWidgetUnderMouseCursor->getDragable())
+				mMouseCursor->_setSkinType("grabbed");
 		}
 
-		return (mWidgetUnderMouseCursor != NULL);
+		return changesMade;
 	}
 
 	bool GUIManager::injectMouseButtonUp(const MouseButtonID& button)
@@ -431,6 +337,9 @@ namespace QuickGUI
 		args.button = button;
 		args.buttonMask = mButtonMask;
 		args.keyModifiers = mKeyModifiers;
+
+		// Create a boolean to track whether or not this injection caused any significant changes.
+		bool changesMade = false;
 
 		if(args.widget != NULL)
 		{
@@ -460,11 +369,7 @@ namespace QuickGUI
 			}
 
 			// Fire EVENT_MOUSE_BUTTON_UP event
-			args.widget->fireWidgetEvent(WIDGET_EVENT_MOUSE_BUTTON_UP,args);
-
-			// Show context menu
-			if((mActiveSheet != NULL) && (button == MB_Right) && (args.widget->getContextMenuName() != ""))
-				mActiveSheet->getContextMenu(args.widget->getContextMenuName())->show(args.position);
+			changesMade |= args.widget->fireWidgetEvent(WIDGET_EVENT_MOUSE_BUTTON_UP,args);
 
 			// Users can manually inject single/double/triple click input, or have it detected
 			// from mouse button up/down injections.
@@ -472,12 +377,12 @@ namespace QuickGUI
 			{
 				if((mTimer->getMilliseconds() - mTimeOfButtonDown[button]) <= mGUIManagerDesc.clickTime)
 				{
-					injectMouseClick(button);
+					changesMade |= injectMouseClick(button);
 				}
 			}
 		}
 
-		return (mWidgetUnderMouseCursor != NULL);
+		return changesMade;
 	}
 
 	bool GUIManager::injectMouseClick(const MouseButtonID& button)
@@ -507,9 +412,9 @@ namespace QuickGUI
 		args.keyModifiers = mKeyModifiers;
 
 		if(args.widget != NULL)
-			args.widget->fireWidgetEvent(WIDGET_EVENT_MOUSE_CLICK,args);
+			return args.widget->fireWidgetEvent(WIDGET_EVENT_MOUSE_CLICK,args);
 
-		return (mWidgetUnderMouseCursor != NULL);
+		return false;
 	}
 
 	bool GUIManager::injectMouseDoubleClick(const MouseButtonID& button)
@@ -539,9 +444,9 @@ namespace QuickGUI
 		args.keyModifiers = mKeyModifiers;
 
 		if(args.widget != NULL)
-			args.widget->fireWidgetEvent(WIDGET_EVENT_MOUSE_CLICK_DOUBLE,args);
+			return args.widget->fireWidgetEvent(WIDGET_EVENT_MOUSE_CLICK_DOUBLE,args);
 
-		return (mWidgetUnderMouseCursor != NULL);
+		return false;
 	}
 
 	bool GUIManager::injectMouseTripleClick(const MouseButtonID& button)
@@ -568,9 +473,9 @@ namespace QuickGUI
 		args.keyModifiers = mKeyModifiers;
 
 		if(args.widget != NULL)
-			args.widget->fireWidgetEvent(WIDGET_EVENT_MOUSE_CLICK_TRIPLE,args);
+			return args.widget->fireWidgetEvent(WIDGET_EVENT_MOUSE_CLICK_TRIPLE,args);
 
-		return (mWidgetUnderMouseCursor != NULL);
+		return false;
 	}
 
 	bool GUIManager::injectMouseMove(const int& xPixelOffset, const int& yPixelOffset)
@@ -590,8 +495,9 @@ namespace QuickGUI
 		if((mWidgetUnderMouseCursor != NULL) && (mWidgetUnderMouseCursor->getGrabbed()))
 		{
 			// Check resizing first
-			if((mResizableBorder != BORDER_NONE) && mDownOnBorder)
+			if(mOverResizableBorder && mDownOnBorder)
 			{
+				// Dragging, which uses move function, works with pixel values (uninfluenced by parent dimensions!)
 				mWidgetUnderMouseCursor->resize(mResizableBorder,xPixelOffset,yPixelOffset);
 
 				return true;
@@ -655,8 +561,39 @@ namespace QuickGUI
 				mMouseCursor->_setSkinType(mMouseCursor->mDefaultSkinType);
 		}
 
-		// Check if cursor needs to change
-		checkIfCursorOverResizableBorder(mMouseCursor->getPosition() - win->getPosition());
+		// Change cursor if we're over a resizable widget's border, or restore cursor if we have left resizable widget's border
+		if((mWidgetUnderMouseCursor != NULL) && (mWidgetUnderMouseCursor->getResizable()))
+		{
+			mPreviousBorder = mResizableBorder;
+			mResizableBorder = mWidgetUnderMouseCursor->getBorderSide(mMouseCursor->getPosition() - win->getPosition());
+			mOverResizableBorder = true;
+
+			switch(mResizableBorder)
+			{
+				case BORDER_LEFT:
+				case BORDER_RIGHT:
+					mMouseCursor->_setSkinType("hresize"); break;
+				case BORDER_TOP:
+				case BORDER_BOTTOM:
+					mMouseCursor->_setSkinType("vresize"); break;
+				case BORDER_TOP_LEFT:
+				case BORDER_BOTTOM_RIGHT:
+					mMouseCursor->_setSkinType("diag1resize"); break;
+				case BORDER_TOP_RIGHT:
+				case BORDER_BOTTOM_LEFT:
+					mMouseCursor->_setSkinType("diag2resize"); break;
+				case BORDER_NONE:
+					// Revert cursor if we have just moved off a resizable border
+					if(mPreviousBorder != BORDER_NONE)
+					{
+						mMouseCursor->_setSkinType(mMouseCursor->mDefaultSkinType);
+					}
+					mOverResizableBorder = false;
+					break;
+			}
+		}
+		else
+			mOverResizableBorder = false;
 
 		return changesMade;
 	}
@@ -689,21 +626,15 @@ namespace QuickGUI
 
 		if(mGUIManagerDesc.scrollLastClicked)
 		{
-			if(mLastClickedWidget != NULL)
-			{
-				Widget* w = mLastClickedWidget->getScrollableContainerWidget();
-				if(w != NULL)
-					return w->fireWidgetEvent(WIDGET_EVENT_MOUSE_WHEEL,args);
-			}
+			Widget* w = mLastClickedWidget->getScrollableContainerWidget();
+			if(w != NULL)
+				return w->fireWidgetEvent(WIDGET_EVENT_MOUSE_WHEEL,args);
 		}
 		else
 		{
-			if(mWidgetUnderMouseCursor != NULL)
-			{
-				Widget* w = mWidgetUnderMouseCursor->getScrollableContainerWidget();
-				if(w != NULL)
-					return w->fireWidgetEvent(WIDGET_EVENT_MOUSE_WHEEL,args);
-			}
+			Widget* w = mWidgetUnderMouseCursor->getScrollableContainerWidget();
+			if(w != NULL)
+				return w->fireWidgetEvent(WIDGET_EVENT_MOUSE_WHEEL,args);
 		}
 
 		return false;

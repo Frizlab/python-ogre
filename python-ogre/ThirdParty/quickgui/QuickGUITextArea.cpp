@@ -63,8 +63,7 @@ namespace QuickGUI
 		mText(NULL),
 		mDesc(NULL),
 		mTextCursor(NULL),
-		mCursorIndex(0),
-		mBlinkTimer(NULL)
+		mCursorIndex(0)
 	{
 		mSkinElementName = BACKGROUND;
 
@@ -76,8 +75,6 @@ namespace QuickGUI
 		addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&TextArea::onMouseButtonDown,this);
 		addWidgetEventHandler(WIDGET_EVENT_MOUSE_CLICK_TRIPLE,&TextArea::onTripleClick,this);
 		addWidgetEventHandler(WIDGET_EVENT_VISIBLE_CHANGED,&TextArea::onVisibleChanged,this);
-
-		mTextCursor = OGRE_NEW_T(TextCursor,Ogre::MEMCATEGORY_GENERAL)(this);
 	}
 
 	TextArea::~TextArea()
@@ -110,28 +107,13 @@ namespace QuickGUI
 
 	void TextArea::_initialize(WidgetDesc* d)
 	{
-		TextAreaDesc* td = dynamic_cast<TextAreaDesc*>(d);
-
-		// Create Timers before calling ContainerWidget::_initialize.  Some functions like setEnabled affect timers.
-		TimerDesc timerDesc;
-		timerDesc.repeat = true;
-		timerDesc.timePeriod = td->textarea_cursorBlinkTime;
-		mBlinkTimer = TimerManager::getSingleton().createTimer(timerDesc);
-		mBlinkTimer->setCallback(&TextArea::blinkTimerCallback,this);
-
-		timerDesc.timePeriod = td->textarea_keyRepeatTime;
-		mKeyRepeatTimer = TimerManager::getSingleton().createTimer(timerDesc);
-		mKeyRepeatTimer->setCallback(&TextArea::keyRepeatTimerCallback,this);
-
-		timerDesc.repeat = false;
-		timerDesc.timePeriod = td->textarea_keyDownTime;
-		mKeyDownTimer = TimerManager::getSingleton().createTimer(timerDesc);
-		mKeyDownTimer->setCallback(&TextArea::keyDownTimerCallback,this);
-
 		ContainerWidget::_initialize(d);
 
 		mDesc = dynamic_cast<TextAreaDesc*>(mWidgetDesc);
 
+		TextAreaDesc* td = dynamic_cast<TextAreaDesc*>(d);
+
+		mTextCursor = OGRE_NEW_T(TextCursor,Ogre::MEMCATEGORY_GENERAL)(this);
 		mTextCursor->setHeight(Text::getFontHeight(td->textarea_defaultFontName));
 		mTextCursor->setSkinType(td->textarea_textCursorDefaultSkinTypeName);
 
@@ -159,6 +141,21 @@ namespace QuickGUI
 		mDesc->textarea_keyDownTime = td->textarea_keyDownTime;
 		mDesc->textarea_keyRepeatTime = td->textarea_keyRepeatTime;
 		mDesc->textarea_readOnly = td->textarea_readOnly;
+
+		TimerDesc timerDesc;
+		timerDesc.repeat = true;
+		timerDesc.timePeriod = mDesc->textarea_cursorBlinkTime;
+		mBlinkTimer = TimerManager::getSingleton().createTimer(timerDesc);
+		mBlinkTimer->setCallback(&TextArea::blinkTimerCallback,this);
+
+		timerDesc.timePeriod = mDesc->textarea_keyRepeatTime;
+		mKeyRepeatTimer = TimerManager::getSingleton().createTimer(timerDesc);
+		mKeyRepeatTimer->setCallback(&TextArea::keyRepeatTimerCallback,this);
+
+		timerDesc.repeat = false;
+		timerDesc.timePeriod = mDesc->textarea_keyDownTime;
+		mKeyDownTimer = TimerManager::getSingleton().createTimer(timerDesc);
+		mKeyDownTimer->setCallback(&TextArea::keyDownTimerCallback,this);
 	}
 
 	void TextArea::_determineVirtualSize()
@@ -321,11 +318,6 @@ namespace QuickGUI
 		return mDesc->textarea_readOnly;
 	}
 
-	Rect TextArea::getScreenRect()
-	{
-		return mTextBoxClipRegion;
-	}
-
 	Ogre::UTFString TextArea::getText()
 	{
 		return mText->getText();
@@ -461,8 +453,8 @@ namespace QuickGUI
 		Rect textArea = Rect(mTexturePosition,mClientDimensions.size);
 		textArea.translate(mClientDimensions.position);
 
-		mTextBoxClipRegion = prevClipRegion.getIntersection(textArea);
-		brush->setClipRegion(mTextBoxClipRegion);
+		Rect newClipRegion = prevClipRegion.getIntersection(textArea);
+		brush->setClipRegion(newClipRegion);
 
 		textArea.translate(mTextPosition);
 
@@ -471,7 +463,7 @@ namespace QuickGUI
 
 		// Draw Text Overlay SkinElement
 
-		brush->drawSkinElement(mTextBoxClipRegion,st->getSkinElement(TEXTOVERLAY));
+		brush->drawSkinElement(newClipRegion,st->getSkinElement(TEXTOVERLAY));
 
 		// Restore clipping
 

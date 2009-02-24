@@ -10,8 +10,9 @@ namespace QuickGUI
 			public WidgetDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		LabelDesc(const Ogre::String& id);
 		virtual ~LabelDesc() {}
 	public:
@@ -53,7 +54,8 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
-		friend class Factory<Widget>;
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -192,7 +194,7 @@ namespace QuickGUI
 		*/
 		virtual void updateClientDimensions();
 
-	protected:
+	//protected:
 		Label(const Ogre::String& name);
 		virtual ~Label();
 

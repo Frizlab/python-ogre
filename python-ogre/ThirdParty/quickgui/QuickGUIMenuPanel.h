@@ -12,8 +12,9 @@ namespace QuickGUI
 			public WindowDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-//	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		MenuPanelDesc(const Ogre::String& id);
 		virtual ~MenuPanelDesc() {}
 	public:
@@ -32,7 +33,7 @@ namespace QuickGUI
 		*/
 		virtual void resetToDefault();
 
-	protected:
+	//protected:
 		bool window_titleBar;
 	};
 
@@ -50,7 +51,8 @@ namespace QuickGUI
 		// ComboBox class creates and destroys MenuPanel
 		friend class ComboBox;
 	public:
-		friend class Factory<Widget>;
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -69,11 +71,6 @@ namespace QuickGUI
 		void clearWidgets();
 
 		/**
-		* Returns the opacity of this widget as it is drawn on screen.
-		* NOTE: Includes parent opacity if widget_inheritOpacity is true.
-		*/
-		virtual float getAbsoluteOpacity();
-		/**
 		* Returns the class name of this Widget.
 		*/
 		virtual Ogre::String getClass();
@@ -88,11 +85,15 @@ namespace QuickGUI
 		void removeWidget(Widget* w);
 
 		/**
+		* Builds the Widget from a ScriptDefinition or Writes the widget to a ScriptDefinition.
+		*/
+		virtual void serialize(SerialBase* b);
+		/**
 		* Sets the max height of the MenuPanel.
 		*/
 		void setMaxHeight(float height);
 
-	protected:
+	//protected:
 		MenuPanel(const Ogre::String& name);
 		virtual ~MenuPanel();
 

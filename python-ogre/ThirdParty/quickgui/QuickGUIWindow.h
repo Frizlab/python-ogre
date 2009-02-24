@@ -20,8 +20,9 @@ namespace QuickGUI
 			public PanelDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-//	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		WindowDesc(const Ogre::String& id);
 		virtual ~WindowDesc() {}
 	public:
@@ -74,7 +75,8 @@ namespace QuickGUI
 		friend class Menu;
 		friend class Widget;
 
-		friend class Factory<Widget>;
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 		/**
 		* Internal function, do not use.
@@ -99,7 +101,7 @@ namespace QuickGUI
         */
 		template<typename T> void addWindowEventHandler(WindowEvent EVENT, void (T::*function)(const EventArgs&), T* obj)
 		{
-			addWindowEventHandler(EVENT, OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
+			mWindowEventHandlers[EVENT].push_back(OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
 		}
 		void addWindowEventHandler(WindowEvent EVENT, EventHandlerSlot* function);
 
@@ -222,7 +224,7 @@ namespace QuickGUI
 		*/
 		virtual void updateTexturePosition();
 
-	protected:
+	//protected:
 		Window(const Ogre::String& name);
 		virtual ~Window();
 

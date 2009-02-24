@@ -14,8 +14,9 @@ namespace QuickGUI
 			public WidgetDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+	//protected:
 		ProgressBarDesc(const Ogre::String& id);
 		virtual ~ProgressBarDesc() {}
 	public:
@@ -64,7 +65,8 @@ namespace QuickGUI
 		// Define Skin Structure
 		static void registerSkinDefinition();
 	public:
-		friend class Factory<Widget>;
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 
 		/**
@@ -90,7 +92,7 @@ namespace QuickGUI
         */
 		template<typename T> void addProgressBarEventHandler(ProgressBarEvent EVENT, void (T::*function)(const EventArgs&), T* obj)
 		{
-			addProgressBarEventHandler(EVENT, OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
+			mProgressBarEventHandlers[EVENT].push_back(OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
 		}
 		void addProgressBarEventHandler(ProgressBarEvent EVENT, EventHandlerSlot* function);
 
@@ -240,7 +242,7 @@ namespace QuickGUI
 		*/
 		virtual void updateClientDimensions();
 
-	protected:
+	//protected:
 		ProgressBar(const Ogre::String& name);
 		virtual ~ProgressBar();
 

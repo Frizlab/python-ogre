@@ -69,13 +69,10 @@ namespace QuickGUI
 		Ogre::String currentTexture = "TextSelection";
 
 		// Render any quads queued for drawing.
-		brush->endRectQueue();
+		brush->emptyQueue();
 
 		// Do an initial pass to draw any quads related to text highlighting
 		brush->setTexture("TextSelection");
-
-		brush->beginRectQueue();
-
 		for(std::vector<Character*>::iterator it = mCharacters.begin(); it != mCharacters.end(); ++it)
 		{
 			// Ignore any newline characters
@@ -95,14 +92,11 @@ namespace QuickGUI
 		if(mMaskText)
 		{
 			// Render any currently queued quads
-			brush->endRectQueue();
-
+			brush->emptyQueue();
 			// Set texture to largest font's texture
 			Ogre::TexturePtr texturePtr = Text::getFontTexture(mLargestFont);
 			brush->setTexture(texturePtr);
 			brush->setColor(mCharacters.front()->colorValue);
-
-			brush->beginRectQueue();
 
 			// Get the glyph's UV Coords
 			UVRect uvCoords = Text::getGlyphUVCoords(mLargestFont,mMaskSymbol);
@@ -127,12 +121,9 @@ namespace QuickGUI
 
 				if( currentTexture != (*it)->texturePtr->getName() )
 				{
-					brush->endRectQueue();
-
+					brush->emptyQueue();
 					currentTexture = (*it)->texturePtr->getName();
 					brush->setTexture(currentTexture);
-
-					brush->beginRectQueue();
 				}
 
 				if((*it)->getHighlighted())

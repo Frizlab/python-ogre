@@ -88,7 +88,26 @@ namespace QuickGUI
 	void SkinElement::_updateTexture()
 	{
 		if(mTextureName != "")
-			mTexture.load(mTextureName,Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		{
+			Ogre::TexturePtr tp = static_cast<Ogre::TexturePtr>(Ogre::TextureManager::getSingleton().getByName(mTextureName));
+
+			// Declare buffer
+			size_t texWidth = tp->getWidth();
+			size_t texHeight = tp->getHeight();
+			const size_t buffSize = texWidth * texHeight * 4;
+			unsigned char* data = OGRE_ALLOC_T(unsigned char, buffSize, Ogre::MEMCATEGORY_GENERAL);
+			
+			// Clear buffer
+			memset(data, 0, buffSize);
+
+			// Setup Image with correct settings
+			mTexture.loadDynamicImage(data, texWidth, texHeight, 1, Ogre::PF_R8G8B8A8, true);
+			
+			// Copy Texture buffer contents to image buffer
+			Ogre::HardwarePixelBufferSharedPtr buf = tp->getBuffer();		
+			const Ogre::PixelBox destBox = mTexture.getPixelBox();
+			buf->blitToMemory(destBox);
+		}
 	}
 
 	UVRect SkinElement::getBackgroundUVCoords()

@@ -48,11 +48,6 @@ namespace QuickGUI
 		Widget(name)
 	{
 		mSkinElementName = UNCHECKED;
-
-		Widget::addWidgetEventHandler(WIDGET_EVENT_MOUSE_ENTER,&CheckBox::onMouseEnter,this);
-		Widget::addWidgetEventHandler(WIDGET_EVENT_MOUSE_LEAVE,&CheckBox::onMouseLeave,this);
-		Widget::addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&CheckBox::onMouseLeftButtonDown,this);
-		Widget::addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_UP,&CheckBox::onMouseLeftButtonUp,this);
 	}
 
 	CheckBox::~CheckBox()
@@ -75,6 +70,11 @@ namespace QuickGUI
 
 		setSkinType(d->widget_skinTypeName);
 		setChecked(cbd->checkbox_checked);
+
+		Widget::addWidgetEventHandler(WIDGET_EVENT_MOUSE_ENTER,&CheckBox::onMouseEnter,this);
+		Widget::addWidgetEventHandler(WIDGET_EVENT_MOUSE_LEAVE,&CheckBox::onMouseLeave,this);
+		Widget::addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&CheckBox::onMouseLeftButtonDown,this);
+		Widget::addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_UP,&CheckBox::onMouseLeftButtonUp,this);
 	}
 
 	void CheckBox::addCheckBoxEventHandler(CheckBoxEvent EVENT, EventHandlerSlot* function)
@@ -173,12 +173,12 @@ namespace QuickGUI
 		}
 	}
 
-	void CheckBox::setChecked(bool checked)
+	void CheckBox::setChecked(bool checkbox_checked)
 	{
-		if(mDesc->checkbox_checked == checked)
+		if(mDesc->checkbox_checked == checkbox_checked)
 			return;
 
-		mDesc->checkbox_checked = checked;
+		mDesc->checkbox_checked = checkbox_checked;
 
 		if(mDesc->checkbox_checked)
 			mSkinElementName = CHECKED;

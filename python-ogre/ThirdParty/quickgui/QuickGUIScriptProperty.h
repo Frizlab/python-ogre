@@ -15,7 +15,7 @@ namespace QuickGUI
 		Ogre::String getPropertyName();
 		Ogre::StringVector& getValues();
 
-	protected:
+	//protected:
 		ScriptProperty(const Ogre::String& propertyName);
 
 		Ogre::String mPropertyName;

@@ -1,19 +1,16 @@
 #include "QuickGUITab.h"
 #include "QuickGUISkinDefinitionManager.h"
-#include "QuickGUITabControl.h"
 
 namespace QuickGUI
 {
 	const Ogre::String Tab::FRONT = "front";
 	const Ogre::String Tab::MAIN = "main";
-	const Ogre::String Tab::ICON = "icon";
 
 	void Tab::registerSkinDefinition()
 	{
 		SkinDefinition* d = OGRE_NEW_T(SkinDefinition,Ogre::MEMCATEGORY_GENERAL)("Tab");
 		d->defineSkinElement(FRONT);
 		d->defineSkinElement(MAIN);
-		d->defineSkinElement(ICON);
 		d->definitionComplete();
 
 		SkinDefinitionManager::getSingleton().registerSkinDefinition("Tab",d);
@@ -29,8 +26,7 @@ namespace QuickGUI
 	{
 		LabelDesc::resetToDefault();
 
-		tab_frontWidth = 0;
-		tab_widthBuffer = 5;
+		tab_frontWidth = -1;
 	}
 
 	void TabDesc::serialize(SerialBase* b)
@@ -38,7 +34,6 @@ namespace QuickGUI
 		LabelDesc::serialize(b);
 
 		b->IO("FrontWidth",&tab_frontWidth);
-		b->IO("WidthBuffer",&tab_widthBuffer);
 	}
 
 	Tab::Tab(const Ogre::String& name) :
@@ -53,11 +48,12 @@ namespace QuickGUI
 
 	void Tab::_adjustTabWidth()
 	{
-		mDesc->widget_dimensions.size.width = mDesc->tab_frontWidth + mDesc->textDesc.getTextWidth() + mDesc->tab_widthBuffer + mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_RIGHT);
+		if(mDesc->textDesc.segments.empty())
+			mDesc->widget_dimensions.size.width = mDesc->tab_frontWidth + 50;
+		else
+			mDesc->widget_dimensions.size.width = mDesc->tab_frontWidth + mDesc->textDesc.getTextWidth() + mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_RIGHT);
 
-		// If the Tab belongs to a TabPage which belongs to a TabControl, signal TabControl to update all TabPages
-		if((mParentWidget != NULL) && (mParentWidget->getParentWidget() != NULL))
-			dynamic_cast<TabControl*>(mParentWidget->getParentWidget())->updateTabPages();
+		mText->setAllottedWidth(mDesc->textDesc.getTextWidth() + mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_RIGHT));
 	}
 
 	void Tab::_initialize(WidgetDesc* d)
@@ -70,7 +66,7 @@ namespace QuickGUI
 
 		setSkinType(td->widget_skinTypeName);
 
-		if(td->tab_frontWidth <= 0)
+		if(td->tab_frontWidth < 0)
 			mDesc->tab_frontWidth = mSkinType->getSkinElement(FRONT)->getWidth();
 		else
 			mDesc->tab_frontWidth = td->tab_frontWidth;
@@ -79,19 +75,18 @@ namespace QuickGUI
 		// modify it directly, which is used for serialization.
 		mDesc->textDesc = td->textDesc;
 
-		float widthFromText = mDesc->tab_frontWidth + mSkinType->getSkinElement(MAIN)->getBorderThickness(BORDER_LEFT) + mDesc->textDesc.getTextWidth() + mDesc->tab_widthBuffer + mSkinType->getSkinElement(MAIN)->getBorderThickness(BORDER_RIGHT);
-		float widthFromIcon = mDesc->tab_frontWidth + mSkinType->getSkinElement(MAIN)->getBorderThickness(BORDER_LEFT) + mSkinType->getSkinElement(ICON)->getWidth() + mDesc->tab_widthBuffer + mSkinType->getSkinElement(MAIN)->getBorderThickness(BORDER_RIGHT);
-		mDesc->widget_dimensions.size.width = widthFromText;
-		if(widthFromIcon > widthFromText)
-			mDesc->widget_dimensions.size.width = widthFromIcon;
+		if(mDesc->textDesc.segments.empty())
+			mDesc->widget_dimensions.size.width = mDesc->tab_frontWidth + 50;
+		else
+			mDesc->widget_dimensions.size.width = mDesc->tab_frontWidth + mSkinType->getSkinElement(MAIN)->getBorderThickness(BORDER_LEFT) + mDesc->textDesc.getTextWidth() + mSkinType->getSkinElement(MAIN)->getBorderThickness(BORDER_RIGHT);
 
-		float heightFromText = mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_TOP) + mDesc->textDesc.getTextHeight() + mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM);
-		float heightFromIcon = mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_TOP) + mSkinType->getSkinElement(ICON)->getHeight() + mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM);
-		mDesc->widget_dimensions.size.height = heightFromText;
-		if(heightFromIcon > heightFromText)
-			mDesc->widget_dimensions.size.height = heightFromIcon;
+		if(mDesc->textDesc.segments.empty())
+			mDesc->widget_dimensions.size.height = 20;
+		else
+			mDesc->widget_dimensions.size.height = mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_TOP) + mDesc->textDesc.getTextHeight() + mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_BOTTOM);
 
 		mDesc->label_verticalTextAlignment = td->label_verticalTextAlignment;
+		mDesc->textDesc.allottedWidth = mDesc->textDesc.getTextWidth() + mSkinType->getSkinElement(mSkinElementName)->getBorderThickness(BORDER_RIGHT);
 		mText = OGRE_NEW_T(Text,Ogre::MEMCATEGORY_GENERAL)(mDesc->textDesc);
 	}
 
@@ -103,11 +98,6 @@ namespace QuickGUI
 	Ogre::String Tab::getClass()
 	{
 		return "Tab";
-	}
-
-	float Tab::getWidthBuffer()
-	{
-		return mDesc->tab_widthBuffer;
 	}
 
 	void Tab::onDraw()
@@ -132,12 +122,6 @@ namespace QuickGUI
 		tabRect.position.x += mDesc->tab_frontWidth;
 		tabRect.size.width = mWidgetDesc->widget_dimensions.size.width - mDesc->tab_frontWidth;
 		brush->drawSkinElement(tabRect,st->getSkinElement(MAIN));
-
-		// Draw the icon on the main part of the tab
-		Rect iconRect(tabRect);
-		iconRect.size.width = st->getSkinElement(ICON)->getWidth();
-		iconRect.size.height = st->getSkinElement(ICON)->getHeight();
-		brush->drawSkinElement(iconRect,st->getSkinElement(ICON));
 
 		Ogre::ColourValue prevColor = brush->getColour();
 		Rect prevClipRegion = brush->getClipRegion();
@@ -234,13 +218,6 @@ namespace QuickGUI
 	void Tab::setText(Ogre::UTFString s)
 	{
 		Label::setText(s);
-
-		_adjustTabWidth();
-	}
-
-	void Tab::setWidthBuffer(float width)
-	{
-		mDesc->tab_widthBuffer = width;
 
 		_adjustTabWidth();
 	}

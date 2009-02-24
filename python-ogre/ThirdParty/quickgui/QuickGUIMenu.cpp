@@ -54,8 +54,7 @@ namespace QuickGUI
 
 	Menu::Menu(const Ogre::String& name) :
 		MenuLabel(name),
-		mMenuPanel(NULL),
-		mAutoNameCounter(0)
+		mMenuPanel(NULL)
 	{
 		mSkinElementName = DEFAULT;
 	}
@@ -97,7 +96,7 @@ namespace QuickGUI
 		mDesc->menu_subMenuOverlap = md->menu_subMenuOverlap;
 
 		// Create our Menu List Window
-		MenuPanelDesc* lpd = FactoryManager::getSingleton().getDescFactory()->getInstance<MenuPanelDesc>("DefaultMenuPanelDesc");
+		MenuPanelDesc* lpd = dynamic_cast<MenuPanelDesc*>(FactoryManager::getSingleton().getWidgetDescFactory()->getInstance("DefaultMenuPanelDesc"));
 		lpd->resetToDefault();
 		lpd->widget_name = mWidgetDesc->widget_name + ".MenuPanel";
 		lpd->widget_dimensions = Rect(0,0,mDesc->menu_menuWidth,1);
@@ -159,8 +158,6 @@ namespace QuickGUI
 		i->notifyMenuParent(this);
 		// Set link to parent ToolBar
 		i->notifyToolBarParent(mDesc->toolBar);
-		// Set link to parent ContextMenu
-		i->notifyContextMenuParent(mDesc->contextMenu);
 		i->_setGUIManager(mWidgetDesc->guiManager);
 		i->_setSheet(mWidgetDesc->sheet);
 
@@ -196,12 +193,6 @@ namespace QuickGUI
 		if(className == "Menu")
 			return createSubMenu(dynamic_cast<MenuDesc*>(d));
 
-		if(d->widget_name == "")
-		{
-			d->widget_name = getName() + ".AutoName.MenuItem." + Ogre::StringConverter::toString(mAutoNameCounter);
-			++mAutoNameCounter;
-		}
-
 		// Make sure new Menu will maintain link to owner ToolBar
 		d->toolBar = mDesc->toolBar;
 
@@ -221,12 +212,6 @@ namespace QuickGUI
 
 	MenuLabel* Menu::createMenuLabel(MenuLabelDesc* d)
 	{
-		if(d->widget_name == "")
-		{
-			d->widget_name = getName() + ".AutoName.MenuItem." + Ogre::StringConverter::toString(mAutoNameCounter);
-			++mAutoNameCounter;
-		}
-
 		// Make sure new Menu will maintain link to owner ToolBar
 		d->toolBar = mDesc->toolBar;
 
@@ -246,12 +231,6 @@ namespace QuickGUI
 
 	Menu* Menu::createSubMenu(MenuDesc* d)
 	{
-		if(d->widget_name == "")
-		{
-			d->widget_name = getName() + ".AutoName.MenuItem." + Ogre::StringConverter::toString(mAutoNameCounter);
-			++mAutoNameCounter;
-		}
-
 		// Make sure new Menu will maintain link to owner ToolBar
 		d->toolBar = mDesc->toolBar;
 
@@ -324,14 +303,6 @@ namespace QuickGUI
 		return (mParentWidget->getClass() != "ToolBar");
 	}
 
-	void Menu::notifyContextMenuParent(ContextMenu* m)
-	{
-		MenuItem::notifyContextMenuParent(m);
-
-		for(std::vector<MenuItem*>::iterator it = mMenuItems.begin(); it != mMenuItems.end(); ++it)
-			(*it)->notifyContextMenuParent(m);
-	}
-
 	void Menu::notifyMenuParent(Menu* m)
 	{
 		MenuItem::notifyMenuParent(m);
@@ -369,19 +340,13 @@ namespace QuickGUI
 				if(mMenuPanel->getVisible())
 					closeMenu();
 				else
-				{
-					if(mDesc->toolBar != NULL)
-						mDesc->toolBar->openMenu(this);
-					else if(mDesc->contextMenu != NULL)
-						mDesc->contextMenu->openSubMenu(this);
-				}
+					mDesc->toolBar->openMenu(this);
 			}
 		}
 	}
 
 	void Menu::onMouseButtonUp(const EventArgs& args)
 	{
-		// Purposefully left blank. (overrides MenuLabel::onMouseButtonUp, which is called as an event handler)
 	}
 
 	void Menu::onMouseEnter(const EventArgs& args)
@@ -391,15 +356,18 @@ namespace QuickGUI
 		if(mParentWidget == NULL)
 			throw Exception(Exception::ERR_INVALID_STATE,"Menu is not attached to any widget! (Parent is NULL)","Menu::onMouseEnter");
 
-		// For standard menus, go through toolBar to open the right menu
-		if((mDesc->toolBar != NULL) && mDesc->toolBar->isMenuOpened())
+		if(mDesc->toolBar->isMenuOpened())
 			mDesc->toolBar->openMenu(this);
-		else if(mDesc->contextMenu != NULL)
-			mDesc->contextMenu->openSubMenu(this);
 	}
 
 	void Menu::openMenu()
 	{
+		if(getNumberOfItems() == 0)
+		{
+			closeMenu();
+			return;
+		}
+
 		// Close all SubMenus
 		for(std::vector<Menu*>::iterator it = mSubMenus.begin(); it != mSubMenus.end(); ++it)
 			(*it)->closeMenu();
@@ -470,12 +438,6 @@ namespace QuickGUI
 
 	void Menu::serialize(SerialBase* b)
 	{
-		// Create Desc object if its not already created.
-		_createDescObject();
-
-		if(!mWidgetDesc->widget_serialize)
-			return;
-
 		b->begin(getClass(),getName());
 
 		mWidgetDesc->serialize(b);
@@ -491,7 +453,7 @@ namespace QuickGUI
 			for(std::list<ScriptDefinition*>::iterator it = defList.begin(); it != defList.end(); ++it)
 			{
 				// Create Empty Widget, supplying class name and widget name from script
-				Widget* newWidget = FactoryManager::getSingleton().getWidgetFactory()->createInstance<Widget>((*it)->getType(),(*it)->getID());
+				Widget* newWidget = FactoryManager::getSingleton().getWidgetFactory()->createInstance((*it)->getType(),(*it)->getID());
 
 				// Populate Desc object from Script Text, and initialize widget
 				newWidget->serialize(b);

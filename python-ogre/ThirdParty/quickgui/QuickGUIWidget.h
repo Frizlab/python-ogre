@@ -2,9 +2,9 @@
 #define QUICKGUIWIDGET_H
 
 #include "QuickGUIAnchors.h"
+#include "QuickGUIBaseDesc.h"
 #include "QuickGUIBorderEnums.h"
 #include "QuickGUIBrush.h"
-#include "QuickGUIDesc.h"
 #include "QuickGUIEventArgs.h"
 #include "QuickGUIExportDLL.h"
 #include "QuickGUIEventHandlerPointer.h"
@@ -26,36 +26,29 @@ namespace QuickGUI
 	// Global function to create Widgets
 
 	class _QuickGUIExport WidgetDesc :
-		public Desc
+		public BaseDesc
 	{
 	public:
-		template<typename BaseClassType> friend class Factory;
-//	protected:
+		template<typename BaseClassType>
+		friend class Factory;
+//	//protected:
 		WidgetDesc(const Ogre::String& id);
 		virtual ~WidgetDesc() {}
 	public:
 
 		BrushFilterMode		widget_brushFilterMode;
 		bool				widget_consumeKeyboardEvents;
-		Ogre::String		widget_contextMenuName;
 		bool				widget_enabled;
 		Rect				widget_dimensions;
 		Ogre::String		widget_disabledSkinType;
 		bool				widget_dragable;
 		HorizontalAnchor	widget_horizontalAnchor;
 		float				widget_hoverTime;
-		bool				widget_inheritOpacity;
 		Size				widget_maxSize;
 		Size				widget_minSize;
 		Ogre::String		widget_name;
-		float				widget_relativeOpacity;
-		bool				widget_positionRelativeToParentClientDimensions;
-		bool				widget_resizeFromBottom;
-		bool				widget_resizeFromLeft;
-		bool				widget_resizeFromRight;
-		bool				widget_resizeFromTop;
+		bool				widget_resizable;
 		bool				widget_scrollable;
-		bool				widget_serialize;
 		Ogre::String		widget_skinTypeName;
 		bool				widget_transparencyPicking;
 		VerticalAnchor		widget_verticalAnchor;
@@ -85,7 +78,7 @@ namespace QuickGUI
 		*/
 		virtual void serialize(SerialBase* b);
 
-	protected:
+	//protected:
 		Ogre::String		mID;
 	};
 
@@ -108,7 +101,8 @@ namespace QuickGUI
 		friend class ListPanel;
 		friend class Window;
 		// Factory class creates and destroys Widgets
-		friend class Factory<Widget>;
+		template<typename BaseClassType>
+		friend class WidgetFactory;
 	public:
 		/**
 		* Static function used to create widgets.  Note that the widgets returned have NOT been initialized yet. (_initialize())
@@ -116,6 +110,10 @@ namespace QuickGUI
 		static Widget* create(const Ogre::String& className, WidgetDesc* d);
 	public:
 
+		/**
+		* Internal use only. (Called in factory method)
+		*/
+		void _createDescObject(const Ogre::String& className);
 		/**
 		* Internal function, do not use.
 		*/
@@ -134,7 +132,7 @@ namespace QuickGUI
 				EVENT Defined widget events, for example: WIDGET_EVENT_SIZE_CHANGED, WIDGET_EVENT_MOUSE_WHEEL, etc.
             @param
                 function member function assigned to handle the event.  Given in the form of myClass::myFunction.
-				Function must return void, and take QuickGUI::EventArgs as its parameters.
+				Function must return bool, and take QuickGUI::EventArgs as its parameters.
             @param
                 obj particular class instance that defines the handler for this event.  Here is an example:
 				addWidgetEventHandler(QuickGUI::WIDGET_EVENT_MOUSE_BUTTON_DOWN,myClass::myFunction,this);
@@ -147,9 +145,9 @@ namespace QuickGUI
         */
 		template<typename T> void addWidgetEventHandler(WidgetEvent EVENT, void (T::*function)(const EventArgs&), T* obj)
 		{
-			addWidgetEventHandler(EVENT,OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
+			mWidgetEventHandlers[EVENT].push_back(OGRE_NEW_T(EventHandlerPointer<T>,Ogre::MEMCATEGORY_GENERAL)(function,obj));
 		}
-		virtual void addWidgetEventHandler(WidgetEvent EVENT, EventHandlerSlot* function);
+		void addWidgetEventHandler(WidgetEvent EVENT, EventHandlerSlot* function);
 
 		/**
 		* Offsets the widget.
@@ -178,17 +176,13 @@ namespace QuickGUI
 		bool fireWidgetEvent(WidgetEvent EVENT, EventArgs& args);
 
 		/**
-		* Returns the opacity of this widget as it is drawn on screen.
-		* NOTE: Includes parent opacity if widget_inheritOpacity is true.
-		*/
-		virtual float getAbsoluteOpacity();
-		/**
 		* Returns true if this widget is being dragged, false otherwise.
 		*/
 		bool getBeingDragged();
 		/**
 		* Returns the Border underneath the point p.
 		* NOTE: Point is assumed to be relative to the Window.
+		* NOTE: Exception is thrown if point is not over a border.
 		*/
 		virtual BorderSide getBorderSide(Point p);
 		/**
@@ -208,11 +202,6 @@ namespace QuickGUI
 		* false otherwise.
 		*/
 		bool getConsumeKeyboardEvents();
-		/**
-		* Returns the name of the context menu for this widget.  If this widget does not have
-		* a context menu, empty string is returned. ("")
-		*/
-		Ogre::String getContextMenuName();
 		/*
 		* Gets the position and size of this widget.
 		* NOTE: Position is relative to its parent.
@@ -255,10 +244,6 @@ namespace QuickGUI
 		*/
 		float getHoverTime();
 		/**
-		* Returns true if this widgets opacity is affected by its parent's opacity, false otherwise.
-		*/
-		bool getInheritOpacity();
-		/**
 		* Returns the maximum size this widget can be.
 		*/
 		Size getMaxSize();
@@ -280,35 +265,9 @@ namespace QuickGUI
 		*/
 		Point getPosition();
 		/**
-		* Returns true if the widget's origin is at the Parent's client area origin, false if
-		* the widget's origin is at the Parent's origin. (The client area is typically the area inside a Widget's
-		* borders)
+		* Returns true if the widget can be resized using the mouse, false otherwise.
 		*/
-		bool getPositionRelativeToParentClientDimensions();
-		/**
-		* Returns the relative opacity of the widget.
-		*/
-		float getRelativeOpacity();
-		/**
-		* Returns true if the bottom border of this widget can be used with the mouse cursor to resize the widget,
-		* false otherwise.
-		*/
-		bool getResizeFromBottom();
-		/**
-		* Returns true if the left border of this widget can be used with the mouse cursor to resize the widget,
-		* false otherwise.
-		*/
-		bool getResizeFromLeft();
-		/**
-		* Returns true if the right border of this widget can be used with the mouse cursor to resize the widget,
-		* false otherwise.
-		*/
-		bool getResizeFromRight();
-		/**
-		* Returns true if the top border of this widget can be used with the mouse cursor to resize the widget,
-		* false otherwise.
-		*/
-		bool getResizeFromTop();
+		bool getResizable();
 		/**
 		* Gets the position of the widget as seen on the screen.
 		*/
@@ -326,11 +285,6 @@ namespace QuickGUI
 		* is not or does not belong to a Scrollable container.
 		*/
 		Widget* getScrollableContainerWidget();
-		/**
-		* Returns true if this widget serializes itself to disk when its Sheet gets serialized to disk,
-		* false if this widget does not serialize to disk.
-		*/
-		bool getSerialize();
 		/**
 		* Returns the sheet this widget belongs to.
 		*/
@@ -430,14 +384,9 @@ namespace QuickGUI
 		*/
 		void setConsumeKeyboardEvents(bool consume);
 		/**
-		* Sets the context menu displayed when the right mouse button goes up over this widget.
-		* NOTE: Empty string is valid, and removes any context menu associated with this widget.
-		*/
-		void setContextMenuName(const Ogre::String& contextMenuName);
-		/**
 		* Sets the size and position (position relative to parent) of this Widget, respectively.
 		*/
-		virtual void setDimensions(const Rect& r);
+		void setDimensions(const Rect& r);
 		/**
 		* Sets the widget_name of the SkinType applied when the widget is disabled.
 		* NOTE: Use "" to prevent the widget's apperance from changing when disabled.
@@ -446,12 +395,12 @@ namespace QuickGUI
 		/**
 		* Set whether or not this widget can be dragged by the mouse cursor.
 		*/
-		virtual void setDragable(bool dragable);
+		virtual void setDragable(bool widget_dragable);
 		/**
 		* Enabled Widgets receive mouse and keyboard events via injections to the GUIManager.
 		* Disabled Widgets can only receive these events if they are manually fired.
 		*/
-		virtual void setEnabled(bool enabled);
+		virtual void setEnabled(bool widget_enabled);
 		/**
 		* Notify the widget it is grabbed or not grabbed.
 		*/
@@ -473,12 +422,6 @@ namespace QuickGUI
 		*/
 		void setHoverTime(float seconds);
 		/**
-		* Sets whether this widget will inherit the opacity of its parent.
-		* NOTE: Widgets will always inherit the opacity of their owner Window or Sheet,
-		*  whichever comes first.
-		*/
-		void setInheritOpacity(bool inherit);
-		/**
 		* Sets the maximum size this widget can be.
 		*/
 		void setMaxSize(const Size& s);
@@ -486,42 +429,15 @@ namespace QuickGUI
 		* Sets the minimum size this widget can be.
 		*/
 		void setMinSize(const Size& s);
-		void setName(const Ogre::String& name);
+		void setName(const Ogre::String& widget_name);
 		/**
 		* Sets the x and y position of this widget, relative to this widget's parent.
 		*/
 		virtual void setPosition(const Point& position);
 		/**
-		* If set true, Widget's origin is in Parent's client area origin. If set false
-		* Widget's origin is at Parent's origin.
+		* Sets whether the widget can be resized using the mouse.
 		*/
-		void setPositionRelativeToParentClientDimensions(bool relativeToClientOrigin);
-		/**
-		* Sets the opacity of this widget.  Values will be curbed within the range [0,1]
-		* NOTE: Widgets will always inherit the opacity of their owner Window or Sheet,
-		*  whichever comes first.
-		*/
-		void setRelativeOpacity(float opacity);
-		/**
-		* Convenience methods allowing all sides to enable/disable resizing using the mouse cursor.
-		*/
-		void setResizeFromAllSides(bool resizable);
-		/**
-		* If set true, the bottom border of this widget can be used with the mouse cursor to resize the widget.
-		*/
-		void setResizeFromBottom(bool resizable);
-		/**
-		* If set true, the left border of this widget can be used with the mouse cursor to resize the widget.
-		*/
-		void setResizeFromLeft(bool resizable);
-		/**
-		* If set true, the right border of this widget can be used with the mouse cursor to resize the widget.
-		*/
-		void setResizeFromRight(bool resizable);
-		/**
-		* If set true, the top border of this widget can be used with the mouse cursor to resize the widget.
-		*/
-		void setResizeFromTop(bool resizable);
+		virtual void setResizable(bool widget_resizable);
 		/**
 		* Scroll the widget horizontally and vertically.
 		*/
@@ -537,12 +453,7 @@ namespace QuickGUI
 		/**
 		* Sets whether the widget can be scrolled by its parent widget.
 		*/
-		void setScrollable(bool scrollable);
-		/**
-		* If set true, this widget serializes itself to disk when its Sheet gets serialized to disk,
-		* otherwise it will not get saved to disk.
-		*/
-		void setSerialize(bool serialize);
+		void setScrollable(bool widget_scrollable);
 		/**
 		* Sets the width and height of this widget.
 		*/
@@ -557,7 +468,7 @@ namespace QuickGUI
 		* Sets whether the widget will receive mouse over events simply by having the mouse over
 		* its texture widget_dimensions, or only when the cursor is over non transparent parts.
 		*/
-		virtual void setTransparencyPicking(bool transparencyPicking);
+		virtual void setTransparencyPicking(bool widget_transparencyPicking);
 		/**
 		* Sets Vertical Anchor of this widget. A Top anchor will enforce the widget to maintain
 		* its distance from the top side of its parent. A bottom anchor will enforce the widget to maintain
@@ -568,7 +479,7 @@ namespace QuickGUI
 		/**
 		* Sets whether or not the widget gets drawn.
 		*/
-		virtual void setVisible(bool visible);
+		void setVisible(bool widget_visible);
 		/**
 		* Sets the widget of the widget.
 		*/
@@ -583,7 +494,7 @@ namespace QuickGUI
 		*/
 		virtual void updateTexturePosition();
 
-	protected:
+//	//protected:
 		Widget(const Ogre::String& widget_name);
 		virtual ~Widget();
 
@@ -591,11 +502,6 @@ namespace QuickGUI
 		Ogre::String mName;
 
 		WidgetDesc* mWidgetDesc;
-
-		/**
-		* Internal use only. Creates desc corresponding to the widget class.
-		*/
-		void _createDescObject();
 
 		bool mGrabbed;
 		bool mBeingDragged;

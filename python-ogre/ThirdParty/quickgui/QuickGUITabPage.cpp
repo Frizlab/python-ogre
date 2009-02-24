@@ -46,24 +46,21 @@ namespace QuickGUI
 
 		mDesc = dynamic_cast<TabPageDesc*>(mWidgetDesc);
 
-		mDesc->tabpage_tabWidthBuffer = tpd->tabpage_tabWidthBuffer;
-
 		// Create Tab
-		TabDesc* td = FactoryManager::getSingleton().getDescFactory()->getInstance<TabDesc>("DefaultTabDesc");
+		TabDesc* td = dynamic_cast<TabDesc*>(FactoryManager::getSingleton().getWidgetDescFactory()->getInstance("DefaultTabDesc"));
 		td->resetToDefault();
 		td->widget_name = getName() + ".Tab";
 		td->tab_frontWidth = tpd->tabpage_tabFrontWidth;
 		td->label_verticalTextAlignment = tpd->tabpage_verticalTextAlignment;
 		td->textDesc = tpd->textDesc;
-		td->tab_widthBuffer = tpd->tabpage_tabWidthBuffer;
 		mTab = dynamic_cast<Tab*>(Widget::create("Tab",td));
-		mTab->addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_DOWN,&TabPage::onMouseButtonDownOnTab,this);
+		mTab->addWidgetEventHandler(WIDGET_EVENT_MOUSE_BUTTON_UP,&TabPage::onMouseButtonUpOnTab,this);
 		mTab->addWidgetEventHandler(WIDGET_EVENT_MOUSE_ENTER,&TabPage::onMouseEnterTab,this);
 		mTab->addWidgetEventHandler(WIDGET_EVENT_MOUSE_LEAVE,&TabPage::onMouseLeaveTab,this);
 		addComponent(TAB,mTab);
 
 		// Create Page
-		PanelDesc* pd = FactoryManager::getSingleton().getDescFactory()->getInstance<PanelDesc>("DefaultPanelDesc");
+		PanelDesc* pd = dynamic_cast<PanelDesc*>(FactoryManager::getSingleton().getWidgetDescFactory()->getInstance("DefaultPanelDesc"));
 		pd->resetToDefault();
 		pd->widget_name = getName() + ".Page";
 		pd->widget_horizontalAnchor = ANCHOR_HORIZONTAL_LEFT_RIGHT;
@@ -79,11 +76,6 @@ namespace QuickGUI
 	void TabPage::addChild(Widget* w)
 	{
 		mPage->addChild(w);
-	}
-
-	void TabPage::addWidgetEventHandler(WidgetEvent EVENT, EventHandlerSlot* function)
-	{
-		mPage->addWidgetEventHandler(EVENT,function);
 	}
 
 	void TabPage::deselect()
@@ -132,19 +124,14 @@ namespace QuickGUI
 		return "TabPage";
 	}
 
-	HorizontalTextAlignment TabPage::getTabHorizontalTextAlignment()
+	HorizontalTextAlignment TabPage::getHorizontalTextAlignment()
 	{
 		return mTab->getHorizontalTextAlignment();
 	}
 
-	VerticalTextAlignment TabPage::getTabVerticalTextAlignment()
+	VerticalTextAlignment TabPage::getVerticalTextAlignment()
 	{
 		return mDesc->tabpage_verticalTextAlignment;
-	}
-
-	float TabPage::getTabWidthBuffer()
-	{
-		return mDesc->tabpage_tabWidthBuffer;
 	}
 
 	bool TabPage::isSelected()
@@ -157,7 +144,7 @@ namespace QuickGUI
 		// Nothing drawn for TabPage, its just a container for Tab and Panel (Page)
 	}
 
-	void TabPage::onMouseButtonDownOnTab(const EventArgs& args)
+	void TabPage::onMouseButtonUpOnTab(const EventArgs& args)
 	{
 		const MouseEventArgs& mea = dynamic_cast<const MouseEventArgs&>(args);
 
@@ -225,9 +212,6 @@ namespace QuickGUI
 
 	void TabPage::serialize(SerialBase* b)
 	{
-		if(!mWidgetDesc->widget_serialize)
-			return;
-
 		b->begin(getClass(),getName());
 
 		mWidgetDesc->serialize(b);
@@ -246,7 +230,7 @@ namespace QuickGUI
 			for(std::list<ScriptDefinition*>::iterator it = defList.begin(); it != defList.end(); ++it)
 			{
 				// Create Empty Widget, supplying class name and widget name from script
-				Widget* newWidget = FactoryManager::getSingleton().getWidgetFactory()->createInstance<Widget>((*it)->getType(),(*it)->getID());
+				Widget* newWidget = FactoryManager::getSingleton().getWidgetFactory()->createInstance((*it)->getType(),(*it)->getID());
 
 				// Populate Desc object from Script Text, and initialize widget
 				newWidget->serialize(b);
@@ -306,6 +290,13 @@ namespace QuickGUI
 		Panel::setHorizontalAnchor(a);
 	}
 
+	void TabPage::setHorizontalTextAlignment(HorizontalTextAlignment a)
+	{
+		mTab->setHorizontalTextAlignment(a);
+
+		redraw();
+	}
+
 	void TabPage::setParent(Widget* parent)
 	{
 		Panel::setParent(parent);
@@ -319,29 +310,9 @@ namespace QuickGUI
 		Panel::setPosition(position);
 	}
 
-	void TabPage::setResizeFromAllSides(bool resizable)
+	void TabPage::setResizable(bool resizable)
 	{
-		Widget::setResizeFromAllSides(resizable);
-	}
-
-	void TabPage::setResizeFromBottom(bool resizable)
-	{
-		Widget::setResizeFromBottom(resizable);
-	}
-
-	void TabPage::setResizeFromLeft(bool resizable)
-	{
-		Widget::setResizeFromLeft(resizable);
-	}
-
-	void TabPage::setResizeFromRight(bool resizable)
-	{
-		Widget::setResizeFromRight(resizable);
-	}
-
-	void TabPage::setResizeFromTop(bool resizable)
-	{
-		Widget::setResizeFromTop(resizable);
+		Panel::setResizable(resizable);
 	}
 
 	void TabPage::setSize(Size size)
@@ -359,72 +330,11 @@ namespace QuickGUI
 		}
 	}
 
-	void TabPage::setTabFont(const Ogre::String& fontName)
-	{
-		mTab->setFont(fontName);
-	}
-
-	void TabPage::setTabFont(const Ogre::String& fontName, unsigned int index)
-	{
-		mTab->setFont(fontName,index);
-	}
-
-	void TabPage::setTabFont(const Ogre::String& fontName, unsigned int startIndex, unsigned int endIndex)
-	{
-		mTab->setFont(fontName,startIndex,endIndex);
-	}
-
-	void TabPage::setTabFont(const Ogre::String& fontName, Ogre::UTFString::code_point c, bool allOccurrences)
-	{
-		mTab->setFont(fontName,c,allOccurrences);
-	}
-
-	void TabPage::setTabFont(const Ogre::String& fontName, Ogre::UTFString s, bool allOccurrences)
-	{
-		mTab->setFont(fontName,s,allOccurrences);
-	}
-
 	void TabPage::setTabHeight(float height)
 	{
 		mTab->setHeight(height);
-		mPage->setPosition(Point(0,mTab->getHeight() - mPage->mSkinType->getSkinElement(mPage->mSkinElementName)->getBorderThickness(BORDER_TOP)));
-		mPage->setHeight(mDesc->widget_dimensions.size.height - mTab->getHeight() + mPage->mSkinType->getSkinElement(mPage->mSkinElementName)->getBorderThickness(BORDER_TOP));
-	}
-
-	void TabPage::setTabHorizontalTextAlignment(HorizontalTextAlignment a)
-	{
-		mTab->setHorizontalTextAlignment(a);
-
-		redraw();
-	}
-
-	void TabPage::setTabText(Ogre::UTFString s, Ogre::FontPtr fp, const Ogre::ColourValue& cv)
-	{
-		mTab->setText(s,fp,cv);
-	}
-
-	void TabPage::setTabText(Ogre::UTFString s, const Ogre::String& fontName, const Ogre::ColourValue& cv)
-	{
-		mTab->setText(s,fontName,cv);
-	}
-
-	void TabPage::setTabText(Ogre::UTFString s)
-	{
-		mTab->setText(s);
-	}
-
-	void TabPage::setTabVerticalTextAlignment(VerticalTextAlignment a)
-	{
-		mTab->setVerticalTextAlignment(a);
-
-		redraw();
-	}
-
-	void TabPage::setTabWidthBuffer(float pixelBuffer)
-	{
-		mDesc->tabpage_tabWidthBuffer = pixelBuffer;
-
-		mTab->setWidthBuffer(pixelBuffer);
+		mPage->setPosition(Point(0,mTab->getHeight()));
+		mPage->setHeight(mDesc->widget_dimensions.size.height - mTab->getHeight());
 	}
 
 	void TabPage::setTransparencyPicking(bool transparencyPicking)
@@ -435,6 +345,13 @@ namespace QuickGUI
 	void TabPage::setVerticalAnchor(VerticalAnchor a)
 	{
 		Panel::setVerticalAnchor(a);
+	}
+
+	void TabPage::setVerticalTextAlignment(VerticalTextAlignment a)
+	{
+		mTab->setVerticalTextAlignment(a);
+
+		redraw();
 	}
 
 	void TabPage::setWidth(float pixelWidth)

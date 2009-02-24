@@ -16,7 +16,7 @@ namespace QuickGUI
 	struct _QuickGUIExport Vertex
 	{
 		Ogre::Vector3 pos;
-		Ogre::ColourValue color;
+		Ogre::RGBA color;
 		Ogre::Vector2 uv;
 	};
 }

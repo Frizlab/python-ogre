@@ -1,8 +1,8 @@
 #ifndef QUICKGUITEXTCURSOR_H
 #define QUICKGUITEXTCURSOR_H
 
+#include "QuickGUIBaseDesc.h"
 #include "QuickGUIBrush.h"
-#include "QuickGUIDesc.h"
 #include "QuickGUIExportDLL.h"
 #include "QuickGUISkinTypeManager.h"
 
@@ -65,7 +65,7 @@ namespace QuickGUI
 		*/
 		void setVisible(bool visible);
 
-	protected:
+	//protected:
 		Rect mDimensions;
 		bool mVisible;
 
