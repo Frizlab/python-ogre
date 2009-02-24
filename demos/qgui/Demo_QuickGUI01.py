@@ -59,26 +59,11 @@ class GuiFrameListener ( sf.FrameListener, ois.MouseListener, ois.KeyListener ):
     def requestShutdown(self):
         self.mShutdownRequested = True
     
-    def setAnimationState(self, as):
-        self.robotAnimationState = as
-
-    def setVars (self, gm, tb ):
-        self.mGUIManager = gm
-        self.mouseOverTB = tb
+    def setAnimationState(self, asIN):
+        self.robotAnimationState = asIN
         
     def frameStarted(self, evt):
-# # #         if (self.robotAnimationState != None): self.robotAnimationState.addTime(evt.timeSinceLastFrame)
-# # # 
-# # # #         if( self.mGUIManager != None ) :
-# # # #             self.mGUIManager.injectTime(evt.timeSinceLastFrame)
-# # # 
-# # #         if(self.mouseOverTB != None):
-# # #             self.mouseOverTB.setText(self.mGUIManager.getMouseOverWidget().getInstanceName())
-        
-# #         if(self.debugTB == None):
-# #             self.debugTB = self.mGUIManager.getActiveSheet().getChildWidget("DebugTextBox") 
-# #         else:
-# #             self.debugTB.setText(self.mGUIManager.getMouseOverWidget().getOffset()) 
+        if (self.robotAnimationState != None): self.robotAnimationState.addTime(evt.timeSinceLastFrame)
     
         return sf.FrameListener.frameStarted(self,evt)
 
@@ -127,8 +112,6 @@ class GuiFrameListener ( sf.FrameListener, ois.MouseListener, ois.KeyListener ):
         k = gui.KeyCode.values[arg.key]
         self.mGUIManager.injectKeyDown( k )
         return True
-
-
 
 class QuickGUIDemoApp (sf.Application):
     def __del__ (self ):
@@ -188,8 +171,6 @@ class QuickGUIDemoApp (sf.Application):
 
         self.camera.setPosition(0,125,500)
         self.camera.pitch(Ogre.Radian(Ogre.Degree(-15)))
-# 
-
 
         ## Setup Render To Texture for preview window
         texture = Ogre.TextureManager.getSingleton().createManual( "RttTex", 
@@ -203,7 +184,6 @@ class QuickGUIDemoApp (sf.Application):
         camNode = self.sceneManager.getRootSceneNode().createChildSceneNode("rttCamNode")
         camNode.attachObject(rttCam)
         rttCam.setPosition(0,75,225)
-        ##rttCam.setVisible(True)
 
         v = self.rttTex.addViewport( rttCam )
         ## Alternatively, use the main camera for the self.rttText, imitating the main screen
@@ -220,6 +200,17 @@ class QuickGUIDemoApp (sf.Application):
         self.mGUIManager.setSceneManager(self.sceneManager) 
         self.mGUIManager.viewport = self.camera.getViewport()
 # 
+        casi = self.robot.getAllAnimationStates().getAnimationStateIterator()
+        state = 0
+        while( casi.hasMoreElements() ):
+            animName = casi.getNext().getAnimationName()
+            if state == 0:
+                self.robotAnimationState = self.robot.getAnimationState(animName)
+                self.robotAnimationState.setEnabled(True)
+                self.robotAnimationState.setTimePosition(0.0)
+                self.robotAnimationState.setLoop(True)
+            state+=1
+
         self.createGUI()
         
     def MakeCallback ( self, function ):
@@ -227,400 +218,261 @@ class QuickGUIDemoApp (sf.Application):
         cb.function = function
         self.callbacks.append( cb )
         return cb
-        
-    def createGUI(self):
-        self.callbacks=[]
-        Rect = gui.Rect
-        Point = gui.Point
-        Size = gui.Size
-        self.mSheet = self.mGUIManager.getDefaultSheet()
-#         descFactory = gui.FactoryManager.getSingleton().getDescFactory()
-        widgetFactory = gui.FactoryManager.getSingleton().getWidgetFactory()
-        
-        
-        
-# #         print descFactory
-# #         print dir (descFactory)
-# #         print dir (gui.FactoryManager.getSingleton())
-# #         print dir (widgetFactory)
-# #         wd = descFactory.getInstance("DefaultWindowDesc")
-# #         pd = descFactory.getInstance<PanelDesc>("DefaultPanelDesc")
-# #         
-# #         print wd
-# #         print pd
-# #         return
 
-        
-#         self.mSheet.setDefaultFont ("acmesa.12")
-                    
-        ## Main Menu and it's MenuLists
-#         topMenu = self.mSheet.createMenu() 
-#         topMenu.setDimensions(Rect(0,0,800,25))
-#         
-#         fileList = topMenu.addMenuList("File",0,60)
-#         exitListItem = fileList.addListItem("Exit")
-#         exitListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback (self.evtHndlr_exitListItem ) )
-#         
-#         testList = topMenu.addMenuList("Tests",60,160) 
-#         pointListItem = testList.addListItem("Main Page") 
-#         pointListItem.addImage(Rect(0,0,12,25),"pointmode.png") 
-#         pointListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_CameraPoint) )
-#         
-#         wireframeListItem = testList.addListItem("Position/Size Test") 
-#         wireframeListItem.addImage(Rect(0,0,12,25),"wireframemode.png") 
-#         wireframeListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_CameraWireFrame) )
-#         
-#         solidListItem = testList.addListItem("Solid") 
-#         solidListItem.addImage(Rect(0,0,12,25),"solidmode.png") 
-#         solidListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_CameraSolid) )
-# 
-#         barColorList = topMenu.addMenuList("Progress Bar Color",220,200) 
-#         redListItem = barColorList.addListItem("Red") 
-#         redListItem.addImage(Rect(20,0,160,20),"listitem.red.png") 
-#         redListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_pbRed) )
-#         
-#         greenListItem = barColorList.addListItem("Green") 
-#         greenListItem.addImage(Rect(20,0,160,20),"listitem.green.png") 
-#         greenListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_pbGreen) )
-#          
-#         blueListItem = barColorList.addListItem("Blue") 
-#         blueListItem.addImage(Rect(20,0,160,20),"listitem.blue.png") 
-#         blueListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_pbBlue) )
-# 
-#         otherList = topMenu.addMenuList("Other",420,200) 
-#         textColorListItem = otherList.addListItem("Text Color") 
-#         textColorListItem.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_setTextWhite) )
-#         
-#         tcProperties = textColorListItem.addNStateButton(Rect(170,2.5,15,15)) 
-#         tcProperties.addState("OpenProperties","properties.png") 
-#         tcProperties.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_showSetTextDialog) )
-#         
-#         RenderStatsListItem = otherList.addListItem("Render Stats") 
-#         toggleRenderStats = RenderStatsListItem.addNStateButton(Rect(170,2.5,15,15)) 
-#         toggleRenderStats.addState("checked","qgui.unchecked.png") 
-#         toggleRenderStats.addState("unchecked","qgui.checked.png") 
-#         toggleRenderStats.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_toggleDebugDisplay))
-# 
-        ## Logos
-        imdesc = gui.ImageDesc("imageone")
-        logoImage = self.mSheet.createImage(imdesc)
-#         logoImage.setDimensions(Rect(16,42,240,180))
-        logoImage.setDimensions(Rect(-240,-180,1,1))
+    def createGUI ( self ):  
+      self.callbacks=[]
+      descFactory = gui.FactoryManager.getSingleton().getWidgetDescFactory()
+      
+      wd = descFactory.getInstance("DefaultWindowDesc")
+      pd = descFactory.getInstance("DefaultPanelDesc")
+      bd = descFactory.getInstance("DefaultButtonDesc")
+      cbd = descFactory.getInstance("DefaultCheckBoxDesc")
+      ltiDesc = descFactory.getInstance("DefaultListTextItemDesc")
+      vsd = descFactory.getInstance("DefaultVScrollBarDesc")
+      tad = descFactory.getInstance("DefaultTextAreaDesc")
+      combod = descFactory.getInstance("DefaultComboBoxDesc")
+      md = descFactory.getInstance("DefaultMenuDesc")
+      textBoxD = descFactory.getInstance("DefaultTextBoxDesc")
+      hsd = descFactory.getInstance("DefaultHScrollBarDesc")
+      progDesc =descFactory.getInstance("DefaultProgressBarDesc")
+      listDesc = descFactory.getInstance("DefaultListDesc")
+      mld = descFactory.getInstance("DefaultMenuLabelDesc")
+      tbd = descFactory.getInstance("DefaultToolBarDesc")
+      cd = descFactory.getInstance("DefaultConsoleDesc")
+      tvd = descFactory.getInstance("DefaultTreeViewDesc")
+      
+      wd.resetToDefault()
+      wd.widget_name = "Window1"
+      wd.widget_dimensions.position = gui.Point(550,50)
+      wd.widget_dimensions.size = gui.Size(225,200)
+      wd.widget_minSize = gui.Size(50,50)
+      wd.widget_maxSize = gui.Size(300,300)
+      print wd.textDesc.segments, dir(wd.textDesc.segments)
+      wd.textDesc.segments.append(gui.TextSegment("micross.12",Ogre.ColourValue().White,"Test Title Bar"))
+      
+      win = self.mGUIManager.getActiveSheet().createWindow(wd)
+      win.setTitleBarTextColor(Ogre.ColourValue().Blue)
 
-# #         screenLeftBottom =gui.Point (16, 42)
-# #         screenLeftOffBottom = gui.Point (-240, -180)
-# #         self.me1 = gui.MoveEffect(logoImage, 3, screenLeftOffBottom, screenLeftBottom, 1)
-# #         self.mGUIManager.addEffect(self.me1)
-# #         screenSize =gui.Size(240, 180)
-# #         noSize =gui.Size(1, 1)
-# #         self.se1 = gui.SizeEffect(logoImage, 3, noSize, screenSize, 1)
-# #         self.mGUIManager.addEffect(self.se1)
-# #         self.ae1 = gui.AlphaEffect(logoImage, 3, 0, 1, 3)
-# #         self.mGUIManager.addEffect( self.ae1)
-             
-        l = gui.LabelDesc("label")
-        logoLabel = self.mSheet.createLabel(l)
-#         logoLabel.setDimensions(Rect(60,240,120,30))
-        logoLabel.setPosition( gui.Point(62,240))
-        logoLabel.setText("Click Me >")
-# #         self.imageToggleButton = self.mSheet.createNStateButton()
-# #         self.imageToggleButton.setDimensions(Rect(180,230,40,40))
-# #         self.imageToggleButton.addState("unchecked","qgui",".checkbox.unchecked")
-# #         self.imageToggleButton.addState("checkbox check","qgui",".checkbox.checked")
-# #         self.imageToggleButton.addState("check","qgui",".checked")
-# #         
-        ## RTT Example Use
-        i = gui.ImageDesc ( "secondone")
-        rttImage = self.mSheet.createImage(i)
-        rttImage.setDimensions(Rect(600,42,160,90))
-# #         rttImage.setTexture("RttTex")
-#         rttImage.setBorderWidth(10)
+      tvd.resetToDefault()
+      tvd.widget_name = "TestTreeView"
+      tvd.widget_dimensions = gui.Rect(0,75,200,300)
+      treeView = self.mGUIManager.getActiveSheet().createTreeView(tvd)
+ 
+      pd.resetToDefault()
+      pd.widget_resizable = True
+      pd.widget_name = "MainPanel"
+      pd.widget_dimensions = gui.Rect(225,75,150,217)
+      panel =self.mGUIManager.getActiveSheet().createPanel(pd)
 
-# #         ninjaWindow = self.mSheet.createWindow()
-# #         ninjaWindow.hideTitlebar()
-# #         ninjaWindow.setDimensions(Rect(600,150,160,120))
-# # 
-# #         animToggleButton = ninjaWindow.createNStateButton()
-# #         animToggleButton.setDimensions(Rect(8,7.5,144,30))
-# #         ## populate NStateButton with States - robot animations
-        casi = self.robot.getAllAnimationStates().getAnimationStateIterator()
-        state = 0
-        while( casi.hasMoreElements() ):
-            animName = casi.getNext().getAnimationName()
-# #             animToggleButton.addState("State"+str(state),"qgui",".button",animName)
-            if state == 0:
-                self.robotAnimationState = self.robot.getAnimationState(animName)
-                self.robotAnimationState.setEnabled(True)
-                self.robotAnimationState.setTimePosition(0.0)
-                self.robotAnimationState.setLoop(True)
-            state+=1
-#         animToggleButton.addOnStateChangedEventHandler(self.evtHndlr_changeAnimations)
-#         animToggleButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_changeAnimations) )
-# #         animToggleButton.addOnStateChangedEventHandler(self.MakeCallback(self.evtHndlr_changeAnimations) )
-        
-#         hurtButton = ninjaWindow.createButton()
-#         hurtButton.setDimensions(Rect(8,45,144,30))
-#         hurtButton.setText("Hurt")
-#         hurtButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_hurt) )
-#         
-#         healButton = ninjaWindow.createButton()
-#         healButton.setDimensions(Rect(8,82.5,144,30))
-#         healButton.setText("Heal")
-#         healButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_heal) )
-#         
-#         ## TrackBar Setup
-#         tb1 = self.mSheet.createHorizontalTrackBar() 
-#         tb1.setDimensions(Rect(320,60,160,24))
-#         tb1.setNumRegions(3)
-#         #tb1.setTickPosition(4) # Does not work! 3 regions . ticks: 0/1/2/3
-#         tb2 = self.mSheet.createVerticalTrackBar() 
-#         tb2.setDimensions(Rect(320,90,24,120))
-#         tb2.setNumTicks(10)
-#         #tb2.setTickPosition(9)
-#         
-#         ## Progress Bar Setup
-#         self.lifeBar = self.mSheet.createProgressBar()
-#         self.lifeBar.setDimensions(Rect(320,330,160,18))
-#         self.lifeBar.setInitialPixelOffset(0)
-#         
-#         HPLabel = self.mSheet.createLabel()
-#         HPLabel.setDimensions(Rect(320,315,56,42))
-#         HPLabel.setTexture("")
-#         HPLabel.setText("HP")
-#         HPLabel.appearOverWidget(self.lifeBar)
-#         
-#         self.lifeBarValueLabel = self.mSheet.createLabel()
-#         self.lifeBarValueLabel.setDimensions(Rect(440,315,56,42))
-#         self.lifeBarValueLabel.setTexture("")
-#         self.lifeBarValueLabel.setText("100")
-#         self.lifeBarValueLabel.appearOverWidget(self.lifeBar)
-# 
-        ## Mouse Over window
-# #         mouseOverWindow = self.mSheet.createWindow()
-# #         mouseOverWindow.setDimensions(Rect(480,420,320,60))
-# #         mouseOverWindow.hideTitlebar()
-# #         
-# #         mouseOverLabel = mouseOverWindow.createLabel()
-# #         mouseOverLabel.setDimensions(Rect(0,0,320,30))
-# #         mouseOverLabel.setText("Mouse Over Widget:")
-# #         s = mouseOverLabel.getSize() 
-        self.mouseOverTB=None    
-# #         self.mouseOverTB = mouseOverWindow.createTextBox()
-# #         self.mouseOverTB.setDimensions(Rect(0,s.height,320,30))
-# #         self.mouseOverTB.setReadOnly(True)
-# # 
-# #         tb = mouseOverWindow.createTextBox("DebugTextBox")
-# #         tb.setDimensions(Rect(0,60,320,30))
+      bd.resetToDefault()
+      bd.widget_name = "ScrollButton"
+      bd.widget_dimensions = gui.Rect(400,250,75,23)
+      panel.createButton(bd)
 
-#         ## Login Portion
-#         l=self.mSheet.createLabel()
-#         l.setDimensions(Rect(16,360,160,30))
-#         l.setText("User Name:")
-#         
-#         l=self.mSheet.createLabel()
-#         l.setDimensions(Rect(16,390,160,30))
-#         l.setText("Password:")
-#         
-#         self.usernameTB = self.mSheet.createTextBox()
-#         self.usernameTB.setDimensions(Rect(180,360,200,30))
-#         self.usernameTB.setText("\tThe quick brown fox jumped over the red fence.") 
-#         
-#         self.passwordTB = self.mSheet.createTextBox()
-#         self.passwordTB.setDimensions(Rect(180,390,200,30))
-#         self.passwordTB.maskUserInput(ord('*'))
-#         
-#         loginButton = self.mSheet.createButton()
-#         loginButton.setDimensions(Rect(100,420,200,42))
-#         loginButton.setText("Login")
-#         loginButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_login) )
-#         self.loginResultLabel = self.mSheet.createLabel()
-#         self.loginResultLabel.setDimensions(Rect(0.0,462,480,30))
-#         self.loginResultLabel.setTexture("")
-#         
-#         ## Set Text Window
-#         self.stWindow = self.mSheet.createWindow()
-#         self.stWindow.setDimensions(Rect(560,270,240,120))
-#         self.stWindow.hide()
-#         self.stWindow.getTitleBar().setText("Set Text Color:")
-#         
-#         closeButton = self.stWindow.getTitleBar().getCloseButton() 
-# 
-#         l=self.stWindow.createLabel()
-#         l.setDimensions(Rect(40,30,60,30))
-#         l.setText("Color:")
-#         
-#         colorCB = self.stWindow.createComboBox()
-#         colorCB.setDimensions(Rect(125,30,100,30))
-#         
-#         colorCB.setDimensions(Rect(125,30,100,30))
-#         item = colorCB.addItem()
-#         item.setText("Red")
-#         item = colorCB.addItem()
-#         item.setText("Green")
-#         item = colorCB.addItem()
-#         item.setText("Blue")
-#         item = colorCB.addItem()
-#         item.setText("Black")
-#         item = colorCB.addItem()
-#         item.setText("White")
-#         item = colorCB.addItem()
-#         item.setText("Purple")
-#         item = colorCB.addItem()
-#         item.setText("Brown")
-#         
-# #         colorCBdropList = colorCB.getDropDownList()
-# #         colorCBdropList.setNumberOfVisibleItems(6) 
-# #         
-# #         colorCBdropList.addListItem("Red")
-# #         colorCBdropList.addListItem("Green")
-# #         colorCBdropList.addListItem("Blue")
-# #         colorCBdropList.addListItem("Black")
-# #         colorCBdropList.addListItem("White") 
-# #         colorCBdropList.addListItem("Yellow") 
-# #         colorCBdropList.addListItem("Purple") 
-# #         colorCBdropList.addListItem("Brown") 
-#         
-#         setTextButton = self.stWindow.createButton()
-#         setTextButton.setDimensions(Rect(80,70,50,30))
-#         setTextButton.setText("Apply")
-#         setTextButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.evtHndlr_setTextColor) )
-#         # colorCB.clearList()
-# #         colorCBdropList.removeListItem(2)
-# 
-#         testButton = self.mSheet.createButton()
-#         testButton.setDimensions(Rect(1200,800,100,50))
-#         testButton.setText("TEST") 
-#         testButton.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.test)) 
-# 
-#         testButton2 = self.stWindow.createButton() 
-#         testButton2.setDimensions(Rect(500,190,100,50))
-#         testButton2.setText("TEST") 
-#         testButton2.addEventHandler(gui.Widget.EVENT_MOUSE_BUTTON_UP,self.MakeCallback(self.test)) 
-#  
-#         tb=self.mSheet.createTextBox() 
-#         tb.setDimensions(Rect(480,480,320,30))
+      tbd.resetToDefault()
+      tbd.widget_horizontalAnchor = gui.ANCHOR_HORIZONTAL_LEFT_RIGHT
+      tbd.widget_name = "TestToolBar"
+      tbd.widget_dimensions = gui.Rect(0,0,800,20)
+      tb =self.mGUIManager.getActiveSheet().createToolBar(tbd)
 
+      md.resetToDefault()
+      md.widget_name = "File"
+      md.textDesc.segments.append(gui.TextSegment("micross.12",Ogre.ColourValue().Black,"File"))
+      tb.createMenu(md)
 
-    def test(self, args):
-        self.mGUIManager.destroyWidget("TestButton1") 
+      md.resetToDefault()
+      md.widget_name = "Edit"
+      md.textDesc.segments.append(gui.TextSegment("micross.12",Ogre.ColourValue().Black,"Edit"))
+      tb.createMenu(md)
 
-    def evtHndlr_mainPage( self, args):
-        self.mGUIManager.setActiveSheet(self.mSheet) 
+      md.resetToDefault()
+      md.widget_name = "Format"
+      md.textDesc.segments.append(gui.TextSegment("micross.12",Ogre.ColourValue().Black,"Format"))
+      m1 = tb.createMenu(md)
 
-    def evtHndlr_test1( self, args):
-        self.mGUIManager.setActiveSheet(self.mSizePositionTest) 
+      md.resetToDefault()
+      md.widget_name = "WordWrap"
+      md.textDesc.segments.append(gui.TextSegment("micross.12",Ogre.ColourValue().Black,"Word Wrap"))
+      m2 = m1.createSubMenu(md)
 
-    def evtHndlr_exitListItem(self, args):
-        ## check if left mouse button is down
-        if(args.button == gui.MB_Left):
-            self.frameListener.requestShutdown()
-        return True
+      mld.resetToDefault()
+      mld.widget_name = "Font"
+      mld.textDesc.segments.append(gui.TextSegment("micross.12",Ogre.ColourValue().Black,"Font..."))
+      m1.createMenuLabel(mld)
 
-    def evtHndlr_changeAnimations(self,args):
-        ## disable previous animation
-        self.robotAnimationState.setEnabled(False)
-        self.robotAnimationState.setWeight(0.0)
+      mld.resetToDefault()
+      mld.widget_name = "Item1"
+      mld.textDesc.segments.append(gui.TextSegment("micross.12",Ogre.ColourValue().Black,"Item 1"))
+      m2.createMenuLabel(mld)
 
-        self.robotAnimationState = self.robot.getAnimationState(args.widget.getCurrentState().getText())
-        self.robotAnimationState.setEnabled(True)
-        self.robotAnimationState.setTimePosition(0.0)
-        self.robotAnimationState.setWeight(1.0)
-        self.robotAnimationState.setLoop(True)
+      md.resetToDefault()
+      md.widget_name = "Item2"
+      md.textDesc.segments.append(gui.TextSegment("micross.12",Ogre.ColourValue().Black,"Item 2"))
+      m3 = m2.createSubMenu(md)
 
-        self.frameListener.setAnimationState(self.robotAnimationState)
-        return True
+      mld.resetToDefault()
+      mld.widget_name = "Item2.1"
+      mld.textDesc.segments.append(gui.TextSegment("micross.12",Ogre.ColourValue().Green,"Item 2.1"))
+      m3.createMenuLabel(mld)
 
-    def evtHndlr_heal(self, args):
-        currentProgress = self.lifeBar.getProgress()
-        random = Ogre.Math.RangeRandom(currentProgress,1.0)
-        self.lifeBar.setProgress(random)
-        self.lifeBarValueLabel.setText(str(int(random * 100)))
-        return True
+      combod.resetToDefault()
+      combod.widget_dimensions = gui.Rect(400,100,125,20)
+      combod.combobox_dropDownMaxHeight = 60
+      comboBox =self.mGUIManager.getActiveSheet().createComboBox(combod)
 
-    def evtHndlr_hurt(self, args):
-        currentProgress = self.lifeBar.getProgress()
-        random = Ogre.Math.RangeRandom(0.0,currentProgress)
-        self.lifeBar.setProgress(random)
-        self.lifeBarValueLabel.setText(str(int(random * 100)))
-        return True
+      ltiDesc.resetToDefault()
+      ltiDesc.textDesc.horizontalTextAlignment = gui.TEXT_ALIGNMENT_HORIZONTAL_CENTER
+      t =gui.VectorTextSegment()
+      t.append(gui.TextSegment("micross.12",Ogre.ColourValue().White,"CB Item 1"))
+      ltiDesc.textDesc.segments=t
+      comboBox.createItem(ltiDesc)
 
-    def evtHndlr_pbRed(self,args):
-        self.lifeBar.setTexture("progressbar.red.png")
-        self.lifeBar.setProgress(1.0)
-        self.lifeBarValueLabel.setText("100")
+      ltiDesc.resetToDefault()
+      t =gui.VectorTextSegment()
+      t.append(gui.TextSegment("micross.12",Ogre.ColourValue().White,"CB Item 2"))
+      ltiDesc.textDesc.segments=t
+      comboBox.createItem(ltiDesc)
 
-        return False
+      ltiDesc.resetToDefault()
+      t =gui.VectorTextSegment()
+      t.append(gui.TextSegment("micross.12",Ogre.ColourValue().White,"CB Item 3"))
+      ltiDesc.textDesc.segments=t
+      comboBox.createItem(ltiDesc)
 
-    def evtHndlr_pbGreen(self, args):
-        self.lifeBar.setTexture("progressbar.green.png")
-        self.lifeBar.setProgress(1.0)
-        self.lifeBarValueLabel.setText("100")
-        return True
+      textBoxD.widget_name = "TestTextBox"
+      textBoxD.textbox_defaultFontName = "micross.12"
+      textBoxD.widget_dimensions = gui.Rect(350,350,100,20)
+      textBoxD.textbox_maskText = True
+      textBoxD.textbox_maskSymbol = 42
+      self.mGUIManager.getActiveSheet().createTextBox(textBoxD)
 
-    def evtHndlr_pbBlue(self, args):
-        self.lifeBar.setTexture("progressbar.blue.png") 
-        self.lifeBar.setProgress(1.0) 
-        return True
+      tad.widget_name = "TestArea1"
+      tad.textarea_defaultFontName = "micross.16"
+      tad.widget_dimensions = gui.Rect(575,300,200,200)
+      self.mGUIManager.getActiveSheet().createTextArea(tad)
 
-    def evtHndlr_login(self, args):
-        if( self.usernameTB.getCaption() == self.passwordTB.getCaption() ) : s = "Login Successful."
-        else: s = "Username and/or Password do not match."
-        self.loginResultLabel.setText(s)
-        return True
+      cd.resetToDefault()
+      cd.widget_dimensions = gui.Rect(300,300,200,200)
 
-    def evtHndlr_toggleDebugDisplay(self, args):
-        self.mDebugDisplayShown = not self.mDebugDisplayShown
-        self.frameListener.showDebugOverlay(self.mDebugDisplayShown)
-        return True
+      vsd.resetToDefault() 
+      vsd.widget_name = "TestVSD1" 
+      vsd.widget_dimensions = gui.Rect(50,50,15,100) 
+      win.createVScrollBar(vsd) 
 
-    def evtHndlr_setTextWhite(self, args):
-        self.stWindow.getTitleBar().getText().setColor(Ogre.ColourValue().White)
-        return True
+      vsd.widget_name = "TestVSD2" 
+      vsd.vscrollbar_scrollBarButtonLayout = gui.VSCROLL_BAR_BUTTON_LAYOUT_ADJACENT_UP 
+      vsd.widget_dimensions = gui.Rect(70,50,15,100) 
+      win.createVScrollBar(vsd) 
 
-    def evtHndlr_showSetTextDialog(self, args):
-        self.stWindow.setPosition(0.7,0.45)
-        self.stWindow.show()
-        return True
-        
-    def evtHndlr_CameraPoint(self, args):
-        self.camera.polygonMode=Ogre.PM_POINTS
-        return True
-    
-    def evtHndlr_CameraWireFrame(self, args):
-        self.camera.polygonMode=Ogre.PM_WIREFRAME
-        return True
-        
-    def evtHndlr_CameraSolid(self, args):
-        self.camera.polygonMode=Ogre.PM_SOLID
-        return True
+      vsd.widget_name = "TestVSD3" 
+      vsd.vscrollbar_scrollBarButtonLayout = gui.VSCROLL_BAR_BUTTON_LAYOUT_ADJACENT_DOWN 
+      vsd.widget_dimensions = gui.Rect(90,50,15,100) 
+      win.createVScrollBar(vsd) 
 
-    def evtHndlr_setTextColor(self, args):
-        s = self.stWindow.getComboBox(0).getText().getCaption()
-        
-        if( s == "Red" ): c = Ogre.ColourValue().Red
-        elif( s == "Green" ): c = Ogre.ColourValue().Green
-        elif( s == "Blue" ): c = Ogre.ColourValue().Blue
-        elif( s == "Black" ): c = Ogre.ColourValue().Black
-        elif( s == "White" ): c = Ogre.ColourValue().White
+      vsd.widget_name = "TestVSD4" 
+      vsd.vscrollbar_scrollBarButtonLayout = gui.VSCROLL_BAR_BUTTON_LAYOUT_MULTIPLE_BOTH 
+      vsd.widget_dimensions = gui.Rect(110,50,15,100) 
+      win.createVScrollBar(vsd) 
 
-        self.stWindow.getTitleBar().getText().setColor(c)
-        return True
-            
+      vsd.widget_name = "TestVSD5" 
+      vsd.vscrollbar_scrollBarButtonLayout = gui.VSCROLL_BAR_BUTTON_LAYOUT_MULTIPLE_DOWN 
+      vsd.widget_dimensions = gui.Rect(130,50,15,100) 
+      win.createVScrollBar(vsd) 
+
+      vsd.widget_name = "TestVSD6" 
+      vsd.vscrollbar_scrollBarButtonLayout = gui.VSCROLL_BAR_BUTTON_LAYOUT_MULTIPLE_UP 
+      vsd.widget_dimensions = gui.Rect(150,50,15,100) 
+      win.createVScrollBar(vsd) 
+
+      vsd.widget_name = "TestVSD7" 
+      vsd.vscrollbar_scrollBarButtonLayout = gui.VSCROLL_BAR_BUTTON_LAYOUT_NONE 
+      vsd.widget_dimensions = gui.Rect(170,50,15,100) 
+      win.createVScrollBar(vsd) 
+
+      hsd.resetToDefault() 
+      hsd.widget_name = "TestHSD1" 
+      hsd.widget_dimensions = gui.Rect(50,160,100,15) 
+      win.createHScrollBar(hsd) 
+
+      progDesc.widget_name = "Prog"
+      progDesc.textDesc.segments.append(gui.TextSegment("micross.12",Ogre.ColourValue().White,"Progress Bar"))
+      progDesc.textDesc.horizontalTextAlignment = gui.TEXT_ALIGNMENT_HORIZONTAL_CENTER
+      progDesc.widget_dimensions = gui.Rect(100,400,200,35)
+      progDesc.progressbar_fillDirection = gui.PROGRESSBAR_FILLS_POSITIVE_TO_NEGATIVE
+      progDesc.progressbar_clippingEdge = gui.PROGRESSBAR_CLIP_RIGHT_TOP
+      progDesc.progressbar_layout = gui.PROGRESSBAR_LAYOUT_VERTICAL
+      self.mGUIManager.getActiveSheet().createProgressBar(progDesc)
+
+      bd.resetToDefault()
+      bd.widget_name = "Minus"
+      bd.widget_dimensions = gui.Rect(100,440,100,35)
+      bd.textDesc.segments.append(gui.TextSegment("micross.12",Ogre.ColourValue().Green,"Minus"))
+      bd.textDesc.horizontalTextAlignment = gui.TEXT_ALIGNMENT_HORIZONTAL_CENTER
+      minus = self.mGUIManager.getActiveSheet().createButton(bd)
+      
+      minus.addWidgetEventHandler(gui.WIDGET_EVENT_MOUSE_BUTTON_UP,self.MakeCallback (self.test1) )
+
+      bd.widget_name = "Plus"
+      bd.widget_dimensions = gui.Rect(200,440,100,35)
+      bd.textDesc.segments.append(gui.TextSegment("micross.12",Ogre.ColourValue().Green,"Plus"))
+      plus = self.mGUIManager.getActiveSheet().createButton(bd)
+      
+      plus.addWidgetEventHandler(gui.WIDGET_EVENT_MOUSE_BUTTON_UP,self.MakeCallback (self.test2) )
+
+      listDesc.widget_name = "TestList"
+      listDesc.widget_dimensions = gui.Rect(330,400,200,100)
+      listDesc.list_listItemHeight = 20
+      listDesc.list_supportMultiSelect = True
+      list_ = self.mGUIManager.getActiveSheet().createList(listDesc)
+      
+      ## PythonOgre change - we don't have a clear() function on vectors so have
+      ## to create a new one each time
+      t =gui.VectorTextSegment()
+      t.append(gui.TextSegment("micross.12",Ogre.ColourValue().White,"Item 1"))
+      ltiDesc.textDesc.segments= t
+      list_.createItem(ltiDesc)
+
+      t =gui.VectorTextSegment()
+      t.append(gui.TextSegment("micross.12",Ogre.ColourValue().Green,"Item 2"))
+      ltiDesc.textDesc.segments=t
+      list_.createItem(ltiDesc)
+
+      t =gui.VectorTextSegment()
+      t.append(gui.TextSegment("micross.12",Ogre.ColourValue().Red,"Item 3"))
+      ltiDesc.textDesc.segments=t
+      list_.createItem(ltiDesc)
+
+      t =gui.VectorTextSegment()
+      t.append(gui.TextSegment("micross.12",Ogre.ColourValue().Blue,"Item 4"))
+      ltiDesc.textDesc.segments=t
+      list_.createItem(ltiDesc)
+
+      t =gui.VectorTextSegment()
+      t.append(gui.TextSegment("micross.12",Ogre.ColourValue().Black,"Item 5"))
+      ltiDesc.textDesc.segments=t
+      list_.createItem(ltiDesc)
+
+      cbd.widget_name = "TestCheckBox"
+      cbd.widget_dimensions.size = gui.Size(25,25)
+      cbd.widget_dimensions.position = gui.Point(250,350)
+      self.mGUIManager.getActiveSheet().createCheckBox(cbd)
+
+    def test1(self, args):
+      pb = self.mGUIManager.getActiveSheet().findWidget("Prog")
+      pb.setProgress(pb.getProgress() - 10)
+
+    def test2(self, args):
+      pb = self.mGUIManager.getActiveSheet().findWidget("Prog")
+      pb.setProgress(pb.getProgress() + 10)
+      self.mGUIManager.getActiveSheet().getWindow("Window1").saveTextureToFile("test.png")
+      
     def _createFrameListener(self):
         self.frameListener= GuiFrameListener(self.renderWindow, self.camera)
         ## This ensures the mouse doesn't move the camera.
         self.frameListener.setMenuMode ( True )
         self.root.addFrameListener(self.frameListener)
         self.frameListener.setAnimationState(self.robotAnimationState)
-        self.frameListener.setVars(self.mGUIManager,self.mouseOverTB) 
-
-    def handleQuit(self,e):
-        self.frameListener.requestShutdown()
-        return True
-
-    def handleChange(self,e):
-        self.mGUIManager.clearAll()
-        return True
+        self.frameListener.mGUIManager = self.mGUIManager
 
 if __name__ == '__main__':
     try:
