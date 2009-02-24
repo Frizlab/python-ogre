@@ -1087,7 +1087,7 @@ class ogreode:
 class quickgui:
     active = True
     pythonModule = True
-    version="9_02"
+    version="8.12"
     name ='quickgui'
     parent="ogre/gui"
     ## note the defined for _QuickGUIExport forces non dll usage

@@ -352,7 +352,7 @@ def ManualInclude ( mb ):
     std_ns.class_("pair<bool, float>").include()
     std_ns.class_("pair<Ogre::SharedPtr<Ogre::Resource>, bool>").include()
     std_ns.class_("list<Ogre::SceneNode*>").include()
-#     std_ns.class_("list<Ogre::SceneNode*>").alias="stdListSceneNodePtr"
+    std_ns.class_("pair<bool, std::string>").include()
     
     if not environment.ogre.version =="1.4":
         main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> >").include()
@@ -878,7 +878,7 @@ def Fix_NT ( mb ):
     for cls in stdex_ns.classes():
         if cls.name.startswith ("hash"):
             cls.include()
-            cls.exclude() ### AJM TOFIX hash_maps are missing at the moment?
+# #             cls.exclude() ### AJM TOFIX hash_maps are missing at the moment?
             
     # need to force these
     hwnd = mb.global_ns.class_("HWND__")
