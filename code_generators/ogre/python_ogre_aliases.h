@@ -9,6 +9,9 @@ typedef Ogre::SharedPtr<Ogre::ControllerValue<Ogre::Real> > ControllerValueRealP
 typedef Ogre::SharedPtr<Ogre::MemoryDataStream> MemoryDataStreamPtr;
 typedef Ogre::SharedPtr<Ogre::DataStream> DataStreamPtr;
 typedef Ogre::SharedPtr<Ogre::DataStreamList> DataStreamListPtr;
+typedef Ogre::SharedPtr<Ogre::AbstractNode> AbstractNodePtr;
+typedef std::pair<bool, std::string> stdPairBoolString;
+
 typedef Ogre::SharedPtr<Ogre::GpuProgramParameters> GpuProgramParametersSharedPtr;
 // typedef std::multimap<Ogre::HardwareVertexBuffer*, Ogre::VertexBufferBinding::HardwareVertexBufferSharedPtr> FreeTemporaryVertexBufferMap;
 //typedef std::map<unsigned short, Ogre::VertexBufferBinding::HardwareVertexBufferSharedPtr> VertexBufferBindingMap;
@@ -360,7 +363,7 @@ typedef Ogre::Mesh::IndexMap IndexMap;
 typedef Ogre::Mesh::SubMeshIterator SubMeshIterator;
 typedef Ogre::Mesh::PoseIterator PoseIterator;
 typedef Ogre::Mesh::ConstPoseIterator ConstPoseIterator;
-typedef Ogre::Material::LodDistanceList LodDistanceList;
+// typedef Ogre::Material::LodDistanceList LodDistanceList;
 typedef Ogre::Material::LodDistanceIterator LodDistanceIterator;
 typedef Ogre::Material::TechniqueIterator MaterialTechniqueIterator;
 typedef Ogre::ManualObject::SectionList SectionList;

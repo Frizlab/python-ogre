@@ -72,9 +72,9 @@ def ManualExclude ( mb ):
         
     excludes=['::QuickGUI::ComboBox::_clearSelection'
                 ,'::QuickGUI::ComboBox::addComboBoxEventHandler'
-                ,'::QuickGUI::ContainerWidget::setDrawChildrenWhenNotVisible'
-                ,'::QuickGUI::ContainerWidget::getDrawChildrenWhenNotVisible'
-                ,'::QuickGUI::TreeViewNode::isSelected'
+#                 ,'::QuickGUI::ContainerWidget::setDrawChildrenWhenNotVisible'
+#                 ,'::QuickGUI::ContainerWidget::getDrawChildrenWhenNotVisible'
+#                 ,'::QuickGUI::TreeViewNode::isSelected'
                 ]
             
     for e in excludes:
@@ -85,6 +85,7 @@ def ManualExclude ( mb ):
     NotExported=['::QuickGUI::ScriptReader'
                 ,'::QuickGUI::Character'
                 ]
+    NotExported = []                
     for c in NotExported:
         print "Excluding Class", c
         main_ns.class_( c ).exclude()
@@ -107,7 +108,12 @@ def ManualInclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns    
-        
+#     includes=['::QuickGUI::WidgetFactory<QuickGUI::Widget>',
+#             '::QuickGUI::Factory<QuickGUI::WidgetDesc>'
+#             ]
+#     for i in includes:
+#         global_ns.class_(i).include()
+#         print "Include Class:", i   
 ############################################################
 ##
 ##  And things that need manual fixes, but not necessarly hand wrapped
@@ -200,30 +206,30 @@ def Fix_NT ( mb ):
 # the 'main'function
 #            
 def generate_code():  
-    messages.disable( 
-#           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-          messages.W1020
-        , messages.W1021
-        , messages.W1022
-        , messages.W1023
-        , messages.W1024
-        , messages.W1025
-        , messages.W1026
-        , messages.W1027
-        , messages.W1028
-        , messages.W1029
-        , messages.W1030
-        , messages.W1031
-        , messages.W1035
-        , messages.W1040 
-        , messages.W1038        
-        , messages.W1041
-        , messages.W1036 # pointer to Python immutable member
-        , messages.W1033 # unnamed variables
-        , messages.W1018 # expose unnamed classes
-        , messages.W1049 # returns reference to local variable
-        , messages.W1014 # unsupported '=' operator
-         )
+#     messages.disable( 
+# #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+#           messages.W1020
+#         , messages.W1021
+#         , messages.W1022
+#         , messages.W1023
+#         , messages.W1024
+#         , messages.W1025
+#         , messages.W1026
+#         , messages.W1027
+#         , messages.W1028
+#         , messages.W1029
+#         , messages.W1030
+#         , messages.W1031
+#         , messages.W1035
+#         , messages.W1040 
+#         , messages.W1038        
+#         , messages.W1041
+#         , messages.W1036 # pointer to Python immutable member
+#         , messages.W1033 # unnamed variables
+#         , messages.W1018 # expose unnamed classes
+#         , messages.W1049 # returns reference to local variable
+#         , messages.W1014 # unsupported '=' operator
+#          )
     #
     # Use GCCXML to create the controlling XML file.
     # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded

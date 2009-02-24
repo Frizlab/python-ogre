@@ -1,38 +1,26 @@
-// sizeof ( Ogre::VectorIterator );
-// sizeof ( Ogre::MapIterator );
-// sizeof ( Ogre::ConstVectorIterator );
-// sizeof ( Ogre::ConstMapIterator );
-
-
 sizeof ( Ogre::MapIterator< std::multimap<Ogre::String, Ogre::String> > );
 sizeof ( Ogre::MapIterator< std::map<Ogre::String, std::multimap<Ogre::String, Ogre::String>*> > );
 sizeof ( Ogre::MaterialPtr );
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, Ogre::Node*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::Node*> >, false> > );
-//sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, unsigned short, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, unsigned short> >, false> > );
-sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, Ogre::SharedPtr<Ogre::Resource>, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::SharedPtr<Ogre::Resource> > >, false> > );
-sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> >, false> > );
+   sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, Ogre::Node*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::Node*> >, false> > );
+   //sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, unsigned short, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, unsigned short> >, false> > );
+   sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, Ogre::SharedPtr<Ogre::Resource>, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::SharedPtr<Ogre::Resource> > >, false> > );
+   sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> >, false> > );
 #endif
 
-#if OGRE_VERSION_MINOR == 4
-
-#else
-    sizeof ( Ogre::ResourceBackgroundQueue );
-    sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > );
-    sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)1> > );
-    sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)2> > );
-    sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)3> > );
-    sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)4> > );
-    sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)5> > );
-    sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)6> > );
-    sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)7> > );
-    sizeof ( Ogre::ConstVectorIterator<std::vector<Ogre::Technique::GPUVendorRule, std::allocator<Ogre::Technique::GPUVendorRule> > > );
-    sizeof ( Ogre::MapIterator<std::map<int, Ogre::InstancedGeometry::InstancedObject*, std::less<int>, std::allocator<std::pair<const int, Ogre::InstancedGeometry::InstancedObject*> > > > );
-    sizeof ( Ogre::ConstVectorIterator<std::vector<Ogre::Technique::GPUDeviceNameRule, std::allocator<Ogre::Technique::GPUDeviceNameRule> > > );
-    
-#endif
-
+sizeof ( Ogre::ResourceBackgroundQueue );
+sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > );
+sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)1> > );
+sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)2> > );
+sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)3> > );
+sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)4> > );
+sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)5> > );
+sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)6> > );
+sizeof ( Ogre::AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)7> > );
+sizeof ( Ogre::ConstVectorIterator<std::vector<Ogre::Technique::GPUVendorRule, std::allocator<Ogre::Technique::GPUVendorRule> > > );
+sizeof ( Ogre::MapIterator<std::map<int, Ogre::InstancedGeometry::InstancedObject*, std::less<int>, std::allocator<std::pair<const int, Ogre::InstancedGeometry::InstancedObject*> > > > );
+sizeof ( Ogre::ConstVectorIterator<std::vector<Ogre::Technique::GPUDeviceNameRule, std::allocator<Ogre::Technique::GPUDeviceNameRule> > > );
 
 sizeof( std::pair<Ogre::SharedPtr<Ogre::Resource>, bool> );
 
@@ -94,13 +82,19 @@ sizeof ( Ogre::SharedPtr<Ogre::WaveformControllerFunction> );
 // sizeof ( Ogre::ControllerFunction<float>);
 // sizeof ( Ogre::SharedPtr<Ogre::ControllerFunction<float>>);
 sizeof ( std::list<Ogre::Particle*> );
+sizeof ( std::vector<float> );
 sizeof ( std::vector<Ogre::Particle*>);
+sizeof ( std::pair<bool,String> );
+
 sizeof ( Ogre::RenderTarget::FrameStats );
+sizeof ( std::map<Ogre::String, Ogre::Archive*> );
+sizeof ( Ogre::MapIterator<std::map<Ogre::String, Ogre::Archive*> > );
 
 sizeof ( Ogre::SharedPtr<Ogre::AnimableValue> );
 sizeof ( Ogre::SharedPtr<Ogre::FileInfoList> );
 sizeof ( Ogre::SharedPtr<Ogre::Texture> );
 sizeof ( Ogre::SharedPtr<Ogre::Material> );
+sizeof ( Ogre::SharedPtr<Ogre::AbstractNode> );
 sizeof ( Ogre::SharedPtr<Ogre::Mesh> );
 sizeof ( Ogre::SharedPtr<Ogre::RenderToVertexBuffer> );
 sizeof ( Ogre::SharedPtr<std::vector<Ogre::SharedPtr<Ogre::ScriptToken> > > );
@@ -113,6 +107,8 @@ sizeof ( Ogre::TexturePtr );
 sizeof ( Ogre::SharedPtr<Ogre::ControllerFunction<Ogre::Real> > );
 sizeof ( Ogre::SharedPtr<Ogre::ControllerValue<Ogre::Real> > );
 sizeof ( Ogre::SharedPtr<Ogre::MemoryDataStream> );
+Ogre::SharedPtr<Ogre::DataStream> d;
+sizeof(d);
 sizeof ( Ogre::SharedPtr<Ogre::DataStream> );
 sizeof ( Ogre::SharedPtr<Ogre::DataStreamList> );
 sizeof ( Ogre::SharedPtr<Ogre::GpuProgramParameters> );
@@ -121,6 +117,8 @@ sizeof ( Ogre::SharedPtr<Ogre::GpuProgramParameters> );
 sizeof ( Ogre::SharedPtr<Ogre::Resource> ); //ResourcePtr;
 sizeof ( Ogre::SharedPtr<Ogre::ShadowCameraSetup> ); //ShadowCameraSetupPtr;
 sizeof ( Ogre::SharedPtr<Ogre::StringVector> ); //StringVectorPtr;
+
+sizeof ( Ogre::SharedPtr<Ogre::Font> ); //FontPtr;
 
 sizeof ( Ogre::SharedPtr<DefaultShadowCameraSetup> );
 sizeof ( Ogre::SharedPtr<FocusedShadowCameraSetup> );
@@ -138,18 +136,18 @@ sizeof ( Ogre::Singleton<Ogre::FontManager> );
 sizeof ( Ogre::Singleton<Ogre::ExternalTextureSourceManager> );
 sizeof (  Ogre::Singleton<Ogre::DynLibManager> );
 
-sizeof (std::pair<bool, float> );
-sizeof (std::pair<unsigned int,unsigned int> );
+sizeof ( std::pair<bool, float> );
+sizeof ( std::pair<unsigned int,unsigned int> );
 //sizeof ( std::pair<Ogre::SharedPtr<Ogre::Resource>, bool> );
 
-sizeof (Ogre::Root::PluginLibList );
-sizeof (Ogre::Root::PluginInstanceList );
+sizeof ( Ogre::Root::PluginLibList );
+sizeof ( Ogre::Root::PluginInstanceList );
 
-sizeof (Ogre::RadixSort<std::vector<Ogre::RenderablePass>,Ogre::RenderablePass,unsigned int> );
-sizeof (Ogre::RadixSort<std::vector<Ogre::RenderablePass>,Ogre::RenderablePass,float> );
-sizeof (Ogre::RadixSort<std::list<Ogre::Particle*>,Ogre::Particle*,float> );
-sizeof (Ogre::RadixSort<std::list<Ogre::Billboard*>,Ogre::Billboard*,float> );
-sizeof (std::map<Ogre::String, Ogre::MovableObjectFactory*> );
+sizeof ( Ogre::RadixSort<std::vector<Ogre::RenderablePass>,Ogre::RenderablePass,unsigned int> );
+sizeof ( Ogre::RadixSort<std::vector<Ogre::RenderablePass>,Ogre::RenderablePass,float> );
+sizeof ( Ogre::RadixSort<std::list<Ogre::Particle*>,Ogre::Particle*,float> );
+sizeof ( Ogre::RadixSort<std::list<Ogre::Billboard*>,Ogre::Billboard*,float> );
+sizeof ( std::map<Ogre::String, Ogre::MovableObjectFactory*> );
 
 sizeof( Ogre::Controller<float> );
 sizeof( Ogre::ControllerValue<float> );
@@ -177,9 +175,7 @@ sizeof( Ogre::RaySceneQueryResult );
 sizeof( Ogre::SceneQueryResultWorldFragmentList );
 sizeof( Ogre::SceneQueryResultMovableList );
 sizeof( Ogre::BackgroundProcessTicket );
-#if OGRE_VERSION_MINOR == 4
-    sizeof( Ogre::DLL_CREATERENDERWINDOW );
-#endif
+
 sizeof( Ogre::RenderTargetPriorityMap );
 sizeof( Ogre::RenderTargetMap );
 sizeof( Ogre::ConfigOptionMap );
