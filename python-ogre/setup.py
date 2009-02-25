@@ -77,7 +77,7 @@ PACKAGEDATA = {
                         'ogre.renderer.plsm2',
                         'ogre.addons.raknet' ],
        "package_dir": {'': 'packages_'+ PythonVersionString },
-       "package_data": {'': ['*.pyd', '*.dll', '*.so']}
+       "package_data": {'': ['*.pyd', '*.dll', '*.so', '*.dylib']}
 
 }
 

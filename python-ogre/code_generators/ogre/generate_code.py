@@ -476,6 +476,9 @@ def ManualFixes ( mb ):
    
     # need to stop the automatic char to array conversion for this function
     global_ns.member_function ('::Ogre::NedAllocPolicy::allocateBytes').documentation = "This is to stop automatic conversion"
+    
+    main_ns.class_("MovableObjectFactory").member_function("getType").exclude()
+    
 ##
 # fix up any ugly name alias
 ##
@@ -1066,21 +1069,21 @@ def FindProtectedVars ( mb ):
 # the 'main'function
 #            
 def generate_code():  
-# #     messages.disable( 
+    messages.disable( 
 # #         messages.W1005 # using a non public variable type for argucments or returns
 # # #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-# #         , messages.W1020
-# #         , messages.W1021
-# #         , messages.W1022
-# #         , messages.W1023
-# #         , messages.W1024
-# #         , messages.W1025
-# #         , messages.W1026
-# #         , messages.W1027
-# #         , messages.W1028
-# #         , messages.W1029
-# #         , messages.W1030
-# #         , messages.W1031
+        messages.W1020
+        , messages.W1021
+        , messages.W1022
+        , messages.W1023
+        , messages.W1024
+        , messages.W1025
+        , messages.W1026
+        , messages.W1027
+        , messages.W1028
+        , messages.W1029
+        , messages.W1030
+        , messages.W1031
 # #         , messages.W1035
 # #         , messages.W1040 
 # #         , messages.W1041 # overlapping names when creating a property
@@ -1090,7 +1093,7 @@ def generate_code():
 # # #         , messages.W1018 # expose unnamed classes
 # #         , messages.W1049 # returns reference to local variable
 # #         , messages.W1014 # unsupported '=' operator
-# #          )
+         )
 #     sort_algorithms.USE_CALLDEF_ORGANIZER = True   ## tried this to remove a couple of order issues, without success :)
     #
     # Use GCCXML to create the controlling XML file.
