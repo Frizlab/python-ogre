@@ -872,7 +872,12 @@ def Fix_Posix ( mb ):
             print "LINUX SPECIAL:", f
             #f.exclude()
     #mb.member_functions('::Ogre::Node::getChildIterator').exclude()
-
+    
+    ## handle the hashmaps -- TODO FIX under LINUX ???
+    #stdex_ns = mb.global_ns.namespace("stdext")
+    #for cls in stdex_ns.classes():
+    #    if cls.name.startswith ("hash"):
+    #        cls.include()
 
 def Fix_NT ( mb ):
     """ fixup for NT systems

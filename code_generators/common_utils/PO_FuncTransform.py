@@ -34,6 +34,12 @@ _arr2seq = string.Template(os.linesep.join([
             '// set a max inbound string length to ensure some level of saftey'
             ,'int len_$pylist = strnlen ( $native_pointer, $max_size );'
             ,'pyplus_conv::copy_container( $native_pointer, $native_pointer + len_$pylist, pyplus_conv::list_inserter( $pylist ) );']))
+if os.sys.platform == 'darwin':
+    _arr2seq = string.Template(os.linesep.join([
+            '// set a max inbound string length to ensure some level of saftey'
+            ,'int len_$pylist = strlen ( $native_pointer ); // note no strnlen on mac!!, $max_size )'
+            ,'if ( len_$pylist > $max_size ) len_$pylist = $max_size;'
+            ,'pyplus_conv::copy_container( $native_pointer, $native_pointer + len_$pylist, pyplus_conv::list_inserter( $pylist ) );']))
     
 _cleanUp = string.Template(  
             'delete $native_name;' )
