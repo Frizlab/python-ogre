@@ -735,7 +735,48 @@ WRAPPER_REGISTRATION_Frustum = [
     """def( "enableCustomNearClipPlaneMP", &::Frustum_enableCustomNearClipPlaneMP );"""
     ]
 
+
+WRAPPER_WRAPPER_MovableObjectFactory = \
+"""
+    virtual ::Ogre::String const & getType(  ) const {
+        bp::object stringin;
+        static Ogre::String MyName ("");
+        if (MyName.length() < 1) {
+           if ( bp::override func_getType = this->get_override( "getType" ) ) {
+               stringin = func_getType(  ); // can't go direct as const on string
+               MyName.clear();
+               for (int x=0;x<bp::len(stringin);x++)
+                  MyName += bp::extract<char> (stringin[x]);
+               }
+            else
+               throw std::logic_error ("You need to override getType and return a string");
+            }
+        return MyName;
+    }
+
+"""  
+
+WRAPPER_DEFINITION_MovableObjectFactory = \
+"""
+
+        { //::Ogre::MovableObjectFactory::getType
+        
+            typedef ::Ogre::String const & ( ::Ogre::MovableObjectFactory::*getType_function_type )(  ) const;
+            
+            MovableObjectFactory_exposer.def( 
+                "getType"
+                , bp::pure_virtual( getType_function_type(&::Ogre::MovableObjectFactory::getType) )
+                , bp::return_value_policy< bp::copy_const_reference >()
+                , "		 Get the type of the object to be created" );
+        
+        }
+"""
     
+WRAPPER_REGISTRATION_MovableObjectFactory=[
+   """def( "getType", bp::pure_virtual( &::Ogre::MovableObjectFactory::getType)\
+                , "Get the type of the object to be created",\
+                bp::return_value_policy< bp::copy_const_reference >() );"""
+   ]
 #################################################################################################
     
 WRAPPER_DEFINITION_SubMesh =\
@@ -973,6 +1014,10 @@ def apply( mb ):
     rt = mb.class_( 'ParticleSystem' )
     rt.add_declaration_code( WRAPPER_DEFINITION_ParticleSystem )
     apply_reg (rt,  WRAPPER_REGISTRATION_ParticleSystem )
+    
+    rt = mb.class_( 'MovableObjectFactory' )
+    rt.add_wrapper_code ( WRAPPER_WRAPPER_MovableObjectFactory )
+    apply_reg (rt, WRAPPER_REGISTRATION_MovableObjectFactory )
     
     mb.add_declaration_code( WRAPPER_DEFINITION_General )
     apply_reg (mb,  WRAPPER_REGISTRATION_General )
