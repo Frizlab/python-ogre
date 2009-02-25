@@ -24,13 +24,17 @@ sizeof ( Ogre::ConstVectorIterator<std::vector<Ogre::Technique::GPUDeviceNameRul
 
 sizeof( std::pair<Ogre::SharedPtr<Ogre::Resource>, bool> );
 
-std::vector< int > v;
-std::set< std::string > s;
+sizeof ( std::vector< int > );
+sizeof ( std::vector< unsigned int > );
+sizeof ( std::vector< bool > );
+sizeof ( std::vector< long > );
+sizeof ( std::vector< unsigned long > );
+sizeof ( std::vector< char > );
+sizeof ( std::vector< unsigned char > );
 sizeof ( std::vector< float > );
-std::multimap< std::string, std::string > ms;
-sizeof ( v );
-sizeof ( s );
-sizeof ( ms );
+
+sizeof ( std::set< std::string > );
+sizeof ( std::multimap< std::string, std::string > );
 
 std::list<Ogre::SceneNode *> specialList; // adding this to stop duplicate exposing in scene managers
 sizeof ( specialList);
