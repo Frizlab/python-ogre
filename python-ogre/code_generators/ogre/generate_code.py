@@ -340,19 +340,27 @@ def ManualInclude ( mb ):
     std_ns = global_ns.namespace("std")
     
   
-    try:
-        std_ns.class_("pair<unsigned int, unsigned int>").include()
-    except:
-        print "** Failed including unsigned int"
-    try:
-        std_ns.class_("pair<unsigned, unsigned>").include()
-    except:
-        print "** Failed including unsigned"
+    includes = ['vector<bool>',
+        'vector<int>',
+        'vector<long>',
+        'vector<float>',
+        'vector<unsigned int>',
+        'vector<char>',
+        'vector<unsigned char>',
+        'vector<float>',
+        'pair<unsigned int, unsigned int>',
+        "pair<bool, float>",
+        "pair<Ogre::SharedPtr<Ogre::Resource>, bool>",
+        "list<Ogre::SceneNode*>",
+        "pair<bool, std::string>"
+        ]
         
-    std_ns.class_("pair<bool, float>").include()
-    std_ns.class_("pair<Ogre::SharedPtr<Ogre::Resource>, bool>").include()
-    std_ns.class_("list<Ogre::SceneNode*>").include()
-    std_ns.class_("pair<bool, std::string>").include()
+    for c in includes:
+      try:
+         std_ns.class_(c).include()
+         print "Included std class:", c
+      except:
+         print "Problem including:", c    
     
     if not environment.ogre.version =="1.4":
         main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> >").include()
