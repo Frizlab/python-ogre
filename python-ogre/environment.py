@@ -463,8 +463,8 @@ class boost:    ## also included bjam
         PATH_LIB = Config.PATH_LIB_Boost
         versionBase = '1_37' ## the version used on the library name
     else:
-        base = 'boost_1_37_0'
-        versionBase = '1_37' ## the version used on the library name
+        base = 'boost_1_38_0'
+        versionBase = '1_38' ## the version used on the library name
 
     if isLinux():
         bjambase = 'boost-jam-3.1.17-1-linuxx86'
@@ -514,7 +514,7 @@ class boost:    ## also included bjam
                 [0,cp + " bjam %s/bin/" % PREFIX, os.path.join(os.getcwd(), bjambase )], ## may need to change on 64 bit systems
 
                 ## and now boost
-#                [0, tar + ' zxf ' + os.path.join(downloadPath, base) + '.tar.gz', ''],
+                [0, tar + ' zxf ' + os.path.join(downloadPath, base) + '.tar.gz', ''],
                 [0,'chmod -R +rw *', os.path.join(os.getcwd(), base ) ],
 #                 [0, sed_ + " 's/BJAM_CONFIG=\"\"/BJAM_CONFIG=release/' "+base+"/configure", '' ],
 #                 [0, sed_ + " s/'BOOST_PYTHON_MAX_ARITY 15'/'BOOST_PYTHON_MAX_ARITY 19'/ "+base+"/boost/python/detail/preprocessor.hpp", ''],
