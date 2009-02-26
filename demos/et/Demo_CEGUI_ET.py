@@ -657,7 +657,11 @@ class GuiApplication ( SampleFramework.Application ):
 
         ## create a fresh, mid-high terrain for editing
         # Note 
-        heightMapValues = ogre.LodDistanceList() ## ET.stdVectorFloat()
+        try:
+            heightMapValues = ogre.LodDistanceList() ## ET.stdVectorFloat()
+        except:
+            heightMapValues = ogre.stdVectorFloat()
+         
         for i in xrange(129):
             for j in xrange(129):
                 heightMapValues.append(float(0.50))
