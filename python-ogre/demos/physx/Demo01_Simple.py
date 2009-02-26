@@ -54,33 +54,33 @@ class CMathUtilities():
         
     def sphericalPolar(radio, pitch, yaw):
         temp = physx.NxVec3()
-      	temp.x=radio* physx.sinf(pitch)*physx.sinf(yaw)
-      	temp.y=radio*physx.cosf(pitch)
-      	temp.z=radio*physx.sinf(pitch)*physx.cosf(yaw)
-      	return temp
+        temp.x=radio* physx.sinf(pitch)*physx.sinf(yaw)
+        temp.y=radio*physx.cosf(pitch)
+        temp.z=radio*physx.sinf(pitch)*physx.cosf(yaw)
+        return temp
         
     def toNxVec3(ogreVec3):
-      	return physx.NxVec3( ogreVec3.x, ogreVec3.y, ogreVec3.z)
+        return physx.NxVec3( ogreVec3.x, ogreVec3.y, ogreVec3.z)
 
     def toVector3(nxVec3):
-      	return ogre.Vector3( nxVec3.x, nxVec3.y, nxVec3.z)
+        return ogre.Vector3( nxVec3.x, nxVec3.y, nxVec3.z)
 
         
     def toNxQuat(q):
-      	orientation = physx.NxQuat()
-      	orientation.x = q.x
-      	orientation.y = q.y
-      	orientation.z = q.z
-      	orientation.w = q.w
-      	return orientation
+        orientation = physx.NxQuat()
+        orientation.x = q.x
+        orientation.y = q.y
+        orientation.z = q.z
+        orientation.w = q.w
+        return orientation
 
     def toQuaternion(q):
-      	orientation = ogre.Quaternion()
-      	orientation.x = q.x
-      	orientation.y = q.y
-      	orientation.z = q.z
-      	orientation.w = q.w
-      	return orientation
+         orientation = ogre.Quaternion()
+         orientation.x = q.x
+         orientation.y = q.y
+         orientation.z = q.z
+         orientation.w = q.w
+         return orientation
         
     def getSizeofNxVec3():
         return 12
@@ -252,9 +252,9 @@ class DENSITY():
 class PhysxStepper():
     def __init__(self, nxscene, bodies):
         # timing
-      	self.FPS  = 30
-      	maxIter = self.FPS / 15.0 
-      	self.timePerPass = 1.0 / self.FPS
+        self.FPS  = 30
+        maxIter = self.FPS / 15.0 
+        self.timePerPass = 1.0 / self.FPS
         maxTimestep = self.timePerPass / float(maxIter)
         nxscene.setTiming( maxTimestep, int(maxIter), physx.NX_TIMESTEP_FIXED )
 
@@ -262,16 +262,16 @@ class PhysxStepper():
         self.bodies  = bodies
 
     def step(self):
-      	self.nxscene.simulate(self.timePerPass)
-      	self.nxscene.flushStream()
+        self.nxscene.simulate(self.timePerPass)
+        self.nxscene.flushStream()
 
     def update(self):
         #----------------------------------------------------------------
         # TODO update self.nxscene.fetchResults to return errorNumber
-      	#self.nxscene.fetchResults( physx.NX_ALL_FINISHED,
+         #self.nxscene.fetchResults( physx.NX_ALL_FINISHED,
         #                           True , ctypes.addressof(self.errorNumber) )
         #--------------------------------------------------------------------------------
-      	self.nxscene.fetchResults( physx.NX_ALL_FINISHED, True  )
+        self.nxscene.fetchResults( physx.NX_ALL_FINISHED, True  )
         for body in self.bodies:
             body.Update()
 
@@ -395,7 +395,7 @@ class PhysxManager():
         self.gCooking  = None
         # create our own actors list NxScene getActors() not working
         self.bodies = []
-
+        self.names = [] # names only store a pointer so need to keep the real things
         self.sceneManager = None
         
     def InitNX(self):
@@ -480,28 +480,31 @@ class PhysxManager():
         
     # ------------------------------------------------------------------------------
     def createCube(self, name, density , vec3Extents , position, dynamic = True):
-    
         # renderer
         ent = self.sceneManager.createEntity(name,'cube.mesh')
         ent.setQueryFlags(1<<2)
         ent.setMaterialName("Examples/RustySteel")
         node = self.sceneManager.getRootSceneNode().createChildSceneNode(name)
         node.translate(0, vec3Extents.y/2.0, 0)
-      	node.scale(vec3Extents/100.0)
+        node.scale(vec3Extents/100.0)
         node.attachObject(ent)
 
         # dimesions half extents
         shapeDimensions = CMathUtilities.toNxVec3( vec3Extents/2.0 )
         
         # box shape description
-      	boxShapeDesc = physx.NxBoxShapeDesc()
-        boxShapeDesc.name = "%sDesc" %(name)
-      	boxShapeDesc.dimensions = shapeDimensions
-      	#boxShapeDesc.localPose.t = physx.NxVec3(0, shapeDimensions.y ,0)
-      	boxShapeDesc.density = density
+        boxShapeDesc = physx.NxBoxShapeDesc()
+        
+        desc = ctypes.create_string_buffer( "%sDesc" %(name) ) 
+        boxShapeDesc.name = ctypes.addressof ( desc )
+        self.names.append(desc) ## probably need to keep this reference
+        
+        boxShapeDesc.dimensions = shapeDimensions
+        #boxShapeDesc.localPose.t = physx.NxVec3(0, shapeDimensions.y ,0)
+        boxShapeDesc.density = density
 
         # actor description
-      	actorDesc = physx.NxActorDesc()
+        actorDesc = physx.NxActorDesc()
         actorDesc.shapes.pushBack(boxShapeDesc)
         actorDesc.density = density
         actorDesc.globalPose.t  = CMathUtilities.toNxVec3(position)
@@ -509,7 +512,7 @@ class PhysxManager():
         # add dynamic body
         if dynamic:
             bodyDesc = physx.NxBodyDesc()
-            bodyDesc.angularDamping	= 0.0
+            bodyDesc.angularDamping = 0.0
             bodyDesc.linearDamping = 0.0
             actorDesc.body = bodyDesc
         
@@ -523,8 +526,7 @@ class PhysxManager():
 
     # ------------------------------------------------------------------------------
     def createPlane(self, name, density , vec2Extents, position):
-
-      	# Render
+        # Render
         plane = ogre.Plane()
         plane.normal = ogre.Vector3().UNIT_Y
         plane.d = 0
@@ -535,16 +537,20 @@ class PhysxManager():
                True,True )
 
         ent = self.sceneManager.createEntity(name, name)
-      	ent.setMaterialName("Examples/GrassFloor")
+        ent.setMaterialName("Examples/GrassFloor")
         sn = self.sceneManager.getRootSceneNode().createChildSceneNode()
-      	sn.translate(vec2Extents.x/2.0 , 0 , vec2Extents.y / 2.0);
+        sn.translate(vec2Extents.x/2.0 , 0 , vec2Extents.y / 2.0);
         sn.attachObject(ent)
 
         planeDesc = physx.NxPlaneShapeDesc()
-        planeDesc.name = "%sDesc" %(name)
-      	planeDesc.d = 0
+        
+        desc = ctypes.create_string_buffer( "%sDesc" %(name) ) 
+        planeDesc.name = ctypes.addressof ( desc )
+        self.names.append(desc) ## probably need to keep this reference
+
+        planeDesc.d = 0
         # actor description
-      	actorDesc = physx.NxActorDesc()
+        actorDesc = physx.NxActorDesc()
         actorDesc.shapes.pushBack(planeDesc)
 
         body = Body(actorDesc, self)
@@ -556,23 +562,23 @@ class PhysxManager():
     # ------------------------------------------------------------------------------
     def createSphere(self, name, density , radius , position, dynamic = True):
 
-      	# Render
+         # Render
         ent = self.sceneManager.createEntity(name,'sphere.mesh')
         ent.setQueryFlags(1<<2)
         ent.setMaterialName("Examples/RustySteel")
         node = self.sceneManager.getRootSceneNode().createChildSceneNode(name)
         node.translate(0, radius, 0)
-      	node.scale( radius/100.0, radius/100.0, radius/100.0 )
+        node.scale( radius/100.0, radius/100.0, radius/100.0 )
         node.attachObject(ent)
 
         # sphere shape description
-      	sphereShapeDesc = physx.NxSphereShapeDesc()
-      	sphereShapeDesc.radius = radius
-      	#sphereShapeDesc.localPose.t = physx.NxVec3(0, radius ,0)
-      	sphereShapeDesc.density = density
+        sphereShapeDesc = physx.NxSphereShapeDesc()
+        sphereShapeDesc.radius = radius
+        #sphereShapeDesc.localPose.t = physx.NxVec3(0, radius ,0)
+        sphereShapeDesc.density = density
 
         # actor description
-      	actorDesc = physx.NxActorDesc()
+        actorDesc = physx.NxActorDesc()
         actorDesc.shapes.pushBack(sphereShapeDesc)
         actorDesc.density = density
         actorDesc.globalPose.t  = CMathUtilities.toNxVec3(position)
@@ -580,7 +586,7 @@ class PhysxManager():
         # add dynamic body
         if dynamic:
             bodyDesc = physx.NxBodyDesc()
-            bodyDesc.angularDamping	= 0.0
+            bodyDesc.angularDamping = 0.0
             bodyDesc.linearDamping = 0.0
             actorDesc.body = bodyDesc
         
@@ -595,18 +601,22 @@ class PhysxManager():
     # ------------------------------------------------------------------------------
     def createMesh(self, name, mesh_name, density, position):
    
-      	# Render
+         # Render
         ent = self.sceneManager.createEntity(name, mesh_name)
         ent.setQueryFlags(1<<2)
         node = self.sceneManager.getRootSceneNode().createChildSceneNode('head')
         node.attachObject(ent)
-      	node.scale( 0.1, 0.1, 0.1 )
+        node.scale( 0.1, 0.1, 0.1 )
         node.translate(position)
 
         vertices,indices = CMeshUtilities.getMeshInfo(ent.mesh)
 
-      	meshDesc = physx.NxTriangleMeshDesc()
-        meshDesc.name = "%sDesc" %(name)
+        meshDesc = physx.NxTriangleMeshDesc()
+        
+        desc = ctypes.create_string_buffer( "%sDesc" %(name) ) 
+        meshDesc.name = ctypes.addressof ( desc )
+        self.names.append(desc) ## probably need to keep this reference
+
         meshDesc.setToDefault()
         meshDesc.numVertices = len(vertices)
         meshDesc.pointStrideBytes = CMathUtilities.getSizeofNxVec3()
@@ -631,7 +641,7 @@ class PhysxManager():
             
         del vertices,indices
         
-       	meshShapeDesc = physx.NxTriangleMeshShapeDesc() 
+        meshShapeDesc = physx.NxTriangleMeshShapeDesc() 
         #meshShapeDesc.shapeFlags|= physx.NX_SF_FEATURE_INDICES
 
         
@@ -653,7 +663,7 @@ class PhysxManager():
         self.gCooking.NxCloseCooking()
 
         # actor description
-      	actorDesc = physx.NxActorDesc()
+        actorDesc = physx.NxActorDesc()
         actorDesc.shapes.pushBack(meshShapeDesc)
         actorDesc.density = 0.02
         actorDesc.globalPose.t  = CMathUtilities.toNxVec3(position)
@@ -733,4 +743,4 @@ if __name__ == '__main__':
     ta.go ()
     ta.cleanUp()
 
-	  	 
+       
