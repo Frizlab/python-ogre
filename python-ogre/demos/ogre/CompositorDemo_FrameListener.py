@@ -14,6 +14,7 @@ import ogre.renderer.OGRE as Ogre
 import ogre.gui.CEGUI as CEGUI
 import ogre.io.OIS as OIS
 import ctypes
+MOVESPEED = 30
 
 def convertOISButtonToCegui( buttonID):
     if buttonID ==0:
@@ -106,7 +107,6 @@ class HDRListener(Ogre.CompositorInstance.Listener):
         self.mVpHeight = height 
     ##---------------------------------------------------------------------------
     def notifyCompositor(self, instance):
-        print "NOTIFYCOMPOSITOR"
         ## Get some RTT dimensions for later calculations
         defIter = instance.getTechnique().getTextureDefinitionIterator() 
         while (defIter.hasMoreElements()) :
@@ -148,11 +148,9 @@ class HDRListener(Ogre.CompositorInstance.Listener):
                     self.mBloomTexOffsetsHorz[i*self.x+1] = 0.0 
                     self.mBloomTexOffsetsVert[i*self.x+0] = 0.0 
                     self.mBloomTexOffsetsVert[i*self.x+1] = -self.mBloomTexOffsetsVert[(i - 7)*self.x+1] 
-        print "OK"                    
 
     ##---------------------------------------------------------------------------
     def notifyMaterialSetup(self, pass_id, mat):
-        print "NOTIFYMATERIALSETUP", mat
         ## Prepare the fragment params offsets
 #       switch(pass_id)
 #       ##case 994: ## rt_lum4
@@ -178,10 +176,8 @@ class HDRListener(Ogre.CompositorInstance.Listener):
                 progName = mat.getBestTechnique().getPass(0).getFragmentProgramName() 
                 fparams.setNamedConstantFloat("sampleOffsets",ctypes.addressof(self.mBloomTexOffsetsVert), self.x) 
                 fparams.setNamedConstantFloat("sampleWeights",ctypes.addressof(self.mBloomTexWeights), self.x) 
-        print "OK"                
     ##---------------------------------------------------------------------------
     def notifyMaterialRender(self, pass_id, mat):
-        print "NOTIFYMATERIALRENDER", mat
         pass
     ##---------------------------------------------------------------------------
 
@@ -589,7 +585,7 @@ class CompositorDemo_FrameListener(Ogre.FrameListener, OIS.KeyListener,  OIS.Mou
             ## rotate camera
             self.mRotX += -e.moveDelta.d_x * self.mAvgFrameTime * 10.0 
             self.mRotY += -e.moveDelta.d_y * self.mAvgFrameTime * 10.0 
-            MouseCursor.getSingleton().setPosition( self.mLastMousePosition ) 
+            CEGUI.MouseCursor.getSingleton().setPosition( self.mLastMousePosition ) 
             self.mUpdateMovement = True 
         else:
             if( self.mRMBDown and not self.mLMBDown):
@@ -597,12 +593,12 @@ class CompositorDemo_FrameListener(Ogre.FrameListener, OIS.KeyListener,  OIS.Mou
                 self.mTranslateVector.x += e.moveDelta.d_x * self.mAvgFrameTime * MOVESPEED 
                 self.mTranslateVector.y += -e.moveDelta.d_y * self.mAvgFrameTime * MOVESPEED 
                 ##self.mTranslateVector.z = 0 
-                MouseCursor.getSingleton().setPosition( self.mLastMousePosition ) 
+                CEGUI.MouseCursor.getSingleton().setPosition( self.mLastMousePosition ) 
                 self.mUpdateMovement = True 
             else:
                 if( self.mRMBDown and self.mLMBDown):
                     self.mTranslateVector.z += (e.moveDelta.d_x + e.moveDelta.d_y) * self.mAvgFrameTime * MOVESPEED 
-                    MouseCursor.getSingleton().setPosition( self.mLastMousePosition ) 
+                    CEGUI.MouseCursor.getSingleton().setPosition( self.mLastMousePosition ) 
                     self.mUpdateMovement = True 
 
         return True 
@@ -684,17 +680,19 @@ class CompositorDemo_FrameListener(Ogre.FrameListener, OIS.KeyListener,  OIS.Mou
     def itemStateChanged( self, index,  state):
         ## get the item text and tell compositor manager to set enable state
         compositor = str(self.mCompositorSelectorViewManager.getItemSelectorText(index))
-        print "Compositor", compositor
+        print type(compositor)
+        print compositor 
+        compositor = self.mCompositorSelectorViewManager.getItemSelectorText(index).c_str()
+        print type(compositor)
+        print compositor 
         Ogre.CompositorManager.getSingleton().\
             setCompositorEnabled(self.mMain.getRenderWindow().getViewport(0),compositor, state)
-        print "CHANGED"            
         self.updateDebugRTTWindow() 
 ##-----------------------------------------------------------------------------------
     def registerCompositors(self):
         vp = self.mMain.getRenderWindow().getViewport(0) 
         self.hvListener = HeatVisionListener() 
         self.hdrListener = HDRListener() 
-        print "HDR OK !!!!"
         self.gaussianListener = gaussianListener() 
 
         self.mCompositorSelectorViewManager = ItemSelectorViewManager("CompositorSelectorWin") 
@@ -722,11 +720,9 @@ class CompositorDemo_FrameListener(Ogre.FrameListener, OIS.KeyListener,  OIS.Mou
             if instance and (compositorName == "Heat Vision"):
                 instance.addListener(self.hvListener) 
             elif instance and (compositorName == "HDR"):
-                print "ADDING LISTENER"
                 instance.addListener(self.hdrListener) 
                 self.hdrListener.notifyViewportSize(vp.getActualWidth(), vp.getActualHeight()) 
                 self.hdrListener.notifyCompositor(instance) 
-                print "DONE"
 
             elif instance and (compositorName == "Gaussian Blur"):
                 instance.addListener(self.gaussianListener) 
