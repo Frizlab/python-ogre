@@ -736,47 +736,50 @@ WRAPPER_REGISTRATION_Frustum = [
     ]
 
 
-WRAPPER_WRAPPER_MovableObjectFactory = \
+WRAPPER_WRAPPER_GetTypeFix = \
 """
-    virtual ::Ogre::String const & getType(  ) const {
+    virtual ::Ogre::String const & %(function_name)s(  ) const {
         bp::object stringin;
         static Ogre::String MyName ("");
         if (MyName.length() < 1) {
-           if ( bp::override func_getType = this->get_override( "getType" ) ) {
+           if ( bp::override func_getType = this->get_override( "%(function_name)s" ) ) {
                stringin = func_getType(  ); // can't go direct as const on string
                MyName.clear();
                for (int x=0;x<bp::len(stringin);x++)
                   MyName += bp::extract<char> (stringin[x]);
                }
             else
-               throw std::logic_error ("You need to override getType and return a string");
+               throw std::logic_error ("You need to override the %(function_name)s and return a string");
             }
         return MyName;
     }
 
 """  
 
-WRAPPER_DEFINITION_MovableObjectFactory = \
-"""
-
-        { //::Ogre::MovableObjectFactory::getType
-        
-            typedef ::Ogre::String const & ( ::Ogre::MovableObjectFactory::*getType_function_type )(  ) const;
-            
-            MovableObjectFactory_exposer.def( 
-                "getType"
-                , bp::pure_virtual( getType_function_type(&::Ogre::MovableObjectFactory::getType) )
-                , bp::return_value_policy< bp::copy_const_reference >()
-                , "		 Get the type of the object to be created" );
-        
-        }
-"""
-    
-WRAPPER_REGISTRATION_MovableObjectFactory=[
-   """def( "getType", bp::pure_virtual( &::Ogre::MovableObjectFactory::getType)\
-                , "Get the type of the object to be created",\
+WRAPPER_REGISTRATION_GetTypeFix=\
+"""def( "%(function_name)s", bp::pure_virtual( &::Ogre::%(class_name)s::%(function_name)s)\
+                , "Get the type (string name) of the object to be created",\
                 bp::return_value_policy< bp::copy_const_reference >() );"""
-   ]
+                
+                
+# WRAPPER_DEFINITION_GetTypeFix = \
+# """
+# 
+#         { //getType
+#         
+#             typedef ::Ogre::String const & ( ::Ogre::%(class_name)s::*%(function_name)s_function_type )(  ) const;
+#             
+#             %(class_name)s_exposer.def( 
+#                 "%(function_name)s"
+#                 , bp::pure_virtual( %(function_name)s_function_type(&::Ogre::%(class_name)s::%(function_name)s) )
+#                 , bp::return_value_policy< bp::copy_const_reference >()
+#                 , "Get the type (string) of the object to be created" );
+#         
+#         }
+# """
+    
+
+ 
 #################################################################################################
     
 WRAPPER_DEFINITION_SubMesh =\
@@ -1015,9 +1018,9 @@ def apply( mb ):
     rt.add_declaration_code( WRAPPER_DEFINITION_ParticleSystem )
     apply_reg (rt,  WRAPPER_REGISTRATION_ParticleSystem )
     
-    rt = mb.class_( 'MovableObjectFactory' )
-    rt.add_wrapper_code ( WRAPPER_WRAPPER_MovableObjectFactory )
-    apply_reg (rt, WRAPPER_REGISTRATION_MovableObjectFactory )
+#     rt = mb.class_( 'MovableObjectFactory' )
+#     rt.add_wrapper_code ( WRAPPER_WRAPPER_MovableObjectFactory )
+#     apply_reg (rt, WRAPPER_REGISTRATION_MovableObjectFactory )
     
     mb.add_declaration_code( WRAPPER_DEFINITION_General )
     apply_reg (mb,  WRAPPER_REGISTRATION_General )

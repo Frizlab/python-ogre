@@ -485,7 +485,19 @@ def ManualFixes ( mb ):
     # need to stop the automatic char to array conversion for this function
     global_ns.member_function ('::Ogre::NedAllocPolicy::allocateBytes').documentation = "This is to stop automatic conversion"
     
-    main_ns.class_("MovableObjectFactory").member_function("getType").exclude()
+    # have to hand wrap a set of functions that are virtual and return a pointer to a static string
+    funcNames = ['getType', 'getTypeName']
+    for funcName in funcNames:
+        for f in main_ns.member_functions(funcName):
+            if f.virtuality == declarations.VIRTUALITY_TYPES.PURE_VIRTUAL:
+                if not f.parent.name.startswith('placeholder'):
+                    main_ns.class_(f.parent.name).member_function(funcName).exclude()
+                    values={'class_name':f.parent.name, 'function_name':f.name }
+                    code=hand_made_wrappers.WRAPPER_WRAPPER_GetTypeFix % values
+                    main_ns.class_(f.parent.name).add_wrapper_code( code )
+                    code=hand_made_wrappers.WRAPPER_REGISTRATION_GetTypeFix % values
+                    main_ns.class_(f.parent.name).add_registration_code( code )
+                    print 'Adjusted pure virtual function returning a static pointer via hand wrapper %s:%s' % ( f.parent.name, f.name)
     
 ##
 # fix up any ugly name alias

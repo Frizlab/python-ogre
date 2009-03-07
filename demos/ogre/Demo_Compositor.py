@@ -35,6 +35,13 @@ def getPluginPath():
              '/etc/OGRE/plugins.cfg',
              os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               'plugins.cfg')]
+    if os.sys.platform == 'darwin':
+        paths.insert(1, os.path.join(os.getcwd(), 'plugins.cfg.mac'))
+        paths.append(os.path.join(os.getcwd(), '..', 'plugins.cfg.mac'))
+    else:
+        paths.insert(1,os.path.join(os.getcwd(), 'plugins.cfg.'+os.name))
+        paths.append(os.path.join(os.getcwd(), '..', 'plugins.cfg.'+os.name))
+        
     for path in paths:
         if os.path.exists(path):
             return path
@@ -297,8 +304,6 @@ class CompositorDemo():
         comp3 = Ogre.CompositorManager.getSingleton().create(
                 "Motion Blur", Ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME
             ) 
-        print comp3
-        print dir(comp3)            
         t = comp3.createTechnique() 
         def_ = t.createTextureDefinition("scene") 
         def_.width = 0 

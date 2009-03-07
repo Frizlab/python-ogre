@@ -11,6 +11,7 @@
 # -----------------------------------------------------------------------------
 import sys
 sys.path.insert(0,'..')
+sys.path.append(r"c:\python25\lib\site-packages")
 import PythonOgreConfig
 import ogre.renderer.OGRE as ogre
 import SampleFramework as sf

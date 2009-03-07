@@ -1,12 +1,24 @@
-xxxx 2009 : Release 1.6.1.xxx
-================================
-Fix: Bullet modules created around Bullet 2.73 now working properly and wrappers improved
+Feburary 26 2009 : Release 1.6.1r906
+====================================
+<<SnapShot Release>>
+FIX: Modified tranformation code to not use strnlen on mac as it's not available on that platform
+FIX: Pretty printing of Vectors etc fixed
 Fix: Exposed std::vector<bool> for joystick buttons in OIS
-Fix: DatStream Ptr's were broken - fixed issues with non const shared pointers being exposed
+Fix: DataStream Ptr's were broken - fixed issues with non const shared pointers being exposed
+
+Update: OgreMovableFactoryObect (specifically getType function) can now be sub classed
+Update: Bullet modules created around Bullet 2.73 now working properly and wrappers improved
+Update: ogre.LodDistanceList is now ogre.stdVectorFloat -- change in ET demo
+Update: QuickGUI Demo updated - works and shows more functionality
+Update: Canvas wrapper expanded to include helper functions and demo completed
+Update: FFmpeg wrapper is back 
+Update: Updated dotsceneloader and added demo 
 
 Change: Exposing functions that return standard pointers (int *, float * etc) with ctype return_addressof functionality
         previously these had been excluded
-
+Change: Added RakNet Module
+Change: Added plsm2 module
+Change: name property now exposed on PhysX desc opjects which required a change in the demo
                 
 
 Janurary 25 2009 : Release 1.6.1
