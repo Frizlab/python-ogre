@@ -468,7 +468,7 @@ class scons:
 
 class boost:    ## also included bjam
     active = True
-    version = "1.37"
+    version = "1.36"
     pythonModule = False
     ModuleName = ""
     # move lib path here (lib name is already here) so we can easily do a static link for windows
@@ -482,8 +482,8 @@ class boost:    ## also included bjam
         PATH_LIB = Config.PATH_LIB_Boost
         versionBase = '1_37' ## the version used on the library name
     else:
-        base = 'boost_1_37_0'
-        versionBase = '1_37' ## the version used on the library name
+        base = 'boost_1_36_0'
+        versionBase = '1_36' ## the version used on the library name
 
     if isLinux():
         # this is now using a prebuilt bjam binary -- if this doesn't work uncomment necessary lines....
@@ -575,7 +575,7 @@ class boost:    ## also included bjam
         import re
         gcc_version = re.search(r'([0-9]+?\.[0-9]+?\.[0-9]+?)', gccp.communicate()[0]).groups()[0].split('.')
         # FIXME: Should this be the multithreaded version!?
-        lib = "boost_python-gcc%s%s-mt-%s" % (gcc_version[0], gcc_version[1], versionBase)
+        lib = "boost_python-gcc%s%s-mt-%s-py25" % (gcc_version[0], gcc_version[1], versionBase, )
     if isMac():
         lib=Config.LIB_Boost
         
