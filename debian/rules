@@ -14,7 +14,15 @@ PYVERS  := $(shell $(PYTHON) -c 'import sys; print sys.version[:3]')
 
 export BUILDFLAGS=--usesystem --verbose --failhard -g
 
-build: $(PYVERS:%=build-stamp%)
+setup: setup-stamp
+setup-stamp:
+	rm -rf include/OGRE || true
+	cp -rf /usr/include/OGRE include
+	patch -p0 < ./patch/ogre_1.6.1-deb.patch
+	touch $@
+
+
+build: setup $(PYVERS:%=build-stamp%)
 build-stamp%:
 	# We set LD_PRELOAD='' to stop fakeroot from killing the code generation
 	# Core Modules
@@ -43,6 +51,7 @@ build-python%:
 clean:
 	dh_testdir
 	dh_testroot
+	rm -rf include/ogre || true
 	rm -f build-python* || true
 	rm -rf build || true
 	rm *-stamp* || true
