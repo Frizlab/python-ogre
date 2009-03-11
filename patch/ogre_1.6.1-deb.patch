@@ -61,7 +61,7 @@ Index: include/OGRE/OgreString.h
  	typedef ::std::tr1::hash< _StringBase > _StringHash;
 Index: PythonOgreConfig_system.py
 ===================================================================
---- PythonOgreConfig_system.py	(revision 908)
+--- PythonOgreConfig_system.py	(revision 914)
 +++ PythonOgreConfig_system.py	(working copy)
 @@ -107,7 +107,7 @@
  PATH_LIB_pcz = os.path.join(PATH_LIB_Ogre_OgreMain, 'OGRE')
@@ -72,3 +72,12 @@ Index: PythonOgreConfig_system.py
  PATH_INCLUDE_Ogre_Dependencies =    PATH_INCLUDE_Ogre #      os.path.join( PATH_Ogre, 'Dependencies/include')
  
  PATH_INCLUDE_OIS =          os.path.join(LOCAL_INCLUDE,'OIS') #os.path.join(PATH_OIS,'includes')    ## Note the plural include's
+@@ -133,7 +133,7 @@
+ PATH_INCLUDE_OgreOdePrefab= os.path.join( PATH_OgreOde,'prefab/include')
+ PATH_INCLUDE_OgreOdeLoader= os.path.join( PATH_OgreOde,'loader/include')
+ PATH_INCLUDE_FMOD =  ""
+-PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join(BASE_DIR, 'include', 'OGRE')
++PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join(os.path.dirname(__file__), 'include/OGRE')
+ PATH_INCLUDE_quickgui =     PATH_quickgui
+ PATH_INCLUDE_NxOgre=        PATH_NxOgre
+ PATH_INCLUDE_NxOgre_09=        PATH_NxOgre_09
