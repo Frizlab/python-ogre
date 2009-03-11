@@ -213,7 +213,8 @@ class gccxml:
     else:
        source_version = "20090123"
        source = [
-                [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co -D 23Jan2009 "+base, os.getcwd()]
+                [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co -D 23Jan2009 "+base, os.getcwd()],
+                ["patch", " -s -i ../python-ogre/patch/gccxml.patch -p0 ", os.path.join(os.getcwd(), "gccxml")],
              ]
     if isLinux() or isMac():
         buildCmds =  [
