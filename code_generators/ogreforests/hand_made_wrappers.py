@@ -82,9 +82,9 @@ def apply_reg ( class_, code ):
         
 def apply( mb ):
 #     pass
-#     rt = mb.class_( 'GrassLoader' )
-#     rt.add_declaration_code( WRAPPER_DEFINITION_GrassLoader )
-#     apply_reg (rt, WRAPPER_REGISTRATION_GrassLoader )
+    rt = mb.class_( 'GrassLoader' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_GrassLoader )
+    apply_reg (rt, WRAPPER_REGISTRATION_GrassLoader )
 
     rt = mb.class_( 'TreeLoader2D' )
     rt.add_declaration_code( WRAPPER_DEFINITION_TreeLoader2D )
