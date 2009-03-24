@@ -323,7 +323,7 @@ def ManualExclude ( mb ):
             if v.name.endswith('Mutex'):
                 print "Excluding possible Mutex Variable:", v
                 v.exclude()
-                                                    
+
 ####################b########################################
 ##
 ##  And there are things that manually need to be INCLUDED 
@@ -875,6 +875,7 @@ def Fix_NT ( mb ):
     for cls in stdex_ns.classes():
         if cls.name.startswith ("hash"):
             cls.include()
+            cls.exclude() ### AJM TOFIX hash_maps are missing at the moment?
             
     # need to force these
     hwnd = mb.global_ns.class_("HWND__")
