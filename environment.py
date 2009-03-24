@@ -137,8 +137,6 @@ if not _ConfigSet:
     print "\n\n You DO need to create a PythonOgreConfig_%s.py file with config details" % ( _SystemType)
     sys.exit(-1)
 
-_STABLE = os.path.exists(os.path.join(os.path.split(__file__)[0], "STABLE")) # set to true if using specific versions of CVS and SVN checkouts..
-
 ######################
 downloadPath = os.path.abspath("downloads")
 wget = "wget -c -nc "
@@ -205,17 +203,11 @@ class gccxml:
     pythonModule = False
     active = True
     base = 'gccxml'
-    if _STABLE:
-       source_version = "20080522"
-       source = [
-                [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co -D 22May2008 "+base, os.getcwd()]
-             ]
-    else:
-       source_version = "20090123"
-       source = [
-                [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co -D 23Jan2009 "+base, os.getcwd()],
-                ["patch", " -s -i ../python-ogre/patch/gccxml.patch -p0 ", os.path.join(os.getcwd(), "gccxml")],
-             ]
+    source_version = "20090123"
+    source = [
+             [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co -D 23Jan2009 "+base, os.getcwd()],
+             ["patch", " -s -i ../python-ogre/patch/gccxml.patch -p0 ", os.path.join(os.getcwd(), "gccxml")],
+          ]
     if isLinux() or isMac():
         buildCmds =  [
                     [0,"mkdir -p gccxml-build", ''],
@@ -291,16 +283,10 @@ class pygccxml:
     pythonModule = False
     active = True
     base = 'pygccxml'
-    if _STABLE:
-        source_version = "1383"
-        source = [
-                    [svn, " co -r 1383 https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
-                 ]
-    else:
-        source_version = "1607"
-        source = [
-                    [svn, " co -r 1607 https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
-                    ]
+    source_version = "1607"
+    source = [
+                [svn, " co -r 1607 https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev "+base, os.getcwd()]
+                ]
     if isLinux() or isMac() :
         buildCmds =  [
 # #                     [0, "patch -s -N -i ../python-ogre/patch/pygccxml.patch -p0 ", os.path.join(os.getcwd(), base) ],
@@ -317,16 +303,10 @@ class pyplusplus:
     pythonModule = False
     active = True
     base = 'pyplusplus'
-    if _STABLE:
-        source_version = "1383"
-        source = [
-                    [svn, " co -r 1383 https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
-                 ]
-    else:
-        source_version = "1607"
-        source = [
-                    [svn, " co -r 1607 https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
-                 ]
+    source_version = "1607"
+    source = [
+                [svn, " co -r 1607 https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev "+base, os.getcwd()]
+             ]
     if isLinux() or isMac() :
         buildCmds =  [
                 [0,"python setup.py install  --prefix=" + PREFIX , os.path.join (os.getcwd(), base) ]
@@ -655,31 +635,19 @@ class ogre:
         cflags += ' -D"_HAS_TR1=0" ' # to solve an issue with <map> include on some machines
         
     elif isLinux():
-        if _STABLE:
-            version = "1.4"
-            base = "ogre-v1-4-9"
-            buildCmds  = [
-                [0, tar + " jxf " + os.path.join(downloadPath,base)+".tar.bz2 --overwrite",os.getcwd() ],
-                [0, "patch -s -N -i ./python-ogre/patch/ogre.patch -p0 ", os.getcwd()],
-                [0, "aclocal", os.path.join(os.getcwd(), 'ogre')],
-                [0, "./bootstrap", os.path.join(os.getcwd(), 'ogre')],
-                [0, "./configure --prefix=%s --with-gui=Xt --disable-devil" % PREFIX, os.path.join(os.getcwd(), 'ogre')],
-                [0, "make", os.path.join(os.getcwd(), 'ogre')],
-                [0, "make install", os.path.join(os.getcwd(), 'ogre')],
-                ]
-        else:
-            version = "1.6.1"
-            base = "ogre-v1-6-1"
-            buildCmds  = [
-                [0, tar + " jxf " + os.path.join(downloadPath,base)+".tar.bz2 --overwrite",os.getcwd() ],
-                [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.1.patch -p0 ", os.getcwd()],
-                #[0, "sed --in-place -s 's|#define OGRE_THREAD_SUPPORT 1|#define OGRE_THREAD_SUPPORT 0|' OgreConfig.h",os.path.join(os.getcwd(),"ogre","OgreMain", "include")],
-                [0, "aclocal", os.path.join(os.getcwd(), 'ogre')],
-                [0, "./bootstrap", os.path.join(os.getcwd(), 'ogre')],
-                [0, "./configure --prefix=%s --disable-devil" % PREFIX, os.path.join(os.getcwd(), 'ogre')], #--with-gui=Xt 
-                [0, "make", os.path.join(os.getcwd(), 'ogre')],
-                [0, "make install", os.path.join(os.getcwd(), 'ogre')],
-                ]
+        version = "1.6.1"
+        base = "ogre-v1-6-1"
+        buildCmds  = [
+            [0, tar + " jxf " + os.path.join(downloadPath,base)+".tar.bz2 --overwrite",os.getcwd() ],
+            [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.1.patch -p0 ", os.getcwd()],
+            #[0, "sed --in-place -s 's|#define OGRE_THREAD_SUPPORT 1|#define OGRE_THREAD_SUPPORT 0|' OgreConfig.h",os.path.join(os.getcwd(),"ogre","OgreMain", "include")],
+            [0, "aclocal", os.path.join(os.getcwd(), 'ogre')],
+            [0, "./bootstrap", os.path.join(os.getcwd(), 'ogre')],
+            [0, "./configure --prefix=%s --disable-devil" % PREFIX, os.path.join(os.getcwd(), 'ogre')], #--with-gui=Xt 
+            [0, "make", os.path.join(os.getcwd(), 'ogre')],
+            [0, "make install", os.path.join(os.getcwd(), 'ogre')],
+            ]
+
         libs=[boost.lib,  'OgreMain']
         #libs.append ( boost_python_index.lib )
         lib_dirs=[Config.LOCAL_LIB]
@@ -859,14 +827,9 @@ class ogrenewt:
     else:
         libs = ['Newton32', boost.lib, 'OgreMain']
         
-    if _STABLE:
-        source = [
-                 [cvs, " -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -D 01052008 -P "+base, os.getcwd()]
-                 ]
-    else:
-        source = [
-                [svn, " co https://ogreaddons.svn.sourceforge.net/svnroot/ogreaddons/trunk/ogrenewt " + base, os.getcwd()]
-                 ]
+    source = [
+            [svn, " co https://ogreaddons.svn.sourceforge.net/svnroot/ogreaddons/trunk/ogrenewt " + base, os.getcwd()]
+             ]
     baseDir = os.path.join(os.getcwd(), base )
     buildCmds = [
             [0, "patch -s -N -i ../../python-ogre/patch/ogrenewt.patch -p0", baseDir],
@@ -916,10 +879,7 @@ class cegui:
     pythonModule = True
     parent = "ogre/gui"
     name = 'cegui'
-    if _STABLE:
-        version = "0.5.0b"
-    else:
-        version = "0.6.2b"
+    version = "0.6.2b"
     if isWindows():
         if _PreCompiled:
             pchstop = 'cegui.h'
@@ -933,16 +893,10 @@ class cegui:
 #        libs.append ( boost_python_index.lib )
 
     if isLinux() or isMac():
-        if _STABLE:
-            base = "CEGUI-0.5.0"
-            source=[
-                [wget, "http://downloads.sourceforge.net/crayzedsgui/CEGUI-0.5.0b.tar.gz", downloadPath]
-                ]
-        else:
-            base = "CEGUI-0.6.2"
-            source=[
-                [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.6.2b.tar.gz?download", downloadPath]
-                ]
+        base = "CEGUI-0.6.2"
+        source=[
+            [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.6.2b.tar.gz?download", downloadPath]
+            ]
 
         buildCmds  = [
                 [0, tar + " zxf " + os.path.join(downloadPath,base)+"b.tar.gz --overwrite",os.getcwd() ],
@@ -1107,14 +1061,9 @@ class ogreode:
                 , Config.PATH_INCLUDE_OgreOdeLoader
                 , Config.PATH_INCLUDE_Ogre
                 ]
-    if _STABLE:
-        source = [
-             [cvs, " -d :pserver:anonymous@cvs.ogre3d.org:/cvsroot/ogre co -D 01052008 -P "+base, os.getcwd()]
-             ]
-    else:
-        source = [
-             [svn, " co https://ogreaddons.svn.sourceforge.net/svnroot/ogreaddons/trunk/ogreode " + baseDir, os.getcwd()]
-             ]
+    source = [
+         [svn, " co https://ogreaddons.svn.sourceforge.net/svnroot/ogreaddons/trunk/ogreode " + baseDir, os.getcwd()]
+         ]
     buildCmds = [
             [0, "patch -s -N -i ../../python-ogre/patch/ogreode.patch -p0", baseDir],
             [0, "chmod +x autogen.sh", baseDir],
