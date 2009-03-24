@@ -14,6 +14,8 @@ LOCAL_INCLUDE = '/usr/include'
 PATH_Boost = os.path.join(LOCAL_INCLUDE, 'boost')
 ## Path to your boost_pythonxxxx lib file
 PATH_LIB_Boost = LOCAL_LIB
+## and the name of the boost python library
+#LIB_Boost = 'libboost_python-gcc42-mt-1_36'
 
 # in Linux we need to code in the Relative path for the library
 RPATH=os.path.join('\\$$ORIGIN',os.pardir,os.pardir, 'lib') #+ '\'' 
@@ -54,7 +56,7 @@ PATH_ogrevideoffmpeg = os.path.join(PATH_THIRDPARTY,'ffmpeg')
 PATH_NxOgre=        os.path.join(PATH_THIRDPARTY, 'nxogre')
 PATH_NxOgre_09=        os.path.join(PATH_THIRDPARTY, 'nxogre_0.9')
 # PATH_NxOgre=        os.path.join(BASE_DIR, 'nxogre/NxOgre')
-PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.66') 
+PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.73') 
 ###PATH_PhysX=         os.path.join(BASE_DIR, 'Physx/v2.7.3/SDKs')
 PATH_Theora=        os.path.join(PATH_OgreAddons,'videoplugin','TheoraVideo')
 PATH_ffmpeg=        os.path.join(BASE_DIR) #, 'ffmpeg')
@@ -63,10 +65,16 @@ PATH_particleuniverse = os.path.join(PATH_Ogre, 'PlugIns', 'ParticleUniverse' )
 PATH_cadunetree=        os.path.join(PATH_THIRDPARTY, 'cadunetree')
 PATH_opensteer =        os.path.join(BASE_DIR, 'opensteer', 'trunk')
 PATH_ogrepcz = os.path.join(PATH_Ogre, 'PlugIns', 'PCZSceneManager' )
-PATH_hydrax = os.path.join(PATH_THIRDPARTY, 'hydrax')
-PATH_hikari = os.path.join(BASE_DIR, 'hikari', 'hikari')
+PATH_hydrax = os.path.join(PATH_THIRDPARTY, 'Hydrax')
+PATH_hikari = os.path.join(PATH_THIRDPARTY, 'Hikari' ) # BASE_DIR, 'hikari', 'hikari')
 PATH_mygui = os.path.join(BASE_DIR, 'MyGUI_2.2.0_RC1_source' )
 PATH_canvas = os.path.join(PATH_THIRDPARTY, 'canvas')
+PATH_plsm2 =        os.path.join(PATH_THIRDPARTY, 'plsm2' )
+
+PATH_raknet = os.path.join(BASE_DIR, 'raknet')
+PATH_LIB_raknet = os.path.join ( PATH_raknet, 'Lib')
+PATH_INCLUDE_raknet = os.path.join ( PATH_raknet, 'Source')
+
 
 ###
 ### these paths assume you've left all the directory structure as standard
@@ -105,6 +113,7 @@ PATH_LIB_hikari = os.path.join(PATH_hikari, 'lib')
 PATH_LIB_mygui = os.path.join(PATH_mygui, 'MyGUIEngine','lib','Release')
 PATH_LIB_canvas = os.path.join(PATH_canvas )
 PATH_LIB_pcz = os.path.join(PATH_LIB_Ogre_OgreMain, 'OGRE')
+PATH_LIB_plsm2 = PATH_plsm2
 
 
 PATH_INCLUDE_Ogre=          os.path.join(LOCAL_INCLUDE,'OGRE')  # os.path.join(PATH_Ogre,'OgreMain/include') 
@@ -160,11 +169,11 @@ PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ]
 physxbase = os.path.join(LOCAL_INCLUDE, 'PhysX','v2.7.3', 'SDKs')
 PATH_INCLUDE_PhysX= [ physxbase
-                    ,os.path.join(physxbase, 'Cooking','Include')
+                    ,os.path.join(physxbase, 'Cooking','include')
                     ,os.path.join(physxbase, 'Foundation','include')
                     ,os.path.join(physxbase, 'PhysXLoader','include')
                     ,os.path.join(physxbase, 'NxCharacter','include')
-                    ,os.path.join(physxbase, 'NxExtensions','include')
+                    ##,os.path.join(physxbase, 'NxExtensions','include')
                     ,os.path.join(physxbase, 'Physics','include')
                     ]
 PATH_INCLUDE_opensteer = os.path.join(LOCAL_INCLUDE, 'OpenSteer')
@@ -174,3 +183,4 @@ PATH_INCLUDE_hydrax=        PATH_hydrax
 PATH_INCLUDE_hikari = os.path.join(PATH_hikari ) #, 'include')
 PATH_INCLUDE_mygui = os.path.join(PATH_mygui,'MyGUIEngine','include') 
 PATH_INCLUDE_canvas=        PATH_canvas
+PATH_INCLUDE_plsm2 = PATH_plsm2
