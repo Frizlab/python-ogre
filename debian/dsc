@@ -1,0 +1,28 @@
+Format: 1.0  
+Source: python-ogre  
+Binary: python-ogre  
+Architecture: any  
+Version: 0.0.0-3  
+Maintainer: Tim 'Mithro' Ansell <mithro@mithis.com>  
+Standards-Version: 3.7.2  
+Build-Depends: debhelper (>= 5.0.38),
+	cmake (>= 2.4.0), scons, pkg-config,
+	zziplib-bin,
+	libboost1.36-dev (>= 1.36),
+	libboost-python1.36-dev (>= 1.36),
+	libfreeimage-dev,
+	libois-dev,
+	libogre-dev (>= 1.6),
+	libceguiogre-dev (>= 1.6),
+	libcegui-mk2-dev (>= 0.6),
+	libogg-dev, libvorbis-dev,
+	libavformat-dev, libavcodec-dev,
+	gccxml (>=0.7.0),
+	pygccxml, pyplusplus,
+	python-central, python-setuptools (>= 0.6b3-1),  
+	python2.5-dev,  
+	libstdc++6-4.1-dev | libc6-dev, svgalibg1 | libc6-dev, libsvga1 | libc6-dev  
+Build-Depends-Indep: python-central, python-setuptools (>= 0.6b3-1)  
+Files:   
+ 535f8ca1986277068e0b71db34fc9db7 2772 python-ogre.tar.gz  
+Python-Version: >=2.4  

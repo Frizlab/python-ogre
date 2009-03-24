@@ -45,7 +45,7 @@ md5sum python-ogre.tar.gz
 du -k python-ogre.tar.gz
 du -h python-ogre.tar.gz
 
-cp python-ogre.tar.gz ..
-cp python-ogre-pristine/debian/rules ../debian.rules
-cp python-ogre-pristine/debian/control ../debian.control
-cp python-ogre-pristine/debian/changelog ../debian.changelog
+cp python-ogre-pristine/debian/rules ./debian.rules
+cp python-ogre-pristine/debian/control ./debian.control
+cp python-ogre-pristine/debian/changelog ./debian.changelog
+cp python-ogre-pristine/debian/dsc ./python-ogre.dsc
