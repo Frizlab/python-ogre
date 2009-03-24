@@ -1,0 +1,20 @@
+--- ./GCC_XML/Support/GCC/4.3/gccxml_builtins.h.org	2009-03-11 11:51:22.000000000 +1100
++++ ./GCC_XML/Support/GCC/4.3/gccxml_builtins.h	2009-03-11 12:05:31.000000000 +1100
+@@ -179,3 +179,17 @@
+ #define __is_pod(x) false
+ #define __is_empty(x) false
+ #define __has_trivial_destructor(x) false
++
++/* The GCC 4.3 parser hard-codes handling of these, so they do not
++   have real signatures.  */
++bool __builtin_isfinite(...);
++bool __builtin_isinf(...);
++bool __builtin_isnan(...);
++bool __builtin_isnormal(...);
++bool __builtin_isgreater(...);
++bool __builtin_isgreaterequal(...);
++bool __builtin_isless(...);
++bool __builtin_islessequal(...);
++bool __builtin_islessgreater(...);
++bool __builtin_isunordered(...);
++bool __builtin_va_arg_pack(...);
