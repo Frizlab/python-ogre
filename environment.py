@@ -751,6 +751,7 @@ class ois:
             pchincludes = ['boost/python.hpp', 'OIS.h']
 
         libs=['OIS_static',boost.lib]
+        cflags = ' -D"_HAS_TR1=0" ' # to solve an issue with <map> include on some machines
         
     else:
         libs=['OIS',boost.lib]
