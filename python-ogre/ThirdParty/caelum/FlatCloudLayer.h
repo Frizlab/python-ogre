@@ -29,6 +29,13 @@ namespace Caelum
 {
     /** A flat cloud layer; drawn as a simple plane.
      *  Supports movement and variable cloud cover.
+     *  
+     *  There are significant incompatible difference between this and the
+     *  LayeredClouds from version 0.3. This implementation of clouds is
+     *  positioned in world space while the old implementation was a curved
+     *  plane moving with the camera. It is not possible to perfectly simulate
+     *  the older implementation.
+     *
      *  @note This is tighly integrated with LayeredCloud.cg and LayeredClouds.material.
      */
 	class CAELUM_EXPORT FlatCloudLayer
@@ -41,6 +48,7 @@ namespace Caelum
 		~FlatCloudLayer();
 
         /** Update function called each frame from above.
+         *  This can be reproduced with calls to other public functions.
          */
 	    void update (
                 Ogre::Real timePassed,
@@ -49,49 +57,68 @@ namespace Caelum
 		        const Ogre::ColourValue &fogColour,
 				const Ogre::ColourValue &sunSphereColour);
 
+        /// Advance cloud animation (the time part of FlatCloudLayer::update).
+        void advanceAnimation (Ogre::Real timePassed);
+
         /** Reset most tweak settings to their default values
          */
         void reset ();
 
 	private:
-        Ogre::Real mHeight;
-	    Ogre::Real mCloudCover;
-
 	    Ogre::Vector2 mCloudSpeed;
 	    Ogre::Vector2 mCloudMassOffset;
 	    Ogre::Vector2 mCloudDetailOffset;
 
-		/// Current cloud blend position; from 0 to mNoiseTextureNames.size()
-	    Ogre::Real mCloudBlendPos;
-        /// Current index in the set of textures.
-        /// Cached to avoid setting textures every frame.
-        int mCurrentTextureIndex;
-
-        /// Time required to blend two cloud shapes.
-	    Ogre::Real mCloudBlendTime;
-
-        std::vector<String> mNoiseTextureNames;
-
-        /// Lookup used for cloud coverage, @see setCloudCoverLookup.
-        std::auto_ptr<Ogre::Image> mCloudCoverLookup;
-
-	    Ogre::GpuProgramParametersSharedPtr getVpParams();
-	    Ogre::GpuProgramParametersSharedPtr getFpParams();
-
-        // Set various internal parameters:
+        // Set texture offsets.
+        // Animated every frame.
 	    void setCloudMassOffset(const Ogre::Vector2 &cloudMassOffset);
 	    void setCloudDetailOffset(const Ogre::Vector2 &cloudDetailOffset);
+
+    public:
+        /** Sets cloud movement speed.
+		 *  @param cloudSpeed Cloud movement speed.
+		 */
+		void setCloudSpeed (const Ogre::Vector2 &cloudSpeed);
+
+		/** Gets cloud movement speed.
+		 *  @param cloudSpeed Cloud movement speed.
+		 */
+        const Ogre::Vector2 getCloudSpeed () const { return mCloudSpeed; }
+
+    private:
+        Ogre::Vector3 mSunDirection; 
+        Ogre::ColourValue mSunLightColour; 
+        Ogre::ColourValue mSunSphereColour; 
+        Ogre::ColourValue mFogColour; 
+
+    public:
 	    void setSunDirection(const Ogre::Vector3 &sunDirection);
 	    void setSunLightColour(const Ogre::ColourValue &sunLightColour);
 		void setSunSphereColour(const Ogre::ColourValue &sunSphereColour);
 	    void setFogColour(const Ogre::ColourValue &fogColour);
+        const Ogre::Vector3 getSunDirection () const; 
+        const Ogre::ColourValue getSunLightColour () const; 
+        const Ogre::ColourValue getSunSphereColour () const; 
+        const Ogre::ColourValue getFogColour () const; 
 
     private:
+        /// Pointer to scene manager.
 	    Ogre::SceneManager *mSceneMgr;
 
         // Note: objects are destroyed in reverse order of declaration.
         // This means that objects must be ordered by dependency.
+
+        /// Cloned cloud material.
 	    OwnedMaterialPtr mMaterial;		
+
+    private:
+        /// Shortcut to VP parameters.
+	    Ogre::GpuProgramParametersSharedPtr getVpParams();
+
+        /// Shortcut to FP parameters.
+	    Ogre::GpuProgramParametersSharedPtr getFpParams();
+
+    private:
         OwnedMeshPtr mMesh;
 	    SceneNodePtr mNode;
 	    EntityPtr mEntity;
@@ -128,27 +155,17 @@ namespace Caelum
         inline int getMeshWidthSegments () const { return mMeshWidthSegments; }
         inline int getMeshHeightSegments () const { return mMeshHeightSegments; }
 
+    private:
+        /// Lookup used for cloud coverage, @see setCloudCoverLookup.
+        std::auto_ptr<Ogre::Image> mCloudCoverLookup;
+
+        /// Filename of mCloudCoverLookup
+        Ogre::String mCloudCoverLookupFileName;
+
+        /// Value passed to setCloudCover (before lookup).
+	    Ogre::Real mCloudCover;
+
     public:
-        /** Set the height of the cloud layer.
-         *  @param height In world units above the cloud root node.
-         */
-        void setHeight(Ogre::Real height);
-
-        /** Get the height of the cloud layer.
-         *  @return height In world units above the cloud root node.
-         */
-        Ogre::Real getHeight() const;
-
-        /** Sets cloud movement speed.
-		 *  @param cloudSpeed Cloud movement speed.
-		 */
-		void setCloudSpeed (const Ogre::Vector2 &cloudSpeed);
-
-		/** Gets cloud movement speed.
-		 *  @param cloudSpeed Cloud movement speed.
-		 */
-        const Ogre::Vector2 getCloudSpeed () const { return mCloudSpeed; }
-
 		/** Sets cloud cover, between 0 (completely clear) and 1 (completely covered)
 		 *  @param cloudCover Cloud cover between 0 and 1
 		 */
@@ -173,11 +190,47 @@ namespace Caelum
          */
 	    void setCloudCoverLookup (const Ogre::String& fileName);
 
+        /** Get the filename of the cloud cover lookup image.
+         *  This returns the value set by setCloudCoverLookup or an empty
+         *  string if disabled.
+         */
+        const Ogre::String getCloudCoverLookupFileName () const;
+
         /** Disable any cloud cover lookup.
          *  @see setCloudCoverLookup.
          */
         void disableCloudCoverLookup ();
 
+    private:
+        /// Height of this cloud layer; equal to node's y position.
+        Ogre::Real mHeight;
+
+    public:
+        /** Set the height of the cloud layer.
+         *  @param height In world units above the cloud root node.
+         */
+        void setHeight(Ogre::Real height);
+
+        /** Get the height of the cloud layer.
+         *  @return height In world units above the cloud root node.
+         */
+        Ogre::Real getHeight() const;
+
+    private:
+		/// Current cloud blend position; from 0 to mNoiseTextureNames.size()
+	    Ogre::Real mCloudBlendPos;
+
+        /// Current index in the set of textures.
+        /// Cached to avoid setting textures every frame.
+        int mCurrentTextureIndex;
+
+        /// Time required to blend two cloud shapes.
+	    Ogre::Real mCloudBlendTime;
+
+        /// Names of noise textures.
+        std::vector<String> mNoiseTextureNames;
+
+    public:
 	    /** Sets the time it takes to blend two cloud shaped together, in seconds.
          *  This will also reset the animation at the current time.
 		 *  @param value Cloud shape blend time in seconds
@@ -201,7 +254,6 @@ namespace Caelum
 
     private:
         Ogre::Real mCloudUVFactor;
-        Ogre::Real mHeightRedFactor;
 
     public:
         /** Cloud texture coordinates are multiplied with this.
@@ -212,6 +264,10 @@ namespace Caelum
         /// @see setCloudUVFactor
         inline Ogre::Real getCloudUVFactor () const { return mCloudUVFactor; }
 
+    private:
+        Ogre::Real mHeightRedFactor;
+
+    public:
         /** High-altitude clouds are tinted red in the evening.
          *  Higher values attenuate the effect.
          */
@@ -236,10 +292,14 @@ namespace Caelum
          */
         void setFadeDistances (Ogre::Real nearValue, Ogre::Real farValue);
 
+        /// Set only near fade distance (see setFadeDistances).
 	    void setNearFadeDist (const Ogre::Real value);
+        /// Get near fade distance (see setFadeDistances).
         Ogre::Real getNearFadeDist () const { return mNearFadeDist; }
 
+        /// Set only far fade distance (see setFadeDistances).
 	    void setFarFadeDist (const Ogre::Real value);
+        /// Get fade distance (see setFadeDistances).
         Ogre::Real getFarFadeDist () const { return mFarFadeDist; }
 
     public:

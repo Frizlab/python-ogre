@@ -57,7 +57,7 @@ namespace Hydrax{namespace Module
 
 	ProjectedGrid::ProjectedGrid(Hydrax *h, Noise::Noise *n, const Ogre::Plane &BasePlane, const MaterialManager::NormalMode& NormalMode)
 		: Module("ProjectedGrid" + _PG_getNormalModeString(NormalMode), 
-		         n, Mesh::Options(mOptions.Complexity, Size(0), _PG_getVertexTypeFromNormalMode(NormalMode)), NormalMode)
+		         n, Mesh::Options(256, Size(0), _PG_getVertexTypeFromNormalMode(NormalMode)), NormalMode)
 		, mHydrax(h)
 		, mVertices(0)
 		, mVerticesChoppyBuffer(0)
@@ -98,11 +98,12 @@ namespace Hydrax{namespace Module
 		// Size(0) -> Infinite mesh
 		mMeshOptions.MeshSize     = Size(0);
 		mMeshOptions.MeshStrength = Options.Strength;
+		mMeshOptions.MeshComplexity = Options.Complexity;
 
 		mHydrax->getMesh()->setOptions(mMeshOptions);
-		mHydrax->_setStrength(mOptions.Strength);
+		mHydrax->_setStrength(Options.Strength);
 
-		// If create() is called, change only the on-fly parameters
+		// Re-create geometry if it's needed
 		if (isCreated() && Options.Complexity != mOptions.Complexity)
 		{
 			remove();
@@ -119,7 +120,6 @@ namespace Hydrax{namespace Module
 			
 		    Ogre::String MaterialNameTmp = mHydrax->getMesh()->getMaterialName();
 		    mHydrax->getMesh()->remove();
-			mMeshOptions.MeshComplexity = Options.Complexity;
 		    mHydrax->getMesh()->setOptions(getMeshOptions());
 		    mHydrax->getMesh()->setMaterialName(MaterialNameTmp);
 		    mHydrax->getMesh()->create();
@@ -127,11 +127,11 @@ namespace Hydrax{namespace Module
 			// Force to recalculate the geometry on next frame
 			mLastPosition = Ogre::Vector3(0,0,0);
 			mLastOrientation = Ogre::Quaternion();
+
+			return;
 		}
-		else
-		{
-			mOptions = Options;
-		}
+
+		mOptions = Options;
 	}
 
 	void ProjectedGrid::create()
@@ -293,32 +293,25 @@ namespace Hydrax{namespace Module
 					for(int i = 0; i < mOptions.Complexity*mOptions.Complexity; i++)
 		            {
 			            Vertices[i] = mVerticesChoppyBuffer[i];
+						Vertices[i].y = -mBasePlane.d + mNoise->getValue(RenderingCameraPos.x + Vertices[i].x, RenderingCameraPos.z + Vertices[i].z)*mOptions.Strength;
 		            }
 				}
-
-				for(v=0; v<mOptions.Complexity; v++)
+				else
 				{
-					for(u=0; u<mOptions.Complexity; u++)
-					{	
+					for(int i = 0; i < mOptions.Complexity*mOptions.Complexity; i++)
+		            {
 						Vertices[i].y = -mBasePlane.d + mNoise->getValue(RenderingCameraPos.x + Vertices[i].x, RenderingCameraPos.z + Vertices[i].z)*mOptions.Strength;
-
-						i++;
-					}
+		            }
 				}
 			}
 			else if (getNormalMode() == MaterialManager::NM_RTT)
 			{
 				Mesh::POS_VERTEX* Vertices = static_cast<Mesh::POS_VERTEX*>(mVertices);
 
-				for(v=0; v<mOptions.Complexity; v++)
-				{
-					for(u=0; u<mOptions.Complexity; u++)
-					{	
-						Vertices[i].y = -mBasePlane.d + mNoise->getValue(RenderingCameraPos.x + Vertices[i].x, RenderingCameraPos.z + Vertices[i].z)*mOptions.Strength;
-					
-						i++;
-					}
-				}
+				for(int i = 0; i < mOptions.Complexity*mOptions.Complexity; i++)
+		        {
+				    Vertices[i].y = -mBasePlane.d + mNoise->getValue(RenderingCameraPos.x + Vertices[i].x, RenderingCameraPos.z + Vertices[i].z)*mOptions.Strength;
+		        }
 			}
 
 			// Smooth the heightdata

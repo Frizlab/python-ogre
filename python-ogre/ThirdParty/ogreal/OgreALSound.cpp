@@ -190,9 +190,12 @@ namespace OgreAL {
 
 		try
 		{
-			alDeleteBuffers(mNumBuffers, mBuffers);
-			CheckError(alGetError(), "Failed to delete Buffers, must still be in use.");
-			SoundManager::getSingleton()._removeBufferRef(mFileName);
+		  // If we have buffers to deallocate, do so.
+		  if(mBuffers != NULL) {
+		    alDeleteBuffers(mNumBuffers, mBuffers);
+		    CheckError(alGetError(), "Failed to delete Buffers, must still be in use.");
+		    SoundManager::getSingleton()._removeBufferRef(mFileName);
+		  }
 		}
 		catch(...)
 		{
@@ -360,14 +363,13 @@ namespace OgreAL {
 		// Don't interrupt a current fade
 		if(!isPlaying() && mFadeMode == FADE_NONE)
 		{
-			// This won't work as expected when the sound is attached to a node,
-			// so disallow it.
-			if(mParentNode)
-			{
-				Ogre::LogManager::getSingleton().logMessage("Cannot fade a Sound that is attached to a node");
-				return false;
-			}
-
+		  // Parented source restriction removed. I think what Casey was 
+		  // intending when blocking off this functionality was that, 
+		  // because mono sources attached to nodes are influenced by gain
+		  // drops and raises as a result of distance to the listener, the
+		  // fade-in and fade-out would not necessarily reach the maximum
+		  // gain set on the sound. There are still, however, legitimate
+		  // uses for this regardless.
 			mFadeMode = FADE_IN;
 			mFadeTime = fadeTime;
 			mRunning = 0.0;
@@ -384,14 +386,7 @@ namespace OgreAL {
 		// Don't interrupt a current fade
 		if(isPlaying() && mFadeMode == FADE_NONE)
 		{
-			// This won't work as expected when the sound is attached to a node,
-			// so disallow it.
-			if(mParentNode)
-			{
-				Ogre::LogManager::getSingleton().logMessage("Cannot fade a Sound that is attached to a node");
-				return false;
-			}
-
+		  // Parented source restriction removed. See fadeIn().
 			mFadeMode = FADE_OUT;
 			mFadeTime = fadeTime;
 			mRunning = 0.0;

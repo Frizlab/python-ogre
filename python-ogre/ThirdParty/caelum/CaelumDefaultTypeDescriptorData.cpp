@@ -59,7 +59,7 @@ namespace Caelum
         // Remember: delete 0 is a legal no-op.
         delete member;
         member = 0;
-    } 
+    }
 
     void CaelumDefaultTypeDescriptorData::unload ()
     {
@@ -331,22 +331,53 @@ namespace Caelum
         {
             std::auto_ptr<DefaultTypeDescriptor> td (new DefaultTypeDescriptor ());
 
+            // Height.
             td->add("height",
                     new AccesorPropertyDescriptor<Caelum::FlatCloudLayer, Real, Real, Real>(
                             &Caelum::FlatCloudLayer::getHeight,
                             &Caelum::FlatCloudLayer::setHeight));
+
+            // Coverage parameters.
             td->add("coverage",
                     new AccesorPropertyDescriptor<Caelum::FlatCloudLayer, Real, Real, Real>(
                             &Caelum::FlatCloudLayer::getCloudCover,
                             &Caelum::FlatCloudLayer::setCloudCover));
+            td->add("cloud_cover_lookup",
+                    new AccesorPropertyDescriptor<Caelum::FlatCloudLayer, String>(
+                            &Caelum::FlatCloudLayer::getCloudCoverLookupFileName,
+                            &Caelum::FlatCloudLayer::setCloudCoverLookup));
+
+            // Overwritten by CaelumSystem; included for completeness.
+            td->add("sun_direction",
+                    new AccesorPropertyDescriptor<Caelum::FlatCloudLayer, Vector3>(
+                            &Caelum::FlatCloudLayer::getSunDirection,
+                            &Caelum::FlatCloudLayer::setSunDirection));
+            td->add("sun_light_colour",
+                    new AccesorPropertyDescriptor<Caelum::FlatCloudLayer, ColourValue>(
+                            &Caelum::FlatCloudLayer::getSunLightColour,
+                            &Caelum::FlatCloudLayer::setSunLightColour));
+            td->add("sun_sphere_colour",
+                    new AccesorPropertyDescriptor<Caelum::FlatCloudLayer, ColourValue>(
+                            &Caelum::FlatCloudLayer::getSunSphereColour,
+                            &Caelum::FlatCloudLayer::setSunSphereColour));
+            td->add("fog_colour",
+                    new AccesorPropertyDescriptor<Caelum::FlatCloudLayer, ColourValue>(
+                            &Caelum::FlatCloudLayer::getFogColour,
+                            &Caelum::FlatCloudLayer::setFogColour));
+
+            // Moving noise textures.
             td->add("cloud_speed",
                     new AccesorPropertyDescriptor<Caelum::FlatCloudLayer, Vector2>(
                             &Caelum::FlatCloudLayer::getCloudSpeed,
                             &Caelum::FlatCloudLayer::setCloudSpeed)); 
+
+            // Blending time between noise textures.
             td->add("blend_time",
                     new AccesorPropertyDescriptor<Caelum::FlatCloudLayer, Real, Real, Real>(
                             &Caelum::FlatCloudLayer::getCloudBlendTime,
                             &Caelum::FlatCloudLayer::setCloudBlendTime));
+
+            // Mesh properties
             td->add("mesh_width",
                     new AccesorPropertyDescriptor<Caelum::FlatCloudLayer, Real, Real, Real>(
                             &Caelum::FlatCloudLayer::getMeshWidth,
@@ -363,6 +394,8 @@ namespace Caelum
                     new AccesorPropertyDescriptor<Caelum::FlatCloudLayer, int, int, int>(
                             &Caelum::FlatCloudLayer::getMeshHeightSegments,
                             &Caelum::FlatCloudLayer::setMeshHeightSegments));
+
+            // Misc hacks
             td->add("cloud_uv_factor",
                     new AccesorPropertyDescriptor<Caelum::FlatCloudLayer, Real, Real, Real>(
                             &Caelum::FlatCloudLayer::getCloudUVFactor,
@@ -371,6 +404,8 @@ namespace Caelum
                     new AccesorPropertyDescriptor<Caelum::FlatCloudLayer, Real, Real, Real>(
                             &Caelum::FlatCloudLayer::getHeightRedFactor,
                             &Caelum::FlatCloudLayer::setHeightRedFactor));
+
+            // Fading
             td->add("near_fade_dist",
                     new AccesorPropertyDescriptor<Caelum::FlatCloudLayer, Real, Real, Real>(
                             &Caelum::FlatCloudLayer::getNearFadeDist,

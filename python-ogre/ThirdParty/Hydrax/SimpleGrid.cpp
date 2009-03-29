@@ -49,9 +49,10 @@ namespace Hydrax{namespace Module
 
 	SimpleGrid::SimpleGrid(Hydrax *h, Noise::Noise *n, const MaterialManager::NormalMode& NormalMode)
 		: Module("SimpleGrid" + _SG_getNormalModeString(NormalMode),
-		         n, Mesh::Options(mOptions.Complexity, Size(mOptions.MeshSize), _SG_getVertexTypeFromNormalMode(NormalMode)), NormalMode)
+		         n, Mesh::Options(256, Size(100), _SG_getVertexTypeFromNormalMode(NormalMode)), NormalMode)
 		, mHydrax(h)
 		, mVertices(0)
+		, mVerticesChoppyBuffer(0)
 	{
 	}
 
@@ -60,6 +61,7 @@ namespace Hydrax{namespace Module
 		         n, Mesh::Options(Options.Complexity, Size(Options.MeshSize), _SG_getVertexTypeFromNormalMode(NormalMode)), NormalMode)
 		, mHydrax(h)
 		, mVertices(0)
+		, mVerticesChoppyBuffer(0)
 	{
 		setOptions(Options);
 	}
@@ -75,13 +77,14 @@ namespace Hydrax{namespace Module
 	{
 		mMeshOptions.MeshSize     = Options.MeshSize;
 		mMeshOptions.MeshStrength = Options.Strength;
+		mMeshOptions.MeshComplexity = Options.Complexity;
 
 		mHydrax->getMesh()->setOptions(mMeshOptions);
-		mHydrax->_setStrength(mOptions.Strength);
+		mHydrax->_setStrength(Options.Strength);
 
 		if (isCreated())
 		{
-			if (Options.Complexity != mOptions.Complexity)
+			if (Options.Complexity != mOptions.Complexity || Options.ChoppyWaves != Options.ChoppyWaves)
 			{
 				remove();
 				mOptions = Options;
@@ -97,7 +100,7 @@ namespace Hydrax{namespace Module
 
 				Ogre::String MaterialNameTmp = mHydrax->getMesh()->getMaterialName();
 				mHydrax->getMesh()->remove();
-				mMeshOptions.MeshComplexity = Options.Complexity;
+				
 				mHydrax->getMesh()->setOptions(getMeshOptions());
 				mHydrax->getMesh()->setMaterialName(MaterialNameTmp);
 				mHydrax->getMesh()->create();
@@ -119,6 +122,14 @@ namespace Hydrax{namespace Module
 						Vertices[v*mOptions.Complexity + u].x  = (static_cast<float>(v)/(mOptions.Complexity-1)) * mOptions.MeshSize.Width;
 						Vertices[v*mOptions.Complexity + u].z  = (static_cast<float>(u)/(mOptions.Complexity-1)) * mOptions.MeshSize.Height;
 					}
+				}
+
+				if (mOptions.ChoppyWaves && mVerticesChoppyBuffer)
+			    {
+				    for(int i = 0; i < mOptions.Complexity*mOptions.Complexity; i++)
+				    {
+					    mVerticesChoppyBuffer[i] = Vertices[i];
+				    }
 				}
 			}
 			else if (getNormalMode() == MaterialManager::NM_RTT)
@@ -165,6 +176,16 @@ namespace Hydrax{namespace Module
 					Vertices[v*mOptions.Complexity + u].nz = 0;
 				}
 			}
+
+			if (mOptions.ChoppyWaves)
+			{
+				mVerticesChoppyBuffer = new Mesh::POS_NORM_VERTEX[mOptions.Complexity*mOptions.Complexity];
+
+				for(int i = 0; i < mOptions.Complexity*mOptions.Complexity; i++)
+				{
+					mVerticesChoppyBuffer[i] = Vertices[i];
+				}
+			}
 		}
 		else if (getNormalMode() == MaterialManager::NM_RTT)
 		{
@@ -203,6 +224,11 @@ namespace Hydrax{namespace Module
 			{
 				delete [] static_cast<Mesh::POS_VERTEX*>(mVertices);
 			}
+		}
+
+		if (mVerticesChoppyBuffer)
+		{
+			delete [] mVerticesChoppyBuffer;
 		}
 	}
 
@@ -247,7 +273,6 @@ namespace Hydrax{namespace Module
 
 		// Update heigths
 		int i = 0, v, u;
-		float v_;
 
 		if (getNormalMode() == MaterialManager::NM_VERTEX)
 		{
@@ -255,26 +280,17 @@ namespace Hydrax{namespace Module
 
 			if (mOptions.ChoppyWaves)
 			{
-				for(v=1; v<(mOptions.Complexity-1); v++)
+				for(int i = 0; i < mOptions.Complexity*mOptions.Complexity; i++)
 				{
-					for(u=1; u<(mOptions.Complexity-1); u++)
-					{
-						Vertices[v*mOptions.Complexity + u].x = (static_cast<float>(v)/(mOptions.Complexity-1)) * mOptions.MeshSize.Width;
-						Vertices[v*mOptions.Complexity + u].z = (static_cast<float>(u)/(mOptions.Complexity-1)) * mOptions.MeshSize.Height;
-					}
+					Vertices[i] = mVerticesChoppyBuffer[i];
+					Vertices[i].y = mNoise->getValue(Vertices[i].x, Vertices[i].z) * mOptions.Strength;
 				}
 			}
-
-			for(v=0; v<mOptions.Complexity; v++)
+			else
 			{
-				v_ = (static_cast<float>(v)/(mOptions.Complexity-1)) * mOptions.MeshSize.Width;
-
-				for(u=0; u<mOptions.Complexity; u++)
+			    for(int i = 0; i < mOptions.Complexity*mOptions.Complexity; i++)
 				{
-					Vertices[i].y  = 
-						mNoise->getValue(v_,
-						(static_cast<float>(u)/(mOptions.Complexity-1)) * mOptions.MeshSize.Height) * mOptions.Strength;
-					i++;
+					Vertices[i].y = mNoise->getValue(Vertices[i].x, Vertices[i].z) * mOptions.Strength;
 				}
 			}
 		}
@@ -284,25 +300,20 @@ namespace Hydrax{namespace Module
 
 			// For object-space to world-space conversion
 			// RTT normals calculation needs world-space coords
-			Ogre::Vector3 p;
+			Ogre::Vector3 p = Ogre::Vector3(0,0,0);
 		    Ogre::Matrix4 mWorldMatrix;
 		    mHydrax->getMesh()->getEntity()->getParentSceneNode()->getWorldTransforms(&mWorldMatrix);
 
-			for(v=0; v<mOptions.Complexity; v++)
+			for(int i = 0; i < mOptions.Complexity*mOptions.Complexity; i++)
 			{
-				v_ = (static_cast<float>(v)/(mOptions.Complexity-1)) * mOptions.MeshSize.Width;
+				p.x = Vertices[i].x;
+				p.y = 0;
+				p.z = Vertices[i].z;
 
-				for(u=0; u<mOptions.Complexity; u++)
-				{
-					p = Ogre::Vector3(v_,0,(static_cast<float>(u)/(mOptions.Complexity-1)) * mOptions.MeshSize.Height);
-					
-					// Calculate the world-space position
-					mWorldMatrix.transformAffine(p);
+				// Calculate the world-space position
+				mWorldMatrix.transformAffine(p);
 
-					Vertices[i].y  = 
-						mNoise->getValue(p.x, p.z) * mOptions.Strength;
-					i++;
-				}
+				Vertices[i].y = mNoise->getValue(p.x, p.z) * mOptions.Strength;
 			}
 		}
 

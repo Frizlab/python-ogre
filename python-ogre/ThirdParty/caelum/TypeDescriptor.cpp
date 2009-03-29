@@ -30,6 +30,12 @@ namespace Caelum
     DefaultTypeDescriptor::DefaultTypeDescriptor ()
     {
     }
+    
+    DefaultTypeDescriptor::~DefaultTypeDescriptor () {
+        for (TypeDescriptor::PropertyMap::const_iterator it = mPropertyMap.begin(), end = mPropertyMap.end(); it != end; ++it) {
+            delete it->second;
+        }
+    }
 
     const ValuePropertyDescriptor* DefaultTypeDescriptor::getPropertyDescriptor (const Ogre::String& name) const
     {
