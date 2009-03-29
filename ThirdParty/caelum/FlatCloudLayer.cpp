@@ -170,6 +170,11 @@ namespace Caelum
 		setHeightRedFactor (100000);
 
         setFadeDistances (10000, 140000);
+
+        setSunDirection (Ogre::Vector3::UNIT_Y);
+        setFogColour (Ogre::ColourValue::Black);
+        setSunLightColour (Ogre::ColourValue::White);
+        setSunSphereColour (Ogre::ColourValue::White);
     }
 
 	void FlatCloudLayer::update (
@@ -179,21 +184,27 @@ namespace Caelum
 			const Ogre::ColourValue &fogColour,
 			const Ogre::ColourValue &sunSphereColour)
 	{
-	    // Set sun parameters.
-		setSunDirection(sunDirection);
-		setSunLightColour(sunLightColour);
-		setSunSphereColour(sunSphereColour);
-		setFogColour(fogColour);
+        // Advance animation
+        advanceAnimation (timePassed);
 
+	    // Set parameters.
+		setSunDirection (sunDirection);
+		setSunLightColour (sunLightColour);
+		setSunSphereColour (sunSphereColour);
+		setFogColour (fogColour);
+
+        this->_ensureGeometry();
+	}	
+
+	void FlatCloudLayer::advanceAnimation (Ogre::Real timePassed)
+    {
 	    // Move clouds.
 		setCloudMassOffset(mCloudMassOffset + timePassed * mCloudSpeed);
 		setCloudDetailOffset(mCloudDetailOffset - timePassed * mCloudSpeed);
 
 		// Animate cloud blending.
         setCloudBlendPos (getCloudBlendPos () + timePassed / mCloudBlendTime);
-
-        this->_ensureGeometry();
-	}	
+    }
 
 	Ogre::GpuProgramParametersSharedPtr FlatCloudLayer::getVpParams() {
 		return mMaterial->getBestTechnique()->getPass(0)->getVertexProgramParameters();
@@ -207,6 +218,17 @@ namespace Caelum
         mCloudCoverLookup.reset(0);
         mCloudCoverLookup.reset(new Ogre::Image());
         mCloudCoverLookup->load(fileName, RESOURCE_GROUP_NAME);
+
+        mCloudCoverLookupFileName = fileName;
+    }
+
+    void FlatCloudLayer::disableCloudCoverLookup () {
+        mCloudCoverLookup.reset (0);
+        mCloudCoverLookupFileName.clear ();
+    }
+
+    const Ogre::String FlatCloudLayer::getCloudCoverLookupFileName () const {
+        return mCloudCoverLookupFileName;
     }
 
 	void FlatCloudLayer::setCloudCover(const Ogre::Real cloudCover) {
@@ -269,26 +291,46 @@ namespace Caelum
         return mCloudBlendPos;
     }
 
-	void FlatCloudLayer::setCloudSpeed(const Ogre::Vector2 &cloudSpeed) {
+	void FlatCloudLayer::setCloudSpeed (const Ogre::Vector2 &cloudSpeed) {
 		mCloudSpeed = cloudSpeed;
 	}
 
-	void FlatCloudLayer::setSunDirection(const Ogre::Vector3 &sunDirection) {
+	void FlatCloudLayer::setSunDirection (const Ogre::Vector3 &sunDirection) {
+        mSunDirection = sunDirection;
 		getVpParams()->setNamedConstant("sunDirection", sunDirection);
 		getFpParams()->setNamedConstant("sunDirection", sunDirection);
 	}
 
-	void FlatCloudLayer::setSunLightColour(const Ogre::ColourValue &sunLightColour) {
-		getFpParams()->setNamedConstant("sunLightColour", sunLightColour);
+	void FlatCloudLayer::setSunLightColour (const Ogre::ColourValue &sunLightColour) {
+		getFpParams()->setNamedConstant("sunLightColour",
+                mSunLightColour = sunLightColour);
 	}
 
-	void FlatCloudLayer::setSunSphereColour(const Ogre::ColourValue &sunSphereColour) {
-		getFpParams()->setNamedConstant("sunSphereColour", sunSphereColour);
+	void FlatCloudLayer::setSunSphereColour (const Ogre::ColourValue &sunSphereColour) {
+		getFpParams()->setNamedConstant("sunSphereColour",
+                mSunSphereColour = sunSphereColour);
 	}
 
-	void FlatCloudLayer::setFogColour(const Ogre::ColourValue &fogColour) {
-		getFpParams()->setNamedConstant("fogColour", fogColour);
+	void FlatCloudLayer::setFogColour (const Ogre::ColourValue &fogColour) {
+		getFpParams()->setNamedConstant("fogColour",
+                mFogColour = fogColour);
 	}
+
+	const Ogre::Vector3 FlatCloudLayer::getSunDirection () const {
+		return mSunDirection;
+	}
+
+	const Ogre::ColourValue FlatCloudLayer::getSunLightColour () const {
+		return mSunLightColour;
+	}
+
+	const Ogre::ColourValue FlatCloudLayer::getSunSphereColour () const {
+		return mSunSphereColour;
+	}
+
+    const Ogre::ColourValue FlatCloudLayer::getFogColour () const {
+        return mFogColour;
+    }
 
 	void FlatCloudLayer::setHeight(Ogre::Real height) {
 		mNode->setPosition(Ogre::Vector3(0, height, 0));

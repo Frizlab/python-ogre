@@ -110,6 +110,7 @@ namespace OgreAL {
 			mLengthInSeconds = ov_time_total(&mOggStream, -1);
 
 			generateBuffers();
+			mBuffersLoaded = loadBuffers();
 		}
 		catch(Ogre::Exception e)
 		{

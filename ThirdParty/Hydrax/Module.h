@@ -103,12 +103,12 @@ namespace Hydrax{ namespace Module
 			return mCreated;
 		}
 
-		/** Create creametry in module(If special geometry is needed)
+		/** Create geometry in module(If special geometry is needed)
 		    @param mMesh Mesh
 			@return false if it must be create by default Mesh::_createGeometry() fnc.
 			@remarks Override it if any especial geometry mesh creation is needed.
 		 */
-		inline virtual bool _createGeometry(Mesh *mMesh) const
+		inline virtual const bool _createGeometry(Mesh *mMesh) const
 		{
 			return false;
 		}

@@ -442,15 +442,16 @@ namespace OgreAL {
 		** string we know that we've found the double NULL that terminates the
 		** list and we can stop there.
 		*/
-		while(*deviceList != NULL)
+		while(*deviceList != '\0')
 		{
 			try
 			{
 				ALCdevice *device = alcOpenDevice(deviceList);
-				CheckError(alcGetError(device), "Unable to open device");
 
 				if(device)
 				{
+				  CheckError(alcGetError(device), "Unable to open device");
+
 					// Device seems to be valid
 					ALCcontext *context = alcCreateContext(device, NULL);
 					CheckError(alcGetError(device), "Unable to create context");
@@ -466,6 +467,10 @@ namespace OgreAL {
 						CheckError(alcGetError(device), "Unable to destroy context");
 					}
 					alcCloseDevice(device);
+				}else{
+				  // There is a chance that because the device could not be
+				  // opened, the error flag was set, clear it.
+				  alcGetError(device);
 				}
 			}
 			catch(...)
@@ -683,7 +688,7 @@ namespace OgreAL {
 		CheckError(alcGetError(NULL), "Failed to retrieve version info");
 		alcGetIntegerv(NULL, ALC_MINOR_VERSION, sizeof(mMinorVersion), &mMinorVersion);
 		CheckError(alcGetError(NULL), "Failed to retrieve version info");
-
+		
 		Ogre::LogManager::getSingleton().logMessage("OpenAL Version: " +
 			Ogre::StringConverter::toString(mMajorVersion) + "." +
 			Ogre::StringConverter::toString(mMinorVersion));

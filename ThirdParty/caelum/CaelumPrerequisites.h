@@ -31,25 +31,25 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include <memory>
 
 // Define the dll export qualifier if compiling for Windows
-/*#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	#ifdef CAELUM_LIB
-		#define CAELUM_EXPORT __declspec (dllexport)
-	#else
-		#ifdef __MINGW32__
-			#define CAELUM_EXPORT
-		#else
-			#define CAELUM_EXPORT __declspec (dllimport)
-		#endif
-	#endif
-#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-	#define CAELUM_EXPORT __attribute__ ((visibility("default")))
-#else */
+// #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+// 	#ifdef CAELUM_LIB
+// 		#define CAELUM_EXPORT __declspec (dllexport)
+// 	#else
+// 		#ifdef __MINGW32__
+// 			#define CAELUM_EXPORT
+// 		#else
+// 			#define CAELUM_EXPORT __declspec (dllimport)
+// 		#endif
+// 	#endif
+// #elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
+// 	#define CAELUM_EXPORT __attribute__ ((visibility("default")))
+// #else
 	#define CAELUM_EXPORT
-//#endif
+// #endif
 
 // Define the version code
 #define CAELUM_VERSION_MAIN 0
-#define CAELUM_VERSION_SEC 4
+#define CAELUM_VERSION_SEC 5
 #define CAELUM_VERSION_TER 0
 #define CAELUM_VERSION = (CAELUM_VERSION_MAIN << 16) | (CAELUM_VERSION_SEC << 8) | CAELUM_VERSION_TER
 

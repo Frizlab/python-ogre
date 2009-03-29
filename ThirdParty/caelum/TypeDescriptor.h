@@ -48,6 +48,8 @@ namespace Caelum
     class CAELUM_EXPORT TypeDescriptor
     {
     public:
+        virtual ~TypeDescriptor() {};
+
         typedef std::map<String, const ValuePropertyDescriptor*> PropertyMap;
 
         /** Get a property descriptor; or null if not available.
@@ -81,6 +83,8 @@ namespace Caelum
     class CAELUM_EXPORT ValuePropertyDescriptor
     {
     public:
+        virtual ~ValuePropertyDescriptor() {};
+
         /** If the value of the property can be read (true means write-only).
          *
          *  This is false for write-only properties.
@@ -201,6 +205,7 @@ namespace Caelum
     {
     public:
         DefaultTypeDescriptor ();
+        virtual ~DefaultTypeDescriptor ();
 
         /** Direct access to the internal property map.
          *  Get the property map used to implement this type descriptor.
@@ -209,7 +214,11 @@ namespace Caelum
          */
         inline PropertyMap& getPropertyMap () { return mPropertyMap; }
 
+        /// Add a property. Type descriptor takes ownership.
         void add (const Ogre::String& name, const ValuePropertyDescriptor* descriptor);
+
+        /// Clear the property map; delete all property descriptors.
+        void clear ();
 
         /// @copydoc TypeDescriptor::getPropertyDescriptor
         virtual const ValuePropertyDescriptor* getPropertyDescriptor (const Ogre::String& name) const;
@@ -221,6 +230,8 @@ namespace Caelum
         virtual const PropertyMap getFullPropertyMap () const;
 
     private:
+        void deleteAllPropertyDescriptors ();
+
         PropertyMap mPropertyMap;
     };
 

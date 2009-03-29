@@ -118,20 +118,27 @@ namespace OgreAL {
 			mLengthInSeconds = (float)mDataSize / ((float)mBufferSize * 4);
 
 			generateBuffers();
+			mBuffersLoaded = loadBuffers();
 		}
 		catch(Ogre::Exception e)
-		{
-			for(int i = 0; i < mNumBuffers; i++)
+		  {
+		    // If we have gone so far as to load the buffers, unload them.
+		    if(mBuffers != NULL) {
+		      for(int i = 0; i < mNumBuffers; i++)
 			{
-				if (mBuffers[i] && alIsBuffer(mBuffers[i]) == AL_TRUE)
-				{
-					alDeleteBuffers(1, &mBuffers[i]);
-					CheckError(alGetError(), "Failed to delete Buffer");
-				}
+			  if (mBuffers[i] && alIsBuffer(mBuffers[i]) == AL_TRUE)
+			    {
+			      alDeleteBuffers(1, &mBuffers[i]);
+			      CheckError(alGetError(), "Failed to delete Buffer");
+			    }
 			}
+		    }
 
-			throw (e);
-		}
+		    // Prevent the ~Sound() destructor from double-freeing.
+		    mBuffers = NULL;
+		    // Propagate.
+		    throw (e);
+		  }
 	}
 
 	WavSound::~WavSound()
