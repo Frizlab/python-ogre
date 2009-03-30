@@ -27,6 +27,11 @@ clean:
 	-find . -name '*.py[co]' | xargs rm -f
 	dh_clean
 
+#test:
+#	patch -p1 < pyplusplus-unittest.patch
+#	python unittests/test_all.py
+
+
 install: build $(PYVERS:%=install-python%) install-shared
 
 install-python%:
