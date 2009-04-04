@@ -112,3 +112,5 @@ Nov 21 2007:  Major change to use Ogre.h and OgreStableHeaders.h, and then add m
 #include "OgreScriptParser.h"
 #include "OgreScriptTranslator.h"
 #include "OgreMaterial.h"
+#include "OgreString.h"
+#include "OgreMath.h"

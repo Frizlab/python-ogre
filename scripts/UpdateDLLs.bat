@@ -20,12 +20,12 @@ set nxogre=%root%\NxOgre\NxOgre\lib
 set newton=%root%\NewtonSDK\sdk\dll
 set ogreode=%root%\ogreaddons\ogreode
 set physx="c:\program files\NVIDIA Corporation\NVIDIA PhysX SDK\v2.8.1\bin\win32"
-set theora=%root%\ogreaddons\videoplugin\TheoraVideo\bin\Release
+set theora=%root%\ogrevideo\TheoraVideoPlugin\bin\Release
 set ffmpeg=%root%\python-ogre\thirdparty\extra
 set naviextra=%root%\navi\Dependencies\win32\awesomium\bin\release
 set navi=%root%\navi\navi\lib
-set boost=%root%\boost_1_37_0\bin.v2\libs\python\build\msvc-9.0\release\threading-multi
-set boostlib=%boost%\boost_python-vc90-mt-1_37.dll
+set boost=%root%\boost_1_38_0\bin.v2\libs\python\build\msvc-9.0\release\threading-multi
+set boostlib=%boost%\boost_python-vc90-mt-1_38.dll
 set particleuniverse=%root%\ogre\lib
 
 set ogreal=%root%\OgreAL\lib\Release

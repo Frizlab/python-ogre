@@ -25,7 +25,7 @@ class CameraTrackApplication(sf.Application):
         
 
         plane = ogre.Plane()
-        plane.normal = ogre.Vector3.UNIT_Y
+        plane.normal = ogre.Vector3().UNIT_Y
         plane.d = 200
         mm = ogre.MeshManager.getSingleton()
         mm.createPlane('FloorPlane', 'General', plane, 200000.0, 200000.0,

@@ -24,7 +24,7 @@ if __name__ == '__main__':
                         'ogre.physics.OgreNewt', 'ogre.physics.Opcode',
                         'ogre.physics.PhysX','ogre.physics.NxOgre',
                         'ogre.physics.bullet','ogre.physics.OgreBulletC', 'ogre.physics.OgreBulletD',
-                        'ogre.addons.theora', 'ogre.addons.plib',
+                        'ogre.addons.ogrevideo', 'ogre.addons.plib',
                         'ogre.addons.ogreforests', 'ogre.addons.et', 'ogre.addons.caelum',
                         'ogre.addons.noise', 
                         'ogre.addons.particleuniverse', 'ogre.addons.cadunetree',

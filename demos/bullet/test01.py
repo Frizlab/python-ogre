@@ -9,36 +9,46 @@ import PythonOgreConfig
 
 import ogre.renderer.OGRE as ogre
 import ogre.physics.bullet as bullet
-t = bullet.btTransform()
-ms = bullet.btDefaultMotionState (t)
-s = bullet.btBoxShape(bullet.btVector3(10,10,10))
-body = bullet.btRigidBody(1, ms, s)
-print body
+m_clock=bullet.btClock()
 
+def getDeltaTimeMicroseconds() :
+		dt = m_clock.getTimeMicroseconds()
+		m_clock.reset()
+		return dt
+		
+# t = bullet.btTransform()
+# ms = bullet.btDefaultMotionState (t)
+# s = bullet.btBoxShape(bullet.btVector3(10,10,10))
+# body = bullet.btRigidBody(1, ms, s)
+# print body
 
-collisionConfiguration = bullet.btDefaultCollisionConfiguration()
-dispatcher = bullet.btCollisionDispatcher (collisionConfiguration)
+# collisionConfiguration = bullet.btDefaultCollisionConfiguration()
 
-worldAabbMin = bullet.btVector3(-1000,-1000,-1000)
-worldAabbMax = bullet.btVector3(1000,1000,1000)
-maxProxies = 32766
+collisionConfiguration = bullet.get_btDefaultCollisionConfiguration()
+dispatcher = bullet.get_btCollisionDispatcher1 (collisionConfiguration)
 
-broadphase = bullet.btAxisSweep3(worldAabbMin, worldAabbMax, maxProxies)
+# worldAabbMin = bullet.btVector3(-1000,-1000,-1000)
+# worldAabbMax = bullet.btVector3(1000,1000,1000)
+# maxProxies = 32766
+# broadphase = bullet.btAxisSweep3(worldAabbMin, worldAabbMax, maxProxies)
+# solver = bullet.btSequentialImpulseConstraintSolver()
 
+broadphase = bullet.btDbvtBroadphase()
 solver = bullet.btSequentialImpulseConstraintSolver()
 
 world = bullet.btDiscreteDynamicsWorld(dispatcher, broadphase , solver, collisionConfiguration)
-world.getDispatchInfo().m_enableSPU = True
 world.setGravity(bullet.btVector3(0,-10,0))
+world.getDispatchInfo().m_enableSPU = True
 
-print world
-print dir(world)
+print "WORLD:=", world
+
 print solver
 print broadphase
 print dispatcher
 print collisionConfiguration 
 for x in range (30):        
     world.stepSimulation( x * 1/30)
+    print getDeltaTimeMicroseconds()
     
 world.stepSimulation(0)
 world.stepSimulation(-0.333)
@@ -79,13 +89,21 @@ shape=bullet.btSphereShape(1)
 shape.calculateLocalInertia(mass, fallInertia)
 print "Creating motionState"
 motionState=OgreMotionState(bullet.btTransform(bullet.btQuaternion(0, 0, 0, 1), bullet.btVector3(0, 50, 0))) 
+print "1"
 construct = bullet.btRigidBody.btRigidBodyConstructionInfo(mass, motionState, shape, fallInertia)
+print "1"
 Object=bullet.btRigidBody(construct) # ...this should work in my eyes 
+print dir (Object)
+print "1"
 world.addRigidBody(Object)
+print "1"
 
 for x in range (90):        
     world.stepSimulation( x * 1/30)
-
+    
+    print "OBJECT:",
+    print Object.getAabb(bullet.btVector3(0,0,0), bullet.btVector3(10,10,10))
+    print Object.getMotionState
     pos = Object.getMotionState().Position
     print x, "height: " + str(pos.y)
 

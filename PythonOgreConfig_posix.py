@@ -16,6 +16,8 @@ LOCAL_INCLUDE = os.path.join(ROOT_DIR, 'usr/include')
 PATH_Boost = os.path.join(LOCAL_INCLUDE, 'boost-1_36')
 ## Path to your boost_pythonxxxx lib file
 PATH_LIB_Boost = LOCAL_LIB
+PATH_LIB_Thread_STATIC = LOCAL_LIB
+PATH_LIB_date_time_STATIC = LOCAL_LIB
 ## and the name of the boost python library
 LIB_Boost = 'libboost_python-gcc42-mt-1_36'
 
@@ -155,6 +157,7 @@ PATH_LIB_mygui = os.path.join(PATH_mygui, 'MyGUIEngine','lib','Release')
 PATH_LIB_canvas = os.path.join(PATH_canvas )
 PATH_LIB_pcz = os.path.join(PATH_LIB_Ogre_OgreMain, 'OGRE')
 PATH_LIB_plsm2 = PATH_plsm2
+PATH_LIB_OPENAL=  PATH_OPENAL ## ????????????????
 
 
 PATH_INCLUDE_Ogre=          os.path.join(LOCAL_INCLUDE,'OGRE')  # os.path.join(PATH_Ogre,'OgreMain/include') 

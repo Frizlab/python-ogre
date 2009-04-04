@@ -53,7 +53,7 @@ def get_ccflags(cls):
         CCFLAGS += ' /DBOOST_PYTHON_MAX_ARITY=19 /DBOOST_PYTHON_NO_PY_SIGNATURES ' 
         CCFLAGS += '  /nologo -Zm200 '
         CCFLAGS += ' /W3 /wd4675' # warning level  -Zc:wchar_t 
-        CCFLAGS += ' /TP /MD /Zc:forScope /EHs /c /Ox /Ob2 /Oi /Ot /Oy /GS- /GR '
+        CCFLAGS += ' /TP /MD /Zc:forScope /EHs /c  /Ob2 /Oi /O2 /Ot /Oy /GS- /GR ' #/Ox
     elif os.name =='posix':
         if os.sys.platform <> 'darwin':
             CCFLAGS = ' `pkg-config --cflags OGRE` '        ## needs to change I think :)
@@ -151,7 +151,7 @@ del temp_env
 for name, cls in environment.projects.items():
     ##if name.active:
     if name in tobuild:
-        log ("Building " + name)
+        log ("SCONS: Building " + name)
         
         ## setup some defaults etc
         cls._source = cls.generated_dir
@@ -160,9 +160,6 @@ for name, cls in environment.projects.items():
         
         ## Note the change -- bug in scons means you have to set env seperately
         _env = Environment(ENV = os.environ)
-        
-        print os.environ['PATH']
-        print _env['ENV']
         
         if environment.rpath:
             _env.Append(RPATH=environment.rpath)

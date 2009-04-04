@@ -62,5 +62,20 @@ pointer = mDs.getPtr ()
 for i in range ( requiredSize):
     pointer[i] = random.randint ( 0, 255 )
 img=ogre.Image()
-img.loadRawData(mDs, 240, 240, 8, ogre.PixelFormat.PF_BYTE_BGR)
+img.loadRawData(mDs, width, height, depth, ogre.PixelFormat.PF_BYTE_BGR)
+
+root = ogre.Root ("plugins.cfg")
+
+# img2=ogre.Image()
+# img2.load ('../../media/materials/textures/smoke.png', 'General')
+# print img2
+
+f= file('../../media/materials/textures/smoke.png', 'rb')
+MatString = f.read()
+f.close()
+memDataStream = ogre.MemoryDataStream ( "MyBuffer", len (MatString) )
+memDataStream.setData ( MatString )
+img2=ogre.Image()
+img2.load (memDataStream)
+
 

@@ -120,6 +120,9 @@ def ManualExclude ( mb ):
             ,'::btSequentialImpulseConstraintSolver::resolveSplitPenetrationImpulseCacheFriendly'       
             
             ,'::btCollisionShape::getName'
+            
+            # new in .74
+            ,'::btSliderConstraint::testLinLimits2'
             ]
     for e in excludes:
         print "excluding function", e
@@ -145,29 +148,74 @@ def ManualExclude ( mb ):
             ,'::btAlignedAllocator< unsigned short, 16u >'
             ,'::btAlignedAllocator< unsigned int, 16u >'
             ,'::btAlignedAllocator< void*, 16u >'
+            ,'::btAlignedAllocator< btActionInterface*, 16u >'
             ,'::btAlignedObjectArray< void* >'
             ,'::btAlignedObjectArray< btMultiSapBroadphase::btBridgeProxy* >'
             ,'::btAlignedObjectArray< btMultiSapBroadphase::btMultiSapProxy* >'
             ,'::btRaycastVehicle'
             ,'::btAlignedAllocator< btRaycastVehicle*, 16u >'
+            
+            ,'::btThreadSupportInterface'
+            
+# #             ## Alignement issues !!!
+# #             ,'::btAxisSweep3'  
+# #             ,'::btAxisSweep3Internal< unsigned int >'
+# #             ,'::btAxisSweep3Internal< unsigned short >'
+# #             ,'::btBU_Simplex1to4'
+# #             ,'::btBoxShape'
+# # #             ,'::btBroadphasePair'
+# #             ,'::btBroadphaseProxy'
+# #             ,'::btBvhSubtreeInfo'
+# #             ,'::btBvhTriangleMeshShape'
+# #             ,'::btCapsuleShape'
+# #             ,'::btCapsuleShapeX'
+# #             ,'::btCapsuleShapeY'
+# #             ,'::btCapsuleShapeZ'
+# #             ,'::btCollisionDispatcher'
+# #             ,'::btCollisionObject'
+# #             ,'::btCollisionWorld'
+# #             ,'::btCompoundShape'
+# #             ,'::btCompoundShapeChild'
+# #             ,'::btConeShape'
+# #             ,'::btConeShapeX'
+# #             ,'::btConeShapeY'
+# #             ,'::btConeShapeZ'
+# #             ,'::btConeTwistConstraint'
+# #             ,'::btConstraintPersistentData'
+# #             ,'::btContinuousDynamicsWorld'
+# #             ,'::btConvexHullShape'
+# #             ,'::btConvexSeparatingDistanceUtil'
             ]
             
 
     for e in excludes:
-        print "excluding class", e
-        global_ns.class_(e).exclude()
-        
+      try:   
+         global_ns.class_(e).exclude()
+         print "Excluded class", e
+      except:
+         print "WARNING: Unable to exclude", e    
+              
+#     for c in global_ns.classes():
+#       if c.name.startswith ('btAligned'):
+#          c.exclude()
+             
     excludes = ['::btPolyhedralConvexShape::m_optionalHull'  ## needs Hull from Extras
                 ,'::btRaycastVehicle::m_wheelInfo' ## TOFIX -- might be a bullet issue with wheels
             ]
     for e in excludes:
+      try:
         global_ns.variable(e).exclude()
+      except:
+         print "WARNING: Unable to exclude variable ", e        
     
         
     excludes = [ '::btAlignedObjectArray< btCharacterControllerInterface* >::operator[]']
     for e in excludes:
-        print "excluding operator",e
+      try:
         global_ns.operators(e).exclude()
+        print "Excluded operator",e
+      except:
+         print "WARNING: Unable to operator", e         
         
     # an Operator that won't compile
     for c in global_ns.classes():

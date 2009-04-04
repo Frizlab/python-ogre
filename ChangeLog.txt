@@ -1,3 +1,18 @@
+April 2 2009: Release 1.6.1 rxxxx
+=================================
+
+Python 2.6 is included in this build (along with 2.54)
+
+Fix: Bullet wrapper for Windows -- incompatibility between the way the base bullet library was built and the
+     way Python-Ogre wrappers were done -- the base library had byte alignment enabled on a number of functions
+     which is not supported (completely) with boost so lots of stack corruption
+Fix: Minor fixes to Build scripts when using differnet versions of Python on a single machine  
+   
+Change: Theora video library name changed to OgreVideo - reflects the base code is now from the OgreVideo project
+        and not from the ogreaddons/video module (which is inactive)
+             
+Update: Caelum, Hydrax, OgreForests, OgreBullet, ODE and OgreODE all updated to latest versions    
+
 Feburary 26 2009 : Release 1.6.1r906
 ====================================
 <<SnapShot Release>>

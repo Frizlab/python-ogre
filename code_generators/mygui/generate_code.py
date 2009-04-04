@@ -89,7 +89,10 @@ def ManualExclude ( mb ):
        ,'::MyGUI::templates::get_resource_path'
        ]
     for e in c:
-        main_ns.free_functions(e).exclude()    
+      try:
+         main_ns.free_functions(e).exclude() 
+      except:
+         print "Unable to exclude function:", e   
                     
 ############################################################
 ##
