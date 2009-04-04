@@ -1298,9 +1298,10 @@ class ogrevideo:
     lib_dirs = [boost.PATH_LIB,
                 Config.PATH_LIB_Ogre_OgreMain,
                 Config.PATH_LIB_Theora,
+                Config.PATH_LIB_OPENAL
                 ]
     CheckIncludes=[]
-    libs=[  boost.lib, 'Plugin_TheoraVideoSystem','OgreMain' ]
+    libs=[  boost.lib, 'Plugin_TheoraVideoSystem','OgreMain', 'openal32' ]
     
 #    if isLinux():
 #        libs.append ( boost_python_index.lib )
