@@ -1,7 +1,7 @@
 import sys
 import os
 sys.path.insert(0,'..')
-import PythonOgreConfig
+# import PythonOgreConfig
 
 import ogre.renderer.OGRE as ogre
 import SampleFramework as sf
@@ -9,7 +9,7 @@ import ctypes, math, random
 
 
 def testLoadMesh(meshSerializer, mesh_name):
-    f = file(os.path.join("../media/models", mesh_name), 'rb')
+    f = file(os.path.join("../../media/models", mesh_name), 'rb')
     fileString = f.read()
     memBuffer = ctypes.create_string_buffer( fileString )
     memstream = ogre.MemoryDataStream ( ogre.CastVoidPtr(ctypes.addressof (memBuffer )), len (fileString) + 1 ) ##+1??
@@ -20,9 +20,11 @@ def testLoadMesh(meshSerializer, mesh_name):
     print type(memstream)
     
     mesh = ogre.Mesh(ogre.MeshManager.getSingletonPtr(), mesh_name, 0, ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME)
-    mesh = meshSerializer.importMesh(memstream, mesh)
+    print mesh
+# # # #     mesh = meshSerializer.importMesh(memstream, mesh)
+    print mesh
     memstream.close()
-    print "Load Mesh Num Sub Meshes %d", mesh.numSubMeshes
+    print "Load Mesh Num Sub Meshes %d" % mesh.numSubMeshes
     del mesh    
 
 

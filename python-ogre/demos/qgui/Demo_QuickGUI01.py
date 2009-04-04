@@ -110,7 +110,7 @@ class GuiFrameListener ( sf.FrameListener, ois.MouseListener, ois.KeyListener ):
     ##----------------------------------------------------------------##
     def keyReleased( self, arg ):
         k = gui.KeyCode.values[arg.key]
-        self.mGUIManager.injectKeyDown( k )
+        self.mGUIManager.injectKeyUp( k )
         return True
 
 class QuickGUIDemoApp (sf.Application):

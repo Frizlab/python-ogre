@@ -66,7 +66,7 @@ PACKAGEDATA = {
                         'ogre.physics.OgreOde', 'ogre.physics.OgreNewt', 'ogre.physics.Opcode',
                         'ogre.physics.bullet','ogre.physics.PhysX','ogre.physics.NxOgre',
                         'ogre.physics.OgreBulletC', 'ogre.physics.OgreBulletD',
-                        'ogre.addons','ogre.addons.theora',
+                        'ogre.addons','ogre.addons.ogrevideo',
                         'ogre.addons.plib', # 'ogre.gui.navi',
                         'ogre.addons.ogreforests', 'ogre.addons.et', 'ogre.addons.caelum',
                         'ogre.addons.noise', #'ogre.addons.watermesh', # 'ogre.addons.ofusion',

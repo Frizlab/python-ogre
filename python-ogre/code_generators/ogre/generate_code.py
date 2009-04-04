@@ -1094,31 +1094,31 @@ def FindProtectedVars ( mb ):
 # the 'main'function
 #            
 def generate_code():  
-    messages.disable( 
-# #         messages.W1005 # using a non public variable type for argucments or returns
-# # #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-        messages.W1020
-        , messages.W1021
-        , messages.W1022
-        , messages.W1023
-        , messages.W1024
-        , messages.W1025
-        , messages.W1026
-        , messages.W1027
-        , messages.W1028
-        , messages.W1029
-        , messages.W1030
-        , messages.W1031
-# #         , messages.W1035
-# #         , messages.W1040 
-# #         , messages.W1041 # overlapping names when creating a property
-# # #         , messages.W1038        
-# #         , messages.W1036 # pointer to Python immutable member
-# # #         , messages.W1033 # unnamed variables
-# # #         , messages.W1018 # expose unnamed classes
-# #         , messages.W1049 # returns reference to local variable
-# #         , messages.W1014 # unsupported '=' operator
-         )
+# # # # # # #     messages.disable( 
+# # # # # # # # #         messages.W1005 # using a non public variable type for argucments or returns
+# # # # # # # # # #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+# # # # # # #         messages.W1020
+# # # # # # #         , messages.W1021
+# # # # # # #         , messages.W1022
+# # # # # # #         , messages.W1023
+# # # # # # #         , messages.W1024
+# # # # # # #         , messages.W1025
+# # # # # # #         , messages.W1026
+# # # # # # #         , messages.W1027
+# # # # # # #         , messages.W1028
+# # # # # # #         , messages.W1029
+# # # # # # #         , messages.W1030
+# # # # # # #         , messages.W1031
+# # # # # # # # #         , messages.W1035
+# # # # # # # # #         , messages.W1040 
+# # # # # # # # #         , messages.W1041 # overlapping names when creating a property
+# # # # # # # # # #         , messages.W1038        
+# # # # # # # # #         , messages.W1036 # pointer to Python immutable member
+# # # # # # # # # #         , messages.W1033 # unnamed variables
+# # # # # # # # # #         , messages.W1018 # expose unnamed classes
+# # # # # # # # #         , messages.W1049 # returns reference to local variable
+# # # # # # # # #         , messages.W1014 # unsupported '=' operator
+# # # # # # #          )
 #     sort_algorithms.USE_CALLDEF_ORGANIZER = True   ## tried this to remove a couple of order issues, without success :)
     #
     # Use GCCXML to create the controlling XML file.
@@ -1137,10 +1137,7 @@ def generate_code():
 
     defined_symbols.append( 'OGRE_VERSION_' + environment.ogre.version )  
     
-    print os.getcwd()
-    print environment.ogre.include_dirs
     environment.ogre.include_dirs.insert ( 0,os.getcwd() )
-    print environment.ogre.include_dirs
     
     #
     # build the core Py++ system from the GCCXML created source
@@ -1160,8 +1157,6 @@ def generate_code():
     
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
-        
-    
 
     #
     # We filter (both include and exclude) specific classes and functions that we want to wrap

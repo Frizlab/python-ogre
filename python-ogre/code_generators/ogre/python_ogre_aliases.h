@@ -24,6 +24,20 @@ typedef Ogre::SharedPtr<Ogre::FocusedShadowCameraSetup> FocusedShadowCameraSetup
 typedef Ogre::SharedPtr<Ogre::LiSPSMShadowCameraSetup> LiSPSMShadowCameraSetupPtr;
 typedef Ogre::SharedPtr<Ogre::PlaneOptimalShadowCameraSetup> PlaneOptimalShadowCameraSetupPtr;
 typedef Ogre::SharedPtr<Ogre::PSSMShadowCameraSetup> PSSMShadowCameraSetupPtr;
+typedef Ogre::SharedPtr<Ogre::Font> FontPtr;
+
+typedef Ogre::SharedPtr<Ogre::Mesh> MeshPtr;
+typedef Ogre::SharedPtr<Ogre::Texture> TexturePtr;
+typedef Ogre::SharedPtr<Ogre::WaveformControllerFunction> WaveformControllerFunctionPtr;
+typedef Ogre::SharedPtr<Ogre::GpuProgram> GpuProgramPtr;
+typedef Ogre::SharedPtr<Ogre::Compositor> CompositorPtr;
+typedef Ogre::SharedPtr<Ogre::Skeleton> SkeletonPtr;
+typedef Ogre::SharedPtr<Ogre::PatchMesh> PatchMeshPtr;
+typedef Ogre::SharedPtr<Ogre::HighLevelGpuProgram> HighLevelGpuProgramPtr;
+typedef Ogre::SharedPtr<Ogre::HardwarePixelBuffer> HardwarePixelBufferPtr;
+typedef Ogre::SharedPtr<Ogre::HardwareVertexBuffer> HardwareVertexBufferPtr;
+typedef Ogre::SharedPtr<Ogre::HardwareIndexBuffer> HardwareIndexBufferPtr;
+
 
 typedef Ogre::SharedPtr<Ogre::StringVector> StringVectorPtr;
 

@@ -46,6 +46,22 @@ def docInfo ( mb, module ):
     t = i % {'timestamp':timestamp, 'version':version}
     add_constants( mb, { '__info__' :  t } ) 
   
+def getSVNVersion ( environment ):
+  """ return a string with the current SVN version number
+  """
+  if hasattr( environment.Config, "SVNVersionCommmand"):
+      cmd = environment.Config.SVNVersionCommand
+  else:
+      cmd = "svnversion"        
+  process = subprocess.Popen (cmd, shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE )
+  try:
+      out,err = process.communicate()
+      returncode = process.returncode
+      svnversion = out
+  except:
+      returncode = -1
+      svnversion = "0000"
+  return svnversion.strip()
  
 def addDetailVersion ( mb, env, envClass ):
     """Add detailed version and build information to the module to assist with debugging etc
@@ -59,22 +75,6 @@ def addDetailVersion ( mb, env, envClass ):
 #                 Input: None\\n\\
 #                 Ouput: Tuple [time, date]");
 #         """                  
-    def getSVNVersion ( environment ):
-        """ return a string with the current SVN version number
-        """
-        if hasattr( environment.Config, "SVNVersionCommmand"):
-            cmd = environment.Config.SVNVersionCommand
-        else:
-            cmd = "svnversion"        
-        process = subprocess.Popen (cmd, shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE )
-        try:
-            out,err = process.communicate()
-            returncode = process.returncode
-            svnversion = out
-        except:
-            returncode = -1
-            svnversion = "0000"
-        return svnversion.strip()
           
     po = ".".join( (env.PythonOgreMajorVersion,env.PythonOgreMinorVersion, env.PythonOgrePatchVersion) )
     t = datetime.datetime.now().isoformat(' ').strip()

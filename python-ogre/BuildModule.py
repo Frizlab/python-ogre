@@ -99,8 +99,12 @@ def spawnTask ( task, cwdin = '', getoutput=None ):
             if environment.is64():
                 env["PYTHONPATH"]=PREFIX+"/lib64/python"+environment.PythonVersionString+"/site-packages"
             env["ZZIPLIB_LIBS"]="-lzzip"
-
-        env["PATH"]=PREFIX+"/bin:" + PATH
+        if environment.isWindows():
+            ## Make sure the right python interpreter is in the path so scons gets called correctly...
+            PATH_Python = os.path.dirname( sys.executable )
+            env["PATH"]=PATH_Python+';'+PREFIX+"\\bin;" + PATH
+        else: 
+            env["PATH"]=PREFIX+"/bin:" + PATH
         ENV_SET=True
 
     logger.debug ( "Spawning '%s' in '%s'" % (task,cwdin) )

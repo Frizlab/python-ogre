@@ -1,132 +1,84 @@
 #!/usr/bin/env python
+# -----------------------------------------------------------------------------
+# This source file is part of Python-Ogre
+# For the latest info, see http://www.python-ogre.org/
 #
-# This is the distutils setup script for python-ogre.
-# Full instructions are in "install.txt" or "install.html"
+# Copyright (c) 2006-2007 Python-Ogre Development Team
 #
-# To configure, compile, install, just run this script.
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+# Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+# http://www.gnu.org/copyleft/lesser.txt.
+#
+# You may alternatively use this source under the terms of a specific version of
+# the Python-Ogre Unrestricted License provided you have obtained such a license
+# -----------------------------------------------------------------------------
+#
 
-DESCRIPTION = """Python-Ogre is a Python wrapper module for the
+_Description = """Python-Ogre is a Python wrapper module for the
 OGRE 3D Graphics library. It contains python functions and classes
 that will allow you to fully utilitize the Ogre library.  It is 
 Unique in that the python wrappers are created automatically by
 Py++, hence making maintainence etc very simple."""
 
-METADATA = {
-    "name":             "Python-Ogre",
-    "version":          "1.0release",
-    "license":          "LGPL",
-    "url":              "http://www.pygame.org",
-    "author":           "Larkin",
-    "author_email":     "pygame@seul.org",
-    "description":      "Py++ Ogre Python Bindingd",
-    "long_description": DESCRIPTION,
-}
-
-cmdclass = {}
-import os, sys, time, shutil, glob
-import os.path
-import distutils.sysconfig
-from distutils.core import setup, Extension
-from distutils.extension import read_setup_file
-from distutils.ccompiler import new_compiler
-from distutils.command.install_data import install_data
 import environment
+import subprocess
+import sys, os
+
+sys.path.append( os.path.join('.', 'code_generators') )
+import common_utils
+
+from setuptools import setup, find_packages
 
 
-sys.path.append( '..' )
-sys.path.append( '.' )
-sys.path.append( 'code_generators' )
-
-def GenerateSource ( module ):
-    sys.path.append ( 'code_generators/'+module )
-    import generate_code
-    start_time = time.clock()
-    generate_code.generate_code()
-    print 'Python-', module, ' source code was updated( %f minutes ).' % (  ( time.clock() - start_time )/60 )
-
-def BuildFileList ( basepath, ext='*.cpp', recurse = False ):   #module name is appended to basepath
-    found = glob.glob(os.path.join(basepath, ext))
-    sourcefiles = []
-    for f in found:
-        if os.path.isfile(f):
-            sourcefiles.append(f)
-    return sourcefiles
-def GetFileList ( basepath ):
-    filesout = []
-    for root, dirs, files in os.walk(basepath):
-        for name in files:
-            filesout.append(os.path.join(root, name))
-    return filesout
-        
-
-
-#headers to install
-#headers = glob.glob(os.path.join('src', '*.h'))
-
-
-if __name__ == '__main__':
-    if len (sys.argv) < 2 :
-        print "Need to specifiy which module to build"
-        sys.exit(-1)
-    sys.argv.append ('install')
-    try:
-        import bdist_mpkg_support
-    except ImportError:
-        pass
-#     else:
-#         cmdclass.update(bdist_mpkg_support.cmdclass)
-#     
-    #get us to the correct directory
-    path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-    os.chdir(path)
-    module = sys.argv[2]
-    module = 'ogre'
-    # call Py++ to generate the necessary source files
-#    GenerateSource ( module )
-    # get a list of the source files
-    sourcefiles = BuildFileList(environment.__dict__[module].generated_dir)
-    print sourcefiles, environment.__dict__[module].generated_dir
-    # now get a list of the lib driectoried and associated library files needed for compile
-    lib_dirs = environment.__dict__[module].libs_dir
-    lib_files = environment.__dict__[module].libs_files
+_Version = ".".join([environment.PythonOgreMajorVersion,environment.PythonOgreMinorVersion,
+               environment.PythonOgrePatchVersion])
+_Version = _Version + '-r' + common_utils.getSVNVersion ( environment )
+_PythonVersionString = str(sys.version_info[0]) + '.' + str(sys.version_info[1])
     
-    # same for the include directories
-    inc_dirs = []
-    inc_dirs.append ( environment.__dict__[module].include_dir )
-    inc_dirs.append ( environment.__dict__[module].generated_dir ) #need to include the source dir as well
-    
-    extension = Extension ( 'Ogre', sourcefiles, 
-                            include_dirs = inc_dirs, 
-                            library_dirs=lib_dirs, libraries=lib_files,
-                            ) #extra_compile_args =[], extra_link_args=[], extra_objects =[] )
-    #ext_modules=[Extension('foo', ['foo.c'])],     
-    #print sourcefiles      
-    demo_files=GetFileList ( os.path.join(environment.root_dir, "demos") )
-    data_files = [('demos', demo_files), ]
-    
-    #finally,
-    #call distutils with all needed info
-    PACKAGEDATA = {
- #          "cmdclass":    cmdclass,
-           "packages":    ['Ogre'],
-           "package_dir": {'': 'packages'},
-           #"headers":     headers, # we don't have an source headers to include..
-           "ext_modules": [extension],
-           "data_files" : data_files
-           #"data_files":  [['pygame', data_files]],
-    }
-    PACKAGEDATA.update(METADATA)
-    setup(**PACKAGEDATA)
-    
+_Packages = find_packages('packages_'+ _PythonVersionString )
+print _Packages
+setup(
+    name="Python-Ogre",
+    license="LGPL",
+    url="http://www.python-ogre.org/",
+    author="Andy Miller, Lakin Wecker, Roman Yakovenko",
+    author_email="python-ogre-developers@googlegroups.com",
+    description="Py++ Ogre Python Binding",
+    long_description = _Description,
+    version = _Version,
 
-# #extra files to install
-# data_path = os.path.join(distutils.sysconfig.get_python_lib(), 'pygame')
-# data_files = []
+    # Project uses reStructuredText, so ensure that the docutils get
+    # installed or upgraded on the target machine
+#     install_requires = ['docutils>=0.3'],
+    package_dir={'':'packages_'+ _PythonVersionString},
+    package_data ={'': ['*.pyd', '*.dll', '*.so', '*.dylib'] },
+#     packages = find_packages(os.path.join('packages_'+ _PythonVersionString, 'ogre', 'renderer') ),
+#     packages = find_packages('packages_'+ _PythonVersionString ),
+    packages=['ogre','ogre.io', 'ogre.io.OIS','ogre.renderer.OGRE'],
+    data_files = [('demos',['demos/Enums.py','demos/SampleFramework.py']),
+                  ('demos/ogre',['demos/ogre/Demo_Smoke.py','demos/ogre/Demo_Basic.py'])
+                  ],
 
-# #add non .py files in lib directory
-# for f in glob.glob(os.path.join('lib', '*')):
-#     if not f[-3:] =='.py' and os.path.isfile(f):
-#         data_files.append(f)
-
-
-
+    # other arguments here...
+    entry_points = {
+        'console_scripts': [
+            'foo = ogre:Function1',
+        ],
+        'gui_scripts': [
+            'baz = my_package_gui.start_func',
+        ]
+    },
+    eager_resources=['ogre/io/OIS/_ois_.pyd', 'ogre/io/OIS/_ois_'],
+#     zip_safe=False
+    # could also include long_description, download_url, classifiers, etc.
+)

@@ -1,4 +1,6 @@
 import os
+import sys
+import getpass
 
 SDK=False # Changes Ogre include path settings
 
@@ -13,13 +15,23 @@ LOCAL_INCLUDE = os.path.join(ROOT_DIR, 'usr/include')
 
 
 ## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
-PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_37_0' ) #-trunk')
+PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_38_0' ) #-trunk')
+# PATH_Boost =        os.path.join(BASE_DIR, 'boost-trunk')
+
 
 ## Path to your boost_pythonxxxx lib file
 PATH_LIB_Boost =    os.path.join(PATH_Boost, 'bin.v2/libs/python/build/msvc-9.0/release/threading-multi')
 #PATH_LIB_Boost_STATIC = os.path.join(PATH_Boost, 'bin.v2/libs/python/build/msvc-9.0/release/link-static/threading-multi')
 PATH_LIB_Thread_STATIC = os.path.join(PATH_Boost, 'bin.v2/libs/thread/build/msvc-9.0/release/link-static/threading-multi')
 PATH_LIB_date_time_STATIC = os.path.join(PATH_Boost, 'bin.v2/libs/date_time/build/msvc-9.0/release/link-static/threading-multi')
+
+if (getpass.getuser() == 'amiller' ):  ## special for Andy's machine as I tend to build against multiple python versions
+   PythonVersionString = str(sys.version_info[0]) + '.' + str(sys.version_info[1])
+   PATH_LIB_Boost =    os.path.join(PATH_Boost, 'bin.v2/libs/python_' +PythonVersionString +'/build/msvc-9.0/release/threading-multi')
+
+
+
+
 # in Linux we need to code in the Relative path for the library
 RPATH=""
 
@@ -39,7 +51,7 @@ PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.6.2')
 PATH_OIS =          os.path.join(BASE_DIR, 'ois' ) ##'ois-1.0RC1')
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonsdk','sdk')
 PATH_FMOD =         os.path.join(BASE_DIR, 'fmod')
-PATH_ODE =          os.path.join(BASE_DIR, 'ode-0.10.1')
+PATH_ODE =          os.path.join(BASE_DIR, 'ode-0.11')
 PATH_OGG =          os.path.join(BASE_DIR, 'ogg')
 PATH_VORBIS=        os.path.join(BASE_DIR, 'vorbis')
 PATH_OPENAL=        os.path.join(BASE_DIR, 'openal-soft-1.5.304') #'openal')
@@ -72,11 +84,9 @@ PATH_cadunetree=        os.path.join(PATH_THIRDPARTY, 'cadunetree')
 PATH_opensteer =        os.path.join(BASE_DIR, 'opensteer', 'trunk')
 
 PATH_ogrevideoffmpeg = os.path.join(PATH_THIRDPARTY,'ffmpeg')
-PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.73') 
+PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.74') 
 PATH_PhysX=         "c:/program files/NVIDIA Corporation/NVIDIA Physx SDK/v2.8.1/SDKs"
-PATH_Theora=        os.path.join(PATH_OgreAddons,'videoplugin','TheoraVideo')
-
-# # # # PATH_Theora = os.path.join( BASE_DIR, 'ogrevideo', 'TheoraVideoPlugin' )
+PATH_Theora=        os.path.join(BASE_DIR,'ogrevideo','TheoraVideoPlugin')
 
 PATH_ffmpeg=        os.path.join(PATH_THIRDPARTY,'extra')
 PATH_navi =         os.path.join(BASE_DIR, 'navi', 'navi')
@@ -86,7 +96,7 @@ PATH_ogrepcz = os.path.join(PATH_Ogre, 'PlugIns', 'PCZSceneManager' )
 
 PATH_hydrax = os.path.join(PATH_THIRDPARTY, 'Hydrax')
 PATH_hikari = os.path.join(PATH_THIRDPARTY, 'Hikari' ) #BASE_DIR, 'hikari', 'hikari')
-PATH_mygui = os.path.join(BASE_DIR, 'MyGUI_2.2.0_RC1_source' )
+PATH_mygui = os.path.join(BASE_DIR, 'MyGUI2.2.2_source' ) # \development\MyGUI2.2.2_source\MyGUIEngine\include
 PATH_canvas = os.path.join(PATH_THIRDPARTY, 'canvas')
 
 PATH_raknet = os.path.join(BASE_DIR, 'raknet')
@@ -125,6 +135,7 @@ PATH_LIB_quickgui =             PATH_quickgui
 PATH_LIB_NxOgre=                os.path.join(PATH_NxOgre, 'lib')
 PATH_LIB_PhysX =                os.path.join(PATH_PhysX,'lib/win32')
 PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'out/release8/libs' )
+# PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'out/debug8/libs' )
 PATH_LIB_Theora=                os.path.join(PATH_Theora, 'bin', 'Release')
 PATH_LIB_ogrevideoffmpeg =      PATH_ogrevideoffmpeg
 PATH_LIB_ffmpeg=                os.path.join(PATH_ffmpeg, 'lib')
@@ -138,6 +149,7 @@ PATH_LIB_mygui = os.path.join(PATH_mygui, 'MyGUIEngine','lib','Release')
 PATH_LIB_canvas = os.path.join(PATH_canvas )
 PATH_LIB_pcz = os.path.join(PATH_LIB_Ogre_OgreMain, 'OGRE')
 PATH_LIB_plsm2 = PATH_plsm2
+PATH_LIB_OPENAL=        os.path.join(PATH_OPENAL, 'release') #'openal')
                 
 if SDK:
     PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'lib')
@@ -184,7 +196,8 @@ PATH_INCLUDE_Bullet=        os.path.join(PATH_Bullet, 'src')
 PATH_INCLUDE_freetype=      os.path.join(PATH_INCLUDE_quickgui,'FreeType2.3.5')    
 PATH_INCLUDE_betagui =      PATH_betagui
 PATH_INCLUDE_Theora =       os.path.join (PATH_Theora,'include')
-PATH_INCLUDE_TheoraDemo =       os.path.join (PATH_Theora,'..', 'CEGUI_TheoraDemo','include')
+# need the audio files
+PATH_INCLUDE_TheoraDemo =       os.path.join (PATH_Theora,'..', 'demos','audio_openal')
 
 # # PATH_INCLUDE_TheoraDemo =   PATH_Theora
 PATH_INCLUDE_plsm2 = PATH_plsm2
@@ -207,9 +220,8 @@ PATH_INCLUDE_canvas=        PATH_canvas
 PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ,os.path.join(BASE_DIR, 'vorbis', 'include')
                         ,os.path.join(BASE_DIR, 'theora', 'include')
-#                         ,os.path.join(PATH_OgreAddons,'videoplugin','theoravideo','include')
-#                         ,os.path.join(PATH_OgreAddons,'videoplugin','ptypes-2.1.1','include')
-                        ,os.path.join(PATH_THIRDPARTY,'ptypes','include')
+                        ,os.path.join(BASE_DIR,'ptypes-2.1.1','include')
+                        ,os.path.join(PATH_INCLUDE_OPENAL, 'AL') 
                         ]
                         
 PATH_INCLUDE_PhysX_Samples = os.path.join(PATH_PhysX, '..', 'Samples','SampleCommonCode','src')

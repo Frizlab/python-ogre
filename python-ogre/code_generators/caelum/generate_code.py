@@ -68,6 +68,7 @@ def ManualExclude ( mb ):
                 ,'::Caelum::OwnedPtr< Ogre::SceneNode, Caelum::SceneNodeOwnedPtrTraits >::reset'
                 ,'::Caelum::OwnedPtr< Ogre::Entity, Caelum::MovableObjectOwnedPtrTraits< Ogre::Entity > >::reset'
                 ,'::Caelum::OwnedPtr< Ogre::Mesh, Caelum::OwnedResourcePtrTraits< Ogre::Mesh, Ogre::MeshPtr, Ogre::MeshManager > >::reset'
+                ,'::Caelum::DefaultTypeDescriptor::clear'
                 ]
     for m in excludes:
         global_ns.member_functions(m).exclude()

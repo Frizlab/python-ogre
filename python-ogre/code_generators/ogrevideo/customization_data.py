@@ -1,0 +1,19 @@
+
+def header_files( version ):
+    return [  'Ogre.h'
+# # # #              ,'TheoraVideoController.h'
+# # # #             ,'TheoraMovieClip.h'
+# # # #             ,'TheoraAudioDriver.h'
+# # # #             ,"SoundManager.h"
+            
+            ,"TheoraVideoManager.h"
+            ,"TheoraVideoClip.h"
+            ,"TheoraAudioInterface.h"
+            ,"OpenAL_AudioInterface.h"
+            ,'OgreExternalTextureSource.h'
+            ,'OgreExternalTextureSourceManager.h'
+             ]
+  
+def huge_classes( version ):
+    return []
+   

@@ -82,7 +82,7 @@ class TutorialApplication(SampleFramework.Application):
         f= file("test.material", 'r')
         MatString = f.read()
         f.close()
-        memDataStream = ogre.MemoryDataStream ( "MyBuffer", len (buf) )
+        memDataStream = ogre.MemoryDataStream ( "MyBuffer", len (MatString) )
         memDataStream.setData ( MatString )
         p = memDataStream.getAsString()
         print len(p)
