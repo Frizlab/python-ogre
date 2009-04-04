@@ -28,8 +28,7 @@ DESCRIPTION = """Python-Ogre is a Python wrapper module for the
 OGRE 3D Graphics library. It contains python functions and classes
 that will allow you to fully utilitize the Ogre library.  It is 
 Unique in that the python wrappers are created automatically by
-Py++, hence making maintainence etc very simple.
-This version is built against the Ogre CVS"""
+Py++, hence making maintainence etc very simple."""
 
 METADATA = {
     "name":             "Python-Ogre",
