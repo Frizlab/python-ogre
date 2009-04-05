@@ -101,25 +101,4 @@ Index: environment.py
 +        lib = "boost_python-gcc%s%s-mt-%s-%s" % (gcc_version[0], gcc_version[1], versionBase, PythonVersionStringNoDot)
  
      if isMac():
-         lib = Config.LIB_Boost
-Index: environment.py
-===================================================================
---- environment.py	(revision 944)
-+++ environment.py	(working copy)
-@@ -68,6 +68,7 @@
- PATH_Python = os.path.dirname( sys.executable )
- ## I want a version string 2.4 or 2.5 etc
- PythonVersionString = str(sys.version_info[0])+'.'+str(sys.version_info[1])
-+PythonVersionStringNoDot = "py"+str(sys.version_info[0])+str(sys.version_info[1])
- 
- if isWindows():
-     python_include_dirs = os.path.join ( PATH_Python, 'include')
-@@ -539,7 +540,7 @@
-         import re
-         gcc_version = re.search(r'([0-9]+?\.[0-9]+?\.[0-9]+?)', gccp.communicate()[0]).groups()[0].split('.')
-         # FIXME: Should this be the multithreaded version!?
--        lib = "boost_python-gcc%s%s-mt-%s" % (gcc_version[0], gcc_version[1], versionBase)
-+        lib = "boost_python-gcc%s%s-mt-%s-%s" % (gcc_version[0], gcc_version[1], versionBase, PythonVersionStringNoDot)
- 
-     if isMac():
         lib = Config.LIB_Boost
