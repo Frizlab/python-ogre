@@ -798,8 +798,8 @@ class ogrenewt:
         [0, "patch -s -N -i ../../python-ogre/patch/ogrenewt.patch -p0", baseDir],
         [0, rm+" -rf ./OgreNewt_Main/inc/boost", baseDir],
         [0, 'cp SConscript OgreNewt_Main', baseDir],
-        [0, "scons prefix=%s boost=%s/include/boost-1_37 build" % (PREFIX, PREFIX), baseDir],  ##WARNING -- boost include dir name is different than  build name (dash not underscore)
-        [0, "scons prefix=%s boost=%s/include/boost-1_37 install" % (PREFIX, PREFIX), baseDir],
+        [0, "scons prefix=%s boost=%s/include/boost-1_38 build" % (PREFIX, PREFIX), baseDir],  ##WARNING -- boost include dir name is different than  build name (dash not underscore)
+        [0, "scons prefix=%s boost=%s/include/boost-1_38 install" % (PREFIX, PREFIX), baseDir],
     ]
 
     if isWindows():
