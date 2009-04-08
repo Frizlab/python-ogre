@@ -13,13 +13,13 @@ LOCAL_LIB = os.path.join(ROOT_DIR,'usr/lib')
 LOCAL_INCLUDE = os.path.join(ROOT_DIR, 'usr/include')
 
 ## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
-PATH_Boost = os.path.join(LOCAL_INCLUDE, 'boost-1_36')
+PATH_Boost = None
 ## Path to your boost_pythonxxxx lib file
 PATH_LIB_Boost = LOCAL_LIB
 PATH_LIB_Thread_STATIC = LOCAL_LIB
 PATH_LIB_date_time_STATIC = LOCAL_LIB
 ## and the name of the boost python library
-LIB_Boost = 'libboost_python-gcc42-mt-1_36'
+LIB_Boost = None
 
 # in Linux we need to code in the Relative path for the library
 RPATH=os.path.join('\\$$ORIGIN',os.pardir,os.pardir, 'lib') #+ '\'' 

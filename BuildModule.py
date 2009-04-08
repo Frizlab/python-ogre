@@ -97,7 +97,7 @@ def spawnTask ( task, cwdin = '', getoutput=None ):
             env["LDFLAGS"]+="-Wl,-rpath='$$ORIGIN/../../lib' -Wl,-rpath='$$ORIGIN' -Wl,-z,origin"
             env["PYTHONPATH"]=PREFIX+"/lib/python"+environment.PythonVersionString+"/site-packages"
             if environment.is64():
-                env["PYTHONPATH"]=PREFIX+"/lib64/python"+environment.PythonVersionString+"/site-packages"
+                env["PYTHONPATH"]=env["PYTHONPATH"]+":"+PREFIX+"/lib64/python"+environment.PythonVersionString+"/site-packages"
             env["ZZIPLIB_LIBS"]="-lzzip"
         if environment.isWindows():
             ## Make sure the right python interpreter is in the path so scons gets called correctly...
@@ -334,7 +334,8 @@ def compileCode ( module ):
     """
     logger.info ( "Compiling Source code for " + module.name )
     ### AJM -- note the assumption that environment.py is sitting in the 'python-ogre' directory...
-    ret = spawnTask ( 'scons PROJECTS='+module.name, os.path.join(environment.root_dir) )
+    # We want a few extra tasks then cores because it keeps everything running at 100%
+    ret = spawnTask ( 'scons -j%i PROJECTS=%s' % (int(environment.NUMBER_OF_CORES*1.5), module.name), os.path.join(environment.root_dir))
     if ret != 0 :
         time.sleep(5)  ## not sure why scons doesn't work after first failure
 
