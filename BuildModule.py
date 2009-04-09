@@ -42,10 +42,8 @@ def getClassList ():
     dict = {}
     for c in dir(environment):
         var = environment.__dict__[c]
-        if isinstance ( var, types.ClassType ) :    ## OK so we know it's a class
-#             logger.debug ( "getClassList: Checking %s" % c )
-            if hasattr(var, 'active') and hasattr(var, 'pythonModule'):   # and it looks like one we care about
-#                 logger.debug ( "getClassList: it's one of ours")
+        if isinstance(var, (type, types.ClassType)):    ## OK so we know it's a class
+            if hasattr(var, 'active') and hasattr(var, 'pythonModule'):
                 dict[c] = var
     return dict
 
