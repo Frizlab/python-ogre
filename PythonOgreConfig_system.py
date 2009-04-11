@@ -5,6 +5,8 @@ module_dir = os.path.abspath(os.path.dirname(__file__) )## The root directory is
 ## lets assume that the base development directory is one level higher
 BASE_DIR = "/usr" 
 
+SDK = False
+
 # the base of the /usr/... dircetory structure that we are using
 ROOT_DIR = '/'
 LOCAL_LIB = '/usr/lib'
@@ -15,7 +17,7 @@ PATH_Boost = os.path.join(LOCAL_INCLUDE, 'boost')
 ## Path to your boost_pythonxxxx lib file
 PATH_LIB_Boost = LOCAL_LIB
 ## and the name of the boost python library
-#LIB_Boost = 'libboost_python-gcc42-mt-1_36'
+LIB_Boost = None
 
 # in Linux we need to code in the Relative path for the library
 RPATH=os.path.join('\\$$ORIGIN',os.pardir,os.pardir, 'lib') #+ '\'' 
@@ -30,13 +32,13 @@ PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
 PATH_Ogre =         os.path.join(BASE_DIR, 'ogre')
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'ogreaddons')
 PATH_CEGUI =        os.path.join(BASE_DIR, 'include/CEGUI' )
-PATH_OIS =          os.path.join(BASE_DIR, 'ois-1.0RC1')
+PATH_OIS =          os.path.join(BASE_DIR, 'ois')
 
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonSDK','sdk')
 PATH_ODE =          os.path.join(BASE_DIR)
 PATH_OGG =          os.path.join(BASE_DIR, 'libogg-1.1.3')
 PATH_VORBIS=        os.path.join(BASE_DIR, 'libvorbis-1.2.0')
-PATH_OPENAL=        os.path.join(BASE_DIR, 'openal-0.0.8')
+PATH_OPENAL=        os.path.join(BASE_DIR, 'openal-soft-1.5.304')
 PATH_OgreOde=       os.path.join(PATH_OgreAddons,'ogreode')
 
 PATH_OgreBullet=    os.path.join(PATH_THIRDPARTY,'ogrebullet')
