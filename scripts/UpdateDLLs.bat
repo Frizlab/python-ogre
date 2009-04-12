@@ -39,6 +39,8 @@ set vorbis=%root%\vorbis\win32
 set ogg=%root%\ogg\win32\Dynamic_Release
 
 set openal=%root%\openal\redist
+set openal=%root%\openal.1.1\redist
+
 
 rem Ogre
 copy /y %ogre%\ogremain.dll %package_2.5%\renderer\OGRE
@@ -141,6 +143,10 @@ copy /y %openal%\OpenAL32.dll %package_2.5%\sound\OgreAL
 copy /y %openal%\wrap_oal.dll %package_2.5%\sound\OgreAL
 copy /y %openal%\OpenAL32.dll %package_2.6%\sound\OgreAL
 copy /y %openal%\wrap_oal.dll %package_2.6%\sound\OgreAL
+copy /y %openal%\OpenAL32.dll %package_2.5%\addons\ogrevideo
+copy /y %openal%\wrap_oal.dll %package_2.5%\addons\ogrevideo
+copy /y %openal%\OpenAL32.dll %package_2.6%\addons\ogrevideo
+copy /y %openal%\wrap_oal.dll %package_2.6%\addons\ogrevideo
 
 rem navi
 copy /y %navi%\*.dll %package_2.5%\gui\navi
@@ -150,5 +156,5 @@ copy /y %naviextra%\*.dll %package_2.6%\gui\navi
 
 
 rem plib
-copy /y %boostlib% %package_2.5%\addons\plib
-copy /y %boostlib% %package_2.6%\addons\plib
+copy /y %boostlib_2.5% %package_2.5%\addons\plib
+copy /y %boostlib_2.6% %package_2.6%\addons\plib

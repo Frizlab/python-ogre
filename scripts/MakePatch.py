@@ -17,6 +17,21 @@ def samefile ( originalFile, latestFile):
     if inhash.digest() != outhash.digest():
         return False    
     return True
+    
+def makePath ( pathIn ):
+   if not os.path.exists (pathIn ):
+      os.makedirs ( pathIn )
+            
+
+def copyFile ( fileName, originalPath, latestPath, patchPath ):
+   originalFile = os.path.join ( originalPath, fileName )
+   latestFile = os.path.join ( latestPath, fileName)
+   patchFile = os.path.join ( patchPath, fileName)
+   # we only copy the file if it's a different size and or date
+   if not samefile( originalFile ,latestFile ):
+      makePath (patchPath)
+      shutil.copyfile( latestFile, patchFile )
+      print "Copying ", latestFile, " to ", patchFile
                                 
 def copyTree ( originalPath, latestPath, patchPath,
                       badPaths=['.svn', 'tofix', 'tests', 'wxOgre', 'showcase_01', 'media_old', 'nxogre', 'navi', 'tilemanager', 'dshow'],
@@ -24,19 +39,6 @@ def copyTree ( originalPath, latestPath, patchPath,
                       files = [], recursive=True ):
     """ function to do a nice tree copy with file filtering and directory creation etc 
     """
-    def makePath ( pathIn ):
-        if not os.path.exists (pathIn ):
-            os.makedirs ( pathIn )
-            
-    def copyFile ( fileName, originalPath, latestPath, patchPath ):
-        originalFile = os.path.join ( originalPath, fileName )
-        latestFile = os.path.join ( latestPath, fileName)
-        patchFile = os.path.join ( patchPath, fileName)
-        # we only copy the file if it's a different size and or date
-        if not samefile( originalFile ,latestFile ):
-            makePath (patchPath)
-            shutil.copyfile( latestFile, patchFile )
-            print "Copying ", latestFile, " to ", patchFile,
             
     def filterExtensions ( listin, extensions):
         returnList=[]
@@ -110,14 +112,16 @@ def parseInput():
     return (options,args)
 
 if __name__ == '__main__':
-
-#     (options, args) = parseInput()
-#     if len(args) == 0 and not (options.compilecodeall or options.gencodeall):
-#         exit("The module to build wasn't specified.  Use -h for help")
-    directories = ['plugins', 'demos', 'packages_2.5']
-    original = "C:/PythonOgre845"
-    latest = "c:/development/python-ogre"
-    dest  = "c:/temp/patch"
-    for d in directories:
+   PythonVersionString = str(sys.version_info[0]) + '.' + str(sys.version_info[1])
+   
+   directories = [ 'plugins', 'demos', 'packages_'+PythonVersionString ]
+   files = ['ChangeLog.txt', 'Setup.py']
+   
+   original = "C:/PythonOgre845"
+   latest = "c:/development/python-ogre"
+   dest  = "c:/temp/patch"
+   for d in directories:
       copyTree (os.path.join ( original, d), os.path.join(latest, d), os.path.join ( dest,d ) )
+   for f in files:
+      copyFile (f, original,latest, dest)
       

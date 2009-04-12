@@ -5,11 +5,7 @@
 #include "TheoraAudioInterface.h"
 #include "OpenAL_AudioInterface.h"
 
-// // #include "TheoraVideoController.h"
-// // #include "TheoraMovieClip.h"
-// // #include "TheoraAudioDriver.h"
-// // #include "TheoraPlayerPreReqs.h"
-// // //#include "SoundManager.h"
+
 #include "Ogre.h"
 #include "OgreExternalTextureSource.h"
 #include "OgreExternalTextureSourceManager.h"

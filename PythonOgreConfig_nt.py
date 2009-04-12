@@ -54,7 +54,7 @@ PATH_FMOD =         os.path.join(BASE_DIR, 'fmod')
 PATH_ODE =          os.path.join(BASE_DIR, 'ode-0.11')
 PATH_OGG =          os.path.join(BASE_DIR, 'ogg')
 PATH_VORBIS=        os.path.join(BASE_DIR, 'vorbis')
-PATH_OPENAL=        os.path.join(BASE_DIR, 'openal-soft-1.5.304') #'openal')
+PATH_OPENAL=        os.path.join(BASE_DIR, 'OpenAL.1.1' ) # 'openal-soft-1.5.304') #'openal')
 PATH_OgreOde=       os.path.join(BASE_DIR, PATH_OgreAddons,'ogreode')
 # # PATH_OgreBullet=    os.path.join(PATH_OgreAddons,'ogrebullet')
 # # PATH_ogreforests=    os.path.join(PATH_OgreAddons,'forests')
@@ -149,7 +149,7 @@ PATH_LIB_mygui = os.path.join(PATH_mygui, 'MyGUIEngine','lib','Release')
 PATH_LIB_canvas = os.path.join(PATH_canvas )
 PATH_LIB_pcz = os.path.join(PATH_LIB_Ogre_OgreMain, 'OGRE')
 PATH_LIB_plsm2 = PATH_plsm2
-PATH_LIB_OPENAL=        os.path.join(PATH_OPENAL, 'release') #'openal')
+PATH_LIB_OPENAL=        os.path.join(PATH_OPENAL, 'libs','win32' ) ##'release') #'openal')
                 
 if SDK:
     PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'lib')

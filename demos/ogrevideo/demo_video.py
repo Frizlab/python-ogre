@@ -26,16 +26,18 @@ import ogre.addons.ogrevideo as theora
 import SampleFramework as sf
 import sys
 
-# demo = "Single" ## "Multiple" or "Cube"
-demo = "Multiple"
+demo = "Single" ## "Multiple" or "Cube"
+# demo = "Multiple"
+# demo = "Cube"
 
 class VideoApplication(sf.Application):
 
     def _loadResources( self ):
-      if demo == "Single1":  # only do audio if it's a single video stream...
-         self.mAudioFactory= theora.OpenAL_AudioInterfaceFactory()
-         mgr = ogre.ExternalTextureSourceManager.getSingleton().getExternalTextureSource("ogg_video")
-         mgr.setAudioInterfaceFactory(self.mAudioFactory)
+      if demo == "Single":  # only do audio if it's a single video stream...
+         theora.enableOpenALAudio()
+# #          self.mAudioFactory= theora.OpenAL_AudioInterfaceFactory()
+# #          mgr = ogre.ExternalTextureSourceManager.getSingleton().getExternalTextureSource("ogg_video")
+# #          mgr.setAudioInterfaceFactory(self.mAudioFactory)
 
       sf.Application._loadResources ( self ) #ogre.ResourceGroupManager.getSingleton().initialiseAllResourceGroups()
 
@@ -45,8 +47,8 @@ class VideoApplication(sf.Application):
          sceneManager = self.sceneManager
          camera = self.camera
          
-         sceneManager.ambientLight = ogre.ColourValue(0.5, 0.5, 0.5)
-         sceneManager.setSkyDome (True, 'Examples/CloudySky',4.0,8.0)
+#          sceneManager.ambientLight = ogre.ColourValue(0.5, 0.5, 0.5)
+#          sceneManager.setSkyDome (True, 'Examples/CloudySky',4.0,8.0)
          
          light = sceneManager.createLight('MainLight')
          light.setPosition (20, 80, 150)
@@ -55,17 +57,17 @@ class VideoApplication(sf.Application):
             ## create one quad, to minimize rendering time inpact on benchmarking
             model = sceneManager.createManualObject("quad")
             model.begin("SimpleVideo")
-            model.position( 1,-0.94,0)
+            model.position( 1,-1,0)
             model.textureCoord(1,1)
             model.position( 1,1,0)
             model.textureCoord(1,0)
-            model.position(-0.5,1,0)
+            model.position(-1,1,0)
             model.textureCoord(0,0)
-            model.position(-0.5,1,0)
+            model.position(-1,1,0)
             model.textureCoord(0,0)
-            model.position( 1,-0.94,0)
+            model.position( 1,-1,0)
             model.textureCoord(1,1)
-            model.position(-0.5,-0.94,0)
+            model.position(-1,-1,0)
             model.textureCoord(0,1)
             model.end()
             model.setUseIdentityProjection(True)
@@ -80,6 +82,7 @@ class VideoApplication(sf.Application):
             top=[1,    1, -0.01, -0.01]
             right=[-0.01,    1, -0.01,     1]
             bottom=[0.01, 0.01,    -1,    -1]
+            
             materials=["konqi","fedora01","fedora02","fedora03"]
             for i in range ( 4):
                model = sceneManager.createManualObject("quad"+str(i))
@@ -110,7 +113,8 @@ class VideoApplication(sf.Application):
    
             n = sceneManager.getRootSceneNode().createChildSceneNode()
             n.attachObject(c)
-            n.setScale(2,2,2)
+            scale = 4
+            n.setScale(scale, scale, scale)
             n.setPosition(ogre.Vector3(0, 0,10))
             n.yaw(ogre.Degree(30))
             
