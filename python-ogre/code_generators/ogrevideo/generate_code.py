@@ -38,6 +38,7 @@ import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
 
 MAIN_NAMESPACE = 'Ogre'
+AUDIO = True
 
 ## small helper function
 def docit ( general, i, o ): 
@@ -128,8 +129,9 @@ def ManualExclude ( mb ):
 def ManualInclude ( mb ):
     global_ns = mb.global_ns
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
-    main_ns.class_('::Ogre::OpenAL_AudioInterface').include()
-    main_ns.class_('::Ogre::OpenAL_AudioInterfaceFactory').include()
+    if AUDIO:
+       main_ns.class_('::Ogre::OpenAL_AudioInterface').include()
+       main_ns.class_('::Ogre::OpenAL_AudioInterfaceFactory').include()
     
     ## need this as it's a base class in Theora
 #     c = main_ns.class_('::Ogre::ExternalTextureSource')
@@ -556,20 +558,18 @@ def generate_code():
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generaated directory..
-    additional_files=[
-            os.path.join( environment.Config.PATH_INCLUDE_TheoraDemo, 'OpenAL_AudioInterface.h'),
-            os.path.join( environment.Config.PATH_INCLUDE_TheoraDemo, 'OpenAL_AudioInterface.cpp'),
-# #             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'generators.h' ),
-# #             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'custom_rvalue.cpp' ),
-#             os.path.join( environment.include_dir, 'tuples.hpp' )
-            ]            
-    for sourcefile in additional_files:
-        p,filename = os.path.split(sourcefile)
-        destfile = os.path.join(environment.ogrevideo.generated_dir, filename ) 
-    
-        if not common_utils.samefile( sourcefile ,destfile ):
-            shutil.copy( sourcefile, environment.ogrevideo.generated_dir )
-            print "Updated ", filename, "as it was missing or out of date"
+    if AUDIO:
+       additional_files=[
+               os.path.join( environment.Config.PATH_INCLUDE_TheoraDemo, 'OpenAL_AudioInterface.h'),
+#                os.path.join( environment.Config.PATH_INCLUDE_TheoraDemo, 'OpenAL_AudioInterface.cpp'),
+               ]            
+       for sourcefile in additional_files:
+           p,filename = os.path.split(sourcefile)
+           destfile = os.path.join(environment.ogrevideo.generated_dir, filename ) 
+       
+           if not common_utils.samefile( sourcefile ,destfile ):
+               shutil.copy( sourcefile, environment.ogrevideo.generated_dir )
+               print "Updated ", filename, "as it was missing or out of date"
         
 if __name__ == '__main__':
     start_time = time.clock()

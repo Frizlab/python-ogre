@@ -61,9 +61,29 @@ def ManualExclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns    
+    c=main_ns.class_('KeyCode')   
+    print dir(c) 
+    for o in c.operators():
+      print "O:",o.name, o
+    for o in c.member_operators():
+      print "MO:", o.name, o
+    for o in c.properties:
+      print "P:", o.name, o
+    c.operator ('=').exclude()
+#     c.operator ('!=').exclude()
+    for o in c.decls():
+      print "D:",o.name, o
+    
+    c=main_ns.class_('::MyGUI::delegates::CMultiDelegate1< std::string const& >')
+    for o in c.operators():
+      print "O:",o.name, o
+    c.operator('+=').exclude()
+    c.operator('-=').exclude()
+        
     e = ['::MyGUI::delegates::CDelegate3< MyGUI::Widget*, std::string const&, std::string const& >',
          '::MyGUI::delegates::CDelegate2< MyGUI::Widget*, unsigned int >',
-         '::MyGUI::ControllerPosition'
+         '::MyGUI::ControllerPosition',
+         '::MyGUI::IBNotifyItemData'
          ]
     for c in e:
         print "Excluding:",c
@@ -73,6 +93,11 @@ def ManualExclude ( mb ):
         if 'delegates' in c.decl_string:
             print "Excuding asssign operator from:", c
             c.operators('=').exclude()  
+#             try:
+#                c.operators('()').exclude()
+#                print "Special exclude operator:", c
+#             except:
+#                pass               
     c=['::MyGUI::Font',
        '::MyGUI::FontManager'
        ]
@@ -93,7 +118,43 @@ def ManualExclude ( mb ):
          main_ns.free_functions(e).exclude() 
       except:
          print "Unable to exclude function:", e   
-                    
+    
+    for f in main_ns.member_functions():
+      if f.name == 'onKeyButtonPressed' or f.name == 'onKeyButtonReleased':
+         print "Excluding:", f
+         f.exclude()   
+         
+    excludes = ['::MyGUI::delegates::CDelegate2< MyGUI::Widget*, MyGUI::KeyCode >',
+               '::MyGUI::delegates::CDelegate3< MyGUI::Widget*, MyGUI::KeyCode, unsigned int >',
+               ]
+    for e in excludes:
+      main_ns.class_(e).operators('()').exclude()
+
+    
+    for f in main_ns.class_('MenuCtrl').member_functions():
+      for a in f.arguments:
+         if a.default_value =="Normal":
+            a.default_value = "::MyGUI::MenuItemType::Normal"
+    main_ns.member_function('::MyGUI::Progress::setProgressStartPoint').arguments[0].default_value="::MyGUI::Align::Left"
+    
+    excludes = ['::MyGUI::Gui::injectKeyRelease', 
+                '::MyGUI::Gui::injectKeyPress',
+                '::MyGUI::InputManager::injectKeyPress',
+                '::MyGUI::InputManager::injectKeyRelease',
+                '::MyGUI::ItemBox::notifyKeyButtonPressed',
+                '::MyGUI::ItemBox::notifyKeyButtonReleased'
+                ,'::MyGUI::Message::createMessageBox'  ## bad enum conversion
+#                 ,'::MyGUI::MenuCtrl::insertItemAt'
+#                 ,'::MyGUI::MenuCtrl::insertItem'
+                ,'::MyGUI::Edit::getTextSelect' # missing
+                ,'::MyGUI::ScrollView::notifyMousePressed'
+                ,'::MyGUI::ScrollView::notifyMouseReleased'
+                ]
+    for e in excludes:
+      main_ns.member_functions(e).exclude()
+                  
+#     sys.exit()  
+                         
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 
