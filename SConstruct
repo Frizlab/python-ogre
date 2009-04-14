@@ -171,6 +171,9 @@ for name, cls in environment.projects.items():
         ## Use custom compilier if wanted (things like ccache)
         if hasattr(environment, 'cxx_compiler'):
             _env['CXX'] = environment.cxx_compiler
+            # We need to tell gccxml about this change
+            if not hasattr(environment, 'gccxml_compiler'):
+              _env['GCCXML_COMPILER'] = environment.cxx_compiler
         if hasattr(environment, 'cc_compiler'):
             _env['CC'] = environment.cc_compiler
            
@@ -234,4 +237,3 @@ for name, cls in environment.projects.items():
         _env.InstallAs(os.path.join(environment.package_dir_name, cls.parent,
                                     cls.ModuleName, cls.PydName), 
                                      package[index] )
-
