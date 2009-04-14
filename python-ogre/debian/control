@@ -5,6 +5,7 @@ Priority: optional
 Maintainer: Tim 'Mithro' Ansell <mithro@mithis.com>
 Build-Depends-Indep: python-central (>= 0.5.6), python-setuptools (>= 0.6b3-1)
 Build-Depends: debhelper (>= 5.0.38),
+	g++-4.2,
 	cmake (>= 2.4.0), scons, pkg-config,
 	zziplib-bin,
 	libboost1.38-dev,
