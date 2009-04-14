@@ -26,6 +26,7 @@ rm -rvf \
 	python-ogre/ThirdParty/dshow					\
 	python-ogre/ThirdParty/History					\
 	python-ogre/ThirdParty/vcredist_x86.exe			\
+	python-ogre/ThirdParty/dxwebsetup.exe \
 	python-ogre/convertonew.sed						\
 	python-ogre/convert.py							\
 	python-ogre/convert.sed							\
