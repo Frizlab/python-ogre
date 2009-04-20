@@ -21,7 +21,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "CaelumPrecompiled.h"
 #include "CaelumSystem.h"
 #include "CaelumExceptions.h"
-#include "ImageHelper.h"
+#include "InternalUtilities.h"
 #include "Astronomy.h"
 #include "CaelumPlugin.h"
 #include "FlatCloudLayer.h"
@@ -625,7 +625,7 @@ namespace Caelum
         }
 
         Real elevation = sunDir.dotProduct (Ogre::Vector3::UNIT_Y) * 0.5 + 0.5;
-        Ogre::ColourValue col = getInterpolatedColour (elevation, 1, mSkyGradientsImage.get(), false);
+        Ogre::ColourValue col = InternalUtilities::getInterpolatedColour (elevation, 1, mSkyGradientsImage.get(), false);
         return col;
     }
 
@@ -636,7 +636,7 @@ namespace Caelum
         }
 
         Real elevation = sunDir.dotProduct (Ogre::Vector3::UNIT_Y) * 0.5 + 0.5;
-        Ogre::ColourValue col = getInterpolatedColour (elevation, 1, mSkyGradientsImage.get(), false);
+        Ogre::ColourValue col = InternalUtilities::getInterpolatedColour (elevation, 1, mSkyGradientsImage.get(), false);
         return col.a;
     }
 
@@ -648,7 +648,7 @@ namespace Caelum
 
         Real elevation = sunDir.dotProduct (Ogre::Vector3::UNIT_Y);
         elevation = elevation * 2 + 0.4;
-        return getInterpolatedColour (elevation, 1, mSunColoursImage.get(), false);
+        return InternalUtilities::getInterpolatedColour (elevation, 1, mSunColoursImage.get(), false);
     }
 
     Ogre::ColourValue CaelumSystem::getSunLightColour (Real time, const Ogre::Vector3 &sunDir)
@@ -661,7 +661,7 @@ namespace Caelum
 
         // Hack: return averaged sky colours.
         // Don't use an alpha value for lights, this can cause nasty problems.
-        Ogre::ColourValue col = getInterpolatedColour (elevation, elevation, mSkyGradientsImage.get(), false);
+        Ogre::ColourValue col = InternalUtilities::getInterpolatedColour (elevation, elevation, mSkyGradientsImage.get(), false);
         Real val = (col.r + col.g + col.b) / 3;
         col = Ogre::ColourValue(val, val, val, 1.0);
         assert(Ogre::Math::RealEqual(col.a, 1));
@@ -679,7 +679,7 @@ namespace Caelum
         }
         // Scaled version of getSunLightColor
         Real elevation = moonDir.dotProduct (Ogre::Vector3::UNIT_Y) * 0.5 + 0.5;
-        Ogre::ColourValue col = getInterpolatedColour (elevation, elevation, mSkyGradientsImage.get(), false);
+        Ogre::ColourValue col = InternalUtilities::getInterpolatedColour (elevation, elevation, mSkyGradientsImage.get(), false);
         Real val = (col.r + col.g + col.b) / 3;
         col = Ogre::ColourValue(val / 2.5f, val / 2.5f, val / 2.5f, 1.0);
         assert(Ogre::Math::RealEqual(col.a, 1));
@@ -698,30 +698,31 @@ namespace Caelum
 
     const Ogre::Vector3 CaelumSystem::getSunDirection (LongReal jday)
     {
-		int fpmode = Astronomy::enterHighPrecissionFloatingPointMode ();
-                  
-        Ogre::Degree azimuth;
-        Ogre::Degree altitude; 
-		Astronomy::getHorizontalSunPosition(jday,
-                getObserverLongitude(), getObserverLatitude(),
-                azimuth, altitude);		
+        Ogre::Degree azimuth, altitude;
+        {
+            ScopedHighPrecissionFloatSwitch precissionSwitch;
+    		                  
+		    Astronomy::getHorizontalSunPosition(jday,
+                    getObserverLongitude(), getObserverLatitude(),
+                    azimuth, altitude);		
+        }
         Ogre::Vector3 res = makeDirection(azimuth, altitude);
 
-        Astronomy::restoreFloatingPointMode(fpmode);
         return res;
     }
 
-	const Ogre::Vector3 CaelumSystem::getMoonDirection (LongReal jday) {
-		int fpmode = Astronomy::enterHighPrecissionFloatingPointMode ();
-
+	const Ogre::Vector3 CaelumSystem::getMoonDirection (LongReal jday)
+    {
         Ogre::Degree azimuth, altitude;
-        Astronomy::getHorizontalMoonPosition(jday,
-                getObserverLongitude (), getObserverLatitude (),
-                azimuth, altitude);
-	
+        {
+            ScopedHighPrecissionFloatSwitch precissionSwitch;
+
+            Astronomy::getHorizontalMoonPosition(jday,
+                    getObserverLongitude (), getObserverLatitude (),
+                    azimuth, altitude);
+        }	
         Ogre::Vector3 res = makeDirection(azimuth, altitude);
 
-		Astronomy::restoreFloatingPointMode(fpmode);
 		return res;
 	}
 

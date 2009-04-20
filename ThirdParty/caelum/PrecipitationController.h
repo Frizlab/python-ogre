@@ -22,6 +22,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #define CAELUM__PRECIPITATION_CONTROLLER_H
 
 #include "CaelumPrerequisites.h"
+#include "FastGpuParamRef.h"
 
 namespace Caelum
 {
@@ -81,6 +82,26 @@ namespace Caelum
         // Only meant for the instance ctl in auto-camera-speed mode.
         Real mSecondsSinceLastFrame;
         inline Real getSecondsSinceLastFrame() { return mSecondsSinceLastFrame; }
+
+    private:
+        struct Params {
+            void setup(Ogre::GpuProgramParametersSharedPtr fpParams);
+
+            Ogre::GpuProgramParametersSharedPtr fpParams;
+            FastGpuParamRef precColor;
+            FastGpuParamRef intensity;
+            FastGpuParamRef dropSpeed;
+            FastGpuParamRef corner1;
+            FastGpuParamRef corner2;
+            FastGpuParamRef corner3;
+            FastGpuParamRef corner4;
+            FastGpuParamRef deltaX;
+            FastGpuParamRef deltaY;
+        } mParams;
+
+        /// Called from CompositorInstance::notifyMaterialSetup
+    	void instanceNotifyMaterialSetup (
+                const Ogre::MaterialPtr& mat);
 
         /// Called to enforce parameters on a composing material
     	void _updateMaterialParams(

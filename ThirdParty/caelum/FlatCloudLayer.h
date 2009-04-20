@@ -22,8 +22,9 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #define CAELUM__FLAT_CLOUD_LAYER_H
 
 #include "CaelumPrerequisites.h"
-#include "ImageHelper.h"
-#include "OwnedPtr.h"
+#include "InternalUtilities.h"
+#include "PrivatePtr.h"
+#include "FastGpuParamRef.h"
 
 namespace Caelum
 {
@@ -109,19 +110,36 @@ namespace Caelum
         // This means that objects must be ordered by dependency.
 
         /// Cloned cloud material.
-	    OwnedMaterialPtr mMaterial;		
+	    PrivateMaterialPtr mMaterial;		
+
+        struct Params
+        {
+            void setup(Ogre::GpuProgramParametersSharedPtr fpParams, Ogre::GpuProgramParametersSharedPtr vpParams);
+
+            Ogre::GpuProgramParametersSharedPtr vpParams;
+            Ogre::GpuProgramParametersSharedPtr fpParams;
+
+            FastGpuParamRef cloudCoverageThreshold;
+            FastGpuParamRef cloudMassOffset;
+            FastGpuParamRef cloudDetailOffset;
+            FastGpuParamRef cloudMassBlend;
+            FastGpuParamRef vpSunDirection;
+            FastGpuParamRef fpSunDirection;
+            FastGpuParamRef sunLightColour;
+            FastGpuParamRef sunSphereColour;
+            FastGpuParamRef fogColour;
+            FastGpuParamRef layerHeight;
+            FastGpuParamRef cloudUVFactor;
+            FastGpuParamRef heightRedFactor;
+            FastGpuParamRef nearFadeDist;
+            FastGpuParamRef farFadeDist;
+            FastGpuParamRef fadeDistMeasurementVector;
+        } mParams;
 
     private:
-        /// Shortcut to VP parameters.
-	    Ogre::GpuProgramParametersSharedPtr getVpParams();
-
-        /// Shortcut to FP parameters.
-	    Ogre::GpuProgramParametersSharedPtr getFpParams();
-
-    private:
-        OwnedMeshPtr mMesh;
-	    SceneNodePtr mNode;
-	    EntityPtr mEntity;
+        PrivateMeshPtr mMesh;
+	    PrivateSceneNodePtr mNode;
+	    PrivateEntityPtr mEntity;
 
         // Mesh parameters.
         bool mMeshDirty;
@@ -278,6 +296,7 @@ namespace Caelum
     private:
         Ogre::Real mNearFadeDist;
         Ogre::Real mFarFadeDist;
+        Ogre::Vector3 mFadeDistMeasurementVector;
 
     public:
         /** Cloud fade distances.
@@ -301,6 +320,19 @@ namespace Caelum
 	    void setFarFadeDist (const Ogre::Real value);
         /// Get fade distance (see setFadeDistances).
         Ogre::Real getFarFadeDist () const { return mFarFadeDist; }
+
+        /** Set on which components is the fade distance measured.
+         *  
+         *  Default is Vector3(0, 1, 1) which measures fade distance
+         *  horizontally in caelum's default assumed coordinate system.
+         *
+         *  If you're in a Z-up system you probably want to set this to (1, 1, 0).
+         *
+         *  Fade distance is always measured relative to the camera.
+         */
+        void setFadeDistMeasurementVector (const Ogre::Vector3& value);
+        /// Get the value set by setFadeDistMeasurementVector.
+        const Ogre::Vector3 getFadeDistMeasurementVector () const { return mFadeDistMeasurementVector; }
 
     public:
         void setQueryFlags (uint flags) { mEntity->setQueryFlags (flags); }

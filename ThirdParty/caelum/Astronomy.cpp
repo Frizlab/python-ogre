@@ -254,13 +254,12 @@ namespace Caelum
             int year, int month, int day,
             int hour, int minute, LongReal second)
     {
-        int fpmode = Astronomy::enterHighPrecissionFloatingPointMode ();
+        ScopedHighPrecissionFloatSwitch precissionSwitch;
 
         int jdn = getJulianDayFromGregorianDate (year, month, day);
         // These are NOT integer divisions.
         LongReal jd = jdn + (hour - 12) / 24.0 + minute / 1440.0 + second / 86400.0;
 
-        Astronomy::restoreFloatingPointMode(fpmode);
         return jd;
     }
 

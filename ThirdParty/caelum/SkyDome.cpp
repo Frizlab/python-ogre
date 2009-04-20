@@ -20,23 +20,20 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 #include "CaelumPrecompiled.h"
 #include "SkyDome.h"
-#include "GeometryFactory.h"
 #include "CaelumExceptions.h"
+#include "InternalUtilities.h"
 
 namespace Caelum
 {
     const Ogre::String SkyDome::SPHERIC_DOME_NAME = "CaelumSphericDome";
     const Ogre::String SkyDome::SKY_DOME_MATERIAL_NAME = "CaelumSkyDomeMaterial";
 
-    SkyDome::SkyDome (Ogre::SceneManager *sceneMgr, Ogre::SceneNode *caelumRootNode):
-        mNode(NULL)
+    SkyDome::SkyDome (Ogre::SceneManager *sceneMgr, Ogre::SceneNode *caelumRootNode)
     {
-	    String uniquePrefix = "Caelum/SkyDome/" + Ogre::StringConverter::toString((size_t)this) + "/";
+        String uniqueSuffix = "/" + InternalUtilities::pointerToString(this);
 
         // First clone material
-        mMaterial = Ogre::MaterialManager::getSingleton().getByName(SKY_DOME_MATERIAL_NAME);
-        mMaterial = mMaterial->clone(uniquePrefix + SKY_DOME_MATERIAL_NAME);
-        mMaterial->load ();
+        mMaterial.reset(InternalUtilities::checkLoadMaterialClone(SKY_DOME_MATERIAL_NAME, SKY_DOME_MATERIAL_NAME + uniqueSuffix));
 
         // Determine if the shader technique works.
         mShadersEnabled = mMaterial->getBestTechnique()->getPass(0)->isProgrammable();
@@ -48,28 +45,17 @@ namespace Caelum
         sceneMgr->getRenderQueue()->getQueueGroup(CAELUM_RENDER_QUEUE_SKYDOME)->setShadowsEnabled(false);
 
         // Generate dome entity.
-        GeometryFactory::generateSphericDome (SPHERIC_DOME_NAME, 32);
-        mEntity = sceneMgr->createEntity (uniquePrefix + "Dome", SPHERIC_DOME_NAME);
+        InternalUtilities::generateSphericDome (SPHERIC_DOME_NAME, 32, InternalUtilities::DT_SKY_DOME);
+        mEntity.reset(sceneMgr->createEntity ("Caelum/SkyDome/Entity" + uniqueSuffix, SPHERIC_DOME_NAME));
         mEntity->setMaterialName (mMaterial->getName());
         mEntity->setRenderQueueGroup (CAELUM_RENDER_QUEUE_SKYDOME);
         mEntity->setCastShadows (false);
 
-        mNode = caelumRootNode->createChildSceneNode (uniquePrefix + "DomeNode");
-        mNode->attachObject (mEntity);
+        mNode.reset(caelumRootNode->createChildSceneNode ("Caelum/SkyDome/Node" + uniqueSuffix));
+        mNode->attachObject (mEntity.get());
     }
 
     SkyDome::~SkyDome () {
-        if (mNode) {
-            // Detach and destroy attached entity.
-            mNode->detachObject (mEntity);
-            mEntity->_getManager ()->destroyEntity (mEntity);
-
-            // Destroy the node
-            static_cast<Ogre::SceneNode *>(mNode->getParent ())->removeAndDestroyChild (mNode->getName ());
-            mNode = 0;
-
-            Ogre::MaterialManager::getSingletonPtr()->remove(mMaterial->getHandle());
-        }
     }
 
     void SkyDome::notifyCameraChanged (Ogre::Camera *cam) {
@@ -86,10 +72,8 @@ namespace Caelum
         elevation = elevation * 0.5 + 0.5;
         Ogre::Pass* pass = mMaterial->getBestTechnique()->getPass(0);
         if (mShadersEnabled) {
-            Ogre::GpuProgramParametersSharedPtr vpParams = pass->getVertexProgramParameters();
-            Ogre::GpuProgramParametersSharedPtr fpParams = pass->getFragmentProgramParameters();
-            vpParams->setNamedConstant ("sunDirection", sunDir);
-            fpParams->setNamedConstant ("offset", elevation);
+            mParams.sunDirection.set(mParams.vpParams, sunDir);
+            mParams.offset.set(mParams.fpParams, elevation);
         } else {
             Ogre::TextureUnitState* gradientsTus = pass->getTextureUnitState(0);
             gradientsTus->setTextureUScroll (elevation);
@@ -98,8 +82,7 @@ namespace Caelum
 
     void SkyDome::setHazeColour (const Ogre::ColourValue& hazeColour) {
         if (mShadersEnabled && mHazeEnabled) {
-            Ogre::GpuProgramParametersSharedPtr fpParams =  mMaterial->getBestTechnique()->getPass(0)->getFragmentProgramParameters();
-            fpParams->setNamedConstant ("hazeColour", hazeColour);
+            mParams.hazeColour.set(mParams.fpParams, hazeColour);
         }    
     }
 
@@ -153,7 +136,17 @@ namespace Caelum
         } else {
             pass->setFragmentProgram("CaelumSkyDomeFP_NoHaze");
         }
-        Ogre::GpuProgramParametersSharedPtr params = pass->getFragmentProgramParameters();
-        params->setIgnoreMissingParams(true);
+        mParams.setup(
+                pass->getVertexProgramParameters(),
+                pass->getFragmentProgramParameters());
+    }
+
+    void SkyDome::Params::setup(Ogre::GpuProgramParametersSharedPtr vpParams, Ogre::GpuProgramParametersSharedPtr fpParams)
+    {
+        this->fpParams = fpParams;
+        this->vpParams = vpParams;
+        sunDirection.bind(vpParams, "sunDirection");
+        offset.bind(fpParams, "offset");
+        hazeColour.bind(fpParams, "hazeColour");
     }
 }

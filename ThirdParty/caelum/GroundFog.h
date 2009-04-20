@@ -23,6 +23,8 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 #include "CaelumPrerequisites.h"
 #include "CameraBoundElement.h"
+#include "PrivatePtr.h"
+#include "FastGpuParamRef.h"
 
 namespace Caelum
 {
@@ -125,20 +127,18 @@ namespace Caelum
         /// Fog colour
 		Ogre::ColourValue mFogColour;
 
-		/// The passes to control.
-		PassSet mPasses;
-
-		/// Sky dome material
-		Ogre::MaterialPtr mDomeMaterial;
-
-		/// Sky dome mesh
-		Ogre::SceneNode *mDomeNode;
-
-		/// Sky dome entity
-		Ogre::Entity *mDomeEntity;
-
+    private:
 		/// The scene to control fog in.
 		Ogre::SceneManager* mScene;
+
+		/// Sky dome material
+		PrivateMaterialPtr mDomeMaterial;
+        
+		/// Sky dome node
+		PrivateSceneNodePtr mDomeNode;
+
+		/// Sky dome entity
+		PrivateEntityPtr mDomeEntity;
 
 		// Called whenever something changes to update the sky dome.
 		void updateSkyFogging();
@@ -155,6 +155,47 @@ namespace Caelum
         uint getQueryFlags () const { return mDomeEntity->getQueryFlags (); }
         void setVisibilityFlags (uint flags) { mDomeEntity->setVisibilityFlags (flags); }
         uint getVisibilityFlags () const { return mDomeEntity->getVisibilityFlags (); }
+
+    private:
+		/// The passes to control.
+		PassSet mPasses;
+
+        /// Params references.
+        struct FogParamsBase
+        {
+            void setup(Ogre::GpuProgramParametersSharedPtr fpParams);
+
+            Ogre::GpuProgramParametersSharedPtr fpParams;
+
+    		FastGpuParamRef fogDensity;
+		    FastGpuParamRef fogColour;
+		    FastGpuParamRef fogVerticalDecay;
+		    FastGpuParamRef fogGroundLevel;
+
+        };
+
+        struct DomeFogParams: public FogParamsBase {
+            void setup(Ogre::GpuProgramParametersSharedPtr fpParams);
+		    FastGpuParamRef cameraHeight;
+        } mDomeParams;
+
+        struct PassFogParams: public FogParamsBase {
+            PassFogParams(Ogre::GpuProgramParametersSharedPtr fpParams) { setup(fpParams); }
+
+            static inline bool lessThanByParams(const PassFogParams& a, const PassFogParams& b) {
+                return a.fpParams.get() <= b.fpParams.get();
+            }
+
+            static inline bool equalByParams(const PassFogParams& a, const PassFogParams& b) {
+                return a.fpParams.get() == b.fpParams.get();
+            }
+        };
+
+        typedef std::vector<PassFogParams> PassFogParamsVector;
+        PassFogParamsVector mPassFogParams;
+
+        /// Update mPassFogParams based on mPasses
+        void updatePassFogParams();
     };
 }
 

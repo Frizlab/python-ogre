@@ -28,7 +28,6 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "CaelumExceptions.h"
 #include "CaelumSystem.h"
 #include "CameraBoundElement.h"
-#include "GeometryFactory.h"
 #include "SkyDome.h"
 #include "Sun.h"
 #include "Moon.h"

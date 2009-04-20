@@ -41,30 +41,30 @@ namespace Caelum
             int year, int month, int day,
             int hour, int minute, double second)
     {
-        ScopedHighPrecissionFloatSwitch lock;
+        ScopedHighPrecissionFloatSwitch precissionSwitch;
         setJulianDay(Astronomy::getJulianDayFromGregorianDateTime(year, month, day, hour, minute, second));
     }
 
     LongReal UniversalClock::getJulianDay () const
     {
-        ScopedHighPrecissionFloatSwitch lock;
+        ScopedHighPrecissionFloatSwitch precissionSwitch;
         Caelum::LongReal res = mJulianDayBase + mCurrentTime / SECONDS_PER_DAY;
         return res;
     }
 
     LongReal UniversalClock::getJulianDayDifference () const {
-        ScopedHighPrecissionFloatSwitch lock;
+        ScopedHighPrecissionFloatSwitch precissionSwitch;
         return (mCurrentTime - mLastUpdateTime) / SECONDS_PER_DAY;
     }
 
     LongReal UniversalClock::getJulianSecond () const {
-        ScopedHighPrecissionFloatSwitch lock;
+        ScopedHighPrecissionFloatSwitch precissionSwitch;
         LongReal res = mJulianDayBase * SECONDS_PER_DAY + mCurrentTime;
         return res;
     }
 
     LongReal UniversalClock::getJulianSecondDifference () const {
-        ScopedHighPrecissionFloatSwitch lock;
+        ScopedHighPrecissionFloatSwitch precissionSwitch;
         return mCurrentTime - mLastUpdateTime;
     }
 

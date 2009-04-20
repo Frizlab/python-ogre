@@ -184,9 +184,6 @@ namespace Caelum
         //            "Caelum::DepthComposer: Material setup");
 
         Pass* pass = mat->getBestTechnique ()->getPass (0);
-		GpuProgramParametersSharedPtr fpParams = pass->getFragmentProgramParameters ();
-
-        fpParams->setIgnoreMissingParams(true);
 
         TextureUnitState *depthTus = pass->getTextureUnitState(1);
         if (depthTus->getTextureName () != mDepthRenderer->getDepthRenderTexture ()->getName()) {
@@ -194,31 +191,46 @@ namespace Caelum
             LogManager::getSingleton ().logMessage (
                         "Caelum::DepthComposer: Assigned depth texture in compositor material");
         }
+
+        mParams.setup(pass->getFragmentProgramParameters ());
 	}
+
+    void DepthComposerInstance::Params::setup(Ogre::GpuProgramParametersSharedPtr fpParams)
+    {
+        this->fpParams = fpParams;
+        invViewProjMatrix.bind(fpParams, "invViewProjMatrix");
+        worldCameraPos.bind(fpParams, "worldCameraPos");
+        groundFogDensity.bind(fpParams, "groundFogDensity");
+        groundFogVerticalDecay.bind(fpParams, "groundFogVerticalDecay");
+        groundFogBaseLevel.bind(fpParams, "groundFogBaseLevel");
+        groundFogColour.bind(fpParams, "groundFogColour");
+        sunDirection.bind(fpParams, "sunDirection");
+        hazeColour.bind(fpParams, "hazeColour");
+    }
 
 	void DepthComposerInstance::notifyMaterialRender(uint pass_id, Ogre::MaterialPtr &mat)
 	{
-        Pass* pass = mat->getBestTechnique ()->getPass (0);
-		GpuProgramParametersSharedPtr fpParams = pass->getFragmentProgramParameters ();
         Camera* camera = getViewport ()->getCamera ();
+
+        assert(mParams.fpParams == mat->getBestTechnique ()->getPass (0)->getFragmentProgramParameters ());
 
         // Auto param in a compositor does not use the external camera.
         // This means that sending matrices as auto_param will not work as expected.
         // Do it manually instead.
         Matrix4 projMatrix = camera->getProjectionMatrixWithRSDepth();
         Matrix4 viewMatrix = camera->getViewMatrix();
-        fpParams->setNamedConstant("invViewProjMatrix", (projMatrix * viewMatrix).inverse());
 
-        fpParams->setNamedConstant("worldCameraPos", camera->getDerivedPosition ());
+        mParams.invViewProjMatrix.set(mParams.fpParams, (projMatrix * viewMatrix).inverse());
 
-        fpParams->setNamedConstant("groundFogDensity", getParent ()->getGroundFogDensity ());
-        fpParams->setNamedConstant("groundFogVerticalDecay", getParent ()->getGroundFogVerticalDecay ());
-        fpParams->setNamedConstant("groundFogBaseLevel", getParent ()->getGroundFogBaseLevel ());
-        fpParams->setNamedConstant("groundFogColour", getParent ()->getGroundFogColour ());
+        mParams.worldCameraPos.set(mParams.fpParams, camera->getDerivedPosition ());
 
-        fpParams->setNamedConstant("sunDirection", getParent ()->getSunDirection ());
-        fpParams->setNamedConstant("hazeColour", getParent ()->getHazeColour ());
+        mParams.groundFogDensity.set(mParams.fpParams, getParent ()->getGroundFogDensity ());
+        mParams.groundFogVerticalDecay.set(mParams.fpParams, getParent ()->getGroundFogVerticalDecay ());
+        mParams.groundFogBaseLevel.set(mParams.fpParams, getParent ()->getGroundFogBaseLevel ());
+        mParams.groundFogColour.set(mParams.fpParams, getParent ()->getGroundFogColour ());
 
+        mParams.sunDirection.set(mParams.fpParams, getParent ()->getSunDirection ());
+        mParams.hazeColour.set(mParams.fpParams, getParent ()->getHazeColour ());
 	}
 
 	void DepthComposerInstance::_update ()

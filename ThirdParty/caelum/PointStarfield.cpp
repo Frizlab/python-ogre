@@ -20,15 +20,15 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 #include "CaelumPrecompiled.h"
 #include "PointStarfield.h"
-#include "GeometryFactory.h"
 #include "CaelumExceptions.h"
 #include "Astronomy.h"
+#include "InternalUtilities.h"
 
 using namespace Ogre;
 
 namespace Caelum
 {
-	const Ogre::String PointStarfield::BILLBOARD_MATERIAL_NAME = "Caelum/StarPoint";
+	const Ogre::String PointStarfield::STARFIELD_MATERIAL_NAME = "Caelum/StarPoint";
     const Ogre::Degree PointStarfield::DEFAULT_OBSERVER_POSITION_REBUILD_DELTA = Ogre::Degree(0.1);
 
 	PointStarfield::PointStarfield (
@@ -44,25 +44,21 @@ namespace Caelum
 		mObserverLongitude = 0;
         mObserverPositionRebuildDelta = DEFAULT_OBSERVER_POSITION_REBUILD_DELTA;
 
-        String uniqueId = StringConverter::toString ((size_t)this);
+        String uniqueSuffix = "/" + InternalUtilities::pointerToString(this);
 
-        MaterialPtr scriptMaterial = MaterialManager::getSingleton ().getByName (BILLBOARD_MATERIAL_NAME);
-		if (scriptMaterial.isNull ()) {
-			CAELUM_THROW_UNSUPPORTED_EXCEPTION ("Can't find point starfield material", "PointStarfield");
-		}
-        mMaterial.reset (scriptMaterial->clone (BILLBOARD_MATERIAL_NAME + uniqueId));
-		mMaterial->load ();
-		if (mMaterial->getBestTechnique () == 0) {
-            CAELUM_THROW_UNSUPPORTED_EXCEPTION ("Can't load point starfield material: " + mMaterial->getUnsupportedTechniquesExplanation(), "PointStarfield");
-		}
+        // Load material.
+        mMaterial.reset(InternalUtilities::checkLoadMaterialClone(
+                    STARFIELD_MATERIAL_NAME,
+                    STARFIELD_MATERIAL_NAME + uniqueSuffix));
 
-		sceneMgr->getRenderQueue()->getQueueGroup(CAELUM_RENDER_QUEUE_STARFIELD)->setShadowsEnabled (false);
+        mParams.setup(mMaterial->getTechnique(0)->getPass(0)->getVertexProgramParameters());
 
 		// We use a separate data source.
-		Ogre::String objName = "Caelum/PointStarfield/" + uniqueId;
+		Ogre::String objName = "Caelum/PointStarfield" + uniqueSuffix;
         mManualObj.reset (sceneMgr->createManualObject (objName));
         mManualObj->setDynamic(false);
 		mManualObj->setRenderQueueGroup (CAELUM_RENDER_QUEUE_STARFIELD);
+		sceneMgr->getRenderQueue()->getQueueGroup(CAELUM_RENDER_QUEUE_STARFIELD)->setShadowsEnabled (false);
         mManualObj->setCastShadows(false);
 
 		mNode.reset (caelumRootNode->createChildSceneNode ());
@@ -220,6 +216,16 @@ namespace Caelum
 
 		mValidGeometry = true;
 	}
+    
+    void PointStarfield::Params::setup(Ogre::GpuProgramParametersSharedPtr vpParams)
+    {
+        this->vpParams = vpParams;
+        this->mag_scale.bind(vpParams, "mag_scale");
+        this->mag0_size.bind(vpParams, "mag0_size");
+        this->min_size.bind(vpParams, "min_size");
+        this->max_size.bind(vpParams, "max_size");
+        this->aspect_ratio.bind(vpParams, "aspect_ratio");
+    }
 
 	void PointStarfield::notifyCameraChanged (Ogre::Camera *cam) {
 		CameraBoundElement::notifyCameraChanged (cam);
@@ -239,12 +245,11 @@ namespace Caelum
         Real aspectRatio = static_cast<Real>(width) / height;
 
         // These params are relative to the size of the screen.
-        vpParams->setIgnoreMissingParams (true);
-        vpParams->setNamedConstant ("mag_scale", magScale);
-        vpParams->setNamedConstant ("mag0_size", mag0Size);
-        vpParams->setNamedConstant ("min_size", minSize);
-        vpParams->setNamedConstant ("max_size", maxSize);
-        vpParams->setNamedConstant ("aspect_ratio", aspectRatio);
+        mParams.mag_scale.set(mParams.vpParams, magScale);
+        mParams.mag0_size.set(mParams.vpParams, mag0Size);
+        mParams.min_size.set(mParams.vpParams, minSize);
+        mParams.max_size.set(mParams.vpParams, maxSize);
+        mParams.aspect_ratio.set(mParams.vpParams, aspectRatio);
 	}
 
 	void PointStarfield::setFarRadius (Ogre::Real radius) {
