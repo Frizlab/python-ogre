@@ -23,6 +23,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 #include "CaelumPrerequisites.h"
 #include "CameraBoundElement.h"
+#include "PrivatePtr.h"
 
 namespace Caelum
 {
@@ -34,13 +35,13 @@ namespace Caelum
     {
 	protected:
 		/// Reference to the dome node.
-		Ogre::SceneNode *mNode;
-
-		/// Reference to the dome entity.
-		Ogre::Entity *mEntity;
+		PrivateSceneNodePtr mNode;
 
 		/// Reference to the (cloned) starfield material.
-		Ogre::MaterialPtr mStarfieldMaterial;
+		PrivateMaterialPtr mStarfieldMaterial;
+
+		/// Reference to the dome entity.
+		PrivateEntityPtr mEntity;
 
 		/// Name of the spheric dome resource.
 		static const Ogre::String STARFIELD_DOME_NAME;

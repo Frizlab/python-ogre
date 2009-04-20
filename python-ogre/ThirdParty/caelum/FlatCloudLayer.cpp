@@ -21,6 +21,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "CaelumPrecompiled.h"
 #include "FlatCloudLayer.h"
 #include "CaelumExceptions.h"
+#include "InternalUtilities.h"
 
 namespace Caelum
 {
@@ -28,27 +29,14 @@ namespace Caelum
             Ogre::SceneManager *sceneMgr,
 			Ogre::SceneNode *cloudRoot)
 	{
-        Ogre::String uniqueId = Ogre::StringConverter::toString((size_t)this);
-        Ogre::String materialName = "Caelum/FlatCloudLayer/Material/" + uniqueId;
+        Ogre::String uniqueSuffix = InternalUtilities::pointerToString(this);
 
 		// Clone material
-        Ogre::MaterialPtr originalMaterial = Ogre::MaterialManager::getSingleton ().getByName ("CaelumLayeredClouds");
-		if (originalMaterial.isNull ()) {
-			CAELUM_THROW_UNSUPPORTED_EXCEPTION (
-                    "Can't find material resource \"CaelumLayeredClouds\"",
-                    "FlatCloudLayer");
-		}
-		mMaterial.reset(originalMaterial->clone (materialName));
-		mMaterial->load ();
-		if (mMaterial->getBestTechnique () == 0) {
-            CAELUM_THROW_UNSUPPORTED_EXCEPTION (
-                    "Can't load flat cloud layer material: " + mMaterial->getUnsupportedTechniquesExplanation(),
-                    "FlatCloudLayer");
-		}
+		mMaterial.reset(InternalUtilities::checkLoadMaterialClone ("CaelumLayeredClouds", "Caelum/FlatCloudLayer/Material" + uniqueSuffix));
 
- 		// Ignore missing shader parameters in clones material.
-		getFpParams()->setIgnoreMissingParams(true);
-		getVpParams()->setIgnoreMissingParams(true);
+        mParams.setup(
+                mMaterial->getTechnique(0)->getPass(0)->getVertexProgramParameters(),
+                mMaterial->getTechnique(0)->getPass(0)->getFragmentProgramParameters());
 
         // Create the scene node.
 		mSceneMgr = sceneMgr;
@@ -79,7 +67,7 @@ namespace Caelum
     {
 		mSceneMgr = 0;
 
-        // Rely on OwnedPtr for everything interesting.
+        // Rely on PrivatePtr for everything interesting.
 	}	
 
     void FlatCloudLayer::_invalidateGeometry () {
@@ -170,6 +158,7 @@ namespace Caelum
 		setHeightRedFactor (100000);
 
         setFadeDistances (10000, 140000);
+        setFadeDistMeasurementVector (Ogre::Vector3(0, 1, 1));
 
         setSunDirection (Ogre::Vector3::UNIT_Y);
         setFogColour (Ogre::ColourValue::Black);
@@ -206,13 +195,26 @@ namespace Caelum
         setCloudBlendPos (getCloudBlendPos () + timePassed / mCloudBlendTime);
     }
 
-	Ogre::GpuProgramParametersSharedPtr FlatCloudLayer::getVpParams() {
-		return mMaterial->getBestTechnique()->getPass(0)->getVertexProgramParameters();
-	}
-
-	Ogre::GpuProgramParametersSharedPtr FlatCloudLayer::getFpParams() {
-		return mMaterial->getBestTechnique()->getPass(0)->getFragmentProgramParameters();
-	}
+    void FlatCloudLayer::Params::setup(Ogre::GpuProgramParametersSharedPtr vpParams, Ogre::GpuProgramParametersSharedPtr fpParams)
+    {
+        this->vpParams = vpParams;
+        this->fpParams = fpParams;
+        cloudCoverageThreshold.bind(fpParams, "cloudCoverageThreshold");
+        cloudMassOffset.bind(fpParams, "cloudMassOffset");
+        cloudDetailOffset.bind(fpParams, "cloudDetailOffset");
+        cloudMassBlend.bind(fpParams, "cloudMassBlend");
+        vpSunDirection.bind(vpParams, "sunDirection");
+        fpSunDirection.bind(fpParams, "sunDirection");
+        sunLightColour.bind(fpParams, "sunLightColour");
+        sunSphereColour.bind(fpParams, "sunSphereColour");
+        fogColour.bind(fpParams, "fogColour");
+        layerHeight.bind(fpParams, "layerHeight");
+        cloudUVFactor.bind(fpParams, "cloudUVFactor");
+        heightRedFactor.bind(fpParams, "heightRedFactor");
+        nearFadeDist.bind(fpParams, "nearFadeDist");
+        farFadeDist.bind(fpParams, "farFadeDist");
+        fadeDistMeasurementVector.bind(fpParams, "fadeDistMeasurementVector");
+    }
 
 	void FlatCloudLayer::setCloudCoverLookup (const Ogre::String& fileName) {
         mCloudCoverLookup.reset(0);
@@ -235,21 +237,21 @@ namespace Caelum
         mCloudCover = cloudCover;
 		float cloudCoverageThreshold = 0;
         if (mCloudCoverLookup.get() != 0) {
-			cloudCoverageThreshold = getInterpolatedColour(cloudCover, 1, mCloudCoverLookup.get(), false).r;
+			cloudCoverageThreshold = InternalUtilities::getInterpolatedColour(cloudCover, 1, mCloudCoverLookup.get(), false).r;
         } else {
             cloudCoverageThreshold = 1 - cloudCover;   
         }
-		getFpParams()->setNamedConstant("cloudCoverageThreshold", cloudCoverageThreshold);
+		mParams.cloudCoverageThreshold.set(mParams.fpParams, cloudCoverageThreshold);
 	}
 
 	void FlatCloudLayer::setCloudMassOffset(const Ogre::Vector2 &cloudMassOffset) {
 		mCloudMassOffset = cloudMassOffset;		
-		getFpParams()->setNamedConstant("cloudMassOffset", Ogre::Vector3(cloudMassOffset.x,cloudMassOffset.y,0));		
+		mParams.cloudMassOffset.set(mParams.fpParams, Ogre::Vector3(cloudMassOffset.x,cloudMassOffset.y,0));		
 	}
 
 	void FlatCloudLayer::setCloudDetailOffset(const Ogre::Vector2 &cloudDetailOffset) {
 		mCloudDetailOffset = cloudDetailOffset;
-		getFpParams()->setNamedConstant("cloudDetailOffset", Ogre::Vector3(cloudDetailOffset.x,cloudDetailOffset.y,0));		
+		mParams.cloudDetailOffset.set(mParams.fpParams, Ogre::Vector3(cloudDetailOffset.x,cloudDetailOffset.y,0));		
 	}
 
 	void FlatCloudLayer::setCloudBlendTime(const Ogre::Real value) {
@@ -284,7 +286,7 @@ namespace Caelum
         }
 
         Ogre::Real cloudMassBlend = fmod(mCloudBlendPos, 1);
-		getFpParams()->setNamedConstant("cloudMassBlend", cloudMassBlend);
+		mParams.cloudMassBlend.set(mParams.fpParams, cloudMassBlend);
     }
 
     Ogre::Real FlatCloudLayer::getCloudBlendPos () const {
@@ -297,23 +299,20 @@ namespace Caelum
 
 	void FlatCloudLayer::setSunDirection (const Ogre::Vector3 &sunDirection) {
         mSunDirection = sunDirection;
-		getVpParams()->setNamedConstant("sunDirection", sunDirection);
-		getFpParams()->setNamedConstant("sunDirection", sunDirection);
+		mParams.vpSunDirection.set(mParams.vpParams, sunDirection);
+		mParams.fpSunDirection.set(mParams.fpParams, sunDirection);
 	}
 
 	void FlatCloudLayer::setSunLightColour (const Ogre::ColourValue &sunLightColour) {
-		getFpParams()->setNamedConstant("sunLightColour",
-                mSunLightColour = sunLightColour);
+		mParams.sunLightColour.set(mParams.fpParams, mSunLightColour = sunLightColour);
 	}
 
 	void FlatCloudLayer::setSunSphereColour (const Ogre::ColourValue &sunSphereColour) {
-		getFpParams()->setNamedConstant("sunSphereColour",
-                mSunSphereColour = sunSphereColour);
+		mParams.sunSphereColour.set(mParams.fpParams, mSunSphereColour = sunSphereColour);
 	}
 
 	void FlatCloudLayer::setFogColour (const Ogre::ColourValue &fogColour) {
-		getFpParams()->setNamedConstant("fogColour",
-                mFogColour = fogColour);
+		mParams.fogColour.set(mParams.fpParams, mFogColour = fogColour);
 	}
 
 	const Ogre::Vector3 FlatCloudLayer::getSunDirection () const {
@@ -335,7 +334,7 @@ namespace Caelum
 	void FlatCloudLayer::setHeight(Ogre::Real height) {
 		mNode->setPosition(Ogre::Vector3(0, height, 0));
 		mHeight = height;
-		getFpParams()->setNamedConstant("layerHeight", mHeight);
+		mParams.layerHeight.set(mParams.fpParams, mHeight);
 	}
 
     Ogre::Real FlatCloudLayer::getHeight() const {
@@ -343,11 +342,11 @@ namespace Caelum
 	}
 
     void FlatCloudLayer::setCloudUVFactor (const Ogre::Real value) {
-		getFpParams()->setNamedConstant("cloudUVFactor", mCloudUVFactor = value);
+		mParams.cloudUVFactor.set(mParams.fpParams, mCloudUVFactor = value);
     }
 
     void FlatCloudLayer::setHeightRedFactor (const Ogre::Real value) {
-		getFpParams()->setNamedConstant("heightRedFactor", mHeightRedFactor = value);
+		mParams.heightRedFactor.set(mParams.fpParams, mHeightRedFactor = value);
     }
 
     void FlatCloudLayer::setFadeDistances (const Ogre::Real nearValue, const Ogre::Real farValue) {
@@ -356,10 +355,14 @@ namespace Caelum
     }
 
     void FlatCloudLayer::setNearFadeDist (const Ogre::Real value) {
-		getFpParams()->setNamedConstant("nearFadeDist", mNearFadeDist = value);
+		mParams.nearFadeDist.set(mParams.fpParams, mNearFadeDist = value);
     }
 
     void FlatCloudLayer::setFarFadeDist (const Ogre::Real value) {
-		getFpParams()->setNamedConstant("farFadeDist", mFarFadeDist = value);
+		mParams.farFadeDist.set(mParams.fpParams, mFarFadeDist = value);
+    }
+
+    void FlatCloudLayer::setFadeDistMeasurementVector (const Ogre::Vector3& value) {
+		mParams.fadeDistMeasurementVector.set(mParams.fpParams, mFadeDistMeasurementVector = value);
     }
 }

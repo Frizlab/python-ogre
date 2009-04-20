@@ -23,7 +23,8 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 #include "CaelumPrerequisites.h"
 #include "CameraBoundElement.h"
-#include "OwnedPtr.h"
+#include "PrivatePtr.h"
+#include "FastGpuParamRef.h"
 
 namespace Caelum
 {
@@ -107,16 +108,15 @@ namespace Caelum
          */
         void addBrightStarCatalogue (int count = BrightStarCatalogueSize);
 
-
     private:
         /// Cloned material
-        OwnedMaterialPtr mMaterial;
+        PrivateMaterialPtr mMaterial;
 
 	    /// Node for the starfield
-	    SceneNodePtr mNode;
+	    PrivateSceneNodePtr mNode;
         
         /// Manual object for drawing.
-        ManualObjectPtr mManualObj;
+        PrivateManualObjectPtr mManualObj;
 
         /// Star data.
         std::vector<Star> mStars;
@@ -179,8 +179,8 @@ namespace Caelum
 
 	    static const Ogre::Degree DEFAULT_OBSERVER_POSITION_REBUILD_DELTA;
 
-        /// Material used on billboards
-	    static const Ogre::String BILLBOARD_MATERIAL_NAME;
+        /// Material used to draw all the points.
+	    static const Ogre::String STARFIELD_MATERIAL_NAME;
 
 	    /// Handle camera change.
 	    virtual void notifyCameraChanged (Ogre::Camera *cam);
@@ -194,6 +194,18 @@ namespace Caelum
         uint getQueryFlags () const { return mManualObj->getQueryFlags (); }
         void setVisibilityFlags (uint flags) { mManualObj->setVisibilityFlags (flags); }
         uint getVisibilityFlags () const { return mManualObj->getVisibilityFlags (); }
+
+    private:
+        struct Params {
+            void setup(Ogre::GpuProgramParametersSharedPtr vpParams);
+        
+            Ogre::GpuProgramParametersSharedPtr vpParams;
+            FastGpuParamRef mag_scale;
+            FastGpuParamRef mag0_size;
+            FastGpuParamRef min_size;
+            FastGpuParamRef max_size;
+            FastGpuParamRef aspect_ratio;
+        } mParams;
     };
 }
 

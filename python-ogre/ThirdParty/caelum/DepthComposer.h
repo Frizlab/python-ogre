@@ -22,6 +22,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #define CAELUM__DEPTH_COMPOSER_H
 
 #include "CaelumPrerequisites.h"
+#include "FastGpuParamRef.h"
 
 namespace Caelum
 {
@@ -138,6 +139,20 @@ namespace Caelum
 
         virtual void notifyMaterialSetup(uint pass_id, Ogre::MaterialPtr &mat);
         virtual void notifyMaterialRender(uint pass_id, Ogre::MaterialPtr &mat);
+
+        struct Params {
+            void setup(Ogre::GpuProgramParametersSharedPtr params);
+
+            Ogre::GpuProgramParametersSharedPtr fpParams;
+            FastGpuParamRef invViewProjMatrix;
+            FastGpuParamRef worldCameraPos;
+            FastGpuParamRef groundFogDensity;
+            FastGpuParamRef groundFogVerticalDecay;
+            FastGpuParamRef groundFogBaseLevel;
+            FastGpuParamRef groundFogColour;
+            FastGpuParamRef sunDirection;
+            FastGpuParamRef hazeColour;
+        } mParams;
 
     protected:
         /// Called from DepthComposer::update

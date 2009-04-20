@@ -33,7 +33,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "DepthComposer.h"
 #include "PrecipitationController.h"
 #include "GroundFog.h"
-#include "OwnedPtr.h"
+#include "PrivatePtr.h"
 
 namespace Caelum
 {
@@ -122,10 +122,10 @@ namespace Caelum
 		Ogre::SceneManager *mSceneMgr;
 
         /// Caelum scene node for camera-bound elements (most).
-		SceneNodePtr mCaelumCameraNode;
+		PrivateSceneNodePtr mCaelumCameraNode;
 
         /// Caelum scene node for ground-bound elements (only clouds currently).
-		SceneNodePtr mCaelumGroundNode;
+		PrivateSceneNodePtr mCaelumGroundNode;
 
 		/// Cleanup requested flag.
 		bool mCleanup;

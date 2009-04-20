@@ -24,6 +24,7 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 #include "CaelumPrerequisites.h"
 #include "CameraBoundElement.h"
 #include "SkyLight.h"
+#include "PrivatePtr.h"
 
 namespace Caelum
 {
@@ -43,19 +44,20 @@ namespace Caelum
 		static const Ogre::String SUN_MATERIAL_NAME;
 
 	private:
-		/// The sun entity.
-		Ogre::Entity *mSunEntity;
-
 		/// Reference to the sun material.
-		Ogre::MaterialPtr mSunMaterial;
+		PrivateMaterialPtr mSunMaterial;
+
+		/// The sun entity.
+		PrivateEntityPtr mSunEntity;
 
 	public:
 		/** Constructor.
 			@param sceneMgr The scene manager where the lights will be created.
 		 */
-		SphereSun (Ogre::SceneManager *sceneMgr,
-			Ogre::SceneNode *caelumRootNode,
-			const Ogre::String &meshName = "sphere.mesh");
+		SphereSun (
+                Ogre::SceneManager *sceneMgr,
+                Ogre::SceneNode *caelumRootNode,
+                const Ogre::String &meshName = "sphere.mesh");
 
 		/** Destructor.
 			@note If a sun position model is in use, it will be deleted.
@@ -79,29 +81,32 @@ namespace Caelum
 
     /** Class representing the sun as billboard with texture on it.
      */
-    class CAELUM_EXPORT SpriteSun : public BaseSkyLight {
+    class CAELUM_EXPORT SpriteSun : public BaseSkyLight
+    {
 	public:
 		/// Name of the sun material.
 		static const Ogre::String SUN_MATERIAL_NAME;
 
 	protected:
-		/// The sun sprite.
-		Ogre::BillboardSet* mSunBillboardSet;
-		
-		/// Reference to the sun material.
-		Ogre::MaterialPtr mSunMaterial;
+		/// The sun material.
+		PrivateMaterialPtr mSunMaterial;
 
+		/// The sun sprite / billboard
+		PrivateBillboardSetPtr mSunBillboardSet;
+		
 		/// The sun sprite visible angle
 		Ogre::Degree mSunTextureAngularSize;
 
 	public:
 		/** Constructor.
 			@param sceneMgr The scene manager where the lights will be created.
+            @param sunTextureAngularSize 0.53f is real angular size of Sun and Moon, 3.77f is compatible with SphereSun
 		 */
-		SpriteSun (Ogre::SceneManager *sceneMgr,
-			Ogre::SceneNode *caelumRootNode,
-			const Ogre::String& sunTextureName = "sun_disc.png", 
-			const Ogre::Degree& sunTextureAngularSize = Ogre::Degree(3.77f)); // 0.53f is real angular size of Sun and Moon, 3.77f is compatible with SphereSun
+		SpriteSun (
+                Ogre::SceneManager *sceneMgr,
+                Ogre::SceneNode *caelumRootNode,
+                const Ogre::String& sunTextureName = "sun_disc.png", 
+                const Ogre::Degree& sunTextureAngularSize = Ogre::Degree(3.77f));
 
 		/** Destructor.
 			@note If a sun position model is in use, it will be deleted.

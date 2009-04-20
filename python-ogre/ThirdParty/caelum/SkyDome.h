@@ -23,6 +23,8 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 #include "CaelumPrerequisites.h"
 #include "CameraBoundElement.h"
+#include "FastGpuParamRef.h"
+#include "PrivatePtr.h"
 
 namespace Caelum
 {
@@ -31,10 +33,6 @@ namespace Caelum
     class CAELUM_EXPORT SkyDome : public CameraBoundElement
     {
 	private:
-		/** Control scene node.
-		 */
-		Ogre::SceneNode *mNode;
-
 		/** Name of the spheric dome resource.
 		 */
 		static const Ogre::String SPHERIC_DOME_NAME;
@@ -43,12 +41,16 @@ namespace Caelum
 		 */
 		static const Ogre::String SKY_DOME_MATERIAL_NAME;
 
-		/// Reference to the sky dome material.
-		Ogre::MaterialPtr mMaterial;
+		/// Control scene node.
+		PrivateSceneNodePtr mNode;
 
-        /// Reference to the sky dome entity.
-        Ogre::Entity* mEntity;
+		/// Sky dome material.
+		PrivateMaterialPtr mMaterial;
 
+        /// Sky dome entity.
+        PrivateEntityPtr mEntity;
+
+    private:
 		/// True if selected technique has shaders.
 		bool mShadersEnabled;
 
@@ -100,6 +102,17 @@ namespace Caelum
     protected:
         /// Handle far radius.
 	    virtual void setFarRadius (Ogre::Real radius);
+
+    private:
+        struct Params {
+            void setup(Ogre::GpuProgramParametersSharedPtr vpParams, Ogre::GpuProgramParametersSharedPtr fpParams);
+
+            Ogre::GpuProgramParametersSharedPtr vpParams;
+            Ogre::GpuProgramParametersSharedPtr fpParams;
+            FastGpuParamRef sunDirection;
+            FastGpuParamRef offset;
+            FastGpuParamRef hazeColour;
+        } mParams;
     };
 }
 

@@ -414,6 +414,10 @@ namespace Caelum
                     new AccesorPropertyDescriptor<Caelum::FlatCloudLayer, Real, Real, Real>(
                             &Caelum::FlatCloudLayer::getFarFadeDist,
                             &Caelum::FlatCloudLayer::setFarFadeDist));
+            td->add("fade_dist_measurement_vector",
+                    new AccesorPropertyDescriptor<Caelum::FlatCloudLayer, Vector3>(
+                            &Caelum::FlatCloudLayer::getFadeDistMeasurementVector,
+                            &Caelum::FlatCloudLayer::setFadeDistMeasurementVector));
 
             FlatCloudLayerTypeDescriptor = td.release ();
         }

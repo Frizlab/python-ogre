@@ -20,14 +20,12 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 #include "CaelumPrecompiled.h"
 #include "ImageStarfield.h"
-#include "GeometryFactory.h"
+#include "InternalUtilities.h"
 
 namespace Caelum
 {
     const Ogre::String ImageStarfield::STARFIELD_DOME_NAME = "CaelumStarfieldDome";
-
     const Ogre::String ImageStarfield::STARFIELD_MATERIAL_NAME = "CaelumStarfieldMaterial";
-
     const Ogre::String ImageStarfield::DEFAULT_TEXTURE_NAME = "Starfield.jpg";
 
     ImageStarfield::ImageStarfield
@@ -35,48 +33,30 @@ namespace Caelum
         Ogre::SceneManager *sceneMgr,
         Ogre::SceneNode *caelumRootNode,
         const Ogre::String &textureName/* = DEFAULT_TEXUTRE_NAME*/
-    ):
-        mNode(0),
-        mEntity(0)
+    )
     {
         mInclination = Ogre::Degree (0);
 
-        String uniqueId = Ogre::StringConverter::toString((size_t)this);
+        String uniqueSuffix = "/" + InternalUtilities::pointerToString (this);
 
-        mStarfieldMaterial = Ogre::MaterialManager::getSingleton().getByName(STARFIELD_MATERIAL_NAME);
-        mStarfieldMaterial = mStarfieldMaterial->clone(STARFIELD_MATERIAL_NAME + uniqueId);
-        mStarfieldMaterial->load();
+        mStarfieldMaterial.reset (InternalUtilities::checkLoadMaterialClone (STARFIELD_MATERIAL_NAME, STARFIELD_MATERIAL_NAME + uniqueSuffix));
         setTexture (textureName);
 
-        sceneMgr->getRenderQueue()->getQueueGroup(CAELUM_RENDER_QUEUE_STARFIELD)->setShadowsEnabled(false);
+        sceneMgr->getRenderQueue ()->getQueueGroup (CAELUM_RENDER_QUEUE_STARFIELD)->setShadowsEnabled (false);
 
-        GeometryFactory::generateSphericDome (STARFIELD_DOME_NAME, 32, GeometryFactory::DT_STARFIELD);
+        InternalUtilities::generateSphericDome (STARFIELD_DOME_NAME, 32, InternalUtilities::DT_IMAGE_STARFIELD);
 
-        mEntity = sceneMgr->createEntity ("Caelum/StarfieldDome/" + uniqueId, STARFIELD_DOME_NAME);
+        mEntity.reset(sceneMgr->createEntity ("Caelum/StarfieldDome" + uniqueSuffix, STARFIELD_DOME_NAME));
         mEntity->setMaterialName (mStarfieldMaterial->getName());
         mEntity->setRenderQueueGroup (CAELUM_RENDER_QUEUE_STARFIELD);
         mEntity->setCastShadows (false);
 
-        mNode = caelumRootNode->createChildSceneNode ();
-        mNode->attachObject (mEntity);
+        mNode.reset (caelumRootNode->createChildSceneNode ());
+        mNode->attachObject (mEntity.get ());
     }
 
     ImageStarfield::~ImageStarfield ()
     {
-		if (mEntity) {
-			mEntity->_getManager ()->destroyMovableObject (mEntity);
-			mEntity = 0;
-		}
-
-        if (mNode) {
-			mNode->getCreator ()->destroySceneNode (mNode->getName ());
-			mNode = 0;
-        }
-
-        if (!mStarfieldMaterial.isNull ()) {
-            Ogre::MaterialManager::getSingletonPtr ()->remove (mStarfieldMaterial->getHandle());
-            mStarfieldMaterial.setNull ();
-        }
     }
 
     void ImageStarfield::notifyCameraChanged (Ogre::Camera *cam) {

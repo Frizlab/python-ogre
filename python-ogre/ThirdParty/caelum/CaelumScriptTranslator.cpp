@@ -452,7 +452,11 @@ namespace Caelum
                 //        " base '" + childObjNode->base + "'");
                 
                 // Only allow declarations with one class token; like "moon { }"
+#if OGRE_VERSION < 0x010700
                 if (childObjNode->name.empty () == false || childObjNode->base.empty () == false) {
+#else
+                if (childObjNode->name.empty () == false || childObjNode->bases.size () != 0) {
+#endif
                     compiler->addError (
                             ScriptCompiler::CE_FEWERPARAMETERSEXPECTED,
                             childObjNode->file, childObjNode->line,
@@ -544,7 +548,11 @@ namespace Caelum
         
                 if (className == "cloud_layer") {
                     // Don't allow names.
+#if OGRE_VERSION < 0x010700
                     if (childObjNode->base.empty () == false) {
+#else
+                    if (childObjNode->bases.size () != 0) {
+#endif
                         compiler->addError (
                                 ScriptCompiler::CE_FEWERPARAMETERSEXPECTED,
                                 childObjNode->file, childObjNode->line,
