@@ -472,7 +472,7 @@ class cmake(module):
 
 
 class scons(module):
-    base = 'scons-1.0.1'
+    base = 'scons-1.2.0'
 
     source = [
         [wget, "http://prdownloads.sourceforge.net/scons/"+base+".tar.gz", downloadPath],
