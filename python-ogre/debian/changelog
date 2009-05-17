@@ -1,3 +1,8 @@
+python-ogre (1.6.0-3) unstable; urgency=low
+
+  * Lots of small updates.
+
+ -- Tim 'Mithro' Ansell <mithro@mithis.com>  Sun, 17 May 2009 20:29:00 +1100
 python-ogre (1.6.0-2) unstable; urgency=low
 
   * Moving to Boost 1.38.
