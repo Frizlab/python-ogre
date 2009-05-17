@@ -18,7 +18,6 @@ rm -rvf \
 	python-ogre/debian								\
 	python-ogre/demos								\
 	python-ogre/docs								\
-	python-ogre/packages_2.6						\
 	python-ogre/ogre_cvs.sh							\
 	python-ogre/scripts								\
 	python-ogre/SourceSnapShots						\
