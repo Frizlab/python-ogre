@@ -176,6 +176,8 @@ for name, cls in environment.projects.items():
               _env['GCCXML_COMPILER'] = environment.cxx_compiler
         if hasattr(environment, 'cc_compiler'):
             _env['CC'] = environment.cc_compiler
+        if hasattr(environment, 'gccxml_compiler'):
+          _env['GCCXML_COMPILER'] = environment.cxx_compiler
            
         ## setup linker paths/libs and flags (standard and additional)
         _env.Append ( LIBPATH= cls.lib_dirs + [environment.python_lib_dirs] )

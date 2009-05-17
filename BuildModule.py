@@ -89,6 +89,15 @@ def spawnTask ( task, cwdin = '', getoutput=None ):
                 if environment.is64():
                     env["CFLAGS"]+=" -L"+os.path.join(PREFIX,"lib64")
 
+            if hasattr(environment, 'cxx_compiler'):
+                env['CXX'] = environment.cxx_compiler
+                # We need to tell gccxml about this change
+                if not hasattr(environment, 'gccxml_compiler'):
+                  env['GCCXML_COMPILER'] = environment.cxx_compiler
+            if hasattr(environment, 'cc_compiler'):
+                env['CC'] = environment.cc_compiler
+            if hasattr(environment, 'gccxml_compiler'):
+              _env['GCCXML_COMPILER'] = environment.cxx_compiler
 
             env["CXXFLAGS"]+=" "+env["CFLAGS"]
             env["CCFLAGS"]+=" "+env["CFLAGS"]
