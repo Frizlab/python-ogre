@@ -6,6 +6,7 @@ Version: 0.0.0-3
 Maintainer: Tim 'Mithro' Ansell <mithro@mithis.com>  
 Standards-Version: 3.7.2  
 Build-Depends: debhelper (>= 5.0.38),
+	g++-4.2,
 	cmake (>= 2.4.0), scons, pkg-config,
 	zziplib-bin,
 	libboost1.38-dev,
