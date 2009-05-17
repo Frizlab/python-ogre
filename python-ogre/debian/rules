@@ -19,10 +19,6 @@ setup-stamp:
 	# Patch the python-ogre build system.
 	patch -p0 < ./patch/python-ogre-deb.patch
 	
-	# Patch the OGRE headers as we can't touch the system ones.
-	rm -rf include/OGRE || true
-	cp -rf /usr/include/OGRE include
-	patch -p0 < ./patch/ogre_1.6.1-deb.patch
 	touch $@
 
 

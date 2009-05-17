@@ -17,7 +17,7 @@ Build-Depends: debhelper (>= 5.0.38),
 	libcegui-mk2-dev,
 	libogg-dev, libvorbis-dev,
 	libavformat-dev, libavcodec-dev,
-	gccxml (>=0.7.0),
+	gccxml (>=0.9.0),
 	pygccxml, pyplusplus
 Standards-Version: 3.7.2
 
