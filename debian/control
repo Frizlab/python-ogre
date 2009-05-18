@@ -14,7 +14,7 @@ Build-Depends: debhelper (>= 5.0.38),
 	libois-dev,
 	libogre-dev (>= 1.6),
 	libceguiogre-dev (>= 1.6),
-	libcegui-mk2-dev,
+	libcegui-dev (>= 0.6.1) | libcegui-mk2-dev (>= 0.6.1),
 	libogg-dev, libvorbis-dev,
 	libavformat-dev, libavcodec-dev,
 	gccxml (>=0.9.0),
@@ -23,7 +23,7 @@ Standards-Version: 3.7.2
 
 Package: python-ogre
 Architecture: any
-Depends: ${python:Depends}, ${shlibs:Depends}, ${misc:Depends}, libcegui-mk2-dev | libcegui-mk2-links,
+Depends: ${python:Depends}, ${shlibs:Depends}, ${misc:Depends}, libcegui-dev | libcegui-mk2-dev | libcegui-mk2-links,
 XB-Python-Version: ${python:Versions}
 Recommends: libcegui-mk2-links
 Description: Python bindings for Ogre 3d engine and a number of other graphic
