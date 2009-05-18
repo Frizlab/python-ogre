@@ -41,3 +41,15 @@ Index: environment.py
  ##
  ##  Jan 2007 modification
  ##
+Index: PythonOgreConfig_system.py
+===================================================================
+--- PythonOgreConfig_system.py	(revision 968)
++++ PythonOgreConfig_system.py	(working copy)
+@@ -1,5 +1,7 @@
+ import sys,os
+ 
++NUMBER_OF_CORES=1
++
+ ## The root directory is where this module is located
+ module_dir = os.path.abspath(os.path.dirname(__file__) )## The root directory is where this module is located
+ ## lets assume that the base development directory is one level higher
