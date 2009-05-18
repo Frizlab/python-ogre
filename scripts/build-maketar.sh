@@ -5,10 +5,15 @@ if [ ! -e python-ogre-pristine ]; then
   exit 1
 fi
 
+CHANGELOG_DATE=`date +'%a, %d %b %Y %H:%m:%S %z'`
+
 rm -rvf python-ogre
 
 cd python-ogre-pristine
 svn update
+
+CHANGELOG_VERSION=`svnversion`
+
 cd ..
 cp -rvf python-ogre-pristine/ python-ogre/
 
@@ -46,5 +51,17 @@ du -h python-ogre.tar.gz
 
 cp python-ogre-pristine/debian/rules ./debian.rules
 cp python-ogre-pristine/debian/control ./debian.control
-cp python-ogre-pristine/debian/changelog ./debian.changelog
 cp python-ogre-pristine/debian/dsc ./python-ogre.dsc
+
+# Update the changelog with the subversion information.
+echo "Updating the changelog to $CHANGELOG_VERSION"
+cat > ./debian.changelog <<EOF
+python-ogre (1.6.0+$CHANGELOG_VERSION-0) unstable; urgency=low
+
+  * Updating for Subversion revision $CHANGELOG_VERSION.
+
+ -- Tim 'Mithro' Ansell <mithro@mithis.com>  $CHANGELOG_DATE
+
+EOF
+cat python-ogre-pristine/debian/changelog >> ./debian.changelog
+
