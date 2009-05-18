@@ -158,6 +158,8 @@ if hasattr(Config, "NUMBER_OF_CORES") and Config.NUMBER_OF_CORES:
 else:
     NUMBER_OF_CORES = numCores()
 
+print "Using the %s cores" % NUMBER_OF_CORES
+
 ######################
 downloadPath = os.path.abspath("downloads")
 wget = "wget -c -nc "
