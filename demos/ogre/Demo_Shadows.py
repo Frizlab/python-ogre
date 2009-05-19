@@ -486,7 +486,7 @@ class ShadowsApplication ( SampleFramework.Application ):
         ## Show the configuration dialog and initialise the system
         ## You can skip self and use root.restoreConfig() to load configuration
         ## settings if you were sure there are valid ones saved in ogre.cfg
-        if(self.root.showConfigDialog()):
+        if self.root.restoreConfig() or self.root.showConfigDialog():
             ## Custom option - to use PlaneOptimalShadowCameraSetup we must have
             ## double-precision. Thus, set the D3D floating point mode if present, 
             ## no matter what was chosen
@@ -1174,5 +1174,3 @@ if __name__ == '__main__':
         sa.go()
     except Ogre.OgreException, e:
         print e
-
-
