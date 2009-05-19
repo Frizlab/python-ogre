@@ -24,7 +24,7 @@ class DotSceneApplication(sf.Application):
         
         # Now load any extra resource locations that we might need..  
         # in the example I'm adding the entire tree under the base directory
-        bases = ["../Media_extra/quake"]
+        bases = ["../media_extra/quake"]
         for base in bases: 
             for directory in os.listdir ( base ):
                 fullPath = os.path.join ( base, directory )
@@ -41,7 +41,7 @@ class DotSceneApplication(sf.Application):
         self.carNode = self.sceneManager.getRootSceneNode().createChildSceneNode("DotSceneRoot")
         
         # now load the 'scene', which in this case is a vechile made from multiple meshes..
-        self.dotscene = DotScene.DotScene("../Media_extra/quake/roadster/roadster.scene", self.sceneManager, self.carNode)
+        self.dotscene = DotScene.DotScene("../media_extra/quake/roadster/roadster.scene", self.sceneManager, self.carNode)
         
         camera.setPosition ( -80,40,100)
         camera.lookAt ( 0,0,0)
