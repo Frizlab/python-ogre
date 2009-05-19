@@ -115,8 +115,8 @@ def parseInput():
       \n      %prog demo_smoke\n"
     parser = OptionParser(usage=usage, version="%prog 1.0")
     parser.add_option("-v", "--verbose", action="store_true", default=False,dest="verbose", help="Output all output to stdout rather then saving to the log file")
-    parser.add_option("-s", "--ScreenShotPath", default=os.path.join(os.getcwd(), "..", "screenshots"), action="store_true", dest="ScreenShotPath", help="Specify the directory for the snapshots")
-    parser.add_option("-p", "--DemoParentPath", default=os.path.join(os.getcwd(), "..", "demos"), action="store_true", dest="DemoParentPath", help="Specify the base directory for the demo files")
+    parser.add_option("-s", "--ScreenShotPath", default=os.path.join(os.getcwd(), "..", "screenshots"), action="store", dest="ScreenShotPath", help="Specify the directory for the snapshots")
+    parser.add_option("-p", "--DemoParentPath", default=os.path.join(os.getcwd(), "..", "demos"), action="store", dest="DemoParentPath", help="Specify the base directory for the demo files")
     parser.add_option("-l", "--logfilename",  default="log.out" ,dest="logfilename", help="Override the default log file name")
     parser.add_option("-d", "--DemoBases", action="append", default=[], help="List the module demo locations you want to test")
     (options, args) = parser.parse_args()
@@ -151,4 +151,3 @@ if __name__ == '__main__':
         b = options.DemoBases[0]
         d = os.path.abspath( os.path.join ( options.DemoParentPath, b, shortName ) )
         runTest ( b, shortName, d )
-        
