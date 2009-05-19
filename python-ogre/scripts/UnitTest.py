@@ -34,11 +34,11 @@ def setupLogging (logfilename):
     console.setFormatter(formatter)
     # add the handler to the root logger
     logging.getLogger('').addHandler(console)
-               
+
 def exit( ExitMessage ):
      logger.error( ExitMessage )
      sys.exit( -1 )
-     
+
 def spawnTask ( task, cwdin = '', getoutput=None ):
     """Execute a command line task and manage the return code etc
     """
@@ -50,8 +50,8 @@ def spawnTask ( task, cwdin = '', getoutput=None ):
     env = os.environ
     if not ENV_SET: # this actually changes the environment so we shouldn't do it more than once
         env["PythonOgreUnitTestPath"]=ScreenShotPath
-        ENV_SET=True        
-     
+        ENV_SET=True
+
     logger.debug ( "Spawning '%s' in '%s'" % (task,cwdin) )
 
     if VERBOSE:
@@ -65,7 +65,7 @@ def spawnTask ( task, cwdin = '', getoutput=None ):
             returncode = process.returncode
         except:
             returncode = -1
-    
+
     if getoutput is not None:
         if returncode != -1:
             getoutput.write(out)
@@ -79,11 +79,11 @@ def spawnTask ( task, cwdin = '', getoutput=None ):
         logger.warning ( "Full Logging ON" )
         logger.debug ( out )
         logger.debug ( err )
-            
+
     if returncode != 0 and FAILHARD:
         exit(" The following command failed %s" % task)
-    return returncode     
-    
+    return returncode
+
 def getDemoFiles ( parent, base ):
     knownBad=[] #'Demo_Basic.py', 'Demo_NetworkServer.py', 'Demo_NetworkClient.py','Demo_Compositor.py']
     ret = []
@@ -95,14 +95,14 @@ def getDemoFiles ( parent, base ):
                 l = file.readline()
                 if not "NO_UNITTEST" in l:
                     ret.append ( os.path.join(p,f) )
-    return ret            
-    
-     
+    return ret
+
+
 def runTest ( base, shortName, fullPath ):
     """ run the test
     """
     logger.info ( "Running test " + shortName )
-    ret = spawnTask ( 'python ' +shortName+'.py', os.path.split(fullPath)[0] ) 
+    ret = spawnTask ( 'python ' +shortName+'.py', os.path.split(fullPath)[0] )
 
 
 FAILHARD=False
@@ -121,24 +121,24 @@ def parseInput():
     parser.add_option("-d", "--DemoBases", action="append", default=[], help="List the module demo locations you want to test")
     (options, args) = parser.parse_args()
     return (options,args)
-    
+
 if __name__ == '__main__':
     (options, args) = parseInput()
     if not options.DemoBases:
         options.DemoBases.append("ogre")
-    
+
     if len (args) >0 and len (options.DemoBases) > 1:
         exit("You can't specify a demo and multiple bases")
 
-        
+
     setupLogging(options.logfilename)
     logger = logging.getLogger('PythonOgre.UnitTest')
-        
+
     VERBOSE=options.verbose
     ScreenShotPath = options.ScreenShotPath
-    
+
     if not os.path.exists( ScreenShotPath ):
-        os.mkdir ( ScreenShotPath )    
+        os.mkdir ( ScreenShotPath )
 
     if len (args) ==0 :
         ## run every demo we can find...
