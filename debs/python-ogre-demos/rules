@@ -27,19 +27,8 @@ install:
 	dh_testroot
 	dh_installdirs
 	
-	mkdir -p $(CURDIR)/debian/python-ogre-demos/usr/share/python-ogre-demos/
-	cp -rvf demos/* $(CURDIR)/debian/python-ogre-demos/usr/share/python-ogre-demos/
-	# Clean up any svn directories
-	find $(CURDIR)/debian/python-ogre-demos -name .svn | xargs rm -rf || true
-	# Remove any plugins.cfg files
-	find $(CURDIR)/debian/python-ogre-demos -name plugins.cfg | xargs rm || true
-	# Remove any yet to work demos
-	find $(CURDIR)/debian/python-ogre-demos -name tofix | xargs rm -rf || true 
-	# Remove windows only demos
-	find $(CURDIR)/debian/python-ogre-demos -name dshow | xargs rm -rf || true
-	# Remove any log files
-	find $(CURDIR)/debian/python-ogre-demos -name \*.log | xargs rm || true
-	
+	mkdir -p $(CURDIR)/debian/python-ogre-demos/usr/share/doc/python-ogre-demos/
+	cp -rvf * $(CURDIR)/debian/python-ogre-demos/usr/share/doc/python-ogre-demos/ || true
 
 # Build architecture-independent files here.
 binary-indep: install
