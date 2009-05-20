@@ -23,7 +23,7 @@ Standards-Version: 3.7.2
 
 Package: python-ogre
 Architecture: any
-Depends: ${python:Depends}, ${shlibs:Depends}, ${misc:Depends}, libcegui-dev | libcegui-mk2-dev | libcegui-mk2-links,
+Depends: ${python:Depends}, ${shlibs:Depends}, ${misc:Depends}, libcegui-dev | libcegui-mk2-dev | libcegui-mk2-links, nvidia-cg-toolkit
 XB-Python-Version: ${python:Versions}
 Recommends: libcegui-mk2-links
 Description: Python bindings for Ogre 3d engine and a number of other graphic
