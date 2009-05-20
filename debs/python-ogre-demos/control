@@ -10,6 +10,7 @@ Standards-Version: 3.7.2
 Package: python-ogre-demos
 Architecture: all
 Depends: ${python:Depends}, ${misc:Depends}, python-ogre
+Recommends: python-gconf
 XB-Python-Version: ${python:Versions}
 Description: Example programs using the python-ogre package.
  .
