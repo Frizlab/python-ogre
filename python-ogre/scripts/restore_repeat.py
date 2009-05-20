@@ -5,8 +5,13 @@
 When Ogre crashes, it does not restore the hold down to repeat key
 functionality. This Python script helps get it back.
 """
+try:
+  import gconf
+except ImportError, e:
+  import sys
+  sys.stderr.write("Install python-gconf module to make the restore_repeat module to work")
+  raise
 
-import gconf
 import time
 
 gconf_key = '/desktop/gnome/peripherals/keyboard/delay'
