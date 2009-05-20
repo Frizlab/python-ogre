@@ -27,8 +27,10 @@ install:
 	dh_testroot
 	dh_installdirs
 	
-	mkdir -p $(CURDIR)/debian/python-ogre-demos/usr/share/doc/python-ogre-demos/
-	cp -rvf * $(CURDIR)/debian/python-ogre-demos/usr/share/doc/python-ogre-demos/ || true
+	mkdir -p $(CURDIR)/debian/python-ogre-demos/usr/share/python-ogre-demos/
+	cp -rvf * $(CURDIR)/debian/python-ogre-demos/usr/share/python-ogre-demos/ || true
+	rm -rvf $(CURDIR)/debian/python-ogre-demos/usr/share/python-ogre-demos/debian
+	ln -sf /etc/OGRE/plugins.cfg $(CURDIR)/debian/python-ogre-demos/usr/share/python-ogre-demos/plugins.cfg
 
 # Build architecture-independent files here.
 binary-indep: install
