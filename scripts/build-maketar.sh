@@ -85,13 +85,43 @@ find python-ogre-demos -name \*.log | xargs rm -rf
 cd python-ogre-demos
 python ../python-ogre-pristine/scripts/python-cleanup.py
 find -name \*.py[co] | xargs rm
-cd ..
+
+# Create the ogre.cfg file
+cat > ogre.cfg <<EOF
+Render System=OpenGL Rendering Subsystem
+
+[OpenGL Rendering Subsystem]
+Display Frequency=50 MHz
+FSAA=0
+Full Screen=No
+RTT Preferred Mode=FBO
+VSync=No
+Video Mode= 640 x  480
+sRGB Gamma Conversion=No
+EOF
+
+# Put an ogre.cfg in each subdirectory too
+for i in *; do
+  if [ -d $i ]; then
+    cd $i
+    ln -sf ../ogre.cfg ogre.cfg
+    cd ..
+  fi
+done
+
+# Setup the symlink for plugins.cfg
+ln -s /etc/OGRE/plugins.cfg plugins.cfg
 
 # Setup the UnitTest scripts
-cp python-ogre-pristine/scripts/UnitTest.py python-ogre-demos/UnitTest.py
-echo "mkdir /tmp/python-ogre-demos" > python-ogre-demos/UnitTest.sh
-echo "python UnitTest.py -p "." -s /tmp/python-ogre-demos \$@" >> python-ogre-demos/UnitTest.sh
-chmod a+x python-ogre-demos/UnitTest.sh
+cp ../python-ogre-pristine/scripts/UnitTest.py UnitTest.py
+cp ../python-ogre-pristine/scripts/restore_repeat.py restore_repeat.py
+echo "#! /bin/sh" > UnitTest.sh
+echo "mkdir /tmp/python-ogre-demos" > UnitTest.sh
+echo "rm -rf /tmp/python-ogre-demos"
+echo "python UnitTest.py -p "." -s /tmp/python-ogre-demos -l /tmp/python-ogre-demos.log \$@" >> UnitTest.sh
+chmod a+x UnitTest.sh
+
+cd ..
 
 mkdir -p ../python-ogre-demos
 tar -czvf ../python-ogre-demos/python-ogre-demos.tar.gz python-ogre-demos
@@ -109,4 +139,3 @@ python-ogre-demos (1.6.1+svn$CHANGELOG_VERSION-0) unstable; urgency=low
 
 EOF
 cat python-ogre-pristine/debs/python-ogre-demos/changelog >> ../python-ogre-demos/debian.changelog
-
