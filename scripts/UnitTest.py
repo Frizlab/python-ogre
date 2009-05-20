@@ -12,6 +12,14 @@ import types
 import os
 import time
 
+try:
+  import restore_repeat
+
+  import atexit
+  atexit.register(restore_repeat.reset_key, restore_repeat.gconf_key)
+except ImportError, e:
+  pass
+
 logger = None
 FULL_LOGGING = False    # Set to true to log everything, even if successful
 ENV_SET = False         # global to ensure we don't set the environment too many times and break the shell.
@@ -54,8 +62,8 @@ def spawnTask ( task, cwdin = '', getoutput=None ):
 
     logger.debug ( "Spawning '%s' in '%s'" % (task,cwdin) )
 
+    out, err = "", ""
     if VERBOSE:
-        out, err = "", ""
         process = subprocess.Popen (task, shell=True, cwd = cwdin, env=env)
         returncode = process.wait()
     else:
