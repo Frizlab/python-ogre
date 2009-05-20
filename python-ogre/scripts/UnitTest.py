@@ -72,7 +72,10 @@ def spawnTask ( task, cwdin = '', getoutput=None ):
             getoutput.write(err)
 
     if returncode != 0:
-        logger.warning ( "Task Failed" )
+        if returncode < 0:
+          logger.warning ( "Task Failed (%s) - Segfault or Killed." % returncode)
+        else:
+          logger.warning ( "Task Failed (%s) - Non-zero exit code." % returncode)
         logger.debug ( out )
         logger.debug ( err )
     elif FULL_LOGGING:
