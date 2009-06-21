@@ -300,8 +300,10 @@ def ManualExclude ( mb ):
 
     # changes for Ogre after 1.4
     if not environment.ogre.version.startswith("1.4"):
-        main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageEnded").exclude()
-        main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageStarted").exclude()
+    
+        if not environment.ogre.version.startswith("1.7"):
+            main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageEnded").exclude()
+            main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageStarted").exclude()
         
         # these don't exist
         main_ns.class_("ScriptCompiler").mem_fun("removeNameExclusion").exclude()
@@ -928,11 +930,14 @@ def Fix_Ref_Not_Const ( mb ):
         for arg in fun.arguments:
             if 'Ptr' in arg.type.decl_string:
                 if not 'const' in arg.type.decl_string and '&' in arg.type.decl_string:
-                    print "Fixing Const:", arg.type.base, fun.parent.name+"::"+fun.name+"::"+arg.name+" ("+arg.type.decl_string+")"
+                    print "Fixing Const:", arg.type.base, "\n",fun, "\n",fun.parent.name+"::"+fun.name+"::"+arg.name+" ("+arg.type.decl_string+")"
                     if len (fun.transformations) == 0:
-                        fun.add_transformation( ft.modify_type(arg_position,declarations.remove_reference ), alias=fun.name )
-                        fun.documentation = docit ("Fixed Constant Var " + arg.name + " (pos:"+str(arg_position) +")",
-                                                        "...", "...")
+                        try:
+                            fun.add_transformation( ft.modify_type(arg_position,declarations.remove_reference ), alias=fun.name )
+                            fun.documentation = docit ("Fixed Constant Var " + arg.name + " (pos:"+str(arg_position) +")",
+                                                            "...", "...")
+                        except:
+                            print "FAILED!!!"
                     else:
                         print "*** Problem adding transform as will cause duplicates", fun   
 #                 else:

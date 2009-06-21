@@ -378,7 +378,13 @@ sizeof( Ogre::Overlay::Overlay2DElementsIterator );
 sizeof( Ogre::Node::ChildNodeMap );
 sizeof( Ogre::Node::ChildNodeIterator );
 sizeof( Ogre::Node::ConstChildNodeIterator );
-sizeof( Ogre::Mesh::LodDistanceList );
+
+#if OGRE_VERSION_MINOR != 7
+    sizeof( Ogre::Mesh::LodDistanceList );
+    sizeof( Ogre::Material::LodDistanceList );
+    sizeof( Ogre::Material::LodDistanceIterator );
+#endif
+
 sizeof( Ogre::Mesh::VertexBoneAssignmentList );
 sizeof( Ogre::Mesh::BoneAssignmentIterator );
 sizeof( Ogre::Mesh::SubMeshList );
@@ -387,8 +393,6 @@ sizeof( Ogre::Mesh::SubMeshNameMap );
 sizeof( Ogre::Mesh::SubMeshIterator );
 sizeof( Ogre::Mesh::PoseIterator );
 sizeof( Ogre::Mesh::ConstPoseIterator );
-sizeof( Ogre::Material::LodDistanceList );
-sizeof( Ogre::Material::LodDistanceIterator );
 sizeof( Ogre::Material::TechniqueIterator );
 sizeof( Ogre::ManualObject::SectionList );
 sizeof( Ogre::Image::Box );

@@ -935,15 +935,18 @@ WRAPPER_REGISTRATION_ParticleSystem = [
 def iter_as_generator_vector( cls ):
     print "ITER:", cls
     
-    code = os.linesep.join([ 
-            'typedef %(cls)s iter_type;'
-            , 'generators::generator_maker_vector< iter_type >::register_< %(call_policies)s >( %(exposer_name)s );'])
-    cls.add_registration_code( 
-            code % { 'cls' : cls.decl_string
-                     , 'call_policies' : cls.mem_fun( 'getNext' ).call_policies.create_type()
-                     , 'exposer_name' : cls.class_var_name }
-            , works_on_instance=False )
-    cls.include_files.append( 'generators.h' )
+    try:
+        code = os.linesep.join([ 
+                'typedef %(cls)s iter_type;'
+                , 'generators::generator_maker_vector< iter_type >::register_< %(call_policies)s >( %(exposer_name)s );'])
+        cls.add_registration_code( 
+                code % { 'cls' : cls.decl_string
+                         , 'call_policies' : cls.mem_fun( 'getNext' ).call_policies.create_type()
+                         , 'exposer_name' : cls.class_var_name }
+                , works_on_instance=False )
+        cls.include_files.append( 'generators.h' )
+    except:
+        print "FAILED to added Iterator:", cls
             
 def iter_as_generator_map( cls ):
     print "ITER:", cls
@@ -1025,12 +1028,13 @@ def apply( mb ):
     mb.add_declaration_code( WRAPPER_DEFINITION_General )
     apply_reg (mb,  WRAPPER_REGISTRATION_General )
     
-    vec_iterators = mb.classes( lambda cls: cls.name.startswith( 'VectorIterator<' ) )
-    for cls in vec_iterators:
-        iter_as_generator_vector( cls )
-        
-    map_iterators = mb.classes( lambda cls: cls.name.startswith( 'MapIterator<' ) )
-    for cls in map_iterators:
-        iter_as_generator_map( cls ) 
-        
+    if not environment.ogre.version.startswith("1.7"):
+        vec_iterators = mb.classes( lambda cls: cls.name.startswith( 'VectorIterator<' ) )
+        for cls in vec_iterators:
+            iter_as_generator_vector( cls )
+            
+        map_iterators = mb.classes( lambda cls: cls.name.startswith( 'MapIterator<' ) )
+        for cls in map_iterators:
+            iter_as_generator_map( cls ) 
+            
 
