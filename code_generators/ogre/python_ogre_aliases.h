@@ -46,8 +46,8 @@ typedef std::list<Ogre::ParticleEmitter*> stdListParticleEmitterPtr;
 typedef std::vector<Ogre::Particle*> stdVectorParticlePtr;
 typedef std::vector<float> stdVectorFloat;
 
-typedef Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::GpuConstantDefinition, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::GpuConstantDefinition> > > >\
-	MapIteratorGpuConstantDefinition;
+//typedef Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::GpuConstantDefinition, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::GpuConstantDefinition> > > >\
+//	MapIteratorGpuConstantDefinition;
 typedef std::vector<std::pair<unsigned, unsigned>, std::allocator<std::pair<unsigned, unsigned> > >\
 	stdVectorUnsignedUnsigned;
 		
@@ -60,6 +60,7 @@ typedef Ogre::FactoryObj<Ogre::Archive> ArchiveFactoryObj;
 typedef Ogre::FactoryObj<Ogre::ParticleSystemRenderer> ParticleSystemRendererFactoryObj;
 
 // these are uglys to remove messages in the generate_code output - doesn't impact the generated code :)
+
 typedef Ogre::MapIterator<std::map<short unsigned int, Ogre::VertexAnimationTrack*, std::less<short unsigned int>, std::allocator<std::pair<const short unsigned int, Ogre::VertexAnimationTrack*> > > >\
     MapIteratorVertexAnimationTrackPtr;
 typedef Ogre::MapIterator<std::map<short unsigned int, Ogre::NumericAnimationTrack*, std::less<short unsigned int>, std::allocator<std::pair<const short unsigned int, Ogre::NumericAnimationTrack*> > > >\
@@ -80,6 +81,9 @@ typedef std::list<Ogre::Plane> stdListPlane;
 typedef std::list<Ogre::Particle*> stdListParticlePtr;
 typedef std::pair<bool, float> stdPairBoolFloat;
 typedef std::pair<unsigned, unsigned> stdPairUnsignedUnsigned;
+
+
+
 
 #if OGRE_VERSION_MINOR == 4
     typedef Ogre::AlignedAllocator<Ogre::Vector4, 0> AlignedAllocatorVector40;
@@ -228,7 +232,11 @@ typedef Ogre::ConstEnabledAnimationStateIterator ConstEnabledAnimationStateItera
 typedef Ogre::EnabledAnimationStateList EnabledAnimationStateList;
 typedef Ogre::ConstAnimationStateIterator ConstAnimationStateIterator;
 typedef Ogre::AnimationStateIterator AnimationStateIterator;
+
 typedef Ogre::AnimationStateMap AnimationStateMap;
+typedef Ogre::AnimationStateIterator AnimationStateIterator;
+typedef Ogre::ConstAnimationStateIterator ConstAnimationStateIterator;
+
 typedef Ogre::PoseList PoseList;
 typedef Ogre::VertexPoseKeyFrame::PoseRefList PoseRefList;
 typedef Ogre::VertexPoseKeyFrame::PoseRefIterator PoseRefIterator;
@@ -378,83 +386,6 @@ typedef Ogre::Mesh::SubMeshIterator SubMeshIterator;
 typedef Ogre::Mesh::PoseIterator PoseIterator;
 typedef Ogre::Mesh::ConstPoseIterator ConstPoseIterator;
 // typedef Ogre::Material::LodDistanceList LodDistanceList;
-#if OGRE_VERSION_MINOR != 7
-    typedef Ogre::Material::LodDistanceIterator LodDistanceIterator;
-#else
- typedef std::list<Ogre::Particle*, Ogre::STLAllocator<Ogre::Particle*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >  stdListParticle;
- typedef std::list<Ogre::ParticleEmitter*, Ogre::STLAllocator<Ogre::ParticleEmitter*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdListParticleEmitter;
- typedef std::list<Ogre::SharedPtr<Ogre::AbstractNode>, Ogre::STLAllocator<Ogre::SharedPtr<Ogre::AbstractNode>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdListSharedPtrAbstractNode;
- typedef std::list<Ogre::SharedPtr<Ogre::ConcreteNode>, Ogre::STLAllocator<Ogre::SharedPtr<Ogre::ConcreteNode>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdListSharedPtrConcreteNode;
- typedef std::map<short unsigned int,short unsigned int,std::less<short unsigned int>,Ogre::STLAllocator<std::pair<const short unsigned int, short unsigned int>, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > > stdMapShortUnsignedIntShortUnsignedInt;
- typedef std::map<std::string, Ogre::GpuConstantDefinition, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::GpuConstantDefinition>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdMapStringGpuConstantDefinition;
- typedef std::map<std::string, Ogre::OverlayElementFactory*, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::OverlayElementFactory*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdMapStringOverlayElementFactory;
- typedef std::map<std::string, Ogre::SharedPtr<Ogre::GpuSharedParameters>, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::SharedPtr<Ogre::GpuSharedParameters> >, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdMapSharedPtrGpuSharedParameters;
- typedef Ogre::set<Ogre::Texture*> OgreSetTexture;
- typedef set<Ogre::Texture*> setTexture;
- typedef set<Ogre::Texture*,std::less<Ogre::Texture*>,Ogre::STLAllocator<Ogre::Texture*, Ogre::CategorisedAllocPolicy<MEMCATEGORY_GENERAL> > > setOgreTexturePtr;
- typedef Ogre::set<Ogre::FrameListener*> OgreSetFrameListener;
- typedef Ogre::set<Ogre::LodListener*> OgreSetLodListener;
- typedef Ogre::set<Ogre::SceneNode*> OgreSetSceneNode;
- typedef Ogre::set<Ogre::SceneQuery*> OgreSetSceneQuery;
- typedef Ogre::set<Ogre::Pass*> OgreSetPass;
- typedef Ogre::set<Ogre::Entity*> OgreSetEntity;
- typedef Ogre::set<Ogre::VertexBufferBinding*> OgreSetVertexBufferBinding;
- typedef Ogre::set<unsigned long long> OgreSetunsignedlonglong;
- typedef Ogre::set<std::string> OgreSetstdstring;
- typedef Ogre::set<Ogre::VertexDeclaration*> OgreSetVertexDeclaration;
- typedef Ogre::set<Ogre::HardwareIndexBuffer*> OgreSetHardwareIndexBuffer;
- typedef Ogre::set<Ogre::HardwareVertexBuffer*> OgreSetHardwareVertexBuffer;
- typedef Ogre::set<Ogre::Controller<float>* > OgreSetControllerfloat;
- typedef Ogre::set<Ogre::Node*> OgreSetNode;
- typedef Ogre::set<Ogre::Bone*> OgreSetBone;
- typedef Ogre::set<unsigned char> OgreSetunsignedchar;
- typedef Ogre::set<Ogre::SceneQuery::WorldFragmentType> OgreSetSceneQueryWorldFragmentType;
- 
- typedef Ogre::list<Ogre::SharedPtr<Ogre::ScriptCompiler::Error> > OgreListSharePtrScriptCompilerError;
- typedef Ogre::list<Ogre::SharedPtr<Ogre::AbstractNode> > OgreListSharePtrAbstractNode;
- typedef Ogre::list<Ogre::SharedPtr<Ogre::ConcreteNode> > OgreListSharePtrConcreteNode;
- typedef Ogre::list<Ogre::Particle*> OgreListParticle;
- typedef Ogre::list<Ogre::StaticGeometry::OptimisedSubMeshGeometry*> OgreLisStaticGeometryOptimizedSubMesh;
- typedef Ogre::list<Ogre::SceneManagerFactory*> OgreListSceneManagerFactory;
- typedef Ogre::list<Ogre::InstancedGeometry::OptimisedSubMeshGeometry*> OgreListInstanceGeometrySubmesh;
- typedef Ogre::list<Ogre::TagPoint*> OgreListTagPoint;
- typedef Ogre::list<std::pair<Ogre::MovableObject*, Ogre::SceneQuery::WorldFragment*> > OgreListParuMovableFragment;
- typedef Ogre::list<std::pair<Ogre::MovableObject*, Ogre::MovableObject*> > OgreListPairMovable;
- typedef Ogre::list<Ogre::SceneQuery::WorldFragment*> OgreListSceneQueryWorldFragment;
- typedef Ogre::list<Ogre::MovableObject*> OgreListMovableObject;
- typedef Ogre::list<Ogre::Plane> OgreListPlane;
- typedef Ogre::list<Ogre::WorkQueue::ResponseHandler*> OgreListWorkQueueResponse;
- typedef Ogre::list<Ogre::WorkQueue::RequestHandler*> OgreListWorkQueueRequest;
- typedef Ogre::list<Ogre::HardwareOcclusionQuery*> OgreListHardwareOcclusionQuery;
- typedef Ogre::list<Ogre::RenderSystem::Listener*> OgreListRenderSystemListener;
- typedef Ogre::list<Ogre::OverlayElement*> OgreListOverlayElement;
- //typedef Ogre::list<Ogre::Profiler::ProfileHistory> OgreListProfilerProfileHistory;
- //typedef Ogre::list<Ogre::Profiler::ProfileFrame> OgreListProfilerProfileFrame;
- //typedef Ogre::list<Ogre::Profiler::ProfileInstance> OgreListProfilerProfileInstance;
- typedef Ogre::list<Ogre::ParticleEmitter*> OgreListParticleEmitter;
- 
- //typedef Ogre::set<Ogre::ProgressiveMesh::PMTriangle*> OgreSetProgressiveMeshPMTriangle;
- //typedef Ogre::set<Ogre::ProgressiveMesh::PMVertex*> OgreSetProgressiveMeshPMVertex;
- typedef Ogre::set<unsigned short> OgreSetunsignedshort;
- 
- 
- typedef std::vector<Ogre::GpuProgramParameters::AutoConstantEntry, Ogre::STLAllocator<Ogre::GpuProgramParameters::AutoConstantEntry, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorGpuProgramParametersAutoConstantEntry;
- typedef std::vector<Ogre::GpuSharedParametersUsage, Ogre::STLAllocator<Ogre::GpuSharedParametersUsage, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorGpuSharedParametersUsage;
- typedef std::vector<Ogre::MeshLodUsage, Ogre::STLAllocator<Ogre::MeshLodUsage, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorMeshLodUsage;
- typedef std::vector<Ogre::PixelFormat, Ogre::STLAllocator<Ogre::PixelFormat, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorPixelFormat;
- typedef std::vector<Ogre::Plane, Ogre::STLAllocator<Ogre::Plane, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorPlane;
- typedef std::vector<Ogre::Plugin*, Ogre::STLAllocator<Ogre::Plugin*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorPlugin;
- typedef std::vector<Ogre::RenderTexture*, Ogre::STLAllocator<Ogre::RenderTexture*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorRenderTexture;
- typedef std::vector<Ogre::RenderWindowDescription,Ogre::STLAllocator<Ogre::RenderWindowDescription, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > > stdVectorRenderWindowDescription;
- typedef std::vector<Ogre::ShadowCaster*, Ogre::STLAllocator<Ogre::ShadowCaster*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorSadowCaster;
- typedef std::vector<Ogre::SubEntity*, Ogre::STLAllocator<Ogre::SubEntity*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorSubEntity;
- typedef std::vector<Ogre::Vector4,Ogre::STLAllocator<Ogre::Vector4, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > > stdVectorVector4;
-// typedef std::vector<float, Ogre::STLAllocator<float, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorFloat;
- typedef std::vector<int, Ogre::STLAllocator<int, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorInt;
- typedef std::vector<std::pair<unsigned int, unsigned int>, Ogre::STLAllocator<std::pair<unsigned int, unsigned int>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorUnsignedIntUnsignedInt;
- 
-#endif
-    
 typedef Ogre::Material::TechniqueIterator MaterialTechniqueIterator;
 typedef Ogre::ManualObject::SectionList SectionList;
 //typedef Ogre::Image::Box ImagBox; //overlaps Box
@@ -481,4 +412,128 @@ typedef Ogre::String String;
 
 
 
+#if OGRE_VERSION_MINOR != 7
+    typedef Ogre::Material::LodDistanceIterator LodDistanceIterator;
+#else
+    // typedef Ogre::MapIteratorWrapper<Ogre::AnimationStateMap, Ogre::AnimationStateMap::iterator> MapIteratorWrapperAnimationStateMap;
+    // typedef Ogre::MapIteratorWrapper<Ogre::AnimationStateMap, Ogre::AnimationStateMap::const_iterator> MapIteratorWrapperAnimationStateMapConst;
+    // typedef Ogre::IteratorWrapper<Ogre::AnimationStateMap, Ogre::AnimationStateMap::const_iterator, Ogre::AnimationStateMap::mapped_type> IteratorWrapperAnimationStateMapConst;
+    // typedef Ogre::IteratorWrapper<Ogre::AnimationStateMap, Ogre::AnimationStateMap::iterator, Ogre::AnimationStateMap::mapped_type> IteratorWrapperAnimationStateMap;
+
+    // typedef Ogre::MapIteratorWrapper<Ogre::GpuConstantDefinitionMap, Ogre::GpuConstantDefinitionMap::iterator> MapIteratorWrapperGpuConstantDefinitionMap;
+    // typedef Ogre::MapIteratorWrapper<Ogre::GpuConstantDefinitionMap, Ogre::GpuConstantDefinitionMap::const_iterator> MapIteratorWrapperGpuConstantDefinitionMapConst;
+    // typedef Ogre::IteratorWrapper<Ogre::GpuConstantDefinitionMap, Ogre::GpuConstantDefinitionMap::const_iterator,Ogre::GpuConstantDefinitionMap::mapped_type> IteratorWrapperGpuConstantDefinitionMapConst;
+    // typedef Ogre::IteratorWrapper<Ogre::GpuConstantDefinitionMap, Ogre::GpuConstantDefinitionMap::iterator,Ogre::GpuConstantDefinitionMap::mapped_type> IteratorWrapperGpuConstantDefinitionMap;
+    
+    // typedef Ogre::map<Ogre::String, Ogre::MovableObjectFactory*>::type MovableObjectFactoryMap;
+    // typedef Ogre::IteratorWrapper<MovableObjectFactoryMap, MovableObjectFactoryMap::const_iterator,MovableObjectFactoryMap::mapped_type> IteratorWrapperMovableObjectFactoryMapConst;
+    // typedef Ogre::IteratorWrapper<MovableObjectFactoryMap, MovableObjectFactoryMap::iterator,MovableObjectFactoryMap::mapped_type> IteratorWrapperMovableObjectFactoryMap;
+    // typedef Ogre::MapIteratorWrapper<MovableObjectFactoryMap, MovableObjectFactoryMap::iterator> MapIteratorWrapperMovableObjectFactoryMap;
+    // typedef Ogre::MapIteratorWrapper<MovableObjectFactoryMap, MovableObjectFactoryMap::const_iterator> MapIteratorWrapperMovableObjectFactoryMapConst;
+
+    // typedef Ogre::map<Ogre::String, Ogre::String>::type stringstringMap;
+    // typedef Ogre::IteratorWrapper<stringstringMap, stringstringMap::const_iterator,stringstringMap::mapped_type> IteratorWrapperstringstringMapConst;
+    // typedef Ogre::IteratorWrapper<stringstringMap, stringstringMap::iterator,stringstringMap::mapped_type> IteratorWrapperstringstringMap;
+    // typedef Ogre::MapIteratorWrapper<stringstringMap, stringstringMap::iterator> MapIteratorWrapperstringstringMap;
+    // typedef Ogre::MapIteratorWrapper<stringstringMap, stringstringMap::const_iterator> MapIteratorWrapperstringstringMapConst;
+    
+    // typedef Ogre::MapIteratorWrapper<Ogre::Pose::VertexOffsetMap, Ogre::Pose::VertexOffsetMap::iterator> MapIteratorWrapperVertexOffsetMap;
+    // typedef Ogre::MapIteratorWrapper<Ogre::Pose::VertexOffsetMap, Ogre::Pose::VertexOffsetMap::const_iterator> MapIteratorWrapperVertexOffsetMapConst;
+    // typedef Ogre::IteratorWrapper<Ogre::Pose::VertexOffsetMap, Ogre::Pose::VertexOffsetMap::const_iterator,Ogre::Pose::VertexOffsetMap::mapped_type> IteratorWrapperVertexOffsetMapConst;
+    // typedef Ogre::IteratorWrapper<Ogre::Pose::VertexOffsetMap, Ogre::Pose::VertexOffsetMap::iterator,Ogre::Pose::VertexOffsetMap::mapped_type> IteratorWrapperVertexOffsetMap;
+    typedef Ogre::Singleton<Ogre::LodStrategyManager> SingletonLodStrategyManager;
+    typedef Ogre::SharedPtr<Ogre::GpuSharedParameters> SharedPtrGpuSharedParameters;
+    
+    typedef std::map<std::string, std::multimap<std::string, std::string> > mapstringmultimap;
+    
+    typedef Ogre::IteratorWrapper<mapstringmultimap, mapstringmultimap::const_iterator,mapstringmultimap::mapped_type> IteratorWrappermapstringmultimapConst;
+    typedef Ogre::IteratorWrapper<mapstringmultimap, mapstringmultimap::iterator,mapstringmultimap::mapped_type> IteratorWrappermapstringmultimap;
+    typedef Ogre::IteratorWrapper<std::map<std::string, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >*, std::less<std::string>, std::allocator<std::pair<std::string const, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >*> > >, std::_Tree<std::_Tmap_traits<std::string, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >*, std::less<std::string>, std::allocator<std::pair<std::string const, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >*> >, false> >::iterator, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >*>  IteratorWrapperMapStringMultiMap;
+    typedef Ogre::IteratorWrapper<std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >, std::_Tree<std::_Tmap_traits<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> >, true> >::iterator, std::string> IteratorWrapperMultiMapStringMultiMap;
+    typedef Ogre::MapIteratorWrapper<std::map<std::string, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >*, std::less<std::string>, std::allocator<std::pair<std::string const, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >*> > >, std::_Tree<std::_Tmap_traits<std::string, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >*, std::less<std::string>, std::allocator<std::pair<std::string const, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >*> >, false> >::iterator> MapIteratorWrapperMapStringMultiMap;
+    typedef Ogre::MapIteratorWrapper<std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >, std::_Tree<std::_Tmap_traits<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> >, true> >::iterator> MapIteratorWrapperMultiMapString;
+    typedef Ogre::MapIterator<std::map<std::string, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >*, std::less<std::string>, std::allocator<std::pair<std::string const, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >*> > > > MapIteratorMapStringMultiMap;
+    typedef Ogre::MapIterator<std::multimap<std::string, std::string> > MapIteratorMultiMapStringString;
+    
+typedef std::vector<int> stdVectorInt;
+typedef std::vector<std::string> stdVectorString;
+typedef std::vector<char> stdVectorChar;
+typedef std::vector<unsigned char> stdVectorUnsignedChar;
+typedef std::vector<long> stdVectorLong;
+typedef std::vector<float> stdVectorFloat;
+typedef std::vector<Ogre::Any> setVectorOgreAny;
+typedef std::multimap<std::string, std::string> stdMultimapStringString;
+typedef std::vector<float, Ogre::STLAllocator<float, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorFloatOgreAlloc;
+typedef std::vector<Ogre::Any,Ogre::STLAllocator<Ogre::Any, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > > stdVectorOgreAnyOgreAlloc;
+    
+ typedef std::list<Ogre::Particle*, Ogre::STLAllocator<Ogre::Particle*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >  stdListParticle;
+ typedef std::list<Ogre::ParticleEmitter*, Ogre::STLAllocator<Ogre::ParticleEmitter*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdListParticleEmitter;
+ typedef std::list<Ogre::SharedPtr<Ogre::AbstractNode>, Ogre::STLAllocator<Ogre::SharedPtr<Ogre::AbstractNode>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdListSharedPtrAbstractNode;
+ typedef std::list<Ogre::SharedPtr<Ogre::ConcreteNode>, Ogre::STLAllocator<Ogre::SharedPtr<Ogre::ConcreteNode>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdListSharedPtrConcreteNode;
+ typedef std::map<short unsigned int,short unsigned int,std::less<short unsigned int>,Ogre::STLAllocator<std::pair<const short unsigned int, short unsigned int>, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > > stdMapShortUnsignedIntShortUnsignedInt;
+ typedef std::map<std::string, Ogre::GpuConstantDefinition, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::GpuConstantDefinition>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdMapStringGpuConstantDefinition;
+ typedef std::map<std::string, Ogre::OverlayElementFactory*, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::OverlayElementFactory*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdMapStringOverlayElementFactory;
+ typedef std::map<std::string, Ogre::SharedPtr<Ogre::GpuSharedParameters>, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::SharedPtr<Ogre::GpuSharedParameters> >, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdMapSharedPtrGpuSharedParameters;
+ typedef std::set<Ogre::Texture*> stdSetTexture;
+ typedef std::vector<std::pair<std::string, std::string>, Ogre::STLAllocator<std::pair<std::string, std::string>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdStringAndy;
+ typedef std::list<Ogre::Plane, Ogre::STLAllocator<Ogre::Plane, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdListPlaneAndy;
+ typedef std::set<Ogre::SceneQuery::WorldFragmentType,std::less<Ogre::SceneQuery::WorldFragmentType>,Ogre::STLAllocator<Ogre::SceneQuery::WorldFragmentType, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdSetSceneQueryAndy;
+ typedef std::set<Ogre::Texture*,std::less<Ogre::Texture*>,Ogre::STLAllocator<Ogre::Texture*, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > > stdSetOgreTexturePtr;
+ typedef ::std::set<Ogre::Texture*,std::less<Ogre::Texture*>,Ogre::STLAllocator<Ogre::Texture*, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > > stdSetOgreTexturePtrExtra;
+ typedef std::vector<Ogre::GpuProgramParameters::AutoConstantEntry, Ogre::STLAllocator<Ogre::GpuProgramParameters::AutoConstantEntry, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorGpuProgramParametersAutoConstantEntry;
+ typedef std::vector<Ogre::GpuSharedParametersUsage, Ogre::STLAllocator<Ogre::GpuSharedParametersUsage, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorGpuSharedParametersUsage;
+ typedef std::vector<Ogre::MeshLodUsage, Ogre::STLAllocator<Ogre::MeshLodUsage, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorMeshLodUsage;
+ typedef std::vector<Ogre::PixelFormat, Ogre::STLAllocator<Ogre::PixelFormat, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorPixelFormat;
+ typedef std::vector<Ogre::Plane, Ogre::STLAllocator<Ogre::Plane, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorPlane;
+ typedef std::vector<Ogre::Plugin*, Ogre::STLAllocator<Ogre::Plugin*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorPlugin;
+ typedef std::vector<Ogre::RenderTexture*, Ogre::STLAllocator<Ogre::RenderTexture*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorRenderTexture;
+ typedef std::vector<Ogre::RenderWindowDescription,Ogre::STLAllocator<Ogre::RenderWindowDescription, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > > stdVectorRenderWindowDescription;
+ typedef std::vector<Ogre::ShadowCaster*, Ogre::STLAllocator<Ogre::ShadowCaster*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorSadowCaster;
+ typedef std::vector<Ogre::SubEntity*, Ogre::STLAllocator<Ogre::SubEntity*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorSubEntity;
+ typedef std::vector<Ogre::Vector4,Ogre::STLAllocator<Ogre::Vector4, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > > stdVectorVector4;
+ typedef std::vector<int, Ogre::STLAllocator<int, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorIntOgreAlloc;
+ typedef std::vector<std::pair<unsigned int, unsigned int>, Ogre::STLAllocator<std::pair<unsigned int, unsigned int>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorUnsignedIntUnsignedInt;
+
+ // typedef Ogre::set<Ogre::FrameListener*> OgreSetFrameListener;
+ // typedef Ogre::set<Ogre::LodListener*> OgreSetLodListener;
+ // typedef Ogre::set<Ogre::SceneNode*> OgreSetSceneNode;
+ // typedef Ogre::set<Ogre::SceneQuery*> OgreSetSceneQuery;
+ // typedef Ogre::set<Ogre::Pass*> OgreSetPass;
+ // typedef Ogre::set<Ogre::Entity*> OgreSetEntity;
+ // typedef Ogre::set<Ogre::VertexBufferBinding*> OgreSetVertexBufferBinding;
+ // typedef Ogre::set<unsigned long long> OgreSetunsignedlonglong;
+ // typedef Ogre::set<std::string> OgreSetstdstring;
+ // typedef Ogre::set<Ogre::VertexDeclaration*> OgreSetVertexDeclaration;
+ // typedef Ogre::set<Ogre::HardwareIndexBuffer*> OgreSetHardwareIndexBuffer;
+ // typedef Ogre::set<Ogre::HardwareVertexBuffer*> OgreSetHardwareVertexBuffer;
+ // typedef Ogre::set<Ogre::Controller<float>* > OgreSetControllerfloat;
+ // typedef Ogre::set<Ogre::Node*> OgreSetNode;
+ // typedef Ogre::set<Ogre::Bone*> OgreSetBone;
+ // typedef Ogre::set<unsigned char> OgreSetunsignedchar;
+ // typedef Ogre::set<Ogre::SceneQuery::WorldFragmentType> OgreSetSceneQueryWorldFragmentType;
+ // typedef Ogre::set<Ogre::Texture*> OgreSetTexture;
+ // typedef Ogre::list<Ogre::SharedPtr<Ogre::ScriptCompiler::Error> > OgreListSharePtrScriptCompilerError;
+ // typedef Ogre::list<Ogre::SharedPtr<Ogre::AbstractNode> > OgreListSharePtrAbstractNode;
+ // typedef Ogre::list<Ogre::SharedPtr<Ogre::ConcreteNode> > OgreListSharePtrConcreteNode;
+ // typedef Ogre::list<Ogre::Particle*> OgreListParticle;
+ // typedef Ogre::list<Ogre::StaticGeometry::OptimisedSubMeshGeometry*> OgreLisStaticGeometryOptimizedSubMesh;
+ // typedef Ogre::list<Ogre::SceneManagerFactory*> OgreListSceneManagerFactory;
+ // typedef Ogre::list<Ogre::InstancedGeometry::OptimisedSubMeshGeometry*> OgreListInstanceGeometrySubmesh;
+ // typedef Ogre::list<Ogre::TagPoint*> OgreListTagPoint;
+ // typedef Ogre::list<std::pair<Ogre::MovableObject*, Ogre::SceneQuery::WorldFragment*> > OgreListParuMovableFragment;
+ // typedef Ogre::list<std::pair<Ogre::MovableObject*, Ogre::MovableObject*> > OgreListPairMovable;
+ // typedef Ogre::list<Ogre::SceneQuery::WorldFragment*> OgreListSceneQueryWorldFragment;
+ // typedef Ogre::list<Ogre::MovableObject*> OgreListMovableObject;
+ // typedef Ogre::list<Ogre::Plane> OgreListPlane;
+ // typedef Ogre::list<Ogre::WorkQueue::ResponseHandler*> OgreListWorkQueueResponse;
+ // typedef Ogre::list<Ogre::WorkQueue::RequestHandler*> OgreListWorkQueueRequest;
+ // typedef Ogre::list<Ogre::HardwareOcclusionQuery*> OgreListHardwareOcclusionQuery;
+ // typedef Ogre::list<Ogre::RenderSystem::Listener*> OgreListRenderSystemListener;
+ // typedef Ogre::list<Ogre::OverlayElement*> OgreListOverlayElement;
+ // typedef Ogre::list<Ogre::ParticleEmitter*> OgreListParticleEmitter;
+ // typedef Ogre::set<unsigned short> OgreSetunsignedshort;
+ 
+ 
+#endif
+    
      
