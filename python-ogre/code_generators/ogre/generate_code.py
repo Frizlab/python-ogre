@@ -32,6 +32,7 @@ import common_utils
 import customization_data
 import hand_made_wrappers
 import register_exceptions
+import re as re
 
 import pygccxml
 from pygccxml import parser
@@ -325,7 +326,37 @@ def ManualExclude ( mb ):
             if v.name.endswith('Mutex'):
                 print "Excluding possible Mutex Variable:", v
                 v.exclude()
-
+                
+    if environment.ogre.version.startswith("1.7"):
+        ## Lots of new wrappers to handle all with uglky aliases that cause issues so rather than many hand entries
+        ## in python_ogre_aliases I'm trying to be a little smart 
+        pat = re.compile ("::Ogre::(\w+?)<.*?Ogre::(.+?)[<*,]")
+        dups = {}
+        for c in main_ns.classes():
+            if not c.ignore and "_" in c.alias: # only care about classes we are include with ugly alaises
+                m = pat.match(c.decl_string)
+                if m:
+                    if not "STLAllocator" in m.group(1): 
+                        const = ""
+                        if "_Const_iterator" in c.decl_string:
+                            const = "Const"
+                        newalias = "".join ( m.groups()) + const 
+                        newalias = newalias.replace("::", "") ## sometimes need to remove namespace ::'s
+                        if not dups.has_key(newalias):
+                            dups[newalias]=0
+                        else:
+                            dups[newalias]=dups[newalias]+1
+                            newalias = newalias + "_" +str(dups[newalias])
+                        print "Set Alias:", newalias, "  ", c.decl_string    
+                        c.alias = newalias
+                    else:
+                        ## any that show up here need a manual entry in the python_ogre_aliases.h file
+                        print "NOT Changed:",c.decl_string
+                        print m.groups()
+                else:
+                    ## any that show up here need a manual entry in the python_ogre_aliases.h file
+                    print "NO MATCH:", c.decl_string
+                          
 ####################b########################################
 ##
 ##  And there are things that manually need to be INCLUDED 
@@ -505,7 +536,7 @@ def ManualFixes ( mb ):
 # fix up any ugly name alias
 ##
 def ManualAlias ( mb ):
-    return
+    
     AliasFixList = [
     ["::Ogre::SceneManager::estimateWorldGeometry",
     ["::Ogre::DataStreamPtr &", "::Ogre::String const &"],
@@ -513,11 +544,22 @@ def ManualAlias ( mb ):
     "estimateWorldGeometry"],
     ]
     
-    for fix in AliasFixList:
-        c=mb.member_function(fix[0] ,arg_types=fix[1])
-        c.add_transformation( fix[2], alias=fix[3])
-    mb.member_function('::Ogre::Math::Abs', arg_types['::Ogre::Real']).alias="AbsReal"
-            
+    if 0:
+        for fix in AliasFixList:
+            c=mb.member_function(fix[0] ,arg_types=fix[1])
+            c.add_transformation( fix[2], alias=fix[3])
+        mb.member_function('::Ogre::Math::Abs', arg_types['::Ogre::Real']).alias="AbsReal"
+    
+    #c=mb.namespace('std').class_('std::set<Ogre::Texture*,std::less<Ogre::Texture*>,Ogre::STLAllocator<Ogre::Texture*,Ogre::CategorisedAllocPolicy<MEMCATEGORY_GENERAL> > >')
+    #c.alias="stdSetOgreTexture"
+    
+    count =0
+#    for c in mb.decls():
+#        #if not c.ignore:#  and not c.alias:
+#        if c.decl_string.startswith('::std::set<Ogre::Texture'):
+#            c.alias = 'stdSetOgreTexture'
+    
+    #sys.exit()            
 ############################################################
 ##
 ##  And things that need to have their argument and call values fixed.
@@ -1099,31 +1141,31 @@ def FindProtectedVars ( mb ):
 # the 'main'function
 #            
 def generate_code():  
-# # # # # # #     messages.disable( 
-# # # # # # # # #         messages.W1005 # using a non public variable type for argucments or returns
-# # # # # # # # # #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-# # # # # # #         messages.W1020
-# # # # # # #         , messages.W1021
-# # # # # # #         , messages.W1022
-# # # # # # #         , messages.W1023
-# # # # # # #         , messages.W1024
-# # # # # # #         , messages.W1025
-# # # # # # #         , messages.W1026
-# # # # # # #         , messages.W1027
-# # # # # # #         , messages.W1028
-# # # # # # #         , messages.W1029
-# # # # # # #         , messages.W1030
-# # # # # # #         , messages.W1031
-# # # # # # # # #         , messages.W1035
-# # # # # # # # #         , messages.W1040 
-# # # # # # # # #         , messages.W1041 # overlapping names when creating a property
-# # # # # # # # # #         , messages.W1038        
-# # # # # # # # #         , messages.W1036 # pointer to Python immutable member
-# # # # # # # # # #         , messages.W1033 # unnamed variables
-# # # # # # # # # #         , messages.W1018 # expose unnamed classes
-# # # # # # # # #         , messages.W1049 # returns reference to local variable
-# # # # # # # # #         , messages.W1014 # unsupported '=' operator
-# # # # # # #          )
+    messages.disable( 
+# #         messages.W1005 # using a non public variable type for argucments or returns
+# # #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+        messages.W1020
+        , messages.W1021
+        , messages.W1022
+        , messages.W1023
+        , messages.W1024
+        , messages.W1025
+        , messages.W1026
+        , messages.W1027
+        , messages.W1028
+        , messages.W1029
+        , messages.W1030
+        , messages.W1031
+# #         , messages.W1035
+# #         , messages.W1040 
+# #         , messages.W1041 # overlapping names when creating a property
+# # #         , messages.W1038        
+# #         , messages.W1036 # pointer to Python immutable member
+# # #         , messages.W1033 # unnamed variables
+# # #         , messages.W1018 # expose unnamed classes
+# #         , messages.W1049 # returns reference to local variable
+# #         , messages.W1014 # unsupported '=' operator
+         )
 #     sort_algorithms.USE_CALLDEF_ORGANIZER = True   ## tried this to remove a couple of order issues, without success :)
     #
     # Use GCCXML to create the controlling XML file.
