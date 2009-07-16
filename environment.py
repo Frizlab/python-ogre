@@ -17,6 +17,7 @@ import datetime
 
 _LOGGING_ON = False
 _PreCompiled = True
+_UserName = getpass.getuser()
 
 def log(instring):
     if _LOGGING_ON:
@@ -77,6 +78,12 @@ else:
 PythonOgreMajorVersion = "1"
 PythonOgreMinorVersion = "6"
 PythonOgrePatchVersion = "1"
+if _UserName =='amiller':
+    PythonOgreMajorVersion = "1"
+    PythonOgreMinorVersion = "7"
+    PythonOgrePatchVersion = "0"
+    _USE_THREADS = True
+    
 
 ##
 ## these should be fine with auto create - however override them as necessary
@@ -112,7 +119,6 @@ package_dir_name = 'packages'+ "_" + PythonVersionString
 generated_dir = os.path.join(root_dir, generated_dir_name)
 declarations_cache_dir = os.path.join(root_dir, 'code_generators', 'cache')
 
-_UserName = getpass.getuser()
 _ConfigSet = False
 _SystemType = os.name ## nt or posix or mac
 _PlatformType = sys.platform ## win32, ??
@@ -597,16 +603,16 @@ class boost(module):
     else:
         PATH_LIB = Config.PATH_LIB_Boost
 
-    # If we are not given a LIB_Boost, use the version we are building.
-    if Config.LIB_Boost is None:
-        import subprocess
-        gccp = subprocess.Popen(["gcc", "--version"], stdout=subprocess.PIPE)
-        import re
-        gcc_version = re.search(r'([0-9]+?\.[0-9]+?\.[0-9]+?)', gccp.communicate()[0]).groups()[0].split('.')
-
-        lib = "boost_python-gcc%s%s-mt" % (gcc_version[0], gcc_version[1])
-    else:
-        lib = Config.LIB_Boost
+# #     # If we are not given a LIB_Boost, use the version we are building.
+# #     if Config.LIB_Boost is None:
+# #         import subprocess
+# #         gccp = subprocess.Popen(["gcc", "--version"], stdout=subprocess.PIPE)
+# #         import re
+# #         gcc_version = re.search(r'([0-9]+?\.[0-9]+?\.[0-9]+?)', gccp.communicate()[0]).groups()[0].split('.')
+# # 
+# #         lib = "boost_python-gcc%s%s-mt" % (gcc_version[0], gcc_version[1])
+# #     else:
+# #         lib = Config.LIB_Boost
 
 ####################################################
 ##
@@ -625,14 +631,14 @@ class ogre(pymodule):
     libraries = myLibraries
 
     if isWindows():
-        version="1.6.1"
+        version="1.6.2"
         source = [
-            [ wget, "http://downloads.sourceforge.net/ogre/ogre-v1-6-1.zip", downloadPath],
+            [ wget, "http://downloads.sourceforge.net/ogre/ogre-v1-6-2.zip", downloadPath],
             [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_VC9_Eihort_20080203.zip", downloadPath],
         ]
 
         buildCmds = [
-            [0, unzip + os.path.join(downloadPath, "ogre-v1-6-1.zip"), os.getcwd()  ],
+            [0, unzip + os.path.join(downloadPath, "ogre-v1-6-2.zip"), os.getcwd()  ],
             [0, unzip + os.path.join(downloadPath, "OgreDependencies_VC9_Eihort_20080203.zip"), Config.PATH_Ogre  ],
             [0, 'echo Please use MSVC Express Edition to build Ogre Release.', '']
         ]
@@ -701,7 +707,7 @@ class ogre(pymodule):
             [0, "cp -R *.framework ~/Library/Frameworks", os.path.join(os.getcwd(), 'ogre', "Mac", "build", "Release") ],
             [0, "cp -R *.framework ~/Library/Frameworks", os.path.join(os.getcwd(), 'ogre', "Dependencies") ]
         ]
-
+        
         libs = [boost.lib]
         lib_dirs = [ boost.PATH_LIB ]
         include_dirs = [
@@ -711,6 +717,8 @@ class ogre(pymodule):
         ]
 
         LINKFLAGS = ''
+    if _UserName == 'amiller':
+        version="1.7.0"
 
 class ois(pymodule):
     version= "1.0"
@@ -1039,7 +1047,7 @@ class caelum(pymodule):
     ModuleName="caelum"
 
 class ogreode(pymodule):
-    version= "r2632"
+    version= "r2684"
     cflags = ""
     parent = "ogre/physics"
     base = 'ogreaddons/ogreode'
@@ -1244,7 +1252,7 @@ class nxogre(pymodule):
 
 
 class ogrevideo(pymodule):
-    version="r66"
+    version="r80"
     parent="ogre/addons"
     base = 'ogrevideo'
     ##
@@ -1370,16 +1378,16 @@ class ogreal(pymodule):
     ]
 
     if isWindows():
-        lib_dirs = [
-            boost.PATH_LIB,
-            Config.PATH_LIB_Ogre_OgreMain,
-            os.path.join(Config.PATH_OGG, 'win32', 'Static_Release'),
-            os.path.join(Config.PATH_VORBIS, 'win32', 'Vorbis_Static_Release'),
-            os.path.join(Config.PATH_VORBIS, 'win32', 'VorbisEnc_Static_Release'),
-            os.path.join(Config.PATH_VORBIS, 'win32', 'VorbisFile_Static_Release'),
-            os.path.join(Config.PATH_OPENAL, 'Release'),
-            Config.PATH_LIB_OgreAL,
-        ]
+        lib_dirs = [ boost.PATH_LIB
+                ,Config.PATH_LIB_Ogre_OgreMain
+                ,os.path.join(Config.PATH_OGG, 'win32', 'Static_Release')
+                ,os.path.join(Config.PATH_VORBIS, 'win32','Vorbis_Static_Release')
+                ,os.path.join(Config.PATH_VORBIS, 'win32','VorbisEnc_Static_Release')
+                ,os.path.join(Config.PATH_VORBIS, 'win32','VorbisFile_Static_Release')
+                ,os.path.join(Config.PATH_OPENAL, 'Release' ) #'libs','Win32')
+                ,Config.PATH_LIB_OgreAL
+                ,Config.PATH_LIB_OPENAL
+                  ]
         CCFLAGS = ' -DWIN32 -DNDEBUG -D_LIB -D_WIN32 -D_WINDOWS ' #-DVORBIS_IEEE_FLOAT32 -D_USE_NON_INTEL_COMPILER '
         libs = [
             boost.lib,
@@ -1548,7 +1556,7 @@ class bullet(pymodule):
     CCFLAGS = ' /D "NDEBUG" /D "_CONSOLE"  /D "WIN32" /D "_MBCS" /fp:fast /Gy /GF '
 
 class ogrebulletc(pymodule):
-    version = "r2676"
+    version = "r2684"
     parent = "ogre/physics"
     libs = [boost.lib,  'OgreMain',
         'LibBulletCollision', 'LibBulletDynamics', 'LibBulletMultiThreaded',
@@ -1582,7 +1590,7 @@ class ogrebulletc(pymodule):
 
 
 class ogrebulletd(pymodule):
-    version = "r2493"
+    version = "r2684"
     name='ogrebulletd'
     parent = "ogre/physics"
 
@@ -1743,6 +1751,9 @@ class hydrax(pymodule):
     libs = [  boost.lib, 'OgreMain' ]
     ModuleName="hydrax"
     descText = "Fantastic water/ocean effects"
+    
+    CCFLAGS= " /fp:fast "
+    LINKFLAGS = "  /LTCG /DYNAMICBASE:NO /MACHINE:X86 "
 
 class hikari(pymodule):
     version="r23"
@@ -1766,7 +1777,7 @@ class hikari(pymodule):
 
 class mygui(pymodule):
     active = False
-    version="2.2.0RC1"
+    version="2.2.2"
     parent="ogre/gui"
     source = [
         ["wget", "http://downloads.sourceforge.net/my-gui/MyGUI_2.2.0_RC1_source.zip", downloadPath],

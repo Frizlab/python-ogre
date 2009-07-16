@@ -43,5 +43,7 @@ class SimpleScenes_BoxStack ( SimpleScenes ):
             body = self.createRandomObject(OgreOde.Geometry.Class_Convex) #TriangleMesh)
         elif (keyinput.isKeyDown(OIS.KC_G)): 
             self.createRagDoll()
+        elif (keyinput.isKeyDown(OIS.KC_B)):           # this part is new
+            self.deleteLastDroppedObject()             # this part is new    
         
         

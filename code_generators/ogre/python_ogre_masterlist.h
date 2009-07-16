@@ -44,12 +44,20 @@ Nov 21 2007:  Major change to use Ogre.h and OgreStableHeaders.h, and then add m
 #include "OgreImage.h"
 // #include "OgreImageCodec.h"  // not this one
 #include "OgreIteratorWrappers.h"
+
 #if OGRE_VERSION_MINOR == 4
     #include "OgreMaterialScriptCompiler.h"
     #include "OgreMemoryMacros.h"
     #include "OgreMemoryManager.h"
     #include "OgreNoMemoryMacros.h"
 #endif    
+
+
+/*
+#if OGRE_VERSION_MINOR >= 7
+    #include "OgreIteratorWrapper.h"
+#endif
+*/
 
 #include "OgreMeshFileFormat.h"
 #include "OgreMeshSerializerImpl.h"
