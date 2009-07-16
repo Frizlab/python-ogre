@@ -175,7 +175,47 @@ class SimpleScenes (OgreOde.CollisionListener, OgreOde.StepListener):
        
         
   
+    def deleteLastDroppedObject(self):
+        if (self._key_delay < self.KEY_DELAY): 
+            return 0
+        
+        if [] == self._geoms:
+            return 0
+        
+        geom = self._geoms.pop()
+        body = self._bodies.pop()
+        node = body.getParentSceneNode()
+        clearList = []
+        if node:
+            name = node.getName()
+            num = node.numAttachedObjects()
+            clearList = [node.getAttachedObject(j) \
+	            for j in range(node.numAttachedObjects()) \
+                    if node.getAttachedObject(j).getMovableType() != body.getMovableType()]
+	    for i in clearList:
+	        if (i.getMovableType() == "Entity") :
+	       	    print "Deleting " + str(i)
+	            self._mgr.destroyMovableObject(i)
+            self._mgr.getRootSceneNode().removeAndDestroyChild(name)
+
+        self._space.removeGeometry(geom)
+        del body
+        del geom
     
+        self._key_delay = 0.0
+    
+        import gc
+        gc.collect()
+        print "Space geometry count: ", self._space.getGeometryCount()
+        while False:
+            s = raw_input()
+            if "" == s:
+                break
+            try:
+                print eval(s)
+            except:
+                import traceback
+                traceback.print_exc()
     
     # /*
     # Create a randomly sized box, sphere or capsule for dropping on things
@@ -191,7 +231,7 @@ class SimpleScenes (OgreOde.CollisionListener, OgreOde.StepListener):
         elif objectClass == OgreOde.Geometry.Class_Cylinder:  #Capsule:
             typeName = "capsule" 
         elif objectClass == OgreOde.Geometry.Class_Convex:  # TriangleMesh:
-            typeName = "gun" 
+            typeName = "gun" #"athene"    #gun
         else:
             typeName = "unknown" 
         ## Create the visual representation (the Ogre entity and scene node)

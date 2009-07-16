@@ -20,7 +20,7 @@ import ogre.addons.hydrax as Hydrax
 import ogre.io.OIS as OIS
 
 _def_SkyBoxNum = 3
-_def_PGComplexity = 256
+
 
 mSkyBoxes = [ "Sky/ClubTropicana",
              "Sky/EarlyMorning",
@@ -49,9 +49,9 @@ class HydraxListener(sf.FrameListener):
         self.raySceneQuery = self.sceneManager.createRayQuery(ogre.Ray(self.camera.getPosition(),
                                                                     ogre.Vector3().NEGATIVE_UNIT_Y))
 
-    def frameStarted(self, e):
+    def frameRenderingQueued ( self, e): ## frameStarted(self, e):
         global mCurrentSkyBox
-        if sf.FrameListener.frameStarted(self, e) == False:
+        if sf.FrameListener.frameRenderingQueued(self, e) == False:
             return False
             
         # Check camera height
@@ -154,7 +154,7 @@ class HydraxApplication(sf.Application):
         sceneManager = self.sceneManager
         camera = self.camera
 
-        sceneManager.setAmbientLight ( ogre.ColourValue(1.0,1.0,1.0 ))
+        sceneManager.setAmbientLight ( ogre.ColourValue(1,1,1 ))
         
         # Create the SkyBox
         sceneManager.setSkyBox(True, mSkyBoxes[mCurrentSkyBox], 99999*3, True)
@@ -177,7 +177,10 @@ class HydraxApplication(sf.Application):
         self.hydrax = Hydrax.Hydrax(sceneManager, camera, self.renderWindow.getViewport(0))
 
         # Create our projected grid module  
-        self.noise=  Hydrax.Perlin()  ## Default options (8, 0.085, 0.49, 1.4, 1.27f) 
+        self.options = Hydrax.Perlin.Options(8, 0.085, 0.49, 1.4, 1.27)
+        print dir ( Hydrax )
+        self.modoptions = Hydrax.ProjectedGrid.Options(64,0.0,0.0,True )
+        self.noise=  Hydrax.Perlin() #self.options)  ## Default options (8, 0.085, 0.49, 1.4, 1.27f) 
         self.Module = Hydrax.ProjectedGrid(# Hydrax parent pointer
                         self.hydrax,
                         # Noise module
@@ -186,7 +189,7 @@ class HydraxApplication(sf.Application):
                         ogre.Plane(ogre.Vector3(0,1,0), ogre.Vector3(0,0,0)),
                         Hydrax.MaterialManager.NM_VERTEX,
                         # Projected grid options (Can be updated each frame . setOptions(...))
-                        Hydrax.ProjectedGrid.Options(264 ))
+                        self.modoptions) # 264
 
         # Set our module
         self.hydrax.setModule(self.Module)

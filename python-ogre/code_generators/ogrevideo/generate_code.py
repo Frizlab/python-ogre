@@ -561,7 +561,7 @@ def generate_code():
     if AUDIO:
        additional_files=[
                os.path.join( environment.Config.PATH_INCLUDE_TheoraDemo, 'OpenAL_AudioInterface.h'),
-#                os.path.join( environment.Config.PATH_INCLUDE_TheoraDemo, 'OpenAL_AudioInterface.cpp'),
+               os.path.join( environment.Config.PATH_INCLUDE_TheoraDemo, 'OpenAL_AudioInterface.cpp'),
                ]            
        for sourcefile in additional_files:
            p,filename = os.path.split(sourcefile)

@@ -66,9 +66,15 @@ img.loadRawData(mDs, width, height, depth, ogre.PixelFormat.PF_BYTE_BGR)
 
 root = ogre.Root ("plugins.cfg")
 
-# img2=ogre.Image()
-# img2.load ('../../media/materials/textures/smoke.png', 'General')
-# print img2
+config = ogre.ConfigFile()
+config.load('resources.cfg' ) 
+section_iter = config.getSectionIterator()
+while section_iter.hasMoreElements():
+    section_name = section_iter.peekNextKey()
+    settings = section_iter.getNext()
+    for item in settings:
+        ogre.ResourceGroupManager.getSingleton().addResourceLocation(item.value, item.key, section_name)
+ogre.ResourceGroupManager.getSingleton().initialiseAllResourceGroups()         
 
 f= file('../../media/materials/textures/smoke.png', 'rb')
 MatString = f.read()
@@ -77,5 +83,9 @@ memDataStream = ogre.MemoryDataStream ( "MyBuffer", len (MatString) )
 memDataStream.setData ( MatString )
 img2=ogre.Image()
 img2.load (memDataStream)
+print "OK:", img2 
 
+img2=ogre.Image()
+img2.load ('Smoke', 'Examples')
+print img2
 

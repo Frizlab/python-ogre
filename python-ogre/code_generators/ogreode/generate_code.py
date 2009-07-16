@@ -107,8 +107,9 @@ def ManualExclude ( mb ):
         print "Excluding:", e
         global_ns.namespace( 'OgreOde' ).class_(e).exclude()
         
-    global_ns.namespace("std").class_('list<Ogre::Plane, std::allocator<Ogre::Plane> >').include(already_exposed=True)  
-
+    #global_ns.namespace("Ogre").class_('list<Ogre::Plane>').include(already_exposed=True)  
+    
+    global_ns.class_('::std::list<Ogre::Plane, Ogre::STLAllocator<Ogre::Plane, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >').include(already_exposed=True)
 
     # a specal set as the constructors require pointers to vertex buffers which we can't do 
     # so make them no initable (so boost won't allow you to try and make them)
@@ -155,7 +156,18 @@ def ManualFixes ( mb, ns ):
                 func.opaque = True
                 func.call_policies = call_policies.return_value_policy(
                     call_policies.return_opaque_pointer )
-              
+
+    ## Functions that return objects we need to manage
+    FunctionsToMemoryManage=[\
+        '::OgreOde::EntityInformer::createStaticTriangleMesh',
+        '::OgreOde::EntityInformer::createSingleStaticBox',
+        '::OgreOde::EntityInformer::createSingleDynamicBox',
+        '::OgreOde::EntityInformer::createSingleDynamicSphere'        
+        ]
+    for cls in FunctionsToMemoryManage:
+        global_ns.mem_fun(cls).call_policies = call_policies.return_value_policy( call_policies.manage_new_object )  
+
+        
 ############################################################
 ##
 ##  And things that need to have their argument and call values fixed.
@@ -325,6 +337,9 @@ def generate_code():
         common_utils.Set_DefaultCall_Policies ( mb.global_ns.namespace ( ns ) )
     ManualExclude ( mb )
     
+    #mb.global_ns.class_('::std::list<Ogre::Plane, Ogre::STLAllocator<Ogre::Plane, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >').include(already_exposed=True)
+    mb.global_ns.class_('::std::list<Ogre::Plane, Ogre::STLAllocator<Ogre::Plane, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >').exclude()
+    
     #
     # the manual stuff all done here !!!
     #
@@ -338,6 +353,12 @@ def generate_code():
     ## add additional version information to the module to help identify it correctly 
     common_utils.addDetailVersion ( mb, environment, environment.ogreode )
 
+    
+    for cls in global_ns.classes():
+        if not cls.ignore:
+            print cls, cls.decl_string
+    
+    
     ##########################################################################################
     #
     # Creating the code. After this step you should not modify/customize declarations.

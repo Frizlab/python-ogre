@@ -130,6 +130,9 @@ class VideoListener(sf.FrameListener):
  
     def frameStarted(self, frameEvent):
       ret = sf.FrameListener.frameStarted(self, frameEvent)
+      self.mgr = ogre.ExternalTextureSourceManager.getSingleton().getExternalTextureSource("ogg_video")
+      self.clip= self.mgr.getVideoClipByName("konqi.ogg")
+      self._setGuiCaption('POCore/DebugText', "precached frames = " + str(self.clip.getNumPrecachedFrames()) )
 #       self.mgr = ogre.ExternalTextureSourceManager.getSingleton().getExternalTextureSource("ogg_video")
 #       self.clip= self.mgr.getVideoClipByName("konqi.ogg")
 #  

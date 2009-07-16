@@ -115,7 +115,7 @@ if SDK:
 ### Override anything that is different
 ###        
 PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'Samples/Common/CEGUIRenderer/lib')
-PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'lib' )
+PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'lib', 'Release' )
 PATH_LIB_Ogre_Dependencies =    os.path.join( PATH_Ogre, 'Dependencies/lib/Release')
 PATH_LIB_OgreRefApp =           os.path.join( PATH_Ogre, 'lib')
 PATH_LIB_OgreNewt =             os.path.join( PATH_OgreAddons, 'ogrenewt/OgreNewt_Main/lib/Release') 
