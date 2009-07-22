@@ -603,16 +603,17 @@ class boost(module):
     else:
         PATH_LIB = Config.PATH_LIB_Boost
 
-# #     # If we are not given a LIB_Boost, use the version we are building.
-# #     if Config.LIB_Boost is None:
-# #         import subprocess
-# #         gccp = subprocess.Popen(["gcc", "--version"], stdout=subprocess.PIPE)
-# #         import re
-# #         gcc_version = re.search(r'([0-9]+?\.[0-9]+?\.[0-9]+?)', gccp.communicate()[0]).groups()[0].split('.')
-# # 
-# #         lib = "boost_python-gcc%s%s-mt" % (gcc_version[0], gcc_version[1])
-# #     else:
-# #         lib = Config.LIB_Boost
+    if not isWindows():
+        # If we are not given a LIB_Boost, use the version we are building.
+        if Config.LIB_Boost is None:
+            import subprocess
+            gccp = subprocess.Popen(["gcc", "--version"], stdout=subprocess.PIPE)
+            import re
+            gcc_version = re.search(r'([0-9]+?\.[0-9]+?\.[0-9]+?)', gccp.communicate()[0]).groups()[0].split('.')
+
+            lib = "boost_python-gcc%s%s-mt" % (gcc_version[0], gcc_version[1])
+        else:
+            lib = Config.LIB_Boost
 
 ####################################################
 ##
