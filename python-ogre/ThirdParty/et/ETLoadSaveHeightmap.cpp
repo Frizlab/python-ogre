@@ -66,7 +66,7 @@ namespace ET
 
     size_t size = image.getWidth() * image.getHeight();
     unsigned int maxVal = (1 << (bpp*8)) - 1;
-    vector<float> data (size);
+    std::vector<float> data (size);
     const uchar* imageData = image.getData();
 
     for (size_t i = 0; i < size; ++i)
@@ -138,7 +138,7 @@ namespace ET
       OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Size of the given data stream does not match with specified dimensions.", "loadHeightmapFromRawData");
 
     unsigned int maxVal = (1 << (bpp*8)) - 1;
-    vector<float> data (size);
+    std::vector<float> data (size);
 
     for (size_t i = 0; i < size; ++i)
     {

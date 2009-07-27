@@ -894,7 +894,13 @@ class cegui(pymodule):
             pchstop = 'cegui.h'
             pchbuild = 'buildpch.cpp'
             pchincludes = ['boost/python.hpp', 'cegui.h']
-        libs = [boost.lib, 'CEGUIBase', 'OgreMain', 'OgreGUIRenderer' ]
+        libs = [boost.lib, 'CEGUIBase', 'OgreMain']
+        
+        if PythonOgreMajorVersion == "1" and int(PythonOgreMinorVersion) < 7:
+            libs.append('OgreGUIRenderer')
+        else:
+            libs.append('CEGUIOgreRenderer')
+        
     elif isLinux():
         libs = [boost.lib, 'CEGUIBase', 'OgreMain', 'CEGUIOgreRenderer' ]
     else:
@@ -1027,7 +1033,7 @@ class opcode(pymodule):
     CheckIncludes = ['boost/python.hpp',  'Opcode.h']
 
 class caelum(pymodule):
-    version="r408"
+    version="r451"
     parent="ogre/addons"
     cflags = ""
     include_dirs = [
@@ -1118,6 +1124,7 @@ class quickgui(pymodule):
     ModuleName="QuickGUI"
 
 class navi(pymodule):
+    active = False
     version="head"
     parent="ogre/gui"
     CCFLAGS = '-D"WIN32" -D"NDEBUG", -D"WINDOWS", -D"_WIN32", -D"NAVI_DYNAMIC_LIB" '
@@ -1220,6 +1227,7 @@ class particleuniverse(pymodule):
 
 
 class nxogre(pymodule):
+    active = False
     version="0.22T5"
     parent="ogre/physics"
     cflags=""
@@ -1755,7 +1763,14 @@ class hydrax(pymodule):
     
     CCFLAGS= " /fp:fast "
     LINKFLAGS = "  /LTCG /DYNAMICBASE:NO /MACHINE:X86 "
-
+    
+    # testing dll linkage..
+    if _UserName =='amiller':
+        libs.append('Hydrax')
+        lib_dirs.append(Config.PATH_LIB_hydrax)
+        for p in Config.PATH_INCLUDE_hydrax_modules:
+            include_dirs.insert(0,p)
+            
 class hikari(pymodule):
     version="r23"
     name='hikari'

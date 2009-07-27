@@ -37,9 +37,6 @@ namespace Caelum
 	private:
 		Ogre::SceneManager *mSceneMgr;
 
-        /// Called to enforce parameters on a composing material
-    	void _updateMaterialParams (const Ogre::MaterialPtr& mat);
-
         void onCompositorMaterialChanged ();
         const String& getCompositorName ();
 

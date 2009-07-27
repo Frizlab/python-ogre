@@ -62,7 +62,9 @@ def ManualExclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns    
-
+    
+    ##main_ns.class_('Math').exclude()
+    
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 
@@ -287,8 +289,8 @@ def generate_code():
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory..
-    
-    common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_hydrax, 
+    if environment._UserName != 'amiller':
+        common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_hydrax, 
                             destPath = environment.hydrax.generated_dir, 
                             recursive= False )
         

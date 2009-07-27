@@ -44,7 +44,7 @@ namespace ET
       /** extents of the heightmap */
       size_t width, height;
       /** the heightmap */
-      vector<float> heightmap;
+      std::vector<float> heightmap;
 
       /** offset at which the (0, 0) point of the terrain is placed in Ogre */
       Vector3 offset;
@@ -64,7 +64,7 @@ namespace ET
     setHeightmap(width, height, heightmap);
   }
 
-  TerrainInfo::TerrainInfo(size_t width, size_t height, const vector<float>& heightmap)
+  TerrainInfo::TerrainInfo(size_t width, size_t height, const std::vector<float>& heightmap)
   : mWidth(0), mHeight(0), mOffset(Vector3::ZERO), mScale(Vector3::UNIT_SCALE)
   {
     setHeightmap(width, height, heightmap);
@@ -78,7 +78,7 @@ namespace ET
     mHeight = height;
   }
 
-  void TerrainInfo::setHeightmap(size_t width, size_t height, const vector<float>& heightmap)
+  void TerrainInfo::setHeightmap(size_t width, size_t height, const std::vector<float>& heightmap)
   {
     if (width*height != heightmap.size())
       OGRE_EXCEPT(Exception::ERR_INVALIDPARAMS, "Given heightmap dimensions and size of the vector do not match.", "TerrainInfo::setHeightmap");

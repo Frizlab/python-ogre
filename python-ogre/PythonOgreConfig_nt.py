@@ -3,6 +3,7 @@ import sys
 import getpass
 
 SDK=False # Changes Ogre include path settings
+_UserName = getpass.getuser()
 
 ## The root directory is where this module is located
 module_dir = os.path.abspath(os.path.dirname(__file__) )
@@ -95,6 +96,7 @@ PATH_particleuniverse = os.path.join(PATH_Ogre, 'PlugIns', 'ParticleUniverse' )
 PATH_ogrepcz = os.path.join(PATH_Ogre, 'PlugIns', 'PCZSceneManager' )
 
 PATH_hydrax = os.path.join(PATH_THIRDPARTY, 'Hydrax')
+
 PATH_hikari = os.path.join(PATH_THIRDPARTY, 'Hikari' ) #BASE_DIR, 'hikari', 'hikari')
 PATH_mygui = os.path.join(BASE_DIR, 'MyGUI2.2.2_source' ) # \development\MyGUI2.2.2_source\MyGUIEngine\include
 PATH_canvas = os.path.join(PATH_THIRDPARTY, 'canvas')
@@ -244,4 +246,16 @@ if SDK:
     PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'samples','include')
     PATH_INCLUDE_ogrepcz = os.path.join(PATH_Ogre,'include', 'opt')
 
+# test to use hydrax dll for performance reasons...
+if _UserName =='amiller':
+    PATH_hydrax = os.path.join(BASE_DIR, 'Hydrax-v0.5')
+    PATH_INCLUDE_hydrax = os.path.join(PATH_hydrax,'Hydrax','src','Hydrax')
+    PATH_INCLUDE_hydrax_modules = [
+        os.path.join(PATH_INCLUDE_hydrax,'Modules'),
+        os.path.join(PATH_INCLUDE_hydrax,'Modules','ProjectedGrid'),
+        os.path.join(PATH_INCLUDE_hydrax,'Modules','SimpleGrid'),
+        os.path.join(PATH_INCLUDE_hydrax,'Noise'),
+        os.path.join(PATH_INCLUDE_hydrax,'Noise','Perlin')
+        ]
+    PATH_LIB_hydrax = os.path.join(PATH_hydrax, 'Hydrax','bin','release')
     

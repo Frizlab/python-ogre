@@ -146,6 +146,7 @@ namespace Caelum
         assert (mCloudCoverLookup.get() == 0);
         setCloudCoverLookup ("CloudCoverLookup.png");
 		setCloudCover (0.3);
+        setCloudCoverVisibilityThreshold (0.001);
 
 		setCloudMassOffset (Ogre::Vector2(0, 0));
 		setCloudDetailOffset (Ogre::Vector2(0, 0));
@@ -183,7 +184,16 @@ namespace Caelum
 		setFogColour (fogColour);
 
         this->_ensureGeometry();
+
+        this->_updateVisibilityThreshold();
 	}	
+
+	void FlatCloudLayer::_updateVisibilityThreshold ()
+    {
+        if (!mEntity.isNull()) {
+            mEntity->setVisible (getCloudCover () > this->getCloudCoverVisibilityThreshold ());
+        }
+    }
 
 	void FlatCloudLayer::advanceAnimation (Ogre::Real timePassed)
     {
@@ -233,6 +243,11 @@ namespace Caelum
         return mCloudCoverLookupFileName;
     }
 
+	void FlatCloudLayer::setCloudCoverVisibilityThreshold(const Ogre::Real value) {
+        mCloudCoverVisibilityThreshold = value;
+        _updateVisibilityThreshold();
+    }
+
 	void FlatCloudLayer::setCloudCover(const Ogre::Real cloudCover) {
         mCloudCover = cloudCover;
 		float cloudCoverageThreshold = 0;
@@ -242,6 +257,7 @@ namespace Caelum
             cloudCoverageThreshold = 1 - cloudCover;   
         }
 		mParams.cloudCoverageThreshold.set(mParams.fpParams, cloudCoverageThreshold);
+        _updateVisibilityThreshold();
 	}
 
 	void FlatCloudLayer::setCloudMassOffset(const Ogre::Vector2 &cloudMassOffset) {

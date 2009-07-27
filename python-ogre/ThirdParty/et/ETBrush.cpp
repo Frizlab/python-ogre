@@ -50,7 +50,7 @@ namespace ET
     memcpy(mBrushArray, brush, width*height*sizeof(float));
   }
 
-  Brush::Brush(const vector<float>& brush, size_t width, size_t height)
+  Brush::Brush(const std::vector<float>& brush, size_t width, size_t height)
   : mWidth(width), mHeight(height)
   {
     mBrushArray = new float[width*height];
@@ -88,7 +88,7 @@ namespace ET
   {
     size_t width = image.getWidth();
     size_t height = image.getHeight();
-    vector<float> brush (width*height);
+    std::vector<float> brush (width*height);
 
     // determine the bytes per pixel used in the image
     int bpp = int(image.getSize() / (width*height));

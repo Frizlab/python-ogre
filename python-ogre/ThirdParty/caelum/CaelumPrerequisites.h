@@ -30,23 +30,8 @@ along with Caelum. If not, see <http://www.gnu.org/licenses/>.
 
 #include <memory>
 
-// Define the dll export qualifier if compiling for Windows
-#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
+
 	#define CAELUM_EXPORT
-// 	#ifdef CAELUM_LIB
-// 		#define CAELUM_EXPORT __declspec (dllexport)
-// 	#else
-// 		#ifdef __MINGW32__
-// 			#define CAELUM_EXPORT
-// 		#else
-// 			#define CAELUM_EXPORT __declspec (dllimport)
-// 		#endif
-// 	#endif
-#elif OGRE_PLATFORM == OGRE_PLATFORM_APPLE
-	#define CAELUM_EXPORT __attribute__ ((visibility("default")))
-#else
-	#define CAELUM_EXPORT
-#endif
 
 // Define the version code
 #define CAELUM_VERSION_MAIN 0
@@ -157,17 +142,22 @@ namespace Caelum
     class DepthRenderer;
 }
 
-namespace Ogre {
+namespace Ogre 
+{
+#if OGRE_VERSION <= 0x010602
     // Write an Ogre::Degree to a stream.
     //
     // Ogre::Any requires that the wrapped type can be written to a stream;
     // otherwise it will fail on instantation. This function was placed here
-    // so it's available everywhere.
+    // so it's available everywhere. This can't be placed in namespace Caelum.
     //
-    // This can't be placed in namespace Caelum.
+    // Ogre 1.6.3 and up already include this operator; so it's ifdefed out.
+    //
+    // This function is never actually used; the output does not matter.
     inline std::ostream& operator << (std::ostream& out, Ogre::Degree deg) {
         return out << deg.valueDegrees();
     }
+#endif
 }
 
 #endif // CAELUM__CAELUM_PREREQUISITES_H

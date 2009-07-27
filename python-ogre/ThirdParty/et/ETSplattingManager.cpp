@@ -204,7 +204,7 @@ namespace ET
       uint numTextures;
       uint numMaps;
 
-      typedef vector<Impl::CoverageMap*> MapList;
+      typedef std::vector<Impl::CoverageMap*> MapList;
       MapList maps;
 
       void paint(uint texture, uint x, uint y, float edit)
