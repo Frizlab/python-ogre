@@ -15,11 +15,13 @@ Review all the functions with 'Check' beside them in the output as they probably
 """
 
 import os, sys, time, shutil
-try:
-   import psyco
-   psyco.full()
-except ImportError:
-   pass
+_DEBUG=False
+if not _DEBUG:
+    try:
+       import psyco
+       psyco.full()
+    except ImportError:
+       pass
 
 #add environment to the path
 sys.path.append( os.path.join( '..', '..' ) )
@@ -415,7 +417,7 @@ def ManualExclude ( mb ):
                     c.exclude()
                     
         excludelist= ['::Ogre::FileHandleDataStream', # uses FILE (c style) -- can use FileStreamDataStream instead
-                      '::Ogre::Node::DebugRenderable', # not implemented
+                     ## '::Ogre::Node::DebugRenderable', # not implemented
                       ]
         for c in excludelist:
             main_ns.class_(c).exclude()
@@ -607,9 +609,28 @@ def ManualFixes ( mb ):
         pat = re.compile ("::Ogre::(\w+?)<.*?Ogre::(.+?)[<*,]")
         dups = {}
 
-        for c in main_ns.member_functions():
+        if 0:
+            c = global_ns.class_('::Ogre::vector<Ogre::RenderWindowDescription, Ogre::STLAllocator<Ogre::RenderWindowDescription, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >')
+            print "FFFFF", c
+            print c.decl_string
+            for cc in c.constructors():
+                if not cc.is_copy_constructor:
+                    print "OLD:", cc.parent.cache.full_name
+                    cc.parent.cache.full_name = cc.parent.cache.full_name.replace('(Ogre::MemoryCategory)0','Ogre::MEMCATEGORY_GENERAL')
+                    print "NEW:", cc.parent.cache.full_name
+                    print cc
+                    print cc.decl_string
+            print c.decl_string
+
+
+           
+        for c in global_ns.member_functions():
+            #
+            # This code is redundent if a patch is applied to OGRE
+            #
             for f in c.arguments:
                 if "<MEMCATEGORY_GENERAL>" in f.type.decl_string:
+                    print "MEMFIX:",f.type
                     try:
                         f.type.declaration.name = f.type.declaration.name.replace("<MEMCATEGORY_GENERAL>","<Ogre::MEMCATEGORY_GENERAL>")
                     except AttributeError:
@@ -618,16 +639,13 @@ def ManualFixes ( mb ):
                          except AttributeError:
                              f.type.base.base.declaration.name = f.type.base.base.declaration.name.replace("<MEMCATEGORY_GENERAL>","<Ogre::MEMCATEGORY_GENERAL>")
                     except:
-                         print "FAILED!!!", f  
+                         print "FAILED!!!", f, f.type
+                         print type(f), type(f.type)
                 if f.default_value and "<MEMCATEGORY_GENERAL>" in f.default_value:
                     f.default_value = f.default_value.replace("<MEMCATEGORY_GENERAL>", "<Ogre::MEMCATEGORY_GENERAL>")
                             # print "PROBLEM", f, type(f.type), dir(f.type)
 #        sys.exit()          
-        for c in main_ns.classes():
-            if "<MEMCATEGORY_GENERAL>" in c.decl_string:    #fix for issue with non namspaced name..
-                print "Changing decl string for class defination", c
-                c.decl_string = c.decl_string.replace("<MEMCATEGORY_GENERAL>","<Ogre::MEMCATEGORY_GENERAL>")
-                print "New Class", c
+        for c in global_ns.classes():
             if not c.ignore and "_" in c.alias: # only care about classes we are include with ugly alaises
                 m = pat.match(c.decl_string)
                 if m:
@@ -647,6 +665,7 @@ def ManualFixes ( mb ):
                             newalias = newalias + "_" +str(dups[newalias])
                         print "Set Alias:", newalias, "  ", c.decl_string
                         c.alias = newalias
+                        c.wrapper_alias = 'wrapper_' + newalias
                     else:
                         ## any that show up here need a manual entry in the python_ogre_aliases.h file
                         print "NOT Changed:",c.decl_string
@@ -656,28 +675,24 @@ def ManualFixes ( mb ):
                     print "NO MATCH:", c.decl_string
 
         # need to fixup return values that show up as invalid typdefs in generated code
-        for f in main_ns.member_functions():
-            if f.return_type:
-                if "<MEMCATEGORY_GENERAL>" in f.return_type.decl_string:
-                    if type (f.return_type) == declarations.cpptypes.declarated_t:
-                        print "TWEAKED:", f, f.return_type
-                        f.return_type.declaration.name = f.return_type.declaration.name.replace("<MEMCATEGORY_GENERAL>","<Ogre::MEMCATEGORY_GENERAL>")
-                    elif type (f.return_type) == declarations.cpptypes.pointer_t:
-                        f.return_type.base.declaration.name = f.return_type.base.declaration.name.replace("<MEMCATEGORY_GENERAL>","<Ogre::MEMCATEGORY_GENERAL>")
-                        print "CHANGED:", f.return_type.base.declaration.name
-                        print f.return_type.decl_string
-                        # print f.return_type
-                        # print type(f.return_type)
-                        # print dir(f.return_type)
-                        # print f.return_type.decl_string
-                        # print f.return_type.base
-                        # print dir(f.return_type.base)
-                        
-                    else:
-                        print "*** ISSUE:", f, type(f.return_type)
-                        # sys.exit()
+        #
+        # again this has been fixed with a patch to the C++ code
+        #
+        # for f in global_ns.member_functions():
+            # if f.return_type:
+                # if "<MEMCATEGORY_GENERAL>" in f.return_type.decl_string:
+                    # print "MEMFIX2:",f.return_type
+                    # if type (f.return_type) == declarations.cpptypes.declarated_t:
+                        # print "TWEAKED:", f, f.return_type
+                        # f.return_type.declaration.name = f.return_type.declaration.name.replace("<MEMCATEGORY_GENERAL>","<Ogre::MEMCATEGORY_GENERAL>")
+                    # elif type (f.return_type) == declarations.cpptypes.pointer_t:
+                        # f.return_type.base.declaration.name = f.return_type.base.declaration.name.replace("<MEMCATEGORY_GENERAL>","<Ogre::MEMCATEGORY_GENERAL>")
+                        # print "CHANGED:", f.return_type.base.declaration.name
+                    # else:
+                        # print "*** ISSUE:", f, type(f.return_type)
+                        # # sys.exit()
                     
-                    # pdb.set_trace()
+                    # # pdb.set_trace()
 
 ##
 # fix up any ugly name alias
@@ -1440,22 +1455,24 @@ def generate_code():
     common_utils.addDetailVersion ( mb, environment, environment.ogre )
     common_utils.Find_Problem_Transformations ( main_ns )
 
-# #     count = 0
-# #     for v in main_ns.variables():
-# #         if not v.ignore:
-# #             count +=1
-# #     print "SPECIAL -- variables:", count
-# #     count = 0
-# #     for v in main_ns.member_functions():
-# #         if not v.ignore:
-# #             count +=1
-# #     print "SPECIAL -- member functions:", count
-# #     count=0
-# #     for v in global_ns.classes():
-# #         if not v.ignore:
-# #             print v
-# #             count +=1
-# #     print "SPECIAL -- Number classes:", count
+    count = 0
+    for v in main_ns.variables():
+        if not v.ignore:
+            print v
+            count +=1
+    print "SPECIAL -- variables:", count
+    count = 0
+    for v in main_ns.member_functions():
+        if not v.ignore:
+            print v
+            count +=1
+    print "SPECIAL -- member functions:", count
+    count=0
+    for v in global_ns.classes():
+        if not v.ignore:
+            print "class:",v
+            count +=1
+    print "SPECIAL -- Number classes:", count
 
 
 
@@ -1516,6 +1533,31 @@ def generate_code():
             shutil.copy( sourcefile, environment.ogre.generated_dir )
             print "Updated ", filename, "as it was missing or out of date"
 
+    if environment.ogre.version.startswith("1.7"):
+        ## have a code generation issue that needs resolving...
+        filesToFix=['LightList.pypp.cpp', 'stdVectorRenderWindowDescription.pypp.cpp']
+        for filename in filesToFix:
+            fname = os.path.join( environment.ogre.generated_dir, filename)
+            try:
+                f = open(fname, 'r')
+                buf = f.read()
+                f.close()
+                buf = buf.replace ( " MEMCATEGORY_GENERAL", " Ogre::MEMCATEGORY_GENERAL")
+                buf = buf.replace ( "<MEMCATEGORY_GENERAL", "<Ogre::MEMCATEGORY_GENERAL")
+                f = open ( fname, 'w+')
+                f.write ( buf )
+                f.close()
+                print "UGLY FIX OK:", fname
+            except:
+                print "ERROR: Unable to fix:", fname
+        
+    count=0
+    for v in global_ns.classes():
+        if not v.ignore:
+            print "class:",v
+            count +=1
+    print "SPECIAL -- Number classes:", count            
+    
 if __name__ == '__main__':
 
     start_time = time.clock()
@@ -1523,7 +1565,8 @@ if __name__ == '__main__':
 #     from pygccxml import utils
 #     logger = utils.loggers.cxx_parser
 # #     logger.setLevel(logging.DEBUG)
-    #pdb.run('generate_code()')
-
-    generate_code()
+    if _DEBUG:
+        pdb.run('generate_code()')
+    else:
+        generate_code()
     print 'Python-OGRE source code was updated( %f minutes ).' % (  ( time.clock() - start_time )/60 )

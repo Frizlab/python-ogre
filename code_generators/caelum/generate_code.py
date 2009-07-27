@@ -68,10 +68,20 @@ def ManualExclude ( mb ):
                 ,'::Caelum::OwnedPtr< Ogre::SceneNode, Caelum::SceneNodeOwnedPtrTraits >::reset'
                 ,'::Caelum::OwnedPtr< Ogre::Entity, Caelum::MovableObjectOwnedPtrTraits< Ogre::Entity > >::reset'
                 ,'::Caelum::OwnedPtr< Ogre::Mesh, Caelum::OwnedResourcePtrTraits< Ogre::Mesh, Ogre::MeshPtr, Ogre::MeshManager > >::reset'
+                ,'::Caelum::PrivatePtr< Ogre::BillboardSet, Caelum::MovableObjectPrivatePtrTraits< Ogre::BillboardSet > >::reset'
+                ,'::Caelum::PrivatePtr< Ogre::Entity, Caelum::MovableObjectPrivatePtrTraits< Ogre::Entity > >::reset'
+                ,'::Caelum::PrivatePtr< Ogre::ManualObject, Caelum::MovableObjectPrivatePtrTraits< Ogre::ManualObject > >::reset'
+                ,'::Caelum::PrivatePtr< Ogre::Material, Caelum::PrivateResourcePtrTraits< Ogre::Material, Ogre::MaterialPtr, Ogre::MaterialManager > >::reset'
+                ,'::Caelum::PrivatePtr< Ogre::Mesh, Caelum::PrivateResourcePtrTraits< Ogre::Mesh, Ogre::MeshPtr, Ogre::MeshManager > >::reset'
+                ,'::Caelum::PrivatePtr< Ogre::SceneNode, Caelum::SceneNodePrivatePtrTraits >::reset'
                 ,'::Caelum::DefaultTypeDescriptor::clear'
                 ]
     for m in excludes:
-        global_ns.member_functions(m).exclude()
+        try:
+            global_ns.member_functions(m).exclude()
+            print "Excluded:", m
+        except:
+            print "Failed to Excluded:", m
     
     excludes=['::Caelum::CameraBoundElement::CAMERA_FAR_DISTANCE_MULTIPLIER']
     for e in excludes:

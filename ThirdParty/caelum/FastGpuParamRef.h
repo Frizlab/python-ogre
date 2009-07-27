@@ -46,7 +46,7 @@ namespace Caelum
      *
      *  Also; please note that fetching gpu params from a material every frame is not free either.
      */
-    class FastGpuParamRef
+    class CAELUM_EXPORT FastGpuParamRef
     {
     public:
         /// Default constructor. Starts as unbound
@@ -83,6 +83,9 @@ namespace Caelum
         /// Return if this param ref is bound to an actual param.
         inline bool isBound() const { return mPhysicalIndex != InvalidPhysicalIndex; }
 
+        /// Return the physical index. Only valid if this->isBound().
+        inline size_t getPhysicalIndex () const { return mPhysicalIndex; }
+
     protected:
         /** Set the value. No effect if !this->isBound()
          *  
@@ -103,6 +106,17 @@ namespace Caelum
             }
         }
 
+        template<typename ArgumentT>
+        inline void doSet(const Ogre::GpuProgramParametersSharedPtr& params, ArgumentT arg, size_t count) const {
+            #if CAELUM_DEBUG_PARAM_REF
+                assert(params.getPointer() == mParams.getPointer());
+            #endif
+            assert(!params.isNull());
+            if (mPhysicalIndex != InvalidPhysicalIndex) {
+                params->_writeRawConstant(mPhysicalIndex, arg, count);
+            }
+        }
+
     public:
         /// @copydoc FastGpuParamRef::doSet
         inline void set(const Ogre::GpuProgramParametersSharedPtr& params, int val) const { doSet<int>(params, val); }
@@ -113,9 +127,9 @@ namespace Caelum
         /// @copydoc FastGpuParamRef::doSet
         inline void set(const Ogre::GpuProgramParametersSharedPtr& params, const Ogre::Vector4& val) const { doSet<const Ogre::Vector4&>(params, val); }
         /// @copydoc FastGpuParamRef::doSet
-        inline void set(const Ogre::GpuProgramParametersSharedPtr& params, const Ogre::Matrix4& val) const { doSet<const Ogre::Matrix4&>(params, val); }
-        /// @copydoc FastGpuParamRef::doSet
         inline void set(const Ogre::GpuProgramParametersSharedPtr& params, const Ogre::ColourValue& val) const { doSet<const Ogre::ColourValue&>(params, val); }
+        /// @copydoc FastGpuParamRef::doSet
+        inline void set(const Ogre::GpuProgramParametersSharedPtr& params, const Ogre::Matrix4& val) const { doSet<const Ogre::Matrix4*>(params, &val, 1); }
 
     private:
         #if CAELUM_DEBUG_PARAM_REF

@@ -1,82 +1,56 @@
 Index: include/OgreOdeEntityInformer.h
 ===================================================================
---- include/OgreOdeEntityInformer.h	(revision 2512)
+--- include/OgreOdeEntityInformer.h	(revision 2719)
 +++ include/OgreOdeEntityInformer.h	(working copy)
-@@ -36,12 +36,12 @@
+@@ -36,7 +36,7 @@
  		const TriangleIndex* getIndices();
  		unsigned int getIndexCount();
  
-+		bool getBoneVertices(unsigned char bone,unsigned int &vertex_count, Ogre::Vector3* &vertices);
- 	protected:
+-	protected:
++// 	protected:
          void addVertexData(const Ogre::VertexData *vertex_data, 
              const Ogre::VertexData *blended_data = 0, 
              const Ogre::Mesh::IndexMap *indexMap = 0);
- 		void addIndexData(Ogre::IndexData *data, const unsigned int offset = 0);
--		bool getBoneVertices(unsigned char bone,unsigned int &vertex_count, Ogre::Vector3* &vertices);
- 
- 		Ogre::Entity*		_entity;
- 		Ogre::SceneNode*	_node;
-Index: src/OgreOdeGeometry.cpp
+Index: include/OgreOdeGeometry.h
 ===================================================================
---- src/OgreOdeGeometry.cpp	(revision 2512)
-+++ src/OgreOdeGeometry.cpp	(working copy)
-@@ -924,7 +924,7 @@
+--- include/OgreOdeGeometry.h	(revision 2719)
++++ include/OgreOdeGeometry.h	(working copy)
+@@ -545,7 +545,7 @@
+         PlaneBoundedRegionGeometryPlaneListener(){}
+         virtual ~PlaneBoundedRegionGeometryPlaneListener(){}
  
- 	_data = dGeomTriMeshDataCreate(); 
+-        virtual std::list<Ogre::Plane>* planesAt(const Ogre::Vector3& position) = 0;
++		virtual Ogre::list<Ogre::Plane>* planesAt(const Ogre::Vector3& position) = 0;
+     };
  
--	dGeomTriMeshDataBuildSimple(_data,(const dReal*)_vertices, (int)vertex_count, _indices, (int) index_count); 
-+	dGeomTriMeshDataBuildSimple(_data,(const dReal*)_vertices, (int)vertex_count, /*(const int *)*/_indices, (int) index_count); 
+     //------------------------------------------------------------------------------------------------
+@@ -562,11 +562,11 @@
+         const Ogre::Vector3& getPosition();
+         const Ogre::Quaternion& getOrientation();
  
- 	_geom = dCreateTriMesh(getSpaceID(space),_data,0,0,0);
- 	registerGeometry();
-Index: src/OgreOdeTriangleMeshDataManager.cpp
-===================================================================
---- src/OgreOdeTriangleMeshDataManager.cpp	(revision 2512)
-+++ src/OgreOdeTriangleMeshDataManager.cpp	(working copy)
-@@ -6,7 +6,7 @@
- using namespace Ogre;
- using namespace OgreOde; 
+-        static std::list<Ogre::Plane> * _planeCallback(void* data, dReal x, dReal z);
+-        static std::list<Ogre::Plane> * _planeCallback(void* data, int x, int z);
++		static Ogre::list<Ogre::Plane> * _planeCallback(void* data, dReal x, dReal z);
++		static Ogre::list<Ogre::Plane> * _planeCallback(void* data, int x, int z);
+         void setPlaneListener(PlaneBoundedRegionGeometryPlaneListener* listener);
  
--template<> TriangleMeshDataManager *Ogre::Singleton<TriangleMeshDataManager>::ms_Singleton = 0;
-+template<> OgreOde::TriangleMeshDataManager * Ogre::Singleton<OgreOde::TriangleMeshDataManager>::ms_Singleton = 0;
+-        inline std::list<Ogre::Plane> *planesAt(const Ogre::Vector3& position)
++		inline Ogre::list<Ogre::Plane> *planesAt(const Ogre::Vector3& position)
+         {
+             _num_query++;
+ //             const Ogre::Vector3 pos (position.x * _sample_width - (_centered?_halfWorldSizeX:0),
+@@ -606,7 +606,7 @@
+         Ogre::Real _halfWorldSizeZ;
+         size_t _num_query;
  
- namespace OgreOde
- {
-Index: src/Makefile.am
-===================================================================
---- src/Makefile.am	(revision 2512)
-+++ src/Makefile.am	(working copy)
-@@ -22,6 +22,8 @@
- 	OgreOdeSpace.cpp \
- 	OgreOdeStepper.cpp \
- 	OgreOdeUtility.cpp \
-+    OgreOdeTriangleMeshData.cpp \
-+    OgreOdeTriangleMeshDataManager.cpp \
- 	OgreOdeWorld.cpp
+-        std::list<Ogre::Plane> *_last_query_results;
++		Ogre::list<Ogre::Plane> *_last_query_results;
+     };
+ }
  
- libOgreOde_Core_la_LIBADD = \
-Index: prefab/src/OgreOdeRagdoll.cpp
-===================================================================
---- prefab/src/OgreOdeRagdoll.cpp	(revision 2512)
-+++ prefab/src/OgreOdeRagdoll.cpp	(working copy)
-@@ -10,6 +10,7 @@
- 
- #include "OgreOde_Prefab.h"
- #include "OgreOdeRagdoll.h"
-+#include "OgreAlignedAllocator.h"
- 
- using namespace Ogre;
- using namespace OgreOde;
-@@ -734,4 +735,4 @@
- void RagdollFactory::destroyInstance( MovableObject* obj)
- {
- 	delete obj;
--} 
-\ No newline at end of file
-+} 
 Index: loader/include/OgreOdeDotLoader.h
 ===================================================================
---- loader/include/OgreOdeDotLoader.h	(revision 2512)
+--- loader/include/OgreOdeDotLoader.h	(revision 2719)
 +++ loader/include/OgreOdeDotLoader.h	(working copy)
 @@ -15,8 +15,8 @@
          DotLoader(OgreOde::World * world = 0, OgreOde::Space * space = 0);
@@ -91,7 +65,7 @@ Index: loader/include/OgreOdeDotLoader.h
          void         save(const Ogre::String &filename, const Ogre::StringVector &objects_names, ObjectList  *objects);
 Index: loader/src/OgreOdeDotLoader.cpp
 ===================================================================
---- loader/src/OgreOdeDotLoader.cpp	(revision 2512)
+--- loader/src/OgreOdeDotLoader.cpp	(revision 2719)
 +++ loader/src/OgreOdeDotLoader.cpp	(working copy)
 @@ -62,6 +62,12 @@
  {
@@ -106,3 +80,1009 @@ Index: loader/src/OgreOdeDotLoader.cpp
  //------------------------------------------------------------------------------------------------
  ObjectList  *DotLoader::load(const String &filename, const StringVector &objects_names, const StringVector &instance_names)
  {
+Index: prefab/src/OgreOdeRagdoll.cpp
+===================================================================
+--- prefab/src/OgreOdeRagdoll.cpp	(revision 2719)
++++ prefab/src/OgreOdeRagdoll.cpp	(working copy)
+@@ -10,6 +10,7 @@
+ 
+ #include "OgreOde_Prefab.h"
+ #include "OgreOdeRagdoll.h"
++#include "OgreAlignedAllocator.h"
+ 
+ #include <OgreAlignedAllocator.h>
+ 
+Index: src/OgreOdeBody.cpp
+===================================================================
+--- src/OgreOdeBody.cpp	(revision 2719)
++++ src/OgreOdeBody.cpp	(working copy)
+@@ -806,7 +806,7 @@
+     GeometryArray::const_iterator proxy, proxyend;
+     proxyend = _geometries.end();
+ 
+-    std::list<Ogre::Plane>::const_iterator pi, piend;
++    list<Ogre::Plane>::type::const_iterator pi, piend;
+     piend = wf->planes->end();
+ 
+     //CollisionInfo collInfo;
+Index: src/OgreOdeDebugObject.cpp
+===================================================================
+--- src/OgreOdeDebugObject.cpp	(revision 2719)
++++ src/OgreOdeDebugObject.cpp	(working copy)
+@@ -16,6 +16,7 @@
+ 
+ 	if (!_materials_created)
+ 	{
++		Ogre::ResourceGroupManager::getSingletonPtr()->createResourceGroup("OgreOde");
+ 		MaterialPtr red = MaterialManager::getSingleton().create("OgreOdeDebugLines/Disabled","OgreOde");
+ 		MaterialPtr green = MaterialManager::getSingleton().create("OgreOdeDebugLines/Enabled","OgreOde");
+ 		MaterialPtr blue = MaterialManager::getSingleton().create("OgreOdeDebugLines/Static","OgreOde");
+Index: src/OgreOdeGeometry.cpp
+===================================================================
+--- src/OgreOdeGeometry.cpp	(revision 2719)
++++ src/OgreOdeGeometry.cpp	(working copy)
+@@ -1322,7 +1322,7 @@
+ }
+ 
+ //------------------------------------------------------------------------------------------------
+-std::list<Ogre::Plane>* PlaneBoundedRegionGeometry::_planeCallback(void* data,int x,int z)
++Ogre::list<Ogre::Plane>* PlaneBoundedRegionGeometry::_planeCallback(void* data,int x,int z)
+ {
+     PlaneBoundedRegionGeometry* terrain = (PlaneBoundedRegionGeometry*)data;
+ 
+Index: src/OgreOdeSpace.cpp
+===================================================================
+--- src/OgreOdeSpace.cpp	(revision 2719)
++++ src/OgreOdeSpace.cpp	(working copy)
+@@ -1,368 +1,368 @@
+-
+-#include "OgreOdePrecompiledHeaders.h"
+-
+-#include "OgreOdeBody.h"
+-#include "OgreOdeSpace.h"
+-#include "OgreOdeGeometry.h"
+-#include "OgreOdeWorld.h"
+-
+-#include "OgreOdeCollision.h"
+-
+-using namespace OgreOde;
+-using namespace Ogre;
+-
+-//------------------------------------------------------------------------------------------------
+-Space::Space(World *world, const Space* space) :
+-    _world(world),
+-    _internal_collisions (true)
+-{
+-}
+-//------------------------------------------------------------------------------------------------
+-Space::Class Space::getClass()
+-{
+-	return (Space::Class)(dSpaceGetClass(_space));
+-}
+-//------------------------------------------------------------------------------------------------
+-dSpaceID Space::getSpaceID() const
+-{
+-	return _space;
+-}
+-//------------------------------------------------------------------------------------------------
+-dSpaceID Space::getSpaceID(const Space* space) const
+-{
+-	if(space) 
+-        return space->getSpaceID();
+-	return 0;
+-}
+-//------------------------------------------------------------------------------------------------
+-void Space::setAutoCleanup(bool on)
+-{
+-	dSpaceSetCleanup(_space,(on)?1:0);
+-}
+-//------------------------------------------------------------------------------------------------
+-bool Space::getAutoCleanup()
+-{
+-	return ((dSpaceGetCleanup(_space))?true:false); 
+-}
+-//------------------------------------------------------------------------------------------------
+-void Space::addGeometry(const Geometry& geometry)
+-{
+-	dSpaceAdd(_space,geometry.getGeometryID()); 
+-}
+-//------------------------------------------------------------------------------------------------
+-void Space::removeGeometry(const Geometry& geometry)
+-{
+-	dSpaceRemove(_space,geometry.getGeometryID()); 
+-}
+-//------------------------------------------------------------------------------------------------
+-bool Space::containsGeometry(const Geometry& geometry)
+-{
+-	return ((dSpaceQuery(_space,geometry.getGeometryID()))?true:false); 
+-}
+-//------------------------------------------------------------------------------------------------
+-int Space::getGeometryCount()
+-{
+-	return dSpaceGetNumGeoms(_space); 
+-}
+-//------------------------------------------------------------------------------------------------
+-Geometry* Space::getGeometry(int index)
+-{
+-	return (Geometry*) _world->getGeometryList().findItem((size_t)dSpaceGetGeom(_space,index)); 
+-}
+-//------------------------------------------------------------------------------------------------
+-void Space::registerSpace()
+-{
+-	_world->getSpaceList().registerItem(this);
+-	dGeomSetData((dGeomID)_space,(void*)this);
+-}
+-//------------------------------------------------------------------------------------------------
+-void Space::collide(void* data)
+-{
+-	if(_internal_collisions)
+-	{
+-		dSpaceCollide(_space,data,World::collisionCallback);
+-	}
+-}
+-//------------------------------------------------------------------------------------------------
+-void Space::collide(Space* space,void* data)
+-{
+-	dSpaceCollide2((dGeomID)_space,(dGeomID)(space->getSpaceID()),data,World::collisionCallback);
+-}
+-//------------------------------------------------------------------------------------------------
+-void Space::collide(Geometry* geometry,void* data)
+-{
+-	dSpaceCollide2((dGeomID)_space,geometry->getGeometryID(),data,World::collisionCallback);
+-}
+-
+-//------------------------------------------------------------------------------------------------
+-void Space::collide(CollisionCallback* colCallback, bool useInternalCollisionFlag)
+-{
+-	if(useInternalCollisionFlag && !_internal_collisions)
+-	{
+-		return;
+-	}
+-	void* data = colCallback;	
+-	dSpaceCollide(_space, data, CollisionCallback::collisionCallback);
+-}
+-//------------------------------------------------------------------------------------------------
+-void Space::collide(CollisionCallback* colCallback, Space* space)
+-{
+-	void* data = colCallback;	
+-	dSpaceCollide2((dGeomID)_space,(dGeomID)(space->getSpaceID()),data, CollisionCallback::collisionCallback);
+-}
+-//------------------------------------------------------------------------------------------------
+-void Space::collide(CollisionCallback* colCallback, Geometry* geometry, bool useInternalCollisionFlag)
+-{
+-	if(useInternalCollisionFlag && !_internal_collisions && geometry->getSpace() == this )
+-		return;
+-
+-	void* data = colCallback;	
+-	dSpaceCollide2((dGeomID)_space, geometry->getGeometryID(), data, CollisionCallback::collisionCallback);
+-}
+-
+-//------------------------------------------------------------------------------------------------
+-void Space::setInternalCollisions(bool collide)
+-{
+-	_internal_collisions = collide;
+-}
+-//------------------------------------------------------------------------------------------------
+-bool Space::getInternalCollisions()
+-{
+-	return _internal_collisions;
+-}
+-//------------------------------------------------------------------------------------------------
+-const AxisAlignedBox& Space::getAxisAlignedBox()
+-{
+-	dReal aabb[6];
+-	dGeomGetAABB((dGeomID)_space,aabb);
+-	_bounding_box.setExtents((Real)aabb[0],(Real)aabb[2],(Real)aabb[4],(Real)aabb[1],(Real)aabb[3],(Real)aabb[5]);
+-	return _bounding_box;
+-}
+-//------------------------------------------------------------------------------------------------
+-size_t Space::getID()
+-{
+-	return (size_t)_space;
+-}
+-//------------------------------------------------------------------------------------------------
+-Space::~Space()
+-{
+-	_world->getSpaceList().unregisterItem((size_t)_space);
+-	dSpaceDestroy(_space); 
+-}
+-//------------------------------------------------------------------------------------------------
+-SimpleSpace::SimpleSpace(World *world, const Space* space) : Space (world, space)
+-{
+-	_space = dSimpleSpaceCreate(getSpaceID(space)); 
+-	registerSpace();
+-}
+-//------------------------------------------------------------------------------------------------
+-SimpleSpace::~SimpleSpace()
+-{
+-}
+-//------------------------------------------------------------------------------------------------
+-HashTableSpace::HashTableSpace(World *world, const Space* space) : Space (world, space)
+-{
+-	_space = dHashSpaceCreate(getSpaceID(space)); 
+-	registerSpace();
+-}
+-//------------------------------------------------------------------------------------------------
+-void HashTableSpace::setLevels(int min_level,int max_level)
+-{
+-	dHashSpaceSetLevels(_space,min_level,max_level); 
+-}
+-//------------------------------------------------------------------------------------------------
+-int HashTableSpace::getMinimumLevel()
+-{
+-	int min_level,max_level;
+-	dHashSpaceGetLevels(_space,&min_level,&max_level);
+-	return min_level;
+-}
+-//------------------------------------------------------------------------------------------------
+-int HashTableSpace::getMaximumLevel()
+-{
+-	int min_level,max_level;
+-	dHashSpaceGetLevels(_space,&min_level,&max_level);
+-	return max_level;
+-}
+-//------------------------------------------------------------------------------------------------
+-HashTableSpace::~HashTableSpace()
+-{
+-}
+-//------------------------------------------------------------------------------------------------
+-SweepAndPruneSpace::SweepAndPruneSpace(AxisOrder axisOrder, World *world, const Space* space) : Space (world, space)
+-{
+-	_space = dSweepAndPruneSpaceCreate(getSpaceID(space), axisOrder);
+-	registerSpace();
+-}
+-//------------------------------------------------------------------------------------------------
+-QuadTreeSpace::QuadTreeSpace(const Ogre::Vector3& center,const Ogre::Vector3& extents,int depth,World *world, const Space* space) : Space (world, space)
+-{
+-	dVector3 c,e;
+-	
+-	c[0] = (dReal)center.x;
+-	c[1] = (dReal)center.y;
+-	c[2] = (dReal)center.z;
+-
+-	e[0] = (dReal)extents.x;
+-	e[1] = (dReal)extents.y;
+-	e[2] = (dReal)extents.z;
+-
+-	_space = dQuadTreeSpaceCreate(getSpaceID(space),c,e,depth); 
+-	registerSpace();
+-}
+-//------------------------------------------------------------------------------------------------
+-QuadTreeSpace::~QuadTreeSpace()
+-{
+-}
+-//------------------------------------------------------------------------------------------------
+-OgreSceneManagerSpace::OgreSceneManagerSpace(const Ogre::Vector3& center,
+-                                             const Ogre::Vector3& extents,
+-                                             int depth,
+-                                             Ogre::SceneManager *_scn_mgr,
+-                                             World *world, const Space* space) : 
+-        Space (world, space),
+-        _scn_mgr(_scn_mgr)
+-{
+-    _intersection_query = _scn_mgr->createIntersectionQuery();
+-
+-    const std::set<Ogre::SceneQuery::WorldFragmentType> *supportedQueryTypes = _intersection_query->getSupportedWorldFragmentTypes();
+-    std::set<Ogre::SceneQuery::WorldFragmentType>::const_iterator it = 
+-        supportedQueryTypes->find (Ogre::SceneQuery::WFT_PLANE_BOUNDED_REGION);
+-    if (it != supportedQueryTypes->end())
+-    {
+-        _intersection_query->setWorldFragmentType(Ogre::SceneQuery::WFT_PLANE_BOUNDED_REGION);
+-        _scene_geometry = true;
+-    }
+-    else
+-    {
+-        _intersection_query->setWorldFragmentType(Ogre::SceneQuery::WFT_NONE);
+-        _scene_geometry = false;
+-    }
+-
+-    // for now register a dummy space in ode.
+-    // perhaps this step can be avoided.dVector3 c,e;
+-
+-    dVector3 c;
+-    c[0] = (dReal)center.x;
+-    c[1] = (dReal)center.y;
+-    c[2] = (dReal)center.z;
+-
+-    dVector3 e;
+-    e[0] = (dReal)extents.x;
+-    e[1] = (dReal)extents.y;
+-    e[2] = (dReal)extents.z;
+-
+-    _space = dQuadTreeSpaceCreate(getSpaceID(space), c, e,depth); 
+-    registerSpace();
+-}
+-//------------------------------------------------------------------------------------------------
+-OgreSceneManagerSpace::~OgreSceneManagerSpace()
+-{
+-    delete _intersection_query;
+-}
+-//------------------------------------------------------------------------------------------------
+-void OgreSceneManagerSpace::collide(void* data)
+-{
+-    if(_internal_collisions)
+-    {
+-        // Collision detection
+-        Ogre::IntersectionSceneQueryResult& results = _intersection_query->execute();
+-
+-        Body *body1, *body2;
+-        Geometry *geom;
+-        Ogre::UserDefinedObject *uo1, *uo2;
+-
+-        // Movables to Movables
+-        Ogre::SceneQueryMovableIntersectionList::iterator it, itend;
+-        itend = results.movables2movables.end();
+-        for (it = results.movables2movables.begin(); it != itend; ++it)
+-        {
+-            /* debugging
+-            MovableObject *mo1, *mo2;
+-            mo1 = it->first;
+-            mo2 = it->second;
+-            */
+-
+-            // Get user defined objects (generic in OGRE)
+-            uo1 = it->first->getUserObject();
+-            uo2 = it->second->getUserObject();
+-
+-            // Only perform collision if we have UserDefinedObject links
+-            if (uo1 && uo2)
+-            {
+-                bool isBody1 = false;
+-                if (uo1->getTypeName () == "Body")
+-                    isBody1 = true;
+-
+-                bool isBody2 = false;
+-                if (uo2->getTypeName () == "Body")
+-                    isBody2 = true;
+-                if (isBody1 || isBody2)
+-                {
+-                    if (isBody2 && isBody1)
+-                    {
+-                        // Both are dynamic object
+-                       body1 = static_cast<Body*>(uo1);
+-                       body2 = static_cast<Body*>(uo2);
+-
+-                        // Do detailed collision test
+-                        body1->collide (data, body2);
+-                    }
+-                    else
+-                    {
+-                        // Both are dynamic object
+-                        if (isBody1)
+-                        {
+-                            body1 = static_cast<Body*>     (uo1);
+-                            geom  = static_cast<Geometry*> (uo2);
+-                        }
+-                        else
+-                        {
+-                            geom  = static_cast<Geometry*> (uo1);
+-                            body1 = static_cast<Body*>     (uo2);
+-                        }
+-
+-                        // Do detailed collision test
+-                        body1->collide(data, geom);
+-                    }
+-                }
+-            }
+-        }
+-
+-        // Movables to World
+-        if (_scene_geometry)
+-        {
+-            Ogre::MovableObject *mo;
+-            Ogre::SceneQuery::WorldFragment *wf;
+-
+-            Ogre::SceneQueryMovableWorldFragmentIntersectionList::iterator wit, witend;
+-            witend = results.movables2world.end();
+-            for (wit = results.movables2world.begin(); wit != witend; ++wit)
+-            {
+-                mo = wit->first;
+-                wf = wit->second;
+-
+-                // Get user defined objects (generic in OGRE)
+-                uo1 = mo->getUserObject();
+-                // Only perform collision if we have UserDefinedObject link
+-                // otherwise ...
+-                if (uo1)
+-                {
+-                    // Cast to ApplicationObject
+-                    if (uo1->getTypeName () == "Body")
+-                    {
+-                        body1 = static_cast<Body*>(uo1);
+-                        body1->collidePlaneBounds(data, wf);
+-                    }
+-//                     else // static objects don't collide against Scene Geometry
+-//                     {
+-//                         geom = static_cast<Geometry*>(uo);
+-//                         // Do detailed collision test
+-//                     }
+-                }
+-            }
+-        }
+-        // no need to use that one.
+-        // dSpaceCollide(_space,data, World::collisionCallback);
+-    }
+-}
++
++#include "OgreOdePrecompiledHeaders.h"
++
++#include "OgreOdeBody.h"
++#include "OgreOdeSpace.h"
++#include "OgreOdeGeometry.h"
++#include "OgreOdeWorld.h"
++
++#include "OgreOdeCollision.h"
++
++using namespace OgreOde;
++using namespace Ogre;
++
++//------------------------------------------------------------------------------------------------
++Space::Space(World *world, const Space* space) :
++    _world(world),
++    _internal_collisions (true)
++{
++}
++//------------------------------------------------------------------------------------------------
++Space::Class Space::getClass()
++{
++	return (Space::Class)(dSpaceGetClass(_space));
++}
++//------------------------------------------------------------------------------------------------
++dSpaceID Space::getSpaceID() const
++{
++	return _space;
++}
++//------------------------------------------------------------------------------------------------
++dSpaceID Space::getSpaceID(const Space* space) const
++{
++	if(space) 
++        return space->getSpaceID();
++	return 0;
++}
++//------------------------------------------------------------------------------------------------
++void Space::setAutoCleanup(bool on)
++{
++	dSpaceSetCleanup(_space,(on)?1:0);
++}
++//------------------------------------------------------------------------------------------------
++bool Space::getAutoCleanup()
++{
++	return ((dSpaceGetCleanup(_space))?true:false); 
++}
++//------------------------------------------------------------------------------------------------
++void Space::addGeometry(const Geometry& geometry)
++{
++	dSpaceAdd(_space,geometry.getGeometryID()); 
++}
++//------------------------------------------------------------------------------------------------
++void Space::removeGeometry(const Geometry& geometry)
++{
++	dSpaceRemove(_space,geometry.getGeometryID()); 
++}
++//------------------------------------------------------------------------------------------------
++bool Space::containsGeometry(const Geometry& geometry)
++{
++	return ((dSpaceQuery(_space,geometry.getGeometryID()))?true:false); 
++}
++//------------------------------------------------------------------------------------------------
++int Space::getGeometryCount()
++{
++	return dSpaceGetNumGeoms(_space); 
++}
++//------------------------------------------------------------------------------------------------
++Geometry* Space::getGeometry(int index)
++{
++	return (Geometry*) _world->getGeometryList().findItem((size_t)dSpaceGetGeom(_space,index)); 
++}
++//------------------------------------------------------------------------------------------------
++void Space::registerSpace()
++{
++	_world->getSpaceList().registerItem(this);
++	dGeomSetData((dGeomID)_space,(void*)this);
++}
++//------------------------------------------------------------------------------------------------
++void Space::collide(void* data)
++{
++	if(_internal_collisions)
++	{
++		dSpaceCollide(_space,data,World::collisionCallback);
++	}
++}
++//------------------------------------------------------------------------------------------------
++void Space::collide(Space* space,void* data)
++{
++	dSpaceCollide2((dGeomID)_space,(dGeomID)(space->getSpaceID()),data,World::collisionCallback);
++}
++//------------------------------------------------------------------------------------------------
++void Space::collide(Geometry* geometry,void* data)
++{
++	dSpaceCollide2((dGeomID)_space,geometry->getGeometryID(),data,World::collisionCallback);
++}
++
++//------------------------------------------------------------------------------------------------
++void Space::collide(CollisionCallback* colCallback, bool useInternalCollisionFlag)
++{
++	if(useInternalCollisionFlag && !_internal_collisions)
++	{
++		return;
++	}
++	void* data = colCallback;	
++	dSpaceCollide(_space, data, CollisionCallback::collisionCallback);
++}
++//------------------------------------------------------------------------------------------------
++void Space::collide(CollisionCallback* colCallback, Space* space)
++{
++	void* data = colCallback;	
++	dSpaceCollide2((dGeomID)_space,(dGeomID)(space->getSpaceID()),data, CollisionCallback::collisionCallback);
++}
++//------------------------------------------------------------------------------------------------
++void Space::collide(CollisionCallback* colCallback, Geometry* geometry, bool useInternalCollisionFlag)
++{
++	if(useInternalCollisionFlag && !_internal_collisions && geometry->getSpace() == this )
++		return;
++
++	void* data = colCallback;	
++	dSpaceCollide2((dGeomID)_space, geometry->getGeometryID(), data, CollisionCallback::collisionCallback);
++}
++
++//------------------------------------------------------------------------------------------------
++void Space::setInternalCollisions(bool collide)
++{
++	_internal_collisions = collide;
++}
++//------------------------------------------------------------------------------------------------
++bool Space::getInternalCollisions()
++{
++	return _internal_collisions;
++}
++//------------------------------------------------------------------------------------------------
++const AxisAlignedBox& Space::getAxisAlignedBox()
++{
++	dReal aabb[6];
++	dGeomGetAABB((dGeomID)_space,aabb);
++	_bounding_box.setExtents((Real)aabb[0],(Real)aabb[2],(Real)aabb[4],(Real)aabb[1],(Real)aabb[3],(Real)aabb[5]);
++	return _bounding_box;
++}
++//------------------------------------------------------------------------------------------------
++size_t Space::getID()
++{
++	return (size_t)_space;
++}
++//------------------------------------------------------------------------------------------------
++Space::~Space()
++{
++	_world->getSpaceList().unregisterItem((size_t)_space);
++	dSpaceDestroy(_space); 
++}
++//------------------------------------------------------------------------------------------------
++SimpleSpace::SimpleSpace(World *world, const Space* space) : Space (world, space)
++{
++	_space = dSimpleSpaceCreate(getSpaceID(space)); 
++	registerSpace();
++}
++//------------------------------------------------------------------------------------------------
++SimpleSpace::~SimpleSpace()
++{
++}
++//------------------------------------------------------------------------------------------------
++HashTableSpace::HashTableSpace(World *world, const Space* space) : Space (world, space)
++{
++	_space = dHashSpaceCreate(getSpaceID(space)); 
++	registerSpace();
++}
++//------------------------------------------------------------------------------------------------
++void HashTableSpace::setLevels(int min_level,int max_level)
++{
++	dHashSpaceSetLevels(_space,min_level,max_level); 
++}
++//------------------------------------------------------------------------------------------------
++int HashTableSpace::getMinimumLevel()
++{
++	int min_level,max_level;
++	dHashSpaceGetLevels(_space,&min_level,&max_level);
++	return min_level;
++}
++//------------------------------------------------------------------------------------------------
++int HashTableSpace::getMaximumLevel()
++{
++	int min_level,max_level;
++	dHashSpaceGetLevels(_space,&min_level,&max_level);
++	return max_level;
++}
++//------------------------------------------------------------------------------------------------
++HashTableSpace::~HashTableSpace()
++{
++}
++//------------------------------------------------------------------------------------------------
++SweepAndPruneSpace::SweepAndPruneSpace(AxisOrder axisOrder, World *world, const Space* space) : Space (world, space)
++{
++	_space = dSweepAndPruneSpaceCreate(getSpaceID(space), axisOrder);
++	registerSpace();
++}
++//------------------------------------------------------------------------------------------------
++QuadTreeSpace::QuadTreeSpace(const Ogre::Vector3& center,const Ogre::Vector3& extents,int depth,World *world, const Space* space) : Space (world, space)
++{
++	dVector3 c,e;
++	
++	c[0] = (dReal)center.x;
++	c[1] = (dReal)center.y;
++	c[2] = (dReal)center.z;
++
++	e[0] = (dReal)extents.x;
++	e[1] = (dReal)extents.y;
++	e[2] = (dReal)extents.z;
++
++	_space = dQuadTreeSpaceCreate(getSpaceID(space),c,e,depth); 
++	registerSpace();
++}
++//------------------------------------------------------------------------------------------------
++QuadTreeSpace::~QuadTreeSpace()
++{
++}
++//------------------------------------------------------------------------------------------------
++OgreSceneManagerSpace::OgreSceneManagerSpace(const Ogre::Vector3& center,
++                                             const Ogre::Vector3& extents,
++                                             int depth,
++                                             Ogre::SceneManager *_scn_mgr,
++                                             World *world, const Space* space) : 
++        Space (world, space),
++        _scn_mgr(_scn_mgr)
++{
++    _intersection_query = _scn_mgr->createIntersectionQuery();
++
++	const set<Ogre::SceneQuery::WorldFragmentType>::type *supportedQueryTypes = _intersection_query->getSupportedWorldFragmentTypes();
++	set<Ogre::SceneQuery::WorldFragmentType>::type::const_iterator it = 
++	   supportedQueryTypes->find (Ogre::SceneQuery::WFT_PLANE_BOUNDED_REGION);
++    if (it != supportedQueryTypes->end())
++    {
++        _intersection_query->setWorldFragmentType(Ogre::SceneQuery::WFT_PLANE_BOUNDED_REGION);
++        _scene_geometry = true;
++    }
++    else
++    {
++        _intersection_query->setWorldFragmentType(Ogre::SceneQuery::WFT_NONE);
++        _scene_geometry = false;
++    }
++
++    // for now register a dummy space in ode.
++    // perhaps this step can be avoided.dVector3 c,e;
++
++    dVector3 c;
++    c[0] = (dReal)center.x;
++    c[1] = (dReal)center.y;
++    c[2] = (dReal)center.z;
++
++    dVector3 e;
++    e[0] = (dReal)extents.x;
++    e[1] = (dReal)extents.y;
++    e[2] = (dReal)extents.z;
++
++    _space = dQuadTreeSpaceCreate(getSpaceID(space), c, e,depth); 
++    registerSpace();
++}
++//------------------------------------------------------------------------------------------------
++OgreSceneManagerSpace::~OgreSceneManagerSpace()
++{
++    delete _intersection_query;
++}
++//------------------------------------------------------------------------------------------------
++void OgreSceneManagerSpace::collide(void* data)
++{
++    if(_internal_collisions)
++    {
++        // Collision detection
++        Ogre::IntersectionSceneQueryResult& results = _intersection_query->execute();
++
++        Body *body1, *body2;
++        Geometry *geom;
++        Ogre::UserDefinedObject *uo1, *uo2;
++
++        // Movables to Movables
++        Ogre::SceneQueryMovableIntersectionList::iterator it, itend;
++        itend = results.movables2movables.end();
++        for (it = results.movables2movables.begin(); it != itend; ++it)
++        {
++            /* debugging
++            MovableObject *mo1, *mo2;
++            mo1 = it->first;
++            mo2 = it->second;
++            */
++
++            // Get user defined objects (generic in OGRE)
++            uo1 = it->first->getUserObject();
++            uo2 = it->second->getUserObject();
++
++            // Only perform collision if we have UserDefinedObject links
++            if (uo1 && uo2)
++            {
++                bool isBody1 = false;
++                if (uo1->getTypeName () == "Body")
++                    isBody1 = true;
++
++                bool isBody2 = false;
++                if (uo2->getTypeName () == "Body")
++                    isBody2 = true;
++                if (isBody1 || isBody2)
++                {
++                    if (isBody2 && isBody1)
++                    {
++                        // Both are dynamic object
++                       body1 = static_cast<Body*>(uo1);
++                       body2 = static_cast<Body*>(uo2);
++
++                        // Do detailed collision test
++                        body1->collide (data, body2);
++                    }
++                    else
++                    {
++                        // Both are dynamic object
++                        if (isBody1)
++                        {
++                            body1 = static_cast<Body*>     (uo1);
++                            geom  = static_cast<Geometry*> (uo2);
++                        }
++                        else
++                        {
++                            geom  = static_cast<Geometry*> (uo1);
++                            body1 = static_cast<Body*>     (uo2);
++                        }
++
++                        // Do detailed collision test
++                        body1->collide(data, geom);
++                    }
++                }
++            }
++        }
++
++        // Movables to World
++        if (_scene_geometry)
++        {
++            Ogre::MovableObject *mo;
++            Ogre::SceneQuery::WorldFragment *wf;
++
++            Ogre::SceneQueryMovableWorldFragmentIntersectionList::iterator wit, witend;
++            witend = results.movables2world.end();
++            for (wit = results.movables2world.begin(); wit != witend; ++wit)
++            {
++                mo = wit->first;
++                wf = wit->second;
++
++                // Get user defined objects (generic in OGRE)
++                uo1 = mo->getUserObject();
++                // Only perform collision if we have UserDefinedObject link
++                // otherwise ...
++                if (uo1)
++                {
++                    // Cast to ApplicationObject
++                    if (uo1->getTypeName () == "Body")
++                    {
++                        body1 = static_cast<Body*>(uo1);
++                        body1->collidePlaneBounds(data, wf);
++                    }
++//                     else // static objects don't collide against Scene Geometry
++//                     {
++//                         geom = static_cast<Geometry*>(uo);
++//                         // Do detailed collision test
++//                     }
++                }
++            }
++        }
++        // no need to use that one.
++        // dSpaceCollide(_space,data, World::collisionCallback);
++    }
++}
+Index: src/OgreOdeTriangleMeshDataManager.cpp
+===================================================================
+--- src/OgreOdeTriangleMeshDataManager.cpp	(revision 2719)
++++ src/OgreOdeTriangleMeshDataManager.cpp	(working copy)
+@@ -1,106 +1,106 @@
+-#include "OgreOdePrecompiledHeaders.h"
+-
+-#include "OgreOdeTriangleMeshDataManager.h"
+-
++#include "OgreOdePrecompiledHeaders.h"
+ 
++#include "OgreOdeTriangleMeshDataManager.h"
++
++
+ using namespace Ogre;
+-using namespace OgreOde; 
+-
+-template<> TriangleMeshDataManager *Ogre::Singleton<TriangleMeshDataManager>::ms_Singleton = 0;
+-
+-namespace OgreOde
+-{
+-	//-----------------------------------------------------------------------
+-	TriangleMeshDataManager::TriangleMeshDataManager()
+-	{
+-	}
+-
+-	//-----------------------------------------------------------------------
+-	TriangleMeshDataManager::~TriangleMeshDataManager()
+-	{
+-		//mTriangleMeshDataMap.clear();
+-	}
+-	
+-	//-----------------------------------------------------------------------
+-	TriangleMeshDataManager *TriangleMeshDataManager::getSingletonPtr () 
+-	{
+-		return ms_Singleton;
+-	}
+-
+-	//-----------------------------------------------------------------------
+-	TriangleMeshDataManager &TriangleMeshDataManager::getSingleton ()
+-	{  
+-		assert (ms_Singleton);  
+-		return (*ms_Singleton);
+-	}
+-
+-
+-	//-----------------------------------------------------------------------
+-	void TriangleMeshDataManager::addTriangleMeshData(const String& name, TriangleMeshDataPtr shape, Vector3 scale)
+-	{
+-
+-		mTriangleMeshDataMap[name][scale] = shape;
+-		
+-		// reduce count so when Ode::Geometry changes its dataPtr or is deleted we arn't
+-		// left with this one on a referance count of 1
+-		unsigned int* count = shape.useCountPointer();
+-		(*count)--;
+-		
+-	}
+-
+-
+-	//-----------------------------------------------------------------------
+-	void TriangleMeshDataManager::removeTriangleMeshData(const String& name, Vector3 scale)
+-	{
+-		
+-		TriangleMeshDataPtrMap::iterator itr = mTriangleMeshDataMap.find(name);
+-		if(itr != mTriangleMeshDataMap.end())
+-		{
+-		
+-			 std::map<Ogre::Vector3, OgreOde::TriangleMeshDataPtr,OgreOde::TriangleMeshDataManager::vectorLess>::iterator itr2;
+-			
+-			itr2 = itr->second.find(scale);
+-			
+-			if ( itr2 != itr->second.end() )
+-			{
+-				//printf ("no TriangleMeshData for scale so erase it\n");
+-				itr->second.erase(itr2);
+-				itr2->second.setNull();
+-			}
+-			
+-			if (itr->second.size() == 0) 
+-			{
+-				//printf ("have no TriangleMeshData for this mesh so erase it from map\n");
+-				mTriangleMeshDataMap.erase(itr); 
+-			}
+-		}
+-			
+-	}
+-	
+-	
+-	/** looks for mesh name then size or returns a NULL TriangleMeshDataPtr
+-	*/
+-	//-----------------------------------------------------------------------
+-	TriangleMeshDataPtr TriangleMeshDataManager::getTriangleMeshData(const String& name, Vector3 scale)
+-	{
+-	
+-		TriangleMeshDataPtrMap::iterator itr = mTriangleMeshDataMap.find(name);
+-		if(itr != mTriangleMeshDataMap.end())
+-		{
+-			 std::map<Ogre::Vector3, OgreOde::TriangleMeshDataPtr,OgreOde::TriangleMeshDataManager::vectorLess>::iterator itr2;
+-			
+-			itr2 = itr->second.find(scale);
+-			
+-			if ( itr2 != itr->second.end() )
+-			{
+-				return itr2->second;
+-			}
+-		}
+-		
+-		//printf ("TriangleMeshDataManager::getTriangleMeshData not found\n");
+-		
+-		return NULL;
+-	
+-	}
+-
+-}
++using namespace OgreOde; 
++
++template<> OgreOde::TriangleMeshDataManager * Ogre::Singleton<OgreOde::TriangleMeshDataManager>::ms_Singleton = 0;
++
++namespace OgreOde
++{
++	//-----------------------------------------------------------------------
++	TriangleMeshDataManager::TriangleMeshDataManager()
++	{
++	}
++
++	//-----------------------------------------------------------------------
++	TriangleMeshDataManager::~TriangleMeshDataManager()
++	{
++		//mTriangleMeshDataMap.clear();
++	}
++	
++	//-----------------------------------------------------------------------
++	TriangleMeshDataManager *TriangleMeshDataManager::getSingletonPtr () 
++	{
++		return ms_Singleton;
++	}
++
++	//-----------------------------------------------------------------------
++	TriangleMeshDataManager &TriangleMeshDataManager::getSingleton ()
++	{  
++		assert (ms_Singleton);  
++		return (*ms_Singleton);
++	}
++
++
++	//-----------------------------------------------------------------------
++	void TriangleMeshDataManager::addTriangleMeshData(const String& name, TriangleMeshDataPtr shape, Vector3 scale)
++	{
++
++		mTriangleMeshDataMap[name][scale] = shape;
++		
++		// reduce count so when Ode::Geometry changes its dataPtr or is deleted we arn't
++		// left with this one on a referance count of 1
++		unsigned int* count = shape.useCountPointer();
++		(*count)--;
++		
++	}
++
++
++	//-----------------------------------------------------------------------
++	void TriangleMeshDataManager::removeTriangleMeshData(const String& name, Vector3 scale)
++	{
++		
++		TriangleMeshDataPtrMap::iterator itr = mTriangleMeshDataMap.find(name);
++		if(itr != mTriangleMeshDataMap.end())
++		{
++		
++			 std::map<Ogre::Vector3, OgreOde::TriangleMeshDataPtr,OgreOde::TriangleMeshDataManager::vectorLess>::iterator itr2;
++			
++			itr2 = itr->second.find(scale);
++			
++			if ( itr2 != itr->second.end() )
++			{
++				//printf ("no TriangleMeshData for scale so erase it\n");
++				itr->second.erase(itr2);
++				itr2->second.setNull();
++			}
++			
++			if (itr->second.size() == 0) 
++			{
++				//printf ("have no TriangleMeshData for this mesh so erase it from map\n");
++				mTriangleMeshDataMap.erase(itr); 
++			}
++		}
++			
++	}
++	
++	
++	/** looks for mesh name then size or returns a NULL TriangleMeshDataPtr
++	*/
++	//-----------------------------------------------------------------------
++	TriangleMeshDataPtr TriangleMeshDataManager::getTriangleMeshData(const String& name, Vector3 scale)
++	{
++	
++		TriangleMeshDataPtrMap::iterator itr = mTriangleMeshDataMap.find(name);
++		if(itr != mTriangleMeshDataMap.end())
++		{
++			 std::map<Ogre::Vector3, OgreOde::TriangleMeshDataPtr,OgreOde::TriangleMeshDataManager::vectorLess>::iterator itr2;
++			
++			itr2 = itr->second.find(scale);
++			
++			if ( itr2 != itr->second.end() )
++			{
++				return itr2->second;
++			}
++		}
++		
++		//printf ("TriangleMeshDataManager::getTriangleMeshData not found\n");
++		
++		return NULL;
++	
++	}
++
++}

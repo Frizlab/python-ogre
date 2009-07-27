@@ -342,6 +342,10 @@ namespace Caelum
                     new AccesorPropertyDescriptor<Caelum::FlatCloudLayer, Real, Real, Real>(
                             &Caelum::FlatCloudLayer::getCloudCover,
                             &Caelum::FlatCloudLayer::setCloudCover));
+            td->add("cloud_cover_visibility_threshold",
+                    new AccesorPropertyDescriptor<Caelum::FlatCloudLayer, Real, Real, Real>(
+                            &Caelum::FlatCloudLayer::getCloudCoverVisibilityThreshold,
+                            &Caelum::FlatCloudLayer::setCloudCoverVisibilityThreshold));
             td->add("cloud_cover_lookup",
                     new AccesorPropertyDescriptor<Caelum::FlatCloudLayer, String>(
                             &Caelum::FlatCloudLayer::getCloudCoverLookupFileName,

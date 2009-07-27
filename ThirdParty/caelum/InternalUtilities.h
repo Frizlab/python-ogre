@@ -30,8 +30,9 @@ namespace Caelum
      *
      *  This class constains various tiny utilities for caelum to use.
      */
-    CAELUM_EXPORT struct InternalUtilities
+    class CAELUM_EXPORT InternalUtilities
     {
+    public:
         /** Gets the interpolated colour between two pixels from an image.
             Interpolate a texture pixel by hand. (fx, fy) are in texture coordinates,
             ranging [0-1] across the entire texture.
@@ -60,7 +61,7 @@ namespace Caelum
          *  modify the original material loaded from scripts. Instead it
          *  should create a clone and use that.
          *
-         *  This method throws an Caelum::UnsupportedException on failure.
+         *  This method throws a Caelum::UnsupportedException on failure.
          *  
          *  @param originalName Name of the original material.
          *  @param cloneName Name of the result clone.
@@ -70,6 +71,16 @@ namespace Caelum
         static Ogre::MaterialPtr checkLoadMaterialClone (
                 const Ogre::String& originalName,
                 const Ogre::String& cloneName);
+
+        /** Fetch a compositor by name and check it can be loaded properly
+         *
+         *  This method throws a Caelum::UnsupportedException on failure.
+         *
+         *  @param name Name of the compositor to check.
+         *
+         *  @return A pointer to the compositor (can be ignored)
+         */
+        static Ogre::CompositorPtr checkCompositorSupported (const Ogre::String& name);
 
 	public:
 		/** Enumeration of types of sky domes.

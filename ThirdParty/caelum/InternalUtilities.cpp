@@ -67,9 +67,16 @@ namespace Caelum
 	    return cf;
     }
 
-    const Ogre::String InternalUtilities::pointerToString (void* pointer) {
-        return Ogre::StringConverter::toString(
-                reinterpret_cast<size_t>(pointer), 2 * sizeof(void *), '0', std::ios::hex);
+    const Ogre::String InternalUtilities::pointerToString (void* pointer)
+    {
+        std::stringstream stream;
+		stream.width(2 * sizeof(void *));
+        stream.fill('0');
+        stream.unsetf(std::ios::dec);
+        stream.setf(std::ios::hex);
+        stream.setf(std::ios::uppercase);
+        stream << reinterpret_cast<ptrdiff_t>(pointer);
+        return stream.str();
     }
 
     Ogre::MaterialPtr InternalUtilities::checkLoadMaterialClone (
@@ -78,7 +85,7 @@ namespace Caelum
     {
         Ogre::MaterialPtr scriptMaterial = Ogre::MaterialManager::getSingletonPtr()->getByName(originalName);
         if (scriptMaterial.isNull()) {
-			CAELUM_THROW_UNSUPPORTED_EXCEPTION (
+            CAELUM_THROW_UNSUPPORTED_EXCEPTION (
                     "Can't find material \"" + originalName + "\"",
                     "Caelum");
         }
@@ -87,14 +94,34 @@ namespace Caelum
         Caelum::PrivateMaterialPtr clonedMaterial (scriptMaterial->clone (cloneName));
 
         // Test clone loads and there is at least on supported technique
-		clonedMaterial->load ();
-		if (clonedMaterial->getBestTechnique () == 0) {
-			CAELUM_THROW_UNSUPPORTED_EXCEPTION (
+        clonedMaterial->load ();
+        if (clonedMaterial->getBestTechnique () == 0) {
+            CAELUM_THROW_UNSUPPORTED_EXCEPTION (
                     "Can't load material \"" + originalName + "\": " + clonedMaterial->getUnsupportedTechniquesExplanation(), 
                     "Caelum");
-		}
+        }
 
         return clonedMaterial.release();
+    }
+
+    Ogre::CompositorPtr InternalUtilities::checkCompositorSupported (const Ogre::String& name)
+    {
+        Ogre::CompositorPtr comp = Ogre::CompositorManager::getSingletonPtr()->getByName(name);
+        if (comp.isNull()) {
+            CAELUM_THROW_UNSUPPORTED_EXCEPTION (
+                    "Can't find compositor \"" + name + "\"",
+                    "Caelum");
+        }
+
+        // Check the compositor is supported after loading.
+        comp->load ();
+        if (comp->getNumSupportedTechniques () == 0) {
+            CAELUM_THROW_UNSUPPORTED_EXCEPTION (
+                    "Can't load compositor \"" + name + "\"", 
+                    "Caelum");
+        }
+
+        return comp;
     }
 
     void InternalUtilities::generateSphericDome (const Ogre::String &name, int segments, DomeType type)

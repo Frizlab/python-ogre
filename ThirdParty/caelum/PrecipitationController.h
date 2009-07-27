@@ -83,32 +83,6 @@ namespace Caelum
         Real mSecondsSinceLastFrame;
         inline Real getSecondsSinceLastFrame() { return mSecondsSinceLastFrame; }
 
-    private:
-        struct Params {
-            void setup(Ogre::GpuProgramParametersSharedPtr fpParams);
-
-            Ogre::GpuProgramParametersSharedPtr fpParams;
-            FastGpuParamRef precColor;
-            FastGpuParamRef intensity;
-            FastGpuParamRef dropSpeed;
-            FastGpuParamRef corner1;
-            FastGpuParamRef corner2;
-            FastGpuParamRef corner3;
-            FastGpuParamRef corner4;
-            FastGpuParamRef deltaX;
-            FastGpuParamRef deltaY;
-        } mParams;
-
-        /// Called from CompositorInstance::notifyMaterialSetup
-    	void instanceNotifyMaterialSetup (
-                const Ogre::MaterialPtr& mat);
-
-        /// Called to enforce parameters on a composing material
-    	void _updateMaterialParams(
-                const Ogre::MaterialPtr& mat,
-                const Ogre::Camera* cam,
-                const Ogre::Vector3& camSpeed);
-
 	public:
         /// Name of the compositor resource.
         static const String COMPOSITOR_NAME;
@@ -246,6 +220,13 @@ namespace Caelum
         virtual void notifyMaterialSetup(uint pass_id, Ogre::MaterialPtr &mat);
         virtual void notifyMaterialRender(uint pass_id, Ogre::MaterialPtr &mat);
 
+        /// Called to enforce parameters on a composing material
+        /// Called from notifyMaterialRender.
+    	void _updateMaterialParams(
+                const Ogre::MaterialPtr& mat,
+                const Ogre::Camera* cam,
+                const Ogre::Vector3& camSpeed);
+
         // Add remove the compositors. Do nothing if already added/removed
         void createCompositor ();
         void destroyCompositor ();
@@ -279,6 +260,23 @@ namespace Caelum
 
         PrecipitationInstance(PrecipitationController* parent, Ogre::Viewport* view);
         virtual ~PrecipitationInstance();
+
+    private:
+        struct Params {
+            void setup(Ogre::GpuProgramParametersSharedPtr fpParams);
+
+            Ogre::GpuProgramParametersSharedPtr fpParams;
+            FastGpuParamRef precColor;
+            FastGpuParamRef intensity;
+            FastGpuParamRef dropSpeed;
+            FastGpuParamRef corner1;
+            FastGpuParamRef corner2;
+            FastGpuParamRef corner3;
+            FastGpuParamRef corner4;
+            FastGpuParamRef deltaX;
+            FastGpuParamRef deltaY;
+        } mParams;
+
     };
 }
 

@@ -220,6 +220,27 @@ namespace Caelum
         void disableCloudCoverLookup ();
 
     private:
+        Ogre::Real mCloudCoverVisibilityThreshold;
+
+    protected:
+        /** Enforce setCloudCoverVisibilityThreshold.
+         */
+        void _updateVisibilityThreshold ();
+
+    public:
+        /// Get cloud cover visiblity threshold.
+        /// Beneath this cloud coverage nothing is drawn anymore.
+        Ogre::Real getCloudCoverVisibilityThreshold () const { return mCloudCoverVisibilityThreshold; }
+
+        /** Set cloud cover visiblity threshold.
+         *
+         *  Beneath this cloud coverage nothing is drawn anymore.
+         *  Default value is very very low (0.001). All this does is save you from
+         *  destroying/recreating layers when they're too thin to bother drawing.
+         */
+        void setCloudCoverVisibilityThreshold (const Ogre::Real value);
+
+    private:
         /// Height of this cloud layer; equal to node's y position.
         Ogre::Real mHeight;
 

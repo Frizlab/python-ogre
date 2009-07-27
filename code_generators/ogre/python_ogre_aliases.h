@@ -487,13 +487,16 @@ typedef std::vector<Ogre::Any,Ogre::STLAllocator<Ogre::Any, Ogre::CategorisedAll
  typedef std::vector<Ogre::Plane, Ogre::STLAllocator<Ogre::Plane, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorPlane;
  typedef std::vector<Ogre::Plugin*, Ogre::STLAllocator<Ogre::Plugin*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorPlugin;
  typedef std::vector<Ogre::RenderTexture*, Ogre::STLAllocator<Ogre::RenderTexture*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorRenderTexture;
+
  typedef std::vector<Ogre::RenderWindowDescription,Ogre::STLAllocator<Ogre::RenderWindowDescription, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > > stdVectorRenderWindowDescription;
+
  typedef std::vector<Ogre::ShadowCaster*, Ogre::STLAllocator<Ogre::ShadowCaster*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorSadowCaster;
  typedef std::vector<Ogre::SubEntity*, Ogre::STLAllocator<Ogre::SubEntity*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorSubEntity;
  typedef std::vector<Ogre::Vector4,Ogre::STLAllocator<Ogre::Vector4, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > > stdVectorVector4;
  typedef std::vector<int, Ogre::STLAllocator<int, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorIntOgreAlloc;
  typedef std::vector<std::pair<unsigned int, unsigned int>, Ogre::STLAllocator<std::pair<unsigned int, unsigned int>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorUnsignedIntUnsignedInt;
 
+ typedef Ogre::vector<Ogre::RenderWindowDescription,Ogre::STLAllocator<Ogre::RenderWindowDescription, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > > VectorRenderWindowDescription;
  // typedef Ogre::set<Ogre::FrameListener*> OgreSetFrameListener;
  // typedef Ogre::set<Ogre::LodListener*> OgreSetLodListener;
  // typedef Ogre::set<Ogre::SceneNode*> OgreSetSceneNode;
