@@ -1,35 +1,6 @@
 Index: environment.py
 ===================================================================
---- environment.py	(revision 949)
-+++ environment.py	(working copy)
-@@ -84,6 +84,7 @@
- PATH_Python = os.path.dirname(sys.executable)
- ## I want a version string 2.4 or 2.5 etc
- PythonVersionString = str(sys.version_info[0]) + '.' + str(sys.version_info[1])
-+PythonVersionStringNoDot = "py"+str(sys.version_info[0])+str(sys.version_info[1])
- 
- if isWindows():
-     python_include_dirs = os.path.join(PATH_Python, 'include')
-@@ -597,12 +598,10 @@
- 
-     # If we are not given a LIB_Boost, use the version we are building.
-     if Config.LIB_Boost is None:
--        import subprocess
--        gccp = subprocess.Popen(["gcc", "--version"], stdout=subprocess.PIPE)
--        import re
--        gcc_version = re.search(r'([0-9]+?\.[0-9]+?\.[0-9]+?)', gccp.communicate()[0]).groups()[0].split('.')
--
--        lib = "boost_python-gcc%s%s-mt" % (gcc_version[0], gcc_version[1])
-+        if os.path.exists("/usr/lib/libboost_python-mt-%s.so" % (PythonVersionStringNoDot)):
-+          lib = "boost_python-mt-%s" % (PythonVersionStringNoDot,)
-+        else:
-+          lib = "boost_python-mt"
-     else:
-         lib = Config.LIB_Boost
- 
-Index: environment.py
-===================================================================
---- environment.py	(revision 949)
+--- environment.py	(revision 989)
 +++ environment.py	(working copy)
 @@ -3,6 +3,9 @@
  import getpass
@@ -41,6 +12,31 @@ Index: environment.py
  ##
  ##  Jan 2007 modification
  ##
+@@ -91,6 +94,7 @@
+ PATH_Python = os.path.dirname(sys.executable)
+ ## I want a version string 2.4 or 2.5 etc
+ PythonVersionString = str(sys.version_info[0]) + '.' + str(sys.version_info[1])
++PythonVersionStringNoDot = "py"+str(sys.version_info[0])+str(sys.version_info[1])
+ 
+ if isWindows():
+     python_include_dirs = os.path.join(PATH_Python, 'include')
+@@ -606,12 +610,10 @@
+     if not isWindows():
+         # If we are not given a LIB_Boost, use the version we are building.
+         if Config.LIB_Boost is None:
+-            import subprocess
+-            gccp = subprocess.Popen(["gcc", "--version"], stdout=subprocess.PIPE)
+-            import re
+-            gcc_version = re.search(r'([0-9]+?\.[0-9]+?\.[0-9]+?)', gccp.communicate()[0]).groups()[0].split('.')
+-
+-            lib = "boost_python-gcc%s%s-mt" % (gcc_version[0], gcc_version[1])
++            if os.path.exists("/usr/lib/libboost_python-mt-%s.so" % (PythonVersionStringNoDot)):
++              lib = "boost_python-mt-%s" % (PythonVersionStringNoDot,)
++            else:
++              lib = "boost_python-mt"
+         else:
+             lib = Config.LIB_Boost
+ 
 Index: PythonOgreConfig_system.py
 ===================================================================
 --- PythonOgreConfig_system.py	(revision 968)
