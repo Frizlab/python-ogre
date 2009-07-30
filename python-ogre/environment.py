@@ -1199,6 +1199,7 @@ class ogreforests(pymodule):
 
 class particleuniverse(pymodule):
     version="0.81"
+    active=False
     name='particleuniverse'
     parent="ogre/addons"
     cflags=""

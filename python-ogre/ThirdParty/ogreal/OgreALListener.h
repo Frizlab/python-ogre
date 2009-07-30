@@ -65,6 +65,9 @@ namespace OgreAL {
 	public:
 		/** Standard Destructor */
 		virtual ~Listener();
+        
+		void visitRenderables(Ogre::Renderable::Visitor* visitor, 
+			bool debugRenderables = false);
 
 		/** Returns the Listener singleton object */
 		static Listener& getSingleton();
