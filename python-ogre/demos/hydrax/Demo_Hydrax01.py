@@ -49,9 +49,9 @@ class HydraxListener(sf.FrameListener):
         self.raySceneQuery = self.sceneManager.createRayQuery(ogre.Ray(self.camera.getPosition(),
                                                                     ogre.Vector3().NEGATIVE_UNIT_Y))
 
-    def frameRenderingQueued ( self, e): ## frameStarted(self, e):
+    def frameStarted(self, e):
         global mCurrentSkyBox
-        if sf.FrameListener.frameRenderingQueued(self, e) == False:
+        if sf.FrameListener.frameStarted(self, e) == False:
             return False
             
         # Check camera height
@@ -180,16 +180,19 @@ class HydraxApplication(sf.Application):
         self.options = Hydrax.Perlin.Options(8, 0.085, 0.49, 1.4, 1.27)
         print dir ( Hydrax )
         self.modoptions = Hydrax.ProjectedGrid.Options(64,0.0,0.0,True )
-        self.noise=  Hydrax.Perlin() #self.options)  ## Default options (8, 0.085, 0.49, 1.4, 1.27f) 
-        self.Module = Hydrax.ProjectedGrid(# Hydrax parent pointer
-                        self.hydrax,
-                        # Noise module
-                        self.noise,
-                        # Base plane
-                        ogre.Plane(ogre.Vector3(0,1,0), ogre.Vector3(0,0,0)),
-                        Hydrax.MaterialManager.NM_VERTEX,
-                        # Projected grid options (Can be updated each frame . setOptions(...))
-                        self.modoptions) # 264
+        # self.noise=  Hydrax.Perlin() #self.options)  ## Default options (8, 0.085, 0.49, 1.4, 1.27f) 
+        # self.Module = Hydrax.ProjectedGrid(# Hydrax parent pointer
+                        # self.hydrax,
+                        # # Noise module
+                        # self.noise,
+                        # # Base plane
+                        # ogre.Plane(ogre.Vector3(0,1,0), ogre.Vector3(0,0,0)),
+                        # Hydrax.MaterialManager.NM_VERTEX,
+                        # # Projected grid options (Can be updated each frame . setOptions(...))
+                        # self.modoptions) # 264
+                        
+                        
+        self.Module = Hydrax.TestCreateModule ( self.hydrax )               
 
         # Set our module
         self.hydrax.setModule(self.Module)

@@ -40,20 +40,18 @@
 
 namespace OgreAL{
 	#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
-	#	include "AL/al.h"
-	#	include "AL/alc.h"
-		typedef ALenum (*EAXGetBufferMode)(ALuint buffer, ALint *pReserved);
-		typedef ALboolean (*EAXSetBufferMode)(ALsizei n, ALuint *buffers, ALint value);
-// 	#	include "xram.h"
-// 	#	if OGRE_COMPILER == OGRE_COMPILER_MSVC
-// 	#		ifdef OGREAL_EXPORT
-// 	#			define OgreAL_Export __declspec(dllexport)
-// 	#		else
-// 	#			define OgreAL_Export __declspec(dllimport)
-// 	#		endif
-// 	#	else
+	#	include "al.h"
+	#	include "alc.h"
+	#	include "xram.h"
+	#	if OGRE_COMPILER == OGRE_COMPILER_MSVC
+	// #		ifdef OGREAL_EXPORT
+	// #			define OgreAL_Export __declspec(dllexport)
+	// #		else
+	// #			define OgreAL_Export __declspec(dllimport)
+	// #		endif
+	// #	else
 	#		define OgreAL_Export
-// 	#	endif
+	#	endif
 	#elif OGRE_COMPILER == OGRE_COMPILER_GNUC
 	#	include "AL/al.h"
 	#	include "AL/alc.h"

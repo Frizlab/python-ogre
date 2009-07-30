@@ -127,7 +127,7 @@ uint32 CountUsedVertices(IndexData *id, std::map<uint32, uint32> &ibmap)
 
 				for (i = 0; i < id->indexCount; i++) {
 					uint16 index = data[i];
-					if (ibmap.find(index) == ibmap.end()) ibmap[index] = ibmap.size();
+					if (ibmap.find(index) == ibmap.end()) ibmap[index] = (uint32)(ibmap.size());
 				}
 				count = (uint32)ibmap.size();
 				id->indexBuffer->unlock();
@@ -141,7 +141,7 @@ uint32 CountUsedVertices(IndexData *id, std::map<uint32, uint32> &ibmap)
 
 				for (i = 0; i < id->indexCount; i++) {
 					uint32 index = data[i];
-					if (ibmap.find(index) == ibmap.end()) ibmap[index] = ibmap.size();
+					if (ibmap.find(index) == ibmap.end()) ibmap[index] = (uint32)(ibmap.size());
 				}
 				count = (uint32)ibmap.size();
 				id->indexBuffer->unlock();

@@ -339,6 +339,7 @@ ImpostorTexture::ImpostorTexture(ImpostorPage *group, Entity *entity)
 	//Store scene manager and entity
 	ImpostorTexture::sceneMgr = group->sceneMgr;
 	ImpostorTexture::entity = entity;
+	ImpostorTexture::group = group;
 
 	//Add self to list of ImpostorTexture's
 	entityKey = ImpostorBatch::generateEntityKey(entity);
@@ -548,7 +549,9 @@ void ImpostorTexture::renderTextures(bool force)
 	for (i = 0; i < sizeof(key); ++i)
 		key[i] = (key[i] % 26) + 'A';
 
-	ResourceGroupManager::getSingleton().addResourceLocation(".", "FileSystem", "BinFolder");
+	String tempdir = this->group->geom->getTempdir();
+	ResourceGroupManager::getSingleton().addResourceLocation(tempdir, "FileSystem", "BinFolder");
+
 	String fileNamePNG = "Impostor." + String(key, sizeof(key)) + '.' + StringConverter::toString(textureSize) + ".png";
 	String fileNameDDS = "Impostor." + String(key, sizeof(key)) + '.' + StringConverter::toString(textureSize) + ".dds";
 
@@ -593,10 +596,10 @@ void ImpostorTexture::renderTextures(bool force)
 				renderTarget->update();
 			}
 		}
-		
+	
 #ifdef IMPOSTOR_FILE_SAVE
-		//Save RTT to file
-		renderTarget->writeContentsToFile(fileNamePNG);
+		//Save RTT to file with respecting the temp dir
+		renderTarget->writeContentsToFile(tempdir + fileNamePNG);
 
 		//Load the render into the appropriate texture view
 		texture = TextureManager::getSingleton().load(fileNamePNG, "BinFolder", TEX_TYPE_2D, MIP_UNLIMITED);

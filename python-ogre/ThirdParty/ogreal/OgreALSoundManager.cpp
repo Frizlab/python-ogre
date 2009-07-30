@@ -52,7 +52,7 @@ namespace OgreAL {
 	const ALenum SoundManager::xRamHardware = alGetEnumValue("AL_STORAGE_HARDWARE");
 	const ALenum SoundManager::xRamAccessible = alGetEnumValue("AL_STORAGE_ACCESSIBLE");
 
-	SoundManager::SoundManager(const Ogre::String& deviceName) : 
+  SoundManager::SoundManager(const Ogre::String& deviceName, int maxNumSources) : 
 		mEAXSupport(false),
 		mEAXVersion(0),
 		mXRAMSupport(false),
@@ -62,7 +62,8 @@ namespace OgreAL {
 		mDevice(0),
 		mDopplerFactor(1.0),
 		mSpeedOfSound(343.3),
-		mMaxNumSources(0),
+		mCullDistance(-1.0),
+		mMaxNumSources(maxNumSources),
 		mMajorVersion(0),
 		mMinorVersion(0),
 		mLastDeltaTime(0.0)
@@ -228,9 +229,14 @@ namespace OgreAL {
 		// Lock Mutex
 		OGREAL_LOCK_AUTO_MUTEX
 
-		// delete all Sound pointers in the SoundMap
+		// Delete all Sound pointers in the SoundMap.
 		std::for_each(mSoundMap.begin(), mSoundMap.end(), DeleteSecond());
 		mSoundMap.clear();
+		// Delete all Sounds scheduled for deletion.
+		performDeleteQueueCycle();
+
+		// Also flush gain values.
+		mSoundGainMap.clear();
 	}
 	
 	void SoundManager::pauseAllSounds()
@@ -239,7 +245,7 @@ namespace OgreAL {
 		OGREAL_LOCK_AUTO_MUTEX
 
 		SoundMap::iterator soundItr;
-		for(soundItr = mSoundMap.begin(); soundItr != mSoundMap.end(); soundItr++)
+		for(soundItr = mSoundMap.begin(); soundItr != mSoundMap.end(); ++soundItr)
 		{
 			if(soundItr->second->isPlaying())
 			{
@@ -255,7 +261,7 @@ namespace OgreAL {
 		OGREAL_LOCK_AUTO_MUTEX
 
 		SoundList::iterator soundItr;
-		for(soundItr = mPauseResumeAll.begin(); soundItr != mPauseResumeAll.end(); soundItr++)
+		for(soundItr = mPauseResumeAll.begin(); soundItr != mPauseResumeAll.end(); ++soundItr)
 		{
 			(*soundItr)->play();
 		}
@@ -280,13 +286,6 @@ namespace OgreAL {
 		return Listener::getSingletonPtr();
 	}
 
-	struct SoundManager::UpdateSound
-	{
-		void operator()(std::pair<std::string, Sound*> pair)const
-		{
-			pair.second->updateSound();
-		}
-	};
 
 	struct SoundManager::SortLowToHigh
 	{
@@ -389,14 +388,11 @@ namespace OgreAL {
 		// Do this before any fading gets updated
 		mLastDeltaTime = evt.timeSinceLastFrame;
 
-		// Destroy any sounds that were queued last frame
-		SoundList::iterator soundItr = mSoundsToDestroy.begin();
-		while(!mSoundsToDestroy.empty())
-		{
-			delete (*soundItr);
-			soundItr = mSoundsToDestroy.erase(soundItr);
+		// If there are sounds to delete, do so now.
+		if(mSoundsToDestroy.size() > 0) {
+		  performDeleteQueueCycle();
 		}
-
+		
 		updateSounds();
 		return true;
 	}
@@ -426,6 +422,22 @@ namespace OgreAL {
 		alSpeedOfSound(mSpeedOfSound);
 		CheckError(alGetError(), "Failed to set Speed of Sound");
 	}
+
+  Ogre::Real SoundManager::getCullDistance() const {
+    return mCullDistance;
+  }
+
+  void SoundManager::setCullDistance(Ogre::Real distance) {
+    // Assign new cull distance.
+    mCullDistance = distance;
+
+    // Go over all sounds.
+    for(SoundMap::iterator i = mSoundMap.begin(); i != mSoundMap.end(); ++i) {
+      // Perform a cull cycle on the sound, redoing all culls based on the 
+      // newly set cull distance.
+      performSoundCull(i->second);
+    }
+  }
 
 	Ogre::StringVector SoundManager::getDeviceList()
 	{
@@ -563,7 +575,7 @@ namespace OgreAL {
 		}
 
 		SoundList::iterator soundItr;
-		for(soundItr = mQueuedSounds.begin(); soundItr != mQueuedSounds.end(); soundItr++)
+		for(soundItr = mQueuedSounds.begin(); soundItr != mQueuedSounds.end(); ++soundItr)
 		{
 			if((*soundItr) == sound)
 			{
@@ -580,7 +592,8 @@ namespace OgreAL {
 			mSourcePool.pop();
 			return source;
 		}
-		else
+		// Beefed up check. Wasn't safe before.
+		else if(!mActiveSounds.empty())
 		{
 			Sound *activeSound = mActiveSounds.front();
 			Ogre::Vector3 listenerPos = Listener::getSingleton().getDerivedPosition();
@@ -604,6 +617,9 @@ namespace OgreAL {
 				return AL_NONE;
 			}
 		}
+
+		// No sources in the source pool, no active sounds to steal from.
+		return AL_NONE;
 	}
 
 	SourceRef SoundManager::_releaseSource(Sound *sound)
@@ -613,45 +629,54 @@ namespace OgreAL {
 
 		bool soundFound = false;
 		SoundList::iterator soundItr;
-		for(soundItr = mActiveSounds.begin(); soundItr != mActiveSounds.end(); soundItr++)
-		{
-			if((*soundItr) == sound)
-			{
-				mActiveSounds.erase(soundItr);
-				soundFound = true;
-				break;
-			}
+		// Look for the sound in the active sounds list.
+		for(soundItr = mActiveSounds.begin(); soundItr != mActiveSounds.end(); ++soundItr) {
+		  // If we've found the sound.
+		  if((*soundItr) == sound) {
+		    // Erase and flag as found.
+		    mActiveSounds.erase(soundItr);
+		    soundFound = true;
+		    break;
+		  }
 		}
 
-		// If it's not in the active list, check the queued list
-		if(!soundFound)
-		{
-			for(soundItr = mQueuedSounds.begin(); soundItr != mQueuedSounds.end(); soundItr++)
-			{
-				if((*soundItr) == sound)
-				{
-					mQueuedSounds.erase(soundItr);
-					break;
-				}
-			}
+		// If it's not in the active list, check the queued list.
+		if(!soundFound)	{
+		  for(soundItr = mQueuedSounds.begin(); soundItr != mQueuedSounds.end(); ++soundItr) {
+		    if((*soundItr) == sound) {
+		      mQueuedSounds.erase(soundItr);
+		      break;
+		    }
+		  }
 		}
 
+		// At this stage we're going to assume that we have found the sound in either
+		// the active or queued sounds list and that we've removed it. If we've removed
+		// it and it has a valid source, then this source can be assigned to the first
+		// sound in line for a source (a sound in the queued sounds list).
 		SourceRef source = sound->getSource();
-		if(source != AL_NONE)
-		{
-			if(!mQueuedSounds.empty())
-			{
-				Sound *queuedSound = mQueuedSounds.front();
-				mQueuedSounds.erase(mQueuedSounds.begin());
+		// If the sound released had a valid source.
+		if(source != AL_NONE) {
+		  // Unbind the buffer from the source. This also decrements the reference count, 
+		  // which needs to be done before we try to release the buffer. In any case we
+		  // want the next sound to have a clean buffer.
+		  alSourcei(source, AL_BUFFER, 0);
+		  CheckError(alGetError(), "Failed to unbind buffer from source.");
 
-				queuedSound->setSource(source);
-				queuedSound->play();
-				mActiveSounds.push_back(queuedSound);
-			}
-			else
-			{
-				mSourcePool.push(source);
-			}
+		  // If there are queued sounds.
+		  if(!mQueuedSounds.empty()) {
+		    // Give the first queued sound the source.
+		    Sound *queuedSound = mQueuedSounds.front();
+		    mQueuedSounds.erase(mQueuedSounds.begin());
+		    
+		    queuedSound->setSource(source);
+		    queuedSound->play();
+		    mActiveSounds.push_back(queuedSound);
+
+		    // No queued sounds.
+		  }else{
+		    mSourcePool.push(source);
+		  }
 		}
 
 		return AL_NONE;
@@ -659,27 +684,37 @@ namespace OgreAL {
 
 	int SoundManager::createSourcePool()
 	{
-		SourceRef source;
+	  SourceRef source;
 
-		int numSources = 0;
-		while(alGetError() == AL_NO_ERROR && numSources < 100)
-		{
-			source = 0;
-			alGenSources(1, &source);
-			if(source != 0)
-			{
-				mSourcePool.push(source);
-				numSources++;
-			}
-			else
-			{
-				// Clear out the error
-				alGetError();
-				break;
-			}
-		}
+	  // Starting with no sources.
+	  int numSources = 0;
+	  // So 
+	  while(alGetError() == AL_NO_ERROR && numSources < mMaxNumSources) {
+	    // Clear source handle and generate the source.
+	    source = 0;
+	    alGenSources(1, &source);
 
-		return numSources;
+	    // If source creation worked.
+	    if(source != 0) {
+	      // Store the source in the list and keep track of count.
+	      mSourcePool.push(source);
+	      numSources++;
+	      
+	    }else{
+	      // Failed to generate all required sources. Clear state.
+	      alGetError();
+	      // Discontinue generation of sources.
+	      break;
+	    }
+	  }
+	  
+	  // If we could not generate all necessary sources.
+	  if(numSources != mMaxNumSources) {
+	    // Notify the user that they are limited.
+	    Ogre::LogManager::getSingleton().logMessage("OgreAL: Warning: Failed to generate all required sources.");
+	  }
+
+	  return numSources;
 	}
 
 	void SoundManager::initializeDevice(const Ogre::String& deviceName)
@@ -708,7 +743,7 @@ namespace OgreAL {
 			Ogre::StringVector deviceList = getDeviceList();
 			std::stringstream ss;
 			Ogre::StringVector::iterator deviceItr;
-			for(deviceItr = deviceList.begin(); deviceItr != deviceList.end() && (*deviceItr).compare("") != 0; deviceItr++)
+			for(deviceItr = deviceList.begin(); deviceItr != deviceList.end() && (*deviceItr).compare("") != 0; ++deviceItr)
 			{
 				deviceInList = (*deviceItr).compare(deviceName) == 0;
 				ss << " * " << (*deviceItr);
@@ -813,12 +848,31 @@ namespace OgreAL {
 		OGREAL_LOCK_AUTO_MUTEX
 
 		// Update the Sound and Listeners if necessary	
-		std::for_each(mSoundMap.begin(), mSoundMap.end(), UpdateSound());
+		  for(SoundMap::iterator i = mSoundMap.begin(); i != mSoundMap.end(); ++i) {
+		    // Perform a sound update.
+		    i->second->updateSound();
+		    
+		    // If culling is enabled, perform cull on the sound.
+		    if(mCullDistance > 0.0) {
+		      performSoundCull(i->second);
+		    }
+		  }
+
 		Listener::getSingleton().updateListener();
 
+		// Before sorting, lock states to use cache. Otherwise it is possible for
+		// a sound to change state in the middle of sorting and cause a segmentation
+		// fault. It has happened to me on numerous occasions.
+		for(SoundMap::iterator i = mSoundMap.begin(); i != mSoundMap.end(); ++i) {
+		  i->second->setStateCached(true);
+		}
 		// Sort the active and queued sounds
 		std::sort(mActiveSounds.begin(), mActiveSounds.end(), SortLowToHigh());
 		std::sort(mQueuedSounds.begin(), mQueuedSounds.end(), SortHighToLow());
+		// Revert back to live states.
+		for(SoundMap::iterator i = mSoundMap.begin(); i != mSoundMap.end(); ++i) {
+		  i->second->setStateCached(false);
+		}
 
 		// Check to see if we should sacrifice any sounds
 		updateSourceAllocations();
@@ -826,7 +880,7 @@ namespace OgreAL {
 
 	void SoundManager::updateSourceAllocations()
 	{
-		while(!mQueuedSounds.empty())
+		while(!mQueuedSounds.empty() && !mActiveSounds.empty())
 		{
 			Sound *queuedSound = mQueuedSounds.front();
 			Sound *activeSound = mActiveSounds.front();
@@ -852,7 +906,8 @@ namespace OgreAL {
 			}
 
 			if(queuedSound->getPriority() > activeSound->getPriority() ||
-				queuedSound->getPriority() == activeSound->getPriority() && distQueuedSound < distActiveSound)
+			   queuedSound->getPriority() == activeSound->getPriority() && 
+			   distQueuedSound < distActiveSound)
 			{
 				// Remove the sounds from their respective lists
 				mActiveSounds.erase(mActiveSounds.begin());
@@ -879,4 +934,75 @@ namespace OgreAL {
 			}
 		}
 	}
+
+  void SoundManager::performDeleteQueueCycle() {
+    // Destroy any sounds that were queued last frame
+    SoundList::iterator soundItr = mSoundsToDestroy.begin();
+    while(!mSoundsToDestroy.empty())
+      {
+	// Grab the pointer to the sound.
+	Sound* sound = *soundItr;
+
+	// If the sound has stored gain for distance culling.
+	SoundGainMap::iterator soundGainItr = mSoundGainMap.find(sound);
+	if(soundGainItr != mSoundGainMap.end()) {
+	  // Delete it along with the sound.
+	  mSoundGainMap.erase(soundGainItr);
+	}
+
+	// Free sound instance.
+	delete sound;
+	// Remove from sound list.
+	soundItr = mSoundsToDestroy.erase(soundItr);
+      }
+  }
+
+  void SoundManager::performSoundCull(Sound* sound) {
+    // Get the distance between the sound and the listener.
+    Ogre::Vector3 soundToListener = sound->getDerivedPosition() - getListener()->getPosition();
+    // Attempt to get the iterator for the sound from the cull map.
+    SoundGainMap::iterator soundGainItr = mSoundGainMap.find(sound);
+
+    // If the sound is further than the cull distance from the listener and
+    // is not already culled, cull it.
+    if(soundToListener.length() > mCullDistance &&
+       soundGainItr == mSoundGainMap.end()) {
+      cullSound(sound);
+
+      // Or if the sound is closer than the cull distance to the listener,
+      // or the culling has been turned off but the sound is culled, uncull.
+    }else if((soundToListener.length() <= mCullDistance || 
+	      mCullDistance <= 0.0) &&
+	     soundGainItr != mSoundGainMap.end()) {
+      uncullSound(soundGainItr);
+    }
+  }
+
+  // Callers of this function must guarantee that the sound is valid and not 
+  // already culled.
+  void SoundManager::cullSound(Sound* sound) {
+    // Add to the culling map.
+    mSoundGainMap[sound] = sound->getGain();
+    // Set gain of the sound to zero.
+    sound->setGain(0.0);
+  }
+
+  // Callers of this function must guarantee that the sound is valid and that
+  // it is already culled (ie. has an entry in the sound gain map.
+  void SoundManager::uncullSound(Sound* sound) {
+    // Attempt to find the sound.
+    SoundGainMap::iterator i = mSoundGainMap.find(sound);
+    // If the sound exists, uncull it.
+    if(i != mSoundGainMap.end()) {
+      uncullSound(i);
+    }
+  }
+
+  void SoundManager::uncullSound(SoundGainMap::iterator& soundGainItr) {
+    // Restore the sound's gain.
+    soundGainItr->first->setGain(soundGainItr->second);
+    // Remove the entry from the gain map.
+    mSoundGainMap.erase(soundGainItr);
+  }
+
 } // Namespace
