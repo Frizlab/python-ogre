@@ -23,6 +23,11 @@ Permission is granted to anyone to use this software for any purpose, including 
 #include <OgreTextureManager.h>
 #include <OgreRenderTexture.h>
 
+#if OGRE_PLATFORM == OGRE_PLATFORM_LINUX
+// linux memory fix
+#include <memory>
+#endif
+
 //The number of angle increments around the yaw axis to render impostor "snapshots" of trees
 #define IMPOSTOR_YAW_ANGLES 8
 
@@ -320,6 +325,7 @@ protected:
 	Ogre::SceneManager *sceneMgr;
 	Ogre::Entity *entity;
 	Ogre::String entityKey;
+	ImpostorPage *group;
 
 	Ogre::MaterialPtr material[IMPOSTOR_PITCH_ANGLES][IMPOSTOR_YAW_ANGLES];
 	Ogre::TexturePtr texture;

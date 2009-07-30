@@ -92,6 +92,9 @@ public:
 	*/
 	inline void setWindDirection(Ogre::Vector3 &dir) { windDir = dir; }
 
+	inline void setBuildEdgesEnabled(bool value) { autoEdgeBuildEnabled=value; }
+	inline bool getBuildEdgesEnabled() { return autoEdgeBuildEnabled; }
+
 	/** \brief Returns the global wind direction for this GrassLoader.
 
 	\see setWindDirection() for more information about the wind direction. */
@@ -172,7 +175,7 @@ public:
 	/** INTERNAL FUNCTION - DO NOT USE */
 	void loadPage(PageInfo &page);
 	/** INTERNAL FUNCTION - DO NOT USE */
-	void unloadPage(const PageInfo &page);
+	void unloadPage(PageInfo &page);
 	/** INTERNAL FUNCTION - DO NOT USE */
 	void frameUpdate();
 
@@ -200,6 +203,8 @@ private:
 	Ogre::Timer windTimer;
 	Ogre::Vector3 windDir;
 	unsigned long lastTime;
+
+	bool autoEdgeBuildEnabled;
 
 	static unsigned long GUID;
 	static inline Ogre::String getUniqueID()
@@ -461,6 +466,11 @@ public:
 	*/
 	void setAnimationEnabled(bool enabled);
 
+
+	/** \brief Enables/disables lighting on this layer
+	*/
+	void setLightingEnabled(bool enabled);
+
 	/** \brief Sets how far grass should sway back and forth
 
 	\note Since this is measured in world units, you may have to adjust this depending on
@@ -529,7 +539,7 @@ private:
 	MapFilter colorMapFilter;
 
 	//Grass shader properties
-	bool animate, blend, shaderNeedsUpdate;
+	bool animate, blend, lighting, shaderNeedsUpdate;
 	float animMag, animSpeed, animFreq;
 
 	//Current frame of animation for this layer

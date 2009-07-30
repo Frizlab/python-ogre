@@ -51,6 +51,35 @@ namespace OgreAL {
 	 */
 	class OgreAL_Export Sound : public Ogre::MovableObject
 	{
+	public:
+	  // This listener iterface allows for notifications about certain sound
+	  // events. It is the unified listener interface for the sound class.
+	  class OgreAL_Export Listener {
+	  public:
+	    // Should the listener functions for sound stopping or looping be
+	    // called. Set these flags according to your desire to be notified.
+	    bool stops, loops;
+	    // Add offsets to this list if you wish to be notified of any. If no
+	    // offsets are present in the list, the corresponding notification
+	    // function will never be called. This list acts as a flag.
+	    typedef std::list<Ogre::Real> OffsetList;
+	    OffsetList offsets;
+	    
+	    // Constructor initialises such that nothing is notified about.
+	    Listener();
+	    virtual ~Listener();
+
+	    // The sound has stopped (not looping).
+	    virtual void soundStopped(Sound* sound);
+	    // The sound has looped (reached the end and looping).
+	    virtual void soundLooped(Sound* sound);
+	    // The sound has reached a requested offset. Because OpenAL is
+	    // running on a separate thread, you've Buckley's chance of actually
+	    // getting notified at the precise offset you want. OgreAL updates
+	    // only once per frame, and so we'll notify you as close as possible.
+	    virtual void soundAtOffset(Sound* sound, Ogre::Real requestedOffset, Ogre::Real actualOffset);
+	  };
+
 	protected:
 		/*
 		** Constructors are protected to enforce the use of the 
@@ -58,9 +87,10 @@ namespace OgreAL {
 		*/
 		/** Default Constructor. */
 		Sound();
-		/** Normal Constructor. Should not be called directly! Use SoundManager::createSound */
+		/** Constructor. Should not be called directly! Use SoundManager::createSound(). */
 		Sound(const Ogre::String& name, const Ogre::String& fileName, bool stream);
-		/** Constructor to be called if BufferRef exists */
+		/** Constructor. Should not be called directly! SoundManager::createSound().
+		    To be called if BufferRef exists. */
 		Sound(BufferRef buffer, const Ogre::String& name, const Ogre::String& fileName, bool loop = false);
 
 	public:
@@ -88,10 +118,15 @@ namespace OgreAL {
 		virtual bool isStopped() const;
 		/** Returns true if the source does not have a state yet, otherwise false */
 		virtual bool isInitial() const;
+		/** Returns true if the sound is currently in the process of fading. */
+		bool isFading() const;
 		/** Starts playing the song while fading in.*/
 		bool fadeIn(Ogre::Real fadeTime);
 		/** Fades out, but keeps playing at volume 0, so it can be faded in again.*/
 		bool fadeOut(Ogre::Real fadeTime);
+		/** Cancel a processing fade operation. This leaves the gain at where the 
+		    fade operation was cancelled and does not touch it. */
+		bool cancelFade();
 		/**
 		 * Sets the pitch multiplier.
 		 * @param pitch The new pitch multiplier
@@ -285,6 +320,7 @@ namespace OgreAL {
 		const Ogre::Vector3& getDerivedDirection() const {return mDerivedDirection;}
 		/** Returns the name of the file used to create this Sound. */
 		const Ogre::String& getFileName() const {return mFileName;}
+
 		/** Sets a callback to alert the user when the Sound has stopped playing */
 		template<typename T>
 		void addSoundFinishedHandler(T *object, void(T::*function)(Sound *sound))
@@ -296,6 +332,14 @@ namespace OgreAL {
 		{
 			mLoopedCallback = new MemberFunctionPointer<T>(function, object);
 		}
+
+		// Add and remove sound listeneder.
+		// Add a sound listener. If the listener already exists in the list,
+		// it will not be added a second time.
+		void addListener(Listener* listener);
+		// Remove a sound listener. If the listener does not exist in the list,
+		// nothing happens. It is assumed that it is removed.
+		void removeListener(Listener* listener);
 
 		/** Overridden from MovableObject */
 		const Ogre::String& getMovableType() const;
@@ -337,6 +381,21 @@ namespace OgreAL {
 		/// Returns the BufferRef for this sounds
 		BufferRef getBufferRef() const {return mBuffers[0];}
 
+		/// Lock states for sorting purposes. When sounds are being sorted in their
+		/// lists, a comparator is used. This comparator utilises the sounds' states
+		/// in order to compare pairs of sounds. To perform sorting, std::sort() is
+		/// used, which requires that elements not change while sorting! Since by
+		/// default, functions like isStopped() return the live state from OpenAL, it
+		/// is possible (and has happened) that a SIGSEGV is the result of a sound
+		/// stopping while the sound list is being sorted. We place a lock on sound
+		/// states that makes them used cached values instead of querying OpenAL.
+		bool isStateCached() const;
+		void setStateCached(bool stateCached);
+		/// Update the cached state. Does nothing if cached states are used. In other
+		/// words, this function will only update the cached state if cached states
+		/// are *not* in effect (being used [mStateCached == false]).
+		void updateStateCache() const;
+
 		/// Postion taking into account the parent node
 		mutable Ogre::Vector3 mDerivedPosition;
 		/// Direction taking into account the parent node
@@ -360,6 +419,14 @@ namespace OgreAL {
 		Ogre::Vector3 mVelocity;
 		Ogre::Vector3 mDirection;
 		Ogre::String mFileName;
+
+		// State cache is being used?
+		bool mStateCached;
+		// Cached source state if we have a source. It is mutable to preserve the
+		// const nature of the API. If it was not, all of the is(Playing/Stopped/...)
+		// functions would have to have their ") const {" removed.
+		mutable State mState;
+
 		ALboolean mSourceRelative;
 		ALboolean mLoop;
 		mutable bool mLocalTransformDirty;
@@ -389,6 +456,9 @@ namespace OgreAL {
 		// Callbacks to alert the user of specific events
 		MemberFunctionSlot *mFinishedCallback;
 		MemberFunctionSlot *mLoopedCallback;
+		// Sound listener list.
+		typedef std::list<Listener*> ListenerList;
+		ListenerList mListeners;
 
 		// This allows us to start a sound back where is should be after being sacrificed
 		time_t mStartTime;
@@ -397,7 +467,9 @@ namespace OgreAL {
 		friend class SoundFactory;
 
 	private:
+		/// Perform an update.
 		void _update() const;
+		/// Perform an update of any active fades.
 		void _updateFading();
 
 		enum FadeMode
@@ -415,6 +487,36 @@ namespace OgreAL {
 	/** Factory object for creating sounds */
 	class OgreAL_Export SoundFactory : public Ogre::MovableObjectFactory
 	{
+	protected:
+	  // This class allows for buffer information storage and usage tracking on a
+	  // per-buffer, shared buffer, basis.
+	  class BufferInfo {
+	  public:
+	    // The buffer reference.
+	    BufferRef reference;
+
+	    // The number of buffer users.
+	    // The previous system relied on each sound attempting to destroy the buffer
+	    // upon destruction and, if successful, telling the factory to remove the 
+	    // buffer reference. The problem with this approach was that buffer deletions
+	    // are delayed by being stored in a queue and only being performed in the 
+	    // next cycle. What can happen is a sound gets deleted that is the last to
+	    // use that buffer, and gets queued in the deletion queue. Just after that, 
+	    // but before the next update, a sound is created that uses the buffer. Sure
+	    // enough, it piggy backs off of the existing buffer but does not yet queue
+	    // it into the source; that happens at play(). Because the new sound did not
+	    // queue the buffers, it is considered unused and at the next frame update
+	    // the deletion of the buffer is successful. When the new sound attempts to
+	    // be played, the buffer is no longer valid and an error ensues. To solve this
+	    // we keep our own track of buffer usage.
+	    unsigned int refCount;
+	    
+	    // Constructors and destructor.
+	    BufferInfo();
+	    BufferInfo(BufferRef reference, unsigned int refCount = 0u);
+	    BufferInfo(const BufferInfo& bufferInfo);
+	  };
+
 	public:
 		SoundFactory();
 		~SoundFactory();
@@ -428,7 +530,7 @@ namespace OgreAL {
 		void _addBufferRef(const Ogre::String& bufferName, BufferRef buffer);
 
 	protected:
-		typedef std::map<std::string, BufferRef> BufferMap;
+		typedef std::map<std::string, BufferInfo> BufferMap;
 		BufferMap mBufferMap;
 
 		Ogre::MovableObject* createInstanceImpl(const Ogre::String& name, const Ogre::NameValuePairList* params = 0);

@@ -40,6 +40,26 @@
 #include "OgreALSoundManager.h"
 
 namespace OgreAL {
+  Sound::Listener::Listener() : stops(false), loops(false) {
+
+  }
+
+  Sound::Listener::~Listener() {
+
+  }
+
+  void Sound::Listener::soundStopped(Sound* sound) {
+
+  }
+
+  void Sound::Listener::soundLooped(Sound* sound) {
+
+  }
+
+  void Sound::Listener::soundAtOffset(Sound* sound, Ogre::Real requestedOffset, Ogre::Real actualOffset) {
+
+  }
+
 	Sound::Sound() :
 		mSource(0),
 		mFormat(0),
@@ -76,6 +96,8 @@ namespace OgreAL {
 		mVelocity(Ogre::Vector3::ZERO),
 		mDirection(Ogre::Vector3::NEGATIVE_UNIT_Z),
 		mFileName(""),
+		mStateCached(false),
+		mState(AL_INITIAL),
 		mSourceRelative(AL_FALSE),
 		mDerivedPosition(Ogre::Vector3::ZERO),
 		mDerivedDirection(Ogre::Vector3::NEGATIVE_UNIT_Z)
@@ -85,7 +107,7 @@ namespace OgreAL {
 
 	Sound::Sound(const Ogre::String &name, const Ogre::String& fileName, bool stream) :
 		mSource(0),
-        mFormat(0),
+		mFormat(0),
 		mFreq(0),
 		mSize(0),
 		mBPS(0),
@@ -120,6 +142,8 @@ namespace OgreAL {
 		mVelocity(Ogre::Vector3::ZERO),
 		mDirection(Ogre::Vector3::NEGATIVE_UNIT_Z),
 		mFileName(fileName),
+		mStateCached(false),
+		mState(AL_INITIAL),
 		mSourceRelative(AL_FALSE),
 		mDerivedPosition(Ogre::Vector3::ZERO),
 		mDerivedDirection(Ogre::Vector3::NEGATIVE_UNIT_Z)
@@ -164,14 +188,19 @@ namespace OgreAL {
 		mVelocity(Ogre::Vector3::ZERO),
 		mDirection(Ogre::Vector3::NEGATIVE_UNIT_Z),
 		mFileName(fileName),
+		mStateCached(false),
+		mState(AL_INITIAL),
 		mSourceRelative(AL_FALSE),
 		mDerivedPosition(Ogre::Vector3::ZERO),
 		mDerivedDirection(Ogre::Vector3::NEGATIVE_UNIT_Z)
 	{
 		mParentNode = NULL;
 
-		mBuffers = new BufferRef[1];
+		// Allocate buffer entry.
+		mBuffers = new BufferRef[mNumBuffers];
 		mBuffers[0] = buffer;
+		// Notify the sound manager of our use of this buffer.
+		SoundManager::getSingleton()._addBufferRef(mFileName, buffer);
 
 		alGetBufferi(mBuffers[0], AL_FREQUENCY, &mFreq);
 		alGetBufferi(mBuffers[0], AL_BITS, &mBPS);
@@ -186,15 +215,33 @@ namespace OgreAL {
 
 	Sound::~Sound()
 	{
-		stop();
+	  // We need to be stopped in order for the buffer to be releasable.
+	  stop();
 
+		// The sound manager needs to also release the source of this sound
+		// object if it was valid (it will figure that out). Put it back into
+		// the source pool and all that.
+		SoundManager::getSingleton()._releaseSource(this);
+
+		// Attempting to release buffers now that we've possibly decremented
+		// the reference count by setting a null buffer on our source.
 		try
 		{
 		  // If we have buffers to deallocate, do so.
 		  if(mBuffers != NULL) {
-		    alDeleteBuffers(mNumBuffers, mBuffers);
-		    CheckError(alGetError(), "Failed to delete Buffers, must still be in use.");
-		    SoundManager::getSingleton()._removeBufferRef(mFileName);
+		    // Buffer deletion is dependent on streaming.
+		    if(mStream) {
+		      // We are streaming, so this buffer is all ours. In this case
+		      // we are responsible for the cleanup.
+		      alDeleteBuffers(mNumBuffers, mBuffers);
+		      CheckError(alGetError(), "Failed to delete a streamed buffer.");
+
+		    }else{
+		      // We are using a non-streamed buffer, so this buffer could very
+		      // well be shared among a number of sounds. We leave proper 
+		      // destruction and deletion to the sound factory.
+		      SoundManager::getSingleton()._removeBufferRef(mFileName);
+		    }
 		  }
 		}
 		catch(...)
@@ -202,20 +249,15 @@ namespace OgreAL {
 			// Don't die because of this.
 		}
 
-		if(mSource != AL_NONE)
-		{
-			alSourcei(mSource, AL_BUFFER, 0);
-			CheckError(alGetError(), "Failed to release buffer");
-		}
 
 		delete[] mBuffers;
 
-		SoundManager::getSingleton()._releaseSource(this);
 	}
 
 	bool Sound::play()
 	{
-		if(isPlaying()) return true;
+	  // If we're already playing, bail out.
+	  if(isPlaying()) return true;
 
 		if(!isPaused())
 		{
@@ -266,11 +308,10 @@ namespace OgreAL {
 			return false;
 		}
 
-		State state;
-		alGetSourcei(mSource, AL_SOURCE_STATE, &state);
-		CheckError(alGetError(), "Failed to get State");
+		// Perform a cached state refresh. No refresh will be done if using cache.
+		updateStateCache();
 
-		return (state == AL_PLAYING);
+		return (mState == AL_PLAYING);
 	}
 
 	bool Sound::pause()
@@ -293,11 +334,10 @@ namespace OgreAL {
 			return false;
 		}
 
-		State state;    
-		alGetSourcei(mSource, AL_SOURCE_STATE, &state);
-		CheckError(alGetError(), "Failed to get State");
+		// Perform a cached state refresh. No refresh will be done if using cache.
+		updateStateCache();
 
-		return (state == AL_PAUSED);
+		return (mState == AL_PAUSED);
 	}
 
 	bool Sound::stop()
@@ -337,11 +377,10 @@ namespace OgreAL {
 			return true;
 		}
 
-		State state;    
-		alGetSourcei(mSource, AL_SOURCE_STATE, &state);
-		CheckError(alGetError(), "Failed to get State");
+		// Perform a cached state refresh. No refresh will be done if using cache.
+		updateStateCache();
 
-		return (state == AL_STOPPED);
+		return (mState == AL_STOPPED);
 	}
 
 	bool Sound::isInitial() const
@@ -350,50 +389,113 @@ namespace OgreAL {
 		{
 			return true;
 		}
+		
+		// Perform a cached state refresh. No refresh will be done if using cache.
+		updateStateCache();
 
-		State state;    
-		alGetSourcei(mSource, AL_SOURCE_STATE, &state);
-		CheckError(alGetError(), "Failed to get State");
-
-		return (state == AL_INITIAL);
+		return (mState == AL_INITIAL);
 	}
 
-	bool Sound::fadeIn(Ogre::Real fadeTime)
-	{
-		// Don't interrupt a current fade
-		if(!isPlaying() && mFadeMode == FADE_NONE)
-		{
-		  // Parented source restriction removed. I think what Casey was 
-		  // intending when blocking off this functionality was that, 
-		  // because mono sources attached to nodes are influenced by gain
-		  // drops and raises as a result of distance to the listener, the
-		  // fade-in and fade-out would not necessarily reach the maximum
-		  // gain set on the sound. There are still, however, legitimate
-		  // uses for this regardless.
-			mFadeMode = FADE_IN;
-			mFadeTime = fadeTime;
-			mRunning = 0.0;
-			// Start at min gain..
-			setGain(mMinGain);
-			// ..and play
-			return play();
-		}
-		return false;
-	}
+  bool Sound::isFading() const {
+    return mFadeMode != FADE_NONE;
+  }
 
-	bool Sound::fadeOut(Ogre::Real fadeTime)
-	{
-		// Don't interrupt a current fade
-		if(isPlaying() && mFadeMode == FADE_NONE)
-		{
-		  // Parented source restriction removed. See fadeIn().
-			mFadeMode = FADE_OUT;
-			mFadeTime = fadeTime;
-			mRunning = 0.0;
-			return true;
-		}
-		return false;
-	}
+  bool Sound::fadeIn(Ogre::Real fadeTime) {
+    // If we're playing, then we're going to fade-in from the current gain
+    // value. This means that in order to perform the fade-in, we must also
+    // not already be at the maximum gain. Also, this only makes sense while
+    // we're fading out or not fading at all. I have not thought of a 
+    // semantic where calling a fade-in while fading in is worthwhile.
+    if(isPlaying() &&
+       mGain != mMaxGain &&
+       (mFadeMode == FADE_NONE || mFadeMode == FADE_OUT)) {
+      // Swap fade direction.
+      mFadeMode = FADE_IN;
+      
+      // What we're going to do is use the existing updateFading code by
+      // modifying the fadeTime and running times so that, when the caller
+      // has asked for a fade-in from the current gain to the max gain over
+      // fadeTime, we create such a fadeTime and running time as to already
+      // have arrived at these values.
+      //
+      // A                   B          C
+      // |===================|----------|
+      //
+      // Consider A as our min-gain, B as our current gain and C as our
+      // max-gain. If we are to fade in from B to C over fadeTime, then
+      // this is essentially the same as fadeTime being scaled by the
+      // ratio of AC/BC and running time being placed at B.
+      mFadeTime = ((mMaxGain - mMinGain) / (mMaxGain - mGain)) * fadeTime;
+      mRunning = ((mGain - mMinGain) / (mMaxGain - mMinGain)) * mFadeTime;
+	
+      return true;
+
+    }else{
+      // Not playing. Can safely assume the caller wants the sound faded in 
+      // from minimum gain, rather than bursting it in and going from the
+      // currently applied gain; this was the default behaviour.
+      mFadeMode = FADE_IN;
+      mFadeTime = fadeTime;
+      mRunning = 0.0;
+      // Start at min gain..
+      setGain(mMinGain);
+      // ..and play
+      return play();
+    }
+
+    
+    // A fade-in has been requested either:
+    //
+    //  * When a fade-in is already in progress.
+    //  * When a sound is playing but is already at max-gain.
+    //  * When a fade-out is in progress but we're at max-gain.
+    //
+    return false;
+  }
+
+  bool Sound::fadeOut(Ogre::Real fadeTime) {
+    // The constructs in this fade-out code are extremely similar to that of
+    // the fade-in code. For details about operation, consult the respective
+    // function. The difference with fade outs is it only makes sense to do
+    // one iff:
+    //
+    //  * We're playing the sound.
+    //  * We're not at min-gain already.
+    //  * A fade-out is not already in progress.
+    //
+    if(isPlaying() &&
+       mGain != mMinGain &&
+       (mFadeMode == FADE_NONE || mFadeMode == FADE_IN)) {
+      // Swap fade direction.
+      mFadeMode = FADE_OUT;
+      
+      // Construct fadeTime and running times so that they interpolate nicely
+      // across the supplied time interval. This time we go from B to A.
+      mFadeTime = ((mMaxGain - mMinGain) / (mGain - mMinGain)) * fadeTime;
+      mRunning = ((mMaxGain - mGain) / (mMaxGain - mMinGain)) * mFadeTime;
+	
+      return true;
+
+    }
+
+    // A fade-out was requested while:
+    //
+    //  * The sound is not playing.
+    //  * The sound is already at the minimum gain.
+    //  * A fade-out is already in progress.
+    return false;
+  }
+
+  bool Sound::cancelFade() {
+    // If we have a running fade, turn it off.
+    if(isFading()) {
+      mFadeMode = FADE_NONE;
+      return true;
+    }
+
+    // No fading was occuring.
+    return false;
+  }
 
 	void Sound::setPitch(Ogre::Real pitch)
 	{
@@ -595,6 +697,27 @@ namespace OgreAL {
 		return offset;
 	}
 
+  void Sound::addListener(Listener* listener) {
+    // Attempt to find the listener in the list of listeners.
+    ListenerList::iterator i = std::find(mListeners.begin(), mListeners.end(), listener);
+
+    // Add the listener only if it's not already registered.
+    if(i == mListeners.end()) {
+      mListeners.push_back(listener);
+    }
+  }
+
+  void Sound::removeListener(Listener* listener) {
+    // Attempt to find the listener in the list of listeners.
+    ListenerList::iterator i = std::find(mListeners.begin(), mListeners.end(), listener);
+
+    // If it exists, remove it from the list.
+    if(i != mListeners.end()) {
+      mListeners.erase(i);
+    }
+  }
+
+
 	void Sound::setPosition(Ogre::Real x, Ogre::Real y, Ogre::Real z)
 	{
 		mPosition.x = x;
@@ -684,33 +807,92 @@ namespace OgreAL {
 
 	bool Sound::updateSound()
 	{
-		_update();
+	  _update();
 
-		if(mSource != AL_NONE)
-		{
-			if(isStopped() && !mManualStop && mFinishedCallback)
-			{
-				mFinishedCallback->execute(this);
-			}
-
-			Ogre::Real currOffset = getSecondOffset();
-			if(currOffset < mPreviousOffset && !mManualRestart && mLoopedCallback)
-			{
-				mLoopedCallback->execute(this);
-			}
-			mPreviousOffset = currOffset;
-
-			alSource3f(mSource, AL_POSITION, mDerivedPosition.x, mDerivedPosition.y, mDerivedPosition.z);
-			CheckError(alGetError(), "Failed to set Position");
-
-			alSource3f(mSource, AL_DIRECTION, mDerivedDirection.x, mDerivedDirection.y, mDerivedDirection.z);
-			CheckError(alGetError(), "Failed to set Direction");
-
-			// Fading
-			_updateFading();
+	  if(mSource != AL_NONE)
+	    {
+	      // If the sound isn't playing, but we have a source and the sound has
+	      // ended naturally (was not stopped by a call to stop()).
+	      if(isStopped() && !mManualStop) {
+		// If we have a callback, notify the callback of the sound's halt.
+		if(mFinishedCallback) {
+		  mFinishedCallback->execute(this);
 		}
 
+		// We have ended. Release the source for reuse.
+		mSource = SoundManager::getSingleton()._releaseSource(this);
+
+		// To prevent constant re-firing of this event due to
+		// the per-frame update nature of the Sound, we flip the
+		// manual-stop flag. This flag is only used for callback
+		// purposes.
+		mManualStop = true;
+
+		// The rest of the code concerns fades, which we don't need to 
+		// process since we're stopped and now have no source to play from.
 		return true;
+	      }
+
+	      // Get the current offset.
+	      Ogre::Real currOffset = getSecondOffset();
+	      // If we have looped around, because our current offset is less than
+	      // our previous, then we call the callback if we have one.
+	      if(isLooping() && currOffset < mPreviousOffset && !mManualRestart && mLoopedCallback) {
+		mLoopedCallback->execute(this);
+	      }
+			
+	      // Go through all listeners.
+	      for(ListenerList::iterator i = mListeners.begin(); i != mListeners.end(); ++i) {
+		// Go through all registered offsets.
+		for(Listener::OffsetList::iterator j = (*i)->offsets.begin(); j != (*i)->offsets.end(); ++j) {
+		  // Grab the requested offset.
+		  Ogre::Real reqOffset = *j;
+
+		  // Here's a bit of a hairy one. If the current offset is greater than
+		  // our previous offset, then we have simply advanced in the file normally.
+		  if(currOffset >= mPreviousOffset) {
+		    if(reqOffset > mPreviousOffset && reqOffset <= currOffset) {
+		      // Good to go. Notify the listener that we have reached or passed the
+		      // offset.
+		      (*i)->soundAtOffset(this, reqOffset, currOffset);
+		    }
+				
+		    // Otherwise our current offset is less than the previous, in which
+		    // case we probably looped. Whatever the cause, we notify listeners
+		    // at or beyond the previous offset up until the duration, and from
+		    // the zero offset to the current; A and B in the diagram.
+		    //
+		    //   _____________________
+		    //  |                     |
+		    // |---->..............----|
+		    // AAAAAA              BBBBB
+		    //
+		  }else{
+		    if((reqOffset >= 0.0 && reqOffset <= currOffset) || // A
+		       (reqOffset > mPreviousOffset && reqOffset <= getSecondDuration())) { // B
+		      // We looped around. The logic of figuring our that we've looped
+		      // is up to the listener.
+		      (*i)->soundAtOffset(this, reqOffset, currOffset);
+		    }
+		  }
+			    
+		}
+	      }
+
+	      // Done with these comparisons. Last offset becomes current for next frame.
+	      mPreviousOffset = currOffset;
+
+	      alSource3f(mSource, AL_POSITION, mDerivedPosition.x, mDerivedPosition.y, mDerivedPosition.z);
+	      CheckError(alGetError(), "Failed to set Position");
+
+	      alSource3f(mSource, AL_DIRECTION, mDerivedDirection.x, mDerivedDirection.y, mDerivedDirection.z);
+	      CheckError(alGetError(), "Failed to set Direction");
+
+	      // Fading
+	      _updateFading();
+	    }
+
+	  return true;
 	}
 
 	void Sound::initSource()
@@ -742,11 +924,18 @@ namespace OgreAL {
 
 	void Sound::generateBuffers()
 	{
-		mBuffers = new BufferRef[mNumBuffers];
-		alGenBuffers(mNumBuffers, mBuffers);
-		CheckError(alGetError(), "Could not generate buffer");
+	  // Create the buffers.
+	  mBuffers = new BufferRef[mNumBuffers];
+	  alGenBuffers(mNumBuffers, mBuffers);
+	  CheckError(alGetError(), "Could not generate buffer");
 
-		if(SoundManager::getSingleton().xRamSupport())
+	  // If we are not streaming.
+	  if(!mStream) {
+	    // Notify the sound manager of our use of this buffer so that it can be shared.
+	    SoundManager::getSingleton()._addBufferRef(mFileName, mBuffers[0]);
+	  }
+	  
+	  if(SoundManager::getSingleton().xRamSupport())
 		{
 			SoundManager::getSingleton().eaxSetBufferMode(mNumBuffers, mBuffers, SoundManager::xRamHardware);
 		}
@@ -840,7 +1029,7 @@ namespace OgreAL {
 	void Sound::unqueueBuffers()
 	{
 		/*
-		** If the sound doens't have a state yet it causes an
+		** If the sound doesn't have a state yet it causes an
 		** error when you try to unqueue the buffers! :S  In 
 		** order to get around this we stop the source even if
 		** it wasn't playing.
@@ -858,6 +1047,24 @@ namespace OgreAL {
 		
 		mBuffersQueued = false;
 	}
+
+  bool Sound::isStateCached() const {
+    return mStateCached;
+  }
+
+  void Sound::setStateCached(bool stateCached) {
+    mStateCached = stateCached;
+  }
+
+  void Sound::updateStateCache() const {
+    // If we are not to use the cached state, in other words, if the cached state is
+    // free to be used, modified and updated.
+    if(!mStateCached) {
+      // Perform a state cache update.
+      alGetSourcei(mSource, AL_SOURCE_STATE, &mState);
+      CheckError(alGetError(), "Failed to get State");
+    }
+  }
 
 	const Ogre::String& Sound::getMovableType(void) const
 	{
@@ -892,98 +1099,139 @@ namespace OgreAL {
 		_update();
 	}
 
-	//-----------------OgreAL::SoundFactory-----------------//
+  //-----------------OgreAL::SoundFactory-----------------//
 
-	Ogre::String SoundFactory::FACTORY_TYPE_NAME = "OgreAL_Sound";
+  SoundFactory::BufferInfo::BufferInfo() : reference(AL_NONE),
+					   refCount(0u) {
 
-	SoundFactory::SoundFactory()
-	{}
+  }
 
-	SoundFactory::~SoundFactory()
-	{
-		BufferMap::iterator bufferItr = mBufferMap.begin();
-		while(bufferItr != mBufferMap.end())
-		{
-			alDeleteBuffers(1, &bufferItr->second);
-			bufferItr++;
-		}
+  SoundFactory::BufferInfo::BufferInfo(BufferRef reference, unsigned int refCount) : reference(reference),
+										     refCount(refCount) {
+    
+  }
 
-		mBufferMap.clear();
-	}
+  SoundFactory::BufferInfo::BufferInfo(const BufferInfo& bufferInfo) : reference(bufferInfo.reference),
+								       refCount(bufferInfo.refCount) {
 
-	const Ogre::String& SoundFactory::getType(void) const
-	{
-		return FACTORY_TYPE_NAME;
-	}
+  }
 
-	Ogre::MovableObject* SoundFactory::createInstanceImpl(const Ogre::String& name, 
-				const Ogre::NameValuePairList* params)
-	{
-		Ogre::String fileName = params->find(SoundManager::SOUND_FILE)->second;
-		bool loop = Ogre::StringConverter::parseBool(params->find(SoundManager::LOOP_STATE)->second);
-		bool stream = Ogre::StringConverter::parseBool(params->find(SoundManager::STREAM)->second);
+  // Default sound factory name for ogre registration and by-name factory retrieval.
+  Ogre::String SoundFactory::FACTORY_TYPE_NAME = "OgreAL_Sound";
+
+  SoundFactory::SoundFactory() {
+
+  }
+
+  SoundFactory::~SoundFactory()
+  {
+    BufferMap::iterator bufferItr = mBufferMap.begin();
+    while(bufferItr != mBufferMap.end()) {
+      alDeleteBuffers(1, &bufferItr->second.reference);
+      ++bufferItr;
+    }
+
+    mBufferMap.clear();
+  }
+
+  const Ogre::String& SoundFactory::getType(void) const
+  {
+    return FACTORY_TYPE_NAME;
+  }
+
+  Ogre::MovableObject* SoundFactory::createInstanceImpl(const Ogre::String& name, 
+							const Ogre::NameValuePairList* params) {
+    // Get the file name of the requested sound file to be sourced.
+    Ogre::String fileName = params->find(SoundManager::SOUND_FILE)->second;
+    // Loop flag.
+    bool loop = Ogre::StringConverter::parseBool(params->find(SoundManager::LOOP_STATE)->second);
+    // Are we streaming or loading the whole thing?
+    bool stream = Ogre::StringConverter::parseBool(params->find(SoundManager::STREAM)->second);
 		
-		// Check to see if we can just piggy back another buffer
-		if(!stream)
-		{
-			BufferMap::iterator bufferItr = mBufferMap.find(fileName);
-			if(bufferItr != mBufferMap.end())
-			{
-				// We have this buffer loaded already!
-				return new Sound((BufferRef)bufferItr->second, name, fileName, loop);
-			}
-		}
+    // Check to see if we can just piggy back another buffer.
+    if(!stream) {
+      // Attempt to find the buffer by name.
+      BufferMap::iterator bufferItr = mBufferMap.find(fileName);
+      // If we have found the buffer.
+      if(bufferItr != mBufferMap.end()) {
+	// We have this buffer loaded already!
+	return new Sound((BufferRef)bufferItr->second.reference, name, fileName, loop);
+      }
+    }
 
-		Ogre::ResourceGroupManager *groupManager = Ogre::ResourceGroupManager::getSingletonPtr();
-		Ogre::String group = groupManager->findGroupContainingResource(fileName);
-		Ogre::DataStreamPtr soundData = groupManager->openResource(fileName, group);
+    // By this stage we are either streaming and need to load a new copy of the file or
+    // we are not streaming but do not have the buffer. Open the file.
+    Ogre::ResourceGroupManager *groupManager = Ogre::ResourceGroupManager::getSingletonPtr();
+    Ogre::String group = groupManager->findGroupContainingResource(fileName);
+    Ogre::DataStreamPtr soundData = groupManager->openResource(fileName, group);
 
-		Sound *sound;
-		if(fileName.find(".ogg") != std::string::npos || fileName.find(".OGG") != std::string::npos)
-		{
-			sound = new OggSound(name, soundData, loop, stream);			
-		}
-		else if(fileName.find(".wav") != std::string::npos || fileName.find(".WAV") != std::string::npos)
-		{
-			sound = new WavSound(name, soundData, loop, stream);
-		}
-		else
-		{
-			throw Ogre::Exception(Ogre::Exception::ERR_INVALIDPARAMS,
-				"Sound file '" + fileName + "' is of an unsupported file type, ",
-				"OgreAL::SoundManager::_createSound");
-		}
+    // If we identify the file as an OGG sound, create an OGG instance.
+    if(fileName.find(".ogg") != std::string::npos || fileName.find(".OGG") != std::string::npos) {
+      return new OggSound(name, soundData, loop, stream);
 
-		if(!stream)
-		{
-			// Save the reference to this buffer so we can point to it again later
-			mBufferMap[fileName] = sound->getBufferRef();
-		}
-		return sound;
-	}
+    // If we identify the file as a wave file. , create a WAV instance.
+    }else if(fileName.find(".wav") != std::string::npos || fileName.find(".WAV") != std::string::npos) {
+      return new WavSound(name, soundData, loop, stream);
 
-	void SoundFactory::destroyInstance(Ogre::MovableObject* obj)
-	{
-		delete obj;
-	}
+      // Unknown file type.
+    }else{
+      throw Ogre::Exception(Ogre::Exception::ERR_INVALIDPARAMS,
+			    "Sound file '" + fileName + "' is of an unsupported file type, ",
+			    "OgreAL::SoundManager::_createSound");
+    }
+  }
 
-	void SoundFactory::_removeBufferRef(const Ogre::String& bufferName)
-	{
-		BufferMap::iterator bufferItr = mBufferMap.find(bufferName);
-		if(bufferItr != mBufferMap.end())
-		{
-			mBufferMap.erase(bufferItr);
-		}
-	}
+  void SoundFactory::destroyInstance(Ogre::MovableObject* obj) {
+    delete obj;
+  }
 
-	void SoundFactory::_addBufferRef(const Ogre::String& bufferName, BufferRef buffer)
-	{
-		BufferMap::const_iterator bufferItr = mBufferMap.find(bufferName);
-		CheckCondition(bufferItr != mBufferMap.end(), 13, "Buffer named " + bufferName + " already exists!");
+  void SoundFactory::_removeBufferRef(const Ogre::String& bufferName) {
+    // Attempt to find the buffer requested.
+    BufferMap::iterator bufferItr = mBufferMap.find(bufferName);
+    // If the buffer information exists in our map.
+    if(bufferItr != mBufferMap.end()) {
+      // The reference count is unsigned, we have to take care not to flip it.
+      if(bufferItr->second.refCount > 0) {
+	// Above zero. Buffer unused, decrement count.
+	bufferItr->second.refCount--;
+      }else{
+	// That's not good! Reference count zero and we got a decrement =/.
+	Ogre::LogManager::getSingleton().logMessage("OgreAL: Internal Error: Reference count decrement on zero buffer.");
+      }
+      
+      // If our reference count is zero, delete the buffer.
+      if(bufferItr->second.refCount == 0u) {
+	// First delete it OpenAL style.
+	alDeleteBuffers(1, &(bufferItr->second.reference));
+	CheckError(alGetError(), "Failed to delete non-stream buffer with zero reference count.");
+	// Then delete it out of our container.
+	mBufferMap.erase(bufferItr);
+      }
 
-		CheckCondition(alIsBuffer(buffer) == AL_TRUE, 13, "Not a valid BufferRef");
-		CheckError(alGetError(), "Failed to check buffer");
+      // Oh ohes! Someone requested a buffer refcount removal without an entry.
+    }else{
+      Ogre::LogManager::getSingleton().logMessage("OgreAL: Internal Error: Reference count decrement on non-existent buffer.");
+    }
+  }
 
-		mBufferMap[bufferName] = buffer;
-	}
+  void SoundFactory::_addBufferRef(const Ogre::String& bufferName, BufferRef buffer)
+  {
+    // Attempt to find the buffer.
+    BufferMap::iterator bufferItr = mBufferMap.find(bufferName);
+    // If we have found the buffer.
+    if(bufferItr != mBufferMap.end()) {
+      // Then the reference in that buffer should be the same as that supplied!
+      if(bufferItr->second.reference != buffer) {
+	// Sweet jesus, something is horribly wrong.
+	Ogre::LogManager::getSingleton().logMessage("OgreAL: Internal Error: Reference mismatch in reference count incrementation.");
+      }
+      
+      // Cool, increment reference count.
+      bufferItr->second.refCount++;
+
+    }else{
+      // No buffer reference by that name. Add it with an initial count of 1.
+      mBufferMap[bufferName] = BufferInfo(buffer, 1u);
+    }
+  }
 } // Namespace

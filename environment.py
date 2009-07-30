@@ -1179,7 +1179,7 @@ class betagui(pymodule):
     ModuleName="betagui"
 
 class ogreforests(pymodule):
-    version="r2676"
+    version="r2719"
     name='ogreforests'
     parent="ogre/addons"
     cflags=""
@@ -1372,7 +1372,7 @@ class physx(pymodule):
     ModuleName="PhysX"
 
 class ogreal(pymodule):
-    version="r118"
+    version="r130"
     cflags = ''
 
     parent = "ogre/sound"

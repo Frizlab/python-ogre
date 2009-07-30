@@ -62,8 +62,9 @@ def ManualExclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns    
-    excludes=['::Ogre::PCZCamera',
-            '::Ogre::PCZSceneManagerFactory'
+    excludes=[ # '::Ogre::PCZCamera',
+            '::Ogre::PCZSceneManagerFactory',
+            '::Ogre::PCZone::PortalSortDistance'
             ]
     for e in excludes:
         main_ns.class_(e).exclude()
@@ -72,17 +73,24 @@ def ManualExclude ( mb ):
     excludes=['::Ogre::PCZSceneManagerFactory::initMetaData',
               '::Ogre::PCZSceneManagerFactory::createInstance',
               '::Ogre::PCZSceneManagerFactory::destroyInstance',
-              '::Ogre::Portal::setCorners'  # hand wrapped..
+              '::Ogre::Portal::setCorners',  # hand wrapped..
+              '::Ogre::PCZCamera::isVisibile'
               ]
     for e in excludes:
-        main_ns.member_functions(e).exclude()
-        print "Excluded Member Function(s):", e
+        try:
+            main_ns.member_functions(e).exclude()
+            print "Excluded Member Function(s):", e
+        except:
+            print "Failed to exclude:", e
         
     excludes=['::Ogre::PCZSceneManagerFactory::FACTORY_TYPE_NAME'
                ]
     for e in excludes:
-        main_ns.variable(e).exclude()
-        print "Excluded Variable:", e
+        try:
+            main_ns.variable(e).exclude()
+            print "Excluded Variable:", e
+        except:
+            print "Failed to exclude:", e
 
 #     std_ns = global_ns.namespace('std')
 #     for c in std_ns.classes():
@@ -110,28 +118,48 @@ def ManualInclude ( mb ):
 #                 '::Ogre::PCZone::NODE_LIST_TYPE'
             ]                 
     for i in includes:
-        main_ns.enum(i).include()  
+        try:
+            main_ns.enum(i).include()  
+        except:
+            pass
     for c in main_ns.classes():
         if "Singleton" in c.decl_string:
             print c, c.name, c.decl_string                  
     includes = ['::Ogre::Singleton<Ogre::PCZoneFactoryManager>',
                 'Ogre::Singleton<Ogre::PCZoneFactoryManager>',
                 '::Ogre::Singleton<::Ogre::PCZoneFactoryManager>',
-                'Singleton<PCZoneFactoryManager>'
+                'Singleton<PCZoneFactoryManager>',
+                '::Ogre::AntiPortal',
+                '::Ogre::PCZCamera',
+                '::Ogre::ZoneData',
+                #'::Ogre::Capsule',  # these aren't exposed in the dll
+                #'::Ogre::Segment',
+                '::Ogre::MapIterator<std::map<std::string, Ogre::PCZone*, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::PCZone*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > >',
+                '::Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::PCZoneFactory*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, Ogre::STLAllocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::PCZoneFactory*>, Ogre::CategorisedAllocPolicy<MEMCATEGORY_GENERAL> > > >',
+                '::std::map<std::string, Ogre::PCZone*, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::PCZone*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >'
+                
                 ]  
     for i in includes:
         try:
             main_ns.class_(i).include()
             print "Forced Include:", i
         except:
-            pass
+            print "Failed to Include:", i
                         
+    main_ns.class_('map<std::string, Ogre::PCZone*, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::PCZone*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >').alias = "stdMapPCZone1"                            
+    main_ns.class_('map<std::string, Ogre::PCZone*, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::PCZone*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >').include()
     main_ns.class_('RaySceneQuery').include(already_exposed=True)            
     main_ns.class_('DefaultRaySceneQuery').include(already_exposed=True)  
     main_ns.class_('SceneQuery').include(already_exposed=True)  
     main_ns.class_('RaySceneQueryListener').include(already_exposed=True)  
 
-    
+    # for c in global_ns.classes():
+        # if "_" in c.alias: # only care about classes we are include with ugly alaises
+            # print "ALIAS:", c, c.alias, c.ignore
+
+    c = global_ns.class_('::std::map<std::string, Ogre::PCZone*, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::PCZone*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >')
+    c.alias="stdMapOgrePCZone"
+    c.wrapper_alias="Wrapper_stdMapOgrePCZone"
     
 ############################################################
 ##
@@ -167,6 +195,29 @@ def ManualFixes ( mb ):
         noncopy = noncopy + ['PCZSceneManager' ]
     for c in noncopy:
         main_ns.class_(c).noncopyable = True
+        
+
+
+    for c in global_ns.member_functions():
+        #
+        # This code is redundent if a patch is applied to OGRE
+        #
+        for f in c.arguments:
+            if "<MEMCATEGORY_GENERAL>" in f.type.decl_string:
+                print "MEMFIX:",f.type
+                try:
+                    f.type.declaration.name = f.type.declaration.name.replace("<MEMCATEGORY_GENERAL>","<Ogre::MEMCATEGORY_GENERAL>")
+                except AttributeError:
+                     try:
+                         f.type.base.declaration.name = f.type.base.declaration.name.replace("<MEMCATEGORY_GENERAL>","<Ogre::MEMCATEGORY_GENERAL>")
+                     except AttributeError:
+                         f.type.base.base.declaration.name = f.type.base.base.declaration.name.replace("<MEMCATEGORY_GENERAL>","<Ogre::MEMCATEGORY_GENERAL>")
+                except:
+                     print "FAILED!!!", f, f.type
+                     print type(f), type(f.type)
+            if f.default_value and "<MEMCATEGORY_GENERAL>" in f.default_value:
+                f.default_value = f.default_value.replace("<MEMCATEGORY_GENERAL>", "<Ogre::MEMCATEGORY_GENERAL>")
+                        # print "PROBLEM", f, type(f.type), dir(f.type)        
                
 ############################################################
 ##
@@ -258,30 +309,30 @@ def Fix_NT ( mb ):
 # the 'main'function
 #            
 def generate_code():  
-#     messages.disable( 
-# #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-#           messages.W1020
-#         , messages.W1021
-#         , messages.W1022
-#         , messages.W1023
-#         , messages.W1024
-#         , messages.W1025
-#         , messages.W1026
-#         , messages.W1027
-#         , messages.W1028
-#         , messages.W1029
-#         , messages.W1030
-#         , messages.W1031
-#         , messages.W1035
-#         , messages.W1040 
-#         , messages.W1038        
-#         , messages.W1041
+    messages.disable( 
+#           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+           messages.W1020
+         , messages.W1021
+         , messages.W1022
+         , messages.W1023
+         , messages.W1024
+         , messages.W1025
+         , messages.W1026
+         , messages.W1027
+         , messages.W1028
+         , messages.W1029
+         , messages.W1030
+         , messages.W1031
+         , messages.W1035
+         , messages.W1040 
+         , messages.W1038        
+         , messages.W1041
 #         , messages.W1036 # pointer to Python immutable member
 #         , messages.W1033 # unnamed variables
 #         , messages.W1018 # expose unnamed classes
 #         , messages.W1049 # returns reference to local variable
 #         , messages.W1014 # unsupported '=' operator
-#          )
+          )
     #
     # Use GCCXML to create the controlling XML file.
     # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded
@@ -345,9 +396,9 @@ def generate_code():
         print "Including ", c            
     
     common_utils.AutoExclude ( mb, MAIN_NAMESPACE )
+    ManualInclude ( mb )
     ManualExclude ( mb )
     common_utils.AutoInclude ( mb, MAIN_NAMESPACE )
-    ManualInclude ( mb )
     # here we fixup functions that expect to modifiy their 'passed' variables    
     ManualTransformations ( mb )
     AutoFixes ( mb, MAIN_NAMESPACE )
@@ -394,7 +445,23 @@ def generate_code():
 #     common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_ogrepcz, 
 #                             destPath = environment.ogrepcz.generated_dir, 
 #                             recursive=False )
-        
+    if environment.ogre.version.startswith("1.7"):
+        ## have a code generation issue that needs resolving...
+        filesToFix=['PCZoneFactoryManager.pypp.cpp']
+        for filename in filesToFix:
+            fname = os.path.join( environment.ogrepcz.generated_dir, filename)
+            try:
+                f = open(fname, 'r')
+                buf = f.read()
+                f.close()
+                buf = buf.replace ( " MEMCATEGORY_GENERAL", " Ogre::MEMCATEGORY_GENERAL")
+                buf = buf.replace ( "<MEMCATEGORY_GENERAL", "<Ogre::MEMCATEGORY_GENERAL")
+                f = open ( fname, 'w+')
+                f.write ( buf )
+                f.close()
+                print "UGLY FIX OK:", fname
+            except:
+                print "ERROR: Unable to fix:", fname        
 if __name__ == '__main__':
     start_time = time.clock()
     generate_code()

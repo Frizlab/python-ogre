@@ -78,6 +78,7 @@ namespace OgreAL {
 	};
 
 	typedef std::map<Ogre::String, Sound*> SoundMap;
+	typedef std::map<Sound*, Ogre::Real> SoundGainMap;
 	typedef std::vector<Sound*> SoundList;
 	typedef std::map<AudioFormat, FormatData*> FormatMap;
 	typedef Ogre::MapIterator<FormatMap> FormatMapIterator;
@@ -99,7 +100,7 @@ namespace OgreAL {
 		 * @param deviceName An optional parameter that allows the user to suggest which device to use.
 		 *		The list of valid devices can be obtained by calling SoundManager::getDeviceList()
 		 */
-		SoundManager(const Ogre::String& deviceName = "");
+	        SoundManager(const Ogre::String& deviceName = "", int maxNumSources = 100);
 		/** Standard Destructor. */
 		virtual ~SoundManager();
 		/** Returns the SoundManager singleton object */
@@ -152,6 +153,35 @@ namespace OgreAL {
 		void setSpeedOfSound(Ogre::Real speedOfSound);
 		/** Returns the speed of sound */
 		Ogre::Real getSpeedOfSound() const {return mSpeedOfSound;}
+
+		/**
+		   \brief Get the sound culling distance.
+		   
+		   \return The sound culling distance. Values greater than 0 indicate that
+		   sound culling is enabled. Values at or lower than 0 indicate culling is
+		   disabled.
+		*/
+		Ogre::Real getCullDistance() const;
+		
+		/**
+		   \brief Enable or disable sound culling.
+		   
+		   This function enables or disables sound culling. Sound culling is the
+		   cutting of gain after a certain distance. After the specified distance
+		   between the listener and the given sound source, a sound's gain will be 
+		   stored and set to zero. This will render the sound as still playing in 
+		   the background, but inaudible. Given the listener return so as to be in
+		   range of the sound (within the cull distance), the stored gain of the 
+		   sound will be restored.
+		   
+		   \param distance The distance between the listener and and sound within
+		   the system after which to cull sounds. Set this to any positive value
+		   to enable culling. Set it to zero or any negative value to disable 
+		   the feature.
+		*/
+		void setCullDistance(Ogre::Real distance);
+		
+
 		/** 
 		 * Returns a list of all posible sound devices on the system.
 		 * @note Versions of OpenAL prior to 1.0 do not support this feature
@@ -217,6 +247,8 @@ namespace OgreAL {
 
 		Ogre::Real mDopplerFactor;
 		Ogre::Real mSpeedOfSound;
+		// Sound culling distance.
+		Ogre::Real mCullDistance;
 
 	private:
 		int createSourcePool();
@@ -225,6 +257,13 @@ namespace OgreAL {
 		void checkFeatureSupport();
 		void updateSounds();
 		void updateSourceAllocations();
+		void performDeleteQueueCycle();
+
+		// Sound culling
+		void performSoundCull(Sound* sound);
+		void cullSound(Sound* sound);
+		void uncullSound(Sound* sound);
+		void uncullSound(SoundGainMap::iterator& soundItr);
 
 		struct UpdateSound;
 		struct SortLowToHigh;
@@ -237,6 +276,8 @@ namespace OgreAL {
 		int mMinorVersion;
 
 		SoundMap mSoundMap;
+		// Sound culling map. Maps Sound* to stored Gain.
+		SoundGainMap mSoundGainMap;
 		SoundList mPauseResumeAll;
 		SoundList mSoundsToDestroy;
 
