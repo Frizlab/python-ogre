@@ -177,8 +177,11 @@ def find_nonconst ( mb ):
         for arg in fun.arguments:
             if 'Ptr' in arg.type.decl_string:
                  if not 'const' in arg.type.decl_string and '&' in arg.type.decl_string:
-                    print "Fixing Const", fun.parent.name,"::", fun.name, "::", arg_position
-                    fun.add_transformation( ft.modify_type(arg_position,declarations.remove_reference ) )
+                    try:
+                        fun.add_transformation( ft.modify_type(arg_position,declarations.remove_reference ) )
+                        print "Fixing Const", fun.parent.name,"::", fun.name, "::", arg_position
+                    except:
+                        print "Unable to fix const", fun.parent.name,"::", fun.name, "::", arg_position
             arg_position +=1                
                 
                                                
