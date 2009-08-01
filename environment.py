@@ -1899,6 +1899,84 @@ class plsm2(pymodule):
     ModuleName="plsm2"
     descText = "Paging Landscape SceneManager"
 
+class ogreoctreesm(pymodule):
+    version=ogre.version
+    active=False
+    name='ogreoctreesm'
+    parent="ogre/renderer"
+    include_dirs = [
+        boost.PATH,
+        Config.PATH_INCLUDE_Ogre,
+        Config.PATH_INCLUDE_ogreoctreesm
+    ]
+    lib_dirs = [
+        boost.PATH_LIB,
+        Config.PATH_LIB_Ogre_OgreMain,
+    ]
+    CheckIncludes = []
+    libs = [boost.lib, 'Plugin_OctreeSceneManager', 'OgreMain' ]
+    ModuleName="ogreoctreesm"
+    descText = "Octree Zone Namangement - Expose all functions in OctreeZone incase required"
+    
+class ogreoctreezone(pymodule):
+    version=ogre.version
+    active=False
+    name='ogreoctreezone'
+    parent="ogre/renderer"
+    include_dirs = [
+        boost.PATH,
+        Config.PATH_INCLUDE_Ogre,
+        Config.PATH_INCLUDE_ogreoctreezone
+    ]
+    lib_dirs = [
+        boost.PATH_LIB,
+        Config.PATH_LIB_Ogre_OgreMain,
+    ]
+    CheckIncludes = []
+    libs = [boost.lib, 'Plugin_OctreeZone', 'OgreMain' ]
+    ModuleName="ogreoctreezone"
+    descText = "Octree Zone Management - Expose all functions in OctreeZone incase required"
+    
+if ogre.version.startswith ("1.7"):    
+    class ogreterrain(pymodule):
+        version=ogre.version
+        active=False
+        name='ogreterrain'
+        parent="ogre/renderer"
+        include_dirs = [
+            boost.PATH,
+            Config.PATH_INCLUDE_Ogre,
+            Config.PATH_INCLUDE_ogreterrain,
+            Config.PATH_INCLUDE_ogrepaging
+        ]
+        lib_dirs = [
+            boost.PATH_LIB,
+            Config.PATH_LIB_Ogre_OgreMain,
+        ]
+        CheckIncludes = []
+        libs = [boost.lib, 'OgreTerrain', 'OgrePaging','OgreMain' ]
+        ModuleName="ogreterrain"
+        descText = "OgreTerrain: New Terrain Manager in Ogre"
+
+    class ogrepaging(pymodule):
+        version=ogre.version
+        active=False
+        name='ogrepaging'
+        parent="ogre/renderer"
+        include_dirs = [
+            boost.PATH,
+            Config.PATH_INCLUDE_Ogre,
+            Config.PATH_INCLUDE_ogrepaging
+        ]
+        lib_dirs = [
+            boost.PATH_LIB,
+            Config.PATH_LIB_Ogre_OgreMain,
+        ]
+        CheckIncludes = []
+        libs = [boost.lib, 'OgrePaging', 'OgreMain' ]
+        ModuleName="ogrepaging"
+        descText = "OgreTerrain: New Terrain Manager in Ogre"
+    
 ############################################################################################
 
 ## Here is the master list....
@@ -1945,6 +2023,10 @@ projects = {
     'raknet' : raknet,
     'doctester' : doctester,
     'plsm2' : plsm2,
+    'ogreoctreezone' : ogreoctreezone,
+    'ogreoctreesm' : ogreoctreesm,
+    'ogrepaging' : ogrepaging,
+    'ogreterrain' : ogreterrain,
 }
 
 #

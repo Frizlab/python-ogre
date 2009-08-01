@@ -11,7 +11,10 @@ set package_2.6=..\packages_2.6\ogre
 
 
 set ogre=%root%\ogre\samples\common\bin\release
+set ogre=%root%\ogre\bin\release
+
 set ogretools=%root%\ogre\tools\common\bin\release
+set ogretools=%root%\ogre\bin\release
 
 set cegui=%root%\cegui-0.6.2\bin
 

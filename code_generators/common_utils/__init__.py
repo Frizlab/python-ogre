@@ -489,7 +489,8 @@ def Fix_Void_Ptr_Args ( mb, pointee_types=['unsigned int','int', 'float', 'unsig
         fixPointerTypes ( fun, pointee_types, [], Exclude=True )
    
                     
-def Fix_Pointer_Returns ( mb, pointee_types=['unsigned int','int', 'float','char','unsigned char', 'bool'], known_names=[] ):
+def Fix_Pointer_Returns ( mb, pointee_types=['unsigned int','int', 'float','char','unsigned char',
+                            'bool', '::Ogre::uint8', '::Ogre::uint16', '::Ogre::uint32' ], known_names=[]):
     """ Change out functions that return a variety of pointer to base types and instead
     have them return the address the pointer is pointing to (the pointer value)
     This allow us to use CTypes to handle in memory buffers from Python
@@ -498,6 +499,7 @@ def Fix_Pointer_Returns ( mb, pointee_types=['unsigned int','int', 'float','char
     """
     for fun in mb.member_functions( allow_empty = True ):
         if declarations.is_pointer (fun.return_type) and not fun.documentation:
+#            print "Checking", fun, fun.return_type.decl_string
             for i in pointee_types:
                 if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
                     if not fun.name in known_names:

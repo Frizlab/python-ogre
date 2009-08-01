@@ -74,7 +74,11 @@ PACKAGEDATA = {
                         'ogre.gui.hikari','ogre.gui.mygui','ogre.gui.canvas',
                         'ogre.addons.ogrevideoffmpeg',
                         'ogre.renderer.plsm2',
-                        'ogre.addons.raknet' ],
+                        'ogre.addons.raknet',
+                        'ogre.renderer.ogreoctreesm',
+                        'ogre.renderer.ogrepaging',
+                        'ogre.renderer.ogreterrain'],
+                        
        "package_dir": {'': 'packages_'+ PythonVersionString },
        "package_data": {'': ['*.pyd', '*.dll', '*.so', '*.dylib']}
 

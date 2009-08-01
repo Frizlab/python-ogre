@@ -92,8 +92,11 @@ PATH_Theora=        os.path.join(BASE_DIR,'ogrevideo','TheoraVideoPlugin')
 PATH_ffmpeg=        os.path.join(PATH_THIRDPARTY,'extra')
 PATH_navi =         os.path.join(BASE_DIR, 'navi', 'navi')
 
+PATH_plugins = os.path.join(PATH_Ogre, 'PlugIns')
+
 PATH_particleuniverse = os.path.join(PATH_Ogre, 'PlugIns', 'ParticleUniverse' )
 PATH_ogrepcz = os.path.join(PATH_Ogre, 'PlugIns', 'PCZSceneManager' )
+
 
 PATH_hydrax = os.path.join(PATH_THIRDPARTY, 'Hydrax')
 
@@ -160,7 +163,10 @@ if SDK:
     PATH_LIB_pcz =                os.path.join( PATH_Ogre, 'lib','opt' )
     
 
-    
+PATH_INCLUDE_ogrepaging =   os.path.join(PATH_Ogre,'Components','Paging', 'include')
+PATH_INCLUDE_ogreterrain =   os.path.join(PATH_Ogre,'Components','Terrain', 'include')
+PATH_INCLUDE_ogreoctreezone = os.path.join(PATH_Ogre,'Plugins', 'OctreeZone', 'include' )
+PATH_INCLUDE_ogreoctreesm = os.path.join(PATH_Ogre,'Plugins', 'OctreeSceneManager', 'include' )
     
     
 PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include') 
