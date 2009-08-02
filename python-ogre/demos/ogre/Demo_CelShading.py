@@ -41,28 +41,31 @@ class CelShadingApplication(sf.Application):
 
         # eyes
         sub = entity.getSubEntity(0)
-        sub.materialName = 'Examples/CelShading'
+        print sub
+        print type(sub)
+        print dir(sub)
+        sub.setMaterialName ('Examples/CelShading')
         sub.setCustomParameter(CUSTOM_SHININESS, (35.0, 0.0, 0.0, 0.0))
         sub.setCustomParameter(CUSTOM_DIFFUSE, (1.0, 0.3, 0.3, 1.0))
         sub.setCustomParameter(CUSTOM_SPECULAR, (1.0, 0.6, 0.6, 1.0))
 
         # skin
         sub = entity.getSubEntity(1)
-        sub.materialName = 'Examples/CelShading'
+        sub.setMaterialName ('Examples/CelShading')
         sub.setCustomParameter(CUSTOM_SHININESS, (10.0, 0.0, 0.0, 0.0))
         sub.setCustomParameter(CUSTOM_DIFFUSE, (0.0, 0.5, 0.0, 1.0))
         sub.setCustomParameter(CUSTOM_SPECULAR, (0.3, 0.5, 0.3, 1.0))
 
         # earring
         sub = entity.getSubEntity(2)
-        sub.materialName = 'Examples/CelShading'
+        sub.setMaterialName ('Examples/CelShading')
         sub.setCustomParameter(CUSTOM_SHININESS, (25.0, 0.0, 0.0, 0.0))
         sub.setCustomParameter(CUSTOM_DIFFUSE, (1.0, 1.0, 0.0, 1.0))
         sub.setCustomParameter(CUSTOM_SPECULAR, (1.0, 1.0, 0.7, 1.0))
 
         # teeth
         sub = entity.getSubEntity(3)
-        sub.materialName = 'Examples/CelShading'
+        sub.setMaterialName ('Examples/CelShading')
         sub.setCustomParameter(CUSTOM_SHININESS, (20.0, 0.0, 0.0, 0.0))
         sub.setCustomParameter(CUSTOM_DIFFUSE, (1.0, 1.0, 0.7, 1.0))
         sub.setCustomParameter(CUSTOM_SPECULAR, (1.0, 1.0, 1.0, 1.0))

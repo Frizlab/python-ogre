@@ -43,8 +43,13 @@ template< typename MapIterator >
 
 struct generator_maker_map{
         
-    typedef BOOST_DEDUCED_TYPENAME MapIterator::MappedType mapped_type;
-
+    #if (OGRE_VERSION_MINOR < 7) 
+        typedef BOOST_DEDUCED_TYPENAME MapIterator::MappedType mapped_type;
+    #else
+        typedef BOOST_DEDUCED_TYPENAME MapIterator::ValueType mapped_type;
+    #endif
+    
+    
     static void iter( const MapIterator& ){
     } //return_self call policies should be used
 

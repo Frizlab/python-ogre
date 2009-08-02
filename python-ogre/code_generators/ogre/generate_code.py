@@ -1384,7 +1384,9 @@ def generate_code():
     # print type(f.return_type)
     # print dir(f.return_type)
     # sys.exit()
-
+#    for f in main_ns.calldefs ('getNext'):
+#        print f
+#    sys.exit()    
 
     autoCasting ( main_ns ) ##
 
