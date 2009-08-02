@@ -92,7 +92,7 @@ class LightingApplication(sf.Application):
         #Add billboard
         bbs = sceneManager.createBillboardSet("bb", 1)
         bbs.createBillboard(ogre.Vector3().ZERO, trail.getInitialColour(0))
-        bbs.MaterialName="Examples/Flare"
+        bbs.setMaterialName("Examples/Flare")
         animNode.attachObject(bbs)
         
         coords = bbs.getTextureCoords()
@@ -149,7 +149,7 @@ class LightingApplication(sf.Application):
         #Add billboard
         bbs1 = sceneManager.createBillboardSet("bb2", 1)
         bbs1.createBillboard(ogre.Vector3().ZERO, trail.getInitialColour(1))
-        bbs1.MaterialName="Examples/Flare"
+        bbs1.setMaterialName("Examples/Flare")
         animNode.attachObject(bbs1)
 
 			
