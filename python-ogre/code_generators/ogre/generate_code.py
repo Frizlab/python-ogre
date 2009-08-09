@@ -306,8 +306,11 @@ def ManualExclude ( mb ):
     if not environment.ogre.version.startswith("1.4"):
 
         if not environment.ogre.version.startswith("1.7"):
-            main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageEnded").exclude()
-            main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageStarted").exclude()
+            try:
+                main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageEnded").exclude()
+                main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageStarted").exclude()
+            except:
+                pass
 
         # these don't exist
         main_ns.class_("ScriptCompiler").mem_fun("removeNameExclusion").exclude()

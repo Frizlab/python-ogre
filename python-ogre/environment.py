@@ -632,14 +632,14 @@ class ogre(pymodule):
     libraries = myLibraries
 
     if isWindows():
-        version="1.6.2"
+        version="1.6.3"
         source = [
-            [ wget, "http://downloads.sourceforge.net/ogre/ogre-v1-6-2.zip", downloadPath],
+            [ wget, "http://downloads.sourceforge.net/ogre/ogre-v1-6-3.zip", downloadPath],
             [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_VC9_Eihort_20080203.zip", downloadPath],
         ]
 
         buildCmds = [
-            [0, unzip + os.path.join(downloadPath, "ogre-v1-6-2.zip"), os.getcwd()  ],
+            [0, unzip + os.path.join(downloadPath, "ogre-v1-6-3.zip"), os.getcwd()  ],
             [0, unzip + os.path.join(downloadPath, "OgreDependencies_VC9_Eihort_20080203.zip"), Config.PATH_Ogre  ],
             [0, 'echo Please use MSVC Express Edition to build Ogre Release.', '']
         ]
@@ -662,8 +662,8 @@ class ogre(pymodule):
         LINKFLAGS = ''
 
     elif isLinux():
-        version = "1.6.1"
-        base = "ogre-v1-6-1"
+        version = "1.6.3"
+        base = "ogre-v1-6-3"
 
         source = [
             [wget, "http://downloads.sourceforge.net/ogre/"+base+".tar.bz2", downloadPath],
@@ -685,8 +685,8 @@ class ogre(pymodule):
 
 
     elif isMac():
-        version = "1.6.1"
-        base = "ogre-v1-6-1"
+        version = "1.6.3"
+        base = "ogre-v1-6-3"
         basedep = "OgreDependencies_OSX_Eihort_20080115"
         source = [
             [wget, "http://downloads.sourceforge.net/ogre/"+base+".tar.bz2", downloadPath],
@@ -2025,9 +2025,10 @@ projects = {
     'plsm2' : plsm2,
     'ogreoctreezone' : ogreoctreezone,
     'ogreoctreesm' : ogreoctreesm,
-    'ogrepaging' : ogrepaging,
-    'ogreterrain' : ogreterrain,
 }
+if ogre.version.startswith ("1.7"):    
+    projects['ogrepaging']= ogrepaging
+    projects['ogreterrain']= ogreterrain
 
 #
 # let's setup some defaults
