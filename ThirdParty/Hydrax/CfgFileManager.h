@@ -156,8 +156,11 @@ namespace Hydrax
 			@param Find String to find
 			@return true if it's contained, false if not
 		 */
-		//static bool _isStringInList(const std::vector<Ogre::String> &List, const Ogre::String &Find);
+#if OGRE_VERSION_MINOR != 7
+		static bool _isStringInList(const std::vector<Ogre::String> &List, const Ogre::String &Find);
+#else
 		static bool _isStringInList(const Ogre::vector<Ogre::String>::type &List, const Ogre::String &Find);
+#endif
 	private:
 		/** Save a string in file
 		    @param Data Data

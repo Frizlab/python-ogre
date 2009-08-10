@@ -990,7 +990,7 @@ class ode(pymodule):
 
     ModuleName = 'ODE'
     CheckIncludes = ['boost/python.hpp',  'ode/ode.h']
-    baseDir = os.path.join(os.getcwd(), "ode-0.10.1")
+    baseDir = os.path.join(os.getcwd(), "ode-0.11")
     if not isWindows():
         source = [
             [wget, "http://downloads.sourceforge.net/opende/ode-0.11.tar.gz", downloadPath]
@@ -998,7 +998,7 @@ class ode(pymodule):
 
         buildCmds = [
             # FIXME: Should this untar not use the unTarGz method mentioned above?
-            [0, 'tar  zxf ' + os.path.join(downloadPath, "ode-0.10.1.tar.gz"), ''],
+            [0, 'tar  zxf ' + os.path.join(downloadPath, "ode-0.11.tar.gz"), ''],
             [0, "chmod +x autogen.sh", baseDir],
             [0, "./autogen.sh", baseDir],
             [0, "./configure --prefix=%s --includedir=%s/include" %(PREFIX, PREFIX), baseDir],
