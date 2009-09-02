@@ -29,7 +29,7 @@ sys.path.append( os.path.join( '..', '..' ) )
 sys.path.append( '..' )
 sys.path.append( '.' )
 
-import pdb
+##import pdb
 import environment
 import common_utils
 import customization_data
@@ -58,6 +58,12 @@ import common_utils.ogre_properties as ogre_properties
 from common_utils import docit
 
 
+##
+## EXPERIMENTAL for SWIG code generation
+##
+from pyplusplus.module_builder import swig_module_builder_t
+import common_utils.swig_wrapper as swig
+SWIG=False
 
 
 predefined_is_smart_ptr = declarations.smart_pointer_traits
@@ -306,11 +312,8 @@ def ManualExclude ( mb ):
     if not environment.ogre.version.startswith("1.4"):
 
         if not environment.ogre.version.startswith("1.7"):
-            try:
-                main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageEnded").exclude()
-                main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageStarted").exclude()
-            except:
-                pass
+            main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageEnded").exclude()
+            main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageStarted").exclude()
 
         # these don't exist
         main_ns.class_("ScriptCompiler").mem_fun("removeNameExclusion").exclude()
@@ -607,8 +610,8 @@ def ManualFixes ( mb ):
                     print 'Adjusted pure virtual function returning a static pointer via hand wrapper %s:%s' % ( f.parent.name, f.name)
 
     if environment.ogre.version.startswith("1.7"):
-        ## Lots of new wrappers to handle all with uglky aliases that cause issues so rather than many hand entries
-        ## in python_ogre_aliases I'm trying to be a little smart
+        # Lots of new wrappers to handle all with uglky aliases that cause issues so rather than many hand entries
+        # in python_ogre_aliases I'm trying to be a little smart
         pat = re.compile ("::Ogre::(\w+?)<.*?Ogre::(.+?)[<*,]")
         dups = {}
 
@@ -649,9 +652,11 @@ def ManualFixes ( mb ):
                             # print "PROBLEM", f, type(f.type), dir(f.type)
 #        sys.exit()          
         for c in global_ns.classes():
-            if not c.ignore and "_" in c.alias: # only care about classes we are include with ugly alaises
+            if "_" in c.alias: # only care about classes we are include with ugly alaises # not c.ignore and 
+                # print "1a:", c, c.alias
                 m = pat.match(c.decl_string)
                 if m:
+                    # print "is M"
                     if not "STLAllocator" in m.group(1):
                         const = ""
                         if "_Const_iterator" in c.decl_string:
@@ -1264,7 +1269,7 @@ def autoCasting ( main_ns, ignores = ['ParamCommand','MovableObjectFactory']  ):
                 if not '<' in r.decl_string : ##and c.name != 'BillboardSet':  # don't worry about templates or factories..
                     if not r.name in ignores: # there are some bases that we don't care about overlaps on
                         for f in c.member_functions(allow_empty=True):
-                            if r.member_functions(f.name, allow_empty=True ): # look for each function in upper classes\
+                            if r.member_functions(f.name, allow_empty=True ): # look for each function in upper classes
                                 key=r.name+'::'+f.name
                                 if masterlist.has_key(key):
                                     masterlist[key]+=1
@@ -1354,7 +1359,19 @@ def generate_code():
     #
     # build the core Py++ system from the GCCXML created source
     #
-    mb = module_builder.module_builder_t( [ xml_cached_fc ]
+    if not SWIG:
+        mb = module_builder.module_builder_t( [ xml_cached_fc ]
+                                          , gccxml_path=environment.gccxml_bin
+                                          , working_directory=environment.root_dir
+                                          , include_paths=environment.ogre.include_dirs
+                                          , define_symbols=defined_symbols
+                                          , undefine_symbols=undefine_symbols
+                                          , indexing_suite_version=2
+                                          , cflags=environment.ogre.cflags
+                                           )
+
+    else:
+        mb = swig_module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
                                           , include_paths=environment.ogre.include_dirs
@@ -1390,7 +1407,40 @@ def generate_code():
 #    for f in main_ns.calldefs ('getNext'):
 #        print f
 #    sys.exit()    
-
+##    c=main_ns.class_('::Ogre::OverlayElementCommands::CmdHorizontalAlign')
+##    print c
+##    print "P:",c.parent
+##    print c.parent.name, c.parent.decl_string
+##    print type(c.parent)
+##    print "PP:",c.parent.parent
+##    print c.parent.parent.name, c.parent.parent.decl_string
+##    print type (c.parent.parent)
+##    
+##    c=main_ns.class_('::Ogre::Node')
+##    print c
+##    print "P:",c.parent
+##    print c.parent.name, c.parent.decl_string
+##    print type(c.parent)
+##    print "PP:",c.parent.parent
+##    print c.parent.parent.name, c.parent.parent.decl_string
+##    print type (c.parent.parent)
+##    print dir (c.parent)
+##    sys.exit()
+    
+##    for t in main_ns.typedefs():
+##        print t.name, t.parent, t.decl_string
+##    print type(t)
+##    print dir(t) 
+##    t=main_ns.typedef('::Ogre::ConfigFile::SettingsIterator')
+##    print t
+##    t=main_ns.typedef('::Ogre::ConfigFile::SectionIterator')
+##    print t
+##    
+##    
+##    
+##       
+##    sys.exit()
+    
     autoCasting ( main_ns ) ##
 
     common_utils.AutoExclude ( mb, MAIN_NAMESPACE )
@@ -1404,8 +1454,8 @@ def generate_code():
     ManualAlias ( mb )
     AutoFixes ( mb, MAIN_NAMESPACE )
     ManualFixes ( mb )
-    ## note change to clear prefix_output as this will force all transforms to be inout (and not 'output') to ensure the arguments are matched
-    ## problem with overload virtual fuctions from parent class such as getMetrics in RenderWindow and RenderTarget
+    # note change to clear prefix_output as this will force all transforms to be inout (and not 'output') to ensure the arguments are matched
+    # problem with overload virtual fuctions from parent class such as getMetrics in RenderWindow and RenderTarget
     common_utils.Auto_Functional_Transformation ( main_ns, special_vars=['::Ogre::Real &','::Ogre::ushort &','size_t &']  )
 
     FindProtectedVars ( mb )
@@ -1460,6 +1510,14 @@ def generate_code():
     common_utils.addDetailVersion ( mb, environment, environment.ogre )
     common_utils.Find_Problem_Transformations ( main_ns )
 
+    ##
+    ## Experimental !!!
+    ##
+    if SWIG:
+        swig.main_process_swig ( main_ns,'swig.in' )
+        return
+        
+        
     count = 0
     for v in main_ns.variables():
         if not v.ignore:

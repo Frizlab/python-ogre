@@ -14,6 +14,7 @@
     sizeof(Ogre::ConstVectorIterator<std::vector<Ogre::Technique::GPUDeviceNameRule, Ogre::STLAllocator<Ogre::Technique::GPUDeviceNameRule, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > > > );
     sizeof(Ogre::ConstVectorIterator<std::vector<Ogre::Technique::GPUVendorRule, Ogre::STLAllocator<Ogre::Technique::GPUVendorRule, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > > > );
     sizeof(Ogre::ConstVectorIterator<std::vector<float, Ogre::STLAllocator<float, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > > > );
+    sizeof(Ogre::ConstMapIterator<std::map<unsigned char, Ogre::RenderQueueGroup*, std::less<unsigned char>, Ogre::STLAllocator<std::pair<const unsigned char, Ogre::RenderQueueGroup*>, Ogre::CategorisedAllocPolicy<MEMCATEGORY_GENERAL> > > > );
     sizeof(Ogre::MapIterator<std::map<int, Ogre::InstancedGeometry::InstancedObject*, std::less<int>, Ogre::STLAllocator<std::pair<const int, Ogre::InstancedGeometry::InstancedObject*>, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > > > );
     sizeof(Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::Archive*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, Ogre::STLAllocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::Archive*>, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > > > );
     sizeof(Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::LodStrategy*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, Ogre::STLAllocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::LodStrategy*>, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > > > );
@@ -30,6 +31,7 @@
     sizeof(std::pair<std::string const, Ogre::Node*>);
     sizeof(std::pair<std::string const, Ogre::SharedPtr<Ogre::Resource> >);
     sizeof(std::pair<std::string const, unsigned short>);
+
     
 #endif
 

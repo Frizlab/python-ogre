@@ -1254,6 +1254,9 @@ def write_swig ( main_ns, filename = None ):
             lookup [cls.decl_string]=cls
 
     for c in masterList:
+            if 'Iterator' in c:
+                print "EXCLUDING:", c
+                next
             cls = lookup[c]           
             #if not cls.name in goodclasses and not cls.ignore:
             #    print "// EXCLUDED CLASS:", cls.name
