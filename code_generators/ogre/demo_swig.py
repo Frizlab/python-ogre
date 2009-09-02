@@ -16,6 +16,7 @@ sys.path.insert(0,'..')
 import time
 
 import OgreBindings as ogre 
+SWIG = True
 
 class OGREMain(ogre.Root):
     def __init__(self, plugins_path='../plugins.cfg',resource_path='./resources.cfg'):
@@ -25,8 +26,12 @@ class OGREMain(ogre.Root):
        self.resource_path = resource_path
        self.sm = None #: scene manager
        self.s_root = None #: root scene node
-       self.rgm = ogre.ResourceGroupManager.getSingleton()
-    
+       if SWIG:
+        self.rgm = ogre.ResourceGroupManager().getSingleton()
+       else:
+        self.rgm = ogre.ResourceGroupManager.getSingleton()
+       
+       
        self._load_resources(self.resource_path)
        self._choose_render_engine()
     
@@ -84,15 +89,46 @@ class OGREMain(ogre.Root):
     def _load_resources(self, resource_path):
         config = ogre.ConfigFile()
         config.load(resource_path)
+        print type(config)
+        print dir(config)
         section_iter = config.getSectionIterator()
+        print dir( section_iter )
+        count = 0
+        
+        if 0:
+           si = config.getSettingsIterator('General')
+           print type(si)
+           print dir(si)
+           while si.hasMoreElements():
+               print "SPECIAL:",count
+               count += 1
+               res = si.getNext()
+               print res.__str__()
+               print dir(res)
+               t=res.next()
+               print "t:",t
+               for i in res:
+                   print "i:", i
+           sys.exit()    
         while section_iter.hasMoreElements():
+            print "Count:", count
+            count += 1
             section_name = section_iter.peekNextKey()
+            section_value = section_iter.peekNextValue()
+            print type ( section_name )
+            print type (section_value)
+            print dir (section_value)
+            print section_name.__str__()
             settings = section_iter.getNext()
             ### settings_tuples = config.getMultiMapSettings(settings)
             ##for resource_type, resource in settings_tuples:
             ##    self.rgm.addResourceLocation(resource, resource_type, section_name)
-            for item in settings:
-                self.rgm.addResourceLocation(item.value, item.key, section_name)
+            #print "SETTINGS:", type (settings)
+            #print "SECTION:", type (section_name)
+            #print dir ( section_name )
+            
+##            for item in settings:
+##                self.rgm.addResourceLocation(item.value, item.key, section_name)
 
 
 def main():
