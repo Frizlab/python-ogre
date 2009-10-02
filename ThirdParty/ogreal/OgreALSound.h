@@ -104,9 +104,6 @@ namespace OgreAL {
 			HIGH
 		};
 
-   		void visitRenderables(Ogre::Renderable::Visitor* visitor, 
-			bool debugRenderables = false);
-
 		/** Plays the sound. */
 		bool play();
 		/** Returns true if the sound is playing, otherwise false. */

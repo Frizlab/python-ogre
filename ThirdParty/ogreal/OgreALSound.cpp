@@ -47,12 +47,7 @@ namespace OgreAL {
   Sound::Listener::~Listener() {
 
   }
-    void Sound::visitRenderables(Ogre::Renderable::Visitor* visitor, 
-		bool debugRenderables)
-	{
-		// nothing to render
-	}
-    
+
   void Sound::Listener::soundStopped(Sound* sound) {
 
   }

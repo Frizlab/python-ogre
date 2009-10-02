@@ -70,12 +70,6 @@ namespace OgreAL {
 	Listener::~Listener()
 	{}
 
-	void Listener::visitRenderables(Ogre::Renderable::Visitor* visitor, 
-		bool debugRenderables)
-	{
-		// nothing to render
-	}
-
 	Listener* Listener::getSingletonPtr(void)
 	{
 		return ms_Singleton;
