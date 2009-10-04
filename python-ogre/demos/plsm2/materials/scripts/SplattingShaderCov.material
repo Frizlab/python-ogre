@@ -1,0 +1,1162 @@
+
+material terrainLight
+{
+    technique
+    {
+        pass lighting
+        {	                
+          vertex_program_ref DepthShadowmap/TerrainReceiverVP_HLSL 
+          {
+          }          
+          fragment_program_ref DepthShadowmap/TerrainNormalShadowFP_HLSL
+          {
+          }
+          
+          texture_unit NormalMap
+          {
+            tex_address_mode clamp
+          }
+          
+          texture_unit 
+          {
+            tex_address_mode border
+            tex_border_colour 1.0 1.0 1.0 0.0                
+            content_type shadow
+            filtering linear linear none
+            //filtering anisotropic anisotropic anisotropic
+            //max_anisotropy 8
+          }
+        }
+    }
+}
+
+
+material SplattingShader_1Cov_4
+{
+  technique
+  {
+    pass
+    {	
+      fragment_program_ref PLSM2/PSSplat_1Cov4
+      {
+        param_named splatScale float 20
+      }
+      
+      texture_unit
+      {
+        texture Coverage
+      }
+     
+
+      texture_unit
+      {
+        texture splatting
+      }
+     
+      texture_unit
+      {
+        texture splatting
+      }
+     
+      texture_unit
+      {
+        texture splatting
+      }
+     
+      texture_unit
+      {
+        texture splatting
+      }   
+    }
+  }
+}
+
+material SplattingShader_2Cov_3
+{
+  technique
+  {
+
+    pass
+    {
+      fragment_program_ref PLSM2/PSSplat_2Cov3
+      {
+        param_named 	splatScale 	float 	20.0
+      }
+      
+      texture_unit
+      {
+        texture CoverageMap
+      } 
+      
+      texture_unit
+      {
+        texture CoverageMap
+      }
+     
+
+      texture_unit
+      {
+        texture splatting
+      }
+     
+      texture_unit
+      {
+        texture splatting
+      }
+     
+      texture_unit
+      {
+        texture splatting
+      }
+     
+      texture_unit
+      {
+        texture splatting
+      }        
+      
+      texture_unit
+      {
+        texture splatting
+      }      
+      
+      texture_unit
+      {
+        texture splatting
+      } 
+    }
+  }
+   
+}
+material SplattingShader_2Cov_4
+{
+    technique
+  {
+
+    pass
+    {
+      fragment_program_ref PLSM2/PSSplat_2Cov4
+      {
+        param_named splatScale float 20
+      }
+      
+      texture_unit
+      {
+        texture Coverage
+      } 
+      
+      texture_unit
+      {
+        texture Coverage
+      }
+     
+
+      texture_unit
+      {
+        texture splatting
+      }
+     
+      texture_unit
+      {
+        texture splatting
+      }
+     
+      texture_unit
+      {
+        texture splatting
+      }
+     
+      texture_unit
+      {
+        texture splatting
+      }   
+      
+      
+      texture_unit
+      {
+        texture splatting
+      }      
+      
+      texture_unit
+      {
+        texture splatting
+      } 
+      texture_unit
+      {
+        texture splatting
+      }      
+      
+      texture_unit
+      {
+        texture splatting
+      } 
+    }
+  }
+  technique
+  {
+    pass
+    {	
+      fragment_program_ref PLSM2/PSSplat_1Cov4
+      {
+        param_named splatScale float 20
+      }
+      
+      texture_unit
+      {
+        texture Coverage
+      }
+      
+
+      texture_unit
+      {
+        texture splatting
+      }
+     
+      texture_unit
+      {
+        texture splatting
+      }
+     
+      texture_unit
+      {
+        texture splatting
+      }
+     
+      texture_unit
+      {
+        texture splatting
+      }   
+      
+    }
+    
+    pass
+    {	
+      fragment_program_ref PLSM2/PSSplat_1Cov4
+      {
+        param_named splatScale float 20
+      }
+      
+      
+      texture_unit
+      {
+        texture Coverage
+      }
+     
+
+      texture_unit
+      {
+        texture splatting
+      }
+     
+      texture_unit
+      {
+        texture splatting
+      }
+     
+      texture_unit
+      {
+        texture splatting
+      }
+     
+      texture_unit
+      {
+        texture splatting
+      }   
+      
+    }
+  }
+}
+
+material terrain3Cov1
+{
+    technique
+    {
+        pass Cov0
+        {	
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov0
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov0_0
+          {
+          }     
+          texture_unit splattingCov0_1
+          {
+          }     
+          texture_unit splattingCov0_2
+          {
+          }
+        }
+ 
+        pass lighting
+        {	      
+          scene_blend modulate
+          depth_bias 1.0 1.0
+          
+              vertex_program_ref DepthShadowmap/TerrainReceiverVP_HLSL
+              {
+              }          
+              fragment_program_ref DepthShadowmap/TerrainNormalShadowFP_HLSL
+              {
+              }
+              
+              texture_unit NormalMap
+              {
+                tex_address_mode clamp
+              }
+              
+              texture_unit
+              {
+                tex_address_mode border
+                tex_border_colour 1.0 1.0 1.0 0.0
+                content_type shadow
+                filtering linear linear none
+                //filtering anisotropic anisotropic anisotropic
+                //max_anisotropy 8
+              }
+        }
+    }
+}
+
+material terrain3Cov2
+{
+    technique
+    {
+        pass Cov0
+        {	
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov0
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov0_0
+          {
+          }     
+          texture_unit splattingCov0_1
+          {
+          }     
+          texture_unit splattingCov0_2
+          {
+          }
+        }
+
+        pass Cov1
+        {	
+          scene_blend add
+          
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov1
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov1_0
+          {
+          }     
+          texture_unit splattingCov1_1
+          {
+          }     
+          texture_unit splattingCov1_2
+          {
+          }
+        }
+ 
+        pass lighting
+        {	      
+          scene_blend modulate
+          depth_bias 1.0 1.0
+          
+              vertex_program_ref DepthShadowmap/TerrainReceiverVP_HLSL
+              {
+              }          
+              fragment_program_ref DepthShadowmap/TerrainNormalShadowFP_HLSL
+              {
+              }
+              
+              texture_unit NormalMap
+              {
+                tex_address_mode clamp
+              }
+              
+              texture_unit
+              {
+                tex_address_mode border
+                tex_border_colour 1.0 1.0 1.0 0.0
+                content_type shadow
+                filtering linear linear none
+                //filtering anisotropic anisotropic anisotropic
+                //max_anisotropy 8
+              }
+        }
+    }
+}
+
+material terrain3Cov3
+{
+    technique
+    {
+        pass Cov0
+        {	
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov0
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov0_0
+          {
+          }     
+          texture_unit splattingCov0_1
+          {
+          }     
+          texture_unit splattingCov0_2
+          {
+          }
+        }
+
+        pass Cov1
+        {	
+          scene_blend add
+          
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov1
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov1_0
+          {
+          }     
+          texture_unit splattingCov1_1
+          {
+          }     
+          texture_unit splattingCov1_2
+          {
+          }
+        }
+
+        pass Cov2
+        {	
+          scene_blend add
+          
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov2
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov2_0
+          {
+          }     
+          texture_unit splattingCov2_1
+          {
+          }     
+          texture_unit splattingCov2_2
+          {
+          }
+        }
+ 
+        pass lighting
+        {	      
+          scene_blend modulate
+          depth_bias 1.0 1.0
+          
+              vertex_program_ref DepthShadowmap/TerrainReceiverVP_HLSL
+              {
+              }          
+              fragment_program_ref DepthShadowmap/TerrainNormalShadowFP_HLSL
+              {
+              }
+              
+              texture_unit NormalMap
+              {
+                tex_address_mode clamp
+              }
+              
+              texture_unit
+              {
+                tex_address_mode border
+                tex_border_colour 1.0 1.0 1.0 0.0
+                content_type shadow
+                filtering linear linear none
+                //filtering anisotropic anisotropic anisotropic
+                //max_anisotropy 8
+              }
+        }
+    }
+}
+
+material terrain3Cov4
+{
+    technique
+    {
+        pass Cov0
+        {	
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov0
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov0_0
+          {
+          }     
+          texture_unit splattingCov0_1
+          {
+          }     
+          texture_unit splattingCov0_2
+          {
+          }
+        }
+
+        pass Cov1
+        {	
+          scene_blend add
+          
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov1
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov1_0
+          {
+          }     
+          texture_unit splattingCov1_1
+          {
+          }     
+          texture_unit splattingCov1_2
+          {
+          }
+        }
+
+        pass Cov2
+        {	
+          scene_blend add
+          
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov2
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov2_0
+          {
+          }     
+          texture_unit splattingCov2_1
+          {
+          }     
+          texture_unit splattingCov2_2
+          {
+          }
+        }
+ 
+        pass Cov3
+        {	
+          scene_blend add
+          
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov3
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov3_0
+          {
+          }     
+          texture_unit splattingCov3_1
+          {
+          }     
+          texture_unit splattingCov3_2
+          {
+          }
+        }
+ 
+        pass lighting
+        {	      
+          scene_blend modulate
+          depth_bias 1.0 1.0
+          
+              vertex_program_ref DepthShadowmap/TerrainReceiverVP_HLSL
+              {
+              }          
+              fragment_program_ref DepthShadowmap/TerrainNormalShadowFP_HLSL
+              {
+              }
+              
+              texture_unit NormalMap
+              {
+                tex_address_mode clamp
+              }
+              
+              texture_unit 
+              {
+                tex_address_mode clamp
+                content_type shadow
+                filtering linear linear none
+                //filtering anisotropic anisotropic anisotropic
+                //max_anisotropy 8
+              }
+        }
+    }
+}
+
+material terrain3Cov5
+{
+    technique
+    {
+        pass Cov0
+        {	
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov0
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov0_0
+          {
+          }     
+          texture_unit splattingCov0_1
+          {
+          }     
+          texture_unit splattingCov0_2
+          {
+          }
+        }
+
+        pass Cov1
+        {	
+          scene_blend add
+          
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov1
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov1_0
+          {
+          }     
+          texture_unit splattingCov1_1
+          {
+          }     
+          texture_unit splattingCov1_2
+          {
+          }
+        }
+
+        pass Cov2
+        {	
+          scene_blend add
+          
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov2
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov2_0
+          {
+          }     
+          texture_unit splattingCov2_1
+          {
+          }     
+          texture_unit splattingCov2_2
+          {
+          }
+        }
+ 
+        pass Cov3
+        {	
+          scene_blend add
+          
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov3
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov3_0
+          {
+          }     
+          texture_unit splattingCov3_1
+          {
+          }     
+          texture_unit splattingCov3_2
+          {
+          }
+        }
+ 
+        pass Cov4
+        {	
+          scene_blend add
+          
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov4
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov4_0
+          {
+          }     
+          texture_unit splattingCov4_1
+          {
+          }     
+          texture_unit splattingCov4_2
+          {
+          }
+        }
+ 
+        pass lighting
+        {	      
+          scene_blend modulate
+          depth_bias 1.0 1.0
+          
+              vertex_program_ref DepthShadowmap/TerrainReceiverVP_HLSL
+              {
+              }          
+              fragment_program_ref DepthShadowmap/TerrainNormalShadowFP_HLSL
+              {
+              }
+              
+              texture_unit NormalMap
+              {
+                tex_address_mode clamp
+              }
+              
+              texture_unit
+              {
+                tex_address_mode border
+                tex_border_colour 1.0 1.0 1.0 0.0
+                content_type shadow
+                filtering linear linear none
+                //filtering anisotropic anisotropic anisotropic
+                //max_anisotropy 8
+              }
+        }
+    }
+}
+
+material terrain3Cov6
+{
+    technique
+    {
+        pass Cov0
+        {	
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov0
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov0_0
+          {
+          }     
+          texture_unit splattingCov0_1
+          {
+          }     
+          texture_unit splattingCov0_2
+          {
+          }
+        }
+
+        pass Cov1
+        {	
+          scene_blend add
+          
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov1
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov1_0
+          {
+          }     
+          texture_unit splattingCov1_1
+          {
+          }     
+          texture_unit splattingCov1_2
+          {
+          }
+        }
+
+        pass Cov2
+        {	
+          scene_blend add
+          
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov2
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov2_0
+          {
+          }     
+          texture_unit splattingCov2_1
+          {
+          }     
+          texture_unit splattingCov2_2
+          {
+          }
+        }
+ 
+        pass Cov3
+        {	
+          scene_blend add
+          
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov3
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov3_0
+          {
+          }     
+          texture_unit splattingCov3_1
+          {
+          }     
+          texture_unit splattingCov3_2
+          {
+          }
+        }
+ 
+        pass Cov4
+        {	
+          scene_blend add
+          
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov4
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov4_0
+          {
+          }     
+          texture_unit splattingCov4_1
+          {
+          }     
+          texture_unit splattingCov4_2
+          {
+          }
+        }
+ 
+        pass Cov5
+        {	
+          scene_blend add
+          
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov5
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov5_0
+          {
+          }     
+          texture_unit splattingCov5_1
+          {
+          }     
+          texture_unit splattingCov5_2
+          {
+          }
+        }
+ 
+        pass lighting
+        {	      
+          scene_blend modulate
+          depth_bias 1.0 1.0
+          
+              vertex_program_ref DepthShadowmap/TerrainReceiverVP_HLSL
+              {
+              }          
+              fragment_program_ref DepthShadowmap/TerrainNormalShadowFP_HLSL
+              {
+              }
+              
+              texture_unit NormalMap
+              {
+                tex_address_mode clamp
+              }
+              
+              texture_unit
+              {
+                tex_address_mode border
+                tex_border_colour 1.0 1.0 1.0 0.0
+                content_type shadow
+                filtering linear linear none
+                //filtering anisotropic anisotropic anisotropic
+                //max_anisotropy 8
+              }
+        }
+    }
+}
+
+material terrain3Cov7
+{
+    technique
+    {
+        pass Cov0
+        {	
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov0
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov0_0
+          {
+          }     
+          texture_unit splattingCov0_1
+          {
+          }     
+          texture_unit splattingCov0_2
+          {
+          }
+        }
+
+        pass Cov1
+        {	
+          scene_blend add
+          
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov1
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov1_0
+          {
+          }     
+          texture_unit splattingCov1_1
+          {
+          }     
+          texture_unit splattingCov1_2
+          {
+          }
+        }
+
+        pass Cov2
+        {	
+          scene_blend add
+          
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov2
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov2_0
+          {
+          }     
+          texture_unit splattingCov2_1
+          {
+          }     
+          texture_unit splattingCov2_2
+          {
+          }
+        }
+ 
+        pass Cov3
+        {	
+          scene_blend add
+          
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov3
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov3_0
+          {
+          }     
+          texture_unit splattingCov3_1
+          {
+          }     
+          texture_unit splattingCov3_2
+          {
+          }
+        }
+ 
+        pass Cov4
+        {	
+          scene_blend add
+          
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov4
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov4_0
+          {
+          }     
+          texture_unit splattingCov4_1
+          {
+          }     
+          texture_unit splattingCov4_2
+          {
+          }
+        }
+ 
+        pass Cov5
+        {	
+          scene_blend add
+          
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov5
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov5_0
+          {
+          }     
+          texture_unit splattingCov5_1
+          {
+          }     
+          texture_unit splattingCov5_2
+          {
+          }
+        }
+ 
+        pass Cov6
+        {	
+          scene_blend add
+          
+          fragment_program_ref PSSplat_1Cov3
+          {
+          }
+          
+          texture_unit Cov6
+          {
+            tex_address_mode clamp
+          }     
+
+          texture_unit splattingCov6_0
+          {
+          }     
+          texture_unit splattingCov6_1
+          {
+          }     
+          texture_unit splattingCov6_2
+          {
+          }
+        }
+ 
+        pass lighting
+        {	      
+          scene_blend modulate
+          depth_bias 1.0 1.0
+          
+              vertex_program_ref DepthShadowmap/TerrainReceiverVP_HLSL
+              {
+              }          
+              fragment_program_ref DepthShadowmap/TerrainNormalShadowFP_HLSL
+              {
+              }
+              
+              texture_unit NormalMap
+              {
+                tex_address_mode clamp
+              }
+              
+              texture_unit
+              {
+                tex_address_mode border
+                tex_border_colour 1.0 1.0 1.0 0.0
+                content_type shadow
+                filtering linear linear none
+                //filtering anisotropic anisotropic anisotropic
+                //max_anisotropy 8
+              }
+        }
+    }
+}

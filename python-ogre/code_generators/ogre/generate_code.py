@@ -61,9 +61,10 @@ from common_utils import docit
 ##
 ## EXPERIMENTAL for SWIG code generation
 ##
-from pyplusplus.module_builder import swig_module_builder_t
-import common_utils.swig_wrapper as swig
 SWIG=False
+if SWIG:
+    from pyplusplus.module_builder import swig_module_builder_t
+    import common_utils.swig_wrapper as swig
 
 
 predefined_is_smart_ptr = declarations.smart_pointer_traits
@@ -311,9 +312,10 @@ def ManualExclude ( mb ):
     # changes for Ogre after 1.4
     if not environment.ogre.version.startswith("1.4"):
 
-        if not environment.ogre.version.startswith("1.7"):
-            main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageEnded").exclude()
-            main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageStarted").exclude()
+# don't seem to be needed with 1.6.4
+#        if not environment.ogre.version.startswith("1.7"):
+#            main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageEnded").exclude()
+#            main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageStarted").exclude()
 
         # these don't exist
         main_ns.class_("ScriptCompiler").mem_fun("removeNameExclusion").exclude()
@@ -423,11 +425,14 @@ def ManualExclude ( mb ):
                     c.exclude()
                     
         excludelist= ['::Ogre::FileHandleDataStream', # uses FILE (c style) -- can use FileStreamDataStream instead
-                     ## '::Ogre::Node::DebugRenderable', # not implemented
+                      '::Ogre::Node::DebugRenderable', # not implemented
                       ]
         for c in excludelist:
-            main_ns.class_(c).exclude()
-            
+            try:
+                main_ns.class_(c).exclude()
+                print "Excluded:", c
+            except:
+                pass
         excludelist= ['::Ogre::HashedVector<Ogre::Light*>::resize',  # compile time issue
                       '::Ogre::HashedVector<Ogre::Light*>::at']
         for c in excludelist:

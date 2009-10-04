@@ -1,0 +1,56 @@
+DebugOverlay
+{
+	zorder 500
+	// Stats block
+	container Panel(DebugPanel)
+	{
+		metrics_mode pixels
+		vert_align top
+		left 150 
+		top 30
+		width 400
+		height 87
+		    
+		element TextArea(FPS)
+		{
+			metrics_mode pixels
+			left 5
+			top 5
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption FPS: 
+			colour_top 0.0 0.0 0.0
+			colour_bottom 0.0 0.0 0.0
+		}
+
+		element TextArea(TriangleCount)
+		{
+			metrics_mode pixels
+			left 5
+			top 25
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption TriCount: 
+			colour_top 0.0 0.0 0.0
+			colour_bottom 0.0 0.0 0.0
+		}
+
+		element TextArea(PlayerLocation)
+		{
+			metrics_mode pixels
+			left 5
+			top 45
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption Location:
+			colour_top 0.0 0.0 0.0
+			colour_bottom 0.0 0.0 0.0
+		}
+	}
+}

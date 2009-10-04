@@ -1,7 +1,6 @@
 import os
 import sys
 import getpass
-import datetime
 
 ##
 ##  Jan 2007 modification
@@ -77,13 +76,13 @@ else:
 
 PythonOgreMajorVersion = "1"
 PythonOgreMinorVersion = "6"
-PythonOgrePatchVersion = "1"
-if _UserName =='amiller':
+PythonOgrePatchVersion = "4"
+if False:
     PythonOgreMajorVersion = "1"
     PythonOgreMinorVersion = "7"
     PythonOgrePatchVersion = "0"
     _USE_THREADS = True
-    
+
 
 ##
 ## these should be fine with auto create - however override them as necessary
@@ -471,17 +470,16 @@ class cmake(module):
 
     if isWindows():
         source = [
-            [wget, "http://www.cmake.org/files/v2.6/cmake-2.6.2-win32-x86.exe", downloadPath]
+            [wget, "http://www.cmake.org/files/v2.6/cmake-2.6.4-win32-x86.exe", downloadPath]
         ]
 
         buildCmds = [
-            [0, os.path.join(downloadPath, "cmake-2.6.2-win32-x86.exe"), '' ]
+            [0, os.path.join(downloadPath, "cmake-2.6.4-win32-x86.exe"), '' ]
         ]
 
 
 class scons(module):
     base = 'scons-1.2.0'
-
     source = [
         [wget, "http://prdownloads.sourceforge.net/scons/"+base+".tar.gz", downloadPath],
     ]
@@ -502,18 +500,18 @@ class scons(module):
 
 class boost(module):
     """Boost module, also included bjam."""
-    version = "1.38"
+    version = "1.40"
     ModuleName = ""
 
     if isWindows():
         PATH_LIB_THREAD = Config.PATH_LIB_Thread_STATIC
         PATH_LIB_DATETIME = Config.PATH_LIB_date_time_STATIC
-        base = 'boost_1_38_0'
-        lib = 'boost_python-vc90-mt-1_38'
-        versionBase = '1_38' ## the version used on the library name
+        base = 'boost_1_40_0'
+        lib = 'boost_python-vc90-mt-1_40'
+        versionBase = '1_40' ## the version used on the library name
     else:
-        base = 'boost_1_38_0'
-        versionBase = '1_38' ## the version used on the library name
+        base = 'boost_1_40_0'
+        versionBase = '1_40' ## the version used on the library name
 
     if isLinux():
         bjambuildset = 'gcc'
@@ -585,10 +583,14 @@ class boost(module):
             [wget, 'http://downloads.sourceforge.net/boost/'+base+'.zip', downloadPath]
         ]
 
+        if BOOST_STATIC:
+            _link="static"
+        else:
+            _link="shared"
         buildCmds =  [
             [0, unzip + os.path.join(downloadPath, bjambase+".zip"), ''],
             [0, unzip + os.path.join(downloadPath, base + ".zip"), ''],
-            [0, os.path.join(os.getcwd(), bjambase, "bjam.exe") + ' release --with-python --with-thread --with-date_time ', os.path.join(os.getcwd(), base)] # --toolset=msvc-8
+            [0, os.path.join(os.getcwd(), bjambase, "bjam.exe") + ' release --with-python --with-thread --with-date_time link='+_link, os.path.join(os.getcwd(), base)] # --toolset=msvc-8
         ]
 
     # If we are not given a LIB path, use the version we are building.
@@ -632,14 +634,14 @@ class ogre(pymodule):
     libraries = myLibraries
 
     if isWindows():
-        version="1.6.3"
+        version="1.6.4"
         source = [
-            [ wget, "http://downloads.sourceforge.net/ogre/ogre-v1-6-3.zip", downloadPath],
+            [ wget, "http://downloads.sourceforge.net/ogre/ogre-v1-6-4.zip", downloadPath],
             [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_VC9_Eihort_20080203.zip", downloadPath],
         ]
 
         buildCmds = [
-            [0, unzip + os.path.join(downloadPath, "ogre-v1-6-3.zip"), os.getcwd()  ],
+            [0, unzip + os.path.join(downloadPath, "ogre-v1-6-4.zip"), os.getcwd()  ],
             [0, unzip + os.path.join(downloadPath, "OgreDependencies_VC9_Eihort_20080203.zip"), Config.PATH_Ogre  ],
             [0, 'echo Please use MSVC Express Edition to build Ogre Release.', '']
         ]
@@ -662,8 +664,8 @@ class ogre(pymodule):
         LINKFLAGS = ''
 
     elif isLinux():
-        version = "1.6.3"
-        base = "ogre-v1-6-3"
+        version = "1.6.1"
+        base = "ogre-v1-6-1"
 
         source = [
             [wget, "http://downloads.sourceforge.net/ogre/"+base+".tar.bz2", downloadPath],
@@ -685,8 +687,8 @@ class ogre(pymodule):
 
 
     elif isMac():
-        version = "1.6.3"
-        base = "ogre-v1-6-3"
+        version = "1.6.1"
+        base = "ogre-v1-6-1"
         basedep = "OgreDependencies_OSX_Eihort_20080115"
         source = [
             [wget, "http://downloads.sourceforge.net/ogre/"+base+".tar.bz2", downloadPath],
@@ -708,7 +710,7 @@ class ogre(pymodule):
             [0, "cp -R *.framework ~/Library/Frameworks", os.path.join(os.getcwd(), 'ogre', "Mac", "build", "Release") ],
             [0, "cp -R *.framework ~/Library/Frameworks", os.path.join(os.getcwd(), 'ogre', "Dependencies") ]
         ]
-        
+
         libs = [boost.lib]
         lib_dirs = [ boost.PATH_LIB ]
         include_dirs = [
@@ -718,8 +720,7 @@ class ogre(pymodule):
         ]
 
         LINKFLAGS = ''
-    if _UserName == 'amiller':
-        version="1.7.0"
+
 
 class ois(pymodule):
     version= "1.0"
@@ -764,7 +765,10 @@ class ois(pymodule):
             pchbuild = 'buildpch.cpp'
             pchincludes = ['boost/python.hpp', 'OIS.h']
 
-        libs = ['OIS_static', boost.lib]
+        if Config.SDK:
+            libs = ['OIS', boost.lib]
+        else:
+            libs = ['OIS_static', boost.lib]
     else:
         libs = ['OIS', boost.lib]
 
@@ -848,7 +852,8 @@ class ogrenewt(pymodule):
     if isWindows():
         buildCmds = [
             [0, "patch -s -N -i ../../python-ogre/patch/ogrenewt.patch -p0", baseDir],
-            [0, "rm -r ./OgreNewt_Main/inc/boost", baseDir],
+            [0, "rmdir  /s /q .\\OgreNewt_Main\\inc\\boost", baseDir],
+            [0, "echo   Now use MSVC to compile OgreNewt -- OgreNewt_vc71.sln", baseDir]
         ]
 
     include_dirs = [
@@ -895,12 +900,12 @@ class cegui(pymodule):
             pchbuild = 'buildpch.cpp'
             pchincludes = ['boost/python.hpp', 'cegui.h']
         libs = [boost.lib, 'CEGUIBase', 'OgreMain']
-        
+
         if PythonOgreMajorVersion == "1" and int(PythonOgreMinorVersion) < 7:
             libs.append('OgreGUIRenderer')
         else:
             libs.append('CEGUIOgreRenderer')
-        
+
     elif isLinux():
         libs = [boost.lib, 'CEGUIBase', 'OgreMain', 'CEGUIOgreRenderer' ]
     else:
@@ -990,7 +995,7 @@ class ode(pymodule):
 
     ModuleName = 'ODE'
     CheckIncludes = ['boost/python.hpp',  'ode/ode.h']
-    baseDir = os.path.join(os.getcwd(), "ode-0.11")
+    baseDir = os.path.join(os.getcwd(), "ode-0.10.1")
     if not isWindows():
         source = [
             [wget, "http://downloads.sourceforge.net/opende/ode-0.11.tar.gz", downloadPath]
@@ -998,7 +1003,7 @@ class ode(pymodule):
 
         buildCmds = [
             # FIXME: Should this untar not use the unTarGz method mentioned above?
-            [0, 'tar  zxf ' + os.path.join(downloadPath, "ode-0.11.tar.gz"), ''],
+            [0, 'tar  zxf ' + os.path.join(downloadPath, "ode-0.10.1.tar.gz"), ''],
             [0, "chmod +x autogen.sh", baseDir],
             [0, "./autogen.sh", baseDir],
             [0, "./configure --prefix=%s --includedir=%s/include" %(PREFIX, PREFIX), baseDir],
@@ -1087,7 +1092,10 @@ class ogreode(pymodule):
        [0, "make", baseDir],
        [0, "make install", baseDir],
     ]
-
+    if isWindows():
+        buildCmds=[
+            [0, "patch -s -N -i ../../python-ogre/patch/ogreode.patch -p0", baseDir],
+        ]
     libs = [boost.lib, 'OgreMain',  'OgreOde_Core', 'OgreOde_Prefab', 'OgreOde_Loader' ]
     if isLinux():
         libs.append('ode')
@@ -1099,7 +1107,7 @@ class ogreode(pymodule):
     ModuleName='OgreOde'
 
 class quickgui(pymodule):
-    version="8.12"
+    version="9.09"
     name ='quickgui'
     parent="ogre/gui"
 
@@ -1172,7 +1180,10 @@ class betagui(pymodule):
         Config.PATH_LIB_OIS
     ]
     CheckIncludes = []
-    libs = [  boost.lib, 'OgreMain', 'OIS_static' ]
+    if Config.SDK:
+        libs = [  boost.lib, 'OgreMain', 'OIS' ]
+    else:
+        libs = [  boost.lib, 'OgreMain', 'OIS_static' ]
     if os.name=="nt":
         libs.append("User32") # needed for static linking
 
@@ -1262,7 +1273,7 @@ class nxogre(pymodule):
 
 
 class ogrevideo(pymodule):
-    version="r80"
+    version="r92"
     parent="ogre/addons"
     base = 'ogrevideo'
     ##
@@ -1745,7 +1756,7 @@ class opensteer(pymodule):
     ModuleName="opensteer"
 
 class hydrax(pymodule):
-    version="0.5"
+    version="0.5.1"
     parent="ogre/addons"
     cflags = ""
     include_dirs = [
@@ -1761,17 +1772,17 @@ class hydrax(pymodule):
     libs = [  boost.lib, 'OgreMain' ]
     ModuleName="hydrax"
     descText = "Fantastic water/ocean effects"
-    
+
     CCFLAGS= " /fp:fast "
     LINKFLAGS = "  /LTCG /DYNAMICBASE:NO /MACHINE:X86 "
-    
+
     # testing dll linkage..
-    if _UserName =='amiller':
+    if False:
         libs.append('Hydrax')
         lib_dirs.append(Config.PATH_LIB_hydrax)
         for p in Config.PATH_INCLUDE_hydrax_modules:
             include_dirs.insert(0,p)
-            
+
 class hikari(pymodule):
     version="r23"
     name='hikari'
@@ -1826,13 +1837,16 @@ class canvas(pymodule):
         boost.PATH,
         Config.PATH_INCLUDE_canvas,
         Config.PATH_INCLUDE_Ogre,
-        Config.PATH_INCLUDE_Ogre_Dependencies,
     ]
     lib_dirs = [
         boost.PATH_LIB,
         Config.PATH_LIB_Ogre_OgreMain,
-        Config.PATH_LIB_Ogre_Dependencies,
     ]
+    
+    if isWindows(): # have put freetype into the SVN tree to make it easier on windows
+        include_dirs.append (os.path.join(Config.PATH_THIRDPARTY, 'freetype', 'include') )
+        lib_dirs.append ( os.path.join(Config.PATH_THIRDPARTY, 'freetype', 'lib') )
+        
     CheckIncludes = []
     libs = [boost.lib, 'OgreMain', 'freetype235']
     ModuleName="canvas"
@@ -1917,7 +1931,7 @@ class ogreoctreesm(pymodule):
     libs = [boost.lib, 'Plugin_OctreeSceneManager', 'OgreMain' ]
     ModuleName="ogreoctreesm"
     descText = "Octree Zone Namangement - Expose all functions in OctreeZone incase required"
-    
+
 class ogreoctreezone(pymodule):
     version=ogre.version
     active=False
@@ -1936,8 +1950,8 @@ class ogreoctreezone(pymodule):
     libs = [boost.lib, 'Plugin_OctreeZone', 'OgreMain' ]
     ModuleName="ogreoctreezone"
     descText = "Octree Zone Management - Expose all functions in OctreeZone incase required"
-    
-if ogre.version.startswith ("1.7"):    
+
+if ogre.version.startswith ("1.7"):
     class ogreterrain(pymodule):
         version=ogre.version
         active=False
@@ -1976,7 +1990,7 @@ if ogre.version.startswith ("1.7"):
         libs = [boost.lib, 'OgrePaging', 'OgreMain' ]
         ModuleName="ogrepaging"
         descText = "OgreTerrain: New Terrain Manager in Ogre"
-    
+
 ############################################################################################
 
 ## Here is the master list....
@@ -2025,11 +2039,11 @@ projects = {
     'plsm2' : plsm2,
     'ogreoctreezone' : ogreoctreezone,
     'ogreoctreesm' : ogreoctreesm,
+    
 }
-if ogre.version.startswith ("1.7"):    
+if ogre.version.startswith ("1.7"):
     projects['ogrepaging']= ogrepaging
-    projects['ogreterrain']= ogreterrain
-
+    projects['ogreterrain']=ogreterrain
 #
 # let's setup some defaults
 #

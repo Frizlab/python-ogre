@@ -1,0 +1,127 @@
+<?xml version="1.0" ?>
+<GUILayout>
+		<Window Type="DefaultWindow" Name="LibnoiseWindow">
+			<Property Name="AbsoluteRect" Value="l:0.000000 t:0.000000 r:473.000000 b:378.000000" />
+			<Property Name="MetricsMode" Value="Absolute" />
+			<Property Name="AlwaysOnTop" Value="true" />
+			<Property Name="Text" Value="Libnoise generator..." />
+			<Window Type="Marti/RadioButton" Name="BillowRadioButton">
+				<Property Name="AbsoluteRect" Value="l:20.000000 t:40.000000 r:120.000000 b:60.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Billow" />
+				<Property Name="Selected" Value="true" />
+				<Property Name="GroupID" Value="255" />
+				</Window>
+			<Window Type="Marti/RadioButton" Name="CheckerboardRadioButton">
+				<Property Name="AbsoluteRect" Value="l:20.000000 t:60.000000 r:120.000000 b:80.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Checkerboard" />
+				<Property Name="GroupID" Value="255" />
+				</Window>
+			<Window Type="Marti/RadioButton" Name="PerlinRadioButton">
+				<Property Name="AbsoluteRect" Value="l:20.000000 t:80.000000 r:120.000000 b:100.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Perlin" />
+				<Property Name="GroupID" Value="255" />
+				</Window>
+			<Window Type="Marti/RadioButton" Name="RidgedRadioButton">
+				<Property Name="AbsoluteRect" Value="l:20.000000 t:100.000000 r:120.000000 b:120.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Ridged multi" />
+				<Property Name="GroupID" Value="255" />
+				</Window>
+			<Window Type="Marti/RadioButton" Name="VoronoiRadioButton">
+				<Property Name="AbsoluteRect" Value="l:20.000000 t:120.000000 r:120.000000 b:140.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Voronoi" />
+				<Property Name="GroupID" Value="255" />
+				</Window>
+			<Window Type="Marti/StaticImage" Name="PreviewStaticImage">
+				<Property Name="AbsoluteRect" Value="l:20.000000 t:158.000000 r:148.000000 b:286.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				</Window>
+			<Window Type="Marti/Button" Name="LibnoisePreviewButton">
+				<Property Name="AbsoluteRect" Value="l:22.000000 t:293.000000 r:150.000000 b:318.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Preview" />
+				</Window>
+			<Window Type="Marti/StaticText" Name="FrequencyStaticText">
+				<Property Name="AbsoluteRect" Value="l:160.000000 t:50.000000 r:250.000000 b:75.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Frequency:" />
+				<Property Name="FrameEnabled" Value="false" />
+				</Window>
+			<Window Type="Marti/StaticText" Name="OctaveCountStaticText">
+				<Property Name="AbsoluteRect" Value="l:160.000000 t:110.000000 r:250.000000 b:135.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Octave count:" />
+				<Property Name="FrameEnabled" Value="false" />
+				</Window>
+			<Window Type="Marti/StaticText" Name="PersistanceStaticText">
+				<Property Name="AbsoluteRect" Value="l:160.000000 t:140.000000 r:250.000000 b:165.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Persistance:" />
+				<Property Name="FrameEnabled" Value="false" />
+				</Window>
+			<Window Type="Marti/StaticText" Name="LacunarityStaticText">
+				<Property Name="AbsoluteRect" Value="l:160.000000 t:80.000000 r:250.000000 b:105.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Lacunarity:" />
+				<Property Name="FrameEnabled" Value="false" />
+				</Window>
+			<Window Type="Marti/StaticText" Name="SeedStaticText">
+				<Property Name="AbsoluteRect" Value="l:160.000000 t:170.000000 r:250.000000 b:195.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Seed:" />
+				<Property Name="FrameEnabled" Value="false" />
+				</Window>
+			<Window Type="Marti/Editbox" Name="FrequencyEditbox">
+				<Property Name="AbsoluteRect" Value="l:250.000000 t:50.000000 r:290.000000 b:75.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				</Window>
+			<Window Type="Marti/Editbox" Name="LacunarityEditbox">
+				<Property Name="AbsoluteRect" Value="l:250.000000 t:80.000000 r:290.000000 b:105.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				</Window>
+			<Window Type="Marti/Editbox" Name="OctaveCountEditbox">
+				<Property Name="AbsoluteRect" Value="l:250.000000 t:110.000000 r:290.000000 b:135.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				</Window>
+			<Window Type="Marti/Editbox" Name="PersistanceEditbox">
+				<Property Name="AbsoluteRect" Value="l:250.000000 t:140.000000 r:290.000000 b:165.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				</Window>
+			<Window Type="Marti/Editbox" Name="SeedEditbox">
+				<Property Name="AbsoluteRect" Value="l:250.000000 t:170.000000 r:290.000000 b:195.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				</Window>
+			<Window Type="Marti/StaticText" Name="LocationStaticText">
+				<Property Name="AbsoluteRect" Value="l:160.000000 t:210.000000 r:250.000000 b:235.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Location:" />
+				<Property Name="FrameEnabled" Value="false" />
+				</Window>
+			<Window Type="Marti/Editbox" Name="LocationXEditbox">
+				<Property Name="AbsoluteRect" Value="l:250.000000 t:210.000000 r:290.000000 b:235.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				</Window>
+			<Window Type="Marti/Editbox" Name="LocationYEditbox">
+				<Property Name="AbsoluteRect" Value="l:290.000000 t:210.000000 r:330.000000 b:235.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				</Window>
+			<Window Type="Marti/StaticText" Name="SizeStaticText">
+				<Property Name="AbsoluteRect" Value="l:160.000000 t:240.000000 r:250.000000 b:265.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Size:" />
+				<Property Name="FrameEnabled" Value="false" />
+				</Window>
+			<Window Type="Marti/Editbox" Name="SizeWEditbox">
+				<Property Name="AbsoluteRect" Value="l:250.000000 t:240.000000 r:290.000000 b:265.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				</Window>
+			<Window Type="Marti/Editbox" Name="SizeHEditbox">
+				<Property Name="AbsoluteRect" Value="l:290.000000 t:240.000000 r:330.000000 b:265.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				</Window>
+			</Window>
+</GUILayout>

@@ -1,0 +1,274 @@
+// Expand a range-compressed vector
+float3 expand(float3 v)
+{
+	return (v - 0.5) * 2;
+}
+
+void main_vs(
+             float4 position	: POSITION,
+			 float3 normal		: NORMAL,
+			 float2 uv			: TEXCOORD0,
+             
+			 // outputs
+			 out float4 oPosition    : POSITION,
+			 out float2 oUv			 : TEXCOORD0,
+             
+			 // parameters
+			 uniform float4x4 worldViewProj)
+{
+	// calculate output position
+	oPosition = mul(worldViewProj, position );
+	// pass the main uvs straight through unchanged
+	oUv = uv;		
+}
+
+/* Offset mapping including a shadow element and multiple lights in one pass */ 
+void main_vsIntShadow(float4 position   : POSITION, 
+                              float3 normal      : NORMAL, 
+                              float2 uv         : TEXCOORD0, 
+                              
+                              // outputs 
+                              out float4 oPosition    : POSITION, 
+                              out float2 oUv          : TEXCOORD0, 
+                			  out float4 oShadowUV : TEXCOORD1,
+              
+                              // parameters 
+                              uniform float4x4 worldViewProj,
+                			  uniform float4x4 worldMatrix,
+                			  uniform float4x4 texViewProj) 
+{  
+   // calculate output position 
+   oPosition = mul(worldViewProj, position); 
+   
+   float4 worldPos = mul(worldMatrix, position);   
+   oShadowUV = mul(texViewProj, worldPos);
+      
+   // pass the main uvs straight through unchanged 
+   oUv = uv; 
+
+}
+ 
+ 
+void main_fp_Normal
+(
+  float2 iTexCoord0 : TEXCOORD0, 
+  out float4 oColor : COLOR,
+
+  uniform float4 lightPosition, // object space 
+  //uniform float4 lightDiffuse, // object space 
+  uniform sampler2D normalMap
+) 
+{
+  float3 normal = expand(tex2D(normalMap, iTexCoord0).xzy);
+  oColor = saturate(dot(normal, lightPosition.xyz));
+}
+
+
+
+void main_fp_1Cov1
+(
+  float2 iTexCoord0 : TEXCOORD0,
+ 
+  out float4 oColor : COLOR,
+
+  uniform float splatScale,
+  
+  uniform sampler2D covMap1,
+  uniform sampler2D splat1
+) 
+{
+  float3 cov1 = tex2D(covMap1, iTexCoord0).rgb;
+  oColor = tex2D(splat1, iTexCoord0 * splatScale) * cov1.x;
+}
+
+void main_fp_1Cov1N
+(
+  float2 iTexCoord0 : TEXCOORD0,
+ 
+  out float4 oColor : COLOR,
+
+  uniform float4 lightPosition, // object space 
+  //uniform float4 lightDiffuse, // object space 
+  uniform float splatScale,
+  
+  uniform sampler2D covMap1,
+  uniform sampler2D splat1,
+  uniform sampler2D normalMap
+) 
+{
+  float3 cov1 = tex2D(covMap1, iTexCoord0).rgb;
+  oColor = tex2D(splat1, iTexCoord0 * splatScale) * cov1.x;
+  float3 normal = expand(tex2D(normalMap, iTexCoord0).xzy);
+  oColor = saturate(oColor* float4(0.7,0.7,0.7,0.7) + saturate(dot(lightPosition.xyz, normal))* float4(0.3,0.3,0.3,0.3));
+  oColor = oColor*oColor;
+}
+
+void main_fp_1Cov2
+(
+  float2 iTexCoord0 : TEXCOORD0,
+ 
+  out float4 oColor : COLOR,
+
+  uniform float splatScale,
+  uniform sampler2D covMap1,
+  uniform sampler2D splat1,
+  uniform sampler2D splat2
+) 
+{
+  float3 cov1 = tex2D(covMap1, iTexCoord0).rgb;
+  oColor = tex2D(splat1, iTexCoord0 * splatScale) * cov1.x
+          + tex2D(splat2, iTexCoord0 * splatScale) * cov1.y;
+}
+
+void main_fp_1Cov2N
+(
+  float2 iTexCoord0 : TEXCOORD0,
+ 
+  out float4 oColor : COLOR,
+
+  uniform float4 lightPosition, // object space 
+  //uniform float4 lightDiffuse, // object space 
+  uniform float splatScale,
+  uniform sampler2D covMap1,
+  uniform sampler2D splat1,
+  uniform sampler2D splat2,
+  uniform sampler2D normalMap
+) 
+{
+  float3 cov1 = tex2D(covMap1, iTexCoord0).rgb;
+  oColor = tex2D(splat1, iTexCoord0 * splatScale) * cov1.x
+          + tex2D(splat2, iTexCoord0 * splatScale) * cov1.y;
+  float3 normal = expand(tex2D(normalMap, iTexCoord0).xzy);
+  oColor = saturate(oColor* float4(0.7,0.7,0.7,0.7) + saturate(dot(lightPosition.xyz, normal))* float4(0.3,0.3,0.3,0.3));
+  oColor = oColor*oColor;
+}
+
+void main_fp_1Cov3
+(
+  float2 iTexCoord0 : TEXCOORD0,
+ 
+  out float4 oColor : COLOR,
+
+  uniform float splatScale,
+  uniform sampler2D covMap1,
+  uniform sampler2D splat1,
+  uniform sampler2D splat2,
+  uniform sampler2D splat3
+) 
+{
+  float3 cov1 = tex2D(covMap1, iTexCoord0).rgb;
+  oColor = tex2D(splat1, iTexCoord0 * splatScale) * cov1.x
+          + tex2D(splat2, iTexCoord0 * splatScale) * cov1.y
+          + tex2D(splat3, iTexCoord0 * splatScale) * cov1.z;
+}
+
+
+void main_fp_1Cov3N
+(
+  float2 iTexCoord0 : TEXCOORD0,
+ 
+  out float4 oColor : COLOR,
+
+  uniform float4 lightPosition, // object space 
+  //uniform float4 lightDiffuse, // object space 
+  uniform float splatScale,
+  
+  uniform sampler2D covMap1,
+  uniform sampler2D splat1,
+  uniform sampler2D splat2,
+  uniform sampler2D splat3,
+  uniform sampler2D normalMap
+) 
+{
+  float3 cov1 = tex2D(covMap1, iTexCoord0).rgb;
+  oColor = (tex2D(splat1, iTexCoord0 * splatScale) * cov1.x
+          + tex2D(splat2, iTexCoord0 * splatScale) * cov1.y
+          + tex2D(splat3, iTexCoord0 * splatScale) * cov1.z);
+  float3 normal = expand(tex2D(normalMap, iTexCoord0).xzy);
+  //oColor = oColor * saturate(dot(lightPosition.xyz, normal));
+  oColor = saturate(oColor* float4(0.7,0.7,0.7,0.7) + saturate(dot(lightPosition.xyz, normal))* float4(0.3,0.3,0.3,0.3));
+  oColor = oColor*oColor;
+  //oColor = oColor * saturate(dot(normal, lightPosition.xyz)) * lightDiffuse;
+}
+
+
+
+void main_fp_1Cov4
+(
+  float2 iTexCoord0 : TEXCOORD0,
+ 
+  out float4 oColor : COLOR,
+
+  uniform float splatScale,
+  uniform sampler2D covMap1,
+  uniform sampler2D splat1,
+  uniform sampler2D splat2,
+  uniform sampler2D splat3,
+  uniform sampler2D splat4
+) 
+{
+  float4 cov1 = tex2D(covMap1, iTexCoord0).rgba;
+  oColor = tex2D(splat1, iTexCoord0 * splatScale) * cov1.x
+          + tex2D(splat2, iTexCoord0 * splatScale) * cov1.y
+          + tex2D(splat3, iTexCoord0 * splatScale) * cov1.z
+          + tex2D(splat4, iTexCoord0 * splatScale) * cov1.w;
+}
+
+void main_fp_2Cov3
+(
+  float2 iTexCoord0 : TEXCOORD0,
+ 
+  out float4 oColor : COLOR,
+
+  uniform float splatScale,
+  uniform sampler2D covMap1,
+  uniform sampler2D covMap2,
+  uniform sampler2D splat1,
+  uniform sampler2D splat2,
+  uniform sampler2D splat3,
+  uniform sampler2D splat4,
+  uniform sampler2D splat5,
+  uniform sampler2D splat6
+) 
+{
+  float3 cov1 = tex2D(covMap1, iTexCoord0).rgb;
+  float3 cov2 = tex2D(covMap2, iTexCoord0).rgb;
+  float2 scaleCoord = iTexCoord0 * splatScale;
+  oColor = tex2D(splat1, iTexCoord0 * splatScale) * cov1.x
+          + tex2D(splat2, iTexCoord0 * splatScale) * cov1.y
+          + tex2D(splat3, iTexCoord0 * splatScale) * cov1.z      
+          + tex2D(splat4, iTexCoord0 * splatScale) * cov2.x
+          + tex2D(splat5, iTexCoord0 * splatScale) * cov2.y
+          + tex2D(splat6, iTexCoord0 * splatScale) * cov2.z;
+}
+
+void main_fp_2Cov4
+(
+  float2 iTexCoord0 : TEXCOORD0,
+ 
+  out float4 oColor : COLOR,
+
+  uniform float splatScale,
+  uniform sampler2D covMap1,
+  uniform sampler2D covMap2,
+  uniform sampler2D splat1,
+  uniform sampler2D splat2,
+  uniform sampler2D splat3,
+  uniform sampler2D splat4,
+  uniform sampler2D splat5,
+  uniform sampler2D splat6,
+  uniform sampler2D splat7,
+  uniform sampler2D splat8
+) 
+{
+  float4 cov1 = tex2D(covMap1, iTexCoord0).rgba;
+  float4 cov2 = tex2D(covMap2, iTexCoord0).rgba;
+  oColor = tex2D(splat1, iTexCoord0 * splatScale) * cov1.x
+          + tex2D(splat2, iTexCoord0 * splatScale) * cov1.y
+          + tex2D(splat3, iTexCoord0 * splatScale) * cov1.z
+          + tex2D(splat4, iTexCoord0 * splatScale) * cov1.w          
+          + tex2D(splat5, iTexCoord0 * splatScale) * cov2.x
+          + tex2D(splat6, iTexCoord0 * splatScale) * cov2.y
+          + tex2D(splat7, iTexCoord0 * splatScale) * cov2.z
+          + tex2D(splat8, iTexCoord0 * splatScale) * cov2.w;
+}

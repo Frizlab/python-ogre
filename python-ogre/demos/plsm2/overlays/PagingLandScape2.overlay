@@ -1,0 +1,470 @@
+// Ogre overlay scripts
+PagingLandScape2/DebugOverlay
+{
+	zorder 500
+	// Stats block
+	container BorderPanel(PagingLandScape2/StatPanel)
+	{
+		metrics_mode pixels
+		vert_align top
+		left 5
+		top 5
+		width 640
+		height 117
+		material Core/StatsBlockCenter
+        	border_size 1 1 1 1
+        	border_material Core/StatsBlockBorder
+        	border_topleft_uv     0.0000 1.0000 0.0039 0.9961
+			border_top_uv         0.0039 1.0000 0.9961 0.9961
+	    	border_topright_uv    0.9961 1.0000 1.0000 0.9961
+	    	border_left_uv        0.0000 0.9961 0.0039 0.0039
+	    	border_right_uv       0.9961 0.9961 1.0000 0.0039
+	    	border_bottomleft_uv  0.0000 0.0039 0.0039 0.0000
+        	border_bottom_uv      0.0039 0.0039 0.9961 0.0000
+	    	border_bottomright_uv 0.9961 0.0039 1.0000 0.0000
+
+		container Panel(PagingLandScape2/BreakPanel)
+		{
+			metrics_mode pixels
+			left 5
+			top 22
+			width 620
+			height 1
+			material Core/StatsBreak
+		}
+
+		element TextArea(PagingLandScape2/Title)
+		{
+			metrics_mode pixels
+			left 5
+			top 5
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 19
+			caption LandScape Plug-in:
+			colour_top 0.7 1 0.7
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Page)
+		{
+			metrics_mode pixels
+			left 5
+			top 25
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption Tile (X,Z): (
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Queue)
+		{
+			metrics_mode pixels
+			left 5
+			top 40
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption Queue (Merges, Splits, Morphs): (
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/FreeTiles)
+		{
+			metrics_mode pixels
+			left 5
+			top 55
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption Tiles (Used, Free): (
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/FreeRenderables)
+		{
+			metrics_mode pixels
+			left 5
+			top 70
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption Renderables (Used, Free): (
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Player)
+		{
+			metrics_mode pixels
+			left 5
+			top 85
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption Player (X, Y, Z): (
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/MainQueue)
+		{
+			metrics_mode pixels
+			left 5
+			top 100
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption Queues (PreLoad, Load, Unload, PostUnload): (
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Impact)
+		{
+			metrics_mode pixels
+			left 5
+			top 100
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption Impact (X, Y, Z, TileX, TileZ, PageX, PageZ): (
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+	}
+}
+
+PagingLandScape2/HelpOverlay
+{
+	zorder 400
+	// Stats block
+	container BorderPanel(PagingLandScape2/HelpPanel)
+	{
+		metrics_mode pixels
+		vert_align top
+		left 15
+		top 25
+		width 620
+		height 400
+		material Core/StatsBlockCenter
+        	border_size 1 1 1 1
+        	border_material Core/StatsBlockBorder
+        	border_topleft_uv     0.0000 1.0000 0.0039 0.9961
+			border_top_uv         0.0039 1.0000 0.9961 0.9961
+	    	border_topright_uv    0.9961 1.0000 1.0000 0.9961
+	    	border_left_uv        0.0000 0.9961 0.0039 0.0039
+	    	border_right_uv       0.9961 0.9961 1.0000 0.0039
+	    	border_bottomleft_uv  0.0000 0.0039 0.0039 0.0000
+        	border_bottom_uv      0.0039 0.0039 0.9961 0.0000
+	    	border_bottomright_uv 0.9961 0.0039 1.0000 0.0000
+
+		container Panel(PagingLandScape2/HelpBreakPanel)
+		{
+			metrics_mode pixels
+			left 5
+			top 22
+			width 610
+			height 1
+			material Core/StatsBreak
+		}
+
+		element TextArea(PagingLandScape2/HelpTitle)
+		{
+			metrics_mode pixels
+			left 5
+			top 5
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 19
+			caption LandScape Plug-in Help:
+			colour_top 0.7 1 0.7
+			colour_bottom 0.3 0.5 0.3
+		}
+
+
+
+
+
+
+		element TextArea(PagingLandScape2/Help1)
+		{
+			metrics_mode pixels
+			left 5
+			top 35
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption Mouse left button                   : Deform Terrain under Click
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Help2)
+		{
+			metrics_mode pixels
+			left 5
+			top 50
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption Mouse right button                  : place sphere on terrain under click
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Help3)
+		{
+			metrics_mode pixels
+			left 5
+			top 65
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption Mouse middle                        : place sphere on terrain  under camera
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Help4)
+		{
+			metrics_mode pixels
+			left 5
+			top 90
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption Switch Mouse Mode (cursor, camera)  : m ,
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Help5)
+		{
+			metrics_mode pixels
+			left 5
+			top 110
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption F1                                  : Map ,Help, Debug info switch
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Help6)
+		{
+			metrics_mode pixels
+			left 5
+			top 135
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption F2                                  : Current Terrain Height
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Help7)
+		{
+			metrics_mode pixels
+			left 5
+			top 150
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption F3,  F4                             : increase, decrease LOD Bias
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Help8)
+		{
+			metrics_mode pixels
+			left 5
+			top 165
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption F5,  F6                             : increase, decrease Distance LOD
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Help9)
+		{
+			metrics_mode pixels
+			left 5
+			top 180
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption F7,  F8                             : increase, decrease Deformation Size
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Help10)
+		{
+			metrics_mode pixels
+			left 5
+			top 195
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption F9,  F10                            : increase, decrease Visible Renderables num
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Help11)
+		{
+			metrics_mode pixels
+			left 5
+			top 220
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption K       : Next Texture Format
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Help12)
+		{
+			metrics_mode pixels
+			left 5
+			top 235
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption N, L, P                             : Next, Reload, Previous Map
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Help13)
+		{
+			metrics_mode pixels
+			left 5
+			top 250
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption aqwsd, arrow keys                   : Move Camera
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Help14)
+		{
+			metrics_mode pixels
+			left 5
+			top 265
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption pg.up, pg down                      : Move Camera up and down
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Help15)
+		{
+			metrics_mode pixels
+			left 5
+			top 280
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption LCtrl                               : Accel camera move * 30
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Help16)
+		{
+			metrics_mode pixels
+			left 5
+			top 295
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption Space                               : Accel camera move * 300 (both possible)
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Help17)
+		{
+			metrics_mode pixels
+			left 5
+			top 320
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption F                                   : FPS, numtris stats
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Help18)
+		{
+			metrics_mode pixels
+			left 5
+			top 335
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption T                                   : wireframe
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Help19)
+		{
+			metrics_mode pixels
+			left 5
+			top 350
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption SysReq                              : Screenshot
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Help20)
+		{
+			metrics_mode pixels
+			left 5
+			top 365
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption C                                   : Shadow Mode
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape2/Help21)
+		{
+			metrics_mode pixels
+			left 5
+			top 380
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption Y                                   : Texture Filtering Mode
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+	}
+}

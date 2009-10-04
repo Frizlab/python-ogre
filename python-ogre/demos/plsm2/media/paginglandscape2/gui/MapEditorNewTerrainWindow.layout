@@ -1,0 +1,178 @@
+<?xml version="1.0" ?>
+<GUILayout>
+		<Window Type="Marti/FrameWindow" Name="NewTerrainWindow">
+			<Property Name="AbsoluteRect" Value="l:89.000000 t:49.000000 r:600.000000 b:450.000000" />
+			<Property Name="MetricsMode" Value="Absolute" />
+			<Property Name="Text" Value="New Terrain..." />
+			<Property Name="AlwaysOnTop" Value="true" />
+            
+			<Window Type="Marti/StaticImage" Name="GenerateWindow">
+				<Property Name="AbsoluteRect" Value="l:150.000000 t:30.000000 r:500.000000 b:390.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="FrameEnabled" Value="true" />
+				</Window>
+
+			<Window Type="Marti/StaticImage" Name="RadioButtonBackground">
+				<Property Name="AbsoluteRect" Value="l:0.000000 t:0.000000 r:150.000000 b:30.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="FrameEnabled" Value="true" />
+				<Property Name="Visible" Value="false" />
+				</Window>
+
+
+			<Window Type="Marti/StaticText" Name="WidthStaticText">
+				<Property Name="AbsoluteRect" Value="l:11.000000 t:35.000000 r:61.000000 b:60.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Width:" />
+				<Property Name="FrameEnabled" Value="false" />
+				</Window>
+			<Window Type="Marti/RadioButton" Name="256WidthRadioButton">
+				<Property Name="AbsoluteRect" Value="l:11.000000 t:65.000000 r:61.000000 b:85.000000" />
+				<Property Name="Selected" Value="True" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="256" />
+				<Property Name="GroupID" Value="0" />
+				<Property Name="Selected" Value="true" />
+				</Window>
+			<Window Type="Marti/RadioButton" Name="512WidthRadioButton">
+				<Property Name="AbsoluteRect" Value="l:11.000000 t:85.000000 r:61.000000 b:105.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="512" />
+				<Property Name="GroupID" Value="0" />
+				</Window>
+			<Window Type="Marti/RadioButton" Name="1024WidthRadioButton">
+				<Property Name="AbsoluteRect" Value="l:11.000000 t:105.000000 r:61.000000 b:125.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="1024" />
+				<Property Name="GroupID" Value="0" />
+				</Window>
+			<Window Type="Marti/RadioButton" Name="2048WidthRadioButton">
+				<Property Name="AbsoluteRect" Value="l:11.000000 t:125.000000 r:61.000000 b:145.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="2048" />
+				<Property Name="GroupID" Value="0" />
+				</Window>
+			<Window Type="Marti/RadioButton" Name="4096WidthRadioButton">
+				<Property Name="AbsoluteRect" Value="l:11.000000 t:145.000000 r:61.000000 b:165.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="4096" />
+				<Property Name="GroupID" Value="0" />
+				</Window>                
+			<Window Type="Marti/RadioButton" Name="UserWidthRadioButton">
+				<Property Name="AbsoluteRect" Value="l:11.000000 t:165.000000 r:61.000000 b:185.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="GroupID" Value="0" />
+				</Window>
+			<Window Type="Marti/Editbox" Name="WidthEditBox">
+				<Property Name="AbsoluteRect" Value="l:23.000000 t:165.000000 r:63.000000 b:185.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				</Window>
+                
+
+            <Window Type="Marti/StaticText" Name="HeightStaticText">
+				<Property Name="AbsoluteRect" Value="l:80.000000 t:35.000000 r:130.000000 b:60.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Height:" />
+				<Property Name="FrameEnabled" Value="false" />
+				</Window>  
+			<Window Type="Marti/RadioButton" Name="256HeightRadioButton">
+				<Property Name="AbsoluteRect" Value="l:80.000000 t:65.000000 r:130.000000 b:85.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="256" />
+				<Property Name="GroupID" Value="1" />
+				<Property Name="Selected" Value="True" />
+				</Window>
+			<Window Type="Marti/RadioButton" Name="512HeightRadioButton">
+				<Property Name="AbsoluteRect" Value="l:80.000000 t:85.000000 r:130.000000 b:105.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="512" />
+				<Property Name="GroupID" Value="1" />
+				</Window>
+			<Window Type="Marti/RadioButton" Name="1024HeightRadioButton">
+				<Property Name="AbsoluteRect" Value="l:80.000000 t:105.000000 r:130.000000 b:125.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="1024" />
+				<Property Name="GroupID" Value="1" />
+				</Window>
+			<Window Type="Marti/RadioButton" Name="2048HeightRadioButton">
+				<Property Name="AbsoluteRect" Value="l:80.000000 t:125.000000 r:130.000000 b:145.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="2048" />
+				<Property Name="GroupID" Value="1" />
+				</Window>
+			<Window Type="Marti/RadioButton" Name="4096HeightRadioButton">
+				<Property Name="AbsoluteRect" Value="l:80.000000 t:145.000000 r:130.000000 b:165.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="4096" />
+				<Property Name="GroupID" Value="1" />
+				</Window>
+			<Window Type="Marti/RadioButton" Name="UserHeightRadioButton">
+				<Property Name="AbsoluteRect" Value="l:80.000000 t:165.000000 r:130.000000 b:185.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="GroupID" Value="1" />
+				</Window>
+			<Window Type="Marti/Editbox" Name="HeightEditBox">
+				<Property Name="AbsoluteRect" Value="l:92.000000 t:165.000000 r:132.000000 b:185.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				</Window>
+                
+                
+			<Window Type="Marti/RadioButton" Name="GenerateBlankTerrain">
+				<Property Name="AbsoluteRect" Value="l:11.000000 t:192.000000 r:250.000000 b:213.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Selected" Value="True" />
+				<Property Name="Text" Value="Blank Terrain" />
+				<Property Name="GroupID" Value="2" />
+				</Window>
+			<Window Type="Marti/RadioButton" Name="GenerateTerrainPlasma">
+				<Property Name="AbsoluteRect" Value="l:11.000000 t:220.000000 r:250.000000 b:241.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Plasma" />
+				<Property Name="GroupID" Value="2" />
+				</Window>
+			<Window Type="Marti/RadioButton" Name="GenerateTerrainFault">
+				<Property Name="AbsoluteRect" Value="l:11.000000 t:248.000000 r:250.000000 b:269.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Fault" />
+				<Property Name="GroupID" Value="2" />
+				</Window>
+			<Window Type="Marti/RadioButton" Name="GenerateTerrainParticle">
+				<Property Name="AbsoluteRect" Value="l:11.000000 t:276.000000 r:250.000000 b:296.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Particles" />
+				<Property Name="GroupID" Value="2" />
+				</Window>
+
+			<Window Type="Marti/RadioButton" Name="GenerateTerrainLibnoise">
+				<Property Name="AbsoluteRect" Value="l:11.000000 t:304.000000 r:250.000000 b:324.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Libnoise" />
+				<Property Name="GroupID" Value="2" />
+				</Window>
+
+              
+			<Window Type="Marti/StaticText" Name="NewTerrainNameStaticText">
+				<Property Name="AbsoluteRect" Value="l:11.000000 t:330.000000 r:54.000000 b:358.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Name:" />
+				<Property Name="FrameEnabled" Value="false" />
+				</Window>
+			<Window Type="Marti/Editbox" Name="NewTerrainNameEditbox">
+				<Property Name="AbsoluteRect" Value="l:58.000000 t:330.000000 r:135.000000 b:358.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				</Window>
+
+                
+			<Window Type="Marti/Button" Name="OkButton">
+				<Property Name="AbsoluteRect" Value="l:11.000000 t:365.000000 r:61.000000 b:385.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Ok" />
+				</Window>
+			<Window Type="Marti/Button" Name="CancelButton">
+				<Property Name="AbsoluteRect" Value="l:80.000000 t:365.000000 r:130.000000 b:385.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Cancel" />
+				</Window>
+                
+		</Window>
+</GUILayout>

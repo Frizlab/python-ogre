@@ -1,0 +1,25 @@
+void main
+(
+  float4 iPosition : POSITION, //in object space
+  float3 iNormal : NORMAL, //in object space
+  float2 iTexCoord0 : TEXCOORD0,
+
+  out float4 oPosition : POSITION, //in projection space
+  out float2 oTexCoord0 : TEXCOORD0, 
+  out float3 oNormal : TEXCOORD1, //in object space
+  out float4 oPosObjectSpace : TEXCOORD2, //position in object space
+
+  uniform float4x4 worldViewProj
+)
+{
+  // pass normal
+  oNormal = iNormal;
+
+  oTexCoord0 = iTexCoord0;
+
+  //pass the object space vertex position through to the fragment shader
+  oPosObjectSpace = iPosition;
+
+  // transform position to projection space
+  oPosition = mul(worldViewProj, iPosition);
+}

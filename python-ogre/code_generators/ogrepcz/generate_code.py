@@ -62,19 +62,27 @@ def ManualExclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns    
+        
+    global_ns.namespace('std').class_('map<std::string, Ogre::PCZone*, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::PCZone*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >').exclude()
+    
     excludes=[ # '::Ogre::PCZCamera',
             '::Ogre::PCZSceneManagerFactory',
-            '::Ogre::PCZone::PortalSortDistance'
+            '::Ogre::PCZone::PortalSortDistance',
+            '::std::map<std::string, Ogre::PCZone*, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::PCZone*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >'
             ]
     for e in excludes:
-        main_ns.class_(e).exclude()
-        print "Excluded Class:", e
-                
+        try:
+            main_ns.class_(e).exclude()
+            print "Excluded Class:", e
+        except:
+            print "Failed to Exclude Class:", e
+            
     excludes=['::Ogre::PCZSceneManagerFactory::initMetaData',
               '::Ogre::PCZSceneManagerFactory::createInstance',
               '::Ogre::PCZSceneManagerFactory::destroyInstance',
               '::Ogre::Portal::setCorners',  # hand wrapped..
-              '::Ogre::PCZCamera::isVisibile'
+              '::Ogre::PCZCamera::isVisibile',
+              '::Ogre::MapIterator< std::map<std::string, Ogre::PCZone*, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::PCZone*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > >::peekNextValuePtr'
               ]
     for e in excludes:
         try:
@@ -92,13 +100,14 @@ def ManualExclude ( mb ):
         except:
             print "Failed to exclude:", e
 
-#     std_ns = global_ns.namespace('std')
-#     for c in std_ns.classes():
-#         if 'map' in c.decl_string or 'Ogre' in c.decl_string:
-#             print c.name, c.decl_string
+    std_ns = global_ns.namespace('std')
+    if False:
+        for c in std_ns.classes():
+            if 'map' in c.decl_string and 'Ogre' in c.decl_string:
+                print c.name, c.decl_string
 #     std_ns.class_('::std::vector<Ogre::Plane, std::allocator<Ogre::Plane> >')    
 # #     std_ns.class_('::std::map<std::string, std::allocator<std::string> >')
-        
+        sys.exit()    
                        
 ############################################################
 ##
@@ -136,8 +145,8 @@ def ManualInclude ( mb ):
                 #'::Ogre::Segment',
                 '::Ogre::MapIterator<std::map<std::string, Ogre::PCZone*, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::PCZone*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > >',
                 '::Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::PCZoneFactory*, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, Ogre::STLAllocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::PCZoneFactory*>, Ogre::CategorisedAllocPolicy<MEMCATEGORY_GENERAL> > > >',
-                '::std::map<std::string, Ogre::PCZone*, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::PCZone*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >'
-                
+#### AJM to review
+###                '::std::map<std::string, Ogre::PCZone*, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::PCZone*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >'
                 ]  
     for i in includes:
         try:
@@ -146,8 +155,11 @@ def ManualInclude ( mb ):
         except:
             print "Failed to Include:", i
                         
-    main_ns.class_('map<std::string, Ogre::PCZone*, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::PCZone*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >').alias = "stdMapPCZone1"                            
-    main_ns.class_('map<std::string, Ogre::PCZone*, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::PCZone*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >').include()
+    try:    #only in newer versions of Ogre...
+        main_ns.class_('map<std::string, Ogre::PCZone*, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::PCZone*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >').alias = "stdMapPCZone1"                            
+        main_ns.class_('map<std::string, Ogre::PCZone*, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::PCZone*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >').include()
+    except:
+        pass
     main_ns.class_('RaySceneQuery').include(already_exposed=True)            
     main_ns.class_('DefaultRaySceneQuery').include(already_exposed=True)  
     main_ns.class_('SceneQuery').include(already_exposed=True)  
@@ -160,6 +172,8 @@ def ManualInclude ( mb ):
     c = global_ns.class_('::std::map<std::string, Ogre::PCZone*, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::PCZone*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >')
     c.alias="stdMapOgrePCZone"
     c.wrapper_alias="Wrapper_stdMapOgrePCZone"
+    c.exclude()
+    c.include(already_exposed=True)
     
 ############################################################
 ##

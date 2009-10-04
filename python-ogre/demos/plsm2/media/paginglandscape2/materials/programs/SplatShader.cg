@@ -1,0 +1,62 @@
+
+// Vertex program for automatic terrain texture generation
+void main_vp
+(
+    float4             iPosition           : POSITION,
+    float2             iTexcoord           : TEXCOORD0,
+
+    out float4         oPosition           : POSITION,
+    out float2         oCoverage           : TEXCOORD0,
+    out float2         oScaled0            : TEXCOORD1,
+    out float2         oScaled1            : TEXCOORD2,
+    out float2         oScaled2            : TEXCOORD3,
+    out float2         oScaled3            : TEXCOORD4,
+
+    uniform float4x4   worldViewProj,
+    uniform float4     lightDirection,
+    uniform float4     ambientLight,
+
+    uniform float4     fogSettings,
+    uniform float4     fogColour
+)
+{
+    // Transform the current vertex from object space to clip space, since OpenGL isn't doing it for us
+    // as long we're using a vertex shader
+    oPosition  = mul(worldViewProj, iPosition);
+
+    //float fog = saturate(( oPosition.z - fogSettings[0] ) / (fogSettings[1] - fogSettings[0])) * fogSettings[2];   
+    //oFog = fogColour * fog;
+    
+    oCoverage = iTexcoord;           
+    oScaled0 = oCoverage*20.0f;
+    oScaled1 = oScaled0;
+    oScaled2 = oScaled0;
+    oScaled3 = oScaled0;
+}
+
+// Fragment program for automatic terrain texture generation
+void main_fp
+(
+    float2              iCoverage    : TEXCOORD0,
+    float2              iScaled0     : TEXCOORD1,
+    float2              iScaled1     : TEXCOORD2,
+    float2              iScaled2     : TEXCOORD3,
+    float2              iScaled3     : TEXCOORD4,
+    
+    out float4          oColor      : COLOR,
+
+    uniform sampler2D   textureUnit0: TEXUNIT0,
+    uniform sampler2D   textureUnit1: TEXUNIT1,
+    uniform sampler2D   textureUnit2: TEXUNIT2,
+    uniform sampler2D   textureUnit3: TEXUNIT3,
+    uniform sampler2D   textureUnit4: TEXUNIT4
+)
+{
+    float4 Coverage = tex2D(textureUnit0, iCoverage.xy);
+    oColor = tex2D(textureUnit1, iScaled0.xy) * Coverage.x
+            + tex2D(textureUnit2, iScaled1.xy) * Coverage.y
+            + tex2D(textureUnit3, iScaled2.xy) * Coverage.z
+            + tex2D(textureUnit4, iScaled3.xy) * Coverage.w;
+
+}
+

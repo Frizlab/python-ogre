@@ -1,0 +1,120 @@
+<?xml version="1.0" ?>
+<GUILayout>
+	<Window Type="Marti/FrameWindow" Name="CommonFileDialog">
+		<Property Name="AlwaysOnTop" Value="true" />
+		<Property Name="MetricsMode" Value="Relative" />
+		<Property Name="Position" Value="x:0.3 y:0.2" />
+		<Property Name="Size" Value="w:0.5 h:0.6" />
+		<Property Name="SizingEnabled" Value="false" />
+		<Property Name="CloseButtonEnabled" Value="true" />
+		<Window Type="Marti/Combobox" Name="CommonFileDialog/DriveCombobox">
+			<Property Name="Position" Value="x:0.05 y:0.07" />
+			<Property Name="Size" Value="w:0.45 h:0.5" />
+			<Property Name="ClippedByParent" Value="false" />
+			<Property Name="ReadOnly" Value="true" />
+		</Window>
+		<Window Type="Marti/Button" Name="CommonFileDialog/BackButton">
+			<Property Name="AlwaysOnTop" Value="true" />
+			<Property Name="MetricsMode" Value="Relative" />
+			<Property Name="RelativePosition" Value="x:0.55 y:0.07" />
+			<Property Name="RelativeSize" Value="w:0.2 h:0.05" />
+		</Window>
+		<Window Type="Marti/Listbox" Name="CommonFileDialog/Listbox">
+			<Property Name="Position" Value="x:0.05 y:0.13" />
+			<Property Name="RelativeMaxSize" Value="w:0.9 h:0.7" />
+			<Property Name="Size" Value="w:0.9 h:0.7" />
+		</Window>
+		<Window Type="Marti/Button" Name="CommonFileDialog/OkButton">
+			<Property Name="AlwaysOnTop" Value="true" />
+			<Property Name="MetricsMode" Value="Relative" />
+			<Property Name="RelativePosition" Value="x:0.75 y:0.85" />
+			<Property Name="RelativeSize" Value="w:0.2 h:0.05" />
+			<Property Name="Text" Value="Ok" />
+		</Window>
+		<Window Type="Marti/Button" Name="CommonFileDialog/CancelButton">
+			<Property Name="AlwaysOnTop" Value="true" />
+			<Property Name="MetricsMode" Value="Relative" />
+			<Property Name="RelativePosition" Value="x:0.75 y:0.9" />
+			<Property Name="RelativeSize" Value="w:0.2 h:0.05" />
+			<Property Name="Text" Value="Cancel" />
+		</Window>
+		<Window Type="Marti/StaticText" Name="CommonFileDialog/FileNameText">
+			<Property Name="Position" Value="x:0.05 y:0.85" />
+			<Property Name="Size" Value="w:0.2 h:0.06" />
+			<Property Name="Text" Value="Filename:" />
+			<Property Name="FrameEnabled" Value="false" />
+			<Property Name="BackgroundEnabled" Value="false" />
+		</Window>
+		<Window Type="Marti/StaticText" Name="CommonFileDialog/ExtentionText">
+			<Property Name="Position" Value="x:0.05 y:0.9" />
+			<Property Name="Size" Value="w:0.2 h:0.06" />
+			<Property Name="Text" Value="Extensions:" />
+			<Property Name="FrameEnabled" Value="false" />
+			<Property Name="BackgroundEnabled" Value="false" />
+		</Window>
+		<Window Type="Marti/Combobox" Name="CommonFileDialog/FileCombobox">
+			<Property Name="Position" Value="x:0.25 y:0.85" />
+			<Property Name="Size" Value="w:0.5 h:0.5" />
+			<Property Name="ClippedByParent" Value="false" />
+			<Property Name="ReadOnly" Value="false" />
+		</Window>
+
+		<Window Type="Marti/Combobox" Name="CommonFileDialog/ExtensionCombobox">
+			<Property Name="Position" Value="x:0.25 y:0.9" />
+			<Property Name="Size" Value="w:0.5 h:0.5" />
+			<Property Name="ClippedByParent" Value="false" />
+			<Property Name="ReadOnly" Value="true" />
+		</Window>
+		<Window Type="Marti/FrameWindow" Name="CommonFileDialog/PromptLoad">
+			<Property Name="AlwaysOnTop" Value="true" />
+			<Property Name="MetricsMode" Value="Relative" />
+			<Property Name="Position" Value="x:0.2 y:0.3" />
+			<Property Name="Size" Value="w:0.6 h:0.4" />
+			<Property Name="SizingEnabled" Value="false" />
+			<Property Name="CloseButtonEnabled" Value="false" />
+			<Property Name="DragMovingEnabled" Value="false" />
+			<Window Type="Marti/StaticText" Name="CommonFileDialog/PromptLoad/Text">
+				<Property Name="Position" Value="x:0.05 y:0.2" />
+				<Property Name="Size" Value="w:0.9 h:0.1" />
+				<Property Name="FrameEnabled" Value="false" />
+				<Property Name="BackgroundEnabled" Value="false" />
+			</Window>
+			<Window Type="Marti/Button" Name="CommonFileDialog/PromptLoad/OkButton">
+				<Property Name="AlwaysOnTop" Value="true" />
+				<Property Name="MetricsMode" Value="Relative" />
+				<Property Name="RelativePosition" Value="x:0.37 y:0.8" />
+				<Property Name="RelativeSize" Value="w:0.25 h:0.1" />
+				<Property Name="Text" Value="Ok" />
+			</Window>
+		</Window>
+		<Window Type="Marti/FrameWindow" Name="CommonFileDialog/PromptSave">
+			<Property Name="AlwaysOnTop" Value="true" />
+			<Property Name="MetricsMode" Value="Relative" />
+			<Property Name="Position" Value="x:0.2 y:0.3" />
+			<Property Name="Size" Value="w:0.6 h:0.4" />
+			<Property Name="SizingEnabled" Value="false" />
+			<Property Name="CloseButtonEnabled" Value="false" />
+			<Property Name="DragMovingEnabled" Value="false" />
+			<Window Type="Marti/StaticText" Name="CommonFileDialog/PromptSave/Text">
+				<Property Name="Position" Value="x:0.05 y:0.2" />
+				<Property Name="Size" Value="w:0.9 h:0.1" />
+				<Property Name="FrameEnabled" Value="false" />
+				<Property Name="BackgroundEnabled" Value="false" />
+			</Window>
+			<Window Type="Marti/Button" Name="CommonFileDialog/PromptSave/OkButton">
+				<Property Name="AlwaysOnTop" Value="true" />
+				<Property Name="MetricsMode" Value="Relative" />
+				<Property Name="RelativePosition" Value="x:0.2 y:0.8" />
+				<Property Name="RelativeSize" Value="w:0.25 h:0.1" />
+				<Property Name="Text" Value="Ok" />
+			</Window>
+			<Window Type="Marti/Button" Name="CommonFileDialog/PromptSave/CancelButton">
+				<Property Name="AlwaysOnTop" Value="true" />
+				<Property Name="MetricsMode" Value="Relative" />
+				<Property Name="RelativePosition" Value="x:0.55 y:0.8" />
+				<Property Name="RelativeSize" Value="w:0.25 h:0.1" />
+				<Property Name="Text" Value="Cancel" />
+			</Window>
+		</Window>
+	</Window>
+</GUILayout>

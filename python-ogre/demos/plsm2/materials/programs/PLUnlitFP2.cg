@@ -1,0 +1,11 @@
+void main
+(
+  float2 iTexCoord0 : TEXCOORD0,
+  
+  out float4 oColor : COLOR,
+
+  uniform sampler2D diffuseMap
+) 
+{
+  oColor = tex2D(diffuseMap, iTexCoord0);
+}

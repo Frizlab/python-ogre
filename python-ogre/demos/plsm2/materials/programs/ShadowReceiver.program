@@ -1,0 +1,8 @@
+ 
+vertex_program VertexShadowReceiver/VP cg
+{
+	source ShadowReceiver.cg
+	entry_point main_vp
+	profiles vs_1_1 arbvp1
+}
+

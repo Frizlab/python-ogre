@@ -1,0 +1,58 @@
+<?xml version="1.0" ?>
+<GUILayout>
+	<Window Type="DefaultWindow" Name="TerrainMorphWindow">
+		<Property Name="AbsoluteRect" Value="l:16.000000 t:20.000000 r:166.000000 b:500.000000" />
+		<Property Name="MetricsMode" Value="Absolute" />
+
+		<Window Type="Marti/Combobox" Name="MorphTypeList">
+			<Property Name="AbsoluteRect" Value="l:0.000000 t:6.000000 r:120.000000 b:106.000000" />
+			<Property Name="MetricsMode" Value="Absolute" />
+			<Property Name="ReadOnly" Value="True" />
+			<Property Name="Text" Value="Choose type..." />
+			</Window>
+		<Window Type="Marti/HorizontalScrollbar" Name="CursorSizeSlider">
+			<Property Name="AbsoluteRect" Value="l:0.000000 t:100.000000 r:120.000000 b:110.000000" />
+			<Property Name="DocumentSize" Value="210.000000" />
+			<Property Name="MetricsMode" Value="Absolute" />
+			<Property Name="OverlapSize" Value="1.000000" />
+			<Property Name="PageSize" Value="10.000000" />
+			</Window>
+		<Window Type="Marti/StaticText" Name="StaticTextSize">
+			<Property Name="AbsoluteRect" Value="l:0.000000 t:70.000000 r:120.000000 b:100.000000" />
+			<Property Name="MetricsMode" Value="Absolute" />
+			<Property Name="Text" Value="Brush size:" />
+			<Property Name="FrameEnabled" Value="False" />
+			<Property Name="EnableBackground" Value="False" />
+			</Window>
+		<Window Type="Marti/Checkbox" Name="CheckBox">
+			<Property Name="AbsoluteRect" Value="l:0.000000 t:200.000000 r:90.000000 b:220.000000" />
+			<Property Name="MetricsMode" Value="Absolute" />
+			<Property Name="Text" Value="Fixed height" />
+			</Window>
+		<Window Type="Marti/Editbox" Name="EditBox">
+			<Property Name="AbsoluteRect" Value="l:88.000000 t:200.000000 r:118.000000 b:225.000000" />
+			<Property Name="MetricsMode" Value="Absolute" />
+			</Window>
+		<Window Type="Marti/StaticText" Name="StaticTextStrength">
+			<Property Name="AbsoluteRect" Value="l:0.000000 t:130.000000 r:120.000000 b:160.000000" />
+			<Property Name="MetricsMode" Value="Absolute" />
+			<Property Name="Text" Value="Brush strength:" />
+			<Property Name="FrameEnabled" Value="False" />
+			</Window>
+		<Window Type="Marti/HorizontalScrollbar" Name="CursorStrengthSlider">
+			<Property Name="AbsoluteRect" Value="l:0.000000 t:160.000000 r:120.000000 b:170.000000" />
+			<Property Name="MetricsMode" Value="Absolute" />
+			<Property Name="DocumentSize" Value="20" />
+			<Property Name="PageSize" Value="1" />
+			<Property Name="StepSize" Value="1" />
+			<Property Name="OverlapSize" Value="1" />
+			</Window>
+		<Window Type="Marti/Button" Name="FogButton">
+			<Property Name="AbsoluteRect" Value="l:0.000000 t:350.000000 r:120.000000 b:370.000000" />
+			<Property Name="MetricsMode" Value="Absolute" />
+			<Property Name="Text" Value="Fog Settings" />
+			</Window>
+		</Window>
+
+
+</GUILayout>

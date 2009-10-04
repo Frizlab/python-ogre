@@ -1,0 +1,5 @@
+// typedef name nicename;
+typedef std::list<Ogre::SceneNode*,Ogre::STLAllocator<Ogre::SceneNode*, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > > stdListOgreSceneNode;
+typedef std::vector<std::map<unsigned int, Ogre::IndexData*, std::less<unsigned int>, Ogre::STLAllocator<std::pair<unsigned int const, Ogre::IndexData*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >*, Ogre::STLAllocator<std::map<unsigned int, Ogre::IndexData*, std::less<unsigned int>, Ogre::STLAllocator<std::pair<unsigned int const, Ogre::IndexData*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorOgreIndexData;
+typedef std::vector<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> > >,Ogre::STLAllocator<std::pair<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > > stdVectorStringString;
+

@@ -68,6 +68,7 @@ class MyApp(object):
 
        # for now this forces D3D
        rend_list = self.root.getAvailableRenderers()
+       print rend_list
        self.root.setRenderSystem(rend_list[-1])
 
    def _build_scene(self):
@@ -191,7 +192,7 @@ class UberSpinningNinja(object):
 
 
 def main():
-   app = MyApp()
+   app = MyApp(plugins_path='../plugins.cfg.nt')
    while not app.window.isClosed():
        ogre.WindowEventUtilities().messagePump()
        if app.window.isActive():

@@ -171,13 +171,7 @@ if SDK :
     PATH_INCLUDE_CEGUI =        os.path.join(PATH_CEGUI,'include','CEGUI') #os.path.join(PATH_CEGUI, r'include/CEGUI')
     PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include') 
     PATH_INCLUDE_Ogre_Dependencies =    os.path.join( PATH_Ogre, 'Dependencies/include')
-
-
-PATH_INCLUDE_ogrepaging =   os.path.join(PATH_Ogre,'Components','Paging', 'include')
-PATH_INCLUDE_ogreterrain =   os.path.join(PATH_Ogre,'Components','Terrain', 'include')
-PATH_INCLUDE_ogreoctreezone = os.path.join(PATH_Ogre,'Plugins', 'OctreeZone', 'include' )
-PATH_INCLUDE_ogreoctreesm = os.path.join(PATH_Ogre,'Plugins', 'OctreeSceneManager', 'include' )
-        
+    
 if isMAC:
     PATH_INCLUDE_OIS =          os.path.join(PATH_OIS,'includes') #os.path.join(PATH_OIS,'includes')    ## Note the plural include's
     PATH_INCLUDE_CEGUI =        os.path.join(PATH_Ogre, 'Dependencies','include', 'CEGUI' ) #PATH_CEGUI,'include','CEGUI') #os.path.join(PATH_CEGUI, r'include/CEGUI')

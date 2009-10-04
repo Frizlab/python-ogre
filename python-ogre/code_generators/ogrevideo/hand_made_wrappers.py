@@ -3,13 +3,14 @@ import environment
 
 WRAPPER_DEFINITION_General = \
 """
-OpenAL_AudioInterfaceFactory* mAudioFactory;
+
+Ogre::OpenAL_AudioInterfaceFactory* mAudioFactory;
 
 void General_enableOpenALAudio( void ){  
 		mAudioFactory=new Ogre::OpenAL_AudioInterfaceFactory();
-		TheoraVideoManager* mgr = (Ogre::TheoraVideoManager*) Ogre::ExternalTextureSourceManager::getSingleton().getExternalTextureSource("ogg_video");
+		Ogre::TheoraVideoManager* mgr = (Ogre::TheoraVideoManager*) Ogre::ExternalTextureSourceManager::getSingleton().getExternalTextureSource("ogg_video");
 		mgr->setAudioInterfaceFactory(mAudioFactory);
-    }			
+    }		
 """
     
 WRAPPER_REGISTRATION_General = [
