@@ -70,8 +70,9 @@ def ManualExclude ( mb ):
     else:
         main_ns = global_ns    
         
-    excludes=['::QuickGUI::ComboBox::_clearSelection'
-                ,'::QuickGUI::ComboBox::addComboBoxEventHandler'
+    excludes=[
+                #'::QuickGUI::ComboBox::_clearSelection'
+                #'::QuickGUI::ComboBox::addComboBoxEventHandler'
 #                 ,'::QuickGUI::ContainerWidget::setDrawChildrenWhenNotVisible'
 #                 ,'::QuickGUI::ContainerWidget::getDrawChildrenWhenNotVisible'
 #                 ,'::QuickGUI::TreeViewNode::isSelected'

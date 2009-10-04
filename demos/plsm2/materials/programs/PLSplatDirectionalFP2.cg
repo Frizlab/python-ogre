@@ -1,0 +1,25 @@
+void main
+(
+  float2 iTexCoord0 : TEXCOORD0,
+  float4 iColor : COLOR,
+  
+  out float4 oColor : COLOR,
+
+  uniform float4 splatScales,
+  uniform sampler2D coverageMap,
+  uniform sampler2D splat1Map,
+  uniform sampler2D splat2Map,
+  uniform sampler2D splat3Map,
+  uniform sampler2D splat4Map
+) 
+{
+
+  oColor = iColor;
+
+  //calculate the splats and modulate with the diffuse directional lighting    
+  float4 coverage = tex2D(coverageMap, iTexCoord0);
+  oColor *= tex2D(splat1Map, iTexCoord0 * splatScales.x) * coverage.x
+          + tex2D(splat2Map, iTexCoord0 * splatScales.y) * coverage.y
+          + tex2D(splat3Map, iTexCoord0 * splatScales.z) * coverage.z
+          + tex2D(splat4Map, iTexCoord0 * splatScales.w) * coverage.w;
+}

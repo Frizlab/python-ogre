@@ -6,9 +6,7 @@ setlocal
 set root=c:\development
 
 rem Support for 2 versions of Python...
-set package_2.5=..\packages_2.5\ogre
 set package_2.6=..\packages_2.6\ogre
-
 
 set ogre=%root%\ogre\samples\common\bin\release
 set ogre=%root%\ogre\bin\release
@@ -24,15 +22,13 @@ set nxogre=%root%\NxOgre\NxOgre\lib
 set newton=%root%\NewtonSDK\sdk\dll
 set ogreode=%root%\ogreaddons\ogreode
 set physx="c:\program files\NVIDIA Corporation\NVIDIA PhysX SDK\v2.8.1\bin\win32"
-set theora=%root%\ogrevideo\TheoraVideoPlugin\bin\Release
+set theora=%root%\ogrevideo\trunk\TheoraVideoPlugin\bin\Release
 set ffmpeg=%root%\python-ogre\thirdparty\extra
 set naviextra=%root%\navi\Dependencies\win32\awesomium\bin\release
 set navi=%root%\navi\navi\lib
 
-set boost_2.5=%root%\boost_1_38_0\bin.v2\libs\python_2.5\build\msvc-9.0\release\threading-multi
-set boost_2.6=%root%\boost_1_38_0\bin.v2\libs\python_2.6\build\msvc-9.0\release\threading-multi
-set boostlib_2.5=%boost_2.5%\boost_python-vc90-mt-1_38.dll
-set boostlib_2.6=%boost_2.6%\boost_python-vc90-mt-1_38.dll
+set boost_2.6=%root%\boost_1_50_0\bin.v2\libs\python_2.6\build\msvc-9.0\release\threading-multi
+set boostlib_2.6=%boost_2.6%\boost_python-vc90-mt-1_40.dll
 
 set particleuniverse=%root%\ogre\lib
 
@@ -46,14 +42,11 @@ set openal=%root%\openal.1.1\redist
 
 
 rem Ogre
-copy /y %ogre%\ogremain.dll %package_2.5%\renderer\OGRE
-copy /y %ogre%\cg.dll %package_2.5%\renderer\OGRE
 copy /y %ogre%\ogremain.dll %package_2.6%\renderer\OGRE
 copy /y %ogre%\cg.dll %package_2.6%\renderer\OGRE
 
 copy /y %ogretools%\* ..\tools
 
-copy /y %boostlib_2.5% %package_2.5%\renderer\OGRE
 copy /y %boostlib_2.6% %package_2.6%\renderer\OGRE
 
 copy /y %ogre%\render*.dll ..\plugins

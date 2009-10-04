@@ -1,0 +1,46 @@
+void main
+(
+  float2 iTexCoord0 : TEXCOORD0,
+  float3 iNormal : TEXCOORD1, //in object space
+  float3 iLightVector : TEXCOORD2, //in object space
+  float iDist : TEXCOORD3,
+  
+  out float4 oColor : COLOR,
+
+  uniform float4 lightDiffuse,
+  uniform float4 lightAttenuation,
+  uniform float4 matDiffuse,
+  uniform float4 splatScales,
+  uniform sampler2D coverageMap : register(s0),
+  uniform sampler2D splat1Map : register(s1),
+  uniform sampler2D splat2Map : register(s2),
+  uniform sampler2D splat3Map : register(s3),
+  uniform sampler2D splat4Map : register(s4),
+  uniform samplerCUBE normalizationMap : register(s5)
+)
+{
+
+  float3 n = 2.0f * (texCUBE(normalizationMap, iNormal).xyz - 0.5f);
+  float3 lightVector = 2.0f * (texCUBE(normalizationMap, iLightVector).xyz - 0.5f);
+  float nDotL = max(dot(n, lightVector), 0.0);
+  
+  float4 color = float4(0.0, 0.0, 0.0, 0.0);
+  
+  if(nDotL > 0.0) 
+  {
+
+    float att = 1 / (lightAttenuation[1] + lightAttenuation[2] * iDist + lightAttenuation[3] * iDist * iDist);
+  
+    //add diffuse light from material and light
+    color += att * lightDiffuse * matDiffuse * nDotL;
+  	
+    //calculate the splats and modulate with the point light   
+    float4 coverage = tex2D(coverageMap, iTexCoord0);
+    color *= tex2D(splat1Map, iTexCoord0 * splatScales.x) * coverage.x
+      + tex2D(splat2Map, iTexCoord0 * splatScales.y) * coverage.y
+      + tex2D(splat3Map, iTexCoord0 * splatScales.z) * coverage.z
+      + tex2D(splat4Map, iTexCoord0 * splatScales.w) * coverage.w;
+  }
+          
+  oColor = color;
+}

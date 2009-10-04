@@ -2,7 +2,7 @@ import os
 import sys
 import getpass
 
-SDK=False # Changes Ogre include path settings
+SDK=True # False # Changes Ogre include path settings
 _UserName = getpass.getuser()
 
 ## The root directory is where this module is located
@@ -16,7 +16,7 @@ LOCAL_INCLUDE = os.path.join(ROOT_DIR, 'usr/include')
 
 
 ## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
-PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_38_0' ) #-trunk')
+PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_40_0' ) #-trunk')
 # PATH_Boost =        os.path.join(BASE_DIR, 'boost-trunk')
 
 
@@ -26,7 +26,7 @@ PATH_LIB_Boost =    os.path.join(PATH_Boost, 'bin.v2/libs/python/build/msvc-9.0/
 PATH_LIB_Thread_STATIC = os.path.join(PATH_Boost, 'bin.v2/libs/thread/build/msvc-9.0/release/link-static/threading-multi')
 PATH_LIB_date_time_STATIC = os.path.join(PATH_Boost, 'bin.v2/libs/date_time/build/msvc-9.0/release/link-static/threading-multi')
 
-if (getpass.getuser() == 'amiller' ):  ## special for Andy's machine as I tend to build against multiple python versions
+if (getpass.getuser() == 'amiller' ):  # special for Andy's machine as I tend to build against multiple python versions
    PythonVersionString = str(sys.version_info[0]) + '.' + str(sys.version_info[1])
    PATH_LIB_Boost =    os.path.join(PATH_Boost, 'bin.v2/libs/python_' +PythonVersionString +'/build/msvc-9.0/release/threading-multi')
 
@@ -87,7 +87,7 @@ PATH_opensteer =        os.path.join(BASE_DIR, 'opensteer', 'trunk')
 PATH_ogrevideoffmpeg = os.path.join(PATH_THIRDPARTY,'ffmpeg')
 PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.74') 
 PATH_PhysX=         "c:/program files/NVIDIA Corporation/NVIDIA Physx SDK/v2.8.1/SDKs"
-PATH_Theora=        os.path.join(BASE_DIR,'ogrevideo','TheoraVideoPlugin')
+PATH_Theora=        os.path.join(BASE_DIR,'ogrevideo','trunk','TheoraVideoPlugin')
 
 PATH_ffmpeg=        os.path.join(PATH_THIRDPARTY,'extra')
 PATH_navi =         os.path.join(BASE_DIR, 'navi', 'navi')
@@ -157,11 +157,11 @@ PATH_LIB_plsm2 = PATH_plsm2
 PATH_LIB_OPENAL=        os.path.join(PATH_OPENAL, 'libs','win32' ) ##'release') #'openal')
                 
 if SDK:
+    PATH_LIB_Ogre_OgreMain =        os.path.join( PATH_Ogre, 'lib' )
     PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'lib')
     PATH_LIB_OIS =                  os.path.join( PATH_Ogre, 'lib') 
     PATH_LIB_CEGUI =                os.path.join( PATH_Ogre, 'lib' )
-    PATH_LIB_pcz =                os.path.join( PATH_Ogre, 'lib','opt' )
-    
+    PATH_LIB_pcz =                  os.path.join( PATH_Ogre, 'lib','opt' )
 
 PATH_INCLUDE_ogrepaging =   os.path.join(PATH_Ogre,'Components','Paging', 'include')
 PATH_INCLUDE_ogreterrain =   os.path.join(PATH_Ogre,'Components','Terrain', 'include')
@@ -228,7 +228,7 @@ PATH_INCLUDE_canvas=        PATH_canvas
 PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ,os.path.join(BASE_DIR, 'vorbis', 'include')
                         ,os.path.join(BASE_DIR, 'theora', 'include')
-                        ,os.path.join(BASE_DIR,'ptypes-2.1.1','include')
+                        ,os.path.join(BASE_DIR,'ptypes','include')
                         ,os.path.join(PATH_INCLUDE_OPENAL, 'AL') 
                         ]
                         
@@ -251,9 +251,10 @@ if SDK:
     PATH_INCLUDE_CEGUI =        os.path.join(PATH_Ogre, 'include/CEGUI')
     PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'samples','include')
     PATH_INCLUDE_ogrepcz = os.path.join(PATH_Ogre,'include', 'opt')
-
+    PATH_INCLUDE_Ogre_Dependencies = os.path.join(PATH_Ogre,'include') 
+    
 # test to use hydrax dll for performance reasons...
-if _UserName =='amiller':
+if False:
     PATH_hydrax = os.path.join(BASE_DIR, 'Hydrax-v0.5')
     PATH_INCLUDE_hydrax = os.path.join(PATH_hydrax,'Hydrax','src','Hydrax')
     PATH_INCLUDE_hydrax_modules = [

@@ -1,0 +1,37 @@
+void main
+(
+  float2 iTexCoord0 : TEXCOORD0,
+  float3 iNormal : TEXCOORD1, //in object space
+  float3 iLightVector : TEXCOORD2, //in object space
+  float iDist : TEXCOORD3,
+  
+  out float4 oColor : COLOR,
+
+  uniform float4 lightDiffuse,
+  uniform float4 lightAttenuation,
+  uniform float4 matDiffuse,
+  uniform sampler2D diffuseMap : register(s0),
+  uniform samplerCUBE normalizationMap : register(s1)
+)
+{
+
+  float3 n = 2.0f * (texCUBE(normalizationMap, iNormal).xyz - 0.5f);
+  float3 lightVector = 2.0f * (texCUBE(normalizationMap, iLightVector).xyz - 0.5f);
+  float nDotL = max(dot(n, lightVector), 0.0);
+  
+  float4 color = float4(0.0, 0.0, 0.0, 0.0);
+  
+  if(nDotL > 0.0) 
+  {
+
+    float att = 1 / (lightAttenuation[1] + lightAttenuation[2] * iDist + lightAttenuation[3] * iDist * iDist);
+  
+    //add diffuse light from material and light
+    color += att * lightDiffuse * matDiffuse * nDotL;
+  	
+    //modulate diffuse map
+    color *= tex2D(diffuseMap, iTexCoord0);
+  }
+          
+  oColor = color;
+}

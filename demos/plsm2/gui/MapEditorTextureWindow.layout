@@ -1,0 +1,185 @@
+<?xml version="1.0" ?>
+<GUILayout>
+		<Window Type="DefaultWindow" Name="TextureWindow">
+			<Property Name="MetricsMode" Value="Absolute" />
+			<Property Name="Width" Value="150.000000" />
+			<Property Name="Height" Value="480.000000" />
+			<Property Name="XPosition" Value="16.000000" />
+			<Property Name="YPosition" Value="20.000000" />
+			<Window Type="Marti/Combobox" Name="TextureFormatList">
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Width" Value="120.000000" />
+				<Property Name="Height" Value="200.000000" />
+				<Property Name="XPosition" Value="0.000000" />
+				<Property Name="YPosition" Value="6.000000" />
+				<Property Name="Text" Value="Choose format..." />
+				<Property Name="ReadOnly" Value="true" />
+			</Window>
+			<Window Type="Marti/Combobox" Name="TextureActionList">
+				<Property Name="AbsoluteRect" Value="l:0.000000 t:110.000000 r:120.000000 b:210.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Choose action..." />
+				<Property Name="ReadOnly" Value="true" />
+				</Window>
+			<Window Type="Marti/StaticText" Name="PaintColorStaticText">
+				<Property Name="AbsoluteRect" Value="l:0.000000 t:140.000000 r:43.000000 b:165.000000" />
+				<Property Name="FrameEnabled" Value="False" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Color:" />
+				</Window>
+			<Window Type="Marti/StaticImage" Name="PaintColorStaticImage">
+				<Property Name="AbsoluteRect" Value="l:50.000000 t:140.000000 r:100.000000 b:165.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Image" Value="set:Marti image:ListboxSelectionBrush" />
+				<Property Name="ImageColours" Value="tl:0 tr:0 bl:0 br:0" />
+				<Property Name="FrameEnabled" Value="False" />
+				</Window>
+			<Window Type="Marti/HorizontalScrollbar" Name="PaintColorRedSlider">
+				<Property Name="AbsoluteRect" Value="l:0.000000 t:170.000000 r:120.000000 b:180.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="DocumentSize" Value="255" />
+				<Property Name="PageSize" Value="16" />
+				<Property Name="StepSize" Value="1" />
+				<Property Name="OverlapSize" Value="1" />
+				</Window>
+			<Window Type="Marti/HorizontalScrollbar" Name="PaintColorGreenSlider">
+				<Property Name="AbsoluteRect" Value="l:0.000000 t:185.000000 r:120.000000 b:195.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="DocumentSize" Value="255" />
+				<Property Name="PageSize" Value="16" />
+				<Property Name="StepSize" Value="1" />
+				<Property Name="OverlapSize" Value="1" />
+				</Window>
+			<Window Type="Marti/HorizontalScrollbar" Name="PaintColorBlueSlider">
+				<Property Name="AbsoluteRect" Value="l:0.000000 t:200.000000 r:120.000000 b:210.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="DocumentSize" Value="255" />
+				<Property Name="PageSize" Value="16" />
+				<Property Name="StepSize" Value="1" />
+				<Property Name="OverlapSize" Value="1" />
+				</Window>
+			
+			<!--<Window Type="Marti/HorizontalScrollbar" Name="PaintColorAlphaSlider">
+				<Property Name="AbsoluteRect" Value="l:0.000000 t:250.000000 r:120.000000 b:260.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="DocumentSize" Value="1.1" />
+				<Property Name="PageSize" Value="0.1" />
+				<Property Name="StepSize" Value="0.1" />
+				<Property Name="OverlapSize" Value="0.1" />
+				</Window>
+			<Window Type="Marti/StaticText" Name="PaintColorAlphaStaticText">
+				<Property Name="AbsoluteRect" Value="l:0.000000 t:220.000000 r:120.000000 b:245.000000" />
+				<Property Name="FrameEnabled" Value="False" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Brush strength:" />
+				</Window>
+			<Window Type="Marti/StaticText" Name="PaintColorBrushSizeStaticText">
+				<Property Name="AbsoluteRect" Value="l:0.000000 t:270.000000 r:120.000000 b:295.000000" />
+				<Property Name="FrameEnabled" Value="False" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Brush size: " />
+				</Window>
+			<Window Type="Marti/HorizontalScrollbar" Name="PaintColorBrushSizeSlider">
+				<Property Name="AbsoluteRect" Value="l:0.000000 t:300.000000 r:120.000000 b:310.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="DocumentSize" Value="210" />
+				<Property Name="PageSize" Value="10" />
+				<Property Name="StepSize" Value="1" />
+				<Property Name="OverlapSize" Value="1" />
+				</Window>-->
+
+			<Window Type="Marti/RadioButton" Name="PaintTextureLayer0Radiobutton">
+				<Property Name="AbsoluteRect" Value="l:0.000000 t:140.000000 r:62.000000 b:160.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Layer 0" />
+				<Property Name="Selected" Value="true" />
+				<Property Name="GroupID" Value="3" />
+				</Window>
+			<Window Type="Marti/StaticImage" Name="PaintTextureLayer0StaticImage">
+				<Property Name="AbsoluteRect" Value="l:0.000000 t:165.000000 r:120.000000 b:215.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				</Window>
+			<Window Type="Marti/Button" Name="PaintTextureLayer0ImportButton">
+				<Property Name="AbsoluteRect" Value="l:68.000000 t:140.000000 r:108.000000 b:160.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="..." />
+				</Window>
+
+			<Window Type="Marti/RadioButton" Name="PaintTextureLayer1Radiobutton">
+				<Property Name="AbsoluteRect" Value="l:0.000000 t:225.000000 r:62.000000 b:245.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Layer 1" />
+				<Property Name="GroupID" Value="3" />
+				</Window>
+			<Window Type="Marti/StaticImage" Name="PaintTextureLayer1StaticImage">
+				<Property Name="AbsoluteRect" Value="l:0.000000 t:250.000000 r:120.000000 b:300.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				</Window>
+			<Window Type="Marti/Button" Name="PaintTextureLayer1ImportButton">
+				<Property Name="AbsoluteRect" Value="l:68.000000 t:225.000000 r:108.000000 b:245.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="..." />
+				</Window>
+
+			<Window Type="Marti/RadioButton" Name="PaintTextureLayer2Radiobutton">
+				<Property Name="AbsoluteRect" Value="l:0.000000 t:310.000000 r:62.000000 b:330.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Layer 2" />
+				<Property Name="GroupID" Value="3" />
+				</Window>
+			<Window Type="Marti/StaticImage" Name="PaintTextureLayer2StaticImage">
+				<Property Name="AbsoluteRect" Value="l:0.000000 t:335.000000 r:120.000000 b:385.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				</Window>
+			<Window Type="Marti/Button" Name="PaintTextureLayer2ImportButton">
+				<Property Name="AbsoluteRect" Value="l:68.000000 t:310.000000 r:108.000000 b:330.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="..." />
+				</Window>
+
+			<Window Type="Marti/RadioButton" Name="PaintTextureLayer3Radiobutton">
+				<Property Name="AbsoluteRect" Value="l:0.000000 t:395.000000 r:62.000000 b:415.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Layer 3" />
+				<Property Name="GroupID" Value="3" />
+				</Window>
+			<Window Type="Marti/StaticImage" Name="PaintTextureLayer3StaticImage">
+				<Property Name="AbsoluteRect" Value="l:0.000000 t:420.000000 r:120.000000 b:470.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				</Window>
+			<Window Type="Marti/Button" Name="PaintTextureLayer3ImportButton">
+				<Property Name="AbsoluteRect" Value="l:68.000000 t:395.000000 r:108.000000 b:415.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="..." />
+				</Window>
+
+			<Window Type="Marti/HorizontalScrollbar" Name="PaintColorAlphaSlider">
+				<Property Name="AbsoluteRect" Value="l:0.000000 t:95.000000 r:120.000000 b:105.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="DocumentSize" Value="1.01" />
+				<Property Name="PageSize" Value="0.01" />
+				<Property Name="StepSize" Value="0.01" />
+				<Property Name="OverlapSize" Value="0.01" />
+				</Window>
+			<Window Type="Marti/StaticText" Name="PaintColorBrushSizeStaticText">
+				<Property Name="AbsoluteRect" Value="l:0.000000 t:35.000000 r:120.000000 b:60.000000" />
+				<Property Name="FrameEnabled" Value="False" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Brush size:" />
+				</Window>
+			<Window Type="Marti/StaticText" Name="PaintColorAlphaStaticText">
+				<Property Name="AbsoluteRect" Value="l:0.000000 t:70.000000 r:120.000000 b:95.000000" />
+				<Property Name="FrameEnabled" Value="False" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Brush strength: " />
+				</Window>
+			<Window Type="Marti/HorizontalScrollbar" Name="PaintColorBrushSizeSlider">
+				<Property Name="AbsoluteRect" Value="l:0.000000 t:60.000000 r:120.000000 b:70.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="DocumentSize" Value="210" />
+				<Property Name="PageSize" Value="10" />
+				<Property Name="StepSize" Value="1" />
+				<Property Name="OverlapSize" Value="1" />
+			</Window>
+	</Window>
+</GUILayout>

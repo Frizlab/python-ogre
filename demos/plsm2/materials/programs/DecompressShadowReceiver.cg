@@ -1,0 +1,43 @@
+
+void main_vp(
+  float4 iPos       : POSITION,
+  float4 iTexCoord0 : TEXCOORD0, 
+  float2               iLodpos             : BLENDWEIGHT,
+    
+  uniform float4  compressionSettings,
+  uniform float4x4  worldViewProj,
+  uniform float4x4  worldMatrix,
+  uniform float4x4  texViewProjMatrix,
+
+  out float4 oPos         : POSITION,
+  out float4 oTexCoord0   : TEXCOORD0,   
+  out float4 oTexCoord1   : TEXCOORD1,
+  out float4 oColor       : COLOR
+)
+{
+  float height = ((iPos.x + 32768) + (iLodpos.x - iPos.x) * compressionSettings[3]) * compressionSettings[1];
+  oPos = float4(iTexCoord0.x * compressionSettings[0], height, iTexCoord0.y * compressionSettings[2], 1.0);
+  float4 uv = mul(worldMatrix, oPos);
+  oPos = mul(worldViewProj, oPos); //at this time, oPos is the uncompressed input position
+  oTexCoord0 = mul(texViewProjMatrix, uv);
+  oTexCoord1 = oTexCoord0;
+  oColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
+}
+
+void main_fp(
+  float4 uvproj : TEXCOORD0,
+  float2 uv     : TEXCOORD1,
+
+  out float4 colour   : COLOR,
+ 
+  uniform float4 lightDiffuse,
+  uniform sampler2D   shadowMap,
+  uniform sampler2D   colorMap,
+  uniform sampler2D   detailMap)
+{
+  // get shadow value
+  float3 shadow = tex2Dproj(shadowMap, uvproj).xyz;
+
+  // Calculate dot product
+  colour = tex2Dproj(shadowMap, uvproj) * tex2D(detailMap, uv) *  tex2D(colorMap, uv);
+} 

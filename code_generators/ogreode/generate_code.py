@@ -109,8 +109,10 @@ def ManualExclude ( mb ):
         
     #global_ns.namespace("Ogre").class_('list<Ogre::Plane>').include(already_exposed=True)  
     
-    global_ns.class_('::std::list<Ogre::Plane, Ogre::STLAllocator<Ogre::Plane, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >').include(already_exposed=True)
-
+    try: # this only works with ogre 1.7 so wrap in a try..
+        global_ns.class_('::std::list<Ogre::Plane, Ogre::STLAllocator<Ogre::Plane, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >').include(already_exposed=True)
+    except:
+        pass 
     # a specal set as the constructors require pointers to vertex buffers which we can't do 
     # so make them no initable (so boost won't allow you to try and make them)
     # and have helper functions in hand wrappers to use instead   
@@ -338,7 +340,10 @@ def generate_code():
     ManualExclude ( mb )
     
     #mb.global_ns.class_('::std::list<Ogre::Plane, Ogre::STLAllocator<Ogre::Plane, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >').include(already_exposed=True)
-    mb.global_ns.class_('::std::list<Ogre::Plane, Ogre::STLAllocator<Ogre::Plane, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >').exclude()
+    try:
+        mb.global_ns.class_('::std::list<Ogre::Plane, Ogre::STLAllocator<Ogre::Plane, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >').exclude()
+    except:
+        pass
     
     #
     # the manual stuff all done here !!!

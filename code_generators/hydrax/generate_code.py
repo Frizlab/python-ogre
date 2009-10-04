@@ -289,8 +289,7 @@ def generate_code():
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory..
-    if environment._UserName != 'amiller':
-        common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_hydrax, 
+    common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_hydrax, 
                             destPath = environment.hydrax.generated_dir, 
                             recursive= False )
         

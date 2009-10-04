@@ -1,0 +1,252 @@
+
+/*
+    float2             iPosition         : ATTR0,
+    float3             iNormal           : ATTR1,
+    float2               iTexcoord       : ATTR2,
+    float2               iLodpos         : ATTR3,
+    
+    float2             iPosition         : POSITION,
+    float3             iNormal           : NORMAL,
+    float2               iTexcoord         : TEXCOORD0,
+    float2               iLodpos         : BLENDWEIGHT,
+*/
+// Vertex program for automatic terrain texture generation
+void main_vp_only
+(
+    float2             iPosition         : POSITION,
+    float2               iLodpos         : BLENDWEIGHT,
+    float3             iNormal           : NORMAL,
+    float2               iTexcoord         : TEXCOORD0,
+
+    out float4         oPosition           : POSITION,
+
+    uniform float4x4   worldViewProj,
+    uniform float4     lightDirection,
+    uniform float4     ambientLight,
+
+    uniform float4     compressionSettings
+)
+{
+    // Calculate the light vector
+    //vLightVector.xyz = vLightPosition - position.xyz;
+
+    // Transform the light vector from object space into tangent space
+    //float3x3 TBNMatrix = float3x3(vTangent, vBinormal, vNormal);
+    //vLightVector.xyz = normalize(mul(TBNMatrix, vLightVector));
+
+    // Calculate the output position and texture coordinates using textures coordinates input.
+
+    float height = ((iPosition.x + 32768) + (iLodpos.x - iPosition.x) * compressionSettings[3]) * compressionSettings[1];
+    oPosition = float4(iTexcoord.x*compressionSettings[0], height, iTexcoord.y*compressionSettings[2], 1.0);
+
+    // Transform the current vertex from object space to clip space, since OpenGL isn't doing it for us
+    // as long we're using a vertex shader
+    oPosition  = mul(worldViewProj, oPosition);
+
+}
+// Vertex program for automatic terrain texture generation
+void main_vp
+(
+    float2             iPosition         : POSITION,
+    float2             iLodpos           : BLENDWEIGHT,
+    float3             iNormal           : NORMAL,
+    
+    float2             iTexcoord       : TEXCOORD0,
+
+    out float4         oPosition           : POSITION,
+    out float2         oTexcoord           : TEXCOORD0,
+    out float2         oScaled             : TEXCOORD1,
+    out float          oDist               : TEXCOORD2,
+    //out float4         colour              : COLOR,
+
+    uniform float4x4   worldViewProj,
+    uniform float4     lightDirection,
+    uniform float4     ambientLight,
+
+    uniform float4     compressionSettings,
+    uniform float4     FogSettings
+)
+{
+    // Calculate the light vector
+    //vLightVector.xyz = vLightPosition - position.xyz;
+
+    // Transform the light vector from object space into tangent space
+    //float3x3 TBNMatrix = float3x3(vTangent, vBinormal, vNormal);
+    //vLightVector.xyz = normalize(mul(TBNMatrix, vLightVector));
+
+    // Calculate the output position and texture coordinates using textures coordinates input.
+    float height = ((iPosition.x + 32768) + (iLodpos.x - iPosition.x) * compressionSettings[3]) * compressionSettings[1];
+    oPosition = float4(iTexcoord.x*compressionSettings[0], height, iTexcoord.y*compressionSettings[2], 1.0);
+
+    // Transform the current vertex from object space to clip space, since OpenGL isn't doing it for us
+    // as long we're using a vertex shader
+    oPosition  = mul(worldViewProj, oPosition);
+
+
+    oTexcoord = iTexcoord;
+    oScaled = oTexcoord.xy * 20.0f;
+
+    // saturate() works just like clamp() apart from that it implies a clamping between [0;1]
+    oDist.x = saturate (1.0 - (oPosition.z / FogSettings[0]));
+
+}
+// Vertex program for automatic terrain texture generation
+void main_vp_lighted
+(
+    float2               iPosition           : POSITION,
+    float3               iNormal             : NORMAL,
+    float2               iTexcoord           : TEXCOORD0,
+    float2               iLodpos             : BLENDWEIGHT,
+
+    out float4         oPosition           : POSITION,
+    out float2         oTexcoord           : TEXCOORD0,
+    out float2         oScaled             : TEXCOORD1,
+    out float2         oTexcoord2          : TEXCOORD2,
+    out float          oDist               : TEXCOORD3,
+    //out float4         colour              : COLOR,
+
+    uniform float4x4   worldViewProj,
+    uniform float4     lightDirection,
+    uniform float4     ambientLight,
+
+    uniform float4     compressionSettings,
+    uniform float4     FogSettings
+)
+{
+    // Calculate the light vector
+    //vLightVector.xyz = vLightPosition - position.xyz;
+
+    // Transform the light vector from object space into tangent space
+    //float3x3 TBNMatrix = float3x3(vTangent, vBinormal, vNormal);
+    //vLightVector.xyz = normalize(mul(TBNMatrix, vLightVector));
+
+    // Calculate the output position and texture coordinates using textures coordinates input.
+    float height = ((iPosition.x + 32768) + (iLodpos.x - iPosition.x) * compressionSettings[3]) * compressionSettings[1];
+    oPosition = float4(iTexcoord.x*compressionSettings[0], height, iTexcoord.y*compressionSettings[2], 1.0);
+
+    // Transform the current vertex from object space to clip space, since OpenGL isn't doing it for us
+    // as long we're using a vertex shader
+    oPosition  = mul(worldViewProj, oPosition);
+
+
+    oTexcoord = iTexcoord;
+    oTexcoord2 = oTexcoord;
+    oScaled = oTexcoord.xy * 20.0f;
+
+    // saturate() works just like clamp() apart from that it implies a clamping between [0;1]
+    oDist.x = saturate (1.0 - (oPosition.z / FogSettings[0]));
+
+}
+// Fragment program for automatic terrain texture generation
+void main_fp
+(
+    float2              worldTextureCoord   : TEXCOORD0,
+    float2              detailTextureCoord  : TEXCOORD1,
+    float               distancedetailFact   : TEXCOORD2,
+
+    out float4          oColor      : COLOR,
+
+    uniform sampler2D   worldTexture: TEXUNIT0,
+    uniform sampler2D   detailTexture: TEXUNIT1
+)
+{
+    // Since the normals in the normal map are in the (color) range [0, 1] we need to uncompress them
+    // to "real" normal (vector) directions.
+    // Decompress vector ([0, 1] -> [-1, 1])
+    //float3 vNormal = 2.0f * (tex2D(normalTexture, texCoords).rgb - 0.5f);
+    // Calculate the diffuse component and store it as the final color in 'colorOUT'
+    // The diffuse component is defined as: I = Dl * Dm * clamp(LoN, 0, 1)
+    // saturate() works just like clamp() apart from that it implies a clamping between [0;1]
+    //colorOUT.rgb = saturate(dot(vLightVector, vNormal)) * tex2D(baseTexture, texCoords).rgb * fLightDiffuseColor;
+
+	float4 worldColor = tex2D( worldTexture, worldTextureCoord.xy );
+    float4 detailColor = tex2D( detailTexture, detailTextureCoord );
+
+    float distanceFact = distancedetailFact.x;
+
+    // Sample the texture to get the output colour
+    oColor.rgb = (worldColor.rgb
+        + lerp( worldColor.rgb, detailColor.rgb, distanceFact )) * 0.5f;
+    oColor.a = 1.0f;
+}
+
+// Fragment program for automatic terrain texture generation
+void main_fp_lighted
+(
+    float2              iTexcoord   : TEXCOORD0,
+    float2              iScaled     : TEXCOORD1,
+    float2              iTexcoord2  : TEXCOORD2,
+    float               iDist       : TEXCOORD3,
+
+    out float4          oColor      : COLOR,
+
+    uniform sampler2D   textureUnit0: TEXUNIT0,
+    uniform sampler2D   textureUnit1: TEXUNIT1
+    //uniform sampler2D   textureUnit2: TEXUNIT2
+)
+{
+    // Sample the texture to get the output colour
+    // oColor.rgb = tex2D(textureUnit2, iTexcoord2.xy).x * tex2D(textureUnit0, iTexcoord.xy).rgb;
+    oColor.rgb = tex2D(textureUnit0, iTexcoord.xy).rgb;
+
+	oColor.rgb = (oColor.rgb + lerp( oColor.rgb, tex2D(textureUnit1, iScaled.xy).rgb, iDist.x )) * 0.5f;
+    oColor.a = 1.0f;
+}
+
+
+// Fragment program for automatic terrain texture generation
+void main_fp_shadowed
+(
+    float2              iTexcoord   : TEXCOORD0,
+    float2              iScaled     : TEXCOORD1,
+    float2              iTexcoord2  : TEXCOORD2,
+    float               iDist       : TEXCOORD3,
+
+    out float4          oColor      : COLOR,
+
+    uniform float4     HorizonSettings,
+
+    uniform sampler2D   terraintexture: TEXUNIT0,
+    uniform sampler2D   detailtexture: TEXUNIT1,
+    uniform sampler2D   horizonnormaltexture: TEXUNIT2
+)
+{
+    // Since the normals in the normal map are in the (color) range [0, 1] we need to uncompress them
+    // to "real" normal (vector) directions.
+    // Decompress vector ([0, 1] -> [-1, 1])
+    //float3 vNormal = 2.0f * (tex2D(normalTexture, texCoords).rgb - 0.5f);
+
+    // Calculate the diffuse component and store it as the final color in 'colorOUT'
+    // The diffuse component is defined as: I = Dl * Dm * clamp(LoN, 0, 1)
+    // saturate() works just like clamp() apart from that it implies a clamping between [0;1]
+    //colorOUT.rgb = saturate(dot(vLightVector, vNormal)) * tex2D(baseTexture, texCoords).rgb * fLightDiffuseColor;
+
+
+      float3 TerrainColor = tex2D (terraintexture, iTexcoord.xy).rgb;
+    
+      //float3 DetailColor = tex2D (detailtexture, iScaled.xy).rgb;
+      //TerrainColor = (TerrainColor + lerp( TerrainColor, DetailColor, iDist.x )) * 0.5f;
+    
+      float4 horizon = tex2D (horizonnormaltexture, iTexcoord2);
+    
+      float DayFactor = (1 -  saturate (HorizonSettings.a - horizon.a));
+      //float DayFactor = saturate (HorizonSettings.a - horizon.a);
+      // Sample the texture to get the output colour
+    
+      // N*L
+      //float3 Normal = saturate ( dot (HorizonSettings.rgb, normalise(2.0f * horizon.rgb - 0.5f)));
+      float3 Normal = saturate ( dot (HorizonSettings.rgb, 2.0f * horizon.rgb - 0.5f));
+    
+      oColor.rgb = DayFactor * TerrainColor * Normal;
+    
+    
+        //float4 horizon = tex2D(horizonnormaltexture, iTexcoord2);
+        // Sample the texture to get the output colour
+        //oColor.rgb = saturate ( dot (HorizonSettings.rgb, 2.0f * horizon.rgb - 0.5f))
+         ////
+       //* (1 -  saturate (HorizonSettings.a - horizon.a));
+
+    oColor.a = 1.0f;
+
+}
+

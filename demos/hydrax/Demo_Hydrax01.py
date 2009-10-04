@@ -67,15 +67,15 @@ class HydraxListener(sf.FrameListener):
                                      self.camera.getPosition().z);
 
         ## this code will clamp the camera at a fixed position above the ground
-#         updateRay = ogre.Ray()
-#         updateRay.setOrigin (self.camera.getPosition() + ogre.Vector3(0.0, 10.0, 0.0))
-#         updateRay.setDirection (ogre.Vector3().NEGATIVE_UNIT_Y)
-#         self.raySceneQuery.Ray = updateRay
-#         for queryResult in self.raySceneQuery.execute():
-#             if queryResult.worldFragment:
-#                 pos = self.camera.getPosition()
-#                 self.camera.setPosition (pos.x, pos.y - queryResult.distance + 30.0, pos.z)
-#                 break
+##         updateRay = ogre.Ray()
+##         updateRay.setOrigin (self.camera.getPosition() + ogre.Vector3(0.0, 10.0, 0.0))
+##         updateRay.setDirection (ogre.Vector3().NEGATIVE_UNIT_Y)
+##         self.raySceneQuery.Ray = updateRay
+##         for queryResult in self.raySceneQuery.execute():
+##             if queryResult.worldFragment:
+##                 pos = self.camera.getPosition()
+##                 self.camera.setPosition (pos.x, pos.y - queryResult.distance + 30.0, pos.z)
+##                 break
                                      
                                                  
         self.app.hydrax.update(e.timeSinceLastFrame)
