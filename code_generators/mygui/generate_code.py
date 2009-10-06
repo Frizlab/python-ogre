@@ -99,7 +99,8 @@ def ManualExclude ( mb ):
 #             except:
 #                pass               
     c=['::MyGUI::Font',
-       '::MyGUI::FontManager'
+       '::MyGUI::FontManager',
+       '::MyGUI::Widget'
        ]
     for e in c:
         main_ns.class_(e).noncopyable=True
@@ -122,14 +123,29 @@ def ManualExclude ( mb ):
     for f in main_ns.member_functions():
       if f.name == 'onKeyButtonPressed' or f.name == 'onKeyButtonReleased':
          print "Excluding:", f
-         f.exclude()   
-         
-    excludes = ['::MyGUI::delegates::CDelegate2< MyGUI::Widget*, MyGUI::KeyCode >',
+         f.exclude()
+		 
+    # excluding all delegates    
+    excludes = ['::MyGUI::delegates::CDelegate1<MyGUI::Widget*>',
+               #'::MyGUI::delegates::CDelegate1<float>',
+               '::MyGUI::delegates::CDelegate2< MyGUI::Widget*, MyGUI::KeyCode >',
                '::MyGUI::delegates::CDelegate3< MyGUI::Widget*, MyGUI::KeyCode, unsigned int >',
+               '::MyGUI::delegates::CDelegate2<MyGUI::Widget*, MyGUI::Widget*>',
+               '::MyGUI::delegates::CDelegate2<MyGUI::Widget*, bool>',
+               '::MyGUI::delegates::CDelegate2<MyGUI::Widget*, int>',
+               #'::MyGUI::delegates::CDelegate2<MyGUI::Widget*, size_t>',
+               '::MyGUI::delegates::CDelegate3<MyGUI::Widget*, int, int>',
+               '::MyGUI::delegates::CDelegate4<MyGUI::Widget*, int, int, MyGUI::MouseButton>',
+               #'::MyGUI::delegates::CDelegate3<MyGUI::Widget*, const std::string&, const std::string&>',
+               #'::MyGUI::delegates::CDelegate3<MyGUI::Widget*, MyGUI::Widget* &, size_t &>',
+               #'::MyGUI::delegates::CDelegate2<MyGUI::Widget*, const MyGUI::ToolTipInfo & >'
                ]
     for e in excludes:
       main_ns.class_(e).operators('()').exclude()
 
+    excludes = ['::MyGUI::KeyCode']
+    for c in excludes:
+        main_ns.class_(c).exclude()
     
     for f in main_ns.class_('MenuCtrl').member_functions():
       for a in f.arguments:
@@ -137,8 +153,8 @@ def ManualExclude ( mb ):
             a.default_value = "::MyGUI::MenuItemType::Normal"
     main_ns.member_function('::MyGUI::Progress::setProgressStartPoint').arguments[0].default_value="::MyGUI::Align::Left"
     
-    excludes = ['::MyGUI::Gui::injectKeyRelease', 
-                '::MyGUI::Gui::injectKeyPress',
+    excludes = [#'::MyGUI::Gui::injectKeyRelease', 
+                #'::MyGUI::Gui::injectKeyPress',
                 '::MyGUI::InputManager::injectKeyPress',
                 '::MyGUI::InputManager::injectKeyRelease',
                 '::MyGUI::ItemBox::notifyKeyButtonPressed',
@@ -146,12 +162,19 @@ def ManualExclude ( mb ):
                 ,'::MyGUI::Message::createMessageBox'  ## bad enum conversion
 #                 ,'::MyGUI::MenuCtrl::insertItemAt'
 #                 ,'::MyGUI::MenuCtrl::insertItem'
-                ,'::MyGUI::Edit::getTextSelect' # missing
+                #,'::MyGUI::Edit::getTextSelect' # missing
                 ,'::MyGUI::ScrollView::notifyMousePressed'
                 ,'::MyGUI::ScrollView::notifyMouseReleased'
+				,'::MyGUI::Any::getType'
                 ]
+				
     for e in excludes:
       main_ns.member_functions(e).exclude()
+	  
+	# excluding manualy methods with KeyCode parameters
+	# thi one function doesn't compile
+    main_ns.member_functions('::MyGUI::Gui::injectKeyPress', arg_types=['::MyGUI::KeyCode', None]).exclude()
+    main_ns.member_functions('::MyGUI::Gui::injectKeyRelease', arg_types=['::MyGUI::KeyCode']).exclude()
                   
 #     sys.exit()  
                          
@@ -256,46 +279,135 @@ def Fix_Posix ( mb ):
 def Fix_NT ( mb ):
     """ fixup for NT systems
     """
-        
 
+def filter_declarations( mb ):	
+    """ filter class declarations
+    """
+    global_ns = mb.global_ns
+    global_ns.exclude()
+    #global_ns.namespace('std').class_('pair<float, float>').include()
+    
+    MyGUI_ns = global_ns.namespace( 'MyGUI' )
+    MyGUI_ns.include()
+    
+    global_ns.namespace( 'Ogre' ).class_('SharedPtr<Ogre::Resource>').include(already_exposed=True)
+    global_ns.namespace( 'Ogre' ).class_('HardwarePixelBufferSharedPtr').include(already_exposed=True)
+    
+    global_ns.namespace( 'OIS' ).class_('KeyEvent').include(already_exposed=True)
+    global_ns.namespace( 'OIS' ).class_('MouseEvent').include(already_exposed=True)	
+	
+    # Exclude protected and private that are not pure virtual
+    query = declarations.access_type_matcher_t( 'private' ) \
+            & ~declarations.virtuality_type_matcher_t( declarations.VIRTUALITY_TYPES.PURE_VIRTUAL )
+    MyGUI_ns.calldefs( query, allow_empty=True ).exclude()
+    #global_ns.namespace( 'OIS' ).class_('MouseButtonID').include(already_exposed=True)	
+
+def set_call_policies( mb ):
+    MyGUI_ns = mb.global_ns.namespace ('MyGUI')
+
+    # Set the default policy to deal with pointer/reference return types to reference_existing object
+    # as this is the MyGUI Default.
+    mem_funs = MyGUI_ns.calldefs ()
+    mem_funs.create_with_signature = True #Generated code will not compile on
+    #MSVC 7.1 if function has throw modifier.
+    for mem_fun in mem_funs:
+        if mem_fun.call_policies:
+            continue
+        if declarations.is_pointer (mem_fun.return_type) or declarations.is_reference (mem_fun.return_type):
+            mem_fun.call_policies = call_policies.return_value_policy(
+                call_policies.reference_existing_object )
+ 
+             
+    ##OK so the MyGUI String class is ugly (from a python perspective) 
+    ##I'm going to fix the pointer arguments so you can use ctypes to use the class
+    ## however real work is in hand_made_wrappers with a new 'assign' function
+    # for fun in MyGUI_ns.class_('String').member_functions():
+        # arg_position = 0
+        # for arg in fun.arguments:
+            # if declarations.type_traits.is_pointer(arg.type): # 
+                # fun.add_transformation( ft.modify_type(arg_position,common_utils._ReturnUnsignedInt ), alias=fun.name )
+                # fun.documentation = common_utils.docit ("Modified Input Argument to work with CTypes",
+                                            # "Argument "+arg.name+ "(pos:" + str(arg_position)\
+                                            # +") takes a CTypes.adddressof(xx)", "...")
+                # break
+            # arg_position +=1
+        
+    # for fun in MyGUI_ns.class_('String').constructors():
+        # arg_position = 0
+        # for arg in fun.arguments:
+            # if declarations.type_traits.is_pointer(arg.type):
+                # fun.add_transformation( ft.modify_type(arg_position,common_utils._ReturnUnsignedInt ), alias=fun.name )
+                # fun.documentation = common_utils.docit ("Modified Input Argument to work with CTypes",
+                                            # "Argument "+arg.name+ "(pos:" + str(arg_position)\
+                                            # +") takes a CTypes.adddressof(xx)", "...")
+                # break
+            # arg_position +=1
+        
+                
+def configure_exception(mb):
+    #We don't exclude  Exception, because it contains functionality, that could
+    #be useful to user. But, we will provide automatic exception translator
+    Exception = mb.namespace( 'CEGUI' ).class_( 'Exception' )
+    Exception.translate_exception_to_string( 'PyExc_RuntimeError',  'exc.getMessage().c_str()' )
+
+
+# def change_cls_alias( ns ):
+    # for cls in ns.classes():
+        # if 1 < len( ns.classes( cls.name ) ):
+            # print "Length of classes is", len( ns.classes( cls.name ) ), " for ", cls.name
+            # for c in ns.classes( cls.name ):
+               # print "* ", c.decl_string
+            # print cls.decl_string
+            # alias = cls.decl_string[ len('::CEGUI::'): ]
+            # print "Adjust Alias for:",cls.decl_string, " with ", alias.replace ('::','')
+            # cls.alias = alias.replace( '::', '' )
+            # cls.wrapper_alias = cls.alias + 'Wrapper' # or 'Wrapper' ??
+            #cls.exclude()
+
+
+
+	
 #
 # the 'main'function
 #            
 def generate_code():  
-    messages.disable( 
+#    messages.disable( 
 #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-          messages.W1020
-        , messages.W1021
-        , messages.W1022
-        , messages.W1023
-        , messages.W1024
-        , messages.W1025
-        , messages.W1026
-        , messages.W1027
-        , messages.W1028
-        , messages.W1029
-        , messages.W1030
-        , messages.W1031
-        , messages.W1035
-        , messages.W1040 
-        , messages.W1038        
-        , messages.W1041
-        , messages.W1036 # pointer to Python immutable member
-        , messages.W1033 # unnamed variables
-        , messages.W1018 # expose unnamed classes
-        , messages.W1049 # returns reference to local variable
-        , messages.W1014 # unsupported '=' operator
-         )
+#          messages.W1020
+#        , messages.W1021
+#        , messages.W1022
+#        , messages.W1023
+#        , messages.W1024
+#        , messages.W1025
+#        , messages.W1026
+#        , messages.W1027
+#        , messages.W1028
+#        , messages.W1029
+#        , messages.W1030
+#        , messages.W1031
+#        , messages.W1035
+#        , messages.W1040 
+#        , messages.W1038        
+#        , messages.W1041
+#        , messages.W1036 # pointer to Python immutable member
+#        , messages.W1033 # unnamed variables
+#        , messages.W1018 # expose unnamed classes
+#        , messages.W1049 # returns reference to local variable
+#        , messages.W1014 # unsupported '=' operator
+#         )
     #
     # Use GCCXML to create the controlling XML file.
     # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded
     # NOTE: If you update the source library code you need to manually delete the cache .XML file   
     #
+    print os.path.join( environment.mygui.root_dir, "python_mygui.h" )
     xml_cached_fc = parser.create_cached_source_fc(
                         os.path.join( environment.mygui.root_dir, "python_mygui.h" )
-                        , environment.mygui.cache_file )
+                        , environment.mygui.cache_file )						
+	
 
-    defined_symbols = ['WIN32','OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', '__PYTHONOGRE_BUILD_CODE', 'MYGUI_NONCLIENT_BUILD' ] #MYGUI_NO_OIS
+    defined_symbols = ['OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', #'BOOST_PYTHON_NO_PY_SIGNATURES', 
+						'__PYTHONOGRE_BUILD_CODE', 'MYGUI_NONCLIENT_BUILD', 'MYGUI_DONT_USE_OBSOLETE'] #MYGUI_NO_OIS
     
     defined_symbols.append( 'VERSION_' + environment.mygui.version )  
     
@@ -315,16 +427,20 @@ def generate_code():
                                           , indexing_suite_version=2
                                           , cflags=environment.mygui.cflags
                                            )
-                                           
+										   
+    filter_declarations(mb)
     # if this module depends on another set it here                                           
+    mb.constructors().allow_implicit_conversion = False
     mb.register_module_dependency ( environment.ogre.generated_dir )
+    print environment.ogre.generated_dir
     
     # normally implicit conversions work OK, however they can cause strange things to happen so safer to leave off
     mb.constructors().allow_implicit_conversion = False                                           
     
     mb.BOOST_PYTHON_MAX_ARITY = 25
     mb.classes().always_expose_using_scope = True
-            
+ 
+	
     #
     # We filter (both include and exclude) specific classes and functions that we want to wrap
     # 
@@ -349,11 +465,14 @@ def generate_code():
     #
     common_utils.Set_DefaultCall_Policies ( mb.global_ns.namespace ( MAIN_NAMESPACE ) )
     
+    #global_ns.namespace( 'MyGUI' ).class_('Widget').include(already_exposed=True)
     #
     # the manual stuff all done here !!!
     #
     hand_made_wrappers.apply( mb )
 
+    set_call_policies (mb)
+	
     NoPropClasses = [""]
     for cls in main_ns.classes():
         if cls.name not in NoPropClasses:
@@ -368,6 +487,8 @@ def generate_code():
     #
     ##########################################################################################
     extractor = exdoc.doc_extractor() # I'm excluding the UTFstring docs as lots about nothing 
+	
+	
     mb.build_code_creator (module_name='_mygui_' , doc_extractor= extractor )
     
     for inc in environment.mygui.include_dirs:
@@ -381,6 +502,19 @@ def generate_code():
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory..
+    additional_files= os.listdir(environment.Config.PATH_INCLUDE_mygui)
+    for f in additional_files:
+        if f.endswith('cpp') or f.endswith('.h'):
+            sourcefile = os.path.join(environment.Config.PATH_INCLUDE_mygui, f)
+            destfile = os.path.join(environment.mygui.generated_dir, f ) 
+        
+            if not common_utils.samefile( sourcefile ,destfile ):
+                shutil.copy( sourcefile, environment.mygui.generated_dir )
+                print "Updated ", f, "as it was missing or out of date"
+				
+    # copying event callback header file
+    print "Copying 'python_mygui_callback.h'"
+    shutil.copy2(os.path.join( environment.mygui.root_dir, "python_mygui_callback.h" ), os.path.join(environment.mygui.generated_dir, "python_mygui_callback.h"))
     
 #     common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_mygui, 
 #                             destPath = environment.mygui.generated_dir, 
