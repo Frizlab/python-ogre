@@ -83,7 +83,8 @@ def ManualExclude ( mb ):
     e = ['::MyGUI::delegates::CDelegate3< MyGUI::Widget*, std::string const&, std::string const& >',
          '::MyGUI::delegates::CDelegate2< MyGUI::Widget*, unsigned int >',
          '::MyGUI::ControllerPosition',
-         '::MyGUI::IBNotifyItemData'
+         '::MyGUI::IBNotifyItemData',
+         '::MyGUI::ScrollViewBase'  # doesn have export parameters
          ]
     for c in e:
         print "Excluding:",c
