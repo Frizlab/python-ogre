@@ -3,7 +3,7 @@
     #include "Carbon/Carbon.h"
 #endif
 #include "Ogre.h"  // need to include this
-#include "QuickGUIRoot.h"
+#include "QuickGUI.h"
 
 // First we create a magic namespace to hold all our aliases
 namespace pyplusplus { namespace aliases {

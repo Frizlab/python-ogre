@@ -2,7 +2,8 @@ import os
 import sys
 import getpass
 
-SDK=True # False # Changes Ogre include path settings
+SDK=False # Changes Ogre include path settings
+
 _UserName = getpass.getuser()
 
 ## The root directory is where this module is located
@@ -44,6 +45,8 @@ pyplusplus_install_dir = os.path.join(BASE_DIR, 'pyplusplus')
 ## Parent directories of the libraries
 PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
 PATH_Ogre =         os.path.join(BASE_DIR, 'ogre')
+PATH_Ogre =         os.path.join(BASE_DIR, 'ogre')
+PATH_Ogre = "c:\\ogre"
 if SDK:
     PATH_Ogre =         "C:\\OgreSDK"
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
@@ -101,7 +104,7 @@ PATH_ogrepcz = os.path.join(PATH_Ogre, 'PlugIns', 'PCZSceneManager' )
 PATH_hydrax = os.path.join(PATH_THIRDPARTY, 'Hydrax')
 
 PATH_hikari = os.path.join(PATH_THIRDPARTY, 'Hikari' ) #BASE_DIR, 'hikari', 'hikari')
-PATH_mygui = os.path.join(BASE_DIR, 'MyGUI2.2.2_source' ) # \development\MyGUI2.2.2_source\MyGUIEngine\include
+PATH_mygui = os.path.join(BASE_DIR, 'MyGUI2.2.3_source' ) # \development\MyGUI2.2.2_source\MyGUIEngine\include
 PATH_canvas = os.path.join(PATH_THIRDPARTY, 'canvas')
 
 PATH_raknet = os.path.join(BASE_DIR, 'raknet')
@@ -120,7 +123,7 @@ if SDK:
 ### Override anything that is different
 ###        
 PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'Samples/Common/CEGUIRenderer/lib')
-PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'lib', 'Release' )
+PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'lib' ) #, 'Release' )
 PATH_LIB_Ogre_Dependencies =    os.path.join( PATH_Ogre, 'Dependencies/lib/Release')
 PATH_LIB_OgreRefApp =           os.path.join( PATH_Ogre, 'lib')
 PATH_LIB_OgreNewt =             os.path.join( PATH_OgreAddons, 'ogrenewt/OgreNewt_Main/lib/Release') 
