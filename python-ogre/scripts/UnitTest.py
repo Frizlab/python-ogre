@@ -11,6 +11,7 @@ import sys
 import types
 import os
 import time
+import shutil
 
 try:
   import restore_repeat
@@ -154,6 +155,8 @@ if __name__ == '__main__':
     if len (args) ==0 :
         ## run every demo we can find...
         for b in options.DemoBases:
+            p=os.path.join( options.DemoParentPath, b )
+            shutil.copy ( "./ogre.cfg", p)
             for d in  getDemoFiles ( options.DemoParentPath, b ):
                 shortName = os.path.splitext( os.path.split(d)[1])[0]
                 runTest ( b, shortName, d )

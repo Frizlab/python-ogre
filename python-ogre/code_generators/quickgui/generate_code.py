@@ -76,17 +76,29 @@ def ManualExclude ( mb ):
 #                 ,'::QuickGUI::ContainerWidget::setDrawChildrenWhenNotVisible'
 #                 ,'::QuickGUI::ContainerWidget::getDrawChildrenWhenNotVisible'
 #                 ,'::QuickGUI::TreeViewNode::isSelected'
+                '::QuickGUI::ComboBox::_clearSelection',
+                '::QuickGUI::ContainerWidget::setDrawChildrenWhenNotVisible',
+                '::QuickGUI::PropertyGrid::getPropertyWidth',
+                '::QuickGUI::PropertyGridItem::isSelected',
+                '::QuickGUI::ScriptProperty::ScriptProperty',
+                '::QuickGUI::ContainerWidget::getDrawChildrenWhenNotVisible',
+                '::QuickGUI::TreeViewNode::isSelected',
+                '::QuickGUI::Widget::setConsumeMouseEvents',
+                '::QuickGUI::ScriptProperty::getPropertyName',
+                '::QuickGUI::ScriptProperty::getValues'
                 ]
             
     for e in excludes:
-        print "Excluding Function", e
-        global_ns.member_functions(e).exclude()
+        try:
+            global_ns.member_functions(e).exclude()
+            print "Excluding Function", e
+        except:
+            print "Failed to exclude function", e
+    
  
- 
-    NotExported=['::QuickGUI::ScriptReader'
-                ,'::QuickGUI::Character'
+    NotExported=['::QuickGUI::DescFactory',
+                 '::QuickGUI::ScriptProperty'
                 ]
-    NotExported = []                
     for c in NotExported:
         print "Excluding Class", c
         main_ns.class_( c ).exclude()

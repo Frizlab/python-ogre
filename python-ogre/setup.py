@@ -32,7 +32,7 @@ Py++, hence making maintainence etc very simple."""
 
 METADATA = {
     "name":             "Python-Ogre",
-    "version":          "1.6.1",
+    "version":          "1.6.4",
     "license":          "LGPL",
     "url":              "http://python-ogre.python-hosting.com/",
     "author":           "Lakin Wecker, Roman Yakovenko, Andy Miller",
