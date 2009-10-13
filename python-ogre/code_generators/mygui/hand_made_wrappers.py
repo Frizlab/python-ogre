@@ -334,6 +334,240 @@ EventCallback* EventMenuCtrl_subscribeMenuCtrlClose(MyGUI::MenuCtrl *self, PyObj
 }
 """
 
+
+WRAPPER_REGISTRATION_DDContainer = \
+"""
+
+	def("subscribeEventStartDrag", &EventDDContainer_subscribeDDContainerStartDrag, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+	DDContainer_exposer.def("subscribeEventRequestDrop", &EventDDContainer_subscribeDDContainerRequestDrop, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+	DDContainer_exposer.def("subscribeEventDropResult", &EventDDContainer_subscribeDDContainerDropResult, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+	DDContainer_exposer.def("subscribeEventChangeDDState", &EventDDContainer_subscribeDDContainerChangeDDState, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+	/*DDContainer_exposer.def("subscribeEventRequestDragWidgetInfo", &EventDDContainer_subscribeDDContainerRequestDragWidgetInfo, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+	DDContainer_exposer.def("subscribeEventInvalideContainer", &EventDDContainer_subscribeDDContainerInvalideContainer, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+	DDContainer_exposer.def("subscribeEventUpdateDropState", &EventDDContainer_subscribeDDContainerUpdateDropState, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());		*/
+	
+"""
+
+WRAPPER_DEFINITION_DDContainer = \
+"""
+	#include "python_mygui_callback.h"
+	
+	
+EventCallback* EventDDContainer_subscribeDDContainerStartDrag(MyGUI::DDContainer *self, PyObject *subscriber, Ogre::String _method)
+{
+	EventCallback *callback = new EventCallback(subscriber, _method);
+	self->eventStartDrag = MyGUI::newDelegate(callback, &EventCallback::callbackP_R_R<MyGUI::DDContainer*, const MyGUI::DDItemInfo&, bool&>);
+	return callback;
+}
+
+EventCallback* EventDDContainer_subscribeDDContainerRequestDrop(MyGUI::DDContainer *self, PyObject *subscriber, Ogre::String _method)
+{
+	EventCallback *callback = new EventCallback(subscriber, _method);
+	self->eventRequestDrop = MyGUI::newDelegate(callback, &EventCallback::callbackP_R_R<MyGUI::DDContainer*, const MyGUI::DDItemInfo&, bool&>);
+	return callback;
+}
+
+EventCallback* EventDDContainer_subscribeDDContainerDropResult(MyGUI::DDContainer *self, PyObject *subscriber, Ogre::String _method)
+{
+	EventCallback *callback = new EventCallback(subscriber, _method);
+	self->eventDropResult = MyGUI::newDelegate(callback, &EventCallback::callbackP_R_R<MyGUI::DDContainer*, const MyGUI::DDItemInfo&, bool>);
+	return callback;
+}
+
+EventCallback* EventDDContainer_subscribeDDContainerChangeDDState(MyGUI::DDContainer *self, PyObject *subscriber, Ogre::String _method)
+{
+	EventCallback *callback = new EventCallback(subscriber, _method);
+	self->eventChangeDDState = MyGUI::newDelegate(callback, &EventCallback::callbackP_R<MyGUI::DDContainer*, MyGUI::DDItemState>);
+	return callback;
+}
+
+/*
+EventCallback* EventDDContainer_subscribeDDContainerRequestDragWidgetInfo(MyGUI::DDContainer *self, PyObject *subscriber, Ogre::String _method)
+{
+	EventCallback *callback = new EventCallback(subscriber, _method);
+	self->requestDragWidgetInfo = MyGUI::newDelegate(callback, &EventCallback::callbackP_P_R<MyGUI::DDContainer*, MyGUI::Widget*, MyGUI::IntCoord>);
+	return callback;
+}
+
+EventCallback* EventDDContainer_subscribeDDContainerInvalideContainer(MyGUI::DDContainer *self, PyObject *subscriber, Ogre::String _method)
+{
+	EventCallback *callback = new EventCallback(subscriber, _method);
+	self->_eventInvalideContainer = MyGUI::newDelegate(callback, &EventCallback::callback<MyGUI::DDContainer*>);
+	return callback;
+}
+
+EventCallback* EventDDContainer_subscribeDDContainerUpdateDropState(MyGUI::DDContainer *self, PyObject *subscriber, Ogre::String _method)
+{
+	EventCallback *callback = new EventCallback(subscriber, _method);
+	self->eventUpdateDropState = MyGUI::newDelegate(callback, &EventCallback::callbackP_P_R<MyGUI::DDContainer*, MyGUI::Widget, const MyGUI::DDWidgetState&>);
+	return callback;
+}
+*/
+"""
+
+WRAPPER_REGISTRATION_Tab = \
+"""
+
+	def("subscribeEventTabChangeSelect", &EventTab_subscribeTabChangeSelect, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+	
+"""
+
+WRAPPER_DEFINITION_Tab = \
+"""
+	#include "python_mygui_callback.h"
+	
+	
+EventCallback* EventTab_subscribeTabChangeSelect(MyGUI::Tab *self, PyObject *subscriber, Ogre::String _method)
+{
+	EventCallback *callback = new EventCallback(subscriber, _method);
+	self->eventTabChangeSelect = MyGUI::newDelegate(callback, &EventCallback::callbackP_R<MyGUI::Tab*, size_t>);
+	return callback;
+}
+
+"""
+
+
+WRAPPER_REGISTRATION_VScroll = \
+"""
+
+	def("subscribeEventScrollChangePosition", &EventVScroll_subscribeVScrollChangePosition, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+	
+"""
+
+WRAPPER_DEFINITION_VScroll = \
+"""
+	#include "python_mygui_callback.h"
+	
+	
+EventCallback* EventVScroll_subscribeVScrollChangePosition(MyGUI::VScroll *self, PyObject *subscriber, Ogre::String _method)
+{
+	EventCallback *callback = new EventCallback(subscriber, _method);
+	self->eventScrollChangePosition = MyGUI::newDelegate(callback, &EventCallback::callbackP_R<MyGUI::VScroll*, size_t>);
+	return callback;
+}
+
+"""
+
+
+WRAPPER_REGISTRATION_RenderBox = \
+"""
+
+	def("subscribeEventUpdateViewport", &EventRenderBox_subscribeRenderBoxUpdateViewport, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+	
+"""
+
+WRAPPER_DEFINITION_RenderBox = \
+"""
+	#include "python_mygui_callback.h"
+	
+	
+EventCallback* EventRenderBox_subscribeRenderBoxUpdateViewport(MyGUI::RenderBox *self, PyObject *subscriber, Ogre::String _method)
+{
+	EventCallback *callback = new EventCallback(subscriber, _method);
+	self->eventUpdateViewport = MyGUI::newDelegate(callback, &EventCallback::callback<MyGUI::RenderBox*>);
+	return callback;
+}
+
+"""
+
+
+WRAPPER_REGISTRATION_Window = \
+"""
+
+	def("subscribeEventWindowButtonPressed", &EventWindow_subscribeWindowButtonPressed, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+	Window_exposer.def("subscribeEventWindowChangeCoord", &EventWindow_subscribeWindowChangeCoord, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+
+"""
+
+WRAPPER_DEFINITION_Window = \
+"""
+	#include "python_mygui_callback.h"
+	
+	
+EventCallback* EventWindow_subscribeWindowButtonPressed(MyGUI::Window *self, PyObject *subscriber, Ogre::String _method)
+{
+	EventCallback *callback = new EventCallback(subscriber, _method);
+	self->eventWindowButtonPressed = MyGUI::newDelegate(callback, &EventCallback::callbackP_R<MyGUI::Window*, const std::string&>);
+	return callback;
+}
+
+EventCallback* EventWindow_subscribeWindowChangeCoord(MyGUI::Window *self, PyObject *subscriber, Ogre::String _method)
+{
+	EventCallback *callback = new EventCallback(subscriber, _method);
+	self->eventWindowChangeCoord = MyGUI::newDelegate(callback, &EventCallback::callback<MyGUI::Window*>);
+	return callback;
+}
+"""
+
+
+
+WRAPPER_REGISTRATION_Message = \
+"""
+
+	def("subscribeEventMessageBoxResult", &EventMessage_subscribeMessageBoxResult, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+	
+"""
+
+WRAPPER_DEFINITION_Message = \
+"""
+	#include "python_mygui_callback.h"
+	
+	
+EventCallback* EventMessage_subscribeMessageBoxResult(MyGUI::Message *self, PyObject *subscriber, Ogre::String _method)
+{
+	EventCallback *callback = new EventCallback(subscriber, _method);
+	self->eventMessageBoxResult = MyGUI::newDelegate(callback, &EventCallback::callbackP_R<MyGUI::Message*, MyGUI::MessageBoxStyle>);
+	return callback;
+}
+
+"""
+
+
+
+WRAPPER_REGISTRATION_MultiList = \
+"""
+
+	def("subscribeEventListSelectAccept", &EventMultiList_subscribeListSelectAccept, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+	MultiList_exposer.def("subscribeEventListChangePosition", &EventMultiList_subscribeListChangePosition, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+
+"""
+
+WRAPPER_DEFINITION_MultiList = \
+"""
+	#include "python_mygui_callback.h"
+	
+	
+EventCallback* EventMultiList_subscribeListSelectAccept(MyGUI::MultiList *self, PyObject *subscriber, Ogre::String _method)
+{
+	EventCallback *callback = new EventCallback(subscriber, _method);
+	self->eventListSelectAccept = MyGUI::newDelegate(callback, &EventCallback::callbackP_R<MyGUI::MultiList*, size_t>);
+	return callback;
+}
+
+EventCallback* EventMultiList_subscribeListChangePosition(MyGUI::MultiList *self, PyObject *subscriber, Ogre::String _method)
+{
+	EventCallback *callback = new EventCallback(subscriber, _method);
+	self->eventListChangePosition = MyGUI::newDelegate(callback, &EventCallback::callbackP_R<MyGUI::MultiList*, size_t>);
+	return callback;
+}
+
+"""
+
 #################################################################################################
 #################################################################################################   
   
@@ -369,6 +603,30 @@ def apply( mb ):
     rt.add_declaration_code( WRAPPER_DEFINITION_MenuCtrl )
     rt.add_registration_code( WRAPPER_REGISTRATION_MenuCtrl )
 	
+    rt = mb.class_( 'DDContainer' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_DDContainer )
+    rt.add_registration_code( WRAPPER_REGISTRATION_DDContainer )
+	
+    rt = mb.class_( 'Tab' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_Tab )
+    rt.add_registration_code( WRAPPER_REGISTRATION_Tab )
+	
+    rt = mb.class_( 'VScroll' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_VScroll )
+    rt.add_registration_code( WRAPPER_REGISTRATION_VScroll )
+	
+    rt = mb.class_( 'RenderBox' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_RenderBox )
+    rt.add_registration_code( WRAPPER_REGISTRATION_RenderBox )
+	
+    rt = mb.class_( 'Window' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_Window )
+    rt.add_registration_code( WRAPPER_REGISTRATION_Window )
+
+    rt = mb.class_( 'Message' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_Message )
+    rt.add_registration_code( WRAPPER_REGISTRATION_Message )
+	
     print "Need to wrap events: " + "eventKeyButtonPressed, eventKeyButtonReleased, _requestGetContainer in WidgetEvent class"
 	
 	#Button
@@ -382,13 +640,13 @@ def apply( mb ):
 	#eventComboChangePosition			+
 	
 	#DDContainer
-	#eventStartDrag
-	#eventRequestDrop
-	#eventDropResult
-	#eventChangeDDState
-	#requestDragWidgetInfo
-	#_eventInvalideContainer
-	#eventUpdateDropState
+	#eventStartDrag					+
+	#eventRequestDrop				+
+	#eventDropResult					+
+	#eventChangeDDState				+
+	#requestDragWidgetInfo			
+	#_eventInvalideContainer			
+	#eventUpdateDropState			
 	
 	#Edit
 	#eventEditSelectAccept			+
@@ -419,11 +677,11 @@ def apply( mb ):
 	#eventMenuCtrlClose				+
 	
 	#Message
-	#eventMessageBoxResult
+	#eventMessageBoxResult			+
 	
 	#MultiList
-	#eventListSelectAccept
-	#eventListChangePosition
+	#eventListSelectAccept				+
+	#eventListChangePosition			+
 	#requestOperatorLess
 	
 	#PopupMenu
@@ -431,7 +689,7 @@ def apply( mb ):
 	#Progress
 	
 	#RenderBox
-	#eventUpdateViewport
+	#eventUpdateViewport				+
 	
 	#ScrollView
 	
@@ -440,10 +698,10 @@ def apply( mb ):
 	#StaticText
 	
 	#Tab
-	#eventTabChangeSelect
+	#eventTabChangeSelect			+
 	
 	#VScroll
-	#eventScrollChangePosition
+	#eventScrollChangePosition			+
 	
 	#Widget
 	
@@ -468,8 +726,8 @@ def apply( mb ):
 	#_requestGetContainer
 	
 	#Window
-	#eventWindowButtonPressed
-	#eventWindowChangeCoord
+	#eventWindowButtonPressed			+
+	#eventWindowChangeCoord			+
 	
 	
 
