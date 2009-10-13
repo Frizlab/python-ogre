@@ -77,6 +77,15 @@ public:
 			boost::python::call<void>(mSubscriber, boost::ref(v1), v2);
 	}
 	
+	template<typename T1, typename T2, typename T3>
+	void callbackP_P_R(T1 v1, T2 v2, T3 v3)
+	{
+		if (mMethod.length() > 0 )
+			boost::python::call_method<void>(mSubscriber, mMethod.c_str(), boost::ref(v1), boost:ref(v2), v3);
+		else
+			boost::python::call<void>(mSubscriber, boost::ref(v1), boost::ref(v2), v3);
+	}
+	
 	template<typename T1, typename T2, typename T3, typename T4>
 	void callbackP_R_R_R(T1 v1, T2 v2, T3 v3, T4 v4)
 	{
