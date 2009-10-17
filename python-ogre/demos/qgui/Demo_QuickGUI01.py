@@ -121,7 +121,8 @@ class QuickGUIDemoApp (sf.Application):
         sf.Application.__del__(self)
 
     def _setUpResources(self):
-        
+        sf.setupLogging()
+        sf.info ("Entering _setupresources")
         # register the quickgui script handler..
         gui.registerScriptReader()
 
@@ -129,12 +130,14 @@ class QuickGUIDemoApp (sf.Application):
         sf.Application._setUpResources ( self )
         
         # Now load any extra resource locations that we might need..  
-        Ogre.ResourceGroupManager.getSingleton().addResourceLocation("media","FileSystem", "General")
-        
+        Ogre.ResourceGroupManager.getSingleton().addResourceLocation("media/textures","FileSystem", "General")
+        Ogre.ResourceGroupManager.getSingleton().addResourceLocation("media/qgui.core.zip", "Zip")
+        #Ogre.ResourceGroupManager.getSingleton().addResourceLocation("media","FileSystem", "General")
+        sf.info ( "Done _setup resources")
                     
     ## Just override the mandatory create scene method
     def _createScene(self):
-
+        sf.info ("Entering _createScene")
         self.mDebugDisplayShown=True
         ## Set ambient light
         self.sceneManager.setAmbientLight((0.5, 0.5, 0.5))
@@ -191,12 +194,16 @@ class QuickGUIDemoApp (sf.Application):
         v.setOverlaysEnabled( False )
         v.setClearEveryFrame( True )
         v.setBackgroundColour( Ogre.ColourValue().Black )
-
+        sf.info ("Createing gui")
         self.guiroot = gui.Root()
+        sf.info ("GUI OK, loading types")
         gui.SkinTypeManager.getSingleton().loadTypes()
+        sf.info ("done load types")
         self.desc = gui.GUIManagerDesc()
+        sf.info ("done self.desc")
 #     
         self.mGUIManager = gui.Root.getSingleton().createGUIManager(self.desc)
+        sf.info ("Created guimanager")
         self.mGUIManager.setSceneManager(self.sceneManager) 
         self.mGUIManager.viewport = self.camera.getViewport()
 # 
@@ -221,7 +228,10 @@ class QuickGUIDemoApp (sf.Application):
 
     def createGUI ( self ):  
       self.callbacks=[]
-      descFactory = gui.FactoryManager.getSingleton().getWidgetDescFactory()
+      sf.info ("Creating GUI")
+      descFactory = gui.FactoryManager.getSingleton().getDescFactory()
+      print dir ( descFactory)
+      #.getWidgetDescFactory()
       
       wd = descFactory.getInstance("DefaultWindowDesc")
       pd = descFactory.getInstance("DefaultPanelDesc")
@@ -240,6 +250,7 @@ class QuickGUIDemoApp (sf.Application):
       tbd = descFactory.getInstance("DefaultToolBarDesc")
       cd = descFactory.getInstance("DefaultConsoleDesc")
       tvd = descFactory.getInstance("DefaultTreeViewDesc")
+      sf.info ("CreateGUI part 1")
       
       wd.resetToDefault()
       wd.widget_name = "Window1"
@@ -247,7 +258,6 @@ class QuickGUIDemoApp (sf.Application):
       wd.widget_dimensions.size = gui.Size(225,200)
       wd.widget_minSize = gui.Size(50,50)
       wd.widget_maxSize = gui.Size(300,300)
-      print wd.textDesc.segments, dir(wd.textDesc.segments)
       wd.textDesc.segments.append(gui.TextSegment("micross.12",Ogre.ColourValue().White,"Test Title Bar"))
       
       win = self.mGUIManager.getActiveSheet().createWindow(wd)

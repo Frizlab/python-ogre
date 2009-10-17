@@ -1,5 +1,9 @@
 
 #include "MyGUI.h"
+#include "MYGUI_RenderItem.h"
+#include "MYGUI_LayerItemKeeper.h"
+#include "MYGUI_LayerKeeper.h"
+#include "MYGUI_WidgetSkinInfo.h"
 
 // First we create a magic namespace to hold all our aliases
 namespace pyplusplus { namespace aliases {

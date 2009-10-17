@@ -108,7 +108,7 @@ def comboboxEventComboChangePosition(widget, v1):
  
 def _buttonListAddClick(widget):
     global list
-    list.addItem("item " + str(list.getItemCount()))
+    list.addItem(ogre.UTFString("item " + str(list.getItemCount())), mygui.Any() )
     
 def _buttonListRemoveClick(widget):
     global list
@@ -187,7 +187,7 @@ class MyGUISceneApplication(sf.Application):
         combobox = window.createWidgetT("ComboBox", "ComboBox", mygui.IntCoord(180, 30, 150, 30), mygui.Align())
         combobox.setComboModeDrop(True)
         for item in xrange(100):
-			combobox.addItem("Item %d" % item)
+			combobox.addItem(ogre.UTFString("Item %d" % item), mygui.Any() )
         print combobox.subscribeEventAccept(comboboxEventComboAccept, '')
         print combobox.subscribeEventChangePosition(comboboxEventComboChangePosition, '')
 		
